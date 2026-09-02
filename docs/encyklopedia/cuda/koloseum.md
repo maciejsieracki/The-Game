@@ -55,3 +55,8 @@ Bonus imperium i/lub ×3 plony w mieście wzniesienia (patrz JSON).
 ## Historia / decyzje
 
 Wygenerowano z danych gry · rev. E 2026-07-03 (pogłębienie + przykłady).
+
+
+## Rys historyczny
+
+Koloseum, wzniesione w Rzymie w I wieku n.e. za panowania dynastii Flawiuszów, było największym amfiteatrem starożytnego świata i mogło pomieścić dziesiątki tysięcy widzów. Budowlę wzniesiono na miejscu sztucznego jeziora dawnego pałacu Nerona, a jej budowę rozpoczął cesarz Wespazjan, dokończył zaś jego syn Tytus, otwierając obiekt widowiskami trwającymi wiele dni. Owalna konstrukcja z betonu, kamienia i cegły, wsparta na systemie łuków i sklepień, umożliwiała sprawne rozprowadzanie tłumów oraz stosowanie zaawansowanych rozwiązań scenicznych, w tym zapadni i mechanizmów pod areną. W Koloseum organizowano walki gladiatorów, polowania na dzikie zwierzęta oraz inscenizacje bitew, które miały demonstrować potęgę Rzymu i zapewniać ludowi rozrywkę na masową skalę. Budowla przetrwała upadek Cesarstwa Zachodniorzymskiego, trzęsienia ziemi i wieki eksploatacji jako źródła materiału budowlanego, pozostając jednym z najbardziej rozpoznawalnych symboli starożytnego Rzymu.

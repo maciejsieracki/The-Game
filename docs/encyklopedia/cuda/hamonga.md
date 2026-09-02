@@ -55,3 +55,8 @@ Bonus imperium i/lub ×3 plony w mieście wzniesienia (patrz JSON).
 ## Historia / decyzje
 
 Wygenerowano z danych gry · rev. E 2026-07-03 (pogłębienie + przykłady).
+
+
+## Rys historyczny
+
+Ha'amonga 'a Maui to megalityczna budowla trylityczna na wyspie Tongatapu w Tonga, złożona z dwóch pionowych kamiennych filarów zwieńczonych poziomą belką, o łącznej wadze szacowanej na kilkadziesiąt ton. Ze względu na brak źródeł pisanych jej dokładne pochodzenie pozostaje niepewne, a wiedzę o niej czerpie się głównie z tradycji ustnej oraz badań archeologicznych, które wskazują na powstanie budowli prawdopodobnie w XIII wieku, za panowania jednego z wczesnych władców tongijskich (tu'i Tonga). Według miejscowych podań konstrukcja miała być bramą triumfalną lub symbolem jedności dwóch synów władcy, choć inne przekazy łączą jej nazwę z legendarnym półbogiem Maui, mitycznym bohaterem polinezyjskich opowieści. Niektórzy badacze sugerują również możliwe zastosowanie astronomiczne budowli, związane z obserwacją przesileń, choć hipoteza ta nie jest jednoznacznie potwierdzona. Ha'amonga 'a Maui pozostaje dziś jednym z niewielu monumentalnych świadectw przedeuropejskiej kultury polinezyjskiej w regionie Pacyfiku, otoczonym mieszanką legendy i archeologicznej hipotezy.

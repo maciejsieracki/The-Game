@@ -55,3 +55,8 @@ Bonus imperium i/lub ×3 plony w mieście wzniesienia (patrz JSON).
 ## Historia / decyzje
 
 Wygenerowano z danych gry · rev. E 2026-07-03 (pogłębienie + przykłady).
+
+
+## Rys historyczny
+
+Tereny nad górnym Menem w dzisiejszej Bawarii, w okolicach współczesnego Aschaffenburga, znajdowały się w młodszej epoce żelaza w zasięgu oddziaływania kultury lateńskiej, charakterystycznej dla środkowoeuropejskich ludów celtyckich i sąsiadujących z nimi grup germańskich. Archeologia tego regionu dostarcza śladów osadnictwa opartego na drewnianym budownictwie — dużych halach konstrukcyjnych wznoszonych z ciosanych pni dębowych, które ze względu na trwałość tego surowca potrafiły przetrwać w formie zachowanych fragmentów fundamentowych przez tysiąclecia. Tego typu budowle pełniły funkcje zarówno mieszkalne, jak i zgromadzeniowe, stanowiąc centrum życia społecznego niewielkich, rozproszonych osad rolniczo-hodowlanych typowych dla tego okresu. Bliskość żeglownej rzeki ułatwiała wymianę handlową i kontakt z odleglejszymi ośrodkami kultury lateńskiej, w tym z terenami dzisiejszej Galii i południowych Niemiec. Ze względu na skąpość źródeł pisanych z tego okresu wiedza o konkretnych osadach w tym regionie opiera się niemal wyłącznie na znaleziskach archeologicznych i ogólnej wiedzy o budownictwie drewnianym ludów naddunajskich i nadreńskich tej epoki.

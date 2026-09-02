@@ -55,3 +55,8 @@ Bonus imperium i/lub ×3 plony w mieście wzniesienia (patrz JSON).
 ## Historia / decyzje
 
 Wygenerowano z danych gry · rev. E 2026-07-03 (pogłębienie + przykłady).
+
+
+## Rys historyczny
+
+Wyrocznie były w starożytnym świecie miejscami, w których wierzono, że bóstwa przemawiają do ludzi za pośrednictwem kapłanów lub kapłanek, udzielając rad w sprawach politycznych, wojennych i osobistych. Najsłynniejszą z nich była wyrocznia Apollina w Delfach, gdzie Pytia, wprawiona w trans, wygłaszała niejasne, często wieloznaczne przepowiednie interpretowane następnie przez kapłanów. Podobną rolę pełniła starsza wyrocznia Zeusa w Dodonie, gdzie odpowiedzi odczytywano z szumu liści świętego dębu, a także liczne sanktuaria wróżebne na Bliskim Wschodzie i wokół basenu Morza Śródziemnego. Do wyroczni pielgrzymowali zarówno zwykli ludzie, jak i władcy i wodzowie, którzy przed ważnymi decyzjami — wyprawami wojennymi, zakładaniem kolonii czy zmianami w prawie — szukali boskiego potwierdzenia swoich planów. Sanktuaria wyroczni gromadziły przy tym ogromne bogactwa w postaci wotywnych darów, stając się także ośrodkami kulturalnymi i dyplomatycznymi, w których rywalizujące ze sobą państwa mogły się spotykać na neutralnym gruncie.

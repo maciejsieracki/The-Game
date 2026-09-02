@@ -55,3 +55,8 @@ Bonus imperium i/lub ×3 plony w mieście wzniesienia (patrz JSON).
 ## Historia / decyzje
 
 Wygenerowano z danych gry · rev. E 2026-07-03 (pogłębienie + przykłady).
+
+
+## Rys historyczny
+
+Kolos Rodyjski to gigantyczny posąg boga słońca Heliosa, wzniesiony na wyspie Rodos na przełomie IV i III wieku p.n.e. dla upamiętnienia zwycięskiej obrony miasta przed oblężeniem macedońskiego wodza Demetriosa Poliorketesa. Statuę, sfinansowaną częściowo ze sprzedaży porzuconego przez najeźdźców sprzętu oblężniczego, wykonano z brązu na szkielecie żelaznym i kamiennym rdzeniu, a jej budowa zajęła rzeźbiarzowi Charesowi z Lindos ponad dekadę. Choć popularna legenda przedstawia Kolosa jako olbrzyma stojącego okrakiem nad wejściem do portu, większość współczesnych badaczy uważa to za wyobrażenie błędne, niezgodne z ówczesną wiedzą inżynieryjną. Posąg przetrwał zaledwie około pięćdziesięciu lat, po czym zawalił się w wyniku silnego trzęsienia ziemi w 226 roku p.n.e., a jego szczątki leżały na ziemi przez kolejne stulecia, wciąż budząc podziw podróżnych. Rodos, dzięki dogodnemu położeniu na szlakach handlowych Morza Egejskiego, było w tym okresie jednym z ważniejszych ośrodków morskich i kulturalnych świata hellenistycznego.

@@ -55,3 +55,8 @@ Bonus imperium i/lub ×3 plony w mieście wzniesienia (patrz JSON).
 ## Historia / decyzje
 
 Wygenerowano z danych gry · rev. E 2026-07-03 (pogłębienie + przykłady).
+
+
+## Rys historyczny
+
+Roquepertuse to celtyckie (galijskie) sanktuarium odkryte w Prowansji, w pobliżu dzisiejszego Velaux, datowane na IV–III wiek p.n.e. Najbardziej charakterystycznym elementem odsłoniętego zespołu jest kamienny portyk z wyciętymi we wnękach otworami, w których pierwotnie umieszczano ludzkie czaszki — praktyka związana z galijskim kultem głów, uznawanych za siedlisko duszy i mocy magicznej. Miejsce to nie było osadą mieszkalną, lecz ośrodkiem o charakterze ceremonialnym, gdzie odnaleziono również kamienne posągi wojowników w pozycji siedzącej oraz ślady polichromii zdobiącej niegdyś budowlę. Sanktuarium funkcjonowało w okresie, gdy południe dzisiejszej Francji znajdowało się pod silnym wpływem kultury śródziemnomorskiej, w tym greckiej kolonii Massalia, co widać w stylu niektórych rzeźb. Roquepertuse zostało zniszczone prawdopodobnie w wyniku konfliktu zbrojnego około III wieku p.n.e., a jego pozostałości stanowią dziś jedno z kluczowych źródeł wiedzy o religijności i sztuce Celtów znad Morza Śródziemnego.

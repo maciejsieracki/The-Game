@@ -55,3 +55,8 @@ Bonus imperium i/lub ×3 plony w mieście wzniesienia (patrz JSON).
 ## Historia / decyzje
 
 Wygenerowano z danych gry · rev. E 2026-07-03 (pogłębienie + przykłady).
+
+
+## Rys historyczny
+
+Dur-Szarrukin, czyli „Twierdza Sargona”, to miasto założone jako nowa stolica przez asyryjskiego króla Sargona II w VIII wieku p.n.e., na terenie dzisiejszego Chorsabadu w północnym Iraku. Budowa miasta, otoczonego potężnymi murami obronnymi z licznymi bramami, trwała około dekady i pochłonęła ogromne zasoby administracji imperium asyryjskiego. Centralnym punktem założenia był rozległy pałac królewski zdobiony monumentalnymi rzeźbami skrzydlatych byków z ludzką głową, zwanych lamassu, które strzegły wejść i symbolizowały ochronną moc władcy. Miasto pełniło funkcję stolicy jedynie krótko, gdyż po śmierci Sargona II w boju jego następca Sennacheryb przeniósł siedzibę władzy do Niniwy, co przerwało dalszy rozwój Dur-Szarrukin. Mimo krótkiego okresu świetności, odkryte w XIX wieku ruiny miasta dostarczyły archeologom jednych z najbogatszych źródeł wiedzy o architekturze i sztuce neoasyryjskiej.

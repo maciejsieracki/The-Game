@@ -55,3 +55,8 @@ Bonus imperium i/lub ×3 plony w mieście wzniesienia (patrz JSON).
 ## Historia / decyzje
 
 Wygenerowano z danych gry · rev. E 2026-07-03 (pogłębienie + przykłady).
+
+
+## Rys historyczny
+
+Piramidy to monumentalne grobowce faraonów Starego Państwa, wznoszone w Egipcie głównie w III tysiącleciu p.n.e. jako wieczne siedziby władców utożsamianych z boskim porządkiem świata. Najsłynniejszy zespół powstał w Gizie za panowania Cheopsa, Chefrena i Mykerinosa, a jego budowa wymagała mobilizacji dziesiątek tysięcy robotników, transportu wielotonowych bloków wapienia i granitu oraz precyzyjnej wiedzy geometrycznej i astronomicznej. Wewnątrz i wokół piramid znajdowały się komory grobowe, świątynie zaupokojne oraz statki solarne, mające zapewnić faraonowi podróż w zaświaty. Budowle te stały się trwałym symbolem potęgi administracyjnej i gospodarczej starożytnego Egiptu, zdolnej skoordynować pracę na skalę niespotykaną w ówczesnym świecie. Przez tysiąclecia pozostawały największymi budowlami na Ziemi i do dziś są jedynym w pełni zachowanym cudem starożytności.

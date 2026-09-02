@@ -55,3 +55,8 @@ Bonus imperium i/lub ×3 plony w mieście wzniesienia (patrz JSON).
 ## Historia / decyzje
 
 Wygenerowano z danych gry · rev. E 2026-07-03 (pogłębienie + przykłady).
+
+
+## Rys historyczny
+
+Lud Zulu, który w XIX wieku zbudował w południowej Afryce potężne państwo pod wodzą Szaki i jego następców, nie pozostawił po sobie tradycji wznoszenia wielkich kamiennych stel na wzór znany z północno-wschodniej Afryki, na przykład z Aksum. Pamięć zbiorowa i upamiętnianie ważnych wydarzeń czy przodków opierały się u Zulusów przede wszystkim na bogatej tradycji ustnej, pieśniach, imionach królewskich oraz kopcach kamiennych i ziemnych usypywanych w miejscach bitew czy zgromadzeń. Kamienne kopce typu isivivane, budowane wzdłuż szlaków i w miejscach znaczących wydarzeń, pełniły funkcję zbliżoną do pomników — podróżni dokładali do nich kolejne kamienie jako gest szacunku lub prośby o powodzenie. Również miejsca dawnych stolic królewskich, takie jak ufortyfikowane osady i pałace władców, stanowiły trwałe punkty odniesienia dla tożsamości i historii ludu. Monumentalne, pojedyncze stele kamienne z inskrypcjami, charakterystyczne dla niektórych kultur wschodnioafrykańskich, pozostają zjawiskiem znacznie rzadszym w tradycji Zulu, gdzie pamięć historyczna przetrwała głównie w formie niematerialnej.

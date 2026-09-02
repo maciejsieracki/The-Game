@@ -55,3 +55,8 @@ Bonus imperium i/lub ×3 plony w mieście wzniesienia (patrz JSON).
 ## Historia / decyzje
 
 Wygenerowano z danych gry · rev. E 2026-07-03 (pogłębienie + przykłady).
+
+
+## Rys historyczny
+
+Perun był w wierzeniach dawnych Słowian bóstwem gromu, wojny i władzy, uznawanym za jednego z najważniejszych, o ile nie najważniejszego, boga panteonu przedchrześcijańskiej Słowiańszczyzny. Wiedza o jego kulcie pochodzi głównie ze wzmianek w kronikach staroruskich, takich jak latopis Powieść minionych lat, opisujący między innymi posąg Peruna wzniesiony w Kijowie przez księcia Włodzimierza Wielkiego przed przyjęciem chrztu w 988 roku. Według przekazów wizerunek boga miał drewnianą postać ze srebrną głową i złotymi wąsami, a przed nim składano ofiary, w tym prawdopodobnie ofiary z ludzi, choć szczegóły tych praktyk pozostają przedmiotem sporów badaczy. Ponieważ Słowianie w okresie pogańskim nie pozostawili własnych źródeł pisanych, obraz kultu Peruna rekonstruuje się dziś głównie na podstawie późniejszych kronik chrześcijańskich, porównań z mitologią bałtyjską i skandynawską oraz badań etnograficznych folkloru ludowego. Po chrystianizacji ziem ruskich posągi Peruna były systematycznie niszczone, a jego kult stopniowo wypierany lub przekształcany w postaci ludowych wierzeń związanych z gromami i burzami.

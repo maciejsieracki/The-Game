@@ -55,3 +55,8 @@ Bonus imperium i/lub ×3 plony w mieście wzniesienia (patrz JSON).
 ## Historia / decyzje
 
 Wygenerowano z danych gry · rev. E 2026-07-03 (pogłębienie + przykłady).
+
+
+## Rys historyczny
+
+Terakotowa armia to zespół tysięcy naturalnej wielkości glinianych figur wojowników, koni i rydwanów, odkryty w 1974 roku w pobliżu Xi'an, wzniesiony jako część monumentalnego kompleksu grobowego Qin Shi Huanga, pierwszego cesarza zjednoczonych Chin z dynastii Qin. Budowę mauzoleum i towarzyszącej mu armii rozpoczęto wkrótce po wstąpieniu władcy na tron w III wieku p.n.e., a prace kontynuowano przez dziesięciolecia przy zaangażowaniu setek tysięcy robotników i rzemieślników. Każda figura, choć wykonywana według standaryzowanych elementów składanych następnie w całość, otrzymywała indywidualne rysy twarzy, fryzurę i wyposażenie, co czyni armię wyjątkowym świadectwem ówczesnego rzemiosła i organizacji pracy. Wojownicy ustawieni byli w formacjach bojowych w podziemnych komorach, mających strzec cesarza w zaświatach i zapewnić mu władzę porównywalną do tej sprawowanej za życia. Odkrycie armii uznawane jest za jedno z najważniejszych znalezisk archeologicznych XX wieku, rzucające nowe światło na potęgę i ambicje twórcy zjednoczonego państwa chińskiego.

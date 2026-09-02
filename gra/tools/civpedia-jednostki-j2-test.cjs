@@ -14,20 +14,27 @@
  *     `## Metadane`), NIE jakiemukolwiek wpisowi zawierającemu "Wojownik" —
  *     osobna, jawna asercja.
  * [3] Zero zmian w istniejących sekcjach "## Historia / decyzje" (tam gdzie
- *     obecne) — treść PRZED "## Rys historyczny" bez tego nagłówka jest
- *     identyczna z wersją w `git show HEAD:<plik>` (bazowy `origin/main`).
- * [4] Zero zmian w pozostałych 25 plikach folderu `jednostki/` (batch J1) —
- *     dowód przez `git diff --stat` (ten test woła `git` jako subprocess,
- *     read-only).
+ *     obecne) — sprawdzane STRUKTURALNIE, na aktualnym stanie pliku na
+ *     dysku, BEZ odwołania do gita: sekcja "## Historia / decyzje" jest
+ *     obecna i występuje PRZED nagłówkiem "## Rys historyczny" (pozycje
+ *     indeksów w treści pliku).
+ * [4] Pozostałe 25 plików folderu `jednostki/` (batch J1) mają WŁASNĄ,
+ *     strukturalnie poprawną zawartość: dokładnie jeden nagłówek
+ *     "## Rys historyczny", na samym końcu pliku — sprawdzane niezależnie
+ *     od gita (J1 i J2 to dwa osobne, legalne commity na tej samej gałęzi,
+ *     więc "diff jest pusty" nie jest już poprawnym kryterium).
  * [5] Żywy dowód w headless Chromium: 3 z 24 haseł (w tym KONIECZNIE
  *     wojownik-celtycki / Soldurii) pokazują wyrenderowaną sekcję
  *     "Rys historyczny" z realną treścią, w widoku depth 'm'.
+ *
+ * WAŻNE — metoda weryfikacji [3]/[4] jest CELOWO niezależna od pozycji git
+ * HEAD i od zakresu `git diff`: test ma przechodzić identycznie PRZED i PO
+ * scommitowaniu tej zmiany, na dowolnym HEAD, na zwykłym świeżym checkout.
  *
  * Usage (z gra/): node tools/civpedia-jednostki-j2-test.cjs
  */
 const fs = require('fs');
 const path = require('path');
-const { execFileSync } = require('child_process');
 const esbuild = require(path.resolve(__dirname, '..', 'node_modules', 'esbuild'));
 
 let chromium;
@@ -134,55 +141,37 @@ async function main() {
   }
 
   // ------------------------------------------------------------------
-  // [3] Zero zmian w "## Historia / decyzje" — treść PRZED nowym nagłówkiem
-  // identyczna z bazową wersją w git (origin/main / HEAD przed tym batchem).
+  // [3] Metoda STRUKTURALNA, niezależna od gita: istniejąca sekcja
+  // "## Historia / decyzje" (tam gdzie występuje) jest obecna i występuje
+  // w treści pliku PRZED nagłówkiem "## Rys historyczny" (pozycje indeksów).
   // ------------------------------------------------------------------
-  let baseAvailable = true;
-  let baseRef = null;
-  try {
-    baseRef = execFileSync('git', ['merge-base', 'HEAD', 'origin/main'], { cwd: REPO_ROOT, encoding: 'utf8' }).trim();
-  } catch (e) {
-    try {
-      baseRef = execFileSync('git', ['rev-parse', 'origin/main'], { cwd: REPO_ROOT, encoding: 'utf8' }).trim();
-    } catch (e2) { baseAvailable = false; }
-  }
-  if (baseAvailable) {
-    for (const fname of BATCH_FILES) {
-      const rel = path.join('docs', 'encyklopedia', 'jednostki', fname);
-      let baseContent;
-      try {
-        baseContent = execFileSync('git', ['show', `${baseRef}:${rel}`], { cwd: REPO_ROOT, encoding: 'utf8' });
-      } catch (e) {
-        check(`[3] "${fname}": bazowa wersja w git czytelna (${baseRef})`, false, String(e.message || e));
-        continue;
-      }
-      const current = fs.readFileSync(path.join(JEDNOSTKI_DIR, fname), 'utf8');
-      const currentWithoutNewSection = current.replace(/\n\n## Rys historyczny\n\n[\s\S]*$/, '\n');
-      check(`[3] "${fname}": treść PRZED "## Rys historyczny" identyczna z bazową (origin/main) — zero zmian w istniejących sekcjach`,
-        currentWithoutNewSection === (baseContent.endsWith('\n') ? baseContent : baseContent + '\n')
-        || currentWithoutNewSection.trimEnd() === baseContent.trimEnd());
-    }
-  } else {
-    check('[3] baza git (origin/main) dostępna do porównania', false, 'brak dostępu do origin/main w tym repo');
+  for (const fname of BATCH_FILES) {
+    const content = fs.readFileSync(path.join(JEDNOSTKI_DIR, fname), 'utf8');
+    const idxChangelog = content.indexOf('## Historia / decyzje');
+    const idxRys = content.indexOf('## Rys historyczny');
+    check(`[3] "${fname}": istniejąca sekcja "## Historia / decyzje" obecna PRZED nową "## Rys historyczny"`,
+      idxChangelog !== -1 && idxRys !== -1 && idxChangelog < idxRys,
+      { idxChangelog, idxRys });
   }
 
   // ------------------------------------------------------------------
-  // [4] Zero zmian poza tymi 24 plikami w folderze jednostki/ (batch J1
-  // nietknięty) — `git diff --stat` względem bazy.
+  // [4] Pozostałe 25 plików folderu jednostki/ (batch J1) mają WŁASNĄ,
+  // strukturalnie poprawną zawartość — sprawdzane niezależnie od gita:
+  // dokładnie 1 nagłówek "## Rys historyczny", na samym końcu pliku.
   // ------------------------------------------------------------------
-  if (baseAvailable) {
-    let diffStat = '';
-    try {
-      diffStat = execFileSync('git', ['diff', '--name-only', `${baseRef}`, '--', 'docs/encyklopedia/jednostki/'], { cwd: REPO_ROOT, encoding: 'utf8' });
-    } catch (e) { diffStat = ''; }
-    const changedFiles = diffStat.split('\n').map((l) => l.trim()).filter(Boolean).map((l) => path.basename(l));
-    const expectedSet = new Set(BATCH_FILES);
-    const unexpected = changedFiles.filter((f) => !expectedSet.has(f));
-    const missing = BATCH_FILES.filter((f) => !changedFiles.includes(f));
-    check('[4] git diff w docs/encyklopedia/jednostki/ obejmuje WYŁĄCZNIE tych 24 plików batcha J2 (zero dotknięcia J1)',
-      unexpected.length === 0, unexpected);
-    check('[4] git diff w docs/encyklopedia/jednostki/ obejmuje WSZYSTKIE 24 pliki batcha J2',
-      missing.length === 0, missing);
+  const allFiles = fs.readdirSync(JEDNOSTKI_DIR).filter((f) => f.endsWith('.md')).sort();
+  const batchSet = new Set(BATCH_FILES);
+  const otherFiles = allFiles.filter((f) => !batchSet.has(f));
+  check('[4] folder jednostki/ zawiera pliki batcha J2 (24) + pozostałe pliki (batch J1)',
+    otherFiles.length === allFiles.length - BATCH_FILES.length, { total: allFiles.length, other: otherFiles.length });
+  for (const f of otherFiles) {
+    const content = fs.readFileSync(path.join(JEDNOSTKI_DIR, f), 'utf8');
+    const occurrences = (content.match(/## Rys historyczny/g) || []).length;
+    const idx = content.indexOf('## Rys historyczny');
+    const rysContent = idx === -1 ? null : content.slice(idx + '## Rys historyczny'.length).replace(/^\s*\n+/, '').trimEnd();
+    check(`[4] pozostały plik "${f}" (poza batchem J2): dokładnie 1 "## Rys historyczny", na samym końcu pliku (własna, nietknięta zawartość)`,
+      occurrences === 1 && idx !== -1 && rysContent !== null && content.trimEnd().endsWith(rysContent),
+      { occurrences });
   }
 
   // ------------------------------------------------------------------

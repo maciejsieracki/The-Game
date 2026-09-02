@@ -55,3 +55,8 @@ Bonus imperium i/lub ×3 plony w mieście wzniesienia (patrz JSON).
 ## Historia / decyzje
 
 Wygenerowano z danych gry · rev. E 2026-07-03 (pogłębienie + przykłady).
+
+
+## Rys historyczny
+
+Zigguraty to charakterystyczne dla starożytnej Mezopotamii wielostopniowe świątynne wieże, wznoszone z suszonej i wypalanej cegły w miastach Sumeru, Akadu i Babilonii od końca III tysiąclecia p.n.e. Najlepiej znanym przykładem jest ziggurat w Ur, poświęcony bogu księżyca Nannie, zbudowany za panowania Ur-Nammu jako serce świątynnego kompleksu miejskiego. Konstrukcja opierała się na masywnym rdzeniu z cegły suszonej na słońcu, obłożonym warstwą cegły wypalanej łączonej bitumem, co miało chronić budowlę przed erozją i deszczami. Na szczycie wznosiło się niewielkie sanktuarium, uważane za miejsce zamieszkania bóstwa i punkt łączności między niebem a ziemią, dostępne wyłącznie kapłanom. Zigguraty pełniły funkcję zarówno religijną, jak i administracyjną, symbolizując potęgę miasta-państwa i jego opiekuńczego bóstwa, a ich forma wywarła później wpływ na biblijne wyobrażenie wieży Babel.

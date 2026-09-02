@@ -55,3 +55,8 @@ Bonus imperium i/lub ×3 plony w mieście wzniesienia (patrz JSON).
 ## Historia / decyzje
 
 Wygenerowano z danych gry · rev. E 2026-07-03 (pogłębienie + przykłady).
+
+
+## Rys historyczny
+
+Mundo Perdido, czyli Zaginiony Świat, to jeden z najstarszych zespołów architektonicznych w obrębie Tikal, wielkiego miasta Majów w nizinnym Petén na terenie dzisiejszej Gwatemali. Kompleks, którego początki sięgają okresu preklasycznego, około IV–III wieku p.n.e., zdominowany jest przez Wielką Piramidę o wysokości ponad trzydziestu metrów, jedną z największych budowli tego typu w całej Mezoameryce. Układ przestrzenny zespołu, łączący piramidy, platformy i ustawienia budynków zorientowane astronomicznie, wskazuje na jego funkcję jako ośrodka obserwacji zjawisk niebieskich i obrzędów kalendarzowych. Przez kolejne stulecia Mundo Perdido było wielokrotnie przebudowywane, a kolejne warstwy konstrukcyjne odzwierciedlają zmieniające się praktyki rytualne i rosnącą potęgę Tikal jako jednego z najważniejszych miast-państw klasycznych Majów. Odkrycia archeologiczne w tym miejscu dostarczyły kluczowych danych o wczesnym rozwoju monumentalnej architektury i religii majańskiej, poprzedzającym rozkwit miasta w okresie klasycznym.

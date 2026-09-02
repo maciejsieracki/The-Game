@@ -55,3 +55,8 @@ Bonus imperium i/lub ×3 plony w mieście wzniesienia (patrz JSON).
 ## Historia / decyzje
 
 Wygenerowano z danych gry · rev. E 2026-07-03 (pogłębienie + przykłady).
+
+
+## Rys historyczny
+
+Stupa w Sanchi, położona w środkowych Indiach, to jeden z najstarszych i najlepiej zachowanych zabytków architektury buddyjskiej, którego rdzeń wzniesiono za panowania cesarza Aśoki z dynastii Maurjów w III wieku p.n.e. Aśoka, który po krwawym podboju Kalingi nawrócił się na buddyzm i uczynił go duchowym fundamentem swojego imperium, ufundował sieć stup i filarów z edyktami w całych Indiach, a Sanchi stało się jednym z najważniejszych takich ośrodków. Kopulasta budowla, zwana pierwotnie stupą numer jeden, została w kolejnych wiekach rozbudowana o kamienne ogrodzenie i cztery bogato zdobione bramy (torany), przedstawiające sceny z życia Buddy oraz dawnych opowieści dżatak. Stupa pełniła funkcję relikwiarza i miejsca medytacyjnej pielgrzymki, symbolizując drogę ku oświeceniu poprzez okrążanie jej w rytualnej procesji. Kompleks w Sanchi przetrwał do czasów nowożytnych w stosunkowo dobrym stanie i dziś uznawany jest za jedno z najważniejszych świadectw wczesnego buddyzmu na subkontynencie indyjskim.

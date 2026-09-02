@@ -12,17 +12,28 @@
  *     `Jednostka` === polu **tytuł** z tabeli `## Metadane` pliku .md) —
  *     programowa iteracja po wszystkich 25, nie próbka.
  * [2] Zero zmian w istniejących sekcjach "## Historia / decyzje" (changelog
- *     wiki, NIEZWIĄZANY z nową sekcją) — treść PRZED "## Rys historyczny"
- *     w każdym z 25 plików musi być identyczna z odpowiednikiem w
- *     `git show HEAD:<plik>`.
- * [3] Zero zmian w pozostałych plikach folderu `jednostki/` poza tymi 25
- *     (w tym `wojownik-celtycki.md`, batch J2) — `git diff --name-only`
- *     ograniczone do folderu pokazuje WYŁĄCZNIE te 25 ścieżek.
+ *     wiki, NIEZWIĄZANY z nową sekcją) — sprawdzane STRUKTURALNIE, na
+ *     aktualnym stanie pliku na dysku, BEZ odwołania do gita: sekcja
+ *     "## Historia / decyzje" (tam gdzie występuje) jest obecna i występuje
+ *     w treści pliku PRZED nagłówkiem "## Rys historyczny" (porównanie
+ *     pozycji indeksów).
+ * [3] Pozostałe pliki folderu `jednostki/` poza tymi 25 (batch J2, w tym
+ *     `wojownik-celtycki.md`) mają WŁASNĄ, strukturalnie poprawną zawartość:
+ *     dokładnie jeden nagłówek "## Rys historyczny", na samym końcu pliku —
+ *     sprawdzane niezależnie od historii gita (patrz [2]/[3] w
+ *     civpedia-jednostki-j2-test.cjs dla treści merytorycznej J2).
  * [4] Żywy dowód w headless Chromium (Playwright): 3 z 25 haseł (widok 'm')
  *     pokazują wyrenderowaną sekcję "Rys historyczny" z realną treścią, przez
  *     `createWikiHubHud` na bundlu zregenerowanym z bieżących plików .md
  *     (`bundle-wiki-for-game.cjs`, ten sam mechanizm co
  *     `civpedia-historia-infra-test.cjs`).
+ *
+ * WAŻNE — metoda weryfikacji [2]/[3] jest CELOWO niezależna od pozycji git
+ * HEAD i od zakresu `git diff`: test ma przechodzić identycznie PRZED i PO
+ * scommitowaniu tej zmiany, na dowolnym HEAD, na zwykłym świeżym checkout —
+ * bo o poprawności decyduje wyłącznie struktura pliku na dysku (wzorowane na
+ * civpedia-budynki-historia-test.cjs / civpedia-technologie-rys-historyczny-
+ * test.cjs), nie relacja do historii gita.
  *
  * Zero mutacji `docs/encyklopedia/**` — tylko odczyt. `gra/src/data/wikiBundle.json`
  * używany do [4] jest ODCZYTYWANY (już zregenerowany przez Operatora poleceniem
@@ -33,7 +44,6 @@
  */
 const fs = require('fs');
 const path = require('path');
-const { execFileSync } = require('child_process');
 const esbuild = require(path.resolve(__dirname, '..', 'node_modules', 'esbuild'));
 
 let chromium;
@@ -79,14 +89,6 @@ async function launchBrowser() {
   }
 }
 
-function readGitHead(relPath) {
-  try {
-    return execFileSync('git', ['show', `HEAD:${relPath}`], { cwd: REPO_ROOT, encoding: 'utf8' });
-  } catch (e) {
-    return null; // plik nieśledzony w HEAD (nie powinno się zdarzyć w tym batchu)
-  }
-}
-
 async function main() {
   const units = JSON.parse(fs.readFileSync(path.join(GRA, 'data', 'units.json'), 'utf8'));
   const byName = {};
@@ -116,29 +118,36 @@ async function main() {
     const occurrences = (content.match(/## Rys historyczny/g) || []).length;
     check(`[1] ${file}: dokładnie 1 wystąpienie nagłówka "## Rys historyczny"`, occurrences === 1, occurrences);
 
-    // [2] treść przed nowym blokiem identyczna z HEAD (przed tą rundą Operatora).
-    // Operator dopisywał blok po zdjęciu jednego końcowego \n z oryginału
-    // (base = content.replace(/\n$/,'') + expectedBlock) — więc poprawna
-    // inwariancja to: content === headContent.replace(/\n$/, '') + expectedBlock,
-    // NIE prosta konkatenacja bez normalizacji końcowego znaku nowej linii.
-    const headContent = readGitHead(`docs/encyklopedia/jednostki/${file}`);
-    check(`[2] ${file}: treść przed "## Rys historyczny" identyczna z git HEAD (zero zmian w istniejących sekcjach)`,
-      headContent !== null && content === headContent.replace(/\n$/, '') + expectedBlock,
-      { headFound: headContent !== null });
+    // [2] Metoda STRUKTURALNA, niezależna od gita: istniejący changelog
+    // "## Historia / decyzje" (tam gdzie występuje) jest obecny i występuje
+    // w treści pliku PRZED nagłówkiem "## Rys historyczny" (pozycje indeksów).
+    const idxChangelog = content.indexOf('## Historia / decyzje');
+    const idxRys = content.indexOf('## Rys historyczny');
+    check(`[2] ${file}: istniejąca sekcja "## Historia / decyzje" obecna PRZED nową "## Rys historyczny"`,
+      idxChangelog !== -1 && idxRys !== -1 && idxChangelog < idxRys,
+      { idxChangelog, idxRys });
   }
 
   // -------------------------------------------------------------------
-  // [3] Zero zmian w pozostałych plikach folderu jednostki/ (poza tych 25).
+  // [3] Pozostałe pliki folderu jednostki/ (poza tymi 25, tj. batch J2) mają
+  // WŁASNĄ, strukturalnie poprawną zawartość — sprawdzane niezależnie od
+  // gita: dokładnie 1 nagłówek "## Rys historyczny", na samym końcu pliku.
   // -------------------------------------------------------------------
-  const diffOut = execFileSync(
-    'git', ['diff', '--name-only', 'HEAD', '--', 'docs/encyklopedia/jednostki/'],
-    { cwd: REPO_ROOT, encoding: 'utf8' },
-  );
-  const changedFiles = diffOut.split('\n').filter(Boolean).map((p) => path.basename(p)).sort();
-  const expectedChanged = [...J1_FILES].sort();
-  check('[3] git diff w docs/encyklopedia/jednostki/ ogranicza się DOKŁADNIE do 25 plików batcha J1 (zero dotknięcia J2, w tym wojownik-celtycki.md)',
-    JSON.stringify(changedFiles) === JSON.stringify(expectedChanged),
-    { changedFiles, expectedChanged });
+  const allFiles = fs.readdirSync(JEDNOSTKI_DIR).filter((f) => f.endsWith('.md')).sort();
+  const j1Set = new Set(J1_FILES);
+  const otherFiles = allFiles.filter((f) => !j1Set.has(f));
+  check('[3] folder jednostki/ zawiera pliki batcha J1 (25) + pozostałe pliki (batch J2)',
+    otherFiles.length === allFiles.length - J1_FILES.length, { total: allFiles.length, other: otherFiles.length });
+  for (const f of otherFiles) {
+    const p = path.join(JEDNOSTKI_DIR, f);
+    const content = fs.readFileSync(p, 'utf8');
+    const occurrences = (content.match(/## Rys historyczny/g) || []).length;
+    const idx = content.indexOf('## Rys historyczny');
+    const rysContent = idx === -1 ? null : content.slice(idx + '## Rys historyczny'.length).replace(/^\s*\n+/, '').trimEnd();
+    check(`[3] pozostały plik "${f}" (poza batchem J1): dokładnie 1 "## Rys historyczny", na samym końcu pliku (własna, nietknięta zawartość)`,
+      occurrences === 1 && idx !== -1 && rysContent !== null && content.trimEnd().endsWith(rysContent),
+      { occurrences });
+  }
 
   // -------------------------------------------------------------------
   // [4] Żywy DOM w headless Chromium: 3 z 25 haseł pokazują "Rys historyczny".

@@ -55,3 +55,8 @@ Bonus imperium i/lub ×3 plony w mieście wzniesienia (patrz JSON).
 ## Historia / decyzje
 
 Wygenerowano z danych gry · rev. E 2026-07-03 (pogłębienie + przykłady).
+
+
+## Rys historyczny
+
+Wiszące Ogrody to jeden z najsłynniejszych cudów starożytności, tradycyjnie łączony z Babilonem za panowania Nabuchodonozora II w VI wieku p.n.e., choć do dziś trwają spory badaczy co do ich rzeczywistej lokalizacji, a nawet istnienia. Według opisów starożytnych autorów, takich jak Diodor Sycylijski, ogrody miały składać się z tarasów obsadzonych drzewami i roślinami, wspartych na masywnych sklepieniach, a wodę do nawadniania podnoszono z Eufratu za pomocą systemu urządzeń hydraulicznych. Legenda głosiła, że władca kazał je wznieść dla swojej żony, tęskniącej za zielonymi górami rodzinnej Medii, choć jest to raczej opowieść symboliczna niż udokumentowany fakt. Niektórzy historycy sugerują, że opisywane ogrody mogły w rzeczywistości znajdować się w Niniwie za czasów asyryjskiego króla Sennacheryba, co dodatkowo komplikuje próby ich lokalizacji. Niezależnie od niepewności źródłowej, Wiszące Ogrody na trwałe weszły do kanonu siedmiu cudów świata starożytnego jako symbol inżynieryjnego kunsztu i bogactwa Mezopotamii.

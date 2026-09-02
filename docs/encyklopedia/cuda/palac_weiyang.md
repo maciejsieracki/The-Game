@@ -55,3 +55,8 @@ Bonus imperium i/lub ×3 plony w mieście wzniesienia (patrz JSON).
 ## Historia / decyzje
 
 Wygenerowano z danych gry · rev. E 2026-07-03 (pogłębienie + przykłady).
+
+
+## Rys historyczny
+
+Pałac Weiyang w Chang'anie, wzniesiony na przełomie III i II wieku p.n.e., był głównym ośrodkiem władzy dynastii Han i przez kilka stuleci pełnił funkcję centralnej siedziby cesarskiego dworu. Budowę pałacu zlecił Liu Bang, założyciel dynastii Han, wkrótce po zakończeniu wojen domowych następujących po upadku dynastii Qin, a jego rozmiary i przepych miały podkreślać trwałość nowo powstałego porządku politycznego. Kompleks obejmował liczne sale audiencyjne, komnaty mieszkalne i tarasy widokowe rozmieszczone na sztucznie ukształtowanym wzniesieniu, co pozwalało na kontrolowanie dostępu i eksponowanie hierarchii dworskiej. To właśnie w Weiyangu zapadały kluczowe decyzje polityczne wczesnego okresu Han, odbywały się przyjęcia poselstw zagranicznych oraz rozgrywały się intrygi dworskie opisywane później w chińskich kronikach historycznych. Pałac funkcjonował przez ponad czterysta lat, aż do upadku dynastii Han, a jego rozległe ruiny pozostają dziś jednym z ważniejszych stanowisk archeologicznych związanych z historią wczesnego cesarstwa chińskiego.

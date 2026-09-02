@@ -55,3 +55,8 @@ Bonus imperium i/lub ×3 plony w mieście wzniesienia (patrz JSON).
 ## Historia / decyzje
 
 Wygenerowano z danych gry · rev. E 2026-07-03 (pogłębienie + przykłady).
+
+
+## Rys historyczny
+
+Yerkapı to monumentalny wał ziemny z przechodzącym przez niego sklepionym tunelem, stanowiący część systemu fortyfikacji Hattusy, stolicy Imperium Hetyckiego w centralnej Anatolii, wzniesiony w XIV–XIII wieku p.n.e. Sztucznie usypany nasyp o znacznej wysokości, obłożony kamiennym licem, tworzył jeden z najbardziej newralgicznych punktów obronnych miasta, łącząc funkcję militarną z prawdopodobnym znaczeniem ceremonialnym. Wąski, kryty korytarz przecinający wał u jego podstawy umożliwiał przejście pomiędzy wewnętrzną a zewnętrzną częścią miasta, a jego rozmiary sugerują, że mógł być wykorzystywany podczas procesji religijnych lub wypadów garnizonu w razie oblężenia. Fortyfikacje Hattusy, których Yerkapı stanowi jeden z najbardziej okazałych elementów, świadczą o zaawansowanej inżynierii wojskowej Hetytów, potęgi rywalizującej z Egiptem o wpływy w Lewancie. Miasto zostało opuszczone i zniszczone wraz z upadkiem państwa hetyckiego około 1200 roku p.n.e., a jego ruiny odkryto i zbadano dopiero na początku XX wieku.

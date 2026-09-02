@@ -55,3 +55,8 @@ Bonus imperium i/lub ×3 plony w mieście wzniesienia (patrz JSON).
 ## Historia / decyzje
 
 Wygenerowano z danych gry · rev. E 2026-07-03 (pogłębienie + przykłady).
+
+
+## Rys historyczny
+
+Petra to skalne miasto wykute w piaskowcowych wąwozach dzisiejszej południowej Jordanii, które od około IV wieku p.n.e. stało się stolicą Nabatejczyków — ludu arabskiego kontrolującego szlaki karawanowe łączące Półwysep Arabski z wybrzeżem Morza Śródziemnego. Bogactwo miasta opierało się na handlu kadzidłem, mirrą i przyprawami, a strategiczne położenie na skrzyżowaniu tras karawanowych pozwoliło Nabatejczykom zbudować rozbudowany system cystern i kanałów, dzięki którym miasto funkcjonowało mimo pustynnego klimatu. Najbardziej znanym zabytkiem Petry jest monumentalna fasada Al-Khazneh, wykuta bezpośrednio w skale i łącząca elementy architektury hellenistycznej z lokalną tradycją nabatejską. Miasto utrzymywało bliskie kontakty handlowe i kulturowe z sąsiednimi cywilizacjami śródziemnomorskimi, w tym z fenickimi i greckimi ośrodkami portowymi, co znalazło odzwierciedlenie w stylistyce jego budowli. Po włączeniu do Cesarstwa Rzymskiego w II wieku n.e. Petra stopniowo traciła znaczenie handlowe, by ostatecznie popaść w zapomnienie aż do jej ponownego odkrycia przez Europejczyków na początku XIX wieku.
