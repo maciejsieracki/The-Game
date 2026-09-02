@@ -310,21 +310,14 @@ export function renderEntityCard(data: EntityCardData): HTMLElement {
   header.appendChild(titleWrap);
   card.appendChild(header);
 
-  const body = el('div', 'entity-card-body');
-  for (const section of data.sections) {
-    if (section.rows.length === 0 && (!section.badges || section.badges.length === 0)) continue;
-    const sectionEl = buildSectionEl(section, card, data.compactHeaderOnExpand === true);
-    body.appendChild(sectionEl);
-  }
-  card.appendChild(body);
-
-  // Rys historyczny (T-KARTY-HISTORIA-INFRA-Q1) — renderowany WYŁĄCZNIE gdy
+  // Rys historyczny (T-KARTY-HISTORIA-INFRA-Q1, kolejność odwrócona przez
+  // P-KARTA-OPIS-PRZED-STATYSTYKAMI-Q1) — renderowany WYŁĄCZNIE gdy
   // `data.historicalNote` jest niepuste (adapter przycina biały tekst i zwraca
   // `undefined` dla braku danych, patrz `types.ts`), więc karty bez jeszcze
   // dopisanej historii (100% dziś) NIE dostają pustej/białej sekcji w DOM — zero
   // węzła `.entity-card-historia` zamiast pustego kontenera. Umieszczony PO
-  // wszystkich sekcjach mechanicznych (`body`), PRZED stopką civpedii/akcji —
-  // ciekawostka fabularna, nie dana do optymalizacji rozgrywki (patrz `types.ts`).
+  // headerze/tytule/medalionie, PRZED sekcjami mechanicznymi (`body`) — opis
+  // fabularny ma poprzedzać statystyki, zgodnie z żądaniem właściciela.
   if (data.historicalNote) {
     const historia = el('div', 'entity-card-historia');
     const sep = el('div', 'entity-card-historia-sep');
@@ -335,6 +328,14 @@ export function renderEntityCard(data: EntityCardData): HTMLElement {
     historia.appendChild(p);
     card.appendChild(historia);
   }
+
+  const body = el('div', 'entity-card-body');
+  for (const section of data.sections) {
+    if (section.rows.length === 0 && (!section.badges || section.badges.length === 0)) continue;
+    const sectionEl = buildSectionEl(section, card, data.compactHeaderOnExpand === true);
+    body.appendChild(sectionEl);
+  }
+  card.appendChild(body);
 
   if (data.civpediaLink) {
     const link = data.civpediaLink;

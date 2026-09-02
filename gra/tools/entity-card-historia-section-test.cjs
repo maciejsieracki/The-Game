@@ -218,14 +218,14 @@ async function main() {
       withHasSection: historiaEl !== null,
       withText: textEl ? textEl.textContent : null,
       withFontStyleItalic: textEl ? getComputedStyle(textEl).fontStyle === 'italic' : false,
-      // Rys historyczny musi być POD wszystkimi sekcjami mechanicznymi — sprawdzone
-      // pozycyjnie: ostatni węzeł-dziecko klasy .entity-card-section poprzedza w DOM
-      // .entity-card-historia (nie odwrotnie).
-      historiaAfterSections: (() => {
+      // Rys historyczny musi być NAD wszystkimi sekcjami mechanicznymi (P-KARTA-OPIS-PRZED-STATYSTYKAMI-Q1)
+      // — sprawdzone pozycyjnie: .entity-card-historia poprzedza w DOM pierwszy
+      // węzeł-dziecko klasy .entity-card-section (nie odwrotnie).
+      historiaBeforeSections: (() => {
         const sections = Array.from(cardWith.querySelectorAll('.entity-card-section'));
-        const lastSection = sections[sections.length - 1];
-        if (!lastSection || !historiaEl) return false;
-        return !!(lastSection.compareDocumentPosition(historiaEl) & Node.DOCUMENT_POSITION_FOLLOWING);
+        const firstSection = sections[0];
+        if (!firstSection || !historiaEl) return false;
+        return !!(historiaEl.compareDocumentPosition(firstSection) & Node.DOCUMENT_POSITION_FOLLOWING);
       })(),
       withoutHasSection: cardWithout.querySelector('.entity-card-historia') !== null,
     };
@@ -233,7 +233,7 @@ async function main() {
   check('[3] fixture z historicalNote: sekcja ".entity-card-historia" obecna', fixture.withHasSection);
   check('[3] fixture: tekst sekcji === dokładnie tekst fixture (bez okrojenia)', fixture.withText === fixtureText, fixture.withText);
   check('[3] fixture: tekst renderuje się kursywą (font-style:italic — stylistycznie odróżniona od sekcji mechanicznych)', fixture.withFontStyleItalic);
-  check('[3] fixture: sekcja "Rys historyczny" jest POD (po) wszystkich sekcjami mechanicznymi w DOM', fixture.historiaAfterSections);
+  check('[3] fixture: sekcja "Rys historyczny" jest NAD (przed) wszystkimi sekcjami mechanicznymi w DOM', fixture.historiaBeforeSections);
   check('[4] fixture BEZ historicalNote: sekcja ".entity-card-historia" NIEOBECNA (zero pustego bloku)', fixture.withoutHasSection === false);
 
   // ---------------------------------------------------------------------
