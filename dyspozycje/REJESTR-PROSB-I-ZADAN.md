@@ -3919,3 +3919,32 @@ jeszcze potwierdzona zywa reprodukcja — to zadanie Operatora.
 | ID | Data | Prośba | Status | Uwagi |
 |---|---|---|---|---|
 | R-DYPLO-HANDEL-OFERTA-AI-BLOKOWANA-Q1 | 2026-09-02 | AI proponuje umowy wymiany surowcow/handlowe, ktore wlasna bramka uczciwosci gry blokuje jako "nieuczciwe dla partnera" mimo bilansu korzystnego dla gracza — Przyjmij nie da sie kliknac. | **DISPATCHOWANE** | Domain GAME (logika, nie graficzny) — Operator+Evaluator+Final Control Sonnet 5. Dispatch wymaga zywej reprodukcji PRZED zalozeniem przyczyny (moze to byc bramka akceptacji ALBO generator propozycji AI — dwie rozne mozliwe poprawki), z zachowaniem istniejacej ochrony gracza w kierunku gracz→AI. Allowlista: `diplomacy-proposals.ts`, `diplomacy-pn-engine.ts`, `diplomacyAcceptanceBalance.ts`, `diplomacy-acceptance-points.ts` — jesli przyczyna okaze sie lezec poza allowlista (np. generator w `main.ts`), Operator ma zatrzymac sie z DECISION_REQUIRED zamiast wychodzic poza zakres. Dispatch `00-dispatch.md`, commit `b06bb7d2`. |
+
+## OTWARTE 2026-09-02 — obóz łowiecki: las znika wizualnie pod ulepszeniem na wzgórzu + podejrzenie budowy bez lasu
+
+Wlasciciel, zrzuty mapy 3D (rejon "DELFY" i osobno laka): "AI gracza buduje
+masowo Obozy lowieckie [...] po wybudowaniu czegokolwiek na wzgorzu, jezeli
+jest tam las, to ten las jakby znika [...] widze budowanie tych [...]
+obozow, takze na lakach, na ktorych nie ma lasu."
+
+Recon (Read/Grep bez subagenta) — CZESC A POTWIERDZONA: `main.ts::
+syncImprovementDecorForHex` chowa kepe lasu (`hideDecorAtHex`) dla KAZDEGO
+ulepszenia na Wzgorza/Gory ktore nie jest `farma`/`bydlo` (jedyne dwa klucze
+w warunku `foodOnForest`) i nie zachowuje reliefu
+(`relief-preserving-improvements.ts`: tylko bydlo/owce/lama/kamieniolom/
+kopalnia*) — `oboz_lowiecki` pasuje do obu warunkow. `hex.nakladka` w
+danych ZOSTAJE `Las` (czysto wizualny bug renderu, ekonomia nietknieta).
+CZESC B NIEPOTWIERDZONA: rzekome obozy na tereniebez lasu przecza
+istniejacej twardej bramce `improvement-build.ts:586` — Operator ma
+zweryfikowac zywo (odczyt `hex.nakladka`), nie zakladac z gory ani bugu ani
+pomylki.
+
+Przy okazji odpowiedziane wprost bez zmiany kodu (informacyjne, w
+dispatchu jako notatka): zasada "zywnosc tylko z obrobionego heksu" juz
+obowiazuje — `cityYieldPerTurn` liczy `zywnosc` WYLACZNIE z `workedTiles`,
+`oboz_lowiecki` NIE jest w `TERRITORY_YIELD_IMPROVEMENTS` (zbior surowcowy
+niezalezny od workerow).
+
+| ID | Data | Prośba | Status | Uwagi |
+|---|---|---|---|---|
+| R-ULEPSZENIA-OBOZ-LOWIECKI-LAS-ZNIKA-I-TEREN-Q1 | 2026-09-02 | (A) Las znika wizualnie po zbudowaniu ulepszenia (np. obozu lowieckiego) na wzgorzu/gorze z lasem. (B, do weryfikacji) obozy lowieckie widziane na terenie bez lasu. | **DISPATCHOWANE** | Domain GAME, wizualny/UX (R-PROC-AUTOBOT.md §5a) — Operator+Evaluator Opus 5, Final Control Sonnet 5. Czesc A ma dokladnie wskazana przyczyne (main.ts:11991-12014, `foodOnForest` sprawdza tylko 'farma'/'bydlo'), do naprawy generycznie wzgledem istniejacego zbioru ulepszen zgodnych z lasem. Czesc B jawnie warunkowa — Operator MUSI zweryfikowac zywo przed jakakolwiek zmiana kodu commitu. Dispatch `00-dispatch.md`, commit `ed11294d`. |
