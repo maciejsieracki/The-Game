@@ -51,6 +51,7 @@ desktop.ini
 *.swp
 *~
 .claude/worktrees/
+.worktrees/
 
 # Artefakty generowane przez bramki (esbuild entry+bundle). KAZDA bramka zapisuje je
 # sama przy starcie (fs.writeFileSync + esbuild), NIC ich nie czyta z repo — sledzenie
