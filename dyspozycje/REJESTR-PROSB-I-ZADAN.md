@@ -3656,6 +3656,33 @@ Operator+Evaluator PASS, zero zarzutow (commit `cae9540b`): guard
 w tym dowod mutacyjny - cofniecie fixu odtwarza duplikacje i test to lapie).
 Final Control dispatchowany razem z powyzszym: Workflow `wf_bc3b5fe6-e7a`.
 
+Final Control PASS oba tematy (Workflow `wf_bc3b5fe6-e7a`, dowod nietautologicznosci
+przez `git worktree add --detach` w calkowicie osobnej lokalizacji, dla
+pierwszego tematu nawet z fizycznie usunietym `.git` w drzewie roboczym -
+testy dzialaja bez zadnego wywolania gita). **ZINTEGROWANE do `main`**:
+`P-CIVPEDIA-TESTY-GIT-HEAD-SAMOODNOSZACE-Q1` -> `9ac41749` (testy J1/J2
+naprawione, 19 hasel cudow dopisanych, nowy `civpedia-cuda-historia-test.cjs`),
+`P-CIVPEDIA-WIKIHUBHUD-RYS-HISTORYCZNY-DUPLIKACJA-Q1` -> `a4f1650d`.
+`wikiBundle.json` zregenerowany raz po obu (`c97d9d45`). Po integracji:
+tsc 0 bledow, wszystkie testy CivPedii zielone (budynki 136, ulepszenia 116,
+technologie 324, jednostki J1 161, J2 157, cuda 126, wikiHubHud-duplikacja 7),
+5 bramek referencyjnych bez regresu.
+
+**6-ta odslona fixture-drift w tej sesji**: `civpedia-historia-infra-test.cjs`
+(napisany PRZED jakakolwiek trescia CivPedii) mial zaszyte zalozenie "zero
+wpisow ma dzis Rys historyczny" - falszywe po integracji 6 batchy tresci
+(168 wpisow, wiekszosc z realna trescia). Dispatch naprawczy
+`P-CIVPEDIA-INFRA-TEST-FIXTURE-DRIFT-Q1` w toku: Workflow `wf_162bdda8-4f9`
+(ten sam ustalony wzorzec naprawy - asercja warunkowa zamiast twardego
+"wszystko puste").
+
+**Podsumowanie CivPedia Faza 2 (na dzien 2026-09-02, po tej fali)**: 6/6
+kategorii tresci zintegrowane (budynki 25/25, cuda 19/19, ulepszenia 17/17,
+technologie 32/32, jednostki 49/49), infra + 2 pochodne bledy naprawione.
+Pozostaje: fix fixture-drift (w toku), potem deploy ROBOCZA. Faza 3 (szeroki
+audyt tooltipow) - kontynuowac autonomicznie po zamknieciu tej fali, zgodnie
+z wczesniejsza dyspozycja wlasciciela.
+
 | ID | Data | Prośba | Status | Uwagi |
 |---|---|---|---|---|
 | P-KARTY-HISTORIA-TEST-FIXTURE-REALNE-DANE-Q1 | 2026-09-01 | Naprawa `entity-card-historia-section-test.cjs` (temat INFRA), ktorego fixture "jeszcze pustych" encji (stolarnia/Lowiectwo/farma) uzywal REALNYCH danych produkcyjnych zamiast syntetycznych - kazdy kolejny batch tresci ktory wypelnia jedna z tych 3 encji powoduje falszywy FAIL. Dodatkowo sekcja [5] ma pokrewny blad: fixture "zla wielkosc liter" dziedziczy z prawdziwego wiersza, wiec po wypelnieniu poprawnego pola test przypadkiem przechodzi/nie przechodzi z innego powodu niz zamierzony. | **ZINTEGROWANE do `main` (4efd8db2)** | Pelny cykl Operator->Evaluator(zero zarzutow)->Final Control przez Workflow. Sekcja [4]: asercja WARUNKOWA (`historiaExists === fieldNonEmpty`) na realnym stanie pola zamiast twardego "nie istnieje". Sekcja [5]: destructuring usuwa poprawne pole z kopii wiersza przed wstrzyknieciem zlej wielkosci liter, dla wszystkich 4 adapterow. Test zweryfikowany na REALNYCH, dzisiejszych danych (B1/T1/I1/U1 juz zintegrowane) - 31/31 PASS, zero fixture-driftu na przyszlosc. tsc 0 bledow, 5 bramek referencyjnych bez regresu. |
