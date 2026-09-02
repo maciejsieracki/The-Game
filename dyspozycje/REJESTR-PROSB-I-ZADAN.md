@@ -3865,3 +3865,30 @@ i rozwoju."
 |---|---|---|---|---|
 | P-TECHDISCOVERY-BADGE-DUPLIKAT-NACHODZENIE-Q1 | 2026-09-02 | Popup odkrycia zwyklej technologii (np. Rolnictwo) pokazuje dwie odznaki mowiace to samo ("Ukonczono badania" + "Ukonczona") obok tytulu; wlasciciel dodatkowo zglasza ze tekst nachodzi na grafike diaromy w tym popupie. | **DISPATCHOWANE, Workflow w toku** | Recon (Explore): `techDiscoveryNotice.ts:526-531,590` — `statusBadges: [kick, statusWord]`, dla zwyklego odkrycia (nie era/preview) OBIE wartosci ("Ukonczono badania"/"Ukonczona") mowia to samo. Gałęzie era/preview NIE sa duplikatem (kick i status niosa rozna informacje) — zostaja bez zmian. Odznaki renderuja sie jako overlay tekstowy NAD sceną diaromy (`entityCards/renderer.ts:299-319`, ten sam mechanizm co `R-KARTA-JEDNOSTKI-3D-EKSPOZYCJA-UX-Q1`), a ten konkretny popup uzywa WLASNEGO, SZERSZEGO wariantu karty (660px, `ensureEntityCardOverrideStyles`) nietestowanego zywo w oryginalnym temacie diaromy (tam testowano 434px) — prawdopodobne realne zrodlo nachodzenia tekstu, ale dispatch wymaga zywej reprodukcji PRZED przyjeciem zalozenia. Temat graficzny — Operator+Evaluator Opus 5, Final Control Sonnet 5. Dispatch `00-dispatch.md`. |
 | P-ENTITYCARD-LINKI-KRZYZOWE-NA-PRZYCISKI-Q1 | 2026-09-02 | Wlasciciel: linki tekstowe nawigacji miedzy kartami encji ("Szczegoly ->", "Gospodarka wodna" itp.) maja zostac zamienione na przyciski — "przyciski wygladaja bardziej profesjonalnie niz linki". | **DISPATCHOWANE, Workflow w toku** | Recon (Explore): temat SWIADOMIE ODWRACA udokumentowana wczesniejsza decyzje projektowa (`P-CIVPEDIA-KARTY-AKCJE-PRZYCISKI-NIEOSTYLOWANE-Q1`: "linki = nawigacja, zloty podkreslony; akcje = zmiana stanu gry, wypelniony przycisk") — wlasciciel wprost poprosil o odwrocenie CZESCI tej decyzji (nawigacja tez ma wygladac jak przycisk), dispatch zachowuje mimo to hierarchie wizualna (nawigacja = `.entity-card-action-secondary` styl, PRAWDZIWE akcje = `-primary`, nadal odrozniane). 4 klasy w `entityCards/renderer.ts` (wspolny CSS blok) + DWIE NIEZALEZNE kopie tego samego stylu w `cityPanel.ts` (`.dc-v-btn` x2) — nie jest to jeden wspolny plik, scattered. Trzeci, odrebny styl `.okolica-info-link` do swiadomej decyzji Operatora czy wchodzi w zakres. CSS-only, struktura DOM/logika klikania nietkniete. Temat graficzny — Operator+Evaluator Opus 5, Final Control Sonnet 5. Dispatch `00-dispatch.md`. |
+
+## OTWARTE 2026-09-02 — nowa funkcja: odkrycie mapy przy traktacie + widocznosc sojusznicza
+
+Wlasciciel: "Przy nawiazaniu umowy handlowej mapy obu cywilizacji powinny byc
+wzajemnie odkryte. To samo w wypadku zobowiazania sojuszu czy paktu o
+nieagresji. Dodatkowo powinna byc mozliwosc wymiany mapy lub kupienia mapy
+pomiedzy cywilizacjami. Powinna byc to w miare latwe, bez blokad." Nastepnie
+doprecyzowal dla sojuszu: "przy sojuszu powinna byc mozliwosc widzenia
+lacznych z odkryciem Fog of War dla obu cywilizacji... my widzimy wszystko co
+sojusznik, a sojusznik widzi wszystko [...] co my widzimy, bez Fog of War" —
+CIAGLE, dwukierunkowe dzielenie widocznosci na czas trwania sojuszu, silniejsze
+niz jednorazowy zrzut mapy ustalony ECHO dla paktu/handlu.
+
+Recon (Explore): WYLACZNIE gracz (ownerId===0) ma trwaly zbior odkrytych
+heksow (`main.ts:9077`, `explored`); AI nie przechowuje mgly wcale, liczy
+widocznosc na biezaco kazda ture (`game/ai-fog.ts`). Wniosek: "wzajemne
+odkrycie" jest w praktyce jednokierunkowe (mapa gracza rosnie), a ciagle
+dzielenie widocznoscia dla sojuszu jest architektonicznie wykonalne PO OBU
+stronach bez budowania nowego systemu mgly dla AI (AI i tak liczy widocznosc
+na biezaco — union z widocznoscia sojusznika to naturalne rozszerzenie tej
+samej, juz istniejacej sciezki), ale to WIEKSZY, osobny temat od
+jednorazowego zrzutu.
+
+| ID | Data | Prośba | Status | Uwagi |
+|---|---|---|---|---|
+| R-DYPLO-MAPA-ODKRYCIE-PRZY-TRAKTACIE-Q1 | 2026-09-02 | Jednorazowe odkrycie terytorium cywilizacji AI na mapie gracza w chwili zawarcia paktu nieagresji, sojuszu lub umowy handlowej z gracza. ECHO (AskUserQuestion): jednorazowy zrzut przy podpisaniu, NIE ciagle dzielenie widocznoscia. | **DISPATCHOWANE, Workflow w toku** | Recon: punkt zaczepienia `applyProposalOutcome` (`main.ts:17956-17958`), scalenie zywo policzonej migawki widocznosci (miasta+jednostki+zasieg, `computeVisibleAt`/`computeVisible` z `game/visibility.ts`) do `explored`. Dotyczy WYLACZNIE PaktNieagresji/sojusz/UmowaSzlakow-Wymiany, WYLACZNIE traktatow z udzialem gracza (AI<->AI: brak efektu, gracz nie jest strona). Domain GAME, nie graficzny — Operator+Evaluator Sonnet 5. Dispatch `00-dispatch.md`. Czesc 1 z 2 zgloszonej funkcji — czesc 2 (kupno/wymiana mapy) dispatchowana OSOBNO, PO integracji tego (te same okolice main.ts, sekwencyjnie). |
+| R-DYPLO-SOJUSZ-WIDOCZNOSC-CIAGLA-Q1 | 2026-09-02 | Doprecyzowanie wlasciciela: dla SOJUSZU (nie paktu/handlu) widocznosc ma byc CIAGLA i DWUKIERUNKOWA przez caly czas trwania sojuszu (gracz widzi biezaco co widzi sojusznik AI i odwrotnie), nie tylko jednorazowy zrzut. | **CZEKA NA POTWIERDZENIE WLASCICIELA** | Orkiestrator zaproponowal podzial: `R-DYPLO-MAPA-ODKRYCIE-PRZY-TRAKTACIE-Q1` zostaje jednorazowym zrzutem dla WSZYSTKICH trzech (w tym sojuszu, jako baza), a TEN temat dokłada NA TO ciagle, dwukierunkowe dzielenie widocznosci WYLACZNIE dla aktywnego sojuszu (aktywuje sie przy zawarciu, deaktywuje przy zerwaniu). Wieksze ryzyko/zlozonosc niz czesc 1 — dotyka biezacej (per-ture) logiki widocznosci gracza ORAZ AI (AI realnie zobaczy wiecej, co moze wplynac na jego decyzje/cele), nie tylko jednorazowego stanu. Nie dispatchowane — czeka na jawne "tak, dzialaj" wlasciciela po przedstawieniu zakresu/ryzyka. |
