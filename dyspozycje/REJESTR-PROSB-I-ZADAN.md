@@ -3420,6 +3420,7 @@ ponownie dispatchowane przez Workflow (`wf_8ada6d10-c99`), w toku.
 
 FALA 4 — status integracji:
 - **U3 (13 jednostek, 39/75): ZINTEGROWANE do `main` (a48bdb32)**. Zero zarzutow Evaluatora (PASS-WITH-NOTES, jedna nieblokujaca uwaga o drobnej niescislosci raportu Operatora, bez wplywu na kryteria), Final Control PASS (niezalezna weryfikacja: inna jednostka niz Operator/Evaluator - "Wojownik Sherden"). entity-card-historia-section-test.cjs 31/31, tsc 0 bledow, 5 bramek referencyjnych bez regresu.
+- **U4 (13 jednostek, czwarty z szesciu batchy: Lucznik akadyjski, Gaesatae, Soldurii, Rydwan celtycki, Wojownik germanski, Berserker germanski, Taran, Taran okuty, Katapulta, Wieza obleznicza, Wojownik tyrrenski, Wojownik szekelesz, Konnica lancowa asyryjska): dispatchowany przez Workflow (`wf_814b4090-610`), w toku.**
 
 | ID | Data | Prośba | Status | Uwagi |
 |---|---|---|---|---|
