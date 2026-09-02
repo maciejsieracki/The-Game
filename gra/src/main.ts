@@ -17958,6 +17958,26 @@ async function boot(): Promise<void> {
         activeDeals = applyAcceptedProposal(activeDeals, result);
         syncRelationFromDeals(proposerId, responderId);
         const acceptedKind = normalizeTreatyKind(result.deal.rodzaj);
+        // R-DYPLO-MAPA-ODKRYCIE-PRZY-TRAKTACIE-Q1: pakt nieagresji, sojusz (dowolna forma) lub
+        // umowa handlowa (szlaki/wymiana) MIĘDZY GRACZEM A CYWILIZACJĄ AI odkrywa jednorazowo,
+        // w chwili podpisania, żywo policzoną migawkę terytorium tej cywilizacji (miasta +
+        // jednostki + ich bieżący zasięg widzenia) na mapie gracza — nie ciągłe dzielenie
+        // widoczności przez czas trwania traktatu. Legacy `UmowaHandlowa` samo w sobie
+        // świadomie NIE wywołuje efektu (nowe propozycje tworzą wyłącznie UmowaSzlakow/
+        // UmowaWymiany — recon 00-dispatch.md). Traktaty AI<->AI (gracz nie jest stroną) i
+        // rodzaje spoza zakresu (OtwartGranice itd.) świadomie NIE wywołują efektu.
+        const revealsTerritoryOnSign = (
+          acceptedKind === RodzajTraktatu.PaktNieagresji
+          || acceptedKind === RodzajTraktatu.SojuszDefensywny
+          || acceptedKind === RodzajTraktatu.SojuszPelny
+          || acceptedKind === RodzajTraktatu.UmowaSzlakow
+          || acceptedKind === RodzajTraktatu.UmowaWymiany
+        );
+        if (revealsTerritoryOnSign && (proposerId === 0 || responderId === 0)) {
+          const otherOwnerId = proposerId === 0 ? responderId : proposerId;
+          addExplored(explored, currentVisibleForOwner(otherOwnerId));
+          refreshFog();
+        }
         if (
           acceptedKind === RodzajTraktatu.UmowaWymiany
           || acceptedKind === RodzajTraktatu.UmowaHandlowa
@@ -18056,6 +18076,57 @@ async function boot(): Promise<void> {
         setDiploRelation(proposerId, responderId, applyDiploEventTracked(proposerId, responderId, cur, 'trybut_zaakceptowany'));
       }
     }
+
+    // Hak testowy WYŁĄCZNIE dla Playwright (ten sam wzorzec i uzasadnienie co
+    // __eraTestDebug/__audienceRelTestDebug — steruje WYŁĄCZNIE danymi wejściowymi: który AI,
+    // czy jest kontaktem, jaka Relacja/Zaufanie/Respekt. Realny efekt tego tematu (scalenie
+    // migawki widoczności do `explored`) powstaje WYŁĄCZNIE wewnątrz applyProposalOutcome
+    // wyżej, wywołanego realnym klikiem w UI audiencji — nigdy przez ten hak).
+    // R-DYPLO-MAPA-ODKRYCIE-PRZY-TRAKTACIE-Q1, dowód: tools/dyplo-mapa-odkrycie-live-test.cjs.
+    (window as any).__dyploMapaOdkrycieTestDebug = {
+      /** Preferuje ownera, którego terytorium gracz jeszcze NIE ma w pełni w `explored`
+       *  (dowód kontroli negatywnej „przed"); w braku takiego — pierwszy dowolny kandydat. */
+      pickCandidateOwnerId: (): number | null => {
+        const eligible: number[] = [];
+        for (const oid of aiOwnerCivMap.keys()) {
+          if (isBarbarian(oid)) continue;
+          if (eliminatedOwners.has(oid)) continue;
+          if (typCityCopyOwners.has(oid)) continue;
+          if (isOwnerClusterCityState(oid, ownerCityStateOpts())) continue;
+          if (!cities.some(c => c.ownerId === oid)) continue;
+          eligible.push(oid);
+        }
+        if (eligible.length === 0) return null;
+        for (const oid of eligible) {
+          const vis = currentVisibleForOwner(oid);
+          if (vis.size === 0) continue;
+          let fullyExplored = true;
+          for (const k of vis) { if (!explored.has(k)) { fullyExplored = false; break; } }
+          if (!fullyExplored) return oid;
+        }
+        return eligible[0]!;
+      },
+      prepareContact: (ownerId: number): void => {
+        diplomaticallyDiscoveredOwners.add(ownerId);
+        setDiploRelation(0, ownerId, { zaufanie: 100, respekt: 100, status: 'neutralni' });
+      },
+      /** SETUP (dispatch kryterium 1: "skonstruuj stan gry gdzie gracz NIE ma odkrytego
+       *  terytorium sąsiedniej cywilizacji AI") — usuwa z `explored` WYŁĄCZNIE heksy z bieżącej
+       *  żywej widoczności danego ownera, jako punkt startowy testu PRZED traktatem. To NIE jest
+       *  efekt tematu (odkrycie) — odwrotność, konstrukcja kontroli negatywnej "przed". */
+      clearOwnerFromExplored: (ownerId: number): void => {
+        for (const k of currentVisibleForOwner(ownerId)) explored.delete(k);
+      },
+      /** Czy CAŁA żywa widoczność ownera (miasta+jednostki+zasięg TERAZ) jest już w `explored`. */
+      isOwnerTerritoryFullyExplored: (ownerId: number): boolean => {
+        const vis = currentVisibleForOwner(ownerId);
+        if (vis.size === 0) return false;
+        for (const k of vis) { if (!explored.has(k)) return false; }
+        return true;
+      },
+      getExploredSize: (): number => explored.size,
+      getOwnerVisibleKeysSize: (ownerId: number): number => currentVisibleForOwner(ownerId).size,
+    };
 
     /**
      * TEMAT 9 (2026-07-24, stół negocjacyjny) — wspólne złożenie payloadu UI → propozycji
