@@ -20401,6 +20401,52 @@ async function boot(): Promise<void> {
       stopAmbience: (): void => stopAmbience(),
     };
 
+    // Hak testowy (ten sam wzorzec i to samo uzasadnienie co `__eraTestDebug` wyżej) —
+    // wołany WYŁĄCZNIE z Playwright w
+    // `tools/diplomacy-relacje-ai-ai-audiencja-live-test.cjs` (R-DYPLO-RELACJE-AI-AI-
+    // AUDIENCJA-Q1, runda Obrony — Zarzut #1 Evaluatora: R-PROC-AUTOBOT.md §9 pkt 6(a)
+    // wymaga żywego zrzutu z headless Chromium dla tematu wizualnego, nie tylko test
+    // kontraktowy esbuild+Node). Konstruuje SYNTETYCZNIE trzecie strony (ownerId 2..5)
+    // powiązane z ownerId 1 (przeciwnik gracza w ?playtest=mapa) wojną/sojuszem/NAP/
+    // handlem — ownerId 2..5 NIGDY nie trafiają do `diplomaticallyDiscoveredOwners`
+    // (gracz ich nie odkrył), więc to REALNY przypadek spoza mgły wojny gracza, nie
+    // scenariusz w którym gracz akurat zna wszystkich (zakaz w REGULE PRZECIW
+    // SAMOOSZUKIWANIU dispatchu). Hak WYŁĄCZNIE woła istniejące funkcje silnika
+    // (`setDiploRelation`, `openDiplomacyAudience`, `showDiploPairSummary`,
+    // `buildDiploPairSummaryData`) — nie reimplementuje logiki widoczności/mgły wojny.
+    (window as any).__audienceRelTestDebug = {
+      setupThirdParties: (): void => {
+        aiOwnerCivMap.set(2, 'chinczycy');
+        aiOwnerCivMap.set(3, 'inkowie');
+        aiOwnerCivMap.set(4, 'zulusi');
+        aiOwnerCivMap.set(5, 'egipt');
+        setDiploRelation(1, 2, { zaufanie: 0, respekt: 0, status: 'wojna' });
+        activeDeals.push({
+          id: 'test-alliance-1-3', rodzaj: RodzajTraktatu.SojuszWojskowy,
+          strony: [1, 3], wygasaTura: null,
+        });
+        activeDeals.push({
+          id: 'test-nap-1-4', rodzaj: RodzajTraktatu.PaktNieagresji,
+          strony: [1, 4], wygasaTura: null,
+        });
+        activeDeals.push({
+          id: 'test-trade-1-5', rodzaj: RodzajTraktatu.UmowaSzlakow,
+          strony: [1, 5], wygasaTura: null,
+        });
+      },
+      getContacts: (): number[] => Array.from(getDiplomaticContacts()),
+      openAudience: (ownerId: number): void => { openDiplomacyAudience(ownerId); },
+      closeAudience: (): void => { if (isDiplomacyAudienceOpen()) hideDiplomacyAudience(); },
+      openPairSummary: (ownerId: number): void => {
+        showDiploPairSummary({
+          getData: () => buildDiploPairSummaryData(ownerId),
+          onOpenAudience: () => {},
+          onClose: () => {},
+        });
+      },
+      closePairSummary: (): void => { if (isDiploPairSummaryOpen()) hideDiploPairSummary(); },
+    };
+
     // --- Konfiguracja pickera badań (przed hubem — getScienceHubSnapshot wymaga hooków) ---
     (window as any).__civ_getResearchedTechs = () => Array.from(player.zbadane);
 

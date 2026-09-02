@@ -211,7 +211,9 @@ export interface DiplomacyAudienceState {
    * (otherOwnerId) z INNYMI cywilizacjami (wojny / sojusze / pakty o nieagresji /
    * handel), niezależnie od tego, czy gracz nawiązał z tymi stronami kontakt —
    * SILNIK (main.ts) wypełnia to wywołaniem buildDiploPairSummaryData(otherOwnerId,
-   * { revealAll: true }), pomijając filtr mgły wojny `isVisiblePartner`. Odrębne od
+   * true) (drugi parametr `revealAll` jest POZYCYJNYM boolean, nie obiektem opcji —
+   * patrz sygnatura `function buildDiploPairSummaryData(ownerId, revealAll = false)`
+   * w main.ts), pomijając filtr mgły wojny `isVisiblePartner`. Odrębne od
    * pop-upu `showDiploPairSummary` (diplomacyPanel.ts), który NADAL filtruje
    * mgłą wojny — patrz GOAL R-DYPLO-RELACJE-AI-AI-AUDIENCJA-Q1 pkt 2.
    * `undefined` = silnik nie dostarczył danych (np. rozmówca poza aktywną dyplomacją).
