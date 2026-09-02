@@ -3468,6 +3468,20 @@ w `WERSJE.md` (FALA 331 oznaczona ZASTAPIONA). Push do `origin/main`
 nie dotykaja battleScene/logiki bitwy). U5 (jednostki, w toku) i dalsze
 batchy (U6, cuda) doloacza kolejna fala.
 
+### ZDEPLOYOWANE FALA 333 (2026-09-02, commit `f5b1f8d7`)
+
+U3+U4+U5+U6 zintegrowane od czasu FALI 332 - kategoria "jednostki" osiagnela
+KOMPLETNOSC 75/75. Wraz z wczesniej ukonczonymi budynkami (41/41),
+technologiami (32/32), ulepszeniami terenu (22/22) - WSZYSTKIE kategorie
+encji poza cudami (wonders) maja teraz pelny rys historyczny. To zamyka
+15 z 17 tematow projektu `R-KARTY-HISTORIA-Q1` (16. i 17. to infrastruktura
++ tresc dla cudow, swiadomie odrebny temat - render cudow zyje poza systemem
+`entityCards/`). Build vite 881 modulow, `inject-build-stamp.cjs` -> md5
+`d6476a96...`, manifest zaktualizowany, `verify-robocza-bundle.cjs` -> VERIFY
+OK, nowy wpis FALA 333 w `WERSJE.md` (FALA 332 oznaczona ZASTAPIONA). Push do
+`origin/main` (`f5b1f8d7`). `Gra-ROBOCZA-POLE-BITWY.html` NIE przebudowany
+(pole `Historia` czysto opisowe, nie dotyka battleScene/statystyk bojowych).
+
 | ID | Data | Prośba | Status | Uwagi |
 |---|---|---|---|---|
 | P-KARTY-HISTORIA-TEST-FIXTURE-REALNE-DANE-Q1 | 2026-09-01 | Naprawa `entity-card-historia-section-test.cjs` (temat INFRA), ktorego fixture "jeszcze pustych" encji (stolarnia/Lowiectwo/farma) uzywal REALNYCH danych produkcyjnych zamiast syntetycznych - kazdy kolejny batch tresci ktory wypelnia jedna z tych 3 encji powoduje falszywy FAIL. Dodatkowo sekcja [5] ma pokrewny blad: fixture "zla wielkosc liter" dziedziczy z prawdziwego wiersza, wiec po wypelnieniu poprawnego pola test przypadkiem przechodzi/nie przechodzi z innego powodu niz zamierzony. | **ZINTEGROWANE do `main` (4efd8db2)** | Pelny cykl Operator->Evaluator(zero zarzutow)->Final Control przez Workflow. Sekcja [4]: asercja WARUNKOWA (`historiaExists === fieldNonEmpty`) na realnym stanie pola zamiast twardego "nie istnieje". Sekcja [5]: destructuring usuwa poprawne pole z kopii wiersza przed wstrzyknieciem zlej wielkosci liter, dla wszystkich 4 adapterow. Test zweryfikowany na REALNYCH, dzisiejszych danych (B1/T1/I1/U1 juz zintegrowane) - 31/31 PASS, zero fixture-driftu na przyszlosc. tsc 0 bledow, 5 bramek referencyjnych bez regresu. |
