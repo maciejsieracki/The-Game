@@ -13,6 +13,21 @@ swoim wĹ‚asnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji d
 > Pakiet 3 z 2026-08-20 jest docs-only i nie tworzy wpisu ROBOCZA/KANON/FINALNA;
 > ten plik pozostaje wyłącznie rejestrem publikacji bundli.
 
+## ROBOCZA 875b02cd - 2026-09-02 02:35 UTC - FALA 334: KAMIEŃ MILOWY — projekt R-KARTY-HISTORIA-Q1 KOMPLETNY (17/17): cuda świata dostają kartę encji (nowy EntityKind) + rys historyczny 19/19, zamyka serię obejmującą wszystkie 5 kategorii encji
+
+|- md5 (pełne): 875b02cdfbe09008989231760c5478ce · stempel: ROBOCZA · label 875b02cd · źródłowy commit integracji: `8e6a3ed5`
+|- **`R-KARTY-HISTORIA-INFRA-CUDA-Q1`** (`52cd0c37`) — cuda świata (`gra/data/wonders.json`) dostają PIERWSZĄ w historii kartę encji: nowy `EntityKind='wonder'`, `resolveWonderRow`/`wonderAdapter.ts` (sekcje dostępności/kosztu/bonusów), rejestracja w `renderer.ts`, oraz nowa ikonka info (ⓘ) na wierszu cudu w panelu budowy — wzorem istniejącej dla ulepszeń terenu, z niezależnym listenerem (`stopPropagation`), zero regresu klikania reszty wiersza (nadal uzbraja tryb postawienia cudu na mapie). Wcześniej klik cudu na liście budowy NIE otwierał żadnego podglądu.
+|- **`P-KARTY-HISTORIA-TEST-CUDA-FIXTURE-REALNE-DANE-Q1`** (`470fe531`) — naprawa fixture-drift: nowy test `entity-card-wonder-test.cjs` miał 3 twarde asercje zakładające że żaden cud nigdy nie ma treści `historia` (ta sama klasa błędu naprawiana już 2x wcześniej w tej serii dla innych kategorii) — zmienione na warunkowe, zgodne z realnym stanem danych.
+|- **`R-KARTY-HISTORIA-W1-Q1`** (`36fa33ab`) — rys historyczny dla 10 z 19 cudów: piramidy, wielka stela (Zulu — świadomie NIE fabrykuje nieistniejącego monumentu, opisuje realny kontekst kultury materialnej), wiszące ogrody, wyrocznia, Roquepertuse (celtyckie sanktuarium), stupa w Sanchi, Petra, Ha'amonga (Tonga — jawnie zaznaczony status legendy wobec braku źródeł pisanych), Kolos Rodyjski, Osada Aschaffenburg.
+|- **`R-KARTY-HISTORIA-W2-Q1`** (`6d27df79`, OSTATNI temat serii) — rys historyczny dla ostatnich 9 cudów: ziggurat, Mundo Perdido (w danych przypisany do Inków, ale opisany jako realny kompleks w Tikal — Majowie, bez fabrykowania nieistniejącego inkaskiego miejsca), Terakotowa armia, Koloseum, Dur-Szarrukin, Brama Wszystkich Narodów (Persepolis, niezależnie od listy cywilizacji gry), Pałac Weiyang, Yerkapı, Posąg Peruna (jawnie zaznaczona fragmentaryczność źródeł słowiańskich).
+|- **KAMIEŃ MILOWY:** projekt `R-KARTY-HISTORIA-Q1` (17 tematów, rozpoczęty zgłoszeniem właściciela o wycieku tekstu deweloperskiego na karcie „Tarasy uprawne") jest KOMPLETNY. Wszystkie 5 kategorii encji mają pełny rys historyczny: **budynki 41/41 · technologie 32/32 · ulepszenia terenu 22/22 · jednostki 75/75 · cuda 19/19** — łącznie 189 encji z nową, oryginalną treścią historyczną w stylu Civilopedii. Każdy batch przeszedł pełny cykl Operator→Evaluator(→Obrona)→Final Control przez Workflow, z niezależną, żywą weryfikacją w headless Chromium.
+|- Wszystkie tematy tej fali: `tsc --noEmit` 0 błędów. 5 bramek referencyjnych (logic-test 213/213, tech-tree-test 19/19, research-test 33/33, unit-replace-test 13/13, combat-test 6/6) + `entity-card-wonder-test.cjs` (134/134) bez regresu po każdej integracji.
+|- Bundle: 881→882 modułów (+1, nowy `wonderAdapter.ts`), `Gra-ROBOCZA.html` 69,2 MB. `Gra-ROBOCZA-POLE-BITWY.html` NIE przebudowany — żaden z tematów tej fali nie dotyka `battleScene.ts`/logiki bitwy.
+|- Publikacja: `gra-robocza/Gra-ROBOCZA.html` + manifest. `VERIFY OK`, manifest match OK.
+|- **Odstępstwo techniczne (jak w FALACH 324-333):** publikacja odtworzona ręcznie w bashu/Node — `pwsh` nie istnieje w tym środowisku.
+|- Szczegóły: rejestr w `REJESTR-PROSB-I-ZADAN.md`.
+|- **AKTUALNA**
+
 ## ROBOCZA d6476a96 - 2026-09-02 01:05 UTC - FALA 333: rys historyczny jednostek dokonczony (U3-U6) — kategoria "jednostki" KOMPLETNA 75/75, wraz z budynkami/technologiami/ulepszeniami terenu WSZYSTKIE kategorie encji poza cudami maja pelna tresc historyczna
 
 |- md5 (pełne): d6476a9633bfe2c6e9561aeb6cca51a6 · stempel: ROBOCZA · label d6476a96 · źródłowy commit integracji: `44184d41`
@@ -26,7 +41,7 @@ swoim wĹ‚asnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji d
 |- Publikacja: `gra-robocza/Gra-ROBOCZA.html` + manifest. `VERIFY OK`, manifest match OK.
 |- **Odstępstwo techniczne (jak w FALACH 324-332):** publikacja odtworzona ręcznie w bashu/Node — `pwsh` nie istnieje w tym środowisku.
 |- Szczegóły: rejestr w `REJESTR-PROSB-I-ZADAN.md`.
-|- **AKTUALNA**
+|- **ZASTĄPIONA** (→ 875b02cd, FALA 334)
 
 ## ROBOCZA 64515106 - 2026-09-02 00:35 UTC - FALA 332: Auto-Żywienie toast, limit miast po podboju silą, "brak: Targowisko", handel w skarbcu HUD, ambience tylko zwierzęta, relacje AI-AI w audiencji, karty historyczne (rys historyczny) — budynki+technologie+ulepszenia terenu kompletne, jednostki 52/75
 
