@@ -3850,7 +3850,8 @@
     "meleeDefence": 3,
     "missileAttack": 0,
     "Utrzymanie surowiec": "Żelazo",
-    "Utrzymanie surowiec (ilość)": 10
+    "Utrzymanie surowiec (ilość)": 10,
+    "Historia": "Tyr, jedno z najpotężniejszych miast-państw fenickich na wybrzeżu dzisiejszego Libanu, zawdzięczał swoją potęgę nie podbojom lądowym, lecz flocie handlowej krążącej po całym Morzu Śródziemnym oraz produkcji cenionego purpurowego barwnika z muszli murex. Miecznicy tyryjscy strzegli portów, magazynów i karawan kupieckich, a w razie potrzeby wzmacniali załogi okrętów wojennych broniących szlaków handlowych przed piratami i rywalizującymi miastami. W przeciwieństwie do greckich hoplitów walczących w zwartej falandze, fenicka piechota miejska bywała lżej uzbrojona i bardziej elastyczna, co odpowiadało potrzebom obrony punktowej, a nie wielkich bitew polowych. Gdy w 332 roku p.n.e. Aleksander Wielki oblegał Tyr zbudowany na wyspie, obrońcy miasta stawiali zacięty opór przez wiele miesięcy, zanim macedońska grobla i flota przełamały ich linie. Dziedzictwo tyryjskich rzemieślników i żołnierzy przetrwało długo po upadku miasta za pośrednictwem kolonii, które Tyr zakładał na zachodnim Śródziemnomorzu, z Kartaginą na czele."
   },
   {
     "Epoka": "Brąz",
@@ -3905,7 +3906,8 @@
     "meleeDefence": 4,
     "missileAttack": 0,
     "Utrzymanie surowiec": "Brąz",
-    "Utrzymanie surowiec (ilość)": 10
+    "Utrzymanie surowiec (ilość)": 10,
+    "Historia": "Fenicjanie, zamieszkujący wąski pas wybrzeża Lewantu, znani byli przede wszystkim jako żeglarze, kupcy i wynalazcy alfabetu, jednak utrzymanie sieci miast-państw i kolonii wymagało również sprawnej piechoty zdolnej bronić murów i portów. Typowy wojownik fenicki uzbrojony był w krótką włócznię lub miecz, okrągłą tarczę oraz lekki pancerz, co pozwalało mu skutecznie działać zarówno w obronie miejskiej, jak i jako oddział pomocniczy podczas ekspedycji kolonizacyjnych. Miasta takie jak Byblos, Sydon i Tyr rzadko prowadziły wielkie wojny zaczepne, wolały raczej opłacać najemników lub polegać na sojuszach, licząc na to, że bogactwo płynące z handlu zniechęci sąsiadów do agresji. Fenicka piechota towarzyszyła jednak licznym wyprawom osadniczym na Cypr, Sycylię i wybrzeża Afryki Północnej, gdzie chroniła nowo zakładane faktorie handlowe przed miejscową ludnością. To właśnie z tej tradycji obronnej i kolonizacyjnej wyrosła później potęga wojskowa Kartaginy, najsłynniejszej z fenickich kolonii."
   },
   {
     "Epoka": "Żelazo",
@@ -3960,7 +3962,8 @@
     "meleeDefence": 6,
     "missileAttack": 0,
     "Utrzymanie surowiec": "Żelazo",
-    "Utrzymanie surowiec (ilość)": 10
+    "Utrzymanie surowiec (ilość)": 10,
+    "Historia": "Elitarne oddziały przyboczne władców Tyru rekrutowano spośród najbardziej zaufanych obywateli miasta, powierzając im ochronę pałacu królewskiego, świątyń bóstwa Melkarta oraz skarbców gromadzących zyski z handlu purpurą, drewnem cedrowym i szkłem. Gwardziści tacy odznaczali się lepszym uzbrojeniem niż przeciętny miejski pospolity ruszenia, nosząc solidniejsze zbroje i starannie wykonaną broń, będącą świadectwem zamożności miasta. Ich rola nie ograniczała się do ceremonialnej obecności przy dworze — w chwilach kryzysu, jak podczas długiego oblężenia Tyru przez Aleksandra Wielkiego, to właśnie takie doborowe jednostki stanowiły trzon obrony murów i twierdz. Fenickie miasta-państwa, pozbawione rozległego zaplecza lądowego, musiały polegać na jakości, a nie liczebności swoich wojsk lądowych, inwestując w niewielkie, lecz dobrze wyszkolone oddziały. Po upadku niepodległości Tyru tradycje takich elitarnych formacji przetrwały częściowo w wojskach kolonii fenickich, w tym w armii Kartaginy."
   },
   {
     "Jednostka": "Thorakites",
@@ -4015,7 +4018,8 @@
     "meleeDefence": 8,
     "missileAttack": 6,
     "Utrzymanie surowiec": "Żelazo",
-    "Utrzymanie surowiec (ilość)": 10
+    "Utrzymanie surowiec (ilość)": 10,
+    "Historia": "Thorakici, których nazwa pochodzi od greckiego słowa thorax oznaczającego pancerz, byli średniozbrojną piechotą hellenistyczną uzbrojoną w kolczugę lub pancerz łuskowy, miecz oraz krótszą włócznię, co odróżniało ich od klasycznych falangitów dzierżących długą sarissę. Formacja ta rozwinęła się w armiach diadochów i ich następców jako odpowiedź na rosnące zapotrzebowanie na piechotę zdolną do walki na urozmaiconym terenie, gdzie ciężka, sztywna falanga traciła swoją skuteczność. Thorakici uzupełniali szyki falangi, osłaniając jej flanki lub wypełniając luki powstałe w trudnym terenie górzystym, gdzie długie sarissy stawały się przeszkodą. Armie hellenistyczne, w tym siły Seleukidów i Ptolemeuszy, wykorzystywały takie oddziały w bitwach przeciwko Rzymianom, których legiony operowały w bardziej elastycznym szyku manipularnym. Rozwój thorakitów bywa postrzegany przez historyków wojskowości jako świadectwo stopniowego odchodzenia świata hellenistycznego od sztywnej doktryny falangi w stronę taktyk bliższych rzymskiemu modelowi legionu."
   },
   {
     "Jednostka": "Evocati",
@@ -4070,7 +4074,8 @@
     "meleeDefence": 8,
     "missileAttack": 6,
     "Utrzymanie surowiec": "Żelazo",
-    "Utrzymanie surowiec (ilość)": 15
+    "Utrzymanie surowiec (ilość)": 15,
+    "Historia": "Evocati byli rzymskimi weteranami, którzy odbyli już pełną służbę wojskową i formalnie uzyskali prawo do zwolnienia, lecz zostali ponownie powołani pod broń na mocy specjalnego wezwania, najczęściej w obliczu poważnego zagrożenia militarnego lub wybuchu wojny domowej. Jako ludzie doświadczeni w boju, cieszyli się wyższym statusem niż zwykli rekruci, a niektórzy źródła wspominają o przywilejach zwalniających ich z części typowych obowiązków obozowych, choć wciąż podlegali dyscyplinie wojskowej. Rzymscy wodzowie, tacy jak Juliusz Cezar czy Oktawian August, chętnie sięgali po evocati w kluczowych momentach swoich kampanii, licząc na ich zaprawę bojową i lojalność wobec dowódcy, pod którym wcześniej służyli. W okresie schyłku republiki i wojen domowych I wieku p.n.e. tacy weterani stanowili często rdzeń oddziałów przybocznych ambitnych polityków-wodzów, wzmacniając ich pozycję wobec senatu i rywali. Praktyka ponownego powoływania weteranów świadczyła zarówno o wartości bojowego doświadczenia w rzymskiej sztuce wojennej, jak i o rosnącym znaczeniu osobistych więzi między żołnierzem a dowódcą w schyłkowym okresie republiki."
   },
   {
     "Jednostka": "iButho z iklwa",
@@ -4125,7 +4130,8 @@
     "meleeDefence": 7,
     "missileAttack": 0,
     "Utrzymanie surowiec": "Żelazo",
-    "Utrzymanie surowiec (ilość)": 10
+    "Utrzymanie surowiec (ilość)": 10,
+    "Historia": "Iklwa, krótki, szerokoostrzowy dzirot kolący, przypisywana jest reformom wojskowym Shaki kaSenzangakhony, twórcy potęgi królestwa Zulu na początku XIX wieku, który miał zastąpić nim tradycyjne, lżejsze oszczepy miotane używane wcześniej przez ludy nguni w południowej Afryce. Krótsze drzewce iklwy wymuszało walkę z bliska, twarzą w twarz z przeciwnikiem, co w połączeniu z dużą tarczą z bawolej skóry pozwalało wojownikom zulu na agresywną taktykę szturmową, znaną jako impi, wykorzystującą osaczanie wroga w kształcie rogów bawołu. Wojownicy tacy, zorganizowani w regimenty wiekowe zwane amabutho, przechodzili surowe szkolenie i podlegali ścisłej dyscyplinie, co uczyniło armię zuluską jedną z najskuteczniejszych sił zbrojnych w południowej Afryce XIX wieku. Nazwa broni miała naśladować dźwięk wydawany podczas wyciągania ostrza z ciała przeciwnika, co stało się częścią wojennej legendy Zulusów. Taktyka i uzbrojenie oparte na iklwie sprawdziły się spektakularnie w bitwie pod Isandlwaną w 1879 roku, gdzie siły zuluskie pokonały liczącą się kolumnę brytyjską, zanim przeważająca siła ognia armii kolonialnej ostatecznie złamała opór królestwa."
   },
   {
     "Jednostka": "Gwardzista z champi",
@@ -4180,7 +4186,8 @@
     "meleeDefence": 5,
     "missileAttack": 5,
     "Utrzymanie surowiec": "Brąz",
-    "Utrzymanie surowiec (ilość)": 10
+    "Utrzymanie surowiec (ilość)": 10,
+    "Historia": "Champi, ciężka maczuga lub buława z drewna, kamienia bądź brązu, należała do podstawowego uzbrojenia elitarnych wojowników Inków, cesarstwa, które w XV i XVI wieku zdominowało rozległe tereny Andów od dzisiejszego Ekwadoru po środkową Chile. Gwardziści cesarscy, wywodzący się często z samej stolicy Cusco lub z ludów szczególnie lojalnych wobec Sapa Inki, otrzymywali starannie zdobione champi jako oznakę statusu, obok tarcz i pikowanych tunik chroniących przed ciosami. Broń tego typu sprawdzała się doskonale w górzystym terenie andyjskim, gdzie ciężkie ostrza sieczne byłyby mniej praktyczne niż uderzeniowa siła maczugi zdolnej łamać kości nawet przez warstwy pikowanej zbroi przeciwnika. Inkowie utrzymywali rozbudowaną armię stałą oraz system dróg i magazynów umożliwiający szybkie przerzucanie wojsk na krańce imperium, a elitarne oddziały przyboczne odgrywały kluczową rolę zarówno w ceremoniach, jak i w tłumieniu buntów podbitych ludów. Podbój hiszpański pod wodzą Francisco Pizarra w latach trzydziestych XVI wieku, wspomagany bronią palną, końmi i chorobami epidemicznymi, ostatecznie złamał opór wojowników uzbrojonych w tradycyjną broń białą, w tym champi."
   },
   {
     "Jednostka": "Wojownik z żelaznym khopesh",
@@ -4235,7 +4242,8 @@
     "meleeDefence": 6,
     "missileAttack": 0,
     "Utrzymanie surowiec": "Żelazo",
-    "Utrzymanie surowiec (ilość)": 10
+    "Utrzymanie surowiec (ilość)": 10,
+    "Historia": "Wraz z rozpowszechnieniem się obróbki żelaza na Bliskim Wschodzie i w dolinie Nilu na przełomie epoki brązu i żelaza, tradycyjny egipski khopesz, wcześniej wytwarzany niemal wyłącznie z brązu, zaczęto stopniowo wykuwać także z nowego, twardszego metalu. Żelazne ostrze pozwalało uzyskać trwalszą i ostrzejszą krawędź niż miękki brąz, choć wczesna metalurgia żelaza w Egipcie rozwijała się wolniej niż u sąsiadów z Lewantu i Anatolii, gdzie Hetyci od dawna posiedli tajniki jej obróbki. Egipska armia okresu Trzeciego Okresu Przejściowego i epoki saickiej, zmagająca się z najazdami ludów libijskich, nubijskich oraz później asyryjskich i perskich, musiała unowocześniać swoje uzbrojenie, by dotrzymać kroku przeciwnikom dysponującym już bronią żelazną na szerszą skalę. Khopesz, niezależnie od materiału, pozostawał bronią o dużym znaczeniu symbolicznym, kojarzoną z władzą faraona i elitarnymi oddziałami piechoty, choć w praktyce coraz częściej ustępował miejsca prostszym mieczom i sztyletom żelaznym powszechnym w regionie. Znaleziska żelaznych narzędzi i broni z późniejszych okresów historii Egiptu świadczą o stopniowym, lecz nieuchronnym przejściu od tradycyjnej metalurgii brązu ku nowej epoce żelaza."
   },
   {
     "Jednostka": "Mur tarcz (Sargonid)",
@@ -4290,7 +4298,8 @@
     "meleeDefence": 10,
     "missileAttack": 0,
     "Utrzymanie surowiec": "Żelazo",
-    "Utrzymanie surowiec (ilość)": 10
+    "Utrzymanie surowiec (ilość)": 10,
+    "Historia": "Formacja muru tarcz, w której ciężkozbrojni włócznicy ustawiali się w zwartych szeregach osłoniętych rzędem dużych tarcz, należy do najstarszych udokumentowanych taktyk piechoty w historii Mezopotamii. Najsłynniejszym świadectwem takiej taktyki jest Stela Sępów z miasta Lagasz, datowana na około 2450 rok p.n.e., przedstawiająca sumeryjskich włóczników maszerujących ramię w ramię za ścianą prostokątnych tarcz, depczących ciała pokonanych wrogów. Tego rodzaju zwarty szyk wymagał ścisłej dyscypliny i wyszkolenia, ponieważ jego skuteczność zależała od utrzymania nieprzerwanej linii tarcz i wysuniętych do przodu grotów włóczni, zdolnej odeprzeć zarówno piechotę, jak i wczesne oddziały bojowych rydwanów. Miasta-państwa południowej Mezopotamii, rywalizujące nieustannie o kontrolę nad kanałami irygacyjnymi i żyznymi polami między Tygrysem a Eufratem, rozwijały takie zorganizowane formacje na długo przed powstaniem greckiej falangi hoplickiej. Mur tarcz pozostawał podstawą mezopotamskiej piechoty ciężkiej przez stulecia, ewoluując wraz z postępem metalurgii i zmieniającymi się zagrożeniami na równinach między rzekami."
   },
   {
     "Jednostka": "Miecznik galijski",
@@ -4345,6 +4354,7 @@
     "meleeDefence": 2,
     "missileAttack": 0,
     "Utrzymanie surowiec": "Żelazo",
-    "Utrzymanie surowiec (ilość)": 10
+    "Utrzymanie surowiec (ilość)": 10,
+    "Historia": "Galowie, ludy celtyckie zamieszkujące tereny dzisiejszej Francji, Belgii i części północnych Włoch, słynęli w oczach Rzymian i Greków z zamiłowania do długiego miecza żelaznego, znacznie dłuższego od śródziemnomorskich broni siecznych, przystosowanego przede wszystkim do potężnych, szerokich cięć z konia lub w zwarciu pieszym. Celtyccy kowale opanowali zaawansowane techniki obróbki żelaza, w tym wczesne formy spawania wzorzystego, tworząc ostrza cenione i naśladowane w całym starożytnym świecie śródziemnomorskim. Miecznik galijski walczył zwykle z niewielką owalną lub prostokątną tarczą, a starożytni autorzy, tacy jak Polibiusz, opisywali gwałtowność pierwszego natarcia Galów, które potrafiło rozbić niedoświadczone szyki przeciwnika, choć długotrwały bój i wyczerpanie bywały ich słabością. Najazdy galijskie sięgały daleko poza rdzenne ziemie plemienne — w 387 roku p.n.e. wojownicy celtyccy złupili samo Rzym, a inne grupy dotarły aż na Bałkany i do Azji Mniejszej, gdzie osiedlili się jako Galaci. Ostatecznie podbój Galii przez Juliusza Cezara w połowie I wieku p.n.e. włączył te wojownicze ludy oraz ich tradycje kowalskie w orbitę cywilizacji rzymskiej."
   }
 ]
