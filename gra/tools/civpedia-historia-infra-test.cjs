@@ -298,13 +298,31 @@ async function main() {
     return `${entry.full}${historiaBlock}`;
   }
   check('[4] kontrola przytomności: dzisiejszy wikiBundle.json ma >0 wpisów encyklopedii', realBundle.encyklopedia.length > 0, realBundle.encyklopedia.length);
-  const regressed = realBundle.encyklopedia.filter((e) => {
+  // Asercja WARUNKOWA na realnym stanie danych (zamiast twardego "wszystko
+  // puste"): jeśli wpis ma niepuste `historia`, sekcja "## Rys historyczny"
+  // MUSI być widoczna na depth 'm'/'full' i NIE widoczna na 's'; jeśli
+  // `historia` jest puste, sekcja NIE ma być widoczna na żadnej głębokości.
+  const withHistoriaEntries = realBundle.encyklopedia.filter((e) => typeof e.historia === 'string' && e.historia.trim() !== '');
+  const withoutHistoriaEntries = realBundle.encyklopedia.filter((e) => !(typeof e.historia === 'string' && e.historia.trim() !== ''));
+  check('[4] kontrola przytomności: dzisiejszy wikiBundle.json ma >0 wpisów z niepustym polem historia (asercja warunkowa nie jest pusta)',
+    withHistoriaEntries.length > 0, withHistoriaEntries.length);
+
+  const missingOnNonEmpty = withHistoriaEntries.filter((e) => {
+    const m = pickEncyContentBlackBox(e, 'm');
+    const full = pickEncyContentBlackBox(e, 'full');
+    const s = pickEncyContentBlackBox(e, 's');
+    return !m.includes('## Rys historyczny') || !full.includes('## Rys historyczny') || s.includes('## Rys historyczny');
+  });
+  check('[4a] WSZYSTKIE wpisy z niepustym polem historia: sekcja "## Rys historyczny" widoczna na depth "m"/"full" i NIEwidoczna na "s"',
+    missingOnNonEmpty.length === 0, missingOnNonEmpty.map((e) => e.id));
+
+  const regressedOnEmpty = withoutHistoriaEntries.filter((e) => {
     const m = pickEncyContentBlackBox(e, 'm');
     const full = pickEncyContentBlackBox(e, 'full');
     return m.includes('## Rys historyczny') || full !== e.full;
   });
-  check('[4] WSZYSTKIE dzisiejsze wpisy encyklopedii: depth "m"/"full" bez sekcji "## Rys historyczny" (zero regresu — pole historia jeszcze nigdzie niewypełnione)',
-    regressed.length === 0, regressed.map((e) => e.id));
+  check('[4b] WSZYSTKIE wpisy z pustym polem historia: depth "m"/"full" bez sekcji "## Rys historyczny" (zero regresu)',
+    regressedOnEmpty.length === 0, regressedOnEmpty.map((e) => e.id));
 
   check('brak błędów konsoli/pageerror podczas całego scenariusza przeglądarkowego', consoleErrors.length === 0, consoleErrors);
 
