@@ -3681,7 +3681,20 @@ warunkowo per wpis. Dowod nietautologicznosci powtorzony niezaleznie przez
 Evaluatora (wlasna mutacja `pickEncyContentBlackBox`, test lapie regres na
 [4a], 142/142 zgloszone). `map-gen-regression-test.cjs` swiadomie pominiety
 jako poza zakresem (wolna bramka, niezwiazana ze zmienionym plikiem). Final
-Control dispatchowany: Workflow `wf_ba629b98-6f3`.
+Control PASS (Workflow `wf_ba629b98-6f3`, wlasny powtorzony dowod mutacyjny).
+**ZINTEGROWANE do `main` (`87ce67ed`)**. Po integracji: tsc 0 bledow, 18/18
+ten test, 5 bramek referencyjnych bez regresu.
+
+**CivPedia Faza 2 — ZAMKNIETA (2026-09-02).** Wszystkie 7 tematow tej fali
+zintegrowane: infra (`d6032099`), 6 kategorii tresci (budynki/cuda/ulepszenia/
+technologie/jednostki J1+J2), 3 naprawy pochodne (testy git-HEAD, duplikacja
+wikiHubHud depth=full, fixture-drift infra-test). Caly zestaw testow CivPedii
+zielony: infra 18/18, budynki 136/136, ulepszenia 116/116, technologie
+324/324, jednostki J1 161/161, J2 157/157, cuda 126/126, wikihubhud-duplikacja
+7/7 — 1045 asercji lacznie, 0 fail. 5 bramek referencyjnych bez regresu przez
+cala fale. Nastepny krok: deploy ROBOCZA (nowa FALA) obejmujacy te fale
+plus R-CIVPEDIA-HISTORIA-INFRA-Q1 i R-KARTA-JEDNOSTKI-3D-PODGLAD-BRAKUJACY-Q1
+z wczesniejszej czesci sesji.
 
 **Podsumowanie CivPedia Faza 2 (na dzien 2026-09-02, po tej fali)**: 6/6
 kategorii tresci zintegrowane (budynki 25/25, cuda 19/19, ulepszenia 17/17,
