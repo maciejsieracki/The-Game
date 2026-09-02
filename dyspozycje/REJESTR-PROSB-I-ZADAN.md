@@ -3988,13 +3988,20 @@ deployu ROBOCZA na końcu z raportem. Orkiestrator kontynuuje bez pytania o zgod
   (`a2c887e8`, Final Control PASS)**, potwierdzone ponownie jako ancestor `origin/main`.
   Stare worktree/branch/Final-Control-worktree posprzątane (były nieaktualne, bez
   wpływu na integrację).
-- **P-TECHDISCOVERY-BADGE-DUPLIKAT-NACHODZENIE-Q1** — Obrona PASS (`1009b347`, oba
-  zarzuty Evaluatora przyjęte, zero zmian w kodzie produkcyjnym od `912d4b86`,
-  bramka 63/63). **Final Control DISPATCHOWANY** (Sonnet 5, effort high).
-- **P-ENTITYCARD-LINKI-KRZYZOWE-NA-PRZYCISKI-Q1** — Obrona PASS (`7dec516e`, oba
-  zarzuty Evaluatora przyjęte: klikalny obszar pigułek przeniesiony na
-  `button.entity-card-pill-text`, naprawiony predykat testu stylu). **Final Control
-  DISPATCHOWANY** (Sonnet 5, effort high).
+- **P-TECHDISCOVERY-BADGE-DUPLIKAT-NACHODZENIE-Q1** — **ZINTEGROWANE do `main`
+  (`eca8f56d`)**. Final Control PASS (własny checkout, własne żywe zrzuty
+  Playwright odtworzyły identyczny pomiar co Obrona co do piksela, 63/63 +
+  12/12 + 5 bramek referencyjnych). Zintegrowane allowlist-only
+  (`techDiscoveryNotice.ts`, nowy test `tech-discovery-badge-diorama-test.cjs`),
+  tsc+5 bramek+oba testy tematu ponownie zielone po integracji. Worktree i
+  branch posprzątane.
+- **P-ENTITYCARD-LINKI-KRZYZOWE-NA-PRZYCISKI-Q1** — **ZINTEGROWANE do `main`
+  (`69cc3604`)**. Final Control PASS (własny checkout, merge-base scoped diff
+  potwierdzony, żywy test elementFromPoint 0 mis, 34/0 + 20/0 + 5 bramek
+  referencyjnych; 2 pre-istniejące czerwone testy poza allowlistą potwierdzone
+  identyczne na czystym `origin/main`). Zintegrowane allowlist-only
+  (`cityPanel.ts`, `entityCards/renderer.ts`, 2 pliki testowe), tsc+5 bramek+oba
+  testy tematu ponownie zielone po integracji. Worktree i branch posprzątane.
 - **R-WOJNA-WYMUSZONA-REGULY-Q1** — Operator PASS (`3a4be6a3`, 3 zasady: próg 25 tur,
   jeden przeciwnik naraz + limit gracza wg trudności, limit trwania 25 tur; Żelazo
   nietknięte). **Evaluator DISPATCHOWANY** (Sonnet 5, effort high).
