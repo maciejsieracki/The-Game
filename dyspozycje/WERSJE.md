@@ -13,6 +13,20 @@ swoim wĹ‚asnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji d
 > Pakiet 3 z 2026-08-20 jest docs-only i nie tworzy wpisu ROBOCZA/KANON/FINALNA;
 > ten plik pozostaje wyłącznie rejestrem publikacji bundli.
 
+## ROBOCZA 15890072 - 2026-09-02 12:20 UTC - FALA 335: CivPedia dostaje "Rys historyczny" — infra + wszystkie 6 kategorii treści (budynki/cuda/ulepszenia/technologie/jednostki, 168 haseł), podgląd 3D jednostki uzupełniony w karcie miasta i linkach krzyżowych, 3 naprawy pochodne
+
+|- md5 (pełne): 15890072e390e172a90b6583b91996ab · stempel: ROBOCZA · label 15890072 · źródłowy commit integracji: `87ce67ed`
+|- **`R-CIVPEDIA-HISTORIA-INFRA-Q1`** (`d6032099`) — mechanizm (bez treści): `bundle-wiki-for-game.cjs` wyciąga nową sekcję `## Rys historyczny` z plików `.md` do pola `historia` na każdym haśle encyklopedii; `wikiHubHud.ts::pickEncyContent` dokleja tę sekcję w widokach 'm'/'full' (nie w 's'). Zero kolizji z istniejącym, niezwiązanym nagłówkiem `## Historia / decyzje` (changelog wiki).
+|- **`R-KARTA-JEDNOSTKI-3D-PODGLAD-BRAKUJACY-Q1`** (`3cd2c34e`) — podgląd 3D jednostki (istniał wcześniej wyłącznie w karcie z listy armii) rozszerzony na kartę rekrutacji w panelu miasta (`cityPanel.ts`, najczęściej oglądana karta jednostki) i generyczną ścieżkę linków krzyżowych z innych kart (`entityCards/renderer.ts`). Pozostałe 4 kinds kart encji i istniejąca ścieżka listy armii bez zmian.
+|- **CivPedia — treść, 6 batchy, 168 haseł łącznie:** `R-CIVPEDIA-BUDYNKI-Q1` (`3418c524`, 25/25), `R-CIVPEDIA-CUDA-Q1` (`9ac41749`, 19/19), `R-CIVPEDIA-ULEPSZENIA-Q1` (`2452429b`, 17/17 — w tym `kopalnia.md`, jeden plik dokumentujący 4 warianty kopalni pod osobnymi podnagłówkami), `R-CIVPEDIA-TECHNOLOGIE-Q1` (`e9687a11`, 32/32), `R-CIVPEDIA-JEDNOSTKI-J1-Q1`+`J2-Q1` (`3a44c234`+`17f1ae17`, 49/49 — w tym wyjątek Soldurii/`wojownik-celtycki.md` przez pole `gra-id`). Treść skopiowana z już zatwierdzonych pól `historia`/`Historia` w `gra/data/*.json` (seria `R-KARTY-HISTORIA-Q1`, FALA 332-334).
+|- **3 naprawy pochodne, znalezione podczas tej fali:** `P-CIVPEDIA-WIKIHUBHUD-RYS-HISTORYCZNY-DUPLIKACJA-Q1` (`a4f1650d`) — `pickEncyContent` dublował sekcję w widoku 'full' (`entry.full` już zawierał sekcję, funkcja doklejała ją ponownie); `P-CIVPEDIA-TESTY-GIT-HEAD-SAMOODNOSZACE-Q1` (`9ac41749`) — 3 nowe testy (cuda, jednostki J1/J2) porównywały się z `git show HEAD:<plik>`, co staje się tautologicznie fałszywe po scommitowaniu — przepisane na metodę strukturalną niezależną od historii gita; `P-CIVPEDIA-INFRA-TEST-FIXTURE-DRIFT-Q1` (`87ce67ed`) — test infry miał zaszyte założenie "zero haseł ma dziś treść" (prawdziwe w dniu napisania, fałszywe po integracji treści) — zmienione na asercję warunkową względem realnego stanu danych. Ta sama klasa błędu ("fixture drift") już wcześniej naprawiana wielokrotnie w serii `R-KARTY-HISTORIA-Q1`.
+|- Wszystkie tematy tej fali: pełny cykl Operator→Evaluator(→Obrona)→Final Control przez Workflow, niezależna, żywa weryfikacja w headless Chromium (różne hasła/encje między rolami). `tsc --noEmit` 0 błędów. 5 bramek referencyjnych (logic-test 213/213, tech-tree-test 19/19, research-test 33/33, unit-replace-test 13/13, combat-test 6/6) bez regresu przez całą falę. Pełny zestaw testów CivPedii zielony: infra 18/18, budynki 136/136, ulepszenia 116/116, technologie 324/324, jednostki J1 161/161, J2 157/157, cuda 126/126, wikihubhud-duplikacja 7/7, unit-card-3d-preview-coverage 18/18 — 1063 asercji łącznie, 0 fail.
+|- Bundle: 882 modułów (bez zmian liczby względem FALI 334 — treść/dane, nie nowe moduły źródłowe), `Gra-ROBOCZA.html` 69,5 MB. `Gra-ROBOCZA-POLE-BITWY.html` NIE przebudowany — żaden temat tej fali nie dotyka `battleScene.ts`/logiki bitwy.
+|- Publikacja: `gra-robocza/Gra-ROBOCZA.html` + manifest. `VERIFY OK`, manifest match OK (stamp md5 WARN kosmetyczny, znany, nieblokujący).
+|- **Odstępstwo techniczne (jak w FALACH 324-334):** publikacja odtworzona ręcznie w bashu/Node — `pwsh` nie istnieje w tym środowisku.
+|- Szczegóły: rejestr w `REJESTR-PROSB-I-ZADAN.md`.
+|- **AKTUALNA**
+
 ## ROBOCZA 875b02cd - 2026-09-02 02:35 UTC - FALA 334: KAMIEŃ MILOWY — projekt R-KARTY-HISTORIA-Q1 KOMPLETNY (17/17): cuda świata dostają kartę encji (nowy EntityKind) + rys historyczny 19/19, zamyka serię obejmującą wszystkie 5 kategorii encji
 
 |- md5 (pełne): 875b02cdfbe09008989231760c5478ce · stempel: ROBOCZA · label 875b02cd · źródłowy commit integracji: `8e6a3ed5`
@@ -26,7 +40,7 @@ swoim wĹ‚asnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji d
 |- Publikacja: `gra-robocza/Gra-ROBOCZA.html` + manifest. `VERIFY OK`, manifest match OK.
 |- **Odstępstwo techniczne (jak w FALACH 324-333):** publikacja odtworzona ręcznie w bashu/Node — `pwsh` nie istnieje w tym środowisku.
 |- Szczegóły: rejestr w `REJESTR-PROSB-I-ZADAN.md`.
-|- **AKTUALNA**
+|- **ZASTĄPIONA** (→ 15890072, FALA 335)
 
 ## ROBOCZA d6476a96 - 2026-09-02 01:05 UTC - FALA 333: rys historyczny jednostek dokonczony (U3-U6) — kategoria "jednostki" KOMPLETNA 75/75, wraz z budynkami/technologiami/ulepszeniami terenu WSZYSTKIE kategorie encji poza cudami maja pelna tresc historyczna
 
