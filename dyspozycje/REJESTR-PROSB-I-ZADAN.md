@@ -3892,3 +3892,30 @@ jednorazowego zrzutu.
 |---|---|---|---|---|
 | R-DYPLO-MAPA-ODKRYCIE-PRZY-TRAKTACIE-Q1 | 2026-09-02 | Jednorazowe odkrycie terytorium cywilizacji AI na mapie gracza w chwili zawarcia paktu nieagresji, sojuszu lub umowy handlowej z gracza. ECHO (AskUserQuestion): jednorazowy zrzut przy podpisaniu, NIE ciagle dzielenie widocznoscia. | **DISPATCHOWANE, Workflow w toku** | Recon: punkt zaczepienia `applyProposalOutcome` (`main.ts:17956-17958`), scalenie zywo policzonej migawki widocznosci (miasta+jednostki+zasieg, `computeVisibleAt`/`computeVisible` z `game/visibility.ts`) do `explored`. Dotyczy WYLACZNIE PaktNieagresji/sojusz/UmowaSzlakow-Wymiany, WYLACZNIE traktatow z udzialem gracza (AI<->AI: brak efektu, gracz nie jest strona). Domain GAME, nie graficzny — Operator+Evaluator Sonnet 5. Dispatch `00-dispatch.md`. Czesc 1 z 2 zgloszonej funkcji — czesc 2 (kupno/wymiana mapy) dispatchowana OSOBNO, PO integracji tego (te same okolice main.ts, sekwencyjnie). |
 | R-DYPLO-SOJUSZ-WIDOCZNOSC-CIAGLA-Q1 | 2026-09-02 | Doprecyzowanie wlasciciela: dla SOJUSZU (nie paktu/handlu) widocznosc ma byc CIAGLA i DWUKIERUNKOWA przez caly czas trwania sojuszu (gracz widzi biezaco co widzi sojusznik AI i odwrotnie), nie tylko jednorazowy zrzut. | **CZEKA NA POTWIERDZENIE WLASCICIELA** | Orkiestrator zaproponowal podzial: `R-DYPLO-MAPA-ODKRYCIE-PRZY-TRAKTACIE-Q1` zostaje jednorazowym zrzutem dla WSZYSTKICH trzech (w tym sojuszu, jako baza), a TEN temat dokłada NA TO ciagle, dwukierunkowe dzielenie widocznosci WYLACZNIE dla aktywnego sojuszu (aktywuje sie przy zawarciu, deaktywuje przy zerwaniu). Wieksze ryzyko/zlozonosc niz czesc 1 — dotyka biezacej (per-ture) logiki widocznosci gracza ORAZ AI (AI realnie zobaczy wiecej, co moze wplynac na jego decyzje/cele), nie tylko jednorazowego stanu. Nie dispatchowane — czeka na jawne "tak, dzialaj" wlasciciela po przedstawieniu zakresu/ryzyka. |
+
+## OTWARTE 2026-09-02 — oferty handlowe AI blokowane mimo bilansu korzystnego dla gracza
+
+Wlasciciel, 4 zrzuty "Stolu negocjacji" (Harappa x2 — pakiety 2 umow,
+Chinczycy, Sumerowie — pojedyncza "Umowa wymiany surowcow"): "Cywilizacje
+AI przedstawiaja propozycje handlowe, ktore sa na bilansie ujemnym, czyli
+nie moga byc przeze mnie zaakceptowane. Powinny byc zawsze propozycje na
+zerze, bilans zero, ewentualnie delikatny plus, albo jest jakis blad w
+obliczeniach, albo blad w logice i kodzie."
+
+Recon (Read/Grep, bez subagenta): konwencja znaku potwierdzona wprost w
+kodzie (`diplomacyAcceptanceBalance.ts:380,399`) — bilans UJEMNY = przewaga
+GRACZA. We wszystkich 4 zrzutach bilans jest ujemny (korzystny dla gracza),
+a mimo to `verdictHtml()` (tamze, linie 403-413) blokuje `Przyjmij` z
+komunikatem "oferta nieuczciwa dla partnera", bo `canAccept` pochodzi z
+`responderPreview.accepted` = wynik `evaluateProposal()` case `'handel'`
+(`diplomacy-proposals.ts` ~1177+, `handelFairnessGate`/`handelRequiredPn`,
+`resolveProposalPn`). Kod w tym samym pliku (komentarz linie 820-830)
+przyznaje wprost, ze mechanizm byl "zaprojektowany" glownie dla kierunku
+gracz→AI, a kierunek AI→gracz mial juz jedna udokumentowana regresje
+(mnoznik chęci liczony w zlym kierunku, naprawiony wymuszeniem multiplier=1).
+Prawdziwa przyczyna (bramka akceptacji vs generator ofert AI) NIE zostala
+jeszcze potwierdzona zywa reprodukcja — to zadanie Operatora.
+
+| ID | Data | Prośba | Status | Uwagi |
+|---|---|---|---|---|
+| R-DYPLO-HANDEL-OFERTA-AI-BLOKOWANA-Q1 | 2026-09-02 | AI proponuje umowy wymiany surowcow/handlowe, ktore wlasna bramka uczciwosci gry blokuje jako "nieuczciwe dla partnera" mimo bilansu korzystnego dla gracza — Przyjmij nie da sie kliknac. | **DISPATCHOWANE** | Domain GAME (logika, nie graficzny) — Operator+Evaluator+Final Control Sonnet 5. Dispatch wymaga zywej reprodukcji PRZED zalozeniem przyczyny (moze to byc bramka akceptacji ALBO generator propozycji AI — dwie rozne mozliwe poprawki), z zachowaniem istniejacej ochrony gracza w kierunku gracz→AI. Allowlista: `diplomacy-proposals.ts`, `diplomacy-pn-engine.ts`, `diplomacyAcceptanceBalance.ts`, `diplomacy-acceptance-points.ts` — jesli przyczyna okaze sie lezec poza allowlista (np. generator w `main.ts`), Operator ma zatrzymac sie z DECISION_REQUIRED zamiast wychodzic poza zakres. Dispatch `00-dispatch.md`, commit `b06bb7d2`. |
