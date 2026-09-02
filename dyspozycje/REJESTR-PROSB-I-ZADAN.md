@@ -3500,6 +3500,26 @@ OK, nowy wpis FALA 333 w `WERSJE.md` (FALA 332 oznaczona ZASTAPIONA). Push do
 `origin/main` (`f5b1f8d7`). `Gra-ROBOCZA-POLE-BITWY.html` NIE przebudowany
 (pole `Historia` czysto opisowe, nie dotyka battleScene/statystyk bojowych).
 
+### ZDEPLOYOWANE FALA 334 (2026-09-02, commit `b224478c`) — KAMIEN MILOWY
+
+Ostatnie dwa tematy projektu `R-KARTY-HISTORIA-Q1` zintegrowane:
+`R-KARTY-HISTORIA-INFRA-CUDA-Q1` (mechanizm karty encji dla cudow, nowy
+EntityKind 'wonder') + naprawa fixture-drift + `R-KARTY-HISTORIA-W1-Q1`/
+`W2-Q1` (tresc historia dla wszystkich 19 cudow). **PROJEKT KOMPLETNY:
+17/17 tematow, wszystkie 5 kategorii encji (budynki 41/41, technologie
+32/32, ulepszenia terenu 22/22, jednostki 75/75, cuda 19/19) maja pelny
+rys historyczny - 189 encji lacznie.** Build vite 882 modulow (+1,
+wonderAdapter.ts), `inject-build-stamp.cjs` -> md5 `875b02cd...`, manifest
+zaktualizowany, `verify-robocza-bundle.cjs` -> VERIFY OK, nowy wpis FALA 334
+w `WERSJE.md` (FALA 333 oznaczona ZASTAPIONA). Push do `origin/main`
+(`b224478c`). `Gra-ROBOCZA-POLE-BITWY.html` NIE przebudowany (zadien z
+tematow tej fali nie dotyka battleScene/logiki bitwy).
+
+Nastepne fazy projektu (swiadomie odlozone przez wlasciciela do czasu po
+zamknieciu Fazy 1): Faza 2 - aktualizacja CivPedia (`wikiBundle.json`) o
+nowe opisy historyczne; Faza 3 - szeroki audyt wszystkich tooltipow/opisow
+w grze. Obie gotowe do rozpoczecia na zyczenie wlasciciela.
+
 | ID | Data | Prośba | Status | Uwagi |
 |---|---|---|---|---|
 | P-KARTY-HISTORIA-TEST-FIXTURE-REALNE-DANE-Q1 | 2026-09-01 | Naprawa `entity-card-historia-section-test.cjs` (temat INFRA), ktorego fixture "jeszcze pustych" encji (stolarnia/Lowiectwo/farma) uzywal REALNYCH danych produkcyjnych zamiast syntetycznych - kazdy kolejny batch tresci ktory wypelnia jedna z tych 3 encji powoduje falszywy FAIL. Dodatkowo sekcja [5] ma pokrewny blad: fixture "zla wielkosc liter" dziedziczy z prawdziwego wiersza, wiec po wypelnieniu poprawnego pola test przypadkiem przechodzi/nie przechodzi z innego powodu niz zamierzony. | **ZINTEGROWANE do `main` (4efd8db2)** | Pelny cykl Operator->Evaluator(zero zarzutow)->Final Control przez Workflow. Sekcja [4]: asercja WARUNKOWA (`historiaExists === fieldNonEmpty`) na realnym stanie pola zamiast twardego "nie istnieje". Sekcja [5]: destructuring usuwa poprawne pole z kopii wiersza przed wstrzyknieciem zlej wielkosci liter, dla wszystkich 4 adapterow. Test zweryfikowany na REALNYCH, dzisiejszych danych (B1/T1/I1/U1 juz zintegrowane) - 31/31 PASS, zero fixture-driftu na przyszlosc. tsc 0 bledow, 5 bramek referencyjnych bez regresu. |
