@@ -22,6 +22,7 @@ import buildingsData from '../../../data/buildings.json';
 import unitsData from '../../../data/units.json';
 import terrainImprovementsData from '../../../data/terrain-improvements.json';
 import techData from '../../../data/tech.json';
+import wondersData from '../../../data/wonders.json';
 import { techToSlug, techNameFromSlug } from '../sciencePicker';
 import { slugify } from './slug';
 import type { EntityCardResolver } from './types';
@@ -123,3 +124,71 @@ export const resolveUnitRow: EntityCardResolver<UnitDef> = (id) => {
 export function unitToSlug(name: string): string {
   return slugify(name);
 }
+
+// ---------------------------------------------------------------------------
+// wonder — R-KARTY-HISTORIA-INFRA-CUDA-Q1: NOWY, mapa `id → wiersz` budowana raz
+// przy imporcie WYŁĄCZNIE z tablicy `cuda` (`wonders.json`) — `parkowane_epoka4plus`
+// (5 nieaktywnych cudów) jest CELOWO POZA ZAKRESEM (dispatch RECON): nie dostają
+// karty ani pola historia w tej rundzie, więc resolver ich w ogóle nie widzi.
+// -----------------------------------------------------------------------------
+
+/** Jeden bonus specjalny cudu (`bonusy.specjalne[]`) — wiersz `opis` gotowy do
+ * wyświetlenia, reszta pól to metadane mechaniki (poza zakresem karty gracza). */
+export interface WonderSpecialBonus {
+  typ?: string;
+  wartosc?: number;
+  opis?: string;
+  cel?: string;
+}
+
+/** Jeden bonus terenowy cudu (`bonusy.teren[]`). */
+export interface WonderTerrainBonus {
+  typTerenu?: string;
+  warunek?: string;
+  [resource: string]: string | number | undefined;
+}
+
+/** Wiersz `wonders.json.cuda[]` — pola realnie użyte przez `wonderAdapter.ts`.
+ * `uwagi` jest CELOWO obecne w typie (dev-tekst istniejący w danych), ale
+ * `wonderAdapter.ts` go NIE renderuje (ta sama zasada co dla pozostałych 4
+ * kategorii — zapobieganie wyciekowi tekstu deweloperskiego graczowi). */
+export interface WonderRow {
+  id: string;
+  nazwa?: string;
+  nazwaAlt?: string;
+  dostep?: string;
+  cywilizacje?: string[];
+  techUnlock?: string[];
+  wymagaTerenu?: string[];
+  epokaWejscia?: number;
+  absolut?: number;
+  maxNaSwiecie?: number;
+  kosztBudowy?: number;
+  utrzymanie?: number;
+  bonusy?: {
+    miasto?: Record<string, number>;
+    teren?: WonderTerrainBonus[];
+    specjalne?: WonderSpecialBonus[];
+  };
+  uwagi?: string;
+  /** Rys historyczny (T-KARTY-HISTORIA-INFRA-Q1) — lowercase, konwencja spójna z
+   * `buildings.json`/`terrain-improvements.json`. Pole NIE jest jeszcze zadeklarowane
+   * w danych (dopisze je dopiero kolejny, treściowy dispatch); tu wyłącznie mechanizm. */
+  historia?: string;
+}
+
+const WONDERS = (wondersData as unknown as { cuda: WonderRow[] }).cuda;
+
+function buildWonderMap(): Map<string, WonderRow> {
+  const map = new Map<string, WonderRow>();
+  for (const w of WONDERS) {
+    if (w?.id) map.set(w.id, w);
+  }
+  return map;
+}
+
+const WONDER_MAP: Map<string, WonderRow> = buildWonderMap();
+
+export const resolveWonderRow: EntityCardResolver<WonderRow> = (id) => {
+  return WONDER_MAP.get(id) ?? null;
+};

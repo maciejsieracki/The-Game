@@ -10,11 +10,12 @@
  */
 import { pushOverlay, popOverlay } from '../escapeOverlayStack';
 import { attachHoverDetail } from '../hoverDetailDock';
-import { resolveBuildingRow, resolveImprovementRow, resolveTechnologyRow, resolveUnitRow } from './registry';
+import { resolveBuildingRow, resolveImprovementRow, resolveTechnologyRow, resolveUnitRow, resolveWonderRow } from './registry';
 import { unitAdapter } from './unitAdapter';
 import { buildingAdapter } from './buildingAdapter';
 import { technologyAdapter } from './technologyAdapter';
 import { improvementAdapter } from './improvementAdapter';
+import { wonderAdapter } from './wonderAdapter';
 import type {
   EntityCardData,
   EntityCardCtx,
@@ -51,6 +52,10 @@ export function buildEntityCardData(kind: EntityKind, id: string, ctx: EntityCar
       case 'improvement': {
         const row = resolveImprovementRow(id);
         return row == null ? null : improvementAdapter(row, ctx);
+      }
+      case 'wonder': {
+        const row = resolveWonderRow(id);
+        return row == null ? null : wonderAdapter(row, ctx);
       }
     }
   })();

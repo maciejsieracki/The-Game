@@ -7,8 +7,9 @@
  * `techTreeView.ts`/`sciencePicker.ts`/`research.ts` w tym kroku (T1).
  */
 
-/** Cztery rodzaje encji obsługiwane przez wspólną kartę. */
-export type EntityKind = 'unit' | 'building' | 'technology' | 'improvement';
+/** Pięć rodzajów encji obsługiwanych przez wspólną kartę (R-KARTY-HISTORIA-INFRA-CUDA-Q1:
+ * dodano 'wonder' — cuda świata z `gra/data/wonders.json`, ostatnia z pięciu kategorii). */
+export type EntityKind = 'unit' | 'building' | 'technology' | 'improvement' | 'wonder';
 
 /** Ikona per wiersz — kafelek SVG wstawiany jako markup (nie `.textContent`),
  * wzorem `unlockItemRow()`/`iconTile()` w `techDiscoveryNotice.ts:148-152,179-187`

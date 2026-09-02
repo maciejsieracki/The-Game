@@ -532,7 +532,15 @@ export function createBuildModeHud(config: BuildModeHudConfig): BuildModeHudApi 
             + ' title="' + (locked && hint ? hint : (w.label + ' — epoka ' + w.epokaWejscia)) + '">'
             + '<span class="ic">🏛</span>'
             + '<span>' + w.label + '</span>'
-            + '<span class="meta">' + (locked && hint ? hint : ('E' + w.epokaWejscia + ' · ' + costLabel + tag)) + '</span></div>';
+            + '<span class="meta">' + (locked && hint ? hint : ('E' + w.epokaWejscia + ' · ' + costLabel + tag)) + '</span>'
+            // Osobna ikonka info (R-KARTY-HISTORIA-INFRA-CUDA-Q1) — DOKŁADNIE analogiczna
+            // do ulepszeń terenu wyżej (t.key pętla): strefa klikalna niezależna od
+            // wyboru cudu do postawienia (onSelectWonder), na KOŃCU wiersza (za etykietą
+            // kosztu), działa nawet gdy wiersz jest locked (podgląd karty to nie akcja
+            // budowy). CSS `.civ-build-info-ic` jest generyczny (linie ~252-255) — brak
+            // dodatkowego stylu tutaj.
+            + '<span class="civ-build-info-ic" role="button" tabindex="0" title="Podgląd karty cudu"'
+            + ' aria-label="Podgląd karty: ' + w.label + '">ⓘ</span></div>';
         }
       }
       const playerCities = config.listPlayerCities?.() ?? [];
@@ -782,6 +790,24 @@ export function createBuildModeHud(config: BuildModeHudConfig): BuildModeHudApi 
           config.onSelectWonder?.(togglingOff ? '' : id);
         }
         render();
+      });
+      // Ikonka info: strefa klikalna NIEZALEŻNA od wyboru cudu (`onSelectWonder` wyżej
+      // bez zmian) — `stopPropagation` uniemożliwia dotarciu kliku do listenera wiersza,
+      // wzorem ulepszeń terenu (`.civ-build-info-ic` dla `data-key` wyżej, T7b). Działa
+      // też gdy wiersz jest `locked`.
+      const infoIc = elItem.querySelector<HTMLElement>('.civ-build-info-ic');
+      infoIc?.addEventListener('click', (ev) => {
+        ev.stopPropagation();
+        const wid = elItem.getAttribute('data-wonder-id');
+        if (wid) openEntityCard('wonder', wid, { mode: 'dialog' });
+      });
+      infoIc?.addEventListener('keydown', (ev) => {
+        const key = (ev as KeyboardEvent).key;
+        if (key !== 'Enter' && key !== ' ') return;
+        ev.stopPropagation();
+        ev.preventDefault();
+        const wid = elItem.getAttribute('data-wonder-id');
+        if (wid) openEntityCard('wonder', wid, { mode: 'dialog' });
       });
     });
 
