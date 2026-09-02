@@ -24,7 +24,69 @@ export interface ArmyConcentrationOptions {
   excludedUnitIds?: ReadonlySet<string>;
 }
 
+/**
+ * Front separation radius (R-AI-KONCENTRACJA-ARMII-WIELE-KLASTROW-Q1, GOAL pkt 1).
+ * Reused, not new: this is the SAME distance `ARMY_CONCENTRATION_RADIUS` already
+ * uses to decide "these units count as one army" on the owner's side. Applying it
+ * symmetrically to enemy positions keeps the definition consistent — an enemy
+ * grouping our own mechanism would treat as one army is, by the same rule, one
+ * front — instead of inventing a second, unrelated threshold.
+ */
+export const ARMY_FRONT_SEPARATION_RADIUS = ARMY_CONCENTRATION_RADIUS;
+
 type ConcentrationUnit = RuntimeUnit & { seaRaider?: boolean };
+
+interface ProximityUnit {
+  id: string;
+  q: number;
+  r: number;
+}
+
+function compareProximity(a: ProximityUnit, b: ProximityUnit): number {
+  return a.q - b.q || a.r - b.r || a.id.localeCompare(b.id);
+}
+
+/**
+ * Partition `items` into connected components under the "within `radius`"
+ * relation (single-linkage / BFS over hex distance). Deterministic: seed order
+ * and traversal are stable-sorted by (q, r, id), and each returned group is
+ * sorted the same way. Owner-agnostic and side-agnostic — used both for the
+ * AI's own unit clusters and for grouping enemy units into threat fronts.
+ */
+export function clusterUnitsByProximity<T extends ProximityUnit>(
+  items: readonly T[],
+  radius: number,
+): T[][] {
+  const sorted = [...items].sort(compareProximity);
+  const n = sorted.length;
+  const visited = new Array<boolean>(n).fill(false);
+  const clusters: T[][] = [];
+  for (let i = 0; i < n; i++) {
+    if (visited[i] === true) continue;
+    const group: T[] = [];
+    const queue: number[] = [i];
+    visited[i] = true;
+    while (queue.length > 0) {
+      const idx = queue.shift();
+      if (idx === undefined) break;
+      const current = sorted[idx];
+      if (current === undefined) continue;
+      group.push(current);
+      for (let j = 0; j < n; j++) {
+        if (visited[j] === true) continue;
+        const candidate = sorted[j];
+        if (candidate === undefined) continue;
+        if (hexDistance(current.q, current.r, candidate.q, candidate.r) <= radius) {
+          visited[j] = true;
+          queue.push(j);
+        }
+      }
+    }
+    group.sort(compareProximity);
+    clusters.push(group);
+  }
+  return clusters;
+}
 
 /** Contract predicate for an active land combat unit. */
 export function isEligibleForArmyConcentration(
@@ -100,4 +162,120 @@ export function planArmyConcentration(
       : best.group.filter(u => u.id !== best.anchor.id).map(u => u.id),
     deferredUnitIds: gathered ? [] : unitIds,
   };
+}
+
+function centroidOf(group: readonly ConcentrationUnit[]): { q: number; r: number } {
+  const q = group.reduce((sum, u) => sum + u.q, 0) / group.length;
+  const r = group.reduce((sum, u) => sum + u.r, 0) / group.length;
+  return { q: Math.round(q), r: Math.round(r) };
+}
+
+/** A stable, already-known concentration hub the caller wants merges to prefer —
+ *  e.g. the roster `planArmyConcentration` already selected this same turn.
+ *  It has weight (size) and a position, but no movable unit list of its own. */
+export interface ArmyFrontAnchorHint {
+  q: number;
+  r: number;
+  weight: number;
+}
+
+export interface ArmyFrontMergeOptions {
+  /** Units to leave out entirely — home defenders, units already claimed by
+   *  `planArmyConcentration` this turn, units already committed to combat. */
+  excludedUnitIds?: ReadonlySet<string>;
+  /** Docelowa liczba klastrów własnych jednostek (GOAL pkt 1 — liczba
+   *  rozpoznanych frontów zagrożenia, co najmniej 1). */
+  targetClusterCount: number;
+  /** Already-known stable hubs (e.g. this turn's `planArmyConcentration` pick)
+   *  that should count as candidate merge targets even though their units are
+   *  not part of `units` passed here. */
+  preferredAnchors?: readonly ArmyFrontAnchorHint[];
+}
+
+export interface ArmyFrontMergeOrder {
+  unitId: string;
+  towardQ: number;
+  towardR: number;
+}
+
+export interface ArmyFrontMergePlan {
+  ownerId: number;
+  moveOrders: readonly ArmyFrontMergeOrder[];
+  deferredUnitIds: readonly string[];
+}
+
+interface FrontMergeEntry {
+  q: number;
+  r: number;
+  weight: number;
+  unitIds: readonly string[];
+}
+
+/**
+ * When the AI has more separate unit clusters than the recognized number of
+ * threat fronts warrants, march the smaller/excess clusters toward the
+ * nearest bigger (or already-known preferred) cluster — the GOAL-pkt-2
+ * counterpart to `planArmyConcentration`'s local, single-cluster gather.
+ *
+ * Clusters are the same connected-components grouping used for threat fronts
+ * (`clusterUnitsByProximity`, radius `ARMY_CONCENTRATION_RADIUS`). The
+ * `targetClusterCount` biggest clusters/anchors are kept as-is; every other
+ * cluster's eligible units get one march order toward the nearest kept
+ * anchor's position. Returns null when there is nothing to merge (already at
+ * or below the target, or no eligible units at all).
+ */
+export function planArmyFrontMerge(
+  ownerId: number,
+  units: readonly ConcentrationUnit[],
+  options: ArmyFrontMergeOptions,
+): ArmyFrontMergePlan | null {
+  const eligible = units
+    .filter(u => !options.excludedUnitIds?.has(u.id))
+    .filter(u => isEligibleForArmyConcentration(u, ownerId))
+    .sort(compareUnits);
+
+  const movableClusters = eligible.length > 0
+    ? clusterUnitsByProximity(eligible, ARMY_CONCENTRATION_RADIUS)
+    : [];
+
+  const entries: FrontMergeEntry[] = movableClusters.map(group => {
+    const c = centroidOf(group);
+    return { q: c.q, r: c.r, weight: group.length, unitIds: group.map(u => u.id) };
+  });
+  for (const anchor of options.preferredAnchors ?? []) {
+    entries.push({ q: anchor.q, r: anchor.r, weight: anchor.weight, unitIds: [] });
+  }
+
+  const target = Math.max(1, options.targetClusterCount);
+  if (entries.length <= target) return null;
+
+  const ranked = [...entries].sort((a, b) => b.weight - a.weight || a.q - b.q || a.r - b.r);
+  const anchors = ranked.slice(0, target);
+  const excess = ranked.slice(target).filter(e => e.unitIds.length > 0);
+  if (excess.length === 0) return null;
+
+  const firstAnchor = anchors[0];
+  if (firstAnchor === undefined) return null; // unreachable: target >= 1 and anchors.length === target here
+
+  const moveOrders: ArmyFrontMergeOrder[] = [];
+  const deferredUnitIds: string[] = [];
+  for (const ex of excess) {
+    let bestAnchor = firstAnchor;
+    let bestDist = hexDistance(ex.q, ex.r, firstAnchor.q, firstAnchor.r);
+    for (const anchor of anchors) {
+      const d = hexDistance(ex.q, ex.r, anchor.q, anchor.r);
+      const better = d < bestDist
+        || (d === bestDist && (anchor.q < bestAnchor.q
+          || (anchor.q === bestAnchor.q && anchor.r < bestAnchor.r)));
+      if (better) {
+        bestDist = d;
+        bestAnchor = anchor;
+      }
+    }
+    for (const unitId of ex.unitIds) {
+      moveOrders.push({ unitId, towardQ: bestAnchor.q, towardR: bestAnchor.r });
+      deferredUnitIds.push(unitId);
+    }
+  }
+  return { ownerId, moveOrders, deferredUnitIds };
 }

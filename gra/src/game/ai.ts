@@ -64,7 +64,10 @@ import { workedHexCoordsForCity } from './turn-economy';
 import { buildingStockCost, unitStockCost } from './building-stock-cost';
 import { unitRecruitUpkeepReserve } from './economy-upkeep';
 import type { AiTargetMemoryEntry } from './ai-fog';
-import { planArmyConcentration } from './army-concentration';
+import {
+  planArmyConcentration, planArmyFrontMerge, clusterUnitsByProximity,
+  ARMY_CONCENTRATION_RADIUS,
+} from './army-concentration';
 
 // ---------------------------------------------------------------------------
 // AICommand discriminated union
@@ -2253,6 +2256,44 @@ export function planCityFounding(
   return { type: 'foundCityAt', q: targetHex.q, r: targetHex.r };
 }
 
+/**
+ * Zasięg wykrywania frontu (R-AI-KONCENTRACJA-ARMII-WIELE-KLASTROW-Q1, GOAL pkt 1).
+ * Wartość PONOWNIE UŻYTA, nie nowo wymyślona: to dokładnie ten sam promień, którym
+ * `isEnemyNearOwnTerritory(..., 8)` już definiuje w tym pliku "wróg wystarczająco
+ * blisko własnego terytorium, żeby się nim wojskowo zajmować" (C-AI-MOC-Q2=A,
+ * `expansionEnemyCities` niżej w `decideAITurn`) — front zagrożenia używa tej samej
+ * definicji bliskości co reszta militarnej logiki AI, zamiast osobnego progu.
+ */
+export const AI_FRONT_DETECTION_VICINITY_HEX = 8;
+
+/**
+ * Ile ODRĘBNYCH frontów zagrożenia otacza własne terytorium/armię
+ * (R-AI-KONCENTRACJA-ARMII-WIELE-KLASTROW-Q1, GOAL pkt 1).
+ *
+ * Front = klaster engageable wrogich jednostek (dane już istniejące —
+ * `engageableEnemyUnits`) leżących w promieniu `AI_FRONT_DETECTION_VICINITY_HEX`
+ * od własnego terytorium (miasta) LUB od własnej jednostki w polu — "wokół
+ * własnego terytorium/armii" z treści GOAL. Klastrowanie: spójne składowe z
+ * krawędzią `<= ARMY_CONCENTRATION_RADIUS` (`clusterUnitsByProximity`) — ta sama
+ * stała, którą własny mechanizm koncentracji już uznaje za "to jest jedna armia";
+ * grupa wrogów, którą nasz mechanizm potraktowałby jako jeden klaster, jest
+ * symetrycznie jednym frontem. Brak zagrożenia w zasięgu → 0 (wywołujący traktuje
+ * to jak front pojedynczy — dąż do jednej armii, zgodnie z GOAL pkt 1).
+ */
+export function countThreatFronts(
+  engageableEnemyUnits: readonly RuntimeUnit[],
+  myCities: AICity[],
+  myUnits: readonly RuntimeUnit[],
+  map: GameMap,
+): number {
+  const nearby = engageableEnemyUnits.filter(eu =>
+    isEnemyNearOwnTerritory(eu.q, eu.r, myCities, map, AI_FRONT_DETECTION_VICINITY_HEX)
+    || myUnits.some(u => hexDistance(eu.q, eu.r, u.q, u.r) <= AI_FRONT_DETECTION_VICINITY_HEX),
+  );
+  if (nearby.length === 0) return 0;
+  return clusterUnitsByProximity(nearby, ARMY_CONCENTRATION_RADIUS).length;
+}
+
 /** Czy wróg jest sąsiadem w promieniu 8 hex od terytorium własnego (C-AI-MOC-Q2=A). */
 function isEnemyNearOwnTerritory(
   enemyQ: number,
@@ -2614,6 +2655,49 @@ export function decideAITurn(
       if (step !== null) {
         commands.push({ type: 'move', unitId: unit.id, toQ: step.q, toR: step.r });
       }
+    }
+  }
+
+  // R-AI-KONCENTRACJA-ARMII-WIELE-KLASTROW-Q1 (GOAL pkt 2): gdy AI ma więcej
+  // faktycznych klastrów własnych jednostek niż rozpoznanych frontów zagrożenia
+  // (pkt 1), oddalone "nadmiarowe" klastry maszerują w stronę najbliższego
+  // większego/preferowanego klastra — rozszerzenie lokalnego zbierania
+  // `planArmyConcentration` (jeden klaster, promień 4) o łączenie klastrów zbyt
+  // odległych, by ten mechanizm w ogóle je zauważył. Jednostki już zaangażowane
+  // w bezpośrednią walkę tej tury (adjacentEnemy) i obrońcy domu (jak wyżej) są
+  // wyłączone — GOAL pkt 2 wprost: "jednostki NIE zaangażowane już w
+  // bezpośrednią walkę/obronę domu". Jednostki już przydzielone do
+  // `concentration` (jeśli powstał) są wyłączone również — to ich lokalny
+  // klaster już jest zbierany, front-merge decyduje wyłącznie o RESZCIE.
+  if (isMajorAiOwner(opts)) {
+    const combatEngagedUnitIds = new Set(
+      myUnits
+        .filter(u => engageableEnemyUnits.some(eu => isWithinAttackRange(u, eu.q, eu.r, data)))
+        .map(u => u.id),
+    );
+    const frontMergeExcluded = new Set<string>([
+      ...homeDefenderAssignments.keys(),
+      ...(concentration?.unitIds ?? []),
+      ...combatEngagedUnitIds,
+    ]);
+    const threatFrontCount = countThreatFronts(engageableEnemyUnits, myCities, myUnits, map);
+    const frontMerge = planArmyFrontMerge(playerId, myUnits, {
+      excludedUnitIds: frontMergeExcluded,
+      targetClusterCount: threatFrontCount <= 1 ? 1 : threatFrontCount,
+      preferredAnchors: concentration !== null
+        ? [{ q: concentration.rallyPoint.q, r: concentration.rallyPoint.r, weight: concentration.unitIds.length }]
+        : [],
+    });
+    if (frontMerge !== null) {
+      for (const order of frontMerge.moveOrders) {
+        const unit = myUnits.find(u => u.id === order.unitId);
+        if (unit === undefined) continue;
+        const step = firstStep(unit, map, order.towardQ, order.towardR, units);
+        if (step !== null) {
+          commands.push({ type: 'move', unitId: unit.id, toQ: step.q, toR: step.r });
+        }
+      }
+      for (const unitId of frontMerge.deferredUnitIds) concentrationDeferred.add(unitId);
     }
   }
 
