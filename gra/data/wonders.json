@@ -340,7 +340,8 @@
           { "typ": "nauka_procent", "cel": "nauka", "wartosc": 0.15, "opis": "+15% Nauki w imperium (cywilizacja)" },
           { "typ": "dyplomacja_wpływ", "wartosc": 4, "opis": "+4 Wpływu — kapłani-astronomowie (cywilizacja)" }
         ]
-      }
+      },
+      "historia": "Zigguraty to charakterystyczne dla starożytnej Mezopotamii wielostopniowe świątynne wieże, wznoszone z suszonej i wypalanej cegły w miastach Sumeru, Akadu i Babilonii od końca III tysiąclecia p.n.e. Najlepiej znanym przykładem jest ziggurat w Ur, poświęcony bogu księżyca Nannie, zbudowany za panowania Ur-Nammu jako serce świątynnego kompleksu miejskiego. Konstrukcja opierała się na masywnym rdzeniu z cegły suszonej na słońcu, obłożonym warstwą cegły wypalanej łączonej bitumem, co miało chronić budowlę przed erozją i deszczami. Na szczycie wznosiło się niewielkie sanktuarium, uważane za miejsce zamieszkania bóstwa i punkt łączności między niebem a ziemią, dostępne wyłącznie kapłanom. Zigguraty pełniły funkcję zarówno religijną, jak i administracyjną, symbolizując potęgę miasta-państwa i jego opiekuńczego bóstwa, a ich forma wywarła później wpływ na biblijne wyobrażenie wieży Babel."
     },
     {
       "id": "mundo_perdido",
@@ -363,7 +364,8 @@
           { "typ": "nauka_procent", "cel": "nauka", "wartosc": 0.2, "opis": "+20% Nauki w imperium — kalendarz Majów (cywilizacja)" },
           { "typ": "dyplomacja_wpływ", "wartosc": 3, "opis": "+3 Wpływu (cywilizacja)" }
         ]
-      }
+      },
+      "historia": "Mundo Perdido, czyli Zaginiony Świat, to jeden z najstarszych zespołów architektonicznych w obrębie Tikal, wielkiego miasta Majów w nizinnym Petén na terenie dzisiejszej Gwatemali. Kompleks, którego początki sięgają okresu preklasycznego, około IV–III wieku p.n.e., zdominowany jest przez Wielką Piramidę o wysokości ponad trzydziestu metrów, jedną z największych budowli tego typu w całej Mezoameryce. Układ przestrzenny zespołu, łączący piramidy, platformy i ustawienia budynków zorientowane astronomicznie, wskazuje na jego funkcję jako ośrodka obserwacji zjawisk niebieskich i obrzędów kalendarzowych. Przez kolejne stulecia Mundo Perdido było wielokrotnie przebudowywane, a kolejne warstwy konstrukcyjne odzwierciedlają zmieniające się praktyki rytualne i rosnącą potęgę Tikal jako jednego z najważniejszych miast-państw klasycznych Majów. Odkrycia archeologiczne w tym miejscu dostarczyły kluczowych danych o wczesnym rozwoju monumentalnej architektury i religii majańskiej, poprzedzającym rozkwit miasta w okresie klasycznym."
     },
     {
       "id": "terakotowa_armia",
@@ -386,7 +388,8 @@
           { "typ": "wojna_wsparcie", "wartosc": 2, "opis": "+2 Wsparcia we wszystkich wojnach (cywilizacja)" }
         ]
       },
-      "uwagi": "Qin, ok. 246–208 p.n.e.; grobowiec Qin Shi Huanga"
+      "uwagi": "Qin, ok. 246–208 p.n.e.; grobowiec Qin Shi Huanga",
+      "historia": "Terakotowa armia to zespół tysięcy naturalnej wielkości glinianych figur wojowników, koni i rydwanów, odkryty w 1974 roku w pobliżu Xi'an, wzniesiony jako część monumentalnego kompleksu grobowego Qin Shi Huanga, pierwszego cesarza zjednoczonych Chin z dynastii Qin. Budowę mauzoleum i towarzyszącej mu armii rozpoczęto wkrótce po wstąpieniu władcy na tron w III wieku p.n.e., a prace kontynuowano przez dziesięciolecia przy zaangażowaniu setek tysięcy robotników i rzemieślników. Każda figura, choć wykonywana według standaryzowanych elementów składanych następnie w całość, otrzymywała indywidualne rysy twarzy, fryzurę i wyposażenie, co czyni armię wyjątkowym świadectwem ówczesnego rzemiosła i organizacji pracy. Wojownicy ustawieni byli w formacjach bojowych w podziemnych komorach, mających strzec cesarza w zaświatach i zapewnić mu władzę porównywalną do tej sprawowanej za życia. Odkrycie armii uznawane jest za jedno z najważniejszych znalezisk archeologicznych XX wieku, rzucające nowe światło na potęgę i ambicje twórcy zjednoczonego państwa chińskiego."
     },
     {
       "id": "koloseum",
@@ -407,7 +410,8 @@
           { "typ": "relacje_zaufanie", "wartosc": 3, "opis": "+3 Zaufanie wewnętrzne — panem et circenses (cywilizacja)" },
           { "typ": "dyplomacja_wpływ", "wartosc": 4, "opis": "+4 Wpływu — chwała Rzymu (cywilizacja)" }
         ]
-      }
+      },
+      "historia": "Koloseum, wzniesione w Rzymie w I wieku n.e. za panowania dynastii Flawiuszów, było największym amfiteatrem starożytnego świata i mogło pomieścić dziesiątki tysięcy widzów. Budowlę wzniesiono na miejscu sztucznego jeziora dawnego pałacu Nerona, a jej budowę rozpoczął cesarz Wespazjan, dokończył zaś jego syn Tytus, otwierając obiekt widowiskami trwającymi wiele dni. Owalna konstrukcja z betonu, kamienia i cegły, wsparta na systemie łuków i sklepień, umożliwiała sprawne rozprowadzanie tłumów oraz stosowanie zaawansowanych rozwiązań scenicznych, w tym zapadni i mechanizmów pod areną. W Koloseum organizowano walki gladiatorów, polowania na dzikie zwierzęta oraz inscenizacje bitew, które miały demonstrować potęgę Rzymu i zapewniać ludowi rozrywkę na masową skalę. Budowla przetrwała upadek Cesarstwa Zachodniorzymskiego, trzęsienia ziemi i wieki eksploatacji jako źródła materiału budowlanego, pozostając jednym z najbardziej rozpoznawalnych symboli starożytnego Rzymu."
     },
     {
       "id": "dur_sharrukin",
@@ -429,7 +433,8 @@
           { "typ": "wojna_wsparcie", "wartosc": 2, "opis": "+2 Wsparcia we wszystkich wojnach (cywilizacja)" },
           { "typ": "relacje_zaufanie", "wartosc": -2, "opis": "−2 Zaufanie u sąsiadów — strach przed Asyrią (cywilizacja)" }
         ]
-      }
+      },
+      "historia": "Dur-Szarrukin, czyli „Twierdza Sargona”, to miasto założone jako nowa stolica przez asyryjskiego króla Sargona II w VIII wieku p.n.e., na terenie dzisiejszego Chorsabadu w północnym Iraku. Budowa miasta, otoczonego potężnymi murami obronnymi z licznymi bramami, trwała około dekady i pochłonęła ogromne zasoby administracji imperium asyryjskiego. Centralnym punktem założenia był rozległy pałac królewski zdobiony monumentalnymi rzeźbami skrzydlatych byków z ludzką głową, zwanych lamassu, które strzegły wejść i symbolizowały ochronną moc władcy. Miasto pełniło funkcję stolicy jedynie krótko, gdyż po śmierci Sargona II w boju jego następca Sennacheryb przeniósł siedzibę władzy do Niniwy, co przerwało dalszy rozwój Dur-Szarrukin. Mimo krótkiego okresu świetności, odkryte w XIX wieku ruiny miasta dostarczyły archeologom jednych z najbogatszych źródeł wiedzy o architekturze i sztuce neoasyryjskiej."
     },
     {
       "id": "brama_narodow",
@@ -456,7 +461,8 @@
           { "typ": "relacje_zaufanie", "wartosc": 3, "opis": "+3 Zaufanie u państw z aktywnym handlem (cywilizacja)" }
         ]
       },
-      "uwagi": "Persepolis / brama satrapii; jedyny cud wyścigowy epoki Żelaza — odblokowanie po Inżynierii"
+      "uwagi": "Persepolis / brama satrapii; jedyny cud wyścigowy epoki Żelaza — odblokowanie po Inżynierii",
+      "historia": "Brama Wszystkich Narodów to monumentalne wejście do kompleksu pałacowego Persepolis, ceremonialnej stolicy imperium Achemenidów, wzniesione na polecenie króla Kserksesa I w V wieku p.n.e. Budowlę tworzyły masywne kamienne portale strzeżone przez rzeźby skrzydlatych byków o ludzkich głowach, nawiązujące do wcześniejszych tradycji mezopotamskich, a jej nazwa odzwierciedlała funkcję jako punktu, przez który przechodzili wysłannicy i poselstwa z całego imperium. Persepolis, założone wcześniej przez Dariusza I, było miejscem dorocznych uroczystości noworocznych, podczas których przedstawiciele licznych ludów podległych Achemenidom składali władcy dary i hołd, co upamiętniają zachowane reliefy na tarasach kompleksu. Brama, umieszczona na osi prowadzącej ku salom audiencyjnym, miała podkreślać ogrom i różnorodność imperium rozciągającego się od Egiptu po dolinę Indusu. Kompleks Persepolis, wraz z Bramą Wszystkich Narodów, został spalony w 330 roku p.n.e. podczas podboju Aleksandra Wielkiego, a jego ruiny do dziś pozostają jednym z najważniejszych świadectw potęgi starożytnej Persji."
     },
     {
       "id": "palac_weiyang",
@@ -478,7 +484,8 @@
           { "typ": "relacje_zaufanie", "wartosc": 4, "opis": "+4 bazowe Zaufanie (cywilizacja)" }
         ]
       },
-      "uwagi": "Zachodnia Han, 200 p.n.e.; cesarz Gaozu"
+      "uwagi": "Zachodnia Han, 200 p.n.e.; cesarz Gaozu",
+      "historia": "Pałac Weiyang w Chang'anie, wzniesiony na przełomie III i II wieku p.n.e., był głównym ośrodkiem władzy dynastii Han i przez kilka stuleci pełnił funkcję centralnej siedziby cesarskiego dworu. Budowę pałacu zlecił Liu Bang, założyciel dynastii Han, wkrótce po zakończeniu wojen domowych następujących po upadku dynastii Qin, a jego rozmiary i przepych miały podkreślać trwałość nowo powstałego porządku politycznego. Kompleks obejmował liczne sale audiencyjne, komnaty mieszkalne i tarasy widokowe rozmieszczone na sztucznie ukształtowanym wzniesieniu, co pozwalało na kontrolowanie dostępu i eksponowanie hierarchii dworskiej. To właśnie w Weiyangu zapadały kluczowe decyzje polityczne wczesnego okresu Han, odbywały się przyjęcia poselstw zagranicznych oraz rozgrywały się intrygi dworskie opisywane później w chińskich kronikach historycznych. Pałac funkcjonował przez ponad czterysta lat, aż do upadku dynastii Han, a jego rozległe ruiny pozostają dziś jednym z ważniejszych stanowisk archeologicznych związanych z historią wczesnego cesarstwa chińskiego."
     },
     {
       "id": "yerkapi",
@@ -503,7 +510,8 @@
           { "typ": "relacje_zaufanie", "wartosc": 2, "opis": "+2 Zaufanie u sojuszników (cywilizacja)" }
         ]
       },
-      "uwagi": "Nasyp ziemny + tunel sklepiony + Brama Sfinksów; kompleks obronno-sakralny Hattusy"
+      "uwagi": "Nasyp ziemny + tunel sklepiony + Brama Sfinksów; kompleks obronno-sakralny Hattusy",
+      "historia": "Yerkapı to monumentalny wał ziemny z przechodzącym przez niego sklepionym tunelem, stanowiący część systemu fortyfikacji Hattusy, stolicy Imperium Hetyckiego w centralnej Anatolii, wzniesiony w XIV–XIII wieku p.n.e. Sztucznie usypany nasyp o znacznej wysokości, obłożony kamiennym licem, tworzył jeden z najbardziej newralgicznych punktów obronnych miasta, łącząc funkcję militarną z prawdopodobnym znaczeniem ceremonialnym. Wąski, kryty korytarz przecinający wał u jego podstawy umożliwiał przejście pomiędzy wewnętrzną a zewnętrzną częścią miasta, a jego rozmiary sugerują, że mógł być wykorzystywany podczas procesji religijnych lub wypadów garnizonu w razie oblężenia. Fortyfikacje Hattusy, których Yerkapı stanowi jeden z najbardziej okazałych elementów, świadczą o zaawansowanej inżynierii wojskowej Hetytów, potęgi rywalizującej z Egiptem o wpływy w Lewancie. Miasto zostało opuszczone i zniszczone wraz z upadkiem państwa hetyckiego około 1200 roku p.n.e., a jego ruiny odkryto i zbadano dopiero na początku XX wieku."
     },
     {
       "id": "posag_peruna",
@@ -526,7 +534,8 @@
           { "typ": "relacje_zaufanie", "wartosc": 3, "opis": "+3 Zaufanie wśród plemion słowiańskich (cywilizacja)" },
           { "typ": "dyplomacja_wpływ", "wartosc": 2, "opis": "+2 Wpływu — kult Peruna (cywilizacja)" }
         ]
-      }
+      },
+      "historia": "Perun był w wierzeniach dawnych Słowian bóstwem gromu, wojny i władzy, uznawanym za jednego z najważniejszych, o ile nie najważniejszego, boga panteonu przedchrześcijańskiej Słowiańszczyzny. Wiedza o jego kulcie pochodzi głównie ze wzmianek w kronikach staroruskich, takich jak latopis Powieść minionych lat, opisujący między innymi posąg Peruna wzniesiony w Kijowie przez księcia Włodzimierza Wielkiego przed przyjęciem chrztu w 988 roku. Według przekazów wizerunek boga miał drewnianą postać ze srebrną głową i złotymi wąsami, a przed nim składano ofiary, w tym prawdopodobnie ofiary z ludzi, choć szczegóły tych praktyk pozostają przedmiotem sporów badaczy. Ponieważ Słowianie w okresie pogańskim nie pozostawili własnych źródeł pisanych, obraz kultu Peruna rekonstruuje się dziś głównie na podstawie późniejszych kronik chrześcijańskich, porównań z mitologią bałtyjską i skandynawską oraz badań etnograficznych folkloru ludowego. Po chrystianizacji ziem ruskich posągi Peruna były systematycznie niszczone, a jego kult stopniowo wypierany lub przekształcany w postaci ludowych wierzeń związanych z gromami i burzami."
     }
   ],
   "panstwa": {
