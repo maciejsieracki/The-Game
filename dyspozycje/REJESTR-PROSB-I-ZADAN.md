@@ -3707,6 +3707,24 @@ Faz 1-2, wiec niezaudytowana), oraz flaguje ewentualne kolejne wycieki tekstu
 deweloperskiego (ta sama klasa bledu co pierwotne zgloszenie "Tarasy
 uprawne"). Wynik posluzy do rozpisania batchy AutoBot per obszar UI.
 
+**Wynik recon (Explore, ~49 plikow UI z tooltipami przeskanowanych):**
+kodowa baza jest w duzej wiekszosci czysta — sprawdzono `civs.json` (opisy
+bonusow cywilizacji, osobne od entity cards), `gra/data/ui-params.json`
+(135 stringow kopii UI kreatora nowej gry) i pozostale ~49 plikow — ZERO
+kolejnych wyciekow tekstu deweloperskiego. JEDEN konkretny, potwierdzony
+przypadek tej samej klasy bledu co pierwotne zgloszenie: karta szczegolow
+podzialu daniny/handlu w panelu miasta (`cityPanel.ts`) zawiera surowa
+notatke projektowa ("Do rozkminienia (v2): skad bierze sie korupcja...",
+slowa "placeholder"/"prototyp"/"silnik") wprost w tresci widocznej dla
+gracza. Reszta znalezisk to normalna, funkcjonalna mikro-tresc UI (etykiety
+przyciskow, tooltipy akcji) — nie wymaga interwencji, decyzja orkiestratora:
+NIE tworzyc sztucznych batchy "tone consistency" bez konkretnych defektow
+(unikanie manufacturowania busywork). Dispatch fixu jedynego realnego
+znaleziska: `P-CITYPANEL-KORUPCJA-TEKST-DEWELOPERSKI-Q1`, Workflow
+`wf_7565c8d6-d1d`. Cala reszta karty (wzory algorytmu pokazywane graczowi —
+`handelBrutto = Σ...` itd.) to swiadomy, zaakceptowany wzorzec
+transparency-panelu i NIE jest w zakresie.
+
 **Podsumowanie CivPedia Faza 2 (na dzien 2026-09-02, po tej fali)**: 6/6
 kategorii tresci zintegrowane (budynki 25/25, cuda 19/19, ulepszenia 17/17,
 technologie 32/32, jednostki 49/49), infra + 2 pochodne bledy naprawione.
