@@ -13,6 +13,18 @@ swoim wĹ‚asnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji d
 > Pakiet 3 z 2026-08-20 jest docs-only i nie tworzy wpisu ROBOCZA/KANON/FINALNA;
 > ten plik pozostaje wyłącznie rejestrem publikacji bundli.
 
+## ROBOCZA 9068f87c - 2026-09-02 20:10 UTC - FALA 338: opis/rys historyczny nad statystykami na kartach encji + panel audiencji dyplomatycznej osiagalny przy zoomie
+
+|- md5 (pełne): 9068f87cdfaa96c515642bb0343dacce · stempel: ROBOCZA · label 9068f87c · źródłowe commity integracji: `5f9e8c41` + `5558c775`
+|- **`P-KARTA-OPIS-PRZED-STATYSTYKAMI-Q1`** (`5f9e8c41`) — właściciel: sekcja opisu/rysu historycznego ma być NAD blokiem statystyk, nie pod nim, żeby gracz poznał charakter jednostki/budynku/cudu/technologii przed liczbami. Jeden wspólny punkt w `entityCards/renderer.ts::renderEntityCard` przenosi blok "Rys historyczny" przed sekcję statystyk (nadal po nagłówku/tytule/medalionie) — naprawia wszystkie 5 rodzajów kart encji jednym mechanizmem, zero zmian w adapterach ani w CivPedii (`wikiHubHud.ts`, osobny system).
+|- **`P-UI-ZOOM-PRZEGLADARKI-PANELE-UCIETE-Q1`** (`5558c775`) — właściciel: przy powiększeniu przeglądarki ze 100% do 125% górna i dolna część paneli (zrzut: audiencja dyplomatyczna) nie jest widoczna, strona się nie doskaluje. Żywa reprodukcja potwierdziła uciecie DWOMA mechanizmami (zoom przeglądarki, wewnętrzny zoom UI gry) — zoom systemowy/DPI nie reprodukował. Przyczyna: "unsafe" centrowanie flex (`align-items:center`) obcinało symetrycznie nadmiar bez ścieżki scrolla. Fix: bezpieczne centrowanie (`flex-start`+`overflow-y:auto`+`margin:auto 0`) — identyczny wygląd przy 100%, panel przykleja się do góry i cała treść jest osiągalna scrollem gdy brakuje miejsca. Zakres świadomie ograniczony do panelu audiencji dyplomatycznej — pozostałe panele (empire/city/entity cards/diplomacja ogólna) mają własne, niezależne reguły `vh` i czekają na osobne tematy po walidacji podejścia.
+|- Oba tematy: pełny cykl Operator→Evaluator→(Obrona)→Final Control przez Workflow, niezależna, żywa weryfikacja w headless Chromium (temat zoomu: 6 zrzutów `page.screenshot()` obejrzanych osobiście przez Final Control, zgodnie z R-PROC-AUTOBOT.md §9 pkt 6a dla tematów wizualnych/UX). `tsc --noEmit` 0 błędów. 5 bramek referencyjnych (logic-test 213/213, tech-tree-test 19/19, research-test 33/33, unit-replace-test 13/13, combat-test 6/6) bez regresu przez całą falę. Nowe testy: `entity-card-historia-section-test.cjs` 31/31 (asercja kolejności odwrócona, dowód nietautologiczności), `diplomacy-audience-zoom-cutoff-real-render-test.cjs` 11/11.
+|- Bundle: 882 modułów (bez zmian liczby — CSS/kolejność DOM, nie nowe moduły źródłowe), `Gra-ROBOCZA.html` 69,5 MB. `Gra-ROBOCZA-POLE-BITWY.html` NIE przebudowany — żaden temat tej fali nie dotyka `battleScene.ts`/logiki bitwy.
+|- Publikacja: `gra-robocza/Gra-ROBOCZA.html` + manifest. `VERIFY OK`, manifest match OK (stamp md5 WARN kosmetyczny, znany, nieblokujący).
+|- **Odstępstwo techniczne (jak w FALACH 324-337):** publikacja odtworzona ręcznie w bashu/Node — `pwsh` nie istnieje w tym środowisku.
+|- Szczegóły: rejestr w `REJESTR-PROSB-I-ZADAN.md`.
+|- **AKTUALNA**
+
 ## ROBOCZA f7f0a3c1 - 2026-09-02 17:30 UTC - FALA 337: naprawa wycieku Pracy przy cofnieciu przestarzalego wpisu kolejki ulepszen terenu
 
 |- md5 (pełne): f7f0a3c19c6d5e427e2568f6cb93dcd6 · stempel: ROBOCZA · label f7f0a3c1 · źródłowy commit integracji: `2d9d8b2a`
@@ -24,7 +36,7 @@ swoim wĹ‚asnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji d
 |- Publikacja: `gra-robocza/Gra-ROBOCZA.html` + manifest. `VERIFY OK`, manifest match OK (stamp md5 WARN kosmetyczny, znany, nieblokujący).
 |- **Odstępstwo techniczne (jak w FALACH 324-336):** publikacja odtworzona ręcznie w bashu/Node — `pwsh` nie istnieje w tym środowisku.
 |- Szczegóły: rejestr w `REJESTR-PROSB-I-ZADAN.md`.
-|- **AKTUALNA**
+|- **ZASTĄPIONA** (→ 9068f87c, FALA 338)
 
 ## ROBOCZA fca50ef6 - 2026-09-02 13:15 UTC - FALA 336: Faza 3 (audyt tooltipow) — naprawa wycieku tekstu deweloperskiego w karcie korupcji/podzialu handlu panelu miasta
 
