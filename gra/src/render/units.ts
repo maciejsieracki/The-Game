@@ -438,6 +438,38 @@ const WAR_RING_OPACITY   = 0.38;
 const WAR_RING_SCALE     = 1.1;
 if (typeof globalThis !== 'undefined') { (globalThis as any).__CIV_OWNER_RING = 'civ-owner-ring'; }
 
+/**
+ * P-JEDNOSTKA-NIEWIDOCZNA-PO-WYBUDOWANIU-Q1 (opcja A, decyzja Macieja 2026-09-03).
+ *
+ * Jednostka gracza ukończona w ticku end-turn czeka w `deferredPlayerUnitRevealIds`
+ * (main.ts) do końca fazy AI. Do tej pory jej ID było CAŁKOWICIE filtrowane z listy
+ * przekazywanej do `sync()` — token nie istniał w scenie, więc dla gracza jednostka
+ * po wybudowaniu po prostu znikała. Opcja A: token renderuje się normalnie (ten sam
+ * model, ta sama tabliczka), tylko PRZYCIEMNIONY, i wraca do pełnej widoczności przy
+ * `flushDeferredPlayerUnitReveals()`.
+ *
+ * PRÓG, NIE MNOŻNIK. Docelowa przezroczystość to `min(bazowa, DEFERRED_TOKEN_OPACITY)`,
+ * a nie `bazowa × współczynnik` — bo część materiałów żetonu jest przezroczysta już
+ * w normalnym stanie (pierścień właściciela `OWNER_RING_OPACITY` = 0.42, pierścień
+ * wojny `WAR_RING_OPACITY` = 0.38). Mnożnik dałby na nich PODWÓJNE przyciemnienie
+ * (0.42 × 0.45 ≈ 0.19) i pierścienie praktycznie by zniknęły; próg zostawia je bez
+ * zmian, bo są już bardziej przezroczyste niż próg. Ikony cierpienia (czaszka głodu
+ * `STARVING_SKULL_OPACITY`, moneta deficytu `GOLD_DEFICIT_COIN_OPACITY`) to sprite'y
+ * spoza `tokenMaterials` — nie są tu w ogóle dotykane, więc też nie mogą się
+ * przyciemnić dwa razy.
+ *
+ * 0.45 dobrane tak, żeby żeton był jednoznacznie odróżnialny od w pełni odsłoniętej
+ * jednostki, ale nadal czytelny (rozpoznawalna sylwetka i kolor właściciela) — cel
+ * tematu to POKAZAĆ jednostkę, nie zamienić jednej niewidoczności na drugą.
+ */
+const DEFERRED_TOKEN_OPACITY = 0.45;
+
+/** Stan materiału sprzed przyciemnienia — źródło przywrócenia przy zdjęciu odroczenia. */
+interface DeferredDimBase {
+  transparent: boolean;
+  opacity: number;
+}
+
 let geoSelectionHexRing: THREE.ShapeGeometry | null = null;
 function appendPointyTopHex(path: THREE.Path | THREE.Shape, radius: number, reverse: boolean): void {
   const order = reverse ? [5, 4, 3, 2, 1, 0] : [0, 1, 2, 3, 4, 5];
@@ -5958,10 +5990,55 @@ export class UnitRenderer {
   }
 
   /**
+   * P-JEDNOSTKA-NIEWIDOCZNA-PO-WYBUDOWANIU-Q1 — przyciemnienie żetonu jednostki
+   * w oknie odroczenia (opcja A). Idempotentne: stan „przyciemniony/normalny”
+   * trzymany jest na `group.userData['deferredDim']`, a przywrócenie zawsze idzie
+   * z zapamiętanej bazy `material.userData['dimBase']`, nigdy z bieżącej wartości —
+   * więc kolejne `sync()` w tej samej klatce ani w kolejnych turach NIE kumulują
+   * przezroczystości. Przebudowa żetonu (zmiana kategorii/typu/zaokrętowania)
+   * tworzy nową grupę bez `deferredDim`, więc przyciemnienie nakłada się od nowa
+   * na świeże materiały — bez wycieku starej bazy.
+   *
+   * Dotyka WYŁĄCZNIE materiałów samego żetonu (`tokenMaterials`, czyli
+   * `userData['mats']` z `buildUnitModel` + pierścienie właściciela/wojny).
+   * Tabliczka statystyk i odznaki to sprite'y dokładane osobno — celowo zostają
+   * w pełnej czytelności, bo gracz ma w oknie odroczenia widzieć CO się zbudowało.
+   */
+  private _applyDeferredDim(unitId: string, dim: boolean): void {
+    const obj = this.tokens.get(unitId);
+    if (!obj) return;
+    if ((obj.userData['deferredDim'] === true) === dim) return;
+    for (const m of this.tokenMaterials.get(unitId) ?? []) {
+      const mat = m as THREE.Material & { opacity: number };
+      if (dim) {
+        const base: DeferredDimBase = { transparent: mat.transparent, opacity: mat.opacity };
+        mat.userData['dimBase'] = base;
+        mat.transparent = true;
+        mat.opacity = Math.min(base.opacity, DEFERRED_TOKEN_OPACITY);
+      } else {
+        const base = mat.userData['dimBase'] as DeferredDimBase | undefined;
+        if (!base) continue;
+        mat.transparent = base.transparent;
+        mat.opacity = base.opacity;
+        delete mat.userData['dimBase'];
+      }
+      mat.needsUpdate = true;
+    }
+    obj.userData['deferredDim'] = dim;
+  }
+
+  /**
    * Synchronise rendered tokens with the current unit list.
    * stackDisplay: 1 token/heks (najmocniejszy) + badge ×N.
+   * dimmedUnitIds: P-JEDNOSTKA-NIEWIDOCZNA-PO-WYBUDOWANIU-Q1 — ID jednostek w oknie
+   *   odroczenia (`deferredPlayerUnitRevealIds` z main.ts). Renderują się normalnie,
+   *   ale przyciemnione; brak zbioru / ID spoza zbioru = pełna widoczność.
    */
-  sync(units: RuntimeUnit[], stackDisplay?: StackDisplayInfo): void {
+  sync(
+    units: RuntimeUnit[],
+    stackDisplay?: StackDisplayInfo,
+    dimmedUnitIds?: ReadonlySet<string>,
+  ): void {
     const presentIds = new Set<string>();
 
     for (const unit of units) {
@@ -6026,6 +6103,13 @@ export class UnitRenderer {
         this._registerToken(unit.id, group);
         this.scene.add(group);
       }
+
+      // P-JEDNOSTKA-NIEWIDOCZNA-PO-WYBUDOWANIU-Q1: przyciemnienie żetonu w oknie
+      // odroczenia. Wołane dla KAŻDEJ jednostki (parytet AI — zero warunków na
+      // ownerId; zbiór wypełnia silnik), zaraz po utworzeniu/aktualizacji żetonu,
+      // żeby świeżo przebudowany model dostał stan przezroczystości w tej samej
+      // klatce, w której powstał (inaczej mignąłby raz pełną widocznością).
+      this._applyDeferredDim(unit.id, dimmedUnitIds?.has(unit.id) === true);
 
       // TABLICZKA JEDNOSTKI nad figurką (R-ZETON-PASKI, Maciej 2026-07-29):
       //

@@ -10111,9 +10111,19 @@ async function boot(): Promise<void> {
       // FoW: bez jawnej listy filtruj wroga — syncUnitsRender() sam z siebie nie może
       // pokazać obcych poza bieżącym zasięgiem (regresja: czerwone pierścienie w czerni).
       const rawSrc = list ?? (fogOn ? visibleUnitsList(currentVisible()) : units);
-      const src = deferredPlayerUnitRevealIds.size > 0
-        ? rawSrc.filter(u => !deferredPlayerUnitRevealIds.has(u.id))
-        : rawSrc;
+      // P-JEDNOSTKA-NIEWIDOCZNA-PO-WYBUDOWANIU-Q1 (opcja A, Maciej 2026-09-03):
+      // jednostki w oknie odroczenia (`deferredPlayerUnitRevealIds`) NIE są już
+      // filtrowane z `src`. Wcześniej token nie istniał w scenie Three.js w ogóle,
+      // więc świeżo wybudowana jednostka po prostu ZNIKAŁA graczowi z mapy do końca
+      // fazy AI (zgłoszenie właściciela). Teraz przechodzą do renderera normalnie, a
+      // renderer przyciemnia ich żetony (UnitRenderer.sync, 3. argument).
+      // KONSEKWENCJA DLA PŁYNNOŚCI: `src` jest teraz IDENTYCZNE przed i po
+      // `flushDeferredPlayerUnitReveals()`, więc flush nie przebudowuje ani nie dodaje
+      // żadnego żetonu — zdejmuje wyłącznie przyciemnienie. Zero klatki bez tokenu i
+      // zero podwójnego tokenu w momencie odsłonięcia.
+      // Logika SAMEGO odroczenia (kiedy ID wchodzi do zbioru i kiedy z niego wychodzi)
+      // pozostaje nietknięta — zmienia się wyłącznie to, CO widać w tym oknie.
+      const src = rawSrc;
       // R-ZETON-PASKI (Maciej 2026-07-29): razem z widocznością stosu licz od
       // razu wartości CAŁEJ armii na tabliczkę nad żetonem (min ruchu / pula HP /
       // Moc pola M / maksima odznak). Grupowanie stosów i tak już tu jest, więc
@@ -10200,7 +10210,8 @@ async function boot(): Promise<void> {
       }
       unitRenderer.setForceVisibleUnitId(forceVisibleUnitId);
       unitRenderer.setCityHexKeys(new Set(cities.map(c => keyOf(c.q, c.r))));
-      unitRenderer.sync(src, display);
+      // 3. argument: ID w oknie odroczenia → żeton przyciemniony zamiast usuniętego.
+      unitRenderer.sync(src, display, deferredPlayerUnitRevealIds);
       const unitForestHexKeys = new Set<string>();
       for (const u of src) {
         if (display.visibleIds.has(u.id)) unitForestHexKeys.add(keyOf(u.q, u.r));
