@@ -13747,7 +13747,7 @@ async function boot(): Promise<void> {
           id: n.id,
           icon: '\u{1F91D}',
           title: 'Dyplomacja: ' + ownerDiploLabel(aiOwnerId),
-          subtitle: negotiationSummary(n) + ` (runda ${n.round}/${NEGOTIATION_MAX_ROUNDS})`,
+          subtitle: negotiationSummary(n, true) + ` (runda ${n.round}/${NEGOTIATION_MAX_ROUNDS})`,
           kind: 'diplo',
           blocking: true,
         });
@@ -15066,7 +15066,7 @@ async function boot(): Promise<void> {
         // applyProposalOutcome shows nothing on its own when !result.accepted.
         const skipGenericToast = entry.actionId === 'wchloniecie' && outcome.kind === 'accepted';
         if (!skipGenericToast) {
-          const summary = negotiationSummary(entry);
+          const summary = negotiationSummary(entry, true);
           showHintMessage(
             ownerDiploLabel(awaitingId)
               + (outcome.kind === 'accepted' ? ' przyjmuje propozycję: ' + summary : ' odrzuca propozycję: ' + summary),
@@ -15386,12 +15386,17 @@ async function boot(): Promise<void> {
       trybut_zadanie: '8', trybut_oferta: '8', ultimatum: '9', wasal: '12', wchloniecie: '15',
     };
 
-    /** C-DYP-Q1=A: krótki opis WARUNKÓW aktualnie na stole (bez nowej wyceny — tylko odczyt payloadu). */
-    function negotiationSummary(entry: PendingNegotiation): string {
+    /**
+     * C-DYP-Q1=A: krótki opis WARUNKÓW aktualnie na stole (bez nowej wyceny — tylko odczyt payloadu).
+     * P-DYPLO-KARTA-DECYZJI-BILANS-SKROT-Q1 (GOAL 1-2): `compact=true` pomija segment
+     * „(łącznie X przez Y tur)" — kompaktowa karta panelu bocznego i toast rozstrzygnięcia;
+     * widok stołu negocjacji (GOAL 3) woła bez tego parametru, zachowanie bez zmian.
+     */
+    function negotiationSummary(entry: PendingNegotiation, compact = false): string {
       const p = entry.payload;
       if (!p) return entry.actionId;
       const incoming = entry.proposerOwnerId !== 0;
-      const basketDetail = formatNegotiationDealPlayerSummary(p, incoming);
+      const basketDetail = formatNegotiationDealPlayerSummary(p, incoming, { omitTotal: compact });
       switch (entry.actionId) {
         case 'nap':
           return p.turns != null && p.turns <= 0

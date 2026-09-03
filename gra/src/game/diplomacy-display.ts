@@ -441,18 +441,27 @@ export interface BasketItemFormatCtx {
   perTurn?: boolean;
   /** Czas trwania umowy w turach — do liczenia sumy łącznej. */
   turns?: number;
+  /**
+   * P-DYPLO-KARTA-DECYZJI-BILANS-SKROT-Q1 (GOAL 1-2): pomiń segment
+   * „(łącznie X przez Y tur)" — dla skróconych komunikatów (kompaktowa karta panelu
+   * bocznego, toast), gdzie właściciel chce widzieć wyłącznie ilość/turę i liczbę tur,
+   * bez przemnożonej sumy. Widoki „szczegółów" (stół negocjacji, kreator koszyka) tego
+   * pola NIE ustawiają — zachowanie bez zmian (domyślnie false/undefined).
+   */
+  omitTotal?: boolean;
 }
 
 /** Krótka etykieta jednej pozycji koszyka PN (UI + podsumowania stołu negocjacji). */
 export function formatBasketItemBrief(item: BasketItem, ctx?: BasketItemFormatCtx): string {
   const perTurn = ctx?.perTurn === true;
   const turns = ctx?.turns;
+  const omitTotal = ctx?.omitTotal === true;
   switch (item.typ) {
     case 'zloto': {
       const amt = item.ilosc ?? 0;
       if (perTurn) {
         const base = `${amt} ¤ na turę`;
-        if (turns != null && turns > 0) {
+        if (turns != null && turns > 0 && !omitTotal) {
           return `${base} (łącznie ${amt * turns} ¤ przez ${turns} tur)`;
         }
         return base;
@@ -481,7 +490,7 @@ export function formatBasketItemBrief(item: BasketItem, ctx?: BasketItemFormatCt
       const label = resourceDisplayLabel(item.id);
       if (perTurn) {
         const base = `${szt} ${label} na turę`;
-        if (turns != null && turns > 0) {
+        if (turns != null && turns > 0 && !omitTotal) {
           return `${base} (łącznie ${szt * turns} ${label} przez ${turns} tur)`;
         }
         return base;
@@ -586,6 +595,7 @@ export function splitNegotiationDealPlayerSides(
 export function formatNegotiationDealPlayerSummary(
   payload: ProposalPayload,
   incoming: boolean,
+  opts?: { omitTotal?: boolean },
 ): string {
   const split = splitNegotiationDealPlayerSides(payload, incoming);
   if (!split) return '';
@@ -593,6 +603,7 @@ export function formatNegotiationDealPlayerSummary(
   const ctx: BasketItemFormatCtx = {
     perTurn: payload.resourceTradeMode === 'per_turn',
     turns: payload.turns,
+    omitTotal: opts?.omitTotal === true,
   };
   const lines = [
     `Oferujemy: ${formatBasketListBrief(split.weOffer, ctx)}`,
