@@ -17,13 +17,23 @@
  *                                       renderowane przez ui/entityCards/improvementAdapter.ts)
  *
  * UWAGA na to, co ten temat świadomie ZOSTAWIA bez zmian (asercje kontrolne niżej):
- *   • `stadnina` NADAL zabroniona na lesie — wpadła w zakaz z 2026-07-29 pochodną definicji
- *     (`surowiecOdblokowany === 'kon'` ⊂ LIVESTOCK_SUROWIEC_KEYS), a ECHO właściciela objęło
- *     wyłącznie owce/bydło/lamę. Zdjęcie zakazu też ze stadniny byłoby czwartą, niezamówioną
- *     zmianą reguły terenu (§14).
  *   • `farma`/`irygacja`/`tarasy` — bez zmian (osobne, zamknięte tematy).
  *   • reguły terenu bazowego i bramka cywilizacji (lama = tylko Inkowie; Nowy Świat: bydło/owce
  *     od epoki 3) — bez zmian.
+ *
+ * AKTUALIZACJA 2026-09-03 (P-STADNINA-LAS-NIEROZSTRZYGNIETE-Q1, ECHO właściciela): `stadnina`
+ * była tu WCZEŚNIEJ udokumentowana jako świadomie POZOSTAWIONA zabroniona na lesie — wpadła w
+ * zakaz z 2026-07-29 pochodną definicji (`surowiecOdblokowany === 'kon'` ⊂
+ * LIVESTOCK_SUROWIEC_KEYS), a ECHO z 2026-08-27 objęło wyłącznie owce/bydło/lamę. Właściciel
+ * dostał to pytanie osobno i odpowiedział: „Stadnina […] jest ulepszeniem surowcowym […] tylko
+ * takim jak tartak czy kopalnie. Jeżeli symbol konia jest na lesie, to nie przeszkadza w tym,
+ * żeby tam postawić stadninę." Zakaz stadniny na lesie jest więc TERAZ RÓWNIEŻ cofnięty —
+ * DOKŁADNIE tym samym mechanizmem co Glinianka (`FOREST_COEXIST_IMPROVEMENT_KEYS`), nie nową
+ * regułą terenu. Asercje „KONTROLA: stadnina NADAL blokowana" niżej zostały ODWRÓCONE razem z
+ * regułą; poprzednie brzmienie zostaje w komentarzu przy każdej — historia decyzji jest częścią
+ * kanonu, tak jak przy owce/bydło/lama wyżej. Właściwa bramka tego tematu:
+ * `tools/stadnina-las-test.cjs` (nowa, dedykowana — kryteria końca P-STADNINA-LAS-
+ * -NIEROZSTRZYGNIETE-Q1 w pełni).
  *
  * Uruchamiaj z gra/:  node tools/hodowla-las-test.cjs
  */
@@ -130,11 +140,14 @@ ok(M.isImprovementBlockedOnForest('owce', N.Las) === false, 'las NIE blokuje owi
 ok(M.isImprovementBlockedOnForest('bydlo', N.Las) === false, 'las NIE blokuje bydla');
 ok(M.isImprovementBlockedOnForest('lama', N.Las) === false, 'las NIE blokuje lamy');
 
-// Kontrola: to, czego temat NIE rusza.
-ok(M.isImprovementBlockedOnForest('stadnina', N.Las) === true, 'KONTROLA: stadnina NADAL blokowana na lesie');
-ok(M.isStadninaBlockedOnForest('stadnina', N.Las) === true, 'KONTROLA: predykat stadniny dziala');
-ok(M.isStadninaBlockedOnForest('stadnina', N.Brak) === false, 'KONTROLA: stadnina poza lasem nie blokowana');
-ok(M.isStadninaBlockedOnForest('owce', N.Las) === false, 'KONTROLA: predykat stadniny nie lapie owiec');
+// P-STADNINA-LAS-NIEROZSTRZYGNIETE-Q1 (2026-09-03): stadnina ODBLOKOWANA na lesie, jak
+// glinianka. Poprzednie brzmienie (kontrola „temat NIE rusza") zostaje w komentarzu:
+//   ok(M.isImprovementBlockedOnForest('stadnina', N.Las) === true, 'KONTROLA: stadnina NADAL blokowana na lesie');
+//   ok(M.isStadninaBlockedOnForest('stadnina', N.Las) === true, 'KONTROLA: predykat stadniny dziala');
+ok(M.isImprovementBlockedOnForest('stadnina', N.Las) === false, 'stadnina JUZ NIE blokowana na lesie (zakaz cofniety 2026-09-03)');
+ok(M.isStadninaBlockedOnForest('stadnina', N.Las) === false, 'predykat stadniny zawsze false od tej rundy');
+ok(M.isStadninaBlockedOnForest('stadnina', N.Brak) === false, 'stadnina poza lasem nie blokowana');
+ok(M.isStadninaBlockedOnForest('owce', N.Las) === false, 'predykat stadniny nie lapie owiec');
 ok(M.isImprovementBlockedOnForest('farma', N.Las) === true, 'KONTROLA: farma nadal zabroniona na lesie');
 ok(M.isImprovementBlockedOnForest('irygacja', N.Las) === true, 'KONTROLA: irygacja nadal zabroniona');
 ok(M.isImprovementBlockedOnForest('tarasy', N.Las) === true, 'KONTROLA: tarasy nadal zabronione');
@@ -144,8 +157,14 @@ ok(M.isImprovementBlockedOnForest('owce', N.Brak) === false, 'poza lasem predyka
 const hintOwce = M.getImprovementForestBlockHint('owce');
 ok(!hintOwce.includes('Obóz łowiecki') && !hintOwce.includes('obóz'),
   'hint blokady lasu nie odsyla juz hodowli do obozu lowieckiego', hintOwce);
+// P-STADNINA-LAS-NIEROZSTRZYGNIETE-Q1 (2026-09-03): stadnina juz nie jest blokowana na lesie,
+// wiec ten hint nie jest juz w praktyce wolany dla niej (funkcja jest formatterem ogolnym,
+// dziala dla dowolnego klucza niezaleznie od realnej blokady — test pilnuje TYLKO formatu
+// tekstu, nie osiagalnosci). Poprzednie brzmienie zostaje w komentarzu:
+//   ok(M.getImprovementForestBlockHint('stadnina').includes('wyrąb'),
+//     'hint dla stadniny radzi wyrab (poprawna rada — po wyrebie kwalifikuje sie)');
 ok(M.getImprovementForestBlockHint('stadnina').includes('wyrąb'),
-  'hint dla stadniny radzi wyrab (poprawna rada — po wyrebie kwalifikuje sie)');
+  'formatter hintu dziala takze dla stadniny (dziS nieosiagalne w UI, patrz komentarz)');
 
 // =====================================================================================
 // (2) ŚCIEŻKA GRACZA — qualifies() na mapie syntetycznej
@@ -179,8 +198,11 @@ ok(qInka('lama', 2, 0) === false, 'GRACZ: lama NIE na Lace z lasem');
 ok(qRzym('bydlo', 5, 0) === false, 'GRACZ: bydlo NIE na Pustyni z lasem');
 ok(qRzym('owce', 5, 0) === false, 'GRACZ: owce NIE na Pustyni z lasem');
 ok(qRzym('lama', 1, 0) === false, 'GRACZ: lama NIE dla Rzymu (bramka cywilizacji bez zmian)');
-ok(qRzym('stadnina', 7, 0) === true, 'KONTROLA GRACZ: stadnina NA golej Lace (warunek istotnosci)');
-ok(qRzym('stadnina', 2, 0) === false, 'KONTROLA GRACZ: stadnina NIE na Lace z lasem');
+ok(qRzym('stadnina', 7, 0) === true, 'GRACZ: stadnina NA golej Lace (warunek istotnosci)');
+// P-STADNINA-LAS-NIEROZSTRZYGNIETE-Q1 (2026-09-03): odwrocone razem z regula (poprzednio
+// `=== false`, „KONTROLA GRACZ: stadnina NIE na Lace z lasem") — stadnina teraz kwalifikuje
+// sie na Lace+Las dokladnie jak bydlo (linia wyzej), bo nakladka Las juz jej nie blokuje.
+ok(qRzym('stadnina', 2, 0) === true, 'GRACZ: stadnina TERAZ NA Lace z lasem (zakaz cofniety 2026-09-03)');
 ok(qRzym('farma', 7, 0) === true, 'KONTROLA GRACZ: farma NA golej Lace (warunek istotnosci)');
 ok(qRzym('farma', 2, 0) === false, 'KONTROLA GRACZ: farma NIE na Lace z lasem');
 
@@ -204,7 +226,9 @@ ok(M.computeImprovementBuildImpact('owce', hexes['1,0'], []) !== null, 'COMMIT: 
 ok(M.computeImprovementBuildImpact('bydlo', hexes['2,0'], []) !== null, 'COMMIT: bydlo na Lace+Las przechodzi');
 ok(M.computeImprovementBuildImpact('lama', hexes['4,0'], []) !== null, 'COMMIT: lama w Gorach+Las przechodzi');
 ok(M.computeImprovementBuildImpact('owce', hexes['2,0'], []) === null, 'COMMIT: owce na Lace+Las nadal null');
-ok(M.computeImprovementBuildImpact('stadnina', hexes['2,0'], []) === null, 'KONTROLA COMMIT: stadnina na lesie null');
+// P-STADNINA-LAS-NIEROZSTRZYGNIETE-Q1 (2026-09-03): odwrocone razem z regula (poprzednio
+// `=== null`, „KONTROLA COMMIT: stadnina na lesie null").
+ok(M.computeImprovementBuildImpact('stadnina', hexes['2,0'], []) !== null, 'COMMIT: stadnina na Lace+Las przechodzi (zakaz cofniety)');
 ok(M.computeImprovementBuildImpact('farma', hexes['2,0'], []) === null, 'KONTROLA COMMIT: farma na lesie null');
 
 // Współistnienie sektorów: tartak ('las') + hodowla ('hodowla') na tym samym zalesionym heksie.
@@ -269,9 +293,11 @@ ok(pickOn(mkHex(0, 0, T.Gory, N.Las), 'lama', 'inkowie', 5) === true,
 ok(pickOn(mkHex(0, 0, T.Laka, N.Las), 'owce', 'rzym', 5) === false,
   'AUTOMAT/AI CYW: NIE stawia owiec na Lace z lasem (teren bazowy rzadzi)');
 ok(pickOn(mkHex(0, 0, T.Laka), 'stadnina', 'rzym', 5) === true,
-  'KONTROLA AUTOMAT/AI CYW: stawia stadnine na golej Lace (warunek istotnosci)');
-ok(pickOn(mkHex(0, 0, T.Laka, N.Las), 'stadnina', 'rzym', 5) === false,
-  'KONTROLA AUTOMAT/AI CYW: NIE stawia stadniny na lesie');
+  'AUTOMAT/AI CYW: stawia stadnine na golej Lace (warunek istotnosci)');
+// P-STADNINA-LAS-NIEROZSTRZYGNIETE-Q1 (2026-09-03): odwrocone razem z regula (poprzednio
+// `=== false`, „KONTROLA AUTOMAT/AI CYW: NIE stawia stadniny na lesie").
+ok(pickOn(mkHex(0, 0, T.Laka, N.Las), 'stadnina', 'rzym', 5) === true,
+  'AUTOMAT/AI CYW: TERAZ stawia stadnine na Lace Z LASEM (zakaz cofniety)');
 ok(pickOn(mkHex(0, 0, T.Laka), 'farma', 'rzym', 5) === true,
   'KONTROLA AUTOMAT/AI CYW: stawia farme na golej Lace (warunek istotnosci)');
 ok(pickOn(mkHex(0, 0, T.Laka, N.Las), 'farma', 'rzym', 5) === false,
@@ -324,7 +350,11 @@ for (const seed of [90210, 777, 31415]) {
   ok(owceLas > 0, `mapa ${seed}: owce kwalifikuja sie na >0 heksach z lasem`);
   ok(bydloLas > 0, `mapa ${seed}: bydlo kwalifikuje sie na >0 heksach z lasem`);
   ok(lamaLas > 0, `mapa ${seed}: lama kwalifikuje sie na >0 heksach z lasem`);
-  ok(stadninaLas === 0, `KONTROLA mapa ${seed}: stadnina na 0 heksach z lasem`);
+  // P-STADNINA-LAS-NIEROZSTRZYGNIETE-Q1 (2026-09-03): odwrocone razem z regula (poprzednio
+  // `stadninaLas === 0`, „KONTROLA mapa ${seed}: stadnina na 0 heksach z lasem") — stadnina
+  // dolacza do owce/bydlo/lama wyzej, kwalifikuje sie teraz na realnie wygenerowanych heksach
+  // lesnych, nie tylko na syntetycznym heksie testu jednostkowego.
+  ok(stadninaLas > 0, `mapa ${seed}: stadnina kwalifikuje sie na >0 heksach z lasem (zakaz cofniety)`);
   ok(farmaLas === 0, `KONTROLA mapa ${seed}: farma na 0 heksach z lasem`);
 }
 
@@ -343,8 +373,14 @@ ok(data.owce.warunek.includes('2026-07-29'),
 ok(!data.owce.teren.includes('bez lasu'), 'JSON: owce.teren nie mowi juz „bez lasu"');
 ok(data.bydlo.warunek.includes('2026-08-27'), 'JSON: bydlo.warunek ma slad cofniecia zakazu');
 ok(data.lama.warunek.includes('2026-08-27'), 'JSON: lama.warunek ma slad cofniecia zakazu');
-ok(data.stadnina.warunek.includes('NADAL zabroniona'),
-  'KONTROLA JSON: stadnina.warunek mowi wprost, ze zakaz lasu ZOSTAJE');
+// P-STADNINA-LAS-NIEROZSTRZYGNIETE-Q1 (2026-09-03): odwrocone razem z regula (poprzednio
+// `.includes('NADAL zabroniona')`, „KONTROLA JSON: stadnina.warunek mowi wprost, ze zakaz
+// lasu ZOSTAJE").
+ok(!data.stadnina.warunek.includes('NADAL zabroniona'),
+  'JSON: stadnina.warunek juz nie mowi, ze zakaz lasu zostaje');
+ok(data.stadnina.warunek.includes('2026-09-03') && data.stadnina.warunek.includes('2026-07-29'),
+  'JSON: stadnina.warunek zachowuje slad decyzji (zakaz cofniety, obie daty)');
+ok(!data.stadnina.teren.includes('bez lasu'), 'JSON: stadnina.teren nie mowi juz „bez lasu"');
 
 console.log(`\nhodowla-las-test: ${pass} passed, ${fail} failed`);
 process.exit(fail === 0 ? 0 : 1);

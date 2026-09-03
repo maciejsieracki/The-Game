@@ -105,6 +105,7 @@ function qual(opts = {}) {
     playerCivArchetype: opts.civ ?? 'inkowie',
     playerEra: opts.era ?? 1,
     placedImprovements: opts.placed,
+    tradeRouteKonUnlocked: opts.tradeRouteKonUnlocked,
   });
 }
 
@@ -312,12 +313,30 @@ ok(qRzym('bydlo', 2, 1), 'bydlo OK on laka+las (zakaz cofniety 2026-08-27)');
 ok(!M.isImprovementBlockedOnForest('bydlo', NK.Las), 'las NIE blokuje bydla');
 ok(!M.isImprovementBlockedOnForest('owce', NK.Las), 'las NIE blokuje owiec');
 ok(!M.isImprovementBlockedOnForest('lama', NK.Las), 'las NIE blokuje lamy');
-// Stadnina ZOSTAJE zabroniona na lesie — wpadla w zakaz z 2026-07-29 pochodna definicji
-// (surowiecOdblokowany = 'kon'), a ECHO wlasciciela objelo wylacznie owce/bydlo/lame.
-ok(M.isStadninaBlockedOnForest('stadnina', NK.Las), 'stadnina nadal blokowana na lesie');
+// P-STADNINA-LAS-NIEROZSTRZYGNIETE-Q1 (ECHO wlasciciela 2026-09-03): zakaz stadniny na lesie
+// COFNIETY — stadnina jest ulepszeniem surowcowym (jak glinianka/tartak/kopalnie), nie
+// pastwiskiem. Poprzednie brzmienie zostaje w komentarzu, historia decyzji jest czescia kanonu:
+//   ok(M.isStadninaBlockedOnForest('stadnina', NK.Las), 'stadnina nadal blokowana na lesie');
+//   ok(M.isImprovementBlockedOnForest('stadnina', NK.Las), 'las blokuje stadnine (gate commitu)');
+ok(!M.isStadninaBlockedOnForest('stadnina', NK.Las), 'stadnina JUZ NIE blokowana na lesie (zakaz cofniety)');
 ok(!M.isStadninaBlockedOnForest('stadnina', NK.Brak), 'stadnina poza lasem nie blokowana');
 ok(!M.isStadninaBlockedOnForest('bydlo', NK.Las), 'predykat stadniny nie lapie bydla');
-ok(M.isImprovementBlockedOnForest('stadnina', NK.Las), 'las blokuje stadnine (gate commitu)');
+ok(!M.isImprovementBlockedOnForest('stadnina', NK.Las), 'las NIE blokuje stadniny (gate commitu, jak glinianka)');
+// Zywy test przetrwania: usuniecie lasu (wyrab) NIE zabiera stadniny z heksa — dokladnie jak
+// tartak, w przeciwienstwie do obozu lowieckiego (kontrola rozroznienia mechanizmow nizej).
+const stadninaPoWyrebie = M.stripImprovementsWhenForestRemoved(['stadnina', 'tartak', 'oboz_lowiecki']);
+ok(stadninaPoWyrebie.includes('stadnina'), 'stadnina PRZETRWA wyrab lasu (niezalezna od lasu, jak glinianka)');
+ok(stadninaPoWyrebie.includes('tartak'), 'kontrola: tartak przetrwa wyrab (kanon)');
+ok(!stadninaPoWyrebie.includes('oboz_lowiecki'), 'kontrola: oboz lowiecki NADAL znika po wyrebie (inny mechanizm)');
+// Zywy test kwalifikacji budowy: heks '3,1' = Laka + Las (zdefiniowany wyzej), gracz ma
+// imperialne odblokowanie Konia (surowiecOdblokowany='kon', symulowane tradeRouteKonUnlocked
+// zeby izolowac regule lasu od reguly zloza — bez tego kazda asercja bylaby tautologiczna, patrz
+// wzorzec w tools/hodowla-las-test.cjs). PRZED poprawka ta asercja czerwienieje (dowod
+// nietautologicznosci, weryfikowany przez Operatora przed commitem — patrz raport rundy).
+const qRzymKonUnlocked = qual({ civ: 'rzym', tradeRouteKonUnlocked: true });
+ok(qRzymKonUnlocked('stadnina', 3, 1), 'ZYWY TEST GOAL 1: stadnina KWALIFIKUJE SIE na Lace+Las po odblokowaniu Konia');
+ok(M.computeImprovementBuildImpact('stadnina', hexes['3,1'], []) !== null,
+  'ZYWY TEST: gate commitu (computeImprovementBuildImpact) NIE blokuje stadniny na Lace+Las');
 ok(M.computeImprovementBuildImpact('bydlo', hexes['2,1'], []), 'impact NIE-null: bydlo on las');
 ok(!qInka('irygacja', 3, 1), 'irygacja NOT on laka+las (wymaga wyrębu)');
 hexes['1,2'] = mkHex(1, 2, TB.Laka, NK.Las);
