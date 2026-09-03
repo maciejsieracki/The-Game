@@ -99,7 +99,7 @@ html.civ-ui-zoom-active .civ-bottom-bar{bottom:${HUD_ZOOM_EDGE_PX}px;right:${HUD
 .civ-bottom-bar .et-meta{display:none;}
 .civ-bottom-bar .et-action{display:flex;align-items:center;gap:8px;font-size:14px;font-weight:700;
   text-transform:uppercase;letter-spacing:.14em;color:#2e2708;}
-.civ-bottom-bar .et-turn-lbl{text-align:center;font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:#8a8070;margin-top:2px;}
+.civ-bottom-bar .et-turn-lbl{text-align:center;font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:#fff8e6;text-shadow:0 0 3px rgba(0,0,0,.95),0 1px 0 rgba(0,0,0,.95),0 -1px 0 rgba(0,0,0,.95),1px 0 0 rgba(0,0,0,.95),-1px 0 0 rgba(0,0,0,.95);margin-top:2px;}
 @keyframes civ-wyk-glow{0%,100%{box-shadow:none}50%{box-shadow:0 0 16px rgba(208,128,48,.5)}}
 
 /* Warstwa 2 — pasek nad HUD nazywający blokady. R-UI-WYKONAJ-DECYZJA-OVERLAP-Q1: musi
