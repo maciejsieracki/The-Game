@@ -487,6 +487,13 @@ nadal jako oznaczenie świadomego, ręcznego wycofania.
 | `raport` | zestawienie statusu w formacie dziesięciu kategorii — pełny kanon: [`R-RAPORT-10-KATEGORII-ABC-PLAYTESTY-Q1.md`](R-RAPORT-10-KATEGORII-ABC-PLAYTESTY-Q1.md) |
 | `co nowego` (warianty: „sprawdź co nowego w Autobots", „co nowego w Autobots") | pokaż wyłącznie sekcję „Co nowego w regułach AutoBota" z `README.md` — bez pełnego audytu jak przy haśle `sprawdź` |
 
+**Język komunikacji orkiestratora (dyspozycja właściciela, 2026-09-03):** orkiestrator
+komunikuje się z właścicielem WYŁĄCZNIE po polsku — dotyczy to całej komunikacji
+user-facing w danej sesji, w tym opisów (`description`) poleceń Bash, nie tylko
+tekstu odpowiedzi. Nie dotyczy treści technicznych, których zmiana języka złamałaby
+działanie (nazwy zmiennych/funkcji/plików, komunikaty z logów narzędzi, cytaty
+źródłowe) — te zostają w oryginalnym języku/formie wewnątrz polskiego zdania.
+
 **Zmieniasz reguły samego AutoBota (nie kod gry)?** Najpierw przeczytaj
 [`dyspozycje/autobot/JAK-BEZPIECZNIE-EDYTOWAC-AUTOBOT.md`](../../dyspozycje/autobot/JAK-BEZPIECZNIE-EDYTOWAC-AUTOBOT.md) —
 mapa wszystkich warstw mechanizmu.
