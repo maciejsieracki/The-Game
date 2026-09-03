@@ -85,6 +85,7 @@ console.log('\n-- (a) eliminateOwner() czyści aiSurplusRedirectedOwners + aiSli
     'bronzeForceWarActiveByPairKey', 'stoneForceWarPendingOwners', 'stoneForceWarCycleOwners',
     'stoneForceWarRestUntilByOwner', 'stoneForceWarActiveByPairKey', 'ironForceWarPendingOwners',
     'ironForceWarCycleOwners', 'ironForceWarRestUntilByOwner', 'ironForceWarActiveByPairKey',
+    'bronzeEraEnterTurnByOwner',
   ];
 
   let realExecOk = false;
@@ -110,6 +111,7 @@ console.log('\n-- (a) eliminateOwner() czyści aiSurplusRedirectedOwners + aiSli
       emptySet(), emptySet(), emptyMap(), emptyMap(),
       emptySet(), emptySet(), emptyMap(), emptyMap(),
       emptySet(), emptySet(), emptyMap(), emptyMap(),
+      emptyMap(),
     );
     afterSurplus = surplus;
     afterSlider = sliderMap;
