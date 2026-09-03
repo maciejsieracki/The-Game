@@ -307,7 +307,7 @@ import {
   applySameCivClusterAbsorptionBoost,
   decideAiCsClusterAction,
   rollAiCsAccept,
-  unitTriggersSisterAllianceThreat,
+  isSisterOwnerThreatenedByWar,
 } from './game/ai-cs-absorption';
 import {
   decideAiMajorAbsorb,
@@ -16951,7 +16951,6 @@ async function boot(): Promise<void> {
      */
     function formSisterAlliancesIfThreatened(): void {
       if (!clusterPlacement || typCityCopyOwners.size === 0) return;
-      const threatRadius = RESUP_TIERS[_menuCitySupport].threatRadius;
 
       for (const tc of clusterPlacement.klastry) {
         const sisterOwners = Array.from(typCityCopyOwners)
@@ -16960,13 +16959,22 @@ async function boot(): Promise<void> {
         if (sisterOwners.length < 2) continue;
 
         const sisterOwnerSet = new Set(sisterOwners);
+        // R-MIASTA-PANSTWA-SOJUSZ-SIOSTRZANY-ATAK-Q1 GOAL 1: wyzwalacz = FAKTYCZNY stan
+        // wojny z kwalifikującym się napastnikiem (GOAL 2), NIE bliskość jednostki (stary
+        // threatRadius/hexDistance warunek USUNIĘTY -- patrz isSisterOwnerThreatenedByWar
+        // w ai-cs-absorption.ts, ZASTĘPUJE dawne unitTriggersSisterAllianceThreat).
+        // Kandydaci-napastnicy = gracz (0) + wszyscy właściciele AI na mapie, poza samymi
+        // siostrami (siostra nigdy nie jest "najeźdźcą" wobec własnego klastra).
+        const candidateAggressorIds = [0, ...allAiOwnerIdsOnMap()]
+          .filter(oid => !sisterOwnerSet.has(oid));
         const threatenedOwners = new Set<number>();
         for (const oid of sisterOwners) {
-          const city = cities.find(c => c.ownerId === oid);
-          if (!city) continue;
-          const threatened = units.some(
-            u => unitTriggersSisterAllianceThreat(u.ownerId, sisterOwnerSet)
-              && hexDistance(u.q, u.r, city.q, city.r) <= threatRadius,
+          const threatened = isSisterOwnerThreatenedByWar(
+            oid,
+            tc.typ,
+            candidateAggressorIds,
+            aggId => aiOwnerCivMap.get(aggId),
+            (a, b) => getDiploRelation(a, b).status === 'wojna',
           );
           if (threatened) threatenedOwners.add(oid);
         }
@@ -17009,11 +17017,42 @@ async function boot(): Promise<void> {
             syncRelationFromDeals(a, b);
             console.log(
               `[Dyplomacja] Siostry ${ownerDiploLabel(p0)}(${p0})-${ownerDiploLabel(p1)}(${p1}) ` +
-              `zawierają sojusz (klaster ${tc.typ}, zagrożenie w promieniu ${threatRadius})`,
+              `zawierają sojusz (klaster ${tc.typ}, zagrożenie: wojna z kwalifikującym się napastnikiem)`,
             );
           }
         }
       }
+    }
+
+    /**
+     * R-MIASTA-PANSTWA-SOJUSZ-SIOSTRZANY-ATAK-Q1 GOAL 3 — czy TEN owner (miasto-państwo)
+     * ma aktywny sojusz (sojusz_pelny/sojusz_defensywny) z co najmniej jedną siostrą klastra
+     * I jest w stanie wojny z kwalifikującym się napastnikiem (GOAL 2). Zasila
+     * `AITurnOpts.sisterAllianceUnderAttack` (ai.ts) -- świadomie OSOBNA funkcja od bloku
+     * cityStateOffensiveSupport/warAllyOwnerIds (main.ts, w pobliżu wołania tej funkcji
+     * niżej -- zakres równoległego tematu R-MIASTA-PANSTWA-PASYWNOSC-ROZSZERZENIE-Q1), żeby
+     * NIE dotykać tamtych linii; dodaje NIEZALEŻNY warunek OR do gate w ai.ts.
+     */
+    function isSisterAllianceUnderAttackForOwner(ownerId: number): boolean {
+      if (!typCityCopyOwners.has(ownerId)) return false;
+      const myCivType = aiOwnerCivMap.get(ownerId);
+      if (myCivType === undefined) return false;
+      const sisterIdsWithAlliance = Array.from(typCityCopyOwners).filter(oid =>
+        oid !== ownerId
+        && aiOwnerCivMap.get(oid) === myCivType
+        && activeDeals.some(d => isAllianceDealKind(d.rodzaj) && dealInvolvesOwners(d, ownerId, oid)),
+      );
+      if (sisterIdsWithAlliance.length === 0) return false; // brak sojuszu -- nic do zrobienia
+      const sisterSet = new Set(sisterIdsWithAlliance);
+      const candidateAggressorIds = [0, ...allAiOwnerIdsOnMap()]
+        .filter(oid => oid !== ownerId && !sisterSet.has(oid));
+      return isSisterOwnerThreatenedByWar(
+        ownerId,
+        myCivType,
+        candidateAggressorIds,
+        aggId => aiOwnerCivMap.get(aggId),
+        (a, b) => getDiploRelation(a, b).status === 'wojna',
+      );
     }
 
     /**
@@ -29131,6 +29170,11 @@ async function boot(): Promise<void> {
                     ),
                   )
                 : undefined,
+              // R-MIASTA-PANSTWA-SOJUSZ-SIOSTRZANY-ATAK-Q1 GOAL 3: wsparcie ofensywne
+              // NIEZALEŻNE od cityStateOffensiveSupport wyżej -- osobny wymiar (sojusz
+              // sióstr pod atakiem), liczone w isSisterAllianceUnderAttackForOwner (osobna
+              // funkcja powyżej, nie dotyka bloku cityStateOffensiveSupport/warAllyOwnerIds).
+              sisterAllianceUnderAttack: isSisterAllianceUnderAttackForOwner(ownerId),
               // TEMAT #6 (2026-07-23) / SUROW-CIV-01 (2026-07-24) / JEDNOSTKI-SUROWIEC-01
               // (2026-07-24): AI pomija budynek LUB jednostkę (skips, nie zawiesza się) gdy
               // pula PAŃSTWA ownera (suma City.surowce po wszystkich miastach — nie tylko to

@@ -594,6 +594,147 @@ console.log('12. Hard wave -- solo atak na gracza zakazany (stos <3)');
   assert(attacksWave.length >= 1, 'Hard: stos 3 na hex → atak dozwolony');
 }
 
+// ===========================================================================
+// 13-15. R-MIASTA-PANSTWA-SOJUSZ-SIOSTRZANY-ATAK-Q1 GOAL 3 -- sisterAllianceUnderAttack
+// wlacza wsparcie ofensywne NIEZALEZNIE od cityStateOffensiveSupport (nowy warunek OR w
+// ai.ts). Scenariusze celowo IDENTYCZNE z testami 10/12 (cityStateOffensiveSupport) --
+// dowod przed/po: ten sam ukiad startowy, jedyna zmienna to sisterAllianceUnderAttack.
+// ===========================================================================
+console.log('13. sisterAllianceUnderAttack -- marsz na wroga wojny, niezaleznie od cityStateOffensiveSupport (dowod przed/po)');
+{
+  const mapSA = makeFlatMap(30, 30);
+  const guard1 = makeGuard('sa1', PLAYER_ID, CITY_Q, CITY_R);
+  const guard2 = makeGuard('sa2', PLAYER_ID, CITY_Q, CITY_R + 1);
+  const guard3 = makeGuard('sa3', PLAYER_ID, CITY_Q + 1, CITY_R);
+  const guard4 = makeGuard('sa4', PLAYER_ID, CITY_Q - 1, CITY_R);
+  const enemyCity = makeCity('ecWarSA', ENEMY_ID, CITY_Q + 8, CITY_R);
+  const atWar = (targetOwnerId) => targetOwnerId === ENEMY_ID;
+  const city = makeCity('cityA', PLAYER_ID, CITY_Q, CITY_R);
+
+  // PRZED (baseline, identycznie jak test 10 "Normal"): brak cityStateOffensiveSupport,
+  // brak sisterAllianceUnderAttack -- na kodzie sprzed tej zmiany siostry NIE atakowaly.
+  const cmdsBefore = decideAITurn(
+    PLAYER_ID,
+    [guard1, guard2, guard3],
+    [city, enemyCity],
+    mapSA,
+    data,
+    { defensiveCopy: true, citySupportLevel: 'normal', canEngageOwner: atWar },
+  );
+  eq(
+    cmdsBefore.filter(c => c.type === 'move').length,
+    0,
+    'PRZED: bez sisterAllianceUnderAttack i bez cityStateOffensiveSupport -- zero marszu (baseline pre-zmiana)',
+  );
+
+  // PO: TEN SAM scenariusz (Trudny poziom posilkow), cityStateOffensiveSupport JAWNIE
+  // false -- jedyny powod ofensywy to sisterAllianceUnderAttack=true.
+  const cmdsAfter = decideAITurn(
+    PLAYER_ID,
+    [guard1, guard2, guard3, guard4],
+    [city, enemyCity],
+    mapSA,
+    data,
+    {
+      defensiveCopy: true,
+      citySupportLevel: 'strong',
+      cityStateOffensiveSupport: false,
+      sisterAllianceUnderAttack: true,
+      canEngageOwner: atWar,
+    },
+  );
+  const movesAfter = cmdsAfter.filter(c => c.type === 'move');
+  assert(
+    movesAfter.length >= 1,
+    'PO: sisterAllianceUnderAttack=true (cityStateOffensiveSupport=false) -- co najmniej 1 marsz na wroga wojny (zmiana zachowania udowodniona)',
+  );
+  const startQById = { sa1: CITY_Q, sa2: CITY_Q, sa3: CITY_Q + 1, sa4: CITY_Q - 1 };
+  const startRById = { sa1: CITY_R, sa2: CITY_R + 1, sa3: CITY_R, sa4: CITY_R };
+  const towardEnemyAfter = movesAfter.some(m =>
+    hexDistance(m.toQ, m.toR, enemyCity.q, enemyCity.r)
+    < hexDistance(startQById[m.unitId], startRById[m.unitId], enemyCity.q, enemyCity.r),
+  );
+  assert(towardEnemyAfter, 'PO: ruch faktycznie zmniejsza dystans do wrogiego miasta (marsz celowy, nie przypadkowy)');
+}
+
+console.log('14. sisterAllianceUnderAttack -- dolaczenie do armii sojusznika-siostry (niezaleznie od cityStateOffensiveSupport)');
+{
+  const mapJoinSA = makeFlatMap(30, 30);
+  const guard1 = makeGuard('saj1', PLAYER_ID, CITY_Q, CITY_R);
+  const guard2 = makeGuard('saj2', PLAYER_ID, CITY_Q, CITY_R + 1);
+  const guard3 = makeGuard('saj3', PLAYER_ID, CITY_Q + 1, CITY_R);
+  const guard4 = makeGuard('saj4', PLAYER_ID, CITY_Q - 1, CITY_R);
+  const allyUnit = makeGuard('sa-ally1', SISTER_ID, CITY_Q + 4, CITY_R);
+  const enemy = makeEnemy('sa-je1', ENEMY_ID, CITY_Q + 5, CITY_R);
+  const city = makeCity('cityA', PLAYER_ID, CITY_Q, CITY_R);
+  const atWar = (targetOwnerId) => targetOwnerId === ENEMY_ID;
+
+  const cmds = decideAITurn(
+    PLAYER_ID,
+    [guard1, guard2, guard3, guard4, allyUnit, enemy],
+    [city],
+    mapJoinSA,
+    data,
+    {
+      defensiveCopy: true,
+      citySupportLevel: 'strong',
+      cityStateOffensiveSupport: false,
+      sisterAllianceUnderAttack: true,
+      canEngageOwner: atWar,
+      warAllyOwnerIds: [SISTER_ID],
+    },
+  );
+  const moves = cmds.filter(c => c.type === 'move' && (c.unitId === 'saj1' || c.unitId === 'saj2'));
+  assert(moves.length >= 1, 'sisterAllianceUnderAttack: co najmniej jedna jednostka rusza (dolaczenie do sojusznika lub marsz na wroga)');
+}
+
+console.log('15. sisterAllianceUnderAttack -- wlacza tez atak w fali (stos >=3), nie tylko marsz');
+{
+  eq(CS_WAVE_ATTACK_MIN_STACK, 3, 'CS_WAVE_ATTACK_MIN_STACK = 3 (regresja-pin, powtorzone z testu 12)');
+  const mapSoloSA = makeFlatMap(30, 30);
+  const HEX_Q = CITY_Q + 2;
+  const HEX_R = CITY_R;
+  const soloGuard = makeGuard('sasg1', PLAYER_ID, HEX_Q, HEX_R);
+  const playerEnemy = makeEnemy('sape1', ENEMY_ID, HEX_Q + 1, HEX_R);
+  const city = makeCity('cityA', PLAYER_ID, CITY_Q, CITY_R);
+  const atWar = (targetOwnerId) => targetOwnerId === ENEMY_ID;
+
+  const cmdsSolo = decideAITurn(
+    PLAYER_ID,
+    [soloGuard, playerEnemy],
+    [city],
+    mapSoloSA,
+    data,
+    {
+      defensiveCopy: true,
+      citySupportLevel: 'strong',
+      cityStateOffensiveSupport: false,
+      sisterAllianceUnderAttack: true,
+      canEngageOwner: atWar,
+    },
+  );
+  eq(cmdsSolo.filter(c => c.type === 'attack').length, 0, 'sisterAllianceUnderAttack: solo jednostka NIE atakuje (stos 1 < 3, sam gate wave nietkniety)');
+
+  const guard2 = makeGuard('sasg2', PLAYER_ID, HEX_Q, HEX_R);
+  const guard3 = makeGuard('sasg3', PLAYER_ID, HEX_Q, HEX_R);
+  const cmdsWave = decideAITurn(
+    PLAYER_ID,
+    [soloGuard, guard2, guard3, playerEnemy],
+    [city],
+    mapSoloSA,
+    data,
+    {
+      defensiveCopy: true,
+      citySupportLevel: 'strong',
+      cityStateOffensiveSupport: false,
+      sisterAllianceUnderAttack: true,
+      canEngageOwner: atWar,
+    },
+  );
+  const attacksWaveSA = cmdsWave.filter(c => c.type === 'attack');
+  assert(attacksWaveSA.length >= 1, 'sisterAllianceUnderAttack: stos 3 na hex -> atak dozwolony (bez cityStateOffensiveSupport)');
+}
+
 // ---------------------------------------------------------------------------
 console.log('');
 console.log(`city-state-alliance-test: ${passed} passed, ${failed} failed`);

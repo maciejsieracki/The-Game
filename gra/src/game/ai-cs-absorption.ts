@@ -164,17 +164,53 @@ export function applySameCivClusterAbsorptionBoost(
   }
 }
 
-/** Q1=A — zagrożenie sojuszu sióstr tylko od gracza (ownerId === 0). */
-export function isSisterAllianceThreatOwner(ownerId: number): boolean {
-  return ownerId === 0;
+/**
+ * R-MIASTA-PANSTWA-SOJUSZ-SIOSTRZANY-ATAK-Q1 GOAL 2 — "prawdziwy najeźdźca" wobec sojuszu
+ * sióstr: gracz (aggressorOwnerId === 0) ZAWSZE kwalifikuje się. AI kwalifikuje się TYLKO
+ * gdy jej typ cywilizacji różni się od typu klastra sióstr (aggressorCivType !==
+ * clusterCivType) — AI TEGO SAMEGO typu jest CELOWO wykluczone: dla tej relacji istnieje
+ * osobny, zamierzony tor integracji (trybut→wasal→wchłonięcie,
+ * `docs/decyzje/R-AI-MP-WASAL-WCHLONIECIE.md`, Q1=A 2026-08-03) — sojusz siostrzany NIE MA
+ * go blokować.
+ *
+ * ZASTĘPUJE dawne `isSisterAllianceThreatOwner`/`unitTriggersSisterAllianceThreat` (Q1=A z
+ * poprzedniej rundy: zagrożenie = TYLKO gracz w promieniu jednostki). Operator decyduje:
+ * ZASTĄP, nie zachowuj starą sygnaturę — semantyka zmieniła się fundamentalnie (promień
+ * bliskości jednostki → status wojny z dowolnym kwalifikującym się właścicielem, plus nowa
+ * kwalifikacja AI-innego-typu), więc zachowanie starych nazw byłoby mylące.
+ */
+export function isSisterAllianceAggressorOwner(
+  aggressorOwnerId: number,
+  clusterCivType: string,
+  aggressorCivType: string | undefined,
+): boolean {
+  if (aggressorOwnerId === 0) return true;
+  return aggressorCivType !== undefined && aggressorCivType !== clusterCivType;
 }
 
-/** True gdy jednostka to gracz i nie jest siostrą z klastra. */
-export function unitTriggersSisterAllianceThreat(
-  unitOwnerId: number,
-  sisterOwnerSet: ReadonlySet<number>,
+/**
+ * R-MIASTA-PANSTWA-SOJUSZ-SIOSTRZANY-ATAK-Q1 GOAL 1 — wyzwalacz sojuszu sióstr: dany
+ * właściciel (siostra LUB dowolne miasto-państwo sprawdzane pod kątem GOAL 3) jest
+ * "zagrożony" gdy jest W STANIE WOJNY z KTÓRYMKOLWIEK kwalifikującym się napastnikiem
+ * (GOAL 2) — NIE gdy wroga jednostka jest po prostu blisko (stary `threatRadius`/
+ * `hexDistance` warunek USUNIĘTY, patrz main.ts `formSisterAlliancesIfThreatened`).
+ *
+ * Czysta logika (main.ts dostarcza gotowe callbacki `civTypeOf`/`isAtWar` — silnikowy stan
+ * `aiOwnerCivMap`/`getDiploRelation` — więc funkcja jest testowalna bez bootstrapowania
+ * całego main.ts, wzorem reszty tego pliku).
+ */
+export function isSisterOwnerThreatenedByWar(
+  ownerId: number,
+  clusterCivType: string,
+  candidateAggressorIds: readonly number[],
+  civTypeOf: (aggressorOwnerId: number) => string | undefined,
+  isAtWar: (a: number, b: number) => boolean,
 ): boolean {
-  return isSisterAllianceThreatOwner(unitOwnerId) && !sisterOwnerSet.has(unitOwnerId);
+  return candidateAggressorIds.some(aggressorId =>
+    aggressorId !== ownerId
+    && isSisterAllianceAggressorOwner(aggressorId, clusterCivType, civTypeOf(aggressorId))
+    && isAtWar(ownerId, aggressorId),
+  );
 }
 
 export function decideAiCsClusterAction(

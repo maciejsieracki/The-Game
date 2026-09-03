@@ -439,6 +439,18 @@ export interface AITurnOpts {
    */
   warAllyOwnerIds?: readonly number[];
   /**
+   * R-MIASTA-PANSTWA-SOJUSZ-SIOSTRZANY-ATAK-Q1 GOAL 3 — TEN owner ma aktywny sojusz
+   * (sojusz_pelny/sojusz_defensywny) z co najmniej jedną siostrą klastra I jest w stanie
+   * wojny z kwalifikującym się napastnikiem (GOAL 2: gracz lub AI innego typu cywilizacji
+   * niż klaster). Gdy true, wsparcie ofensywne (marsz na wroga wojny / dołączenie do armii
+   * sojusznika-siostry / atak w fali) MA działać NIEZALEŻNIE od `cityStateOffensiveSupport`
+   * (który pozostaje osobnym wymiarem: trudność MP wobec GRACZA, sterowana przez równoległy
+   * temat R-MIASTA-PANSTWA-PASYWNOSC-ROZSZERZENIE-Q1 — patrz main.ts, gate `offensiveSupport`
+   * niżej łączy oba warunki przez OR). Silnik: main.ts liczy to POZA blokiem
+   * cityStateOffensiveSupport/warAllyOwnerIds (osobne miejsce w main.ts, nie te same linie).
+   */
+  sisterAllianceUnderAttack?: boolean;
+  /**
    * Silnik: czy AI (playerId) może prowadzić walkę z ownerId celu.
    * main.ts ustawia: gracz (0) tylko przy status 'wojna' — bez tego miasta-państwa
    * atakowały zwiadowcę przy PRZYJAZNY/neutralni (bug 2026-07-21).
@@ -3264,7 +3276,12 @@ function decideDefensiveCopyTurn(
       && aiCanEngageOwner(opts, c.ownerId)
       && !sisterOwnerIds.has(c.ownerId),
   );
-  const offensiveSupport = opts.cityStateOffensiveSupport === true;
+  // R-MIASTA-PANSTWA-SOJUSZ-SIOSTRZANY-ATAK-Q1 GOAL 3: OR NOWY warunek --
+  // sisterAllianceUnderAttack (sojusz z siostrą + wojna z kwalifikującym się napastnikiem)
+  // włącza dokładnie to samo wsparcie ofensywne co cityStateOffensiveSupport (trudność MP
+  // wobec GRACZA), NIEZALEŻNIE od tamtego -- dwa osobne wymiary, jeden gate.
+  const offensiveSupport = opts.cityStateOffensiveSupport === true
+    || opts.sisterAllianceUnderAttack === true;
   const waveStackOwnerIds = new Set<number>([
     playerId,
     ...sisterOwnerIds,

@@ -25,8 +25,8 @@ const ENTRY_TS = `
 export {
   aiCsAbsorptionParams,
   applySameCivClusterAbsorptionBoost,
-  isSisterAllianceThreatOwner,
-  unitTriggersSisterAllianceThreat,
+  isSisterAllianceAggressorOwner,
+  isSisterOwnerThreatenedByWar,
   decideAiCsClusterAction,
   rollAiCsAccept,
 } from ${JSON.stringify(AI_SRC + '/game/ai-cs-absorption')};
@@ -58,8 +58,8 @@ try {
 const {
   aiCsAbsorptionParams,
   applySameCivClusterAbsorptionBoost,
-  isSisterAllianceThreatOwner,
-  unitTriggersSisterAllianceThreat,
+  isSisterAllianceAggressorOwner,
+  isSisterOwnerThreatenedByWar,
   decideAiCsClusterAction,
   rollAiCsAccept,
   startRelationForAiMajorSameCivCityState,
@@ -87,15 +87,51 @@ assert(hard.instantAnnexIfRatio === 1.25, 'T1c: hard instant ratio');
 eq(easy.instantAnnexIfRatio, null, 'T1d: easy no instant annex');
 assert(hard.clusterWarMinTurn < easy.clusterWarMinTurn, 'T1e: hard war min earlier');
 
-console.log('\n--- T2: isSisterAllianceThreatOwner ---');
-assert(isSisterAllianceThreatOwner(0), 'T2a: player is threat');
-assert(!isSisterAllianceThreatOwner(5), 'T2b: AI not threat');
+console.log('\n--- T2: isSisterAllianceAggressorOwner (R-MIASTA-PANSTWA-SOJUSZ-SIOSTRZANY-ATAK-Q1 GOAL 2) ---');
+assert(isSisterAllianceAggressorOwner(0, 'grecy', undefined), 'T2a: gracz zawsze kwalifikuje sie (nawet bez znanego civType)');
+assert(isSisterAllianceAggressorOwner(5, 'grecy', 'rzymianie'), 'T2b: AI innego typu cywilizacji kwalifikuje sie');
+assert(!isSisterAllianceAggressorOwner(5, 'grecy', 'grecy'), 'T2c: AI TEGO SAMEGO typu NIE kwalifikuje sie (chroni R-AI-MP-WASAL-WCHLONIECIE)');
+assert(!isSisterAllianceAggressorOwner(5, 'grecy', undefined), 'T2d: AI bez znanego civType (brak w aiOwnerCivMap) NIE kwalifikuje sie');
 
-console.log('\n--- T3: unitTriggersSisterAllianceThreat ---');
-const sisters = new Set([2, 3]);
-assert(unitTriggersSisterAllianceThreat(0, sisters), 'T3a: player triggers');
-assert(!unitTriggersSisterAllianceThreat(2, sisters), 'T3b: sister does not');
-assert(!unitTriggersSisterAllianceThreat(7, sisters), 'T3c: other AI does not');
+console.log('\n--- T3: isSisterOwnerThreatenedByWar (GOAL 1 -- wyzwalacz = WOJNA, nie bliskosc) ---');
+{
+  // 5 = AI TEGO SAMEGO typu co klaster (grecy); 6 = AI INNEGO typu (rzymianie).
+  const civTypeOf = (id) => ({ 5: 'grecy', 6: 'rzymianie' })[id];
+
+  // Kryterium 1 (dowod ze stary warunek blizkosci zniknal): kandydaci "obecni" (na liscie),
+  // ale ZERO stanu wojny -- sojusz NIE wyzwala sie. Dawny mechanizm reagowal na sama
+  // obecnosc jednostki gracza w promieniu; nowy w ogole nie zna pojecia promienia/dystansu.
+  assert(
+    !isSisterOwnerThreatenedByWar(2, 'grecy', [0, 5, 6], civTypeOf, () => false),
+    'T3a: brak stanu wojny -> BRAK zagrozenia mimo obecnosci kandydatow (blizkosc juz nie wystarcza)',
+  );
+
+  // Kryterium 2a: wojna z graczem -> zagrozenie (zero regresji vs dzisiejsze zachowanie).
+  assert(
+    isSisterOwnerThreatenedByWar(2, 'grecy', [0, 5, 6], civTypeOf, (a, b) => a === 2 && b === 0),
+    'T3b: wojna z graczem (ownerId=0) -> zagrozenie (zero regresji)',
+  );
+
+  // Kryterium 2b: wojna z AI INNEGO typu cywilizacji -> zagrozenie (NOWE zachowanie, Q1
+  // odwrocone: dawniej TYLKO gracz).
+  assert(
+    isSisterOwnerThreatenedByWar(2, 'grecy', [0, 5, 6], civTypeOf, (a, b) => a === 2 && b === 6),
+    'T3c: wojna z AI innego typu cywilizacji (rzymianie != grecy) -> zagrozenie (nowe zachowanie)',
+  );
+
+  // Kryterium 3 -- NEGATYWNY test: wojna z AI TEGO SAMEGO typu cywilizacji co klaster ->
+  // BRAK zagrozenia (ochrona mechanizmu trybut->wasal->wchloniecie).
+  assert(
+    !isSisterOwnerThreatenedByWar(2, 'grecy', [0, 5, 6], civTypeOf, (a, b) => a === 2 && b === 5),
+    'T3d [NEGATYWNY, kryterium 3]: wojna z AI TEGO SAMEGO typu cywilizacji -> sojusz NIE wyzwala sie',
+  );
+
+  // Wlasny ownerId wsrod kandydatow nigdy nie liczy sie jako "napastnik na samego siebie".
+  assert(
+    !isSisterOwnerThreatenedByWar(2, 'grecy', [2], civTypeOf, () => true),
+    'T3e: wlasny ownerId wsrod kandydatow nigdy nie kwalifikuje sie jako napastnik',
+  );
+}
 
 console.log('\n--- T4: decide hard instant_annex ---');
 const instant = decideAiCsClusterAction({
