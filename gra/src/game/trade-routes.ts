@@ -64,6 +64,9 @@ import type { GameMap } from '../types/map';
 import { TerenBazowy } from '../types/hex';
 import { hexDistance, hexNeighborCoords, keyOf } from '../units/setup';
 import type { City } from './cities';
+import { territoryOwnerAt, cityTerritoryRadius, type TerritoryNode } from '../map/territory';
+
+export type { TerritoryNode };
 
 // ---------------------------------------------------------------------------
 // Typy
@@ -197,6 +200,116 @@ function cityHasPort(
 }
 
 // ---------------------------------------------------------------------------
+// Wspólna granica lądowa (R-HANDEL-SZLAKI-WYMOG-GRANICY-LADOWEJ-Q1, GOAL 1)
+// ---------------------------------------------------------------------------
+
+/**
+ * Wszystkie heksy w promieniu `radius` od (cq,cr) — pełne koło aksjalne (cube
+ * distance ≤ radius), TA SAMA metryka co `axialDistance`/`cityTerritoryRadius`
+ * w map/territory.ts. Rząd 3*radius^2 heksów (max promień 15 -> ~675) — zgodnie
+ * z szacunkiem kosztu z RECON dispatchu.
+ */
+function hexesInRadius(cq: number, cr: number, radius: number): Array<{ q: number; r: number }> {
+  const out: Array<{ q: number; r: number }> = [];
+  for (let dq = -radius; dq <= radius; dq++) {
+    const rMin = Math.max(-radius, -dq - radius);
+    const rMax = Math.min(radius, -dq + radius);
+    for (let dr = rMin; dr <= rMax; dr++) {
+      out.push({ q: cq + dq, r: cr + dr });
+    }
+  }
+  return out;
+}
+
+/**
+ * Czy terytoria (wg `territoryOwnerAt`, ten sam model radialny co reszta gry —
+ * WYŁĄCZNIE reużyty, zero zmian) ownera A i ownera B FAKTYCZNIE się stykają
+ * (GOAL 1 dispatchu, zgłoszenie właściciela 2026-09-03: "nasza granica opiera
+ * się na ich granicy").
+ *
+ * Definicja "stykają się": istnieje heks należący do A, którego przynajmniej
+ * jeden sąsiad (`hexNeighborCoords`) należy do B (symetryczne — kolejność
+ * ownerA/ownerB nie ma znaczenia).
+ *
+ * Przypadek brzegowy (dispatch GOAL 1): `territoryOwnerAt` NIE filtruje terenu —
+ * przypisuje właściciela heksom wodnym w promieniu miasta tak samo jak lądowym
+ * (np. wybrzeże blisko miasta). Żeby granica WYŁĄCZNIE przez wodę (dwie wyspy
+ * blisko siebie, KRYTERIUM KOŃCA #4) nie liczyła się jako granica LĄDOWA, i
+ * heks-właściciel, i jego sąsiad muszą być lądem (`isLandPassable`, ta sama
+ * definicja co BFS trasy lądowej niżej — spójność z resztą pliku).
+ *
+ * Czysta funkcja, zero zależności od stanu modułu. Koszt: suma promieni miast
+ * ownera A (setki heksów, patrz `hexesInRadius`) — NIE cała mapa. Wołający
+ * (computeCityConnection) MUSI memoizować wynik per PARA WŁAŚCICIELI (nie per
+ * para miast) — patrz `landBorderShared` niżej — funkcja sama tego nie robi.
+ */
+export function ownersHaveSharedLandBorder(
+  ownerA: number,
+  ownerB: number,
+  territoryNodes: readonly TerritoryNode[],
+  map: GameMap,
+): boolean {
+  if (ownerA === ownerB) return false;
+  const nodesA = territoryNodes.filter(n => n.ownerId === ownerA);
+  if (nodesA.length === 0) return false;
+  if (!territoryNodes.some(n => n.ownerId === ownerB)) return false;
+
+  for (const node of nodesA) {
+    const radius = cityTerritoryRadius(node);
+    for (const hex of hexesInRadius(node.q, node.r, radius)) {
+      const hexData = map.hexes[keyOf(hex.q, hex.r)];
+      if (!hexData || !isLandPassable(hexData.terenBazowy)) continue;
+      if (territoryOwnerAt(hex.q, hex.r, territoryNodes) !== ownerA) continue;
+
+      for (const n of hexNeighborCoords(hex.q, hex.r)) {
+        const nHexData = map.hexes[keyOf(n.q, n.r)];
+        if (!nHexData || !isLandPassable(nHexData.terenBazowy)) continue;
+        if (territoryOwnerAt(n.q, n.r, territoryNodes) === ownerB) return true;
+      }
+    }
+  }
+  return false;
+}
+
+/**
+ * Memoizowana wersja `ownersHaveSharedLandBorder`, kluczowana per PARA
+ * WŁAŚCICIELI (posortowane id, symetryczny klucz) — GOAL 4 dispatchu: adjacency
+ * liczone RAZ na wywołanie refreshTradeRoutes (albo innej funkcji górnego
+ * poziomu tego łańcucha), NIE osobno per para miast. `cache` jest opcjonalny —
+ * wołający bez własnej mapy (np. pojedyncze, izolowane wywołanie
+ * `findCityConnection`) po prostu liczy świeżo za każdym razem (poprawne, tylko
+ * bez korzyści z memoizacji wielokrotnych wywołań).
+ *
+ * `territoryNodes === undefined` -> WYŁĄCZONY wymóg granicy (patrz komentarz
+ * przy `findCityConnection`/`computeCityConnection`: wsteczna zgodność dla
+ * wywołujących spoza allowlisty tego tematu, które nie przekazują dziś danych
+ * terytorium — np. `gra/tools/{trade-routes-income,trade-ilosc,trade-grant,
+ * zloto-szlak,mennica-uspienie}-test.cjs`, poza allowlistą R-HANDEL-SZLAKI-
+ * WYMOG-GRANICY-LADOWEJ-Q1 — muszą zostać zielone bez zmian, patrz GOAL 7 vs
+ * ALLOWLISTA dispatchu). Realne wywołania z main.ts ZAWSZE przekazują
+ * `buildAllTerritoryNodes()` (nigdy undefined) — więc w grze wymóg granicy jest
+ * zawsze wyegzekwowany; wyłączenie dotyczy WYŁĄCZNIE testów, które testują inny
+ * wymiar (dochód, umowy, wojna) i nie budują fikstur terytorium.
+ */
+function landBorderShared(
+  ownerA: number,
+  ownerB: number,
+  territoryNodes: readonly TerritoryNode[] | undefined,
+  map: GameMap,
+  cache: Map<string, boolean> | undefined,
+): boolean {
+  if (territoryNodes === undefined) return true;
+  const key = ownerA < ownerB ? `${ownerA}|${ownerB}` : `${ownerB}|${ownerA}`;
+  if (cache) {
+    const cached = cache.get(key);
+    if (cached !== undefined) return cached;
+  }
+  const result = ownersHaveSharedLandBorder(ownerA, ownerB, territoryNodes, map);
+  if (cache) cache.set(key, result);
+  return result;
+}
+
+// ---------------------------------------------------------------------------
 // Cache
 // ---------------------------------------------------------------------------
 
@@ -219,11 +332,16 @@ function cacheKeyFor(
   params: TradeRouteParams,
   hasPortFrom: boolean,
   hasPortTo: boolean,
+  landBorderTag: string,
 ): string {
   // Klucz symetryczny nie jest potrzebny — kierunek nie zmienia wyniku detekcji,
   // ale dla prostoty i determinizmu zapisujemy dokładnie parę tak, jak wywołana.
+  // landBorderTag ('x' brak wymogu / '1' granica / '0' brak granicy) — GOAL 4:
+  // terytoria zmieniają się co turę (podobnie jak Porty wyżej), więc wynik MUSI
+  // wejść do klucza, inaczej WeakMap<GameMap,...> (trwały między turami) zwracałby
+  // przeterminowany wynik connectivity po zmianie terytorium bez zmiany pozycji miast.
   return `${fromCity.q},${fromCity.r}|${toCity.q},${toCity.r}|${medium}|` +
-    `${params.ladMaxDist}|${params.morzeMaxDist}|${hasPortFrom ? 1 : 0}|${hasPortTo ? 1 : 0}`;
+    `${params.ladMaxDist}|${params.morzeMaxDist}|${hasPortFrom ? 1 : 0}|${hasPortTo ? 1 : 0}|${landBorderTag}`;
 }
 
 // ---------------------------------------------------------------------------
@@ -474,6 +592,23 @@ function coastalWaterNeighbors(map: GameMap, city: TradeRouteCityRef): Array<{ q
  *
  * Wynik jest cache'owany per mapa (zob. __tradeConnectionCache) — kolejne
  * wywołania dla tej samej pary/parametrów/stanu Portów są praktycznie darmowe.
+ *
+ * GOAL 1-4 (R-HANDEL-SZLAKI-WYMOG-GRANICY-LADOWEJ-Q1, 2026-09-03): medium='lad'
+ * dodatkowo wymaga WSPÓLNEJ GRANICY LĄDOWEJ między ownerami obu miast
+ * (`ownersHaveSharedLandBorder`) — zgłoszenie właściciela: "handel powinien być
+ * możliwy tylko wtedy, kiedy graniczymy". `territoryNodes` niesie dane
+ * terytorium (reużycie `territoryOwnerAt`/`cityTerritoryRadius`, model
+ * terytorium BEZ ZMIAN). `territoryNodes === undefined` (domyślne, wsteczna
+ * zgodność) WYŁĄCZA ten wymóg — patrz komentarz przy `landBorderShared` wyżej:
+ * dotyczy WYŁĄCZNIE wywołujących spoza allowlisty tego tematu (testy innego
+ * wymiaru — dochód/umowy/wojna — bez fikstur terytorium). Realne wywołania z
+ * main.ts ZAWSZE przekazują `buildAllTerritoryNodes()`. Gałąź medium='morze'
+ * BEZ ZMIAN (druga zasada właściciela: brak granicy nadal pozwala handlować
+ * przez Port).
+ * `landBorderCache` — opcjonalna memoizacja per-para-właścicieli (GOAL 4:
+ * "raz na wywołanie refreshTradeRoutes, nie per para miast") — wołający robiący
+ * wiele wywołań dla tej samej pary właścicieli (refreshTradeRoutes,
+ * citiesHaveTradeConnection) powinien przekazać WSPÓLNĄ instancję `Map`.
  */
 export function findCityConnection(
   fromCity: TradeRouteCityRef,
@@ -482,11 +617,20 @@ export function findCityConnection(
   medium: TradeRouteMedium,
   params: TradeRouteParams = DEFAULT_TRADE_ROUTE_PARAMS,
   builtByCity: ReadonlyMap<string, readonly string[]> = new Map(),
+  territoryNodes?: readonly TerritoryNode[],
+  landBorderCache?: Map<string, boolean>,
 ): CityConnectionResult {
   const distance = hexDistance(fromCity.q, fromCity.r, toCity.q, toCity.r);
 
   const hasPortFrom = medium === 'morze' ? cityHasPort(fromCity.id, builtByCity) : false;
   const hasPortTo   = medium === 'morze' ? cityHasPort(toCity.id, builtByCity) : false;
+
+  // GOAL 4: sprawdzenie granicy TYLKO dla lądu — wołane przez cache wołającego
+  // (jeśli podany), więc dla wielu miast tej samej pary właścicieli liczone raz.
+  const sharedBorder = medium === 'lad'
+    ? landBorderShared(fromCity.ownerId, toCity.ownerId, territoryNodes, map, landBorderCache)
+    : true;
+  const borderTag = medium !== 'lad' ? 'x' : territoryNodes === undefined ? 'x' : sharedBorder ? '1' : '0';
 
   let mapCache = __tradeConnectionCache.get(map);
   if (!mapCache) {
@@ -494,12 +638,12 @@ export function findCityConnection(
     __tradeConnectionCache.set(map, mapCache);
   }
 
-  const cacheKey = cacheKeyFor(fromCity, toCity, medium, params, hasPortFrom, hasPortTo);
+  const cacheKey = cacheKeyFor(fromCity, toCity, medium, params, hasPortFrom, hasPortTo, borderTag);
   const cached = mapCache.get(cacheKey);
   if (cached) return cached;
 
   const result = computeCityConnection(
-    fromCity, toCity, map, medium, params, distance, hasPortFrom, hasPortTo,
+    fromCity, toCity, map, medium, params, distance, hasPortFrom, hasPortTo, sharedBorder,
   );
   mapCache.set(cacheKey, result);
   return result;
@@ -514,6 +658,7 @@ function computeCityConnection(
   distance: number,
   hasPortFrom: boolean,
   hasPortTo: boolean,
+  sharedLandBorder: boolean,
 ): CityConnectionResult {
   const NOT_CONNECTED: CityConnectionResult = { connected: false, distance, pathHexes: [] };
   // GOAL 2 (R-HANDEL-SZLAKI-LIMIT-DYSTANSU-USUN-Q1): sufit BFS liczony DYNAMICZNIE
@@ -529,6 +674,13 @@ function computeCityConnection(
     const startKey = keyOf(fromCity.q, fromCity.r);
     const goalKey = keyOf(toCity.q, toCity.r);
     if (startKey === goalKey) return { connected: true, distance, pathHexes: [startKey] };
+
+    // R-HANDEL-SZLAKI-WYMOG-GRANICY-LADOWEJ-Q1 GOAL 2: tani check PRZED drogim
+    // BFS (early-exit) — brak wspólnej granicy lądowej blokuje trasę NIEZALEŻNIE
+    // od wyniku BFS (nawet gdy fizyczna ścieżka istnieje, np. przez pas ziemi
+    // niczyjej). Koszt (suma promieni terytorium, setki heksów) jest zwykle
+    // znacząco niższy niż koszt BFS w najgorszym przypadku (skala całej mapy).
+    if (!sharedLandBorder) return NOT_CONNECTED;
 
     if (!landComponentsMayConnect(map, fromCity, toCity, distance)) return NOT_CONNECTED;
 
@@ -714,10 +866,12 @@ function detectBestConnection(
   map: GameMap,
   params: TradeRouteParams,
   builtByCity: ReadonlyMap<string, readonly string[]>,
+  territoryNodes?: readonly TerritoryNode[],
+  landBorderCache?: Map<string, boolean>,
 ): { medium: TradeRouteMedium; distance: number } | null {
-  const land = findCityConnection(a, b, map, 'lad', params, builtByCity);
+  const land = findCityConnection(a, b, map, 'lad', params, builtByCity, territoryNodes, landBorderCache);
   if (land.connected) return { medium: 'lad', distance: land.distance };
-  const sea = findCityConnection(a, b, map, 'morze', params, builtByCity);
+  const sea = findCityConnection(a, b, map, 'morze', params, builtByCity, territoryNodes, landBorderCache);
   if (sea.connected) return { medium: 'morze', distance: sea.distance };
   return null;
 }
@@ -741,11 +895,16 @@ export function citiesHaveTradeConnection(
   map: GameMap,
   builtByCity: ReadonlyMap<string, readonly string[]>,
   params: TradeRouteParams = DEFAULT_TRADE_ROUTE_PARAMS,
+  territoryNodes?: readonly TerritoryNode[],
 ): boolean {
+  // GOAL 4: memoizacja per-para-właścicieli lokalna dla TEGO wywołania — citiesA/
+  // citiesB to zwykle wszystkie miasta dwóch konkretnych cywilizacji, więc bez
+  // tego granica liczyłaby się ponownie dla każdej pary miast zamiast raz.
+  const landBorderCache = new Map<string, boolean>();
   for (const a of citiesA) {
     for (const b of citiesB) {
-      if (findCityConnection(a, b, map, 'lad', params, builtByCity).connected) return true;
-      if (findCityConnection(a, b, map, 'morze', params, builtByCity).connected) return true;
+      if (findCityConnection(a, b, map, 'lad', params, builtByCity, territoryNodes, landBorderCache).connected) return true;
+      if (findCityConnection(a, b, map, 'morze', params, builtByCity, territoryNodes, landBorderCache).connected) return true;
     }
   }
   return false;
@@ -780,6 +939,18 @@ export function citiesHaveTradeConnection(
  * Komunikat morski („wymagany Port") zostaje — TO nadal bywa faktyczną,
  * osobną przyczyną (fizyczna ścieżka wodna istnieje, ale żadne miasto nie ma
  * Portu) — rozróżniona teraz jawnie od czysto geograficznej nieosiągalności.
+ *
+ * GOAL 5 (R-HANDEL-SZLAKI-WYMOG-GRANICY-LADOWEJ-Q1, 2026-09-03): nowa gałąź
+ * odróżnia "brak wspólnej granicy lądowej" (terytoria fizycznie osiągalne
+ * lądem — BFS by się powiódł — ale żadna para miast gracz↔partner nie ma
+ * stykających się terytoriów) od "brak fizycznego połączenia" (żadna ścieżka
+ * lądowa nie istnieje niezależnie od granic, np. inny kontynent). Wykrywane
+ * przez ponowne sprawdzenie `citiesHaveTradeConnection` z `territoryNodes`
+ * jawnie `undefined` — to WYŁĄCZA wymóg granicy (patrz `landBorderShared`),
+ * więc różnica wyniku między "z territoryNodes" i "bez" izoluje dokładnie ten
+ * jeden warunek (medium='morze' jest identyczne w obu przypadkach — granica go
+ * nie dotyczy — więc jeśli druga próba się powiedzie, to wyłącznie dzięki
+ * lądowi bez wymogu granicy).
  */
 export function diagnoseMissingTradeRouteForPartner(
   playerOwnerId: number,
@@ -790,6 +961,7 @@ export function diagnoseMissingTradeRouteForPartner(
   isAtWar: (ownerA: number, ownerB: number) => boolean,
   params: TradeRouteParams = DEFAULT_TRADE_ROUTE_PARAMS,
   partnerLabel?: string,
+  territoryNodes?: readonly TerritoryNode[],
 ): string | null {
   if (isAtWar(playerOwnerId, partnerOwnerId)) {
     return 'wojna — szlaki zawieszone';
@@ -803,13 +975,23 @@ export function diagnoseMissingTradeRouteForPartner(
     return 'brak miast do handlu';
   }
 
-  if (citiesHaveTradeConnection(playerCities, partnerCities, map, builtByCity, params)) {
+  if (citiesHaveTradeConnection(playerCities, partnerCities, map, builtByCity, params, territoryNodes)) {
     return null; // T3: geometria połączona + traktat aktywny + brak wojny => trasa istnieje, nic do zdiagnozowania.
   }
 
-  // GOAL 5: brak połączenia (lądem ANI morzem, sprawdzone wyżej dla WSZYSTKICH
-  // par miast) — rozróżnij "brak Portu" (fizyczna przyczyna łatwa do naprawienia
-  // przez gracza, budując Port) od czysto geograficznej nieosiągalności (różne
+  // GOAL 5: fizycznie osiągalne lądem (BFS by się powiódł), ale zadna para
+  // terytoriów sie nie styka -- jedyny brakujacy warunek to wspolna granica.
+  if (
+    territoryNodes !== undefined &&
+    citiesHaveTradeConnection(playerCities, partnerCities, map, builtByCity, params, undefined)
+  ) {
+    return `brak wspólnej granicy lądowej z ${label}`;
+  }
+
+  // GOAL 5 (dziedziczone z R-HANDEL-SZLAKI-LIMIT-DYSTANSU-USUN-Q1): brak
+  // połączenia (lądem ANI morzem, sprawdzone wyżej dla WSZYSTKICH par miast) —
+  // rozróżnij "brak Portu" (fizyczna przyczyna łatwa do naprawienia przez
+  // gracza, budując Port) od czysto geograficznej nieosiągalności (różne
   // kontynenty/wyspy — nic do zbudowania, to realna geografia mapy).
   const anyPlayerPort = playerCities.some(c => cityHasPort(c.id, builtByCity));
   const anyPartnerPort = partnerCities.some(c => cityHasPort(c.id, builtByCity));
@@ -888,6 +1070,16 @@ export function diagnoseMissingTradeRouteForPartner(
  *                       (main.ts, z realnych traktatów diplomacy-treaties) — ten moduł
  *                       CELOWO nie zna stanu dyplomacji, tak samo jak isAtWar.
  * @param params        progi dystansu (handel_szlaki, patrz loadTradeRouteParams).
+ * @param territoryNodes R-HANDEL-SZLAKI-WYMOG-GRANICY-LADOWEJ-Q1 (GOAL 1-4,
+ *                       2026-09-03): węzły terytorium WSZYSTKICH właścicieli
+ *                       (reużycie main.ts:buildAllTerritoryNodes()/
+ *                       map/territory.ts:territoryOwnerAt — model terytorium BEZ
+ *                       ZMIAN), do wymogu wspólnej granicy lądowej między ownerami
+ *                       (`ownersHaveSharedLandBorder`). `undefined` (domyślne) =
+ *                       WSTECZNA ZGODNOŚĆ, wymóg wyłączony — WYŁĄCZNIE dla
+ *                       wywołujących spoza allowlisty tego tematu (testy innego
+ *                       wymiaru bez fikstur terytorium, patrz komentarz przy
+ *                       `landBorderShared`); main.ts ZAWSZE przekazuje realne dane.
  */
 export function refreshTradeRoutes(
   cities: readonly TradeRouteCityRef[],
@@ -897,6 +1089,7 @@ export function refreshTradeRoutes(
   isAtWar: (ownerA: number, ownerB: number) => boolean,
   hasTradeTreaty: (ownerA: number, ownerB: number) => boolean,
   params: TradeRouteParams = DEFAULT_TRADE_ROUTE_PARAMS,
+  territoryNodes?: readonly TerritoryNode[],
 ): TradeRoute[] {
   const cityById = new Map<string, TradeRouteCityRef>();
   for (const c of cities) cityById.set(c.id, c);
@@ -904,6 +1097,12 @@ export function refreshTradeRoutes(
   const playerCities  = cities.filter(c => c.ownerId === 0);
   const foreignCities = cities.filter(c => c.ownerId !== 0);
   if (playerCities.length === 0 || foreignCities.length === 0) return [];
+
+  // GOAL 4: adjacency liczone RAZ na to wywołanie refreshTradeRoutes (lokalna
+  // Map<string,boolean> per-para-właścicieli, NIE per-para-miast — patrz
+  // `landBorderShared`), przekazywana w dół do wszystkich findCityConnection/
+  // detectBestConnection poniżej (pass 1 + pass 2).
+  const landBorderCache = new Map<string, boolean>();
 
   // T3: sloty budynkowe NIE decydują już o istnieniu trasy — wyłącznie o polu
   // `budynekOdblokowany` (patrz docstring wyżej). Ten sam mechanizm priorytetu
@@ -939,8 +1138,8 @@ export function refreshTradeRoutes(
     if (from.ownerId !== 0 || to.ownerId === 0) continue; // musi być nadal gracz->obcy
     if (isAtWar(from.ownerId, to.ownerId)) continue;
     if (!hasTradeTreaty(from.ownerId, to.ownerId)) continue; // C-HANDEL-UMOWA=B: brak/zerwana Umowa Handlowa -> trasa znika
-    const conn = findCityConnection(from, to, map, route.medium, params, builtByCity);
-    if (!conn.connected) continue; // dla morza wciąż wymaga fizycznego Portu w obu miastach (cityHasPort) — bez zmian
+    const conn = findCityConnection(from, to, map, route.medium, params, builtByCity, territoryNodes, landBorderCache);
+    if (!conn.connected) continue; // dla morza wciąż wymaga fizycznego Portu w obu miastach (cityHasPort) — bez zmian; dla lądu dodatkowo wymaga wspólnej granicy (GOAL 1)
     stillValid.push({ from, to, medium: route.medium, distance: conn.distance, id: route.id });
   }
   stillValid.sort((x, y) => x.id.localeCompare(y.id));
@@ -967,8 +1166,8 @@ export function refreshTradeRoutes(
     for (const f of foreignCities) {
       if (isAtWar(p.ownerId, f.ownerId)) continue;
       if (!hasTradeTreaty(p.ownerId, f.ownerId)) continue; // C-HANDEL-UMOWA=B: bez Umowy Handlowej trasa nie powstaje
-      const best = detectBestConnection(p, f, map, params, builtByCity);
-      if (!best) continue; // dla morza detectBestConnection/findCityConnection nadal wymaga Portu w obu miastach
+      const best = detectBestConnection(p, f, map, params, builtByCity, territoryNodes, landBorderCache);
+      if (!best) continue; // dla morza detectBestConnection/findCityConnection nadal wymaga Portu w obu miastach; dla lądu dodatkowo wymaga wspólnej granicy (GOAL 1)
       const id = tradeRouteId(p.id, f.id, best.medium);
       if (keptIds.has(id)) continue;
       fresh.push({ from: p, to: f, medium: best.medium, distance: best.distance, id });

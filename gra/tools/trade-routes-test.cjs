@@ -26,6 +26,7 @@ export {
   computeSeaTradeRouteCountByCity, computeSeaTradeBonusIncomeByCity,
   PORT_SEA_TRADE_BONUS_PIENIADZ,
   diagnoseMissingTradeRouteForPartner,
+  refreshTradeRoutes, citiesHaveTradeConnection, ownersHaveSharedLandBorder,
 } from '../src/game/trade-routes';
 `, 'utf8');
 
@@ -323,6 +324,170 @@ const diagMountainWithPort = TR.diagnoseMissingTradeRouteForPartner(0, 1, [cityM
 assert(diagMountainWithPort !== null, 'm5: nadal fizycznie zablokowane (brak wody przy miastach) -> diagnoza NIE jest null mimo Portow');
 assert(!diagMountainWithPort.includes('za daleko'), 'm5: GOAL 5 -- brak martwego tekstu "za daleko"');
 assert(!diagMountainWithPort.includes('brak Portu'), 'm5: oba miasta MAJA Port -> komunikat nie zarzuca braku Portu (rozroznienie przyczyn z GOAL 5)');
+
+// ---------------------------------------------------------------------------
+// R-HANDEL-SZLAKI-WYMOG-GRANICY-LADOWEJ-Q1 (2026-09-03) -- KRYTERIA KONCA 1-5:
+// wymog wspolnej granicy ladowej dla LAD (SEA bez zmian, druga zasada
+// wlasciciela: brak granicy nadal pozwala handlowac przez Port).
+// ---------------------------------------------------------------------------
+
+function territoryNode(q, r, ownerId, pop) {
+  return { q, r, pop: pop ?? 1, level: 1, ownerId };
+  // pop=1 -> cityRangeForPopulation(1) = max(zasieg_okolicy_baza=5, min(1,15)) = 5
+  // (data/miasto-params.json) -- KAZDY wezel nizej ma promien DOKLADNIE 5.
+}
+
+const NO_WAR2 = () => false;
+
+// (n1) KRYTERIUM #1: terytoria STYKAJACE SIE. Promien 5 kazde, centra w
+// odleglosci 11 = 5+5+1 (linia prosta wzdluz q, r=0 -- ten sam kierunek co
+// sasiad HEX_NEIGHBORS [+1,0]) -> heks q=5 (wlasciciel 10, na krawedzi swojego
+// promienia) i heks q=6 (wlasciciel 11, na krawedzi swojego promienia) SA
+// SASIADAMI -> granica istnieje.
+const cityBorderA1 = { id: 'nb-a1', ownerId: 10, q: 0, r: 0 };
+const cityBorderB1 = { id: 'nb-b1', ownerId: 11, q: 11, r: 0 };
+const nodesTouching = [territoryNode(0, 0, 10), territoryNode(11, 0, 11)];
+assert(
+  TR.ownersHaveSharedLandBorder(10, 11, nodesTouching, map),
+  'n1: ownersHaveSharedLandBorder -- promienie 5+5, centra w odleglosci 11 (=5+5+1) -> heks q=5 (wl.10) sasiaduje z q=6 (wl.11) -> true',
+);
+const touchingConn = TR.findCityConnection(
+  cityBorderA1, cityBorderB1, map, 'lad', TR.DEFAULT_TRADE_ROUTE_PARAMS, new Map(), nodesTouching,
+);
+assert(touchingConn.connected, 'n1: KRYTERIUM KONCA #1 -- terytoria stykajace sie (sasiadujace heksy) -> connected:true dla LAD');
+
+// (n2) KRYTERIUM #2: terytoria ODLEGLE O PAS NICZYJEGO TERENU. TE SAME
+// promienie (5+5) co n1, ale INNA pozycja miast (centra w odleglosci 15, nie
+// 11 jak w n1) -> A konczy sie na q=5, B zaczyna na q=10 -- pas niczyjego
+// terenu DLUGOSCI 4 heksow (q=6..9) miedzy terytoriami. Caly rzad r=0
+// (buildMap) to plaski przechodni lad, wiec BFS bez wymogu granicy JEST
+// polaczone (kontrola nizej) -- to DOKLADNIE scenariusz ze zgloszenia
+// wlasciciela: "praktycznie kazdy moze handlowac z kazdym po calym
+// kontynencie". Z wymogiem granicy (GOAL 1 tego tematu): connected:false.
+const cityBorderA2 = { id: 'nb-a2', ownerId: 20, q: 0, r: 0 };
+const cityBorderB2 = { id: 'nb-b2', ownerId: 21, q: 15, r: 0 };
+const nodesDistant = [territoryNode(0, 0, 20), territoryNode(15, 0, 21)];
+assert(
+  !TR.ownersHaveSharedLandBorder(20, 21, nodesDistant, map),
+  'n2: ownersHaveSharedLandBorder -- centra w odleglosci 15 (promienie 5+5, pas niczyjego terenu 4 heksy: q=6,7,8,9) -> false',
+);
+// Kontrola ANTY-HALUCYNACYJNA (dispatch): dowod, ze scenariusz n2 NIE jest po
+// prostu "za daleko" (czyste odbicie starego progu dystansu) -- bez wymogu
+// granicy (territoryNodes pominiete -> wymog wylaczony, patrz komentarz przy
+// findCityConnection) ta sama para miast JEST fizycznie polaczona (BFS).
+const distantPhysicalOnly = TR.findCityConnection(cityBorderA2, cityBorderB2, map, 'lad');
+assert(distantPhysicalOnly.connected, 'n2: (kontrola) fizycznie OSIAGALNE BFS bez wymogu granicy -- caly rzad r=0 to plaski przechodni lad (GOAL 1 poprzedniego tematu: brak gornego limitu dystansu)');
+const distantConn = TR.findCityConnection(
+  cityBorderA2, cityBorderB2, map, 'lad', TR.DEFAULT_TRADE_ROUTE_PARAMS, new Map(), nodesDistant,
+);
+assert(!distantConn.connected, 'n2: KRYTERIUM KONCA #2 -- fizycznie osiagalne (BFS), ale terytoria NIE stykaja sie -> connected:false dla LAD (roznica wzgledem n2-kontrola dowodzi, ze to wlasnie granica blokuje, nie fizyka)');
+eq(touchingConn.connected, true, 'n1/n2 roznicujaca kontrola: n1 (stykajace sie, odleglosc centrow 11) -> connected');
+eq(distantConn.connected, false, 'n1/n2 roznicujaca kontrola: n2 (NIE stykajace sie, odleglosc centrow 15, INNA pozycja niz n1) -> not connected');
+
+// (n3) KRYTERIUM #3: brak granicy ladowej (miasta wyspiarskie na pasie wodnym
+// mapy, q=3 i q=7 na rzedzie r=10 z woda q=4..6 pomiedzy), ALE oba miasta maja
+// Port i istnieje polaczenie morskie -> connected:true dla SEA mimo ze
+// territoryNodes SA przekazane i realnie NIE dowodza granicy (zero regresji
+// drugiej zasady wlasciciela: handel przez port nie wymaga granicy).
+const nodesSeaNoBorder = [territoryNode(3, 10, 30), territoryNode(7, 10, 31)];
+assert(
+  !TR.ownersHaveSharedLandBorder(30, 31, nodesSeaNoBorder, map),
+  'n3: (kontrola) wlasciciele 30/31 (miasta wyspiarskie rozdzielone pasem wody q=4..6) NIE maja wspolnej granicy ladowej',
+);
+const seaBuiltByCity = new Map([['nb-sea-a', ['port']], ['nb-sea-b', ['port_wielki']]]);
+const cityBorderSeaA = { id: 'nb-sea-a', ownerId: 30, q: 3, r: 10 };
+const cityBorderSeaB = { id: 'nb-sea-b', ownerId: 31, q: 7, r: 10 };
+const seaWithTerritory = TR.findCityConnection(
+  cityBorderSeaA, cityBorderSeaB, map, 'morze', TR.DEFAULT_TRADE_ROUTE_PARAMS, seaBuiltByCity, nodesSeaNoBorder,
+);
+assert(seaWithTerritory.connected, 'n3: KRYTERIUM KONCA #3 -- brak granicy ladowej + oba Porty + polaczenie morskie -> connected:true dla SEA (territoryNodes przekazane, granica realnie sprawdzona i nieobecna, morze i tak dziala)');
+
+// (n4) KRYTERIUM #4: dwie wyspy rozdzielone WYLACZNIE jednym heksem wody.
+// Promien 5 kazdej strony MASOWO zachodzi w SUROWEJ odleglosci osiowej (centra
+// o 2 heksy od siebie) -- gdyby adjacency ignorowala teren, wygladaloby to na
+// "stykajace sie" wielokrotnie. Jedyne heksy LADOWE to same centra miast (0,0)
+// i (2,0) -- NIE sasiaduja (dzieli je (1,0)=morze) -> BRAK granicy LADOWEJ.
+function buildIslandsMap() {
+  const hexes = {
+    '0,0': { terenBazowy: 'rownina' }, // wyspa A (miasto)
+    '1,0': { terenBazowy: 'morze' },   // pojedynczy heks wody miedzy wyspami
+    '2,0': { terenBazowy: 'rownina' }, // wyspa B (miasto)
+  };
+  return { szerokoscQ: 3, wysokoscR: 1, hexes, seed: 1, riverPaths: [] };
+}
+const islandsMap = buildIslandsMap();
+const cityIslandA = { id: 'isl-a', ownerId: 40, q: 0, r: 0 };
+const cityIslandB = { id: 'isl-b', ownerId: 41, q: 2, r: 0 };
+const nodesIslands = [territoryNode(0, 0, 40), territoryNode(2, 0, 41)];
+assert(
+  !TR.ownersHaveSharedLandBorder(40, 41, nodesIslands, islandsMap),
+  'n4: KRYTERIUM KONCA #4 -- dwie wyspy rozdzielone WYLACZNIE jednym heksem wody (promienie 5+5 masowo zachodza w surowej odleglosci osiowej: centra o 2) -> BRAK granicy LADOWEJ (jedyne heksy ladowe to same centra, nie sasiaduja)',
+);
+const islandsConn = TR.findCityConnection(
+  cityIslandA, cityIslandB, islandsMap, 'lad', TR.DEFAULT_TRADE_ROUTE_PARAMS, new Map(), nodesIslands,
+);
+assert(!islandsConn.connected, 'n4: findCityConnection LAD -- wyspy rozdzielone woda, brak granicy ladowej (a i BFS blokowany woda) -> connected:false');
+
+// (n5) GOAL 5: diagnoseMissingTradeRouteForPartner rozpoznaje "brak wspolnej
+// granicy" jako powod, gdy to FAKTYCZNIE jedyny brakujacy warunek (scenariusz
+// n2: fizycznie osiagalne BFS, ale terytoria nie stykaja sie) -- odroznione od
+// "brak fizycznej sciezki"/"brak umowy"/"wojna" (testy m1-m5 wyzej).
+const diagNoBorder = TR.diagnoseMissingTradeRouteForPartner(
+  20, 21, [cityBorderA2, cityBorderB2], map, new Map(), NO_WAR2, TR.DEFAULT_TRADE_ROUTE_PARAMS, undefined, nodesDistant,
+);
+eq(diagNoBorder, 'brak wspólnej granicy lądowej z cywilizacja 21', 'n5: GOAL 5 -- diagnoza zglasza "brak wspolnej granicy" gdy fizycznie osiagalne, ale terytoria nie stykaja sie');
+// Kontrola: gdy territoryNodes NIE sa przekazane (wymog wylaczony), ta sama
+// fizycznie-polaczona para dostaje diagnoze null (bez zmian wzgledem starego
+// zachowania -- m1 wyzej testuje analogiczny przypadek).
+const diagNoBorderSkipped = TR.diagnoseMissingTradeRouteForPartner(
+  20, 21, [cityBorderA2, cityBorderB2], map, new Map(), NO_WAR2,
+);
+eq(diagNoBorderSkipped, null, 'n5: (kontrola) bez territoryNodes (wymog wylaczony) -- ta sama para fizycznie polaczona -> diagnoza null');
+
+// (n6 / KRYTERIUM #5) "zywy" test refreshTradeRoutes z >=3 cywilizacjami w
+// roznych konfiguracjach sasiedztwa -- LAD tworzy/usuwa trasy wg NOWEGO
+// warunku (granica), SEA bez regresji.
+//   - p1 (gracz, owner 0, q=0,r=0)   <-> f1 (owner 1, q=11,r=0): STYKAJA SIE
+//     (jak n1, odleglosc 11) -> oczekiwana trasa LAD.
+//   - p1 (owner 0, q=0,r=0)          <-> f2 (owner 2, q=26,r=0): fizycznie
+//     osiagalne (plaski lad), ale terytoria NIE stykaja sie (odleglosc 26,
+//     szeroki pas niczyjego terenu) i brak Portu -> BRAK trasy (regres
+//     ze zgloszenia wlasciciela, teraz naprawiony).
+//   - pSea (owner 0, q=3,r=10, Port) <-> f3 (owner 3, q=7,r=10, Port): inny
+//     rzad mapy (brak sciezki ladowej w ogole, gap miedzy rzedami buildMap),
+//     ALE polaczenie morskie istnieje -> oczekiwana trasa SEA (zero regresji
+//     drugiej zasady wlasciciela).
+const livePlayer1 = { id: 'live-p1', ownerId: 0, q: 0, r: 0 };
+const livePlayerSea = { id: 'live-pSea', ownerId: 0, q: 3, r: 10 };
+const liveForeign1 = { id: 'live-f1', ownerId: 1, q: 11, r: 0 };
+const liveForeign2 = { id: 'live-f2', ownerId: 2, q: 26, r: 0 };
+const liveForeign3 = { id: 'live-f3', ownerId: 3, q: 7, r: 10 };
+const liveCities = [livePlayer1, livePlayerSea, liveForeign1, liveForeign2, liveForeign3];
+const liveTerritoryNodes = [
+  territoryNode(0, 0, 0), territoryNode(3, 10, 0),
+  territoryNode(11, 0, 1), territoryNode(26, 0, 2), territoryNode(7, 10, 3),
+];
+const liveBuiltByCity = new Map([
+  ['live-pSea', ['port']],
+  ['live-f3', ['port']],
+]);
+const liveRoutes = TR.refreshTradeRoutes(
+  liveCities, [], map, liveBuiltByCity, NO_WAR2, () => true,
+  TR.DEFAULT_TRADE_ROUTE_PARAMS, liveTerritoryNodes,
+);
+eq(liveRoutes.length, 2, 'n6: KRYTERIUM KONCA #5 -- dokladnie 2 trasy: p1<->f1 (LAD, granica) i pSea<->f3 (SEA, port) -- p1<->f2 (fizycznie osiagalne, brak granicy, brak Portu) NIE dostaje trasy');
+const liveLad = liveRoutes.find(r => r.medium === 'lad');
+const liveSea = liveRoutes.find(r => r.medium === 'morze');
+assert(!!liveLad, 'n6: trasa LAD (p1<->f1, stykajace sie terytoria) istnieje');
+eq(liveLad && liveLad.fromCityId, 'live-p1', 'n6: trasa LAD zaczyna sie w live-p1');
+eq(liveLad && liveLad.toCityId, 'live-f1', 'n6: trasa LAD konczy sie w live-f1 (jedyny sasiad graniczny gracza)');
+assert(!!liveSea, 'n6: trasa SEA (pSea<->f3, oba Porty, brak granicy ladowej) istnieje mimo braku granicy');
+eq(liveSea && liveSea.fromCityId, 'live-pSea', 'n6: trasa SEA zaczyna sie w live-pSea');
+eq(liveSea && liveSea.toCityId, 'live-f3', 'n6: trasa SEA konczy sie w live-f3');
+assert(
+  !liveRoutes.some(r => r.toCityId === 'live-f2' || r.fromCityId === 'live-f2'),
+  'n6: zadna trasa NIE dotyczy live-f2 (fizycznie osiagalne lądem, ale brak wspolnej granicy i brak Portu -- dokladnie regres ze zgloszenia wlasciciela, teraz naprawiony)',
+);
 
 console.log(`\ntrade-routes-test: ${passed} passed, ${failed} failed`);
 try { fs.unlinkSync(ENTRY_FILE); } catch (e) {}

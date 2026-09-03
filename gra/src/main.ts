@@ -530,6 +530,7 @@ import {
   TRADE_ROUTE_RESOURCE_KEYS,
   loadTradeRouteParams,
   loadTradeRouteIncomeParams,
+  DEFAULT_TRADE_ROUTE_PARAMS,
   diffTradeRoutes,
   findCityConnection,
   tradeRouteTotalDistanceIncome,
@@ -13582,6 +13583,7 @@ async function boot(): Promise<void> {
           isAtWarFn,
           hasTradeTreatyFn,
           tradeParams,
+          buildAllTerritoryNodes(), // R-HANDEL-SZLAKI-WYMOG-GRANICY-LADOWEJ-Q1: wymóg wspólnej granicy lądowej
         );
       } catch (eTrade) {
         console.error('[Handel] Blad odswiezania tras:', eTrade);
@@ -13669,7 +13671,7 @@ async function boot(): Promise<void> {
         } else if (!hasTradeTreaty(route.ownerId, route.toOwnerId)) {
           reason = 'zerwana Umowa Handlowa';
         } else {
-          const conn = findCityConnection(from, to, map, route.medium, tradeParams, builtByCity);
+          const conn = findCityConnection(from, to, map, route.medium, tradeParams, builtByCity, buildAllTerritoryNodes());
           if (!conn.connected) reason = 'brak połączenia';
         }
 
@@ -13710,7 +13712,7 @@ async function boot(): Promise<void> {
         if (hasSzlakowTreaty(activeDeals, 0, oid)) continue; // juz ma traktat szlakow
         const foreignCities = cities.filter(c => c.ownerId === oid);
         if (foreignCities.length === 0) continue;
-        if (citiesHaveTradeConnection([city], foreignCities, map, cityBuilt)) {
+        if (citiesHaveTradeConnection([city], foreignCities, map, cityBuilt, DEFAULT_TRADE_ROUTE_PARAMS, buildAllTerritoryNodes())) {
           out.push(ownerDiploLabel(oid));
         }
       }
@@ -14677,6 +14679,7 @@ async function boot(): Promise<void> {
             isAtWarForDiag,
             tradeParamsForDiag,
             ownerDiploLabel(partnerId),
+            buildAllTerritoryNodes(),
           ) ?? undefined;
         }
         activeDealsRows.push({
@@ -17384,6 +17387,8 @@ async function boot(): Promise<void> {
             cities.filter(c => c.ownerId === b),
             map,
             cityBuilt,
+            DEFAULT_TRADE_ROUTE_PARAMS,
+            buildAllTerritoryNodes(),
           );
           if (!hasConnection) continue;
 
@@ -18619,6 +18624,8 @@ async function boot(): Promise<void> {
           cities.filter(c => c.ownerId === ownerId),
           map,
           cityBuilt,
+          DEFAULT_TRADE_ROUTE_PARAMS,
+          buildAllTerritoryNodes(),
         ),
         hasWymiana: hasWymianaTreaty(activeDeals, 0, ownerId),
         hasSojusz,
@@ -29368,6 +29375,8 @@ async function boot(): Promise<void> {
                   cities.filter(c => c.ownerId === ownerId),
                   map,
                   cityBuilt,
+                  DEFAULT_TRADE_ROUTE_PARAMS,
+                  buildAllTerritoryNodes(),
                 );
                 const aiHandlowosc = resolveArchetypeTrade(aiTyp, ARCHETYPE_TRADE[aiTyp] ?? 0.5);
                 const resourceTradeOfferRaw = relStatus !== 'wojna'
