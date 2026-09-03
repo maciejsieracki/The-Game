@@ -428,6 +428,43 @@ export const MAX_PODZIAL_PRACY_BUDYNKI_PERCENT = 100;
 export const MAX_PROCENT_PULI_IMPERIUM = 100 - MIN_PODZIAL_PRACY_BUDYNKI_PERCENT;
 
 /**
+ * R-AI-ULEPSZENIA-MALO-BUDOWANE-Q1 (Krok 3): dolna granica udzialu Pracy AI CYWILIZACJI
+ * w puli imperium PODCZAS przekierowania nadwyzki (ZASADA 3 automatu ulepszen,
+ * R-AI-WYRAB-PRZY-RZECE-FARMY-Q1 runda 4 — `applyAiImprovementSurplusRedirect`
+ * w main.ts). NIE mylic z `MIN_PROCENT_PULI_IMPERIUM` nizej: tamten jest OGOLNYM
+ * dolnym koncem calego suwaka (0%, legalny swiadomy wybor gracza „wszystko na
+ * budynki"), ten jest WLASNA, WEZSZA granica, ktorej ZASADA 3 — mechanizm AI, nie
+ * decyzja gracza — nie wolno przekroczyc w dol.
+ *
+ * Krok 1 tego tematu zmierzyl zywo (`tools/ai-ulepszenia-malo-budowane-test.cjs`),
+ * ze bez tej granicy ZASADA 3 ustawia `procentBudynki` na `MAX_PODZIAL_PRACY_BUDYNKI_PERCENT`
+ * (100) — ZERO Pracy do puli imperium — na WIEKSZOSC tur scenariusza bez niedoboru
+ * surowca (5 ziaren x 40 tur, `tools/ai4-popyt-obywatele-measure.cjs`: 19-25/40 tur
+ * w nadwyzce, pierwsza nadwyzka juz w turze 15-16; wlasny harness tego tematu,
+ * populacja rosnaca 4->14 w 80 tur: udzial puli = 0% w 41-58% tur). Zero nie jest
+ * tym samym co „przekierowanie nadwyzki na budynki, bo nie ma gdzie budowac
+ * ulepszen": pula imperium finansuje TAKZE cuda na mapie, zakladanie miast i
+ * wyreb (patrz komentarz przy `MAX_PROCENT_PULI_IMPERIUM` wyzej), wiec zerujac ja
+ * calkowicie ZASADA 3 blokuje wszystkie te mechanizmy naraz — szerszy skutek, niz
+ * wlasny cel „nie buduj ulepszen na zapas".
+ *
+ * Wartosc 10 (punkty procentowe) jest decyzja projektowa Operatora, nie wynika z
+ * istniejacej stalej — zgloszona w raporcie jako punkt decyzyjny wlasciciela:
+ * wystarczajaco niska, zeby przekierowanie nadal bylo WYRAZNE (z normalnego
+ * pulapu AI, klamrowanego do `MAX_PROCENT_PULI_IMPERIUM`=50%, spada o 40 punktow,
+ * nie o 50 — cyt. „przesuwac srodki", nie „calkowicie odciac"), i wystarczajaco
+ * wysoka, zeby AI utrzymalo jakikolwiek postep ulepszen podczas dlugich okresow
+ * nadwyzki (np. gdy jedynym wyjsciem z nadwyzki jest wzrost populacji odslaniajacy
+ * nowe heksy obrabiane przez obywateli — patrz `getOnlyWorked` w ZASADZIE 2).
+ * Przy genuinie zerowej liczbie kandydatow (miasto/terytorium w pelni zabudowane)
+ * te 10% nie jest marnowane: zostaje w puli, nietkniete, dostepne na kolejna
+ * tura/nowego kandydata — pula NIE jest per-tura budzetem „wydaj albo strac"
+ * (`pracaAutoPercent`, warstwa 3, throttluje wydatek automatu z SKUMULOWANEJ puli,
+ * nie z tegorocznego przyrostu).
+ */
+export const MIN_PROCENT_PULI_IMPERIUM_ZASADA3_NADWYZKA = 10;
+
+/**
  * R-PRACA-JEDEN-PODZIAL-Q1 (pkt 6 dispatchu, runda 2/F2) — JEDNO zrodlo nazwy drugiego
  * strumienia jedynego podzialu Pracy dla CALEGO UI.
  *

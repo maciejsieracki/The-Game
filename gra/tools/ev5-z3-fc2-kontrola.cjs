@@ -145,12 +145,18 @@ function tura(body, S, ownerId, defensiveCopy, K) {
     'opts', 'ownerId', 'cities', 'aiSurplusReportByOwner', 'aiSurplusRedirectedOwners',
     'ownerDefaultPodzialPracy', 'aiSliderStateByOwner',
     'MAX_PODZIAL_PRACY_BUDYNKI_PERCENT', 'DEFAULT_PODZIAL_PRACY',
+    // R-AI-ULEPSZENIA-MALO-BUDOWANE-Q1 (Krok 3): blok ZASADY 3 aktualnego main.ts
+    // referencuje TAKZE `MIN_PROCENT_PULI_IMPERIUM_ZASADA3_NADWYZKA` (import na poziomie
+    // pliku w main.ts) — bez wstrzykniecia tutaj `new Function` rzuca ReferenceError,
+    // POLYKANY przez try/catch ZASADY 3, wiec przekierowanie po cichu nigdy sie nie
+    // wykonuje (dokladnie tak samo jak w `ai5-zasada3-harness.cjs`, patrz komentarz tam).
+    'MIN_PROCENT_PULI_IMPERIUM_ZASADA3_NADWYZKA',
     'clampPodzialPracyBudynkiPercent', 'console',
     body,
   )(
     { defensiveCopy }, ownerId, S.cities, S.aiSurplusReportByOwner, S.aiSurplusRedirectedOwners,
     S.ownerDefaultPodzialPracy, S.aiSliderStateByOwner,
-    K.MAX, K.DEF, K.clamp, console,
+    K.MAX, K.DEF, K.MIN_NADWYZKA, K.clamp, console,
   );
 }
 
@@ -242,14 +248,14 @@ function scenariuszFC2(src, K, roster) {
     S.aiSurplusReportByOwner.set(o.id, rap(true));
   }
   for (const o of roster) tura(z3.body, S, o.id, o.pm, K);
-  const naMax = (o) => S.ownerDefaultPodzialPracy.get(o.id).procentBudynki === K.MAX;
+  const naPrzekierowanej = (o) => S.ownerDefaultPodzialPracy.get(o.id).procentBudynki === K.redirected;
   const pm = roster.filter(o => o.pm), civ = roster.filter(o => !o.pm);
   return {
-    pmPrzekierowane: pm.filter(naMax).length, pmIle: pm.length,
-    civPrzekierowane: civ.filter(naMax).length, civIle: civ.length,
+    pmPrzekierowane: pm.filter(naPrzekierowanej).length, pmIle: pm.length,
+    civPrzekierowane: civ.filter(naPrzekierowanej).length, civIle: civ.length,
     pmZnaczniki: pm.filter(o => S.aiSurplusRedirectedOwners.has(o.id)).length,
     pmMiastaNaMax: S.cities.filter(c => pm.some(o => o.id === c.ownerId)
-      && c.podzialPracy.procentBudynki === K.MAX).length,
+      && c.podzialPracy.procentBudynki === K.redirected).length,
   };
 }
 
@@ -262,10 +268,19 @@ if (require.main === module) {
     DEF: CITIES.DEFAULT_PODZIAL_PRACY,
     clamp: CITIES.clampPodzialPracyBudynkiPercent,
     pula: CITIES.procentPuliImperiumZBudynkow,
+    // R-AI-ULEPSZENIA-MALO-BUDOWANE-Q1 (Krok 3): cel ZASADY 3 juz nie jest `MAX` (100 —
+    // zero puli imperium na stale, patrz uzasadnienie przy `MIN_PROCENT_PULI_IMPERIUM_
+    // ZASADA3_NADWYZKA` w game/cities.ts) — jest to WARTOSC PRZYCIETA PODLOGA.
+    MIN_NADWYZKA: CITIES.MIN_PROCENT_PULI_IMPERIUM_ZASADA3_NADWYZKA,
+    redirected: Math.min(
+      CITIES.MAX_PODZIAL_PRACY_BUDYNKI_PERCENT,
+      100 - CITIES.MIN_PROCENT_PULI_IMPERIUM_ZASADA3_NADWYZKA,
+    ),
   };
   console.log('=== ev5-z3-fc2-kontrola (Evaluator, wlasna metoda) ===');
   console.log('main.ts:', MAIN_TS);
-  console.log(`stale z cities.ts: MAX=${K.MAX} DEFAULT=${K.DEF.procentBudynki} pula(MAX)=${K.pula(K.MAX)}%`);
+  console.log(`stale z cities.ts: MAX=${K.MAX} DEFAULT=${K.DEF.procentBudynki} pula(MAX)=${K.pula(K.MAX)}% `
+    + `cel-przekierowania=${K.redirected} (podloga nadwyzki=${K.MIN_NADWYZKA})`);
 
   // mutacje zrodla — kolumna PRZED
   const bezStraznika = src.replace('if (!opts.defensiveCopy) {\n              try {', 'if (true) {\n              try {');
@@ -283,14 +298,20 @@ if (require.main === module) {
   fmt(po,    'PO    ');
   fmt(legacy, 'LEGACY');
 
-  ok(przed.po.civNadw === K.MAX, `PRZED: AI CYWILIZACJI zostaje na ${K.MAX}% budynkow (blad Z-3 odtworzony)`);
-  ok(K.pula(przed.po.civNadw) === 0, 'PRZED: pula imperium 0% — zero Pracy na ulepszenia terenu, trwale');
-  ok(po.po.civNadw !== K.MAX, `PO: AI CYWILIZACJI wraca z ${K.MAX}% (jest ${po.po.civNadw}%)`);
-  ok(K.pula(po.po.civNadw) > 0, `PO: pula imperium ${K.pula(po.po.civNadw)}% > 0 — Praca znowu plynie na ulepszenia`);
+  // R-AI-ULEPSZENIA-MALO-BUDOWANE-Q1 (Krok 3): cel przekierowania ZASADY 3 = `K.redirected`
+  // (przyciety podloga), NIE `K.MAX` — patrz uzasadnienie przy budowie `K` wyzej. Pula
+  // imperium podczas "utkniecia" (blad Z-3 tego historycznego tematu odtworzony) jest wiec
+  // TERAZ `K.MIN_NADWYZKA`%, nie 0% — Krok 3 tego tematu ZLAGODZIL TAKZE najgorszy przypadek
+  // starego bledu Z-3, jesli mialby kiedys wrocic (podloga dziala niezaleznie od przyczyny
+  // "utkniecia" na przekierowanej wartosci).
+  ok(przed.po.civNadw === K.redirected, `PRZED: AI CYWILIZACJI zostaje na ${K.redirected}% budynkow (blad Z-3 odtworzony)`);
+  ok(K.pula(przed.po.civNadw) === K.MIN_NADWYZKA, `PRZED: pula imperium ${K.MIN_NADWYZKA}% (podloga) — Praca na ulepszenia terenu przycieta do minimum, trwale`);
+  ok(po.po.civNadw !== K.redirected, `PO: AI CYWILIZACJI wraca z ${K.redirected}% (jest ${po.po.civNadw}%)`);
+  ok(K.pula(po.po.civNadw) > K.MIN_NADWYZKA, `PO: pula imperium ${K.pula(po.po.civNadw)}% > podlogi ${K.MIN_NADWYZKA}% — Praca znowu plynie na ulepszenia w normalnym tempie`);
   ok(po.znacznikiPoLoad.length === 1 && po.znacznikiPoLoad[0] === 11, `PO: po load znacznik ma dokladnie [11], jest [${po.znacznikiPoLoad}]`);
   ok(po.po.civBez === 60, `PO: owner NIGDY nieprzekierowany nietkniety (60 -> ${po.po.civBez})`);
   ok(po.miastaPo.every(([oid, v]) => oid !== 11 || v === po.po.civNadw), 'PO: miasta ownera zgodne z podzialem imperium');
-  ok(legacy.po.civNadw === K.MAX, 'LEGACY (sejw bez pola): zbior pusty -> zachowanie jak PRZED (zgodnosc wsteczna, nie crash)');
+  ok(legacy.po.civNadw === K.redirected, 'LEGACY (sejw bez pola): zbior pusty -> zachowanie jak PRZED (zgodnosc wsteczna, nie crash)');
 
   console.log('\n--- FC-2: miasta-panstwa vs AI CYWILIZACJI, jawne rostery ---');
   const rostery = [

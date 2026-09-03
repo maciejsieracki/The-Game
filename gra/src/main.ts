@@ -194,6 +194,7 @@ import {
   procentPuliImperiumZBudynkow,
   podzialPracyZProcentuPuli,
   MAX_PROCENT_PULI_IMPERIUM,
+  MIN_PROCENT_PULI_IMPERIUM_ZASADA3_NADWYZKA,
   resolveUlepszeniaPracaPercentFromRaw,
   freshUlepszeniaEmpirePolicy,
   resolveEffectiveUlepszenia,
@@ -29662,6 +29663,18 @@ async function boot(): Promise<void> {
             // Raport nadwyżki JEST dla nich wypełniany (`decideDefensiveCopyTurn` woła ten sam
             // `planCityImprovements`), więc bez tego warunku kopie obronne dostawały
             // przekierowanie budżetu na budynki — poszerzenie zakresu wobec §14.
+            //
+            // R-AI-ULEPSZENIA-MALO-BUDOWANE-Q1 (Krok 3): „na maksimum" (komentarz wyżej)
+            // NIE oznacza już `MAX_PODZIAL_PRACY_BUDYNKI_PERCENT` (100 — zero Pracy do puli
+            // imperium). Krok 1 tego tematu zmierzył żywo, że przy stałym braku niedoboru
+            // surowca ta pełna nadwyżka utrzymuje się WIĘKSZOŚĆ tur (patrz uzasadnienie
+            // przy `MIN_PROCENT_PULI_IMPERIUM_ZASADA3_NADWYZKA` w `game/cities.ts`) — więc
+            // „przekierowanie nadwyżki" w praktyce zerowało pulę imperium (a z nią cuda na
+            // mapie, zakładanie miast, wyrąb — nie tylko ulepszenia) na dziesiątki tur pod
+            // rząd, dokładnie objaw zgłoszony przez właściciela. `pct` jest teraz przycięte
+            // tak, żeby udział puli nigdy nie spadł poniżej tej dolnej granicy — nadal
+            // WYRAŹNE przekierowanie (z normalnego pułapu AI ~50% w dół), nie całkowite
+            // odcięcie.
             // -----------------------------------------------------------------
             if (!opts.defensiveCopy) {
               try {
@@ -29669,7 +29682,18 @@ async function boot(): Promise<void> {
                 const redirected = aiSurplusRedirectedOwners.has(ownerId);
                 if (surplusRep?.surplus) {
                   if (!redirected) aiSurplusRedirectedOwners.add(ownerId);
-                  const pct = MAX_PODZIAL_PRACY_BUDYNKI_PERCENT;
+                  // Evaluator runda 1 (zarzut 2): jedyne z CZTERECH miejsc w tym pliku piszacych
+                  // `procentBudynki` dla AI CYWILIZACJI, ktore NIE przechodzilo przez
+                  // `clampPodzialPracyBudynkiPercent` — dzis nieszkodliwe (stala=10 -> pct=90, w
+                  // zakresie [50,100]), ale twardy sufit 50% byl tu strzezony WYLACZNIE
+                  // rozsadkiem wartosci stalej, nie strukturalnie jak wszedzie indziej. Klamra
+                  // dodana dla spojnosci — patrz test mutacyjny w
+                  // ai-ulepszenia-malo-budowane-test.cjs (MIN_PROCENT_PULI_IMPERIUM_ZASADA3_NADWYZKA
+                  // > 50 nadal daje pct w [50,100]).
+                  const pct = clampPodzialPracyBudynkiPercent(Math.min(
+                    MAX_PODZIAL_PRACY_BUDYNKI_PERCENT,
+                    100 - MIN_PROCENT_PULI_IMPERIUM_ZASADA3_NADWYZKA,
+                  ));
                   ownerDefaultPodzialPracy.set(ownerId, { procentBudynki: pct });
                   for (const c of cities) {
                     if (c.ownerId !== ownerId) continue;

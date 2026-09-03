@@ -124,11 +124,11 @@ for (const seed of [1337, 4242, 90210]) {
   const po = H.scenariuszFC2(realSrc, seed, CITIES);
   say(`  ziarno ${String(seed).padEnd(6)} PM=[${przed.pmIds.join(',')}] CIV=[${przed.civIds.join(',')}]`);
   say(`    PRZED: PM przekierowanych ${przed.pmPrzekierowane}/${przed.pmWszystkich}`
-    + ` | miast PM na 100% budynkow ${przed.pmMiastaNaMax}`
+    + ` | miast PM na przekierowanej wartosci budynkow ${przed.pmMiastaNaMax}`
     + ` | AI CYWILIZACJI przekierowanych ${przed.civPrzekierowane}/${przed.civWszystkich}`
     + ` | znaczniki PM w Set: ${przed.pmZnaczniki}`);
   say(`    PO:    PM przekierowanych ${po.pmPrzekierowane}/${po.pmWszystkich}`
-    + ` | miast PM na 100% budynkow ${po.pmMiastaNaMax}`
+    + ` | miast PM na przekierowanej wartosci budynkow ${po.pmMiastaNaMax}`
     + ` | AI CYWILIZACJI przekierowanych ${po.civPrzekierowane}/${po.civWszystkich}`
     + ` | znaczniki PM w Set: ${po.pmZnaczniki}`);
 }

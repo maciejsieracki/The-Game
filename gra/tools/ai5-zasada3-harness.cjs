@@ -96,13 +96,37 @@ function runZasada3(body, S, ownerId, opts, CITIES) {
     'opts', 'ownerId', 'cities', 'aiSurplusReportByOwner', 'aiSurplusRedirectedOwners',
     'ownerDefaultPodzialPracy', 'aiSliderStateByOwner',
     'MAX_PODZIAL_PRACY_BUDYNKI_PERCENT', 'DEFAULT_PODZIAL_PRACY',
+    // R-AI-ULEPSZENIA-MALO-BUDOWANE-Q1 (Krok 3): blok ZASADY 3 wyciety z main.ts od tego
+    // tematu referencuje TAKZE `MIN_PROCENT_PULI_IMPERIUM_ZASADA3_NADWYZKA` (dolna granica
+    // przekierowania) — w main.ts jest to zwykly import modulu na poziomie pliku, wiec musi
+    // byc jawnie wstrzykniety tu, tak samo jak pozostale importy z `game/cities`. Bez tego
+    // wyciety kod rzuca ReferenceError, ktory GLOB TRY/CATCH ZASADY 3 (main.ts) po cichu
+    // polyka (`console.error`), wiec test bez tej zmiany NIE FAILUJE GLOSNO — po prostu
+    // przekierowanie nigdy sie nie wykonuje (zlapane Evaluatorem/Operatorem tego tematu:
+    // Z3l/Z3m spadaly do wartosci sprzed przekierowania, „70->70").
+    'MIN_PROCENT_PULI_IMPERIUM_ZASADA3_NADWYZKA',
     'clampPodzialPracyBudynkiPercent', 'console',
     body,
   )(
     opts, ownerId, S.cities, S.aiSurplusReportByOwner, S.aiSurplusRedirectedOwners,
     S.ownerDefaultPodzialPracy, S.aiSliderStateByOwner,
     CITIES.MAX_PODZIAL_PRACY_BUDYNKI_PERCENT, CITIES.DEFAULT_PODZIAL_PRACY,
+    CITIES.MIN_PROCENT_PULI_IMPERIUM_ZASADA3_NADWYZKA,
     CITIES.clampPodzialPracyBudynkiPercent, console,
+  );
+}
+
+/**
+ * Wartosc `procentBudynki`, na jaka ZASADA 3 przestawia AI CYWILIZACJI PODCZAS nadwyzki —
+ * liczona TA SAMA formula co main.ts (`Math.min(MAX_PODZIAL_PRACY_BUDYNKI_PERCENT,
+ * 100 - MIN_PROCENT_PULI_IMPERIUM_ZASADA3_NADWYZKA)`), nie zaslepka. Testy porownuja do
+ * TEJ funkcji, nie do surowego `MAX_PODZIAL_PRACY_BUDYNKI_PERCENT` — inaczej pinowalyby
+ * wartosc SPRZED Kroku 3 tego tematu.
+ */
+function przekierowanyProcentBudynki(CITIES) {
+  return Math.min(
+    CITIES.MAX_PODZIAL_PRACY_BUDYNKI_PERCENT,
+    100 - CITIES.MIN_PROCENT_PULI_IMPERIUM_ZASADA3_NADWYZKA,
   );
 }
 
@@ -196,20 +220,21 @@ function scenariuszFC2(src, seed, CITIES) {
   for (const o of owners) runZasada3(z3.body, S, o.ownerId, { defensiveCopy: o.defensiveCopy }, CITIES);
   const pm = owners.filter(o => o.defensiveCopy);
   const civ = owners.filter(o => !o.defensiveCopy);
-  const na100 = (o) => S.ownerDefaultPodzialPracy.get(o.ownerId).procentBudynki === CITIES.MAX_PODZIAL_PRACY_BUDYNKI_PERCENT;
+  const redirectedPct = przekierowanyProcentBudynki(CITIES);
+  const naPrzekierowanej = (o) => S.ownerDefaultPodzialPracy.get(o.ownerId).procentBudynki === redirectedPct;
   return {
     seed, guard: z3.guard,
     pmIds: pm.map(o => o.ownerId), civIds: civ.map(o => o.ownerId),
-    pmPrzekierowane: pm.filter(na100).length, pmWszystkich: pm.length,
-    civPrzekierowane: civ.filter(na100).length, civWszystkich: civ.length,
+    pmPrzekierowane: pm.filter(naPrzekierowanej).length, pmWszystkich: pm.length,
+    civPrzekierowane: civ.filter(naPrzekierowanej).length, civWszystkich: civ.length,
     pmZnaczniki: pm.filter(o => S.aiSurplusRedirectedOwners.has(o.ownerId)).length,
     pmMiastaNaMax: S.cities.filter(c => pm.some(o => o.ownerId === c.ownerId)
-      && c.podzialPracy.procentBudynki === CITIES.MAX_PODZIAL_PRACY_BUDYNKI_PERCENT).length,
+      && c.podzialPracy.procentBudynki === redirectedPct).length,
   };
 }
 
 module.exports = {
   ZASADA3_ANCHOR, SAVE_SIG, RESTORE_SIG,
   ts2js, extractZasada3, extractSaveRhs, extractLoadBlock,
-  makeSession, runZasada3, scenariuszZ3, rosterZZiarna, scenariuszFC2,
+  makeSession, runZasada3, przekierowanyProcentBudynki, scenariuszZ3, rosterZZiarna, scenariuszFC2,
 };

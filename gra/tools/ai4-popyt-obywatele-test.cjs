@@ -349,19 +349,29 @@ console.log('RUNDA 5 — naprawy Z-3 (persist znacznika) i FC-2 (miasta-panstwa)
 {
   const H = require(path.resolve(__dirname, 'ai5-zasada3-harness.cjs'));
   const mainSrc = fs.readFileSync(path.resolve(SRC, 'main.ts'), 'utf8');
+  // R-AI-ULEPSZENIA-MALO-BUDOWANE-Q1 (Krok 3): ZASADA 3 juz NIE przestawia AI na
+  // MAX_PODZIAL_PRACY_BUDYNKI_PERCENT (100 = zero Pracy do puli imperium) — Krok 1 tego
+  // tematu zmierzyl zywo, ze to zerowalo pule (a z nia ulepszenia, cuda, zakladanie miast)
+  // na WIEKSZOSC tur w scenariuszu bez niedoboru surowca. Cel tych dwoch asercji (redirect
+  // sie dzieje / wraca po ustaniu nadwyzki / omija miasta-panstwa) jest identyczny —
+  // zmienil sie TYLKO cel liczbowy przekierowania, z `MAX_PODZIAL_PRACY_BUDYNKI_PERCENT`
+  // na `H.przekierowanyProcentBudynki(CITIES)` (patrz `game/cities.ts`,
+  // `MIN_PROCENT_PULI_IMPERIUM_ZASADA3_NADWYZKA`).
+  const redirectedPct = H.przekierowanyProcentBudynki(CITIES);
 
   // --- Z3l (naprawa Z-3): save w turze z nadwyzka -> load -> tura bez nadwyzki ---
   let z3 = null, z3err = null;
   try { z3 = H.scenariuszZ3(mainSrc, CITIES); } catch (e) { z3err = String(e && e.message || e); }
   ok(z3 !== null
     && z3.saveRhs !== null && !z3.loadErr
-    && z3.procentWNadwyzce === CITIES.MAX_PODZIAL_PRACY_BUDYNKI_PERCENT
+    && z3.procentWNadwyzce === redirectedPct
     && z3.redirectedPoLoad === true
-    && z3.procentPo !== CITIES.MAX_PODZIAL_PRACY_BUDYNKI_PERCENT
+    && z3.procentPo !== redirectedPct
     && z3.pulaImperiumPo > 0
-    && z3.miastaPo.every(p => p !== CITIES.MAX_PODZIAL_PRACY_BUDYNKI_PERCENT),
+    && z3.miastaPo.every(p => p !== redirectedPct),
     `Z3l: SAVE/LOAD ZASADY 3 — po zapisie w turze z nadwyzka i wczytaniu w swiezej sesji `
-    + `podzial Pracy AI CYWILIZACJI WRACA (nie zostaje na 100% budynkow = 0% puli imperium). `
+    + `podzial Pracy AI CYWILIZACJI WRACA (nie zostaje na przekierowanej wartosci ${redirectedPct}% `
+    + `budynkow na zawsze). `
     + (z3err ? `BLAD: ${z3err}` : `zapis=${z3 && z3.saveRhs} odczyt=${z3 && !z3.loadErr} `
       + `znacznik po load=${z3 && z3.redirectedPoLoad} `
       + `procentBudynki ${z3 && z3.procentWNadwyzce}->${z3 && z3.procentPo} `
@@ -376,9 +386,9 @@ console.log('RUNDA 5 — naprawy Z-3 (persist znacznika) i FC-2 (miasta-panstwa)
     && fc.every(r => r.pmPrzekierowane === 0 && r.pmZnaczniki === 0 && r.pmMiastaNaMax === 0)
     && fc.every(r => r.civPrzekierowane === r.civWszystkich),
     `Z3m: ZASADA 3 pomija MIASTA-PANSTWA (opts.defensiveCopy) i obejmuje AI CYWILIZACJI — `
-    + `${ziarna.length} ziarna, wszyscy ownerzy w stanie nadwyzki. `
+    + `${ziarna.length} ziarna, wszyscy ownerzy w stanie nadwyzki (cel przekierowania: ${redirectedPct}% budynkow). `
     + (fcerr ? `BLAD: ${fcerr}` : (fc || []).map(r =>
-      `s${r.seed}: PM ${r.pmPrzekierowane}/${r.pmWszystkich} (miast na max ${r.pmMiastaNaMax}), `
+      `s${r.seed}: PM ${r.pmPrzekierowane}/${r.pmWszystkich} (miast na przekierowanej ${r.pmMiastaNaMax}), `
       + `CIV ${r.civPrzekierowane}/${r.civWszystkich}`).join(' | ')));
 }
 

@@ -101,6 +101,15 @@ const DEFAULT_PODZIAL_PRACY = { procentBudynki: 70 };
 const clampPodzialPracyBudynkiPercent = v => Math.max(0, Math.min(100, Number(v) || 0));
 // realna formula z main.ts: 100% budynkow => 0% Pracy do puli imperium (zero ulepszen terenu)
 const procentPuliImperiumZBudynkow = pb => 100 - clampPodzialPracyBudynkiPercent(pb);
+// R-AI-ULEPSZENIA-MALO-BUDOWANE-Q1 (Krok 3): dolna granica przekierowania ZASADY 3 —
+// wyciety blok main.ts referencuje ten symbol jako zwykly import na poziomie pliku, wiec
+// atrapa silnika musi go dostarczyc, tak jak dostarcza `MAX_PODZIAL_PRACY_BUDYNKI_PERCENT`
+// i pozostale. Wartosc pinowana LITERALEM (10), NIE odczytana z game/cities.ts — celowo:
+// ta sonda jest NIEZALEZNA od Operatora takze co do stalych (jak reszta pliku), wiec gdyby
+// ktos przypadkiem zmienil `MIN_PROCENT_PULI_IMPERIUM_ZASADA3_NADWYZKA` w cities.ts bez
+// zamiaru, sonda i tak zapali sie na rozjezdzie.
+const MIN_PROCENT_PULI_IMPERIUM_ZASADA3_NADWYZKA = 10;
+const REDIRECTED_PCT = Math.min(MAX_PODZIAL_PRACY_BUDYNKI_PERCENT, 100 - MIN_PROCENT_PULI_IMPERIUM_ZASADA3_NADWYZKA);
 
 function nowySwiat(roster) {
   // roster: [{ownerId, mp:boolean, miasta:n, sliderPct:n}]
@@ -121,12 +130,16 @@ function turaZasady3(W, ownerId, blokText) {
   const fn = new Function(
     'opts', 'ownerId', 'cities', 'aiSurplusReportByOwner', 'aiSurplusRedirectedOwners',
     'ownerDefaultPodzialPracy', 'aiSliderStateByOwner',
-    'MAX_PODZIAL_PRACY_BUDYNKI_PERCENT', 'DEFAULT_PODZIAL_PRACY', 'clampPodzialPracyBudynkiPercent', 'console',
+    'MAX_PODZIAL_PRACY_BUDYNKI_PERCENT', 'DEFAULT_PODZIAL_PRACY',
+    'MIN_PROCENT_PULI_IMPERIUM_ZASADA3_NADWYZKA',
+    'clampPodzialPracyBudynkiPercent', 'console',
     '"use strict";\n' + blokText,
   );
   fn({ defensiveCopy: W.typCityCopy.has(ownerId) }, ownerId, W.cities, W.aiSurplusReportByOwner,
      W.aiSurplusRedirectedOwners, W.ownerDefaultPodzialPracy, W.aiSliderStateByOwner,
-     MAX_PODZIAL_PRACY_BUDYNKI_PERCENT, DEFAULT_PODZIAL_PRACY, clampPodzialPracyBudynkiPercent, console);
+     MAX_PODZIAL_PRACY_BUDYNKI_PERCENT, DEFAULT_PODZIAL_PRACY,
+     MIN_PROCENT_PULI_IMPERIUM_ZASADA3_NADWYZKA,
+     clampPodzialPracyBudynkiPercent, console);
 }
 
 /* zapis -> JSON -> odczyt, PRAWDZIWYMI liniami ze zrodla */
@@ -190,8 +203,8 @@ const PO    = osCzasu(true);
 console.log(`  PRZED: T1 ${PRZED.t1.p11} | meta=${JSON.stringify(PRZED.sejwMeta)} | poLoad ${PRZED.poLoad.p11} znacznik=${JSON.stringify(PRZED.poLoad.znacznik)} | T2 ${PRZED.t2.p11} | T3 ${PRZED.t3.p11}`);
 console.log(`  PO   : T1 ${PO.t1.p11} | meta=${JSON.stringify(PO.sejwMeta)} | poLoad ${PO.poLoad.p11} znacznik=${JSON.stringify(PO.poLoad.znacznik)} | T2 ${PO.t2.p11} | T3 ${PO.t3.p11}`);
 
-t('T1 (obie kolumny): nadwyzka podnosi AI CYWILIZACJI do 100% budynkow',
-  PRZED.t1.p11.every(v => v === 100) && PO.t1.p11.every(v => v === 100), `PRZED ${PRZED.t1.p11} / PO ${PO.t1.p11}`);
+t(`T1 (obie kolumny): nadwyzka podnosi AI CYWILIZACJI do ${REDIRECTED_PCT}% budynkow (przyciete podloga)`,
+  PRZED.t1.p11.every(v => v === REDIRECTED_PCT) && PO.t1.p11.every(v => v === REDIRECTED_PCT), `PRZED ${PRZED.t1.p11} / PO ${PO.t1.p11}`);
 t('PRZED: znacznik NIE trafia do sejwu (meta puste)', Object.keys(PRZED.sejwMeta).length === 0, JSON.stringify(PRZED.sejwMeta));
 t('PO: znacznik trafia do sejwu jako plaska tablica ownerId i PRZEZYWA JSON',
   Array.isArray(PO.sejwMeta.aiSurplusRedirectedOwners)
@@ -201,15 +214,15 @@ t('PO: znacznik trafia do sejwu jako plaska tablica ownerId i PRZEZYWA JSON',
 t('PRZED: po wczytaniu znacznik PUSTY -> galaz powrotu martwa',
   PRZED.poLoad.znacznik.length === 0, JSON.stringify(PRZED.poLoad.znacznik));
 t('PO: po wczytaniu znacznik ODTWORZONY', PO.poLoad.znacznik.join(',') === '11', JSON.stringify(PO.poLoad.znacznik));
-t('PRZED: T2 po ustaniu nadwyzki AI CYWILIZACJI ZOSTAJE na 100% (regres Z-3)',
-  PRZED.t2.p11.every(v => v === 100), `${PRZED.t2.p11}`);
-t('PRZED: T3 — regres TRWALY, nie jednorazowy', PRZED.t3.p11.every(v => v === 100), `${PRZED.t3.p11}`);
-t('PO: T2 po ustaniu nadwyzki AI CYWILIZACJI WRACA z 100%',
-  PO.t2.p11.every(v => v !== 100), `${PO.t2.p11}`);
-t('PRZED: pula imperium ownera 11 zostaje na 0% -> zero Pracy na ulepszenia terenu',
-  procentPuliImperiumZBudynkow(PRZED.t3.p11[0]) === 0, `pula ${procentPuliImperiumZBudynkow(PRZED.t3.p11[0])}%`);
-t('PO: pula imperium ownera 11 wraca > 0%',
-  procentPuliImperiumZBudynkow(PO.t2.p11[0]) > 0, `pula ${procentPuliImperiumZBudynkow(PO.t2.p11[0])}%`);
+t(`PRZED: T2 po ustaniu nadwyzki AI CYWILIZACJI ZOSTAJE na ${REDIRECTED_PCT}% (regres Z-3)`,
+  PRZED.t2.p11.every(v => v === REDIRECTED_PCT), `${PRZED.t2.p11}`);
+t('PRZED: T3 — regres TRWALY, nie jednorazowy', PRZED.t3.p11.every(v => v === REDIRECTED_PCT), `${PRZED.t3.p11}`);
+t(`PO: T2 po ustaniu nadwyzki AI CYWILIZACJI WRACA z ${REDIRECTED_PCT}%`,
+  PO.t2.p11.every(v => v !== REDIRECTED_PCT), `${PO.t2.p11}`);
+t(`PRZED: pula imperium ownera 11 zostaje na podlodze ${MIN_PROCENT_PULI_IMPERIUM_ZASADA3_NADWYZKA}% -> Praca na ulepszenia terenu przycieta do minimum, nie zero`,
+  procentPuliImperiumZBudynkow(PRZED.t3.p11[0]) === MIN_PROCENT_PULI_IMPERIUM_ZASADA3_NADWYZKA, `pula ${procentPuliImperiumZBudynkow(PRZED.t3.p11[0])}%`);
+t(`PO: pula imperium ownera 11 wraca > podlogi ${MIN_PROCENT_PULI_IMPERIUM_ZASADA3_NADWYZKA}%`,
+  procentPuliImperiumZBudynkow(PO.t2.p11[0]) > MIN_PROCENT_PULI_IMPERIUM_ZASADA3_NADWYZKA, `pula ${procentPuliImperiumZBudynkow(PO.t2.p11[0])}%`);
 t('owner 12 (NIGDY nadwyzki) nietkniety w obu kolumnach na calej osi czasu',
   PRZED.t1.p12.every(v => v === 70) && PO.t1.p12.every(v => v === 70)
   && PRZED.t2.p12.every(v => v === 70) && PO.t2.p12.every(v => v === 70),
@@ -237,7 +250,7 @@ for (let i = 0; i < ROSTERY.length; i++) {
     for (const o of R) W.aiSurplusReportByOwner.set(o.ownerId, { surplus: true });
     for (const o of R) turaZasady3(W, o.ownerId, blok);
     const mp = R.filter(o => o.mp), civ = R.filter(o => !o.mp);
-    const cnt = (list) => list.reduce((a, o) => a + pb(W, o.ownerId).filter(v => v === 100).length, 0);
+    const cnt = (list) => list.reduce((a, o) => a + pb(W, o.ownerId).filter(v => v === REDIRECTED_PCT).length, 0);
     const tot = (list) => list.reduce((a, o) => a + o.miasta, 0);
     return { mp: `${cnt(mp)}/${tot(mp)}`, civ: `${cnt(civ)}/${tot(civ)}`, znacznikMp: mp.filter(o => W.aiSurplusRedirectedOwners.has(o.ownerId)).length };
   };
