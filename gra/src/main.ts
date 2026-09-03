@@ -25350,9 +25350,19 @@ async function boot(): Promise<void> {
         zdobyczePowerByOwner.set(newOwner, (zdobyczePowerByOwner.get(newOwner) ?? 0) + powerGain);
       }
       const eliminatedCivLabel = civLabelForOwner(oldOwner);
+      // R-MIASTA-ELIMINACJA-LUP-KWOTY-Q1: konkretne kwoty zamiast ogólnikowego
+      // "Skarbiec, nauka..." — gracz ma widzieć DOKŁADNIE ile złota/nauki przejęto
+      // (Math.floor spójnie z resztą UI, np. `zloto: Math.floor(player.skarbiec)` /
+      // `nauka: Math.floor(player.nauka)` przy HUD gracza).
+      const skarbiecKwota = Math.floor(outcome.skarbiecPrzejety);
+      const naukaKwota = Math.floor(outcome.naukaPrzejeta);
+      const skarbiecText = skarbiecKwota > 0
+        ? `Skarbiec: +${skarbiecKwota} złota.`
+        : 'Skarbiec był pusty.';
+      const naukaText = naukaKwota > 0 ? ` Nauka: +${naukaKwota} nauki.` : '';
       const eliminatedDetails = barbCaptor
         ? 'Skarbiec i nauka przepadły (barbarzyńcy nie dziedziczą łupu).'
-        : `Skarbiec, nauka i ${outcome.techSkopiowane.length} tech(y) przejęte. Zdobycze Power: +${lostPower}.`;
+        : `${skarbiecText}${naukaText} ${outcome.techSkopiowane.length} tech(y) przejęte. Zdobycze Power: +${lostPower}.`;
       const isTriumph = newOwner === 0 && shouldShowPlayerTriumphCityStateUnification({
         newOwner,
         oldOwner,
