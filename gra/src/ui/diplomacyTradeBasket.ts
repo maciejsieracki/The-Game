@@ -574,9 +574,18 @@ function defaultTreatyState(actionId: string, initial?: TradeBasketInitial, ctx?
   const offerTechs = techTradeOfferOptions(techDirection, ctx);
   const rivals = ctx?.rivalOptions ?? [];
   const defaultTurns = actionId === '5' ? 20 : (actionId === '2' ? 15 : 10);
-  const initialTurns = initial?.turns;
+  // R-DYPLO-TRAKTAT-HANDLOWY-WYBOR-CZASU-Q1 (Evaluator R3, zarzut 3): czas TRAKTATU bierzemy
+  // najpierw z jawnego `treatyTurns`, a dopiero potem — dla wszystkich dotychczasowych
+  // wywołań, które tego pola nie podają — z `turns`, jak przed tą rundą.
+  const initialTurns = initial?.treatyTurns ?? initial?.turns;
+  // Dolna granica ręcznego pola różni się per akcja i MUSI zgadzać się z tym, co przyjmuje
+  // silnik: '5' (`umowa_szlakow`) ma widełki `clampDealTurns` 1–20 i taki zakres deklaruje
+  // własna sekcja formularza („Ręcznie: 1–20 tur lub 0 = bezterminowy"), pakt nieagresji i
+  // reszta traktatów — 10–20. Twarde `Math.max(10, …)` dla wszystkich po cichu podnosiło
+  // prefill kontroferty '5' z np. 7 na 10 tur, czyli zmieniało warunki leżące na stole.
+  const minManualTurns = actionId === '5' ? 1 : 10;
   const turns = initialTurns != null
-    ? (initialTurns <= 0 ? 0 : Math.max(10, Math.min(20, initialTurns)))
+    ? (initialTurns <= 0 ? 0 : Math.max(minManualTurns, Math.min(20, initialTurns)))
     : defaultTurns;
   return {
     turns,
@@ -672,10 +681,20 @@ function treatySectionHtml(actionId: string, ctx: NegotiationModalContext, state
         '<button type="button" class="cdb-chip cdb-chip-turn' + (state.turns === t ? ' selected' : '')
         + '" data-turns="' + t + '">' + t + '</button>',
       ).join('');
+      // R-DYPLO-TRAKTAT-HANDLOWY-WYBOR-CZASU-Q1 (Obrona runda 1, zarzut 1 Evaluatora
+      // PRZYJĘTY): silnik (`diplomacy-proposals.ts:1325`,
+      // `payload.turns != null ? ... : null`) już obsługuje bezterminowy `umowa_szlakow`
+      // dokładnie jak NAP — analogiczny chip tutaj. UWAGA: to NIE jest `turns: 0` (to dałoby
+      // 1 turę, `clampDealTurns` 1–20 — patrz E3) — chip pomija pole `turns` w payloadzie
+      // całkowicie (patrz `buildTreatyPayload`, case '5').
+      const indefiniteSelected = state.turns <= 0 ? ' selected' : '';
       body = '<label for="cdb-treaty-turns">Czas traktatu handlowego (tur)</label>'
-        + '<div class="cdb-chip-row cdb-turn-presets">' + turnChips + '</div>'
-        + qtyStepperHtml('cdb-treaty-turns', 'treaty', state.turns, 1, 20)
-        + '<p class="cdb-sub">Fundament szlaków handlowych — opcjonalnie dołóż wymianę PW poniżej.</p>';
+        + '<div class="cdb-chip-row cdb-turn-presets">' + turnChips
+        + '<button type="button" class="cdb-chip cdb-chip-turn' + indefiniteSelected
+        + '" data-turns="0">Bezterminowy</button></div>'
+        + qtyStepperHtml('cdb-treaty-turns', 'treaty', state.turns <= 0 ? 0 : state.turns, 0, 20)
+        + '<p class="cdb-sub">Ręcznie: 1–20 tur lub 0 = bezterminowy. Fundament szlaków '
+        + 'handlowych — opcjonalnie dołóż wymianę PW poniżej.</p>';
       break;
     }
     case '6': {
@@ -785,17 +804,44 @@ function readTreatyStateFromDom(actionId: string, prev: TreatyFormState, ctx?: N
     state.borderMilitary = (document.querySelector('.cdb-treaty-mil') as HTMLInputElement)?.checked ?? false;
     state.barbarianCooperation = (document.querySelector('.cdb-treaty-barb') as HTMLInputElement)?.checked ?? false;
   } else if (actionId === '8') {
-    const mode = (document.querySelector('.cdb-treaty-trib-mode') as HTMLSelectElement)?.value;
-    state.tributeMode = mode === 'offer' ? 'offer' : 'demand';
-    state.goldPerTurn = parseInt((document.querySelector('.cdb-treaty-gpt') as HTMLInputElement)?.value ?? '10', 10);
-    state.tributeTurns = parseInt((document.querySelector('.cdb-treaty-trib-turns') as HTMLInputElement)?.value ?? '0', 10);
+    // R-DYPLO-TRAKTAT-HANDLOWY-WYBOR-CZASU-Q1 (Obrona runda 1, piąty przebieg Evaluatora,
+    // nota do zarzutu 1): DOKŁADNIE ta sama wada, którą naprawiono wcześniej w gałęzi '5'.
+    // `refresh()` woła ten odczyt PRZED pierwszym `renderBasket`, więc przy otwarciu modala
+    // `box` jest jeszcze pusty i pola trybutu NIE ISTNIEJĄ. Twarde fallbacki ('demand'/'10'/'0')
+    // kasowały wtedy prefill z `counterInitial` (warunki propozycji leżącej na stole) zanim
+    // gracz cokolwiek zobaczył — a wyzerowany `tributeTurns` dodatkowo zasilał regresję
+    // z zarzutu 1 (0 → `treatyTurns: 0` → mnożnik ×8). Brak pola w DOM = „nie ma czego
+    // odczytać" → zachowaj `prev`, jak robią to już gałęzie '5' i '6'.
+    const modeEl = document.querySelector('.cdb-treaty-trib-mode') as HTMLSelectElement | null;
+    if (modeEl) state.tributeMode = modeEl.value === 'offer' ? 'offer' : 'demand';
+    const gptEl = document.querySelector('.cdb-treaty-gpt') as HTMLInputElement | null;
+    if (gptEl) {
+      const gpt = parseInt(gptEl.value, 10);
+      state.goldPerTurn = Number.isFinite(gpt) ? gpt : prev.goldPerTurn;
+    }
+    const tribTurnsEl = document.querySelector('.cdb-treaty-trib-turns') as HTMLInputElement | null;
+    if (tribTurnsEl) {
+      const tribTurns = parseInt(tribTurnsEl.value, 10);
+      state.tributeTurns = Number.isFinite(tribTurns) ? Math.max(0, tribTurns) : prev.tributeTurns;
+    }
   } else if (actionId === '12') {
     state.goldPerTurn = parseInt((document.querySelector('.cdb-treaty-wasal-gpt') as HTMLInputElement)?.value ?? '10', 10);
   } else if (actionId === '15') {
     state.goldOnce = parseInt((document.querySelector('.cdb-treaty-wchlon-gold') as HTMLInputElement)?.value ?? '0', 10);
   } else if (actionId === '5') {
-    const turns = parseInt((document.querySelector('.cdb-treaty-turns') as HTMLInputElement)?.value ?? '20', 10);
-    state.turns = Math.max(1, Math.min(20, turns));
+    // R-DYPLO-TRAKTAT-HANDLOWY-WYBOR-CZASU-Q1 (Evaluator R3, zarzut 3): `refresh()` woła ten
+    // odczyt PRZED pierwszym `renderBasket`, więc przy otwarciu modala `box` jest jeszcze
+    // pusty i `.cdb-treaty-turns` NIE ISTNIEJE. Podstawienie wtedy sztywnego '20' kasowało
+    // prefill z `counterInitial` (warunki propozycji leżącej na stole) zanim gracz cokolwiek
+    // zobaczył. Brak pola w DOM = „nie ma czego odczytać" → zachowaj `prev`, dokładnie jak
+    // robi to już gałąź '6' niżej dla kierunku wymiany technologii.
+    const el = document.querySelector('.cdb-treaty-turns') as HTMLInputElement | null;
+    if (el) {
+      const turns = parseInt(el.value, 10);
+      state.turns = Number.isFinite(turns)
+        ? (turns <= 0 ? 0 : Math.max(1, Math.min(20, turns)))
+        : prev.turns;
+    }
   } else if (actionId === '6') {
     // N1 (Evaluator runda 1): przełączenie kierunku Sprzedaż/Kupno zmienia listę
     // technologii, ale w chwili tego odczytu DOM jeszcze pokazuje POPRZEDNI render (ten
@@ -887,8 +933,9 @@ function validateTreatyForm(actionId: string, state: TreatyFormState, ctx?: Nego
       break;
     }
     case '5':
+      if (state.turns === 0) break;
       if (state.turns < 1 || state.turns > 20) {
-        return { valid: false, reason: 'Czas traktatu handlowego: od 1 do 20 tur' };
+        return { valid: false, reason: 'Czas traktatu handlowego: bezterminowy (0) lub 1–20 tur' };
       }
       break;
     case '6':
@@ -1038,9 +1085,25 @@ function buildTreatyPayload(
   resourceTradeMode: 'once' | 'per_turn',
 ): NegotiationPayload {
   const payload: NegotiationPayload = { actionId };
+  // R-DYPLO-TRAKTAT-HANDLOWY-WYBOR-CZASU-Q1 (Obrona runda 1 — zarzut 2 pierwszej
+  // Obrony, po korekcie z zarzutu 1 drugiego przebiegu Evaluatora):
+  // czas TRWANIA TRAKTATU (formularz „Warunki traktatu", case '2'/'5'/'8') i
+  // czas/częstotliwość WYMIANY z koszyka (`dealTurns`, „Co ile tur trwa wymiana",
+  // tylko przy `resourceTradeMode==='per_turn'`) to DWIE różne wielkości i jadą teraz
+  // w DWÓCH różnych polach payloadu:
+  //   • `payload.treatyTurns` — czas traktatu (0 = bezterminowy). Czyta go WYŁĄCZNIE
+  //     `resolveTreatyDurationTurns` w silniku przy liczeniu `wygasaTura`.
+  //   • `payload.turns` — czas/częstotliwość wymiany koszyka, dokładnie jak przed
+  //     tą rundą. To NIEZBĘDNE, bo `turns` jest mnożnikiem wyceny PN
+  //     (`proposalPnTurnsMultiplier`) używanym też przez `main.ts` i
+  //     `diplomacy-acceptance-points.ts`; wpisanie tam czasu traktatu sprzęgało wycenę
+  //     słodzika z długością traktatu (7 vs 20 tur → −42%/+1900% wyceny) mimo że
+  //     `umowa_szlakow` transferuje koszyk JEDNORAZOWO, i rozjeżdżało podgląd koszyka
+  //     (`givePn` liczone z `dealTurns`) z tym, co silnik przelicza przy akceptacji.
   switch (actionId) {
     case '2':
       payload.turns = state.turns;
+      payload.treatyTurns = state.turns;
       break;
     case '3':
       payload.allianceKind = state.allianceKind;
@@ -1055,7 +1118,24 @@ function buildTreatyPayload(
     case '8':
       payload.tributeMode = state.tributeMode;
       payload.goldPerTurn = state.goldPerTurn;
-      if (state.tributeTurns > 0) payload.turns = state.tributeTurns;
+      // R-DYPLO-TRAKTAT-HANDLOWY-WYBOR-CZASU-Q1 (Obrona runda 1, piąty przebieg Evaluatora,
+      // zarzut 1 PRZYJĘTY — regresja balansu/UI wprowadzona przez poprzedni przebieg Obrony):
+      // `treatyTurns` ustawiamy WYŁĄCZNIE dla wartości dodatnich, dokładnie tak samo jak
+      // `turns` przed tą rundą. Poprzedni, bezwarunkowy zapis (`= state.tributeTurns`, także
+      // gdy 0) trafiał do `treatyDurationPnMultiplier` (`trybut_zadanie`/`trybut_oferta`
+      // NALEŻĄ do `TREATY_DURATION_MULTIPLIER_ACTIONS`), które dla `raw <= 0` zwraca 8 (kod
+      // „bezterminowy"). Formularz trybutu ma DOMYŚLNIE `tributeTurns = 0` („Czas (tur,
+      // 0 = bezterminowy)", `min="0"`), więc KAŻDA domyślna propozycja trybutu dostawała
+      // ośmiokrotnie zawyżoną bazę PW w panelu akceptacji stołu (960 zamiast 120) — liczba
+      // fałszywa dla gracza, choć samo `wygasaTura` pozostawało poprawne.
+      // Pominięcie OBU pól daje w `resolveTreatyDurationTurns` `undefined`, czyli
+      // `wygasaTura === null` (trybut bezterminowy) — BIT-W-BIT zachowanie sprzed tematu
+      // (main: `if (state.tributeTurns > 0) payload.turns = …`; silnik: `payload.turns != null
+      // ? ctx.turn + payload.turns : null`). Dowód żywy: sekcja (M) testu tematu.
+      if (state.tributeTurns > 0) {
+        payload.treatyTurns = state.tributeTurns;
+        payload.turns = state.tributeTurns;
+      }
       break;
     case '12':
       payload.goldPerTurn = state.goldPerTurn;
@@ -1064,7 +1144,12 @@ function buildTreatyPayload(
       payload.goldOnce = state.goldOnce;
       break;
     case '5':
-      payload.turns = state.turns;
+      // Czas traktatu handlowego jedzie w `treatyTurns` (0 = chip „Bezterminowy" →
+      // `wygasaTura === null` w silniku). `payload.turns` NIE dostaje tu czasu traktatu:
+      // dla `umowa_szlakow` niesie wyłącznie czas/częstotliwość wymiany z koszyka
+      // (ustawiany niżej z `dealTurns`) i jest mnożnikiem wyceny PN — dzięki temu
+      // wycena słodzika jest STABILNA względem wybranej długości traktatu.
+      payload.treatyTurns = state.turns;
       break;
     case '6':
       payload.techId = state.techId;
@@ -1096,6 +1181,10 @@ function buildTreatyPayload(
   }
   const hasResourceAccess = basketHasResourceAccess(giveItems, receiveItems);
   const hasQtyRes = !hasResourceAccess && basketHasQuantityResource(giveItems, receiveItems);
+  // `payload.turns` = czas/częstotliwość WYMIANY koszyka — bez zmian względem stanu
+  // sprzed tej rundy, żeby wycena PN (`proposalPnTurnsMultiplier`, ta sama w podglądzie
+  // koszyka i w silniku) pozostała funkcją wyłącznie parametrów wymiany. Czas traktatu
+  // jest już bezpieczny w `payload.treatyTurns` i nie da się go tu nadpisać.
   if (hasResourceAccess) {
     payload.turns = dealTurns;
   } else if (resourceTradeMode === 'per_turn' && hasQtyRes) {
@@ -2183,7 +2272,20 @@ export interface TradeBasketModalOptions {
 export interface TradeBasketInitial {
   giveItems?: readonly BasketItem[];
   receiveItems?: readonly BasketItem[];
+  /**
+   * Czas/częstotliwość WYMIANY z koszyka (prefill „Co ile tur trwa wymiana", `dealTurns`).
+   * Dla akcji, które NIE przekazują `treatyTurns`, jest też fallbackiem czasu traktatu —
+   * dokładnie jak przed R-DYPLO-TRAKTAT-HANDLOWY-WYBOR-CZASU-Q1.
+   */
   turns?: number;
+  /**
+   * R-DYPLO-TRAKTAT-HANDLOWY-WYBOR-CZASU-Q1 (Evaluator R3, zarzut 3): czas TRWANIA traktatu
+   * (0 = bezterminowy) jako prefill formularza „Warunki traktatu", ODDZIELNY od `turns`.
+   * Bez tego pola prefill kontroferty dla '5' musiałby przepchnąć czas traktatu przez
+   * `turns` i nadpisałby nim czas wymiany koszyka — czyli dokładnie to sprzężenie, które ta
+   * runda rozdzieliła w payloadzie (`payload.treatyTurns` vs `payload.turns`).
+   */
+  treatyTurns?: number;
   resourceTradeMode?: 'once' | 'per_turn';
   allianceKind?: 'defensywny' | 'pelny';
   borderMilitary?: boolean;
@@ -2346,22 +2448,33 @@ export function showTradeBasketModal(
       });
     });
 
+    // R-DYPLO-TRAKTAT-HANDLOWY-WYBOR-CZASU-Q1 (Obrona runda 1, zarzut 2 Evaluatora
+    // PRZYJĘTY): chipy `.cdb-chip-turn` występują w DWÓCH niezależnych sekcjach modala —
+    // „Warunki traktatu" (`.cdb-treaty` → input `.cdb-treaty-turns`, czas TRAKTATU) oraz
+    // „Co ile tur trwa wymiana" (`.cdb-duration` → input `.cdb-deal-turns`, czas WYMIANY).
+    // Poprzednio o adresacie zapisu decydowało `box.querySelector('.cdb-treaty-turns')`,
+    // czyli SAMO ISTNIENIE pola traktatu GDZIEKOLWIEK w modalu — więc po dopuszczeniu
+    // obu sekcji naraz klik chipa w sekcji wymiany przestawiał pole traktatu (a chip „5"
+    // dodatkowo lądował jako 10 przez clamp). Adresat wynika teraz z sekcji, w której
+    // FAKTYCZNIE leży kliknięty przycisk (`btn.closest(...)`), nie z zawartości modala.
     box.querySelectorAll('.cdb-chip-turn').forEach(btn => {
       btn.addEventListener('click', () => {
         const turns = parseInt(btn.getAttribute('data-turns') ?? '15', 10);
-        const treatyInp = box.querySelector('.cdb-treaty-turns') as HTMLInputElement | null;
-        if (treatyInp) {
+        const treatyRoot = btn.closest('.cdb-treaty');
+        if (treatyRoot) {
+          const treatyInp = treatyRoot.querySelector('.cdb-treaty-turns') as HTMLInputElement | null;
+          if (!treatyInp) return;
           const val = turns <= 0 ? 0 : Math.max(10, Math.min(20, turns));
           treatyInp.value = String(val);
-          const treatyRoot = treatyInp.closest('.cdb-treaty');
-          treatyRoot?.querySelectorAll('.cdb-chip-turn').forEach(c => c.classList.toggle('selected', c === btn));
+          treatyRoot.querySelectorAll('.cdb-chip-turn').forEach(c => c.classList.toggle('selected', c === btn));
           refresh();
           return;
         }
+        const durationRoot = btn.closest('.cdb-duration');
         dealTurns = Math.max(1, Math.min(20, turns));
-        const inp = box.querySelector('.cdb-deal-turns') as HTMLInputElement | null;
+        const inp = (durationRoot ?? box).querySelector('.cdb-deal-turns') as HTMLInputElement | null;
         if (inp) inp.value = String(dealTurns);
-        box.querySelectorAll('.cdb-chip-turn').forEach(c => {
+        (durationRoot ?? box).querySelectorAll('.cdb-chip-turn').forEach(c => {
           c.classList.toggle('selected', c === btn);
         });
         refresh();

@@ -15451,7 +15451,16 @@ async function boot(): Promise<void> {
           tempoGry: player.tempoGry ?? 'standardowa',
         });
         let counterInitial: import('./ui/diplomacyTradeBasket').TradeBasketInitial | undefined;
-        if (canCounter && actionUsesTradeBasket(uiActionId)) {
+        // R-DYPLO-TRAKTAT-HANDLOWY-WYBOR-CZASU-Q1 (Evaluator R3, zarzut 3 PRZYJĘTY): '5'
+        // (`umowa_szlakow`) CELOWO nie należy do `TRADE_BASKET_ACTION_IDS` (patrz
+        // diplomacyTradeBasket.ts — BUG-TRAKTAT-KOSZYK-REGRESJA=A), ale od tej rundy otwiera
+        // TEN SAM modal koszyka-traktatu, więc `openCounterNegotiationModal` prowadził dla
+        // niego edycję propozycji ze stołu BEZ prefillu: modal pokazywał domyślne 20 tur i
+        // pustą wymianę zamiast warunków, które faktycznie leżą na stole. Gate musi
+        // przepuścić '5' dokładnie tak, jak przepuszcza go `usesTreatyOrTradeBasket`
+        // w `diplomacyAudience.ts`. `ownEditableBasketMode` (wyżej) NIE jest tym rozluźnione
+        // — własne wiersze '5' nadal nie mają przycisku „Edytuj".
+        if (canCounter && (uiActionId === '5' || actionUsesTradeBasket(uiActionId))) {
           if (direction === 'own') {
             // Własna propozycja: payload JUŻ jest „co MY dajemy/dostajemy" (tak samo jak
             // renderuje karta na stole — patrz splitNegotiationDealPlayerSides z
@@ -15495,7 +15504,13 @@ async function boot(): Promise<void> {
               giveItems: p.receiveItems?.length ? [...p.receiveItems] : undefined,
               receiveItems: p.giveItems?.length ? [...p.giveItems] : undefined,
               resourceTradeMode: p.resourceTradeMode,
-              turns: uiActionId === '2' ? p.turns : undefined,
+              // '5': `turns` = czas/częstotliwość WYMIANY z koszyka (prefill sekcji „Co ile
+              // tur trwa wymiana"), `treatyTurns` = czas TRWANIA traktatu (prefill „Czas
+              // traktatu handlowego", 0 = Bezterminowy). Dla '2' pole `treatyTurns` zostaje
+              // puste — `defaultTreatyState` ma tam fallback na `turns`, czyli zachowanie
+              // paktu nieagresji jest bit-w-bit takie jak przed tą rundą.
+              turns: uiActionId === '2' || uiActionId === '5' ? p.turns : undefined,
+              treatyTurns: uiActionId === '5' ? (p.treatyTurns ?? p.turns) : undefined,
               allianceKind: entry.actionId === 'sojusz_defensywny' ? 'defensywny' : 'pelny',
               borderMilitary: p.borderMilitary,
               barbarianCooperation: p.barbarianCooperation,
@@ -18220,6 +18235,18 @@ async function boot(): Promise<void> {
       const cywAction = proposalActionIdFromPayload(payload);
       const uiPayload: ProposalPayload = {
         turns: payload.turns,
+        // BLOKER 1 (Evaluator runda 3 — DRUGIE wystąpienie tej samej klasy błędu w tym samym
+        // miejscu, R-DYPLO-TRAKTAT-HANDLOWY-WYBOR-CZASU-Q1): `treatyTurns` (czas TRWANIA
+        // traktatu, 0 = bezterminowy; `turns` niesie osobno czas/częstotliwość WYMIANY z
+        // koszyka i mnożnik wyceny PN) brakowało na tej białej liście, więc jawny wybór
+        // gracza z formularza ginął PO buildProposalFromPayload i nigdy nie docierał do
+        // `resolveTreatyDurationTurns` w silniku. Skutek gorszy niż brak funkcji: traktat
+        // handlowy BEZ koszyka (payload = wyłącznie `{actionId:'5', treatyTurns:N}`) tracił
+        // JEDYNE pole czasu i stawał się WIECZYSTY (`wygasaTura === null`).
+        // Regresja pilnowana ŻYWO przez REALNĄ ścieżkę (nie samo `evaluateProposal`): sekcja
+        // (K) w `gra/tools/dyplo-traktat-handlowy-wybor-czasu-real-render-test.cjs` wykonuje
+        // TĘ funkcję wyekstrahowaną z tego pliku — usunięcie pola stąd czerwieni bramkę.
+        treatyTurns: payload.treatyTurns,
         goldPerTurn: payload.goldPerTurn,
         goldOnce: payload.goldOnce,
         resource: payload.resource,

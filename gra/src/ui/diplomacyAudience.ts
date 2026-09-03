@@ -449,6 +449,25 @@ export function withOwnTableTechFilter(
 }
 
 /**
+ * R-DYPLO-TRAKTAT-HANDLOWY-WYBOR-CZASU-Q1 — akcja '5' („Traktat handlowy") NIE należy do
+ * `TRADE_BASKET_ACTION_IDS`, więc `getTradeBasketMode('5')` zwróciłoby fallback `'trade'`
+ * (koszyk wymiany, bez sekcji „Warunki traktatu" z wyborem czasu). Formularz traktatowy dla
+ * '5' JUŻ ISTNIEJE w `diplomacyTradeBasket.ts` (`treatySectionHtml` case '5' — chipy
+ * 10/15/20 + stepper 1–20, `readTreatyStateFromDom`, `validateTreatyForm`, `buildTreatyPayload`)
+ * i był dotąd martwy, bo klik w akcję omijał modal. Ta funkcja jest jedynym miejscem, które
+ * wymusza dla '5' tryb `'treaty'` — pozostałe akcje zachowują dotychczasowe mapowanie 1:1.
+ * EN: forces 'treaty' mode for action '5'; every other action keeps its existing mapping.
+ */
+function treatyBasketModeFor(aid: string): 'trade' | 'gift' | 'treaty' {
+  return aid === '5' ? 'treaty' : getTradeBasketMode(aid);
+}
+
+/** R-DYPLO-TRAKTAT-HANDLOWY-WYBOR-CZASU-Q1 — patrz `treatyBasketModeFor`. */
+function usesTreatyOrTradeBasket(aid: string): boolean {
+  return aid === '5' || actionUsesTradeBasket(aid);
+}
+
+/**
  * Blokuje duplikat na stole: ich wpis → kontroferta; nasz → ignoruj klik.
  * R-DYPLO-UMOWA-SUROWCOW-WIELOKROTNA (2026-08-13): dla „Umowa wymiany surowców" (aid '14') NIE
  * blokuj ponownego kliknięcia z powodu istniejącego NASZEGO wpisu tego samego typu — kolejny
@@ -487,13 +506,13 @@ function openCounterNegotiationModal(
     label: row.actionLabel ?? 'Kontroferta',
     enabled: true,
   };
-  if (actionUsesTradeBasket(row.uiActionId)) {
+  if (usesTreatyOrTradeBasket(row.uiActionId)) {
     // R-PROPOZYCJA-BRAK-EDYCJI (wariant A): 'own' — nasza jeszcze nierozstrzygnięta
     // propozycja — idzie do onEditOwnNegotiation (edycja W MIEJSCU, bez zmiany rundy);
     // 'incoming' — kontroferta AI — dalej onCounterNegotiation (jak dotychczas).
     const isOwnEdit = row.direction === 'own';
     showTradeBasketModal(
-      getTradeBasketMode(row.uiActionId),
+      treatyBasketModeFor(row.uiActionId),
       syntheticAction,
       withOwnTableTechFilter(mergeBasketCtx(negCtx), st, row.uiActionId, isOwnEdit ? row.id : undefined),
       (payload) => isOwnEdit
@@ -2188,8 +2207,17 @@ function render(): void {
         }
         if (aid === '5' && negCtx) {
           if (blockDuplicateNegotiationClick(st, aid, mergeBasketCtx)) return;
-          // D-DYPLO-KOSZYK-OD-RAZU: traktat handlowy od razu na stół („My oferujemy"), bez modala potwierdzenia.
-          cfg!.onAction(cfg!.ownerId, '5', { actionId: '5', turns: 20 });
+          // R-DYPLO-TRAKTAT-HANDLOWY-WYBOR-CZASU-Q1: traktat handlowy dostaje TEN SAM modal
+          // (koszyk w trybie 'treaty', sekcja „Warunki traktatu") co pakt nieagresji — z
+          // wyborem czasu, zamiast dawnego, zahardkodowanego `turns: 20`
+          // (D-DYPLO-KOSZYK-OD-RAZU: „od razu na stół, bez modala").
+          showTradeBasketModal(
+            treatyBasketModeFor(aid),
+            action,
+            withOwnTableTechFilter(mergeBasketCtx(negCtx), st, aid),
+            (payload) => cfg!.onAction(cfg!.ownerId, aid, payload),
+            () => { /* anulowano */ },
+          );
           return;
         }
         if (action && action.enabled && actionNeedsNegotiation(aid) && negCtx) {

@@ -11,7 +11,25 @@ import { TRAKTAT_HANDLOWY_LABEL } from '../game/diplomacy-display';
 
 export interface NegotiationPayload {
   actionId: string;
+  /**
+   * Czas/częstotliwość WYMIANY z koszyka („Co ile tur trwa wymiana" — `dealTurns`).
+   * To JEDNOCZEŚNIE mnożnik wyceny PN cyklicznego słodzika
+   * (`proposalPnTurnsMultiplier`: `perTurn ? max(1, turns) : 1`), więc MUSI pozostać
+   * powiązany z parametrami WYMIANY, nie z czasem trwania traktatu — na to jest
+   * osobne pole `treatyTurns` (R-DYPLO-TRAKTAT-HANDLOWY-WYBOR-CZASU-Q1, Obrona
+   * runda 1, zarzut 1 Evaluatora).
+   */
   turns?: number;
+  /**
+   * R-DYPLO-TRAKTAT-HANDLOWY-WYBOR-CZASU-Q1 (Obrona runda 1, zarzut 1 Evaluatora
+   * PRZYJĘTY): czas TRWANIA TRAKTATU wybrany JAWNIE w formularzu „Warunki traktatu"
+   * (akcje '2' pakt nieagresji, '5' traktat handlowy, '8' trybut). `0` = bezterminowy.
+   * Osobne pole od `turns`, bo to DWIE różne wielkości: `turns` niesie częstotliwość
+   * wymiany surowcowej z koszyka i wchodzi do WYCENY PN, `treatyTurns` decyduje
+   * WYŁĄCZNIE o `wygasaTura` traktatu. Brak pola = zachowanie historyczne
+   * (fallback na `turns`, m.in. wszystkie payloady generowane przez AI).
+   */
+  treatyTurns?: number;
   goldPerTurn?: number;
   goldOnce?: number;
   resource?: string;

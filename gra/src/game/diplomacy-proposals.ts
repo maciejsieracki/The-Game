@@ -144,6 +144,16 @@ export interface ProposalPayload {
    * działa identycznie gdy proponentem jest gracz LUB AI.
    */
   resourceTradeMode?: 'once' | 'per_turn';
+  /**
+   * R-DYPLO-TRAKTAT-HANDLOWY-WYBOR-CZASU-Q1 (Obrona runda 1, zarzut 1 Evaluatora
+   * PRZYJĘTY): czas TRWANIA TRAKTATU wybrany jawnie w formularzu „Warunki traktatu"
+   * (`nap`, `umowa_szlakow`, `trybut_*`). `0` = bezterminowy. Celowo ODDZIELONE od
+   * `turns`: `turns` niesie częstotliwość/czas WYMIANY z koszyka i jest mnożnikiem
+   * wyceny PN (`proposalPnTurnsMultiplier`), a `treatyTurns` decyduje wyłącznie
+   * o `wygasaTura` traktatu. Pole opcjonalne — jego brak = zachowanie historyczne
+   * (fallback na `turns`; wszystkie payloady AI i starsze zapisy idą tą ścieżką).
+   */
+  treatyTurns?: number;
   /** Ultimatum wojenne — odmowa respondenta = casus belli (wypowiedzenie wojny przez proponenta). */
   warThreat?: boolean;
 }
@@ -389,12 +399,33 @@ export function clampDealTurns(turns: number | undefined, defaultTurns = 15): nu
   return clamp(turns ?? defaultTurns, 1, 20);
 }
 
+/**
+ * R-DYPLO-TRAKTAT-HANDLOWY-WYBOR-CZASU-Q1 (Obrona runda 1, zarzut 1 Evaluatora PRZYJĘTY):
+ * JEDNO miejsce odczytu „czasu trwania traktatu" z payloadu. `treatyTurns` (jawny wybór
+ * gracza w formularzu „Warunki traktatu") ma pierwszeństwo; `turns` jest wyłącznie
+ * fallbackiem historycznym (payloady AI, stare zapisy) — bo `turns` niesie też
+ * częstotliwość WYMIANY z koszyka i jest mnożnikiem wyceny PN, więc nie wolno tych
+ * dwóch wielkości utożsamiać. Zwraca `undefined` = „nie podano czasu",
+ * `null` = bezterminowy, liczbę = liczba tur (bez clampu — clamp należy do wywołującego,
+ * bo widełki różnią się per traktat: NAP 10–20, umowa szlaków 1–20, trybut bez clampu).
+ */
+export function resolveTreatyDurationTurns(
+  payload: { turns?: number; treatyTurns?: number },
+): number | null | undefined {
+  // `treatyTurns` jest polem NOWYM i jednoznacznym: `0` = bezterminowy.
+  if (payload.treatyTurns != null) return payload.treatyTurns > 0 ? payload.treatyTurns : null;
+  // Ścieżka historyczna (payloady AI, starsze zapisy) zwracana BEZ REINTERPRETACJI — żeby
+  // `turns: 0` znaczyło tam dokładnie to, co znaczyło przed tą rundą (per traktat:
+  // dla `umowa_szlakow` 1 tura po clampie, dla trybutu `ctx.turn + 0`), a nie „bezterminowy".
+  return payload.turns;
+}
+
 /** §9.1 WIAR-NAP-IMP: NAP terminowy (10–20 tur) lub bezterminowy (wygasaTura null). */
 export function resolveNapDealExpiry(
   turn: number,
-  payload: Pick<ProposalPayload, 'turns'>,
+  payload: { turns?: number; treatyTurns?: number },
 ): { wygasaTura: number | null; label: string } {
-  const raw = payload.turns;
+  const raw = payload.treatyTurns ?? payload.turns;
   if (raw != null && raw <= 0) {
     return { wygasaTura: null, label: 'Pakt nieagresji (bezterminowy)' };
   }
@@ -552,9 +583,14 @@ const TREATY_DURATION_MULTIPLIER_ACTIONS: ReadonlySet<string> = new Set<string>(
  * jako dolna granica clampu (10 tur → ×1), żeby nie zmieniać istniejącej semantyki
  * „baza traktatu" tam, gdzie czas trwania jest nieznany/nieistotny dla testu.
  */
-export function treatyDurationPnMultiplier(actionId: string, payload: Pick<ProposalPayload, 'turns'>): number {
+export function treatyDurationPnMultiplier(
+  actionId: string,
+  payload: { turns?: number; treatyTurns?: number },
+): number {
   if (!TREATY_DURATION_MULTIPLIER_ACTIONS.has(actionId)) return 1;
-  const raw = payload.turns;
+  // R-DYPLO-TRAKTAT-HANDLOWY-WYBOR-CZASU-Q1: mnożnik liczy się z CZASU TRAKTATU
+  // (`treatyTurns`), nie z częstotliwości wymiany koszyka, która żyje w `turns`.
+  const raw = payload.treatyTurns ?? payload.turns;
   if (raw != null && raw <= 0) return 8;
   const turns = clamp(raw ?? 10, 10, 20);
   return Math.pow(2, (turns - 10) / 5);
@@ -568,7 +604,10 @@ export function treatyDurationPnMultiplier(actionId: string, payload: Pick<Propo
  * R-DYPLO-KOSZT-CZAS-TRWANIA-TRAKTATU-Q1: `payload` opcjonalny — gdy podany, baza jest
  * przemnożona przez `treatyDurationPnMultiplier` (efekt realny tylko dla `nap`, patrz tam).
  */
-export function treatyBasePnFromConfig(actionId: string, payload?: Pick<ProposalPayload, 'turns'>): number {
+export function treatyBasePnFromConfig(
+  actionId: string,
+  payload?: { turns?: number; treatyTurns?: number },
+): number {
   const t = (acceptancePointsJson.traktaty as Record<string, { punkty?: number } | undefined>);
   const base = t[actionId]?.punkty ?? 0;
   return payload ? base * treatyDurationPnMultiplier(actionId, payload) : base;
@@ -1102,12 +1141,15 @@ export function evaluateProposal(
       if (pairHasKind(ctx.activeDeals, proposerOwnerId, responderOwnerId, RodzajTraktatu.Wasalizacja)) {
         return { accepted: false, reason: 'Trybut/wasalizacja z tym państwem już obowiązuje' };
       }
+      const trybutDurationTurns = resolveTreatyDurationTurns(payload) ?? null;
       const deal = buildDeal(
         RodzajTraktatu.Wasalizacja,
         proposerOwnerId,
         responderOwnerId,
         ctx.turn,
-        payload.turns != null ? ctx.turn + payload.turns : null,
+        // R-DYPLO-TRAKTAT-HANDLOWY-WYBOR-CZASU-Q1: czas TRAKTATU (`treatyTurns`), nie
+        // częstotliwość wymiany koszyka z `turns` (ta zostaje mnożnikiem wyceny PN).
+        trybutDurationTurns != null ? ctx.turn + trybutDurationTurns : null,
         {
           payerOwnerId: responderOwnerId,
           receiverOwnerId: proposerOwnerId,
@@ -1159,12 +1201,15 @@ export function evaluateProposal(
       if (payload.goldOnce != null && payload.goldOnce > 0) {
         return { accepted: true, reason: 'Jednorazowy trybut za pokój', oneShotTrade: true };
       }
+      const trybutOfertaDurationTurns = resolveTreatyDurationTurns(payload) ?? null;
       const deal = buildDeal(
         RodzajTraktatu.Wasalizacja,
         proposerOwnerId,
         responderOwnerId,
         ctx.turn,
-        payload.turns != null ? ctx.turn + payload.turns : null,
+        // R-DYPLO-TRAKTAT-HANDLOWY-WYBOR-CZASU-Q1: czas TRAKTATU (`treatyTurns`), nie
+        // częstotliwość wymiany koszyka z `turns` (ta zostaje mnożnikiem wyceny PN).
+        trybutOfertaDurationTurns != null ? ctx.turn + trybutOfertaDurationTurns : null,
         {
           payerOwnerId: proposerOwnerId,
           receiverOwnerId: responderOwnerId,
@@ -1322,7 +1367,19 @@ export function evaluateProposal(
           return { accepted: false, reason: 'Oferta poniżej uczciwej wartości PW @ Relacji', pwBalance };
         }
       }
-      const wygasa = payload.turns != null ? ctx.turn + clampDealTurns(payload.turns) : null;
+      // R-DYPLO-TRAKTAT-HANDLOWY-WYBOR-CZASU-Q1 (Obrona runda 1, zarzut 1 Evaluatora
+      // PRZYJĘTY): wygaśnięcie traktatu szlaków liczymy z `treatyTurns` — jawnego wyboru
+      // gracza „Czas traktatu handlowego" — a NIE z `payload.turns`, które dla tej akcji
+      // niesie czas/częstotliwość WYMIANY z koszyka i jest mnożnikiem wyceny PN
+      // (`proposalPnTurnsMultiplier`). Sprzęgnięcie obu ról w jednym polu powodowało, że
+      // wybór długości traktatu przeliczał wycenę słodzika (7 vs 20 tur → −42%/+1900%),
+      // mimo że `umowa_szlakow` transferuje koszyk JEDNORAZOWO. `treatyTurns === 0`
+      // (chip „Bezterminowy") → `wygasaTura === null`. Brak obu pól (payloady AI) →
+      // zachowanie historyczne przez fallback w `resolveTreatyDurationTurns`.
+      const szlakiDurationTurns = resolveTreatyDurationTurns(payload);
+      const wygasa = szlakiDurationTurns != null
+        ? ctx.turn + clampDealTurns(szlakiDurationTurns)
+        : null;
       const deal = buildDeal(
         RodzajTraktatu.UmowaSzlakow,
         proposerOwnerId,
@@ -1913,12 +1970,15 @@ export function resolvePlayerAcceptsAiPending(
     case 'umowa_handlowa':
     case 'umowa_szlakow': {
       // E6 / HANDEL-SPLIT-Q1=B: gracz akceptuje propozycję traktatu szlaków od AI.
+      // R-DYPLO-TRAKTAT-HANDLOWY-WYBOR-CZASU-Q1: ta sama zasada co w `evaluateProposal`
+      // — czas TRAKTATU z `treatyTurns`, fallback na `turns` dla payloadów AI.
+      const szlakiAiDurationTurns = resolveTreatyDurationTurns(payload);
       const deal = buildDeal(
         RodzajTraktatu.UmowaSzlakow,
         fromOwnerId,
         toOwnerId,
         turn,
-        payload.turns != null ? turn + clampDealTurns(payload.turns) : null,
+        szlakiAiDurationTurns != null ? turn + clampDealTurns(szlakiAiDurationTurns) : null,
       );
       return { accepted: true, reason: 'Traktat handlowy zawarty', deal };
     }
