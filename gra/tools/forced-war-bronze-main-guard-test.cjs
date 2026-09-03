@@ -138,8 +138,11 @@ check(
 check(
   'main.ts: bronzeForceWarPendingOwners.delete(ownerId) leży w BLOKU SUKCESU -- bezpośrednio obok '
     + 'bronzeForceWarActiveByPairKey.set(...) i bronzeForceWarCycleOwners.add(ownerId), wewnątrz '
-    + '"if (bronzeForceWarTargetId != null && targetId === bronzeForceWarTargetId)"',
-  /if \(bronzeForceWarTargetId != null && targetId === bronzeForceWarTargetId\) \{\s*\n\s*bronzeForceWarActiveByPairKey\.set\(diploPairKey\(ownerId, targetId\), \{\s*\n\s*attackerId: ownerId, targetId, capturedByAttacker: 0, capturedByDefender: 0,\s*\n\s*\}\);\s*\n\s*bronzeForceWarCycleOwners\.add\(ownerId\);\s*\n\s*bronzeForceWarPendingOwners\.delete\(ownerId\);/.test(mainSrc),
+    + '"if (bronzeForceWarTargetId != null && targetId === bronzeForceWarTargetId)". '
+    + 'R-WOJNA-WYMUSZONA-REGULY-Q1 (Część C): budżet {0,200} (zamiast dawnego dokładnego dopasowania) '
+    + 'wchłania nowe pole `startTurn: turn,` dołożone do literału stanu pary bez utraty czułości na '
+    + 'usunięcie samego wywołania .set/.add/.delete w tym bloku.',
+  /if \(bronzeForceWarTargetId != null && targetId === bronzeForceWarTargetId\) \{\s*\n\s*bronzeForceWarActiveByPairKey\.set\(diploPairKey\(ownerId, targetId\), \{\s*\n\s*attackerId: ownerId, targetId, capturedByAttacker: 0, capturedByDefender: 0,[\s\S]{0,400}?\}\);\s*\n\s*bronzeForceWarCycleOwners\.add\(ownerId\);\s*\n\s*bronzeForceWarPendingOwners\.delete\(ownerId\);/.test(mainSrc),
 );
 
 console.log('');
@@ -175,8 +178,12 @@ check(
 
 check(
   'restoreGameFromSave: repopuluje WSZYSTKIE 4 struktury (.clear() + pętla .add()/.set()) '
-    + 'z bronzeForceWarRestored',
-  /bronzeForceWarPendingOwners\.clear\(\);\s*\n\s*for \(const oid of bronzeForceWarRestored\.pendingOwners\) bronzeForceWarPendingOwners\.add\(oid\);\s*\n\s*bronzeForceWarCycleOwners\.clear\(\);\s*\n\s*for \(const oid of bronzeForceWarRestored\.cycleOwners\) bronzeForceWarCycleOwners\.add\(oid\);\s*\n\s*bronzeForceWarRestUntilByOwner\.clear\(\);\s*\n\s*for \(const \[oid, t\] of bronzeForceWarRestored\.restUntilByOwner\) bronzeForceWarRestUntilByOwner\.set\(oid, t\);\s*\n\s*bronzeForceWarActiveByPairKey\.clear\(\);\s*\n\s*for \(const \[key, st\] of bronzeForceWarRestored\.activeByPairKey\) bronzeForceWarActiveByPairKey\.set\(key, st\);/.test(mainSrc),
+    + 'z bronzeForceWarRestored. R-WOJNA-WYMUSZONA-REGULY-Q1 (Część C): pętla activeByPairKey '
+    + 'teraz backfilluje `startTurn` (`{ ...st, startTurn: st.startTurn ?? turn }` zamiast gołego '
+    + '`st`) -- regex dopuszcza DOWOLNĄ treść ciała pętli activeByPairKey ({0,200}), o ile nadal '
+    + 'realnie .set()-uje do mapy w pętli po bronzeForceWarRestored.activeByPairKey (czułość na '
+    + 'usunięcie SAMEJ pętli/repopulacji zostaje, czułość na DOKŁADNY kształt wnętrza — nie)',
+  /bronzeForceWarPendingOwners\.clear\(\);\s*\n\s*for \(const oid of bronzeForceWarRestored\.pendingOwners\) bronzeForceWarPendingOwners\.add\(oid\);\s*\n\s*bronzeForceWarCycleOwners\.clear\(\);\s*\n\s*for \(const oid of bronzeForceWarRestored\.cycleOwners\) bronzeForceWarCycleOwners\.add\(oid\);\s*\n\s*bronzeForceWarRestUntilByOwner\.clear\(\);\s*\n\s*for \(const \[oid, t\] of bronzeForceWarRestored\.restUntilByOwner\) bronzeForceWarRestUntilByOwner\.set\(oid, t\);\s*\n\s*bronzeForceWarActiveByPairKey\.clear\(\);[\s\S]{0,400}?for \(const \[key, st\] of bronzeForceWarRestored\.activeByPairKey\) \{[\s\S]{0,150}?bronzeForceWarActiveByPairKey\.set\(key, [\s\S]{0,150}?\);/.test(mainSrc),
 );
 
 console.log('');
@@ -187,9 +194,13 @@ console.log('');
 console.log('5. Baseline -- eligibility check obecny przed próbą, sprzątanie stanu przy eliminacji');
 
 check(
-  'main.ts: isEligibleForBronzeForcedWar({ isMainAiCiv: true, isAlreadyAtWarAnyRole: ... }) '
-    + 'wołane w gałęzi wasPending PRZED wyborem celu (shouldSearch)',
-  /const shouldSearch = wasPending\s*\? isEligibleForBronzeForcedWar\(\{ isMainAiCiv: true, isAlreadyAtWarAnyRole: alreadyAtWarAnyRole \}\)\s*: searchingAfterRest;/.test(mainSrc),
+  'main.ts: isEligibleForBronzeForcedWar({ isMainAiCiv: true, isAlreadyAtWarAnyRole: ..., '
+    + 'currentTurn: turn, eraEnterTurn: ... }) wołane w gałęzi wasPending PRZED wyborem celu '
+    + '(shouldSearch). R-WOJNA-WYMUSZONA-REGULY-Q1 (Część A): shouldSearch teraz zaczyna się od '
+    + '`forcedWarDifficultyLevel !== 1 && (...)` (Część B, Łatwy) i isEligibleForBronzeForcedWar '
+    + 'dostaje 2 nowe pola (próg 25 tur od wejścia w Brąz) -- regex dopuszcza to bez utraty '
+    + 'czułości na usunięcie SAMEGO wywołania eligibility PRZED shouldSearch',
+  /const shouldSearch = [\s\S]{0,80}?\(wasPending\s*\? isEligibleForBronzeForcedWar\(\{\s*isMainAiCiv: true,\s*isAlreadyAtWarAnyRole: alreadyAtWarAnyRole,[\s\S]{0,500}?\}\)\s*: searchingAfterRest\);/.test(mainSrc),
 );
 
 check(
@@ -245,6 +256,51 @@ check(
     + 'wojnę wymuszoną automatycznym pokojem po KAŻDYM pojedynczym przejęciu miasta między parą, '
     + 'nie dopiero po osiągnięciu progu WOJNA_WYMUSZONA_MAX_MIASTA_ZDOBYTE_LUB_STRACONE',
   /if \(!shouldEndBronzeForcedWarByCityCount\(st\.capturedByAttacker, st\.capturedByDefender\)\) return;[\s\S]{0,1300}?finalizePeaceTreatyBetween\(/.test(mainSrc),
+);
+
+console.log('');
+
+// ---------------------------------------------------------------------------
+// RUNDA 4 (Operator obrona rundy 1, Evaluator FAIL: "nowa wiązka R-WOJNA-WYMUSZONA-
+// REGULY-Q1 -- Część B koordynacja/fallback/limit trudności, Część C limit czasu
+// trwania, częściowo Część A licznik wejścia w Brąz -- nie ma ŻADNEGO main-guard
+// chroniącego jej OKABLOWANIE w main.ts"). 3 nowe asercje, każda zweryfikowana
+// mutacyjnie poza repo (wycięcie/okrojenie literału na kopii tekstu main.ts w
+// locie, bez modyfikacji repo) -- w każdym przypadku odpowiadająca asercja
+// czerwienieje. Czwarty punkt zarzutu (Kamień/pickStoneForcedWarTargetIdCoordinated)
+// pokryty analogiczną asercją w forced-war-stone-main-guard-test.cjs.
+// ---------------------------------------------------------------------------
+console.log('7. RUNDA 4 (Operator obrona) -- Część A/B/C: koordynacja Brązu, limit czasu, licznik wejścia w Brąz');
+
+check(
+  'main.ts: pickBronzeForcedWarTargetIdCoordinated() wołane z KOMPLETEM opcji Części B -- '
+    + 'candidatesAlreadyAtWarIds (kandydat już w innej wojnie wykluczony), poziomTrudnosci '
+    + '(wyłącznik Łatwego/limit Normalnego), playerActiveForcedWarCount (limit "gracz najwyżej '
+    + 'w jednej naraz" dla Normalnego) -- OBOK istniejącego blockedOwnerIds z rundy 2. Usunięcie '
+    + 'któregokolwiek z tych trzech pól z wywołania (np. cichy powrót do starego '
+    + 'pickBronzeForcedWarTargetId bez koordynacji) czerwieni tę asercję -- zweryfikowano '
+    + 'mutacyjnie: usunięcie całego bloku opcji ORAZ usunięcie samego pola candidatesAlreadyAtWarIds '
+    + 'osobno oba psują dopasowanie.',
+  /const bronzePicked = pickBronzeForcedWarTargetIdCoordinated\(\s*\n\s*bronzeCandidates,\s*\n\s*refCity \? \{ q: refCity\.q, r: refCity\.r \} : undefined,\s*\n\s*hexDistance,\s*\n\s*\{\s*\n\s*blockedOwnerIds: bronzeBlockedOwnerIds,\s*\n\s*candidatesAlreadyAtWarIds: bronzeCandidatesAlreadyAtWarIds,\s*\n\s*poziomTrudnosci: forcedWarDifficultyLevel,\s*\n\s*playerActiveForcedWarCount,\s*\n\s*\},\s*\n\s*\);/.test(mainSrc),
+);
+
+check(
+  'main.ts: resolveForcedWarDurationLimits() faktycznie WOŁANE w pętli tury AI -- wewnątrz '
+    + '"if (!aiCmdResume) {" OBOK pruneInvalidNegotiations(), PRZED reconcileAllOwnerErasFromResearch() '
+    + '-- nie tylko zdefiniowane. Część C (limit trwania 25 tur, Kamień+Brąz) bez tego wywołania '
+    + 'funkcja nigdy się nie uruchamia i żadna wojna wymuszona nie kończy się z powodu czasu. '
+    + 'Zweryfikowano mutacyjnie: usunięcie SAMEJ linii wywołania (definicja funkcji nietknięta) '
+    + 'czerwieni tę asercję.',
+  /if \(!aiCmdResume\) \{\s*\n\s*try \{ pruneInvalidNegotiations\(\); \} catch \(ePrune\)[\s\S]{0,400}?try \{ resolveForcedWarDurationLimits\(\); \} catch \(eForcedWarDuration\) \{ console\.error\('\[Dyplomacja\] Blad limitu czasu wojny wymuszonej:', eForcedWarDuration\); \}\s*\n\s*\}\s*\n\s*reconcileAllOwnerErasFromResearch\(\);/.test(mainSrc),
+);
+
+check(
+  'main.ts: przy awansie Kamień(1)→Brąz(2) (obok bronzeForceWarPendingOwners.add(ownerId)) '
+    + 'wołane JEST bronzeEraEnterTurnByOwner.set(ownerId, turn) -- Część A: bez tego zapisu próg '
+    + '„25 tur od wejścia w Brąz" (isEligibleForBronzeForcedWar eraEnterTurn) nie ma od czego liczyć '
+    + 'dla nowo awansowanych cywilizacji. Zweryfikowano mutacyjnie: usunięcie SAMEJ linii .set() '
+    + '(pozostawiając .add(ownerId) i resztę bloku awansu) czerwieni tę asercję.',
+  /if \(\s*\n\s*prev === 1 && next === 2\s*\n\s*&& !isOwnerClusterCityState\(ownerId, ownerCityStateOpts\(\)\)\s*\n\s*\) \{\s*\n\s*bronzeForceWarPendingOwners\.add\(ownerId\);[\s\S]{0,400}?bronzeEraEnterTurnByOwner\.set\(ownerId, turn\);\s*\n\s*\}/.test(mainSrc),
 );
 
 console.log('');

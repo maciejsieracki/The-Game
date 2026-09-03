@@ -9,11 +9,24 @@ import {
   type ForcedWarSaveState,
 } from './forced-war-common';
 
-/** R-EPOKA-KAMIEN-WYMUSZONA-WOJNA: ochrona startowa mierzona turą gry. */
-export const WOJNA_KAMIEN_WYMUSZONA_START_TURY = 20;
+/**
+ * R-WOJNA-WYMUSZONA-REGULY-Q1 (Część A): ochrona startowa mierzona turą gry —
+ * podniesiona z 20 na 25 na jawne życzenie właściciela ("zmieńmy czas wybuchu wojny
+ * na 25 tur od początku epoki, zarówno dla kamienia, jak i dla brązu"). Dla Kamienia
+ * "tura gry" i "tura od początku epoki" są tożsame, bo każda cywilizacja zaczyna grę
+ * w Kamieniu w turze 0 — zero zmiany mechanizmu, wyłącznie wartość stałej.
+ */
+export const WOJNA_KAMIEN_WYMUSZONA_START_TURY = 25;
 export const WOJNA_KAMIEN_WYMUSZONA_MAX_MIASTA_ZDOBYTE_LUB_STRACONE = 2;
 export const WOJNA_KAMIEN_WYMUSZONA_ODPOCZYNEK_TUR = 20;
 export const WOJNA_KAMIEN_WYMUSZONA_COOLDOWN_TA_SAMA_CYWILIZACJA_TUR = 20;
+/**
+ * R-WOJNA-WYMUSZONA-REGULY-Q1 (Część C): limit czasu trwania TEJ KONKRETNEJ pary wojny
+ * wymuszonej Kamienia — niezależnie od progu miast (`WOJNA_KAMIEN_WYMUSZONA_MAX_MIASTA_
+ * ZDOBYTE_LUB_STRACONE`, który zostaje jako DODATKOWY, zwykle wcześniejszy warunek
+ * zakończenia — który z dwóch warunków spełni się pierwszy, kończy wojnę).
+ */
+export const WOJNA_KAMIEN_WYMUSZONA_MAX_CZAS_TRWANIA_TUR = 25;
 
 export interface StoneForcedWarEligibilityInput {
   /** Wyłącznie główna cywilizacja AI; nie gracz, miasto-państwo ani barbarzyńca. */
@@ -69,6 +82,25 @@ export function shouldEndStoneForcedWarByCityCount(
   );
 }
 
+/**
+ * R-WOJNA-WYMUSZONA-REGULY-Q1 (Część C): czy TA KONKRETNA para wojny wymuszonej Kamienia
+ * kończy się TERAZ automatycznym pokojem, bo minęło `maxDurationTurns` tur od jej
+ * rozpoczęcia — NIEZALEŻNIE od liczby zdobytych/straconych miast (próg miastowy zostaje
+ * jako dodatkowy, zwykle wcześniejszy warunek — `shouldEndStoneForcedWarByCityCount`
+ * wyżej, niezmieniona). `startTurn === undefined` (stary zapis sprzed tego pola,
+ * `ForcedWarPairState.startTurn` jest opcjonalne) → `currentTurn - currentTurn === 0`,
+ * więc NIGDY nie kończy wojny samym tym wywołaniem — main.ts backfilluje brakujące
+ * `startTurn` PRZY WCZYTANIU zapisu (`restoreGameFromSave`), więc ten fallback w
+ * praktyce nie jest długotrwały (patrz raport Operatora).
+ */
+export function shouldEndStoneForcedWarByDuration(
+  currentTurn: number,
+  startTurn: number | undefined,
+  maxDurationTurns: number = WOJNA_KAMIEN_WYMUSZONA_MAX_CZAS_TRWANIA_TUR,
+): boolean {
+  return currentTurn - (startTurn ?? currentTurn) >= maxDurationTurns;
+}
+
 export function isRestingFromStoneForcedWar(
   currentTurn: number,
   restUntilTurn: number | undefined,
@@ -99,4 +131,53 @@ export function restoreStoneForcedWarState(
   activeByPairKey: Map<string, StoneForcedWarPairState>;
 } {
   return restoreForcedWarState(saved);
+}
+
+/**
+ * R-WOJNA-WYMUSZONA-REGULY-Q1 (Część B, WYZWALACZ właściciela: "jedna cywilizacja
+ * wypowiada wojnę Jednej cywilizacji"): wybór celu wojny wymuszonej Kamienia, z
+ * KOORDYNACJĄ między niezależnymi napastnikami (żaden kandydat już w innej wojnie —
+ * `candidatesAlreadyAtWarIds`, main.ts liczy przez `countActiveWarsForOwnerExcludingBarbarians`,
+ * TA SAMA funkcja, która dziś chroni już samego napastnika) i FALLBACKIEM na gracza
+ * ostatniej szansy, gdy pula (po odjęciu NAP/peaceLocked/sojuszu ORAZ "już w wojnie")
+ * jest pusta — ograniczonym `poziomTrudnosci`:
+ *   - Łatwy (1): wołający (main.ts) w ogóle NIE wywołuje tej funkcji — cały mechanizm
+ *     wyłączony wcześniej, przy obliczaniu `shouldSearch` (patrz main.ts).
+ *   - Normalny (2, i `undefined` traktowane jak 2 — ta sama konwencja co
+ *     `opts.poziomTrudnosci ?? 2` w `ai.ts:2438`): fallback na gracza NIE aktywuje się,
+ *     jeśli gracz ma już `playerActiveForcedWarCount >= 1` aktywną wojnę wymuszoną
+ *     (Kamień+Brąz łącznie, main.ts liczy).
+ *   - Trudny (3): fallback zawsze dozwolony, bez limitu.
+ * Fallback wymaga, by gracz w ogóle BYŁ w oryginalnej puli kandydatów i nie był
+ * zablokowany NAP/peaceLocked/sojuszem (`blockedOwnerIds`) — ignorowane jest WYŁĄCZNIE
+ * to, czy gracz akurat prowadzi inną wojnę (WYZWALACZ: "próbuje wypowiedzieć wojnę
+ * graczowi [...] NIEZALEŻNIE od tego, czy gracz akurat prowadzi inną wojnę").
+ */
+export interface StoneForcedWarCoordinatedPickOpts {
+  /** NAP / peaceLocked (w tym cooldown tej samej pary) / aktywny sojusz — jak dziś. */
+  blockedOwnerIds: ReadonlySet<number>;
+  /** Kandydaci (dowolna rola) już w JAKIEJKOLWIEK aktywnej wojnie (poza barbarzyńcami). */
+  candidatesAlreadyAtWarIds: ReadonlySet<number>;
+  poziomTrudnosci: 1 | 2 | 3;
+  /** Aktywne wojny wymuszone gracza jako CEL, Kamień+Brąz łącznie (main.ts liczy). */
+  playerActiveForcedWarCount: number;
+}
+
+export function pickStoneForcedWarTargetIdCoordinated(
+  candidates: ReadonlyArray<StoneForcedWarNeighborCandidate>,
+  referenceHex: { q: number; r: number } | undefined,
+  hexDistanceFn: (aq: number, ar: number, bq: number, br: number) => number,
+  opts: StoneForcedWarCoordinatedPickOpts,
+): number | null {
+  const combinedBlocked = new Set<number>([
+    ...opts.blockedOwnerIds,
+    ...opts.candidatesAlreadyAtWarIds,
+  ]);
+  const picked = pickForcedWarTargetId(candidates, referenceHex, hexDistanceFn, combinedBlocked);
+  if (picked != null) return picked;
+  const playerInPoolIgnoringWar = candidates.some(c => c.ownerId === 0)
+    && !opts.blockedOwnerIds.has(0);
+  if (!playerInPoolIgnoringWar) return null;
+  if (opts.poziomTrudnosci === 2 && opts.playerActiveForcedWarCount >= 1) return null;
+  return 0;
 }

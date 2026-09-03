@@ -49,9 +49,13 @@ export {
   WOJNA_WYMUSZONA_MAX_MIASTA_ZDOBYTE_LUB_STRACONE,
   WOJNA_WYMUSZONA_ODPOCZYNEK_TUR,
   WOJNA_WYMUSZONA_COOLDOWN_TA_SAMA_CYWILIZACJA_TUR,
+  WOJNA_WYMUSZONA_START_TURY_OD_EPOKI,
+  WOJNA_WYMUSZONA_MAX_CZAS_TRWANIA_TUR,
   isEligibleForBronzeForcedWar,
   pickBronzeForcedWarTargetId,
+  pickBronzeForcedWarTargetIdCoordinated,
   shouldEndBronzeForcedWarByCityCount,
+  shouldEndBronzeForcedWarByDuration,
   isRestingFromBronzeForcedWar,
   serializeBronzeForcedWarState,
   restoreBronzeForcedWarState,
@@ -82,9 +86,13 @@ const {
   WOJNA_WYMUSZONA_MAX_MIASTA_ZDOBYTE_LUB_STRACONE,
   WOJNA_WYMUSZONA_ODPOCZYNEK_TUR,
   WOJNA_WYMUSZONA_COOLDOWN_TA_SAMA_CYWILIZACJA_TUR,
+  WOJNA_WYMUSZONA_START_TURY_OD_EPOKI,
+  WOJNA_WYMUSZONA_MAX_CZAS_TRWANIA_TUR,
   isEligibleForBronzeForcedWar,
   pickBronzeForcedWarTargetId,
+  pickBronzeForcedWarTargetIdCoordinated,
   shouldEndBronzeForcedWarByCityCount,
+  shouldEndBronzeForcedWarByDuration,
   isRestingFromBronzeForcedWar,
   serializeBronzeForcedWarState,
   restoreBronzeForcedWarState,
@@ -120,7 +128,7 @@ eq(
   + 'zmień TĘ stałą w game/forced-war-bronze.ts, gdy Maciej poda właściwą liczbę)',
 );
 
-console.log('\n--- T1 (a): awans do Brązu bez aktywnej wojny → eligibility TRUE ---');
+console.log('\n--- T1 (a): awans do Brązu bez aktywnej wojny → eligibility TRUE (bez pól tury -- pomija próg) ---');
 assert(
   isEligibleForBronzeForcedWar({ isMainAiCiv: true, isAlreadyAtWarAnyRole: false }),
   'T1a: główna cywilizacja, brak wojny → eligible',
@@ -131,6 +139,96 @@ assert(
   !isEligibleForBronzeForcedWar({ isMainAiCiv: true, isAlreadyAtWarAnyRole: true }),
   'T2a: napastnik LUB obrońca (flaga zbiorcza any-role) → NIE eligible',
 );
+
+console.log('\n--- R-WOJNA-WYMUSZONA-REGULY-Q1 (Część A): próg 25 tur OD WEJŚCIA W BRĄZ ---');
+eq(WOJNA_WYMUSZONA_START_TURY_OD_EPOKI, 25, 'stała progu = 25 tur');
+assert(
+  !isEligibleForBronzeForcedWar({
+    isMainAiCiv: true, isAlreadyAtWarAnyRole: false, currentTurn: 124, eraEnterTurn: 100,
+  }),
+  'tura 124, wejście w Brąz w turze 100 → 24 tur < 25, NIE eligible',
+);
+assert(
+  isEligibleForBronzeForcedWar({
+    isMainAiCiv: true, isAlreadyAtWarAnyRole: false, currentTurn: 125, eraEnterTurn: 100,
+  }),
+  'tura 125, wejście w Brąz w turze 100 → dokładnie 25 tur, eligible',
+);
+assert(
+  isEligibleForBronzeForcedWar({
+    isMainAiCiv: true, isAlreadyAtWarAnyRole: false, currentTurn: 260, eraEnterTurn: 235,
+  }),
+  'cywilizacja, która weszła w Brąz PÓŹNIEJ (tura 235) → próg mierzony NIEZALEŻNIE od startu gry, 25 tur od TEJ tury wystarcza',
+);
+assert(
+  !isEligibleForBronzeForcedWar({
+    isMainAiCiv: true, isAlreadyAtWarAnyRole: false, currentTurn: 259, eraEnterTurn: 235,
+  }),
+  'ta sama cywilizacja tydzień wcześniej (259, 24 tur od 235) → jeszcze NIE eligible',
+);
+assert(
+  isEligibleForBronzeForcedWar({
+    isMainAiCiv: true, isAlreadyAtWarAnyRole: false, currentTurn: 50, eraEnterTurn: undefined,
+  }),
+  'eraEnterTurn undefined (stary zapis sprzed tej naprawy) → próg POMINIĘTY, eligible natychmiast (zero regresu na starych zapisach)',
+);
+
+console.log('\n--- R-WOJNA-WYMUSZONA-REGULY-Q1 (Część C): shouldEndBronzeForcedWarByDuration ---');
+eq(WOJNA_WYMUSZONA_MAX_CZAS_TRWANIA_TUR, 25, 'stała limitu czasu trwania pary = 25 tur');
+assert(!shouldEndBronzeForcedWarByDuration(24, 0), 'tura 24, start 0 → wojna trwa (< 25 tur)');
+assert(shouldEndBronzeForcedWarByDuration(25, 0), 'tura 25, start 0 → limit osiągnięty');
+assert(shouldEndBronzeForcedWarByDuration(55, 30), 'tura 55, start 30 → 25 tur, limit osiągnięty');
+assert(!shouldEndBronzeForcedWarByDuration(40, 30), 'tura 40, start 30 → 10 tur, wojna trwa');
+assert(
+  !shouldEndBronzeForcedWarByDuration(500, undefined),
+  'startTurn undefined (stary zapis) → currentTurn - currentTurn === 0, NIGDY nie kończy samym tym wywołaniem',
+);
+
+console.log('\n--- R-WOJNA-WYMUSZONA-REGULY-Q1 (Część B): pickBronzeForcedWarTargetIdCoordinated ---');
+{
+  const hexDistanceCoord = (aq, ar, bq, br) => {
+    const dq = aq - bq, dr = ar - br;
+    return (Math.abs(dq) + Math.abs(dq + dr) + Math.abs(dr)) / 2;
+  };
+  const coordCandidates = [
+    { ownerId: 0, q: 0, r: 0 },
+    { ownerId: 4, q: 5, r: 5 },
+    { ownerId: 6, q: 9, r: 9 },
+  ];
+  const refHex = { q: 0, r: 0 };
+  eq(
+    pickBronzeForcedWarTargetIdCoordinated(coordCandidates, refHex, hexDistanceCoord, {
+      blockedOwnerIds: new Set(), candidatesAlreadyAtWarIds: new Set(),
+      poziomTrudnosci: 2, playerActiveForcedWarCount: 0,
+    }),
+    0,
+    'brak wykluczeń → gracz najbliższy wygrywa normalnie',
+  );
+  eq(
+    pickBronzeForcedWarTargetIdCoordinated(coordCandidates, refHex, hexDistanceCoord, {
+      blockedOwnerIds: new Set(), candidatesAlreadyAtWarIds: new Set([0, 4, 6]),
+      poziomTrudnosci: 2, playerActiveForcedWarCount: 0,
+    }),
+    0,
+    'wszyscy kandydaci już w wojnie, Normalny, gracz bez aktywnej wojny wymuszonej → fallback na gracza',
+  );
+  eq(
+    pickBronzeForcedWarTargetIdCoordinated(coordCandidates, refHex, hexDistanceCoord, {
+      blockedOwnerIds: new Set(), candidatesAlreadyAtWarIds: new Set([0, 4, 6]),
+      poziomTrudnosci: 2, playerActiveForcedWarCount: 1,
+    }),
+    null,
+    'Normalny, gracz już ma 1 aktywną wojnę wymuszoną → fallback NIE aktywuje się',
+  );
+  eq(
+    pickBronzeForcedWarTargetIdCoordinated(coordCandidates, refHex, hexDistanceCoord, {
+      blockedOwnerIds: new Set(), candidatesAlreadyAtWarIds: new Set([0, 4, 6]),
+      poziomTrudnosci: 3, playerActiveForcedWarCount: 5,
+    }),
+    0,
+    'Trudny → fallback działa niezależnie od liczby istniejących wojen gracza',
+  );
+}
 
 console.log('\n--- T9: pickBronzeForcedWarTargetId — najbliższy sąsiad terytorialny ---');
 const candidates = [

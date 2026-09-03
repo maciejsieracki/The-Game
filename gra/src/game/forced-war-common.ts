@@ -11,6 +11,21 @@ export interface ForcedWarPairState {
   targetId: number;
   capturedByAttacker: number;
   capturedByDefender: number;
+  /**
+   * R-WOJNA-WYMUSZONA-REGULY-Q1 (Część C, Kamień + Brąz WYŁĄCZNIE): tura rozpoczęcia
+   * TEJ KONKRETNEJ pary — podstawa limitu czasu trwania 25 tur, niezależnego od progu
+   * miast. OPCJONALNE i CELOWO NIEwypełniane przez Żelazo (`forced-war-iron.ts`, poza
+   * zakresem tego dispatchu — Żelazo ma świadomie odrębny mechanizm wyzwalania,
+   * `R-EPOKA-ZELAZO-WYMUSZONA-WOJNA-Q1`, i NIE dostaje limitu czasu trwania w tej
+   * naprawie) — gdyby to pole było wymagane, literały `{ attackerId, targetId,
+   * capturedByAttacker: 0, capturedByDefender: 0 }` budowane w gałęzi Żelaza w main.ts
+   * (poza allowlistą tego dispatchu, NIETKNIĘTE) przestałyby się kompilować. Brak pola
+   * (stary zapis sprzed tej naprawy, LUB para Żelaza) czytany jako `st.startTurn ??
+   * <bieżąca tura>` przez Kamień/Brąz — main.ts backfilluje wartość PRZY WCZYTANIU
+   * zapisu tak, by limit czasu liczył od realnego (lub, dla starych zapisów, od
+   * momentu wczytania) startu, nie zerował się co turę.
+   */
+  startTurn?: number;
 }
 
 export interface ForcedWarNeighborCandidate {

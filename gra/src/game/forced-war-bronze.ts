@@ -74,6 +74,24 @@ export const WOJNA_WYMUSZONA_ODPOCZYNEK_TUR = 20;
  */
 export const WOJNA_WYMUSZONA_COOLDOWN_TA_SAMA_CYWILIZACJA_TUR = 20;
 
+/**
+ * R-WOJNA-WYMUSZONA-REGULY-Q1 (Część A): próg startu Brązu, analogiczny do
+ * `WOJNA_KAMIEN_WYMUSZONA_START_TURY` (Kamień) — ALE mierzony od tury WEJŚCIA TEGO
+ * OWNERA w epokę Brąz (`bronzeEraEnterTurnByOwner` w main.ts, ustawiane w
+ * `syncOwnerEraFromResearch` w chwili awansu 1→2), NIE od startu gry — cywilizacje
+ * wchodzą w Brąz w bardzo różnych turach, więc "25 tur od początku epoki" musi być
+ * per-owner. Właściciel: "zmieńmy czas wybuchu wojny na 25 tur od początku epoki,
+ * zarówno dla kamienia, jak i dla brązu".
+ */
+export const WOJNA_WYMUSZONA_START_TURY_OD_EPOKI = 25;
+/**
+ * R-WOJNA-WYMUSZONA-REGULY-Q1 (Część C): limit czasu trwania TEJ KONKRETNEJ pary wojny
+ * wymuszonej Brązu — niezależnie od progu miast (`WOJNA_WYMUSZONA_MAX_MIASTA_ZDOBYTE_
+ * LUB_STRACONE` wyżej, który zostaje jako DODATKOWY, zwykle wcześniejszy warunek
+ * zakończenia — który z dwóch warunków spełni się pierwszy, kończy wojnę).
+ */
+export const WOJNA_WYMUSZONA_MAX_CZAS_TRWANIA_TUR = 25;
+
 export interface BronzeForcedWarEligibilityInput {
   /** Czy owner to główna cywilizacja AI (NIE miasto-państwo, NIE gracz, NIE barbarzyńca). */
   isMainAiCiv: boolean;
@@ -84,6 +102,18 @@ export interface BronzeForcedWarEligibilityInput {
    * wypowiadać komuś innemu wojny").
    */
   isAlreadyAtWarAnyRole: boolean;
+  /**
+   * R-WOJNA-WYMUSZONA-REGULY-Q1 (Część A): bieżąca tura gry i tura wejścia TEGO ownera
+   * w Brąz — OPCJONALNE (nie wymagane) tak, by wywołania sprzed tej naprawy (testy,
+   * ewentualni inni wołający) bez tych pól NIE traciły eligibility milcząco: brak
+   * jednego z dwóch pól = `currentTurn - currentTurn === 0 < próg` TYLKO gdyby próg był
+   * ujemny, co nigdy nie zachodzi — więc żeby NIE złamać zachowania sprzed tej naprawy
+   * dla wołających bez tych pól, brak `currentTurn`/`eraEnterTurn` pomija próg
+   * CAŁKOWICIE (traktowany jak spełniony). main.ts (jedyny produkcyjny wołający) ZAWSZE
+   * przekazuje oba pola.
+   */
+  currentTurn?: number;
+  eraEnterTurn?: number;
 }
 
 /**
@@ -92,7 +122,10 @@ export interface BronzeForcedWarEligibilityInput {
  * right now (one-shot check on era advance).
  */
 export function isEligibleForBronzeForcedWar(inp: BronzeForcedWarEligibilityInput): boolean {
-  return inp.isMainAiCiv && !inp.isAlreadyAtWarAnyRole;
+  const turnThresholdMet = inp.currentTurn === undefined || inp.eraEnterTurn === undefined
+    ? true
+    : inp.currentTurn - inp.eraEnterTurn >= WOJNA_WYMUSZONA_START_TURY_OD_EPOKI;
+  return inp.isMainAiCiv && !inp.isAlreadyAtWarAnyRole && turnThresholdMet;
 }
 
 export interface BronzeForcedWarNeighborCandidate {
@@ -163,6 +196,22 @@ export function isRestingFromBronzeForcedWar(
   return isRestingFromForcedWar(currentTurn, restUntilTurn);
 }
 
+/**
+ * R-WOJNA-WYMUSZONA-REGULY-Q1 (Część C): czy TA KONKRETNA para wojny wymuszonej Brązu
+ * kończy się TERAZ automatycznym pokojem, bo minęło `maxDurationTurns` tur od jej
+ * rozpoczęcia — niezależnie od progu miast (`shouldEndBronzeForcedWarByCityCount`
+ * wyżej, niezmieniona). `startTurn === undefined` (stary zapis sprzed tego pola) →
+ * `currentTurn - currentTurn === 0`, więc NIGDY nie kończy wojny samym tym wywołaniem —
+ * main.ts backfilluje brakujące `startTurn` PRZY WCZYTANIU zapisu, patrz raport.
+ */
+export function shouldEndBronzeForcedWarByDuration(
+  currentTurn: number,
+  startTurn: number | undefined,
+  maxDurationTurns: number = WOJNA_WYMUSZONA_MAX_CZAS_TRWANIA_TUR,
+): boolean {
+  return currentTurn - (startTurn ?? currentTurn) >= maxDurationTurns;
+}
+
 // ---------------------------------------------------------------------------
 // B5 (Evaluator runda 1, FAIL blokujący): save/load. Serializacja/deserializacja
 // CZYSTA tu, żeby dało się jej dowieść roundtripem BEZ bundlowania całego main.ts
@@ -213,4 +262,39 @@ export function restoreBronzeForcedWarState(
   activeByPairKey: Map<string, BronzeForcedWarPairState>;
 } {
   return restoreForcedWarState(saved);
+}
+
+/**
+ * R-WOJNA-WYMUSZONA-REGULY-Q1 (Część B) — patrz komentarz analogiczny przy
+ * `pickStoneForcedWarTargetIdCoordinated` (`forced-war-stone.ts`): identyczna reguła
+ * koordynacji + fallbacku na gracza + limitu trudności, osobna kopia dla Brązu (jak
+ * cała reszta pliku — Kamień/Brąz mają osobne rejestry stanu, ale te same reguły).
+ */
+export interface BronzeForcedWarCoordinatedPickOpts {
+  /** NAP / peaceLocked (w tym cooldown tej samej pary) / aktywny sojusz — jak dziś. */
+  blockedOwnerIds: ReadonlySet<number>;
+  /** Kandydaci (dowolna rola) już w JAKIEJKOLWIEK aktywnej wojnie (poza barbarzyńcami). */
+  candidatesAlreadyAtWarIds: ReadonlySet<number>;
+  poziomTrudnosci: 1 | 2 | 3;
+  /** Aktywne wojny wymuszone gracza jako CEL, Kamień+Brąz łącznie (main.ts liczy). */
+  playerActiveForcedWarCount: number;
+}
+
+export function pickBronzeForcedWarTargetIdCoordinated(
+  candidates: ReadonlyArray<BronzeForcedWarNeighborCandidate>,
+  referenceHex: { q: number; r: number } | undefined,
+  hexDistanceFn: (aq: number, ar: number, bq: number, br: number) => number,
+  opts: BronzeForcedWarCoordinatedPickOpts,
+): number | null {
+  const combinedBlocked = new Set<number>([
+    ...opts.blockedOwnerIds,
+    ...opts.candidatesAlreadyAtWarIds,
+  ]);
+  const picked = pickForcedWarTargetId(candidates, referenceHex, hexDistanceFn, combinedBlocked);
+  if (picked != null) return picked;
+  const playerInPoolIgnoringWar = candidates.some(c => c.ownerId === 0)
+    && !opts.blockedOwnerIds.has(0);
+  if (!playerInPoolIgnoringWar) return null;
+  if (opts.poziomTrudnosci === 2 && opts.playerActiveForcedWarCount >= 1) return null;
+  return 0;
 }

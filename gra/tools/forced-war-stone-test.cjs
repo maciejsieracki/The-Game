@@ -18,9 +18,12 @@ export {
   WOJNA_KAMIEN_WYMUSZONA_MAX_MIASTA_ZDOBYTE_LUB_STRACONE,
   WOJNA_KAMIEN_WYMUSZONA_ODPOCZYNEK_TUR,
   WOJNA_KAMIEN_WYMUSZONA_COOLDOWN_TA_SAMA_CYWILIZACJA_TUR,
+  WOJNA_KAMIEN_WYMUSZONA_MAX_CZAS_TRWANIA_TUR,
   isEligibleForStoneForcedWar,
   pickStoneForcedWarTargetId,
+  pickStoneForcedWarTargetIdCoordinated,
   shouldEndStoneForcedWarByCityCount,
+  shouldEndStoneForcedWarByDuration,
   isRestingFromStoneForcedWar,
   serializeStoneForcedWarState,
   restoreStoneForcedWarState,
@@ -61,22 +64,26 @@ try {
     WOJNA_KAMIEN_WYMUSZONA_MAX_MIASTA_ZDOBYTE_LUB_STRACONE: cityLimit,
     WOJNA_KAMIEN_WYMUSZONA_ODPOCZYNEK_TUR: restTurns,
     WOJNA_KAMIEN_WYMUSZONA_COOLDOWN_TA_SAMA_CYWILIZACJA_TUR: cooldownTurns,
+    WOJNA_KAMIEN_WYMUSZONA_MAX_CZAS_TRWANIA_TUR: maxDurationTurns,
     isEligibleForStoneForcedWar,
     pickStoneForcedWarTargetId,
+    pickStoneForcedWarTargetIdCoordinated,
     shouldEndStoneForcedWarByCityCount,
+    shouldEndStoneForcedWarByDuration,
     isRestingFromStoneForcedWar,
     serializeStoneForcedWarState,
     restoreStoneForcedWarState,
     decideAIDiplomacy,
   } = api;
 
-  console.log('--- kontrakt Q1/Q3 ---');
-  eq(startTurn, 20, 'start po 20 turach');
+  console.log('--- kontrakt Q1/Q3, R-WOJNA-WYMUSZONA-REGULY-Q1 Część A/C ---');
+  eq(startTurn, 25, 'R-WOJNA-WYMUSZONA-REGULY-Q1 (Część A): start po 25 turach (podniesiony z 20)');
   eq(cityLimit, 2, 'pokój po 2 miastach');
   eq(restTurns, 20, 'odpoczynek 20 tur');
   eq(cooldownTurns, 20, 'cooldown tej samej cywilizacji 20 tur');
+  eq(maxDurationTurns, 25, 'R-WOJNA-WYMUSZONA-REGULY-Q1 (Część C): limit czasu trwania pary = 25 tur');
 
-  console.log('--- trigger po turn 20 i guardy ownera ---');
+  console.log('--- trigger po turn 25 i guardy ownera (R-WOJNA-WYMUSZONA-REGULY-Q1 Część A) ---');
   const eligibility = (currentTurn, overrides = {}) => isEligibleForStoneForcedWar({
     isMainAiCiv: true,
     isAlreadyAtWarAnyRole: false,
@@ -84,17 +91,106 @@ try {
     isStoneEra: true,
     ...overrides,
   });
-  assert(!eligibility(19), 'brak wojny przed turn 20');
-  assert(eligibility(20), 'wojna dostępna od turn 20');
-  assert(eligibility(21), 'wojna nadal dostępna po turn 20');
-  assert(!eligibility(20, { isMainAiCiv: false }), 'brak dla player/miasta-państwa/barbarzyńcy');
-  assert(!eligibility(20, { isAlreadyAtWarAnyRole: true }), 'brak dla ownera już w wojnie');
-  assert(!eligibility(20, { isStoneEra: false }), 'brak dla ownera poza epoką Kamienia');
+  assert(!eligibility(24), 'brak wojny przed turn 25');
+  assert(eligibility(25), 'wojna dostępna od turn 25');
+  assert(eligibility(26), 'wojna nadal dostępna po turn 25');
+  assert(!eligibility(25, { isMainAiCiv: false }), 'brak dla player/miasta-państwa/barbarzyńcy');
+  assert(!eligibility(25, { isAlreadyAtWarAnyRole: true }), 'brak dla ownera już w wojnie');
+  assert(!eligibility(25, { isStoneEra: false }), 'brak dla ownera poza epoką Kamienia');
+
+  console.log('--- R-WOJNA-WYMUSZONA-REGULY-Q1 (Część C): shouldEndStoneForcedWarByDuration ---');
+  assert(!shouldEndStoneForcedWarByDuration(24, 0), 'tura 24, start 0 -> wojna trwa (< 25 tur)');
+  assert(shouldEndStoneForcedWarByDuration(25, 0), 'tura 25, start 0 -> limit osiągnięty, koniec');
+  assert(shouldEndStoneForcedWarByDuration(55, 30), 'tura 55, start 30 -> 25 tur, limit osiągnięty (>= wystarczy)');
+  assert(!shouldEndStoneForcedWarByDuration(40, 30), 'tura 40, start 30 -> 10 tur, wojna trwa');
+  assert(
+    !shouldEndStoneForcedWarByDuration(500, undefined),
+    'startTurn undefined (stary zapis) -> currentTurn - currentTurn === 0, NIGDY nie kończy samym tym wywołaniem',
+  );
 
   console.log('--- target guard: najbliższy i wykluczenia ---');
   const distance = (aq, ar, bq, br) => (
     Math.abs(aq - bq) + Math.abs(aq - bq + ar - br) + Math.abs(ar - br)
   ) / 2;
+
+  console.log('--- R-WOJNA-WYMUSZONA-REGULY-Q1 (Część B): pickStoneForcedWarTargetIdCoordinated ---');
+  {
+    const coordCandidates = [
+      { ownerId: 0, q: 0, r: 0 },  // gracz — najbliżej
+      { ownerId: 4, q: 5, r: 5 },  // AI wolny, dalej
+      { ownerId: 6, q: 9, r: 9 },  // AI już w innej wojnie
+    ];
+    const refHex = { q: 0, r: 0 };
+    eq(
+      pickStoneForcedWarTargetIdCoordinated(coordCandidates, refHex, distance, {
+        blockedOwnerIds: new Set(),
+        candidatesAlreadyAtWarIds: new Set(),
+        poziomTrudnosci: 2,
+        playerActiveForcedWarCount: 0,
+      }),
+      0,
+      'brak wykluczeń -> gracz najbliższy wygrywa normalnie (nie fallback)',
+    );
+    eq(
+      pickStoneForcedWarTargetIdCoordinated(coordCandidates, refHex, distance, {
+        blockedOwnerIds: new Set(),
+        candidatesAlreadyAtWarIds: new Set([0, 4]),
+        poziomTrudnosci: 2,
+        playerActiveForcedWarCount: 0,
+      }),
+      6,
+      'gracz i AI4 już w wojnie -> AI6 (jedyny wolny) wybrany normalnie',
+    );
+    eq(
+      pickStoneForcedWarTargetIdCoordinated(coordCandidates, refHex, distance, {
+        blockedOwnerIds: new Set(),
+        candidatesAlreadyAtWarIds: new Set([0, 4, 6]),
+        poziomTrudnosci: 2,
+        playerActiveForcedWarCount: 0,
+      }),
+      0,
+      'WSZYSCY kandydaci (w tym gracz) już w wojnie, Normalny, gracz BEZ aktywnej wojny wymuszonej -> fallback na gracza',
+    );
+    eq(
+      pickStoneForcedWarTargetIdCoordinated(coordCandidates, refHex, distance, {
+        blockedOwnerIds: new Set(),
+        candidatesAlreadyAtWarIds: new Set([0, 4, 6]),
+        poziomTrudnosci: 2,
+        playerActiveForcedWarCount: 1,
+      }),
+      null,
+      'Normalny, gracz JUŻ MA 1 aktywną wojnę wymuszoną -> fallback NIE aktywuje się, null',
+    );
+    eq(
+      pickStoneForcedWarTargetIdCoordinated(coordCandidates, refHex, distance, {
+        blockedOwnerIds: new Set(),
+        candidatesAlreadyAtWarIds: new Set([0, 4, 6]),
+        poziomTrudnosci: 3,
+        playerActiveForcedWarCount: 3,
+      }),
+      0,
+      'Trudny, gracz ma już 3 aktywne wojny wymuszone -> fallback NADAL działa (brak limitu)',
+    );
+    eq(
+      pickStoneForcedWarTargetIdCoordinated(
+        [{ ownerId: 4, q: 5, r: 5 }], refHex, distance,
+        { blockedOwnerIds: new Set(), candidatesAlreadyAtWarIds: new Set([4]), poziomTrudnosci: 3, playerActiveForcedWarCount: 0 },
+      ),
+      null,
+      'gracz w ogóle NIE JEST w oryginalnej puli kandydatów -> brak fallbacku mimo Trudnego',
+    );
+    eq(
+      pickStoneForcedWarTargetIdCoordinated(coordCandidates, refHex, distance, {
+        blockedOwnerIds: new Set([0]), // gracz zablokowany NAP/peaceLocked/sojuszem
+        candidatesAlreadyAtWarIds: new Set([4, 6]),
+        poziomTrudnosci: 3,
+        playerActiveForcedWarCount: 0,
+      }),
+      null,
+      'gracz zablokowany NAP/peaceLocked/sojuszem (nie tylko "już w wojnie") -> fallback go NIE ignoruje, null',
+    );
+  }
+
   const candidates = [
     { ownerId: 3, q: 8, r: 8 },
     { ownerId: 4, q: 1, r: 1 },

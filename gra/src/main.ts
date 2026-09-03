@@ -1074,9 +1074,11 @@ import {
 import {
   WOJNA_WYMUSZONA_ODPOCZYNEK_TUR,
   WOJNA_WYMUSZONA_COOLDOWN_TA_SAMA_CYWILIZACJA_TUR,
+  WOJNA_WYMUSZONA_MAX_CZAS_TRWANIA_TUR,
   isEligibleForBronzeForcedWar,
-  pickBronzeForcedWarTargetId,
+  pickBronzeForcedWarTargetIdCoordinated,
   shouldEndBronzeForcedWarByCityCount,
+  shouldEndBronzeForcedWarByDuration,
   isRestingFromBronzeForcedWar,
   serializeBronzeForcedWarState,
   restoreBronzeForcedWarState,
@@ -1086,9 +1088,11 @@ import {
   WOJNA_KAMIEN_WYMUSZONA_START_TURY,
   WOJNA_KAMIEN_WYMUSZONA_ODPOCZYNEK_TUR,
   WOJNA_KAMIEN_WYMUSZONA_COOLDOWN_TA_SAMA_CYWILIZACJA_TUR,
+  WOJNA_KAMIEN_WYMUSZONA_MAX_CZAS_TRWANIA_TUR,
   isEligibleForStoneForcedWar,
-  pickStoneForcedWarTargetId,
+  pickStoneForcedWarTargetIdCoordinated,
   shouldEndStoneForcedWarByCityCount,
+  shouldEndStoneForcedWarByDuration,
   isRestingFromStoneForcedWar,
   serializeStoneForcedWarState,
   restoreStoneForcedWarState,
@@ -1657,6 +1661,19 @@ async function boot(): Promise<void> {
      * every subsequent turn.
      */
     const bronzeForceWarPendingOwners = new Set<number>();
+    /**
+     * R-WOJNA-WYMUSZONA-REGULY-Q1 (Część A): tura, w której TEN owner wszedł w epokę Brąz
+     * (ustawiane w `syncOwnerEraFromResearch`, obok `bronzeForceWarPendingOwners.add`, w
+     * chwili awansu 1→2) — podstawa progu „25 tur od początku epoki" (Brąz nie ma stałej
+     * epokowej analogicznej do startu gry Kamienia, bo cywilizacje wchodzą w Brąz w bardzo
+     * różnych turach; patrz `isEligibleForBronzeForcedWar`, `forced-war-bronze.ts`). Stary
+     * zapis (sprzed tej naprawy) nie ma tego pola — brak wpisu (`.get(ownerId)` →
+     * `undefined`) sprawia, że `isEligibleForBronzeForcedWar` POMIJA próg czasu CAŁKOWICIE
+     * (patrz komentarz przy `BronzeForcedWarEligibilityInput.eraEnterTurn`), czyli
+     * zachowanie IDENTYCZNE ze stanem sprzed tej naprawy dla ownerów już w Brązie w starej
+     * grze — zero regresu na starych zapisach, patrz `restoreGameFromSave` niżej.
+     */
+    const bronzeEraEnterTurnByOwner = new Map<number, number>();
     /** OwnerId zapisane do PERPETUAL cyklu „wojna wymuszona → pokój → odpoczynek → nowy cel" (raz zapisany, zostaje na stałe do eliminacji). / EN: owners enrolled in the perpetual "forced war → peace → rest → new target" cycle (permanent once enrolled, until elimination). */
     const bronzeForceWarCycleOwners = new Set<number>();
     /** Tura, do której (wyłącznie) owner NIE szuka nowego celu wojny wymuszonej po pokoju (`WOJNA_WYMUSZONA_ODPOCZYNEK_TUR`). / EN: turn until which (exclusive) the owner does NOT search for a new forced-war target after peace. */
@@ -1752,6 +1769,9 @@ async function boot(): Promise<void> {
         && !isOwnerClusterCityState(ownerId, ownerCityStateOpts())
       ) {
         bronzeForceWarPendingOwners.add(ownerId);
+        // R-WOJNA-WYMUSZONA-REGULY-Q1 (Część A): zapamiętaj TURĘ awansu — próg „25 tur od
+        // początku epoki" dla Brązu liczy się od TEGO momentu, nie od startu gry.
+        bronzeEraEnterTurnByOwner.set(ownerId, turn);
       }
       // R-EPOKA-ZELAZO-WYMUSZONA-WOJNA-Q1: awans do epoki Żelaza (3) — TYLKO główne
       // cywilizacje (miasta-państwa/kopie wykluczone tym samym isOwnerClusterCityState co
@@ -24453,6 +24473,11 @@ async function boot(): Promise<void> {
       // R-EPOKA-BRAZU-WYMUSZONA-WOJNA: cywilizacja skasowana — usuń ją ze WSZYSTKICH
       // struktur stanu mechanizmu (pending/cycle/rest jako owner, aktywne pary jako którakolwiek
       // ze stron), żeby po eliminacji nie próbował dalej wypowiadać/kończyć wojen w jej imieniu.
+      // R-WOJNA-WYMUSZONA-REGULY-Q1 (Część A): sprzątnij też turę wejścia w Brąz tego
+      // ownera — TUŻ PRZED istniejącym łańcuchem sprzątania Brązu (regex bramek main-guard
+      // pina ADJACENCY pendingOwners.delete → cycleOwners.delete → restUntilByOwner.delete,
+      // więc nowa linia NIE jest wstawiona MIĘDZY nie).
+      bronzeEraEnterTurnByOwner.delete(ownerId);
       bronzeForceWarPendingOwners.delete(ownerId);
       bronzeForceWarCycleOwners.delete(ownerId);
       bronzeForceWarRestUntilByOwner.delete(ownerId);
@@ -24738,6 +24763,57 @@ async function boot(): Promise<void> {
         st.targetId,
         WOJNA_KAMIEN_WYMUSZONA_COOLDOWN_TA_SAMA_CYWILIZACJA_TUR,
       );
+    }
+
+    /**
+     * R-WOJNA-WYMUSZONA-REGULY-Q1 (Część C, WYZWALACZ: "Wojna może trwać do 25 tur, potem
+     * ustaje i cywilizacje pomiędzy sobą zawierają pokój, niezależnie od tego, czy zdobędą
+     * jakieś tereny, czy nie"): limit czasu trwania KAŻDEJ aktywnej pary wojny wymuszonej
+     * Kamienia/Brązu — niezależny od progu miast (`maybeResolve{Stone,Bronze}ForcedWarOnCityCapture`
+     * wyżej, NIETKNIĘTE — który z dwóch warunków spełni się pierwszy, kończy wojnę). Wołane
+     * RAZ na świeżą turę (main.ts, obok `pruneInvalidNegotiations`/
+     * `reconcileAllOwnerErasFromResearch`, `if (!aiCmdResume)`) — NIE przy wznowieniu tej
+     * samej tury po przerwie async (animacja bitwy), żeby nie liczyć dwa razy. Iteruje po
+     * SNAPSHOCIE (`Array.from`), bo `finalizePeaceTreatyBetween` mutuje (usuwa z) samą mapę,
+     * po której inaczej iterowalibyśmy. Żelazo (`ironForceWarActiveByPairKey`) POZA
+     * ZAKRESEM — nietknięte, brak pola `startTurn` wypełnianego dla tych par.
+     */
+    function resolveForcedWarDurationLimits(): void {
+      for (const st of Array.from(stoneForceWarActiveByPairKey.values())) {
+        if (!shouldEndStoneForcedWarByDuration(turn, st.startTurn)) continue;
+        const pairKey = diploPairKey(st.attackerId, st.targetId);
+        if (getDiploRelation(st.attackerId, st.targetId).status !== 'wojna') {
+          // Relacja już nie 'wojna' (rozstrzygnięte inaczej wcześniej w tej samej turze) —
+          // finalizePeaceTreatyBetween nie ma czego kończyć, sprzątamy stan bezpośrednio
+          // (ten sam wzorzec co maybeResolveStoneForcedWarOnCityCapture wyżej).
+          stoneForceWarActiveByPairKey.delete(pairKey);
+          stoneForceWarRestUntilByOwner.set(st.attackerId, turn + WOJNA_KAMIEN_WYMUSZONA_ODPOCZYNEK_TUR);
+          continue;
+        }
+        console.log(
+          `[Dyplomacja] R-WOJNA-WYMUSZONA-REGULY-Q1: limit czasu (${WOJNA_KAMIEN_WYMUSZONA_MAX_CZAS_TRWANIA_TUR} `
+          + `tur) — auto-pokój Kamień AI${st.attackerId}↔AI${st.targetId === 0 ? 'gracz' : `AI${st.targetId}`}`,
+        );
+        finalizePeaceTreatyBetween(
+          st.attackerId, st.targetId, WOJNA_KAMIEN_WYMUSZONA_COOLDOWN_TA_SAMA_CYWILIZACJA_TUR,
+        );
+      }
+      for (const st of Array.from(bronzeForceWarActiveByPairKey.values())) {
+        if (!shouldEndBronzeForcedWarByDuration(turn, st.startTurn)) continue;
+        const pairKey = diploPairKey(st.attackerId, st.targetId);
+        if (getDiploRelation(st.attackerId, st.targetId).status !== 'wojna') {
+          bronzeForceWarActiveByPairKey.delete(pairKey);
+          bronzeForceWarRestUntilByOwner.set(st.attackerId, turn + WOJNA_WYMUSZONA_ODPOCZYNEK_TUR);
+          continue;
+        }
+        console.log(
+          `[Dyplomacja] R-WOJNA-WYMUSZONA-REGULY-Q1: limit czasu (${WOJNA_WYMUSZONA_MAX_CZAS_TRWANIA_TUR} `
+          + `tur) — auto-pokój Brąz AI${st.attackerId}↔AI${st.targetId === 0 ? 'gracz' : `AI${st.targetId}`}`,
+        );
+        finalizePeaceTreatyBetween(
+          st.attackerId, st.targetId, WOJNA_WYMUSZONA_COOLDOWN_TA_SAMA_CYWILIZACJA_TUR,
+        );
+      }
     }
 
     /**
@@ -25664,6 +25740,11 @@ async function boot(): Promise<void> {
           // wojny wymuszonej Brązu — bez tego wpisu/odtworzenia licznik miast, cykl i
           // odpoczynek zerują się po każdym save/load (patrz restoreGameFromSave niżej).
           bronzeForceWarPendingOwners: bronzeForceWarSave.pendingOwners,
+          // R-WOJNA-WYMUSZONA-REGULY-Q1 (Część A): bez tego wpisu próg „25 tur od
+          // wejścia w Brąz" zerowałby się po każdym save/load (fallback main.ts
+          // traktowałby KAŻDEGO ownera jako "brak wpisu" -> próg pominięty), nie tylko
+          // dla naprawdę starych zapisów sprzed tej naprawy.
+          bronzeEraEnterTurnByOwner: Array.from(bronzeEraEnterTurnByOwner.entries()),
           bronzeForceWarCycleOwners: bronzeForceWarSave.cycleOwners,
           bronzeForceWarRestUntilByOwner: bronzeForceWarSave.restUntilByOwner,
           bronzeForceWarActiveByPairKey: bronzeForceWarSave.activeByPairKey,
@@ -28081,6 +28162,9 @@ async function boot(): Promise<void> {
             // NIE przy wznowieniu po animacji bitwy (aiCmdResume wtedy niepuste).
             if (!aiCmdResume) {
               try { pruneInvalidNegotiations(); } catch (ePrune) { console.error('[Dyplomacja] Blad sprzatania stolu negocjacyjnego:', ePrune); }
+              // R-WOJNA-WYMUSZONA-REGULY-Q1 (Część C): limit czasu trwania 25 tur, RAZ na
+              // świeżą turę (nie przy wznowieniu po przerwie async) — patrz komentarz funkcji.
+              try { resolveForcedWarDurationLimits(); } catch (eForcedWarDuration) { console.error('[Dyplomacja] Blad limitu czasu wojny wymuszonej:', eForcedWarDuration); }
             }
             reconcileAllOwnerErasFromResearch();
             const aiOwnerList = aiCmdResume?.ownerList ?? (() => {
@@ -28886,6 +28970,13 @@ async function boot(): Promise<void> {
                 let bronzeForceWarTargetId: number | undefined;
                 let stoneForceWarTargetId: number | undefined;
                 let ironForceWarTargetId: number | undefined;
+                // R-WOJNA-WYMUSZONA-REGULY-Q1 (Część B): aktywne wojny wymuszone GRACZA
+                // jako CEL, Kamień+Brąz łącznie — jedyny wejściowy licznik dla limitu
+                // trudności Normalnej ("najwyżej jedna naraz"); Trudny go ignoruje, Łatwy
+                // nigdy tu nie dociera (mechanizm wyłączony niżej przy forcedWarDifficultyLevel).
+                const playerActiveForcedWarCount =
+                  [...bronzeForceWarActiveByPairKey.values()].filter(st => st.targetId === 0).length
+                  + [...stoneForceWarActiveByPairKey.values()].filter(st => st.targetId === 0).length;
                 if (
                   ownerId > 0
                   && !typCityCopyOwners.has(ownerId)
@@ -28902,9 +28993,21 @@ async function boot(): Promise<void> {
                     && !hasActiveForcedWarAsAttacker
                     && !alreadyAtWarAnyRole
                     && !isRestingFromBronzeForcedWar(turn, bronzeForceWarRestUntilByOwner.get(ownerId));
-                  const shouldSearch = wasPending
-                    ? isEligibleForBronzeForcedWar({ isMainAiCiv: true, isAlreadyAtWarAnyRole: alreadyAtWarAnyRole })
-                    : searchingAfterRest;
+                  // R-WOJNA-WYMUSZONA-REGULY-Q1 (Część B, Łatwy): cały mechanizm wojny
+                  // wymuszonej wyłączony — zero szukania celu z tego powodu (ani gracza, ani
+                  // AI), niezależnie od wasPending/searchingAfterRest.
+                  const forcedWarDifficultyLevel = aiDiffLevelForOwner(ownerId);
+                  const shouldSearch = forcedWarDifficultyLevel !== 1 && (wasPending
+                    ? isEligibleForBronzeForcedWar({
+                      isMainAiCiv: true,
+                      isAlreadyAtWarAnyRole: alreadyAtWarAnyRole,
+                      // R-WOJNA-WYMUSZONA-REGULY-Q1 (Część A): próg 25 tur od WEJŚCIA W BRĄZ
+                      // (nie od startu gry) — brak wpisu (stary zapis) pomija próg, patrz
+                      // komentarz przy `bronzeEraEnterTurnByOwner`.
+                      currentTurn: turn,
+                      eraEnterTurn: bronzeEraEnterTurnByOwner.get(ownerId),
+                    })
+                    : searchingAfterRest);
                   if (shouldSearch) {
                     const refCity = cities.find(c => c.ownerId === ownerId);
                     // P-WOJNA-WYMUSZONA-TRZY-NAPRAWY-Q1 (c), NOWA DECYZJA właściciela
@@ -28941,11 +29044,27 @@ async function boot(): Promise<void> {
                         )
                         .map(c => c.ownerId),
                     );
-                    const bronzePicked = pickBronzeForcedWarTargetId(
+                    // R-WOJNA-WYMUSZONA-REGULY-Q1 (Część B, WYZWALACZ: "jedna cywilizacja
+                    // wypowiada wojnę Jednej cywilizacji"): kandydat już w JAKIEJKOLWIEK
+                    // aktywnej wojnie (poza barbarzyńcami) wykluczony — LUSTRZANA ochrona do
+                    // istniejącej `alreadyAtWarAnyRole` po stronie napastnika, ta sama funkcja
+                    // (`countActiveWarsForOwnerExcludingBarbarians`), zastosowana teraz też do
+                    // KAŻDEGO kandydata (w tym gracza).
+                    const bronzeCandidatesAlreadyAtWarIds = new Set(
+                      bronzeCandidates
+                        .filter(c => countActiveWarsForOwnerExcludingBarbarians(c.ownerId) > 0)
+                        .map(c => c.ownerId),
+                    );
+                    const bronzePicked = pickBronzeForcedWarTargetIdCoordinated(
                       bronzeCandidates,
                       refCity ? { q: refCity.q, r: refCity.r } : undefined,
                       hexDistance,
-                      { blockedOwnerIds: bronzeBlockedOwnerIds },
+                      {
+                        blockedOwnerIds: bronzeBlockedOwnerIds,
+                        candidatesAlreadyAtWarIds: bronzeCandidatesAlreadyAtWarIds,
+                        poziomTrudnosci: forcedWarDifficultyLevel,
+                        playerActiveForcedWarCount,
+                      },
                     );
                     if (bronzePicked != null) bronzeForceWarTargetId = bronzePicked;
                   }
@@ -28988,14 +29107,17 @@ async function boot(): Promise<void> {
                       turn,
                       stoneForceWarRestUntilByOwner.get(ownerId),
                     );
-                  const shouldSearch = wasPending
+                  // R-WOJNA-WYMUSZONA-REGULY-Q1 (Część B, Łatwy) — patrz komentarz analogiczny
+                  // przy Brązie wyżej: cały mechanizm wyłączony na Łatwym.
+                  const forcedWarDifficultyLevel = aiDiffLevelForOwner(ownerId);
+                  const shouldSearch = forcedWarDifficultyLevel !== 1 && (wasPending
                     ? isEligibleForStoneForcedWar({
                       isMainAiCiv: true,
                       isStoneEra: empireEpochForOwner(ownerId) === 1,
                       currentTurn: turn,
                       isAlreadyAtWarAnyRole: alreadyAtWarAnyRole,
                     })
-                    : searchingAfterRest;
+                    : searchingAfterRest);
                   if (shouldSearch) {
                     const refCity = cities.find(c => c.ownerId === ownerId);
                     // P-WOJNA-WYMUSZONA-TRZY-NAPRAWY-Q1 (c) — patrz komentarz analogiczny
@@ -29023,11 +29145,23 @@ async function boot(): Promise<void> {
                         )
                         .map(c => c.ownerId),
                     );
-                    const stonePicked = pickStoneForcedWarTargetId(
+                    // R-WOJNA-WYMUSZONA-REGULY-Q1 (Część B) — patrz komentarz analogiczny przy
+                    // bronzeCandidatesAlreadyAtWarIds wyżej.
+                    const stoneCandidatesAlreadyAtWarIds = new Set(
+                      stoneCandidates
+                        .filter(c => countActiveWarsForOwnerExcludingBarbarians(c.ownerId) > 0)
+                        .map(c => c.ownerId),
+                    );
+                    const stonePicked = pickStoneForcedWarTargetIdCoordinated(
                       stoneCandidates,
                       refCity ? { q: refCity.q, r: refCity.r } : undefined,
                       hexDistance,
-                      { blockedOwnerIds: stoneBlockedOwnerIds },
+                      {
+                        blockedOwnerIds: stoneBlockedOwnerIds,
+                        candidatesAlreadyAtWarIds: stoneCandidatesAlreadyAtWarIds,
+                        poziomTrudnosci: forcedWarDifficultyLevel,
+                        playerActiveForcedWarCount,
+                      },
                     );
                     if (stonePicked != null) stoneForceWarTargetId = stonePicked;
                   }
@@ -29220,6 +29354,9 @@ async function boot(): Promise<void> {
                       if (bronzeForceWarTargetId != null && targetId === bronzeForceWarTargetId) {
                         bronzeForceWarActiveByPairKey.set(diploPairKey(ownerId, targetId), {
                           attackerId: ownerId, targetId, capturedByAttacker: 0, capturedByDefender: 0,
+                          // R-WOJNA-WYMUSZONA-REGULY-Q1 (Część C): tura rozpoczęcia TEJ pary —
+                          // podstawa limitu czasu trwania 25 tur, niezależnego od progu miast.
+                          startTurn: turn,
                         });
                         bronzeForceWarCycleOwners.add(ownerId);
                         bronzeForceWarPendingOwners.delete(ownerId);
@@ -29232,6 +29369,8 @@ async function boot(): Promise<void> {
                       if (stoneForceWarTargetId != null && targetId === stoneForceWarTargetId) {
                         stoneForceWarActiveByPairKey.set(diploPairKey(ownerId, targetId), {
                           attackerId: ownerId, targetId, capturedByAttacker: 0, capturedByDefender: 0,
+                          // R-WOJNA-WYMUSZONA-REGULY-Q1 (Część C): jak w Brązie wyżej.
+                          startTurn: turn,
                         });
                         stoneForceWarCycleOwners.add(ownerId);
                         stoneForceWarPendingOwners.delete(ownerId);
@@ -31689,6 +31828,8 @@ async function boot(): Promise<void> {
       // R-WOJNA-BRAZ-CZYSZCZENIE-NOWA-GRA-Q1: nowa gra bez przeładowania strony nie może
       // dziedziczyć rejestrów Brązu z poprzedniej rozgrywki (ownerId są reużywane).
       bronzeForceWarPendingOwners.clear();
+      // R-WOJNA-WYMUSZONA-REGULY-Q1 (Część A): to samo dla tury wejścia w Brąz per-owner.
+      bronzeEraEnterTurnByOwner.clear();
       bronzeForceWarCycleOwners.clear();
       bronzeForceWarRestUntilByOwner.clear();
       bronzeForceWarActiveByPairKey.clear();
@@ -32983,7 +33124,21 @@ async function boot(): Promise<void> {
       bronzeForceWarRestUntilByOwner.clear();
       for (const [oid, t] of bronzeForceWarRestored.restUntilByOwner) bronzeForceWarRestUntilByOwner.set(oid, t);
       bronzeForceWarActiveByPairKey.clear();
-      for (const [key, st] of bronzeForceWarRestored.activeByPairKey) bronzeForceWarActiveByPairKey.set(key, st);
+      // R-WOJNA-WYMUSZONA-REGULY-Q1 (Część C): backfill `startTurn` PRZY WCZYTANIU dla
+      // wpisów bez tego pola (stary zapis sprzed tej naprawy) — `st.startTurn ?? turn`,
+      // limit czasu trwania liczy od TERAZ zamiast ciąć wojnę natychmiast po wczytaniu.
+      for (const [key, st] of bronzeForceWarRestored.activeByPairKey) {
+        bronzeForceWarActiveByPairKey.set(key, { ...st, startTurn: st.startTurn ?? turn });
+      }
+      // R-WOJNA-WYMUSZONA-REGULY-Q1 (Część A): odtworzenie tury wejścia w Brąz per-owner —
+      // brak wpisu dla danego ownera (stary zapis) = `undefined`, `isEligibleForBronzeForcedWar`
+      // wtedy pomija próg czasu (patrz komentarz przy `bronzeEraEnterTurnByOwner` wyżej).
+      bronzeEraEnterTurnByOwner.clear();
+      const savedBronzeEraEnterTurn = saved.meta?.bronzeEraEnterTurnByOwner as
+        Array<[number, number]> | undefined;
+      if (savedBronzeEraEnterTurn?.length) {
+        for (const [oid, t] of savedBronzeEraEnterTurn) bronzeEraEnterTurnByOwner.set(oid, t);
+      }
       const stoneForceWarRestored = restoreStoneForcedWarState({
         pendingOwners: saved.meta?.stoneForceWarPendingOwners as number[] | undefined,
         cycleOwners: saved.meta?.stoneForceWarCycleOwners as number[] | undefined,
@@ -33000,8 +33155,9 @@ async function boot(): Promise<void> {
         stoneForceWarRestUntilByOwner.set(oid, t);
       }
       stoneForceWarActiveByPairKey.clear();
+      // R-WOJNA-WYMUSZONA-REGULY-Q1 (Część C): backfill analogiczny do Brązu wyżej.
       for (const [key, st] of stoneForceWarRestored.activeByPairKey) {
-        stoneForceWarActiveByPairKey.set(key, st);
+        stoneForceWarActiveByPairKey.set(key, { ...st, startTurn: st.startTurn ?? turn });
       }
       // R-EPOKA-ZELAZO-WYMUSZONA-WOJNA-Q1: odtworzenie CZYSTĄ funkcją (forced-war-iron.ts).
       // Brak `saved.meta?.ironForceWar*` (zapis sprzed tego mechanizmu) daje bezpieczny

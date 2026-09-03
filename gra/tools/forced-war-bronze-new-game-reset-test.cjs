@@ -66,6 +66,13 @@ assert(
   'wyodrębniony fragment zawiera dokładnie 4 wywołania bronzeForceWar*.clear()',
   (originalSlice.match(/bronzeForceWar\w+\.clear\(\);/g) || []).length === 4,
 );
+// R-WOJNA-WYMUSZONA-REGULY-Q1 (Część A): nowy 13. rejestr Brązu (tura wejścia w epokę
+// per-owner) MUSI też być czyszczony przy nowej grze -- inaczej dziedziczy się z
+// poprzedniej rozgrywki (ownerId są reużywane), tak samo jak pozostałe 12.
+assert(
+  'wyodrębniony fragment czyści też bronzeEraEnterTurnByOwner (13. rejestr, Część A)',
+  originalSlice.includes('bronzeEraEnterTurnByOwner.clear();'),
+);
 
 const PARAM_NAMES = [
   'stoneForceWarPendingOwners',
@@ -80,6 +87,7 @@ const PARAM_NAMES = [
   'bronzeForceWarCycleOwners',
   'bronzeForceWarRestUntilByOwner',
   'bronzeForceWarActiveByPairKey',
+  'bronzeEraEnterTurnByOwner',
 ];
 
 function seededRegistries() {
@@ -88,7 +96,7 @@ function seededRegistries() {
     // Set-podobne rejestry (Pending/Cycle owners, lootedVillageHexKeys) i
     // Map-podobne (RestUntilByOwner, ActiveByPairKey) — obie mają .clear()/.size,
     // więc realny Set/Map jako atrapa jest wierny zachowaniu produkcyjnemu.
-    if (/RestUntilByOwner$/.test(name) || /ActiveByPairKey$/.test(name)) {
+    if (/RestUntilByOwner$/.test(name) || /ActiveByPairKey$/.test(name) || name === 'bronzeEraEnterTurnByOwner') {
       const m = new Map();
       m.set(name === 'ironForceWarActiveByPairKey' || name === 'stoneForceWarActiveByPairKey'
         || name === 'bronzeForceWarActiveByPairKey' ? 'p1|p2' : 1, { seeded: true, attackerId: 1 });

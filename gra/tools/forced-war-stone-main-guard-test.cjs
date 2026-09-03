@@ -132,5 +132,22 @@ check(
     && main.includes('maybeResolveBronzeForcedWarOnCityCapture'),
 );
 
+// ---------------------------------------------------------------------------
+// R-WOJNA-WYMUSZONA-REGULY-Q1, runda 1 -- Operator obrona po Evaluator FAIL:
+// koordynacja/fallback/limit trudności (Część B) nie miała ŻADNEGO main-guard
+// chroniącego jej OKABLOWANIE (opcje przekazane do pickStoneForcedWarTargetIdCoordinated
+// w main.ts). Zweryfikowano mutacyjnie poza repo (na kopii tekstu main.ts w locie): usunięcie
+// bloku opcji z wywołania oraz usunięcie samego pola playerActiveForcedWarCount osobno
+// oba czerwienią tę asercję.
+// ---------------------------------------------------------------------------
+check(
+  'main.ts: pickStoneForcedWarTargetIdCoordinated() wołane z KOMPLETEM opcji Części B -- '
+  + 'candidatesAlreadyAtWarIds (kandydat już w innej wojnie wykluczony), poziomTrudnosci '
+  + '(wyłącznik Łatwego/limit Normalnego), playerActiveForcedWarCount (limit "gracz najwyżej '
+  + 'w jednej naraz" dla Normalnego, WSPÓLNY licznik Kamień+Brąz) -- OBOK istniejącego '
+  + 'blockedOwnerIds',
+  /const stonePicked = pickStoneForcedWarTargetIdCoordinated\(\s*\n\s*stoneCandidates,\s*\n\s*refCity \? \{ q: refCity\.q, r: refCity\.r \} : undefined,\s*\n\s*hexDistance,\s*\n\s*\{\s*\n\s*blockedOwnerIds: stoneBlockedOwnerIds,\s*\n\s*candidatesAlreadyAtWarIds: stoneCandidatesAlreadyAtWarIds,\s*\n\s*poziomTrudnosci: forcedWarDifficultyLevel,\s*\n\s*playerActiveForcedWarCount,\s*\n\s*\},\s*\n\s*\);/.test(main),
+);
+
 console.log(`WYNIK: ${passed} PASS, ${failed} FAIL`);
 if (failed > 0) process.exit(1);
