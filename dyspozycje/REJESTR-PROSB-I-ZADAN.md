@@ -4061,10 +4061,22 @@ deployu ROBOCZA na końcu z raportem. Orkiestrator kontynuuje bez pytania o zgod
   przez `treatyDurationPnMultiplier` daje mnożnik ×8 zamiast ×1 — **każda
   domyślna propozycja trybutu dostaje 8-krotnie zawyżoną bazę PW** (dowód
   przed/po: 168→1344 PW za identyczny klik). Żaden z 52 testów dyplomacji tego
-  nie łapał. **Obrona R5 DISPATCHOWANA** (Opus 5, effort medium) — piąta
-  iteracja tej samej rundy 1; temat okazał się wyjątkowo głęboki (białe listy
-  payloadu + współdzielone pole czasu między 3 typami traktatów), każda runda
-  znajdowała realny, wcześniej niewykryty błąd.
+  nie łapał. Obrona R5 (`e35aaf41`) naprawiła (guard `> 0` + powiązany prefill
+  case '8'), test 76/76. Evaluator R5 (szósty niezależny przegląd) **NIE
+  znalazł już żadnego defektu w `gra/src/**`** — wszystkie ścieżki (biała
+  lista, counterInitial, prefille, AI, save/load, kontroferty silnika)
+  przeszły jego niezależne żywe scenariusze. Jedyne 2 zarzuty były poza kodem
+  gry: niedeterministyczny zrzut PNG (kosmetyczny) i `01-operator.md` wciąż
+  opisujący rundę 1 sprzed 5 Obron, zaprzeczający faktycznej treści commitu w
+  6 punktach. Obrona R6 (`95b3a76e`, ZERO zmian w `gra/src/**`) naprawiła oba
+  wyłącznie dokumentacyjnie. **ZINTEGROWANE do `main` (`1db988b7`)** — Final
+  Control PASS (siódma i ostatnia weryfikacja, własne 23 niezależne asercje
+  przez realną ścieżkę `main.ts`, wszystkie bramki dyplomacji + 5 bramek
+  referencyjnych zielone). Zintegrowane allowlist-only (5 plików źródłowych +
+  test tematu). Worktree i branch posprzątane. Najbardziej dociekliwie
+  zweryfikowany temat tej serii — 7 pełnych rund Operator/Obrona i Evaluatora,
+  każda runda poza ostatnią znalazła realny, wcześniej niewykryty błąd mimo
+  pozornie zielonych testów.
 - **R-AI-ULEPSZENIA-MALO-BUDOWANE-Q1** — Operator PASS (`ccd5f6be`): diagnoza
   żywą symulacją potwierdziła że ZASADA 3 mogła przekierować 100% puli
   ulepszeń na budynki bez dolnej granicy; naprawa — nowa stała
