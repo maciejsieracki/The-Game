@@ -4212,3 +4212,9 @@ Dwa kandydaci potwierdzeni jako GENUINE OTWARTE, zdispatchowane w tej rundzie:
 Oba tematy dotykają różnych, nieprzecinających się obszarów kodu
 (`diplomacyAcceptanceBalance.ts`/`diplomacyTradeBasket.ts` vs profiling bez
 z góry ustalonego zakresu) — dispatchowane równolegle.
+
+## NOWE ZGŁOSZENIE 2026-09-03 (zrzut ekranu) — kolejność kafelków w panelu audiencji dyplomatycznej
+
+| ID | Prośba | Status | Uwagi |
+|---|---|---|---|
+| `P-DYPLO-UMOWY-AKTYWNE-NA-GORZE-Q1` | Zrzut ekranu panelu "Możliwe umowy": "Sprawdź, czy jest możliwość, aby podczas rozmów dyplomatycznych wszystkie aktywne statusy były na samej górze, a nieaktywne zgodnie z obecną kolejnością." | **DISPATCHOWANE** | Domain GAME, UI — Operator+Evaluator+Final Control Sonnet 5, effort HIGH. Recon: `dealsColumnHtml` (`diplomacyAudience.ts:1704-1776`) już liczy `isLocked` per pozycja (linia 1734) — dokładnie ten predykat ma teraz decydować o kolejności (stabilne sortowanie: aktywne przed nieaktywnymi, bez zmiany kolejności wewnątrz każdej grupy). Zero zmian w wyglądzie/logice pojedynczego kafelka ani w źródle `st.actions`. Dispatch `00-dispatch.md`.
