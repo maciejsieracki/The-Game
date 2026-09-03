@@ -5,12 +5,27 @@
  *   - Typy szlaku handlowego (TradeRoute) — na razie tylko pola potrzebne do detekcji;
  *     dochód, wpięcie w turn-economy.ts i UI to E3+.
  *   - findCityConnection() — GENERYCZNA funkcja: czy dwa dowolne miasta MOGĄ być
- *     połączone danym medium (ląd/morze), przy uproszczonym modelu (Q6=B, decyzja
- *     właściciela 2026-07-20): connected = dystans (hex) ≤ próg ORAZ istnieje
- *     przechodnia ścieżka (BFS) bez przeszkody terenowej. NIE budujemy pathfindera
- *     po sieci dróg — to nie jest computePath/Dijkstra po koszcie ruchu jednostki,
- *     tylko czysta reachability (każdy krok kosztuje "1", bez modyfikatorów drogi/
- *     rzeki/lasu — te wpływają na ruch JEDNOSTEK, nie na to czy handel jest możliwy).
+ *     połączone danym medium (ląd/morze). R-HANDEL-SZLAKI-LIMIT-DYSTANSU-USUN-Q1
+ *     (2026-09-03, jawne ODWRÓCENIE wcześniejszej Q6=B, decyzja właściciela
+ *     2026-07-20 — dokładnie tak, jak odwrócenie P-PROMOCJA-FRONT-RESET-POSTEPU-Q1=B
+ *     w R-PRODUKCJA-POSTEP-PAMIEC-PO-USUNIECIU-Q1, ta sama sesja): dawny model
+ *     "connected = dystans (hex) ≤ próg ORAZ istnieje przechodnia ścieżka" miał próg
+ *     dystansu jako warunek BLOKUJĄCY (12 heksów ląd / 20 morze) — na dużych mapach
+ *     ("superogromny" 672×476) blokował handel między stolicami tej samej,
+ *     graniczącej pary cywilizacji tylko dlatego, że miasta leżały daleko od siebie
+ *     w LINII PROSTEJ, mimo istnienia realnej, przechodniej ścieżki lądowej/morskiej.
+ *     Właściciel uznał to za nielogiczne i zażądał usunięcia progu, nie tylko
+ *     wyjaśnienia. Od tego tematu: connected = WYŁĄCZNIE istnieje przechodnia
+ *     ścieżka (BFS) bez przeszkody terenowej — bez górnego limitu dystansu (sufit
+ *     BFS liczony dynamicznie z wymiarów mapy, patrz komentarz przy dawnym
+ *     `BFS_RADIUS_MULT` niżej). Sam próg dystansu ŻYJE DALEJ, ale WYŁĄCZNIE jako
+ *     referencyjny dystans SZCZYTU krzywej dochodu (`TradeRouteIncomeParams`,
+ *     rozdzielony od connectivity od tego tematu — patrz GOAL 3 dispatchu i
+ *     komentarz przy `TradeRouteIncomeParams`/`tradeRouteDistanceIncome` niżej).
+ *     NIE budujemy pathfindera po sieci dróg — to nie jest computePath/Dijkstra po
+ *     koszcie ruchu jednostki, tylko czysta reachability (każdy krok kosztuje "1",
+ *     bez modyfikatorów drogi/rzeki/lasu — te wpływają na ruch JEDNOSTEK, nie na to
+ *     czy handel jest możliwy).
  *   - Filtr „obce miasto / pokój" NIE jest tu stosowany na poziomie findCityConnection
  *     — to warstwa E3 (refreshTradeRoutes niżej stosuje ten filtr).
  *
@@ -39,8 +54,10 @@
  * w wonders-data.ts (wylicza sumę % per owner/medium) i 3. argument
  * computeTradeRouteIncomeByCity niżej (resolver wstrzyknięty przez main.ts).
  *
- * Pure logic — bez DOM, bez THREE, bez side effects (poza cache'em w WeakMap,
- * patrz niżej).
+ * Pure logic — bez DOM, bez THREE, bez side effects (poza cache'ami w WeakMap,
+ * patrz niżej — `__tradeConnectionCache` oraz, od R-HANDEL-SZLAKI-LIMIT-DYSTANSU-
+ * USUN-Q1, `__landComponentsCache`/`__seaComponentsCache` dla taniego wstępnego
+ * filtra GOAL 2).
  */
 
 import type { GameMap } from '../types/map';
@@ -99,21 +116,38 @@ export interface TradeRoute {
 /** Minimalny kształt miasta wymagany do detekcji połączenia (podzbiór City). */
 export type TradeRouteCityRef = Pick<City, 'id' | 'ownerId' | 'q' | 'r'>;
 
-/** Parametry progów detekcji (data/econ-params.json, blok "handel_szlaki"). */
+/**
+ * Parametry connectivity (data/econ-params.json, blok "handel_szlaki").
+ *
+ * R-HANDEL-SZLAKI-LIMIT-DYSTANSU-USUN-Q1 (2026-09-03, GOAL 1 + GOAL 3 dispatchu):
+ * `ladMaxDist`/`morzeMaxDist` NIE SĄ JUŻ progiem BLOKUJĄCYM istnienie trasy —
+ * connectivity zależy wyłącznie od fizycznej osiągalności (BFS), zob.
+ * `computeCityConnection`. Pola zostają w typie WYŁĄCZNIE dla zgodności (kształt
+ * struktury threadowany przez `findCityConnection`/`detectBestConnection`/
+ * `citiesHaveTradeConnection`/`refreshTradeRoutes` poza allowlistą tego tematu,
+ * plus klucz cache w `cacheKeyFor`) — grep całego `gra/src` potwierdza (recon
+ * dispatchu) zero innych konsumentów tych dwóch pól poza tym plikiem. Referencyjny
+ * dystans szczytu krzywej DOCHODU to od teraz osobny parametr —
+ * `TradeRouteIncomeParams.ladMaxDist`/`morzeMaxDist` (patrz niżej) — celowo
+ * ROZDZIELONY typowo od tego tu, mimo że oba czytają dziś te same klucze JSON
+ * (`lad_max_dystans`/`morze_max_dystans`, patrz `loadTradeRouteParams` i
+ * `loadTradeRouteIncomeParams`).
+ */
 export interface TradeRouteParams {
-  /** Maks. dystans heksowy dla szlaku lądowego. */
+  /** Nieużywane do blokowania — patrz GOAL 1. Maks. dystans heksowy dla szlaku lądowego (legacy, tylko dla zgodności typów/cache). */
   ladMaxDist: number;
-  /** Maks. dystans heksowy dla szlaku morskiego. */
+  /** Nieużywane do blokowania — patrz GOAL 1. Maks. dystans heksowy dla szlaku morskiego (legacy, tylko dla zgodności typów/cache). */
   morzeMaxDist: number;
 }
 
 /**
- * Wartości domyślne (gdy econ-params.json niedostępny / brak bloku).
- * Dobrane tak, by pokryć typowy dystans między sąsiednimi miastami tego samego
- * kontynentu (mapa "srednia" ~60 heksów szerokości) bez łączenia całych imperiów:
- *   ląd  12 heksów  — kilka miast w promieniu, nie cała mapa.
- *   morze 20 heksów — szlaki międzykontynentalne po wybrzeżu, szerzej niż ląd
- *                     (statek nie zna gór/lasów, ale wciąż ograniczony).
+ * Wartości domyślne (gdy econ-params.json niedostępny / brak bloku). Wartości
+ * zachowane bez zmian (12/20) mimo że od R-HANDEL-SZLAKI-LIMIT-DYSTANSU-USUN-Q1
+ * już NIE blokują connectivity (patrz komentarz przy `TradeRouteParams` wyżej) —
+ * to te same liczby, którymi domyślnie posługuje się dziś referencyjny dystans
+ * szczytu dochodu (`DEFAULT_TRADE_ROUTE_INCOME_PARAMS` niżej), więc zmiana ich tu
+ * bez zmiany tamtych rozjechałaby dwa miejsca, które historycznie (i nadal w
+ * domyślnym JSON) reprezentują tę samą liczbę geografii/gameplayu.
  */
 export const DEFAULT_TRADE_ROUTE_PARAMS: TradeRouteParams = {
   ladMaxDist: 12,
@@ -197,12 +231,148 @@ function cacheKeyFor(
 // ---------------------------------------------------------------------------
 
 /**
- * Mnożnik promienia BFS względem progu dystansu — pozwala znaleźć rozsądny objazd
- * (np. wokół gór/zatoki) bez skanowania całej mapy. Ograniczenie kosztu: liczba
- * heksów w promieniu R to ~3R²+3R+1, więc dla R rzędu kilkudziesięciu to wciąż
- * tania operacja, niezależna od rozmiaru mapy.
+ * R-HANDEL-SZLAKI-LIMIT-DYSTANSU-USUN-Q1 (2026-09-03, decyzja właściciela — jawne
+ * odwrócenie wcześniejszej Q6=B, patrz komentarz przy `DEFAULT_TRADE_ROUTE_PARAMS`
+ * niżej): usunięty dawny `BFS_RADIUS_MULT` (mnożnik progu dystansu blokującego —
+ * `params.ladMaxDist/morzeMaxDist * 2`). Sufit BFS (`maxSteps`) liczony jest teraz
+ * DYNAMICZNIE z wymiarów AKTUALNEJ mapy w `computeCityConnection`
+ * (`map.szerokoscQ + map.wysokoscR`) — bezpieczna górna granica z nierówności
+ * trójkąta dla hexDistance (odległość między dwoma dowolnymi heksami mapy W×H
+ * nie przekracza (W-1)+(H-1) ≤ W+H), niezależna od progu connectivity (który od
+ * tego tematu już nie istnieje — patrz GOAL 1) i odporna na przyszłe, jeszcze
+ * większe mapy niż dzisiejsze "superogromny" (672×476).
  */
-const BFS_RADIUS_MULT = 2;
+
+/**
+ * Tani wstępny filtr przed pełnym BFS (GOAL 2 dispatchu, uzasadnienie w raporcie
+ * Operatora): po usunięciu progu dystansu (GOAL 1) i podniesieniu sufitu BFS do
+ * skali całej mapy, para miast na RÓŻNYCH, fizycznie niepołączonych kontynentach/
+ * wyspach wywoływałaby dziś pełny BFS aż do wyczerpania CAŁEGO osiągalnego obszaru
+ * danego medium (potencjalnie dziesiątki tysięcy heksów na "superogromny") zamiast
+ * taniego odsiewu O(1) sprzed tej zmiany. Rozwiązanie: komponenty spójności
+ * (flood fill) per medium, liczone RAZ na mapę (O(liczby heksów), cache'owane w
+ * WeakMap — analogicznie do `__tradeConnectionCache` niżej, auto-inwalidacja przy
+ * nowej mapie) — potem sprawdzenie "czy te dwa miasta mogą być połączone" to O(1)
+ * porównanie identyfikatorów komponentu. Filtr jest WYŁĄCZNIE NEGATYWNY i
+ * bezpieczny: różne komponenty ⇒ DOWIEDZIONA fizyczna nieosiągalność (żadna
+ * ścieżka po heksach przechodnich nie może istnieć między różnymi komponentami
+ * spójności z definicji) ⇒ wolno zwrócić NOT_CONNECTED bez uruchamiania BFS. Ten
+ * sam komponent NIE gwarantuje connected=true (BFS nadal wymagany — dopiero on
+ * buduje faktyczną `pathHexes` do wizualizacji i respektuje `maxSteps`), więc
+ * filtr nigdy nie może wygenerować fałszywego NOT_CONNECTED — brak ryzyka
+ * zablokowania realnego połączenia (odrzucone jako zbyt ryzykowne: dowolna
+ * heurystyka bez pełnej informacji o spójności terenu, np. bounding-box, mogłaby
+ * błędnie odciąć istniejące połączenie na mapie z wąskimi przesmykami/zatokami).
+ */
+function computeConnectivityComponents(
+  map: GameMap,
+  passable: (tb: TerenBazowy) => boolean,
+): Map<string, number> {
+  const comp = new Map<string, number>();
+  let nextId = 0;
+  for (const key of Object.keys(map.hexes)) {
+    if (comp.has(key)) continue;
+    const hex = map.hexes[key];
+    if (!hex || !passable(hex.terenBazowy)) continue;
+
+    const id = nextId++;
+    comp.set(key, id);
+    let frontier: string[] = [key];
+    while (frontier.length > 0) {
+      const next: string[] = [];
+      for (const curKey of frontier) {
+        const [cq, cr] = curKey.split(',').map(Number) as [number, number];
+        for (const n of hexNeighborCoords(cq, cr)) {
+          const nKey = keyOf(n.q, n.r);
+          if (comp.has(nKey)) continue;
+          const nHex = map.hexes[nKey];
+          if (!nHex || !passable(nHex.terenBazowy)) continue;
+          comp.set(nKey, id);
+          next.push(nKey);
+        }
+      }
+      frontier = next;
+    }
+  }
+  return comp;
+}
+
+const __landComponentsCache = new WeakMap<GameMap, Map<string, number>>();
+const __seaComponentsCache = new WeakMap<GameMap, Map<string, number>>();
+
+function getLandComponents(map: GameMap): Map<string, number> {
+  let c = __landComponentsCache.get(map);
+  if (!c) {
+    c = computeConnectivityComponents(map, isLandPassable);
+    __landComponentsCache.set(map, c);
+  }
+  return c;
+}
+
+function getSeaComponents(map: GameMap): Map<string, number> {
+  let c = __seaComponentsCache.get(map);
+  if (!c) {
+    c = computeConnectivityComponents(map, isWaterHex);
+    __seaComponentsCache.set(map, c);
+  }
+  return c;
+}
+
+/**
+ * Czy para miast MOŻE być połączona lądem — negatywny filtr O(1) po jednorazowym
+ * O(heksów) per mapa (patrz komentarz `computeConnectivityComponents` wyżej).
+ * distance<=1 pomija filtr i zawsze zwraca true: miasto sąsiadujące/to samo miasto
+ * jest zawsze dozwolonym celem BFS niezależnie od przechodniości terenu (patrz
+ * `multiSourceBfs` — start/cel są zawsze dozwolone), więc komponent terenu
+ * miasta samego w sobie nie rozstrzyga (np. miasto portowe na przesmyku).
+ */
+function landComponentsMayConnect(
+  map: GameMap,
+  fromCity: TradeRouteCityRef,
+  toCity: TradeRouteCityRef,
+  distance: number,
+): boolean {
+  if (distance <= 1) return true;
+  const comps = getLandComponents(map);
+  const idsOf = (city: TradeRouteCityRef): Set<number> => {
+    const ids = new Set<number>();
+    const ownId = comps.get(keyOf(city.q, city.r));
+    if (ownId !== undefined) ids.add(ownId);
+    for (const n of hexNeighborCoords(city.q, city.r)) {
+      const id = comps.get(keyOf(n.q, n.r));
+      if (id !== undefined) ids.add(id);
+    }
+    return ids;
+  };
+  const fromIds = idsOf(fromCity);
+  if (fromIds.size === 0) return false;
+  for (const id of idsOf(toCity)) if (fromIds.has(id)) return true;
+  return false;
+}
+
+/**
+ * Czy para wejść morskich (sąsiadujące heksy wodne dwóch miast, patrz
+ * `coastalWaterNeighbors`) MOŻE być połączona wodą — analogiczny negatywny filtr
+ * O(1) jak `landComponentsMayConnect`, patrz komentarz `computeConnectivityComponents`.
+ */
+function waterComponentsMayConnect(
+  map: GameMap,
+  fromWater: ReadonlyArray<{ q: number; r: number }>,
+  toWater: ReadonlyArray<{ q: number; r: number }>,
+): boolean {
+  const comps = getSeaComponents(map);
+  const fromIds = new Set<number>();
+  for (const h of fromWater) {
+    const id = comps.get(keyOf(h.q, h.r));
+    if (id !== undefined) fromIds.add(id);
+  }
+  if (fromIds.size === 0) return false;
+  for (const h of toWater) {
+    const id = comps.get(keyOf(h.q, h.r));
+    if (id !== undefined && fromIds.has(id)) return true;
+  }
+  return false;
+}
 
 /**
  * BFS z wielu źródeł do wielu celów po heksach spełniających `passable`, z
@@ -346,20 +516,28 @@ function computeCityConnection(
   hasPortTo: boolean,
 ): CityConnectionResult {
   const NOT_CONNECTED: CityConnectionResult = { connected: false, distance, pathHexes: [] };
+  // GOAL 2 (R-HANDEL-SZLAKI-LIMIT-DYSTANSU-USUN-Q1): sufit BFS liczony DYNAMICZNIE
+  // z wymiarów AKTUALNEJ mapy — patrz komentarz przy dawnym `BFS_RADIUS_MULT` wyżej.
+  const maxSteps = Math.max(1, map.szerokoscQ + map.wysokoscR);
 
   if (medium === 'lad') {
-    if (distance > params.ladMaxDist) return NOT_CONNECTED;
-
+    // GOAL 1: usunięty dawny twardy próg `if (distance > params.ladMaxDist) return
+    // NOT_CONNECTED` — connectivity lądowa zależy WYŁĄCZNIE od fizycznej
+    // osiągalności (BFS po terenie przechodnim), zob. docstring findCityConnection
+    // i `DEFAULT_TRADE_ROUTE_PARAMS` niżej (params.ladMaxDist pozostaje w typie
+    // wyłącznie jako parametr SZCZYTU krzywej dochodu, patrz GOAL 3 / TradeRouteIncomeParams).
     const startKey = keyOf(fromCity.q, fromCity.r);
     const goalKey = keyOf(toCity.q, toCity.r);
     if (startKey === goalKey) return { connected: true, distance, pathHexes: [startKey] };
+
+    if (!landComponentsMayConnect(map, fromCity, toCity, distance)) return NOT_CONNECTED;
 
     const path = multiSourceBfs(
       map,
       [{ q: fromCity.q, r: fromCity.r }],
       new Set([goalKey]),
       isLandPassable,
-      Math.max(1, params.ladMaxDist * BFS_RADIUS_MULT),
+      maxSteps,
     );
     if (!path) return NOT_CONNECTED;
     return { connected: true, distance, pathHexes: path };
@@ -367,11 +545,14 @@ function computeCityConnection(
 
   // medium === 'morze'
   if (!hasPortFrom || !hasPortTo) return NOT_CONNECTED;
-  if (distance > params.morzeMaxDist) return NOT_CONNECTED;
+  // GOAL 1: usunięty dawny twardy próg `if (distance > params.morzeMaxDist) return
+  // NOT_CONNECTED` — patrz uzasadnienie wyżej (analogicznie do lądu).
 
   const fromWater = coastalWaterNeighbors(map, fromCity);
   const toWater = coastalWaterNeighbors(map, toCity);
   if (fromWater.length === 0 || toWater.length === 0) return NOT_CONNECTED;
+
+  if (!waterComponentsMayConnect(map, fromWater, toWater)) return NOT_CONNECTED;
 
   const goalKeys = new Set(toWater.map(h => keyOf(h.q, h.r)));
   const waterPath = multiSourceBfs(
@@ -379,7 +560,7 @@ function computeCityConnection(
     fromWater,
     goalKeys,
     isWaterHex,
-    Math.max(1, params.morzeMaxDist * BFS_RADIUS_MULT),
+    maxSteps,
   );
   if (!waterPath) return NOT_CONNECTED;
 
@@ -586,6 +767,19 @@ export function citiesHaveTradeConnection(
  * usunięte; diagnoza sprawdza teraz geometrię/wojnę bezpośrednio na WSZYSTKICH
  * miastach (fizyczny wymóg Portu na morze pozostaje bez zmian, wewnątrz
  * `findCityConnection`/`citiesHaveTradeConnection`).
+ *
+ * GOAL 5 (R-HANDEL-SZLAKI-LIMIT-DYSTANSU-USUN-Q1, 2026-09-03): dawny branch
+ * „za daleko (N heks.)" był oparty na `hexDistance > params.ladMaxDist` — dystans
+ * w LINII PROSTEJ jako powód BRAKU trasy lądowej. Od GOAL 1 dystans już NIE
+ * blokuje connectivity lądowej (ani morskiej), więc ten branch jest MARTWY: skoro
+ * `citiesHaveTradeConnection` niżej zwróciła false, oznacza to, że KAŻDA para
+ * miast gracz↔partner jest fizycznie nieosiągalna (BFS) zarówno lądem, jak i
+ * morzem — powód nigdy już nie jest „za daleko w linii prostej", tylko realna
+ * geografia (różne kontynenty/wyspy bez portu) — dokładnie to, co właściciel
+ * wprost zaakceptował jako warunek pozostający bez zmian (GOAL 6 dispatchu).
+ * Komunikat morski („wymagany Port") zostaje — TO nadal bywa faktyczną,
+ * osobną przyczyną (fizyczna ścieżka wodna istnieje, ale żadne miasto nie ma
+ * Portu) — rozróżniona teraz jawnie od czysto geograficznej nieosiągalności.
  */
 export function diagnoseMissingTradeRouteForPartner(
   playerOwnerId: number,
@@ -613,30 +807,17 @@ export function diagnoseMissingTradeRouteForPartner(
     return null; // T3: geometria połączona + traktat aktywny + brak wojny => trasa istnieje, nic do zdiagnozowania.
   }
 
-  let minDist = Infinity;
-  for (const a of playerCities) {
-    for (const b of partnerCities) {
-      const d = hexDistance(a.q, a.r, b.q, b.r);
-      if (d < minDist) minDist = d;
-    }
+  // GOAL 5: brak połączenia (lądem ANI morzem, sprawdzone wyżej dla WSZYSTKICH
+  // par miast) — rozróżnij "brak Portu" (fizyczna przyczyna łatwa do naprawienia
+  // przez gracza, budując Port) od czysto geograficznej nieosiągalności (różne
+  // kontynenty/wyspy — nic do zbudowania, to realna geografia mapy).
+  const anyPlayerPort = playerCities.some(c => cityHasPort(c.id, builtByCity));
+  const anyPartnerPort = partnerCities.some(c => cityHasPort(c.id, builtByCity));
+  if (!anyPlayerPort || !anyPartnerPort) {
+    return `brak fizycznego połączenia lądowego z ${label} i brak Portu do szlaku morskiego`;
   }
 
-  let seaPossible = false;
-  for (const a of playerCities) {
-    for (const b of partnerCities) {
-      if (findCityConnection(a, b, map, 'morze', params, builtByCity).connected) {
-        seaPossible = true;
-        break;
-      }
-    }
-    if (seaPossible) break;
-  }
-
-  if (minDist > params.ladMaxDist && !seaPossible) {
-    return `${label} za daleko (${minDist} heks.)`;
-  }
-
-  return 'brak połączenia lądowego lub morskiego (wymagany Port)';
+  return `brak fizycznego połączenia (lądowego ani morskiego) z ${label} — różne kontynenty/wyspy`;
 }
 
 /**
@@ -816,15 +997,28 @@ export function refreshTradeRoutes(
 // E3: dochód z tras — składnik dystansowy (Q7=A) + agregaty per-miasto
 // ---------------------------------------------------------------------------
 
-/** Parametry dochodu dystansowego (data/econ-params.json, blok "handel_szlaki"). */
+/**
+ * Parametry dochodu dystansowego (data/econ-params.json, blok "handel_szlaki").
+ *
+ * R-HANDEL-SZLAKI-LIMIT-DYSTANSU-USUN-Q1 (2026-09-03, GOAL 3 dispatchu): od tego
+ * tematu `ladMaxDist`/`morzeMaxDist` TUTAJ (w odróżnieniu od tych samych nazw pól
+ * w `TradeRouteParams` wyżej — patrz komentarz tam) to WYŁĄCZNIE referencyjny
+ * dystans SZCZYTU krzywej dochodu (nigdy próg blokujący connectivity — ten zniknął,
+ * patrz GOAL 1/`computeCityConnection`). Rozdzielenie od `TradeRouteParams` jest
+ * celowe: connectivity mogła w przyszłości dostać inny sposób strojenia bez
+ * przypadkowego spłaszczenia krzywej dochodu (i odwrotnie) — mimo że OBA typy dziś
+ * czytają z JSON te same klucze `lad_max_dystans`/`morze_max_dystans`
+ * (`loadTradeRouteParams` vs `loadTradeRouteIncomeParams`), są to dwa NIEZALEŻNE
+ * pola w dwóch NIEZALEŻNYCH strukturach.
+ */
 export interface TradeRouteIncomeParams {
   /** Dochód (pieniądz) trasy przy dystansie 0 — dolna podłoga wzoru. */
   dochodPodloga: number;
   /** Dochód (pieniądz) trasy przy dystansie = maxDist DLA DANEGO MEDIUM — szczyt wzoru. */
   dochodSzczyt: number;
-  /** Maks. dystans heksowy dla szlaku lądowego (ten sam parametr geografii co TradeRouteParams). */
+  /** Referencyjny dystans heksowy SZCZYTU krzywej dochodu dla szlaku lądowego (NIE próg connectivity — patrz komentarz interfejsu wyżej). */
   ladMaxDist: number;
-  /** Maks. dystans heksowy dla szlaku morskiego (ten sam parametr geografii co TradeRouteParams). */
+  /** Referencyjny dystans heksowy SZCZYTU krzywej dochodu dla szlaku morskiego (NIE próg connectivity — patrz komentarz interfejsu wyżej). */
   morzeMaxDist: number;
 }
 
@@ -852,10 +1046,20 @@ export const DEFAULT_TRADE_ROUTE_INCOME_PARAMS: TradeRouteIncomeParams = {
  * Wzór dystansowy (przebudowa ECHO Q1 + p.3, 2026-08-21): dochód ROŚNIE liniowo
  * z dystansem, od dochodPodloga (dystans=0) do dochodSzczyt (dystans=maxDist
  * WŁAŚCIWEGO DLA TEGO MEDIUM — ląd vs morze mają osobne maxDist, ale ten sam
- * szczyt). Wynik zawsze przycięty do [dochodPodloga, dochodSzczyt] (clamp),
- * na wypadek dystansu spoza [0, maxDist] (nie powinien się zdarzyć w praktyce,
- * bo geometria trasy jest ograniczona osobnym progiem, ale funkcja jest pure
- * i nie zakłada tego u wywołującego).
+ * szczyt).
+ *
+ * R-HANDEL-SZLAKI-LIMIT-DYSTANSU-USUN-Q1 (2026-09-03, GOAL 3 dispatchu): odkąd
+ * connectivity (GOAL 1) już NIE ogranicza `dystans` do [0, maxDist] — trasa może
+ * dziś fizycznie mieć setki heksów na dużej mapie — wejście do wzoru liniowego jest
+ * JAWNIE przycięte do `Math.min(dystans, maxDist)` PRZED podstawieniem, żeby
+ * istniejące, bliskie trasy (≤maxDist) zarabiały DOKŁADNIE tyle co dziś (zero
+ * zmiany balansu, kryterium końca #2 dispatchu), a każda trasa DALSZA niż
+ * referencyjny dystans szczytu dostawała dochód RÓWNY szczytowi — nigdy więcej,
+ * nigdy ekstrapolowany powyżej (kryterium końca #3). Wynik dodatkowo przycięty do
+ * [dochodPodloga, dochodSzczyt] (clamp na wyjściu) jako druga, niezależna linia
+ * obrony przed zaokrągleniem (Math.floor) — z samym przycięciem wejścia te dwa
+ * zabezpieczenia dają identyczny wynik dla dystansu w [0, maxDist], więc druga
+ * warstwa jest tu redundantna, ale tania i nieszkodliwa.
  */
 export function tradeRouteDistanceIncome(
   dystans: number,
@@ -863,8 +1067,9 @@ export function tradeRouteDistanceIncome(
   params: TradeRouteIncomeParams = DEFAULT_TRADE_ROUTE_INCOME_PARAMS,
 ): number {
   const maxDist = medium === 'lad' ? params.ladMaxDist : params.morzeMaxDist;
+  const dystansPrzyciety = Math.min(dystans, maxDist);
   const stawkaWzrostu = (params.dochodSzczyt - params.dochodPodloga) / maxDist;
-  const raw = params.dochodPodloga + dystans * stawkaWzrostu;
+  const raw = params.dochodPodloga + dystansPrzyciety * stawkaWzrostu;
   return Math.min(params.dochodSzczyt, Math.max(params.dochodPodloga, Math.floor(raw)));
 }
 

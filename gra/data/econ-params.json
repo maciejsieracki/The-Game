@@ -701,14 +701,14 @@
       "normal": 12,
       "hard": 12,
       "jednostka": "heksow",
-      "opis": "Handel E2 (trade-routes.ts): prog uproszczonego dystansu (hexDistance) dla szlaku LADOWEGO miedzy centrami dwoch miast. Ta sama wartosc na wszystkich trudnosciach -- to parametr geografii/gameplayu, nie ekonomicznego skalowania trudnosci. Q6=B (Maciej 2026-07-20): connected = dystans <= prog ORAZ istnieje przechodnia sciezka bez przeszkody terenowej (woda/gory blokuja); NIE budujemy pathfindera po sieci drog."
+      "opis": "R-HANDEL-SZLAKI-LIMIT-DYSTANSU-USUN-Q1 (Maciej, 2026-09-03): od tego tematu ta wartosc NIE JEST JUZ progiem BLOKUJACYM istnienie szlaku LADOWEGO -- to jawne ODWROCENIE wczesniejszej Q6=B (Maciej 2026-07-20: \"connected = dystans <= prog ORAZ istnieje przechodnia sciezka\"). Dzis connected = WYLACZNIE istnieje przechodnia sciezka po terenie (BFS, woda/gory blokuja) -- BEZ gornego limitu dystansu w linii prostej (na duzych mapach ten prog blokowal handel miedzy stolicami tej samej pary cywilizacji tylko dlatego, ze lezaly daleko od siebie, mimo realnej, przechodniej sciezki). Ta liczba (12) zyje dalej jako pole TradeRouteParams.ladMaxDist w trade-routes.ts, dzis nieuzywane do blokowania (patrz komentarz w kodzie). Referencyjny dystans SZCZYTU krzywej DOCHODU (identyczna dzis liczbowo wartosc 12, ale osobne pole TradeRouteIncomeParams.ladMaxDist) pozostaje bez zmian -- istniejace, bliskie trasy (<=12 heksow) zarabiaja dokladnie tyle co przed ta zmiana."
     },
     "morze_max_dystans": {
       "easy": 20,
       "normal": 20,
       "hard": 20,
       "jednostka": "heksow",
-      "opis": "Handel E2 (trade-routes.ts): prog uproszczonego dystansu dla szlaku MORSKIEGO (przez Port w OBU miastach), po wodzie (Morze unia Wybrzeze -- obie klasyfikowane jako woda po zmianie z 2026-07-20). Szerszy prog niz lad, bo statek nie zna przeszkod gorskich/lasu."
+      "opis": "R-HANDEL-SZLAKI-LIMIT-DYSTANSU-USUN-Q1 (Maciej, 2026-09-03): analogicznie do lad_max_dystans wyzej -- ta wartosc NIE JEST JUZ progiem BLOKUJACYM istnienie szlaku MORSKIEGO (przez Port w OBU miastach, po wodzie: Morze unia Wybrzeze). Connectivity morska = WYLACZNIE fizyczna osiagalnosc po wodzie (BFS) + Port w obu miastach, bez gornego limitu dystansu w linii prostej. Ta liczba (20) zyje dalej jako pole TradeRouteParams.morzeMaxDist w trade-routes.ts, dzis nieuzywane do blokowania. Referencyjny dystans SZCZYTU krzywej DOCHODU (TradeRouteIncomeParams.morzeMaxDist, ta sama liczba 20) pozostaje bez zmian -- istniejace, bliskie trasy morskie (<=20 heksow) zarabiaja dokladnie tyle co przed ta zmiana."
     },
     "dochod_podloga": {
       "easy": 5,

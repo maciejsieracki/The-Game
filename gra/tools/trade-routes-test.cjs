@@ -25,6 +25,7 @@ export {
   loadTradeRouteParams, diffTradeRoutes,
   computeSeaTradeRouteCountByCity, computeSeaTradeBonusIncomeByCity,
   PORT_SEA_TRADE_BONUS_PIENIADZ,
+  diagnoseMissingTradeRouteForPartner,
 } from '../src/game/trade-routes';
 `, 'utf8');
 
@@ -39,9 +40,13 @@ function assert(cond, msg) { if (cond) passed++; else { failed++; console.error(
 function eq(a, b, msg) { assert(a === b, `${msg} (got ${JSON.stringify(a)}, want ${JSON.stringify(b)})`); }
 
 // ---------------------------------------------------------------------------
-// Fixture map: two rows.
-//   r=0  : q=0..30 flat land (rownina)               -- used for a/b/e (lad only)
-//   r=10 : q=0..10 land | q=4..6 morze | q=7..10 land -- used for c/d (lad+morze)
+// Fixture map: trzy rzedy.
+//   r=0  : q=0..30 flat land (rownina)                  -- a/b/e (lad only)
+//   r=10 : q=0..10 land | q=4..6 morze | q=7..10 land    -- c/d (lad+morze)
+//   r=20 : q=0..10 land | q=4..6 gory  | q=7..10 land    -- b2 (fizyczna blokada
+//          GORAMI, nie woda -- KRYTERIUM KONCA #5 dispatchu R-HANDEL-SZLAKI-
+//          LIMIT-DYSTANSU-USUN-Q1: fizyczna nieosiagalnosc nadal blokuje trase,
+//          niezaleznie od usunietego progu dystansu)
 // ---------------------------------------------------------------------------
 
 function buildMap() {
@@ -53,7 +58,11 @@ function buildMap() {
     const isWater = q >= 4 && q <= 6;
     hexes[`${q},10`] = { terenBazowy: isWater ? 'morze' : 'rownina' };
   }
-  return { szerokoscQ: 31, wysokoscR: 11, hexes, seed: 1, riverPaths: [] };
+  for (let q = 0; q <= 10; q++) {
+    const isMountain = q >= 4 && q <= 6;
+    hexes[`${q},20`] = { terenBazowy: isMountain ? 'gory' : 'rownina' };
+  }
+  return { szerokoscQ: 31, wysokoscR: 21, hexes, seed: 1, riverPaths: [] };
 }
 
 const map = buildMap();
@@ -64,6 +73,8 @@ const cityFar1  = { id: 'c3', ownerId: 0, q: 0, r: 0 };
 const cityFar2  = { id: 'c4', ownerId: 1, q: 20, r: 0 };
 const cityWater1 = { id: 'c5', ownerId: 0, q: 3, r: 10 };
 const cityWater2 = { id: 'c6', ownerId: 1, q: 7, r: 10 };
+const cityMountain1 = { id: 'c7', ownerId: 0, q: 3, r: 20 };
+const cityMountain2 = { id: 'c8', ownerId: 1, q: 7, r: 20 };
 
 // (a) dwa miasta blisko na ladzie = connected, distance poprawny
 const near = TR.findCityConnection(cityNear1, cityNear2, map, 'lad');
@@ -73,16 +84,31 @@ eq(near.pathHexes.length, 6, 'a: path 6 hexow (0..5 wlacznie)');
 eq(near.pathHexes[0], '0,0', 'a: path zaczyna sie w miescie zrodlowym');
 eq(near.pathHexes[near.pathHexes.length - 1], '5,0', 'a: path konczy sie w miescie docelowym');
 
-// (b) za daleko = not connected
+// (b) R-HANDEL-SZLAKI-LIMIT-DYSTANSU-USUN-Q1 (GOAL 1, 2026-09-03): dawny prog
+// dystansu USUNIETY -- 20 heksow > dawne lad_max_dystans=12, ale teren jest w
+// calosci przechodni (plaska rownina) -> DZIS connected=true (odwrotnie niz przed
+// ta zmiana). Zero gornego limitu dystansu w linii prostej, patrz KRYTERIUM
+// KONCA #1 dispatchu.
 const far = TR.findCityConnection(cityFar1, cityFar2, map, 'lad');
-assert(!far.connected, 'b: za daleko (20 heksow > lad_max_dystans=12) -> not connected');
-eq(far.distance, 20, 'b: dystans nadal raportowany mimo not-connected');
-eq(far.pathHexes.length, 0, 'b: brak path gdy not connected');
+assert(far.connected, 'b: 20 heksow na przechodnim ladzie -> connected mimo przekroczenia dawnego progu 12 (GOAL 1: prog usuniety)');
+eq(far.distance, 20, 'b: dystans poprawnie raportowany');
+eq(far.pathHexes.length, 21, 'b: path 21 hexow (0..20 wlacznie), zaden limit nie ucina sciezki');
+eq(far.pathHexes[0], '0,0', 'b: path zaczyna sie w miescie zrodlowym');
+eq(far.pathHexes[far.pathHexes.length - 1], '20,0', 'b: path konczy sie w miescie docelowym');
+
+// (b2) KRYTERIUM KONCA #5 dispatchu: fizyczna nieosiagalnosc NADAL blokuje trase
+// -- to nie jest limit dystansu, tylko realna geografia (Gory nieprzechodnie dla
+// ladu). Dystans tej pary (4 heksy) jest MNIEJSZY niz dawny prog 12, a mimo to
+// not-connected, bo miedzy miastami fizycznie nie ma przechodniej sciezki.
+const mountainBlocked = TR.findCityConnection(cityMountain1, cityMountain2, map, 'lad');
+assert(!mountainBlocked.connected, 'b2: pas Gor (nieprzechodnich dla ladu) blokuje trase mimo bliskiego dystansu (4) -- fizyczna geografia, nie limit dystansu');
+eq(mountainBlocked.distance, 4, 'b2: dystans = hexDistance(3,20 -> 7,20) = 4 (daleko ponizej dawnego progu 12, a mimo to zablokowane)');
+eq(mountainBlocked.pathHexes.length, 0, 'b2: brak path gdy not connected');
 
 // (c) rozdzielone woda bez portow = not connected (lad)
 const landBlocked = TR.findCityConnection(cityWater1, cityWater2, map, 'lad');
 assert(!landBlocked.connected, 'c: pas morza blokuje trase ladowa -> not connected');
-eq(landBlocked.distance, 4, 'c: dystans = hexDistance(3,10 -> 7,10) = 4 (<= prog, ale teren blokuje)');
+eq(landBlocked.distance, 4, 'c: dystans = hexDistance(3,10 -> 7,10) = 4 (fizycznie zablokowane przez teren, nie przez limit dystansu)');
 
 // (c-bis) bez portow trasa morska tez niemozliwa (brak Portu w obu miastach)
 const seaNoPort = TR.findCityConnection(cityWater1, cityWater2, map, 'morze', TR.DEFAULT_TRADE_ROUTE_PARAMS, new Map());
@@ -145,9 +171,20 @@ const routeOneSided = TR.createTradeRoute(
 );
 eq(routeOneSided.budynekOdblokowany, false, 'TradeRoute: budynekOdblokowany=false gdy tylko JEDNA strona ma budynek handlowy');
 
+// GOAL 1 (R-HANDEL-SZLAKI-LIMIT-DYSTANSU-USUN-Q1): trasa daleka (20 heksow), ale
+// fizycznie przechodnia -- od tej zmiany JEST polaczona (dawniej: brak_polaczenia
+// wylacznie z powodu przekroczenia progu dystansu 12).
 const routeFar = TR.createTradeRoute(cityFar1, cityFar2, map, 'lad');
-eq(routeFar.status, 'brak_polaczenia', 'TradeRoute: status brak_polaczenia gdy not connected');
-eq(routeFar.budynekOdblokowany, false, 'TradeRoute: budynekOdblokowany=false gdy trasa nawet nie polaczona (brak builtByCity)');
+eq(routeFar.status, 'polaczony', 'TradeRoute: status polaczony mimo dystansu 20 > dawny prog 12 (GOAL 1: prog usuniety, teren przechodni)');
+eq(routeFar.dystans, 20, 'TradeRoute: dystans dalekiej, ale polaczonej trasy raportowany poprawnie');
+eq(routeFar.budynekOdblokowany, false, 'TradeRoute: budynekOdblokowany=false (brak builtByCity), niezaleznie od polaczenia');
+
+// KRYTERIUM KONCA #5 dispatchu: trasa fizycznie zablokowana (Gory) pozostaje
+// brak_polaczenia -- to NIE jest limit dystansu (dystans=4, daleko ponizej
+// dawnego progu 12), tylko realna geografia.
+const routeMountainBlocked = TR.createTradeRoute(cityMountain1, cityMountain2, map, 'lad');
+eq(routeMountainBlocked.status, 'brak_polaczenia', 'TradeRoute: status brak_polaczenia gdy fizycznie zablokowane (Gory), niezaleznie od GOAL 1');
+eq(routeMountainBlocked.budynekOdblokowany, false, 'TradeRoute: budynekOdblokowany=false gdy trasa nawet nie polaczona (brak builtByCity)');
 
 // loadTradeRouteParams -- odporne na braki + czyta z JSON
 eq(
@@ -246,6 +283,46 @@ const singleSea = [seaRoute('x->y:morze', 'x', 'y')];
 const countSingle = TR.computeSeaTradeRouteCountByCity(singleSea);
 eq(countSingle.get('x'), 1, 'l7: fromCityId (x) dostaje wpis w mapie wyniku');
 eq(countSingle.get('y'), 1, 'l7: toCityId (y) dostaje wpis w mapie wyniku');
+
+// ---------------------------------------------------------------------------
+// GOAL 5 (R-HANDEL-SZLAKI-LIMIT-DYSTANSU-USUN-Q1): diagnoseMissingTradeRouteForPartner
+// -- dawny martwy branch "za daleko (N heks.)" usuniety (dystans juz nie blokuje
+// connectivity, patrz GOAL 1), rozroznienie "brak Portu" vs "fizyczna
+// nieosiagalnosc" zamiast jednego ogolnego komunikatu.
+// ---------------------------------------------------------------------------
+const NO_WAR = () => false;
+const WAR = () => true;
+
+// (m1) para daleka (20 heksow), ale fizycznie polaczona (GOAL 1) -> diagnoza
+// null, nic do zdiagnozowania (trasa geometrycznie istnieje).
+const diagFar = TR.diagnoseMissingTradeRouteForPartner(0, 1, [cityFar1, cityFar2], map, new Map(), NO_WAR);
+eq(diagFar, null, 'm1: para daleka (20 heksow) ale fizycznie polaczona (GOAL 1) -> diagnoza null');
+
+// (m2) wojna -> zawsze ten komunikat, niezaleznie od geometrii.
+const diagWar = TR.diagnoseMissingTradeRouteForPartner(0, 1, [cityNear1, cityNear2], map, new Map(), WAR);
+eq(diagWar, 'wojna — szlaki zawieszone', 'm2: wojna blokuje diagnoze niezaleznie od geometrii');
+
+// (m3) brak miast partnera.
+eq(TR.diagnoseMissingTradeRouteForPartner(0, 1, [cityNear1], map, new Map(), NO_WAR), 'brak miast do handlu', 'm3: brak miast partnera -> "brak miast do handlu"');
+
+// (m4) para fizycznie zablokowana Gorami (dystans=4, DALEKO PONIZEJ dawnego progu
+// 12) i BEZ Portu w zadnym miescie -> komunikat NIE wspomina juz dystansu
+// (martwy dawny branch "za daleko" usuniety), wspomina Port jako brakujacy
+// warunek szlaku morskiego.
+const diagMountainNoPort = TR.diagnoseMissingTradeRouteForPartner(0, 1, [cityMountain1, cityMountain2], map, new Map(), NO_WAR);
+assert(diagMountainNoPort !== null, 'm4: para fizycznie zablokowana -> diagnoza NIE jest null');
+assert(!diagMountainNoPort.includes('za daleko'), 'm4: GOAL 5 -- komunikat NIE zawiera juz martwego dawnego tekstu "za daleko"');
+assert(diagMountainNoPort.includes('Port'), 'm4: brak Portu w zadnym miescie -> komunikat wspomina Port');
+
+// (m5) fizycznie zablokowane Gorami, ale OBA miasta maja Port (wciaz brak wody
+// przy ktoryms z miast na tym rzedzie mapy -> szlak morski nadal fizycznie
+// niemozliwy) -> komunikat generyczny "rozne kontynenty/wyspy", bez zarzutu
+// braku Portu (bo Port jest -- po prostu nie ma dokad nim plynac).
+const builtMountainBothPorts = new Map([['c7', ['port']], ['c8', ['port']]]);
+const diagMountainWithPort = TR.diagnoseMissingTradeRouteForPartner(0, 1, [cityMountain1, cityMountain2], map, builtMountainBothPorts, NO_WAR);
+assert(diagMountainWithPort !== null, 'm5: nadal fizycznie zablokowane (brak wody przy miastach) -> diagnoza NIE jest null mimo Portow');
+assert(!diagMountainWithPort.includes('za daleko'), 'm5: GOAL 5 -- brak martwego tekstu "za daleko"');
+assert(!diagMountainWithPort.includes('brak Portu'), 'm5: oba miasta MAJA Port -> komunikat nie zarzuca braku Portu (rozroznienie przyczyn z GOAL 5)');
 
 console.log(`\ntrade-routes-test: ${passed} passed, ${failed} failed`);
 try { fs.unlinkSync(ENTRY_FILE); } catch (e) {}
