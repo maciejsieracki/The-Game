@@ -4230,3 +4230,9 @@ z góry ustalonego zakresu) — dispatchowane równolegle.
 | ID | Prośba | Status | Uwagi |
 |---|---|---|---|
 | `R-DYPLO-PROG-NAP-90-DO-110-Q1` | "Zmieńmy jeszcze pakt o nieagresji z 90 na 110." | **ZINTEGROWANE** (`740993f4`) | Domain GAME, balans — Operator+Evaluator+Final Control Sonnet 5, effort MEDIUM. Ten sam wzorzec co wcześniejsza zmiana `progNapRelacja` 50→90 w tej samej sesji (FALA 340, `R-BALANS-PAKT-NIEAGRESJI-I-GLINA-Q1`) — czysta decyzja balansu, bez ABC. Dwa źródła prawdy zmienione: `gra/src/game/diplomacy.ts:204` i `gra/data/diplomacy.json:46`. Final Control PASS, wszystkie 5 kryteriów potwierdzone żywo (w tym mutacyjny dowód nietautologiczności testu T9k). Zintegrowane, 5 bramek referencyjnych + 9 testów dyplomacji zielone po integracji.
+
+## NOWE ZGŁOSZENIE 2026-09-03 (dwa zrzuty ekranu) — cały wiersz karty encji ma być przyciskiem
+
+| ID | Prośba | Status | Uwagi |
+|---|---|---|---|
+| `P-CIVPEDIA-KARTY-CALY-WIERSZ-PRZYCISKIEM-Q1` | Zrzuty kart "Garncarstwo"/"Wymiana": "Te przyciski po prawej stronie nie są potrzebne... Jest kolejna technologia wymiana, powinien być przycisk jako wymiana... To samo z brązownictwem, pismem, religią... oraz także z budynkami i jednostkami. Wszystkie powinny być przyciskiem." | **DISPATCHOWANE** | Domain GAME, UI (DOM/HTML, nie render/**) — Operator+Evaluator+Final Control Sonnet 5, effort HIGH. Recon (subagent Explore): wspólny renderer `entityCards/renderer.ts` (`buildGridRowEl`) robi cały wiersz klikalnym TYLKO gdy `value===''` (Budynki/Jednostki) — dla wierszy z niepustym `value` (Kolejne technologie: "Wymaga też: X, Y") klikalna jest wyłącznie prawa plakietka, a `label` (nazwa technologii) w ogóle nie reaguje — prawdziwy bug funkcjonalny, nie tylko wizualny. Ten sam wzorzec w sekcji "Zmiany ekonomiczne" tego samego adaptera (niezgłoszony wprost, ale identyczny). Inne adaptery (unit/improvement/wonder) już działają poprawnie. Dispatch `00-dispatch.md`.
