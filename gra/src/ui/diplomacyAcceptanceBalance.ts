@@ -262,12 +262,33 @@ export function balancePanelDataFromRows(
   let unifiedPwBalance: number | undefined;
   let minPwBalance: number | undefined;
   let allActionableHavePwBalance = true;
+  // Obrona runda 1 (P-DYPLO-BILANS-GATE-NIESPOJNY-N-E1-REPRODUKCJA, zarzut 3 Evaluatora,
+  // POTWIERDZONY żywym testem '(G)' niżej w pliku testowym): centerLabel w
+  // renderPnBalancePanelHtml ('Bilans (netto)' vs 'Bilans (Oni)') czyta WYŁĄCZNIE
+  // `theirBalance.mode`/`myBalance.mode` z PRIMARY wiersza (pickPrimaryNegotiationRow —
+  // pierwszy 'own' w KOLEJNOŚCI TABLICY `rows`, czyli kolejności dodania do
+  // negotiationTable). Dla pakietu 2+ pozycji (np. Traktat handlowy + Umowa wymiany
+  // surowców) TA SAMA zawartość pakietu dawała RÓŻNĄ etykietę wyłącznie w zależności od
+  // tego, który wiersz trafił do tablicy jako pierwszy — usunięcie i ponowne dodanie
+  // JEDNEJ pozycji (dokładnie akcja Macieja z opisu) przesuwa ją na koniec tablicy i
+  // zmienia, który wiersz jest "primary", mimo że semantycznie pakiet nadal zawiera
+  // DOKŁADNIE ten sam traktat + koszyk. Naprawa: `mode` pakietu (>1 pozycja) liczony z
+  // WSZYSTKICH pozycji, nie tylko primary — 'mixed' gdy pakiet ma zarówno komponent
+  // traktatowy, jak i koszykowy (co dla Traktat handlowy + Umowa wymiany zawsze
+  // zachodzi), niezależnie od kolejności dodania.
+  let hasTreatyComponent = false;
+  let hasBasketComponent = false;
+  let hasGiftComponent = false;
 
   for (const row of actionable) {
     const d = balancePanelDataFromRow(row, 0);
     if (!d) continue;
     myOfferPn += d.myOfferPn;
     theirOfferPn += d.theirOfferPn;
+    const rowMode = d.theirBalance?.mode ?? d.myBalance?.mode;
+    if (rowMode === 'treaty' || rowMode === 'mixed') hasTreatyComponent = true;
+    if (rowMode === 'basket' || rowMode === 'mixed') hasBasketComponent = true;
+    if (rowMode === 'gift') hasGiftComponent = true;
     // R-DYPLO-FAIRNESS-GATE-ZAKRES-Q2=A: responderPreview (evaluateProposal, package-aware
     // od Q2 dla umowa_szlakow/umowa_handlowa — patrz main.ts previewNegotiationEntry) jest
     // JEDYNYM źródłem prawdy, tym samym, którego użyje backend przy realnym wysłaniu
@@ -324,14 +345,35 @@ export function balancePanelDataFromRows(
       ? 'Spełnia warunki (0 PW)'
       : `Brakuje ${Math.abs(net)} PW`;
 
+  // actionable.length <= 1: zachowaj DOKŁADNIE dawne zachowanie (mode = primary.mode,
+  // bez zmiany — patrz komentarz przy hasTreatyComponent/hasBasketComponent wyżej).
+  const packageMode: AcceptanceSideBalance['mode'] | undefined = actionable.length > 1
+    ? (hasTreatyComponent && hasBasketComponent
+      ? 'mixed'
+      : hasTreatyComponent
+        ? 'treaty'
+        : hasBasketComponent
+          ? 'basket'
+          : hasGiftComponent
+            ? 'gift'
+            : undefined)
+    : undefined;
+
   const theirBalance = {
     ...base.theirBalance,
     balancePn: net,
     accepted: net >= 0,
     statusLabel,
+    ...(packageMode != null ? { mode: packageMode } : null),
   };
   const myBalance = base.myBalance
-    ? { ...base.myBalance, balancePn: net, accepted: net >= 0, statusLabel }
+    ? {
+      ...base.myBalance,
+      balancePn: net,
+      accepted: net >= 0,
+      statusLabel,
+      ...(packageMode != null ? { mode: packageMode } : null),
+    }
     : undefined;
 
   return {
