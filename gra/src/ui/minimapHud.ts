@@ -6,7 +6,6 @@
  * LANE: src/ui/*.  Wpięcie getMinimapData = MASTER/MAPA.
  */
 
-import { brandIconSvg } from './icons/brandAssets';
 import { ensureBrandRootTokens } from './brandTokenVars';
 import { FOG_EXPLORED_BRIGHTNESS } from '../game/visibility';
 import {
@@ -52,7 +51,15 @@ export interface MinimapData {
   markers?: MinimapMarkerData[];
 }
 
-/** F2 / D15: przełączniki zasięgu kultury, religii i państwa obok minimapy. */
+/**
+ * F2 / D15: przełączniki zasięgu kultury, religii i państwa obok minimapy.
+ * R-MINIMAPA-PASEK-NARZEDZI-REORGANIZACJA-Q1: kultura/religia NIE mają już własnych
+ * przycisków przy minimapie (sterowane z chipów górnego paska, patrz hud.ts
+ * handleHudBarAction) — pola onToggleCulture/onToggleReligion/onOpenCulturePanel/
+ * onOpenReligionPanel/isCultureActive/isReligionActive zostają w interfejsie (hud.ts
+ * `buildMinimapLayers()` nadal je buduje z main.ts `minimapLayers` configu), ale
+ * `createMinimapHud()` już ich nie odczytuje — zero elementu DOM je woła.
+ */
 export interface MinimapLayerHooks {
   onToggleCulture?: () => void;
   onToggleReligion?: () => void;
@@ -63,6 +70,10 @@ export interface MinimapLayerHooks {
   isCultureActive?: () => boolean;
   isReligionActive?: () => boolean;
   isTerritoryActive?: () => boolean;
+  /** R-MINIMAPA-PASEK-NARZEDZI-REORGANIZACJA-Q1: nowy toggle widoczności tras handlowych
+   *  (drugi przycisk po prawej stronie minimapy, obok granic). */
+  onToggleTradeRoutes?: () => void;
+  isTradeRoutesActive?: () => boolean;
 }
 
 /** Tymczasowe (playtest/dev): przyciski F/M obok minimapy — wyłączone w produkcji. */
@@ -75,13 +86,21 @@ export interface MinimapPlaytestFogHooks {
   isLandReveal: () => boolean;
 }
 
-/** E-map-worker-overlay: toggle podglądu robotników na mapie świata. */
+/**
+ * E-map-worker-overlay: toggle podglądu robotników na mapie świata.
+ * R-MINIMAPA-PASEK-NARZEDZI-REORGANIZACJA-Q1: przycisk przeniesiony do rzędu zoom
+ * (hud.ts `.civ-hud-util-dock`) — interfejs zostaje eksportowany, bo hud.ts typuje nim
+ * `HudConfig.minimapWorkerOverlay`, ale `createMinimapHud()` już go nie przyjmuje.
+ */
 export interface MinimapWorkerOverlayHooks {
   onToggleWorkers?: () => void;
   isWorkersActive?: () => boolean;
 }
 
-/** Toggle ikon złóż / nakładek surowcowych (resourceOverlays w main.ts). */
+/**
+ * Toggle ikon złóż / nakładek surowcowych (resourceOverlays w main.ts).
+ * R-MINIMAPA-PASEK-NARZEDZI-REORGANIZACJA-Q1: jw. — przycisk w rzędzie zoom, nie tutaj.
+ */
 export interface MinimapResourceDepositOverlayHooks {
   onToggleDeposits?: () => void;
   isDepositsActive?: () => boolean;
@@ -92,14 +111,10 @@ export interface MinimapHudConfig {
   getMinimapData: () => MinimapData | null;
   /** Klik na minimapie → przesunięcie kamery (q, r = przybliżony hex). */
   onMinimapClick?: (q: number, r: number) => void;
-  /** Opcjonalne warstwy zasięgu (🎭 kultura, ⛪ religia). */
+  /** Przełączniki granic + tras handlowych — jedyne 2 przyciski po prawej stronie minimapy. */
   layers?: MinimapLayerHooks;
   /** Playtest/dev: FoW F / ląd M — tylko klawiatura (bez przycisków w HUD). */
   playtestFog?: MinimapPlaytestFogHooks;
-  /** Toggle ikon 👤 — pola z robotnikami na mapie świata. */
-  workerOverlay?: MinimapWorkerOverlayHooks;
-  /** Toggle ikon złóż / surowców na mapie 3D (⛏). */
-  resourceDepositOverlay?: MinimapResourceDepositOverlayHooks;
   width?: number;
   height?: number;
 }
@@ -127,8 +142,10 @@ const FOG_HIDDEN = '#0a0e14';
 const DEFAULT_W = MINIMAP_W_PX;
 const DEFAULT_H = MINIMAP_H_PX;
 
-const SEARCH_SVG = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M20 20 16 16"/></svg>';
 const TERRITORY_SVG = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"><path d="M12 2 20 7v10L12 22 4 17V7z"/><path d="M12 2v20M4 7l8 5 8-5M4 17l8-5 8 5"/></svg>';
+/** R-MINIMAPA-PASEK-NARZEDZI-REORGANIZACJA-Q1: nowa ikona — trasy handlowe (strzałki wymiany),
+ *  spójna stylistycznie z TERRITORY_SVG (stroke, viewBox 24, linecap/linejoin round). */
+const TRADE_ROUTES_SVG = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h13M13 3l4 4-4 4"/><path d="M20 17H7M11 21l-4-4 4-4"/></svg>';
 
 const SQRT3 = Math.sqrt(3);
 
@@ -333,67 +350,15 @@ export function createMinimapHud(config: MinimapHudConfig): MinimapHudApi {
   tools.className = 'civ-minimap-tools';
   wrap.appendChild(tools);
 
-  let mapBtn: HTMLButtonElement | null = null;
-  let searchBtn: HTMLButtonElement | null = null;
+  // R-MINIMAPA-PASEK-NARZEDZI-REORGANIZACJA-Q1: `.civ-minimap-tools` niesie WYŁĄCZNIE
+  // te dwa przyciski (kryterium końca #1) — worker/deposit przeniesione do rzędu zoom
+  // (hud.ts `.civ-hud-util-dock`), mapa/religia usunięte (sterowane z chipów górnego
+  // paska, hud.ts handleHudBarAction).
   let territoryBtn: HTMLButtonElement | null = null;
-  let workerBtn: HTMLButtonElement | null = null;
-  let depositBtn: HTMLButtonElement | null = null;
+  let tradeRoutesBtn: HTMLButtonElement | null = null;
 
   function ensureToolButtons(): void {
     const L = config.layers;
-    const W = config.workerOverlay;
-    const D = config.resourceDepositOverlay;
-    if (W?.onToggleWorkers && !workerBtn) {
-      workerBtn = document.createElement('button');
-      workerBtn.type = 'button';
-      workerBtn.className = 'mini-tool-btn';
-      workerBtn.title = 'Pokaż robotników w terenie';
-      workerBtn.textContent = '👤';
-      workerBtn.style.fontSize = '18px';
-      workerBtn.onclick = () => W.onToggleWorkers?.();
-      tools.appendChild(workerBtn);
-    }
-    if (D?.onToggleDeposits && !depositBtn) {
-      depositBtn = document.createElement('button');
-      depositBtn.type = 'button';
-      depositBtn.className = 'mini-tool-btn';
-      depositBtn.title = 'Pokaż złoża i surowce na mapie';
-      depositBtn.textContent = '⛏';
-      depositBtn.style.fontSize = '18px';
-      depositBtn.onclick = () => D.onToggleDeposits?.();
-      tools.appendChild(depositBtn);
-    }
-    if (!mapBtn) {
-      const mapSvg = brandIconSvg('chip-map', 24) || '';
-      mapBtn = document.createElement('button');
-      mapBtn.type = 'button';
-      mapBtn.className = 'mini-tool-btn';
-      mapBtn.title = 'Zasięg kultury (klik) · panel (dblclick)';
-      mapBtn.innerHTML = mapSvg.replace(/\swidth="[^"]*"/, ' width="20"').replace(/\sheight="[^"]*"/, ' height="20"');
-      mapBtn.onclick = () => L?.onToggleCulture?.();
-      if (L?.onOpenCulturePanel) {
-        mapBtn.addEventListener('dblclick', (e) => {
-          e.preventDefault();
-          L.onOpenCulturePanel?.();
-        });
-      }
-      tools.appendChild(mapBtn);
-    }
-    if (!searchBtn) {
-      searchBtn = document.createElement('button');
-      searchBtn.type = 'button';
-      searchBtn.className = 'mini-tool-btn';
-      searchBtn.title = 'Zasięg religii (klik) · panel (dblclick)';
-      searchBtn.innerHTML = SEARCH_SVG;
-      searchBtn.onclick = () => L?.onToggleReligion?.();
-      if (L?.onOpenReligionPanel) {
-        searchBtn.addEventListener('dblclick', (e) => {
-          e.preventDefault();
-          L.onOpenReligionPanel?.();
-        });
-      }
-      tools.appendChild(searchBtn);
-    }
     if (L?.onToggleTerritory && !territoryBtn) {
       territoryBtn = document.createElement('button');
       territoryBtn.type = 'button';
@@ -403,11 +368,17 @@ export function createMinimapHud(config: MinimapHudConfig): MinimapHudApi {
       territoryBtn.onclick = () => L.onToggleTerritory?.();
       tools.appendChild(territoryBtn);
     }
-    if (mapBtn) mapBtn.classList.toggle('on', L?.isCultureActive?.() ?? false);
-    if (searchBtn) searchBtn.classList.toggle('on', L?.isReligionActive?.() ?? false);
+    if (L?.onToggleTradeRoutes && !tradeRoutesBtn) {
+      tradeRoutesBtn = document.createElement('button');
+      tradeRoutesBtn.type = 'button';
+      tradeRoutesBtn.className = 'mini-tool-btn';
+      tradeRoutesBtn.title = 'Pokaż trasy handlowe (klik)';
+      tradeRoutesBtn.innerHTML = TRADE_ROUTES_SVG;
+      tradeRoutesBtn.onclick = () => L.onToggleTradeRoutes?.();
+      tools.appendChild(tradeRoutesBtn);
+    }
     if (territoryBtn) territoryBtn.classList.toggle('on', L?.isTerritoryActive?.() ?? false);
-    if (workerBtn) workerBtn.classList.toggle('on', W?.isWorkersActive?.() ?? false);
-    if (depositBtn) depositBtn.classList.toggle('on', D?.isDepositsActive?.() ?? false);
+    if (tradeRoutesBtn) tradeRoutesBtn.classList.toggle('on', L?.isTradeRoutesActive?.() ?? false);
   }
 
   let canvas: HTMLCanvasElement | null = null;

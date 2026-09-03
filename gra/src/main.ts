@@ -10918,6 +10918,10 @@ async function boot(): Promise<void> {
 
     // --- E7 (epik Handel): łuki tras handlowych na mapie 3D ---
     let tradeRoutesOverlayGroup: THREE.Group | null = null;
+    /** R-MINIMAPA-PASEK-NARZEDZI-REORGANIZACJA-Q1 (GOAL 4): widoczność tras handlowych —
+     *  nowy przycisk po prawej stronie minimapy, obok granic. Domyślnie ON (zachowanie
+     *  sprzed tego toggle — trasy rysowały się zawsze, gdy istniały). */
+    let showTradeRoutesOverlay = true;
 
     function clearTradeRoutesOverlay(): void {
       if (!tradeRoutesOverlayGroup) return;
@@ -10929,6 +10933,7 @@ async function boot(): Promise<void> {
     /** Przerysuj łuki tras handlowych (wołaj po każdej zmianie tradeRoutes — co turę). */
     function refreshTradeRoutesOverlay(): void {
       clearTradeRoutesOverlay();
+      if (!showTradeRoutesOverlay) return;
       if (isCityPanelOpen()) return;
       if (tradeRoutes.length === 0) return;
       const cityById = new Map(cities.map(c => [c.id, c] as const));
@@ -10943,6 +10948,25 @@ async function boot(): Promise<void> {
       if (inputs.length === 0) return;
       tradeRoutesOverlayGroup = buildTradeRoutesOverlayGroup(map, inputs);
       scene.add(tradeRoutesOverlayGroup);
+    }
+
+    /**
+     * R-MINIMAPA-PASEK-NARZEDZI-REORGANIZACJA-Q1 (GOAL 4): toggle nowego przycisku przy
+     * minimapie — wzorem toggleResourceDepositOverlayOnMap(). `markMinimapDirty()` —
+     * `.civ-minimap-tools` to PERSYSTENTNE węzły DOM (utworzone raz w createMinimapHud()),
+     * ich klasa `.on` odświeża się WYŁĄCZNIE przez `minimapApi.update()`, wołane z
+     * `refreshMinimap()` (hud.ts) tylko gdy `minimapDirty` — bez tego przycisk sam nie
+     * odzwierciedla świeżo kliknietego stanu (nadal patrzy na wartość z ostatniego
+     * przerysowania minimapy, dziś wywoływanego tylko z fog/mapy — main.ts:9640). Znalezione
+     * żywym testem Playwright tej rundy (Operator) — potwierdzone identycznie na
+     * territoryBtn (nietkniętym, pre-istniejące zachowanie, poza zakresem tego dispatchu),
+     * więc naprawiam WYŁĄCZNIE tu, w nowej funkcji, bez dotykania toggleTerritoryBorderOnMap.
+     */
+    function toggleTradeRoutesOverlayOnMap(): void {
+      showTradeRoutesOverlay = !showTradeRoutesOverlay;
+      refreshTradeRoutesOverlay();
+      markMinimapDirty();
+      refreshD1bHud();
     }
 
     // --- E-map-worker-overlay: ikonki 👤 na polach z robotnikami (wszystkie cywilizacje) ---
@@ -10981,6 +11005,7 @@ async function boot(): Promise<void> {
       territoryBorderVisible = true;
       showWorkerOverlay = true;
       showResourceDepositOverlay = true;
+      showTradeRoutesOverlay = true;
       territoryBorderSavedBeforeCityPanel = null;
     }
 
@@ -20309,6 +20334,9 @@ async function boot(): Promise<void> {
           isCultureActive: () => cultureRangeVisible,
           isReligionActive: () => religionRangeVisible,
           isTerritoryActive: () => territoryBorderVisible,
+          // GOAL 4: nowy przycisk trade-routes po prawej stronie minimapy, obok granic.
+          onToggleTradeRoutes: () => toggleTradeRoutesOverlayOnMap(),
+          isTradeRoutesActive: () => showTradeRoutesOverlay,
         },
         minimapWorkerOverlay: {
           onToggleWorkers: () => toggleWorkerOverlayOnMap(),

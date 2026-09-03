@@ -588,6 +588,10 @@ html.civ-ui-zoom-active .civ-hud .b-wiki{padding:0 11px;font-size:11px;letter-sp
 .civ-hud .civ-hud-chip{display:inline-flex;align-items:center;gap:5px;white-space:nowrap;flex-shrink:0;}
 .civ-hud .civ-hud-chip-click{cursor:pointer;border-radius:8px;padding:2px 4px;margin:-2px -4px;}
 .civ-hud .civ-hud-chip-click:hover{background:rgba(232,216,138,.06);}
+/* GOAL 2: podświetlenie chipa Kultura/Religia gdy zasięg jest aktywny na mapie 3D —
+   analogon dawnego stanu .on na usuniętych ikonach mapBtn/searchBtn przy minimapie. */
+.civ-hud .civ-hud-chip-range-on{background:rgba(232,216,138,.12);border-radius:8px;
+  box-shadow:inset 0 0 0 1px var(--tg-gold-primary,#e8d88a);}
 .civ-hud .civ-hud-chip-sep{width:1px;height:24px;background:rgba(232,216,138,.2);margin:0 8px;flex-shrink:0;}
 .civ-hud .civ-hud-chip-med{width:30px;height:30px;border-radius:50%;flex-shrink:0;
   display:inline-flex;align-items:center;justify-content:center;box-shadow:0 1px 3px rgba(0,0,0,.6);}
@@ -645,6 +649,12 @@ html.civ-ui-zoom-active .civ-hud .b-wiki{padding:0 11px;font-size:11px;letter-sp
   background:linear-gradient(180deg,#161c28,#0a0d14);color:var(--civ-gold-primary);
   font-size:12px;letter-spacing:.16em;text-transform:uppercase;font-weight:600;cursor:pointer;font-family:var(--civ-font-ui);}
 .civ-hud-util-dock .b-menu:hover{filter:brightness(1.06);border-color:rgba(232,216,138,.55);}
+.civ-hud-util-dock .b-util-toggle{display:inline-flex;align-items:center;justify-content:center;
+  width:42px;height:42px;border-radius:9px;padding:0;font-size:18px;line-height:1;
+  border:1px solid rgba(232,216,138,.3);background:linear-gradient(180deg,#161c28,#0a0d14);
+  color:#e8d88a;}
+.civ-hud-util-dock .b-util-toggle:hover{border-color:rgba(232,216,138,.55);}
+.civ-hud-util-dock .b-util-toggle.on{background:rgba(232,216,138,.12);border-color:var(--tg-gold-primary,#e8d88a);}
 .civ-hud-util-dock.is-city-view{display:none!important;}
 html.civ-ui-zoom-active .civ-hud-util-dock{
   left:${utilDockLeftCss(MINI_W, true)};bottom:${utilDockBottomCss(true)};}
@@ -996,6 +1006,21 @@ function powerSymbolHtml(): string {
   return '<span class="p-power-ic p-power-fleur" aria-hidden="true" title="Moc imperium — siła absolutna państwa">⚜</span>';
 }
 
+/**
+ * R-MINIMAPA-PASEK-NARZEDZI-REORGANIZACJA-Q1: podświetla chip 6C (Kultura/Religia), gdy
+ * powiązany zasięg jest aktywny na mapie 3D — analogon dawnego stanu `.on` na ikonach
+ * mapBtn/searchBtn przy minimapie (usuniętych, patrz minimapHud.ts). `chip6cHtml()`
+ * (hudChip6c.ts) zostaje NIETKNIĘTY — poza allowlistą tego tematu — dopisujemy klasę
+ * `civ-hud-chip-range-on` do już wyrenderowanego znacznika. `chip6cHtml()` zawsze
+ * otwiera chip z klikalnym `act` dokładnie tak (patrz hudChip6c.ts:
+ * `class="civ-hud-chip civ-hud-chip-click"` + `data-act=`), więc podmiana jest
+ * deterministyczna, nie zgadywaniem układu znaczników.
+ */
+function withChipRangeActive(html: string, active: boolean): string {
+  if (!active) return html;
+  return html.replace('class="civ-hud-chip civ-hud-chip-click"', 'class="civ-hud-chip civ-hud-chip-click civ-hud-chip-range-on"');
+}
+
 function renderBarD1B(s: HudState): string {
   const powerIconHtml = powerCenterIconHtml(s);
   const leftHeadChips: string[] = [
@@ -1110,23 +1135,28 @@ function renderBarD1B(s: HudState): string {
       title: obywateleChipTitle(s),
     }),
     chip6cSep(),
-    chip6cHtml({
+    // GOAL 2/kryterium końca #3: chip podświetlony gdy zasięg kultury/religii jest widoczny
+    // na mapie 3D. hudChip6c.ts NIE jest w allowliście tego tematu (dispatch wymienia
+    // WYŁĄCZNIE minimapHud.ts/hud.ts/main.ts/mapToolbarHud.ts) — zamiast rozszerzać
+    // Chip6cOpts tam, podświetlenie wstrzykujemy tu, w hud.ts, przez withChipRangeActive()
+    // (prosty postprocessing wygenerowanego znacznika, kontrakt chip6cHtml nietknięty).
+    withChipRangeActive(chip6cHtml({
       iconId: 'res-culture',
       label: 'Kultura',
       value: String(Math.floor(s.kultura)),
       rate: signed(s.kulturaRate ?? 0),
       act: 'kultura',
       title: kulturaChipTitle(s),
-    }),
+    }), cfg?.minimapLayers?.isCultureActive?.() ?? false),
     chip6cSep(),
-    chip6cHtml({
+    withChipRangeActive(chip6cHtml({
       iconId: 'res-religion',
       label: 'Religia',
       value: String(Math.round(s.religionStock ?? 0)),
       rate: signed(s.religionRate ?? 0),
       act: 'religia',
       title: religiaChipTitle(s),
-    }),
+    }), cfg?.minimapLayers?.isReligionActive?.() ?? false),
   ];
 
   const rekrLabel = s.rekruciLabel ?? '—';
@@ -1182,6 +1212,17 @@ function renderBarD1B(s: HudState): string {
   return html;
 }
 
+/**
+ * R-MINIMAPA-PASEK-NARZEDZI-REORGANIZACJA-Q1: przycisk toggle 👤/⛏ w rzędzie zoom —
+ * ten sam wzorzec ikony/tooltipa/zachowania co dawny `mini-tool-btn` w minimapHud.ts,
+ * zmienia się WYŁĄCZNIE pozycja w DOM (kryterium końca #2).
+ */
+function utilToggleBtnHtml(opts: { act: string; icon: string; title: string; active: boolean }): string {
+  const t = escHtml(opts.title);
+  return `<button type="button" class="b-util-toggle${opts.active ? ' on' : ''}" data-act="${opts.act}" `
+    + `aria-label="${t}" aria-pressed="${opts.active ? 'true' : 'false'}" title="${t}">${opts.icon}</button>`;
+}
+
 function renderUtilDock(show: boolean, fsBtn: string): void {
   if (utilDockEl === null) return;
   utilDockEl.classList.toggle('is-city-view', mapChromeSuppressed);
@@ -1192,7 +1233,24 @@ function renderUtilDock(show: boolean, fsBtn: string): void {
   }
   utilDockEl.style.display = 'flex';
   utilDockEl.title = 'Powiększenie UI i pełny ekran';
-  utilDockEl.innerHTML = renderZoomControls() + fsBtn;
+  // GOAL 1: worker + deposit — u góry minimapy, obok kontrolki zoom (właściciel: "postawiłbym
+  // obok tego plus minus 150"). Ten sam dock jest już wizualnie tuż nad canvasem minimapy
+  // (minimapLayout.ts utilDockBottomCss) — nic więcej nie trzeba przesuwać.
+  const W = cfg?.minimapWorkerOverlay;
+  const D = cfg?.minimapResourceDepositOverlay;
+  const workerBtn = W?.onToggleWorkers
+    ? utilToggleBtnHtml({
+      act: 'worker-toggle', icon: '👤', title: 'Pokaż robotników w terenie',
+      active: W.isWorkersActive?.() ?? false,
+    })
+    : '';
+  const depositBtn = D?.onToggleDeposits
+    ? utilToggleBtnHtml({
+      act: 'deposit-toggle', icon: '⛏', title: 'Pokaż złoża i surowce na mapie',
+      active: D.isDepositsActive?.() ?? false,
+    })
+    : '';
+  utilDockEl.innerHTML = workerBtn + depositBtn + renderZoomControls() + fsBtn;
 }
 
 function renderBarLegacy(s: HudState): string {
@@ -1225,6 +1283,11 @@ function handleHudBarAction(act: string): void {
   else if (act === 'fullscreen') toggleFullscreen();
   else if (act === 'zoom-in') stepUiZoom(UI_ZOOM_STEP);
   else if (act === 'zoom-out') stepUiZoom(-UI_ZOOM_STEP);
+  // GOAL 1: worker/deposit przeniesione z minimapHud.ts do rzędu zoom — te same hooki
+  // (cfg.minimapWorkerOverlay/minimapResourceDepositOverlay), tylko wołane stąd. Toggle
+  // w main.ts sam odświeża HUD (refreshD1bHud), więc nie trzeba tu wołać renderBar().
+  else if (act === 'worker-toggle') cfg.minimapWorkerOverlay?.onToggleWorkers?.();
+  else if (act === 'deposit-toggle') cfg.minimapResourceDepositOverlay?.onToggleDeposits?.();
   else if (act === 'power') {
     hideEmpireOverlay();
     hidePowerOverlay();
@@ -1243,6 +1306,14 @@ function handleHudBarAction(act: string): void {
   } else if (act === 'religia' || act === 'kultura' || act === 'skarbiec' || act === 'praca' || act === 'nauka'
     || act === 'miasta' || act === 'ludnosc' || act === 'rekruci' || act === 'spichlerz' || act === 'zywnosc' || act === 'armia'
     || act === 'surowce' || act === 'handel') {
+    // GOAL 2: klik chipa Kultura/Religia w górnym pasku PRZEŁĄCZA (toggle) podświetlenie
+    // zasięgu na mapie 3D (dawna funkcja ikon mapBtn/searchBtn przy minimapie, usuniętych
+    // z minimapHud.ts) — OPRÓCZ dotychczasowego otwarcia panelu szczegółów, nie zamiast
+    // niego. Toggle NAJPIERW: toggleCultureRangeOnMap()/toggleReligionRangeOnMap()
+    // (main.ts) same wołają hideEmpireOverlay() — gdyby poszły PO otwarciu panelu,
+    // zamknęłyby panel, który właśnie otwarliśmy.
+    if (act === 'kultura') cfg.minimapLayers?.onToggleCulture?.();
+    else if (act === 'religia') cfg.minimapLayers?.onToggleReligion?.();
     hideEmpireOverlay();
     const section = empireSectionFromHudAct(act);
     if (cfg.onOpenEmpireDetail) cfg.onOpenEmpireDetail(section);
@@ -1389,13 +1460,13 @@ function mountMinimap(): void {
 
   // D15=B: modul minimapHud (preferowany gdy getMinimapData)
   if (cfg.getMinimapData !== undefined && minimapApi === null) {
+    // R-MINIMAPA-PASEK-NARZEDZI-REORGANIZACJA-Q1: worker/deposit NIE jadą już do
+    // createMinimapHud — przeniesione do renderUtilDock() (rząd zoom), patrz niżej.
     minimapApi = createMinimapHud({
       getMinimapData: cfg.getMinimapData,
       onMinimapClick: cfg.onMinimapClick,
       layers: buildMinimapLayers(),
       playtestFog: cfg.minimapPlaytestFog,
-      workerOverlay: cfg.minimapWorkerOverlay,
-      resourceDepositOverlay: cfg.minimapResourceDepositOverlay,
       width: MINI_W,
       height: MINI_H,
     });
