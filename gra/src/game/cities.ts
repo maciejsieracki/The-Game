@@ -936,6 +936,17 @@ export interface City {
   rebelState?: boolean;
   /** Właściciel sprzed buntu (do wykrycia odbicia po rebelii — B-LAW-Q1). */
   rebelPreviousOwnerId?: number;
+  /**
+   * R-MIASTA-REBELIA-OCHRONA-20-TUR-Q1: pozostałe tury okna ochrony zbuntowanego miasta
+   * (start 20, main.ts `markCityRebellionStarted`/`tickRebelProtectionEndOfTurn`). Dopóki
+   * >0 i `rebelState===true`, przejęcie tego miasta przez cywilizację INNĄ niż
+   * `rebelPreviousOwnerId` wymusza wypowiedzenie wojny bylemu właścicielowi (main.ts
+   * `triggerRebelProtectionWarConsequence`). Kasowane razem z `rebelPreviousOwnerId` w
+   * `applyPostCaptureLawOnCapture` (post-capture-law.ts) przy KAŻDYM przejęciu miasta.
+   * Optional, plain numeric field — round-tripuje przez save/load tak samo jak
+   * `postCaptureLawTurnsRemaining` niżej (żadna specjalna obsługa w save.ts).
+   */
+  rebelProtectionTurnsRemaining?: number;
   /** Pozostałe tury bonusu Prawa 100% po podboju / odbiciu (B-LAW-Q1). */
   postCaptureLawTurnsRemaining?: number;
   /** true = odbicie po buncie (10 tur); false = świeży podbój (5 tur). */

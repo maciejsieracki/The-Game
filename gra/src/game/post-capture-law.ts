@@ -23,6 +23,14 @@ import {
 export const POST_CAPTURE_FRESH_TURNS = 5;
 export const POST_CAPTURE_REBELLION_RECONQUEST_TURNS = 10;
 export const POST_CAPTURE_LAW_PCT = 100;
+/**
+ * R-MIASTA-REBELIA-OCHRONA-20-TUR-Q1: okno ochrony (tury) po buncie miasta, w którym
+ * przejęcie tego miasta przez cywilizację INNĄ niż `rebelPreviousOwnerId` liczy się jako
+ * wypowiedzenie wojny bylemu właścicielowi (main.ts, `triggerRebelProtectionWarConsequence`).
+ * Niezależny od `POST_CAPTURE_REBELLION_RECONQUEST_TURNS` (ten drugi to bonus Prawa PO
+ * odbiciu, ten tu to ochrona miasta PRZED odbiciem — dwa oddzielne liczniki na tym samym City).
+ */
+export const REBEL_PROTECTION_TURNS = 20;
 
 export interface PostCaptureLawCity {
   postCaptureLawTurnsRemaining?: number;
@@ -30,11 +38,15 @@ export interface PostCaptureLawCity {
   rebelPreviousOwnerId?: number;
   rebelState?: boolean;
   revoltGraceRemaining?: number | null;
+  /** R-MIASTA-REBELIA-OCHRONA-20-TUR-Q1: pozostałe tury okna ochrony zbuntowanego miasta. */
+  rebelProtectionTurnsRemaining?: number;
 }
 
-/** Miasto zbuntowało się — zapamiętaj właściciela przed przejęciem przez rebeliantów. */
+/** Miasto zbuntowało się — zapamiętaj właściciela przed przejęciem przez rebeliantów i
+ * wystartuj 20-turowe okno ochrony (R-MIASTA-REBELIA-OCHRONA-20-TUR-Q1). */
 export function markCityRebellionStarted(city: PostCaptureLawCity & { ownerId: number }): void {
   city.rebelPreviousOwnerId = city.ownerId;
+  city.rebelProtectionTurnsRemaining = REBEL_PROTECTION_TURNS;
 }
 
 /** Odbicie po buncie: poprzedni właściciel to frakcja rebeliantów, a my byliśmy właścicielem sprzed buntu. */
@@ -61,6 +73,11 @@ export function applyPostCaptureLawOnCapture(
   city.wasRebellionReconquest = reconquest;
   city.revoltGraceRemaining = null;
   delete city.rebelPreviousOwnerId;
+  // R-MIASTA-REBELIA-OCHRONA-20-TUR-Q1: KAŻDE przejęcie miasta (odbicie lub nie) kończy
+  // okno ochrony — kasowane bezwarunkowo obok `rebelPreviousOwnerId` tuż wyżej. Wołający
+  // (main.ts) MUSI odczytać oba pola do lokalnych zmiennych PRZED tym wywołaniem, jeśli
+  // ma jeszcze zdecydować o konsekwencji wojennej tego konkretnego przejęcia.
+  delete city.rebelProtectionTurnsRemaining;
 }
 
 export function isPostCaptureLawActive(city: PostCaptureLawCity): boolean {
@@ -78,6 +95,20 @@ export function tickPostCaptureLawEndOfTurn(city: PostCaptureLawCity): void {
     delete city.wasRebellionReconquest;
   } else {
     city.postCaptureLawTurnsRemaining = next;
+  }
+}
+
+/** Koniec tury — odlicz okno ochrony zbuntowanego miasta (R-MIASTA-REBELIA-OCHRONA-20-TUR-Q1).
+ * Bezwarunkowa (nie zależy od `isPostCaptureLawActive`/`postCaptureLawActive`) — licznik
+ * niezależny od bonusu Prawa po podboju, patrz komentarz przy `REBEL_PROTECTION_TURNS`. */
+export function tickRebelProtectionEndOfTurn(city: PostCaptureLawCity): void {
+  const n = city.rebelProtectionTurnsRemaining;
+  if (typeof n !== 'number' || n <= 0) return;
+  const next = n - 1;
+  if (next <= 0) {
+    delete city.rebelProtectionTurnsRemaining;
+  } else {
+    city.rebelProtectionTurnsRemaining = next;
   }
 }
 

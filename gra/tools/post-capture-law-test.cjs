@@ -19,9 +19,11 @@ export {
   isRebellionReconquest,
   markCityRebellionStarted,
   tickPostCaptureLawEndOfTurn,
+  tickRebelProtectionEndOfTurn,
   POST_CAPTURE_FRESH_TURNS,
   POST_CAPTURE_REBELLION_RECONQUEST_TURNS,
   POST_CAPTURE_LAW_PCT,
+  REBEL_PROTECTION_TURNS,
   REBEL_FACTION_OWNER_ID,
 } from '../src/game/post-capture-law';
 export { evaluateOrderFromBreakdown } from '../src/game/society-breakdown';
@@ -69,12 +71,64 @@ eq(rebelCity.rebelPreviousOwnerId, undefined, 'clears rebelPreviousOwnerId');
 const markCity = { ownerId: 0 };
 M.markCityRebellionStarted(markCity);
 eq(markCity.rebelPreviousOwnerId, 0, 'mark rebellion stores owner');
+eq(markCity.rebelProtectionTurnsRemaining, M.REBEL_PROTECTION_TURNS, 'mark rebellion starts 20-turn protection window (R-MIASTA-REBELIA-OCHRONA-20-TUR-Q1)');
+eq(M.REBEL_PROTECTION_TURNS, 20, 'REBEL_PROTECTION_TURNS constant is 20');
+
+// R-MIASTA-REBELIA-OCHRONA-20-TUR-Q1: markCityRebellionStarted works identically for an
+// AI-owned city (ownerId>0) -- the counter/protection logic itself is symmetric player/AI,
+// even though today's ONLY natural trigger site (main.ts ~27775) is gated to ownerId===0
+// (see GOAL 7 / dispatch RECON) -- that trigger-site gate is a pre-existing fact of the
+// rebellion mechanism, not a limitation of this new logic.
+const markCityAi = { ownerId: 3 };
+M.markCityRebellionStarted(markCityAi);
+eq(markCityAi.rebelPreviousOwnerId, 3, 'mark rebellion (AI owner) stores owner');
+eq(markCityAi.rebelProtectionTurnsRemaining, 20, 'mark rebellion (AI owner) starts 20-turn protection window');
 
 const tickCity = { postCaptureLawTurnsRemaining: 2, wasRebellionReconquest: false };
 M.tickPostCaptureLawEndOfTurn(tickCity);
 eq(tickCity.postCaptureLawTurnsRemaining, 1, 'tick decrements');
 M.tickPostCaptureLawEndOfTurn(tickCity);
 eq(tickCity.postCaptureLawTurnsRemaining, undefined, 'tick clears at 0');
+
+// R-MIASTA-REBELIA-OCHRONA-20-TUR-Q1: tickRebelProtectionEndOfTurn is a SEPARATE counter
+// from postCaptureLawTurnsRemaining -- run it 19 times (20 -> 1, still active) then once
+// more (1 -> 0, field deleted = protection over). Also prove it is unconditional: it must
+// run identically regardless of postCaptureLawTurnsRemaining being present/active or not
+// (GOAL 2: "bezwarunkowo, nie tylko gdy postCaptureLawActive").
+const protCity = { rebelState: true, rebelProtectionTurnsRemaining: 20 };
+for (let i = 0; i < 19; i++) M.tickRebelProtectionEndOfTurn(protCity);
+eq(protCity.rebelProtectionTurnsRemaining, 1, 'rebel protection: 19 ticks from 20 -> 1 (still active, in window)');
+M.tickRebelProtectionEndOfTurn(protCity);
+eq(protCity.rebelProtectionTurnsRemaining, undefined, 'rebel protection: 20th tick clears the field (window over, fair game)');
+M.tickRebelProtectionEndOfTurn(protCity);
+eq(protCity.rebelProtectionTurnsRemaining, undefined, 'rebel protection: ticking an already-cleared city is a no-op (no negative/undefined crash)');
+
+const noCounterCity = { rebelState: true };
+M.tickRebelProtectionEndOfTurn(noCounterCity);
+eq(noCounterCity.rebelProtectionTurnsRemaining, undefined, 'rebel protection: ticking a city with no counter set is a safe no-op');
+
+// R-MIASTA-REBELIA-OCHRONA-20-TUR-Q1 (GOAL 4/regression 7): applyPostCaptureLawOnCapture
+// clears BOTH rebelPreviousOwnerId AND the new rebelProtectionTurnsRemaining together,
+// on every capture (fresh conquest AND reconquest) -- and the pre-existing
+// postCaptureLawTurnsRemaining/wasRebellionReconquest bonus values are UNCHANGED by the
+// new field's presence (zero regression on B-LAW-Q1's own counter/conditions).
+const reconquestCity = {
+  id: 'c3', ownerId: M.REBEL_FACTION_OWNER_ID, rebelPreviousOwnerId: 0, rebelState: true,
+  rebelProtectionTurnsRemaining: 14,
+};
+M.applyPostCaptureLawOnCapture(reconquestCity, 0, M.REBEL_FACTION_OWNER_ID);
+eq(reconquestCity.rebelProtectionTurnsRemaining, undefined, 'reconquest within protection window clears rebelProtectionTurnsRemaining too');
+eq(reconquestCity.postCaptureLawTurnsRemaining, M.POST_CAPTURE_REBELLION_RECONQUEST_TURNS, 'regression: reconquest still grants 10-turn Prawo bonus (B-LAW-Q1 untouched)');
+eq(reconquestCity.wasRebellionReconquest, true, 'regression: reconquest flag still set true (B-LAW-Q1 untouched)');
+
+const thirdPartyCaptureCity = {
+  id: 'c4', ownerId: M.REBEL_FACTION_OWNER_ID, rebelPreviousOwnerId: 0, rebelState: true,
+  rebelProtectionTurnsRemaining: 14,
+};
+M.applyPostCaptureLawOnCapture(thirdPartyCaptureCity, 2, M.REBEL_FACTION_OWNER_ID);
+eq(thirdPartyCaptureCity.rebelProtectionTurnsRemaining, undefined, 'third-party capture within window also clears rebelProtectionTurnsRemaining (fresh conquest, not reconquest)');
+eq(thirdPartyCaptureCity.postCaptureLawTurnsRemaining, M.POST_CAPTURE_FRESH_TURNS, 'regression: fresh conquest still grants 5-turn Prawo bonus (B-LAW-Q1 untouched)');
+eq(thirdPartyCaptureCity.wasRebellionReconquest, false, 'regression: fresh conquest flag still false (B-LAW-Q1 untouched)');
 
 const ord = M.evaluateOrderFromBreakdown(
   { population: 10, buildingZadowolenie: 0, era: 1 },

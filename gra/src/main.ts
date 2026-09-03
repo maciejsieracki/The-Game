@@ -376,6 +376,7 @@ import {
   markCityRebellionStarted,
   shouldSuppressRevoltDuringPostCaptureLaw,
   tickPostCaptureLawEndOfTurn,
+  tickRebelProtectionEndOfTurn,
 } from './game/post-capture-law';
 import {
   buildPlaytestWalkaMapy,
@@ -9337,10 +9338,21 @@ async function boot(): Promise<void> {
       return true;
     }
 
-    /** Wypowiedzenie wojny między dowolnymi państwami (ultimatum / odmowa negocjacji). */
-    function ownerDeclareWarOn(attackerId: number, defenderId: number): void {
+    /** Wypowiedzenie wojny między dowolnymi państwami (ultimatum / odmowa negocjacji).
+     * `force` (R-MIASTA-REBELIA-OCHRONA-20-TUR-Q1): domyślnie `false`, zachowuje 100%
+     * dzisiejsze zachowanie dla WSZYSTKICH innych wywołań. `true` omija guard
+     * `isPeaceLockedBetween` poniżej ORAZ czyści samo `peaceUntilTurn` tej pary (inaczej
+     * para formalnie wchodzi w 'wojna' w `diplomacyRelations`, a niezależna karencja
+     * pokoju w `diplomacyPairMeta` zostałaby martwym, mylącym reliktem, wciąż zgłaszanym
+     * przez `isPeaceLockedBetween` jako "trwający traktat") — używane wyłącznie przez
+     * `triggerRebelProtectionWarConsequence` (patrz niżej). */
+    function ownerDeclareWarOn(attackerId: number, defenderId: number, force = false): void {
       if (attackerId === defenderId) return;
-      if (isPeaceLockedBetween(attackerId, defenderId)) return;
+      if (force) {
+        setDiploPairMeta(attackerId, defenderId, { ...getDiploPairMeta(attackerId, defenderId), peaceUntilTurn: undefined });
+      } else if (isPeaceLockedBetween(attackerId, defenderId)) {
+        return;
+      }
       chargeWarDeclarationCredibility(attackerId, defenderId);
       breakTreatiesOnWar(attackerId, defenderId, attackerId === 0);
       applyAllianceObligationsOnWar(attackerId, defenderId);
@@ -9366,6 +9378,28 @@ async function boot(): Promise<void> {
         updateHud();
         wireUnitRendererRingStance();
       }
+    }
+
+    /**
+     * R-MIASTA-REBELIA-OCHRONA-20-TUR-Q1 (GOAL 3-5): miasto zbuntowane, jeszcze w oknie
+     * ochrony, zdobyte przez cywilizację INNĄ niż `rebelPrevOwnerId` = wymuszone
+     * wypowiedzenie wojny temu bylemu właścicielowi, NAWET w formalnym pokoju/traktacie
+     * (`force=true` na `ownerDeclareWarOn`). Wołający (oba lejki przejęcia miasta) MUSI
+     * przekazać `wasProtectedRebel`/`rebelPrevOwnerId` odczytane PRZED
+     * `applyPostCaptureLawOnCapture` (które je kasuje) — patrz wywołania niżej.
+     * Wyjątki bez konsekwencji: barbarzyńcy jako zdobywca (brak dyplomacji, GOAL 5) i
+     * bylej właściciel odzyskujący własne miasto (reconquest, GOAL 4).
+     */
+    function triggerRebelProtectionWarConsequence(
+      wasProtectedRebel: boolean,
+      rebelPrevOwnerId: number | undefined,
+      newOwner: number,
+    ): void {
+      if (!wasProtectedRebel) return;
+      if (rebelPrevOwnerId === undefined) return;
+      if (newOwner === rebelPrevOwnerId) return;
+      if (isBarbarian(newOwner)) return;
+      ownerDeclareWarOn(newOwner, rebelPrevOwnerId, true);
     }
 
     /** Bramka UX: atak / marsz na obce państwo wymaga wojny (modal potwierdzenia). */
@@ -9661,6 +9695,21 @@ async function boot(): Promise<void> {
         isLandReveal: () => revealAllLand,
       };
     }
+
+    // R-MIASTA-REBELIA-OCHRONA-20-TUR-Q1: hak testowy WYŁĄCZNIE do
+    // `tools/rebel-protection-live-test.cjs` (sekcja B, dowód mechanizmu
+    // `tickRebelProtectionEndOfTurn` na kilkunastu REALNYCH, kolejnych `endTurn()`).
+    // `?playtest=mapa` to malutki, 2-cywilizacyjny sandbox zaprojektowany pod
+    // pojedynczą bitwę/oblężenie (patrz PLAYTEST_MAPA_HINT) — jego Power gracza/AI jest
+    // już od startu na tyle niezrównoważone, że po 1-2 turach naturalnie spełnia próg
+    // zwycięstwa przez dominację (>50% Power), NIEZALEŻNE od tego dispatchu/tej zmiany
+    // (żaden inny `*-live-test.cjs` w tym katalogu nie rozgrywa więcej niż 1-2 kolejnych
+    // `endTurn()` w tym sandboksie z tego właśnie powodu). Zwycięstwo/porażka są
+    // ortogonalne do tego, co ta bramka dowodzi (odliczanie licznika ochrony co turę) —
+    // flaga wyłącza WYŁĄCZNIE `checkVictory` dla TEJ jednej sesji testowej, gdy jawnie
+    // włączona przez `__rebelProtectionTestDebug.disableVictoryCheckForTest()`; domyślnie
+    // `false`, zero wpływu na normalną rozgrywkę i na WSZYSTKIE inne testy.
+    let rebelProtectionTestSkipVictoryCheck = false;
 
     // Game state
     let selectedId: string | null = null;
@@ -12768,7 +12817,15 @@ async function boot(): Promise<void> {
       let citySiegeOwnerChanged = false;
       if (newOwner !== null && newOwner !== city.ownerId) {
         const oldOwner = city.ownerId;
+        // R-MIASTA-REBELIA-OCHRONA-20-TUR-Q1: odczyt PRZED applyPostCaptureLawOnCapture,
+        // które kasuje bezwarunkowo rebelPreviousOwnerId/rebelProtectionTurnsRemaining —
+        // patrz REGULA PRZECIW SAMOOSZUKIWANIU dispatchu (kolejność operacji w tym lejku).
+        const wasProtectedRebel = city.rebelState === true
+          && typeof city.rebelProtectionTurnsRemaining === 'number'
+          && city.rebelProtectionTurnsRemaining > 0;
+        const rebelPrevOwnerSnapshot = city.rebelPreviousOwnerId;
         applyPostCaptureLawOnCapture(city, newOwner, oldOwner);
+        triggerRebelProtectionWarConsequence(wasProtectedRebel, rebelPrevOwnerSnapshot, newOwner);
         city.ownerId = newOwner;
         // R-DYPLO-FLAGA-MIASTO-PANSTWO-NIE-GASNIE-Q1 (ECHO = wariant A): kapitulacja
         // głodowa to DRUGA ścieżka przejęcia miasta — oznaczenie miasta-państwa gasi się
@@ -20726,6 +20783,160 @@ async function boot(): Promise<void> {
       getWarEventLog: (): unknown[] => warEventLog.slice(),
     };
 
+    // Hak testowy (ten sam wzorzec i to samo uzasadnienie co `__eraTestDebug`/
+    // `__rebelNotifyTestDebug` wyżej) — wołany WYŁĄCZNIE z Playwright w
+    // `tools/rebel-protection-live-test.cjs` (R-MIASTA-REBELIA-OCHRONA-20-TUR-Q1).
+    // REGULA PRZECIW SAMOOSZUKIWANIU tego dispatchu wymaga realnej symulacji z pokazaniem
+    // faktycznego stanu diplo/traktatów PRZED i PO przejęciu chronionego zbuntowanego
+    // miasta — niemożliwej bez wywołania REALNYCH main.ts-owych `resolveSiegeSurrender`/
+    // `captureCityWithoutBattle`/`ownerDeclareWarOn`/`isPeaceLockedBetween` (zamknięte w
+    // tym pliku, nie eksportowane, nie bundlowalne osobno — patrz nagłówki innych
+    // `*-live-test.cjs`). Hak steruje WYŁĄCZNIE danymi wejściowymi (który cywil jest
+    // rebelPreviousOwnerId/zdobywcą, czy trwa traktat pokoju, kto oblega/atakuje) — sama
+    // decyzja o konsekwencji wojennej i wypowiedzenie wojny idą przez REALNY kod silnika
+    // (`triggerRebelProtectionWarConsequence` → `ownerDeclareWarOn` → `breakTreatiesOnWar`/
+    // `applyAllianceObligationsOnWar`/`setDiploRelation`), NIE reimplementowane.
+    (window as any).__rebelProtectionTestDebug = {
+      REBEL_FACTION_OWNER_ID,
+      BARBARIAN_OWNER_ID,
+      /** Patrz `rebelProtectionTestSkipVictoryCheck` (deklaracja u góry tego pliku) —
+       * wyłącza WYŁĄCZNIE `checkVictory` dla tej sesji testowej, żeby móc rozegrać
+       * kilkanaście REALNYCH `endTurn()` w tym z natury niezrównoważonym sandboksie bez
+       * przedwczesnego `gameOver` przez dominację, ortogonalną do tego, co ta bramka
+       * dowodzi. */
+      disableVictoryCheckForTest: (): void => { rebelProtectionTestSkipVictoryCheck = true; },
+      /**
+       * Odsuwa jednostki GRACZA od ewentualnych sąsiadów wroga — bez tego druga i
+       * kolejne prawdziwe `endTurn()` w tym sandboxie (`?playtest=mapa`, zaprojektowanym
+       * pod bitwę/oblężenie: „Hastati #1 → Ateny" siedzi CELOWO tuż przy AI) otwierają
+       * modal preBattle w fazie AI i blokują dalsze `endTurn()` (ten sam ograniczenie
+       * opisane w `__rebelNotifyTestDebug.forceRevoltEligible` wyżej), co
+       * uniemożliwiłoby rozegranie kilkunastu KOLEJNYCH prawdziwych tur wymaganych przez
+       * REGUŁĘ PRZECIW SAMOOSZUKIWANIU tego dispatchu. Steruje WYŁĄCZNIE POZYCJĄ
+       * jednostek gracza (przenosi je na hex własnego miasta) — NIE usuwa/dotyka
+       * jednostek WROGA (usunięcie jedynej jednostki AI w tym malutkim sandboksie
+       * zerowało jej Power i wywoływało fałszywe zwycięstwo przez dominację, patrz
+       * historia tej bramki) i NIE zmienia mechanizmu bitwy/oblężenia, tylko to, gdzie
+       * fizycznie stoją jednostki gracza.
+       */
+      pullPlayerUnitsHome: (): number => {
+        const home = cities.find(c => c.ownerId === 0);
+        if (!home) return 0;
+        let moved = 0;
+        for (const u of units) {
+          if (u.ownerId !== 0) continue;
+          if (u.q === home.q && u.r === home.r) continue;
+          u.q = home.q;
+          u.r = home.r;
+          moved++;
+        }
+        return moved;
+      },
+      /**
+       * `a` = realny AI ownerId obecny w tym świecie (posiada miasto — `?playtest=mapa`
+       * ma dokładnie jednego, `PLAYTEST_MAPA_AI_OWNER`). `b` = drugi, ODRĘBNY numeryczny
+       * ownerId, gwarantowanie nie kolidujący z żadnym istniejącym właścicielem w tym
+       * świecie (`max(...wszystkie ownerId obecne wśród cities/units) + 1000`) — używany
+       * WYŁĄCZNIE jako klucz par w mapach dyplomacji (`diplomacyRelations`/
+       * `diplomacyPairMeta`, keyowanych surowym `number`, bez zależności od realnego
+       * miasta/jednostki tego ownera — `getDiploRelation`/`isPeaceLockedBetween` działają
+       * identycznie dla KAŻDEGO ownerId, patrz ich definicje) oraz jako `atkOwnerId`/
+       * `besiegerOwnerId` w `captureViaBattle`/`captureViaSiegeSurrender` poniżej (którym
+       * REALNY silnik i tak tylko przypisuje ten numer do `city.ownerId`/klonowanej
+       * jednostki — mechanizm przejęcia jest identyczny niezależnie od tego, czy ten
+       * ownerId ma gdzieś jeszcze inne miasto w tym małym sandboxie). */
+      pickTwoAiOwners: (): { a: number; b: number } | null => {
+        const realAi = cities.find(c => c.ownerId > 0 && !isBarbarian(c.ownerId));
+        if (!realAi) return null;
+        const maxId = Math.max(
+          0,
+          ...cities.map(c => c.ownerId),
+          ...units.map(u => u.ownerId),
+        );
+        return { a: realAi.ownerId, b: maxId + 1000 };
+      },
+      getCityIdForOwner: (ownerId: number): string | null => {
+        const c = cities.find(x => x.ownerId === ownerId);
+        return c ? c.id : null;
+      },
+      /**
+       * Wystawia miasto WPROST w stan „zbuntowane, w oknie ochrony" — dokładnie ten sam
+       * kształt pól, jaki REALNY `markCityRebellionStarted` + main.ts (~27780,
+       * `city.rebelState=true; city.ownerId=REBEL_FACTION_OWNER_ID`) zapisują przy
+       * naturalnym buncie — uogólniony na dowolnego `rebelPrevOwnerId`. Dzisiejszy
+       * naturalny trigger buntu dotyczy WYŁĄCZNIE miast gracza (`ownerId===0`, main.ts,
+       * fakt stanu wyjściowego — patrz RECON/GOAL 7 dispatchu), więc dla scenariusza
+       * "AI traci miasto na rzecz buntu" (kryterium 3, symetria gracz/AI) nie istnieje
+       * dziś żaden naturalny trigger do odtworzenia — ten hak testuje SYMETRIĘ logiki
+       * ochrony/konsekwencji PONIŻEJ triggera (tick + przejęcie), nie sam trigger.
+       */
+      stageRebelCity: (cityId: string, rebelPrevOwnerId: number, turnsRemaining: number): void => {
+        const c = cities.find(x => x.id === cityId);
+        if (!c) throw new Error('stageRebelCity: city not found: ' + cityId);
+        c.rebelState = true;
+        c.ownerId = REBEL_FACTION_OWNER_ID;
+        c.rebelPreviousOwnerId = rebelPrevOwnerId;
+        c.rebelProtectionTurnsRemaining = turnsRemaining;
+      },
+      getCityProtectionState: (cityId: string): {
+        ownerId: number;
+        rebelState: boolean;
+        rebelPreviousOwnerId: number | undefined;
+        rebelProtectionTurnsRemaining: number | undefined;
+      } | null => {
+        const c = cities.find(x => x.id === cityId);
+        if (!c) return null;
+        return {
+          ownerId: c.ownerId,
+          rebelState: !!c.rebelState,
+          rebelPreviousOwnerId: c.rebelPreviousOwnerId,
+          rebelProtectionTurnsRemaining: c.rebelProtectionTurnsRemaining,
+        };
+      },
+      /** Ustawia/przedłuża realny pokój-lock między a,b — ten sam kształt co realna
+       * akceptacja traktatu pokoju: `peaceUntilTurn` (diplomacyPairMeta) ORAZ status
+       * relacji (diplomacyRelations) ustawiony na 'pokoj' (w prawdziwym kodzie oba idą
+       * razem — `startPeaceTreatyLock` jest wołane PO `applyDiplomaticEvent('pokoj')`,
+       * patrz diplomacy-peace-lock.ts). Bez tego drugiego kroku relacja mogłaby zostać
+       * przy 'wojna' z poprzedniego scenariusza tej samej bramki testowej. */
+      setPeaceLock: (a: number, b: number, turns: number): void => {
+        setDiploPairMeta(a, b, { ...getDiploPairMeta(a, b), peaceUntilTurn: turn + turns });
+        setDiploRelation(a, b, { ...getDiploRelation(a, b), status: 'pokoj' });
+      },
+      isPeaceLocked: (a: number, b: number): boolean => isPeaceLockedBetween(a, b),
+      getRelationStatus: (a: number, b: number): string => getDiploRelation(a, b).status,
+      getTurn: (): number => turn,
+      /** Lejek 1 (kapitulacja głodowa oblężenia) — REALNA `resolveSiegeSurrender`, ta sama
+       * funkcja co przy prawdziwym wygłodzeniu miasta na mapie. Steruje WYŁĄCZNIE tym,
+       * KTO oblega (`oblegajacyOwnerId`, dokładnie to co `besiegerOwnerForCity` czyta). */
+      captureViaSiegeSurrender: (cityId: string, besiegerOwnerId: number): void => {
+        const c = cities.find(x => x.id === cityId);
+        if (!c) throw new Error('captureViaSiegeSurrender: city not found: ' + cityId);
+        c.oblegajacyOwnerId = besiegerOwnerId;
+        resolveSiegeSurrender(cityId);
+      },
+      /** Lejek 2 (wejście zbrojne / `applyCityCaptureToMap`) — REALNA
+       * `captureCityWithoutBattle` (ta sama funkcja co `__rebelNotifyTestDebug.
+       * aiCaptureFormerRebelCity` wyżej), uogólniona na dowolnego `atkOwnerId` (potrzebne
+       * dla kryterium 3: gracz jako zdobywca). Steruje WYŁĄCZNIE tym, KTO atakuje — gdy w
+       * tym małym sandboxie nie ma jeszcze jednostki tego ownera, klonuje istniejącą
+       * jednostkę wojskową i przepisuje jej `ownerId` (ten sam duch co
+       * `forceBronzeForcedWarOnPlayer` wyżej: steruje WEJŚCIEM, nie mechanizmem
+       * przejęcia). */
+      captureViaBattle: (cityId: string, atkOwnerId: number): void => {
+        const c = cities.find(x => x.id === cityId);
+        if (!c) throw new Error('captureViaBattle: city not found: ' + cityId);
+        let anchor = units.find(u => u.ownerId === atkOwnerId && !isCivilianUnit(u));
+        if (!anchor) {
+          const template = units.find(u => !isCivilianUnit(u));
+          if (!template) throw new Error('captureViaBattle: no military unit template in this world');
+          anchor = { ...template, id: template.id + '_rebelProtTestClone' + atkOwnerId, ownerId: atkOwnerId };
+          units.push(anchor);
+        }
+        captureCityWithoutBattle(c, anchor, [anchor]);
+      },
+    };
+
     // --- Konfiguracja pickera badań (przed hubem — getScienceHubSnapshot wymaga hooków) ---
     (window as any).__civ_getResearchedTechs = () => Array.from(player.zbadane);
 
@@ -25062,6 +25273,17 @@ async function boot(): Promise<void> {
       eliminatedDetails: string | null;
     } {
       const oldOwner = city.ownerId;
+      // R-MIASTA-REBELIA-OCHRONA-20-TUR-Q1: odczyt PRZED applyCityCaptureAfterBattle, które
+      // (post-battle-map.ts, gdy !isBarbarian(atkOwner)) woła applyPostCaptureLawOnCapture i
+      // kasuje bezwarunkowo rebelPreviousOwnerId/rebelProtectionTurnsRemaining — ten drugi
+      // lejek przejęcia miasta NIE woła applyPostCaptureLawOnCapture wprost tutaj w main.ts
+      // (żyje w post-battle-map.ts, poza allowlistą tego tematu), więc odczyt/decyzja o
+      // konsekwencji wojennej musi siedzieć w tym opakowującym wywołaniu — patrz REGULA
+      // PRZECIW SAMOOSZUKIWANIU dispatchu (kolejność operacji w tym lejku).
+      const wasProtectedRebel = city.rebelState === true
+        && typeof city.rebelProtectionTurnsRemaining === 'number'
+        && city.rebelProtectionTurnsRemaining > 0;
+      const rebelPrevOwnerSnapshot = city.rebelPreviousOwnerId;
       const lead = applyCityCaptureAfterBattle(
         city,
         atkRoster,
@@ -25090,6 +25312,7 @@ async function boot(): Promise<void> {
           },
         },
       );
+      triggerRebelProtectionWarConsequence(wasProtectedRebel, rebelPrevOwnerSnapshot, atkOwner);
       maybeResolveBronzeForcedWarOnCityCapture(oldOwner, atkOwner);
       maybeResolveStoneForcedWarOnCityCapture(oldOwner, atkOwner);
       maybeResolveIronForcedWarOnCityCapture(oldOwner, atkOwner);
@@ -27741,6 +27964,17 @@ async function boot(): Promise<void> {
                 data.societyParams,
                 difficulty,
               );
+
+              // R-MIASTA-REBELIA-OCHRONA-20-TUR-Q1 (GOAL 2): bezwarunkowo, NIE tylko gdy
+              // postCaptureLawActive — licznik ochrony jest niezależny od bonusu Prawa po
+              // podboju. Funkcja sama no-opuje, gdy pole nie jest ustawione/>0. UMYŚLNIE
+              // PRZED blokiem wyzwalającym bunt niżej w tej samej iteracji pętli per-miasto:
+              // gdy bunt startuje WŁAŚNIE w tej turze, świeży licznik=20 (ustawiony przez
+              // markCityRebellionStarted niżej) MA przetrwać tę turę nietknięty — pierwszy
+              // tick następuje dopiero na kolejnej turze (ten sam wzorzec co
+              // postCaptureLawTurnsRemaining, ustawiane POZA tą pętlą przy zdobyciu miasta,
+              // więc nigdy nie jest tykane w turze, w której zostało ustawione).
+              tickRebelProtectionEndOfTurn(city);
 
               const postCaptureLawActive = shouldSuppressRevoltDuringPostCaptureLaw(city);
               const ordPct = postCaptureLawActive
@@ -30788,7 +31022,7 @@ async function boot(): Promise<void> {
         setTurnTransition(98, 'Sprawdzanie zwycięstwa…', 'Gracz', nextTurnNum);
         await yieldTurnTransitionUi();
         try {
-          if (!gameOver) {
+          if (!gameOver && !rebelProtectionTestSkipVictoryCheck) {
             // Build VictoryPlayer list from all non-barbarian owners.
             const allOwners = new Set<number>([0]);
             for (const u of units) { if (u.ownerId >= 0) allOwners.add(u.ownerId); }
