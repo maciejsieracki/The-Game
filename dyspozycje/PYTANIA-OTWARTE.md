@@ -31584,8 +31584,11 @@ NIE wołają `refreshBuildHighlight()` po drodze — nieaktualne podświetlenie 
 R-KOPALNIA-PODSWIETLENIE-HEKSOW-Q1) — teraz, dla kopalń, nowa warstwa jest widoczna nad
 terenem, więc efekt (nieaktualna niebieska warstwa po zablokowanym cudzie) może się ujawnić.
 
-STATUS: **OTWARTE — zarejestrowane, do dispatchu po zamknięciu bieżących wątków** (zgodnie z
-zasadą „nowe tematy tylko rejestruj" do czasu zbliżenia się do limitu kontekstu sesji).
+STATUS: **ZAMKNIĘTE (potwierdzone 2026-09-03, weryfikacja kolejki AutoBot)** — kod już naprawiony,
+brak zmian do wdrożenia. `onSelectWonder` (`main.ts:19909-19936`, przesunięte od czasu zgłoszenia)
+ma dziś WSZYSTKIE trzy wczesne `return` (linie ~19920/19925/19930) poprzedzone wywołaniem
+`refreshBuildHighlight()`, a ścieżka sukcesu woła ją też na końcu (linia 19935) — naprawione
+prawdopodobnie jako efekt uboczny innej pracy w tej funkcji, nigdy niezamknięte formalnie tutaj.
 
 ---
 
