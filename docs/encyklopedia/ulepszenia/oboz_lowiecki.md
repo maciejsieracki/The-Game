@@ -22,8 +22,10 @@
 ## Wiki‑M
 
 ### Co robi
-Ulepszenie **Obóz łowiecki** na polu w **twoim terytorium**. Teren: Las / dzika zwierzyna.
-**Warunek:** dzika zwierzyna
+Ulepszenie **Obóz łowiecki** na polu w **twoim terytorium**. Teren: nakładka Las.
+**Warunek:** na tym samym heksie musi już stać ukończony **Tartak** — bez niego opcja budowy
+obozu jest niedostępna (R-ULEPSZENIA-OBOZ-LOWIECKI-WYMAGA-TARTAKU-Q1, ten sam wzorzec co
+Droga brukowana wymagająca wcześniejszej Drogi).
 ### Strategia
 - Buduj z trybu **Budowa** (lewy panel mapy) — koszt w **pracy** ze skarbca imperium.
 - Przypisz heks w **Okolica** miasta, które ma nadwyżkę pracy.

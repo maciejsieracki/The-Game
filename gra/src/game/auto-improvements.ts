@@ -42,21 +42,72 @@ export interface AutoImprovementPick {
   kosztPraca: number;
 }
 
-/** Kolejność priorytetów AI / profil Zrównoważone (determinizm A=B). */
+/**
+ * Kolejność priorytetów AI / profil Zrównoważone (determinizm A=B).
+ *
+ * R-ULEPSZENIA-OBOZ-LOWIECKI-WYMAGA-TARTAKU-Q1: `tartak` PRZED `oboz_lowiecki` — obóz
+ * wymaga teraz w `qualifies()` (map/improvement-build.ts) WCZEŚNIEJ zbudowanego tartaku na
+ * TYM SAMYM heksie lasu. Było odwrotnie (`oboz_lowiecki` przed `tartak`): AI próbowałoby
+ * najpierw obozu, ten byłby zablokowany przez nowy gate, a pętla FAZA 1 idzie po priorytecie
+ * RAZ na heks w tej samej iteracji — więc bez tej zmiany kolejności obóz nigdy nie doczekałby
+ * się budowy w rozsądnym czasie na danym polu (dopiero po tym, jak inny mechanizm postawi
+ * tartak). Kolejność wewnątrz reszty listy bez zmian.
+ */
 export const AI_IMPROVEMENT_PRIORITY: readonly ImprovementKey[] = [
-  'farma', 'bydlo', 'owce', 'lama', 'tarasy', 'oboz_lowiecki', 'lodzie_rybackie',
+  'farma', 'bydlo', 'owce', 'lama', 'tarasy', 'tartak', 'oboz_lowiecki', 'lodzie_rybackie',
   'irygacja', 'kopalnia_miedzi', 'kopalnia_zelaza', 'kopalnia_cyny', 'kamieniolom', 'glinianka', 'stadnina',
-  'warzelnia_soli', 'tartak', 'posterunek', 'droga', 'droga_brukowana', 'fort',
+  'warzelnia_soli', 'posterunek', 'droga', 'droga_brukowana', 'fort',
   'wyrab',
 ];
 
+/**
+ * R-ULEPSZENIA-OBOZ-LOWIECKI-WYMAGA-TARTAKU-Q1 (runda 2 — naprawa regresu znalezionego przez
+ * Final Control w rundzie 1): `tartak` PRZED `oboz_lowiecki`, ten sam wzorzec reorderu co w
+ * `AI_IMPROVEMENT_PRIORITY` wyżej. Bez tego pod profilem „Żywność" automat próbował od razu
+ * `oboz_lowiecki`, zawsze przegrywał gate wymagający wcześniejszego tartaku na TYM SAMYM
+ * heksie (bo tartak nigdy nie jest w tej liście w ogóle), i CICHO przestawał budować obozy
+ * pod tym profilem na zawsze (0/18 zamiast 18/18 w symulacji Final Control).
+ */
 export const ULEPSZENIA_FOCUS_ZYWNOSC: readonly ImprovementKey[] = [
-  'farma', 'bydlo', 'owce', 'lama', 'tarasy', 'oboz_lowiecki', 'lodzie_rybackie', 'irygacja',
+  'farma', 'bydlo', 'owce', 'lama', 'tarasy', 'tartak', 'oboz_lowiecki', 'lodzie_rybackie', 'irygacja',
 ];
 
-/** Ten sam zbiór co `ULEPSZENIA_FOCUS_ZYWNOSC`, w formie `Set` — Zasada 1 (runda 4). */
+/**
+ * R-ULEPSZENIA-OBOZ-LOWIECKI-WYMAGA-TARTAKU-Q1 (runda 3 — naprawa regresu znalezionego
+ * przez Evaluatora rundy 2, potwierdzonego niezależnie przez Obronę rundy 2): CELOWO
+ * nie `new Set(ULEPSZENIA_FOCUS_ZYWNOSC)` wprost — `tartak` jest tu ODJĘTY, mimo że
+ * jest w `ULEPSZENIA_FOCUS_ZYWNOSC` (kolejność budowy, komentarz przy tej stałej wyżej).
+ * Powód rozdziału: ten Set ma DRUGIEGO konsumenta poza kolejnością budowy — `main.ts`
+ * (`syncImprovementDecorForHex`/`forestKeptUnderImprovement`, ~12071-12078) ma jawny,
+ * zamknięty kontrakt z tematu R-ULEPSZENIA-OBOZ-LOWIECKI-LAS-ZNIKA-I-TEREN-Q1 (Final
+ * Control PASS 2026-09-02): „droga/fort/posterunek/tartak/glinianka NIE są ulepszeniami
+ * żywnościowymi i spłaszczają wzgórze jak dotąd". Runda 2 dopisała `tartak` do
+ * `ULEPSZENIA_FOCUS_ZYWNOSC`, żeby naprawić INNY defekt (profil „Żywność" nigdy nie
+ * budował `oboz_lowiecki` — gate w `qualifies()` wymaga wcześniej zbudowanego `tartak`
+ * na TYM SAMYM heksie) — ale przez `new Set(...)` bez filtra ta zmiana PRZY OKAZJI
+ * przesunęła też `tartak` do zbioru „żywnościowych" dla kontraktu widoczności lasu,
+ * łamiąc go (żywy dowód: `tools/oboz-lowiecki-las-znika-render-test.cjs`, sekcja G,
+ * 26/27 zamiast 27/27 na cfbff71d). Rozdzielenie dwóch znaczeń tego Setu naprawia
+ * kontrakt lasu bez cofania naprawy rundy 2.
+ *
+ * UWAGA — weryfikacja żywa konsumenta `foodOnly` (`hexPhasePriority` niżej, ~linia 682)
+ * DAŁA WYNIK PRZECIWNY do założenia dispatchu rundy 3 („dodanie tartak tam jest
+ * niezależnie pożądane, zostaw jak jest"): symulacja `pickAutoImprovements`
+ * (`demandDriven: true`, profil `zrownowazone`, brak deficytu → foodOnly aktywne,
+ * 3 ziarna × 40 tur) daje PRZED tą zmianą tartak=123/oboz_lowiecki=123 w parach 1:1,
+ * a PO tej zmianie (ten sam Set, bez filtra na konsumenta) tartak=0/oboz_lowiecki=0 —
+ * dokładnie wzorzec cichego regresu z rundy 1/2 tego tematu, tym razem po stronie
+ * AI CYWILIZACJI profilu zrównoważonego pod popytem. Przyczyna: `hexPhasePriority`
+ * (linia 682) czyta TEN SAM eksport `ULEPSZENIA_ZYWNOSCIOWE`, więc odjęcie `tartak`
+ * tu odejmuje go RÓWNIEŻ tam — te dwa znaczenia (kontrakt dekoru lasu vs. gate
+ * `foodOnly`) są z tego miejsca strukturalnie nierozdzielne, bo allowlista rundy 3
+ * zezwala WYŁĄCZNIE na zmianę tej definicji, nie linii 682 ani main.ts. Zgłoszone
+ * jawnie w raporcie rundy 3 jako BLOKADA do decyzji Evaluatora/właściciela — NIE
+ * naprawione w tej rundzie, bo naprawa (rozdzielenie konsumentów) wymaga poszerzenia
+ * allowlisty poza tę definicję.
+ */
 export const ULEPSZENIA_ZYWNOSCIOWE: ReadonlySet<ImprovementKey> =
-  new Set<ImprovementKey>(ULEPSZENIA_FOCUS_ZYWNOSC);
+  new Set<ImprovementKey>(ULEPSZENIA_FOCUS_ZYWNOSC.filter(k => k !== 'tartak'));
 
 const ULEPSZENIA_FOCUS_SUROWCE: readonly ImprovementKey[] = [
   'tartak', 'kamieniolom', 'glinianka', 'kopalnia_miedzi', 'kopalnia_zelaza', 'kopalnia_cyny',
@@ -633,7 +684,7 @@ export function pickAutoImprovements(opts: PickAutoImprovementsOpts): AutoImprov
     const hexPhasePriority = basePriority.filter(
       k => k !== 'wyrab'
         && !ZERO_YIELD_IMPROVEMENTS.has(k)
-        && (!foodOnly || ULEPSZENIA_ZYWNOSCIOWE.has(k)),
+        && (!foodOnly || ULEPSZENIA_FOCUS_ZYWNOSC.includes(k)),
     );
     const defensePriority = foodOnly
       ? []

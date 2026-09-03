@@ -480,6 +480,12 @@ function listTerrainPossibleImprovements(
     // Ta sama reguła co `createQualifier` (map/improvement-build.ts) — tooltip nie może
     // obiecywać więcej niż silnik. Porównanie enumu, nie podciągu nazwy terenu.
     if (key === 'oboz_lowiecki' && nakladka !== Nakladka.Las) continue;
+    // R-ULEPSZENIA-OBOZ-LOWIECKI-WYMAGA-TARTAKU-Q1: obóz łowiecki wymaga WCZEŚNIEJ zbudowanego
+    // `tartak` na TYM SAMYM heksie — ten sam wzorzec `active.has(...)` co `droga_brukowana`
+    // niżej (wymaga `droga`). Ta sama reguła co `createQualifier`
+    // (map/improvement-build.ts, `existing.includes('tartak')`) — tooltip nie może obiecywać
+    // więcej niż silnik.
+    if (key === 'oboz_lowiecki' && !active.has('tartak')) continue;
     if (key === 'warzelnia_soli' && teren !== TerenBazowy.Wybrzeze && zloze !== 'sol') continue;
     if (key === 'kopalnia_zelaza' && zloze !== 'zelazo') continue;
     if (key === 'kopalnia_miedzi'

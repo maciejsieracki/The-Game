@@ -586,6 +586,14 @@ export function computeImprovementBuildImpact(
   if (key === 'oboz_lowiecki' && hex.nakladka !== Nakladka.Las) {
     return null;
   }
+  // R-ULEPSZENIA-OBOZ-LOWIECKI-WYMAGA-TARTAKU-Q1: obóz łowiecki wymaga WCZEŚNIEJ zbudowanego
+  // tartaku na TYM SAMYM heksie — wzorzec identyczny z `droga_brukowana` wymagającej `droga`
+  // (~929-936 w qualifies() niżej). Ten sam drugi, niezależny gate za `qualifies()`/`canBuild`
+  // co gałąź Lasu wyżej — `applyBuildRequest` nie powtarza `qualifies()`, więc bez tego obóz
+  // dałoby się zacommitować ścieżką pomijającą panel budowy nawet bez tartaku na heksie.
+  if (key === 'oboz_lowiecki' && !existing.includes('tartak')) {
+    return null;
+  }
 
   const removedImprovements = improvementsReplacedByBuild(key, existing);
   const after = existingAfterSimulatedRemoval(existing, removedImprovements);
@@ -1049,8 +1057,16 @@ function createQualifier(state: ImprovementBuildState) {
       // Dokładne porównanie enumu `Nakladka.Las`, NIGDY dopasowanie po podciągu nazwy terenu:
       // `normTerrain('Plaskie (rownina/laka)')` zawiera podciąg „las" (udowodniony błąd,
       // combat.ts:638-646). Bramka tematu: tools/oboz-lowiecki-las-test.cjs.
+      //
+      // R-ULEPSZENIA-OBOZ-LOWIECKI-WYMAGA-TARTAKU-Q1: dodatkowo wymaga WCZEŚNIEJ zbudowanego,
+      // ukończonego `tartak` na TYM SAMYM heksie — dokładnie wzorzec `droga_brukowana`
+      // wymagającej `existing.includes('droga')` (~929-936 wyżej w tej funkcji). Właściciel:
+      // „nie chcemy marnować pola na obóz łowiecki […] stawiamy obozy tylko tam, gdzie już są
+      // tartaki". Tartak na polu lasu BEZ obozu zostaje bez zmian budowalny (ten warunek
+      // dotyczy wyłącznie `oboz_lowiecki`, nigdy `tartak`).
       case 'oboz_lowiecki':
-        terrainOk = inPlayerTerritory(q, r) && nakladka === Nakladka.Las;
+        terrainOk = inPlayerTerritory(q, r) && nakladka === Nakladka.Las
+          && existing.includes('tartak');
         break;
       case 'warzelnia_soli':
         terrainOk = inPlayerTerritory(q, r)
