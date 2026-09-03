@@ -34,6 +34,20 @@ swoim wĹ‚asnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji d
 |- Publikacja: `gra-robocza/Gra-ROBOCZA.html` + manifest. `VERIFY OK`, manifest match OK (stamp md5 WARN kosmetyczny, znany, nieblokujący).
 |- **Odstępstwo techniczne (jak w FALACH 324-339):** publikacja odtworzona ręcznie w bashu/Node — `pwsh` nie istnieje w tym środowisku.
 |- Szczegóły: rejestr w `REJESTR-PROSB-I-ZADAN.md`.
+|- **ZASTĄPIONA** (→ 4a8fcb72, FALA 341)
+
+## ROBOCZA 4a8fcb72 - 2026-09-03 11:22 UTC - FALA 341: 3 tematy (podzial Pracy AI 50/50, oboz lowiecki wymaga tartaku, ochrona zbuntowanych miast 20 tur)
+
+|- md5 (pełne): 4a8fcb72f0ddff3443db400b3f85e2b4 · stempel: ROBOCZA · label 4a8fcb72 · źródłowe commity integracji: `e7983ff4` + `20a1d06c` + `8fa5ba27`
+|- Trzy zgłoszenia właściciela po FALI 340, jedna seria z jawnym poleceniem kontynuacji pętli AutoBot bez jego udziału ("Działaj z tematami w pętli, autobot, workflow, bez mojego udziału, popraw wszystko, co jest w stanie").
+|- **`R-AI-PRACA-PODZIAL-STALY-50-50-Q1`** (`e7983ff4`) — kontynuacja `R-AI-ULEPSZENIA-MALO-BUDOWANE-Q1`, które nie zwiększyło tempa widocznej budowy ulepszeń. Sztywny `procentBudynki=50` (nowa stała `AI_FIXED_PROCENT_BUDYNKI`) dla AI cywilizacji i miast-państw — usunięto dynamiczne dostosowanie do wojny/pokoju/fazy gry, AI ma gwarantowany budżet zarówno na budynki, jak i ulepszenia terenu. Runda 1 ujawniła i naprawiła dodatkowe okno tury 1 (nowi właściciele AI seedowani starym 70%). ZASADA 3 i ścieżka gracza bez zmian.
+|- **`R-ULEPSZENIA-OBOZ-LOWIECKI-WYMAGA-TARTAKU-Q1`** (`8fa5ba27`) — obóz łowiecki na lesie wymaga wcześniej zbudowanego tartaku na tym samym polu (nie marnować pola na mniej efektywny obóz — najpierw tartak, obóz jako dodatkowy bonus), identycznie dla gracza i AI. Cztery rundy: gate + kolejność AI, poprawka profilu automatu "Żywność", naprawa przypadkowej regresji kontraktu widoczności lasu na wzgórzu (inny, wcześniej zamknięty temat), naprawa przypadkowej regresji foodOnly-gate demand-driven AI — wszystkie trzy mechanizmy potwierdzone zielone jednocześnie na końcu łańcucha.
+|- **`R-MIASTA-REBELIA-OCHRONA-20-TUR-Q1`** (`20a1d06c`) — 20-turowy okres ochrony po buncie miasta: przejęcie zbuntowanego miasta w tym oknie przez cywilizację inną niż były właściciel liczy się jak wypowiedzenie wojny temu właścicielowi (łamie traktaty/pokój), symetrycznie gracz/AI. Po 20 turach lub po odbiciu przez byłego właściciela — brak konsekwencji. Barbarzyńcy wyłączeni z nowej logiki wojennej.
+|- Wszystkie tematy: pełny cykl AutoBot (Operator→Evaluator→Obrona gdy potrzebna→Final Control) przez Workflow, `tsc --noEmit` 0 błędów, 5 bramek referencyjnych (logic-test 213/213, tech-tree-test 19/19, research-test 33/33, unit-replace-test 13/13, combat-test 6/6) bez regresu po każdej integracji i na finalnym stanie `main`.
+|- Bundle: 882 modułów, `Gra-ROBOCZA.html` 69,6 MB. `Gra-ROBOCZA-POLE-BITWY.html` NIE przebudowany — żaden temat tej fali nie dotyka `battleScene.ts`/logiki bitwy.
+|- Publikacja: `gra-robocza/Gra-ROBOCZA.html` + manifest. `VERIFY OK`, manifest match OK (stamp md5 WARN kosmetyczny, znany, nieblokujący).
+|- **Odstępstwo techniczne (jak w FALACH 324-340):** publikacja odtworzona ręcznie w bashu/Node — `pwsh` nie istnieje w tym środowisku.
+|- Szczegóły: rejestr w `REJESTR-PROSB-I-ZADAN.md`.
 |- **AKTUALNA**
 
 ## ROBOCZA 046d388a - 2026-09-02 21:15 UTC - FALA 339: diorama pelnej szerokosci na kartach encji (podglad 3D jednostki/ikona wyeksponowane, Wariant A)
