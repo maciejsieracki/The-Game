@@ -4185,3 +4185,30 @@ R-PROC-AUTOBOT.md §2b (tematy dotykające tych samych plików nie równolegle �
 tu trzy tematy dotykają różnych obszarów main.ts/ai.ts/auto-improvements.ts,
 więc mogą iść równolegle jeśli allowlisty się nie przecinają; zweryfikowane
 przy dispatchu każdego kolejnego).
+
+## POSTĘP PĘTLI AUTOBOT 2026-09-03 — kontynuacja po deployu FALI 341 (na wyraźne polecenie właściciela: "Kontynuuj pętlę autobot z kolejnymi zgłoszeniami")
+
+Przeszukano `PYTANIA-OTWARTE.md` i ten rejestr (subagent Explore + weryfikacja
+orkiestratora) pod kątem tematów gotowych do dispatchu bez pytania właściciela.
+**Znaleziono nadspodziewanie wysoki odsetek fałszywych tropów** — 4 z 6
+kandydatów okazały się już dawno zaimplementowane/zdeployowane, ale wiersze
+rejestru/PYTANIA-OTWARTE.md nigdy nie zostały zaktualizowane po faktycznej
+integracji:
+
+| Kandydat | Werdykt | Dowód |
+|---|---|---|
+| `R-HANDEL-SZLAKI-PRZEBUDOWA-Q1` T3/T4/T6 | **JUŻ ZINTEGROWANE** | `docs/decyzje/R-HANDEL-SZLAKI-PRZEBUDOWA-Q1.md` nagłówek: „T1+T2+T2b+T3+T4+T6 ZINTEGROWANE do main (T6 commit `2e6aac59`)". Wiersz rejestru (wyżej w tym pliku) poprawiony. |
+| `R-AI-WYRAB-PRZY-RZECE-FARMY-R4-Q2` | **JUŻ ZINTEGROWANE** | Pełne wiązanie w kodzie: `wolnoWycinacLas` (`cities.ts`), UI przełącznik (`buildModeHud.ts`), `getSkipWyrab`/`skipWyrab` w `auto-improvements.ts` z komentarzem „R4-Q2=C". Wiersz rejestru poprawiony. |
+| `P-CYNA-BRAK-WIZUALIZACJI-3D-NA-MAPIE` | **JUŻ ZAMKNIĘTE** | `PYTANIA-OTWARTE.md` STATUS: ZAMKNIĘTE (2026-08-17), commit `34700709`, FALA 291 — status był poprawny, kandydat odrzucony przy weryfikacji. |
+| `P-CUD-WONDER-EARLY-RETURN-STALE-HIGHLIGHT` | **JUŻ NAPRAWIONE** | `onSelectWonder` (`main.ts:19909-19936`) ma dziś wszystkie 3 wczesne `return` + ścieżkę sukcesu poprzedzone `refreshBuildHighlight()`. `PYTANIA-OTWARTE.md` zamknięty. |
+
+Dwa kandydaci potwierdzeni jako GENUINE OTWARTE, zdispatchowane w tej rundzie:
+
+| ID | Prośba | Status | Uwagi |
+|---|---|---|---|
+| `P-DYPLO-BILANS-GATE-NIESPOJNY-N-E1-REPRODUKCJA` | Panel „Wymiana" pokazuje bilans dodatni mimo blokady akceptacji oferty wielo-umowowej (N-E1 potwierdzone ponownie ze zrzutami Macieja) + nowy wątek: możliwy brak odświeżania panelu po edycji koszyka bez usunięcia/ponownego dodania. | **DISPATCHOWANE** | Domain GAME, Operator+Evaluator+Final Control Sonnet 5, effort HIGH. Recon-first: dwie konkurencyjne hipotezy (formuła N-E1 vs staleness UI) do rozstrzygnięcia żywym testem w headless Chromium, nie zgadywaniem. Dispatch `00-dispatch.md`. |
+| `P-PERF-SPOWALNIANIE-SESJA-DLUGA-Q1` | Spowolnienie KAŻDEJ interakcji gracza (ruch, przełączanie, klik) narastające z liczbą miast gracza, nieobecne na starcie gry — najszerszy z trzech powiązanych wątków tego ID. Właściciel wcześniej zdecydował „Do kolejki" (2026-08-17); ta runda jest tym wznowieniem. | **DISPATCHOWANE** | Domain GAME, Operator+Evaluator+Final Control Sonnet 5, effort HIGH (faza recon/profiling). Jeśli profiling wskaże `gra/src/render/**` jako źródło kosztu — Operator zatrzymuje się z DECISION_REQUIRED zamiast naprawiać sam (wymaga Opus 5, stała zgoda właściciela dla tego katalogu); poza render/** — naprawia w tej samej rundzie. Dispatch `00-dispatch.md`. |
+
+Oba tematy dotykają różnych, nieprzecinających się obszarów kodu
+(`diplomacyAcceptanceBalance.ts`/`diplomacyTradeBasket.ts` vs profiling bez
+z góry ustalonego zakresu) — dispatchowane równolegle.
