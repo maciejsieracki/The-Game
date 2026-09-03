@@ -1397,19 +1397,48 @@ export function chooseCityProduction(
     }
   }
 
-  // Miasta-państwa (defensiveCopy): bootstrap infrastruktury po pierwszym garnizonie.
-  // Mid-phase dodaje Wojownika (~170+mil ≈ 270 pkt), co stale wygrywało ze Spichlerzem
-  // (250) i resztą gospodarki (~140+eko ≈ 240) — efekt: 0 budynków mimo zasobów.
-  // Studnia/Garncarnia nie były w puli kandydatów w ogóle. Po garnizonie priorytet
-  // podstawowej bazy; wojsko tylko przy zagrożeniu lub gdy baza już stoi.
+  // Miasta-państwa (defensiveCopy): bootstrap infrastruktury po osiągnięciu docelowego
+  // garnizonu. Mid-phase dodaje Wojownika (~170+mil ≈ 270 pkt), co stale wygrywało ze
+  // Spichlerzem (250) i resztą gospodarki (~140+eko ≈ 240) — efekt: 0 budynków mimo
+  // zasobów. Studnia/Garncarnia nie były w puli kandydatów w ogóle. Po garnizonie
+  // priorytet podstawowej bazy; wojsko tylko przy zagrożeniu lub gdy baza już stoi.
   // R-MP-HARD-WAVE Q1: na Trudnym osłabiona supresja wojska + wyższy priorytet Koszar.
+  //
+  // R-MIASTA-PANSTWA-PRODUKCJA-OBRONNA-Q1 (Maciej 2026-09-03, WYZWALACZ: "Państwa-miasta
+  // [...] w tej chwili nie są w ogóle wyzwaniem [...] powinny się skupić na budowie
+  // jednostek wojskowych, żeby się obronić [...] ewentualnie palisadę, rekrutować
+  // jednostki"). Zmiany WYŁĄCZNIE w tym bloku (opts.defensiveCopy — tylko MP, GOAL 5:
+  // zero wpływu na cywilizacje AI, żaden warunek tu nie dotyka gałęzi bez defensiveCopy):
+  //   GOAL 2 — próg przejścia wojsko/obrona → ekonomia podniesiony z "1 dowolna jednostka"
+  //     na próg skalowany trudnością MP-vs-gracz (CS_EARLY_GARRISON_TARGET, analogicznie do
+  //     wzorca citySupportByDifficulty w main.ts, poza allowlistą tego tematu): easy=1,
+  //     normal=2, hard=3 — uzasadnienie w raporcie Operatora.
+  //   GOAL 3 — usunięta kara score dla mury/koszary (dawniej -90 normal / -25 hard po
+  //     osiągnięciu progu garnizonu) — fortyfikacje mają być neutralnie/pozytywnie
+  //     punktowane, nie odradzane.
+  //   GOAL 2 (Palisada) — recon potwierdził (grep buildings.json): Palisada istnieje jako
+  //     osobna, tańsza/wcześniejsza pozycja niż Mury (epoka 1 vs 2, koszt 22 vs 35, +100%
+  //     vs +200% obrony; Mury zastępują Palisadę — production.ts usuwa ją z cityBuilt po
+  //     ukończeniu Murów). Dodana jako PIERWSZY wybór obronny MP, score > mury (linia
+  //     wyżej, 320+defenseScore), tech/epoka nadal filtrowana przez isProductionAllowed
+  //     tam gdzie podane.
   const hardOffensive = opts.cityStateOffensiveSupport === true;
   if (opts.defensiveCopy) {
+    const CS_EARLY_GARRISON_TARGET: Record<DifficultyLevel, number> = {
+      easy: 1,
+      normal: 2,
+      hard: 3,
+    };
+    const garrisonTarget = CS_EARLY_GARRISON_TARGET[opts.cityStateDifficultyVsPlayer ?? 'normal'];
     const cityGuardCount = allUnits.filter(
       u => u.ownerId === playerId && hexDistance(u.q, u.r, city.q, city.r) <= 1,
     ).length;
     const infraBootstrap = built.length < 6;
-    if (infraBootstrap && cityGuardCount >= 1) {
+    const garrisonMet = cityGuardCount >= garrisonTarget;
+    if (!built.includes('palisada') && !built.includes('mury')) {
+      candidates.push({ id: 'palisada', score: 340 + defenseScore });
+    }
+    if (infraBootstrap && garrisonMet) {
       const adminBuilding = myCities.length === 1 ? 'palac' : 'dom_starszyzny';
       const infraOrder = [
         'studnia',
@@ -1429,16 +1458,11 @@ export function chooseCityProduction(
           candidates.push({ id: bid, score: 450 - i * 12 });
         }
       }
-      for (const c of candidates) {
-        if (c.id === 'mury' || c.id === 'koszary') {
-          c.score -= hardOffensive ? 25 : 90;
-        }
-      }
       if (hardOffensive && !built.includes('koszary')) {
         candidates.push({ id: 'koszary', score: 400 + militaryScore });
       }
     }
-    if (cityGuardCount >= 1 && !underThreat && infraBootstrap) {
+    if (garrisonMet && !underThreat && infraBootstrap) {
       for (const c of candidates) {
         if (c.id === 'Wojownik' || c.id === 'Łucznik') {
           c.score -= hardOffensive ? 60 : 250;

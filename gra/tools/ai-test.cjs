@@ -2489,11 +2489,16 @@ console.log('\n--- T11-scout-b: defensiveCopy (państwo-miasto) -> brak Zwiadowc
   );
 }
 
-console.log('\n--- T7D-h: defensiveCopy z garnizonem -> infrastruktura, nie kolejny Wojownik ---');
+console.log('\n--- T7D-h: defensiveCopy z garnizonem (na progu) -> infrastruktura, nie kolejny Wojownik ---');
 {
+  // R-MIASTA-PANSTWA-PRODUKCJA-OBRONNA-Q1 (2026-09-03, GOAL 2): próg bootstrap infrastruktury
+  // to teraz CS_EARLY_GARRISON_TARGET (ai.ts) skalowany trudnością, domyślnie ('normal',
+  // gdy cityStateDifficultyVsPlayer nie podane) = 2 -- nie "dowolna 1 jednostka" jak dawniej.
+  // Stąd DWIE jednostki [guard, guard2] zamiast jednej.
   const map = makeMap(10, 10);
   const city = makeCity('cs1', 4, 3, 3);
   const guard = makeUnit('g1', 4, 3, 3, 'miecznik');
+  const guard2 = makeUnit('g1b', 4, 3, 3, 'miecznik');
   const dataCs = makeGameData();
   dataCs.buildings.push(
     { id: 'studnia', nazwa: 'Studnia' },
@@ -2504,7 +2509,7 @@ console.log('\n--- T7D-h: defensiveCopy z garnizonem -> infrastruktura, nie kole
   const pick = chooseCityProduction(
     'cs1',
     [city],
-    [guard],
+    [guard, guard2],
     4,
     dataCs,
     { wojsko: 0, nauka: 0, ekonomia: 0, obrona: 0 },
@@ -2512,7 +2517,7 @@ console.log('\n--- T7D-h: defensiveCopy z garnizonem -> infrastruktura, nie kole
     map,
     diff,
   );
-  eq(pick, 'studnia', 'T7D-h: po garnizonie pierwszy budynek = Studnia');
+  eq(pick, 'studnia', 'T7D-h: po progu garnizonu pierwszy budynek = Studnia');
 }
 
 console.log('\n--- T7D-i: defensiveCopy bez garnizonu -> nadal Wojownik pierwszy ---');
@@ -2567,11 +2572,15 @@ console.log('\n--- T7D-j: defensiveCopy + garnizon + isProductionAllowed odrzuca
   eq(pick, 'Wojownik', 'T7D-j: gdy bramka tech blokuje budynki, wybiera Wojownika');
 }
 
-console.log('\n--- T7D-k: defensiveCopy + garnizon + isProductionAllowed tylko studnia -> studnia ---');
+console.log('\n--- T7D-k: defensiveCopy + garnizon (na progu) + isProductionAllowed tylko studnia -> studnia ---');
 {
+  // R-MIASTA-PANSTWA-PRODUKCJA-OBRONNA-Q1: jak w T7D-h -- próg to teraz 2 jednostki (domyślnie
+  // 'normal'), nie 1; bez tego studnia nigdy nie trafia do puli kandydatów (infra bootstrap
+  // nie triggeruje), a bramka odrzucająca resztę zwraca null zamiast studni.
   const map = makeMap(10, 10);
   const city = makeCity('cs4', 4, 3, 3);
   const guard = makeUnit('g4', 4, 3, 3, 'miecznik');
+  const guard2 = makeUnit('g4b', 4, 3, 3, 'miecznik');
   const dataCs = makeGameData();
   dataCs.buildings.push(
     { id: 'studnia', nazwa: 'Studnia' },
@@ -2583,7 +2592,7 @@ console.log('\n--- T7D-k: defensiveCopy + garnizon + isProductionAllowed tylko s
   const pick = chooseCityProduction(
     'cs4',
     [city],
-    [guard],
+    [guard, guard2],
     4,
     dataCs,
     { wojsko: 0, nauka: 0, ekonomia: 0, obrona: 0 },

@@ -155,8 +155,14 @@ console.log('\n--- T8e: major AI rank 3 + zagrozenie -> bez Murów ---');
   assert(id !== 'mury', 'rank 3 + zagrozenie -> nie Mury');
 }
 
-console.log('\n--- T8f: defensiveCopy + zagrozenie + garnizon -> Mury (po bootstrap) ---');
+console.log('\n--- T8f: defensiveCopy + zagrozenie + garnizon -> Palisada (fortyfikacja, po bootstrap) ---');
 {
+  // R-MIASTA-PANSTWA-PRODUKCJA-OBRONNA-Q1 (2026-09-03, GOAL 2): recon potwierdził Palisada
+  // istnieje jako tańsza/wcześniejsza pozycja niż Mury (buildings.json: epoka 1 vs 2, koszt
+  // 22 vs 35) -- ai.ts dodaje ją teraz jako PIERWSZY wybór obronny MP (score > mury), dopóki
+  // Mury nie są zbudowane. Bez opts.isProductionAllowed w tym scenariuszu (brak bramki
+  // tech/epoki) Palisada wygrywa nad Murami -- zamierzone zachowanie, nie regresja; dawniej
+  // (przed tym tematem) MP w ogóle nie znało Palisady jako kandydata.
   const data = makeData(7);
   const enemy = { id: 'e4', ownerId: 2, typeId: 'Wojownik', category: 'miecznik', q: 6, r: 5, ruch: 2, ruchLeft: 2 };
   const guard = { id: 'g1', ownerId: 1, typeId: 'Wojownik', category: 'miecznik', q: 5, r: 4, ruch: 2, ruchLeft: 2 };
@@ -167,7 +173,7 @@ console.log('\n--- T8f: defensiveCopy + zagrozenie + garnizon -> Mury (po bootst
     powerRank: 1,
     defensiveCopy: true,
   }, map, loadDifficultyParams(data, 2));
-  eq(id, 'mury', 'defensiveCopy + garnizon + zagrozenie -> Mury');
+  eq(id, 'palisada', 'defensiveCopy + garnizon + zagrozenie -> Palisada (fortyfikacja tania/wczesna)');
 }
 
 console.log('\n--- T8g: P-AI-008 chooseAIResearch underThreat -> nie Murarstwo (military/rozwój) ---');

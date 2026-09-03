@@ -110,11 +110,17 @@ const data = makeGameData();
 const diff = loadDifficultyParams(data, 2);
 
 console.log('--- T1: cityStateMilitaryProductionCap ---');
+// R-MIASTA-PANSTWA-PRODUKCJA-OBRONNA-Q1 (2026-09-03): normal 1→3, hard 4→7 -- WYZWALACZ
+// właściciela "PM nie są w ogóle wyzwaniem" + KRYTERIUM: hard nie może być NIŻSZY niż normal
+// (7>=3 spełnione). Uzasadnienie liczb w city-state-difficulty.ts (garnizon docelowy +
+// bufor na falę ofensywną hard); 'easy' celowo nietknięte, poza jawnym zakresem tego tematu.
 eq(cityStateMilitaryProductionCap('easy'), null, 'T1a: easy = no cap');
-eq(cityStateMilitaryProductionCap('normal'), 1, 'T1b: normal = 1');
-eq(cityStateMilitaryProductionCap('hard'), 4,
-  'T1c: hard = 4 (= CS_WAVE_ATTACK_MIN_STACK + RESUP_TIERS[\'strong\'].minGuard = 3 + 1, '
-    + 'runda 3 fix -- cap=3 nigdy nie osiągał próg bramki wyjścia z domu, patrz '
+eq(cityStateMilitaryProductionCap('normal'), 3,
+  'T1b: normal = 3 (docelowy garnizon wczesnej fazy 2 + bufor 1, R-MIASTA-PANSTWA-PRODUKCJA-OBRONNA-Q1)');
+eq(cityStateMilitaryProductionCap('hard'), 7,
+  'T1c: hard = 7 (docelowy garnizon wczesnej fazy 3 + CS_WAVE_ATTACK_MIN_STACK 3 + '
+    + 'RESUP_TIERS[\'strong\'].minGuard 1, R-MIASTA-PANSTWA-PRODUKCJA-OBRONNA-Q1 -- dawne cap=4 '
+    + 'nie mieściło jednocześnie garnizonu i progu bramki wyjścia z domu, patrz '
     + 'cs-military-cap-wiring-test.cjs sekcja 3)');
 
 console.log('\n--- T2: hard MP bez garnizonu → MOŻE Wojownik (pierwszy garnizon, 0 < cap 4) ---');
@@ -130,7 +136,7 @@ console.log('\n--- T2: hard MP bez garnizonu → MOŻE Wojownik (pierwszy garniz
   eq(pick, 'Wojownik', `T2a: hard 0 military → może pierwszy garnizon (got ${pick})`);
 }
 
-console.log('\n--- T3: hard MP z 1 jednostką → MOŻE dokupić do capu 4 ---');
+console.log('\n--- T3: hard MP z 1 jednostką (< próg garnizonu 3) → wciąż priorytet wojsko/obrona ---');
 {
   const city = makeCity('cs_h2', 4, 3, 3);
   const guard = makeUnit('g1', 4, 3, 3, 'Wojownik');
@@ -139,26 +145,31 @@ console.log('\n--- T3: hard MP z 1 jednostką → MOŻE dokupić do capu 4 ---')
     { defensiveCopy: true, cityStateDifficultyVsPlayer: 'hard', cityBuildings: { cs_h2: ['mury'] } },
     map, diff,
   );
-  // 1 jednostka < cap 4 -- filtr capu NIE odcina kandydatów wojskowych (różnica vs stare
-  // cap('hard')=0, gdzie filtr ucinał WSZYSTKO niezależnie od stanu garnizonu). Pick
-  // faktycznie wypada na 'studnia' -- bootstrap infrastruktury (cityGuardCount>=1,
-  // built.length<6) score'uje wyżej niż stłumiony (hardOffensive=false) kandydat
-  // wojskowy -- ale to scoring ekonomii, NIE cap; dowód capu = T8 niżej (przy 4 cap
-  // FAKTYCZNIE odcina wojsko).
-  eq(pick, 'studnia', `T3a: hard 1/4 military -- bootstrap infra wygrywa scoring, nie cap (got ${pick})`);
+  // R-MIASTA-PANSTWA-PRODUKCJA-OBRONNA-Q1 (GOAL 2): próg bootstrap infrastruktury podniesiony
+  // z "dowolna 1 jednostka" na CS_EARLY_GARRISON_TARGET['hard']=3 -- przy 1/3 garnizonu blok
+  // infraBootstrap w ogóle NIE triggeruje (dawniej triggerował już przy 1), więc studnia i
+  // reszta infraOrder nie są nawet dodane jako kandydaci. Zamiast tego wygrywa 'koszary'
+  // (mid-phase, nieukończone -- mury już zbudowane w tym scenariuszu, więc Palisada nie
+  // wchodzi do puli) -- priorytet wojsko/obrona utrzymany aż do progu, zgodnie z GOAL 2.
+  // 1 jednostka < cap 7 -- filtr capu z GOAL 1 też nie odcina (dowód capu = T8 niżej).
+  eq(pick, 'koszary', `T3a: hard 1/3 garnizonu -- priorytet wojsko/obrona (koszary), nie ekonomia (got ${pick})`);
   eq(countOwnerMilitaryUnits([guard], 4), 1, 'T3b: guard counts as military');
 }
 
-console.log('\n--- T4: normal MP max 1 wojskowa (bez zmian -- normal cap wciąż 1) ---');
+console.log('\n--- T4: normal MP po progu garnizonu (2) → wojsko wypada na rzecz obrony/ekonomii ---');
 {
+  // R-MIASTA-PANSTWA-PRODUKCJA-OBRONNA-Q1: próg to teraz CS_EARLY_GARRISON_TARGET['normal']=2
+  // (nie "1 dowolna jednostka" jak dawniej) -- stąd DWIE jednostki [guard, guard2].
   const city = makeCity('cs_n', 4, 3, 3);
   const guard = makeUnit('g2', 4, 3, 3, 'Wojownik');
+  const guard2 = makeUnit('g2b', 4, 3, 3, 'Wojownik');
   const pick = chooseCityProduction(
-    'cs_n', [city], [guard], 4, data, ZERO,
+    'cs_n', [city], [guard, guard2], 4, data, ZERO,
     { defensiveCopy: true, cityStateDifficultyVsPlayer: 'normal', cityBuildings: { cs_n: [] } },
     map, diff,
   );
-  assert(pick !== 'Wojownik' && pick !== 'Łucznik', `T4a: normal at cap no military (got ${pick})`);
+  assert(pick !== 'Wojownik' && pick !== 'Łucznik',
+    `T4a: normal at garrison target (2) no more military (got ${pick})`);
 }
 
 console.log('\n--- T5: normal MP bez wojska → może Wojownik (bez zmian) ---');
@@ -199,23 +210,30 @@ console.log('\n--- T6: easy vs hard pod zagrożeniem (OBA mogą wojsko -- hard c
   assert(hardMil, `T6b: hard under threat MOŻE teraz budować wojsko, do capu 4 (got ${pickHard})`);
 }
 
-console.log('\n--- T8: hard MP przy capie (4 jednostki) → nie dokup 5. ---');
+console.log('\n--- T8: hard MP przy capie (7 jednostek, R-MIASTA-PANSTWA-PRODUKCJA-OBRONNA-Q1) → nie dokup 8. ---');
 {
+  // Cap podniesiony 4→7 (patrz T1c) -- boundary-test musi użyć NOWEGO capu, inaczej
+  // przy starych 4 jednostkach (< nowy cap 7) filtr capu wcale by nie zadziałał i test
+  // przechodziłby przypadkiem dzięki scoringowi ekonomii/koszar, nie dzięki capowi
+  // (dowód nietautologiczności: bez tej poprawki 4 jednostki nie testują już capu).
   const city = makeCity('cs_h3', 4, 3, 3);
   const units = [
     makeUnit('h1', 4, 3, 3, 'Wojownik'),
     makeUnit('h2', 4, 2, 3, 'Wojownik'),
     makeUnit('h3', 4, 2, 2, 'Wojownik'),
     makeUnit('h4', 4, 3, 2, 'Wojownik'),
+    makeUnit('h5', 4, 3, 4, 'Wojownik'),
+    makeUnit('h6', 4, 4, 3, 'Wojownik'),
+    makeUnit('h7', 4, 4, 2, 'Wojownik'),
   ];
   const pick = chooseCityProduction(
     'cs_h3', [city], units, 4, data, ZERO,
     { defensiveCopy: true, cityStateDifficultyVsPlayer: 'hard', cityBuildings: { cs_h3: ['mury'] } },
     map, diff,
   );
-  eq(countOwnerMilitaryUnits(units, 4), 4, 'T8a: 4 units counted as military');
+  eq(countOwnerMilitaryUnits(units, 4), 7, 'T8a: 7 units counted as military');
   assert(pick !== 'Wojownik' && pick !== 'Łucznik',
-    `T8b: hard at cap (4) no more military (got ${pick})`);
+    `T8b: hard at cap (7) no more military (got ${pick})`);
 }
 
 console.log('\n--- T7: absorption params easy/normal/hard ---');

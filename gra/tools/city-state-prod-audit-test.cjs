@@ -100,12 +100,20 @@ const diff = loadDifficultyParams(gameData, 2);
 const map = makeMap(8, 8);
 const city = makeCity('mp1', 7, 3, 3);
 const guard = makeUnit('g1', 7, 3, 3);
+// R-MIASTA-PANSTWA-PRODUKCJA-OBRONNA-Q1 (2026-09-03): próg przejścia wojsko/obrona→ekonomia
+// w ai.ts przestał być "dowolna 1 jednostka" -- jest teraz CS_EARLY_GARRISON_TARGET skalowany
+// trudnością MP-vs-gracz (easy=1/normal=2/hard=3). Sekcje A/B/E/F/G niżej testują ścieżkę
+// infraBootstrap (undefined difficulty -> domyślnie 'normal' w ai.ts, target=2) -- dawniej
+// wystarczał jeden `guard`, dziś potrzeba DWÓCH jednostek, by garnizon osiągnął próg i
+// odblokował kandydatów z infraOrder (inaczej priorytet zostaje przy wojsku/obronie, zgodnie
+// z GOAL 2 tego tematu -- to jest ZAMIERZONA zmiana zachowania, nie regresja tego testu).
+const guard2 = makeUnit('g1b', 7, 3, 3);
 const mods = { wojsko: 0, nauka: 0, ekonomia: 0, obrona: 0 };
 
 console.log('-- A. Start Kamień: infra bootstrap bez bramki → studnia (wysoki score) --');
 {
   const pickNoGate = chooseCityProduction(
-    'mp1', [city], [guard], 7, gameData, mods,
+    'mp1', [city], [guard, guard2], 7, gameData, mods,
     { defensiveCopy: true, cityBuildings: { mp1: [] } },
     map, diff,
   );
@@ -121,7 +129,7 @@ console.log('-- B. Start Kamień + PROD-GATE: studnia zablokowana (brak Gospodar
   assert(allowedPalac, 'B2: palac allowed at stone start (techUnlock "-", stolica)');
 
   const pick = chooseCityProduction(
-    'mp1', [city], [guard], 7, gameData, mods,
+    'mp1', [city], [guard, guard2], 7, gameData, mods,
     { defensiveCopy: true, cityBuildings: { mp1: [] }, isProductionAllowed: gate },
     map, diff,
   );
@@ -136,7 +144,7 @@ console.log('-- C. Po Garncarstwo: spichlerz dostępny (brak DEPOSIT gate przy b
   assert(!gate('mp1', 'garncarnia'), 'C2: garncarnia still blocked without Glina deposit/stock');
 }
 
-console.log('-- D. Cap wojska Hard=4 bez garnizonu → Wojownik (0 < cap 4, runda 3 fix) --');
+console.log('-- D. Cap wojska Hard=7 bez garnizonu → Wojownik (0 < cap 7, R-MIASTA-PANSTWA-PRODUKCJA-OBRONNA-Q1) --');
 {
   // R-CS-HARD-PASYWNE-KOLIDUJE-Z-DWIEMA-DECYZJAMI-08-04=B (2026-08-10): pole opts przepięte
   // z opts.menuDifficulty (stara oś gry) na opts.cityStateDifficultyVsPlayer (nowa oś
@@ -146,8 +154,13 @@ console.log('-- D. Cap wojska Hard=4 bez garnizonu → Wojownik (0 < cap 4, rund
   // blokuje ofensywę dopóki totalMilitary < CS_WAVE_ATTACK_MIN_STACK + RESUP_TIERS['strong']
   // .minGuard = 3 + 1 = 4, więc cap podniesiony do 4 (patrz cs-military-cap-wiring-test.cjs
   // sekcja 3 -- relacja, nie literał).
+  // R-MIASTA-PANSTWA-PRODUKCJA-OBRONNA-Q1 (2026-09-03): 4 nie mieściło JEDNOCZEŚNIE docelowego
+  // garnizonu hard (3, CS_EARLY_GARRISON_TARGET w ai.ts) i progu wyjścia z domu (4) -- cap
+  // podniesiony do 7 = 3 (garnizon) + 3 (CS_WAVE_ATTACK_MIN_STACK) + 1 (RESUP_TIERS.strong
+  // .minGuard), patrz uzasadnienie w city-state-difficulty.ts.
   const capHard = cityStateMilitaryProductionCap('hard');
-  eq(capHard, 4, "D1: hard cap = 4 (= CS_WAVE_ATTACK_MIN_STACK + RESUP_TIERS['strong'].minGuard w ai.ts)");
+  eq(capHard, 7, "D1: hard cap = 7 (= docelowy garnizon hard 3 + CS_WAVE_ATTACK_MIN_STACK 3 + "
+    + "RESUP_TIERS['strong'].minGuard 1 w ai.ts)");
   const pick = chooseCityProduction(
     'mp1', [city], [], 7, gameData, mods,
     {
@@ -158,13 +171,15 @@ console.log('-- D. Cap wojska Hard=4 bez garnizonu → Wojownik (0 < cap 4, rund
     },
     map, diff,
   );
-  eq(pick, 'Wojownik', 'D2: hard bez garnizonu — 0 military < cap 4, pierwszy garnizon przechodzi');
+  eq(pick, 'Wojownik', 'D2: hard bez garnizonu — 0 military < cap 7, pierwszy garnizon przechodzi');
 }
 
-console.log('-- E. Normal cap=1: po garnizonie wojsko wypada, budynek z bramki --');
+console.log('-- E. Normal cap=3: po osiągnięciu progu garnizonu (2) wojsko wypada, budynek z bramki --');
 {
+  // R-MIASTA-PANSTWA-PRODUKCJA-OBRONNA-Q1: próg to teraz CS_EARLY_GARRISON_TARGET['normal']=2,
+  // nie "1 dowolna jednostka" -- stąd [guard, guard2] zamiast [guard].
   const pick = chooseCityProduction(
-    'mp1', [city], [guard], 7, gameData, mods,
+    'mp1', [city], [guard, guard2], 7, gameData, mods,
     {
       defensiveCopy: true,
       cityStateDifficultyVsPlayer: 'normal',
@@ -173,7 +188,7 @@ console.log('-- E. Normal cap=1: po garnizonie wojsko wypada, budynek z bramki -
     },
     map, diff,
   );
-  eq(pick, 'palac', 'E: normal po garnizonie → palac gdy studnia zablokowana tech');
+  eq(pick, 'palac', 'E: normal po progu garnizonu (2) → palac gdy studnia zablokowana tech');
 }
 
 console.log('-- F. R-AI-MIASTA-BUDOWY-FIX-Q1: bramka Kamień — nie studnia/garncarnia, palac wygrywa nad Wojownikiem --');
@@ -184,7 +199,7 @@ console.log('-- F. R-AI-MIASTA-BUDOWY-FIX-Q1: bramka Kamień — nie studnia/gar
   assert(gate('mp1', 'palac'), 'F3: palac dozwolony');
 
   const pick = chooseCityProduction(
-    'mp1', [city], [guard], 7, gameData, mods,
+    'mp1', [city], [guard, guard2], 7, gameData, mods,
     {
       defensiveCopy: true,
       cityStateDifficultyVsPlayer: 'normal',
@@ -202,7 +217,7 @@ console.log('-- F. R-AI-MIASTA-BUDOWY-FIX-Q1: bramka Kamień — nie studnia/gar
 console.log('-- G. Bez callbacka isProductionAllowed — regresja A (studnia) --');
 {
   const pick = chooseCityProduction(
-    'mp1', [city], [guard], 7, gameData, mods,
+    'mp1', [city], [guard, guard2], 7, gameData, mods,
     { defensiveCopy: true, cityBuildings: { mp1: [] } },
     map, diff,
   );

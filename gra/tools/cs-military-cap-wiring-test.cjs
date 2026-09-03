@@ -204,15 +204,23 @@ const expectedCapHard = waveStackValue !== null && strongMinGuardValue !== null
   ? waveStackValue + strongMinGuardValue
   : null;
 
+// R-MIASTA-PANSTWA-PRODUKCJA-OBRONNA-Q1 (2026-09-03): relacja rozluźniona z równości NA
+// "co najmniej" -- właściciel podniósł cap('hard') 4→7, żeby zmieścić RÓWNOCZEŚNIE docelowy
+// garnizon wczesnej fazy (CS_EARLY_GARRISON_TARGET['hard']=3, ai.ts) i próg bramki wyjścia
+// z domu (4). Realny wymóg zawsze był ">= suma" (patrz komentarz w city-state-difficulty.ts:
+// "cap musi pozwolić PM zgromadzić PRZYNAJMNIEJ tę sumę") -- sztywna równość była tylko
+// najciaśniejszą wartością spełniającą go w rundzie 3, nie samym wymogiem. Mutant, przed
+// którym ta bramka chroni (cap poniżej progu wyjścia z domu -> fala nigdy nie wyruszy),
+// jest wciąż łapany: capHardValue < expectedCapHard nadal czerwieni tę bramkę.
 check(
-  "cap('hard') === CS_WAVE_ATTACK_MIN_STACK + RESUP_TIERS['strong'].minGuard -- to FAKTYCZNY "
+  "cap('hard') >= CS_WAVE_ATTACK_MIN_STACK + RESUP_TIERS['strong'].minGuard -- to FAKTYCZNY "
     + "próg bramki wyjścia z domu (totalMilitary < minFieldArmyBeforeSend + minGuardToSend, "
     + "ai.ts ok. linii 2820/2563), nie sam rozmiar stosu do wave-attacku; cap musi pozwolić PM "
     + "zgromadzić PRZYNAJMNIEJ tę sumę, inaczej mechanizm ofensywy zbierze stos, ale bramka "
     + "wyjścia i tak go zatrzyma w mieście (dokładnie regresja rundy 2, Evaluator 7e753db2)",
-  capHardValue !== null && capHardValue === expectedCapHard,
+  capHardValue !== null && expectedCapHard !== null && capHardValue >= expectedCapHard,
   `cap('hard')=${capHardValue}, CS_WAVE_ATTACK_MIN_STACK=${waveStackValue}, `
-    + `RESUP_TIERS.strong.minGuard=${strongMinGuardValue}, oczekiwana suma=${expectedCapHard}`,
+    + `RESUP_TIERS.strong.minGuard=${strongMinGuardValue}, próg minimalny=${expectedCapHard}`,
 );
 
 console.log('');
@@ -295,7 +303,8 @@ const diff4 = loadDifficultyParams(data4, 2);
 
 // Scenariusz T6-podobny (ai-mp-military-cap-test.cjs): PM pod zagrożeniem, infra w pełni
 // zbudowana (scoring naturalnie preferuje wojsko pod threat), własne wojsko DOKŁADNIE na
-// dzisiejszym capie('hard')=4 -- 4 własne jednostki bojowe.
+// dzisiejszym capie('hard')=7 (R-MIASTA-PANSTWA-PRODUKCJA-OBRONNA-Q1, 2026-09-03 -- dawniej
+// 4) -- 7 własnych jednostek bojowych.
 const city4 = makeCity('cs_wire', 4, 5, 5);
 const enemy4 = makeUnit('en', 0, 6, 5, 'Wojownik');
 const own4 = [
@@ -303,6 +312,9 @@ const own4 = [
   makeUnit('w2', 4, 4, 5, 'Łucznik'),
   makeUnit('w3', 4, 5, 4, 'Wojownik'),
   makeUnit('w4', 4, 4, 4, 'Łucznik'),
+  makeUnit('w5', 4, 5, 6, 'Wojownik'),
+  makeUnit('w6', 4, 6, 4, 'Łucznik'),
+  makeUnit('w7', 4, 4, 6, 'Wojownik'),
 ];
 const built4 = ['mury', 'koszary', 'spichlerz', 'studnia', 'garncarnia', 'stolarnia', 'targowisko'];
 const units4 = [enemy4, ...own4];
@@ -322,14 +334,14 @@ const pickUnwired = chooseCityProduction(
 const isMilitaryPick = (p) => p === 'Wojownik' || p === 'Łucznik';
 
 check(
-  "z opts.cityStateDifficultyVsPlayer='hard' (4 własne jednostki === cap 4) cap BLOKUJE "
+  "z opts.cityStateDifficultyVsPlayer='hard' (7 własnych jednostek === cap 7) cap BLOKUJE "
     + "produkcję wojska (bramka działa)",
   !isMilitaryPick(pickCapped),
   `pickCapped=${JSON.stringify(pickCapped)}`,
 );
 check(
   "z opts.cityStateDifficultyVsPlayer=undefined (symulacja mutanta 2a) cap znika CAŁKOWICIE -- "
-    + "ta sama sytuacja (4/4 jednostek) znów pozwala na wojsko, bo blok capu w ai.ts jest "
+    + "ta sama sytuacja (7/7 jednostek) znów pozwala na wojsko, bo blok capu w ai.ts jest "
     + "pomijany przy undefined (dowód runtime-skutku wiring-mutanta, nie tylko braku stringa)",
   isMilitaryPick(pickUnwired),
   `pickUnwired=${JSON.stringify(pickUnwired)}`,

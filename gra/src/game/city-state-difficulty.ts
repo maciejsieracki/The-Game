@@ -28,19 +28,37 @@ export type DifficultyLevel = 'easy' | 'normal' | 'hard';
  * bramka wyjścia z domu faktycznie testuje próg -- cap musi pozwolić PM zgromadzić
  * PRZYNAJMNIEJ tę sumę, inaczej mechanizm ofensywy nigdy nie miałby z czego wyruszyć
  * (zbierze stos do wave-attacku, ale bramka wyjścia i tak go zatrzyma w mieście).
- * Zsynchronizowane bramką cs-military-cap-wiring-test.cjs (assert cap('hard') ===
- * CS_WAVE_ATTACK_MIN_STACK + RESUP_TIERS['strong'].minGuard).
+ * Zsynchronizowane bramką cs-military-cap-wiring-test.cjs (assert cap('hard') >=
+ * CS_WAVE_ATTACK_MIN_STACK + RESUP_TIERS['strong'].minGuard -- RELACJA "co najmniej",
+ * nie sztywna równość od R-MIASTA-PANSTWA-PRODUKCJA-OBRONNA-Q1 niżej).
  * / EN: 'hard' raised from 3 to 4 -- the home-exit gate in ai.ts blocks the offensive
  * whenever totalMilitary < minFieldArmyBeforeSend + minGuardToSend (CS_WAVE_ATTACK_MIN_STACK
  * + RESUP_TIERS['strong'].minGuard = 3 + 1 = 4 on hard), so a cap of exactly the wave-stack
  * size (3) could never clear that threshold -- the wave never left home.
+ *
+ * R-MIASTA-PANSTWA-PRODUKCJA-OBRONNA-Q1 (Maciej 2026-09-03): WYZWALACZ -- "Państwa-miasta
+ * [...] w tej chwili nie są w ogóle wyzwaniem [...] powinny się skupić na budowie jednostek
+ * wojskowych, żeby się obronić." Recon (ten temat) potwierdził: to JEDYNY sufit CAŁKOWITEJ
+ * armii MP (nie osobny cap atak/obrona -- jedyny odczyt w ai.ts:1554, filtr produkcji), z
+ * którego czerpie zarówno garnizon obronny jak i ewentualna fala ofensywna (hard). 'hard'
+ * podniesione 4→7 = docelowy garnizon wczesnej fazy na hard (3, patrz CS_EARLY_GARRISON_TARGET
+ * w ai.ts) + CS_WAVE_ATTACK_MIN_STACK (3) + RESUP_TIERS['strong'].minGuard (1) -- MP na
+ * Trudnym może utrzymać PEŁNY docelowy garnizon (3) I RÓWNOCZEŚNIE zgromadzić minimalną falę
+ * ofensywną, zamiast wybierać jedno kosztem drugiego jak przy starym, ciasnym cap=4 (garnizon
+ * docelowy 3 + próg wyjścia z domu 4 nie mieściły się razem w jednym punkcie). 'normal'
+ * podniesione 1→3 = docelowy garnizon wczesnej fazy na normal (2) + 1 bufor (normal nie ma
+ * cityStateOffensiveSupport, więc bez potrzeby miejsca na falę ofensywną) -- stary cap=1
+ * fizycznie BLOKOWAŁ osiągnięcie nawet 2-jednostkowego garnizonu (GOAL 2 dispatcha). 'easy'
+ * CELOWO nietknięte (null/bez limitu) -- poza jawnym zakresem GOAL 1 (wymaga tylko
+ * hard >= normal, spełnione już bez zmiany 'easy'; zmiana 'easy' byłaby osobną decyzją
+ * balansu spoza tego dispatchu).
  */
 export function cityStateMilitaryProductionCap(csDifficultyVsPlayer: DifficultyLevel): number | null {
   switch (csDifficultyVsPlayer) {
     case 'hard':
-      return 4;
+      return 7;
     case 'normal':
-      return 1;
+      return 3;
     default:
       return null;
   }
