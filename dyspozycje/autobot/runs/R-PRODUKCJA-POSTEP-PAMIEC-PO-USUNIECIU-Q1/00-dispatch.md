@@ -3,8 +3,10 @@ RUNDA: 1/5
 DATA: 2026-09-03
 DOMAIN: GAME
 ŚCIEŻKA: gra/src/game/production.ts (dequeue/enqueue/dropFrontItem), gra/src/ui/cityPanel.ts
-(cancelQueueItem), gra/src/types/city.ts (nowe pole na City), gra/src/game/save.ts
-(serializacja/migracja)
+(cancelQueueItem), gra/src/game/cities.ts (nowe pole na City — KOREKTA rundy 2: pierwotna
+allowlista wskazywała types/city.ts, martwy plik bez importów w src/; realny City używany
+przez production.ts/cityPanel.ts/save.ts pochodzi z game/cities.ts, potwierdzone przez
+Operatora i Evaluatora rundy 1 zgodnym reconem), gra/src/game/save.ts (serializacja/migracja)
 MODEL+EFFORT: claude-sonnet-5, effort high (odwrócenie udokumentowanej decyzji
 projektowej + migracja zapisu gry — wymaga staranności)
 
