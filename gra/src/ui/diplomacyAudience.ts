@@ -790,7 +790,7 @@ ${DIPLO_1E_SHARED_CSS}
 .da-negot-actionbar .da-btnrow button:disabled{opacity:.4;cursor:not-allowed;}
 .da-cond-verdict{font-size:0.68em;line-height:1.4;margin:4px 0 2px;padding:5px 7px;border-radius:6px;}
 .da-cond-verdict.ok{color:#7ad0a0;background:rgba(80,176,112,.1);border:1px solid rgba(80,176,112,.35);}
-.da-cond-verdict.no{color:#e0a868;background:rgba(224,168,104,.08);border:1px solid rgba(224,168,104,.35);}
+.da-cond-verdict.no{color:#e08a8a;background:rgba(200,64,64,.1);border:1px solid rgba(200,64,64,.5);}
 .da-cond-verdict.wait{color:#a8a090;background:rgba(40,48,60,.45);border:1px solid rgba(232,216,138,.2);}
 .da-negot .da-req-ai{margin-top:6px;font-size:0.7em;padding:6px 10px;border-radius:6px;
   border:1px solid rgba(140,180,240,.45);background:rgba(90,140,200,.25);color:#e8e0c8;cursor:pointer;width:100%;}
@@ -803,7 +803,7 @@ ${DIPLO_1E_SHARED_CSS}
 .da-accept-pts .ap-val.neg{color:#e0a868;}
 .da-accept-pts .ap-foot{margin-top:3px;padding-top:3px;border-top:1px dashed rgba(255,255,255,.06);font-weight:600;}
 .da-accept-pts.ok .ap-foot{color:#7ad0a0;}
-.da-accept-pts.no .ap-foot{color:#e0a868;}
+.da-accept-pts.no .ap-foot{color:#e08a8a;}
 /* Panel PN — bilans porozumienia między kolumnami My / Oni (Maciej 2026-07-29). */
 .da-pn-balance-bar{border-radius:10px;padding:10px 12px;border:2px solid rgba(232,216,138,.28);
   background:linear-gradient(180deg,rgba(22,28,40,.95),rgba(10,14,22,.92));
@@ -855,7 +855,14 @@ ${DIPLO_1E_SHARED_CSS}
 .da-pn-rel-mod.neutral .da-pn-rel-mod-deal{color:#c8b898;}
 .da-pn-bal-verdict{margin-top:8px;padding:7px 10px;border-radius:7px;font-size:0.72em;font-weight:600;line-height:1.4;}
 .da-pn-bal-verdict.ok{color:#7ad0a0;background:rgba(80,176,112,.12);border:1px solid rgba(80,176,112,.35);}
-.da-pn-bal-verdict.no{color:#e0a868;background:rgba(224,168,104,.1);border:1px solid rgba(224,168,104,.35);}
+/* R-DYPLO-WARUNEK-NIESPELNIONY-CZERWONY-TOOLTIP-Q1 (właściciel, 2026-09-03): .no to TWARDA
+ * BLOKADA — warunki (np. Relacja) nie są spełnione i Przyjmij jest wyłączone, nie tylko
+ * "gorsza opcja". Dawny bursztynowy (#e0a868, dzielony z liczbami informacyjnymi typu
+ * .da-pn-bal-num.neg / .da-pn-rel-mod.worse) nie sygnalizował tego dość mocno i wizualnie
+ * mylił się z ostrzeżeniami nieblokującymi. Czerwony #e08a8a to już istniejący w tym pliku
+ * kolor "danger" (wojna/zerwanie/odrzuć — .da-tone-wojna, .da-btnrow button.rej), nie nowa
+ * paleta. .wait (stan informacyjny, "oceń ofertę") ZOSTAJE bez zmian — to nie jest blokada. */
+.da-pn-bal-verdict.no{color:#e08a8a;background:rgba(200,64,64,.1);border:1px solid rgba(200,64,64,.5);}
 .da-pn-bal-verdict.wait{color:#a8a090;background:rgba(40,48,60,.45);border:1px solid rgba(232,216,138,.2);}
 .da-accept-compact{font-size:0.62em;line-height:1.35;margin:4px 0 2px;padding:3px 6px;border-radius:5px;
   border:1px dashed rgba(232,216,138,.15);color:#a8a090;}
@@ -888,6 +895,15 @@ ${DIPLO_1E_SHARED_CSS}
    dashing), note is informational (not a warning), positive color, distinct from the blue warning
    note above. */
 .da-deal.on-table-ok .da-note{color:#8ec9a0;}
+/* GOAL 3 (R-DYPLO-WARUNEK-NIESPELNIONY-CZERWONY-TOOLTIP-Q1): "prawdopodobnie odrzucone przy
+ * dzisiejszej Relacji" — kafelek zostaje KLIKALNY (żaden disabled, żaden .locked), bo
+ * słodzik w koszyku może jeszcze obniżyć próg; tylko wyraźnie przygaszony (nie tak mocno jak
+ * .locked opacity .48) + bursztynowe ostrzeżenie (nie czerwień .no z panelu PW — to jest
+ * sygnał ryzyka PRZED próbą, nie twarda blokada PO niej). */
+.da-deal.rel-warn{opacity:.78;border-style:dashed;border-color:rgba(224,168,104,.4);}
+.da-deal.rel-warn .da-note{color:#e0a868;}
+.da-deal.rel-warn:hover{border-color:#e0a868;box-shadow:0 0 8px rgba(224,168,104,.25);}
+.da-relwarnic{width:12px;height:12px;color:#e0a868;}
 .da-multi-deal-hint{font-size:0.62em;color:#8a8070;line-height:1.45;margin-top:6px;padding:6px 8px;
   border-radius:6px;border:1px dashed rgba(232,216,138,.2);background:rgba(0,0,0,.18);}
 .da-deal.active{border-color:rgba(142,197,255,.5);background:linear-gradient(180deg,rgba(142,197,255,.09),rgba(12,16,24,.75));cursor:default;}
@@ -1692,6 +1708,38 @@ export function actionBarHtml(st: DiplomacyAudienceState): string {
 }
 
 /**
+ * R-DYPLO-WARUNEK-NIESPELNIONY-CZERWONY-TOOLTIP-Q1 GOAL 3 (właściciel, 2026-09-03): akcje z
+ * TWARDYM progiem Relacji/Zaufania/Respektu w `evaluateProposal` (diplomacy-proposals.ts —
+ * NIETKNIĘTE, zero zmian progów tutaj) — '2' nap, '3' sojusz (domyślnie sojusz_pelny, patrz
+ * `proposalActionIdFromPayload`), '4' granice, '12' wasal. Zbadane: '5'/'14' (handel) i '8'
+ * (trybut) mają WŁASNĄ bramkę PW liczoną z koszyka (nie ma sensu "bazowy próg bez koszyka" —
+ * koszyk JEST progiem), '10' (pokój) nigdy nie jest blokowany liczbą (Obrona runda 4 innego
+ * tematu, komentarz przy `uiActionId !== '10'` w diplomacyAcceptanceBalance.ts) — żadne z nich
+ * nie pasuje do wzorca "widoczny próg Relacji niezależny od koszyka".
+ */
+const HARD_RELATION_TREATY_UI_IDS: ReadonlySet<string> = new Set(['2', '3', '4', '12']);
+
+/**
+ * Podgląd BAZOWEGO progu (koszyk pusty — żaden słodzik) tej samej bramki, którą realnie
+ * wykona `evaluateProposal` (SILNIK), przez już istniejący, opcjonalny hak
+ * `cfg.previewNegotiation` (main.ts::previewNegotiatedProposal — TA SAMA ścieżka, którą modal
+ * negocjacji woła od dawna dla podglądu W TRAKCIE edycji koszyka, patrz `showNegotiationModal`
+ * wyżej w tym pliku). Zero duplikatu progów/formuł z diplomacy-proposals.ts — pytamy silnik
+ * wprost, więc żadna przyszła zmiana progu tam nie może rozjechać się z tym sygnałem. Zwraca
+ * `null`, gdy: akcja nie jest z `HARD_RELATION_TREATY_UI_IDS`, hak nie jest wpięty (test
+ * jednostkowy wołający `dealsColumnHtml` bez `showDiplomacyAudience` — `cfg` wtedy `null`,
+ * zachowanie sprzed tej rundy, fail-open na SAM SYGNAŁ ostrzegawczy, NIE na blokadę — kafelek
+ * i tak zostaje w pełni klikalny), albo bazowy próg jest osiągalny (`accepted: true`).
+ */
+function baseRelationWarning(actionId: string): { reason: string } | null {
+  if (!HARD_RELATION_TREATY_UI_IDS.has(actionId)) return null;
+  if (!cfg?.previewNegotiation) return null;
+  const preview = cfg.previewNegotiation(cfg.ownerId, { actionId });
+  if (preview.accepted) return null;
+  return { reason: preview.reason ?? 'Warunki relacji niespełnione' };
+}
+
+/**
  * FAZA 2 pkt 3 kol.1 (lewo) — „Możliwe umowy" (12 akcji; bez „Nawiązanie kontaktu" gdy kontakt jest).
  * Eksport WYŁĄCZNIE do testu warstwy wiązania (Runda 2, 2026-08-13,
  * `diplomacy-tech-chip-filter-and-multi-deal-test.cjs` CZĘŚĆ C) — potwierdza, że render
@@ -1742,13 +1790,20 @@ export function dealsColumnHtml(st: DiplomacyAudienceState): string {
       ? (st.pendingNegotiations ?? []).filter(r => r.direction === 'own' && r.uiActionId === a.id).length
       : 0;
     const isLocked = a.locked || !a.enabled || a.active === true || onTableBlocks;
+    // GOAL 3 (R-DYPLO-WARUNEK-NIESPELNIONY-CZERWONY-TOOLTIP-Q1): sygnał "prawdopodobnie
+    // odrzucone" liczony WYŁĄCZNIE dla kafelków, które i tak wyglądają na w pełni dostępne
+    // (nie isLocked, nie już zawarte) — inaczej dublowałby istniejącą blokadę/notatkę.
+    const relWarn = !isLocked && !a.active ? baseRelationWarning(a.id) : null;
     let cls = isLocked ? 'da-deal locked' : 'da-deal';
     if (a.active) cls += ' active';
     if (onTableBlocks) cls += ' on-table';
     if (onTableAllowsMore) cls += ' on-table-ok';
+    if (relWarn) cls += ' rel-warn';
     const statusNote = onTableAllowsMore
       ? 'na stole: ' + onTableCountForType + ' — dodaj kolejną'
-      : audienceActionStatusNote(a, onTableBlocks);
+      : relWarn
+        ? 'wymaga wyższej Relacji'
+        : audienceActionStatusNote(a, onTableBlocks);
     const lockReason = a.lockNote || (isLocked && a.tooltip ? a.tooltip : '');
     const hoverTip = onTableBlocks
       ? 'Ta umowa już leży na stole negocjacji — użyj Przyjmij przy panelu PW lub Odrzuć, aby wycofać'
@@ -1756,11 +1811,15 @@ export function dealsColumnHtml(st: DiplomacyAudienceState): string {
         ? 'Na stole jest już ' + onTableCountForType + ' tego typu — możesz dodać kolejną umowę'
         : a.active
           ? 'Umowa już zawarta'
-          : (a.opis || lockReason || a.tooltip || a.label);
+          : relWarn
+            ? relWarn.reason
+            : (a.opis || lockReason || a.tooltip || a.label);
     const icon = dipBrandIconHtml(actionIconId(a.id), 14, 'da-di');
     const endIc = a.active
       ? dipBrandIconHtml('ui-check', 13, 'da-checkic')
-      : (isLocked ? dipBrandIconHtml('ui-lock', 12, 'da-lockic') : '');
+      : (isLocked
+        ? dipBrandIconHtml('ui-lock', 12, 'da-lockic')
+        : (relWarn ? dipBrandIconHtml('chip-warning', 12, 'da-relwarnic') : ''));
     const html = (
       '<button type="button" class="' + cls + '" data-aid="' + esc(a.id) + '"' +
       ' title="' + esc(hoverTip) + '"' +

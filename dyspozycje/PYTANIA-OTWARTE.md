@@ -32088,3 +32088,25 @@ pastwiska **103 → 0**, obozy bez zmian. **Skutek odwrotny do zamierzonego.**
   nie mogła zejść do zera) — Evaluator zastąpił ją E1/E2, korekta obowiązkowa.
 - `ai-praca-split-parity-test` **21/1 — regres ZASTANY na `main`**, zweryfikowany przez
   Evaluatora na czystym `origin/main` `d0de8164`. Osobny temat.
+
+---
+
+## P-DYPLO-DWA-TESTY-CZERWONE-ZASTANE-Q1 (2026-09-03, Final Control rundy 1 przy R-DYPLO-WARUNEK-NIESPELNIONY-CZERWONY-TOOLTIP-Q1)
+
+Dwa testy dyplomacji czerwone/przerwane **niezależnie od diffu tej rundy** (allowlist:
+wyłącznie `gra/src/ui/diplomacyAudience.ts` + nowy test) — potwierdzone samodzielnie przez
+Final Control przez `git stash -u` do stanu sprzed zmian tego tematu i ponowne uruchomienie:
+identyczny wynik z i bez diffu.
+
+- **`gra/tools/diplomacy-audience-close-flush-test.cjs`: 36 pass, 1 fail** (nie 37/0 jak
+  odnotowane wcześniej w tym pliku, patrz wpisy `diplomacy-audience-close-flush-test.cjs`
+  wyżej — regres względem tamtych zapisów, ale ZASTANY na `origin/main`, nie wprowadzony
+  przez ten temat). Failing: `[A4] main.ts ma DOKLADNIE 2 gole wywolania
+  hideDiplomacyAudience() poza importem (wrapper + onBack) -- got 3.`
+- **`gra/tools/dyplo-przemarsz-checkbox-przycisk-real-render-test.cjs`: self-check
+  przerwany** — `PRZERWANE: nie udało się odtworzyć stanu sprzed zmiany — kod się przesunął`
+  po (0)/(0b) PASS. Ten sam wynik na `origin/main` bez diffu tematu.
+
+STATUS: **OTWARTE — zarejestrowane, do reconu/naprawy w osobnym temacie, nie blokują
+integracji `R-DYPLO-WARUNEK-NIESPELNIONY-CZERWONY-TOOLTIP-Q1`** (potwierdzone pre-istniejące,
+zero związku z jego allowlistą).
