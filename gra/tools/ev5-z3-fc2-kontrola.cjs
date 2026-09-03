@@ -151,12 +151,18 @@ function tura(body, S, ownerId, defensiveCopy, K) {
     // POLYKANY przez try/catch ZASADY 3, wiec przekierowanie po cichu nigdy sie nie
     // wykonuje (dokladnie tak samo jak w `ai5-zasada3-harness.cjs`, patrz komentarz tam).
     'MIN_PROCENT_PULI_IMPERIUM_ZASADA3_NADWYZKA',
+    // R-AI-PRACA-PODZIAL-STALY-50-50-Q1 (Krok 2): fallback przywracania (main.ts ok.
+    // 29705-29709) referencuje TAKZE `AI_FIXED_PROCENT_BUDYNKI` (import z `game/cities`)
+    // zamiast `DEFAULT_PODZIAL_PRACY.procentBudynki` — SAM wzorzec wstrzykniecia co
+    // `MIN_PROCENT_PULI_IMPERIUM_ZASADA3_NADWYZKA` powyzej (bez tego: ReferenceError
+    // polykany przez try/catch ZASADY 3, przekierowanie po cichu nigdy sie nie cofa).
+    'AI_FIXED_PROCENT_BUDYNKI',
     'clampPodzialPracyBudynkiPercent', 'console',
     body,
   )(
     { defensiveCopy }, ownerId, S.cities, S.aiSurplusReportByOwner, S.aiSurplusRedirectedOwners,
     S.ownerDefaultPodzialPracy, S.aiSliderStateByOwner,
-    K.MAX, K.DEF, K.MIN_NADWYZKA, K.clamp, console,
+    K.MAX, K.DEF, K.MIN_NADWYZKA, K.AI_FIXED, K.clamp, console,
   );
 }
 
@@ -266,6 +272,7 @@ if (require.main === module) {
   const K = {
     MAX: CITIES.MAX_PODZIAL_PRACY_BUDYNKI_PERCENT,
     DEF: CITIES.DEFAULT_PODZIAL_PRACY,
+    AI_FIXED: CITIES.AI_FIXED_PROCENT_BUDYNKI,
     clamp: CITIES.clampPodzialPracyBudynkiPercent,
     pula: CITIES.procentPuliImperiumZBudynkow,
     // R-AI-ULEPSZENIA-MALO-BUDOWANE-Q1 (Krok 3): cel ZASADY 3 juz nie jest `MAX` (100 —

@@ -419,6 +419,18 @@ export const MIN_PODZIAL_PRACY_BUDYNKI_PERCENT = 50;
 export const MAX_PODZIAL_PRACY_BUDYNKI_PERCENT = 100;
 
 /**
+ * R-AI-PRACA-PODZIAL-STALY-50-50-Q1: podzial Pracy STANDARDOWY (poza ZASADA 3, ktora
+ * PRZEKIEROWUJE nadwyzke na ture faktycznego braku kandydatow na ulepszenia — main.ts
+ * ok. 29679-29719) dla KAZDEGO AI (cywilizacja glowna I miasto-panstwo, ownerId>0).
+ * Zastepuje dawna dynamiczna heurystyke `decideAIEconomySliders` (early 40% / mid 50% /
+ * podbicie do 100% w wojnie), ktora mogla zepchnac pule imperium (budzet ulepszen terenu)
+ * do ZERA na czas wojny — dokladnie objaw zgloszony przez wlasciciela. Gracz (ownerId===0)
+ * BEZ ZMIAN — jego suwak pozostaje w pelni interaktywny w zakresie [MIN_PODZIAL_PRACY_
+ * BUDYNKI_PERCENT, MAX_PODZIAL_PRACY_BUDYNKI_PERCENT] powyzej.
+ */
+export const AI_FIXED_PROCENT_BUDYNKI = 50;
+
+/**
  * Maksymalny udzial Pracy miasta trafiajacy do puli imperium. Z tej puli finansowane
  * sa ulepszenia terenu (przez automat, w granicach `pracaAutoPercent`), a takze cuda
  * na mapie, zakladanie miast, wycinka lasu i utrzymanie ulepszen surowcowych — pula

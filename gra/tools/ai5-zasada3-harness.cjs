@@ -105,6 +105,13 @@ function runZasada3(body, S, ownerId, opts, CITIES) {
     // przekierowanie nigdy sie nie wykonuje (zlapane Evaluatorem/Operatorem tego tematu:
     // Z3l/Z3m spadaly do wartosci sprzed przekierowania, „70->70").
     'MIN_PROCENT_PULI_IMPERIUM_ZASADA3_NADWYZKA',
+    // R-AI-PRACA-PODZIAL-STALY-50-50-Q1 (Krok 2): fallback przywracania (main.ts ok.
+    // 29705-29709) od tego tematu referencuje TAKZE `AI_FIXED_PROCENT_BUDYNKI` (import z
+    // `game/cities`) zamiast `DEFAULT_PODZIAL_PRACY.procentBudynki` -- musi byc jawnie
+    // wstrzykniety tu, SAMYM wzorcem co `MIN_PROCENT_PULI_IMPERIUM_ZASADA3_NADWYZKA` powyzej
+    // (komentarz tamze: bez tego wyciety kod cicho polyka ReferenceError, test NIE FAILUJE
+    // GLOSNO -- przekierowanie po prostu nigdy sie nie cofa).
+    'AI_FIXED_PROCENT_BUDYNKI',
     'clampPodzialPracyBudynkiPercent', 'console',
     body,
   )(
@@ -112,6 +119,7 @@ function runZasada3(body, S, ownerId, opts, CITIES) {
     S.ownerDefaultPodzialPracy, S.aiSliderStateByOwner,
     CITIES.MAX_PODZIAL_PRACY_BUDYNKI_PERCENT, CITIES.DEFAULT_PODZIAL_PRACY,
     CITIES.MIN_PROCENT_PULI_IMPERIUM_ZASADA3_NADWYZKA,
+    CITIES.AI_FIXED_PROCENT_BUDYNKI,
     CITIES.clampPodzialPracyBudynkiPercent, console,
   );
 }

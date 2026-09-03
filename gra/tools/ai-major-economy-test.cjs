@@ -98,8 +98,15 @@ const PARAMS = {
 
 const CURRENT = { procentRozwoj: 70, procentBudynki: 70, procentNauka: 20 };
 
-console.log('\n-- A. Major early slider: max wzrost + 40% budynki --');
+console.log('\n-- A. Major early slider: max wzrost + procentBudynki STALY 50 (R-AI-PRACA-PODZIAL-STALY-50-50-Q1) --');
 {
+  // AKTUALIZACJA (R-AI-PRACA-PODZIAL-STALY-50-50-Q1, jawnie uzasadniona): ta asercja pinowala
+  // DZISIEJSZA (sprzed tego tematu) DYNAMICZNA wartosc AI_MAJOR_EARLY_PROCENT_BUDYNKI=40 (i tak
+  // przycinana w gorę do 50 przez clampPodzialPracyBudynkiPercent w main.ts — de facto martwa w
+  // grze, patrz RECON w dispatchu). decideAIEconomySliders juz NIE rozroznia early/mid/wojny dla
+  // procentBudynki — jest STALY (AI_FIXED_PROCENT_BUDYNKI=50) dla KAZDEGO AI, niezaleznie od fazy
+  // gry. AI_MAJOR_EARLY_PROCENT_BUDYNKI zostaje wyeksportowana (uzywana tylko historycznie/gdzie
+  // indziej niepodpiete) — ale przestala byc celem procentBudynki w tej funkcji.
   const r = decideAIEconomySliders({
     zapasyPanstwa: 25,
     atWar: false,
@@ -112,11 +119,17 @@ console.log('\n-- A. Major early slider: max wzrost + 40% budynki --');
     upkeepGoldCost: 50,
   }, PARAMS);
   eq(r.procentRozwoj, 100, 'major early -> procentRozwoj 100');
-  eq(r.procentBudynki, AI_MAJOR_EARLY_PROCENT_BUDYNKI, 'major early -> procentBudynki 40');
+  eq(r.procentBudynki, 50, 'major early -> procentBudynki STALY 50 (nie dynamiczne 40)');
 }
 
-console.log('\n-- B. Major early peace: bez obniżania procentBudynki (legacy peace skip) --');
+console.log('\n-- B. Major early peace: procentBudynki zostaje na stalej 50 (R-AI-PRACA-PODZIAL-STALY-50-50-Q1) --');
 {
+  // AKTUALIZACJA (R-AI-PRACA-PODZIAL-STALY-50-50-Q1, jawnie uzasadniona): stary tytul „bez
+  // obnizania" opisywal WYJATEK w starej heurystyce (pokoj + major early NIE obnizal procentBudynki
+  // ponizej celu 40). Dzis procentBudynki jest STALY niezaleznie od pokoju/wojny/fazy — wejscie z
+  // current.procentBudynki=40 (stara, juz nieosiagalna dla AI wartosc) konwerguje NATYCHMIAST do 50,
+  // tak samo jak kazde inne odchylenie od stalej (patrz test „Seeding" w
+  // tools/praca-podzial-staly-50-50-test.cjs dla tego samego mechanizmu).
   const r = decideAIEconomySliders({
     zapasyPanstwa: 25,
     atWar: false,
@@ -126,7 +139,7 @@ console.log('\n-- B. Major early peace: bez obniżania procentBudynki (legacy pe
     isMajorAi: true,
     isEarlyGame: true,
   }, PARAMS);
-  eq(r.procentBudynki, 40, 'major early peace -> budynki bez spadku');
+  eq(r.procentBudynki, 50, 'major early peace -> procentBudynki konweruje do stalej 50');
 }
 
 console.log('\n-- C. Archetype 60/40 fraction (ai-params) --');

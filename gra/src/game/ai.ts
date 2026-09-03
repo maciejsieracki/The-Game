@@ -23,7 +23,7 @@ import {
   type DifficultyLevel,
 } from './city-state-difficulty';
 import type { City }       from './cities';
-import { canFoundCity, MAX_PROCENT_NAUKA, MAX_PROCENT_PULI_IMPERIUM }    from './cities';
+import { canFoundCity, MAX_PROCENT_NAUKA, MAX_PROCENT_PULI_IMPERIUM, AI_FIXED_PROCENT_BUDYNKI }    from './cities';
 import { evaluateFoundCityAffordance } from './city-founding';
 import {
   aiBypassClusterConsolidation,
@@ -4882,6 +4882,23 @@ export function decideAIEconomySliders(
   let { procentRozwoj, procentBudynki, procentNauka } = inp.current;
   let changed = false;
 
+  // R-AI-PRACA-PODZIAL-STALY-50-50-Q1: procentBudynki jest teraz STAŁY (AI_FIXED_PROCENT_
+  // BUDYNKI=50), NIEZALEŻNY od wojny/pokoju/fazy gry/isMajorAi (dawniej: early 40% / mid
+  // 50% / podbicie do 100% w wojnie — mogło zepchnąć pulę imperium, budżet ulepszeń
+  // terenu, do zera na czas wojny — dokładnie objaw zgłoszony przez właściciela).
+  // Świadomie POZA blokiem `minOdstepTur` niżej (ten cooldown chroni przed oscylacją
+  // suwaków REAGUJĄCYCH na zmienny stan gry — procentBudynki już nie reaguje na nic,
+  // więc nie ma czego wygaszać; konwerguje do stałej natychmiast, w tym w turze 1 przed
+  // pierwszym seedowaniem). ZASADA 3 (przekierowanie nadwyżki, main.ts ok. 29679-29719)
+  // to ODRĘBNY mechanizm, poza tą funkcją — nie ruszany tutaj, nadal przywraca do tej
+  // samej stałej po ustaniu nadwyżki (main.ts ok. 29705-29707, fallback DEFAULT_PODZIAL_
+  // PRACY.procentBudynki=70 tam NIE jest już osiągalny dla AI, bo aiSliderStateByOwner
+  // trzyma zawsze 50 od pierwszego wywołania tej funkcji).
+  if (procentBudynki !== AI_FIXED_PROCENT_BUDYNKI) {
+    procentBudynki = AI_FIXED_PROCENT_BUDYNKI;
+    changed = true;
+  }
+
   // Major early: zawsze max wzrost (procentRozwoj=100) jeśli Spichlerz państwa nie jest
   // ujemny. Nie czekamy na minOdstepTur — między korektami nie można tracić tur na niskie
   // racje. Deficyt żywności (< deficytZapasowProg) nadal obniża suwak w bloku poniżej.
@@ -4919,34 +4936,19 @@ export function decideAIEconomySliders(
       if (nextNauka !== procentNauka) { procentNauka = nextNauka; changed = true; }
     }
 
-    if (inp.isMajorAi && inp.isEarlyGame) {
-      const targetB = AI_MAJOR_EARLY_PROCENT_BUDYNKI;
-      if (procentBudynki !== targetB) { procentBudynki = targetB; changed = true; }
-    } else if (inp.isMajorAi && !inp.isEarlyGame) {
-      const targetB = AI_MAJOR_MID_PROCENT_BUDYNKI;
-      if (Math.abs(procentBudynki - targetB) > params.krokProcentPracaNauka) {
-        const nextB = procentBudynki > targetB
-          ? procentBudynki - params.krokProcentPracaNauka
-          : procentBudynki + params.krokProcentPracaNauka;
-        if (nextB !== procentBudynki) { procentBudynki = nextB; changed = true; }
-      }
-    }
-
     if (inp.atWar) {
-      const nextBudynki = Math.min(100, procentBudynki + params.krokProcentPracaNauka);
-      if (nextBudynki !== procentBudynki) { procentBudynki = nextBudynki; changed = true; }
       const nextNauka = Math.max(0, Math.min(MAX_PROCENT_NAUKA, procentNauka - params.krokProcentPracaNauka));
       if (nextNauka !== procentNauka) { procentNauka = nextNauka; changed = true; }
     } else if (!inp.isMajorAi || !inp.isEarlyGame) {
-      // Pokój: major early NIE obniża procentBudynki (szkodzi ulepszeniom/wzrostowi).
+      // Pokój, nie major-early (lub nie major): korekta Nauki niżej. procentBudynki NIE
+      // jest tu już w ogóle dotykany (R-AI-PRACA-PODZIAL-STALY-50-50-Q1 — stały, patrz blok
+      // AI_FIXED_PROCENT_BUDYNKI wyżej w tej funkcji) — ten warunek dotyczy WYŁĄCZNIE Nauki.
       // Pieniądze: najpierw upkeep budynki+armia — w kryzysie nie zwiększamy Nauki kosztem Pieniądza.
       const moneyCrisis = inp.isMajorAi
         && inp.treasuryGold !== undefined
         && inp.upkeepGoldCost !== undefined
         && inp.treasuryGold < inp.upkeepGoldCost;
       if (!moneyCrisis) {
-        const nextBudynki = Math.max(0, procentBudynki - params.krokProcentPracaNauka);
-        if (nextBudynki !== procentBudynki) { procentBudynki = nextBudynki; changed = true; }
         const nextNauka = Math.min(MAX_PROCENT_NAUKA, procentNauka + params.krokProcentPracaNauka);
         if (nextNauka !== procentNauka) { procentNauka = nextNauka; changed = true; }
       }

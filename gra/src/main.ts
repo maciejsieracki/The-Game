@@ -189,6 +189,7 @@ import {
   DEFAULT_ULEPSZENIA_ONLY_WORKED,
   DEFAULT_ULEPSZENIA_WOLNO_WYCINAC_LAS,
   MAX_PODZIAL_PRACY_BUDYNKI_PERCENT,
+  AI_FIXED_PROCENT_BUDYNKI,
   clampUlepszeniaPracaPercent,
   clampPodzialPracyBudynkiPercent,
   procentPuliImperiumZBudynkow,
@@ -4750,7 +4751,19 @@ async function boot(): Promise<void> {
       ownerDefaultPoziomRacji.set(0, freshOwnerDefaultPoziomRacji());
       for (const ai of aiStartHexes) {
         if (!ownerDefaultPodzialPracy.has(ai.ownerId)) {
-          ownerDefaultPodzialPracy.set(ai.ownerId, freshOwnerDefaultPodzialPracy());
+          // R-AI-PRACA-PODZIAL-STALY-50-50-Q1 (Runda 1, Zarzut 1 Evaluatora — PRZYJĘTE):
+          // freshOwnerDefaultPodzialPracy() zwraca DEFAULT_PODZIAL_PRACY.procentBudynki=70
+          // (default GRACZA, cities.ts). Bez tej gałęzi każdy nowy owner AI startował
+          // turę 1 z 70%, bo advanceCityEconomy (main.ts ok. 26736) czyta ten seed PRZED
+          // pierwszym wywołaniem decideAIEconomySliders w ownerLoop (main.ts ok. 28505),
+          // które dopiero nadpisuje na 50 -- ale za późno na tę samą turę. Seeduj AI
+          // (ownerId!==0, gracz zawsze ma ownerId 0) od razu na AI_FIXED_PROCENT_BUDYNKI,
+          // żeby okno tury 1 nie istniało. Żywo zweryfikowane w
+          // ai-praca-podzial-tura1-seed-test.cjs (prawdziwy silnik, bez reimplementacji).
+          ownerDefaultPodzialPracy.set(
+            ai.ownerId,
+            ai.ownerId === 0 ? freshOwnerDefaultPodzialPracy() : { procentBudynki: AI_FIXED_PROCENT_BUDYNKI },
+          );
         }
         if (!ownerDefaultOkolicaFocus.has(ai.ownerId)) {
           ownerDefaultOkolicaFocus.set(ai.ownerId, freshOwnerDefaultOkolicaFocus());
@@ -4780,7 +4793,15 @@ async function boot(): Promise<void> {
         ownerDefaultBudowaProfil.set(c.ownerId, freshOwnerDefaultBudowaProfil());
       }
       if (!ownerDefaultPodzialPracy.has(c.ownerId)) {
-        ownerDefaultPodzialPracy.set(c.ownerId, freshOwnerDefaultPodzialPracy());
+        // R-AI-PRACA-PODZIAL-STALY-50-50-Q1 (Runda 1, Zarzut 1 Evaluatora — PRZYJĘTE):
+        // ten sam powód co initOwnerDefaultCityFields wyżej -- świeżo zdobyte/spawnowane
+        // miasto AI (w tym miasto-państwo) NIE MOŻE dziedziczyć defaultu gracza (70%),
+        // bo advanceCityEconomy tej samej tury policzy produkcję z tą wartością zanim
+        // decideAIEconomySliders zdąży ją nadpisać na 50 dla tego ownera.
+        ownerDefaultPodzialPracy.set(
+          c.ownerId,
+          c.ownerId === 0 ? freshOwnerDefaultPodzialPracy() : { procentBudynki: AI_FIXED_PROCENT_BUDYNKI },
+        );
       }
       if (!ownerDefaultPoziomRacji.has(c.ownerId)) {
         ownerDefaultPoziomRacji.set(c.ownerId, freshOwnerDefaultPoziomRacji());
@@ -29702,9 +29723,17 @@ async function boot(): Promise<void> {
                   }
                 } else if (redirected) {
                   aiSurplusRedirectedOwners.delete(ownerId);
+                  // R-AI-PRACA-PODZIAL-STALY-50-50-Q1 (Krok 2): fallback gdy `aiSliderStateByOwner`
+                  // nie ma jeszcze wpisu dla tego ownera (np. świeża sesja PO save/load — ten stan
+                  // NIE jest persystowany, patrz `tools/ai5-zasada3-harness.cjs::scenariuszZ3`) był
+                  // dawniej `DEFAULT_PODZIAL_PRACY.procentBudynki` (70) — dziś, gdy `decideAIEconomySliders`
+                  // trzyma procentBudynki na stałej AI_FIXED_PROCENT_BUDYNKI od PIERWSZEGO wywołania,
+                  // fallback musi celować w TĘ SAMĄ stałą, inaczej przywrócenie po ustaniu nadwyżki
+                  // wraca do nieaktualnej wartości (70) zamiast do 50 na tę jedną turę, do najbliższego
+                  // wywołania suwaka AI (żywo zweryfikowane: ai4-popyt-obywatele-test.cjs::Z3l).
                   const pct = clampPodzialPracyBudynkiPercent(
                     aiSliderStateByOwner.get(ownerId)?.procentBudynki
-                    ?? DEFAULT_PODZIAL_PRACY.procentBudynki,
+                    ?? AI_FIXED_PROCENT_BUDYNKI,
                   );
                   ownerDefaultPodzialPracy.set(ownerId, { procentBudynki: pct });
                   for (const c of cities) {

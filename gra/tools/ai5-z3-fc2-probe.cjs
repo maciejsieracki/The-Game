@@ -109,11 +109,13 @@ say(`  PRZED: procentBudynki zostaje na ${z3Przed.procentPo}, pula imperium ${z3
   + ` — ${z3Przed.pulaImperiumPo === 0 ? 'ZERO Pracy do puli imperium = ZERO ulepszen terenu, TRWALE' : 'pula niezerowa'}`);
 say(`  PO:    procentBudynki wraca do ${z3Po.procentPo}, pula imperium ${z3Po.pulaImperiumPo}%`
   + ` — ${z3Po.pulaImperiumPo > 0 ? 'Praca znowu plynie do puli imperium' : 'NADAL ZABLOKOWANE'}`);
-say(`  NOTA (§13a): po wczytaniu podzial wraca do DEFAULT_PODZIAL_PRACY`
-  + ` (${CITIES.DEFAULT_PODZIAL_PRACY.procentBudynki}), NIE do wartosci wybranej wczesniej przez AI (85),`
-  + ` bo \`aiSliderStateByOwner\` tez nie jest persistowany. To OSOBNA sprawa, poza zakresem`
-  + ` dispatchu rundy 5 — nie blokuje, bo nie jest trwalym zablokowaniem: decideAIEconomySliders`
-  + ` przelicza suwaki dalej. Zgloszone, nie naprawione.`);
+say(`  NOTA (§13a, zaktualizowana R-AI-PRACA-PODZIAL-STALY-50-50-Q1): po wczytaniu podzial`
+  + ` wraca do AI_FIXED_PROCENT_BUDYNKI (${CITIES.AI_FIXED_PROCENT_BUDYNKI}), NIE do wartosci`
+  + ` wybranej wczesniej przez AI (85) sprzed nadwyzki — \`aiSliderStateByOwner\` nadal NIE jest`
+  + ` persistowany (osobna sprawa, nadal nienaprawiona), ale odkad procentBudynki AI jest`
+  + ` STALY (nie dynamiczny), fallback przywracania (main.ts) celuje w TA SAMA stala co`
+  + ` decideAIEconomySliders zapisalby przy najblizszym wywolaniu — brak juz obserwowalnej`
+  + ` rozbieznosci wobec starego DEFAULT_PODZIAL_PRACY.procentBudynki (${CITIES.DEFAULT_PODZIAL_PRACY.procentBudynki}).`);
 say('');
 
 say('--- FC-2: miasta-panstwa (defensiveCopy) w stanie nadwyzki, 3 ziarna ---');
