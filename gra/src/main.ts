@@ -1149,6 +1149,10 @@ import {
   pickAutoImprovements,
   AUTO_ULEPSZENIA_PRACA_RESERVE,
   freshSurplusReport,
+  // R-ULEPSZENIA-OBOZ-LOWIECKI-LAS-ZNIKA-I-TEREN-Q1: kanoniczny zbiór ulepszeń
+  // żywnościowych — CZYTANY (nie kopiowany) przez `syncImprovementDecorForHex`,
+  // żeby lista „co nie kasuje kępy lasu" nie była drugi raz zahardkodowana.
+  ULEPSZENIA_ZYWNOSCIOWE,
   type AutoImprovementSurplusReport,
 } from './game/auto-improvements';
 import { preservesHillRelief } from './game/relief-preserving-improvements';
@@ -12026,6 +12030,53 @@ async function boot(): Promise<void> {
         return;
       }
       if (elevated && keepsReliefUnderImprovement(hexKey, layers)) {
+        return;
+      }
+      // R-ULEPSZENIA-OBOZ-LOWIECKI-LAS-ZNIKA-I-TEREN-Q1 (zgłoszenie właściciela 2026-09-02:
+      // „po wybudowaniu czegokolwiek na wzgórzu, jeżeli jest tam las, to ten las jakby
+      // znika"). Gałąź `elevated` NIŻEJ nie pytała o las w ogóle: każde ulepszenie spoza
+      // `farma`/`bydlo`, które nie zachowuje reliefu, kasowało z widoku CAŁY dekor heksa —
+      // razem z kępą drzew. Trafiał w to obóz łowiecki, który może stać WYŁĄCZNIE na
+      // nakładce Las (twardy gate `computeImprovementBuildImpact` + `qualifies`,
+      // map/improvement-build.ts), więc render kasował las będący warunkiem jego istnienia,
+      // zostawiając goły, spłaszczony heks — dokładnie to, co widział właściciel.
+      //
+      // Zamiast dopisać trzeci zahardkodowany klucz obok `farma`/`bydlo`, pytamy o dwa
+      // ISTNIEJĄCE zbiory: `ULEPSZENIA_ZYWNOSCIOWE` (game/auto-improvements.ts) PRZEFILTROWANE
+      // kanonicznym predykatem budowy na lesie `isImprovementBlockedOnForest`
+      // (map/improvement-build.ts). Z ośmiu kluczy żywnościowych SAM PREDYKAT przepuszcza
+      // PIĘĆ: `bydlo`, `owce`, `lama`, `oboz_lowiecki` ORAZ `lodzie_rybackie` — na lesie
+      // ZABRONIONE są dokładnie trzy: `farma`, `tarasy`, `irygacja`
+      // (`FOREST_BLOCKED_IMPROVEMENT_KEYS`). `lodzie_rybackie` nie występuje w ŻADNYM z dwóch
+      // zbiorów `improvement-build.ts` ani w `isStadninaBlockedOnForest`, więc predykat zwraca
+      // dla niego `false` — z TEJ gałęzi wyklucza je WARUNEK TERENU, nie predykat: łodzie
+      // wymagają `Wybrzeze`/`Morze` (`TERRAIN_ALLOW`, improvement-build.ts), a ta gałąź stoi
+      // pod `elevated` (`Wzgorza`/`Gory`); zbiory terenów są rozłączne, więc kombinacja jest
+      // tutaj strukturalnie nieosiągalna — niezależnie od tego, że generator i tak nie kładzie
+      // nakładki Las na wodzie (`isForestEligibleTerrain`, map/gen-helpers.ts).
+      //
+      // REALNIE osiągalne na lesie-na-wzgórzu są więc CZTERY: `bydlo`, `owce`, `lama`,
+      // `oboz_lowiecki`. Z nich `bydlo` nigdy tu nie dociera (łapie je `foodOnForest` wyżej —
+      // decyzja Macieja 2026-07-21 zostaje bez zmiany), a `owce`/`lama` już dziś wychodzą
+      // gałęzią reliefu wyżej. Efektywna zmiana zachowania dotyczy więc WYŁĄCZNIE obozu
+      // łowieckiego — zakres dokładnie tak szeroki jak przyczyna.
+      //
+      // Świadomy wybór: NIE dodajemy tu jawnego warunku terenu dla `lodzie_rybackie`. Byłby
+      // martwym kodem za istniejącym `elevated` (trzecia, redundantna bramka po `qualifies()`
+      // i po `elevated`), a utwardzanie tej gałęzi „na wszelki wypadek" jest w tym temacie
+      // zakazane wprost (§14 / reguła przeciw samooszukiwaniu). Gdyby kiedyś powstał wzniesiony
+      // teren wodny, właściwą bramką pozostaje kanoniczny `qualifies()`, nie warstwa renderu.
+      //
+      // Świadomie POZA zakresem: `droga`/`fort`/`posterunek`/`tartak`/`glinianka` nie są
+      // ulepszeniami żywnościowymi i spłaszczają wzgórze jak dotąd (poszerzanie tej listy
+      // „na wszelki wypadek" jest zakazane — §14 / reguła przeciw samooszukiwaniu tematu).
+      //
+      // ZERO zmian w danych: `hex.nakladka` zostaje `Las` w każdej gałęzi tej funkcji —
+      // to poprawka wyłącznie warstwy renderu, tak jak `foodOnForest` wyżej.
+      const forestKeptUnderImprovement = hex.nakladka === Nakladka.Las
+        && layers.every(k => ULEPSZENIA_ZYWNOSCIOWE.has(k as ImprovementKey)
+          && !isImprovementBlockedOnForest(k, hex.nakladka));
+      if (elevated && forestKeptUnderImprovement) {
         return;
       }
       if (elevated) {
