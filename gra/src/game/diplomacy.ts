@@ -154,7 +154,7 @@ export const DIPLOMACY_PARAMS = {
   wspolnaReligia_zaufanie_perTura:  0.5,
   /** "Odmienna religia" (-0.5/ture, max -10) */
   odmiennaReligia_zaufanie_perTura: -0.5,
-  /** "Ekspansja przy granicy" (-2/ture) */
+  /** "Kara za wspólną granicę" (-2/ture) */
   ekspansjaGranica_zaufanie_perTura: -2,
   /** "Urazy historyczne (zanikajace)" (-2/ture; fades every 20 turns) */
   urazyHistoryczne_zaufanie_perTura: -2,
@@ -922,15 +922,17 @@ export function applyDiplomaticEvent(
     case 'tarcia_graniczne':
       // R-DYPLO-PAKT-WETO-EKSPANSJA-Q1 — SPROSTOWANIE komentarza (bez zmiany zachowania).
       // Poprzednie brzmienie ("Ekspansja przy granicy" -- modelled as one-shot -2 Zaufanie)
-      // sugerowało, że czynnik „Ekspansja przy granicy" jest karą JEDNORAZOWĄ, i przez to
-      // stało w sprzeczności z UI („−2/turę"). Pomiar rozstrzyga: to są DWA różne
-      // mechanizmy, nie jeden opisany dwa razy.
+      // sugerowało, że czynnik jest karą JEDNORAZOWĄ, i przez to stało w sprzeczności z UI
+      // („−2/turę"). Pomiar rozstrzyga: to są DWA różne mechanizmy, nie jeden opisany dwa
+      // razy.
       //   • TU: dyskretne ZDARZENIE `tarcia_graniczne` — jednorazowe, wołane przez
       //     `applyDiplomaticEvent`; pożycza tylko WARTOŚĆ parametru per-turowego, żeby nie
       //     mnożyć stałych. Dowód: `tools/diplomacy-test.cjs:158` (20 → 18, raz).
-      //   • STAN CIĄGŁY „Ekspansja przy granicy" żyje osobno, w
-      //     `computeTickZaufanieDelta` (`if (ctx.ekspansjaPrzyGranicy) dZ += ...`), i jest
-      //     naliczany KAŻDEJ tury. Pomiar: Zaufanie 50 → 48/46/44/42/40 w 5 turach.
+      //   • STAN CIĄGŁY „Kara za wspólną granicę" (do R-DYPLO-NAP-KARA-GRANICA-
+      //     REDEFINICJA-Q1: „Ekspansja przy granicy" — nazwa myląco sugerowała ekspansję
+      //     zamiast sąsiedztwa) żyje osobno, w `computeTickZaufanieDelta`
+      //     (`if (ctx.karaWspolnaGranica) dZ += ...`), i jest naliczany KAŻDEJ tury.
+      //     Pomiar: Zaufanie 50 → 48/46/44/42/40 w 5 turach.
       // UI („−2/turę", `diplomacy-factors.ts` `perTurn: true`) opisuje ten drugi mechanizm
       // i jest ZGODNE ze specyfikacją (`Dyplomacja/Dyplomacja-zasady.md` §3.2). Defektem
       // był wyłącznie ten komentarz.
@@ -1639,8 +1641,12 @@ export interface TickCtx {
   wspolnaReligia?:      boolean;
   /** Czy gracze wyznają odmienne religie? (-0.5 Zaufanie/turę). */
   odmiennaReligia?:     boolean;
-  /** Czy gracz rozbudowuje się przy granicy partnera? (-2 Zaufanie/turę). */
-  ekspansjaPrzyGranicy?: boolean;
+  /**
+   * Realne sąsiedztwo terytorialne z partnerem (granica lądowa styka się) ORAZ obie
+   * strony >2 miasta (-2 Zaufanie/turę). Do R-DYPLO-NAP-KARA-GRANICA-REDEFINICJA-Q1:
+   * `ekspansjaPrzyGranicy` — czysty licznik miast, zero związku z faktyczną granicą.
+   */
+  karaWspolnaGranica?: boolean;
   /**
    * REL-WIARYG-DRIFT-Q1 — globalna Wiarygodność strony (nie per para), źródło
    * pasywnego dryfu Zaufania `zaufanieDryfOdWiarygodnosci(W)` (niezależnego od umów).
@@ -1663,7 +1669,7 @@ export interface TickCtx {
  *   wspolnyWrog    +1 Zaufanie
  *   wspolnaReligia +0.5 Zaufanie  (TODO: cap akumulacyjny +15/−10 per religia)
  *   odmiennaReligia −0.5 Zaufanie (TODO: cap −10 dla odmiennej religii)
- *   ekspansja      −2 Zaufanie
+ *   karaWspolnaGranica −2 Zaufanie
  *
  * Zanik urazów: co 20 tur (turn % 20 === 0) urazyHistoryczne zmniejszają się
  * o krok urazyHistoryczne_zaufanie_perTura (2) ku 0 (nie przekraczają 0).
@@ -1695,7 +1701,7 @@ export function computeTickZaufanieDelta(ctx: TickCtx, atWar: boolean): number {
   if (ctx.wspolnyWrog)          dZ += p.wspolnyWrog_zaufanie_perTura;
   if (ctx.wspolnaReligia)       dZ += p.wspolnaReligia_zaufanie_perTura;
   if (ctx.odmiennaReligia)      dZ += p.odmiennaReligia_zaufanie_perTura;
-  if (ctx.ekspansjaPrzyGranicy) dZ += p.ekspansjaGranica_zaufanie_perTura;
+  if (ctx.karaWspolnaGranica) dZ += p.ekspansjaGranica_zaufanie_perTura;
 
   dZ = applyWiarygodnoscTempoDoDelty(dZ, ctx.wiarygodnoscSelf);
 

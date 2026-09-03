@@ -442,14 +442,14 @@ function freshRdip(zaufanie, status) {
 {
   // ekspansja −2 przy W=+100 → (dryf +3 + ekspansja −2) ×1.5 = +1.5
   const before = freshRdip(50, 'neutralni');
-  const after = WC.tickDiplomacy(before, { turn: 1, ekspansjaPrzyGranicy: true, wiarygodnoscSelf: 100 });
+  const after = WC.tickDiplomacy(before, { turn: 1, karaWspolnaGranica: true, wiarygodnoscSelf: 100 });
   ok(approxEqual(after.zaufanie, 51.5), `tickDiplomacy: ekspansja + dryf W=100 → dZ=+1.5 (got ${after.zaufanie})`);
 }
 
 {
   // ekspansja −2 przy W=−100 → (dryf −3 + ekspansja −2) ×1.5 = −7.5
   const before = freshRdip(50, 'neutralni');
-  const after = WC.tickDiplomacy(before, { turn: 1, ekspansjaPrzyGranicy: true, wiarygodnoscSelf: -100 });
+  const after = WC.tickDiplomacy(before, { turn: 1, karaWspolnaGranica: true, wiarygodnoscSelf: -100 });
   ok(approxEqual(after.zaufanie, 42.5), `tickDiplomacy: ekspansja + dryf W=−100 → dZ=−7.5 (got ${after.zaufanie})`);
 }
 

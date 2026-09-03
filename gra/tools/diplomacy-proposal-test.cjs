@@ -67,7 +67,7 @@ export {
   enrichAiCommandWithTreasury, formatAiDiplomacyPlayerMessage,
   negotiationStillValid, TRIBUTE_PROPOSAL_ACTIONS,
   findWasalDeal, wasalAgeTurns, graczWchloniecieKosztZloto,
-  evaluatePendingFromAI, NAP_EKSPANSJA_RELACJA_NARZUT,
+  evaluatePendingFromAI, NAP_GRANICA_RELACJA_NARZUT,
 } from '../src/game/diplomacy-proposals.ts';
 export { capAiGoldOffer, AI_TRADE_GOLD_MAX as ECO_GOLD_MAX } from '../src/game/diplomacy-economy.ts';
 export { addTreaty, hasTreaty, treatiesBrokenByWar, resolvePokojTrustTier } from '../src/game/diplomacy-treaties.ts';
@@ -108,7 +108,7 @@ const {
   enrichAiCommandWithTreasury, formatAiDiplomacyPlayerMessage, capAiGoldOffer,
   negotiationStillValid, TRIBUTE_PROPOSAL_ACTIONS,
   findWasalDeal, wasalAgeTurns, graczWchloniecieKosztZloto,
-  evaluatePendingFromAI, diplomacyFairGivePn, NAP_EKSPANSJA_RELACJA_NARZUT,
+  evaluatePendingFromAI, diplomacyFairGivePn, NAP_GRANICA_RELACJA_NARZUT,
   actionUsesTradeBasket, getTradeBasketMode, isTreatyOnlyFormAction, TRADE_BASKET_ACTION_IDS,
   showTradeBasketModal, hideTradeBasketModal,
 } = require(BUNDLE);
@@ -170,7 +170,7 @@ ok(!r.accepted, 'NAP reject relacja 49 normal');
 // > 2"), Pakt był z takim sąsiadem strukturalnie nieosiągalny. Zamienione na narzut równy
 // sufitowi słodzika, kompensowalny jak reszta tej bramki.
 // AKTUALIZACJA UZASADNIONA, NIE ROZLUŹNIONA: stary jednolinijkowy `!accepted` zastąpiony
-// PARĄ asercji po obu stronach progu wyprowadzonego z `NAP_EKSPANSJA_RELACJA_NARZUT`.
+// PARĄ asercji po obu stronach progu wyprowadzonego z `NAP_GRANICA_RELACJA_NARZUT`.
 // FC-R1 SPROSTOWANIE (N1, `02-evaluator.md`): ta para jest sparametryzowana SAMĄ stałą
 // `napNarzut`, więc wobec mutacji WARTOŚCI tej stałej (np. cichy `NARZUT=0`) jest
 // tautologiczna — zmierzone: `NARZUT=0` → ta para nadal PASS (próg po prostu przesuwa się
@@ -180,14 +180,14 @@ ok(!r.accepted, 'NAP reject relacja 49 normal');
 // tools/dyplo-pakt-ekspansja-granica-test.cjs — tamte czerwienieją przy `NARZUT=0`
 // (zmierzone: 17/26, nie 15/26 jak w `01-operator.md` §6 — patrz `03-final-control.md`).
 {
-  const napNarzut = NAP_EKSPANSJA_RELACJA_NARZUT;
+  const napNarzut = NAP_GRANICA_RELACJA_NARZUT;
   const napProg = dipNormal.progNapRelacja;
   r = evaluateProposal(prop('nap'), ctx({
-    relation: rel(napProg + napNarzut - 1, 0), ekspansjaPrzyGranicy: true,
+    relation: rel(napProg + napNarzut - 1, 0), karaWspolnaGranica: true,
   }));
   ok(!r.accepted, `NAP reject ekspansja — Relacja ${napProg + napNarzut - 1} < próg+narzut`);
   r = evaluateProposal(prop('nap'), ctx({
-    relation: rel(napProg + napNarzut, 0), ekspansjaPrzyGranicy: true,
+    relation: rel(napProg + napNarzut, 0), karaWspolnaGranica: true,
   }));
   ok(r.accepted, `NAP accept ekspansja — Relacja ${napProg + napNarzut} = próg+narzut (kompensowalne)`);
 }

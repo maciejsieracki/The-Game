@@ -29,7 +29,7 @@ const entryFile = path.resolve(__dirname, '.dyplo-pakt-ekspansja-entry.ts');
 fs.writeFileSync(entryFile, `
 export {
   evaluateProposal, evaluatePendingFromAI, resolvePlayerAcceptsAiPending,
-  aiCommandToPendingProposal, sweetenerEasePoints, NAP_EKSPANSJA_RELACJA_NARZUT,
+  aiCommandToPendingProposal, sweetenerEasePoints, NAP_GRANICA_RELACJA_NARZUT,
 } from '../src/game/diplomacy-proposals.ts';
 export {
   getEffectiveDiplomacyParams, tickDiplomacy, applyDiplomaticEvent, computeTickZaufanieDelta,
@@ -52,7 +52,7 @@ await esbuild.build({
 
 const {
   evaluateProposal, evaluatePendingFromAI, resolvePlayerAcceptsAiPending,
-  aiCommandToPendingProposal, sweetenerEasePoints, NAP_EKSPANSJA_RELACJA_NARZUT,
+  aiCommandToPendingProposal, sweetenerEasePoints, NAP_GRANICA_RELACJA_NARZUT,
   getEffectiveDiplomacyParams, tickDiplomacy, applyDiplomaticEvent, computeTickZaufanieDelta,
   buildRelationBreakdown, renderPnBalancePanelHtml,
 } = require(BUNDLE);
@@ -72,7 +72,7 @@ const gold = n => ({ turns: 15, giveItems: [{ typ: 'zloto', id: 'zloto', ilosc: 
 console.log('dyplo-pakt-ekspansja-granica-test');
 const P = getEffectiveDiplomacyParams('normal');
 const BASE = P.progNapRelacja;          // 50 @ normal
-const NARZUT = NAP_EKSPANSJA_RELACJA_NARZUT;
+const NARZUT = NAP_GRANICA_RELACJA_NARZUT;
 
 // ---------------------------------------------------------------------------
 // A. Pakt jest OSIĄGALNY mimo czynnika — trzy niezależne drogi.
@@ -81,7 +81,7 @@ const NARZUT = NAP_EKSPANSJA_RELACJA_NARZUT;
 {
   const score = BASE + NARZUT;          // dokładnie na progu
   const r = evaluateProposal(prop('nap', 0, 1, { turns: 15 }),
-    ctx({ relation: rel(score, 0), ekspansjaPrzyGranicy: true }));
+    ctx({ relation: rel(score, 0), karaWspolnaGranica: true }));
   ok(r.accepted && r.deal?.rodzaj === 'pakt_nieagresji',
     `A1 Relacja ${score} (=próg+narzut) + ekspansja → pakt zawarty`);
 }
@@ -93,7 +93,7 @@ const NARZUT = NAP_EKSPANSJA_RELACJA_NARZUT;
   const ease = sweetenerEasePoints(pay, { difficulty: 'normal', proposerOwnerId: 0, playerOwnerId: 0 });
   ok(ease === NARZUT, `A2a sufit słodzika (${ease}) === narzut ekspansji (${NARZUT})`);
   const r = evaluateProposal(prop('nap', 0, 1, pay),
-    ctx({ relation: rel(BASE, 0), ekspansjaPrzyGranicy: true }));
+    ctx({ relation: rel(BASE, 0), karaWspolnaGranica: true }));
   ok(r.accepted, `A2b Relacja ${BASE} (goły próg) + maks. słodzik + ekspansja → pakt zawarty`);
 }
 // A3 — REGRESJA GŁÓWNA: sytuacja ze zgłoszenia właściciela (oryginalnie Relacja 81/200
@@ -107,13 +107,13 @@ const NARZUT = NAP_EKSPANSJA_RELACJA_NARZUT;
 //      lukę do progu (zmierzone realnym evaluateProposal, nie wyliczone na papierze).
 {
   const r = evaluateProposal(prop('nap', 0, 1, gold(300)),
-    ctx({ relation: rel(59, 64), ekspansjaPrzyGranicy: true }));
+    ctx({ relation: rel(59, 64), karaWspolnaGranica: true }));
   ok(r.accepted, 'A3 zgłoszenie właściciela, skalowane do progu 110 (Zauf 59 + Resp 64 = Relacja 123, oferta 300 PW) → pakt zawarty');
 }
 // A4 — dowód, że NIE MA już sufitu nieprzebijalności: maksymalna możliwa Relacja przechodzi.
 {
   const r = evaluateProposal(prop('nap', 0, 1, { turns: 15 }),
-    ctx({ relation: rel(100, 100), ekspansjaPrzyGranicy: true }));
+    ctx({ relation: rel(100, 100), karaWspolnaGranica: true }));
   ok(r.accepted, 'A4 Relacja 200/200 + ekspansja → pakt zawarty (przed naprawą: NIGDY)');
 }
 
@@ -123,9 +123,9 @@ const NARZUT = NAP_EKSPANSJA_RELACJA_NARZUT;
 {
   const score = BASE + NARZUT - 1;      // jeden punkt pod progiem z narzutem
   const withExp = evaluateProposal(prop('nap', 0, 1, { turns: 15 }),
-    ctx({ relation: rel(score, 0), ekspansjaPrzyGranicy: true }));
+    ctx({ relation: rel(score, 0), karaWspolnaGranica: true }));
   const noExp = evaluateProposal(prop('nap', 0, 1, { turns: 15 }),
-    ctx({ relation: rel(score, 0), ekspansjaPrzyGranicy: false }));
+    ctx({ relation: rel(score, 0), karaWspolnaGranica: false }));
   ok(!withExp.accepted, `B1 Relacja ${score} + ekspansja → ODRZUCONE (czynnik dalej boli)`);
   ok(noExp.accepted, `B2 ta sama Relacja ${score} BEZ ekspansji → przyjęte (różnica to wyłącznie czynnik)`);
   ok(NARZUT > 0, 'B3 narzut > 0 — czynnik nie został wyzerowany');
@@ -133,9 +133,9 @@ const NARZUT = NAP_EKSPANSJA_RELACJA_NARZUT;
 // B4 — czynnik nie wypycha progu wyżej niż o narzut (nie ma podwójnego liczenia).
 {
   const r = evaluateProposal(prop('nap', 0, 1, { turns: 15 }),
-    ctx({ relation: rel(BASE + NARZUT, 0), ekspansjaPrzyGranicy: true }));
+    ctx({ relation: rel(BASE + NARZUT, 0), karaWspolnaGranica: true }));
   const r2 = evaluateProposal(prop('nap', 0, 1, { turns: 15 }),
-    ctx({ relation: rel(BASE, 0), ekspansjaPrzyGranicy: false }));
+    ctx({ relation: rel(BASE, 0), karaWspolnaGranica: false }));
   ok(r.accepted && r2.accepted, 'B4 próg z ekspansją = próg bazowy + dokładnie narzut');
 }
 
@@ -144,12 +144,12 @@ const NARZUT = NAP_EKSPANSJA_RELACJA_NARZUT;
 // ---------------------------------------------------------------------------
 {
   const r = evaluateProposal(prop('nap', 0, 1, { turns: 15 }),
-    ctx({ relation: rel(BASE, 0), ekspansjaPrzyGranicy: true }));
+    ctx({ relation: rel(BASE, 0), karaWspolnaGranica: true }));
   const msg = String(r.reason ?? '');
   ok(!r.accepted, 'C0 scenariusz odmowy przygotowany');
   ok(msg.includes(String(BASE + NARZUT)),
     `C1 komunikat podaje WYMAGANĄ liczbę (${BASE + NARZUT}): "${msg}"`);
-  ok(/ekspansj/i.test(msg), 'C2 komunikat nazywa przyczynę narzutu (ekspansja przy granicy)');
+  ok(/wspólną granicę/i.test(msg), 'C2 komunikat nazywa przyczynę narzutu (wspólna granica)');
   ok(/dołóż|podnieś/i.test(msg), 'C3 komunikat mówi, JAKĄ akcją to zdjąć (dołóż do oferty / podnieś Relację)');
   ok(!/brak zaufania do paktu/.test(msg),
     'C4 zniknął stary, bezwyjściowy komunikat „brak zaufania do paktu"');
@@ -157,9 +157,9 @@ const NARZUT = NAP_EKSPANSJA_RELACJA_NARZUT;
 // C5 — bez czynnika komunikat zostaje w starej, krótkiej formie (brak szumu).
 {
   const r = evaluateProposal(prop('nap', 0, 1, { turns: 15 }),
-    ctx({ relation: rel(BASE - 1, 0), ekspansjaPrzyGranicy: false }));
-  ok(!r.accepted && !/ekspansj/i.test(String(r.reason)),
-    'C5 bez ekspansji komunikat nie wspomina o ekspansji');
+    ctx({ relation: rel(BASE - 1, 0), karaWspolnaGranica: false }));
+  ok(!r.accepted && !/wspólną granicę/i.test(String(r.reason)),
+    'C5 bez czynnika komunikat nie wspomina o wspólnej granicy');
 }
 
 // ---------------------------------------------------------------------------
@@ -167,15 +167,15 @@ const NARZUT = NAP_EKSPANSJA_RELACJA_NARZUT;
 // ---------------------------------------------------------------------------
 {
   let r = rel(50, 50);
-  for (let t = 1; t <= 5; t++) r = tickDiplomacy(r, { turn: t, ekspansjaPrzyGranicy: true });
+  for (let t = 1; t <= 5; t++) r = tickDiplomacy(r, { turn: t, karaWspolnaGranica: true });
   ok(r.zaufanie === 40, `D1 stan ciągły: Zaufanie 50 → ${r.zaufanie} po 5 turach (−2/turę, nie jednorazowo)`);
-  ok(computeTickZaufanieDelta({ turn: 1, ekspansjaPrzyGranicy: true }, false) === -2,
+  ok(computeTickZaufanieDelta({ turn: 1, karaWspolnaGranica: true }, false) === -2,
     'D2 delta per tura = −2');
   const oneShot = applyDiplomaticEvent(rel(20, 30), 'tarcia_graniczne');
   ok(oneShot.zaufanie === 18,
     'D3 `tarcia_graniczne` to OSOBNE, jednorazowe zdarzenie (20 → 18) — nie ten sam mechanizm');
-  const row = (buildRelationBreakdown([], { ekspansjaPrzyGranicy: true }, getEffectiveDiplomacyParams('normal'))
-    .negatywne || []).find(x => /kspansj/.test(x.label || ''));
+  const row = (buildRelationBreakdown([], { karaWspolnaGranica: true }, getEffectiveDiplomacyParams('normal'))
+    .negatywne || []).find(x => /granic/i.test(x.label || ''));
   ok(!!row && row.perTurn === true && row.value === -2,
     'D4 wiersz UI „ZA CO CIĘ NIE LUBIĄ" zgodny z pomiarem: −2, perTurn=true');
 }
@@ -186,14 +186,14 @@ const NARZUT = NAP_EKSPANSJA_RELACJA_NARZUT;
 {
   const pend = aiCommandToPendingProposal(
     { type: 'zaproponuj_pakt', targetId: '0', powod: 'x', turns: 15 }, 1, 0, 10);
-  const c = ctx({ relation: rel(BASE, 0), ekspansjaPrzyGranicy: true });
+  const c = ctx({ relation: rel(BASE, 0), karaWspolnaGranica: true });
   // E1 — ocena silnikowa jest identyczna niezależnie od kierunku propozycji.
   const playerToAi = evaluateProposal(prop('nap', 0, 1, { turns: 15 }), c);
   const aiToPlayer = evaluatePendingFromAI(pend, c);
   ok(playerToAi.accepted === aiToPlayer.accepted && playerToAi.reason === aiToPlayer.reason,
     'E1 gracz→AI i AI→gracz: identyczny werdykt i identyczny komunikat (brak asymetrii bramki)');
   // E2 — i po drugiej stronie progu tak samo.
-  const c2 = ctx({ relation: rel(BASE + NARZUT, 0), ekspansjaPrzyGranicy: true });
+  const c2 = ctx({ relation: rel(BASE + NARZUT, 0), karaWspolnaGranica: true });
   ok(evaluateProposal(prop('nap', 0, 1, { turns: 15 }), c2).accepted
     === evaluatePendingFromAI(pend, c2).accepted,
     'E2 parytet zachowany również powyżej progu');
@@ -211,7 +211,7 @@ const NARZUT = NAP_EKSPANSJA_RELACJA_NARZUT;
 // ---------------------------------------------------------------------------
 {
   const blocked = evaluateProposal(prop('nap', 0, 1, { turns: 15 }),
-    ctx({ relation: rel(BASE, 0), ekspansjaPrzyGranicy: true }));
+    ctx({ relation: rel(BASE, 0), karaWspolnaGranica: true }));
   const html = renderPnBalancePanelHtml({
     actionLabel: 'Pakt o nieagresji',
     theirBalance: { mode: 'treaty', accepted: false, balancePn: 64, statusLabel: 'x' },
@@ -222,7 +222,7 @@ const NARZUT = NAP_EKSPANSJA_RELACJA_NARZUT;
   });
   ok(html.includes(String(BASE + NARZUT)),
     `F1 panel bilansu pokazuje graczowi wymaganą liczbę (${BASE + NARZUT})`);
-  ok(/ekspansj/i.test(html), 'F2 panel bilansu nazywa przyczynę narzutu');
+  ok(/wspólną granicę/i.test(html), 'F2 panel bilansu nazywa przyczynę narzutu (wspólna granica)');
   ok(!html.includes('brak zaufania do paktu'),
     'F3 panel bilansu nie pokazuje już bezwyjściowego „brak zaufania do paktu"');
   ok(html.includes('da-pn-balance-bar no'), 'F4 panel nadal koloruje odmowę na czerwono (bez regresji tonu)');

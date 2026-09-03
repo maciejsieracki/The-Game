@@ -540,6 +540,7 @@ import {
   loadTradeRouteResourceFlowParams,
   computeSeaTradeRouteCountByCity,
   computeSeaTradeBonusIncomeByCity,
+  ownersHaveSharedLandBorder,
   type TradeRoute,
   type TradeRouteCityRef,
   type TradeRouteParams,
@@ -4259,6 +4260,20 @@ async function boot(): Promise<void> {
         level: 1,
         ownerId: c.ownerId,
       }));
+    }
+
+    /**
+     * R-DYPLO-NAP-KARA-GRANICA-REDEFINICJA-Q1: realne sąsiedztwo terytorialne
+     * (lądowe, `ownersHaveSharedLandBorder` z trade-routes.ts) dla pary właścicieli —
+     * zamiast dawnego czystego licznika miast pod nazwą myląco sugerującą "ekspansję".
+     * Bez własnego cache: te 4 miejsca wywołania w tym pliku to co najwyżej
+     * kilka-kilkanaście par cywilizacji przy budowie kontekstu dyplomacji per turę/
+     * otwarcie audiencji — NIE per-para-miast w BFS tras handlowych (tam
+     * `landBorderShared` memoizuje celowo). `buildAllTerritoryNodes()` jest tu i tak
+     * wołane bez cache wszędzie indziej w tym pliku (mapowanie po `cities`, tanie).
+     */
+    function ownersShareLandBorderLive(ownerA: number, ownerB: number): boolean {
+      return ownersHaveSharedLandBorder(ownerA, ownerB, buildAllTerritoryNodes(), map);
     }
 
     /**
@@ -16909,8 +16924,9 @@ async function boot(): Promise<void> {
         wspolnyWrog: false,
         wspolnaReligia: sameCulture && !!religionA && !!religionB && religionA === religionB,
         odmiennaReligia: !!religionA && !!religionB && religionA !== religionB,
-        ekspansjaPrzyGranicy:
-          cities.filter(c => c.ownerId === a).length > 2 && cities.filter(c => c.ownerId === b).length > 2,
+        karaWspolnaGranica:
+          cities.filter(c => c.ownerId === a).length > 2 && cities.filter(c => c.ownerId === b).length > 2
+          && ownersShareLandBorderLive(a, b),
         wiarygodnoscSelf: atWar || !playerInPair ? undefined : getWiarygodnosc(0),
       };
     }
@@ -16945,8 +16961,9 @@ async function boot(): Promise<void> {
         }),
         wspolnaReligia: sameCulture && !!religionA && !!religionB && religionA === religionB,
         odmiennaReligia: !!religionA && !!religionB && religionA !== religionB,
-        ekspansjaPrzyGranicy:
-          cities.filter(c => c.ownerId === a).length > 2 && cities.filter(c => c.ownerId === b).length > 2,
+        karaWspolnaGranica:
+          cities.filter(c => c.ownerId === a).length > 2 && cities.filter(c => c.ownerId === b).length > 2
+          && ownersShareLandBorderLive(a, b),
         rywalizacjaTenSamTyp: sameTypCiv && !isPlayerSameCivCityState,
         miastoPanstwoSameCiv: isPlayerSameCivCityState,
         roznicaKulturowa: sameCulture === false,
@@ -18175,9 +18192,10 @@ async function boot(): Promise<void> {
         responderRespekt,
         militaryRatio,
         respektWzgledny,
-        ekspansjaPrzyGranicy:
+        karaWspolnaGranica:
           cities.filter(c => c.ownerId === responderId).length > 2 &&
-          cities.filter(c => c.ownerId === proposerId).length > 2,
+          cities.filter(c => c.ownerId === proposerId).length > 2 &&
+          ownersShareLandBorderLive(responderId, proposerId),
         fairTradeValue: 20,
         activeDeals,
         difficulty: _menuDifficulty,
@@ -29399,9 +29417,10 @@ async function boot(): Promise<void> {
                     return sameCulture && !!pr && !!ar && pr === ar;
                   })(),
                   odmiennaReligia: false,
-                  ekspansjaPrzyGranicy:
+                  karaWspolnaGranica:
                     cities.filter(c => c.ownerId === ownerId).length > 2 &&
-                    cities.filter(c => c.ownerId === 0).length > 2,
+                    cities.filter(c => c.ownerId === 0).length > 2 &&
+                    ownersShareLandBorderLive(ownerId, 0),
                   wiarygodnoscSelf: relStatus === 'wojna' ? undefined : getWiarygodnosc(0),
                 };
                 const relTicked = tickDiplomacy(relWithRespekt as any, tickCtx);

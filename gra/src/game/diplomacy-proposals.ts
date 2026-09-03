@@ -179,7 +179,8 @@ export interface ProposalEvalContext {
   militaryRatio?: number;
   /** Frakcja siły respondenta 0..1 (jak decideAIDiplomacy respektWzgledny) */
   respektWzgledny?: number;
-  ekspansjaPrzyGranicy?: boolean;
+  /** Realne sąsiedztwo terytorialne (granica lądowa) + obie strony >2 miasta. */
+  karaWspolnaGranica?: boolean;
   /** Benchmark wartości handlu (fair value) */
   fairTradeValue?: number;
   techMinPrice?: number;
@@ -452,13 +453,15 @@ const SWEETENER_EASE_MAX_POINTS = 20;
 
 /**
  * R-DYPLO-PAKT-WETO-EKSPANSJA-Q1: narzut na próg Relacji dla Paktu o nieagresji, gdy
- * aktywny jest czynnik „Ekspansja przy granicy" (`ctx.ekspansjaPrzyGranicy`).
+ * aktywny jest czynnik „Kara za wspólną granicę" (`ctx.karaWspolnaGranica`; do
+ * R-DYPLO-NAP-KARA-GRANICA-REDEFINICJA-Q1 nazywany `ekspansjaPrzyGranicy` —
+ * przemianowany na uczciwą nazwę, WARTOŚĆ narzutu bez zmian).
  * WYPROWADZONY, nie wymyślony: równy `SWEETENER_EASE_MAX_POINTS`, więc maksymalny słodzik
  * dokładnie kasuje narzut i sprowadza próg z powrotem do `progNapRelacja`. Ta równość jest
  * TREŚCIĄ decyzji — gwarantuje, że czynnik nigdy nie czyni paktu nieosiągalnym, tylko
  * droższym. Zmiana jednej z tych dwóch stałych bez drugiej łamie tę gwarancję.
  */
-export const NAP_EKSPANSJA_RELACJA_NARZUT = SWEETENER_EASE_MAX_POINTS;
+export const NAP_GRANICA_RELACJA_NARZUT = SWEETENER_EASE_MAX_POINTS;
 
 /** Wartość netto słodzika w PN (koszyk giveItems minus receiveItems, floor 0). */
 export function sweetenerNetPn(payload: ProposalPayload, pnOpts?: ResolveProposalPnOptions): number {
@@ -1032,14 +1035,14 @@ export function evaluateProposal(
       // reszta tej bramki. Narzut = SWEETENER_EASE_MAX_POINTS (sufit słodzika), więc
       // MAKSYMALNY słodzik dokładnie go kasuje — to jest gwarancja, że warunek nigdy nie
       // jest nieosiągalny. Wartość WYPROWADZONA z istniejącej stałej, nie nowy balans.
-      const napExpansionSurcharge = ctx.ekspansjaPrzyGranicy ? NAP_EKSPANSJA_RELACJA_NARZUT : 0;
+      const napExpansionSurcharge = ctx.karaWspolnaGranica ? NAP_GRANICA_RELACJA_NARZUT : 0;
       const napThreshold = Math.max(0, p.progNapRelacja + napExpansionSurcharge - napEase);
       if (score < napThreshold) {
         return {
           accepted: false, pwBalance: -1,
           reason: napExpansionSurcharge > 0
             ? `Relacja zbyt niska na pakt (wymagana ≥ ${napThreshold}; +${napExpansionSurcharge}`
-              + ' za ekspansję przy granicy — dołóż do oferty lub podnieś Relację)'
+              + ' za wspólną granicę — dołóż do oferty lub podnieś Relację)'
             : `Relacja zbyt niska na pakt (wymagana ≥ ${napThreshold})`,
         };
       }
@@ -1933,15 +1936,16 @@ export function resolvePlayerAcceptsAiPending(
     case 'nap': {
       // PARYTET (rule_108) — R-DYPLO-PAKT-WETO-EKSPANSJA-Q1, zapis JAWNY, żeby asymetria
       // nie była przypadkowa. Ta ścieżka (AI zaproponowało pakt, GRACZ klika „Przyjmij")
-      // celowo NIE stosuje narzutu „Ekspansja przy granicy" ani progów Relacji/Wiarygodności
-      // — bo tu responderem jest CZŁOWIEK, a jego bramką jest własne kliknięcie
-      // (C-DYP-Q1=A: „bez progów — gracz już się zgodził ręcznie"). Odwrotna strona tej
-      // symetrii: gdy responderem jest AI, bramką jest evaluateProposal::case 'nap' wyżej.
+      // celowo NIE stosuje narzutu „Kara za wspólną granicę" ani progów Relacji/
+      // Wiarygodności — bo tu responderem jest CZŁOWIEK, a jego bramką jest własne
+      // kliknięcie (C-DYP-Q1=A: „bez progów — gracz już się zgodził ręcznie"). Odwrotna
+      // strona tej symetrii: gdy responderem jest AI, bramką jest evaluateProposal::case
+      // 'nap' wyżej.
       // ZNANA, ZMIERZONA LUKA POZA ALLOWLISTĄ tego tematu: inicjatywa AI
       // (`ai.ts` Priorytet 3b, ~4344) sprawdza wyłącznie `score >= progNapRelacja -
-      // napScoreEase` i nie zna flagi `ekspansjaPrzyGranicy` w ogóle (`AIDiplomacyInput`
+      // napScoreEase` i nie zna flagi `karaWspolnaGranica` w ogóle (`AIDiplomacyInput`
       // jej nie niesie), więc AI potrafi SAMO zaproponować pakt przy Relacji między
-      // `progNapRelacja` a `progNapRelacja + NAP_EKSPANSJA_RELACJA_NARZUT`, którego samo
+      // `progNapRelacja` a `progNapRelacja + NAP_GRANICA_RELACJA_NARZUT`, którego samo
       // by nie przyjęło. Domknięcie wymaga `ai.ts` + `main.ts` (oba poza allowlistą) —
       // zgłoszone jako osobny temat, nie poszerzane w biegu (R-PROC-AUTOBOT §14).
       const napExpiry = resolveNapDealExpiry(turn, payload);

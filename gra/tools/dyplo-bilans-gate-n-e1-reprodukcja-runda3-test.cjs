@@ -179,7 +179,7 @@ function aiPeaceProposal(payload, relation) {
   const ctx = {
     relation, stanWojny: true, turn: 80,
     proposerRespekt: 60, responderRespekt: 60, militaryRatio: 1, respektWzgledny: 0.5,
-    ekspansjaPrzyGranicy: false, difficulty: 'normal',
+    karaWspolnaGranica: false, difficulty: 'normal',
   };
   return { proposal, ctx };
 }
@@ -190,7 +190,7 @@ function playerPeaceProposal(payload, relation) {
   const ctx = {
     relation, stanWojny: true, turn: 80,
     proposerRespekt: 60, responderRespekt: 60, militaryRatio: 1, respektWzgledny: 0.5,
-    ekspansjaPrzyGranicy: false, difficulty: 'normal',
+    karaWspolnaGranica: false, difficulty: 'normal',
   };
   return { proposal, ctx };
 }

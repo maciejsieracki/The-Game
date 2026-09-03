@@ -356,7 +356,7 @@ function pageBootstrap() {
     responderRespekt: 60,
     militaryRatio: 1,
     respektWzgledny: 0.5,
-    ekspansjaPrzyGranicy: false,
+    karaWspolnaGranica: false,
     difficulty: 'normal',
     packageSiblingGivePn: sibling ? sibling.givePn : undefined,
     packageSiblingReceivePn: sibling ? sibling.receivePn : undefined,

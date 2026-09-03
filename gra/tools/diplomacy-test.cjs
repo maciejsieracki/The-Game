@@ -514,12 +514,12 @@ function mkRdip(zaufanie, respekt, urazyHistoryczne = 0, traktaty = []) {
 }
 {
   // ekspansja przy granicy -> -2 Zaufanie/turę
-  const r = tickDiplomacy(mkRdip(50, 30), { turn: 5, ekspansjaPrzyGranicy: true });
+  const r = tickDiplomacy(mkRdip(50, 30), { turn: 5, karaWspolnaGranica: true });
   eq(r.zaufanie, 48, 'tickDiplomacy: ekspansja -> -2 Zaufanie');
 }
 {
   // Clamp: Zaufanie nie schodzi poniżej 0
-  const r = tickDiplomacy(mkRdip(1, 30), { turn: 2, ekspansjaPrzyGranicy: true });
+  const r = tickDiplomacy(mkRdip(1, 30), { turn: 2, karaWspolnaGranica: true });
   eq(r.zaufanie, 0, 'tickDiplomacy: Zaufanie klampuje do 0');
 }
 {

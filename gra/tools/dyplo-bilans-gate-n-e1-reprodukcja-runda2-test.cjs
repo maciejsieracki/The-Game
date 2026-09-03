@@ -226,7 +226,7 @@ function buildIncomingRow(mod, actionId, payload, relation, relTotal, ctxExtra) 
   const ctx = Object.assign({
     relation, stanWojny: false, turn: 50,
     proposerRespekt: 60, responderRespekt: 60, militaryRatio: 1, respektWzgledny: 0.5,
-    ekspansjaPrzyGranicy: false, difficulty: 'normal', proposerWiarygodnosc: 50,
+    karaWspolnaGranica: false, difficulty: 'normal', proposerWiarygodnosc: 50,
   }, ctxExtra || {});
   const res = mod.evaluateProposal(proposal, ctx);
   const acceptance = mod.computePlayerAcceptanceSides(actionId, payload, relTotal, true, {
@@ -246,7 +246,7 @@ function buildOwnRow(mod, id, actionId, actionLabel, payload, relTotal, ctxExtra
   const ctx = Object.assign({
     relation: { zaufanie: 20, respekt: 20, status: 'pokoj' }, stanWojny: false, turn: 100,
     proposerRespekt: 60, responderRespekt: 60, militaryRatio: 1, respektWzgledny: 0.5,
-    ekspansjaPrzyGranicy: false, difficulty: 'normal',
+    karaWspolnaGranica: false, difficulty: 'normal',
   }, ctxExtra || {});
   const res = mod.evaluateProposal(proposal, ctx);
   const acceptance = mod.computePlayerAcceptanceSides(actionId, payload, relTotal, false, {
@@ -441,7 +441,7 @@ async function main() {
   const wasalCtx = {
     relation: { zaufanie: 20, respekt: 20, status: 'pokoj' }, stanWojny: false, turn: 50,
     proposerRespekt: 65, responderRespekt: 60, militaryRatio: 1, respektWzgledny: 0.5,
-    ekspansjaPrzyGranicy: false, difficulty: 'normal',
+    karaWspolnaGranica: false, difficulty: 'normal',
   };
   const initial = mutD_mod.evaluateProposal(wasalProposal, wasalCtx);
   check('(4-setup) pierwsza wersja (bez słodzika) faktycznie odrzucona (Respekt 65<70) — '
@@ -498,7 +498,7 @@ async function main() {
     const ctx = {
       relation: warRelation, stanWojny: true, turn: 80,
       proposerRespekt: 60, responderRespekt: 60, militaryRatio: 1, respektWzgledny: 0.5,
-      ekspansjaPrzyGranicy: false, difficulty: 'normal',
+      karaWspolnaGranica: false, difficulty: 'normal',
     };
     const res = mod.evaluateProposal(proposal, ctx);
     const acceptance = mod.computePlayerAcceptanceSides('pokoj', {}, 10, true, {
@@ -556,7 +556,7 @@ async function main() {
   const playerPokojCtx = {
     relation: warRelation, stanWojny: true, turn: 80,
     proposerRespekt: 60, responderRespekt: 60, militaryRatio: 1, respektWzgledny: 0.5,
-    ekspansjaPrzyGranicy: false, difficulty: 'normal',
+    karaWspolnaGranica: false, difficulty: 'normal',
   };
   const playerPokojPo = fixed.evaluateProposal(playerPokojProposal, playerPokojCtx);
   console.log('  gracz proponuje pokój (zła relacja, pusty koszyk, wojna), PO (runda 4): '
