@@ -88,6 +88,7 @@ const PARAM_NAMES = [
   'bronzeForceWarRestUntilByOwner',
   'bronzeForceWarActiveByPairKey',
   'bronzeEraEnterTurnByOwner',
+  'ironEraEnterTurnByOwner',
 ];
 
 function seededRegistries() {
@@ -96,7 +97,7 @@ function seededRegistries() {
     // Set-podobne rejestry (Pending/Cycle owners, lootedVillageHexKeys) i
     // Map-podobne (RestUntilByOwner, ActiveByPairKey) — obie mają .clear()/.size,
     // więc realny Set/Map jako atrapa jest wierny zachowaniu produkcyjnemu.
-    if (/RestUntilByOwner$/.test(name) || /ActiveByPairKey$/.test(name) || name === 'bronzeEraEnterTurnByOwner') {
+    if (/RestUntilByOwner$/.test(name) || /ActiveByPairKey$/.test(name) || name === 'bronzeEraEnterTurnByOwner' || name === 'ironEraEnterTurnByOwner') {
       const m = new Map();
       m.set(name === 'ironForceWarActiveByPairKey' || name === 'stoneForceWarActiveByPairKey'
         || name === 'bronzeForceWarActiveByPairKey' ? 'p1|p2' : 1, { seeded: true, attackerId: 1 });

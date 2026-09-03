@@ -80,6 +80,12 @@ check(
   /isEligibleForIronForcedWar\(\{[\s\S]{0,200}isMainAiCiv: true,[\s\S]{0,200}isAlreadyAtWarAnyRole: alreadyAtWarAnyRole,/.test(main),
 );
 check(
+  'R-WOJNA-WYMUSZONA-ZELAZO-PROG-TURY-Q1: isEligibleForIronForcedWar wołane z currentTurn: turn, '
+    + 'eraEnterTurn: ironEraEnterTurnByOwner.get(ownerId) -- bez tego próg 25 tur od wejścia w Żelazo '
+    + 'nigdy nie jest sprawdzany, mechanizm strzela natychmiast po awansie',
+  /isEligibleForIronForcedWar\(\{\s*\n\s*isMainAiCiv: true,\s*\n\s*isAlreadyAtWarAnyRole: alreadyAtWarAnyRole,[\s\S]{0,300}?currentTurn: turn,\s*\n\s*eraEnterTurn: ironEraEnterTurnByOwner\.get\(ownerId\),\s*\n\s*\}\)/.test(main),
+);
+check(
   'cykl po odpoczynku: wymaga cycleOwners, braku wojny i wygaśnięcia isRestingFromIronForcedWar',
   /const searchingAfterRest = !wasPending\s*\n\s*&& ironForceWarCycleOwners\.has\(ownerId\)\s*\n\s*&& !hasActiveForcedWarAsAttacker\s*\n\s*&& !alreadyAtWarAnyRole\s*\n\s*&& !isRestingFromIronForcedWar\(/.test(main),
 );
@@ -202,6 +208,40 @@ check(
   'eliminacja i nowa gra czyszczą stan Żelaza',
   count('ironForceWarPendingOwners\\.delete\\(ownerId\\)') >= 1
     && count('ironForceWarActiveByPairKey\\.clear\\(\\)') >= 2,
+);
+
+// ---------------------------------------------------------------------------
+// 7b. R-WOJNA-WYMUSZONA-ZELAZO-PROG-TURY-Q1 — okablowanie `ironEraEnterTurnByOwner` (analogicznie
+//     do `bronzeEraEnterTurnByOwner`): deklaracja, ustawienie przy awansie, sprzątanie przy
+//     eliminacji i nowej grze, wpis w save snapshot ORAZ w restore.
+// ---------------------------------------------------------------------------
+check(
+  'deklaracja: const ironEraEnterTurnByOwner = new Map<number, number>();',
+  /const ironEraEnterTurnByOwner = new Map<number, number>\(\);/.test(main),
+);
+check(
+  'przy awansie do Żelaza (isIronEraEntry) ustawiane jest ironEraEnterTurnByOwner.set(ownerId, turn) '
+    + 'OBOK ironForceWarPendingOwners.add(ownerId) -- bez tego próg 25 tur nie ma od czego liczyć '
+    + 'dla nowo awansowanych cywilizacji',
+  /isIronEraEntry\(prev, next\)\s*\n\s*&& !isOwnerClusterCityState\(ownerId, ownerCityStateOpts\(\)\)\s*\n\s*\) \{\s*\n\s*ironForceWarPendingOwners\.add\(ownerId\);[\s\S]{0,400}?ironEraEnterTurnByOwner\.set\(ownerId, turn\);\s*\n\s*\}/.test(main),
+);
+check(
+  'eliminacja ownera sprząta ironEraEnterTurnByOwner.delete(ownerId) OBOK reszty sprzątacza Żelaza',
+  /ironEraEnterTurnByOwner\.delete\(ownerId\);\s*\n\s*ironForceWarPendingOwners\.delete\(ownerId\);/.test(main),
+);
+check(
+  'reset nowej gry (bez przeładowania strony) czyści ironEraEnterTurnByOwner.clear() '
+    + 'OBOK reszty rejestrów Żelaza -- inaczej reużyte ownerId dziedziczą licznik z poprzedniej gry',
+  /ironForceWarPendingOwners\.clear\(\);[\s\S]{0,200}?ironEraEnterTurnByOwner\.clear\(\);\s*\n\s*ironForceWarCycleOwners\.clear\(\);/.test(main),
+);
+check(
+  'save snapshot zawiera ironEraEnterTurnByOwner: Array.from(ironEraEnterTurnByOwner.entries())',
+  count('ironEraEnterTurnByOwner: Array\\.from\\(ironEraEnterTurnByOwner\\.entries\\(\\)\\)') === 1,
+);
+check(
+  'restoreGameFromSave odtwarza ironEraEnterTurnByOwner z saved.meta?.ironEraEnterTurnByOwner '
+    + '(clear() + pętla .set(), analogicznie do bronzeEraEnterTurnByOwner)',
+  /ironEraEnterTurnByOwner\.clear\(\);\s*\n\s*const savedIronEraEnterTurn = saved\.meta\?\.ironEraEnterTurnByOwner as\s*\n\s*Array<\[number, number\]> \| undefined;\s*\n\s*if \(savedIronEraEnterTurn\?\.length\) \{\s*\n\s*for \(const \[oid, t\] of savedIronEraEnterTurn\) ironEraEnterTurnByOwner\.set\(oid, t\);\s*\n\s*\}/.test(main),
 );
 
 // ---------------------------------------------------------------------------

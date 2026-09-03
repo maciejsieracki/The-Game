@@ -1717,6 +1717,18 @@ async function boot(): Promise<void> {
     const ironForceWarCycleOwners = new Set<number>();
     const ironForceWarRestUntilByOwner = new Map<number, number>();
     const ironForceWarActiveByPairKey = new Map<string, IronForcedWarPairState>();
+    /**
+     * R-WOJNA-WYMUSZONA-ZELAZO-PROG-TURY-Q1: tura, w której TEN owner wszedł w epokę Żelaza
+     * (ustawiane w `syncOwnerEraFromResearch`, obok `ironForceWarPendingOwners.add`, w chwili
+     * `isIronEraEntry`) — podstawa progu „25 tur od początku epoki" (analogicznie do
+     * `bronzeEraEnterTurnByOwner` wyżej). Stary zapis (sprzed tej naprawy) nie ma tego pola —
+     * brak wpisu (`.get(ownerId)` → `undefined`) sprawia, że `isEligibleForIronForcedWar`
+     * POMIJA próg czasu CAŁKOWICIE (patrz komentarz przy `IronForcedWarEligibilityInput.
+     * eraEnterTurn`), czyli zachowanie IDENTYCZNE ze stanem sprzed tej naprawy dla ownerów już
+     * w Żelazie w starej grze — zero regresu na starych zapisach, patrz `restoreGameFromSave`
+     * niżej.
+     */
+    const ironEraEnterTurnByOwner = new Map<number, number>();
 
     const ERA_ID_TO_NUM: Record<string, number> = { kamien: 1, braz: 2, zelazo: 3 };
 
@@ -1797,6 +1809,10 @@ async function boot(): Promise<void> {
         && !isOwnerClusterCityState(ownerId, ownerCityStateOpts())
       ) {
         ironForceWarPendingOwners.add(ownerId);
+        // R-WOJNA-WYMUSZONA-ZELAZO-PROG-TURY-Q1: zapamiętaj TURĘ awansu — próg „25 tur od
+        // początku epoki" dla Żelaza liczy się od TEGO momentu, nie od startu gry ani od
+        // wejścia w Brąz (analogicznie do `bronzeEraEnterTurnByOwner.set` wyżej).
+        ironEraEnterTurnByOwner.set(ownerId, turn);
       }
       return prev !== next;
     }
@@ -25076,6 +25092,9 @@ async function boot(): Promise<void> {
         }
       }
       // R-EPOKA-ZELAZO-WYMUSZONA-WOJNA-Q1: ten sam sprzątacz dla rejestrów Żelaza.
+      // R-WOJNA-WYMUSZONA-ZELAZO-PROG-TURY-Q1: sprzątnij też turę wejścia w Żelazo tego
+      // ownera (analogicznie do `bronzeEraEnterTurnByOwner.delete` wyżej).
+      ironEraEnterTurnByOwner.delete(ownerId);
       ironForceWarPendingOwners.delete(ownerId);
       ironForceWarCycleOwners.delete(ownerId);
       ironForceWarRestUntilByOwner.delete(ownerId);
@@ -26365,6 +26384,11 @@ async function boot(): Promise<void> {
           stoneForceWarRestUntilByOwner: stoneForceWarSave.restUntilByOwner,
           stoneForceWarActiveByPairKey: stoneForceWarSave.activeByPairKey,
           ironForceWarPendingOwners: ironForceWarSave.pendingOwners,
+          // R-WOJNA-WYMUSZONA-ZELAZO-PROG-TURY-Q1: bez tego wpisu próg „25 tur od wejścia
+          // w Żelazo" zerowałby się po każdym save/load (fallback main.ts traktowałby
+          // KAŻDEGO ownera jako "brak wpisu" -> próg pominięty), analogicznie do
+          // `bronzeEraEnterTurnByOwner` wyżej.
+          ironEraEnterTurnByOwner: Array.from(ironEraEnterTurnByOwner.entries()),
           ironForceWarCycleOwners: ironForceWarSave.cycleOwners,
           ironForceWarRestUntilByOwner: ironForceWarSave.restUntilByOwner,
           ironForceWarActiveByPairKey: ironForceWarSave.activeByPairKey,
@@ -29844,6 +29868,11 @@ async function boot(): Promise<void> {
                     ? isEligibleForIronForcedWar({
                       isMainAiCiv: true,
                       isAlreadyAtWarAnyRole: alreadyAtWarAnyRole,
+                      // R-WOJNA-WYMUSZONA-ZELAZO-PROG-TURY-Q1: próg 25 tur od WEJŚCIA W
+                      // ŻELAZO (nie od startu gry) — brak wpisu (stary zapis) pomija próg,
+                      // patrz komentarz przy `ironEraEnterTurnByOwner`.
+                      currentTurn: turn,
+                      eraEnterTurn: ironEraEnterTurnByOwner.get(ownerId),
                     })
                     : searchingAfterRest;
                   if (shouldSearch) {
@@ -32500,6 +32529,8 @@ async function boot(): Promise<void> {
       // R-EPOKA-ZELAZO-WYMUSZONA-WOJNA-Q1: nowa gra bez przeładowania strony nie może
       // dziedziczyć rejestrów Żelaza z poprzedniej rozgrywki (ownerId są reużywane).
       ironForceWarPendingOwners.clear();
+      // R-WOJNA-WYMUSZONA-ZELAZO-PROG-TURY-Q1: to samo dla tury wejścia w Żelazo per-owner.
+      ironEraEnterTurnByOwner.clear();
       ironForceWarCycleOwners.clear();
       ironForceWarRestUntilByOwner.clear();
       ironForceWarActiveByPairKey.clear();
@@ -33858,6 +33889,15 @@ async function boot(): Promise<void> {
       ironForceWarActiveByPairKey.clear();
       for (const [key, st] of ironForceWarRestored.activeByPairKey) {
         ironForceWarActiveByPairKey.set(key, st);
+      }
+      // R-WOJNA-WYMUSZONA-ZELAZO-PROG-TURY-Q1: odtworzenie tury wejścia w Żelazo per-owner —
+      // brak wpisu dla danego ownera (stary zapis) = `undefined`, `isEligibleForIronForcedWar`
+      // wtedy pomija próg czasu (patrz komentarz przy `ironEraEnterTurnByOwner` wyżej).
+      ironEraEnterTurnByOwner.clear();
+      const savedIronEraEnterTurn = saved.meta?.ironEraEnterTurnByOwner as
+        Array<[number, number]> | undefined;
+      if (savedIronEraEnterTurn?.length) {
+        for (const [oid, t] of savedIronEraEnterTurn) ironEraEnterTurnByOwner.set(oid, t);
       }
       // Audyt #13: reaplikuj zlupienie wiosek na (ewentualnie świeżo zregenerowanej
       // z seeda) mapie -- generator/placeVillages zawsze stawia je jako istnieje=true.

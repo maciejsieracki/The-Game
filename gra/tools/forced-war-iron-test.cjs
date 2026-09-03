@@ -19,6 +19,7 @@ export {
   WOJNA_ZELAZO_WYMUSZONA_MAX_MIASTA_ZDOBYTE_LUB_STRACONE,
   WOJNA_ZELAZO_WYMUSZONA_ODPOCZYNEK_TUR,
   WOJNA_ZELAZO_WYMUSZONA_COOLDOWN_TA_SAMA_CYWILIZACJA_TUR,
+  WOJNA_ZELAZO_WYMUSZONA_START_TURY_OD_EPOKI,
   isEligibleForIronForcedWar,
   isIronEraEntry,
   pickIronForcedWarTargetId,
@@ -74,6 +75,7 @@ try {
     WOJNA_ZELAZO_WYMUSZONA_MAX_MIASTA_ZDOBYTE_LUB_STRACONE: cityLimit,
     WOJNA_ZELAZO_WYMUSZONA_ODPOCZYNEK_TUR: restTurns,
     WOJNA_ZELAZO_WYMUSZONA_COOLDOWN_TA_SAMA_CYWILIZACJA_TUR: cooldownTurns,
+    WOJNA_ZELAZO_WYMUSZONA_START_TURY_OD_EPOKI: startTuryOdEpoki,
     isEligibleForIronForcedWar,
     isIronEraEntry,
     pickIronForcedWarTargetId,
@@ -107,6 +109,56 @@ try {
   assert(eligibility(), 'główna cywilizacja AI poza wojną jest kwalifikowana');
   assert(!eligibility({ isMainAiCiv: false }), 'brak dla gracza/miasta-państwa/barbarzyńcy');
   assert(!eligibility({ isAlreadyAtWarAnyRole: true }), 'brak dla ownera już w wojnie (dowolna rola)');
+
+  console.log('--- R-WOJNA-WYMUSZONA-ZELAZO-PROG-TURY-Q1: próg 25 tur od WEJŚCIA W ŻELAZO ---');
+  eq(startTuryOdEpoki, 25, 'próg startu Żelaza = 25 tur od wejścia w epokę (jak Brąz)');
+
+  // Kryterium końca 1 (dispatch): 0 tur po wejściu w Żelazo -> NIE kwalifikuje się, mimo że
+  // wszystkie pozostałe warunki (główna cywilizacja AI, brak wojny) są spełnione -- dziś (przed
+  // naprawą) zwracałoby true, po naprawie false.
+  assert(
+    !eligibility({ currentTurn: 40, eraEnterTurn: 40 }),
+    'kryterium 1: 0 tur po wejściu w Żelazo (currentTurn === eraEnterTurn) NIE kwalifikuje się',
+  );
+  assert(
+    !eligibility({ currentTurn: 40 + startTuryOdEpoki - 1, eraEnterTurn: 40 }),
+    'próg NIE jest spełniony jedną turą przed 25 (24 tury od wejścia)',
+  );
+
+  // Kryterium końca 2 (dispatch): dokładnie 25 tur po wejściu, nadal poza wojną -> KWALIFIKUJE
+  // się (próg spełniony, granica włącznie: >=).
+  assert(
+    eligibility({ currentTurn: 40 + startTuryOdEpoki, eraEnterTurn: 40 }),
+    'kryterium 2: dokładnie 25 tur po wejściu w Żelazo KWALIFIKUJE się (próg spełniony, granica >=)',
+  );
+  assert(
+    eligibility({ currentTurn: 40 + startTuryOdEpoki + 10, eraEnterTurn: 40 }),
+    'próg pozostaje spełniony długo po 25 turach (nie jest to jednorazowe okno)',
+  );
+
+  // Kryterium końca 3 (dispatch, ZERO REGRESJI): wojna z miastem-państwem (isAlreadyAtWarAnyRole)
+  // NADAL blokuje, niezależnie od tego, jak dawno temu nastąpił awans do Żelaza -- próg tury nie
+  // obchodzi tej blokady.
+  assert(
+    !eligibility({ isAlreadyAtWarAnyRole: true, currentTurn: 40 + startTuryOdEpoki + 100, eraEnterTurn: 40 }),
+    'kryterium 3: isAlreadyAtWarAnyRole=true blokuje NIEZALEŻNIE od progu tury (zero regresji, próg dawno spełniony)',
+  );
+
+  // Kryterium końca 4 (dispatch, kompatybilność wsteczna): wywołanie BEZ currentTurn/eraEnterTurn
+  // (stare testy/wołający sprzed tej naprawy) zachowuje się jak dziś -- próg POMIJANY całkowicie,
+  // bez regresji istniejących testów.
+  assert(
+    eligibility(),
+    'kryterium 4: brak currentTurn/eraEnterTurn pomija próg CAŁKOWICIE (zachowanie sprzed naprawy, main.ts zawsze przekazuje oba pola)',
+  );
+  assert(
+    eligibility({ currentTurn: 40 }),
+    'brak WYŁĄCZNIE eraEnterTurn (currentTurn obecny) pomija próg tak samo jak brak obu',
+  );
+  assert(
+    eligibility({ eraEnterTurn: 40 }),
+    'brak WYŁĄCZNIE currentTurn (eraEnterTurn obecny) pomija próg tak samo jak brak obu',
+  );
 
   console.log('--- wybór celu: najbliższy terytorialnie + wykluczenia ---');
   const distance = (aq, ar, bq, br) => (

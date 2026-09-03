@@ -18,13 +18,23 @@ import {
  * wojny wymuszonej; Żelazo — trzecia i ostatnia epoka gry (`KOLEJNOSC_EPOK =
  * ['Kamien','Braz','Zelazo']`) — nie miało żadnego. Ten plik domyka trzecią epokę.
  *
- * WYZWALACZ = AWANS EPOKI, NIE PRÓG TURY (dispatch §PARAMETR). Żelazo, tak jak Brąz,
- * jest epoką osiąganą przez awans (a nie epoką startową jak Kamień), więc mechanizm
- * naśladuje Brąz, a nie Kamień: gdy główna cywilizacja AI (NIE miasto-państwo, NIE gracz,
- * NIE barbarzyńca) wchodzi do epoki Żelaza i nie jest w ŻADNEJ aktywnej wojnie (ani jako
- * napastnik, ani jako obrońca), wypowiada wojnę jednemu sąsiadowi terytorialnemu. Sztywny
- * próg tury byłby tu bez sensu — do Żelaza cywilizacje docierają w bardzo różnych turach.
+ * WYZWALACZ = AWANS EPOKI (dispatch §PARAMETR). Żelazo, tak jak Brąz, jest epoką osiąganą
+ * przez awans (a nie epoką startową jak Kamień), więc mechanizm naśladuje Brąz, a nie
+ * Kamień: gdy główna cywilizacja AI (NIE miasto-państwo, NIE gracz, NIE barbarzyńca)
+ * wchodzi do epoki Żelaza i nie jest w ŻADNEJ aktywnej wojnie (ani jako napastnik, ani jako
+ * obrońca), wypowiada wojnę jednemu sąsiadowi terytorialnemu.
  *
+ * R-WOJNA-WYMUSZONA-ZELAZO-PROG-TURY-Q1 (2026-09-03, ODWRACA poniższe zdanie z pierwszego
+ * tematu): próg tury JEDNAK istnieje, analogicznie do Brązu —
+ * `WOJNA_ZELAZO_WYMUSZONA_START_TURY_OD_EPOKI` (25 tur od WEJŚCIA TEGO OWNERA w Żelazo, nie
+ * od startu gry) blokuje wybuch wojny zbyt szybko po awansie, tak samo jak w Brązie. Zdanie
+ * poniżej („sztywny próg tury byłby tu bez sensu") było ŚWIADOMĄ decyzją poprzedniego tematu
+ * (`R-EPOKA-ZELAZO-WYMUSZONA-WOJNA-Q1`) — zostaje jako ślad historii decyzji, NIE jako
+ * aktualny opis zachowania: „Sztywny próg tury byłby tu bez sensu — do Żelaza cywilizacje
+ * docierają w bardzo różnych turach" [NIEAKTUALNE od 2026-09-03 — próg per-owner, liczony
+ * od `eraEnterTurn`, rozwiązuje dokładnie ten problem, tak jak już rozwiązywał go w Brązie].
+ *
+
  * POZOSTAŁE TRZY PARAMETRY SĄ IDENTYCZNE Z BRĄZEM I KAMIENIEM (2 miasta = koniec wojny,
  * 20 tur odpoczynku, 20 tur cooldownu na tego samego rywala) — dziś nie ma żadnej
  * przesłanki, żeby epoka Żelaza miała inny rytm konfliktu niż Brąz. Gdyby właściciel
@@ -91,6 +101,27 @@ export const WOJNA_ZELAZO_WYMUSZONA_ODPOCZYNEK_TUR = 20;
  */
 export const WOJNA_ZELAZO_WYMUSZONA_COOLDOWN_TA_SAMA_CYWILIZACJA_TUR = 20;
 
+/**
+ * R-WOJNA-WYMUSZONA-ZELAZO-PROG-TURY-Q1 (ECHO właściciela 2026-09-03, po doprecyzowaniu
+ * ABC): próg startu Żelaza, analogiczny do `WOJNA_WYMUSZONA_START_TURY_OD_EPOKI` w
+ * `forced-war-bronze.ts` — ALE mierzony od tury WEJŚCIA TEGO OWNERA w epokę Żelaza
+ * (`ironEraEnterTurnByOwner` w main.ts, ustawiane w `syncOwnerEraFromResearch` w chwili
+ * `isIronEraEntry`), NIE od startu gry ani od wejścia w Brąz — cywilizacje wchodzą w
+ * Żelazo w bardzo różnych turach, więc "25 tur od początku epoki" musi być per-owner,
+ * tak jak w Brązie.
+ *
+ * ŚWIADOMIE ZDEFINIOWANA LOKALNIE, nie zaimportowana z `forced-war-bronze.ts`: Brąz jest
+ * poza allowlistą tego tematu do EDYCJI, a import samej stałej (bez edycji pliku źródłowego)
+ * byłby formalnie dozwolony, ale tworzyłby zależność modułową Żelazo→Brąz, której dziś nie
+ * ma (oba pliki importują wyłącznie ze wspólnego `forced-war-common.ts`, nigdy jeden z
+ * drugiego) — sprzeczną z jawną izolacją epok udokumentowaną w komentarzu nagłówkowym tego
+ * pliku („osobny rejestr stanu w main.ts, żadne pole nie jest współdzielone"). Duplikacja
+ * jednej liczby (25) jest tańsza niż nowa zależność między dwoma plikami epok, które mają
+ * pozostać niezależne (gdyby właściciel podał w przyszłości inny próg dla Żelaza, zmienia
+ * się WYŁĄCZNIE ta jedna stała, bez ryzyka zmiany Brązu przy okazji).
+ */
+export const WOJNA_ZELAZO_WYMUSZONA_START_TURY_OD_EPOKI = 25;
+
 export interface IronForcedWarEligibilityInput {
   /** Czy owner to główna cywilizacja AI (NIE miasto-państwo, NIE gracz, NIE barbarzyńca). */
   isMainAiCiv: boolean;
@@ -100,6 +131,16 @@ export interface IronForcedWarEligibilityInput {
    * wypowiedziana wojna, to nie ma już obowiązku wypowiadać komuś innemu wojny").
    */
   isAlreadyAtWarAnyRole: boolean;
+  /**
+   * R-WOJNA-WYMUSZONA-ZELAZO-PROG-TURY-Q1: bieżąca tura gry i tura wejścia TEGO ownera w
+   * Żelazo — OPCJONALNE (nie wymagane), analogicznie do `BronzeForcedWarEligibilityInput`:
+   * brak jednego z dwóch pól POMIJA próg CAŁKOWICIE (traktowany jak spełniony), żeby
+   * wywołania sprzed tej naprawy (istniejące testy `forced-war-iron*-test.cjs` bez tych
+   * pól) NIE straciły eligibility milcząco. main.ts (jedyny produkcyjny wołający) ZAWSZE
+   * przekazuje oba pola.
+   */
+  currentTurn?: number;
+  eraEnterTurn?: number;
 }
 
 /**
@@ -108,7 +149,10 @@ export interface IronForcedWarEligibilityInput {
  * considered for an Iron forced war right now (one-shot check on the era advance).
  */
 export function isEligibleForIronForcedWar(inp: IronForcedWarEligibilityInput): boolean {
-  return inp.isMainAiCiv && !inp.isAlreadyAtWarAnyRole;
+  const turnThresholdMet = inp.currentTurn === undefined || inp.eraEnterTurn === undefined
+    ? true
+    : inp.currentTurn - inp.eraEnterTurn >= WOJNA_ZELAZO_WYMUSZONA_START_TURY_OD_EPOKI;
+  return inp.isMainAiCiv && !inp.isAlreadyAtWarAnyRole && turnThresholdMet;
 }
 
 /**
