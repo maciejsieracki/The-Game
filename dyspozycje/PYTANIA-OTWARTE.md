@@ -32110,3 +32110,79 @@ identyczny wynik z i bez diffu.
 STATUS: **OTWARTE — zarejestrowane, do reconu/naprawy w osobnym temacie, nie blokują
 integracji `R-DYPLO-WARUNEK-NIESPELNIONY-CZERWONY-TOOLTIP-Q1`** (potwierdzone pre-istniejące,
 zero związku z jego allowlistą).
+
+## R-MIASTA-PANSTWA-PASYWNOSC-ROZSZERZENIE-Q1 — addendum: autoryzacja rozszerzenia zakresu rundy 2 (2026-09-03) · STATUS: **ZAMKNIĘTE — udokumentowane retroaktywnie, addendum obowiązkowe wg zarzutu 1 Evaluatora rundy 2**
+
+**Kontekst:** `00-dispatch.md` (runda 1) zostawił GOAL 2 podłączony wyłącznie pod
+`ai.ts:2662-2726` (gałąź `decideAITurn` dla `isMajorAiOwner`). Operator rundy 1 udokumentował
+w kodzie i w `ai-cs-offensive-normal-easy-test.cjs` (sekcja C, komentarz przy `ai.ts:2677-2682`),
+że ta gałąź jest **strukturalnie nieosiągalna** dla miast-państw (`opts.defensiveCopy===true`),
+bo `decideAITurn` przekierowuje takie wywołania do `decideDefensiveCopyTurn` wcześniejszym
+`return` (`ai.ts:2524-2526`) — czyli GOAL 2 z rundy 1, mimo zielonych testów jednostkowych na
+`canConcentrateArmy` jako funkcji czystej, **nigdy realnie nie uruchamiał się dla PM w
+rozgrywce**. To zostało zgłoszone jako `DECISION_REQUIRED` w raporcie rundy 1 (podłączenie
+wewnątrz `decideDefensiveCopyTurn` wykracza poza allowlistę `ai.ts:2662-2726` zapisaną w
+`00-dispatch.md`).
+
+**Decyzja właściciela:** rozszerzyć zakres na realne podłączenie wewnątrz
+`decideDefensiveCopyTurn` — przekazana orkiestratorowi i wpisana wprost do treści dispatchu
+rundy 2 ("GOAL: Runda 2 — podłączenie realne `planArmyConcentration`/`planArmyFrontMerge` w
+`decideDefensiveCopyTurn` dla miast-państw z `cityStateOffensiveSupport`", dispatch Operatora
+rundy 2 z 2026-09-03). Zarzut 1 Evaluatora rundy 2 słusznie wskazał, że ten fakt nie miał
+śladu w `00-dispatch.md`/rejestrze/`PYTANIA-OTWARTE.md` w momencie audytu (tylko treść
+wiadomości dispatchującej, co CLAUDE.md wprost wyklucza jako dowód) — **ten wpis jest tym
+brakującym śladem**, dopisanym w obronie rundy 2 przed przekazaniem do Final Control.
+
+**Zakres faktycznie zrealizowany w rundzie 2 (potwierdza wcześniejszą decyzję, nic więcej):**
+nowy blok w `decideDefensiveCopyTurn` (`ai.ts` ok. 3311-3369 przed pętlą per-jednostce,
+ok. 3480-3496 w pętli) wołający `planArmyConcentration`/`planArmyFrontMerge` gated
+`canConcentrateArmy(opts)`, z priorytetem NIŻSZYM niż atak/riposta domowa/posiłek siostry/marsz
+ofensywny GOAL 1 (zero regresji GOAL 1 z rundy 1 — patrz test C3 "Hard offensive" w
+`city-state-alliance-test.cjs`, wcześniej łapane jako żywa regresja i naprawione w tej samej
+rundzie 2, patrz komentarz przy `csConcentrationMoveTarget` w `ai.ts`). Trzecia opcja z ECHO
+właściciela (postawa ofensywna dla wszystkich typów cywilizacji, nie tylko typu gracza) —
+NADAL poza zakresem, nie dotknięta.
+
+## R-MIASTA-PANSTWA-PASYWNOSC-ROZSZERZENIE-Q1 — odkrycie rundy 3: przedistniejący, poza zakresem koszt `getNeutralVillagesInTerritory` (2026-09-03) · STATUS: **ZAMKNIĘTE — odkrycie udokumentowane, do przyszłego dispatchu**
+
+**Kontekst:** Final Control rundy 2 uruchomił `gra/tools/city-state-offensive-perf-test.cjs`
+samodzielnie trzykrotnie w tym worktree — za każdym razem czerwono (run1: 2/4, run2: 1/5,
+run3: 1/5). Werdykt: NAPRAW metodologię pomiaru (runda 3), z jawnym zarejestrowaniem
+przedistniejącego problemu jako osobnego, poza-zakresowego odkrycia — to ten wpis.
+
+**Odkrycie (zweryfikowane czytaniem `ai.ts` w rundzie 3, nie zgadywane):**
+`getNeutralVillagesInTerritory` (`ai.ts` ok. 3271-3286, mechanizm P-MP-CHATKI-SKARBOW-NIE-ZBIERANE
+sprzed tej rundy) wykonuje pełny `Object.keys(map.hexes)` (79968 kluczy na mapie "ogromnej")
+przy KAŻDYM wywołaniu `decideDefensiveCopyTurn` (czyli co turę, na każde miasto-państwo), o ile
+CHOĆ JEDNA jego jednostka dotrze do gałęzi CHATKI w pętli per-jednostce (brak pilniejszego
+zadania: atak/riposta domowa/posiłek/marsz ofensywny/GOAL 2 rally). Cache jest per-wywołanie
+(`neutralVillagesInTerritoryCache`, zmienna lokalna zamykana w `decideDefensiveCopyTurn`) —
+NIE persystuje między turami ani między miastami-państwami, więc ten skan płaci się od nowa
+za KAŻDYM razem, gdy jakakolwiek jednostka PM trafi w CHATKI. Niezależny od
+`cityStateOffensiveSupport` — istniał przed rundą 1 tego tematu, potwierdzone: koszt
+wystąpił identycznie w wersji PRZED (support=false) jak i PO (support=true) w pomiarach
+Final Control i w sekcji informacyjnej `city-state-offensive-perf-test.cjs` po naprawie
+rundy 3 (416–1935ms na całą turę przy 8–24 miastach-państwach, na mapie "ogromnej" z płaskim
+terenem, bez enemy — patrz ta sekcja dla świeżych liczb).
+
+**Dlaczego to zepsuło pomiar wydajności GOAL 2 (nie samą grę):** w syntetycznym roscie testu
+(bez miast, bez wrogów) jedyne gałęzie per-jednostce osiągalne to GOAL 2 (rally target, tylko
+gdy `cityStateOffensiveSupport=true`) i CHATKI. W wersji PRZED WSZYSTKIE jednostki zawsze
+trafiały w CHATKI (skan płacony zawsze). W wersji PO `planArmyConcentration` często przydzielał
+rally target większości/wszystkim jednostkom (roster naturalnie skupiony), więc CHATKI bywało
+CAŁKOWICIE pomijane (0 skanów) — stąd delta całej tury bywała silnie ujemna albo dodatnia w
+sposób niezależny od rzeczywistego (mikrosekundowego) kosztu GOAL 2. Naprawa rundy 3 mierzy
+koszt GOAL 2 bezpośrednim wywołaniem `canConcentrateArmy`/`planArmyConcentration`/
+`countThreatFronts`/`planArmyFrontMerge` (dokładna kopia `ai.ts` ok. 3334-3367), z pominięciem
+pętli per-jednostce — CHATKI nigdy się tam nie uruchamia, po żadnej stronie, więc ten
+przedistniejący koszt już nie zanieczyszcza pomiaru GOAL 2. Sekcja pełnej `decideAITurn`
+zachowana wyłącznie informacyjnie (nie bramkuje PASS/FAIL) — pokazuje prawdziwe, wciąż
+zdominowane przez ten problem liczby, zgodnie z REGUŁĄ PRZECIW SAMOOSZUKIWANIU.
+
+**Poza zakresem tej rundy (i rundy 1/2) — do rozważenia w przyszłym dispatchu, jeśli właściciel
+uzna koszt za istotny w realnej rozgrywce:** memoizacja `getNeutralVillagesInTerritory` na
+poziomie szerszym niż jedno wywołanie `decideDefensiveCopyTurn` (np. per tura globalnie, nie per
+miasto-państwo) albo zamiana pełnego skanu `Object.keys(map.hexes)` na indeks chatek
+utrzymywany przyrostowo — obie opcje wymagają zmian w `ai.ts` poza allowlistą tej rundy
+(`gra/tools/city-state-offensive-perf-test.cjs` wyłącznie). Ten wpis jest wyłącznie
+zarejestrowaniem odkrycia (append-only, `STATUS: ZAMKNIĘTE`), nie autoryzacją naprawy.

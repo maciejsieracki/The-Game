@@ -29219,11 +29219,14 @@ async function boot(): Promise<void> {
               vassalizedCityStateOwnerIds: vassalizedCsOwnerIds,
               // D-START posiłki v2: setup „Wsparcie miast-państw" -> RESUP_TIERS (ai.ts).
               citySupportLevel: _menuCitySupport,
-              // Trudny MP: aktywne wsparcie ofensywne (Normal/Easy = legacy defend-only).
-              // C-025/C-026: wsparcie ofensywne PM wymierzone w gracza — oś PM-vs-gracz.
+              // R-MIASTA-PANSTWA-PASYWNOSC-ROZSZERZENIE-Q1 (GOAL 1): aktywne wsparcie
+              // ofensywne dla PM typu gracza NIEZALEŻNIE od trudności PM-vs-gracz
+              // (normal/easy/hard jednakowo) — usunięty warunek `=== 'hard'`, który
+              // dotąd ograniczał tę flagę do samej trudności "hard" (legacy defend-only
+              // na normal/easy). C-025/C-026: wsparcie ofensywne PM wymierzone w gracza —
+              // oś PM-vs-gracz, `isOwnerPlayerSameCivType` zostaje bez zmian.
               cityStateOffensiveSupport: typCityCopyOwners.has(ownerId)
-                && isOwnerPlayerSameCivType(ownerId)
-                && _menuCityStateDifficultyVsPlayer === 'hard',
+                && isOwnerPlayerSameCivType(ownerId),
               warAllyOwnerIds: typCityCopyOwners.has(ownerId)
                 && isOwnerPlayerSameCivType(ownerId)
                 ? aiOwnerList.filter(oid =>

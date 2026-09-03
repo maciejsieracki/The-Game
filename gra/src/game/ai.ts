@@ -1166,6 +1166,23 @@ export function isMajorAiOwner(opts: AITurnOpts): boolean {
   return !opts.defensiveCopy;
 }
 
+// R-MIASTA-PANSTWA-PASYWNOSC-ROZSZERZENIE-Q1 (GOAL 2): pełne cywilizacje AI ORAZ
+// miasta-państwa z aktywnym wsparciem ofensywnym (opts.cityStateOffensiveSupport) mogą
+// korzystać z punktów zbiorczych (planArmyConcentration/planArmyFrontMerge). Miasta-
+// -państwa BEZ aktywnego wsparcia (defend-only) pozostają wykluczone celowo — nie
+// ciągniemy jednostek obronnych z murów do rajdu. UWAGA (runda 1 → runda 2): ta funkcja
+// gatuje wywołania w decideAITurn (ai.ts:2662-2726), gałąź NIEOSIĄGALNA dla
+// opts.defensiveCopy===true — decideAITurn przekierowuje TAKIE wywołania do
+// decideDefensiveCopyTurn wcześniejszym `return` (ai.ts:2524-2526). Runda 1 zostawiła to
+// jako udokumentowany DECISION_REQUIRED (ai.ts:2662-2726 samo w sobie nigdy nie wystarczy
+// dla PM); runda 2 (właściciel rozszerzył zakres) podłączyła realne wywołanie
+// planArmyConcentration/planArmyFrontMerge WEWNĄTRZ decideDefensiveCopyTurn (ai.ts ok.
+// 3151+, przed pętlą per-jednostka, priorytet niższy niż marsz ofensywny GOAL 1) — ten gate
+// (canConcentrateArmy) jest teraz faktycznie używany z OBU miejsc, nie tylko z martwej gałęzi.
+export function canConcentrateArmy(opts: AITurnOpts): boolean {
+  return isMajorAiOwner(opts) || opts.cityStateOffensiveSupport === true;
+}
+
 /** Early game major AI — mała ludność, mało budynków lub wczesna tura. */
 export function computeMajorAiEarlyGame(
   opts: AITurnOpts,
@@ -2671,7 +2688,16 @@ export function decideAITurn(
   // is owner-agnostic; this call only gates the main-civilization path and
   // leaves the existing barbarian local rally untouched. Home defenders keep
   // their higher-priority assignment and are not pulled into the rally.
-  const concentration = isMajorAiOwner(opts)
+  // Uwaga GOAL 2 (dispatch, runda 1): pytanie "czy excludedUnitIds z
+  // homeDefenderAssignments.keys() działa poprawnie dla PM (opts.defensiveCopy)" jest
+  // bezprzedmiotowe -- ten blok (jak cała reszta decideAITurn poniżej wcześniejszego
+  // `return` w linii ~2524-2526) jest NIEOSIĄGALNY dla opts.defensiveCopy===true; PM idą
+  // przez decideDefensiveCopyTurn, która nie liczy homeDefenderAssignments (obrona domu PM
+  // jest reaktywna per-jednostka, nie migawką jak tutaj). Runda 2: decideDefensiveCopyTurn
+  // TERAZ woła własną, niezależną kopię planArmyConcentration/planArmyFrontMerge (ai.ts ok.
+  // 3151+, przed jej pętlą per-jednostka) -- ale NIE przez TEN blok, który zostaje
+  // nieosiągalny dla PM tak jak wcześniej.
+  const concentration = canConcentrateArmy(opts)
     ? planArmyConcentration(playerId, myUnits, {
       excludedUnitIds: new Set(homeDefenderAssignments.keys()),
     })
@@ -2705,7 +2731,7 @@ export function decideAITurn(
   // bezpośrednią walkę/obronę domu". Jednostki już przydzielone do
   // `concentration` (jeśli powstał) są wyłączone również — to ich lokalny
   // klaster już jest zbierany, front-merge decyduje wyłącznie o RESZCIE.
-  if (isMajorAiOwner(opts)) {
+  if (canConcentrateArmy(opts)) {
     const combatEngagedUnitIds = new Set(
       myUnits
         .filter(u => engageableEnemyUnits.some(eu => isWithinAttackRange(u, eu.q, eu.r, data)))
@@ -3299,6 +3325,64 @@ function decideDefensiveCopyTurn(
     ),
   );
 
+  // R-MIASTA-PANSTWA-PASYWNOSC-ROZSZERZENIE-Q1 runda 2 (GOAL 2): podłącz realnie
+  // planArmyConcentration/planArmyFrontMerge dla miast-państw z aktywnym wsparciem
+  // ofensywnym -- WOŁANE STĄD (nie z ai.ts:2662-2726 -- ten blok jest nieosiągalny dla PM,
+  // bo decideAITurn deleguje do decideDefensiveCopyTurn PRZED nim, patrz ai.ts:2677-2682).
+  // Gate identyczny jak reszta wsparcia ofensywnego PM: canConcentrateArmy(opts) redukuje się
+  // tu do opts.cityStateOffensiveSupport===true (isMajorAiOwner(opts) zawsze false w tej
+  // funkcji). Brak odpowiednika homeDefenderAssignments w tej funkcji (zbadane, nie zgadywane:
+  // decideDefensiveCopyTurn nigdy nie liczy assignHomeDefenders -- obrona domu PM jest
+  // reaktywna per-jednostka w pętli niżej, riposta gdy wróg sąsiaduje z miastem, a NIE
+  // pre-przydzielona migawką jak u major AI), więc excludedUnitIds tutaj nie wyklucza
+  // obrońców domu z góry -- to świadoma różnica względem major AI.
+  //
+  // RÓŻNICA CELOWA względem decideAITurn (ai.ts:2683-2747): tam koncentracja liczy się PRZED
+  // pętlą i całkowicie WYKLUCZA (continue) dopasowane jednostki z reszty tury. Wklejenie tego
+  // samego wzorca tu zepsuło żywo zweryfikowany marsz ofensywny GOAL 1 (kryterium regresji z
+  // rundy 1) -- w city-state-alliance-test.cjs (test "10. Hard offensive") 4 strażniki stojące
+  // obok własnego miasta (różne heksy, więc `gathered=false`) trafiały CAŁE w
+  // `deferredUnitIds` i marsz na odległe wrogie miasto nigdy nie startował. Dlatego tu
+  // koncentracja jest NAJNIŻSZYM priorytetem, sprawdzanym DOPIERO gdy jednostka nie znalazła
+  // ataku/riposty domowej/posiłku dla siostry/marszu ofensywnego (patrz `csConcentrationMoveTarget`
+  // użyte niżej, po bloku "Trudny: aktywne wsparcie ofensywne") -- zero regresji GOAL 1, a
+  // GOAL 2 nadal realnie działa dla jednostek, które inaczej szłyby po chatkę/patrolować dom
+  // (patrz test C3 w city-state-offensive-normal-easy-test.cjs, scenariusz bez widocznego wroga).
+  const canConcentratePm = canConcentrateArmy(opts);
+  const csConcentration = canConcentratePm
+    ? planArmyConcentration(playerId, myUnits, {})
+    : null;
+  const csConcentrationMoveTarget = new Map<string, { q: number; r: number }>();
+  if (csConcentration !== null) {
+    for (const unitId of csConcentration.moveUnitIds) {
+      csConcentrationMoveTarget.set(unitId, csConcentration.rallyPoint);
+    }
+  }
+  if (canConcentratePm) {
+    const csCombatEngagedUnitIds = new Set(
+      myUnits
+        .filter(u => nonSisterEnemyUnits.some(eu => isWithinAttackRange(u, eu.q, eu.r, data)))
+        .map(u => u.id),
+    );
+    const csFrontMergeExcluded = new Set<string>([
+      ...(csConcentration?.unitIds ?? []),
+      ...csCombatEngagedUnitIds,
+    ]);
+    const csThreatFrontCount = countThreatFronts(nonSisterEnemyUnits, myCities, myUnits, map);
+    const csFrontMerge = planArmyFrontMerge(playerId, myUnits, {
+      excludedUnitIds: csFrontMergeExcluded,
+      targetClusterCount: csThreatFrontCount <= 1 ? 1 : csThreatFrontCount,
+      preferredAnchors: csConcentration !== null
+        ? [{ q: csConcentration.rallyPoint.q, r: csConcentration.rallyPoint.r, weight: csConcentration.unitIds.length }]
+        : [],
+    });
+    if (csFrontMerge !== null) {
+      for (const order of csFrontMerge.moveOrders) {
+        csConcentrationMoveTarget.set(order.unitId, { q: order.towardQ, r: order.towardR });
+      }
+    }
+  }
+
   for (const unit of myUnits) {
     if (unit.ruchLeft <= 0) continue;
 
@@ -3411,6 +3495,20 @@ function decideDefensiveCopyTurn(
           offensiveMovesThisTurn++;
           continue;
         }
+      }
+    }
+
+    // KONCENTRACJA (GOAL 2, runda 2): brak pilniejszego zadania powyżej (atak/riposta domowa/
+    // posiłek dla siostry/marsz ofensywny) -- jednostka dołącza do prawdziwego punktu
+    // zbiorczego (planArmyConcentration/planArmyFrontMerge) zamiast od razu iść po chatkę/
+    // patrolować dom. Priorytet CELOWO niższy niż marsz ofensywny wyżej (zero regresji GOAL 1
+    // -- patrz komentarz przy csConcentrationMoveTarget powyżej pętli).
+    const csRallyTarget = csConcentrationMoveTarget.get(unit.id);
+    if (csRallyTarget !== undefined) {
+      const step = firstStep(unit, map, csRallyTarget.q, csRallyTarget.r, units);
+      if (step !== null) {
+        commands.push({ type: 'move', unitId: unit.id, toQ: step.q, toR: step.r });
+        continue;
       }
     }
 
