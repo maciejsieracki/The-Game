@@ -434,6 +434,19 @@ function isIgnorableRevoltEvent(ev: SidePanelEvent): boolean {
   return ev.blocking === true && ev.id.startsWith('revolt-') && !ev.id.startsWith('revolt-warn-');
 }
 
+/** P-DYPLO-KARTA-DECYZJI-DISMISS-Q1: karta dyplomatyczna blokująca (propozycja przychodząca
+ * z `pendingDiplomacyInbox`, id `diplo-pend-*`, LUB kontroferta czekająca na gracza z
+ * `negotiationTable`, id `negot-*`) — jedyne dwa źródła `kind:'diplo'` w kolejce blokującej
+ * (main.ts, collectTurnEvents). Dopasowanie po `kind`, nie po prefiksie id (w odróżnieniu od
+ * `isIgnorableRevoltEvent`) — oba źródła mają różny kształt id, ale ten sam `kind`, i main.ts
+ * (handleSidePanelEventDismiss, gałąź domyślna) już dziś obsługuje OBA przez miękki
+ * `dismissedSidePanelEventIds`, czyszczony co turę — zero zmian w main.ts potrzebne.
+ * Właściciel wprost odróżnił to od formalnego odrzucenia (reputacyjne konsekwencje): to
+ * WYŁĄCZNIE ukrycie karty do końca tury, nie interakcja z samą propozycją. */
+function isDeferrableDiploEvent(ev: SidePanelEvent): boolean {
+  return ev.blocking === true && ev.kind === 'diplo';
+}
+
 /** Prosta polska pluralizacja dla licznika kolejki („1 wymaga" / „2 wymagają"). */
 function pluralPl(n: number, one: string, many: string): string {
   return n === 1 ? one : many;
@@ -655,6 +668,7 @@ export function createSidePanelHud(config: SidePanelHudConfig): SidePanelHudApi 
           if (blockingSeen === 1) {
             // Rozwinięta — zawsze dokładnie jedna, pierwsza blokująca w kolejce.
             const ignorable = isIgnorableRevoltEvent(ev);
+            const deferrable = isDeferrableDiploEvent(ev);
             html += '<div class="sp-event sp-blocking sp-expanded" data-id="' + ev.id + '">'
               + '<div class="sp-blk-body">'
               + '<span class="sp-ico">' + icoContent + '</span>'
@@ -670,6 +684,9 @@ export function createSidePanelHud(config: SidePanelHudConfig): SidePanelHudApi 
               + '</div>'
               + (ignorable
                 ? '<button type="button" class="sp-action-ignore" data-sp-ignore="' + ev.id + '">Zignoruj — bunt potrwa dalej</button>'
+                : '')
+              + (deferrable
+                ? '<button type="button" class="sp-action-ignore" data-sp-ignore="' + ev.id + '">Odłóż na później</button>'
                 : '')
               + '</div>'
               + '</div>';
