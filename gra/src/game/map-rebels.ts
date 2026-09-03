@@ -8,7 +8,7 @@
 
 import type { GameMap } from '../types/map';
 import { TerenBazowy } from '../types/hex';
-import { hexDistance } from '../units/setup';
+import { hexDistance, isWaterTerrain } from '../units/setup';
 
 /** Indeks epoki gracza: Średniowiecze = 4 (Kamień=1, Brąz=2, Żelazo=3). */
 export const EPOKA_SREDNIOWIECZE = 4;
@@ -46,7 +46,7 @@ function isPassableLand(map: GameMap, q: number, r: number): boolean {
   const h = map.hexes[`${q},${r}`];
   if (!h) return false;
   const t = h.terenBazowy as TerenBazowy;
-  return t !== TerenBazowy.Morze && t !== TerenBazowy.Wybrzeze && t !== TerenBazowy.Gory;
+  return !isWaterTerrain(t) && t !== TerenBazowy.Gory;
 }
 
 /**

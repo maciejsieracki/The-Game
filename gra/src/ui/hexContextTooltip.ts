@@ -87,7 +87,7 @@ const TEREN_LABEL: Record<TerenBazowy, string> = {
   [TerenBazowy.Rownina]: 'Równina',
   [TerenBazowy.Wzgorza]: 'Wzgórza',
   [TerenBazowy.Gory]: 'Góry',
-  [TerenBazowy.Wybrzeze]: 'Wybrzeże',
+  [TerenBazowy.PlytkieMorze]: 'Płytkie morze',
   [TerenBazowy.Morze]: 'Morze',
   [TerenBazowy.Pustynia]: 'Pustynia',
   [TerenBazowy.Polarny]: 'Polarny',
@@ -486,7 +486,7 @@ function listTerrainPossibleImprovements(
     // (map/improvement-build.ts, `existing.includes('tartak')`) — tooltip nie może obiecywać
     // więcej niż silnik.
     if (key === 'oboz_lowiecki' && !active.has('tartak')) continue;
-    if (key === 'warzelnia_soli' && teren !== TerenBazowy.Wybrzeze && zloze !== 'sol') continue;
+    if (key === 'warzelnia_soli' && teren !== TerenBazowy.PlytkieMorze && zloze !== 'sol') continue;
     if (key === 'kopalnia_zelaza' && zloze !== 'zelazo') continue;
     if (key === 'kopalnia_miedzi'
       && zloze !== 'miedz' && nakladka !== Nakladka.ZlozeRudy && zloze !== 'ruda') continue;

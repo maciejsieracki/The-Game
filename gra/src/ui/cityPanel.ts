@@ -9094,13 +9094,13 @@ function buildGarnizonDetailCard(
 // ---------------------------------------------------------------------------
 
 const TEREN_COL: Record<TerenBazowy, string> = {
-  [TerenBazowy.Morze]: '#0d2236', [TerenBazowy.Wybrzeze]: '#14506a',
+  [TerenBazowy.Morze]: '#0d2236', [TerenBazowy.PlytkieMorze]: '#14506a',
   [TerenBazowy.Laka]: '#243a24', [TerenBazowy.Rownina]: '#3f3815',
   [TerenBazowy.Pustynia]: '#4a3a18', [TerenBazowy.Wzgorza]: '#3a2f18', [TerenBazowy.Gory]: '#2e2e2e',
   [TerenBazowy.Polarny]: '#d8e4f0',
 };
 const TEREN_LETTER: Record<TerenBazowy, string> = {
-  [TerenBazowy.Morze]: '~', [TerenBazowy.Wybrzeze]: '~',
+  [TerenBazowy.Morze]: '~', [TerenBazowy.PlytkieMorze]: '~',
   [TerenBazowy.Laka]: 'Ł', [TerenBazowy.Rownina]: 'R',
   [TerenBazowy.Pustynia]: 'P', [TerenBazowy.Wzgorza]: 'W', [TerenBazowy.Gory]: 'G',
   [TerenBazowy.Polarny]: '❄',

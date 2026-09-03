@@ -197,7 +197,7 @@ export function improvementUnlockActiveOnHex(
   if (LIVESTOCK_NO_DEPOSIT.has(norm)) return true;
 
   if (norm === 'warzelnia_soli') {
-    return hex.terenBazowy === TerenBazowy.Wybrzeze
+    return hex.terenBazowy === TerenBazowy.PlytkieMorze
       || hex.zloze === 'sol';
   }
 

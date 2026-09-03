@@ -111,7 +111,7 @@ function measureVariants(seeds) {
     let wzgorzeBezLasuZeZlozem = 0;
     for (const hk of Object.keys(map.hexes)) {
       const h = map.hexes[hk];
-      if (!h || h.terenBazowy === TerenBazowy.Morze || h.terenBazowy === TerenBazowy.Wybrzeze) continue;
+      if (!h || h.terenBazowy === TerenBazowy.Morze || h.terenBazowy === TerenBazowy.PlytkieMorze) continue;
       lad++;
       const isLas = h.nakladka === Nakladka.Las;
       const anim = M.hasAnimalDeposit(h.nakladka);

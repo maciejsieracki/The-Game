@@ -2201,7 +2201,7 @@ export function planExpansionFortBuilding(
     const hex = map.hexes[`${q},${r}`];
     if (!hex) continue;
     const t = hex.terenBazowy as string;
-    if (t === 'morze' || t === 'wybrzeze' || t === 'gory') continue;
+    if (t === 'morze' || t === 'plytkie_morze' || t === 'gory') continue;
     // F3 fix (Evaluator runda 1, 2026-08-13): heks juz majacy fort LUB posterunek
     // (dowolny wlasciciel -- `qualifies()` w improvement-build.ts odrzuca druga
     // budowe tego samego klucza na tym samym hexie bez wzgledu na wlasciciela)
@@ -3593,7 +3593,7 @@ function findCityFoundingHex(
     if (hex === undefined) continue;
 
     const t = hex.terenBazowy as string;
-    if (t === 'morze' || t === 'wybrzeze' || t === 'gory') continue;
+    if (t === 'morze' || t === 'plytkie_morze' || t === 'gory') continue;
 
     const { q, r } = hex.coords;
     if (excludeSet.has(`${q},${r}`)) continue;

@@ -102,7 +102,7 @@ function makeMap(w, h, opts = {}) {
   for (let q = 0; q < w; q++) {
     for (let r = 0; r < h; r++) {
       const k = `${q},${r}`;
-      const teren = gory.has(k) ? 'gory' : morze.has(k) ? 'morze' : wybrz.has(k) ? 'wybrzeze' : 'laka';
+      const teren = gory.has(k) ? 'gory' : morze.has(k) ? 'morze' : wybrz.has(k) ? 'plytkie_morze' : 'laka';
       hexes[k] = {
         coords: { q, r },
         terenBazowy: teren,
@@ -484,7 +484,7 @@ assert(barbariansActive(P.startTurn, P, EPOKA_SREDNIOWIECZE_BARBARZY) === false,
   eq(EMBARK_DEFENSE_MULT, 0.5, 'embarked defense multiplier is 0.5 (-50%)');
 
   assert(isWaterTerrain('morze') === true, 'isWaterTerrain(morze) true');
-  assert(isWaterTerrain('wybrzeze') === true, 'isWaterTerrain(wybrzeze) true');
+  assert(isWaterTerrain('plytkie_morze') === true, 'isWaterTerrain(wybrzeze) true');
   assert(isWaterTerrain('laka') === false, 'isWaterTerrain(laka) false');
 
   // Mapa: pas morza q=3..4 rozdziela dwa lady (r=0..2).
@@ -577,7 +577,7 @@ assert(barbariansActive(P.startTurn, P, EPOKA_SREDNIOWIECZE_BARBARZY) === false,
   for (const c of camps) {
     const t = map.hexes[`${c.q},${c.r}`].terenBazowy;
     const island = t === 'laka' && c.q === 1 && c.r === 8;
-    if (!(t === 'wybrzeze' || island)) okSites = false;
+    if (!(t === 'plytkie_morze' || island)) okSites = false;
   }
   assert(okSites, 'every sea camp sits on wybrzeze or an island hex');
 

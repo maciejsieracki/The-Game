@@ -362,7 +362,7 @@ export function regionMassDominance(
 
 function isSpawnHabitableTerrain(teren: TerenBazowy | string): boolean {
   return teren !== TerenBazowy.Morze && teren !== TerenBazowy.Gory &&
-    teren !== TerenBazowy.Wybrzeze && teren !== 'morze' && teren !== 'gory' && teren !== 'wybrzeze';
+    teren !== TerenBazowy.PlytkieMorze && teren !== 'morze' && teren !== 'gory' && teren !== 'plytkie_morze';
 }
 
 /**
@@ -3359,7 +3359,7 @@ export function computeClusters(
   const ladowe: Array<{ q: number; r: number }> = [];
   for (const h of allHexes) {
     if (h.terenBazowy !== TerenBazowy.Morze && h.terenBazowy !== TerenBazowy.Gory &&
-        h.terenBazowy !== TerenBazowy.Wybrzeze) {
+        h.terenBazowy !== TerenBazowy.PlytkieMorze) {
       ladowe.push({ q: h.coords.q, r: h.coords.r });
     }
   }

@@ -80,7 +80,7 @@ export function isDenseLandmassMap(map: GameMap): boolean {
   const hexCount = Object.keys(map.hexes).length;
   for (const h of Object.values(map.hexes)) {
     const t = h.terenBazowy;
-    if (t !== TerenBazowy.Morze && t !== TerenBazowy.Wybrzeze) land++;
+    if (isDryLandTeren(t)) land++;
   }
   return land / Math.max(1, hexCount) > 0.50;
 }
@@ -184,7 +184,7 @@ export const FLAT_LAND_SURFACE_Y = SEA_SURFACE_TOP_Y + LAND_MIN_CLEARANCE_ABOVE_
 /** Wysokość powierzchni hexa (height + yOffset) — Roblox: płaskie przejścia. */
 export const TERRAIN_SURFACE_Y: Record<TerenBazowy, number> = {
   [TerenBazowy.Morze]: SEA_SURFACE_TOP_Y,
-  [TerenBazowy.Wybrzeze]: WYBRZEZE_SURFACE_TOP_Y,
+  [TerenBazowy.PlytkieMorze]: WYBRZEZE_SURFACE_TOP_Y,
   [TerenBazowy.Laka]: FLAT_LAND_SURFACE_Y,
   [TerenBazowy.Rownina]: FLAT_LAND_SURFACE_Y,
   [TerenBazowy.Pustynia]: FLAT_LAND_SURFACE_Y,
@@ -212,7 +212,7 @@ export interface TerrainVisualSpec {
 export const ROBLOX_TERRAIN_VIS: Record<TerenBazowy, TerrainVisualSpec> = {
   [TerenBazowy.Morze]:     { height: 0.30, yOffset: 0.00 },
   /** Hybryda C — wyższy profil, mniejszy „schodek” względem lądu (top ≈ 0.40 vs ląd 0.45). */
-  [TerenBazowy.Wybrzeze]:  { height: 0.30, yOffset: 0.10 },
+  [TerenBazowy.PlytkieMorze]:  { height: 0.30, yOffset: 0.10 },
   [TerenBazowy.Laka]:      { height: 0.38, yOffset: 0.07 },
   [TerenBazowy.Rownina]:   { height: 0.40, yOffset: 0.07 },
   /** Pustynia = profil wzgórza (Maciej 2026-07-04: nie zalewa morze). */
@@ -229,7 +229,7 @@ export function terrainVisualForStyle(
   civ: TerrainVisualSpec,
 ): TerrainVisualSpec {
   const base = style === 'roblox' ? ROBLOX_TERRAIN_VIS[t] : civ;
-  if (t === TerenBazowy.Morze || t === TerenBazowy.Wybrzeze) {
+  if (!isDryLandTeren(t)) {
     if (style === 'roblox') {
       const topY = TERRAIN_SURFACE_Y[t];
       return { height: base.height, yOffset: topY - base.height };
@@ -250,7 +250,7 @@ export interface TerrainHeightAuditRow {
 export interface TerrainHeightAudit {
   style: MapRenderStyle;
   seaTopY: number;
-  wybrzezeTopY: number;
+  plytkieMorzeTopY: number;
   coastWaterCapTopY: number;
   land: TerrainHeightAuditRow[];
   minLandGap: number;
@@ -272,7 +272,7 @@ export function coastWaterCapTopY(style: MapRenderStyle = GAME_MAP_RENDER_STYLE)
 /** Diagnostyka wysokości morze vs ląd (testy + playtest). */
 export function terrainHeightAudit(style: MapRenderStyle = GAME_MAP_RENDER_STYLE): TerrainHeightAudit {
   const seaTopY = terrainSurfaceTopY(TerenBazowy.Morze, style);
-  const wybrzezeTopY = terrainSurfaceTopY(TerenBazowy.Wybrzeze, style);
+  const plytkieMorzeTopY = terrainSurfaceTopY(TerenBazowy.PlytkieMorze, style);
   const coastWaterCapTopY = seaTopY + COAST_WATER_CAP_THICKNESS;
   const flatTypes: TerenBazowy[] = [
     TerenBazowy.Laka,
@@ -291,8 +291,8 @@ export function terrainHeightAudit(style: MapRenderStyle = GAME_MAP_RENDER_STYLE
   });
   const minLandGap = land.length > 0 ? Math.min(...land.map((r) => r.gapAboveSea)) : 0;
   const violations: string[] = [];
-  if (wybrzezeTopY <= seaTopY) {
-    violations.push(`wybrzeże (${wybrzezeTopY.toFixed(3)}) <= morze (${seaTopY.toFixed(3)})`);
+  if (plytkieMorzeTopY <= seaTopY) {
+    violations.push(`płytkie morze (${plytkieMorzeTopY.toFixed(3)}) <= morze (${seaTopY.toFixed(3)})`);
   }
   const flatTops = flatTypes.map((t) => terrainSurfaceTopY(t, style));
   const flatSpread = flatTops.length > 0 ? Math.max(...flatTops) - Math.min(...flatTops) : 0;
@@ -312,7 +312,7 @@ export function terrainHeightAudit(style: MapRenderStyle = GAME_MAP_RENDER_STYLE
   return {
     style,
     seaTopY,
-    wybrzezeTopY,
+    plytkieMorzeTopY,
     coastWaterCapTopY,
     land,
     minLandGap,
@@ -323,7 +323,7 @@ export function terrainHeightAudit(style: MapRenderStyle = GAME_MAP_RENDER_STYLE
 /** Fallback Civ — spójny ze scene.ts / cities.ts (height + yOffset → powierzchnia). */
 const CIV_TERRAIN_VIS: Record<TerenBazowy, TerrainVisualSpec> = {
   [TerenBazowy.Morze]:    { height: 0.30, yOffset: 0.00 },
-  [TerenBazowy.Wybrzeze]: { height: 0.35, yOffset: 0.05 },
+  [TerenBazowy.PlytkieMorze]: { height: 0.35, yOffset: 0.05 },
   [TerenBazowy.Laka]:     { height: 0.40, yOffset: 0.05 },
   [TerenBazowy.Rownina]:  { height: 0.45, yOffset: 0.08 },
   [TerenBazowy.Pustynia]: { height: 0.42, yOffset: 0.08 },
@@ -496,7 +496,7 @@ function robloxCliffUnder(g: THREE.Group, topY: number, R: number, seed: number)
 
 const TERRAIN_CIV: Record<TerenBazowy, number> = {
   [TerenBazowy.Morze]: 0x1f5a86,
-  [TerenBazowy.Wybrzeze]: 0x46a3d6,
+  [TerenBazowy.PlytkieMorze]: 0x46a3d6,
   [TerenBazowy.Laka]: 0x6aa53f,
   [TerenBazowy.Rownina]: 0xa9b257,
   [TerenBazowy.Pustynia]: 0xd9c179,
@@ -512,7 +512,7 @@ export const COAST_SAND_ROBLOX = 0xe8d4a0;
 const TERRAIN_ROBLOX: Record<TerenBazowy, number> = {
   [TerenBazowy.Morze]: 0x5594ad,
   /** Płytka woda przy brzegu (jasnoniebieski heks + tafla 3D; piasek na krawędzi w stronę lądu). */
-  [TerenBazowy.Wybrzeze]: 0x82c8e0,
+  [TerenBazowy.PlytkieMorze]: 0x82c8e0,
   [TerenBazowy.Laka]: 0x94bf78,
   [TerenBazowy.Rownina]: 0xb0ca7e,
   [TerenBazowy.Pustynia]: 0xe0c88e,
@@ -523,7 +523,7 @@ const TERRAIN_ROBLOX: Record<TerenBazowy, number> = {
 
 const TERRAIN_MINECRAFT: Record<TerenBazowy, number> = {
   [TerenBazowy.Morze]: 0x2b5ea8,
-  [TerenBazowy.Wybrzeze]: 0x3d8fd9,
+  [TerenBazowy.PlytkieMorze]: 0x3d8fd9,
   [TerenBazowy.Laka]: 0x5b8f3c,
   [TerenBazowy.Rownina]: 0x6ea043,
   [TerenBazowy.Pustynia]: 0xdbc35c,
@@ -1248,7 +1248,7 @@ export interface CoastSandParams {
 }
 
 function isDryLandTeren(tb: TerenBazowy): boolean {
-  return tb !== TerenBazowy.Morze && tb !== TerenBazowy.Wybrzeze;
+  return tb !== TerenBazowy.Morze && tb !== TerenBazowy.PlytkieMorze;
 }
 
 export { isDryLandTeren as isDryLandTerrain };
@@ -1257,7 +1257,7 @@ export { isDryLandTeren as isDryLandTerrain };
 export function landCoastSandNeeded(map: GameMap, q: number, r: number, self: TerenBazowy): boolean {
   if (!isDryLandTeren(self)) return false;
   for (const [dq, dr] of AXIAL_NEIGHBORS) {
-    if (map.hexes[`${q + dq},${r + dr}`]?.terenBazowy === TerenBazowy.Wybrzeze) return true;
+    if (map.hexes[`${q + dq},${r + dr}`]?.terenBazowy === TerenBazowy.PlytkieMorze) return true;
   }
   return false;
 }
@@ -1290,7 +1290,7 @@ export function findRiverMouthWybrzeze(
     const pt = path[i]!;
     const h = map.hexes[`${pt.q},${pt.r}`];
     if (!h) continue;
-    if (h.terenBazowy === TerenBazowy.Wybrzeze) return pt;
+    if (h.terenBazowy === TerenBazowy.PlytkieMorze) return pt;
   }
 
   for (let i = path.length - 1; i >= Math.max(0, path.length - 8); i--) {
@@ -1304,7 +1304,7 @@ export function findRiverMouthWybrzeze(
       const nq = pt.q + dq;
       const nr = pt.r + dr;
       const nh = map.hexes[`${nq},${nr}`];
-      if (nh?.terenBazowy !== TerenBazowy.Wybrzeze) continue;
+      if (nh?.terenBazowy !== TerenBazowy.PlytkieMorze) continue;
       let score = 1;
       if (prev) score = (nq - pt.q) * (pt.q - prev.q) + (nr - pt.r) * (pt.r - prev.r);
       if (score > bestScore) {
@@ -1321,7 +1321,7 @@ export function findRiverMouthWybrzeze(
     if (h?.terenBazowy !== TerenBazowy.Morze) continue;
     for (const [dq, dr] of AXIAL_NEIGHBORS) {
       const nh = map.hexes[`${pt.q + dq},${pt.r + dr}`];
-      if (nh?.terenBazowy === TerenBazowy.Wybrzeze) return { q: pt.q + dq, r: pt.r + dr };
+      if (nh?.terenBazowy === TerenBazowy.PlytkieMorze) return { q: pt.q + dq, r: pt.r + dr };
     }
   }
 
@@ -1339,10 +1339,10 @@ function pathReachesOpenSea(map: GameMap, path: Array<{ q: number; r: number }>)
   if (!lastH) return false;
   // ostatni hex to woda, albo Wybrzeże graniczące z Morzem, albo ląd stykający się z Wybrzeżem+Morzem
   if (lastH.terenBazowy === TerenBazowy.Morze) return true;
-  if (lastH.terenBazowy === TerenBazowy.Wybrzeze) return hasMorzeNeighbor(map, last.q, last.r);
+  if (lastH.terenBazowy === TerenBazowy.PlytkieMorze) return hasMorzeNeighbor(map, last.q, last.r);
   for (const [dq, dr] of AXIAL_NEIGHBORS) {
     const nh = map.hexes[`${last.q + dq},${last.r + dr}`];
-    if (nh?.terenBazowy === TerenBazowy.Wybrzeze && hasMorzeNeighbor(map, last.q + dq, last.r + dr)) {
+    if (nh?.terenBazowy === TerenBazowy.PlytkieMorze && hasMorzeNeighbor(map, last.q + dq, last.r + dr)) {
       return true;
     }
   }
@@ -1367,7 +1367,7 @@ export function computeRiverDeltaHexKeys(map: GameMap, maxHexes = 3): Set<string
     if (!mouth) continue;
 
     const startKey = `${mouth.q},${mouth.r}`;
-    if (map.hexes[startKey]?.terenBazowy !== TerenBazowy.Wybrzeze) continue;
+    if (map.hexes[startKey]?.terenBazowy !== TerenBazowy.PlytkieMorze) continue;
     // anty-kolizja: pomiń ujście bliżej niż 3 hex od już zakwalifikowanego (scal do jednego)
     let tooClose = false;
     for (const m of usedMouths) {
@@ -1392,7 +1392,7 @@ export function computeRiverDeltaHexKeys(map: GameMap, maxHexes = 3): Set<string
         const nk = `${nq},${nr}`;
         if (keys.has(nk)) continue;
         const nh = map.hexes[nk];
-        if (nh?.terenBazowy !== TerenBazowy.Wybrzeze) continue;
+        if (nh?.terenBazowy !== TerenBazowy.PlytkieMorze) continue;
         let score = hasMorzeNeighbor(map, nq, nr) ? 3 : 1;
         if (pathHexSet.has(nk)) score += 2;
         scored.push({ q: nq, r: nr, score });
@@ -1445,7 +1445,7 @@ function coastMat(color: number): THREE.MeshLambertMaterial {
 }
 
 export function coastWaterMaterial(): THREE.MeshLambertMaterial {
-  return coastMat(TERRAIN_ROBLOX[TerenBazowy.Wybrzeze]);
+  return coastMat(TERRAIN_ROBLOX[TerenBazowy.PlytkieMorze]);
 }
 
 export function coastSandMaterial(): THREE.MeshLambertMaterial {
@@ -1630,7 +1630,7 @@ export function collectRobloxLandCoastSandInst(
   for (const [dq, dr] of AXIAL_NEIGHBORS) {
     const lq = q + dq;
     const lr = r + dr;
-    if (map.hexes[`${lq},${lr}`]?.terenBazowy !== TerenBazowy.Wybrzeze) continue;
+    if (map.hexes[`${lq},${lr}`]?.terenBazowy !== TerenBazowy.PlytkieMorze) continue;
 
     const nbWorld = axialToWorld(lq, lr, R);
     const dx = nbWorld.x - x;
@@ -1674,7 +1674,7 @@ export function buildStyleLandCoastSandCap(
     const lq = q + dq;
     const lr = r + dr;
     const nbHex = map.hexes[`${lq},${lr}`];
-    if (nbHex?.terenBazowy !== TerenBazowy.Wybrzeze) continue;
+    if (nbHex?.terenBazowy !== TerenBazowy.PlytkieMorze) continue;
 
     const nbWorld = axialToWorld(lq, lr, R);
     const dx = nbWorld.x - x;
@@ -1705,7 +1705,7 @@ export function buildStyleLandCoastSandCap(
  * Opaska piasku na heksie Wybrzeże — krawędź w stronę lądu (uzupełnienie pełnej tafli piasku).
  */
 function coastEdgeNeedsSand(self: TerenBazowy, neighbor: TerenBazowy | null): boolean {
-  if (self !== TerenBazowy.Wybrzeze) return false;
+  if (self !== TerenBazowy.PlytkieMorze) return false;
   return neighbor !== null && isDryLandTeren(neighbor);
 }
 
@@ -1722,7 +1722,7 @@ export function computeRiverMouthEdgeKeys(map: GameMap): Set<string> {
     if (!lastH) continue;
     const prev = path.length >= 2 ? path[path.length - 2]! : null;
 
-    if (lastH.terenBazowy === TerenBazowy.Wybrzeze && prev) {
+    if (lastH.terenBazowy === TerenBazowy.PlytkieMorze && prev) {
       keys.add(`${prev.q},${prev.r}|${last.q},${last.r}`);
       continue;
     }
@@ -1734,7 +1734,7 @@ export function computeRiverMouthEdgeKeys(map: GameMap): Set<string> {
       const nq = last.q + dq;
       const nr = last.r + dr;
       const nh = map.hexes[`${nq},${nr}`];
-      if (nh?.terenBazowy !== TerenBazowy.Wybrzeze) continue;
+      if (nh?.terenBazowy !== TerenBazowy.PlytkieMorze) continue;
       let score = 1;
       if (prev) score = (nq - last.q) * (last.q - prev.q) + (nr - last.r) * (last.r - prev.r);
       if (score > bestScore) {
@@ -1816,7 +1816,7 @@ export function buildStyleCoastWaterCap(
   if (style !== 'roblox') return g;
 
   const lite = opts.lite ?? false;
-  const waterColor = TERRAIN_ROBLOX[TerenBazowy.Wybrzeze];
+  const waterColor = TERRAIN_ROBLOX[TerenBazowy.PlytkieMorze];
   const apothem = R * (Math.sqrt(3) / 2);
   const edgeLen = R * 1.04;
   const isDelta = opts.isDelta ?? opts.deltaKeys?.has(`${q},${r}`) ?? false;

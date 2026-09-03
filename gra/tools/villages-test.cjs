@@ -93,7 +93,7 @@ function makeMap(w, h, opts = {}) {
       if (gory.has(k)) teren = 'gory';
       else if (pustynia.has(k)) teren = 'pustynia';
       else if (morze.has(k)) teren = 'morze';
-      else if (wybrzeze.has(k)) teren = 'wybrzeze';
+      else if (wybrzeze.has(k)) teren = 'plytkie_morze';
       hexes[k] = {
         coords: { q, r },
         terenBazowy: teren,
@@ -134,7 +134,7 @@ console.log('1. placeVillages -- teren/wykluczenia');
   for (const s of sites) {
     const hex = hexes[`${s.q},${s.r}`];
     const t = hex.terenBazowy;
-    if (t === 'gory' || t === 'pustynia' || t === 'morze' || t === 'wybrzeze') noBadTerrain = false;
+    if (t === 'gory' || t === 'pustynia' || t === 'morze' || t === 'plytkie_morze') noBadTerrain = false;
   }
   assert(noBadTerrain, 'no village on gory/pustynia/morze/wybrzeze');
 }

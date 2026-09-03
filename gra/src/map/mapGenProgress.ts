@@ -18,7 +18,7 @@ export const MAP_GEN_PHASE_LABELS = {
   terrain: 'Klimat i teren bazowy',
   landSea: 'Ląd i ocean',
   relief: 'Relief (góry i wzgórza)',
-  coast: 'Wybrzeże',
+  coast: 'Płytkie morze',
   riversMain: 'Rzeki — główne',
   riversFill: 'Rzeki — uzupełnianie',
   forest: 'Las i roślinność',

@@ -6,6 +6,7 @@ import type { GameMap } from '../types/map';
 import { TerenBazowy, Nakladka } from '../types/hex';
 import type { MapRenderStyle } from './mapRenderStyle';
 import { improvementKeysForHex } from '../game/terrain-improvements';
+import { isWaterTerrain } from '../units/setup';
 
 function hash2D(q: number, r: number, seed: number, salt: number): number {
   let h = (Math.imul(q | 0, 0x27d4eb2d) ^ Math.imul(r | 0, 0x165667b1) ^ Math.imul(seed | 0, 0x9e3779b1) ^ Math.imul(salt | 0, 0x85ebca6b)) >>> 0;
@@ -84,7 +85,7 @@ export function countSceneOverlayCandidates(
     const q = hex.coords.q;
     const r = hex.coords.r;
 
-    if (hex.nakladka === Nakladka.Las && t !== TerenBazowy.Morze && t !== TerenBazowy.Wybrzeze) {
+    if (hex.nakladka === Nakladka.Las && !isWaterTerrain(t)) {
       if (styledTerrain) {
         // roblox: las + dżungla = InstancedMesh — nie styledOverlay
       } else if (useStyledDecor) {
@@ -101,7 +102,7 @@ export function countSceneOverlayCandidates(
       if (!hillLayers.includes('tarasy')) bump('minecraftHill', false);
     }
 
-    if (t === TerenBazowy.Wybrzeze && useStyledDecor && renderStyle === 'minecraft') {
+    if (t === TerenBazowy.PlytkieMorze && useStyledDecor && renderStyle === 'minecraft') {
       bump('minecraftBeach', false);
     }
 

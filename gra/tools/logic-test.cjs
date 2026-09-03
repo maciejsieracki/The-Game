@@ -358,7 +358,7 @@ if (c !== null) {
   let nearQ = null, nearR = null;
   let farQ  = null, farR  = null;
   for (const [key, hex] of Object.entries(map.hexes)) {
-    if (hex.terenBazowy === 'morze' || hex.terenBazowy === 'wybrzeze' || hex.terenBazowy === 'gory') continue;
+    if (hex.terenBazowy === 'morze' || hex.terenBazowy === 'plytkie_morze' || hex.terenBazowy === 'gory') continue;
     const [hq, hr] = key.split(',').map(Number);
     const d = hexDistance(hq, hr, c.q, c.r);
     if (d > 0 && d < MIN_CITY_DISTANCE && nearQ === null) {
@@ -795,7 +795,7 @@ const NAK_TO_DEPOSIT = {
   let landCnt = 0, waterCnt = 0;
   for (const k in e1map.hexes) {
     const t = e1map.hexes[k].terenBazowy;
-    if (t === 'morze' || t === 'wybrzeze') waterCnt++; else landCnt++;
+    if (t === 'morze' || t === 'plytkie_morze') waterCnt++; else landCnt++;
   }
   assert('mapgen: generated map has BOTH land and water',
     landCnt > 0 && waterCnt > 0, `land=${landCnt} water=${waterCnt}`);
@@ -1442,7 +1442,7 @@ assert('religion: makeRng (culture-religion) is a deterministic [0,1) generator 
   let fq = -1, fr = -1;
   for (const [key, hex] of Object.entries(cityMap.hexes)) {
     const t = hex.terenBazowy;
-    if (t !== 'morze' && t !== 'wybrzeze' && t !== 'gory') {
+    if (t !== 'morze' && t !== 'plytkie_morze' && t !== 'gory') {
       const [q, r] = key.split(',').map(Number);
       fq = q; fr = r; break;
     }

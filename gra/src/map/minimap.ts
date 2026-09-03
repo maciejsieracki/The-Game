@@ -79,7 +79,7 @@ const TEREN_KEY: Record<TerenBazowy, string> = {
   [TerenBazowy.Rownina]: 'Rownina',
   [TerenBazowy.Wzgorza]: 'Wzgorza',
   [TerenBazowy.Gory]: 'Gory',
-  [TerenBazowy.Wybrzeze]: 'Wybrzeze',
+  [TerenBazowy.PlytkieMorze]: 'Wybrzeze',
   [TerenBazowy.Morze]: 'Morze',
   [TerenBazowy.Pustynia]: 'Pustynia',
   [TerenBazowy.Polarny]: 'Polarny',

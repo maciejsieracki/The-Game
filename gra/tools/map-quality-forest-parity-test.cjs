@@ -39,7 +39,7 @@ function forestLandHexes(map) {
   for (const hex of Object.values(map.hexes)) {
     const t = hex.terenBazowy;
     if (hex.nakladka !== M.Nakladka.Las) continue;
-    if (t === M.TerenBazowy.Morze || t === M.TerenBazowy.Wybrzeze) continue;
+    if (t === M.TerenBazowy.Morze || t === M.TerenBazowy.PlytkieMorze) continue;
     keys.push(`${hex.coords.q},${hex.coords.r}`);
   }
   return keys.sort();

@@ -250,7 +250,7 @@ export const DEFAULT_PRESET: TerrainPreset = {
  * standalone/testable -- callers pass hex.terenBazowy as a plain string.
  */
 export interface WorldTerrainInput {
-  /** TerenBazowy value, case-insensitive ('laka','rownina','wzgorza','gory','pustynia','wybrzeze', ...). */
+  /** TerenBazowy value, case-insensitive ('laka','rownina','wzgorza','gory','pustynia','plytkie_morze', ...). */
   baza: string;
   /** Nakladka.Las present on the world hex (forest overlay). */
   las?: boolean;
@@ -312,7 +312,7 @@ export function presetForWorldTerrain(wt?: WorldTerrainInput): TerrainPreset {
             riverMode: 'none', edgeRocks: false, noForest: true, desertPalette: true, biasSafeCols: true,
             isMountain: false };
       break;
-    case 'wybrzeze':
+    case 'plytkie_morze':
       p = { forestBlobsMul: 0.4, hillBlobsMul: 0, rockCountMul: 0.7, hillRadiusBoost: 0,
             riverMode: 'coast', edgeRocks: false, noForest: false, desertPalette: false, biasSafeCols: false,
             isMountain: false };
@@ -334,7 +334,7 @@ export function presetForWorldTerrain(wt?: WorldTerrainInput): TerrainPreset {
   // Rzeka overlay: forces a wide, multi-ford crossing regardless of baza's
   // own river default -- EXCEPT Pustynia (zero rivers, always) and Wybrzeze
   // (already has its own single-edge water feature).
-  if (wt.rzeka && !p.noForest && baza !== 'wybrzeze') {
+  if (wt.rzeka && !p.noForest && baza !== 'plytkie_morze') {
     // lakeCount dropped on purpose: the wide-river preset must have NO water
     // besides the single continuous S-channel (owner 2026-07-22 #4 -- "zadnych
     // odseparowanych plam wody"), so a baza's ponds (Rownina/Laka) are removed.

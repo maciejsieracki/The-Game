@@ -50,7 +50,7 @@ function countPustyniaInOcean(hexes) {
     let dry = 0;
     for (const [dq, dr] of [[1, 0], [1, -1], [0, -1], [-1, 0], [-1, 1], [0, 1]]) {
       const nh = hexes[`${q + dq},${r + dr}`];
-      if (nh && nh.terenBazowy !== TerenBazowy.Morze && nh.terenBazowy !== TerenBazowy.Wybrzeze) {
+      if (nh && nh.terenBazowy !== TerenBazowy.Morze && nh.terenBazowy !== TerenBazowy.PlytkieMorze) {
         dry++;
       }
     }

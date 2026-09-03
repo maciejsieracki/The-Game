@@ -32,7 +32,7 @@ function countLandMasses(map) {
   let masses = 0;
   const HEX = [[1,0],[-1,0],[0,1],[0,-1],[1,-1],[-1,1]];
   const isLand = (tb) =>
-    tb !== M.TerenBazowy.Morze && tb !== M.TerenBazowy.Wybrzeze;
+    tb !== M.TerenBazowy.Morze && tb !== M.TerenBazowy.PlytkieMorze;
 
   for (const key of Object.keys(map.hexes)) {
     if (visited.has(key)) continue;

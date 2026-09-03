@@ -12,7 +12,7 @@ import type { GameData } from '../data/loader';
 import type { City } from './cities';
 import type { CityProduction } from './production';
 import type { RuntimeUnit } from '../units/setup';
-import { categoryOf, hexDistance, keyOf } from '../units/setup';
+import { categoryOf, hexDistance, keyOf, isWaterTerrain } from '../units/setup';
 import { TerenBazowy } from '../types/hex';
 import {
   buildPlaytestMiastoEkonomia,
@@ -105,7 +105,7 @@ function isLandPassable(map: GameMap, q: number, r: number): boolean {
   const hex = map.hexes[keyOf(q, r)];
   if (!hex) return false;
   const t = hex.terenBazowy;
-  return t !== TerenBazowy.Morze && t !== TerenBazowy.Gory;
+  return !isWaterTerrain(t) && t !== TerenBazowy.Gory;
 }
 
 function makeUnit(

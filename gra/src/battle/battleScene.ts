@@ -434,7 +434,7 @@ export interface BattleOpts {
    * tactical field echoes the world terrain. OPTIONAL -- omit it and the field
    * generates exactly as before (no regression for callers that don't pass it).
    * See battle-terrain.ts `presetForWorldTerrain`. Overridable for playtests
-   * via the `?bt=laka|rownina|wzgorza|gory|las|pustynia|wybrzeze|rzeka` query
+   * via the `?bt=laka|rownina|wzgorza|gory|las|pustynia|plytkie_morze|rzeka` query
    * param (see debugWorldTerrainOverride() below).
    */
   worldTerrain?: WorldTerrainInput;
@@ -536,7 +536,7 @@ const BT_DEBUG_PRESETS: Record<string, WorldTerrainInput> = {
   wzgorza:  { baza: 'wzgorza' },
   gory:     { baza: 'gory' },
   pustynia: { baza: 'pustynia' },
-  wybrzeze: { baza: 'wybrzeze' },
+  plytkie_morze: { baza: 'plytkie_morze' },
   las:      { baza: 'rownina', las: true },
   rzeka:    { baza: 'rownina', rzeka: true },
 };
@@ -1066,7 +1066,7 @@ const TERRAIN_COLORS: Record<string, number> = {
   wzgorza:  0xa08850,
   gory:     0x8a8880,
   pustynia: 0xc8a862,
-  wybrzeze: 0xd8c880,
+  plytkie_morze: 0xd8c880,
   morze:    0x3068a0,
   las:      0x2e6830,
 };

@@ -139,6 +139,20 @@ export function hexDistanceAxial(aq: number, ar: number, bq: number, br: number)
   return Math.max(dq, dr, ds);
 }
 
+/**
+ * True dla terenu wodnego (Morze / PlytkieMorze). Samodzielna kopia — spójna z
+ * isWaterTerrain() z units/setup.ts, ale nie importowana stamtąd: gen-helpers.ts
+ * jest częścią bundla generatora mapy uruchamianego w Web Workerze (genWorker.ts),
+ * który celowo NIE ciągnie za sobą units/setup.ts (patrz komentarz przy
+ * hexDistanceAxial wyżej — ten sam wzorzec, ten sam powód).
+ * P-MAPGEN-PANGEA-OBRYS-P4-WYBRZEZE-Q1 (2026-09-03): wprowadzona, by przepiąć na nią
+ * ręczne porównania `=== TerenBazowy.Morze`, które pomijały PlytkieMorze jako wodę —
+ * dokładnie ten błąd ujawniła metryka kształtu Pangei (groupLandMassKeys niżej).
+ */
+function isWaterTerrainLocal(tb: TerenBazowy): boolean {
+  return tb === TerenBazowy.Morze || tb === TerenBazowy.PlytkieMorze;
+}
+
 /** Klucz heksa "q,r" — zgodny z GameMap.hexes. */
 export function hexKey(q: number, r: number): string {
   return `${q},${r}`;
@@ -1018,7 +1032,7 @@ export function reapplyForestOverlay(
   const partitions = landPartitionKeysForDistribution(hexes, typ, continentOf, nContinents);
 
   for (const part of partitions) {
-    const massSet = new Set(part.filter((k) => hexes[k]?.terenBazowy !== TerenBazowy.Morze));
+    const massSet = new Set(part.filter((k) => { const hx = hexes[k]; return !hx || !isWaterTerrainLocal(hx.terenBazowy); }));
     let maxSeaInPart = 1;
     for (const k of massSet) {
       const d = seaDist.get(k) ?? 0;
@@ -1104,7 +1118,7 @@ export function reapplyLandTerrain(
   let landCount = 0;
 
   for (const [key, hex] of Object.entries(hexes)) {
-    if (hex.terenBazowy === TerenBazowy.Morze || hex.terenBazowy === TerenBazowy.Wybrzeze) {
+    if (isWaterTerrainLocal(hex.terenBazowy)) {
       continue;
     }
     const s = scratch.get(key);
@@ -1191,7 +1205,7 @@ function countLandNeighborsInSet(hexes: Record<string, Hex>, q: number, r: numbe
   let n = 0;
   for (const [dq, dr] of HEX_DIRECTIONS) {
     const nh = hexes[hexKey(q + dq, r + dr)];
-    if (nh && nh.terenBazowy !== TerenBazowy.Morze) n++;
+    if (nh && !isWaterTerrainLocal(nh.terenBazowy)) n++;
   }
   return n;
 }
@@ -1231,12 +1245,12 @@ export function applyMarginalLandZoneCaps(
 
     let land = 0;
     for (const k of ring) {
-      if (hexes[k]!.terenBazowy !== TerenBazowy.Morze) land++;
+      if (!isWaterTerrainLocal(hexes[k]!.terenBazowy)) land++;
     }
     const targetLand = Math.round(ring.length * cap);
 
     if (land > targetLand) {
-      const landKeys = ring.filter((k) => hexes[k]!.terenBazowy !== TerenBazowy.Morze);
+      const landKeys = ring.filter((k) => !isWaterTerrainLocal(hexes[k]!.terenBazowy));
       const sorted = sortLandKeysForErosion(landKeys, hexes, landScores, width, height);
       for (const k of sorted) {
         if (land <= targetLand) break;
@@ -1245,7 +1259,7 @@ export function applyMarginalLandZoneCaps(
         adjusted++;
       }
     } else if (land < targetLand) {
-      const morseKeys = ring.filter((k) => hexes[k]!.terenBazowy === TerenBazowy.Morze);
+      const morseKeys = ring.filter((k) => isWaterTerrainLocal(hexes[k]!.terenBazowy));
       morseKeys.sort((a, b) => {
         const pa = parseHexKey(a);
         const pb = parseHexKey(b);
@@ -1334,7 +1348,7 @@ function isReliefCandidateHex(
   width: number,
   height: number,
 ): boolean {
-  if (hex.terenBazowy === TerenBazowy.Morze || hex.terenBazowy === TerenBazowy.Wybrzeze) {
+  if (isWaterTerrainLocal(hex.terenBazowy)) {
     return false;
   }
   return !isInMapBorder(q, r, width, height);
@@ -1399,7 +1413,7 @@ export function groupLandMassKeys(hexes: Record<string, Hex>): string[][] {
   const groups: string[][] = [];
   for (const key of Object.keys(hexes)) {
     const hex = hexes[key];
-    if (!hex || hex.terenBazowy === TerenBazowy.Morze) continue;
+    if (!hex || isWaterTerrainLocal(hex.terenBazowy)) continue;
     if (visited.has(key)) continue;
     const mass: string[] = [];
     const stack = [key];
@@ -1412,7 +1426,7 @@ export function groupLandMassKeys(hexes: Record<string, Hex>): string[][] {
         const nk = hexKey(q + dq, r + dr);
         if (visited.has(nk)) continue;
         const nh = hexes[nk];
-        if (!nh || nh.terenBazowy === TerenBazowy.Morze) continue;
+        if (!nh || isWaterTerrainLocal(nh.terenBazowy)) continue;
         visited.add(nk);
         stack.push(nk);
       }
@@ -1539,7 +1553,7 @@ export function hexDistanceToCenterSquare(
 }
 
 function isForestEligibleTerrain(tb: TerenBazowy): boolean {
-  return tb !== TerenBazowy.Morze && tb !== TerenBazowy.Wybrzeze
+  return !isWaterTerrainLocal(tb)
     && tb !== TerenBazowy.Gory && tb !== TerenBazowy.Pustynia
     && tb !== TerenBazowy.Polarny;
 }
@@ -1558,7 +1572,7 @@ export function landPartitionKeysForDistribution(
     const zones: string[][] = Array.from({ length: nContinents }, () => []);
     for (const key of Object.keys(hexes)) {
       const hex = hexes[key];
-      if (!hex || hex.terenBazowy === TerenBazowy.Morze) continue;
+      if (!hex || isWaterTerrainLocal(hex.terenBazowy)) continue;
       const ci = Math.min(nContinents - 1, Math.max(0, continentOf.get(key) ?? 0));
       zones[ci]!.push(key);
     }
@@ -1907,7 +1921,7 @@ function eligibleReliefLandCount(land: Array<[number, number]>, hexes: Record<st
   let n = 0;
   for (const [q, r] of land) {
     const tb = hexes[hexKey(q, r)]?.terenBazowy;
-    if (tb !== undefined && tb !== TerenBazowy.Morze && tb !== TerenBazowy.Wybrzeze) n++;
+    if (tb !== undefined && !isWaterTerrainLocal(tb)) n++;
   }
   return n;
 }
@@ -2024,8 +2038,7 @@ function pickReliefForceHex(
       const k = hexKey(q, r);
       if (avoid.has(k)) return false;
       const hex = hexes[k];
-      if (!hex || hex.terenBazowy === TerenBazowy.Morze) return false;
-      if (hex.terenBazowy === TerenBazowy.Wybrzeze) return false;
+      if (!hex || isWaterTerrainLocal(hex.terenBazowy)) return false;
       if (want === 'mountain' && hex.terenBazowy === TerenBazowy.Gory) return false;
       if (want === 'highland' && hex.terenBazowy === TerenBazowy.Wzgorza) return false;
       if (want === 'mountain' && protectHighland && hex.terenBazowy === TerenBazowy.Wzgorza) {
@@ -2041,7 +2054,7 @@ function pickReliefForceHex(
       let score = scratch.get(k)?.mtnNoise ?? 0;
       if (want === 'highland') score *= 0.9;
       score += Math.min(8, hexBorderDistance(q, r, width, height)) * 0.04;
-      if (hexes[k]!.terenBazowy === TerenBazowy.Wybrzeze) score -= 0.15;
+      if (hexes[k]!.terenBazowy === TerenBazowy.PlytkieMorze) score -= 0.15;
       score += rand() * 0.1;
       return { q, r, score };
     })
@@ -2085,8 +2098,7 @@ function forceReliefTypeInCell(
           const k = hexKey(q, r);
           if (placed.has(k)) return false;
           const hex = hexes[k];
-          if (!hex || hex.terenBazowy === TerenBazowy.Morze) return false;
-          if (hex.terenBazowy === TerenBazowy.Wybrzeze) return false;
+          if (!hex || isWaterTerrainLocal(hex.terenBazowy)) return false;
           if (want === 'mountain' && hex.terenBazowy === TerenBazowy.Gory) return false;
           if (want === 'highland' && hex.terenBazowy === TerenBazowy.Wzgorza) return false;
           return true;
@@ -3235,7 +3247,7 @@ export function isLandTerrain(tb: TerenBazowy): boolean {
  * Nazwa zostaje (minimalny diff, funkcja eksportowana) — semantyka zmieniona świadomie.
  */
 export function isLandOrCoast(tb: TerenBazowy): boolean {
-  return tb !== TerenBazowy.Morze && tb !== TerenBazowy.Wybrzeze;
+  return !isWaterTerrainLocal(tb);
 }
 
 /** Domyślny udział lądu (0–1) per typ świata; nadpisywalny suwakiem zaawansowanym. Maciej 2026-07-04. */
@@ -3257,7 +3269,7 @@ export function countLandSeaHexes(hexes: Record<string, Hex>): { land: number; s
   let land = 0;
   let sea = 0;
   for (const h of Object.values(hexes)) {
-    if (h.terenBazowy === TerenBazowy.Morze || h.terenBazowy === TerenBazowy.Wybrzeze) sea++;
+    if (isWaterTerrainLocal(h.terenBazowy)) sea++;
     else land++;
   }
   return { land, sea, total: land + sea };
@@ -3265,7 +3277,7 @@ export function countLandSeaHexes(hexes: Record<string, Hex>): { land: number; s
 
 /** Priorytet usuwania lądu przy balansie — najpierw plaża, na końcu góry. */
 const ERODE_TERRAIN_ORDER: TerenBazowy[] = [
-  TerenBazowy.Wybrzeze,
+  TerenBazowy.PlytkieMorze,
   TerenBazowy.Laka,
   TerenBazowy.Pustynia,
   TerenBazowy.Rownina,
@@ -3283,7 +3295,7 @@ function countMorseNeighbors(hexes: Record<string, Hex>, q: number, r: number): 
   let n = 0;
   for (const [dq, dr] of HEX_DIRECTIONS) {
     const nh = hexes[hexKey(q + dq, r + dr)];
-    if (nh?.terenBazowy === TerenBazowy.Morze || nh?.terenBazowy === TerenBazowy.Wybrzeze) n++;
+    if (nh && isWaterTerrainLocal(nh.terenBazowy)) n++;
   }
   return n;
 }
@@ -3293,20 +3305,20 @@ function countLandNeighbors(hexes: Record<string, Hex>, q: number, r: number): n
   let n = 0;
   for (const [dq, dr] of HEX_DIRECTIONS) {
     const nh = hexes[hexKey(q + dq, r + dr)];
-    if (nh && nh.terenBazowy !== TerenBazowy.Morze && nh.terenBazowy !== TerenBazowy.Wybrzeze) n++;
+    if (nh && !isWaterTerrainLocal(nh.terenBazowy)) n++;
   }
   return n;
 }
 
 function isCoastalLandHex(hexes: Record<string, Hex>, q: number, r: number): boolean {
   const h = hexes[hexKey(q, r)];
-  if (!h || h.terenBazowy === TerenBazowy.Morze || h.terenBazowy === TerenBazowy.Wybrzeze) return false;
+  if (!h || isWaterTerrainLocal(h.terenBazowy)) return false;
   return countMorseNeighbors(hexes, q, r) > 0;
 }
 
 function isCoastalMorseHex(hexes: Record<string, Hex>, q: number, r: number): boolean {
   const h = hexes[hexKey(q, r)];
-  if (h?.terenBazowy !== TerenBazowy.Morze && h?.terenBazowy !== TerenBazowy.Wybrzeze) return false;
+  if (!h || !isWaterTerrainLocal(h.terenBazowy)) return false;
   return countLandNeighbors(hexes, q, r) > 0;
 }
 
@@ -3376,8 +3388,7 @@ export function applyClimateBandsToHexes(
     const { q, r } = parseHexKey(key);
     const tb = hex.terenBazowy;
     if (
-      tb === TerenBazowy.Morze
-      || tb === TerenBazowy.Wybrzeze
+      isWaterTerrainLocal(tb)
       || tb === TerenBazowy.Gory
       || tb === TerenBazowy.Wzgorza
     ) {
@@ -3458,6 +3469,9 @@ export function applyLandFractionByScore(
   };
 
   if (land < targetLand) {
+    // Wzrost lądu bierze WYŁĄCZNIE z czystego Morza, nigdy z istniejącego pierścienia
+    // PlytkieMorze (P-MAPGEN-PANGEA-OBRYS-P4-WYBRZEZE-Q1, świadomie zostawione bez
+    // isWaterTerrain) — inaczej rebalance zjadałby wybrzeże zamiast otwartego morza.
     const morseCandidates = keys
       .filter((k) => {
         if (hexes[k]!.terenBazowy !== TerenBazowy.Morze || !borderOk(k)) return false;
@@ -3724,6 +3738,8 @@ export function applyLandFractionByContinent(
     let land = keys.filter((k) => isDryLandTerrain(hexes[k]!.terenBazowy)).length;
 
     if (land < quota) {
+      // Jak w applyLandFractionByScore — wzrost tylko z czystego Morza, nigdy z pierścienia
+      // PlytkieMorze (P-MAPGEN-PANGEA-OBRYS-P4-WYBRZEZE-Q1, świadomie bez isWaterTerrain).
       const morseCandidates = keys
         .filter((k) => hexes[k]!.terenBazowy === TerenBazowy.Morze && borderOk(k))
         .sort((a, b) => {
@@ -3864,7 +3880,7 @@ export function rebalanceLandSeaRatio(
 
 /** Suchy ląd — bez morza i wybrzeża (surowce lądowe tylko tutaj; ryby = osobne ulepszenie). */
 export function isDryLandTerrain(tb: TerenBazowy): boolean {
-  return tb !== TerenBazowy.Morze && tb !== TerenBazowy.Wybrzeze;
+  return !isWaterTerrainLocal(tb);
 }
 
 /**
@@ -3892,7 +3908,7 @@ export function applyCoastRing(hexes: Record<string, Hex>): number {
   }
   for (const key of toCoast) {
     const hex = hexes[key]!;
-    hex.terenBazowy = TerenBazowy.Wybrzeze;
+    hex.terenBazowy = TerenBazowy.PlytkieMorze;
     hex.nakladka = Nakladka.Brak;
     delete (hex as HexWithZloze).zloze;
   }
@@ -3914,7 +3930,7 @@ export function applyDoubleCoastRing(hexes: Record<string, Hex>): number {
     const r = Number(parts[1]);
     for (const [dq, dr] of HEX_DIRECTIONS) {
       const nb = hexes[hexKey(q + dq, r + dr)];
-      if (nb?.terenBazowy === TerenBazowy.Wybrzeze) {
+      if (nb?.terenBazowy === TerenBazowy.PlytkieMorze) {
         toCoast.push(key);
         break;
       }
@@ -3922,7 +3938,7 @@ export function applyDoubleCoastRing(hexes: Record<string, Hex>): number {
   }
   for (const key of toCoast) {
     const hex = hexes[key]!;
-    hex.terenBazowy = TerenBazowy.Wybrzeze;
+    hex.terenBazowy = TerenBazowy.PlytkieMorze;
     hex.nakladka = Nakladka.Brak;
     delete (hex as HexWithZloze).zloze;
   }
@@ -3966,7 +3982,7 @@ export function sanitizeCoastHexes(hexes: Record<string, Hex>): number {
   const queue: string[] = [];
 
   for (const [key, hex] of Object.entries(hexes)) {
-    if (hex.terenBazowy !== TerenBazowy.Wybrzeze) continue;
+    if (hex.terenBazowy !== TerenBazowy.PlytkieMorze) continue;
     const parts = key.split(',');
     const q = Number(parts[0]);
     const r = Number(parts[1]);
@@ -3988,7 +4004,7 @@ export function sanitizeCoastHexes(hexes: Record<string, Hex>): number {
     for (const [dq, dr] of HEX_DIRECTIONS) {
       const nk = hexKey(q + dq, r + dr);
       if (valid.has(nk)) continue;
-      if (hexes[nk]?.terenBazowy === TerenBazowy.Wybrzeze) {
+      if (hexes[nk]?.terenBazowy === TerenBazowy.PlytkieMorze) {
         valid.add(nk);
         queue.push(nk);
       }
@@ -3997,7 +4013,7 @@ export function sanitizeCoastHexes(hexes: Record<string, Hex>): number {
 
   let fixed = 0;
   for (const [key, hex] of Object.entries(hexes)) {
-    if (hex.terenBazowy !== TerenBazowy.Wybrzeze) continue;
+    if (hex.terenBazowy !== TerenBazowy.PlytkieMorze) continue;
     if (valid.has(key)) continue;
     // Sierota — brak łańcucha do lądu. Cofamy do Morza (woda), nigdy do lądu.
     setHexToMorze(hex);
@@ -4015,7 +4031,7 @@ export function oceanConnectedWaterKeys(
   const connected = new Set<string>();
   const queue: string[] = [];
   const isOceanWater = (tb: TerenBazowy) =>
-    tb === TerenBazowy.Morze || tb === TerenBazowy.Wybrzeze;
+    isWaterTerrainLocal(tb);
 
   for (let r = 0; r < height; r++) {
     for (let q = 0; q < width; q++) {
@@ -4099,7 +4115,7 @@ export function findInlandWaterHexes(
   return Object.entries(hexes)
     .filter(([k, h]) => {
       const tb = h.terenBazowy;
-      return (tb === TerenBazowy.Morze || tb === TerenBazowy.Wybrzeze) && !ocean.has(k);
+      return isWaterTerrainLocal(tb) && !ocean.has(k);
     })
     .map(([k]) => k);
 }
@@ -4149,7 +4165,7 @@ export function purgeDesertEnclaveWater(
     let dryN = 0;
     for (const [dq, dr] of HEX_DIRECTIONS) {
       const nh = hexes[hexKey(q + dq, r + dr)];
-      if (!nh || nh.terenBazowy === TerenBazowy.Morze || nh.terenBazowy === TerenBazowy.Wybrzeze) continue;
+      if (!nh || isWaterTerrainLocal(nh.terenBazowy)) continue;
       dryN++;
       if (nh.terenBazowy === TerenBazowy.Pustynia) pustN++;
     }
@@ -4178,7 +4194,7 @@ export function fillEnclosedWaterByLandNeighbors(
   for (let pass = 0; pass < 8; pass++) {
     let n = 0;
     for (const [key, hex] of Object.entries(hexes)) {
-      if (hex.terenBazowy !== TerenBazowy.Morze && hex.terenBazowy !== TerenBazowy.Wybrzeze) {
+      if (!isWaterTerrainLocal(hex.terenBazowy)) {
         continue;
       }
       const { q, r } = parseHexKey(key);
@@ -4353,7 +4369,7 @@ function groupDryLandMassKeys(hexes: Record<string, Hex>): string[][] {
  * stare BFS tylko po Morzu było ślepe).
  */
 function isPangeaBridgeWater(tb: TerenBazowy): boolean {
-  return tb === TerenBazowy.Morze || tb === TerenBazowy.Wybrzeze;
+  return isWaterTerrainLocal(tb);
 }
 
 export function ensurePangeaSingleContinent(
@@ -4714,7 +4730,7 @@ export function purgeReliefValleyWater(
   let converted = 0;
   for (const hex of Object.values(hexes)) {
     const tb = hex.terenBazowy;
-    if (tb !== TerenBazowy.Morze && tb !== TerenBazowy.Wybrzeze) continue;
+    if (!isWaterTerrainLocal(tb)) continue;
     const { q, r } = hex.coords;
     const key = hexKey(q, r);
     if (depth.has(key)) continue;
@@ -4723,7 +4739,7 @@ export function purgeReliefValleyWater(
     let dryLandNeighbors = 0;
     for (const [dq, dr] of HEX_DIRECTIONS) {
       const nh = hexes[hexKey(q + dq, r + dr)];
-      if (!nh || nh.terenBazowy === TerenBazowy.Morze || nh.terenBazowy === TerenBazowy.Wybrzeze) continue;
+      if (!nh || isWaterTerrainLocal(nh.terenBazowy)) continue;
       dryLandNeighbors++;
       if (nh.terenBazowy === TerenBazowy.Gory || nh.terenBazowy === TerenBazowy.Wzgorza) reliefNeighbors++;
     }
@@ -4854,7 +4870,7 @@ export function thickenCoastAndSmoothInlets(
   // ląd się nie kurczy, więc reset musi wracać do wody, nigdy do lądu), potem `coastWidth`
   // pierścieni od Morza w głąb, trwałe (bez sanitizeCoastHexes, który zdejmowałby 2. pierścień).
   for (const hex of Object.values(hexes)) {
-    if (hex.terenBazowy === TerenBazowy.Wybrzeze) {
+    if (hex.terenBazowy === TerenBazowy.PlytkieMorze) {
       setHexToMorze(hex);
       changed++;
     }
@@ -4866,7 +4882,7 @@ export function thickenCoastAndSmoothInlets(
       const { q, r } = parseHexKey(key);
       for (const [dq, dr] of HEX_DIRECTIONS) {
         const nb = hexes[hexKey(q + dq, r + dr)];
-        if (nb && (isDryLandTerrain(nb.terenBazowy) || nb.terenBazowy === TerenBazowy.Wybrzeze)) {
+        if (nb && (isDryLandTerrain(nb.terenBazowy) || nb.terenBazowy === TerenBazowy.PlytkieMorze)) {
           toCoast.push(key);
           break;
         }
@@ -4875,7 +4891,7 @@ export function thickenCoastAndSmoothInlets(
     if (toCoast.length === 0) break;
     for (const key of toCoast) {
       const hex = hexes[key]!;
-      hex.terenBazowy = TerenBazowy.Wybrzeze;
+      hex.terenBazowy = TerenBazowy.PlytkieMorze;
       hex.nakladka = Nakladka.Brak;
       delete (hex as HexWithZloze).zloze;
       changed++;
@@ -4903,7 +4919,7 @@ export function flattenFalseCoastalRiverNotches(
 ): number {
   const toFlatten: string[] = [];
   for (const [key, hex] of Object.entries(hexes)) {
-    if (hex.terenBazowy !== TerenBazowy.Wybrzeze) continue;
+    if (hex.terenBazowy !== TerenBazowy.PlytkieMorze) continue;
     if (hex.rzeka?.obecna) continue; // prawdziwe ujście/koryto — nigdy nie ruszamy
     const { q, r } = parseHexKey(key);
     if (isInMapBorder(q, r, width, height)) continue;
@@ -4990,7 +5006,7 @@ export function minTinyIslandHexesForTyp(typ: TypSwiata): number {
 export function countOpenOceanLandSpecks(hexes: Record<string, Hex>): number {
   let n = 0;
   for (const hex of Object.values(hexes)) {
-    if (hex.terenBazowy === TerenBazowy.Morze || hex.terenBazowy === TerenBazowy.Wybrzeze) {
+    if (isWaterTerrainLocal(hex.terenBazowy)) {
       continue;
     }
     const { q, r } = hex.coords;
@@ -4998,10 +5014,7 @@ export function countOpenOceanLandSpecks(hexes: Record<string, Hex>): number {
     for (const [dq, dr] of HEX_DIRECTIONS) {
       const nh = hexes[hexKey(q + dq, r + dr)];
       if (!nh) continue;
-      if (
-        nh.terenBazowy !== TerenBazowy.Morze
-        && nh.terenBazowy !== TerenBazowy.Wybrzeze
-      ) {
+      if (!isWaterTerrainLocal(nh.terenBazowy)) {
         dryLandNeighbors++;
       }
     }
@@ -5014,7 +5027,7 @@ export function countOpenOceanLandSpecks(hexes: Record<string, Hex>): number {
 export function purgeOpenOceanLandSpecks(hexes: Record<string, Hex>): number {
   let removed = 0;
   for (const hex of Object.values(hexes)) {
-    if (hex.terenBazowy === TerenBazowy.Morze || hex.terenBazowy === TerenBazowy.Wybrzeze) {
+    if (isWaterTerrainLocal(hex.terenBazowy)) {
       continue;
     }
     const { q, r } = hex.coords;
@@ -5022,10 +5035,7 @@ export function purgeOpenOceanLandSpecks(hexes: Record<string, Hex>): number {
     for (const [dq, dr] of HEX_DIRECTIONS) {
       const nh = hexes[hexKey(q + dq, r + dr)];
       if (!nh) continue;
-      if (
-        nh.terenBazowy !== TerenBazowy.Morze
-        && nh.terenBazowy !== TerenBazowy.Wybrzeze
-      ) {
+      if (!isWaterTerrainLocal(nh.terenBazowy)) {
         dryLandNeighbors++;
       }
     }
@@ -5164,7 +5174,7 @@ export function auditMapTerrainData(
 /** Ranking wysokosci terenu (nizszy = nizej nad poziomem morza). */
 export const ELEVATION_RANK: Record<TerenBazowy, number> = {
   [TerenBazowy.Morze]:    0,
-  [TerenBazowy.Wybrzeze]: 1,
+  [TerenBazowy.PlytkieMorze]: 1,
   [TerenBazowy.Laka]:     2,
   [TerenBazowy.Pustynia]: 3,
   [TerenBazowy.Rownina]:  4,
@@ -5200,11 +5210,11 @@ export function purgeOceanInsideEarthLandMask(
   for (const [key, hex] of Object.entries(hexes)) {
     const { q, r } = parseHexKey(key);
     if (earthTemplateLandAt(q, r, width, height) <= 0) continue;
-    if (hex.terenBazowy !== TerenBazowy.Morze && hex.terenBazowy !== TerenBazowy.Wybrzeze) continue;
+    if (!isWaterTerrainLocal(hex.terenBazowy)) continue;
     let pustN = 0;
     for (const [dq, dr] of HEX_DIRECTIONS) {
       const nh = hexes[hexKey(q + dq, r + dr)];
-      if (!nh || nh.terenBazowy === TerenBazowy.Morze || nh.terenBazowy === TerenBazowy.Wybrzeze) continue;
+      if (!nh || isWaterTerrainLocal(nh.terenBazowy)) continue;
       if (nh.terenBazowy === TerenBazowy.Pustynia) pustN++;
     }
     hex.terenBazowy = climateBandAt(q, r, height) === 'desert' && pustN >= 2
@@ -5255,7 +5265,7 @@ export function landRiverRenderPath(
   const land: RiverCoord[] = [];
   for (const p of path) {
     const h = hexes[hexKey(p.q, p.r)];
-    if (!h || h.terenBazowy === TerenBazowy.Morze || h.terenBazowy === TerenBazowy.Wybrzeze) break;
+    if (!h || isWaterTerrainLocal(h.terenBazowy)) break;
     land.push({ q: p.q, r: p.r });
   }
   if (land.length < 2) return land;
@@ -5308,7 +5318,7 @@ export function coastalRiverRenderPath(
   for (let i = path.length - 1; i >= 0; i--) {
     const h = hexes[hexKey(path[i]!.q, path[i]!.r)];
     if (!h) continue;
-    if (h.terenBazowy === TerenBazowy.Wybrzeze) {
+    if (h.terenBazowy === TerenBazowy.PlytkieMorze) {
       start = i;
       break;
     }
@@ -5336,7 +5346,7 @@ export function coastalRiverRenderPath(
     let lp = out[out.length - 1]!;
     let lh = hexes[hexKey(lp.q, lp.r)];
     for (let guard = 0; guard < 4; guard++) {
-      if (lh?.terenBazowy === TerenBazowy.Wybrzeze && hasMorzeNeighborForRiverRender(hexes, lp.q, lp.r)) {
+      if (lh?.terenBazowy === TerenBazowy.PlytkieMorze && hasMorzeNeighborForRiverRender(hexes, lp.q, lp.r)) {
         break; // już styka z Morzem — koniec dociągania
       }
       let nextKey: string | null = null;
@@ -5347,7 +5357,7 @@ export function coastalRiverRenderPath(
         const nk = hexKey(nq, nr);
         if (out.some((o) => o.q === nq && o.r === nr)) continue;
         const nh = hexes[nk];
-        if (nh?.terenBazowy !== TerenBazowy.Wybrzeze) continue;
+        if (nh?.terenBazowy !== TerenBazowy.PlytkieMorze) continue;
         const score = hasMorzeNeighborForRiverRender(hexes, nq, nr) ? 1 : 0;
         if (score > bestScore) { bestScore = score; nextKey = nk; }
       }
@@ -5362,7 +5372,7 @@ export function coastalRiverRenderPath(
   if (start > 0) {
     const prev = path[start - 1]!;
     const ph = hexes[hexKey(prev.q, prev.r)];
-    if (ph && ph.terenBazowy !== TerenBazowy.Morze && ph.terenBazowy !== TerenBazowy.Wybrzeze) {
+    if (ph && !isWaterTerrainLocal(ph.terenBazowy)) {
       out.unshift({ q: prev.q, r: prev.r });
     }
   }
@@ -5373,7 +5383,7 @@ export function coastalRiverRenderPath(
 function hasLandNeighborTouchingSea(hexes: Record<string, Hex>, q: number, r: number): boolean {
   for (const [dq, dr] of HEX_DIRECTIONS) {
     const nh = hexes[hexKey(q + dq, r + dr)];
-    if (nh?.terenBazowy === TerenBazowy.Wybrzeze || nh?.terenBazowy === TerenBazowy.Morze) return true;
+    if (nh && isWaterTerrainLocal(nh.terenBazowy)) return true;
   }
   return false;
 }
@@ -5560,7 +5570,7 @@ export function riverPathRespectsSeaBuffer(
   for (let i = 0; i < bodyEnd; i++) {
     const p = path[i]!;
     const h = hexes[hexKey(p.q, p.r)];
-    if (!h || h.terenBazowy === TerenBazowy.Morze) return false;
+    if (!h || isWaterTerrainLocal(h.terenBazowy)) return false;
     if ((seaDist.get(hexKey(p.q, p.r)) ?? 0) < minInland) return false;
   }
   return true;
@@ -5605,7 +5615,7 @@ export function buildSeaDistanceField(hexes: Record<string, Hex>): Map<string, n
   const dist = new Map<string, number>();
   const queue: string[] = [];
   for (const [key, hex] of Object.entries(hexes)) {
-    if (hex.terenBazowy === TerenBazowy.Morze || hex.terenBazowy === TerenBazowy.Wybrzeze) {
+    if (isWaterTerrainLocal(hex.terenBazowy)) {
       dist.set(key, 0);
       queue.push(key);
     }
@@ -5857,6 +5867,9 @@ function canRiverFlowThrough(
   allowKey?: string,
   allowReliefTraversal = false,
 ): boolean {
+  // Świadomie Morze-only, nie isWaterTerrain (P-MAPGEN-PANGEA-OBRYS-P4-WYBRZEZE-Q1): rzeka
+  // MUSI móc wejść na PlytkieMorze (tam kończy się jej ujście — patrz extendRiverToWybrzeze/
+  // finishRiverMouthAtSea niżej), ale nigdy dalej w głąb Morza.
   if (!hex || hex.terenBazowy === TerenBazowy.Morze) return false;
   if (isReliefTerrain(hex.terenBazowy) && !allowReliefTraversal) return cellKey === sourceKey;
   if (blockExisting && hex.rzeka?.obecna && cellKey !== allowKey) return false;
@@ -6602,7 +6615,7 @@ function extendRiverToWybrzeze(
   for (let extra = 0; extra < RIVER_MOUTH_TAIL_LEN; extra++) {
     const endHex = hexes[hexKey(cq, cr)];
     if (!endHex) break;
-    if (endHex.terenBazowy === TerenBazowy.Wybrzeze || endHex.terenBazowy === TerenBazowy.Morze) break;
+    if (isWaterTerrainLocal(endHex.terenBazowy)) break;
 
     let best: [number, number] | null = null;
     let bestScore = Infinity;
@@ -6614,7 +6627,7 @@ function extendRiverToWybrzeze(
       const nh = hexes[nk];
       if (!nh || nh.terenBazowy === TerenBazowy.Morze || isReliefTerrain(nh.terenBazowy)) continue;
       let score = seaDist.get(nk) ?? 999;
-      if (nh.terenBazowy === TerenBazowy.Wybrzeze) score -= 8;
+      if (nh.terenBazowy === TerenBazowy.PlytkieMorze) score -= 8;
       if (score < bestScore) {
         bestScore = score;
         best = [nq, nr];
@@ -6666,13 +6679,13 @@ function finishRiverMouthAtSea(
       const nh = hexes[nk];
       if (!nh || nh.terenBazowy === TerenBazowy.Morze || isReliefTerrain(nh.terenBazowy)) continue;
       const nd = seaDist.get(nk) ?? Infinity;
-      if (nh.terenBazowy !== TerenBazowy.Wybrzeze
+      if (nh.terenBazowy !== TerenBazowy.PlytkieMorze
         && !canRiverDrainStep(nk, nd, openOceanDist, oceanConnected, true)) continue;
-      if (!canRiverFlowThrough(nh, nk, sourceKey) && nh.terenBazowy !== TerenBazowy.Wybrzeze) continue;
+      if (!canRiverFlowThrough(nh, nk, sourceKey) && nh.terenBazowy !== TerenBazowy.PlytkieMorze) continue;
       let score = openOceanDist.get(nk) ?? nd;
       // Preferuj Wybrzeże (pierwszy kontakt z wodą kończy trasę w następnej iteracji —
       // patrz mouthReady) — bez dodatkowego tunelowania do heksu stykającego realne Morze.
-      if (nh.terenBazowy === TerenBazowy.Wybrzeze) score -= 15;
+      if (nh.terenBazowy === TerenBazowy.PlytkieMorze) score -= 15;
       if (score < bestScore) {
         bestScore = score;
         best = { q: nq, r: nr };
@@ -7108,7 +7121,7 @@ function sanitizeRiverTurnWindow(
 /** Czy heks może dostać oznaczenie rzeki (bonus plonów / rzeka.obecna). */
 function canReceiveRiverYieldMark(hex: Hex | undefined): boolean {
   if (!hex || hex.terenBazowy === TerenBazowy.Morze) return false;
-  return isDryLandTerrain(hex.terenBazowy) || hex.terenBazowy === TerenBazowy.Wybrzeze;
+  return isDryLandTerrain(hex.terenBazowy) || hex.terenBazowy === TerenBazowy.PlytkieMorze;
 }
 
 function markRiverEdge(hexes: Record<string, Hex>, q: number, r: number, edgeIdx: number): void {
@@ -7262,7 +7275,7 @@ function markRiverPath(hexes: Record<string, Hex>, path: Array<{ q: number; r: n
     if (ha.terenBazowy === TerenBazowy.Morze && hb.terenBazowy === TerenBazowy.Morze) continue;
     if (ha.terenBazowy === TerenBazowy.Morze || hb.terenBazowy === TerenBazowy.Morze) {
       const coastal =
-        ha.terenBazowy === TerenBazowy.Wybrzeze || hb.terenBazowy === TerenBazowy.Wybrzeze;
+        ha.terenBazowy === TerenBazowy.PlytkieMorze || hb.terenBazowy === TerenBazowy.PlytkieMorze;
       if (!coastal) continue;
     }
     const eA = neighborDirIndex(a.q, a.r, b.q, b.r);
@@ -7286,7 +7299,7 @@ function riverSegmentEdgeMarks(
   if (ha.terenBazowy === TerenBazowy.Morze && hb.terenBazowy === TerenBazowy.Morze) return [];
   if (ha.terenBazowy === TerenBazowy.Morze || hb.terenBazowy === TerenBazowy.Morze) {
     const coastal =
-      ha.terenBazowy === TerenBazowy.Wybrzeze || hb.terenBazowy === TerenBazowy.Wybrzeze;
+      ha.terenBazowy === TerenBazowy.PlytkieMorze || hb.terenBazowy === TerenBazowy.PlytkieMorze;
     if (!coastal) return [];
   }
   const out: Array<{ key: string; edge: number }> = [];
@@ -7705,7 +7718,7 @@ function collectMediumTributaryGrowCandidates(
     // FALA 192: pierwszy krok od main może być Wybrzeże; dalej — tylko suchy ląd.
     if (!isJunction
       && netSoFar < o.minNetLen
-      && nh?.terenBazowy === TerenBazowy.Wybrzeze
+      && nh?.terenBazowy === TerenBazowy.PlytkieMorze
       && o.path.length > 1) continue;
     if (!isJunction) {
       // FALA 192: luźniejszy sep przy starcie — effectiveSep=1, nie 2.
@@ -7727,7 +7740,7 @@ function collectMediumTributaryGrowCandidates(
     );
     score += inlandSteps <= 1 ? centerBias * 3.2 : centerBias * 5.0;
     if (centerBias < 0 && inlandSteps > 1) score -= 28;
-    if (nh?.terenBazowy === TerenBazowy.Wybrzeze && inlandSteps > 0) score -= 90;
+    if (nh?.terenBazowy === TerenBazowy.PlytkieMorze && inlandSteps > 0) score -= 90;
     score += o.rand() * (inlandSteps <= 1 ? 0.25 : 0.12);
     if (isJunction) {
       score += 55;
@@ -10141,7 +10154,7 @@ function cellEligibleForRiverPlacement(
 
 /** Ląd liczony w metryce bliskości rzeki (niziny + wybrzeże w masie lądu). */
 function isRiverProximityWalkTerrain(t: TerenBazowy): boolean {
-  return isRiverLandTerrain(t) || t === TerenBazowy.Wybrzeze;
+  return isRiverLandTerrain(t) || t === TerenBazowy.PlytkieMorze;
 }
 
 /** Multi-source BFS od sieci rzek — O(land) zamiast O(land²) na Pangei. */
@@ -10352,7 +10365,7 @@ function bfsNearestRiverHexOnLowland(
       const nh = hexes[nk];
       if (!nh) continue;
       const walkable = isRiverLandTerrain(nh.terenBazowy)
-        || (allowReliefTraversal && nh.terenBazowy === TerenBazowy.Wybrzeze);
+        || (allowReliefTraversal && nh.terenBazowy === TerenBazowy.PlytkieMorze);
       if (!walkable) continue;
       if (!allowReliefTraversal && isReliefTerrain(nh.terenBazowy)) continue;
       visited.add(nk);
@@ -11945,9 +11958,9 @@ export interface DepositRule {
   allowedOn: (hex: Hex) => boolean;
   /**
    * Gdy true — dodatkowo wymaga, by heks byl LADEM najblizszym wybrzeza
-   * (suchy lad graniczacy z plytkim morzem/Wybrzezem — isCoastalLandHex).
+   * (suchy lad graniczacy z PlytkieMorze/Morze — isCoastalLandHex).
    * C-MAP-SOL-ZIEMIA=B (Maciej 2026-07-25): tak zdefiniowane wybrzeze dziala
-   * takze na mapie Ziemia (brak kafli Wybrzeze, ale jest lad przy Morzu).
+   * takze na mapie Ziemia (brak kafli PlytkieMorze, ale jest lad przy Morzu).
    */
   requiresCoastalLand?: boolean;
   /** Rzadkosc: ulamek pasujacych heksow, ktore dostana zloze (0..1). */
@@ -12080,7 +12093,7 @@ export function placeDeposits(
     // Woda nigdy nie dostaje złoża. C-MAP-SOL-ZIEMIA=B: sól nie jest już na kaflu Wybrzeże,
     // tylko na LĄDZIE przy wybrzeżu (requiresCoastalLand niżej) — więc Wybrzeże, jak Morze,
     // jest wykluczone dla wszystkich złóż.
-    if (hex.terenBazowy === TerenBazowy.Morze || hex.terenBazowy === TerenBazowy.Wybrzeze) continue;
+    if (isWaterTerrainLocal(hex.terenBazowy)) continue;
 
     const [depQ, depR] = key.split(',').map(Number) as [number, number];
     for (const rule of rules) {
@@ -12146,10 +12159,9 @@ function nakladkaBlocksDepositSpawn(nakladka: Nakladka): boolean {
 }
 
 function hexCanAcceptDeposit(hex: HexWithZloze, rule: DepositRule): boolean {
-  if (hex.terenBazowy === TerenBazowy.Morze) return false;
   // C-MAP-SOL-ZIEMIA=B: żadne złoże nie ląduje na wodzie (sól jest teraz na LĄDZIE przy
-  // wybrzeżu, nie na kaflu Wybrzeże) — Wybrzeże, jak Morze, wykluczone dla wszystkich złóż.
-  if (hex.terenBazowy === TerenBazowy.Wybrzeze) return false;
+  // wybrzeżu, nie na kaflu PlytkieMorze) — PlytkieMorze, jak Morze, wykluczone dla wszystkich złóż.
+  if (isWaterTerrainLocal(hex.terenBazowy)) return false;
   if (hex.zloze) return false;
   if (nakladkaBlocksDepositSpawn(hex.nakladka)) return false;
   return rule.allowedOn(hex);
@@ -12212,7 +12224,7 @@ function pickDepositBootstrapHex(
   const ranked = land
     .filter(([q, r]) => {
       const hex = hexes[hexKey(q, r)];
-      if (!hex || hex.terenBazowy === TerenBazowy.Morze || hex.terenBazowy === TerenBazowy.Wybrzeze) {
+      if (!hex || isWaterTerrainLocal(hex.terenBazowy)) {
         return false;
       }
       // 'glina' nie wymusza już terenu (TEMAT 12, patrz prepareTerrainForDeposit) — jej regula
@@ -12437,7 +12449,7 @@ export function ensureForestGridCoverage(
 export function stripDepositsFromWater(hexes: Record<string, Hex>): number {
   let n = 0;
   for (const hex of Object.values(hexes) as HexWithZloze[]) {
-    if (hex.terenBazowy !== TerenBazowy.Morze && hex.terenBazowy !== TerenBazowy.Wybrzeze) continue;
+    if (!isWaterTerrainLocal(hex.terenBazowy)) continue;
     const had = hex.nakladka !== Nakladka.Brak || !!hex.zloze;
     hex.nakladka = Nakladka.Brak;
     delete hex.zloze;
@@ -12450,7 +12462,7 @@ export function stripDepositsFromWater(hexes: Record<string, Hex>): number {
 export function countDepositsOnWater(hexes: Record<string, Hex>): number {
   let n = 0;
   for (const hex of Object.values(hexes) as HexWithZloze[]) {
-    if (hex.terenBazowy !== TerenBazowy.Morze && hex.terenBazowy !== TerenBazowy.Wybrzeze) continue;
+    if (!isWaterTerrainLocal(hex.terenBazowy)) continue;
     if (hex.nakladka !== Nakladka.Brak || hex.zloze) n++;
   }
   return n;

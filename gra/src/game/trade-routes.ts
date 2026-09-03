@@ -62,7 +62,7 @@
 
 import type { GameMap } from '../types/map';
 import { TerenBazowy } from '../types/hex';
-import { hexDistance, hexNeighborCoords, keyOf } from '../units/setup';
+import { hexDistance, hexNeighborCoords, keyOf, isWaterTerrain } from '../units/setup';
 import type { City } from './cities';
 import { territoryOwnerAt, cityTerritoryRadius, type TerritoryNode } from '../map/territory';
 
@@ -176,14 +176,14 @@ export interface CityConnectionResult {
 // nową zasadę Wybrzeze+Morze=woda dla morza).
 // ---------------------------------------------------------------------------
 
-/** Ląd przechodni dla trasy lądowej: wszystko poza wodą (Wybrzeże/Morze) i Górami. */
+/** Ląd przechodni dla trasy lądowej: wszystko poza wodą (PlytkieMorze/Morze) i Górami. */
 function isLandPassable(tb: TerenBazowy): boolean {
-  return tb !== TerenBazowy.Morze && tb !== TerenBazowy.Wybrzeze && tb !== TerenBazowy.Gory;
+  return !isWaterTerrain(tb) && tb !== TerenBazowy.Gory;
 }
 
-/** Woda żeglowna dla trasy morskiej: Morze lub Wybrzeże (obie klasyfikowane jako woda). */
+/** Woda żeglowna dla trasy morskiej: Morze lub PlytkieMorze (obie klasyfikowane jako woda). */
 function isWaterHex(tb: TerenBazowy): boolean {
-  return tb === TerenBazowy.Morze || tb === TerenBazowy.Wybrzeze;
+  return isWaterTerrain(tb);
 }
 
 /** Budynki portowe — odblokowują szlak morski (dowolny poziom Portu). */

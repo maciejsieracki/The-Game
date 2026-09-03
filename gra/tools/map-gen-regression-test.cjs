@@ -72,7 +72,8 @@ fs.writeFileSync(
 export { pathEndsAtSea, pathReachesRealSea, pathHasValidRiverOutlet, verifyRiverNetworkConnectivity, checkTributaryJunctions, groupLandMassKeys } from '../src/map/gen-helpers';
 export { expectedStartCityCount, targetVillageHutCount } from '../src/map/villages';
 export { defaultCivTypesFromMapLabel, defaultMiastaPanstwaFromMapLabel } from '../src/map/newGameMapDefaults';
-export { TerenBazowy } from '../src/types/hex';`,
+export { TerenBazowy } from '../src/types/hex';
+export { isWaterTerrain } from '../src/units/setup';`,
   'utf8',
 );
 
@@ -232,7 +233,6 @@ console.log(`  dopływy z junction: ${tribJunctionFails === 0 ? 'PASS' : 'FAIL'}
 console.log(`  determinizm: ${detOk ? 'PASS' : 'FAIL'}`);
 
 console.log('\n=== Pangea nieregularna (FALA 187, 5 seedów standardowy) ===');
-const TB = M.TerenBazowy;
 const PANGEA_DIRS = [[1, 0], [-1, 0], [0, 1], [0, -1], [1, -1], [-1, 1]];
 function pangeaShapeMetrics(map) {
   const hexes = map.hexes;
@@ -248,7 +248,7 @@ function pangeaShapeMetrics(map) {
     rMin = Math.min(rMin, r); rMax = Math.max(rMax, r);
     for (const [dq, dr] of PANGEA_DIRS) {
       const nh = hexes[`${q + dq},${r + dr}`];
-      if (!nh || nh.terenBazowy === TB.Morze) { coast++; break; }
+      if (!nh || M.isWaterTerrain(nh.terenBazowy)) { coast++; break; }
     }
   }
   const bboxArea = (qMax - qMin + 1) * (rMax - rMin + 1);
@@ -275,6 +275,16 @@ function pangeaShapeMetrics(map) {
 // lets extreme shape degeneration through too (bboxFill<0.87 is the real shape guard), but the
 // owner chose gate simplicity over this assertion's sharpness. Section is now a normal blocking
 // assertion like the rest of the file — the ABC is resolved, no reason to keep the exemption.
+//
+// P-MAPGEN-PANGEA-OBRYS-P4-WYBRZEZE-Q1 (2026-09-03): metryka NAPRAWIONA — PlytkieMorze liczy się
+// teraz jako woda (groupLandMassKeys + kontakt-z-wodą powyżej używają isWaterTerrain), zgodnie
+// z Pytaniem 1=A dokumentu P-MAPGEN-PANGEA-OBRYS.md. Zmierzony coastRatio na tych samych 5 SEEDS
+// skoczył z 3.7778–3.8272 do 5,29–5,89 (recon dokumentu, sekcja 3) — próg 3.72 wyżej jest teraz
+// znacznie luźniejszy niż zamierzała kalibracja R-MAPGEN-PANGEA-PROG-Q1 (dobrana pod STARĄ,
+// wadliwą metrykę). Asercja zostaje zielona i nadal poprawnie łapie degenerację kształtu przez
+// bboxFill<0.87 (prawdziwy strażnik kształtu wg komentarza wyżej) — rekalibracja samego progu
+// coastRatio pod nową metrykę to osobna decyzja właściciela (Pytanie 2 dokumentu), poza zakresem
+// tego dispatchu, który dotyczy wyłącznie nazwy i przepięcia porównań.
 let pangeaShapeFail = 0;
 for (const seed of SEEDS) {
   const pmap = M.generujSwiat(seed, 'standardowy', 'pangea', { worldDensity: DENSITY });

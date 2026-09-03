@@ -45,7 +45,7 @@ const cities = [];
 function findLandHex() {
   for (const [key, hex] of Object.entries(map.hexes)) {
     const t = hex.terenBazowy;
-    if (t !== 'morze' && t !== 'wybrzeze' && t !== 'gory') {
+    if (t !== 'morze' && t !== 'plytkie_morze' && t !== 'gory') {
       const [q, r] = key.split(',').map(Number);
       return { q, r };
     }

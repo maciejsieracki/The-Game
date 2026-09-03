@@ -16,7 +16,7 @@ import type { GameData } from '../data/loader';
 import { TerenBazowy } from '../types/hex';
 import type { City } from './cities';
 import type { RuntimeUnit } from '../units/setup';
-import { categoryOf, keyOf, hexNeighborCoords } from '../units/setup';
+import { categoryOf, keyOf, hexNeighborCoords, isWaterTerrain } from '../units/setup';
 import { computeVisible } from './visibility';
 
 export const PLAYTEST_ODSKOK_SEED = 331777;
@@ -64,7 +64,7 @@ function isOpenField(map: GameMap, q: number, r: number): boolean {
   const hex = map.hexes[keyOf(q, r)];
   if (!hex) return false;
   const t = hex.terenBazowy;
-  return t !== TerenBazowy.Morze && t !== TerenBazowy.Gory && t !== TerenBazowy.Wybrzeze;
+  return !isWaterTerrain(t) && t !== TerenBazowy.Gory;
 }
 
 /** 3 heksy w linii prostej (kierunek dq,dr) + linia wroga 1 heks w „przód”. */

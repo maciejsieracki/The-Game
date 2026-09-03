@@ -46,7 +46,7 @@ function ok(cond, msg) {
 const audit = M.terrainHeightAudit('roblox');
 console.log('\n--- Wysokości render (Roblox) ---');
 console.log(`Morze (tafla):     ${audit.seaTopY.toFixed(3)}`);
-console.log(`Wybrzeże:          ${audit.wybrzezeTopY.toFixed(3)}`);
+console.log(`Wybrzeże:          ${audit.plytkieMorzeTopY.toFixed(3)}`);
 console.log(`Nakładka wody 3D:  ${audit.coastWaterCapTopY.toFixed(3)}`);
 for (const row of audit.land) {
   console.log(

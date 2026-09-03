@@ -2468,7 +2468,7 @@ async function boot(): Promise<void> {
       const hex = map.hexes[hexKey];
       if (!hex) return;
       const hexZ = hex as typeof hex & { zloze?: string };
-      if (hex.terenBazowy === TerenBazowy.Morze || hex.terenBazowy === TerenBazowy.Wybrzeze) return;
+      if (isWaterTerrain(hex.terenBazowy)) return;
       const hasNakladka = hex.nakladka && hex.nakladka !== Nakladka.Brak && hex.nakladka !== Nakladka.Las;
       const zlozeShown = visibleZloze(hexZ, overlayDepositEra);
       if (!hasNakladka && !zlozeShown) return;
@@ -2496,7 +2496,7 @@ async function boot(): Promise<void> {
       let count = 0;
       for (const hex of Object.values(map.hexes)) {
         const hexZ = hex as typeof hex & { zloze?: string };
-        if (hex.terenBazowy === TerenBazowy.Morze || hex.terenBazowy === TerenBazowy.Wybrzeze) continue;
+        if (isWaterTerrain(hex.terenBazowy)) continue;
         const hasNakladka = hex.nakladka && hex.nakladka !== Nakladka.Brak && hex.nakladka !== Nakladka.Las;
         const zlozeShown = visibleZloze(hexZ, overlayDepositEra);
         if (!hasNakladka && !zlozeShown) continue;
@@ -12542,7 +12542,7 @@ async function boot(): Promise<void> {
       const t = hex.terenBazowy;
       const n = hex.nakladka;
       if (t === TerenBazowy.Morze) return [];
-      if (t === TerenBazowy.Wybrzeze) return ['lodzie_rybackie'];
+      if (t === TerenBazowy.PlytkieMorze) return ['lodzie_rybackie'];
       if (n === Nakladka.Las) return ['farma', 'tartak', 'oboz_lowiecki', 'droga'];
       const out: ImprovementKey[] = [];
       if (n === Nakladka.ZlozeKonia) out.push('stadnina');
@@ -12793,7 +12793,7 @@ async function boot(): Promise<void> {
           const hex = map.hexes[`${q},${r}`];
           if (!hex) continue;
           sampled++;
-          if (hex.terenBazowy === TerenBazowy.Morze || hex.terenBazowy === TerenBazowy.Wybrzeze) {
+          if (isWaterTerrain(hex.terenBazowy)) {
             sea++;
           } else if (hex.rzeka.obecna) {
             river++;
@@ -24062,7 +24062,7 @@ async function boot(): Promise<void> {
       const hex = map.hexes[hk];
       if (!hex) return false;
       const t = hex.terenBazowy;
-      return t !== TerenBazowy.Morze && t !== TerenBazowy.Wybrzeze && t !== TerenBazowy.Gory;
+      return !isWaterTerrain(t) && t !== TerenBazowy.Gory;
     }
 
     function isOccupiedHex(q: number, r: number, exceptId?: string | number): boolean {

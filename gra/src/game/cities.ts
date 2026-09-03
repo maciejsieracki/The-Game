@@ -8,7 +8,7 @@
 import type { GameMap } from '../types/map';
 import { TerenBazowy } from '../types/hex';
 import type { RuntimeUnit } from '../units/setup';
-import { hexDistance } from '../units/setup';
+import { hexDistance, isWaterTerrain } from '../units/setup';
 import { freshWealthState, type WealthState } from './wealth';
 import { readCityFoodBuffer } from './economy-upkeep';
 import {
@@ -1094,8 +1094,7 @@ export function canFoundCity(
 
   const hex = map.hexes[key];
   if (hex !== undefined) {
-    if (hex.terenBazowy === TerenBazowy.Morze ||
-        hex.terenBazowy === TerenBazowy.Wybrzeze) {
+    if (isWaterTerrain(hex.terenBazowy)) {
       return { ok: false, reason: 'morze' };
     }
     if (hex.terenBazowy === TerenBazowy.Gory) {

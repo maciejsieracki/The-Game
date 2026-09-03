@@ -9,7 +9,7 @@
  *   allHexKeys()         - all hex keys on the map (fog-off / reveal-all mode)
  */
 
-import { hexDistance, keyOf } from '../units/setup';
+import { hexDistance, keyOf, isWaterTerrain } from '../units/setup';
 import type { RuntimeUnit } from '../units/setup';
 import type { GameMap } from '../types/map';
 import type { UnitDef } from '../data/loader';
@@ -226,7 +226,7 @@ export function allRevealLandKeys(map: GameMap): string[] {
 
 /** Ląd bez Morze/Wybrzeże — ekonomia / generator. */
 export function isDryLandTeren(t: TerenBazowy): boolean {
-  return t !== TerenBazowy.Morze && t !== TerenBazowy.Wybrzeze;
+  return !isWaterTerrain(t);
 }
 
 export function allDryLandKeys(map: GameMap): string[] {

@@ -122,7 +122,7 @@ const REQUIRED_LINES = [
   "if (key === 'wyrab' && nakladka !== Nakladka.Las) continue;",
   "if (key === 'glinianka' && !hexHasClayDeposit(hex)) continue;",
   "if (key === 'oboz_lowiecki' && nakladka !== Nakladka.Las && !hasAnimalDeposit(nakladka)) continue;",
-  "if (key === 'warzelnia_soli' && teren !== TerenBazowy.Wybrzeze && zloze !== 'sol') continue;",
+  "if (key === 'warzelnia_soli' && teren !== TerenBazowy.PlytkieMorze && zloze !== 'sol') continue;",
   "if (key === 'kopalnia_zelaza' && zloze !== 'zelazo') continue;",
   "if (key === 'kopalnia_miedzi'\n      && zloze !== 'miedz' && nakladka !== Nakladka.ZlozeRudy && zloze !== 'ruda') continue;",
   "if (key === 'kopalnia_zlota' && zloze !== 'zloto') continue;",
@@ -289,7 +289,7 @@ async function main() {
       if (!skip.has('oboz_lowiecki') && key === 'oboz_lowiecki'
         && nakladka !== Nakladka.Las && !hasAnimalDeposit(nakladka)) continue;
       if (!skip.has('warzelnia_soli') && key === 'warzelnia_soli'
-        && teren !== TerenBazowy.Wybrzeze && zloze !== 'sol') continue;
+        && teren !== TerenBazowy.PlytkieMorze && zloze !== 'sol') continue;
       if (!skip.has('kopalnia_zelaza') && key === 'kopalnia_zelaza' && zloze !== 'zelazo') continue;
       if (!skip.has('kopalnia_miedzi') && key === 'kopalnia_miedzi'
         && zloze !== 'miedz' && nakladka !== Nakladka.ZlozeRudy && zloze !== 'ruda') continue;
@@ -361,7 +361,7 @@ async function main() {
 
   // --- Wybrzeże (bez złoża soli) -> Warzelnia soli nadal OK (teren wystarcza) -------------
   {
-    const hex = makeHex(TerenBazowy.Wybrzeze, Nakladka.Brak, undefined);
+    const hex = makeHex(TerenBazowy.PlytkieMorze, Nakladka.Brak, undefined);
     const keys = computePossibleKeys(hex, null);
     assert(keys.includes('warzelnia_soli'), 'Wybrzeże bez złoża: lista ZAWIERA Warzelni soli (sól z morza, bez złoża)');
   }

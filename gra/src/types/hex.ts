@@ -14,7 +14,9 @@ export enum TerenBazowy {
   Rownina  = 'rownina',
   Wzgorza  = 'wzgorza',
   Gory     = 'gory',
-  Wybrzeze = 'wybrzeze',
+  /** Płytkie morze — teren WODNY (patrz isWaterTerrain w units/setup.ts); nazwa "wybrzeże"
+   *  myliła (P-MAPGEN-PANGEA-OBRYS P4, 2026-09-03) — zmieniona na PlytkieMorze/'plytkie_morze'. */
+  PlytkieMorze = 'plytkie_morze',
   Morze    = 'morze',
   Pustynia = 'pustynia',
   /** Strefa polarna (śnieg) — niezamieszkana, C-MAP-Q3b. */

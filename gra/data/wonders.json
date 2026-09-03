@@ -253,7 +253,7 @@
         "zulusi", "slowianie"
       ],
       "techUnlock": ["Żegluga"],
-      "wymagaTerenu": ["wybrzeze"],
+      "wymagaTerenu": ["plytkie_morze"],
       "epokaWejscia": 2,
       "absolut": 6,
       "maxNaSwiecie": 1,
@@ -263,7 +263,7 @@
         "miasto": { "kultura": 3, "zywnosc": 3 },
         "teren": [
           { "typTerenu": "lowie_rybackie", "kultura": 2, "zywnosc": 2 },
-          { "typTerenu": "laka", "kultura": 2, "warunek": "hex_sasiad_wybrzeze" }
+          { "typTerenu": "laka", "kultura": 2, "warunek": "hex_sasiad_plytkie_morze" }
         ],
         "specjalne": [
           { "typ": "handel_procent", "cel": "handel_morski", "wartosc": 0.15, "opis": "+15% Handlu — dochodu z tras handlowych morskich (cywilizacja); NIE zwiększa Daniny miasta" },
@@ -279,7 +279,7 @@
       "dostep": "E",
       "cywilizacje": ["grecy"],
       "techUnlock": ["Inżynieria"],
-      "wymagaTerenu": ["wybrzeze"],
+      "wymagaTerenu": ["plytkie_morze"],
       "epokaWejscia": 3,
       "absolut": 6,
       "maxNaSwiecie": 1,
@@ -722,7 +722,7 @@
       "dostep": "E",
       "cywilizacje": ["germanie"],
       "techUnlock": ["Murarstwo"],
-      "wymagaTerenu": ["wybrzeze"],
+      "wymagaTerenu": ["plytkie_morze"],
       "epokaDocelowa": 4,
       "epokaDocelowaOpis": "VI w. n.e. — Ostrogoci, Ravenna; poza Antykiem",
       "maxNaSwiecie": 1,

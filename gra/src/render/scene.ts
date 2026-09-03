@@ -137,7 +137,7 @@ interface TerenVisual {
 
 const TERRAIN_VISUALS: Record<TerenBazowy, TerenVisual> = {
   [TerenBazowy.Morze]:     { color: 0x1f5a86, height: 0.30, yOffset: 0.00 },
-  [TerenBazowy.Wybrzeze]:  { color: 0x46a3d6, height: 0.35, yOffset: 0.05 },
+  [TerenBazowy.PlytkieMorze]:  { color: 0x46a3d6, height: 0.35, yOffset: 0.05 },
   [TerenBazowy.Laka]:      { color: 0x6aa53f, height: 0.40, yOffset: 0.05 },
   [TerenBazowy.Rownina]:   { color: 0xa9b257, height: 0.45, yOffset: 0.08 },
   [TerenBazowy.Pustynia]:  { color: 0xd9c179, height: 0.42, yOffset: 0.08 },
@@ -498,14 +498,12 @@ function blendedTerrainHex(
     if (!nb) continue;
     // Suchy ląd nie miesza koloru z morzem/wybrzeżem (inaczej „zalanie” przy zoom).
     if (selfTeren
-      && selfTeren !== TerenBazowy.Morze
-      && selfTeren !== TerenBazowy.Wybrzeze
-      && (nb.terenBazowy === TerenBazowy.Morze || nb.terenBazowy === TerenBazowy.Wybrzeze)) {
+      && isDryLandTeren(selfTeren)
+      && !isDryLandTeren(nb.terenBazowy)) {
       continue;
     }
-    if (selfTeren === TerenBazowy.Wybrzeze
-      && nb.terenBazowy !== TerenBazowy.Morze
-      && nb.terenBazowy !== TerenBazowy.Wybrzeze) {
+    if (selfTeren === TerenBazowy.PlytkieMorze
+      && isDryLandTeren(nb.terenBazowy)) {
       continue;
     }
     const nbHex = renderStyle === 'civ'
@@ -527,7 +525,7 @@ function blendedTerrainHex(
 function terrainRank(t: TerenBazowy): number {
   switch (t) {
     case TerenBazowy.Morze: return 0;
-    case TerenBazowy.Wybrzeze: return 1;
+    case TerenBazowy.PlytkieMorze: return 1;
     case TerenBazowy.Wzgorza: return 3;
     case TerenBazowy.Gory: return 4;
     default: return 2; // Laka / Rownina / Pustynia
@@ -572,18 +570,18 @@ function vElev(map: GameMap, v: Vtx): number {
   return s / v.hexKeys.length;
 }
 function vIsSea(map: GameMap, v: Vtx): boolean {
-  return v.hexKeys.some(hk => { const h = map.hexes[hk]; return !!h && (h.terenBazowy === TerenBazowy.Morze || h.terenBazowy === TerenBazowy.Wybrzeze); });
+  return v.hexKeys.some(hk => { const h = map.hexes[hk]; return !!h && !isDryLandTeren(h.terenBazowy); });
 }
 
 const AXIAL_DIRS: ReadonlyArray<readonly [number, number]> = [[1, 0], [1, -1], [0, -1], [-1, 0], [-1, 1], [0, 1]];
 
 function isDryLandTeren(tb: TerenBazowy): boolean {
-  return tb !== TerenBazowy.Morze && tb !== TerenBazowy.Wybrzeze;
+  return tb !== TerenBazowy.Morze && tb !== TerenBazowy.PlytkieMorze;
 }
 
 function hasWybrzezeNeighbor(map: GameMap, q: number, r: number): boolean {
   for (const [dq, dr] of AXIAL_DIRS) {
-    if (map.hexes[`${q + dq},${r + dr}`]?.terenBazowy === TerenBazowy.Wybrzeze) return true;
+    if (map.hexes[`${q + dq},${r + dr}`]?.terenBazowy === TerenBazowy.PlytkieMorze) return true;
   }
   return false;
 }
@@ -715,7 +713,7 @@ function riverVertexAtCoast(map: GameMap, v: Vtx, coastalKeys: Set<string>): boo
   for (const k of v.hexKeys) {
     const h = map.hexes[k];
     if (!h) continue;
-    if (h.terenBazowy === TerenBazowy.Wybrzeze || h.terenBazowy === TerenBazowy.Morze) return true;
+    if (!isDryLandTeren(h.terenBazowy)) return true;
     if (h.rzeka?.obecna && hasWybrzezeNeighbor(map, h.coords.q, h.coords.r)) return true;
   }
   return false;
@@ -947,7 +945,7 @@ function riverHexSurfaceY(
   const h = map.hexes[`${q},${r}`];
   if (!h || h.terenBazowy === TerenBazowy.Morze) return null;
   // Tylko sam heks Wybrzeże schodzi do poziomu morza; sąsiedztwo plaży NIE obcina lądu.
-  if (h.terenBazowy === TerenBazowy.Wybrzeze) return riverMouthY;
+  if (h.terenBazowy === TerenBazowy.PlytkieMorze) return riverMouthY;
   // Maciej 2026-08-01: STAŁA PŁASKA wysokość (FLAT_LAND_SURFACE_Y) — wszystkie płaskie typy
   // lądu na tej samej wysokości; rzeka nie tonie pod pustynią / równiną.
   void R;
@@ -1727,7 +1725,7 @@ export async function buildScene(
     countByTerrain[t] = (countByTerrain[t] ?? 0) + 1;
     if (hex.nakladka === Nakladka.Las) {
       forestCount++;
-      if (styledTerrain && t !== TerenBazowy.Morze && t !== TerenBazowy.Wybrzeze) {
+      if (styledTerrain && isDryLandTeren(t)) {
         const fq = hex.coords.q, fr = hex.coords.r;
         if (isWarmJungleForestHex(fq, fr, map.wysokoscR)) {
           djunglaVarCount[wariantDjungliDlaHeksa(fq, fr, NDJ, map.seed)]!++;
@@ -1932,7 +1930,7 @@ export async function buildScene(
   }
 
   // -- Piaszczysty pierscien wybrzeza
-  const coastCount = countByTerrain[TerenBazowy.Wybrzeze] ?? 0;
+  const coastCount = countByTerrain[TerenBazowy.PlytkieMorze] ?? 0;
   const beachGeo = useStyledDecor ? new THREE.CylinderGeometry(1, 1, 1, 3) : new THREE.CylinderGeometry(R * 0.92, R * 0.96, R * 0.03, 6);
   const beachMat = new THREE.MeshLambertMaterial({ color: BEACH_SAND_COLOR });
   const beachMesh = new THREE.InstancedMesh(beachGeo, beachMat, useStyledDecor ? 0 : coastCount);
@@ -2020,7 +2018,7 @@ export async function buildScene(
   });
 
   const coastDeltaMat = new THREE.MeshLambertMaterial({
-    color: styleTerrainColor(TerenBazowy.Wybrzeze, renderStyle),
+    color: styleTerrainColor(TerenBazowy.PlytkieMorze, renderStyle),
     side: THREE.DoubleSide,
     // Ujścia/delty rzeki — ten sam powód co riverWaterMat.fog (R-RZEKI-MEDIUM-FOW).
     fog: false,
@@ -2259,7 +2257,7 @@ export async function buildScene(
     // Morze / Wybrzeże (roblox): płaska tafla na wspólnym poziomie seaSurfaceY.
     let y = surfaceTopY - vis.height / 2;
     let scaleY = 1;
-    if (renderStyle === 'roblox' && (t === TerenBazowy.Morze || t === TerenBazowy.Wybrzeze)) {
+    if (renderStyle === 'roblox' && !isDryLandTeren(t)) {
       y = seaSurfaceY - vis.height / 2;
     }
     const hexKey = `${hex.coords.q},${hex.coords.r}`;
@@ -2314,10 +2312,10 @@ export async function buildScene(
 
       // Inicjalizuj kolor instancji: kolor bazowy terenu + deterministyczny jitter HSL.
       // Wybrzeże roblox: jednolity #82C8E0 (D-COAST-2 — bez blendu z lądem / ciemnej obwódki).
-      const isCoastRoblox = t === TerenBazowy.Wybrzeze && renderStyle === 'roblox';
-      const isWater = t === TerenBazowy.Morze
-        || isCoastRoblox
-        || (t === TerenBazowy.Wybrzeze && renderStyle !== 'roblox');
+      const isCoastRoblox = t === TerenBazowy.PlytkieMorze && renderStyle === 'roblox';
+      // Matematycznie: (t===Morze) || (t===PlytkieMorze && roblox) || (t===PlytkieMorze && !roblox)
+      // == (t===Morze) || (t===PlytkieMorze) == !isDryLandTeren(t) — niezależnie od renderStyle.
+      const isWater = !isDryLandTeren(t);
       const baseTerrainHex = styleTerrainColor(t, renderStyle);
       const blendedHex = isCoastRoblox
         ? baseTerrainHex
@@ -2343,7 +2341,7 @@ export async function buildScene(
     { const t = performance.now(); hexAcc.pryzmy += t - sectT; sectT = t; }
 
     // Las — dekoracja 3D gdy nakladka=Las (logika gry); robloxLite tylko upraszcza meshe (E1).
-    if (hex.nakladka === Nakladka.Las && t !== TerenBazowy.Morze && t !== TerenBazowy.Wybrzeze) {
+    if (hex.nakladka === Nakladka.Las && isDryLandTeren(t)) {
       const baseY = vis.height + vis.yOffset;
       const q = hex.coords.q, r = hex.coords.r;
       if (styledTerrain) {
@@ -2521,7 +2519,7 @@ export async function buildScene(
 
     // Brzeg hybryda C: ląd = pas piasku; Wybrzeże = pełna tafła piasku + woda od strony Morza.
     const topYCoast = surfaceTopY;
-    if (useStyledDecor && renderStyle === 'roblox' && t === TerenBazowy.Wybrzeze && coastInstBuf) {
+    if (useStyledDecor && renderStyle === 'roblox' && t === TerenBazowy.PlytkieMorze && coastInstBuf) {
       const hexQ = hex.coords.q;
       const hexR = hex.coords.r;
       const isDelta = deltaHexKeys.has(hexKey);
@@ -2534,7 +2532,7 @@ export async function buildScene(
       collectRobloxLandCoastSandInst(
         coastInstBuf, map, hex.coords.q, hex.coords.r, x, z, surfaceTopY, R, hexKey, robloxLite, dummy,
       );
-    } else if (useStyledDecor && renderStyle === 'minecraft' && t !== TerenBazowy.Morze && t !== TerenBazowy.Wybrzeze) {
+    } else if (useStyledDecor && renderStyle === 'minecraft' && isDryLandTeren(t)) {
       const sand = buildStyleCoastSandEdges(renderStyle, {
         map,
         q: hex.coords.q,
@@ -2548,10 +2546,10 @@ export async function buildScene(
       if (sand.children.length > 0) {
         pushStyledOverlay(sand, hexKey);
       }
-    } else if (t === TerenBazowy.Wybrzeze && useStyledDecor && renderStyle === 'minecraft') {
+    } else if (t === TerenBazowy.PlytkieMorze && useStyledDecor && renderStyle === 'minecraft') {
       const beach = buildStyleBeachRing(renderStyle, x, topYCoast, z, R);
       pushStyledOverlay(beach, hexKey);
-    } else if (t === TerenBazowy.Wybrzeze && !useStyledDecor) {
+    } else if (t === TerenBazowy.PlytkieMorze && !useStyledDecor) {
       dummy.position.set(x, topYCoast + R * 0.015, z);
       dummy.rotation.set(0, 0, 0);
       dummy.scale.set(1, 1, 1);
@@ -2882,7 +2880,7 @@ export async function buildScene(
   // Sea level = wierzch capa Wybrzeża + margines; drop lądu→morze robi buildCoastalRiverPointChain
   // pionowym progiem (wodospad), a nie skosem wchodzącym pod mesh.
   const capTopY = coastWaterCapTopY(renderStyle);
-  const coastPrismTopY = terrainSurfaceTopY(TerenBazowy.Wybrzeze, renderStyle);
+  const coastPrismTopY = terrainSurfaceTopY(TerenBazowy.PlytkieMorze, renderStyle);
   const riverMouthY = Math.max(capTopY + R * 0.026, coastPrismTopY + R * 0.035);
 
   // Wstęgi wzdłuż krawędzi hex (Roblox: proste odcinki obwodu, bez środka pola).
@@ -3632,7 +3630,7 @@ export async function buildScene(
     if (renderStyle === 'roblox' && showOceanBackdrop) {
       for (const [key, entry] of hexInstance) {
         const teren = hexTeren.get(key);
-        if (teren !== TerenBazowy.Morze && teren !== TerenBazowy.Wybrzeze) continue;
+        if (teren === undefined || isDryLandTeren(teren)) continue;
         entry.mesh.setMatrixAt(entry.index, ZERO_MATRIX);
         touchedMeshes.add(entry.mesh);
       }

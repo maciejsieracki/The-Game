@@ -29,6 +29,7 @@ import {
 } from './clusters';
 import { hexDistanceAxial, mulberry32 } from './gen-helpers';
 import { TerenBazowy } from '../types/hex';
+import { isWaterTerrain } from '../units/setup';
 
 /** Slot startowy — kontrakt dla SILNIK (D-START). */
 export interface ClusterSpawnSlot {
@@ -70,8 +71,8 @@ export interface ClusterSpawnPlan {
 function landHexesFromMap(map: GameMap): Array<{ q: number; r: number }> {
   const out: Array<{ q: number; r: number }> = [];
   for (const h of Object.values(map.hexes)) {
-    if (h.terenBazowy === TerenBazowy.Morze || h.terenBazowy === TerenBazowy.Gory ||
-        h.terenBazowy === TerenBazowy.Wybrzeze || h.terenBazowy === TerenBazowy.Polarny) continue;
+    if (isWaterTerrain(h.terenBazowy) || h.terenBazowy === TerenBazowy.Gory ||
+        h.terenBazowy === TerenBazowy.Polarny) continue;
     out.push({ q: h.coords.q, r: h.coords.r });
   }
   return out;

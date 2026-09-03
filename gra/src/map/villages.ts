@@ -94,11 +94,20 @@ function lcgNext(state: number): [number, number] {
   return [next, next / 0x100000000];
 }
 
+/**
+ * True dla terenu wodnego (Morze / PlytkieMorze). Samodzielna kopia — spójna z
+ * isWaterTerrain() z units/setup.ts, nie importowana stamtąd (ten moduł celowo nie
+ * zależy od game/, patrz komentarz na górze pliku; ten sam wzorzec co hexDistanceAxial
+ * w gen-helpers.ts).
+ */
+function isWaterTerrainLocal(t: TerenBazowy): boolean {
+  return t === TerenBazowy.Morze || t === TerenBazowy.PlytkieMorze;
+}
+
 /** Teren, na którym wioska nigdy nie może stanąć (woda/wybrzeże/góry/pustynia). */
 function isVillageExcludedTerrain(t: TerenBazowy): boolean {
   return (
-    t === TerenBazowy.Morze ||
-    t === TerenBazowy.Wybrzeze ||
+    isWaterTerrainLocal(t) ||
     t === TerenBazowy.Gory ||
     t === TerenBazowy.Pustynia ||
     t === TerenBazowy.Polarny
@@ -156,7 +165,7 @@ export function placeVillages(
     const hex = hexes[key];
     if (hex === undefined) continue;
 
-    const isSea = hex.terenBazowy === TerenBazowy.Morze || hex.terenBazowy === TerenBazowy.Wybrzeze;
+    const isSea = isWaterTerrainLocal(hex.terenBazowy);
     if (!isSea) landHexCount++;
 
     if (hex.wlasciciel !== null) continue;

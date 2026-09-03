@@ -110,10 +110,10 @@ for (const seed of [1, 7, 42, 99, 2026, 314, 777]) {
     for (let i = Math.max(0, path.length - 4); i < path.length; i++) {
       const h = map.hexes[`${path[i].q},${path[i].r}`];
       if (!h) continue;
-      if (h.terenBazowy === M.TerenBazowy.Wybrzeze) coastal = true;
+      if (h.terenBazowy === M.TerenBazowy.PlytkieMorze) coastal = true;
       for (const [dq, dr] of [[1,0],[1,-1],[0,-1],[-1,0],[-1,1],[0,1]]) {
         const nh = map.hexes[`${path[i].q + dq},${path[i].r + dr}`];
-        if (nh?.terenBazowy === M.TerenBazowy.Wybrzeze) coastal = true;
+        if (nh?.terenBazowy === M.TerenBazowy.PlytkieMorze) coastal = true;
       }
     }
   }

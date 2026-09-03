@@ -66,7 +66,7 @@ function landBBoxFromMap(map) {
   let minQ = Infinity, maxQ = -Infinity, minR = Infinity, maxR = -Infinity;
   for (const h of Object.values(map.hexes)) {
     const t = h.terenBazowy;
-    if (t === 'morze' || t === 'gory' || t === 'wybrzeze') continue;
+    if (t === 'morze' || t === 'gory' || t === 'plytkie_morze') continue;
     const q = h.coords.q;
     const r = h.coords.r;
     if (q < minQ) minQ = q;

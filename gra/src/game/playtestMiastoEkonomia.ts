@@ -79,7 +79,7 @@ function paintOkolicaSandbox(map: GameMap, cq: number, cr: number): void {
     TerenBazowy.Rownina,
     TerenBazowy.Rownina,
     TerenBazowy.Wzgorza,
-    TerenBazowy.Wybrzeze,
+    TerenBazowy.PlytkieMorze,
     TerenBazowy.Pustynia,
   ];
   let idx = 0;

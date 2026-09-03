@@ -225,7 +225,7 @@ async function main() {
     const scored = [];
     for (const k of keys) {
       const h = map.hexes[k];
-      if (!h || h.terenBazowy === TerenBazowy.Morze || h.terenBazowy === TerenBazowy.Wybrzeze) continue;
+      if (!h || h.terenBazowy === TerenBazowy.Morze || h.terenBazowy === TerenBazowy.PlytkieMorze) continue;
       const [q, r] = k.split(',').map(Number);
       let land = 0;
       for (let dq = -3; dq <= 3; dq++) {

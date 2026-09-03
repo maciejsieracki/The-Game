@@ -382,7 +382,7 @@ const DEFAULT_TERRAIN_COSTS: Record<TerenBazowy, number> = {
   [TerenBazowy.Laka]:     1,
   [TerenBazowy.Rownina]:  1,
   [TerenBazowy.Pustynia]: 1,
-  [TerenBazowy.Wybrzeze]: Infinity,
+  [TerenBazowy.PlytkieMorze]: Infinity,
   [TerenBazowy.Wzgorza]:  2,
   [TerenBazowy.Gory]:     Infinity,
   [TerenBazowy.Morze]:    Infinity,
@@ -406,7 +406,14 @@ let _forestExtra: number = 1;
  * @param costs       Mapa kosztów (TerenBazowy lub etykieta z terrain-movement.json).
  * @param forestExtra Extra cost added to finite base costs when Las overlay is present.
  */
-/** Mapuje etykiety z terrain-movement.json / Excel na {@link TerenBazowy}. */
+/**
+ * Mapuje etykiety z terrain-movement.json / Excel na {@link TerenBazowy}.
+ * Klucze 'Wybrzeze'/'Wybrzeże'/'wybrzeze' ZOSTAJĄ dosłownie — to etykiety z
+ * terrain-movement.json, poza allowlistą P-MAPGEN-PANGEA-OBRYS-P4-WYBRZEZE-Q1
+ * (tylko gra/data/civ-matrix.json + wonders.json wolno tam zmieniać), więc plik
+ * źródłowy nadal używa starej nazwy — te trzy klucze to udokumentowany mostek
+ * wstecznej kompatybilności, nie przeoczenie (KRYTERIUM KOŃCA 4 dispatchu).
+ */
 const TERRAIN_MOVEMENT_KEY_ALIASES: Record<string, TerenBazowy> = {
   Laka: TerenBazowy.Laka,
   'Łąka': TerenBazowy.Laka,
@@ -416,9 +423,9 @@ const TERRAIN_MOVEMENT_KEY_ALIASES: Record<string, TerenBazowy> = {
   rownina: TerenBazowy.Rownina,
   Pustynia: TerenBazowy.Pustynia,
   pustynia: TerenBazowy.Pustynia,
-  Wybrzeze: TerenBazowy.Wybrzeze,
-  'Wybrzeże': TerenBazowy.Wybrzeze,
-  wybrzeze: TerenBazowy.Wybrzeze,
+  Wybrzeze: TerenBazowy.PlytkieMorze,
+  'Wybrzeże': TerenBazowy.PlytkieMorze,
+  wybrzeze: TerenBazowy.PlytkieMorze,
   Wzgorza: TerenBazowy.Wzgorza,
   'Wzgórza': TerenBazowy.Wzgorza,
   wzgorza: TerenBazowy.Wzgorza,
@@ -469,7 +476,7 @@ function terrainScore(tb: TerenBazowy): number {
     case TerenBazowy.Rownina:  return 4;
     case TerenBazowy.Wzgorza:  return 2;
     case TerenBazowy.Pustynia: return 1;
-    case TerenBazowy.Wybrzeze: return -1;
+    case TerenBazowy.PlytkieMorze: return -1;
     case TerenBazowy.Gory:     return -1;
     case TerenBazowy.Morze:    return -1;
     default:                   return 0;
@@ -646,7 +653,7 @@ const RIVER_HEX_MOVE_COST = 1;
 export function terrainMoveCost(hex: Hex): number {
   if (hex.rzeka?.obecna === true) {
     const tb = hex.terenBazowy;
-    if (tb === TerenBazowy.Morze || tb === TerenBazowy.Wybrzeze || tb === TerenBazowy.Polarny) {
+    if (isWaterTerrain(tb) || tb === TerenBazowy.Polarny) {
       return Infinity;
     }
     return applyRoadMovementModifier(RIVER_HEX_MOVE_COST, hex);
@@ -669,7 +676,7 @@ export function terrainMoveCost(hex: Hex): number {
 
 /** True dla terenu wodnego (Morze / Wybrzeże). */
 export function isWaterTerrain(t: TerenBazowy): boolean {
-  return t === TerenBazowy.Morze || t === TerenBazowy.Wybrzeze;
+  return t === TerenBazowy.Morze || t === TerenBazowy.PlytkieMorze;
 }
 
 /** Stały koszt wejścia na heks wody dla jednostki zaokrętowanej (decyzja: stały). */

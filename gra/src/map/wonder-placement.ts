@@ -6,6 +6,7 @@ import type { GameMap } from '../types/map';
 import type { Hex } from '../types/hex';
 import { TerenBazowy } from '../types/hex';
 import { axialDistance, cityTerritoryRadius, type CityNode } from './territory';
+import { isWaterTerrain } from '../units/setup';
 
 export interface WonderPlacementCity {
   q: number;
@@ -30,9 +31,7 @@ function hexAt(map: GameMap, q: number, r: number): Hex | undefined {
 
 function isLandBuildable(hex: Hex): boolean {
   const t = hex.terenBazowy;
-  return t !== TerenBazowy.Morze
-    && t !== TerenBazowy.Gory
-    && t !== TerenBazowy.Wybrzeze;
+  return !isWaterTerrain(t) && t !== TerenBazowy.Gory;
 }
 
 function isOccupied(

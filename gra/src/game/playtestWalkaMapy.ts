@@ -20,7 +20,7 @@ import { TerenBazowy } from '../types/hex';
 import type { City } from './cities';
 import { computeVisible } from './visibility';
 import type { RuntimeUnit } from '../units/setup';
-import { categoryOf, hexDistance, hexNeighborCoords, keyOf } from '../units/setup';
+import { categoryOf, hexDistance, hexNeighborCoords, keyOf, isWaterTerrain } from '../units/setup';
 
 // Marker (side-effect) — przeżywa tree-shaking, potwierdza że duża bitwa jest w bundlu.
 (globalThis as any).__CIV_BITWA_DUZA = 'civ-bitwa-duza';
@@ -132,7 +132,7 @@ function isLandPassable(map: GameMap, q: number, r: number): boolean {
   const hex = map.hexes[keyOf(q, r)];
   if (!hex) return false;
   const t = hex.terenBazowy;
-  return t !== TerenBazowy.Morze && t !== TerenBazowy.Wybrzeze && t !== TerenBazowy.Gory;
+  return !isWaterTerrain(t) && t !== TerenBazowy.Gory;
 }
 
 function resolveTypeId(token: string, data: GameData): string {

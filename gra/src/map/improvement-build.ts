@@ -19,6 +19,7 @@ import {
 } from './territory';
 import { isTerritoryHexOwnedBy } from './territory-work';
 import { hexKeysWithinRadius } from '../game/okolica';
+import { isWaterTerrain } from '../units/setup';
 import terrainImprovements from '../../data/terrain-improvements.json';
 import {
   computeEmpireLivestockUnlocks,
@@ -657,7 +658,7 @@ const TERRAIN_ALLOW: Partial<Record<ImprovementKey, TerenSet | null>> = {
   kamieniolom: new Set([TerenBazowy.Wzgorza, TerenBazowy.Gory]), // Maciej 2026-07-24: Wzgórza+Góry
   oboz_lowiecki: null,
   wyrab: null,
-  lodzie_rybackie: new Set([TerenBazowy.Wybrzeze, TerenBazowy.Morze]),
+  lodzie_rybackie: new Set([TerenBazowy.PlytkieMorze, TerenBazowy.Morze]),
   tarasy: new Set([TerenBazowy.Wzgorza]),
   fort: null,
   droga: null,
@@ -1091,7 +1092,7 @@ function createQualifier(state: ImprovementBuildState) {
         break;
       case 'warzelnia_soli':
         terrainOk = inPlayerTerritory(q, r)
-          && (teren === TerenBazowy.Wybrzeze || zloze === 'sol');
+          && (teren === TerenBazowy.PlytkieMorze || zloze === 'sol');
         break;
       case 'kopalnia_miedzi':
         terrainOk = inPlayerTerritory(q, r)
@@ -1114,8 +1115,7 @@ function createQualifier(state: ImprovementBuildState) {
           && teren === TerenBazowy.Wzgorza;
         break;
       case 'lodzie_rybackie':
-        terrainOk = inPlayerTerritory(q, r)
-          && (teren === TerenBazowy.Wybrzeze || teren === TerenBazowy.Morze);
+        terrainOk = inPlayerTerritory(q, r) && isWaterTerrain(teren);
         break;
       default: {
         const allowed = TERRAIN_ALLOW[key];
@@ -1180,7 +1180,7 @@ export function galleryTerrainEligible(key: ImprovementKey, teren: TerenBazowy):
       if (teren === TerenBazowy.Pustynia || teren === TerenBazowy.Morze) return false;
       return TERRAIN_ALLOW.lama?.has(teren) ?? false;
     case 'lodzie_rybackie':
-      return teren === TerenBazowy.Wybrzeze || teren === TerenBazowy.Morze;
+      return isWaterTerrain(teren);
     case 'kamieniolom':
     case 'kopalnia_miedzi':
     case 'kopalnia_zelaza':
@@ -1200,9 +1200,9 @@ export function galleryTerrainEligible(key: ImprovementKey, teren: TerenBazowy):
     // tooltip↔`qualifies()`. Ta funkcja nie widzi nakładki; warunek lasu egzekwuje
     // wywołujący (tooltip) i `createQualifier`. Wykluczamy tylko wodę.
     case 'oboz_lowiecki':
-      return teren !== TerenBazowy.Morze && teren !== TerenBazowy.Wybrzeze;
+      return !isWaterTerrain(teren);
     case 'warzelnia_soli':
-      return teren === TerenBazowy.Wybrzeze || teren === TerenBazowy.Rownina;
+      return teren === TerenBazowy.PlytkieMorze || teren === TerenBazowy.Rownina;
     case 'droga':
     case 'droga_brukowana':
     case 'fort':
@@ -1210,9 +1210,7 @@ export function galleryTerrainEligible(key: ImprovementKey, teren: TerenBazowy):
     case 'tartak':
       return TARTAK_TERENY.has(teren);
     case 'posterunek':
-      return teren !== TerenBazowy.Morze
-        && teren !== TerenBazowy.Wybrzeze
-        && TERENY_LADU.has(teren);
+      return !isWaterTerrain(teren) && TERENY_LADU.has(teren);
     default:
       return false;
   }

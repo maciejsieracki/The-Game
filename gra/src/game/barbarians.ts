@@ -687,7 +687,7 @@ function lcgNext(state: number): [number, number] {
 
 /** Terrain that barbarians (land units / camps) can never occupy. */
 function isImpassableTerrain(t: TerenBazowy): boolean {
-  return t === TerenBazowy.Morze || t === TerenBazowy.Wybrzeze || t === TerenBazowy.Gory;
+  return isWaterTerrain(t) || t === TerenBazowy.Gory;
 }
 
 /** Pointy-top axial hex neighbours (matches units/setup.ts). */
@@ -1039,7 +1039,7 @@ export function spawnSeaCamps(
     const { q, r } = hex.coords;
     if (campHexIsCleared(clearedHexes, q, r)) continue;
     let ok = false;
-    if (hex.terenBazowy === TerenBazowy.Wybrzeze) {
+    if (hex.terenBazowy === TerenBazowy.PlytkieMorze) {
       ok = true; // (a) obóz plażowy na płytkiej wodzie
     } else if (!isImpassableTerrain(hex.terenBazowy)) {
       // (b) wysepka: większość sąsiadów to woda

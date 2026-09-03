@@ -362,12 +362,15 @@ export interface ProductionProgressResult {
 
 const ZERO_YIELD: TileYield = { zywnosc: 0, praca: 0, handel: 0, drewno: 0, kamien: 0, glina: 0, ruda: 0, ruda_zelaza: 0 };
 
+// Klucz 'Wybrzeże' zostaje dosłownie — etykieta z terrain-yields.json, poza allowlistą
+// P-MAPGEN-PANGEA-OBRYS-P4-WYBRZEZE-Q1 (nietknięty plik danych); wartość mapuje już na
+// nowy TerenBazowy.PlytkieMorze.
 const TERRAIN_NAME_TO_ENUM: Record<string, TerenBazowy> = {
   'Łąka':     TerenBazowy.Laka,
   'Równina':  TerenBazowy.Rownina,
   'Wzgórza':  TerenBazowy.Wzgorza,
   'Góry':     TerenBazowy.Gory,
-  'Wybrzeże': TerenBazowy.Wybrzeze,
+  'Wybrzeże': TerenBazowy.PlytkieMorze,
   'Morze':    TerenBazowy.Morze,
   'Pustynia': TerenBazowy.Pustynia,
   'Polarny':  TerenBazowy.Polarny,

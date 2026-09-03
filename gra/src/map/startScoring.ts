@@ -7,7 +7,7 @@
 
 import type { GameMap } from '../types/map';
 import { TerenBazowy } from '../types/hex';
-import { hexDistance, keyOf } from '../units/setup';
+import { hexDistance, keyOf, isWaterTerrain } from '../units/setup';
 import { groupHabitableMasses, passesPlayerStartMassGate, developmentSpaceScore } from './clusters';
 
 /** Domyślny promień (legacy / testy) — w grze używaj {@link startRevealRadiusForDifficulty}. */
@@ -39,8 +39,7 @@ function isArable(tb: TerenBazowy): boolean {
 }
 
 function canFoundOnTerrain(tb: TerenBazowy): boolean {
-  return tb !== TerenBazowy.Morze
-    && tb !== TerenBazowy.Wybrzeze
+  return !isWaterTerrain(tb)
     && tb !== TerenBazowy.Gory
     && tb !== TerenBazowy.Polarny;
 }

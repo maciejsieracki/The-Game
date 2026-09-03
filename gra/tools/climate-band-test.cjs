@@ -68,7 +68,7 @@ for (const hex of Object.values(map.hexes)) {
   const { q, r } = hex.coords;
   if (hex.terenBazowy === TerenBazowy.Polarny) polar++;
   if (M.climateBandAt(q, r, height) === 'desert' && hex.terenBazowy === TerenBazowy.Pustynia) desert++;
-  if (r < buf && hex.terenBazowy !== TerenBazowy.Morze && hex.terenBazowy !== TerenBazowy.Wybrzeze) {
+  if (r < buf && hex.terenBazowy !== TerenBazowy.Morze && hex.terenBazowy !== TerenBazowy.PlytkieMorze) {
     landTopBuf++;
   }
 }
@@ -84,7 +84,7 @@ const eBuf = M.latitudinalOceanBufferRows(earth.wysokoscR, true);
 for (const hex of Object.values(earth.hexes)) {
   const r = hex.coords.r;
   if (r < eBuf || r >= earth.wysokoscR - eBuf) {
-    if (hex.terenBazowy !== TerenBazowy.Morze && hex.terenBazowy !== TerenBazowy.Wybrzeze) antLand++;
+    if (hex.terenBazowy !== TerenBazowy.Morze && hex.terenBazowy !== TerenBazowy.PlytkieMorze) antLand++;
   }
 }
 assert(antLand === 0, `earth polar ocean buffer clear (violations=${antLand})`);

@@ -128,7 +128,7 @@ const TERRAIN_COLORS: Record<string, number> = {
   wzgorza:  0xa08850,
   gory:     0x8a8880,
   pustynia: 0xc8a862,
-  wybrzeze: 0xd8c880,
+  plytkie_morze: 0xd8c880,
   morze:    0x3068a0,
   las:      0x2e6830,
 };

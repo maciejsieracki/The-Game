@@ -86,7 +86,7 @@ for (const key of Object.keys(big.hexes)) {
   const [q, r] = key.split(',').map(Number);
   if (M.earthTemplateLandAt(q, r, big.szerokoscQ, big.wysokoscR) <= 0) continue;
   const tb = big.hexes[key].terenBazowy;
-  if (tb === 'morze' || tb === 'wybrzeze') morseInMask++;
+  if (tb === 'morze' || tb === 'plytkie_morze') morseInMask++;
 }
 ok(morseInMask === 0, `ziemia duzy: 0 morza/wybrzeza w masce lądu (found ${morseInMask})`);
 const inland = M.findInlandWaterHexes(big.hexes, big.szerokoscQ, big.wysokoscR);

@@ -279,6 +279,8 @@ export function buildCityOkolicaOverlayGroup(
       if (!hex) continue;
       const { q, r } = hex.coords;
       const t = hex.terenBazowy;
+      // Świadomie Morze/Gory-only, nie isWaterTerrain (P-MAPGEN-PANGEA-OBRYS-P4-WYBRZEZE-Q1):
+      // PlytkieMorze JEST obsadzalne i ma plony — patrz okolica.ts::isLandWorkableHex.
       if (t === TerenBazowy.Morze || t === TerenBazowy.Gory) continue;
       // R-HEKS-PLONY-UKRYTE-POD-MIASTEM (Maciej 2026-08-08): heks centrum miasta ZAWSZE
       // ma realne plony z wlasnego terenu (silnik: cityWorkedTilesForEconomy — "Centrum

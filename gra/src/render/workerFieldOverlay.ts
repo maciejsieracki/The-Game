@@ -140,6 +140,9 @@ export function buildWorkerFieldOverlayGroup(
     if (!hex) continue;
     const { q, r } = hex.coords;
     const t = hex.terenBazowy;
+    // Świadomie Morze/Gory-only, nie isWaterTerrain (P-MAPGEN-PANGEA-OBRYS-P4-WYBRZEZE-Q1):
+    // PlytkieMorze JEST obsadzalne (rybołówstwo) — patrz okolica.ts::isLandWorkableHex,
+    // wspólne źródło prawdy dla silnika ekonomii; ikona pracownika ma się tam renderować.
     if (t === TerenBazowy.Morze || t === TerenBazowy.Gory) continue;
 
     const sprite = makeWorkerIconSprite(ownerId, playerOwnerId);

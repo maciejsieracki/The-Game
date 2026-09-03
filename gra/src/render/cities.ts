@@ -69,7 +69,7 @@ interface TerrainTopY {
 
 const CIV_TERRAIN_HEIGHT: Record<TerenBazowy, TerrainTopY> = {
   [TerenBazowy.Morze]:    { height: 0.30, yOffset: 0.00 },
-  [TerenBazowy.Wybrzeze]: { height: 0.35, yOffset: 0.05 },
+  [TerenBazowy.PlytkieMorze]: { height: 0.35, yOffset: 0.05 },
   [TerenBazowy.Laka]:     { height: 0.40, yOffset: 0.05 },
   [TerenBazowy.Rownina]:  { height: 0.45, yOffset: 0.08 },
   [TerenBazowy.Pustynia]: { height: 0.42, yOffset: 0.08 },
