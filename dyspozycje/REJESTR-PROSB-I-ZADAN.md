@@ -4333,3 +4333,31 @@ z góry ustalonego zakresu) — dispatchowane równolegle.
 | ID | Prośba | Status | Uwagi |
 |---|---|---|---|
 | `R-HANDEL-SZLAKI-LIMIT-DYSTANSU-USUN-Q1` | "usuń ten limit max 12xów do lądu i 20 dla morza [...] to jest nielogiczne dlatego że przy dużych mapach te odległości powodują że żadne miasta nie mogą ze sobą handlować. [...] rozumiem dwie cywilizacje muszą ze sobą graniczyć to jest okej ale to nie oznacza że na przykład stolica danej cywilizacji nie może handlować bo jest za daleko ze stolicą innej cywilizacji." | **DISPATCHOWANE** | Domain GAME, ekonomia/wydajność — Operator+Evaluator+Final Control Sonnet 5, effort HIGH. Świadome ODWRÓCENIE wcześniejszej decyzji właściciela (Q6=B, 2026-07-20, `econ-params.json:704`) na jego wyraźne żądanie — nie błąd agenta, jak wstępnie podejrzewał właściciel. Recon: próg dystansu (`trade-routes.ts` linie 351/370) i promień BFS (`maxSteps=ladMaxDist×2`, linia 362/382) to DWA sczepione mechanizmy — usunięcie samego progu bez podniesienia `maxSteps` odtworzyłoby limit "tylnymi drzwiami". Krytyczne sprzężenie: `TradeRouteIncomeParams` (szczyt krzywej dochodu) czyta TE SAME klucze JSON co próg connectivity — rozstrzygnięte w dispatchu (GOAL 3): rozdzielić parametry, dochód dla dalekich tras = szczyt (40), bliskie trasy bez zmian balansu. Ryzyko wydajnościowe na mapie "superogromny" (672×476, do ~1150 heksów) — wymaga żywego pomiaru PRZED/PO. Dispatch `00-dispatch.md`. |
+
+## NOWE ZGŁOSZENIE 2026-09-03 — audyt kompletności backlogu, 8 odpowiedzi ABC właściciela naraz
+
+Kontekst: właściciel poprosił o sprawdzenie, czy wszystkie zgłoszone tematy mają operatora i
+workflow. Audyt (subagent) zidentyfikował listę tematów bez dispatchu; część okazała się
+FAŁSZYWYMI ALARMAMI (już zamknięte we wcześniejszych, późniejszych wpisach tego samego pliku,
+które audyt przeoczył — zweryfikowane ręcznie przez orkiestratora przed zadaniem pytań, żeby nie
+pytać o już odpowiedziane): `R-DYPLO-FLAGA-MIASTO-PANSTWO-NIE-GASNIE-Q1` (ZINTEGROWANE,
+`3284`+), `R-REPO-SCIEZKA-KANON-FINALNA-Q1` (ZINTEGROWANE `f274df70`),
+`P-DYPLO-RELACJA-I-SILA-TA-SAMA-LICZBA-Q1` (ZAMKNIETE, interpretacja C), 2 z 3 pytań
+`P-MAPGEN-PANGEA-OBRYS` (Pytania 1=A, 2=B już odpowiedziane wcześniej w
+`docs/decyzje/P-MAPGEN-PANGEA-OBRYS.md` — tylko Pytanie 4 pozostawało realnie otwarte).
+
+Realnie otwarte tematy — 8 pytań ABC zadanych i odpowiedzianych w tej turze:
+
+| ID | Pytanie | ECHO właściciela | Uwagi |
+|---|---|---|---|
+| `P-MAPGEN-PANGEA-OBRYS` (Pytanie 4) | Nazwa `TerenBazowy.Wybrzeze` myląca (woda nazwana jak ląd) — co zrobić? | **B** — zmiana nazwy na "płytkie morze" + przepięcie 142 ręcznych porównań `=== TerenBazowy.Morze` na istniejący helper `isWaterTerrain()` | Ostatnie z 4 pytań tego tematu — 1/2/3 już były odpowiedziane (A/B/B) w `docs/decyzje/P-MAPGEN-PANGEA-OBRYS.md`. Do dispatchu: rename + repin, zero zmian w `generator.ts`, sprawdzić wszystkie call-site `groupLandMassKeys`. |
+| `P-DYPLO-ZELAZO-BRAK-WOJNY-WYMUSZONEJ-Q1` | Epoka Żelaza nie ma mechanizmu wojny wymuszonej (Kamień/Brąz mają) — jak uzupełnić? | **Skopiuj parametry Brązu 1:1** | Do dispatchu: nowy `forced-war-iron.ts` wzorem `forced-war-bronze.ts`, te same wartości progowe, dostosowane odniesienia do jednostek/budynków epoki Żelaza. |
+| `P-STADNINA-LAS-NIEROZSTRZYGNIETE-Q1` | Czy Stadnina (surowiec Koń) wchodzi do lasu jak owce/bydło/lamy? | **Odpowiedź precyzująca regułę, nie proste tak/nie**: "Stadnina, w przeciwieństwie do owiec/bydła/lam, jest ulepszeniem SUROWCOWYM — ma podlegać takim samym zasadom jak Tartak czy Kopalnia, nie jak pastwiska. Jeśli symbol konia jest na lesie, nie przeszkadza to w postawieniu tam Stadniny. Późniejsze usunięcie lasu NIE powinno usuwać Stadniny — jest niezależna od lasu, tak samo jak Glinianka." | Do dispatchu: Stadnina dołącza do grupy budynków surowcowych niezależnych od obecności lasu (wzorem Glinianki/Tartaku/Kopalni), NIE do grupy pastwisk objętej regułą 07-29. Recon Operatora: potwierdzić dokładny dzisiejszy warunek blokujący Stadninę w lesie i zamienić go na wzorzec Glinianki. |
+| `R-DYPLO-SOJUSZ-WIDOCZNOSC-CIAGLA-Q1` | Ciągła, dwukierunkowa widoczność mapy dla aktywnego sojuszu (nie tylko jednorazowy zrzut)? | **Tak, działaj** | Do dispatchu: aktywuje się przy zawarciu sojuszu, deaktywuje przy zerwaniu; dotyka logiki widoczności per-turę gracza ORAZ AI — wymaga starannej weryfikacji braku regresji w decyzjach AI. |
+| `P-REPO-2-BUNDLE-NIEODTWARZALNE-Q1` | Bramka `filter-repo` (nieodwracalne przepisanie historii Gita) zablokowana — 2 z 8 bundli PLAYTEST nie odtworzą się wcale. Jak postąpić? | **Zaakceptuj trwałą utratę tych 2 bundli (BITWA-DUZA, OBLEZENIE-DUZE), idź dalej z filter-repo** | Do dispatchu/wykonania: PRZED uruchomieniem filter-repo, jawnie udokumentować w commicie/raporcie które dokładnie bundle są trwale tracone i dlaczego (zgoda właściciela), potem odblokować bramkę. |
+| Wojna trójstronna, rozszerzenie `R-DYPLO-AI-WOJNA-Z-GRACZEM-PARZYSTOSC-Q1` (pytanie 1/3: zakres) | Wyłącznie wojny wymuszone, czy też ogólna ścieżka decyzyjna AI? | **Wyłącznie wojny wymuszone** (Kamień/Brąz/Żelazo) | Węższy, bezpieczniejszy zakres — zero zmian w ogólnej logice AI (`ai.ts` Priorytet 4). |
+| Wojna trójstronna (pytanie 2/3: wyjątek sojuszu) | "Chyba że jedną z nich łączy sojusz" — z kim: z graczem, czy AI-AI? | **Wyjątek gdy KTÓRAKOLWIEK ze stron ma aktywny sojusz z graczem** | Jeśli AI-A lub AI-B ma sojusz z graczem, mechanizm się nie uruchamia — sojusznik nigdy nie dołączy do wojny przez ten efekt domina. |
+| Wojna trójstronna (pytanie 3/3: trudność) | Zwiększa trudność gry (możliwe równoczesne wojny z dwiema cywilizacjami) — zamierzone czy wymaga złagodzenia? | **Zamierzone zaostrzenie, bez dodatkowego łagodzenia** | Wprowadzić dokładnie jak opisano, bez dodatkowych progów/ograniczeń trudnością. |
+
+Wszystkie 8 tematów WYMAGAJĄ napisania `00-dispatch.md` i uruchomienia przez Workflow —
+orkiestrator kontynuuje w kolejnych krokach tej samej sesji.
