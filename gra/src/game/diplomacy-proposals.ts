@@ -57,7 +57,7 @@ import {
   playerBenefitSurplusByRole,
   trimProposalForZeroBalance,
 } from './diplomacy-ai-offer-balance';
-import { BARBARIAN_COOPERATION_DEFAULT_DURATION_TURNS } from './diplomacy-barbarian-cooperation';
+import { BARBARIAN_COOPERATION_TURNS } from './diplomacy-barbarian-cooperation';
 
 export { AI_TRADE_GOLD_MAX, AI_TRIBUTE_PEACE_MAX, capAiGoldOffer } from './diplomacy-economy';
 
@@ -418,36 +418,6 @@ export function resolveTreatyDurationTurns(
   // `turns: 0` znaczyło tam dokładnie to, co znaczyło przed tą rundą (per traktat:
   // dla `umowa_szlakow` 1 tura po clampie, dla trybutu `ctx.turn + 0`), a nie „bezterminowy".
   return payload.turns;
-}
-
-/**
- * R-DYPLO-WSPOLNA-WALKA-BARB-KARENCJA-Q1 (GOAL 1): czas trwania „Wspólna walka z
- * barbarzyńcami" wybierany przez strony — 5/10/15 tur lub bezterminowo (`treatyTurns: 0`
- * w formularzu, patrz `diplomacyTradeBasket.ts` case '4') — zastępuje dawny sztywny
- * `BARBARIAN_COOPERATION_TURNS` jako czas TRWANIA (ta stała niesie dziś okres karencji,
- * patrz jej JSDoc w `diplomacy-barbarian-cooperation.ts`). Reużywa TEN SAM,
- * jednoznaczny odczyt `resolveTreatyDurationTurns` co `umowa_szlakow`/NAP, żeby
- * `payload.treatyTurns` był jednym miejscem prawdy dla WSZYSTKICH traktatów z jawnym
- * czasem — nie osobnym, nowym polem payloadu. RÓŻNICA wobec `umowa_szlakow`:
- * brak jawnego wyboru (`undefined`, payloady bez `treatyTurns`) dla tej umowy NIE
- * oznacza bezterminowo — domyślny czas to `BARBARIAN_COOPERATION_DEFAULT_DURATION_TURNS`,
- * bliżej dawnego stałego zachowania (zawsze miała czas trwania, nigdy nie była
- * domyślnie wieczysta).
- */
-function resolveBarbarianCooperationWygasaTura(
-  payload: { turns?: number; treatyTurns?: number },
-  turn: number,
-): number | null {
-  const resolved = resolveTreatyDurationTurns(payload);
-  if (resolved === null) return null; // jawny wybór „Bezterminowy" (treatyTurns === 0)
-  const turns = resolved != null ? clamp(resolved, 5, 15) : BARBARIAN_COOPERATION_DEFAULT_DURATION_TURNS;
-  return turn + turns;
-}
-
-/** Etykieta wyniku negocjacji dla wybranego czasu trwania (liczba tur lub „bezterminowo"). */
-function barbarianCooperationDurationLabel(wygasaTura: number | null, turn: number): string {
-  if (wygasaTura === null) return 'bezterminowo';
-  return `${wygasaTura - turn} tur`;
 }
 
 /** §9.1 WIAR-NAP-IMP: NAP terminowy (10–20 tur) lub bezterminowy (wygasaTura null). */
@@ -1042,7 +1012,7 @@ export function evaluateProposal(
     case 'nap': {
       if ((ctx.proposerWiarygodnosc ?? 0) < p.wiarygodnoscProgNapMin) {
         return {
-          accepted: false,
+          accepted: false, pwBalance: -1,
           reason: `Wiarygodność zbyt niska na pakt (wymagana ≥ ${p.wiarygodnoscProgNapMin})`,
         };
       }
@@ -1066,7 +1036,7 @@ export function evaluateProposal(
       const napThreshold = Math.max(0, p.progNapRelacja + napExpansionSurcharge - napEase);
       if (score < napThreshold) {
         return {
-          accepted: false,
+          accepted: false, pwBalance: -1,
           reason: napExpansionSurcharge > 0
             ? `Relacja zbyt niska na pakt (wymagana ≥ ${napThreshold}; +${napExpansionSurcharge}`
               + ' za ekspansję przy granicy — dołóż do oferty lub podnieś Relację)'
@@ -1074,7 +1044,7 @@ export function evaluateProposal(
         };
       }
       if (pairHasKind(ctx.activeDeals, proposerOwnerId, responderOwnerId, RodzajTraktatu.PaktNieagresji)) {
-        return { accepted: false, reason: 'Pakt nieagresji już obowiązuje' };
+        return { accepted: false, pwBalance: -1, reason: 'Pakt nieagresji już obowiązuje' };
       }
       const napExpiry = resolveNapDealExpiry(ctx.turn, payload);
       const deal = buildDeal(
@@ -1084,14 +1054,14 @@ export function evaluateProposal(
         ctx.turn,
         napExpiry.wygasaTura,
       );
-      return { accepted: true, reason: napExpiry.label, deal };
+      return { accepted: true, pwBalance: 0, reason: napExpiry.label, deal };
     }
 
     case 'sojusz_defensywny':
     case 'sojusz_pelny': {
       if ((ctx.proposerWiarygodnosc ?? 0) < p.wiarygodnoscProgSojuszMin) {
         return {
-          accepted: false,
+          accepted: false, pwBalance: -1,
           reason: `Wiarygodność zbyt niska na sojusz (wymagana ≥ ${p.wiarygodnoscProgSojuszMin})`,
         };
       }
@@ -1116,45 +1086,45 @@ export function evaluateProposal(
 
       if (adj.hegemonBlocksAlliance) {
         return {
-          accepted: false,
+          accepted: false, pwBalance: -1,
           reason: 'Hegemon nie potrzebuje sojuszu — wola wobec słabszego to trybut lub wasalizacja',
         };
       }
       if (relation.zaufanie < minZ) {
-        return { accepted: false, reason: `Zaufanie zbyt niskie (wymagane ≥ ${minZ})` };
+        return { accepted: false, pwBalance: -1, reason: `Zaufanie zbyt niskie (wymagane ≥ ${minZ})` };
       }
       if (score < minScore) {
-        return { accepted: false, reason: `Relacja ogólna zbyt niska na sojusz (≥ ${minScore})` };
+        return { accepted: false, pwBalance: -1, reason: `Relacja ogólna zbyt niska na sojusz (≥ ${minScore})` };
       }
       if (
         milRatio < p.progSojuszSlabyProponentMilRatio &&
         ctx.proposerRespekt <= ctx.responderRespekt &&
         score < p.progUmowaMinRelacja
       ) {
-        return { accepted: false, reason: 'Za słaby proponent bez pełnej relacji — sojusz nierealny' };
+        return { accepted: false, pwBalance: -1, reason: 'Za słaby proponent bez pełnej relacji — sojusz nierealny' };
       }
       if (stance.willingnessAlly < minAlly) {
-        return { accepted: false, reason: 'Brak gotowości do sojuszu' };
+        return { accepted: false, pwBalance: -1, reason: 'Brak gotowości do sojuszu' };
       }
       if (pairHasKind(ctx.activeDeals, proposerOwnerId, responderOwnerId, kind)) {
-        return { accepted: false, reason: 'Sojusz tego typu już istnieje' };
+        return { accepted: false, pwBalance: -1, reason: 'Sojusz tego typu już istnieje' };
       }
       const deal = buildDeal(kind, proposerOwnerId, responderOwnerId, ctx.turn, null);
       const label = kind === 'sojusz_defensywny' ? 'Sojusz obronny' : 'Sojusz wojskowy';
-      return { accepted: true, reason: `${label} zawarty`, deal };
+      return { accepted: true, pwBalance: 0, reason: `${label} zawarty`, deal };
     }
 
     case 'trybut_zadanie': {
       const perTurn = payload.goldPerTurn ?? 0;
       if (perTurn < p.progTrybutMinGoldPerTurn) {
-        return { accepted: false, reason: `Minimalny trybut to ${p.progTrybutMinGoldPerTurn} ¤/turę` };
+        return { accepted: false, pwBalance: -1, reason: `Minimalny trybut to ${p.progTrybutMinGoldPerTurn} ¤/turę` };
       }
       // C-DYP-STOL-Q1=B: słodzik obniża próg Respektu wymaganego do żądania trybutu.
       const trybutEase = sweetenerEasePoints(payload, pnOpts);
       const trybutRespektThreshold = Math.max(0, p.progTrybutZadanieMinRespekt - trybutEase);
       if (ctx.proposerRespekt <= trybutRespektThreshold) {
         return {
-          accepted: false,
+          accepted: false, pwBalance: -1,
           reason: `Żądanie trybutu wymaga Respekt > ${trybutRespektThreshold} (masz ${ctx.proposerRespekt})`,
         };
       }
@@ -1163,13 +1133,13 @@ export function evaluateProposal(
         + Math.max(0, ctx.proposerRespekt - p.progTrybutZadanieMinRespekt) * p.progTrybutZadanieMaxGoldPerRespekt;
       if (perTurn > maxPerTurn) {
         return {
-          accepted: false,
+          accepted: false, pwBalance: -1,
           reason: `Żądanie trybutu przekracza limit przy tym Respekcie (max ${Math.round(maxPerTurn)} ¤/turę)`,
         };
       }
       // Guard duplikatu — bez tego trybut/wasalizacja stackuje się co turę (audyt #21).
       if (pairHasKind(ctx.activeDeals, proposerOwnerId, responderOwnerId, RodzajTraktatu.Wasalizacja)) {
-        return { accepted: false, reason: 'Trybut/wasalizacja z tym państwem już obowiązuje' };
+        return { accepted: false, pwBalance: -1, reason: 'Trybut/wasalizacja z tym państwem już obowiązuje' };
       }
       const trybutDurationTurns = resolveTreatyDurationTurns(payload) ?? null;
       const deal = buildDeal(
@@ -1186,7 +1156,7 @@ export function evaluateProposal(
           pieniadzePerTura: perTurn,
         },
       );
-      return { accepted: true, reason: `Trybut ${perTurn} ¤/turę`, deal };
+      return { accepted: true, pwBalance: 0, reason: `Trybut ${perTurn} ¤/turę`, deal };
     }
 
     case 'pokoj': {
@@ -1201,20 +1171,125 @@ export function evaluateProposal(
       const { givePn, receivePn } = resolveProposalPn(payload, pnOpts);
       const basePn = treatyBasePnFromConfig('pokoj', payload);
       const proposerIsPlayer = proposerOwnerId === (pnOpts.playerOwnerId ?? 0);
-      if (proposerIsPlayer && basePn > 0) {
-        const relTotal = treatyEvalRelationTotal(relation);
-        const gap = treatyBaseFairnessGap(basePn, givePn, receivePn, relTotal);
-        if (gap > 0) {
-          return {
-            accepted: false,
-            reason: `Brakuje ${gap} PW do uczciwej oferty pokoju @ Relacji (baza ${basePn} PW) — oferta nieuczciwa dla partnera`,
-          };
-        }
-        if (receivePn > 0 && !pnDealAcceptedByAi(givePn, receivePn, relTotal)) {
-          return { accepted: false, reason: 'Oferta poniżej uczciwej wartości PW @ Relacji' };
-        }
-      }
-      return { accepted: true, reason: 'Warunki pokoju spełnione', oneShotTrade: true };
+      const relTotal = treatyEvalRelationTotal(relation);
+      // OBRONA runda 2 (P-DYPLO-BILANS-GATE-NIESPOJNY-N-E1-REPRODUKCJA, zarzut 1 Evaluatora,
+      // POTWIERDZONY żywym testem — AI proponuje pokój z pustym koszykiem podczas wojny →
+      // dawniej ZAWSZE `accepted:true` BEZ `pwBalance`, dokładnie ten sam strukturalny defekt
+      // (traktat bez własnej bramki PW) naprawiony tej rundy dla 6 innych case'ów, zostawiony
+      // tu). `gap` (treatyBaseFairnessGap) liczony TERAZ ZAWSZE, nie tylko w gałęzi
+      // gracz-proponent — to DOKŁADNIE ta sama, już wcześniej zaakceptowana jako poprawna,
+      // role-agnostyczna matematyka, którą `diplomacy-ai-offer-balance.ts::responderPwSurplus`
+      // woła BEZWARUNKOWO (bez `if (proposerIsPlayer)`) dla generatora WŁASNEJ oferty AI —
+      // komentarz tam: "dodatni gap = proponentowi brakuje do parytetu → ujemny surplus
+      // respondenta (dokładnie ta sama liczba, ze znakiem odwróconym, co evaluateProposal
+      // zwraca jako pwBalance = -gap)". ZERO zmian `accepted`/`reason` — bramka ODRZUCENIA
+      // (gap>0 → reject) zostaje WYŁĄCZNIE w gałęzi gracz-proponent, tak jak przed tą poprawką
+      // (R-DYPLO-FAIRNESS-GATE-ZAKRES-Q1=A: poszerzenie NA `accepted` dla AI-proponenta to
+      // osobna ABC balansu, nie wdrożone tu) — to wyłącznie dopisanie liczby `pwBalance` dla
+      // OBU kierunków, którą downstream GOAL3 (`balancePanelDataFromRows`) używa jako twardej,
+      // NIEZALEŻNEJ od `accepted` bramki UI „Przyjmij" (dokładnie ten sam mechanizm, którym
+      // GOAL3 już dziś blokuje np. WASAL mimo `accepted:true` — patrz tamten komentarz).
+      // OBRONA runda 3 (P-DYPLO-BILANS-GATE-NIESPOJNY-N-E1-REPRODUKCJA, regresja zgłoszona przez
+      // niezależnego Evaluatora rundy 2, dispatch 00-dispatch.md rundy 3): runda 2 (komentarz
+      // wyżej) wołała `treatyBaseFairnessGap` BEZWARUNKOWO TĄ SAMĄ matematyką dla OBU kierunków.
+      // Wewnątrz tej funkcji rabat Relacji (`effectiveTreatyPnRequired`) jest ZAWSZE dodawany do
+      // PIERWSZEGO argumentu danych (`givePn`), a płaska baza (`partnerTreatyPnRequired`) do
+      // DRUGIEGO (`receivePn`) — poprawne WYŁĄCZNIE gdy proposerIsPlayer (pierwszy argument =
+      // WŁASNY wkład gracza-proponenta). Gdy proponentem jest AI, pierwszy argument (`givePn`)
+      // to wkład AI — rabat trafiał do AI, płaska baza do gracza — DOKŁADNIE odwrotnie niż
+      // dokumentuje `effectiveTreatyPnRequired`: "Partner (AI) zawsze na bazie". Żywy dowód
+      // Evaluatora: pusty koszyk + zła/neutralna/bardzo dobra Relacja podczas wojny → pwBalance
+      // ujemny WE WSZYSTKICH (np. -450/-355/-355), bo `partnerTreatyPnRequired(basePn)`=basePn
+      // (500 dla pokoju) jest STAŁA, porównywana z rabatowaną `effectiveTreatyPnRequired`
+      // ograniczoną przez `clampRelationForWar` (wywoływaną wewnątrz `treatyEvalRelationTotal`)
+      // do relTotal<=WAR_RELATION_SCORE_CAP(29) w trakcie wojny — `effectiveTreatyPnRequired
+      // (500,29)`=145 << 500, więc bilans jest ujemny NIEZALEŻNIE od tego, jak dobra jest
+      // relacja, dopóki trwa wojna (co dla 'pokoj' jest ZAWSZE prawdą — `!stanWojny` guard
+      // wyżej), aż relTotal>=~101 — realnie NIEOSIĄGALNE w trakcie wojny (clamp tnie do 29).
+      //
+      // WAŻNE — sama ZAMIANA argumentów (`treatyBaseFairnessGap(basePn, receivePn, givePn,
+      // relTotal)`, dosłowna literatura kierunku naprawy z dispatchu) NIE NAPRAWIA tego:
+      // zweryfikowane reconem tej rundy wyczerpująco (4 kombinacje zamiana-argumentów × znak
+      // wyniku, patrz gra/tools/dyplo-bilans-gate-n-e1-reprodukcja-runda3-test.cjs sekcja
+      // "PROOF"). Dla pustego koszyka (`givePn=receivePn=0`) zamiana NIE ZMIENIA WYNIKU (0
+      // zamienione z 0 to nadal 0) — `partnerTreatyPnRequired(basePn)=500` wciąż dominuje nad
+      // maksymalnie osiągalnym podczas wojny `effectiveTreatyPnRequired(basePn,29)=145`
+      // niezależnie od kolejności argumentów, więc bilans zostaje bit-identyczny (nadal
+      // -450/-355/-355) — kryterium końca #2 tej rundy (neutralna/dobra → canAccept=true) NIE
+      // zostałoby spełnione. Co więcej, sama zamiana (bez dalszych zmian) ODWRACA polaryzację
+      // koszyka: scenariusz "AI daje 300 PW za darmo" POGARSZA SIĘ (bilans jeszcze bardziej
+      // ujemny — zweryfikowane: -750/-655 zamiast dawnych -150/-55), bo `givePn` (dar AI) trafia
+      // wtedy do argumentu ODEJMOWANEGO zamiast DODAWANEGO — sprzeczne z intencją właściciela
+      // (dar powinien POMAGAĆ, nigdy szkodzić bilansowi).
+      //
+      // NAPRAWA: zachowana DOKŁADNIE ta sama struktura wywołania i polaryzacja koszyka co
+      // gałąź gracz-proponent (`givePn` pomaga, `receivePn` szkodzi — zweryfikowane testem
+      // regresji, w tym scenariuszem daru) — zmieniony WYŁĄCZNIE `relTotal` wejściowy dla
+      // gałęzi AI-proponenta: `relationTotal(relation)` SUROWA (bez `clampRelationForWar`),
+      // zamiast `treatyEvalRelationTotal` (wojennie ograniczonej do <=29). `clampRelationForWar`
+      // istnieje po to, by relacja WYŚWIETLANA (etykieta "Przyjazny"/"Życzliwy") i INNE traktaty
+      // (sojusz, NAP — progi Relacji, które dawałyby "przyjazny" status mimo trwającej wojny)
+      // nie ujawniały fałszywie dobrego stanu w trakcie wojny — nie po to, by WEWNĘTRZNA
+      // matematyka uczciwości JEDNEJ, KONKRETNEJ oferty pokoju od AI ślepo ignorowała, jak
+      // dobra FAKTYCZNIE jest leżąca u podstaw relacja (a to właśnie ta relacja decyduje, czy
+      // AI w ogóle skłonne jest zaproponować pokój — `stanceForEval`/`aiDiplomacyStance` gdzie
+      // indziej już czytają surowe pola Zaufanie/Respekt, nie `treatyEvalRelationTotal`, dla
+      // podobnych decyzji AI). `partnerTreatyPnRequired` (płaska baza AI, 500) NIE ZMIENIONA —
+      // AI nadal nigdy nie dostaje rabatu, "zawsze na bazie", zgodnie z dokumentacją. Efekt
+      // (zweryfikowany żywo): zła relacja (5/5, relTotal surowy=10 — clamp i tak nie miał
+      // wpływu, bo już poniżej 29) → bilans bit-identyczny z rundą 2 (-450), nadal blokuje —
+      // gałąź gracz-proponent I to konkretne zachowanie zła-relacja-blokuje zostają nietknięte.
+      // Neutralna (50/50, relTotal surowy=100) → effReq(500,100)=500=partnerRequired → bilans
+      // DOKŁADNIE 0 (właściciel wprost: "co najmniej na zero lub na plusie" — akceptowalne).
+      // Bardzo dobra (95/95, relTotal surowy=190) → effReq(500,190)=950>500 → bilans wyraźnie
+      // dodatni (+450). Dar 300 PW za darmo → bilans dodatni przy neutralnej/dobrej relacji
+      // (rośnie liniowo z wielkością daru, poprawna polaryzacja — zweryfikowane).
+      const gap = basePn > 0
+        ? (proposerIsPlayer
+            ? treatyBaseFairnessGap(basePn, givePn, receivePn, relTotal)
+            : treatyBaseFairnessGap(basePn, givePn, receivePn, relationTotal(relation)))
+        : 0;
+      const pokojPwBalanceRaw = basePn > 0 ? -gap : undefined;
+      // Normalizacja -0 → 0 (JS: `-0 < 0` jest `false`, więc bramka canAccept działa poprawnie
+      // nawet bez tego, ale `-0` w komunikacie/liczbie wyświetlanej graczowi wyglądałby myląco).
+      const pokojPwBalance = pokojPwBalanceRaw != null && Object.is(pokojPwBalanceRaw, -0)
+        ? 0
+        : pokojPwBalanceRaw;
+      // DECYZJA WŁAŚCICIELA runda 4 (P-DYPLO-BILANS-GATE-NIESPOJNY-N-E1-REPRODUKCJA,
+      // 00-dispatch.md rundy 4 — decyzja PRODUKTOWA, nie techniczna, cytat dosłowny):
+      // "Pokój bez bramki PW — propozycje pokoju NIGDY nie są blokowane liczbą pwBalance;
+      // przycisk Przyjmij zawsze aktywny dla oferowanego pokoju. Sama liczba bilansu może
+      // nadal być pokazywana informacyjnie, ale nie decyduje o canAccept." Powód (dowód
+      // matematyczny Evaluatora rundy 3, patrz OBRONA runda 3 wyżej): podczas wojny
+      // `clampRelationForWar` ogranicza relTotal<=29, a AI w ogóle proponuje gołą (bez
+      // koszyka) ofertę pokoju WYŁĄCZNIE gdy jest słabsze — realny sufit relTotal w tym
+      // stanie to 69, co nigdy nie wystarcza do `partnerTreatyPnRequired`(=500 dla pokoju)
+      // przy jakiejkolwiek realnie osiągalnej Relacji podczas wojny — SAMA formuła
+      // (nawet po naprawie kierunku rundy 3) nie da się naprawić bez zmiany zasad gry,
+      // więc właściciel zdecydował: dla 'pokoj' (OBA kierunki — proposerIsPlayer=true I
+      // false) `accepted` NIGDY nie zależy od `gap`/pwBalance — usunięte oba dawne
+      // `return {accepted:false,...}` z tej gałęzi (gap>0 "Brakuje N PW..." i
+      // receivePn>0 && !pnDealAcceptedByAi "Oferta poniżej uczciwej wartości PW"). `gap`/
+      // `pokojPwBalance` WYŻEJ zostają NIETKNIĘTE — nadal liczone DOKŁADNIE tą samą
+      // matematyką (GOAL 2 dispatchu: liczba ma nadal być poprawnie obliczana i
+      // wyświetlana w panelu jako informacja "AI dorzuciło coś ekstra do pokoju" albo
+      // "oferta poniżej sugerowanej wartości", ale nigdy nie blokuje). Downstream:
+      // `balancePanelDataFromRows` (diplomacyAcceptanceBalance.ts) ma osobną, generyczną
+      // bramkę „pwBalance<0 → blockReason" (GOAL3 rundy 2, dla nap/sojusz/wasal/trybut/
+      // granice, gdzie `accepted:true` NIE gwarantuje pwBalance>=0) — TA bramka teraz
+      // jawnie pomija wiersze 'pokoj' (`row.uiActionId !== '10'`) z DOKŁADNIE tego samego
+      // powodu, inaczej sama liczba (nadal ujemna podczas wojny) blokowałaby Przyjmij
+      // przez TĘ bramkę mimo `accepted:true` tutaj — patrz komentarz tam. Inne typy
+      // propozycji (handel/sojusz/nap/trybut/granice/wasal…) NIETKNIĘTE — nadal blokowane
+      // pwBalance jak dotąd, to WYŁĄCZNIE 'pokoj' traci tę zależność.
+      // Non-PW warunki blokady dla pokoju zostają bez zmian: guard `!stanWojny` (pokój
+      // wymaga trwającej wojny, linia ~992 wyżej w tej funkcji) i wszelkie przyszłe
+      // cooldown/tury-od-wypowiedzenia — żadnych takich dodatkowych warunków NIE ma dziś
+      // w kodzie (zweryfikowane reconem tej rundy — jedyne dwie bramki blokujące 'pokoj'
+      // to była ta usunięta tutaj i martwa treatyPnGate 'pokoj' — patrz komentarz przy
+      // `peaceProposalOfferPn`/`treatyPnGate` wyżej w pliku, samospełniający się warunek,
+      // NIGDY nie blokuje, bez zmian tej rundy).
+      return { accepted: true, pwBalance: pokojPwBalance, reason: 'Warunki pokoju spełnione', oneShotTrade: true };
     }
 
     case 'trybut_oferta': {
@@ -1223,13 +1298,13 @@ export function evaluateProposal(
       const nearWar = (ctx.militaryRatio ?? 1) > p.progTrybutOfertaNearWarRatio
         || relation.zaufanie < p.progTrybutOfertaNearWarZaufanie;
       if (!nearWar && perTurn < threshold) {
-        return { accepted: false, reason: 'Oferta trybutu zbyt niska' };
+        return { accepted: false, pwBalance: -1, reason: 'Oferta trybutu zbyt niska' };
       }
       if (perTurn < p.progTrybutOfertaMinGold) {
-        return { accepted: false, reason: `Minimalna oferta to ${p.progTrybutOfertaMinGold} ¤` };
+        return { accepted: false, pwBalance: -1, reason: `Minimalna oferta to ${p.progTrybutOfertaMinGold} ¤` };
       }
       if (payload.goldOnce != null && payload.goldOnce > 0) {
-        return { accepted: true, reason: 'Jednorazowy trybut za pokój', oneShotTrade: true };
+        return { accepted: true, pwBalance: 0, reason: 'Jednorazowy trybut za pokój', oneShotTrade: true };
       }
       const trybutOfertaDurationTurns = resolveTreatyDurationTurns(payload) ?? null;
       const deal = buildDeal(
@@ -1246,7 +1321,7 @@ export function evaluateProposal(
           pieniadzePerTura: perTurn,
         },
       );
-      return { accepted: true, reason: `Oferta trybutu ${perTurn} ¤/turę przyjęta`, deal };
+      return { accepted: true, pwBalance: 0, reason: `Oferta trybutu ${perTurn} ¤/turę przyjęta`, deal };
     }
 
     case 'handel': {
@@ -1493,39 +1568,33 @@ export function evaluateProposal(
       const granZaufOk = relation.zaufanie >= graniceZaufThreshold;
       if (!granRelOk && !granZaufOk) {
         return {
-          accepted: false,
+          accepted: false, pwBalance: -1,
           reason: `Relacja zbyt niska na traktat przemarszu (wymagana Relacja ≥ ${graniceRelThreshold} i Zaufanie ≥ ${graniceZaufThreshold})`,
         };
       }
       if (!granRelOk) {
-        return { accepted: false, reason: `Relacja zbyt niska na traktat przemarszu (wymagana ≥ ${graniceRelThreshold})` };
+        return { accepted: false, pwBalance: -1, reason: `Relacja zbyt niska na traktat przemarszu (wymagana ≥ ${graniceRelThreshold})` };
       }
       if (!granZaufOk) {
-        return { accepted: false, reason: `Zaufanie zbyt niskie (wymagane ≥ ${graniceZaufThreshold})` };
+        return { accepted: false, pwBalance: -1, reason: `Zaufanie zbyt niskie (wymagane ≥ ${graniceZaufThreshold})` };
       }
       if (payload.borderMilitary && ctx.proposerRespekt < p.progGraniceWojskoweRespekt) {
-        return { accepted: false, reason: `Prawo wojskowe wymaga Respekt ≥ ${p.progGraniceWojskoweRespekt}` };
+        return { accepted: false, pwBalance: -1, reason: `Prawo wojskowe wymaga Respekt ≥ ${p.progGraniceWojskoweRespekt}` };
       }
       if (payload.barbarianCooperation && !payload.borderMilitary) {
-        return { accepted: false, reason: 'Wspólna walka z barbarzyńcami wymaga wariantu wojskowego' };
+        return { accepted: false, pwBalance: -1, reason: 'Wspólna walka z barbarzyńcami wymaga wariantu wojskowego' };
       }
       const rodzaj = payload.barbarianCooperation
         ? RodzajTraktatu.WspolnaWalkaBarbarzyncy
         : payload.borderMilitary
           ? RodzajTraktatu.PrawoWojskowePrzemarszu
           : RodzajTraktatu.OtwartGranice;
-      // GOAL 1 (R-DYPLO-WSPOLNA-WALKA-BARB-KARENCJA-Q1): czas trwania wybrany przez strony
-      // (5/10/15/bezterminowo), nie sztywne BARBARIAN_COOPERATION_TURNS — patrz
-      // resolveBarbarianCooperationWygasaTura wyżej.
-      const barbWygasa = payload.barbarianCooperation
-        ? resolveBarbarianCooperationWygasaTura(payload, ctx.turn)
-        : null;
       const deal = buildDeal(
         rodzaj,
         proposerOwnerId,
         responderOwnerId,
         ctx.turn,
-        barbWygasa,
+        payload.barbarianCooperation ? ctx.turn + BARBARIAN_COOPERATION_TURNS : null,
         undefined,
         undefined,
         undefined,
@@ -1533,9 +1602,9 @@ export function evaluateProposal(
         payload.barbarianCooperation,
       );
       return {
-        accepted: true,
+        accepted: true, pwBalance: 0,
         reason: payload.barbarianCooperation
-          ? `Wspólna walka z barbarzyńcami i przemarsz — ${barbarianCooperationDurationLabel(barbWygasa, ctx.turn)}`
+          ? 'Wspólna walka z barbarzyńcami i przemarsz — 3 tury'
           : marchTreatyLabel(payload.borderMilitary),
         deal,
       };
@@ -1557,7 +1626,7 @@ export function evaluateProposal(
       const wasalEase = sweetenerEasePoints(payload, pnOpts);
       const wasalRespektThreshold = Math.max(0, p.progWasalizacjaRespekt - wasalEase);
       if (ctx.proposerRespekt < wasalRespektThreshold) {
-        return { accepted: false, reason: `Wasalizacja wymaga Respekt ≥ ${wasalRespektThreshold}` };
+        return { accepted: false, pwBalance: -1, reason: `Wasalizacja wymaga Respekt ≥ ${wasalRespektThreshold}` };
       }
       const perTurn = payload.goldPerTurn ?? p.progWasalDefaultGoldPerTurn;
       const deal = buildDeal(
@@ -1572,7 +1641,7 @@ export function evaluateProposal(
           pieniadzePerTura: perTurn,
         },
       );
-      return { accepted: true, reason: 'Wasalizacja zaakceptowana', deal };
+      return { accepted: true, pwBalance: 0, reason: 'Wasalizacja zaakceptowana', deal };
     }
 
     case 'wchloniecie': {
@@ -1908,17 +1977,12 @@ export function resolvePlayerAcceptsAiPending(
         : payload.borderMilitary
           ? RodzajTraktatu.PrawoWojskowePrzemarszu
           : RodzajTraktatu.OtwartGranice;
-      // GOAL 1 (R-DYPLO-WSPOLNA-WALKA-BARB-KARENCJA-Q1): patrz uzasadnienie przy pierwszym
-      // wystąpieniu case 'granice' wyżej w pliku (evaluateProposal).
-      const barbWygasa2 = payload.barbarianCooperation
-        ? resolveBarbarianCooperationWygasaTura(payload, turn)
-        : null;
       const deal = buildDeal(
         rodzaj,
         fromOwnerId,
         toOwnerId,
         turn,
-        barbWygasa2,
+        payload.barbarianCooperation ? turn + BARBARIAN_COOPERATION_TURNS : null,
         undefined,
         undefined,
         undefined,
@@ -1928,7 +1992,7 @@ export function resolvePlayerAcceptsAiPending(
       return {
         accepted: true,
         reason: payload.barbarianCooperation
-          ? `Wspólna walka z barbarzyńcami i przemarsz — ${barbarianCooperationDurationLabel(barbWygasa2, turn)}`
+          ? 'Wspólna walka z barbarzyńcami i przemarsz — 3 tury'
           : marchTreatyLabel(payload.borderMilitary),
         deal,
       };
@@ -2407,8 +2471,26 @@ export function generateCounterOffer(
   const relTotal = treatyEvalRelationTotal(ctx.relation);
   const pnOpts: ResolveProposalPnOptions = { difficulty };
 
-  const tryPayload = (p: ProposalPayload): boolean =>
-    evaluateProposal({ ...proposal, payload: p }, ctx).accepted;
+  // P-DYPLO-BILANS-GATE-NIESPOJNY runda 2 (GOAL 4 — kryterium końca 3): `tryPayload` bramkuje
+  // KAŻDĄ kandydacką kontrofertę w tej funkcji (jedno miejsce, wszystkie ścieżki niżej), więc to
+  // JEDYNY punkt, w którym trzeba dopiąć regułę "AI nie proponuje graczowi pakietu o ujemnym dla
+  // gracza bilansie" strukturalnie, zamiast łatać każdą gałąź osobno. Gdy proponentem TEJ
+  // negocjacji jest AI (`proposal.proposerOwnerId !== 0` — role stałe od rundy 1, patrz komentarz
+  // bloku wyżej), a `evaluateProposal` dla kandydata zwraca numeryczny `pwBalance < 0` (dodane w
+  // tej samej rundzie dla nap/sojusz/wasal/trybut_zadanie/trybut_oferta/granice — GOAL 2/6; dla
+  // handel/umowa_szlakow/umowa_handlowa `pwBalance` już istniał), kandydat jest ODRZUCANY tu,
+  // ZANIM funkcja go w ogóle rozważy jako `bestUp`/`bestDown`/wynik — mirror twardej reguły z
+  // `balancePanelDataFromRows` (diplomacyAcceptanceBalance.ts, GOAL 3), tu zastosowany PRZED
+  // wysłaniem propozycji do gracza, nie tylko przy jej wyświetleniu. Gdy proponentem jest gracz
+  // (`proposerOwnerId === 0`, AI kontruje WŁASNĄ ofertę gracza), reguła nie dotyczy — to gracz
+  // decyduje, czy jego własna, jeszcze niezaakceptowana propozycja mu się opłaca.
+  const proposerIsAi = proposal.proposerOwnerId !== 0;
+  const tryPayload = (p: ProposalPayload): boolean => {
+    const evalResult = evaluateProposal({ ...proposal, payload: p }, ctx);
+    if (!evalResult.accepted) return false;
+    if (proposerIsAi && evalResult.pwBalance != null && evalResult.pwBalance < 0) return false;
+    return true;
+  };
 
   // R-DYPLOMACJA-BILANS-UNIFIKACJA-Q1-C (GOAL b): `entry.proposerOwnerId` jest stałe od rundy 1
   // (patrz komentarz przy `resolveNegotiationAsResponder`) i bywa GRACZEM (gracz zainicjował

@@ -981,21 +981,29 @@ ok(
   'wasal @ niska Rel bez koszyka: dedykowany komunikat Respekt, nie generyczny',
 );
 
-// 19e pokój — BEZPIECZEŃSTWO (wymóg #2): peaceProposalOfferPn ma samospełniający
-// się warunek przy pustym koszyku (offerPn = required + 0 = required, nigdy
-// < required) — bez dedykowanej bramki lokalnej to byłby exploit „darmowy pokój
-// podczas wojny". Musi ODRZUCIĆ mimo pustego koszyka.
+// 19e pokój — AKTUALIZACJA RUNDA 4 (P-DYPLO-BILANS-GATE-NIESPOJNY-N-E1-REPRODUKCJA, decyzja
+// właściciela, 00-dispatch.md rundy 4, cytat dosłowny): "Pokój bez bramki PW — propozycje
+// pokoju NIGDY nie są blokowane liczbą pwBalance; przycisk Przyjmij zawsze aktywny dla
+// oferowanego pokoju." Ten test HISTORYCZNIE (wymóg BEZPIECZEŃSTWO #2, przed rundą 4) sprawdzał
+// dokładnie odwrotne zachowanie — właściciel świadomie to zniósł (dowód matematyczny Evaluatora
+// rundy 3: podczas wojny realny sufit relTotal nigdy nie wystarcza do pokrycia bazy 500 PW, więc
+// SAMA formuła nie da się naprawić bez zmiany zasad gry — patrz DECYZJA WŁAŚCICIELA runda 4 w
+// diplomacy-proposals.ts). `peaceProposalOfferPn`/`treatyPnGate` (samospełniający się warunek,
+// NIGDY nie blokuje — nietknięte tą rundą) i tak nigdy nie były realną ochroną; jedyna realna
+// blokada (case 'pokoj', gap>0) została usunięta. accepted:true teraz zawsze, pwBalance
+// NIETKNIĘTY (nadal ujemny — informacyjnie, GOAL 2 dispatchu rundy 4).
 r = evaluateProposal(prop('pokoj', 0, 1, {}), ctx({ stanWojny: true, relation: rel(25, 24, 'wojna') }));
 ok(
-  !r.accepted && r.reason.includes('PW') && !r.reason.includes('Przewaga u Ciebie —'),
-  'BEZPIECZEŃSTWO: pokój bez koszyka podczas wojny @ niska Rel — ODRZUCONY (brak exploita "darmowy pokój"), komunikat dedykowany',
+  r.accepted && typeof r.pwBalance === 'number' && r.pwBalance < 0,
+  'RUNDA 4: pokój bez koszyka podczas wojny @ niska Rel — PRZYJĘTY (pwBalance nigdy nie blokuje '
+  + '\'pokoj\', decyzja właściciela); pwBalance nadal poprawnie ujemny (informacyjnie)',
 );
-// ...i przy Relacji bliskiej neutralnej (ale wciąż capowanej WAR_RELATION_SCORE_CAP=29
-// podczas wojny) — też odrzucony bez koszyka, bo baza pokoju (500 PW) nie jest pokryta
-// samą Relacją @ tym capie; dopłata koszykiem (patrz test #17 wyżej, `pokój z dopłatą
-// bilansu PW @ wojna`) pokrywa różnicę.
+// ...i przy Relacji bliskiej neutralnej (capowanej WAR_RELATION_SCORE_CAP=29 podczas wojny) —
+// RUNDA 4: również przyjęty, mimo że baza pokoju (500 PW) nadal nie jest pokryta samą Relacją
+// @ tym capie (pwBalance ujemny, ale to już wyłącznie informacyjne — nie blokuje).
 r = evaluateProposal(prop('pokoj', 0, 1, {}), ctx({ stanWojny: true, relation: rel(50, 50, 'wojna') }));
-ok(!r.accepted, 'pokój bez koszyka @ wojna, Relacja przedwojenna neutralna: wciąż wymaga dopłaty (WAR_RELATION_SCORE_CAP)');
+ok(r.accepted, 'RUNDA 4: pokój bez koszyka @ wojna, Relacja przedwojenna neutralna: PRZYJĘTY mimo '
+  + 'WAR_RELATION_SCORE_CAP (dawniej wymagał dopłaty — blokada usunięta tą rundą)');
 
 // ---------------------------------------------------------------------------
 // 19f-g R-DYPLO-FAIRNESS-GATE-ZAKRES-Q1=A — zakres treatyPnGate receive-side

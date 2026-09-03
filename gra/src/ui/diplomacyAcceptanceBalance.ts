@@ -327,6 +327,45 @@ export function balancePanelDataFromRows(
         minPwBalance = minPwBalance == null
           ? row.responderPreview.pwBalance
           : Math.min(minPwBalance, row.responderPreview.pwBalance);
+        // P-DYPLO-BILANS-GATE-NIESPOJNY runda 2 (GOAL 3, reguła właściciela WPROST W KODZIE,
+        // zrzut 1 "Chińczycy": bilans −51, "Możesz przyjąć" zielone, Przyjmij aktywny mimo
+        // ujemnego bilansu). ŻYWY DOWÓD (dyplo-bilans-gate-n-e1-reprodukcja-runda2-test.cjs,
+        // scenariusz WASAL): `responderPreview.accepted` z evaluateProposal dla traktatów bez
+        // własnej bramki PW (nap/sojusz/wasal/trybut/granice — progi WYŁĄCZNIE Relacja/
+        // Zaufanie/Respekt, patrz komentarz przy `treatyPnGate`/`proposerUnfairToPartnerGate`
+        // w diplomacy-proposals.ts, `if (!proposerIsPlayer) return null`) jest CAŁKOWICIE
+        // niezależne od pwBalance — `accepted:true` NIE gwarantuje `pwBalance>=0`. Właściciel
+        // wprost: "nie powinno być możliwości przyjęcia oferty, której bilans jest ujemny (...)
+        // można zaakceptować tylko taki deal, który jest co najmniej na zero lub na plusie" —
+        // twarda reguła, NIEZALEŻNA od tego, co odpowiedział `responderPreview.accepted` z
+        // innego powodu. Blokuje ZAWSZE, gdy poprawnie policzony (per wiersz, z evaluateProposal
+        // — TA SAMA bramka co realne wykonanie) bilans PW jest ujemny — nie tylko fallback net.
+        // OBRONA runda 2 (P-DYPLO-BILANS-GATE-NIESPOJNY-N-E1-REPRODUKCJA, żywy dowód TEST 5
+        // 'pokoj'-AI-proponent w dyplo-bilans-gate-n-e1-reprodukcja-runda2-test.cjs): ten
+        // fallback biegnie WYŁĄCZNIE gdy `blockReason` jest jeszcze `null`, czyli gdy
+        // `responderPreview.accepted !== false` — więc `responderPreview.reason` tutaj to
+        // ZAWSZE tekst opisujący SUKCES (np. „Warunki pokoju spełnione"), nigdy powód
+        // odrzucenia. Użycie go jako `blockReason` dawało mylący komunikat „zablokowane,
+        // bo: Warunki pokoju spełnione" — poprawne blokowanie (GOAL 3), myląca treść. Zawsze
+        // czytelny komunikat liczbowy zamiast reużycia nietrafionego tekstu sukcesu.
+        //
+        // WYJĄTEK runda 4 (decyzja właściciela, 00-dispatch.md rundy 4, cytat dosłowny):
+        // "Pokój bez bramki PW — propozycje pokoju NIGDY nie są blokowane liczbą pwBalance;
+        // przycisk Przyjmij zawsze aktywny dla oferowanego pokoju. Sama liczba bilansu może
+        // nadal być pokazywana informacyjnie, ale nie decyduje o canAccept." `row.uiActionId`
+        // (ustawiane bezwarunkowo w main.ts buildPendingNegotiationRows, patrz pole
+        // `uiActionId` w NegotiationBalanceSource) to '10' DOKŁADNIE dla akcji 'pokoj' —
+        // patrz `proposalActionIdFromUi('10', …) === 'pokoj'` w diplomacyTradeBasket.ts,
+        // jedyne dostępne w TYM pliku (poza main.ts, poza allowlistą) rozróżnienie typu
+        // propozycji per wiersz. `minPwBalance`/`unifiedPwBalance` WYŻEJ liczone są nadal
+        // BEZ zmian dla wszystkich wierszy (w tym 'pokoj') — liczba bilansu zostaje
+        // poprawnie widoczna w panelu (informacyjnie, GOAL 2 dispatchu rundy 4); wyłącznie
+        // TA blokada `canAccept` jest pomijana dla 'pokoj'. Inne typy propozycji (handel,
+        // sojusz, trybut, granice, wasal, nap…) NIETKNIĘTE — nadal blokowane ujemnym
+        // pwBalance jak dotąd, dokładnie ta sama gałąź poniżej.
+        if (row.responderPreview.pwBalance < 0 && blockReason == null && row.uiActionId !== '10') {
+          blockReason = `Bilans PW ujemny (${row.responderPreview.pwBalance}) — nie można przyjąć na minusie`;
+        }
       } else {
         allActionableHavePwBalance = false;
       }

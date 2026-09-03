@@ -460,13 +460,19 @@ ok(
     );
   }
 
-  // Kontrola negatywna — akcja BEZ numerycznej bramki PW (nap) nie ustawia pwBalance;
-  // panel spada na dawne zachowanie (surowy net) bez rzucania wyjątku.
+  // AKTUALIZACJA RUNDA 2 (P-DYPLO-BILANS-GATE-NIESPOJNY-N-E1-REPRODUKCJA, GOAL 2/6): 'nap'
+  // dostał `pwBalance` w evaluateProposal (0 gdy accepted — "bez dopłaty" to fakt silnika, nie
+  // fikcja; -1, umowna symboliczna wartość, gdy nie accepted — BEZ zmiany warunków
+  // accepted/reason). Ta kontrola negatywna dokumentowała DOKŁADNIE ten strukturalny brak,
+  // który był źródłem case 1 rundy 2 (zrzut "Chińczycy" — bilans ujemny, "Możesz przyjąć"
+  // aktywne mimo tego) — patrz dyplo-bilans-gate-n-e1-reprodukcja-runda2-test.cjs. Przy tej
+  // Relacji (27,8, daleko poniżej progu nap ≥ ~110) propozycja jest odrzucona -> pwBalance=-1.
   {
     const payload = { givePn: 0, receivePn: 0 };
     const proposal = { actionId: 'nap', proposerOwnerId: 0, responderOwnerId: 1, payload };
     const preview = mod.evaluateProposal(proposal, ctx);
-    ok(preview.pwBalance === undefined, 'kontrola: nap (bez bramki PW) nie ustawia pwBalance — undefined jak przed naprawą');
+    ok(preview.accepted === false, 'kontrola (runda 2): nap przy tej Relacji nadal odrzucone (bez zmiany warunków accepted)');
+    ok(preview.pwBalance === -1, 'kontrola (runda 2): nap odrzucone teraz niesie pwBalance=-1 (umowna wartość, GOAL 2/6) zamiast undefined');
   }
 }
 
@@ -634,12 +640,16 @@ ok(
     ok(sumPwBalance > 0 && packageData.theirBalance.balancePn < 0, 'MUTACJA N4: suma i min dają PRZECIWNY znak na tym fixture — test realnie rozróżnia obie formuły');
   }
 
-  // Kontrola negatywna N4: pakiet z akcją BEZ numerycznej bramki PW (nap) w środku —
-  // min nie ma sensu, panel spada na dawny surowy net (nie rzuca wyjątku, nie zeruje).
+  // AKTUALIZACJA RUNDA 2: 'nap' ma teraz pwBalance (patrz kontrola wyżej), więc pakiet mieszany
+  // (nap + traktat) NIE spada już na surowy net — obie pozycje mają numeryczny pwBalance, więc
+  // `allActionableHavePwBalance=true` i wyświetlany bilans = MIN(pwBalance) obu pozycji
+  // (dokładnie mechanizm N4 z bloku wyżej w tym pliku, teraz obejmujący też typy traktatowe
+  // bez własnej bramki PW — GOAL 2 rundy 2). nap tu jest odrzucone (Relacja 27,8 < próg) ->
+  // pwBalance=-1; handel/traktat jest zaakceptowany z pwBalance>=0 -> MIN = -1.
   {
     const napProposal = { actionId: 'nap', proposerOwnerId: 0, responderOwnerId: 1, payload: { givePn: 0, receivePn: 0 } };
     const napPreview = mod.evaluateProposal(napProposal, ctx);
-    ok(napPreview.pwBalance === undefined, 'kontrola N4: nap nie ustawia pwBalance');
+    ok(napPreview.pwBalance === -1, 'kontrola N4 (runda 2): nap odrzucone niesie pwBalance=-1 (umowna wartość)');
     const napSides = mod.computePlayerAcceptanceSides('nap', { givePn: 0, receivePn: 0 }, rel, false, { difficulty: 'normal', proposerOwnerId: 0 });
     const napRow = {
       id: 'nap-row',
@@ -654,9 +664,10 @@ ok(
     const mixedPackage = mod.balancePanelDataFromRows([napRow, handelRow]);
     ok(mixedPackage != null, 'kontrola N4: pakiet mieszany (nap + traktat) zwraca dane bez wyjątku');
     ok(
-      mixedPackage.theirBalance.balancePn === mixedPackage.myOfferPn - mixedPackage.theirOfferPn,
-      'kontrola N4: gdy KTÓRAKOLWIEK pozycja nie ma pwBalance, panel wraca do dawnego surowego net (min nie stosuje się częściowo)',
+      mixedPackage.theirBalance.balancePn === Math.min(napPreview.pwBalance, handelRow.responderPreview.pwBalance),
+      `kontrola N4 (runda 2): teraz OBIE pozycje niosą pwBalance -> wyświetlany bilans (${mixedPackage.theirBalance.balancePn}) === MIN(nap=${napPreview.pwBalance}, handel=${handelRow.responderPreview.pwBalance}), nie surowy net`,
     );
+    ok(mixedPackage.canAccept === false, 'kontrola N4 (runda 2): pakiet nadal zablokowany (nap odrzucone) — bez zmiany bramki');
   }
 
   // N5: żywy podgląd koszyka traktatu (renderPnBalancePanelForTreaty) — musi teraz
