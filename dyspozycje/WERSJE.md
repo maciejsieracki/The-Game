@@ -13,6 +13,33 @@ swoim wĹ‚asnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji d
 > Pakiet 3 z 2026-08-20 jest docs-only i nie tworzy wpisu ROBOCZA/KANON/FINALNA;
 > ten plik pozostaje wyłącznie rejestrem publikacji bundli.
 
+## ROBOCZA c72b5629 - 2026-09-03 19:21 UTC - FALA 342: 16 tematow (dyplomacja, mgla, produkcja, miasta-panstwa, UI)
+
+|- md5 (pełne): c72b56297f22470bfa097318467d30d8 · stempel: ROBOCZA · label c72b5629 · źródłowe commity integracji: `4638b6ce` + `740993f4` + `3ca7c600` + `5b05773c` + `78151c38` + `9a36550d` + `79748fac` + `1fafac1f` + `1d8583b7` + `7030ee1b` + `68278b20` + `6a9db6e0` + `52cbd838` + `799fe21d` + `5cbe910c` + `e5baa201`
+|- Ta FALA obejmuje WSZYSTKIE integracje od FALI 341 (2026-09-03 11:22 UTC) — 6 tematów zintegrowanych krótko przed FALĄ 341 nigdy nie dostały własnego wpisu FALA (ta sama luka w logowaniu jak przy FALI 340), dołączone tutaj razem z 10 tematami zamkniętymi w tej sesji pętli AutoBot.
+|- **`P-DYPLO-UMOWY-AKTYWNE-NA-GORZE-Q1`** (`4638b6ce`) — aktywne umowy dyplomatyczne sortowane na górze listy "Możliwe umowy".
+|- **`R-DYPLO-PROG-NAP-90-DO-110-Q1`** (`740993f4`) — próg Relacji dla paktu o nieagresji 90→110 (balans właściciela).
+|- **`P-DYPLO-BILANS-GATE-NIESPOJNY-N-E1-REPRODUKCJA`** runda 1 (`3ca7c600`) — etykieta "Bilans (Oni)"/"(netto)" w panelu wymiany była zależna od kolejności wierszy pakietu zamiast realnej roli stron; naprawiona. Runda 2+ (formuła pwBalance dla propozycji pokoju) jest OSOBNĄ, wciąż otwartą warstwą tego samego ID — NIE wchodzi w tę FALĘ, jeszcze nie zintegrowana.
+|- **`P-CIVPEDIA-KARTY-CALY-WIERSZ-PRZYCISKIEM-Q1`** (`5b05773c`) — cały wiersz karty encji (nie tylko tytuł) klikalny jako jeden przycisk nawigacyjny.
+|- **`P-DYPLO-PRZEMARSZ-CHECKBOX-PRZYCISK-Q1`** (`78151c38`) — checkboxy Traktatu przemarszu (wojsko/barbarzyńcy) zamienione na przyciski-chipy, wzorem reszty UI koszyka.
+|- **`P-DYPLO-PRZEMARSZ-DUPLIKAT-AKTYWNY-Q1`** (`9a36550d`) — Traktat przemarszu po zawarciu znika z listy "Możliwe umowy" (był duplikat, klikalny mimo aktywnej umowy).
+|- **`P-JEDNOSTKA-NIEWIDOCZNA-PO-WYBUDOWANIU-Q1`** (`79748fac`) — jednostka odroczona (deferred) po wybudowaniu była całkowicie niewidoczna na mapie; zastąpione przyciemnionym tokenem (0,45 opacity progowo, nie mnożnikowo).
+|- **`P-UI-TURA-ETYKIETA-KONTRAST-Q1`** (`1fafac1f`) — etykieta "TURA N · rok" w dolnym pasku zlewała się z żółtym terenem; kolor + kontur zapewniają czytelność na każdym tle.
+|- **`R-DYPLO-WSPOLNA-WALKA-BARB-KARENCJA-Q1`** (`1d8583b7`) — umowa "Wspólna walka z barbarzyńcami" dostaje regulowany czas trwania (5/10/15/bezterminowo) zamiast sztywnych 3 tur; 3 tury stają się okresem karencji bez kary po wygaśnięciu/zerwaniu, nie czasem trwania.
+|- **`P-DYPLO-KARTA-DECYZJI-BILANS-SKROT-Q1`** (`7030ee1b`) — skompaktowana karta panelu bocznego/toast propozycji wymiany surowców: 3 liczby (co która strona daje za turę) zamiast rozwlekłego opisu z sumą za cały okres; stół negocjacji i kreator koszyka bez zmian.
+|- **`R-PRODUKCJA-POSTEP-PAMIEC-PO-USUNIECIU-Q1`** (`68278b20`) — postęp budowy budynku w kolejce produkcji jest teraz zapamiętywany per miasto/typ budynku i przywracany po ponownym dodaniu do kolejki, nawet po usunięciu — odwrócenie wcześniejszej decyzji "front traci własny postęp" na wyraźne życzenie właściciela.
+|- **`P-MGLA-ODKRYCIE-WZDLUZ-SCIEZKI-Q1`** (`6a9db6e0`) — mgła wojny odkrywa CAŁĄ przebytą ścieżkę wieloheksowego ruchu (nie tylko pozycję końcową); wcześniej szybkie jednostki (np. Zwiadowca) zostawiały nieodkryte "dziury" wzdłuż trasy.
+|- **`R-MIASTA-PANSTWA-PRODUKCJA-OBRONNA-Q1`** (`52cbd838`) — miasta-państwa realnie skupiają się na obronie we wczesnej fazie (cap wojska hard 4→7/normal 1→3, próg garnizonu przed przejściem na ekonomię, Palisada jako tańszy wybór obronny przed Murami, brak kary score za fortyfikacje) — zero wpływu na cywilizacje AI.
+|- **`P-USTAWIENIA-MIASTA-PANSTWA-WYLACZONE-Q1`** (`799fe21d`) — czwarta opcja "Wyłączone" w trudności miast-państw kreatora nowej gry — mapa generuje wyłącznie cywilizacje, zero miast-państw.
+|- **`P-DYPLO-KARTA-DECYZJI-DISMISS-Q1`** (`5cbe910c`) — blokujące karty propozycji dyplomatycznych w panelu bocznym dostają przycisk "Odłóż na później" (wzorem "Zignoruj" przy buncie) — karta znika na tę turę, propozycja zostaje osiągalna w panelu audiencji, wraca w kolejnej turze jeśli nadal aktualna.
+|- **`R-MIASTA-PANSTWA-STARTOWE-JEDNOSTKI-Q1`** (`e5baa201`) — miasta-państwa dostają startowe jednostki wojskowe wg trudności przy założeniu (easy=0/normal=1/hard=2), zamiast zawsze zera.
+|- Wszystkie tematy: pełny cykl AutoBot (Operator→Evaluator→Obrona gdy potrzebna→Final Control) przez Workflow, `tsc --noEmit` 0 błędów, 5 bramek referencyjnych (logic-test 213/213, tech-tree-test 19/19, research-test 33/33, unit-replace-test 13/13, combat-test 6/6) bez regresu po każdej integracji i na finalnym stanie `main`.
+|- Bundle: 882 modułów, `Gra-ROBOCZA.html` 69,7 MB. `Gra-ROBOCZA-POLE-BITWY.html` NIE przebudowany — żaden temat tej fali nie dotyka `battleScene.ts`/logiki bitwy.
+|- Publikacja: `gra-robocza/Gra-ROBOCZA.html` + manifest + 6 kopii PLAYTEST. `VERIFY OK` (md5 pliku = md5 manifestu, potwierdzone `md5sum`).
+|- **Odstępstwo techniczne (jak w FALACH 324-341):** publikacja odtworzona ręcznie w bashu/Node — `pwsh` nie istnieje w tym środowisku.
+|- Szczegóły: rejestr w `REJESTR-PROSB-I-ZADAN.md`.
+|- **AKTUALNA**
+
 ## ROBOCZA 8bb29544 - 2026-09-03 03:25 UTC - FALA 340: 12 tematow (dyplomacja handlowa/mapa/wojna wymuszona, AI ulepszenia/armie, bunt miast, wizualne)
 
 |- md5 (pełne): 8bb29544be138638ab4a15f4bffa7661 · stempel: ROBOCZA · label 8bb29544 · źródłowe commity integracji: `5bb8e863` + `4e44e52e` + `50c30512` + `a2c887e8` + `eca8f56d` + `69cc3604` + `9a2be640`+`df1b322c` + `bba85893` + `16ad0841` + `dc378ab7` + `1db988b7`+`6f26b729` + `3741fdb3`+`cd683738`
@@ -48,7 +75,7 @@ swoim wĹ‚asnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji d
 |- Publikacja: `gra-robocza/Gra-ROBOCZA.html` + manifest. `VERIFY OK`, manifest match OK (stamp md5 WARN kosmetyczny, znany, nieblokujący).
 |- **Odstępstwo techniczne (jak w FALACH 324-340):** publikacja odtworzona ręcznie w bashu/Node — `pwsh` nie istnieje w tym środowisku.
 |- Szczegóły: rejestr w `REJESTR-PROSB-I-ZADAN.md`.
-|- **AKTUALNA**
+|- **ZASTĄPIONA** (→ c72b5629, FALA 342)
 
 ## ROBOCZA 046d388a - 2026-09-02 21:15 UTC - FALA 339: diorama pelnej szerokosci na kartach encji (podglad 3D jednostki/ikona wyeksponowane, Wariant A)
 
