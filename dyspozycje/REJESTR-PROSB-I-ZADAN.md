@@ -4270,6 +4270,12 @@ z góry ustalonego zakresu) — dispatchowane równolegle.
 |---|---|---|---|
 | `P-DYPLO-KARTA-DECYZJI-BILANS-SKROT-Q1` | "Przy propozycji wymiany surowców komunikat powinien informować, ile co turę chce wymienić druga strona i za co, w jakiej ilości w drugą stronę, ale co turę... trzy liczby. Ja potem umiem obliczyć, ile to jest przez cały okres... W tym wypadku nie jest to potrzebne, tylko ewentualnie jak ktoś otworzy, widzi dokładnie co tam jest w szczegółach." | **DISPATCHOWANE** | Domain GAME, UI — Operator+Evaluator+Final Control Sonnet 5, effort HIGH. Recon: `formatBasketItemBrief` (`diplomacy-display.ts:447-494`) dopisuje "(łącznie X przez Y tur)" ZAWSZE — współdzielone przez 3 miejsca o różnej szczegółowości: kompaktowa karta panelu bocznego (main.ts:13720, TU ma zniknąć), toast po rozstrzygnięciu (main.ts:15039, prawdopodobnie tak samo), wiersz stołu negocjacji (main.ts:15485, TU ZOSTAJE — to "szczegóły" ze zdania właściciela) + kreator koszyka (bez zmian). Drugi wątek zrzutu: "Oferują: —" — NIEROZSTRZYGNIĘTE czy poprawne (jednostronna prośba miasta-państwa) czy błąd (rewanż gubiony przy formatowaniu) — Operator ma to zbadać żywym testem przed zmianą. Dispatch `00-dispatch.md`. |
 
+## NOWE ZGŁOSZENIE 2026-09-03 (zrzut ekranu paska dolnego) — kontrast etykiety tury na żółtym terenie
+
+| ID | Prośba | Status | Uwagi |
+|---|---|---|---|
+| `P-UI-TURA-ETYKIETA-KONTRAST-Q1` | "Trzeba zrobić, żeby te tury były trochę bardziej widoczne, bo czasem, gdy jest coś na żółtym terenie, to się całkowicie zmywa i nic nie widać. Może warto zmienić to na kolor niebieski." | **DISPATCHOWANE** | Domain GAME, UI — Operator+Evaluator+Final Control Sonnet 5, effort HIGH. Zlokalizowane dokładnie: `bottomBarHud.ts:102`, `.et-turn-lbl{color:#8a8070}` na w pełni przezroczystym tle paska (`.civ-bottom-bar{background:transparent}`, linia 57) — tekst renderuje się bezpośrednio nad mapą 3D. Dispatch pozostawia Operatorowi wybór między zmianą koloru a dodaniem text-shadow (bardziej odporne na różne kolory terenu niż sam pojedynczy kolor) — wymaga żywego testu kontrastu na żółtym/zielonym/niebieskim terenie, nie tylko żółtym z zgłoszenia. Dispatch `00-dispatch.md`. |
+
 ## NOWE ZGŁOSZENIE 2026-09-03 — reset postępu budowy po usunięciu z kolejki (odwrócenie decyzji P-PROMOCJA-FRONT-RESET-POSTEPU-Q1=B)
 
 | ID | Prośba | Status | Uwagi |
