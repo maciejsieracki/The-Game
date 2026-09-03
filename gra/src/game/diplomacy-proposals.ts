@@ -750,7 +750,7 @@ function treatyPnGate(
  *    ZAKRES-Q1=A`):
  *     - `nap`/`sojusz_defensywny`/`sojusz_pelny`/`granice`/`wasal` mają REALNE,
  *       niezerowe progi Relacji/Zaufania/Respektu we własnym case'ie
- *       (progNapRelacja=90, progSojuszRelacja=151, progGraniceRelacja=100,
+ *       (progNapRelacja=110, progSojuszRelacja=151, progGraniceRelacja=100,
  *       progWasalizacjaRespekt=70) — przy pustym koszyku wystarczy im próg
  *       case'a; ochrona przed koszykiem nieuczciwym dla partnera (np. „daj mi
  *       coś za darmo w koszyku") zostaje w `treatyPnGate` (uruchamianym i tak

@@ -141,21 +141,21 @@ console.log('diplomacy-proposal-test');
 const dipNormal = getEffectiveDiplomacyParams('normal');
 const dipEasy = getEffectiveDiplomacyParams('easy');
 const dipHard = getEffectiveDiplomacyParams('hard');
-ok(dipNormal.progNapRelacja === 90, 'normal progNapRelacja 90');
+ok(dipNormal.progNapRelacja === 110, 'normal progNapRelacja 110');
 ok(dipNormal.progHandelRelacja === 0, 'normal progHandelRelacja 0');
-ok(dipEasy.progNapRelacja === 80, 'easy progNapRelacja 80');
+ok(dipEasy.progNapRelacja === 100, 'easy progNapRelacja 100');
 ok(dipEasy.progHandelRelacja === 0, 'easy progHandelRelacja 0');
-ok(dipHard.progNapRelacja === 100, 'hard progNapRelacja 100');
+ok(dipHard.progNapRelacja === 120, 'hard progNapRelacja 120');
 ok(dipHard.progHandelRelacja === 0, 'hard progHandelRelacja 0 (bez skali trudnosci)');
 
-// 1 NAP accept — Relacja >= 50 @ normal (bez progu Zaufania, Maciej 2026-07-21)
-// @ rel 100 bilans PW = 0 (FALA 213: przy rel 50 wymagana dopłata)
-let r = evaluateProposal(prop('nap', 0, 1, { turns: 15 }), ctx({ relation: rel(50, 50) }));
-ok(r.accepted && r.deal?.rodzaj === 'pakt_nieagresji', 'NAP accept rel 100 @ normal');
+// 1 NAP accept — Relacja >= 110 @ normal (bez progu Zaufania; R-DYPLO-PROG-NAP-90-DO-110-Q1
+// 2026-09-03: prog podniesiony 90→110, relacje testowe podbite z rel(50,50) do rel(55,55))
+let r = evaluateProposal(prop('nap', 0, 1, { turns: 15 }), ctx({ relation: rel(55, 55) }));
+ok(r.accepted && r.deal?.rodzaj === 'pakt_nieagresji', 'NAP accept rel 110 @ normal');
 
 // 1a NAP accept — Rel OK, niskie Zaufanie (brak progu Zauf)
-r = evaluateProposal(prop('nap'), ctx({ relation: rel(50, 50) }));
-ok(r.accepted, 'NAP accept rel 100 (bez progu Zauf)');
+r = evaluateProposal(prop('nap'), ctx({ relation: rel(55, 55) }));
+ok(r.accepted, 'NAP accept rel 110 (bez progu Zauf)');
 
 // 2 NAP reject low relacja @ normal
 r = evaluateProposal(prop('nap'), ctx({ relation: rel(25, 24) }));
@@ -193,13 +193,13 @@ ok(!r.accepted, 'NAP reject relacja 49 normal');
 }
 
 // 3b WIAR-NAP-IMP: NAP bezterminowy (turns=0) vs terminowy (10–20)
-r = evaluateProposal(prop('nap', 0, 1, { turns: 0 }), ctx({ relation: rel(50, 50), turn: 10 }));
+r = evaluateProposal(prop('nap', 0, 1, { turns: 0 }), ctx({ relation: rel(55, 55), turn: 10 }));
 ok(r.accepted && r.deal?.wygasaTura === null, 'NAP bezterminowy → wygasaTura null');
 const napExp = resolveNapDealExpiry(10, { turns: 0 });
 ok(napExp.wygasaTura === null, 'resolveNapDealExpiry turns=0 → null');
 const napTerm = resolveNapDealExpiry(10, { turns: 15 });
 ok(napTerm.wygasaTura === 25, 'resolveNapDealExpiry turns=15 → turn+15');
-r = evaluateProposal(prop('nap', 0, 1, { turns: 8 }), ctx({ relation: rel(50, 50), turn: 5 }));
+r = evaluateProposal(prop('nap', 0, 1, { turns: 8 }), ctx({ relation: rel(55, 55), turn: 5 }));
 ok(r.accepted && r.deal?.wygasaTura === 15, 'NAP turns=8 clamped to 10 → wygasa t.15');
 
 // 4 Sojusz pełny accept (równowaga — Zauf >90, Relacja >150)

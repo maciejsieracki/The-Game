@@ -160,7 +160,7 @@ export function isPlayerIncomingGift(payload: ProposalPayload): boolean {
  * umowę" (accepted=false) na w pełni akceptowalnych przez silnik propozycjach (np. NAP @ Rel
  * 61/200: baza gracza po rabacie Relacji 122, partner na stałej bazie 200 → sztuczny deficyt
  * −78 PW, mimo że evaluateProposal dla tej samej propozycji zwraca accepted:true — case 'nap'
- * sprawdza tylko `score < napThreshold`, progNapRelacja=90, 61≥50).
+ * sprawdza tylko `score < napThreshold`, progNapRelacja=110, 61≥50).
  * / EN: actions where the treaty base PW is a REAL requirement when the PLAYER proposes
  * (own) — mirrors `treatyBaseFairnessGap` in diplomacy-proposals.ts, called there ONLY
  * `if (proposerIsPlayer/proposerIsTreatyPlayer)` inside the `umowa_handlowa`/`umowa_szlakow`
@@ -172,7 +172,7 @@ export function isPlayerIncomingGift(payload: ProposalPayload): boolean {
  * producing a false "Missing N PW" (accepted=false) on offers the engine fully accepts (e.g.
  * NAP @ Relation 61/200: player base after the Relation discount is 122, partner stays at the
  * fixed base 200 → artificial −78 PW deficit, even though evaluateProposal accepts the same
- * proposal — the 'nap' case only checks `score < napThreshold`, progNapRelacja=90, 61≥50).
+ * proposal — the 'nap' case only checks `score < napThreshold`, progNapRelacja=110, 61≥50).
  */
 const OWN_PROPOSER_TREATY_PW_GATE_ACTIONS: ReadonlySet<string> = new Set<string>([
   'umowa_handlowa',

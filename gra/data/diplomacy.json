@@ -43,7 +43,7 @@
     "progPoboczneAkceptacja": 60,
     "progPoboczneHandel": 30,
     "progPoboczneWojna": 15,
-    "progNapRelacja": 90,
+    "progNapRelacja": 110,
     "progHandelRelacja": 0,
     "progSojuszPartnerRwMin": 0.4,
     "progSojuszPartnerRwMax": 0.7,

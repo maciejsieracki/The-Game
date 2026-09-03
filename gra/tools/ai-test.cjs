@@ -1675,6 +1675,43 @@ console.log('\n--- T9j: decideAIDiplomacy - powod jest niepustym stringiem ---')
   }
 }
 
+console.log('\n--- T9k: decideAIDiplomacy Priorytet 3b (zaproponuj_pakt) — zywy test progNapRelacja 90->110 (R-DYPLO-PROG-NAP-90-DO-110-Q1) ---');
+{
+  // ANTY-HALUCYNACYJNA: dowod ze silnik faktycznie odczytuje NOWA wartosc progNapRelacja=110
+  // (nie tylko plik danych ja przechowuje) przez prawdziwa sciezke decyzji AI (ai.ts P3b,
+  // score >= dipP.progNapRelacja - bias.napScoreEase). Profil peaceful (agresywnoscRaw<=3,
+  // sklonnoscDoPodboju<=2) jest JEDYNA kombinacja bias z proposeNap=true, a niesie stala
+  // napScoreEase=12 (resolveDiplomacyCivBias) -- efektywny prog = progNapRelacja - 12 =
+  // 110-12=98 (byl 90-12=78 przed ta zmiana). rw=0.5 i partnerId!='0' trzymaja P1/P2/P2a/
+  // P2b/P3/P4 nieaktywne (rw ponizej PROG_WOJNA_SILA=0.6 i PROG_TRYBUT=0.7, stanWojny=false,
+  // brak resourceTradeOffer) -- jedyna zmienna ktora decyduje o 'zaproponuj_pakt' to Relacja
+  // wzgledem progNapRelacja.
+  const baseRel = {
+    partnerId: 'peaceful-1',
+    stanWojny: false,
+    respektWzgledny: 0.5,
+    hasNapTreaty: false,
+  };
+  const belowThreshold = decideAIDiplomacy({
+    myPlayerId: 'ai-1',
+    agresja: 0.2,
+    agresywnoscRaw: 2,
+    sklonnoscDoPodboju: 2,
+    relacje: [{ ...baseRel, relation: { zaufanie: 48, respekt: 49, status: 'pokoj' } }], // score 97 < 98
+  });
+  const atThreshold = decideAIDiplomacy({
+    myPlayerId: 'ai-1',
+    agresja: 0.2,
+    agresywnoscRaw: 2,
+    sklonnoscDoPodboju: 2,
+    relacje: [{ ...baseRel, relation: { zaufanie: 49, respekt: 49, status: 'pokoj' } }], // score 98 = 98
+  });
+  const belowTypy = belowThreshold.map(c => c.type);
+  const atTypy = atThreshold.map(c => c.type);
+  assert(!belowTypy.includes('zaproponuj_pakt'), `T9k: Relacja 97 < prog efektywny 98 (110-12) -> BRAK zaproponuj_pakt (got ${JSON.stringify(belowTypy)})`);
+  assert(atTypy.includes('zaproponuj_pakt'), `T9k: Relacja 98 = prog efektywny 98 (110-12) -> zaproponuj_pakt OBECNE (got ${JSON.stringify(atTypy)})`);
+}
+
 
 // ============================================================================
 // TESTY T2-SOJUSZ/HANDEL: decideAIDiplomacy v0.2 — sojusz i handel
