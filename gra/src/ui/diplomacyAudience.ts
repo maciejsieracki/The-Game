@@ -1707,7 +1707,17 @@ export function dealsColumnHtml(st: DiplomacyAudienceState): string {
     (st.pendingNegotiations ?? []).filter(r => r.direction === 'own').map(r => r.uiActionId),
   );
   const ownPendingCount = (st.pendingNegotiations ?? []).filter(r => r.direction === 'own').length;
-  const items = visible.map(a => {
+  // R-DYPLO-UMOWY-AKTYWNE-NA-GORZE (2026-09-03): renderujemy najpierw wszystkie
+  // kafelki z isLocked===false, potem wszystkie z isLocked===true — w obu grupach
+  // zachowując dzisiejszą względną kolejność (sort musi być STABILNY). Dane
+  // wejściowe (`st.actions`, kolejność) i logika `isLocked`/`cls`/`statusNote`/
+  // `hoverTip`/ikon pozostają bez zmian — zmienia się wyłącznie kolejność
+  // renderowania wyniku.
+  // EN: render all isLocked===false tiles first, then all isLocked===true tiles,
+  // preserving today's relative order within each group (the sort MUST be
+  // stable). Input data (`st.actions` order) and the isLocked/cls/statusNote/
+  // hoverTip/icon logic are unchanged — only the render order of the output.
+  const rendered = visible.map(a => {
     const onTable = ownOnTable.has(a.id);
     // R-DYPLO-UMOWA-SUROWCOW-WIELOKROTNA (2026-08-13): uiActionAllowsMultipleOwnOnTable —
     // „Umowa wymiany surowców" (id '14') może trafić na stół wielokrotnie w jednej negocjacji,
@@ -1751,7 +1761,7 @@ export function dealsColumnHtml(st: DiplomacyAudienceState): string {
     const endIc = a.active
       ? dipBrandIconHtml('ui-check', 13, 'da-checkic')
       : (isLocked ? dipBrandIconHtml('ui-lock', 12, 'da-lockic') : '');
-    return (
+    const html = (
       '<button type="button" class="' + cls + '" data-aid="' + esc(a.id) + '"' +
       ' title="' + esc(hoverTip) + '"' +
       (isLocked ? ' disabled' : '') + '>' +
@@ -1761,7 +1771,16 @@ export function dealsColumnHtml(st: DiplomacyAudienceState): string {
       '</div>' + endIc +
       '</button>'
     );
-  }).join('');
+    return { isLocked, html };
+  });
+  // Array.prototype.sort jest stabilny (ES2019+, wszystkie silniki JS używane tu:
+  // V8/Node, Chromium, przeglądarka) — pozycje o tej samej wartości isLocked
+  // zachowują względną kolejność z `rendered` (czyli z `visible`/`st.actions`).
+  const items = rendered
+    .slice()
+    .sort((x, y) => Number(x.isLocked) - Number(y.isLocked))
+    .map(r => r.html)
+    .join('');
   const multiHint = ownPendingCount > 0
     ? '<div class="da-multi-deal-hint">Na stole: <b>' + ownPendingCount
       + '</b> · dodaj kolejną umowę z listy · jeden bilans PW — jedno Przyjmij/Odrzuć; niechcianą pozycję najpierw Usuń</div>'
