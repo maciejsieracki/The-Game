@@ -5887,7 +5887,13 @@ function stockCostForQueueItem(item: ProductionItem): Record<string, number> {
   return {};
 }
 
-/** Usuń pozycję z kolejki Pracy i zwróć jednorazowy koszt surowcowy do puli państwa. */
+/**
+ * Usuń pozycję z kolejki Pracy i zwróć jednorazowy koszt surowcowy do puli
+ * państwa. R-PRODUKCJA-POSTEP-PAMIEC-PO-USUNIECIU-Q1: `dequeue(prod, index,
+ * city)` bankuje PRZED usunięciem Pracę usuwanej pozycji (front LUB
+ * oczekująca) do `city.postepBudynkowUsuniete` -- osobny mechanizm od tego
+ * zwrotu surowcowego (cegła/kamień), który zostaje bez zmian.
+ */
 function cancelQueueItem(city: City, index: number): void {
   const prod = getProd(city.id);
   if (index < 0 || index >= prod.kolejka.length) return;
@@ -5896,7 +5902,7 @@ function cancelQueueItem(city: City, index: number): void {
   if (Object.keys(cost).length > 0) {
     refundBuildingStockCostAcrossCities(cfg.getCities?.() ?? [city], city.ownerId, cost);
   }
-  setProd(city.id, dequeue(prod, index));
+  setProd(city.id, dequeue(prod, index, city));
   rerender();
 }
 
@@ -6021,6 +6027,13 @@ export function appendRecruitMilitaryResourceStrip(
   mount.appendChild(strip);
 }
 
+/**
+ * R-PRODUKCJA-POSTEP-PAMIEC-PO-USUNIECIU-Q1: `enqueue(prod, item, city)`
+ * sprawdza `city.postepBudynkowUsuniete` dla `item.id` i, jeśli ten budynek
+ * miał wcześniej zbankowany postęp w TYM mieście (usunięty z kolejki, nigdy
+ * odtąd nie dodany ponownie), nowa pozycja startuje z TYM postępem zamiast
+ * od zera -- zapis jest przy tym konsumowany (usuwany z mapy).
+ */
 function addItem(city: City, item: ProductionItem, opts?: { upgrade?: boolean }): void {
   if (item.kind === 'budynek') {
     const prod = getProd(city.id);
@@ -6040,7 +6053,7 @@ function addItem(city: City, item: ProductionItem, opts?: { upgrade?: boolean })
     // budowane za Pracę. Rekrutacja ma własną ścieżkę zakupu poniżej.
     return;
   }
-  setProd(city.id, enqueue(getProd(city.id), item));
+  setProd(city.id, enqueue(getProd(city.id), item, city));
   rerender();
 }
 

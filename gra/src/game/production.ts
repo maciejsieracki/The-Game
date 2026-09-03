@@ -43,7 +43,11 @@
  *   buildingProductionItem() / unitProductionItem() - build a ProductionItem
  *   availableProduction() - what a city may queue right now
  *   advanceProduction()   - pour one turn of Praca into the queue
- *   enqueue() / dequeue() - immutable queue helpers
+ *   enqueue() / dequeue() - immutable queue helpers (optional `city` arg banks/
+ *                            restores per-building progress across removal --
+ *                            R-PRODUKCJA-POSTEP-PAMIEC-PO-USUNIECIU-Q1)
+ *   forfeitedProgressForIndex() / bankRemovedBuildingProgress() /
+ *   withdrawBankedBuildingProgress() - City.postepBudynkowUsuniete helpers
  *   sanitizeBuildQueue() - removes legacy unit entries from the Praca queue
  *   frontItem()           - the item currently being built (or null)
  */
@@ -1118,8 +1122,32 @@ export function etaTurns(koszt: number, postep: number, praca: number): number |
  * Append `item` to the end of the queue.  Returns a new CityProduction; the
  * input is not mutated.  `postep` is preserved (work already done on the front
  * item is untouched).
+ *
+ * `city` (R-PRODUKCJA-POSTEP-PAMIEC-PO-USUNIECIU-Q1, GOAL 3, opcjonalny —
+ * wsteczna zgodność z istniejącymi 2-argumentowymi wywołaniami, np.
+ * production-overflow-test.cjs/promote-to-front-test.cjs, zachowanie
+ * IDENTYCZNE bez niego): gdy podany, sprawdza `city.postepBudynkowUsuniete`
+ * dla `item.id` (`withdrawBankedBuildingProgress`, KONSUMUJE zapis — usuwa
+ * klucz z mapy, nigdy nie zostaje zdublowany w mapie i w kolejce naraz) i
+ * nową pozycję startuje z TYM postępem zamiast od zera. Dwa przypadki:
+ *   - kolejka PUSTA -- `item` staje się frontem NATYCHMIAST; zbankowana
+ *     Praca ląduje w aktywnym `prod.postep` (skalarze), NIE na `item.postep`
+ *     -- niezmiennik "index 0 nigdy nie ma zdefiniowanego `postep`" (patrz
+ *     `dropFrontItem`) musi przetrwać nawet dla świeżo dodanej pozycji.
+ *   - kolejka NIEPUSTA -- `item` dołącza jako pozycja oczekująca z własnym
+ *     zbankowanym `item.postep` (ten sam kontrakt co `promoteToFront`
+ *     bankuje/przywraca dla pozycji NIEBĘDĄCYCH frontem).
+ * / EN: `city` (optional, backward-compatible with existing 2-arg callers):
+ * when given, checks `city.postepBudynkowUsuniete` for `item.id` and starts
+ * the new entry from that banked progress instead of zero — consuming the
+ * entry (deleted from the map, never duplicated in both places). Two cases:
+ * empty queue -- the item becomes the front immediately, so the banked
+ * amount lands in the active `prod.postep` scalar, never on `item.postep`
+ * (preserves the "index 0 never carries `postep`" invariant); non-empty
+ * queue -- the item joins as a waiting entry carrying its own banked
+ * `item.postep` (same contract `promoteToFront` uses for non-front items).
  */
-export function enqueue(prod: CityProduction, item: ProductionItem): CityProduction {
+export function enqueue(prod: CityProduction, item: ProductionItem, city?: City): CityProduction {
   // P-REKRUTACJA-JEDNOSTEK-TYLKO-SKARBIEC-Q1=B: jednostki mają osobną,
   // opłaconą kolejkę rekrutacji. Twarda bramka tutaj chroni także przyszłych
   // wywołujących przed przypadkowym powrotem jednostki do kolejki Pracy.
@@ -1130,12 +1158,103 @@ export function enqueue(prod: CityProduction, item: ProductionItem): CityProduct
       rekrutacja: prod.rekrutacja ? [...prod.rekrutacja] : undefined,
     };
   }
+  const banked = city ? withdrawBankedBuildingProgress(city, item.id) : 0;
+  if (prod.kolejka.length === 0) {
+    return {
+      kolejka: [item],
+      postep: prod.postep + banked,
+      wstrzymana: prod.wstrzymana,
+      rekrutacja: prod.rekrutacja ? [...prod.rekrutacja] : undefined,
+    };
+  }
   return {
-    kolejka: [...prod.kolejka, item],
+    kolejka: [...prod.kolejka, banked > 0 ? { ...item, postep: banked } : item],
     postep: prod.postep,
     wstrzymana: prod.wstrzymana,
     rekrutacja: prod.rekrutacja ? [...prod.rekrutacja] : undefined,
   };
+}
+
+/**
+ * R-PRODUKCJA-POSTEP-PAMIEC-PO-USUNIECIU-Q1 (GOAL 2/3, decision-abc.md) --
+ * dwie małe, czyste funkcje pomocnicze dzielone przez `enqueue`/`dequeue`
+ * (wywoływane stąd) i bezpośrednio przez `ui/cityPanel.ts` `cancelQueueItem`
+ * (który musi zbankować PRZED wywołaniem `dequeue`, żeby nie stracić
+ * niezmiennika "dequeue/dropFrontItem nie zmieniają się", patrz ich docstring
+ * niżej).
+ */
+
+/**
+ * Praca, którą USUNIĘCIE pozycji `index` z kolejki bezpowrotnie skasowałoby z
+ * `CityProduction`, GDYBY nikt jej wcześniej nie zbankował -- front (index 0):
+ * jej aktywny `prod.postep`; pozycja oczekująca: jej własny zbankowany
+ * `item.postep` (patrz `promoteToFront`). Czysta funkcja ODCZYTU -- nie
+ * mutuje `prod` ani niczego nie usuwa. Zwraca 0 dla nieprawidłowego indeksu
+ * albo braku zbankowanej/aktywnej Pracy.
+ * / EN: the Praca that removing the item at `index` would irrecoverably wipe
+ * from `CityProduction` if nobody banked it first. Pure read -- mutates
+ * nothing. Returns 0 for an out-of-range index or no banked/active progress.
+ */
+export function forfeitedProgressForIndex(prod: CityProduction, index: number): number {
+  if (index < 0 || index >= prod.kolejka.length) return 0;
+  if (index === 0) {
+    return Number.isFinite(prod.postep) && prod.postep > 0 ? prod.postep : 0;
+  }
+  const item = prod.kolejka[index];
+  return item && Number.isFinite(item.postep) && item.postep! > 0 ? item.postep! : 0;
+}
+
+/**
+ * Przed usunięciem pozycji `index` z kolejki Pracy miasta `city` -- zbankuj
+ * jej Pracę (`forfeitedProgressForIndex`) do `city.postepBudynkowUsuniete`
+ * (`game/cities.ts`), indeksowanej po `id` budynku. WYŁĄCZNIE `kind ===
+ * 'budynek'` -- pamięć postępu jest z definicji per-budynek (jednostki,
+ * legacy `kolejka` z `sanitizeBuildQueue`, jej nie dostają). Zapis NAJNOWSZEJ
+ * próby budowy: gdy dla tego `id` istnieje już wcześniejszy zapis (budynek
+ * usuwano już wcześniej), NOWY NADPISUJE stary -- nie sumuje się z nim (GOAL 2
+ * dispatchu). Zero efektu gdy forfeited===0 (nic do zbankowania -- mapa bez
+ * zbędnych zer). Mutuje `city` NA MIEJSCU, zgodnie z konwencją reszty pól
+ * `City` (np. `city.wealthImmunityRemaining =` w `game/turn-economy.ts`) --
+ * CELOWO nie dotyka `prod`/kolejki; wołający (`dequeue`, `cityPanel.ts`
+ * `cancelQueueItem`) i tak zaraz potem woła `dequeue(prod, index)` osobno --
+ * `dropFrontItem`/kontrakt `dequeue` pozostają BEZ ZMIAN (patrz ich
+ * docstring, GOAL 5 dispatchu).
+ * / EN: before removing item `index` from city `city`'s Praca queue, bank its
+ * progress into `city.postepBudynkowUsuniete`, keyed by building id.
+ * BUILDINGS ONLY. Records the MOST RECENT build attempt (overwrites, never
+ * sums). No-op when nothing would be forfeited. Mutates `city` in place, same
+ * convention as the rest of `City`'s fields; deliberately leaves `prod`/the
+ * queue untouched -- `dropFrontItem`/`dequeue`'s own contract is unchanged.
+ */
+export function bankRemovedBuildingProgress(
+  city: City,
+  prod: CityProduction,
+  index: number,
+): void {
+  const item = prod.kolejka[index];
+  if (!item || item.kind !== 'budynek') return;
+  const forfeited = forfeitedProgressForIndex(prod, index);
+  if (forfeited <= 0) return;
+  if (!city.postepBudynkowUsuniete) city.postepBudynkowUsuniete = {};
+  city.postepBudynkowUsuniete[item.id] = forfeited;
+}
+
+/**
+ * Praca zbankowana w `city.postepBudynkowUsuniete` dla budynku `buildingId` w
+ * TYM mieście (0 gdy brak zapisu) -- KONSUMUJE zapis (usuwa klucz z mapy), więc
+ * wołający, który odczyta wynik i przekaże go do `enqueue()`, nigdy nie
+ * zostawia tej samej Pracy jednocześnie zbankowanej w dwóch miejscach (mapie
+ * i kolejce).
+ * / EN: banked Praca for `buildingId` in this city (0 if none) -- CONSUMES the
+ * entry (deletes the key), so the caller never leaves the same Praca banked
+ * in two places at once (the map and the queue).
+ */
+export function withdrawBankedBuildingProgress(city: City, buildingId: string): number {
+  const map = city.postepBudynkowUsuniete;
+  const banked = map ? map[buildingId] : undefined;
+  if (!banked || !(banked > 0)) return 0;
+  delete map![buildingId];
+  return banked;
 }
 
 export interface BuildQueueSanitizeResult {
@@ -1260,8 +1379,21 @@ function dropFrontItem(
  * item's progress). Removing any other index leaves the front (and its
  * `postep`) untouched. An out-of-range index is a no-op (returns a shallow
  * copy).
+ *
+ * `city` (R-PRODUKCJA-POSTEP-PAMIEC-PO-USUNIECIU-Q1, GOAL 2, opcjonalny --
+ * wsteczna zgodność z istniejącymi 2-argumentowymi wywołaniami, np.
+ * `promote-to-front-test.cjs`, zachowanie/return type IDENTYCZNE bez niego):
+ * gdy podany, PRZED usunięciem bankuje Pracę tracącej pozycji do
+ * `city.postepBudynkowUsuniete` (`bankRemovedBuildingProgress`) -- czysta
+ * mutacja `city` z boku, zwracana `CityProduction` i cała reszta kontraktu
+ * tej funkcji (w tym "anulowany item traci SWÓJ postęp" z `CityProduction`)
+ * pozostają DOKŁADNIE takie jak wyżej.
+ * / EN: `city` (optional, backward-compatible): when given, banks the
+ * departing item's progress into `city.postepBudynkowUsuniete` BEFORE
+ * removal -- a side mutation on `city` only; the returned `CityProduction`
+ * and the rest of this function's contract are unchanged.
  */
-export function dequeue(prod: CityProduction, index = 0): CityProduction {
+export function dequeue(prod: CityProduction, index = 0, city?: City): CityProduction {
   if (index < 0 || index >= prod.kolejka.length) {
     return {
       kolejka: [...prod.kolejka],
@@ -1270,6 +1402,7 @@ export function dequeue(prod: CityProduction, index = 0): CityProduction {
       rekrutacja: prod.rekrutacja ? [...prod.rekrutacja] : undefined,
     };
   }
+  if (city) bankRemovedBuildingProgress(city, prod, index);
   if (index === 0) {
     const dropped = dropFrontItem(prod.kolejka, 0);
     return {

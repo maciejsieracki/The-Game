@@ -767,6 +767,10 @@ export function ensureCitySaveDefaults(city: City): void {
   // addytywne, opcjonalne; brak bumpu SAVE_VERSION. Stary zapis (bez pola) dostaje
   // pusty magazyn.
   if (!city.surowce) city.surowce = {};
+  // R-PRODUKCJA-POSTEP-PAMIEC-PO-USUNIECIU-Q1: pole addytywne/opcjonalne --
+  // brak w starym zapisie (sprzed tej rundy) = pusta pamięć, zero zmiany
+  // zachowania -- ten sam wzorzec co `surowce` wyżej.
+  if (!city.postepBudynkowUsuniete) city.postepBudynkowUsuniete = {};
 }
 
 export interface City {
@@ -1015,6 +1019,44 @@ export interface City {
    * (no special handling in save.ts).
    */
   barbGarrisonSpawnCooldown?: number;
+  /**
+   * R-PRODUKCJA-POSTEP-PAMIEC-PO-USUNIECIU-Q1 (Maciej, decision-abc.md, ODWRACA
+   * P-PROMOCJA-FRONT-RESET-POSTEPU-Q1=B WYŁĄCZNIE dla ścieżki anulowania/
+   * usunięcia z kolejki przez gracza -- NIE dla dropFrontItem/promoteToFront
+   * naturalnego ukończenia, te zostają bez zmian): Praca zbankowana PER TYP
+   * BUDYNKU w TYM mieście dla budynku USUNIĘTEGO z kolejki Pracy (dowolny
+   * index -- front LUB pozycja oczekująca; `game/production.ts`
+   * `bankRemovedBuildingProgress`, wołane z `ui/cityPanel.ts` `cancelQueueItem`
+   * PRZED `dequeue()`). Klucz = building id (buildings.json `id`, to samo pole
+   * co `ProductionItem.id` dla `kind==='budynek'`). Niezależna od samej kolejki
+   * (`game/production.ts` `CityProduction.kolejka`) -- przetrwa dowolną liczbę
+   * tur i usunięć innych budynków (brak TTL/wygasania). Zapis NAJNOWSZEJ próby
+   * budowy: ponowne usunięcie tego samego budynku NADPISUJE wcześniejszy zapis
+   * (nie sumuje się z nim). Skonsumowana (klucz usunięty z mapy) w momencie
+   * ponownego dodania TEGO budynku do kolejki TEGO SAMEGO miasta
+   * (`production.ts` `enqueue`/`withdrawBankedBuildingProgress`, wołane z
+   * `cityPanel.ts` `addItem`) -- nigdy nie żyje jednocześnie w mapie i w
+   * kolejce dla tego samego id. Per-miasto CELOWO (nie globalna dla gracza) --
+   * to samo id w innym mieście tej samej cywilizacji ma osobny zapis/brak
+   * zapisu. Optional/addytywne -- brak pola (stary zapis sprzed tej rundy) =
+   * pusta pamięć, zero zmiany zachowania (`ensureCitySaveDefaults` niżej
+   * normalizuje do `{}`, ten sam wzorzec co `surowce` wyżej), zero bumpu
+   * SAVE_VERSION.
+   * / EN: Praca (work) banked PER BUILDING TYPE in THIS city for a building
+   * REMOVED from the Praca queue (any index -- front or waiting;
+   * `game/production.ts` `bankRemovedBuildingProgress`, called from
+   * `ui/cityPanel.ts` `cancelQueueItem` BEFORE `dequeue()`). Key = building id.
+   * Independent of the queue itself -- survives any number of turns and
+   * removals of OTHER buildings (no TTL/expiry). Records the MOST RECENT build
+   * attempt: removing the same building again OVERWRITES the prior entry
+   * (never sums). Consumed (key deleted) the moment this building is re-added
+   * to the SAME city's queue (`production.ts` `enqueue`/
+   * `withdrawBankedBuildingProgress`, called from `cityPanel.ts` `addItem`) --
+   * never lives in both the map and the queue for the same id at once.
+   * Deliberately per-city (not global to the player). Optional/additive --
+   * missing field on an old save = empty memory, no behaviour change.
+   */
+  postepBudynkowUsuniete?: Record<string, number>;
 }
 
 export const MIN_CITY_DISTANCE = (miastoParams.min_dystans_miast?.wartosc as number) ?? 5;
