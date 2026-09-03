@@ -4102,9 +4102,20 @@ deployu ROBOCZA na końcu z raportem. Orkiestrator kontynuuje bez pytania o zgod
   założonych podczas nadwyżki, spójne we wszystkich ziarnach — i jawnie
   poinformowała, że tempo budowy ulepszeń TERENU widocznych na mapie (oryginalny
   objaw) się nie poprawia i wymaga osobnego reconu. Zarzut 2 naprawiony
-  (clamping dodany + test mutacyjny). Test tematu 13/13. **Final Control
-  DISPATCHOWANY** (Sonnet 5, effort high) — ma dokończyć
-  `map-gen-regression-test.cjs`, który nie zdążył się zakończyć w oknie Obrony.
+  (clamping dodany + test mutacyjny, potwierdzony mutacyjnie niezależnie przez
+  Final Control). Test tematu 13/13. Final Control PASS — dokończył samodzielnie
+  `map-gen-regression-test.cjs` (~63 min, zero FAIL), niezależnie zmierzył
+  zarzut 1 na innych ziarnach (+21%, ten sam kierunek co Obrona), potwierdził
+  uczciwość raportu wobec właściciela. **ZINTEGROWANE do `main` (`3741fdb3`)**
+  allowlist-only. Przy okazji integracji naprawiono niezwiązany, ujawniony
+  dopiero teraz test `ai-dlug-porzadki-q1-test.cjs` (`cd683738`) — wycinanie
+  kodu `eliminateOwner()` do `new Function` nie deklarowało
+  `bronzeEraEnterTurnByOwner`, dodanego przez wcześniejszą integrację
+  `R-WOJNA-WYMUSZONA-REGULY-Q1` do tej samej funkcji. Worktree i branch
+  posprzątane.
+
+**To był OSTATNI z 8 tematów tej serii — wszystkie zamknięte (zintegrowane do
+`main`).** Następny krok: pełny deploy ROBOCZA.
 - **R-MIASTA-REBELIA-CICHA-BEZ-POWIADOMIENIA-Q1** — **ZINTEGROWANE do `main`
   (`16ad0841`)**. Dwa nowe `showHintMessage` przy zmianie `city.ownerId` na/z
   `REBEL_FACTION_OWNER_ID` (bunt: "zbuntowało się", NIE "podbite"; przejęcie
