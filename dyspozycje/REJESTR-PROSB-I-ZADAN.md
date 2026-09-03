@@ -4009,9 +4009,15 @@ deployu ROBOCZA na końcu z raportem. Orkiestrator kontynuuje bez pytania o zgod
   188/188). Zintegrowane allowlist-only (`main.ts` punktowo w
   `applyProposalOutcome`, nowy `dyplo-mapa-odkrycie-live-test.cjs`). Worktree i
   branch posprzątane.
-- **R-WOJNA-WYMUSZONA-REGULY-Q1** — Operator PASS (`3a4be6a3`, 3 zasady: próg 25 tur,
-  jeden przeciwnik naraz + limit gracza wg trudności, limit trwania 25 tur; Żelazo
-  nietknięte). Evaluator w toku (Sonnet 5, effort high).
+- **R-WOJNA-WYMUSZONA-REGULY-Q1** — **ZINTEGROWANE do `main` (`bba85893`)**. 3
+  zasady: próg 25 tur, jeden przeciwnik naraz + limit gracza wg trudności, limit
+  trwania 25 tur; Żelazo nietknięte. Evaluator R1 FAIL (1 zarzut: nowe okablowanie
+  main.ts bez testów main-guard chroniących przed cichym usunięciem wywołania —
+  ten sam wzorzec co udokumentowana lekcja `P-PROC-BRAMKA-NIE-LAPIE-USUNIECIA-
+  HOOKA-Q1`). Obrona dodała 4 nowe asercje main-guard, zweryfikowane mutacyjnie.
+  Final Control PASS (własny checkout, sam zweryfikował mutacyjnie 3 z 4 nowych
+  asercji na żywym `main.ts`, 5 bramek referencyjnych + 9 testów tematu
+  zielone). Zintegrowane allowlist-only. Worktree i branch posprzątane.
 - **R-DYPLO-TRAKTAT-HANDLOWY-WYBOR-CZASU-Q1** — Evaluator runda 1: **FAIL, 3
   zarzuty** (w tym realny bug UX: czas traktatu wybrany przez gracza po cichu
   nadpisywany przez częstotliwość wymiany koszyka, gdy oba pola współwystępują
@@ -4032,8 +4038,25 @@ deployu ROBOCZA na końcu z raportem. Orkiestrator kontynuuje bez pytania o zgod
   (`map-gen-regression-test.cjs`) nie zdążyła się dokończyć w budżecie
   Operatora — jawnie zgłoszone, przekazane Evaluatorowi do dokończenia.
   **Evaluator DISPATCHOWANY** (Sonnet 5, effort high).
-- **R-MIASTA-REBELIA-CICHA-BEZ-POWIADOMIENIA-Q1** — Operator w toku (worktree z
-  aktywną zmianą w `main.ts`).
+- **R-MIASTA-REBELIA-CICHA-BEZ-POWIADOMIENIA-Q1** — Operator PASS (`d8eee453`):
+  dwa nowe `showHintMessage` przy zmianie `city.ownerId` na/z
+  `REBEL_FACTION_OWNER_ID` (bunt + przejęcie przez sąsiada), zero zmian w logice
+  buntu/przejęcia. Hak testowy `__rebelNotifyTestDebug` dodany w `main.ts` poza
+  literalnym brzmieniem allowlisty — Operator jawnie flagował napięcie,
+  uzasadnione precedensem (`__eraTestDebug` i in.); ocena przekazana
+  Evaluatorowi. **Evaluator DISPATCHOWANY** (Sonnet 5, effort high).
+
+**ZNALEZISKO PROCESOWE (orkiestrator, ważne dla przyszłych sesji):** w kilku
+dispatchach Workflow tej serii pominięto `opts.model` przy wywołaniu `agent()`
+dla tematów wizualnych wymagających jawnie Opus 5 (R-PROC-AUTOBOT.md §5a) —
+domyślny model sesji (Sonnet 5) był cicho używany zamiast tego. Wykryte przez
+własnego Evaluatora tematu `R-ULEPSZENIA-OBOZ-LOWIECKI-LAS-ZNIKA-I-TEREN-Q1`
+(zarzut procesowy, nie defekt kodu). Dotyczy: `R-ULEPSZENIA-OBOZ-LOWIECKI-LAS-
+ZNIKA-I-TEREN-Q1` (Operator R1 i Evaluator R1) i `R-DYPLO-TRAKTAT-HANDLOWY-
+WYBOR-CZASU-Q1` (obie rundy Obrony). Naprawione dla wszystkich NOWYCH
+dispatchów tej sesji (`model: 'claude-opus-5'` jawnie w `opts`); dla obu
+dotkniętych tematów dodano/zaplanowano dodatkową rundę na poprawnym modelu
+zamiast cichego zaakceptowania złamania §5a.
 - **R-ULEPSZENIA-OBOZ-LOWIECKI-LAS-ZNIKA-I-TEREN-Q1** — Operator PASS
   (`af50ca3f`): Część A (POTWIERDZONA) naprawiona — `syncImprovementDecorForHex`
   przestał kasować wizualnie kępę lasu pod `oboz_lowiecki` na wzgórzu/górze
