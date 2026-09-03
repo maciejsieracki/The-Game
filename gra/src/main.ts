@@ -1083,6 +1083,7 @@ import {
   WOJNA_WYMUSZONA_MAX_CZAS_TRWANIA_TUR,
   isEligibleForBronzeForcedWar,
   pickBronzeForcedWarTargetIdCoordinated,
+  pickBronzeForcedWarDominoOwnerIds,
   shouldEndBronzeForcedWarByCityCount,
   shouldEndBronzeForcedWarByDuration,
   isRestingFromBronzeForcedWar,
@@ -1097,6 +1098,7 @@ import {
   WOJNA_KAMIEN_WYMUSZONA_MAX_CZAS_TRWANIA_TUR,
   isEligibleForStoneForcedWar,
   pickStoneForcedWarTargetIdCoordinated,
+  pickStoneForcedWarDominoOwnerIds,
   shouldEndStoneForcedWarByCityCount,
   shouldEndStoneForcedWarByDuration,
   isRestingFromStoneForcedWar,
@@ -1110,6 +1112,7 @@ import {
   isEligibleForIronForcedWar,
   isIronEraEntry,
   pickIronForcedWarTargetId,
+  pickIronForcedWarDominoOwnerIds,
   shouldEndIronForcedWarByCityCount,
   isRestingFromIronForcedWar,
   serializeIronForcedWarState,
@@ -29167,6 +29170,55 @@ async function boot(): Promise<void> {
               }
             }
 
+            // R-DYPLO-AI-WOJNA-TROJSTRONNA-Q1 (rozszerzenie R-DYPLO-AI-WOJNA-Z-GRACZEM-
+            // PARZYSTOSC-Q1): jeden, STABILNY odczyt "czy gracz ma już jakąkolwiek aktywną
+            // wojnę wymuszoną" NA CAŁĄ pętlę `ownerLoop` niżej — policzony TU, PRZED
+            // przetworzeniem jakiegokolwiek ownera, nie wewnątrz pętli jak istniejący
+            // `playerActiveForcedWarCount` (który świadomie JEST przeliczany per-owner, bo
+            // służy INNEMU, węższemu limitowi trudności "Normalny: najwyżej jedna naraz").
+            // Domino musi być JEDNĄ, skoordynowaną decyzją: gdyby ten odczyt siedział
+            // wewnątrz pętli (per owner), pierwszy przetworzony owner pary zdążyłby dopisać
+            // graczowi wojnę i DRUGI widziałby już wynik pierwszego — łamiąc kryterium "OBIE
+            // strony pary JEDNOCZEŚNIE, w TEJ SAMEJ turze" (GOAL 1, dispatch runy Q1).
+            // Świadomie liczy WSZYSTKIE TRZY epoki (Kamień+Brąz+Żelazo) — szerzej niż
+            // istniejący `playerActiveForcedWarCount` (tylko Kamień+Brąz), bo GOAL 1 mówi o
+            // "parze do walki" bez rozróżnienia epoki.
+            const playerAlreadyHasAnyActiveForcedWarThisTurn =
+              [...bronzeForceWarActiveByPairKey.values()].some(st => st.targetId === 0)
+              || [...stoneForceWarActiveByPairKey.values()].some(st => st.targetId === 0)
+              || [...ironForceWarActiveByPairKey.values()].some(st => st.targetId === 0);
+            // ECHO 2 właściciela: "chyba że jedną z nich łączy sojusz" — sojusz KTÓREJKOLWIEK
+            // strony pary z graczem blokuje CAŁĄ parę (main.ts `allianceFormalKindBetween`,
+            // ta sama funkcja co istniejący `stoneBlockedOwnerIds`/`bronzeBlockedOwnerIds`
+            // niżej, tylko względem gracza ownerId=0).
+            const dominoHasAllianceWithPlayer = (oid: number): boolean =>
+              allianceFormalKindBetween(activeDeals, oid, 0) !== null;
+            const dominoOpts = {
+              playerAlreadyHasActiveForcedWar: playerAlreadyHasAnyActiveForcedWarThisTurn,
+              hasAllianceWithPlayer: dominoHasAllianceWithPlayer,
+            };
+            const bronzeDominoOwnerIds = pickBronzeForcedWarDominoOwnerIds(
+              [...bronzeForceWarActiveByPairKey.values()]
+                .filter(st => st.targetId !== 0
+                  && !eliminatedOwners.has(st.attackerId)
+                  && !eliminatedOwners.has(st.targetId)),
+              dominoOpts,
+            );
+            const stoneDominoOwnerIds = pickStoneForcedWarDominoOwnerIds(
+              [...stoneForceWarActiveByPairKey.values()]
+                .filter(st => st.targetId !== 0
+                  && !eliminatedOwners.has(st.attackerId)
+                  && !eliminatedOwners.has(st.targetId)),
+              dominoOpts,
+            );
+            const ironDominoOwnerIds = pickIronForcedWarDominoOwnerIds(
+              [...ironForceWarActiveByPairKey.values()]
+                .filter(st => st.targetId !== 0
+                  && !eliminatedOwners.has(st.attackerId)
+                  && !eliminatedOwners.has(st.targetId)),
+              dominoOpts,
+            );
+
             ownerLoop: for (let oi = startOi; oi < aiOwnerList.length; oi++) {
               const ownerId = aiOwnerList[oi]!;
               // Bezpiecznik: gdyby lista pochodziła z aiCmdResume sprzed eliminacji
@@ -29996,6 +30048,14 @@ async function boot(): Promise<void> {
                     if (bronzePicked != null) bronzeForceWarTargetId = bronzePicked;
                   }
                 }
+                // R-DYPLO-AI-WOJNA-TROJSTRONNA-Q1 (GOAL 1/2): domino Brązu — NIEZALEŻNIE od
+                // `shouldSearch` wyżej (owner jest tu z definicji `alreadyAtWarAnyRole=true`,
+                // więc normalna ścieżka szukania celu go pomija). `bronzeDominoOwnerIds`
+                // policzone RAZ przed `ownerLoop` (patrz komentarz tam) — obie strony
+                // kwalifikującej się pary dostają cel=gracz w TEJ SAMEJ turze.
+                if (bronzeDominoOwnerIds.has(ownerId)) {
+                  bronzeForceWarTargetId = 0;
+                }
                 // R-EPOKA-KAMIEN-WYMUSZONA-WOJNA (Q1=A): po 20 turach od startu
                 // gry główna cywilizacja AI pozostająca w Kamieniu dostaje
                 // jednorazowy wpis pending. Wpis nie jest konsumowany przy samej
@@ -30093,6 +30153,11 @@ async function boot(): Promise<void> {
                     if (stonePicked != null) stoneForceWarTargetId = stonePicked;
                   }
                 }
+                // R-DYPLO-AI-WOJNA-TROJSTRONNA-Q1 (GOAL 1/2): domino Kamienia — patrz
+                // komentarz analogiczny przy `bronzeDominoOwnerIds` wyżej.
+                if (stoneDominoOwnerIds.has(ownerId)) {
+                  stoneForceWarTargetId = 0;
+                }
                 // R-EPOKA-ZELAZO-WYMUSZONA-WOJNA-Q1: wymuszona wojna głównej cywilizacji
                 // z sąsiadem terytorialnym — (a) jednorazowo przy AWANSIE do Żelaza
                 // (ironForceWarPendingOwners, ustawione w syncOwnerEraFromResearch przez
@@ -30177,6 +30242,11 @@ async function boot(): Promise<void> {
                     );
                     if (ironPicked != null) ironForceWarTargetId = ironPicked;
                   }
+                }
+                // R-DYPLO-AI-WOJNA-TROJSTRONNA-Q1 (GOAL 1/2): domino Żelaza — patrz
+                // komentarz analogiczny przy `bronzeDominoOwnerIds` wyżej.
+                if (ironDominoOwnerIds.has(ownerId)) {
+                  ironForceWarTargetId = 0;
                 }
                 const diploInp: DiplomacjaInputs = {
                   myPlayerId: String(ownerId),

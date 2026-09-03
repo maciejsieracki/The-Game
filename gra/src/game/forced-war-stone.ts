@@ -181,3 +181,55 @@ export function pickStoneForcedWarTargetIdCoordinated(
   if (opts.poziomTrudnosci === 2 && opts.playerActiveForcedWarCount >= 1) return null;
   return 0;
 }
+
+/**
+ * R-DYPLO-AI-WOJNA-TROJSTRONNA-Q1 (rozszerzenie R-DYPLO-AI-WOJNA-Z-GRACZEM-PARZYSTOSC-Q1),
+ * WYZWALACZ dosłowny właściciela: "Jeżeli jakaś cywilizacja ma już parę i z kimś walczy, a
+ * gracz nie ma swojej pary do walki — obie cywilizacje, które ze sobą walczą, wypowiadają
+ * jednocześnie wojnę graczowi [...] chyba że jedną z nich łączy sojusz".
+ *
+ * Różni się od `pickStoneForcedWarTargetIdCoordinated` wyżej: TAMTA funkcja wybiera JEDEN
+ * cel dla ownera, który dopiero SZUKA (jeszcze nie jest w żadnej wojnie). TA funkcja działa
+ * na PARACH JUŻ AKTYWNYCH (`activeByPairKey`, obie strony AI, `targetId !== 0`) — obie strony
+ * takiej pary są z definicji `alreadyAtWarAnyRole=true`, więc normalna ścieżka szukania
+ * (`shouldSearch`) je pomija; main.ts musi ustawić `stoneForceWarTargetId = 0` dla OBU stron
+ * NIEZALEŻNIE od `shouldSearch`, gdy ta funkcja je zwróci.
+ *
+ * GOAL 4 (ECHO 3, "zamierzone zaostrzenie BEZ dodatkowego łagodzenia"): świadomie BEZ
+ * parametru `poziomTrudnosci` — w odróżnieniu od `pickStoneForcedWarTargetIdCoordinated`,
+ * ten mechanizm NIE jest ograniczony limitem "Normalny: gracz najwyżej w jednej wojnie
+ * wymuszonej naraz" (`playerActiveForcedWarCount>=1` wyżej) — to jest INNY, węższy limit
+ * dla INNEGO mechanizmu (fallback pojedynczej AI z wyczerpanej puli), nie dotyczy tej,
+ * skoordynowanej, JEDNEJ decyzji obu stron istniejącej pary.
+ *
+ * `opts.playerAlreadyHasActiveForcedWar` MUSI być jednym, stabilnym odczytem na CAŁĄ turę
+ * (main.ts liczy go RAZ, przed pętlą po ownerach) — odczyt PONOWNIE per-owner złamałby
+ * "jednocześnie": pierwszy przetworzony owner pary zdążyłby dopisać graczowi wojnę i drugi
+ * widziałby już aktywną parę z graczem, więc by się nie uruchomił.
+ */
+export interface StoneForcedWarActiveAiPair {
+  attackerId: number;
+  targetId: number;
+}
+
+export interface StoneForcedWarDominoOpts {
+  /** Gracz ma już JAKĄKOLWIEK aktywną wojnę wymuszoną (Kamień+Brąz+Żelazo łącznie) — jeden, stabilny odczyt na całą turę. */
+  playerAlreadyHasActiveForcedWar: boolean;
+  /** Czy dany ownerId ma DZIŚ aktywny sojusz z graczem (ECHO 2: KTÓRAKOLWIEK strona blokuje całą parę). */
+  hasAllianceWithPlayer: (ownerId: number) => boolean;
+}
+
+export function pickStoneForcedWarDominoOwnerIds(
+  activeAiPairs: ReadonlyArray<StoneForcedWarActiveAiPair>,
+  opts: StoneForcedWarDominoOpts,
+): ReadonlySet<number> {
+  const result = new Set<number>();
+  if (opts.playerAlreadyHasActiveForcedWar) return result;
+  for (const pair of activeAiPairs) {
+    if (pair.attackerId === 0 || pair.targetId === 0 || pair.attackerId === pair.targetId) continue;
+    if (opts.hasAllianceWithPlayer(pair.attackerId) || opts.hasAllianceWithPlayer(pair.targetId)) continue;
+    result.add(pair.attackerId);
+    result.add(pair.targetId);
+  }
+  return result;
+}

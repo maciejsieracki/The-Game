@@ -298,3 +298,39 @@ export function pickBronzeForcedWarTargetIdCoordinated(
   if (opts.poziomTrudnosci === 2 && opts.playerActiveForcedWarCount >= 1) return null;
   return 0;
 }
+
+/**
+ * R-DYPLO-AI-WOJNA-TROJSTRONNA-Q1 — patrz komentarz analogiczny przy
+ * `pickStoneForcedWarDominoOwnerIds` (`forced-war-stone.ts`): identyczna reguła, osobna
+ * kopia dla Brązu (jak cała reszta pliku). Działa na PARACH JUŻ AKTYWNYCH Brązu
+ * (`bronzeForceWarActiveByPairKey`, obie strony AI, `targetId !== 0`), nie na ownerach
+ * dopiero szukających celu (to robi `pickBronzeForcedWarTargetIdCoordinated` wyżej).
+ * Świadomie BEZ `poziomTrudnosci` (GOAL 4/ECHO 3) — limit "Normalny: gracz najwyżej w
+ * jednej naraz" dotyczy WYŁĄCZNIE innego, węższego mechanizmu fallbacku wyżej.
+ */
+export interface BronzeForcedWarActiveAiPair {
+  attackerId: number;
+  targetId: number;
+}
+
+export interface BronzeForcedWarDominoOpts {
+  /** Gracz ma już JAKĄKOLWIEK aktywną wojnę wymuszoną (Kamień+Brąz+Żelazo łącznie) — jeden, stabilny odczyt na całą turę. */
+  playerAlreadyHasActiveForcedWar: boolean;
+  /** Czy dany ownerId ma DZIŚ aktywny sojusz z graczem (ECHO 2: KTÓRAKOLWIEK strona blokuje całą parę). */
+  hasAllianceWithPlayer: (ownerId: number) => boolean;
+}
+
+export function pickBronzeForcedWarDominoOwnerIds(
+  activeAiPairs: ReadonlyArray<BronzeForcedWarActiveAiPair>,
+  opts: BronzeForcedWarDominoOpts,
+): ReadonlySet<number> {
+  const result = new Set<number>();
+  if (opts.playerAlreadyHasActiveForcedWar) return result;
+  for (const pair of activeAiPairs) {
+    if (pair.attackerId === 0 || pair.targetId === 0 || pair.attackerId === pair.targetId) continue;
+    if (opts.hasAllianceWithPlayer(pair.attackerId) || opts.hasAllianceWithPlayer(pair.targetId)) continue;
+    result.add(pair.attackerId);
+    result.add(pair.targetId);
+  }
+  return result;
+}
