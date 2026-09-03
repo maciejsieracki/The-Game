@@ -520,10 +520,19 @@ export function resolveWorldGenNumbers(opts?: WorldGenOptions): {
 /** Twardy sufit miast-państw w klastrze (Maciej 2026-07-04: max 9 + stolica gracza = 10). */
 export const MAX_MIAST_PANSTWA = 9;
 
-/** Ogranicza liczbę miast-państw do [1, MAX_MIAST_PANSTWA]. */
-export function clampMiastaPanstwaCount(raw: number): number {
+/**
+ * Ogranicza liczbę miast-państw do [1, MAX_MIAST_PANSTWA].
+ * `allowZero` (P-USTAWIENIA-MIASTA-PANSTWA-WYLACZONE-Q1, Maciej 2026-09-03,
+ * domyślnie false — zero regresji dla wszystkich dotychczasowych wywołań):
+ * gdy true, dolna granica schodzi do 0 — WYŁĄCZNIE dla ustawienia „Trudność
+ * miast-państw: Wyłączone" (patrz main.ts, applyMenuParams). Każde inne
+ * wywołanie (bez drugiego argumentu) zachowuje dokładnie dotychczasowe
+ * zachowanie: minimum 1.
+ */
+export function clampMiastaPanstwaCount(raw: number, allowZero = false): number {
   const n = Math.floor(Number(raw));
-  if (!Number.isFinite(n) || n < 1) return 1;
+  const floor = allowZero ? 0 : 1;
+  if (!Number.isFinite(n) || n < floor) return floor;
   return Math.min(n, MAX_MIAST_PANSTWA);
 }
 

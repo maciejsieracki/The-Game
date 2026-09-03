@@ -656,8 +656,16 @@ export function generateMap(
   const mapMenuLabel = genOpts?.mapSizeMenuLabel ?? 'Standardowy';
   const startCityCount = expectedStartCityCount(
     genOpts?.civTypesCount ?? defaultCivTypesFromMapLabel(mapMenuLabel),
+    // P-USTAWIENIA-MIASTA-PANSTWA-WYLACZONE-Q1 (Ewaluator runda 1, zarzut 1):
+    // allowZero=true, bo `genOpts.cityStatesCount` faktycznie dostaje 0 z
+    // main.ts (`_menuCityStates` dla "Trudność miast-państw: Wyłączone").
+    // Bezpieczne dla pozostałych 3 poziomów — main.ts (linia ok. 31681) buduje
+    // `_menuCityStates` dla nich przez łańcuch `||`/`defaultMiastaPanstwaFromMapLabel`,
+    // który nigdy nie daje 0 (0 jest falsy w JS), więc floor=0 zamiast floor=1
+    // nie zmienia wyniku clampMiastaPanstwaCount dla żadnej wartości >=1.
     clampMiastaPanstwaCount(
       genOpts?.cityStatesCount ?? defaultMiastaPanstwaFromMapLabel(mapMenuLabel),
+      true,
     ),
   );
   // P-CHATKI-NAGRODY-TOGGLE-USTAWIENIA-Q1: warunkuj liczbę chatek na ustawieniu.

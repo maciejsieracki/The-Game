@@ -31736,11 +31736,18 @@ async function boot(): Promise<void> {
       _menuMapSize = params.mapSize || 'Standardowy';
       _menuCivTypesCount = params.civTypesCount || defaultCivTypesFromMapLabel(_menuMapSize);
       _menuSelectedAiCivIds = Array.isArray(params.selectedAiCivIds) ? [...params.selectedAiCivIds] : [];
-      _menuCityStates = clampMiastaPanstwaCount(
-        params.cityStatesCount
-        || parseInt(String(params.rivals), 10)
-        || defaultMiastaPanstwaFromMapLabel(_menuMapSize),
-      );
+      // P-USTAWIENIA-MIASTA-PANSTWA-WYLACZONE-Q1 (Maciej 2026-09-03): "Wyłączone" w
+      // "Trudność miast-państw" zeruje efektywną liczbę miast-państw NIEZALEŻNIE od
+      // suwaka/presetu cityStatesCount|rivals — dlatego jest to gałąź PRZED łańcuchem
+      // `||` poniżej (0 jest falsy w JS, więc zwykły OR i tak przepuściłby do
+      // wartości domyślnej, gdyby ktoś po prostu przekazał cityStatesCount:0).
+      _menuCityStates = csOverrideRaw === 'off'
+        ? clampMiastaPanstwaCount(0, true)
+        : clampMiastaPanstwaCount(
+          params.cityStatesCount
+          || parseInt(String(params.rivals), 10)
+          || defaultMiastaPanstwaFromMapLabel(_menuMapSize),
+        );
       _menuRivals = _menuCityStates;
       _menuWorldDensity = params.worldDensity ?? { ...DEFAULT_WORLD_DENSITY };
       _menuCityLimitBase = params.advanced?.cityLimitBase ?? 10; // R-MIASTA-LIMIT-PER-EPOKA-Q1 / EN: city limit base

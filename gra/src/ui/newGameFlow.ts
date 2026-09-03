@@ -182,8 +182,11 @@ export interface NewGameAdvancedOptions {
    * i siłą posiłków obronnych (RESUP_TIERS) w main.ts.
    * `null` = brak override — śledzi na bieżąco główną trudność (`difficulty` powyżej),
    * dopóki gracz nie ustawi jej wprost w „Zaawansowane opcje". Zero regresji domyślnej.
+   * `'off'` (P-USTAWIENIA-MIASTA-PANSTWA-WYLACZONE-Q1, Maciej 2026-09-03): pełne
+   * wyłączenie generacji miast-państw — mapa ma wyłącznie cywilizacje (gracz + AI).
+   * Wzorzec identyczny jak `barbariansLevel`/'brak' powyżej.
    */
-  cityStateDifficultyOverride: 'easy' | 'normal' | 'hard' | null;
+  cityStateDifficultyOverride: 'easy' | 'normal' | 'hard' | 'off' | null;
   /** R-MIASTA-LIMIT-PER-EPOKA-Q1: bazowy limit miast na epokę (10 / 15 / 20); per-era limit = base + (era-1)*5. / EN: base city limit per era. */
   cityLimitBase: number;
 }
@@ -336,6 +339,7 @@ function migrateAdvanced(raw: Record<string, unknown>): NewGameAdvancedOptions {
     raw.cityStateDifficultyOverride === 'easy'
     || raw.cityStateDifficultyOverride === 'normal'
     || raw.cityStateDifficultyOverride === 'hard'
+    || raw.cityStateDifficultyOverride === 'off'
   ) {
     base.cityStateDifficultyOverride = raw.cityStateDifficultyOverride;
   }
@@ -1221,18 +1225,19 @@ function advancedSettingRows(): AdvSettingRow[] {
     {
       key: 'cityStateDifficulty',
       lbl: 'Trudność miast-państw',
-      hint: 'Zaufanie startowe, próg sojuszu sióstr i posiłki obronne miast-państw — niezależnie od głównej trudności gry. Domyślnie = główna trudność.',
-      opts: ['Łatwy', 'Normalny', 'Trudny'],
+      hint: 'Zaufanie startowe, próg sojuszu sióstr i posiłki obronne miast-państw — niezależnie od głównej trudności gry. Domyślnie = główna trudność. Wyłączone = pełne wyłączenie generacji miast-państw, mapa ma tylko cywilizacje.',
+      opts: ['Łatwy', 'Normalny', 'Trudny', 'Wyłączone'],
       getIdx: () => {
         if (advOpts.cityStateDifficultyOverride === 'easy') return 0;
         if (advOpts.cityStateDifficultyOverride === 'hard') return 2;
+        if (advOpts.cityStateDifficultyOverride === 'off') return 3;
         if (advOpts.cityStateDifficultyOverride === 'normal') return 1;
         // Brak override -- pokaz biezaca glowna trudnosc (SETT difficulty).
         const diffRow = SETT.find(x => x.key === 'difficulty');
         return diffRow ? diffRow.idx : 1;
       },
       setIdx: (i) => {
-        advOpts.cityStateDifficultyOverride = i === 0 ? 'easy' : i === 2 ? 'hard' : 'normal';
+        advOpts.cityStateDifficultyOverride = i === 0 ? 'easy' : i === 2 ? 'hard' : i === 3 ? 'off' : 'normal';
       },
     },
     {
@@ -1667,9 +1672,11 @@ function renderGenStep(host: HTMLElement): void {
       ? 'Łatwy'
       : csOverride === 'hard'
         ? 'Trudny'
-        : csOverride === 'normal'
-          ? 'Normalny'
-          : p.difficulty + ' (jak glowna)';
+        : csOverride === 'off'
+          ? 'Wyłączone'
+          : csOverride === 'normal'
+            ? 'Normalny'
+            : p.difficulty + ' (jak glowna)';
     const cityLimitLabel = p.advanced.cityLimitBase === 15
       ? '15 miast'
       : p.advanced.cityLimitBase === 20
