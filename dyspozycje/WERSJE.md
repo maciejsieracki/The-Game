@@ -13,6 +13,21 @@ swoim wĹ‚asnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji d
 > Pakiet 3 z 2026-08-20 jest docs-only i nie tworzy wpisu ROBOCZA/KANON/FINALNA;
 > ten plik pozostaje wyłącznie rejestrem publikacji bundli.
 
+## ROBOCZA d8932b01 - 2026-09-03 20:47 UTC - FALA 343: 5 tematow (dyplomacja pokoj, handel dystans, entity-cards, wojna wymuszona, repo-prep)
+
+|- md5 (pełne): d8932b0115cebbb047d70aaec98aa70e · stempel: ROBOCZA · label d8932b01 · źródłowe commity integracji: `e253e64a` + `9b31997d` + `c2e00778` + `85865586` + `7d77e978`
+|- **`P-DYPLO-BILANS-GATE-NIESPOJNY-N-E1-REPRODUKCJA`** runda 4, OSTATNIA (`e253e64a`) — propozycje pokoju (oba kierunki: gracz/AI) nigdy nie są blokowane liczbą bilansu PW; bilans nadal liczony i pokazywany informacyjnie w panelu, ale przestaje działać jako brama blokująca `canAccept` dla akcji pokoju. Temat zamknięty.
+|- **`R-HANDEL-SZLAKI-LIMIT-DYSTANSU-USUN-Q1`** (`9b31997d`) — usunięcie twardego progu dystansu 12 heksów (ląd)/20 heksów (morze) jako warunku ISTNIENIA trasy handlowej; jedyną blokadą pozostaje fizyczna nieosiągalność (BFS, promień skalowany dynamicznie do wymiarów mapy). Krzywa dochodu z dystansem oddzielona od connectivity, zero regresji balansu na bliskich trasach.
+|- **`P-REPO-2-BUNDLE-NIEODTWARZALNE-Q1`** (`c2e00778`) — WYŁĄCZNIE przygotowanie: dokument nieodwracalnej utraty 2 bundli PLAYTEST + dokładna, nieuruchomiona komenda `git filter-repo` (czeka na osobną jawną autoryzację) + rozszerzenie `sync-playtest-bundles.cjs` o 2 wcześniej nieobsługiwane nazwy. Zero zmian w `gra/src`/`gra/data`.
+|- **`P-ENTITYCARD-DIALOG-WIELOKROTNY-Q1`** (`85865586`) — karty encji (technologia/budynek/jednostka/cud) przestały się nakładać: nowe otwarcie dialogu synchronicznie zamyka poprzedni PRZED zbudowaniem nowego, niezależnie skąd wywołane (w tym z linku wewnątrz innej karty).
+|- **`R-WOJNA-WYMUSZONA-ZELAZO-PROG-TURY-Q1`** (`7d77e978`) — wymuszona wojna epoki Żelaza nie może wystartować wcześniej niż 25 tur od wejścia danej cywilizacji w tę epokę (analogicznie do już istniejącego progu Brązu); wojna z miastem-państwem nadal blokuje bez zmian.
+|- Wszystkie tematy: pełny cykl AutoBot (Operator→Evaluator→Obrona gdy potrzebna→Final Control) przez Workflow, `tsc --noEmit` 0 błędów, 5 bramek referencyjnych (logic-test 213/213, tech-tree-test 19/19, research-test 33/33, unit-replace-test 13/13, combat-test 6/6) bez regresu po każdej integracji i na finalnym stanie `main`.
+|- Bundle: 882 modułów, `Gra-ROBOCZA.html` 69,7 MB. `Gra-ROBOCZA-POLE-BITWY.html` NIE przebudowany — żaden temat tej fali nie dotyka `battleScene.ts`/logiki bitwy.
+|- Publikacja: `gra-robocza/Gra-ROBOCZA.html` + manifest + 6 kopii PLAYTEST.
+|- **Odstępstwo techniczne (jak w poprzednich FALACH):** publikacja odtworzona ręcznie w bashu/Node — `pwsh` nie istnieje w tym środowisku.
+|- Szczegóły: rejestr w `REJESTR-PROSB-I-ZADAN.md`.
+|- **AKTUALNA**
+
 ## ROBOCZA c72b5629 - 2026-09-03 19:21 UTC - FALA 342: 16 tematow (dyplomacja, mgla, produkcja, miasta-panstwa, UI)
 
 |- md5 (pełne): c72b56297f22470bfa097318467d30d8 · stempel: ROBOCZA · label c72b5629 · źródłowe commity integracji: `4638b6ce` + `740993f4` + `3ca7c600` + `5b05773c` + `78151c38` + `9a36550d` + `79748fac` + `1fafac1f` + `1d8583b7` + `7030ee1b` + `68278b20` + `6a9db6e0` + `52cbd838` + `799fe21d` + `5cbe910c` + `e5baa201`
@@ -38,7 +53,7 @@ swoim wĹ‚asnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji d
 |- Publikacja: `gra-robocza/Gra-ROBOCZA.html` + manifest + 6 kopii PLAYTEST. `VERIFY OK` (md5 pliku = md5 manifestu, potwierdzone `md5sum`).
 |- **Odstępstwo techniczne (jak w FALACH 324-341):** publikacja odtworzona ręcznie w bashu/Node — `pwsh` nie istnieje w tym środowisku.
 |- Szczegóły: rejestr w `REJESTR-PROSB-I-ZADAN.md`.
-|- **AKTUALNA**
+|- **ZASTĄPIONA** (→ d8932b01, FALA 343)
 
 ## ROBOCZA 8bb29544 - 2026-09-03 03:25 UTC - FALA 340: 12 tematow (dyplomacja handlowa/mapa/wojna wymuszona, AI ulepszenia/armie, bunt miast, wizualne)
 
