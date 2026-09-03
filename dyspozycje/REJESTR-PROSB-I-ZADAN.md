@@ -4164,3 +4164,24 @@ Kolejna kontrola zaplanowana automatycznie; po zamknięciu wszystkich powyższyc
 — integracja allowlist-only każdego PASS, potem pełny deploy ROBOCZA (build →
 stamp → manifest → weryfikacja → FALA w `WERSJE.md`) i raport końcowy dla
 właściciela.
+
+## NOWA SERIA 2026-09-03 — trzy zgłoszenia właściciela po FALI 340, pętla AutoBot kontynuowana bez przerwy
+
+Właściciel po otrzymaniu raportu FALI 340 zgłosił trzy kolejne tematy w jednej
+serii wiadomości, z jawnym poleceniem kontynuacji pętli AutoBot bez jego
+udziału ("Działaj z tematami w pętli, autobot, workflow, bez mojego udziału,
+popraw wszystko, co jest w stanie, i na końcu zrób raport").
+
+| ID | Data | Prośba | Status | Uwagi |
+|---|---|---|---|---|
+| R-AI-PRACA-PODZIAL-STALY-50-50-Q1 | 2026-09-03 | Kontynuacja R-AI-ULEPSZENIA-MALO-BUDOWANE-Q1 (które NIE zwiększyło tempa budowy ulepszeń widocznych na mapie): ustaw dla AI cywilizacji i miast-państw sztywny podział Pracy 50/50 (budynki/ulepszenia), żeby AI zawsze miało budżet na oba. | **DISPATCHOWANE** | Domain GAME, logika AI/ekonomii — Operator+Evaluator+Final Control Sonnet 5, effort HIGH. Recon (subagent Explore): sufit 50% na ulepszenia JUŻ istnieje strukturalnie (`clampPodzialPracyBudynkiPercent` `[50,100]` na `procentBudynki`=budynki), ale PODŁOGA na ulepszenia to dziś efektywnie 0% — `decideAIEconomySliders` (`ai.ts:4874-4964`) podbija `procentBudynki` do 100 w stanie wojny, zabierając całą pulę ulepszeń. To prawdziwa przyczyna niskiej widocznej budowy ulepszeń, nieadresowana przez poprzedni temat. GOAL: usunąć dynamiczne dostosowywanie (wojna/pokój/faza gry) na rzecz stałej `procentBudynki=50` dla AI cywilizacji i miast-państw, gracz bez zmian, ZASADA 3 (przekierowanie nadwyżki przy braku kandydatów) pozostaje jako wyjątek. Dispatch `00-dispatch.md`. |
+| R-ULEPSZENIA-OBOZ-LOWIECKI-WYMAGA-TARTAKU-Q1 | 2026-09-03 | Obóz łowiecki powinien być budowalny WYŁĄCZNIE na heksie, gdzie już stoi tartak (rationale: nie marnować pola na mało wydajny obóz — lepiej najpierw postawić tartak, potem dołożyć obóz jako dodatkowy bonus na tym samym polu). | **W PRZYGOTOWANIU** | Domain GAME, logika budowy. Recon (subagent Explore): gotowy precedens do skopiowania — `droga_brukowana` już wymaga współistniejącego `droga` na tym samym heksie, dokładnie tym samym wzorcem (`improvement-build.ts:929-936`, mirror w `hexContextTooltip.ts:493`). `tartak` i `oboz_lowiecki` już mogą koegzystować (różne sektory `las`/`lowiectwo`, potwierdzone testem `map-improvement-qualify-test.cjs`). Do zmiany: gate w `qualifies()`/`computeImprovementBuildImpact` (2 miejsca, `improvement-build.ts:586-588,1052-1054`), tooltip (`hexContextTooltip.ts`), oraz kolejność `AI_IMPROVEMENT_PRIORITY` w `auto-improvements.ts` (dziś `oboz_lowiecki` PRZED `tartak` — AI próbowałby obozu zanim tartak istnieje, trzeba odwrócić), plus przegląd logiki "minimalnej liczby na miasto" (`lesneWymagane`/`JEDEN_NA_ILU_OBYWATELI`) traktującej je dziś jako niezależne kwoty per-miasto, nie per-heks. Dispatch w trakcie pisania. |
+| R-MIASTA-REBELIA-OCHRONA-20-TUR-Q1 | 2026-09-03 | 20-turowy okres ochrony po buncie miasta: zdobycie zbuntowanego miasta przez KOGOKOLWIEK (gracza lub AI) w ciągu 20 tur od buntu ma liczyć się jak wypowiedzenie wojny byłemu właścicielowi (łamie pakty), symetrycznie dla gracza i AI. Po 20 turach miasto w pełni niezależne. | **RECON W TOKU** | Domain GAME, logika dyplomacji/buntu, buduje na R-MIASTA-REBELIA-CICHA-BEZ-POWIADOMIENIA-Q1 (ta sama sesja). Recon (subagent Explore) w trakcie — sprawdza czy istnieje dziś jakikolwiek zapis byłego właściciela/tury buntu na zbuntowanym mieście (prawdopodobnie NIE, trzeba dodać pola), mechanizm łączący przejęcie miasta z wypowiedzeniem wojny (prawdopodobnie nie istnieje wprost), oraz istniejące zachowanie AI wobec zdobywania miast partnerów paktu (żeby ustalić czy AI powinno unikać zdobywania chronionych miast, czy je zdobywać z konsekwencją wojny). |
+
+Kolejność dispatchu: 50/50 najpierw (recon gotowy), potem obóz/tartak (recon
+gotowy), potem bunt/ochrona (recon w toku) — każdy sekwencyjnie przez pełny
+cykl AutoBot (Operator→Evaluator→Obrona→Final Control→integracja), zgodnie z
+R-PROC-AUTOBOT.md §2b (tematy dotykające tych samych plików nie równolegle —
+tu trzy tematy dotykają różnych obszarów main.ts/ai.ts/auto-improvements.ts,
+więc mogą iść równolegle jeśli allowlisty się nie przecinają; zweryfikowane
+przy dispatchu każdego kolejnego).
