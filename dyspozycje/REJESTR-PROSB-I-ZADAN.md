@@ -4038,8 +4038,21 @@ deployu ROBOCZA na końcu z raportem. Orkiestrator kontynuuje bez pytania o zgod
   wycena stabilna względem czasu traktatu (H4), nadal zależna od wymiany (H5,
   nietautologiczność), rozbieżność UI/silnik zlikwidowana (H6/I2), realne kliki
   w obu sekcjach nie kolidują (J1-J5). Test tematu 52/52, wszystkie 56 testów
-  dyplomacji zielone (silnik dotknięty, nie tylko UI). **Evaluator R3
-  DISPATCHOWANY** (Opus 5, effort high, poprawny model).
+  dyplomacji zielone (silnik dotknięty, nie tylko UI). Evaluator R3 (Opus 5,
+  effort high, poprawny model) FAIL, **4 zarzuty, 2 KRYTYCZNE**: (1)
+  `payload.treatyTurns` nigdy nie dociera do silnika — `main.ts` (`~18079`,
+  `buildProposalFromPayload`) przepisuje payload negocjacji przez jawną białą
+  listę 21 pól, `treatyTurns` nie jest na liście (ten sam wzorzec regresji co
+  udokumentowany wcześniej incydent w tym samym miejscu kodu, ślad w
+  komentarzu); (2) **REGRESJA względem stanu SPRZED tematu**: traktat handlowy
+  bez koszyka staje się BEZTERMINOWY zamiast trwać wybraną liczbę tur (payload
+  po białej liście staje się pusty → `wygasaTura=null`) — gorzej niż
+  zahardkodowane `turns:20` sprzed tematu. (3) nowo otwarta ścieżka
+  kontroferty/edycji dla aid '5' gubi prefill warunków propozycji z AI. (4)
+  test tematu (52/52 zielone) omijał realną ścieżkę `buildProposalFromPayload`,
+  więc nie wykrył (1)-(2) mimo pozornej pełnej zieleni. Allowlist rozszerzona
+  PONOWNIE (`5fe2bbe7`, main.ts wyłącznie whitelist+counterInitial). **Obrona R4
+  DISPATCHOWANA** (Opus 5, effort medium).
 - **R-AI-ULEPSZENIA-MALO-BUDOWANE-Q1** — Operator PASS (`ccd5f6be`): diagnoza
   żywą 5×80-turową symulacją potwierdziła realny problem (ZASADA 3 mogła
   przekierować 100% puli ulepszeń na budynki, bez dolnej granicy), naprawa —
