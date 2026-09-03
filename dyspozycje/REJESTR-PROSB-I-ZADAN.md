@@ -4217,7 +4217,7 @@ z góry ustalonego zakresu) — dispatchowane równolegle.
 
 | ID | Prośba | Status | Uwagi |
 |---|---|---|---|
-| `P-DYPLO-UMOWY-AKTYWNE-NA-GORZE-Q1` | Zrzut ekranu panelu "Możliwe umowy": "Sprawdź, czy jest możliwość, aby podczas rozmów dyplomatycznych wszystkie aktywne statusy były na samej górze, a nieaktywne zgodnie z obecną kolejnością." | **DISPATCHOWANE** | Domain GAME, UI — Operator+Evaluator+Final Control Sonnet 5, effort HIGH. Recon: `dealsColumnHtml` (`diplomacyAudience.ts:1704-1776`) już liczy `isLocked` per pozycja (linia 1734) — dokładnie ten predykat ma teraz decydować o kolejności (stabilne sortowanie: aktywne przed nieaktywnymi, bez zmiany kolejności wewnątrz każdej grupy). Zero zmian w wyglądzie/logice pojedynczego kafelka ani w źródle `st.actions`. Dispatch `00-dispatch.md`.
+| `P-DYPLO-UMOWY-AKTYWNE-NA-GORZE-Q1` | Zrzut ekranu panelu "Możliwe umowy": "Sprawdź, czy jest możliwość, aby podczas rozmów dyplomatycznych wszystkie aktywne statusy były na samej górze, a nieaktywne zgodnie z obecną kolejnością." | **ZINTEGROWANE** (`4638b6ce`) | Domain GAME, UI — Operator+Evaluator+Final Control Sonnet 5, effort HIGH. `dealsColumnHtml` (`diplomacyAudience.ts`) sortuje teraz stabilnie po `isLocked` (aktywne przed nieaktywnymi), bez zmiany kolejności wewnątrz grup ani wyglądu pojedynczego kafelka. Zero zarzutów Evaluatora, Final Control PASS (własny niezależny test 8/8 z inną fixture, 11 testów regresyjnych audiencji dyplomatycznej sprawdzonych, real Chromium). Zintegrowane, 5 bramek referencyjnych + nowa bramka tematu (15/15) zielone po integracji.
 
 ## NOWE ZGŁOSZENIE 2026-09-03 (dwa zrzuty ekranu) — jednostka chwilowo niewidoczna po wybudowaniu
 
