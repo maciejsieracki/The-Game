@@ -18487,6 +18487,14 @@ async function boot(): Promise<void> {
         ),
         hasWymiana: hasWymianaTreaty(activeDeals, 0, ownerId),
         hasSojusz,
+        // P-DYPLO-PRZEMARSZ-DUPLIKAT-AKTYWNY-Q1: traktat przemarszu jest symetryczny
+        // (hasTreaty normalizuje parę stron przez pairKey) — sprawdzamy WSZYSTKIE trzy
+        // odmiany jednocześnie (cywilny/wojskowy/wspólna walka z barbarzyńcami).
+        hasGranice: (
+          hasTreaty(activeDeals, 0, ownerId, RodzajTraktatu.OtwartGranice)
+          || hasTreaty(activeDeals, 0, ownerId, RodzajTraktatu.PrawoWojskowePrzemarszu)
+          || hasTreaty(activeDeals, 0, ownerId, RodzajTraktatu.WspolnaWalkaBarbarzyncy)
+        ),
         breaksTreatyLabel: breakingDeal ? treatyDisplayLabel(breakingDeal.rodzaj) : undefined,
         sellableTechCount: getSellableTechForPlayer(ownerId).length,
         buyableTechCount: getBuyableTechFromOwner(ownerId).length,

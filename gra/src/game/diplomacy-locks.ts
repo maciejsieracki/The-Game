@@ -65,6 +65,14 @@ export interface DiplomacyActionLockContext {
   /** Umowa wymiany surowców (`umowa_wymiany`). */
   hasWymiana?: boolean;
   hasSojusz: boolean;
+  /**
+   * P-DYPLO-PRZEMARSZ-DUPLIKAT-AKTYWNY-Q1: czy między stronami jest już aktywny traktat
+   * przemarszu w KTÓREJKOLWIEK z trzech odmian (`otwarte_granice` cywilny,
+   * `prawo_wojskowe_przemarszu`, `wspolna_walka_barbarzyncy`) — analogicznie do `hasNap`
+   * dla case '2', gate'uje case '4', żeby zawarty traktat nie pokazywał się jako kolejna
+   * klikalna propozycja na liście „Możliwe umowy".
+   */
+  hasGranice?: boolean;
   /** Etykieta traktatu, który zrywa wypowiedzenie wojny (np. „Pakt o nieagresji"); undefined = brak. */
   breaksTreatyLabel?: string;
   sellableTechCount: number;
@@ -159,6 +167,7 @@ function dualGate(
 const ALREADY_NOTE: Record<string, string> = {
   '2': 'już zawarty',
   '3': 'już zawarty',
+  '4': 'już zawarty',
   '5': 'już zawarta',
   '14': 'już zawarta',
 };
@@ -189,6 +198,7 @@ export function resolveDiplomacyActionLock(ctx: DiplomacyActionLockContext): Dip
     }
 
     case '4': { // Otwarte granice / prawo przemarszu
+      if (ctx.hasGranice) return { locked: false, active: true, note: ALREADY_NOTE['4']! };
       if (ctx.atWar) return { locked: true, note: 'zablokowane — trwa wojna' };
       const gate = dualGate(ctx.relTotal, ctx.zaufanie, ctx.progGraniceRelacja, ctx.progGraniceZaufanie);
       if (gate) return gate;

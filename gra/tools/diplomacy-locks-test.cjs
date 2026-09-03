@@ -106,6 +106,7 @@ function baseCtx(overrides = {}) {
     hasHandel: false,
     hasTradeConnection: true,
     hasSojusz: false,
+    hasGranice: false,
     breaksTreatyLabel: undefined,
     sellableTechCount: 1,
     buyableTechCount: 0,
@@ -284,6 +285,48 @@ eq(
   const r = resolveDiplomacyActionLock(baseCtx({ actionId: '2', hasNap: true }));
   eq(r.active, true, 'id2: active=true gdy hasNap');
   eq(r.note, 'już zawarty', 'id2: note "już zawarty"');
+}
+
+// ===========================================================================
+// 7b. id '4' Otwarte granice / prawo przemarszu -- "już zawarty"
+//     (P-DYPLO-PRZEMARSZ-DUPLIKAT-AKTYWNY-Q1: przed poprawką case '4' NIE sprawdzał
+//     traktatu już aktywnego -- panel "Możliwe umowy" pokazywał duplikat klikalnej
+//     propozycji mimo zawartego traktatu przemarszu).
+// ===========================================================================
+{
+  const r = resolveDiplomacyActionLock(baseCtx({ actionId: '4', hasGranice: true }));
+  eq(r.locked, false, 'id4: już zawarty traktat przemarszu -> nie locked');
+  eq(r.active, true, 'id4: active=true gdy hasGranice (fix P-DYPLO-PRZEMARSZ-DUPLIKAT-AKTYWNY-Q1)');
+  eq(r.note, 'już zawarty', 'id4: note "już zawarty" (forma męska -- Traktat)');
+}
+{
+  // Regresja: bez traktatu, progi spełnione -> nadal odblokowana (klikalna propozycja),
+  // dokładnie jak przed tym tematem.
+  const r = resolveDiplomacyActionLock(baseCtx({
+    actionId: '4', hasGranice: false, relTotal: 200, zaufanie: 200,
+  }));
+  eq(r.locked, false, 'id4: brak traktatu + progi spełnione -> odblokowana propozycja (regresja)');
+  eq(r.active, undefined, 'id4: active nieustawione, gdy traktat jeszcze nie zawarty');
+}
+{
+  // Regresja: bez traktatu, Zaufanie/Relacja za niskie -> nadal locked przez dualGate.
+  const r = resolveDiplomacyActionLock(baseCtx({
+    actionId: '4', hasGranice: false, relTotal: 0, zaufanie: 0,
+  }));
+  eq(r.locked, true, 'id4: brak traktatu + progi niespełnione -> locked przez dualGate (regresja)');
+}
+{
+  // Regresja: bez traktatu, trwa wojna -> locked (kolejność gate'ów po hasGranice zachowana).
+  const r = resolveDiplomacyActionLock(baseCtx({ actionId: '4', hasGranice: false, atWar: true }));
+  eq(r.locked, true, 'id4: brak traktatu + wojna -> locked (regresja)');
+  eq(r.note, 'zablokowane — trwa wojna', 'id4: note wojny niezmieniona (regresja)');
+}
+{
+  // hasGranice sprawdzany PRZED atWar (dokładnie jak hasNap w case '2') -- zawarty traktat
+  // pozostaje "już zawarty", nawet gdyby (skądinąd nierealny w silniku) stan wojny współistniał.
+  const r = resolveDiplomacyActionLock(baseCtx({ actionId: '4', hasGranice: true, atWar: true }));
+  eq(r.locked, false, 'id4: hasGranice sprawdzany przed atWar -- traktat już zawarty wygrywa (jak id2/hasNap)');
+  eq(r.active, true, 'id4: active=true nawet przy atWar=true, gdy hasGranice=true');
 }
 
 // ===========================================================================
