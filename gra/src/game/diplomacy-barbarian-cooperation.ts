@@ -8,7 +8,21 @@ import { hexDistance, isCivilianUnit } from '../units/setup';
 import type { RuntimeUnit } from '../units/setup';
 
 export const BARBARIAN_COOPERATION_RADIUS = 2;
+/**
+ * R-DYPLO-WSPOLNA-WALKA-BARB-KARENCJA-Q1 (korekta wcześniejszego zamierzenia właściciela):
+ * ta stała NIE JEST już czasem trwania samej umowy (patrz
+ * `BARBARIAN_COOPERATION_DURATION_CHOICES`/`BARBARIAN_COOPERATION_DEFAULT_DURATION_TURNS`
+ * niżej) — jest długością OKRESU KARENCJI PO WYGAŚNIĘCIU LUB JEDNOSTRONNYM USUNIĘCIU
+ * traktatu: przez tyle tur `hasAuthorizedBorderCrossing` nadal traktuje parę jak
+ * autoryzowaną do przemarszu wojskowego (bez kary Zaufania), dając czas na wycofanie
+ * jednostek — mechanizm karencji żyje w `diplomacy-treaties.ts`
+ * (`recordBarbarianCooperationGrace`/`isBarbarianCooperationGraceActive`).
+ */
 export const BARBARIAN_COOPERATION_TURNS = 3;
+/** Jawne wybory gracza w formularzu „Wspólna walka z barbarzyńcami" (Bezterminowy = osobna opcja, `treatyTurns: 0`). */
+export const BARBARIAN_COOPERATION_DURATION_CHOICES: readonly number[] = [5, 10, 15];
+/** Domyślny czas trwania, gdy payload nie niesie jawnego `treatyTurns` (środek widełek wyżej). */
+export const BARBARIAN_COOPERATION_DEFAULT_DURATION_TURNS = 10;
 
 /**
  * Jednostka kwalifikuje się do automatycznej pomocy tylko jako aktywna jednostka

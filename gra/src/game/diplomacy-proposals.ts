@@ -57,7 +57,7 @@ import {
   playerBenefitSurplusByRole,
   trimProposalForZeroBalance,
 } from './diplomacy-ai-offer-balance';
-import { BARBARIAN_COOPERATION_TURNS } from './diplomacy-barbarian-cooperation';
+import { BARBARIAN_COOPERATION_DEFAULT_DURATION_TURNS } from './diplomacy-barbarian-cooperation';
 
 export { AI_TRADE_GOLD_MAX, AI_TRIBUTE_PEACE_MAX, capAiGoldOffer } from './diplomacy-economy';
 
@@ -418,6 +418,36 @@ export function resolveTreatyDurationTurns(
   // `turns: 0` znaczyło tam dokładnie to, co znaczyło przed tą rundą (per traktat:
   // dla `umowa_szlakow` 1 tura po clampie, dla trybutu `ctx.turn + 0`), a nie „bezterminowy".
   return payload.turns;
+}
+
+/**
+ * R-DYPLO-WSPOLNA-WALKA-BARB-KARENCJA-Q1 (GOAL 1): czas trwania „Wspólna walka z
+ * barbarzyńcami" wybierany przez strony — 5/10/15 tur lub bezterminowo (`treatyTurns: 0`
+ * w formularzu, patrz `diplomacyTradeBasket.ts` case '4') — zastępuje dawny sztywny
+ * `BARBARIAN_COOPERATION_TURNS` jako czas TRWANIA (ta stała niesie dziś okres karencji,
+ * patrz jej JSDoc w `diplomacy-barbarian-cooperation.ts`). Reużywa TEN SAM,
+ * jednoznaczny odczyt `resolveTreatyDurationTurns` co `umowa_szlakow`/NAP, żeby
+ * `payload.treatyTurns` był jednym miejscem prawdy dla WSZYSTKICH traktatów z jawnym
+ * czasem — nie osobnym, nowym polem payloadu. RÓŻNICA wobec `umowa_szlakow`:
+ * brak jawnego wyboru (`undefined`, payloady bez `treatyTurns`) dla tej umowy NIE
+ * oznacza bezterminowo — domyślny czas to `BARBARIAN_COOPERATION_DEFAULT_DURATION_TURNS`,
+ * bliżej dawnego stałego zachowania (zawsze miała czas trwania, nigdy nie była
+ * domyślnie wieczysta).
+ */
+function resolveBarbarianCooperationWygasaTura(
+  payload: { turns?: number; treatyTurns?: number },
+  turn: number,
+): number | null {
+  const resolved = resolveTreatyDurationTurns(payload);
+  if (resolved === null) return null; // jawny wybór „Bezterminowy" (treatyTurns === 0)
+  const turns = resolved != null ? clamp(resolved, 5, 15) : BARBARIAN_COOPERATION_DEFAULT_DURATION_TURNS;
+  return turn + turns;
+}
+
+/** Etykieta wyniku negocjacji dla wybranego czasu trwania (liczba tur lub „bezterminowo"). */
+function barbarianCooperationDurationLabel(wygasaTura: number | null, turn: number): string {
+  if (wygasaTura === null) return 'bezterminowo';
+  return `${wygasaTura - turn} tur`;
 }
 
 /** §9.1 WIAR-NAP-IMP: NAP terminowy (10–20 tur) lub bezterminowy (wygasaTura null). */
@@ -1484,12 +1514,18 @@ export function evaluateProposal(
         : payload.borderMilitary
           ? RodzajTraktatu.PrawoWojskowePrzemarszu
           : RodzajTraktatu.OtwartGranice;
+      // GOAL 1 (R-DYPLO-WSPOLNA-WALKA-BARB-KARENCJA-Q1): czas trwania wybrany przez strony
+      // (5/10/15/bezterminowo), nie sztywne BARBARIAN_COOPERATION_TURNS — patrz
+      // resolveBarbarianCooperationWygasaTura wyżej.
+      const barbWygasa = payload.barbarianCooperation
+        ? resolveBarbarianCooperationWygasaTura(payload, ctx.turn)
+        : null;
       const deal = buildDeal(
         rodzaj,
         proposerOwnerId,
         responderOwnerId,
         ctx.turn,
-        payload.barbarianCooperation ? ctx.turn + BARBARIAN_COOPERATION_TURNS : null,
+        barbWygasa,
         undefined,
         undefined,
         undefined,
@@ -1499,7 +1535,7 @@ export function evaluateProposal(
       return {
         accepted: true,
         reason: payload.barbarianCooperation
-          ? 'Wspólna walka z barbarzyńcami i przemarsz — 3 tury'
+          ? `Wspólna walka z barbarzyńcami i przemarsz — ${barbarianCooperationDurationLabel(barbWygasa, ctx.turn)}`
           : marchTreatyLabel(payload.borderMilitary),
         deal,
       };
@@ -1872,12 +1908,17 @@ export function resolvePlayerAcceptsAiPending(
         : payload.borderMilitary
           ? RodzajTraktatu.PrawoWojskowePrzemarszu
           : RodzajTraktatu.OtwartGranice;
+      // GOAL 1 (R-DYPLO-WSPOLNA-WALKA-BARB-KARENCJA-Q1): patrz uzasadnienie przy pierwszym
+      // wystąpieniu case 'granice' wyżej w pliku (evaluateProposal).
+      const barbWygasa2 = payload.barbarianCooperation
+        ? resolveBarbarianCooperationWygasaTura(payload, turn)
+        : null;
       const deal = buildDeal(
         rodzaj,
         fromOwnerId,
         toOwnerId,
         turn,
-        payload.barbarianCooperation ? turn + BARBARIAN_COOPERATION_TURNS : null,
+        barbWygasa2,
         undefined,
         undefined,
         undefined,
@@ -1887,7 +1928,7 @@ export function resolvePlayerAcceptsAiPending(
       return {
         accepted: true,
         reason: payload.barbarianCooperation
-          ? 'Wspólna walka z barbarzyńcami i przemarsz — 3 tury'
+          ? `Wspólna walka z barbarzyńcami i przemarsz — ${barbarianCooperationDurationLabel(barbWygasa2, turn)}`
           : marchTreatyLabel(payload.borderMilitary),
         deal,
       };

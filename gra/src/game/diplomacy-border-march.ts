@@ -8,8 +8,10 @@ import { RodzajTraktatu } from '../types/diplomacy';
 import type { Relation } from './diplomacy';
 import {
   type ActiveDeal,
+  type BarbarianCooperationGraceState,
   hasTreaty,
   normalizeTreatyKind,
+  isBarbarianCooperationGraceActive,
 } from './diplomacy-treaties';
 import { diploPairKey } from './diplomacy-pn-engine';
 
@@ -34,6 +36,15 @@ export interface BorderMarchCheckContext {
   isMilitary: boolean;
   /** Opcjonalnie — status wojny = brak kary. */
   relation?: Relation;
+  /**
+   * R-DYPLO-WSPOLNA-WALKA-BARB-KARENCJA-Q1 (GOAL 2) — okres karencji po wygaśnięciu/
+   * jednostronnym usunięciu WspolnaWalkaBarbarzyncy (patrz `diplomacy-treaties.ts`).
+   * Oba pola opcjonalne i BACKWARD-COMPATIBLE: brak = zachowanie identyczne jak przed
+   * tą rundą (żadna dodatkowa autoryzacja). Wymaga `turn` do sprawdzenia, czy okno
+   * karencji dla tej pary jeszcze trwa — bez tury nie da się tego rozstrzygnąć czysto.
+   */
+  barbarianCooperationGrace?: BarbarianCooperationGraceState;
+  turn?: number;
 }
 
 export interface BorderMarchParams {
@@ -124,7 +135,7 @@ export function hasAuthorizedBorderCrossing(
   }
 
   if (isMilitary) {
-    return hasTreaty(
+    const hasActiveTreaty = hasTreaty(
       [...treaties],
       intruderOwnerId,
       territoryOwnerId,
@@ -135,6 +146,20 @@ export function hasAuthorizedBorderCrossing(
       && (normalizeTreatyKind(d.rodzaj) === RodzajTraktatu.WspolnaWalkaBarbarzyncy
         || d.wspolnaWalkaBarbarzyncy === true),
     );
+    if (hasActiveTreaty) return true;
+    // GOAL 2 — okres karencji: traktat WspolnaWalkaBarbarzyncy już nie istnieje w
+    // `treaties`, ale para jest nadal autoryzowana przez `BARBARIAN_COOPERATION_TURNS`
+    // tur od wygaśnięcia/usunięcia (patrz JSDoc `BorderMarchCheckContext.
+    // barbarianCooperationGrace` wyżej).
+    if (ctx.barbarianCooperationGrace && ctx.turn !== undefined) {
+      return isBarbarianCooperationGraceActive(
+        ctx.barbarianCooperationGrace,
+        intruderOwnerId,
+        territoryOwnerId,
+        ctx.turn,
+      );
+    }
+    return false;
   }
 
   return hasTreaty(

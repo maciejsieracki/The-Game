@@ -54,6 +54,71 @@ export interface HandelSurowiecCyklicznyItem {
   buyerNieZaplacilTuryZRzedu?: number;
 }
 
+/**
+ * R-DYPLO-WSPOLNA-WALKA-BARB-KARENCJA-Q1 (GOAL 2) — okres karencji PO wygaśnięciu lub
+ * jednostronnym usunięciu traktatu WspolnaWalkaBarbarzyncy: para nadal ma prawo
+ * przemarszu wojskowego (bez kary Zaufania) przez `BARBARIAN_COOPERATION_TURNS`
+ * (`diplomacy-barbarian-cooperation.ts`) tur, choć współpraca bojowa już nie działa.
+ *
+ * ŚWIADOMIE osobna, ZEWNĘTRZNA struktura, NIE pole na `ActiveDeal`/`activeDeals` —
+ * traktat w tym oknie już NIE ISTNIEJE jako umowa (dispatch GOAL 2 wprost to dopuszcza).
+ * Rozważona i ODRZUCONA alternatywa: zostawić w `activeDeals` „kikut" traktatu z
+ * przedłużonym `wygasaTura`. Powody odrzucenia (patrz raport rundy 1):
+ * (1) złamałoby istniejący, chroniony test `diplomacy-barbarian-cooperation-test.cjs`
+ * (`expireTreaties(deal, 3).length === 0` — asercja, że umowa naprawdę znika z
+ * `activeDeals` na granicy tury 3, GOAL 4 zabrania nawet zmiany LICZBY); (2) `main.ts`
+ * (`activeTreatiesForPair`) buduje panel „Aktywne traktaty" WPROST z `activeDeals` —
+ * kikut pokazywałby się tam jako wciąż w pełni aktywny, klikalny traktat (przycisk
+ * „Zerwij" zadziałałby na nim PONOWNIE, drugi raz naliczając karę zerwania).
+ *
+ * Klucz pary jest KANONICZNY (`pairKey`, jak `ActiveDeal.strony`) — kolejność argumentów
+ * przy zapisie/odczycie nie ma znaczenia.
+ */
+export interface BarbarianCooperationGraceEntry {
+  strony: [number, number];
+  /** Ostatnia tura karencji WŁĄCZNIE — od tej tury+1 kara wraca do naliczania normalnie. */
+  graceUntilTurn: number;
+}
+
+export type BarbarianCooperationGraceState = readonly BarbarianCooperationGraceEntry[];
+
+/**
+ * Zapisuje/odświeża wpis karencji dla pary (a,b) do `graceUntilTurn` włącznie. Wywołujący
+ * (dziś main.ts — WYMAGA wpięcia w `runDiplomacyTurnTick`/`breakTreatyVoluntarily`, poza
+ * allowlistą tej rundy, patrz raport) sam wylicza `graceUntilTurn` — ta funkcja NIE zna
+ * `BARBARIAN_COOPERATION_TURNS` celowo (uniknięcie importu cyklicznego z
+ * `diplomacy-barbarian-cooperation.ts`, które importuje STĄD `hasBarbarianCooperationTreaty`).
+ */
+export function recordBarbarianCooperationGrace(
+  state: BarbarianCooperationGraceState,
+  a: number,
+  b: number,
+  graceUntilTurn: number,
+): BarbarianCooperationGraceEntry[] {
+  const [p0, p1] = pairKey(a, b);
+  const without = state.filter(e => !(e.strony[0] === p0 && e.strony[1] === p1));
+  return [...without, { strony: [p0, p1], graceUntilTurn }];
+}
+
+/** Analogon `expireTreaties` dla stanu karencji — usuwa wpisy, których okno minęło. */
+export function pruneExpiredBarbarianCooperationGrace(
+  state: BarbarianCooperationGraceState,
+  turn: number,
+): BarbarianCooperationGraceEntry[] {
+  return state.filter(e => e.graceUntilTurn >= turn);
+}
+
+/** Czy para (a,b) jest DZIŚ (w turze `turn`) w oknie karencji po WspolnaWalkaBarbarzyncy. */
+export function isBarbarianCooperationGraceActive(
+  state: BarbarianCooperationGraceState,
+  a: number,
+  b: number,
+  turn: number,
+): boolean {
+  const [p0, p1] = pairKey(a, b);
+  return state.some(e => e.strony[0] === p0 && e.strony[1] === p1 && e.graceUntilTurn >= turn);
+}
+
 /** Aktywny traktat między dwoma ownerId (gra używa number). */
 export interface ActiveDeal {
   id: string;

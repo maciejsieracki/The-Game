@@ -423,6 +423,7 @@ import { collectAtkRosterNearCity, collectBattleRoster as collectBattleRosterPur
 import {
   collectBarbarianCooperationUnits,
   mergeBattleRosterWithBarbarianCooperation,
+  BARBARIAN_COOPERATION_TURNS,
 } from './game/diplomacy-barbarian-cooperation';
 import { canCaptureCityWithoutBattle, hasCityDefenders, survivorsLiveSet } from './game/siegeDefenders';
 import { getCityFood } from './game/turn-economy';
@@ -1223,6 +1224,8 @@ import {
   allianceFormalKindBetween,
   type HandelSurowiecCyklicznyItem,
   type AllianceObligation,
+  type BarbarianCooperationGraceState,
+  recordBarbarianCooperationGrace,
 } from './game/diplomacy-treaties';
 import { empireDiploResourceFlowPerTurn } from './game/empire-diplo-resource-flow';
 import {
@@ -4562,6 +4565,11 @@ async function boot(): Promise<void> {
         treaties: activeDeals,
         isMilitary: pair.isMilitary === true,
         relation: getDiploRelation(pair.intruderOwnerId, pair.territoryOwnerId),
+        // R-DYPLO-WSPOLNA-WALKA-BARB-KARENCJA-Q1 (GOAL 2, decision-abc.md pkt 3) — okres
+        // karencji po wygaśnięciu/usunięciu WspolnaWalkaBarbarzyncy (oba pola opcjonalne,
+        // backward-compatible — patrz JSDoc BorderMarchCheckContext).
+        barbarianCooperationGrace,
+        turn,
       });
       const { relations, penalizedPairs } = applyUnauthorizedBorderPenalties(
         enriched,
@@ -7571,6 +7579,17 @@ async function boot(): Promise<void> {
     let diplomaticContactTrackingReady = false;
     /** v1.1: aktywne traktaty dyplomatyczne (save/load meta.diplomacyDeals). */
     let activeDeals: ActiveDeal[] = [];
+    /**
+     * R-DYPLO-WSPOLNA-WALKA-BARB-KARENCJA-Q1 (GOAL 2, runda 2 — wpięcie main.ts,
+     * decision-abc.md pkt 3): okres karencji po wygaśnięciu/jednostronnym usunięciu
+     * traktatu WspolnaWalkaBarbarzyncy — żyje TU, obok `activeDeals` (traktat już nie
+     * istnieje w `activeDeals` w tym oknie, patrz JSDoc `BarbarianCooperationGraceEntry`
+     * w diplomacy-treaties.ts). Runtime-only, poza allowlistą tej rundy — NIE
+     * persystowane w save/load meta (okno krótkie, 3 tury; brak wpisu po wczytaniu
+     * zapisu w środku okna = zachowanie sprzed tej rundy, nie regresja stanu istniejącego
+     * przed R-DYPLO-WSPOLNA-WALKA-BARB-KARENCJA-Q1).
+     */
+    let barbarianCooperationGrace: BarbarianCooperationGraceState = [];
     /** Jednostki z otwartej bitwy są niedostępne dla drugiej bitwy do jej zakończenia. */
     const activeBattleUnitIds = new Set<string>();
     /**
@@ -16735,6 +16754,16 @@ async function boot(): Promise<void> {
       activeDeals = removeTreatiesById(activeDeals, [dealId]);
       zlozeGrants = deactivateZlozeGrantsForDeal(zlozeGrants, dealId);
 
+      // R-DYPLO-WSPOLNA-WALKA-BARB-KARENCJA-Q1 (GOAL 2/3, decision-abc.md pkt 2) — jednostronne
+      // zerwanie WspolnaWalkaBarbarzyncy otwiera TEN SAM mechanizm karencji co naturalne
+      // wygaśnięcie (runDiplomacyTurnTick powyżej), zakotwiczony na turze USUNIĘCIA (`turn`,
+      // zmienna zamknięcia — patrz np. n3Window wyżej), nie na oryginalnym `wygasaTura`.
+      if (normalizeTreatyKind(deal.rodzaj) === RodzajTraktatu.WspolnaWalkaBarbarzyncy || deal.wspolnaWalkaBarbarzyncy === true) {
+        barbarianCooperationGrace = recordBarbarianCooperationGrace(
+          barbarianCooperationGrace, a, b, turn + BARBARIAN_COOPERATION_TURNS - 1,
+        );
+      }
+
       const cur = getDiploRelation(a, b);
       const ev = isTrade ? 'zerwanie_handlu' as const : 'zerwanie_traktatu' as const;
       let next = applyDiploEventTracked(a, b, cur, ev);
@@ -17865,6 +17894,16 @@ async function boot(): Promise<void> {
         // to wspólna zasługa, nie asymetryczna wina jak kary N1–N7).
         const kindExpired = normalizeTreatyKind(d.rodzaj);
         const [pa, pb] = d.strony;
+        // R-DYPLO-WSPOLNA-WALKA-BARB-KARENCJA-Q1 (GOAL 2, decision-abc.md pkt 1) — traktat
+        // WspolnaWalkaBarbarzyncy wygasł NATURALNIE tutaj (nie zerwany dobrowolnie —
+        // patrz breakTreatyVoluntarily, ten sam mechanizm, osobne wywołanie na osobnym
+        // zdarzeniu): otwiera okres karencji, w którym przemarsz wojskowy pary NADAL jest
+        // autoryzowany (hasAuthorizedBorderCrossing) mimo braku traktatu w activeDeals.
+        if (kindExpired === RodzajTraktatu.WspolnaWalkaBarbarzyncy || d.wspolnaWalkaBarbarzyncy === true) {
+          barbarianCooperationGrace = recordBarbarianCooperationGrace(
+            barbarianCooperationGrace, pa, pb, turn + BARBARIAN_COOPERATION_TURNS - 1,
+          );
+        }
         if (kindExpired === 'sojusz_defensywny' || kindExpired === 'sojusz_pelny' || kindExpired === RodzajTraktatu.SojuszWojskowy) {
           appendWiarygodnoscEvent(pa, 'dotrwanie_sojuszu', _diplomacyParams().wiarygodnoscP1FiniszSojusz);
           appendWiarygodnoscEvent(pb, 'dotrwanie_sojuszu', _diplomacyParams().wiarygodnoscP1FiniszSojusz);

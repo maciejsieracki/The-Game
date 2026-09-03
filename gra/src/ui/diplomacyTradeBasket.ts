@@ -31,6 +31,7 @@ import {
   type WartoscPozycjaTyp,
 } from '../game/diplomacy-value-catalog';
 import { HANDEL_ZLOZE_CENA_BAZA } from '../game/diplomacy-deposit-trade';
+import { BARBARIAN_COOPERATION_DEFAULT_DURATION_TURNS } from '../game/diplomacy-barbarian-cooperation';
 import unitsJson from '../../data/units.json';
 import techJson from '../../data/tech.json';
 import { pushOverlay, popOverlay } from './escapeOverlayStack';
@@ -583,9 +584,13 @@ function defaultTreatyState(actionId: string, initial?: TradeBasketInitial, ctx?
   // własna sekcja formularza („Ręcznie: 1–20 tur lub 0 = bezterminowy"), pakt nieagresji i
   // reszta traktatów — 10–20. Twarde `Math.max(10, …)` dla wszystkich po cichu podnosiło
   // prefill kontroferty '5' z np. 7 na 10 tur, czyli zmieniało warunki leżące na stole.
-  const minManualTurns = actionId === '5' ? 1 : 10;
+  // R-DYPLO-WSPOLNA-WALKA-BARB-KARENCJA-Q1 (GOAL 1): widełki tej umowy są 5–15 tur
+  // (`BARBARIAN_COOPERATION_DURATION_CHOICES`), niższe niż domyślne 10–20 dla reszty
+  // traktatów — inaczej prefill „5" z kontroferty byłby po cichu podnoszony do 10.
+  const minManualTurns = actionId === '5' ? 1 : (actionId === '4' ? 5 : 10);
+  const maxManualTurns = actionId === '4' ? 15 : 20;
   const turns = initialTurns != null
-    ? (initialTurns <= 0 ? 0 : Math.max(minManualTurns, Math.min(20, initialTurns)))
+    ? (initialTurns <= 0 ? 0 : Math.max(minManualTurns, Math.min(maxManualTurns, initialTurns)))
     : defaultTurns;
   return {
     turns,
@@ -649,13 +654,32 @@ function treatySectionHtml(actionId: string, ctx: NegotiationModalContext, state
       // W odróżnieniu od `cdb-treaty-tech-dir`/`cdb-treaty-tech-pay` (grupa wzajemnie
       // wykluczająca) to DWA NIEZALEŻNE przełączniki — każdy trzyma własny stan `selected`,
       // patrz listener w refresh() niżej.
+      // R-DYPLO-WSPOLNA-WALKA-BARB-KARENCJA-Q1 (GOAL 1): czas trwania wybierany przez strony
+      // (5/10/15/bezterminowo) zamiast dawnego sztywnego „(3 tury)" w etykiecie przycisku —
+      // wzorzec chipów identyczny jak `turnChips` case '2' (RECON dispatchu), inne wartości.
+      // Chipy pokazane WYŁĄCZNIE gdy przycisk współpracy jest zaznaczony — dla zwykłego
+      // przemarszu (bez barb-coop) traktat pozostaje bezterminowy jak dziś, bez zmian.
+      const barbTurnsChips = [5, 10, 15].map(t =>
+        '<button type="button" class="cdb-chip cdb-chip-barbturns' + (state.turns === t ? ' selected' : '')
+        + '" data-turns="' + t + '">' + t + '</button>',
+      ).join('');
+      const barbIndefiniteSelected = state.turns <= 0 ? ' selected' : '';
+      const barbDurationSection = state.barbarianCooperation
+        ? '<label for="cdb-treaty-barbturns">Czas współpracy</label>'
+          + '<div class="cdb-chip-row cdb-turn-presets">' + barbTurnsChips
+          + '<button type="button" class="cdb-chip cdb-chip-barbturns' + barbIndefiniteSelected
+          + '" data-turns="0">Bezterminowy</button></div>'
+          + '<input type="hidden" id="cdb-treaty-barbturns" class="cdb-treaty-barbturns" value="'
+          + (state.turns <= 0 ? 0 : state.turns) + '" />'
+        : '';
       body = '<label>Traktat przemarszu</label>'
         + '<div class="cdb-chip-row">'
         + '<button type="button" id="cdb-treaty-mil" class="cdb-chip cdb-treaty-mil'
         + (state.borderMilitary ? ' selected' : '') + '">Wariant wojskowy (+ opłata)</button>'
         + '<button type="button" id="cdb-treaty-barb" class="cdb-chip cdb-treaty-barb'
-        + (state.barbarianCooperation ? ' selected' : '') + '">Wspólna walka z barbarzyńcami (3 tury)</button>'
+        + (state.barbarianCooperation ? ' selected' : '') + '">Wspólna walka z barbarzyńcami</button>'
         + '</div>'
+        + barbDurationSection
         + '<p class="cdb-sub">Opłata cywilne: ' + feeC + ' ¤ · wojskowe: ' + feeM + ' ¤ (jednorazowo)</p>';
       break;
     }
@@ -812,6 +836,14 @@ function readTreatyStateFromDom(actionId: string, prev: TreatyFormState, ctx?: N
     // wyżej w tej funkcji).
     state.borderMilitary = document.querySelector('.cdb-treaty-mil')?.classList.contains('selected') ?? false;
     state.barbarianCooperation = document.querySelector('.cdb-treaty-barb')?.classList.contains('selected') ?? false;
+    // GOAL 1 (R-DYPLO-WSPOLNA-WALKA-BARB-KARENCJA-Q1): pole istnieje w DOM WYŁĄCZNIE gdy
+    // barbarianCooperation jest zaznaczone (patrz treatySectionHtml) — brak pola = zachowaj
+    // `prev.turns`, ten sam wzorzec co gałąź '8' wyżej w tej funkcji.
+    const barbTurnsEl = document.querySelector('.cdb-treaty-barbturns') as HTMLInputElement | null;
+    if (barbTurnsEl) {
+      const t = parseInt(barbTurnsEl.value, 10);
+      state.turns = Number.isFinite(t) ? (t <= 0 ? 0 : Math.max(5, Math.min(15, t))) : prev.turns;
+    }
   } else if (actionId === '8') {
     // R-DYPLO-TRAKTAT-HANDLOWY-WYBOR-CZASU-Q1 (Obrona runda 1, piąty przebieg Evaluatora,
     // nota do zarzutu 1): DOKŁADNIE ta sama wada, którą naprawiono wcześniej w gałęzi '5'.
@@ -1123,6 +1155,16 @@ function buildTreatyPayload(
       payload.goldOnce = state.borderMilitary
         ? (ctx.borderFeeMilitary ?? 40)
         : (ctx.borderFeeCivil ?? 20);
+      // GOAL 1 (R-DYPLO-WSPOLNA-WALKA-BARB-KARENCJA-Q1): czas współpracy jedzie w
+      // `treatyTurns` — TO SAMO pole i TA SAMA konwencja (0 = bezterminowy) już
+      // wykorzystywana przez case '2'/'5'/'8' wyżej, odczytana w silniku wyłącznie przez
+      // `resolveTreatyDurationTurns`/`resolveBarbarianCooperationWygasaTura`. Ustawiane
+      // WYŁĄCZNIE gdy barbarianCooperation jest zaznaczone — zwykły przemarsz bez
+      // współpracy zostaje bezterminowy jak dziś (silnik ignoruje treatyTurns, gdy
+      // payload.barbarianCooperation jest falsy).
+      if (state.barbarianCooperation) {
+        payload.treatyTurns = state.turns;
+      }
       break;
     case '8':
       payload.tributeMode = state.tributeMode;
@@ -2553,6 +2595,22 @@ export function showTradeBasketModal(
     box.querySelectorAll('.cdb-treaty-mil, .cdb-treaty-barb').forEach(btn => {
       btn.addEventListener('click', () => {
         btn.classList.toggle('selected');
+        refresh();
+      });
+    });
+
+    // GOAL 1 (R-DYPLO-WSPOLNA-WALKA-BARB-KARENCJA-Q1): chipy czasu trwania „Wspólna walka
+    // z barbarzyńcami" — klasa/input DEDYKOWANE (`.cdb-chip-barbturns`/`.cdb-treaty-
+    // barbturns`), osobne od `.cdb-chip-turn`/`.cdb-treaty-turns` (case '2'/'5'/'8'), żeby
+    // NIE dzielić z nimi wspólnego klampu 10–20 zapisanego w listenerze `.cdb-chip-turn`
+    // wyżej — widełki tej umowy to 5–15 (BARBARIAN_COOPERATION_DURATION_CHOICES).
+    box.querySelectorAll('.cdb-chip-barbturns').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const turns = parseInt(btn.getAttribute('data-turns') ?? String(BARBARIAN_COOPERATION_DEFAULT_DURATION_TURNS), 10);
+        const val = turns <= 0 ? 0 : Math.max(5, Math.min(15, turns));
+        const inp = box.querySelector('.cdb-treaty-barbturns') as HTMLInputElement | null;
+        if (inp) inp.value = String(val);
+        box.querySelectorAll('.cdb-chip-barbturns').forEach(c => c.classList.toggle('selected', c === btn));
         refresh();
       });
     });
