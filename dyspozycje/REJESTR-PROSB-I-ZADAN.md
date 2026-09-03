@@ -4084,10 +4084,15 @@ deployu ROBOCZA na końcu z raportem. Orkiestrator kontynuuje bez pytania o zgod
   nieprzemierzonej przez żaden test. (2) drobny dług — przypisanie `pct` w
   ZASADZIE 3 nie przechodzi przez `clampPodzialPracyBudynkiPercent` w
   odróżnieniu od 3 innych miejsc w tym samym pliku; sufit 50% strzeżony tam
-  wyłącznie rozsądną wartością stałej, nie strukturalnie. **Obrona
-  DISPATCHOWANA** (Sonnet 5, effort high) — z jawną instrukcją: jeśli żywy
-  dowód nie potwierdzi realnego zwiększenia budowanych ulepszeń, przeformułować
-  raport uczciwie zamiast wymuszać PASS.
+  wyłącznie rozsądną wartością stałej, nie strukturalnie. Obrona (`d0ecd3db`)
+  **uczciwie NIE wymusiła PASS na zarzucie 1** — zamiast tego zmierzyła INNY
+  realny konsument tej samej puli (zakładanie miast AI): 5 ziaren, +42% miast
+  założonych podczas nadwyżki, spójne we wszystkich ziarnach — i jawnie
+  poinformowała, że tempo budowy ulepszeń TERENU widocznych na mapie (oryginalny
+  objaw) się nie poprawia i wymaga osobnego reconu. Zarzut 2 naprawiony
+  (clamping dodany + test mutacyjny). Test tematu 13/13. **Final Control
+  DISPATCHOWANY** (Sonnet 5, effort high) — ma dokończyć
+  `map-gen-regression-test.cjs`, który nie zdążył się zakończyć w oknie Obrony.
 - **R-MIASTA-REBELIA-CICHA-BEZ-POWIADOMIENIA-Q1** — **ZINTEGROWANE do `main`
   (`16ad0841`)**. Dwa nowe `showHintMessage` przy zmianie `city.ownerId` na/z
   `REBEL_FACTION_OWNER_ID` (bunt: "zbuntowało się", NIE "podbite"; przejęcie
