@@ -127,6 +127,21 @@ export function planMajorAiDifficultyStartBonuses(
   return { units, cities: extraCities, extraCitiesBlocked };
 }
 
+/**
+ * R-MIASTA-PANSTWA-STARTOWE-JEDNOSTKI-Q1: jednostki startowe MIASTA-PAŃSTWA (nie major
+ * AI) wg `cityStateDifficulty` (osobny suwak od `_menuDifficulty`/AI, main.ts). Miasta-
+ * państwa NIE kwalifikują się do `qualifiesForMajorAiDifficultyBonus` (isCityState=true
+ * je wyklucza z bonusu major AI wyżej w tym pliku) — to jest ich WŁASNA, prostsza ścieżka:
+ * liczba jednostek zależy WYŁĄCZNIE od poziomu trudności miast-państw, nie od
+ * DifficultyParams.startoweJednostki (to pole karmi inną skalę/inne źródło dla major AI).
+ * easy=0 (zachowanie dzisiejsze, bez regresji) / normal=1 / hard=2.
+ */
+export function cityStateStartUnitCount(difficulty: 'easy' | 'normal' | 'hard'): number {
+  if (difficulty === 'hard') return 2;
+  if (difficulty === 'normal') return 1;
+  return 0;
+}
+
 /** Sąsiad stolicy nadający się na dodatkowe miasto startowe AI. */
 export function pickBonusCityHex(
   map: GameMap,

@@ -34,6 +34,8 @@ export {
   planMajorAiDifficultyStartBonuses,
   pickBonusCityHex,
   applyDifficultyCombatToUnitDef,
+  cityStateStartUnitCount,
+  AI_DIFFICULTY_BONUS_UNIT_TYPE,
 } from ${JSON.stringify(SRC + '/game/ai-difficulty-bonus')};
 export { isBarbarian, BARBARIAN_OWNER_ID } from ${JSON.stringify(SRC + '/game/barbarians')};
 `, 'utf8');
@@ -66,6 +68,8 @@ const {
   applyDifficultyCombatToUnitDef,
   isBarbarian,
   BARBARIAN_OWNER_ID,
+  cityStateStartUnitCount,
+  AI_DIFFICULTY_BONUS_UNIT_TYPE,
 } = require(BUNDLE);
 
 let passed = 0;
@@ -234,6 +238,14 @@ console.log('\n--- T-DB-g: chooseAIResearch lowercase spichlerz id (P0-2) ---');
   const pickLowerOnly = chooseAIResearch(RESEARCH_FIXTURE, [], { allBuiltBuildings: ['spichlerz'] });
   const pickUpperOnly = chooseAIResearch(RESEARCH_FIXTURE, [], { allBuiltBuildings: ['Spichlerz'] });
   eq(pickLowerOnly, pickUpperOnly, 'spichlerz lowercase == Spichlerz uppercase (dual-check)');
+}
+
+console.log('\n--- T-DB-i: cityStateStartUnitCount (R-MIASTA-PANSTWA-STARTOWE-JEDNOSTKI-Q1) ---');
+{
+  eq(cityStateStartUnitCount('easy'), 0, 'easy -> 0 jednostek (zero regresji domyslnej)');
+  eq(cityStateStartUnitCount('normal'), 1, 'normal -> 1 jednostka');
+  eq(cityStateStartUnitCount('hard'), 2, 'hard -> 2 jednostki');
+  eq(AI_DIFFICULTY_BONUS_UNIT_TYPE, 'Wojownik', 'typ jednostki startowej = ten sam wzorzec co major AI (Wojownik)');
 }
 
 console.log('\n========================================');

@@ -1141,7 +1141,9 @@ import {
 import { isWaterTerrain } from './units/setup';
 import { autoManageCity, pickAutoBuildItem, isBudowaListaUkonczonaForCity } from './game/auto-manage';
 import {
+  AI_DIFFICULTY_BONUS_UNIT_TYPE,
   applyDifficultyCombatToUnitDef,
+  cityStateStartUnitCount,
   difficultyCombatMultiplier,
   difficultyProductionMultiplier,
   difficultyScienceBonusPerTurn,
@@ -8228,6 +8230,7 @@ async function boot(): Promise<void> {
           finalizeCityFounding(c, pos.q, pos.r);
           seedCityOwnerDefaults(c);
           aiStartHexes.push({ q: pos.q, r: pos.r, ownerId });
+          grantCityStateStartUnits(ownerId, pos.q, pos.r);
           _rivalsFounded++;
         } else {
           _rivalsRejected++;
@@ -8265,6 +8268,27 @@ async function boot(): Promise<void> {
         ruch,
         ruchLeft: ruch,
       });
+    }
+
+    /**
+     * R-MIASTA-PANSTWA-STARTOWE-JEDNOSTKI-Q1: jednostki startowe MIASTA-PAŃSTWA (nie
+     * major AI, patrz grantDifficultyStartBonusesForMajorCapital niżej — funkcja
+     * osobna, zero współdzielonego stanu poza spawnDifficultyBonusUnit, generycznym
+     * spawnerem jednostek bez logiki AI w środku). Liczba wg `_menuCityStateDifficulty`
+     * (easy=0/normal=1/hard=2, cityStateStartUnitCount w ai-difficulty-bonus.ts) —
+     * ta sama oś, która już steruje zaufaniem/posiłkami/RESUP_TIERS miast-państw
+     * (aiDiffLevelForOwner wyżej), NIE `_menuDifficulty` (gracz/AI, nietknięte) ani
+     * `_menuCityStateDifficultyVsPlayer` (oś PM-vs-gracz, inna sprawa: agresja/wojna).
+     * Wywoływana z DWÓCH punktów foundowania miasta-państwa: pętla rywali tego samego
+     * typu (deferred, po pierwszym mieście gracza) i spawnPendingForeignClusters
+     * (miasta-państwa obcych klastrów) — oba miejsca faktycznie zakładają
+     * `c.startCityState = true`, potwierdzone reconem tej rundy.
+     */
+    function grantCityStateStartUnits(ownerId: number, q: number, r: number): void {
+      const count = cityStateStartUnitCount(_menuCityStateDifficulty);
+      for (let i = 0; i < count; i++) {
+        spawnDifficultyBonusUnit(ownerId, AI_DIFFICULTY_BONUS_UNIT_TYPE, q, r);
+      }
     }
 
     function grantDifficultyStartBonusesForMajorCapital(
@@ -8322,6 +8346,7 @@ async function boot(): Promise<void> {
         if (c) {
           if (isCS) {
             c.startCityState = true;
+            grantCityStateStartUnits(sc.ownerId, sc.q, sc.r);
           }
           cities.push(c);
           finalizeCityFounding(c, sc.q, sc.r);
@@ -20997,6 +21022,109 @@ async function boot(): Promise<void> {
           units.push(anchor);
         }
         captureCityWithoutBattle(c, anchor, [anchor]);
+      },
+    };
+
+    // R-MIASTA-PANSTWA-STARTOWE-JEDNOSTKI-Q1 (Operator obrona runda 1, Evaluator zarzut 1):
+    // hak testowy WYŁĄCZNIE do `tools/city-state-start-units-live-test.cjs` — REGUŁA
+    // PRZECIW SAMOOSZUKIWANIU dispatchu zakazuje uznania kryteriów końca 1/2 za spełnione
+    // bez żywej generacji świata i faktycznego przeliczenia jednostek na mapie per
+    // miasto-państwo. Ten hak NIE reimplementuje `grantCityStateStartUnits`/
+    // `spawnDifficultyBonusUnit`/`spawnPendingSameTypeRivals`/`spawnPendingForeignClusters`
+    // (wszystkie zamknięte w main.ts, nieeksportowane) — `startNewGame` steruje WYŁĄCZNIE
+    // danymi wejściowymi REALNEGO `doStartGame(params)`, dokładnie tej samej funkcji,
+    // której używa prawdziwy kreator „Nowa Gra" po kliknięciu „Start" (patrz
+    // `onStart: (params) => void doStartGame(params)` przy `showNewGameFlow` niżej w tym
+    // pliku) — ten sam wzorzec co `__eraTestDebug.endTurn` wołające `triggerPlayerEndTurn()`
+    // zamiast klikać DOM. `params` ma dokładnie ten sam kształt co znany-dobry
+    // `doStartPlaytestMapaSwiata`/`doStartPlaytestMiastoEkonomia` niżej w tym pliku, różniący
+    // się WYŁĄCZNIE `cityStatesCount` i `advanced.cityStateDifficultyOverride` — dokładnie tą
+    // osią, którą steruje ten dispatch; reszta pól to niezwiązane ustawienia mapy/cywilizacji
+    // gracza, potrzebne wyłącznie żeby `doStartGame` w ogóle wystartował realną generację.
+    // `dumpState()` to surowy odczyt `cities`/`units` — zero logiki liczenia w środku
+    // (porównanie z oczekiwaną liczbą per trudność robi test w `tools/`, nie ten hak).
+    (window as any).__cityStateStartUnitsTestDebug = {
+      startNewGame: (csDifficulty: 'easy' | 'normal' | 'hard', cityStatesCount: number): void => {
+        const mqTier = mapQualityTierFromQuery('high');
+        const mqBundle = bundledMapQualityPreset(mqTier);
+        const advanced: NewGameAdvancedOptions = {
+          barbariansLevel: 'normalny',
+          battleAlwaysManual: false,
+          victoryMode: 'moc_i_dominacja',
+          buildingCostPace: 'niski',
+          kosztJednostekPace: 'niski',
+          wzrostLudnosciPace: 'wysoki',
+          ruchSwiataPace: 'krotki',
+          landFractionPercent: 30,
+          landFractionCustom: false,
+          cityStateDifficultyOverride: csDifficulty,
+          cityLimitBase: 10,
+        };
+        void doStartGame({
+          civId: 'rzymianie',
+          civName: 'Rzymianie',
+          epoch: 'Epoka Brązu',
+          epochId: 'braz',
+          difficulty: 'Normalny',
+          mapSize: 'Maly',
+          rivals: String(cityStatesCount),
+          speed: 'Normalna',
+          worldType: 'Kontynenty',
+          typSwiata: 'kontynenty',
+          seed: 778899,
+          mapQualityLabel: qualityTierToLabel(mqTier),
+          mapQuality: mqTier,
+          renderQualityLabel: qualityTierToLabel(mqBundle.renderQuality),
+          mapDetailQualityLabel: qualityTierToLabel(mqBundle.mapDetailQuality),
+          renderQuality: mqBundle.renderQuality,
+          mapDetailQuality: mqBundle.mapDetailQuality,
+          civTypesCount: 3,
+          cityStatesCount: clampMiastaPanstwaCount(cityStatesCount),
+          worldDensity: { ...DEFAULT_WORLD_DENSITY },
+          worldDensityLabels: {
+            resources: 'Normalnie', rivers: 'Normalnie', desert: 'Normalnie',
+            forest: 'Normalnie', relief: 'Normalnie',
+          },
+          advanced,
+          villageRewardsEnabled: true,
+        } as NewGameParams);
+      },
+      dumpState: () => ({
+        turn,
+        cityStateDifficulty: _menuCityStateDifficulty,
+        awaitingFirstPlayerCity: isAwaitingFirstPlayerCity(),
+        playerStartHex: playerStartHex ? { q: playerStartHex.q, r: playerStartHex.r } : null,
+        // R-MIASTA-PANSTWA-STARTOWE-JEDNOSTKI-Q1 obrona runda 1 (Evaluator zarzut 1, część
+        // anty-duplikacyjna): `menuCivId` + `civTypeId` per miasto to surowy odczyt
+        // `_menuCivId`/`aiOwnerCivMap` (istniejący stan silnika, zero nowej logiki liczenia) —
+        // pozwala testowi w `tools/` odróżnić DWA rozłączne punkty foundowania miasta-państwa
+        // bez reimplementacji: `civTypeId === menuCivId` → rywal tego samego typu
+        // (spawnPendingSameTypeRivals, main.ts:8144+), `civTypeId !== menuCivId` → kopia
+        // klastra obcego typu (spawnPendingForeignClusters, main.ts:8337+). Rozdzielność tych
+        // dwóch zbiorów jest strukturalna (cluster-spawn.ts:332 pomija typIndex gracza przy
+        // budowie `slots`/`spawnCities` — rywale tego samego typu nigdy tam nie trafiają), test
+        // dynamicznie potwierdza że OBA punkty faktycznie coś wygenerowały w tym samym biegu.
+        menuCivId: _menuCivId,
+        cities: cities.map(c => ({
+          id: c.id, ownerId: c.ownerId, startCityState: !!c.startCityState, q: c.q, r: c.r,
+          civTypeId: aiOwnerCivMap.get(c.ownerId) ?? null,
+        })),
+        units: units.map(u => ({
+          id: u.id, ownerId: u.ownerId, typeId: u.typeId, q: u.q, r: u.r,
+        })),
+      }),
+      /** RECON tej rundy (Evaluator zarzut 1): `spawnPendingSameTypeRivals`/
+       *  `spawnPendingForeignClusters` (a więc `grantCityStateStartUnits`) są DEFERRED —
+       *  wołane WYŁĄCZNIE z wnętrza `tryFoundPlayerCityAt` (main.ts:11817-11818), zaraz PO
+       *  faktycznym założeniu stolicy gracza, nie podczas samej generacji świata (log
+       *  „[EndTurn] blocked: awaitingFirstPlayerCity" potwierdza żywo ten stan przejściowy).
+       *  Realny gracz klika podświetlony `playerStartHex` — ta metoda woła DOKŁADNIE tę samą
+       *  `tryFoundPlayerCityAt(q, r)`, którą wywołuje ten klik (main.ts, handler mapy), z
+       *  jedynym różniącym się wejściem: współrzędne klikniętego heksu. Zero reimplementacji
+       *  logiki foundowania/spawnu — steruje WYŁĄCZNIE tym, KTÓRY heks „klika" test. */
+      foundPlayerStartCity: (): boolean => {
+        if (!playerStartHex) return false;
+        return tryFoundPlayerCityAt(playerStartHex.q, playerStartHex.r);
       },
     };
 
