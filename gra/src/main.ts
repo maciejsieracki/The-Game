@@ -20602,6 +20602,81 @@ async function boot(): Promise<void> {
       closePairSummary: (): void => { if (isDiploPairSummaryOpen()) hideDiploPairSummary(); },
     };
 
+    // Hak testowy (ten sam wzorzec i to samo uzasadnienie co `__eraTestDebug`/
+    // `__audienceRelTestDebug` wyżej) — wołany WYŁĄCZNIE z Playwright w
+    // `tools/rebel-city-notification-live-test.cjs`
+    // (R-MIASTA-REBELIA-CICHA-BEZ-POWIADOMIENIA-Q1). Inscenizuje REALNY, żywy łańcuch
+    // "miasto gracza traci porządek → przekracza próg buntu skrajny → staje się
+    // frakcją rebeliancką → sąsiednia AI je zdobywa", bez rozgrywania dziesiątek tur
+    // ręcznego psucia porządku. Hak steruje WYŁĄCZNIE danymi wejściowymi (populacja
+    // miasta, próg buntu z data.societyParams dla aktywnej trudności) — sama
+    // rebelia/przejęcie idą przez REALNE funkcje silnika: `updateRevoltGrace` i
+    // przypisanie `city.ownerId` (main.ts, ta sama gałąź co u każdego gracza) przez
+    // `endTurn()` z `__eraTestDebug` (identyczne z przyciskiem „Zakończ turę"), oraz
+    // `captureCityWithoutBattle` (ta sama funkcja co przy zwykłym wejściu jednostki
+    // AI na puste/słabo bronione miasto) dla drugiego etapu. Turn/toast/warEventLog
+    // czytamy z `__eraTestDebug` (endTurn/getToast/getWarEventLogHead/
+    // isEndTurnInProgress) — bez duplikowania tych metod tutaj.
+    (window as any).__rebelNotifyTestDebug = {
+      getPlayerCity: (): { id: string; name: string; population: number } | null => {
+        const c = cities.find(x => x.ownerId === 0);
+        return c ? { id: c.id, name: c.name, population: c.population } : null;
+      },
+      /** Steruje WYŁĄCZNIE wejściami: populacja ponad próg immunitetu osiedla (5, tuż
+       * nad progiem 4 — minimalna ingerencja w Power/warunki zwycięstwa tego małego
+       * sandboxa `?playtest=mapa`, patrz PLAYTEST_MAPA_HINT), próg buntu skrajnego
+       * (data.societyParams, trudność aktywnej gry) podniesiony tak, żeby porządek
+       * miasta — jakikolwiek dziś realnie jest — był poniżej progu, ORAZ
+       * `revoltGraceRemaining` ustawiony wprost na 0 (ten sam wzorzec "jedna prawdziwa
+       * tura od przejścia" co `__eraTestDebug.prepareOneTechFromBronze()` dla epoki —
+       * bez tego trzeba by rozegrać `graceTurns+2` KOLEJNYCH, NIEPRZERWANYCH prawdziwych
+       * tur w sandboxie zaprojektowanym pod bitwę/oblężenie (jednostka tuż przy Atenach),
+       * gdzie starcie AI w trakcie fazy AI otwiera modal preBattle i blokuje dalsze
+       * `endTurn()` — jedna, deterministyczna tura wystarcza, mechanizm progu/grace
+       * (`updateRevoltGrace`) i przypisanie `city.ownerId` idą przez REALNY kod). */
+      forceRevoltEligible: (cityId: string): { criticalPorPctBefore: number; graceTurns: number } => {
+        const c = cities.find(x => x.id === cityId);
+        if (!c) throw new Error('forceRevoltEligible: city not found: ' + cityId);
+        if (c.population < 5) c.population = 5;
+        c.revoltGraceRemaining = 0;
+        const block = (data.societyParams as unknown as { porzadek?: Record<string, Record<string, number>> }).porzadek;
+        const row = block?.porzadek_prog_bunt_skrajny_pct;
+        if (!row) throw new Error('forceRevoltEligible: porzadek_prog_bunt_skrajny_pct not found in society-params.json');
+        const before = row[_menuDifficulty] ?? 12;
+        row[_menuDifficulty] = 95;
+        const graceTurns = block?.porzadek_grace_tur_bunt?.[_menuDifficulty] ?? 3;
+        return { criticalPorPctBefore: before, graceTurns };
+      },
+      getCityState: (cityId: string): {
+        ownerId: number; rebelState: boolean; revoltGraceRemaining: number | null; name: string;
+      } | null => {
+        const c = cities.find(x => x.id === cityId);
+        return c
+          ? { ownerId: c.ownerId, rebelState: !!c.rebelState, revoltGraceRemaining: c.revoltGraceRemaining ?? null, name: c.name }
+          : null;
+      },
+      /** Drugi etap: sąsiednia AI zdobywa (już niezależne, rebelianckie) miasto —
+       * REALNA `captureCityWithoutBattle` (ta sama ścieżka co jednostka AI wchodząca
+       * na puste/słabo bronione miasto na mapie), nie reimplementacja. */
+      aiCaptureFormerRebelCity: (cityId: string): { aiOwnerId: number; cityOwnerIdAfter: number } => {
+        const city = cities.find(x => x.id === cityId);
+        if (!city) throw new Error('aiCaptureFormerRebelCity: city not found: ' + cityId);
+        const anchor = units.find(u => u.ownerId > 0 && !isBarbarian(u.ownerId) && !isCivilianUnit(u));
+        if (!anchor) throw new Error('aiCaptureFormerRebelCity: no eligible AI unit in this world');
+        captureCityWithoutBattle(city, anchor, [anchor]);
+        return { aiOwnerId: anchor.ownerId, cityOwnerIdAfter: city.ownerId };
+      },
+      /** Stałe/etykiety odczytywane wprost z silnika (zero duplikowania wartości
+       * magicznych w pliku testowym). */
+      REBEL_FACTION_OWNER_ID,
+      getCivLabel: (ownerId: number): string => civLabelForOwner(ownerId),
+      isOwnerEliminated: (ownerId: number): boolean => eliminatedOwners.has(ownerId),
+      /** Pełny `warEventLog` (już ograniczony do 8 przez silnik) — `__eraTestDebug.
+       * getWarEventLogHead()` obcina do 3, za mało gdy w tej samej turze obok buntu
+       * powstają inne wpisy EOT (np. atak AI) i mogłyby zepchnąć szukany wpis poza okno. */
+      getWarEventLog: (): unknown[] => warEventLog.slice(),
+    };
+
     // --- Konfiguracja pickera badań (przed hubem — getScienceHubSnapshot wymaga hooków) ---
     (window as any).__civ_getResearchedTechs = () => Array.from(player.zbadane);
 
@@ -24648,7 +24723,26 @@ async function boot(): Promise<void> {
       // skarbca/stolicy/Power. Bez tego guarda odbicie jej miasta wpadało w
       // ścieżkę "ostatnie miasto -> eliminacja": fałszywy komunikat ELIMINACJA
       // i eliminateOwner(-99) zaśmiecały eliminatedOwners/sejw wpisem -99.
-      if (oldOwner === REBEL_FACTION_OWNER_ID) return null;
+      if (oldOwner === REBEL_FACTION_OWNER_ID) {
+        // R-MIASTA-REBELIA-CICHA-BEZ-POWIADOMIENIA-Q1: jedyna droga do
+        // REBEL_FACTION_OWNER_ID to bunt miasta GRACZA (main.ts, guard
+        // `city.ownerId === 0` przy przejściu na frakcję rebeliantów) — więc
+        // KAŻDE miasto z tym oldOwner było dawnym miastem gracza. Gdy zdobywcą
+        // jest gracz (newOwner===0, odbicie własnego miasta), wołający już
+        // pokazuje `showCityCaptureNotice` — nic tu nie dokładamy, żeby nie
+        // zdublować. Gdy zdobywcą jest inna cywilizacja (AI/barbarzyńcy),
+        // wcześniej NIC nie informowało gracza, że to WŁAŚNIE jego dawne
+        // miasto przepadło na rzecz konkretnego sąsiada (zgłoszenie właściciela:
+        // "Sumerowie zabrali mi miasto, a mieliśmy pakt" — miasto nie było już
+        // jego w chwili zdobycia, ale on tego nigdy nie widział).
+        if (newOwner !== 0) {
+          showHintMessage(
+            `${city.name}: dawne zbuntowane miasto przejęte przez ${civLabelForOwner(newOwner)}.`,
+            5000,
+          );
+        }
+        return null;
+      }
       const designatedCapitalId = capitalCityIdByOwner.get(oldOwner) ?? undefined;
       // P-BARB-CAPTURE-GUARD RUNDA 2 (Evaluator, punkt 1), wyciągnięte do czystych,
       // testowalnych funkcji w RUNDZIE 3 (capital-capture.ts, zero pokrycia testowego
@@ -27637,6 +27731,19 @@ async function boot(): Promise<void> {
                   // override i zsynchronizować pola z globalnym defaultem frakcji rebeliantów.
                   seedCityOwnerDefaults(city);
                   console.log(`[Rebelia] Tura ${turn} ${city.name} → frakcja rebeliantów`);
+                  // R-MIASTA-REBELIA-CICHA-BEZ-POWIADOMIENIA-Q1: do tej pory to zdarzenie miało
+                  // WYŁĄCZNIE console.log powyżej — kompletnie niewidoczny dla gracza w normalnej
+                  // rozgrywce. Toast (ten sam wzorzec co inne zdarzenia dyplomatyczne/wojenne w
+                  // tym pliku, np. main.ts:9317) jasno mówi „zbuntowało się", NIE „zostało
+                  // podbite" — miasto nie trafia do żadnej cywilizacji, staje się niezależne.
+                  // EN: until now this event had ONLY the console.log above — completely invisible
+                  // to the player in normal play. Toast (same pattern as other diplomatic/war
+                  // events in this file, e.g. main.ts:9317) clearly says "rebelled", NOT
+                  // "was conquered" — the city doesn't go to any civilization, it becomes independent.
+                  showHintMessage(
+                    `⚡ ${city.name} zbuntowało się i ogłosiło niepodległość! Miasto nie jest już Twoje.`,
+                    5500,
+                  );
                 }
               }
 
