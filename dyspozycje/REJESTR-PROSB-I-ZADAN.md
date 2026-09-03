@@ -4018,17 +4018,28 @@ deployu ROBOCZA na końcu z raportem. Orkiestrator kontynuuje bez pytania o zgod
   Final Control PASS (własny checkout, sam zweryfikował mutacyjnie 3 z 4 nowych
   asercji na żywym `main.ts`, 5 bramek referencyjnych + 9 testów tematu
   zielone). Zintegrowane allowlist-only. Worktree i branch posprzątane.
-- **R-DYPLO-TRAKTAT-HANDLOWY-WYBOR-CZASU-Q1** — Evaluator runda 1: **FAIL, 3
-  zarzuty** (w tym realny bug UX: czas traktatu wybrany przez gracza po cichu
-  nadpisywany przez częstotliwość wymiany koszyka, gdy oba pola współwystępują
-  w tym samym modalu). Obrona (`febd159f`) przyjęła wszystkie 3 zarzuty, ale
-  zatrzymała się na **DECISION_REQUIRED** — naprawa zarzutów 1 i 2 wymaga edycji
-  `diplomacyTradeBasket.ts`, poza allowlistą pierwotnego dispatchu (błędna
-  atrybucja pliku w recon — logika case '5' żyje w `diplomacyTradeBasket.ts`,
-  nie w `diplomacyAudience.ts`, który tylko re-eksportuje). Orkiestrator
-  **rozszerzył allowlistę** (`195b1970`, sekcja "ROZSZERZENIE RUNDA 1" w
-  dispatchu) i **redispatchował kontynuację Obrony** w tej samej rundzie/branchu
-  — w toku.
+- **R-DYPLO-TRAKTAT-HANDLOWY-WYBOR-CZASU-Q1** — najbardziej burzliwy temat serii,
+  3 rundy Evaluator/Obrona, wciąż OTWARTY. R1 Evaluator FAIL (3 zarzuty, w tym
+  realny bug: czas traktatu nadpisywany częstotliwością wymiany koszyka). Obrona
+  przyjęła wszystko, ale DECISION_REQUIRED (naprawa wymagała
+  `diplomacyTradeBasket.ts`, poza pierwotną allowlistą — błędna atrybucja pliku
+  w recon). Allowlist rozszerzona (`195b1970`). Kontynuacja Obrony (`ad14a38d`)
+  naprawiła produkcyjnie, ALE R2 Evaluator znalazł 2 NOWE, poważne zarzuty:
+  (1) wycena PN sweetenera `per_turn` została błędnie sprzęgnięta z czasem
+  TRAKTATU zamiast z czasem WYMIANY — zmierzone odchylenia wyceny -42%/-95%/
+  +1900% + 20-krotna rozbieżność UI-vs-silnik dla "Bezterminowy"; (2) klik chipa
+  czasu w sekcji "wymiana" po cichu nadpisywał pole "czas traktatu" (globalny
+  selektor zamiast scopowanego) — dokładnie ten sam rodzaj błędu, który temat
+  miał naprawić, tylko inną ścieżką interakcji. Obrona (`7cecd4e5`, POPRAWNIE na
+  Opus 5 po naprawieniu znaleziska procesowego niżej) naprawiła oba: nowe pole
+  `payload.treatyTurns` rozdziela czas trwania traktatu od mnożnika wyceny PN
+  (który wraca do pierwotnej roli, powiązanej z wymianą), handler kliku
+  scopowany przez `btn.closest('.cdb-treaty'/'​.cdb-duration')`. Żywy dowód:
+  wycena stabilna względem czasu traktatu (H4), nadal zależna od wymiany (H5,
+  nietautologiczność), rozbieżność UI/silnik zlikwidowana (H6/I2), realne kliki
+  w obu sekcjach nie kolidują (J1-J5). Test tematu 52/52, wszystkie 56 testów
+  dyplomacji zielone (silnik dotknięty, nie tylko UI). **Evaluator R3
+  DISPATCHOWANY** (Opus 5, effort high, poprawny model).
 - **R-AI-ULEPSZENIA-MALO-BUDOWANE-Q1** — Operator PASS (`ccd5f6be`): diagnoza
   żywą 5×80-turową symulacją potwierdziła realny problem (ZASADA 3 mogła
   przekierować 100% puli ulepszeń na budynki, bez dolnej granicy), naprawa —
@@ -4038,13 +4049,18 @@ deployu ROBOCZA na końcu z raportem. Orkiestrator kontynuuje bez pytania o zgod
   (`map-gen-regression-test.cjs`) nie zdążyła się dokończyć w budżecie
   Operatora — jawnie zgłoszone, przekazane Evaluatorowi do dokończenia.
   **Evaluator DISPATCHOWANY** (Sonnet 5, effort high).
-- **R-MIASTA-REBELIA-CICHA-BEZ-POWIADOMIENIA-Q1** — Operator PASS (`d8eee453`):
-  dwa nowe `showHintMessage` przy zmianie `city.ownerId` na/z
-  `REBEL_FACTION_OWNER_ID` (bunt + przejęcie przez sąsiada), zero zmian w logice
-  buntu/przejęcia. Hak testowy `__rebelNotifyTestDebug` dodany w `main.ts` poza
-  literalnym brzmieniem allowlisty — Operator jawnie flagował napięcie,
-  uzasadnione precedensem (`__eraTestDebug` i in.); ocena przekazana
-  Evaluatorowi. **Evaluator DISPATCHOWANY** (Sonnet 5, effort high).
+- **R-MIASTA-REBELIA-CICHA-BEZ-POWIADOMIENIA-Q1** — **ZINTEGROWANE do `main`
+  (`16ad0841`)**. Dwa nowe `showHintMessage` przy zmianie `city.ownerId` na/z
+  `REBEL_FACTION_OWNER_ID` (bunt: "zbuntowało się", NIE "podbite"; przejęcie
+  przez sąsiada: identyfikuje konkretną AI), zero zmian w logice buntu/progów/
+  `runCapitalCapturePlunder`. Hak testowy `__rebelNotifyTestDebug` w `main.ts`
+  (poza literalnym brzmieniem allowlisty) uznany przez Evaluatora i Final
+  Control NIEZALEŻNIE za uzasadnione rozszerzenie w duchu allowlisty — czysto
+  odczytowy/sterujący wejściami, woła REALNE funkcje silnika, precedens
+  `__eraTestDebug`/`__buildRequestTestDebug`/`__audienceRelTestDebug` w tym
+  samym pliku. Final Control PASS (własny niekopiowany skrypt Playwright, 3
+  scenariusze na żywo, zero duplikacji komunikatów, guard eliminacji
+  nietknięty). Zintegrowane allowlist-only. Worktree i branch posprzątane.
 
 **ZNALEZISKO PROCESOWE (orkiestrator, ważne dla przyszłych sesji):** w kilku
 dispatchach Workflow tej serii pominięto `opts.model` przy wywołaniu `agent()`
@@ -4057,15 +4073,25 @@ WYBOR-CZASU-Q1` (obie rundy Obrony). Naprawione dla wszystkich NOWYCH
 dispatchów tej sesji (`model: 'claude-opus-5'` jawnie w `opts`); dla obu
 dotkniętych tematów dodano/zaplanowano dodatkową rundę na poprawnym modelu
 zamiast cichego zaakceptowania złamania §5a.
-- **R-ULEPSZENIA-OBOZ-LOWIECKI-LAS-ZNIKA-I-TEREN-Q1** — Operator PASS
-  (`af50ca3f`): Część A (POTWIERDZONA) naprawiona — `syncImprovementDecorForHex`
-  przestał kasować wizualnie kępę lasu pod `oboz_lowiecki` na wzgórzu/górze
-  (lista dwóch zahardkodowanych kluczy farma/bydlo rozszerzona do
-  `ULEPSZENIA_ZYWNOSCIOWE` przefiltrowanego przez `isImprovementBlockedOnForest`).
-  Część B (obozy na terenie bez lasu) — **NIE potwierdzona** żywo, zero zmian
-  kodu; wniosek Operatora: to również objaw Części A (zalesione wzgórze bez
-  widocznej kępy myli się z łąką). **Evaluator DISPATCHOWANY** (Opus 5, effort
-  high) — ma też sceptycznie ocenić wniosek Części B.
+- **R-ULEPSZENIA-OBOZ-LOWIECKI-LAS-ZNIKA-I-TEREN-Q1** — **ZINTEGROWANE do `main`
+  (`dc378ab7`)**. Część A naprawiona — `syncImprovementDecorForHex` przestał
+  kasować wizualnie kępę lasu pod `oboz_lowiecki` na wzgórzu/górze (lista dwóch
+  zahardkodowanych kluczy farma/bydlo rozszerzona do `ULEPSZENIA_ZYWNOSCIOWE`
+  przefiltrowanego przez `isImprovementBlockedOnForest`, realnie osiągalne na
+  lesie-na-wzgórzu: bydlo/owce/lama/oboz_lowiecki). Część B (obozy na terenie
+  bez lasu) — NIE potwierdzona żywo, zero zmian kodu; to był ten sam objaw
+  Części A. Evaluator FAIL R1 z 2 zarzutami: (1) **procesowy** — Operator i
+  Evaluator R1 byli błędem orkiestratora uruchomieni na Sonnet 5 zamiast
+  wymaganego Opus 5 (temat wizualny, §5a) — pierwsze wykryte i udokumentowane
+  wystąpienie znaleziska procesowego niżej; (2) drobny — opis "predykat
+  przepuszcza dokładnie 4 klucze" był nieścisły, sam predykat przepuszcza 5
+  (dodatkowo `lodzie_rybackie`, nieszkodliwie bo teren wodny wyklucza się z
+  wzgórzem/górą). Obrona (`d20fcda8`, POPRAWNIE na Opus 5) potwierdziła
+  właściwe autorstwo modelu i doprecyzowała opis + rozszerzyła bramkę o pomiar
+  ZACHOWANIEM zamiast ręcznego liczenia. Final Control PASS (własne
+  przeliczenie zbiorów, własny zrzut z żywego Chromium, 27/27 + 5 bramek
+  referencyjnych + 7 bramek związanych). Zintegrowane allowlist-only. Worktree
+  i branch posprzątane.
 
 Kolejna kontrola zaplanowana automatycznie; po zamknięciu wszystkich powyższych
 — integracja allowlist-only każdego PASS, potem pełny deploy ROBOCZA (build →
