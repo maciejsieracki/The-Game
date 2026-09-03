@@ -80,6 +80,41 @@ export function computeVisibleAt(
 }
 
 // ---------------------------------------------------------------------------
+// computeVisibleAlongPath — widocznosc z CALEJ przebytej sciezki ruchu
+// ---------------------------------------------------------------------------
+
+/**
+ * Unia widocznosci ze WSZYSTKICH heksow przekazanej sciezki (nie tylko z
+ * punktu koncowego). Czysta funkcja, bez side-effectow, budowana na
+ * `computeVisibleAt`.
+ *
+ * P-MGLA-ODKRYCIE-WZDLUZ-SCIEZKI-Q1: przed tym fog reveal po wieloheksowym
+ * marszu liczyl widocznosc WYLACZNIE z pozycji koncowej jednostki — heks
+ * posrodku sciezki, w zasiegu `sight` W TRAKCIE przejscia, ale poza zasiegiem
+ * z pozycji koncowej (typowe dla Zwiadowcy: duzy `ruch` > `sight`, marsz w
+ * linii prostej), nigdy nie zostawal odkryty. Ta funkcja liczy widocznosc
+ * osobno z kazdego heksu sciezki i zwraca ich unie — wolanie po stronie
+ * wywolujacego (main.ts) dolacza wynik do `explored`, DODATKOWO do istniejacej
+ * widocznosci z pozycji koncowej, nie zamiast niej.
+ *
+ * @param pathHexes  Heksy przebytej sciezki (np. `anim.pathHexes` — bez
+ *                    heksu startowego, patrz main.ts).
+ * @param map        Aktualna mapa gry.
+ * @param sight      Promien widzenia jednostki (liczba stala dla calego wywolania).
+ */
+export function computeVisibleAlongPath(
+  pathHexes: ReadonlyArray<{ q: number; r: number }>,
+  map: GameMap,
+  sight: number,
+): Set<string> {
+  const visible = new Set<string>();
+  for (const h of pathHexes) {
+    for (const k of computeVisibleAt(h.q, h.r, map, sight)) visible.add(k);
+  }
+  return visible;
+}
+
+// ---------------------------------------------------------------------------
 // computeVisible
 // ---------------------------------------------------------------------------
 

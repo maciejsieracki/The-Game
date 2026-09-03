@@ -155,7 +155,7 @@ import type { RuntimeUnit } from './units/setup';
 import { UnitRenderer, type UnitRingStance } from './render/units';
 // Import keyOf from picker only (avoids duplicate identifier with setup.ts keyOf)
 import { pixelToHex, unitAt, keyOf, worldToClientPx } from './input/picker';
-import { computeVisible, addExplored, allHexKeys, allRevealLandKeys, exploredSetForRender, DEFAULT_SIGHT, computeVisibleAt, buildUnitSightResolver, computePlayerVisibility, unitsVisibleOnMap } from './game/visibility';
+import { computeVisible, addExplored, allHexKeys, allRevealLandKeys, exploredSetForRender, DEFAULT_SIGHT, computeVisibleAt, computeVisibleAlongPath, buildUnitSightResolver, computePlayerVisibility, unitsVisibleOnMap } from './game/visibility';
 import { clearScoutAutoExplore, isScoutUnit, runScoutsAutoExplore } from './game/scout-auto-explore';
 import { cyclablePlayerArmyLeadsBase, resolveAdjacentPlayerUnitCycle } from './game/army-cycle';
 import {
@@ -21749,6 +21749,10 @@ async function boot(): Promise<void> {
       let hutCollected = false;
       let campDestroyed = false;
       if (result.movePath.length > 0) {
+        // P-MGLA-ODKRYCIE-WZDLUZ-SCIEZKI-Q1: mgla wzdluz calej sciezki (jak w renderLoop).
+        for (const su of stack) {
+          addExplored(explored, computeVisibleAlongPath(result.movePath, map, unitSight(su)));
+        }
         if (u.ownerId === 0) hutCollected = checkVillageRewardsAlongPath(result.movePath);
         // P-BARBARZYNCY-USUWANIE-SEMANTYKA-Q1: `u` jest zawsze graczem (guard
         // `u.ownerId !== 0` wyżej) -- nigdy barbarzyńcą, więc bez isBarbarian.
@@ -31460,6 +31464,10 @@ async function boot(): Promise<void> {
           let campDestroyed = false;
           if (u) {
             if (pathHexes.length > 0) {
+              // P-MGLA-ODKRYCIE-WZDLUZ-SCIEZKI-Q1: mgla wzdluz calej sciezki.
+              for (const su of stack) {
+                addExplored(explored, computeVisibleAlongPath(pathHexes, map, unitSight(su)));
+              }
               if (u.ownerId === 0) hutCollected = checkVillageRewardsAlongPath(pathHexes);
               campDestroyed = checkBarbCampDestructionAlongPath(pathHexes);
               const bonusChanged = applyCityVisitBonusesAlongPath(
