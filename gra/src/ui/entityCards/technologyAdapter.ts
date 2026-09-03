@@ -217,8 +217,16 @@ export const technologyAdapter: EntityCardAdapter<RawTech> = (tech) => {
       };
     }
     const icon = techIconSvg(t['Technologia'], 14);
+    // P-CIVPEDIA-KARTY-CALY-WIERSZ-PRZYCISKIEM-Q1 (GOAL pkt 3, opcja (a) — właściciel:
+    // "te przyciski po prawej stronie nie są potrzebne"): `value` NIE niesie już tekstu
+    // "Wymaga też: X, Y" — ten tekst wymienia INNE technologie niż `linkTo` (cel wiersza
+    // to `t['Technologia']`, np. "Wymiana"), więc jako jedyny klikalny element sugerował
+    // fałszywy cel. Info zostaje (nie zubaża karty) jako `trailing` — zwykły, NIEinteraktywny
+    // `<span>` (renderer.ts `buildGridRowEl`, linia `if (row.trailing) ...`), a `label`
+    // (nazwa technologii docelowej) jest teraz głównym, w pełni klikalnym elementem
+    // dzięki rozszerzonemu fallbackowi `entity-card-row--linked` na całym wierszu.
     return {
-      label: t['Technologia'], value: `Wymaga też: ${otherPrereqs.join(', ')}`,
+      label: t['Technologia'], value: '', trailing: `Wymaga też: ${otherPrereqs.join(', ')}`,
       icon: icon ? { kind: 'svg', svg: icon } : undefined,
       linkTo: { kind: 'technology', id: nextSlug },
     };
@@ -228,6 +236,15 @@ export const technologyAdapter: EntityCardAdapter<RawTech> = (tech) => {
   };
 
   // --- Zmiany ekonomiczne --------------------------------------------------------------------
+  // P-CIVPEDIA-KARTY-CALY-WIERSZ-PRZYCISKIEM-Q1 (GOAL pkt 4): `value` tutaj (efekt budynku /
+  // koszt utrzymania) opisuje WŁASNY budynek wiersza, nie inną encję — inaczej niż "Kolejne
+  // technologie" (pkt 3), gdzie `value` wymieniał INNE technologie niż cel linku. Bug zgłoszony
+  // przez recon dla tej sekcji był wyłącznie strukturalny (klik działał tylko na wąskim
+  // przycisku `value`, klik na `label`/nazwę budynku nic nie robił) — naprawiony już
+  // uniwersalnie w `renderer.ts::buildGridRowEl` (fallback `entity-card-row--linked` na całym
+  // wierszu, bez warunku `value===''`). Żadna zmiana treści `value` tutaj nie jest więc
+  // potrzebna — przenoszenie tego tekstu do `trailing` tylko zubożyłoby kartę wizualnie
+  // (opacity .7, mniejsza czcionka) bez żadnej korzyści funkcjonalnej.
   const econRows: EntityCardRow[] = [];
   for (const b of buildings) {
     const buildingLinkTo = resolveBuildingRow(b.id) != null

@@ -90,7 +90,20 @@ export function buildEntityCardData(kind: EntityKind, id: string, ctx: EntityCar
  * `row.label` staje się etykietą badge'a — zamiast siatki label/value. `row.linkTo`
  * (T10) jest honorowany JEDNOLICIE również w tej gałęzi — tekst obok badge'a staje
  * się `<button data-entity-kind data-entity-id>` zamiast `<span>`, złapane przez ten
- * sam delegowany listener w `renderEntityCard` co zwykłe wiersze niżej. */
+ * sam delegowany listener w `renderEntityCard` co zwykłe wiersze niżej.
+ *
+ * P-CIVPEDIA-KARTY-CALY-WIERSZ-PRZYCISKIEM-Q1: KAŻDY wiersz z `row.linkTo` — obie
+ * gałęzie (badge i grid), niezależnie od tego czy `row.value`/`row.label` przy
+ * badge'u jest puste czy nie — dostaje fallback `data-row-entity-*` +
+ * `entity-card-row--linked` na CAŁYM `rowEl`, złapany przez delegowany listener w
+ * `renderEntityCard` (`.entity-card-row[data-row-entity-kind]`, patrz niżej). Klik
+ * gdziekolwiek w wierszu (etykieta, ikona, dopełnienie wokół wąskiego przycisku)
+ * otwiera ten sam cel co klik w sam przycisk — właściciel wprost: "wszystkie
+ * powinny być przyciskiem [...] naciskam, pojawia się karta". Wcześniejsza wersja
+ * (RUNDA 2, R-TECHNOLOGIA-KARTA-USUN-OPIS-BUDYNKI-JEDNOSTKI-Q1) ograniczała ten
+ * fallback do `row.value === ''` — świadomie, żeby NIE poszerzać obszaru klikalności
+ * tam, gdzie ECHO tamtego tematu wymagało zera zmiany zachowania. Ten temat jest
+ * odwrotną, jawną dyspozycją właściciela: poszerzenie MA się stać wszędzie. */
 function buildGridRowEl(row: EntityCardData['sections'][number]['rows'][number]): HTMLElement {
   if (row.badge) {
     const rowEl = el('div', 'entity-card-row entity-card-row-action');
@@ -101,6 +114,9 @@ function buildGridRowEl(row: EntityCardData['sections'][number]['rows'][number])
     if (row.linkTo) {
       text.setAttribute('data-entity-kind', row.linkTo.kind);
       text.setAttribute('data-entity-id', row.linkTo.id);
+      rowEl.classList.add('entity-card-row--linked');
+      rowEl.setAttribute('data-row-entity-kind', row.linkTo.kind);
+      rowEl.setAttribute('data-row-entity-id', row.linkTo.id);
     }
     rowEl.append(badgeEl, text);
     return rowEl;
@@ -121,29 +137,15 @@ function buildGridRowEl(row: EntityCardData['sections'][number]['rows'][number])
   if (row.linkTo) {
     val.setAttribute('data-entity-kind', row.linkTo.kind);
     val.setAttribute('data-entity-id', row.linkTo.id);
-    // RUNDA 2 (R-TECHNOLOGIA-KARTA-USUN-OPIS-BUDYNKI-JEDNOSTKI-Q1, ECHO): gdy `row.value`
-    // jest puste (Budynki/Jednostki karty technologii od rundy 1 — usunięty opis po
-    // prawej), przycisk-link kurczy się do 0px szerokości i tylko klik w USTAWIONY
-    // wąski obszar przycisku otwierał kartę — etykieta po lewej (`key`, osobny `<span>`)
-    // nie reagowała. Naprawa: CAŁY wiersz (`rowEl`) dostaje te same atrybuty pod inną
-    // nazwą (`data-row-entity-*`, celowo różną od `data-entity-*` na `card` — patrz
-    // listener niżej) jako fallback hit-area, plus klasę do kursora.
-    //
-    // RUNDA 2, POPRAWKA PO ZARZUCIE EVALUATORA: warunek `row.value === ''` PONIŻEJ jest
-    // konieczny, nie kosmetyczny — bez niego `rowEl.setAttribute` uruchamiał się dla
-    // KAŻDEGO wiersza z `linkTo`, więc fallback w listenerze (patrz niżej) łapał też
-    // klik w etykietę `key` w sekcjach z NIEPUSTYM `value` (Ulepszenia terenu, Kolejne
-    // technologie, Zmiany ekonomiczne, karta jednostki) — czyli poszerzał obszar
-    // klikalności tam, gdzie ECHO wymagało zera zmiany zachowania. Z tym warunkiem
-    // fallback istnieje WYŁĄCZNIE tam, gdzie przycisk `val` faktycznie ma zerową
-    // szerokość (Budynki/Jednostki po rundzie 1) — w pozostałych sekcjach `val` ma
-    // widoczny tekst i klik zawsze trafia w przycisk, więc atrybut fallbacku tam się
-    // w ogóle nie pojawia.
-    if (row.value === '') {
-      rowEl.classList.add('entity-card-row--linked');
-      rowEl.setAttribute('data-row-entity-kind', row.linkTo.kind);
-      rowEl.setAttribute('data-row-entity-id', row.linkTo.id);
-    }
+    // Fallback hit-area na CAŁYM wierszu — patrz komentarz funkcji wyżej
+    // (P-CIVPEDIA-KARTY-CALY-WIERSZ-PRZYCISKIEM-Q1). Obejmuje TERAZ każdy wiersz z
+    // `linkTo`, niezależnie od tego czy `val` (przycisk po prawej) ma widoczną
+    // treść czy jest puste — wcześniej warunek `row.value === ''` świadomie to
+    // ograniczał (RUNDA 2 ECHO), ten temat odwraca tamtą decyzję na jawne życzenie
+    // właściciela.
+    rowEl.classList.add('entity-card-row--linked');
+    rowEl.setAttribute('data-row-entity-kind', row.linkTo.kind);
+    rowEl.setAttribute('data-row-entity-id', row.linkTo.id);
   }
   rowEl.append(key, val);
   if (row.trailing) {
@@ -549,10 +551,19 @@ export const ENTITY_CARD_CSS = `
 .entity-card-section h3{margin:0 0 4px;font-size:13px;opacity:.8;}
 .entity-card-row{display:flex;justify-content:space-between;gap:8px;font-size:13px;padding:2px 0;}
 .entity-card-row-emphasis{font-weight:600;}
-/* RUNDA 2 (R-TECHNOLOGIA-KARTA-USUN-OPIS-BUDYNKI-JEDNOSTKI-Q1): kursor spojny z tym, ze
-   caly wiersz jest teraz klikalny (fallback data-row-entity-*, patrz renderEntityCard),
-   nie tylko przycisk value — najbardziej widoczne, gdy value jest puste. */
+/* RUNDA 2 (R-TECHNOLOGIA-KARTA-USUN-OPIS-BUDYNKI-JEDNOSTKI-Q1) + rozszerzenie
+   P-CIVPEDIA-KARTY-CALY-WIERSZ-PRZYCISKIEM-Q1: kursor spojny z tym, ze CALY wiersz
+   z linkTo jest klikalny (fallback data-row-entity-*, patrz buildGridRowEl +
+   renderEntityCard), nie tylko wazki przycisk value po prawej. Podswietlenie tla
+   na hover/focus-within nizej daje ten sam sygnal "to jest przycisk" na calej
+   szerokosci wiersza, nie tylko na kursorze — kryterium GOAL pkt 2 (widoczny sygnal
+   klikalnosci, nie tylko cichy cursor:pointer). Ujemny margines + dopelniajacy
+   padding to ten sam wzorzec co .entity-card-section--hi wyzej w tym pliku —
+   podswietlenie "wylewa sie" do krawedzi karty bez przesuwania tresci wiersza. */
 .entity-card-row--linked{cursor:pointer;}
+.entity-card-row--linked:hover,
+.entity-card-row--linked:focus-within{background:rgba(232,216,138,.08);
+  border-radius:6px;margin-left:-6px;margin-right:-6px;padding-left:6px;padding-right:6px;}
 /* P-CIVPEDIA-KARTY-LINKI-NIEOSTYLOWANE-REGRES-T10-Q1: brakujace od T1 (c1365bfa) reguly
    dla pary etykieta/wartosc wiersza siatki. Do T10 .entity-card-row-value renderowalo sie
    zawsze jako span — brak stylu byl niewidoczny (dziedziczony kolor otoczenia). T10
