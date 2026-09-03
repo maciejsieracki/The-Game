@@ -436,7 +436,30 @@ export function renderEntityCard(data: EntityCardData): HTMLElement {
   return card;
 }
 
+/**
+ * P-ENTITYCARD-DIALOG-WIELOKROTNY-Q1: co najwyżej JEDEN dialog karty encji może być
+ * otwarty naraz — niezależnie skąd `openEntityCard(..., {mode:'dialog'})` jest wołane
+ * (HUD, panel miasta, czy link WEWNĄTRZ innej już otwartej karty, `renderEntityCard`
+ * linia ~433). Śledzimy to modułowym stanem (nie przez `escapeOverlayStack` — ten
+ * zarządza WYŁĄCZNIE kolejnością zamykania klawiszem Escape i jest poza allowlistą tego
+ * tematu, patrz `00-dispatch.md` §GRANICE). `pushOverlay`/`popOverlay` używane tu tak
+ * jak dotąd, bez zmiany ich kontraktu.
+ */
+let activeDialog: { kind: EntityKind; id: string; dismiss: EntityCardDismiss } | null = null;
+
 function openDialog(data: EntityCardData): EntityCardDismiss {
+  // Kryterium 4 (idempotencja): ten sam kind+id co już otwarty dialog → nic nowego nie
+  // budujemy, oddajemy istniejący `dismiss` — zero duplikatu, zero dodatkowego
+  // push/pop na `escapeOverlayStack`.
+  if (activeDialog != null && activeDialog.kind === data.kind && activeDialog.id === data.id) {
+    return activeDialog.dismiss;
+  }
+  // Kryteria 1-2: zamknij POPRZEDNI dialog encji (jeśli jakiś jest) SYNCHRONICZNIE,
+  // PRZED zbudowaniem i dołączeniem nowego backdropu do `document.body` — w tej samej
+  // klatce, więc DOM nigdy nie ma dwóch `.entity-card-backdrop` naraz (zero migotania).
+  if (activeDialog != null) {
+    activeDialog.dismiss();
+  }
   const overlayId = `entity-card-${data.kind}-${data.id}-${overlaySeq++}`;
   const backdrop = el('div', 'entity-card-backdrop');
   const dialog = el('div', 'entity-card-dialog');
@@ -446,6 +469,7 @@ function openDialog(data: EntityCardData): EntityCardDismiss {
   const dismiss = (): void => {
     if (closed) return;
     closed = true;
+    if (activeDialog != null && activeDialog.dismiss === dismiss) activeDialog = null;
     popOverlay(overlayId);
     backdrop.remove();
   };
@@ -457,6 +481,7 @@ function openDialog(data: EntityCardData): EntityCardDismiss {
     if (event.target === backdrop) dismiss();
   });
   pushOverlay(overlayId, dismiss);
+  activeDialog = { kind: data.kind, id: data.id, dismiss };
   return dismiss;
 }
 
