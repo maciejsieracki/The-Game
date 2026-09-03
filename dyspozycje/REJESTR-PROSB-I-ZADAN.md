@@ -4054,14 +4054,28 @@ deployu ROBOCZA na końcu z raportem. Orkiestrator kontynuuje bez pytania o zgod
   PONOWNIE (`5fe2bbe7`, main.ts wyłącznie whitelist+counterInitial). **Obrona R4
   DISPATCHOWANA** (Opus 5, effort medium).
 - **R-AI-ULEPSZENIA-MALO-BUDOWANE-Q1** — Operator PASS (`ccd5f6be`): diagnoza
-  żywą 5×80-turową symulacją potwierdziła realny problem (ZASADA 3 mogła
-  przekierować 100% puli ulepszeń na budynki, bez dolnej granicy), naprawa —
-  nowa stała `MIN_PROCENT_PULI_IMPERIUM_ZASADA3_NADWYZKA=10` jako podłoga.
-  Sufit 50% (`MAX_PROCENT_PULI_IMPERIUM`) już istniał i już obowiązywał
-  wszystkie AI — potwierdzone działającym bez zmian. Jedna bramka referencyjna
-  (`map-gen-regression-test.cjs`) nie zdążyła się dokończyć w budżecie
-  Operatora — jawnie zgłoszone, przekazane Evaluatorowi do dokończenia.
-  **Evaluator DISPATCHOWANY** (Sonnet 5, effort high).
+  żywą symulacją potwierdziła że ZASADA 3 mogła przekierować 100% puli
+  ulepszeń na budynki bez dolnej granicy; naprawa — nowa stała
+  `MIN_PROCENT_PULI_IMPERIUM_ZASADA3_NADWYZKA=10` jako podłoga. Sufit 50% już
+  istniał i obowiązywał wszystkie AI. Evaluator (Sonnet 5, dokończył samodzielnie
+  `map-gen-regression-test.cjs`, ~75 min, wszystkie twarde asercje PASS) FAIL, **2
+  zarzuty**: (1) **ważny, dotyczy sedna zgłoszenia właściciela** — własna,
+  niezależna 30-biegowa symulacja (10 ziaren × 3 trudności × 100 tur, prawdziwy
+  silnik) mierząca FAKTYCZNĄ liczbę rozkazów `buildImprovement` PRZED/PO pokazała
+  **deltę zero w każdym biegu** (1854→1854). ZASADA 3 uruchamia się właśnie
+  DLATEGO, że brak kandydatów do ulepszeń — dodatkowa Praca w puli nie może więc
+  przełożyć się na więcej zbudowanych ulepszeń terenu w tych turach; budżet
+  nigdy nie był czynnikiem ograniczającym. Naprawa zapobiega trwałemu zeru w
+  UDZIALE % puli (prawdziwe), ale NIE zwiększa faktycznie budowanych ulepszeń
+  widocznych na mapie — jedyny observable, o który pytał właściciel; ewentualna
+  korzyść jest ograniczona do INNEJ ścieżki main.ts (cuda/zakładanie miast),
+  nieprzemierzonej przez żaden test. (2) drobny dług — przypisanie `pct` w
+  ZASADZIE 3 nie przechodzi przez `clampPodzialPracyBudynkiPercent` w
+  odróżnieniu od 3 innych miejsc w tym samym pliku; sufit 50% strzeżony tam
+  wyłącznie rozsądną wartością stałej, nie strukturalnie. **Obrona
+  DISPATCHOWANA** (Sonnet 5, effort high) — z jawną instrukcją: jeśli żywy
+  dowód nie potwierdzi realnego zwiększenia budowanych ulepszeń, przeformułować
+  raport uczciwie zamiast wymuszać PASS.
 - **R-MIASTA-REBELIA-CICHA-BEZ-POWIADOMIENIA-Q1** — **ZINTEGROWANE do `main`
   (`16ad0841`)**. Dwa nowe `showHintMessage` przy zmianie `city.ownerId` na/z
   `REBEL_FACTION_OWNER_ID` (bunt: "zbuntowało się", NIE "podbite"; przejęcie
