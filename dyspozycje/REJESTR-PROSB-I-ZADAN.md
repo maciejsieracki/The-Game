@@ -4051,8 +4051,20 @@ deployu ROBOCZA na końcu z raportem. Orkiestrator kontynuuje bez pytania o zgod
   kontroferty/edycji dla aid '5' gubi prefill warunków propozycji z AI. (4)
   test tematu (52/52 zielone) omijał realną ścieżkę `buildProposalFromPayload`,
   więc nie wykrył (1)-(2) mimo pozornej pełnej zieleni. Allowlist rozszerzona
-  PONOWNIE (`5fe2bbe7`, main.ts wyłącznie whitelist+counterInitial). **Obrona R4
-  DISPATCHOWANA** (Opus 5, effort medium).
+  PONOWNIE (`5fe2bbe7`, main.ts wyłącznie whitelist+counterInitial). Obrona R4
+  (`25afe93c`) naprawiła wszystkie 4 (w tym odkryła i naprawiła DRUGĄ ukrytą
+  przyczynę zarzutu 3 — `readTreatyStateFromDom` case '5' zerował prefill przed
+  pierwszym renderem koszyka), test 65/65. Evaluator R4 (Opus 5, piąty
+  niezależny przegląd) potwierdził wszystkie 4 naprawy żywo, ale znalazł JEDEN
+  NOWY krytyczny zarzut — efekt uboczny Obrony R3: `buildTreatyPayload` case
+  '8' (trybut) ustawia `treatyTurns=0` bezwarunkowo z domyślnego formularza, co
+  przez `treatyDurationPnMultiplier` daje mnożnik ×8 zamiast ×1 — **każda
+  domyślna propozycja trybutu dostaje 8-krotnie zawyżoną bazę PW** (dowód
+  przed/po: 168→1344 PW za identyczny klik). Żaden z 52 testów dyplomacji tego
+  nie łapał. **Obrona R5 DISPATCHOWANA** (Opus 5, effort medium) — piąta
+  iteracja tej samej rundy 1; temat okazał się wyjątkowo głęboki (białe listy
+  payloadu + współdzielone pole czasu między 3 typami traktatów), każda runda
+  znajdowała realny, wcześniej niewykryty błąd.
 - **R-AI-ULEPSZENIA-MALO-BUDOWANE-Q1** — Operator PASS (`ccd5f6be`): diagnoza
   żywą symulacją potwierdziła że ZASADA 3 mogła przekierować 100% puli
   ulepszeń na budynki bez dolnej granicy; naprawa — nowa stała
