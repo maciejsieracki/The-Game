@@ -13,6 +13,29 @@ swoim wĹ‚asnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji d
 > Pakiet 3 z 2026-08-20 jest docs-only i nie tworzy wpisu ROBOCZA/KANON/FINALNA;
 > ten plik pozostaje wyłącznie rejestrem publikacji bundli.
 
+## ROBOCZA 8bb29544 - 2026-09-03 03:25 UTC - FALA 340: 12 tematow (dyplomacja handlowa/mapa/wojna wymuszona, AI ulepszenia/armie, bunt miast, wizualne)
+
+|- md5 (pełne): 8bb29544be138638ab4a15f4bffa7661 · stempel: ROBOCZA · label 8bb29544 · źródłowe commity integracji: `5bb8e863` + `4e44e52e` + `50c30512` + `a2c887e8` + `eca8f56d` + `69cc3604` + `9a2be640`+`df1b322c` + `bba85893` + `16ad0841` + `dc378ab7` + `1db988b7`+`6f26b729` + `3741fdb3`+`cd683738`
+|- Ta FALA obejmuje WSZYSTKIE integracje od FALI 339 (2026-09-02 21:15 UTC) — 4 tematy zintegrowane wcześniej tej samej nocy nigdy nie dostały własnego wpisu FALA (luka w logowaniu), dołączone tutaj razem z 8 tematami zamkniętymi w tej sesji pętli AutoBot.
+|- **`R-DYPLO-HANDEL-OFERTA-AI-BLOKOWANA-Q1`** (`5bb8e863`) — AI proponowało zakup surowca poniżej progu uczciwości (24 PN vs wymagane ≥67 przy relTotal=60); naprawiony kierunek-świadomy parametr wyceny, bramka fairness bez zmian.
+|- **`R-AI-KONCENTRACJA-ARMII-WIELE-KLASTROW-Q1`** (`4e44e52e`) — AI łączy rozproszone małe armie w jedną, wg liczby aktywnych frontów zagrożenia (podział uzasadniony tylko przy ataku z wielu stron).
+|- **`R-BALANS-PAKT-NIEAGRESJI-I-GLINA-Q1`** (`50c30512`) — próg Relacji dla paktu nieagresji 50→90; produkcja gliny na łące 5→2, bonus rzeki 10→5 (decyzje balansu właściciela).
+|- **`P-SCIENCEHUB-EMOJI-ZAMIAST-IKON-ODBLOKOWAN-Q1`** (`a2c887e8`) — regresja emoji zamiast ikon marki w wierszu "Odblok." huba badań, naprawiona per-encja.
+|- **`P-TECHDISCOVERY-BADGE-DUPLIKAT-NACHODZENIE-Q1`** (`eca8f56d`) — popup odkrycia technologii: jedna odznaka statusu dla zwykłego odkrycia (było: dwie tożsame) + koniec nachodzenia nagłówka na grafikę diaromy dla dłuższych nazw technologii.
+|- **`P-ENTITYCARD-LINKI-KRZYZOWE-NA-PRZYCISKI-Q1`** (`69cc3604`) — linki krzyżowe kart encji (CSS-only) ze "złotego podkreślonego linku" na styl przycisku, zachowana hierarchia primary/secondary/nawigacja; pigułki przeniesione na klikalny `<button>`.
+|- **`R-DYPLO-MAPA-ODKRYCIE-PRZY-TRAKTACIE-Q1`** (`9a2be640`+`df1b322c`) — pakt nieagresji/sojusz/umowa handlowa z AI jednorazowo odkrywa (`explored`) żywą migawkę terytorium tej AI; AI↔AI i traktaty spoza zakresu (przemarsz, otwarte granice, itd.) bez efektu.
+|- **`R-WOJNA-WYMUSZONA-REGULY-Q1`** (`bba85893`) — wojna wymuszona Kamienia/Brązu: próg startu 25 tur od epoki, jeden przeciwnik naraz (koordynacja + limit gracza wg trudności), limit trwania wojny 25 tur → automatyczny pokój. Nowe testy main-guard chroniące okablowanie przed cichym usunięciem wywołania.
+|- **`R-MIASTA-REBELIA-CICHA-BEZ-POWIADOMIENIA-Q1`** (`16ad0841`) — właściciel zgłosił przejęcie miasta mimo aktywnego paktu; rzeczywisty mechanizm to CICHY bunt miasta (brak komunikatu) + późniejsze przejęcie przez sąsiada, pakt nigdy nie złamany. Dodane dwa komunikaty w grze dla obu etapów.
+|- **`R-ULEPSZENIA-OBOZ-LOWIECKI-LAS-ZNIKA-I-TEREN-Q1`** (`dc378ab7`) — kępa lasu znikała wizualnie (nie w danych) po zbudowaniu obozu łowieckiego na zalesionym wzgórzu/górze; naprawa warstwy renderu.
+|- **`R-DYPLO-TRAKTAT-HANDLOWY-WYBOR-CZASU-Q1`** (`1db988b7`+`6f26b729`) — traktat handlowy dostaje wybór czasu trwania jak pakt nieagresji, zamiast zahardkodowanych 20 tur. Najbardziej złożony temat serii — 7 rund weryfikacji, każda poza ostatnią ujawniła realny błąd (nadpisywanie czasu przez wymianę koszyka, sprzężenie wyceny PN z czasem traktatu, biała lista pól w silniku gubiąca nowe pole, 8-krotne zawyżenie wyceny trybutu).
+|- **`R-AI-ULEPSZENIA-MALO-BUDOWANE-Q1`** (`3741fdb3`+`cd683738`) — ZASADA 3 (przekierowanie nadwyżki puli ulepszeń AI na budynki) mogła przekierować 100% bez dolnej granicy; nowa podłoga 10%. Uczciwe zastrzeżenie: nie zwiększa tempa budowy ulepszeń terenu widocznych na mapie (ograniczone dostępnością kandydatów, nie budżetem) — zapobiega tylko trwałemu zeru w puli imperium, z mierzalną korzyścią dla innego konsumenta (zakładanie miast AI).
+|- Wszystkie tematy: pełny cykl AutoBot (Operator→Evaluator→Obrona gdy potrzebna→Final Control) przez Workflow, `tsc --noEmit` 0 błędów, 5 bramek referencyjnych (logic-test 213/213, tech-tree-test 19/19, research-test 33/33, unit-replace-test 13/13, combat-test 6/6) bez regresu po każdej integracji i na finalnym stanie `main`.
+|- Bundle: 882 modułów, `Gra-ROBOCZA.html` 69,6 MB. `Gra-ROBOCZA-POLE-BITWY.html` NIE przebudowany — żaden temat tej fali nie dotyka `battleScene.ts`/logiki bitwy.
+|- Publikacja: `gra-robocza/Gra-ROBOCZA.html` + manifest. `VERIFY OK`, manifest match OK (stamp md5 WARN kosmetyczny, znany, nieblokujący).
+|- **Odstępstwo techniczne (jak w FALACH 324-339):** publikacja odtworzona ręcznie w bashu/Node — `pwsh` nie istnieje w tym środowisku.
+|- Szczegóły: rejestr w `REJESTR-PROSB-I-ZADAN.md`.
+|- **AKTUALNA**
+
 ## ROBOCZA 046d388a - 2026-09-02 21:15 UTC - FALA 339: diorama pelnej szerokosci na kartach encji (podglad 3D jednostki/ikona wyeksponowane, Wariant A)
 
 |- md5 (pełne): 046d388ac1c721790d66b0bd4adc0136 · stempel: ROBOCZA · label 046d388a · źródłowe commity integracji: `e32d150a` + `6cebf7c3`
@@ -23,7 +46,7 @@ swoim wĹ‚asnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji d
 |- Publikacja: `gra-robocza/Gra-ROBOCZA.html` + manifest. `VERIFY OK`, manifest match OK (stamp md5 WARN kosmetyczny, znany, nieblokujący).
 |- **Odstępstwo techniczne (jak w FALACH 324-338):** publikacja odtworzona ręcznie w bashu/Node — `pwsh` nie istnieje w tym środowisku.
 |- Szczegóły: rejestr w `REJESTR-PROSB-I-ZADAN.md`.
-|- **AKTUALNA**
+|- **ZASTĄPIONA** (→ 8bb29544, FALA 340)
 
 ## ROBOCZA 9068f87c - 2026-09-02 20:10 UTC - FALA 338: opis/rys historyczny nad statystykami na kartach encji + panel audiencji dyplomatycznej osiagalny przy zoomie
 
