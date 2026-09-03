@@ -643,13 +643,19 @@ function treatySectionHtml(actionId: string, ctx: NegotiationModalContext, state
     case '4': {
       const feeC = ctx.borderFeeCivil ?? 20;
       const feeM = ctx.borderFeeMilitary ?? 40;
+      // P-DYPLO-PRZEMARSZ-CHECKBOX-PRZYCISK-Q1 (wyzwalacz: właściciel, „powinny być zamienione
+      // na Przyciski, bo wygląda to bardziej profesjonalnie"): dwa checkboxy zamienione na
+      // przyciski toggle w TYM SAMYM wzorcu `cdb-chip`/`selected` co `turnChips` (case '2').
+      // W odróżnieniu od `cdb-treaty-tech-dir`/`cdb-treaty-tech-pay` (grupa wzajemnie
+      // wykluczająca) to DWA NIEZALEŻNE przełączniki — każdy trzyma własny stan `selected`,
+      // patrz listener w refresh() niżej.
       body = '<label>Traktat przemarszu</label>'
-        + '<div class="cdb-row" style="display:flex;gap:8px;align-items:center;margin:6px 0">'
-        + '<input type="checkbox" id="cdb-treaty-mil" class="cdb-treaty-mil"' + (state.borderMilitary ? ' checked' : '') + ' />'
-        + '<label for="cdb-treaty-mil" style="margin:0">Wariant wojskowy (+ opłata)</label></div>'
-        + '<div class="cdb-row" style="display:flex;gap:8px;align-items:center;margin:6px 0">'
-        + '<input type="checkbox" id="cdb-treaty-barb" class="cdb-treaty-barb"' + (state.barbarianCooperation ? ' checked' : '') + ' />'
-        + '<label for="cdb-treaty-barb" style="margin:0">Wspólna walka z barbarzyńcami (3 tury)</label></div>'
+        + '<div class="cdb-chip-row">'
+        + '<button type="button" id="cdb-treaty-mil" class="cdb-chip cdb-treaty-mil'
+        + (state.borderMilitary ? ' selected' : '') + '">Wariant wojskowy (+ opłata)</button>'
+        + '<button type="button" id="cdb-treaty-barb" class="cdb-chip cdb-treaty-barb'
+        + (state.barbarianCooperation ? ' selected' : '') + '">Wspólna walka z barbarzyńcami (3 tury)</button>'
+        + '</div>'
         + '<p class="cdb-sub">Opłata cywilne: ' + feeC + ' ¤ · wojskowe: ' + feeM + ' ¤ (jednorazowo)</p>';
       break;
     }
@@ -801,8 +807,11 @@ function readTreatyStateFromDom(actionId: string, prev: TreatyFormState, ctx?: N
     const v = (document.querySelector('.cdb-treaty-alliance') as HTMLSelectElement)?.value;
     state.allianceKind = v === 'defensywny' ? 'defensywny' : 'pelny';
   } else if (actionId === '4') {
-    state.borderMilitary = (document.querySelector('.cdb-treaty-mil') as HTMLInputElement)?.checked ?? false;
-    state.barbarianCooperation = (document.querySelector('.cdb-treaty-barb') as HTMLInputElement)?.checked ?? false;
+    // P-DYPLO-PRZEMARSZ-CHECKBOX-PRZYCISK-Q1: `.checked` (checkbox) -> `.selected` (button
+    // toggle, ten sam odczyt co `.cdb-treaty-tech-dir.selected`/`.cdb-treaty-tech-pay.selected`
+    // wyżej w tej funkcji).
+    state.borderMilitary = document.querySelector('.cdb-treaty-mil')?.classList.contains('selected') ?? false;
+    state.barbarianCooperation = document.querySelector('.cdb-treaty-barb')?.classList.contains('selected') ?? false;
   } else if (actionId === '8') {
     // R-DYPLO-TRAKTAT-HANDLOWY-WYBOR-CZASU-Q1 (Obrona runda 1, piąty przebieg Evaluatora,
     // nota do zarzutu 1): DOKŁADNIE ta sama wada, którą naprawiono wcześniej w gałęzi '5'.
@@ -2530,10 +2539,22 @@ export function showTradeBasketModal(
     box.querySelector('.cdb-deal-turns')?.addEventListener('input', () => refresh());
 
     box.querySelectorAll(
-      '.cdb-treaty-turns, .cdb-treaty-alliance, .cdb-treaty-mil, .cdb-treaty-trib-mode, .cdb-treaty-gpt, .cdb-treaty-trib-turns, .cdb-treaty-wasal-gpt, .cdb-treaty-wchlon-gold',
+      '.cdb-treaty-turns, .cdb-treaty-alliance, .cdb-treaty-trib-mode, .cdb-treaty-gpt, .cdb-treaty-trib-turns, .cdb-treaty-wasal-gpt, .cdb-treaty-wchlon-gold',
     ).forEach(el => {
       el.addEventListener('change', () => refresh());
       el.addEventListener('input', () => refresh());
+    });
+
+    // P-DYPLO-PRZEMARSZ-CHECKBOX-PRZYCISK-Q1: `.cdb-treaty-mil`/`.cdb-treaty-barb` są teraz
+    // przyciski `cdb-chip`, nie checkboxy — brak zdarzenia `change`, więc osobny listener
+    // `click`. Wzorzec identyczny z `.cdb-treaty-tech-dir`/`.cdb-treaty-tech-pay` wyżej, ALE
+    // to dwa NIEZALEŻNE przełączniki (nie grupa wzajemnie wykluczająca) — każdy przycisk
+    // przełącza WYŁĄCZNIE swój własny stan `selected`.
+    box.querySelectorAll('.cdb-treaty-mil, .cdb-treaty-barb').forEach(btn => {
+      btn.addEventListener('click', () => {
+        btn.classList.toggle('selected');
+        refresh();
+      });
     });
 
     box.querySelectorAll('.cdb-add-btn').forEach(btn => {
