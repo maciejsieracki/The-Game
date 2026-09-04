@@ -4769,3 +4769,59 @@ w kryteriach końca tematów walki — czyli generuje fałszywe `PASS-WITH-NOTES
 takim temacie. Dołącza do listy zaległych czerwonych bramek obok `oboz-lowiecki-las-test`
 (72/19), `map-improvement-qualify-test` (130/1) i `entity-card-contract-test` (rAF ReferenceError).
 **STATUS: ZAREJESTROWANE, NIE DISPATCHOWANE.** DOMAIN: INFRA.
+
+## R-ENTITYCARD-JEDNA-KARTA-CZY-STOS-Q1 — SPRZECZNOŚĆ KONTRAKTÓW (2026-09-04, znalezisko CivPedia r2)
+
+**To nie jest błąd wykonawcy — to dwa zatwierdzone tematy, które chcą sprzecznych rzeczy.**
+Znalezione przy próbie wyjaśnienia, dlaczego dwie bramki są czerwone (29 faili łącznie:
+`civpedia-caly-wiersz-przyciskiem` 19, `entity-card-cross-links-nested-overlay` 10).
+Zweryfikowane niezależnie przez Operatora i Evaluatora w kodzie.
+
+**Strona A — „jedna karta naraz".** `openDialog()` (`gra/src/ui/entityCards/renderer.ts:474-479`)
+bezwarunkowo woła `activeDialog.dismiss()` przed zbudowaniem nowej karty. To jest **celowy
+wynik `P-ENTITYCARD-DIALOG-WIELOKROTNY-Q1`, zamówionego przez właściciela** słowami: „żeby
+nie wszystkie włączały się naraz […] poprzednia powinna zniknąć". Kryterium K1 tamtego tematu
+żąda wprost: po kliknięciu linku krzyżowego w karcie A zostaje **dokładnie 1** backdrop.
+
+**Strona B — „stos zagnieżdżony".** Starszy `entity-card-cross-links-nested-overlay-test.cjs:163-165`
+żąda `depthAfterB === 2`, czyli że karta A ma **zostać pod spodem**. Około 10 asercji
+`depthAfter === 2` siedzi też w `civpedia-caly-wiersz-przyciskiem-test.cjs`.
+
+**Objaw w liczbach:** `depthBefore:1, depthAfter:1` przy POPRAWNYM `cardTop` — czyli karta
+docelowa jest właściwa, tylko **zastępuje** źródłową zamiast się na niej kłaść. Nic nie jest
+zepsute; dwa kontrakty po prostu opisują dwa różne UX.
+
+**Dodatkowo martwy komentarz:** `renderer.ts:406-411` wciąż opisuje zachowanie „NIE zamykając
+karty źródłowej", którego kod od czasu `P-ENTITYCARD-DIALOG-WIELOKROTNY-Q1` już nie realizuje.
+Do poprawienia **niezależnie od wyniku decyzji** — dziś wprowadza w błąd każdego, kto tam zajrzy.
+
+**STATUS: OTWARTE — wymaga ABC właściciela, nie decyzji wykonawcy.** Wybór „jedna karta naraz"
+vs „stos zagnieżdżony" to decyzja o UX, a nie o poprawności. Operator i Evaluator zgodnie
+odmówili rozstrzygnięcia i przekazali wyżej — zachowanie prawidłowe (§14).
+
+## P-BRAMKA-WSPOLDZIELONY-DIST-TMPDIR-Q1 — INFRA (2026-09-04, znalezisko Evaluatora CivPedia r2)
+
+`gra/tools/wydarzenia-zbadano-karta-tech-real-render-test.cjs:~65` buduje do
+**współdzielonego** katalogu `os.tmpdir()/civ-zbadano-karta-tech-dist`. Dwa równoległe
+przebiegi tej samej bramki (typowo: baza vs HEAD przy pomiarze parytetu) po cichu mieszają
+ten sam `dist`.
+
+**Dlaczego to jest realne, a nie teoretyczne:** Evaluator natrafił na to w praktyce i musiał
+powtórzyć własne przebiegi **sekwencyjnie**. Przy tej sesji — pięć równoległych fal AutoBota,
+każda mogąca uruchamiać bramki — ryzyko **fałszywego parytetu** jest wprost proporcjonalne
+do liczby fal. Fałszywy parytet to najgorsza klasa błędu w tym procesie: wygląda jak dowód,
+że nic się nie zepsuło.
+
+**Zakres:** katalog docelowy per przebieg (PID/losowy sufiks) w tej bramce oraz **audyt
+pozostałych bramek budujących do `os.tmpdir()`** — sprawdzić, ile z nich ma ten sam wzorzec.
+**STATUS: ZAREJESTROWANE, NIE DISPATCHOWANE.** DOMAIN: INFRA.
+
+## P-BRAMKA-ZBADANO-KARTA-KOMENTARZE-NIEAKTUALNE-Q1 — dokumentacja (2026-09-04)
+
+Po rundzie 2 tematu CivPedia komentarz nad `clickRowLabel`
+(`gra/tools/wydarzenia-zbadano-karta-tech-real-render-test.cjs:268-272`) i etykieta asercji
+(`:581`) nadal mówią o „`button[data-entity-kind]`" i „Szczegóły →" — czyli o warunku,
+który właśnie zdjęto, i o przycisku, którego już nie ma. Operator **świadomie ich nie tknął**,
+bo ratyfikacja mówiła „nic więcej w tym pliku" — zachowanie prawidłowe, ale zostawia ślad
+do sprzątnięcia. **STATUS: ZAREJESTROWANE, NIE DISPATCHOWANE.** Drobny, do połączenia
+z pierwszym tematem dotykającym tego pliku.
