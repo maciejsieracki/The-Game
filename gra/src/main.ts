@@ -9704,6 +9704,37 @@ async function boot(): Promise<void> {
     }
 
     /**
+     * P-MGLA-ODKRYCIE-SCIEZKA-INWARIANT-Q1 — NAZWANY PRYMITYW ODKRYWANIA WZDLUZ SCIEZKI.
+     *
+     * `refreshFog()` nizej odkrywa WYLACZNIE z AKTUALNEJ pozycji jednostki
+     * (`currentVisible()` -> `computeVisibleAt(u.q, u.r, ...)`). Kazde przemieszczenie
+     * o WIECEJ niz jeden heks, ktore konczy sie samym `refreshFog()`, produkuje objaw
+     * zgloszony przez wlasciciela CZTERY razy: „odkrywa sie w tym miejscu, w ktorym
+     * pojawi sie na koncu, a nie odkrywa nic po drodze". Ta funkcja jest jedynym
+     * poprawnym domknieciem takiego przemieszczenia.
+     *
+     * NIE jest zamiennikiem trzech istniejacych wywolan inline (main.ts ~22514, ~27689,
+     * ~32435): ich DOSLOWNY tekst jest zakontraktowany przez bramke
+     * `gra/tools/mgla-odkrycie-wzdluz-sciezki-test.cjs` (SEKCJA D) oraz
+     * `gra/tools/mgla-teleport-koniec-tury-test.cjs` (SEKCJA D). Pierwsza z nich lezy
+     * POZA allowlista tematu P-MGLA-ODKRYCIE-SCIEZKA-INWARIANT-Q1 — patrz raport rundy 1.
+     *
+     * Strukturalnym zabezpieczeniem przed PIATYM zapomnianym miejscem nie jest ten helper
+     * (helper nie zmusza nikogo, zeby go zawolac), tylko bramka
+     * `gra/tools/mgla-sciezka-inwariant-test.cjs`, ktora wymaga jawnej klasyfikacji
+     * KAZDEGO zapisu pozycji jednostki (`.q =` / `.r =`) w calym `gra/src`.
+     */
+    function revealAlongPathForStack(
+      stack: ReadonlyArray<RuntimeUnit>,
+      pathHexes: ReadonlyArray<{ q: number; r: number }>,
+    ): void {
+      if (pathHexes.length === 0) return;
+      for (const su of stack) {
+        addExplored(explored, computeVisibleAlongPath(pathHexes, map, unitSight(su)));
+      }
+    }
+
+    /**
      * Re-apply fog and unit visibility after any state change.
      * Must NOT be called while gallery is active (gallery drives its own sync).
      */
@@ -27726,6 +27757,20 @@ async function boot(): Promise<void> {
             unitSight,
             Math.random,
             (u) => {
+              // P-MGLA-ODKRYCIE-SCIEZKA-INWARIANT-Q1 — CZWARTE miejsce tego samego wzorca.
+              // `advanceScoutAutoExplore` (scout-auto-explore.ts:234) przestawia `unit.q/r`
+              // KROK PO KROKU w petli `while (unit.ruchLeft > 0)` — zwiadowca z duzym
+              // budzetem ruchu (rzeka: plaski koszt 1/heks, units/setup.ts:628) przechodzi
+              // w JEDNEJ turze kilkanascie heksow. Jedynym odkryciem bylo `refreshFog()`
+              // PO calej petli (nizej) — a ono liczy WYLACZNIE z pozycji KONCOWEJ
+              // (`currentVisible()`), wiec heksy POSRODKU trasy nie trafialy do `explored`.
+              // `advanceScoutAutoExplore` prowadzi wprawdzie wlasny `workingExplored`, ale
+              // to LOKALNA kopia (`new Set(explored)`), porzucana po powrocie z funkcji.
+              // Hak `onAfterStep` jest wolany po KAZDYM kroku, wiec odkrycie z biezacego
+              // heksu w tym haku jest rownowazne odkryciu wzdluz calej sciezki — i jest
+              // jedynym wpieciem osiagalnym z main.ts (scout-auto-explore.ts jest poza
+              // allowlista tematu).
+              revealAlongPathForStack([u], [{ q: u.q, r: u.r }]);
               if (u.ownerId === 0) {
                 if (checkVillageRewardAt(u.q, u.r)) scoutHutCollected = true;
               }
