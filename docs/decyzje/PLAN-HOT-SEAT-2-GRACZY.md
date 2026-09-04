@@ -321,3 +321,110 @@ w `gra-robocza/Gra-ROBOCZA.html`.
   tras. Uwaga: konsumenty `tradeRoutes` w `main.ts` (chip HUD, panel imperium,
   nakładka, toasty) filtrują po `ownerId===0` — w hot-seat filtr musi iść na `ME()`
   (aktywny człowiek), co jest już objęte tabelą B2 (kategoria „render/HUD" → `isMe`).
+
+---
+
+# H. MULTIPLAYER SIECIOWY — Etap 9, ostatni krok po hot-seacie
+
+**Status:** ocena wykonalności, nie plan wdrożenia. Powstała 2026-09-04 na pytanie
+właściciela: „co ewentualnie z wersją multiplayer, czy to byłoby dużo trudniejsze
+czy łatwiejsze?" oraz „być może gra musiałaby być na serwerze odpalana tylko w
+przeglądarce". Decyzja właściciela: **multiplayer jako OSTATNI krok**, po Etapach 0-8.
+
+## H1. Relacja do hot-seatu: nadzbiór, nie alternatywa
+
+Multiplayer jest **ściśle trudniejszy**, bo zawiera hot-seat w całości. Wszystko z
+Etapów 0-7 (wielu ludzkich właścicieli, mgła per człowiek, `PlayerState` per człowiek,
+rozcięcie `triggerPlayerEndTurn`, save v3) jest w multiplayerze wymagane tak samo.
+Nic z tej pracy się nie marnuje. Przyrost ponad hot-seat jest natomiast mniejszy, niż
+sugeruje intuicja — z czterech konkretnych powodów (H2).
+
+## H2. Co gra ma JUŻ gotowe pod multiplayer (zweryfikowane w kodzie)
+
+1. **Logika gry działa headless w Node.** Cały zestaw bramek (`gra/tools/*-test.cjs`)
+   bunduje `src/` esbuildem i uruchamia w Node — np. `trade-routes-limit-test.cjs`
+   wywołuje żywe `refreshTradeRoutes`, `logic-test.cjs` całą warstwę reguł.
+   Rdzeniowe moduły mają **zero** odwołań do DOM/three.js (sprawdzone:
+   `game/trade-routes.ts`, `game/combat.ts`, `game/turn-economy.ts`, `game/ai.ts`,
+   `game/visibility.ts` — po 0 trafień na `document.`/`window.`/`from 'three'`).
+   **To jest najdroższa rzecz w budowie autorytatywnego serwera i jest już zrobiona** —
+   nie celowo pod multiplayer, tylko jako efekt uboczny dyscypliny testowej.
+2. **AI jest celowo deterministyczne.** `game/ai.ts` (3900+ linii): zero
+   `Math.random()`, komentarze wprost deklarują „Stała lista — zero `Math.random()`,
+   determinizm A=B". AI może liczyć się identycznie u wszystkich graczy.
+3. **Walka i oblężenie już przyjmują wstrzykiwany RNG:** `game/combat.ts:818` i
+   `game/siege.ts:584` mają `const rng = opts.rng ?? (() => Math.random())` —
+   architektura gotowa, tylko miejsca wywołania nie podają dziś ziarna.
+4. **Pełna serializacja stanu istnieje.** `SaveGame` (`game/save.ts`) + `buildSaveGameSnapshot`
+   dowodzą, że stan da się zapisać i odtworzyć — to gotowy kanał synchronizacji
+   i gotowy mechanizm odzyskiwania po rozjeździe/reconnekcie.
+5. **Gra jest turowa** — odpada cała najtrudniejsza warstwa typowego multiplayera:
+   interpolacja, predykcja ruchu, kompensacja lagów, rollback.
+
+## H3. Czego brakuje
+
+1. **Backend nie istnieje w ogóle.** Grep `WebSocket|socket.io|fetch(|XMLHttpRequest|WebRTC`
+   w `gra/src` → **zero trafień**. Gra to jeden plik HTML otwierany lokalnie. To nowa
+   infrastruktura (serwer/relay, lobby, dołączanie, reconnect), nie refaktor.
+2. **Domknięcie determinizmu — wąskie i zlokalizowane.** `Math.random()` w `gra/src`:
+   51 wystąpień, ale **8 w `game/`** (z czego większość to komentarze deklarujące
+   determinizm) i **11 w `main.ts`**. Realnie do domknięcia:
+   - **6 generatorów ID jednostek** (`main.ts:3539, 8295, 22748, 29164, 31768, 31843`),
+     wzorzec `'prod_' + turn + '_' + cityId + '_' + Math.random().toString(36)` —
+     dwa klienty nadałyby tej samej jednostce różne ID. Zamiana na deterministyczny
+     licznik (tura + owner + numer kolejny).
+   - **1 realne losowanie rozgrywkowe:** `main.ts:22677`
+     `pickVillageReward(Math.random(), …)` — nagroda z wioski.
+   - `main.ts:1384` i `:33141` to generowanie ziarna na starcie gry — bez zmian,
+     ziarno i tak jest współdzielone.
+   - Reszta (`render/`, `audio/`) nie dotyka stanu gry.
+3. **Model zaufania.** Przy autorytecie klienta każdy gracz może edytować własny stan.
+   Dla grania ze znajomymi — do przyjęcia; dla publicznego — wymaga autorytetu serwera.
+
+## H4. Wybór architektury — REKOMENDACJA: autorytatywny host, nie lockstep
+
+**Lockstep** (klienci wymieniają wyłącznie rozkazy, każdy symuluje identycznie) jest
+najtańszy pasmowo, ale wymaga domknięcia **każdej** dziury w determinizmie, a jeden
+rozjazd kończy partię; potrzebne sumy kontrolne stanu i procedura rozjazdu.
+
+**Autorytatywny host + synchronizacja stanu** — jeden podmiot (serwer albo jeden
+klient) jest źródłem prawdy, reszta wysyła rozkazy i dostaje stan. Znacznie
+wyrozumialszy wobec resztek niedeterminizmu, a **format snapshotu już istnieje**
+(save/load). Rekomendacja: ten wariant.
+
+## H5. „Gra na serwerze, odpalana w przeglądarce" — dwa różne znaczenia
+
+Właściciel podniósł ten wątek osobno. Trzeba rozdzielić:
+
+**(a) Serwer SERWUJE stronę** (logika nadal w przeglądarce). Tanie, a rozwiązuje trzy
+realne problemy naraz:
+- wszyscy gracze mają **tę samą wersję** automatycznie — rozjazd wersji to klasyczny
+  zabójca multiplayera;
+- znika dystrybucja pliku;
+- **znika hack z pojedynczym plikiem.** Dziś `gra-robocza/Gra-ROBOCZA.html` waży
+  **66 MB** i GitHub ostrzega przy każdym pushu, że plik przekracza zalecany limit.
+  `vite-plugin-singlefile` istnieje wyłącznie po to, żeby gra działała z lokalnego
+  dysku — przy hostingu zdejmuje się go i wraca do normalnego builda z podziałem na
+  paczki i cache'owaniem.
+
+**(b) Serwer LICZY grę** (autorytatywny). Dopiero to rozwiązuje zaufanie. Blokadą nie
+jest logika (H2 pkt 1 — już headless), tylko fakt, że rozstrzyganie tury siedzi w
+`triggerPlayerEndTurn` wewnątrz `main.ts`, wymieszane z UI. **To jest dokładnie
+Etap 4 tego planu** — po rozcięciu na `endActiveHumanTurn()` (ekran) i
+`runWorldEndTurn()` (czysta symulacja), ten drugi jest gotowym silnikiem serwerowym.
+
+Serwowanie strony ≠ autorytet serwera. (a) można zrobić od razu, niezależnie od
+hot-seatu, i ma wartość samo w sobie.
+
+## H6. Kolejność
+
+| Krok | Zależy od | Wartość sama w sobie |
+|---|---|---|
+| Etapy 0-7 (hot-seat) | — | dwóch graczy przy jednym komputerze |
+| Etap 8 (dyplomacja gracz↔gracz, ABC-1=C) | Etap 5 | pełne negocjacje w hot-seacie |
+| **H5(a) hosting strony** | **nic** — można kiedykolwiek | spójność wersji, koniec 66 MB w gicie |
+| H3 pkt 2 (domknięcie 7 losowań) | nic | powtarzalność partii, łatwiejsze testy |
+| **Etap 9: multiplayer** | Etapy 0-8 + H5(a) + H3 pkt 2 | gra sieciowa |
+
+Nic w tej kolejności nie jest ślepą uliczką: każdy krok ma sens, nawet gdyby następny
+nigdy nie powstał.
