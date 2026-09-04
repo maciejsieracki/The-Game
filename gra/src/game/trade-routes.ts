@@ -1122,6 +1122,16 @@ export function diagnoseMissingTradeRouteForPartner(
 }
 
 /**
+ * R-HANDEL-WYMIANA-TECH-GATE-Q1: slug technologii (tech.json „Technologia")
+ * wymaganej, by właściciel prowadził JAKIKOLWIEK handel szlakowy — zewnętrzny
+ * (traktatowy) LUB wewnątrz-cywilizacyjny. Wzorzec `EMBARK_TECH`
+ * (embarkation.ts) — stała nazwy techu żyje w module `game/`, sam predykat
+ * per-owner (`hasTradeTech` niżej) jest wstrzykiwany przez main.ts (ten moduł
+ * jest czysty, nie zna `player.zbadane`/`aiResearchDone`).
+ */
+export const TRADE_TECH = 'Wymiana';
+
+/**
  * refreshTradeRoutes — E3: ustala aktywne trasy handlowe wszystkich cywilizacji
  * (gracz + AI + państwa-miasta) na tę turę.
  *
@@ -1275,6 +1285,19 @@ export function diagnoseMissingTradeRouteForPartner(
  *                       allowlisty tego tematu, którzy nie przekazują tego
  *                       argumentu — main.ts ZAWSZE przekazuje realne dane
  *                       (`loadTradeRouteIncomeParams` z econ-params.json).
+ * @param hasTradeTech  R-HANDEL-WYMIANA-TECH-GATE-Q1: (ownerId) => czy właściciel
+ *                       zbadał `TRADE_TECH` ("Wymiana"). Bramuje candidate-
+ *                       generation (kandydat bez techu w ogóle NIE POWSTAJE —
+ *                       nie zajmuje existence-slotu ani miejsca w priorytetyzacji),
+ *                       para zewnętrzna wymaga `hasTradeTech` PO OBU stronach,
+ *                       para wewnętrzna (ten sam właściciel) wymaga go raz. Ta
+ *                       sama reguła obowiązuje kandydatów KONTYNUUJĄCYCH
+ *                       (`existingRoutes`) — trasa, której właściciel przestał
+ *                       spełniać warunek, znika z wyniku tak samo jak przy
+ *                       utracie traktatu/geometrii. Domyślne `() => true` =
+ *                       WSTECZNA ZGODNOŚĆ dla wywołujących spoza allowlisty tego
+ *                       tematu; main.ts ZAWSZE przekazuje realny predykat oparty
+ *                       o `unlockedTechSetForOwner`/`ownerResearchedTechs`.
  */
 export function refreshTradeRoutes(
   cities: readonly TradeRouteCityRef[],
@@ -1286,6 +1309,7 @@ export function refreshTradeRoutes(
   params: TradeRouteParams = DEFAULT_TRADE_ROUTE_PARAMS,
   territoryNodes?: readonly TerritoryNode[],
   incomeParams: TradeRouteIncomeParams = DEFAULT_TRADE_ROUTE_INCOME_PARAMS,
+  hasTradeTech: (ownerId: number) => boolean = () => true,
 ): TradeRoute[] {
   if (cities.length === 0) return [];
 
@@ -1362,9 +1386,12 @@ export function refreshTradeRoutes(
     const to   = cityById.get(route.toCityId);
     if (!from || !to) continue;
     const wewnetrzna = from.ownerId === to.ownerId;
-    if (!wewnetrzna) {
+    if (wewnetrzna) {
+      if (!hasTradeTech(from.ownerId)) continue; // R-HANDEL-WYMIANA-TECH-GATE-Q1: brak techu -> trasa wewnetrzna znika
+    } else {
       if (isAtWar(from.ownerId, to.ownerId)) continue;
       if (!hasTradeTreaty(from.ownerId, to.ownerId)) continue; // C-HANDEL-UMOWA=B: brak/zerwana Umowa Szlaków -> trasa znika
+      if (!hasTradeTech(from.ownerId) || !hasTradeTech(to.ownerId)) continue; // R-HANDEL-WYMIANA-TECH-GATE-Q1: brak techu po ktorejkolwiek stronie -> trasa zewnetrzna znika
     }
     const conn = findCityConnection(
       from, to, map, route.medium, params, builtByCity,
@@ -1402,6 +1429,7 @@ export function refreshTradeRoutes(
       const ownerB = ownerIds[j]!;
       if (isAtWar(ownerA, ownerB)) continue;
       if (!hasTradeTreaty(ownerA, ownerB)) continue; // C-HANDEL-UMOWA=B: bez Umowy Szlaków para wykluczona
+      if (!hasTradeTech(ownerA) || !hasTradeTech(ownerB)) continue; // R-HANDEL-WYMIANA-TECH-GATE-Q1: brak techu po ktorejkolwiek stronie -> para wykluczona z candidate-generation
       const citiesA = citiesByOwner.get(ownerA)!;
       const citiesB = citiesByOwner.get(ownerB)!;
       for (const a of citiesA) {
@@ -1424,6 +1452,7 @@ export function refreshTradeRoutes(
   for (const ownerId of ownerIds) {
     const ownerCities = citiesByOwner.get(ownerId)!;
     if (ownerCities.length < 2) continue;
+    if (!hasTradeTech(ownerId)) continue; // R-HANDEL-WYMIANA-TECH-GATE-Q1: brak techu -> zero kandydatur wewnetrznych dla tego wlasciciela
     const sorted = ownerCities.slice().sort((x, y) => x.id.localeCompare(y.id));
     for (let i = 0; i < sorted.length; i++) {
       for (let j = i + 1; j < sorted.length; j++) {

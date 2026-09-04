@@ -520,6 +520,7 @@ import {
 } from './game/turn-economy';
 import {
   refreshTradeRoutes,
+  TRADE_TECH,
   computeTradeRouteIncomeByCity,
   computeTradeRouteBuildingBonusByCity,
   // T6: per-trasowa wersja tej samej premii 5% — do rozkładu dochodu w panelu imperium.
@@ -10385,6 +10386,16 @@ async function boot(): Promise<void> {
       return false;
     }
 
+    // R-HANDEL-WYMIANA-TECH-GATE-Q1: czy właściciel (gracz/AI/państwo-miasto)
+    // zbadał technologię handlu szlakowego (TRADE_TECH="Wymiana"). Wzorzec
+    // ownerHasSeafaring wyżej — GOTOWY akcesor per-owner (unlockedTechSetForOwner),
+    // nie duplikuje odczytu player.zbadane/aiResearchDone. Barbarzyńcy (ownerId<0)
+    // są już wykluczeni z tradeCities (isBarbarian) przed wywołaniem refreshTradeRoutes,
+    // ale funkcja zwraca bezpiecznie false (Set pusty) także dla nich.
+    function ownerHasTradeTech(ownerId: number): boolean {
+      return unlockedTechSetForOwner(ownerId).has(TRADE_TECH);
+    }
+
     /** Funkcja kosztu ruchu jednostki: woda przejezdna, gdy może się zaokrętować. */
     function moveCostFnForUnit(u: RuntimeUnit): ((hex: Hex) => number) | undefined {
       return moveCostFnFor(u, ownerHasSeafaring(u.ownerId));
@@ -13720,6 +13731,7 @@ async function boot(): Promise<void> {
           tradeParams,
           buildAllTerritoryNodes(), // R-HANDEL-SZLAKI-WYMOG-GRANICY-LADOWEJ-Q1: wymóg wspólnej granicy lądowej (pary zewnętrzne — GOAL 5 R-HANDEL-LIMIT-TRAS-PELNY-Q1 pomija ten wymóg dla par wewnętrznych, wewnątrz samej funkcji)
           tradeIncomeParams, // R-HANDEL-LIMIT-TRAS-PELNY-Q1 GOAL 3: priorytet kandydatów wg dochodu malejąco
+          ownerHasTradeTech, // R-HANDEL-WYMIANA-TECH-GATE-Q1 GOAL 1: bez technologii "Wymiana" -> zero tras (zewnętrznych i wewnętrznych)
         );
       } catch (eTrade) {
         console.error('[Handel] Blad odswiezania tras:', eTrade);
@@ -15457,7 +15469,7 @@ async function boot(): Promise<void> {
         negotiationToLegacyPending(entry),
         turn,
         _menuDifficulty,
-        { atWar },
+        { atWar, hasTradeTech: ownerHasTradeTech }, // R-HANDEL-WYMIANA-TECH-GATE-Q1 GOAL 3
       );
       applyProposalOutcome(entry.proposerOwnerId, entry.responderOwnerId, result, entry.payload, entry.actionId);
       refreshD1bHud();
@@ -16011,7 +16023,10 @@ async function boot(): Promise<void> {
           } as AIDiplomacyCommand;
           const pending = aiCommandToPendingProposal(cmd, p.ownerId, 0, turn);
           if (pending) {
-            const result = resolvePlayerAcceptsAiPending(pending, turn);
+            const result = resolvePlayerAcceptsAiPending(
+              pending, turn, undefined,
+              { hasTradeTech: ownerHasTradeTech }, // R-HANDEL-WYMIANA-TECH-GATE-Q1 GOAL 3 (difficulty: undefined -> default 'normal', zachowanie bez zmian)
+            );
             applyProposalOutcome(p.ownerId, 0, result, pending.payload, pending.actionId);
             if (result.accepted) showHintMessage('Przyjęto: ' + p.civName, 3500);
           } else {
@@ -17543,6 +17558,7 @@ async function boot(): Promise<void> {
       if (!pending) return;
       const result = resolvePlayerAcceptsAiPending(
         pending, turn, effectiveGameDifficultyForOwner(targetId),
+        { hasTradeTech: ownerHasTradeTech }, // R-HANDEL-WYMIANA-TECH-GATE-Q1 GOAL 3
       );
       if (!result.accepted || !result.deal) return;
       activeDeals = applyAcceptedProposal(activeDeals, result);
@@ -17666,6 +17682,7 @@ async function boot(): Promise<void> {
           if (rel.status === 'wojna') continue;
           if (relationScore(rel) < dip.progHandelRelacja) continue;
           if (hasSzlakowTreaty(activeDeals, a, b)) continue; // już obowiązuje traktat szlaków
+          if (!ownerHasTradeTech(a) || !ownerHasTradeTech(b)) continue; // R-HANDEL-WYMIANA-TECH-GATE-Q1 GOAL 3: brak techu po ktorejkolwiek stronie -> para pominieta
 
           const pairKey = diploPairKey(a, b);
           if (!canAiProposeTradeAgreement(turn, aiAiTradeAgreementLastTurn.get(pairKey))) continue;
@@ -18457,6 +18474,12 @@ async function boot(): Promise<void> {
         responderWiarygodnosc: getWiarygodnosc(responderId),
         packageSiblingGivePn: sibling?.givePn,
         packageSiblingReceivePn: sibling?.receivePn,
+        // R-HANDEL-WYMIANA-TECH-GATE-Q1 GOAL 3: bramka techniczna dla
+        // evaluateProposal case 'umowa_handlowa'/'umowa_szlakow' — jedyny
+        // punkt budowy ProposalEvalContext, pokrywa wszystkie wywołania
+        // evaluateProposal (gracz->AI, AI->gracz preview, live preview UI).
+        hasTradeTechProposer: ownerHasTradeTech(proposerId),
+        hasTradeTechResponder: ownerHasTradeTech(responderId),
       };
     }
 
@@ -19018,6 +19041,11 @@ async function boot(): Promise<void> {
           DEFAULT_TRADE_ROUTE_PARAMS,
           buildAllTerritoryNodes(),
         ),
+        // R-HANDEL-WYMIANA-TECH-GATE-Q1 GOAL 2: bramka techniczna dla propozycji
+        // Umowy Szlaków (case '5', diplomacy-locks.ts) — MY zawsze gracz (0) w
+        // tym kontekście, ONI to `ownerId` (partner).
+        hasTradeTechSelf: ownerHasTradeTech(0),
+        hasTradeTechOther: ownerHasTradeTech(ownerId),
         hasWymiana: hasWymianaTreaty(activeDeals, 0, ownerId),
         hasSojusz,
         // P-DYPLO-PRZEMARSZ-DUPLIKAT-AKTYWNY-Q1: traktat przemarszu jest symetryczny

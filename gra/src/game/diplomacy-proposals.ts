@@ -224,6 +224,17 @@ export interface ProposalEvalContext {
    */
   packageSiblingGivePn?: number;
   packageSiblingReceivePn?: number;
+  /**
+   * R-HANDEL-WYMIANA-TECH-GATE-Q1: czy proponent/respondent zbadali technologię
+   * handlu szlakowego (`TRADE_TECH`, trade-routes.ts). Bramuje WYŁĄCZNIE
+   * 'umowa_handlowa'/'umowa_szlakow' (obie strony wymagane) — nie duplikuje
+   * logiki, moduł nie zna `player.zbadane`/`aiResearchDone`, wywołujący
+   * (main.ts, `buildProposalEvalContext`) wstrzykuje realne wartości.
+   * `undefined` = WSTECZNA ZGODNOŚĆ (bramka pominięta) dla wywołujących spoza
+   * allowlisty tego tematu.
+   */
+  hasTradeTechProposer?: boolean;
+  hasTradeTechResponder?: boolean;
 }
 
 export interface ProposalEvalResult {
@@ -1421,6 +1432,13 @@ export function evaluateProposal(
 
     case 'umowa_handlowa':
     case 'umowa_szlakow': {
+      // R-HANDEL-WYMIANA-TECH-GATE-Q1: twarda bramka techniczna, przed każdą
+      // inną oceną tej propozycji — bez technologii "Wymiana" po którejkolwiek
+      // stronie nie ma o czym negocjować. `undefined` (wywołujący spoza
+      // allowlisty) = bramka pominięta, wsteczna zgodność.
+      if (ctx.hasTradeTechProposer === false || ctx.hasTradeTechResponder === false) {
+        return { accepted: false, reason: 'Brak zbadanej technologii Wymiana po jednej ze stron' };
+      }
       const { givePn, receivePn } = resolveProposalPn(payload, pnOpts);
       // treatyEvalRelationTotal (nie goły relationTotal) — spójne z dawną
       // proposerUnfairToPartnerGate/treatyPnGate (clamp wojenny), choć w praktyce
@@ -1921,7 +1939,9 @@ export function resolvePlayerAcceptsAiPending(
   pending: PendingProposal,
   turn: number,
   difficulty: GameDifficulty = 'normal',
-  opts?: { atWar?: boolean },
+  // R-HANDEL-WYMIANA-TECH-GATE-Q1: `hasTradeTech` opcjonalny — wsteczna zgodność
+  // dla wywołujących spoza allowlisty tego tematu (undefined = bramka pominięta).
+  opts?: { atWar?: boolean; hasTradeTech?: (ownerId: number) => boolean },
 ): ProposalEvalResult {
   const { actionId, fromOwnerId, toOwnerId, payload } = pending;
   if (opts?.atWar === true) {
@@ -2081,6 +2101,12 @@ export function resolvePlayerAcceptsAiPending(
       // E6 / HANDEL-SPLIT-Q1=B: gracz akceptuje propozycję traktatu szlaków od AI.
       // R-DYPLO-TRAKTAT-HANDLOWY-WYBOR-CZASU-Q1: ta sama zasada co w `evaluateProposal`
       // — czas TRAKTATU z `treatyTurns`, fallback na `turns` dla payloadów AI.
+      // R-HANDEL-WYMIANA-TECH-GATE-Q1: druga warstwa tej samej bramki — nawet gdy
+      // AI zdążyło zaproponować traktat zanim/gdy tech przestał być spełniony,
+      // gracz nie może go PRZYJĄĆ bez technologii "Wymiana" po obu stronach.
+      if (opts?.hasTradeTech && (!opts.hasTradeTech(fromOwnerId) || !opts.hasTradeTech(toOwnerId))) {
+        return { accepted: false, reason: 'Brak zbadanej technologii Wymiana po jednej ze stron' };
+      }
       const szlakiAiDurationTurns = resolveTreatyDurationTurns(payload);
       const deal = buildDeal(
         RodzajTraktatu.UmowaSzlakow,
