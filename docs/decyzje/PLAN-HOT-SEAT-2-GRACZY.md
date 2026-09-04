@@ -294,11 +294,30 @@ w `gra-robocza/Gra-ROBOCZA.html`.
 
 ---
 
-## G. Decyzje ABC do podjęcia przed Etapem 4
+## G. Decyzje ABC — ROZSTRZYGNIĘTE przez właściciela 2026-09-04
 
-- **ABC-1 — relacja gracz1↔gracz2:** (A) zawsze wojna, (B) zawsze neutralni bez
-  możliwości traktatu, (C) pełna dyplomacja z UI negocjacji przy jednym ekranie.
-- **ABC-2 — moment liczenia ekonomii:** (A) jedna faza EOT po turach obu ludzi
-  (rekomendacja — silnik już liczy wszystkich ownerów jednym `advanceCityEconomy`),
-  (B) osobno po każdym foteli.
-- **ABC-3 — trasy handlowe człowiek↔człowiek:** (A) tak jak z AI, (B) wyłączone.
+- **ABC-1 — relacja gracz1↔gracz2: ODPOWIEDŹ = (C) PEŁNA DYPLOMACJA.** Gracz 1 może
+  negocjować z graczem 2 przy jednym ekranie (traktaty, wymiana, sojusz, wojna).
+  **Skutek dla planu:** rdzeń jest gotowy (`getDiploRelation(a,b)` @ `main.ts:7696-7698`
+  używa symetrycznego klucza `a<b ? a_b : b_a`, para `0_1` jest legalna; `activeDeals`
+  ze `strony:[a,b]` obsługuje dowolną parę). Praca dochodzi w warstwie UI: panel
+  audiencji/negocjacji musi umieć tryb „obaj gracze przy jednym monitorze" — kto
+  proponuje, kto akceptuje, i jak nie pokazać drugiemu graczowi informacji, do
+  których nie ma prawa (patrz ryzyko D3, wyciek informacji). **To jest osobny,
+  duży podtemat — dodaje się jako Etap 8 po ustabilizowaniu Etapów 0-7**, nie
+  blokuje wcześniejszych etapów (do Etapu 7 para ludzi zachowuje się jak każda inna
+  para właścicieli, z relacją domyślną z generatora).
+- **ABC-2 — moment liczenia ekonomii: ODPOWIEDŹ = (A) RAZ, PO TURACH OBU LUDZI.**
+  Zgodne z rekomendacją i z istniejącym silnikiem — `advanceCityEconomy` (wołane raz
+  w fazie EOT @ `main.ts:27700+`) już dziś liczy WSZYSTKIE miasta wszystkich
+  właścicieli i rozdziela wyniki po `tick.ownerId`. **Skutek dla planu:** Etap 4
+  (`runWorldEndTurn`) nie wymaga rozbijania fazy ekonomii — zostaje jedna faza po
+  ostatnim foteli człowieka, przed turami AI. To najtańszy wariant.
+- **ABC-3 — trasy handlowe człowiek↔człowiek: ODPOWIEDŹ = (A) TAK JAK Z AI.**
+  Człowiek #2 jest traktowany jak każda inna cywilizacja — trasy powstają po zawarciu
+  Umowy Szlaków, wg tych samych limitów slotów. **Skutek dla planu:** ryzyko D9 znika —
+  po `R-HANDEL-LIMIT-TRAS-PELNY-Q1` (generalizacja `refreshTradeRoutes` na dowolne
+  pary właścicieli) para człowiek↔człowiek działa automatycznie, bez wyjątku w kodzie
+  tras. Uwaga: konsumenty `tradeRoutes` w `main.ts` (chip HUD, panel imperium,
+  nakładka, toasty) filtrują po `ownerId===0` — w hot-seat filtr musi iść na `ME()`
+  (aktywny człowiek), co jest już objęte tabelą B2 (kategoria „render/HUD" → `isMe`).
