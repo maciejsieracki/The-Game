@@ -122,3 +122,86 @@ OBIEG
 Operator (Sonnet 5, effort medium) → Evaluator (Sonnet 5, effort high) →
 Operator (obrona, jeśli zarzuty niepuste) → Final Control (Sonnet 5, effort
 high) → integracja orkiestratora.
+
+---
+
+# RUNDA 2 — RATYFIKACJA ROZSZERZENIA ALLOWLISTY (orkiestrator, 2026-09-04)
+
+## Powód — błąd w dispatchu rundy 1, nie błąd Operatora
+
+Final Control rundy 1 wydał DECISION_REQUIRED na zarzucie 1 i miał rację: dispatch
+rundy 1 był WEWNĘTRZNIE SPRZECZNY. RECON pkt 5 kazał „sprawdzić, czy wikiBundle.json
+to plik GENEROWANY (wtedy popraw ŹRÓDŁO, nie sam bundle)", ale ALLOWLISTA nie
+wymieniała żadnego pliku źródłowego — a do tego podawała nieistniejącą ścieżkę
+`gra/data/wikiBundle.json` (realna: `gra/src/data/wikiBundle.json`).
+
+Ustalenie Final Control (dowód z kodu): `tools/bundle-wiki-for-game.cjs:9-11,148` —
+`gra/src/data/wikiBundle.json` jest GENEROWANY z `docs/encyklopedia/` oraz
+`docs/PORADNIK-GRACZA/`. Operator rundy 1 poprawnie zmienił 4 pliki źródłowe, ale po
+zarzucie Evaluatora (słusznym co do litery allowlisty) je ZREWERTOWAŁ — i to
+stworzyło ukrytą pułapkę: **źródła mówią „Wyrąb", bundle mówi „Wycinka"
+(hand-patch), więc najbliższa regeneracja bundla CICHO cofnie nazwę w encyklopedii
+w grze**.
+
+Orkiestrator ratyfikuje rozszerzenie allowlisty o pliki źródłowe bundla oraz nakazuje
+zastąpienie hand-patcha REGENERACJĄ kanonicznym narzędziem.
+
+## GOAL RUNDY 2
+
+R2-1. Przywróć zmianę „Wyrąb"→„Wycinka" w 4 plikach źródłowych zrewertowanych w
+   rundzie 1 (commit `908cfc9a`): `docs/encyklopedia/ulepszenia/wyrab.md`,
+   `docs/encyklopedia/indeks.md`, `docs/PORADNIK-GRACZA/05-budowa-mapa.md`,
+   `docs/PORADNIK-GRACZA/28-katalog-ulepszen.md`. Zmieniaj WYŁĄCZNIE nazwę
+   wyświetlaną ulepszenia — nie tytuły sekcji „Rys historyczny", nie treść
+   historyczną, nie nazwy plików (`wyrab.md` zostaje, klucz `wyrab` się nie zmienia).
+
+R2-2. Zastąp hand-patch bundla REGENERACJĄ kanonicznym narzędziem:
+   `node tools/bundle-wiki-for-game.cjs`. **UWAGA KRYTYCZNA:** regeneracja może
+   wciągnąć NIEZWIĄZANY dryf między dzisiejszymi źródłami a ostatnio wygenerowanym
+   bundlem. Po regeneracji obejrzyj diff `gra/src/data/wikiBundle.json` STRUKTURALNIE
+   (zdekoduj JSON, porównaj liście — nie „na oko" po surowym diffie):
+   - jeśli diff zawiera WYŁĄCZNIE zmiany „Wyrąb"→„Wycinka" — zostaw regenerację;
+   - jeśli zawiera cokolwiek więcej — WYPISZ w raporcie każdą dodatkową zmianę
+     (ścieżka w JSON + przed/po) i oceń, czy to bezpieczny dryf dokumentacji, czy
+     coś, co wymaga osobnego tematu. Przy dużym, niezwiązanym dryfie: zostaw
+     hand-patch, zgłoś BLOKADĘ z listą znalezisk zamiast wypuszczać niekontrolowaną
+     zmianę treści encyklopedii.
+
+R2-3. Zweryfikuj, że po zmianie źródło i bundle są SPÓJNE — ponowne uruchomienie
+   `node tools/bundle-wiki-for-game.cjs` nie produkuje już żadnego diffu
+   (idempotencja). To jest binarny dowód, że pułapka „cicha regeneracja cofnie
+   nazwę" została zamknięta.
+
+## ALLOWLISTA RUNDY 2 (rozszerzona względem rundy 1)
+
+- Wszystko z rundy 1 (`gra/data/terrain-improvements.json`,
+  `gra/src/render/improvements.ts:39`, `gra/src/main.ts` stringi 12100/28014/31437,
+  `gra/src/map/improvement-build.ts:471`) — bez zmian, zostaje jak jest.
+- **`gra/src/data/wikiBundle.json`** (POPRAWIONA ŚCIEŻKA — w rundzie 1 dispatch
+  błędnie podawał `gra/data/wikiBundle.json`).
+- **DODANE: 4 pliki źródłowe bundla** — `docs/encyklopedia/ulepszenia/wyrab.md`,
+  `docs/encyklopedia/indeks.md`, `docs/PORADNIK-GRACZA/05-budowa-mapa.md`,
+  `docs/PORADNIK-GRACZA/28-katalog-ulepszen.md`, WYŁĄCZNIE w zakresie nazwy
+  wyświetlanej ulepszenia.
+- Nowe/rozszerzone testy w `gra/tools/*-test.cjs`.
+Zakazane bez zmian: zmiana klucza `wyrab`, zmiana mechaniki wycinki lasu, zmiana
+komentarzy kodu (poza zakresem), `dyspozycje/WERSJE.md`,
+`gra-robocza/ROBOCZA-MANIFEST.json`, `playbook.json`.
+
+## KRYTERIA KOŃCA RUNDY 2 (dodatkowo do 1-6 z rundy 1, które zostają w mocy)
+
+R2-K1. `grep -rn "Wyrąb" docs/encyklopedia docs/PORADNIK-GRACZA` — zero wystąpień
+   nazwy ulepszenia (dopuszczalne wyłącznie w treści historycznej, jeśli tam
+   występuje jako słowo pospolite — wypisz każde takie i uzasadnij).
+R2-K2. `node tools/bundle-wiki-for-game.cjs` uruchomione, a NASTĘPNE uruchomienie
+   daje pusty diff (`git diff --stat gra/src/data/wikiBundle.json` = puste) —
+   dowód idempotencji i spójności źródło↔bundle.
+R2-K3. Diff bundla po regeneracji przeanalizowany strukturalnie i udokumentowany w
+   raporcie (lista każdej zmienionej ścieżki JSON, przed/po).
+R2-K4. `wyrab-wycinka-nazwa-live-test.cjs` nadal 10/10, `tsc --noEmit` czysty,
+   5 bramek referencyjnych zielone.
+
+## OBIEG RUNDY 2
+Operator (Sonnet 5, effort medium) → Evaluator (Sonnet 5, effort high) → Operator
+(obrona, jeśli zarzuty niepuste) → Final Control (Sonnet 5, effort high) →
+integracja orkiestratora.
