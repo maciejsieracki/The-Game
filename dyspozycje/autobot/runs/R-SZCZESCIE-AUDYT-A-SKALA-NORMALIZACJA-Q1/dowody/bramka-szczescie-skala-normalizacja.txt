@@ -143,9 +143,37 @@
   [OK] tabela: prawMax(pop 12, epoka 1) = 74,5
   [OK] tabela: prawMax(pop 6, epoka 3) = 117,0
 
-9. Osiagalnosc: duze miasto z pelna administracja nadal domyka Prawo do 100%
-  [OK] easy: pop 12 z garnizonem 5 + Palacem III + pelna administracja domyka Prawo do 100% w epokach 1-3
-  [OK] normal: pop 12 z garnizonem 5 + Palacem III + pelna administracja domyka Prawo do 100% w epokach 1-3
-  [OK] hard: pop 12 z garnizonem 5 + Palacem III + pelna administracja domyka Prawo do 100% w epokach 1-3
+9. Osiagalnosc: duze miasto z REALNIE mozliwa administracja epoki
+  [OK] buildings.json: Palac III jest budynkiem stolicy
+  [OK] buildings.json: Pretorium jest budynkiem miasta regionalnego
+  [OK] buildings.json: Pretorium ZASTEPUJE Dwor Zarzadcy (nie wspolistnieje)
+  [OK] buildings.json: Dwor Zarzadcy ZASTEPUJE Dom Starszyzny
+  [OK] buildings.json: Palac III / Pretorium / Sad wchodza dopiero w epoce 3
+  [OK] stolica/easy/epoka 1: PrawPct = 100% (pop 12, garnizon 5, administracja epoki)
+  [OK] stolica/easy/epoka 2: PrawPct = 100% (pop 12, garnizon 5, administracja epoki)
+  [OK] stolica/easy/epoka 3: PrawPct = 100% (pop 12, garnizon 5, administracja epoki)
+  stolica  easy    | e1 170/69=100%  | e2 205/103.5=100%  | e3 243/138=100%
+  [OK] stolica/normal/epoka 1: PrawPct = 100% (pop 12, garnizon 5, administracja epoki)
+  [OK] stolica/normal/epoka 2: PrawPct = 100% (pop 12, garnizon 5, administracja epoki)
+  [OK] stolica/normal/epoka 3: PrawPct = 100% (pop 12, garnizon 5, administracja epoki)
+  stolica  normal  | e1 135/74.5=100%  | e2 162/111.75=100%  | e3 191/149=100%
+  [OK] stolica/hard/epoka 1: PrawPct = 100% (pop 12, garnizon 5, administracja epoki)
+  [OK] stolica/hard/epoka 2: PrawPct = 90.3% (pop 12, garnizon 5, administracja epoki)
+  [OK] stolica/hard/epoka 3: PrawPct = 82.6% (pop 12, garnizon 5, administracja epoki)
+  stolica  hard    | e1 88/80.5=100%  | e2 109/120.75=90.3%  | e3 133/161=82.6%
+  [OK] region/easy/epoka 1: PrawPct = 100% (pop 12, garnizon 5, administracja epoki)
+  [OK] region/easy/epoka 2: PrawPct = 100% (pop 12, garnizon 5, administracja epoki)
+  [OK] region/easy/epoka 3: PrawPct = 100% (pop 12, garnizon 5, administracja epoki)
+  region   easy    | e1 161/69=100%  | e2 190/103.5=100%  | e3 222/138=100%
+  [OK] region/normal/epoka 1: PrawPct = 100% (pop 12, garnizon 5, administracja epoki)
+  [OK] region/normal/epoka 2: PrawPct = 100% (pop 12, garnizon 5, administracja epoki)
+  [OK] region/normal/epoka 3: PrawPct = 100% (pop 12, garnizon 5, administracja epoki)
+  region   normal  | e1 128/74.5=100%  | e2 150/111.75=100%  | e3 174/149=100%
+  [OK] region/hard/epoka 1: PrawPct = 100% (pop 12, garnizon 5, administracja epoki)
+  [OK] region/hard/epoka 2: PrawPct = 82% (pop 12, garnizon 5, administracja epoki)
+  [OK] region/hard/epoka 3: PrawPct = 74.5% (pop 12, garnizon 5, administracja epoki)
+  region   hard    | e1 82/80.5=100%  | e2 99/120.75=82%  | e3 120/161=74.5%
+  [OK] easy i normal: pop 12 z garnizonem 5 i pelna administracja epoki domyka Prawo do 100% w epokach 1-3 (oba warianty)
+  [OK] hard: pelna administracja epoki NIE domyka juz Prawa do capu, ale trzyma je w granicach (min 74.5%, wymagane 70-99,9%)
 
-[szczescie-skala-normalizacja-test] 110 OK, 0 FAIL
+[szczescie-skala-normalizacja-test] 132 OK, 0 FAIL

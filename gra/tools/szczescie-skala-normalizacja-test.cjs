@@ -462,23 +462,92 @@ console.log('\n8. Tabela prog(pop, epoka) — PRZED vs PO (normal), zapisana w r
 }
 
 // ---------------------------------------------------------------------------
-console.log('\n9. Osiagalnosc: duze miasto z pelna administracja nadal domyka Prawo do 100%');
+console.log('\n9. Osiagalnosc: duze miasto z REALNIE mozliwa administracja epoki');
 // ---------------------------------------------------------------------------
 {
   // Mianownik rosnacy z miastem ma WYMAGAC administracji, nie ODCIAC od niej. Cap ludnosci
   // to 12 (econ-params.json -> akwedukt_max_ludnosci), wiec to jest realny szczyt gry.
-  for (const diff of DIFFS) {
-    let najgorszy = 100;
-    for (const era of [1, 2, 3]) {
-      const r = M.computeLawBreakdown({
-        population: 12, era, difficulty: diff, garnizonCount: 5, palacTier: 3,
-        hasPretorium: true, hasSad: true, hasTrybunal: true, hasDworZarzadcy: true,
-      }, SOCIETY);
-      najgorszy = Math.min(najgorszy, r.prawPct);
+  //
+  // RUNDA 2, zarzut 6 Final Control: asercja z rundy 1 ustawiala jednoczesnie
+  // `hasDworZarzadcy: true` ORAZ `hasPretorium: true` — dwa poziomy TEGO SAMEGO lancucha
+  // zastepowania, konfiguracja niemozliwa w grze. Przeglad calego bloku wykazal, ze byly
+  // tam w sumie TRZY niemozliwe kombinacje naraz, nie jedna:
+  //   (1) Dwor Zarzadcy + Pretorium — ten sam lancuch (buildings.json: pretorium.upgradeFrom
+  //       = dwor_zarzadcy, dwor_zarzadcy.upgradeFrom = dom_starszyzny);
+  //   (2) Palac III + Pretorium — Palac ma `lokalizacja: "stolica"`, caly lancuch
+  //       Dom Starszyzny/Dwor Zarzadcy/Pretorium ma `lokalizacja: "region"`, a
+  //       production.ts:489-490 (`buildingLocationAllowed`) zwraca dla nich odpowiednio
+  //       `isCapital === true` i `isCapital === false` — miasto jest albo stolica, albo nie;
+  //   (3) Palac III / Pretorium / Sad (wszystkie `epokaWejscia: 3`) postawione w epoce 1 i 2.
+  // Stad ponizej: DWA rozlaczne warianty miasta (stolica i region), a w kazdym administracja
+  // faktycznie dostepna w danej epoce.
+  const BUILDINGS = JSON.parse(
+    fs.readFileSync(path.resolve(__dirname, '..', 'data', 'buildings.json'), 'utf8'),
+  );
+  const bud = (id) => BUILDINGS.find((b) => b.id === id) ?? {};
+
+  // 9a. Kotwice w danych — to one uzasadniaja podzial na dwa warianty. Gdyby ktos zmienil
+  //     buildings.json tak, ze lancuchy przestaja byc rozlaczne, ta bramka ma o tym powiedziec.
+  eq(bud('palac_iii').lokalizacja, 'stolica', 'buildings.json: Palac III jest budynkiem stolicy');
+  eq(bud('pretorium').lokalizacja, 'region', 'buildings.json: Pretorium jest budynkiem miasta regionalnego');
+  eq(bud('pretorium').upgradeFrom, 'dwor_zarzadcy', 'buildings.json: Pretorium ZASTEPUJE Dwor Zarzadcy (nie wspolistnieje)');
+  eq(bud('dwor_zarzadcy').upgradeFrom, 'dom_starszyzny', 'buildings.json: Dwor Zarzadcy ZASTEPUJE Dom Starszyzny');
+  eq([bud('palac_iii'), bud('pretorium'), bud('sad')].map((b) => b.epokaWejscia).join(','), '3,3,3',
+    'buildings.json: Palac III / Pretorium / Sad wchodza dopiero w epoce 3');
+
+  // 9b. Administracja faktycznie dostepna w danej epoce (epokaWejscia: Trybunal 2, Sad 3).
+  const STOLICA = {
+    1: { palacTier: 1 },
+    2: { palacTier: 2, hasTrybunal: true },
+    3: { palacTier: 3, hasTrybunal: true, hasSad: true },
+  };
+  const REGION = {
+    1: { hasDomStarszyzny: true },
+    2: { hasDworZarzadcy: true, hasTrybunal: true },
+    3: { hasPretorium: true, hasTrybunal: true, hasSad: true },
+  };
+  // Wartosci oczekiwane PRZELICZONE na realnych konfiguracjach (nie przepisane z rundy 1).
+  const OCZEK = {
+    stolica: { easy: [100, 100, 100], normal: [100, 100, 100], hard: [100, 90.3, 82.6] },
+    region: { easy: [100, 100, 100], normal: [100, 100, 100], hard: [100, 82, 74.5] },
+  };
+  for (const [wariant, SET] of [['stolica', STOLICA], ['region', REGION]]) {
+    for (const diff of DIFFS) {
+      const wiersz = [];
+      for (const era of [1, 2, 3]) {
+        const r = M.computeLawBreakdown({
+          population: 12, era, difficulty: diff, garnizonCount: 5, ...SET[era],
+        }, SOCIETY);
+        wiersz.push(`e${era} ${r.netto}/${r.prawMax}=${r.prawPct}%`);
+        eq(r.prawPct, OCZEK[wariant][diff][era - 1],
+          `${wariant}/${diff}/epoka ${era}: PrawPct = ${OCZEK[wariant][diff][era - 1]}% (pop 12, garnizon 5, administracja epoki)`);
+      }
+      console.log(`  ${wariant.padEnd(8)} ${diff.padEnd(7)} | ${wiersz.join('  | ')}`);
     }
-    eq(najgorszy, 100,
-      `${diff}: pop 12 z garnizonem 5 + Palacem III + pelna administracja domyka Prawo do 100% w epokach 1-3`);
   }
+
+  // 9c. Wnioski, ktore te liczby faktycznie niosa — zamiast obalonego „domyka do 100% zawsze".
+  //     easy/normal: mianownik WYMAGA administracji, ale jej nie odcina — 100% nadal osiagalne.
+  const easyNormalMin = Math.min(
+    ...[['stolica', STOLICA], ['region', REGION]].flatMap(([, SET]) => ['easy', 'normal'].flatMap(
+      (diff) => [1, 2, 3].map((era) => M.computeLawBreakdown({
+        population: 12, era, difficulty: diff, garnizonCount: 5, ...SET[era],
+      }, SOCIETY).prawPct),
+    )),
+  );
+  eq(easyNormalMin, 100,
+    'easy i normal: pop 12 z garnizonem 5 i pelna administracja epoki domyka Prawo do 100% w epokach 1-3 (oba warianty)');
+  //     hard: juz NIE domyka — i to jest zamierzone (hard ma byc trudny), ale nie wolno, zeby
+  //     spadlo to miasto w pasmo ponizej „Spokoju" po samej stronie Prawa (patrz porPctBand).
+  const hardMin = Math.min(
+    ...[['stolica', STOLICA], ['region', REGION]].flatMap(([, SET]) => [1, 2, 3].map(
+      (era) => M.computeLawBreakdown({
+        population: 12, era, difficulty: 'hard', garnizonCount: 5, ...SET[era],
+      }, SOCIETY).prawPct,
+    )),
+  );
+  ok(hardMin < 100 && hardMin >= 70,
+    `hard: pelna administracja epoki NIE domyka juz Prawa do capu, ale trzyma je w granicach (min ${hardMin}%, wymagane 70-99,9%)`);
 }
 
 fs.unlinkSync(ENTRY);
