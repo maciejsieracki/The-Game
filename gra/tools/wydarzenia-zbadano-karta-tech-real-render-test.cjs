@@ -9,6 +9,25 @@
  *  (B) „naciskam na szczegóły, na przykład o obozie łowieckim, ekran się wytwarza, ale nie
  *      pojawia się obok, tylko pod spodem. Powinno się pojawić obok."
  *
+ * R-TECH-KARTA-BOCZNA-KLIK-WIERSZ-REGRES-Q1 (regresja dwoch niedopasowanych commitow —
+ * 57006261 wireSideCardLinks + 5b05773c caly-wiersz-przyciskiem — rozszerza scenariusze (B)):
+ *  (B6) klik w LEWA CZESC wiersza „Obóz łowiecki" (etykieta, NIE przycisk „Szczegóły →") MUSI
+ *       dawac IDENTYCZNY efekt jak klik w przycisk — karta BOCZNA obok, zero
+ *       `.entity-card-backdrop`. Przed naprawa ten klik omijal capture-listener
+ *       `wireSideCardLinks` (lapal tylko `button[data-entity-kind]`) i trafial w delegowany
+ *       bąbelkowy listener `renderer.ts` -> `openDialog()` (karta pod spodem hosta 940 < 520).
+ *  (B7) overflow karty bocznej PRZY TYPOWYCH SZEROKOSCIACH (1280/1440/1920 px) — pomiar
+ *       `getBoundingClientRect().right <= window.innerWidth` ORAZ (RUNDA 2, po zarzucie
+ *       Evaluatora) przepelnienie TRESCI karty `scrollHeight > clientHeight`. Sam prostokat
+ *       NIE rozstrzyga: karta ma `max-height:calc(100vh-36px)` + `overflow:auto`, wiec
+ *       miesci sie w viewporcie takze z pelnym dev-notem — zmierzone.
+ *  (B7-K) KONTROLA NEGATYWNA (B7): oryginalny dev-note (czytany z `oboz_lowiecki.uwagi`)
+ *       wstrzykniety do wyrenderowanego wiersza „Warunek" MUSI odwrocic metryke. Bez tego
+ *       (B7) nie dowodzi zwiazku przyczynowego skrocenia `warunek` z domknieciem overflow.
+ *  (B8) kryterium 5 ZYWO, nie tylko na JSON: `Farma` (Rolnictwo), `Trzoda`/`Owce`/`Lama`
+ *       (Oswojenie zwierząt) — widoczny wiersz „Warunek" bez sygnatury notatki
+ *       deweloperskiej i bez przepelnienia karty.
+ *
  * DLACZEGO ŻYWA, ZBUDOWANA GRA (C-001), A NIE jsdom:
  *  - (A) rozstrzyga wyłącznie faktyczne kliknięcie MYSZĄ w faktycznie wyrenderowaną kartę
  *    panelu WYDARZENIA, po którym faktycznie otwiera się karta WŁAŚCIWEJ technologii.
@@ -52,6 +71,16 @@ function assert(label, cond, detail) {
   else { fail++; console.error('  FAIL ' + label + (detail !== undefined ? ' -- ' + JSON.stringify(detail) : '')); }
 }
 const wait = (ms) => new Promise(r => setTimeout(r, ms));
+
+/** R-TECH-KARTA-BOCZNA-KLIK-WIERSZ-REGRES-Q1, RUNDA 2 — ladunek kontroli negatywnej (B7-K).
+ * NIE zaszyty na sztywno w tescie: to DOKLADNIE ten tekst, ktory przed naprawa siedzial w
+ * `oboz_lowiecki.warunek` i byl renderowany graczowi — dzis zyje w nierenderowanym polu
+ * `uwagi` (wzorzec P-TECH-UWAGI-WYCIEK-CITYPANEL-Q1). Czytamy go z danych, wiec kontrola
+ * nie moze sie rozjechac z rzeczywistoscia przy kolejnych edycjach. */
+const OBOZ_LOWIECKI_WARUNEK_ORIGIN_MAIN = (() => {
+  const j = JSON.parse(fs.readFileSync(path.join(GRA_DIR, 'data', 'terrain-improvements.json'), 'utf8'));
+  return String((j.oboz_lowiecki || {}).uwagi || '');
+})();
 
 function buildBundle() {
   if (DIST_ARG !== null) { console.log('[zbadano-test] uzywam gotowego dist: ' + OUT_DIR); return; }
@@ -157,6 +186,70 @@ async function measureBothCards(page) {
   });
 }
 
+/** R-TECH-KARTA-BOCZNA-KLIK-WIERSZ-REGRES-Q1, RUNDA 2 — POMIAR ROZSTRZYGAJACY dla (B7).
+ *
+ * DLACZEGO SAM `rect.right/bottom <= viewport` NIE WYSTARCZA (zarzut Evaluatora, runda 2):
+ * `#civ-tech-discovery-notice-host .entity-card` ma w CSS `max-height:calc(100vh - 36px)`
+ * oraz `overflow:auto` (techDiscoveryNotice.ts, ensureEntityCardOverrideStyles), a karta
+ * satelita dodatkowo sztywne `width:min(434px,96vw)`. Prostokat karty jest wiec PRZYCIETY
+ * do viewportu ZAWSZE — niezaleznie od dlugosci tresci. Zmierzone (Chromium 1440x1000,
+ * ten sam build, wstrzykniety oryginalny dev-note 1021 znakow): rect.bottom 982 <= 1000,
+ * czyli asercja rect-owa jest ZIELONA takze dla stanu SPRZED naprawy — nie rozroznia go.
+ *
+ * ROZROZNIA dopiero przepelnienie TRESCI wewnatrz karty (`scrollHeight > clientHeight`):
+ *   krotki `warunek` (stan wysylany): wiersz „Warunek" 19 px, karta 768 px, scroll 0;
+ *   dev-note 1021 zn. (stan przed):   wiersz „Warunek" 304 px, karta przycieta do 962 px
+ *                                     przy scrollHeight 1052 → 90 px tresci PONIZEJ krawedzi.
+ * To jest dokladnie to, co widzial wlasciciel („karta wychodzi poza zakres ekranu"):
+ * nie prostokat poza viewportem, tylko tresc nie mieszczaca sie w karcie. */
+async function measureSideCardOverflow(page) {
+  return page.evaluate(() => {
+    const host = document.getElementById('civ-tech-discovery-notice-host');
+    const side = host === null ? null : host.querySelector('.tdn-side-card');
+    if (side === null) return { missing: true };
+    const rows = Array.from(side.querySelectorAll('.entity-card-row'));
+    const wr = rows.find((r) => {
+      const k = r.querySelector('.entity-card-row-key');
+      return k !== null && (k.textContent || '').trim() === 'Warunek';
+    }) || null;
+    return {
+      cardClientH: side.clientHeight, cardScrollH: side.scrollHeight,
+      cardClientW: side.clientWidth, cardScrollW: side.scrollWidth,
+      overflowsY: side.scrollHeight > side.clientHeight + 1,
+      overflowsX: side.scrollWidth > side.clientWidth + 1,
+      warunekRowH: wr === null ? null : +wr.getBoundingClientRect().height.toFixed(1),
+      warunekText: wr === null ? null : (wr.textContent || '').replace(/\s+/g, ' ').trim(),
+    };
+  });
+}
+
+/** Tekst wiersza „Warunek" w KAZDEJ otwartej karcie encji (technologii i satelity) —
+ * do (B8): kontrola, ze gracz nie widzi surowej notatki deweloperskiej. */
+async function readWarunekRows(page) {
+  return page.evaluate(() => {
+    const host = document.getElementById('civ-tech-discovery-notice-host');
+    if (host === null) return [];
+    return Array.from(host.querySelectorAll('.entity-card')).map((card) => {
+      const h2 = card.querySelector('h2');
+      const rows = Array.from(card.querySelectorAll('.entity-card-row'));
+      const wr = rows.find((r) => {
+        const k = r.querySelector('.entity-card-row-key');
+        return k !== null && (k.textContent || '').trim() === 'Warunek';
+      }) || null;
+      const val = wr === null ? null : wr.querySelector('.entity-card-row-value');
+      return {
+        title: h2 === null ? null : (h2.textContent || '').trim(),
+        warunek: val === null ? null : (val.textContent || '').replace(/\s+/g, ' ').trim(),
+      };
+    });
+  });
+}
+
+/** Sygnatura NOTATKI DEWELOPERSKIEJ w tekscie widzianym przez gracza (ten sam wzorzec co
+ * audyt kryterium 5 dispatchu): ID tematu, „ECHO", „właściciel", „RUNDA n", „COFNIĘTY",
+ * data ISO. Zadne z nich nie ma prawa pojawic sie w polu `Warunek` na karcie gracza. */
+const DEVNOTE_RE = /\b[A-Z]-[A-ZŁŚŻŹĆŃÓĘĄ0-9-]+-Q\d|ECHO|właściciel|RUNDA \d|COFNIĘT|\d{4}-\d{2}-\d{2}/;
+
 function assertTwoCardsVisible(m, label) {
   const t = m.tech.rect, s = m.side.rect;
   assert(label + ': obie karty w DOM z NIEZEROWA powierzchnia',
@@ -170,6 +263,38 @@ function assertTwoCardsVisible(m, label) {
     m.tech.hitTitle === m.tech.title && m.side.hitTitle === m.side.title, m);
   assert(label + ': karta szczegolu NIE jest w osobnym .entity-card-backdrop (z-index 520 < 940)',
     m.strayBackdrops === 0, { strayBackdrops: m.strayBackdrops });
+}
+
+/** R-TECH-KARTA-BOCZNA-KLIK-WIERSZ-REGRES-Q1 (B6) — realny klik MYSZA w LEWA CZESC wiersza
+ * (etykiete `.entity-card-row-key`, NIE w przycisk „Szczegóły →" po prawej). Hit-test
+ * potwierdza ZANIM klikniemy, ze punkt faktycznie nalezy do `.entity-card-row-key` i NIE
+ * jest wewnatrz `button[data-entity-kind]` — bez tego test bylby tautologiczny (moglby
+ * przypadkiem trafiac w ten sam przycisk co (B1) i nic by nie rozstrzygal). */
+async function clickRowLabel(page, rowSel) {
+  const row = page.locator(rowSel);
+  if (await row.count() === 0) return { hit: false, why: 'brak wiersza w DOM: ' + rowSel };
+  const keyEl = row.locator('.entity-card-row-key');
+  if (await keyEl.count() === 0) return { hit: false, why: 'brak .entity-card-row-key w wierszu' };
+  const b = await keyEl.boundingBox();
+  if (b === null) return { hit: false, why: 'brak boundingBox etykiety' };
+  const cx = b.x + Math.min(8, b.width / 2);
+  const cy = b.y + b.height / 2;
+  const at = await page.evaluate(({ cx, cy }) => {
+    const el = document.elementFromPoint(cx, cy);
+    if (el === null) return null;
+    return {
+      inButton: el.closest('button[data-entity-kind]') !== null,
+      inKey: el.closest('.entity-card-row-key') !== null,
+      rowId: (el.closest('.entity-card-row[data-row-entity-kind]') || {}).getAttribute
+        ? el.closest('.entity-card-row[data-row-entity-kind]').getAttribute('data-row-entity-id') : null,
+    };
+  }, { cx, cy });
+  if (at === null || at.inButton === true || at.inKey !== true) {
+    return { hit: false, why: 'punkt kliku NIE trafia czysto w etykiete wiersza (albo trafia w przycisk)', at };
+  }
+  await page.mouse.click(cx, cy);
+  await wait(700);
+  return { hit: true, at };
 }
 
 /** Rozwin sekcje akordeonu REALNYM klikiem (tak jak gracz), jesli jest zwinieta. */
@@ -441,6 +566,152 @@ async function main() {
       await page.setViewportSize({ width: 1600, height: 1000 });
       await wait(300);
     }
+
+    console.log('\n-- (B6) klik w LEWA CZESC wiersza „Obóz łowiecki" (etykieta, NIE przycisk) --');
+    {
+      await page.evaluate(() => window.__sidePanelLinkTestDebug.closeAll());
+      await page.evaluate(() => { document.getElementById('civ-tech-discovery-notice-host')?.remove(); });
+      await page.evaluate(() => window.__eraTestDebug.openTechCompletion('Łowiectwo'));
+      await wait(600);
+      await expandSection(page, 'improvements');
+      const rowSel = '#civ-tech-discovery-notice-host .entity-card-row[data-row-entity-kind="improvement"][data-row-entity-id="oboz_lowiecki"]';
+      assert('(B6) wiersz „Obóz łowiecki" ma fallback data-row-entity-* (P-CIVPEDIA-KARTY-CALY-WIERSZ-PRZYCISKIEM-Q1)',
+        await page.locator(rowSel).count() === 1);
+      const clicked = await clickRowLabel(page, rowSel);
+      assert('(B6) hit-test PRZED klikiem: punkt trafia czysto w etykiete, NIE w przycisk „Szczegóły →"',
+        clicked.hit === true, clicked);
+      const mb6 = await measureBothCards(page);
+      assert('(B6) klik w etykiete otworzyl karte technologii NIEZAMKNIETA', mb6.tech.title === 'Łowiectwo', mb6.tech);
+      assert('(B6) klik w etykiete otworzyl karte „Obóz łowiecki" OBOK (nie pod spodem)', mb6.side.title === 'Obóz łowiecki', mb6.side);
+      assertTwoCardsVisible(mb6, '(B6) klik w etykiete wiersza');
+      assert('(B6) regresja: zero .entity-card-backdrop (dawny dialog pod hostem 940<520)',
+        mb6.strayBackdrops === 0, { strayBackdrops: mb6.strayBackdrops });
+    }
+
+    console.log('\n-- (B7) overflow karty bocznej przy typowych szerokosciach (1280/1440/1920) --');
+    for (const w of [1280, 1440, 1920]) {
+      await page.evaluate(() => window.__sidePanelLinkTestDebug.closeAll());
+      await page.evaluate(() => { document.getElementById('civ-tech-discovery-notice-host')?.remove(); });
+      await page.setViewportSize({ width: w, height: 1000 });
+      await wait(300);
+      await page.evaluate(() => window.__eraTestDebug.openTechCompletion('Łowiectwo'));
+      await wait(600);
+      await expandSection(page, 'improvements');
+      const b = await impLink.boundingBox();
+      await page.mouse.click(b.x + b.width / 2, b.y + b.height / 2);
+      await wait(700);
+      const mw = await measureBothCards(page);
+      assert('(B7) ' + w + 'px: obie karty otwarte („Łowiectwo" + „Obóz łowiecki")',
+        mw.tech.title === 'Łowiectwo' && mw.side.title === 'Obóz łowiecki', mw);
+      assert('(B7) ' + w + 'px: karta technologii MIESCI SIE w viewport (rect.right <= innerWidth), zmierzone',
+        mw.tech.rect !== null && mw.tech.rect.right <= mw.viewport.w + 0.5, { rect: mw.tech.rect, viewport: mw.viewport });
+      assert('(B7) ' + w + 'px: karta boczna MIESCI SIE w viewport (rect.right <= innerWidth), zmierzone',
+        mw.side.rect !== null && mw.side.rect.right <= mw.viewport.w + 0.5, { rect: mw.side.rect, viewport: mw.viewport });
+      assertTwoCardsVisible(mw, '(B7) ' + w + 'px');
+      // POMIAR ROZSTRZYGAJACY (patrz komentarz przy measureSideCardOverflow): karta ma
+      // max-height + overflow:auto, wiec o „wychodzeniu poza ekran" decyduje przepelnienie
+      // TRESCI, nie prostokat. To jest ta czesc (B7), ktora faktycznie rozroznia stan
+      // przed/po skroceniu pola `warunek`.
+      const ov = await measureSideCardOverflow(page);
+      assert('(B7) ' + w + 'px: tresc karty bocznej MIESCI SIE w karcie (scrollHeight <= clientHeight), zmierzone',
+        ov.missing !== true && ov.overflowsY === false, ov);
+      assert('(B7) ' + w + 'px: brak przepelnienia poziomego tresci karty bocznej',
+        ov.missing !== true && ov.overflowsX === false, ov);
+      assert('(B7) ' + w + 'px: wiersz „Warunek" to KROTKIE zdanie gracza (<= 60 px wysokosci), nie sciana tekstu',
+        ov.warunekRowH !== null && ov.warunekRowH <= 60, { warunekRowH: ov.warunekRowH, warunekText: ov.warunekText });
+      assert('(B7) ' + w + 'px: „Warunek" bez sygnatury notatki deweloperskiej (ID tematu/ECHO/właściciel/RUNDA/data)',
+        typeof ov.warunekText === 'string' && DEVNOTE_RE.test(ov.warunekText) === false, ov.warunekText);
+    }
+
+    // ---- (B7-K) KONTROLA NEGATYWNA pomiaru (B7): czy on w ogole potrafi sczerwieniec? ----
+    // Bez tej kontroli (B7) bylby tautologiczny: Evaluator rundy 2 wykazal, ze poprzednia,
+    // czysto prostokatna wersja (B7) przechodzila TAK SAMO po przywroceniu pelnego dev-notu,
+    // wiec NIE dowodzila zwiazku przyczynowego „skrocenie `warunek` domyka overflow".
+    // Tu wstrzykujemy ORYGINALNY tekst `oboz_lowiecki.warunek` (stan origin/main, 1021 zn.)
+    // do JUZ WYRENDEROWANEGO wiersza „Warunek" tej samej karty, w tym samym buildzie —
+    // eksperyment A/B na jednej scenie. Jesli metryka jest rozstrzygajaca, MUSI sie odwrocic.
+    console.log('\n-- (B7-K) kontrola negatywna: wstrzykniety dev-note MUSI zlamac te sama metryke --');
+    {
+      await page.setViewportSize({ width: 1440, height: 1000 });
+      await wait(300);
+      await page.evaluate(() => window.__sidePanelLinkTestDebug.closeAll());
+      await page.evaluate(() => { document.getElementById('civ-tech-discovery-notice-host')?.remove(); });
+      await page.evaluate(() => window.__eraTestDebug.openTechCompletion('Łowiectwo'));
+      await wait(600);
+      await expandSection(page, 'improvements');
+      const b = await impLink.boundingBox();
+      await page.mouse.click(b.x + b.width / 2, b.y + b.height / 2);
+      await wait(700);
+      const okBefore = await measureSideCardOverflow(page);
+      assert('(B7-K) punkt wyjscia: stan wysylany NIE przepelnia karty', okBefore.overflowsY === false, okBefore);
+      assert('(B7-K) ladunek kontrolny = realny dev-note (>= 800 zn., sygnatura obecna), czytany z `uwagi`',
+        OBOZ_LOWIECKI_WARUNEK_ORIGIN_MAIN.length >= 800 && DEVNOTE_RE.test(OBOZ_LOWIECKI_WARUNEK_ORIGIN_MAIN),
+        { len: OBOZ_LOWIECKI_WARUNEK_ORIGIN_MAIN.length });
+      const injected = await page.evaluate((txt) => {
+        const host = document.getElementById('civ-tech-discovery-notice-host');
+        const side = host === null ? null : host.querySelector('.tdn-side-card');
+        if (side === null) return false;
+        const wr = Array.from(side.querySelectorAll('.entity-card-row')).find((r) => {
+          const k = r.querySelector('.entity-card-row-key');
+          return k !== null && (k.textContent || '').trim() === 'Warunek';
+        });
+        if (wr === undefined) return false;
+        const val = wr.querySelector('.entity-card-row-value');
+        if (val === null) return false;
+        val.textContent = txt;
+        return true;
+      }, OBOZ_LOWIECKI_WARUNEK_ORIGIN_MAIN);
+      assert('(B7-K) udalo sie wstrzyknac oryginalny dev-note w wiersz „Warunek"', injected === true);
+      await wait(400);
+      const broken = await measureSideCardOverflow(page);
+      assert('(B7-K) metryka ROZROZNIA: z dev-notem tresc karty PRZEPELNIA sie (scrollHeight > clientHeight)',
+        broken.overflowsY === true, broken);
+      assert('(B7-K) metryka ROZROZNIA: z dev-notem wiersz „Warunek" pęcznieje > 60 px',
+        broken.warunekRowH !== null && broken.warunekRowH > 60, { przed: okBefore.warunekRowH, po: broken.warunekRowH });
+      assert('(B7-K) metryka ROZROZNIA: z dev-notem „Warunek" niesie sygnature notatki deweloperskiej',
+        DEVNOTE_RE.test(broken.warunekText || '') === true, (broken.warunekText || '').slice(0, 90));
+      // Sprzatanie: karta z wstrzyknietym tekstem nie moze wyciec do (B8)/(E).
+      await page.evaluate(() => { document.getElementById('civ-tech-discovery-notice-host')?.remove(); });
+      await wait(200);
+    }
+
+    // ---- (B8) kryterium 5 ZYWO: pozostale naprawione wpisy `warunek`, realnie na ekranie ----
+    // Kryterium 5 dispatchu (audyt + naprawa POZOSTALYCH wpisow `warunek`) bylo dotad
+    // dowodzone wylacznie na JSON. Tu jest dowod ZYWY, ta sama sciezka co (B1)/(B6):
+    // karta technologii → sekcja „Ulepszenia terenu" → klik w wiersz → karta boczna.
+    console.log('\n-- (B8) zywy dowod kryterium 5: `Warunek` bez dev-notu dla pozostalych ulepszen --');
+    for (const p of [
+      { tech: 'Rolnictwo', id: 'farma', title: 'Farma' },
+      { tech: 'Oswojenie zwierząt', id: 'bydlo', title: 'Trzoda' },
+      { tech: 'Oswojenie zwierząt', id: 'owce', title: 'Owce' },
+      { tech: 'Oswojenie zwierząt', id: 'lama', title: 'Lama' },
+    ]) {
+      await page.evaluate(() => window.__sidePanelLinkTestDebug.closeAll());
+      await page.evaluate(() => { document.getElementById('civ-tech-discovery-notice-host')?.remove(); });
+      await page.evaluate((t) => window.__eraTestDebug.openTechCompletion(t), p.tech);
+      await wait(600);
+      await expandSection(page, 'improvements');
+      const sel = '#civ-tech-discovery-notice-host [data-entity-kind="improvement"][data-entity-id="' + p.id + '"]';
+      const loc = page.locator(sel);
+      assert('(B8) ' + p.id + ': wiersz osiagalny z karty „' + p.tech + '"', await loc.count() === 1);
+      if (await loc.count() !== 1) continue;
+      const bb = await loc.boundingBox();
+      await page.mouse.click(bb.x + bb.width / 2, bb.y + bb.height / 2);
+      await wait(700);
+      const rows = await readWarunekRows(page);
+      const card = rows.find((r) => r.title === p.title) || null;
+      assert('(B8) ' + p.id + ': karta boczna „' + p.title + '" otwarta z wierszem „Warunek"',
+        card !== null && typeof card.warunek === 'string' && card.warunek.length > 0, rows);
+      if (card === null || typeof card.warunek !== 'string') continue;
+      assert('(B8) ' + p.id + ': widoczny „Warunek" BEZ sygnatury notatki deweloperskiej',
+        DEVNOTE_RE.test(card.warunek) === false, card.warunek);
+      const ov = await measureSideCardOverflow(page);
+      assert('(B8) ' + p.id + ': tresc karty bocznej miesci sie w karcie (scrollHeight <= clientHeight)',
+        ov.missing !== true && ov.overflowsY === false, ov);
+    }
+    await page.evaluate(() => { document.getElementById('civ-tech-discovery-notice-host')?.remove(); });
+    await page.setViewportSize({ width: 1600, height: 1000 });
+    await wait(300);
 
     console.log('\n-- (E) brak bledow konsoli/JS --');
     assert('(E) zero bledow konsoli/JS przez caly przebieg', consoleErrors.length === 0, consoleErrors.slice(0, 5));

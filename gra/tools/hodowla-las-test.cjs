@@ -366,21 +366,49 @@ const data = JSON.parse(fs.readFileSync(
   path.resolve(__dirname, '..', 'data', 'terrain-improvements.json'), 'utf8'));
 ok(!data.owce.warunek.includes('nakładka Las zabroniona)'),
   'JSON: owce.warunek nie stawia juz zakazu lasu jako warunku');
-ok(data.owce.warunek.includes('COFNIĘTY') && data.owce.warunek.includes('2026-08-27'),
-  'JSON: owce.warunek zachowuje slad decyzji (zakaz cofniety, data)');
-ok(data.owce.warunek.includes('2026-07-29'),
-  'JSON: owce.warunek nie wymazuje historii (data pierwotnego zakazu)');
+// R-TECH-KARTA-BOCZNA-KLIK-WIERSZ-REGRES-Q1 (2026-09-03): `warunek` jest tekstem DLA GRACZA,
+// renderowanym na karcie ulepszenia (improvementAdapter.ts) — surowa notatka deweloperska
+// (daty decyzji, cytaty ECHO, ID tematow, „COFNIĘTY") przeniesiona do nierenderowanego pola
+// `uwagi`, wzorzec P-TECH-UWAGI-WYCIEK-CITYPANEL-Q1. Historia decyzji NIE jest wymazywana —
+// zmienia sie tylko nosnik, wiec asercje historii czytaja teraz `uwagi` zamiast `warunek`.
+ok((data.owce.uwagi || '').includes('COFNIĘTY') && (data.owce.uwagi || '').includes('2026-08-27'),
+  'JSON: owce.uwagi zachowuje slad decyzji (zakaz cofniety, data)');
+ok((data.owce.uwagi || '').includes('2026-07-29'),
+  'JSON: owce.uwagi nie wymazuje historii (data pierwotnego zakazu)');
 ok(!data.owce.teren.includes('bez lasu'), 'JSON: owce.teren nie mowi juz „bez lasu"');
-ok(data.bydlo.warunek.includes('2026-08-27'), 'JSON: bydlo.warunek ma slad cofniecia zakazu');
-ok(data.lama.warunek.includes('2026-08-27'), 'JSON: lama.warunek ma slad cofniecia zakazu');
+ok((data.bydlo.uwagi || '').includes('2026-08-27'), 'JSON: bydlo.uwagi ma slad cofniecia zakazu');
+ok((data.lama.uwagi || '').includes('2026-08-27'), 'JSON: lama.uwagi ma slad cofniecia zakazu');
 // P-STADNINA-LAS-NIEROZSTRZYGNIETE-Q1 (2026-09-03): odwrocone razem z regula (poprzednio
 // `.includes('NADAL zabroniona')`, „KONTROLA JSON: stadnina.warunek mowi wprost, ze zakaz
 // lasu ZOSTAJE").
 ok(!data.stadnina.warunek.includes('NADAL zabroniona'),
   'JSON: stadnina.warunek juz nie mowi, ze zakaz lasu zostaje');
-ok(data.stadnina.warunek.includes('2026-09-03') && data.stadnina.warunek.includes('2026-07-29'),
-  'JSON: stadnina.warunek zachowuje slad decyzji (zakaz cofniety, obie daty)');
+// (jw. R-TECH-KARTA-BOCZNA-KLIK-WIERSZ-REGRES-Q1: slad decyzji zyje w `uwagi`, nie w `warunek`)
+// RUNDA 2, po zarzucie Evaluatora — asercja na SAMA DATE `2026-09-03` byla TAUTOLOGICZNA:
+// prefiks kazdego nowego `uwagi` brzmi „R-TECH-KARTA-BOCZNA-KLIK-WIERSZ-REGRES-Q1
+// (2026-09-03):", wiec przechodzila nawet gdyby oryginalne ECHO z tego dnia wyparowalo.
+// Kotwica przeniesiona na FRAGMENT CYTATU ECHO wlasciciela (P-STADNINA-LAS-
+// NIEROZSTRZYGNIETE-Q1) — tresci, ktorej zaden prefiks procesowy nie wyprodukuje.
+ok((data.stadnina.uwagi || '').includes('Jeżeli symbol konia jest na lesie'),
+  'JSON: stadnina.uwagi zachowuje CYTAT ECHO wlasciciela (nie sama date z prefiksu)');
+ok((data.stadnina.uwagi || '').includes('P-STADNINA-LAS-NIEROZSTRZYGNIETE-Q1'),
+  'JSON: stadnina.uwagi wskazuje temat, w ktorym zapadla decyzja');
+ok((data.stadnina.uwagi || '').includes('2026-07-29'),
+  'JSON: stadnina.uwagi nie wymazuje historii (data pierwotnego, cofnietego zakazu)');
 ok(!data.stadnina.teren.includes('bez lasu'), 'JSON: stadnina.teren nie mowi juz „bez lasu"');
+// KRYTERIUM 5 dispatchu — kontrola POZYTYWNA na tekscie WIDZIANYM PRZEZ GRACZA: pole
+// `warunek` (renderowane przez improvementAdapter.ts) nie moze niesc sygnatury notatki
+// deweloperskiej. Dla `stadnina` to jest jedyna dostepna bramka: wpis NIE MA zywej sciezki
+// do karty encji (`tech.json` nie wymienia „Stadnina" w „Odblokowuje ulepszenie terenu"
+// zadnej technologii, a CivPedia — `src/data/wikiBundle.json`, folder `ulepszenia`, 17
+// hasel — nie zawiera hasla `stadnina` i renderuje wlasny markdown, nie pole `warunek`).
+// Zywy odpowiednik tej samej kontroli dla farma/bydlo/owce/lama: (B8) w
+// tools/wydarzenia-zbadano-karta-tech-real-render-test.cjs.
+const DEVNOTE_RE = /\b[A-Z]-[A-ZŁŚŻŹĆŃÓĘĄ0-9-]+-Q\d|ECHO|właściciel|RUNDA \d|COFNIĘT|\d{4}-\d{2}-\d{2}/;
+for (const key of ['owce', 'bydlo', 'lama', 'stadnina']) {
+  ok(!DEVNOTE_RE.test(data[key].warunek || ''),
+    `JSON: ${key}.warunek (tekst gracza) bez sygnatury notatki deweloperskiej`, data[key].warunek);
+}
 
 console.log(`\nhodowla-las-test: ${pass} passed, ${fail} failed`);
 process.exit(fail === 0 ? 0 : 1);

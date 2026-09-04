@@ -1,5 +1,10 @@
 TEMAT: R-TECH-KARTA-BOCZNA-KLIK-WIERSZ-REGRES-Q1
-RUNDA: 1/5
+RUNDA: 1/5 — NIEAKTUALNE OD 2026-09-03. Temat jest w RUNDZIE 2/5.
+  >>> CZYTAJ RAZEM Z `01-addendum-runda-2.md` W TYM SAMYM KATALOGU. <<<
+  Addendum rundy 2 ROZSZERZA allowlistę niżej o `gra/tools/farma-nie-w-lesie-test.cjs`
+  i `gra/tools/hodowla-las-test.cjs` (wyłącznie asercje historii decyzji: czytanie pola
+  `uwagi` zamiast `warunek`) oraz o run-dir tego tematu. Sekcja „ALLOWLISTA (nic poza tym)"
+  poniżej opisuje stan RUNDY 1 i jest przez addendum zastąpiona.
 DATA: 2026-09-03
 DOMAIN: GAME (UI + dane)
 ŚCIEŻKA: gra/src/ui/techDiscoveryNotice.ts, gra/data/terrain-improvements.json (WYŁĄCZNIE pole

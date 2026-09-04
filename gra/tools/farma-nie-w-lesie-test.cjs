@@ -478,8 +478,19 @@ async function main() {
   ok(!/Wzgórza z lasem/i.test(f.teren), 'JSON: farma.teren nie obiecuje juz „Wzgórza z lasem"', f.teren);
   ok(/Łąka/.test(f.teren) && /Równina/.test(f.teren), 'JSON: farma.teren nadal wymienia Łąkę i Równinę', f.teren);
   ok(/NIE na lesie|nie na lesie/.test(f.warunek), 'JSON: farma.warunek mowi wprost o zakazie lasu', f.warunek);
-  ok(/2026-08-27/.test(f.warunek), 'JSON: farma.warunek nosi date nowej decyzji', f.warunek);
-  ok(/2026-07-21/.test(f.warunek), 'JSON: farma.warunek zachowuje slad decyzji uchylonej (nie wymazuje historii)', f.warunek);
+  // R-TECH-KARTA-BOCZNA-KLIK-WIERSZ-REGRES-Q1 (2026-09-03): `warunek` jest tekstem DLA GRACZA,
+  // renderowanym na karcie ulepszenia (improvementAdapter.ts) — surowa notatka deweloperska
+  // (daty decyzji, cytaty ECHO, ID tematow) przeniesiona do nierenderowanego pola `uwagi`,
+  // wzorzec P-TECH-UWAGI-WYCIEK-CITYPANEL-Q1. Historia decyzji NIE jest wymazywana — zmienia
+  // sie tylko nosnik, wiec asercje historii czytaja teraz `uwagi` zamiast `warunek`.
+  ok(/2026-08-27/.test(f.uwagi || ''), 'JSON: farma.uwagi nosi date nowej decyzji', f.uwagi);
+  ok(/2026-07-21/.test(f.uwagi || ''), 'JSON: farma.uwagi zachowuje slad decyzji uchylonej (nie wymazuje historii)', f.uwagi);
+  ok(/ECHO/.test(f.uwagi || '') && /w lesie można wybudować tylko tartak/.test(f.uwagi || ''),
+    'JSON: farma.uwagi zachowuje CYTAT ECHO wlasciciela (nie sama date)', f.uwagi);
+  // KRYTERIUM 5 dispatchu — kontrola POZYTYWNA na tekscie WIDZIANYM PRZEZ GRACZA.
+  // Zywy odpowiednik: (B8) w tools/wydarzenia-zbadano-karta-tech-real-render-test.cjs.
+  ok(!/\b[A-Z]-[A-ZŁŚŻŹĆŃÓĘĄ0-9-]+-Q\d|ECHO|właściciel|RUNDA \d|COFNIĘT|\d{4}-\d{2}-\d{2}/.test(f.warunek || ''),
+    'JSON: farma.warunek (tekst gracza) bez sygnatury notatki deweloperskiej', f.warunek);
 
   console.log(`\nfarma-nie-w-lesie-test: ${pass} passed, ${fail} failed`);
   try { fs.unlinkSync(ENTRY); } catch { /* ignore */ }

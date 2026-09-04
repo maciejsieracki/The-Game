@@ -666,9 +666,22 @@ function wireSideCardLinks(card: HTMLElement, host: HTMLElement, stage: HTMLElem
   card.addEventListener('click', (event) => {
     const target = event.target as HTMLElement | null;
     const btn = target?.closest<HTMLElement>('button[data-entity-kind][data-entity-id]');
-    if (btn === null || btn === undefined || !card.contains(btn)) return;
-    const kind = btn.getAttribute('data-entity-kind');
-    const id = btn.getAttribute('data-entity-id');
+    let kind: string | null = null;
+    let id: string | null = null;
+    if (btn !== null && btn !== undefined && card.contains(btn)) {
+      kind = btn.getAttribute('data-entity-kind');
+      id = btn.getAttribute('data-entity-id');
+    } else {
+      // R-TECH-KARTA-BOCZNA-KLIK-WIERSZ-REGRES-Q1 — fallback lustrzany do `renderer.ts`
+      // (`.entity-card-row[data-row-entity-kind]`, cały wiersz klikalny od
+      // P-CIVPEDIA-KARTY-CALY-WIERSZ-PRZYCISKIEM-Q1). Bez tego klik w etykietę omijał
+      // CAPTURE i łapał go bąbelkowy `openDialog()` (karta pod spodem, nie obok).
+      const rowEl = target?.closest<HTMLElement>('.entity-card-row[data-row-entity-kind]');
+      if (rowEl !== null && rowEl !== undefined && card.contains(rowEl)) {
+        kind = rowEl.getAttribute('data-row-entity-kind');
+        id = rowEl.getAttribute('data-row-entity-id');
+      }
+    }
     if (kind === null || id === null) return;
     event.preventDefault();
     event.stopPropagation();

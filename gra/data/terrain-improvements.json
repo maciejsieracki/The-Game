@@ -19,10 +19,11 @@
     },
     "surowiecOdblokowany": null,
     "teren": "Łąka, Równina (bez lasu)",
-    "warunek": "ziemia uprawna; DZIAŁA BEZ rzeki (podstawowy); NIE na lesie (Las) na ŻADNYM terenie bazowym — najpierw wyrąb (Maciej 2026-08-27, ECHO: \u201ew lesie można wybudować tylko tartak i ewentualnie obozowisko\u201d); UCHYLA poprzedni zapis \u201eMOŻE na lesie (Las) — bez wyrębu (Maciej 2026-07-21)\u201d, który dopuszczał też Wzgórza z lasem — po tej zmianie farma na Wzgórzach jest niemożliwa całkowicie (świadoma konsekwencja, nie przeoczenie)",
+    "warunek": "ziemia uprawna; rzeka NIE jest wymagana; NIE na lesie — najpierw wyrąb.",
     "koszt_praca": 20,
     "tech": "Rolnictwo",
     "odblokowuje": "",
+    "uwagi": "R-TECH-KARTA-BOCZNA-KLIK-WIERSZ-REGRES-Q1 (2026-09-03): tekst gracza w `warunek` skrócony z surowej notatki deweloperskiej — pełna historia decyzji zachowana tu. Oryginał: ziemia uprawna; DZIAŁA BEZ rzeki (podstawowy); NIE na lesie (Las) na ŻADNYM terenie bazowym — najpierw wyrąb (Maciej 2026-08-27, ECHO: „w lesie można wybudować tylko tartak i ewentualnie obozowisko”); UCHYLA poprzedni zapis „MOŻE na lesie (Las) — bez wyrębu (Maciej 2026-07-21)”, który dopuszczał też Wzgórza z lasem — po tej zmianie farma na Wzgórzach jest niemożliwa całkowicie (świadoma konsekwencja, nie przeoczenie)",
     "historia": "Przejście od zbieractwa do uprawy roślin to jedna z najgłębszych rewolucji w dziejach ludzkości — zaszło niezależnie w kilku regionach świata: na Żyznym Półksiężycu (pszenica, jęczmień, ok. 9500 p.n.e.), w dorzeczu Jangcy i Żółtej Rzeki w Chinach (ryż, proso), w Mezoameryce (kukurydza) oraz w Andach (ziemniak, komosa ryżowa). Zamiast wędrować za dziką roślinnością, ludzie zaczęli świadomie selekcjonować nasiona, przygotowywać glebę i pilnować pól przez cały cykl wegetacyjny. Ta zmiana pozwoliła na osiadły tryb życia, gromadzenie nadwyżek żywności i w konsekwencji na powstanie pierwszych wsi, a później miast. Archeolodzy szacują, że udomowienie pszenicy i jęczmienia zajęło setki, a nawet tysiące lat stopniowej selekcji odmian dających większe i trwalsze ziarna. Farma w tym sensie to nie pojedynczy wynalazek, lecz długi proces, który na zawsze odmienił relację człowieka z ziemią."
   },
   "irygacja": {
@@ -52,10 +53,11 @@
     "surowiecOdblokowany": "bydlo",
     "surowiecOdblokowany_uwaga": "ABC-18: dostęp dopiero po postawieniu na złożu trzody",
     "teren": "Łąka, Równina (także z nakładką Las)",
-    "warunek": "plaski ląd; pierwsze: złoże bydła; potem po odblokowaniu — bez złoża; + farma lub solo; NIE na Pustyni; nakładka Las NIE przeszkadza — zakaz z 2026-07-29 COFNIĘTY 2026-08-27 (R-ULEPSZENIA-HODOWLA-LAS-ODBLOKOWANA-Q1, ECHO właściciela: „Tak, odwracamy — wszystkie trzy”)",
+    "warunek": "płaski ląd poza Pustynią; pierwsze pastwisko wymaga złoża bydła, po odblokowaniu bez złoża; nakładka Lasu nie przeszkadza.",
     "koszt_praca": 20,
     "tech": "Oswojenie zwierząt",
     "odblokowuje": "Trzoda (Rydwan po odblokowaniu)",
+    "uwagi": "R-TECH-KARTA-BOCZNA-KLIK-WIERSZ-REGRES-Q1 (2026-09-03): tekst gracza w `warunek` skrócony z surowej notatki deweloperskiej — pełna historia decyzji zachowana tu. Oryginał: plaski ląd; pierwsze: złoże bydła; potem po odblokowaniu — bez złoża; + farma lub solo; NIE na Pustyni; nakładka Las NIE przeszkadza — zakaz z 2026-07-29 COFNIĘTY 2026-08-27 (R-ULEPSZENIA-HODOWLA-LAS-ODBLOKOWANA-Q1, ECHO właściciela: „Tak, odwracamy — wszystkie trzy”)",
     "historia": "Udomowienie zwierząt hodowlanych — kóz i owiec na Bliskim Wschodzie, bydła w Afryce i Azji, świń w Chinach i Europie — przebiegało mniej więcej równolegle z udomowieniem roślin, tworząc razem podstawę neolitycznej rewolucji rolniczej. Zwierzęta hodowlane dawały nie tylko mięso, ale też mleko, skóry, wełnę i nawóz użyźniający pola, a z czasem także siłę pociągową. W przeciwieństwie do polowania, hodowla pozwalała trzymać zapas żywca na czas nieurodzaju czy suszy, działając jak bufor bezpieczeństwa całej wspólnoty. Archeolodzy odróżniają udomowione stada od dzikich populacji po zmianach w budowie kości i strukturze wieku ubijanych zwierząt, co pozwala datować pierwsze zagrody na kontynentach niezależnie od siebie. Trzoda hodowlana uczyniła też ludzi bardziej osiadłymi niż sami myśliwi-zbieracze, bo stada trzeba było paść i pilnować blisko osady. To właśnie bliski kontakt człowieka ze zwierzętami hodowlanymi uczynił z niego również nosiciela — i czasem ofiarę — chorób odzwierzęcych, które później odmieniły bieg historii."
   },
   "owce": {
@@ -69,10 +71,11 @@
     "surowiecOdblokowany": "owce",
     "surowiecOdblokowany_uwaga": "pierwsze na zlozu owiec; solo na wzgorzu; bez farmy/bydla",
     "teren": "Wzgórza (także z nakładką Las)",
-    "warunek": "solo wzgórze — otwarte LUB z nakładką Las; pierwsze: złoże owiec; potem wzgórze bez złoża po odblokowaniu; zakaz „nakładka Las zabroniona” (Maciej 2026-07-29) COFNIĘTY 2026-08-27 — R-ULEPSZENIA-HODOWLA-LAS-ODBLOKOWANA-Q1, ECHO właściciela: „Tak, odwracamy — wszystkie trzy” (owce, bydło, lama); historia decyzji zostaje, nie jest wymazywana",
+    "warunek": "wzgórze, także z nakładką Lasu; pierwsze pastwisko wymaga złoża owiec, po odblokowaniu bez złoża.",
     "koszt_praca": 20,
     "tech": "Oswojenie zwierząt",
     "odblokowuje": "Owce (wełna / jedzenie)",
+    "uwagi": "R-TECH-KARTA-BOCZNA-KLIK-WIERSZ-REGRES-Q1 (2026-09-03): tekst gracza w `warunek` skrócony z surowej notatki deweloperskiej — pełna historia decyzji zachowana tu. Oryginał: solo wzgórze — otwarte LUB z nakładką Las; pierwsze: złoże owiec; potem wzgórze bez złoża po odblokowaniu; zakaz „nakładka Las zabroniona” (Maciej 2026-07-29) COFNIĘTY 2026-08-27 — R-ULEPSZENIA-HODOWLA-LAS-ODBLOKOWANA-Q1, ECHO właściciela: „Tak, odwracamy — wszystkie trzy” (owce, bydło, lama); historia decyzji zostaje, nie jest wymazywana",
     "historia": "Owca była jednym z pierwszych zwierząt udomowionych przez człowieka, prawdopodobnie już około 10 000 lat temu na terenach dzisiejszej Anatolii i Iranu, gdzie żyły ich dzikie przodkinie, muflony. Początkowo hodowano je głównie dla mięsa i skóry, lecz z czasem — wraz z selekcją osobników o gęstszym runie — owca stała się też kluczowym źródłem wełny, surowca, który zrewolucjonizował włókiennictwo w całej Eurazji. Pasterstwo owiec dobrze sprawdzało się na terenach zbyt jałowych lub zbyt stromych pod uprawę, jak wzgórza czy stepy, co czyniło je uzupełnieniem, a nie konkurencją dla rolnictwa. W wielu kulturach, od starożytnej Mezopotamii po średniowieczną Europę, handel wełną i tkaninami wełnianymi stał się fundamentem bogactwa całych regionów i miast. Pasterze owiec, prowadzący stada między pastwiskami sezonowymi, ukształtowali też charakterystyczny, na wpół koczowniczy styl życia zwany transhumancją, praktykowany do dziś w wielu górzystych regionach świata."
   },
   "lama": {
@@ -87,10 +90,11 @@
     "surowiecOdblokowany": "lama",
     "surowiecOdblokowany_uwaga": "TYLKO Inkowie; solo — bez innych ulepszen na heksie; pierwsze na zlozu lamy",
     "teren": "Wzgórza, Góry (także z nakładką Las)",
-    "warunek": "solo; tylko cyw. Inkowie; wzgórza/góry; pierwsze: złoże lamy; NIE na Łące/Równinie/Pustyni; nakładka Las NIE przeszkadza — zakaz z 2026-07-29 COFNIĘTY 2026-08-27 (R-ULEPSZENIA-HODOWLA-LAS-ODBLOKOWANA-Q1, ECHO właściciela: „Tak, odwracamy — wszystkie trzy”)",
+    "warunek": "tylko cywilizacja Inków; wzgórza i góry, także z nakładką Lasu; pierwsze wymaga złoża lamy.",
     "koszt_praca": 20,
     "tech": "Oswojenie zwierząt",
     "odblokowuje": "Lama (transport / żywność)",
+    "uwagi": "R-TECH-KARTA-BOCZNA-KLIK-WIERSZ-REGRES-Q1 (2026-09-03): tekst gracza w `warunek` skrócony z surowej notatki deweloperskiej — pełna historia decyzji zachowana tu. Oryginał: solo; tylko cyw. Inkowie; wzgórza/góry; pierwsze: złoże lamy; NIE na Łące/Równinie/Pustyni; nakładka Las NIE przeszkadza — zakaz z 2026-07-29 COFNIĘTY 2026-08-27 (R-ULEPSZENIA-HODOWLA-LAS-ODBLOKOWANA-Q1, ECHO właściciela: „Tak, odwracamy — wszystkie trzy”)",
     "historia": "Lama, obok pokrewnej alpaki, była jedynym dużym zwierzęciem jucznym udomowionym w przedkolumbijskich Andach — regionie pozbawionym koni, wołów czy wielbłądów znanych ze Starego Świata. Ludy andyjskie, w tym później Inkowie, wykorzystywały lamy do transportu towarów po stromych górskich szlakach, gdzie jedno zwierzę mogło nieść kilkadziesiąt kilogramów ładunku na wysokościach sięgających kilku tysięcy metrów. Poza transportem lama dostarczała wełny, mięsa, a nawet nawozu i suszonego łajna używanego jako opał na bezdrzewnych wyżynach. Inkowie stworzyli rozbudowaną sieć dróg górskich obsługiwaną właśnie przez karawany lam, co pozwalało administrować rozległym imperium bez koła i koni. Zwierzę to było na tyle cenione, że pojawiało się w mitologii i sztuce andyjskiej jako symbol dostatku i więzi między człowiekiem a górami. Do dziś lamy i alpaki pozostają nieodłącznym elementem krajobrazu i gospodarki wysokogórskich regionów Peru, Boliwii i Chile."
   },
   "stadnina": {
@@ -104,10 +108,11 @@
     "surowiecOdblokowany_uwaga": "ABC-18: tylko na złożu konia + tech Jeździectwo. PYTANIE-84-B3 (Maciej 2026-07-27): produkcja Koń do magazynu państwa per ulepszenie w terytorium (SUROW-TERYT-01); stawka REALNA = 1/ture. R-ZUZYCIE-SUROWCOW-OBYWATELE-PROD-Q1, korekta balansu Maciej 2026-08-12: 5/turę (było 1/turę). R-EKONOMIA-SUROWCE-SKALA-5X-Q1 (Maciej 2026-08-13): ×5 → 25/turę (było 5/turę).",
     "surowiec_ilosc_tura": 25,
     "teren": "Łąka, Równina",
-    "warunek": "solo; tylko heks ze złożem konia w terytorium (albo po imperialnym odblokowaniu Konia — wtedy bez złoża); nakładka Las NIE przeszkadza (P-STADNINA-LAS-NIEROZSTRZYGNIETE-Q1, ECHO właściciela 2026-09-03: „Stadnina […] jest ulepszeniem surowcowym […] tylko takim jak tartak czy kopalnie. Jeżeli symbol konia jest na lesie, to nie przeszkadza w tym, żeby tam postawić stadninę.” — COFA zakaz z 2026-07-29, który stadninę objął pochodną definicji, nie decyzją właściciela). Stadnina jest niezależna od lasu: usunięcie lasu spod już postawionej stadniny NIE usuwa stadniny, dokładnie jak przy Gliniance.",
+    "warunek": "heks ze złożem konia w terytorium (albo po imperialnym odblokowaniu Konia — bez złoża); nakładka Lasu nie przeszkadza.",
     "koszt_praca": 28,
     "tech": "Jeździectwo",
     "odblokowuje": "Koń (jednostki konne)",
+    "uwagi": "R-TECH-KARTA-BOCZNA-KLIK-WIERSZ-REGRES-Q1 (2026-09-03): tekst gracza w `warunek` skrócony z surowej notatki deweloperskiej — pełna historia decyzji zachowana tu. Oryginał: solo; tylko heks ze złożem konia w terytorium (albo po imperialnym odblokowaniu Konia — wtedy bez złoża); nakładka Las NIE przeszkadza (P-STADNINA-LAS-NIEROZSTRZYGNIETE-Q1, ECHO właściciela 2026-09-03: „Stadnina […] jest ulepszeniem surowcowym […] tylko takim jak tartak czy kopalnie. Jeżeli symbol konia jest na lesie, to nie przeszkadza w tym, żeby tam postawić stadninę.” — COFA zakaz z 2026-07-29, który stadninę objął pochodną definicji, nie decyzją właściciela). Stadnina jest niezależna od lasu: usunięcie lasu spod już postawionej stadniny NIE usuwa stadniny, dokładnie jak przy Gliniance.",
     "historia": "Udomowienie konia, które nastąpiło prawdopodobnie na stepach Azji Środkowej, w rejonie dzisiejszego Kazachstanu, około 3500 roku p.n.e., należy do przełomowych momentów w historii ludzkości — dało człowiekowi szybkość i zasięg wcześniej niedostępne pieszo. Hodowla koni w wydzielonych zagrodach i stadninach pozwalała selekcjonować zwierzęta pod kątem siły, wytrzymałości czy temperamentu, co miało ogromne znaczenie zarówno dla rolnictwa, jak i dla wojskowości. Ludy stepowe, takie jak Scytowie czy późniejsi Mongołowie, zbudowały całe cywilizacje koczownicze wokół konnej mobilności, docierając na ogromne odległości i zmieniając układ sił w Eurazji. W Europie i na Bliskim Wschodzie konie ciągnące pierwsze rydwany bojowe zrewolucjonizowały pole bitwy już w drugim tysiącleciu p.n.e. Hodowla koni wymagała rozległych, otwartych pastwisk oraz stałej troski o żywienie, kopyta i rozród, co czyniło stadninę kosztowną, lecz strategicznie bezcenną inwestycją każdego władcy."
   },
   "glinianka": {
@@ -158,10 +163,11 @@
     "surowiecOdblokowany": null,
     "surowiecOdblokowany_uwaga": "dzika zwierzyna nie jest osobnym surowcem w resources.json v0.1 — brak klucza; plony ekonomiczne (zywnosc+pieniadz) jako substytut",
     "teren": "Las (dowolny teren pod lasem — łąka, równina, wzgórze) — WYMAGA już zbudowanego Tartaku na tym samym heksie",
-    "warunek": "R-ULEPSZENIA-OBOZ-LOWIECKI-WYMAGA-TARTAKU-Q1 (właściciel): nie budujemy obozu łowieckiego, dopóki na tym samym heksie lasu nie stoi już ukończony Tartak — marnowanie pola pod mało wydajny obóz ma sens tylko wtedy, gdy tartak (zawsze dodatkowy bonus) już tam jest. Bez tartaku na heksie opcja budowy obozu jest niedostępna, identycznie jak Droga brukowana bez Drogi. Sam Tartak na lesie bez obozu pozostaje budowalny bez zmian. R-ULEPSZENIA-OBOZ-LOWIECKI-TYLKO-LAS-Q1 (Maciej): WYLACZNIE nakladka Las; teren pod lasem bez znaczenia (takze las na wzgorzu). Bylo `Las LUB zloze zwierzece` — stad obozy poza lasem. Wariant `Las I zloze` zmierzony i ODRZUCONY: 0 kwalifikujacych pol na 5 mapach (nakladka to JEDNO pole, Las i Zloze* wykluczaja sie; Model B 2026-07-09 usunal zloza owiec/bydla/lamy z generatora) — ulepszenie byloby martwe. RUNDA 2 (ECHO Maciej 2026-08-27, wariant A): wyrab lasu spod obozu USUWA oboz z heksa (stripImprovementsWhenForestRemoved) — praca NIE jest zwracana; tartak przy wyrebie zostaje (kanon).",
+    "warunek": "Wymaga ukończonego Tartaku na tym samym heksie lasu.",
     "koszt_praca": 18,
     "tech": "Łowiectwo",
     "odblokowuje": "",
+    "uwagi": "R-TECH-KARTA-BOCZNA-KLIK-WIERSZ-REGRES-Q1 (2026-09-03): tekst gracza w `warunek` skrócony z surowej notatki deweloperskiej — pełna historia decyzji zachowana tu. Oryginał: R-ULEPSZENIA-OBOZ-LOWIECKI-WYMAGA-TARTAKU-Q1 (właściciel): nie budujemy obozu łowieckiego, dopóki na tym samym heksie lasu nie stoi już ukończony Tartak — marnowanie pola pod mało wydajny obóz ma sens tylko wtedy, gdy tartak (zawsze dodatkowy bonus) już tam jest. Bez tartaku na heksie opcja budowy obozu jest niedostępna, identycznie jak Droga brukowana bez Drogi. Sam Tartak na lesie bez obozu pozostaje budowalny bez zmian. R-ULEPSZENIA-OBOZ-LOWIECKI-TYLKO-LAS-Q1 (Maciej): WYLACZNIE nakladka Las; teren pod lasem bez znaczenia (takze las na wzgorzu). Bylo `Las LUB zloze zwierzece` — stad obozy poza lasem. Wariant `Las I zloze` zmierzony i ODRZUCONY: 0 kwalifikujacych pol na 5 mapach (nakladka to JEDNO pole, Las i Zloze* wykluczaja sie; Model B 2026-07-09 usunal zloza owiec/bydla/lamy z generatora) — ulepszenie byloby martwe. RUNDA 2 (ECHO Maciej 2026-08-27, wariant A): wyrab lasu spod obozu USUWA oboz z heksa (stripImprovementsWhenForestRemoved) — praca NIE jest zwracana; tartak przy wyrebie zostaje (kanon).",
     "historia": "Zanim rolnictwo i hodowla stały się głównym źródłem pożywienia, polowanie w lasach dostarczało ludziom mięsa, skór, kości i poroża wykorzystywanych do narzędzi i odzieży — a w wielu kulturach pozostało ważnym zajęciem nawet długo po neolitycznej rewolucji rolniczej. Ludy leśne Europy, Syberii czy Ameryki Północnej zakładały sezonowe obozowiska myśliwskie w głębi puszczy, skąd wyprawiano się tropić zwierzynę grubą — jelenie, dziki, łosie czy bizony — wracając do głównej osady z upolowaną zdobyczą. Skuteczne polowanie leśne wymagało szczegółowej znajomości terenu, tropów i zwyczajów zwierząt, przekazywanej z pokolenia na pokolenie, a często też współpracy grupowej przy organizowaniu obław. Dla wielu społeczności łowieckich, jak choćby ludów borealnych Syberii, futra zwierząt leśnych stały się z czasem cennym towarem handlowym, napędzającym dalekosiężną wymianę. Las, choć trudniejszy do zagospodarowania rolniczo niż otwarte równiny, oferował więc własne, unikatowe bogactwo — pod warunkiem, że ktoś potrafił je wytropić i upolować."
   },
   "wyrab": {
@@ -173,7 +179,7 @@
     },
     "surowiecOdblokowany": null,
     "teren": "Las",
-    "warunek": "koszt 2.5 Pracy na start; plon +25 Drewna × 1 tura (surowiec do puli państwa, Maciej 2026-07-24; R-EKONOMIA-SUROWCE-SKALA-5X-Q1 Runda 2, Maciej 2026-08-13, B2: x5 -> 25, bylo 5 -- koszt startu 2.5 Pracy (Maciej 2026-08-17) NIE jest surowcem budowlanym, zostaje bez zmian); potem teren bazowy bez lasu",
+    "warunek": "jednorazowo +25 Drewna, potem teren traci nakładkę Lasu",
     "koszt_praca": 2.5,
     "tech": null,
     "wycinka": {
@@ -182,6 +188,7 @@
       "usuwa_nakladke": "las"
     },
     "odblokowuje": "",
+    "uwagi": "R-TECH-KARTA-BOCZNA-KLIK-WIERSZ-REGRES-Q1 (2026-09-03): tekst gracza w `warunek` skrócony z surowej notatki deweloperskiej — pełna historia decyzji zachowana tu. Oryginał: koszt 2.5 Pracy na start; plon +25 Drewna × 1 tura (surowiec do puli państwa, Maciej 2026-07-24; R-EKONOMIA-SUROWCE-SKALA-5X-Q1 Runda 2, Maciej 2026-08-13, B2: x5 -> 25, bylo 5 -- koszt startu 2.5 Pracy (Maciej 2026-08-17) NIE jest surowcem budowlanym, zostaje bez zmian); potem teren bazowy bez lasu",
     "historia": "Karczowanie lasu pod potrzeby rolnictwa i budownictwa to proces towarzyszący ekspansji rolniczych społeczności od neolitu — w Europie znany jako gospodarka żarowa, praktykowana też niezależnie w tropikalnych lasach Ameryki Środkowej i Azji Południowo-Wschodniej. Drewno wycięte z lasu było surowcem uniwersalnym: budulcem dla domów i statków, opałem, a po przetworzeniu na węgiel drzewny — paliwem potrzebnym do wytopu metali. Sam wyrąb, wykonywany kamiennymi, a później żelaznymi toporami, był pracą żmudną i czasochłonną, dlatego często wspomagano go ogniem, wypalając poszycie i mniejsze drzewa, by ułatwić dalsze karczowanie. Skala średniowiecznego wyrębu lasów w Europie Zachodniej, związana z rosnącą populacją i potrzebą nowych pól uprawnych, trwale zmieniła krajobraz kontynentu, zamieniając rozległe puszcze w mozaikę pól i wsi. W wielu regionach świata deforestacja pod uprawę pozostaje procesem kontrowersyjnym do dziś, co pokazuje, jak dawna praktyka gospodarcza wciąż kształtuje debaty współczesności."
   },
   "tartak": {
