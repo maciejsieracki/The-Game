@@ -49,12 +49,12 @@ function assert(cond, msg) {
 
 const p = loadAutoBattleParams();
 assert(p.L_MAX === 0.42, 'L_MAX from JSON');
-assert(p.p_atk === 0.58, 'p_atk from JSON');
+assert(p.p_atk === 1.2, 'p_atk from JSON');
 
 const r15 = resolveAutoBattleByPower({ mAtk: 150, mDef: 100, rng: () => 1 });
 assert(r15.winner === 'attacker', '150 vs 100 attacker wins');
-assert(Math.abs(r15.lossAtkPct - 0.332) < 0.02, 'ATK loss ~33% at R=1.5');
-assert(Math.abs(r15.lossDefPct - 0.668) < 0.02, 'DEF loss ~67% at R=1.5');
+assert(Math.abs(r15.lossAtkPct - 0.258) < 0.02, 'ATK loss ~26% at R=1.5');
+assert(Math.abs(r15.lossDefPct - 0.742) < 0.02, 'DEF loss ~74% at R=1.5');
 
 const r5 = resolveAutoBattleByPower({ mAtk: 500, mDef: 100, rng: () => 1 });
 assert(r5.winner === 'attacker', '500 vs 100 attacker wins');

@@ -8,8 +8,8 @@
   "kalibracja": "v2b-2026-06-30",
   "straty": {
     "L_MAX": 0.42,
-    "p_atk": 0.58,
-    "p_def": 0.58,
+    "p_atk": 1.2,
+    "p_def": 1.2,
     "L_MIN": 0.05,
     "remis_pct": 0.4,
     "coef_zwyciezca": 1.0,

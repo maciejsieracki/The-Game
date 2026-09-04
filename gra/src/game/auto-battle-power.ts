@@ -84,10 +84,33 @@ function coreLoss(ratio: number, pExp: number, L_MAX: number): number {
   return L_MAX / Math.pow(r, pExp);
 }
 
+/**
+ * L_MIN jako podłoga na SUMIE strat składu, nie na pojedynczej jednostce
+ * (R-WALKA-PRZEWAGA-LICZEBNA-Q1-W1).
+ *
+ * Zwrócony `lossPct` jest procentem NA JEDNOSTKĘ, a skład zwycięzcy liczy
+ * ~`ratio` jednostko-równoważników (ratio = M zwycięzcy / M przegranego), więc
+ * łączne straty składu = `lossPct × ratio`. Podłoga na jednostce dawała sumę
+ * `L_MIN × ratio`, która ROSŁA z przewagą i przy 20:1 zawracała ciąg do 1,000
+ * mimo poprawnego wykładnika. Dzieląc podłogę przez liczebność ograniczamy
+ * dokładnie łączne straty składu: `lossPct × ratio >= L_MIN`.
+ */
+function winnerLossFloorPct(ratio: number, p: AutoBattleStratyParams): number {
+  const sizeUnits = Math.max(1, ratio);
+  return p.L_MIN / sizeUnits;
+}
+
 function winnerLossPct(ratio: number, pExp: number, p: AutoBattleStratyParams): number {
   const raw = p.coef_zwyciezca * coreLoss(ratio, pExp, p.L_MAX);
   const cap = Math.min(1, p.coef_zwyciezca * p.L_MAX);
-  return Math.round(Math.max(p.L_MIN, Math.min(cap, raw)) * 10000) / 10000;
+  const floor = winnerLossFloorPct(ratio, p);
+  // Zaokrąglenie NAJPIERW, podłoga POTEM. Przy r > ~1863 procent na jednostkę
+  // schodzi poniżej 0,00005 i zaokrąglenie do 4 miejsc kasowało zarówno `raw`,
+  // jak i podłogę — łączne straty zwycięzcy spadały do 0,00000 zamiast do
+  // `L_MIN`. W zakresie grywalnym (r <= 1863) `rounded > floor`, więc wartości
+  // z tabeli GOAL są nietknięte.
+  const rounded = Math.round(Math.min(cap, raw) * 10000) / 10000;
+  return Math.max(floor, rounded);
 }
 
 function loserLossPct(ratio: number, pExp: number, p: AutoBattleStratyParams): number {
