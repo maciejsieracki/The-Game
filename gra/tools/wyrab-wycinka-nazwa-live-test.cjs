@@ -524,6 +524,113 @@ async function main() {
     + ' jest zglaszana',
     skanujTekst('Wybierz Wyrąb w panelu ulepszeń.').length === 1);
 
+  // -----------------------------------------------------------------------
+  // [11] SKAN NEGATYWNY `gra/src` -- zarzuty 2 i 3 Evaluatora rundy 5, PRZYJETE.
+  //      Bloki [3]/[4] robily wylacznie asercje POZYTYWNE (`includes`) na czterech
+  //      znanych literalach, wiec nawrot nazwy ulepszenia w DOWOLNYM innym stringu
+  //      gracza w `gra/src` przechodzil na zielono. To dokladnie ta sama klasa
+  //      slepoty, ktora [6]/[7] zamknely dla bundla, a [8]/[8b] dla
+  //      terrain-improvements.json -- dla kodu zrodlowego pozostawala otwarta.
+  //
+  //      ZAKRES: wszystkie `.ts`/`.tsx` w `gra/src`, z pominieciem komentarzy
+  //      (blokowych oraz linii zaczynajacych sie od `//` lub `*`). Pomijanie jest
+  //      CELOWO zachowawcze -- wycinamy tylko cale linie komentarza, nigdy ogona
+  //      linii z kodem, zeby `//` wewnatrz literalu stringowego nie oslepilo skanu.
+  //      Komentarze kodu sa jawnie poza zakresem tematu (dispatch runda 1, RECON).
+  //
+  //      WZORZEC: wylacznie wariant z "ą" (`wyrąb`). Klucz wewnetrzny `wyrab` (bez
+  //      "ą") jest identyfikatorem i ZOSTAJE BEZ ZMIAN (GOAL pkt 6) -- w `gra/src`
+  //      wystepuje w ~80 miejscach jako klucz, typ, nazwa funkcji i selektor DOM.
+  //
+  //      KLASYFIKACJA TRZECH ZNANYCH TRAFIEN (zarzut 2 -- dotad nigdzie nie zapisana):
+  //        improvement-build.ts:471 "najpierw wyrąb las (Wycinka w panelu ulepszeń)"
+  //          -- czasownik, jawnie wylaczony ze zmiany juz w dispatchu rundy 1 (GOAL 4).
+  //        main.ts:20535           "automat MOŻE wycinać las (wyrąb pod farmę przy rzece)"
+  //        buildModeHud.ts:572     "Pozwól automatowi wycinać las (wyrąb pod farmę przy rzece)"
+  //          -- rzeczownik odczasownikowy: glosa czasownika "wycinać las" stojacego w
+  //             TYM SAMYM zdaniu, bez szeregu nazw ulepszen obok (inaczej niz
+  //             "wyrąb → farma → irygacja" z 05-budowa-mapa.md, przeklasyfikowane w
+  //             rundzie 4). Klasa "wyrąb lasu" -- zostaja bez zmian.
+  //      Nie dopisuj tu wpisow "zeby przeszlo" -- kazde nowe trafienie ma byc
+  //      sklasyfikowane jawnie albo poprawione.
+  // -----------------------------------------------------------------------
+  const DOZWOLONE_WYRAB_SRC = [
+    'wyrąb las (Wycinka w panelu ulepszeń)',
+    'wyrąb pod farmę przy rzece',
+  ];
+  const SRC_DIR = path.resolve(GRA, 'src');
+  function zbierzTs(dir, out) {
+    for (const e of fs.readdirSync(dir, { withFileTypes: true })) {
+      const p = path.join(dir, e.name);
+      if (e.isDirectory()) zbierzTs(p, out);
+      else if (/\.(ts|tsx)$/.test(e.name)) out.push(p);
+    }
+    return out;
+  }
+  const plikiSrc = zbierzTs(SRC_DIR, []);
+  const trafieniaSrc = [];
+  let dozwoloneSrc = 0;
+  let znakowSrc = 0;
+  for (const plik of plikiSrc) {
+    const bezBlokowych = fs.readFileSync(plik, 'utf8')
+      .replace(/\/\*[\s\S]*?\*\//g, (m) => m.replace(/[^\n]/g, ' '));
+    bezBlokowych.split('\n').forEach((linia, i) => {
+      const t = linia.trim();
+      if (t.startsWith('//') || t.startsWith('*')) return;
+      znakowSrc += linia.length;
+      const re = /[Ww]yrąb/g;
+      let m;
+      while ((m = re.exec(linia)) !== null) {
+        if (DOZWOLONE_WYRAB_SRC.some((fraza) => zakotwiczona(linia, m.index, fraza))) dozwoloneSrc++;
+        else trafieniaSrc.push({ plik: path.relative(GRA, plik) + ':' + (i + 1), kontekst: t.slice(0, 160) });
+      }
+    });
+  }
+  check('[11] gra/src (SKAN NEGATYWNY, wszystkie .ts/.tsx poza komentarzami): ZERO'
+    + ' wystapien nazwy ulepszenia "Wyrąb" w stringach -- kazde trafienie musi byc'
+    + ' na jawnej liscie uzyc pospolitych',
+    trafieniaSrc.length === 0, trafieniaSrc);
+  check('[11] sanity: skan objal wszystkie trzy znane, sklasyfikowane uzycia pospolite'
+    + ' (asercja nie jest pusta ani slepa)',
+    dozwoloneSrc === 3, { dozwoloneSrc, oczekiwane: 3 });
+
+  // [11b] STRAZNIK POKRYCIA bloku [11] -- ten sam wzorzec co [7] i [8b]. Sam skan
+  //       negatywny nie wykryje wlasnej slepoty: zly glob, zla sciezka albo zbyt
+  //       agresywne wycinanie komentarzy daje zero trafien, czyli PASS.
+  check('[11b] skan [11] przeczytal realne drzewo zrodel (>= 300 plikow .ts/.tsx)',
+    plikiSrc.length >= 300, plikiSrc.length);
+  check('[11b] skan [11] objal realna objetosc kodu poza komentarzami (> 1 000 000 znakow)',
+    znakowSrc > 1000000, znakowSrc);
+  const OBOWIAZKOWE_PLIKI_SRC = ['src/main.ts', 'src/map/improvement-build.ts', 'src/ui/buildModeHud.ts'];
+  const wzgledneSrc = new Set(plikiSrc.map((p) => path.relative(GRA, p).split(path.sep).join('/')));
+  check('[11b] skan [11] objal wszystkie pliki niosace znane stringi gracza',
+    OBOWIAZKOWE_PLIKI_SRC.every((p) => wzgledneSrc.has(p)),
+    OBOWIAZKOWE_PLIKI_SRC.filter((p) => !wzgledneSrc.has(p)));
+
+  // [11c] NIETAUTOLOGICZNOSC [11] na tekscie syntetycznym (wzorem [9]): nazwa
+  //       ulepszenia wstawiona do stringa gracza MUSI byc zgloszona, takze gdy stoi
+  //       tuz obok dozwolonej frazy z whitelisty `gra/src`.
+  function skanujLinieSrc(linia) {
+    const out = [];
+    const re = /[Ww]yrąb/g;
+    let m;
+    while ((m = re.exec(linia)) !== null) {
+      if (DOZWOLONE_WYRAB_SRC.some((fraza) => zakotwiczona(linia, m.index, fraza))) continue;
+      out.push(m.index);
+    }
+    return out;
+  }
+  check('[11c] kontrola negatywna: dozwolona fraza sama w sobie NIE jest zglaszana',
+    skanujLinieSrc("toast('automat MOŻE wycinać las (wyrąb pod farmę przy rzece)');").length === 0);
+  check('[11c] NIETAUTOLOGICZNOSC: nazwa ulepszenia w nowym stringu gracza JEST zgloszona',
+    skanujLinieSrc("toast('Zlecono Wyrąb na tym heksie');").length === 1);
+  const PULAPKA_SRC = "hint('wyrąb pod farmę przy rzece; wybierz Wyrąb w panelu');";
+  check('[11c] KOTWICZENIE: nazwa ulepszenia tuz obok dozwolonej frazy JEST wykrywana'
+    + ' (dokladnie 1 trafienie, pod indeksem nazwy -- nie czasownika)',
+    skanujLinieSrc(PULAPKA_SRC).length === 1
+      && skanujLinieSrc(PULAPKA_SRC)[0] === PULAPKA_SRC.indexOf('Wyrąb w panelu'),
+    { trafienia: skanujLinieSrc(PULAPKA_SRC), oczekiwany: PULAPKA_SRC.indexOf('Wyrąb w panelu') });
+
   console.log('');
   console.log(`[wyrab-wycinka-nazwa-live-test] ${pass} pass, ${fail} fail`);
   try { fs.unlinkSync(ENTRY); } catch (_e) { /* noop */ }
