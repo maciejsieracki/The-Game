@@ -13,6 +13,17 @@ swoim wĹ‚asnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji d
 > Pakiet 3 z 2026-08-20 jest docs-only i nie tworzy wpisu ROBOCZA/KANON/FINALNA;
 > ten plik pozostaje wyłącznie rejestrem publikacji bundli.
 
+## ROBOCZA f5d23e8e - 2026-09-04 09:39 UTC - FALA 345: 1 temat (minimapa ikona robotnika/kilofa - kolor zloty)
+
+|- md5 (pełne): f5d23e8e8277c0fa4436a23b4d00765c · stempel: ROBOCZA · label f5d23e8e · źródłowe commity integracji: `df0fcc0d` + `99b441b1`
+|- **`R-MINIMAPA-IKONA-ROBOTNIK-KOLOR-Q1`** (`df0fcc0d`+`99b441b1`, obrona w rundzie 1) — przyciski worker i deposit (kilof) w rzędzie zoom nad minimapą renderują teraz inline SVG (`stroke="currentColor"`) zamiast surowych emoji Unicode (`'👤'`/`'⛏'`), które całkowicie ignorowały CSS `color`; oba dziedziczą teraz `#e8d88a`, spójnie z resztą rzędu (territory/trade-routes), zero regresji toggle. Ewaluator złapał, że pierwsza wersja kilofa czytała się jak litera "T" — obrona dostarczyła symetryczny łuk z trzonkiem przebijającym łuk pod kątem -35°, zweryfikowany żywo na 5 skalach.
+|- Test: nowy żywy test Chromium `gra/tools/minimapa-ikona-robotnik-kolor-live-test.cjs`, 56/56 PASS (kolor `getComputedStyle`, piksele, toggle, geometria doku). `tsc --noEmit` 0 błędów, 5 bramek referencyjnych (logic-test 213/213, tech-tree-test 19/19, research-test 33/33, unit-replace-test 13/13, combat-test 6/6) zielone na worktree i ponownie na `main` po cherry-picku.
+|- Bundle: 882 modułów, `Gra-ROBOCZA.html` 69,6 MB. `Gra-ROBOCZA-POLE-BITWY.html` BEZ ZMIAN (temat dotyka wyłącznie `hud.ts`, nie `battleScene.ts`) — pozostaje z FALA 344, md5 `b50ad543aef35fdf36957d481c70b427`.
+|- Publikacja: `gra-robocza/Gra-ROBOCZA.html` + manifest + 8 kopii PLAYTEST.
+|- **Odstępstwo techniczne (jak w poprzednich FALACH):** publikacja odtworzona ręcznie w bashu/Node — `pwsh` nie istnieje w tym środowisku.
+|- Szczegóły: rejestr w `REJESTR-PROSB-I-ZADAN.md`.
+|- **AKTUALNA**
+
 ## ROBOCZA 2447a670 - 2026-09-04 04:09 UTC - FALA 344: 11 tematow (handel granica ladowa, dyplomacja UI+NAP+widocznosc sojuszu, minimapa, lup eliminacji, miasta-panstwa pasywnosc, tech-karta, Pangea wybrzeze, wojna trojstronna, etykieta bitwy)
 
 |- md5 (pełne): 2447a67085dc8f3eae9044328deac6e7 · stempel: ROBOCZA · label 2447a670 · źródłowe commity integracji: `d1a3c99d` + `da370d5f` + `4e7a146e` + `92f75053` + `24b34975` + `56d38457` + `7c913485` + `3a91fcf5` + `6be6be37`+`338bb9d6` + `e29cb5dd`+`c0b5546a`+`ec4dd4fa` + `9479ccc4`
@@ -32,7 +43,7 @@ swoim wĹ‚asnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji d
 |- Publikacja: `gra-robocza/Gra-ROBOCZA.html` + `Gra-ROBOCZA-POLE-BITWY.html` + manifest + 8 kopii PLAYTEST.
 |- **Odstępstwo techniczne (jak w poprzednich FALACH):** publikacja odtworzona ręcznie w bashu/Node — `pwsh` nie istnieje w tym środowisku.
 |- Szczegóły: rejestr w `REJESTR-PROSB-I-ZADAN.md`.
-|- **AKTUALNA**
+|- **ZASTĄPIONA** (→ f5d23e8e, FALA 345)
 
 ## ROBOCZA d8932b01 - 2026-09-03 20:47 UTC - FALA 343: 5 tematow (dyplomacja pokoj, handel dystans, entity-cards, wojna wymuszona, repo-prep)
 
