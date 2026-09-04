@@ -326,8 +326,14 @@ async function main() {
     check('(C) fixture: domyślna karta budynku wyrenderowana', !sideAndDefault.error, sideAndDefault);
     check('(c1) domyślna karta encji (budynek) ma NADAL diaromę 190px z renderer.ts',
       sideAndDefault.defaultDioramaHeight === 190, sideAndDefault);
-    check('(c1) domyślna karta encji ma NADAL szerokość 434px (nie 660px popupu)',
-      sideAndDefault.defaultCardWidth === 434, sideAndDefault);
+    // R-CIVPEDIA-KARTY-SPOJNOSC-Q1-A świadomie odwraca tę asercję: `.entity-card` base
+    // (renderer.ts) zmienia szerokość referencyjną 434→660px dla WSZYSTKICH kart używających
+    // jej wprost (dispatch GOAL pkt 2 + kryterium końca 3) — domyślna karta budynku (ta ścieżka)
+    // jest jedną z nich. `.tdn-side-card` (c2 niżej) ma WŁASNĄ regułę `width:min(434px,96vw)`
+    // (techDiscoveryNotice.ts:762) która nadpisuje bazę i zostaje nietknięta — 434px tam nadal
+    // poprawne. Tylko domyślna karta (bez klasy `.tdn-side-card`/`.tdn-entity-card-v2`) rośnie.
+    check('(c1) domyślna karta encji (budynek) ma TERAZ szerokość 660px referencyjną (base renderer.ts)',
+      sideAndDefault.defaultCardWidth === 660, sideAndDefault);
 
     // (c2) satelita: ten SAM host co naprawiona karta — najostrzejszy test przecieku selektora.
     const sideProbe = await page.evaluate(() => {
