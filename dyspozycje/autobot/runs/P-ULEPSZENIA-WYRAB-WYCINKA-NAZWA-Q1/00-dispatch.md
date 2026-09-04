@@ -260,3 +260,89 @@ R3-K4. `tsc --noEmit` czysty, 5 bramek referencyjnych zielone, testy civpedia
 Operator (Sonnet 5, effort medium) → Evaluator (Sonnet 5, effort high) → Operator
 (obrona, jeśli zarzuty niepuste) → Final Control (Sonnet 5, effort high) →
 integracja orkiestratora.
+
+---
+
+# RUNDA 4 — KOREKTA BŁĘDU AUTORA DISPATCHU + zawężenie R3-K1 (orkiestrator, 2026-09-04)
+
+## Powód: pomyliłem się w R3-1, Operator słusznie odmówił
+
+Runda 3, zarzut 1: Evaluator wskazał `docs/PORADNIK-GRACZA/05-budowa-mapa.md:166`
+jako nazwę ulepszenia, a nie czasownik. Obrona ODRZUCIŁA proceduralnie i miała rację
+proceduralnie — R3-1 wprost wyłączał frazę „najpierw wyrąb" jako czasownik, więc
+zmiana byłaby złamaniem jawnego wyłączenia z GOAL (§9). Operator zachował się
+wzorowo: nie poszerzył zakresu jednostronnie, tylko eskalował.
+
+**Orkiestrator przyznaje błąd.** Obejrzałem pełny kontekst obu linii:
+- `:166` — „Jeśli gra pozwala tylko **jedno** ulepszenie na heks, priorytet:
+  najpierw wyrąb → farma → irygacja na tym samym polu w kolejnych turach." To jest
+  ŁAŃCUCH ULEPSZEŃ stawianych kolejno na heksie; `farma` i `irygacja` to nazwy
+  ulepszeń małą literą. „wyrąb" jest tu trzecim elementem tego samego szeregu, nie
+  trybem rozkazującym. Klasyfikacja w R3-1 była błędna, bo powstała na urwanym
+  cytacie „najpierw wyrąb", bez widocznych strzałek.
+- `:227` — „Tartak na lesie w promieniu miasta; wyrąb tylko gdy potrzebujesz pola
+  pod farmę." Szereg równoległy do „Tartak" (nazwa ulepszenia) w checkliście budowy.
+  Ta sama klasa; po zmianie zdanie pozostaje poprawne przy obu odczytach.
+
+## GOAL RUNDY 4
+
+R4-1. `docs/PORADNIK-GRACZA/05-budowa-mapa.md` linie 166 i 227: „wyrąb" → „wycinka"
+   (małą literą, zgodnie z otoczeniem — sąsiednie nazwy w tych szeregach są małą
+   literą).
+R4-2. **USUŃ odpowiadające wpisy z whitelisty testu** (`DOZWOLONE_WYRAB[0]`/`[1]` w
+   `gra/tools/wyrab-wycinka-nazwa-live-test.cjs`) — dopóki tam siedzą, test jest
+   ślepy dokładnie na tę klasę resztki. Zostaw w whiteliście WYŁĄCZNIE realne
+   czasowniki i treść historyczną (`14-ai-zagrozenia.md` „wyrąb lasu"/„wyrąb AI",
+   `encyklopedia/ulepszenia/wyrab.md:60` „Sam wyrąb, wykonywany…").
+R4-3. `docs/PORADNIK-GRACZA-SPIS-TRESCI.md` (linie ~68, 787, 790: „**Wyrąb** —
+   usuwa las z heksu") — to spis treści poradnika gracza, dokument adresowany do
+   gracza, więc nazwa ma być spójna. NIE trafia do Civpedii (`PORADNIK_FILES` to
+   zamknięta lista 22 plików w katalogu `docs/PORADNIK-GRACZA/`, a ten plik jest
+   siostrzany), więc bundle się od tego nie zmieni — zmiana czysto dokumentacyjna.
+R4-4. Regeneracja bundla (`node gra/tools/bundle-wiki-for-game.cjs`) + dowód
+   idempotencji, jak w rundach 2-3.
+
+## ZAWĘŻENIE KRYTERIUM R3-K1 (decyzja orkiestratora, zamyka zarzut 3 rundy 3)
+
+R3-K1 brzmiało `grep -rn "[Ww]yrąb" docs/` — było napisane ZA SZEROKO. Pozostałe
+~35 wystąpień żyje w `docs/decyzje/`, `docs/archiwum/`, `docs/analiza/`,
+`docs/obieg/`, `docs/ROADMAP.md`. **Te ZOSTAJĄ bez zmian, świadomie i trwale:**
+zapis decyzyjny ma mówić, co i kiedy postanowiono — przemianowanie historii
+sfałszowałoby te dokumenty. Evaluator i Obrona niezależnie potwierdzili, że żaden
+z nich nie trafia do Civpedii, więc gracz ich nie widzi. Kryterium obowiązuje
+odtąd wyłącznie dla źródeł widocznych dla gracza: `docs/PORADNIK-GRACZA/**`,
+`docs/encyklopedia/**`, `docs/PORADNIK-GRACZA-SPIS-TRESCI.md`, `gra/src`, `gra/data`.
+
+## ALLOWLISTA RUNDY 4
+- Wszystko z rund 1-3 (bez zmian).
+- DODANE: `docs/PORADNIK-GRACZA-SPIS-TRESCI.md` (wyłącznie nazwa ulepszenia).
+- `gra/tools/wyrab-wycinka-nazwa-live-test.cjs` (usunięcie wpisów whitelisty).
+Zakazane bez zmian, TERAZ JAWNIE: `docs/decyzje/**`, `docs/archiwum/**`,
+`docs/analiza/**`, `docs/obieg/**`, `docs/ROADMAP.md` — zapisy historyczne
+zachowują dawną nazwę z rozmysłem.
+
+## KRYTERIA KOŃCA RUNDY 4
+R4-K1. `grep -rn "[Ww]yrąb"` w `docs/PORADNIK-GRACZA/`, `docs/encyklopedia/`,
+   `docs/PORADNIK-GRACZA-SPIS-TRESCI.md` — pozostają WYŁĄCZNIE realne czasowniki
+   i treść historyczna; wypisz każde z uzasadnieniem.
+R4-K2. Whitelista testu nie zawiera już wpisów dla `05-budowa-mapa.md:166/227`, a
+   test na bundlu SPRZED rundy 4 czerwieni się na obu (dowód, że whitelista
+   faktycznie je wcześniej ukrywała).
+R4-K3. Blok pokrycia [7] z rundy 3 nadal zielony (skan obejmuje `wikiS`/`wikiM`/
+   `full`/`historia`, nie tylko tytuły).
+R4-K4. `tsc --noEmit` czysty, 5 bramek referencyjnych zielone, testy civpedia
+   zielone, idempotencja bundlera potwierdzona.
+
+## NOTA DLA INTEGRATORA (z rundy 3, do przeniesienia do commita integracji)
+Regeneracja bundla nadgania NIEZWIĄZANY, ale NAPRAWCZY dryf: `/encyklopedia/78`
+(`ulepszenia/oboz_lowiecki`, pola `wikiM`+`full`) — warunek budowy zmienia się na
+„musi już stać ukończony Tartak" i „Teren: nakładka Las". Źródło zmienił commit
+`8fa5ba27` w `main` (`R-ULEPSZENIA-OBOZ-LOWIECKI-WYMAGA-TARTAKU-Q1`), ale bundla
+tam NIE zregenerowano — `main` niesie nieaktualną encyklopedię. Nasza regeneracja
+to naprawia; integrator ma o tym wiedzieć, bo w mergu pojawia się zmiana treści
+Obozu łowieckiego niewynikająca z tego tematu.
+
+## OBIEG RUNDY 4
+Operator (Sonnet 5, effort medium) → Evaluator (Sonnet 5, effort high) → Operator
+(obrona, jeśli zarzuty niepuste) → Final Control (Sonnet 5, effort high) →
+integracja orkiestratora.
