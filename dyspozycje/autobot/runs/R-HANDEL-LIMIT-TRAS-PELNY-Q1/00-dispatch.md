@@ -312,3 +312,86 @@ OBIEG
 Operator (Sonnet 5, effort HIGH) → Evaluator (Sonnet 5, effort high) →
 Operator (obrona, jeśli zarzuty niepuste) → Final Control (Sonnet 5, effort
 high) → integracja orkiestratora.
+
+---
+
+# RUNDA 2 — ROZSZERZENIE ALLOWLISTY (ratyfikacja orkiestratora, 2026-09-04)
+
+## Powód
+
+Runda 1: Operator PASS, Evaluator zgłosił 4 zarzuty (1-3 KRYTYCZNE, 4 MAJOR),
+Obrona PRZYJĘŁA wszystkie 4 jako trafne, przygotowała zweryfikowane łatki, ale je
+**wycofała** i zgłosiła BLOCK — poprawnie, bo leżą poza allowlistą rundy 1
+(`main.ts` był zawężony WYŁĄCZNIE do miejsca wywołania `refreshTradeRoutes`,
+linia ~13682). Obrona nie poszerzyła allowlisty jednostronnie (R-PROC-AUTOBOT.md
+§14) i eskalowała decyzję do orkiestratora. To jest zachowanie wzorcowe.
+
+**Orkiestrator ratyfikuje rozszerzenie allowlisty.** Uzasadnienie: bez tych czterech
+poprawek zmiana z rundy 1 NIE realizuje GOAL, tylko go odwraca — globalna tablica
+`tradeRoutes` po generalizacji (GOAL 4-5) zawiera trasy AI↔AI i wewnętrzne
+WSZYSTKICH właścicieli, a konsumenty w `main.ts` sumują/rysują ją bez filtra
+właściciela. Gracz zobaczyłby dochód i sieć handlową całego świata — dokładnie
+objaw z wyzwalacza tematu („Handel +542", gęsta pajęczyna), tylko spotęgowany o
+~15 cywilizacji AI. Integracja rundy 1 bez tych poprawek byłaby regresją.
+
+## GOAL RUNDY 2 (wyłącznie zarzuty 1-4, nic więcej)
+
+R2-1. `main.ts:16523-16539` (chip HUD „Handel", `handelIncome`/`handelRouteCount`):
+   filtruj `tradeRoutes` do tras, w których stroną jest gracz (`ownerId === 0 ||
+   toOwnerId === 0`), z poprawną obsługą trasy WEWNĘTRZNEJ gracza (obie strony to
+   gracz — nie licz jej podwójnie). Zaktualizuj nieaktualny komentarz-inwariant
+   (16524-16525, „tradeRoutes zawiera WYŁĄCZNIE pary gracz<->obcy") na opis stanu
+   po generalizacji, z odwołaniem do tego tematu.
+
+R2-2. `main.ts:14664-14726` (`buildEmpireTradeSnap`, panel imperium „Handel"):
+   ten sam filtr właściciela; trasa wewnętrzna gracza ma dać sensowny wiersz
+   (Obrona zaproponowała 2 wiersze z osobnymi id — zdecyduj i uzasadnij).
+   Zaktualizuj komentarz 14666-14668.
+
+R2-3. `main.ts:11004-11020` (`refreshTradeRoutesOverlay`): rysuj wyłącznie trasy,
+   w których stroną jest gracz — nakładka mapy nie pokazuje sieci handlowej obcych
+   cywilizacji ani ich handlu wewnętrznego.
+
+R2-4. `main.ts:13717-13791` (`reportTradeRouteEvents`, wołane z
+   `recomputeTradeRoutesNow`): `diffTradeRoutes`/toasty/wpisy do dziennika
+   WYDARZENIA wyłącznie dla tras gracza. Zaktualizuj nieaktualne komentarze-
+   inwarianty `13415-13420` i `13649-13656` („route.fromCityId jest zawsze miastem
+   gracza"/„AI<->AI tu nie istnieje"). Zwróć szczególną uwagę na „wysyp" toastów
+   przy pierwszym uruchomieniu po zmianie (handel wewnętrzny powstaje naraz dla
+   każdej cywilizacji) — po filtrze zostaną tylko trasy gracza, ale zweryfikuj to
+   żywo, nie deklaratywnie.
+
+## ALLOWLISTA RUNDY 2 (rozszerzona względem rundy 1 — nic poza tym)
+
+- gra/src/game/trade-routes.ts (jak w rundzie 1; zmiany z rundy 1 zostają).
+- gra/src/main.ts — DODATKOWO do miejsca wywołania `refreshTradeRoutes`:
+  WYŁĄCZNIE cztery funkcje wskazane w R2-1..R2-4 (chip HUD `handelIncome`,
+  `buildEmpireTradeSnap`, `refreshTradeRoutesOverlay`, `reportTradeRouteEvents`)
+  wraz z ich komentarzami-inwariantami. Zero zmian w innych funkcjach `main.ts`.
+- Nowe/rozszerzone testy w gra/tools/*-test.cjs.
+Zakazane bez zmian: `diplomacy-*.ts`, `formAiAiTradeAgreementsIfEligible`, formuła
+dochodu/progi dystansu, `TRADE_BUILDING_IDS`, tech-gate „Wymiana", WERSJE.md,
+ROBOCZA-MANIFEST.json, playbook.json.
+
+## KRYTERIA KOŃCA RUNDY 2 (dodatkowo do 1-10 z rundy 1, które zostają w mocy)
+
+R2-K1. Żywy test: przy co najmniej 2 cywilizacjach AI mających własne trasy
+   (AI↔AI oraz wewnętrzne) chip HUD „Handel" gracza pokazuje DOKŁADNIE sumę
+   dochodu gracza z jego własnych tras — zweryfikowane liczbowo względem
+   niezależnie policzonej wartości, nie „wygląda sensownie".
+R2-K2. Panel imperium „Handel" nie zawiera ANI JEDNEGO wiersza trasy, w której
+   gracz nie jest stroną.
+R2-K3. Nakładka mapy rysuje wyłącznie trasy gracza — policz linie w żywym
+   renderze i porównaj z liczbą tras gracza.
+R2-K4. Toasty/dziennik: po pierwszym przeliczeniu tras w świecie z AI mającym
+   nowy handel wewnętrzny gracz NIE dostaje ani jednego komunikatu o cudzej
+   trasie (zweryfikuj licznikiem wywołań `showHintMessage`, nie na oko).
+R2-K5. Trasa WEWNĘTRZNA gracza (miasto↔miasto gracza) jest liczona w chipie
+   dokładnie RAZ, nie dwa razy.
+R2-K6. `tsc --noEmit` czysty, wszystkie bramki handlu i 5 bramek referencyjnych
+   zielone (jak w rundzie 1).
+
+## OBIEG RUNDY 2
+Operator (Sonnet 5, effort high) → Evaluator (Sonnet 5, effort high) → Operator
+(obrona, jeśli zarzuty niepuste) → Final Control (Sonnet 5, effort high) →
+integracja orkiestratora.
