@@ -1240,13 +1240,17 @@ function renderUtilDock(show: boolean, fsBtn: string): void {
   const D = cfg?.minimapResourceDepositOverlay;
   const workerBtn = W?.onToggleWorkers
     ? utilToggleBtnHtml({
-      act: 'worker-toggle', icon: '👤', title: 'Pokaż robotników w terenie',
+      act: 'worker-toggle',
+      icon: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="12" cy="7.2" r="3.4"/><path d="M5.4 20v-1.1c0-3.2 2.9-5.4 6.6-5.4s6.6 2.2 6.6 5.4V20"/></svg>',
+      title: 'Pokaż robotników w terenie',
       active: W.isWorkersActive?.() ?? false,
     })
     : '';
   const depositBtn = D?.onToggleDeposits
     ? utilToggleBtnHtml({
-      act: 'deposit-toggle', icon: '⛏', title: 'Pokaż złoża i surowce na mapie',
+      act: 'deposit-toggle',
+      icon: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M3 10.6C6.8 4.8 15.2 3.4 20.8 7.2"/><path d="M12.4 4.4 8 21"/></svg>',
+      title: 'Pokaż złoża i surowce na mapie',
       active: D.isDepositsActive?.() ?? false,
     })
     : '';
