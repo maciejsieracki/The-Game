@@ -67,12 +67,16 @@
   [OK] normal/epoka 1: prog Prawa pop 12 realnie wiekszy niz pop 2
 
 4. GOAL 2 — ciaglosc: brak skoku progu przy pop -> pop+1
-  (najwiekszy skok wzgledny progu: Sz x1.130, Prawo x1.110)
-  [OK] skok szMax przy pop->pop+1 <= x1.15 (jest x1.130)
-  [OK] skok prawMax przy pop->pop+1 <= x1.15 (jest x1.110)
-  (najwiekszy spadek PorPct przy +1 mieszkancu PRZED tym tematem: 7.9 p.p. na kroku pop 4->5 — zanik Osiedla / Zageszczenie, zakres wezlow C i D)
-  (DODATKOWY spadek PorPct wniesiony przez skalowanie progu z GOAL 2: 7.8 p.p. na kroku pop 2->3)
-  [OK] skalowanie progu nie zbija PorPct o kilkanascie p.p. przy +1 mieszkancu (dodatkowo max 7.8 p.p.)
+  (najwiekszy skok wzgledny progu: Sz x1.064, Prawo x1.053)
+  [OK] skok szMax przy pop->pop+1 <= x1.08 (jest x1.064)
+  [OK] skok prawMax przy pop->pop+1 <= x1.08 (jest x1.053)
+  (siatka: 7680 profili x 11 krokow populacji)
+  (CALKOWITY spadek PorPct przy +1 mieszkancu — stan gry PRZED tym tematem: max 16.9 p.p.; zanik Osiedla / Zageszczenie, wezly C i D)
+  (CALKOWITY spadek PorPct PO tym wezle: max 18.4 p.p.)
+  (DODATKOWY, co widzi gracz: max 12.0 p.p. — hard/e1/14 bud./garnizon 0/palac 2/wojna false/pop 4->5 (z tego urwisko sprzed tematu 9.8 p.p.))
+  (WLASNY WKLAD skalowania progu: max 5.4 p.p. — hard/e2/26 bud./garnizon 1/palac 1/wojna false/pop 6->7)
+  [OK] NA CALEJ SIATCE wlasny wklad skalowania w spadek PorPct przy +1 mieszkancu < 8 p.p. (max 5.4 p.p., hard/e2/26 bud./garnizon 1/palac 1/wojna false/pop 6->7)
+  [OK] najgorszy calkowity spadek gry rosnie najwyzej o 2,5 p.p. (16.9 -> 18.4 p.p.)
 
 5. GOAL 2 — neutralnosc startowa (pop 1-2, epoka 1) i epoka jako czynnik
   [OK] easy: pop 1 / epoka 1 -> szMax 14 (dzisiejsze, bez tolerancji)
@@ -88,7 +92,19 @@
   [OK] hard: pop 2 / epoka 1 -> szMax 14 (dzisiejsze, bez tolerancji)
   [OK] hard: pop 2 / epoka 1 -> prawMax 50 (dzisiejsze, bez tolerancji)
   [OK] epoka nadal rozroznia prog przy tej samej populacji (pop 8: e1 < e2 < e3)
-  [OK] wspolczynnik per trudnosc easy<normal<hard (0.07 < 0.1 < 0.13)
+  [OK] wspolczynnik Sz per trudnosc easy<normal<hard (0.038 < 0.048 < 0.058)
+  [OK] wspolczynnik Prawa per trudnosc easy<normal<hard (0.033 < 0.041 < 0.049)
+  [OK] prawMax(pop 12, epoka 3) rozny per trudnosc (138 < 149 < 161)
+  [OK] szMax(pop 12, epoka 3) rozny per trudnosc (40.6 < 44.8 < 49.28)
+
+5b. GOAL 1 — cap PorPct z JSON dziala na OBU sciezkach liczenia PorPct
+  [OK] stala fallbacku PorPct w order.ts = SZ_PCT_CAP w society-breakdown.ts (brak rozjazdu dwoch liczb)
+  [OK] loadOrderParams czyta cap 120 z JSON
+  [OK] przestrojenie szczescie_pct_cap w JSON dociera do OrderParams (sciezka post-capture-law)
+  [OK] computePorPct z capem 120 z JSON tnie do 120
+  [OK] computePorPct z capem 150 z JSON tnie do 150
+  [OK] OrderParams bez pola porPctCap -> fallback na stala SZ_PCT_CAP (zachowanie jak przed tematem)
+  [OK] society=null -> porPctCap ze stalej TS
 
 6. Scenariusz ze zrzutu wlasciciela: pop 2, epoka 1, Sz netto 16, Prawo 20
   PRZED: Sz 16/14 = 114.3% | Prawo 20/50 = 40%
@@ -101,28 +117,35 @@
   [OK] zrzut PO zmianie: PrawPct bez zmian wobec PRZED (40%)
 
 7. Objaw zgloszony przez wlasciciela: rozwiniete miasto NIE dobija do capu 120%
-  pop 12 / epoka 3 / 31 budynkow: netto 33.75 | PRZED 120% (szMax 28) -> PO 60.3% (szMax 56)
+  pop 12 / epoka 3 / 31 budynkow: netto 33.75 | PRZED 120% (szMax 28) -> PO 75.3% (szMax 44.8)
   [OK] PRZED zmiana rozwiniete miasto dobija do capu 120% (odtworzony objaw ze zgloszenia)
-  [OK] PO zmianie rozwiniete miasto NIE dobija automatycznie do capu (60.3%)
-  [OK] prog rosnie z miastem: szMax 28 -> 56
-  Prawo pop 12 / epoka 3 (garnizon 5 + Palac III): netto 155 | PRZED 100% (prawMax 100) -> PO 86.1% (prawMax 180)
-  PorPct laczny pop 12 / epoka 3 / 20 budynkow + garnizon 5 + Palac III: PRZED 90.7% (Ład) -> PO 63.4% (Napięcie)
+  [OK] PO zmianie rozwiniete miasto NIE dobija automatycznie do capu (75.3%)
+  [OK] prog rosnie z miastem: szMax 28 -> 44.8
+  Prawo pop 12 / epoka 3 (garnizon 5 + Palac III): netto 155 | PRZED 100% (prawMax 100) -> PO 100% (prawMax 149)
+  PorPct laczny pop 12 / epoka 3 / 20 budynkow + garnizon 5 + Palac III: PRZED 90.7% (Ład) -> PO 75.4% (Spokój)
   [OK] PRZED zmiana duze miasto dobija do capu Prawa 100%
-  [OK] PO zmianie duze miasto nie dobija automatycznie do 100% Prawa (86.1%)
-  [OK] PO zmianie rozwiniete miasto z pelna administracja nie wpada w niepokoj: PorPct 63.4% (Napięcie)
-  [OK] zmiana faktycznie kosztuje: PorPct 90.7% -> 63.4% (SzPct 40.6%)
+  Prawo pop 12 / epoka 3, garnizon 5 + Palac III, per trudnosc: easy 100% | normal 100% | hard 64.6%
+  [OK] prog Prawa rosnie z miastem: pop 2 -> 100, pop 12 -> 149 (epoka 3, normal)
+  [OK] na hard duze miasto z samym garnizonem i Palacem NIE domyka juz Prawa do capu (64.6%)
+  [OK] PO zmianie rozwiniete miasto z pelna administracja nie wpada w niepokoj: PorPct 75.4% (Spokój)
+  [OK] zmiana faktycznie kosztuje: PorPct 90.7% -> 75.4% (SzPct 50.8%)
 
 8. Tabela prog(pop, epoka) — PRZED vs PO (normal), zapisana w raporcie
   pop | szMax e1  e2  e3 (PRZED 14 / 20 / 28) | prawMax e1  e2  e3 (PRZED 50 / 75 / 100)
     1 |  14.0  20.0  28.0                          |  50.0  75.0 100.0
     2 |  14.0  20.0  28.0                          |  50.0  75.0 100.0
-    4 |  16.8  24.0  33.6                          |  58.0  87.0 116.0
-    6 |  19.6  28.0  39.2                          |  66.0  99.0 132.0
-    8 |  22.4  32.0  44.8                          |  74.0 111.0 148.0
-   12 |  28.0  40.0  56.0                          |  90.0 135.0 180.0
-  [OK] tabela: szMax(pop 12, epoka 1) = 28,0
-  [OK] tabela: szMax(pop 12, epoka 3) = 56,0
-  [OK] tabela: prawMax(pop 12, epoka 1) = 90,0
-  [OK] tabela: prawMax(pop 6, epoka 3) = 132,0
+    4 |  15.4  22.0  30.8                          |  54.0  81.0 108.0
+    6 |  16.9  24.2  33.9                          |  58.5  87.8 117.0
+    8 |  18.5  26.4  37.0                          |  63.5  95.3 127.0
+   12 |  22.4  32.0  44.8                          |  74.5 111.8 149.0
+  [OK] tabela: szMax(pop 12, epoka 1) = 22,4
+  [OK] tabela: szMax(pop 12, epoka 3) = 44,8
+  [OK] tabela: prawMax(pop 12, epoka 1) = 74,5
+  [OK] tabela: prawMax(pop 6, epoka 3) = 117,0
 
-[szczescie-skala-normalizacja-test] 95 OK, 0 FAIL
+9. Osiagalnosc: duze miasto z pelna administracja nadal domyka Prawo do 100%
+  [OK] easy: pop 12 z garnizonem 5 + Palacem III + pelna administracja domyka Prawo do 100% w epokach 1-3
+  [OK] normal: pop 12 z garnizonem 5 + Palacem III + pelna administracja domyka Prawo do 100% w epokach 1-3
+  [OK] hard: pop 12 z garnizonem 5 + Palacem III + pelna administracja domyka Prawo do 100% w epokach 1-3
+
+[szczescie-skala-normalizacja-test] 110 OK, 0 FAIL

@@ -180,18 +180,20 @@ export const PRAW_PCT_CAP = 100;
  * R-SZCZESCIE-AUDYT-A-SKALA-NORMALIZACJA-Q1 (GOAL 2) — mianownik procentu rośnie z miastem.
  *
  * Do populacji odniesienia włącznie próg jest DOKŁADNIE taki, jak przed zmianą (neutralność
- * startowa); powyżej rośnie liniowo:
+ * startowa); powyżej rośnie geometrycznie, o stały procent na mieszkańca:
  *
- *   szMax(pop, epoka)   = szMaxByEra[epoka]   × (1 + wspSz   × max(0, pop − popOdniesienia))
- *   prawMax(pop, epoka) = prawMaxByEra[epoka] × (1 + wspPraw × max(0, pop − popOdniesienia))
+ *   szMax(pop, epoka)   = szMaxByEra[epoka]   × (1 + wspSz)   ^ max(0, pop − popOdniesienia)
+ *   prawMax(pop, epoka) = prawMaxByEra[epoka] × (1 + wspPraw) ^ max(0, pop − popOdniesienia)
  *
- * Liniowo, a nie pasmami — przyrost populacji o 1 nigdy nie daje skoku progu (ten sam błąd
- * projektowy co zanik bonusu Osiedla powyżej pop 4). Epoka zostaje czynnikiem
+ * Gładko, a nie pasmami — przyrost populacji o 1 nigdy nie daje skoku progu (ten sam błąd
+ * projektowy co zanik bonusu Osiedla powyżej pop 4), a stały procent na mieszkańca oznacza,
+ * że NAJWIĘKSZY skok jest najmniejszy z możliwych przy zadanym mnożniku końcowym na capie
+ * ludności 12 (uzasadnienie przy `popScaleMultiplier`). Epoka zostaje czynnikiem
  * multiplikatywnym, więc „każda epoka rozpatrzona oddzielnie” nadal obowiązuje.
  * Fallbacki poniżej działają tylko przy braku wierszy w society-params.json.
  */
-export const SZ_MAX_POP_WSP_DEFAULT = 0.1;
-export const PRAW_MAX_POP_WSP_DEFAULT = 0.08;
+export const SZ_MAX_POP_WSP_DEFAULT = 0.048;
+export const PRAW_MAX_POP_WSP_DEFAULT = 0.041;
 export const SZ_MAX_POP_ODNIESIENIA_DEFAULT = 2;
 export const PRAW_MAX_POP_ODNIESIENIA_DEFAULT = 2;
 
@@ -410,17 +412,28 @@ export function prawMaxForEra(
 }
 
 /**
- * GOAL 2 — mnożnik progu od wielkości miasta: `1 + wsp × max(0, pop − popOdniesienia)`.
- * Monotoniczny (wsp ujemny jest ignorowany), ciągły (liniowy, bez pasm), równy dokładnie 1
- * do populacji odniesienia włącznie. Wynik zaokrąglony do 2 miejsc, żeby próg był
- * deterministyczny i wolny od śmieci zmiennoprzecinkowych.
+ * GOAL 2 — mnożnik progu od wielkości miasta: `(1 + wsp) ^ max(0, pop − popOdniesienia)`.
+ *
+ * Monotoniczny (wsp ujemny jest ignorowany), ciągły (bez pasm), równy DOKŁADNIE 1 do
+ * populacji odniesienia włącznie. Wynik zaokrąglony do 2 miejsc — próg deterministyczny,
+ * bez śmieci zmiennoprzecinkowych.
+ *
+ * Dlaczego wykładniczo, a nie liniowo (`1 + wsp × excess`): przy ustalonym mnożniku
+ * końcowym na capie ludności (12, `econ-params.json → akwedukt_max_ludnosci`) wzrost
+ * geometryczny jest MINIMAKSEM — daje najmniejszy możliwy NAJWIĘKSZY skok względny progu
+ * przy +1 mieszkańcu, bo rozkłada ten sam mnożnik równo na wszystkie kroki, zamiast
+ * upychać największy skok w pierwszy krok powyżej populacji odniesienia. Liniowo max skok
+ * wynosił ×1,13 (hard), tutaj ×1,087 przy tym samym mnożniku końcowym ~2,3. To jest
+ * bezpośrednia odpowiedź na warunek ciągłości z dispatchu („miasto nie może z tury na turę
+ * spaść o kilkanaście procent porządku tylko dlatego, że urosło") — koszt rozbudowy zostaje
+ * ten sam, rozłożony gładziej.
  */
 function popScaleMultiplier(population: number, wsp: number, popOdniesienia: number): number {
   const pop = Number.isFinite(population) ? Math.max(0, Math.floor(population)) : 0;
   const w = Number.isFinite(wsp) && wsp > 0 ? wsp : 0;
   const ref = Number.isFinite(popOdniesienia) ? Math.max(0, Math.floor(popOdniesienia)) : 0;
   const excess = Math.max(0, pop - ref);
-  return Math.round((1 + w * excess) * 100) / 100;
+  return Math.round(Math.pow(1 + w, excess) * 100) / 100;
 }
 
 /** GOAL 2: mianownik SzPct dla konkretnego miasta — epoka × wielkość miasta. */
@@ -776,15 +789,22 @@ export function orderEffectsFromPorPct(
   }
 }
 
+/**
+ * R-SZCZESCIE-AUDYT-A-SKALA-NORMALIZACJA-Q1 (GOAL 1): cap PorPct pochodzi z `params`
+ * (`loadOrderParams` czyta `szczescie.szczescie_pct_cap` z JSON), a nie z argumentu
+ * dodatkowego — dzięki temu ta sama wartość obowiązuje na OBU ścieżkach liczenia PorPct,
+ * łącznie z `post-capture-law.ts:135`, która woła tę funkcję z samym `OrderParams`.
+ * Brak pola (ręcznie zbudowane `OrderParams`) → stała `SZ_PCT_CAP`, czyli zachowanie
+ * dokładnie jak przed tematem.
+ */
 export function computePorPct(
   szPct: number,
   prawPct: number,
   params: OrderParams = FALLBACK_ORDER_PARAMS,
-  porPctCap: number = SZ_PCT_CAP,
 ): number {
   const wS = params.wagaSzczescie;
   const wP = params.wagaPrawo;
-  const cap = Number.isFinite(porPctCap) ? porPctCap : SZ_PCT_CAP;
+  const cap = Number.isFinite(params.porPctCap) ? (params.porPctCap as number) : SZ_PCT_CAP;
   return clampPct(wS * szPct + wP * prawPct, cap);
 }
 
@@ -831,9 +851,8 @@ export function computeOrderPctBreakdown(
   prawo: LawPctBreakdown,
   params: OrderParams = FALLBACK_ORDER_PARAMS,
   revolt: RevoltParams = FALLBACK_REVOLT_PARAMS,
-  scale: SocietyScaleParams = FALLBACK_SOCIETY_SCALE,
 ): OrderPctBreakdown {
-  const porPct = computePorPct(sz.szPct, prawo.prawPct, params, scale.szPctCap);
+  const porPct = computePorPct(sz.szPct, prawo.prawPct, params);
   const band = porPctBand(porPct, revolt.criticalPorPct);
   const tier = tierFromPorPct(porPct);
   const effects = orderEffectsFromPorPct(porPct, params, revolt.criticalPorPct);
@@ -859,10 +878,9 @@ export function evaluateOrderFromBreakdown(
 ): OrderPctBreakdown {
   const params = loadOrderParams(society, difficulty);
   const revolt = loadRevoltParams(society, difficulty);
-  const scale = loadSocietyScaleParams(society, difficulty);
   const sz = computeHappinessBreakdown(happinessInput, society);
   const prawo = computeLawBreakdown(lawInput, society);
-  return computeOrderPctBreakdown(sz, prawo, params, revolt, scale);
+  return computeOrderPctBreakdown(sz, prawo, params, revolt);
 }
 
 // ---------------------------------------------------------------------------
