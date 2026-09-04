@@ -149,11 +149,31 @@ export const FALLBACK_REVOLT_PARAMS: RevoltParams = {
 /** Id frakcji rebeliantów (SILNIK mapuje na ownerId). */
 export const REBEL_FACTION_OWNER_ID = -99;
 
-/** Skala % Sz — wyższa = łagodniejsze kary (PT 2026-07). */
-export const SZMAX_DEFAULTS: Readonly<Record<number, number>> = { 1: 14, 2: 20, 3: 28 };
-/** Skala % Prawo — 5× jednostka (20) = 100%; 1 jedn. ≠ pełne Prawo (PT 2026-07). */
-export const PRAWMAX_DEFAULTS: Readonly<Record<number, number>> = { 1: 50, 2: 75, 3: 100 };
+/**
+ * Skala % Sz — wyższa = łagodniejsze kary (PT 2026-07).
+ * R-SZCZESCIE-AUDYT-A-SKALA-NORMALIZACJA-Q1 (GOAL 1): wartość wiążąca żyje w
+ * `gra/data/society-params.json` → `szczescie.szczescie_max_epoka`; ta stała jest
+ * WYŁĄCZNIE fallbackiem przy braku wpisu w JSON (jak wszystkie sąsiednie parametry).
+ */
+const SZMAX_BY_ERA_DEFAULT: readonly [number, number, number] = [14, 20, 28];
+export const SZMAX_DEFAULTS: Readonly<Record<number, number>> = {
+  1: SZMAX_BY_ERA_DEFAULT[0],
+  2: SZMAX_BY_ERA_DEFAULT[1],
+  3: SZMAX_BY_ERA_DEFAULT[2],
+};
+/**
+ * Skala % Prawo — 5× jednostka (20) = 100%; 1 jedn. ≠ pełne Prawo (PT 2026-07).
+ * Fallback dla `prawo.prawo_max_epoka` w society-params.json (GOAL 1 jw.).
+ */
+const PRAWMAX_BY_ERA_DEFAULT: readonly [number, number, number] = [50, 75, 100];
+export const PRAWMAX_DEFAULTS: Readonly<Record<number, number>> = {
+  1: PRAWMAX_BY_ERA_DEFAULT[0],
+  2: PRAWMAX_BY_ERA_DEFAULT[1],
+  3: PRAWMAX_BY_ERA_DEFAULT[2],
+};
+/** Fallback dla `szczescie.szczescie_pct_cap`. */
 export const SZ_PCT_CAP = 120;
+/** Fallback dla `prawo.prawo_pct_cap`. */
 export const PRAW_PCT_CAP = 100;
 
 // ---------------------------------------------------------------------------
@@ -197,6 +217,69 @@ function pickSociety(
   if (!row) return fallback;
   const v = row[difficulty];
   return typeof v === 'number' && Number.isFinite(v) ? v : fallback;
+}
+
+/**
+ * Odczyt wiersza-TABLICY (per trudność) z bloku society-params.json — ten sam wzorzec co
+ * `pickOsiedlePopBonus`, ale zwraca całą tablicę, nie jeden indeks. Wiersz niepełny
+ * (brak trudności, pusta tablica, wpis nieliczbowy) → kopia fallbacku.
+ */
+function pickSocietyArray(
+  block: Record<string, RawParamRow> | undefined,
+  key: string,
+  difficulty: Difficulty,
+  fallback: readonly number[],
+): number[] {
+  const arr = block?.[key]?.[difficulty];
+  if (
+    Array.isArray(arr) && arr.length > 0
+    && arr.every((v) => typeof v === 'number' && Number.isFinite(v))
+  ) {
+    return arr.slice();
+  }
+  return fallback.slice();
+}
+
+/**
+ * R-SZCZESCIE-AUDYT-A-SKALA-NORMALIZACJA-Q1: skala procentu Szczęścia i Prawa (mianownik
+ * + cap), strojona z `society-params.json`, nie z kodu. Stałe `SZMAX_DEFAULTS` /
+ * `PRAWMAX_DEFAULTS` / `SZ_PCT_CAP` / `PRAW_PCT_CAP` zostają wyłącznie jako fallback.
+ */
+export interface SocietyScaleParams {
+  /** Mianownik % Szczęścia per epoka; indeks 0 = epoka 1, epoki dalsze biorą ostatni wpis. */
+  szMaxByEra: number[];
+  /** Mianownik % Prawa per epoka; indeks 0 = epoka 1. */
+  prawMaxByEra: number[];
+  /** Górne ograniczenie SzPct (%). */
+  szPctCap: number;
+  /** Górne ograniczenie PrawPct (%). */
+  prawPctCap: number;
+}
+
+export const FALLBACK_SOCIETY_SCALE: Readonly<SocietyScaleParams> = Object.freeze({
+  szMaxByEra: [...SZMAX_BY_ERA_DEFAULT],
+  prawMaxByEra: [...PRAWMAX_BY_ERA_DEFAULT],
+  szPctCap: SZ_PCT_CAP,
+  prawPctCap: PRAW_PCT_CAP,
+});
+
+/**
+ * Wczytaj skalę % Sz/Prawa z society-params.json (bloki `szczescie` i `prawo`).
+ * Brak dowolnego klucza → wartość z `FALLBACK_SOCIETY_SCALE`, czyli ze stałej w TS.
+ */
+export function loadSocietyScaleParams(
+  society: SocietyParamsLike | null | undefined,
+  difficulty: Difficulty = 'normal',
+): SocietyScaleParams {
+  const szBlock = (society?.szczescie ?? {}) as Record<string, RawParamRow>;
+  const prBlock = (society?.prawo ?? {}) as Record<string, RawParamRow>;
+  const f = FALLBACK_SOCIETY_SCALE;
+  return {
+    szMaxByEra: pickSocietyArray(szBlock, 'szczescie_max_epoka', difficulty, f.szMaxByEra),
+    prawMaxByEra: pickSocietyArray(prBlock, 'prawo_max_epoka', difficulty, f.prawMaxByEra),
+    szPctCap: pickSociety(szBlock, 'szczescie_pct_cap', difficulty, f.szPctCap),
+    prawPctCap: pickSociety(prBlock, 'prawo_pct_cap', difficulty, f.prawPctCap),
+  };
 }
 
 export function osiedlePopLabel(pop: number): string {
@@ -262,14 +345,29 @@ function pctFromNetto(netto: number, max: number, cap: number): number {
   return clampPct(100 * netto / m, cap);
 }
 
-export function szMaxForEra(era: number): number {
+/**
+ * Wspólny odczyt tablicy „mianownik per epoka”: epoka 1 → indeks 0, epoka powyżej długości
+ * tablicy → ostatni wpis (zachowanie identyczne ze starym `DEFAULTS[e] ?? DEFAULTS[3]`).
+ */
+function maxFromEraTable(era: number, table: readonly number[]): number {
   const e = Number.isFinite(era) ? Math.max(1, Math.floor(era)) : 1;
-  return SZMAX_DEFAULTS[e] ?? SZMAX_DEFAULTS[3] ?? 24;
+  if (table.length === 0) return 24;
+  const v = table[Math.min(e, table.length) - 1];
+  return typeof v === 'number' && Number.isFinite(v) ? v : 24;
 }
 
-export function prawMaxForEra(era: number): number {
-  const e = Number.isFinite(era) ? Math.max(1, Math.floor(era)) : 1;
-  return PRAWMAX_DEFAULTS[e] ?? PRAWMAX_DEFAULTS[3] ?? 24;
+export function szMaxForEra(
+  era: number,
+  scale: SocietyScaleParams = FALLBACK_SOCIETY_SCALE,
+): number {
+  return maxFromEraTable(era, scale.szMaxByEra);
+}
+
+export function prawMaxForEra(
+  era: number,
+  scale: SocietyScaleParams = FALLBACK_SOCIETY_SCALE,
+): number {
+  return maxFromEraTable(era, scale.prawMaxByEra);
 }
 
 /** Klucz JSON siatki Sz od udziału Zamożności (dziesięć przedziałów co 10 p.p.). */
@@ -332,6 +430,7 @@ export function computeHappinessBreakdown(
 ): HappinessPctBreakdown {
   const diff = input.difficulty ?? 'normal';
   const szBlock = (society?.szczescie ?? {}) as Record<string, RawParamRow>;
+  const scale = loadSocietyScaleParams(society, diff);
   const lines: SocietyLine[] = [];
   const pop = Math.max(0, Math.floor(input.population ?? 0));
   const era = input.era ?? 1;
@@ -428,8 +527,8 @@ export function computeHappinessBreakdown(
   // oba mechanizmy naraz dawały -2 pkt Sz, sama nowa siatka daje poprawne -1 pkt).
 
   const netto = lines.reduce((s, l) => s + l.value, 0);
-  const szMax = szMaxForEra(era);
-  const szPct = pctFromNetto(netto, szMax, SZ_PCT_CAP);
+  const szMax = szMaxForEra(era, scale);
+  const szPct = pctFromNetto(netto, szMax, scale.szPctCap);
 
   return { lines, netto, szMax, szPct };
 }
@@ -444,6 +543,7 @@ export function computeLawBreakdown(
 ): LawPctBreakdown {
   const diff = input.difficulty ?? 'normal';
   const prBlock = (society?.prawo ?? {}) as Record<string, RawParamRow>;
+  const scale = loadSocietyScaleParams(society, diff);
   const lines: SocietyLine[] = [];
   const era = input.era ?? 1;
 
@@ -520,8 +620,8 @@ export function computeLawBreakdown(
   }
 
   const netto = lines.reduce((s, l) => s + l.value, 0);
-  const prawMax = prawMaxForEra(era);
-  const prawPct = pctFromNetto(Math.max(0, netto), prawMax, PRAW_PCT_CAP);
+  const prawMax = prawMaxForEra(era, scale);
+  const prawPct = pctFromNetto(Math.max(0, netto), prawMax, scale.prawPctCap);
 
   return { lines, netto, prawMax, prawPct };
 }
@@ -605,10 +705,12 @@ export function computePorPct(
   szPct: number,
   prawPct: number,
   params: OrderParams = FALLBACK_ORDER_PARAMS,
+  porPctCap: number = SZ_PCT_CAP,
 ): number {
   const wS = params.wagaSzczescie;
   const wP = params.wagaPrawo;
-  return clampPct(wS * szPct + wP * prawPct, SZ_PCT_CAP);
+  const cap = Number.isFinite(porPctCap) ? porPctCap : SZ_PCT_CAP;
+  return clampPct(wS * szPct + wP * prawPct, cap);
 }
 
 /** Rozbicie procentowego WKŁADU Szczęścia i Prawa do finalnego wyniku Porządku łącznie. */
@@ -654,8 +756,9 @@ export function computeOrderPctBreakdown(
   prawo: LawPctBreakdown,
   params: OrderParams = FALLBACK_ORDER_PARAMS,
   revolt: RevoltParams = FALLBACK_REVOLT_PARAMS,
+  scale: SocietyScaleParams = FALLBACK_SOCIETY_SCALE,
 ): OrderPctBreakdown {
-  const porPct = computePorPct(sz.szPct, prawo.prawPct, params);
+  const porPct = computePorPct(sz.szPct, prawo.prawPct, params, scale.szPctCap);
   const band = porPctBand(porPct, revolt.criticalPorPct);
   const tier = tierFromPorPct(porPct);
   const effects = orderEffectsFromPorPct(porPct, params, revolt.criticalPorPct);
@@ -681,9 +784,10 @@ export function evaluateOrderFromBreakdown(
 ): OrderPctBreakdown {
   const params = loadOrderParams(society, difficulty);
   const revolt = loadRevoltParams(society, difficulty);
+  const scale = loadSocietyScaleParams(society, difficulty);
   const sz = computeHappinessBreakdown(happinessInput, society);
   const prawo = computeLawBreakdown(lawInput, society);
-  return computeOrderPctBreakdown(sz, prawo, params, revolt);
+  return computeOrderPctBreakdown(sz, prawo, params, revolt, scale);
 }
 
 // ---------------------------------------------------------------------------
