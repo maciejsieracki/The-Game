@@ -1249,7 +1249,7 @@ function renderUtilDock(show: boolean, fsBtn: string): void {
   const depositBtn = D?.onToggleDeposits
     ? utilToggleBtnHtml({
       act: 'deposit-toggle',
-      icon: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M3 10.6C6.8 4.8 15.2 3.4 20.8 7.2"/><path d="M12.4 4.4 8 21"/></svg>',
+      icon: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M4.4 17C4.2 9.4 12.7 3.4 19.8 6.3"/><path d="M7.1 4.4 18.3 20.5"/></svg>',
       title: 'Pokaż złoża i surowce na mapie',
       active: D.isDepositsActive?.() ?? false,
     })
