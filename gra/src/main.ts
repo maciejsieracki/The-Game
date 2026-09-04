@@ -9307,8 +9307,11 @@ async function boot(): Promise<void> {
       );
     }
 
-    /** Widoczne heksy = zasięg jednostek/miast gracza; przed miastem = oświetlenie startu. */
-    function currentVisible(): Set<string> {
+    /** Widoczność WYŁĄCZNIE z własnych jednostek/miast gracza (bez unii sojusznika) —
+     *  wydzielone z `currentVisible()`, żeby `currentVisibleForOwner()` mogło dołożyć unię z
+     *  widocznością gracza bez wzajemnej rekursji currentVisible()<->currentVisibleForOwner()
+     *  (R-DYPLO-SOJUSZ-WIDOCZNOSC-CIAGLA-Q1 runda 2). */
+    function ownPlayerVisibleHexes(): Set<string> {
       const visible = new Set<string>();
       for (const u of units.filter(u => u.ownerId === 0)) {
         const sight = unitSight(u);
@@ -9320,6 +9323,35 @@ async function boot(): Promise<void> {
         if (sight <= 0) continue;
         for (const k of computeVisibleAt(c.q, c.r, map, sight)) visible.add(k);
       }
+      return visible;
+    }
+
+    /**
+     * Widoczne heksy = zasięg jednostek/miast gracza; przed miastem = oświetlenie startu.
+     *
+     * R-DYPLO-SOJUSZ-WIDOCZNOSC-CIAGLA-Q1: dla KAŻDEGO aktywnego sojuszu (obronny LUB pełny,
+     * `allianceFormalKindBetween`) gracz↔AI dokłada unię z BIEŻĄCĄ, żywą widocznością tego
+     * sojusznika (`currentVisibleForOwner`) — przeliczaną PRZY KAŻDYM wywołaniu tej funkcji,
+     * NIE cache'owaną. To jest CAŁY mechanizm ciągłości (GOAL 1: co turę, nie jednorazowo —
+     * `refreshFog()` woła `currentVisible()` po każdej zmianie stanu, w tym po turze) i CAŁY
+     * mechanizm natychmiastowej dezaktywacji (GOAL 2): gdy `activeDeals` przestaje zawierać
+     * traktat sojuszu (wojna/wygaśnięcie/dobrowolne zerwanie), KOLEJNE wywołanie po prostu go
+     * nie znajduje — bez osobnego mechanizmu czyszczenia, bez opóźnienia o turę. Pakt/handel/
+     * granice NIE aktywują unii — `allianceFormalKindBetween` rozpoznaje wyłącznie
+     * sojusz_defensywny/sojusz_pelny, więc pozostałe rodzaje traktatów są nietknięte (GOAL 4).
+     *
+     * RUNDA 2 (ECHO właściciela: "Tak, zrob to tez dla AI (obustronnie)"): `currentVisibleForOwner`
+     * teraz analogicznie dokłada unię z widocznością GRACZA dla każdego sojuszniczego ownera —
+     * patrz komentarz przy tamtej funkcji. Priorytet 4 AI (`ai.ts`) NIETKNIĘTY — wyłącznie
+     * ŹRÓDŁO DANYCH o widoczności się zmienia (co AI "widzi" jako sojusznik), sama logika
+     * decyzyjna, która na tej podstawie wybiera cele, jest identyczna jak przed tym tematem.
+     */
+    function currentVisible(): Set<string> {
+      const visible = ownPlayerVisibleHexes();
+      for (const oid of aiOwnerCivMap.keys()) {
+        if (allianceFormalKindBetween(activeDeals, 0, oid) === null) continue;
+        for (const k of currentVisibleForOwner(oid)) visible.add(k);
+      }
       if (visible.size > 0) return visible;
       if (playerStartHex !== null) {
         return computeVisibleAt(playerStartHex.q, playerStartHex.r, map, startRevealRadius);
@@ -9327,14 +9359,34 @@ async function boot(): Promise<void> {
       return new Set<string>();
     }
 
-    /** P-AI-BRAK-POJECIA-MGLY-Q1: widoczność konkretnego ownera AI, nie gracza. */
+    /**
+     * P-AI-BRAK-POJECIA-MGLY-Q1: widoczność konkretnego ownera AI, nie gracza.
+     *
+     * R-DYPLO-SOJUSZ-WIDOCZNOSC-CIAGLA-Q1 runda 2 (ECHO właściciela, obustronność): gdy `ownerId`
+     * ma aktywny sojusz z graczem (`allianceFormalKindBetween`, dokładnie ten sam predykat co
+     * strona gracza w `currentVisible()` powyżej — obronny LUB pełny, nie pakt/handel/granice),
+     * dokłada unię z BIEŻĄCĄ, żywą widocznością WŁASNĄ gracza (`ownPlayerVisibleHexes()` — NIE
+     * `currentVisible()`, żeby uniknąć wzajemnej rekursji z pętlą sojuszników w tamtej funkcji).
+     * Ta funkcja zasila WPROST decyzje AI (aiVisibleHexes/rememberVisibleAiTargets przy
+     * dispatchu tury AI, `aiCityCaptureAllowed` przy przejęciu miasta) — to jest CELOWA,
+     * zamierzona zmiana źródła danych: sojusznik AI faktycznie "widzi" teren gracza i może na
+     * tej podstawie wybierać cele/priorytety w `ai.ts`, którego logika decyzyjna (Priorytet 4)
+     * pozostaje NIETKNIĘTA — zmienia się wyłącznie to, co ta funkcja zwraca jako wejście.
+     * Aktywacja/dezaktywacja identyczna jak strona gracza: liczone od nowa przy każdym
+     * wywołaniu, więc zerwanie sojuszu (`activeDeals` przestaje zawierać traktat) natychmiast,
+     * bez opóźnienia o turę, cofa dodatkową widoczność.
+     */
     function currentVisibleForOwner(ownerId: number): Set<string> {
-      return computePlayerVisibility({
+      const visible = computePlayerVisibility({
         map,
         playerUnits: units.filter(u => u.ownerId === ownerId),
         playerCities: cities.filter(c => c.ownerId === ownerId),
         unitSight,
       });
+      if (ownerId !== 0 && allianceFormalKindBetween(activeDeals, 0, ownerId) !== null) {
+        for (const k of ownPlayerVisibleHexes()) visible.add(k);
+      }
+      return visible;
     }
 
     /** Klucze oświetlonego kręgu startu — rzeki widoczne przed założeniem pierwszego miasta. */
@@ -18474,6 +18526,108 @@ async function boot(): Promise<void> {
       },
       getExploredSize: (): number => explored.size,
       getOwnerVisibleKeysSize: (ownerId: number): number => currentVisibleForOwner(ownerId).size,
+    };
+
+    // Hak testowy (ten sam wzorzec i uzasadnienie co __dyploMapaOdkrycieTestDebug wyżej i
+    // __audienceRelTestDebug.setupThirdParties niżej — WYŁĄCZNIE Playwright, wołany z
+    // tools/dyplo-sojusz-widocznosc-ciagla-live-test.cjs, R-DYPLO-SOJUSZ-WIDOCZNOSC-CIAGLA-Q1).
+    // Steruje WYŁĄCZNIE wejściem „jest aktywny traktat sojuszu gracz↔ownerId" (bezpośredni
+    // wpis do `activeDeals`, identyczny kształt co realny sojusz zawarty przez UI — patrz
+    // `__audienceRelTestDebug.setupThirdParties`, ten sam wzorzec dla innej pary) i realnym
+    // zerwaniem (`breakTreatyVoluntarily`, ta sama funkcja co przycisk „Zerwij"). Sam EFEKT
+    // tematu — unia widoczności — powstaje WYŁĄCZNIE przez `currentVisible()`/`refreshFog()`
+    // wołane z realnego `endTurn()` (`__eraTestDebug.endTurn`), nigdy tu reimplementowany.
+    (window as any).__sojuszWidocznoscTestDebug = {
+      formAllianceWithOwner: (ownerId: number): string => {
+        diplomaticallyDiscoveredOwners.add(ownerId);
+        const id = 'test-sojusz-widocznosc-0-' + ownerId;
+        activeDeals.push({
+          id, rodzaj: RodzajTraktatu.SojuszPelny, strony: [0, ownerId], wygasaTura: null,
+        });
+        return id;
+      },
+      breakAllianceDeal: (dealId: string): void => { breakTreatyVoluntarily(dealId, 0); },
+      /** Żywa widoczność GRACZA TERAZ — dokładnie `currentVisible()`, bez duplikacji logiki. */
+      getPlayerCurrentVisibleKeys: (): string[] => Array.from(currentVisible()),
+      /** Żywa widoczność KONKRETNEGO ownera (jego własne jednostki/miasta) — do skonstruowania
+       *  kontroli „ten heks jest widoczny WYŁĄCZNIE dla sojusznika, nie dla gracza samego". */
+      getOwnerCurrentVisibleKeys: (ownerId: number): string[] => Array.from(currentVisibleForOwner(ownerId)),
+      /**
+       * `?playtest=mapa` to malutki 2-cywilizacyjny sandbox pod bitwę (PLAYTEST_MAPA_HINT) —
+       * jedyny AI startuje TUŻ PRZY graczu, więc CAŁA jego żywa widoczność jest od tury 1
+       * podzbiorem widoczności gracza (zero ally-only heksów, kontrola negatywna „przed" —
+       * kryterium 3 tego testu — nie ma czego dowieść). Klonuje ISTNIEJĄCĄ jednostkę tego
+       * ownera (realny typeId/category, więc `unitSight` czyta prawdziwą definicję z
+       * units.json — nic o SAMEJ widoczności nie jest podrobione) na najdalszy suchy ląd od
+       * WSZYSTKICH jednostek/miast gracza — czysto geometryczna separacja testowa, ten sam
+       * wzorzec co `forceBronzeForcedWarOnPlayer` (repozycjonowanie dla scenariusza, nie
+       * reimplementacja mechanizmu pod testem). `ruch:0/ruchLeft:0` — jednostka nie rusza się
+       * o własnej woli w kolejnych `endTurn()` (AI nie generuje ruchu bez punktów ruchu), więc
+       * pozostaje na miejscu przez całą wieloturową część testu.
+       */
+      spawnFarAiScout: (ownerId: number): { q: number; r: number } => {
+        const template = units.find(u => u.ownerId === ownerId);
+        if (!template) throw new Error('spawnFarAiScout: brak istniejącej jednostki ownera ' + ownerId);
+        const playerPoints: Array<{ q: number; r: number }> = [
+          ...units.filter(u => u.ownerId === 0).map(u => ({ q: u.q, r: u.r })),
+          ...cities.filter(c => c.ownerId === 0).map(c => ({ q: c.q, r: c.r })),
+        ];
+        let best: { q: number; r: number } | null = null;
+        let bestMinDist = -1;
+        for (const hex of Object.values(map.hexes)) {
+          if (hex.terenBazowy === TerenBazowy.Morze) continue;
+          const { q, r } = hex.coords;
+          let minDist = Infinity;
+          for (const p of playerPoints) {
+            const d = hexDistance(q, r, p.q, p.r);
+            if (d < minDist) minDist = d;
+          }
+          if (playerPoints.length === 0) minDist = 0;
+          if (minDist > bestMinDist) { bestMinDist = minDist; best = { q, r }; }
+        }
+        if (!best) throw new Error('spawnFarAiScout: brak suchego lądu na mapie');
+        units.push({
+          ...template,
+          id: 'test-sojusz-far-scout-' + ownerId,
+          q: best.q, r: best.r, ruch: 0, ruchLeft: 0, inGarnizon: false,
+        });
+        return best;
+      },
+      /**
+       * RUNDA 2 (obustronność — ECHO właściciela): symetryczny odpowiednik `spawnFarAiScout`
+       * powyżej, ale po stronie GRACZA — klonuje istniejącą jednostkę GRACZA na najdalszy suchy
+       * ląd od WSZYSTKICH jednostek/miast danego `ownerId`. Buduje kontrolę negatywną „przed"
+       * dla strony AI: heks widoczny wyłącznie tej dalekiej jednostce gracza, sprawdzany przez
+       * `currentVisibleForOwner(ownerId)` (to, co realnie zasila decyzje AI-sojusznika).
+       */
+      spawnFarPlayerScout: (ownerId: number): { q: number; r: number } => {
+        const template = units.find(u => u.ownerId === 0);
+        if (!template) throw new Error('spawnFarPlayerScout: brak istniejącej jednostki gracza');
+        const ownerPoints: Array<{ q: number; r: number }> = [
+          ...units.filter(u => u.ownerId === ownerId).map(u => ({ q: u.q, r: u.r })),
+          ...cities.filter(c => c.ownerId === ownerId).map(c => ({ q: c.q, r: c.r })),
+        ];
+        let best: { q: number; r: number } | null = null;
+        let bestMinDist = -1;
+        for (const hex of Object.values(map.hexes)) {
+          if (hex.terenBazowy === TerenBazowy.Morze) continue;
+          const { q, r } = hex.coords;
+          let minDist = Infinity;
+          for (const p of ownerPoints) {
+            const d = hexDistance(q, r, p.q, p.r);
+            if (d < minDist) minDist = d;
+          }
+          if (ownerPoints.length === 0) minDist = 0;
+          if (minDist > bestMinDist) { bestMinDist = minDist; best = { q, r }; }
+        }
+        if (!best) throw new Error('spawnFarPlayerScout: brak suchego lądu na mapie');
+        units.push({
+          ...template,
+          id: 'test-sojusz-far-player-scout-' + ownerId,
+          ownerId: 0, q: best.q, r: best.r, ruch: 0, ruchLeft: 0, inGarnizon: false,
+        });
+        return best;
+      },
     };
 
     /**
