@@ -62,6 +62,18 @@ export interface DiplomacyActionLockContext {
    * powstanie trasy w `refreshTradeRoutes`.
    */
   hasTradeConnection: boolean;
+  /**
+   * R-HANDEL-WYMIANA-TECH-GATE-Q1: czy MY (gracz, strona zwracająca ten kontekst)
+   * zbadaliśmy technologię handlu szlakowego (`TRADE_TECH`, trade-routes.ts).
+   * Bramuje samą PROPOZYCJĘ `UmowaSzlakow` (case '5') tak samo jak `hasTradeConnection`
+   * — twarda, wcześniejsza niż `relacjaGate`, ale po `atWar`/`hasHandel`. Opcjonalne:
+   * `undefined` = WSTECZNA ZGODNOŚĆ (bramka pominięta) dla wywołujących spoza
+   * allowlisty tego tematu (np. istniejące fikstury `diplomacy-locks-test.cjs`,
+   * które nie znają tego pola) — main.ts ZAWSZE przekazuje realną wartość.
+   */
+  hasTradeTechSelf?: boolean;
+  /** Jw., dla DRUGIEJ strony (partnera negocjacji). */
+  hasTradeTechOther?: boolean;
   /** Umowa wymiany surowców (`umowa_wymiany`). */
   hasWymiana?: boolean;
   hasSojusz: boolean;
@@ -208,6 +220,16 @@ export function resolveDiplomacyActionLock(ctx: DiplomacyActionLockContext): Dip
     case '5': { // Traktat handlowy (HANDEL-SPLIT-Q1=B)
       if (ctx.atWar) return { locked: true, note: 'handel niedostępny w wojnie' };
       if (ctx.hasHandel) return { locked: false, active: true, note: ALREADY_NOTE['5']! };
+      // R-HANDEL-WYMIANA-TECH-GATE-Q1: bramka techniczna, twarda i wcześniejsza
+      // niż relacjaGate — bez wymyślonej technologii "Wymiana" po którejkolwiek
+      // stronie nie ma o czym negocjować. Rozróżnienie w note: "to MY nie mamy
+      // techu" (gracz wie, że ma badać) vs "to ONI nie mają" (gracz wie, że czeka).
+      if (ctx.hasTradeTechSelf === false) {
+        return { locked: true, note: 'zablokowana — nie zbadano technologii Wymiana' };
+      }
+      if (ctx.hasTradeTechOther === false) {
+        return { locked: true, note: 'zablokowana — partner nie zbadał technologii Wymiana' };
+      }
       if (!ctx.hasTradeConnection) {
         return { locked: true, note: 'brak możliwego połączenia handlowego (ląd lub porty)' };
       }
