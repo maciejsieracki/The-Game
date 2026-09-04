@@ -27458,6 +27458,18 @@ async function boot(): Promise<void> {
               su.q = anim.destQ;
               su.r = anim.destR;
             }
+            // P-MGLA-ODKRYCIE-TELEPORT-KONIEC-TURY-Q1: koniec tury podczas trwajacej animacji
+            // marszu teleportuje jednostke na anim.destQ/destR (koniec sciezki) -- bez tego
+            // wywolania mgla pomijala heksy POSRODKU anim.pathHexes, dokladnie ten sam wzorzec
+            // co juz naprawione main.ts:32200-32205 (koniec animacji) i main.ts:22295 (ruch
+            // instant). Musi wystapic PRZED checkVillageRewardsAlongPath/
+            // checkBarbCampDestructionAlongPath ponizej -- mgla odkrywa sciezke, zanim nagrody/
+            // zniszczenia wzdluz tej samej sciezki sa liczone.
+            if (anim.pathHexes.length > 0) {
+              for (const su of stack) {
+                addExplored(explored, computeVisibleAlongPath(anim.pathHexes, map, unitSight(su)));
+              }
+            }
             deductStackRuchLeft(stack, anim.cost);
             // TEMAT #15: woda -> zaokrętowanie, ląd -> zejście na ląd.
             applyEmbarkStateAfterMove(stack, map);
