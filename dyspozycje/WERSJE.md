@@ -13,6 +13,27 @@ swoim wĹ‚asnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji d
 > Pakiet 3 z 2026-08-20 jest docs-only i nie tworzy wpisu ROBOCZA/KANON/FINALNA;
 > ten plik pozostaje wyłącznie rejestrem publikacji bundli.
 
+## ROBOCZA 2447a670 - 2026-09-04 04:09 UTC - FALA 344: 11 tematow (handel granica ladowa, dyplomacja UI+NAP+widocznosc sojuszu, minimapa, lup eliminacji, miasta-panstwa pasywnosc, tech-karta, Pangea wybrzeze, wojna trojstronna, etykieta bitwy)
+
+|- md5 (pełne): 2447a67085dc8f3eae9044328deac6e7 · stempel: ROBOCZA · label 2447a670 · źródłowe commity integracji: `d1a3c99d` + `da370d5f` + `4e7a146e` + `92f75053` + `24b34975` + `56d38457` + `7c913485` + `3a91fcf5` + `6be6be37`+`338bb9d6` + `e29cb5dd`+`c0b5546a`+`ec4dd4fa` + `9479ccc4`
+|- **`R-HANDEL-SZLAKI-WYMOG-GRANICY-LADOWEJ-Q1`** (`d1a3c99d`) — handel lądowy wymaga realnej wspólnej granicy terytorialnej (`ownersHaveSharedLandBorder`, BFS po heksach lądowych), nie tylko fizycznej osiągalności; handel morski przez port bez zmian. Wydajność: ~25-32× szybciej niż przed zmianą (tani border-check eliminuje większość niesąsiadujących par przed drogim BFS).
+|- **`R-DYPLO-WARUNEK-NIESPELNIONY-CZERWONY-TOOLTIP-Q1`** (`da370d5f`) — blokada warunków w panelu negocjacji świeci na czerwono (było: bursztynowo, mylące z ostrzeżeniem); lista "Możliwe umowy" oznacza akcje z nieosiągniętym bazowym progiem Relacji etykietą "wymaga wyższej Relacji" (nadal klikalne — słodzik z koszyka może obniżyć próg).
+|- **`R-MINIMAPA-PASEK-NARZEDZI-REORGANIZACJA-Q1`** (`4e7a146e`) — worker/złoża przeniesione do rzędu zoom nad minimapą; przyciski kultura/religia usunięte z minimapy, klik odpowiedniego chipa w górnym pasku toggle'uje podświetlenie zasięgu na mapie; nowy przycisk widoczności tras handlowych przy minimapie.
+|- **`R-MIASTA-ELIMINACJA-LUP-KWOTY-Q1`** (`92f75053`) — komunikat eliminacji cywilizacji pokazuje konkretne kwoty złota/nauki przejętej (np. "Skarbiec: +1500 złota. Nauka: +63 nauki."), nie tylko ogólnikowy tekst; pusty skarbiec komunikowany jawnie.
+|- **`R-DYPLO-NAP-KARA-GRANICA-REDEFINICJA-Q1`** (`24b34975`) — fałszywy czynnik "ekspansja przy granicy" (czysty licznik miast) przedefiniowany na realne sąsiedztwo terytorialne (`ownersHaveSharedLandBorder`), pole/stała przemianowane na `karaWspolnaGranica`/`NAP_GRANICA_RELACJA_NARZUT` (wartość 20 bez zmian); próg ">2 miasta" zachowany jako dodatkowy warunek obok granicy.
+|- **`R-MIASTA-PANSTWA-PASYWNOSC-ROZSZERZENIE-Q1`** (`56d38457`, 3 rundy) — postawa ofensywna miast-państw niezależna od trudności (było: wyłącznie hard); punkty zbiorcze armii (`planArmyConcentration`/`planArmyFrontMerge`) realnie podłączone dla miast-państw (były martwym kodem — `decideAITurn` przekierowywał je poza gate'owanym blokiem).
+|- **`R-TECH-KARTA-BOCZNA-KLIK-WIERSZ-REGRES-Q1`** (`7c913485`, 2 rundy) — klik w cały wiersz karty ulepszenia otwiera kartę boczną (nie dialog pod spodem); 7 wpisów `terrain-improvements.json` oczyszczonych z wyciekających notatek deweloperskich w polu `warunek` (historia przeniesiona do nierenderowanego `uwagi`), domykający overflow karty bocznej.
+|- **`R-DYPLO-SOJUSZ-WIDOCZNOSC-CIAGLA-Q1`** (`3a91fcf5`, 2 rundy) — dla aktywnego sojuszu (nie paktu/handlu) gracz i sojusznik AI widzą na bieżąco, co turę, unię własnej widoczności z widocznością drugiej strony; aktywuje się przy zawarciu, dezaktywuje natychmiast po zerwaniu; zero zmian w `ai.ts`.
+|- **`P-MAPGEN-PANGEA-OBRYS-P4-WYBRZEZE-Q1`** (`6be6be37`+`338bb9d6`) — rename `TerenBazowy.Wybrzeze`→`PlytkieMorze` + przepięcie porównań na `isWaterTerrain()`; Evaluator znalazł i Obrona naprawiła 3 pominięte pliki testowe (realna regresja metryki kształtu wybrzeża). Kryterium wydajnościowej regresji mapy (`map-gen-regression-test.cjs`) nie ukończyło się żywo z powodu przeciążenia maszyny (load 9-18/4 rdzenie) — zero zmian w `generator.ts`, ryzyko zaakceptowane przez orkiestratora.
+|- **`R-DYPLO-AI-WOJNA-TROJSTRONNA-Q1`** (`e29cb5dd`+`c0b5546a`+`ec4dd4fa`, 2 rundy) — gdy dwie cywilizacje AI już we wzajemnej wojnie wymuszonej i gracz bez własnej pary, obie wypowiadają jednocześnie wojnę graczowi (domino), wyjątek gdy którakolwiek strona ma aktywny sojusz z graczem.
+|- **`R-BITWA-ETYKIETA-TOZSAMOSC-STRONY-Q1`** (`9479ccc4`, 3 rundy) — pasek bitwy i werdykt "X wygrywa" (obie ścieżki: bitwa polowa i mapowe podsumowanie/szturm) pokazują tożsamość cywilizacji ("Rzymianie wygrywa"), nie nazwę typu jednostki ("Hastati wygrywa" — dokładnie oryginalne zgłoszenie właściciela, znalezione i naprawione też na drugiej, niezależnej ścieżce kodu). Udokumentowane ograniczenie: ikona miasta-państwa/barbarzyńcy jako strony bitwy bez żywego dowodu z klikanej bitwy (brak presetu testowego stawiającego ich jako stronę) — do osobnego przyszłego tematu.
+|- Wszystkie tematy: pełny cykl AutoBot (Operator→Evaluator→Obrona gdy potrzebna→Final Control) przez Workflow, `tsc --noEmit` 0 błędów, 5 bramek referencyjnych (logic-test 213/213, tech-tree-test 19/19, research-test 33/33, unit-replace-test 13/13, combat-test 6/6) bez regresu po każdej integracji i na finalnym stanie `main`.
+|- Bundle: 882 modułów, `Gra-ROBOCZA.html` 69,6 MB. `Gra-ROBOCZA-POLE-BITWY.html` PRZEBUDOWANY (świeży build z `vite.oblezenie-bitwa.config.ts`, md5 `b50ad543aef35fdf36957d481c70b427`) — `R-BITWA-ETYKIETA-TOZSAMOSC-STRONY-Q1` dotyka `battleScene.ts`.
+|- Publikacja: `gra-robocza/Gra-ROBOCZA.html` + `Gra-ROBOCZA-POLE-BITWY.html` + manifest + 8 kopii PLAYTEST.
+|- **Odstępstwo techniczne (jak w poprzednich FALACH):** publikacja odtworzona ręcznie w bashu/Node — `pwsh` nie istnieje w tym środowisku.
+|- Szczegóły: rejestr w `REJESTR-PROSB-I-ZADAN.md`.
+|- **AKTUALNA**
+
 ## ROBOCZA d8932b01 - 2026-09-03 20:47 UTC - FALA 343: 5 tematow (dyplomacja pokoj, handel dystans, entity-cards, wojna wymuszona, repo-prep)
 
 |- md5 (pełne): d8932b0115cebbb047d70aaec98aa70e · stempel: ROBOCZA · label d8932b01 · źródłowe commity integracji: `e253e64a` + `9b31997d` + `c2e00778` + `85865586` + `7d77e978`
@@ -26,7 +47,7 @@ swoim wĹ‚asnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji d
 |- Publikacja: `gra-robocza/Gra-ROBOCZA.html` + manifest + 6 kopii PLAYTEST.
 |- **Odstępstwo techniczne (jak w poprzednich FALACH):** publikacja odtworzona ręcznie w bashu/Node — `pwsh` nie istnieje w tym środowisku.
 |- Szczegóły: rejestr w `REJESTR-PROSB-I-ZADAN.md`.
-|- **AKTUALNA**
+|- **ZASTĄPIONA** (→ 2447a670, FALA 344)
 
 ## ROBOCZA c72b5629 - 2026-09-03 19:21 UTC - FALA 342: 16 tematow (dyplomacja, mgla, produkcja, miasta-panstwa, UI)
 
