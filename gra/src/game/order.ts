@@ -127,6 +127,17 @@ export interface OrderParams {
   bonusProdukcjaT2: number;
   /** Order trade bonus as a fraction (positive, e.g. 0.10). */
   bonusHandelT2: number;
+  /**
+   * R-SZCZESCIE-AUDYT-A-SKALA-NORMALIZACJA-Q1 (GOAL 1): górne ograniczenie PorPct (%),
+   * czytane z `society-params.json → szczescie.szczescie_pct_cap`. Opcjonalne — brak
+   * wartości = fallback na stałą `SZ_PCT_CAP` w `society-breakdown.ts`, więc ręcznie
+   * budowane `OrderParams` (poza `loadOrderParams`) działają dokładnie jak dotąd.
+   * Siedzi w `OrderParams`, a nie tylko w skali Szczęścia, bo `computePorPct` bywa
+   * wołane ze ścieżki mającej pod ręką WYŁĄCZNIE `OrderParams`
+   * (`post-capture-law.ts:135`) — inaczej przestrojenie capa w JSON byłoby tam
+   * po cichu ignorowane.
+   */
+  porPctCap?: number;
 }
 
 /** Per-tier multiplicative/risk effects derived from OrderParams. */
@@ -173,6 +184,10 @@ export const FALLBACK_ORDER_PARAMS: Readonly<OrderParams> = Object.freeze({
   ryzykoBuntuT1:    0.05,
   bonusProdukcjaT2: 0.10,
   bonusHandelT2:    0.10,
+  // Lustro SZ_PCT_CAP z society-breakdown.ts. Nie importujemy go tutaj, bo order.ts leży
+  // NIŻEJ w grafie zależności (society-breakdown importuje order, nie odwrotnie) — rozjazd
+  // obu liczb czerwieni bramkę szczescie-skala-normalizacja-test (asercja parytetu).
+  porPctCap:        120,
 });
 
 // ---------------------------------------------------------------------------
@@ -260,7 +275,26 @@ export function loadOrderParams(
     ryzykoBuntuT1:    pick(p.porzadek_ryzyko_buntu_t1,   difficulty, f.ryzykoBuntuT1),
     bonusProdukcjaT2: pick(p.porzadek_bonus_produkcja_t2, difficulty, f.bonusProdukcjaT2),
     bonusHandelT2:    pick(p.porzadek_bonus_handel_t2,   difficulty, f.bonusHandelT2),
+    // Cap PorPct mieszka w bloku `szczescie` (jeden cap dla SzPct i dla PorPct — tak było
+    // w kodzie od zawsze: `clampPct(..., SZ_PCT_CAP)`), więc czytamy go stamtąd, nie
+    // z `porzadek`. Dzięki temu KAŻDA ścieżka licząca PorPct — także `post-capture-law.ts`,
+    // która dostaje tylko `OrderParams` — bierze wartość z JSON, nie ze stałej w TS.
+    porPctCap:        pick(szBlock(society)?.szczescie_pct_cap, difficulty, f.porPctCap ?? 120),
   };
+}
+
+/**
+ * Blok `szczescie` z society-params.json, odczytany przez indeks `SocietyParamsLike`
+ * (celowo bez rozszerzania interfejsu — `society-breakdown.ts` rzutuje ten sam blok na
+ * własny typ wiersza i nie chcemy dwóch sprzecznych deklaracji tego samego pola).
+ */
+function szBlock(
+  society: SocietyParamsLike | null | undefined,
+): Record<string, RawSocietyParam | undefined> | undefined {
+  const raw = society ? (society as { szczescie?: unknown }).szczescie : undefined;
+  return raw && typeof raw === 'object'
+    ? (raw as Record<string, RawSocietyParam | undefined>)
+    : undefined;
 }
 
 // ---------------------------------------------------------------------------

@@ -149,12 +149,53 @@ export const FALLBACK_REVOLT_PARAMS: RevoltParams = {
 /** Id frakcji rebeliantów (SILNIK mapuje na ownerId). */
 export const REBEL_FACTION_OWNER_ID = -99;
 
-/** Skala % Sz — wyższa = łagodniejsze kary (PT 2026-07). */
-export const SZMAX_DEFAULTS: Readonly<Record<number, number>> = { 1: 14, 2: 20, 3: 28 };
-/** Skala % Prawo — 5× jednostka (20) = 100%; 1 jedn. ≠ pełne Prawo (PT 2026-07). */
-export const PRAWMAX_DEFAULTS: Readonly<Record<number, number>> = { 1: 50, 2: 75, 3: 100 };
+/**
+ * Skala % Sz — wyższa = łagodniejsze kary (PT 2026-07).
+ * R-SZCZESCIE-AUDYT-A-SKALA-NORMALIZACJA-Q1 (GOAL 1): wartość wiążąca żyje w
+ * `gra/data/society-params.json` → `szczescie.szczescie_max_epoka`; ta stała jest
+ * WYŁĄCZNIE fallbackiem przy braku wpisu w JSON (jak wszystkie sąsiednie parametry).
+ */
+const SZMAX_BY_ERA_DEFAULT: readonly [number, number, number] = [14, 20, 28];
+export const SZMAX_DEFAULTS: Readonly<Record<number, number>> = {
+  1: SZMAX_BY_ERA_DEFAULT[0],
+  2: SZMAX_BY_ERA_DEFAULT[1],
+  3: SZMAX_BY_ERA_DEFAULT[2],
+};
+/**
+ * Skala % Prawo — 5× jednostka (20) = 100%; 1 jedn. ≠ pełne Prawo (PT 2026-07).
+ * Fallback dla `prawo.prawo_max_epoka` w society-params.json (GOAL 1 jw.).
+ */
+const PRAWMAX_BY_ERA_DEFAULT: readonly [number, number, number] = [50, 75, 100];
+export const PRAWMAX_DEFAULTS: Readonly<Record<number, number>> = {
+  1: PRAWMAX_BY_ERA_DEFAULT[0],
+  2: PRAWMAX_BY_ERA_DEFAULT[1],
+  3: PRAWMAX_BY_ERA_DEFAULT[2],
+};
+/** Fallback dla `szczescie.szczescie_pct_cap`. */
 export const SZ_PCT_CAP = 120;
+/** Fallback dla `prawo.prawo_pct_cap`. */
 export const PRAW_PCT_CAP = 100;
+
+/**
+ * R-SZCZESCIE-AUDYT-A-SKALA-NORMALIZACJA-Q1 (GOAL 2) — mianownik procentu rośnie z miastem.
+ *
+ * Do populacji odniesienia włącznie próg jest DOKŁADNIE taki, jak przed zmianą (neutralność
+ * startowa); powyżej rośnie geometrycznie, o stały procent na mieszkańca:
+ *
+ *   szMax(pop, epoka)   = szMaxByEra[epoka]   × (1 + wspSz)   ^ max(0, pop − popOdniesienia)
+ *   prawMax(pop, epoka) = prawMaxByEra[epoka] × (1 + wspPraw) ^ max(0, pop − popOdniesienia)
+ *
+ * Gładko, a nie pasmami — przyrost populacji o 1 nigdy nie daje skoku progu (ten sam błąd
+ * projektowy co zanik bonusu Osiedla powyżej pop 4), a stały procent na mieszkańca oznacza,
+ * że NAJWIĘKSZY skok jest najmniejszy z możliwych przy zadanym mnożniku końcowym na capie
+ * ludności 12 (uzasadnienie przy `popScaleMultiplier`). Epoka zostaje czynnikiem
+ * multiplikatywnym, więc „każda epoka rozpatrzona oddzielnie” nadal obowiązuje.
+ * Fallbacki poniżej działają tylko przy braku wierszy w society-params.json.
+ */
+export const SZ_MAX_POP_WSP_DEFAULT = 0.048;
+export const PRAW_MAX_POP_WSP_DEFAULT = 0.041;
+export const SZ_MAX_POP_ODNIESIENIA_DEFAULT = 2;
+export const PRAW_MAX_POP_ODNIESIENIA_DEFAULT = 2;
 
 // ---------------------------------------------------------------------------
 // Society param helpers
@@ -197,6 +238,89 @@ function pickSociety(
   if (!row) return fallback;
   const v = row[difficulty];
   return typeof v === 'number' && Number.isFinite(v) ? v : fallback;
+}
+
+/**
+ * Odczyt wiersza-TABLICY (per trudność) z bloku society-params.json — ten sam wzorzec co
+ * `pickOsiedlePopBonus`, ale zwraca całą tablicę, nie jeden indeks. Wiersz niepełny
+ * (brak trudności, pusta tablica, wpis nieliczbowy) → kopia fallbacku.
+ */
+function pickSocietyArray(
+  block: Record<string, RawParamRow> | undefined,
+  key: string,
+  difficulty: Difficulty,
+  fallback: readonly number[],
+): number[] {
+  const arr = block?.[key]?.[difficulty];
+  if (
+    Array.isArray(arr) && arr.length > 0
+    && arr.every((v) => typeof v === 'number' && Number.isFinite(v))
+  ) {
+    return arr.slice();
+  }
+  return fallback.slice();
+}
+
+/**
+ * R-SZCZESCIE-AUDYT-A-SKALA-NORMALIZACJA-Q1: skala procentu Szczęścia i Prawa (mianownik
+ * + cap), strojona z `society-params.json`, nie z kodu. Stałe `SZMAX_DEFAULTS` /
+ * `PRAWMAX_DEFAULTS` / `SZ_PCT_CAP` / `PRAW_PCT_CAP` zostają wyłącznie jako fallback.
+ */
+export interface SocietyScaleParams {
+  /** Mianownik % Szczęścia per epoka; indeks 0 = epoka 1, epoki dalsze biorą ostatni wpis. */
+  szMaxByEra: number[];
+  /** Mianownik % Prawa per epoka; indeks 0 = epoka 1. */
+  prawMaxByEra: number[];
+  /** Górne ograniczenie SzPct (%). */
+  szPctCap: number;
+  /** Górne ograniczenie PrawPct (%). */
+  prawPctCap: number;
+  /** GOAL 2: przyrost mianownika Sz na 1 mieszkańca powyżej `szMaxPopOdniesienia`. */
+  szMaxPopWsp: number;
+  /** GOAL 2: przyrost mianownika Prawa na 1 mieszkańca powyżej `prawMaxPopOdniesienia`. */
+  prawMaxPopWsp: number;
+  /** GOAL 2: populacja, do której mianownik Sz jest dokładnie taki jak przed zmianą. */
+  szMaxPopOdniesienia: number;
+  /** GOAL 2: populacja, do której mianownik Prawa jest dokładnie taki jak przed zmianą. */
+  prawMaxPopOdniesienia: number;
+}
+
+export const FALLBACK_SOCIETY_SCALE: Readonly<SocietyScaleParams> = Object.freeze({
+  szMaxByEra: [...SZMAX_BY_ERA_DEFAULT],
+  prawMaxByEra: [...PRAWMAX_BY_ERA_DEFAULT],
+  szPctCap: SZ_PCT_CAP,
+  prawPctCap: PRAW_PCT_CAP,
+  szMaxPopWsp: SZ_MAX_POP_WSP_DEFAULT,
+  prawMaxPopWsp: PRAW_MAX_POP_WSP_DEFAULT,
+  szMaxPopOdniesienia: SZ_MAX_POP_ODNIESIENIA_DEFAULT,
+  prawMaxPopOdniesienia: PRAW_MAX_POP_ODNIESIENIA_DEFAULT,
+});
+
+/**
+ * Wczytaj skalę % Sz/Prawa z society-params.json (bloki `szczescie` i `prawo`).
+ * Brak dowolnego klucza → wartość z `FALLBACK_SOCIETY_SCALE`, czyli ze stałej w TS.
+ */
+export function loadSocietyScaleParams(
+  society: SocietyParamsLike | null | undefined,
+  difficulty: Difficulty = 'normal',
+): SocietyScaleParams {
+  const szBlock = (society?.szczescie ?? {}) as Record<string, RawParamRow>;
+  const prBlock = (society?.prawo ?? {}) as Record<string, RawParamRow>;
+  const f = FALLBACK_SOCIETY_SCALE;
+  return {
+    szMaxByEra: pickSocietyArray(szBlock, 'szczescie_max_epoka', difficulty, f.szMaxByEra),
+    prawMaxByEra: pickSocietyArray(prBlock, 'prawo_max_epoka', difficulty, f.prawMaxByEra),
+    szPctCap: pickSociety(szBlock, 'szczescie_pct_cap', difficulty, f.szPctCap),
+    prawPctCap: pickSociety(prBlock, 'prawo_pct_cap', difficulty, f.prawPctCap),
+    szMaxPopWsp: pickSociety(szBlock, 'szczescie_max_pop_wspolczynnik', difficulty, f.szMaxPopWsp),
+    prawMaxPopWsp: pickSociety(prBlock, 'prawo_max_pop_wspolczynnik', difficulty, f.prawMaxPopWsp),
+    szMaxPopOdniesienia: pickSociety(
+      szBlock, 'szczescie_max_pop_odniesienia', difficulty, f.szMaxPopOdniesienia,
+    ),
+    prawMaxPopOdniesienia: pickSociety(
+      prBlock, 'prawo_max_pop_odniesienia', difficulty, f.prawMaxPopOdniesienia,
+    ),
+  };
 }
 
 export function osiedlePopLabel(pop: number): string {
@@ -262,14 +386,76 @@ function pctFromNetto(netto: number, max: number, cap: number): number {
   return clampPct(100 * netto / m, cap);
 }
 
-export function szMaxForEra(era: number): number {
+/**
+ * Wspólny odczyt tablicy „mianownik per epoka”: epoka 1 → indeks 0, epoka powyżej długości
+ * tablicy → ostatni wpis (zachowanie identyczne ze starym `DEFAULTS[e] ?? DEFAULTS[3]`).
+ */
+function maxFromEraTable(era: number, table: readonly number[]): number {
   const e = Number.isFinite(era) ? Math.max(1, Math.floor(era)) : 1;
-  return SZMAX_DEFAULTS[e] ?? SZMAX_DEFAULTS[3] ?? 24;
+  if (table.length === 0) return 24;
+  const v = table[Math.min(e, table.length) - 1];
+  return typeof v === 'number' && Number.isFinite(v) ? v : 24;
 }
 
-export function prawMaxForEra(era: number): number {
-  const e = Number.isFinite(era) ? Math.max(1, Math.floor(era)) : 1;
-  return PRAWMAX_DEFAULTS[e] ?? PRAWMAX_DEFAULTS[3] ?? 24;
+export function szMaxForEra(
+  era: number,
+  scale: SocietyScaleParams = FALLBACK_SOCIETY_SCALE,
+): number {
+  return maxFromEraTable(era, scale.szMaxByEra);
+}
+
+export function prawMaxForEra(
+  era: number,
+  scale: SocietyScaleParams = FALLBACK_SOCIETY_SCALE,
+): number {
+  return maxFromEraTable(era, scale.prawMaxByEra);
+}
+
+/**
+ * GOAL 2 — mnożnik progu od wielkości miasta: `(1 + wsp) ^ max(0, pop − popOdniesienia)`.
+ *
+ * Monotoniczny (wsp ujemny jest ignorowany), ciągły (bez pasm), równy DOKŁADNIE 1 do
+ * populacji odniesienia włącznie. Wynik zaokrąglony do 2 miejsc — próg deterministyczny,
+ * bez śmieci zmiennoprzecinkowych.
+ *
+ * Dlaczego wykładniczo, a nie liniowo (`1 + wsp × excess`): przy ustalonym mnożniku
+ * końcowym na capie ludności (12, `econ-params.json → akwedukt_max_ludnosci`) wzrost
+ * geometryczny jest MINIMAKSEM — daje najmniejszy możliwy NAJWIĘKSZY skok względny progu
+ * przy +1 mieszkańcu, bo rozkłada ten sam mnożnik równo na wszystkie kroki, zamiast
+ * upychać największy skok w pierwszy krok powyżej populacji odniesienia. Liniowo max skok
+ * wynosił ×1,13 (hard), tutaj ×1,087 przy tym samym mnożniku końcowym ~2,3. To jest
+ * bezpośrednia odpowiedź na warunek ciągłości z dispatchu („miasto nie może z tury na turę
+ * spaść o kilkanaście procent porządku tylko dlatego, że urosło") — koszt rozbudowy zostaje
+ * ten sam, rozłożony gładziej.
+ */
+function popScaleMultiplier(population: number, wsp: number, popOdniesienia: number): number {
+  const pop = Number.isFinite(population) ? Math.max(0, Math.floor(population)) : 0;
+  const w = Number.isFinite(wsp) && wsp > 0 ? wsp : 0;
+  const ref = Number.isFinite(popOdniesienia) ? Math.max(0, Math.floor(popOdniesienia)) : 0;
+  const excess = Math.max(0, pop - ref);
+  return Math.round(Math.pow(1 + w, excess) * 100) / 100;
+}
+
+/** GOAL 2: mianownik SzPct dla konkretnego miasta — epoka × wielkość miasta. */
+export function szMaxForCity(
+  era: number,
+  population: number,
+  scale: SocietyScaleParams = FALLBACK_SOCIETY_SCALE,
+): number {
+  const base = szMaxForEra(era, scale);
+  const mult = popScaleMultiplier(population, scale.szMaxPopWsp, scale.szMaxPopOdniesienia);
+  return Math.round(base * mult * 100) / 100;
+}
+
+/** GOAL 2: mianownik PrawPct dla konkretnego miasta — epoka × wielkość miasta. */
+export function prawMaxForCity(
+  era: number,
+  population: number,
+  scale: SocietyScaleParams = FALLBACK_SOCIETY_SCALE,
+): number {
+  const base = prawMaxForEra(era, scale);
+  const mult = popScaleMultiplier(population, scale.prawMaxPopWsp, scale.prawMaxPopOdniesienia);
+  return Math.round(base * mult * 100) / 100;
 }
 
 /** Klucz JSON siatki Sz od udziału Zamożności (dziesięć przedziałów co 10 p.p.). */
@@ -332,6 +518,7 @@ export function computeHappinessBreakdown(
 ): HappinessPctBreakdown {
   const diff = input.difficulty ?? 'normal';
   const szBlock = (society?.szczescie ?? {}) as Record<string, RawParamRow>;
+  const scale = loadSocietyScaleParams(society, diff);
   const lines: SocietyLine[] = [];
   const pop = Math.max(0, Math.floor(input.population ?? 0));
   const era = input.era ?? 1;
@@ -428,8 +615,8 @@ export function computeHappinessBreakdown(
   // oba mechanizmy naraz dawały -2 pkt Sz, sama nowa siatka daje poprawne -1 pkt).
 
   const netto = lines.reduce((s, l) => s + l.value, 0);
-  const szMax = szMaxForEra(era);
-  const szPct = pctFromNetto(netto, szMax, SZ_PCT_CAP);
+  const szMax = szMaxForCity(era, pop, scale);
+  const szPct = pctFromNetto(netto, szMax, scale.szPctCap);
 
   return { lines, netto, szMax, szPct };
 }
@@ -444,6 +631,7 @@ export function computeLawBreakdown(
 ): LawPctBreakdown {
   const diff = input.difficulty ?? 'normal';
   const prBlock = (society?.prawo ?? {}) as Record<string, RawParamRow>;
+  const scale = loadSocietyScaleParams(society, diff);
   const lines: SocietyLine[] = [];
   const era = input.era ?? 1;
 
@@ -520,8 +708,8 @@ export function computeLawBreakdown(
   }
 
   const netto = lines.reduce((s, l) => s + l.value, 0);
-  const prawMax = prawMaxForEra(era);
-  const prawPct = pctFromNetto(Math.max(0, netto), prawMax, PRAW_PCT_CAP);
+  const prawMax = prawMaxForCity(era, pop, scale);
+  const prawPct = pctFromNetto(Math.max(0, netto), prawMax, scale.prawPctCap);
 
   return { lines, netto, prawMax, prawPct };
 }
@@ -601,6 +789,14 @@ export function orderEffectsFromPorPct(
   }
 }
 
+/**
+ * R-SZCZESCIE-AUDYT-A-SKALA-NORMALIZACJA-Q1 (GOAL 1): cap PorPct pochodzi z `params`
+ * (`loadOrderParams` czyta `szczescie.szczescie_pct_cap` z JSON), a nie z argumentu
+ * dodatkowego — dzięki temu ta sama wartość obowiązuje na OBU ścieżkach liczenia PorPct,
+ * łącznie z `post-capture-law.ts:135`, która woła tę funkcję z samym `OrderParams`.
+ * Brak pola (ręcznie zbudowane `OrderParams`) → stała `SZ_PCT_CAP`, czyli zachowanie
+ * dokładnie jak przed tematem.
+ */
 export function computePorPct(
   szPct: number,
   prawPct: number,
@@ -608,7 +804,8 @@ export function computePorPct(
 ): number {
   const wS = params.wagaSzczescie;
   const wP = params.wagaPrawo;
-  return clampPct(wS * szPct + wP * prawPct, SZ_PCT_CAP);
+  const cap = Number.isFinite(params.porPctCap) ? (params.porPctCap as number) : SZ_PCT_CAP;
+  return clampPct(wS * szPct + wP * prawPct, cap);
 }
 
 /** Rozbicie procentowego WKŁADU Szczęścia i Prawa do finalnego wyniku Porządku łącznie. */

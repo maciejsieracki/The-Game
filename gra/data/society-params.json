@@ -305,6 +305,34 @@
       "jednostka": "×",
       "opis": "Mnożnik wzrostu populacji przy wysokim zadowoleniu (≥ progu). Np. 0,10 = +10% szybciej. [PT — do strojenia]"
     },
+    "szczescie_max_epoka": {
+      "easy": [14, 20, 28],
+      "normal": [14, 20, 28],
+      "hard": [14, 20, 28],
+      "jednostka": "pkt Szczęścia (mianownik %)",
+      "opis": "R-SZCZESCIE-AUDYT-A GOAL 1: mianownik SzPct per epoka (indeks 0 = epoka 1, 1 = epoka 2, 2 = epoka 3; epoki dalsze biorą ostatni wpis). Przeniesione 1:1 z SZMAX_DEFAULTS w society-breakdown.ts — te same liczby co dotąd w kodzie, zero zmiany zachowania. Stała w TS zostaje wyłącznie jako fallback przy braku tego wiersza."
+    },
+    "szczescie_pct_cap": {
+      "easy": 120,
+      "normal": 120,
+      "hard": 120,
+      "jednostka": "%",
+      "opis": "R-SZCZESCIE-AUDYT-A GOAL 1: górne ograniczenie SzPct (dawne SZ_PCT_CAP w kodzie). Ten sam cap ogranicza też PorPct łącznie."
+    },
+    "szczescie_max_pop_odniesienia": {
+      "easy": 2,
+      "normal": 2,
+      "hard": 2,
+      "jednostka": "ludność",
+      "opis": "R-SZCZESCIE-AUDYT-A GOAL 2: populacja odniesienia mianownika Szczęścia. Do tej wielkości miasta włącznie próg jest DOKŁADNIE taki jak przed zmianą (neutralność startowa — wczesna gra nietknięta); dopiero powyżej rośnie o szczescie_max_pop_wspolczynnik (składane) na każdego kolejnego mieszkańca."
+    },
+    "szczescie_max_pop_wspolczynnik": {
+      "easy": 0.038,
+      "normal": 0.048,
+      "hard": 0.058,
+      "jednostka": "× mianownika / 1 ludności (składane)",
+      "opis": "R-SZCZESCIE-AUDYT-A GOAL 2: szMax = szczescie_max_epoka[epoka] × (1 + wsp) ^ max(0, pop − szczescie_max_pop_odniesienia). Stały procent na mieszkańca, składany — ciągle i monotonicznie, brak skoków progu przy pop→pop+1 (ten sam błąd projektowy co zanik bonusu Osiedla powyżej pop 4). Normal 0,072 dobrane tak, że miasto na capie ludności (pop 12; econ-params.json → akwedukt_max_ludnosci) potrzebuje 2,00× więcej punktów Szczęścia na ten sam procent co miasto pop 2 tej samej epoki — rozbudowa wymaga proporcjonalnie większego wysiłku zamiast windować procent do sufitu. Wzrost składany, a nie liniowy, bo przy TYM SAMYM mnożniku końcowym daje najmniejszy możliwy największy skok progu na jednym przyroście ludności (liniowo ×1,13 na hard, składanie ×1,087). Konwencja trudności jak w reszcie pliku: easy najłagodniej dla gracza. Mnożniki końcowe na pop 12: easy 1,69× / normal 2,00× / hard 2,30×."
+    },
     "szczescie_prog_bonus_produkcja": {
       "easy": 4,
       "normal": 5,
@@ -894,6 +922,34 @@
       "hard": 4,
       "jednostka": "pop",
       "opis": "Populacja ≤ prog → bonus osady (D16-A)."
+    },
+    "prawo_max_epoka": {
+      "easy": [50, 75, 100],
+      "normal": [50, 75, 100],
+      "hard": [50, 75, 100],
+      "jednostka": "pkt Prawa (mianownik %)",
+      "opis": "R-SZCZESCIE-AUDYT-A GOAL 1: mianownik PrawPct per epoka (indeks 0 = epoka 1; epoki dalsze biorą ostatni wpis). Przeniesione 1:1 z PRAWMAX_DEFAULTS w society-breakdown.ts — zero zmiany zachowania. Stała w TS zostaje wyłącznie jako fallback."
+    },
+    "prawo_pct_cap": {
+      "easy": 100,
+      "normal": 100,
+      "hard": 100,
+      "jednostka": "%",
+      "opis": "R-SZCZESCIE-AUDYT-A GOAL 1: górne ograniczenie PrawPct (dawne PRAW_PCT_CAP w kodzie)."
+    },
+    "prawo_max_pop_odniesienia": {
+      "easy": 2,
+      "normal": 2,
+      "hard": 2,
+      "jednostka": "ludność",
+      "opis": "R-SZCZESCIE-AUDYT-A GOAL 2: populacja odniesienia mianownika Prawa — do tej wielkości włącznie próg dokładnie jak przed zmianą (neutralność startowa)."
+    },
+    "prawo_max_pop_wspolczynnik": {
+      "easy": 0.033,
+      "normal": 0.041,
+      "hard": 0.049,
+      "jednostka": "× mianownika / 1 ludności (składane)",
+      "opis": "R-SZCZESCIE-AUDYT-A GOAL 2: prawMax = prawo_max_epoka[epoka] × (1 + wsp) ^ max(0, pop − prawo_max_pop_odniesienia). Składane, jak przy Szczęściu. Łagodniej niż Szczęście (normal 0,060 vs 0,072), bo źródła Prawa są grubo skwantowane (garnizon 20/jedn. z capem 5 jednostek, Pałac 35–55) i mają twardy cap 100% — zbyt stromy mianownik odciąłby duże miasta od osiągalnego Prawa zamiast wymagać od nich realnej administracji. Mnożniki końcowe na pop 12: easy 1,60× / normal 1,79× / hard 2,08×. Skutek graniczny (zmierzony, świadomy): pop 12 z garnizonem 5, Pałacem III i pełną administracją domyka Prawo do 100% na easy i normal we wszystkich epokach oraz na hard w epokach 1–2; na hard w epoce 3 osiąga 90,5% — największe miasto na najwyższej trudności nie ma już darmowego 100% Prawa."
     },
     "prawo_bonus_stolica_easy": {
       "easy": 1,
