@@ -328,10 +328,11 @@ function _legacyBuildUnitInfoCard(
 }
 
 export const UNIT_INFO_CARD_CSS = `
-.unit-info-card-backdrop{position:fixed;inset:0;z-index:520;display:flex;align-items:center;
-  justify-content:center;padding:16px;background:rgba(0,0,0,.62);}
-.unit-info-card-dialog{position:relative;max-height:calc(100vh - 32px);overflow:auto;}
-.unit-info-card{width:min(434px,calc(100vw - 32px));border:1px solid rgba(232,216,138,.45);
+.unit-info-card-backdrop{position:fixed;inset:0;z-index:520;display:flex;align-items:flex-start;
+  justify-content:center;padding:16px;background:rgba(0,0,0,.62);overflow-y:auto;}
+.unit-info-card-dialog{position:relative;height:min(80vh,calc(100vh - 32px));overflow:auto;
+  margin:auto 0;}
+.unit-info-card{width:min(660px,calc(100vw - 32px));border:1px solid rgba(232,216,138,.45);
   border-radius:12px;background:linear-gradient(180deg,rgba(20,26,34,.99),rgba(8,10,16,.99));
   color:#e8e0c8;box-shadow:0 10px 28px rgba(0,0,0,.65);overflow:hidden;
   font-family:var(--tg-font-ui,'Segoe UI',Tahoma,sans-serif);}
