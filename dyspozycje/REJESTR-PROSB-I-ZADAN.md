@@ -4705,3 +4705,64 @@ z `miasta_cywilizacji`, z pomijaniem nazw użytych.
 **Ratyfikacja rundy 3 dopisana do `00-dispatch.md` NA GAŁĘZI TEMATU** (`fb33fd0a`),
 nie na `main` — agenci pracują w worktree i commitów z `main` nie widzą. To jest poprawka
 własnego błędu procesowego z wcześniejszej rundy tej samej sesji.
+
+### `R-WALKA-PRZEWAGA-LICZEBNA-Q1-W1` — wynik rundy 1 (2026-09-04, noc)
+
+**Obieg pełny: Operator `PASS-WITH-NOTES` → Evaluator 3 zarzuty → Obrona PRZYJMUJE wszystkie
+trzy → Final Control w biegu.** Commity: `f72744d3` (praca) + `288e420e` (obrona).
+
+**GOAL osiągnięty.** `p_atk`/`p_def` 0,58 → 1,2; `L_MIN` przeniesiona z podłogi na jednostkę
+na podłogę na sumie składu. Zmierzony ciąg łącznych strat zwycięzcy: **0,3873 / 0,3656 /
+0,3372 / 0,3045 / 0,2650 / 0,2300** dla r = 1,5 / 2 / 3 / 5 / 10 / 20 — ściśle malejący,
+zgodny z tabelą docelową w tolerancji ±0,005. Przegrany: 74,2 / 81,7 / 88,8 / 93,9 / 97,4 / 98,9 %.
+
+**Trzy wymagane przebiegi wykonane i udokumentowane:** (a) czysta baza — bramka CZERWONA
+16/21, z odtworzonym rosnącym ciągiem 0,498…1,478 zgodnym z reconem; (b) po zmianie —
+ZIELONA; (c) po cofnięciu SAMEJ zmiany `L_MIN` przy `p=1,2` — ZNÓW CZERWONA, r=10 → 0,500,
+r=20 → 1,000. **Pułapka z reconu potwierdzona empirycznie przez Operatora**, nie tylko
+przewidziana przez orkiestratora.
+
+**Evaluator znalazł DWA realne defekty, których dispatch nie przewidział — oba naprawione:**
+1. **Sekcja bramki była tautologiczna.** Sonda przy r=1000 przechodziła z samego `raw`, bez
+   udziału podłogi, więc mutacja „podłoga → 0" zostawiała bramkę zieloną. Sondy przeniesione
+   na r = 2000 / 5000 / 50 000 (jedyny zakres, gdzie podłoga faktycznie trzyma), 37 → 43 asercje.
+2. **Zaokrąglenie kasowało straty przy skrajnych stosunkach.** `Math.round(max(floor, …))`
+   zerowało OBA składniki od r≈1866 — auto-bitwa przy takiej przewadze dawała **zero strat**,
+   choć przed zmianą podłoga gwarantowała ≥5%. Naprawione odwróceniem kolejności: zaokrąglenie
+   najpierw, podłoga potem. Po poprawce r ≥ 41 821 daje dokładnie `L_MIN`; zakres grywalny
+   nietknięty.
+
+**To jest dokładnie ta klasa błędu, przed którą miała chronić reguła anty-halucynacyjna** —
+bramka zielona po zmianie, a mimo to niczego nie mierząca w kluczowym punkcie.
+
+## P-AUTO-BATTLE-SYMULATOR-PY-ROZJAZD-Q1 — nowe zgłoszenie (2026-09-04, znalezisko Evaluatora W1)
+
+`gra/tools/auto-battle-power.py:133` liczy `max(L_MIN, min(cap, raw))` — **stara podłoga
+na jednostce** — ale `p` czyta z `auto-battle-params.json` (`:35`, `:43`), czyli już 1,2.
+Skutek: symulator balansu odtwarza dziś **krzywą-pułapkę** r=10 → 0,500, r=20 → 1,000,
+sprzeczną z runtime TS po naprawie W1. Odtworzone liczbowo przez dwie niezależne role.
+
+**Dlaczego to ma znaczenie, a nie jest kosmetyką:** to jest narzędzie, którym właściciel
+stroi balans („Panel-C → Auto-walka → eksportuj panel C" wg nagłówka pliku parametrów).
+Rozjechany symulator doradzałby wartości wyliczone z nieaktualnego wzoru — czyli następna
+kalibracja walki startowałaby z fałszywych liczb.
+
+**Świadomie NIE naprawione w W1** — plik poza allowlistą tematu; Operator zgłosił notę
+zamiast wejść w niego samowolnie, co jest zachowaniem prawidłowym (§14).
+**STATUS: ZAREJESTROWANE, NIE DISPATCHOWANE.** Zakres: doprowadzić `auto-battle-power.py`
+do zgodności z `auto-battle-power.ts` po W1, plus bramka porównująca oba wzory na tym
+samym zestawie stosunków sił — żeby rozjazd nie mógł się powtórzyć po cichu.
+**Zależność: dispatchować PO integracji W1**, inaczej symulator zostanie zrównany
+z wersją, która jeszcze się zmieni.
+
+## P-BRAMKA-MAP-FIELD-BATTLE-INFRA-CZERWONA-Q1 — nowe zgłoszenie (2026-09-04)
+
+`node gra/tools/map-field-battle-test.cjs` → exit 1, `TypeError: import_meta.glob is not
+a function` (moduł audio pod esbuild). **Zweryfikowane niezależnie przez Operatora i Evaluatora
+jako czerwone identycznie na czystej bazie `287718c2`** — defekt INFRA sprzed tematu, nie regres W1.
+
+Skutek: bramka pokrywająca bitwę polową na mapie **nie chroni dziś niczego**, a jest wymieniana
+w kryteriach końca tematów walki — czyli generuje fałszywe `PASS-WITH-NOTES` przy każdym
+takim temacie. Dołącza do listy zaległych czerwonych bramek obok `oboz-lowiecki-las-test`
+(72/19), `map-improvement-qualify-test` (130/1) i `entity-card-contract-test` (rAF ReferenceError).
+**STATUS: ZAREJESTROWANE, NIE DISPATCHOWANE.** DOMAIN: INFRA.
