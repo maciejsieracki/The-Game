@@ -12,20 +12,64 @@ grep -rnE '\.(q|r)[[:space:]]*=[^=>]' gra/src --include=*.ts
 Wynik na bazie `20f9993d`: **47 trafień w 6 plikach** (main.ts 26, post-battle-map.ts 8,
 battleScene.ts 8, scout-auto-explore.ts 2, ai-city-capture-executor.ts 2, manualBattle.ts 1).
 
+**Uzgodnienie z HEAD rundy 1 (żeby nikt nie dostał innej liczby niż zapisana).** Na HEAD ta
+sama komenda zwraca **48**, nie 47. Różnica to **jedna linia KOMENTARZA** dodana w tej rundzie
+(`gra/src/main.ts`, nagłówek helpera `revealAlongPathForStack`, tekst „…(`.q =` / `.r =`)…”) —
+komentarz cytuje własny wzorzec i dlatego wpada w surowego grepa. Skaner bramki pomija **całe
+linie komentarza** (blok [5] to osobno asertuje), więc widzi niezmiennie **47 trafień na
+poziomie kodu**, wszystkie sklasyfikowane. Zapis „47" dotyczy kodu, „48" surowego grepa na
+HEAD — obie liczby są prawdziwe, żadna nie jest zaokrągleniem.
+
 Ta sama komenda jest zaimplementowana jako `RE_ZAPIS_POZYCJI` w bramce
 `gra/tools/mgla-sciezka-inwariant-test.cjs` (blok [1]) — każde jej trafienie musi mieć wpis
 w tabeli `KLASYFIKACJA`, inaczej bramka czerwieni.
 
-### Wykluczone wzorce pośrednie (sprawdzone, ZERO trafień)
+### Wzorce pośrednie — komendy rozstrzygające i ich PRAWDZIWE wyniki
 
-| Wzorzec | Komenda | Wynik |
+**Korekta rundy 1 (obrona, zarzut 2 Evaluatora).** Pierwsza wersja tej tabeli podawała dla
+`Object.assign` wynik „0". To było **nieprawdą**: komenda `grep -rnE 'Object\.assign' gra/src
+--include=*.ts` zwraca **244**. Merytoryczny wniosek się bronił (wszystkie 244 mają pierwszy
+argument `*.style`), ale zapisana liczba nie była tym, co dostaje ktoś, kto uruchomi komendę —
+a dispatch wymaga metody, „którą ktoś inny może uruchomić i **dostać ten sam wynik**". Poniżej
+komendy faktycznie rozstrzygające, z wynikami odtworzonymi na HEAD rundy 1.
+
+Komendy dosłownie, do skopiowania (uruchamiane z katalogu repo, nie z `gra/`):
+
+```bash
+# A. przypisanie zlozone i inkrementacja               -> 0 i 0
+grep -rnE '\.(q|r)[[:space:]]*([-+*/%|&^]|\*\*|<<|>>>?)=' gra/src --include=*.ts | wc -l
+grep -rnE '(\+\+|--)[[:space:]]*\w+\.(q|r)\b|\w+\.(q|r)[[:space:]]*(\+\+|--)' gra/src --include=*.ts | wc -l
+
+# B. notacja nawiasowa                                 -> 6 (same userData Three.js)
+grep -rnE "\[[[:space:]]*['\"](q|r)['\"][[:space:]]*\][[:space:]]*=[^=]" gra/src --include=*.ts
+
+# C. Object.assign — naiwna vs rozstrzygajaca          -> 244, potem 0
+grep -rnE 'Object\.assign' gra/src --include=*.ts | wc -l
+grep -rnoE 'Object\.assign\([^,]*,' gra/src --include=*.ts | grep -v '\.style' | wc -l
+
+# D. spread i podmiana elementu tablicy                -> 0 i 0
+grep -rnE '\.\.\..*,[[:space:]]*q:' gra/src --include=*.ts | wc -l
+grep -rnE 'units\[[^]]+\][[:space:]]*=[^=]' gra/src --include=*.ts | wc -l
+```
+
+| Wzorzec | Wynik na HEAD rundy 1 | Egzekwowany w bramce? |
 |---|---|---|
-| przypisanie złożone | `grep -rnE '\.(q\|r)[[:space:]]*[-+*/]=' gra/src --include=*.ts` | 0 |
-| `Object.assign` na jednostce | `grep -rnE 'Object\.assign' gra/src --include=*.ts` | 0 (tylko `.style`) |
-| przepisanie przez spread | `grep -rnE '\.\.\..*,[[:space:]]*q:' gra/src --include=*.ts` | 0 |
-| podmiana elementu tablicy | `grep -rnE 'units\[[^]]+\][[:space:]]*=' gra/src --include=*.ts` | 0 |
+| A. przypisanie złożone / inkrementacja | **0** i **0** | **TAK** — `RE_ZAPIS_ZLOZONY`, blok [1c] |
+| B. notacja nawiasowa | **6**, wyłącznie `userData` Three.js: `render/cities.ts:486,487,528,529` i `battle/manualBattle.ts:677,678` — żadne nie jest jednostką | **TAK** — `RE_ZAPIS_NAWIASOWY` + whitelista `DOZWOLONE_NAWIASOWE`, blok [1c] |
+| C. `Object.assign` na jednostce | naiwna: **244** (nie 0!); rozstrzygająca: **0** — wszystkie 244 wywołania mają pierwszy argument kończący się `.style` | **TAK** — `skanujObjectAssign`, wycinanie pierwszego argumentu z uwzględnieniem zagnieżdżeń (odporne na `Object.assign({a,b}, x)`), blok [1c] |
+| D. spread + podmiana elementu tablicy | **0** i **0** | NIE — patrz nota niżej |
 
-Wniosek: `.q =` / `.r =` jest **kompletną siecią** na zapisy pozycji jednostki w `gra/src`.
+**Nota o dwóch ostatnich wierszach — świadoma granica, nie przeoczenie.** Spread sam w sobie
+niczego nie mutuje (`{...u, q: x}` tworzy NOWY obiekt); żeby przemieścił jednostkę, wynik musi
+zostać podstawiony z powrotem — czyli przez wiersz „podmiana elementu tablicy". A ten wzorzec
+nie ma regexu, który byłby jednocześnie szczelny i wolny od fałszywych alarmów: każde
+`tablica[i] = obiekt` w kodzie wyglądałoby tak samo. Te dwa wiersze są więc **pomiarem
+wykonanym raz na HEAD**, nie asercją chroniącą przyszłość — i tak są tu zapisane, zamiast
+udawać pokrycie, którego nie ma. Zostaje to jako ryzyko rezydualne w raporcie rundy.
+
+Wniosek (skorygowany): `.q =` / `.r =` **nie jest** kompletną siecią samo z siebie. Kompletną
+siecią na wszystkie wzorce realnie mutujące pozycję jest dopiero **suma czterech skanerów bloku
+[1] + [1c]** bramki `mgla-sciezka-inwariant-test.cjs`, z jawnie nazwanym wyjątkiem powyżej.
 
 ## Tabela
 

@@ -18878,6 +18878,76 @@ async function boot(): Promise<void> {
       },
     };
 
+    // P-MGLA-ODKRYCIE-SCIEZKA-INWARIANT-Q1 — hak testowy WYŁĄCZNIE dla Playwright
+    // (`tools/mgla-sciezka-live-test.cjs`, dowód z żywej przeglądarki wg §9 pkt 6a).
+    // Ten sam wzorzec i to samo ograniczenie co __dyploMapaOdkrycieTestDebug wyżej: hak
+    // steruje WYŁĄCZNIE DANYMI WEJŚCIOWYMI scenariusza (gdzie stoi zwiadowca, jaka jest
+    // mgła NA STARCIE pomiaru, która jednostka jest zaznaczona) i CZYTA stan. Sam EFEKT
+    // pod testem — odkrycie mgły wzdłuż PRZEBYTEJ ŚCIEŻKI — powstaje wyłącznie w realnym
+    // kodzie gry (`runScoutsAutoExplore` + hak `onAfterStep` w `triggerPlayerEndTurn`),
+    // uruchomionym realnym klikiem w „Zwiedzaj" i realnym końcem tury. Hak nigdy nie
+    // dopisuje niczego do `explored` samodzielnie.
+    (window as any).__mglaSciezkaTestDebug = {
+      /** Zwiadowca gracza na wskazanym heksie — przez REALNY spawner jednostek gry. */
+      spawnPlayerScout: (q: number, r: number): string | null => {
+        const przed = new Set(units.map(u => u.id));
+        spawnDifficultyBonusUnit(0, 'Zwiadowca', q, r);
+        const nowy = units.find(u => !przed.has(u.id));
+        if (!nowy) return null;
+        syncUnitsRender();
+        refreshFog();
+        return nowy.id;
+      },
+      /** Suchy ląd bez jednostki i bez miasta, w podanym promieniu od miasta gracza. */
+      findFreeLandNearPlayerCity: (
+        minDist: number,
+        maxDist: number,
+      ): { q: number; r: number } | null => {
+        const city = cities.find(c => c.ownerId === 0);
+        if (!city) return null;
+        for (const hex of Object.values(map.hexes)) {
+          if (hex.terenBazowy === TerenBazowy.Morze) continue;
+          const { q, r } = hex.coords;
+          const d = hexDistance(q, r, city.q, city.r);
+          if (d < minDist || d > maxDist) continue;
+          if (units.some(u => u.q === q && u.r === r)) continue;
+          if (cities.some(c => c.q === q && c.r === r)) continue;
+          return { q, r };
+        }
+        return null;
+      },
+      /**
+       * Mgła startowa pomiaru: `explored` skasowane do tego, co gracz WIDZI teraz.
+       * `?playtest=mapa` startuje z odkrytym promieniem 12 wokół miasta, w którym nie ma
+       * już czego odkrywać — bez tego kroku pomiar „co doszło do `explored`" byłby pusty.
+       * Odtworzenie stanu idzie przez REALNY `refreshFog()`, nie przez ręczne `addExplored`.
+       */
+      resetFogToCurrentlyVisible: (): number => {
+        explored.clear();
+        refreshFog();
+        return explored.size;
+      },
+      selectUnit: (unitId: string): void => { selectPlayerUnit(unitId); },
+      getUnit: (
+        unitId: string,
+      ): { q: number; r: number; ruchLeft: number; autoExplore: boolean } | null => {
+        const u = units.find(x => x.id === unitId);
+        if (!u) return null;
+        return { q: u.q, r: u.r, ruchLeft: u.ruchLeft, autoExplore: u.autoExplore === true };
+      },
+      getExploredKeys: (): string[] => Array.from(explored),
+      /** Widoczność Z SAMEJ pozycji jednostki — kontrola „czy to odkrycie mogło powstać
+       *  z pozycji KOŃCOWEJ" (dokładnie ten sam `computeVisibleAt` co `currentVisible`). */
+      getVisibleKeysFromUnit: (unitId: string): string[] => {
+        const u = units.find(x => x.id === unitId);
+        if (!u) return [];
+        return Array.from(computeVisibleAt(u.q, u.r, map, unitSight(u)));
+      },
+      hexDistanceBetween: (aq: number, ar: number, bq: number, br: number): number =>
+        hexDistance(aq, ar, bq, br),
+      isAnimatingNow: (): boolean => isAnimating,
+    };
+
     /**
      * TEMAT 9 (2026-07-24, stół negocjacyjny) — wspólne złożenie payloadu UI → propozycji
      * CYW, dzielone przez podgląd (previewNegotiatedProposal, BEZ finalizacji) i faktyczne

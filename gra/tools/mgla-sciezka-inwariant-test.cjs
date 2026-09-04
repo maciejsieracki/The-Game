@@ -30,9 +30,20 @@
  *   Skaner ponizej implementuje DOKLADNIE ten wzorzec (`/\.(q|r)\s*=(?!=)/`), z
  *   pominieciem calych linii komentarza. Kazdy jego wynik musi trafic do `KLASYFIKACJA`.
  *
+ * DLACZEGO SAM `.q =` NIE WYSTARCZA (blok [1c])
+ *   Notacja kropkowa jest konwencja DZISIEJSZEGO kodu, nie gwarancja na przyszlosc.
+ *   Te same dwa pola da sie zapisac co najmniej trzema innymi sposobami, ktorych wzorzec
+ *   `\.(q|r)\s*=` NIE widzi: `u['q'] = ...` (notacja nawiasowa), `Object.assign(u, { q, r })`
+ *   oraz `u.q += dq` / `u.q++` (przypisanie zlozone). Piate miejsce napisane tak powstaloby
+ *   rownie niezauwazenie jak czwarte. Blok [1c] domyka wszystkie trzy licznikiem zerowym
+ *   z jawna, uzasadniona whitelista — inwentaryzacja wykonana RECZNIE i RAZ na bazie nie
+ *   chroni przyszlosci, chroni ja dopiero asercja uruchamiana za kazdym razem.
+ *
  * BLOKI:
  *   [1]  skan negatywny calego `gra/src`: ZERO niesklasyfikowanych zapisow pozycji.
  *   [1b] straznik pokrycia (anty-slepota): skan przeczytal realne drzewo zrodel.
+ *   [1c] wzorce POSREDNIE: notacja nawiasowa `['q'] =`, `Object.assign` i przypisanie
+ *        zlozone `+=`/`++` — licznik zerowy poza jawna, uzasadniona whitelista.
  *   [2]  okno odkrycia: kazdy zapis klasy WIELOHEKS-ODKRYWA w main.ts ma w poblizu
  *        wywolanie odkrycia wzdluz sciezki. <- DETEKTOR MUTACJI (Tryb trzeci dispatchu)
  *   [3]  czwarte miejsce: hak `onAfterStep` przy `runScoutsAutoExplore(` odkrywa.
@@ -68,31 +79,119 @@ function assert(cond, msg, detail) {
 // o tescie [1] (C-046: test ma importowac ta sama jednostke co produkcja).
 // ---------------------------------------------------------------------------
 
+/**
+ * Klucz trafienia: `plik + tekst + nr`, serializowany jednoznacznie. Separator musi byc
+ * niemozliwy do podrobienia przez tresc pola (inaczej dwa rozne trafienia moglyby dac ten
+ * sam klucz i jedno z nich zniknelo by z pokrycia) — a jednoczesnie DRUKOWALNY, zeby plik
+ * pozostal tekstowy dla `git diff` i `grep`.
+ */
+function klucz(plik, tekst, nr) {
+  return JSON.stringify([plik, tekst, nr]);
+}
+
 /** Wzorzec zapisu pozycji jednostki — odpowiednik komendy grep z naglowka. */
 const RE_ZAPIS_POZYCJI = /\.(q|r)\s*=(?!=)/;
 
 /**
- * Zwraca liste trafien w JEDNYM pliku. Klucz trafienia to `plik + tekst + nr`
+ * Wzorzec POSREDNI 1: notacja nawiasowa `u['q'] = ...` / `u["r"] = ...`.
+ * Zapisuje DOKLADNIE to samo pole co `u.q =`, ale wzorzec kropkowy jej nie widzi.
+ */
+const RE_ZAPIS_NAWIASOWY = /\[\s*['"](q|r)['"]\s*\]\s*=(?!=)/;
+
+/**
+ * Wzorzec POSREDNI 3: przypisanie ZLOZONE (`u.q += dq`) i inkrementacja (`u.q++`, `--u.r`).
+ * `u.q += 5` przesuwa jednostke o piec heksow rownie skutecznie jak `u.q = q0 + 5`, a wzorzec
+ * `\.(q|r)\s*=` tego nie widzi. Alternatywy sa wypisane jawnie, zeby zaden operator
+ * POROWNANIA (`>=`, `<=`, `!==`, `===`) nie wpadl tu jako falszywy alarm.
+ */
+const RE_ZAPIS_ZLOZONY = new RegExp(
+  '\\.(q|r)\\s*(?:\\*\\*|<<|>>>|>>|&&|\\|\\||\\?\\?|[-+*/%&|^])=(?!=)'
+  + '|(?:\\+\\+|--)\\s*[A-Za-z_$][\\w$]*\\.(?:q|r)\\b'
+  + '|[A-Za-z_$][\\w$]*\\.(?:q|r)\\s*(?:\\+\\+|--)',
+);
+
+/** Cale linie komentarza i komentarze blokowe -> spacje (offsety i numery linii zachowane). */
+function wygasKomentarze(tresc) {
+  const bezBlokowych = tresc.replace(/\/\*[\s\S]*?\*\//g, (m) => m.replace(/[^\n]/g, ' '));
+  return bezBlokowych
+    .split('\n')
+    .map((l) => {
+      const t = l.trim();
+      return t.startsWith('//') || t.startsWith('*') ? l.replace(/[^\n]/g, ' ') : l;
+    })
+    .join('\n');
+}
+
+/**
+ * Zwraca liste trafien wzorca `re` w JEDNYM pliku. Klucz trafienia to `plik + tekst + nr`
  * (nr = ktore z rzedu wystapienie tego samego tekstu w tym pliku) — celowo BEZ
  * numeru linii, zeby whitelist nie rozjezdzala sie przy kazdej edycji main.ts.
  * Cale linie komentarza (`//`, `*`) i komentarze blokowe sa pomijane — zachowawczo,
  * nigdy ogon linii z kodem (`//` w literalu stringowym nie moze oslepic skanu).
  */
-function skanujZrodlo(rel, tresc) {
-  const bezBlokowych = tresc.replace(/\/\*[\s\S]*?\*\//g, (m) => m.replace(/[^\n]/g, ' '));
+function skanujWzorcem(rel, tresc, re) {
   const licznik = new Map();
   const out = [];
-  bezBlokowych.split('\n').forEach((linia, i) => {
-    const t = linia.trim();
-    if (t.startsWith('//') || t.startsWith('*')) return;
-    if (!RE_ZAPIS_POZYCJI.test(linia)) return;
-    const k = t;
+  wygasKomentarze(tresc).split('\n').forEach((linia, i) => {
+    if (!linia.trim()) return;
+    if (!re.test(linia)) return;
+    const k = linia.trim();
     const nr = (licznik.get(k) || 0) + 1;
     licznik.set(k, nr);
-    out.push({ plik: rel, linia: i + 1, tekst: t, nr });
+    out.push({ plik: rel, linia: i + 1, tekst: k, nr });
   });
   return out;
 }
+
+function skanujZrodlo(rel, tresc) {
+  return skanujWzorcem(rel, tresc, RE_ZAPIS_POZYCJI);
+}
+
+function skanujNawiasowe(rel, tresc) {
+  return skanujWzorcem(rel, tresc, RE_ZAPIS_NAWIASOWY);
+}
+
+function skanujZlozone(rel, tresc) {
+  return skanujWzorcem(rel, tresc, RE_ZAPIS_ZLOZONY);
+}
+
+/**
+ * Wzorzec POSREDNI 2: `Object.assign(cel, { q, r })`. Zwraca PIERWSZY argument kazdego
+ * wywolania, wycinany z uwzglednieniem zagniezdzen (przecinek wewnatrz `{}`/`()`/`[]`
+ * nie konczy argumentu) — inaczej `Object.assign({}, a, b)` bylby czytany jako `{`.
+ */
+function skanujObjectAssign(rel, tresc) {
+  const czysty = wygasKomentarze(tresc);
+  const re = /Object\.assign\s*\(/g;
+  const out = [];
+  let m;
+  while ((m = re.exec(czysty)) !== null) {
+    let depth = 0;
+    let arg = '';
+    for (let i = m.index + m[0].length; i < czysty.length; i++) {
+      const c = czysty[i];
+      if (c === '(' || c === '[' || c === '{') depth++;
+      else if (c === ')' || c === ']' || c === '}') {
+        if (depth === 0) break;
+        depth--;
+      } else if (c === ',' && depth === 0) break;
+      arg += c;
+    }
+    out.push({
+      plik: rel,
+      linia: czysty.slice(0, m.index).split('\n').length,
+      arg: arg.trim().replace(/\s+/g, ' '),
+    });
+  }
+  return out;
+}
+
+/**
+ * Jedyne dozwolone uzycie `Object.assign` w tym repo: ustawianie stylu CSS elementu DOM
+ * (`Object.assign(el.style, { ... })`). Pierwszy argument konczacy sie `.style` NIE jest
+ * jednostka — nie ma pol `q`/`r` mapy swiata.
+ */
+const RE_OBJECT_ASSIGN_STYL = /\.style$/;
 
 function zbierzTs(dir, out) {
   for (const e of fs.readdirSync(dir, { withFileTypes: true })) {
@@ -191,7 +290,38 @@ const KLASYFIKACJA = [
 ];
 
 const indeksKlasyfikacji = new Map();
-for (const w of KLASYFIKACJA) indeksKlasyfikacji.set(w.plik + ' ' + w.tekst + ' ' + w.nr, w);
+for (const w of KLASYFIKACJA) indeksKlasyfikacji.set(klucz(w.plik, w.tekst, w.nr), w);
+
+// ---------------------------------------------------------------------------
+// WZORZEC POSREDNI 1 — notacja nawiasowa `['q'] =` / `['r'] =`.
+// Ta sama dyscyplina co w KLASYFIKACJA: kazdy wpis z uzasadnieniem, zero wpisow
+// „zeby przeszlo". Dzis w `gra/src` istnieje wylacznie jedno uzasadnione zastosowanie:
+// `userData` obiektu Three.js (mesh/grupa renderu), gdzie `q`/`r` sa znacznikiem heksu
+// odczytywanym przy raycascie. Obiekt sceny nie jest jednostka — jego przestawienie
+// nikogo nie przemieszcza po mapie, wiec nie ma tam sciezki do odkrycia.
+// ---------------------------------------------------------------------------
+const DOZWOLONE_NAWIASOWE = [
+  { plik: 'src/render/cities.ts', tekst: "grp.userData['q'] = q;", nr: 1, uzasadnienie: 'Three.js userData grupy renderu miasta — znacznik heksu do raycastu, nie jednostka' },
+  { plik: 'src/render/cities.ts', tekst: "grp.userData['r'] = r;", nr: 1, uzasadnienie: 'j.w.' },
+  { plik: 'src/render/cities.ts', tekst: "group.userData['q'] = q;", nr: 1, uzasadnienie: 'j.w. — druga grupa renderu miasta' },
+  { plik: 'src/render/cities.ts', tekst: "group.userData['r'] = r;", nr: 1, uzasadnienie: 'j.w.' },
+  { plik: 'src/battle/manualBattle.ts', tekst: "mesh.userData['q'] = q;", nr: 1, uzasadnienie: 'Three.js userData kafla siatki bitwy — inna przestrzen wspolrzednych niz mapa swiata' },
+  { plik: 'src/battle/manualBattle.ts', tekst: "mesh.userData['r'] = r;", nr: 1, uzasadnienie: 'j.w.' },
+];
+const indeksNawiasowych = new Map();
+for (const w of DOZWOLONE_NAWIASOWE) indeksNawiasowych.set(klucz(w.plik, w.tekst, w.nr), w);
+
+// ---------------------------------------------------------------------------
+// WZORZEC POSREDNI 2 — `Object.assign(cel, ...)` z celem innym niz `*.style`.
+// Lista jest PUSTA i to jest wynik pomiaru, nie zaniechania: wszystkie 244 wywolania
+// `Object.assign` w `gra/src` (stan bazy 20f9993d) maja pierwszy argument konczacy sie
+// `.style`, czyli ustawiaja styl CSS elementu DOM. Cel spoza tego wzorca wymaga wpisu
+// z uzasadnieniem — albo jest jednostka i wtedy potrzebuje odkrycia wzdluz sciezki,
+// albo nia nie jest i trzeba to napisac wprost.
+// ---------------------------------------------------------------------------
+const DOZWOLONE_OBJECT_ASSIGN = [];
+const indeksObjectAssign = new Map();
+for (const w of DOZWOLONE_OBJECT_ASSIGN) indeksObjectAssign.set(klucz(w.plik, w.arg, 1), w);
 
 console.log('========================================================================');
 console.log('P-MGLA-ODKRYCIE-SCIEZKA-INWARIANT-Q1 -- INWARIANT odkrywania wzdluz sciezki');
@@ -214,15 +344,15 @@ for (const abs of plikiSrc) {
 }
 
 const niesklasyfikowane = wszystkieTrafienia.filter(
-  (t) => !indeksKlasyfikacji.has(t.plik + ' ' + t.tekst + ' ' + t.nr),
+  (t) => !indeksKlasyfikacji.has(klucz(t.plik, t.tekst, t.nr)),
 );
 assert(niesklasyfikowane.length === 0,
   '[1] kazdy zapis pozycji jednostki w gra/src jest jawnie sklasyfikowany w KLASYFIKACJA'
   + ' (nowe trafienie = nowe miejsce przemieszczenia -> sklasyfikuj albo domknij odkryciem)',
   niesklasyfikowane.map((t) => t.plik + ':' + t.linia + ' ' + t.tekst));
 
-const uzyteKlucze = new Set(wszystkieTrafienia.map((t) => t.plik + ' ' + t.tekst + ' ' + t.nr));
-const martwe = KLASYFIKACJA.filter((w) => !uzyteKlucze.has(w.plik + ' ' + w.tekst + ' ' + w.nr));
+const uzyteKlucze = new Set(wszystkieTrafienia.map((t) => klucz(t.plik, t.tekst, t.nr)));
+const martwe = KLASYFIKACJA.filter((w) => !uzyteKlucze.has(klucz(w.plik, w.tekst, w.nr)));
 assert(martwe.length === 0,
   '[1] whitelist nie zawiera MARTWYCH wpisow (kod zniknal, uzasadnienie zostalo) -- inaczej'
   + ' bramka po cichu traci pokrycie',
@@ -256,6 +386,71 @@ assert(OBOWIAZKOWE.every((p) => zTrafieniami.has(p)),
   OBOWIAZKOWE.filter((p) => !zTrafieniami.has(p)));
 
 // ---------------------------------------------------------------------------
+// [1c] WZORCE POSREDNIE -- domkniecie luki wzorca kropkowego.
+//
+//      Blok [1] widzi WYLACZNIE `.q =` / `.r =`. To jest konwencja dzisiejszego kodu,
+//      nie prawo natury: `u['q'] = last.q` oraz `Object.assign(u, { q, r })` zapisuja
+//      DOKLADNIE to samo pole i sa dla wzorca kropkowego niewidzialne. Bez tego bloku
+//      piate miejsce napisane w jednej z tych dwoch konwencji powstaloby rownie
+//      niezauwazenie jak czwarte -- czyli inwariant chronilby dzien dzisiejszy zamiast
+//      przyszlosci, ktora jest jego jedynym powodem istnienia.
+// ---------------------------------------------------------------------------
+console.log('\n[1c] WZORCE POSREDNIE -- notacja nawiasowa i Object.assign');
+
+const trafieniaNawiasowe = [];
+const trafieniaObjectAssign = [];
+const trafieniaZlozone = [];
+for (const abs of plikiSrc) {
+  const rel = 'src/' + path.relative(SRC_DIR, abs).split(path.sep).join('/');
+  const tresc = fs.readFileSync(abs, 'utf8');
+  for (const t of skanujNawiasowe(rel, tresc)) trafieniaNawiasowe.push(t);
+  for (const t of skanujObjectAssign(rel, tresc)) trafieniaObjectAssign.push(t);
+  for (const t of skanujZlozone(rel, tresc)) trafieniaZlozone.push(t);
+}
+
+const nawiasoweNieznane = trafieniaNawiasowe.filter(
+  (t) => !indeksNawiasowych.has(klucz(t.plik, t.tekst, t.nr)),
+);
+assert(nawiasoweNieznane.length === 0,
+  "[1c] ZERO nieuzasadnionych zapisow notacja nawiasowa (`['q'] =` / `['r'] =`) w gra/src"
+  + ' -- nowy zapis tej postaci to nowe miejsce przemieszczenia, sklasyfikuj albo domknij odkryciem',
+  nawiasoweNieznane.map((t) => t.plik + ':' + t.linia + ' ' + t.tekst));
+
+const nawiasoweUzyte = new Set(trafieniaNawiasowe.map((t) => klucz(t.plik, t.tekst, t.nr)));
+const nawiasoweMartwe = DOZWOLONE_NAWIASOWE.filter(
+  (w) => !nawiasoweUzyte.has(klucz(w.plik, w.tekst, w.nr)),
+);
+assert(nawiasoweMartwe.length === 0,
+  '[1c] whitelist notacji nawiasowej nie zawiera MARTWYCH wpisow',
+  nawiasoweMartwe.map((w) => w.plik + ' ' + w.tekst));
+
+assert(DOZWOLONE_NAWIASOWE.every((w) => typeof w.uzasadnienie === 'string' && w.uzasadnienie.length >= 4),
+  '[1c] kazdy wpis whitelisty nawiasowej ma niepuste uzasadnienie');
+
+assert(trafieniaNawiasowe.length >= DOZWOLONE_NAWIASOWE.length,
+  '[1c] sanity: skaner nawiasowy widzi co najmniej tyle trafien, ile ma whitelist'
+  + ' (dzis 6: 4x render/cities.ts + 2x manualBattle.ts) -- asercja wyzej nie jest pusta ani slepa',
+  trafieniaNawiasowe.length);
+
+const objectAssignPodejrzane = trafieniaObjectAssign.filter(
+  (t) => !RE_OBJECT_ASSIGN_STYL.test(t.arg) && !indeksObjectAssign.has(klucz(t.plik, t.arg, 1)),
+);
+assert(objectAssignPodejrzane.length === 0,
+  '[1c] ZERO wywolan `Object.assign(cel, ...)` z celem innym niz `*.style` w gra/src'
+  + ' -- `Object.assign(u, { q, r })` zapisuje pozycje jednostki niewidocznie dla wzorca `.q =`',
+  objectAssignPodejrzane.map((t) => t.plik + ':' + t.linia + ' Object.assign(' + t.arg + ', ...'));
+
+assert(trafieniaZlozone.length === 0,
+  '[1c] ZERO przypisan ZLOZONYCH i inkrementacji na pozycji jednostki (`u.q += dq`, `u.q++`)'
+  + ' w gra/src -- `u.q += 5` przesuwa o piec heksow tak samo jak `u.q = q0 + 5`',
+  trafieniaZlozone.map((t) => t.plik + ':' + t.linia + ' ' + t.tekst));
+
+assert(trafieniaObjectAssign.length >= 200,
+  '[1c] sanity: skaner Object.assign widzi realna liczbe wywolan (>= 200; na bazie 20f9993d: 244)'
+  + ' -- asercja wyzej nie jest pusta ani slepa',
+  trafieniaObjectAssign.length);
+
+// ---------------------------------------------------------------------------
 // [2] OKNO ODKRYCIA -- detektor mutacji (Tryb trzeci dispatchu).
 //     Kazdy zapis klasy WIELOHEKS-ODKRYWA w main.ts musi miec w sasiedztwie
 //     wywolanie odkrycia wzdluz sciezki. Usuniecie odkrycia przy KTORYMKOLWIEK
@@ -271,7 +466,7 @@ const mainAbs = path.join(GRA_ROOT, MAIN_TS);
 const mainLinie = fs.readFileSync(mainAbs, 'utf8').split('\n');
 
 const wieloheks = wszystkieTrafienia.filter((t) => {
-  const w = indeksKlasyfikacji.get(t.plik + ' ' + t.tekst + ' ' + t.nr);
+  const w = indeksKlasyfikacji.get(klucz(t.plik, t.tekst, t.nr));
   return t.plik === MAIN_TS && w && w.klasa === 'WIELOHEKS-ODKRYWA';
 });
 
@@ -366,7 +561,7 @@ const trafSyntet = skanujZrodlo('src/syntetyczny.ts', SYNTET_NOWE_MIEJSCE);
 assert(trafSyntet.length === 2,
   '[5] skaner wykrywa NOWE, nieuzasadnione miejsce przemieszczenia (u.q/u.r) w zrodle syntetycznym',
   trafSyntet);
-assert(trafSyntet.every((t) => !indeksKlasyfikacji.has(t.plik + ' ' + t.tekst + ' ' + t.nr)),
+assert(trafSyntet.every((t) => !indeksKlasyfikacji.has(klucz(t.plik, t.tekst, t.nr))),
   '[5] takie trafienie NIE jest na whiteliscie -> blok [1] bylby czerwony (piate miejsce wykryte)');
 
 const SYNTET_KOMENTARZ = [
@@ -384,6 +579,53 @@ assert(skanujZrodlo('src/syntetyczny3.ts', SYNTET_POROWNANIE).length === 0,
 const SYNTET_DWA_W_LINII = 'ru.q = col; ru.r = row;';
 assert(skanujZrodlo('src/syntetyczny4.ts', SYNTET_DWA_W_LINII).length === 1,
   '[5] dwa przypisania w jednej linii to JEDNO trafienie (klucz = tekst linii) -- zgodne z whitelista');
+
+// --- [5c] nietautologicznosc SKANEROW POSREDNICH (blok [1c]) ---
+// Dokladnie te dwa ksztalty piatego miejsca, ktore przechodzily przez sam wzorzec kropkowy.
+
+const SYNTET_NAWIASOWE = [
+  'function jakisNowyRuch2(u, path) {',
+  '  const last = path[path.length - 1];',
+  "  u['q'] = last.q;",
+  '  u["r"] = last.r;',
+  '  refreshFog();',
+  '}',
+].join('\n');
+const trafNawiasSyntet = skanujNawiasowe('src/syntetyczny5.ts', SYNTET_NAWIASOWE);
+assert(trafNawiasSyntet.length === 2,
+  "[5] skaner nawiasowy wykrywa NOWE miejsce zapisane jako u['q'] / u[\"r\"] (oba cudzyslowy)",
+  trafNawiasSyntet);
+assert(trafNawiasSyntet.every((t) => !indeksNawiasowych.has(klucz(t.plik, t.tekst, t.nr))),
+  '[5] takie trafienie NIE jest na whiteliscie nawiasowej -> blok [1c] bylby czerwony');
+
+assert(skanujNawiasowe('src/syntetyczny6.ts', "if (u['q'] === last.q) return;").length === 0,
+  '[5] skaner nawiasowy NIE myli porownania z przypisaniem');
+assert(skanujNawiasowe('src/syntetyczny7.ts', "const v = u['queue'] = 1;").length === 0,
+  "[5] skaner nawiasowy NIE lapie innych pol o nazwie zaczynajacej sie na q/r (`['queue']`)");
+
+const SYNTET_OBJECT_ASSIGN = 'Object.assign(u, { q: last.q, r: last.r });';
+const trafOaSyntet = skanujObjectAssign('src/syntetyczny8.ts', SYNTET_OBJECT_ASSIGN);
+assert(trafOaSyntet.length === 1 && trafOaSyntet[0].arg === 'u',
+  '[5] skaner Object.assign wyciaga pierwszy argument (`u`) z `Object.assign(u, { q, r })`',
+  trafOaSyntet);
+assert(!RE_OBJECT_ASSIGN_STYL.test(trafOaSyntet[0] ? trafOaSyntet[0].arg : ''),
+  '[5] taki cel NIE jest `*.style` -> blok [1c] bylby czerwony (piate miejsce przez Object.assign)');
+
+const trafOaStyl = skanujObjectAssign('src/syntetyczny9.ts', "Object.assign(el.style, { top: '0' });");
+assert(trafOaStyl.length === 1 && RE_OBJECT_ASSIGN_STYL.test(trafOaStyl[0].arg),
+  '[5] `Object.assign(el.style, ...)` jest rozpoznane jako dozwolone (brak falszywych alarmow)');
+
+assert(skanujZlozone('src/syntetyczny11.ts', '  u.q += dq; u.r -= dr;').length === 1,
+  '[5] skaner zlozony wykrywa przypisanie zlozone (`u.q += dq`)');
+assert(skanujZlozone('src/syntetyczny12.ts', '  u.q++; --u.r;').length === 1,
+  '[5] skaner zlozony wykrywa inkrementacje/dekrementacje (`u.q++`, `--u.r`)');
+assert(skanujZlozone('src/syntetyczny13.ts', 'if (u.q >= a && u.r <= b && u.q !== c) return;').length === 0,
+  '[5] skaner zlozony NIE myli operatorow POROWNANIA (`>=`, `<=`, `!==`) z przypisaniem');
+
+const trafOaZagniezdz = skanujObjectAssign('src/syntetyczny10.ts', 'Object.assign({ a: 1, b: 2 }, src);');
+assert(trafOaZagniezdz.length === 1 && trafOaZagniezdz[0].arg === '{ a: 1, b: 2 }',
+  '[5] przecinek WEWNATRZ pierwszego argumentu go nie ucina (wycinanie z uwzglednieniem zagniezdzen)',
+  trafOaZagniezdz);
 
 console.log('\n' + pass + ' pass, ' + fail + ' fail');
 process.exit(fail ? 1 : 0);
