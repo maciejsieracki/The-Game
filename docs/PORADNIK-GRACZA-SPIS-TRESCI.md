@@ -65,7 +65,7 @@ Populacja · Wzrost ludności · Zdrowie · Szczęście · Porządek · Prawo ·
 Zakładka Plony · Zakładka Okolica · Zakładka Produkcja · Budynek · Kolejka budowy · Przyspieszenie za złoto · Rekrutacja · Garnizon · Osiedle
 
 ### Kategoria: Mapa i teren
-Heks · Terytorium · Mgła wojny · Typ terenu · Złoże · Ulepszenie terenu · Farma · Irygacja · Tartak · Posterunek (Strażnica) · Fort · Droga · Łódź rybacka · Wyrąb · Gęstość świata
+Heks · Terytorium · Mgła wojny · Typ terenu · Złoże · Ulepszenie terenu · Farma · Irygacja · Tartak · Posterunek (Strażnica) · Fort · Droga · Łódź rybacka · Wycinka · Gęstość świata
 
 ### Kategoria: Jednostki i walka
 Jednostka · Moc jednostki (M) · Ruch · Garnizon · Posiłki · Armia · Counter · Auto‑walka · Bitwa ręczna · preBattle · Teren bojowy · Katapulta · Oblężenie · Milicja · Machina oblężnicza · Fan‑out (pierścień)
@@ -784,10 +784,10 @@ Panel miasta · Warstwa kultury na mapie · Kreator nowej gry · Zapis gry · Sk
 - **Fort** — większe terytorium, obrona
 - **Łódź rybacka** — wybrzeże w terytorium miasta (§13.2)
 
-**28.5.** **Specjalne:** Warzelnia soli, Glinianka, Wyrąb (FREE, usuwa las)
+**28.5.** **Specjalne:** Warzelnia soli, Glinianka, Wycinka (FREE, usuwa las)
 - **Warzelnia soli** — luksus / handel (rzadki teren)
 - **Glinianka** — produkcja (glina logiczna v1)
-- **Wyrąb** — usuwa las z heksu; często **darmowy** lub tani — otwiera pole pod farmę
+- **Wycinka** — usuwa las z heksu; często **darmowy** lub tani — otwiera pole pod farmę
 
 ---
 
@@ -810,7 +810,7 @@ Panel miasta · Warstwa kultury na mapie · Kreator nowej gry · Zapis gry · Sk
 **30.1.** Wymagania terenu (np. farma bez złoża, rzeka-sąsiad…)
 - **Farma** — łąka, **bez** złoża na heksie
 - **Irygacja** — sąsiedni heks z **rzeką**
-- **Tartak** — las; **wyrąb** go usuwa
+- **Tartak** — las; **wycinka** go usuwa
 - Pełna tabela — apendyks B.7
 
 **30.2.** 📋 Wielowarstwowość heksów (farma+irygacja) — kanon zapisany, kod 🔮

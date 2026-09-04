@@ -221,16 +221,23 @@ async function main() {
   //     dowolnym rozdziale poradnika wywala test.
   //
   //     Dopuszczone uzycia pospolite (uzasadnienie per pozycja):
-  //       "najpierw wyrąb → farma"        -- tryb rozkazujacy czas. "wyrąbać"
-  //       "wyrąb tylko gdy potrzebujesz"  -- tryb rozkazujacy czas. "wyrąbać"
   //       "wyrąb lasu"                    -- rzeczownik odczasownikowy (czynnosc),
   //                                          jawnie wylaczony z zakresu w R3-1
   //       "wyrąb AI"                      -- ta sama czynnosc, stopka rewizji
   //       "Sam wyrąb, wykonywany"         -- tresc historyczna encyklopedii
+  //
+  //     RUNDA 4 -- USUNIETE Z WHITELISTY (byly bledna klasyfikacja autora dispatchu
+  //     R3-1, ratyfikowana korekta w sekcji "RUNDA 4" dispatchu):
+  //       "najpierw wyrąb → farma"        -- NIE tryb rozkazujacy: trzeci element
+  //                                          szeregu nazw ulepszen "wyrąb → farma →
+  //                                          irygacja" (lancuch ulepszen na heksie)
+  //       "wyrąb tylko gdy potrzebujesz"  -- NIE tryb rozkazujacy: szereg rownolegly
+  //                                          do "Tartak" w checkliscie budowy
+  //     Dopoki te dwa wpisy tu byly, test byl SLEPY dokladnie na te klase resztki
+  //     i przepuscil ja przez trzy rundy. Nie dopisuj tu wpisow "zeby przeszlo" --
+  //     whitelista przyjmuje wylacznie realne czasowniki i tresc historyczna.
   // -----------------------------------------------------------------------
   const DOZWOLONE_WYRAB = [
-    'najpierw wyrąb → farma',
-    'wyrąb tylko gdy potrzebujesz',
     'wyrąb lasu',
     'wyrąb AI',
     'Sam wyrąb, wykonywany',
@@ -275,6 +282,9 @@ async function main() {
   for (const [id, oczekiwane] of [
     ['02-mapa-swiata', 'Tartak, wycinka, obóz łowiecki'],
     ['07-miasto-budowa-rekrutacja', 'tartak lub wycinka'],
+    // RUNDA 4: obie linie 05-budowa-mapa.md ukrywane wczesniej przez whiteliste.
+    ['05-budowa-mapa', 'najpierw wycinka → farma → irygacja'],
+    ['05-budowa-mapa', 'wycinka tylko gdy potrzebujesz pola pod farmę'],
   ]) {
     const rozdz = bundle.poradnik.find((p) => p.id === id);
     check(`[6] bundle/poradnik/${id}: nazwa ulepszenia w wyliczeniu == "wycinka"`,
