@@ -4667,3 +4667,41 @@ Nie wchodzi do bieżącej pętli AutoBota i nie liczy się do niej jako dług.
 **bez żadnej zależności** i z natychmiastową wartością (koniec 66 MB w gicie, koniec
 rozjazdu wersji). Gdyby właściciel chciał kiedyś ruszyć multiplayer małym krokiem,
 to jest ten krok, a nie Etap 9.
+
+### `R-MAPA-ETYKIETA-STOLICY-NAZWA-MIASTA-Q1` — wynik rundy 2 i dwa ECHO (2026-09-04, noc)
+
+**Runda 2 = `DECISION_REQUIRED`, ale sam GOAL SPEŁNIONY.** Chińska stolica AI pokazuje
+`XI'AN` zamiast `QIN · CHIŃCZ…` — potwierdzone zrzutem z żywego Chromium przez Operatora
+**i niezależnie przez Evaluatora**, który przebudował grę u siebie zamiast oglądać cudzy
+obraz. Praca w `1e87ec1c`: nowa `foreignCapitalMapName`, `foreignCapitalFromPool` czyta
+`miasta_cywilizacji[0]`, opt-in z rundy 1 usunięty (nie miał konsumenta). Diff 10 plików,
+**każdy w allowliście**. Nietautologiczność udowodniona mutacjami źródła (27/7 i 25/9).
+
+**Pomiar przycięć, trzy stany:** przed tematem 0/15 i 2/15 → runda 1 **14/15 i 15/15**
+(katastrofa, stąd zmiana kierunku) → runda 2 **1/15 i 1/15**. Przy budżecie z produkcją
+(161 px) runda 2 jest więc POPRAWĄ względem stanu sprzed tematu (2→1).
+
+**Zarzut 1 → ECHO właściciela: „Poszerzyć budżet etykiety".** Jedyne przycięcie to zuluskie
+`uMgungundlovu` (214 px przy budżecie 181 px). Odrzucone: przyjęcie 1/15 oraz skrócenie
+nazwy w puli. **Orkiestrator ostrzegł PRZED decyzją, że zmiana `cityMapStatChip.ts:769`
+dotyka WSZYSTKICH etykiet mapy i grozi zachodzeniem plakietki na sąsiednie heksy —
+właściciel przyjął to ryzyko świadomie.** Dlatego runda 3 ma to ryzyko **zmierzyć**:
+twardy warunek to zrzut w układzie GĘSTYM, a przy konflikcie „0/15 przycięć" ↔ „brak
+zachodzenia" Operator ma zatrzymać się na `DECISION_REQUIRED` z podaną granicą pikselową,
+zamiast wybierać kompromis samodzielnie.
+
+**Zarzut 2 → ECHO właściciela: „Naprawić teraz, w rundzie 3".** Evaluator znalazł poza
+zleceniem, że `playerCapitalFromPool` (`city-names-pool.ts:75-77`) **też czyta złą pulę** —
+gracz-Chińczyk startuje w mieście „Qin", czyli dokładnie ta sama klasa pomyłki, którą
+właściciel zgłosił dla AI, tylko po jego stronie. Allowlista rozszerzona o bramkę
+z asercją **E7**, która utrwalała stary stan; jej aktualizacja dopuszczona pod warunkiem
+wypisania w raporcie wartości przed i po wraz z uzasadnieniem.
+
+**Zasięg pomyłki puli — ustalony, wąski.** Dotyczy WYŁĄCZNIE nazwy stolicy (2 z 15
+cywilizacji dawały nazwę państwa zamiast miasta). Pozostałe miasta klastra to miasta-państwa
+z właściwej puli, a miasta zakładane osadnikiem idą przez `pickNextRegularCityName`
+z `miasta_cywilizacji`, z pomijaniem nazw użytych.
+
+**Ratyfikacja rundy 3 dopisana do `00-dispatch.md` NA GAŁĘZI TEMATU** (`fb33fd0a`),
+nie na `main` — agenci pracują w worktree i commitów z `main` nie widzą. To jest poprawka
+własnego błędu procesowego z wcześniejszej rundy tej samej sesji.
