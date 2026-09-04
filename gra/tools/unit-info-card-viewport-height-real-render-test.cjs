@@ -19,6 +19,28 @@
  * geometrię DOM (`getBoundingClientRect`, `getComputedStyle`, scrollTop/scrollHeight po
  * realnym scrollowaniu) — NIE odczyt CSS z kodu źródłowego.
  *
+ * ZRZUTY EKRANU (real Chromium, page.screenshot — R-PROC-AUTOBOT.md §9 pkt 6a, wzorzec
+ * `diplomacy-audience-zoom-cutoff-real-render-test.cjs`): zapisywane ZAWSZE (nie opt-in) do
+ * `dyspozycje/autobot/runs/R-CIVPEDIA-KARTY-SPOJNOSC-Q1-B/dowody/`. UWAGA: przy tej konkretnej
+ * bogatej jednostce i tych viewportach dialog jest ZAWSZE krótszy niż dostępna przestrzeń
+ * backdropu (720px < 868px na 900px), więc 01 i 02 mogą wyjść piksel-w-piksel identyczne —
+ * to nie błąd, to potwierdzenie że różnica `align-items`/`overflow-y` między wariantami jest
+ * realna na poziomie computed style (patrz asercje "regres wykryty" niżej, PRZED zrzutami),
+ * nie zawsze widoczna gołym okiem na każdym viewporcie. Realną cutoff-różnicę (dialog ZA
+ * WYSOKI na dostępną przestrzeń backdropu) rezerwuje osobny przypadek 2000px/krótka jednostka.
+ *   01-przed-fixem-900px.png — (PRZED, bundle z cofniętym fixem) stan tuż po otwarciu.
+ *   02-po-fixie-900px.png — (PO, bieżący kod) stan tuż po otwarciu, dialog stałej wysokości
+ *     min(80vh, vh-32px), backdrop wyrównany do góry z overflow-y:auto.
+ *   03-po-fixie-900px-scroll-do-dolu.png — (PO) po scrollu wewnątrz dialogu ostatnia sekcja
+ *     ("Statusy") w pełni widoczna.
+ *
+ * DOWÓD NIETAUTOLOGICZNOŚCI (mutate/revertFixPlugin, wzorzec jak wyżej): esbuild `onLoad`
+ * cofa W LOCIE (tylko w buforze bundlera, bez dotykania plików repo) dokładnie te same 3
+ * reguły CSS co wprowadza commit tego węzła (backdrop align-items, dialog height+margin,
+ * karta width) i uruchamia TE SAME asercje na zmutowanym bundlu — oczekiwany wynik to
+ * czerwone `align-items:flex-start`/wysokość/backdrop-overflow, co dowodzi że test faktycznie
+ * wykrywa regres, a nie zawsze przechodzi niezależnie od kodu.
+ *
  * Usage (z gra/): node tools/unit-info-card-viewport-height-real-render-test.cjs
  */
 const fs = require('fs');
@@ -39,6 +61,17 @@ const SCIENCE_OWL_STUB = path.resolve(STUB_DIR, 'unit-info-card-badges-scienceOw
 const MINI_PREVIEW_STUB = path.resolve(STUB_DIR, 'unit-info-card-badges-mini-preview-stub.ts');
 const ENTRY = path.resolve(__dirname, '.unit-info-card-viewport-height-entry.ts');
 const OUTFILE = path.resolve(__dirname, '.unit-info-card-viewport-height-bundle.cjs');
+const UNIT_INFO_CARD_TS = path.resolve(GRA, 'src', 'ui', 'unitInfoCard.ts');
+const SHOT_DIR = path.resolve(
+  GRA, '..', 'dyspozycje', 'autobot', 'runs',
+  'R-CIVPEDIA-KARTY-SPOJNOSC-Q1-B', 'dowody',
+);
+async function shot(page, name) {
+  fs.mkdirSync(SHOT_DIR, { recursive: true });
+  const p = path.join(SHOT_DIR, name);
+  await page.screenshot({ path: p });
+  console.log('[unit-info-card-viewport-height-real-render-test] zrzut: ' + p);
+}
 const FALLBACK_CHROME = '/opt/pw-browsers/chromium-1194/chrome-linux/chrome';
 
 const units = JSON.parse(fs.readFileSync(path.join(GRA, 'data', 'units.json'), 'utf8'));
@@ -61,6 +94,53 @@ const stubPlugin = {
   },
 };
 
+/** Cofnięcie W LOCIE (tylko w buforze esbuild, bez dotykania plików repo) dokładnie tych
+ * 3 reguł CSS, które wprowadza commit 55a76698 — odtwarza stan "PRZED" tego węzła. */
+const mutation = { applied: 0 };
+const revertFixPlugin = {
+  name: 'revert-unit-info-card-fix',
+  setup(build) {
+    build.onLoad({ filter: /unitInfoCard\.ts$/ }, (args) => {
+      if (path.resolve(args.path) !== UNIT_INFO_CARD_TS) return null;
+      const src = fs.readFileSync(args.path, 'utf8');
+      let out = src.replace(
+        '.unit-info-card-backdrop{position:fixed;inset:0;z-index:520;display:flex;align-items:flex-start;\n  justify-content:center;padding:16px;background:rgba(0,0,0,.62);overflow-y:auto;}',
+        '.unit-info-card-backdrop{position:fixed;inset:0;z-index:520;display:flex;align-items:center;\n  justify-content:center;padding:16px;background:rgba(0,0,0,.62);}',
+      );
+      if (out !== src) mutation.applied++;
+      const out2 = out.replace(
+        '.unit-info-card-dialog{position:relative;height:min(80vh,calc(100vh - 32px));overflow:auto;\n  margin:auto 0;}',
+        '.unit-info-card-dialog{position:relative;max-height:80vh;overflow:auto;}',
+      );
+      if (out2 !== out) mutation.applied++;
+      out = out2;
+      return { contents: out, loader: 'ts', resolveDir: path.dirname(args.path) };
+    });
+  },
+};
+
+async function buildBundle(outfile, mutate) {
+  mutation.applied = 0;
+  await esbuild.build({
+    entryPoints: [ENTRY],
+    bundle: true,
+    platform: 'browser',
+    format: 'iife',
+    target: 'es2020',
+    outfile,
+    absWorkingDir: GRA,
+    loader: { '.ts': 'ts' },
+    plugins: [...(mutate ? [revertFixPlugin] : []), stubPlugin],
+    logLevel: 'silent',
+  });
+  if (mutate && mutation.applied !== 2) {
+    throw new Error(
+      `[unit-info-card-viewport-height-real-render-test] revertFixPlugin: oczekiwano 2 podmian, zastosowano ${mutation.applied} — `
+      + 'wzorce nie pasują do bieżącego kodu, popraw revertFixPlugin (kod się przesunął).',
+    );
+  }
+}
+
 let pass = 0;
 let fail = 0;
 function check(name, cond, detail) {
@@ -77,7 +157,7 @@ async function launchBrowser() {
   }
 }
 
-async function measureAt(browser, bundleJs, viewportHeight, unit) {
+async function measureAt(browser, bundleJs, viewportHeight, unit, shotNames) {
   const page = await browser.newPage({ viewport: { width: 1280, height: viewportHeight } });
   const consoleErrors = [];
   page.on('pageerror', (e) => consoleErrors.push(String(e)));
@@ -106,6 +186,8 @@ async function measureAt(browser, bundleJs, viewportHeight, unit) {
     };
   }, { unit, gameData });
 
+  if (shotNames && shotNames.before) await shot(page, shotNames.before);
+
   // Przewiń dialog do samego dołu i zweryfikuj że ostatnia sekcja jest w pełni widoczna.
   const after = await page.evaluate(() => {
     const dialog = document.querySelector('.unit-info-card-dialog');
@@ -126,6 +208,8 @@ async function measureAt(browser, bundleJs, viewportHeight, unit) {
         : null,
     };
   });
+
+  if (shotNames && shotNames.afterScroll) await shot(page, shotNames.afterScroll);
 
   // Zamknij: Esc, przycisk ✕, klik w backdrop — po kolei, świeże otwarcie za każdym razem.
   const closeResults = {};
@@ -164,26 +248,49 @@ async function main() {
     'utf8',
   );
 
-  await esbuild.build({
-    entryPoints: [ENTRY],
-    bundle: true,
-    platform: 'browser',
-    format: 'iife',
-    target: 'es2020',
-    outfile: OUTFILE,
-    absWorkingDir: GRA,
-    loader: { '.ts': 'ts' },
-    plugins: [stubPlugin],
-    logLevel: 'silent',
-  });
+  await buildBundle(OUTFILE, false);
+  const BUNDLE_PRZED = path.resolve(__dirname, '.unit-info-card-viewport-height-bundle-przed.cjs');
+  await buildBundle(BUNDLE_PRZED, true);
 
   const browser = await launchBrowser();
   const bundleJs = fs.readFileSync(OUTFILE, 'utf8');
+  const bundlePrzedJs = fs.readFileSync(BUNDLE_PRZED, 'utf8');
+
+  // Dowód nietautologiczności: te SAME asercje (align-items/overflow/wysokość) na bundlu
+  // z cofniętym fixem (mutate:true) MUSZĄ zaczerwienić się — inaczej test nic nie wykrywa.
+  {
+    const { before } = await measureAt(browser, bundlePrzedJs, 900, richUnit, {
+      before: '01-przed-fixem-900px.png',
+    });
+    check('[PRZED fixem, 900px] regres wykryty: align-items NIE jest już flex-start (unsafe center wrócił)',
+      before.backdropAlignItems !== 'flex-start', before.backdropAlignItems);
+    check('[PRZED fixem, 900px] regres wykryty: backdrop NIE ma już overflow-y:auto (fallback scrolla zniknął)',
+      before.backdropOverflowY !== 'auto', before.backdropOverflowY);
+
+    // Kryterium "stała wysokość niezależnie od treści": na viewporcie 2000px (żaden z dwóch
+    // wariantów jednostek nie przekracza 80vh) height:min(80vh,vh-32px) PO FIXIE wymusza tę
+    // samą wysokość co przed, ALE max-height:80vh SPRZED fixu z krótką treścią HUGGUJE ją
+    // (dialogHeight < 80vh) zamiast wymuszać stałą wysokość — to właśnie różni oba warianty.
+    if (shortUnit) {
+      const { before: shortBeforeMut } = await measureAt(browser, bundlePrzedJs, 2000, shortUnit);
+      const { before: shortBeforePo } = await measureAt(browser, bundleJs, 2000, shortUnit);
+      check('[PRZED fixem, 2000px, krótka jednostka] regres wykryty: dialog NIE ma już stałej wysokości min(80vh,vh-32px) — max-height hugguje krótką treść',
+        Math.abs(shortBeforeMut.dialogHeight - Math.min(0.8 * 2000, 2000 - 32)) > 2,
+        shortBeforeMut.dialogHeight);
+      check('[kontrola, PO fixie, 2000px, krótka jednostka] wysokość jest stała min(80vh,vh-32px) niezależnie od krótkiej treści',
+        Math.abs(shortBeforePo.dialogHeight - Math.min(0.8 * 2000, 2000 - 32)) <= 2,
+        shortBeforePo.dialogHeight);
+    }
+  }
 
   const heights = [700, 900, 1200];
   const dialogHeights = {};
   for (const h of heights) {
-    const { before, after, closeResults, consoleErrors } = await measureAt(browser, bundleJs, h, richUnit);
+    const shotNames = h === 900 ? {
+      before: '02-po-fixie-900px.png',
+      afterScroll: '03-po-fixie-900px-scroll-do-dolu.png',
+    } : undefined;
+    const { before, after, closeResults, consoleErrors } = await measureAt(browser, bundleJs, h, richUnit, shotNames);
     check(`[${h}px] brak błędów konsoli/pageerror`, consoleErrors.length === 0, consoleErrors);
     check(`[${h}px] backdrop align-items:flex-start (bezpieczne centrowanie, nie "unsafe" center)`,
       before.backdropAlignItems === 'flex-start', before.backdropAlignItems);
@@ -220,6 +327,7 @@ async function main() {
   await browser.close();
   try { fs.unlinkSync(ENTRY); } catch (_e) { /* noop */ }
   try { fs.unlinkSync(OUTFILE); } catch (_e) { /* noop */ }
+  try { fs.unlinkSync(BUNDLE_PRZED); } catch (_e) { /* noop */ }
 
   console.log('');
   console.log(`[unit-info-card-viewport-height-real-render-test] ${pass} pass, ${fail} fail`);
