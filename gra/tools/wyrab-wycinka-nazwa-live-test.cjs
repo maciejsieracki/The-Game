@@ -30,6 +30,10 @@ catch (e) {
 }
 
 const GRA = path.resolve(__dirname, '..');
+const REPO = path.resolve(GRA, '..');
+/** Zrzuty dowodowe rundy 5 (R5-K1). */
+const SHOTS = path.resolve(REPO, 'dyspozycje', 'autobot', 'runs',
+  'P-ULEPSZENIA-WYRAB-WYCINKA-NAZWA-Q1', 'dowody');
 const FALLBACK_CHROME = '/opt/pw-browsers/chromium-1194/chrome-linux/chrome';
 const ENTRY = path.resolve(__dirname, '.wyrab-wycinka-live-entry.ts');
 const OUTFILE = path.resolve(__dirname, '.wyrab-wycinka-live-bundle.cjs');
@@ -61,9 +65,15 @@ async function main() {
       "import { createBuildModeHud } from '../src/ui/buildModeHud.ts';",
       "import { getImprovementMeta } from '../src/game/improvement-tech.ts';",
       "import { IMPROVEMENTS } from '../src/render/improvements.ts';",
+      // RUNDA 5 (R5-K1): zywy render KARTY ulepszenia -- ta sama sciezka produkcyjna
+      // co Civpedia/panel (buildEntityCardData -> improvementAdapter -> renderEntityCard).
+      "import { buildEntityCardData, renderEntityCard, ENTITY_CARD_CSS } from '../src/ui/entityCards/renderer.ts';",
       'window.__createBuildModeHud = createBuildModeHud;',
       'window.__getImprovementMeta = getImprovementMeta;',
       'window.__IMPROVEMENTS = IMPROVEMENTS;',
+      'window.__buildEntityCardData = buildEntityCardData;',
+      'window.__renderEntityCard = renderEntityCard;',
+      'window.__ENTITY_CARD_CSS = ENTITY_CARD_CSS;',
       '',
     ].join('\n'),
     'utf8',
@@ -158,6 +168,65 @@ async function main() {
     result.staticLabel === 'Wycinka', result.staticLabel);
   check('[2] meta.nazwa (JSON, zawsze wygrywa w listTypes()) != null -- staticEntry.label jest martwy dla "wyrab"',
     result.metaNazwa !== null && result.metaNazwa !== undefined);
+
+  // -----------------------------------------------------------------------
+  // [10] R5-K1: ZYWY RENDER KARTY ULEPSZENIA "Farma" w Chromium -- wiersz "Warunek".
+  //      Kryterium rundy 5 wymaga ZRZUTU z zywej karty, nie odczytu JSON: blok [8]
+  //      czyta plik danych i nie udowadnia, ze to pole faktycznie dociera do gracza
+  //      tym wierszem. Tu idziemy produkcyjna sciezka
+  //      buildEntityCardData('improvement','farma') -> improvementAdapter (l. 137:
+  //      { label: 'Warunek', value: text(improvement.warunek) }) -> renderEntityCard,
+  //      odczytujemy tekst z realnego DOM i zapisujemy PNG.
+  // -----------------------------------------------------------------------
+  const karta = await page.evaluate(() => {
+    const stary = document.getElementById('r5-card-host');
+    if (stary) stary.remove();
+    const style = document.createElement('style');
+    style.textContent = window.__ENTITY_CARD_CSS;
+    document.head.appendChild(style);
+    const host = document.createElement('div');
+    host.id = 'r5-card-host';
+    host.style.cssText = 'position:fixed;left:0;top:0;z-index:99999;background:#1b1b1b;padding:16px;';
+    const data = window.__buildEntityCardData('improvement', 'farma');
+    if (data == null) return { blad: 'buildEntityCardData zwrocilo null' };
+    host.appendChild(window.__renderEntityCard(data));
+    document.body.appendChild(host);
+    // Wiersz "Warunek" wyszukany po ETYKIECIE w DOM, nie po indeksie -- dowod, ze
+    // tekst siedzi dokladnie w tym wierszu karty, ktory widzi gracz.
+    let warunekText = null;
+    for (const el of host.querySelectorAll('*')) {
+      if (el.children.length === 0 && (el.textContent || '').trim() === 'Warunek') {
+        warunekText = ((el.parentElement && el.parentElement.textContent) || '').trim();
+        break;
+      }
+    }
+    return {
+      tytul: data.title,
+      warunekText,
+      kartaText: (host.textContent || '').trim(),
+    };
+  });
+
+  check('[10] karta ulepszenia "Farma" zbudowana zywa sciezka produkcyjna',
+    !karta.blad && karta.tytul === 'Farma', karta);
+  check('[10] ZYWY DOM: wiersz "Warunek" karty Farma istnieje i wskazuje "Wycinka"',
+    typeof karta.warunekText === 'string' && karta.warunekText.includes('najpierw Wycinka.'),
+    karta.warunekText);
+  check('[10] ZYWY DOM: wiersz "Warunek" NIE zawiera juz "wyrąb"',
+    typeof karta.warunekText === 'string' && !/[Ww]yrąb/.test(karta.warunekText),
+    karta.warunekText);
+  check('[10] ZYWY DOM: CALA karta Farma bez "wyrąb" (dowod, ze `uwagi` -- zapis'
+    + ' decyzyjny z "najpierw wyrąb" -- faktycznie NIE jest renderowane)',
+    typeof karta.kartaText === 'string' && !/[Ww]yrąb/.test(karta.kartaText),
+    karta.kartaText && karta.kartaText.slice(0, 400));
+
+  fs.mkdirSync(SHOTS, { recursive: true });
+  const shotPath = path.join(SHOTS, 'r5-karta-farma-warunek.png');
+  const hostEl = await page.$('#r5-card-host');
+  if (hostEl) await hostEl.screenshot({ path: shotPath });
+  check('[10] zrzut PNG karty Farma zapisany (dowod R5-K1)',
+    fs.existsSync(shotPath) && fs.statSync(shotPath).size > 1000, shotPath);
+  console.log('       zrzut: ' + shotPath);
 
   await browser.close();
   check('brak bledow konsoli/pageerror', consoleErrors.length === 0, consoleErrors);
@@ -332,55 +401,128 @@ async function main() {
   //     PRZYJETY. Do tej pory zaden blok nie skanowal pol tego pliku renderowanych
   //     graczowi; [5]-[7] pilnuja WYLACZNIE wikiBundle.json. To ta sama klasa
   //     slepoty, ktora przezyla trzy rundy -- tylko w innym pliku.
-  //     Renderowane graczowi (gra/src/ui/entityCards/improvementAdapter.ts):
-  //       nazwa->title, typ/epoka->subtitle, teren/warunek/tech->"Wymagania",
-  //       koszt_praca, surowiecOdblokowany, odblokowuje, bonus_ruch_uwaga,
-  //       upgradeFrom, historia->historicalNote.
+  //     KOMPLET POL RENDEROWANYCH -- ustalony odczytem
+  //     `gra/src/ui/entityCards/improvementAdapter.ts` (nie zgadywany):
+  //       nazwa            -> `title`                                (l. 91, 209)
+  //       typ, epoka       -> `subtitle`                             (l. 198-201)
+  //       teren            -> wiersz "Teren"                         (l. 126)
+  //       tech             -> wiersz "Technologia"                   (l. 132-134)
+  //       koszt_praca      -> wiersz "Koszt (Praca)"                 (l. 136)
+  //       warunek          -> wiersz "Warunek"                       (l. 137)  <-- R5-1
+  //       cywilizacje      -> wiersz "Cywilizacje" (join ', ')       (l. 143-147)
+  //       upgradeFrom      -> wiersz "Ulepszenie bazowe"             (l. 148)
+  //       surowiecOdblokowany -> "Odblokowuje surowiec"              (l. 156-160)
+  //       odblokowuje      -> wiersz "Odblokowuje"                   (l. 185-187)
+  //       bonus_ruch_uwaga -> doklejane do wiersza "Ruch"            (l. 103-107)
+  //       historia         -> `historicalNote`                       (l. 214)
+  //     Pola czysto LICZBOWE sa renderowane, ale tekstu nie niosa, wiec nie moga
+  //     przemycic nazwy i sa poza skanem: `epoka`, `koszt_praca`,
+  //     `surowiec_ilosc_tura`, `zasieg_terytorium|kontroli|pol`, `bonus_*`.
+  //     (`epoka` byla tu przez chwile w rundzie 5 -- wywalil ja straznik [8b].)
   //     NIE renderowane (jawnie usuniete w T-KARTY-HISTORIA-INFRA-Q1):
-  //       uwagi, tech_uwaga, cywilizacje_uwaga -- poza skanem swiadomie.
+  //       uwagi, tech_uwaga, cywilizacje_uwaga, surowiecOdblokowany_uwaga -- poza
+  //       skanem SWIADOMIE (to zapisy decyzyjne; `farma.uwagi` niesie historyczne
+  //       "najpierw wyrąb" i ma je zachowac).
+  //
+  //     RUNDA 5: lista BLOKAD `ZNANE_BLOKADY_JSON` USUNIETA razem ze swoja przyczyna
+  //     -- `farma.warunek` naprawiony w R5-1. Asercja jest teraz ZERO-TOLERANCYJNA:
+  //     kazde trafienie w polach gracza poza whitelista uzyc pospolitych = FAIL.
   // -----------------------------------------------------------------------
-  const POLA_GRACZA = ['nazwa', 'typ', 'epoka', 'teren', 'warunek', 'tech',
-    'surowiecOdblokowany', 'odblokowuje', 'bonus_ruch_uwaga', 'upgradeFrom', 'historia'];
+  const POLA_GRACZA = ['nazwa', 'typ', 'teren', 'warunek', 'tech',
+    'cywilizacje', 'surowiecOdblokowany', 'odblokowuje', 'bonus_ruch_uwaga',
+    'upgradeFrom', 'historia'];
   const improvements = JSON.parse(
     fs.readFileSync(path.join(GRA, 'data', 'terrain-improvements.json'), 'utf8'));
 
-  // Jedyne trafienie zablokowane proceduralnie: `warunek` wpisu `farma` to ta sama
-  // konstrukcja (lancuch "wyrąb -> farma"), ktora runda 4 przeklasyfikowala w
-  // 05-budowa-mapa.md, ale ALLOWLISTA RUNDY 4 dopuszcza w tym pliku WYLACZNIE pole
-  // `nazwa` wpisu `wyrab`. Zgloszone jako BLOKADA R4-Z1 do decyzji orkiestratora --
-  // NIE zaslaniane po cichu. Asercja nizej wymaga ROWNOSCI zbiorow, wiec:
-  //   - kazde NOWE trafienie w polach gracza  -> FAIL,
-  //   - usuniecie tego trafienia (naprawa)    -> tez FAIL, co wymusza skreslenie
-  //     tego wpisu razem z naprawa. Wpis nie moze przezyc swojej przyczyny.
-  const ZNANE_BLOKADY_JSON = [
-    { klucz: 'farma', pole: 'warunek', fragment: 'NIE na lesie — najpierw wyrąb.' },
-  ];
-
   const trafieniaJson = [];
   for (const [klucz, wpis] of Object.entries(improvements)) {
+    if (klucz.startsWith('_')) continue; // `_meta` nie jest wpisem ulepszenia
     for (const pole of POLA_GRACZA) {
-      const val = wpis[pole];
-      if (typeof val !== 'string') continue;
-      const re = /[Ww]yrąb/g;
-      let m;
-      while ((m = re.exec(val)) !== null) {
-        if (DOZWOLONE_WYRAB.some((fraza) => zakotwiczona(val, m.index, fraza))) continue;
-        trafieniaJson.push({ klucz, pole, kontekst: val.slice(Math.max(0, m.index - 40), m.index + 40) });
+      // `cywilizacje` jest tablica stringow (adapter robi join) -- skanuj kazdy element.
+      const wartosci = Array.isArray(wpis[pole]) ? wpis[pole] : [wpis[pole]];
+      for (const val of wartosci) {
+        if (typeof val !== 'string') continue;
+        const re = /[Ww]yrąb/g;
+        let m;
+        while ((m = re.exec(val)) !== null) {
+          if (DOZWOLONE_WYRAB.some((fraza) => zakotwiczona(val, m.index, fraza))) continue;
+          trafieniaJson.push({ klucz, pole, kontekst: val.slice(Math.max(0, m.index - 40), m.index + 40) });
+        }
       }
     }
   }
-  const znaneOK = trafieniaJson.length === ZNANE_BLOKADY_JSON.length
-    && ZNANE_BLOKADY_JSON.every((b) => trafieniaJson.some(
-      (t) => t.klucz === b.klucz && t.pole === b.pole && t.kontekst.includes(b.fragment)));
-  check('[8] terrain-improvements.json (pola renderowane graczowi): zero wystapien'
-    + ' "wyrab" w roli nazwy ulepszenia poza jawna lista BLOKAD (R4-Z1, farma.warunek)',
-    znaneOK, { trafieniaJson, oczekiwane: ZNANE_BLOKADY_JSON });
+  check('[8] terrain-improvements.json (KOMPLET pol renderowanych graczowi): ZERO'
+    + ' wystapien "wyrab" w roli nazwy ulepszenia -- zadnych wyjatkow',
+    trafieniaJson.length === 0, trafieniaJson);
+  check('[8] farma.warunek (wiersz "Warunek" karty) wskazuje ulepszenie "Wycinka" (R5-1)',
+    improvements.farma && improvements.farma.warunek
+      === 'ziemia uprawna; rzeka NIE jest wymagana; NIE na lesie — najpierw Wycinka.',
+    improvements.farma && improvements.farma.warunek);
+  check('[8] farma.uwagi (zapis decyzyjny, NIE renderowany) NIETKNIETY -- zachowuje'
+    + ' historyczne "najpierw wyrąb"',
+    improvements.farma && typeof improvements.farma.uwagi === 'string'
+      && improvements.farma.uwagi.includes('najpierw wyrąb (Maciej 2026-08-27'),
+    improvements.farma && improvements.farma.uwagi);
   check('[8] sanity: skan objal realne pola kart (nazwa wpisu "wyrab" == "Wycinka",'
     + ' historia obecna)',
     improvements.wyrab && improvements.wyrab.nazwa === 'Wycinka'
       && typeof improvements.wyrab.historia === 'string'
       && improvements.wyrab.historia.length > 100,
     improvements.wyrab && improvements.wyrab.nazwa);
+
+  // [8b] STRAZNIK POKRYCIA bloku [8] -- ten sam wzorzec co [7] dla bundla.
+  // Sam skan nie wykryje literowki w nazwie pola (brak pola == undefined == zero
+  // trafien == PASS). Ta asercja wymaga, by kazde pole z POLA_GRACZA faktycznie
+  // istnialo w danych i by skan objal realna objetosc tekstu kart.
+  const polaObecne = POLA_GRACZA.filter((pole) => Object.entries(improvements)
+    .some(([k, w]) => !k.startsWith('_')
+      && (typeof w[pole] === 'string' || Array.isArray(w[pole]))));
+  const brakujacePola = POLA_GRACZA.filter((p) => !polaObecne.includes(p));
+  check('[8b] kazde pole z POLA_GRACZA istnieje realnie w terrain-improvements.json'
+    + ' (literowka/przemianowanie pola oslepiloby skan zamiast go wywalic)',
+    brakujacePola.length === 0, brakujacePola);
+
+  // -----------------------------------------------------------------------
+  // [9] SAMOTEST MECHANIZMU WHITELISTY (R5-3). Runda 4, zarzut 3: dopasowanie bylo
+  //     KONTEKSTOWE (fraza gdziekolwiek w oknie +-40 znakow), wiec nazwa ulepszenia
+  //     postawiona blisko dozwolonej frazy byla cicho zaslaniana. Obrona rundy 4
+  //     zamienila to na dopasowanie ZAKOTWICZONE (`zakotwiczona`). Ponizsze przypadki
+  //     to DOWOD, ze poprawka dziala -- nie deklaracja. Uzywaja tej samej funkcji i
+  //     tej samej whitelisty `DOZWOLONE_WYRAB`, co bloki [6] i [8].
+  //
+  //     Skan pomocniczy: identyczna petla co w [6]/[8], na tekscie syntetycznym.
+  // -----------------------------------------------------------------------
+  function skanujTekst(tekst) {
+    const out = [];
+    const re = /[Ww]yrąb/g;
+    let m;
+    while ((m = re.exec(tekst)) !== null) {
+      if (DOZWOLONE_WYRAB.some((fraza) => zakotwiczona(tekst, m.index, fraza))) continue;
+      out.push(m.index);
+    }
+    return out;
+  }
+
+  // Dokladnie ta pulapka z zarzutu 3: NAZWA ulepszenia ("Wyrąb" wielka litera, jako
+  // pozycja panelu) stoi 24 znaki od dozwolonej frazy "wyrąb lasu" -- czyli wewnatrz
+  // dawnego okna +-40. Przy starym, kontekstowym dopasowaniu bylaby przepuszczona.
+  const PULAPKA_40 = 'Zlecony wyrąb lasu trwa 3 tury; Wyrąb w panelu ulepszeń.';
+  const odlegloscZnakow = PULAPKA_40.indexOf('Wyrąb w panelu') - PULAPKA_40.indexOf('wyrąb lasu');
+  check('[9] przypadek testowy stoi w promieniu 40 znakow od dozwolonej frazy'
+    + ' (inaczej nie testowalby niczego)',
+    odlegloscZnakow > 0 && odlegloscZnakow <= 40, odlegloscZnakow);
+  const trafieniaPulapki = skanujTekst(PULAPKA_40);
+  check('[9] KOTWICZENIE DZIALA: nazwa ulepszenia w promieniu 40 znakow od dozwolonej'
+    + ' frazy JEST wykrywana (dokladnie 1 trafienie -- nazwa, nie czasownik)',
+    trafieniaPulapki.length === 1
+      && trafieniaPulapki[0] === PULAPKA_40.indexOf('Wyrąb w panelu'),
+    { trafieniaPulapki, oczekiwanyIndeks: PULAPKA_40.indexOf('Wyrąb w panelu') });
+  check('[9] kontrola negatywna: sama dozwolona fraza (bez nazwy obok) NIE jest'
+    + ' zglaszana -- whitelista nadal dziala',
+    skanujTekst('Zlecony wyrąb lasu trwa 3 tury.').length === 0);
+  check('[9] kontrola negatywna: nazwa ulepszenia BEZ dozwolonej frazy w poblizu'
+    + ' jest zglaszana',
+    skanujTekst('Wybierz Wyrąb w panelu ulepszeń.').length === 1);
 
   console.log('');
   console.log(`[wyrab-wycinka-nazwa-live-test] ${pass} pass, ${fail} fail`);

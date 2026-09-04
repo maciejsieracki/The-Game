@@ -19,7 +19,7 @@
     },
     "surowiecOdblokowany": null,
     "teren": "Łąka, Równina (bez lasu)",
-    "warunek": "ziemia uprawna; rzeka NIE jest wymagana; NIE na lesie — najpierw wyrąb.",
+    "warunek": "ziemia uprawna; rzeka NIE jest wymagana; NIE na lesie — najpierw Wycinka.",
     "koszt_praca": 20,
     "tech": "Rolnictwo",
     "odblokowuje": "",
