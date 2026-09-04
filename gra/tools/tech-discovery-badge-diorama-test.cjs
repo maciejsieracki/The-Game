@@ -35,11 +35,16 @@
  *      skrajne, przezroczyste pasmo ≤4 px. Pomiar sprzed naprawy (origin/main 85777982) dla
  *      porównania: odznaka „Ukończona" nachodziła 80x6 px na medalion i 80x18 px na elipsę.
  *
- *  (C) ZERO REGRESU POZA TYM POPUPEM. Naprawa (B) jest zakotwiczona w `.tdn-entity-card-v2`,
- *      więc: (c1) domyślna karta encji (budynek, 434px, ścieżka `renderEntityCard` bez tego
- *      popupu) ma NADAL diaromę 190px z blokiem `renderer.ts`; (c2) karta-satelita
- *      `.tdn-side-card` — 434px, ten SAM host `#civ-tech-discovery-notice-host`, czyli
- *      najostrzejszy możliwy test przecieku selektora — też zostaje na 190px.
+ *  (C) ZERO REGRESU POZA TYM HOSTEM. Naprawa (B) jest zakotwiczona w `.tdn-entity-card-v2`
+ *      ORAZ (od R-CIVPEDIA-KARTY-SPOJNOSC-Q1-C) w `.tdn-side-card` — węzeł C ujednolicił
+ *      szerokość satelity do 660px (referencyjna szerokość karty technologii, zgłoszenie
+ *      właściciela), więc satelita dziś dzieli TĘ SAMĄ geometrię kolizji i musi dzielić TĘ
+ *      SAMĄ naprawę: (c1) domyślna karta encji (budynek, 434px, ścieżka `renderEntityCard`
+ *      POZA tym hostem, np. dialog z mapy) ma NADAL diaromę 190px z blokiem `renderer.ts` —
+ *      naprawa nie przecieka poza `#civ-tech-discovery-notice-host`; (c2) karta-satelita
+ *      `.tdn-side-card` W TYM hoście jest dziś 660px szeroka I ma TĘ SAMĄ podniesioną scenę
+ *      226px co karta technologii — najostrzejszy test, że rozszerzenie selektora naprawy na
+ *      `.tdn-side-card` faktycznie działa (nie tylko istnieje w źródle).
  *
  *  (D) MUTACJA — dowód nietautologiczności (§9 pkt 6a). Wycinamy z ŹRÓDŁA `techDiscoveryNotice.ts`
  *      kolejno: (d1) jednoodznakową gałąź i (d2) blok CSS naprawiający scenę — i sprawdzamy, że
@@ -336,9 +341,14 @@ async function main() {
       sideAndDefault.defaultCardWidth === 660, sideAndDefault);
 
     // (c2) satelita: ten SAM host co naprawiona karta — najostrzejszy test przecieku selektora.
+    // `host.classList.add('tdn-has-side')` odtwarza DOKŁADNIE `openEntityCardBeside()` (produkcja) —
+    // bez tego host zostaje bez klasy progu wąskiego okna, dwie karty 660+660px walczą o tę samą
+    // szerokość viewportu (1280px < próg 1400px) i flex je ŚCIŚNIE poniżej zamierzonych 660px —
+    // fałszywy FAIL niezwiązany z naprawą (B), tylko z pominięciem kroku, który produkcja zawsze robi.
     const sideProbe = await page.evaluate(() => {
       const host = document.getElementById('civ-tech-discovery-notice-host');
       if (!host) return { error: 'no-host' };
+      host.classList.add('tdn-has-side');
       const stage = host.querySelector('.tdn-stage');
       const data = window.__C.buildEntityCardData('building',
         document.getElementById('card-default-building').getAttribute('data-entity-id'), {});
@@ -350,9 +360,10 @@ async function main() {
         sideDioramaHeight: Math.round(side.querySelector('.entity-card-diorama').getBoundingClientRect().height),
       };
     });
-    check('(c2) karta-satelita w TYM SAMYM hoście zostaje na 434px', sideProbe.sideWidth === 434, sideProbe);
-    check('(c2) karta-satelita zostaje na diaromie 190px — naprawa NIE przecieka przez host',
-      sideProbe.sideDioramaHeight === 190, sideProbe);
+    check('(c2) karta-satelita w TYM SAMYM hoście jest dziś 660px (ujednolicona z kartą technologii)',
+      sideProbe.sideWidth === 660, sideProbe);
+    check('(c2) karta-satelita dzieli podniesioną scenę 226px — naprawa TERAZ celowo obejmuje .tdn-side-card',
+      sideProbe.sideDioramaHeight === 226, sideProbe);
 
     check('zero błędów konsoli/pageerror w całym przebiegu', consoleErrors.length === 0, consoleErrors);
 
@@ -373,7 +384,7 @@ async function main() {
       rMut1.completion.badgeTexts);
 
     // (d2) usuń blok CSS naprawiający scenę → wraca nachodzenie tekstu na grafikę
-    const MUT_CSS_FROM = /#\$\{HOST_ID\} \.tdn-entity-card-v2 \.entity-card-diorama\{height:226px;\}\n#\$\{HOST_ID\} \.tdn-entity-card-v2 \.entity-card-diorama-stage\{padding-bottom:72px;\}\n#\$\{HOST_ID\} \.tdn-entity-card-v2 \.entity-card-diorama-ground\{bottom:63px;\}\n/;
+    const MUT_CSS_FROM = /#\$\{HOST_ID\} \.tdn-entity-card-v2 \.entity-card-diorama,\n#\$\{HOST_ID\} \.tdn-side-card \.entity-card-diorama\{height:226px;\}\n#\$\{HOST_ID\} \.tdn-entity-card-v2 \.entity-card-diorama-stage,\n#\$\{HOST_ID\} \.tdn-side-card \.entity-card-diorama-stage\{padding-bottom:72px;\}\n#\$\{HOST_ID\} \.tdn-entity-card-v2 \.entity-card-diorama-ground,\n#\$\{HOST_ID\} \.tdn-side-card \.entity-card-diorama-ground\{bottom:63px;\}\n/;
     check('(D) kotwica mutacji (d2) istnieje w źródle', MUT_CSS_FROM.test(orig));
     const mut2 = orig.replace(MUT_CSS_FROM, '');
     const allMut2 = await runCore(page, await buildBundle(mut2));

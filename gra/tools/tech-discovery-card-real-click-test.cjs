@@ -90,7 +90,14 @@ async function launchBrowser() {
 /** Klika `label`em opisany przycisk stopki karty PRAWDZIWYM kliknięciem myszy
  * (`page.mouse.click` na środku `getBoundingClientRect()`, po realnym hit-teście
  * `elementFromPoint`) — nie `button.click()`/`dispatchEvent` (patrz nagłówek pliku:
- * to jest DOKŁADNIE to, czego nie wykrywa jsdom). Zwraca `{ hitOk, hitTag }`. */
+ * to jest DOKŁADNIE to, czego nie wykrywa jsdom). Zwraca `{ hitOk, hitTag }`.
+ *
+ * R-CIVPEDIA-KARTY-SPOJNOSC-Q1-C: `.entity-card` ma dziś STAŁĄ wysokość (`height`, nie
+ * `max-height`) z `overflow:auto` — dla treści dłuższej niż karta stopka z przyciskami
+ * może być OSIĄGALNA SCROLLEM, a nie widoczna od razu bez przewinięcia (dokładnie tego
+ * wymaga KRYTERIUM KOŃCA 1 tego węzła: „przyciski akcji osiągalne scrollem w OBU
+ * stanach"). `scrollIntoView` na przycisku odtwarza realne zachowanie użytkownika
+ * (przewiń, potem kliknij) zamiast zakładać, że przycisk jest w pierwszym kadrze. */
 async function realClickActionButton(page, label) {
   return page.evaluate((label) => {
     const host = document.getElementById('civ-tech-discovery-notice-host');
@@ -98,6 +105,7 @@ async function realClickActionButton(page, label) {
     const btn = Array.from(host.querySelectorAll('.entity-card-actions button'))
       .find((b) => b.textContent === label);
     if (!btn) return { error: 'no-button' };
+    btn.scrollIntoView({ block: 'center', behavior: 'instant' });
     const rect = btn.getBoundingClientRect();
     return {
       cx: rect.left + rect.width / 2,

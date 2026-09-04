@@ -747,28 +747,59 @@ function ensureEntityCardOverrideStyles(): void {
   const style = document.createElement('style');
   style.id = 'civ-tech-discovery-entity-card-css-v1';
   style.textContent = ENTITY_CARD_CSS + `
-#${HOST_ID} .entity-card{position:relative;pointer-events:auto;width:min(660px,96vw);max-height:calc(100vh - 36px);
-  overflow:auto;border-color:var(--tg-gold-primary,#e8d88a);
+/* R-CIVPEDIA-KARTY-SPOJNOSC-Q1-C — wysokość obu kart STAŁA (nie max-height): zgłoszenie
+   właściciela „karta technologii nie przewija się odpowiednio i zmienia swoją wysokość" —
+   z max-height treść krótsza dawała niższą kartę, dłuższa (wszystkie sekcje accordion
+   rozwinięte) wyższą, aż znikał dół z przyciskiem akcji. 80vh = 10% zapasu góra+dół
+   względem wysokości viewportu (żądanie właściciela), z pułapem calc(100vh - 36px) na
+   bardzo niskie viewporty (36px = 2x18px padding hosta), żeby karta nigdy nie była wyższa
+   niż faktycznie dostępna przestrzeń. overflow:auto zostaje — treść dłuższa niż karta
+   przewija się WEWNĄTRZ niej, karta sama się już nie rozciąga. */
+#${HOST_ID} .entity-card{position:relative;pointer-events:auto;width:min(660px,96vw);
+  height:min(80vh,calc(100vh - 36px));overflow:auto;margin:auto 0;
+  border-color:var(--tg-gold-primary,#e8d88a);
   box-shadow:var(--tg-glow-gold,0 0 24px rgba(232,216,138,.28)),0 12px 40px rgba(0,0,0,.6);}
 /* P-WYDARZENIA-ZBADANO-KLIK-KARTA-TECH-Q1 (B) — scena obu kart. Host jest wyśrodkowanym
    flexem na całą stronę; .tdn-stage jest JEDYNYM elementem układającym karty, więc karta
    technologii i karta szczegółu stoją OBOK SIEBIE w tym samym kontekście stackowania
    (żadna nie może przykryć drugiej, w przeciwieństwie do dawnego .entity-card-backdrop
    z z-index 520 pod hostem 940). Para pointer-events none (scena) / auto (karty) sprawia,
-   że klik w wolne pole między kartami trafia w .tdn-back i zamyka całość, tak jak dotąd. */
-#${HOST_ID} .tdn-stage{position:relative;display:flex;align-items:center;justify-content:center;
-  gap:14px;max-width:100%;max-height:100%;pointer-events:none;}
+   że klik w wolne pole między kartami trafia w .tdn-back i zamyka całość, tak jak dotąd.
+   R-CIVPEDIA-KARTY-SPOJNOSC-Q1-C — BEZPIECZNE CENTROWANIE, zagnieżdżone dwupoziomowo
+   (host → .tdn-stage → karty), wzorzec z diplomacyAudience.ts:566-590
+   (P-UI-ZOOM-PRZEGLADARKI-PANELE-UCIETE-Q1): dawne align-items:center na hoście I na
+   .tdn-stage centrowało "unsafe" — nadmiar wysokości obcinany symetrycznie góra+dół, bez
+   ścieżki scrolla (dokładnie zgłoszony bug "znika sam dół"). Teraz: host dostaje
+   align-items:flex-start + overflow-y:auto (patrz reguła #${HOST_ID} niżej w tym arkuszu —
+   nadpisuje bazowe align-items:center z ensureStyles() tą samą specyficznością, później w
+   DOM = wygrywa); .tdn-stage centruje się w hoście przez margin:auto 0 zamiast liczenia na
+   align-items hosta; karty (.entity-card, dotyczy TAKŻE satelity) centrują się w .tdn-stage
+   tym samym marginesem, przy align-items:flex-start na samym .tdn-stage. Gdy zabraknie
+   miejsca, margines auto nigdy nie schodzi poniżej 0 — treść przykleja się do góry, nadmiar
+   ląduje pod spodem, osiągalny scrollem hosta (overflow-y:auto), nigdy niewidoczny bez
+   ścieżki. max-height:100% świadomie USUNIĘTE (dawne ograniczenie samo obcinało scenę, gdy
+   suma kart przekraczała wysokość hosta) — scena rośnie do wysokości treści, scroll
+   zapewnia rodzic. */
+#${HOST_ID}{align-items:flex-start;overflow-y:auto;}
+#${HOST_ID} .tdn-stage{position:relative;display:flex;align-items:flex-start;justify-content:center;
+  gap:14px;max-width:100%;margin:auto 0;pointer-events:none;}
 #${HOST_ID} .tdn-stage > *{pointer-events:auto;}
-#${HOST_ID} .tdn-side-card{width:min(434px,96vw);animation:civ-tdn-in .18s ease-out;}
-/* PRÓG WĄSKIEGO OKNA — jawnie 1160 px szerokości viewportu. Rachunek: karta technologii
-   660 + karta szczegółu 434 + odstęp 14 + padding hosta 2x18 = 1144 px; 1160 daje 16 px
-   zapasu. PONIŻEJ progu obie karty ZOSTAJĄ WIDOCZNE, tylko układ zmienia się na pionowy
-   (jedna pod drugą, każda z połową dostępnej wysokości i własnym scrollem) — świadomie NIE
-   wracamy do podmiany ani do stosu, bo cały sens zmiany to widoczny związek „z tej
+/* Szerokość satelity ujednolicona z kartą technologii (GOAL pkt 2 — było min(434px,96vw),
+   zgłoszenie właściciela: "wszystkie karty powinny mieć tę samą wysokość [...] szerokość
+   referencyjna to obecna szerokość karty technologii"). Wysokość dziedziczy z bazowej
+   reguły #${HOST_ID} .entity-card wyżej (satelita nosi obie klasy, .entity-card +
+   .tdn-side-card) — nie nadpisujemy jej tutaj osobno. */
+#${HOST_ID} .tdn-side-card{width:min(660px,96vw);animation:civ-tdn-in .18s ease-out;}
+/* PRÓG WĄSKIEGO OKNA — jawnie 1400 px szerokości viewportu. Rachunek PO ujednoliceniu
+   szerokości satelity (GOAL pkt 2): karta technologii 660 + karta szczegółu 660 (była 434)
+   + odstęp 14 + padding hosta 2x18 = 1370 px; 1400 daje 30 px zapasu (stary próg 1160 liczył
+   660+434, dziś nieaktualne). PONIŻEJ progu obie karty ZOSTAJĄ WIDOCZNE, tylko układ zmienia
+   się na pionowy (jedna pod drugą, każda ze stałą połową dostępnej wysokości) — świadomie
+   NIE wracamy do podmiany ani do stosu, bo cały sens zmiany to widoczny związek „z tej
    technologii wynika to ulepszenie". */
-@media (max-width:1160px){
-  #${HOST_ID}.tdn-has-side .tdn-stage{flex-direction:column;gap:10px;overflow:auto;}
-  #${HOST_ID}.tdn-has-side .entity-card{max-height:calc((100vh - 56px) / 2);}
+@media (max-width:1400px){
+  #${HOST_ID}.tdn-has-side .tdn-stage{flex-direction:column;align-items:center;gap:10px;}
+  #${HOST_ID}.tdn-has-side .entity-card{height:calc((100vh - 56px) / 2);margin:0;}
 }
 /* P-TECHDISCOVERY-BADGE-DUPLIKAT-NACHODZENIE-Q1 — NACHODZENIE TEKSTU NA GRAFIKĘ DIAROMY.
    Zreprodukowane żywym Chromium na kodzie z origin/main (85777982), 660 px, kind:'completion',
@@ -778,15 +809,24 @@ function ensureEntityCardOverrideStyles(): void {
    sceny, nie w szerokości: .entity-card-diorama ma 190 px wysokości, a -stage rezerwuje
    pod tekst tylko padding-bottom:26px, gdy sam blok tytuł+odznaki+podtytuł mierzy ~50 px i
    siedzi 11 px nad dnem — 122-pikselowy medalion nie ma się gdzie zmieścić bez kolizji.
-   ZAKRES NAPRAWY — świadomie WYŁĄCZNIE ta karta: selektor kotwiczy się w .tdn-entity-card-v2
-   (klasa nadawana tylko karcie technologii tego popupu, showTechDiscoveryNoticeViaEntityCard),
-   więc NIE dotyka ani renderer.ts, ani domyślnej karty 434 px, ani diaromy pozostałych 4
-   rodzajów encji (jednostki/budynki/ulepszenia/cuda), ani karty satelity .tdn-side-card,
-   która żyje w TYM SAMYM hoście i zostaje na domyślnych 434 px/190 px. Zmierzone, nie
-   założone: karta domyślna 434 px z odznaką („Triari", „Super-jednostka") NIE ma kolizji z
-   medalionem (0 px) — tylko z miękką poświatą gruntu — bo jej krótszy wiersz tytułu nie sięga
-   poziomo pod wyśrodkowany medalion. Kolizja jest więc realnie właściwością TEJ szerszej
-   karty i tu ją naprawiamy (C-025: naprawiamy zgłoszony błąd, nie wspólny mechanizm).
+   ZAKRES NAPRAWY — pierwotnie WYŁĄCZNIE karta technologii: selektor kotwiczył się w
+   .tdn-entity-card-v2 (klasa nadawana tylko karcie technologii tego popupu,
+   showTechDiscoveryNoticeViaEntityCard), bo w TAMTYM stanie karta satelity .tdn-side-card
+   była węższa (434 px) i (zmierzone, nie założone) karta domyślna 434 px z odznaką
+   („Triari", „Super-jednostka") NIE miała kolizji z medalionem (0 px) — tylko z miękką
+   poświatą gruntu — bo jej krótszy wiersz tytułu nie sięgał poziomo pod wyśrodkowany
+   medalion. Kolizja była więc realnie właściwością TEJ szerszej (660 px) karty (C-025:
+   naprawiamy zgłoszony błąd, nie wspólny mechanizm).
+   R-CIVPEDIA-KARTY-SPOJNOSC-Q1-C rozszerza selektor na .tdn-side-card: GOAL pkt 2 tego
+   węzła ujednolica szerokość satelity do TEJ SAMEJ wartości referencyjnej (660 px) —
+   satelita jest odtąd renderowana przez ten sam wspólny renderer (renderer.ts) w TEJ SAMEJ
+   szerokości, więc podlega DOKŁADNIE tej samej geometrii kolizji tytuł/odznaka×medalion;
+   bez rozszerzenia tej reguły karta budynku/jednostki/technologii otwarta jako satelita
+   (np. „Stolarnia" obok „Obróbka drewna") odziedziczyłaby z powrotem nachodzenie tekstu na
+   diaromę przy 660 px. Zmierzone żywo (Chromium, Playwright) na satelicie z długim tytułem
+   po tej zmianie: 0 px kolizji, identycznie jak dla .tdn-entity-card-v2. renderer.ts,
+   domyślna diaroma pozostałych rodzajów encji poza tym hostem i ENTITY_CARD_CSS nietknięte —
+   selektor wciąż kotwiczy się WYŁĄCZNIE w tym hoście (#${HOST_ID}).
    Sama naprawa duplikatu odznak NIE wystarcza: po niej „Rolnictwo" ma jeszcze 3x6 px, a
    „Hutnictwo żelaza" — 78x6 px nachodzenia na medalion, więc ten blok nie jest ostrożnością
    „na wszelki wypadek", tylko domknięciem zgłoszonej wady.
@@ -794,9 +834,12 @@ function ensureEntityCardOverrideStyles(): void {
    scena wyższa (190→226), głębsza rezerwa pod overlay tekstu (26→72) i elipsa „gruntu"
    podniesiona razem z medalionem (22→63), żeby kontakt światła nadal padał pod obiekt,
    a nie za tekstem. Wynik mierzy sekcja (B) w tools/tech-discovery-badge-diorama-test.cjs. */
-#${HOST_ID} .tdn-entity-card-v2 .entity-card-diorama{height:226px;}
-#${HOST_ID} .tdn-entity-card-v2 .entity-card-diorama-stage{padding-bottom:72px;}
-#${HOST_ID} .tdn-entity-card-v2 .entity-card-diorama-ground{bottom:63px;}
+#${HOST_ID} .tdn-entity-card-v2 .entity-card-diorama,
+#${HOST_ID} .tdn-side-card .entity-card-diorama{height:226px;}
+#${HOST_ID} .tdn-entity-card-v2 .entity-card-diorama-stage,
+#${HOST_ID} .tdn-side-card .entity-card-diorama-stage{padding-bottom:72px;}
+#${HOST_ID} .tdn-entity-card-v2 .entity-card-diorama-ground,
+#${HOST_ID} .tdn-side-card .entity-card-diorama-ground{bottom:63px;}
 #${HOST_ID} .entity-card-header{position:relative;padding-right:44px;}
 .tdn-entity-close{position:absolute;top:10px;right:10px;width:28px;height:28px;
   border-radius:var(--tg-radius-btn,8px);border:2px solid rgba(232,216,138,.4);
