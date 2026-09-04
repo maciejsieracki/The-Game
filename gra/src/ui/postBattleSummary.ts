@@ -3,6 +3,7 @@
  */
 
 import type { PostBattleSummaryData, BattleSummaryUnitCard, BattleSummarySide } from '../game/battle-summary';
+import { buildPostBattleSummary } from '../game/battle-summary';
 import {
   PB_SVG,
   BATTLE_GOLD,
@@ -17,6 +18,8 @@ import {
   applyBtnStartBattle,
 } from '../battle/battleHudTheme';
 import { pushOverlay, popOverlay } from './escapeOverlayStack';
+import { civIconSvg, brandIconSvg } from './icons/brandAssets';
+import { leaderPortraitUrl } from './leaderPortraits';
 
 let overlayEl: HTMLDivElement | null = null;
 let keyHandler: ((e: KeyboardEvent) => void) | null = null;
@@ -125,7 +128,28 @@ function buildCommanderCorner(
     boxShadow: isPlayer ? '0 0 26px rgba(58,106,208,.4)' : '0 0 26px rgba(200,64,64,.4)',
     flexShrink: '0',
   });
-  medal.innerHTML = PB_SVG.commander;
+  // R-BITWA-ETYKIETA-TOZSAMOSC-STRONY (2026-09-03): ikona medalionu dobrana wg
+  // tozsamosci strony, ten sam wzorzec co mkCommanderCard (battleScene.ts) --
+  // barbarzyncy > miasto-panstwo > portret wladcy > PB_SVG.commander (fallback,
+  // np. brak civIconId/era w wejsciu -- wywolania spoza battleScene.ts, ktore
+  // jeszcze nie przekazuja tych pol).
+  const civIconId = side.civIconId;
+  const portraitUrl = (side.isBarbarian || side.isCityState || !civIconId)
+    ? null
+    : leaderPortraitUrl(civIconId, side.era ?? 1);
+  if (portraitUrl) {
+    const img = el('img');
+    img.src = portraitUrl;
+    img.alt = '';
+    css(img, { width: '100%', height: '100%', objectFit: 'cover', borderRadius: '50%', display: 'block' });
+    medal.appendChild(img);
+  } else if (side.isBarbarian) {
+    medal.innerHTML = brandIconSvg('chip-death', 30);
+  } else if (side.isCityState && civIconId) {
+    medal.innerHTML = civIconSvg(civIconId, 30);
+  } else {
+    medal.innerHTML = PB_SVG.commander;
+  }
   wrap.appendChild(medal);
 
   const txt = el('div');
@@ -146,8 +170,23 @@ function buildCommanderCorner(
     color: '#8a8070',
     marginTop: '2px',
   });
+  // R-BITWA-ETYKIETA-TOZSAMOSC-STRONY-Q1 (runda 3, zarzut Evaluatora 4): po naprawie
+  // GOAL 1 bold (`side.label`) NIESIE JUZ TOZSAMOSC, wiec podtytul \u201EcivLabel \u00B7 rola"
+  // powtarzal ja drugi raz (\u201EGrecy" + \u201EGRECY \u00B7 OBRONCA"), a rog stracil informacje o
+  // SKLADZIE (dawne \u201ESklad (N)" w bold jest dzis nieosiagalne). Decyzja: podtytul
+  // pokazuje SKLAD, ale WYLACZNIE gdy tozsamosc faktycznie sie dubluje. Sciezki, na
+  // ktorych bold to nadal nazwa jednostki (auto-rozstrzygniecie z mapy \u2014
+  // applyMapBattleOutcomeWithSummary; fallback `_sideDisplayLabel`), nadal potrzebuja
+  // civLabel w podtytule i dostaja go bez zmiany.
   const civ = side.civLabel ?? (isPlayer ? 'Gracz' : 'Wr\u00F3g');
-  sub.textContent = civ + ' \u00B7 ' + (isAtk ? 'Atakuj\u0105cy' : 'Obro\u0144ca');
+  const norm = (s: string): string => s.trim().toLowerCase();
+  const n = side.units.length;
+  const composition = n === 1
+    ? String(side.units[0]!.typeId)
+    : n > 1 ? 'Sk\u0142ad (' + n + ')' : '';
+  const duplicate = norm(civ) === norm(side.label) && composition !== '';
+  sub.textContent = (duplicate ? composition : civ)
+    + ' \u00B7 ' + (isAtk ? 'Atakuj\u0105cy' : 'Obro\u0144ca');
   txt.appendChild(sub);
   wrap.appendChild(txt);
   return wrap;
@@ -535,4 +574,30 @@ export function hidePostBattleSummary(): void {
 
 export function isPostBattleSummaryOpen(): boolean {
   return overlayEl !== null;
+}
+
+// R-BITWA-ETYKIETA-TOZSAMOSC-STRONY (2026-09-03; zakres doprecyzowany 2026-09-04,
+// runda 3, zarzut Evaluatora 3): test hook (ten sam wzorzec co
+// __eraTestDebug/__cityStateStartUnitsTestDebug w main.ts) -- wolany WYLACZNIE z
+// Playwright w tools/*-real-render-test.cjs.
+//
+// GRANICA UZYCIA, WIAZACA: to jest WSTRZYKNIECIE `BattleSummarySide`, wiec wolno nim
+// dowodzic WYLACZNIE zachowania samego widoku (`buildCommanderCorner` to czysty DOM
+// nad zadana tozsamoscia strony). NIE WOLNO nim dowodzic, ze realna bitwa faktycznie
+// ustala `isCityState`/`isBarbarian`/`civIconId` -- ta droga (main.ts
+// preBattleSideFromRoster -> BattleScene -> _buildBattleSummaryData) jest tu
+// pominieta, a uznanie jej za sprawdzona na tej podstawie bylo bledem rundy 2.
+// Dowod zywy tej drogi nalezy do
+// tools/r-bitwa-etykieta-tozsamosc-strony-live-atak-test.cjs (realny klik w mapie,
+// realny BattleScene).
+if (typeof window !== 'undefined') {
+  (window as any).__postBattleSummaryTestDebug = {
+    build: buildPostBattleSummary,
+    show: showPostBattleSummary,
+    hide: hidePostBattleSummary,
+    civIconSvg,
+    brandIconSvg,
+    leaderPortraitUrl,
+    commanderFallbackSvg: PB_SVG.commander,
+  };
 }

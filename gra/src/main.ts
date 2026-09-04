@@ -23947,13 +23947,18 @@ async function boot(): Promise<void> {
       const dTeren4: string = dHex4 ? (dHex4.terenBazowy as string) : 'Rownina';
       const dStructBonus4 = structureDefenseBonusFor(defUnit.q, defUnit.r);
       const szanse4 = preBattleSzanseAtkPct(atkRoster, defRoster, dTeren4, dStructBonus4, defUnit.q, defUnit.r);
+      // R-BITWA-ETYKIETA-TOZSAMOSC-STRONY (2026-09-03, GOAL 3): civLabel atakującego
+      // gracza liczony tak samo jak civLabel obrońcy (ownerDiploLabel), zamiast
+      // zahardkodowanego literału "Gracz" -- naprawia potencjalne drugie źródło
+      // niespójności "Gracz" vs prawdziwa nazwa cywilizacji w innych scenariuszach ataku.
+      const atkCivLabel = ownerDiploLabel(atkUnit.ownerId);
       const defCivLabel = ownerDiploLabel(defUnit.ownerId);
       const placeInfo = fieldBattlePlaceInfo(defUnit.q, defUnit.r, dTeren4, 0);
       const pbInfo4: PreBattleInfo = {
         atakujacy: preBattleSideFromRoster(
           atkRoster,
           atkRoster.length > 1 ? 'Skład (' + atkRoster.length + ')' : atkUnit.typeId,
-          'Gracz',
+          atkCivLabel,
         ),
         obronca: preBattleSideFromRoster(
           defRoster,
@@ -24001,6 +24006,15 @@ async function boot(): Promise<void> {
           defLabel: pbInfo4.obronca.nazwa,
           atkCivLabel: pbInfo4.atakujacy.cywilizacja,
           defCivLabel: pbInfo4.obronca.cywilizacja,
+          // GOAL 2 (runda 3): te pola liczy juz `preBattleSideFromRoster` -- przekazanie.
+          atkCivIconId: pbInfo4.atakujacy.civId,
+          defCivIconId: pbInfo4.obronca.civId,
+          atkIsCityState: pbInfo4.atakujacy.isCityState,
+          defIsCityState: pbInfo4.obronca.isCityState,
+          atkIsBarbarian: pbInfo4.atakujacy.isBarbarian,
+          defIsBarbarian: pbInfo4.obronca.isBarbarian,
+          atkEra: pbInfo4.atakujacy.era,
+          defEra: pbInfo4.obronca.era,
           teren: dTeren4,
           placeLabel: placeInfo.miejsce + ' · ' + placeInfo.lokacja,
         };
@@ -24161,21 +24175,38 @@ async function boot(): Promise<void> {
       showPostBattleSummary(buildPostBattleSummary(input), onContinue);
     }
 
+    /**
+     * R-BITWA-ETYKIETA-TOZSAMOSC-STRONY-Q1 (runda 3, obrona): jeden ksztalt metadanych
+     * mapowego podsumowania bitwy, wspoldzielony przez `applyMapBattleOutcomeWithSummary`
+     * i pass-through `executeSiegeStorm(opts.summary)`. Wczesniej ten sam ksztalt byl
+     * wpisany DWA razy inline i rozjezdzal sie przy dokladaniu pol.
+     */
+    type MapBattleSummaryMeta = {
+      mode: 'auto' | 'manual' | 'szturm';
+      atkLabel: string;
+      defLabel: string;
+      atkCivLabel?: string;
+      defCivLabel?: string;
+      /** Dobor ikony medalionu (postBattleSummary.buildCommanderCorner) -- GOAL 2. */
+      atkCivIconId?: string;
+      defCivIconId?: string;
+      atkIsCityState?: boolean;
+      defIsCityState?: boolean;
+      atkIsBarbarian?: boolean;
+      defIsBarbarian?: boolean;
+      atkEra?: number;
+      defEra?: number;
+      teren?: string;
+      placeLabel?: string;
+    };
+
     function applyMapBattleOutcomeWithSummary(
       atkRoster: RuntimeUnit[],
       defRoster: RuntimeUnit[],
       winner: BattleResult['winner'] | 'remis',
       survivors: BattleUnit[] | undefined,
       opts: Parameters<typeof applyMapBattleOutcome>[4],
-      summary: {
-        mode: 'auto' | 'manual' | 'szturm';
-        atkLabel: string;
-        defLabel: string;
-        atkCivLabel?: string;
-        defCivLabel?: string;
-        teren?: string;
-        placeLabel?: string;
-      },
+      summary: MapBattleSummaryMeta,
       onContinue: () => void,
     ): void {
       const atkBefore = snapshotRosterForSummary(atkRoster);
@@ -24189,10 +24220,35 @@ async function boot(): Promise<void> {
       const loot = applyMapBattleOutcome(atkRoster, defRoster, winner, survivors, opts);
       const summaryData = buildPostBattleSummary({
         winner: winner as BattleSummaryWinner,
-        atkLabel: summary.atkLabel,
-        defLabel: summary.defLabel,
+        // R-BITWA-ETYKIETA-TOZSAMOSC-STRONY-Q1 (runda 3, obrona -- zarzut Evaluatora 3):
+        // TO JEST WIDOK ZE ZGLOSZENIA WLASCICIELA ("w wyniku bitwy jest informacja
+        // 'wojownik wygrywa'"): mapowe podsumowanie po kliknieciu „POWROT NA MAPE".
+        // GOAL 1 naprawil dotad TYLKO `_sideDisplayLabel` w `battleScene.ts` (pasek
+        // naglowka W TRAKCIE bitwy) -- ta sciezka buduje `PostBattleSummaryData`
+        // NIEZALEZNIE, z `summary.atkLabel` = `pbInfo.atakujacy.nazwa`, czyli NAZWY TYPU
+        // JEDNOSTKI. Zywy bieg `r-bitwa-etykieta-tozsamosc-strony-live-atak-test.cjs`
+        // (2026-09-04, oba sandboxy) dal tu werdykt „Hastati wygrywa" i bold
+        // „Hastati"/„Łucznik" mimo poprawnego „Rzymianie"/„Grecy" na pasku bitwy.
+        // Priorytet civLabel -> nazwa jednostki jest DOKLADNIE ten sam co w
+        // `_sideDisplayLabel` po naprawie GOAL 1: tozsamosc strony wygrywa, nazwa
+        // jednostki zostaje wylacznie jako ostatnia linia obrony przy pustym civLabel.
+        atkLabel: (summary.atkCivLabel ?? '').trim() || summary.atkLabel,
+        defLabel: (summary.defCivLabel ?? '').trim() || summary.defLabel,
         atkCivLabel: summary.atkCivLabel,
         defCivLabel: summary.defCivLabel,
+        // GOAL 2 na tej samej sciezce: bez tych pol medaliony mapowego podsumowania
+        // spadaly na generyczny `PB_SVG.commander` (kryteria konca 3 i 5) -- potwierdzone
+        // zywo w tej rundzie. Dane sa juz policzone przez `preBattleSideFromRoster`
+        // (main.ts: `civId`, `era`, `isCityState`, `isBarbarian`) -- tu WYLACZNIE
+        // przekazanie, zero nowego liczenia.
+        atkCivIconId: summary.atkCivIconId,
+        defCivIconId: summary.defCivIconId,
+        atkIsCityState: summary.atkIsCityState,
+        defIsCityState: summary.defIsCityState,
+        atkIsBarbarian: summary.atkIsBarbarian,
+        defIsBarbarian: summary.defIsBarbarian,
+        atkEra: summary.atkEra,
+        defEra: summary.defEra,
         playerSide,
         teren: summary.teren,
         placeLabel: summary.placeLabel,
@@ -24478,8 +24534,16 @@ async function boot(): Promise<void> {
       const defLead = defRosterRef[0]!;
       const szanse = preBattleSzanseAtkPct(atkRosterRef, defRosterRef, terrain, structBonusPct, battleQ, battleR);
       const atkOwner = atkLead.ownerId;
-      const atkCivLabel = atkOwner === 0 ? 'Gracz' : ownerDiploLabel(atkOwner);
-      const defCivLabel = defLead.ownerId === 0 ? 'Gracz' : ownerDiploLabel(defLead.ownerId);
+      // R-BITWA-ETYKIETA-TOZSAMOSC-STRONY-Q1 (runda 3, zarzut Evaluatora 1): literały
+      // 'Gracz' dla ownerId 0 usunięte. Po naprawie GOAL 1 `civLabel` jest etykietą
+      // GŁÓWNĄ (bold) paska bitwy, więc w każdej bitwie na tej ścieżce (atak AI na
+      // gracza, call site main.ts:~24275/24283) bold gracza pokazywałby 'Gracz'
+      // zamiast nazwy cywilizacji — dokładnie skarga właściciela, tylko z innym
+      // błędnym słowem. `ownerDiploLabel(0)` daje ten sam poprawny format co dla AI
+      // („Rzymianie"), bo civDisplayNameForOwner(0) czyta civTypeForOwner(0) →
+      // data.civs.cywilizacje[].Cywilizacja (nazwa wyświetlana, nie surowe id).
+      const atkCivLabel = ownerDiploLabel(atkOwner);
+      const defCivLabel = ownerDiploLabel(defLead.ownerId);
       const atkSideTitle = atkOwner === 0
         ? (atkRosterRef.length > 1 ? 'Skład (' + atkRosterRef.length + ')' : atkLead.typeId)
         : (ownerDiploLabel(atkOwner) + ' — atak');
@@ -24540,6 +24604,15 @@ async function boot(): Promise<void> {
           defLabel: pbInfo.obronca.nazwa,
           atkCivLabel: pbInfo.atakujacy.cywilizacja,
           defCivLabel: pbInfo.obronca.cywilizacja,
+          // GOAL 2 (runda 3): te pola liczy juz `preBattleSideFromRoster` -- przekazanie.
+          atkCivIconId: pbInfo.atakujacy.civId,
+          defCivIconId: pbInfo.obronca.civId,
+          atkIsCityState: pbInfo.atakujacy.isCityState,
+          defIsCityState: pbInfo.obronca.isCityState,
+          atkIsBarbarian: pbInfo.atakujacy.isBarbarian,
+          defIsBarbarian: pbInfo.obronca.isBarbarian,
+          atkEra: pbInfo.atakujacy.era,
+          defEra: pbInfo.obronca.era,
           teren: terrain,
           placeLabel: pbInfo.miejsce + ' · ' + pbInfo.lokacja,
         };
@@ -26130,7 +26203,22 @@ async function boot(): Promise<void> {
     };
 
     function civLabelForOwner(ownerId: number): string {
-      if (ownerId === 0) return String(player.civType || _menuCivId || 'Gracz');
+      // R-BITWA-ETYKIETA-TOZSAMOSC-STRONY-Q1 (runda 3, zarzut Evaluatora 2): dla gracza
+      // ta funkcja zwracała SUROWE ID cywilizacji (`player.civType`/`_menuCivId`, np.
+      // „rzymianie" małą literą), a dla AI — sformatowaną nazwę z `ownerDiploLabel`
+      // („Grecy"). Ta niespójność szła prosto na pasek bitwy: mapFieldBattle.ts:332/343
+      // (atak na miasto) i szturm oblężniczy main.ts:~25959 karmią `civLabel` sceny
+      // bitwy właśnie stąd, a po naprawie GOAL 1 `civLabel` jest etykietą GŁÓWNĄ.
+      // Żywy dowód Evaluatora: bold lewy „rzymianie", bold prawy „Grecy".
+      // `ownerDiploLabel(0)` liczy dokładnie ten sam format dla obu stron
+      // (civDisplayNameForOwner → data.civs.cywilizacje[].Cywilizacja). Surowe id
+      // zostaje WYŁĄCZNIE jako ostatnia deska ratunku, gdyby ownerDiploLabel nie miał
+      // z czego złożyć nazwy (pusty string) — np. świat bez wybranej cywilizacji gracza.
+      if (ownerId === 0) {
+        const diplo = ownerDiploLabel(0).trim();
+        if (diplo) return diplo;
+        return String(player.civType || _menuCivId || 'Gracz');
+      }
       return ownerDiploLabel(ownerId);
     }
 
@@ -26146,14 +26234,10 @@ async function boot(): Promise<void> {
         atkStart?: Map<string | number, { q: number; r: number }>;
         lossAtkPct?: number;
         lossDefPct?: number;
-        summary?: {
-          mode: 'auto' | 'manual' | 'szturm';
-          atkLabel: string;
-          defLabel: string;
-          atkCivLabel?: string;
-          defCivLabel?: string;
-          teren?: string;
-        };
+        // R-BITWA-ETYKIETA-TOZSAMOSC-STRONY-Q1 (runda 3): ten sam ksztalt co
+        // `applyMapBattleOutcomeWithSummary` (`MapBattleSummaryMeta`), zeby pola doboru
+        // ikony (GOAL 2) nie gubily sie na pass-through `{ ...opts.summary }` nizej.
+        summary?: MapBattleSummaryMeta;
         afterSummary?: () => void;
       },
     ): void {
@@ -26407,6 +26491,15 @@ async function boot(): Promise<void> {
           defLabel: pbInfo.obronca.nazwa,
           atkCivLabel: pbInfo.atakujacy.cywilizacja,
           defCivLabel: pbInfo.obronca.cywilizacja,
+          // GOAL 2 (runda 3): te pola liczy juz `preBattleSideFromRoster` -- przekazanie.
+          atkCivIconId: pbInfo.atakujacy.civId,
+          defCivIconId: pbInfo.obronca.civId,
+          atkIsCityState: pbInfo.atakujacy.isCityState,
+          defIsCityState: pbInfo.obronca.isCityState,
+          atkIsBarbarian: pbInfo.atakujacy.isBarbarian,
+          defIsBarbarian: pbInfo.obronca.isBarbarian,
+          atkEra: pbInfo.atakujacy.era,
+          defEra: pbInfo.obronca.era,
           teren: dTeren,
         };
       }

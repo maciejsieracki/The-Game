@@ -42,6 +42,17 @@ fs.writeFileSync(
   'utf8',
 );
 
+// R-BITWA-ETYKIETA-TOZSAMOSC-STRONY-Q1 (2026-09-04): `postBattleSummary.ts` dobiera teraz
+// ikonę dowódcy (portret władcy / civIcon / chip-death) i importuje `./icons/brandAssets`
+// oraz `./leaderPortraits`. Oba ciągną konstrukty Vite-only, na których goły esbuild pada:
+//   - brandAssets.ts: `import ... from './brand/*.svg?raw'` -> brak loadera dla ".svg";
+//   - leaderPortraits.ts: `import.meta.glob(...)` -> pod `format: 'cjs'` esbuild podstawia
+//     puste `import.meta`, więc `.glob` byłoby `undefined` i moduł rzucałby przy require.
+// Ta bramka nie testuje ikon ani portretów, tylko cykl życia overlaya — ale MUSI się
+// zbudować. Nie stubujemy modułów (to wymagałoby pluginu, a plugin nie działa z
+// `buildSync`): dajemy loadery dla assetów i podmieniamy JEDYNIE `import.meta.glob` na
+// funkcję zwracającą pusty rejestr (leaderPortraitUrl() -> null, ścieżka fallbacku).
+// Dzięki temu w bundlu leci PRAWDZIWY kod brandAssets/leaderPortraits, nie atrapa.
 esbuild.buildSync({
   entryPoints: [ENTRY],
   bundle: true,
@@ -51,6 +62,9 @@ esbuild.buildSync({
   outfile: BUNDLE,
   absWorkingDir: GRA,
   logLevel: 'silent',
+  loader: { '.ts': 'ts', '.json': 'json', '.svg': 'text', '.png': 'dataurl', '.jpg': 'dataurl' },
+  define: { 'import.meta.glob': '__PBS_DISPOSE_TEST_NO_GLOB' },
+  banner: { js: 'const __PBS_DISPOSE_TEST_NO_GLOB = () => ({});' },
 });
 
 const {

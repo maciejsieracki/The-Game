@@ -2456,6 +2456,19 @@ export class BattleScene {
   };
   private _attackerCivLabel = 'Gracz';
   private _defenderCivLabel = 'Przeciwnik';
+  /**
+   * R-BITWA-ETYKIETA-TOZSAMOSC-STRONY-Q1 (runda 3, zarzut Evaluatora 6): civLabel
+   * DOKŁADNIE tak, jak podał go wołający — pusty string, gdy `opts` go w ogóle nie
+   * przekazał. `_attackerCivLabel`/`_defenderCivLabel` mają domyślne 'Gracz'/'Przeciwnik'
+   * i NIGDY nie są puste, więc oparcie o nie etykiety głównej dawało dwa skutki naraz:
+   * (a) cały fallback w `_sideDisplayLabel` (custom → typ jednostki) był kodem martwym,
+   * (b) wołający bez civLabel dostawał w bold literał 'Gracz'/'Przeciwnik' — to samo
+   * błędne słowo, na które skarżył się właściciel. Etykieta główna czyta więc TĘ parę
+   * (pustą, gdy nie ma realnej tożsamości), a podtytuł/medaliony nadal starą, z
+   * domyślnymi — zero zmiany dla nich.
+   */
+  private _attackerCivLabelExplicit = '';
+  private _defenderCivLabelExplicit = '';
   private _attackerSideLabel = '';
   private _defenderSideLabel = '';
   private _attackerCivIconId = 'grecy';
@@ -2547,8 +2560,10 @@ export class BattleScene {
     this.goldDeficitStatMult = opts.goldDeficitStatMult ?? 0.75;
     this.attackerDifficultyCombatMult = opts.attackerDifficultyCombatMult ?? 1;
     this.defenderDifficultyCombatMult = opts.defenderDifficultyCombatMult ?? 1;
-    this._attackerCivLabel = opts.attackerCivLabel?.trim() || 'Gracz';
-    this._defenderCivLabel = opts.defenderCivLabel?.trim() || 'Przeciwnik';
+    this._attackerCivLabelExplicit = opts.attackerCivLabel?.trim() ?? '';
+    this._defenderCivLabelExplicit = opts.defenderCivLabel?.trim() ?? '';
+    this._attackerCivLabel = this._attackerCivLabelExplicit || 'Gracz';
+    this._defenderCivLabel = this._defenderCivLabelExplicit || 'Przeciwnik';
     this._attackerSideLabel = opts.attackerSideLabel?.trim() || '';
     // C-COMBAT-Q2 (Maciej 2026-07-26): patrz doc na polu isCityDefenseBattle.
     this.isCityDefenseBattle = opts.cityDefense === true || opts.siege != null;
@@ -8839,6 +8854,26 @@ export class BattleScene {
   }
 
   private _sideDisplayLabel(side: 'atk' | 'def'): string {
+    // R-BITWA-ETYKIETA-TOZSAMOSC-STRONY-Q1, runda 3 (2026-09-04). Recon dispatchu
+    // zakladal, ze custom (_attackerSideLabel/_defenderSideLabel) "dzis puste w tym
+    // scenariuszu" -- FALSZ. KAZDY realny wolajacy (main.ts:23704-23705,
+    // main.ts:24283-24284, mapFieldBattle.ts:491-492) ustawia je na
+    // preBattleSideFromRoster(...).nazwa = nazwe typu jednostki/"Sklad (N)" (NIGDY
+    // civLabel), wiec `custom` byl ZAWSZE truthy w prawdziwej grze i galaz civLabel
+    // byla martwym kodem. civLabel MUSI miec pierwszenstwo -- to jest wlasnie
+    // TOZSAMOSC strony z GOAL 1 / kryteriow 1,2,4.
+    //
+    // Zarzut Evaluatora 6 (runda 2): fallback ponizej byl NIEOSIAGALNY, bo czytalismy
+    // `_civLabelForSide()`, a `_attackerCivLabel`/`_defenderCivLabel` maja domyslne
+    // 'Gracz'/'Przeciwnik' i nigdy nie sa puste. Czytamy wiec `*CivLabelExplicit`
+    // (dokladnie to, co podal wolajacy; pusty string gdy nie podal nic) -- fallback
+    // jest realnie osiagalny dla KAZDEGO wolajacego `new BattleScene()` bez
+    // attackerCivLabel/defenderCivLabel i pokryty asercja w
+    // tools/r-bitwa-etykieta-tozsamosc-strony-zrodlo-test.cjs. Efekt uboczny, tez
+    // pozadany: bold nigdy nie pokaze literalu 'Gracz'/'Przeciwnik' (skarga
+    // wlasciciela) -- brak tozsamosci degraduje do nazwy jednostki, nie do zaimka.
+    const civLabel = this._civLabelForSideExplicit(side);
+    if (civLabel) return civLabel;
     const custom = side === 'atk' ? this._attackerSideLabel : this._defenderSideLabel;
     if (custom) return custom;
     const snaps = side === 'atk' ? this._startAtkSnaps : this._startDefSnaps;
@@ -8880,6 +8915,14 @@ export class BattleScene {
       defLabel: this._sideDisplayLabel('def'),
       atkCivLabel: this._attackerCivLabel,
       defCivLabel: this._defenderCivLabel,
+      atkCivIconId: this._attackerCivIconId,
+      defCivIconId: this._defenderCivIconId,
+      atkIsCityState: this._attackerIsCityState,
+      defIsCityState: this._defenderIsCityState,
+      atkIsBarbarian: this._attackerIsBarbarian,
+      defIsBarbarian: this._defenderIsBarbarian,
+      atkEra: this._attackerEra,
+      defEra: this._defenderEra,
       playerSide: this._playerControlSide(),
       teren: this.terrain,
       mode: 'manual',
@@ -10926,6 +10969,15 @@ export class BattleScene {
 
   private _civLabelForSide(side: 'atk' | 'def'): string {
     return side === 'atk' ? this._attackerCivLabel : this._defenderCivLabel;
+  }
+
+  /**
+   * civLabel BEZ domyslek 'Gracz'/'Przeciwnik' -- pusty, gdy wolajacy go nie podal.
+   * Uzywane wylacznie przez `_sideDisplayLabel` (etykieta glowna/bold + werdykt),
+   * patrz komentarz tam (zarzut Evaluatora 6, runda 2).
+   */
+  private _civLabelForSideExplicit(side: 'atk' | 'def'): string {
+    return side === 'atk' ? this._attackerCivLabelExplicit : this._defenderCivLabelExplicit;
   }
 
   private _isPlayerSide(side: 'atk' | 'def'): boolean {

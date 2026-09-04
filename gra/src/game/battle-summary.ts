@@ -29,6 +29,12 @@ export interface BattleSummaryUnitCard {
 export interface BattleSummarySide {
   label: string;
   civLabel?: string;
+  /** civIconId (symbol kultury/cywilizacji) -- dobór ikony medalionu w postBattleSummary. */
+  civIconId?: string;
+  isCityState?: boolean;
+  isBarbarian?: boolean;
+  /** Epoka (1/2/3) -- dobór portretu władcy (leaderPortraits.ts), gdy dostępny. */
+  era?: number;
   units: BattleSummaryUnitCard[];
   totalBefore: number;
   totalAfter: number;
@@ -56,6 +62,14 @@ export interface BuildBattleSummaryInput {
   defLabel: string;
   atkCivLabel?: string;
   defCivLabel?: string;
+  atkCivIconId?: string;
+  defCivIconId?: string;
+  atkIsCityState?: boolean;
+  defIsCityState?: boolean;
+  atkIsBarbarian?: boolean;
+  defIsBarbarian?: boolean;
+  atkEra?: number;
+  defEra?: number;
   teren?: string;
   placeLabel?: string;
   mode: 'auto' | 'manual' | 'szturm';
@@ -120,11 +134,19 @@ export function buildPostBattleSummary(input: BuildBattleSummaryInput): PostBatt
     ...atkBase,
     label: input.atkLabel,
     civLabel: input.atkCivLabel,
+    civIconId: input.atkCivIconId,
+    isCityState: input.atkIsCityState,
+    isBarbarian: input.atkIsBarbarian,
+    era: input.atkEra,
   };
   const defSide: BattleSummarySide = {
     ...defBase,
     label: input.defLabel,
     civLabel: input.defCivLabel,
+    civIconId: input.defCivIconId,
+    isCityState: input.defIsCityState,
+    isBarbarian: input.defIsBarbarian,
+    era: input.defEra,
   };
 
   let winnerLabel: string;
