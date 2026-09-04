@@ -346,3 +346,82 @@ Obozu łowieckiego niewynikająca z tego tematu.
 Operator (Sonnet 5, effort medium) → Evaluator (Sonnet 5, effort high) → Operator
 (obrona, jeśli zarzuty niepuste) → Final Control (Sonnet 5, effort high) →
 integracja orkiestratora.
+
+---
+
+# RUNDA 5 — OSTATNIA Z LIMITU (orkiestrator, 2026-09-04)
+
+## Powód
+Runda 4, zarzut 1 (Evaluator, przyjęty przez Obronę jako fakt, zgłoszony jako BLOKADA
+bez samowolnego poszerzania allowlisty — zachowanie wzorowe): pole `warunek` wpisu
+`farma` w `gra/data/terrain-improvements.json:22` brzmi „…NIE na lesie — **najpierw
+wyrąb**." i jest RENDEROWANE GRACZOWI jako wiersz „Warunek" karty ulepszenia
+(`improvementAdapter.ts:137` → `renderer.ts:67-69`). To ta sama konstrukcja, którą
+runda 4 przeklasyfikowała w `05-budowa-mapa.md:166`.
+
+## PEŁNA INWENTARYZACJA ORKIESTRATORA (wykonana przed tą rundą — nie powtarzaj, to jest komplet)
+Przeskanowane: `gra/data/*.json`, `gra/src/data/*.json` (w tym `wikiBundle.json`
+zdekodowany polami). Wszystkie wystąpienia „wyrąb/Wyrąb", z decyzją:
+
+| Miejsce | Renderowane graczowi? | Decyzja |
+|---|---|---|
+| `terrain-improvements.json:22` `farma.warunek` — „najpierw wyrąb" | **TAK** (wiersz „Warunek") | **ZMIENIĆ** (R5-1) |
+| `terrain-improvements.json:26` `farma.uwagi` — zapis decyzyjny | NIE (wiersz „Uwagi" trwale usunięty w `T-KARTY-HISTORIA-INFRA-Q1`) | zostaje — zapis historyczny |
+| `terrain-improvements.json:192` `wyrab.historia` — „Sam wyrąb, wykonywany…" | tak, ale to treść historyczna | zostaje — rzeczownik odczasownikowy |
+| `econ-params.json:460` `teren_las_praca.opis` — „dostęp do drewna / wyrąb" | NIE (opis parametru strojenia; sprawdzone: `.opis` czytają wyłącznie inne struktury — cuda/bonusy/jednostki) | zostaje — czynność, nie nazwa |
+| `wikiBundle` `/poradnik/14/content` — „wyrąb lasu — §88.5" | tak | zostaje — czynność AI |
+| `wikiBundle` `/encyklopedia/159/{full,historia}` | tak | zostaje — treść historyczna |
+
+Po R5-1 w danych gry NIE POWINNO zostać ani jedno wystąpienie nazwy ulepszenia w
+polu widocznym dla gracza. To jest lista zamknięta — jeśli Evaluator znajdzie coś
+spoza niej, znaczy że mój skan był niepełny i to jest realny zarzut.
+
+## GOAL RUNDY 5
+R5-1. `gra/data/terrain-improvements.json`, wpis `farma`, pole `warunek`: fragment
+   „najpierw wyrąb" → „najpierw Wycinka" (wielką literą — zdanie wskazuje konkretne
+   ulepszenie jako warunek wstępny, tak jak wcześniej „Wycinka w panelu ulepszeń"
+   w `improvement-build.ts:471`). Zero zmian w polu `uwagi` tego wpisu.
+R5-2. **Domknij lukę pokrycia (zarzut 2 rundy 4):** dodaj do
+   `gra/tools/wyrab-wycinka-nazwa-live-test.cjs` asercję skanującą pola
+   `terrain-improvements.json` RENDEROWANE graczowi (`nazwa`, `warunek`, `teren`,
+   `historia` — ustal komplet z `improvementAdapter.ts`, nie zgaduj) pod kątem
+   nazwy ulepszenia. Dotąd strażnik pokrycia [7] pilnował WYŁĄCZNIE
+   `wikiBundle.json`, przez co to wystąpienie przeżyło cztery rundy. Asercja ma
+   być nietautologiczna — pokaż, że przed R5-1 czerwieni się.
+R5-3. Potwierdź, że poprawka whitelisty z obrony rundy 4 (zarzut 3 — kotwiczenie
+   frazy na trafieniu zamiast okna ±40 znaków) faktycznie działa: dodaj przypadek,
+   w którym nazwa ulepszenia w promieniu 40 znaków od dozwolonej frazy JEST
+   wykrywana.
+R5-4. Regeneracja bundla + idempotencja (jak w rundach 2-4).
+
+## ALLOWLISTA RUNDY 5
+- Wszystko z rund 1-4.
+- `gra/data/terrain-improvements.json` — ROZSZERZONE: pole `warunek` wpisu `farma`
+  (dotąd dopuszczone było wyłącznie pole `nazwa` wpisu `wyrab`). Zero innych pól,
+  zero innych wpisów.
+- `gra/tools/wyrab-wycinka-nazwa-live-test.cjs`, `gra/src/data/wikiBundle.json`.
+Zakazane bez zmian: klucz `wyrab`, `farma.uwagi`, `econ-params.json`,
+`docs/decyzje|archiwum|analiza|obieg`, `ROADMAP.md`, `WERSJE.md`,
+`ROBOCZA-MANIFEST.json`, `playbook.json`.
+
+## KRYTERIA KOŃCA RUNDY 5
+R5-K1. Żywy test: karta ulepszenia **Farma** pokazuje w wierszu „Warunek" „…najpierw
+   Wycinka.", zero „wyrąb" — zrzut z Chromium, nie sam odczyt JSON.
+R5-K2. Nowa asercja z R5-2 czerwieni się na stanie sprzed R5-1 (dowód, że luka
+   pokrycia jest realnie zamknięta, a nie zadeklarowana).
+R5-K3. Skan wszystkich pól renderowanych z `terrain-improvements.json` +
+   `wikiBundle.json`: zero nazw ulepszenia; pozostałe trafienia zgodne z tabelą
+   inwentaryzacji wyżej.
+R5-K4. `tsc --noEmit` czysty, 5 bramek referencyjnych zielone, testy civpedia
+   zielone, idempotencja bundlera potwierdzona.
+
+## LIMIT RUND
+To jest **runda 5 z 5**. Jeśli po niej zostanie cokolwiek nierozstrzygniętego,
+NIE otwieraj rundy 6 — zgłoś to jako `LIMIT-5-EXCEEDED` z jawną listą resztek;
+orkiestrator założy osobny temat. Nie próbuj „domknąć na siłę" kosztem wyjścia
+poza allowlistę.
+
+## OBIEG RUNDY 5
+Operator (Sonnet 5, effort medium) → Evaluator (Sonnet 5, effort high) → Operator
+(obrona, jeśli zarzuty niepuste) → Final Control (Sonnet 5, effort high) →
+integracja orkiestratora.
