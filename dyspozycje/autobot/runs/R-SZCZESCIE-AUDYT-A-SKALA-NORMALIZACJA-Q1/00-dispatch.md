@@ -206,3 +206,56 @@ i TEJ SAMEJ gałęzi. Po 5 rundach: `LIMIT-5-EXCEEDED`.
 
 Operator → Evaluator (ponumerowane zarzuty) → Obrona (gdy lista niepusta) → koniec
 skryptu. Final Control osobno, integracja allowlist-only ręką orkiestratora.
+
+---
+
+# RUNDA 2 — poprawka po Final Control (FAIL na zarzucie 6)
+
+DATA: 2026-09-04
+STATUS RUNDY 1: Final Control **FAIL** — jeden werdykt `NAPRAW` (zarzut 6), pozostałe
+`ODDAL`, plus zarzut 1 jako `DO DECYZJI CZŁOWIEKA` (idzie do właściciela RÓWNOLEGLE,
+nie blokuje tej rundy).
+
+## R2-1 — jedyne zadanie tej rundy
+
+`gra/tools/szczescie-skala-normalizacja-test.cjs:475-476` ustawia jednocześnie
+`hasDworZarzadcy: true` **oraz** `hasPretorium: true`. To **dwa poziomy TEGO SAMEGO
+łańcucha administracji** (Dom Starszyzny → Dwór Zarządcy → Pretorium, „zastępowanie"
+wg opisu w `society-params.json`) — konfiguracja niemożliwa w grze.
+
+Skutek: asercja twierdzi, że duże miasto z pełną administracją domyka Prawo do **100%**
+we wszystkich epokach. Final Control sprawdził realną konfigurację (sam Pretorium + Sąd
++ Trybunał + garnizon + Pałac III, **bez** Dworu Zarządcy): `hard`/epoka 3 daje **91,9%**,
+nie 100%. Zawyżona jest przez to również teza z materiału obrony.
+
+**Napraw:** usuń `hasDworZarzadcy` z tej asercji i przelicz oczekiwaną wartość na realną.
+
+## GRANICE TEJ RUNDY — wąskie, celowo
+
+- **NIE zmieniasz formuły GOAL 2** ani żadnego współczynnika w `society-params.json`.
+  To jest poprawka TESTU, nie modelu.
+- **NIE dotykasz zarzutu 1** (urwisko pop 4→5, 12,0 p.p.). Jest `DECISION_REQUIRED`
+  u właściciela; cokolwiek zdecyduje, trafi do osobnej rundy albo do węzła C.
+- Nie ruszasz węzłów B/C/D/E.
+- Allowlista i izolacja bez zmian wobec rundy 1. Baza: HEAD gałęzi (`d37396f5`),
+  **nie** `origin/main` — kontynuujesz tę samą gałąź.
+
+## KRYTERIUM KOŃCA RUNDY 2 (binarne)
+
+- [ ] `tsc --noEmit` zielone.
+- [ ] Bramka tematu 100% pass (liczba asercji może się zmienić — podaj nową).
+- [ ] W raporcie: **realna wartość Prawa** dla konfiguracji bez Dworu Zarządcy,
+      per trudność i epoka — liczby, nie opis.
+- [ ] Jawne potwierdzenie, że `society-params.json` **nie zmienił się** w tej rundzie
+      (`git diff` tego pliku wobec `d37396f5` pusty).
+- [ ] 16 bramek społeczeństwa/porządku i 5 referencyjnych bez regresu.
+- [ ] Sprawdź, czy **inne** asercje bramki nie zawierają tej samej klasy błędu —
+      niemożliwej kombinacji budynków z jednego łańcucha zastępowania. Wypisz wynik
+      przeglądu, nawet jeśli brzmi „nie znaleziono".
+
+## REGUŁA PRZECIW SAMOOSZUKIWANIU
+
+Tryb tej rundy: **naprawa jednej asercji i przeoczenie tej samej klasy błędu obok.**
+Final Control znalazł jeden niemożliwy stan gry w teście. Zanim zgłosisz zamknięcie,
+przejrzyj WSZYSTKIE konfiguracje budynków w bramce pod tym kątem i wypisz przegląd.
+Znalezienie drugiego takiego miejsca jest wynikiem, nie porażką.
