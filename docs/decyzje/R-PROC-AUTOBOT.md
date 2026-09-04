@@ -439,6 +439,7 @@ z pamięci przy kolejnym użyciu:
 | Walka | `node tools/combat-test.cjs` | 6/6 |
 | Moc jednostek | `node tools/unit-power-test.cjs` | **czerwony pre-istniejąco: 4 pass / 2 fail** — nie regresja, nie naprawiaj przy okazji |
 | Generator mapy | `node tools/map-gen-regression-test.cjs` | determinizm A=B + 0 rzek bez ujścia; progi czasowe to pomiar wydajności, nie regresja — wolny (rzędu minut), uruchom osobno |
+| **Mgła wzdłuż ścieżki (INWARIANT)** | `node tools/mgla-sciezka-inwariant-test.cjs` | **42/42** — skanuje CAŁE `gra/src` w trzech notacjach zapisu pozycji jednostki (`.q=`, `["q"]=`, `Object.assign`) z jawną, uzasadnioną whitelistą. Każde nowe miejsce przesuwające jednostkę o więcej niż heks bez odkrycia mgły wzdłuż ścieżki czerwieni tę bramkę. **Dodana po CZWARTYM zgłoszeniu tego samego błędu** (`P-MGLA-ODKRYCIE-SCIEZKA-INWARIANT-Q1`, merge `1af06c38`) — trzy poprzednie tematy naprawiały po jednym miejscu i każdy był ogłaszany jako ostatni. Nie usuwaj i nie osłabiaj whitelisty bez ECHO właściciela. |
 
 Zawsze czytaj kod wyjścia testu, nie procesu opakowującego. Worktree bez
 `gra/node_modules` daje mylący wynik `tsc` w obie strony — patrz playbook C-029.
