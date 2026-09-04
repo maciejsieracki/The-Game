@@ -54,6 +54,9 @@ export {
 export {
   resolveDiplomacyActionLock,
 } from '../src/game/diplomacy-locks';
+export {
+  evaluateProposal, resolvePlayerAcceptsAiPending,
+} from '../src/game/diplomacy-proposals';
 `, 'utf8');
 
 try {
@@ -61,7 +64,10 @@ try {
 } catch (e) { console.error('[handel-wymiana-tech-gate-test] esbuild failed:\n', e.message || e); process.exit(1); }
 
 const B = require(BUNDLE_FILE);
-const { refreshTradeRoutes, TRADE_TECH, resolveDiplomacyActionLock } = B;
+const {
+  refreshTradeRoutes, TRADE_TECH, resolveDiplomacyActionLock,
+  evaluateProposal, resolvePlayerAcceptsAiPending,
+} = B;
 
 let passed = 0, failed = 0;
 function assert(cond, msg) { if (cond) passed++; else { failed++; console.error('  FAIL:', msg); } }
@@ -237,6 +243,86 @@ console.log("\n-- Kryterium 8: diplomacy-locks case '5' -- locked wg technologii
 
   const rBoth = resolveDiplomacyActionLock({ ...baseCtx, hasTradeTechSelf: true, hasTradeTechOther: true });
   eq(rBoth.locked, false, 'K8d: obie strony maja tech (pozostale warunki spelnione) -- locked===false');
+}
+
+// ===========================================================================
+// KRYTERIUM 9 -- diplomacy-proposals.ts evaluateProposal(): case umowa_handlowa/
+// umowa_szlakow -- ZARZUT EVALUATORA #1 (runda 1, druga Obrona Operatora): ta
+// bramka (linia ~1439) nie mialA zadnego zywego testu -- usuniecie jej samodzielnie
+// nie czerwienilo ZADNEGO istniejacego pliku testowego. Naprawiono: bramka
+// eksportowana tutaj wprost, obie strony pary (proposer/responder) i oba kierunki
+// niekompletnosci osobno.
+// ===========================================================================
+console.log('\n-- Kryterium 9: evaluateProposal case umowa_handlowa/umowa_szlakow -- bramka techu --');
+{
+  function rel(z = 25, r = 25, status = 'pokoj') { return { zaufanie: z, respekt: r, status }; }
+  function prop(actionId, a, b, payload) { return { actionId, proposerOwnerId: a, responderOwnerId: b, payload }; }
+  // Fikstura znana z diplomacy-proposal-test.cjs (§17, lowTradeCtx) jako ACCEPTED
+  // baseline dla 'umowa_szlakow' -- gwarantuje, ze ponizsze odrzucenia sa efektem
+  // WYLACZNIE nowej bramki techu, nie przypadkowego zderzenia z inna bramka.
+  const baseCtx = {
+    relation: rel(25, 25),
+    responderPlayer: { typCywilizacji: 'zulusi' },
+    proposerPlayer: { typCywilizacji: 'rzymianie' },
+  };
+  const payload = { givePn: 250, receivePn: 100, turns: 20 };
+
+  const rBothTech = evaluateProposal(prop('umowa_szlakow', 0, 1, payload), { ...baseCtx, hasTradeTechProposer: true, hasTradeTechResponder: true });
+  assert(rBothTech.accepted && rBothTech.deal?.rodzaj === 'umowa_szlakow', `K9a: obie strony maja tech -- akceptacja jak dotad (got: ${JSON.stringify(rBothTech)})`);
+
+  const rUndef = evaluateProposal(prop('umowa_szlakow', 0, 1, payload), baseCtx);
+  assert(rUndef.accepted && rUndef.deal?.rodzaj === 'umowa_szlakow', 'K9b: pola pominiete (undefined) -- wsteczna zgodnosc, bramka pominieta jak K7');
+
+  const rNoProposer = evaluateProposal(prop('umowa_szlakow', 0, 1, payload), { ...baseCtx, hasTradeTechProposer: false, hasTradeTechResponder: true });
+  eq(rNoProposer.accepted, false, 'K9c: proponent bez techu -- odrzucenie');
+  assert(/Wymiana/.test(rNoProposer.reason ?? ''), `K9c: powod wspomina technologie Wymiana (got: ${JSON.stringify(rNoProposer.reason)})`);
+
+  const rNoResponder = evaluateProposal(prop('umowa_szlakow', 0, 1, payload), { ...baseCtx, hasTradeTechProposer: true, hasTradeTechResponder: false });
+  eq(rNoResponder.accepted, false, 'K9d: respondent bez techu -- odrzucenie');
+
+  const rNeither = evaluateProposal(prop('umowa_szlakow', 0, 1, payload), { ...baseCtx, hasTradeTechProposer: false, hasTradeTechResponder: false });
+  eq(rNeither.accepted, false, 'K9e: obie strony bez techu -- odrzucenie');
+
+  // Alias umowa_handlowa -- ten sam case w evaluateProposal (patrz komentarz w zrodle).
+  const rAliasNoTech = evaluateProposal(prop('umowa_handlowa', 0, 1, payload), { ...baseCtx, hasTradeTechProposer: false, hasTradeTechResponder: true });
+  eq(rAliasNoTech.accepted, false, 'K9f: alias umowa_handlowa -- ta sama bramka, odrzucenie');
+
+  // Anty-halucynacja lokalna: bez bramki (usunieta reka w teście) ten sam scenariusz
+  // K9c bylby accepted -- potwierdza ze bramka faktycznie decyduje, nie inna sciezka.
+  const rNoGateControl = evaluateProposal(prop('umowa_szlakow', 0, 1, payload), { ...baseCtx });
+  assert(rNoGateControl.accepted, 'K9g: (kontrola) bez pol hasTradeTech* w ogole -- ten sam payload akceptowany -- K9c/d/e sa efektem bramki, nie payloadu');
+}
+
+// ===========================================================================
+// KRYTERIUM 10 -- diplomacy-proposals.ts resolvePlayerAcceptsAiPending(): druga
+// warstwa tej samej bramki (gracz klika Przyjmij na propozycji AI, linia ~2107).
+// ZARZUT EVALUATORA #1: rowniez bez zywego pokrycia. Naprawiono.
+// ===========================================================================
+console.log('\n-- Kryterium 10: resolvePlayerAcceptsAiPending -- druga warstwa bramki --');
+{
+  function pending(actionId, fromOwnerId, toOwnerId, payload = {}) {
+    return { id: 'p10', fromOwnerId, toOwnerId, actionId, payload, createdTurn: 1, expiresTurn: null, source: 'ai' };
+  }
+  const ALL_TECH  = () => true;
+  const NO_TECH   = () => false;
+  const ONLY_AI_HAS_TECH = (ownerId) => ownerId === 1; // AI(1)=proponent ma, gracz(0)=respondent nie
+
+  const rNoOpts = resolvePlayerAcceptsAiPending(pending('umowa_szlakow', 1, 0), 10, 'normal');
+  assert(rNoOpts.accepted && rNoOpts.deal?.rodzaj === 'umowa_szlakow', 'K10a: opts pominiete -- wsteczna zgodnosc, akceptacja jak przed tematem');
+
+  const rBothTech = resolvePlayerAcceptsAiPending(pending('umowa_szlakow', 1, 0), 10, 'normal', { hasTradeTech: ALL_TECH });
+  assert(rBothTech.accepted && rBothTech.deal?.rodzaj === 'umowa_szlakow', 'K10b: hasTradeTech -> zawsze true -- akceptacja');
+
+  const rNoTech = resolvePlayerAcceptsAiPending(pending('umowa_szlakow', 1, 0), 10, 'normal', { hasTradeTech: NO_TECH });
+  eq(rNoTech.accepted, false, 'K10c: hasTradeTech -> zawsze false -- gracz NIE moze przyjac propozycji AI bez techu');
+  assert(/Wymiana/.test(rNoTech.reason ?? ''), `K10c: powod wspomina Wymiana (got: ${JSON.stringify(rNoTech.reason)})`);
+
+  const rPartial = resolvePlayerAcceptsAiPending(pending('umowa_szlakow', 1, 0), 10, 'normal', { hasTradeTech: ONLY_AI_HAS_TECH });
+  eq(rPartial.accepted, false, 'K10d: tylko proponent (AI) ma tech, respondent (gracz, id 0) nie -- odrzucenie (symetria z K9d)');
+
+  // Alias umowa_handlowa -- ten sam case.
+  const rAlias = resolvePlayerAcceptsAiPending(pending('umowa_handlowa', 1, 0), 10, 'normal', { hasTradeTech: NO_TECH });
+  eq(rAlias.accepted, false, 'K10e: alias umowa_handlowa -- ta sama bramka w resolvePlayerAcceptsAiPending');
 }
 
 // ---------------------------------------------------------------------------
