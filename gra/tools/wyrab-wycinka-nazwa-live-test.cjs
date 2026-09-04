@@ -181,6 +181,34 @@ async function main() {
   check('[4] improvement-build.ts: "najpierw wyrąb las" (czasownik) NIETKNIĘTY',
     buildTs.includes('najpierw wyrąb las (Wycinka w panelu ulepszeń)'));
 
+  // -----------------------------------------------------------------------
+  // [5] wikiBundle.json -- OBIE sekcje bundla (encyklopedia I poradnik).
+  //     Dodane w rundzie 2 po zarzucie 1 Evaluatora: raport pominal zmiany
+  //     w /poradnik/*, bo sekcja poradnika nie byla w ogole asertowana.
+  //     Ten blok zamyka luke na stale -- regeneracja bundla, ktora cofnelaby
+  //     nazwe w KTOREJKOLWIEK sekcji, wywala test.
+  // -----------------------------------------------------------------------
+  const bundle = JSON.parse(
+    fs.readFileSync(path.join(GRA, 'src', 'data', 'wikiBundle.json'), 'utf8'));
+
+  const wpis = bundle.encyklopedia.find((e) => e.id === 'ulepszenia/wyrab');
+  check('[5] bundle/encyklopedia: wpis "ulepszenia/wyrab" istnieje (klucz NIEZMIENIONY)',
+    !!wpis, wpis && wpis.id);
+  check('[5] bundle/encyklopedia: title == "Wycinka"',
+    wpis && wpis.title === 'Wycinka', wpis && wpis.title);
+
+  for (const id of ['05-budowa-mapa', '28-katalog-ulepszen']) {
+    const rozdz = bundle.poradnik.find((p) => p.id === id);
+    check(`[5] bundle/poradnik/${id}: rozdzial obecny`, !!rozdz);
+    check(`[5] bundle/poradnik/${id}: zawiera "Wycinka"`,
+      !!rozdz && rozdz.content.includes('Wycinka'));
+    check(`[5] bundle/poradnik/${id}: NIE zawiera "Wyrąb"`,
+      !!rozdz && !rozdz.content.includes('Wyrąb'));
+  }
+
+  check('[5] bundle (CALY, obie sekcje): zero wystapien "Wyrąb"',
+    !JSON.stringify(bundle).includes('Wyrąb'));
+
   console.log('');
   console.log(`[wyrab-wycinka-nazwa-live-test] ${pass} pass, ${fail} fail`);
   try { fs.unlinkSync(ENTRY); } catch (_e) { /* noop */ }
