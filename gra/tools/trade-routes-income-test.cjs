@@ -161,40 +161,83 @@ const routesBRestored = TR.refreshTradeRoutes([p1, f1], routesB, map, builtA, NO
 eq(routesBRestored.length, 1, 'B: powrot do pokoju -> trasa odtworzona');
 
 // ---------------------------------------------------------------------------
-// C. Wlasne<->wlasne NIGDY nie tworzy trasy (filtr zewnetrzny)
+// C. R-HANDEL-LIMIT-TRAS-PELNY-Q1 (2026-09-04, GOAL 5) -- ODWROCENIE: wlasne<->
+//    wlasne TERAZ TWORZY trase (handel wewnatrz-cywilizacyjny), gdy fizycznie
+//    polaczone -- bez traktatu (nie mozna go zawrzec z samym soba) i bez wymogu
+//    granicy (irrelewantne dla tego samego wlasciciela). Cytat wyzwalajacy
+//    wlasciciela (2026-09-04): "w sytuacji, gdy dana cywilizacja gracza, inna
+//    cywilizacja lub panstwo-miasto nie maja zadnej umowy wymiany, moga
+//    handlowac pomiedzy swoimi miastami." Dawny test tej sekcji (C: "wlasne<->
+//    wlasne NIGDY nie tworzy trasy") zakladal STARA, teraz JAWNIE odwrocona
+//    semantyke -- zaktualizowany ponizej zgodnie z KRYTERIUM KONCA #7 dispatchu.
 // ---------------------------------------------------------------------------
-console.log('\n-- C. refreshTradeRoutes: wlasne<->wlasne nie tworzy trasy --');
+console.log('\n-- C. refreshTradeRoutes: wlasne<->wlasne TERAZ TWORZY trase (GOAL 5, odwrocenie) --');
 const p1c = city('p1c', 0, 30);
-const p2c = city('p2c', 0, 35); // rowniez gracz -- brak miasta obcego w tym wywolaniu
+const p2c = city('p2c', 0, 35); // ten sam wlasciciel (gracz) -- brak miasta obcego w tym wywolaniu
 const builtC = new Map([['p1c', ['targowisko']], ['p2c', ['targowisko']]]);
 const routesC = TR.refreshTradeRoutes([p1c, p2c], [], map, builtC, NO_WAR, HAS_TREATY);
-eq(routesC.length, 0, 'C: dwa miasta gracza, brak obcego -> zero tras (own<->own wykluczone)');
+eq(routesC.length, 1, 'C: GOAL 5 -- dwa miasta TEGO SAMEGO wlasciciela, fizycznie polaczone -> dokladnie 1 trasa wewnetrzna');
+const routeC = routesC[0];
+eq(routeC.fromCityId, 'p1c', 'C: fromCityId = p1c (kierunek kanoniczny -- id mniejsze pierwsze)');
+eq(routeC.toCityId, 'p2c', 'C: toCityId = p2c');
+eq(routeC.ownerId, 0, 'C: ownerId = 0 (wlasny wlasciciel)');
+eq(routeC.toOwnerId, 0, 'C: toOwnerId = 0 -- IDENTYCZNY jak ownerId (trasa WEWNETRZNA, nowosc GOAL 5)');
+eq(routeC.medium, 'lad', 'C: medium lad (plaski, przechodni teren)');
+eq(routeC.dystans, 5, 'C: dystans = 5');
+eq(routeC.status, 'polaczony', 'C: status polaczony');
+eq(routeC.budynekOdblokowany, true, 'C: oba miasta maja Targowisko (1 slot kazde) -> budynekOdblokowany=true, jedyna trasa wewnetrzna');
 
 // ---------------------------------------------------------------------------
-// D. T3: limit budynkow handlowych NIE ogranicza juz ISTNIENIE trasy -- wylacznie
-//    pole budynekOdblokowany (ten sam mechanizm priorytetu, co dawniej dla istnienia:
-//    najpierw istniejace trasy po id, potem nowe wg rosnacego dystansu).
+// D. T3 (buildings-only, bez zmian): limit budynkow handlowych NIE ogranicza
+//    ISTNIENIE trasy -- wylacznie pole budynekOdblokowany. R-HANDEL-LIMIT-TRAS-
+//    PELNY-Q1 (2026-09-04, GOAL 2-3) ZMIENIL jednak kolejnosc priorytetu tego
+//    pola: NIE JUZ "najpierw istniejace po id, potem nowe wg rosnacego dystansu"
+//    -- od tego tematu kolejnosc to DOCHOD MALEJACO (patrz docstring
+//    refreshTradeRoutes) -- fixture'y ponizej maja WIEC celowo DUZA roznice
+//    dystansu miedzy kandydatami (nie tylko 1 heks jak dawniej), zeby zaokraglenie
+//    /5 (R-HANDEL-SZLAKI-DOCHOD-PODZIEL5-Q1) nie dawalo remisu i test jednoznacznie
+//    demonstrowal NOWA regule: dalszy/bardziej dochodowy kandydat wygrywa slot,
+//    NIE blizszy jak przed tym tematem (dokladne odwrocenie -- patrz takze
+//    kryterium konca #5 dispatchu i sekcja I nizej, ktora testuje analogiczna
+//    zmiane dla SAMEGO ISTNIENIA w oddzielnym pliku trade-routes-limit-test.cjs).
+//    Fixture'y uzywaja tez SCOPED `isAtWar`, ktory blokuje WYLACZNIE krawedz
+//    MIEDZY dwoma konkurujacymi kandydatami (nie dotyczaca centralnego miasta
+//    testu) -- inaczej R-HANDEL-LIMIT-TRAS-PELNY-Q1 GOAL 4 (uogolnienie na
+//    dowolne pary wlascicieli) wygenerowalby DODATKOWA, nieplanowana trzecia
+//    trase miedzy samymi kandydatami (na tej plaskiej, w calosci przechodniej
+//    mapie testowej sa oni zawsze fizycznie polaczeni), co zaszumialoby test
+//    ponad jego pierwotny, waski cel (limit budynkowy JEDNEGO miasta).
 // ---------------------------------------------------------------------------
-console.log('\n-- D. refreshTradeRoutes: T3 -- budynki gatuja budynekOdblokowany, NIE istnienie --');
+console.log('\n-- D. refreshTradeRoutes: T3 -- budynki gatuja budynekOdblokowany, NIE istnienie (GOAL 3: priorytet wg dochodu) --');
 
-// D1: pD ma tylko 1 slot budynkowy (Targowisko), dwaj obcy kandydaci -- OBIE trasy
-// teraz ISTNIEJA, ale tylko blizsza (fD1) dostaje budynekOdblokowany=true.
+// D1: pD ma tylko 1 slot budynkowy (Targowisko), dwaj obcy kandydaci (rozne
+// wlascicielstwa 1/2) -- OBIE trasy ISTNIEJA (existence baseline=2 kazde: 1+1
+// budynek), ale TYLKO bardziej dochodowy (fD2, dystans 8, dalszy) dostaje
+// budynekOdblokowany=true -- odwrotnie niz przed tym tematem (dawniej wygrywal
+// blizszy fD1). isAtWar blokuje WYLACZNIE fD1<->fD2 (GOAL 4 wygenerowalby tu
+// dodatkowa trase miedzy fD1/fD2, nieplanowana dla tego testu).
+const WAR_BETWEEN_CANDIDATES_1_2 = (a, b) => (a === 1 && b === 2) || (a === 2 && b === 1);
 const pD  = city('pD', 0, 60);
-const fD1 = city('fD1', 1, 63); // dystans 3 -- blizej
-const fD2 = city('fD2', 2, 64); // dystans 4 -- dalej
+const fD1 = city('fD1', 1, 63); // dystans 3 -- blizej, NIZSZY dochod (patrz ponizej)
+const fD2 = city('fD2', 2, 68); // dystans 8 -- dalej, WYZSZY dochod
 const builtD1 = new Map([
-  ['pD',  ['targowisko']],          // 1 slot
+  ['pD',  ['targowisko']],          // 1 slot budynkowy
   ['fD1', ['targowisko']],
   ['fD2', ['targowisko']],
 ]);
-const routesD1 = TR.refreshTradeRoutes([pD, fD1, fD2], [], map, builtD1, NO_WAR, HAS_TREATY);
-eq(routesD1.length, 2, 'D1: T3 -- limit budynkowy=1 po stronie gracza, ALE obie trasy ISTNIEJA');
+const routesD1 = TR.refreshTradeRoutes([pD, fD1, fD2], [], map, builtD1, WAR_BETWEEN_CANDIDATES_1_2, HAS_TREATY);
+eq(routesD1.length, 2, 'D1: T3 -- limit budynkowy=1 po stronie gracza, ALE obie trasy ISTNIEJA (existence baseline=2 kazde)');
 const routeD1_fD1 = routesD1.find(r => r.toCityId === 'fD1');
 const routeD1_fD2 = routesD1.find(r => r.toCityId === 'fD2');
-eq(routeD1_fD1.budynekOdblokowany, true, 'D1: blizszy kandydat (dystans 3) dostaje wolny slot -> budynekOdblokowany=true');
-eq(routeD1_fD2.budynekOdblokowany, false, 'D1: dalszy kandydat (dystans 4) -- brak wolnego slotu -> budynekOdblokowany=false');
+assert(
+  TR.tradeRouteTotalDistanceIncome(8, 'lad', TR.DEFAULT_TRADE_ROUTE_INCOME_PARAMS)
+    > TR.tradeRouteTotalDistanceIncome(3, 'lad', TR.DEFAULT_TRADE_ROUTE_INCOME_PARAMS),
+  'D1: (setup) kontrola -- dystans 8 daje WYZSZY dochod niz dystans 3 (fixture rzeczywiscie testuje priorytet dochodowy, nie przypadkowy remis)',
+);
+eq(routeD1_fD2.budynekOdblokowany, true, 'D1 (GOAL 3, ODWROCENIE): dalszy, BARDZIEJ DOCHODOWY kandydat (fD2, dystans 8) dostaje wolny slot -> budynekOdblokowany=true');
+eq(routeD1_fD1.budynekOdblokowany, false, 'D1 (GOAL 3, ODWROCENIE): blizszy, MNIEJ DOCHODOWY kandydat (fD1, dystans 3) -- brak wolnego slotu -> budynekOdblokowany=false');
 assert(routeD1_fD1.dystans === 3 && routeD1_fD1.status === 'polaczony', 'D1: fD1 ma pelny dochod dystansowy mimo dzielonego slotu');
-assert(routeD1_fD2.dystans === 4 && routeD1_fD2.status === 'polaczony', 'D1: fD2 (bez slotu) NADAL ma dochod dystansowy (T3 -- dochod dostepny od poczatku)');
+assert(routeD1_fD2.dystans === 8 && routeD1_fD2.status === 'polaczony', 'D1: fD2 (ze slotem) ma dochod dystansowy (T3 -- dochod dostepny od poczatku)');
 
 // D1-bis: podniesienie limitu gracza do 2 (Targowisko + Port wielki) -> obie trasy
 // dostaja budynekOdblokowany=true (istnienie bez zmian -- juz bylo 2).
@@ -203,26 +246,30 @@ const builtD1b = new Map([
   ['fD1', ['targowisko']],
   ['fD2', ['targowisko']],
 ]);
-const routesD1b = TR.refreshTradeRoutes([pD, fD1, fD2], [], map, builtD1b, NO_WAR, HAS_TREATY);
+const routesD1b = TR.refreshTradeRoutes([pD, fD1, fD2], [], map, builtD1b, WAR_BETWEEN_CANDIDATES_1_2, HAS_TREATY);
 eq(routesD1b.length, 2, 'D1-bis: 2 sloty po stronie gracza -> nadal obie trasy istnieja');
 assert(routesD1b.every(r => r.budynekOdblokowany === true), 'D1-bis: 2 sloty -> OBIE trasy dostaja budynekOdblokowany=true');
 
-// D2: limit po stronie OBCEGO miasta -- fD ma tylko 1 slot, dwaj gracze konkuruja
-// o budynekOdblokowany (obie trasy jednak istnieja).
+// D2: limit po stronie OBCEGO miasta (fD) -- fD ma tylko 1 slot budynkowy, DWA
+// INNE miasta (wlasciciele 0 i 2 -- rozne, zeby uniknac przypadkowej trasy
+// WEWNETRZNEJ miedzy nimi, GOAL 5) konkuruja o jego jedyny slot. isAtWar blokuje
+// WYLACZNIE krawedz pF1<->pF2 (analogicznie do D1 -- GOAL 4 wygenerowalby
+// nieplanowana trzecia trase miedzy kandydatami).
+const WAR_BETWEEN_CANDIDATES_0_2 = (a, b) => (a === 0 && b === 2) || (a === 2 && b === 0);
 const fD  = city('fD', 1, 90);
-const pF1 = city('pF1', 0, 91); // dystans 1 -- blizej
-const pF2 = city('pF2', 0, 88); // dystans 2 -- dalej
+const pF1 = city('pF1', 0, 91); // dystans 1 -- blizej, NIZSZY dochod
+const pF2 = city('pF2', 2, 80); // dystans 10 -- dalej, WYZSZY dochod
 const builtD2 = new Map([
   ['fD',  ['targowisko']],  // 1 slot (obce miasto)
   ['pF1', ['targowisko']],
   ['pF2', ['targowisko']],
 ]);
-const routesD2 = TR.refreshTradeRoutes([fD, pF1, pF2], [], map, builtD2, NO_WAR, HAS_TREATY);
-eq(routesD2.length, 2, 'D2: T3 -- limit budynkowy=1 po stronie obcego, ALE obie trasy ISTNIEJA');
-const routeD2_pF1 = routesD2.find(r => r.fromCityId === 'pF1');
-const routeD2_pF2 = routesD2.find(r => r.fromCityId === 'pF2');
-eq(routeD2_pF1.budynekOdblokowany, true, 'D2: blizszy gracz (dystans 1) dostaje wolny slot obcego -> budynekOdblokowany=true');
-eq(routeD2_pF2.budynekOdblokowany, false, 'D2: dalszy gracz (dystans 2) -- brak wolnego slotu -> budynekOdblokowany=false');
+const routesD2 = TR.refreshTradeRoutes([fD, pF1, pF2], [], map, builtD2, WAR_BETWEEN_CANDIDATES_0_2, HAS_TREATY);
+eq(routesD2.length, 2, 'D2: T3 -- limit budynkowy=1 po stronie obcego (fD), ALE obie trasy ISTNIEJA');
+const routeD2_pF1 = routesD2.find(r => r.fromCityId === 'pF1' || r.toCityId === 'pF1');
+const routeD2_pF2 = routesD2.find(r => r.fromCityId === 'pF2' || r.toCityId === 'pF2');
+eq(routeD2_pF2.budynekOdblokowany, true, 'D2 (GOAL 3, ODWROCENIE): dalszy, BARDZIEJ DOCHODOWY kandydat (pF2, dystans 10) dostaje wolny slot fD -> budynekOdblokowany=true');
+eq(routeD2_pF1.budynekOdblokowany, false, 'D2 (GOAL 3, ODWROCENIE): blizszy, MNIEJ DOCHODOWY kandydat (pF1, dystans 1) -- brak wolnego slotu -> budynekOdblokowany=false');
 
 // ---------------------------------------------------------------------------
 // E. Stabilnosc: DWA POZIOMY (T3) -- (1) istnienie trasy z existingRoutes zawsze
@@ -231,24 +278,34 @@ eq(routeD2_pF2.budynekOdblokowany, false, 'D2: dalszy gracz (dystans 2) -- brak 
 //    nowym, blizszym kandydatem.
 // ---------------------------------------------------------------------------
 console.log('\n-- E. refreshTradeRoutes: stabilnosc istnienia ORAZ budynekOdblokowany (T3) --');
+// fENew ma INNEGO wlasciciela (2) niz fEOld (1) -- gdyby oba byly tym samym
+// wlascicielem, R-HANDEL-LIMIT-TRAS-PELNY-Q1 GOAL 5 wygenerowalby DODATKOWA,
+// nieplanowana trase WEWNETRZNA miedzy nimi (fizycznie polaczeni na tej plaskiej
+// mapie) -- WAR_1_2 blokuje analogicznie do sekcji D wyzej.
+const WAR_1_2_FOR_E = (a, b) => (a === 1 && b === 2) || (a === 2 && b === 1);
 const pE = city('pE', 0, 120);
-const fEOld = city('fEOld', 1, 125); // dystans 5 -- istniejaca trasa
-const fENew = city('fENew', 1, 122); // dystans 2 -- blizszy NOWY kandydat
+const fEOld = city('fEOld', 1, 125); // dystans 5 -- istniejaca trasa, WYZSZY dochod
+const fENew = city('fENew', 2, 122); // dystans 2 -- blizszy NOWY kandydat, NIZSZY dochod
 const builtE = new Map([
   ['pE',    ['targowisko']], // 1 slot
   ['fEOld', ['targowisko']],
   ['fENew', ['targowisko']],
 ]);
-const existingE = TR.refreshTradeRoutes([pE, fEOld], [], map, builtE, NO_WAR, HAS_TREATY);
+const existingE = TR.refreshTradeRoutes([pE, fEOld], [], map, builtE, WAR_1_2_FOR_E, HAS_TREATY);
 eq(existingE.length, 1, 'E: (setup) trasa poczatkowa pE<->fEOld istnieje');
 eq(existingE[0].budynekOdblokowany, true, 'E: (setup) jedyna trasa -> od razu ma budynekOdblokowany=true (1 slot wolny)');
 
-const routesE = TR.refreshTradeRoutes([pE, fEOld, fENew], existingE, map, builtE, NO_WAR, HAS_TREATY);
+const routesE = TR.refreshTradeRoutes([pE, fEOld, fENew], existingE, map, builtE, WAR_1_2_FOR_E, HAS_TREATY);
 eq(routesE.length, 2, 'E: T3 -- OBIE trasy (stara + nowa, blizsza) TERAZ ISTNIEJA (1 slot juz nie ogranicza istnienia)');
 const routeE_old = routesE.find(r => r.toCityId === 'fEOld');
 const routeE_new = routesE.find(r => r.toCityId === 'fENew');
-eq(routeE_old.budynekOdblokowany, true, 'E: istniejaca trasa fEOld PRIORYTETOWO zachowuje budynekOdblokowany=true mimo blizszego fENew');
-eq(routeE_new.budynekOdblokowany, false, 'E: nowy, blizszy kandydat fENew NIE dostaje slotu -- zajety przez istniejaca trase');
+assert(
+  TR.tradeRouteTotalDistanceIncome(5, 'lad', TR.DEFAULT_TRADE_ROUTE_INCOME_PARAMS)
+    > TR.tradeRouteTotalDistanceIncome(2, 'lad', TR.DEFAULT_TRADE_ROUTE_INCOME_PARAMS),
+  'E: (setup) kontrola -- fEOld (dystans 5) ma WYZSZY dochod niz fENew (dystans 2), wiec ponizsze PRIORYTETOWO wynika z GOAL 3 (dochod malejaco), nie tylko ze stabilnosci',
+);
+eq(routeE_old.budynekOdblokowany, true, 'E (GOAL 3): istniejaca trasa fEOld zachowuje budynekOdblokowany=true -- WYZSZY dochod NIZ fENew (dystans 5 > 2), stabilnosc jest tu redundantna z priorytetem dochodowym, nie jedynym powodem');
+eq(routeE_new.budynekOdblokowany, false, 'E: nowy, blizszy, MNIEJ DOCHODOWY kandydat fENew NIE dostaje slotu -- zajety przez bardziej dochodowa istniejaca trase');
 
 // ---------------------------------------------------------------------------
 // J. T3: dochod dystansowy dostepny BEZ zadnego budynku handlowego; trasa morska

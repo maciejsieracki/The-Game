@@ -13666,6 +13666,15 @@ async function boot(): Promise<void> {
         data.econParams as unknown as Parameters<typeof loadTradeRouteParams>[0],
         _menuDifficulty,
       );
+      // R-HANDEL-LIMIT-TRAS-PELNY-Q1 (GOAL 4 dispatchu): przeniesione PRZED refreshTradeRoutes
+      // (dawniej liczone tylko wewnątrz `if (reportEvents)` niżej) — refreshTradeRoutes
+      // od tego tematu przyjmuje `incomeParams` jako klucz sortowania priorytetu
+      // kandydatów (dochód malejąco, GOAL 3), więc musi być dostępny zawsze, nie
+      // tylko gdy raportujemy zdarzenia.
+      const tradeIncomeParams = loadTradeRouteIncomeParams(
+        data.econParams as unknown as Parameters<typeof loadTradeRouteIncomeParams>[0],
+        _menuDifficulty,
+      );
       const isAtWarFn = (a: number, b: number): boolean => getDiploRelation(a, b).status === 'wojna';
       const hasTradeTreatyFn = (a: number, b: number): boolean => hasSzlakowTreaty(activeDeals, a, b);
       const prevTradeRoutes = tradeRoutes;
@@ -13678,7 +13687,8 @@ async function boot(): Promise<void> {
           isAtWarFn,
           hasTradeTreatyFn,
           tradeParams,
-          buildAllTerritoryNodes(), // R-HANDEL-SZLAKI-WYMOG-GRANICY-LADOWEJ-Q1: wymóg wspólnej granicy lądowej
+          buildAllTerritoryNodes(), // R-HANDEL-SZLAKI-WYMOG-GRANICY-LADOWEJ-Q1: wymóg wspólnej granicy lądowej (pary zewnętrzne — GOAL 5 R-HANDEL-LIMIT-TRAS-PELNY-Q1 pomija ten wymóg dla par wewnętrznych, wewnątrz samej funkcji)
+          tradeIncomeParams, // R-HANDEL-LIMIT-TRAS-PELNY-Q1 GOAL 3: priorytet kandydatów wg dochodu malejąco
         );
       } catch (eTrade) {
         console.error('[Handel] Blad odswiezania tras:', eTrade);
@@ -13690,10 +13700,6 @@ async function boot(): Promise<void> {
         console.error('[Handel] Blad przeliczania grantow z trasy:', eTradeGrant);
       }
       if (reportEvents) {
-        const tradeIncomeParams = loadTradeRouteIncomeParams(
-          data.econParams as unknown as Parameters<typeof loadTradeRouteIncomeParams>[0],
-          _menuDifficulty,
-        );
         try {
           reportTradeRouteEvents(
             prevTradeRoutes, tradeRoutes, tradeCities, map, tradeParams, cityBuilt,

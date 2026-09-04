@@ -30,15 +30,26 @@
  *     — to warstwa E3 (refreshTradeRoutes niżej stosuje ten filtr).
  *
  * Zakres E3 (dochód z tras, decyzje właściciela 2026-07-20 -- Q7=A, Q8=B, Q9):
- *   - refreshTradeRoutes() — ustala/utrzymuje/usuwa trasy GRACZ<->OBCA CYWILIZACJA
- *     co turę: filtr obcy właściciel + pokój (nie wojna) + AKTYWNA Umowa Handlowa
- *     (RodzajTraktatu.UmowaHandlowa — decyzja właściciela C-HANDEL-UMOWA=B,
- *     2026-07-23: sam pokój już NIE wystarcza, trasa wymaga zawartego traktatu).
+ *   - refreshTradeRoutes() — ustala/utrzymuje/usuwa trasy handlowe co turę.
+ *     R-HANDEL-LIMIT-TRAS-PELNY-Q1 (2026-09-04, patrz docstring funkcji niżej dla
+ *     pełnego opisu): odkąd ten temat zintegrowany, trasy powstają MIĘDZY
+ *     DOWOLNĄ parą właścicieli (gracz/AI/państwo-miasto, nie tylko gracz<->obcy)
+ *     ORAZ WEWNĄTRZ jednego właściciela (miasto<->miasto tej samej cywilizacji,
+ *     bez traktatu) — to ODWRACA dawny opis „GRACZ<->OBCA CYWILIZACJA WYŁĄCZNIE"
+ *     poniżej, zachowany jako historia: filtr obcy właściciel + pokój (nie wojna)
+ *     + AKTYWNA Umowa Szlaków (RodzajTraktatu.UmowaSzlakow, dawniej opisywana tu
+ *     mylącą nazwą legacy „Umowa Handlowa" — decyzja właściciela C-HANDEL-UMOWA=B,
+ *     2026-07-23: sam pokój już NIE wystarcza, trasa ZEWNĘTRZNA wymaga zawartego
+ *     traktatu; trasa WEWNĘTRZNA, nowość tego tematu, nie wymaga traktatu w ogóle).
  *     T3 (R-HANDEL-SZLAKI-PRZEBUDOWA-Q1, 2026-08-24): liczba budynków handlowych
- *     (Targowisko/Port/Port wielki) w mieście już NIE ogranicza istnienie trasy —
- *     ogranicza wyłącznie pole `TradeRoute.budynekOdblokowany` (czy dana trasa ma
- *     dziś pokrycie budynkowe, konsumowane w T4 do bonusu 5%). Fizyczny Port jako
- *     wymóg samej łączności morskiej (`cityHasPort`) zostaje bez zmian.
+ *     (Targowisko/Port/Port wielki) w mieście NIE ogranicza pola
+ *     `TradeRoute.budynekOdblokowany` (bonus 5%, T4) inaczej niż dawniej —
+ *     R-HANDEL-LIMIT-TRAS-PELNY-Q1 PRZYWRÓCIŁ jednak ograniczenie SAMEGO ISTNIENIA
+ *     trasy, przez NOWY, niezależny licznik `tradeRouteExistenceLimitForCity`
+ *     (baza=1 slot nawet bez budynków, +1 za budynek) — `tradeRouteLimitForCity`
+ *     (T3, buildings-only) zostaje bez zmian i nadal gatinguje wyłącznie
+ *     `budynekOdblokowany`. Fizyczny Port jako wymóg samej łączności morskiej
+ *     (`cityHasPort`) zostaje bez zmian.
  *   - Dochód = DWA SKŁADNIKI (wpięte oddzielnie):
  *     (1) składnik dystansowy (tradeRouteDistanceIncome / computeTradeRouteIncomeByCity)
  *         — wzór liniowy z podłogą, kredytowany OBU miastom trasy w pełnej kwocie
@@ -109,9 +120,16 @@ export interface TradeRoute {
    * (economy.ts) do naliczenia realnego bonusu 5% — samo w sobie nie niesie żadnej
    * kwoty. Liczba budynkowych „slotów" per miasto pozostaje ograniczona
    * (`tradeRouteLimitForCity`), więc gdy tras jest więcej niż slotów, o tym, KTÓRA
-   * trasa dostaje `budynekOdblokowany=true` decyduje ten sam mechanizm priorytetu
-   * co dawniej decydował o istnieniu: najpierw istniejące trasy (`existingRoutes`,
-   * sortowane po id), potem nowe wg rosnącego dystansu — patrz `refreshTradeRoutes`.
+   * trasa dostaje `budynekOdblokowany=true` decyduje mechanizm priorytetu —
+   * patrz `refreshTradeRoutes`. R-HANDEL-LIMIT-TRAS-PELNY-Q1 (2026-09-04, GOAL 3)
+   * ZMIENIŁ tę kolejność: NIE JUŻ "najpierw istniejące po id, potem nowe wg
+   * rosnącego dystansu" (opis T3 powyżej, historyczny) — od tego tematu kolejność
+   * to DOCHÓD MALEJĄCO (`tradeRouteTotalDistanceIncome`, ta sama, co gatinguje
+   * ISTNIENIE trasy przez `usedExistenceSlots`, patrz `tradeRouteExistenceLimitForCity`),
+   * ze stabilnością jako tie-break przy remisie dochodu (istniejąca trasa wygrywa
+   * z nową o identycznym dochodzie). Skutek: trasa dalsza (więc bardziej
+   * dochodowa, do sufitu krzywej) ma dziś WYŻSZY priorytet do slotu budynkowego
+   * niż trasa bliższa — odwrotnie niż przed tym tematem.
    */
   budynekOdblokowany: boolean;
 }
@@ -333,6 +351,7 @@ function cacheKeyFor(
   hasPortFrom: boolean,
   hasPortTo: boolean,
   landBorderTag: string,
+  needPath: boolean,
 ): string {
   // Klucz symetryczny nie jest potrzebny — kierunek nie zmienia wyniku detekcji,
   // ale dla prostoty i determinizmu zapisujemy dokładnie parę tak, jak wywołana.
@@ -340,8 +359,16 @@ function cacheKeyFor(
   // terytoria zmieniają się co turę (podobnie jak Porty wyżej), więc wynik MUSI
   // wejść do klucza, inaczej WeakMap<GameMap,...> (trwały między turami) zwracałby
   // przeterminowany wynik connectivity po zmianie terytorium bez zmiany pozycji miast.
+  // `needPath` (R-HANDEL-LIMIT-TRAS-PELNY-Q1, GOAL 6) — MUSI wejść do klucza:
+  // wynik z `needPath=false` (patrz komentarz przy `computeCityConnection`) ma
+  // celowo puste `pathHexes` mimo `connected=true`, więc nie wolno mu dzielić
+  // wpisu z wynikiem `needPath=true` (pełna ścieżka) dla TEJ SAMEJ pary/stanu —
+  // inaczej wołający, który faktycznie potrzebuje `pathHexes` (np. przyszłe E7),
+  // mógłby dostać z cache'a skrócony wynik zapisany wcześniej przez
+  // refreshTradeRoutes (który nigdy nie czyta `pathHexes`, patrz GOAL 6 w
+  // docstringu `findCityConnection`).
   return `${fromCity.q},${fromCity.r}|${toCity.q},${toCity.r}|${medium}|` +
-    `${params.ladMaxDist}|${params.morzeMaxDist}|${hasPortFrom ? 1 : 0}|${hasPortTo ? 1 : 0}|${landBorderTag}`;
+    `${params.ladMaxDist}|${params.morzeMaxDist}|${hasPortFrom ? 1 : 0}|${hasPortTo ? 1 : 0}|${landBorderTag}|${needPath ? 1 : 0}`;
 }
 
 // ---------------------------------------------------------------------------
@@ -609,6 +636,21 @@ function coastalWaterNeighbors(map: GameMap, city: TradeRouteCityRef): Array<{ q
  * "raz na wywołanie refreshTradeRoutes, nie per para miast") — wołający robiący
  * wiele wywołań dla tej samej pary właścicieli (refreshTradeRoutes,
  * citiesHaveTradeConnection) powinien przekazać WSPÓLNĄ instancję `Map`.
+ *
+ * `needPath` (R-HANDEL-LIMIT-TRAS-PELNY-Q1, GOAL 6, domyślnie `true` — WSTECZNA
+ * ZGODNOŚĆ pełna dla każdego istniejącego wywołującego): gdy `false`, wynik
+ * `connected`/`distance` jest identyczny, ale `pathHexes` jest CELOWO puste — w
+ * zamian, gdy tania negatywna komponenta spójności (`landComponentsMayConnect`/
+ * `waterComponentsMayConnect`, dowód patrz `computeCityConnection`) już
+ * POZYTYWNIE dowodzi istnienia ścieżki, funkcja pomija drogi `multiSourceBfs`
+ * (rekonstrukcję samej ścieżki) i zwraca `connected:true` od razu. Użyj
+ * WYŁĄCZNIE, gdy wołający naprawdę nie czyta `pathHexes` (dziś: WYŁĄCZNIE
+ * wewnętrzne wywołania `refreshTradeRoutes` — candidate-generation potrzebuje
+ * tylko `connected`+`distance`; `refreshTradeRoutesOverlay`, main.ts, rysuje
+ * łuki wprost ze współrzędnych miast, nie z `pathHexes` — grep całego
+ * `gra/src`/`gra/tools` potwierdza zero innych konsumentów `CityConnectionResult
+ * .pathHexes` poza tym plikiem i jego testami). Żywy pomiar wydajności (GOAL 6):
+ * `gra/tools/trade-routes-limit-test.cjs`, sekcja "Kryterium 9".
  */
 export function findCityConnection(
   fromCity: TradeRouteCityRef,
@@ -619,6 +661,7 @@ export function findCityConnection(
   builtByCity: ReadonlyMap<string, readonly string[]> = new Map(),
   territoryNodes?: readonly TerritoryNode[],
   landBorderCache?: Map<string, boolean>,
+  needPath: boolean = true,
 ): CityConnectionResult {
   const distance = hexDistance(fromCity.q, fromCity.r, toCity.q, toCity.r);
 
@@ -638,12 +681,12 @@ export function findCityConnection(
     __tradeConnectionCache.set(map, mapCache);
   }
 
-  const cacheKey = cacheKeyFor(fromCity, toCity, medium, params, hasPortFrom, hasPortTo, borderTag);
+  const cacheKey = cacheKeyFor(fromCity, toCity, medium, params, hasPortFrom, hasPortTo, borderTag, needPath);
   const cached = mapCache.get(cacheKey);
   if (cached) return cached;
 
   const result = computeCityConnection(
-    fromCity, toCity, map, medium, params, distance, hasPortFrom, hasPortTo, sharedBorder,
+    fromCity, toCity, map, medium, params, distance, hasPortFrom, hasPortTo, sharedBorder, needPath,
   );
   mapCache.set(cacheKey, result);
   return result;
@@ -659,6 +702,7 @@ function computeCityConnection(
   hasPortFrom: boolean,
   hasPortTo: boolean,
   sharedLandBorder: boolean,
+  needPath: boolean,
 ): CityConnectionResult {
   const NOT_CONNECTED: CityConnectionResult = { connected: false, distance, pathHexes: [] };
   // GOAL 2 (R-HANDEL-SZLAKI-LIMIT-DYSTANSU-USUN-Q1): sufit BFS liczony DYNAMICZNIE
@@ -684,6 +728,17 @@ function computeCityConnection(
 
     if (!landComponentsMayConnect(map, fromCity, toCity, distance)) return NOT_CONNECTED;
 
+    // R-HANDEL-LIMIT-TRAS-PELNY-Q1 (GOAL 6): `landComponentsMayConnect` powyżej
+    // to nie tylko negatywny filtr — jego wynik POZYTYWNY (`true`) jest z
+    // definicji flood-fillu (`computeConnectivityComponents`, IDENTYCZNY
+    // predykat `isLandPassable` co poniższy `multiSourceBfs`) dowodem, że
+    // ścieżka MIĘDZY tymi dwoma heksami FAKTYCZNIE istnieje (ten sam komponent
+    // spójności ⇒ osiągalne przez flood-fill bez ograniczenia liczby kroków).
+    // Gdy wołający nie potrzebuje `pathHexes` (`needPath=false`), pomijamy więc
+    // drogą rekonstrukcję samej ścieżki — `connected` i `distance` są identyczne
+    // z pełnym wynikiem, `pathHexes` jest po prostu puste zamiast policzone.
+    if (!needPath) return { connected: true, distance, pathHexes: [] };
+
     const path = multiSourceBfs(
       map,
       [{ q: fromCity.q, r: fromCity.r }],
@@ -705,6 +760,10 @@ function computeCityConnection(
   if (fromWater.length === 0 || toWater.length === 0) return NOT_CONNECTED;
 
   if (!waterComponentsMayConnect(map, fromWater, toWater)) return NOT_CONNECTED;
+
+  // GOAL 6 (analogicznie do lądu wyżej): pozytywny wynik `waterComponentsMayConnect`
+  // dowodzi istnienia ścieżki wodnej — pomiń BFS, gdy `pathHexes` niepotrzebne.
+  if (!needPath) return { connected: true, distance, pathHexes: [] };
 
   const goalKeys = new Set(toWater.map(h => keyOf(h.q, h.r)));
   const waterPath = multiSourceBfs(
@@ -836,17 +895,50 @@ export function tradeRouteLimitForCity(
   return n;
 }
 
+/**
+ * R-HANDEL-LIMIT-TRAS-PELNY-Q1 (GOAL 1, 2026-09-04) — limit ISTNIENIA tras
+ * handlowych danego miasta: 1 slot bazowy (nawet BEZ żadnego budynku handlowego)
+ * + 1 dodatkowy slot za KAŻDY zbudowany budynek z `TRADE_BUILDING_IDS`
+ * (Targowisko/Port/Port wielki — ten sam, NIEZMIENIONY zbiór, Magazyn/Mennica
+ * WYKLUCZONE, ECHO właściciela). To NOWY, NIEZALEŻNY tor od `tradeRouteLimitForCity`
+ * (który zostaje BEZ ZMIAN — dalej liczy WYŁĄCZNIE pokrycie budynkowe, zero
+ * baseline, konsumowane wyłącznie przez `TradeRoute.budynekOdblokowany`/bonus 5%).
+ *
+ * Cytat wyzwalający właściciela (2026-09-04): „miasto bez budynków miało tylko
+ * jedną drogę handlową i mogło handlować z jednym miastem. Kolejne budynki, takie
+ * jak rynek, umożliwiałyby kolejne drogi handlowe. Za każdy kolejny budynek
+ * powinna być kolejna droga dostępna." — stąd `1 + tradeRouteLimitForCity(...)`,
+ * nie sam `tradeRouteLimitForCity(...)` (który dałby 0 slotów miastu bez
+ * budynków, sprzecznie z "miasto bez budynków miało JEDNĄ drogę").
+ *
+ * Konsumowane w `refreshTradeRoutes` przez OSOBNY tor `usedExistenceSlots` —
+ * decyduje, czy dana trasa w ogóle TRAFIA do wyniku (`kept[]`), nie tylko czy
+ * dostaje bonus 5%. Patrz GOAL 2 dispatchu R-HANDEL-LIMIT-TRAS-PELNY-Q1.
+ */
+export function tradeRouteExistenceLimitForCity(
+  cityId: string,
+  builtByCity: ReadonlyMap<string, readonly string[]>,
+): number {
+  return 1 + tradeRouteLimitForCity(cityId, builtByCity);
+}
+
 // ---------------------------------------------------------------------------
 // E3: refreshTradeRoutes — ustalanie/utrzymanie/usuwanie tras co turę
 // ---------------------------------------------------------------------------
 
-/** Jeden kandydat trasy (para miast + medium wybrane przez detectBestConnection). */
+/**
+ * Jeden kandydat trasy (para miast + medium wybrane przez detectBestConnection).
+ * R-HANDEL-LIMIT-TRAS-PELNY-Q1 (GOAL 3): `isExisting` — czy ten kandydat
+ * KONTYNUUJE trasę z `existingRoutes` poprzedniej tury (tie-break stabilności
+ * przy remisie dochodu w połączonym sortowaniu, patrz `refreshTradeRoutes`).
+ */
 interface TradeRouteCandidate {
   from: TradeRouteCityRef;
   to: TradeRouteCityRef;
   medium: TradeRouteMedium;
   distance: number;
   id: string;
+  isExisting: boolean;
 }
 
 /**
@@ -868,10 +960,11 @@ function detectBestConnection(
   builtByCity: ReadonlyMap<string, readonly string[]>,
   territoryNodes?: readonly TerritoryNode[],
   landBorderCache?: Map<string, boolean>,
+  needPath: boolean = true,
 ): { medium: TradeRouteMedium; distance: number } | null {
-  const land = findCityConnection(a, b, map, 'lad', params, builtByCity, territoryNodes, landBorderCache);
+  const land = findCityConnection(a, b, map, 'lad', params, builtByCity, territoryNodes, landBorderCache, needPath);
   if (land.connected) return { medium: 'lad', distance: land.distance };
-  const sea = findCityConnection(a, b, map, 'morze', params, builtByCity, territoryNodes, landBorderCache);
+  const sea = findCityConnection(a, b, map, 'morze', params, builtByCity, territoryNodes, landBorderCache, needPath);
   if (sea.connected) return { medium: 'morze', distance: sea.distance };
   return null;
 }
@@ -1003,83 +1096,159 @@ export function diagnoseMissingTradeRouteForPartner(
 }
 
 /**
- * refreshTradeRoutes — E3: ustala aktywne trasy handlowe gracza na tę turę.
+ * refreshTradeRoutes — E3: ustala aktywne trasy handlowe wszystkich cywilizacji
+ * (gracz + AI + państwa-miasta) na tę turę.
  *
- * Reguły (decyzje właściciela, patrz STAN-PRACY-HANDOFF.md, epik Handel):
- *   - TYLKO ZEWNĘTRZNY: trasa łączy miasto GRACZA (ownerId === 0) z miastem
- *     OBCEJ cywilizacji (ownerId !== 0). Własne<->własne NIGDY nie tworzy trasy.
+ * R-HANDEL-LIMIT-TRAS-PELNY-Q1 (2026-09-04) — ODWRÓCENIE trzech wcześniejszych
+ * decyzji, na wyraźne zgłoszenie właściciela (limit tras + uogólnienie na
+ * wszystkie cywilizacje + handel wewnątrz-cywilizacyjny — patrz dispatch GOAL
+ * 1-5). Historyczny kontekst KAŻDEJ odwróconej decyzji zostaje niżej (czemu
+ * poprzedni temat zrobił to co zrobił), z jawnym dopiskiem, że został świadomie
+ * odwrócony:
+ *
+ *   (1) TYLKO ZEWNĘTRZNY (odwrócone, patrz GOAL 5): przed tym tematem trasa
+ *       łączyła WYŁĄCZNIE miasto GRACZA (ownerId===0) z miastem OBCEJ cywilizacji
+ *       (ownerId!==0) — „Własne<->własne NIGDY nie tworzy trasy". Cytat
+ *       wyzwalający właściciela (2026-09-04): „w sytuacji, gdy dana cywilizacja
+ *       gracza, inna cywilizacja lub państwo-miasto nie mają żadnej umowy wymiany,
+ *       mogą handlować pomiędzy swoimi miastami". Od tego tematu: KAŻDY właściciel
+ *       (gracz, każde AI, każde państwo-miasto) z 2+ miastami handluje też
+ *       WEWNĄTRZ siebie — bez traktatu (nie można mieć traktatu z samym sobą) i
+ *       bez wymogu wspólnej granicy (irrelewantne dla tego samego właściciela),
+ *       ALE z tym samym wymogiem fizycznej łączności BFS i tym samym wymogiem
+ *       Portu dla morza. Te kandydatury wchodzą do TEGO SAMEGO poola co
+ *       kandydatury zewnętrzne (patrz niżej), konkurując o te same existence-
+ *       -sloty na równych zasadach.
+ *   (2) TYLKO GRACZ<->OBCY, nie dowolne pary (odwrócone, patrz GOAL 4): przed tym
+ *       tematem candidate-generation iterowała WYŁĄCZNIE `playerCities` (ownerId
+ *       ===0) × `foreignCities` (ownerId!==0) — AI<->AI i AI<->państwo-miasto były
+ *       ignorowane, mimo że `formAiAiTradeAgreementsIfEligible` (main.ts) od dawna
+ *       zawiera dla nich realne traktaty. Od tego tematu: iteracja po WSZYSTKICH
+ *       unikalnych parach WŁAŚCICIELI obecnych w `cities` (grupowanie po
+ *       ownerId, para w kierunku kanonicznym ownerId rosnąco) — ten sam filtr
+ *       isAtWar/hasTradeTreaty co dawniej, tylko już nie zawężony do gracza.
+ *   (3) T3 (R-HANDEL-SZLAKI-PRZEBUDOWA-Q1, 2026-08-24, częściowo odwrócone —
+ *       patrz GOAL 1-2): T3 zniósł limit LICZBY tras per miasto całkowicie
+ *       („Umowa handlowa od początku [...] daje nam pomimo braku wybudowanych
+ *       budynków już środki samej odległości [...] Natomiast w momencie, gdy
+ *       budynki staną wybudowane, to dochodzi dodatkowo tych 5% handlu") —
+ *       budynki handlowe od T3 gatingowały WYŁĄCZNIE `budynekOdblokowany`
+ *       (bonus 5%), nie samo istnienie. Cytat wyzwalający właściciela
+ *       (2026-09-04): „miasto bez budynków miało tylko jedną drogę handlową
+ *       [...] Kolejne budynki [...] umożliwiałyby kolejne drogi handlowe." — od
+ *       tego tematu ISTNIENIE trasy jest znów ograniczone, ale przez NOWY,
+ *       NIEZALEŻNY licznik `tradeRouteExistenceLimitForCity` (baza=1 slot NAWET
+ *       bez budynków, +1 za każdy budynek handlowy) — `tradeRouteLimitForCity`
+ *       (T3, buildings-only, zero baseline) zostaje BEZ ZMIAN i nadal gatinguje
+ *       WYŁĄCZNIE `budynekOdblokowany`/bonus 5%, na przetrwałej (existence-
+ *       -gated) liście tras. Te DWA tory (existence i bonus) są w pełni
+ *       niezależne — miasto może mieć wolny existence-slot, ale zero bonusowych
+ *       (Magazyn/Mennica nie liczą się do żadnego z nich, ECHO właściciela).
+ *
+ * Reguły BEZ ZMIAN w tym temacie:
  *   - Filtr pokoju: isAtWar(ownerA, ownerB) === true -> para wykluczona (wojna
- *     zrywa/blokuje trasę). Wszystko poza wojną liczy się jako "pokój" (w tym
- *     neutralni/sojusz) — zgodnie z „filtr: obcy właściciel + pokój (nie wojna)".
- *   - Filtr traktatu (C-HANDEL-UMOWA=B, decyzja właściciela 2026-07-23 — ZMIENIA
- *     wcześniejszą HANDEL-Q1/Q8): hasTradeTreaty(ownerA, ownerB) === false -> para
- *     wykluczona. Sam pokój już NIE wystarcza — trasa wymaga AKTYWNEJ Umowy
- *     Handlowej (RodzajTraktatu.UmowaHandlowa) między stronami. Wojna nadal zrywa
- *     trasę niezależnie od traktatu (traktat i tak pada przy wypowiedzeniu wojny,
- *     patrz breakTreatiesOnWar w main.ts — to tylko druga, redundantna bramka).
- *   - T3 (R-HANDEL-SZLAKI-PRZEBUDOWA-Q1, cytat właściciela: „Umowa handlowa od
- *     początku [...] daje nam pomimo braku wybudowanych budynków już środki samej
- *     odległości [...] Natomiast w momencie, gdy budynki staną wybudowane, to
- *     dochodzi dodatkowo tych 5% handlu"): `tradeRouteLimitForCity` (budynki
- *     Targowisko/Port/Port wielki) NIE ogranicza już ISTNIENIE trasy — trasa
- *     istnieje i daje dochód dystansowy natychmiast po spełnieniu warunków
- *     wyżej (dla morza dodatkowo fizyczny Port w obu miastach, wymóg
- *     `findCityConnection`/`cityHasPort` — TO INNY BYT niż budynkowy limit tras:
- *     `cityHasPort` sprawdza wyłącznie 'port'/'port_wielki' jako warunek fizycznej
- *     łączności morskiej, `tradeRouteLimitForCity` liczy Targowisko+Port+Port
- *     wielki jako pojemność slotów „pokrycia budynkowego"). Zamiast gatingu
- *     istnienia, budynkowy limit slotów per miasto decyduje wyłącznie o polu
- *     `budynekOdblokowany` (patrz `TradeRoute.budynekOdblokowany`) — flaga
- *     konsumowana dopiero w T4 (economy.ts) do naliczenia bonusu 5%.
- *   - Stabilność między turami — DWA POZIOMY: (1) ISTNIENIE trasy: skoro od T3
- *     nie jest już ograniczone slotami, każda trasa z `existingRoutes`, która
- *     nadal spełnia warunki geometrii/wojny/traktatu, zostaje zachowana
- *     bezwarunkowo (nowe pary też mogą dojść — nic już z nikim nie rywalizuje
- *     o samo istnienie). (2) Pole `budynekOdblokowany`: budynkowe sloty per
- *     miasto (`tradeRouteLimitForCity`) POZOSTAJĄ ograniczone, więc gdy tras
- *     istnieje więcej niż slotów, o tym KTÓRA trasa dostaje
- *     `budynekOdblokowany=true` decyduje DOKŁADNIE ten sam mechanizm priorytetu,
- *     co dawniej decydował o samym istnieniu: najpierw istniejące trasy
- *     (`existingRoutes`, sortowane po id — trasa, która miała pokrycie budynkowe
- *     w poprzedniej turze, nie traci go byle nowej, bliższej trasie), potem nowe
- *     kandydatury wg rosnącego dystansu (tie-break: id) — „najbliższe wygrywają".
- *     Uzasadnienie: właściciel opisał 5% jako coś, co „dochodzi dodatkowo" do
- *     już istniejącego dochodu dystansowego, nie jako nowy, nieograniczony zasób —
- *     budynek fizycznie obsługuje ograniczoną liczbę szlaków, więc jego
- *     „odblokowanie" 5% powinno pozostać rzadkim, przydzielanym zasobem, tak jak
- *     przed T3 był rzadkim zasobem sam slot trasy.
+ *     zrywa/blokuje trasę zewnętrzną; NIE dotyczy handlu wewnętrznego — właściciel
+ *     nie może być w stanie wojny sam ze sobą).
+ *   - Filtr traktatu (C-HANDEL-UMOWA=B, 2026-07-23): hasTradeTreaty(ownerA,
+ *     ownerB) === false -> para zewnętrzna wykluczona. Handel WEWNĘTRZNY nie
+ *     wymaga traktatu (nie można go zawrzeć z samym sobą, GOAL 5).
+ *   - Wymóg wspólnej granicy lądowej dla LAD (R-HANDEL-SZLAKI-WYMOG-GRANICY-
+ *     LADOWEJ-Q1) — WYŁĄCZNIE dla par ZEWNĘTRZNYCH; handel wewnętrzny (GOAL 5)
+ *     jawnie POMIJA ten wymóg (przekazuje `territoryNodes=undefined` do
+ *     `findCityConnection`/`detectBestConnection` WYŁĄCZNIE dla kandydatur tego
+ *     samego właściciela — `landBorderShared` z `territoryNodes===undefined`
+ *     zwraca `true` NIEZALEŻNIE od par ownerId, czyli dokładnie "wymóg
+ *     wyłączony" — zero zmian w samej `findCityConnection`/`ownersHaveSharedLandBorder`).
+ *     Fizyczny wymóg Portu dla morza BEZ ZMIAN, dla obu rodzajów par.
+ *
+ * PRIORYTET KANDYDATÓW (GOAL 3, ZMIENIONY w tym temacie — dotyczy OBU torów,
+ * existence i bonus, ujednoliconych na tę samą kolejność): dawniej (T3) —
+ * najpierw istniejące trasy z poprzedniej tury (`existingRoutes`, sortowane po
+ * id), DOPIERO POTEM nowe kandydatury wg ROSNĄCEGO dystansu ("najbliższe
+ * wygrywają", dwa odrębne przebiegi Pass1-then-Pass2). Cytat wyzwalający
+ * właściciela: „każde miasto zawsze wybiera drogę najbardziej lukratywną, czyli
+ * najdalszą, ale jeżeli już jest niedostępna, to potem dobiera drogi bliższe."
+ * Od tego tematu: WSZYSTKIE kandydatury (kontynuujące ORAZ nowe) są połączone w
+ * JEDNĄ listę i posortowane razem wg MALEJĄCEGO dochodu
+ * (`tradeRouteTotalDistanceIncome` — dochód WPROST, nie surowy dystans, żeby
+ * uwzględnić bonus morski ×2 w porównaniach ląd/morze), z tie-breakiem
+ * stabilności (kandydatura kontynuująca wygrywa przy DOKŁADNYM remisie dochodu)
+ * i wreszcie po `id` dla pełnego determinizmu. Kandydaci są następnie
+ * przetwarzani w TYM POJEDYNCZYM porządku — pierwszy napotkany dla danej pary
+ * miast, dla którego OBIE strony mają wolny slot, zajmuje go.
+ *
+ * DECYZJA (dokumentacja żywego testu, patrz GOAL 3 dispatchu): POŁĄCZONE
+ * sortowanie (nie oddzielne przebiegi Pass1-then-Pass2 z priorytetem
+ * bezwarunkowym dla istniejących) było KONIECZNE, nie tylko możliwe — dowód:
+ * scenariusz „stopniowego wypierania" (kryterium końca #5, drugi test) —
+ * miasto z 1 slotem ma aktywną trasę WEWNĘTRZNĄ (niski dochód, kontynuowaną z
+ * poprzedniej tury); po zawarciu Umowy Szlaków pojawia się kandydatura
+ * ZEWNĘTRZNA o WYŻSZYM dochodzie. Gdyby istniejące trasy nadal miały
+ * bezwarunkowe pierwszeństwo (dawny Pass 1 zawsze przed Pass 2), trasa
+ * wewnętrzna zajęłaby jedyny slot miasta PRZED wygenerowaniem/rozważeniem nowej
+ * kandydatury zewnętrznej, która nigdy nie dostałaby szansy wyparcia jej —
+ * sprzeczne z kryterium „trasa wewnętrzna znika, zastąpiona zewnętrzną, BEZ
+ * specjalnej logiki warunkowej". Połączone sortowanie po dochodzie naprawia to
+ * z definicji: kandydatura o wyższym dochodzie (zewnętrzna) jest przetwarzana
+ * PIERWSZA niezależnie od tego, czy jest "nowa" czy "kontynuująca" — usuwa
+ * potrzebę jakiejkolwiek dodatkowej gałęzi "czy jest traktat". Żywy test:
+ * patrz `gra/tools/trade-routes-limit-test.cjs`, sekcja "wypieranie".
  *
  * Czysta funkcja — nie mutuje `existingRoutes`; zwraca nową listę (wyłącznie
  * trasy aktualnie połączone => wszystkie mają status 'polaczony'; trasa, która
- * przestała spełniać warunki, po prostu znika z wyniku zamiast dostawać status
- * 'zawieszony' — najprostsze rozwiązanie spełniające wymaganie „trasa znika
- * przy wojnie").
+ * przestała spełniać warunki — geometrii, wojny, traktatu ALBO existence-slotu —
+ * po prostu znika z wyniku zamiast dostawać status 'zawieszony').
  *
- * @param cities        WSZYSTKIE miasta biorące udział w handlu (gracz + obce
- *                       cywilizacje kwalifikujące się do handlu). Wykluczenie
+ * @param cities        WSZYSTKIE miasta biorące udział w handlu (gracz + AI +
+ *                       państwa-miasta kwalifikujące się do handlu, GOAL 4-5:
+ *                       generyczne po ownerId, nie tylko gracz+obcy). Wykluczenie
  *                       barbarzyńców / niekwalifikujących się właścicieli to
  *                       odpowiedzialność wywołującego (main.ts) — ten moduł nie
  *                       zna pojęcia "barbarzyńca".
  * @param existingRoutes trasy z poprzedniej tury (dla ciągłości/stabilności).
  * @param map           mapa świata (do findCityConnection).
- * @param builtByCity   cityId -> zbudowane budynki (T3: sloty `budynekOdblokowany`
- *                       + niezmieniony wymóg fizycznego Portu na morzu).
- * @param isAtWar       (ownerA, ownerB) => czy strony są w stanie wojny.
- * @param hasTradeTreaty (ownerA, ownerB) => czy strony mają AKTYWNĄ Umowę Handlową
- *                       (RodzajTraktatu.UmowaHandlowa). Wstrzyknięte przez wywołującego
- *                       (main.ts, z realnych traktatów diplomacy-treaties) — ten moduł
- *                       CELOWO nie zna stanu dyplomacji, tak samo jak isAtWar.
- * @param params        progi dystansu (handel_szlaki, patrz loadTradeRouteParams).
- * @param territoryNodes R-HANDEL-SZLAKI-WYMOG-GRANICY-LADOWEJ-Q1 (GOAL 1-4,
- *                       2026-09-03): węzły terytorium WSZYSTKICH właścicieli
- *                       (reużycie main.ts:buildAllTerritoryNodes()/
+ * @param builtByCity   cityId -> zbudowane budynki (bonus `budynekOdblokowany`
+ *                       + baseline `tradeRouteExistenceLimitForCity` + niezmieniony
+ *                       wymóg fizycznego Portu na morzu).
+ * @param isAtWar       (ownerA, ownerB) => czy strony są w stanie wojny (pomijane
+ *                       dla par WEWNĘTRZNYCH, GOAL 5 — właściciel nie może być w
+ *                       stanie wojny sam ze sobą).
+ * @param hasTradeTreaty (ownerA, ownerB) => czy strony mają AKTYWNĄ Umowę Szlaków
+ *                       (RodzajTraktatu.UmowaSzlakow — NIE „UmowaHandlowa", nazwa
+ *                       legacy w tej prozie/komentarzach, ani `UmowaWymiany`,
+ *                       koszyk PN — patrz RECON część D dispatchu). Wstrzyknięte
+ *                       przez wywołującego (main.ts, z realnych traktatów
+ *                       diplomacy-treaties) — ten moduł CELOWO nie zna stanu
+ *                       dyplomacji, tak samo jak isAtWar. Pomijane dla par
+ *                       WEWNĘTRZNYCH (GOAL 5 — nie można zawrzeć traktatu z samym
+ *                       sobą).
+ * @param params        progi dystansu (handel_szlaki, patrz loadTradeRouteParams) —
+ *                       WYŁĄCZNIE referencyjne dla connectivity legacy (GOAL 1 w
+ *                       poprzednim temacie); realny szczyt krzywej DOCHODU (do
+ *                       sortowania priorytetu, ten temat) czyta `incomeParams`.
+ * @param territoryNodes R-HANDEL-SZLAKI-WYMOG-GRANICY-LADOWEJ-Q1: węzły terytorium
+ *                       WSZYSTKICH właścicieli (reużycie main.ts:buildAllTerritoryNodes()/
  *                       map/territory.ts:territoryOwnerAt — model terytorium BEZ
  *                       ZMIAN), do wymogu wspólnej granicy lądowej między ownerami
- *                       (`ownersHaveSharedLandBorder`). `undefined` (domyślne) =
- *                       WSTECZNA ZGODNOŚĆ, wymóg wyłączony — WYŁĄCZNIE dla
- *                       wywołujących spoza allowlisty tego tematu (testy innego
- *                       wymiaru bez fikstur terytorium, patrz komentarz przy
- *                       `landBorderShared`); main.ts ZAWSZE przekazuje realne dane.
+ *                       PAR ZEWNĘTRZNYCH (`ownersHaveSharedLandBorder`) — GOAL 5
+ *                       tego tematu: pary WEWNĘTRZNE zawsze pomijają ten wymóg,
+ *                       niezależnie od tego argumentu. `undefined` (domyślne) =
+ *                       WSTECZNA ZGODNOŚĆ, wymóg wyłączony dla WSZYSTKICH par —
+ *                       WYŁĄCZNIE dla wywołujących spoza allowlisty tego tematu
+ *                       (testy innego wymiaru bez fikstur terytorium, patrz
+ *                       komentarz przy `landBorderShared`); main.ts ZAWSZE
+ *                       przekazuje realne dane.
+ * @param incomeParams  R-HANDEL-LIMIT-TRAS-PELNY-Q1 (GOAL 3): parametry dochodu
+ *                       (`loadTradeRouteIncomeParams`) użyte WYŁĄCZNIE do
+ *                       wyliczenia klucza sortowania priorytetu kandydatów
+ *                       (`tradeRouteTotalDistanceIncome`) — nie zmienia SAMEGO
+ *                       dochodu żadnej trasy (ten liczy się osobno, w
+ *                       `computeTradeRouteIncomeByCity`, z własnym `incomeParams`
+ *                       przekazanym przez main.ts w tamtym wywołaniu). Domyślne
+ *                       `DEFAULT_TRADE_ROUTE_INCOME_PARAMS` dla wywołujących spoza
+ *                       allowlisty tego tematu, którzy nie przekazują tego
+ *                       argumentu — main.ts ZAWSZE przekazuje realne dane
+ *                       (`loadTradeRouteIncomeParams` z econ-params.json).
  */
 export function refreshTradeRoutes(
   cities: readonly TradeRouteCityRef[],
@@ -1090,24 +1259,51 @@ export function refreshTradeRoutes(
   hasTradeTreaty: (ownerA: number, ownerB: number) => boolean,
   params: TradeRouteParams = DEFAULT_TRADE_ROUTE_PARAMS,
   territoryNodes?: readonly TerritoryNode[],
+  incomeParams: TradeRouteIncomeParams = DEFAULT_TRADE_ROUTE_INCOME_PARAMS,
 ): TradeRoute[] {
+  if (cities.length === 0) return [];
+
   const cityById = new Map<string, TradeRouteCityRef>();
   for (const c of cities) cityById.set(c.id, c);
 
-  const playerCities  = cities.filter(c => c.ownerId === 0);
-  const foreignCities = cities.filter(c => c.ownerId !== 0);
-  if (playerCities.length === 0 || foreignCities.length === 0) return [];
+  // GOAL 4: grupowanie po właścicielu — candidate-generation iteruje WSZYSTKIE
+  // unikalne pary właścicieli obecnych w `cities` (kierunek kanoniczny: ownerId
+  // rosnąco), nie tylko gracz(0)<->obcy.
+  const citiesByOwner = new Map<number, TradeRouteCityRef[]>();
+  for (const c of cities) {
+    const arr = citiesByOwner.get(c.ownerId);
+    if (arr) arr.push(c); else citiesByOwner.set(c.ownerId, [c]);
+  }
+  const ownerIds = Array.from(citiesByOwner.keys()).sort((a, b) => a - b);
 
   // GOAL 4: adjacency liczone RAZ na to wywołanie refreshTradeRoutes (lokalna
   // Map<string,boolean> per-para-właścicieli, NIE per-para-miast — patrz
   // `landBorderShared`), przekazywana w dół do wszystkich findCityConnection/
-  // detectBestConnection poniżej (pass 1 + pass 2).
+  // detectBestConnection poniżej (kandydaci kontynuujący + nowi, zewnętrzni +
+  // wewnętrzni). Wywołania WEWNĘTRZNE (GOAL 5) przekazują `territoryNodes=undefined`
+  // jawnie zamiast tego cache'a wprost — `landBorderShared` zwraca `true` na
+  // samym początku, gdy `territoryNodes===undefined`, WCZEŚNIEJ niż jakikolwiek
+  // odczyt/zapis cache'a (patrz jej definicja wyżej), więc dzielenie tego samego
+  // obiektu Map między wywołaniami zewnętrznymi i wewnętrznymi jest bezpieczne —
+  // wywołania wewnętrzne nigdy go nie dotykają.
   const landBorderCache = new Map<string, boolean>();
 
-  // T3: sloty budynkowe NIE decydują już o istnieniu trasy — wyłącznie o polu
-  // `budynekOdblokowany` (patrz docstring wyżej). Ten sam mechanizm priorytetu
-  // co dawniej gatingował istnienie: najpierw istniejące trasy (po id), potem
-  // nowe wg rosnącego dystansu.
+  // GOAL 1-2: NOWY, NIEZALEŻNY tor existence-slotów — decyduje, czy trasa w
+  // ogóle TRAFIA do wyniku (`kept[]`). Baza=1 slot nawet bez budynków (patrz
+  // `tradeRouteExistenceLimitForCity`).
+  const usedExistenceSlots = new Map<string, number>();
+  const existenceLimitOf = (cityId: string): number =>
+    tradeRouteExistenceLimitForCity(cityId, builtByCity);
+  const hasExistenceRoom = (cityId: string): boolean =>
+    (usedExistenceSlots.get(cityId) ?? 0) < existenceLimitOf(cityId);
+  const useExistenceSlot = (cityId: string): void => {
+    usedExistenceSlots.set(cityId, (usedExistenceSlots.get(cityId) ?? 0) + 1);
+  };
+
+  // T3 (bez zmian w tym torze — zero baseline, buildings-only): sloty budynkowe
+  // decydują WYŁĄCZNIE o polu `budynekOdblokowany`, na liście PRZETRWAŁEJ
+  // existence-gatingu (GOAL 2 — "bez zmian algorytmu, tylko mniej kandydatów na
+  // wejściu").
   const usedSlots = new Map<string, number>();
   const limitOf  = (cityId: string): number => tradeRouteLimitForCity(cityId, builtByCity);
   const hasRoom  = (cityId: string): boolean => (usedSlots.get(cityId) ?? 0) < limitOf(cityId);
@@ -1125,57 +1321,108 @@ export function refreshTradeRoutes(
     return true;
   };
 
-  const kept: TradeRoute[] = [];
-  const keptIds = new Set<string>();
+  const incomeOf = (distance: number, medium: TradeRouteMedium): number =>
+    tradeRouteTotalDistanceIncome(distance, medium, incomeParams);
 
-  // --- Pass 1: zachowaj WSZYSTKIE istniejące trasy, które nadal spełniają warunki
-  //     istnienia (bez gatingu slotami — patrz T3 wyżej) ---
+  // --- Kandydaci KONTYNUUJĄCY: trasy z `existingRoutes`, które nadal spełniają
+  //     warunki (geometria/wojna/traktat — GENERYCZNE, zewnętrzne LUB wewnętrzne
+  //     wg aktualnego ownerId obu miast, NIE wg zapamiętanych pól trasy — miasto
+  //     mogło zmienić właściciela). Existence-gating dzieje się DOPIERO w
+  //     połączonym sortowaniu niżej — tu tylko ustalamy, co jest GEOMETRYCZNIE/
+  //     TRAKTATOWO nadal ważne. ---
   const stillValid: TradeRouteCandidate[] = [];
   for (const route of existingRoutes) {
     const from = cityById.get(route.fromCityId);
     const to   = cityById.get(route.toCityId);
     if (!from || !to) continue;
-    if (from.ownerId !== 0 || to.ownerId === 0) continue; // musi być nadal gracz->obcy
-    if (isAtWar(from.ownerId, to.ownerId)) continue;
-    if (!hasTradeTreaty(from.ownerId, to.ownerId)) continue; // C-HANDEL-UMOWA=B: brak/zerwana Umowa Handlowa -> trasa znika
-    const conn = findCityConnection(from, to, map, route.medium, params, builtByCity, territoryNodes, landBorderCache);
-    if (!conn.connected) continue; // dla morza wciąż wymaga fizycznego Portu w obu miastach (cityHasPort) — bez zmian; dla lądu dodatkowo wymaga wspólnej granicy (GOAL 1)
-    stillValid.push({ from, to, medium: route.medium, distance: conn.distance, id: route.id });
+    const wewnetrzna = from.ownerId === to.ownerId;
+    if (!wewnetrzna) {
+      if (isAtWar(from.ownerId, to.ownerId)) continue;
+      if (!hasTradeTreaty(from.ownerId, to.ownerId)) continue; // C-HANDEL-UMOWA=B: brak/zerwana Umowa Szlaków -> trasa znika
+    }
+    const conn = findCityConnection(
+      from, to, map, route.medium, params, builtByCity,
+      wewnetrzna ? undefined : territoryNodes, // GOAL 5: wewnętrzna pomija wymóg granicy
+      landBorderCache,
+      false, // GOAL 6: candidate-generation nie czyta pathHexes -- pomiń rekonstrukcję ścieżki
+    );
+    if (!conn.connected) continue; // dla morza wciąż wymaga fizycznego Portu w obu miastach; dla lądu zewnętrznego dodatkowo wymaga wspólnej granicy
+    stillValid.push({ from, to, medium: route.medium, distance: conn.distance, id: route.id, isExisting: true });
   }
-  stillValid.sort((x, y) => x.id.localeCompare(y.id));
-  for (const cand of stillValid) {
-    keptIds.add(cand.id);
-    kept.push({
-      id: cand.id,
-      fromCityId: cand.from.id,
-      toCityId: cand.to.id,
-      ownerId: cand.from.ownerId,
-      toOwnerId: cand.to.ownerId,
-      medium: cand.medium,
-      dystans: cand.distance,
-      status: 'polaczony',
-      budynekOdblokowany: grantBuilding(cand.from.id, cand.to.id),
-    });
-  }
+  const stillValidIds = new Set(stillValid.map(c => c.id));
 
-  // --- Pass 2: nowe kandydatury (wszystkie geometrycznie/traktatowo poprawne
-  //     pary gracz<->obcy dostają trasę; kolejność rosnącego dystansu decyduje
-  //     wyłącznie o priorytecie przydziału budynekOdblokowany z pozostałych slotów) ---
+  // --- Kandydaci NOWI: (a) ZEWNĘTRZNI — każda unikalna para WŁAŚCICIELI (GOAL 4),
+  //     (b) WEWNĘTRZNI — pary miast TEGO SAMEGO właściciela (GOAL 5). ---
   const fresh: TradeRouteCandidate[] = [];
-  for (const p of playerCities) {
-    for (const f of foreignCities) {
-      if (isAtWar(p.ownerId, f.ownerId)) continue;
-      if (!hasTradeTreaty(p.ownerId, f.ownerId)) continue; // C-HANDEL-UMOWA=B: bez Umowy Handlowej trasa nie powstaje
-      const best = detectBestConnection(p, f, map, params, builtByCity, territoryNodes, landBorderCache);
-      if (!best) continue; // dla morza detectBestConnection/findCityConnection nadal wymaga Portu w obu miastach; dla lądu dodatkowo wymaga wspólnej granicy (GOAL 1)
-      const id = tradeRouteId(p.id, f.id, best.medium);
-      if (keptIds.has(id)) continue;
-      fresh.push({ from: p, to: f, medium: best.medium, distance: best.distance, id });
+
+  // (a) Zewnętrzni: kierunek kanoniczny ownerA<ownerB (ownerIds posortowane
+  //     rosnąco) — jedna, deterministyczna trasa na parę miast, bez duplikatu
+  //     odwrotnego kierunku (income/gating są symetryczne, patrz
+  //     `computeTradeRouteIncomeByCity`).
+  for (let i = 0; i < ownerIds.length; i++) {
+    for (let j = i + 1; j < ownerIds.length; j++) {
+      const ownerA = ownerIds[i]!;
+      const ownerB = ownerIds[j]!;
+      if (isAtWar(ownerA, ownerB)) continue;
+      if (!hasTradeTreaty(ownerA, ownerB)) continue; // C-HANDEL-UMOWA=B: bez Umowy Szlaków para wykluczona
+      const citiesA = citiesByOwner.get(ownerA)!;
+      const citiesB = citiesByOwner.get(ownerB)!;
+      for (const a of citiesA) {
+        for (const b of citiesB) {
+          // GOAL 6: needPath=false -- candidate-generation nie czyta pathHexes.
+          const best = detectBestConnection(a, b, map, params, builtByCity, territoryNodes, landBorderCache, false);
+          if (!best) continue; // dla morza nadal wymaga Portu w obu miastach; dla lądu dodatkowo wymaga wspólnej granicy
+          const id = tradeRouteId(a.id, b.id, best.medium);
+          if (stillValidIds.has(id)) continue; // już policzone jako kontynuacja
+          fresh.push({ from: a, to: b, medium: best.medium, distance: best.distance, id, isExisting: false });
+        }
+      }
     }
   }
-  fresh.sort((a, b) => a.distance - b.distance || a.id.localeCompare(b.id));
 
-  for (const cand of fresh) {
+  // (b) Wewnętrzni (GOAL 5): pary miast TEGO SAMEGO właściciela, bez traktatu/
+  //     granicy, z fizyczną łącznością BFS (territoryNodes=undefined jawnie —
+  //     wyłącza wymóg granicy niezależnie od tego, co main.ts przekazał dla par
+  //     zewnętrznych). Kierunek kanoniczny: miasta posortowane po id, i<j.
+  for (const ownerId of ownerIds) {
+    const ownerCities = citiesByOwner.get(ownerId)!;
+    if (ownerCities.length < 2) continue;
+    const sorted = ownerCities.slice().sort((x, y) => x.id.localeCompare(y.id));
+    for (let i = 0; i < sorted.length; i++) {
+      for (let j = i + 1; j < sorted.length; j++) {
+        const a = sorted[i]!;
+        const b = sorted[j]!;
+        // GOAL 6: needPath=false -- candidate-generation nie czyta pathHexes.
+        const best = detectBestConnection(a, b, map, params, builtByCity, undefined, landBorderCache, false);
+        if (!best) continue;
+        const id = tradeRouteId(a.id, b.id, best.medium);
+        if (stillValidIds.has(id)) continue;
+        fresh.push({ from: a, to: b, medium: best.medium, distance: best.distance, id, isExisting: false });
+      }
+    }
+  }
+
+  // --- Połączone sortowanie (GOAL 3, patrz DECYZJA w docstringu wyżej): dochód
+  //     malejąco, tie-break stabilności (kontynuujący wygrywa remis), potem id. ---
+  const combined: TradeRouteCandidate[] = [...stillValid, ...fresh];
+  combined.sort((x, y) => {
+    const incomeX = incomeOf(x.distance, x.medium);
+    const incomeY = incomeOf(y.distance, y.medium);
+    if (incomeY !== incomeX) return incomeY - incomeX;
+    if (x.isExisting !== y.isExisting) return x.isExisting ? -1 : 1;
+    return x.id.localeCompare(y.id);
+  });
+
+  // --- Przetwarzanie w kolejności priorytetu: existence-gating decyduje, czy
+  //     trasa w ogóle wchodzi do wyniku; budynkowy bonus (grantBuilding) działa
+  //     PO tym gatingu, na tej samej, przetrwałej liście, w TEJ SAMEJ kolejności
+  //     (GOAL 2-3 — "bez zmian algorytmu bonusu, tylko mniej kandydatów na wejściu,
+  //     ta sama kolejność"). ---
+  const kept: TradeRoute[] = [];
+  for (const cand of combined) {
+    if (!hasExistenceRoom(cand.from.id) || !hasExistenceRoom(cand.to.id)) continue; // brak wolnego slotu istnienia -> trasa POMIJANA CAŁKOWICIE
+    useExistenceSlot(cand.from.id);
+    useExistenceSlot(cand.to.id);
     kept.push({
       id: cand.id,
       fromCityId: cand.from.id,
@@ -1655,14 +1902,23 @@ export function firstTradeRouteResourceGrant(
 // pulą PAŃSTWA (SUROW-CIV-01, Maciej 2026-07-24, patrz building-stock-cost.ts
 // ownerResourceStockAll — suma City.surowce po WSZYSTKICH miastach jednego
 // ownera). Oznacza to, że WEWNĄTRZ jednej cywilizacji przepływ przez trasę nie
-// miałby żadnego efektu: surowiec miasta A tej samej cywilizacji jest już
+// ma żadnego efektu: surowiec miasta A tej samej cywilizacji jest już
 // identycznie dostępny miastu B (ta sama pula). Przepływ ilościowy ma sens
-// WYŁĄCZNIE MIĘDZY RÓŻNYMI cywilizacjami — a to jest dokładnie zbiór tras, jaki
-// w ogóle istnieje: refreshTradeRoutes tworzy WYŁĄCZNIE pary
-// gracz(ownerId=0)<->obca cywilizacja, własne<->własne nigdy nie tworzy trasy
-// (patrz nagłówek refreshTradeRoutes). Funkcja niżej tego nie zakłada na twardo
-// (czyta route.ownerId/toOwnerId jak leci) — gdyby kiedyś doszły trasy
-// AI<->AI, zadziała identycznie, bez żadnej gałęzi po ownerId (parytet AI).
+// WYŁĄCZNIE MIĘDZY RÓŻNYMI cywilizacjami.
+//
+// R-HANDEL-LIMIT-TRAS-PELNY-Q1 (2026-09-04): od tego tematu refreshTradeRoutes
+// TWORZY TAKŻE trasy wewnątrz-cywilizacyjne (ownerId===toOwnerId, GOAL 5 —
+// dawny opis „refreshTradeRoutes tworzy WYŁĄCZNIE pary gracz<->obca cywilizacja"
+// jest tu NIEAKTUALNY, patrz docstring refreshTradeRoutes). Funkcja niżej NIE
+// wymaga żadnej zmiany — dla route.ownerId===route.toOwnerId
+// `ownerStockNow === toOwnerStockNow` jest trywialnie prawdziwe (ten sam klucz
+// ledgera), więc `if (ownerStockNow === toOwnerStockNow) continue;` (patrz
+// pętla niżej) poprawnie pomija każdą trasę wewnętrzną bez żadnego transferu —
+// dokładnie zachowanie, jakiego oczekuje ten komentarz (przepływ tylko
+// międzycywilizacyjny), teraz osiągnięte przez ogólny warunek, nie przez
+// nieistnienie tras wewnętrznych. Zero gałęzi po ownerId (parytet AI) —
+// zachowanie identyczne, gdyby trasy AI<->AI istniały (i od tego tematu
+// istnieją, patrz GOAL 4).
 // ---------------------------------------------------------------------------
 
 /**
