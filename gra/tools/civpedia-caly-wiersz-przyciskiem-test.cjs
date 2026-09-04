@@ -21,10 +21,16 @@
  *     jednostek) i "Ulepszenia terenu" (Garncarstwo — Glinianka/Warzelnia soli).
  * [4] Sekcja "Zmiany ekonomiczne" — klik w ETYKIETĘ (nie w przycisk `value` z
  *     tekstem efektu) wiersza budynku otwiera kartę tego budynku.
- * [5] "Wymaga też: X, Y" nie jest już jedynym klikalnym elementem: `value` wiersza
- *     "Kolejne technologie" jest puste (button:empty, bez treści), tekst trafia do
+ * [5] "Wymaga też: X, Y" nie jest jedynym klikalnym elementem: tekst trafia do
  *     `trailing` jako zwykły, NIEinteraktywny `<span>` (brak `data-entity-kind` na
- *     nim, nie jest przodkiem żadnego `<button>`).
+ *     nim, nie jest przodkiem żadnego `<button>`) — cały wiersz pozostaje klikalny
+ *     przez fallback niezależnie od tego. AKTUALIZACJA (R-CIVPEDIA-KARTY-SPOJNOSC-Q1-A,
+ *     GOAL pkt 1 — świadome, jawne odwrócenie CZĘŚCI decyzji z tego węzła przez
+ *     właściciela): `value` wiersza "Kolejne technologie" NIE jest już puste —
+ *     dostaje widoczny przycisk-link "Szczegóły →" (spójny ze stylem ulepszeń
+ *     terenu), żeby wiersz miał ten sam widoczny sygnał klikalności co budynki/
+ *     jednostki/wymagania. Cały wiersz zostaje klikalny (fallback), TERAZ zresztą
+ *     wraz z widocznym przyciskiem — obie ścieżki prowadzą do tego samego celu.
  * [6] Regresja na pozostałych kind (unit/wonder/improvement) — klik w POZYCJĘ
  *     ETYKIETY (nie środek przycisku) nadal nawiguje poprawnie.
  * [7] tsc/bramki referencyjne — poza zakresem tego pliku (uruchamiane osobno).
@@ -249,10 +255,12 @@ async function main() {
         afterClick.depthBefore === 1 && afterClick.depthAfter === 2
           && afterClick.cardTop && afterClick.cardTop.kind === 'technology' && afterClick.cardTop.id === expectedId,
         { expectedId, afterClick });
-      // [5] "Wymaga też: X, Y" nie jest jedynym klikalnym elementem: value pusty (button:empty),
-      // trailing to zwykły span bez data-entity-kind, poza zasięgiem <button>.
-      check(`[1]+[5] "${name}": przycisk value jest PUSTY (row.value='' — cel linku to CAŁY wiersz, nie osobny tekst "Wymaga też")`,
-        rowInfo.btnEmpty === true && rowInfo.btnEntityId === expectedId, rowInfo);
+      // [5] R-CIVPEDIA-KARTY-SPOJNOSC-Q1-A: `value` NIE jest już pusty — dostaje widoczny
+      // przycisk-link "Szczegóły →" (spójny z resztą tego węzła), cel linku pozostaje ten sam
+      // wiersz/technologia niezależnie od tego, przez który element (przycisk czy cały wiersz)
+      // klik trafia.
+      check(`[1]+[5] "${name}": przycisk value ma widoczną treść "Szczegóły →" (R-CIVPEDIA-KARTY-SPOJNOSC-Q1-A, cel linku to CAŁY wiersz, przycisk niesie ten sam cel)`,
+        rowInfo.btnEmpty === false && rowInfo.btnEntityId === expectedId, rowInfo);
       const trailingInfo = await page.evaluate((labelText) => {
         const section = document.querySelector('[data-section-key="next"]');
         const rows = Array.from(section.querySelectorAll('.entity-card-row'));

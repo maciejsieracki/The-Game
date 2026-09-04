@@ -159,12 +159,19 @@ export const technologyAdapter: EntityCardAdapter<RawTech> = (tech) => {
   // `resolveBuildingRow`), więc jest ZAWSZE kanonicznym, rozwiązywalnym id budynku —
   // weryfikacja przez `resolveBuildingRow` mimo to (spójny wzorzec zabezpieczenia z
   // resztą tego zadania, nie zakładamy cichej niezmienności między plikami danych).
-  const buildingsRows: EntityCardRow[] = buildings.map((b) => ({
-    label: b.nazwa ?? b.id,
-    value: '',
-    icon: { kind: 'svg', svg: buildingIconSvg(undefined, b.id) },
-    linkTo: resolveBuildingRow(b.id) != null ? { kind: 'building', id: b.id } : undefined,
-  }));
+  const buildingsRows: EntityCardRow[] = buildings.map((b) => {
+    const linkTo = resolveBuildingRow(b.id) != null ? ({ kind: 'building', id: b.id } as const) : undefined;
+    return {
+      label: b.nazwa ?? b.id,
+      // R-CIVPEDIA-KARTY-SPOJNOSC-Q1-A (GOAL pkt 1, odwrócenie
+      // P-CIVPEDIA-KARTY-CALY-WIERSZ-PRZYCISKIEM-Q1 wprost przez właściciela): widoczny
+      // przycisk-link, ten sam styl/etykieta co "Szczegóły →" ulepszeń terenu
+      // (techDiscoveryNotice.ts:576) — spójność wszystkich czterech typów wierszy.
+      value: linkTo ? 'Szczegóły →' : '',
+      icon: { kind: 'svg', svg: buildingIconSvg(undefined, b.id) },
+      linkTo,
+    };
+  });
   const buildingsSection: EntityCardSection = {
     key: 'buildings', title: 'Budynki', rows: buildingsRows, collapsible: true, openDefault: true,
   };
@@ -172,11 +179,13 @@ export const technologyAdapter: EntityCardAdapter<RawTech> = (tech) => {
   // --- Jednostki (paginacja: previewLimit=UNIT_PREVIEW, sprzężone z compactHeaderOnExpand) ---
   const unitsRows: EntityCardRow[] = units.map((u) => {
     const slug = unitToSlug(u.Jednostka);
+    const linkTo = resolveUnitRow(slug) != null ? ({ kind: 'unit', id: slug } as const) : undefined;
     return {
       label: u.Jednostka,
-      value: '',
+      // R-CIVPEDIA-KARTY-SPOJNOSC-Q1-A: patrz komentarz przy buildingsRows wyżej.
+      value: linkTo ? 'Szczegóły →' : '',
       icon: { kind: 'svg', svg: unitIconSvg(undefined, u.Jednostka) },
-      linkTo: resolveUnitRow(slug) != null ? { kind: 'unit', id: slug } : undefined,
+      linkTo,
     };
   });
   const unitsSection: EntityCardSection = {
@@ -225,8 +234,11 @@ export const technologyAdapter: EntityCardAdapter<RawTech> = (tech) => {
     // `<span>` (renderer.ts `buildGridRowEl`, linia `if (row.trailing) ...`), a `label`
     // (nazwa technologii docelowej) jest teraz głównym, w pełni klikalnym elementem
     // dzięki rozszerzonemu fallbackowi `entity-card-row--linked` na całym wierszu.
+    // R-CIVPEDIA-KARTY-SPOJNOSC-Q1-A: `trailing` (info "Wymaga też: ...") zostaje
+    // nietknięty (nie jest celem linku, patrz komentarz wyżej) — `value` dostaje ten sam
+    // widoczny przycisk-link co pozostałe trzy typy wierszy w tym zgłoszeniu.
     return {
-      label: t['Technologia'], value: '', trailing: `Wymaga też: ${otherPrereqs.join(', ')}`,
+      label: t['Technologia'], value: 'Szczegóły →', trailing: `Wymaga też: ${otherPrereqs.join(', ')}`,
       icon: icon ? { kind: 'svg', svg: icon } : undefined,
       linkTo: { kind: 'technology', id: nextSlug },
     };

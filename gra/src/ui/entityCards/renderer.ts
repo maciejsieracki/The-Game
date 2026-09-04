@@ -557,10 +557,19 @@ export function openEntityCard(kind: EntityKind, id: string, opts: OpenEntityCar
 }
 
 export const ENTITY_CARD_CSS = `
-.entity-card-backdrop{position:fixed;inset:0;z-index:520;display:flex;align-items:center;
-  justify-content:center;padding:16px;background:rgba(0,0,0,.62);}
-.entity-card-dialog{position:relative;max-height:calc(100vh - 32px);overflow:auto;}
-.entity-card{width:min(434px,calc(100vw - 32px));border:1px solid rgba(232,216,138,.45);
+/* R-CIVPEDIA-KARTY-SPOJNOSC-Q1-A (GOAL pkt 2-4): szerokość referencyjna ujednolicona na
+   wszystkie karty (byla 434px, teraz 660px karty technologii — RECON pkt 2), wysokość
+   dialogu STALA (10% marginesu gora+dol = 80% viewportu, zamiast max-height zaleznego od
+   tresci) i "bezpieczne centrowanie" backdropu wzorem diplomacyAudience.ts:566-590
+   (P-UI-ZOOM-PRZEGLADARKI-PANELE-UCIETE-Q1) — align-items:flex-start + overflow-y:auto na
+   backdropie, margin:auto 0 na dialogu: przy braku miejsca margines auto nie schodzi ponizej
+   0, dialog przykleja sie do gory, nadmiar osiagalny scrollem backdropu zamiast ciecia bez
+   sladu. */
+.entity-card-backdrop{position:fixed;inset:0;z-index:520;display:flex;align-items:flex-start;
+  justify-content:center;padding:16px;background:rgba(0,0,0,.62);overflow-y:auto;}
+.entity-card-dialog{position:relative;height:min(80vh,calc(100vh - 32px));overflow:auto;
+  margin:auto 0;}
+.entity-card{width:min(660px,calc(100vw - 32px));border:1px solid rgba(232,216,138,.45);
   border-radius:12px;background:linear-gradient(180deg,rgba(20,26,34,.99),rgba(8,10,16,.99));
   color:#e8e0c8;box-shadow:0 10px 28px rgba(0,0,0,.65);overflow:hidden;
   font-family:var(--tg-font-ui,'Segoe UI',Tahoma,sans-serif);}
