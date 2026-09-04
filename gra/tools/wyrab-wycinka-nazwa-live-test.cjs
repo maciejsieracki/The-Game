@@ -240,7 +240,14 @@ async function main() {
     ...bundle.poradnik.map((p) => ({ zrodlo: 'poradnik/' + p.id, tekst: String(p.content || '') })),
     ...bundle.encyklopedia.map((e) => ({
       zrodlo: 'encyklopedia/' + e.id,
-      tekst: [e.title, e.content, e.body, e.text]
+      // UWAGA: wpisy encyklopedii NIE maja pol `content`/`body`/`text` -- realne pola
+      // tresci to `wikiS`/`wikiM`/`full`/`historia` (patrz bundle-wiki-for-game.cjs).
+      // W pierwszym podejsciu rundy 3 blok [6] skanowal bledna liste pol, wiec obejmowal
+      // same tytuly (2 140 z 750 753 znakow = 0,3% tresci) -- nazwa mala litera
+      // wstrzyknieta do `wikiM`/`full` przechodzila bez FAIL. Zarzut 2 Evaluatora
+      // rundy 3, przyjety. Asercja [7] nizej pilnuje, by ta lista pol nie zwiotczala
+      // ponownie (pokrycie liczone w znakach, nie deklarowane w komentarzu).
+      tekst: [e.title, e.wikiS, e.wikiM, e.full, e.historia]
         .filter((x) => typeof x === 'string').join('\n'),
     })),
   ];
@@ -273,6 +280,28 @@ async function main() {
     check(`[6] bundle/poradnik/${id}: nazwa ulepszenia w wyliczeniu == "wycinka"`,
       !!rozdz && rozdz.content.includes(oczekiwane), oczekiwane);
   }
+
+  // -----------------------------------------------------------------------
+  // [7] STRAZNIK POKRYCIA bloku [6]. Zarzut 2 Evaluatora rundy 3: blok [6]
+  //     deklarowal skan "calej tresci civpedii", a faktycznie czytal nieistniejace
+  //     pola encyklopedii i obejmowal 0,3% znakow -- same tytuly. Sam skan nie
+  //     potrafi tego wykryc (brak pola == pusty string == zero trafien == PASS).
+  //     Ta asercja mierzy pokrycie W ZNAKACH wzgledem calego bundla, wiec kazde
+  //     przyszle przemianowanie/dodanie pola tresci w bundle-wiki-for-game.cjs,
+  //     ktore wypadnie z listy pol w [6], zwali test zamiast cicho oslepic skan.
+  // -----------------------------------------------------------------------
+  const znakowSkanowanych = sekcjeCivpedii.reduce((n, s) => n + s.tekst.length, 0);
+  const znakowTresci =
+    bundle.poradnik.reduce((n, p) => n + String(p.content || '').length, 0)
+    + bundle.encyklopedia.reduce((n, e) => n + Object.entries(e)
+      .filter(([k, v]) => typeof v === 'string' && !['id', 'slug', 'folder', 'category'].includes(k))
+      .reduce((m, [, v]) => m + v.length, 0), 0);
+  const pokrycie = znakowSkanowanych / znakowTresci;
+  check('[7] blok [6] faktycznie skanuje cala tresc civpedii (pokrycie >= 99% znakow'
+    + ' tresciowych bundla, nie same tytuly)',
+    pokrycie >= 0.99, { znakowSkanowanych, znakowTresci, pokrycie: pokrycie.toFixed(4) });
+  check('[7] skan objal obie sekcje bundla w realnej skali (> 100 000 znakow)',
+    znakowSkanowanych > 100000, znakowSkanowanych);
 
   console.log('');
   console.log(`[wyrab-wycinka-nazwa-live-test] ${pass} pass, ${fail} fail`);
