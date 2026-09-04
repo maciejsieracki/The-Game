@@ -28,6 +28,7 @@ fs.writeFileSync(entry, `
 export { pickStoneForcedWarDominoOwnerIds } from ${JSON.stringify(GRA_ROOT + '/src/game/forced-war-stone')};
 export { pickBronzeForcedWarDominoOwnerIds } from ${JSON.stringify(GRA_ROOT + '/src/game/forced-war-bronze')};
 export { pickIronForcedWarDominoOwnerIds } from ${JSON.stringify(GRA_ROOT + '/src/game/forced-war-iron')};
+export { decideAIDiplomacy } from ${JSON.stringify(GRA_ROOT + '/src/game/ai')};
 `, 'utf8');
 
 let passed = 0;
@@ -66,6 +67,7 @@ try {
     pickStoneForcedWarDominoOwnerIds,
     pickBronzeForcedWarDominoOwnerIds,
     pickIronForcedWarDominoOwnerIds,
+    decideAIDiplomacy,
   } = require(bundle);
 
   const noAlliance = () => false;
@@ -135,6 +137,85 @@ try {
       pickDomino(degenerate, { playerAlreadyHasActiveForcedWar: false, hasAllianceWithPlayer: noAlliance }),
       [],
       `${nazwa}: para z graczem jako celem lub attacker===target jest odrzucana przez samą funkcję (obrona w głąb)`,
+    );
+  }
+
+  // Antycypowany zarzut własny, runda 1 (główny, blokujący): dotychczasowe testy powyżej
+  // ćwiczyły WYŁĄCZNIE izolowaną, czystą funkcję pickXForcedWarDominoOwnerIds z ręcznie
+  // skonstruowanymi zbiorami wynikowymi -- nie dowodziły, że OBIE strony pary faktycznie
+  // WYPOWIADAJĄ WOJNĘ przez prawdziwą ścieżkę silnika. Sekcja niżej jest analogiczna do
+  // "decideAIDiplomacy: finalny target guard" w forced-war-stone-test.cjs (linie ok.
+  // 241-259): woła REALNY decideAIDiplomacy() z ustawionym x[Era]ForceWarTargetId=0
+  // (dokładnie tak, jak main.ts robi to w `ownerLoop` po `if (xDominoOwnerIds.has(ownerId))
+  // { xForceWarTargetId = 0; }`) i sprawdza wygenerowaną komendę wypowiedz_wojne DLA
+  // KAŻDEJ STRONY PARY Z OSOBNA -- attackerId(2) i targetId(3) -- bo main.ts przetwarza
+  // każdego ownera w OSOBNYM wywołaniu decideAIDiplomacy wewnątrz tej samej `ownerLoop`
+  // (patrz main.ts ok. L28814-29824); to domino zapewnia jedynie, że OBIE strony DOSTAJĄ
+  // ten sam docelowy wpis w TEJ SAMEJ turze (main-guard test niżej), a niniejszy blok
+  // dowodzi, że każda z nich, dostawszy go, faktycznie generuje DOW na gracza (partnerId
+  // '0') tą samą, niezmienioną ścieżką ai.ts co istniejący fallback pojedynczy.
+  console.log('--- decideAIDiplomacy: finalny target guard, OBIE strony pary domina (antycypowany zarzut własny, runda 1) ---');
+  const relToPlayer = (extra = {}) => ({
+    partnerId: '0',
+    relation: { status: 'neutralny', zaufanie: 0, respekt: 50 },
+    respektWzgledny: 0.5,
+    stanWojny: false,
+    ...extra,
+  });
+  const forcedFieldByEra = {
+    Kamień: 'stoneForceWarTargetId',
+    Brąz: 'bronzeForceWarTargetId',
+    Żelazo: 'ironForceWarTargetId',
+  };
+  for (const [nazwa] of eras) {
+    const forcedField = forcedFieldByEra[nazwa];
+    const dominoCommand = (myPlayerId, extraRel = {}) => decideAIDiplomacy({
+      myPlayerId,
+      relacje: [relToPlayer(extraRel)],
+      agresja: 0.1,
+      currentTurn: 30,
+      [forcedField]: 0,
+    });
+    // Strona-napastnik (attackerId=2 z pairAB wyżej) dostaje xForceWarTargetId=0 ->
+    // generuje wypowiedz_wojne na gracza, tak samo jak strona-obrońca (targetId=3).
+    assert(
+      dominoCommand('2').some(c => c.type === 'wypowiedz_wojne' && c.targetId === '0'),
+      `${nazwa}: attackerId(2) z ${forcedField}=0 (wpisane przez domino) generuje realną komendę wypowiedz_wojne na gracza`,
+    );
+    assert(
+      dominoCommand('3').some(c => c.type === 'wypowiedz_wojne' && c.targetId === '0'),
+      `${nazwa}: targetId(3) z ${forcedField}=0 (wpisane przez domino) TEŻ generuje realną komendę wypowiedz_wojne na gracza -- OBIE strony, nie tylko jedna`,
+    );
+    // Guardy istniejące na stronie gracza (cel) nadal obowiązują -- domino nie omija ich,
+    // tylko zasila ten sam kanał co dotychczasowy fallback pojedynczy.
+    assert(
+      !dominoCommand('2', { stanWojny: true }).some(c => c.type === 'wypowiedz_wojne'),
+      `${nazwa}: gracz już w wojnie z attackerId(2) -> guard istniejący nadal blokuje DOW mimo domina`,
+    );
+    assert(
+      !dominoCommand('3', { relation: { status: 'sojusz', zaufanie: 0, respekt: 50 }, hasAllianceTreaty: true }).some(c => c.type === 'wypowiedz_wojne'),
+      `${nazwa}: sojusz gracz<->targetId(3) na poziomie ai.ts nadal blokuje DOW (obrona w głąb, niezależna od gate'u domina w main.ts)`,
+    );
+
+    // Antycypowany zarzut własny (poboczny, runda 1 -- "zbadaj reconem/testem, NIE naprawiaj"):
+    // main.ts (ok. L29171) buduje `relacje[].partnerId==='0'` DLA OWNERA WYŁĄCZNIE gdy
+    // `diplomaticallyDiscoveredOwners.has(ownerId)` (gracz odkrył go na mapie/przez
+    // audiencję) -- gdy owner NIE jest odkryty, `relacje` w ogóle nie niesie wpisu
+    // partnerId='0' i finalny target guard w ai.ts (linie ok. 4324-4339, `forcedRel =
+    // inp.relacje.find(...)` -> undefined -> `if` fałszywy) CICHO pomija całą gałąź -- BEZ
+    // komendy, BEZ loga -- mimo że domino w main.ts już wpisało xForceWarTargetId=0. Test
+    // niżej DOWODZI tej interakcji na realnej ścieżce silnika (relacje=[], brak wpisu
+    // partnerId='0', dokładnie stan "owner nieodkryty"): to PRE-ISTNIEJĄCE, dziedziczne
+    // ograniczenie CAŁEGO mechanizmu wojny wymuszonej (identyczne dla starego fallbacku
+    // pojedynczego, patrz analogiczny brzeg aiCmdResume w raporcie rundy 1) -- NIE regresja
+    // tego tematu, ŚWIADOMIE NIENAPRAWIANE w tej rundzie (poza allowlistą, dispatch pkt 3).
+    assert(
+      !decideAIDiplomacy({
+        myPlayerId: '2', relacje: [], agresja: 0.1, currentTurn: 30, [forcedField]: 0,
+      }).some(c => c.type === 'wypowiedz_wojne'),
+      `${nazwa}: ZARZUT 2 (znane, dziedziczne ograniczenie, NIE naprawiane tu) -- owner `
+      + `nieodkryty przez gracza (relacje bez wpisu partnerId='0') -> guard w ai.ts cicho `
+      + `pomija DOW mimo ${forcedField}=0 wpisanego przez domino`,
     );
   }
 

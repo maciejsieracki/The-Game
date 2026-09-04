@@ -20808,6 +20808,154 @@ async function boot(): Promise<void> {
         return { attackerId };
       },
       getRelationStatus: (a: number, b: number): string => getDiploRelation(a, b).status,
+      // R-DYPLO-AI-WOJNA-TROJSTRONNA-Q1 (runda 1, antycypowany zarzut własny): `?playtest=mapa`
+      // ma z definicji DOKŁADNIE JEDNEGO realnego AI ownera (PLAYTEST_MAPA_AI_OWNER) —
+      // domino wymaga DWÓCH, już wzajemnie wojujących. `__rebelProtectionTestDebug.
+      // pickTwoAiOwners` wyżej rozwiązuje analogiczny brak SYNTETYCZNYM drugim ownerId
+      // BEZ miasta — ale domino wymaga, żeby OBIE strony zostały faktycznie PRZETWORZONE
+      // przez `ownerLoop` w main.ts (tam żyje gate `if (xDominoOwnerIds.has(ownerId))`), a
+      // `aiOwnerList` tej pętli jest budowany WYŁĄCZNIE z realnych `cities`/`units` — owner
+      // bez żadnego z nich nigdy by nie wszedł do pętli i domino nigdy by się nie wykonało.
+      // Dlatego druga strona pary dostaje tu REALNE miasto przez `foundCityAt` (ta sama
+      // funkcja co `spawnPendingForeignClusters`/`grantDifficultyStartBonusesForMajorCapital`
+      // — silnik zakłada nią cywilizacje przy generacji świata, więc jest to REALNA,
+      // sprawdzona ścieżka silnika, nie improwizacja tego hooka), `clusterStartSlot=true`
+      // pomija WYŁĄCZNIE próg odległości od innych miast (canFoundCity, cities.ts) — teren
+      // morze/góry nadal wymagany, a hex jest jawnie wolny (sprawdzone przed wywołaniem).
+      // BEZ jednostek dla drugiej strony (unikamy ruchu/walki AI i modala preBattle, który
+      // zawiesza kolejne `endTurn()` — patrz komentarz `pullPlayerUnitsHome` wyżej) — sama
+      // dyplomacja (i domino) działa wyłącznie na `ownerId`, nie wymaga jednostek.
+      forceBronzeForcedWarDominoOnPlayer: (
+        opts?: { allianceSide?: 'attacker' | 'defender' },
+      ): { attackerId: number; targetId: number } => {
+        const attackerCity = cities.find(c =>
+          c.ownerId > 0
+          && !typCityCopyOwners.has(c.ownerId)
+          && !isBarbarian(c.ownerId)
+          && !eliminatedOwners.has(c.ownerId)
+          && !isOwnerClusterCityState(c.ownerId, ownerCityStateOpts()),
+        );
+        if (!attackerCity) throw new Error('forceBronzeForcedWarDominoOnPlayer: brak eligible AI ownera w tym świecie');
+        const attackerId = attackerCity.ownerId;
+
+        const targetId = Math.max(
+          0,
+          ...cities.map(c => c.ownerId),
+          ...units.map(u => u.ownerId),
+        ) + 1000;
+        // Diagnoza rundy 2 (debug script, nieprzechowywany w repo): promień 1..8 stawiał
+        // drugie miasto TUŻ przy attackerze (np. 2 heksy) -- attacker (REALNA, uzbrojona AI,
+        // JUŻ we wzajemnej wojnie z targetem z definicji domina) w SWOJEJ WŁASNEJ, niezwiązanej
+        // z tym tematem logice ruchu/walki wchodził bez bitwy do bezbronnego (0 jednostek)
+        // świeżo założonego miasta target JESZCZE W TEJ SAMEJ turze -- `eliminateOwner(targetId)`
+        // wywoływał się PRZED dotarciem do iteracji targetId w `ownerLoop`, więc target nigdy nie
+        // dostawał szansy wypowiedzieć wojny (guard `if (eliminatedOwners.has(ownerId)) continue;`
+        // na starcie pętli). Naprawa: wymuszony MINIMALNY dystans (ring>=MIN) poza jednorazowym
+        // zasięgiem ruchu jednostki lądowej w tym silniku -- target fizycznie nieosiągalny dla
+        // attackera w tej samej turze, bez dotykania mechanizmu ruchu/walki (poza allowlistą).
+        const MIN_DOMINO_TARGET_RING = 15;
+        const MAX_DOMINO_TARGET_RING = 60;
+        let targetCity: import('./game/cities').City | null = null;
+        outerHexScan: for (let ring = MIN_DOMINO_TARGET_RING; ring <= MAX_DOMINO_TARGET_RING; ring++) {
+          for (let dq = -ring; dq <= ring; dq++) {
+            for (let dr = -ring; dr <= ring; dr++) {
+              if (Math.max(Math.abs(dq), Math.abs(dr), Math.abs(dq + dr)) !== ring) continue;
+              const q = attackerCity.q + dq, r = attackerCity.r + dr;
+              if (cities.some(c => c.q === q && c.r === r)) continue;
+              const found = foundCityAt(q, r, targetId, cities, map, 'Domino Test AI', false, true);
+              if (found) { targetCity = found; break outerHexScan; }
+            }
+          }
+        }
+        if (!targetCity) {
+          throw new Error(
+            `forceBronzeForcedWarDominoOnPlayer: brak legalnego heksu (morze/gory) dla drugiej `
+            + `strony pary w promieniu ${MIN_DOMINO_TARGET_RING}..${MAX_DOMINO_TARGET_RING} `
+            + `(mapa może być za mała -- zmniejsz MIN/MAX ryzykując walk-in capture tej samej tury)`,
+          );
+        }
+        cities.push(targetCity);
+        finalizeCityFounding(targetCity, targetCity.q, targetCity.r);
+        seedCityOwnerDefaults(targetCity);
+        aiOwnerCivMap.set(targetId, 'egipt');
+        if (!empireFoodStates.has(targetId)) empireFoodStates.set(targetId, freshEmpireFoodState());
+        if (!goldDeficitStates.has(targetId)) goldDeficitStates.set(targetId, freshGoldDeficitState());
+        if (!ownerDefaultPodzialHandlu.has(targetId)) {
+          ownerDefaultPodzialHandlu.set(targetId, freshOwnerDefaultPodzialHandlu());
+        }
+        reconcileAllOwnerErasFromResearch();
+
+        // Zeruj istniejące wojny obu stron (poza barbarzyńcami) -- ta sama pętla co
+        // `forceBronzeForcedWarOnPlayer` wyżej -- żeby jedyna aktywna wojna obu stron była
+        // TA para (bez tego istniejący `stanWojny` z graczem albo inna aktywna wojna wymuszona
+        // mogłaby zablokować finalny target guard w ai.ts albo dać fałszywy
+        // `playerAlreadyHasAnyActiveForcedWarThisTurn=true`).
+        for (const oid of allPowerOwnerIds()) {
+          if (oid === attackerId || isBarbarian(oid)) continue;
+          const rel = getDiploRelation(attackerId, oid);
+          if (rel.status === 'wojna') setDiploRelation(attackerId, oid, { ...rel, status: 'neutralni' });
+        }
+        for (const oid of allPowerOwnerIds()) {
+          if (oid === targetId || isBarbarian(oid)) continue;
+          const rel = getDiploRelation(targetId, oid);
+          if (rel.status === 'wojna') setDiploRelation(targetId, oid, { ...rel, status: 'neutralni' });
+        }
+        for (const [key, st] of [...bronzeForceWarActiveByPairKey.entries()]) {
+          if (
+            st.attackerId === attackerId || st.targetId === attackerId
+            || st.attackerId === targetId || st.targetId === targetId
+          ) bronzeForceWarActiveByPairKey.delete(key);
+        }
+
+        // REALNA, aktywna para AI-vs-AI Brązu: attacker już wojuje z target -- to jest
+        // dokładnie stan, który main.ts czyta z `bronzeForceWarActiveByPairKey` przed
+        // `ownerLoop` (GOAL 1: "cywilizacja ma już parę i z kimś walczy").
+        setDiploRelation(attackerId, targetId, { zaufanie: 0, respekt: 0, status: 'wojna' });
+        bronzeForceWarActiveByPairKey.set(diploPairKey(attackerId, targetId), {
+          attackerId, targetId, capturedByAttacker: 0, capturedByDefender: 0, startTurn: turn,
+        });
+        bronzeForceWarCycleOwners.add(attackerId);
+        bronzeForceWarPendingOwners.delete(attackerId);
+        bronzeForceWarPendingOwners.delete(targetId);
+
+        // Antycypowany zarzut własny (runda 1): OBIE strony "odkryte" przez gracza -- bez tego
+        // `diplomaticallyDiscoveredOwners.has(ownerId)` (main.ts ok. L29171) tnie cicho
+        // relacjeDip dla strony nieodkrytej i finalny target guard w ai.ts nigdy by nie
+        // zobaczył wpisu partnerId='0' dla niej (patrz ZARZUT 2 tego samego dispatchu).
+        diplomaticallyDiscoveredOwners.add(attackerId);
+        diplomaticallyDiscoveredOwners.add(targetId);
+        initDiplomaticContactSnapshot();
+
+        // Gracz zaczyna BEZ wojny z którąkolwiek stroną -- domino ma ją wygenerować.
+        const relAtt = getDiploRelation(attackerId, 0);
+        if (relAtt.status === 'wojna') setDiploRelation(attackerId, 0, { ...relAtt, status: 'neutralni' });
+        const relTgt = getDiploRelation(targetId, 0);
+        if (relTgt.status === 'wojna') setDiploRelation(targetId, 0, { ...relTgt, status: 'neutralni' });
+
+        // Sprzątnij ewentualny sojusz z poprzedniego wywołania tego hooka (drugi scenariusz
+        // ECHO 2 w tej samej stronie testu), potem opcjonalnie ustaw nowy.
+        for (let i = activeDeals.length - 1; i >= 0; i--) {
+          if (activeDeals[i]!.id === 'test-domino-alliance') activeDeals.splice(i, 1);
+        }
+        if (opts?.allianceSide) {
+          const sideOwner = opts.allianceSide === 'attacker' ? attackerId : targetId;
+          // ZARZUT 1 (Evaluator, runda 1): `ActiveDeal.strony` to KONTRAKT pary kanonicznej
+          // [mniejszy ownerId, większy ownerId] (diplomacy-treaties.ts, definicja `ActiveDeal`);
+          // `pairKey`/`dealsForPair` (tamże) i przez nie `allianceFormalKindBetween` filtrują
+          // DOKŁADNIE po tej kolejności. Gracz to zawsze ownerId=0, a `sideOwner` to zawsze
+          // realny AI ownerId > 0 -- więc para kanoniczna to zawsze [0, sideOwner], NIGDY
+          // [sideOwner, 0]. Odwrócona kolejność była niewidoczna dla `dealsForPair`, więc
+          // `dominoHasAllianceWithPlayer` w main.ts zawsze widział "brak sojuszu" dla tego
+          // haka -- ECHO 2 ("KTÓRAKOLWIEK strona ma sojusz -> brak efektu") nigdy nie mógł
+          // zadziałać w tym teście, mimo że produkcyjny mechanizm (poza tym hakiem) jest OK.
+          activeDeals.push({
+            id: 'test-domino-alliance', rodzaj: RodzajTraktatu.SojuszWojskowy,
+            strony: [0, sideOwner], wygasaTura: null,
+          });
+        }
+
+        return { attackerId, targetId };
+      },
     };
 
     // Hak testowy (ten sam wzorzec i to samo uzasadnienie co `__eraTestDebug` wyżej) —
