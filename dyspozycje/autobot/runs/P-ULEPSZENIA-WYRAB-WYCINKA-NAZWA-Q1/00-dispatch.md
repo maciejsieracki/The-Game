@@ -205,3 +205,58 @@ R2-K4. `wyrab-wycinka-nazwa-live-test.cjs` nadal 10/10, `tsc --noEmit` czysty,
 Operator (Sonnet 5, effort medium) → Evaluator (Sonnet 5, effort high) → Operator
 (obrona, jeśli zarzuty niepuste) → Final Control (Sonnet 5, effort high) →
 integracja orkiestratora.
+
+---
+
+# RUNDA 3 — DOMKNIĘCIE RESZTKI W PORADNIKU (ratyfikacja orkiestratora, 2026-09-04)
+
+## Powód
+Evaluator rundy 2 znalazł DWA miejsca, w których „wyrąb" jest nazwą ULEPSZENIA
+(w wyliczeniu obok „Tartak"/„obóz łowiecki"), a nie słowem pospolitym:
+- `docs/PORADNIK-GRACZA/02-mapa-swiata.md:56` — `| Las | Tartak, wyrąb, obóz łowiecki |`
+- `docs/PORADNIK-GRACZA/07-miasto-budowa-rekrutacja.md:78` — „las — tartak lub wyrąb"
+Oba pliki są w `PORADNIK_FILES` bundlera, więc gracz WIDZI starą nazwę w Civpedii.
+Evaluator słusznie NIE obciążył tym Operatora — leżą poza allowlistą rundy 2.
+Orkiestrator ratyfikuje rozszerzenie allowlisty o te dwa pliki.
+
+## GOAL RUNDY 3
+R3-1. `docs/PORADNIK-GRACZA/02-mapa-swiata.md:56` i
+   `docs/PORADNIK-GRACZA/07-miasto-budowa-rekrutacja.md:78` — zamień „wyrąb"
+   występujące jako NAZWA ULEPSZENIA na „Wycinka" (zachowaj konwencję
+   wielkości liter otoczenia: jeśli sąsiednie nazwy w wyliczeniu są małą literą,
+   dopasuj się do nich — liczy się, żeby gracz widział nową nazwę, nie sztywna
+   wielkość litery). NIE ruszaj czasowników pospolitych („najpierw wyrąb",
+   „po wyrębie", „wyrąb lasu") ani treści historycznej.
+R3-2. Zregeneruj bundle: `node gra/tools/bundle-wiki-for-game.cjs`; potwierdź
+   idempotencję (drugie uruchomienie = pusty diff poza polem `generated`).
+R3-3. ROZSZERZ `gra/tools/wyrab-wycinka-nazwa-live-test.cjs` o asercję pokrywającą
+   TREŚĆ CIVPEDII (sekcje poradnika w `wikiBundle.json`) — to jest luka, przez
+   którą ta resztka przeszła niezauważona w rundach 1-2: dotychczasowy test
+   sprawdzał panel budowy, nie treść encyklopedii. Asercja binarna: w całym
+   `wikiBundle.json` zero wystąpień „Wyrąb"/„wyrąb" w roli nazwy ulepszenia
+   (dopuszczalne wyłącznie czasowniki pospolite — wypisz każde i uzasadnij).
+
+## ALLOWLISTA RUNDY 3
+- Wszystko z rund 1-2 (bez zmian).
+- DODANE: `docs/PORADNIK-GRACZA/02-mapa-swiata.md`,
+  `docs/PORADNIK-GRACZA/07-miasto-budowa-rekrutacja.md` — WYŁĄCZNIE wystąpienia
+  nazwy ulepszenia.
+- `gra/src/data/wikiBundle.json` (regeneracja), `gra/tools/*-test.cjs`.
+Zakazane bez zmian: klucz `wyrab`, mechanika wycinki, komentarze kodu,
+`dyspozycje/WERSJE.md`, `gra-robocza/ROBOCZA-MANIFEST.json`, `playbook.json`.
+
+## KRYTERIA KOŃCA RUNDY 3
+R3-K1. `grep -rn "[Ww]yrąb" docs/` — każde pozostałe wystąpienie jest czasownikiem
+   pospolitym lub treścią historyczną; wypisz je wszystkie z uzasadnieniem.
+R3-K2. W `gra/src/data/wikiBundle.json` zero wystąpień nazwy ulepszenia „Wyrąb"
+   (i „wyrąb" w roli nazwy) — sprawdzone samodzielnym grepem po zdekodowanym JSON.
+R3-K3. Rozszerzony live-test przechodzi i JEST NIETAUTOLOGICZNY: pokaż, że przed
+   poprawką rundy 3 nowa asercja czerwieni się (mutacja/checkout starego bundla).
+R3-K4. `tsc --noEmit` czysty, 5 bramek referencyjnych zielone, testy civpedia
+   (`civpedia-ulepszenia-historia-batch`, `civpedia-historia-infra`,
+   `civpedia-gra-id-mostek`) zielone.
+
+## OBIEG RUNDY 3
+Operator (Sonnet 5, effort medium) → Evaluator (Sonnet 5, effort high) → Operator
+(obrona, jeśli zarzuty niepuste) → Final Control (Sonnet 5, effort high) →
+integracja orkiestratora.
