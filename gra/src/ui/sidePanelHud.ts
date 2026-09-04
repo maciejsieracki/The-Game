@@ -265,6 +265,21 @@ html.civ-ui-zoom-active .civ-side-ctx-dock{left:${SIDE_PANEL_LEFT};
 /* Blokująca — rozwinięta: dokładnie jedna, zawsze pierwsza w kolejce (kolejka, nie stos). */
 .civ-side-panel .sp-event.sp-blocking.sp-expanded{cursor:default;flex-direction:column;align-items:stretch;
   padding:0;gap:0;overflow:hidden;
+  /* P-DYPLO-KARTA-DECYZJI-DISMISS-UCIETY-Q1 (2026-09-04): stopka akcji (.sp-action-bar) bywała
+     UCIĘTA u dołu karty, gdy w .sp-scroll zabrakło miejsca — najwyraźniej po dodaniu drugiego
+     elementu do stopki (commit 5cbe910c). Przyczyna: ta karta jest elementem flex w kolumnie
+     .sp-scroll (max-height:100%, overflow-y:auto), a overflow:hidden WYŻEJ w tej regule
+     (potrzebne, żeby tło paska akcji nie wychodziło poza border-radius:12px) zmienia automatyczne
+     minimum flexa z min-height:auto (= wysokość treści) na 0 — przeglądarka woli więc
+     ŚCISNĄĆ kartę niż uruchomić przewijanie kontenera, obcinając dolną krawędź stopki.
+     Fix przywraca minimum treści (min-height:min-content) i dodatkowo blokuje kurczenie
+     (flex-shrink:0), więc nadmiar przewija SIĘ CAŁY .sp-scroll — karta zostaje kompletna.
+     Zaokrąglone rogi zachowane bez zmian (overflow:hidden zostaje). Bramka:
+     tools/sidepanel-blocking-card-cutoff-real-render-test.cjs (niski viewport wymusza brak miejsca).
+     EN: the action bar could be clipped when .sp-scroll ran out of room, because overflow:hidden
+     on this flex item drops its automatic min-size from content height to 0, so the browser shrinks
+     the card instead of scrolling the container. min-content minimum + no shrink restores it. */
+  min-height:min-content;flex-shrink:0;
   border:var(--tg-border-blocking,3px) solid var(--tg-gold-primary);border-radius:12px;
   background:linear-gradient(180deg,rgba(30,24,20,.99),rgba(10,10,14,.99));
   box-shadow:0 12px 32px rgba(0,0,0,.65),var(--tg-glow-gold);}
@@ -279,6 +294,18 @@ html.civ-ui-zoom-active .civ-side-ctx-dock{left:${SIDE_PANEL_LEFT};
   background:linear-gradient(180deg,#ffe08a,#e0b24a);border-radius:4px;padding:2px 7px;font-weight:700;
   white-space:nowrap;}
 .civ-side-panel .sp-blk-hint{font-size:10.5px;color:#a89a80;}
+/* P-DYPLO-KARTA-DECYZJI-DISMISS-UCIETY-Q1: „✕" karty blokującej — dokładnie ten sam element
+   .sp-close (i ten sam handler data-dismiss → onEventDismiss) co na kartach
+   informacyjnych, tyle że zakotwiczony w NAGŁÓWKU karty (.sp-blk-body), nie w stopce akcji:
+   dzięki temu jest widoczny zawsze, niezależnie od miejsca w .sp-scroll, i nie rywalizuje
+   o przestrzeń z przyciskami akcji. margin-left:auto z bazowej reguły .sp-close odpycha
+   go na prawy kraniec; tu tylko powiększamy cel kliknięcia do rozmiarów reszty rozwiniętej
+   karty (bazowe 10px byłoby zbyt drobne przy tytule 16px).
+   EN: same .sp-close element/handler as on info cards, anchored in the card header instead of
+   the action footer — always visible, never competing for footer space; only the hit target is
+   enlarged to match the expanded card's scale. */
+.civ-side-panel .sp-event.sp-blocking.sp-expanded .sp-close{font-size:13px;line-height:1;padding:3px 5px;
+  flex:none;align-self:flex-start;}
 .civ-side-panel .sp-event.sp-expanded .sp-ico{width:42px;height:42px;border-radius:10px;
   border:2px solid var(--tg-gold-primary);background:var(--tg-medallion-bg);}
 .civ-side-panel .sp-event.sp-expanded .sp-ico .sp-ic-svg{width:22px;height:22px;}
@@ -442,7 +469,20 @@ function isIgnorableRevoltEvent(ev: SidePanelEvent): boolean {
  * (handleSidePanelEventDismiss, gałąź domyślna) już dziś obsługuje OBA przez miękki
  * `dismissedSidePanelEventIds`, czyszczony co turę — zero zmian w main.ts potrzebne.
  * Właściciel wprost odróżnił to od formalnego odrzucenia (reputacyjne konsekwencje): to
- * WYŁĄCZNIE ukrycie karty do końca tury, nie interakcja z samą propozycją. */
+ * WYŁĄCZNIE ukrycie karty do końca tury, nie interakcja z samą propozycją.
+ *
+ * P-DYPLO-KARTA-DECYZJI-DISMISS-UCIETY-Q1 (2026-09-04): predykat ZOSTAJE nietknięty, ale nie ma
+ * już konsumenta w renderze. Powód: „✕" (`.sp-close`, nagłówek karty blokującej) woła DOKŁADNIE
+ * ten sam `config.onEventDismiss` co dawny link „Odłóż na później" i przysługuje WSZYSTKIM kartom
+ * blokującym — tak jak dziś wszystkim informacyjnym — więc gate „czy ta karta jest diplo" nie ma
+ * już czego rozstrzygać. Sprawdzone w danych: każda karta blokująca (`diplo-pend-*`, `negot-*`,
+ * `revolt-*`, `prod-empty-*`) trafia w main.ts do gałęzi miękkiego, jednoturowego dismissu
+ * (`dismissedSidePanelEventIds`), więc nie istnieje karta blokująca, dla której zamknięcie byłoby
+ * semantycznie błędne. Funkcja zostaje jako kanoniczne, przetestowane rozpoznanie „karta
+ * dyplomatyczna w kolejce blokującej" — jedyne miejsce w tym pliku, które je definiuje.
+ * EN: predicate intentionally retained but no longer called — the new header „✕" applies to ALL
+ * blocking cards (same soft, one-turn dismiss branch in main.ts for every blocking id shape), so
+ * there is nothing left for a diplo-only gate to decide. */
 function isDeferrableDiploEvent(ev: SidePanelEvent): boolean {
   return ev.blocking === true && ev.kind === 'diplo';
 }
@@ -668,7 +708,6 @@ export function createSidePanelHud(config: SidePanelHudConfig): SidePanelHudApi 
           if (blockingSeen === 1) {
             // Rozwinięta — zawsze dokładnie jedna, pierwsza blokująca w kolejce.
             const ignorable = isIgnorableRevoltEvent(ev);
-            const deferrable = isDeferrableDiploEvent(ev);
             html += '<div class="sp-event sp-blocking sp-expanded" data-id="' + ev.id + '">'
               + '<div class="sp-blk-body">'
               + '<span class="sp-ico">' + icoContent + '</span>'
@@ -678,15 +717,32 @@ export function createSidePanelHud(config: SidePanelHudConfig): SidePanelHudApi 
               + '</div>'
               + '<div class="sp-title">' + ev.title + '</div>'
               + (ev.subtitle !== undefined ? '<div class="sp-sub">' + ev.subtitle + '</div>' : '')
-              + '</div></div>'
+              + '</div>'
+              // P-DYPLO-KARTA-DECYZJI-DISMISS-UCIETY-Q1 (zgłoszenie właściciela: „Lepszy byłby
+              // krzyżyk w górnym rogu, żeby można było to po prostu wyłączyć"): „✕" w prawym
+              // górnym rogu karty blokującej. DOKŁADNIE ten sam znacznik, ta sama klasa,
+              // ten sam `data-dismiss` i ten sam `title`/`aria-label` co na kartach
+              // informacyjnych (patrz render karty informacyjnej niżej) — więc łapie go ten
+              // sam, już istniejący listener `.sp-close[data-dismiss]` → `config.onEventDismiss`,
+              // czyli DOKŁADNIE ta sama miękka, jednoturowa semantyka (main.ts,
+              // `dismissedSidePanelEventIds`, czyszczone na końcu każdej tury) co dawny link
+              // „Odłóż na później"/„Zignoruj". Zero zmian w main.ts.
+              // Ta sama bramka gatingu co na kartach informacyjnych: bez `onEventDismiss`
+              // w configu nie ma czego zamykać, więc nie pokazujemy martwego „✕".
+              + (config.onEventDismiss !== undefined
+                ? '<span class="sp-close" data-dismiss="' + ev.id + '" title="Zamknij" aria-label="Zamknij powiadomienie">✕</span>'
+                : '')
+              + '</div>'
               + '<div class="sp-action-bar"><div class="sp-action-row">'
               + '<button type="button" class="sp-action-btn tg-btn-primary" data-sp-open="' + ev.id + '">Otwórz →</button>'
               + '</div>'
+              // Link „Zignoruj — bunt potrwa dalej" ZOSTAJE: jego etykieta niesie własną,
+              // nieoczywistą informację o skutku (bunt trwa dalej), więc nie jest duplikatem
+              // „✕". Zdublowany link „Odłóż na później" kart dyplomatycznych (dodany w
+              // 5cbe910c) został USUNIĘTY — wołał dokładnie ten sam `onEventDismiss` co nowe
+              // „✕", a był drugim elementem walczącym o miejsce w tej samej, ciasnej stopce.
               + (ignorable
                 ? '<button type="button" class="sp-action-ignore" data-sp-ignore="' + ev.id + '">Zignoruj — bunt potrwa dalej</button>'
-                : '')
-              + (deferrable
-                ? '<button type="button" class="sp-action-ignore" data-sp-ignore="' + ev.id + '">Odłóż na później</button>'
                 : '')
               + '</div>'
               + '</div>';

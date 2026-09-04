@@ -50,6 +50,17 @@
  *     dodatkowych przycisków — tylko "Otwórz →".
  *  E. Zero błędów konsoli/JS przez cały przebieg.
  *
+ * AKTUALIZACJA KONTRAKTU — P-DYPLO-KARTA-DECYZJI-DISMISS-UCIETY-Q1 (2026-09-04, runda 1):
+ * właściciel zgłosił, że stopka akcji karty blokującej bywa UCIĘTA („nie da się jej włączyć...
+ * lepszy byłby krzyżyk w górnym rogu"). Tekstowy link „Odłóż na później" (dodany tym tematem)
+ * został zastąpiony przyciskiem „✕" (`.sp-close`, `data-dismiss`) w NAGŁÓWKU karty — ten sam
+ * element, ta sama klasa i ten sam handler co „✕" kart informacyjnych, więc wołany jest
+ * DOKŁADNIE ten sam `config.onEventDismiss` → `handleSidePanelEventDismiss` (main.ts,
+ * nietknięty) co wcześniej. Semantyka („miękki, jednoturowy dismiss, karta wraca w następnej
+ * turze, propozycja w audiencji nietknięta") jest niezmieniona i ten test nadal jej pilnuje —
+ * zmienił się WYŁĄCZNIE element, w który klika gracz. Geometrii (brak ucięcia) pilnuje osobna
+ * bramka tools/sidepanel-blocking-card-cutoff-real-render-test.cjs.
+ *
  * Bramka (z katalogu gra/): node tools/sidepanel-diplo-dismiss-real-render-test.cjs
  *   --shots <katalog>   zrzuty ekranu kart przed/po dismiss
  *   --dist <katalog>    użyj gotowego katalogu vite build zamiast budować go w teście
@@ -140,10 +151,16 @@ async function readBlockingCard(page, id) {
     if (card === null) return { missing: true };
     const ignoreBtns = Array.from(card.querySelectorAll('.sp-action-ignore'))
       .map((b) => (b.textContent || '').replace(/\s+/g, ' ').trim());
+    const closeEl = card.querySelector('.sp-close');
     return {
       missing: false,
       expanded: card.classList.contains('sp-expanded'),
       badge: (card.querySelector('.sp-badge-decision')?.textContent || '').trim(),
+      hasCloseBtn: closeEl !== null && (closeEl.textContent || '').trim() === '✕'
+        && closeEl.getAttribute('data-dismiss') === id,
+      closeInHeader: closeEl !== null && closeEl.closest('.sp-blk-body') !== null,
+      closeTitle: closeEl?.getAttribute('title') ?? null,
+      closeAria: closeEl?.getAttribute('aria-label') ?? null,
       openBtnText: (card.querySelector('[data-sp-open]')?.textContent || '').trim(),
       ignoreBtns,
       hasDeferBtn: ignoreBtns.some((t) => t === 'Odłóż na później'),
@@ -153,7 +170,9 @@ async function readBlockingCard(page, id) {
 }
 
 async function clickDeferButton(page, id) {
-  const sel = '.civ-side-panel .sp-event[data-id="' + id + '"] [data-sp-ignore="' + id + '"]';
+  // P-DYPLO-KARTA-DECYZJI-DISMISS-UCIETY-Q1: dismiss karty blokujacej idzie teraz przez „✕"
+  // (.sp-close/data-dismiss) w naglowku, nie przez tekstowy link data-sp-ignore w stopce.
+  const sel = '.civ-side-panel .sp-event[data-id="' + id + '"] .sp-close[data-dismiss="' + id + '"]';
   const loc = page.locator(sel);
   if (await loc.count() === 0) return { hit: false, why: 'brak przycisku w DOM' };
   await loc.click();
@@ -173,9 +192,10 @@ async function main() {
   const hudSrc = fs.readFileSync(path.join(GRA_DIR, 'src', 'ui', 'sidePanelHud.ts'), 'utf8');
   assert('(0a) sidePanelHud.ts ma predykat isDeferrableDiploEvent dopasowujacy po kind, nie po prefiksie id',
     /function isDeferrableDiploEvent\(ev: SidePanelEvent\): boolean \{\s*\n\s*return ev\.blocking === true && ev\.kind === 'diplo';/.test(hudSrc));
-  assert('(0b) renderer blokujacych kart wola deferrable i renderuje drugi przycisk data-sp-ignore',
-    /const deferrable = isDeferrableDiploEvent\(ev\);/.test(hudSrc)
-    && /deferrable[\s\S]{0,300}Odłóż na później/.test(hudSrc));
+  assert('(0b) renderer karty blokujacej renderuje "✕" (.sp-close z data-dismiss) w naglowku .sp-blk-body, przed .sp-action-bar',
+    /sp-blk-body[\s\S]{0,2500}class="sp-close" data-dismiss=[\s\S]{0,400}sp-action-bar/.test(hudSrc));
+  assert('(0b2) zdublowany tekstowy link "Odloz na pozniej" znikl z renderu (zastapiony przez "✕")',
+    !/data-sp-ignore="[^"]*">Odłóż na później</.test(hudSrc));
   // Ciało WYŁĄCZNIE handleSidePanelEventDismiss (od deklaracji do jej zamykającej klamry) —
   // startsWith('diplo-pend-')/('negot-') ISTNIEJĄ gdzie indziej w main.ts (routing kliknięcia
   // karty do właściwego modala — inna funkcja, poza allowlistą tego tematu), więc kotwica musi
@@ -239,12 +259,17 @@ async function main() {
       const before = await readBlockingCard(page, id);
       assert('(' + label + '1) karta wyrenderowana i rozwinieta', before.missing === false && before.expanded === true, before);
       assert('(' + label + '2) badge "Wymaga decyzji" + "Otworz ->" nietkniete', before.badge === 'Wymaga decyzji' && before.openBtnText === 'Otwórz →', before);
-      assert('(' + label + '3) przycisk "Odloz na pozniej" widoczny, BEZ przycisku buntu', before.hasDeferBtn === true && before.hasRevoltIgnoreBtn === false, before);
+      assert('(' + label + '3) "✕" widoczny w NAGLOWKU karty, z tym samym title/aria-label co karty informacyjne, BEZ przycisku buntu',
+        before.hasCloseBtn === true && before.closeInHeader === true
+        && before.closeTitle === 'Zamknij' && before.closeAria === 'Zamknij powiadomienie'
+        && before.hasRevoltIgnoreBtn === false, before);
+      assert('(' + label + '3b) zdublowany tekstowy link "Odloz na pozniej" znikl ze stopki (zero .sp-action-ignore na karcie diplo)',
+        before.hasDeferBtn === false && before.ignoreBtns.length === 0, before);
       const beforeControl = await readBlockingCard(page, controlId);
       assert('(' + label + '3k) karta kontrolna (druga, niekliknieta) tez wyrenderowana', beforeControl.missing === false, beforeControl);
 
       const click = await clickDeferButton(page, id);
-      assert('(' + label + '4) klik w "Odloz na pozniej" trafil w przycisk', click.hit, click);
+      assert('(' + label + '4) klik w "✕" trafil w przycisk', click.hit, click);
       const afterClick = await readBlockingCard(page, id);
       assert('(' + label + '5) karta zniknela z panelu bocznego W TEJ TURZE (przed endTurn)', afterClick.missing === true, afterClick);
       const afterClickControl = await readBlockingCard(page, controlId);
@@ -300,6 +325,8 @@ async function main() {
       assert('(C2) MA "Zignoruj — bunt potrwa dalej"', revolt.hasRevoltIgnoreBtn === true, revolt);
       assert('(C3) NIE dubluje sie z "Odloz na pozniej" (kind!=="diplo")', revolt.hasDeferBtn === false, revolt);
       assert('(C4) dokladnie JEDEN przycisk .sp-action-ignore na karcie', revolt.ignoreBtns.length === 1, revolt);
+      assert('(C5) karta buntu ma DODATKOWO "✕" w naglowku (przysluguje wszystkim kartom blokujacym)',
+        revolt.hasCloseBtn === true && revolt.closeInHeader === true, revolt);
 
       console.log('\n-- (D) kontrola regresji: karta prod-empty --');
       const ID_PROD = 'prod-empty-testcity';
@@ -313,6 +340,8 @@ async function main() {
       assert('(D1) karta prod-empty wyrenderowana i rozwinieta', prod.missing === false && prod.expanded === true, prod);
       assert('(D2) zero przyciskow .sp-action-ignore (ani "Zignoruj", ani "Odloz")', prod.ignoreBtns.length === 0, prod);
       assert('(D3) "Otworz ->" nietkniety', prod.openBtnText === 'Otwórz →', prod);
+      assert('(D4) karta prod-empty ma "✕" w naglowku (przysluguje wszystkim kartom blokujacym)',
+        prod.hasCloseBtn === true && prod.closeInHeader === true, prod);
     } finally {
       await page.close();
     }
