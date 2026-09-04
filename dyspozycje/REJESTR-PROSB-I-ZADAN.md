@@ -4623,3 +4623,47 @@ w fali:** `R-WALKA-PRZEWAGA-LICZEBNA-Q1` (węzły W1/W2 — `auto-battle-*`, `co
 `battleScene.ts`), `R-NAZWY-MIAST-AUDYT-STOLICE-I-PANSTWA-Q1` (pule nazw + `cluster-spawn.ts`),
 `R-AUTOWYZYWIENIE-GLOBALNY-BLOKER-I-STAN-PRZYCISKU-Q1` (`empire-food.ts` + panel Spichlerza).
 To są trzy najbliższe dispatche.
+
+## R-HOTSEAT-MULTIPLAYER-HOSTING-Q1 — temat na przyszłość (rejestracja 2026-09-04, noc)
+
+**Wyzwalacz (właściciel):** „Dopisać multiplayer i hosting jako rozdział do planu
+hot-seatu, czy zostawiamy przy samej ocenie w rozmowie? Tak, dopisz do tematu
+na przyszłość."
+
+**Stan faktyczny sprawdzony przed zapisem: rozdział JUŻ ISTNIEJE.**
+`docs/decyzje/PLAN-HOT-SEAT-2-GRACZY.md`, rozdział **H** (H1–H6), commit `eba74a99`
+„Plan hot-seat: rozdzial H - multiplayer sieciowy jako Etap 9 (ostatni krok)".
+Ocena z rozmowy została utrwalona w pliku, nie została w czacie. Rozdział pokrywa oba
+wątki z pytania: multiplayer (H1–H4, H6) **oraz** hosting (H5, z rozdzieleniem
+„serwer serwuje stronę" vs „serwer liczy grę").
+
+**Czego naprawdę brakowało i co ten wpis naprawia: pozycji w REJESTRZE.** Plan żył
+wyłącznie w `docs/decyzje/`, a rejestr nie miał ani jednego trafienia na „hot-seat"
+i „multiplayer" — czyli temat był niewidoczny dla audytów kompletności i nie stał
+w żadnej kolejce. Od teraz stoi.
+
+**STATUS: NIE DISPATCHOWANE, ŚWIADOMIE — temat na przyszłość, nie zaległość.**
+Nie wchodzi do bieżącej pętli AutoBota i nie liczy się do niej jako dług.
+
+**Zawartość rozdziału H w skrócie (dla przyszłego reconu — nie zastępuje lektury pliku):**
+- **H1** Multiplayer jest ścisłym NADZBIOREM hot-seatu, nie alternatywą: zawiera Etapy 0–7
+  w całości, więc żadna praca nad hot-seatem się nie marnuje.
+- **H2** Cztery rzeczy gotowe, zweryfikowane w kodzie: logika działa headless w Node (rdzeń
+  bez DOM/three.js), AI celowo deterministyczne (zero `Math.random()` w `ai.ts`), walka
+  i oblężenie przyjmują wstrzykiwany RNG, istnieje pełna serializacja stanu (`SaveGame`).
+  Plus gra jest turowa, więc odpada interpolacja, predykcja i rollback.
+- **H3** Braki: backend nie istnieje w ogóle (zero trafień na `WebSocket|socket.io|fetch(`
+  w `gra/src`) oraz **siedem** realnych losowań do domknięcia — 6 generatorów ID jednostek
+  i 1 nagroda z wioski (`main.ts:22677`).
+- **H4** Rekomendacja: autorytatywny host, NIE lockstep — format snapshotu już istnieje.
+- **H5** Hosting rozdzielony na dwa różne znaczenia. **(a) serwerowanie strony ma wartość
+  samo w sobie i nie zależy od niczego** — daje spójność wersji między graczami i likwiduje
+  hack `vite-plugin-singlefile` wraz z 66 MB `Gra-ROBOCZA.html` ostrzeganym przy każdym
+  pushu. **(b) serwer liczący grę** to dopiero Etap 4 planu (rozcięcie `triggerPlayerEndTurn`
+  na `endActiveHumanTurn()` i `runWorldEndTurn()`).
+- **H6** Kolejność, w której żaden krok nie jest ślepą uliczką.
+
+**Wniosek do zapamiętania:** H5(a) — hosting strony — jest jedyną pozycją tego tematu
+**bez żadnej zależności** i z natychmiastową wartością (koniec 66 MB w gicie, koniec
+rozjazdu wersji). Gdyby właściciel chciał kiedyś ruszyć multiplayer małym krokiem,
+to jest ten krok, a nie Etap 9.
