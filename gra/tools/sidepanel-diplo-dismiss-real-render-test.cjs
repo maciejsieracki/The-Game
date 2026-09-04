@@ -47,7 +47,8 @@
  *  C. Kontrola regresji: karta buntu (`revolt-*`) ma WYŁĄCZNIE "Zignoruj — bunt potrwa dalej",
  *     BEZ "Odłóż na później".
  *  D. Kontrola regresji: karta `prod-empty-*` (`kind:'city'`) nie dostaje ŻADNEGO z dwóch
- *     dodatkowych przycisków — tylko "Otwórz →".
+ *     dodatkowych przycisków — tylko "Otwórz →", i (runda 1 obrona) też BEZ „✕": jej dismiss
+ *     w main.ts jest wieloturowy (odcisk opcji produkcji), więc „✕" byłby zmianą rozgrywkową.
  *  E. Zero błędów konsoli/JS przez cały przebieg.
  *
  * AKTUALIZACJA KONTRAKTU — P-DYPLO-KARTA-DECYZJI-DISMISS-UCIETY-Q1 (2026-09-04, runda 1):
@@ -193,7 +194,7 @@ async function main() {
   assert('(0a) sidePanelHud.ts ma predykat isDeferrableDiploEvent dopasowujacy po kind, nie po prefiksie id',
     /function isDeferrableDiploEvent\(ev: SidePanelEvent\): boolean \{\s*\n\s*return ev\.blocking === true && ev\.kind === 'diplo';/.test(hudSrc));
   assert('(0b) renderer karty blokujacej renderuje "✕" (.sp-close z data-dismiss) w naglowku .sp-blk-body, przed .sp-action-bar',
-    /sp-blk-body[\s\S]{0,2500}class="sp-close" data-dismiss=[\s\S]{0,400}sp-action-bar/.test(hudSrc));
+    /sp-blk-body[\s\S]{0,4000}class="sp-close" role="button" tabindex="0" data-dismiss=[\s\S]{0,400}sp-action-bar/.test(hudSrc));
   assert('(0b2) zdublowany tekstowy link "Odloz na pozniej" znikl z renderu (zastapiony przez "✕")',
     !/data-sp-ignore="[^"]*">Odłóż na później</.test(hudSrc));
   // Ciało WYŁĄCZNIE handleSidePanelEventDismiss (od deklaracji do jej zamykającej klamry) —
@@ -340,8 +341,13 @@ async function main() {
       assert('(D1) karta prod-empty wyrenderowana i rozwinieta', prod.missing === false && prod.expanded === true, prod);
       assert('(D2) zero przyciskow .sp-action-ignore (ani "Zignoruj", ani "Odloz")', prod.ignoreBtns.length === 0, prod);
       assert('(D3) "Otworz ->" nietkniety', prod.openBtnText === 'Otwórz →', prod);
-      assert('(D4) karta prod-empty ma "✕" w naglowku (przysluguje wszystkim kartom blokujacym)',
-        prod.hasCloseBtn === true && prod.closeInHeader === true, prod);
+      // D4 (runda 1, obrona — zarzut Evaluatora 1): karta prod-empty NIE dostaje „✕".
+      // main.ts obsluguje prefiks 'prod-empty-' wlasna galezia (prodEmptyDismissFp +
+      // productionOptionsFingerprint) PRZED miekkim dismissedSidePanelEventIds — dismiss jest
+      // WIELOTUROWY, wiec „✕" bylby tam trwalym wyciszeniem blokujacego alertu, czyli zmiana
+      // rozgrywkowa poza GOAL tematu (GOAL 4: zmienia sie WYLACZNIE prezentacja).
+      assert('(D4) karta prod-empty NIE ma "✕" (jej dismiss w main.ts jest wieloturowy — poza GOAL)',
+        prod.hasCloseBtn === false, prod);
     } finally {
       await page.close();
     }

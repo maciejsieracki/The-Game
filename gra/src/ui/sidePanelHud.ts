@@ -471,20 +471,41 @@ function isIgnorableRevoltEvent(ev: SidePanelEvent): boolean {
  * Właściciel wprost odróżnił to od formalnego odrzucenia (reputacyjne konsekwencje): to
  * WYŁĄCZNIE ukrycie karty do końca tury, nie interakcja z samą propozycją.
  *
- * P-DYPLO-KARTA-DECYZJI-DISMISS-UCIETY-Q1 (2026-09-04): predykat ZOSTAJE nietknięty, ale nie ma
- * już konsumenta w renderze. Powód: „✕" (`.sp-close`, nagłówek karty blokującej) woła DOKŁADNIE
- * ten sam `config.onEventDismiss` co dawny link „Odłóż na później" i przysługuje WSZYSTKIM kartom
- * blokującym — tak jak dziś wszystkim informacyjnym — więc gate „czy ta karta jest diplo" nie ma
- * już czego rozstrzygać. Sprawdzone w danych: każda karta blokująca (`diplo-pend-*`, `negot-*`,
- * `revolt-*`, `prod-empty-*`) trafia w main.ts do gałęzi miękkiego, jednoturowego dismissu
- * (`dismissedSidePanelEventIds`), więc nie istnieje karta blokująca, dla której zamknięcie byłoby
- * semantycznie błędne. Funkcja zostaje jako kanoniczne, przetestowane rozpoznanie „karta
- * dyplomatyczna w kolejce blokującej" — jedyne miejsce w tym pliku, które je definiuje.
- * EN: predicate intentionally retained but no longer called — the new header „✕" applies to ALL
- * blocking cards (same soft, one-turn dismiss branch in main.ts for every blocking id shape), so
- * there is nothing left for a diplo-only gate to decide. */
+ * P-DYPLO-KARTA-DECYZJI-DISMISS-UCIETY-Q1 (2026-09-04, runda 1 obrona): predykat ZOSTAJE
+ * nietknięty, ale nie ma już konsumenta w renderze — jego rolę bramki dla „✕" przejął szerszy
+ * `hasSoftOneTurnDismissEvent()` niżej (diplo NIE jest jedyną kartą z miękkim dismissem: buntowe
+ * `revolt-*`/`revolt-warn-*` też nim są). Funkcja zostaje jako kanoniczne, przetestowane
+ * rozpoznanie „karta dyplomatyczna w kolejce blokującej" — jedyne miejsce w tym pliku, które je
+ * definiuje.
+ * EN: predicate intentionally retained but no longer called; the header „✕" is gated by the wider
+ * `hasSoftOneTurnDismissEvent()` instead, since diplo cards are not the only soft-dismiss ones. */
 function isDeferrableDiploEvent(ev: SidePanelEvent): boolean {
   return ev.blocking === true && ev.kind === 'diplo';
+}
+
+/** P-DYPLO-KARTA-DECYZJI-DISMISS-UCIETY-Q1 — bramka dla „✕" na karcie BLOKUJĄCEJ.
+ *
+ * GOAL 3 dispatchu kazał sprawdzić W DANYCH, czy istnieje karta blokująca, dla której
+ * zamknięcie byłoby semantycznie błędne. SPRAWDZONE (main.ts, `handleSidePanelEventDismiss`
+ * :19886+ i `collectTurnEvents` :13830-13892) — blokujących kształtów id jest pięć i NIE są
+ * równoważne:
+ *  - `revolt-warn-*`, `revolt-*`, `p.id` (pendingDiplomacyInbox), `n.id` (negotiationTable)
+ *    spadają do gałęzi domyślnej `dismissedSidePanelEventIds.add(id)` (:19956) — dismiss
+ *    MIĘKKI, JEDNOTUROWY (zbiór czyszczony na końcu każdej tury), karta wraca w następnej.
+ *    To dokładnie semantyka dawnego linku „Odłóż na później", więc „✕" jest tu poprawny.
+ *  - `prod-empty-*` ma WŁASNĄ gałąź WCZEŚNIEJ (:19946-19954): `prodEmptyDismissFp.set(city.id,
+ *    productionOptionsFingerprint(city))` + `return`, a `collectTurnEvents` (:13854-13857)
+ *    wznawia kartę dopiero, gdy odcisk opcji produkcji się ZMIENI. To dismiss WIELOTUROWY,
+ *    trwałe wyciszenie blokującego alertu pustej kolejki — dodanie mu „✕" byłoby zmianą
+ *    ROZGRYWKOWĄ poza GOAL i łamałoby GOAL 4 („zmienia się WYŁĄCZNIE prezentacja").
+ * Stąd wyjątek po prefiksie: dopasowanie po `kind` jest niemożliwe — `prod-empty-*` i
+ * `revolt-*` mają ten sam `kind:'city'`, a różnią się właśnie gałęzią dismissu.
+ * EN: gate for the blocking card's „✕". Every blocking id shape falls through to the soft,
+ * one-turn `dismissedSidePanelEventIds` branch EXCEPT `prod-empty-*`, which main.ts dismisses
+ * durably via a production-options fingerprint — giving that card an „✕" would be a gameplay
+ * change, not a presentation one, so it is excluded. */
+function hasSoftOneTurnDismissEvent(ev: SidePanelEvent): boolean {
+  return ev.blocking === true && !ev.id.startsWith('prod-empty-');
 }
 
 /** Prosta polska pluralizacja dla licznika kolejki („1 wymaga" / „2 wymagają"). */
@@ -573,8 +594,12 @@ export function createSidePanelHud(config: SidePanelHudConfig): SidePanelHudApi 
   let showOtherCivsEvents = false;
 
   // Wspólne dla trzech kart (DYSPOZYCJA-WDROZENIE.md §5): Esc zamyka karty niezobowiązujące.
-  // Tylko informacyjne (blokujące nie mają zamknięcia poza akcją/Zignoruj) — delegacja na
-  // el, żeby działać niezależnie od tego, który element w danym momencie ma fokus.
+  // Tylko informacyjne — delegacja na el, żeby działać niezależnie od tego, który element
+  // w danym momencie ma fokus. P-DYPLO-KARTA-DECYZJI-DISMISS-UCIETY-Q1: filtr
+  // `:not(.sp-blocking)` ZOSTAJE celowo — karta blokująca nie ma być zamykana przypadkowym
+  // Escape'em „w tle"; jej klawiaturowa ścieżka zamknięcia to sfokusowany „✕" (`.sp-close`
+  // z `tabindex="0"`/`role="button"`, Enter/Spacja — listener przy końcu render()), czyli
+  // świadome trafienie w konkretny element, tak jak dawniej Tab+Enter na „Odłóż na później".
   el.addEventListener("keydown", (e: Event) => {
     const ke = e as KeyboardEvent;
     if (ke.key !== "Escape") return;
@@ -727,10 +752,18 @@ export function createSidePanelHud(config: SidePanelHudConfig): SidePanelHudApi 
               // czyli DOKŁADNIE ta sama miękka, jednoturowa semantyka (main.ts,
               // `dismissedSidePanelEventIds`, czyszczone na końcu każdej tury) co dawny link
               // „Odłóż na później"/„Zignoruj". Zero zmian w main.ts.
-              // Ta sama bramka gatingu co na kartach informacyjnych: bez `onEventDismiss`
-              // w configu nie ma czego zamykać, więc nie pokazujemy martwego „✕".
-              + (config.onEventDismiss !== undefined
-                ? '<span class="sp-close" data-dismiss="' + ev.id + '" title="Zamknij" aria-label="Zamknij powiadomienie">✕</span>'
+              // Ta sama bramka gatingu co na kartach informacyjnych (bez `onEventDismiss`
+              // w configu nie ma czego zamykać, więc nie pokazujemy martwego „✕"), PLUS
+              // `hasSoftOneTurnDismissEvent` — patrz docblok predykatu: `prod-empty-*` ma w
+              // main.ts dismiss WIELOTUROWY (odcisk opcji produkcji), więc „✕" byłby tam
+              // zmianą rozgrywkową, nie prezentacyjną.
+              // `role="button"` + `tabindex="0"`: usunięty stąd link „Odłóż na później" był
+              // natywnym <button>, więc kartę blokującą dało się zamknąć Tabem+Enterem, a
+              // handler Escape wyżej celowo pomija `.sp-blocking`. Bez tych atrybutów zmiana
+              // byłaby regresem dostępności względem 5cbe910c. Aktywacja Enter/Spacją żyje w
+              // listenerze `.sp-close[data-dismiss]` niżej; `:focus-visible` ma już CSS.
+              + (config.onEventDismiss !== undefined && hasSoftOneTurnDismissEvent(ev)
+                ? '<span class="sp-close" role="button" tabindex="0" data-dismiss="' + ev.id + '" title="Zamknij" aria-label="Zamknij powiadomienie">✕</span>'
                 : '')
               + '</div>'
               + '<div class="sp-action-bar"><div class="sp-action-row">'
@@ -865,6 +898,23 @@ export function createSidePanelHud(config: SidePanelHudConfig): SidePanelHudApi 
     el.querySelectorAll('.sp-close[data-dismiss]').forEach(btn => {
       btn.addEventListener('click', (e: Event) => {
         e.stopPropagation();
+        const id = (btn as HTMLElement).getAttribute('data-dismiss');
+        if (id !== null) {
+          config.onEventDismiss?.(id);
+          render();
+        }
+      });
+      // P-DYPLO-KARTA-DECYZJI-DISMISS-UCIETY-Q1: Enter/Spacja robią to samo co klik. Dotyczy
+      // WYŁĄCZNIE „✕" karty blokującej — tylko on dostał `tabindex`/`role="button"` w renderze
+      // (karty informacyjne zamyka Escape, ich `.sp-close` nie jest fokusowalny, więc dla nich
+      // ten listener nigdy się nie odpali: zero regresji, kryterium 4 dispatchu).
+      // EN: keyboard activation for the blocking card's „✕" only — info-card closers are not
+      // focusable, so this listener can never fire for them.
+      btn.addEventListener('keydown', (e: Event) => {
+        const ke = e as KeyboardEvent;
+        if (ke.key !== 'Enter' && ke.key !== ' ') return;
+        ke.preventDefault();
+        ke.stopPropagation();
         const id = (btn as HTMLElement).getAttribute('data-dismiss');
         if (id !== null) {
           config.onEventDismiss?.(id);
