@@ -71,7 +71,7 @@ const hexes = {
   '2,0': mkHex(2, 0, TB.Laka, NK.ZlozeBydla),
   '3,0': mkHex(3, 0, TB.Laka),
   '4,0': mkHex(4, 0, TB.Rownina, NK.Brak, 'sol'),
-  '5,0': mkHex(5, 0, TB.Wybrzeze),
+  '5,0': mkHex(5, 0, TB.PlytkieMorze),
   '0,1': mkHex(0, 1, TB.Wzgorza),
   '1,1': mkHex(1, 1, TB.Wzgorza, NK.ZlozeOwiec),
   '2,1': mkHex(2, 1, TB.Gory, NK.Brak, 'miedz'),
@@ -83,7 +83,7 @@ const hexes = {
   '7,0': mkHex(7, 0, TB.Rownina, NK.Brak, 'bydlo'),
 };
 hexes['0,2'] = mkHex(0, 2, TB.Rownina);
-hexes['0,-1'] = mkHex(0, -1, TB.Wybrzeze);
+hexes['0,-1'] = mkHex(0, -1, TB.PlytkieMorze);
 hexes['0,2'].rzeka = { obecna: true, krawedzie: [0] };
 hexes['6,2'] = mkHex(6, 2, TB.Pustynia);
 hexes['6,2'].rzeka = { obecna: true, krawedzie: [0] };

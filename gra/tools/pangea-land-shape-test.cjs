@@ -58,7 +58,7 @@ function pangeaShapeMetrics(map) {
     let adjSea = false;
     for (const [dq, dr] of DIRS) {
       const nh = hexes[`${q + dq},${r + dr}`];
-      if (!nh || nh.terenBazowy === TB.Morze) adjSea = true;
+      if (!nh || nh.terenBazowy === TB.Morze || nh.terenBazowy === TB.PlytkieMorze) adjSea = true;
     }
     if (adjSea) coast++;
   }
@@ -101,7 +101,7 @@ for (const seed of SEEDS) {
     let n = 0;
     const D = [[1,0],[-1,0],[0,1],[0,-1],[1,-1],[-1,1]];
     for (const [k, h] of Object.entries(map.hexes)) {
-      if (h.terenBazowy === TB.Morze || h.terenBazowy === TB.Wybrzeze) continue;
+      if (h.terenBazowy === TB.Morze || h.terenBazowy === TB.PlytkieMorze) continue;
       if (visited.has(k)) continue;
       n++;
       const stack = [k];
@@ -113,7 +113,7 @@ for (const seed of SEEDS) {
           const nk = `${q+dq},${r+dr}`;
           if (visited.has(nk)) continue;
           const nh = map.hexes[nk];
-          if (!nh || nh.terenBazowy === TB.Morze || nh.terenBazowy === TB.Wybrzeze) continue;
+          if (!nh || nh.terenBazowy === TB.Morze || nh.terenBazowy === TB.PlytkieMorze) continue;
           visited.add(nk);
           stack.push(nk);
         }
@@ -151,7 +151,7 @@ for (const seed of SEEDS) {
     const visited = new Set();
     const D = [[1,0],[-1,0],[0,1],[0,-1],[1,-1],[-1,1]];
     for (const [k, h] of Object.entries(map.hexes)) {
-      if (h.terenBazowy === TB.Morze || h.terenBazowy === TB.Wybrzeze) continue;
+      if (h.terenBazowy === TB.Morze || h.terenBazowy === TB.PlytkieMorze) continue;
       if (visited.has(k)) continue;
       dryMasses++;
       const stack = [k];
@@ -163,7 +163,7 @@ for (const seed of SEEDS) {
           const nk = `${q+dq},${r+dr}`;
           if (visited.has(nk)) continue;
           const nh = map.hexes[nk];
-          if (!nh || nh.terenBazowy === TB.Morze || nh.terenBazowy === TB.Wybrzeze) continue;
+          if (!nh || nh.terenBazowy === TB.Morze || nh.terenBazowy === TB.PlytkieMorze) continue;
           visited.add(nk);
           stack.push(nk);
         }

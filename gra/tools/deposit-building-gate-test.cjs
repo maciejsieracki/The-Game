@@ -114,11 +114,11 @@ function mapWith(...hexes) {
 
 // --- warzelnia_soli na wybrzeżu (bez złoża) ---
 {
-  const hex = { coords: { q: 1, r: 0 }, terenBazowy: TB.Wybrzeze, nakladka: NK.Brak, wlasciciel: '0' };
+  const hex = { coords: { q: 1, r: 0 }, terenBazowy: TB.PlytkieMorze, nakladka: NK.Brak, wlasciciel: '0' };
   const map = mapWith(hex);
   const placed = new Map([['1,0', 'warzelnia_soli']]);
   ok(M.getCityResourceAccessForCity(city, map, placed, 99).active.includes('Sól'), 'warzelnia na wybrzeżu → Sól bez złoża');
-  ok(M.improvementUnlockActiveOnHex('warzelnia_soli', { terenBazowy: TB.Wybrzeze }), 'warzelnia coast active');
+  ok(M.improvementUnlockActiveOnHex('warzelnia_soli', { terenBazowy: TB.PlytkieMorze }), 'warzelnia coast active');
 }
 
 // --- koń + stadnina ---
