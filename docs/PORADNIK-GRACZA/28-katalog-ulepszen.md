@@ -18,7 +18,7 @@ Ulepszenia stawiasz z lewego panelu mapy (**Budowa**) na heksach w **swoim** ter
 | Obóz łowiecki | Kamień | 18 | +1 żywność, +1 złoto | Las / dzika zwierzyna | Łowiectwo | [Obóz łowiecki](../encyklopedia/ulepszenia/oboz_lowiecki.md) |
 | Owce | Kamień | 20 | +1 żywność, +2 praca | Wzgórza | Oswojenie zwierząt | [Owce](../encyklopedia/ulepszenia/owce.md) |
 | Tartak | Kamień | 25 | +3 praca | Ląd w terytorium (łąka, lasy, wzgórza…) | Obróbka drewna | [Tartak](../encyklopedia/ulepszenia/tartak.md) |
-| Wyrąb | Kamień | 0 (wycinka) | — | Las | — | [Wyrąb](../encyklopedia/ulepszenia/wyrab.md) |
+| Wycinka | Kamień | 0 (wycinka) | — | Las | — | [Wycinka](../encyklopedia/ulepszenia/wyrab.md) |
 | Łodzie rybackie | Kamień | 20 | +2 żywność, +3 praca | Wybrzeże, Morze (ryby) | Żegluga | [Łodzie rybackie](../encyklopedia/ulepszenia/lodzie_rybackie.md) |
 | Glinianka | Brąz | 20 | +1 praca | złoże Gliny | Garncarstwo | [Glinianka](../encyklopedia/ulepszenia/glinianka.md) |
 | Irygacja | Brąz | 30 | +5 żywność | Łąka, Równina, Pustynia | Irygacja | [Irygacja](../encyklopedia/ulepszenia/irygacja.md) |
@@ -199,9 +199,9 @@ Bonus **+3 praca** — przy **4** polach w okolicy suma skalowana liniowo z przy
 Utrzymanie **1** ¤/t × **10** tur = **10** ¤ — uwzględnij w bilansie skarbca.
 → [`docs/encyklopedia/ulepszenia/tartak.md`](../encyklopedia/ulepszenia/tartak.md)
 
-### Wyrąb
+### Wycinka
 
-**Wyrąb** (epoka **Kamień**) kosztuje **0** pracy. Daje: **—**.
+**Wycinka** (epoka **Kamień**) kosztuje **0** pracy. Daje: **—**.
 Dozwolony teren: Las.
 **Warunek:** darmowa wycinka; +20 Pracy/turę × 3 tury (=60); potem teren bazowy bez lasu
 
