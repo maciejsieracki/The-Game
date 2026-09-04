@@ -9704,6 +9704,37 @@ async function boot(): Promise<void> {
     }
 
     /**
+     * P-MGLA-ODKRYCIE-SCIEZKA-INWARIANT-Q1 — NAZWANY PRYMITYW ODKRYWANIA WZDLUZ SCIEZKI.
+     *
+     * `refreshFog()` nizej odkrywa WYLACZNIE z AKTUALNEJ pozycji jednostki
+     * (`currentVisible()` -> `computeVisibleAt(u.q, u.r, ...)`). Kazde przemieszczenie
+     * o WIECEJ niz jeden heks, ktore konczy sie samym `refreshFog()`, produkuje objaw
+     * zgloszony przez wlasciciela CZTERY razy: „odkrywa sie w tym miejscu, w ktorym
+     * pojawi sie na koncu, a nie odkrywa nic po drodze". Ta funkcja jest jedynym
+     * poprawnym domknieciem takiego przemieszczenia.
+     *
+     * NIE jest zamiennikiem trzech istniejacych wywolan inline (main.ts ~22514, ~27689,
+     * ~32435): ich DOSLOWNY tekst jest zakontraktowany przez bramke
+     * `gra/tools/mgla-odkrycie-wzdluz-sciezki-test.cjs` (SEKCJA D) oraz
+     * `gra/tools/mgla-teleport-koniec-tury-test.cjs` (SEKCJA D). Pierwsza z nich lezy
+     * POZA allowlista tematu P-MGLA-ODKRYCIE-SCIEZKA-INWARIANT-Q1 — patrz raport rundy 1.
+     *
+     * Strukturalnym zabezpieczeniem przed PIATYM zapomnianym miejscem nie jest ten helper
+     * (helper nie zmusza nikogo, zeby go zawolac), tylko bramka
+     * `gra/tools/mgla-sciezka-inwariant-test.cjs`, ktora wymaga jawnej klasyfikacji
+     * KAZDEGO zapisu pozycji jednostki (`.q =` / `.r =`) w calym `gra/src`.
+     */
+    function revealAlongPathForStack(
+      stack: ReadonlyArray<RuntimeUnit>,
+      pathHexes: ReadonlyArray<{ q: number; r: number }>,
+    ): void {
+      if (pathHexes.length === 0) return;
+      for (const su of stack) {
+        addExplored(explored, computeVisibleAlongPath(pathHexes, map, unitSight(su)));
+      }
+    }
+
+    /**
      * Re-apply fog and unit visibility after any state change.
      * Must NOT be called while gallery is active (gallery drives its own sync).
      */
@@ -18847,6 +18878,76 @@ async function boot(): Promise<void> {
       },
     };
 
+    // P-MGLA-ODKRYCIE-SCIEZKA-INWARIANT-Q1 — hak testowy WYŁĄCZNIE dla Playwright
+    // (`tools/mgla-sciezka-live-test.cjs`, dowód z żywej przeglądarki wg §9 pkt 6a).
+    // Ten sam wzorzec i to samo ograniczenie co __dyploMapaOdkrycieTestDebug wyżej: hak
+    // steruje WYŁĄCZNIE DANYMI WEJŚCIOWYMI scenariusza (gdzie stoi zwiadowca, jaka jest
+    // mgła NA STARCIE pomiaru, która jednostka jest zaznaczona) i CZYTA stan. Sam EFEKT
+    // pod testem — odkrycie mgły wzdłuż PRZEBYTEJ ŚCIEŻKI — powstaje wyłącznie w realnym
+    // kodzie gry (`runScoutsAutoExplore` + hak `onAfterStep` w `triggerPlayerEndTurn`),
+    // uruchomionym realnym klikiem w „Zwiedzaj" i realnym końcem tury. Hak nigdy nie
+    // dopisuje niczego do `explored` samodzielnie.
+    (window as any).__mglaSciezkaTestDebug = {
+      /** Zwiadowca gracza na wskazanym heksie — przez REALNY spawner jednostek gry. */
+      spawnPlayerScout: (q: number, r: number): string | null => {
+        const przed = new Set(units.map(u => u.id));
+        spawnDifficultyBonusUnit(0, 'Zwiadowca', q, r);
+        const nowy = units.find(u => !przed.has(u.id));
+        if (!nowy) return null;
+        syncUnitsRender();
+        refreshFog();
+        return nowy.id;
+      },
+      /** Suchy ląd bez jednostki i bez miasta, w podanym promieniu od miasta gracza. */
+      findFreeLandNearPlayerCity: (
+        minDist: number,
+        maxDist: number,
+      ): { q: number; r: number } | null => {
+        const city = cities.find(c => c.ownerId === 0);
+        if (!city) return null;
+        for (const hex of Object.values(map.hexes)) {
+          if (hex.terenBazowy === TerenBazowy.Morze) continue;
+          const { q, r } = hex.coords;
+          const d = hexDistance(q, r, city.q, city.r);
+          if (d < minDist || d > maxDist) continue;
+          if (units.some(u => u.q === q && u.r === r)) continue;
+          if (cities.some(c => c.q === q && c.r === r)) continue;
+          return { q, r };
+        }
+        return null;
+      },
+      /**
+       * Mgła startowa pomiaru: `explored` skasowane do tego, co gracz WIDZI teraz.
+       * `?playtest=mapa` startuje z odkrytym promieniem 12 wokół miasta, w którym nie ma
+       * już czego odkrywać — bez tego kroku pomiar „co doszło do `explored`" byłby pusty.
+       * Odtworzenie stanu idzie przez REALNY `refreshFog()`, nie przez ręczne `addExplored`.
+       */
+      resetFogToCurrentlyVisible: (): number => {
+        explored.clear();
+        refreshFog();
+        return explored.size;
+      },
+      selectUnit: (unitId: string): void => { selectPlayerUnit(unitId); },
+      getUnit: (
+        unitId: string,
+      ): { q: number; r: number; ruchLeft: number; autoExplore: boolean } | null => {
+        const u = units.find(x => x.id === unitId);
+        if (!u) return null;
+        return { q: u.q, r: u.r, ruchLeft: u.ruchLeft, autoExplore: u.autoExplore === true };
+      },
+      getExploredKeys: (): string[] => Array.from(explored),
+      /** Widoczność Z SAMEJ pozycji jednostki — kontrola „czy to odkrycie mogło powstać
+       *  z pozycji KOŃCOWEJ" (dokładnie ten sam `computeVisibleAt` co `currentVisible`). */
+      getVisibleKeysFromUnit: (unitId: string): string[] => {
+        const u = units.find(x => x.id === unitId);
+        if (!u) return [];
+        return Array.from(computeVisibleAt(u.q, u.r, map, unitSight(u)));
+      },
+      hexDistanceBetween: (aq: number, ar: number, bq: number, br: number): number =>
+        hexDistance(aq, ar, bq, br),
+      isAnimatingNow: (): boolean => isAnimating,
+    };
+
     /**
      * TEMAT 9 (2026-07-24, stół negocjacyjny) — wspólne złożenie payloadu UI → propozycji
      * CYW, dzielone przez podgląd (previewNegotiatedProposal, BEZ finalizacji) i faktyczne
@@ -27726,6 +27827,20 @@ async function boot(): Promise<void> {
             unitSight,
             Math.random,
             (u) => {
+              // P-MGLA-ODKRYCIE-SCIEZKA-INWARIANT-Q1 — CZWARTE miejsce tego samego wzorca.
+              // `advanceScoutAutoExplore` (scout-auto-explore.ts:234) przestawia `unit.q/r`
+              // KROK PO KROKU w petli `while (unit.ruchLeft > 0)` — zwiadowca z duzym
+              // budzetem ruchu (rzeka: plaski koszt 1/heks, units/setup.ts:628) przechodzi
+              // w JEDNEJ turze kilkanascie heksow. Jedynym odkryciem bylo `refreshFog()`
+              // PO calej petli (nizej) — a ono liczy WYLACZNIE z pozycji KONCOWEJ
+              // (`currentVisible()`), wiec heksy POSRODKU trasy nie trafialy do `explored`.
+              // `advanceScoutAutoExplore` prowadzi wprawdzie wlasny `workingExplored`, ale
+              // to LOKALNA kopia (`new Set(explored)`), porzucana po powrocie z funkcji.
+              // Hak `onAfterStep` jest wolany po KAZDYM kroku, wiec odkrycie z biezacego
+              // heksu w tym haku jest rownowazne odkryciu wzdluz calej sciezki — i jest
+              // jedynym wpieciem osiagalnym z main.ts (scout-auto-explore.ts jest poza
+              // allowlista tematu).
+              revealAlongPathForStack([u], [{ q: u.q, r: u.r }]);
               if (u.ownerId === 0) {
                 if (checkVillageRewardAt(u.q, u.r)) scoutHutCollected = true;
               }
