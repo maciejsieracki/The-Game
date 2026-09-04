@@ -176,6 +176,25 @@ export const SZ_PCT_CAP = 120;
 /** Fallback dla `prawo.prawo_pct_cap`. */
 export const PRAW_PCT_CAP = 100;
 
+/**
+ * R-SZCZESCIE-AUDYT-A-SKALA-NORMALIZACJA-Q1 (GOAL 2) — mianownik procentu rośnie z miastem.
+ *
+ * Do populacji odniesienia włącznie próg jest DOKŁADNIE taki, jak przed zmianą (neutralność
+ * startowa); powyżej rośnie liniowo:
+ *
+ *   szMax(pop, epoka)   = szMaxByEra[epoka]   × (1 + wspSz   × max(0, pop − popOdniesienia))
+ *   prawMax(pop, epoka) = prawMaxByEra[epoka] × (1 + wspPraw × max(0, pop − popOdniesienia))
+ *
+ * Liniowo, a nie pasmami — przyrost populacji o 1 nigdy nie daje skoku progu (ten sam błąd
+ * projektowy co zanik bonusu Osiedla powyżej pop 4). Epoka zostaje czynnikiem
+ * multiplikatywnym, więc „każda epoka rozpatrzona oddzielnie” nadal obowiązuje.
+ * Fallbacki poniżej działają tylko przy braku wierszy w society-params.json.
+ */
+export const SZ_MAX_POP_WSP_DEFAULT = 0.1;
+export const PRAW_MAX_POP_WSP_DEFAULT = 0.08;
+export const SZ_MAX_POP_ODNIESIENIA_DEFAULT = 2;
+export const PRAW_MAX_POP_ODNIESIENIA_DEFAULT = 2;
+
 // ---------------------------------------------------------------------------
 // Society param helpers
 // ---------------------------------------------------------------------------
@@ -254,6 +273,14 @@ export interface SocietyScaleParams {
   szPctCap: number;
   /** Górne ograniczenie PrawPct (%). */
   prawPctCap: number;
+  /** GOAL 2: przyrost mianownika Sz na 1 mieszkańca powyżej `szMaxPopOdniesienia`. */
+  szMaxPopWsp: number;
+  /** GOAL 2: przyrost mianownika Prawa na 1 mieszkańca powyżej `prawMaxPopOdniesienia`. */
+  prawMaxPopWsp: number;
+  /** GOAL 2: populacja, do której mianownik Sz jest dokładnie taki jak przed zmianą. */
+  szMaxPopOdniesienia: number;
+  /** GOAL 2: populacja, do której mianownik Prawa jest dokładnie taki jak przed zmianą. */
+  prawMaxPopOdniesienia: number;
 }
 
 export const FALLBACK_SOCIETY_SCALE: Readonly<SocietyScaleParams> = Object.freeze({
@@ -261,6 +288,10 @@ export const FALLBACK_SOCIETY_SCALE: Readonly<SocietyScaleParams> = Object.freez
   prawMaxByEra: [...PRAWMAX_BY_ERA_DEFAULT],
   szPctCap: SZ_PCT_CAP,
   prawPctCap: PRAW_PCT_CAP,
+  szMaxPopWsp: SZ_MAX_POP_WSP_DEFAULT,
+  prawMaxPopWsp: PRAW_MAX_POP_WSP_DEFAULT,
+  szMaxPopOdniesienia: SZ_MAX_POP_ODNIESIENIA_DEFAULT,
+  prawMaxPopOdniesienia: PRAW_MAX_POP_ODNIESIENIA_DEFAULT,
 });
 
 /**
@@ -279,6 +310,14 @@ export function loadSocietyScaleParams(
     prawMaxByEra: pickSocietyArray(prBlock, 'prawo_max_epoka', difficulty, f.prawMaxByEra),
     szPctCap: pickSociety(szBlock, 'szczescie_pct_cap', difficulty, f.szPctCap),
     prawPctCap: pickSociety(prBlock, 'prawo_pct_cap', difficulty, f.prawPctCap),
+    szMaxPopWsp: pickSociety(szBlock, 'szczescie_max_pop_wspolczynnik', difficulty, f.szMaxPopWsp),
+    prawMaxPopWsp: pickSociety(prBlock, 'prawo_max_pop_wspolczynnik', difficulty, f.prawMaxPopWsp),
+    szMaxPopOdniesienia: pickSociety(
+      szBlock, 'szczescie_max_pop_odniesienia', difficulty, f.szMaxPopOdniesienia,
+    ),
+    prawMaxPopOdniesienia: pickSociety(
+      prBlock, 'prawo_max_pop_odniesienia', difficulty, f.prawMaxPopOdniesienia,
+    ),
   };
 }
 
@@ -368,6 +407,42 @@ export function prawMaxForEra(
   scale: SocietyScaleParams = FALLBACK_SOCIETY_SCALE,
 ): number {
   return maxFromEraTable(era, scale.prawMaxByEra);
+}
+
+/**
+ * GOAL 2 — mnożnik progu od wielkości miasta: `1 + wsp × max(0, pop − popOdniesienia)`.
+ * Monotoniczny (wsp ujemny jest ignorowany), ciągły (liniowy, bez pasm), równy dokładnie 1
+ * do populacji odniesienia włącznie. Wynik zaokrąglony do 2 miejsc, żeby próg był
+ * deterministyczny i wolny od śmieci zmiennoprzecinkowych.
+ */
+function popScaleMultiplier(population: number, wsp: number, popOdniesienia: number): number {
+  const pop = Number.isFinite(population) ? Math.max(0, Math.floor(population)) : 0;
+  const w = Number.isFinite(wsp) && wsp > 0 ? wsp : 0;
+  const ref = Number.isFinite(popOdniesienia) ? Math.max(0, Math.floor(popOdniesienia)) : 0;
+  const excess = Math.max(0, pop - ref);
+  return Math.round((1 + w * excess) * 100) / 100;
+}
+
+/** GOAL 2: mianownik SzPct dla konkretnego miasta — epoka × wielkość miasta. */
+export function szMaxForCity(
+  era: number,
+  population: number,
+  scale: SocietyScaleParams = FALLBACK_SOCIETY_SCALE,
+): number {
+  const base = szMaxForEra(era, scale);
+  const mult = popScaleMultiplier(population, scale.szMaxPopWsp, scale.szMaxPopOdniesienia);
+  return Math.round(base * mult * 100) / 100;
+}
+
+/** GOAL 2: mianownik PrawPct dla konkretnego miasta — epoka × wielkość miasta. */
+export function prawMaxForCity(
+  era: number,
+  population: number,
+  scale: SocietyScaleParams = FALLBACK_SOCIETY_SCALE,
+): number {
+  const base = prawMaxForEra(era, scale);
+  const mult = popScaleMultiplier(population, scale.prawMaxPopWsp, scale.prawMaxPopOdniesienia);
+  return Math.round(base * mult * 100) / 100;
 }
 
 /** Klucz JSON siatki Sz od udziału Zamożności (dziesięć przedziałów co 10 p.p.). */
@@ -527,7 +602,7 @@ export function computeHappinessBreakdown(
   // oba mechanizmy naraz dawały -2 pkt Sz, sama nowa siatka daje poprawne -1 pkt).
 
   const netto = lines.reduce((s, l) => s + l.value, 0);
-  const szMax = szMaxForEra(era, scale);
+  const szMax = szMaxForCity(era, pop, scale);
   const szPct = pctFromNetto(netto, szMax, scale.szPctCap);
 
   return { lines, netto, szMax, szPct };
@@ -620,7 +695,7 @@ export function computeLawBreakdown(
   }
 
   const netto = lines.reduce((s, l) => s + l.value, 0);
-  const prawMax = prawMaxForEra(era, scale);
+  const prawMax = prawMaxForCity(era, pop, scale);
   const prawPct = pctFromNetto(Math.max(0, netto), prawMax, scale.prawPctCap);
 
   return { lines, netto, prawMax, prawPct };

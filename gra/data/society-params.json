@@ -319,6 +319,20 @@
       "jednostka": "%",
       "opis": "R-SZCZESCIE-AUDYT-A GOAL 1: górne ograniczenie SzPct (dawne SZ_PCT_CAP w kodzie). Ten sam cap ogranicza też PorPct łącznie."
     },
+    "szczescie_max_pop_odniesienia": {
+      "easy": 2,
+      "normal": 2,
+      "hard": 2,
+      "jednostka": "ludność",
+      "opis": "R-SZCZESCIE-AUDYT-A GOAL 2: populacja odniesienia mianownika Szczęścia. Do tej wielkości miasta włącznie próg jest DOKŁADNIE taki jak przed zmianą (neutralność startowa — wczesna gra nietknięta); dopiero powyżej rośnie o szczescie_max_pop_wspolczynnik na każdego kolejnego mieszkańca."
+    },
+    "szczescie_max_pop_wspolczynnik": {
+      "easy": 0.07,
+      "normal": 0.1,
+      "hard": 0.13,
+      "jednostka": "× mianownika / 1 ludności",
+      "opis": "R-SZCZESCIE-AUDYT-A GOAL 2: szMax = szczescie_max_epoka[epoka] × (1 + wsp × max(0, pop − szczescie_max_pop_odniesienia)). Liniowo, więc ciągle i monotonicznie — brak skoków progu przy pop→pop+1 (ten sam błąd projektowy co zanik bonusu Osiedla powyżej pop 4). Normal 0,10 dobrane tak, że miasto pop 12 potrzebuje 2× więcej punktów Szczęścia na ten sam procent co miasto pop 2 tej samej epoki — rozbudowa wymaga proporcjonalnie większego wysiłku zamiast windować procent do sufitu. Konwencja trudności jak w reszcie pliku: easy najłagodniej dla gracza (najmniejszy przyrost mianownika)."
+    },
     "szczescie_prog_bonus_produkcja": {
       "easy": 4,
       "normal": 5,
@@ -922,6 +936,20 @@
       "hard": 100,
       "jednostka": "%",
       "opis": "R-SZCZESCIE-AUDYT-A GOAL 1: górne ograniczenie PrawPct (dawne PRAW_PCT_CAP w kodzie)."
+    },
+    "prawo_max_pop_odniesienia": {
+      "easy": 2,
+      "normal": 2,
+      "hard": 2,
+      "jednostka": "ludność",
+      "opis": "R-SZCZESCIE-AUDYT-A GOAL 2: populacja odniesienia mianownika Prawa — do tej wielkości włącznie próg dokładnie jak przed zmianą (neutralność startowa)."
+    },
+    "prawo_max_pop_wspolczynnik": {
+      "easy": 0.06,
+      "normal": 0.08,
+      "hard": 0.11,
+      "jednostka": "× mianownika / 1 ludności",
+      "opis": "R-SZCZESCIE-AUDYT-A GOAL 2: prawMax = prawo_max_epoka[epoka] × (1 + wsp × max(0, pop − prawo_max_pop_odniesienia)). Łagodniej niż Szczęście (normal 0,08 vs 0,10), bo źródła Prawa są grubo skwantowane (garnizon 20/jedn. z capem 5 jednostek, Pałac 35–55) i mają twardy cap 100% — zbyt stromy mianownik odciąłby duże miasta od osiągalnego Prawa zamiast wymagać od nich realnej administracji."
     },
     "prawo_bonus_stolica_easy": {
       "easy": 1,

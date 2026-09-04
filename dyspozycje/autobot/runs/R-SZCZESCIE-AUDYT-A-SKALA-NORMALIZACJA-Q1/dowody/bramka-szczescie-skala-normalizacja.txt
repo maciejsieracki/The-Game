@@ -1,0 +1,128 @@
+
+1. GOAL 1 — rownowaznosc: przeniesienie stalych nie zmienia zachowania
+  [OK] JSON szczescie_max_epoka easy = 14,20,28 (jak SZMAX_DEFAULTS)
+  [OK] JSON prawo_max_epoka easy = 50,75,100 (jak PRAWMAX_DEFAULTS)
+  [OK] JSON szczescie_pct_cap easy = 120 (jak SZ_PCT_CAP)
+  [OK] JSON prawo_pct_cap easy = 100 (jak PRAW_PCT_CAP)
+  [OK] JSON szczescie_max_epoka normal = 14,20,28 (jak SZMAX_DEFAULTS)
+  [OK] JSON prawo_max_epoka normal = 50,75,100 (jak PRAWMAX_DEFAULTS)
+  [OK] JSON szczescie_pct_cap normal = 120 (jak SZ_PCT_CAP)
+  [OK] JSON prawo_pct_cap normal = 100 (jak PRAW_PCT_CAP)
+  [OK] JSON szczescie_max_epoka hard = 14,20,28 (jak SZMAX_DEFAULTS)
+  [OK] JSON prawo_max_epoka hard = 50,75,100 (jak PRAWMAX_DEFAULTS)
+  [OK] JSON szczescie_pct_cap hard = 120 (jak SZ_PCT_CAP)
+  [OK] JSON prawo_pct_cap hard = 100 (jak PRAW_PCT_CAP)
+  [OK] szMaxForEra(1) = 14 jak przed przeniesieniem
+  [OK] prawMaxForEra(1) = 50 jak przed przeniesieniem
+  [OK] szMaxForEra(2) = 20 jak przed przeniesieniem
+  [OK] prawMaxForEra(2) = 75 jak przed przeniesieniem
+  [OK] szMaxForEra(3) = 28 jak przed przeniesieniem
+  [OK] prawMaxForEra(3) = 100 jak przed przeniesieniem
+  [OK] szMaxForEra(4) = 28 jak przed przeniesieniem
+  [OK] prawMaxForEra(4) = 100 jak przed przeniesieniem
+  [OK] szMaxForEra(7) = 28 jak przed przeniesieniem
+  [OK] prawMaxForEra(7) = 100 jak przed przeniesieniem
+  [OK] pop 2 / epoka 1: netto Sz = 16 (13 budynkow + 3 Osiedle)
+  [OK] pop 2 / epoka 1: szMax = 14 (dokladnie jak przed zmiana)
+  [OK] pop 2 / epoka 1: SzPct = 114,3% (dokladnie jak przed zmiana)
+  [OK] pop 2 / epoka 1: netto Prawo = 20 (bonus Osiedla)
+  [OK] pop 2 / epoka 1: prawMax = 50 (dokladnie jak przed zmiana)
+  [OK] pop 2 / epoka 1: PrawPct = 40% (dokladnie jak przed zmiana)
+
+2. GOAL 1 — fallback: usuniecie wpisu z JSON daje wartosc ze stalej w TS
+  [OK] stala TS SZMAX_DEFAULTS[1] = 14
+  [OK] stala TS PRAWMAX_DEFAULTS[1] = 50
+  [OK] stala TS SZ_PCT_CAP = 120
+  [OK] stala TS PRAW_PCT_CAP = 100
+  [OK] society=null -> szMaxByEra ze stalej TS
+  [OK] society=null -> prawMaxByEra ze stalej TS
+  [OK] society=null -> szPctCap ze stalej TS
+  [OK] society=null -> prawPctCap ze stalej TS
+  [OK] brak szczescie_max_epoka -> SZMAX_DEFAULTS z TS
+  [OK] brak prawo_max_epoka -> PRAWMAX_DEFAULTS z TS
+  [OK] brak szczescie_pct_cap -> SZ_PCT_CAP z TS
+  [OK] brak szczescie_max_pop_wspolczynnik -> wspolczynnik ze stalej TS
+  [OK] przebieg bez wiersza JSON: szMax epoki 2 = 20 z fallbacku TS
+
+3. GOAL 2 — monotonicznosc progu po populacji (pop 1..15)
+  [OK] easy/epoka 1: szMax niemalejacy dla pop 1..15
+  [OK] easy/epoka 1: prawMax niemalejacy dla pop 1..15
+  [OK] easy/epoka 2: szMax niemalejacy dla pop 1..15
+  [OK] easy/epoka 2: prawMax niemalejacy dla pop 1..15
+  [OK] easy/epoka 3: szMax niemalejacy dla pop 1..15
+  [OK] easy/epoka 3: prawMax niemalejacy dla pop 1..15
+  [OK] normal/epoka 1: szMax niemalejacy dla pop 1..15
+  [OK] normal/epoka 1: prawMax niemalejacy dla pop 1..15
+  [OK] normal/epoka 2: szMax niemalejacy dla pop 1..15
+  [OK] normal/epoka 2: prawMax niemalejacy dla pop 1..15
+  [OK] normal/epoka 3: szMax niemalejacy dla pop 1..15
+  [OK] normal/epoka 3: prawMax niemalejacy dla pop 1..15
+  [OK] hard/epoka 1: szMax niemalejacy dla pop 1..15
+  [OK] hard/epoka 1: prawMax niemalejacy dla pop 1..15
+  [OK] hard/epoka 2: szMax niemalejacy dla pop 1..15
+  [OK] hard/epoka 2: prawMax niemalejacy dla pop 1..15
+  [OK] hard/epoka 3: szMax niemalejacy dla pop 1..15
+  [OK] hard/epoka 3: prawMax niemalejacy dla pop 1..15
+  [OK] normal/epoka 1: prog pop 12 realnie wiekszy niz pop 2 (nie tylko rowny)
+  [OK] normal/epoka 1: prog Prawa pop 12 realnie wiekszy niz pop 2
+
+4. GOAL 2 — ciaglosc: brak skoku progu przy pop -> pop+1
+  (najwiekszy skok wzgledny progu: Sz x1.130, Prawo x1.110)
+  [OK] skok szMax przy pop->pop+1 <= x1.15 (jest x1.130)
+  [OK] skok prawMax przy pop->pop+1 <= x1.15 (jest x1.110)
+  (najwiekszy spadek PorPct przy +1 mieszkancu PRZED tym tematem: 7.9 p.p. na kroku pop 4->5 — zanik Osiedla / Zageszczenie, zakres wezlow C i D)
+  (DODATKOWY spadek PorPct wniesiony przez skalowanie progu z GOAL 2: 7.8 p.p. na kroku pop 2->3)
+  [OK] skalowanie progu nie zbija PorPct o kilkanascie p.p. przy +1 mieszkancu (dodatkowo max 7.8 p.p.)
+
+5. GOAL 2 — neutralnosc startowa (pop 1-2, epoka 1) i epoka jako czynnik
+  [OK] easy: pop 1 / epoka 1 -> szMax 14 (dzisiejsze, bez tolerancji)
+  [OK] easy: pop 1 / epoka 1 -> prawMax 50 (dzisiejsze, bez tolerancji)
+  [OK] easy: pop 2 / epoka 1 -> szMax 14 (dzisiejsze, bez tolerancji)
+  [OK] easy: pop 2 / epoka 1 -> prawMax 50 (dzisiejsze, bez tolerancji)
+  [OK] normal: pop 1 / epoka 1 -> szMax 14 (dzisiejsze, bez tolerancji)
+  [OK] normal: pop 1 / epoka 1 -> prawMax 50 (dzisiejsze, bez tolerancji)
+  [OK] normal: pop 2 / epoka 1 -> szMax 14 (dzisiejsze, bez tolerancji)
+  [OK] normal: pop 2 / epoka 1 -> prawMax 50 (dzisiejsze, bez tolerancji)
+  [OK] hard: pop 1 / epoka 1 -> szMax 14 (dzisiejsze, bez tolerancji)
+  [OK] hard: pop 1 / epoka 1 -> prawMax 50 (dzisiejsze, bez tolerancji)
+  [OK] hard: pop 2 / epoka 1 -> szMax 14 (dzisiejsze, bez tolerancji)
+  [OK] hard: pop 2 / epoka 1 -> prawMax 50 (dzisiejsze, bez tolerancji)
+  [OK] epoka nadal rozroznia prog przy tej samej populacji (pop 8: e1 < e2 < e3)
+  [OK] wspolczynnik per trudnosc easy<normal<hard (0.07 < 0.1 < 0.13)
+
+6. Scenariusz ze zrzutu wlasciciela: pop 2, epoka 1, Sz netto 16, Prawo 20
+  PRZED: Sz 16/14 = 114.3% | Prawo 20/50 = 40%
+  PO   : Sz 16/14 = 114.3% | Prawo 20/50 = 40%
+  [OK] zrzut: Szczescie netto = 16
+  [OK] zrzut: Prawo netto = 20
+  [OK] zrzut PRZED: SzPct = 114,3% (zrzut wlasciciela pokazywal 114%)
+  [OK] zrzut PRZED: PrawPct = 40% (zrzut wlasciciela pokazywal 40%)
+  [OK] zrzut PO zmianie: SzPct bez zmian wobec PRZED (114,3%)
+  [OK] zrzut PO zmianie: PrawPct bez zmian wobec PRZED (40%)
+
+7. Objaw zgloszony przez wlasciciela: rozwiniete miasto NIE dobija do capu 120%
+  pop 12 / epoka 3 / 31 budynkow: netto 33.75 | PRZED 120% (szMax 28) -> PO 60.3% (szMax 56)
+  [OK] PRZED zmiana rozwiniete miasto dobija do capu 120% (odtworzony objaw ze zgloszenia)
+  [OK] PO zmianie rozwiniete miasto NIE dobija automatycznie do capu (60.3%)
+  [OK] prog rosnie z miastem: szMax 28 -> 56
+  Prawo pop 12 / epoka 3 (garnizon 5 + Palac III): netto 155 | PRZED 100% (prawMax 100) -> PO 86.1% (prawMax 180)
+  PorPct laczny pop 12 / epoka 3 / 20 budynkow + garnizon 5 + Palac III: PRZED 90.7% (Ład) -> PO 63.4% (Napięcie)
+  [OK] PRZED zmiana duze miasto dobija do capu Prawa 100%
+  [OK] PO zmianie duze miasto nie dobija automatycznie do 100% Prawa (86.1%)
+  [OK] PO zmianie rozwiniete miasto z pelna administracja nie wpada w niepokoj: PorPct 63.4% (Napięcie)
+  [OK] zmiana faktycznie kosztuje: PorPct 90.7% -> 63.4% (SzPct 40.6%)
+
+8. Tabela prog(pop, epoka) — PRZED vs PO (normal), zapisana w raporcie
+  pop | szMax e1  e2  e3 (PRZED 14 / 20 / 28) | prawMax e1  e2  e3 (PRZED 50 / 75 / 100)
+    1 |  14.0  20.0  28.0                          |  50.0  75.0 100.0
+    2 |  14.0  20.0  28.0                          |  50.0  75.0 100.0
+    4 |  16.8  24.0  33.6                          |  58.0  87.0 116.0
+    6 |  19.6  28.0  39.2                          |  66.0  99.0 132.0
+    8 |  22.4  32.0  44.8                          |  74.0 111.0 148.0
+   12 |  28.0  40.0  56.0                          |  90.0 135.0 180.0
+  [OK] tabela: szMax(pop 12, epoka 1) = 28,0
+  [OK] tabela: szMax(pop 12, epoka 3) = 56,0
+  [OK] tabela: prawMax(pop 12, epoka 1) = 90,0
+  [OK] tabela: prawMax(pop 6, epoka 3) = 132,0
+
+[szczescie-skala-normalizacja-test] 95 OK, 0 FAIL
