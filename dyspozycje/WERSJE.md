@@ -13,6 +13,21 @@ swoim wĹ‚asnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji d
 > Pakiet 3 z 2026-08-20 jest docs-only i nie tworzy wpisu ROBOCZA/KANON/FINALNA;
 > ten plik pozostaje wyłącznie rejestrem publikacji bundli.
 
+## ROBOCZA 51e2e06b - 2026-09-04 17:45 UTC - FALA 346: 6 tematow (spojnosc kart CivPedia, mgla przy koncu tury, karta decyzji dyplomatycznej, limit tras handlowych)
+
+|- md5 (pełne): 51e2e06b1486ea50d2103722ac35d32a · stempel: ROBOCZA · label 51e2e06b · źródłowe commity integracji: `40bc1e27`+`5a25e6f7` + `265098f2`+`a3b6f121` + `2a241075` + `97b0b32e` + `cb067a17` + `677fcd8c`+`5f068f46`+`8effa750` + `bd563c22`+`05e98dd3`+`ddd389fe`
+|- **`R-CIVPEDIA-KARTY-SPOJNOSC-Q1`** (węzły -A/-B/-C, `40bc1e27`+`5a25e6f7`+`265098f2`+`a3b6f121`+`2a241075`+`97b0b32e`) — wszystkie 4 typy kart (technologia/budynek/jednostka/ulepszenie terenu) mają teraz wspólną szerokość referencyjną 660px i STAŁĄ wysokość 80vh (zamiast `max-height` rosnącego z treścią), nadmiar przewija się wewnątrz karty. Bezpieczne centrowanie backdropu (wzorem `diplomacyAudience.ts`) — koniec ucinania kart bez dostępnego scrolla (zgłoszenie: „Taran wychodzi poza linię"). Widoczny przycisk-link dla budynków/jednostek/kolejnych technologii — świadome odwrócenie decyzji `P-CIVPEDIA-KARTY-CALY-WIERSZ-PRZYCISKIEM-Q1` na jawne żądanie właściciela. Udokumentowany wyjątek: pigułki „Wymagania" pokazują nazwę wymaganej technologii zamiast generycznego „Szczegóły →" (są już widocznym przyciskiem, a nazwa niesie więcej informacji).
+|- **`P-MGLA-ODKRYCIE-TELEPORT-KONIEC-TURY-Q1`** (`cb067a17`) — TRZECIE i ostatnie miejsce wzorca buga z `P-MGLA-ODKRYCIE-WZDLUZ-SCIEZKI-Q1`: gdy gracz kończył turę PODCZAS animacji wieloheksowego marszu, silnik teleportował jednostkę na cel i liczył nagrody/zniszczenia wzdłuż ścieżki, ale NIE odkrywał mgły — heksy pośrednie zostawały zakryte. Zgłoszenie właściciela („pole nie zostaje odkryte, zwłaszcza kiedy komputer zamula") korelowało z zamuleniem, bo ta ścieżka aktywuje się tylko wtedy, gdy gracz zdąży kliknąć koniec tury przed końcem animacji. Test z reprodukcją buga przed fixem (heks środkowy trasy), 16/16.
+|- **`P-DYPLO-KARTA-DECYZJI-DISMISS-UCIETY-Q1`** (`677fcd8c`+`5f068f46`+`8effa750`) — regres z `5cbe910c`: dodanie drugiego przycisku do stopki karty blokującej w połączeniu z `overflow:hidden` znosiło automatyczne minimum elementu flex, więc przeglądarka ŚCISKAŁA kartę poniżej wysokości treści zamiast przewijać listę — „Odłóż na później" był fizycznie ucięty i nieklikalny. Naprawione `min-height:min-content`, plus „✕" w prawym górnym rogu (żądanie właściciela), z obsługą klawiatury (`role="button"`, `tabindex`, Enter/Spacja). „✕" świadomie NIE trafia na karty o wieloturowym dismissie (`prod-empty-`), żeby nie dawać trwałego wyciszenia blokującego alertu. Testy 47/47 + 35/35, mutant czerwieni 12 asercji.
+|- **`R-HANDEL-LIMIT-TRAS-PELNY-Q1`** (`bd563c22`+`05e98dd3`+`ddd389fe`, 2 rundy) — odpowiedź na „Handel +542": miasto bez budynków handlowych ma 1 slot trasy, każdy Targowisko/Port/Port wielki dokłada kolejny (Magazyn/Mennica świadomie wykluczone, ECHO właściciela); limit działa SYMETRYCZNIE (brak slotu po drugiej stronie blokuje połączenie); miasto wybiera najbardziej lukratywną dostępną trasę, przy zajętej sięga po bliższą; mechanizm uogólniony na WSZYSTKIE pary właścicieli (AI↔AI, AI↔państwo-miasto — infrastruktura traktatów była gotowa, `refreshTradeRoutes` ją ignorował); NOWY handel wewnątrz-cywilizacyjny konkurujący o te same sloty (naturalnie wypierany przez lepsze trasy zewnętrzne). Runda 2 naprawiła dwie regresje wykryte przez Evaluatora: (a) 4 konsumenty `tradeRoutes` w `main.ts` (chip HUD, panel imperium, nakładka mapy, toasty) sumowały trasy CAŁEGO ŚWIATA po uogólnieniu; (b) KRYTYCZNE — `tradeRouteId` nie był kanoniczny dla pary miast, więc po zdobyciu miasta powstawał bliźniak trasy w drugim kierunku i ta sama para liczyła się 2× (dochód 24 zamiast 16) — naprawione bezkierunkowym kluczem pary. Przykład arytmetyczny właściciela zweryfikowany dosłownie: 10 miast bez budynków vs 10 miast z jednym budynkiem = dokładnie 10 tras. Wydajność zmierzona i zoptymalizowana: 150 miast/15 właścicieli w 101 ms (pierwsza wersja: 40 s).
+|- Wszystkie tematy: pełny cykl AutoBot (Operator→Evaluator→Obrona→Final Control) przez Workflow, `tsc --noEmit` 0 błędów, 5 bramek referencyjnych (logic 213/213, tech-tree 19/19, research 33/33, unit-replace 13/13, combat 6/6) zielone po każdej integracji i na finalnym stanie `main`. Testy tematyczne: handel 76/76 + 59/59 + 117/117 + 103/103, mgła 16/16, karta blokująca 47/47 + 35/35, karty CivPedia 24/24 + 35/35.
+|- Bundle: `Gra-ROBOCZA.html` 69,6 MB. `Gra-ROBOCZA-POLE-BITWY.html` BEZ ZMIAN (żaden temat nie dotyka `battleScene.ts`) — pozostaje z FALA 344, md5 `b50ad543aef35fdf36957d481c70b427`.
+|- Publikacja: `gra-robocza/Gra-ROBOCZA.html` + manifest + 8 kopii PLAYTEST.
+|- **Odstępstwo techniczne (jak w poprzednich FALACH):** publikacja odtworzona ręcznie w bashu/Node — `pwsh` nie istnieje w tym środowisku.
+|- W TOKU, poza tą falą: `P-ULEPSZENIA-WYRAB-WYCINKA-NAZWA-Q1` (runda 3 — domknięcie resztki nazwy w poradniku + rozszerzenie testu o treść Civpedii).
+|- Szczegóły: rejestr w `REJESTR-PROSB-I-ZADAN.md`.
+|- **AKTUALNA**
+
 ## ROBOCZA f5d23e8e - 2026-09-04 09:39 UTC - FALA 345: 1 temat (minimapa ikona robotnika/kilofa - kolor zloty)
 
 |- md5 (pełne): f5d23e8e8277c0fa4436a23b4d00765c · stempel: ROBOCZA · label f5d23e8e · źródłowe commity integracji: `df0fcc0d` + `99b441b1`
@@ -22,7 +37,7 @@ swoim wĹ‚asnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji d
 |- Publikacja: `gra-robocza/Gra-ROBOCZA.html` + manifest + 8 kopii PLAYTEST.
 |- **Odstępstwo techniczne (jak w poprzednich FALACH):** publikacja odtworzona ręcznie w bashu/Node — `pwsh` nie istnieje w tym środowisku.
 |- Szczegóły: rejestr w `REJESTR-PROSB-I-ZADAN.md`.
-|- **AKTUALNA**
+|- **ZASTĄPIONA** (→ 51e2e06b, FALA 346)
 
 ## ROBOCZA 2447a670 - 2026-09-04 04:09 UTC - FALA 344: 11 tematow (handel granica ladowa, dyplomacja UI+NAP+widocznosc sojuszu, minimapa, lup eliminacji, miasta-panstwa pasywnosc, tech-karta, Pangea wybrzeze, wojna trojstronna, etykieta bitwy)
 
@@ -435,7 +450,7 @@ swoim wĹ‚asnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji d
 |- Każdy temat przeszedł pełny łańcuch Operator→Evaluator→Final Control (wszystkie PASS/PASS-WITH-NOTES), tematy graficzne/wizualne (#2,#4,#6,#8,#9) dispatchowane do Opus 5 High zgodnie z nowym wyjątkiem `R-PROC-AUTOBOT.md` §5a, zweryfikowane realnym renderem Playwright/Chromium; tematy logika/dane (#1,#3,#5,#7) do Sonnet 5. Każdy zmergowany non-ff do `main`, niezależnie zweryfikowany przez orkiestratora po każdym scaleniu (tsc czyste, Vite 845 modułów, testy tematyczne + 5 bramek referencyjnych zielone za każdym razem).
 |- Publikacja: `gra-robocza/` + 6 bundli playtestowych + `Gra-ROBOCZA-POLE-BITWY.html` (świeży build z `vite.oblezenie-bitwa.config.ts`) + manifest.
 |- Szczegóły zgłoszeń, recon i pełna treść ECHO: `dyspozycje/PYTANIA-OTWARTE.md` (wpisy #1–#9 powyżej, ZINTEGROWANE). Jeden dodatkowy temat znaleziony przy #4 (emoji zamiast ikon marki w panelu pracy) zarejestrowany jako `P-PRACA-PANEL-EMOJI-ZAMIAST-IKON-Q1`, NIE dispatchowany.
-|- **AKTUALNA**
+|- **ZASTĄPIONA** (→ 0df8953e, porządkowo — znacznik zapomniany przy FALI 317)
 
 ## ROBOCZA 5bcde74d - 2026-08-22 12:26 UTC - FALA 316: przebudowa szlaków handlowych T1+T2+T2b — **ZASTĄPIONA** (→ 0df8953e)
 |- md5 (pełne): 5bcde74dd67ad516b10900ece1a15e8f · stempel: ROBOCZA · label 5bcde74d · źródłowy commit integracji: `33cd3248`
@@ -458,7 +473,7 @@ swoim wĹ‚asnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji d
 |- `R-MIASTA-LIMIT-PODBÓJ-Q1=A`: limit dotyczy wyłącznie miast założonych; podbój bitewny, bez bitwy i kapitulacja nie zużywają puli; test 11/11, AI founding 28/28.
 |- `R-EPOKA-KAMIEN-WYMUSZONA-WOJNA-Q1`: start po 20 turach, najbliższy sąsiad, pokój po 2 miastach, odpoczynek 20 tur, cooldown pary 20 tur; Stone 32/32 + guard 18/18.
 |- Brąz zachowany bez regresji: Bronze 44/44 + guard 25/25; typecheck PASS · Vite 831 modułów · VERIFY OK.
-|- **AKTUALNA**
+|- **ZASTĄPIONA** (→ 5bcde74d, porządkowo — znacznik zapomniany przy FALI 316)
 
 ## ROBOCZA bdb3f91a - 2026-08-18 15:53 UTC - FALA 297: pełny split Pracy AI/MP + czytelność UI — **ZASTĄPIONA** (→ 4322f5aa)
 |- md5 (pełne): bdb3f91a966bd33c64f3657f281bd8b6 · stempel: ROBOCZA · label bdb3f91a · źródłowy commit integracji: `333ae41b`
