@@ -209,6 +209,71 @@ async function main() {
   check('[5] bundle (CALY, obie sekcje): zero wystapien "Wyrąb"',
     !JSON.stringify(bundle).includes('Wyrąb'));
 
+  // -----------------------------------------------------------------------
+  // [6] TRESC CIVPEDII -- pelne pokrycie, nie tylko wybrane rozdzialy.
+  //     Runda 3: resztka "wyrab" jako NAZWA ULEPSZENIA przezyla rundy 1-2 w
+  //     02-mapa-swiata.md i 07-miasto-budowa-rekrutacja.md, bo test asertowal
+  //     panel budowy i tylko dwa wskazane rozdzialy poradnika. Ten blok
+  //     skanuje CALA tresc bundla (poradnik + encyklopedia) i wymaga, by
+  //     KAZDE wystapienie "wyrab" mieszczilo sie na jawnej liscie uzyc
+  //     pospolitych (czasownik / rzeczownik czynnosci / tresc historyczna).
+  //     Kazde NOWE lub NIEZNANE wystapienie = FAIL, wiec nawrot nazwy w
+  //     dowolnym rozdziale poradnika wywala test.
+  //
+  //     Dopuszczone uzycia pospolite (uzasadnienie per pozycja):
+  //       "najpierw wyrąb → farma"        -- tryb rozkazujacy czas. "wyrąbać"
+  //       "wyrąb tylko gdy potrzebujesz"  -- tryb rozkazujacy czas. "wyrąbać"
+  //       "wyrąb lasu"                    -- rzeczownik odczasownikowy (czynnosc),
+  //                                          jawnie wylaczony z zakresu w R3-1
+  //       "wyrąb AI"                      -- ta sama czynnosc, stopka rewizji
+  //       "Sam wyrąb, wykonywany"         -- tresc historyczna encyklopedii
+  // -----------------------------------------------------------------------
+  const DOZWOLONE_WYRAB = [
+    'najpierw wyrąb → farma',
+    'wyrąb tylko gdy potrzebujesz',
+    'wyrąb lasu',
+    'wyrąb AI',
+    'Sam wyrąb, wykonywany',
+  ];
+
+  const sekcjeCivpedii = [
+    ...bundle.poradnik.map((p) => ({ zrodlo: 'poradnik/' + p.id, tekst: String(p.content || '') })),
+    ...bundle.encyklopedia.map((e) => ({
+      zrodlo: 'encyklopedia/' + e.id,
+      tekst: [e.title, e.content, e.body, e.text]
+        .filter((x) => typeof x === 'string').join('\n'),
+    })),
+  ];
+
+  const nieuzasadnione = [];
+  let dozwoloneTrafienia = 0;
+  for (const sekcja of sekcjeCivpedii) {
+    const re = /[Ww]yrąb/g;
+    let m;
+    while ((m = re.exec(sekcja.tekst)) !== null) {
+      const kontekst = sekcja.tekst.slice(Math.max(0, m.index - 40), m.index + 40);
+      if (DOZWOLONE_WYRAB.some((fraza) => kontekst.includes(fraza))) dozwoloneTrafienia++;
+      else nieuzasadnione.push({ zrodlo: sekcja.zrodlo, kontekst });
+    }
+  }
+
+  check('[6] CIVPEDIA (cala tresc bundla): zero wystapien "wyrab" w roli NAZWY ULEPSZENIA'
+    + ' -- kazde trafienie musi byc na liscie uzyc pospolitych',
+    nieuzasadnione.length === 0, nieuzasadnione);
+  check('[6] sanity: skan objal realna tresc civpedii i znalazl dozwolone uzycia pospolite'
+    + ' (asercja nie jest pusta)',
+    sekcjeCivpedii.length > 0 && dozwoloneTrafienia > 0,
+    { sekcje: sekcjeCivpedii.length, dozwoloneTrafienia });
+
+  for (const [id, oczekiwane] of [
+    ['02-mapa-swiata', 'Tartak, wycinka, obóz łowiecki'],
+    ['07-miasto-budowa-rekrutacja', 'tartak lub wycinka'],
+  ]) {
+    const rozdz = bundle.poradnik.find((p) => p.id === id);
+    check(`[6] bundle/poradnik/${id}: nazwa ulepszenia w wyliczeniu == "wycinka"`,
+      !!rozdz && rozdz.content.includes(oczekiwane), oczekiwane);
+  }
+
   console.log('');
   console.log(`[wyrab-wycinka-nazwa-live-test] ${pass} pass, ${fail} fail`);
   try { fs.unlinkSync(ENTRY); } catch (_e) { /* noop */ }
