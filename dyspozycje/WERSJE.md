@@ -13,6 +13,22 @@ swoim wĹ‚asnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji d
 > Pakiet 3 z 2026-08-20 jest docs-only i nie tworzy wpisu ROBOCZA/KANON/FINALNA;
 > ten plik pozostaje wyłącznie rejestrem publikacji bundli.
 
+## ROBOCZA 557c9cfb - 2026-09-04 19:20 UTC - FALA 347: 1 temat (nazwa ulepszenia „Wyrąb" → „Wycinka")
+
+|- md5 (pełne): 557c9cfbc714d21c2c889f6ca94216f2 · stempel: ROBOCZA · label 557c9cfb · źródłowy commit integracji: `a87da490`
+|- **`P-ULEPSZENIA-WYRAB-WYCINKA-NAZWA-Q1`** (`a87da490`, merge rund 1-5, Final Control PASS, wszystkie 5 zarzutów `ODDAL`) — ulepszenie terenu nazywa się teraz „Wycinka" wszędzie, gdzie widzi je gracz: karta ulepszenia w CivPedii, etykieta w trybie budowy, komunikaty hint/log, warunek budowy Farmy („NIE na lesie — najpierw Wycinka"), komunikat blokady budowy na lesie, poradnik gracza (5 plików) i encyklopedia. Klucz wewnętrzny `wyrab` celowo BEZ ZMIAN (nie jest widoczny dla gracza; zmiana zerwałaby zapisy gier).
+|- **Dlaczego jednozdaniowa zmiana kosztowała pełne 5 rund:** nie trudność samej podmiany, tylko **czterokrotnie udowodniona ślepota własnej bramki testowej**. Każda runda dokładała warstwę skanu dopiero PO tym, jak poprzednia przepuściła realne wystąpienie: [6] skan bundla, [7] strażnik pokrycia liczony w znakach (poprzedni czytał nieistniejące pola i pokrywał 0,3% treści), [8]/[8b] pola kart `terrain-improvements.json` — to ta warstwa odkryła `farma.warunek`, wyświetlany graczowi od początku, [11]/[11b]/[11c] skan negatywny 447 plików `.ts/.tsx` w `gra/src` z zakotwiczonym dopasowaniem. Test urósł 10/10 → 49/49.
+|- **Błąd autora dispatchu, ujawniony przez proces (rundy 3→4):** orkiestrator sklasyfikował „najpierw wyrąb" w `05-budowa-mapa.md:166` jako czasownik pospolity i jawnie wykluczył ze zmiany. Evaluator zakwestionował, Obrona **proceduralnie odmówiła** wyjścia poza allowlistę i eskalowała zamiast poprawić po cichu. Pełna linia brzmi „priorytet: najpierw wyrąb → farma → irygacja na tym samym polu" — czyli szereg NAZW ulepszeń. Ratyfikowane w rundzie 4 razem z usunięciem wpisów whitelisty, które ten błąd zakonserwowały w teście.
+|- Dwa stringi zostają celowo bez zmian, jawnie sklasyfikowane w whiteliście `DOZWOLONE_WYRAB_SRC` jako rzeczownik odczasownikowy (`buildModeHud.ts:572`, `main.ts:20535` — glosa czasownika „wycinać las" w tym samym zdaniu).
+|- Testy: `wyrab-wycinka-nazwa-live-test.cjs` 49/49 (żywy Chromium — karta budowana produkcyjną ścieżką `buildEntityCardData` → adapter → `renderEntityCard`, wiersz czytany z realnego DOM po etykiecie). Final Control samodzielnie zmutował string gracza w pliku SPOZA dowodu obrony (`improvement-tech.ts`) — złapany; sprawdził też, że komentarz w tej samej linii nie oślepia skanu. `tsc --noEmit` 0 błędów, 5 bramek referencyjnych (logic 213/213, tech-tree 19/19, research 33/33, unit-replace 13/13, combat 6/6) zielone.
+|- **Nota dla przyszłych tematów (nie regres tej fali):** cztery bramki `*improvement*`/`*las*` są czerwone PRE-ISTNIEJĄCO na `origin/main` — `map-improvement-qualify-test` 130/1, `oboz-lowiecki-las-test` 72/19, `improvement-card-callsites-test` 34/2, `entity-card-contract-test` (wyjątek). Parytet z czystym `origin/main` zweryfikowany niezależnie przez Evaluatora i Final Control. Osobna resztka do sprzątnięcia.
+|- Bundle: 882 moduły, `Gra-ROBOCZA.html` 69,6 MB. `Gra-ROBOCZA-POLE-BITWY.html` BEZ ZMIAN (temat nie dotyka `battleScene.ts`) — pozostaje z FALA 344, md5 `b50ad543aef35fdf36957d481c70b427`.
+|- Publikacja: `gra-robocza/Gra-ROBOCZA.html` + manifest + 8 kopii PLAYTEST.
+|- **Odstępstwo techniczne (jak w poprzednich FALACH):** publikacja odtworzona ręcznie w bashu/Node — `pwsh` nie istnieje w tym środowisku.
+|- W TOKU, poza tą falą: `R-HANDEL-WYMIANA-TECH-GATE-Q1` (bramka technologiczna „Wymiana" dla całego handlu szlakowego — runda 1).
+|- Szczegóły: rejestr w `REJESTR-PROSB-I-ZADAN.md`.
+|- **AKTUALNA**
+
 ## ROBOCZA 51e2e06b - 2026-09-04 17:45 UTC - FALA 346: 6 tematow (spojnosc kart CivPedia, mgla przy koncu tury, karta decyzji dyplomatycznej, limit tras handlowych)
 
 |- md5 (pełne): 51e2e06b1486ea50d2103722ac35d32a · stempel: ROBOCZA · label 51e2e06b · źródłowe commity integracji: `40bc1e27`+`5a25e6f7` + `265098f2`+`a3b6f121` + `2a241075` + `97b0b32e` + `cb067a17` + `677fcd8c`+`5f068f46`+`8effa750` + `bd563c22`+`05e98dd3`+`ddd389fe`
@@ -26,7 +42,7 @@ swoim wĹ‚asnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji d
 |- **Odstępstwo techniczne (jak w poprzednich FALACH):** publikacja odtworzona ręcznie w bashu/Node — `pwsh` nie istnieje w tym środowisku.
 |- W TOKU, poza tą falą: `P-ULEPSZENIA-WYRAB-WYCINKA-NAZWA-Q1` (runda 3 — domknięcie resztki nazwy w poradniku + rozszerzenie testu o treść Civpedii).
 |- Szczegóły: rejestr w `REJESTR-PROSB-I-ZADAN.md`.
-|- **AKTUALNA**
+|- **ZASTĄPIONA** (→ 557c9cfb, FALA 347)
 
 ## ROBOCZA f5d23e8e - 2026-09-04 09:39 UTC - FALA 345: 1 temat (minimapa ikona robotnika/kilofa - kolor zloty)
 
