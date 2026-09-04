@@ -11000,7 +11000,18 @@ async function boot(): Promise<void> {
       tradeRoutesOverlayGroup = null;
     }
 
-    /** Przerysuj łuki tras handlowych (wołaj po każdej zmianie tradeRoutes — co turę). */
+    /**
+     * Przerysuj łuki tras handlowych (wołaj po każdej zmianie tradeRoutes — co turę).
+     *
+     * R-HANDEL-LIMIT-TRAS-PELNY-Q1 (runda 2, R2-3): po generalizacji (GOAL 4-5 tego
+     * tematu) globalna tablica `tradeRoutes` zawiera trasy WSZYSTKICH właścicieli —
+     * pary AI↔AI, AI↔państwo-miasto oraz trasy WEWNĘTRZNE każdej cywilizacji. Nakładka
+     * mapy jest widokiem GRACZA, więc rysuje wyłącznie trasy, w których gracz (ownerId
+     * 0) jest stroną — inaczej gracz zobaczyłby pajęczynę sieci handlowej całego świata
+     * (dokładnie objaw z wyzwalacza tematu, spotęgowany o ~15 cywilizacji AI).
+     * Trasa WEWNĘTRZNA gracza (obie strony to gracz) to jeden łuk — rysowany RAZ,
+     * bo pętla iteruje po trasach, nie po ich stronach.
+     */
     function refreshTradeRoutesOverlay(): void {
       clearTradeRoutesOverlay();
       if (!showTradeRoutesOverlay) return;
@@ -11010,6 +11021,7 @@ async function boot(): Promise<void> {
       const inputs: TradeRouteOverlayInput[] = [];
       for (const route of tradeRoutes) {
         if (route.status !== 'polaczony') continue;
+        if (route.ownerId !== 0 && route.toOwnerId !== 0) continue; // R2-3: cudza trasa (AI↔AI / wewnętrzna obcych) — nie na mapie gracza
         const from = cityById.get(route.fromCityId);
         const to = cityById.get(route.toCityId);
         if (!from || !to) continue;
@@ -13406,19 +13418,25 @@ async function boot(): Promise<void> {
     const tradeRouteEventLog: SidePanelEvent[] = [];
     /**
      * P-WYDARZENIA-AUDYT-PRZEKIEROWANIA-Q1: id wpisu `trade-new-*`/`trade-lost-*` → id miasta
-     * GRACZA będącego początkiem szlaku (klucz = SidePanelEvent.id, analogicznie do
-     * `borderMarchEventTargets`/`civElimEventDetails` wyżej). `route.fromCityId` jest zawsze
-     * miastem gracza — `refreshTradeRoutes` (trade-routes.ts) trzyma wyłącznie pary
-     * gracz→obcy (`from.ownerId !== 0 || to.ownerId === 0 → continue`), więc druga strona
-     * szlaku nigdy nie ma panelu miasta (panel jest gracz-only). Kliknięcie karty otwiera
+     * GRACZA będącego kotwicą szlaku (klucz = SidePanelEvent.id, analogicznie do
+     * `borderMarchEventTargets`/`civElimEventDetails` wyżej). Kliknięcie karty otwiera
      * panel tego miasta — sekcję „Szlaki handlowe" (cityPanel.ts), czyli miejsce, w którym
      * gracz widzi i zmienia stan szlaków. Wpis może się „zestarzeć" (miasto utracone /
      * zniknęło — jeden z powodów zerwania szlaku), dlatego `sidePanelEventLinkFor` sprawdza
      * istnienie miasta ZANIM pokaże skrót.
-     * EN: event id → the PLAYER city that anchors the route (routes are always player→foreign),
-     * so clicking opens that city's panel and its "Trade routes" section. The entry can go
-     * stale (city lost — one of the reasons a route breaks), so the link resolver re-checks
-     * that the city still exists before offering the shortcut.
+     *
+     * R-HANDEL-LIMIT-TRAS-PELNY-Q1 (runda 2, R2-4) — INWARIANT ODWRÓCONY: dawny komentarz
+     * mówił „`route.fromCityId` jest zawsze miastem gracza, bo refreshTradeRoutes trzyma
+     * wyłącznie pary gracz→obcy". To PRZESTAŁO być prawdą — po GOAL 4 (dowolne pary
+     * właścicieli, w tym AI↔AI) i GOAL 5 (trasy WEWNĘTRZNE każdej cywilizacji) `fromCityId`
+     * bywa miastem obcym, a gracz bywa stroną `to`. Dlatego `reportTradeRouteEvents`
+     * (a) raportuje WYŁĄCZNIE trasy, w których gracz jest stroną, i (b) wpisuje tu
+     * miasto GRACZA wybrane jawnie po `ownerId`, nie na ślepo `fromCityId`.
+     * EN: event id → the PLAYER city that anchors the route. Since this topic generalized
+     * routes to arbitrary owner pairs (incl. AI↔AI) and intra-civ routes, `fromCityId` is no
+     * longer guaranteed to be the player's city — the reporter filters to player routes and
+     * resolves the player-side city explicitly. The entry can go stale (city lost — one of
+     * the reasons a route breaks), so the link resolver re-checks the city still exists.
      */
     const tradeRouteEventPlayerCityIds = new Map<string, string>();
     /** SPICH-AUTO-Q1: komunikat auto-obniżenia racji — widoczny przez turę gracza po EOT. */
@@ -13653,8 +13671,21 @@ async function boot(): Promise<void> {
     /**
      * TEMAT #5 — porownuje trasy sprzed i po jednym wywolaniu refreshTradeRoutes
      * (ta sama tura) i zglasza zdarzenia WYDARZENIA + toast dla kazdej nowej/
-     * zerwanej trasy GRACZA (tradeRoutes zawiera wylacznie pary gracz<->obcy,
-     * wiec kazdy wpis jest z definicji trasa gracza — AI<->AI tu nie istnieje).
+     * zerwanej trasy GRACZA.
+     *
+     * R-HANDEL-LIMIT-TRAS-PELNY-Q1 (runda 2, R2-4) — INWARIANT ODWROCONY: dawny
+     * komentarz mowil „tradeRoutes zawiera wylacznie pary gracz<->obcy, wiec kazdy
+     * wpis jest z definicji trasa gracza — AI<->AI tu nie istnieje". Po GOAL 4
+     * (dowolne pary wlascicieli, w tym AI<->AI) i GOAL 5 (trasy WEWNETRZNE kazdej
+     * cywilizacji) AI<->AI istnieje tu jak najbardziej — i bez filtra gracz
+     * dostawalby toast/wpis o KAZDEJ cudzej trasie. Szczegolnie dotkliwie przy
+     * PIERWSZYM przeliczeniu po tej zmianie: handel wewnetrzny powstaje naraz dla
+     * kazdej cywilizacji, wiec `added` liczy dziesiatki tras naraz. Dlatego
+     * `reportTradeRouteEvents` filtruje diff do tras, w ktorych gracz jest STRONA
+     * (ownerId===0 || toOwnerId===0) — zweryfikowane zywo licznikiem wywolan
+     * showHintMessage (kryterium R2-K4, tools/trade-routes-hud-filter-test.cjs).
+     * Trasa WEWNETRZNA gracza daje JEDEN komunikat, nie dwa — petla iteruje po
+     * trasach, nie po ich stronach.
      *
      * Dedup w tej samej turze: id zdarzenia koduje `turn` + id trasy, wiec
      * ponowne wywolanie z tym samym diffem (np. bledny retry) nie dodaje
@@ -13724,7 +13755,15 @@ async function boot(): Promise<void> {
       hasTradeTreaty: (a: number, b: number) => boolean,
       incomeParams: TradeRouteIncomeParams,
     ): void {
-      const { added, removed } = diffTradeRoutes(prevRoutes, nextRoutes);
+      const diff = diffTradeRoutes(prevRoutes, nextRoutes);
+      // R2-4: raportujemy WYŁĄCZNIE trasy, w których gracz jest stroną — reszta
+      // (AI↔AI, handel wewnętrzny obcych) nie należy do dziennika gracza.
+      const isPlayerRoute = (r: TradeRoute): boolean => r.ownerId === 0 || r.toOwnerId === 0;
+      // R2-4: która strona trasy jest miastem GRACZA (kotwica wpisu/linku). Dla trasy
+      // wewnętrznej gracza obie są — bierzemy `fromCityId`, wpis powstaje raz.
+      const playerCityIdOf = (r: TradeRoute): string => (r.ownerId === 0 ? r.fromCityId : r.toCityId);
+      const added = diff.added.filter(isPlayerRoute);
+      const removed = diff.removed.filter(isPlayerRoute);
       if (added.length === 0 && removed.length === 0) return;
 
       const cityById = new Map(cities.map(c => [c.id, c] as const));
@@ -13738,12 +13777,15 @@ async function boot(): Promise<void> {
         const to = cityById.get(route.toCityId);
         const fromName = from?.name ?? route.fromCityId;
         const toName = to?.name ?? route.toCityId;
-        const civLabel = ownerDiploLabel(route.toOwnerId);
+        // R2-4: etykieta opisuje DRUGĄ stronę względem gracza; dla trasy wewnętrznej
+        // (obie strony to gracz) własna nazwa cywilizacji nic nie mówi — jawny opis.
+        const wewnetrzna = route.ownerId === route.toOwnerId;
+        const civLabel = wewnetrzna ? 'handel wewnętrzny' : ownerDiploLabel(route.ownerId === 0 ? route.toOwnerId : route.ownerId);
         const income = tradeRouteTotalDistanceIncome(route.dystans, route.medium, incomeParams);
         const summary = `${fromName} ↔ ${toName} (${civLabel}) \xb7 +${income} złota/turę`;
         showHintMessage('\u{1F9ED} Nowy szlak handlowy: ' + summary, 4500);
         // P-WYDARZENIA-AUDYT-PRZEKIEROWANIA-Q1: zapamiętaj miasto gracza pod tym samym id.
-        tradeRouteEventPlayerCityIds.set('trade-new-' + turn + '-' + route.id, route.fromCityId);
+        tradeRouteEventPlayerCityIds.set('trade-new-' + turn + '-' + route.id, playerCityIdOf(route));
         pushOnce({
           id: 'trade-new-' + turn + '-' + route.id,
           icon: '\u{1F9ED}', // 🧭
@@ -13758,21 +13800,33 @@ async function boot(): Promise<void> {
         const to = cityById.get(route.toCityId);
         const fromName = from?.name ?? route.fromCityId;
         const toName = to?.name ?? route.toCityId;
-        const civLabel = ownerDiploLabel(route.toOwnerId);
+        // R2-4: jw. — etykieta drugiej strony względem gracza.
+        const wewnetrzna = route.ownerId === route.toOwnerId;
+        const civLabel = wewnetrzna ? 'handel wewnętrzny' : ownerDiploLabel(route.ownerId === 0 ? route.toOwnerId : route.ownerId);
 
         // Powod — tylko tanie, deterministyczne sprawdzenia (bez ponownego BFS
         // poza jednym findCityConnection, ktory i tak jest cache'owany).
+        // R2-4: trasa WEWNĘTRZNA (GOAL 5) nie ma ani wojny, ani traktatu ze sobą samą —
+        // te dwa sprawdzenia dotyczą wyłącznie par zewnętrznych, dokładnie jak gałąź
+        // `wewnetrzna` w refreshTradeRoutes. Bez tego każde zerwanie trasy wewnętrznej
+        // raportowałoby fałszywy powód „zerwana Umowa Handlowa".
         let reason: string | null = null;
         if (!from || !to) {
           reason = 'miasto zniknęło';
         } else if (from.ownerId !== route.ownerId || to.ownerId !== route.toOwnerId) {
           reason = 'zmiana właściciela miasta';
-        } else if (isAtWar(route.ownerId, route.toOwnerId)) {
+        } else if (!wewnetrzna && isAtWar(route.ownerId, route.toOwnerId)) {
           reason = 'wojna';
-        } else if (!hasTradeTreaty(route.ownerId, route.toOwnerId)) {
-          reason = 'zerwana Umowa Handlowa';
+        } else if (!wewnetrzna && !hasTradeTreaty(route.ownerId, route.toOwnerId)) {
+          reason = 'zerwana Umowa Szlaków';
         } else {
-          const conn = findCityConnection(from, to, map, route.medium, tradeParams, builtByCity, buildAllTerritoryNodes());
+          // R2-4: dla trasy wewnętrznej pomijamy wymóg wspólnej granicy lądowej
+          // (territoryNodes=undefined) — tak samo jak refreshTradeRoutes (GOAL 5),
+          // inaczej powód byłby fałszywym „brak połączenia".
+          const conn = findCityConnection(
+            from, to, map, route.medium, tradeParams, builtByCity,
+            wewnetrzna ? undefined : buildAllTerritoryNodes(),
+          );
           if (!conn.connected) reason = 'brak połączenia';
         }
 
@@ -13781,7 +13835,7 @@ async function boot(): Promise<void> {
         // P-WYDARZENIA-AUDYT-PRZEKIEROWANIA-Q1: jw. — przy zerwaniu miasto gracza może już
         // nie istnieć (powód „miasto zniknęło"/„zmiana właściciela"); zapis jest tani, a
         // `sidePanelEventLinkFor` i tak weryfikuje istnienie miasta przed pokazaniem skrótu.
-        tradeRouteEventPlayerCityIds.set('trade-lost-' + turn + '-' + route.id, route.fromCityId);
+        tradeRouteEventPlayerCityIds.set('trade-lost-' + turn + '-' + route.id, playerCityIdOf(route));
         pushOnce({
           id: 'trade-lost-' + turn + '-' + route.id,
           icon: '⛓️', // ⛓️‍💥 (fallback bez kombinujacego znaku dla zgodnosci fontow)
@@ -14665,9 +14719,35 @@ async function boot(): Promise<void> {
 
     /**
      * TEMAT 14 (Maciej 2026-07-24) — zbiorczy widok imperium: WSZYSTKIE aktywne trasy
-     * handlowe gracza (tradeRoutes zawiera wyłącznie pary gracz<->obca cyw., patrz
-     * refreshTradeRoutes) + dochód każdej + suma. Panel miasta (cityPanel.ts
+     * handlowe gracza + dochód każdej + suma. Panel miasta (cityPanel.ts
      * buildTradeRoutesDetailCard) pokazuje to samo per-miasto; tu jest agregat.
+     *
+     * R-HANDEL-LIMIT-TRAS-PELNY-Q1 (runda 2, R2-2) — INWARIANT ODWRÓCONY: dawny
+     * komentarz mówił „tradeRoutes zawiera wyłącznie pary gracz<->obca cyw.". Po
+     * generalizacji z tego tematu (GOAL 4 — dowolne pary właścicieli, w tym AI↔AI;
+     * GOAL 5 — trasy WEWNĘTRZNE każdej cywilizacji) to nieprawda, więc panel filtruje
+     * po stronie trasy: gracz musi być stroną (ownerId===0 lub toOwnerId===0).
+     *
+     * DECYZJA (R2-2, „trasa wewnętrzna ma dać sensowny wiersz — zdecyduj i uzasadnij"):
+     * trasa WEWNĘTRZNA gracza daje DWA wiersze, po jednym z perspektywy każdego z jego
+     * miast, z osobnymi id (`<id trasy>` oraz `<id trasy>@<toCityId>`). Uzasadnienie —
+     * to nie kosmetyka, tylko odwzorowanie silnika:
+     *   * `computeTradeRouteIncomeByCity` (Q8=B) kredytuje PEŁNĄ kwotę OBU miastom
+     *     trasy, a `computeTradeRouteBuildingBonusByCity` (T4) tak samo rozdziela
+     *     premię 5% — dla trasy wewnętrznej OBA miasta są gracza, więc gracz realnie
+     *     dostaje 2× jedno i 2× drugie. Jeden wiersz pokazywałby POŁOWĘ tego, co
+     *     wpływa do skarbca, i rozjechałby panel z chipem HUD i skarbcem (klasa błędu
+     *     zamknięta w CUDA-HANDEL-01 i P-HANDEL-SZLAKI-WZOR-DUPLIKAT-Q1).
+     *   * zakładka „Miasto" grupuje trasy PER `cityId` (P-EMPIRE-MIASTA-JOIN-INDEX) —
+     *     przy jednym wierszu drugie miasto gracza w ogóle nie pokazałoby tej trasy,
+     *     mimo że to jej pełnoprawna strona i to ona przynosi mu dochód.
+     * Wiersz jest ZAWSZE z perspektywy miasta GRACZA: `cityId` to jego miasto, a
+     * `partnerCityName`/`partnerOwnerLabel` opisują drugą stronę. Dla trasy zewnętrznej,
+     * w której gracz jest stroną `to`, dawny kod wpisywał do `cityId` miasto OBCE —
+     * po generalizacji byłby to realny błąd grupowania, więc stronę wybieramy jawnie.
+     * Identyfikator trasy zewnętrznej pozostaje NIEZMIENIONY (`r.id`) — sufiks
+     * dostaje wyłącznie drugi wiersz trasy wewnętrznej, żeby nie ruszać istniejących
+     * konsumentów id dla przypadku dotychczasowego.
      */
     /** DYSPOZYCJA 85: etykiety PL surowców "z trasy" (trade-routes.ts TradeRouteResourceKey) —
      *  wyłącznie do panelu Handel (empireDetailPanel.ts), nie dubluje LABEL_BY_ASCII
@@ -14682,15 +14762,35 @@ async function boot(): Promise<void> {
         _menuDifficulty,
       );
       const routes = tradeRoutes
-        .filter(r => r.status === 'polaczony')
-        .map(r => {
-          const myCity = cities.find(c => c.id === r.fromCityId);
-          const partnerCity = cities.find(c => c.id === r.toCityId);
+        // R2-2: gracz musi być STRONĄ trasy — panel imperium jest widokiem gracza
+        // (ownerId=0), a `tradeRoutes` zawiera od GOAL 4-5 także trasy AI↔AI i
+        // wewnętrzne obcych cywilizacji.
+        .filter(r => r.status === 'polaczony' && (r.ownerId === 0 || r.toOwnerId === 0))
+        // R2-2: jeden wiersz na KAŻDĄ stronę trasy należącą do gracza — dla trasy
+        // zewnętrznej dokładnie jeden (jak dotąd), dla WEWNĘTRZNEJ dwa (patrz DECYZJA
+        // w docstringu wyżej).
+        .flatMap(r => {
+          const bothPlayer = r.ownerId === 0 && r.toOwnerId === 0;
+          const sides: Array<{ rowId: string; myCityId: string; partnerCityId: string; partnerOwnerId: number }> = [];
+          if (r.ownerId === 0) {
+            sides.push({ rowId: r.id, myCityId: r.fromCityId, partnerCityId: r.toCityId, partnerOwnerId: r.toOwnerId });
+          }
+          if (r.toOwnerId === 0) {
+            sides.push({
+              rowId: bothPlayer ? r.id + '@' + r.toCityId : r.id,
+              myCityId: r.toCityId, partnerCityId: r.fromCityId, partnerOwnerId: r.ownerId,
+            });
+          }
+          return sides.map(side => {
+          const myCity = cities.find(c => c.id === side.myCityId);
+          const partnerCity = cities.find(c => c.id === side.partnerCityId);
           // CUDA-HANDEL-01 (2026-07-26) + DYSPOZYCJA 85: dochód pokazany w panelu Handel
           // musi zgadzać się z realnym wpisem do skarbca I z chipem HUD „Handel"
           // (ta sama formuła co niżej przy `handelIncome`, patrz komentarz tam) —
           // inaczej trzy miejsca pokazywałyby trzy różne liczby dla tego samego dochodu.
-          const bonus = wonderTradeRouteBonusForOwner(r.ownerId, r.medium);
+          // R2-2: bonus cudów liczony dla GRACZA (0), nie dla `r.ownerId` — po
+          // generalizacji `r.ownerId` bywa cywilizacją obcą (gracz jako strona `to`).
+          const bonus = wonderTradeRouteBonusForOwner(0, r.medium);
           const base = tradeRouteTotalDistanceIncome(r.dystans, r.medium, incomeParams);
           const income = bonus === 0 ? base : Math.floor(base * (1 + bonus));
           // T6 (R-HANDEL-SZLAKI-PRZEBUDOWA-Q1): drugi składnik dochodu trasy — premia 5%
@@ -14705,15 +14805,17 @@ async function boot(): Promise<void> {
           // naliczona graczowi z cudami handlowymi.
           const premiaBudynku = tradeRouteBuildingBonusForRoute(r, incomeParams);
           return {
-            id: r.id,
+            id: side.rowId,
             // P-PANEL-MIASTO-OBYWATELE-TRESC-NIEPELNA (Maciej 2026-08-16, ECHO A): id, nie
             // tylko nazwa (P-EMPIRE-MIASTA-JOIN-INDEX) — pozwala zakładce Miasto grupować
             // trasy PER MIASTO niezawodnie. / EN: id, not just the name — lets the Miasto tab
             // group routes PER CITY reliably.
-            cityId: r.fromCityId,
-            cityName: myCity?.name ?? r.fromCityId,
-            partnerCityName: partnerCity?.name ?? r.toCityId,
-            partnerOwnerLabel: ownerDiploLabel(r.toOwnerId),
+            cityId: side.myCityId,
+            cityName: myCity?.name ?? side.myCityId,
+            partnerCityName: partnerCity?.name ?? side.partnerCityId,
+            // R2-2: dla trasy WEWNĘTRZNEJ obie strony to gracz — etykieta „Handel
+            // wewnętrzny" zamiast własnej nazwy cywilizacji w kolumnie „partner".
+            partnerOwnerLabel: bothPlayer ? 'Handel wewnętrzny' : ownerDiploLabel(side.partnerOwnerId),
             medium: r.medium,
             dystans: r.dystans,
             income,
@@ -14722,6 +14824,7 @@ async function boot(): Promise<void> {
             budynekOdblokowany: r.budynekOdblokowany,
             premiaBudynku,
           };
+          });
         })
         .sort((a, b) => a.dystans - b.dystans || a.id.localeCompare(b.id));
       const totalIncome = routes.reduce((s, r) => s + r.income, 0);
@@ -16521,8 +16624,28 @@ async function boot(): Promise<void> {
       const surowceTotal = storedResourceRows.length;
       const surowceOk = surowceTotal - resourceAlertCount;
       // TEMAT 14 (Maciej 2026-07-24): chip „Handel" w HUD — suma dochodu z aktywnych
-      // tras handlowych (gracz<->obca cyw.) tej tury. `tradeRoutes` zawiera WYŁĄCZNIE
-      // pary gracz<->obcy (refreshTradeRoutes), więc każda trasa liczy się raz.
+      // tras handlowych gracza tej tury.
+      //
+      // R-HANDEL-LIMIT-TRAS-PELNY-Q1 (runda 2, R2-1) — INWARIANT ODWRÓCONY: dawny
+      // komentarz mówił „tradeRoutes zawiera WYŁĄCZNIE pary gracz<->obcy, więc każda
+      // trasa liczy się raz". To PRZESTAŁO być prawdą po generalizacji z tego tematu
+      // (GOAL 4: pary dowolnych właścicieli, w tym AI↔AI; GOAL 5: trasy WEWNĘTRZNE
+      // każdej cywilizacji). Bez filtra chip pokazywałby dochód handlowy CAŁEGO świata
+      // — objaw z wyzwalacza tematu („Handel +542"), spotęgowany o ~15 cywilizacji AI.
+      // Filtr: gracz musi być STRONĄ trasy (ownerId===0 lub toOwnerId===0).
+      //
+      // TRASA WEWNĘTRZNA GRACZA (obie strony to gracz) — dwa różne pytania, dwie różne
+      // odpowiedzi, oba zweryfikowane w tools/trade-routes-hud-filter-test.cjs:
+      //   * LICZBA tras (`handelRouteCount`): trasa liczy się DOKŁADNIE RAZ — pętla
+      //     iteruje po trasach, nie po ich stronach (kryterium R2-K5).
+      //   * DOCHÓD (`handelIncome`): musi się zgadzać ze SKARBCEM, a silnik
+      //     (`computeTradeRouteIncomeByCity`, Q8=B „obie strony zarabiają") kredytuje
+      //     PEŁNĄ kwotę OBU miastom trasy — dla trasy wewnętrznej OBA te miasta są
+      //     gracza, więc do skarbca wpływa 2× kwota strony. Chip dolicza ją 2×, bo
+      //     jedyna alternatywa (1×) rozjechałaby HUD ze skarbcem i panelem imperium —
+      //     dokładnie klasa błędu, przed którą broni CUDA-HANDEL-01 niżej. Formuła
+      //     dochodu jest poza allowlistą tego tematu, więc chip raportuje stan
+      //     faktyczny, nie postulowany.
       const handelIncomeParams = loadTradeRouteIncomeParams(
         data.econParams as unknown as Parameters<typeof loadTradeRouteIncomeParams>[0],
         _menuDifficulty,
@@ -16531,11 +16654,17 @@ async function boot(): Promise<void> {
       let handelRouteCount = 0;
       for (const r of tradeRoutes) {
         if (r.status !== 'polaczony') continue;
+        const fromPlayer = r.ownerId === 0;
+        const toPlayer = r.toOwnerId === 0;
+        if (!fromPlayer && !toPlayer) continue; // R2-1: cudza trasa (AI↔AI / wewnętrzna obcych)
         // CUDA-HANDEL-01: chip HUD musi odzwierciedlać ten sam bonus % cudów, co
         // realny wpis do skarbca (tradeIncomeByCity) — inaczej HUD i skarbiec by się rozjechały.
-        const bonus = wonderTradeRouteBonusForOwner(r.ownerId, r.medium);
+        // Bonus liczony dla WŁAŚCICIELA 0 (gracza), nie dla `r.ownerId` — po generalizacji
+        // gracz bywa stroną `to`, a wtedy `r.ownerId` to cudza cywilizacja.
+        const bonus = wonderTradeRouteBonusForOwner(0, r.medium);
         const base = tradeRouteTotalDistanceIncome(r.dystans, r.medium, handelIncomeParams);
-        handelIncome += bonus === 0 ? base : Math.floor(base * (1 + bonus));
+        const perSide = bonus === 0 ? base : Math.floor(base * (1 + bonus));
+        handelIncome += fromPlayer && toPlayer ? perSide * 2 : perSide;
         handelRouteCount++;
       }
       const mpMults = civManpowerMultsForOwner(0);
