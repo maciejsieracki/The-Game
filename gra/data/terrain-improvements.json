@@ -171,7 +171,7 @@
     "historia": "Zanim rolnictwo i hodowla stały się głównym źródłem pożywienia, polowanie w lasach dostarczało ludziom mięsa, skór, kości i poroża wykorzystywanych do narzędzi i odzieży — a w wielu kulturach pozostało ważnym zajęciem nawet długo po neolitycznej rewolucji rolniczej. Ludy leśne Europy, Syberii czy Ameryki Północnej zakładały sezonowe obozowiska myśliwskie w głębi puszczy, skąd wyprawiano się tropić zwierzynę grubą — jelenie, dziki, łosie czy bizony — wracając do głównej osady z upolowaną zdobyczą. Skuteczne polowanie leśne wymagało szczegółowej znajomości terenu, tropów i zwyczajów zwierząt, przekazywanej z pokolenia na pokolenie, a często też współpracy grupowej przy organizowaniu obław. Dla wielu społeczności łowieckich, jak choćby ludów borealnych Syberii, futra zwierząt leśnych stały się z czasem cennym towarem handlowym, napędzającym dalekosiężną wymianę. Las, choć trudniejszy do zagospodarowania rolniczo niż otwarte równiny, oferował więc własne, unikatowe bogactwo — pod warunkiem, że ktoś potrafił je wytropić i upolować."
   },
   "wyrab": {
-    "nazwa": "Wyrąb",
+    "nazwa": "Wycinka",
     "typ": "wycinka",
     "epoka": 1,
     "bonus": {

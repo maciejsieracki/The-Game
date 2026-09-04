@@ -85,7 +85,7 @@ Skrót kategorii (szczegóły w katalogu):
 | **Produkcja** | Tartak, Kamieniołom, Kopalnia, Glinianka |
 | **Hodowla** | Bydło, Owce, Lama (Inkowie) |
 | **Infrastruktura** | Droga, Posterunek, Fort, Łodzie rybackie |
-| **Specjalne** | Warzelnia soli, Wyrąb (wycinka lasu — często tania) |
+| **Specjalne** | Warzelnia soli, Wycinka (wycinka lasu — często tania) |
 
 **Posterunek** rozszerza terytorium o ok. **5 heksów**; **Fort** — o ok. **10** (Część II §9.1). **Droga** obniża koszt ruchu wojska (§31.2).
 

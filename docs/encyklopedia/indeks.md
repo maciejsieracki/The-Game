@@ -94,7 +94,7 @@
 - [Glinianka](ulepszenia/glinianka.md)
 - [Kamieniołom](ulepszenia/kamieniolom.md)
 - [Obóz łowiecki](ulepszenia/oboz_lowiecki.md)
-- [Wyrąb](ulepszenia/wyrab.md)
+- [Wycinka](ulepszenia/wyrab.md)
 - [Tartak](ulepszenia/tartak.md)
 - [Tarasy uprawne](ulepszenia/tarasy.md)
 - [Łodzie rybackie](ulepszenia/lodzie_rybackie.md)
