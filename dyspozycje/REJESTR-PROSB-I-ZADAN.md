@@ -4708,8 +4708,11 @@ własnego błędu procesowego z wcześniejszej rundy tej samej sesji.
 
 ### `R-WALKA-PRZEWAGA-LICZEBNA-Q1-W1` — wynik rundy 1 (2026-09-04, noc)
 
-**Obieg pełny: Operator `PASS-WITH-NOTES` → Evaluator 3 zarzuty → Obrona PRZYJMUJE wszystkie
-trzy → Final Control w biegu.** Commity: `f72744d3` (praca) + `288e420e` (obrona).
+**ZINTEGROWANE** (`487b0cfc`, 2026-09-04). Obieg pełny: Operator `PASS-WITH-NOTES` →
+Evaluator 3 zarzuty → Obrona PRZYJMUJE wszystkie trzy → **Final Control `PASS`, 3× ODDAL**.
+Bramki potwierdzone przez orkiestratora NA `main`, nie z raportu: nowa monotoniczność 43/0,
+`auto-battle-power` 14/0, logic 213/213, tech-tree 19/19, research ALL GREEN,
+unit-replace 13/13, combat OK, `tsc --noEmit` exit 0. Worktree sprzątnięty. Commity: `f72744d3` (praca) + `288e420e` (obrona).
 
 **GOAL osiągnięty.** `p_atk`/`p_def` 0,58 → 1,2; `L_MIN` przeniesiona z podłogi na jednostkę
 na podłogę na sumie składu. Zmierzony ciąg łącznych strat zwycięzcy: **0,3873 / 0,3656 /
