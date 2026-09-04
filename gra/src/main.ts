@@ -14728,26 +14728,41 @@ async function boot(): Promise<void> {
      * GOAL 5 — trasy WEWNĘTRZNE każdej cywilizacji) to nieprawda, więc panel filtruje
      * po stronie trasy: gracz musi być stroną (ownerId===0 lub toOwnerId===0).
      *
-     * DECYZJA (R2-2, „trasa wewnętrzna ma dać sensowny wiersz — zdecyduj i uzasadnij"):
-     * trasa WEWNĘTRZNA gracza daje DWA wiersze, po jednym z perspektywy każdego z jego
-     * miast, z osobnymi id (`<id trasy>` oraz `<id trasy>@<toCityId>`). Uzasadnienie —
-     * to nie kosmetyka, tylko odwzorowanie silnika:
-     *   * `computeTradeRouteIncomeByCity` (Q8=B) kredytuje PEŁNĄ kwotę OBU miastom
-     *     trasy, a `computeTradeRouteBuildingBonusByCity` (T4) tak samo rozdziela
-     *     premię 5% — dla trasy wewnętrznej OBA miasta są gracza, więc gracz realnie
-     *     dostaje 2× jedno i 2× drugie. Jeden wiersz pokazywałby POŁOWĘ tego, co
-     *     wpływa do skarbca, i rozjechałby panel z chipem HUD i skarbcem (klasa błędu
-     *     zamknięta w CUDA-HANDEL-01 i P-HANDEL-SZLAKI-WZOR-DUPLIKAT-Q1).
-     *   * zakładka „Miasto" grupuje trasy PER `cityId` (P-EMPIRE-MIASTA-JOIN-INDEX) —
-     *     przy jednym wierszu drugie miasto gracza w ogóle nie pokazałoby tej trasy,
-     *     mimo że to jej pełnoprawna strona i to ona przynosi mu dochód.
+     * DECYZJA (R2-2, „trasa wewnętrzna ma dać sensowny wiersz — zdecyduj i uzasadnij";
+     * wersja OSTATECZNA po zarzucie 3 Evaluatora, runda 2): trasa WEWNĘTRZNA gracza
+     * daje DOKŁADNIE JEDEN wiersz — jak każda inna trasa — a jego `income` i
+     * `premiaBudynku` są policzone 2×.
+     *
+     * Pierwsze podejście rundy 2 dawało jej DWA wiersze (po jednym z perspektywy
+     * każdego z dwóch miast gracza, z osobnymi id) — po to, by zakładka „Miasto"
+     * (grupująca `trade.routes` po `cityId`, P-EMPIRE-MIASTA-JOIN-INDEX) pokazała ją
+     * przy OBU miastach. Evaluator wykazał żywo, że to rozjeżdża dwie liczby widoczne
+     * dla gracza JEDNOCZEŚNIE: `empireDetailPanel.ts` renderuje licznik szlaków jako
+     * `t.routes.length`, więc przy 3 trasach gracza (w tym 1 wewnętrznej) chip HUD
+     * mówił „3 szlaki", a panel „4 szlaki". To ta sama klasa rozjazdu, którą zamknęły
+     * CUDA-HANDEL-01 i P-HANDEL-SZLAKI-WZOR-DUPLIKAT-Q1, tylko przeniesiona z dochodu
+     * na LICZBĘ — rozstrzygnięta tak samo: jedno źródło prawdy, wiersz = trasa.
+     *
+     * Dlaczego 2× w kwocie, mimo jednego wiersza: `computeTradeRouteIncomeByCity`
+     * (Q8=B) kredytuje PEŁNĄ kwotę OBU miastom trasy, a
+     * `computeTradeRouteBuildingBonusByCity` (T4) tak samo rozdziela premię 5% — dla
+     * trasy wewnętrznej OBA miasta są gracza, więc do skarbca wpływa 2×. Jeden wiersz
+     * z kwotą 1× pokazywałby POŁOWĘ realnego wpływu; kwota 2× utrzymuje równość
+     * „suma panelu == chip HUD == skarbiec", która jest tu nadrzędna.
+     *
+     * Koszt decyzji, świadomy: w zakładce „Miasto" trasa wewnętrzna wisi przy mieście
+     * `fromCityId`, nie przy obu. To ta SAMA semantyka, jaką ta zakładka ma od zawsze
+     * dla trasy zewnętrznej (tam też wisi tylko przy mieście gracza, nigdy przy obcym),
+     * a zakładka „Handel" pokazuje w wierszu OBIE nazwy miast (`cityName` ↔
+     * `partnerCityName`) — więc informacja o drugiej stronie nie znika, przesuwa się
+     * tylko miejsce, w którym gracz ją czyta.
+     *
      * Wiersz jest ZAWSZE z perspektywy miasta GRACZA: `cityId` to jego miasto, a
      * `partnerCityName`/`partnerOwnerLabel` opisują drugą stronę. Dla trasy zewnętrznej,
      * w której gracz jest stroną `to`, dawny kod wpisywał do `cityId` miasto OBCE —
      * po generalizacji byłby to realny błąd grupowania, więc stronę wybieramy jawnie.
-     * Identyfikator trasy zewnętrznej pozostaje NIEZMIENIONY (`r.id`) — sufiks
-     * dostaje wyłącznie drugi wiersz trasy wewnętrznej, żeby nie ruszać istniejących
-     * konsumentów id dla przypadku dotychczasowego.
+     * Identyfikatory tras pozostają NIEZMIENIONE (`r.id`) — żadnych sufiksów, więc
+     * konsumenci id widzą dokładnie to, co przed tym tematem.
      */
     /** DYSPOZYCJA 85: etykiety PL surowców "z trasy" (trade-routes.ts TradeRouteResourceKey) —
      *  wyłącznie do panelu Handel (empireDetailPanel.ts), nie dubluje LABEL_BY_ASCII
@@ -14766,22 +14781,33 @@ async function boot(): Promise<void> {
         // (ownerId=0), a `tradeRoutes` zawiera od GOAL 4-5 także trasy AI↔AI i
         // wewnętrzne obcych cywilizacji.
         .filter(r => r.status === 'polaczony' && (r.ownerId === 0 || r.toOwnerId === 0))
-        // R2-2: jeden wiersz na KAŻDĄ stronę trasy należącą do gracza — dla trasy
-        // zewnętrznej dokładnie jeden (jak dotąd), dla WEWNĘTRZNEJ dwa (patrz DECYZJA
-        // w docstringu wyżej).
-        .flatMap(r => {
+        // R2-2 (DECYZJA po zarzucie 3 Evaluatora, runda 2): DOKŁADNIE JEDEN wiersz na
+        // JEDNĄ trasę — także dla trasy WEWNĘTRZNEJ gracza (oba miasta jego).
+        //
+        // Runda 2 (pierwsze podejście) dawała trasie wewnętrznej DWA wiersze — po jednym
+        // z perspektywy każdego z dwóch miast gracza — żeby zakładka „Miasto" (która
+        // grupuje `trade.routes` po `cityId`) pokazała ją przy OBU miastach. Evaluator
+        // wykazał żywo, że to rozjeżdża dwie liczby, które gracz widzi JEDNOCZEŚNIE:
+        // panel imperium liczy szlaki jako `t.routes.length` (empireDetailPanel.ts), więc
+        // przy 3 trasach gracza (w tym 1 wewnętrznej) chip HUD mówił „3 szlaki", a panel
+        // „4 szlaki". To dokładnie klasa rozjazdu, przed którą broni CUDA-HANDEL-01 —
+        // tylko przeniesiona z dochodu na LICZBĘ, więc rozstrzygnięta tak samo: jedno
+        // źródło prawdy. Wiersz = trasa, w chipie i w panelu.
+        //
+        // Kosztem jest to, że w zakładce „Miasto" trasa wewnętrzna wisi przy mieście
+        // `fromCityId`, nie przy obu — ale to ta SAMA, istniejąca od zawsze semantyka co
+        // dla trasy zewnętrznej (tam też wisi tylko przy mieście gracza, nigdy przy
+        // obcym), a zakładka „Handel" i tak pokazuje w wierszu OBIE nazwy miast
+        // (`cityName` ↔ `partnerCityName`), więc żadna informacja nie znika.
+        .map(r => {
           const bothPlayer = r.ownerId === 0 && r.toOwnerId === 0;
-          const sides: Array<{ rowId: string; myCityId: string; partnerCityId: string; partnerOwnerId: number }> = [];
-          if (r.ownerId === 0) {
-            sides.push({ rowId: r.id, myCityId: r.fromCityId, partnerCityId: r.toCityId, partnerOwnerId: r.toOwnerId });
-          }
-          if (r.toOwnerId === 0) {
-            sides.push({
-              rowId: bothPlayer ? r.id + '@' + r.toCityId : r.id,
-              myCityId: r.toCityId, partnerCityId: r.fromCityId, partnerOwnerId: r.ownerId,
-            });
-          }
-          return sides.map(side => {
+          // Strona gracza: dla trasy zewnętrznej ta, której ownerId===0 (po
+          // generalizacji GOAL 4-5 gracz bywa stroną `to`, nie tylko `from`); dla
+          // wewnętrznej kanonicznie `from`.
+          const side = r.ownerId === 0
+            ? { rowId: r.id, myCityId: r.fromCityId, partnerCityId: r.toCityId, partnerOwnerId: r.toOwnerId }
+            : { rowId: r.id, myCityId: r.toCityId, partnerCityId: r.fromCityId, partnerOwnerId: r.ownerId };
+          {
           const myCity = cities.find(c => c.id === side.myCityId);
           const partnerCity = cities.find(c => c.id === side.partnerCityId);
           // CUDA-HANDEL-01 (2026-07-26) + DYSPOZYCJA 85: dochód pokazany w panelu Handel
@@ -14792,7 +14818,14 @@ async function boot(): Promise<void> {
           // generalizacji `r.ownerId` bywa cywilizacją obcą (gracz jako strona `to`).
           const bonus = wonderTradeRouteBonusForOwner(0, r.medium);
           const base = tradeRouteTotalDistanceIncome(r.dystans, r.medium, incomeParams);
-          const income = bonus === 0 ? base : Math.floor(base * (1 + bonus));
+          const perSide = bonus === 0 ? base : Math.floor(base * (1 + bonus));
+          // R2-2 / R2-K5: silnik (`computeTradeRouteIncomeByCity`, Q8=B „obie strony
+          // zarabiają") kredytuje PEŁNĄ kwotę OBU miastom trasy. Dla trasy WEWNĘTRZNEJ
+          // oba te miasta są gracza, więc do skarbca wpływa 2× kwota strony — jeden
+          // wiersz musi więc pokazać 2×, inaczej suma panelu (`totalIncome`, hero i
+          // wiersz SUMA) rozjechałaby się ze skarbcem i z chipem HUD. Ta sama, jedna
+          // decyzja co przy `handelIncome` w chipie (patrz komentarz tam).
+          const income = bothPlayer ? perSide * 2 : perSide;
           // T6 (R-HANDEL-SZLAKI-PRZEBUDOWA-Q1): drugi składnik dochodu trasy — premia 5%
           // za budynek handlowy (T4, ECHO Q3 Wariant C). Liczona WYŁĄCZNIE przez
           // `tradeRouteBuildingBonusForRoute()` z trade-routes.ts, czyli tę SAMĄ funkcję,
@@ -14803,7 +14836,13 @@ async function boot(): Promise<void> {
           // CELOWO liczona od `base` (bez bonusu cudów), nie od `income` — dokładnie jak
           // silnik; gdyby liczyć od `income`, panel pokazywałby premię wyższą niż realnie
           // naliczona graczowi z cudami handlowymi.
-          const premiaBudynku = tradeRouteBuildingBonusForRoute(r, incomeParams);
+          // R2-2 (zarzut 3): 2× dla trasy WEWNĘTRZNEJ z DOKŁADNIE tego samego powodu co
+          // `income` wyżej — `computeTradeRouteBuildingBonusByCity()` (silnik, T4) też
+          // kredytuje bonus OBU miastom trasy, a przy trasie wewnętrznej oba są gracza.
+          // Bez tego wiersz SUMA („· 5%") w zakładce Handel pokazywałby połowę premii,
+          // która realnie wchodzi do Podatku miast gracza.
+          const premiaBudynkuPerSide = tradeRouteBuildingBonusForRoute(r, incomeParams);
+          const premiaBudynku = bothPlayer ? premiaBudynkuPerSide * 2 : premiaBudynkuPerSide;
           return {
             id: side.rowId,
             // P-PANEL-MIASTO-OBYWATELE-TRESC-NIEPELNA (Maciej 2026-08-16, ECHO A): id, nie
@@ -14824,7 +14863,7 @@ async function boot(): Promise<void> {
             budynekOdblokowany: r.budynekOdblokowany,
             premiaBudynku,
           };
-          });
+          }
         })
         .sort((a, b) => a.dystans - b.dystans || a.id.localeCompare(b.id));
       const totalIncome = routes.reduce((s, r) => s + r.income, 0);
@@ -14869,8 +14908,17 @@ async function boot(): Promise<void> {
         const partnerId = deal.strony[0] === 0 ? deal.strony[1] : deal.strony[0];
         if (seenDealPartners.has(partnerId)) continue;
         seenDealPartners.add(partnerId);
+        // R2-2 (zarzut 4 Evaluatora, runda 2): filtr SYMETRYCZNY. Do rundy 1 warunek
+        // `r.ownerId === 0 && r.toOwnerId === partnerId` był wystarczający, bo generator
+        // dopuszczał wyłącznie kierunek gracz->obcy. Po generalizacji (GOAL 4-5) kierunek
+        // kanoniczny wynika z ownerId (ownerA<ownerB), więc dla KAŻDEGO partnera trasa
+        // jest zapisana jako `partner -> gracz`, nie `gracz -> partner` — asymetryczny
+        // warunek zwracał `false` dla realnie istniejącej trasy i panel dokładał do niej
+        // fałszywy `blockReason` („brak połączenia") z `diagnoseMissingTradeRouteForPartner`.
         const hasActiveRoute = tradeRoutes.some(
-          r => r.status === 'polaczony' && r.ownerId === 0 && r.toOwnerId === partnerId,
+          r => r.status === 'polaczony'
+            && ((r.ownerId === 0 && r.toOwnerId === partnerId)
+              || (r.ownerId === partnerId && r.toOwnerId === 0)),
         );
         let blockReason: string | undefined;
         if (!hasActiveRoute) {
@@ -16646,6 +16694,14 @@ async function boot(): Promise<void> {
       //     dokładnie klasa błędu, przed którą broni CUDA-HANDEL-01 niżej. Formuła
       //     dochodu jest poza allowlistą tego tematu, więc chip raportuje stan
       //     faktyczny, nie postulowany.
+      //   * ROZSTRZYGNIĘCIE (zarzut 2 Evaluatora, runda 2): R2-K1 („chip pokazuje
+      //     DOKŁADNIE sumę dochodu gracza z jego własnych tras — zweryfikowane
+      //     liczbowo") i literalne czytanie R2-K5 jako reguły o KWOCIE wykluczają się
+      //     wzajemnie dla trasy wewnętrznej. R2-K5 mówi o trasie „liczonej" raz, więc
+      //     stosuje się do LICZNIKA — i licznik jej dotrzymuje. Kwota idzie za R2-K1,
+      //     czyli za skarbcem. Panel imperium (`buildEmpireTradeSnap`) trzyma DOKŁADNIE
+      //     tę samą parę reguł: jeden wiersz na trasę, kwota 2× — więc licznik i suma
+      //     zgadzają się w HUD, w panelu i w skarbcu jednocześnie.
       const handelIncomeParams = loadTradeRouteIncomeParams(
         data.econParams as unknown as Parameters<typeof loadTradeRouteIncomeParams>[0],
         _menuDifficulty,

@@ -43,7 +43,8 @@ const BUNDLE_FILE = path.resolve(__dirname, '.trade-routes-limit-bundle.cjs');
 fs.writeFileSync(ENTRY_FILE, `
 export {
   refreshTradeRoutes, tradeRouteExistenceLimitForCity, tradeRouteLimitForCity,
-  tradeRouteId, tradeRouteTotalDistanceIncome, DEFAULT_TRADE_ROUTE_INCOME_PARAMS,
+  tradeRouteId, tradeRoutePairKey, tradeRouteTotalDistanceIncome,
+  DEFAULT_TRADE_ROUTE_INCOME_PARAMS, computeTradeRouteIncomeByCity,
   TRADE_BUILDING_IDS,
 } from '../src/game/trade-routes';
 `, 'utf8');
@@ -432,6 +433,81 @@ console.log('\n-- Kryterium 9: wydajnosc -- pomiar ZYWO na ~120 miastach / 15 wl
   // budzet czasu, nie utknac w petli nieskonczonej/minutach) -- 5s jest rażąco
   // hojnym marginesem ponad oczekiwany wynik (patrz raport), nie prawdziwym limitem.
   assert(coldMs < 5000, `K9: (twarda gorna granica bezpieczenstwa, NIE cel wydajnosciowy) cold=${coldMs.toFixed(2)}ms < 5000ms`);
+}
+
+// ===========================================================================
+// ZARZUT 1 (Evaluator, runda 2) -- BLIZNIAK TRASY PO ZMIANIE WLASCICIELA MIASTA
+//
+// `tradeRouteId` niesie KIERUNEK (`from->to`) i medium. Po generalizacji (GOAL 4-5)
+// kierunek kanoniczny wynika z ownerId (zewnetrzne: ownerA<ownerB) albo z id miast
+// (wewnetrzne), wiec PODBOJ miasta odwraca kierunek: trasa przezywa jako
+// kontynuacja w STARYM kierunku, a generator dokladal jej BLIZNIAKA w NOWYM.
+// Ta sama para miast liczona 2x = podwojony dochod i podwojnie zuzyte
+// existence-sloty, czyli dokladnie inflacja handlu, przeciw ktorej powstal temat.
+// Poprawka: dedup po BEZKIERUNKOWEJ parze miast (`tradeRoutePairKey`) + twardy
+// inwariant w petli budujacej wynik.
+// ===========================================================================
+console.log('\n-- Zarzut 1: brak blizniaka trasy po zmianie wlasciciela miasta --');
+{
+  const map = buildFlatMap(60);
+  // Kazde miasto: Targowisko + Port wielki -> existence-limit 3, wiec sloty NIE sa
+  // wiazacym ograniczeniem i duplikat (gdyby powstal) bylby widoczny w wyniku.
+  const built = new Map([
+    ['z1-a1', ['targowisko', 'port_wielki']],
+    ['z1-a2', ['targowisko', 'port_wielki']],
+    ['z1-p1', ['targowisko', 'port_wielki']],
+  ]);
+  const pairsOf = rs => rs.map(r => TR.tradeRoutePairKey(r.fromCityId, r.toCityId));
+  const dupOf   = rs => { const ps = pairsOf(rs); return ps.filter((x, i) => ps.indexOf(x) !== i); };
+
+  // TURA 1: AI(1) ma a1,a2 (trasa WEWNETRZNA), gracz(0) ma p1 (dwie ZEWNETRZNE).
+  const before = [city('z1-a1', 1, 0), city('z1-a2', 1, 10), city('z1-p1', 0, 25)];
+  const t1 = TR.refreshTradeRoutes(before, [], map, built, NO_WAR, HAS_TREATY);
+  eq(t1.length, 3, 'Z1: (setup) tura 1 daje 3 trasy (a1<->a2 wewnetrzna AI + dwie zewnetrzne gracza)');
+  eq(dupOf(t1).length, 0, 'Z1: (setup) tura 1 bez duplikatow');
+
+  // TURA 2: gracz ZDOBYWA a2 -> ownerId 0. Kierunek kanoniczny obu tras dotykajacych
+  // a2 sie odwraca (a1<->a2 staje sie zewnetrzna 0<->1; p1<->a2 staje sie wewnetrzna).
+  const after = [city('z1-a1', 1, 0), city('z1-a2', 0, 10), city('z1-p1', 0, 25)];
+  const t2 = TR.refreshTradeRoutes(after, t1, map, built, NO_WAR, HAS_TREATY);
+  eq(dupOf(t2).length, 0, `Z1: po podboju ZADNA para miast nie ma dwoch tras (bylo: ${dupOf(t2).join(',')})`);
+  eq(t2.length, 3, 'Z1: po podboju nadal DOKLADNIE 3 trasy (a nie 4 z blizniakiem)');
+  eq(new Set(t2.map(r => r.id)).size, t2.length, 'Z1: id tras pozostaja unikalne');
+  // Trasy zachowuja swoje DOTYCHCZASOWE id -- zadnych fałszywych „zerwana/nowa"
+  // w dzienniku wydarzen tylko dlatego, ze miasto zmienilo wlasciciela.
+  assert(t1.every(r => t2.some(x => x.id === r.id)),
+    'Z1: kontynuacje zachowuja niezmienione id (brak fałszywych toastow „zerwany/nowy" po podboju)');
+  // DOCHOD: gracz ma po podboju p1 i a2. Kazda z 3 tras kredytuje pelna kwote OBU
+  // swoim miastom -- bez duplikatu p1 dostaje dokladnie 2 wklady (od a1 i od a2).
+  {
+    const inc = TR.computeTradeRouteIncomeByCity(t2);
+    const touchingP1 = t2.filter(r => r.fromCityId === 'z1-p1' || r.toCityId === 'z1-p1');
+    eq(touchingP1.length, 2, 'Z1: p1 ma DOKLADNIE 2 trasy po podboju (do a1 i do a2)');
+    const expected = touchingP1.reduce((sm, r) => sm + incomeOf(r.dystans, r.medium), 0);
+    eq(inc.get('z1-p1'), expected, 'Z1: dochod p1 == suma jego 2 tras (nie podwojony przez blizniaka)');
+  }
+  // Idempotencja: kolejna tura na TYM SAMYM stanie nie zmienia juz nic.
+  const t3 = TR.refreshTradeRoutes(after, t2, map, built, NO_WAR, HAS_TREATY);
+  eq(t3.length, t2.length, 'Z1: kolejna tura na stabilnym stanie nie dokłada tras');
+  eq(dupOf(t3).length, 0, 'Z1: kolejna tura nadal bez duplikatow');
+
+  // ZAPIS SPRZED POPRAWKI: `existingRoutes` juz NIESIE blizniaka (tak wygladal stan
+  // gry zapisany przed ta poprawka). Wczytanie takiego stanu MUSI go zredukowac,
+  // a nie utrwalac.
+  {
+    const twin = { ...t2[0], id: TR.tradeRouteId(t2[0].toCityId, t2[0].fromCityId, t2[0].medium),
+      fromCityId: t2[0].toCityId, toCityId: t2[0].fromCityId,
+      ownerId: t2[0].toOwnerId, toOwnerId: t2[0].ownerId };
+    const legacy = [...t2, twin];
+    eq(dupOf(legacy).length, 1, 'Z1: (setup) sztuczny „zapis sprzed poprawki" faktycznie zawiera blizniaka');
+    const healed = TR.refreshTradeRoutes(after, legacy, map, built, NO_WAR, HAS_TREATY);
+    eq(dupOf(healed).length, 0, 'Z1: wczytanie zapisu z blizniakiem LECZY stan (duplikat usuniety, nie utrwalony)');
+    eq(healed.length, 3, 'Z1: po wyleczeniu znow DOKLADNIE 3 trasy');
+  }
+
+  // Klucz pary jest BEZKIERUNKOWY -- kontrola samego narzedzia dedupu.
+  eq(TR.tradeRoutePairKey('x', 'y'), TR.tradeRoutePairKey('y', 'x'), 'Z1: tradeRoutePairKey jest bezkierunkowy');
+  assert(TR.tradeRoutePairKey('x', 'y') !== TR.tradeRoutePairKey('x', 'z'), 'Z1: tradeRoutePairKey rozroznia rozne pary');
 }
 
 console.log(`\ntrade-routes-limit-test: ${passed} passed, ${failed} failed`);

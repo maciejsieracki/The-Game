@@ -102,6 +102,11 @@ const SRC_CHIP    = extractBetween(MAIN_SRC, '      let handelIncome = 0;', '   
 const SRC_PANEL   = extractBetween(MAIN_SRC, '      const routes = tradeRoutes', '.sort((a, b) => a.dystans - b.dystans || a.id.localeCompare(b.id));');
 const SRC_OVERLAY = extractFunction(MAIN_SRC, 'refreshTradeRoutesOverlay');
 const SRC_REPORT  = extractFunction(MAIN_SRC, 'reportTradeRouteEvents');
+// ZARZUT 4 (Evaluator, runda 2): PIATY konsument `tradeRoutes` w main.ts --
+// `hasActiveRoute` w sekcji `activeDeals` funkcji buildEmpireTradeSnap. Wycinany
+// osobno (to kilka linii w srodku dlugiej petli, nie cala funkcja), bo decyduje o
+// tym, czy panel dokleja partnerowi `blockReason` („brak polaczenia").
+const SRC_HASROUTE = extractBetween(MAIN_SRC, '        const hasActiveRoute = tradeRoutes.some(', '\n        );');
 
 // ---------------------------------------------------------------------------
 // Fikstura swiata: gracz(0) + AI(1) + AI(2) + AI(3), kazdy po 2 miasta.
@@ -285,23 +290,36 @@ assert(panelRows.every(row => PLAYER_CITY_IDS.has(row.cityId)),
   eq(total, chip.handelIncome, 'R2-K2: suma dochodu w panelu identyczna z chipem HUD');
 }
 {
-  // DECYZJA R2-2: trasa wewnetrzna gracza -> DWA wiersze z ROZNYMI id, po jednym
-  // z perspektywy kazdego miasta gracza (odwzorowanie silnika, ktory kredytuje oba).
+  // DECYZJA R2-2 (OSTATECZNA, po zarzucie 3 Evaluatora rundy 2): trasa wewnetrzna
+  // gracza -> DOKLADNIE JEDEN wiersz (jak kazda inna trasa), z kwotami 2x. Powod:
+  // panel liczy szlaki jako `t.routes.length` (empireDetailPanel.ts), wiec dwa
+  // wiersze rozjezdzaly licznik panelu z licznikiem chipa HUD (4 vs 3).
   const r = INTERNAL_PLAYER_ROUTES[0];
-  const rows = panelRows.filter(row => String(row.id).split('@')[0] === r.id);
-  eq(rows.length, 2, 'R2-2 (decyzja): trasa WEWNETRZNA gracza daje DWA wiersze panelu, po jednym na miasto gracza');
-  eq(new Set(rows.map(x => x.id)).size, 2, 'R2-2: oba wiersze trasy wewnetrznej maja ROZNE id');
-  eq(new Set(rows.map(x => x.cityId)).size, 2, 'R2-2: oba wiersze wskazuja ROZNE miasta gracza (grupowanie per-miasto dziala dla obu)');
-  // Premia budynkowa tez jest kredytowana OBU miastom (computeTradeRouteBuildingBonusByCity).
-  const bonusByCity = TR.computeTradeRouteBuildingBonusByCity([r], incP);
-  let engineBonus = 0;
-  for (const id of PLAYER_CITY_IDS) engineBonus += bonusByCity.get(id) ?? 0;
-  const panelBonus = rows.reduce((s, x) => s + x.premiaBudynku, 0);
-  eq(panelBonus, engineBonus, 'R2-2: suma premii 5% z obu wierszy == premia kredytowana miastom gracza przez silnik');
-  // Trasy ZEWNETRZNE zachowuja NIEZMIENIONE id (bez sufiksu) -- zero regresji dla konsumentow id.
+  const rows = panelRows.filter(row => row.id === r.id);
+  eq(rows.length, 1, 'R2-2 (decyzja): trasa WEWNETRZNA gracza daje DOKLADNIE JEDEN wiersz panelu');
+  assert(!panelRows.some(row => String(row.id).includes('@')),
+    'R2-2: ZADEN wiersz panelu nie ma sufiksowanego id -- id wiersza == id trasy');
+  // ZARZUT 3: licznik szlakow panelu (`t.routes.length`) == licznik chipa HUD.
+  eq(panelRows.length, chip.handelRouteCount,
+    'ZARZUT 3: liczba wierszy panelu (=`t.routes.length`, licznik „szlaki") == handelRouteCount chipa HUD');
+  // Kwoty jednego wiersza trasy wewnetrznej MUSZA byc 2x -- silnik kredytuje OBA
+  // miasta gracza (computeTradeRouteIncomeByCity Q8=B / computeTradeRouteBuildingBonusByCity T4).
+  {
+    const incByCity = TR.computeTradeRouteIncomeByCity([r], incP, WONDER_BONUS);
+    let engineIncome = 0;
+    for (const id of PLAYER_CITY_IDS) engineIncome += incByCity.get(id) ?? 0;
+    eq(rows[0].income, engineIncome,
+      'R2-2: income JEDNEGO wiersza trasy wewnetrznej == suma kredytowana obu miastom gracza przez silnik (2x)');
+    const bonusByCity = TR.computeTradeRouteBuildingBonusByCity([r], incP);
+    let engineBonus = 0;
+    for (const id of PLAYER_CITY_IDS) engineBonus += bonusByCity.get(id) ?? 0;
+    eq(rows[0].premiaBudynku, engineBonus,
+      'R2-2: premiaBudynku JEDNEGO wiersza trasy wewnetrznej == premia kredytowana obu miastom gracza przez silnik (2x)');
+  }
+  // Trasy ZEWNETRZNE zachowuja NIEZMIENIONE id -- zero regresji dla konsumentow id.
   const extIds = PLAYER_ROUTES.filter(x => x.id !== r.id).map(x => x.id);
   assert(extIds.every(id => panelRows.some(row => row.id === id)),
-    'R2-2: trasy ZEWNETRZNE gracza zachowuja niezmienione id wiersza (bez sufiksu)');
+    'R2-2: trasy ZEWNETRZNE gracza zachowuja niezmienione id wiersza');
 }
 
 // ===========================================================================
@@ -412,6 +430,36 @@ console.log('\n-- R2-D: trasa z graczem po stronie `to` (odwrocony kierunek) --'
   runSnippet(SRC_REPORT, rc, 'reportTradeRouteEvents([], __ctx.__routes, __ctx.__cities, __ctx.__map, __ctx.__params, __ctx.__built, () => false, __ctx.__treaty, __ctx.__inc);');
   eq(rc.state.hints.length, 1, 'R2-D: dokladnie 1 komunikat o trasie z graczem po stronie `to`');
   eq([...rc.state.anchors.values()][0], src.fromCityId, 'R2-D: kotwica linku wskazuje MIASTO GRACZA, nie `fromCityId` trasy');
+}
+
+console.log('\n-- ZARZUT 4: `hasActiveRoute` (activeDeals) symetryczny wzgledem kierunku trasy --');
+{
+  // Realne zrodlo z main.ts uruchomione na trasie gracz<->partner w OBU kierunkach.
+  // Przed poprawka warunek brzmial `r.ownerId === 0 && r.toOwnerId === partnerId`,
+  // wiec dla zapisu `partner -> gracz` zwracal false przy REALNIE istniejacej trasie
+  // i panel doklejal fałszywy blockReason.
+  const run = (routes, partnerId) =>
+    runSnippet(SRC_HASROUTE, { tradeRoutes: routes, partnerId }, 'return hasActiveRoute;');
+  const fwd = { id: 'z4-f', status: 'polaczony', fromCityId: 'p1', toCityId: 'a1', ownerId: 0, toOwnerId: 1, medium: 'lad', dystans: 5, budynekOdblokowany: false };
+  const rev = { id: 'z4-r', status: 'polaczony', fromCityId: 'a1', toCityId: 'p1', ownerId: 1, toOwnerId: 0, medium: 'lad', dystans: 5, budynekOdblokowany: false };
+  eq(run([fwd], 1), true,  'ZARZUT 4: trasa zapisana jako gracz->partner wykryta (zachowanie dotychczasowe, bez regresji)');
+  eq(run([rev], 1), true,  'ZARZUT 4: trasa zapisana jako partner->gracz TAKZE wykryta (filtr symetryczny)');
+  eq(run([fwd], 2), false, 'ZARZUT 4: trasa z INNYM partnerem nie jest zaliczana partnerowi 2');
+  eq(run([rev], 2), false, 'ZARZUT 4: jw. dla kierunku odwroconego');
+  // Trasa WEWNETRZNA gracza (obie strony ownerId 0) nie moze uchodzic za trase
+  // z jakimkolwiek partnerem dyplomatycznym.
+  const wew = { ...fwd, id: 'z4-w', toCityId: 'p2', toOwnerId: 0 };
+  eq(run([wew], 1), false, 'ZARZUT 4: trasa WEWNETRZNA gracza nie jest liczona jako trasa z partnerem');
+  // Trasa CUDZA (AI<->AI) rowniez nie.
+  const cudza = { ...fwd, id: 'z4-c', fromCityId: 'a1', toCityId: 'b1', ownerId: 1, toOwnerId: 2 };
+  eq(run([cudza], 1), false, 'ZARZUT 4: trasa AI<->AI nie jest liczona jako trasa gracza z partnerem');
+  eq(run([], 1), false, 'ZARZUT 4: brak tras -> brak aktywnej trasy (blockReason nadal moze byc wyliczony)');
+  // Mutant: przywrocony asymetryczny warunek MUSI oblac przypadek odwrocony.
+  const mutant = SRC_HASROUTE
+    .replace(/&& \(\([\s\S]*?\)\),/, "&& r.ownerId === 0 && r.toOwnerId === partnerId,");
+  assert(mutant !== SRC_HASROUTE, 'ZARZUT 4: (setup) mutant asymetryczny faktycznie zbudowany');
+  const mutRev = runSnippet(mutant, { tradeRoutes: [rev], partnerId: 1 }, 'return hasActiveRoute;');
+  eq(mutRev, false, 'ZARZUT 4 [MUTANT]: asymetryczny warunek gubi trase partner->gracz (dowod nietautologicznosci)');
 }
 
 // ===========================================================================

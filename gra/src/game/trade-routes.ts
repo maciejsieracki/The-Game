@@ -794,6 +794,32 @@ export function tradeRouteId(fromCityId: string, toCityId: string, medium: Trade
 }
 
 /**
+ * R-HANDEL-LIMIT-TRAS-PELNY-Q1, runda 2 (zarzut 1 Evaluatora): BEZKIERUNKOWY,
+ * BEZ-MEDIALNY klucz PARY MIAST — jedyna poprawna tożsamość szlaku przy dedupie
+ * w `refreshTradeRoutes`.
+ *
+ * DLACZEGO NIE `tradeRouteId`: id niesie kierunek (`from->to`) i medium, więc dwa
+ * rekordy opisujące TĘ SAMĄ parę miast mają RÓŻNE id, gdy tylko zmieni się
+ * kierunek kanoniczny albo medium. Do rundy 1 było to nieszkodliwe, bo generator
+ * dopuszczał wyłącznie pary gracz->obcy i kierunek nie mógł się odwrócić bez
+ * zniknięcia trasy. Po generalizacji (GOAL 4-5) kierunek kanoniczny wynika z
+ * ownerId (zewnętrzne: ownerA<ownerB) lub z id miast (wewnętrzne) — więc ZMIANA
+ * WŁAŚCICIELA MIASTA (podbój) odwraca kierunek: trasa przeżywa jako kontynuacja w
+ * STARYM kierunku, a generator dokłada jej BLIŹNIAKA w NOWYM. Ta sama para miast
+ * liczona dwa razy = podwojony dochód i podwójnie zużyte existence-sloty, czyli
+ * dokładnie inflacja handlu, przeciw której powstał ten temat.
+ *
+ * Medium jest POZA kluczem celowo: `detectBestConnection` z definicji zwraca
+ * JEDNO, najlepsze połączenie na parę miast (ląd przed morzem), więc dwa szlaki
+ * między tymi samymi miastami różniące się wyłącznie medium to również duplikat —
+ * osiągalny, gdy trasa morska przetrwa jako kontynuacja, a nowo powstała wspólna
+ * granica lądowa odblokuje wariant lądowy tej samej pary.
+ */
+export function tradeRoutePairKey(cityIdA: string, cityIdB: string): string {
+  return cityIdA < cityIdB ? `${cityIdA}~${cityIdB}` : `${cityIdB}~${cityIdA}`;
+}
+
+/**
  * Buduje rekord TradeRoute na podstawie wyniku detekcji. Czysta funkcja — NIE
  * zapisuje niczego w stanie gry (brak listy tras, brak wpięcia w turn-economy).
  * Do użycia przez UI/ekonomię dopiero w E3+.
@@ -1349,7 +1375,18 @@ export function refreshTradeRoutes(
     if (!conn.connected) continue; // dla morza wciąż wymaga fizycznego Portu w obu miastach; dla lądu zewnętrznego dodatkowo wymaga wspólnej granicy
     stillValid.push({ from, to, medium: route.medium, distance: conn.distance, id: route.id, isExisting: true });
   }
-  const stillValidIds = new Set(stillValid.map(c => c.id));
+  // Runda 2 / zarzut 1: dedup po BEZKIERUNKOWEJ parze miast, nie po id (patrz
+  // `tradeRoutePairKey`). `stillValid` dedupujemy TAKŻE wobec siebie — zapis gry
+  // sporządzony przed tą poprawką może już nieść bliźniaka, a wczytanie takiego
+  // stanu nie może go utrwalać.
+  const stillValidPairs = new Set<string>();
+  const stillValidUnique: TradeRouteCandidate[] = [];
+  for (const cand of stillValid) {
+    const key = tradeRoutePairKey(cand.from.id, cand.to.id);
+    if (stillValidPairs.has(key)) continue; // zachowujemy PIERWSZE wystąpienie (kolejność `existingRoutes`)
+    stillValidPairs.add(key);
+    stillValidUnique.push(cand);
+  }
 
   // --- Kandydaci NOWI: (a) ZEWNĘTRZNI — każda unikalna para WŁAŚCICIELI (GOAL 4),
   //     (b) WEWNĘTRZNI — pary miast TEGO SAMEGO właściciela (GOAL 5). ---
@@ -1373,7 +1410,7 @@ export function refreshTradeRoutes(
           const best = detectBestConnection(a, b, map, params, builtByCity, territoryNodes, landBorderCache, false);
           if (!best) continue; // dla morza nadal wymaga Portu w obu miastach; dla lądu dodatkowo wymaga wspólnej granicy
           const id = tradeRouteId(a.id, b.id, best.medium);
-          if (stillValidIds.has(id)) continue; // już policzone jako kontynuacja
+          if (stillValidPairs.has(tradeRoutePairKey(a.id, b.id))) continue; // ta PARA MIAST już policzona jako kontynuacja (dedup bezkierunkowy, patrz `tradeRoutePairKey`)
           fresh.push({ from: a, to: b, medium: best.medium, distance: best.distance, id, isExisting: false });
         }
       }
@@ -1396,7 +1433,7 @@ export function refreshTradeRoutes(
         const best = detectBestConnection(a, b, map, params, builtByCity, undefined, landBorderCache, false);
         if (!best) continue;
         const id = tradeRouteId(a.id, b.id, best.medium);
-        if (stillValidIds.has(id)) continue;
+        if (stillValidPairs.has(tradeRoutePairKey(a.id, b.id))) continue; // jw. — dedup po PARZE MIAST, nie po kierunkowym id
         fresh.push({ from: a, to: b, medium: best.medium, distance: best.distance, id, isExisting: false });
       }
     }
@@ -1404,7 +1441,7 @@ export function refreshTradeRoutes(
 
   // --- Połączone sortowanie (GOAL 3, patrz DECYZJA w docstringu wyżej): dochód
   //     malejąco, tie-break stabilności (kontynuujący wygrywa remis), potem id. ---
-  const combined: TradeRouteCandidate[] = [...stillValid, ...fresh];
+  const combined: TradeRouteCandidate[] = [...stillValidUnique, ...fresh];
   combined.sort((x, y) => {
     const incomeX = incomeOf(x.distance, x.medium);
     const incomeY = incomeOf(y.distance, y.medium);
@@ -1419,8 +1456,17 @@ export function refreshTradeRoutes(
   //     (GOAL 2-3 — "bez zmian algorytmu bonusu, tylko mniej kandydatów na wejściu,
   //     ta sama kolejność"). ---
   const kept: TradeRoute[] = [];
+  // Runda 2 / zarzut 1: OSTATECZNY, autorytatywny inwariant wyniku — co najwyżej
+  // JEDEN szlak na parę miast, niezależnie od kierunku i medium. Filtry przy
+  // generacji kandydatów wyżej są optymalizacją (nie produkuj tego, co i tak
+  // odpadnie); TA pętla jest miejscem, które gwarantuje inwariant, więc żadna
+  // przyszła ścieżka kandydatów nie może go obejść po cichu.
+  const keptPairs = new Set<string>();
   for (const cand of combined) {
+    const pairKey = tradeRoutePairKey(cand.from.id, cand.to.id);
+    if (keptPairs.has(pairKey)) continue; // duplikat tej samej pary miast (odwrócony kierunek / inne medium)
     if (!hasExistenceRoom(cand.from.id) || !hasExistenceRoom(cand.to.id)) continue; // brak wolnego slotu istnienia -> trasa POMIJANA CAŁKOWICIE
+    keptPairs.add(pairKey);
     useExistenceSlot(cand.from.id);
     useExistenceSlot(cand.to.id);
     kept.push({
