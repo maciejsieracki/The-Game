@@ -53,7 +53,7 @@ Każdy heks ma **typ terenu** — decyduje o plonach bazowych i koszcie ruchu:
 | Teren | Typowa rola |
 |-------|-------------|
 | Łąka, równina | Żywność — farma, bydło |
-| Las | Tartak, wyrąb, obóz łowiecki |
+| Las | Tartak, wycinka, obóz łowiecki |
 | Wzgórze | Owce, kamieniołom |
 | Góry | Kopalnia, złoża metali (po epokach) |
 | Pustynia | Tarasy, warzelnia soli (przy złożu) |

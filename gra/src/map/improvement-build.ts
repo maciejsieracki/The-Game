@@ -468,7 +468,7 @@ export function isImprovementBlockedOnForest(key: string, nakladka: Nakladka): b
  */
 export function getImprovementForestBlockHint(key: string): string {
   const name = improvementDisplayName(key);
-  return `${name} na lesie zabroniona — najpierw wyrąb las (Wyrąb w panelu ulepszeń).`;
+  return `${name} na lesie zabroniona — najpierw wyrąb las (Wycinka w panelu ulepszeń).`;
 }
 
 /**

@@ -12109,7 +12109,7 @@ async function boot(): Promise<void> {
         spawnClearingMesh(req.hexKey);
         const costPart = startCost > 0 ? ' (koszt startu ' + startCost + ' Pracy)' : '';
         showHintMessage(
-          'Wyrąb' + costPart + ': +20 Pracy/turę przez 3 tury (łącznie 60) · klik ponownie = cofnij',
+          'Wycinka' + costPart + ': +20 Pracy/turę przez 3 tury (łącznie 60) · klik ponownie = cofnij',
           3500,
         );
         refreshBuildApi();
@@ -28214,7 +28214,7 @@ async function boot(): Promise<void> {
               );
               creditOwnerResourceStock(cities, ownerId, 'drewno', drewnoCredit, drewnoCap);
               showHintMessage(
-                'Wyrąb: +' + drewnoCredit + ' Drewna (pozostało ' + st.turnsLeft + ' tury)',
+                'Wycinka: +' + drewnoCredit + ' Drewna (pozostało ' + st.turnsLeft + ' tury)',
                 2000,
               );
             }
@@ -31637,7 +31637,7 @@ async function boot(): Promise<void> {
                     hideDecorAtHex(hexKey);
                     syncResourceOverlayAtHex(hexKey);
                     console.log(
-                      `[AI ${ownerId}] Wyrąb @ (${cmd.q},${cmd.r}) (-${koszt} Pracy, +${drewnoCredited} Drewna)`,
+                      `[AI ${ownerId}] Wycinka @ (${cmd.q},${cmd.r}) (-${koszt} Pracy, +${drewnoCredited} Drewna)`,
                     );
                     continue;
                   }

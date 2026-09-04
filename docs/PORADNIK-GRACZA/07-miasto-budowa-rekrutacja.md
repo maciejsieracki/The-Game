@@ -75,7 +75,7 @@ Profile **Podatki** i **Zrównoważone** kierują heksy na wyższy dochód złot
 
 ### 43.4. Typ terenu
 
-Łąka i równina — żywność; las — tartak lub wyrąb; wzgórze — owce, kamieniołom; wybrzeże — port i łodzie. Tabela terenu — apendyks B.7 spisu treści.
+Łąka i równina — żywność; las — tartak lub wycinka; wzgórze — owce, kamieniołom; wybrzeże — port i łodzie. Tabela terenu — apendyks B.7 spisu treści.
 
 ### 43.5. Cuda
 

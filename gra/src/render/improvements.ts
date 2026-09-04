@@ -36,7 +36,7 @@ export const IMPROVEMENTS: { key: ImprovementKey; label: string; epoka: number }
   { key: 'kopalnia_cyny', label: 'Kopalnia cyny', epoka: 2 },
   { key: 'kamieniolom', label: 'Kamieniołom', epoka: 1 },
   { key: 'kopalnia_zlota', label: 'Kopalnia złota', epoka: 2 },
-  { key: 'oboz_lowiecki', label: 'Obóz łowiecki', epoka: 1 }, { key: 'wyrab', label: 'Wyrąb', epoka: 1 },
+  { key: 'oboz_lowiecki', label: 'Obóz łowiecki', epoka: 1 }, { key: 'wyrab', label: 'Wycinka', epoka: 1 },
   { key: 'tartak', label: 'Tartak', epoka: 1 },
   { key: 'lodzie_rybackie', label: 'Łodzie rybackie', epoka: 1 }, { key: 'droga', label: 'Droga', epoka: 1 },
   { key: 'droga_brukowana', label: 'Droga brukowana', epoka: 3 },

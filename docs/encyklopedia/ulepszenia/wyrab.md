@@ -1,11 +1,11 @@
-# Wyrąb
+# Wycinka
 
 ## Metadane
 
 | Pole | Wartość |
 |------|---------|
 | **id** | `wyrab` |
-| **tytuł** | Wyrąb |
+| **tytuł** | Wycinka |
 | **kategoria** | Mapa i teren |
 | **poradnik_ref** | `docs/PORADNIK-GRACZA/28-katalog-ulepszen.md` |
 | **json_ref** | `terrain-improvements.json` |
@@ -15,14 +15,14 @@
 
 ## Wiki‑S
 
-**Wyrąb** (Kamień): koszt **?** pracy, bonus na heksie. 
+**Wycinka** (Kamień): koszt **?** pracy, bonus na heksie. 
 
 ---
 
 ## Wiki‑M
 
 ### Co robi
-Ulepszenie **Wyrąb** na polu w **twoim terytorium**. Teren: Las.
+Ulepszenie **Wycinka** na polu w **twoim terytorium**. Teren: Las.
 **Warunek:** darmowa wycinka; +20 Pracy/turę × 3 tury (=60); potem teren bazowy bez lasu
 ### Strategia
 - Buduj z trybu **Budowa** (lewy panel mapy) — koszt w **pracy** ze skarbca imperium.
@@ -40,7 +40,7 @@ Ulepszenie **Wyrąb** na polu w **twoim terytorium**. Teren: Las.
 
 **Zwrot pracy (uproszczenie):** czysty zysk **+2**/t vs bez ulepszenia → **10 tur** na „odrobienie" 20 pracy (ignorując bazę pola).
 
-**Przykład:** łąka daje 1 żywność/t; **Wyrąb** +2 → **3 żywności/t** z tego heksu dla miasta właściciela.
+**Przykład:** łąka daje 1 żywność/t; **Wycinka** +2 → **3 żywności/t** z tego heksu dla miasta właściciela.
 
 ---
 

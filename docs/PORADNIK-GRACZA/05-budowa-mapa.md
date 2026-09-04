@@ -85,7 +85,7 @@ Skrót kategorii (szczegóły w katalogu):
 | **Produkcja** | Tartak, Kamieniołom, Kopalnia, Glinianka |
 | **Hodowla** | Bydło, Owce, Lama (Inkowie) |
 | **Infrastruktura** | Droga, Posterunek, Fort, Łodzie rybackie |
-| **Specjalne** | Warzelnia soli, Wyrąb (wycinka lasu — często tania) |
+| **Specjalne** | Warzelnia soli, Wycinka (wycinka lasu — często tania) |
 
 **Posterunek** rozszerza terytorium o ok. **5 heksów**; **Fort** — o ok. **10** (Część II §9.1). **Droga** obniża koszt ruchu wojska (§31.2).
 
@@ -163,7 +163,7 @@ Pełna tabela warunków — apendyks B.7 spisu treści i kolumna **Warunek** w [
 
 ### 30.2. Wielowarstwowość heksów
 
-**Kanon** dokumentacji: docelowo kilka ulepszeń na jednym heksie (np. farma + irygacja). W **v1.0** sprawdź w grze, co faktycznie działa — pełna wielowarstwowość to 🔮 v2.0 (apendyks E.2). Jeśli gra pozwala tylko **jedno** ulepszenie na heks, priorytet: najpierw wyrąb → farma → irygacja na tym samym polu w kolejnych turach.
+**Kanon** dokumentacji: docelowo kilka ulepszeń na jednym heksie (np. farma + irygacja). W **v1.0** sprawdź w grze, co faktycznie działa — pełna wielowarstwowość to 🔮 v2.0 (apendyks E.2). Jeśli gra pozwala tylko **jedno** ulepszenie na heks, priorytet: najpierw wycinka → farma → irygacja na tym samym polu w kolejnych turach.
 
 
 ### Przykład liczbowy
@@ -224,7 +224,7 @@ Czytaj **rozpiskę plusów i minusów** w panelu — naprawiaj największy minus
 
 1. **Okolica** stolicy → profil **Żywność** lub ręcznie 2–3 farmy na łąkach.  
 2. **Badanie** Rolnictwo / Obróbka drewna — odblokuj farę i tartak.  
-3. Tartak na lesie w promieniu miasta; wyrąb tylko gdy potrzebujesz pola pod farmę.  
+3. Tartak na lesie w promieniu miasta; wycinka tylko gdy potrzebujesz pola pod farmę.  
 4. Przed ekspansją: **Posterunek** na kierunku wroga lub złoża.  
 5. Po wejściu w **Brąz**: glinianka / kopalnia na górze — patrz E3 i katalog §28.
 
