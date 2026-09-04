@@ -301,8 +301,12 @@ async function main() {
       { scrollHeight: after.scrollHeight, clientHeight: after.clientHeight });
     check(`[${h}px] po przewinięciu do dołu ostatnia sekcja w pełni widoczna w oknie dialogu`,
       after.lastSectionFullyVisible === true, after);
+    // Tolerancja 3px (nie 1px): getBoundingClientRect() na content-box .entity-card
+    // liczy border 1px z każdej strony (border:1px solid, brak box-sizing:border-box) —
+    // 660px width + 2px border = 662px zmierzone, potwierdzone niezależnie przez
+    // Evaluatora R-CIVPEDIA-KARTY-SPOJNOSC-Q1-A na tej samej klasie .entity-card.
     check(`[${h}px] karta ma szerokość referencyjną min(660px, 100vw-32px)`,
-      Math.abs(before.cardWidth - Math.min(660, 1280 - 32)) <= 1, before.cardWidth);
+      Math.abs(before.cardWidth - Math.min(660, 1280 - 32)) <= 3, before.cardWidth);
     check(`[${h}px] zamknięcie przez Esc działa`, closeResults.esc === true, closeResults);
     check(`[${h}px] zamknięcie przez przycisk ✕ działa`, closeResults.button === true, closeResults);
     check(`[${h}px] zamknięcie klikiem w backdrop działa`, closeResults['backdrop-click'] === true, closeResults);
