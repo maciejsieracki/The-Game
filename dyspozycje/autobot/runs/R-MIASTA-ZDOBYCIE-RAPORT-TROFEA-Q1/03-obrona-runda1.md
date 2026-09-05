@@ -24,12 +24,12 @@ wycofać bramkę (jej sens — konkretne kwoty zamiast ogólników — niosą as
 9-0c nowej bramki).
 
 **Zarzut 2 (raport ofiary pokazuje stratę jako zieloną zdobycz) → PRZYJMUJĘ, poprawione.**
-Zarzut był trafny: `main.ts:8164` brał `args.rows` (perspektywa zdobywcy, `+`/`gain`) także dla
+Zarzut był trafny: `main.ts` (przed poprawką linia 8164) brał `args.rows` (perspektywa zdobywcy, `+`/`gain`) także dla
 `oldOwner === 0`. Poprawka: nowa czysta funkcja `mirrorCaptureReportRowsForVictim`
 (`main.ts:1468-1472`, w BLOKU CZYSTYM) odwraca WYŁĄCZNIE prezentację — `gain`/`+N` → `loss`/`−N`;
 pozycje już stratne i informacyjne bez zmian. `recordCityCaptureEvent` liczy `viewRows`
-(`main.ts:8181-8183`) i podaje je i karcie, i mapie szczegółów; nagłówek listy to
-`'Bilans zdobycia' | 'Bilans straty'` (`main.ts:8206`), przepuszczony do
+(`main.ts:8198-8200`) i podaje je i karcie, i mapie szczegółów; nagłówek listy to
+`'Bilans zdobycia' | 'Bilans straty'` (`main.ts:8221`), przepuszczony do
 `reportRowsHtml(opts.rows, opts.rowsTitle)` (`cityCaptureNotice.ts`).
 Dowód z żywego Chromium (`dowody/05-modal-strata-ofiara.png`): „MIASTO UTRACONE / Gniezno /
 Przejęte przez Rzym / BILANS STRATY / Ludność −4 / Budynki −3 / Złoto ze skarbca −1234",
@@ -39,7 +39,7 @@ odwracany jest opis, nie liczby (asercja 11h: etykiety i kolejność identyczne)
 
 **Zarzut 3 (drugie przejęcie w tej samej turze ginie) → PRZYJMUJĘ, poprawione.**
 Klucz dedupu niesie teraz PARĘ WŁAŚCICIELI: `capture-<turn>-<cityId>-<oldOwner>-<newOwner>`
-(`main.ts:8168-8169`). Trzy lejki jednego przejęcia podają identyczną parę (sprawdzone:
+(`main.ts:8189-8190`). Trzy lejki jednego przejęcia podają identyczną parę (sprawdzone:
 `applyCityCaptureToMap` woła `runCapitalCapturePlunder(city, oldOwner, atkOwner)` i rejestrator
 z `newOwner: atkOwner`; `resolveSiegeSurrender` — ta sama para w obu wywołaniach), więc no-op
 „pierwszy wygrywa" działa jak dotąd; odbicie w tej samej turze ma parę odwrotną i dostaje własny
