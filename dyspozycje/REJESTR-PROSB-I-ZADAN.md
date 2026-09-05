@@ -5049,3 +5049,83 @@ wyszłoby `(391+158)×4 = 2196 > 2048`, czyli ponad gwarantowany WebGL2 `MAX_TEX
 udokumentowany „zapas na przyszłość" prowadziłby wprost w ścianę. **Wartość 305 zostaje
 (1852 < 2048), więc to defekt dokumentacji, nie runtime.** Komentarz przeczy przy tym asercji
 G5 z tego samego commita, która używa poprawnego `SLOTY_POZA_NAZWA_PX = 158`.
+
+## R-ZARZADCA-AUTOMATYCZNY-STAN-PRZYCISKU-Q1 — nowe zgłoszenie (2026-09-05, znalezisko Evaluatora węzła B)
+
+
+**Zgłoszenie źródłowe (właściciel, ta sama wiadomość co temat wyżywienia):** „Inne przyciski:
+po prostu ten przycisk się świeci, gdy jest aktywny, a gdy jest odznaczony, jest nieaktywny."
+
+**Defekt.** Przycisk `cs-manager` „Zarządca automatyczny" w NAGŁÓWKU panelu miasta
+(`gra/src/ui/cityPanel.ts:9871`) jest **trwałym przełącznikiem stanu**, nie akcją: stan czyta
+`cfg.isAutoManageEnabled?.(city.id)` (`cityPanel.ts:11493-11501`), źródło
+`main.ts:6598 autoManageCities`. Ma dokładnie tę samą wadę, którą naprawia
+`R-AUTOWYZYWIENIE-STAN-PRZYCISKU-Q1-B`: **WŁ dostaje `.active`, WYŁ wraca do gołego `.hbtn`** —
+czyli wygląda identycznie jak zwykły, w pełni klikalny przycisk. Brakuje drugiej strony pary.
+
+**Dlaczego pilne.** Po wdrożeniu tematu wyżywienia właściciel zobaczy w tym samym panelu dwie
+różne konwencje obok siebie: poprawną w treści zakładki i wadliwą w nagłówku.
+
+**Dlaczego NIE naprawiono w temacie wyżywienia.** C-025 — zakres = tylko zgłoszony błąd; GOAL
+dispatchu mówi wprost o „przełączniku wyżywienia". `cs-manager` nie ma z wyżywieniem nic
+wspólnego, więc naprawa tutaj byłaby „przy okazji".
+
+**Szacowany koszt.** Bardzo mały. Reguła CSS `.civ-cs .hbtn.off` (+`:hover`) **już istnieje**
+w arkuszu po tym temacie — wystarczy w gałęzi `else` (`cityPanel.ts:11498-11500`) dodać
+`manager.classList.add('off')` / `data-stan`, symetrycznie do `classList.remove('active')`,
+plus asercja różnicy stanów w bramce (wzór gotowy: bloki (C2)/(D)/(E) w
+`gra/tools/autowyzywienie-stan-przycisku-test.cjs`).
+
+**Sąsiedni przycisk SPRAWDZONY, poza zakresem.** `cs-artview` („Widok artystyczny",
+`cityPanel.ts:9872`, wpięcie `cityPanel.ts:11504`) woła tylko `cfg.onArtView?.(city.id)` — nie
+czyta żadnego stanu, więc jest jednorazową akcją i tej wady NIE ma.
+
+**Przeniesione przez orkiestratora z `NOTA-N3-REJESTR-CS-MANAGER.md`.** Obrona węzła B
+**słusznie odmówiła wpisania tego sama** — `REJESTR-PROSB-I-ZADAN.md` jest poza jej
+allowlistą, a §14 wymaga wpisu; przygotowała więc gotowy blok do przeniesienia zamiast
+poszerzać allowlistę w biegu. To jest wzorcowe zachowanie i warto je odnotować.
+**STATUS: ZAREJESTROWANE, NIE DISPATCHOWANE.**
+
+## R-AUTOWYZYWIENIE-LIMIT-WPIECIE-POPCAP-Q1 — temat następczy (2026-09-05, zarzut 2 węzła A)
+
+**Własność (B) autowyżywienia jest zaimplementowana i pokryta bramką, ale w grze MARTWA.**
+`grep -rn popCapByCityId gra/src` trafia **wyłącznie w `empire-food.ts`** — żaden realny
+caller nie podaje mapy limitów ludności, więc `atPopCap` jest zawsze puste.
+
+To jest realna luka wobec ECHO właściciela (wariant (a): „miasto na limicie ma zerowy przyrost
+i nie konsumuje racji ponad potrzebę"). **Nie jest winą wykonawcy węzła A** — wpięcie wymaga
+`gra/src/main.ts` (`:28128`, `:28152`, `:28179`, `:16256`, `:16285`), zakazanego w tamtym
+dispatchu i dodatkowo zajętego przez `P-AI-NIE-STAWIA-BUDYNKOW-Q1` (§2b).
+
+**Bezpieczeństwo integracji węzła A mimo tej luki:** parametr `popCapByCityId` jest
+**opcjonalny**, a brak mapy daje zachowanie **wsteczne** — więc integracja niczego nie psuje,
+a jedynie zostawia własność (B) nieaktywną do czasu wpięcia.
+
+**Zakres:** przekazać mapę limitów ludności z `main.ts` do `resolveEqualGrowthRationPlan`
+plus bramka mierząca, że w PRAWDZIWEJ pętli ekonomii (nie w harnessie) miasto na limicie
+ma zerowy przyrost i oddaje porcję do puli. **Dispatchować po zwolnieniu `main.ts`.**
+**STATUS: ZAREJESTROWANE, NIE DISPATCHOWANE.**
+
+## R-SPICHLERZ-STAN-I-PRZELACZNIK-Q1 — nowe zgłoszenie (2026-09-05, ECHO właściciela „2+3")
+
+**Właściciel ŚWIADOMIE COFA swoją wcześniejszą decyzję.** W temacie
+`P-SPICHLERZ-AUTO-ZYWIENIE-PRZYCISK-TEKST-Q1` rozstrzygnął, że przycisk w panelu Spichlerza
+ma być **jednorazową akcją** „ustaw teraz", nie przełącznikiem stanu — i tak jest w kodzie
+(`gra/src/ui/empireDetailPanel.ts:176-179`). Po tym, jak sam nie potrafił odczytać, czy
+autowyżywienie działa („chyba to autowyżywienie nie było włączone, ale ciężko mi się
+odnieść"), zmienił zdanie.
+
+**ECHO (AskUserQuestion): „2+3" — OBA warianty naraz:**
+1. **wskaźnik stanu** w panelu Spichlerza — ile miast jest w trybie auto, ile w indywidualnym;
+2. **prawdziwy przełącznik** całej cywilizacji zamiast akcji jednorazowej.
+
+**Dlaczego nie dało się tego zrobić w węźle B:** `EmpireFoodCityUiRow`
+(`empireDetailTypes.ts:531-539`) **nie niesie pola `autoWyzywienie`**, a jedynym producentem
+snapshotu jest `buildEmpireFoodSnap()` (`main.ts:14401`) — plik zakazany w tamtym dispatchu.
+Dlatego kryterium 4 węzła B zostało **uchylone przeze mnie jako błędnie postawione**:
+żądałem zrzutów dwóch stanów Spichlerza, które wtedy nie istniały.
+
+**Zakres:** rozszerzyć `EmpireFoodCityUiRow` i `buildEmpireFoodSnap` o tryb wyżywienia,
+dodać wskaźnik zbiorczy, przerobić przycisk na przełącznik ze stanem czytelnym w konwencji
+`.active`/`.off` ustalonej w węźle B. **Kolizja: `main.ts` + `empireDetailPanel.ts`** —
+dispatchować po zwolnieniu obu. **STATUS: ZAREJESTROWANE, NIE DISPATCHOWANE.**
