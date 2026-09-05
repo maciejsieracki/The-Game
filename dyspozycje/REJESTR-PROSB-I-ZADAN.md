@@ -5016,3 +5016,36 @@ bramek), czy raczej **limit należy podnieść albo przenieść na poszczególne
 Dzisiejszy stan — limit, którego nikt nie dotrzymuje i który za każdym razem obniża status
 do `PASS-WITH-NOTES` — jest gorszy od obu rozwiązań, bo zaszumia sygnał `-WITH-NOTES`,
 który powinien znaczyć coś merytorycznego. **STATUS: ZAREJESTROWANE, NIE DISPATCHOWANE.**
+
+### `R-MAPA-ETYKIETA-STOLICY-NAZWA-MIASTA-Q1` — runda 4, dwa sprostowania liczb (2026-09-05)
+
+**Operator zakwestionował kotwicę z MOJEJ ratyfikacji — i miał rację.** Ratyfikacja rundy 4
+podawała bazę „≈305" wyprowadzoną z szerokości zapisu `−100,0%` = 51,7 px. **Formatter tego
+zapisu nigdy nie produkuje**: `formatCityGrowthPercentLabel` dla −100 zwraca `−100%` (41 px).
+Najszerszy realny zapis to `−99,9%` = 45 px, więc minimum arytmetyczne wynosi **298 px,
+nie 304,6**. Operator **zostawił 305, ale z własnego pomiaru, nie z mojego dispatchu**,
+i uzasadnił to marginesem: przy 298 zapas nad `uMgungundlovu` to 0,1 px i znika przy pierwszym
+zapisie szerszym niż `−99,9%`; przy 305 zapas wynosi 7,1 px. **Dokładnie tak miał postąpić** —
+dispatch wymagał dobrania wartości pomiarem i zgłoszenia rozbieżności zamiast dopasowania
+pomiaru do liczby ode mnie.
+
+**Wynik R4-1 zmierzony w trzech konfiguracjach:** obca stolica bez glifu 0/15, z glifem 0/15,
+**stolica gracza z WZROST% 1/15 → 0/15**. Niezależny odczyt z prawdziwego
+`makeCityMapBadgeSprite`: **0/45**. Cała pula nazw: 25/1500 → 8/1500. **Kolizje
+plakietka↔plakietka: 0/45** (odstęp 5 heksów = 8,66 j. wobec najszerszej plakietki 4,62 j.) —
+czyli kryterium, którym zastąpiłem swój błędny warunek, wypada czysto.
+
+**Zrzut z żywego Chromium w układzie gęstym** pokazuje stolicę GRACZA `UMGUNGUNDLOVU`
+z trzema slotami bez wielokropka, sześć miast-państw wokół, trzy w minimalnej odległości.
+Operator założył partię **prawdziwym kreatorem nowej gry**, bo hak `startNewGame` ma na stałe
+`civId: 'rzymianie'` — czyli nie poszedł na skróty, które dałyby zrzut niereprezentatywny.
+
+**ZARZUT EVALUATORA (1, w toku obrony) — margines tekstury zawyżony o 148 px.** Komentarz
+w `cityMapStatChip.ts:124-125,150-158` podaje „najszersza plakietka 426 px CSS → margines
+344 px, sufit bazy 391". Zmierzone: 426 px powstaje przy `defenseTier: 0` i **nieprzyciętej**
+nazwie; najszersza plakietka osiągalna na realnych danych to **463 px = BASE+158** → tekstura
+1852 px, margines **196 px**, sufit bazy **354**. Znaczenie praktyczne: przy bazie 391
+wyszłoby `(391+158)×4 = 2196 > 2048`, czyli ponad gwarantowany WebGL2 `MAX_TEXTURE_SIZE` —
+udokumentowany „zapas na przyszłość" prowadziłby wprost w ścianę. **Wartość 305 zostaje
+(1852 < 2048), więc to defekt dokumentacji, nie runtime.** Komentarz przeczy przy tym asercji
+G5 z tego samego commita, która używa poprawnego `SLOTY_POZA_NAZWA_PX = 158`.
