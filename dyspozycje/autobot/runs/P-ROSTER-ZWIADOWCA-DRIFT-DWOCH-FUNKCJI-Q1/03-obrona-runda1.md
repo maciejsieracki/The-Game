@@ -47,7 +47,8 @@ dokładnie na moim warunku.
 
 ## OBSERWACJE
 
-- Limit słów: PRZYJMUJĘ (542 zamiast ~400).
+- Limit słów: PRZYJMUJĘ (542 zamiast ~400). Ten raport ma 578 słów — nadal ponad
+  limit, mimo destylacji; podaję liczbę zamiast ją przemilczeć.
 - E5 przechodzi `battle-roster-test` 7/7 także na HEAD: twardy limit 2 łapie wyłącznie
   przepisana asercja z `map-field-battle-test`; bramka rodziny pozostaje ślepa.
 - Erraty do raportu rundy 1 nie wprowadzam — korektą jest ten plik.
@@ -65,19 +66,19 @@ rc 0), z tym samym `gra/node_modules`.
 `battle-summary-test` OK · `auto-battle-power-test` 14/14 · `entity-card-contract-test`
 75/75 · `retreat-garnizon-fortyfikacja-test` 27/27 · `logic-test` 213/213 ·
 `tech-tree-test` 19/19 · `research-test` 33/33 · `unit-replace-test` 13/13 ·
-`combat-test` 6/6. Grep po `battleRoster`: te trzy bramki + `_tmp-battle-roster-test`
-(nie bramka). Uruchomione w kopii — patrz BLOKADY.
+`combat-test` 6/6. Grep po `battleRoster` nie dodał nic poza tymi bramkami
+i `_tmp-battle-roster-test` (nie bramka). Uruchomione w kopii — patrz BLOKADY.
 
 ## BLOKADY
 
 **Współdzielony worktree, potwierdzony.** Prompt wymagał HEAD `91877f11` i czystego
 drzewa; zastałem `1854bd26` plus obcą, niezacommitowaną modyfikację
 `gra/tools/map-field-battle-test.cjs`, zacommitowaną w trakcie mojej pracy jako
-`83482d5c` (Operator rundy 2). Nie zatrzymałem się na `BLOCK`, bo rozjazd tłumaczą
-legalne commity tego tematu (`4e44b0bd`, `7a19f591`, `1854bd26`, `83482d5c`),
-a `91877f11` to warunek promptu rundy 1, nie stan właściwy II fazie. Do `gra/**` nie
-pisałem i bramek w worktree nie uruchamiałem: piszą `gra/tools/.*-bundle.cjs` pod stałą
-nazwą, więc równoległy przebieg dałby fałszywy wynik obu procesom (klasa błędu z C-001).
+`83482d5c` (Operator rundy 2). Nie zatrzymałem się na `BLOCK`: rozjazd tłumaczą legalne
+commity tego tematu (`4e44b0bd`, `7a19f591`, `1854bd26`, `83482d5c`), a `91877f11` to
+warunek promptu rundy 1, nie stan właściwy II fazie. Bramek w worktree nie uruchamiałem —
+piszą `gra/tools/.*-bundle.cjs` pod stałą nazwą, więc równoległy przebieg dałby fałszywy
+wynik obu procesom (klasa błędu z C-001).
 
 ## DO DECYZJI CZŁOWIEKA
 
