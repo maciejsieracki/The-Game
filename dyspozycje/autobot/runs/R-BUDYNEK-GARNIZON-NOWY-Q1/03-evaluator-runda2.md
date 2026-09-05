@@ -6,7 +6,7 @@ TEMAT: R-BUDYNEK-GARNIZON-NOWY-Q1
 GOAL: Nowy budynek Garnizon — kompletny, na równi z każdym innym budynkiem w grze (bez wpinania do Prawa i bez obrony cywilnej).
 MODEL+EFFORT: Opus 5, effort high.
 ZMIANY/COMMIT: nic w `gra/` ani w `docs/` — Evaluator tylko weryfikuje. Oceniany zakres: `e1bc77b6..a3e4ea6e` (12 plików). Własny artefakt: ten raport.
-TESTY: własne uruchomienia (nie przepisane z raportu) — `tsc --noEmit` exit 0; `budynek-garnizon-test` **80/0**; `grupy-budynkow-test` **84/0**; pięć referencyjnych 213/213, 19/0, 33/0, 13/0, 6/0; `civpedia-budynki-historia-test` **138/3 (REGRES)**; sześć pozostałych bramek CivPedii zielonych; `koszty-surowcowe` 126/3 (bez zmiany), `building-happiness` 8/0, `prawo-siatka-v2` 55/0. Trzy WŁASNE mutacje E1–E3 (inne niż M1–M3 Operatora): 3/3 czerwienią bramkę, każda cofnięta kopią pliku, `git diff --quiet` czysto, md5 zgodne przed/po.
+TESTY: własne uruchomienia (nie przepisane z raportu) — `tsc --noEmit` exit 0; `budynek-garnizon-test` **80/0**; `grupy-budynkow-test` **84/0**; pięć referencyjnych 213/213, 19/0, 33/0, 13/0, 6/0; `civpedia-budynki-historia-test` **138/3 (REGRES)**; sześć pozostałych bramek CivPedii zielonych; `koszty-surowcowe` 126/3 (bez zmiany), `building-happiness` 8/0, `prawo-siatka-v2` 55/0; `ai-buduje-budynki` — faza FIX domknieta (pokrycie 5/5, roundtrip save/load OK), warianty mutacyjne przerwane swiadomie, pelnej liczby nie podaje. Trzy WŁASNE mutacje E1–E3 (inne niż M1–M3 Operatora): 3/3 czerwienią bramkę, każda cofnięta kopią pliku, `git diff --quiet` czysto, md5 zgodne przed/po.
 BLOKADY: 6 zarzutów niżej; z tego 2 wymagają decyzji orkiestratora (fix poza allowlistą tematu), 3 są brakami w śladzie (BLOKADY, `decision-abc.md`, rejestr), 1 jest przekroczeniem §11. Żaden nie jest naruszeniem granicy §9 ani FAIL-em `STRICT-PARITY`.
 RUNDY: 2/5
 NASTĘPNY KROK: Final Control (werdyktu nie wydaję — §16).
@@ -70,7 +70,7 @@ Zero `git add -A` / `git add .` — potwierdzone kształtem diffu (żadnego plik
 
 ## PUNKT KONTROLI 4 — trzy WŁASNE mutacje (inne niż M1–M3 Operatora)
 
-Każda przez edycję pliku, cofnięta **kopią ze scratchpada** (`EVAL-R2-*.bak`), nigdy `git checkout`.
+Każda przez edycję pliku, cofnięta **kopią ze scratchpada** (`GARNIZON-R2-EVAL-*.bak`, C-036), nigdy `git checkout`.
 Po każdej `git diff --quiet` na zmutowanym pliku → czysto; md5 wszystkich trzech plików po zakończeniu **identyczne z md5 sprzed mutacji**.
 
 | # | mutacja (celowo inne pole/plik niż u Operatora) | wynik bramki | co się zaczerwieniło |
@@ -223,10 +223,29 @@ Po każdej `git diff --quiet` na zmutowanym pliku → czysto; md5 wszystkich trz
 
 ## Wynik `ai-buduje-budynki` (pozycja D4 rozstrzygnięta pomiarem)
 
-**Przebieg w toku w chwili commitowania tego raportu** (uruchomiony, cztery buildy `vite` zakończone OK,
-własna asercja bramki `H0`/`H0b` zielona — katalogi buildu poza drzewem repo, żaden śledzony plik nie ruszony;
-trwa symulacja 45 tur × 4 warianty). Wynik dopisuję drugim commitem, gdy bramka skończy.
-**To jest jedyne pole tego raportu bez domkniętej liczby** — i celowo nie wpisuję tu żadnej wartości „prawdopodobnej" (C-058).
+**Wynik częściowy — faza FIX domknięta, trzy warianty mutacyjne przerwane świadomie. Pełnej liczby `X/Y` NIE podaję** (C-058: brak danych to nota, nie zgadywanie).
+
+**Co zmierzone (faza FIX, na drzewie rundy 2, 4 buildy `vite` + 45 tur headless):**
+
+- `H0` / `H0b` zielone — katalogi buildu **poza drzewem repo**, bramka **nie zmieniła żadnego śledzonego pliku** (C-001 spełniony, `git status` czysty po przebiegu).
+- `FIX PODSUMOWANIE po 45 turach: duzeAI=11 panstwaMiasta=7 barbarzyncy=0 gracz=1`
+- `FIX POKRYCIE (miasta duzego AI w wieku >=15 tur): 5/5 ma >=1 budynek`
+- `FIX WCZYTANIE ZAPISU (legacy) w turze 13: duzeAI=0 panstwaMiasta=0 -> na koncu duzeAI=11 panstwaMiasta=7` — roundtrip save/load przeszedł, tryb miast po wczytaniu zachowany.
+- Zero sygnałów regresu; obraz zgodny z zieloną 42/0 zmierzoną w rundzie 1.
+
+**Dlaczego przerwałem trzy warianty mutacyjne (`mut-a`/`-b`/`-c`).** Każdy to kolejne 45 tur headless (faza FIX zajęła ~18 min),
+a warianty mutacyjne dowodzą **nietautologiczności samej tej bramki**, nie niczego z siedmiu kryteriów tej rundy.
+W tym samym środowisku dwie **cudze** pętle czekały na zwolnienie tej bramki (PID 7941, 8612) — trzymanie ich kolejną godzinę
+dla wyniku, który i tak nie rozstrzyga D3, byłoby złym rachunkiem. Zatrzymałem **wyłącznie własny PID 11800** (`kill` po PID,
+**nigdy `pkill` po wzorcu nazwy** — dokładnie ta pułapka, w którą wpadła runda 2) i sprzątnąłem własny katalog `TMPDIR` (273 MB).
+
+**Rozstrzygnięcie D4 — i ważniejsza obserwacja.** Odmowa Operatora była zbędnie ostrożna: bramkę da się uruchomić
+bezpiecznie bez dotykania pliku spoza allowlisty (`TMPDIR=<unikalny>`, OBSERWACJE 3). **Ale wynik tej bramki i tak nie
+odpowiada na D3** — jej asercje pytają „czy miasta AI mają **≥1 jakikolwiek** budynek", a log nie wymienia budynków po id
+(zero trafień na „garnizon" w całym przebiegu). Runda 1 napisała to samo i miała rację. **Zielona `ai-buduje-budynki`
+nie jest i nigdy nie będzie dowodem, że AI buduje Garnizon** — dowodem na to jest wyłącznie analiza gałęzi `defensiveCopy`
+z zarzutu 4. Kto po tej rundzie zacytuje tę bramkę jako domknięcie parytetu, popełni dokładnie błąd „budynku-widmo"
+przeniesiony o poziom wyżej: z danych na bramkę.
 
 ---
 
