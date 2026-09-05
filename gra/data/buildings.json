@@ -1651,6 +1651,48 @@
     "historia": "Trybun ludowy to urząd ustanowiony w Rzymie w 494 roku p.n.e. w wyniku secesji plebejuszy, mający chronić zwykłych obywateli przed nadużyciami władzy patrycjuszowskich urzędników poprzez prawo weta wobec decyzji senatu i konsulów. Osoba trybuna była nietykalna — sacrosanctitas — a jakikolwiek zamach na jego życie czy godność uznawano za świętokradztwo karane śmiercią, co miało zagwarantować mu odwagę w przeciwstawianiu się możnym. Miejsce, w którym trybun urzędował i przyjmował skargi obywateli, z czasem przekształciło się w rozbudowaną instytucję sądową rozstrzygającą spory sięgające poza pierwotny zakres ochrony plebejuszy. Późniejsze trybunały, jak Trybunał Koronny w Rzeczypospolitej powołany w 1578 roku, przejęły od Rzymian ideę niezależnego, objazdowego sądu wyższej instancji, wolnego od bezpośredniego wpływu monarchy. Napięcia między trybunami a senatem, szczególnie w czasach reform Grakchów w II wieku p.n.e., pokazały, jak łatwo instytucja stworzona do ochrony ludu mogła stać się areną gwałtownej walki politycznej."
   },
   {
+    "id": "garnizon",
+    "nazwa": "Garnizon",
+    "kategoria": "Administracja",
+    "grupa": "Prawo i administracja",
+    "epokaWejscia": 1,
+    "maksPoziom": 1,
+    "nazwyPoziomow": [],
+    "baza": {
+      "praca": 0,
+      "pieniadz": 0,
+      "zywnosc": 0,
+      "nauka": 0,
+      "kultura": 0,
+      "zadowolenie": 0,
+      "obrona": 0,
+      "mnoznik": 0
+    },
+    "przyrost": {
+      "praca": 0,
+      "pieniadz": 0,
+      "zywnosc": 0,
+      "nauka": 0,
+      "kultura": 0,
+      "zadowolenie": 0,
+      "obrona": 0,
+      "mnoznik": 0
+    },
+    "kosztBudowy": 30,
+    "przyrostKosztu": 6,
+    "utrzymanie": 2,
+    "przyrostUtrzymania": 1,
+    "wymagania": "",
+    "uwagi": "Stała straż porządkowa miasta regionalnego — quasi-policja. Budynek PRAWA, nie wojska: wojsko w mieście jest tymczasowe, garnizon zostaje. POZA łańcuchem ulepszeń — nie zastępuje Domu Starszyzny i nie jest przez nikogo zastępowany (inaczej niż Dom Starszyzny → Dwór Zarządcy → Pretorium), więc brak pola upgradeFrom. Przy podboju NIE jest kasowany — zdobywca dziedziczy go jak każdy budynek. maksPoziom=1: wartość stała per epoka, skalowanie idzie tablicą epok, nie poziomem budynku. Wartość Prawa (25/35/47) wprowadza osobny temat w society-params.json — dlatego baza i przyrost są tu zerowe: cały efekt Garnizonu to Prawo, nie plon na turę. Obrona cywilna (Milicja) — również osobny temat. Koszt budowy, koszt surowcowy i utrzymanie: propozycja wyprowadzona z pomiaru sąsiadów, do zatwierdzenia przez właściciela (R-BUDYNEK-GARNIZON-NOWY-Q1, wyzwalacz D2 w dyspozycje/BALANS-PRAWO-PRZEBUDOWA.md).",
+    "techUnlock": "-",
+    "lokalizacja": "region",
+    "dajeSzczescie": false,
+    "koszt_surowce": {
+      "drewno": 30
+    },
+    "historia": "Straż pilnująca porządku w mieście jest niemal tak stara jak samo miasto — w Mezopotamii i Egipcie oddziały wartownicze strzegły bram, spichlerzy i świątynnych skarbców, a ich obecność bywała warunkiem, by kupiec odważył się zostawić towar na noc. Egipscy Medżaj, początkowo nubijscy zwiadowcy, z czasem przekształcili się w formację pilnującą nekropolii i osad, jedną z pierwszych znanych służb porządkowych oddzielonych od armii polowej. W Atenach porządku na agorze pilnowali scytyjscy łucznicy, publiczni niewolnicy podlegli urzędnikom, a nie dowódcom wojskowym, co miało chronić obywateli przed samowolą uzbrojonych rodaków. Rzym doczekał się cohortes urbanae oraz vigiles — oddziałów, które gasiły pożary, rozdzielały bijatyki i pilnowały nocnych ulic, podlegając prefektowi miasta, nie legionowi. Wspólną cechą tych formacji było to, że stacjonowały na stałe: wojsko odchodziło na wojnę, a garnizon zostawał i odpowiadał za to, żeby prawo obowiązywało również wtedy, gdy armii nie było w pobliżu."
+  },
+  {
     "id": "laznia_publiczna",
     "nazwa": "Łaźnia publiczna",
     "kategoria": "Zdrowie",

@@ -40,6 +40,7 @@
     "akademia_wojskowa": "bld-akademia_wojskowa",
     "sad": "bld-sad",
     "pretorium": "bld-palac",
+    "garnizon": "bld-garnizon",
     "_default": "bld-default"
   }
 }
