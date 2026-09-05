@@ -153,12 +153,38 @@ const atkR = collectBattleRoster(hastati, [hastati, ally, garrison], 'attacker')
 assert(atkR.length === 2 && atkR.every(u => u.ownerId === 0), 'collectBattleRoster: 2 allies dist<=1');
 
 const atkWithScout = collectBattleRoster(hastati, [hastati, ally, scoutNeighbor, warrior2], 'attacker');
-assert(atkWithScout.length === 2 && !atkWithScout.some(u => u.typeId === 'Zwiadowca'),
-  'collectBattleRoster atk: adjacent scout excluded');
+// Kontrola ZBIORU ID zamiast licznika (runda 2, ratyfikacja orkiestratora 2026-09-05).
+// Stary warunek `length === 2` czerwienil sie na POPRAWNYM rosterze 3-elementowym: fixture
+// ma czwarta, NIEcywilna jednostke `warrior2` (Hastati, ownerId 0) w dystansie 1 od kotwicy,
+// a kontrakt pola to „heks kotwicy + wlasne jednostki w promieniu 1 heksa". Wersja zbiorowa
+// jest MOCNIEJSZA, nie slabsza: stary licznik przechodzil takze wtedy, gdy roster zgubil
+// dowolne dwie jednostki, nowa wymaga imiennie, ze wypadl dokladnie zwiadowca i nikt poza nim.
+const atkWithScoutIds = new Set(atkWithScout.map(u => u.id));
+assert(!atkWithScoutIds.has(scoutNeighbor.id), 'collectBattleRoster atk: adjacent scout excluded');
+assert(
+  atkWithScoutIds.has(hastati.id) && atkWithScoutIds.has(ally.id) && atkWithScoutIds.has(warrior2.id),
+  'collectBattleRoster atk: pozostale trzy jednostki bojowe ZOSTAJA w rosterze',
+);
 
 const atkNear = collectAtkRosterNearCity(openCity, hastati, [hastati, ally, scoutNeighbor]);
 assert(atkNear.length === 2 && !atkNear.some(u => u.typeId === 'Zwiadowca'),
   'collectAtkRosterNearCity: adjacent scout excluded');
+
+// PARYTET RODZINY (runda 2). Dla WSPOLNEJ kotwicy stojacej na heksie miasta obie funkcje
+// licza z tego samego punktu (battleHex == kotwica == miasto), wiec musza zwrocic identyczny
+// ZBIOR ID — porownujemy zbiory, nie listy, bo kolejnosc moze sie roznic. Parytet zachodzi
+// juz dzis; ta asercja go utrwala, zeby funkcje nie rozjechaly sie w przyszlosci.
+// `size > 1` broni przed tautologia „oba zbiory puste".
+const parityAnchor = { ...hastati, id: 'u-anchor-city', q: openCity.q, r: openCity.r };
+const parityUnits = [parityAnchor, hastati, ally, scoutNeighbor, warrior2, garrison];
+const parityField = new Set(collectBattleRoster(parityAnchor, parityUnits, 'attacker').map(u => u.id));
+const parityCity = new Set(collectAtkRosterNearCity(openCity, parityAnchor, parityUnits).map(u => u.id));
+assert(
+  parityField.size > 1 &&
+    parityField.size === parityCity.size &&
+    [...parityField].every(id => parityCity.has(id)),
+  'parytet collectBattleRoster == collectAtkRosterNearCity (zbior ID, kotwica na heksie miasta)',
+);
 
 const cityScoutDef = {
   id: 'u-scout-def',
