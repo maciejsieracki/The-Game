@@ -78,7 +78,30 @@ const DEFAULTS_REL = path.join('src', 'game', 'empire-city-defaults.ts');
 const DEFAULTS_TS = path.join(GRA_DIR, DEFAULTS_REL);
 const FALLBACK_CHROME = '/opt/pw-browsers/chromium-1194/chrome-linux/chrome';
 // §9 pkt 1 (C-001): katalog wyjściowy MUSI leżeć poza drzewem repo.
-const TMP_ROOT = path.join(os.tmpdir(), 'civ-ai-buduje-budynki');
+// --- P-BRAMKA-WSPOLDZIELONY-DIST-TMPDIR-Q1: katalogi/pliki tymczasowe unikalne per przebieg ---
+// Stala nazwa pod os.tmpdir() jest wspoldzielona przez KAZDY rownolegly przebieg (takze
+// uruchomiony z innego worktree). Skutek dziala w obie strony: raz falszywy CZERWONY
+// (jeden bieg czysci drugiemu katalog w locie), raz falszywy ZIELONY (dwa biegi mierza
+// ten sam artefakt, wiec "parytet" jest artefaktem kolizji, nie dowodem). Sufiks
+// per-proces to rozlacza; asercje i progi bramki pozostaja nietkniete.
+const TMPDIR_RUN_ID = `${process.pid}-${Math.random().toString(36).slice(2, 8)}`;
+// Unikalnosc BEZ sprzatania zamienilaby kolizje w staly wyciek dysku (brak miejsca to
+// ta sama klasa problemu z drugiej strony), wiec kasujemy WLASNE artefakty tego biegu.
+// Dopasowanie po TMPDIR_RUN_ID nie moze trafic w cudzy katalog. Zrzuty/podglady
+// zostaja na dysku celowo — sa DOWODEM wizualnym (R-PROC-AUTOBOT.md §9 pkt 6).
+process.on('exit', () => {
+  // `require` lokalnie: hak musi dzialac takze w plikach, ktore nie maja `fs`/`path`
+  // w zasiegu modulu — inaczej ReferenceError wpada w catch i sprzatanie milczy.
+  const nfs = require('fs'); const npath = require('path'); const nos = require('os');
+  try {
+    for (const ent of nfs.readdirSync(nos.tmpdir())) {
+      if (!ent.includes(TMPDIR_RUN_ID)) continue;
+      if (/shots|preview|zrzut/i.test(ent)) continue;
+      try { nfs.rmSync(npath.join(nos.tmpdir(), ent), { recursive: true, force: true }); } catch { /* best-effort */ }
+    }
+  } catch { /* best-effort */ }
+});
+const TMP_ROOT = path.join(os.tmpdir(), `civ-ai-buduje-budynki-${TMPDIR_RUN_ID}`);
 
 // Świat: duże cywilizacje AI + miasta-państwa + miasto gracza (seed 778899).
 // Obie ścieżki z recon D dispatchu (Zarządca dla dużego AI, tryAutoEnqueueBuild dla

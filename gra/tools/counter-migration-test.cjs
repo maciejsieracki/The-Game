@@ -51,7 +51,30 @@ const UNITS_JSON = path.join(GRA_DIR, 'data/units.json');
 const COUNTERS_JSON = path.join(GRA_DIR, 'data/counters.json');
 const COMBAT_PARAMS_JSON = path.join(GRA_DIR, 'data/combat-params.json');
 const ESBUILD_BIN = path.join(GRA_DIR, 'node_modules/.bin/esbuild');
-const BUNDLE_PATH = path.join(os.tmpdir(), 'counter-migration-combat-bundle.cjs');
+// --- P-BRAMKA-WSPOLDZIELONY-DIST-TMPDIR-Q1: katalogi/pliki tymczasowe unikalne per przebieg ---
+// Stala nazwa pod os.tmpdir() jest wspoldzielona przez KAZDY rownolegly przebieg (takze
+// uruchomiony z innego worktree). Skutek dziala w obie strony: raz falszywy CZERWONY
+// (jeden bieg czysci drugiemu katalog w locie), raz falszywy ZIELONY (dwa biegi mierza
+// ten sam artefakt, wiec "parytet" jest artefaktem kolizji, nie dowodem). Sufiks
+// per-proces to rozlacza; asercje i progi bramki pozostaja nietkniete.
+const TMPDIR_RUN_ID = `${process.pid}-${Math.random().toString(36).slice(2, 8)}`;
+// Unikalnosc BEZ sprzatania zamienilaby kolizje w staly wyciek dysku (brak miejsca to
+// ta sama klasa problemu z drugiej strony), wiec kasujemy WLASNE artefakty tego biegu.
+// Dopasowanie po TMPDIR_RUN_ID nie moze trafic w cudzy katalog. Zrzuty/podglady
+// zostaja na dysku celowo — sa DOWODEM wizualnym (R-PROC-AUTOBOT.md §9 pkt 6).
+process.on('exit', () => {
+  // `require` lokalnie: hak musi dzialac takze w plikach, ktore nie maja `fs`/`path`
+  // w zasiegu modulu — inaczej ReferenceError wpada w catch i sprzatanie milczy.
+  const nfs = require('fs'); const npath = require('path'); const nos = require('os');
+  try {
+    for (const ent of nfs.readdirSync(nos.tmpdir())) {
+      if (!ent.includes(TMPDIR_RUN_ID)) continue;
+      if (/shots|preview|zrzut/i.test(ent)) continue;
+      try { nfs.rmSync(npath.join(nos.tmpdir(), ent), { recursive: true, force: true }); } catch { /* best-effort */ }
+    }
+  } catch { /* best-effort */ }
+});
+const BUNDLE_PATH = path.join(os.tmpdir(), `counter-migration-combat-bundle-${TMPDIR_RUN_ID}.cjs`);
 
 // ---------------------------------------------------------------------------
 // Step 1: Bundle the CURRENT (post-migration) combat.ts -> get the NEW

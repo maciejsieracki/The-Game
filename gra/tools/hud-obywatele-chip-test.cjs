@@ -203,8 +203,16 @@ console.log('');
 // ---------------------------------------------------------------------------
 console.log('4. empirePanelSectionMap.ts: act "ludnosc" i "miasta" -> DWIE ROZNE zakladki');
 
+// --- P-BRAMKA-WSPOLDZIELONY-DIST-TMPDIR-Q1: katalog roboczy unikalny per przebieg ---
+// Stala nazwa pliku/katalogu pod os.tmpdir() jest wspoldzielona przez KAZDY rownolegly
+// przebieg (takze z innego worktree): dwa biegi nadpisuja sobie ten sam artefakt, co
+// daje raz falszywy CZERWONY, raz falszywy ZIELONY. mkdtempSync rozlacza je z definicji.
+const TMPDIR_RUN_DIR = fs.mkdtempSync(path.join(os.tmpdir(), 'civ-hud-obywatele-chip-'));
+// Unikalnosc bez sprzatania zamienilaby kolizje w staly wyciek dysku — kasujemy
+// WYLACZNIE wlasny katalog tego przebiegu.
+process.on('exit', () => { try { fs.rmSync(TMPDIR_RUN_DIR, { recursive: true, force: true }); } catch { /* best-effort */ } });
 function bundle(entry, outName) {
-  const outfile = path.join(os.tmpdir(), outName);
+  const outfile = path.join(TMPDIR_RUN_DIR, outName);
   execSync(
     '"' + ESBUILD_BIN + '" "' + entry + '" --bundle --platform=node --format=cjs --outfile="' + outfile + '"',
     { stdio: 'inherit' },

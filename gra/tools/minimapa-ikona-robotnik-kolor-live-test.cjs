@@ -49,8 +49,31 @@ catch (e) {
 
 const GRA = path.resolve(__dirname, '..');
 const FALLBACK_CHROME = '/opt/pw-browsers/chromium-1194/chrome-linux/chrome';
-const OUT_AFTER = path.join(os.tmpdir(), 'civ-ikona-robotnik-kolor-after');
-const OUT_BEFORE = path.join(os.tmpdir(), 'civ-ikona-robotnik-kolor-before');
+// --- P-BRAMKA-WSPOLDZIELONY-DIST-TMPDIR-Q1: katalogi/pliki tymczasowe unikalne per przebieg ---
+// Stala nazwa pod os.tmpdir() jest wspoldzielona przez KAZDY rownolegly przebieg (takze
+// uruchomiony z innego worktree). Skutek dziala w obie strony: raz falszywy CZERWONY
+// (jeden bieg czysci drugiemu katalog w locie), raz falszywy ZIELONY (dwa biegi mierza
+// ten sam artefakt, wiec "parytet" jest artefaktem kolizji, nie dowodem). Sufiks
+// per-proces to rozlacza; asercje i progi bramki pozostaja nietkniete.
+const TMPDIR_RUN_ID = `${process.pid}-${Math.random().toString(36).slice(2, 8)}`;
+// Unikalnosc BEZ sprzatania zamienilaby kolizje w staly wyciek dysku (brak miejsca to
+// ta sama klasa problemu z drugiej strony), wiec kasujemy WLASNE artefakty tego biegu.
+// Dopasowanie po TMPDIR_RUN_ID nie moze trafic w cudzy katalog. Zrzuty/podglady
+// zostaja na dysku celowo — sa DOWODEM wizualnym (R-PROC-AUTOBOT.md §9 pkt 6).
+process.on('exit', () => {
+  // `require` lokalnie: hak musi dzialac takze w plikach, ktore nie maja `fs`/`path`
+  // w zasiegu modulu — inaczej ReferenceError wpada w catch i sprzatanie milczy.
+  const nfs = require('fs'); const npath = require('path'); const nos = require('os');
+  try {
+    for (const ent of nfs.readdirSync(nos.tmpdir())) {
+      if (!ent.includes(TMPDIR_RUN_ID)) continue;
+      if (/shots|preview|zrzut/i.test(ent)) continue;
+      try { nfs.rmSync(npath.join(nos.tmpdir(), ent), { recursive: true, force: true }); } catch { /* best-effort */ }
+    }
+  } catch { /* best-effort */ }
+});
+const OUT_AFTER = path.join(os.tmpdir(), `civ-ikona-robotnik-kolor-after-${TMPDIR_RUN_ID}`);
+const OUT_BEFORE = path.join(os.tmpdir(), `civ-ikona-robotnik-kolor-before-${TMPDIR_RUN_ID}`);
 
 /** Jedyny plik dotknięty tym dispatchem (allowlista 00-dispatch.md). */
 const TOUCHED_FILES = ['src/ui/hud.ts'].map(p => path.join(GRA, p));
@@ -64,7 +87,7 @@ const argOf = (flag) => {
   const i = process.argv.indexOf(flag);
   return i > -1 ? process.argv[i + 1] : null;
 };
-const SHOTS = argOf('--shots') || path.join(os.tmpdir(), 'civ-ikona-robotnik-kolor-shots');
+const SHOTS = argOf('--shots') || path.join(os.tmpdir(), `civ-ikona-robotnik-kolor-shots-${TMPDIR_RUN_ID}`);
 fs.mkdirSync(SHOTS, { recursive: true });
 
 let pass = 0;

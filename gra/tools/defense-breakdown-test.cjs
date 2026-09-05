@@ -62,7 +62,30 @@ function assert(cond, msg) {
 // ---------------------------------------------------------------------------
 // Bundle 1: game/defenseBreakdown.ts
 // ---------------------------------------------------------------------------
-const DB_BUNDLE = path.join(os.tmpdir(), 'defense-breakdown-bundle.cjs');
+// --- P-BRAMKA-WSPOLDZIELONY-DIST-TMPDIR-Q1: katalogi/pliki tymczasowe unikalne per przebieg ---
+// Stala nazwa pod os.tmpdir() jest wspoldzielona przez KAZDY rownolegly przebieg (takze
+// uruchomiony z innego worktree). Skutek dziala w obie strony: raz falszywy CZERWONY
+// (jeden bieg czysci drugiemu katalog w locie), raz falszywy ZIELONY (dwa biegi mierza
+// ten sam artefakt, wiec "parytet" jest artefaktem kolizji, nie dowodem). Sufiks
+// per-proces to rozlacza; asercje i progi bramki pozostaja nietkniete.
+const TMPDIR_RUN_ID = `${process.pid}-${Math.random().toString(36).slice(2, 8)}`;
+// Unikalnosc BEZ sprzatania zamienilaby kolizje w staly wyciek dysku (brak miejsca to
+// ta sama klasa problemu z drugiej strony), wiec kasujemy WLASNE artefakty tego biegu.
+// Dopasowanie po TMPDIR_RUN_ID nie moze trafic w cudzy katalog. Zrzuty/podglady
+// zostaja na dysku celowo — sa DOWODEM wizualnym (R-PROC-AUTOBOT.md §9 pkt 6).
+process.on('exit', () => {
+  // `require` lokalnie: hak musi dzialac takze w plikach, ktore nie maja `fs`/`path`
+  // w zasiegu modulu — inaczej ReferenceError wpada w catch i sprzatanie milczy.
+  const nfs = require('fs'); const npath = require('path'); const nos = require('os');
+  try {
+    for (const ent of nfs.readdirSync(nos.tmpdir())) {
+      if (!ent.includes(TMPDIR_RUN_ID)) continue;
+      if (/shots|preview|zrzut/i.test(ent)) continue;
+      try { nfs.rmSync(npath.join(nos.tmpdir(), ent), { recursive: true, force: true }); } catch { /* best-effort */ }
+    }
+  } catch { /* best-effort */ }
+});
+const DB_BUNDLE = path.join(os.tmpdir(), `defense-breakdown-bundle-${TMPDIR_RUN_ID}.cjs`);
 esbuild.buildSync({
   entryPoints: [path.join(GRA_ROOT, 'src/game/defenseBreakdown.ts')],
   bundle: true,
@@ -85,7 +108,7 @@ const {
 // ---------------------------------------------------------------------------
 // Bundle 2: game/city-defense.ts (predykat REALNEJ fortyfikacji)
 // ---------------------------------------------------------------------------
-const CD_BUNDLE = path.join(os.tmpdir(), 'defense-breakdown-city-defense-bundle.cjs');
+const CD_BUNDLE = path.join(os.tmpdir(), `defense-breakdown-city-defense-bundle-${TMPDIR_RUN_ID}.cjs`);
 esbuild.buildSync({
   entryPoints: [path.join(GRA_ROOT, 'src/game/city-defense.ts')],
   bundle: true,
@@ -99,7 +122,7 @@ const { unitGetsFortifyDefenseBonus, cityWallDefenseBonusPercent } = require(CD_
 // ---------------------------------------------------------------------------
 // Bundle 3: game/siege.ts (FORTIFY_OBRONA_PROC_FIELD realny, nie hardkodowany)
 // ---------------------------------------------------------------------------
-const SIEGE_BUNDLE = path.join(os.tmpdir(), 'defense-breakdown-siege-bundle.cjs');
+const SIEGE_BUNDLE = path.join(os.tmpdir(), `defense-breakdown-siege-bundle-${TMPDIR_RUN_ID}.cjs`);
 esbuild.buildSync({
   entryPoints: [path.join(GRA_ROOT, 'src/game/siege.ts')],
   bundle: true,

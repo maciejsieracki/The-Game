@@ -108,7 +108,15 @@ async function main() {
   await page.setContent('<div id="root" style="background:#1a1f2b;padding:16px;display:inline-block;"></div>');
   await page.addStyleTag({ content: 'body{background:#1a1f2b;} .civ-cs-mil-strip{display:flex;align-items:center;flex-wrap:wrap;} .civ-cs-res-chip{display:inline-flex;align-items:center;gap:4px;color:#e8d88a;font:14px sans-serif;background:#2a2f3b;border-radius:6px;padding:4px 8px;margin-right:6px;} .civ-cs-mil-era{color:#fff;font:14px sans-serif;margin-right:10px;} .civ-cs-res-chip-ic svg{width:20px;height:20px;display:block;background:#e8d88a44;border-radius:4px;}' });
   await page.addScriptTag({ content: fs.readFileSync(OUTFILE, 'utf8') });
-  const SHOT_DIR = process.env.RECRUIT_STRIP_SHOT_DIR || require('os').tmpdir();
+  // --- P-BRAMKA-WSPOLDZIELONY-DIST-TMPDIR-Q1: katalog roboczy unikalny per przebieg ---
+  // Stala nazwa pliku/katalogu pod os.tmpdir() jest wspoldzielona przez KAZDY rownolegly
+  // przebieg (takze z innego worktree): dwa biegi nadpisuja sobie ten sam artefakt, co
+  // daje raz falszywy CZERWONY, raz falszywy ZIELONY. mkdtempSync rozlacza je z definicji.
+  const TMPDIR_RUN_DIR = fs.mkdtempSync(path.join(require('os').tmpdir(), 'civ-recruit-resource-strip-shots-'));
+  // Zrzuty ZOSTAJA na dysku — sa DOWODEM wizualnym (R-PROC-AUTOBOT.md §9 pkt 6);
+  // unikalnosc chroni je przed nadpisaniem przez rownolegly bieg. Sciezke drukujemy.
+  console.log('[zrzuty] katalog tego przebiegu: ' + TMPDIR_RUN_DIR);
+  const SHOT_DIR = process.env.RECRUIT_STRIP_SHOT_DIR || TMPDIR_RUN_DIR;
 
   // Odczyt REALNEGO DOM wyprodukowanego przez appendRecruitMilitaryResourceStrip —
   // dokładnie ten sam selektor co appendCityResourceStockStrip (panel budowy),
