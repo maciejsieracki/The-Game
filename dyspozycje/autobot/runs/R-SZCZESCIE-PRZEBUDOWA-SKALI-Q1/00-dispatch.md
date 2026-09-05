@@ -254,3 +254,58 @@ gałęzi. Po 5 rundach: `LIMIT-5-EXCEEDED`.
 
 Operator → Evaluator → (Obrona, jeśli lista zarzutów niepusta) → koniec skryptu.
 Final Control osobnym wywołaniem Workflow. Integracja i deploy — ręką orkiestratora.
+
+---
+
+## RATYFIKACJA ORKIESTRATORA — runda 2 (2026-09-05)
+
+**Powód: sprzeczność w TYM dispatchu, nie defekt wytworu.** Zażądałem zastąpienia mechanik,
+których bramki pilnują, a bramek nie umieściłem w allowliście. Operator ich nie tknął
+i zatrzymał się z `DECISION_REQUIRED` — zachowanie prawidłowe (§14, C-054).
+
+**ROZSTRZYGNIĘCIE: allowlista rozszerzona o:**
+
+- `gra/tools/logic-test.cjs` (**wyłącznie** asercja `:1370` na binarny kontrakt
+  `religionHappiness`; reszta pliku NIETKNIĘTA — to bramka referencyjna 213/213)
+- `gra/tools/society-breakdown-test.cjs` (pełny zakres, nie tylko `happinessBucketsFromPct`)
+- `gra/tools/szczescie-zamoznosc-test.cjs`
+- `gra/tools/szczescie-skala-normalizacja-test.cjs`
+- `gra/tools/building-happiness-test.cjs`
+- `gra/tools/r-wzrost-szczescie-dubel-wealth-ceramika-test.cjs`
+- `gra/tools/war-happiness-parity-test.cjs`
+- `gra/tools/wealth-test.cjs`
+- `gra/data/citizen-resource-upkeep.json` (**wyłącznie** `_kara.szczescieZaDostepny` → `2`
+  i `_kara.szczescieZaBrakujacy` → `-2`; reszta pliku NIETKNIĘTA)
+
+**BRAMEK NIE WOLNO WYCOFAĆ ANI OSŁABIĆ.** Zakres pracy dla każdej:
+
+1. **Przepisz asercje na nowy kontrakt, zachowując każdą sprawdzaną WŁASNOŚĆ.** Asercja
+   pilnująca, że religia wpływa na szczęście, ma dalej tego pilnować — tylko wobec skali
+   proporcjonalnej, a nie binarnego przeskoku.
+2. **Dla KAŻDEJ przepisanej asercji podaj w raporcie jedno zdanie:** co sprawdzała przed
+   i przez co jest sprawdzana po. Jeśli któraś nie ma odpowiednika w nowej mechanice,
+   powiedz to wprost zamiast ją po cichu usunąć.
+3. **Liczba asercji w każdym pliku nie może spaść** poza przypadkami z punktu 2, jawnie
+   wymienionymi. Spadek bez uzasadnienia = osłabienie = FAIL.
+4. Po przepisaniu **wszystkie osiem plus nowa bramka mają być ZIELONE**, a `logic-test`
+   z powrotem **213/213**.
+
+**G8 — preferowane rozwiązanie docelowe.** Przenieś `±2` wprost do
+`citizen-resource-upkeep.json` (`_kara`), a mnożnik obejściowy
+`szczescie_zaopatrzenie_na_surowiec` usuń, jeśli staje się zbędny. Jeśli uznasz, że mnożnik
+jest lepszy — uzasadnij i zostaw, ale nie trzymaj obu naraz.
+
+**Rozstrzygnięcia do trzech decyzji projektowych Operatora — WSZYSTKIE PRZYJĘTE:**
+
+- **G1 jako pole `dajeSzczescie` per budynek** — trafne. Nowy budynek klasyfikuje się razem
+  ze swoim rekordem, bez centralnej listy do zapomnienia. Brak pola = `false` jest dobrym
+  domyślnym.
+- **G4 przez znormalizowany wskaźnik [−1,+1]** — trafne i lepsze niż to, co miałem
+  w głowie. Punkty powstają w JEDNYM miejscu, więc silnik i panel nie mogą się rozjechać.
+  To rozwiązuje tryb trzeci reguły anty-halucynacyjnej u źródła.
+- **`szczescie_max_pop_wspolczynnik` zostawiony 0,038/0,048/0,058 per trudność** — trafne.
+  Dispatch mówił „BEZ ZMIAN, ZOSTAJE"; zrównanie do 0,048 byłoby strojeniem liczby
+  właściciela. Dobrze, że nie tknąłeś.
+
+**Zarzutów nie ma — Evaluator jeszcze nie orzekał.** Runda 2 to dokończenie tej samej pracy
+po rozszerzeniu allowlisty, nie naprawa defektu.
