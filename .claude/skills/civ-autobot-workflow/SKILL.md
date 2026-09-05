@@ -170,6 +170,14 @@ export default async function autobotOperatorEvaluator(input) {
       **sekwencyjnie**, nie w tej samej fali (`R-PROC-AUTOBOT.md` §2b).
 - [ ] Licznik rund (C-050) i ledger (C-051) prowadzone przez orkiestratora — nie
       polegaj na tym, że skrypt Workflow sam je aktualizuje.
+- [ ] **Poprzedni skrypt tego samego tematu ZWRÓCIŁ wynik.** Skrypt ma TRZY fazy, nie dwie
+      — Obrona pracuje w tym samym worktree co Operator. Runda N nie jest zamknięta po
+      Evaluatorze, tylko gdy skrypt zwróci. Dispatch rundy N+1 wcześniej sadza dwa procesy
+      w jednym drzewie i na jednej gałęzi (`R-PROC-AUTOBOT.md` §2b, incydent 2026-09-05:
+      trzy wystąpienia w jednym temacie, praca ocalała tylko dzięki ostrożności agentów).
+- [ ] Prompt KAŻDEJ roli niesie guard wstępny `git -C <wt> log -1 --oneline` +
+      `git -C <wt> status --short`, z jawną instrukcją `BLOCK` przy rozbieżności — oraz
+      zakaz cofania mutacji przez `git checkout` (tylko przez kopię pliku).
 - [ ] Model i effort per rola zapisane w raporcie etapu, jak przy dispatchu ręcznym
       (analogicznie do C-052 dla Codex `multi_agent_v1`).
 - [ ] Po zakończeniu skryptu: Final Control, integracja allowlist-only (C-059),

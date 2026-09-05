@@ -122,6 +122,39 @@ Równoległy dispatch dwóch tematów na ten sam plik kończy się albo skasowan
 pracy pierwszego, albo statusem `INTEGRATION_PENDING` i ręcznym rozjazdem,
 którego nikt nie zaplanował (playbook C-059).
 
+**JEDEN PISARZ NA WORKTREE — w każdej chwili, bez wyjątku.** To nie to samo co reguła
+wyżej: tamta mówi o dwóch RÓŻNYCH tematach, ta o dwóch przebiegach TEGO SAMEGO tematu.
+Skrypt Workflow ma **trzy** fazy (Operator → Evaluator → Obrona, §3c), a Obrona pracuje
+w tym samym worktree co Operator. **Runda N nie jest zamknięta po Evaluatorze — jest
+zamknięta, gdy skrypt zwróci wynik.** Dispatch rundy N+1 przed tym momentem sadza dwa
+procesy w jednym drzewie i na jednej gałęzi.
+
+Każdy prompt Operatora, Evaluatora i Obrony dostaje obowiązkowy guard wstępny:
+
+```bash
+git -C <worktree> log -1 --oneline      # ma pokazać oczekiwaną bazę
+git -C <worktree> status --short        # ma być puste
+```
+
+Rozbieżność → **`BLOCK`, bez zapisu do drzewa**. Agent nie „poprawia" cudzego stanu
+i nie zgaduje, czyja jest niezacommitowana zmiana.
+
+**Incydent źródłowy (2026-09-05, `R-SZCZESCIE-PRZEBUDOWA-SKALI-Q1`, TRZY wystąpienia
+w jednym temacie):** orkiestrator dispatchował rundę 2 nie czekając na zwrot skryptu
+rundy 1, a potem rundę 3 w trakcie rundy 2. Gałąź przesuwała się pod stopami pracujących
+agentów (`c9bc5d34` → `a8b84809` → `eccac414` → `643c4abe`), licznik asercji tej samej
+bramki rósł między kolejnymi uruchomieniami tego samego agenta (446 → 496 → 503 → 511),
+a Evaluator rundy 3 przywrócił plik, w którym cudza, niezacommitowana zmiana pojawiła się
+w trakcie jego pomiaru. **`git status` przestał być dowodem czyjejkolwiek pracy.**
+
+Praca ocalała **wyłącznie dzięki ostrożności agentów**, nie dzięki procesowi: wszyscy
+commitowali per plik (nigdy `git add -A`) i cofali mutacje testowe przez **kopię pliku**,
+nigdy przez `git checkout -- gra/`. Gdyby którykolwiek użył odruchowego `git checkout`,
+praca drugiego zniknęłaby bez błędu i bez śladu. Stąd druga część tej reguły:
+
+**Mutacje weryfikacyjne cofa się przez kopię pliku, nie przez `git checkout`.** Dotyczy
+Operatora, Evaluatora i Final Control. Po każdym cofnięciu: `git diff --quiet <plik>`.
+
 **Sprzątanie worktree przy `INFRA`/braku miejsca na dysku ma własną procedurę** —
 `INFRA` nie jest wadą pracy Operatora i nie poprawia się jej ponownym dispatchem
 tego samego zlecenia:
@@ -441,8 +474,25 @@ z pamięci przy kolejnym użyciu:
 | Generator mapy | `node tools/map-gen-regression-test.cjs` | determinizm A=B + 0 rzek bez ujścia; progi czasowe to pomiar wydajności, nie regresja — wolny (rzędu minut), uruchom osobno |
 | **Mgła wzdłuż ścieżki (INWARIANT)** | `node tools/mgla-sciezka-inwariant-test.cjs` | **42/42** — skanuje CAŁE `gra/src` w trzech notacjach zapisu pozycji jednostki (`.q=`, `["q"]=`, `Object.assign`) z jawną, uzasadnioną whitelistą. Każde nowe miejsce przesuwające jednostkę o więcej niż heks bez odkrycia mgły wzdłuż ścieżki czerwieni tę bramkę. **Dodana po CZWARTYM zgłoszeniu tego samego błędu** (`P-MGLA-ODKRYCIE-SCIEZKA-INWARIANT-Q1`, merge `1af06c38`) — trzy poprzednie tematy naprawiały po jednym miejscu i każdy był ogłaszany jako ostatni. Nie usuwaj i nie osłabiaj whitelisty bez ECHO właściciela. |
 
+| **AI stawia budynki (POKRYCIE, nie sumy)** | `node tools/ai-buduje-budynki-test.cjs` | **42/0** — realny build vite, realny headless Chromium, realne `doStartGame`/`endTurn()`, roundtrip zapisu. Weryfikator zamówiony przez właściciela słowami „żeby to już nigdy nie wróciło" (`P-AI-NIE-STAWIA-BUDYNKOW-Q1`). **Ustalenie Final Control do zapamiętania: asercje `A1`/`A2` (sumy imperium) zostają ZIELONE pod mutacją**, bo duże AI ma drugą drogę do kolejki — defekt łapie wyłącznie `A7` (pokrycie per-miasto). **`A7` nie wolno osłabiać.** |
+| **Bitwa na polu mapy** | `node tools/map-field-battle-test.cjs` | 20/20 po `P-ROSTER-ZWIADOWCA-DRIFT-DWOCH-FUNKCJI-Q1`; wcześniej 19/1 — jedna asercja czerwieniła się od zawsze, ukryta pod `TypeError` sprzed naprawy INFRA |
+| **Kontrakt karty encji** | `node tools/entity-card-contract-test.cjs` | 75/0 |
+
 Zawsze czytaj kod wyjścia testu, nie procesu opakowującego. Worktree bez
 `gra/node_modules` daje mylący wynik `tsc` w obie strony — patrz playbook C-029.
+
+**Nowa bramka istnieje dopiero wtedy, gdy jest w tej tabeli.** Bramka niewpisana do §6
+nie trafia do żadnej listy uruchamianej przez kolejne tematy, więc po kilku falach nikt
+jej nie odpala i weryfikator zamówiony jako trwały cicho umiera. Wpis do tabeli jest
+częścią integracji tematu, który bramkę stworzył — nie osobnym zadaniem na później
+(`P-BRAMKA-AI-BUDYNKI-NIEZAREJESTROWANA-W-PROC-Q1`).
+
+**Katalog tymczasowy bramki musi być unikalny per przebieg.** Stała nazwa pod
+`os.tmpdir()` dała w tym repo już dwa potwierdzone fałszywe wyniki: fałszywy ZIELONY
+(parytet baza-vs-HEAD u Evaluatora) i fałszywy CZERWONY (dwa równoległe przebiegi
+`ai-buduje-budynki-test`). Wzorzec bezpieczny:
+`fs.mkdtempSync(path.join(os.tmpdir(), '<nazwa>-'))`. Patrz
+`P-BRAMKA-WSPOLDZIELONY-DIST-TMPDIR-Q1`.
 
 ## 7. Bariery w kodzie, nie tylko w prompcie
 
