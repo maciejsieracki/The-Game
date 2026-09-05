@@ -4856,3 +4856,49 @@ opisuje zachowanie sprzed `P-ENTITYCARD-DIALOG-WIELOKROTNY-Q1` i dziś wprowadza
 co znaczy „zamknięcie karty B" — czy odsłania A (naturalne przy stosie), czy zamyka obie.
 To jest pytanie, na które wytwór sam nie odpowie; jeśli Operator na nie trafi,
 ma zatrzymać się na `DECISION_REQUIRED`, a nie wybierać.
+
+### `P-PANEL-KOLEJKA-PRODUKCJI-PASEK-POSTEPU-Q1` — **ZINTEGROWANE** (`86e28a6d`, 2026-09-05)
+
+Obieg pełny: Operator → Evaluator (3 zarzuty) → Obrona → **Final Control `PASS`, 3× ODDAL**.
+Paski postępu w sekcji KOLEJKA PRODUKCJI, wzorem paska z PRODUKCJI NAUKI, na który powołał
+się właściciel zrzutem. Procent liczbowy zostaje obok paska; stopka rozróżnia znaczenie
+obu pasków. Pięć przypadków brzegowych: 0%, 100% bez przelania, pozycja wstrzymana
+(pasek wygaszony), pozycja pusta, kikut przy 7%.
+
+**Najcenniejsza część kontroli — Final Control zmutował inaczej niż Operator.** Zamiast
+powtórzyć cudzą mutację, podmienił `pct` na `pct/2`, czyli zostawił pasek w DOM i nie ruszył
+procentu liczbowego — zmieniła się wyłącznie szerokość wypełnienia. Bramka sczerwieniała
+na 13 asercjach mierzących `getBoundingClientRect`. **To dowodzi, że bramka mierzy szerokość
+względem toru, a nie samo istnienie elementu** — czyli dokładnie to, o czym łatwo tu
+skłamać samemu sobie.
+
+**Luka procesowa zapisana jawnie przez Final Control, nie ukryta:** raport Evaluatora
+przepadł przy restarcie kontenera, więc nie da się zweryfikować, czy jego lista zarzutów
+była kompletna. Final Control skompensował to własnym przejściem 10 punktów §16a po
+wytworze — wynik czysty. Pary zarzut/odpowiedź odtworzył z pliku obrony, który wyliczał
+je po numerze.
+
+Bramki potwierdzone przez orkiestratora NA `main`: `panel-kolejka-pasek-postepu` 82/0,
+logic 213/213, tech-tree 19/19, research ALL GREEN, unit-replace 13/13, combat OK,
+`tsc --noEmit` exit 0. Worktree sprzątnięty.
+
+## P-RESTART-KONTENERA-RAPORTY-W-PAMIECI-Q1 — wniosek procesowy (2026-09-05)
+
+**Zdarzenie:** kontener zrestartował się w trakcie pracy pięciu równoległych fal AutoBota
+(`up 3 min`, obciążenie z 15 na 1). Wszystkie pięć przebiegów Workflow zostało ubitych.
+
+**Co przetrwało, a co nie.** Przetrwało wszystko, co agenci zdążyli **zacommitować** —
+kod i te raporty etapów, które trafiły do gita. **Przepadł raport Evaluatora** tematu
+`P-PANEL-KOLEJKA-PRODUKCJI-PASEK-POSTEPU-Q1`, bo został zapisany, ale nie zacommitowany;
+przepadły też wszystkie raporty żyjące wyłącznie w pamięci procesu Workflow.
+
+**Skutek dla jakości kontroli, realny:** Final Control musiał odtworzyć pary zarzut/odpowiedź
+z pliku obrony i **nie mógł zweryfikować kompletności listy zarzutów**. Orkiestrator nie mógł
+też zanonimizować par zgodnie z §3c, bo plik obrony zawiera etykiety ról — odstępstwo
+zapisane jawnie w prompcie Final Control zamiast przemilczane.
+
+**Wniosek wdrożony natychmiast, we wszystkich promptach wznowionych fal:** *raport etapu
+commituj OD RAZU po zapisaniu, nie zostawiaj go w pamięci procesu*. Do rozważenia jako
+trwała zmiana `R-PROC-AUTOBOT.md` §11 — dziś kontrakt raportu mówi, CO ma zawierać raport,
+ale nie mówi, że ma być utrwalony w gicie przed przejściem do następnej roli.
+**STATUS: ZAREJESTROWANE, NIE DISPATCHOWANE.** DOMAIN: PROCESS.
