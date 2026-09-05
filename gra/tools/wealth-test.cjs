@@ -84,12 +84,33 @@ near(W.wealthMnoznik(100, P), 15.85, 'mnoznik W=100 -> 15.85', 1e-6);
 near(W.wealthMnoznik(0,   P), 1.0,   'mnoznik W=0   -> 1.0 (min)');
 
 // ===========================================================================
-// B. wealthZadowolenie: W=0->karaZero; else floor(W/10)*zadowolenieNa10pkt
+// B. wealthZadowolenie(poziom, params, EPOKA):
+//      W=0 -> karaZero; inaczej floor( W * zadowolenieMax / cap_epoki ), cap = epoka*10.
+//
+// R-SZCZESCIE-PRZEBUDOWA-SKALI-Q1 G6 (wlasciciel 2026-09-05). Stara formula
+// `floor(W/10) * zadowolenieNa10pkt` dawala max +1 / +2 / +3 w epokach 1-3, bo do +10
+// trzeba bylo poziomu 100 (cap epoki 10). Po zmianie MAKSIMUM JEST STALE (+10 w kazdej
+// epoce), a rosnie PROG: 10 -> 20 -> 30. Sygnatura dostala trzeci argument (epoka).
+// Sprawdzana wlasciwosc bez zmian: poziom Wealth przeklada sie na punkty Szczescia
+// monotonicznie, z zerem na dole i twardym sufitem na gorze.
 // ===========================================================================
-eq(W.wealthZadowolenie(0,   P), 0, 'zadowolenie W=0   -> 0 (neutral, D16-A)');
-eq(W.wealthZadowolenie(9,   P),  0, 'zadowolenie W=9   -> 0');
-eq(W.wealthZadowolenie(10,  P),  1, 'zadowolenie W=10  -> +1');
-eq(W.wealthZadowolenie(100, P), 10, 'zadowolenie W=100 -> +10');
+eq(W.wealthZadowolenie(0,   P, 1),  0, 'zadowolenie W=0  ep1 -> 0 (neutral, D16-A)');
+eq(W.wealthZadowolenie(2,   P, 3),  0, 'zadowolenie W=2  ep3 -> 0 (ponizej pierwszego stopnia: floor(2*10/30))');
+eq(W.wealthZadowolenie(10,  P, 1), 10, 'zadowolenie W=10 ep1 -> +10 (poziom = cap epoki 1)');
+eq(W.wealthZadowolenie(100, P, 10), 10, 'zadowolenie W=100 ep10 -> +10 (poziom = cap epoki 10)');
+// Prog rosnie z epoka, sufit nie: ten sam poziom 10 daje coraz mniej.
+eq(W.wealthZadowolenie(10,  P, 2),  5, 'zadowolenie W=10 ep2 -> +5 (polowa capu epoki 2)');
+eq(W.wealthZadowolenie(10,  P, 3),  3, 'zadowolenie W=10 ep3 -> +3 (floor(10*10/30))');
+eq(W.wealthZadowolenie(20,  P, 2), 10, 'zadowolenie W=20 ep2 -> +10 (cap epoki 2)');
+eq(W.wealthZadowolenie(30,  P, 3), 10, 'zadowolenie W=30 ep3 -> +10 (cap epoki 3)');
+// Sufit jest twardy: poziom ponad capem nie daje wiecej niz zadowolenieMax.
+eq(W.wealthZadowolenie(999, P, 3), 10, 'zadowolenie W=999 ep3 -> +10 (przyciete do capu, nie ponad)');
+eq(W.wealthZadowolenie(9,   P, 1),  9, 'zadowolenie W=9  ep1 -> +9 (proporcjonalnie, bez schodka co 10)');
+// Epoka nieliczbowa/zerowa NIE moze wpuscic NaN do rozpiski Szczescia (netto miasta
+// zrobiloby sie NaN i caly Porzadek by znikl).
+eq(W.wealthZadowolenie(50,  P, 0),  0, 'zadowolenie: cap epoki 0 -> 0, nigdy NaN');
+assert(Number.isFinite(W.wealthZadowolenie(50, P, undefined)),
+  'zadowolenie: brak epoki -> liczba skonczona, nie NaN');
 
 // ===========================================================================
 // C. wealthCap: floor(epoka)*capNaEpoke
@@ -146,7 +167,7 @@ eq(immunitet.poziom, 1, 'immunitet: poziom zostaje 1');
 // ===========================================================================
 // G3. D16-A: wealthZadowolenie W=0 -> karaZero=0 (normal)
 // ===========================================================================
-eq(W.wealthZadowolenie(0, P), 0, 'W=0 -> zadowolenie 0 (karaZero=0, regresja D16-A)');
+eq(W.wealthZadowolenie(0, P, 1), 0, 'W=0 -> zadowolenie 0 (karaZero=0, regresja D16-A)');
 
 // ===========================================================================
 // H. loadWealthParams

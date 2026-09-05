@@ -268,13 +268,6 @@
       "jednostka": "% udziału Zamożności",
       "opis": "R-SZCZESCIE-PRZEBUDOWA-SKALI-Q1 G7: udział Zamożności (suwak handlu miasta), przy którym linia podatków osiąga szczescie_podatki_max."
     },
-    "szczescie_zaopatrzenie_na_surowiec": {
-      "easy": 2,
-      "normal": 2,
-      "hard": 2,
-      "jednostka": "pkt Szczęścia / surowiec epoki",
-      "opis": "R-SZCZESCIE-PRZEBUDOWA-SKALI-Q1 G8 (właściciel 2026-09-05): +2 za każdy dostarczony surowiec epoki, −2 za brakujący (było +1/−1), symetrycznie. Mnożnik nakładany na BINARNY wskaźnik per surowiec z data/citizen-resource-upkeep.json (_kara: +1 dostępny / −1 brakujący), bo ten plik jest poza allowlistą tego tematu. UWAGA DLA PRZYSZŁEJ ZMIANY: docelowo _kara powinno nieść wprost ±2, a ten mnożnik zniknąć — dopóki tego nie zrobiono, zmiana _kara na wartość inną niż ±1 rozjedzie tę linię z decyzją właściciela."
-    },
     "szczescie_max_epoka": {
       "easy": [
         20,

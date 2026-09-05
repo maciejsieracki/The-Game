@@ -73,17 +73,42 @@ const happiness = M.computeHappinessBreakdown({
 }, null);
 eq(happiness.lines.find(line => line.id === 'wealth')?.value, 10,
   'Wealth jest jedną, jawną linią +10');
-eq(happiness.lines.find(line => line.id === 'ceramika')?.value, 1,
-  'Ceramika jest osobną linią +1 na miasto');
-eq(happiness.lines.find(line => line.id === 'spichlerz')?.value, 1,
-  'Spichlerz jest osobną linią +1 na miasto');
+// R-SZCZESCIE-PRZEBUDOWA-SKALI-Q1 G3 (wlasciciel 2026-09-05): wiersze „Ceramika (dostep)" +1
+// i „Spichlerz (dzialajacy)" +1 ZOSTALY USUNIETE z rozpiski Szczescia jako DUBLE — ceramika
+// liczy sie teraz jako zwykly surowiec zaopatrzenia (linia `zaopatrzenie_obywateli`, +-2 na
+// surowiec), a Spichlerz jako budynek szczesciodajny (+5 lacznie, G2).
+//
+// Tego wlasnie pilnowal ten temat (R-GARNCARNIA-CERAMIKA-SZCZESCIE-111-Q1): zeby bonus
+// per miasto NIE byl mnozony przez liczbe miast ownera — objaw „111". Wlasciwosc zostaje,
+// tylko po drugiej stronie: pola `ceramikaZadowolenie` / `spichlerzZadowolenie` sa teraz
+// IGNOROWANE, wiec zadne wejscie (1, 111, cokolwiek) nie moze juz wniesc ani punktu.
+// To jest MOCNIEJSZA bramka niz poprzednia: chroni przed przywroceniem dubla w ogole.
+eq(happiness.lines.find(line => line.id === 'ceramika')?.value, undefined,
+  'Ceramika NIE jest juz osobna linia rozpiski (G3 — liczy sie jako surowiec zaopatrzenia)');
+eq(happiness.lines.find(line => line.id === 'spichlerz')?.value, undefined,
+  'Spichlerz NIE jest juz osobna linia rozpiski (G3 — liczy sie jako budynek, +5)');
 eq(
   happiness.lines
     .filter(line => ['wealth', 'ceramika', 'spichlerz'].includes(line.id))
     .reduce((sum, line) => sum + line.value, 0),
-  12,
-  'kontrolowane kanały = Wealth 10 + Ceramika 1 + Spichlerz 1',
+  10,
+  'kontrolowane kanaly = sam Wealth 10; Ceramika i Spichlerz nie dokladaja sie drugi raz',
 );
+// Kontrola „111" po nowemu: wejscie 111 na obu polach ma zmienic netto o DOKLADNIE 0
+// wzgledem tego samego miasta bez tych pol. Gdyby ktos przywrocil wiersze, netto skoczy.
+{
+  const bezDubli = M.computeHappinessBreakdown({
+    population: 4, era: 2, buildingZadowolenie: 0, haWealth: 10,
+  }, null);
+  const z111 = M.computeHappinessBreakdown({
+    population: 4, era: 2, buildingZadowolenie: 0, haWealth: 10,
+    ceramikaZadowolenie: 111, spichlerzZadowolenie: 111,
+  }, null);
+  eq(z111.netto, bezDubli.netto,
+    'regula 111 po G3: ceramikaZadowolenie/spichlerzZadowolenie = 111 nie zmienia netto ani o punkt');
+  eq(z111.lines.length, bezDubli.lines.length,
+    'regula 111 po G3: liczba wierszy rozpiski bez zmian (zaden dubel nie wraca)');
+}
 
 const shared = {
   population: 4,

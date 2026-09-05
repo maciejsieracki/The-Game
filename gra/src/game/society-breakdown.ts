@@ -692,18 +692,20 @@ export function computeHappinessBreakdown(
     if (v) lines.push({ id: 'stolica_easy', label: 'Stolica imperium (easy)', value: v });
   }
   if (input.citizenResourceHappinessDelta) {
-    // G8: wołający dostarcza BINARNY wskaźnik per surowiec epoki (+1 dostępny / −1 brakujący,
-    // `citizen-resource-upkeep.ts` → `_kara`); punktacja Szczęścia to ±2 na surowiec
-    // (`szczescie_zaopatrzenie_na_surowiec`, decyzja właściciela 2026-09-05).
-    const naSurowiec = pickSociety(szBlock, 'szczescie_zaopatrzenie_na_surowiec', diff, 2);
-    const v = input.citizenResourceHappinessDelta * naSurowiec;
-    if (v) {
-      lines.push({
-        id: 'zaopatrzenie_obywateli',
-        label: 'Zaopatrzenie obywateli (surowce)',
-        value: v,
-      });
-    }
+    // G8 (właściciel 2026-09-05): +2 za każdy dostarczony surowiec epoki, −2 za brakujący
+    // (było +1 / −1), symetrycznie. Wartości żyją WYŁĄCZNIE w
+    // `data/citizen-resource-upkeep.json` → `_kara` (`szczescieZaDostepny` / `szczescieZaBrakujacy`),
+    // a wołający (`resolveCitizenResourceCoverage`) sumuje je po surowcach epoki. Rozpiska
+    // wstawia tę sumę 1:1 — BEZ mnożnika. Runda 1 tego tematu trzymała ±2 w osobnym parametrze
+    // `szczescie_zaopatrzenie_na_surowiec` mnożącym wskaźnik ±1, bo plik danych był wtedy poza
+    // allowlistą; ratyfikacja orkiestratora (runda 2) przeniosła liczbę do źródła i mnożnik
+    // usunęła. NIE przywracać: dwa nośniki tej samej liczby rozjeżdżają się po pierwszej zmianie.
+    const v = input.citizenResourceHappinessDelta;
+    lines.push({
+      id: 'zaopatrzenie_obywateli',
+      label: 'Zaopatrzenie obywateli (surowce)',
+      value: v,
+    });
   }
 
   // USUNIĘTE i NIE PRZYWRACAĆ (G3/G5/G12, właściciel 2026-09-05 — pełne uzasadnienia

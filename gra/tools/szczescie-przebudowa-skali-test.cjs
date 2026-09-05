@@ -58,6 +58,11 @@ export {
 export { wealthZadowolenie, wealthCap, loadWealthParams } from '../src/game/wealth';
 export { religionHappiness, religionOwnShare } from '../src/game/culture-religion';
 export { conquestUnstableHappinessPenalty } from '../src/game/conquest-stability';
+export {
+  resolveCitizenResourceCoverage,
+  CITIZEN_UPKEEP_HAPPINESS_PER_AVAILABLE,
+  CITIZEN_UPKEEP_HAPPINESS_PER_MISSING,
+} from '../src/game/citizen-resource-upkeep';
 `, 'utf8');
 
 try {
@@ -331,19 +336,54 @@ function zaopatrzenieLinia(delta, era) {
   }, society).lines.find(l2 => l2.id === 'zaopatrzenie_obywateli');
   return l ? l.value : 0;
 }
-eq(zaopatrzenieLinia(1), 2, '2f: 1 surowiec dostarczony -> +2');
-eq(zaopatrzenieLinia(-1), -2, '2f: 1 surowiec brakujacy -> -2');
-eq(zaopatrzenieLinia(2), 4, '2f: 2 surowce dostarczone (epoka 1, NSUR=2) -> +4');
-eq(zaopatrzenieLinia(-2), -4, '2f: 2 surowce brakujace -> -4');
-eq(zaopatrzenieLinia(4, 2), 8, '2f: 4 surowce dostarczone (epoka 2, NSUR=4) -> +8');
-eq(zaopatrzenieLinia(5, 3), 10, '2f: 5 surowcow dostarczonych (epoka 3, NSUR=5) -> +10');
-eq(upkeep._kara.szczescieZaDostepny, 1,
-  '2f: citizen-resource-upkeep._kara nadal niesie BINARNY wskaznik +1 (punkty daje mnoznik)');
-eq(upkeep._kara.szczescieZaBrakujacy, -1,
-  '2f: citizen-resource-upkeep._kara nadal niesie BINARNY wskaznik -1');
-for (const diff of ['easy', 'normal', 'hard']) {
-  eq(society.szczescie.szczescie_zaopatrzenie_na_surowiec[diff], 2,
-    '2f: szczescie_zaopatrzenie_na_surowiec = 2 na poziomie ' + diff + ' (G13)');
+
+// Zrodlo prawdy dla +-2 to data/citizen-resource-upkeep.json -> _kara. Po ratyfikacji
+// orkiestratora (runda 2) NIE MA juz drugiego nosnika tej liczby: mnoznik obejsciowy
+// `szczescie_zaopatrzenie_na_surowiec` zostal usuniety z society-params.json, a rozpiska
+// wstawia sume dostarczona przez `resolveCitizenResourceCoverage` 1:1.
+eq(upkeep._kara.szczescieZaDostepny, 2,
+  '2f: citizen-resource-upkeep._kara.szczescieZaDostepny = +2 (G8, liczba wlasciciela)');
+eq(upkeep._kara.szczescieZaBrakujacy, -2,
+  '2f: citizen-resource-upkeep._kara.szczescieZaBrakujacy = -2 (G8, symetrycznie)');
+eq(M.CITIZEN_UPKEEP_HAPPINESS_PER_AVAILABLE, 2,
+  '2f: stala TS czyta +2 z danych (nie z fallbacku +1)');
+eq(M.CITIZEN_UPKEEP_HAPPINESS_PER_MISSING, -2,
+  '2f: stala TS czyta -2 z danych (nie z fallbacku -1)');
+eq(Object.prototype.hasOwnProperty.call(society.szczescie, 'szczescie_zaopatrzenie_na_surowiec'), false,
+  '2f: mnoznik obejsciowy szczescie_zaopatrzenie_na_surowiec USUNIETY (jeden nosnik liczby, nie dwa)');
+
+// Rozpiska nie skaluje juz wejscia — 1:1. Gdyby ktos przywrocil mnoznik obok +-2 w danych,
+// linia dalaby +-4 i te cztery asercje zaczerwienieja.
+eq(zaopatrzenieLinia(2), 2, '2f: 1 surowiec dostarczony (delta +2) -> linia +2, bez mnozenia');
+eq(zaopatrzenieLinia(-2), -2, '2f: 1 surowiec brakujacy (delta -2) -> linia -2, bez mnozenia');
+eq(zaopatrzenieLinia(4), 4, '2f: 2 surowce dostarczone (delta +4) -> linia +4');
+eq(zaopatrzenieLinia(-4), -4, '2f: 2 surowce brakujace (delta -4) -> linia -4');
+
+// Koniec-do-konca przez PRAWDZIWY `resolveCitizenResourceCoverage`: liczba surowcow epoki
+// (NSUR = 2 / 4 / 5) razy +-2. To jest ta sama sciezka, ktora wola silnik tury.
+const NSUR_2F = { 1: 2, 2: 4, 3: 5 };
+const PELNY_MAGAZYN = { drewno: 999, glina: 999, kamien: 999, ceramika: 999, cegla: 999 };
+for (const era of [1, 2, 3]) {
+  const wszystkie = M.resolveCitizenResourceCoverage(era, PELNY_MAGAZYN);
+  const zadne = M.resolveCitizenResourceCoverage(era, {});
+  eq(wszystkie.available.length, NSUR_2F[era], '2f: epoka ' + era + ' wymaga ' + NSUR_2F[era] + ' surowcow');
+  eq(wszystkie.happinessDelta, 2 * NSUR_2F[era],
+    '2f: epoka ' + era + ', komplet zaopatrzenia -> delta +' + (2 * NSUR_2F[era]) + ' (+2 na surowiec)');
+  eq(zadne.happinessDelta, -2 * NSUR_2F[era],
+    '2f: epoka ' + era + ', pusty magazyn -> delta ' + (-2 * NSUR_2F[era]) + ' (-2 na surowiec)');
+  eq(zaopatrzenieLinia(wszystkie.happinessDelta, era), 2 * NSUR_2F[era],
+    '2f: epoka ' + era + ', komplet -> linia rozpiski +' + (2 * NSUR_2F[era]));
+  eq(zaopatrzenieLinia(zadne.happinessDelta, era), -2 * NSUR_2F[era],
+    '2f: epoka ' + era + ', brak -> linia rozpiski ' + (-2 * NSUR_2F[era]));
+}
+// Symetria wprost: ta sama liczba surowcow daje przeciwne wartosci co do znaku.
+for (const era of [1, 2, 3]) {
+  eq(
+    M.resolveCitizenResourceCoverage(era, PELNY_MAGAZYN).happinessDelta
+      + M.resolveCitizenResourceCoverage(era, {}).happinessDelta,
+    0,
+    '2f: epoka ' + era + ': kara i bonus sa symetryczne (suma = 0)',
+  );
 }
 
 // ===========================================================================
@@ -423,7 +463,8 @@ for (const era of [1, 2, 3]) {
     ownReligionShare: 1,                   // 100% wlasnej religii -> +x
     haWealth: M.wealthZadowolenie(M.wealthCap(era, wp), wp, era),   // cap epoki -> +10
     podzialHandlu: { procentPieniadz: 10, procentNauka: 0, procentLuksus: 90 }, // -> +10
-    citizenResourceHappinessDelta: NSUR[era],                        // wszystkie surowce -> +2/szt.
+    // komplet zaopatrzenia epoki: NSUR surowcow x (+2) z citizen-resource-upkeep.json -> _kara
+    citizenResourceHappinessDelta: 2 * NSUR[era],
     atWar: false,
   }, society);
   eq(sz.netto, OPTYMISTYCZNY[era],
@@ -457,13 +498,23 @@ ok(/evaluateOrderFromBreakdown\(/.test(panelSrc),
   '2i: cityPanel.ts liczy Szczescie przez evaluateOrderFromBreakdown (wspolny kod)');
 ok(/ownCultureShare,/.test(panelSrc),
   '2i: cityPanel.ts przekazuje ownCultureShare do rozpiski');
-// (3) Wealth z epoka na wszystkich trzech wywolaniach panelu
+// (3) Wealth z EPOKA (nie literalem) na wszystkich trzech wywolaniach panelu.
+//     OBRONA runda 1, zarzut 1: poprzednia wersja liczyla tylko przecinki
+//     (`w.split(',').length === 3`), wiec podmiana `era` na literal `1` przechodzila
+//     na zielono, mimo ze panel pokazywalby wtedy +10 Wealth przy W=10 w KAZDEJ epoce.
+//     Teraz sprawdzany jest sam trzeci argument.
 {
   const wywolania = panelSrc.match(/wealthZadowolenie\([^)]*\)/g) || [];
   eq(wywolania.length, 3, '2i: cityPanel.ts ma 3 wywolania wealthZadowolenie');
   for (const w of wywolania) {
-    eq(w.split(',').length, 3, '2i: wywolanie "' + w + '" podaje epoke (3 argumenty)');
+    const args = w.replace(/^wealthZadowolenie\(/, '').replace(/\)$/, '').split(',');
+    eq(args.length, 3, '2i: wywolanie "' + w + '" podaje epoke (3 argumenty)');
+    eq(args[2].trim(), 'era',
+      '2i: trzecim argumentem "' + w + '" jest zmienna `era` z cfg.getEpoch, nie literal');
   }
+  // ...a `era` w panelu faktycznie pochodzi z epoki wlasciciela miasta, nie ze stalej.
+  ok(/const era = cfg\.getEpoch\?\.\([^)]*\) \?\? 1;/.test(panelSrc),
+    '2i: `era` w cityPanel.ts pochodzi z cfg.getEpoch(ownerId)');
 }
 // (4) panel nie dokleja juz nadwyzki Garncarni do linii Budynkow (G3)
 eq(panelSrc.includes('computeGarncarniaSurplusZadowolenieByOwner'), false,
@@ -496,7 +547,11 @@ for (const era of [1, 2, 3]) {
       '2i: panel == silnik dla Religii, epoka ' + era + ', sklad ' + JSON.stringify(counts));
   }
 }
-// (7) parytet calej rozpiski: to samo miasto, to samo wejscie -> ten sam netto i szPct
+// (7) SPOJNOSC WEWNETRZNA silnika (nie parytet z panelem!): `evaluateOrderFromBreakdown`
+//     wola `computeHappinessBreakdown` (society-breakdown.ts:983), wiec ta para pilnuje
+//     wylacznie tego, ze wejscie przechodzi przez obudowe bez zgubienia pola. OBRONA
+//     runda 1, zarzut 1 trafnie wskazala, ze NIE jest to dowod jednego toru z panelem —
+//     ten dowod daje dopiero blok (8) nizej, ktory URUCHAMIA panel.
 for (const era of [1, 2, 3]) {
   const wejscie = {
     difficulty: 'normal', era, population: 6,
@@ -505,7 +560,7 @@ for (const era of [1, 2, 3]) {
     haRel: M.religionHappiness({ counts: { A: 3, B: 2 } }, 'A'),
     haWealth: M.wealthZadowolenie(era * 10, wp, era),
     podzialHandlu: { procentPieniadz: 40, procentNauka: 20, procentLuksus: 40 },
-    citizenResourceHappinessDelta: NSUR[era] - 2,
+    citizenResourceHappinessDelta: 2 * (NSUR[era] - 2),
   };
   const a = M.computeHappinessBreakdown(wejscie, society);
   const b = M.evaluateOrderFromBreakdown(wejscie, { difficulty: 'normal', era, population: 6, garnizonCount: 0 }, society, 'normal').sz;
