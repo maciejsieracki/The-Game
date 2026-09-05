@@ -309,3 +309,37 @@ jest lepszy — uzasadnij i zostaw, ale nie trzymaj obu naraz.
 
 **Zarzutów nie ma — Evaluator jeszcze nie orzekał.** Runda 2 to dokończenie tej samej pracy
 po rozszerzeniu allowlisty, nie naprawa defektu.
+
+---
+
+## RATYFIKACJA ORKIESTRATORA — runda 3 (2026-09-05): jedna zmiana liczby
+
+**Decyzja właściciela, podjęta po rundzie 2:**
+
+`szczescie_max_pop_wspolczynnik` = **0,04** — jedna wartość na WSZYSTKICH trzech poziomach
+trudności (było 0,038 / 0,048 / 0,058).
+
+**Powód:** ten sam współczynnik przyjęto dla Prawa (`prawo_max_pop_wspolczynnik` = 0,04),
+żeby wielkość miasta obciążała oba filary Porządku identycznie. Gracz uczy się jednej
+zasady zamiast dwóch, a `PorPct = 0,5 × szPct + 0,5 × prawPct` zachowuje się przewidywalnie.
+
+Zgodne też z zasadą G13: **trudność wyrażana jest WYŁĄCZNIE przez `szczescie_max_epoka`**,
+a wszystkie pozostałe parametry mają te same wartości na easy / normal / hard. Współczynnik
+per trudność był ostatnim wyłomem od tej zasady.
+
+**To UCHYLA wcześniejszy zapis „`szczescie_max_pop_wspolczynnik` = 0,048 — BEZ ZMIAN,
+ZOSTAJE" z G13.** Twoja decyzja z rundy 1, żeby go nie ruszać, była wtedy prawidłowa —
+dispatch tak mówił. Teraz właściciel zmienił zdanie.
+
+**Zakres rundy 3:** wyłącznie ta jedna wartość plus aktualizacja asercji w bramkach, które
+ją sprawdzają. Nic więcej nie ruszaj.
+
+**Zmierzony skutek** (scenariusz realistyczny, poziom normalny, szMax 30/50/70):
+
+| pop | ep. 1 | ep. 2 | ep. 3 |
+|---|---|---|---|
+| 8 | 111% → **116%** | 107% → **112%** | 112% → **117%** |
+| 12 | 92% → **99%** | 89% → **96%** | 93% → **100%** |
+| 20 | 63% → **72%** | 61% → **70%** | 64% → **73%** |
+
+Łagodniej o 5–9 punktów procentowych, im większe miasto tym więcej.
