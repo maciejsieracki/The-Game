@@ -134,7 +134,9 @@ export function wealthMnoznik(poziom: number, p: WealthParams): number {
 export function wealthZadowolenie(poziom: number, p: WealthParams, epoka: number): number {
   if (poziom <= 0) return p.karaZero;
   const cap = wealthCap(epoka, p);
-  if (cap <= 0) return 0;
+  // Epoka nieliczbowa (np. wywolanie z JS bez trzeciego argumentu) NIE moze wpuscic NaN
+  // do rozpiski Szczescia -- netto miasta zrobiloby sie NaN i caly Porzadek by znikl.
+  if (!Number.isFinite(cap) || cap <= 0) return 0;
   const poz = Math.min(poziom, cap);
   return Math.floor(poz * p.zadowolenieMax / cap);
 }
