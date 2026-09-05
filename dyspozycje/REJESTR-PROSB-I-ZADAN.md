@@ -5268,3 +5268,53 @@ logic 213/213, tech-tree 19/19, research ALL GREEN, unit-replace 13/13, combat O
 **Temat `R-AUTOWYZYWIENIE-GLOBALNY-BLOKER-I-STAN-PRZYCISKU-Q1` jest tym samym domknięty**
 w obu węzłach. Zostają dwa tematy następcze: `R-AUTOWYZYWIENIE-LIMIT-WPIECIE-POPCAP-Q1`
 (wpięcie mapy limitów) i `R-SPICHLERZ-STAN-I-PRZELACZNIK-Q1` (ECHO „2+3").
+
+## P-CIV-NAMES-FALLBACK-BEZ-PULI-Q1 — nowe zgłoszenie (2026-09-05, znalezisko Evaluatora audytu nazw)
+
+**Ujawnione przez rozdzielenie pul — i to jest sedno: wcześniej ta ścieżka działała TYLKO
+dlatego, że pule się pokrywały.** Awaryjna stolica liczona bez puli
+(`gra/src/game/civ-names.ts:63`, `:96`) daje dla **14 cywilizacji** drugorzędny ośrodek
+zamiast stolicy właściwej: Grecy `Sykion`, Rzymianie `Nola`, Egipt `Tinis`,
+Asyria `Ekallatum`. Przed rozdzieleniem fallback trafiał w stolicę przypadkiem, bo
+`miasta_panstwa[0]` było tą samą nazwą co `miasta_cywilizacji[0]`.
+
+**To jest ta sama klasa błędu, którą właściciel zgłosił jako „stolica nazwana od państwa"** —
+tylko w ścieżce, którą kod sam opisuje jako znany defekt naprawiony wyłącznie przy obecnej
+puli (`civ-names.ts:48-52`).
+
+**NIE jest to regres tematu audytu nazw.** Ścieżka produkcyjna została zweryfikowana jako
+nietknięta: `playerStartCityName(civs,'grecy',pools) === 'Ateny'` stoi zielone i niezmienione
+(`city-names-pool-test.cjs:56`). Zmieniona została wyłącznie asercja fallbacku
+(`civ-names-test.cjs:53`), jawnie i z uzasadnieniem.
+
+**Zakres:** fallback bez puli ma czytać stolicę z `miasta_cywilizacji[0]`, a nie z puli
+państw-miast; bramka ma to asertować dla wszystkich 15 cywilizacji, nie dla jednej.
+**Wymaga `gra/src/game/civ-names.ts`** — poza allowlistą tematu danych.
+**STATUS: ZAREJESTROWANE, NIE DISPATCHOWANE.**
+
+### `R-NAZWY-MIAST-AUDYT-STOLICE-I-PANSTWA-Q1` — runda 1, osiem zarzutów (2026-09-05)
+
+**Warstwa kontroli, o którą w tym temacie naprawdę chodziło, zadziałała.** Dispatch mówił
+wprost, że bramka sprawdzi rozłączność i liczność, ale **nie sprawdzi, czy nazwa istniała
+naprawdę** — wymyślony toponim brzmiący z grecka przeszedłby każdy test automatyczny.
+Evaluator przeszedł próbę z 14 cywilizacji i orzekł: **żadnej nazwy wymyślonej**, wszystkie
+poświadczone i z właściwego kręgu. Ale złapał **trzy błędy epoki/kręgu**, których nic innego
+by nie wyłapało:
+- `Antinoupolis` — fundacja **Hadriana, 130 n.e.**, w grze o starożytności wczesnej;
+- `Karanis` — fundacja **ptolemejska, III w. p.n.e.**; przy okazji 6 z 10 pozycji listy
+  egipskiej miało formę grecką;
+- `Meklemburg` — **spolszczona nazwa niemiecka** zamiast grodu obodryckiego.
+
+Podmiany przyjęte (`Hebenu`, `Tjebu`, `Uznam`), udział form greckich na liście egipskiej
+spadł z 6/10 do 4/10.
+
+**Rozszerzenie allowlisty o `gra/data/civs.json` — ratyfikowane.** `validateCityNamesPools`
+(`civ-names.ts:167-172`) wymaga `nazwyKlastra === miasta_panstwa`, więc bez tego kryterium
+rozłączności jest **mechanicznie nieosiągalne**. Mój dispatch tego nie przewidział.
+Zakres dopuszczony wąsko: wyłącznie pole `nazwyKlastra`, wyłącznie dla zmienionych
+cywilizacji — Evaluator potwierdził, że zmiana jest chirurgiczna.
+
+**Sprostowanie po mojej stronie:** zmierzona liczba kolizji przed zmianą to **125**, nie 126
+jak podawał mój recon (`celtowie` 9 — `Závist` ≠ `Zavist` różnią się diakrytykiem).
+Wymieniono i tak wszystkie 140 pozycji, bo warianty transliteracji
+(`Kanesh`/`Kanesz`, `Kiev`/`Kijów`, `Carchemish`/`Karkemisz`) to duplikaty faktyczne.
