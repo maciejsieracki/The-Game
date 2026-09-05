@@ -87,15 +87,50 @@ miast w grze to miasta zwykłe.
 | | Epoka 1 | Epoka 2 | Epoka 3 |
 |---|---|---|---|
 | Budynki | Dom Starszyzny 28 + **Garnizon 25** | Dwór 33 + Trybunał 17 + **Garnizon 35** | Pretorium 38 + Trybunał 17 + Sąd 19 + **Garnizon 47** |
-| **`prawo_max_epoka`** | **53** | **85** | **121** |
+| Suma z budynków | 53 | 85 | 121 |
+| **`prawo_max_epoka`** | **40** | **75** | **100** |
+
+**`prawo_max_epoka` jest CELOWO NIŻSZE niż suma budynków.** Dzięki temu małe miasto
+z kompletem administracji przebija 100% (132% / 113% / 121% przy pop 2) i nadwyżka jest
+widoczna pod sufitem 170 — znaczy „to miasto jest wzorowo zarządzane". Gdyby `prawMax`
+równał się sumie budynków, każde miasto powyżej pop 2 siedziałoby dokładnie na stu.
 
 **Garnizon skaluje się z epoką: 25 / 35 / 47** (decyzja właściciela) — inaczej jego waga
 spadałaby 47% → 33% → 25%, czyli ta sama choroba rozwadniania co przy religii.
 Zapis: tablica per epoka, wzorem `prawo_max_epoka`, nie stała w kodzie.
 
-### D4. `prawo_max_pop_wspolczynnik` = 0
+### D4. `prawo_max_pop_wspolczynnik` = 0,04
 
-Płaski mianownik, jak przy szczęściu (tam współczynnik ZOSTAJE na 0,048 — tu na 0).
+**Zmiana wobec pierwotnej decyzji o płaskim mianowniku.** Właściciel dołożył karę za wielkość
+miasta: *„większe miasto wymaga większych nakładów i organizacji, żeby utrzymać prawo
+na odpowiednim poziomie"*.
+
+Wybrany mechanizm to **współczynnik w mianowniku**, nie kara addytywna — bo kara addytywna
+rozwadnia się z epoką (przy `−2`/obywatela metropolia pop 20 dawałaby 25% w epoce 1, ale 67%
+w epoce 3), czyli powtarzałaby defekt odrzucony przy szczęściu jako wariant W2.
+Współczynnik daje **wynik niezależny od epoki**.
+
+### D4a. ZASADA PROJEKTOWA — „większe miasto, większe problemy"
+
+Słowa właściciela: *„Po prostu większe miasta trzeba będzie budować w kolejnych epokach.
+Tam będą nowe budynki, które pozwolą zmniejszyć te kary za ludność i poprawić wielkość
+prawa."*
+
+**To jest wiążąca zasada na przyszłe epoki, nie obserwacja.** Rozrost miasta ma boleć,
+a lekarstwem mają być NOWE BUDYNKI kolejnych epok — nie łagodzenie współczynnika.
+
+Ile obywateli każda epoka realnie potrafi rządzić (populacja, przy której miasto zwykłe
+z kompletem budynków ma dokładnie 100%):
+
+| Epoka | Budynki | `prawMax` | Zapas | **pop przy 100%** |
+|---|---|---|---|---|
+| 1 | 53 | 40 | 1,325 | **9,2** |
+| 2 | 85 | 75 | 1,133 | **5,2** |
+| 3 | 121 | 100 | 1,210 | **6,9** |
+
+**Epoka 2 jest najciaśniejsza** — udźwignie tylko miasto pięcioosobowe. To wyjaśnia dołek
+90% przy pop 8 w tej epoce. Świadomie nie wyrównane; gdyby właściciel chciał krzywą płaską,
+epoka 2 powinna mieć `prawMax` ok. **64** zamiast 75.
 
 ### D5. Dwie kary USUNIĘTE
 
@@ -175,3 +210,65 @@ Do rozstrzygnięcia:
 - `unbreakable: true` — milicja walczy do ostatniego mieszkańca, co przy dużym mieście
   i przeważającej armii daje długą, jednostronną rzeź. Rozważyć próg ucieczki dla milicji
   **bez** Garnizonu, a `unbreakable` zostawić tam, gdzie Garnizon stoi.
+
+
+---
+
+## 6. REGUŁA SKALOWANIA PRAWA PRZY DODAWANIU EPOK
+
+Analogiczna do `dyspozycje/BALANS-SZCZESCIE-SKALOWANIE-EPOK.md`.
+
+### 6a. Wzór podstawowy
+
+```
+wymagane_budynki(P) = prawMax_epoki × 1,04 ^ (P − 2)
+```
+
+gdzie `P` to populacja, którą epoka ma umieć rządzić na poziomie 100%.
+
+| pop docelowy | `prawMax` 120 | `prawMax` 140 | `prawMax` 160 |
+|---|---|---|---|
+| 8 | 152 | 177 | 202 |
+| 10 | 164 | 192 | 219 |
+| 12 | 178 | 207 | 237 |
+| 15 | 200 | 233 | 266 |
+| 20 | 243 | 284 | 324 |
+| 25 | 296 | 345 | 394 |
+
+Odczyt: żeby w epoce 4 (`prawMax` 120) miasto 12-osobowe miało 100%, komplet budynków Prawa
+musi dawać **178 pkt** — czyli o 57 więcej niż 121 z epoki 3.
+
+### 6b. Ile muszą rosnąć budynki
+
+| Z pop | Na pop | Mnożnik budynków |
+|---|---|---|
+| 8 | 10 | 1,08× |
+| 10 | 12 | 1,08× |
+| 12 | 16 | 1,17× |
+| 16 | 20 | 1,17× |
+| 20 | 25 | 1,22× |
+
+**Każde +4 obywateli wymaga ok. +17% Prawa z budynków. Podwojenie miasta z 10 na 20 wymaga
++48%.** To jest budżet, w którym muszą się zmieścić nowe budynki kolejnej epoki.
+
+### 6c. Kolejność postępowania przy nowej epoce
+
+1. Ustal, jak duże miasto ta epoka ma umieć rządzić (`P`).
+2. Policz `wymagane_budynki(P)` wzorem z §6a.
+3. Odejmij to, co niosą budynki poprzedniej epoki po zwinięciu łańcuchów ulepszeń —
+   różnica to budżet Prawa dla nowych budynków epoki.
+4. Rozdziel budżet między nowe budynki, pamiętając, że **Garnizon też powinien awansować**
+   (25 → 35 → 47 → …), żeby jego udział nie spadał.
+5. `prawo_max_epoka` ustal **poniżej** sumy budynków, tak żeby małe miasto przebijało 100%
+   (historycznie: 40 przy 53, 75 przy 85, 100 przy 121 — zapas 1,13–1,33×).
+6. Zweryfikuj scenariusze dla pop 2 / 8 / 12 / 20: komplet, bez Garnizonu, zero budynków —
+   **przed** wpisaniem czegokolwiek do `society-params.json`.
+
+### 6d. Czego NIE zmieniać przy nowej epoce
+
+- **`prawo_max_pop_wspolczynnik` = 0,04** — kara za wielkość ma zostać stała. Lekarstwem
+  na duże miasta są nowe budynki, nie łagodzenie współczynnika (zasada D4a).
+- **`prawo_pct_cap` = 170** — zapas nad setką jest potrzebny, żeby pałac i nadwyżka małych
+  miast były widoczne.
+- **Jednostki wojskowe nie wchodzą do `prawMax`** (D1) — są doraźnym ratunkiem ponad skalą.
+- **Bonus osiedla 28 / 20 / 14 / 8** — bez zmian (D6).
