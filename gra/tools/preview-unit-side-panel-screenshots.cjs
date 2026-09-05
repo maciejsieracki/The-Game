@@ -34,7 +34,10 @@ process.on('exit', () => {
     }
   } catch { /* best-effort */ }
 });
-const TMP = path.join(os.tmpdir(), `civ-unit-panel-preview-${TMPDIR_RUN_ID}`);
+// Nazwa BEZ czlonu "preview": to katalog ROBOCZY (bundle + html), a nie zrzuty-dowody.
+// Hak sprzatajacy celowo omija nazwy z "shots"/"preview"/"zrzut", wiec stara nazwa
+// zostawialaby ten katalog na dysku po kazdym przebiegu. Wlasciwy produkt idzie do OUT.
+const TMP = path.join(os.tmpdir(), `civ-unit-panel-build-${TMPDIR_RUN_ID}`);
 const BUNDLE = path.join(TMP, 'unit-panel-preview-bundle.cjs');
 const STUB_DIR = path.join(__dirname, '.stubs');
 const STUB_BRAND = path.join(STUB_DIR, 'brandAssets-preview-stub.ts');
