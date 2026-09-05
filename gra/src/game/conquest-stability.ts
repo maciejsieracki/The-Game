@@ -150,16 +150,32 @@ export function tickCityCultureReligion(
   };
 }
 
-/** Dodatkowa kara Sz gdy obie obce (kultura + religia) — podwójne tarcie po podboju. */
+/**
+ * USUNIĘTA KARA SZCZĘŚCIA (G5, R-SZCZESCIE-PRZEBUDOWA-SKALI-Q1, właściciel 2026-09-05).
+ *
+ * Dawniej: dodatkowe −2 Sz, gdy po podboju jednocześnie obca kultura (<50%) i obca
+ * dominująca religia. Znika, bo proporcjonalna skala ±x z G4 **już to liczy**: linia
+ * Kultury daje −x przy obcej kulturze i linia Religii daje −x przy obcej religii, więc
+ * miasto podwójnie obce dostawało tę samą rzecz trzeci raz. Parametr
+ * `szczescie_kara_podboj_podwojna_obca` usunięty z `data/society-params.json`.
+ *
+ * Funkcja ZOSTAJE (zwraca stałe 0) wyłącznie dlatego, że importuje ją i woła `main.ts`,
+ * który jest poza allowlistą tego tematu (trzyma go `R-MIASTA-ZDOBYCIE-RAPORT-TROFEA-Q1`,
+ * §2b). `computeHappinessBreakdown` i tak IGNORUJE `conquestUnstablePenalty` — kara jest
+ * usunięta na obu torach, nie tylko tutaj.
+ *
+ * NIE MYLIĆ z `conquestNoGarrisonLawPenalty` niżej — to kara PRAWA, inny mechanizm,
+ * nietknięta przez ten temat.
+ *
+ * @deprecated Zawsze 0. Do usunięcia razem z wywołaniem w `main.ts`, gdy ten plik będzie wolny.
+ */
 export function conquestUnstableHappinessPenalty(
-  ownCultureShare: number,
-  foreignReligionDominant: boolean,
-  society: SocietyParamsLike | null | undefined,
-  difficulty: Difficulty = 'normal',
+  _ownCultureShare: number,
+  _foreignReligionDominant: boolean,
+  _society: SocietyParamsLike | null | undefined,
+  _difficulty: Difficulty = 'normal',
 ): number {
-  if (!isConquestUnstable(ownCultureShare, foreignReligionDominant)) return 0;
-  const sz = (society?.szczescie ?? {}) as Record<string, RawParamRow>;
-  return pick(sz.szczescie_kara_podboj_podwojna_obca, difficulty, -2);
+  return 0;
 }
 
 /** Kara Prawa gdy podbój niestabilny i brak garnizonu. */

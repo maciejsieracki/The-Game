@@ -23,7 +23,6 @@ export {
   orderEffectsFromPorPct,
   porPctBand,
   updateRevoltGrace,
-  happinessBucketsFromPct,
   loadRevoltParams,
   isOsiedleRevoltImmune,
   osiedlePopMax,
@@ -148,9 +147,11 @@ eq(g.graceTurnsLeft, 3, 'easy: PorPct 4% -> grace 3');
 eq(M.porPctBand(4, 5), 'bunt_skrajny', 'PorPct 4 < crit 5 -> skrajny');
 eq(M.porPctBand(6, 5), 'bunt', 'PorPct 6 >= crit 5 -> bunt not skrajny');
 
-// Buckets from pct
-const buckets = M.happinessBucketsFromPct(10, 80);
-eq(buckets.zadowoleni + buckets.kontentni + buckets.niezadowoleni, 10, 'buckets sum pop');
+// USUNIETE (R-SZCZESCIE-PRZEBUDOWA-SKALI-Q1 G14, wlasciciel 2026-09-05): asercja
+// `happinessBucketsFromPct(10, 80)` -> suma koszykow = populacja. Funkcja zostala usunieta
+// z society-breakdown.ts razem z siedmioma martwymi parametrami — byla pozostaloscia po
+// porzuconym modelu "liczby zadowolonych mieszkancow", zastapionym modelem procentowym
+// szPct -> PorPct, i nie miala ani jednego wywolania w gra/src poza wlasnym plikiem.
 
 // D-START-OSIEDLE: symulacja PorPct T1 pop=1 (cele 75/55/35)
 {

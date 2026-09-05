@@ -1,6 +1,7 @@
 [
   {
     "id": "stolarnia",
+    "dajeSzczescie": false,
     "nazwa": "Stolarnia",
     "kategoria": "Produkcja",
     "grupa": "Produkcja surowców",
@@ -52,6 +53,7 @@
   },
   {
     "id": "kamieniarski",
+    "dajeSzczescie": false,
     "nazwa": "Warsztat kamieniarski",
     "kategoria": "Produkcja",
     "grupa": "Produkcja surowców",
@@ -92,6 +94,7 @@
   },
   {
     "id": "kuznia",
+    "dajeSzczescie": false,
     "nazwa": "Kuźnia brązu",
     "kategoria": "Produkcja+Wojsko",
     "grupa": "Produkcja surowców",
@@ -133,6 +136,7 @@
   },
   {
     "id": "odlewnia_brazu",
+    "dajeSzczescie": false,
     "nazwa": "Odlewnia brązu",
     "kategoria": "Produkcja",
     "grupa": "Produkcja surowców",
@@ -174,6 +178,7 @@
   },
   {
     "id": "odlewnia_zelaza",
+    "dajeSzczescie": false,
     "nazwa": "Odlewnia żelaza",
     "kategoria": "Produkcja",
     "grupa": "Produkcja surowców",
@@ -216,6 +221,7 @@
   },
   {
     "id": "wielka_odlewnia",
+    "dajeSzczescie": false,
     "nazwa": "Wielka odlewnia",
     "kategoria": "Produkcja",
     "grupa": "Produkcja surowców",
@@ -259,6 +265,7 @@
   },
   {
     "id": "targowisko",
+    "dajeSzczescie": true,
     "nazwa": "Targowisko (Rynek)",
     "kategoria": "Pieniadz",
     "grupa": "Handel i pieniądz",
@@ -310,6 +317,7 @@
   },
   {
     "id": "port",
+    "dajeSzczescie": true,
     "nazwa": "Port handlowy",
     "kategoria": "Pieniadz",
     "grupa": "Handel i pieniądz",
@@ -351,6 +359,7 @@
   },
   {
     "id": "port_wielki",
+    "dajeSzczescie": true,
     "nazwa": "Port wielki",
     "kategoria": "Pieniadz",
     "grupa": "Handel i pieniądz",
@@ -393,6 +402,7 @@
   },
   {
     "id": "spichlerz",
+    "dajeSzczescie": true,
     "nazwa": "Spichlerz",
     "kategoria": "Zywnosc",
     "grupa": "Żywność",
@@ -405,7 +415,7 @@
       "zywnosc": 2,
       "nauka": 0,
       "kultura": 0,
-      "zadowolenie": 0,
+      "zadowolenie": 4,
       "obrona": 0,
       "mnoznik": 0
     },
@@ -433,6 +443,7 @@
   },
   {
     "id": "spichlerz_ii",
+    "dajeSzczescie": true,
     "nazwa": "Spichlerz II",
     "kategoria": "Zywnosc",
     "grupa": "Żywność",
@@ -446,7 +457,7 @@
       "zywnosc": 3,
       "nauka": 0,
       "kultura": 0,
-      "zadowolenie": 2,
+      "zadowolenie": 4,
       "obrona": 0,
       "mnoznik": 0
     },
@@ -475,6 +486,7 @@
   },
   {
     "id": "garncarnia",
+    "dajeSzczescie": false,
     "nazwa": "Garncarnia",
     "kategoria": "Produkcja",
     "grupa": "Produkcja surowców",
@@ -515,6 +527,7 @@
   },
   {
     "id": "cegielnia",
+    "dajeSzczescie": false,
     "nazwa": "Cegielnia",
     "kategoria": "Produkcja",
     "grupa": "Produkcja surowców",
@@ -556,6 +569,7 @@
   },
   {
     "id": "kamienne_kregi",
+    "dajeSzczescie": true,
     "nazwa": "Kamienne kręgi",
     "kategoria": "Religia",
     "grupa": "Wiara",
@@ -596,6 +610,7 @@
   },
   {
     "id": "swiatynia",
+    "dajeSzczescie": true,
     "nazwa": "Świątynia",
     "kategoria": "Religia",
     "grupa": "Wiara",
@@ -637,6 +652,7 @@
   },
   {
     "id": "biblioteka",
+    "dajeSzczescie": true,
     "nazwa": "Biblioteka",
     "kategoria": "Nauka",
     "grupa": "Nauka i kultura",
@@ -692,6 +708,7 @@
   },
   {
     "id": "studnia",
+    "dajeSzczescie": true,
     "nazwa": "Studnia",
     "kategoria": "Zdrowie",
     "grupa": "Zdrowie",
@@ -732,6 +749,7 @@
   },
   {
     "id": "akwedukt",
+    "dajeSzczescie": true,
     "nazwa": "Akwedukt",
     "kategoria": "Zdrowie",
     "grupa": "Zdrowie",
@@ -773,6 +791,7 @@
   },
   {
     "id": "mennica",
+    "dajeSzczescie": false,
     "nazwa": "Mennica",
     "kategoria": "Pieniadz",
     "grupa": "Handel i pieniądz",
@@ -815,6 +834,7 @@
   },
   {
     "id": "palisada",
+    "dajeSzczescie": false,
     "nazwa": "Palisada drewniana",
     "kategoria": "Obrona",
     "grupa": "Wojsko i obrona",
@@ -856,6 +876,7 @@
   },
   {
     "id": "mury",
+    "dajeSzczescie": false,
     "nazwa": "Mury",
     "kategoria": "Obrona",
     "grupa": "Wojsko i obrona",
@@ -898,6 +919,7 @@
   },
   {
     "id": "koszary",
+    "dajeSzczescie": false,
     "nazwa": "Koszary",
     "kategoria": "Wojsko",
     "grupa": "Wojsko i obrona",
@@ -939,6 +961,7 @@
   },
   {
     "id": "magazyn",
+    "dajeSzczescie": false,
     "nazwa": "Magazyn",
     "kategoria": "Produkcja+Pieniadz",
     "grupa": "Handel i pieniądz",
@@ -980,6 +1003,7 @@
   },
   {
     "id": "stela",
+    "dajeSzczescie": true,
     "nazwa": "Stela / Pomnik",
     "kategoria": "Kultura",
     "grupa": "Nauka i kultura",
@@ -1020,6 +1044,7 @@
   },
   {
     "id": "palac",
+    "dajeSzczescie": true,
     "nazwa": "Pałac",
     "kategoria": "Kultura/Administracja",
     "grupa": "Prawo i administracja",
@@ -1062,6 +1087,7 @@
   },
   {
     "id": "palac_ii",
+    "dajeSzczescie": true,
     "nazwa": "Pałac II",
     "kategoria": "Kultura/Administracja",
     "grupa": "Prawo i administracja",
@@ -1105,6 +1131,7 @@
   },
   {
     "id": "palac_iii",
+    "dajeSzczescie": true,
     "nazwa": "Pałac III",
     "kategoria": "Kultura/Administracja",
     "grupa": "Prawo i administracja",
@@ -1148,6 +1175,7 @@
   },
   {
     "id": "kuznia_zelaza",
+    "dajeSzczescie": false,
     "nazwa": "Kuźnia żelaza",
     "kategoria": "Produkcja+Wojsko",
     "grupa": "Produkcja surowców",
@@ -1191,6 +1219,7 @@
   },
   {
     "id": "wielka_kuznia",
+    "dajeSzczescie": false,
     "nazwa": "Wielka Kuźnia",
     "kategoria": "Produkcja",
     "grupa": "Produkcja surowców",
@@ -1234,6 +1263,7 @@
   },
   {
     "id": "fort",
+    "dajeSzczescie": false,
     "nazwa": "Cytadela",
     "kategoria": "Obrona",
     "grupa": "Wojsko i obrona",
@@ -1276,6 +1306,7 @@
   },
   {
     "id": "baszta",
+    "dajeSzczescie": false,
     "nazwa": "Baszta",
     "kategoria": "Obrona",
     "grupa": "Wojsko i obrona",
@@ -1318,6 +1349,7 @@
   },
   {
     "id": "warsztat_oblezniczy",
+    "dajeSzczescie": false,
     "nazwa": "Warsztat oblężniczy",
     "kategoria": "Wojsko",
     "grupa": "Wojsko i obrona",
@@ -1360,6 +1392,7 @@
   },
   {
     "id": "akademia",
+    "dajeSzczescie": true,
     "nazwa": "Akademia",
     "kategoria": "Nauka",
     "grupa": "Nauka i kultura",
@@ -1401,6 +1434,7 @@
   },
   {
     "id": "teatr",
+    "dajeSzczescie": true,
     "nazwa": "Teatr",
     "kategoria": "Kultura",
     "grupa": "Nauka i kultura",
@@ -1443,6 +1477,7 @@
   },
   {
     "id": "sad",
+    "dajeSzczescie": true,
     "nazwa": "Sąd",
     "kategoria": "Administracja",
     "grupa": "Prawo i administracja",
@@ -1484,6 +1519,7 @@
   },
   {
     "id": "dom_starszyzny",
+    "dajeSzczescie": false,
     "nazwa": "Dom Starszyzny",
     "kategoria": "Administracja",
     "grupa": "Prawo i administracja",
@@ -1525,6 +1561,7 @@
   },
   {
     "id": "dwor_zarzadcy",
+    "dajeSzczescie": false,
     "nazwa": "Dwór Zarządcy",
     "kategoria": "Administracja",
     "grupa": "Prawo i administracja",
@@ -1568,6 +1605,7 @@
   },
   {
     "id": "pretorium",
+    "dajeSzczescie": false,
     "nazwa": "Pretorium",
     "kategoria": "Administracja",
     "grupa": "Prawo i administracja",
@@ -1611,6 +1649,7 @@
   },
   {
     "id": "trybunal",
+    "dajeSzczescie": true,
     "nazwa": "Trybunał",
     "kategoria": "Administracja",
     "grupa": "Prawo i administracja",
@@ -1652,6 +1691,7 @@
   },
   {
     "id": "laznia_publiczna",
+    "dajeSzczescie": true,
     "nazwa": "Łaźnia publiczna",
     "kategoria": "Zdrowie",
     "grupa": "Zdrowie",
@@ -1693,6 +1733,7 @@
   },
   {
     "id": "akademia_wojskowa",
+    "dajeSzczescie": false,
     "nazwa": "Akademia wojskowa",
     "kategoria": "Wojsko",
     "grupa": "Wojsko i obrona",

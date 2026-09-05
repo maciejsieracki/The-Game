@@ -131,7 +131,6 @@ import {
   buildingStructuralDefenseBonusLine,
   buildingStructuralDefenseBonusPercent,
   cityHasBibliotekaLine,
-  cityHasAmfiteatrLine,
   cityPalacTier,
   groupBuiltBuildingIds,
 } from '../game/building-upgrades';
@@ -193,7 +192,6 @@ import {
   cityWorkedTilesForEconomy,
   toEconomyCity,
   computeCityHealthBreakdown,
-  computeGarncarniaSurplusZadowolenieByOwner,
   type CityHealthLine,
   type Difficulty,
 } from '../game/turn-economy';
@@ -224,6 +222,10 @@ import {
   porPctBand,
   POR_BAND_LABELS,
   orderContributionPct,
+  loadSocietyScaleParams,
+  kultReligScaleForEra,
+  proporcjonalneSzczescie,
+  ownShareFromSignal,
 } from '../game/society-breakdown';
 import {
   computeCitizenResourceDrain,
@@ -236,7 +238,7 @@ import {
   postCaptureLawBannerLabel,
 } from '../game/post-capture-law';
 import { stolicaEasyBonusActive } from '../game/society-inputs';
-import { cultureHappiness, loadCultureParams, loadReligionParams, FALLBACK_RELIGION_PARAMS } from '../game/culture-religion';
+import { loadReligionParams, FALLBACK_RELIGION_PARAMS } from '../game/culture-religion';
 import { resolveOwnCultureShare } from '../game/society-inputs';
 import {
   buildOrderSectionHtml,
@@ -2955,6 +2957,24 @@ function PH(): string {
 // Lewa kolumna — społeczeństwo (B2: Mieszkańcy, Porządek, Zdrowie)
 // ---------------------------------------------------------------------------
 
+/**
+ * G4 + G15 — `getReligionState().wplywSzczescie` to od 2026-09-05 ZNORMALIZOWANY wskaźnik
+ * przewagi własnej religii [−1, +1] (`religionHappiness`), a nie punkty. Punkty powstają
+ * dopiero po pomnożeniu przez `x(epoka)` = `szczescie_skala_kultura_religia` — DOKŁADNIE
+ * tak, jak robi to `computeHappinessBreakdown` w silniku. Panel liczy to tym samym
+ * kodem, żeby nie powstał drugi tor (znany, powtarzalny defekt tego repo).
+ */
+function religiaSzPunkty(wskaznik: number, ownerId: number): number {
+  const data = gameData();
+  const era = cfg.getEpoch?.(ownerId) ?? 1;
+  const scale = loadSocietyScaleParams(data?.societyParams ?? null, cfg.difficulty ?? 'normal');
+  const pkt = proporcjonalneSzczescie(
+    kultReligScaleForEra(era, scale),
+    ownShareFromSignal(wskaznik),
+  );
+  return Math.round(pkt * 10) / 10;
+}
+
 function buildingHappinessSum(cityId: string, data: GameData, era: number, ownerId: number): number {
   const builtIds = cfg.getBuiltBuildingIds?.(cityId) ?? [];
   const techs = cfg.getUnlockedTechs?.(ownerId) ?? [];
@@ -2969,14 +2989,11 @@ function buildingHappinessSum(cityId: string, data: GameData, era: number, owner
       techs,
     ),
   );
-  if (builtIds.includes('garncarnia')) {
-    const allCities = cfg.getCities?.() ?? [];
-    const builtByCity = new Map<string, readonly string[]>();
-    for (const c of allCities) {
-      builtByCity.set(c.id, cfg.getBuiltBuildingIds?.(c.id) ?? []);
-    }
-    sum += computeGarncarniaSurplusZadowolenieByOwner(allCities, builtByCity, false).get(ownerId) ?? 0;
-  }
+  // G3 (2026-09-05): nadwyżka Garncarni NIE dolicza się już do linii Budynków. Silnik
+  // podawał ją osobnym kanałem (`ceramikaZadowolenie` → wiersz „Ceramika (dostęp)"), a ten
+  // wiersz został usunięty — ceramika liczy się jako zwykły surowiec zaopatrzenia
+  // obywateli. Panel dodawał ją do Budynków, czyli oba tory i tak liczyły to inaczej;
+  // teraz oba nie liczą jej wcale (G15 — jeden tor).
   return sum;
 }
 
@@ -3011,22 +3028,21 @@ function computeOrderStateLocal(city: City, data: GameData): { state: OrderState
   const era = cfg.getEpoch?.(city.ownerId) ?? 1;
   const builtIds = cfg.getBuiltBuildingIds?.(city.id) ?? [];
   const op = loadOrderParams(data.societyParams, difficulty);
-  const cp = loadCultureParams(data.societyParams, difficulty);
 
   const relState = cfg.getReligionState?.(city.id);
-  const cultState = cfg.getCultureState?.(city.id);
-  const kulturaSkumulowana = cultState?.kulturaSuma
-    ?? (city as { kultura?: number }).kultura
-    ?? 0;
   const ownCultureShare = resolveOwnCultureShare(city as { ownCultureShare?: number; kulturaOwnShare?: number });
-  const haKult = cultureHappiness({ kulturaSkumulowana, ownCultureShare }, cp);
+  // G4 + G15: panel NIE liczy już własnej wersji linii Kultury/Religii. Podaje surowe
+  // udziały (Kultura) i znormalizowany wskaźnik (Religia) do `computeHappinessBreakdown`,
+  // które jako JEDYNE zamienia je na punkty — ten sam kod, który wywołuje silnik.
   const haRel = relState?.wplywSzczescie ?? 0;
 
   const ws = city.wealthState ?? freshWealthState();
   const wealthParams = data.econParams
     ? loadWealthParams(data.econParams as unknown as RawWealthParamsJson, difficulty)
     : null;
-  const haWealth = wealthParams ? wealthZadowolenie(ws.poziom ?? 0, wealthParams) : 0;
+  // G6: wkład Wealth zależy od CAPU epoki (max +10 w każdej epoce) — ta sama epoka,
+  // którą panel podaje do rozpiski Szczęścia, więc panel i silnik liczą to identycznie.
+  const haWealth = wealthParams ? wealthZadowolenie(ws.poziom ?? 0, wealthParams, era) : 0;
 
   const gCount = cfg.getUnitsAt?.(city.q, city.r)?.length ?? 0;
   const podzial = readPodzialHandlu(city, data);
@@ -3074,13 +3090,11 @@ function computeOrderStateLocal(city: City, data: GameData): { state: OrderState
       era,
       population: city.population,
       buildingZadowolenie: buildingHappinessSum(city.id, data, era, city.ownerId),
-      haKult,
       haRel,
+      ownCultureShare,
       haWealth,
       podzialHandlu: podzial,
       atWar: false,
-      hasSwiatynia: builtIds.includes('swiatynia'),
-      hasAmfiteatr: cityHasAmfiteatrLine(builtIds),
       stolicaEasyBonus: stolicaBonus,
       citizenResourceHappinessDelta: citizenUpkeep.happinessDelta,
     },
@@ -3728,9 +3742,9 @@ function buildKulturaDetailCard(
   appendDetailAlgo(card, 'Sens mechaniki religii', [
     'Każda cywilizacja ma religię państwową (np. Politeizm, Animizm) — to tożsamość, nie wybór gracza co turę.',
     'Miasta mają skład wyznawców; gdy jedna wiara >50% ludności → religia dominująca.',
-    'Twoja religia dominuje → bonus Szczęścia (spokojniejsze miasto, wyższy Porządek).',
-    'Obca religia dominuje → kara Szczęścia (tarcie po podboju, ryzyko buntu).',
-    'Brak dominującej / mieszanka wierzeń → mała kara (chaos duchowy).',
+    'Szczęście z religii jest <b>proporcjonalne do udziału twojej wiary</b>: 100% własnej = +x, 100% obcej = −x, 50/50 = dokładnie 0.',
+    'x rośnie z epoką (10 / 16 / 23) — im dalej w las, tym więcej waży jedność wyznaniowa.',
+    'Brak wyznawców w mieście → 0 (ani bonusu, ani kary — nie ma tam ani własnej, ani obcej wiary).',
     'Religia <b>szerzy się</b> na sąsiednie miasta co turę — jak presja kulturowa; Świątynia przyspiesza.',
     'Po podboju miasto <b>konwertuje</b> stopniowo (%) ku religii właściciela — Świątynia przyspiesza.',
     'Strategia: misjonerskie imperium vs tolerancyjne (akceptuj obce miasta, ale płać karą Sz).',
@@ -3739,10 +3753,15 @@ function buildKulturaDetailCard(
 
   appendDetailSection(card, 'Religia — parametry (normal)');
   const gr = appendDetailGrid(card);
-  gridDetailRow(gr, 'Próg dominacji', `>${relParams.progDominacjiPct}% wyznawców`);
-  gridDetailRow(gr, 'Twoja religia dominuje', `${relParams.zadowolenieDominujaca >= 0 ? '+' : ''}${relParams.zadowolenieDominujaca} Sz`);
-  gridDetailRow(gr, 'Obca religia dominuje', String(relParams.karaObca));
-  gridDetailRow(gr, 'Brak / mieszanka', String(relParams.karaBrakReligii));
+  const xRel = kultReligScaleForEra(
+    cfg.getEpoch?.(city.ownerId) ?? 1,
+    loadSocietyScaleParams(data?.societyParams ?? null, diff),
+  );
+  gridDetailRow(gr, 'Próg dominacji', `>${relParams.progDominacjiPct}% wyznawców (opis składu; Szczęście liczy się z udziału)`);
+  gridDetailRow(gr, 'Skala Sz tej epoki', `±${xRel} pkt — 100% własnej +${xRel}, 100% obcej −${xRel}`);
+  gridDetailRow(gr, '100% własnej wiary', `+${xRel} Sz`);
+  gridDetailRow(gr, '50/50', 'dokładnie 0 Sz');
+  gridDetailRow(gr, '100% obcej wiary', `−${xRel} Sz`);
   gridDetailRow(gr, 'Szerzenie bazowe', `${relParams.szybkoscSzerzeniaBazowa} sąsiednie miasto`);
   gridDetailRow(gr, 'Bonus Świątyni (szerzenie)', `+${relParams.swiatyniaBonusSzerzenia}`);
   gridDetailRow(gr, 'Zasięg szerzenia', `${relParams.szerzenieMaxDystans} heksy`);
@@ -3770,7 +3789,8 @@ function buildKulturaDetailCard(
     }
     gridDetailRow(gs, 'Dominująca', relState.dominujaca);
     gridDetailRow(gs, 'Udział wyznawców', `${relState.udzialPct}%`);
-    gridDetailRow(gs, 'Wpływ na Szczęście', `${relState.wplywSzczescie >= 0 ? '+' : ''}${relState.wplywSzczescie}`);
+    const relSzPkt = religiaSzPunkty(relState.wplywSzczescie, city.ownerId);
+    gridDetailRow(gs, 'Wpływ na Szczęście', `${relSzPkt >= 0 ? '+' : ''}${relSzPkt} pkt`);
     if (relState.przyrostWiernych != null) {
       gridDetailRow(gs, 'Szerzenie', `${relState.przyrostWiernych >= 0 ? '+' : ''}${relState.przyrostWiernych} wiernych`);
     }
@@ -3933,7 +3953,8 @@ function renderReligia(mount: HTMLElement, city: City, view: CityView | null): v
         const g = appendDetailGrid(card);
         gridDetailRow(g, 'Dominująca', relState.dominujaca);
         gridDetailRow(g, 'Udział', `${relState.udzialPct}%`);
-        gridDetailRow(g, 'Wpływ na Sz', `${relState.wplywSzczescie >= 0 ? '+' : ''}${relState.wplywSzczescie}`);
+        const szPkt = religiaSzPunkty(relState.wplywSzczescie, city.ownerId);
+        gridDetailRow(g, 'Wpływ na Sz', `${szPkt >= 0 ? '+' : ''}${szPkt} pkt`);
       } else {
         card.appendChild(el('div', 'dc-note', 'Brak danych silnika (hak getReligionState).'));
       }
@@ -3942,6 +3963,9 @@ function renderReligia(mount: HTMLElement, city: City, view: CityView | null): v
   );
 
   const relChips: TabIndicatorChip[] = [];
+  // G4/G15: wskaźnik [-1,+1] z silnika → punkty Szczęścia tej epoki (ta sama funkcja,
+  // którą liczy `computeHappinessBreakdown`).
+  const relSzPkt = relState ? religiaSzPunkty(relState.wplywSzczescie, city.ownerId) : 0;
   if (relState) {
     relChips.push({
       icon: cityPanelChipIcon('res-religion', 14),
@@ -3953,9 +3977,9 @@ function renderReligia(mount: HTMLElement, city: City, view: CityView | null): v
     relChips.push({
       icon: cityPanelChipIcon('chip-happiness', 14),
       label: 'Sz',
-      value: `${relState.wplywSzczescie >= 0 ? '+' : ''}${relState.wplywSzczescie}`,
-      cls: relState.wplywSzczescie >= 0 ? 'green' : 'red',
-      title: 'Wpływ na szczęście',
+      value: `${relSzPkt >= 0 ? '+' : ''}${relSzPkt}`,
+      cls: relSzPkt >= 0 ? 'green' : 'red',
+      title: 'Wpływ na szczęście (pkt tej epoki)',
     });
     if (relState.przyrostWiernych != null) {
       relChips.push({
@@ -3996,8 +4020,8 @@ function renderReligia(mount: HTMLElement, city: City, view: CityView | null): v
 
   const relLines: BreakdownLine[] = relState?.zrodla?.map(z => ({ label: z.nazwa, value: z.wartosc })) ?? [];
   if (relState) {
-    if (relState.wplywSzczescie !== 0 && !relLines.some(l => /szczęście/i.test(l.label))) {
-      relLines.push({ label: 'Wpływ na szczęście', value: relState.wplywSzczescie });
+    if (relSzPkt !== 0 && !relLines.some(l => /szczęście/i.test(l.label))) {
+      relLines.push({ label: 'Wpływ na szczęście', value: relSzPkt });
     }
     if (relState.przyrostWiernych != null && relState.przyrostWiernych !== 0
         && !relLines.some(l => /szerzenie/i.test(l.label))) {
@@ -4014,10 +4038,10 @@ function renderReligia(mount: HTMLElement, city: City, view: CityView | null): v
   if (relState) {
     const sum = el('div', 'rsb civ-w4-rel-summary');
     sum.style.cssText = 'margin-top:0.35em;font-size:0.82em;display:flex;justify-content:space-between;align-items:center;gap:0.35em;flex-wrap:wrap;';
-    const szCls = relState.wplywSzczescie >= 0 ? 'green' : 'red';
+    const szCls = relSzPkt >= 0 ? 'green' : 'red';
     sum.innerHTML =
       `<span style="color:#e8e0c8;">${relState.dominujaca} / kult państwa</span>` +
-      `<span class="${szCls} val">${relState.udzialPct}% · ${relState.wplywSzczescie >= 0 ? '+' : ''}${relState.wplywSzczescie}</span>`;
+      `<span class="${szCls} val">${relState.udzialPct}% · ${relSzPkt >= 0 ? '+' : ''}${relSzPkt}</span>`;
     mount.appendChild(sum);
   }
 }
@@ -4592,7 +4616,7 @@ function renderWealth(mount: HTMLElement, city: City, data: GameData | null, vie
   const prog = wealthProg(ws.poziom, epoch, wealthParams);
   const atCap = ws.poziom >= cap;
   const mnoz = wealthMnoznik(ws.poziom, wealthParams);
-  const szBonus = wealthZadowolenie(ws.poziom, wealthParams);
+  const szBonus = wealthZadowolenie(ws.poziom, wealthParams, epoch);
   const pct = atCap ? 100 : (prog > 0
     ? Math.round(Math.min(100, Math.max(0, (ws.pula / prog) * 100)))
     : 0);
@@ -4628,7 +4652,7 @@ function buildWealthDetailCard(
   const cap = wealthCap(epoch, p);
   const prog = wealthProg(ws.poziom, epoch, p);
   const mnoz = wealthMnoznik(ws.poziom, p);
-  const szcz = wealthZadowolenie(ws.poziom, p);
+  const szcz = wealthZadowolenie(ws.poziom, p, epoch);
   const daninaLbl = daninaLabelForCity(city);
   const daninaLblGen = daninaLabelGenitive(daninaLbl);
   const rown = wealthRownowaga(ws.poziom, epoch, p);
@@ -4715,7 +4739,7 @@ function buildWealthDetailCard(
   gridDetailRow(g3, 'Awans', `Pula ≥ próg → W+1, zostaje ${Math.round(p.zachowaniePoAwansie * 100)}% puli`);
   gridDetailRow(g3, 'Spadek', 'Gdy pula spadnie poniżej 0 → W−1 (bufor wyczerpany)');
   gridDetailRow(g3, 'Równowaga W', `${Math.round(p.utrzymanieBaza * 100)}%→${Math.round(p.utrzymaniePrzyCap * 100)}% pieniędzy (W0→cap)`);
-  gridDetailRow(g3, 'Szczęście', `W=0: ${p.karaZero}; co 10 poziomów W: +${p.zadowolenieNa10pkt}`);
+  gridDetailRow(g3, 'Szczęście', `W=0: ${p.karaZero}; dalej floor(W × ${p.zadowolenieMax} / cap epoki) — max +${p.zadowolenieMax} w każdej epoce (cap ${cap})`);
 
   appendDetailAlgo(card, 'Kolejność ticku zamożności', [
     `Wejście: strumień z ${daninaLblGen} = floor(handelNetto × %${HANDEL_ZAMOZNOSC_LABEL}) — nie trafia do skarbca.`,
@@ -5820,8 +5844,11 @@ function buildTopBarReligiaDetailCard(
 
   appendDetailSection(card, 'Po co religia w grze');
   const g1 = appendDetailGrid(card);
-  gridDetailRow(g1, 'Twoja wiara dominuje', `bonus Sz (+${relParams.zadowolenieDominujaca})`);
-  gridDetailRow(g1, 'Obca wiara dominuje', `kara Sz (${relParams.karaObca})`);
+  const xRelTop = kultReligScaleForEra(
+    cfg.getEpoch?.(city.ownerId) ?? 1,
+    loadSocietyScaleParams(data?.societyParams ?? null, diff),
+  );
+  gridDetailRow(g1, 'Szczęście z wiary', `proporcjonalnie do udziału: 100% własnej +${xRelTop}, 50/50 = 0, 100% obcej −${xRelTop}`);
   gridDetailRow(g1, 'Szerzenie', 'Sąsiednie miasta + Świątynia przyspieszają konwersję');
 
   appendDetailAlgo(card, 'Gdzie zarządzać', [

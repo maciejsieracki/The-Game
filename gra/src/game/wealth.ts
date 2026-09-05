@@ -16,6 +16,10 @@
  * spadek: bufor puli, potem -1 poziom przy puli=0; pula po awansie zostaje % (jak Spichlerz);
  * cap = epoka*10; prog awansu liniowy *(L+1)*epoka; utrzymanie = (baza + (W/cap)*(przyCap-baza)) * pieniadz.
  *
+ * G6 (R-SZCZESCIE-PRZEBUDOWA-SKALI-Q1, wlasciciel 2026-09-05): wklad Wealth do Szczescia
+ * to teraz floor(poziom * wealth_zadowolenie_max / cap_epoki) -- max +10 w KAZDEJ epoce,
+ * prog rosnie 10 -> 20 -> 30. Dawne "co +10 poziomow -> +1 zadowolony" juz NIE obowiazuje.
+ *
  * Parametry strojone per poziom trudnosci -> econ-params.json grupa "wealth".
  * Kod ASCII; bezpieczne fallbacki (jeden zly wiersz nie wywali tury).
  */
@@ -39,8 +43,12 @@ export interface WealthParams {
   utrzymaniePrzyCap:    number;
   /** Ulamek puli zachowany po awansie poziomu (jak Spichlerz). */
   zachowaniePoAwansie:  number;
-  /** Ilu zadowolonych mieszkancow daje kazde 10 poziomow Wealth. */
-  zadowolenieNa10pkt:   number;
+  /**
+   * G6 (R-SZCZESCIE-PRZEBUDOWA-SKALI-Q1, wlasciciel 2026-09-05): maksymalny wklad Wealth
+   * do Szczescia miasta, osiagany przy CAPIE poziomu epoki. Dawne `zadowolenieNa10pkt`
+   * (floor(W/10)*1) dawalo max +1/+2/+3 w epokach 1-3 -- na +10 trzeba bylo poziomu 100.
+   */
+  zadowolenieMax:       number;
   /** Wklad do zadowolenia przy W=0 (kara za biede; ujemny). */
   karaZero:             number;
   /** Tury immunitetu przed spadkiem poziomu W od założenia (D16-A). */
@@ -55,7 +63,7 @@ export const FALLBACK_WEALTH_PARAMS: WealthParams = {
   utrzymanieBaza:      0.20,
   utrzymaniePrzyCap:   0.40,
   zachowaniePoAwansie: 0.5,
-  zadowolenieNa10pkt:  1,
+  zadowolenieMax:      10,
   karaZero:            0,
   immunitetTur:        5,
 };
@@ -86,7 +94,7 @@ export function loadWealthParams(
     utrzymanieBaza:      read('wealth_utrzymanie_baza',       FALLBACK_WEALTH_PARAMS.utrzymanieBaza),
     utrzymaniePrzyCap:   read('wealth_utrzymanie_przy_cap',   FALLBACK_WEALTH_PARAMS.utrzymaniePrzyCap),
     zachowaniePoAwansie: read('wealth_zachowanie_po_awansie', FALLBACK_WEALTH_PARAMS.zachowaniePoAwansie),
-    zadowolenieNa10pkt:  read('wealth_zadowolenie_na_10pkt',  FALLBACK_WEALTH_PARAMS.zadowolenieNa10pkt),
+    zadowolenieMax:      read('wealth_zadowolenie_max',        FALLBACK_WEALTH_PARAMS.zadowolenieMax),
     karaZero:            read('wealth_kara_zero',             FALLBACK_WEALTH_PARAMS.karaZero),
     immunitetTur:        read('wealth_immunitet_tur',        FALLBACK_WEALTH_PARAMS.immunitetTur),
   };
@@ -107,12 +115,28 @@ export function wealthMnoznik(poziom: number, p: WealthParams): number {
 }
 
 /**
- * Wklad Wealth do zadowolenia miasta (w "zadowolonych mieszkancach").
- * W=0 -> karaZero (bieda); inaczej floor(W/10)*zadowolenieNa10pkt (W10->+1 ... W100->+10).
+ * Wklad Wealth do Szczescia miasta (pkt).
+ *
+ * G6 (R-SZCZESCIE-PRZEBUDOWA-SKALI-Q1, wlasciciel 2026-09-05):
+ *
+ *   zadowolenie = floor( poziom_W * zadowolenieMax / cap_epoki ),   cap_epoki = epoka * capNaEpoke
+ *
+ * Maksimum `zadowolenieMax` (+10) w KAZDEJ epoce, ale poziom potrzebny rosnie 10 -> 20 -> 30.
+ * Dawna formula `floor(W/10) * zadowolenieNa10pkt` dawala max +1 / +2 / +3 w epokach 1-3,
+ * bo poziom 100 (czyli cap epoki 10) byl potrzebny na +10.
+ *
+ * ZMIANA SYGNATURY: funkcja potrzebuje epoki, zeby znac cap. `advanceWealth` podaje ja
+ * z wlasnego argumentu, panel miasta z `cfg.getEpoch(ownerId)` -- jeden tor liczenia.
+ *
+ * W=0 -> karaZero (bieda). Poziom powyzej capu jest przycinany do capu, wiec wynik nigdy
+ * nie przekracza `zadowolenieMax`.
  */
-export function wealthZadowolenie(poziom: number, p: WealthParams): number {
+export function wealthZadowolenie(poziom: number, p: WealthParams, epoka: number): number {
   if (poziom <= 0) return p.karaZero;
-  return Math.floor(poziom / 10) * p.zadowolenieNa10pkt;
+  const cap = wealthCap(epoka, p);
+  if (cap <= 0) return 0;
+  const poz = Math.min(poziom, cap);
+  return Math.floor(poz * p.zadowolenieMax / cap);
 }
 
 /**
@@ -213,7 +237,7 @@ export function advanceWealth(
     poziom,
     pula,
     mnoznik:     wealthMnoznik(poziom, p),
-    zadowolenie: wealthZadowolenie(poziom, p),
+    zadowolenie: wealthZadowolenie(poziom, p, epoka),
     awans,
     spadek,
   };

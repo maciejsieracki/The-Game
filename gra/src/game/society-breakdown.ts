@@ -64,25 +64,57 @@ export interface HappinessBreakdownInput {
   difficulty?: Difficulty;
   era?: number;
   population: number;
-  /** Suma zadowolenia z budynków (pkt). */
+  /** Suma Szczęścia z budynków SZCZĘŚCIODAJNYCH (pkt) — `sumBuildingHappinessFromBuiltIds`. */
   buildingZadowolenie: number;
-  /** Dostęp do Ceramiki (pkt), osobno od bonusu budynków. */
+  /**
+   * @deprecated G3 (2026-09-05) — IGNOROWANE. Wiersz „Ceramika (dostęp)" +1 usunięty:
+   * ceramika liczy się jako zwykły surowiec zaopatrzenia obywateli
+   * (`citizenResourceHappinessDelta`), więc dawał to samo drugi raz. Pole zostaje
+   * wyłącznie po to, żeby literał obiektu w `main.ts` (poza allowlistą) nadal się typował.
+   */
   ceramikaZadowolenie?: number;
-  /** Działający Spichlerz (pkt), niezależnie od Ceramiki. */
+  /**
+   * @deprecated G3 (2026-09-05) — IGNOROWANE. Wiersz „Spichlerz (działający)" +1 usunięty:
+   * Spichlerz jest liczony jako budynek szczęściodajny (łącznie +5, G2).
+   */
   spichlerzZadowolenie?: number;
+  /**
+   * @deprecated G4 (2026-09-05) — IGNOROWANE. Linia Kultury liczy się teraz PROPORCJONALNIE
+   * z `ownCultureShare` i skali `szczescie_skala_kultura_religia` per epoka, a nie ze
+   * schodków `cultureHappiness`. Pole zostaje dla zgodności literału w `main.ts`.
+   */
   haKult?: number;
+  /**
+   * ZNORMALIZOWANY wskaźnik przewagi własnej religii, [−1, +1] — wynik `religionHappiness`
+   * (`culture-religion.ts`), NIE punkty Szczęścia. Punkty powstają tutaj: `x(epoka) × wskaźnik`
+   * (G4). Pierwszeństwo ma jawne `ownReligionShare`, jeśli wołający je zna.
+   */
   haRel?: number;
+  /** Udział własnej religii [0,1]; gdy brak — odtwarzany z `haRel` (G4). */
+  ownReligionShare?: number;
   haWealth?: number;
   /** CUDA-EKON-01 (2026-07-23): suma bonusy.miasto.zadowolenie cudów ukończonych (× każde miasto ownera). */
   haCuda?: number;
   podzialHandlu?: CityPodzialHandlu;
   atWar?: boolean;
+  /** @deprecated G3 (2026-09-05) — IGNOROWANE. Świątynia jest już liczona jako budynek (+3). */
   hasSwiatynia?: boolean;
+  /** @deprecated G3 (2026-09-05) — IGNOROWANE. Teatr (+4) i Akademia (+4) są już liczone jako budynki. */
   hasAmfiteatr?: boolean;
+  /** Udział własnej kultury [0,1]; brak = 1 (miasto bez mixu kulturowego). Podstawa linii Kultury (G4). */
   ownCultureShare?: number;
+  /** @deprecated G4 (2026-09-05) — IGNOROWANE; Religia liczy się z udziału, nie z dominacji. */
   ownReligionDominant?: boolean;
+  /**
+   * @deprecated G5 (2026-09-05) — IGNOROWANE. Kara `szczescie_kara_obca_religia` (−4) usunięta:
+   * proporcjonalna linia Religii daje już −x przy obcej religii.
+   */
   foreignReligionDominant?: boolean;
-  /** Kara za podwójnie obce miasto po podboju (kultura + religia). */
+  /**
+   * @deprecated G5 (2026-09-05) — IGNOROWANE. Kara „Podbój: obca kultura i religia" (−2)
+   * usunięta: obie linie (Kultura i Religia) dają już po −x. Patrz
+   * `conquestUnstableHappinessPenalty` w `conquest-stability.ts` (zwraca stałe 0).
+   */
   conquestUnstablePenalty?: number;
   /** D18-4: pierwsze miasto gracza na easy (T1–T10). */
   stolicaEasyBonus?: boolean;
@@ -166,6 +198,12 @@ export const SZMAX_DEFAULTS: Readonly<Record<number, number>> = {
  * Fallback dla `prawo.prawo_max_epoka` w society-params.json (GOAL 1 jw.).
  */
 const PRAWMAX_BY_ERA_DEFAULT: readonly [number, number, number] = [50, 75, 100];
+/**
+ * G4 — fallback dla `szczescie.szczescie_skala_kultura_religia` (decyzja właściciela
+ * 2026-09-05: 10 / 16 / 23 dla epok 1–3). Wartość wiążąca żyje w JSON; ta stała działa
+ * wyłącznie przy braku wiersza, jak wszystkie sąsiednie parametry.
+ */
+const KULT_RELIG_BY_ERA_DEFAULT: readonly [number, number, number] = [10, 16, 23];
 export const PRAWMAX_DEFAULTS: Readonly<Record<number, number>> = {
   1: PRAWMAX_BY_ERA_DEFAULT[0],
   2: PRAWMAX_BY_ERA_DEFAULT[1],
@@ -271,6 +309,11 @@ export interface SocietyScaleParams {
   szMaxByEra: number[];
   /** Mianownik % Prawa per epoka; indeks 0 = epoka 1. */
   prawMaxByEra: number[];
+  /**
+   * G4: `x` per epoka dla linii Kultury i Religii (obie mają tę samą wartość).
+   * Indeks 0 = epoka 1; epoki dalsze biorą ostatni wpis.
+   */
+  kultReligByEra: number[];
   /** Górne ograniczenie SzPct (%). */
   szPctCap: number;
   /** Górne ograniczenie PrawPct (%). */
@@ -288,6 +331,7 @@ export interface SocietyScaleParams {
 export const FALLBACK_SOCIETY_SCALE: Readonly<SocietyScaleParams> = Object.freeze({
   szMaxByEra: [...SZMAX_BY_ERA_DEFAULT],
   prawMaxByEra: [...PRAWMAX_BY_ERA_DEFAULT],
+  kultReligByEra: [...KULT_RELIG_BY_ERA_DEFAULT],
   szPctCap: SZ_PCT_CAP,
   prawPctCap: PRAW_PCT_CAP,
   szMaxPopWsp: SZ_MAX_POP_WSP_DEFAULT,
@@ -310,6 +354,9 @@ export function loadSocietyScaleParams(
   return {
     szMaxByEra: pickSocietyArray(szBlock, 'szczescie_max_epoka', difficulty, f.szMaxByEra),
     prawMaxByEra: pickSocietyArray(prBlock, 'prawo_max_epoka', difficulty, f.prawMaxByEra),
+    kultReligByEra: pickSocietyArray(
+      szBlock, 'szczescie_skala_kultura_religia', difficulty, f.kultReligByEra,
+    ),
     szPctCap: pickSociety(szBlock, 'szczescie_pct_cap', difficulty, f.szPctCap),
     prawPctCap: pickSociety(prBlock, 'prawo_pct_cap', difficulty, f.prawPctCap),
     szMaxPopWsp: pickSociety(szBlock, 'szczescie_max_pop_wspolczynnik', difficulty, f.szMaxPopWsp),
@@ -412,6 +459,51 @@ export function prawMaxForEra(
 }
 
 /**
+ * G4 — `x` dla linii Kultury i Religii w danej epoce (10 / 16 / 23 dla epok 1–3,
+ * decyzja właściciela 2026-09-05). Epoka powyżej długości tablicy bierze ostatni wpis,
+ * dokładnie jak mianowniki wyżej.
+ */
+export function kultReligScaleForEra(
+  era: number,
+  scale: SocietyScaleParams = FALLBACK_SOCIETY_SCALE,
+): number {
+  const table = scale.kultReligByEra;
+  const e = Number.isFinite(era) ? Math.max(1, Math.floor(era)) : 1;
+  if (table.length === 0) return KULT_RELIG_BY_ERA_DEFAULT[0];
+  const v = table[Math.min(e, table.length) - 1];
+  return typeof v === 'number' && Number.isFinite(v) ? v : KULT_RELIG_BY_ERA_DEFAULT[0];
+}
+
+/**
+ * G4 — JEDNA formuła dla Kultury i Religii (decyzja właściciela 2026-09-05):
+ *
+ *   szczęście = 2·x · udział_własnej − x
+ *
+ * 100% własnej = `+x`, 100% obcej = `−x`, DOKŁADNIE zero przy 50/50, 75% = `+x/2`.
+ * Zastępuje schodki `cultureHappiness` (100/75/50/<50/<25) i binarny przeskok
+ * `religionHappiness` (+4 przy 51%, −4 przy 49% — skok o 8 pkt na jednym wyznawcu).
+ *
+ * Bez zaokrąglania: przy nieparzystym `x` wartości pośrednie są ułamkowe i tak mają
+ * pozostać — zaokrąglenie byłoby strojeniem liczby właściciela.
+ */
+export function proporcjonalneSzczescie(x: number, udzialWlasnej: number): number {
+  const scale = Number.isFinite(x) ? x : 0;
+  const share = Number.isFinite(udzialWlasnej)
+    ? Math.min(1, Math.max(0, udzialWlasnej))
+    : 1;
+  return 2 * scale * share - scale;
+}
+
+/**
+ * Odtwarza udział własnej [0,1] ze ZNORMALIZOWANEGO wskaźnika [−1, +1]
+ * (`religionHappiness`, `culture-religion.ts`). Odwrotność `2·udział − 1`.
+ */
+export function ownShareFromSignal(signal: number | undefined | null): number {
+  const v = typeof signal === 'number' && Number.isFinite(signal) ? signal : 0;
+  return Math.min(1, Math.max(0, (v + 1) / 2));
+}
+
+/**
  * GOAL 2 — mnożnik progu od wielkości miasta: `(1 + wsp) ^ max(0, pop − popOdniesienia)`.
  *
  * Monotoniczny (wsp ujemny jest ignorowany), ciągły (bez pasm), równy DOKŁADNIE 1 do
@@ -458,40 +550,34 @@ export function prawMaxForCity(
   return Math.round(base * mult * 100) / 100;
 }
 
-/** Klucz JSON siatki Sz od udziału Zamożności (dziesięć przedziałów co 10 p.p.). */
-const ZAMOZNOSC_SIATKA_KEY = 'szczescie_siatka_zamoznosc';
-
 /**
- * Fallback siatki, gdy brak `szczescie_siatka_zamoznosc` w danych (nie powinno się zdarzyć
- * w grze — society-params.json zawsze ją niesie). Indeks 0 = 0–9% … indeks 9 = 90–100%.
- * Wartości identyczne z JSON (Maciej 2026-07-25, nowa siatka Sz od Zamożności).
+ * G7 (właściciel 2026-09-05) — Szczęście od podatków LINIOWO: udział Zamożności 0% → −10,
+ * 90% → +10, liniowo pomiędzy, 90–100% → +10 (45% → dokładnie 0).
+ *
+ * Zastępuje siatkę `szczescie_siatka_zamoznosc` `[-1,0,1,…,8]` (rozpiętość 9 pkt, osobna
+ * trójka per trudność, skoki co 10 p.p.). Wartości wiążące żyją w `society-params.json`:
+ * `szczescie_podatki_min`, `szczescie_podatki_max`, `szczescie_podatki_prog_pct` — te same
+ * na easy/normal/hard (G13). Stałe niżej są WYŁĄCZNIE fallbackiem przy braku wierszy.
+ *
+ * Nazwa funkcji zachowana (`luksusHappinessBonus`), bo importują ją istniejące bramki.
  */
-const ZAMOZNOSC_SIATKA_DEFAULT: Record<Difficulty, number[]> = {
-  easy: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
-  normal: [-1, 0, 1, 2, 3, 4, 5, 6, 7, 8],
-  hard: [-2, -1, 0, 1, 2, 3, 4, 5, 6, 7],
-};
+const PODATKI_MIN_DEFAULT = -10;
+const PODATKI_MAX_DEFAULT = 10;
+const PODATKI_PROG_PCT_DEFAULT = 90;
 
-/**
- * Bonus/kara Sz od udziału Zamożności w podziale Daniny netto (Maciej 2026-07-25, nowa
- * siatka — decyzja właściciela). Co 10 p.p. udziału = 1 pkt Szczęścia; poniżej 10% udziału
- * to KARA (wartość ujemna) na normal/hard. Zero zahardkodowanych progów w kodzie poza
- * fallbackiem na wypadek braku danych — same wartości zawsze z `society.szczescie[ZAMOZNOSC_SIATKA_KEY]`.
- */
 export function luksusHappinessBonus(
   procentLuksus: number,
   society: SocietyParamsLike | null | undefined,
   difficulty: Difficulty = 'normal',
 ): number {
   const sz = (society?.szczescie ?? {}) as Record<string, RawParamRow>;
-  const luks = Number.isFinite(procentLuksus) ? procentLuksus : 0;
-  const idx = Math.min(9, Math.max(0, Math.floor(luks / 10)));
-  const row = sz[ZAMOZNOSC_SIATKA_KEY];
-  const arr = row?.[difficulty];
-  if (Array.isArray(arr) && typeof arr[idx] === 'number' && Number.isFinite(arr[idx])) {
-    return arr[idx] as number;
-  }
-  return ZAMOZNOSC_SIATKA_DEFAULT[difficulty][idx] ?? 0;
+  const min = pickSociety(sz, 'szczescie_podatki_min', difficulty, PODATKI_MIN_DEFAULT);
+  const max = pickSociety(sz, 'szczescie_podatki_max', difficulty, PODATKI_MAX_DEFAULT);
+  const prog = pickSociety(sz, 'szczescie_podatki_prog_pct', difficulty, PODATKI_PROG_PCT_DEFAULT);
+  const luks = Number.isFinite(procentLuksus) ? Math.max(0, Math.min(100, procentLuksus)) : 0;
+  if (!(prog > 0)) return max;
+  const t = Math.min(1, luks / prog);
+  return min + (max - min) * t;
 }
 
 function podzialLuksus(city?: CityPodzialHandlu): number {
@@ -499,19 +585,35 @@ function podzialLuksus(city?: CityPodzialHandlu): number {
   return p.procentLuksus ?? DEFAULT_PODZIAL_HANDLU.procentLuksus;
 }
 
-/** Etykieta w rozpisce Szczęścia — „Kultura”, nie mylące „obca kultura” (to osobna mechanika podboju). */
-function cultureHappinessLineLabel(haKult: number, ownCultureShare?: number): string {
-  if (haKult < 0 && ownCultureShare !== undefined && ownCultureShare < 0.5) {
-    const pct = Math.round(ownCultureShare * 100);
-    return `Kultura (udział własnej ${pct}%)`;
-  }
-  return 'Kultura';
+/**
+ * Etykieta linii Kultury / Religii — zawsze z udziałem własnej, bo od G4 to udział
+ * (a nie próg dominacji) decyduje o wartości linii.
+ */
+function udzialLineLabel(nazwa: string, share: number): string {
+  return `${nazwa} (udział własnej ${Math.round(share * 100)}%)`;
 }
 
 // ---------------------------------------------------------------------------
 // Happiness breakdown
 // ---------------------------------------------------------------------------
 
+/**
+ * Rozpiska Szczęścia miasta — JEDYNE miejsce, w którym powstają punkty Szczęścia.
+ *
+ * R-SZCZESCIE-PRZEBUDOWA-SKALI-Q1 (właściciel 2026-09-05, decyzje G1–G15):
+ *  • Budynki — ryczałt +1 tylko dla budynków `dajeSzczescie: true` (G1) + Spichlerz +5 (G2);
+ *  • Kultura i Religia — PROPORCJONALNIE `2·x·udział − x`, x = 10/16/23 per epoka (G4);
+ *  • usunięte cztery wiersze dublujące: Świątynia, Amfiteatr, Ceramika, Spichlerz (G3);
+ *  • usunięte dwie kary już zawarte w skali ±x: obca religia, podbój podwójnie obcy (G5);
+ *  • Wealth max +10 w każdej epoce (G6, `wealth.ts`);
+ *  • podatki liniowo −10…+10 (G7), zaopatrzenie ±2 na surowiec (G8), wojna −5 (G9),
+ *    bonus osiedla [15,12,8,5] (G10), cuda po +6 (G11, `wonders.json`);
+ *  • usunięte zagęszczenie — wielkość miasta działa WYŁĄCZNIE przez mianownik (G12);
+ *  • mianownik `szczescie_max_epoka` per epoka i per trudność (G13).
+ *
+ * Wszystkie liczby pochodzą od właściciela i żyją w `data/society-params.json`;
+ * stałe w tym pliku są wyłącznie fallbackiem przy braku wiersza.
+ */
 export function computeHappinessBreakdown(
   input: HappinessBreakdownInput,
   society: SocietyParamsLike | null | undefined = null,
@@ -524,39 +626,44 @@ export function computeHappinessBreakdown(
   const era = input.era ?? 1;
 
   if (input.buildingZadowolenie !== 0) {
-    lines.push({ id: 'budynki', label: 'Budynki (+1/budynek)', value: input.buildingZadowolenie });
+    lines.push({
+      id: 'budynki',
+      label: 'Budynki (szczęściodajne)',
+      value: input.buildingZadowolenie,
+    });
   }
-  const ceramikaBonus = Number.isFinite(input.ceramikaZadowolenie)
-    && (input.ceramikaZadowolenie ?? 0) > 0 ? 1 : 0;
-  if (ceramikaBonus) {
-    lines.push({ id: 'ceramika', label: 'Ceramika (dostęp)', value: ceramikaBonus });
+
+  // --- G4: Kultura i Religia proporcjonalnie do udziału własnej, ta sama skala x(epoka) ---
+  const x = kultReligScaleForEra(era, scale);
+
+  const kultShare = Number.isFinite(input.ownCultureShare)
+    ? Math.min(1, Math.max(0, input.ownCultureShare as number))
+    : 1;                                   // brak mixu kulturowego = 100% własnej
+  const kultV = proporcjonalneSzczescie(x, kultShare);
+  if (kultV) {
+    lines.push({ id: 'kultura', label: udzialLineLabel('Kultura', kultShare), value: kultV });
   }
-  const spichlerzBonus = Number.isFinite(input.spichlerzZadowolenie)
-    && (input.spichlerzZadowolenie ?? 0) > 0 ? 1 : 0;
-  if (spichlerzBonus) {
-    lines.push({ id: 'spichlerz', label: 'Spichlerz (działający)', value: spichlerzBonus });
+
+  // Udział religii: jawny, a gdy go nie ma — odtworzony ze znormalizowanego wskaźnika
+  // `haRel` (`religionHappiness`). Miasto bez wyznawców = 0,5 → linia 0 (neutralnie).
+  const relShare = Number.isFinite(input.ownReligionShare)
+    ? Math.min(1, Math.max(0, input.ownReligionShare as number))
+    : ownShareFromSignal(input.haRel);
+  const relV = proporcjonalneSzczescie(x, relShare);
+  if (relV) {
+    lines.push({ id: 'religia', label: udzialLineLabel('Religia', relShare), value: relV });
   }
-  if (input.haKult) {
-    lines.push({ id: 'kultura', label: cultureHappinessLineLabel(input.haKult, input.ownCultureShare), value: input.haKult });
-  }
-  if (input.haRel) {
-    lines.push({ id: 'religia', label: 'Religia', value: input.haRel });
-  }
+
   if (input.haWealth) {
     lines.push({ id: 'wealth', label: 'Wealth (pula luksusu)', value: input.haWealth });
   }
   if (input.haCuda) {
     lines.push({ id: 'cuda', label: 'Cuda świata', value: input.haCuda });
   }
-  if (input.hasSwiatynia) {
-    const v = pickSociety(szBlock, 'szczescie_swiatynia', diff, 1);
-    if (v) lines.push({ id: 'swiatynia', label: 'Świątynia', value: v });
-  }
-  if (input.hasAmfiteatr) {
-    const v = pickSociety(szBlock, 'szczescie_amfiteatr', diff, 1);
-    if (v) lines.push({ id: 'amfiteatr', label: 'Amfiteatr', value: v });
-  }
 
+  // G12: kara zagęszczenia (`szczescie_kara_wielkosc_miasta`) USUNIĘTA w całości —
+  // wielkość miasta działa wyłącznie przez mianownik (`szMaxForCity`). Nie dodawać
+  // „−1 za obywatela": była rozważana i świadomie odrzucona jako podwójne liczenie.
   const progZagesz = pickSociety(szBlock, 'szczescie_prog_zagęszczenia', diff, 4);
   const legacyMale = pop <= progZagesz
     ? pickSociety(szBlock, 'szczescie_male_miasto_bonus', diff, 1)
@@ -566,12 +673,6 @@ export function computeHappinessBreakdown(
   );
   if (osiedleV) {
     lines.push({ id: 'osiedle', label: osiedlePopLabel(pop), value: osiedleV });
-  }
-  if (pop > progZagesz) {
-    const karaPer = pickSociety(szBlock, 'szczescie_kara_wielkosc_miasta', diff, -1);
-    const excess = pop - progZagesz;
-    const v = karaPer * excess;
-    if (v) lines.push({ id: 'zageszczenie', label: `Zagęszczenie (${pop}−${progZagesz})`, value: v });
   }
 
   const luksPct = podzialLuksus(input.podzialHandlu);
@@ -583,36 +684,37 @@ export function computeHappinessBreakdown(
   }
 
   if (input.atWar) {
-    const v = pickSociety(szBlock, 'szczescie_kara_wojna', diff, -3);
+    const v = pickSociety(szBlock, 'szczescie_kara_wojna', diff, -5);
     if (v) lines.push({ id: 'wojna', label: 'Wojna', value: v });
-  }
-  if (input.foreignReligionDominant) {
-    const v = pickSociety(szBlock, 'szczescie_kara_obca_religia', diff, -2);
-    if (v) lines.push({ id: 'obca_religia', label: 'Obca religia', value: v });
-  }
-  if (input.conquestUnstablePenalty) {
-    lines.push({
-      id: 'podboj_niestabilny',
-      label: 'Podbój: obca kultura i religia',
-      value: input.conquestUnstablePenalty,
-    });
   }
   if (input.stolicaEasyBonus) {
     const v = pickSociety(szBlock, 'szczescie_bonus_stolica_easy', diff, 1);
     if (v) lines.push({ id: 'stolica_easy', label: 'Stolica imperium (easy)', value: v });
   }
   if (input.citizenResourceHappinessDelta) {
-    lines.push({
-      id: 'zaopatrzenie_obywateli',
-      label: 'Zaopatrzenie obywateli (surowce)',
-      value: input.citizenResourceHappinessDelta,
-    });
+    // G8: wołający dostarcza BINARNY wskaźnik per surowiec epoki (+1 dostępny / −1 brakujący,
+    // `citizen-resource-upkeep.ts` → `_kara`); punktacja Szczęścia to ±2 na surowiec
+    // (`szczescie_zaopatrzenie_na_surowiec`, decyzja właściciela 2026-09-05).
+    const naSurowiec = pickSociety(szBlock, 'szczescie_zaopatrzenie_na_surowiec', diff, 2);
+    const v = input.citizenResourceHappinessDelta * naSurowiec;
+    if (v) {
+      lines.push({
+        id: 'zaopatrzenie_obywateli',
+        label: 'Zaopatrzenie obywateli (surowce)',
+        value: v,
+      });
+    }
   }
 
-  // Stary mechanizm "wysokie podatki" (próg DEFAULT_PODZIAL_HANDLU.procentLuksus, kara co
-  // 10 p.p. poniżej) USUNIĘTY 2026-07-25 — dublował się z karą już wbudowaną w nową siatkę
-  // szczescie_siatka_zamoznosc powyżej (patrz raport zadania: przy udziale 5% na normalu
-  // oba mechanizmy naraz dawały -2 pkt Sz, sama nowa siatka daje poprawne -1 pkt).
+  // USUNIĘTE i NIE PRZYWRACAĆ (G3/G5/G12, właściciel 2026-09-05 — pełne uzasadnienia
+  // w dyspozycje/BALANS-SZCZESCIE-SKALOWANIE-EPOK.md §4):
+  //   • Świątynia +1 i Amfiteatr +1 — te budynki są już liczone w linii Budynki;
+  //   • Ceramika (dostęp) +1 — ceramika liczy się jako zwykły surowiec zaopatrzenia;
+  //   • Spichlerz (działający) +1 — Spichlerz jest już liczony jako budynek (+5);
+  //   • Obca religia −4 i Podbój: obca kultura i religia −2 — skala ±x z G4 już je zawiera;
+  //   • Zagęszczenie −0,75/mieszk. powyżej progu — zastąpione mianownikiem (`szMaxForCity`).
+  // Wcześniej (2026-07-25) usunięty został także stary mechanizm „wysokie podatki" z progiem
+  // DEFAULT_PODZIAL_HANDLU.procentLuksus — dublował karę wbudowaną w skalę podatków.
 
   const netto = lines.reduce((s, l) => s + l.value, 0);
   const szMax = szMaxForCity(era, pop, scale);
@@ -946,20 +1048,4 @@ export function revoltWarningMessage(cityName: string, graceTurnsLeft: number | 
     return `KRYTYCZNE — grozi bunt w ${cityName}! Ostatnia tura — obniż podatki lub wprowadź wojsko.`;
   }
   return `KRYTYCZNE — grozi bunt w ${cityName}! Masz ${graceTurnsLeft} tury na reakcję (podatki/Wealth lub garnizon).`;
-}
-
-/** Koszyki emotikon z SzPct (1C — wizualizacja, nie źródło prawdy). */
-export function happinessBucketsFromPct(
-  population: number,
-  szPct: number,
-): { zadowoleni: number; kontentni: number; niezadowoleni: number } {
-  const pop = Number.isFinite(population) && population > 0 ? Math.floor(population) : 0;
-  if (pop <= 0) return { zadowoleni: 0, kontentni: 0, niezadowoleni: 0 };
-  const p = Number.isFinite(szPct) ? szPct : 0;
-  const happyFrac = Math.min(1, Math.max(0, (p - 50) / 50));
-  const unhappyFrac = Math.min(1, Math.max(0, (50 - p) / 50));
-  const zadowoleni = Math.floor(pop * happyFrac);
-  const niezadowoleni = Math.floor(pop * unhappyFrac);
-  const kontentni = pop - zadowoleni - niezadowoleni;
-  return { zadowoleni, kontentni, niezadowoleni };
 }

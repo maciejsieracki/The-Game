@@ -184,7 +184,7 @@
       "kosztBudowy": 290,
       "utrzymanie": 2,
       "bonusy": {
-        "miasto": { "kultura": 3, "zadowolenie": 3 },
+        "miasto": { "kultura": 3, "zadowolenie": 6 },
         "hex": { "kultura": 6 },
         "specjalne": [
           { "typ": "walka_procent", "cel": "piechota_szarza", "wartosc": 0.15, "opis": "+15% ataku piechoty przy pierwszym uderzeniu (cywilizacja)" },
@@ -209,7 +209,7 @@
       "kosztBudowy": 210,
       "utrzymanie": 1,
       "bonusy": {
-        "miasto": { "zadowolenie": 3, "kultura": 3 },
+        "miasto": { "zadowolenie": 6, "kultura": 3 },
         "specjalne": [
           { "typ": "kultura_z_nadwyzka_zadowolenia", "wartosc": 2, "opis": "+2 Kultury/turę na każde 5 nadwyżki Zadowolenia w imperium (cywilizacja)" },
           { "typ": "relacje_zaufanie", "wartosc": 4, "opis": "+4 bazowe Zaufanie — dharmiczny spokój (cywilizacja)" },
@@ -356,7 +356,7 @@
       "kosztBudowy": 220,
       "utrzymanie": 2,
       "bonusy": {
-        "miasto": { "nauka": 3, "zadowolenie": 3 },
+        "miasto": { "nauka": 3, "zadowolenie": 6 },
         "teren": [
           { "typTerenu": "tropiki", "nauka": 2, "zadowolenie": 2 }
         ],
@@ -477,7 +477,7 @@
       "kosztBudowy": 290,
       "utrzymanie": 3,
       "bonusy": {
-        "miasto": { "kultura": 3, "zadowolenie": 3, "pieniadz": 3 },
+        "miasto": { "kultura": 3, "zadowolenie": 6, "pieniadz": 3 },
         "specjalne": [
           { "typ": "dyplomacja_wpływ", "wartosc": 12, "opis": "+12 Wpływu — cesarski dwór Chang'an (cywilizacja)" },
           { "typ": "handel_procent", "cel": "handel", "wartosc": 0.15, "opis": "+15% Handlu — dochodu z tras handlowych (cywilizacja); NIE zwiększa Daniny miasta" },
@@ -526,7 +526,7 @@
       "kosztBudowy": 140,
       "utrzymanie": 1,
       "bonusy": {
-        "miasto": { "kultura": 3, "zadowolenie": 3 },
+        "miasto": { "kultura": 3, "zadowolenie": 6 },
         "hex": { "kultura": 3 },
         "specjalne": [
           { "typ": "pobor_regen", "wartosc": 0.15, "opis": "+15% regeneracji Manpower (cywilizacja)" },

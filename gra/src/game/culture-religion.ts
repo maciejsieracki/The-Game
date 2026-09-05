@@ -776,31 +776,55 @@ export function aggregateReligionEmpire(
 // ---------------------------------------------------------------------------
 
 /**
- * Religion's contribution to the city's happiness (which feeds Order), per
- * Spec SS4 "Bonusy za religie dominujaca" / "Kary za obca religie":
+ * Udzial WLASNEJ religii wsrod wyznawcow miasta, [0,1].
  *
- *   our religion dominates       -> +zadowolenieDominujaca
- *   a foreign religion dominates  -> +karaObca           (negative)
- *   no dominant religion          -> +karaBrakReligii    (negative, small)
+ * G4 (R-SZCZESCIE-PRZEBUDOWA-SKALI-Q1, wlasciciel 2026-09-05) — podstawa proporcjonalnej
+ * linii Religii w rozpisce Szczescia. Miasto bez ani jednego wyznawcy (albo owner bez
+ * religii panstwowej) jest NEUTRALNE: 0,5, czyli linia Religii = 0. Nie ma tam ani wlasnej,
+ * ani obcej wiary, wiec ani bonus, ani kara nie mialyby z czego wyniknac.
+ */
+export function religionOwnShare(
+  state: ReligionState,
+  ownReligion: string | null,
+): number {
+  const total = totalAdherents(state);
+  if (total <= 0 || ownReligion === null) return 0.5;
+  return clamp(countReligionAdherents(state, ownReligion) / total, 0, 1);
+}
+
+/**
+ * ZNORMALIZOWANY wskaznik przewagi wlasnej religii w miescie: `2 * udzial_wlasnej - 1`,
+ * czyli [-1, +1]. 100% wlasnej = +1, 100% obcej = -1, DOKLADNIE 0 przy 50/50.
+ *
+ * G4 (R-SZCZESCIE-PRZEBUDOWA-SKALI-Q1, wlasciciel 2026-09-05): to NIE sa juz punkty
+ * Szczescia. Skala punktowa rosnie z epoka (x = 10 / 16 / 23, `szczescie_skala_kultura_religia`),
+ * a epoka jest znana dopiero w `computeHappinessBreakdown` (`society-breakdown.ts`), ktore
+ * mnozy ten wskaznik przez x. Dzieki temu silnik i panel miasta licza Religie JEDNYM torem,
+ * bez przepinania `main.ts`.
+ *
+ * Zastapiony binarny przeskok: dotad +zadowolenieDominujaca (+4 normal) przy 51% wlasnej
+ * i +karaObca (-4 normal) przy 49% — skok o 8 pkt na jednym wyznawcu. Parametry
+ * `religia_zadowolenie_dominujaca`, `religia_kara_obca` i `religia_kara_brak_religii`
+ * zostaja w danych i w `ReligionParams` (czytaja je panele imperium), ale NIE steruja juz
+ * linia Szczescia.
+ *
+ * Znak zachowany wzgledem starej funkcji: wynik < 0 dokladnie wtedy, gdy wlasna religia ma
+ * mniej niz polowe wyznawcow — wiec predykaty typu `religionHappiness(...) < 0` (przeglad
+ * imperium w `main.ts`) dzialaja bez zmiany.
  *
  * @param state       - ReligionState for the city.
  * @param ownReligion - the owner civ's religion (from civReligion()); may be null.
- * @param params      - ReligionParams.
- * @returns signed happiness bonus (point scale).
+ * @param _params     - ReligionParams; zostaje w sygnaturze dla zgodnosci wywolan.
+ * @param _hasSwiatynia - j.w. (dawna bramka kary za brak religii).
+ * @returns znormalizowany wskaznik [-1, +1], NIE punkty Szczescia.
  */
 export function religionHappiness(
   state: ReligionState,
   ownReligion: string | null,
-  params: ReligionParams = FALLBACK_RELIGION_PARAMS,
-  hasSwiatynia = false,
+  _params: ReligionParams = FALLBACK_RELIGION_PARAMS,
+  _hasSwiatynia = false,
 ): number {
-  const dom = dominantReligion(state, params);
-  if (dom.status === 'none' || dom.status === 'mixed') {
-    return hasSwiatynia ? params.karaBrakReligii : 0;
-  }
-  // dominant:
-  if (ownReligion !== null && dom.religion === ownReligion) return params.zadowolenieDominujaca;
-  return params.karaObca; // a (foreign) religion dominates
+  return 2 * religionOwnShare(state, ownReligion) - 1;
 }
 
 // ---------------------------------------------------------------------------
