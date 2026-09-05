@@ -186,8 +186,18 @@ export const REBEL_FACTION_OWNER_ID = -99;
  * R-SZCZESCIE-AUDYT-A-SKALA-NORMALIZACJA-Q1 (GOAL 1): wartość wiążąca żyje w
  * `gra/data/society-params.json` → `szczescie.szczescie_max_epoka`; ta stała jest
  * WYŁĄCZNIE fallbackiem przy braku wpisu w JSON (jak wszystkie sąsiednie parametry).
+ *
+ * R-SZCZESCIE-PRZEBUDOWA-SKALI-Q1 R3-C (ratyfikacja orkiestratora 2026-09-05):
+ * fallback dosunięty do danych — `30 / 50 / 70`, czyli kolumna `normal` z tabeli G13
+ * właściciela (easy 20/40/60 · normal 30/50/70 · hard 35/55/80). To NIE jest zmiana
+ * balansu: dane ładują się statycznie i to one rządzą żywą grą, a fallback dotyka
+ * wyłącznie ścieżek z `society = null` (m.in. w bramkach), gdzie stare 14/20/28 kłamało.
+ * Fallback jest jednowartościowy (nie zna trudności), a `normal` jest w tym repo
+ * poziomem odniesienia — ta sama konwencja co pozostałe fallbacki G4/G7/G9/G10.
+ * Wiązanie „fallback === normal w JSON" pilnuje bramka
+ * `gra/tools/szczescie-skala-normalizacja-test.cjs` (sekcja 2).
  */
-const SZMAX_BY_ERA_DEFAULT: readonly [number, number, number] = [14, 20, 28];
+const SZMAX_BY_ERA_DEFAULT: readonly [number, number, number] = [30, 50, 70];
 export const SZMAX_DEFAULTS: Readonly<Record<number, number>> = {
   1: SZMAX_BY_ERA_DEFAULT[0],
   2: SZMAX_BY_ERA_DEFAULT[1],

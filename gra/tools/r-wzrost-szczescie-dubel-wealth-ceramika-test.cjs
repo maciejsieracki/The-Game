@@ -130,12 +130,29 @@ eq(M.ceramikaHappinessBonus(1000, true), 1, 'Ceramika pozostaje binarna, bez ska
 eq(M.ceramikaHappinessBonus(111, true), 1, 'reguła 111: dokładnie +1 dla 111 sztuk Ceramiki');
 eq(M.ceramikaHappinessBonus(111, false), 0, 'reguła 111: bez dostępu brak bonusu');
 eq(M.ceramikaHappinessBonus(0, true), 0, 'reguła 111: zerowy zapas nie jest dostępem');
-eq(M.computeGrowthHappinessNetto(10, true, true), 12,
-  'Podgląd wzrostu sumuje Wealth 10 + Ceramika 1 + Spichlerz 1 dokładnie raz');
-eq(M.computeGrowthHappinessNetto(10, false, true), 11,
-  'Działający Spichlerz pozostaje dokładnie +1 bez Ceramiki');
+// R-SZCZESCIE-PRZEBUDOWA-SKALI-Q1 G3 + ratyfikacja R3-D (2026-09-05): podglad wzrostu
+// PRZESTAL doliczac Ceramike +1 i Spichlerz +1. Rozpiska Szczescia przestala je liczyc
+// juz w rundzie 1 (ceramika = zwykly surowiec zaopatrzenia +-2, Spichlerz = budynek +5),
+// a ten drugi tor zostal wtedy przeoczony i rozjezdzal sie z silnikiem o 2 punkty.
+// Sprawdzana WLASCIWOSC tego tematu — „bonus per miasto nie moze byc mnozony przez liczbe
+// miast" (objaw 111) — nie znika, tylko jest teraz pilnowana MOCNIEJ: skoro oba kanaly
+// wnosza zero, zadne wejscie nie moze wniesc ani punktu, wiec dubel nie moze wrocic.
+eq(M.computeGrowthHappinessNetto(10, true, true), 10,
+  'Podglad wzrostu niesie SAM Wealth 10 (G3/R3-D: Ceramika i Spichlerz juz sie nie dolicza)');
+eq(M.computeGrowthHappinessNetto(10, false, true), 10,
+  'Dzialajacy Spichlerz nie dodaje juz osobnego +1 do podgladu wzrostu (liczy sie jako budynek, G2)');
 eq(M.computeGrowthHappinessNetto(10, false, false), 10,
-  'Brak działającego Spichlerza nie daje bonusu Szczęścia');
+  'Brak Ceramiki i dzialajacego Spichlerza — punkt odniesienia, ten sam wynik');
+// ASERCJA NEGATYWNA (dokladnie jak po stronie rozpiski, „regula 111" wyzej): podanie tych
+// pol na wejsciu nie zmienia wyniku w ZADNEJ kombinacji flag.
+for (const [maCeramike, maSpichlerz] of [[true, true], [true, false], [false, true], [false, false]]) {
+  eq(M.computeGrowthHappinessNetto(10, maCeramike, maSpichlerz),
+    M.computeGrowthHappinessNetto(10, false, false),
+    `R3-D: ceramika=${maCeramike} / spichlerz=${maSpichlerz} nie zmienia netto podgladu wzrostu`);
+}
+// Ten sam dowod na innej wartosci Wealth — zeby zgodnosc nie wynikala z jednej fixtury.
+eq(M.computeGrowthHappinessNetto(0, true, true), 0,
+  'R3-D: przy Wealth 0 flagi Ceramiki i Spichlerza tez wnosza dokladnie 0');
 
 // Scope guard: the helper is a committed part of this exact regression lane.
 eq(typeof M.computeGrowthHappinessNetto, 'function',

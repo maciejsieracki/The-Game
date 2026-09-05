@@ -152,8 +152,17 @@ console.log('\n1. GOAL 1 — rownowaznosc: przeniesienie stalych nie zmienia zac
     // wlasciciel, ORAZ loader faktycznie czyta plik, a nie fallback.
     eq(scale.szMaxByEra.join(','), SZMAX_G13[diff].join(','),
       `JSON szczescie_max_epoka ${diff} = ${SZMAX_G13[diff].join(',')} (G13, liczby wlasciciela)`);
-    eq(scale.szMaxByEra.join(',') === [M.SZMAX_DEFAULTS[1], M.SZMAX_DEFAULTS[2], M.SZMAX_DEFAULTS[3]].join(','), false,
-      `${diff}: szMaxByEra pochodzi z JSON, a nie z fallbacku SZMAX_DEFAULTS (liczby sie roznia)`);
+    // R-SZCZESCIE-PRZEBUDOWA-SKALI-Q1 R3-C: SZMAX_DEFAULTS zostal dosuniety do danych
+    // (30/50/70 = kolumna `normal`), wiec dla `normal` porownanie „liczby sie roznia"
+    // z definicji przestalo odrozniac JSON od fallbacku. Sprawdzana WLASCIWOSC — „loader
+    // faktycznie czyta plik, a nie stala w TS" — zostaje i jest teraz MOCNIEJSZA: zamiast
+    // liczyc na przypadkowa nierownosc liczb wstawiam do KOPII danych wartownika i zadam,
+    // zeby loader zwrocil dokladnie jego. Dziala na kazdej trudnosci, takze tam, gdzie
+    // dane i fallback sa rowne.
+    const wartownik = JSON.parse(JSON.stringify(SOCIETY));
+    wartownik.szczescie.szczescie_max_epoka[diff] = [997, 998, 999];
+    eq(M.loadSocietyScaleParams(wartownik, diff).szMaxByEra.join(','), '997,998,999',
+      `${diff}: szMaxByEra pochodzi z JSON, a nie z fallbacku SZMAX_DEFAULTS (wartownik w danych)`);
     eq(scale.prawMaxByEra.join(','), '50,75,100', `JSON prawo_max_epoka ${diff} = 50,75,100 (jak PRAWMAX_DEFAULTS)`);
     eq(scale.szPctCap, 120, `JSON szczescie_pct_cap ${diff} = 120 (jak SZ_PCT_CAP)`);
     eq(scale.prawPctCap, 100, `JSON prawo_pct_cap ${diff} = 100 (jak PRAW_PCT_CAP)`);
@@ -204,21 +213,32 @@ console.log('\n1. GOAL 1 — rownowaznosc: przeniesienie stalych nie zmienia zac
 console.log('\n2. GOAL 1 — fallback: usuniecie wpisu z JSON daje wartosc ze stalej w TS');
 // ---------------------------------------------------------------------------
 {
-  eq(M.SZMAX_DEFAULTS[1], 14, 'stala TS SZMAX_DEFAULTS[1] = 14');
+  // R3-C (ratyfikacja orkiestratora 2026-09-05): fallback dosuniety do danych — 30/50/70,
+  // czyli kolumna `normal` z tabeli G13. Sprawdzana wlasciwosc bez zmian (fallback ISTNIEJE
+  // i jest brany, gdy society = null); zmienily sie wylacznie liczby, ktore niesie.
+  eq(M.SZMAX_DEFAULTS[1], 30, 'stala TS SZMAX_DEFAULTS[1] = 30 (R3-C)');
+  eq(M.SZMAX_DEFAULTS[2], 50, 'stala TS SZMAX_DEFAULTS[2] = 50 (R3-C)');
+  eq(M.SZMAX_DEFAULTS[3], 70, 'stala TS SZMAX_DEFAULTS[3] = 70 (R3-C)');
+  // WIAZANIE KOD <-> DANE, dolozone przez R3-C: fallback ma byc DOKLADNIE kolumna `normal`
+  // z society-params.json. Bez tej asercji przyszly rozjazd (ktos zmienia dane i zapomina
+  // o stalej, albo odwrotnie) siedzialby cicho — dokladnie tak, jak siedzial 14/20/28.
+  eq([M.SZMAX_DEFAULTS[1], M.SZMAX_DEFAULTS[2], M.SZMAX_DEFAULTS[3]].join(','),
+    M.loadSocietyScaleParams(SOCIETY, 'normal').szMaxByEra.join(','),
+    'R3-C: SZMAX_DEFAULTS === szczescie_max_epoka.normal z JSON (rozjazd kodu z danymi czerwieni bramke)');
   eq(M.PRAWMAX_DEFAULTS[1], 50, 'stala TS PRAWMAX_DEFAULTS[1] = 50');
   eq(M.SZ_PCT_CAP, 120, 'stala TS SZ_PCT_CAP = 120');
   eq(M.PRAW_PCT_CAP, 100, 'stala TS PRAW_PCT_CAP = 100');
 
   // society = null -> same stale z TS.
   const brakCalosci = M.loadSocietyScaleParams(null, 'normal');
-  eq(brakCalosci.szMaxByEra.join(','), '14,20,28', 'society=null -> szMaxByEra ze stalej TS');
+  eq(brakCalosci.szMaxByEra.join(','), '30,50,70', 'society=null -> szMaxByEra ze stalej TS (R3-C: 30,50,70)');
   eq(brakCalosci.prawMaxByEra.join(','), '50,75,100', 'society=null -> prawMaxByEra ze stalej TS');
   eq(brakCalosci.szPctCap, M.SZ_PCT_CAP, 'society=null -> szPctCap ze stalej TS');
   eq(brakCalosci.prawPctCap, M.PRAW_PCT_CAP, 'society=null -> prawPctCap ze stalej TS');
 
   // Usuniecie POJEDYNCZEGO wiersza — reszta nadal z JSON, brakujacy ze stalej.
   const bezSzEpoka = M.loadSocietyScaleParams(withoutKey('szczescie', 'szczescie_max_epoka'), 'normal');
-  eq(bezSzEpoka.szMaxByEra.join(','), '14,20,28', 'brak szczescie_max_epoka -> SZMAX_DEFAULTS z TS');
+  eq(bezSzEpoka.szMaxByEra.join(','), '30,50,70', 'brak szczescie_max_epoka -> SZMAX_DEFAULTS z TS (R3-C)');
   const bezPrawEpoka = M.loadSocietyScaleParams(withoutKey('prawo', 'prawo_max_epoka'), 'normal');
   eq(bezPrawEpoka.prawMaxByEra.join(','), '50,75,100', 'brak prawo_max_epoka -> PRAWMAX_DEFAULTS z TS');
   const bezCapu = M.loadSocietyScaleParams(withoutKey('szczescie', 'szczescie_pct_cap'), 'normal');
@@ -234,7 +254,7 @@ console.log('\n2. GOAL 1 — fallback: usuniecie wpisu z JSON daje wartosc ze st
     { population: 2, era: 2, difficulty: 'normal', buildingZadowolenie: 10 },
     withoutKey('szczescie', 'szczescie_max_epoka'),
   );
-  eq(szBezDanych.szMax, 20, 'przebieg bez wiersza JSON: szMax epoki 2 = 20 z fallbacku TS');
+  eq(szBezDanych.szMax, 50, 'przebieg bez wiersza JSON: szMax epoki 2 = 50 z fallbacku TS (R3-C)');
 }
 
 // ---------------------------------------------------------------------------
@@ -379,9 +399,14 @@ console.log('\n5. GOAL 2 — neutralnosc startowa (pop 1-2, epoka 1) i epoka jak
   // Warunek 4: parametryzacja per trudnosc dziala i zachowuje konwencje easy < normal < hard.
   // OBA wspolczynniki — Szczescia i Prawa. (Runda 1, zarzut 2 Evaluatora: sprawdzany byl
   // wylacznie szMaxPopWsp, wiec zrownanie easy=hard dla Prawa przechodzilo bramke bez sladu.)
+  // R-SZCZESCIE-PRZEBUDOWA-SKALI-Q1 R3-A (decyzja wlasciciela 2026-09-05): wspolczynnik
+  // Szczescia to JEDNA liczba 0,04 na wszystkich trzech poziomach — uchyla 0,038/0,048/0,058.
+  // Asercja NIE znika, tylko odwraca znak oczekiwania: dalej pilnuje, zeby nikt nie wrocil
+  // do trojki per trudnosc (kontrakt G13: trudnosc wyrazana WYLACZNIE przez szczescie_max_epoka).
   const wspSz = DIFFS.map((d) => M.loadSocietyScaleParams(SOCIETY, d).szMaxPopWsp);
-  ok(wspSz[0] < wspSz[1] && wspSz[1] < wspSz[2],
-    `wspolczynnik Sz per trudnosc easy<normal<hard (${wspSz.join(' < ')})`);
+  ok(wspSz[0] === wspSz[1] && wspSz[1] === wspSz[2],
+    `R3-A: wspolczynnik Sz JEDEN na easy/normal/hard (${wspSz.join(' === ')})`);
+  eq(wspSz[1], 0.04, 'R3-A: wspolczynnik Sz = 0,04 (liczba wlasciciela, ten sam co prawo_max_pop_wspolczynnik)');
   const wspPr = DIFFS.map((d) => M.loadSocietyScaleParams(SOCIETY, d).prawMaxPopWsp);
   ok(wspPr[0] < wspPr[1] && wspPr[1] < wspPr[2],
     `wspolczynnik Prawa per trudnosc easy<normal<hard (${wspPr.join(' < ')})`);
@@ -520,17 +545,23 @@ console.log('\n8. Tabela prog(pop, epoka) — PRZED vs PO (normal), zapisana w r
     console.log(`  ${String(pop).padStart(3)} |${s.join('')}                          |${p.join('')}`);
   }
   // Kotwica liczbowa tabeli — gdyby ktos zmienil formule, tabela w raporcie przestaje zgadzac sie z kodem.
-  // PRZED G13 bylo 22,4 i 44,8 (baza 14 / 28 razy ten sam mnoznik populacji). Mnoznik
-  // populacji sie NIE zmienil (0,048 — dispatch mowi „BEZ ZMIAN, ZOSTAJE"), zmienila sie
-  // wylacznie baza epoki: 14 -> 30 i 28 -> 70. Wlasciwosc bez zmian: tabela drukowana
-  // w raporcie jest przybita do kodu, wiec zmiana formuly rozjezdza bramke.
-  eq(M.szMaxForCity(1, 12, scale), 48, 'tabela: szMax(pop 12, epoka 1) = 48,0 (G13 baza 30 x mnoznik populacji)');
-  eq(M.szMaxForCity(3, 12, scale), 112, 'tabela: szMax(pop 12, epoka 3) = 112,0 (G13 baza 70 x mnoznik populacji)');
+  // Historia tych dwoch liczb: 22,4 / 44,8 (baza 14 / 28) -> 48,0 / 112,0 po G13 (baza 30 / 70,
+  // mnoznik populacji 0,048) -> 44,4 / 103,6 po R3-A (baza bez zmian, mnoznik 0,04 na kazdej
+  // trudnosci). Wlasciwosc bez zmian: tabela drukowana w raporcie jest przybita do kodu, wiec
+  // zmiana formuly ALBO wspolczynnika rozjezdza bramke.
+  // Rachunek: (1 + 0,04) ^ (12 - 2) = 1,48 (zaokraglone do 2 miejsc w popScaleMultiplier);
+  // 30 x 1,48 = 44,4 i 70 x 1,48 = 103,6.
+  eq(M.szMaxForCity(1, 12, scale), 44.4, 'tabela: szMax(pop 12, epoka 1) = 44,4 (G13 baza 30 x mnoznik 1,48 z R3-A)');
+  eq(M.szMaxForCity(3, 12, scale), 103.6, 'tabela: szMax(pop 12, epoka 3) = 103,6 (G13 baza 70 x mnoznik 1,48 z R3-A)');
   // Kotwica samego mnoznika, zeby zmiana bazy nie zamaskowala zmiany wspolczynnika:
   // stosunek prog(pop 12) / prog(pop 2) musi byc ten sam w kazdej epoce.
   near(M.szMaxForCity(1, 12, scale) / M.szMaxForCity(1, 2, scale),
     M.szMaxForCity(3, 12, scale) / M.szMaxForCity(3, 2, scale),
     'mnoznik populacji nie zalezy od epoki (prog 12/prog 2 taki sam w epokach 1 i 3)');
+  // ...i jego WARTOSC, zapisana literalem — inaczej zmiana wspolczynnika przesunelaby obie
+  // strony powyzszego rownania jednoczesnie i przeszlaby bez sladu.
+  near(M.szMaxForCity(1, 12, scale) / M.szMaxForCity(1, 2, scale), 1.48,
+    'R3-A: mnoznik populacji na pop 12 = 1,48x (0,04 skladane na 10 mieszkancow ponad populacje odniesienia)');
   eq(M.prawMaxForCity(1, 12, scale), 74.5, 'tabela: prawMax(pop 12, epoka 1) = 74,5');
   eq(M.prawMaxForCity(3, 6, scale), 117, 'tabela: prawMax(pop 6, epoka 3) = 117,0');
 }

@@ -204,9 +204,14 @@ console.log('\n-- C. Sumowanie kar -- wiele brakujących surowców naraz (epoka 
   );
   eq(mixed.growthPctDelta, 3 * M.CITIZEN_UPKEEP_GROWTH_PCT_PER_MISSING, 'growthPctDelta liczy WYŁĄCZNIE braki (dostępne nie dają bonusu Rozwoju)');
 
-  // Kanon wartości specyfikacji (Maciej 2026-08-10): +1 Sz/dostępny, -1 Sz i -1% Rozwój/brakujący.
-  eq(M.CITIZEN_UPKEEP_HAPPINESS_PER_AVAILABLE, 1, 'kanon: +1 Szczęście za dostępny surowiec');
-  eq(M.CITIZEN_UPKEEP_HAPPINESS_PER_MISSING, -1, 'kanon: -1 Szczęście za brakujący surowiec');
+  // Kanon wartości specyfikacji: R-SZCZESCIE-PRZEBUDOWA-SKALI-Q1 G8 (właściciel 2026-09-05)
+  // + ratyfikacja rundy 3, punkt R3-B: +2 Sz za dostępny surowiec i -2 Sz za brakujący.
+  // Uchyla ±1 z 2026-08-10; -1% Rozwoju za brakujący NIE był objęty decyzją i zostaje.
+  // Literał MUSI zostać literałem: to jedyne miejsce w tym pliku, które zna liczbę
+  // właściciela z DRUGIEGO nośnika — reszta asercji porównuje się z M.CITIZEN_UPKEEP_*
+  // symbolicznie, więc sama z siebie nie wykryje zmiany wartości w danych.
+  eq(M.CITIZEN_UPKEEP_HAPPINESS_PER_AVAILABLE, 2, 'kanon: +2 Szczęście za dostępny surowiec (G8)');
+  eq(M.CITIZEN_UPKEEP_HAPPINESS_PER_MISSING, -2, 'kanon: -2 Szczęście za brakujący surowiec (G8)');
   eq(M.CITIZEN_UPKEEP_GROWTH_PCT_PER_MISSING, -1, 'kanon: -1% Rozwój za brakujący surowiec');
 }
 

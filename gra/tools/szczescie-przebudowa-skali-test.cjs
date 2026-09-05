@@ -415,8 +415,16 @@ for (const k of ['szczescie_pct_cap', 'szczescie_max_pop_wspolczynnik', 'szczesc
   eq(Object.prototype.hasOwnProperty.call(society.szczescie, k), true, '2g: klucz "' + k + '" ZOSTAJE');
 }
 eq(society.szczescie.szczescie_pct_cap.normal, 120, '2g: szczescie_pct_cap = 120 bez zmian');
-eq(society.szczescie.szczescie_max_pop_wspolczynnik.normal, 0.048,
-  '2g: szczescie_max_pop_wspolczynnik = 0,048 bez zmian');
+// R-SZCZESCIE-PRZEBUDOWA-SKALI-Q1 R3-A (decyzja wlasciciela 2026-09-05) uchyla zapis G13
+// „0,048 — BEZ ZMIAN, ZOSTAJE": wspolczynnik to teraz JEDNA liczba 0,04 na wszystkich
+// trzech poziomach trudnosci (ten sam co prawo_max_pop_wspolczynnik, zeby wielkosc miasta
+// obciazala oba filary Porzadku identycznie). Asercja nie znika i nie slabnie — pilnuje
+// dalej, ze klucz ZOSTAJE i niesie liczbe wlasciciela, tylko liczba jest nowa; dolozony
+// parytet trudnosci domyka kontrakt G13.
+for (const d of ['easy', 'normal', 'hard']) {
+  eq(society.szczescie.szczescie_max_pop_wspolczynnik[d], 0.04,
+    '2g: szczescie_max_pop_wspolczynnik ' + d + ' = 0,04 (R3-A)');
+}
 
 // G9/G10/G11/G13 — liczby wlasciciela w danych
 section('G9-G13: pozostale liczby wlasciciela w danych');
