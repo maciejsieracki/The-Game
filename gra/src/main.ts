@@ -1449,6 +1449,28 @@ function captureReportShortLine(rows: readonly CaptureReportRow[]): string {
   return captureReportOneLine(rows.filter(r => r.group === 'lup'));
 }
 
+/**
+ * OBRONA RUNDA 1, zarzut 2 — TE SAME liczby widziane przez OFIARE.
+ *
+ * `buildCityCaptureReportRows` opisuje przejecie z perspektywy ZDOBYWCY: kazda pozycja lupu
+ * dostaje znak `+` i ton `gain`. Gdy to GRACZ jest ofiara (`oldOwner === 0`), ten sam zestaw
+ * wierszy trafial na jego karte „Utracono miasto" i do jego modalu — i mowil mu, ze
+ * „Zloto ze skarbca +1234", na zielono, o zlocie, ktore mu WLASNIE zabrano. To ta sama klasa
+ * defektu, ktora usuwa GOAL 1 (komunikat zaprzeczajacy temu, co gra zrobila), tylko po stronie
+ * lustrzanej.
+ *
+ * Odwracamy WYLACZNIE prezentacje: pozycja zdobyta (`gain`, wartosc zaczynajaca sie od `+`)
+ * staje sie strata (`loss`, ta sama liczba ze znakiem minus). Pozycje juz stratne („Pula pracy
+ * przepadla") i informacyjne („Lup: brak") zostaja bez zmian — z obu stron znacza to samo.
+ * Liczby, etykiety, kolejnosc i ekonomia sie NIE zmieniaja.
+ * EN: mirrors the captor-side rows for the victim — a gain becomes the same number as a loss.
+ */
+function mirrorCaptureReportRowsForVictim(rows: readonly CaptureReportRow[]): CaptureReportRow[] {
+  return rows.map(r => (r.tone === 'gain' && r.value.startsWith('+')
+    ? { ...r, value: '\u2212' + r.value.slice(1), tone: 'loss' as const }
+    : { ...r }));
+}
+
 // ===========================================================================
 // R-MIASTA-ZDOBYCIE-RAPORT-TROFEA-Q1 — BLOK CZYSTY: KONIEC
 // ===========================================================================
@@ -8122,6 +8144,7 @@ async function boot(): Promise<void> {
       cityName: string;
       subtitle: string;
       rows: CaptureReportRow[];
+      rowsTitle: string;
     }>();
 
     const CITY_CAPTURE_EVENT_PREFIX = 'capture-';
@@ -8154,12 +8177,28 @@ async function boot(): Promise<void> {
       eliminatedCivLabel?: string | null;
     }): void {
       if (args.oldOwner !== 0 && args.newOwner !== 0) return;
-      const evId = CITY_CAPTURE_EVENT_PREFIX + turn + '-' + args.cityId;
+      // OBRONA RUNDA 1, zarzut 3 — klucz dedupu niesie PARE WLASCICIELI, nie samo miasto.
+      // Dedup ma chronic przed potrojnym zapisem TEGO SAMEGO zdarzenia z trzech lejkow
+      // (recon D): tam wszystkie wywolania maja identyczna pare `oldOwner`/`newOwner`, wiec
+      // nadal wygrywa pierwsze, najbogatsze w tresc. Ale gdy gracz zdobywa miasto, a AI odbija
+      // je w swojej fazie TEJ SAMEJ tury, para jest ODWROTNA — to DRUGIE, osobne zdarzenie
+      // i musi dostac wlasny wpis. Wczesniej ginelo bez sladu (GOAL 3 wymaga trwalego wpisu
+      // dla KAZDEGO przejecia).
+      // EN: the dedup key carries the owner pair, so the three funnels of ONE capture still
+      // collapse into one entry, while a re-capture in the same turn gets its own.
+      const evId = CITY_CAPTURE_EVENT_PREFIX + turn + '-' + args.cityId
+        + '-' + args.oldOwner + '-' + args.newOwner;
       if (cityCaptureEventDetails.has(evId)) return;
 
       const playerCaptured = args.newOwner === 0;
       const elim = args.eliminatedCivLabel ?? null;
-      const oneLine = captureReportShortLine(args.rows);
+      // OBRONA RUNDA 1, zarzut 2: wiersze przychodza w perspektywie ZDOBYWCY. Gdy ofiara jest
+      // gracz, karta i modal dostaja te same liczby odwrocone na strate — inaczej gra mowilaby
+      // mu na zielono „+1234" o zlocie, ktore mu wlasnie zabrano.
+      const viewRows: readonly CaptureReportRow[] = playerCaptured
+        ? args.rows
+        : mirrorCaptureReportRowsForVictim(args.rows);
+      const oneLine = captureReportShortLine(viewRows);
 
       const cardTitle = elim
         ? 'ELIMINACJA: ' + elim
@@ -8176,7 +8215,10 @@ async function boot(): Promise<void> {
           : (playerCaptured
             ? 'Odebrane: ' + args.victimLabel
             : 'Przejęte przez ' + args.captorLabel),
-        rows: [...args.rows],
+        rows: [...viewRows],
+        // Naglowek listy nazywa to, co gracz na niej widzi: bilans ZDOBYCIA, gdy zdobywal,
+        // bilans STRATY, gdy tracil. „BILANS ZDOBYCIA" nad wlasna strata byl czescia zarzutu 2.
+        rowsTitle: playerCaptured ? 'Bilans zdobycia' : 'Bilans straty',
       });
 
       warEventLog.unshift({
@@ -8207,6 +8249,7 @@ async function boot(): Promise<void> {
         cityName: info.cityName,
         subtitle: info.subtitle,
         rows: info.rows,
+        rowsTitle: info.rowsTitle,
       });
       return true;
     }

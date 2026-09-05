@@ -140,7 +140,7 @@ function esc(s: string): string {
  * Pusta lista → pusty string (nagłówek „Bilans" też się nie pojawia).
  * EN: every entry becomes its own row element with separate label/value spans.
  */
-function reportRowsHtml(rows: readonly CaptureReportRow[] | undefined): string {
+function reportRowsHtml(rows: readonly CaptureReportRow[] | undefined, title?: string): string {
   if (!rows || rows.length === 0) return '';
   const body = rows.map(r =>
     '<div class="civ-ccn-row civ-ccn-row-' + (r.tone ?? 'info') + '">'
@@ -148,7 +148,7 @@ function reportRowsHtml(rows: readonly CaptureReportRow[] | undefined): string {
       + '<span class="civ-ccn-row-val">' + esc(r.value) + '</span>'
     + '</div>').join('');
   return '<div class="civ-ccn-rows">'
-    + '<div class="civ-ccn-rows-hdr">Bilans zdobycia</div>'
+    + '<div class="civ-ccn-rows-hdr">' + esc(title ?? 'Bilans zdobycia') + '</div>'
     + body
     + '</div>';
 }
@@ -252,6 +252,11 @@ export function showCaptureReportNotice(opts: {
   cityName: string;
   subtitle?: string;
   rows: readonly CaptureReportRow[];
+  /** OBRONA RUNDA 1, zarzut 2 — nagłówek listy nazywa to, co na niej stoi: „Bilans zdobycia"
+   *  dla zdobywcy, „Bilans straty" dla ofiary. Bez tego modal „Miasto utracone" nosił nad
+   *  własną stratą gracza nagłówek „BILANS ZDOBYCIA".
+   *  EN: names the list for what it actually shows — a gain balance or a loss balance. */
+  rowsTitle?: string;
 }): void {
   close();
   ensureStyles();
@@ -268,7 +273,7 @@ export function showCaptureReportNotice(opts: {
       '<div class="civ-ccn-title">' + esc(opts.title) + '</div>' +
       '<div class="civ-ccn-name">' + esc(opts.cityName) + '</div>' +
       (opts.subtitle ? '<div class="civ-ccn-elim-sub">' + esc(opts.subtitle) + '</div>' : '') +
-      reportRowsHtml(opts.rows) +
+      reportRowsHtml(opts.rows, opts.rowsTitle) +
     '</div>' +
     '<div class="civ-ccn-foot">' +
       '<div class="civ-ccn-actions">' +

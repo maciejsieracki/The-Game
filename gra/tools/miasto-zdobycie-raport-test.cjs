@@ -83,12 +83,17 @@ ok(!!pureBlock && pureBlock.includes('function captureReportOneLine('),
 let build = null;
 let oneLine = null;
 let shortLine = null;
+let mirror = null;
+/** Ochrona przed tautologią: gdy funkcji nie ma w bloku, sekcja 11 czerwienieje, nie wybucha. */
+const mirror0 = rows => (typeof mirror === 'function' ? mirror(rows) : null);
 try {
   const api = runTs(pureBlock,
-    'return { buildCityCaptureReportRows, captureReportOneLine, captureReportShortLine };');
+    'return { buildCityCaptureReportRows, captureReportOneLine, captureReportShortLine,'
+    + ' mirrorCaptureReportRowsForVictim };');
   build = api.buildCityCaptureReportRows;
   oneLine = api.captureReportOneLine;
   shortLine = api.captureReportShortLine;
+  mirror = api.mirrorCaptureReportRowsForVictim;
 } catch (e) {
   console.log('  (egzekucja bloku rzuciła: ' + e.message + ')');
 }
@@ -366,7 +371,7 @@ console.log('9. Wpis w panelu WYDARZENIA + szczegóły po kliknięciu');
     '9d: powtórne wywołanie dla tego samego miasta/tury jest no-opem (trzy lejki, jeden wpis)');
   ok(rec.includes('cityCaptureEventDetails.set(evId,'),
     '9e: pełna treść (wiersze) trafia do mapy szczegółów pod tym samym id');
-  ok(rec.includes('captureReportShortLine(args.rows)') && rec.includes('rows: [...args.rows],'),
+  ok(rec.includes('captureReportShortLine(viewRows)') && rec.includes('rows: [...viewRows],'),
     '9e2: karta dostaje skrót, mapa szczegółów KOMPLET wierszy (karta ≠ modal)');
   ok(code.includes('function openCityCaptureEventLink(id: string): boolean {')
     && /showCaptureReportNotice\(\{/.test(code),
@@ -396,6 +401,71 @@ console.log('10. Ekonomia przejęcia nietknięta (ten temat zmienia tylko to, co
     '10c: reguła dziedziczenia Mocy przez barbarzyńców bez zmian');
   ok(elim.includes('moc: powerGain,'),
     '10d: raport podaje Moc FAKTYCZNIE przejętą (powerGain), nie utraconą przez ofiarę');
+}
+
+// ===========================================================================
+// 11. OBRONA RUNDA 1, zarzut 2 — raport dla OFIARY nie pokazuje jej straty jako zdobyczy.
+// ===========================================================================
+console.log('11. Strona lustrzana — gdy to GRACZ traci miasto, bilans jest stratą');
+{
+  const rows = build({ ...BAZA, kind: 'stolica', zloto: 1234 });
+  const mirror = mirror0(rows);
+  ok(mirror !== null, '11a: BLOK CZYSTY wystawia mirrorCaptureReportRowsForVictim');
+  const zloto = rowFor(mirror || [], 'Złoto ze skarbca');
+  eq(zloto && zloto.value, '\u22121234',
+    '11b: złoto zabrane graczowi ma znak MINUS, nie „+1234"');
+  eq(zloto && zloto.tone, 'loss', '11c: ta sama pozycja ma ton straty, nie zdobyczy');
+  ok((mirror || []).every(r => r.tone !== 'gain'),
+    '11d: w bilansie ofiary NIE MA ani jednej pozycji w tonie zdobyczy');
+  const ludnosc = rowFor(mirror || [], 'Ludność');
+  eq(ludnosc && ludnosc.value, '\u22124', '11e: utracona ludność też liczy się na minus');
+  const pula = rowFor(mirror || [], 'Pula pracy');
+  eq(pula && pula.value, 'przepadła — nie przechodzi na zdobywcę',
+    '11f: pozycja już stratna zostaje BEZ ZMIAN (nie podwaja się minusem)');
+  const brak = rowFor(mirror0(build({ ...BAZA, kind: 'zwykle' })) || [], 'Łup');
+  eq(brak && brak.value, 'brak', '11g: pozycja informacyjna „Łup: brak" zostaje bez zmian');
+  eq(labels(mirror || []).join('|'), labels(rows).join('|'),
+    '11h: odwrócona jest WYŁĄCZNIE prezentacja — etykiety i kolejność identyczne');
+  eq(rowFor(rows, 'Złoto ze skarbca').value, '+1234',
+    '11i: oryginalne wiersze (perspektywa zdobywcy) nietknięte — funkcja nie mutuje wejścia');
+  eq(shortLine(mirror || []), 'Złoto ze skarbca: \u22121234',
+    '11j: skrót na kartę „Utracono miasto" niesie kwotę ze znakiem minus');
+
+  const rec = sliceBetween(stripComments(mainSrc), 'function recordCityCaptureEvent(',
+    'function cityCaptureEventLinkFor(') || '';
+  ok(/playerCaptured\s*\?\s*args\.rows\s*:\s*mirrorCaptureReportRowsForVictim\(args\.rows\)/.test(rec),
+    '11k: rejestrator faktycznie odwraca wiersze, gdy gracz jest ofiarą');
+  ok(rec.includes('rows: [...viewRows],'),
+    '11l: mapa szczegółów (modal po kliknięciu) dostaje wiersze W TEJ SAMEJ perspektywie co karta');
+  ok(rec.includes("rowsTitle: playerCaptured ? 'Bilans zdobycia' : 'Bilans straty'"),
+    '11m: nagłówek listy nazywa stratę stratą — koniec „BILANS ZDOBYCIA" nad utraconym miastem');
+  ok(/reportRowsHtml\(opts\.rows, opts\.rowsTitle\)/.test(noticeSrc),
+    '11n: modal raportu przekazuje ten nagłówek do renderu wierszy');
+}
+
+// ===========================================================================
+// 12. OBRONA RUNDA 1, zarzut 3 — drugie przejęcie tego samego miasta w tej samej turze.
+// ===========================================================================
+console.log('12. Dedup chroni przed potrójnym zapisem JEDNEGO zdarzenia, nie kasuje drugiego');
+{
+  const rec = sliceBetween(stripComments(mainSrc), 'function recordCityCaptureEvent(',
+    'function cityCaptureEventLinkFor(') || '';
+  ok(rec.includes("+ '-' + args.oldOwner + '-' + args.newOwner;"),
+    '12a: klucz dedupu niesie PARĘ WŁAŚCICIELI, nie samo miasto i turę');
+  // Symulacja tego samego klucza, jaki liczy main.ts — dowód na zachowaniu, nie na literale.
+  const key = (turn, cityId, oldOwner, newOwner) =>
+    'capture-' + turn + '-' + cityId + '-' + oldOwner + '-' + newOwner;
+  eq(key(7, 'c1', 3, 0), key(7, 'c1', 3, 0),
+    '12b: dwa lejki TEGO SAMEGO przejęcia dają identyczny klucz — nadal jeden wpis');
+  ok(key(7, 'c1', 3, 0) !== key(7, 'c1', 0, 3),
+    '12c: odbicie miasta w tej samej turze ma klucz INNY — wpis „Utracono miasto" powstaje');
+  ok(key(7, 'c1', 3, 0) !== key(8, 'c1', 3, 0), '12d: kolejna tura to nadal osobny wpis');
+  ok(key(7, 'c1', -1, 0) !== key(7, 'c1', 3, 0),
+    '12e: ujemne id (barbarzyńcy) nie zlewa się z id cywilizacji');
+  ok(key(7, 'c1', 3, 0).startsWith('capture-'),
+    '12f: klucz nadal zaczyna się prefiksem rodziny (✕ i klik po nim rozpoznają wpis)');
+  ok(rec.includes('if (cityCaptureEventDetails.has(evId)) return;'),
+    '12g: sam mechanizm no-opu zostaje — zmieniła się WYŁĄCZNIE ziarnistość klucza');
 }
 
 console.log('');
