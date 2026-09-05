@@ -777,6 +777,35 @@ function miniRow(cells: string[], grid: string): string {
   return `<div class="civ-emp-mini-r" style="grid-template-columns:${grid}">${c}</div>`;
 }
 
+/**
+ * Wspólny TOR paska postępu panelu imperium — jedno źródło wysokości (8px), promienia
+ * (999px) i koloru toru (#1f2733) dla sekcji „Produkcja nauki" i „Kolejka produkcji".
+ *
+ * UWAGA — ten helper ustala WYŁĄCZNIE WYGLĄD, nigdy ZNACZENIE. `pct` to gotowa szerokość
+ * wypełnienia w procentach toru; co ta liczba znaczy, rozstrzyga wywołujący i musi to
+ * powiedzieć w stopce swojej sekcji:
+ *   • „Produkcja nauki"  → pasek WZGLĘDNY: `n / maxN`, udział wobec najsilniejszego miasta;
+ *   • „Kolejka produkcji" → pasek BEZWZGLĘDNY: `postep / koszt`, ukończenie pozycji 0-100%.
+ * Dwa identycznie wyglądające paski o różnym znaczeniu jeden pod drugim to główne ryzyko
+ * tematu P-PANEL-KOLEJKA-PRODUKCJI-PASEK-POSTEPU-Q1 — stąd ten komentarz i stopki obu sekcji.
+ *
+ * / EN: shared progress-bar TRACK for the empire panel — single source of height, radius and
+ * track color. It fixes APPEARANCE only, never MEANING: `pct` is a ready fill width; the
+ * science bar is relative (share vs. strongest city), the queue bar is absolute (completion).
+ *
+ * @param pct       szerokość wypełnienia [0..100]; wartości spoza zakresu są przycinane
+ * @param boxStyle  prefiks stylu toru zależny od miejsca użycia (np. `flex:2;` albo `display:block;`)
+ * @param cls       klasa toru (wypełnienie dostaje `<cls>-fill`) — wyłącznie do selekcji w bramkach,
+ *                  bez własnych reguł CSS, żeby oba paski pozostały wizualnie identyczne
+ * @param gradient  gradient wypełnienia; domyślnie wspólny „język" niebieski panelu
+ */
+function empireBarHtml(pct: number, boxStyle: string, cls: string, gradient?: string): string {
+  const w = Math.max(0, Math.min(100, Number.isFinite(pct) ? pct : 0));
+  const grad = gradient ?? 'linear-gradient(90deg,#2c4a6b,#8ec5ff)';
+  return `<span class="${cls}" style="${boxStyle}height:8px;border-radius:999px;background:#1f2733;overflow:hidden">`
+    + `<span class="${cls}-fill" style="display:block;height:100%;width:${w}%;background:${grad}"></span></span>`;
+}
+
 /** Atrybut `title="…"` z bezpiecznym cudzysłowem — ten sam wzorzec co przycisk Auto-Żywienia. */
 function tipAttr(text: string): string {
   return ` title="${esc(text).replace(/"/g, '&quot;')}"`;
@@ -1969,11 +1998,13 @@ export function renderMiastoSection(
     for (const { pob, econ } of paired) {
       const n = econ?.nauka ?? 0;
       const pct = maxN > 0 ? Math.max(0, Math.round((n / maxN) * 100)) : 0;
+      // Pasek WZGLĘDNY (udział wobec najsilniejszego miasta) — tor z `empireBarHtml`, ten sam
+      // co w „Kolejce produkcji"; wygląd BEZ ZMIAN wobec stanu sprzed wprowadzenia helpera
+      // (identyczny `flex:2`, wysokość, promień, tło toru i gradient) — doszła wyłącznie klasa
+      // `civ-emp-nauka-bar`, do której nie ma żadnej reguły CSS, służy tylko bramkom.
       h += '<div style="display:flex;align-items:center;gap:8px;font-size:12px;color:#cfd5de">'
         + `<span style="flex:1;min-width:0">${esc(pob.name)}</span>`
-        + '<span style="flex:2;height:8px;border-radius:999px;background:#1f2733;overflow:hidden">'
-        + `<span style="display:block;height:100%;width:${pct}%;`
-        + 'background:linear-gradient(90deg,#2c4a6b,#8ec5ff)"></span></span>'
+        + empireBarHtml(pct, 'flex:2;', 'civ-emp-nauka-bar')
         + '<span style="width:62px;text-align:right;color:#8ec5ff;font-weight:600">'
         + `${signedIntTxt(n)} PN</span></div>`;
     }
@@ -2060,11 +2091,29 @@ export function renderMiastoSection(
       if (q.length > 0) anyQueue = true;
       let frontTxt = '<span style="color:#6f7889">pusta</span>';
       if (front) {
+        // FORMUŁA PASKA — BEZWZGLĘDNA: `postep / koszt`, czyli UKOŃCZENIE tej pozycji 0-100%.
+        // Świadomie INNA niż w sekcji „Produkcja nauki", gdzie pasek jest WZGLĘDNY
+        // (`n / maxN` — udział wobec najsilniejszego miasta). Nigdy nie licz tu udziału
+        // względem innych miast: dwa identyczne paski o różnym znaczeniu jeden pod drugim
+        // to dokładnie ten błąd, przed którym ostrzega dispatch tego tematu.
         const pct = front.postep != null
           ? Math.max(0, Math.min(100, Math.round((front.postep / Math.max(1, front.koszt)) * 100)))
           : null;
+        const wstrz = econ?.queueWstrzymana === true;
         frontTxt = esc(front.nazwa) + (pct != null ? ` (${pct}%)` : '')
-          + (econ?.queueWstrzymana ? ' · wstrzymana' : '');
+          + (wstrz ? ' · wstrzymana' : '');
+        // Pasek TYLKO gdy jest co pokazać. Brak `postep` (undefined) to „nie wiadomo", a nie
+        // „0%" — narysowanie pustego toru zrównałoby dwa różne stany danych (GOAL 3 pkt 2).
+        // Kolejka wstrzymana: ten sam tor, ale wygaszony gradient — pasek nie ma sugerować
+        // trwającego postępu, a jednocześnie nie może zniknąć, bo zgromadzony postęp istnieje.
+        if (pct != null) {
+          frontTxt += empireBarHtml(
+            pct,
+            'display:block;margin-top:4px;',
+            'civ-emp-q-bar',
+            wstrz ? 'linear-gradient(90deg,#2a313d,#5b6575)' : undefined,
+          );
+        }
       }
       h += miniRow([esc(pob.name), frontTxt, String(Math.max(0, q.length - 1))], grid);
     }
@@ -2073,8 +2122,15 @@ export function renderMiastoSection(
     // postępu" fałszywie twierdził, że pozycje ZA frontem nie mają postępu — silnik (production.ts
     // promoteToFront()) MOŻE bankować na nich postęp z wcześniejszego pobytu na froncie, ten
     // widok po prostu go nie pokazuje (patrz JSDoc EmpireCityQueueItemRow.postep).
+    // GOAL 2 tematu P-PANEL-KOLEJKA-PRODUKCJI-PASEK-POSTEPU-Q1: pasek tej sekcji wygląda tak
+    // samo jak pasek „Produkcji nauki", ale znaczy CO INNEGO — stopka musi to rozróżnić wprost,
+    // inaczej gracz odczyta go przez analogię do sąsiada i zrozumie odwrotnie. Zastrzeżenie
+    // o froncie kolejki i zbankowanym postępie (naprawa N5) zostaje NIENARUSZONE poniżej.
     h += anyQueue
-      ? '<div class="civ-emp-foot">Procent dotyczy WYŁĄCZNIE pozycji na froncie kolejki (postęp Pracy '
+      ? '<div class="civ-emp-foot">Pasek = UKOŃCZENIE pozycji na froncie (zgromadzony postęp ÷ jej '
+        + 'koszt, 0-100%) — <b>nie</b> udział względem innych miast, inaczej niż pasek w sekcji '
+        + '„Produkcja nauki". Wygaszony pasek = kolejka wstrzymana, postęp nie rośnie. '
+        + 'Procent dotyczy WYŁĄCZNIE pozycji na froncie kolejki (postęp Pracy '
         + 'zgromadzony na tym budynku/jednostce). „W kolejce" = liczba pozycji ZA frontem — ich '
         + 'ewentualny wcześniejszy postęp ten widok nie pokazuje.</div>'
       : '<div class="civ-emp-empty">Brak aktywnej produkcji w zakresie.</div>';
