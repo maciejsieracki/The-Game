@@ -91,6 +91,28 @@ czy podniesienie go do 170 nie przepuszcza `PorPct` powyżej sensownej granicy, 
 pomiar w raporcie**. Jeśli okaże się, że `PorPct` potrafi teraz przekroczyć 120% (cap
 Szczęścia), to jest `DECISION_REQUIRED`, nie samodzielna korekta.
 
+## ⚠ PUŁAPKA NAZEWNICZA — przeczytaj, zanim tkniesz cokolwiek z „garnizonem" w nazwie
+
+Znalezisko Evaluatora tematu Garnizonu, potwierdzone przeze mnie w danych. **W grze są dziś
+DWIE różne rzeczy o tej samej nazwie, o przeciwstawnej roli w tym temacie:**
+
+| | `prawo_garnizon_per_jednostka` (`society-params.json:767`) | budynek `garnizon` (`buildings.json`) |
+|---|---|---|
+| co to jest | bonus Prawa **za jednostkę wojskową** stacjonującą w mieście | **budynek** administracyjny epoki 1 |
+| wartości | easy 25 / normal 20 / hard 15, do capu | 25 / 35 / 47 per epoka |
+| rola w D1 | **POZA `prawMax`** — doraźny ratunek, świadomie nieliczone do kalibracji | **W `prawMax`** — filar kalibracji 53/85/121 |
+
+**To są mechaniki, które właściciel jawnie rozdzielił.** Powiedział wprost: *„zostawiamy dalej
+garnizon wojskowy pod kątem normalnego wojska, które może stacjonować dalej na prawo.
+Ja tylko mówiłem, że nie powinien być potrzebny przy normalnej rozbudowie budynku."*
+
+**Pomylenie ich = FAIL.** Konkretnie: usunięcie albo zmiana `prawo_garnizon_per_jednostka`
+„bo mamy już budynek Garnizon" byłoby usunięciem mechaniki, którą właściciel kazał zostawić.
+Wciągnięcie go do `prawMax` byłoby złamaniem D1, powtórzonym dziesięć razy.
+
+Przed jakąkolwiek zmianą klucza zawierającego `garnizon` **sprawdź, o który z tych dwóch
+bytów chodzi**, i napisz to w raporcie.
+
 ## CZEGO TEN TEMAT NIE ROBI
 
 - **Nie tworzy budynku Garnizon** — robi to `R-BUDYNEK-GARNIZON-NOWY-Q1` (osobny temat,
