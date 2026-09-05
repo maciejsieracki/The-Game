@@ -183,11 +183,23 @@ Zakazane bezwzględnie: `gra/src/main.ts`, `gra/data/buildings.json` (trzyma go
 `ROBOCZA-MANIFEST.json`, `playbook.json`.
 Zakaz `git add -A` i `git add .` — dodawaj po jawnych ścieżkach.
 
+## BLOKADA — ten temat NIE startuje przed `R-AI-PRODUKCJA-Z-DOSTEPNYCH-BUDYNKOW-Q1`
+
+**Decyzja właściciela z 2026-09-05: „Naprawić listę AI PRZED wejściem Prawa."**
+
+Powód, zmierzony: AI nie zbuduje **19 z 41** budynków, a **cała grupa „Prawo i administracja"
+jest dla niego niewidzialna** (`dwor_zarzadcy`, `trybunal`, `palac_ii`, `palac_iii`,
+`pretorium`, `sad`). W epoce 3 AI zna **3 z 13** budynków. Gdyby Prawo weszło pierwsze,
+miasta AI wylądowałyby w epokach 2-3 na `prawPct` rzędu 30-40% — w paśmie Niepokoju,
+blisko Buntu — **nie z powodu balansu, tylko z powodu tej luki**. Właściciel zobaczyłby
+w playteście bunty u rywali i szukałby przyczyny w liczbach, których nie ma sensu ruszać.
+
 ## IZOLACJA
 
 Worktree `/home/user/wt-prawo-skala`, gałąź `autobot/R-PRAWO-PRZEBUDOWA-SKALI-Q1`,
-baza wskazana jawnie przy zakładaniu worktree (będzie zawierać zintegrowane Szczęście
-i Garnizon — §2b: te tematy trzymają te same pliki i muszą wejść pierwsze).
+baza wskazana jawnie przy zakładaniu worktree — **musi zawierać zintegrowane Szczęście,
+Garnizon ORAZ `R-AI-PRODUKCJA-Z-DOSTEPNYCH-BUDYNKOW-Q1`** (§2b: wszystkie trzy trzymają
+pliki, których ten temat dotyka, i muszą wejść pierwsze).
 
 PRZED jakąkolwiek pracą: `git -C /home/user/wt-prawo-skala log -1 --oneline` i
 `git status --short`. Oczekiwana baza i czyste drzewo. Rozbieżność → `BLOCK`, bez zapisu

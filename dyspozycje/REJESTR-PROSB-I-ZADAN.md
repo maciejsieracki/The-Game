@@ -5722,3 +5722,27 @@ kodowi po `d618a8ae`.
 | `P-AI-BRAK-SCIEZKI-ZDOBYCIA-MIASTA-ADIACENCJA` | Duze AI nie ma zadnej dzialajacej sciezki zdobycia miasta przez adiacencje — `ai.ts:2517` emituje `move`, `canUnitOccupyCityHex` odrzuca bezwarunkowo, jednostka trafia do `unitActed` i traci ture. Gracz (3 wywolania) i barbarzyncy (1) maja `tryAutoCaptureEmptyCityAt`; cywilizacje major **zero**. | **NAPRAWIC — AI ma zdobywac miasta jak gracz.** | To jest wyrownanie parytetu, nie nowa funkcja. Swiadomie przyjety skutek: AI zaczyna realnie odbierac miasta sobie nawzajem i graczowi. |
 | Gorace krzeslo, Etap 7 | Format zapisu musi dostac v3 (nie zniesie dwoch ludzi). Co ze starymi zapisami? | **BEZ MIGRACJI — stare zapisy przestaja dzialac.** | Tylko nowy format; o jedna warstwe kodu i jedna klase bledow mniej. **Konsekwencja przyjeta swiadomie po jej opisaniu: kazdy istniejacy zapis z playtestow staje sie bezuzyteczny, w tym te sluzace do odtwarzania zgloszen.** Etap 7 NIE pisze funkcji migrujacej v2->v3; ma za to jasno komunikowac uzytkownikowi, ze zapis jest w starym formacie, zamiast wywalac sie po cichu. |
 | `P-KOLOR-SUROWCE-MIASTO-VS-MAPA-Q1` | Ktora konwencja kolorow wygrywa przy sprzecznosci? | **Ta czesciej uzywana w kodzie.** | Operator liczy wystapienia i wybiera wariant obecny w wiekszej liczbie miejsc. Kazdy surowiec ze zmieniona wartoscia ma byc wymieniony w raporcie: przed i po. |
+
+## ECHO WLASCICIELA 2026-09-05 (noc) — AI nie widzi 19 z 41 budynkow
+
+**Wyzwalacz (wlasciciel, doslownie):** „Jezeli tak wyglada budowanie budynkow przez AI, ze jest to budowa z dostepnej listy, trzeba sprawdzic, czy na pewno wszystkie budynki na tej liscie wystepuja, bo moze to byc blad, na przyklad gdy pojawiaja sie nowe epoki. Wydaje mi sie, ze na kazda epoke powinna byc inna lista."
+
+**Intuicja potwierdzona pomiarem — i sytuacja gorsza, niz zakladal.** `chooseCityProduction` (`ai.ts:1261`) buduje kandydatow z zaszytych literalow rozsianych po kilkunastu galeziach, nie z `availableProduction()`. Pomiar orkiestratora:
+
+| Epoka | AI zna | Pokrycie |
+|---|---|---|
+| 1 | 9 / 11 | 82% |
+| 2 | 9 / 15 | 60% |
+| **3** | **3 / 13** | **23%** |
+| 4 | 1 / 2 | 50% |
+
+Brakuje 19 budynkow, w tym **calej grupy Prawo i administracja** (`dwor_zarzadcy`, `trybunal`, `palac_ii`, `palac_iii`, `pretorium`, `sad`) oraz `swiatynia`, `teatr`, `laznia_publiczna` (Szczescie) i czterech budynkow wojskowych epoki 3. Weryfikacja wyrywkowa szesciu pozycji: zero trafien w `ai.ts`, normalne wystepowanie w `main.ts` — wiec nie jest to artefakt metody.
+
+| Pytanie | **Odpowiedz wlasciciela** | Skutek |
+|---|---|---|
+| Jak naprawiamy? | **Przepiac AI na `availableProduction()` — koniec listy na sztywno.** Wlasciciel odrzucil wariant „listy per epoka" (wlasna pierwotna propozycje) oraz hybryde. | Nowy temat `R-AI-PRODUKCJA-Z-DOSTEPNYCH-BUDYNKOW-Q1`, dispatch napisany. Binarny sprawdzian sukcesu: dodanie nowego budynku albo nowej epoki nie wymaga ani jednej linii w `ai.ts`. |
+| Kolejnosc wobec Prawa? | **Naprawic liste AI PRZED wejsciem Prawa.** | `R-PRAWO-PRZEBUDOWA-SKALI-Q1` dostaje jawna sekcje BLOKADA. Bez tego miasta AI mialyby `prawPct` 30-40% w epokach 2-3 — Niepokoj blisko Buntu — **nie z powodu balansu, tylko tej luki**. |
+
+**Skutek uboczny:** latka „dopisz garnizon do infraOrder" z `R-BUDYNEK-GARNIZON-NOWY-Q1` (ECHO z tej samej nocy) staje sie zbedna po przepieciu. Kryterium konca 6 nowego tematu kaze ja usunac i udowodnic asercja, ze Garnizon nadal jest dla AI dostepny. Latka zostaje na czas przejsciowy — daje efekt od razu, a jej usuniecie jest jednolinijkowe.
+
+**Do zapamietania procesowo:** bramka `ai-buduje-budynki-test.cjs` jest przy tym defekcie **ZIELONA (42/0)** i to nie jest jej wada — sprawdza, czy miasta AI maja *jakikolwiek* budynek, nie czy AI potrafi postawic *kazdy*. Defekt tej klasy wymaga bramki mierzacej **pokrycie katalogu**, czyli inna wielkosc. To jest wzorzec do zapamietania: zielona bramka nie dowodzi braku defektu w wymiarze, ktorego nie mierzy.
