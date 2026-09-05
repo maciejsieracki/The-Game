@@ -209,7 +209,8 @@ Jeden plik, z allowlisty (ratyfikacja rundy 2, punkt `gra/tools/szczescie-skala-
   komunikatu asercji `114,3%` → `90,7%`.
 - `dyspozycje/autobot/runs/R-SZCZESCIE-PRZEBUDOWA-SKALI-Q1/06-obrona-runda2.md` (ten raport).
 
-`git add` po jawnych ścieżkach, **zero `git add -A` / `git add .`**. `git diff --check` — exit 0.
+Commit: **`fef6c538`**. `git add` po jawnych ścieżkach, **zero `git add -A` / `git add .`**.
+`git diff --check` — exit 0.
 `git diff --stat gra/data/` — **pusto**: ani jednej zmiany w plikach danych, ani jednej liczby
 balansu tkniętej w tej obronie (obie mutacje dowodowe cofnięte z kopii).
 `gra/src/main.ts` — `git diff --name-only f570a91a… | grep -c main.ts` = **0**, plik bajt w bajt
@@ -217,6 +218,12 @@ jak baza i jak `origin/main`.
 Zero komend `npm run` (C-001); jedyna kompilacja to `tsc --noEmit`.
 
 ## TESTY (komplet uruchomiony ponownie po poprawce, własne przebiegi)
+
+**Gdzie mierzyłem.** Pomiar pierwszy zrobiłem w `/home/user/wt-szczescie-skala`. Ponieważ
+w trakcie pracy inny proces zaczął mutować to drzewo (BLOKADA 1), **powtórzyłem cały komplet
+w czystym, odłączonym worktree na moim commicie**:
+`git worktree add --detach /tmp/claude-0/obrona-r2-head fef6c538`. Liczby niżej pochodzą
+z tego przebiegu — są wolne od cudzych mutacji i wyszły identycznie jak pomiar pierwszy.
 
 `node ./node_modules/typescript/bin/tsc --noEmit` — **exit 0, zero błędów.**
 
@@ -248,15 +255,23 @@ asercja z zarzutu 4. Po każdej: `git diff --quiet gra/data/society-params.json`
 
 ## BLOKADY
 
-1. **Kolizja izolacji trwa — R3-E nadal naruszone, ale nie przeze mnie.** W trakcie tej obrony
-   w `/home/user/wt-szczescie-skala/gra/tools/` pojawiły się cztery pliki nieśledzone,
-   utworzone o 22:01 przez inny proces (najpewniej Evaluator rundy 3):
-   `RSZQ1EVAL3-baza-{citizen-resource-upkeep,r-wzrost-szczescie-dubel-wealth-ceramika,
-   szczescie-przebudowa-skali,szczescie-skala-normalizacja}-test.cjs`.
-   **Nie tknąłem ich, nie zacommitowałem, nie usunąłem** — `git add` szedł po dwóch jawnych
-   ścieżkach. Zgłaszam do rozstrzygnięcia orkiestratora: w tym worktree znów pracuje więcej
-   niż jeden proces, a te cztery pliki trzeba posprzątać (nie moją ręką — mogą być czyimś
-   materiałem w locie).
+1. **Kolizja izolacji trwa i tym razem REALNIE ZNISZCZYŁA pracę — R3-E naruszone, nie przeze
+   mnie.** Przebieg, udokumentowany co do minuty:
+   - 22:01 — w `/home/user/wt-szczescie-skala/gra/tools/` pojawiają się cztery pliki
+     nieśledzone, utworzone przez inny proces (najpewniej Evaluator rundy 3):
+     `RSZQ1EVAL3-baza-{citizen-resource-upkeep,r-wzrost-szczescie-dubel-wealth-ceramika,
+     szczescie-przebudowa-skali,szczescie-skala-normalizacja}-test.cjs`.
+   - między moim `git add` a `git status` **moja poprawka linii `:474` została cofnięta** —
+     plik wrócił do stanu z HEAD z komunikatem `114,3%`. Równolegle `gra/data/society-params.json`
+     i `gra/src/game/society-breakdown.ts` pokazywały się jako `M` i po chwili znów czysto,
+     czyli tamten proces prowadził w tym drzewie własne mutacje i przywracał pliki.
+   - **Poprawkę nałożyłem ponownie i zacommitowałem natychmiast** (`fef6c538`), po dwóch
+     jawnych ścieżkach. Zawartość commitu zweryfikowana `git show fef6c538:…` — linia `:474`
+     niesie `90,7%`.
+   Czterech plików `RSZQ1EVAL3-baza-*` **nie tknąłem, nie zacommitowałem, nie usunąłem** —
+   mogą być czyimś materiałem w locie. Do rozstrzygnięcia orkiestratora: R3-E („jeden pisarz
+   na worktree") jest łamane po raz trzeci w tym temacie, a tym razem doszło do faktycznej
+   utraty zapisu (odzyskanej tylko dlatego, że natychmiast sprawdziłem `git status` po `git add`).
 2. Poza tym — brak. Wszystkie cztery zarzuty PRZYJĘTE i zamknięte dowodem.
 
 ## RUNDY
