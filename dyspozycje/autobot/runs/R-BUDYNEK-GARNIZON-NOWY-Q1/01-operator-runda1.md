@@ -5,8 +5,9 @@ DOMAIN: GAME
 TEMAT: R-BUDYNEK-GARNIZON-NOWY-Q1
 GOAL: Nowy budynek Garnizon — kompletny, na równi z każdym innym budynkiem w grze (bez wpinania do Prawa i bez obrony cywilnej).
 ZMIANY/COMMIT: `gra/data/buildings.json` (+42 linie, 0 usunięć — wyłącznie nowy rekord `garnizon`), `gra/src/ui/icons/brand/building-icon-map.json` (+1), `gra/src/ui/icons/brand/buildings/bld-garnizon.svg` (NOWY), `gra/tools/budynek-garnizon-test.cjs` (NOWY), `runs/.../dowody/*.png` (3). Commit **`c326f8eadf9334d90d564e2ac22a4b724a900f9d`** na gałęzi `autobot/R-BUDYNEK-GARNIZON-NOWY-Q1` (baza `d2bbd5481ea9bb6297d1e2eed1a635e2d7c06f5d`, potwierdzona `git log -1` przed pracą).
-TESTY: budynek-garnizon-test **55/55**; tsc --noEmit **0 błędów**; logic **213/213**, tech-tree **19/19**, research **33/33**, unit-replace **13/13**, combat **6/6**. Rodzina budynków (przed→po): koszty-surowcowe 125/3→**126/3**, plony 68/0, prereq 51/8→**51/8**, upgrade 48/1→**48/1**, building-tech-gate 89/0, cost-tempo 6/0, happiness 8/0, queue-refund 2/3→**2/3**, unit-building-bonuses 82/0, administracja-stolica 52/1→**52/1**, prawo-siatka-v2 55/0, szczescie-skala 132/0, deposit-building-gate 46/1→**46/1**, ai-buduje-budynki — patrz nota niżej. Rodzina kart/CivPedii: civpedia-budynki-historia 136/0, civpedia-gra-id-mostek PASS, entity-card-contract 75/0, entity-card-historia-section 31/0, building-detail-card-hover-layout 11/0, owned-building-detail-side 17/0, owned-building-inactive 4/0, panel-kolejka-pasek-postepu 82/0, building-detail-card-entitycard-migration 51/1→**51/1**, building-gate-audit OK. Każdy pre-istniejący czerwony zmierzony na OBU stanach drzewa (moje pliki chwilowo cofnięte) — identyczny. **Jedyna zmiana na czerwono: `grupy-budynkow-test` 80/3 → 79/4** — patrz BLOKADY.
+TESTY: bramka tematu **55/55**; `tsc --noEmit` **0 błędów**; pięć bramek referencyjnych bez zmian (213/213, 19/19, 33/33, 13/13, 6/6). Rodzina budynków i kart — 23 bramki, pełna tabela w §Bramki. **Jedyna pozycja, która zmieniła wynik: `grupy-budynkow-test` 80/3 → 79/4** (patrz DECISION_REQUIRED #1). Każdy pozostały czerwony jest pre-istniejący i zmierzony na OBU stanach drzewa (moje pliki chwilowo cofnięte) — identyczny.
 BLOKADY: 3 pliki spoza allowlisty (niżej). Zero naruszeń granic §9; zero zmian w plikach zakazanych.
+UWAGA DO §11: raport przekracza ~400 słów, bo dispatch wprost zamawia dwie treści obszerne z natury — listę reconu (G1) i tabelę pomiarową z uzasadnieniem per liczba (G3). Kontrakt i wyniki są skondensowane; rozwlekłe są wyłącznie te dwie zamówione sekcje.
 RUNDY: 1/5
 NASTĘPNY KROK: decyzja orkiestratora o rozszerzeniu allowlisty, potem Evaluator.
 DEPLOY/PUSH: NIE WYKONANO
@@ -87,3 +88,28 @@ Uzasadnienie, jedno zdanie na liczbę:
 ## Nowa bramka
 
 `gra/tools/budynek-garnizon-test.cjs` — 55 asercji w trzech częściach: [A] dane + ikona, [B] silnik produkcji (esbuild→node), [C] żywe Chromium (`renderBuildList` + `buildBuildingDetailCard`, realne funkcje `cityPanel.ts` eksportowane tylko w buforze esbuild, plik w repo nietknięty). Stuby ikon generowane do katalogu tymczasowego systemu — bramka nie dokłada plików do repo. Stub `buildingIconSvg` czyta **realną** mapę i **realną** treść SVG, więc medalion na zrzucie to prawdziwa ikona, a usunięcie wpisu z mapy czerwieni asercję `[I4]`.
+
+## Bramki — wyniki (przed → po; „=" gdy bez zmiany)
+
+| Bramka | Wynik | | Bramka | Wynik |
+|---|---|---|---|---|
+| budynek-garnizon (NOWA) | **55/0** | | civpedia-budynki-historia | 136/0 |
+| tsc --noEmit | **0 błędów** | | civpedia-gra-id-mostek | PASS |
+| logic | 213/0 = | | entity-card-contract | 75/0 |
+| tech-tree | 19/0 = | | entity-card-historia-section | 31/0 |
+| research | 33/0 = | | building-detail-card-hover-layout | 11/0 |
+| unit-replace | 13/0 = | | building-detail-card-entitycard-migr. | 51/1 = (pre-ist.) |
+| combat | 6/0 = | | owned-building-detail-side | 17/0 |
+| koszty-surowcowe | 125/3 → **126/3** | | owned-building-inactive | 4/0 |
+| plony-budynkow | 68/0 = | | panel-kolejka-pasek-postepu | 82/0 |
+| prereq-budynkow | 51/8 = (pre-ist.) | | building-gate-audit | OK (informacyjna) |
+| upgrade-budynki | 48/1 = (pre-ist.) | | building-tech-gate | 89/0 |
+| building-queue-refund | 2/3 = (pre-ist.) | | building-cost-tempo | 6/0 |
+| administracja-stolica | 52/1 = (pre-ist.) | | building-happiness | 8/0 |
+| deposit-building-gate | 46/1 = (pre-ist.) | | unit-building-bonuses | 82/0 |
+| prawo-siatka-v2 | 55/0 = | | szczescie-skala-normalizacja | 132/0 = |
+| **grupy-budynkow** | **80/3 → 79/4** | | ai-buduje-budynki | **42/0** (zielona) |
+
+`koszty-surowcowe` zyskuje jeden PASS — Garnizon przechodzi regułę „epoka Kamienia = wyłącznie drewno". Pre-istniejące czerwone (`prereq`, `upgrade`, `queue-refund`, `administracja-stolica`, `deposit-building-gate`, `entitycard-migration`) zmierzone dwukrotnie: z moimi plikami i po ich chwilowym cofnięciu — te same nazwy i liczby, zero związku z Garnizonem.
+
+`ai-buduje-budynki` jest **zielona (42/0)** i to NIE unieważnia DECISION_REQUIRED #3: ta bramka sprawdza, czy miasta AI mają w ogóle jakiś budynek, a nie czy AI potrafi postawić KAŻDY budynek. Luka parytetu przy Garnizonie jest niewidoczna dla tej bramki. Uczciwa nota: pierwszy przebieg tej bramki wywalił się na `Target page ... has been closed` — była to moja własna kolizja (dwa równoległe uruchomienia tego samego testu dzielą artefakty `.entry.ts`/`.bundle.cjs` w `gra/tools/`), nie defekt gry; wynik 42/0 pochodzi z przebiegu w pojedynkę.
