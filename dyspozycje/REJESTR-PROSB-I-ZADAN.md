@@ -5176,3 +5176,51 @@ Worktree sprzątnięty.
 
 **Odblokowany temat następczy:** `R-NAZWY-MIAST-AUDYT-STOLICE-I-PANSTWA-Q1` (pule nazw)
 przestaje kolidować — ten temat zwolnił `city-names-pool.ts` i `civ-names.ts`.
+
+### `R-AUTOWYZYWIENIE-ROWNY-WZROST-Q1-A` — **ZINTEGROWANE** (`d618a8ae`, 2026-09-05)
+
+Obieg pełny: Operator → Evaluator (3 zarzuty) → Obrona → ratyfikacja orkiestratora →
+**Final Control `PASS`, 3× ODDAL**.
+
+**Najważniejszy wynik tego węzła: moja hipoteza główna została OBALONA pomiarem — i o to
+prosiłem w dispatchu.** Twierdziłem, że autowyżywienie jest „wszystko-albo-nic" i miasta
+deficytowe blokują racje w całym imperium. Prawdziwa przyczyna to **asymetria**: obniżanie
+działało per-miasto i **zależało od kolejności iteracji** (funkcja pytała „jak nisko musi
+zejść TO JEDNO miasto, żeby CAŁE imperium się zbilansowało", więc pierwsze odpytane miasto
+pochłaniało całą korektę), a podnoszenie było lockstep i cofane globalnie. Pomiar
+rozstrzygający: to samo imperium, ta sama tura, `maxSafePoziomRacji` **0 dla Sparty
+i 2 dla Jin**; po naprawie **4 dla wszystkich 12 miast**. Hipoteza jest prawdziwa wyłącznie
+jako blokada powrotu, nie jako źródło rozrzutu.
+
+**Final Control obalił własną mutacją najgroźniejszy scenariusz:** zmusił algorytm do zerowego
+wzrostu wszędzie — rozrzut 0, brak głodu, a bramka **CZERWIENIEJE** (49/54). Czyli wariant
+„zatrzymaj wszystkich", który trywialnie spełnia „mały rozrzut", nie przechodzi. Sprawdził też
+mutacją realnej pętli (`population-growth-v85.ts:450`), że bramka woła prawdziwą ekonomię,
+a nie własną kopię wzoru.
+
+**Znane ograniczenie, zapisane jawnie:** własność (B) — miasto na limicie ludności — jest
+zaimplementowana i pokryta bramką, ale **w grze nieaktywna**, bo nic nie podaje mapy limitów
+(`popCapByCityId`: 13 trafień, wszystkie w `empire-food.ts`). Final Control **zweryfikował
+pomiarem warunek bezpieczeństwa integracji**: plan bez mapy i z mapą pustą dają identyczny
+`uniformLevel` i identyczne `levelByCityId`, a wszystkie 7 czerwonych bramek ma wyjście
+bit w bit takie samo. Wpięcie idzie osobnym tematem `R-AUTOWYZYWIENIE-LIMIT-WPIECIE-POPCAP-Q1`
+po zwolnieniu `main.ts`.
+
+Bramki potwierdzone przez orkiestratora NA `main`: `autowyzywienie-rowny-wzrost` 60/60,
+`auto-wyzywienie-kosztarmii-kryterium` 18/18, logic 213/213, tech-tree 19/19, research
+ALL GREEN, unit-replace 13/13, combat OK, `tsc` exit 0. Worktree sprzątnięty.
+
+## DEPLOY ROBOCZA FALA 348 — wykonany (2026-09-05, `1fe41e3f`)
+
+md5 `15ef5bc3ba66d84b83106015b6c35588`, **osiem tematów**. Pełny opis w `WERSJE.md`.
+`Gra-ROBOCZA-POLE-BITWY.html` **przebudowane pierwszy raz od FALA 344** (md5
+`d4477b3eaed627e426c41b9f8d0ad1f1`), bo węzeł W2 dotyka `battleScene.ts`. Osiem kopii
+PLAYTEST zweryfikowanych — md5 wszystkich identyczne z głównym bundlem. FALA 347 oznaczona
+`ZASTĄPIONA`.
+
+**Drugi restart kontenera tej sesji, tym razem bez strat merytorycznych.** Wymóg
+„raport commituj OD RAZU", dopisany do promptów po pierwszym restarcie, zadziałał:
+Final Control węzła A zdążył utrwalić werdykt PASS w gicie (`a270af86`) i nie trzeba było
+powtarzać jego pracy. Przy pierwszym restarcie przepadł raport Evaluatora tematu paska.
+To jest argument za trwałym wpisaniem tego wymogu do `R-PROC-AUTOBOT.md` §11
+(temat `P-RESTART-KONTENERA-RAPORTY-W-PAMIECI-Q1`).
