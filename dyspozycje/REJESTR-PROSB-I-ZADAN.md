@@ -4829,6 +4829,87 @@ sprawną pracę. Wzorzec `os.tmpdir()/<stała-nazwa>` ma więc już **dwa** potw
 wystąpienia, co przesuwa audyt z „warto sprawdzić" na „prawie na pewno jest ich więcej".
 **Do zakresu tematu dochodzi `ai-buduje-budynki-test.cjs`.**
 
+## R-SZCZESCIE-PRZEBUDOWA-SKALI-Q1 — ECHO WLASCICIELA, KOMPLET DECYZJI (2026-09-05)
+
+**To jest zapis wiazacych rozstrzygniec wlasciciela z sesji analitycznej.** Zadna z tych zmian
+NIE zostala jeszcze wprowadzona do kodu — rejestr utrwala decyzje, dispatch pojdzie osobno.
+Wlasciciel przypomnial w trakcie: **balans jest wylacznie w jego wladaniu**; wszystkie liczby
+ponizej pochodza od niego, orkiestrator dostarczal wylacznie pomiary.
+
+### Decyzje
+
+1. **Ryczałt `+1` za budynek ZOSTAJE** — „podnosi zadowolenie i dostepnosc uslug".
+2. **Nie kazdy budynek daje szczescie.** Wlasciciel przyjal podzial orkiestratora
+   (19 TAK / 22 NIE). Kryterium: czy mieszkaniec korzysta z budynku, czy tylko panstwo
+   lub wojsko. Produkcja, Obrona i Wojsko → NIE. Zdrowie, Religia, Kultura, Zywnosc → TAK.
+   Administracja dzieli sie: Trybunal i Sad TAK, Dom Starszyzny / Dwor Zarzadcy / Pretorium NIE.
+3. **Kultura i religia proporcjonalnie**, wzor `20 x udzial_wlasnej - 10` (100% wlasnej = +10,
+   100% obcej = -10, zero na 50/50). Zastepuje dzisiejsze schodki kultury i binarny przeskok
+   religii (+4/-4 na progu 50%).
+4. **-1 szczescia za KAZDEGO obywatela**, i to **ZASTEPUJE** dzisiejsze zageszczenie
+   (`-0,75` powyzej pop 5).
+5. **Podatki liniowo**: Zamoznosc 0% → **-8**, 90% → **+8**, proporcjonalnie pomiedzy.
+   Zastepuje siatke `szczescie_siatka_zamoznosc` `[-1,0,1,...,8]`.
+6. **Zaopatrzenie: +2 za kazdy dostarczony surowiec** (bylo +1). Kara za brakujacy zostaje -1
+   — wlasciciel zmienil tylko strone dodatnia (asymetria SWIADOMA, zglosozna i przyjeta).
+7. **Spichlerz +5** do szczescia (i Spichlerz II, ten sam lancuch ulepszen).
+8. **Swiatynia, Teatr i Akademia zachowuja stare wartosci** (3 / 4 / 4).
+9. **USUNIETE cztery wiersze dublujace** — „powoduja podwojne liczenie i wprowadzaja w blad":
+   `szczescie_swiatynia` +1, `szczescie_amfiteatr` +1, `Ceramika (dostep)` +1
+   (ceramika liczy sie odtad jako zwykly surowiec zaopatrzenia), `Spichlerz dzialajacy` +1.
+10. **Religia, kultura i Wealth skaluja sie z epoka**, zeby zachowac staly udzial w puli
+    dodatniej (53,57% dla trojki, zmierzone w epoce 1): **10 / 16 / 23** per epoka.
+    Powod: bez tego udzial religii spadal 17,9% → 14,1% → 11,1%, bo budynki rosly wokol niej.
+11. **`szczescie_max_epoka` = `[48, 80, 121]`** — maksymalna osiagalna liczba punktow epoki,
+    rowna scenariuszowi optymistycznemu. **100% = to, co w danej epoce da sie zebrac.**
+12. **`szczescie_max_pop_wspolczynnik` = 0** — mianownik **przestaje skalowac sie populacja**.
+    Slowa wlasciciela: „niezaleznie od wielkosci miasta powinnismy wyznaczyc maksymalna ilosc
+    punktow dla danej epoki osiagalna, i to jest 100% zadowolenia". Populacja wplywa odtad
+    WYLACZNIE na licznik, przez kare -1 za obywatela.
+13. **Sufit `szczescie_pct_cap = 120` zostaje bez zmian.** Ustalono, ze cap NIE jest kosmetyka:
+    `szPct` wchodzi do `computePorPct` (`society-breakdown.ts:800-809`,
+    `PorPct = min(cap, 0,5 x szPct + 0,5 x prawPct)`), a `PorPct` steruje mnoznikami produkcji,
+    pieniadza, nauki, kultury, wzrostu i `revoltRisk`. Podniesienie capu pozwoliloby zastapic
+    Prawo nadmiarem szczescia. Po przeskalowaniu mianownika zapas do 120% przestaje byc
+    teoretyczny i zaczyna cokolwiek znaczyc.
+
+### Zmierzony skutek (miasto z kompletem budynkow, scenariusz optymistyczny)
+
+| pop | Ep. 1 | Ep. 2 | Ep. 3 |
+|---|---|---|---|
+| 1 | 115% | 110% | 106% |
+| 4 | 108% | 106% | 103% |
+| **8** | **100%** | **101%** | **100%** |
+| 12 | 92% | 96% | 97% |
+| 20 | 75% | 86% | 90% |
+
+Scenariusz najgorszy: **-58% / -39% / -24%** przy pop 8. Dolna polowa skali dziala w kazdej
+epoce — wczesniej epoka 3 nie schodzila ponizej +62%.
+
+### Znaleziska po drodze, ktore trzeba osobno domknac
+
+- **Blad w moich wczesniejszych pomiarach, poprawiony:** liczylem budynki tak, jakby ulepszenia
+  dokladaly sie do poprzednikow. `building-resource-gate.ts:357` — „Ulepszenie do Spichlerz II
+  USUWA `'spichlerz'` z `builtIds`". Szesc lancuchow sie zwija, wiec miasto z kompletem ma
+  **11 / 23 / 31** budynkow, nie 11 / 26 / 39. Wszystkie tabele sprzed tej korekty byly
+  zawyzone w epokach 2 i 3.
+- **Rzeka NIE daje szczescia** — wlasciciel pamietal „+1 za dostep do rzeki", ale
+  `turn-economy.ts:529` (`zdrowie_rzeka = 2`) to **Zdrowie**, osobny stat liczony
+  w `computeCityHealth`, ktory do szczescia nie wchodzi ani jedna linia. Do rozstrzygniecia,
+  czy rzeka MA dawac takze szczescie — to bylaby nowa pozycja.
+- **Martwe parametry w `society-params.json`** — `szczescie_kara_obca_kultura` (-2),
+  `szczescie_bonus_produkcja_wartosc` (0,1), `szczescie_bonus_wzrost_wartosc` (0,1):
+  **zero uzyc w `gra/src`**. Do sprzatniecia albo do wpiecia.
+- **Utrzymanie budynkow w ZLOCIE juz istnieje** — 40 z 41 budynkow, 84 zl/ture za komplet
+  (`economy-upkeep.ts:641-645`). Szczescia nie dotyka.
+- **Kara za wielkosc wazy odwrotnie niz powinna:** przy plaskim `szMax` dwunastu obywateli
+  kosztuje 25 p.p. w epoce 1, ale tylko 10 p.p. w epoce 3 — metropolie sa najlatwiejsze
+  w utrzymaniu na koncu gry. Lekarstwo (gdyby playtest to potwierdzil): kara rosnaca z epoka,
+  ok. -1 / -1,7 / -2,5. **Wlasciciel swiadomie odlozyl to do playtestu.**
+
+**STATUS: ZAREJESTROWANE, DO DISPATCHU.** DOMAIN: GAME. Wszystkie liczby pochodza od
+wlasciciela; Operator dostanie jawny **zakaz ich strojenia**.
+
 ## R-SZCZESCIE-AUDYT-B-WKLAD-BUDYNKOW-Q1 — POMIAR ORKIESTRATORA, WSTRZYMANY DO DECYZJI (2026-09-05)
 
 **Temat NIE zostal dispatchowany. Zadna liczba balansu nie zostala zmieniona.** Wlasciciel
