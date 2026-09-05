@@ -5224,3 +5224,47 @@ Final Control węzła A zdążył utrwalić werdykt PASS w gicie (`a270af86`) i 
 powtarzać jego pracy. Przy pierwszym restarcie przepadł raport Evaluatora tematu paska.
 To jest argument za trwałym wpisaniem tego wymogu do `R-PROC-AUTOBOT.md` §11
 (temat `P-RESTART-KONTENERA-RAPORTY-W-PAMIECI-Q1`).
+
+### `R-AUTOWYZYWIENIE-STAN-PRZYCISKU-Q1-B` — **ZINTEGROWANE** (`7dab640b`, 2026-09-05)
+
+Obieg pełny: Operator → Evaluator (4 zarzuty) → Obrona → ratyfikacja orkiestratora →
+**Final Control `PASS`, 4× ODDAL**.
+
+**Przyczyna okazała się inna niż zakładał recon — i to jest pouczające.** Obie połówki
+przełącznika **już miały** `.active` i `aria-pressed`. Brakowało **drugiej strony pary**:
+stan WYŁĄCZONY nie miał żadnego oznaczenia i wyglądał identycznie jak zwykły, w pełni
+klikalny przycisk. Stąd „nie wiadomo, czy jest włączone" — nie brak stanu aktywnego,
+tylko brak stanu nieaktywnego.
+
+**Zakres okazał się dwa razy szerszy, niż zakładałem: CZTERY kontrolki, nie dwie.**
+Obie połówki grupy Żywność plus komponent **współdzielony** przez grupy Skarbiec+Nauka
+i Praca. Naprawa dwóch zostawiłaby właściciela z tym samym problemem w trzech miejscach.
+
+**Final Control zweryfikował pokrycie dwoma własnymi mutacjami**, nie deklaracją:
+nadanie obu połówkom znacznika aktywności czerwieni 20 asercji, a pozostawienie reguły CSS
+**wizualnie pustej** czerwieni 13 przez pomiar `getComputedStyle` w żywym Chromium.
+Bramka mierzy więc RÓŻNICĘ między stanami, a nie obecność klasy — czyli dokładnie to,
+przed czym ostrzegał dispatch. Przeszukał też kod samodzielnie i potwierdził, że szóstej
+kontrolki nie ma (`cs-rename`/`cs-artview` to akcje bez stanu).
+
+Bramki potwierdzone przez orkiestratora NA `main`: `autowyzywienie-stan-przycisku` 90/90,
+logic 213/213, tech-tree 19/19, research ALL GREEN, unit-replace 13/13, combat OK,
+`tsc` exit 0. Worktree sprzątnięty.
+
+**Trzy noty Final Control do przejęcia przez orkiestratora:**
+- **N4** — `buildModeHud.ts` (`:562`, `:570`, `:624`, `:640`, `:646`) ma **pięć kolejnych
+  przełączników trwałego stanu** w konwencji „tylko `.active`". Przypadek słabszy niż
+  `cs-manager` (bazowy przycisk jest już przygaszony i każdy niesie `aria-pressed`),
+  ale **dopisany do `R-ZARZADCA-AUTOMATYCZNY-STAN-PRZYCISKU-Q1`** — inaczej naprawa
+  tamtego tematu znów pokryje jedno miejsce z kilku.
+- **N5** — dwie **pre-istniejące czerwone bramki, nigdzie niezadeklarowane**:
+  `empire-panel-moc-scroll-preserve` 38/9 i `empire-panel-miasto-obywatele-content` 113/2.
+  Parytet z bazą potwierdzony, więc nie regres — ale dołączają do listy zaległych czerwonych
+  bramek (`oboz-lowiecki-las-test` 72/19, `map-improvement-qualify-test` 130/1,
+  `entity-card-contract-test`, `map-field-battle-test`).
+- **N6** — limit §11 przekroczony w kolejnych dwóch raportach (542 i 526 słów). Zasila
+  `P-RAPORTY-PRZEKRACZAJA-LIMIT-400-SLOW-Q1`.
+
+**Temat `R-AUTOWYZYWIENIE-GLOBALNY-BLOKER-I-STAN-PRZYCISKU-Q1` jest tym samym domknięty**
+w obu węzłach. Zostają dwa tematy następcze: `R-AUTOWYZYWIENIE-LIMIT-WPIECIE-POPCAP-Q1`
+(wpięcie mapy limitów) i `R-SPICHLERZ-STAN-I-PRZELACZNIK-Q1` (ECHO „2+3").
