@@ -64,8 +64,11 @@ BAZA: a09218ec (potwierdzona `git log -1` przed pracą).
    zamiast ogólników) jest przejęty przez asercje 1b, 3c, 3f, 3g nowej bramki.
    **Potrzebna decyzja: dopisać `gra/tools/eliminacja-lup-kwoty-test.cjs` do allowlisty w rundzie 2
    (przepisanie asercji na nowy kształt) albo świadome wycofanie tej bramki.**
-2. Dwie bramki playwright niezwiązane z tematem (`sidepanel-blocking-card-cutoff-real-render`,
-   `sidepanel-diplo-dismiss-real-render`) przekraczają 300 s w tym kontenerze — INFRA, nie sprawdzane.
+2. Brak innych. (Rodzina panelu wydarzeń — dotknąłem `getEventLink`/`onEventClick` — też zielona:
+   `side-panel-event-link` 34/34, `eot-event-defer` 33/33, `important-event-cards` 10/10 + regression
+   PASS, `sidepanel-event-przekierowania-real-render` 51/51, `sidepanel-event-header-wydarzenie-real-render`
+   23/23, `sidepanel-blocking-card-cutoff-real-render` 47/47, `sidepanel-diplo-dismiss-real-render` 35/35.
+   Trzy ostatnie robią pełny `vite build` — ok. 5 min każda, uruchamiać z osobnym budżetem czasu.)
 
 RUNDY: 1/5
 NASTĘPNY KROK: Evaluator (rozstrzygnięcie blokady 1 przed werdyktem).
