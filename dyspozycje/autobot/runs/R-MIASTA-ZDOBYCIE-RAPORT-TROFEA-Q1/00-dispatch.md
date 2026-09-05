@@ -205,3 +205,42 @@ i TEJ SAMEJ gałęzi. Po 5 rundach: `LIMIT-5-EXCEEDED`.
 
 Operator → Evaluator (ponumerowane zarzuty) → Obrona (gdy lista niepusta) → koniec
 skryptu. Final Control osobno, integracja allowlist-only ręką orkiestratora.
+
+---
+
+## RATYFIKACJA ORKIESTRATORA — runda 2 (2026-09-05)
+
+**Powód: sprzeczność w TYM dispatchu, nie defekt wytworu.** GOAL 2 pkt 2 i GOAL 5 pkt 4 żądają
+usunięcia z `main.ts` literału `` `${skarbiecText}${naukaText} ${outcome.techSkopiowane.length}
+tech(y) przejęte. Zdobycze Power: +${lostPower}.` `` (E3, E4). Bramka
+`gra/tools/eliminacja-lup-kwoty-test.cjs:74` wycina ten sam literał ze źródła i asercjonuje go
+dosłownie — więc spełnienie GOAL 2 **z konieczności** ją czerwieni. Nie umieściłem jej
+w allowliście. Operator i Evaluator zgłosili to niezależnie, Operator nie tknął pliku spoza
+allowlisty — zachowanie prawidłowe (§14).
+
+**ROZSTRZYGNIĘCIE: allowlista zostaje rozszerzona o `gra/tools/eliminacja-lup-kwoty-test.cjs`.**
+
+**Bramki NIE WOLNO wycofać ani osłabić.** Jej sens — „komunikat podaje FAKTYCZNE kwoty złota
+i nauki, a nie ogólniki" — jest nadal potrzebny i pokrywa się z GOAL 1. Zakres pracy:
+
+1. **Przepisz asercje na nową strukturę wierszy**, zachowując każdą sprawdzaną WŁASNOŚĆ.
+   Asercja sprawdzająca, że w komunikacie stoi konkretna kwota skarbca, ma dalej to sprawdzać —
+   tylko przez `reportRows`, a nie przez literał sklejanego stringa.
+2. **Dla każdej z 6 dzisiejszych asercji (1a–1f) podaj w raporcie jedno zdanie:** co sprawdzała
+   przed i przez co jest sprawdzana po. Jeśli któraś nie ma odpowiednika, powiedz to wprost
+   zamiast ją po cichu usunąć.
+3. **Napraw twardy crash** `ReferenceError: eliminatedDetails is not defined`
+   (`eliminacja-lup-kwoty-test.cjs:92,104`) — bramka ma dobiegać do końca.
+4. **Dowód nietautologiczności dla PRZEPISANEJ bramki:** zepsuj kwotę skarbca w `main.ts`,
+   pokaż że bramka czerwienieje, cofnij, pokaż czysty `git status`.
+
+**Zakaz podmiany asercji na słabsze.** Jeśli po przepisaniu bramka ma mniej asercji niż 24, albo
+przestaje sprawdzać konkretne liczby, to jest osłabienie i Final Control potraktuje je jak FAIL.
+
+**Zarzuty 2 i 3 uznaję za zamknięte obroną** — poprawki naniesione, dowiedzione zrzutami
+z żywego Chromium (`dowody/05`, `dowody/06`) i mutacjami, po których bramka czerwienieje
+(12a, 11k, oraz 11b/c/d/e/j). Nie otwieraj ich ponownie.
+
+**Reszta dispatchu bez zmian** — ECHO właściciela (1) „bez nowej mechaniki" i (2) „modal ORAZ
+wpis w panelu" pozostają wiążące, ekonomia przejęcia nietknięta, `capital-capture.ts` nadal
+tylko warunkowo.
