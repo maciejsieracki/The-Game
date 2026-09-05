@@ -455,3 +455,67 @@ ze statusem `BLOCK`** zamiast pisać do drzewa, w którym może pracować ktoś 
    jedynym dopuszczalnym wyjątkiem (potwierdzony pomiarem jako identyczny na czystym `main`).
 7. Nietautologiczność: dla każdej z czterech zmian (A–D) pokaż mutację, która czerwieni
    dokładnie tę asercję, i cofnij ją, dowodząc `git diff --quiet`.
+
+---
+
+## RATYFIKACJA ORKIESTRATORA — runda 4 (2026-09-05, po Final Control rundy 3)
+
+**Werdykt 1 Final Control („DO DECYZJI CZŁOWIEKA") rozstrzygam: DOMYKAMY.**
+
+### Co znalazł Final Control
+
+`SZ_MAX_POP_WSP_DEFAULT = 0,048` (`gra/src/game/society-breakdown.ts:243`) rozjechał się
+z danymi (0,04). **Rozjazd powstał W TEJ RUNDZIE** — przed R3-A fallback trafiał dokładnie
+w wartość `normal`, więc problem jest skutkiem ubocznym naszej własnej zmiany.
+
+Gorsza część znaleziska: mutacja **FC-M10** podmieniła tę stałą na **0,5** — dziesięciokrotnie
+— i **sześć bramek zostało zielonych**. Jedyna asercja, która niby jej pilnuje
+(`szczescie-skala-normalizacja-test.cjs:249`), **porównuje stałą z samą sobą**. To jest
+tautologia, czyli dokładnie ten tryb, przed którym ostrzega reguła anty-halucynacyjna
+tego dispatchu, przeoczony przez trzy rundy i przez Evaluatora.
+
+### Dlaczego „domykamy", a nie „zostaw jak jest"
+
+Final Control pyta wprost, czy R3-C był jednorazową poprawką, czy zasadą. **Był zasadą** —
+brzmienie R3-C mówi: *„Wtedy każdy przyszły rozjazd kodu z danymi zaczerwieni bramkę,
+zamiast siedzieć cicho."* Zostawienie drugiego fallbacku rozjechanego byłoby zaprzeczeniem
+zdania, które sam napisałem trzy godziny wcześniej.
+
+**To nie jest zmiana balansu i nie wymaga decyzji właściciela.** Dane rządzą żywą grą;
+fallback dotyka wyłącznie ścieżek z `society = null`. Zmiana 0,048 → 0,04 zrównuje kod
+z liczbą, którą właściciel już zatwierdził — nie ustala nowej.
+
+### Zakres rundy 4 — DWIE rzeczy, nic więcej
+
+1. **`SZ_MAX_POP_WSP_DEFAULT` = 0,04** w `gra/src/game/society-breakdown.ts`.
+2. **`szczescie-skala-normalizacja-test.cjs:249` — koniec tautologii.** Asercja ma wiązać
+   fallback z **wartością `normal` wczytaną z `gra/data/society-params.json`**, a nie ze
+   stałą z tego samego modułu. Wzorzec jest już w tej bramce po R3-C (asercja wiążąca
+   `SZMAX_DEFAULTS` z danymi) — zrób to samo dla współczynnika.
+
+### KRYTERIA KOŃCA rundy 4 (binarne)
+
+1. `SZ_MAX_POP_WSP_DEFAULT` = 0,04; `grep` po `0.048` w `gra/src/` daje zero trafień.
+2. **Powtórz mutację FC-M10 i pokaż, że teraz DZIAŁA:** podmień fallback na `0.5`,
+   uruchom `szczescie-skala-normalizacja-test.cjs` — ma być **CZERWONA**. Podaj liczbę
+   faili. Cofnij przez KOPIĘ pliku, `git diff --quiet`. Bez tego przebiegu runda jest
+   niedomknięta — to jest cała jej treść.
+3. Druga mutacja, z drugiej strony: zmień `szczescie_max_pop_wspolczynnik` w danych
+   (np. normal na 0,05) — ta sama asercja ma zaczerwienić. To dowodzi, że wiąże obie
+   strony, a nie tylko jedną.
+4. Liczba asercji w `szczescie-skala-normalizacja-test.cjs` **nie może spaść** (dziś 146).
+5. `tsc --noEmit` zielony; pięć bramek referencyjnych zielonych; cała rodzina
+   szczęścia/porządku zielona (dopuszczalne wyjątki potwierdzone jako identyczne na
+   `origin/main`: `border-march-wygasanie` 22/4, `unit-resource-upkeep` 3/4).
+
+### Czego runda 4 NIE robi
+
+Nie rusza ani jednej liczby balansu — ani w danych, ani nigdzie indziej. `0,04` w danych
+**zostaje takie, jakie jest**; zmienia się wyłącznie fallback w kodzie, żeby przestał
+kłamać. Nie rusza `main.ts`. Nie rusza Prawa.
+
+### Uwaga do zapamiętania poza tym tematem
+
+Tautologiczna asercja przeżyła trzy rundy, Evaluatora i Obronę — złapał ją dopiero
+Final Control własną mutacją. **Mutacja jest jedynym testem asercji.** To jest materiał
+do playbooka, nie do tego dispatchu; rejestruje orkiestrator.
