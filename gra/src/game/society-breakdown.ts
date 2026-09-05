@@ -239,8 +239,17 @@ export const PRAW_PCT_CAP = 100;
  * ludności 12 (uzasadnienie przy `popScaleMultiplier`). Epoka zostaje czynnikiem
  * multiplikatywnym, więc „każda epoka rozpatrzona oddzielnie” nadal obowiązuje.
  * Fallbacki poniżej działają tylko przy braku wierszy w society-params.json.
+ *
+ * R-SZCZESCIE-PRZEBUDOWA-SKALI-Q1 R4 (ratyfikacja orkiestratora 2026-09-05): fallback
+ * `szMaxPopWsp` dosunięty do danych — `0,04`, czyli kolumna `normal` z `society-params.json`
+ * (po R3-A jedna wartość na easy/normal/hard). Rozjazd powstał w rundzie 3: przed R3-A dane
+ * miały 0,038/0,048/0,058 i stała trafiała dokładnie w `normal`. To NIE jest zmiana balansu —
+ * dane rządzą żywą grą, a fallback dotyka wyłącznie ścieżek z `society = null`. Ta sama
+ * konwencja i to samo uzasadnienie co przy `SZMAX_BY_ERA_DEFAULT` (R3-C wyżej).
+ * Wiązanie „fallback === normal w JSON" pilnuje bramka
+ * `gra/tools/szczescie-skala-normalizacja-test.cjs` (sekcja 2) — asercja R4.
  */
-export const SZ_MAX_POP_WSP_DEFAULT = 0.048;
+export const SZ_MAX_POP_WSP_DEFAULT = 0.04;
 export const PRAW_MAX_POP_WSP_DEFAULT = 0.041;
 export const SZ_MAX_POP_ODNIESIENIA_DEFAULT = 2;
 export const PRAW_MAX_POP_ODNIESIENIA_DEFAULT = 2;

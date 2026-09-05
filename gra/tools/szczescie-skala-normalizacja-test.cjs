@@ -246,8 +246,20 @@ console.log('\n2. GOAL 1 — fallback: usuniecie wpisu z JSON daje wartosc ze st
   const bezWsp = M.loadSocietyScaleParams(
     withoutKey('szczescie', 'szczescie_max_pop_wspolczynnik'), 'normal',
   );
-  eq(bezWsp.szMaxPopWsp, M.FALLBACK_SOCIETY_SCALE.szMaxPopWsp,
-    'brak szczescie_max_pop_wspolczynnik -> wspolczynnik ze stalej TS');
+  // WIAZANIE KOD <-> DANE, dolozone przez R4 (ratyfikacja orkiestratora 2026-09-05).
+  // Poprzednia wersja tej asercji porownywala `bezWsp.szMaxPopWsp` z
+  // `M.FALLBACK_SOCIETY_SCALE.szMaxPopWsp`, czyli stala z TYM SAMYM modulem po obu stronach
+  // — tautologia. Final Control udowodnil ja mutacja FC-M10: podmiana
+  // SZ_MAX_POP_WSP_DEFAULT 0,048 -> 0,5 (10x obok) zostawiala SZESC bramek zielonych.
+  // Teraz fallback jest wiazany z wartoscia `normal` WCZYTANA Z society-params.json,
+  // dokladnie tak jak SZMAX_DEFAULTS po R3-C: rozjazd z KAZDEJ ze stron czerwieni bramke.
+  // Asercja na surowym JSON-ie jest pierwsza celowo — bez niej usuniecie wiersza z danych
+  // przywrociloby tautologie (obie strony spadlyby na ten sam fallback).
+  const wspNormalJSON = ((SOCIETY.szczescie || {})['szczescie_max_pop_wspolczynnik'] || {}).normal;
+  ok(typeof wspNormalJSON === 'number' && Number.isFinite(wspNormalJSON),
+    'R4: szczescie_max_pop_wspolczynnik.normal ISTNIEJE w society-params.json (bez tego wiersza asercja nizej stalaby sie tautologia)');
+  eq(bezWsp.szMaxPopWsp, wspNormalJSON,
+    'R4: brak szczescie_max_pop_wspolczynnik -> fallback z TS === szczescie_max_pop_wspolczynnik.normal z JSON (rozjazd kodu z danymi czerwieni bramke)');
 
   // Fallback dziala takze w pelnym przebiegu (nie tylko w loaderze).
   const szBezDanych = M.computeHappinessBreakdown(
