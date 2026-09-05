@@ -21,10 +21,22 @@ Po każdej serii rejestracji w `dyspozycje/PYTANIA-OTWARTE.md`, przed zmianą
 wątku — uruchom:
 
 ```bash
-grep -n 'STATUS: \*\*OTWARTE' dyspozycje/PYTANIA-OTWARTE.md
+grep -nE 'STATUS:[[:space:]]*\*{0,2}OTWARTE' dyspozycje/PYTANIA-OTWARTE.md
 ```
 
-(bez kotwicy `^## ` — gubi nagłówki `### `). Dla każdego trafienia potwierdź:
+**Ta komenda zastąpiła 2026-09-05 poprzednią wersję `grep -n 'STATUS: \*\*OTWARTE'`,
+która była ŚLEPA na większość pliku.** Stara forma łapała wyłącznie kanoniczne
+`STATUS: **OTWARTE` (pogrubienie zaczyna się PO dwukropku) — a w pliku istnieją też,
+i to w porównywalnej liczbie, formy `**STATUS: OTWARTE …**` (pogrubienie od słowa STATUS)
+oraz nagłówkowa `## … · STATUS: OTWARTE`. Zmierzone na dzień zmiany: **stara komenda
+31 trafień, nowa 71**. Audyt narzucony jako „twarda reguła" po cichu pomijał ponad połowę
+realnie otwartych pozycji od momentu wprowadzenia. Historia: `P-AUDYT-STATUS-OTWARTE-REGEX-SLEPOTA`.
+
+Nowa komenda **celowo nadmiarowo** łapie też linie audytowe i cytaty samej komendy —
+nadmiar jest bezpieczny (sprawdzasz i odrzucasz), niedomiar gubi tematy. Nie zawężaj jej
+z powrotem „dla czystości wyniku".
+
+(Bez kotwicy `^## ` — gubi nagłówki `### `.) Dla każdego trafienia potwierdź:
 subagent w locie / pytanie ABC zadane / udokumentowany powód odłożenia. Brak
 któregokolwiek → zgłoszenie zgubione. Ta komenda żyje TAKŻE w
 `.cursor/rules/komendy-raport.mdc` — dwa niezależne, zawsze ładowane nośniki,

@@ -18,7 +18,10 @@ Evaluator/Final Control oznacza brak dowodu zakończenia. Pełny routing i hiera
 ## Kontrola kompletności zgłoszeń (C-031)
 
 Po każdej serii rejestracji w `dyspozycje/PYTANIA-OTWARTE.md`, przed zmianą
-wątku — uruchom `grep -n 'STATUS: \*\*OTWARTE' dyspozycje/PYTANIA-OTWARTE.md`
+wątku — uruchom `grep -nE 'STATUS:[[:space:]]*\*{0,2}OTWARTE' dyspozycje/PYTANIA-OTWARTE.md`
+(komenda poprawiona 2026-09-05 — stara forma `grep -n 'STATUS: \*\*OTWARTE'` widziała
+31 z 71 realnych trafień, bo gubiła formy `**STATUS: OTWARTE …**` i nagłówkowe;
+patrz `P-AUDYT-STATUS-OTWARTE-REGEX-SLEPOTA` i CLAUDE.md §0c)
 (bez kotwicy `^## ` — gubi nagłówki `### `) i potwierdź dla każdego trafienia:
 subagent w locie / pytanie ABC zadane / udokumentowany powód odłożenia. Ta sama
 komenda żyje TAKŻE w `CLAUDE.md` §0c — dwa niezależne, zawsze ładowane nośniki

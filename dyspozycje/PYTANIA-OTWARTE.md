@@ -30604,8 +30604,18 @@ tematu: (a) systematyczny przegląd i normalizacja wszystkich ~29 wpisów do for
 — (b) jest szybsze i nie ryzykuje przypadkowej zmiany treści 29 istniejących wpisów, ale (a) jest
 bardziej zgodne z duchem reguły „jeden kanoniczny format".
 
-**STATUS: **OTWARTE** — czeka na decyzję właściciela (a) vs (b) powyżej. Nie dispatchuję
-subagenta bez tej decyzji, bo (a) dotyka merytorycznej treści ~29 istniejących wpisów rejestru.**
+**STATUS: **ZAMKNIĘTE** 2026-09-05 — wybrano (b), rozszerzenie komendy.** Orkiestrator
+podjął decyzję sam, bo (b) nie dotyka treści ani jednego wpisu: zmienia wyłącznie regex
+w `CLAUDE.md` §0c i w `.cursor/rules/komendy-raport.mdc`. Wariant (a) — normalizacja ~29
+wpisów do jednej formy — **odrzucony jako niepotrzebne ryzyko**: przepisywanie stempli
+w istniejących wpisach niesie ryzyko przypadkowej zmiany treści merytorycznej, a po (b)
+nie daje już żadnej korzyści, bo komenda widzi wszystkie formy.
+
+Nowa komenda: `grep -nE 'STATUS:[[:space:]]*\*{0,2}OTWARTE' dyspozycje/PYTANIA-OTWARTE.md`.
+**Pomiar w dniu zmiany: stara 31 trafień, nowa 71.** Skala ślepoty potwierdzona niezależnie
+od pomiaru Evaluatora z 2026-08-16 (wtedy 19 vs ok. 48) — proporcja się utrzymała, mimo że
+plik od tamtej pory urósł. Nowa komenda celowo łapie nadmiarowo (linie audytowe, cytaty
+samej komendy): nadmiar jest bezpieczny, niedomiar gubi tematy.
 
 ---
 
