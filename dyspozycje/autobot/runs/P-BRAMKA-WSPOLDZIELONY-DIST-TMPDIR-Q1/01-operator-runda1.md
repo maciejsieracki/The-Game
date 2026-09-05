@@ -6,10 +6,12 @@ TEMAT: P-BRAMKA-WSPOLDZIELONY-DIST-TMPDIR-Q1
 MODEL+EFFORT: Operator — Opus 5, effort high (§1a / C-052)
 GOAL: Żadna bramka w `gra/tools/` nie może dać wyniku zależnego od tego, czy w tej samej
 chwili biegnie inny przebieg — jej albo czyjkolwiek.
-ZMIANY/COMMIT: `9bc06495` (naprawa + nowa bramka), `8cafb97e`, `71531e2c`, `ed4a5af6`
-tymczasowego + sprzątanie) + NOWY `gra/tools/bramki-tmpdir-unikalnosc-test.cjs`.
-Allowlista dotrzymana: `git status` pokazuje wyłącznie `gra/tools/`; zero `gra/src`,
-zero `gra/data`. Staging po jawnych ścieżkach, bez `git add -A`.
+ZMIANY/COMMIT: `9bc06495` (59× `gra/tools/**/*.cjs` — wyłącznie ścieżka katalogu
+tymczasowego i sprzątanie — plus NOWY `gra/tools/bramki-tmpdir-unikalnosc-test.cjs`),
+`8cafb97e`, `71531e2c`, `ed4a5af6` (trzy poprawki mojej własnej naprawy, opis niżej).
+Allowlista dotrzymana: cały diff leży w `gra/tools/`; zero `gra/src`, zero `gra/data`.
+Staging po jawnych ścieżkach, bez `git add -A`. Diff dowiedziony jako path+sprzątanie:
+żadna usunięta linia nie dotyczy asercji, progów ani logiki pomiarowej.
 RUNDY: 1/5
 NASTĘPNY KROK: Evaluator (Opus 5, effort high)
 DEPLOY/PUSH: NIE WYKONANO
@@ -108,9 +110,14 @@ przyczyną** przed i po zmianie:
 ### Tryb trzeci — czy katalog znika po przebiegu
 
 Pomiar, nie deklaracja: `ls /tmp` przed i po **16 naprawionych bramkach** →
-**zero nowych pozostałości**. Zrzuty ekranu (`*shots*`, `*preview*`) **celowo zostają** —
-są dowodem wizualnym (§9 pkt 6); unikalność chroni je przed nadpisaniem przez równoległy
-bieg, a hak sprzątający jawnie je pomija.
+**zero nowych pozostałości** (`comm -13` na listingach przed/po).
+
+Celowo **nie** kasujemy dokładnie czterech katalogów zrzutów — `civ-ikona-robotnik-kolor-shots`,
+`civ-jednostka-niewidoczna-r2-shots`, `civ-shots-praca-panel-budowy-warstwa`, `oboz-las-shots`
+— plus dwóch tworzonych leniwie przez `recruit-*`. Zrzuty są **dowodem wizualnym** (§9 pkt 6):
+gdyby znikały, unikalność chroniłaby je przed nadpisaniem tylko po to, żeby je zaraz skasować.
+Lista jest zamknięta i sprawdzona co do pozycji — wpadał w nią wcześniej katalog roboczy
+`civ-unit-panel-preview`, patrz defekt (c) wyżej.
 
 ## BLOKADY
 
