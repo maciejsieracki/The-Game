@@ -1,0 +1,51 @@
+# R-BUDYNEK-GARNIZON-NOWY-Q1 — Evaluator, runda 1/5
+
+STATUS: DECISION_REQUIRED
+DOMAIN: GAME
+TEMAT: R-BUDYNEK-GARNIZON-NOWY-Q1
+GOAL: Nowy budynek Garnizon — kompletny, na równi z każdym innym budynkiem w grze (bez wpinania do Prawa i bez obrony cywilnej).
+ZMIANY/COMMIT: własny `git diff d2bbd548..HEAD` — 8 plików, **619 wstawień, 0 usunięć**; commity `c326f8ea`, `540f8a73`, `6300fd9c`. Drzewo czyste po wszystkich moich uruchomieniach i mutacjach.
+TESTY: uruchomione PRZEZE MNIE. `tsc --noEmit` exit 0. Bramka tematu **55/0**. Pięć referencyjnych: logic 213/213, tech-tree 19/0, research 33/0, unit-replace 13/0, combat 6/0. Rodzina budynków — uruchomiłem **38 z 39** plików z grepa dispatchu (Operator: 21 z tego zbioru, patrz zarzut 1). Wszystkie czerwone są PRE-ISTNIEJĄCE, zmierzone przeze mnie na obu stanach drzewa: grupy-budynkow 79/4 (baza 80/3 — jedyny nowy fail to licznik grupy 8→9, zarzut nie dotyczy), entity-card-action-buttons 30/1 = 30/1 (baza), nested-overlay 17/7 vs baza 16/8, prereq 51/8, upgrade 48/1, queue-refund 2/3, administracja-stolica 52/1, deposit-building-gate 46/1, entitycard-migration 51/1. koszty-surowcowe 126/3 (baza 125/3 — Garnizon dokłada PASS). Zielone i istotne dla tematu: civpedia-budynki-historia 136/0, entity-card-contract 75/0, entity-card-historia-section 31/0, building-tech-gate 89/0, panel-kolejka-pasek-postepu 82/0, plony-budynkow 68/0, building-happiness 8/0, prawo-siatka-v2 55/0. ai-buduje-budynki: **nie domknięta w moim budżecie** — dwa podejścia (9 min i 13 min) przerwane timeoutem, w tle na tym samym worktree pracowała równolegle inna sesja (`logic-test`, `tsc`), a bramka robi kilka pełnych buildów `vite` na wariant mutacyjny; **nie potwierdzam liczby 42/0 Operatora**. Bramka nie asertuje niczego o Garnizonie (sprawdza, czy miasta AI mają JAKIŚ budynek), więc nie zmienia to żadnego zarzutu. Potwierdzam też ostrzeżenie Operatora: `civpedia-gra-id-mostek-test.cjs` przy uruchomieniu przepisuje śledzony `gra/src/data/wikiBundle.json` (stempel `generated` 2026-09-04 → dziś) — u mnie też; cofnięte `git restore`.
+BLOKADY: 3 pliki spoza allowlisty zgłoszone przez Operatora — potwierdzam wszystkie trzy własnym odczytem: `gra/tools/grupy-budynkow-test.cjs:63,78,93` (zaszyte 40 / „Prawo i administracja”: 8), `docs/encyklopedia/budynki/` + `gra/src/data/wikiBundle.json` (25 haseł na 42 budynki; `dom_starszyzny`, `dwor_zarzadcy`, `trybunal` też ich nie mają — nie regres), `gra/src/game/ai.ts:1471` (`infraOrder` z zaszytą listą; `dwor_zarzadcy` i `trybunal` też w niej nie są). Dodatkowo zarzut 3 niżej.
+RUNDY: 1/5
+NASTĘPNY KROK: decyzja orkiestratora o allowliście + odpowiedź Operatora na zarzuty, potem Final Control.
+DEPLOY/PUSH: NIE WYKONANO
+
+**Uwaga o długości (§11):** limit ~400 słów przekroczony, bo prompt Evaluatora wymaga
+dowodu przy KAŻDYM zarzucie i KAŻDYM potwierdzeniu (cytat z linią albo wynik komendy).
+Kontrakt i werdykty są skondensowane; rozwlekłe są wyłącznie dowody.
+
+**Nie wydaję werdyktu PASS/FAIL** — zgodnie z promptem. `STATUS: DECISION_REQUIRED`
+odzwierciedla realną blokadę tematu (allowlista), nie moją ocenę jakości.
+
+## Punkty kontroli — potwierdzenia z dowodem
+
+**P1 kompletność (własny recon).** `grep -rIl dom_starszyzny|dwor_zarzadcy|trybunal` (bez `.git`, bez `node_modules`) → **40 plików**, przejrzane jeden po drugim. Garnizon jest w każdym miejscu właściwym dla budynku administracyjnego: `buildings.json`, `building-icon-map.json:43`, `brand/buildings/bld-garnizon.svg`, silnik produkcji (`[D1]-[D3]` bramki), żywy render listy budowy i karty encji. Nieobecny tylko w trzech miejscach z BLOKAD (wszystkie zgłoszone) oraz w plikach Prawa/oblężenia i zbudowanych bundlach `Gra-FINALNA.html`/`gra-robocza/*` — wszystkie poza allowlistą, słusznie nietknięte. Nie znalazłem miejsca pominiętego przez Operatora.
+
+**P2 `upgradeFrom`.** Pole **nieobecne** w rekordzie (`node`: `'upgradeFrom' in G === false`); żaden budynek nie ma `upgradeFrom === 'garnizon'` (pusta lista). Bramka asertuje obie strony + dowód silnikiem.
+
+**P3.** `dajeSzczescie: false`, `lokalizacja: "region"`, `epokaWejscia: 1` — odczytane przeze mnie z `gra/data/buildings.json`. Uwaga: Garnizon jest **jedynym z 42 budynków** mającym pole `dajeSzczescie`, a `grep -rn dajeSzczescie gra/src` nie daje ani jednego trafienia w źródłach — pole jest dziś martwe, czeka na temat szczęścia (zgodnie z dispatchem, nie zarzut).
+
+**P4 liczby balansu.** Oznaczone jako PROPOZYCJA w nagłówku §G3, w wierszu tabeli i **w samym rekordzie** (`uwagi`: „propozycja … do zatwierdzenia przez właściciela”). Przemierzyłem sąsiadów niezależnie — wszystkie wartości w tabeli Operatora zgadzają się co do cyfry (Dom Starszyzny 25/5/1/drewno 30; Pałac 40/12/2; Trybunał 30/10/1/drewno 30+kamień 40/maks 2; Dwór 45/9/2/drewno 30+kamień 30; Sąd 55/12/2; Pretorium 75/15/3). Proporcja 1/5 dla `przyrostKosztu` sprawdzona. Patrz jednak zarzut 2.
+
+**P5 `buildings.json`.** `git diff d2bbd548 -- gra/data/buildings.json` = **42 wstawienia, 0 usunięć**. Porównanie semantyczne rekord-po-rekordzie (JSON, po `id`): baza 41 → HEAD 42, **0 zmienionych i 0 usuniętych** istniejących rekordów, jedyny nowy: `garnizon`. Zero śladu przepisania pliku przez `export-data`.
+
+**P6 zrzuty.** Obejrzałem wszystkie trzy. `garnizon-kolejka-budowy.png` — realny render `renderBuildList`: „Garnizon” z aktywnym **Buduj** pod Domem Starszyzny, reszta epoki w sekcji „Jeszcze zablokowane”. `garnizon-kolejka-budowy-i-karta.png` — kompletna karta: własna ikona (baszta z blankami), Administracja / Kamień / Unikalny w mieście, 60 pkt Pracy, +6/poziom, 4 Pieniądza + −5 Drewno/t, 60 Drewno, „Brak wymogu (startowa)”, pełny rys historyczny. Patrz zarzut 5 co do trzeciego pliku.
+
+**P7 nietautologiczność — mutacje MOJE, nie Operatora.** (M-E1) `lokalizacja: "region" → "stolica"` w rekordzie → **50 pass / 5 fail**, w tym `[D4]` — Garnizon **realnie znika** z listy „Dostępne do budowy” w żywym Chromium. (M-E2) usunięcie wpisu `"garnizon"` z `building-icon-map.json` → **53 pass / 2 fail** (`[I1]`, `[I4]` — medalion spada na `bld-default`). Obie cofnięte, bramka z powrotem **55/0**, `git status` pusty.
+
+## ZARZUTY
+
+1. **Kryterium końca 5 wykonane częściowo.** Grep z dispatchu daje **39** plików `.cjs`; z nich Operator uruchomił **21** (tabela „23 bramki” zawiera jeszcze `administracja-stolica` i `prawo-siatka-v2`, które do tego grepa nie należą). **18 nieuruchomionych** przerobiłem sam: 16 zielonych (civpedia-caly-wiersz 85/0, civpedia-historia-infra 18/0, civpedia-karty-nazwa-przyciskiem 27/0, civpedia-karty-spojnosc-q1-c 24/0, civpedia-cuda-historia 126/0, civpedia-jednostki-j1 161/0, j2 157/0, civpedia-technologie 324/0, civpedia-ulepszenia 116/0, civpedia-wikihubhud 7/0, civpedia-cross-link-style 20/0, entity-card-cross-links-button-style 34/0, entity-card-diorama 46/0, entity-card-single-dialog 25/0, entity-card-wonder 134/0, march-attack-queue-persist 57/0) i 2 czerwone, obie pre-istniejące (dowód wyżej), z fail-ami o jednostce „falanga” i wierszach technologii — zero związku z Garnizonem. **Skutek: żadnej ukrytej wady, ale zestaw bramek w raporcie nie jest zestawem zamówionym w dispatchu.**
+
+2. **G3 — pomiar niepełny; przemilczany wyjątek.** Dispatch wprost wymienia `przyrost` wśród wartości do zmierzenia u sąsiadów; tabela G3 nie ma kolumny `baza` ani `przyrost`. Mój pomiar: dom_starszyzny `praca 1/pieniadz 1/kultura 2`, palac `kultura 5/zadowolenie 2`, trybunal `pieniadz 1/zadowolenie 1`, dwor_zarzadcy `praca 1/pieniadz 2/kultura 3`, sad `pieniadz 2/kultura 5/zadowolenie 2`, pretorium `praca 2/pieniadz 3/kultura 5`. **Wszystkie 6 pozostałych budynków grupy „Prawo i administracja” mają niezerowe plony; Garnizon jako jedyny ma zera we wszystkich ośmiu polach.** Decyzja „zera świadomie” może być słuszna, ale nie została przedstawiona właścicielowi jako **zmierzony wyjątek** — a dispatch (Tryb trzeci) oddaje balans właścicielowi.
+
+3. **Zerowy efekt w KAŻDYM systemie gry — nie zgłoszony w BLOKADACH.** Dowód: `baza` + `przyrost` = same zera; jedyne inne budynki z zerowymi plonami (palisada, mury, fort, baszta) mają wartość w `gra/src/game/building-upgrades.ts:8-13` (`STRUCTURAL_DEFENSE_PARAM_KEY`) — **Garnizon nie ma tam wpisu**; `gra/data/society-params.json` nie ma klucza budynku (jest tylko `prawo_garnizon_per_jednostka`, linia 806 — bonus JEDNOSTEK z D1); `siegeDefenders.ts` słusznie nietknięty. Karta w żywym renderze pokazuje „Plony i efekty → Efekty **—**”. **Zintegrowany i wydany przed `R-PRAWO-PRZEBUDOWA-SKALI-Q1` Garnizon jest dla gracza czystym kosztem (60 pkt Pracy, 60 Drewna, 4 Pieniądza/turę) bez jednej korzyści.** To twarda zależność kolejności deployu i należy do pola BLOKADY, nie do prozy.
+
+4. **Kolizja nazewnicza nie zgłoszona.** `gra/data/society-params.json:806 prawo_garnizon_per_jednostka` (doraźny bonus jednostek wojskowych, D1, świadomie POZA `prawMax`) vs nowy budynek o id `garnizon` (D2, ma wejść DO `prawMax`). Ta sama nazwa, dwie przeciwstawne mechaniki. `uwagi` rekordu odróżniają je opisowo („Budynek PRAWA, nie wojska”), ale raport nie ostrzega tematu Prawa przed pomyleniem klucza — a to jest dokładnie ta klasa pomyłki, którą `BALANS-PRAWO-PRZEBUDOWA.md` §D1 stara się wykluczyć.
+
+5. **Opis zrzutu niezgodny z zawartością pliku.** `dowody/garnizon-karta-encji.png` jest **ucięty z prawej** — cała kolumna wartości poza kadrem (widać `60 D…`). Raport przypisuje temu plikowi „Kamień, unikalny w mieście, 60 pkt Pracy, 4 Pieniądza, 60 Drewno”, których w nim nie widać; są wyłącznie w `garnizon-kolejka-budowy-i-karta.png`. Kryterium 3 pozostaje spełnione (trzeci plik jest kompletny, obejrzałem wszystkie), ale opis dowodu musi zgadzać się z dowodem.
+
+## Nota (nie zarzut)
+
+`def.uwagi` budynków jest dziś **nie renderowane** na żadnej karcie (`buildBuildingDetailCardViaEntityCard` i `_legacyBuildBuildingDetailCard` dokładają wyłącznie sekcję „Technologie”), mimo że `playerFacingNote()` istnieje i nagłówek `buildingAdapter.ts:18` twierdzi inaczej. Gdyby ta sekcja wróciła, `uwagi` Garnizonu (898 znaków, z `society-params.json`, ID tematu i ścieżką `dyspozycje/…`) trafiłyby przed gracza — ale tak samo jak `uwagi` Domu Starszyzny, Dworu i Pretorium, więc to zastana klasa problemu repo, nie wada tej pracy.
