@@ -212,9 +212,25 @@ oba jej hunki (viewport 1240×900, `#card` 680px) są obecne w moim pliku i w mo
 commicie, a mój commit `dc355979` siedzi na `060bd2d8` bez konfliktu. Warunek startowy
 z promptu (`e1bc77b6` + czyste drzewo) był spełniony **w momencie sprawdzenia** —
 rozjazd powstał później i nie pochodzi ode mnie, dlatego nie zgłaszam `BLOCK`.
-Pod koniec pracy w tym samym drzewie pojawiła się **trzecia** sesja (modyfikacje
-`runs/R-KARTA-JEDNOSTKI-3D-EKSPOZYCJA-UX-Q1/dowody/*.png`, 12 plików). Zgłaszam jako
-proces: trzy sesje w jednym worktree to nie jest izolacja (C-047, C-059, §2b).
+**Korekta własnej obserwacji:** widziane pod koniec pracy modyfikacje 12 plików
+`runs/R-KARTA-JEDNOSTKI-3D-EKSPOZYCJA-UX-Q1/dowody/*.png` **nie pochodziły od trzeciej
+sesji** — to skutek uruchamiania rodziny bramek budynków, które zapisują zrzuty do
+śledzonego katalogu dowodów CUDZEGO tematu (opisała to Obrona rundy 1 w swoich
+OBSERWACJACH jako czwartą niespójność). Sprawdziłem: te pliki są dziś czyste i **nie
+weszły do żadnego z moich commitów** (`git diff --name-only 060bd2d8..HEAD | grep
+R-KARTA-JEDNOSTKI` → 0). Zgłaszam jako proces: dwie role tego samego ID nie powinny
+dzielić worktree (C-047, C-059, §2b).
+
+**Mój własny błąd tej klasy — zgłaszam sam.** Mój commit raportu `e633a65c` **zabrał ze
+sobą cudzy plik** `03-obrona-runda1.md` (+86 linii). Przyczyna to dokładnie C-047:
+`git add` wykonała sesja Obrony, a moje `git commit` (bez ścieżek) zatwierdziło **cały
+indeks**, nie tylko to, co sam zaindeksowałem. Sprawdziłem skutek: plik w commicie jest
+**identyczny z wersją na dysku i kompletny** (kończy się sekcją „Uwaga o długości"),
+więc nic nie zostało obcięte ani nadpisane, a treść i tak należy do tego samego ID
+i tej samej gałęzi. **Nie przepisuję historii** — przy trzech procesach w jednym drzewie
+`reset`/`amend` jest groźniejszy niż sama wada. Lekcja na przyszłość: w drzewie
+współdzielonym `git commit` musi dostać **jawne ścieżki** (`git commit -- <ścieżki>`),
+bo samo `git add` po ścieżkach nie wystarcza.
 
 **Karta pokazuje `Efekty —`.** Zerowy efekt Garnizonu do czasu wydania tematu Prawa
 (zarzut 3 Evaluatora rundy 1) jest teraz **napisany wprost dla gracza** w haśle CivPedii,
