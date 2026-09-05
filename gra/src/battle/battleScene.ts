@@ -64,6 +64,16 @@ import {
 } from '../game/combat';
 import type { CombatUnit, CombatResult } from '../game/combat';
 import { combatUnitFromDef, unitRowStat } from '../game/combat';
+// R-WALKA-PRZEWAGA-LICZEBNA-Q1-W2 -- GOAL 1 (jeden kontratak na ture obroncy)
+// i GOAL 2 (startowa kara morale od stosunku MOCY wazonej biezacym HP).
+import {
+  DefenderCounterBudget,
+  hpWeightedFieldPower,
+  powerAdvantage,
+  startingMoralePenaltyFrac,
+  applyStartingMoralePenalty,
+} from '../game/combat';
+import type { UnitPowerInput } from '../game/unit-power';
 import {
   buildTerrainTerenTooltipParts,
   terrainTerenTooltipColor,
@@ -2546,6 +2556,15 @@ export class BattleScene {
   // applied ONLY on the very first blow an attacker lands on a given target.
   private engaged = new Set<string>();
 
+  // R-WALKA-PRZEWAGA-LICZEBNA-Q1-W2 GOAL 1: budzet kontratakow w skali TURY.
+  // Obronca oddaje kontratak TYLKO PIERWSZEMU atakujacemu w danej turze;
+  // kolejni napastnicy w tej samej turze zadaja obrazenia, ale kontrataku nie
+  // dostaja. Reset na poczatku kazdej tury (_beginTurn). BEZ WYJATKOW dla
+  // fortyfikacji ani obrony miasta -- decyzja wlasciciela.
+  private _counterBudget = new DefenderCounterBudget();
+  /** GOAL 2: startowa kara morale liczona RAZ na starcie bitwy (nie co runde). */
+  private _startMoralePenaltyApplied = false;
+
   // -------------------------------------------------------------------------
   constructor(opts: BattleOpts) {
     this.onCancelCb  = opts.onCancel ?? null;
@@ -3384,6 +3403,10 @@ export class BattleScene {
     // TW v5 §2: zegar bitwy MM:SS startuje TERAZ — bazowa = zegar wirtualny w
     // chwili START WALKI (patrz _updateArmyMoraleBars / _fmtBattleClock).
     this._battleStartVNow = this.vNow;
+    // R-WALKA-PRZEWAGA-LICZEBNA-Q1-W2 GOAL 2: startowa kara morale slabszej
+    // strony -- RAZ, tutaj, zanim ruszy pierwsza tura. Nigdy co runde (spirala
+    // smierci) i nigdy na mapie swiata.
+    this._applyStartingMoralePowerPenalty();
     this._manualMode = true;
     this._battleAwaitingOrders = true;
     this._queuedOrderUnitIds.clear();
@@ -5181,12 +5204,64 @@ export class BattleScene {
     if (this._stallTurns >= STALL_TURN_LIMIT) this._stalled = true;
   }
 
+  /**
+   * R-WALKA-PRZEWAGA-LICZEBNA-Q1-W2 GOAL 2 -- startowa kara morale od stosunku
+   * MOCY, nie liczebnosci (20 Wojownikow nie ma onieśmielać Falangi).
+   *
+   * r = MOC strony silniejszej / MOC strony slabszej, MOC wazona BIEZACYM HP
+   * (combat.ts hpWeightedFieldPower). spadek = min(sufit, wsp * log10(r)),
+   * parametry z data/combat-params.json -> morale_przewaga_mocy.
+   *
+   * Liczone RAZ (flaga _startMoralePenaltyApplied). Obniza WYLACZNIE biezaca
+   * pule `morale` slabszej strony -- `moraleMax` i `fleeMorale` zostaja
+   * nietkniete, wiec ulamek morale strony (_armyMoraleRatio: suma biezacych /
+   * suma startowych) startuje ponizej 100% i slabsza strona routuje szybciej.
+   * Silniejsza strona NIE dostaje zadnej premii.
+   */
+  private _applyStartingMoralePowerPenalty(): void {
+    if (this._startMoralePenaltyApplied) return;
+    this._startMoralePenaltyApplied = true;
+
+    const toPowerUnit = (ru: RuntimeBattleUnit) => {
+      const cu = toCombatUnit(ru.bu, this.armyHungerStatMult, false, this.goldDeficitStatMult);
+      const def: UnitPowerInput = {
+        meleeAttack: cu.meleeAttack,
+        meleeDefence: cu.meleeDefence,
+        weaponDamage: cu.weaponDamage,
+        piercing: cu.piercing,
+        armor: cu.armor,
+        chargeBonus: cu.chargeBonus,
+        health: cu.health,
+        missileAttack: cu.missileAttack,
+        'Rola (linia)': cu.rola,
+      };
+      return { typeId: cu.typNazwa, def, hp: ru.bu.hp, maxHp: ru.bu.maxHp };
+    };
+
+    const alive = (ru: RuntimeBattleUnit) => !ru.dead && !ru.fadingOut && !ru.removed;
+    const mAtk = hpWeightedFieldPower(this.atk.filter(alive).map(toPowerUnit));
+    const mDef = hpWeightedFieldPower(this.def.filter(alive).map(toPowerUnit));
+
+    const { weakerSide, ratio } = powerAdvantage(mAtk, mDef);
+    const frac = startingMoralePenaltyFrac(ratio);
+    if (!weakerSide || frac <= 0) return;
+
+    const n = applyStartingMoralePenalty([...this.atk, ...this.def], weakerSide, frac);
+    if (n === 0) return;
+    for (const ru of [...this.atk, ...this.def]) this._updateMoraleBar(ru);
+    this._updateArmyMoraleBars?.();
+  }
+
   private _beginTurn(): void {
     if (this.finished) return;
     if (this._battleAwaitingOrders) return;
     this._updateStallWatch();
     if (this._checkEnd()) return;
     this.roundNo++;
+
+    // R-WALKA-PRZEWAGA-LICZEBNA-Q1-W2 GOAL 1: nowa tura => stan "obronca juz
+    // kontratakowal" wraca do zera i kazdy obronca znow moze kontratakowac raz.
+    this._counterBudget.beginTurn();
 
     // Snapshot of all living, non-routed units for this turn, interleaved
     // atk/def so both sides participate throughout the turn (initiative order).
@@ -7833,6 +7908,14 @@ export class BattleScene {
   private _defenderCounters(defender: RuntimeBattleUnit, _attacker: RuntimeBattleUnit): boolean {
     if (defender.dead || defender.fadingOut || defender.routed) return false;
     if (defender.bu.hp <= 0) return false;
+    // R-WALKA-PRZEWAGA-LICZEBNA-Q1-W2 GOAL 1: JEDEN kontratak na ture obroncy,
+    // dla PIERWSZEGO atakujacego w kolejnosci ataku. Sprawdzane PRZED
+    // wszystkimi pozostalymi warunkami dotyczacymi typu jednostki i BEZ
+    // jakiegokolwiek wyjatku dla jednostek ufortyfikowanych w polu ani
+    // broniacych miasta/muru -- decyzja wlasciciela (00-dispatch.md GOAL 1).
+    // Bramka walka-jeden-kontratak-test.cjs pilnuje, ze zadna z tych flag nie
+    // pojawi sie w tej metodzie jako furtka omijajaca budzet.
+    if (!this._counterBudget.canCounter(defender.bu.id)) return false;
     if (!defender.primaryRanged) return true;     // melee unit -> always counters
     return !canShoot(defender);                   // ranged unit counters only when cornered (dry)
   }
@@ -7878,6 +7961,8 @@ export class BattleScene {
         // A ranged defender does NOT melee-counter unless CORNERED (out of ammo /
         // cannot shoot). resolveCombat is untouched -- this reuses _singleBlow.
         if (this._defenderCounters(defender, attacker)) {
+          // GOAL 1: ten kontratak zuzywa jedyny budzet obroncy na TE ture.
+          this._counterBudget.consume(defender.bu.id);
           this.engaged.add(defender.bu.id + '>' + attacker.bu.id); // deny counter the charge
           // Defender turns to face the blow it returns (front exchange for it).
           defender.facing = facingFromTo(defender.q, defender.r, attacker.q, attacker.r, defender.facing);
@@ -9137,6 +9222,12 @@ export class BattleScene {
     this._routCountD = 0;
     this.turnOrder = [];
     this.turnIdx = 0;
+    // GOAL 2 / obrona zarzutu 1: kara startowa jest liczona RAZ NA BITWE, a
+    // "Rozegraj ponownie" to NOWA bitwa. _replayBattle() -> _placeUnits(klony)
+    // nadaje swieze morale/moraleMax = moraleBaseFor(bu); bez tego resetu
+    // _applyStartingMoralePowerPenalty() wyszloby na guardzie _startMoralePenaltyApplied
+    // i slabsza strona startowalaby w powtorce z ulamkiem morale 100%.
+    this._startMoralePenaltyApplied = false;
     this.paused = false;
     if (this.pauseHud) this.pauseHud.style.display = 'none';
     if (this._topPauseBadge) this._topPauseBadge.style.display = 'none';

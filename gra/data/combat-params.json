@@ -22,6 +22,13 @@
     "max_rounds": 30
   },
   "counter_multiplier": 1.5,
+  "morale_przewaga_mocy": {
+    "_opis": "R-WALKA-PRZEWAGA-LICZEBNA-Q1-W2 GOAL 2 -- startowa kara morale slabszej strony w BITWIE TAKTYCZNEJ 3D (battleScene.ts). r = MOC strony silniejszej / MOC strony slabszej, MOC wazona BIEZACYM HP (combat.ts hpWeightedFieldPower -- te same cegielki co sumRosterFieldM auto-bitwy). spadek = min(sufit_proc, wspolczynnik_proc * log10(r)). Liczone RAZ na starcie bitwy; obniza WYLACZNIE biezaca pule morale (nigdy moraleMax ani fleeMorale); zadnej premii dla silniejszego. Kalibracja wlasciciela: r=10 -> 50%. NIE kopiowac tych liczb do auto-battle-params.json -- auto-bitwa mapy nie ma morale.",
+    "wspolczynnik_proc": 50,
+    "sufit_proc": 65,
+    "epsilon_ponad_flee": 1,
+    "_epsilon_ponad_flee_opis": "R2-1 (ratyfikacja wlasciciela, wariant A) -- KLAMP DOLNY: morale_startowe = max(fleeMorale + epsilon, morale_bazowe * (1 - spadek)). Prog ucieczki to morale <= fleeMorale, wiec sama ROWNOSC oznacza rout; epsilon to margines PONAD progiem, ktory wymusza ostra nierownosc. Jednostka wchodzi maksymalnie zdemoralizowana, ale NIE zlamana. 1 punkt morale, bo biezaca pula jest zaokraglana do liczb calkowitych. Klamp NIE dotyka moraleMax ani fleeMorale i nie zmienia wynikow tam, gdzie nie jest potrzebny (tabela r=1,5/2/3/5/10 bez zmian)."
+  },
   "river_attack_mult": 0.75,
   "brod": {
     "_opis": "C-BTL-BROD-Q1 wariant C -- mechanika brodu (Ford) na planszy bitwy taktycznej (battleScene.ts). karaAtak/karaObrona sa numerycznie te same co river_attack_mult (0.75=1-0.25) ale to OSOBNY, dedykowany dla brodu wpis (tamten zasila swiatowy resolveCombat/instant-resolve dla starcia z obronca-na-rzece; ten zasila per-tile Ford w bitwie taktycznej -- oba moga byc strojone niezaleznie w przyszlosci).",

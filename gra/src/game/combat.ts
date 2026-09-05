@@ -6,6 +6,13 @@ import { applyVeteranFracToCombatUnit } from './veteran';
 import { applyArmyHungerStatMultToCombatUnit } from './army-starvation';
 import { applyGoldDeficitStatMultToCombatUnit } from './gold-deficit';
 import combatParamsRaw from '../../data/combat-params.json';
+// R-WALKA-PRZEWAGA-LICZEBNA-Q1-W2 (GOAL 2): JEDNA definicja MOCY dla obu
+// systemow walki. Te symbole sa WYLACZNIE CZYTANE -- auto-bitwa mapy
+// (auto-battle-power.ts / auto-battle-params.json, wezel W1) nie jest tu
+// modyfikowana w zaden sposob.
+import { isFieldBattleUnit } from './auto-battle-power';
+import { armyFieldPower } from './unit-power';
+import type { UnitPowerInput } from './unit-power';
 
 /** Panel-C: stałe walki (export-c.py → combat-params.json). */
 const TW = combatParamsRaw.tw_v3;
@@ -1127,4 +1134,210 @@ export function resolveCombat(
     routed,
     log,
   };
+}
+
+// ===========================================================================
+// R-WALKA-PRZEWAGA-LICZEBNA-Q1-W2 -- bitwa taktyczna 3D:
+//   GOAL 1: obronca oddaje kontratak TYLKO PIERWSZEMU atakujacemu w danej turze
+//   GOAL 2: startowa kara morale od stosunku MOCY wazonej biezacym HP
+//
+// UWAGA CO DO POZIOMU WPIECIA (GOAL 1). Ta sekcja NIE dotyka petli rund w
+// resolveCombat powyzej. Kontratak WEWNATRZ jednego starcia (kazda runda tego
+// samego pojedynku, blok "Defender counter-attacks simultaneously") zostaje
+// DOKLADNIE taki jak byl -- zmiana dotyczy TURY bitwy taktycznej: drugiego
+// i kolejnych ATAKUJACYCH uderzajacych tego samego obronce w tej samej turze.
+// Wylaczenie kontrataku wewnatrz resolveCombat byloby naprawa o poziom za
+// nisko (mierzylaby pojedynek zamiast tury) -- patrz 00-dispatch.md.
+// ===========================================================================
+
+/** Ile razy JEDEN obronca moze kontratakowac w ciagu JEDNEJ tury bitwy. */
+export const COUNTERS_PER_DEFENDER_PER_TURN = 1;
+
+/**
+ * Budzet kontratakow obroncy w skali TURY (nie pojedynku).
+ *
+ * Stan "obronca juz kontratakowal w tej turze" zyje tutaj, a nie w
+ * resolveCombat, bo resolveCombat jest scisle 1v1 i nie zna pojecia tury ani
+ * stosu atakujacych. BEZ WYJATKOW: jednostka ufortyfikowana i jednostka
+ * broniaca miasta korzystaja z tego samego budzetu (obrona murow oplaca sie
+ * przez modyfikatory obrony, nie przez darmowe dodatkowe kontrataki).
+ */
+export class DefenderCounterBudget {
+  private used = new Map<string, number>();
+
+  /** Poczatek tury: kazdy obronca znow moze kontratakowac raz. */
+  beginTurn(): void {
+    this.used.clear();
+  }
+
+  /** Czy ten obronca ma jeszcze kontratak w tej turze? */
+  canCounter(defenderId: string): boolean {
+    return (this.used.get(defenderId) ?? 0) < COUNTERS_PER_DEFENDER_PER_TURN;
+  }
+
+  /** Zuzyj kontratak tego obroncy w tej turze. */
+  consume(defenderId: string): void {
+    this.used.set(defenderId, (this.used.get(defenderId) ?? 0) + 1);
+  }
+
+  /** Ile kontratakow ten obronca oddal w biezacej turze (diagnostyka/bramka). */
+  usedThisTurn(defenderId: string): number {
+    return this.used.get(defenderId) ?? 0;
+  }
+}
+
+// ---------------------------------------------------------------------------
+// GOAL 2 -- startowa kara morale od stosunku MOCY
+// ---------------------------------------------------------------------------
+
+/** Parametry kary morale (combat-params.json -> morale_przewaga_mocy). */
+export interface StartingMoralePowerParams {
+  /** Wspolczynnik przed log10(r), w procentach (kanon: 50). */
+  wspolczynnikProc: number;
+  /** Sufit spadku morale, w procentach (kanon: 65). */
+  sufitProc: number;
+  /**
+   * R2-1 (ratyfikacja wlasciciela, wariant A) -- KLAMP DOLNY. Startowa kara
+   * morale nie moze zejsc do progu ucieczki jednostki: prog to
+   * `morale <= fleeMorale`, wiec ROWNOSC juz oznacza rout. Epsilon to margines
+   * PONAD `fleeMorale`, ktory ta rownosc wyklucza (kanon: 1 punkt morale --
+   * biezaca pula jest zaokraglana do liczb calkowitych). Jednostka ma wchodzic
+   * do bitwy maksymalnie zdemoralizowana, ale NIE zlamana.
+   */
+  epsilonPonadFlee: number;
+}
+
+type MoralePowerParamsFile = {
+  morale_przewaga_mocy?: {
+    wspolczynnik_proc?: number;
+    sufit_proc?: number;
+    epsilon_ponad_flee?: number;
+  };
+};
+
+export function loadStartingMoralePowerParams(
+  raw: unknown = combatParamsRaw,
+): StartingMoralePowerParams {
+  const m = (raw as MoralePowerParamsFile)?.morale_przewaga_mocy ?? {};
+  const pick = (v: unknown, d: number) =>
+    typeof v === 'number' && Number.isFinite(v) && v >= 0 ? v : d;
+  return {
+    wspolczynnikProc: pick(m.wspolczynnik_proc, 50),
+    sufitProc: pick(m.sufit_proc, 65),
+    epsilonPonadFlee: pick(m.epsilon_ponad_flee, 1),
+  };
+}
+
+/**
+ * Ulamek spadku morale slabszej strony: min(sufit, wspolczynnik * log10(r)).
+ * r <= 1 (albo nieskonczone/NaN) -> 0.
+ */
+export function startingMoralePenaltyFrac(
+  ratio: number,
+  params: StartingMoralePowerParams = loadStartingMoralePowerParams(),
+): number {
+  if (!Number.isFinite(ratio) || ratio <= 1) return 0;
+  const raw = (params.wspolczynnikProc / 100) * Math.log10(ratio);
+  return Math.min(params.sufitProc / 100, raw);
+}
+
+/** Jednostka na potrzeby MOCY wazonej biezacym HP. */
+export interface HpWeightedPowerUnit {
+  typeId: string;
+  def: UnitPowerInput;
+  hp: number;
+  maxHp: number;
+}
+
+/**
+ * Moc armii wazona BIEZACYM HP. Ta sama definicja mocy co auto-bitwa mapy
+ * (isFieldBattleUnit + armyFieldPower, czyli cegielki sumRosterFieldM), tylko
+ * kazda jednostka wchodzi z waga hp/maxHp -- armia pobita do 10% HP nie ma
+ * liczyc sie jak swieza. Dla wszystkich jednostek na pelnym HP wynik jest
+ * rowny sumRosterFieldM(roster) (asercja w bramce).
+ */
+export function hpWeightedFieldPower(
+  roster: ReadonlyArray<HpWeightedPowerUnit>,
+): number {
+  let sum = 0;
+  for (const u of roster) {
+    if (!isFieldBattleUnit(u.typeId, u.def)) continue;
+    const maxHp = u.maxHp > 0 ? u.maxHp : 0;
+    const frac = maxHp > 0 ? Math.max(0, Math.min(1, u.hp / maxHp)) : 0;
+    sum += armyFieldPower(u.def) * frac;
+  }
+  return Math.round(sum * 10) / 10;
+}
+
+/** Ktora strona jest slabsza i jaki jest stosunek mocy silniejsza/slabsza. */
+export function powerAdvantage(
+  mAtk: number,
+  mDef: number,
+): { weakerSide: 'atk' | 'def' | null; ratio: number } {
+  if (!(mAtk > 0) || !(mDef > 0)) return { weakerSide: null, ratio: 1 };
+  if (mAtk === mDef) return { weakerSide: null, ratio: 1 };
+  return mAtk > mDef
+    ? { weakerSide: 'def', ratio: mAtk / mDef }
+    : { weakerSide: 'atk', ratio: mDef / mAtk };
+}
+
+/** Minimalny ksztalt jednostki dla startowej kary morale. */
+export interface StartingMoraleUnit {
+  side: 'atk' | 'def';
+  morale: number;
+  moraleMax: number;
+  fleeMorale: number;
+}
+
+/**
+ * Nakłada startowa kare morale WYLACZNIE na jednostki slabszej strony.
+ *
+ * PUNKT 4 dyspozycji: zadnej premii dla silniejszego -- jednostki drugiej
+ * strony nie sa nawet dotykane.
+ *
+ * PUNKT 5 dyspozycji (SEDNO): obnizamy WYLACZNIE `morale` (biezaca pule).
+ * `moraleMax` i `fleeMorale` zostaja NIETKNIETE. Obnizenie `moraleMax` razem
+ * z `morale` zniweczyloby caly efekt: ulamek morale strony
+ * (suma biezacych / suma startowych) wrocilby do 100% i slabsza strona nie
+ * routowalaby ani odrobine szybciej. Nie dodawaj tu zadnego zapisu do
+ * u.moraleMax ani u.fleeMorale.
+ *
+ * R2-1 -- KLAMP DOLNY DO PROGU UCIECZKI (ratyfikacja wlasciciela, wariant A):
+ *
+ *   morale_startowe = max(fleeMorale + epsilon, morale_bazowe * (1 - spadek))
+ *
+ * Prog ucieczki to `morale <= fleeMorale` (patrz battleScene `projMorale <=
+ * defender.fleeMorale`), wiec sama ROWNOSC juz oznacza rout -- epsilon > 0
+ * wymusza OSTRA nierownosc i gwarantuje, ze zadna jednostka nie startuje
+ * zlamana. Bez klampu przy karze sufitowej 65% cztery rekordy z
+ * data/units.json (mb/fm: 50/22, 40/25, 30/25, 60/22) startowaly na progu albo
+ * ponizej niego. To jest jawna KOREKTA GOAL 2 pkt 5, nie jego naruszenie:
+ * `moraleMax` i `fleeMorale` nadal NIE sa dotykane -- zmienia sie wylacznie
+ * dolne ograniczenie wartosci wpisywanej do biezacej puli.
+ *
+ * Podloga nigdy nie PODNOSI morale: gdy jednostka wchodzi juz z morale
+ * ponizej `fleeMorale + epsilon`, klamp jest ograniczony jej wartoscia
+ * wejsciowa (Math.min ponizej), wiec kara moze tylko obnizyc albo zostawic.
+ *
+ * @returns liczba jednostek, ktorym obnizono morale
+ */
+export function applyStartingMoralePenalty<T extends StartingMoraleUnit>(
+  units: ReadonlyArray<T>,
+  weakerSide: 'atk' | 'def' | null,
+  frac: number,
+  params: StartingMoralePowerParams = loadStartingMoralePowerParams(),
+): number {
+  if (!weakerSide || !(frac > 0)) return 0;
+  const eps = Number.isFinite(params.epsilonPonadFlee) ? params.epsilonPonadFlee : 1;
+  let n = 0;
+  for (const u of units) {
+    if (u.side !== weakerSide) continue;
+    const ukarane = Math.round(u.morale * (1 - frac));
+    const flee = Number.isFinite(u.fleeMorale) ? u.fleeMorale : 0;
+    // Podloga = prog ucieczki + epsilon, ale nigdy wyzej niz morale wejsciowe.
+    const podloga = Math.min(u.morale, flee + eps);
+    u.morale = Math.max(0, Math.max(podloga, ukarane));
+    n++;
+  }
+  return n;
 }

@@ -209,3 +209,67 @@ Raport maksymalnie ok. 400 słów, destylat.
 Operator → Evaluator → (Obrona, jeśli lista zarzutów niepusta) → koniec skryptu.
 Final Control osobnym wywołaniem Workflow. Integracja, `READY_FOR_DEPLOY` i deploy/push —
 wyłącznie ręką orkiestratora.
+
+---
+
+# RUNDA 2 — RATYFIKACJA ORKIESTRATORA (2026-09-05)
+
+## Rozstrzygnięcie DO DECYZJI CZŁOWIEKA z rundy 1
+
+Obrona wyprowadziła z noty do jawnej pozycji `DECISION_REQUIRED` pytanie: czy startowa kara
+morale ma być klampowana tak, by nie schodziła poniżej `fleeMorale` jednostki. **Postąpiła
+prawidłowo** — GOAL 2 pkt 5 mówił dosłownie „obniża `morale`, a NIE `moraleMax` ani
+`fleeMorale`", więc klamp byłby nową regułą produktową wprowadzoną przez wykonawcę.
+
+Fakt zmierzony i potwierdzony na `gra/data/units.json` (71 rekordów z morale): przy karze
+sufitowej 65% **cztery rekordy startują na poziomie własnego progu ucieczki albo poniżej** —
+`mb=50/fm=22 → 17,5`; `40/25 → 14,0`; `30/25 → 10,5`; `60/22 → 21,0`.
+
+**ECHO WŁAŚCICIELA: „Klamp do progu ucieczki". Wiążące, wariant A.**
+
+## R2-1 — KLAMP DOLNY DO `fleeMorale`
+
+Startowa kara morale nie może zejść poniżej progu ucieczki jednostki:
+
+```
+morale_startowe = max(fleeMorale + epsilon, morale_bazowe × (1 − spadek))
+```
+
+Wartość `epsilon` (albo równoważny warunek ostrej nierówności) dobierz tak, żeby jednostka
+**nie routowała przed pierwszym ciosem** — próg ucieczki to `morale <= fleeMorale`, więc
+równość już oznacza rout. Uzasadnienie właściciela: jednostka ma wchodzić do bitwy
+maksymalnie zdemoralizowana, ale **nie złamana** — gracz zawsze dostaje bitwę do rozegrania.
+
+**To jest jawna korekta GOAL 2 pkt 5, nie jego naruszenie.** Zdanie „obniża `morale`, a NIE
+`moraleMax` ani `fleeMorale`" zostaje w mocy co do tego, czego NIE wolno ruszać: `moraleMax`
+i `fleeMorale` nadal pozostają nietknięte, a kryterium 4 bramki nadal ich pilnuje.
+Zmienia się wyłącznie dolne ograniczenie wartości wpisywanej do bieżącej puli.
+
+## KRYTERIA KOŃCA RUNDY 2
+
+1. Dla **każdego** z 71 rekordów z morale w `gra/data/units.json`, przy karze sufitowej 65%,
+   morale startowe jest **ostro większe** od `fleeMorale` tej jednostki. Bramka iteruje po
+   wszystkich rekordach, nie po wybranej próbce.
+2. Osobna asercja na cztery rekordy wymienione wyżej (`50/22`, `40/25`, `30/25`, `60/22`) —
+   z wartościami przed klampem i po, żeby regres był czytelny w logu bramki.
+3. Klamp **nie zmienia** wyniku tam, gdzie nie jest potrzebny: dla stosunku mocy 1,5 / 2 / 3 /
+   5 / 10 kara pozostaje dokładnie `50% × log₁₀(r)` dla jednostek o typowym `fleeMorale`.
+   Tabela z GOAL 2 ma się odtworzyć bez zmian.
+4. `moraleMax` i `fleeMorale` nietknięte — kryterium 4 z rundy 1 nadal zielone.
+5. Praca rundy 1 UTRZYMANA: jeden kontratak na turę obrońcy (GOAL 1) oraz reset flagi
+   w `_resetBattleRuntimeState` z obrony — nie cofać.
+6. `tsc --noEmit` zielone; obie bramki tematu zielone; pięć bramek referencyjnych zielonych
+   (logic 213/213, tech-tree 19/19, research 33/33, unit-replace 13/13, combat 6/6).
+7. Bramka z kryterium 1 **czerwienieje po cofnięciu samego klampu** — pokaż wynik po mutacji.
+
+## ALLOWLISTA RUNDY 2
+
+Bez zmian wobec rundy 1. Węzeł W1 (`auto-battle-power.ts`, `auto-battle-params.json`)
+jest ZINTEGROWANY w `main` — wolno czytać, modyfikować NIE.
+
+## UWAGA PROCESOWA
+
+Poprzedni przebieg został przerwany **restartem kontenera**, nie błędem. Praca rundy 1
+jest zacommitowana (do `e356d144`) i kompletna. **Raporty etapów commituj od razu po
+zapisaniu** — raport Evaluatora w temacie równoległym przepadł właśnie dlatego, że został
+w pamięci procesu.
