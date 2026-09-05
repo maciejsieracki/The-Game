@@ -59,11 +59,15 @@ Dwa łańcuchy w Prawie:
 
 ## 3. DECYZJE WŁAŚCICIELA — podjęte
 
-### D1. Garnizon wojskowy WYPADA z Prawa
+### D1. Jednostki wojskowe NIE WCHODZĄ do skali Prawa
 
 Uzasadnienie właściciela: *„wojsko stacjonujące w mieście jest tymczasowe i przeznaczone
-do prowadzenia wojen, a nie do pilnowania porządku"*.
-`prawo_garnizon_per_jednostka` (+20/jedn., cap 5) przestaje wpływać na Prawo.
+do prowadzenia wojen, a nie do pilnowania porządku"* oraz *„to jest ostateczność, ratowanie
+sytuacji; to nie jest stałe rozwiązanie. Stałe rozwiązanie to budynki, które dają prawo"*.
+
+`prawo_garnizon_per_jednostka` (+20/jedn., cap 5 jednostek) **zostaje w kodzie bez zmian**
+jako doraźny dodatek ponad skalą — ale **NIE jest częścią `prawMax`** i nie wolno go
+uwzględniać przy wyliczaniu maksimum epoki. Skala Prawa opiera się **wyłącznie na budynkach**.
 
 ### D2. Nowy BUDYNEK „Garnizon" — +25 do Prawa
 
@@ -82,8 +86,12 @@ miast w grze to miasta zwykłe.
 
 | | Epoka 1 | Epoka 2 | Epoka 3 |
 |---|---|---|---|
-| Budynki | Dom Starszyzny 28 + **Garnizon 25** | Dwór 33 + Trybunał 17 + **Garnizon 25** | Pretorium 38 + Trybunał 17 + Sąd 19 + **Garnizon 25** |
-| **`prawo_max_epoka`** | **53** | **75** | **99** |
+| Budynki | Dom Starszyzny 28 + **Garnizon 25** | Dwór 33 + Trybunał 17 + **Garnizon 35** | Pretorium 38 + Trybunał 17 + Sąd 19 + **Garnizon 47** |
+| **`prawo_max_epoka`** | **53** | **85** | **121** |
+
+**Garnizon skaluje się z epoką: 25 / 35 / 47** (decyzja właściciela) — inaczej jego waga
+spadałaby 47% → 33% → 25%, czyli ta sama choroba rozwadniania co przy religii.
+Zapis: tablica per epoka, wzorem `prawo_max_epoka`, nie stała w kodzie.
 
 ### D4. `prawo_max_pop_wspolczynnik` = 0
 
@@ -116,34 +124,30 @@ szczęściem wpada w bunt skrajny. Przed zmianą: 91% i pasmo Niepokój.
 
 ---
 
+### D6. Bonus osiedla dla Prawa ZOSTAJE bez zmian
+
+`prawo_bonus_osiedle_pop` = **28 / 20 / 14 / 8** dla pop 1–4. Przy `prawMax` 53 daje osadzie
+pop 1 aż 53% Prawa bez jednego budynku — właściciel przyjął to świadomie, bo wczesna gra ma
+być łagodna, a osada i tak nie zdąży nic zbudować.
+
+### D7. `prawo_pct_cap` = 170
+
+Podniesiony ze 100. Powód: pałac (**+35 / +45 / +55**, tylko stolica) przy sufitie 100 był
+całkowicie niewidoczny — stolica zawsze miała maksimum i nadwyżka przepadała. Przy 170
+stolica pokazuje **166% / 153% / 145%** i wkład pałacu jest widoczny.
+
+### D8. Budynek Garnizon włącza obronę cywilną (Milicję)
+
+Warunek w `hasCityDefenders` (`siegeDefenders.ts:24-29`) rozszerzony o obecność budynku.
+**Bez Garnizonu miasto bez wojska nadal pada bez bitwy** — to jest kara za brak budynku.
+Milicja zachowuje `unbreakable: true`, bo Garnizon oznacza, że ci ludzie mają dowódców
+i się nie rozbiegną.
+
+Jeden budynek, dwa czytelne skutki: porządek wewnątrz i niemożność wejścia bez walki.
+
+---
+
 ## 5. OTWARTE — wymagają decyzji właściciela
-
-### O1. Czy Garnizon skaluje się z epoką
-
-Przy stałym +25 jego waga spada: **47% → 33% → 25%** `prawMax`. To ta sama choroba
-rozwadniania, którą naprawiono przy religii. Równa waga wymagałaby **25 / 35 / 47**.
-
-### O2. Bonus osiedla dla Prawa
-
-Dziś `prawo_bonus_osiedle_pop` = **28 / 20 / 14 / 8** dla pop 1–4. Przy nowym `prawMax` 53
-osada pop 1 dostaje **53%** Prawa z samego faktu bycia małą, bez jednego budynku.
-Przy szczęściu bonus przeskalowano w GÓRĘ; tutaj wypadałoby raczej w DÓŁ.
-
-| pop | Bonus dziś | % ep.1 (53) | % ep.2 (75) | % ep.3 (99) |
-|---|---|---|---|---|
-| 1 | 28 | **53%** | 37% | 28% |
-| 2 | 20 | 38% | 27% | 20% |
-| 3 | 14 | 26% | 19% | 14% |
-| 4 | 8 | 15% | 11% | 8% |
-
-### O3. `prawo_pct_cap` i stolica
-
-Dziś **100**, czyli zero zapasu (przy szczęściu jest 120). Stolica z pałacem wychodzi
-**156–166%** i cała nadwyżka (35–55 pkt) przepada — pałac nie robi w Prawie nic poza tym,
-że stolica zawsze ma maksimum.
-
-Argument ZA zostawieniem 100: nadmiar szczęścia może ratować miasto bezprawne, ale nadmiar
-Prawa nie powinien ratować miasta nieszczęśliwego. *Policja nie zastępuje chleba.*
 
 ### O4. W której epoce pojawia się Garnizon
 
