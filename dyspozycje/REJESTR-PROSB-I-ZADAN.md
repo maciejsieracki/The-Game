@@ -4894,13 +4894,57 @@ tematem" i przechodzi dalej — a bramka przez caly ten czas nic nie chroni.
 
 Wspolny mianownik: braki w warstwie zgodnosci srodowiska bramki, **nie defekty logiki gry**.
 Naprawa nie moze zmieniac zachowania gry w przegladarce ani oslabiac asercji.
-**DISPATCHOWANE** 2026-09-05 — worktree `wt-bramki-infra-crash`. Wchlania zakres
-`P-BRAMKA-MAP-FIELD-BATTLE-INFRA-CZERWONA-Q1`.
+**ZINTEGROWANE** `68f1f089` (2026-09-05, runda 1, Final Control PASS — 7 werdyktow ODDAL).
+Wchlania zakres `P-BRAMKA-MAP-FIELD-BATTLE-INFRA-CZERWONA-Q1`, ktory tym samym jest ZAMKNIETY.
+
+**Wynik:** `map-field-battle-test.cjs` 19 ok / 1 fail z **20 realnych asercji** (przedtem zero),
+`entity-card-contract-test.cjs` **75 pass / 0 fail** (przedtem zero). Naprawa lezy wylacznie
+w warstwie bramki — **zero zmian w `gra/src` i `gra/data`**, stub referowany tylko z wlasnego
+testu, nie wchodzi do `vite.config.ts` ani do kodu przegladarki.
+
+**Diagnoza okazala sie glebsza niz recon orkiestratora:** lancuch to `mapFieldBattle.ts:33`
+-> `audio/muzyka-antyczna.ts` -> `audio/filePlayer.ts` z **osmioma** wywolaniami
+`import.meta.glob`. Naprawa idzie wzorcem juz obecnym w repo (stub calego modulu na granicy
+`esbuild onResolve`, jak 60+ stubow w `gra/tools/.stubs/`), plus `buildSync` -> `build`
+(pluginy tego wymagaja) i uzupelnienie brakujacego pola `fortifyScaledDefFor` w fixture —
+**wymaganego typem `MapFieldBattleLaunchDeps`**, czyli uzupelnienie kontraktu, nie oslabienie
+asercji (zweryfikowane osobno przez Evaluatora i Final Control wzgledem bazy `6b81abf4`).
+Druga bramka dostala `pretendToBeVisual: true` w jsdom, czyli **prawdziwa implementacje**
+`requestAnimationFrame`, nie zaslepke.
+
+**Dowod anty-maskujacy wykonany TRZY razy niezaleznie, za kazdym razem na INNYM celu:**
+Operator (`siegeDefenders.ts`, `slug.ts`), Evaluator (powtorzyl oba, dostal te same 4 faile),
+Final Control (dwa NOWE cele: `validateOpenCityFieldBattle` -> 18/20, `renderEntityCard` h2
+-> 71/75). Final Control policzyl tez asercje w kodzie i dopasowal 1:1 do wykonania
+(20 = 20; 60 statycznych + petla x4 = 75) — bramki nie zostaly wyciszone.
 
 **Poza zakresem tego tematu, nadal otwarte:** `oboz-lowiecki-las-test` (72 pass / 19 fail)
 i `map-improvement-qualify-test` (130 pass / 1 fail) — te dwie **uruchamiaja sie
 poprawnie** i maja realne czerwone asercje, wiec sa kandydatami na defekty gry, nie INFRA.
 Osobny temat.
+
+## P-ROSTER-ZWIADOWCA-DRIFT-DWOCH-FUNKCJI-Q1 — GAME (2026-09-05, znalezisko bramki INFRA)
+
+Po przywroceniu uruchamialnosci `map-field-battle-test.cjs` (patrz temat wyzej) bramka
+wykonuje 20 asercji i **jedna z nich jest realnie czerwona**:
+`collectBattleRoster atk: adjacent scout excluded`.
+
+**Istota:** `collectBattleRoster` **nie wyklucza** sasiadujacego zwiadowcy ze skladu bitwy,
+podczas gdy siostrzana `collectAtkRosterNearCity` **to robi**. Dwie funkcje, ktore powinny
+skladac ten sam roster, rozjechaly sie w jednym warunku. Skutek w grze: zwiadowca stojacy
+obok moze byc doliczany do sily atakujacego tam, gdzie druga sciezka go pomija — czyli
+sklad bitwy zalezy od tego, ktora funkcja go akurat policzyla.
+
+**Uczciwie zgloszony, nie przykrojony** — Final Control potwierdzil, ze asercja jest
+**bajt-identyczna z baza** `6b81abf4`; Operator mial jawny zakaz majstrowania przy
+asercjach, zeby bramka zzieleniala, i sie do niego zastosowal. To jest dokladnie ten
+przypadek, dla ktorego dispatch mowil „celem nie jest zielono za wszelka cene".
+
+**Ta asercja czerwienila sie od zawsze — tylko nikt jej nie widzial**, bo bramka wywalala
+sie przed nia z `TypeError`. Naprawa INFRA odslonila defekt, ktory lezal pod spodem.
+**STATUS: ZAREJESTROWANE, NIE DISPATCHOWANE.** DOMAIN: GAME. Zakres: zrownac warunek
+wykluczania zwiadowcy w obu funkcjach i dodac asercje pilnujaca ich parytetu, zeby nie
+rozjechaly sie ponownie.
 
 ## P-BRAMKA-AI-BUDYNKI-NIEZAREJESTROWANA-W-PROC-Q1 — PROCESS (2026-09-05, ustalenie Final Control)
 
