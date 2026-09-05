@@ -4959,3 +4959,60 @@ plikowo** węzły, dispatchowane równolegle (§2b spełnione):
   OTWARTE) i taki, przez który **właściciel nie mógł zdiagnozować własnej rozgrywki**
   („chyba to autowyżywienie nie było włączone, ale ciężko mi się odnieść"). Zakaz zmiany
   logiki przełączania — jeśli Operator odkryje wadę logiki, zgłasza notę do węzła A.
+
+### `R-WALKA-PRZEWAGA-LICZEBNA-Q1-W2` — **ZINTEGROWANE** (`5ef3ece3`, 2026-09-05). TEMAT WALKI ZAMKNIĘTY W CAŁOŚCI.
+
+Runda 1 (Operator → Evaluator 2 zarzuty → Obrona: 1 przyjęty, 1 wyprowadzony do
+`DECISION_REQUIRED`) → ECHO właściciela „klamp do progu ucieczki" → runda 2 (Operator PASS,
+Evaluator **zero zarzutów**) → **Final Control `PASS-WITH-NOTES`**.
+
+**Co dostał właściciel:** obrońca oddaje **jeden kontratak na turę**, pierwszemu atakującemu,
+bez wyjątku dla fortyfikacji i miast. Wewnątrz jednego starcia kontratak działa jak dotąd —
+naprawa siedzi na poziomie TURY, nie pojedynku, co Final Control zweryfikował osobno.
+Do tego startowa kara morale `50% × log₁₀(r)` z sufitem 65%, gdzie `r` to stosunek **mocy
+ważonej bieżącym HP**, a nie liczebności.
+
+**Klamp dolny do progu ucieczki — wartość tego ECHO w liczbach.** Bez klampu **cztery z 71
+typów jednostek** startowałyby przy sufcie 65% poniżej własnego progu ucieczki, czyli
+routowałyby przed pierwszym ciosem (`50/22→17,5`; `40/25→14,0`; `30/25→10,5`; `60/22→21,0`).
+Po klampie: `18→23`, `14→26`, `11→26`, `21→23`. Obrona **słusznie odmówiła rozstrzygnięcia
+sama** i wyprowadziła to z noty do jawnej pozycji `DECISION_REQUIRED` — GOAL 2 pkt 5 mówił
+dosłownie „nie ruszaj `fleeMorale`", więc klamp był nową regułą produktową.
+
+**Najmocniejszy element kontroli — Final Control wykluczył scenariusz „bramka mierzy próbkę".**
+Zsabotował **trzy rekordy SPOZA czwórki granicznej** (pierwszy, środkowy i ostatni zbioru):
+bramka sczerwieniała i wymieniła je z nazwy. Usunięcie jednego rekordu daje „oczekiwano 71,
+jest 70" — czyli sama liczność jest asercją. Zweryfikował też niezależnie, że `units.json`
+ma 75 rekordów, z czego 4 pominięte to machiny oblężnicze z `Morale ucieczki = null`
+(`isNeverRout`), więc 71 jest liczbą prawidłową, a nie wygodną.
+
+**Sprostowanie do protokołu (Final Control, nie zarzut):** `RuntimeUnit` **ma** pole `morale`,
+ale jest to wcześniejszy mapowy licznik dezercji/głodu, obecny już przed tym tematem.
+Sformułowanie Evaluatora „`RuntimeUnit` nie dostaje pola morale" było nieprecyzyjne;
+samo rozstrzygnięcie „morale od przewagi nie trafia na mapę" **zostaje utrzymane** —
+`types/unit.ts` nietknięty, diff nie odwołuje się ani do `RuntimeUnit`, ani do
+`effectiveDefenderM`.
+
+Bramki potwierdzone przez orkiestratora NA `main`: `walka-morale-przewaga-mocy` 123/123,
+`walka-jeden-kontratak` 24/24, logic 213/213, tech-tree 19/19, research ALL GREEN,
+unit-replace 13/13, combat OK, battle-roster 7/7, battle-summary OK, battle-hp-display 7/7,
+teren-walki-etapy 33/33, army-hunger-combat 13/13, `tsc --noEmit` exit 0. Worktree sprzątnięty.
+
+**Cały temat `R-WALKA-PRZEWAGA-LICZEBNA-Q1` jest tym samym domknięty:** W1 (`487b0cfc`)
+naprawił arytmetykę auto-bitwy, W2 (`5ef3ece3`) bitwę ręczną, W3 został skreślony przez
+właściciela. Zostają dwa tematy poboczne z tej pracy: `P-AUTO-BATTLE-SYMULATOR-PY-ROZJAZD-Q1`
+(teraz odblokowany — W1 zintegrowany) i `P-BRAMKA-MAP-FIELD-BATTLE-INFRA-CZERWONA-Q1`.
+
+## P-RAPORTY-PRZEKRACZAJA-LIMIT-400-SLOW-Q1 — PROCESS (2026-09-05, nota Final Control W2)
+
+Final Control zmierzył długość **wszystkich** raportów tematu W2: `02` 558 słów, `03` 552,
+`04` 555, `05` 476, własny 468 — wobec orientacyjnych ~400 z `R-PROC-AUTOBOT.md` §11.
+**Przekroczenie jest systemowe, nie incydentalne**, więc zgodnie z §16b pkt 4 należy je
+otworzyć jako osobny temat, a nie kwitować notą w każdym raporcie z osobna.
+
+Do rozstrzygnięcia w temacie: czy limit ~400 słów jest realistyczny przy dzisiejszym
+kontrakcie raportu (dziewięć pól plus lista werdyktów per zarzut plus wyniki kilkunastu
+bramek), czy raczej **limit należy podnieść albo przenieść na poszczególne pola**.
+Dzisiejszy stan — limit, którego nikt nie dotrzymuje i który za każdym razem obniża status
+do `PASS-WITH-NOTES` — jest gorszy od obu rozwiązań, bo zaszumia sygnał `-WITH-NOTES`,
+który powinien znaczyć coś merytorycznego. **STATUS: ZAREJESTROWANE, NIE DISPATCHOWANE.**
