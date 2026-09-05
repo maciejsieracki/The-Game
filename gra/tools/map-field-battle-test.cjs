@@ -135,6 +135,22 @@ const warrior2 = {
   ruch: 2,
 };
 
+// Jednostka bojowa ownera 0 w dystansie DOKLADNIE 2 od kotwicy (5,0) i od miasta (6,0).
+// Istnieje po to, zeby promien rosteru byl MIERZALNY: przy kontraktowym `dist <= 1` ma
+// zostac POZA rosterem, a kazde rozszerzenie promienia natychmiast lamie `size === 3`.
+// Bez niej fixture nie mial ani jednej jednostki poza promieniem 1, wiec mutacja
+// „promien > 1 -> > 2" przechodzila bramke ZIELONO (zarzut 2 Evaluatora rundy 2).
+const farAlly = {
+  id: 'u-far',
+  ownerId: 0,
+  typeId: 'Hastati',
+  category: 'miecznik',
+  q: 4,
+  r: 2,
+  ruchLeft: 2,
+  ruch: 2,
+};
+
 const stubDef = () => ({
   meleeAttack: 8,
   meleeDefence: 7,
@@ -152,7 +168,7 @@ console.log('map-field-battle-test');
 const atkR = collectBattleRoster(hastati, [hastati, ally, garrison], 'attacker');
 assert(atkR.length === 2 && atkR.every(u => u.ownerId === 0), 'collectBattleRoster: 2 allies dist<=1');
 
-const atkWithScout = collectBattleRoster(hastati, [hastati, ally, scoutNeighbor, warrior2], 'attacker');
+const atkWithScout = collectBattleRoster(hastati, [hastati, ally, scoutNeighbor, warrior2, farAlly], 'attacker');
 // Kontrola ZBIORU ID zamiast licznika (runda 2, ratyfikacja orkiestratora 2026-09-05).
 // Stary warunek `length === 2` czerwienil sie na POPRAWNYM rosterze 3-elementowym: fixture
 // ma czwarta, NIEcywilna jednostke `warrior2` (Hastati, ownerId 0) w dystansie 1 od kotwicy,
@@ -162,7 +178,8 @@ const atkWithScout = collectBattleRoster(hastati, [hastati, ally, scoutNeighbor,
 const atkWithScoutIds = new Set(atkWithScout.map(u => u.id));
 assert(!atkWithScoutIds.has(scoutNeighbor.id), 'collectBattleRoster atk: adjacent scout excluded');
 assert(
-  atkWithScoutIds.has(hastati.id) && atkWithScoutIds.has(ally.id) && atkWithScoutIds.has(warrior2.id),
+  atkWithScoutIds.size === 3 &&
+    atkWithScoutIds.has(hastati.id) && atkWithScoutIds.has(ally.id) && atkWithScoutIds.has(warrior2.id),
   'collectBattleRoster atk: pozostale trzy jednostki bojowe ZOSTAJA w rosterze',
 );
 
@@ -170,20 +187,37 @@ const atkNear = collectAtkRosterNearCity(openCity, hastati, [hastati, ally, scou
 assert(atkNear.length === 2 && !atkNear.some(u => u.typeId === 'Zwiadowca'),
   'collectAtkRosterNearCity: adjacent scout excluded');
 
-// PARYTET RODZINY (runda 2). Dla WSPOLNEJ kotwicy stojacej na heksie miasta obie funkcje
-// licza z tego samego punktu (battleHex == kotwica == miasto), wiec musza zwrocic identyczny
-// ZBIOR ID — porownujemy zbiory, nie listy, bo kolejnosc moze sie roznic. Parytet zachodzi
-// juz dzis; ta asercja go utrwala, zeby funkcje nie rozjechaly sie w przyszlosci.
+// PARYTET RODZINY (runda 2, wzmocniony po zarzutach 1 i 3 Evaluatora rundy 2).
+//
+// WERSJA ODRZUCONA: obie funkcje wolane z TA SAMA kotwica stojaca na heksie miasta. Wtedy
+// dla obu battleHex == kotwica == miasto, wiec `hexDistance(anchor..)` i `hexDistance(..city)`
+// sa TYM SAMYM wyrazeniem — asercja nie moze zaczerwieniec przy ZADNEJ zmianie jednej funkcji.
+// Zmierzone: mutacja „collectAtkRosterNearCity liczy od kotwicy, nie od miasta" (dokladnie
+// klasa rozjazdu, dla ktorej powstal temat) zostawiala tamta wersje ZIELONA — 22/22.
+//
+// WERSJA UZYTA: ten sam HEKS BITWY (heks miasta), osiagany DWIEMA roznymi drogami:
+//   - collectBattleRoster — kotwica `parityOnCity` STOI na heksie miasta (6,0), wiec jej
+//     battleHex to heks miasta,
+//   - collectAtkRosterNearCity — kotwica `hastati` stoi OBOK (5,0), a punktem pomiaru jest
+//     parametr `city`.
+// Ten sam heks bitwy => ten sam zbior ID. Gdy ktoras funkcja przestanie liczyc od swojego
+// battleHex, zbiory sie rozjada i asercja czerwienieje (zweryfikowane mutacyjnie).
 // `size > 1` broni przed tautologia „oba zbiory puste".
-const parityAnchor = { ...hastati, id: 'u-anchor-city', q: openCity.q, r: openCity.r };
-const parityUnits = [parityAnchor, hastati, ally, scoutNeighbor, warrior2, garrison];
-const parityField = new Set(collectBattleRoster(parityAnchor, parityUnits, 'attacker').map(u => u.id));
-const parityCity = new Set(collectAtkRosterNearCity(openCity, parityAnchor, parityUnits).map(u => u.id));
+//
+// UWAGA (kandydat do decyzji wlasciciela, NIE rozstrzygany przez ten test): dla kotwicy
+// POZA heksem miasta funkcje zwracaja ROZNE zbiory — zmierzone na tym fixture: kotwica u0
+// (5,0) daje field ["u-anchor-city","u0","u2","u3"] vs city ["u-anchor-city","u0","u2"].
+// Bitwa w polu toczy sie na heksie kotwicy, a bitwa o miasto na heksie miasta — to sa rozne
+// miejsca starcia, wiec roznica moze byc zamierzona. Ta asercja jej NIE przesadza.
+const parityOnCity = { ...hastati, id: 'u-anchor-city', q: openCity.q, r: openCity.r };
+const parityUnits = [parityOnCity, hastati, ally, scoutNeighbor, warrior2, garrison, farAlly];
+const parityField = new Set(collectBattleRoster(parityOnCity, parityUnits, 'attacker').map(u => u.id));
+const parityCity = new Set(collectAtkRosterNearCity(openCity, hastati, parityUnits).map(u => u.id));
 assert(
   parityField.size > 1 &&
     parityField.size === parityCity.size &&
     [...parityField].every(id => parityCity.has(id)),
-  'parytet collectBattleRoster == collectAtkRosterNearCity (zbior ID, kotwica na heksie miasta)',
+  'parytet collectBattleRoster == collectAtkRosterNearCity (zbior ID, wspolny heks bitwy)',
 );
 
 const cityScoutDef = {
