@@ -5318,3 +5318,44 @@ cywilizacji — Evaluator potwierdził, że zmiana jest chirurgiczna.
 jak podawał mój recon (`celtowie` 9 — `Závist` ≠ `Zavist` różnią się diakrytykiem).
 Wymieniono i tak wszystkie 140 pozycji, bo warianty transliteracji
 (`Kanesh`/`Kanesz`, `Kiev`/`Kijów`, `Carchemish`/`Karkemisz`) to duplikaty faktyczne.
+
+## P-BRAMKA-NESTED-OVERLAY-BRAK-SCROLLINTOVIEW-Q1 — INFRA (2026-09-05)
+
+`gra/tools/entity-card-cross-links-nested-overlay-test.cjs:146`, `:213` klika **na ślepo**
+przez `page.mouse.click`, bez `scrollIntoView` — a bratnia bramka
+`civpedia-caly-wiersz-przyciskiem-test.cjs:209-210` ten `scrollIntoView` ma. Przycisk
+„Technologia" wypada na `y≈869-890` przy viewporcie 900, więc `elementFromPoint` zwraca
+w kolejnych przebiegach raz `null`, raz `DIV`, raz `BUTTON`.
+
+**Skutek: 8 asercji jest czerwonych niezależnie od jakiegokolwiek tematu**, a wyglądają
+na defekt tematu, który akurat tę bramkę uruchomił. Udowodnione dwiema niezależnymi sondami
+(Operator i Evaluator): samo dodanie pary `scrollIntoView` daje **24/24**.
+
+**Obie role słusznie NIE naprawiły tego w temacie sufitu kart** — to poza jego allowlistą
+i poza jego przyczyną. **STATUS: ZAREJESTROWANE, NIE DISPATCHOWANE.** Naprawa jednolinijkowa,
+warta zrobienia przy pierwszym temacie dotykającym tej bramki.
+
+### `R-ENTITYCARD-JEDNA-KARTA-CZY-STOS-Q1` — runda 2, dwa znaleziska warte zapamiętania
+
+**1. Moje dwa zdania w ratyfikacji nie dawały się spełnić naraz — i wykonawca to ZMIERZYŁ,
+zamiast zgadywać.** Napisałem, że widoczny brzeg karty A ma być klikalny, „więc nie może go
+zakrywać backdrop karty B". **To był mój wniosek, nie słowa właściciela.** Kontr-eksperyment
+obrony: przy `pointer-events:none` na wierzchnim backdropie **klik w brzeg A przestaje
+cokolwiek robić**, a **klik w dalekie tło zdejmuje NAJSTARSZĄ kartę** — czyli literalna
+realizacja mojego zdania łamie drugie ECHO właściciela. Wykonawca wybrał wariant zachowujący
+ECHO 2 i **jawnie oznaczył interpretację w kodzie i w nazwie asercji**, zamiast po cichu
+wybrać. Oba zdania właściciela są spełnione w praktyce: brzeg jest widoczny i nieprzyciemniony
+(dowód pikselowy `[12,16,22]` z backdropem i bez, przy tle strony `[4,5,8]`), a trzy gesty —
+Escape, klik w tło, klik w brzeg — zdejmują po jednej karcie.
+
+**2. Asercja nazwana „POMIAR WIDOCZNOSCI" nie mierzyła widoczności.** Evaluator wykazał
+mutacją: po przyciemnieniu brzegu A (`transparent` → `rgba(0,0,0,.62)`) bramka nadal dawała
+**64/1** — asercja przechodziła, mimo że brzeg realnie zniknął pod przyciemnieniem.
+To jest najczystszy przykład defektu, przed którym ostrzegał dispatch: **nazwa asercji
+obiecywała coś, czego kod nie sprawdzał**. Przemianowana na „UKLAD/KOLEJNOSC HIT-TESTU",
+dołożone dwie asercje pikselowe, nietautologiczne (pod tą samą mutacją 65/2).
+
+**Rozliczenie 29 asercji, tym razem POMIAREM:** (a) 21 zzieleniało samo, (b) 8 czerwonych
+z przyczyny niezależnej od tematu, (c) **0** utrwalających stos nieograniczony. Teza z rundy 1
+(„zero wymaga zmiany") była **nieprawdziwa jako twierdzenie**, choć wniosek końcowy okazał się
+prawdziwy z innego powodu — różnica między „zgadłem dobrze" a „zmierzyłem".
