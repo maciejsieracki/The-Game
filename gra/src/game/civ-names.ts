@@ -46,7 +46,12 @@ export function getNazwyKlastra(civs: CivsData, ikonaId: string): readonly strin
   return def?.nazwyKlastra ?? [];
 }
 
-/** N-1A: pierwsze miasto gracza = miasta_panstwa[0] (pula) lub nazwyKlastra[0]. */
+/**
+ * N-1A: stolica gracza = `miasta_cywilizacji[0]` z puli
+ * (R-MAPA-ETYKIETA-STOLICY-NAZWA-MIASTA-Q1 R3-2; wcześniej czytane z puli miast-państw
+ * `miasta_panstwa[0]` — gracz-Chińczyk startował w `Qin` zamiast `Xi'an`, gracz-Słowianin
+ * w `Kiev` zamiast `Kijów`). Bez puli — legacy `nazwyKlastra[0]` z `civs.json`.
+ */
 export function playerStartCityName(
   civs: CivsData,
   playerCivId: string,
@@ -77,7 +82,12 @@ export function clusterRivalCityName(
   return nazwaKlastraAt(names, idx, `Rywal ${rivalIndex1Based}`);
 }
 
-/** Stolica obcego typu = miasta_panstwa[0] lub nazwyKlastra[0]. */
+/**
+ * Stolica obcego typu (państwa AI) = `miasta_cywilizacji[0]` z puli
+ * (R-MAPA-ETYKIETA-STOLICY-NAZWA-MIASTA-Q1 R2-2; wcześniej czytane z puli miast-państw
+ * `miasta_panstwa[0]` — `Qin` zamiast `Xi'an`, `Kiev` zamiast `Kijów`).
+ * Bez puli — legacy `nazwyKlastra[0]` z `civs.json`, jedyna dostępna wtedy lista.
+ */
 export function foreignCapitalCityName(
   civs: CivsData,
   typIkonaId: string,

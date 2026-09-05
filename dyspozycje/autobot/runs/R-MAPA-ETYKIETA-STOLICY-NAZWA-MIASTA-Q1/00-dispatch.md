@@ -197,3 +197,246 @@ i TEJ SAMEJ gałęzi. Po 5 rundach: `LIMIT-5-EXCEEDED`.
 
 Operator → Evaluator (ponumerowane zarzuty) → Obrona (gdy lista niepusta) → koniec
 skryptu. Final Control osobno, integracja allowlist-only ręką orkiestratora.
+
+---
+
+# RUNDA 2 — ZMIANA KIERUNKU PO POMIARZE + RATYFIKACJA ALLOWLISTY
+
+DATA: 2026-09-04
+STATUS RUNDY 1: Evaluator `FAIL`. **Nie za jakość wykonania — za to, że zmierzył
+i pokazał, że rozwiązanie z ECHO rundy 1 fizycznie nie mieści się na plakietce.**
+
+## Dlaczego kierunek się zmienia
+
+Evaluator policzył realne szerokości prawdziwym fontem (`700 22px Georgia`) wobec
+budżetu `maxNameW = 200 − prodW − growthW − crownW` (`render/cityMapStatChip.ts:769`):
+
+| stan | stolic przyciętych (budżet 181 px) | z produkcją (161 px) |
+|---|---|---|
+| przed tematem | **0 z 15** | 0 z 15 |
+| po rundzie 1 | **14 z 15** | **15 z 15** |
+
+Skrajny przypadek: `UMGUNGUNDLOVU · ZULUSI` → `UMGUNGUND…` — **człon cywilizacji znika
+całkowicie**, czyli wynik GORSZY niż przed tematem, gdzie czytelne było „ZULUSI".
+
+**ECHO WŁAŚCICIELA po przedstawieniu tych pomiarów: „Sama nazwa miasta, bez cywilizacji".**
+Obca stolica ma być podpisana jak każde inne miasto — korona zostaje znakiem stolicy,
+kolor terytorium znakiem przynależności.
+
+## R2-1 — uprość etykietę do samej nazwy miasta
+
+Gałąź `isClusterCapital` w `display-names.ts` ma zwracać **nazwę miasta**, nie nazwę
+cywilizacji i nie oba człony. Mechanizm opt-in `clusterCapitalWithCityName` z rundy 1
+prawdopodobnie przestaje być potrzebny — **usuń go, jeśli po uproszczeniu nie ma
+drugiego konsumenta**; jeśli ma (np. `ownerDiploLabel`, `main.ts:7879`, wymaga innego
+zachowania niż mapa), zostaw i uzasadnij.
+
+Degradacja: gdy brak nazwy miasta — sama nazwa cywilizacji, jak dotąd. Nie pusty string.
+
+**Państwa-miasta, zwykłe obce miasta i miasta gracza: BEZ ZMIAN.** To ma zostać
+udowodnione asercją, nie deklaracją.
+
+## R2-2 — NAPRAWA BŁĘDU NAZEWNICTWA STOLIC AI (ratyfikowana, nowa)
+
+**To jest znalezisko Operatora rundy 1, którego mój recon błędnie uznał za bezprzedmiotowe.
+Przyznaję błąd.**
+
+`cluster-spawn.ts:354` → `foreignCapitalCityName` → `foreignCapitalFromPool` →
+`stateCityNameAt(pools, id, 0)` czyta **`miasta_panstwa[0]`**, czyli pulę PAŃSTW-MIAST,
+a nie listę miast cywilizacji. U 13 z 15 cywilizacji obie pule mają tam to samo, więc
+różnicy nie widać. Wyjątki, oba widoczne w grze:
+- **Chińczycy: `Qin` zamiast `Xi'an`** — a `Qin` to nazwa państwa i dynastii, nie miasta;
+  to jest dosłownie napis, który właściciel zobaczył na zrzucie;
+- **Słowianie: `Kiev` zamiast `Kijów`.**
+
+**ECHO WŁAŚCICIELA: „Tak, w tym samym temacie".**
+
+Stolica AI ma brać nazwę z **`miasta_cywilizacji[0]`**. Uzasadnienie pilności: dziś
+dotyczy dwóch cywilizacji, ale po planowanym rozdzieleniu list nazw
+(`R-NAZWY-MIAST-AUDYT-STOLICE-I-PANSTWA-Q1`, ECHO: rozdzielić wszystkie ~126 pozycji)
+dotknęłoby **wszystkich piętnastu** — naprawa teraz jest tańsza niż potem.
+
+Sprawdź, czy ta sama pomyłka nie występuje przy nazywaniu **kolejnych** miast AI
+(nie tylko stolicy) — jeśli tak, napraw i wypisz w raporcie; jeśli nie, napisz to wprost.
+
+## ALLOWLISTA — ROZSZERZONA (ratyfikacja orkiestratora)
+
+Do dotychczasowej dochodzą:
+- `gra/tools/display-names-test.cjs` — zawiera asercję kodującą wprost odwracaną decyzję
+  („mapa: stolica obcego państwa → nazwa cywilizacji, Neapol → Rzym"); zmierzone przez
+  Evaluatora: **27/0 na bazie, 26/1 na gałęzi**. Przepisz tę jedną asercję na nowe
+  zachowanie. **Nie „napraw" jej przez usunięcie** — ma nadal mierzyć, tylko to, co teraz
+  jest prawdą.
+- `gra/src/map/cluster-spawn.ts`
+- `gra/src/game/city-names-pool.ts`
+- `gra/src/game/civ-names.ts`
+
+**`gra/data/city-names-pools.json` i `gra/data/civs.json` POZOSTAJĄ ZAKAZANE** — dane są
+poprawne (audyt orkiestratora: wszystkie 15 cywilizacji mają komplet 100+10, pierwsze
+miasta historycznie zasadne). Naprawa dotyczy tego, KTÓRĄ pulę czyta kod, nie zawartości pul.
+
+`render/cityMapStatChip.ts` **pozostaje poza allowlistą** — po ECHO nie jest już potrzebny,
+bo sama nazwa miasta mieści się w dotychczasowym budżecie (przed tematem 0/15 przyciętych).
+Jeśli okaże się, że jednak nie, to jest `DECISION_REQUIRED`, nie samodzielne poszerzanie.
+
+## KRYTERIA KOŃCA RUNDY 2
+
+- [ ] `tsc --noEmit` zielone.
+- [ ] `mapa-etykieta-stolicy-test.cjs` — 100% pass, asercje przepisane na nowe zachowanie.
+- [ ] `display-names-test.cjs` — **27/0**, czyli parytet z bazą, z przepisaną asercją.
+- [ ] Nowa/rozszerzona asercja: stolica AI Chińczyków nazywa się `Xi'an`, Słowian `Kijów`
+      — nie `Qin` i nie `Kiev`. To jest sedno R2-2, musi być mierzone.
+- [ ] **Zrzut żywego Chromium** obcej stolicy, obejrzany: nazwa miasta, korona, populacja,
+      brak przycięcia. Porównaj z zrzutem rundy 1 (`dowody/`), gdzie widniało „QIN · CHIŃCZ…".
+- [ ] Pomiar szerokości: ile z 15 stolic jest przyciętych po tej zmianie. Oczekiwane 0.
+- [ ] 5 bramek referencyjnych i bramki nazw bez regresu.
+
+## REGUŁA PRZECIW SAMOOSZUKIWANIU
+
+**Tryb pierwszy: cofnięcie się za daleko.** ECHO mówi „sama nazwa miasta" — to NIE znaczy
+„przywróć stan sprzed tematu". Przed tematem była nazwa CYWILIZACJI. Teraz ma być nazwa
+MIASTA. To trzeci, nowy stan, nie powrót do żadnego z dwóch poprzednich.
+
+**Tryb drugi: naprawa R2-2 bez sprawdzenia, czy nazwa w ogóle dojdzie na ekran.**
+R2-1 i R2-2 są sprzężone: dopiero po naprawie puli stolica Chińczyków MA nazwę miasta,
+którą etykieta może pokazać. Zweryfikuj oba razem, na jednym zrzucie.
+
+**Tryb trzeci: test przestaje mierzyć.** `display-names-test.cjs` ma po przepisaniu nadal
+czerwienieć, gdy zachowanie się zmieni — pokaż to mutacją.
+
+---
+
+# RUNDA 3 — RATYFIKACJA ORKIESTRATORA (2026-09-04, noc)
+
+Runda 2 zakończyła się `DECISION_REQUIRED` z dwoma zarzutami. **Oba trafiły do właściciela
+i oba zostały rozstrzygnięte.** Poniższe jest wiążące i NIE podlega ponownej ocenie
+przez Evaluatora — to decyzje właściciela, nie propozycje orkiestratora.
+
+Praca rundy 2 (`1e87ec1c`) jest **UTRZYMANA w całości**. Runda 3 ją rozszerza, nie zastępuje.
+Nie cofaj `foreignCapitalMapName` ani zmiany puli na `miasta_cywilizacji[0]`.
+
+## R3-1 — POSZERZENIE BUDŻETU ETYKIETY (zarzut 1, ECHO: „Poszerzyć budżet etykiety")
+
+Właściciel odrzucił przyjęcie 1/15 i odrzucił skracanie nazwy w puli. **Budżet szerokości
+nazwy w `gra/src/render/cityMapStatChip.ts:769` ma zostać poszerzony tak, żeby wszystkie
+15 pierwszych miast cywilizacji mieściło się bez wielokropka**, łącznie z zuluskim
+`uMgungundlovu` (zmierzone 214 px przy `700 22px Georgia`).
+
+**Ostrzeżenie orkiestratora, przedstawione właścicielowi PRZED decyzją i przez niego
+przyjęte:** ta zmiana dotyka **wszystkich** etykiet na mapie, nie tylko zuluskiej, i niesie
+ryzyko zachodzenia plakietki na sąsiednie heksy. Właściciel wybrał ten wariant świadomie.
+**Dlatego runda 3 ma to ryzyko ZMIERZYĆ, a nie założyć, że go nie ma:**
+
+- **Twardy warunek:** przy nowym budżecie plakietka **nie zachodzi na sąsiednie heksy**
+  — udowodnione zrzutem z żywego Chromium, w układzie gęstym (stolica z sąsiadującymi
+  miastami-państwami), nie na odosobnionym mieście.
+- Jeśli okaże się, że nie da się spełnić jednocześnie „0/15 przycięć" i „brak zachodzenia
+  na sąsiednie heksy" — **zatrzymaj się ze statusem `DECISION_REQUIRED`** i podaj zmierzoną
+  granicę: przy ilu pikselach zaczyna się zachodzenie i ilu cywilizacjom to wystarcza.
+  Nie wybieraj sam kompromisu.
+- Kryterium dotyczy **15 pierwszych miast cywilizacji**. Dłuższe nazwy z dalszej części pul
+  (112 z 1500 nazw przekracza dzisiejszy budżet) mogą nadal się przycinać — to jest
+  poza zakresem i nie jest defektem.
+
+## R3-2 — STOLICA GRACZA CZYTA WŁAŚCIWĄ PULĘ (zarzut 2, ECHO: „Naprawić teraz, w rundzie 3")
+
+`playerCapitalFromPool` (`gra/src/game/city-names-pool.ts:75-77`) czyta `miasta_panstwa[0]`,
+przez co gracz-Chińczyk startuje w mieście „Qin" — **dokładnie ta sama klasa pomyłki, którą
+zgłosił właściciel dla AI**, tylko po jego własnej stronie. Ma czytać `miasta_cywilizacji[0]`,
+symetrycznie do naprawionego w rundzie 2 `foreignCapitalFromPool`.
+
+**Allowlista jest tym samym rozszerzona o bramkę utrwalającą stary stan.** Evaluator wskazał
+asercję **E7**, która zapisuje dzisiejsze (błędne) zachowanie. Wolno ją zaktualizować —
+ale **w raporcie wypisz dokładnie, którą asercję zmieniłeś, jaką miała wartość przed i po,
+i dlaczego stara utrwalała defekt.** Cicha zmiana oczekiwań istniejącej bramki jest
+niedopuszczalna i zostanie potraktowana jak ukrycie regresu.
+
+Sprawdź przy okazji, czy naprawa nie tworzy **duplikatu nazw**: stolica gracza i stolica AI
+tej samej cywilizacji nie mogą wylądować na tej samej nazwie w jednej partii.
+
+## ALLOWLISTA RUNDY 3 (rozszerzenie, reszta bez zmian)
+
+Dochodzą:
+- `gra/src/render/cityMapStatChip.ts` (wyłącznie budżet szerokości nazwy, R3-1)
+- bramka z asercją E7 — wyłącznie aktualizacja utrwalonej wartości, jawnie uzasadniona
+- `gra/src/game/city-names-pool.ts` (już był w allowliście — `playerCapitalFromPool`)
+
+Nadal zakazane bezwzględnie: `gra/src/main.ts`, pliki z sekretami, `docs/decyzje/**`,
+`.git/**`, `dyspozycje/WERSJE.md`, `gra-robocza/**`, `ROBOCZA-MANIFEST.json`, `playbook.json`.
+
+## KRYTERIA KOŃCA RUNDY 3
+
+1. Pomiar przycięć: **0/15** przy nowym budżecie — pomiar w żywym Chromium, tą samą metodą
+   co w rundzie 2 (`700 22px Georgia`), z liczbami przed i po.
+2. Zrzut z żywego Chromium w układzie GĘSTYM dowodzący braku zachodzenia na sąsiednie heksy.
+3. `playerCapitalFromPool` czyta `miasta_cywilizacji[0]`; bramka to asertuje, a asercja
+   **czerwienieje po cofnięciu zmiany** (pokaż wynik po mutacji).
+4. Brak duplikatu nazw stolica-gracza / stolica-AI tej samej cywilizacji.
+5. `tsc --noEmit` zielone; `mapa-etykieta-stolicy-test.cjs`, `display-names-test.cjs`,
+   `city-names-pool-test.cjs`, `city-names-pools-test.cjs`, `rozmiar-label` zielone.
+6. Pięć bramek referencyjnych zielonych (logic 213/213, tech-tree 19/19, research 33/33,
+   unit-replace 13/13, combat 6/6).
+7. Bramki czerwone z potwierdzonym parytetem bazy z rundy 2 (`flaga-mp`,
+   `miasta-panstwa-wylaczone`) mają zostać na tym samym poziomie — pogorszenie = regres.
+
+---
+
+# RUNDA 4 — RATYFIKACJA ORKIESTRATORA (2026-09-05)
+
+## Uznanie błędu w zleceniu — kryterium 2 rundy 3 było NIEWYKONALNE
+
+Zgłoszenie `decision-abc.md` jest **trafne i zostaje przyjęte w całości**. Warunek twardy
+R3-1 („plakietka nie zachodzi na sąsiednie heksy") był postawiony przez orkiestratora
+błędnie: pomiar 30 plakietek pokazał, że **nie spełnia go żadna konfiguracja — także stan
+sprzed całego tematu**. Granica wypada przy ok. 4–5 wielkich literach; z 15 pierwszych miast
+cywilizacji mieści się pod nią jedno (`Tyr`, 46,4 px). Nie istnieje wartość budżetu
+spełniająca jednocześnie kryteria 1 i 2. **Operator postąpił prawidłowo, zatrzymując się
+zamiast wybierać odczyt warunku (§14, C-054).**
+
+**Kryterium 2 zostaje ZASTĄPIONE miarą, którą sam zaproponowałeś jako rozłączną:**
+plakietka nie może kolidować z **plakietką sąsiedniego miasta**. Minimalny odstęp miast
+w klastrze to 5 heksów = 8,66 j. (`clusters.ts`, `CLUSTER_CITY_STATE_MIN_HEX`), najszersza
+zmierzona plakietka ma 4,04 j. — **0/30 kolizji**. To jest realne ryzyko czytelności;
+zachodzenie na pusty heks nim nie jest.
+
+## R4-1 — BAZA 305 (ECHO właściciela: „Baza 305 — domknąć także stolicę gracza")
+
+Sprawa poboczna zgłoszenia rozstrzygnięta: **domykamy również własną stolicę gracza**,
+która ma trzeci slot (WZROST%) i przy bazie 260 nadal przycina `uMgungundlovu`.
+
+- Baza szerokości nazwy: **≈305 px**, wartość dobrana pomiarem tak, by dać **0/15 przycięć
+  we WSZYSTKICH trzech konfiguracjach**: stolica obca bez glifu produkcji, z glifem,
+  oraz własna stolica gracza z WZROST%.
+- Sufit techniczny (`BADGE_MAX_TOTAL_SCALE` wobec gwarantowanego w WebGL2
+  `MAX_TEXTURE_SIZE = 2048`) przepuszcza bazę do ≈369 — **potwierdź to własnym rachunkiem
+  i podaj margines**, jaki zostaje przy wybranej wartości.
+- **Koszt zaakceptowany jawnie przez właściciela:** każda długa etykieta na mapie rośnie
+  o kolejne ~45 px względem bazy 260. To jest cena domknięcia stolicy gracza.
+
+## KRYTERIA KOŃCA RUNDY 4
+
+1. **0/15 przycięć w trzech konfiguracjach** — pomiar w żywym Chromium, tą samą metodą
+   co w rundach 2–3 (`700 22px Georgia`), z liczbami przed i po dla każdej konfiguracji.
+2. **0 kolizji plakietka↔plakietka** przy minimalnym odstępie miast (5 heksów) — pomiar
+   liczbowy, nie ogląd. Kryterium „brak zachodzenia na sąsiednie heksy" **NIE OBOWIĄZUJE**
+   i jego niespełnienie nie jest defektem.
+3. Zrzut z żywego Chromium w układzie gęstym, obejmujący stolicę gracza z trzema slotami.
+4. Margines do sufitu tekstury podany liczbowo.
+5. Praca rund 2–3 UTRZYMANA: `foreignCapitalMapName`, pula `miasta_cywilizacji[0]` dla
+   stolic AI oraz `playerCapitalFromPool` z R3-2 — nie cofać.
+6. `tsc --noEmit` zielone; bramki tematu, `city-names-pool`, `city-names-pools`,
+   `rozmiar-label` zielone; pięć bramek referencyjnych zielonych (logic 213/213,
+   tech-tree 19/19, research 33/33, unit-replace 13/13, combat 6/6).
+7. Bramki czerwone z potwierdzonym parytetem bazy (`flaga-mp`, `miasta-panstwa-wylaczone`)
+   na tym samym poziomie co w rundzie 3 — pogorszenie = regres.
+
+## ALLOWLISTA RUNDY 4
+
+Bez zmian wobec rundy 3 (`cityMapStatChip.ts` już w niej jest — zmienia się tylko wartość).
+
+## UWAGA PROCESOWA
+
+Poprzedni przebieg rundy 3 został przerwany **restartem kontenera**, nie błędem. Praca rundy 3
+jest zacommitowana (`bbe93e30` + `f2e85157`) i kompletna. **Raporty etapów commituj od razu
+po zapisaniu**, nie zostawiaj ich w pamięci procesu — tak przepadł raport Evaluatora
+w temacie równoległym.

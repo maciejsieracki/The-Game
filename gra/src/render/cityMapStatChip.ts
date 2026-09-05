@@ -95,6 +95,49 @@ const GROWTH_FONT = '700 13px Arial, Helvetica, sans-serif';
 const HOVER_ROW_H = 22;
 
 /**
+ * R-MAPA-ETYKIETA-STOLICY-NAZWA-MIASTA-Q1 R4-1 — baza budżetu szerokości NAZWY na plakietce.
+ * Od tej bazy odejmowane są sloty, które dzielą z nazwą ten sam wiersz (glif produkcji,
+ * WZROST%, korona stolicy) — patrz `maxNameW` w `paintCityMapBadgeOntoCanvas`.
+ *
+ * O CO WALCZY: po R2-1 plakietka obcej stolicy niesie nazwę MIASTA, więc o mieszczenie się
+ * walczy najdłuższe `miasta_cywilizacji[0]` z pul — zuluskie `uMgungundlovu`, zmierzone
+ * w żywym Chromium na 213,9 px fontem `700 22px Georgia`. Kryterium ma trzy konfiguracje,
+ * nie jedną, bo trzy różne komplety slotów dzielą z nazwą wiersz:
+ *   1. stolica OBCA bez glifu produkcji  → budżet = baza − korona 19;
+ *   2. stolica OBCA z glifem produkcji   → budżet = baza − 19 − 20;
+ *   3. WŁASNA stolica gracza             → budżet = baza − 19 − 20 − WZROST%.
+ * Slot WZROST% jest liczony wyłącznie dla miast gracza (`render/cities.ts`, `getCityGrowth`),
+ * więc konfiguracja (3) jest najciaśniejsza i to ona wyznacza bazę.
+ *
+ * DLACZEGO 305. Najszerszy zapis, jaki `formatCityGrowthPercentLabel` potrafi wydać dla
+ * realnej wartości, to `−99,9%` = 45 px (`700 13px Arial`, szerokość liczona jak w produkcji,
+ * przez `Math.ceil`). Minimum arytmetyczne to więc 213,9 + 19 + 20 + 45 = 297,9 → 298 px,
+ * ale przy 298 zapas nad zuluską nazwą wynosi 0,1 px i znika przy każdym zapisie WZROST%
+ * szerszym niż `−99,9%` (np. `−100,5%`). Baza 305 (ratyfikowana przez właściciela) zostawia
+ * 7,1 px zapasu i przepuszcza slot WZROST% do 52 px — żadna realna wartość wzrostu nie wepchnie
+ * najdłuższej stolicy w wielokropek. Poprzednia baza 260 (runda 3) domykała konfiguracje
+ * (1) i (2), ale w (3) nadal przycinała `uMgungundlovu` na `UMGUNGUND…` (1/15).
+ *
+ * KOSZT, przyjęty jawnie przez właściciela: każda długa etykieta na mapie rośnie o ~45 px
+ * względem bazy 260. Sufit techniczny leży wyżej: `BADGE_MAX_TOTAL_SCALE` (niżej) wymaga,
+ * żeby najszersza plakietka razy 4 zmieściła się w gwarantowanym w WebGL2
+ * `MAX_TEXTURE_SIZE = 2048`. Najszersza OSIĄGALNA plakietka przy bazie 305 to 463 px CSS:
+ * pełny komplet slotów (tarcza obrony, medalion, korona, WZROST%, glif produkcji) i nazwa
+ * z puli DŁUŻSZA niż budżet, więc przycięta do budżetu — `Kartagena Hiszpańska`, 287,5 px.
+ * To dokładnie `BASE + 158`, ta sama stała `SLOTY_POZA_NAZWA_PX` co w asercji G5 bramki.
+ * Stąd 1852 px tekstury, margines 196 px; sufit przepuszcza bazę do 354.
+ * NIE mylić z 426 px: tyle ma najszersza z 15 stolic (`uMgungundlovu`) BEZ tarczy obrony
+ * i z nazwą krótszą od budżetu — to nie jest najgorszy przypadek i sufit liczony z niej
+ * (391) przepuściłby bazę, przy której `(391 + 158) × 4 = 2196 > 2048`.
+ * Pomiar (prawdziwe `makeCityMapBadgeSprite` w żywym Chromium, cała pula nazw):
+ * `dyspozycje/autobot/runs/R-MAPA-ETYKIETA-STOLICY-NAZWA-MIASTA-Q1/dowody/
+ * pomiar-plakietki-runda-4.cjs`, sekcja SUFIT TEKSTURY.
+ * / EN: name-width budget base — fits the longest first-city name next to the crown, the
+ * production glyph AND the player-only growth slot; the WebGL2 texture ceiling sits at 354.
+ */
+const CITY_NAME_BUDGET_BASE = 305;
+
+/**
  * BUG-ETYKIETA-MIASTA-ROZMYTA — gęstość pikseli tekstury pigułki.
  * Cała geometria niżej liczona jest w px CSS; kanwa dostaje `dpr`× tyle pikseli fizycznych,
  * a kontekst jest przeskalowany, więc sprite ma tę samą wielkość w świecie (aspect bez zmian),
@@ -110,12 +153,19 @@ function badgePixelRatio(): number {
 
 /**
  * BUG-ETYKIETA-MIASTA-ROZMYTA-ZOOM — twardy sufit na ŁĄCZNY mnożnik kanwy (DPI × LOD).
- * Dwa niezależne mnożniki mnożą się (dpr 3 × LOD ×3 = 9), a najszersza możliwa pigułka ma
- * ~427 px CSS (nazwa przycięta do 200 px + wszystkie sloty + wiersz hover), więc bez sufitu
- * kanwa sięgnęłaby 3843 px — ponad gwarantowane w WebGL2 minimum MAX_TEXTURE_SIZE = 2048.
- * Przy suficie 4 najszersza pigułka ma 1708 px i mieści się z zapasem na każdym sprzęcie.
+ * Dwa niezależne mnożniki mnożą się (dpr 3 × LOD ×3 = 9), a najszersza OSIĄGALNA pigułka
+ * ma 463 px CSS: pełny komplet slotów (tarcza obrony 22 + odstęp 8, medalion 38 + 8, korona
+ * 19 + 8, WZROST% i glif produkcji z odstępami, kółko populacji 30, dwa marginesy 10) przy
+ * nazwie DŁUŻSZEJ niż budżet, więc przyciętej do budżetu. Sloty WZROST%/glif skracają nazwę
+ * o dokładnie tyle, ile same zajmują, więc `W = CITY_NAME_BUDGET_BASE + 158` niezależnie od
+ * bazy (305 → 463; przy bazie 260 → 418, przy dawnym budżecie 200 → 358). ZMIERZONE
+ * prawdziwym `makeCityMapBadgeSprite` na całej puli nazw, patrz
+ * `dowody/pomiar-plakietki-runda-4.cjs`. Bez sufitu kanwa sięgnęłaby 4167 px — ponad
+ * gwarantowane w WebGL2 minimum MAX_TEXTURE_SIZE = 2048. Przy suficie 4 najszersza pigułka
+ * ma 1852 px i mieści się z marginesem 196 px na każdym sprzęcie — to ta nierówność
+ * ogranicza `CITY_NAME_BUDGET_BASE` od góry (354, bo `(354 + 158) × 4 = 2048`).
  * / EN: DPI and zoom multipliers compound; this ceiling keeps the widest badge under the
- * 2048 px WebGL2 minimum guaranteed texture size (427 × 4 = 1708).
+ * 2048 px WebGL2 minimum guaranteed texture size (463 × 4 = 1852).
  *
  * Sufit NIE dotyka poziomu 0: `min(dpr, 4)` = `dpr`, bo `dpr` jest już przycięte do 3.
  * / EN: at level 0 the ceiling is inert — today's texture stays byte-identical.
@@ -765,8 +815,12 @@ function paintCityMapBadgeOntoCanvas(
   }
   measure.font = nameFont;
   let displayName = name;
-  // Budżet nazwy: 200 px kanwy minus sloty glifu produkcji / WZROST% / korony stolicy.
-  const maxNameW = 200 - prodW - growthW - crownW;
+  // Budżet nazwy: baza kanwy minus sloty glifu produkcji / WZROST% / korony stolicy.
+  // R4-1: baza `CITY_NAME_BUDGET_BASE` (305) domyka WSZYSTKIE TRZY komplety slotów — także
+  // własną stolicę gracza, gdzie do korony i glifu dochodzi WZROST% (najciaśniejszy przypadek);
+  // najdłuższe pierwsze miasto cywilizacji (`uMgungundlovu`, 213,9 px) mieści się bez
+  // wielokropka w każdym z nich.
+  const maxNameW = CITY_NAME_BUDGET_BASE - prodW - growthW - crownW;
   if (measure.measureText(name).width > maxNameW) {
     displayName = truncateName(measure, name, maxNameW, nameFont);
   }

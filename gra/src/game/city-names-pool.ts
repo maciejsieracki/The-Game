@@ -71,8 +71,29 @@ export function stateCityNameAt(
   return fallback;
 }
 
-/** N-1A: pierwsze miasto gracza = miasta_panstwa[0]. */
+/**
+ * N-1A: stolica GRACZA = `miasta_cywilizacji[0]`.
+ *
+ * R-MAPA-ETYKIETA-STOLICY-NAZWA-MIASTA-Q1, runda 3 (R3-2) — NAPRAWA BŁĘDU, symetryczna do
+ * naprawionego w rundzie 2 `foreignCapitalFromPool`: do tej pory pierwsze miasto gracza szło
+ * przez `stateCityNameAt(..., 0)`, czyli przez pulę PAŃSTW-MIAST (`miasta_panstwa`). Dla
+ * 13 z 15 cywilizacji obie pule mają na pozycji 0 to samo, więc różnicy nie było widać; dwa
+ * wyjątki to dokładnie ta sama klasa pomyłki, którą właściciel zgłosił dla AI, tylko po jego
+ * własnej stronie: gracz-Chińczyk startował w mieście `Qin` (nazwa państwa i dynastii, NIE
+ * miasta) zamiast `Xi'an`, gracz-Słowianin w `Kiev` zamiast `Kijów`.
+ * Stolica IMPERIUM należy do listy miast cywilizacji; `miasta_panstwa` opisuje miasta-państwa
+ * klastra i zostaje źródłem dla `clusterRivalFromPool` (indeksy 1..N-1).
+ *
+ * BEZ DUPLIKATU NAZW: obce klastry pomijają typ gracza (`cluster-spawn.ts:332`), a rywale
+ * tego samego typu biorą nazwy z `miasta_panstwa[1..]` (`clusterRivalCityName`), więc żadne
+ * inne miasto w partii nie sięga po `miasta_cywilizacji[0]` cywilizacji gracza.
+ *
+ * Fallback zachowany bez zmian: brak listy miast cywilizacji → stara ścieżka
+ * (`miasta_panstwa[0]`, dalej `'Stolica'`), żeby niekompletna pula nie dawała pustej nazwy.
+ */
 export function playerCapitalFromPool(pools: CityNamesPoolsData, ikonaId: string): string {
+  const first = poolEntry(pools, ikonaId)?.miasta_cywilizacji?.[0];
+  if (first) return first;
   return stateCityNameAt(pools, ikonaId, 0, 'Stolica');
 }
 
@@ -121,8 +142,23 @@ export function clusterRivalFromPool(
   return fallback;
 }
 
-/** Stolica obcego typu = miasta_panstwa[0]. */
+/**
+ * Stolica obcego klastra (państwo AI) = `miasta_cywilizacji[0]`.
+ *
+ * R-MAPA-ETYKIETA-STOLICY-NAZWA-MIASTA-Q1, runda 2 (R2-2) — NAPRAWA BŁĘDU: do tej pory szło
+ * to przez `stateCityNameAt(..., 0)`, czyli przez pulę PAŃSTW-MIAST (`miasta_panstwa`).
+ * Dla 13 z 15 cywilizacji obie pule mają na pozycji 0 to samo, więc różnicy nie było widać;
+ * dwa wyjątki widać w grze: Chińczycy dostawali `Qin` (nazwa państwa i dynastii, NIE miasta —
+ * to dosłownie napis ze zrzutu właściciela) zamiast `Xi'an`, Słowianie `Kiev` zamiast `Kijów`.
+ * Stolica IMPERIUM należy do listy miast cywilizacji; `miasta_panstwa` opisuje miasta-państwa
+ * klastra i zostaje źródłem dla `playerCapitalFromPool`/`clusterRivalFromPool`.
+ *
+ * Fallback zachowany bez zmian: brak listy miast cywilizacji → stara ścieżka
+ * (`miasta_panstwa[0]`, dalej `ikonaId`), żeby niekompletna pula nie dawała pustej nazwy.
+ */
 export function foreignCapitalFromPool(pools: CityNamesPoolsData, ikonaId: string): string {
+  const first = poolEntry(pools, ikonaId)?.miasta_cywilizacji?.[0];
+  if (first) return first;
   return stateCityNameAt(pools, ikonaId, 0, ikonaId);
 }
 

@@ -153,10 +153,20 @@ export interface CityMapLabelOpts {
  * Etykieta miasta na mapie / tooltipie.
  *
  * MAP-UX-CLUSTER-LABEL-Q1 = B+C: stolica OBCEGO państwa (nie gracz, nie miasto-państwo)
- * pokazuje NAZWĘ CYWILIZACJI zamiast nazwy miasta — mapowanie ownerId→cywilizacja przychodzi
+ * dostaje nazwę cywilizacji na plakietce — mapowanie ownerId→cywilizacja przychodzi
  * z zewnątrz (`civDisplayName`), a wybór nazwy robi ta sama `resolveOwnerBaseName`, której
  * używa dyplomacja/HUD (gałąź `isClusterCapital`). Brak nazwy cywilizacji → fallback na nazwę
  * miasta (stare zachowanie).
+ *
+ * R-MAPA-ETYKIETA-STOLICY-NAZWA-MIASTA-Q1 (Maciej 2026-09-04) zmienia JEDEN element tamtej
+ * decyzji: plakietka obcej stolicy pokazuje NAZWĘ MIASTA (`foreignCapitalMapName` niżej).
+ * Runda 1 próbowała dwóch członów („Xi'an · Chińczycy”) — pomiar prawdziwym fontem wobec
+ * budżetu `cityMapStatChip.ts:769` pokazał 14/15 stolic przyciętych (u Zulusów człon
+ * cywilizacji znikał w całości), więc ECHO właściciela brzmi: „Sama nazwa miasta, bez
+ * cywilizacji”. To TRZECI stan, nie powrót do stanu sprzed tematu: przedtem plakietka
+ * niosła nazwę CYWILIZACJI. Znakiem stolicy zostaje korona, znakiem przynależności kolor
+ * terytorium. Korona, marker, liczba populacji, etykiety miast-państw, zwykłych obcych
+ * miast i miast gracza — bez zmian.
  */
 export function formatCityMapLabel(
   city: {
@@ -172,14 +182,8 @@ export function formatCityMapLabel(
   const isCityStateOwner = opts?.isCityStateOwner === true;
 
   if (isForeign && opts?.isCapital === true && !isCityState && !isCityStateOwner) {
-    const base = resolveOwnerBaseName({
-      ownerId: city.ownerId,
-      cityName: city.name,
-      civDisplayName: opts.civDisplayName,
-      isCityState: false,
-      isClusterCapital: true,
-    });
-    if (base.trim()) {
+    const base = foreignCapitalMapName(city.name, opts.civDisplayName);
+    if (base) {
       return formatEntityDisplayName({ baseName: base, isCityState: false });
     }
   }
@@ -221,6 +225,32 @@ export interface ResolveOwnerBaseNameInput {
   isClusterCapital?: boolean;
 }
 
+/** Człon etykiety po odsianiu placeholderów technicznych i dopisku „· miasto-państwo”. */
+function cleanDisplayPart(value: string | null | undefined): string | undefined {
+  return value && !isTechnicalOwnerLabel(value) ? stripCityStateSuffix(value) : undefined;
+}
+
+/**
+ * R-MAPA-ETYKIETA-STOLICY-NAZWA-MIASTA-Q1, runda 2 (ECHO „Sama nazwa miasta, bez
+ * cywilizacji”) — nazwa na plakietce obcej stolicy NA MAPIE.
+ *
+ * DLACZEGO OSOBNA FUNKCJA, A NIE ZMIANA GAŁĘZI `isClusterCapital` w `resolveOwnerBaseName`:
+ * tamta gałąź ma DWÓCH wołających — mapę (`formatCityMapLabel` wyżej) i `ownerDiploLabel`
+ * w `main.ts` (nazwa państwa w dyplomacji/HUD). W dyplomacji identyfikujemy PAŃSTWO, więc
+ * „Hetyci” musi tam zostać; MIASTO pokazuje wyłącznie mapa. Zmiana samej gałęzi przeniosłaby
+ * „Hattusa” do dyplomacji — zakres, o który nikt nie prosił. Opt-in `clusterCapitalWithCityName`
+ * z rundy 1 został usunięty, bo po uproszczeniu do jednego członu nie miał drugiego konsumenta.
+ *
+ * Degradacja: brak realnej nazwy miasta (placeholder `Rywal N`/`AI N`/`oid-N`) → nazwa
+ * cywilizacji, jak przed tematem. Pusty wynik = wołający zostaje przy nazwie miasta.
+ */
+export function foreignCapitalMapName(
+  cityName?: string,
+  civDisplayName?: string,
+): string {
+  return cleanDisplayPart(cityName) ?? cleanDisplayPart(civDisplayName) ?? '';
+}
+
 /**
  * Bazowa nazwa państwa przed dopiskiem „· miasto-państwo”.
  * Miasta-państwa → „[miasto] · [kultura]” (R-MP-PORTRET, Maciej 2026-07-24 — samo miasto nie
@@ -239,17 +269,16 @@ export function resolveOwnerBaseName(input: ResolveOwnerBaseNameInput): string {
     isClusterCapital = false,
   } = input;
 
-  const cleanCity = cityName && !isTechnicalOwnerLabel(cityName)
-    ? stripCityStateSuffix(cityName)
-    : undefined;
-  const cleanCiv = civDisplayName && !isTechnicalOwnerLabel(civDisplayName)
-    ? stripCityStateSuffix(civDisplayName)
-    : undefined;
-  const cleanCached = cached && !isTechnicalOwnerLabel(cached)
-    ? stripCityStateSuffix(cached)
-    : undefined;
+  const cleanCity = cleanDisplayPart(cityName);
+  const cleanCiv = cleanDisplayPart(civDisplayName);
+  const cleanCached = cleanDisplayPart(cached);
 
-  if (isClusterCapital && cleanCiv) return cleanCiv;
+  // Dyplomacja/HUD: stolica obcego klastra identyfikuje PAŃSTWO — nazwa nacji, bez zmian.
+  // Etykieta na MAPIE ma własną ścieżkę (`foreignCapitalMapName` wyżej), bo tam pokazujemy
+  // MIASTO (R-MAPA-ETYKIETA-STOLICY-NAZWA-MIASTA-Q1, runda 2).
+  if (isClusterCapital && cleanCiv) {
+    return cleanCiv;
+  }
   if (isCityState && cleanCity && cleanCiv && cleanCity !== cleanCiv) {
     return `${cleanCity}${CITY_STATE_SEPARATOR}${cleanCiv}`;
   }

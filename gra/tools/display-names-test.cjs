@@ -197,14 +197,17 @@ assert(
   'sanitize: Rywal N → kultura (stolica obcego typu bez miasta)',
 );
 
-// --- MAP-UX-CLUSTER-LABEL-Q1 = B+C — etykieta stolicy na MAPIE ---------------
-// Stolica OBCEGO państwa (nie gracz, nie miasto-państwo) → nazwa cywilizacji.
+// --- MAP-UX-CLUSTER-LABEL-Q1 = B+C, zmienione przez ------------------------
+// --- R-MAPA-ETYKIETA-STOLICY-NAZWA-MIASTA-Q1 (ECHO „Sama nazwa miasta, bez cywilizacji")
+// Stolica OBCEGO państwa (nie gracz, nie miasto-państwo) → nazwa MIASTA; znakiem stolicy
+// zostaje korona, znakiem przynależności kolor terytorium. Asercja mierzy tę samą gałąź
+// co przed tematem — zmieniło się to, co jest w niej prawdą, nie to, czy w ogóle mierzy.
 assert(
   M.formatCityMapLabel(
     { name: 'Neapol', ownerId: 5, startCityState: false },
     { playerOwnerId: 0, isCapital: true, civDisplayName: 'Rzym' },
-  ) === 'Rzym',
-  'mapa: stolica obcego państwa → nazwa cywilizacji (Neapol → Rzym)',
+  ) === 'Neapol',
+  'mapa: stolica obcego państwa → nazwa miasta (Neapol, nie „Rzym")',
 );
 
 // Zwykłe (nie-stolica) miasto obcego państwa → nazwa miasta bez zmian.
