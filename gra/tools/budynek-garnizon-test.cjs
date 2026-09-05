@@ -68,6 +68,10 @@ const NODE_ENTRY = path.resolve(__dirname, '.budynek-garnizon-node-entry.ts');
 const NODE_BUNDLE = path.resolve(__dirname, '.budynek-garnizon-node-bundle.cjs');
 const FALLBACK_CHROME = '/opt/pw-browsers/chromium-1194/chrome-linux/chrome';
 
+const ROOT = path.resolve(GRA, '..');
+const AI_TS = path.join(GRA, 'src', 'game', 'ai.ts');
+const ENCY_MD = path.join(ROOT, 'docs', 'encyklopedia', 'budynki', 'garnizon.md');
+const WIKI_BUNDLE = path.join(GRA, 'src', 'data', 'wikiBundle.json');
 const ICON_MAP_PATH = path.join(GRA, 'src', 'ui', 'icons', 'brand', 'building-icon-map.json');
 const ICON_DIR = path.join(GRA, 'src', 'ui', 'icons', 'brand', 'buildings');
 const GARNIZON_SVG = path.join(ICON_DIR, 'bld-garnizon.svg');
@@ -136,6 +140,12 @@ function makeStubPlugin(stubs) {
       build.onResolve({ filter: /(^|\/)scienceOwlIcon$/ }, () => ({ path: stubs.owl }));
       build.onResolve({ filter: /(^|\/)hud$/ }, () => ({ path: stubs.hud }));
       build.onResolve({ filter: /(^|\/)leaderPortraits$/ }, () => ({ path: stubs.portraits }));
+      // `wikiHubHud.ts` → `brandTokenVars.ts` → `import ... from './icons/brand/tokens.css?raw'`
+      // (Vite-only). esbuild tego nie rozumie — pusty wirtualny moduł, jak w
+      // civpedia-budynki-historia-test.cjs. Nie dotyczy niczego, co ta bramka sprawdza.
+      build.onResolve({ filter: /tokens\.css\?raw$/ }, () => ({ path: 'garnizon-empty-css-raw', namespace: 'garnizon-virtual' }));
+      build.onLoad({ filter: /^garnizon-empty-css-raw$/, namespace: 'garnizon-virtual' },
+        () => ({ contents: 'export default "";', loader: 'js' }));
       // Eksport PRYWATNYCH funkcji cityPanel.ts wyłącznie w buforze esbuild —
       // produkcyjny plik w repo zostaje bez `export` (wzorzec:
       // citypanel-uwagi-hostcard-removed-real-render-test.cjs).
@@ -228,10 +238,36 @@ function partA() {
     typeof G.historia === 'string' && G.historia.trim().length > 200, (G.historia || '').length);
   check('[K] garnizon.uwagi jest niepuste', typeof G.uwagi === 'string' && G.uwagi.trim().length > 0);
 
-  // Liczby balansu — asercje na TYP i sensowność zakresu, nie na konkretną wartość
-  // (koszt/utrzymanie to PROPOZYCJA do zatwierdzenia przez właściciela — bramka nie
-  // ma zamrażać liczby, którą właściciel może zmienić jednym słowem).
-  for (const f of ['kosztBudowy', 'przyrostKosztu', 'utrzymanie', 'przyrostUtrzymania', 'maksPoziom', 'epokaWejscia']) {
+  // --------------------------------------------------------------------------
+  // [R2-A] LICZBY WŁAŚCICIELA — ZAMROŻONE NA DOKŁADNE WARTOŚCI.
+  //
+  // W RUNDZIE 1 te asercje CELOWO NIE ISTNIAŁY: liczby były wtedy PROPOZYCJĄ
+  // Operatora i zamrożenie propozycji zmusiłoby właściciela do poprawiania testu,
+  // żeby zmienić własny balans. Od ratyfikacji rundy 2 (ECHO 2026-09-05, wariant
+  // Operatora zatwierdzony BEZ ZMIAN) jest dokładnie odwrotnie: to są liczby
+  // właściciela i obowiązuje zakaz ich strojenia, więc bramka ma je trzymać.
+  // Bez tych asercji następna fala zmieni koszt Garnizonu i NIKT tego nie zauważy.
+  //
+  // Zmiana którejkolwiek z tych wartości wymaga NOWEGO ECHO właściciela — i wtedy
+  // zmienia się JEDNOCZEŚNIE `buildings.json` i ta tablica, nigdy sam test.
+  // --------------------------------------------------------------------------
+  const LICZBY_WLASCICIELA = {
+    kosztBudowy: 30,
+    przyrostKosztu: 6,
+    utrzymanie: 2,
+    przyrostUtrzymania: 1,
+    maksPoziom: 1,
+    epokaWejscia: 1,
+  };
+  for (const [f, v] of Object.entries(LICZBY_WLASCICIELA)) {
+    check(`[R2-A] garnizon.${f} === ${v} — liczba WŁAŚCICIELA (ECHO 2026-09-05), zakaz strojenia`,
+      G[f] === v, { jest: G[f], oczekiwane: v });
+  }
+  check('[R2-A] garnizon.koszt_surowce === { drewno: 30 } — dokładnie jeden surowiec, dokładnie 30',
+    JSON.stringify(G.koszt_surowce) === JSON.stringify({ drewno: 30 }), G.koszt_surowce);
+  // Typ i zakres zostają OBOK zamrożenia — łapią podmianę liczby na string ("30")
+  // albo na wartość zmiennoprzecinkową, czego samo `=== 30` by nie odróżniło.
+  for (const f of Object.keys(LICZBY_WLASCICIELA)) {
     check(`[N] garnizon.${f} jest liczbą całkowitą >= 0`, Number.isInteger(G[f]) && G[f] >= 0, G[f]);
   }
   // Reguła A z koszty-surowcowe-test.cjs: epoka Kamienia = WYŁĄCZNIE drewno
@@ -260,6 +296,86 @@ function partA() {
       return opens === 1 && closes === 1 && svg.trim().endsWith('</svg>');
     })());
   }
+}
+
+// ===========================================================================
+// CZĘŚĆ AI — [R2-D] Garnizon na zaszytej liście budów AI (`infraOrder`, ai.ts)
+//
+// DLACZEGO ASERCJA NA ŹRÓDLE, A NIE NA ZACHOWANIU: AI nie wybiera budynków
+// z `availableProduction`, tylko z list wpisanych ręcznie w `ai.ts` — a to
+// znaczy, że KAŻDY nowy budynek jest dla AI niewidoczny, dopóki ktoś nie dopisze
+// go do listy. Właściciel świadomie przyjął łatkę (ECHO: „Dopisać Garnizon do
+// listy AI od razu"), naprawa przyczyny jest osobnym tematem
+// `P-AI-LISTA-BUDYNKOW-ZASZYTA-NIE-Z-PRODUKCJI-Q1`. Ta asercja pilnuje, żeby
+// łatka nie wypadła przy pierwszym refaktorze `ai.ts` — bez niej zniknie po cichu.
+//
+// ZAKRES ŁATKI — CZYTAJ, ZANIM UZNASZ TO ZA „PARYTET GRACZ/AI": `infraOrder` leży
+// wewnątrz gałęzi `if (opts.defensiveCopy)`, a `defensiveCopy` ustawiane jest
+// w `main.ts` wyłącznie dla PAŃSTW-MIAST (`typCityCopyOwners`). Ta linia daje więc
+// Garnizon państwom-miastom; cywilizacje AI mają własne, osobne listy kandydatów
+// w tej samej funkcji i nadal go NIE widzą. Szczegóły w raporcie rundy 2.
+// ===========================================================================
+function partAI() {
+  console.log('\n--- [AI] lista budów AI (ai.ts::infraOrder) ---');
+  const src = fs.readFileSync(AI_TS, 'utf8');
+  const m = src.match(/const infraOrder = \[([\s\S]*?)\];/);
+  check('[AI1] kotwica: ai.ts nadal zawiera listę `const infraOrder = [ ... ];`', !!m);
+  if (!m) return;
+  const items = m[1]
+    .split('\n')
+    .map((l) => l.trim())
+    .map((l) => {
+      const q = l.match(/^'([^']+)'/);          // 'studnia',
+      if (q) return q[1];
+      const ident = l.match(/^([A-Za-z_$][\w$]*)\s*,/); // adminBuilding,
+      return ident ? ident[1] : null;
+    })
+    .filter(Boolean);
+  check('[AI2] sanity: parser wyłuskał REALNĄ listę, nie pustkę (studnia + adminBuilding + >=6 pozycji)',
+    items.includes('studnia') && items.includes('adminBuilding') && items.length >= 6, items);
+  check('[AI3] `garnizon` JEST na liście infraOrder w ai.ts (bez tego AI nigdy go nie zbuduje)',
+    items.includes('garnizon'), items);
+  console.log(`[info] infraOrder = [${items.join(', ')}]`);
+}
+
+// ===========================================================================
+// CZĘŚĆ W — [R2-C] hasło CivPedii (docs/encyklopedia/budynki/garnizon.md
+//            + wygenerowany gra/src/data/wikiBundle.json)
+// ===========================================================================
+function partWiki() {
+  console.log('\n--- [W] hasło CivPedii ---');
+  check('[W1] plik docs/encyklopedia/budynki/garnizon.md istnieje', fs.existsSync(ENCY_MD));
+  if (!fs.existsSync(ENCY_MD)) return null;
+  const md = fs.readFileSync(ENCY_MD, 'utf8');
+  check('[W2] metadane hasła deklarują id `garnizon` (mostek do buildings.json)',
+    /\|\s*\*\*id\*\*\s*\|\s*`garnizon`/.test(md));
+  check('[W2] hasło ma tytuł „Garnizon" w metadanych', /\|\s*\*\*tytuł\*\*\s*\|\s*Garnizon\s*\|/.test(md));
+
+  // Kontrakt civpedia-budynki-historia-test.cjs: treść pod "## Rys historyczny"
+  // MUSI być dokładnie równa polu `historia` z buildings.json (bez parafrazy).
+  const idx = md.indexOf('## Rys historyczny');
+  const rys = idx === -1 ? null : md.slice(idx + '## Rys historyczny'.length).replace(/^\s*\n+/, '').trimEnd();
+  check('[W3] sekcja "## Rys historyczny" === buildings.json.garnizon.historia (dokładnie, bez parafrazy)',
+    rys !== null && rys === G.historia, { rysLen: rys ? rys.length : null, historiaLen: String(G.historia).length });
+
+  const bundle = JSON.parse(fs.readFileSync(WIKI_BUNDLE, 'utf8'));
+  const entry = bundle.encyklopedia.find((e) => e.folder === 'budynki' && e.slug === 'garnizon');
+  check('[W4] wygenerowany wikiBundle.json zawiera hasło budynki/garnizon', !!entry);
+  if (!entry) return null;
+  check('[W5] hasło w bundlu ma niepuste wikiS / wikiM / historia',
+    entry.wikiS.length > 40 && entry.wikiM.length > 200 && entry.historia.length > 200,
+    { wikiS: entry.wikiS.length, wikiM: entry.wikiM.length, historia: entry.historia.length });
+
+  // Resolver 1:1 z `wikiHubHud.ts::findEncyByGameId` — dokładnie ta funkcja, którą
+  // wywołuje przycisk „Więcej informacji (Civpedia)" na karcie budynku.
+  const resolve = (folder, id) =>
+    bundle.encyklopedia.find((e) => e.folder === folder && e.gameIds.includes(id))
+    ?? bundle.encyklopedia.find((e) => e.folder === folder && e.slug === id);
+  check("[W6] resolver openEncyEntry('budynki','garnizon') trafia w to hasło (nie w żadne inne)",
+    resolve('budynki', 'garnizon') === entry, (resolve('budynki', 'garnizon') || {}).slug);
+  check('[W7] sanity: resolver NIE trafia dla nieistniejącego id (asercja nie jest zawsze-zielona)',
+    resolve('budynki', 'garnizon-ktorego-nie-ma') === undefined);
+  return entry;
 }
 
 // ===========================================================================
@@ -313,7 +429,7 @@ function partB() {
 // ===========================================================================
 // CZĘŚĆ C — żywe Chromium: lista budowy + karta encji
 // ===========================================================================
-async function partC() {
+async function partC(wikiEntry) {
   console.log('\n--- [D/E-render] żywe Chromium ---');
   const stubs = prepareStubs();
   const techRaw = JSON.parse(fs.readFileSync(path.join(GRA, 'data', 'tech.json'), 'utf8'));
@@ -322,9 +438,13 @@ async function partC() {
 
   fs.writeFileSync(ENTRY, [
     "import { configureCityPanel, buildBuildingDetailCard, renderBuildList } from '../src/ui/cityPanel.ts';",
+    // [R2-C] REALNY panel CivPedii z produkcji — ten sam moduł, który gra montuje
+    // pod przyciskiem Civpedia w HUD; czyta REALNY wikiBundle.json (import w module).
+    "import { createWikiHubHud } from '../src/ui/wikiHubHud.ts';",
     'window.__configureCityPanel = configureCityPanel;',
     'window.__buildBuildingDetailCard = buildBuildingDetailCard;',
     'window.__renderBuildList = renderBuildList;',
+    'window.__createWikiHubHud = createWikiHubHud;',
     '',
   ].join('\n'), 'utf8');
 
@@ -343,8 +463,13 @@ async function partC() {
 
   await page.setContent(`
     <style>
-      body{background:#12181f;color:#e8e2d4;font-family:system-ui,sans-serif;margin:0;padding:16px;
-           display:flex;gap:18px;align-items:flex-start;}
+      /* 380px lewego marginesu: realny panel CivPedii jest position:fixed przy lewej
+         krawedzi (SIDE_PANEL_LEFT) i bez tego przykrylby liste budowy na zrzucie. */
+      body{background:#12181f;color:#e8e2d4;font-family:system-ui,sans-serif;margin:0;
+           padding:16px 16px 16px 380px;display:flex;flex-wrap:wrap;gap:18px;align-items:flex-start;}
+      #civpedia-note{flex-basis:100%;max-width:1120px;font-size:12px;line-height:1.5;color:#f0c987;
+                     border:1px dashed #7a5c22;border-radius:6px;padding:8px 10px;}
+      #civpedia-note:empty{display:none;}
       .col{background:#1b232c;border:1px solid #3a4756;border-radius:6px;padding:10px;}
       #buildlist{width:420px;}
       /* 680px, nie 460: kolumna wartosci karty ("60 Drewno - z magazynu panstwa")
@@ -355,6 +480,7 @@ async function partC() {
     </style>
     <div class="col" id="buildlist"><h4>Panel miasta — „Dostępne do budowy" (epoka 1, miasto regionalne)</h4><div id="mount"></div></div>
     <div class="col" id="card"><h4>Karta encji — Garnizon</h4><div id="dock"></div></div>
+    <div id="civpedia-note"></div>
   `);
   await page.addScriptTag({ content: fs.readFileSync(OUTFILE, 'utf8') });
 
@@ -437,13 +563,98 @@ async function partC() {
   check('[I4] medalion karty pokazuje WŁASNĄ ikonę Garnizonu (bld-garnizon.svg), nie bld-default',
     karta.medalionSvg.includes(firstPath), { firstPath, medalion: karta.medalionSvg.slice(0, 160) });
 
-  check('[X] zero błędów strony/konsoli podczas renderu', pageErrors.length === 0, pageErrors.slice(0, 3));
-
   if (SHOTS) {
+    // Zrzuty rundy 1 — robione ZANIM otworzy się panel CivPedii, żeby dowód
+    // „karta + kolejka budowy" pozostał dokładnie tym samym kadrem co poprzednio.
     fs.mkdirSync(SHOTS, { recursive: true });
     await page.screenshot({ path: path.join(SHOTS, 'garnizon-kolejka-budowy-i-karta.png'), fullPage: true });
     await page.locator('#buildlist').screenshot({ path: path.join(SHOTS, 'garnizon-kolejka-budowy.png') });
     await page.locator('#card').screenshot({ path: path.join(SHOTS, 'garnizon-karta-encji.png') });
+  }
+
+  // -------------------------------------------------------------------------
+  // [CP] — [R2-C] kryterium 3: przycisk „Więcej informacji (Civpedia)" na karcie
+  //       Garnizonu a REALNY panel CivPedii.
+  //
+  // CO TU JEST DOWODZONE, A CO NIE — CZYTAJ ZANIM ZACYTUJESZ ZRZUT:
+  //   DOWODZONE: (a) karta Garnizonu ma realny przycisk stopki z realnymi
+  //     współrzędnymi `data-civpedia-folder="budynki"` / `data-civpedia-slug="garnizon"`;
+  //     (b) REALNY `createWikiHubHud` (ten sam moduł co Civpedia w HUD, czytający
+  //     REALNY wikiBundle.json) po podaniu DOKŁADNIE tych współrzędnych otwiera
+  //     hasło Garnizonu z jego treścią i rysem historycznym.
+  //   NIE DOWODZONE: że robi to sam KLIK gracza. W repozytorium NIE MA listenera
+  //     dla `.entity-card-civpedia-link` — `renderer.ts:375-384` tworzy przycisk
+  //     i ustawia atrybuty, ale nikt ich nie czyta; `openEncyEntry` nie jest
+  //     wywoływane z żadnego miejsca w `gra/src`. Przycisk jest martwy dla
+  //     WSZYSTKICH 42 budynków, nie tylko dla Garnizonu — to zastana luka repo,
+  //     poza allowlistą tego tematu (zgłoszona jako DECISION_REQUIRED w raporcie
+  //     rundy 2). Most klik→panel poniżej dokłada TEST, nie gra, i jest tak
+  //     opisany na zrzucie. Gdy ktoś dopnie wiring w produkcji, ta sekcja zmieni
+  //     się w jedno `await page.click(...)` bez mostu.
+  // -------------------------------------------------------------------------
+  console.log('\n--- [CP] CivPedia: przycisk karty → realny panel ---');
+  const cp = await page.evaluate(() => {
+    const btn = document.querySelector('#dock button.entity-card-civpedia-link');
+    if (!btn) return { btn: false };
+    const folder = btn.getAttribute('data-civpedia-folder');
+    const slug = btn.getAttribute('data-civpedia-slug');
+    // MOST TESTOWY (nie produkcyjny — patrz komentarz wyżej): przypinamy handler,
+    // który czyta WYŁĄCZNIE atrybuty przycisku i podaje je REALNEMU api panelu.
+    const api = window.__createWikiHubHud({});
+    window.__wikiApi = api;
+    btn.addEventListener('click', () => {
+      api.openEncyEntry(btn.getAttribute('data-civpedia-folder'), btn.getAttribute('data-civpedia-slug'));
+    });
+    return { btn: true, folder, slug, label: (btn.textContent || '').trim() };
+  });
+
+  check('[CP1] karta Garnizonu ma przycisk stopki „Więcej informacji (Civpedia)"',
+    cp.btn === true && cp.label === 'Więcej informacji (Civpedia)', cp);
+  check("[CP2] przycisk niesie współrzędne folder='budynki' / slug='garnizon'",
+    cp.folder === 'budynki' && cp.slug === 'garnizon', cp);
+
+  // REALNY klik myszą Playwrighta w REALNY przycisk karty.
+  await page.click('#dock button.entity-card-civpedia-link');
+
+  const panel = await page.evaluate(() => {
+    const root = document.querySelector('.civ-wiki-hub');
+    const content = root ? root.querySelector('.wh-content') : null;
+    const note = document.getElementById('civpedia-note');
+    if (note) {
+      note.innerHTML = '<b>MOST KLIK→PANEL DOKŁADA TEN TEST, NIE GRA.</b> '
+        + 'W repo nie ma listenera dla .entity-card-civpedia-link (renderer.ts:375-384) — '
+        + 'przycisk jest martwy dla wszystkich 42 budynków. Panel po lewej to realny '
+        + 'wikiHubHud na realnym wikiBundle.json, otwarty współrzędnymi odczytanymi z przycisku.';
+    }
+    return {
+      panelIstnieje: !!root,
+      otwarty: !!root && root.classList.contains('open'),
+      naglowki: content ? Array.from(content.querySelectorAll('h2,h3')).map((h) => h.textContent.trim()) : [],
+      tekst: content ? (content.textContent || '') : '',
+    };
+  });
+
+  check('[CP3] REALNY klik w przycisk karty otworzył panel CivPedii (.civ-wiki-hub.open)',
+    panel.panelIstnieje === true && panel.otwarty === true, { panelIstnieje: panel.panelIstnieje, otwarty: panel.otwarty });
+  check('[CP4] otwarte hasło to „Garnizon" (nagłówek treści panelu)',
+    panel.naglowki.includes('Garnizon'), panel.naglowki);
+  check('[CP5] treść panelu zawiera realny fragment rysu historycznego z buildings.json',
+    panel.tekst.includes(String(G.historia).slice(0, 60)), { oczekiwanyPoczatek: String(G.historia).slice(0, 60) });
+  // Panel renderuje Markdown do HTML, więc SUROWY `wikiM` (z `**`, `###`) nigdy nie
+  // pojawi się w `textContent` — porównujemy frazą bez znaczników. Fraza jest
+  // sprawdzana w DWÓCH niezależnych miejscach (plik hasła i wyrenderowany panel),
+  // więc jej usunięcie z .md czerwieni [CP6a] i wskazuje realną przyczynę,
+  // zamiast po cichu przechodzić.
+  const FRAZA_WIKIM = 'Wojsko stacjonujące w mieście jest tymczasowe';
+  check('[CP6a] Wiki-M hasła zawiera frazę kontrolną (asercja nie jest pusto-zielona)',
+    !!wikiEntry && String(wikiEntry.wikiM).includes(FRAZA_WIKIM));
+  check('[CP6b] panel CivPedii RENDERUJE treść Wiki-M hasła, nie sam tytuł',
+    panel.tekst.includes(FRAZA_WIKIM), { fraza: FRAZA_WIKIM, dlugoscTekstu: panel.tekst.length });
+
+  check('[X] zero błędów strony/konsoli podczas renderu', pageErrors.length === 0, pageErrors.slice(0, 3));
+
+  if (SHOTS) {
+    await page.screenshot({ path: path.join(SHOTS, 'garnizon-civpedia-klik-panel.png'), fullPage: true });
     console.log('[budynek-garnizon-test] zrzuty zapisane w', SHOTS);
   }
 
@@ -452,8 +663,10 @@ async function partC() {
 
 (async () => {
   partA();
+  partAI();
+  const wikiEntry = partWiki();
   partB();
-  await partC();
+  await partC(wikiEntry);
   console.log(`\nbudynek-garnizon-test: ${pass} pass, ${fail} fail`);
   try { fs.rmSync(TMP_STUBS, { recursive: true, force: true }); } catch (_) { /* ignore */ }
   process.exit(fail === 0 ? 0 : 1);

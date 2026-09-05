@@ -1476,6 +1476,7 @@ export function chooseCityProduction(
         'spichlerz',
         'targowisko',
         adminBuilding,
+        'garnizon', // R-BUDYNEK-GARNIZON-NOWY-Q1 (ECHO wlasciciela: dopisac do listy AI od razu)
       ];
       const prodAllowed = opts.isProductionAllowed;
       for (let i = 0; i < infraOrder.length; i++) {
