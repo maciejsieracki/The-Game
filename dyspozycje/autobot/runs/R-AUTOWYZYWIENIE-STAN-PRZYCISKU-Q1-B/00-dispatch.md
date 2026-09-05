@@ -117,3 +117,50 @@ Raport maksymalnie ok. 400 słów. **Raport commituj OD RAZU po zapisaniu.**
 
 Operator → Evaluator → (Obrona, jeśli lista zarzutów niepusta) → koniec skryptu.
 Final Control osobnym wywołaniem Workflow. Integracja i deploy — ręką orkiestratora.
+
+---
+
+# RATYFIKACJA ORKIESTRATORA — KRYTERIUM 4 UCHYLONE (2026-09-05)
+
+## Uznanie błędu w zleceniu
+
+Kryterium 4 żądało **czterech zrzutów**, w tym „Spichlerz w trybie auto i indywidualnym".
+**To jest niewykonalne i błąd jest po stronie orkiestratora, nie wykonawcy.** W panelu
+Spichlerza **nie ma przełącznika auto/indywidualne** — jest jednorazowa akcja „Włącz
+Auto-Żywienie", i to jest **wcześniejsza, świadoma decyzja właściciela**, zapisana wprost
+w wytworze (`gra/src/ui/empireDetailPanel.ts:176-179`, temat
+`P-SPICHLERZ-AUTO-ZYWIENIE-PRZYCISK-TEKST-Q1`): „przycisk jest jednorazową akcją »ustaw
+teraz«, nie przełącznikiem stanu".
+
+Dwa stany tam **nie istnieją**, więc identyczny md5 obu zrzutów Spichlerza jest **dowodem
+tego faktu, a nie brakiem dowodu**. Obrona ma rację; Evaluator słusznie zgłosił niespełnienie
+kryterium binarnego, bo takie było jego zadanie.
+
+**Kryterium 4 zostaje UCHYLONE w części dotyczącej Spichlerza.** Obowiązuje wyłącznie
+w części panelu miasta — i tam jest spełnione.
+
+## Zakres węzła B zamyka się na panelu miasta
+
+Inwentaryzacja Operatora znalazła **cztery kontrolki, nie dwie**, jak zakładał dispatch —
+wszystkie w `cityPanel.ts`, w tym jeden komponent współdzielony przez trzy grupy
+(Żywność, Skarbiec+Nauka, Praca). To jest właściwy zakres tego węzła i on jest wykonany.
+
+## Sprawa Spichlerza przechodzi do OSOBNEGO tematu — ECHO właściciela: „2+3"
+
+Właściciel rozstrzygnął, że Spichlerz ma dostać **jedno i drugie**:
+- **wskaźnik stanu** — ile miast jest w trybie auto, ile w indywidualnym;
+- **prawdziwy przełącznik** całej cywilizacji zamiast akcji jednorazowej.
+
+**To jawnie COFA wcześniejszą decyzję** z `P-SPICHLERZ-AUTO-ZYWIENIE-PRZYCISK-TEKST-Q1`.
+Nie jest to sprzeczność do rozstrzygania przez wykonawcę — właściciel zmienił zdanie
+świadomie, po zobaczeniu, że nie potrafi odczytać stanu autowyżywienia.
+
+**Nie należy do węzła B** i nie jest jego brakiem: wymaga `main.ts` w allowliście
+(`buildEmpireFoodSnap`, `main.ts:14401` — jedyny producent snapshotu) oraz rozszerzenia
+`EmpireFoodCityUiRow` (`empireDetailTypes.ts:531-539`), które dziś nie niesie pola
+`autoWyzywienie`. Osobny temat, dispatchowany po zwolnieniu `main.ts`.
+
+## Co Final Control ma orzec
+
+Cztery zarzuty Evaluatora i odpowiedzi obrony. Zarzut 1 orzekaj **wobec kryterium
+UCHYLONEGO powyżej**, nie wobec pierwotnego brzmienia.

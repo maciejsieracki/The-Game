@@ -2256,6 +2256,18 @@ function ensureStyles(): void {
 .civ-cs .cs-order .or-status.t1{background:rgba(217,138,58,0.12);color:#d98a3a;border:1px solid rgba(217,138,58,0.35);}
 .civ-cs .cs-order .or-status.t2{background:rgba(211,107,94,0.15);color:var(--red);border:1px solid rgba(211,107,94,0.45);}
 .civ-cs .hbtn.active{background:linear-gradient(180deg,#2a5a28,#1e4020);border-color:var(--green);color:#dff5d8;box-shadow:0 0 8px rgba(107,191,89,.45);}
+/* R-AUTOWYZYWIENIE-STAN-PRZYCISKU-Q1-B (Maciej, zrzut panelu miasta): przelacznik
+   wyzywienia dawal sie odczytac WYLACZNIE po tym, ze wariant WLACZONY swieci (.active).
+   Wariant WYLACZONY wygladal jak kazdy inny, w pelni aktywny .hbtn (pelny tekst
+   var(--text) + zloty kontur), wiec „ciemny" przycisk nie czytal sie jako WYLACZONY,
+   tylko jako „zwykly przycisk do klikniecia". Stan WYL dostaje wiec jawne WYGASZENIE
+   — dokladnie ta sama para co istniejacy .civ-cs .fsbtn / .fsbtn.active wyzej
+   (nieaktywny: ten sam gradient #2a3040->#1e2530 + color:var(--muted); aktywny: kolor
+   nasycony + wyroznienie). Zadnej nowej konwencji: swieci = WL, wygaszony = WYL.
+   TYLKO WYGLAD — logika przelaczania nietknieta. */
+.civ-cs .hbtn.off{background:linear-gradient(180deg,#2a3040,#1e2530);border-color:var(--border);
+  color:var(--muted);box-shadow:none;font-weight:400;}
+.civ-cs .hbtn.off:hover{background:linear-gradient(180deg,#333a4c,#252d3a);border-color:var(--bord2);color:var(--text);}
 .civ-cs .okprof{display:flex;flex-wrap:wrap;gap:0.25em;margin:0.35em 0;}
 .civ-cs .okprof button{font-size:0.72em;padding:0.15em 0.45em;border:1px solid var(--border);background:var(--panel2);color:var(--muted);border-radius:3px;cursor:pointer;font-family:inherit;}
 .civ-cs .okprof button.on{border-color:var(--gold);color:var(--gold);background:#2a2530;}
@@ -4401,7 +4413,13 @@ function appendIndywidualneToggle(
   btn.type = 'button';
   btn.className = 'hbtn indywidualne-btn';
   btn.textContent = 'Indywidualne';
-  if (overrideOn) btn.classList.add('active');
+  // R-AUTOWYZYWIENIE-STAN-PRZYCISKU-Q1-B: stan czytelny BEZ klikania — WL swieci
+  // (`.active`), WYL jest WYGASZONY (`.off`). Wczesniej istniala tylko klasa `.active`,
+  // wiec „brak swiecenia" nie odroznial sie niczym od zwyklego, klikalnego przycisku.
+  // `data-stan` to jawna, mierzalna kotwica dla bramki (rozroznia stany, nie sam fakt
+  // istnienia klasy). Logika przelaczania (`onToggle`) NIETKNIETA.
+  btn.classList.add(overrideOn ? 'active' : 'off');
+  btn.dataset.stan = overrideOn ? 'wl' : 'wyl';
   btn.setAttribute('aria-pressed', String(overrideOn));
   btn.title = overrideOn
     ? 'WŁ: to miasto ma własne ustawienie — ignoruje zmiany globalne z panelu cywilizacji (mapa świata).'
@@ -5161,7 +5179,11 @@ function renderMagazyn(mount: HTMLElement, city: City, view: CityView | null): v
     autoBtn.className = 'hbtn auto-wyzywienie-btn';
     autoBtn.textContent = 'Auto Wyżywienie';
     const autoWyzywienieOn = city.autoWyzywienie === true;
-    if (autoWyzywienieOn) autoBtn.classList.add('active');
+    // R-AUTOWYZYWIENIE-STAN-PRZYCISKU-Q1-B — patrz appendIndywidualneToggle: ta sama
+    // para klas dla obu polowek przelacznika wyzywienia, zeby „auto" i „indywidualne"
+    // dalo sie odczytac z jednego spojrzenia. Zmiana WYLACZNIE prezentacyjna.
+    autoBtn.classList.add(autoWyzywienieOn ? 'active' : 'off');
+    autoBtn.dataset.stan = autoWyzywienieOn ? 'wl' : 'wyl';
     autoBtn.setAttribute('aria-pressed', String(autoWyzywienieOn));
     // Bug #1 (P-AUTO-WYZYWIENIE-PODWOJNY-BLAD) JEST naprawiony (runda 1, applyLiveSafeRationForCity):
     // obniżenie działa NA ŻYWO, w trakcie tury, przy każdej zmianie wpływającej na produkcję
