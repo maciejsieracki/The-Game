@@ -336,7 +336,7 @@ async function partC() {
   });
 
   const browser = await launchBrowser();
-  const page = await browser.newPage({ viewport: { width: 1000, height: 820 } });
+  const page = await browser.newPage({ viewport: { width: 1240, height: 900 } });
   const pageErrors = [];
   page.on('pageerror', (e) => pageErrors.push(String(e)));
   page.on('console', (m) => { if (m.type() === 'error') pageErrors.push(m.text()); });
@@ -347,7 +347,10 @@ async function partC() {
            display:flex;gap:18px;align-items:flex-start;}
       .col{background:#1b232c;border:1px solid #3a4756;border-radius:6px;padding:10px;}
       #buildlist{width:420px;}
-      #card{width:460px;}
+      /* 680px, nie 460: kolumna wartosci karty ("60 Drewno - z magazynu panstwa")
+         przelewa sie poza wezszy kontener i zrzut elementu #card gubi ja z prawej
+         strony (zarzut 5 Evaluatora, runda 1). Nie zwezaj tej wartosci. */
+      #card{width:680px;}
       h4{margin:0 0 8px;font-size:13px;color:#e8d88a;letter-spacing:.04em;}
     </style>
     <div class="col" id="buildlist"><h4>Panel miasta — „Dostępne do budowy" (epoka 1, miasto regionalne)</h4><div id="mount"></div></div>
