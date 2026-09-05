@@ -2,37 +2,51 @@
 /**
  * entity-card-single-dialog-real-render-test.cjs
  *
- * TEMAT: P-ENTITYCARD-DIALOG-WIELOKROTNY-Q1.
+ * TEMAT: P-ENTITYCARD-DIALOG-WIELOKROTNY-Q1, ZAKTUALIZOWANY przez
+ * R-ENTITYCARD-JEDNA-KARTA-CZY-STOS-Q1 (runda 2, ECHO wlasciciela 2026-09-05).
  *
- * Zgloszenie wlasciciela: "Dopiero jak wylacze karte technologii, to wtedy sie wlacza
- * [poprzednia]. Chodzi o to, zeby nie wszystkie wlaczaly sie naraz, tylko ta, ktora sie
- * kliknie, aby pojawila sie obok, a gdy klika sie inna karte lub inny przycisk, powinna
- * zniknac i pojawic sie nowa."
+ * Zgloszenie wlasciciela, ktore powolalo ten plik: "Dopiero jak wylacze karte technologii,
+ * to wtedy sie wlacza [poprzednia]. Chodzi o to, zeby nie wszystkie wlaczaly sie naraz,
+ * tylko ta, ktora sie kliknie, aby pojawila sie obok, a gdy klika sie inna karte lub inny
+ * przycisk, powinna zniknac i pojawic sie nowa."
+ *
+ * PO CO TA AKTUALIZACJA (jawnie, zeby nikt nie czytal tego pliku jako cichego oslabienia
+ * bramki): wlasciciel zamowil pozniej STOS Z SUFITEM DWOCH — karta zrodlowa ZOSTAJE
+ * widoczna pod docelowa, ale trzecia karta zamyka NAJSTARSZA. Intencja "zeby nie wszystkie
+ * wlaczaly sie naraz" jest odtad realizowana przez SUFIT, nie przez bezwarunkowe zamykanie
+ * karty zrodlowej. Asercje, ktore utrwalaly "dokladnie 1 backdrop", sa tu ODWROCONE — kazda
+ * z komentarzem [ZMIANA R2] mowiacym, co asertowala przed i co asertuje po. Asercje, ktorych
+ * ECHO nie dotknelo (K3 — trzy drogi zamkniecia; K4 — idempotencja), zostaja BEZ ZMIAN.
  *
  * Co pilnuje (w PRAWDZIWYM Chromium, nie jsdom — jsdom nie liczy layoutu/kaskady, wiec
  * scrollIntoView + elementFromPoint + realny klik mysza sa tu bezuzyteczne bez zywej
  * przegladarki; precedens: entity-card-cross-links-button-style-real-render-test.cjs):
  *
  *  CZESC 1 — REGULA PRZECIW SAMOOSZUKIWANIU (00-dispatch.md): bundlujemy DWIE wersje
- *  `renderer.ts` W TYM SAMYM biegu testu — (a) PRE-NAPRAWA, dokladnie tresc z `git show
- *  HEAD:...` (czyli kod SPRZED tej rundy — HEAD jest commitem dispatchu, zanim Operator
- *  dotknal pliku), zaladowana jako WIRTUALNY modul (bez zapisu na dysk poza tools/), oraz
- *  (b) PO-NAPRAWIE, prawdziwy plik z drzewa roboczego. Obie maja WLASNA, ODDZIELONA
- *  instancje modulu (osobne domkniecia `overlaySeq`/`activeDialog`) — jsdom/esbuild
- *  deduplikuje wg sciezki, a wersja PRE ladowana jest pod sciezka wirtualna, wiec kolizji
- *  nie ma. Test NAJPIERW dowodzi, ze PRE-wersja FAKTYCZNIE reprodukuje dwa (a nawet cztery)
- *  jednoczesne `.entity-card-backdrop` w DOM przy scenariuszach z kryteriow 1/2/4 dispatchu
- *  — dopiero potem sprawdza, ze PO-wersja naprawia dokladnie te same scenariusze do zawsze
- *  JEDNEGO backdropu. Bez tej czesci test bylby tautologiczny (precedens
- *  P-TECH-CARD-TEST-NIE-TESTUJE-AKTYWNEJ-SCIEZKI-Q1).
+ *  `renderer.ts` W TYM SAMYM biegu testu — (a) PRZED-SUFITEM, czyli prawdziwe zrodlo
+ *  z drzewa roboczego ze ZMUTOWANA jedna stala (`ENTITY_CARD_STACK_LIMIT` 2 -> 1, co
+ *  dokladnie odtwarza zachowanie sprzed R-ENTITYCARD-JEDNA-KARTA-CZY-STOS-Q1: karta
+ *  docelowa ZASTEPUJE zrodlowa), zaladowana jako WIRTUALNY modul, oraz (b) PO-SUFICIE,
+ *  prawdziwy plik bez mutacji. Obie maja WLASNA, ODDZIELONA instancje modulu (osobne
+ *  domkniecia `overlaySeq`/`dialogStack`) — esbuild deduplikuje wg sciezki, a wersja
+ *  PRZED ladowana jest pod sciezka wirtualna, wiec kolizji nie ma.
  *
- *  CZESC 2 — PO-NAPRAWIE, wszystkie 4 kryteria binarne z GOAL:
- *   (K1) Otwarcie A (technologia "Garncarstwo"), REALNY klik mysza w link krzyzowy
- *        WEWNATRZ A (budynek "Cegielnia" — dokladnie ta para ze zrzutow wlasciciela) →
- *        po otwarciu B dokladnie 1 backdrop w DOM, wylacznie B, A juz nie istnieje.
- *   (K2) Dwa NIEZWIAZANE, bezposrednie wywolania `openEntityCard(...)` (symulujace dwa
- *        rozne miejsca UI, np. buildModeHud.ts vs cityPanel.ts) w OBU kolejnosciach →
- *        zawsze dokladnie 1 backdrop, ostatnio otwarty wygrywa, niezaleznie od kolejnosci.
+ *  [ZMIANA R2 — DEFEKT NAPRAWIONY PRZY OKAZJI] wersja PRZED byla dotad pobierana przez
+ *  `git show HEAD:gra/src/ui/entityCards/renderer.ts`. To wiazalo bramke z historia Gita
+ *  zamiast z kodem: w chwili scalenia naprawy do `main` HEAD PRZESTAL byc "kodem sprzed
+ *  naprawy" i CALA CZESC 1 czerwieniala sama z siebie, niezaleznie od jakiegokolwiek
+ *  tematu (zmierzone na bazie `d7819ab7`: 21 pass, 5 fail). Mutacja jednej stalej w
+ *  PAMIECI daje ten sam dowod nietautologicznosci i nie psuje sie z uplywem czasu.
+ *
+ *  CZESC 2 — PO SUFICIE, cztery kryteria binarne (K1/K2 w brzmieniu po ECHO):
+ *   (K1) [ZMIANA R2] Otwarcie A (technologia "Garncarstwo"), REALNY klik mysza w link
+ *        krzyzowy WEWNATRZ A (budynek "Cegielnia" — dokladnie ta para ze zrzutow
+ *        wlasciciela) → po otwarciu B w DOM sa DWA backdropy: A pod B. PRZED R2 ta sama
+ *        asercja zadala "dokladnie 1 backdrop, A juz nie istnieje".
+ *   (K2) [ZMIANA R2] Dwa NIEZWIAZANE, bezposrednie wywolania `openEntityCard(...)`
+ *        (symulujace dwa rozne miejsca UI, np. buildModeHud.ts vs cityPanel.ts) w OBU
+ *        kolejnosciach → ostatnio otwarty jest ZAWSZE NA WIERZCHU, a stos nigdy nie
+ *        przekracza DWOCH kart. PRZED R2: "zawsze dokladnie 1 backdrop".
  *   (K3) Zamkniecie jedynego otwartego dialogu trzema drogami — wywolanie zwroconego
  *        `dismiss()` (droga X), klawisz Escape, klik w tlo backdropu poza dialogiem —
  *        za kazdym razem poprawnie usuwa go z DOM i z `escapeOverlayStack` (glebokosc 0).
@@ -47,7 +61,6 @@
  */
 const fs = require('fs');
 const path = require('path');
-const { execSync } = require('child_process');
 const esbuild = require(path.resolve(__dirname, '..', 'node_modules', 'esbuild'));
 
 let chromium;
@@ -58,9 +71,10 @@ catch (e) {
 }
 
 const GRA = path.resolve(__dirname, '..');
-const REPO_ROOT = execSync('git rev-parse --show-toplevel', { cwd: GRA }).toString().trim();
 const ENTITY_CARDS_DIR = path.resolve(GRA, 'src', 'ui', 'entityCards');
-const RENDERER_REL_FROM_REPO_ROOT = 'gra/src/ui/entityCards/renderer.ts';
+const RENDERER_TS = path.resolve(ENTITY_CARDS_DIR, 'renderer.ts');
+/** Stala, ktorej mutacja (2 -> 1) odtwarza zachowanie sprzed sufitu dwoch kart. */
+const LIMIT_DECL = 'const ENTITY_CARD_STACK_LIMIT = 2;';
 const ENTRY = path.resolve(__dirname, '.entity-card-single-dialog-entry.ts');
 const OUTFILE = path.resolve(__dirname, '.entity-card-single-dialog-bundle.cjs');
 const FALLBACK_CHROME = '/opt/pw-browsers/chromium-1194/chrome-linux/chrome';
@@ -128,7 +142,7 @@ const viteCompatPlugin = {
   },
 };
 
-/** Wstrzykuje PRE-NAPRAWA `renderer.ts` (dokladna tresc z `git show HEAD:...`) pod
+/** Wstrzykuje PRZED-SUFITEM `renderer.ts` (prawdziwe zrodlo ze zmutowana stala sufitu) pod
  * wirtualna sciezka modulu — bez zapisu pliku gdziekolwiek poza plikami TEGO testu.
  * `resolveDir` wskazuje na PRAWDZIWY katalog `entityCards/`, wiec wzgledne importy
  * pre-naprawa wersji (escapeOverlayStack, registry, adaptery, types...) rozwiazuja sie
@@ -148,15 +162,16 @@ function prefixRendererPlugin(prefixSource) {
 }
 
 async function main() {
-  // --- (0) Pobierz PRE-NAPRAWA tresc renderer.ts z HEAD (commit dispatchu, sprzed
-  //     zmiany Operatora w tej rundzie) i upewnij sie, ze naprawde jest sprzed naprawy. ---
-  const prefixSource = execSync(`git show HEAD:${RENDERER_REL_FROM_REPO_ROOT}`, { cwd: REPO_ROOT }).toString();
-  const fixedSourceOnDisk = fs.readFileSync(path.resolve(ENTITY_CARDS_DIR, 'renderer.ts'), 'utf8');
-  check('(0) HEAD:renderer.ts (PRE-naprawa) NIE zawiera jeszcze sledzenia "activeDialog"',
-    !prefixSource.includes('activeDialog'));
-  check('(0) plik roboczy renderer.ts (PO naprawie) zawiera sledzenie "activeDialog"',
-    fixedSourceOnDisk.includes('activeDialog'));
-  check('(0) tresc PRE i PO naprawie realnie sie roznia (nie ten sam string)',
+  // --- (0) Zbuduj wersje PRZED-SUFITEM przez mutacje JEDNEJ stalej w pamieci.
+  //     [ZMIANA R2] Bylo: `git show HEAD:...` + asercje na obecnosc/nieobecnosc slowa
+  //     "activeDialog". Obie te asercje byly ZALEZNE OD HISTORII GITA, nie od kodu, i po
+  //     scaleniu naprawy do main czerwienialy same z siebie. Teraz sprawdzamy to, co
+  //     naprawde ma znaczenie: ze w zrodle jest jawna stala sufitu i ze mutacja ja zmienia. ---
+  const fixedSourceOnDisk = fs.readFileSync(RENDERER_TS, 'utf8');
+  check('(0) renderer.ts niesie jawna stala sufitu ' + JSON.stringify(LIMIT_DECL)
+    + ' (bez niej mutacja nie mialaby czego odwrocic)', fixedSourceOnDisk.includes(LIMIT_DECL));
+  const prefixSource = fixedSourceOnDisk.replace(LIMIT_DECL, 'const ENTITY_CARD_STACK_LIMIT = 1;');
+  check('(0) tresc PRZED-SUFITEM i PO-SUFICIE realnie sie roznia (nie ten sam string)',
     prefixSource !== fixedSourceOnDisk);
 
   fs.writeFileSync(ENTRY, [
@@ -257,32 +272,43 @@ async function main() {
     // =================================================================================
     // CZESC 1 — REGULA PRZECIW SAMOOSZUKIWANIU: PRE-naprawa reprodukuje bug naprawde.
     // =================================================================================
-    console.log('\n-- CZESC 1: PRE-naprawa (kod z HEAD, sprzed rundy) — dowod reprodukcji bugu --');
+    console.log('\n-- CZESC 1: PRZED SUFITEM (zrodlo ze zmutowana stala 2 -> 1) — dowod nietautologicznosci --');
 
     await page.evaluate((techA) => { window.__prefixOpenEntityCard('technology', techA, { mode: 'dialog' }); }, TECH_A);
     let s = await domState();
     check('(PRE-P1) otwarcie A (Garncarstwo) daje 1 backdrop', s.count === 1 && s.entries[0].kind === 'technology' && s.entries[0].id === TECH_A, s);
+    // [ZMIANA R2] Ponizsze trzy asercje opisuja teraz ZACHOWANIE SPRZED SUFITU (karta docelowa
+    // ZASTEPUJE zrodlowa), a nie "bug ze zrzutow wlasciciela" — bo bugiem juz nie jest, tylko
+    // stanem, ktory ECHO wlasciciela zastapilo stosem. Ich rola sie nie zmienila: dowodza, ze
+    // asercje K1/K2 z CZESCI 2 realnie zaleza od sufitu, a nie przechodza same z siebie.
     await shot(page, 'pre-01-single-tech.png');
 
     const clickRectPre = await clickBuildingLinkInsideTopDialog();
     check('(PRE) link krzyzowy "Cegielnia" znaleziony i widoczny wewnatrz A', !!clickRectPre && clickRectPre.w > 0 && clickRectPre.h > 0, clickRectPre);
     s = await domState();
-    await shot(page, 'pre-02-po-kliku-DWA-backdropy.png', { fullPage: true });
-    check('(PRE-P2, ANTY-SAMOOSZUKIWANIE) klik w link wewnatrz A NIE zamyka A — po otwarciu B w DOM sa DWA jednoczesne .entity-card-backdrop (Garncarstwo pod Cegielnia) — kod sprzed naprawy realnie reprodukuje bug ze zrzutow wlasciciela',
-      s.count === 2
-      && s.entries.some((e) => e.kind === 'technology' && e.id === TECH_A)
-      && s.entries.some((e) => e.kind === 'building' && e.id === BUILDING_B), s);
+    await shot(page, 'pre-02-po-kliku-JEDEN-backdrop.png', { fullPage: true });
+    check('(PRE-P2, ANTY-SAMOOSZUKIWANIE) [ZMIANA R2] bez sufitu klik w link wewnatrz A ZAMYKA A — w DOM zostaje DOKLADNIE JEDEN backdrop (sama Cegielnia). PRZED R2 ta asercja zadala tu 2 backdropow, bo "wersja PRE" byla wtedy kodem sprzed P-ENTITYCARD-DIALOG-WIELOKROTNY-Q1, a nie sprzed sufitu',
+      s.count === 1 && s.entries[0].kind === 'building' && s.entries[0].id === BUILDING_B, s);
 
     await page.evaluate((idC) => { window.__prefixOpenEntityCard('building', idC, { mode: 'dialog' }); }, BUILDING_C);
     s = await domState();
-    check('(PRE-P3) bezposrednie otwarcie NIEZWIAZANEGO C przy 2 juz otwartych dokladajac trzeci — PRE-naprawa nie zamyka niczego (3 backdropy)', s.count === 3, s);
+    check('(PRE-P3) [ZMIANA R2] bez sufitu bezposrednie otwarcie NIEZWIAZANEGO C tez tylko ZASTEPUJE — 1 backdrop, C. PRZED R2: 3 backdropy',
+      s.count === 1 && s.entries[0].kind === 'building' && s.entries[0].id === BUILDING_C, s);
 
     await page.evaluate((idC) => { window.__prefixOpenEntityCard('building', idC, { mode: 'dialog' }); }, BUILDING_C);
     s = await domState();
-    check('(PRE-P4) ponowne otwarcie TEGO SAMEGO kind+id (C) PRZED naprawa TWORZY duplikat (4 backdropy) — idempotencja rowniez byla zepsuta', s.count === 4, s);
+    check('(PRE-P4) [ZMIANA R2] idempotencja dziala juz PRZED sufitem (ponowne otwarcie tego samego kind+id nie duplikuje) — sufit jej nie dotknal. PRZED R2: 4 backdropy',
+      s.count === 1, s);
 
-    // Sprzatanie po sekcji PRE — nie dotyka modulu "fixed" (osobna instancja, nietkniete
-    // dotad `overlaySeq`/`activeDialog`), wiec sekcja PO zaczyna od czystego stanu.
+    // Sprzatanie po sekcji PRZED — idzie przez PRAWDZIWA droge zamkniecia (Escape), bo
+    // `openDialog` trzyma wlasny `dialogStack` i samo wyrwanie wezlow z DOM zostawiloby
+    // w module wpisy dla nieistniejacych kart. Modul "fixed" to osobna instancja
+    // (wlasny `overlaySeq`/`dialogStack`), wiec CZESC 2 zaczyna od czystego stanu.
+    for (let i = 0; i < 8; i++) {
+      const n = await page.evaluate(() => document.querySelectorAll('.entity-card-backdrop').length);
+      if (n === 0) break;
+      await page.keyboard.press('Escape');
+    }
     await page.evaluate(() => {
       document.querySelectorAll('.entity-card-backdrop').forEach((n) => n.remove());
       window.__escResetForTest();
@@ -293,7 +319,7 @@ async function main() {
     // =================================================================================
     // CZESC 2 — PO NAPRAWIE: kryteria 1-4 z GOAL.
     // =================================================================================
-    console.log('\n-- CZESC 2: PO naprawie (renderer.ts z drzewa roboczego) — kryteria 1-4 --');
+    console.log('\n-- CZESC 2: PO SUFICIE (renderer.ts z drzewa roboczego, bez mutacji) — kryteria 1-4 --');
 
     // ---- K1: klik w link WEWNATRZ A zamyka A i pokazuje wylacznie B ----
     await page.evaluate((techA) => { window.__fixedOpenEntityCard('technology', techA, { mode: 'dialog' }); }, TECH_A);
@@ -302,26 +328,42 @@ async function main() {
     await shot(page, 'fixed-01-single-tech.png');
 
     const clickRectFixed = await clickBuildingLinkInsideTopDialog();
-    check('(K1) link krzyzowy "Cegielnia" znaleziony i widoczny wewnatrz A (po naprawie)', !!clickRectFixed && clickRectFixed.w > 0, clickRectFixed);
+    check('(K1) link krzyzowy "Cegielnia" znaleziony i widoczny wewnatrz A (po suficie)', !!clickRectFixed && clickRectFixed.w > 0, clickRectFixed);
     s = await domState();
-    await shot(page, 'fixed-02-po-kliku-JEDEN-backdrop.png', { fullPage: true });
-    check('(K1) po realnym kliku myszy w link WEWNATRZ A: dokladnie 1 backdrop w DOM, wylacznie B (Cegielnia) — A (Garncarstwo) juz nie istnieje',
-      s.count === 1 && s.entries[0].kind === 'building' && s.entries[0].id === BUILDING_B, s);
+    await shot(page, 'fixed-02-po-kliku-DWIE-karty.png', { fullPage: true });
+    // [ZMIANA R2] BYLO: "dokladnie 1 backdrop w DOM, wylacznie B — A juz nie istnieje".
+    // JEST: A ZOSTAJE pod B. Uzasadnienie: ECHO wlasciciela 2026-09-05 ("stos, ale
+    // maksymalnie dwie karty" + "zamkniecie B odslania A") wprost odwraca ten punkt.
+    // To jedyna asercja tego pliku, ktora byla bezposrednim zapisem sporu rozstrzygnietego
+    // przez ECHO; reszta CZESCI 2 (K3, K4) jest nietknieta.
+    check('(K1) [ZMIANA R2] po realnym kliku myszy w link WEWNATRZ A: DWA backdropy — A (Garncarstwo) pod B (Cegielnia), obie zyja',
+      s.count === 2
+      && s.entries[0].kind === 'technology' && s.entries[0].id === TECH_A
+      && s.entries[1].kind === 'building' && s.entries[1].id === BUILDING_B, s);
 
     // ---- K2: dwa NIEZWIAZANE, bezposrednie wywolania — obie kolejnosci ----
     await page.evaluate((idC) => { window.__fixedOpenEntityCard('building', idC, { mode: 'dialog' }); }, BUILDING_C);
     s = await domState();
-    check('(K2a) bezposrednie otwarcie NIEZWIAZANEGO C (symulacja innego miejsca UI) zamyka poprzedni (Cegielnia) — 1 backdrop, C',
-      s.count === 1 && s.entries[0].kind === 'building' && s.entries[0].id === BUILDING_C, s);
+    // [ZMIANA R2] BYLO: "zamyka poprzedni — 1 backdrop, C". JEST: doklada sie na wierzch
+    // istniejacego stosu, ale stos nigdy nie przekracza DWOCH — najstarsza (A) wypada.
+    check('(K2a) [ZMIANA R2] bezposrednie otwarcie NIEZWIAZANEGO C (symulacja innego miejsca UI) laduje NA WIERZCHU, a sufit wypycha NAJSTARSZA — 2 backdropy: B pod C, A juz nie ma',
+      s.count === 2
+      && s.entries[1].kind === 'building' && s.entries[1].id === BUILDING_C
+      && !s.entries.some((e) => e.kind === 'technology' && e.id === TECH_A), s);
 
     await page.evaluate((techD) => { window.__fixedOpenEntityCard('technology', techD, { mode: 'dialog' }); }, TECH_D);
     s = await domState();
-    check('(K2b) kolejnosc #1 (building → technology): otwarcie D po C daje 1 backdrop, D wygrywa',
-      s.count === 1 && s.entries[0].kind === 'technology' && s.entries[0].id === TECH_D, s);
+    check('(K2b) [ZMIANA R2] kolejnosc #1 (building → technology): otwarcie D po C daje 2 backdropy, D NA WIERZCHU (bylo: 1 backdrop, D wygrywa)',
+      s.count === 2 && s.entries[1].kind === 'technology' && s.entries[1].id === TECH_D, s);
 
     await page.evaluate((idC) => { window.__fixedOpenEntityCard('building', idC, { mode: 'dialog' }); }, BUILDING_C);
     s = await domState();
-    check('(K2c) kolejnosc #2, odwrotna (technology → building): otwarcie C po D daje 1 backdrop, C wygrywa — kolejnosc otwarcia nie ma znaczenia',
+    // [ZMIANA R2] BYLO: "otwarcie C po D daje 1 backdrop, C wygrywa". JEST: te same 1 backdrop
+    // i to samo C — ale z INNEGO powodu, wiec asercja dostaje jawny opis mechanizmu zamiast
+    // przechodzic zbiegiem okolicznosci. C jest w tym momencie NA DOLE stosu ([C, D]), a nowe
+    // otwarcie tego samego kind+id nie buduje duplikatu, tylko zdejmuje to, co C zaslania —
+    // czyli "wraca do karty pod spodem" (ECHO 2). Kolejnosc otwarcia nadal nie ma znaczenia.
+    check('(K2c) [ZMIANA R2] kolejnosc #2, odwrotna (technology → building): ponowne otwarcie C, ktore lezy JUZ na dole stosu, zdejmuje D i wraca do C — 1 backdrop, C (bez duplikatu)',
       s.count === 1 && s.entries[0].kind === 'building' && s.entries[0].id === BUILDING_C, s);
 
     // ---- K4: idempotencja — ten sam kind+id dwa razy pod rzad ----
@@ -338,6 +380,16 @@ async function main() {
     check('(K4) zwrocony "dismiss" z drugiego wywolania jest TYM SAMYM odwolaniem co z pierwszego (prawdziwy no-op, nie cichy rebuild)', idem.sameDismiss === true, idem);
 
     // ---- K3a: zamkniecie przez zwrocony dismiss() (droga "X") ----
+    // [ZMIANA R2] Drenaz stosu PRZED sekcja K3 — przez prawdziwe Escape, nie przez wyrywanie
+    // wezlow z DOM: `openDialog` trzyma wlasny `dialogStack`, wiec sam `node.remove()`
+    // zostawilby w module wpisy dla nieistniejacych kart (i kolejne otwarcie tej samej encji
+    // poszloby sciezka idempotencji, nie budujac nic). Bez sufitu ten stan byl niemozliwy,
+    // wiec wczesniej wystarczalo czyszczenie DOM.
+    for (let i = 0; i < 8; i++) {
+      const n = await page.evaluate(() => document.querySelectorAll('.entity-card-backdrop').length);
+      if (n === 0) break;
+      await page.keyboard.press('Escape');
+    }
     const closedViaDismiss = await page.evaluate(() => {
       // jedyny obecnie otwarty dialog to ten z kroku K4 (building/kuznia) — jego dismiss
       // trzymamy tu, bo poprzedni page.evaluate zakonczyl sie i zwrocil tylko booleana.

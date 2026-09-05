@@ -406,9 +406,17 @@ export function renderEntityCard(data: EntityCardData): HTMLElement {
   // Linkowanie krzyżowe (T10 LINKOWANIE-KRZYZOWE) — dispatch JEDNOLITY dla wszystkich
   // 4 kinds i wszystkich trybów (dialog/inline/hover): klik na dowolny wiersz z
   // `row.linkTo` (renderowany jako `<button data-entity-kind data-entity-id>` w
-  // `buildGridRowEl`/`buildPillRowEl` wyżej) otwiera kartę docelową jako NOWY,
-  // zagnieżdżony overlay (`mode:'dialog'`, więc zawsze przez `pushOverlay`/`popOverlay`
-  // — `openDialog` niżej), NIE zamykając karty źródłowej. Delegowany listener na `card`
+  // `buildGridRowEl`/`buildPillRowEl` wyżej) otwiera kartę docelową jako nowy dialog
+  // (`mode:'dialog'`, więc zawsze przez `pushOverlay`/`popOverlay` — `openDialog` niżej).
+  //
+  // HISTORIA TEGO ZDANIA (żeby nie odżyło jako martwy opis — było nim raz, do 2026-09-05):
+  // pierwotnie brzmiało „otwiera … jako NOWY, zagnieżdżony overlay, NIE zamykając karty
+  // źródłowej"; `P-ENTITYCARD-DIALOG-WIELOKROTNY-Q1` unieważnił je bezwarunkowym zamykaniem
+  // karty źródłowej. Od `R-ENTITYCARD-JEDNA-KARTA-CZY-STOS-Q1` (ECHO właściciela 2026-09-05)
+  // wiążący jest opis powyżej: karta docelowa otwiera się NAD źródłową, obie żyją w DOM
+  // (dwa `.entity-card-backdrop`), a stos ma twardy SUFIT DWÓCH — trzecia karta zamyka
+  // NAJSTARSZĄ, nie źródłową. Szczegóły i geometria przesunięcia: `openDialog` niżej.
+  // Delegowany listener na `card`
   // (nie na każdym przycisku z osobna) — jeden słuchacz per zbudowana karta, jednolity
   // dla wszystkich adapterów, zgodnie z wymogiem dispatchu T10 ("nie osobne wiring
   // per-adapter jak robił T7b tymczasowo"). Selektor `button[data-entity-kind]` celowo
@@ -454,28 +462,67 @@ export function renderEntityCard(data: EntityCardData): HTMLElement {
 }
 
 /**
- * P-ENTITYCARD-DIALOG-WIELOKROTNY-Q1: co najwyżej JEDEN dialog karty encji może być
- * otwarty naraz — niezależnie skąd `openEntityCard(..., {mode:'dialog'})` jest wołane
- * (HUD, panel miasta, czy link WEWNĄTRZ innej już otwartej karty, `renderEntityCard`
- * linia ~433). Śledzimy to modułowym stanem (nie przez `escapeOverlayStack` — ten
- * zarządza WYŁĄCZNIE kolejnością zamykania klawiszem Escape i jest poza allowlistą tego
- * tematu, patrz `00-dispatch.md` §GRANICE). `pushOverlay`/`popOverlay` używane tu tak
- * jak dotąd, bez zmiany ich kontraktu.
+ * R-ENTITYCARD-JEDNA-KARTA-CZY-STOS-Q1 (ECHO właściciela 2026-09-05, WIĄŻĄCE): karty encji
+ * układają się w STOS z twardym SUFITEM DWÓCH. Otwarcie trzeciej karty zamyka NAJSTARSZĄ
+ * (dół stosu), nie najnowszą — intencja z `P-ENTITYCARD-DIALOG-WIELOKROTNY-Q1` („żeby nie
+ * wszystkie włączały się naraz") jest odtąd spełniana przez SUFIT, a nie przez bezwarunkowe
+ * zamykanie karty źródłowej.
+ *
+ * Śledzimy to modułowym stanem (nie przez `escapeOverlayStack` — ten zarządza WYŁĄCZNIE
+ * kolejnością zamykania klawiszem Escape i jest poza allowlistą tego tematu, patrz
+ * `00-dispatch.md` §ALLOWLISTA). `pushOverlay`/`popOverlay` używane tu tak jak dotąd, bez
+ * zmiany ich kontraktu: każdy dialog wkłada własny wpis, więc Escape zdejmuje DOKŁADNIE
+ * JEDNĄ kartę (ECHO 2 — „z B wracasz do A, drugim gestem wychodzisz na mapę").
+ *
+ * Widoczność karty spod spodu jest sprawą CSS, nie tego stanu: `restackDialogs()` niżej
+ * nadaje każdemu backdropowi jego pozycję w stosie (`data-ec-stack-depth`), a
+ * `ENTITY_CARD_CSS` przesuwa kartę wierzchnią o `--ec-stack-dx/dy` i gasi jej przyciemnienie,
+ * żeby brzeg karty pod spodem był widoczny i klikalny. Rozmiar karty wierzchniej (660 px
+ * szerokości, 80vh wysokości z `R-CIVPEDIA-KARTY-SPOJNOSC-Q1`) pozostaje NIETKNIĘTY —
+ * zmienia się wyłącznie położenie.
  */
-let activeDialog: { kind: EntityKind; id: string; dismiss: EntityCardDismiss } | null = null;
+const ENTITY_CARD_STACK_LIMIT = 2;
+
+interface EntityCardDialogEntry {
+  kind: EntityKind;
+  id: string;
+  dismiss: EntityCardDismiss;
+  backdrop: HTMLElement;
+}
+
+/** Najstarsza karta na indeksie 0, wierzchnia na końcu. Długość <= ENTITY_CARD_STACK_LIMIT. */
+const dialogStack: EntityCardDialogEntry[] = [];
+
+/**
+ * Przepisuje pozycję w stosie na atrybut każdego żywego backdropu. Wołane po KAŻDEJ zmianie
+ * stosu (otwarcie, zamknięcie, wypchnięcie najstarszej przez sufit) — inaczej po zamknięciu
+ * karty wierzchniej ta pod spodem zostałaby z przesunięciem i przezroczystym tłem.
+ */
+function restackDialogs(): void {
+  for (let i = 0; i < dialogStack.length; i++) {
+    dialogStack[i]!.backdrop.setAttribute('data-ec-stack-depth', String(i));
+  }
+}
 
 function openDialog(data: EntityCardData): EntityCardDismiss {
-  // Kryterium 4 (idempotencja): ten sam kind+id co już otwarty dialog → nic nowego nie
-  // budujemy, oddajemy istniejący `dismiss` — zero duplikatu, zero dodatkowego
-  // push/pop na `escapeOverlayStack`.
-  if (activeDialog != null && activeDialog.kind === data.kind && activeDialog.id === data.id) {
-    return activeDialog.dismiss;
+  // Idempotencja (kryterium 4 `P-ENTITYCARD-DIALOG-WIELOKROTNY-Q1`, zachowane): ten sam
+  // kind+id co karta JUŻ w stosie → nic nowego nie budujemy, oddajemy istniejący `dismiss`
+  // (zero duplikatu, zero dodatkowego push/pop na `escapeOverlayStack`). Gdy trafiona karta
+  // leży POD wierzchnią, zdejmujemy to, co ją zasłania — to jest „powrót do A" z ECHO 2,
+  // a nie cichy no-op wyglądający na zepsuty link.
+  const existingIdx = dialogStack.findIndex((e) => e.kind === data.kind && e.id === data.id);
+  if (existingIdx >= 0) {
+    for (let i = dialogStack.length - 1; i > existingIdx; i--) dialogStack[i]!.dismiss();
+    return dialogStack[existingIdx]!.dismiss;
   }
-  // Kryteria 1-2: zamknij POPRZEDNI dialog encji (jeśli jakiś jest) SYNCHRONICZNIE,
-  // PRZED zbudowaniem i dołączeniem nowego backdropu do `document.body` — w tej samej
-  // klatce, więc DOM nigdy nie ma dwóch `.entity-card-backdrop` naraz (zero migotania).
-  if (activeDialog != null) {
-    activeDialog.dismiss();
+  // SUFIT: przy otwarciu karty ponad limit zamykamy NAJSTARSZĄ (dialogStack[0]), nie
+  // najnowszą — SYNCHRONICZNIE, przed dołączeniem nowego backdropu do `document.body`.
+  // Warunek `dialogStack[0] === oldest` to zabezpieczenie przed pętlą nieskończoną, gdyby
+  // czyjś `dismiss` kiedyś przestał zdejmować własny wpis ze stosu.
+  while (dialogStack.length >= ENTITY_CARD_STACK_LIMIT) {
+    const oldest = dialogStack[0]!;
+    oldest.dismiss();
+    if (dialogStack[0] === oldest) { dialogStack.shift(); break; }
   }
   const overlayId = `entity-card-${data.kind}-${data.id}-${overlaySeq++}`;
   const backdrop = el('div', 'entity-card-backdrop');
@@ -486,19 +533,35 @@ function openDialog(data: EntityCardData): EntityCardDismiss {
   const dismiss = (): void => {
     if (closed) return;
     closed = true;
-    if (activeDialog != null && activeDialog.dismiss === dismiss) activeDialog = null;
+    const idx = dialogStack.findIndex((e) => e.dismiss === dismiss);
+    if (idx >= 0) dialogStack.splice(idx, 1);
     popOverlay(overlayId);
     backdrop.remove();
+    restackDialogs();
   };
   const card = renderEntityCard(data);
   dialog.appendChild(card);
   backdrop.appendChild(dialog);
   document.body.appendChild(backdrop);
+  // Klik w tło zdejmuje DOKŁADNIE tę kartę. Backdrop wierzchniej karty jest `inset:0`, więc
+  // przechwytuje też klik w widoczny brzeg karty pod spodem — i to jest zamierzone: ECHO 2
+  // żąda, żeby taki klik WRACAŁ do karty pod spodem, a nie żeby otwierał coś z jej wnętrza.
+  //
+  // TO JEST INTERPRETACJA, NIE FAKT — zgłoszona jawnie w `06-obrona-runda2.md` (zarzut 1)
+  // jako kandydat DO DECYZJI CZŁOWIEKA. ECHO 1 mówi dosłownie „brzegu nie może zakrywać
+  // backdrop karty B"; przy `inset:0` backdrop go jednak przechwytuje (`elementFromPoint`
+  // w brzegu → `DIV.entity-card-backdrop`), choć niczego nie przyciemnia (pomiar piksela:
+  // identyczny z backdropem B i bez niego). Literalne zdjęcie tego przechwytywania
+  // (`pointer-events:none` na wierzchnim backdropie) zostało ZMIERZONE i łamie ECHO 2 w
+  // dwóch miejscach: klik w brzeg A przestaje cokolwiek robić, a klik w dalekie tło zdejmuje
+  // NAJSTARSZĄ kartę zamiast wierzchniej. Oba zdania ECHO nie dają się spełnić literalnie
+  // naraz — rozstrzygnięcie należy do właściciela, nie do tego pliku.
   backdrop.addEventListener('click', (event) => {
     if (event.target === backdrop) dismiss();
   });
   pushOverlay(overlayId, dismiss);
-  activeDialog = { kind: data.kind, id: data.id, dismiss };
+  dialogStack.push({ kind: data.kind, id: data.id, dismiss, backdrop });
+  restackDialogs();
   return dismiss;
 }
 
@@ -583,9 +646,32 @@ export const ENTITY_CARD_CSS = `
    0, dialog przykleja sie do gory, nadmiar osiagalny scrollem backdropu zamiast ciecia bez
    sladu. */
 .entity-card-backdrop{position:fixed;inset:0;z-index:520;display:flex;align-items:flex-start;
-  justify-content:center;padding:16px;background:rgba(0,0,0,.62);overflow-y:auto;}
+  justify-content:center;padding:16px;background:rgba(0,0,0,.62);overflow-y:auto;
+  --ec-stack-dx:clamp(0px,calc(50vw - 366px),72px);
+  --ec-stack-dy:clamp(0px,calc(10vh - 24px),56px);}
 .entity-card-dialog{position:relative;height:min(80vh,calc(100vh - 32px));overflow:auto;
   margin:auto 0;}
+/* R-ENTITYCARD-JEDNA-KARTA-CZY-STOS-Q1 (ECHO wlasciciela 2026-09-05, WIAZACE) — sufit dwoch
+   kart: openDialog nadaje kazdemu zywemu backdropowi data-ec-stack-depth (0 = najstarsza,
+   ostatnia = wierzchnia). Karta wierzchnia jest PRZESUNIETA w prawo i w dol o --ec-stack-dx/dy,
+   zeby spod niej wystawal brzeg karty pod spodem; jej backdrop jest PRZEZROCZYSTY, zeby tego
+   brzegu nic nie przyciemnialo (przyciemnienie mapy niesie backdrop najstarszej karty, depth 0).
+   ROZMIAR karty wierzchniej sie NIE zmienia — 660px szerokosci i min(80vh,100vh-32) wysokosci
+   z R-CIVPEDIA-KARTY-SPOJNOSC-Q1 zostaja; przesuwamy wylacznie polozenie, przez left/top
+   na position:relative dialogu, wiec ukladu (flex/centrowanie/margin:auto 0) to nie rusza
+   i karta nie moze sie sciesnic.
+   DEGRADACJA PRZY MALYM OKNIE liczona z geometrii, nie na oko — karta wierzchnia ma zostac
+   w calosci w oknie:
+     poziom: prawy brzeg = 50vw + 331 + dx <= 100vw - 16  =>  dx <= 50vw - 347;
+             bierzemy 50vw - 366 (19px zapasu na pasek przewijania) i tniemy do 0, wiec
+             ponizej 732px szerokosci przesuniecia po prostu nie ma;
+     pion:   dolny brzeg = 16 + (100vh-32-H)/2 + H + dy <= 100vh - 16, przy H=80vh
+             =>  dy <= 10vh - 16; bierzemy 10vh - 24 i tniemy do 0.
+   Klik w widoczny brzeg karty spodniej trafia w inset:0 backdrop karty wierzchniej i ja
+   zamyka — czyli WRACA do karty spodniej, dokladnie jak zada ECHO 2. */
+.entity-card-backdrop[data-ec-stack-depth]:not([data-ec-stack-depth="0"]){background:transparent;}
+.entity-card-backdrop[data-ec-stack-depth]:not([data-ec-stack-depth="0"]) .entity-card-dialog{
+  left:var(--ec-stack-dx);top:var(--ec-stack-dy);}
 .entity-card{width:min(660px,calc(100vw - 32px));border:1px solid rgba(232,216,138,.45);
   border-radius:12px;background:linear-gradient(180deg,rgba(20,26,34,.99),rgba(8,10,16,.99));
   color:#e8e0c8;box-shadow:0 10px 28px rgba(0,0,0,.65);overflow:hidden;
