@@ -343,6 +343,128 @@ export function freshOwnerDefaultBudowaProfil(): CityBudowaProfil {
   return { budowaFocus: DEFAULT_BUDOWA_FOCUS, budowaTryb: DEFAULT_BUDOWA_TRYB };
 }
 
+/**
+ * P-AI-NIE-STAWIA-BUDYNKOW-Q1 (Maciej 2026-09-04): tryb auto-budowy dla NOWEGO
+ * właściciela będącego realnym AI (duża cywilizacja LUB miasto-państwo). Ta sama
+ * wartość, którą `foundCityAt` (cities.ts) wpisuje w świeżo założone miasto
+ * (`budowaTryb: 'zrownowazone'`) — i którą `seedCityOwnerDefaults` (main.ts) dotąd
+ * kasowała bezwarunkowym `DEFAULT_BUDOWA_TRYB = 'reczny'` przy KAŻDYM założeniu
+ * i KAŻDYM przejęciu miasta.
+ */
+export const AI_DEFAULT_BUDOWA_TRYB: BudowaTryb = 'zrownowazone';
+
+/**
+ * P-AI-NIE-STAWIA-BUDYNKOW-Q1: globalny default budowy ZALEŻNY OD WŁAŚCICIELA.
+ *
+ * RUNDA 1, OBRONA, zarzut 1 — PRZYJĘTY. ECHO właściciela (przekazane PO dispatchu,
+ * więc wiążące ponad zapisem „gracz: bez zmian" w `00-dispatch.md`): „profil domyślny
+ * trybu budowy ma być AUTOMATYCZNY dla wszystkich właścicieli, ŁĄCZNIE Z GRACZEM —
+ * z zachowaniem gwarancji, że barbarzyńcy mają ZERO budynków".
+ *
+ * Dotąd każdy owner — gracz, duże AI, miasto-państwo, barbarzyńcy, rebelianci —
+ * dostawał `freshOwnerDefaultBudowaProfil()` z `budowaTryb:'reczny'`.
+ * `pickAutoBuildItem` (auto-manage.ts) odmawia dla trybu 'reczny', a AI nie ma
+ * ŻADNEJ ścieżki UI powrotu do trybu auto — więc miasta AI nigdy nie stawiały
+ * budynków (zgłoszenie właściciela: dwa zdobyte miasta obcych cywilizacji, oba
+ * z pustą listą „BUDYNKI W MIEŚCIE (0)”).
+ *
+ * Rozróżnienie zamiast globalnego zdjęcia resetu:
+ *  - `ownerId >= 0` (GRACZ oraz każde realne AI — duża cywilizacja i miasto-państwo,
+ *    oba mają dodatnie ownerId) → tryb auto. Gracz NIE traci kontroli: „ręczna kolejka"
+ *    jest z natury per-miasto (`onBudowaEnterManual` w main.ts ustawia
+ *    `budowaFocusOverride = true`), a miasta z override są pomijane przez
+ *    `broadcastBudowaProfilToOwnerCities` i przez migrację niżej;
+ *  - `BARBARIAN_OWNER_ID = -1` → 'reczny' OBOWIĄZKOWE: gwarancja „miasto
+ *    barbarzyńskie produkuje WYŁĄCZNIE jednostki (nigdy budynki)" (main.ts,
+ *    komentarz w `applyCityCaptureToMap`) opiera się WPROST na tym, że
+ *    `pickAutoBuildItem` odmawia barbarzyńcom. Zdjęcie resetu globalnie
+ *    naprawiłoby budowanie AI i po cichu złamało tamtą gwarancję;
+ *  - `REBEL_FACTION_OWNER_ID = -99` (i każdy inny ujemny sentinel) → 'reczny',
+ *    zero zmiany zachowania poza celem tego tematu.
+ *
+ * Test `isBarbarianOwner` jest przy dzisiejszym `BARBARIAN_OWNER_ID = -1`
+ * redundantny wobec `ownerId < 0` — zostaje ŚWIADOMIE, bo gwarancja barbarzyńska
+ * nie może zależeć od znaku sentinela. Predykat wstrzykiwany (nie import), żeby ten
+ * moduł pozostał wolny od zależności na `barbarians.ts` (wzorzec `owner-utils.ts`
+ * odwrócony: tam import, tu injekcja — tu moduł jest częścią warstwy defaults,
+ * ładowanej także przez testy jednostkowe bez świata gry).
+ */
+export function freshOwnerDefaultBudowaProfilForOwner(
+  ownerId: number,
+  isBarbarianOwner: (id: number) => boolean,
+): CityBudowaProfil {
+  if (ownerId < 0 || isBarbarianOwner(ownerId)) return freshOwnerDefaultBudowaProfil();
+  return { budowaFocus: DEFAULT_BUDOWA_FOCUS, budowaTryb: AI_DEFAULT_BUDOWA_TRYB };
+}
+
+/**
+ * P-AI-NIE-STAWIA-BUDYNKOW-Q1, RUNDA 1, OBRONA, zarzut 2 — PRZYJĘTY.
+ * ŚCIEŻKA WCZYTANIA ZAPISU (§16a pkt 4 — trwały stan save/load).
+ *
+ * `migrateBudowaProfilOnLoad` wyżej odtwarza `ownerDefaultBudowaProfil` z zapisu
+ * (`savedDefaults`) albo wylicza go z pól miast — w OBU gałęziach oddaje graczowski
+ * `DEFAULT_BUDOWA_TRYB = 'reczny'` dla ownerów AI, bo dokładnie to niesie każdy zapis
+ * zrobiony przed tą naprawą. Bez tego kroku właściciel, który zgłosił defekt
+ * z TRWAJĄCEJ rozgrywki, po wczytaniu swojego zapisu nie zobaczyłby ŻADNEJ zmiany:
+ * `seedCityOwnerDefaults` nie pomoże, bo jego gałąź stoi pod
+ * `if (!ownerDefaultBudowaProfil.has(...))`, a wpis z zapisu już tam jest.
+ *
+ * ARGUMENT „PODNIESIENIE NIE ODBIERA WYBORU" (dowód z kodu, nie z deklaracji;
+ * uznany za poprawny w ratyfikacji, patrz akapit niżej — ale NIE jest już
+ * uzasadnieniem dla ownera 0): `'reczny'` NIGDY nie trafia do wartości GLOBALNEJ
+ * z woli użytkownika. Jedyne wejście w tryb ręczny to `onBudowaEnterManual` (main.ts),
+ * które ustawia `city.budowaFocusOverride = true` i z definicji NIE broadcastuje
+ * (`onBudowaTrybChange` zapisuje globalny profil wyłącznie w gałęzi
+ * `if (!city.budowaFocusOverride)`, a tryb 'reczny' nie przechodzi tamtędy).
+ * Globalne `'reczny'` w zapisie jest więc ZAWSZE śladem starego defaultu, nigdy
+ * decyzją — a miasta, w których gracz świadomie wybrał ręczną kolejkę, mają
+ * `budowaFocusOverride === true` i są tu pomijane (jak w `broadcastBudowaProfil-
+ * ToOwnerCities`). Barbarzyńcy i ujemne sentinele zostają nietknięci.
+ *
+ * RATYFIKACJA ORKIESTRATORA 2026-09-05, DECYZJA 1 — ECHO właściciela „Tylko nowe
+ * partie". Argument wyżej został UZNANY ZA POPRAWNY, ale właściciel wybrał wariant
+ * ZACHOWAWCZY i to jest wiążące: **ta migracja POMIJA ownera 0 (gracza)**. Skutek
+ * przyjęty jawnie: zapis zrobiony przed naprawą zachowuje graczowi tryb ręczny
+ * i NIE skorzysta z naprawy — gracz włączy automat sam globalnym przełącznikiem,
+ * jeśli zechce. Zakres jest wąski i celowy: dotyczy WYŁĄCZNIE tej migracji.
+ * Seed nowej gry oraz przejęcie miasta idą przez
+ * `freshOwnerDefaultBudowaProfilForOwner` wyżej i dalej dają graczowi tryb AUTO
+ * (drugie ECHO: „gracz też startowo auto"). Migracja dla AI i miast-państw zostaje
+ * bez zmian — tam podniesienie trybu jest sednem tematu (asercje A8/A8b/A9 bramki).
+ *
+ * Zwraca listę ownerów faktycznie podniesionych (dla bramki i diagnostyki).
+ */
+export function upgradeBudowaProfilAutoDefaultsOnLoad(
+  cities: ReadonlyArray<City>,
+  ownerDefaults: Map<number, CityBudowaProfil>,
+  isBarbarianOwner: (id: number) => boolean,
+): number[] {
+  const owners = new Set<number>(ownerDefaults.keys());
+  for (const c of cities) owners.add(c.ownerId);
+  const upgraded: number[] = [];
+  for (const oid of owners) {
+    if (oid < 0 || isBarbarianOwner(oid)) continue;
+    // RATYFIKACJA 2026-09-05, DECYZJA 1 („Tylko nowe partie"): gracz (owner 0) NIE jest
+    // podnoszony na ścieżce wczytania zapisu. Bramka: A10 (zielona) + M7 (mutant bez tej
+    // linii podnosi gracza, więc A10 realnie mierzy tę jedną linię). Nie upraszczaj.
+    if (oid === 0) continue;
+    const cur = ownerDefaults.get(oid);
+    // Cokolwiek innego niż stary default 'reczny' jest realnym ustawieniem — nie ruszamy.
+    if (cur && cur.budowaTryb !== DEFAULT_BUDOWA_TRYB) continue;
+    const next: CityBudowaProfil = {
+      budowaFocus: cur?.budowaFocus ?? DEFAULT_BUDOWA_FOCUS,
+      budowaTryb: AI_DEFAULT_BUDOWA_TRYB,
+    };
+    ownerDefaults.set(oid, next);
+    // Pola per-miasto są czytane BEZPOŚREDNIO przez pętlę ekonomii
+    // (`else if (isAutoBudowaTryb(city.budowaTryb))`, main.ts) — sam wpis w mapie
+    // globalnej by nie wystarczył. Miasta z override pomijane (pin 📌).
+    broadcastBudowaProfilToOwnerCities(cities, oid, next);
+    upgraded.push(oid);
+  }
+  return upgraded;
+}
+
 // ---------------------------------------------------------------------------
 // 4. Żywność (poziom Wyżywienia/Racji) — R-USTAWIENIA-GLOBALNE-LOKALNE (Maciej
 //    2026-08-10, żywa rozmowa: "globalne ustawienia dla żywności pracy i pieniędzy").

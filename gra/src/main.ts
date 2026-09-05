@@ -239,6 +239,8 @@ import {
   resolveCityOkolicaFocus,
   migrateBudowaProfilOnLoad,
   freshOwnerDefaultBudowaProfil,
+  freshOwnerDefaultBudowaProfilForOwner,
+  upgradeBudowaProfilAutoDefaultsOnLoad,
   broadcastBudowaProfilToOwnerCities,
   resolveCityBudowaProfil,
   type CityBudowaProfil,
@@ -4793,7 +4795,12 @@ async function boot(): Promise<void> {
       ownerDefaultOkolicaFocus.clear();
       ownerDefaultOkolicaFocus.set(0, freshOwnerDefaultOkolicaFocus());
       ownerDefaultBudowaProfil.clear();
-      ownerDefaultBudowaProfil.set(0, freshOwnerDefaultBudowaProfil());
+      // P-AI-NIE-STAWIA-BUDYNKOW-Q1, OBRONA R1 zarzut 1 (ECHO właściciela, wiążące ponad
+      // zapisem dispatchu „gracz: bez zmian"): profil domyślny budowy jest AUTOMATYCZNY
+      // dla WSZYSTKICH właścicieli, łącznie z graczem (0). Ręczna kolejka zostaje graczowi
+      // per miasto -- `onBudowaEnterManual` ustawia `budowaFocusOverride = true`, a miasta
+      // z override są pomijane przez broadcast i przez migrację wczytania.
+      ownerDefaultBudowaProfil.set(0, freshOwnerDefaultBudowaProfilForOwner(0, isBarbarian));
       ownerDefaultPoziomRacji.clear();
       ownerDefaultPoziomRacji.set(0, freshOwnerDefaultPoziomRacji());
       for (const ai of aiStartHexes) {
@@ -4816,7 +4823,21 @@ async function boot(): Promise<void> {
           ownerDefaultOkolicaFocus.set(ai.ownerId, freshOwnerDefaultOkolicaFocus());
         }
         if (!ownerDefaultBudowaProfil.has(ai.ownerId)) {
-          ownerDefaultBudowaProfil.set(ai.ownerId, freshOwnerDefaultBudowaProfil());
+          // P-AI-NIE-STAWIA-BUDYNKOW-Q1: ten sam wzorzec co podzialPracy wyżej -- stary
+          // globalny default 'reczny' nie może trafić do ownera AI, bo AI nie ma ŻADNEJ
+          // ścieżki powrotu do trybu auto (wszystkie 4 callbacki zmiany trybu są tylko dla
+          // ownerId===0), więc pickAutoBuildItem odmawiałby mu na zawsze.
+          // OBRONA R2, zarzut 1 (PRZYJĘTY): na tej ścieżce -- SEED nowej gry -- tryb AUTO
+          // dostaje TAKŻE gracz (0), dokładnie jak każde AI; patrz `set(0, ...)` kilka linii
+          // wyżej. 'reczny' zostaje WYŁĄCZNIE ownerom ujemnym (barbarzyńcy -1, rebelianci
+          // -99). Jedyny wyjątek dla ownera 0 żyje w MIGRACJI WCZYTANIA
+          // (`upgradeBudowaProfilAutoDefaultsOnLoad`, ratyfikacja 2026-09-05, Decyzja 1
+          // „Tylko nowe partie"), a NIE tutaj -- patrz docstring
+          // freshOwnerDefaultBudowaProfilForOwner (empire-city-defaults.ts).
+          ownerDefaultBudowaProfil.set(
+            ai.ownerId,
+            freshOwnerDefaultBudowaProfilForOwner(ai.ownerId, isBarbarian),
+          );
         }
         if (!ownerDefaultPoziomRacji.has(ai.ownerId)) {
           ownerDefaultPoziomRacji.set(ai.ownerId, freshOwnerDefaultPoziomRacji());
@@ -4837,7 +4858,24 @@ async function boot(): Promise<void> {
         ownerDefaultOkolicaFocus.set(c.ownerId, freshOwnerDefaultOkolicaFocus());
       }
       if (!ownerDefaultBudowaProfil.has(c.ownerId)) {
-        ownerDefaultBudowaProfil.set(c.ownerId, freshOwnerDefaultBudowaProfil());
+        // P-AI-NIE-STAWIA-BUDYNKOW-Q1 (Maciej 2026-09-04, zgłoszenie „zdobyte miasto obcej
+        // cywilizacji — BUDYNKI W MIEŚCIE (0)"): ten sam powód co przy podzialPracy niżej --
+        // świeżo założone/zdobyte miasto realnego AI (duża cywilizacja LUB miasto-państwo)
+        // NIE MOŻE dziedziczyć defaultu gracza 'reczny'. pickAutoBuildItem (auto-manage.ts)
+        // odmawia dla 'reczny', a AI nie ma żadnej ścieżki UI powrotu do trybu auto -->
+        // kolejka Pracy miasta AI zostawała pusta NA ZAWSZE (0 budynków przez całą grę).
+        // OBRONA R1, zarzut 1 (ECHO właściciela, wiążące ponad zapisem dispatchu „gracz:
+        // bez zmian"): tryb automatyczny dostaje TAKŻE gracz (ownerId 0) -- ręczna kolejka
+        // zostaje mu per miasto przez `onBudowaEnterManual` (budowaFocusOverride = true),
+        // nie przez globalny default. Reset na 'reczny' zostaje WYŁĄCZNIE dla ownerów
+        // ujemnych (barbarzyńcy BARBARIAN_OWNER_ID = -1, rebelianci -99), gdzie jest
+        // JAWNYM nośnikiem gwarancji „miasto barbarzyńskie produkuje WYŁĄCZNIE jednostki
+        // (nigdy budynki)" -- patrz komentarz w applyCityCaptureToMap niżej w tym pliku
+        // oraz docstring freshOwnerDefaultBudowaProfilForOwner (empire-city-defaults.ts).
+        ownerDefaultBudowaProfil.set(
+          c.ownerId,
+          freshOwnerDefaultBudowaProfilForOwner(c.ownerId, isBarbarian),
+        );
       }
       if (!ownerDefaultPodzialPracy.has(c.ownerId)) {
         // R-AI-PRACA-PODZIAL-STALY-50-50-Q1 (Runda 1, Zarzut 1 Evaluatora — PRZYJĘTE):
@@ -6987,7 +7025,8 @@ async function boot(): Promise<void> {
           const next = !city.budowaFocusOverride;
           city.budowaFocusOverride = next;
           if (!next) {
-            const bp = ownerDefaultBudowaProfil.get(city.ownerId) ?? freshOwnerDefaultBudowaProfil();
+            const bp = ownerDefaultBudowaProfil.get(city.ownerId)
+              ?? freshOwnerDefaultBudowaProfilForOwner(city.ownerId, isBarbarian);
             city.budowaFocus = bp.budowaFocus;
             city.budowaTryb = bp.budowaTryb;
           }
@@ -8164,6 +8203,17 @@ async function boot(): Promise<void> {
       migratePodzialPracyOnLoad(cities, ownerDefaultPodzialPracy, undefined);
       migrateOkolicaFocusOnLoad(cities, ownerDefaultOkolicaFocus, undefined);
       migrateBudowaProfilOnLoad(cities, ownerDefaultBudowaProfil, undefined);
+      // P-AI-NIE-STAWIA-BUDYNKOW-Q1, OBRONA R1 zarzut 2 (§16a pkt 4 — trwały stan
+      // save/load): KAŻDY zapis zrobiony przed tą naprawą niesie globalne
+      // `budowaTryb:'reczny'` dla ownerów AI, a `migrateBudowaProfilOnLoad` wiernie je
+      // odtwarza -- bez tego kroku wczytana rozgrywka właściciela zostawałaby przy zerze
+      // budynków NA ZAWSZE. Podniesienie dotyczy WYŁĄCZNIE wartości równej staremu
+      // defaultowi i pomija miasta z `budowaFocusOverride` -- dowód, że nie odbiera
+      // wyboru, w docstringu `upgradeBudowaProfilAutoDefaultsOnLoad`.
+      // RATYFIKACJA 2026-09-05, DECYZJA 1 (ECHO właściciela „Tylko nowe partie"):
+      // migracja POMIJA ownera 0 -- gracz wczytujący STARY zapis zostaje przy trybie
+      // ręcznym i włącza automat sam. Podnoszone są WYŁĄCZNIE AI i miasta-państwa.
+      upgradeBudowaProfilAutoDefaultsOnLoad(cities, ownerDefaultBudowaProfil, isBarbarian);
       migratePoziomRacjiOnLoad(cities, ownerDefaultPoziomRacji, undefined);
       console.log(
         '[ClusterStart] typ=' + playerCivId +
@@ -21861,6 +21911,129 @@ async function boot(): Promise<void> {
       },
     };
 
+    // P-AI-NIE-STAWIA-BUDYNKOW-Q1 — hak testowy WYŁĄCZNIE dla
+    // `tools/ai-buduje-budynki-test.cjs`. REGUŁA PRZECIW SAMOOSZUKIWANIU dispatchu
+    // („dowód z deklaracji zamiast z symulacji") wymaga pokazania WZROSTU `cityBuilt`
+    // w czasie w PRAWDZIWEJ pętli ekonomii — a `cityBuilt`/`cityProd`/`isCityStateOwner`/
+    // `seedCityOwnerDefaults` są domknięciami wewnątrz `main()` (main.ts nie jest
+    // modułem, nie da się ich zaimportować — patrz nagłówki innych `*-live-test.cjs`).
+    // `dumpBuildings()` to SUROWY odczyt istniejącego stanu (zero liczenia, zero logiki
+    // decyzyjnej w środku — porównania i progi robi test w `tools/`); świat startuje
+    // REALNYM `doStartGame` przez `__cityStateStartUnitsTestDebug.startNewGame`, tury
+    // idą REALNYM `__eraTestDebug.endTurn()`, a miasto barbarzyńskie powstaje REALNĄ
+    // ścieżką przejęcia `__rebelProtectionTestDebug.captureViaBattle`.
+    (window as any).__aiBuildingsTestDebug = {
+      BARBARIAN_OWNER_ID,
+      /**
+       * REALNY `doStartGame(params)` — dokładnie ta sama funkcja, którą woła kreator
+       * „Nowa Gra" po kliknięciu „Start" (patrz `onStart` przy `showNewGameFlow`).
+       * Kształt `params` skopiowany 1:1 z `__cityStateStartUnitsTestDebug.startNewGame`
+       * (znany-dobry, przetestowany zestaw); OSOBNY hak, bo ta bramka potrzebuje
+       * SUWAKA liczby dużych cywilizacji vs miast-państw (dwie różne ścieżki budowania
+       * z recon D dispatchu), którym tamten hak nie steruje — a jest własnością innego,
+       * zamkniętego tematu i nie wolno zmieniać mu domyślnego świata.
+       */
+      startNewGame: (opts: { rivals?: string; cityStates?: number; civTypes?: number; seed?: number }): void => {
+        const mqTier = mapQualityTierFromQuery('high');
+        const mqBundle = bundledMapQualityPreset(mqTier);
+        const advanced: NewGameAdvancedOptions = {
+          barbariansLevel: 'normalny',
+          battleAlwaysManual: false,
+          victoryMode: 'moc_i_dominacja',
+          buildingCostPace: 'niski',
+          kosztJednostekPace: 'niski',
+          wzrostLudnosciPace: 'wysoki',
+          ruchSwiataPace: 'krotki',
+          landFractionPercent: 30,
+          landFractionCustom: false,
+          cityStateDifficultyOverride: 'normal',
+          cityLimitBase: 10,
+        };
+        void doStartGame({
+          civId: 'rzymianie',
+          civName: 'Rzymianie',
+          epoch: 'Epoka Brązu',
+          epochId: 'braz',
+          difficulty: 'Normalny',
+          mapSize: 'Maly',
+          rivals: opts.rivals ?? '6',
+          speed: 'Normalna',
+          worldType: 'Kontynenty',
+          typSwiata: 'kontynenty',
+          seed: opts.seed ?? 778899,
+          mapQualityLabel: qualityTierToLabel(mqTier),
+          mapQuality: mqTier,
+          renderQualityLabel: qualityTierToLabel(mqBundle.renderQuality),
+          mapDetailQualityLabel: qualityTierToLabel(mqBundle.mapDetailQuality),
+          renderQuality: mqBundle.renderQuality,
+          mapDetailQuality: mqBundle.mapDetailQuality,
+          civTypesCount: opts.civTypes ?? 4,
+          cityStatesCount: clampMiastaPanstwaCount(opts.cityStates ?? 2),
+          worldDensity: { ...DEFAULT_WORLD_DENSITY },
+          worldDensityLabels: {
+            resources: 'Normalnie', rivers: 'Normalnie', desert: 'Normalnie',
+            forest: 'Normalnie', relief: 'Normalnie',
+          },
+          advanced,
+          villageRewardsEnabled: true,
+        } as NewGameParams);
+      },
+      /**
+       * P-AI-NIE-STAWIA-BUDYNKOW-Q1, OBRONA R1 zarzut 2 — dowód na ŚCIEŻCE WCZYTANIA
+       * ZAPISU (§16a pkt 4), a nie z deklaracji. Robi PEŁNY roundtrip przez REALNE
+       * `buildSaveGameSnapshot()` i REALNE `restoreGameFromSave()` — te same funkcje,
+       * które wołają „Zapisz grę" i `loadGameFromSlot`. Mapa się nie zmienia (ten sam
+       * seed i ta sama sesja), więc pomijamy wyłącznie odbudowę mapy z `loadGameFromSlot`.
+       *
+       * `legacy:true` degraduje snapshot DOKŁADNIE do postaci, jaką ma każdy zapis
+       * zrobiony PRZED tą naprawą: globalny `budowaTryb:'reczny'` dla wszystkich ownerów
+       * plus takie samo pole w miastach bez override. To jest wejście, na którym stara
+       * ścieżka wczytania zostawiała miasta AI na 'reczny' NA ZAWSZE.
+       */
+      saveLoadRoundTrip: (opts?: { legacy?: boolean }): void => {
+        const snap = buildSaveGameSnapshot('ai-buduje-budynki-test');
+        if (opts?.legacy) {
+          const meta = snap.meta as Record<string, unknown>;
+          const defs = meta.ownerDefaultBudowaProfil as Array<[number, CityBudowaProfil]>;
+          meta.ownerDefaultBudowaProfil = defs.map(([oid, prof]) => [
+            oid, { budowaFocus: prof.budowaFocus, budowaTryb: 'reczny' as const },
+          ]);
+          for (const c of snap.cities) {
+            if (c.budowaFocusOverride !== true) c.budowaTryb = 'reczny';
+          }
+        }
+        restoreGameFromSave(snap);
+      },
+      dumpBuildings: () => ({
+        turn,
+        // OBRONA R2, zarzut 2 (PRZYJĘTY): bramka ma MIERZYĆ globalny profil ownera, a nie
+        // wnioskować go ze złożenia dwóch asercji na polach miast. To jest DOKŁADNIE ta
+        // wartość, którą `seedCityOwnerDefaults` kopiuje do miasta zakładanego ORAZ do
+        // miasta zmieniającego właściciela, i którą podnosi (albo nie -- owner 0, Decyzja 1)
+        // `upgradeBudowaProfilAutoDefaultsOnLoad`. Hak diagnostyczny, tylko odczyt.
+        ownerDefaultBudowaTryb: Array.from(ownerDefaultBudowaProfil.entries())
+          .map(([oid, prof]) => [oid, prof.budowaTryb] as [number, string]),
+        cities: cities.map(c => {
+          const prod = cityProd.get(c.id) ?? { kolejka: [], postep: 0 };
+          return {
+            id: c.id,
+            name: c.name,
+            ownerId: c.ownerId,
+            budowaTryb: c.budowaTryb ?? null,
+            budowaFocusOverride: c.budowaFocusOverride === true,
+            startCityState: !!c.startCityState,
+            isBarbarian: isBarbarian(c.ownerId),
+            isCityState: isCityStateOwner(c.ownerId),
+            isMajorAi: isMajorAiOwner(c.ownerId, isCityStateOwner),
+            built: [...(cityBuilt.get(c.id) ?? [])],
+            queue: prod.kolejka.map(it => `${it.kind}:${it.id}`),
+            postep: prod.postep,
+            frontKoszt: prod.kolejka[0]?.koszt ?? null,
+          };
+        }),
+      }),
+    };
+
     // --- Konfiguracja pickera badań (przed hubem — getScienceHubSnapshot wymaga hooków) ---
     (window as any).__civ_getResearchedTechs = () => Array.from(player.zbadane);
 
@@ -26340,9 +26513,16 @@ async function boot(): Promise<void> {
       // Pracę od frontu kolejki bez sprawdzania właściciela -- razem to zaprzeczałoby
       // "miasto barbarzyńskie produkuje WYŁĄCZNIE jednostki (nigdy budynki)". Barbarzyńcy
       // i tak NIGDY sami nie wkładają budynku do kolejki (pickAutoBuildItem odmawia,
-      // bo seedCityOwnerDefaults resetuje budowaTryb do 'reczny' przy KAŻDYM przejęciu,
-      // patrz komentarz przy tym wywołaniu wyżej) -- ten reset zamyka WYŁĄCZNIE
-      // przypadek ODZIEDZICZONEGO, już rozpoczętego budynku ofiary.
+      // bo seedCityOwnerDefaults ustawia barbarzyńcom budowaTryb 'reczny' przy KAŻDYM
+      // przejęciu). AKTUALIZACJA P-AI-NIE-STAWIA-BUDYNKOW-Q1 (2026-09-05): ten reset NIE
+      // JEST JUŻ globalny -- od tego tematu dotyczy WYŁĄCZNIE ownerów ujemnych
+      // (barbarzyńcy -1, rebelianci -99), bo pozostali właściciele (gracz i AI) dostają
+      // tryb automatyczny. Nośnikiem gwarancji jest teraz gałąź `ownerId < 0 ||
+      // isBarbarianOwner(ownerId)` w `freshOwnerDefaultBudowaProfilForOwner`
+      // (empire-city-defaults.ts) -- NIE UPRASZCZAJ jej: bramka
+      // tools/ai-buduje-budynki-test.cjs (wariant MUT-B) czerwienieje, gdy zniknie.
+      // Ten reset zamyka WYŁĄCZNIE przypadek ODZIEDZICZONEGO, już rozpoczętego
+      // budynku ofiary.
       // / EN: batch 7-10 topic 8 gap closure (barbarian-owned cities -- see the
       // tickBarbarianCityGarrisons wiring further down in the barbarian tick): capture
       // did NOT clear the victim's inherited build queue -- a building IN PROGRESS
@@ -26353,9 +26533,16 @@ async function boot(): Promise<void> {
       // subtracts that Praca from the queue front without checking ownership -- together
       // that would contradict "a barbarian-owned city produces ONLY units (never
       // buildings)". Barbarians never queue a building themselves anyway
-      // (pickAutoBuildItem refuses, because seedCityOwnerDefaults resets budowaTryb to
-      // 'reczny' on EVERY capture, see the comment on that call above) -- this reset
-      // closes ONLY the case of an INHERITED, already-started building of the victim.
+      // (pickAutoBuildItem refuses, because seedCityOwnerDefaults gives barbarians
+      // budowaTryb 'reczny' on EVERY capture). UPDATE P-AI-NIE-STAWIA-BUDYNKOW-Q1
+      // (2026-09-05): that reset is NO LONGER global -- since this topic it applies ONLY
+      // to negative owners (barbarians -1, rebels -99); every other owner (the human
+      // player and the AI) now gets an automatic mode. The guarantee now rests on the
+      // `ownerId < 0 || isBarbarianOwner(ownerId)` branch in
+      // `freshOwnerDefaultBudowaProfilForOwner` (empire-city-defaults.ts) -- DO NOT
+      // simplify it: the tools/ai-buduje-budynki-test.cjs gate (MUT-B variant) turns red
+      // when it disappears. This reset closes ONLY the case of an INHERITED,
+      // already-started building of the victim.
       if (isBarbarian(atkOwner)) {
         cityProd.set(city.id, { kolejka: [], postep: 0 });
       } else {
@@ -34991,6 +35178,17 @@ async function boot(): Promise<void> {
       ownerDefaultBudowaProfil.clear();
       const savedBudowaProfil = saved.meta?.ownerDefaultBudowaProfil as Array<[number, CityBudowaProfil]> | undefined;
       migrateBudowaProfilOnLoad(cities, ownerDefaultBudowaProfil, savedBudowaProfil);
+      // P-AI-NIE-STAWIA-BUDYNKOW-Q1, OBRONA R1 zarzut 2 (§16a pkt 4 — trwały stan
+      // save/load): KAŻDY zapis zrobiony przed tą naprawą niesie globalne
+      // `budowaTryb:'reczny'` dla ownerów AI, a `migrateBudowaProfilOnLoad` wiernie je
+      // odtwarza -- bez tego kroku wczytana rozgrywka właściciela zostawałaby przy zerze
+      // budynków NA ZAWSZE. Podniesienie dotyczy WYŁĄCZNIE wartości równej staremu
+      // defaultowi i pomija miasta z `budowaFocusOverride` -- dowód, że nie odbiera
+      // wyboru, w docstringu `upgradeBudowaProfilAutoDefaultsOnLoad`.
+      // RATYFIKACJA 2026-09-05, DECYZJA 1 (ECHO właściciela „Tylko nowe partie"):
+      // migracja POMIJA ownera 0 -- gracz wczytujący STARY zapis zostaje przy trybie
+      // ręcznym i włącza automat sam. Podnoszone są WYŁĄCZNIE AI i miasta-państwa.
+      upgradeBudowaProfilAutoDefaultsOnLoad(cities, ownerDefaultBudowaProfil, isBarbarian);
       // R-USTAWIENIA-GLOBALNE-LOKALNE (Żywność, Maciej 2026-08-10): wczytanie/migracja
       // globalnego domyślnego poziomu Racji, wzorem trzy pola wyżej.
       ownerDefaultPoziomRacji.clear();

@@ -203,3 +203,54 @@ i TEJ SAMEJ gałęzi. Po 5 rundach: `LIMIT-5-EXCEEDED`.
 
 Operator → Evaluator (ponumerowane zarzuty) → Obrona (gdy lista niepusta) → koniec
 skryptu. Final Control osobno, integracja allowlist-only ręką orkiestratora.
+
+---
+
+# RATYFIKACJA ORKIESTRATORA (2026-09-05) — dwie decyzje właściciela
+
+Obrona przyjęła wszystkie 7 zarzutów i zostawiła dwie pozycje `DO DECYZJI CZŁOWIEKA`.
+**Obie zostały właścicielowi zadane i rozstrzygnięte.**
+
+## Decyzja 1 — ECHO: „Tylko nowe partie". MIGRACJA NIE RUSZA GRACZA W STARYCH ZAPISACH.
+
+Obrona wykazała kodem, że globalne `'reczny'` **nie mogło pochodzić z decyzji gracza**
+(jedyne wejście w tryb ręczny, `onBudowaEnterManual` w `main.ts:7006`, pinuje pojedyncze
+miasto i nie zapisuje profilu globalnego; jedyny zapis globalny, `main.ts:7000`, stoi pod
+`if (!city.budowaFocusOverride)`). Argument jest poprawny — **właściciel mimo to wybrał
+wariant zachowawczy** i to jest wiążące.
+
+**`upgradeBudowaProfilAutoDefaultsOnLoad` ma POMIJAĆ ownera 0.** Wskazana przez obronę
+jedna linia (`if (oid === 0) continue;`) jest wystarczająca. Skutek zaakceptowany jawnie:
+zapis sprzed naprawy zachowuje tryb ręczny gracza i **nie skorzysta z naprawy** —
+gracz włączy automat sam globalnym przełącznikiem, jeśli zechce.
+
+**Migracja dla AI i miast-państw ZOSTAJE bez zmian** — tam podniesienie trybu jest
+sednem tematu.
+
+**Kryterium końca dla tej zmiany:** bramka ma asertować, że po roundtripie zapisu
+zdegradowanego do postaci sprzed naprawy **owner 0 zachowuje `'reczny'`**, a AI i miasta-państwa
+przechodzą na tryb automatyczny. To jest nowa asercja, nie modyfikacja istniejącej.
+**Nie osłabiaj A8/A8b/A9** — one mierzą migrację AI i mają zostać zielone.
+
+## Decyzja 2 — ECHO: „Przyjąć skutek, budynki mają pierwszeństwo"
+
+Skutek uboczny zgłoszony przez obronę: miasta gracza same wkładają budynki do kolejki Pracy,
+więc `doBudynkow` gracza **przestaje wracać do puli ulepszeń terenu**. Właściciel przyjął
+to świadomie — spójność z jego ECHO „gracz też startowo auto" jest ważniejsza.
+
+**Uwaga do zapisania w raporcie, nie do naprawiania tutaj:** zmienia to punkt odniesienia
+tematu `R-AI-ULEPSZENIA-MALO-BUDOWANE-Q1`, którego recon powstał przy starym zachowaniu.
+Orkiestrator odnotuje to w rejestrze; **nie wchodź w tamten temat**.
+
+**Uwaga o zasięgu decyzji 1 wobec decyzji 2:** przy „tylko nowe partie" skutek z decyzji 2
+dotyczy **wyłącznie nowych partii gracza**. W starych zapisach gracz zostaje ręczny,
+więc jego praca dalej wraca do puli ulepszeń. To jest spójne i zamierzone.
+
+## Uznanie sposobu pracy obrony
+
+Obrona zastała w worktree **niezacommitowaną pracę przebiegu przerwanego restartem**
+(raport z `PLACEHOLDER_SHA`, bramki nieprzebiegnięte do końca) i **nie przyjęła jej
+na słowo** — przebiegła wszystko samodzielnie. To wykryło **realny `FAIL M5`**: mutacja
+kontrolna zdejmowała tylko JEDEN z dwóch nośników gwarancji barbarzyńskiej, więc po
+roundtripie zapisu barbarzyńcy wracali na `'reczny'` i asercja nie mierzyła tego, co głosiła.
+Naprawiona została **mutacja, nie asercja** — czyli we właściwą stronę.
