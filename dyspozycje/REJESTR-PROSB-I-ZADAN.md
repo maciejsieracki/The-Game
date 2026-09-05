@@ -5359,3 +5359,50 @@ dołożone dwie asercje pikselowe, nietautologiczne (pod tą samą mutacją 65/2
 z przyczyny niezależnej od tematu, (c) **0** utrwalających stos nieograniczony. Teza z rundy 1
 („zero wymaga zmiany") była **nieprawdziwa jako twierdzenie**, choć wniosek końcowy okazał się
 prawdziwy z innego powodu — różnica między „zgadłem dobrze" a „zmierzyłem".
+
+### `R-ENTITYCARD-JEDNA-KARTA-CZY-STOS-Q1` — **ZINTEGROWANE** (`ec8b2e8e`, 2026-09-05)
+
+Dwie rundy, dwa pytania ABC, **Final Control `PASS` (3× ODDAL)**. Rozstrzygnięcie sprzeczności
+dwóch zatwierdzonych tematów, która dawała 29 czerwonych asercji.
+
+**Co widzi właściciel:** klik w link krzyżowy otwiera drugą kartę, a pierwsza **zostaje
+widoczna pod nią** — przesunięta o 72 px w bok i 56 px w dół. Trzecia karta zamyka najstarszą.
+Escape, klik w tło i klik w brzeg pierwszej karty zdejmują **po jednej** karcie.
+
+**Widoczność udowodniona pomiarem pikselowym, nie oceną:** kolor brzegu `[12,16,22]`
+z backdropem karty B i bez niego jest **identyczny**, przy tle strony `[4,5,8]`.
+Stała szerokość 660 px i wysokość 80vh z `R-CIVPEDIA-KARTY-SPOJNOSC-Q1` nietknięte;
+degradacja ciągła do progu 732 px szerokości okna, zweryfikowana na 16 viewportach.
+
+**Bramka `civpedia-caly-wiersz-przyciskiem` przeszła z 19 faili na PEŁNĄ ZIELEŃ** —
+potwierdzone przez orkiestratora na `main`. To jest miara tego, że sprzeczność faktycznie
+zniknęła, a nie została zamaskowana.
+
+**Sprzeczność w moim własnym zleceniu, wykryta pomiarem.** Ratyfikacja rundy 2 zawierała
+moje zdanie: „widoczny brzeg A ma być klikalny, **więc nie może go zakrywać backdrop
+karty B**". To był **mój wniosek, nie słowa właściciela**. Kontr-eksperyment obrony:
+przy `pointer-events:none` na wierzchnim backdropie **klik w brzeg A przestaje cokolwiek
+robić**, a **klik w dalekie tło zdejmuje NAJSTARSZĄ kartę** — czyli literalna realizacja
+mojego zdania łamie drugie ECHO. Wykonawca wybrał wariant zachowujący ECHO właściciela
+i **jawnie oznaczył interpretację** w kodzie i w nazwie asercji.
+
+**Zarzut 2 — najlepszy w tej rundzie.** Asercja nazwana „POMIAR WIDOCZNOSCI" **nie mierzyła
+widoczności**: po przyciemnieniu brzegu A bramka nadal dawała 64/1. Nazwa obiecywała coś,
+czego kod nie sprawdzał. Final Control **powtórzył tę mutację sam** i potwierdził, że po
+poprawce bramka czerwienieje (65/2) dzięki dwóm nowym asercjom pikselowym.
+
+Worktree sprzątnięty.
+
+## P-BRAMKA-EDGEPIXEL-BRAK-GUARDU-Q1 — INFRA (2026-09-05, nota Final Control)
+
+Helper `edgePixel()` (`gra/tools/entitycard-sufit-dwoch-kart-test.cjs:386`) **nie ma
+zabezpieczenia na przypadek „brak drugiej karty"**: przy pełnym cofnięciu do bazy
+`page.screenshot` dostaje pusty `clip` i bramka kończy się **stack trace'em** po wypisaniu
+11 FAIL. Bramka jest wtedy nadal czerwona (exit 1), więc kryterium nietautologiczności stoi —
+ale przeczy to jawnej intencji sentinela `NO_RECT` (`:67-70`) i **unieważnia liczbę
+„baza 26/39"** podaną w raporcie Operatora dla obecnej wersji bramki.
+
+Regres częściowy (`--ec-stack-dx` → 0) przechodzi czysto, 59/8 — czyli problem dotyczy
+wyłącznie pełnego cofnięcia. **STATUS: ZAREJESTROWANE, NIE DISPATCHOWANE.** Do zrobienia
+razem z `P-BRAMKA-NESTED-OVERLAY-BRAK-SCROLLINTOVIEW-Q1` — obie to jednolinijkowe
+uodpornienia bramek kart.
