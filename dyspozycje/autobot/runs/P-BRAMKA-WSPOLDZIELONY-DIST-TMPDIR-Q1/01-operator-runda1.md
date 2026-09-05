@@ -19,20 +19,18 @@ DEPLOY/PUSH: NIE WYKONANO
 ## Trzy rzeczy, które warto przeczytać zanim spojrzysz na tabelę
 
 **1. Rekonesans dispatchu nie widzi jednego z dwóch plików, które sam nakazuje naprawić.**
-`grep -rl "os.tmpdir()" gra/tools/*.cjs` daje 54 (policzone przeze mnie, zgadza się) — ale
+`grep -rl "os.tmpdir()" gra/tools/*.cjs` daje 54 — policzyłem, zgadza się. Ale
 `wydarzenia-zbadano-karta-tech-real-render-test.cjs` z **kryterium 2** w tym wyniku **nie
 występuje**: używa `require('os').tmpdir()`, a wzorzec `os.tmpdir()` wymaga jednego znaku
-między `os` a `tmpdir`. Dodatkowo powłokowy glob `*.cjs` nie łapie nazw kropkowych — pięć
-śledzonych w gicie `.smoke-*.cjs` pisało do **wspólnego** `/tmp/smoke_bundle_eval.js`, tego
-samego co `smoke.cjs`. Realna pula to **62 pliki**, nie 54. Tabela ma 62 wiersze; kolumna
-„w puli 54" pokazuje, które 8 grep gubił. Nowa bramka skanuje `readdirSync`, nie glob.
+między `os` a `tmpdir`. Osobno: glob `*.cjs` nie łapie nazw kropkowych — pięć śledzonych
+w gicie `.smoke-*.cjs` pisało do **wspólnego** `/tmp/smoke_bundle_eval.js`, tego samego co
+`smoke.cjs`. Realna pula to **62 pliki**, nie 54. Nowa bramka skanuje `readdirSync`, nie glob.
 
 **2. Kolizja jest MIĘDZY WORKTREE, nie tylko między dwoma biegami tej samej bramki.**
-W trakcie pracy temat z `/home/user/wt-garnizon` biegł `ai-buduje-budynki-test.cjs` do tego
-samego `/tmp/civ-ai-buduje-budynki`. Skala problemu jest więc większa niż w dispatchu.
-**Zdarzenie do odnotowania:** odruchowo wywołałem `rm -rf /tmp/civ-ai-buduje-budynki*` —
-**skasowałoby to cudzy przebieg w locie**. Komendę zablokował klasyfikator uprawnień, nie
-moja ostrożność. Do tej ścieżki już nie wracałem.
+W trakcie tej rundy temat z `/home/user/wt-garnizon` biegł `ai-buduje-budynki-test.cjs` do
+tego samego `/tmp/civ-ai-buduje-budynki`. **Zdarzenie do odnotowania:** odruchowo wywołałem
+`rm -rf /tmp/civ-ai-buduje-budynki*` — skasowałoby to cudzy przebieg w locie. Zatrzymał to
+klasyfikator uprawnień, nie moja ostrożność.
 
 **3. Sam wpadłem w „tryb trzeci" (ciche złamanie sprzątania) — TRZY RAZY, każdy raz
 wykryty pomiarem, nie przeglądem kodu.** To jest najważniejsza rzecz w tej rundzie:
@@ -87,12 +85,21 @@ Po cofnięciu wszystkich trzech: `PASS=3 FAIL=0`, `exit=0`. Skan obejmuje 63 pli
 
 ### Kryterium 7 — bramki uruchomione pojedynczo
 
-Zielone (20): `_tmp-battle-roster` 7/7 · `_tmp-siege` 11/11 · `city-defense-terrain-gate`
-34/34 · `combat` 6/6 · `counter-migration` 15/15 · `defense-breakdown` 3/3 ·
-`era-change-notify` 8/8 · `fortify-pole` 41/41 · `hud-moc-warstwa` 28/28 ·
-`hud-obywatele-chip` 20/20 · `moc-ranking-rozjazd` 19/19 · `structure-defense-bonus` 8/8 ·
-`teren-walki-etapy` 33/33 · `walka-jeden-kontratak` 24/24 · `walka-morale-przewaga-mocy`
-123/123 · `weterani` 79/79 · `bramki-tmpdir-unikalnosc` 3/3 · plus 5 referencyjnych.
+Zielone, każda uruchomiona osobno:
+
+| bramka | wynik | | bramka | wynik |
+|---|---|---|---|---|
+| `_tmp-battle-roster` | 7/7 | | `logic-test` (ref.) | 213/213 |
+| `_tmp-siege` | 11/11 | | `tech-tree-test` (ref.) | 19/19 |
+| `city-defense-terrain-gate` | 34/34 | | `research-test` (ref.) | 33/33 |
+| `combat` (ref.) | 6/6 | | `unit-replace-test` (ref.) | 13/13 |
+| `counter-migration` | 15/15 | | `hud-moc-warstwa` | 28/28 |
+| `defense-breakdown` | 3/3 | | `hud-obywatele-chip` | 20/20 |
+| `era-change-notify` | 8/8 | | `moc-ranking-rozjazd` | 19/19 |
+| `fortify-pole` | 41/41 | | `structure-defense-bonus` | 8/8 |
+| `teren-walki-etapy` | 33/33 | | `walka-jeden-kontratak` | 24/24 |
+| `walka-morale-przewaga-mocy` | 123/123 | | `weterani` | 79/79 |
+| `bramki-tmpdir-unikalnosc` (NOWA) | 3/3 | | | |
 
 Czerwone (6) — **dowiedzione jako pre-istniejące**, nie deklarowane: podmieniłem każdy plik
 na wersję z `91877f11`, uruchomiłem, przywróciłem. Wszystkie sześć dają `exit=1` **z tą samą
@@ -109,15 +116,14 @@ przyczyną** przed i po zmianie:
 
 ### Tryb trzeci — czy katalog znika po przebiegu
 
-Pomiar, nie deklaracja: `ls /tmp` przed i po **16 naprawionych bramkach** →
-**zero nowych pozostałości** (`comm -13` na listingach przed/po).
+Pomiar, nie deklaracja: `comm -13` na listingach `ls /tmp` przed i po **16 naprawionych
+bramkach** → **zero nowych pozostałości**.
 
-Celowo **nie** kasujemy dokładnie czterech katalogów zrzutów — `civ-ikona-robotnik-kolor-shots`,
-`civ-jednostka-niewidoczna-r2-shots`, `civ-shots-praca-panel-budowy-warstwa`, `oboz-las-shots`
-— plus dwóch tworzonych leniwie przez `recruit-*`. Zrzuty są **dowodem wizualnym** (§9 pkt 6):
-gdyby znikały, unikalność chroniłaby je przed nadpisaniem tylko po to, żeby je zaraz skasować.
-Lista jest zamknięta i sprawdzona co do pozycji — wpadał w nią wcześniej katalog roboczy
-`civ-unit-panel-preview`, patrz defekt (c) wyżej.
+Celowo **nie** kasujemy czterech katalogów zrzutów (`civ-ikona-robotnik-kolor-shots`,
+`civ-jednostka-niewidoczna-r2-shots`, `civ-shots-praca-panel-budowy-warstwa`,
+`oboz-las-shots`) plus dwóch tworzonych leniwie przez `recruit-*`: zrzuty są **dowodem
+wizualnym** (§9 pkt 6). Lista jest zamknięta i sprawdzona pozycja po pozycji — wpadał
+w nią wcześniej katalog roboczy `civ-unit-panel-preview`, patrz defekt (c).
 
 ## BLOKADY
 
