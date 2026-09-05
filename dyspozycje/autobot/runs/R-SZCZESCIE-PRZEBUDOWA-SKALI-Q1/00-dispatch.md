@@ -343,3 +343,115 @@ ją sprawdzają. Nic więcej nie ruszaj.
 | 20 | 63% → **72%** | 61% → **70%** | 64% → **73%** |
 
 Łagodniej o 5–9 punktów procentowych, im większe miasto tym więcej.
+
+---
+
+## RATYFIKACJA ORKIESTRATORA — runda 3, uzupełnienie (2026-09-05, po obronie rundy 1
+## i raporcie Operatora rundy 2)
+
+Trzy blokady zgłoszone przez Operatorów i Evaluatora są rozstrzygnięte niżej. Runda 3 wykonuje
+**cztery** rzeczy i nic więcej.
+
+### R3-A. `szczescie_max_pop_wspolczynnik` = 0,04 — jak w ratyfikacji rundy 3 wyżej
+
+Bez zmian wobec zapisu z 21:25. Operator rundy 2 zmierzył skutek: padają dokładnie **trzy**
+asercje, wszystkie w `gra/tools/szczescie-skala-normalizacja-test.cjs`:
+
+1. `wspolczynnik Sz per trudnosc easy<normal<hard` (sekcja 5) → **przepisz** na
+   `easy === normal === hard` (kontrakt G13), analogicznie do parytetu dołożonego w
+   `szczescie-zamoznosc-test`. **Nie usuwaj** — asercja ma nadal pilnować, że nikt nie wróci
+   do trójki per trudność, tylko z odwróconym znakiem oczekiwania.
+   Bliźniaczą asercję **dla Prawa** (`prawo_max_pop_wspolczynnik`) **zostaw nietkniętą** —
+   Prawo nie jest w tym temacie i jego współczynnik nie zmienia się w tej rundzie.
+2. `tabela: szMax(pop 12, epoka 1) = 48,0` → nowa wartość policzona samodzielnie (Operator
+   rundy 2 przewiduje 44,4 — **przelicz, nie przepisuj z zaufania**).
+3. `tabela: szMax(pop 12, epoka 3) = 112,0` → j.w. (przewidywane 103,6).
+
+Kotwica mnożnika `prog(12)/prog(2)` identyczny w epokach 1 i 3 — **zostaje bez zmian**, ma dalej
+zielenieć.
+
+### R3-B. ALLOWLISTA ROZSZERZONA o `gra/tools/citizen-resource-upkeep-test.cjs`
+
+**Zakres ściśle ograniczony:** wyłącznie dwie asercje literałowe (`:208`, `:209`), które niosą
+uchylone przez G8 liczby `+1` / `−1`. Przepisz je na `+2` / `−2` wraz z komentarzem wskazującym
+G8 i tę ratyfikację.
+
+**Zakaz osłabiania:** nie wolno tych asercji usunąć, zakomentować ani zamienić na porównanie
+ze stałą symboliczną (to zamieniłoby je w tautologię — reszta pliku już używa
+`M.CITIZEN_UPKEEP_HAPPINESS_PER_*` i przechodzi). Literał ma zostać literałem: bramka pilnuje,
+czy liczba w danych zgadza się z decyzją właściciela, więc musi ją znać z drugiego nośnika.
+Liczba asercji w tym pliku **nie może spaść** — po rundzie 3 ma być 109/0 albo więcej.
+
+Decyzja Operatora rundy 2, żeby przenieść ±2 wprost do `citizen-resource-upkeep.json` i usunąć
+mnożnik obejściowy `szczescie_zaopatrzenie_na_surowiec` — **ZATWIERDZONA**. Jeden nośnik liczby,
+nie dwa. To była właściwa lektura ratyfikacji rundy 2.
+
+### R3-C. `SZMAX_DEFAULTS` (14/20/28) — fallback dosunięty do danych
+
+Operator rundy 2 zgłosił jako obserwację: to jedyny parametr Szczęścia, w którym kod i dane
+mówią co innego — pozostałe fallbacki G4/G7/G9/G10 runda 1 przestawiła, ten został stary.
+
+**Rozstrzygnięcie: przestaw `SZMAX_DEFAULTS` na wartości poziomu NORMALNEGO z G13, czyli
+30 / 50 / 70.** Uzasadnienie: fallback jest jednowartościowy (nie zna trudności), a normal jest
+w tym repo poziomem odniesienia; ta sama konwencja obowiązuje resztę fallbacków przestawionych
+w rundzie 1. **To nie jest zmiana balansu** — dane ładują się statycznie i to one rządzą żywą
+grą; fallback dotyka wyłącznie ścieżek z `society = null` (m.in. w bramkach), gdzie dziś kłamie.
+
+Asercje bramek testujących fallback `14` (m.in. sekcja 2 `szczescie-skala-normalizacja-test`)
+przepisz na `30/50/70` — **z zachowaniem właściwości**, którą sprawdzały (że fallback istnieje
+i jest brany, gdy `society = null`), a dołóż asercję, że fallback **równa się** wartości
+`normal` z `society-params.json`. Wtedy każdy przyszły rozjazd kodu z danymi zaczerwieni bramkę,
+zamiast siedzieć cicho.
+
+### R3-D. `growth-happiness.ts` — koniec podwójnego liczenia Ceramiki i Spichlerza
+
+Operator rundy 2 zgłosił: `computeGrowthHappinessNetto` nadal dolicza Ceramikę +1 i Spichlerz +1,
+choć rozpiska Szczęścia już ich nie liczy (G3). Podgląd wzrostu i silnik rozeszły się o 2 punkty,
+a bramka `r-wzrost-szczescie-dubel-wealth-ceramika-test` utrwala rozjazd trzema ZIELONYMI
+asercjami (`10+1+1 = 12`).
+
+**Rozstrzygnięcie: usuń oba doliczenia z `computeGrowthHappinessNetto`.** To nie jest nowa
+decyzja balansowa i nie wolno jej tak potraktować — G3 właściciela już zapadła („Ceramika liczy
+się jak każdy zaopatrzony surowiec, Spichlerz jako budynek +5; osobnych linii nie ma"). Tu
+domykamy ją na drugim torze, który ją przeoczył. Bramka `r-wzrost-…-ceramika-test`: asercje
+`10+1+1 = 12` przepisz na `10` **wraz z asercją negatywną**, że dodanie
+`ceramikaZadowolenie`/`spichlerzZadowolenie` do wejścia nie zmienia wyniku — dokładnie tak, jak
+zrobiono to już po stronie rozpiski.
+
+**ALLOWLISTA ROZSZERZONA** o `gra/src/game/growth-happiness.ts` — wyłącznie w tym zakresie
+(usunięcie dwóch doliczeń). Reszta pliku nietknięta.
+
+### R3-E. IZOLACJA — jeden pisarz na worktree, bezwzględnie
+
+W rundzie 2 doszło do kolizji: dwa procesy pisały równolegle do `/home/user/wt-szczescie-skala`
+i do gałęzi `autobot/R-SZCZESCIE-PRZEBUDOWA-SKALI-Q1` (obrona rundy 1 i Operator rundy 2).
+Do utraty pracy nie doszło wyłącznie dlatego, że obaj Operatorzy commitowali per plik i robili
+mutacje przez kopię pliku zamiast `git checkout -- gra/`. **To była moja pomyłka jako
+orkiestratora, nie ich** — obaj zachowali się wzorowo i obaj to zgłosili.
+
+**Runda 3 jest jedynym procesem w tym worktree.** Zanim zaczniesz: `git log -1` i `git status`
+mają pokazywać `00afd4d9` i czyste drzewo. Jeśli pokazują cokolwiek innego — **zatrzymaj się
+ze statusem `BLOCK`** zamiast pisać do drzewa, w którym może pracować ktoś inny.
+
+### Czego runda 3 NIE robi
+
+- Nie rusza `prawo_max_pop_wspolczynnik` ani niczego po stronie Prawa — osobny temat.
+- Nie rusza `main.ts`.
+- Nie zmienia żadnej innej liczby balansu. `szczescie_max_epoka` (20/40/60 · 30/50/70 · 35/55/80),
+  `szczescie_pct_cap` 120, bonus osiedla [15,12,8,5], cuda po 6, wojna −5, podatki ±10, Wealth
+  cap +10 — **wszystkie zostają dokładnie takie, jakie są**.
+- Nie zamyka obserwacji „start easy = PorPct 94,8% przy pop 1" — to jest do wiadomości
+  właściciela i osobnej decyzji, nie do samodzielnego strojenia.
+
+### KRYTERIA KOŃCA rundy 3 (binarne)
+
+1. `szczescie_max_pop_wspolczynnik` = 0,04 na easy, normal i hard.
+2. `SZMAX_DEFAULTS` = 30/50/70 i istnieje asercja wiążąca go z `normal` w danych.
+3. `computeGrowthHappinessNetto` nie dolicza Ceramiki ani Spichlerza; istnieje asercja negatywna.
+4. `citizen-resource-upkeep-test.cjs` — **109/0 lub więcej**, literały `+2`/`−2`.
+5. `tsc --noEmit` zielony; pięć bramek referencyjnych zielonych.
+6. Cała rodzina szczęścia/porządku zielona, **bez wyjątku** — po tej rundzie nie ma już
+   ani jednej czerwonej bramki do usprawiedliwiania. `border-march-wygasanie-test` 22/4 jest
+   jedynym dopuszczalnym wyjątkiem (potwierdzony pomiarem jako identyczny na czystym `main`).
+7. Nietautologiczność: dla każdej z czterech zmian (A–D) pokaż mutację, która czerwieni
+   dokładnie tę asercję, i cofnij ją, dowodząc `git diff --quiet`.
