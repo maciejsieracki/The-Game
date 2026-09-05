@@ -5129,3 +5129,50 @@ Dlatego kryterium 4 węzła B zostało **uchylone przeze mnie jako błędnie pos
 dodać wskaźnik zbiorczy, przerobić przycisk na przełącznik ze stanem czytelnym w konwencji
 `.active`/`.off` ustalonej w węźle B. **Kolizja: `main.ts` + `empireDetailPanel.ts`** —
 dispatchować po zwolnieniu obu. **STATUS: ZAREJESTROWANE, NIE DISPATCHOWANE.**
+
+### `R-MAPA-ETYKIETA-STOLICY-NAZWA-MIASTA-Q1` — **ZINTEGROWANE** (`8080f792`, 2026-09-05)
+
+Cztery rundy, dwie zmiany kierunku, **dwa błędy w moich zleceniach uznane i naprawione**.
+Final Control rundy 4: **PASS** (werdykt ODDAL po obronie).
+
+**Co widzi właściciel:** chińska stolica AI pokazuje `XI'AN` zamiast `QIN · CHIŃCZ…`.
+Przy okazji naprawiona ta sama pomyłka **po stronie gracza** — `playerCapitalFromPool`
+też czytał pulę państw, więc gracz-Chińczyk startował w mieście „Qin". Budżet nazwy
+260 → 305: **0/15 przycięć we wszystkich trzech konfiguracjach**, łącznie z własną stolicą
+gracza mającą trzeci slot WZROST%. W całej puli 1500 nazw przycięcia spadły z 25 do 8.
+Kolizji plakietka↔plakietka **0/45**.
+
+**Dwa moje błędy w zleceniach, oba wykryte przez wykonawców:**
+1. **Runda 3 — kryterium niewykonalne.** Postawiłem warunek „plakietka nie zachodzi
+   na sąsiednie heksy". Pomiar 30 plakietek pokazał, że **nie spełnia go żadna konfiguracja,
+   także sprzed całego tematu** — granica wypada przy 4–5 wielkich literach, mieści się
+   jedno miasto z piętnastu (`Tyr`). Operator zatrzymał się na `DECISION_REQUIRED`
+   zamiast naciągać odczyt warunku, i zaproponował miarę rozłączną, którą przyjąłem.
+2. **Runda 4 — kotwica z powietrza.** Podałem bazę „≈305" wyprowadzoną z zapisu `−100,0%`,
+   którego formatter **nigdy nie produkuje**. Prawdziwe minimum to 298. Operator zostawił
+   305, ale **z własnego pomiaru i dla marginesu** (7,1 px zamiast 0,1 px), i zgłosił
+   rozbieżność zamiast dopasować pomiar do mojej liczby.
+
+**Znalezisko Evaluatora rundy 4 — margines tekstury zawyżony o 148 px.** Komentarz
+deklarował sufit bazy 391; faktyczny to **354**, bo `(391+158)×4 = 2196` przekracza
+gwarantowany w WebGL2 `MAX_TEXTURE_SIZE = 2048`, a `(354+158)×4 = 2048` **dokładnie**.
+Źródło błędu: próbka obejmowała tylko `miasta_cywilizacji[0]` przy `defenseTier: 0`,
+a najdłuższa z nich jest krótsza od budżetu, więc nigdy go nie wypełniła. Znaczenie
+praktyczne: **udokumentowany „zapas na przyszłość" prowadziłby wprost w ścianę**, gdyby
+ktoś kiedyś na nim polegał. Obrona poprawiła komentarz **oraz skrypt dowodowy** — bez tego
+komentarz cytowałby dowód drukujący inną liczbę, czyli powielał ten sam defekt.
+
+**Final Control ODDALIŁ zarzut z uzasadnieniem wartym zapamiętania:** zarzut był trafny
+co do każdej liczby, ale `NAPRAW` wymaga wskazania „co i gdzie poprawić" (§3c pkt 3),
+a naprawa weszła już w tej samej rundzie — nie ma podstawy, by zużyć rundę 5/5 na pracę
+wykonaną. Sprawdził przy tym sam, że diff obrony w `cityMapStatChip.ts` zawiera
+**zero linii kodu**, więc „brak ryzyka regresu" jest faktem, nie deklaracją.
+
+Bramki potwierdzone przez orkiestratora NA `main`: `mapa-etykieta-stolicy` 47/0,
+`display-names` 27/0, `city-map-badge` 62/0, `city-badge-growth-percent` 38/0,
+`rozmiar-label` 13/0, `city-names-pool` 12/0, `city-names-pools` 6/0, logic 213/213,
+tech-tree 19/19, research ALL GREEN, unit-replace 13/13, combat OK, `tsc` exit 0.
+Worktree sprzątnięty.
+
+**Odblokowany temat następczy:** `R-NAZWY-MIAST-AUDYT-STOLICE-I-PANSTWA-Q1` (pule nazw)
+przestaje kolidować — ten temat zwolnił `city-names-pool.ts` i `civ-names.ts`.
