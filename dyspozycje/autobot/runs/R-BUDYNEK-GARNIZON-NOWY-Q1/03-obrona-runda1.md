@@ -83,7 +83,7 @@ Widać to na przegenerowanym zrzucie `dowody/garnizon-karta-encji.png`: **„Plo
 
 Cztery klucze z prefiksem `prawo_garnizon*`/`…garnizonu` o mechanice **przeciwnej** do tej, którą temat Prawa ma dopisać.
 
-**Gorzej — kolizja jest już w kodzie, nie tylko w nazwach.** `gra/src/game/society-breakdown.ts:638-647` wystawia linię jednostkową z **`id: 'garnizon'`** i etykietą `Garnizon (N jedn.)`. Budynkowa linia Prawa trafi do **tej samej tablicy `lines[]` z tym samym `id`**. Konsument `gra/src/ui/orderPanel.ts:129-137` renderuje po `label` i tnie `slice(0, max = 5)` → gracz zobaczy **dwie pozycje „Garnizon"** w rozpisce Porządku, a piąta realna pozycja może zostać wypchnięta pod „…".
+**Gorzej — kolizja jest już w kodzie, nie tylko w nazwach.** `gra/src/game/society-breakdown.ts:638-647` wystawia linię jednostkową z **`id: 'garnizon'`** i etykietą `Garnizon (N jedn.)`. Budynkowa linia Prawa trafi do **tej samej tablicy `lines[]` z tym samym `id`**. Konsument `gra/src/ui/orderPanel.ts:129-137` renderuje po `label`, nie po `id`, i tnie liste — dla Prawa wywolanie to `linesHtml(s.prawLines, 6, pfx)` (`orderPanel.ts:167`), czyli **6 pozycji**, reszta pod „…" → gracz zobaczy **dwie pozycje „Garnizon"** w rozpisce Porządku, a przy komplecie administracji szósta realna pozycja może zostać wypchnięta poza kadr.
 
 **Czego NIE robię:** naprawa wymaga `society-params.json` i `society-breakdown.ts` — **oba zakazane bezwzględnie** w mojej allowliście. Nie wchodzę w nie. Przekazuję jako ostrzeżenie wejściowe do `R-PRAWO-PRZEBUDOWA-SKALI-Q1` (§BLOKADY poz. 4).
 
