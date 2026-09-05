@@ -178,3 +178,107 @@ gałęzi. Po 5 rundach: `LIMIT-5-EXCEEDED`.
 
 Operator → Evaluator → (Obrona, jeśli zarzuty) → koniec skryptu.
 Final Control osobnym wywołaniem Workflow. Integracja i deploy — ręką orkiestratora.
+
+---
+
+## RATYFIKACJA ORKIESTRATORA — runda 2 (2026-09-05, po `DECISION_REQUIRED` rundy 1)
+
+Raport rundy 1 przyjęty. Recon G1 (dziesięć miejsc, których dispatch nie znał), zrzuty
+z żywego Chromium, mutacja M2 odtwarzająca dokładnie pułapkę `upgradeFrom` — wzorowo.
+Trzy blokady rozstrzygam niżej, plus decyzja właściciela o liczbach.
+
+### R2-A. LICZBY — ECHO WŁAŚCICIELA, wariant Operatora ZATWIERDZONY BEZ ZMIAN
+
+| pole | wartość |
+|---|---|
+| `kosztBudowy` | **30** (60 punktów Pracy na ekranie) |
+| `przyrostKosztu` | **6** |
+| `utrzymanie` | **2** (4 Pieniądza, 5 drewna/turę) |
+| `przyrostUtrzymania` | **1** |
+| `koszt_surowce` | **drewno 30** (60 z magazynu) |
+| `maksPoziom` | **1** |
+| `epokaWejscia` | **1** · `lokalizacja: region` · `techUnlock: "-"` · `dajeSzczescie: false` |
+
+Właściciel wybrał tę wersję wprost, z uzasadnieniem Operatora: droższy od Domu Starszyzny
+(kwatery i posterunek, nie izba obrad), tańszy od każdego urzędu epoki 2 (ma być realnie
+osiągalny w pierwszych turach), utrzymanie jak Dwór Zarządcy (strażnicy biorą żołd).
+
+**Teraz to są liczby właściciela.** Od tej chwili obowiązuje zakaz ich strojenia —
+i **bramka ma je zamrozić**: dołóż asercje na dokładne wartości `30 / 6 / 2 / 1 / drewno 30`.
+W rundzie 1 słusznie ich nie zamrażałeś (były propozycją); teraz jest odwrotnie — bez
+asercji ktoś je zmieni przy następnej fali i nikt nie zauważy.
+
+### R2-B. ALLOWLISTA ROZSZERZONA o `gra/tools/grupy-budynkow-test.cjs`
+
+Bramka ma zaszyte liczniki z lipca: `buildings.length === 40` i `'Prawo i administracja': 8`.
+Była **czerwona już przed Twoją pracą** (41 budynków vs 40) — Twój rekord dokłada czwarty
+fail tej samej klasy.
+
+**Popraw OBA liczniki na stan faktyczny (42 i 9) i napraw też pre-istniejący fail.**
+Nie zostawiaj bramki „czerwonej jak była" — to jest dokładnie ten rodzaj długu, który
+narósł tu przez półtora miesiąca. **Dołóż komentarz**, że liczniki wymagają bumpu przy
+każdym nowym budynku, żeby następny Operator wiedział to od razu.
+
+Jeśli po poprawce zostaną w tym pliku inne faile, których przyczyną nie jest liczba
+budynków — **wypisz je i zostaw**, to osobna sprawa.
+
+### R2-C. ALLOWLISTA ROZSZERZONA o hasło CivPedii
+
+`docs/encyklopedia/budynki/garnizon.md` + regeneracja `gra/src/data/wikiBundle.json`.
+
+Przycisk „Więcej informacji (Civpedia)" jest na karcie **zawsze**; bez hasła klik jest
+no-opem. Fakt, że 17 z 42 budynków ma tę samą lukę, jest argumentem za jej niepowiększaniem,
+nie za dołączeniem do niej.
+
+**Uwaga praktyczna z Twojego własnego reconu:** `civpedia-gra-id-mostek-test.cjs` przy
+uruchomieniu **nadpisuje** śledzony `wikiBundle.json` (zmienia stempel `generated`).
+Po regeneracji sprawdź `git diff` tego pliku i upewnij się, że commitujesz treść, a nie
+sam przestawiony stempel.
+
+### R2-D. ALLOWLISTA ROZSZERZONA o `gra/src/game/ai.ts` — JEDNA LINIA
+
+**ECHO właściciela: „Dopisać Garnizon do listy AI od razu."**
+
+Zakres: **wyłącznie dopisanie `garnizon` do zaszytej listy `infraOrder`** (~linia 1471).
+Ani jednej innej zmiany w tym pliku.
+
+**§2b — ostrzeżenie o kolizji, przeczytaj zanim dotkniesz pliku.** Równolegle pracuje temat
+`P-AI-BRAK-SCIEZKI-ZDOBYCIA-MIASTA-ADIACENCJA-Q1` w rejonie `ai.ts:2517`. Twoja zmiana
+jest o tysiąc linii wyżej, więc integracja powinna przejść — ale **zmień dokładnie jedną
+linię**, żeby scalenie było trywialne. Jeśli zobaczysz potrzebę większej zmiany —
+`DECISION_REQUIRED`, nie improwizuj.
+
+**Właściciel wie, że to jest łatka, a nie naprawa przyczyny** — decyzję podjął po opisaniu,
+że następny nowy budynek znowu będzie dla AI niewidoczny. Rejestruję osobny temat
+`P-AI-LISTA-BUDYNKOW-ZASZYTA-NIE-Z-PRODUKCJI-Q1` na naprawę źródła; **Ty go nie robisz.**
+
+Dołóż asercję do swojej bramki: `garnizon` występuje na liście AI. Bez niej łatka wypadnie
+przy pierwszym refaktorze `ai.ts`.
+
+### R2-E. Trzy niespójności zastane — ZOSTAJĄ, zarejestrowane
+
+`trybunal` bez wpisu w `building-icon-map.json` (leci na heurystykę), `bld-pretorium.svg`
+istnieje ale mapa kieruje `pretorium` na `bld-palac`, `civpedia-gra-id-mostek-test` brudzi
+śledzony plik. **Nie naprawiasz ich** — rejestruje orkiestrator. Wypisz je w OBSERWACJACH.
+
+### KRYTERIA KOŃCA rundy 2
+
+1. Liczby R2-A w `buildings.json` co do cyfry, **zamrożone asercjami** w bramce tematu.
+2. `node gra/tools/grupy-budynkow-test.cjs` — **zielona** (albo z jawną listą faili
+   niezwiązanych z liczbą budynków).
+3. `docs/encyklopedia/budynki/garnizon.md` istnieje, `wikiBundle.json` zawiera hasło,
+   a klik „Więcej informacji" na karcie Garnizonu **otwiera je w żywym Chromium** — zrzut
+   w `dowody/`. Bez zrzutu to jest deklaracja, nie dowód (§9 poz. 6b).
+4. `garnizon` na liście AI + asercja w bramce.
+5. Bramka tematu zielona z liczbą asercji **wyższą niż 55** (dochodzą zamrożone liczby,
+   CivPedia i lista AI).
+6. `tsc --noEmit` zielony; pięć bramek referencyjnych zielonych.
+7. Mutacja per nowa grupa asercji: zmień `kosztBudowy` na 31 → bramka czerwona; usuń
+   `garnizon` z listy AI → bramka czerwona; usuń hasło CivPedii → bramka czerwona.
+   Każdą cofnij przez KOPIĘ pliku, `git diff --quiet`.
+
+### Czego runda 2 NIE robi
+
+Nie wpina Garnizonu w Prawo (osobny temat `R-PRAWO-PRZEBUDOWA-SKALI-Q1`, wartości 25/35/47).
+Nie rusza obrony cywilnej ani Milicji (`P-MILICJA-OBRONA-CYWILNA-Q1`). Nie naprawia
+przyczyny problemu z listą AI. Nie rusza trzech zastanych niespójności z R2-E.
