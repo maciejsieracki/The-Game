@@ -4829,6 +4829,79 @@ sprawną pracę. Wzorzec `os.tmpdir()/<stała-nazwa>` ma więc już **dwa** potw
 wystąpienia, co przesuwa audyt z „warto sprawdzić" na „prawie na pewno jest ich więcej".
 **Do zakresu tematu dochodzi `ai-buduje-budynki-test.cjs`.**
 
+## R-SZCZESCIE-AUDYT-B-WKLAD-BUDYNKOW-Q1 — POMIAR ORKIESTRATORA, WSTRZYMANY DO DECYZJI (2026-09-05)
+
+**Temat NIE zostal dispatchowany. Zadna liczba balansu nie zostala zmieniona.** Wlasciciel
+przypomnial, ze balans jest wylacznie w jego wladaniu, i po obejrzeniu wariantow wstrzymal
+decyzje. Ponizej jest material do niej — sam pomiar, bez rekomendacji wpisanej do kodu.
+
+**Punkt wyjscia (miasto pop 8, budynki poziomu 1, `SZ_PCT_CAP = 120%`):**
+
+| Epoka | Budynkow | `szMax` | Wklad budynkow | % `szMax` |
+|---|---|---|---|---|
+| 1 | 11 | 18,5 | 15 | 81% |
+| 2 | 26 | 26,5 | 40 | **151%** |
+| 3 | 39 | 37,1 | 69 | **186%** |
+| 4 | 41 | 37,1 | 71 | **191%** |
+
+Od epoki 2 same budynki przekraczaja sufit — kultura, religia, prawo i kary za podboj
+przestaja cokolwiek wazyc. To jest zmierzony mechanizm objawu „im dalej w las, tym
+szczescie wyzsze".
+
+**Drugie znalezisko:** 28 z 41 budynkow daje szczescie WYLACZNIE z ryczaltu `+1`, bez
+tematycznego uzasadnienia — mury, palisada, koszary, fort, baszta, warsztat obleznicy,
+odlewnia, magazyn. Tylko 13 ma realne `baza.zadowolenie`.
+
+**Trzecie znalezisko, kluczowe dla oceny wariantow: utrzymanie budynkow W ZLOCIE JUZ
+ISTNIEJE i jest naliczane** — `buildings.json` ma pola `utrzymanie` i `przyrostUtrzymania`
+wypelnione dla **40 z 41** budynkow, a `economy-upkeep.ts:641-645` je realnie pobiera.
+Komplet budynkow kosztuje dzis **84 zl/ture** (poziom 1). Podniesienie tych stawek **nie
+rusza szczescia ani o punkt** — to osobny uklad, `sumBuildingHappinessFromBuiltIds`
+o zlocie nic nie wie.
+
+**Cztery policzone warianty (% `szMax`, epoki 1/2/3/4):**
+
+- **A — zdjac ryczalt `+1`**, zostaje tylko `baza.zadowolenie`: 22 / 53 / 81 / 81%.
+  Jedna funkcja w `economy.ts`, zero nowych parametrow. Skutek uboczny: w epoce 1 budynki
+  daja prawie nic (z 11 dostepnych tylko trzy cokolwiek wnosza).
+- **B — sufit jako udzial `szMax`** (przyklad 50%): 50 / 50 / 50 / 50%. Ograniczenie
+  z konstrukcji, odporne na przyszle budynki. Skutek uboczny: po sufitcie kolejny budynek
+  nie daje nic.
+- **C — malejace zwroty** (8 pelnych, reszta po 1/2): 73 / 117 / 144 / 147%.
+  **NIE WYSTARCZA** — od epoki 3 miasto nadal stoi przy suficie.
+- **D — utrzymanie w SZCZESCIU**, proporcjonalne do istniejacego `utrzymanie` w zlocie:
+  przy `k = 0,25` → 66 / 116 / 135 / 135% (objaw wraca w epoce 3);
+  przy `k = 0,50` → 51 / 81 / 84 / 78% (dziala, ale komplet kosztuje 42 pkt szczescia/ture).
+
+**STATUS: ZAREJESTROWANE, WSTRZYMANE — czeka na decyzje wlasciciela co do wariantu
+i wartosci parametru.** Gdy decyzja zapadnie, parametr wpisuje do dispatchu orkiestrator
+jako wartosc PODANA PRZEZ WLASCICIELA, a Operator dostaje jawny zakaz jej strojenia.
+Wezly C i D audytu szczescia czekaja za tym wezlem (kolejnosc B -> C -> D, §2b).
+
+## P-BRAMKI-INFRA-CRASH-DWIE-Q1 — INFRA (2026-09-05, rozszerzenie tematu map-field-battle)
+
+Dwie bramki **wywalaja sie przed pierwsza asercja**, czyli nie wykonuja zadnego pomiaru,
+a sa wymieniane w kryteriach konca tematow. Generuja przez to falszywe `PASS-WITH-NOTES`:
+agent widzi czerwien, sprawdza parytet na czystej bazie, stwierdza „czerwone bylo przed
+tematem" i przechodzi dalej — a bramka przez caly ten czas nic nie chroni.
+
+- `map-field-battle-test.cjs` → `TypeError: import_meta.glob is not a function`
+  (`.map-field-battle-bundle.cjs:5244`). `import.meta.glob` to funkcja **Vite**, nie Node
+  ani esbuild — bundle budowany esbuildem zostawia wywolanie nietkniete.
+- `entity-card-contract-test.cjs` → `ReferenceError: requestAnimationFrame is not defined`
+  (`drainQueue` → `mountUnitMiniPreview` → `renderEntityCard`). Podglad 3D jednostki wchodzi
+  na DOM-owe API animacji, ktorego w golym Node nie ma.
+
+Wspolny mianownik: braki w warstwie zgodnosci srodowiska bramki, **nie defekty logiki gry**.
+Naprawa nie moze zmieniac zachowania gry w przegladarce ani oslabiac asercji.
+**DISPATCHOWANE** 2026-09-05 — worktree `wt-bramki-infra-crash`. Wchlania zakres
+`P-BRAMKA-MAP-FIELD-BATTLE-INFRA-CZERWONA-Q1`.
+
+**Poza zakresem tego tematu, nadal otwarte:** `oboz-lowiecki-las-test` (72 pass / 19 fail)
+i `map-improvement-qualify-test` (130 pass / 1 fail) — te dwie **uruchamiaja sie
+poprawnie** i maja realne czerwone asercje, wiec sa kandydatami na defekty gry, nie INFRA.
+Osobny temat.
+
 ## P-BRAMKA-AI-BUDYNKI-NIEZAREJESTROWANA-W-PROC-Q1 — PROCESS (2026-09-05, ustalenie Final Control)
 
 Final Control tematu `P-AI-NIE-STAWIA-BUDYNKOW-Q1` (runda 2, werdykt PASS) zauważył, że
