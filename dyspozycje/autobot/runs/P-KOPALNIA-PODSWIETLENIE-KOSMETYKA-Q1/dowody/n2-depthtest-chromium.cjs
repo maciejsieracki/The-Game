@@ -227,8 +227,12 @@ window.__run = function (variantName) {
       if (isMnt) paintedMountain++;
     }
   }
-  // Ostatni render zostaje na ekranie do zrzutu — pełna scena z warstwą.
-  if (overlay) renderer.render(scene, cam);
+  // Ostatni render zostaje na ekranie do zrzutu. Renderujemy BEZWARUNKOWO: materiały
+  // i tło są już przywrócone po przebiegu masek, więc dla wariantów 'przed'/'po' na
+  // ekranie ląduje pełna scena z warstwą, a dla wariantu 'brak' (overlay === null) —
+  // czysta scena referencyjna. Bez tego renderu zrzut wariantu 'brak' pokazywał
+  // ostatni przebieg MASEK ID, a nie scenę referencyjną (zarzut 1 Evaluatora, runda 1).
+  renderer.render(scene, cam);
   return { variant: variantName, paintedTotal, paintedUnit, unitPx, paintedMountain, mountainPx };
 };
 `;
@@ -266,7 +270,9 @@ html,body{margin:0;background:#111}canvas{display:block}
     await page.locator('#gl').screenshot({ path: shot });
     console.log(`[n2] zrzut: ${shot}`);
   }
-  // Scena referencyjna bez warstwy — kontrola, że przesłona i jednostka są tam, gdzie mają być.
+  // Scena referencyjna bez warstwy (overlay === null) — kontrola, że przesłona i jednostka
+  // są tam, gdzie mają być. __run kończy bezwarunkowym renderem przywróconych materiałów,
+  // więc zrzut trzyma scenę referencyjną, a nie przebieg masek ID.
   await page.evaluate(() => window.__run('brak'));
   await page.locator('#gl').screenshot({ path: path.join(OUT_DIR, 'n2-scena-bez-warstwy.png') });
 

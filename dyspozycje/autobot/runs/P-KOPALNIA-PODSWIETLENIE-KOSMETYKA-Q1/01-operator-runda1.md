@@ -19,7 +19,7 @@ plików allowlisty i zamyka N2, N3, N5 i N6. Uwagi Evaluatora opisują stan
 | N3 | `clearMineEligibleOverlay()` = pierwsza linia `applySceneResult()` (`main.ts:33332-33333`) | mutacja (usunięcie linii) → bramka **75/1** |
 | N5 | tautologia zastąpiona regexem importu (`…test.cjs:288`); linia 277 to dziś asercja `renderOrder === 3` | patrz niżej |
 | N6 | komentarz mówi „w większości zasłonięty… jedynie wąski pierścień" (`rangeOverlay.ts:461-464`) | przeliczenie własne, niżej |
-| N2 | `MINE_ELIGIBLE_STYLE.hugTerrainRelief = true`; w `gra/src/render/` **nie ma już** `depthTest:false` | pomiar w Chromium, niżej |
+| N2 | `MINE_ELIGIBLE_STYLE.hugTerrainRelief = true`; w **ścieżce warstwy kopalni** (`rangeOverlay.ts`) **nie ma już** `depthTest:false` [ERRATA R1-Z3] | pomiar w Chromium, niżej |
 
 **Nie wprowadziłem żadnej zmiany w `gra/`** — naprawianie naprawionego byłoby
 zmyśleniem pracy. Dostarczyłem natomiast dowód, którego brakowało.
@@ -42,7 +42,7 @@ regionów z osobnego przebiegu ID — bez heurystyk kolorystycznych.
 i zniknął w PO przy widoczności **119 %** poprzedniej — płachta oblekająca pokrywa
 całą powierzchnię bryły, a nie sam krążek, więc jest lepiej widoczna, nie gorzej.
 Zrzuty: `dowody/n2-przed-depthtest-false.png`, `dowody/n2-po-hugterrainrelief.png`,
-`dowody/n2-scena-bez-warstwy.png`.
+`dowody/n2-scena-bez-warstwy.png` [ERRATA R1-Z1].
 
 ## N5 — dowód nietautologiczności
 
@@ -57,8 +57,9 @@ Tint 0,97·HEX_R (`HUG_RELIEF_RADIUS_FRAC` = promień płaskiego krążka), `yOf
 0,06. Zmierzyłem realny promień przesłaniania raycastem po `powierzchniaReliefuY`
 dla 5 wariantów × 720 kierunków, na wysokości krążka: **wzgórze 0,777–0,915·R,
 góra 0,714–0,818·R** → widoczny pierścień **11,0–45,7 % pola krążka**.
-Kierunek komentarza z HEAD jest poprawny („w większości zasłonięty, wąski
-pierścień"), krążek nigdy nie znikał w całości.
+Kierunek komentarza z HEAD jest poprawny co do tego, że krążek nigdy nie znikał
+w całości — ale sformułowanie „jedynie wąski pierścień" przeszacowuje zasłonięcie
+dla Góry (do 45,9 % pola krążka). [ERRATA R1-Z2 — poprawione w rundzie 1, obrona]
 
 **Rozbieżność (tryb trzeci): bracket 0,87–0,92·R z dispatchu to wartości stałych
 `GORA_FOOTPRINT_R`/`WZGORZE_FOOTPRINT_R`, a nie efektywny promień przesłaniania.**
@@ -97,3 +98,26 @@ Evaluator — niezależna weryfikacja tezy „wszystkie cztery uwagi już w `mai
 (`git merge-base --is-ancestor ac09c091 HEAD`) oraz powtórzenie pomiaru N2.
 
 DEPLOY/PUSH: NIE WYKONANO
+
+
+---
+
+## ERRATA (dopisana w rundzie 1, faza obrony — nie zmienia werdyktu)
+
+Trzy zarzuty Evaluatora (`02-evaluator-runda1.md`) przyjęte; szczegóły i dowody
+w `03-obrona-runda1.md`. Tekst powyżej poprawiony wyłącznie w miejscach oznaczonych
+`[ERRATA …]`, reszta zostaje jako zapis historyczny.
+
+- **R1-Z1** — `dowody/n2-scena-bez-warstwy.png` trzymał przebieg MASEK ID, nie scenę
+  referencyjną: dla wariantu `'brak'` (`overlay === null`) harness nie renderował ponownie
+  po przywróceniu materiałów. Naprawione w `dowody/n2-depthtest-chromium.cjs`
+  (render bezwarunkowy), zrzut przegenerowany. Dwa nośne zrzuty PRZED/PO są
+  bit-identyczne po naprawie — defekt nie dotykał pomiaru.
+- **R1-Z2** — komentarz N6 w `rangeOverlay.ts` mówił „jedynie wąski pierścień"; zmierzony
+  pierścień to 11,1–45,9 % pola krążka (Góra 28,8–45,9 %). Komentarz przepisany na liczby.
+- **R1-Z3** — zdanie „w `gra/src/render/` nie ma już `depthTest:false`" było FAŁSZYWE:
+  jest **13** przypisań w **8** plikach (units ×4, siegeMarker ×3, cities, unitOwnerEmblem,
+  cityMapStatChip, workerFieldOverlay, cityOkolicaOverlay, unitStatPlate). Prawdziwe
+  i wystarczające dla N2 jest zdanie węższe: nie ma go w ścieżce warstwy kopalni
+  (`rangeOverlay.ts` — tam `depthTest` zostaje domyślne `true`, `rangeOverlay.ts:422`).
+  Wszystkie 13 wystąpień to warstwy HUD/sprite'y poza tematem i poza allowlistą.
