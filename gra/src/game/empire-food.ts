@@ -17,10 +17,9 @@ import {
   clampPoziomRacji,
   ensureCityRationDefaults,
   getCityRationLevel,
+  rationGrowthPercent,
   WYZYWIENIE_LEVELS,
-  WYZYWIENIE_MAX,
   WYZYWIENIE_MIN,
-  WYZYWIENIE_STEP,
   type GrowthPercentBreakdown,
   type PoziomRacji,
   type RationParams,
@@ -452,6 +451,238 @@ export function simulateCityFoodCentralPool(
 }
 
 /**
+ * R-AUTOWYZYWIENIE-ROWNY-WZROST-Q1-A: czy KAŻDE miasto właściciela zostanie w tej turze
+ * nakarmione, tzn. czy pula centralna pokryje KAŻDY deficyt lokalny W CAŁOŚCI.
+ *
+ * `simulateCityFoodCentralPool` tego NIE mówi: pokrywa deficyty `Math.min(need, max(0, central))`,
+ * więc gdy puli zabraknie, zwraca 0 — nigdy nie schodzi poniżej zera i „pool >= 0" jest w praktyce
+ * zawsze prawdą. Głód (`fed=false` → `applyHungerPenaltyV85` → −1 ludność) rozpoznaje dopiero
+ * `advanceEmpireFood` (:257-265). Ta funkcja odtwarza DOKŁADNIE tę samą kolejność (nadwyżki do
+ * puli, potem deficyty w kolejności miast) i zwraca twardy warunek nadrzędny funkcji celu
+ * autowyżywienia: „żadne miasto nie głoduje".
+ * EN: whether EVERY city gets fully covered this turn — the hard constraint of the auto-feeding
+ * objective. `simulateCityFoodCentralPool` cannot answer this: it clamps coverage at the pool's
+ * remainder and never returns a negative pool, so "pool >= 0" is vacuous. Mirrors the exact
+ * redistribution order of `advanceEmpireFood`.
+ */
+export function simulateCityFoodAllFed(
+  zapasyPrzed: number,
+  perCity: ReadonlyArray<CityFoodTickLike>,
+  ownerId: number,
+): boolean {
+  let central = zapasyPrzed;
+  const deficits: number[] = [];
+  for (const tick of perCity) {
+    if (tick.ownerId !== ownerId || tick.oblegany) continue;
+    const produkcja = tick.zywnoscBrutto ?? 0;
+    const koszt = tick.kosztRacji ?? 0;
+    const bilans = tick.bilansLokalny ?? (produkcja - koszt);
+    if (bilans >= 0) central += bilans;
+    else deficits.push(-bilans);
+  }
+  for (const need of deficits) {
+    const covered = Math.min(need, Math.max(0, central));
+    central -= covered;
+    if (covered < need - 1e-9) return false;
+  }
+  return true;
+}
+
+/**
+ * R-AUTOWYZYWIENIE-ROWNY-WZROST-Q1-A, własność (B): poziom Wyżywienia miasta, które osiągnęło
+ * limit ludności. Najniższy poziom z `WYZYWIENIE_LEVELS` o NIEUJEMNYM wzroście (dziś 1,5 → 0%):
+ * miasto na limicie nie musi rosnąć (i tak nie urośnie — `applyFractionalGrowthV85` blokuje
+ * DODATNI przyrost przy `pop >= popCap`, ale ujemnego NIE blokuje: gałąź `growthPct < 0`
+ * w `population-growth-v85.ts:250` działa niezależnie od capu), więc poziom niżej
+ * (−2%/−6%/−10%) jest wykluczony DOPÓKI stać na to imperium. To jest SUFIT, nie podłoga:
+ * gdy wspólny poziom miast rosnących spada poniżej tej wartości, miasto na limicie schodzi
+ * razem z nimi (`cappedLevelFor`) — inaczej byłoby uprzywilejowane kosztem rosnących. Wyprowadzony z tabeli `WYZYWIENIE_GROWTH_PCT`, nie wpisany ręcznie —
+ * zmiana tabeli automatycznie przesuwa ten poziom.
+ * EN: ration level for a city at its population cap — the lowest level with non-negative growth
+ * (today 1.5 → 0%). Derived from WYZYWIENIE_GROWTH_PCT, not a magic number. Its surplus portion
+ * returns to the central pool for the remaining cities.
+ */
+export const WYZYWIENIE_POZIOM_NA_LIMICIE: PoziomRacji =
+  WYZYWIENIE_LEVELS.find(l => rationGrowthPercent(l) >= 0) ?? WYZYWIENIE_MIN;
+
+export interface EqualGrowthRationPlanOpts {
+  ownerId: number;
+  cities: City[];
+  econ: Pick<EconomyTickResult, 'perCity'>;
+  zapasyPrzed: number;
+  rationParams: RationParams;
+  spichlerzByCity?: ReadonlyMap<string, SpichlerzCityBonusState>;
+  /** Gracz Q5=A: planem obejmujemy tylko miasta z autoWyzywienie === true. */
+  onlyAutoManaged?: boolean;
+  /** Gracz (ownerId===0): kryterium FLOW-based zamiast STOCK-based — patrz `isRationBalanceTargetMet`. */
+  requireFlowBalance?: boolean;
+  /** Koszt żywności armii tej tury — ten sam kontrakt co w `AutoBalanceRationsOpts.kosztArmii`. */
+  kosztArmii?: number;
+  /**
+   * Własność (B): limit ludności per miasto (`cityPopulationCap(maAkwedukt, maSpichlerz, econParams)`),
+   * liczony przez wołającego — `empire-food.ts` nie zna ani `builtByCity`, ani `EconParams`, a
+   * `City` nie niesie capu. Brak mapy (dziś: wywołania z `main.ts` przed wdrożeniem węzła B) →
+   * żadne miasto nie jest uznane za „na limicie" i plan zachowuje się jak bez własności (B),
+   * bez zmiany zachowania wstecz.
+   * EN: per-city population cap, computed by the caller (empire-food.ts knows neither builtByCity
+   * nor EconParams, and City carries no cap). Absent → no city is treated as capped (backward
+   * compatible).
+   */
+  popCapByCityId?: ReadonlyMap<string, number>;
+}
+
+export interface EqualGrowthRationPlan {
+  /** Wspólny poziom Wyżywienia dla miast, które jeszcze mogą rosnąć. */
+  uniformLevel: PoziomRacji;
+  /** Docelowy poziom per miasto (miasta na limicie ludności dostają `WYZYWIENIE_POZIOM_NA_LIMICIE`). */
+  levelByCityId: Map<string, PoziomRacji>;
+  /** Miasta rozpoznane jako będące na limicie ludności (własność B). */
+  atPopCapCityIds: string[];
+  /** Czy przy tym planie KAŻDE miasto właściciela jest nakarmione (twardy warunek nadrzędny). */
+  allFed: boolean;
+}
+
+/**
+ * R-AUTOWYZYWIENIE-ROWNY-WZROST-Q1-A — RDZEŃ nowej funkcji celu autowyżywienia.
+ *
+ * PRZYCZYNA, którą to zastępuje (zmierzona, nie założona — raport `01-operator.md`): dawny
+ * mechanizm był ASYMETRYCZNY. Obniżanie szło PER MIASTO przez `maxSafePoziomRacjiForCity`, które
+ * pytało „jak nisko musi zejść TO JEDNO miasto, żeby CAŁE imperium się zbilansowało" — więc
+ * pierwsze odpytane miasto pochłaniało całą korektę imperium i lądowało na 0 (−10% wzrostu),
+ * a pozostałe zostawały na 4 (+4,5%). Podnoszenie szło natomiast LOCKSTEP przez
+ * `autoRaiseRationsForGrowth` (krok o `WYZYWIENIE_STEP` we WSZYSTKICH miastach naraz, cofany
+ * globalnie) — więc przyklepane miasto mogło wrócić dopiero, gdy na krok stać było całe imperium.
+ * Efekt: zapadka, w której miasto z ZEROWYM kosztem racji (dodatni bilans lokalny!) kurczy się,
+ * a miasto na pełnych racjach (ujemny bilans, dopłacany z puli) rośnie +7% — dokładnie odwrotna
+ * zależność ze zrzutu właściciela.
+ *
+ * NOWA FUNKCJA CELU: nie „podnoś racje wszystkim, dopóki się da", tylko WYRÓWNYWANIE WZROSTU.
+ * Racje są jedyną dźwignią, którą autowyżywienie steruje wzrostem (`WYZYWIENIE_GROWTH_PCT`),
+ * więc WSPÓLNY poziom = wspólny składnik `racje` wzrostu: przy tej samej wielkości i tych samych
+ * modyfikatorach dwa miasta dostają ten sam WZROST%, niezależnie od tego, które z nich ma
+ * lokalną nadwyżkę, a które deficyt (deficyt pokrywa redystrybucja z puli centralnej,
+ * `advanceEmpireFood:257-265` — mechanizm, którego ta zmiana NIE dotyka).
+ *
+ * Plan to najwyższy WSPÓLNY poziom, przy którym JEDNOCZEŚNIE:
+ *   (1) żadne miasto nie głoduje (`simulateCityFoodAllFed`) — twardy warunek nadrzędny,
+ *   (2) kryterium bilansu jest spełnione (`isRationBalanceTargetMet`, to samo co dotąd).
+ * Koszt racji rośnie monotonicznie z poziomem, więc skan malejący znajduje maksimum.
+ * Stąd własność (C): mniej żywności → niższy wspólny poziom → CAŁA cywilizacja zwalnia razem,
+ * zamiast części miast stanąć, a części pędzić.
+ * Własność (B): miasto na limicie ludności wychodzi z wyrównywania — dostaje
+ * `WYZYWIENIE_POZIOM_NA_LIMICIE`, a zaoszczędzona porcja podnosi wspólny poziom pozostałym.
+ *
+ * Funkcja NIE zapisuje niczego trwale: ustawia poziomy próbnie, a na końcu przywraca stan
+ * wejściowy (`econ` przeliczony z powrotem), więc jest bezpieczna także jako zapytanie.
+ */
+export function resolveEqualGrowthRationPlan(
+  opts: EqualGrowthRationPlanOpts,
+): EqualGrowthRationPlan {
+  const {
+    ownerId, cities, econ, zapasyPrzed, rationParams, spichlerzByCity,
+    onlyAutoManaged, requireFlowBalance, kosztArmii = 0, popCapByCityId,
+  } = opts;
+
+  const managed = ownerCitiesForAutoAdjust(cities, ownerId, onlyAutoManaged);
+  const originalLevels = new Map<string, PoziomRacji>();
+  for (const c of managed) {
+    ensureCityRationDefaults(c);
+    originalLevels.set(c.id, getCityRationLevel(c));
+  }
+
+  const atPopCap: City[] = [];
+  const growing: City[] = [];
+  for (const c of managed) {
+    const cap = popCapByCityId?.get(c.id);
+    if (cap !== undefined && c.population >= cap) atPopCap.push(c);
+    else growing.push(c);
+  }
+
+  const perCity = econ.perCity as CityEconomyTick[];
+  /**
+   * Poziom miasta na limicie: „potrzeba" (0% wzrostu), ale NIGDY więcej niż dostają miasta
+   * rosnace. Bez `Math.min` w niedoborze wychodziło odwrotnie niz mowi GOAL wlasnosci (B)
+   * („nie konsumuje racji ponad potrzebe — jego porcja wraca do puli dla pozostalych"):
+   * przy wspolnym poziomie ponizej 1,5 miasto na limicie konsumowalo DROZSZE racje niz miasta,
+   * ktorym ta porcja miala pomoc, i spychalo je o caly poziom nizej (pomiar: 12 miast ze zrzutu,
+   * cap 5, kosztArmii 20, zapasy 279, produkcja x0,25 — BEZ mapy limitow wspolny poziom 0,5
+   * (-6%), Z mapa 0 (-10%)). `Math.min` zachowuje oszczednosc tam, gdzie ona istnieje
+   * (poziom > 1,5 → miasto na limicie bierze 1,5 i oddaje reszte do puli), a w niedoborze
+   * zrownuje je z pozostalymi — wlasnosc (C): przy mniejszej ilosci zywnosci ZWALNIAJA WSZYSCY,
+   * miasto na limicie nie jest uprzywilejowane kosztem rosnacych.
+   * EN: capped city takes its "need" level (0% growth) but never MORE than the growing cities.
+   */
+  const cappedLevelFor = (level: PoziomRacji): PoziomRacji =>
+    Math.min(WYZYWIENIE_POZIOM_NA_LIMICIE, level) as PoziomRacji;
+  const applyCandidate = (level: PoziomRacji): void => {
+    for (const c of atPopCap) c.poziomRacji = cappedLevelFor(level);
+    for (const c of growing) c.poziomRacji = level;
+    recomputeCityFoodBalancesInEcon(perCity, cities, rationParams, spichlerzByCity);
+  };
+  const feasible = (): boolean =>
+    simulateCityFoodAllFed(zapasyPrzed, perCity, ownerId)
+    && isRationBalanceTargetMet(zapasyPrzed, perCity, ownerId, requireFlowBalance, kosztArmii);
+
+  let uniformLevel: PoziomRacji = WYZYWIENIE_MIN;
+  let allFed = false;
+  for (let i = WYZYWIENIE_LEVELS.length - 1; i >= 0; i--) {
+    const level = WYZYWIENIE_LEVELS[i] ?? WYZYWIENIE_MIN;
+    applyCandidate(level);
+    if (feasible()) { uniformLevel = level; allFed = true; break; }
+  }
+  if (!allFed) {
+    // Nawet minimum nie karmi wszystkich (produkcja imperium nie pokrywa samego istnienia miast) —
+    // zostajemy na minimum: niżej zejść się nie da, a wyżej byłoby tylko gorzej.
+    applyCandidate(WYZYWIENIE_MIN);
+    allFed = simulateCityFoodAllFed(zapasyPrzed, perCity, ownerId);
+  }
+
+  const levelByCityId = new Map<string, PoziomRacji>();
+  for (const c of atPopCap) levelByCityId.set(c.id, cappedLevelFor(uniformLevel));
+  for (const c of growing) levelByCityId.set(c.id, uniformLevel);
+
+  // Przywróć stan wejściowy — plan jest zapytaniem, nie zapisem.
+  for (const c of managed) c.poziomRacji = originalLevels.get(c.id)!;
+  recomputeCityFoodBalancesInEcon(perCity, cities, rationParams, spichlerzByCity);
+
+  return {
+    uniformLevel,
+    levelByCityId,
+    atPopCapCityIds: atPopCap.map(c => c.id),
+    allFed,
+  };
+}
+
+/** Zastosuj plan wyrównania i zwróć listę faktycznych zmian poziomu. */
+function applyEqualGrowthRationPlan(
+  plan: EqualGrowthRationPlan,
+  cities: City[],
+  ownerId: number,
+  onlyAutoManaged: boolean | undefined,
+  econ: Pick<EconomyTickResult, 'perCity'>,
+  rationParams: RationParams,
+  spichlerzByCity?: ReadonlyMap<string, SpichlerzCityBonusState>,
+): AutoRationCityChange[] {
+  const managed = ownerCitiesForAutoAdjust(cities, ownerId, onlyAutoManaged);
+  const changes: AutoRationCityChange[] = [];
+  for (const c of managed) {
+    const target = plan.levelByCityId.get(c.id);
+    if (target === undefined) continue;
+    const oldLevel = getCityRationLevel(c);
+    const newLevel = clampPoziomRacji(target);
+    if (Math.abs(newLevel - oldLevel) < 1e-9) continue;
+    c.poziomRacji = newLevel;
+    changes.push({ cityId: c.id, name: c.name, oldLevel, newLevel });
+  }
+  if (changes.length > 0) {
+    recomputeCityFoodBalancesInEcon(
+      econ.perCity as CityEconomyTick[], cities, rationParams, spichlerzByCity,
+    );
+  }
+  return changes;
+}
+
+/**
  * Czy po rozliczeniu miast Spichlerz nie jest ujemny.
  *
  * R-AUTO-WYZYWIENIE-KRYTERIUM-Q1=A, z doprecyzowaniem właściciela (2026-08-13, ECHO
@@ -547,11 +778,21 @@ export interface AutoBalanceRationsOpts {
    * net increase (not just cities' balance/reserve) is ≥0. Default 0 for backward compat where
    * army cost isn't computable yet at that point in the turn (0 reproduces prior behavior). */
   kosztArmii?: number;
+  /** R-AUTOWYZYWIENIE-ROWNY-WZROST-Q1-A własność (B) — patrz `EqualGrowthRationPlanOpts.popCapByCityId`. */
+  popCapByCityId?: ReadonlyMap<string, number>;
 }
 
 /**
- * SPICH-AUTO-Q1: obniża poziomRacji we wszystkich miastach właściciela o WYZYWIENIE_STEP,
- * aż pula po dopłatach miastom (przed wojskiem) nie spadnie poniżej zera.
+ * SPICH-AUTO-Q1: sprowadza poziomRacji miast właściciela do poziomu, przy którym pula po
+ * dopłatach miastom (przed wojskiem) nie spada poniżej zera.
+ *
+ * R-AUTOWYZYWIENIE-ROWNY-WZROST-Q1-A: dawniej była to pętla LOCKSTEP (krok −`WYZYWIENIE_STEP`
+ * we wszystkich miastach naraz), która ZACHOWYWAŁA istniejący rozrzut poziomów — miasto
+ * przyklepane wcześniej do 0,5 schodziło razem z miastem stojącym na 4, więc różnica wzrostu
+ * −6% vs +4,5% trwała. Teraz kieruje nią `resolveEqualGrowthRationPlan`: wspólny poziom dla
+ * wszystkich miast mogących rosnąć, przy twardym warunku „żadne miasto nie głoduje".
+ * EN: was a lockstep loop that PRESERVED the existing spread of levels; now driven by the
+ * equal-growth plan (one shared level, hard no-starvation constraint).
  */
 export function autoBalanceRationsToSolvency(opts: AutoBalanceRationsOpts): AutoRationAdjustResult {
   const {
@@ -563,41 +804,25 @@ export function autoBalanceRationsToSolvency(opts: AutoBalanceRationsOpts): Auto
     return { adjusted: false, changes: [] };
   }
 
-  if (isRationBalanceTargetMet(zapasyPrzed, econ.perCity, ownerId, requireFlowBalance, kosztArmii)) {
+  for (const c of ownerCities) ensureCityRationDefaults(c);
+
+  const targetAlreadyMet = isRationBalanceTargetMet(
+    zapasyPrzed, econ.perCity, ownerId, requireFlowBalance, kosztArmii,
+  );
+  const allFedAlready = simulateCityFoodAllFed(zapasyPrzed, econ.perCity, ownerId);
+  if (targetAlreadyMet && allFedAlready) {
+    // Bilans i brak głodu już osiągnięte — obniżanie nie ma czego naprawiać. Wyrównanie
+    // W GÓRĘ należy do `autoRaiseRationsForGrowth`, nie do tej funkcji (zachowany podział ról).
     return { adjusted: false, changes: [] };
   }
 
-  const oldLevels = new Map<string, PoziomRacji>();
-  for (const c of ownerCities) {
-    ensureCityRationDefaults(c);
-    oldLevels.set(c.id, getCityRationLevel(c));
-  }
-
-  const maxSteps = Math.round((WYZYWIENIE_MAX - WYZYWIENIE_MIN) / WYZYWIENIE_STEP) + 2;
-  for (let step = 0; step < maxSteps; step++) {
-    if (isRationBalanceTargetMet(zapasyPrzed, econ.perCity, ownerId, requireFlowBalance, kosztArmii)) break;
-
-    let lowered = false;
-    for (const c of ownerCities) {
-      const lvl = getCityRationLevel(c);
-      if (lvl > WYZYWIENIE_MIN) {
-        c.poziomRacji = clampPoziomRacji(lvl - WYZYWIENIE_STEP);
-        lowered = true;
-      }
-    }
-    if (!lowered) break;
-
-    recomputeCityFoodBalancesInEcon(econ.perCity, cities, rationParams, spichlerzByCity);
-  }
-
-  const changes: AutoRationCityChange[] = [];
-  for (const c of ownerCities) {
-    const oldLvl = oldLevels.get(c.id)!;
-    const newLvl = getCityRationLevel(c);
-    if (newLvl !== oldLvl) {
-      changes.push({ cityId: c.id, name: c.name, oldLevel: oldLvl, newLevel: newLvl });
-    }
-  }
+  const plan = resolveEqualGrowthRationPlan({
+    ownerId, cities, econ, zapasyPrzed, rationParams, spichlerzByCity,
+    onlyAutoManaged, requireFlowBalance, kosztArmii, popCapByCityId: opts.popCapByCityId,
+  });
+  const changes = applyEqualGrowthRationPlan(
+    plan, cities, ownerId, onlyAutoManaged, econ, rationParams, spichlerzByCity,
+  );
 
   return { adjusted: changes.length > 0, changes };
 }
@@ -616,13 +841,26 @@ export interface AutoRaiseRationsOpts {
   /** R-AUTO-WYZYWIENIE-KRYTERIUM-Q1=A (2026-08-13): koszt żywności armii tej tury — patrz
    * `AutoBalanceRationsOpts.kosztArmii`, ten sam kontrakt (domyślnie 0, wsteczna kompatybilność). */
   kosztArmii?: number;
+  /** R-AUTOWYZYWIENIE-ROWNY-WZROST-Q1-A własność (B) — patrz `EqualGrowthRationPlanOpts.popCapByCityId`. */
+  popCapByCityId?: ReadonlyMap<string, number>;
 }
 
 /**
- * Gdy Spichlerz państwa jest solvent — podnieś Wyżywienie (poziomRacji) o krok,
- * aż do max lub braku nadwyżki. Parytet SPICH-AUTO (obniżanie przy deficycie).
+ * Gdy Spichlerz państwa jest solvent — ustaw Wyżywienie na najwyższy WSPÓLNY poziom, na jaki
+ * stać imperium przy braku głodu. Parytet SPICH-AUTO (obniżanie przy deficycie).
  * Gracz (requireProductionSurplus): tylko nadwyżka produkcji miast (Q1=B).
  * Major AI: nadwyżka lub zapasy centralne (nie magazynuj zamiast rosnąć).
+ *
+ * R-AUTOWYZYWIENIE-ROWNY-WZROST-Q1-A: dawniej pętla LOCKSTEP podnosiła `poziomRacji` o
+ * `WYZYWIENIE_STEP` we WSZYSTKICH miastach naraz i cofała krok globalnie, gdy imperium go nie
+ * udźwignęło — więc miasto przyklepane wcześniej do 0/0,5 mogło wrócić DOPIERO wtedy, gdy na
+ * krok stać było wszystkie miasta łącznie (zapadka: rozrzut raz powstały nie znikał). Teraz
+ * funkcja nie „dokłada kroku do stanu bieżącego", tylko rozwiązuje docelowy WSPÓLNY poziom
+ * (`resolveEqualGrowthRationPlan`) — dzięki temu wyrównuje w OBIE strony i jest niezależna od
+ * stanu wyjściowego, więc nie ma stanu, z którego nie da się wrócić.
+ * EN: was a lockstep raise-and-globally-revert ratchet (a city pinned low could only recover
+ * when the WHOLE empire could afford a step). Now it solves for the target shared level, so it
+ * equalizes in both directions and has no unrecoverable state.
  */
 export function autoRaiseRationsForGrowth(opts: AutoRaiseRationsOpts): AutoRationAdjustResult {
   const {
@@ -649,71 +887,56 @@ export function autoRaiseRationsForGrowth(opts: AutoRaiseRationsOpts): AutoRatio
     return { adjusted: false, changes: [] };
   }
 
-  const oldLevels = new Map<string, PoziomRacji>();
-  for (const c of ownerCities) {
-    ensureCityRationDefaults(c);
-    oldLevels.set(c.id, getCityRationLevel(c));
-  }
+  for (const c of ownerCities) ensureCityRationDefaults(c);
 
-  const maxSteps = Math.round((WYZYWIENIE_MAX - WYZYWIENIE_MIN) / WYZYWIENIE_STEP) + 2;
-  for (let step = 0; step < maxSteps; step++) {
-    const levelsBeforeRaise = new Map<string, PoziomRacji>();
-    for (const c of ownerCities) {
-      levelsBeforeRaise.set(c.id, getCityRationLevel(c));
-    }
-
-    let raised = false;
-    for (const c of ownerCities) {
-      const lvl = getCityRationLevel(c);
-      if (lvl < WYZYWIENIE_MAX) {
-        c.poziomRacji = clampPoziomRacji(lvl + WYZYWIENIE_STEP);
-        raised = true;
-      }
-    }
-    if (!raised) break;
-
-    recomputeCityFoodBalancesInEcon(econ.perCity, cities, rationParams, spichlerzByCity);
-
-    const pool = simulateCityFoodCentralPool(zapasyPrzed, econ.perCity, ownerId);
-    // R-AUTO-WYZYWIENIE-CEL-BILANS-NIEUJEMNY (rozpoznanie #4): dla gracza (requireProductionSurplus)
-    // krok akceptujemy TYLKO jeśli PO nim flow tej tury jest nieujemny — nie wystarczy, że
-    // skumulowana rezerwa (stock) go pokryje. Dawniej `nadwyzka<=0` po kroku był tylko `break`
-    // BEZ cofnięcia — funkcja strukturalnie przestrzeliwała o jeden krok (WYZYWIENIE_STEP) ponad
-    // to, co bieżąca produkcja udźwignie, cicho finansując go z rezerwy. AI (requireProductionSurplus
-    // fałsz) zostaje przy dawnym stock-based kryterium (isRationBalanceTargetMet bez flagi).
-    // EN: for the player (requireProductionSurplus) a step is accepted ONLY if this turn's flow
-    // is non-negative after it — reserve coverage (stock) is not enough. Previously a
-    // post-step nadwyzka<=0 was merely a `break` WITHOUT rollback — the function structurally
-    // overshot by one step (WYZYWIENIE_STEP) beyond what current production can sustain, silently
-    // financed from the reserve. AI (requireProductionSurplus false) keeps the old stock-based
-    // criterion (isRationBalanceTargetMet without the flag).
-    const targetMet = isRationBalanceTargetMet(
-      zapasyPrzed, econ.perCity, ownerId, requireProductionSurplus, kosztArmii,
+  {
+    // R-AUTO-WYZYWIENIE-CEL-BILANS-NIEUJEMNY (rozpoznanie #4) ZACHOWANE: dla gracza
+    // (requireProductionSurplus) poziom jest akceptowalny TYLKO jeśli flow tej tury jest po nim
+    // nieujemny — nie wystarczy, że skumulowana rezerwa (stock) go pokryje. Ta sama flaga jedzie
+    // do planu jako `requireFlowBalance`, więc skan poziomów odrzuca dokładnie te poziomy, które
+    // dawna pętla musiała cofać po fakcie. AI (requireProductionSurplus fałsz) zostaje przy
+    // dawnym stock-based kryterium.
+    // EN: finding #4 PRESERVED — the same flag is passed to the plan as `requireFlowBalance`, so
+    // the level scan rejects exactly the levels the old loop had to roll back after the fact.
+    const plan = resolveEqualGrowthRationPlan({
+      ownerId, cities, econ, zapasyPrzed, rationParams, spichlerzByCity,
+      onlyAutoManaged, requireFlowBalance: requireProductionSurplus, kosztArmii,
+      popCapByCityId: opts.popCapByCityId,
+    });
+    const changes = applyEqualGrowthRationPlan(
+      plan, cities, ownerId, onlyAutoManaged, econ, rationParams, spichlerzByCity,
     );
-    if (pool < 0 || !targetMet) {
-      for (const c of ownerCities) {
-        c.poziomRacji = levelsBeforeRaise.get(c.id)!;
-      }
-      recomputeCityFoodBalancesInEcon(econ.perCity, cities, rationParams, spichlerzByCity);
-      break;
-    }
-
-    if (requireProductionSurplus && computeEmpireCityFoodNadwyzka(econ.perCity, ownerId) <= 0) break;
+    return { adjusted: changes.length > 0, changes };
   }
-
-  const changes: AutoRationCityChange[] = [];
-  for (const c of ownerCities) {
-    const oldLvl = oldLevels.get(c.id)!;
-    const newLvl = getCityRationLevel(c);
-    if (newLvl !== oldLvl) {
-      changes.push({ cityId: c.id, name: c.name, oldLevel: oldLvl, newLevel: newLvl });
-    }
-  }
-
-  return { adjusted: changes.length > 0, changes };
 }
 
-/** R-AUTO-RACJE-RAISE-Q3=A: najwyższy poziom Wyżywienia przy którym Spichlerz ≥ 0 po dopłatach miastom. */
+/**
+ * R-AUTO-RACJE-RAISE-Q3=A: najwyższy poziom Wyżywienia przy którym Spichlerz ≥ 0 po dopłatach
+ * miastom i żadne miasto nie głoduje.
+ *
+ * ⚠️ R-AUTOWYZYWIENIE-ROWNY-WZROST-Q1-A — TU MIESZKAŁA PRZYCZYNA odwrotnej zależności wzrostu
+ * od bilansu ze zrzutu właściciela (pomiar w `runs/R-AUTOWYZYWIENIE-ROWNY-WZROST-Q1-A/01-operator.md`).
+ * Dawny kontrfaktyk brzmiał: „ustaw TO JEDNO miasto na `level`, POZOSTAŁE ZOSTAW GDZIE SĄ" — więc
+ * funkcja odpowiadała na pytanie „jak nisko musi zejść to jedno miasto, żeby CAŁE imperium się
+ * zbilansowało". Cała korekta imperium spadała na miasto, które akurat zostało odpytane jako
+ * pierwsze (`main.ts` woła to w pętli po miastach i z `applyLiveSafeRationForCity` po każdym
+ * przyroście ludności). Zmierzony przykład, jedno i to samo imperium, ta sama tura, flow −22:
+ * maxSafe dla Sparty = 0, maxSafe dla Jin = 2 — wynik zależał od TEGO, KTÓRE MIASTO PYTA, czyli
+ * od kolejności iteracji. Miasto zbite do 0 przestawało płacić za racje (DODATNI bilans lokalny)
+ * i dostawało −10% wzrostu, a miasta nietknięte zostawały na 4 (ujemny bilans, dopłacany z puli)
+ * z +4,5%. Stąd „miasta z nadwyżką się kurczą, miasta z deficytem rosną".
+ *
+ * Kontrfaktyk jest teraz SPRAWIEDLIWY: przy sprawdzaniu poziomu `level` pozostałe miasta
+ * właściciela schodzą do `min(ich poziom, level)` — nikt nie jest proszony o zejście niżej niż
+ * miasto, o które pytamy. Dzięki temu wynik jest ten sam dla każdego miasta o poziomie ≥ level
+ * (niezależny od kolejności), a przycięcie w `main.ts` przestaje wybierać ofiarę i zaczyna
+ * WYRÓWNYWAĆ. Koszt nadal rośnie monotonicznie z `level`, więc skan rosnący jest poprawny.
+ * EN: the old counterfactual ("set THIS city to `level`, leave the others where they are") made a
+ * single, order-dependent city absorb the entire empire-wide correction — measured: same empire,
+ * same turn, maxSafe=0 for one city and 2 for another. Now the other cities drop to
+ * min(theirLevel, level) in the counterfactual, so the answer is order-independent and the
+ * main.ts clamp equalizes instead of picking a victim.
+ */
 export function maxSafePoziomRacjiForCity(opts: {
   cityId: string;
   ownerId: number;
@@ -725,15 +948,24 @@ export function maxSafePoziomRacjiForCity(opts: {
   /** R-AUTO-WYZYWIENIE-KRYTERIUM-Q1=A (2026-08-13): koszt żywności armii tej tury — patrz
    * `AutoBalanceRationsOpts.kosztArmii`, ten sam kontrakt (domyślnie 0, wsteczna kompatybilność). */
   kosztArmii?: number;
+  /** R-AUTOWYZYWIENIE-ROWNY-WZROST-Q1-A własność (B) — patrz `EqualGrowthRationPlanOpts.popCapByCityId`. */
+  popCapByCityId?: ReadonlyMap<string, number>;
 }): PoziomRacji {
   const {
     cityId, ownerId, cities, econ, zapasyPrzed, rationParams, spichlerzByCity, kosztArmii = 0,
+    popCapByCityId,
   } = opts;
   const city = cities.find(c => c.id === cityId);
   if (!city || city.ownerId !== ownerId) return WYZYWIENIE_MIN;
 
   ensureCityRationDefaults(city);
   const originalLevel = getCityRationLevel(city);
+  const others = cities.filter(c => c.ownerId === ownerId && c.id !== cityId);
+  const othersOriginal = new Map<string, PoziomRacji>();
+  for (const c of others) {
+    ensureCityRationDefaults(c);
+    othersOriginal.set(c.id, getCityRationLevel(c));
+  }
   let maxSafe = WYZYWIENIE_MIN;
 
   // R-AUTO-WYZYWIENIE-CEL-BILANS-NIEUJEMNY (rozpoznanie #4): backstop gracza (ownerId===0) używał
@@ -753,17 +985,27 @@ export function maxSafePoziomRacjiForCity(opts: {
 
   for (const level of WYZYWIENIE_LEVELS) {
     city.poziomRacji = level;
+    for (const c of others) {
+      const cap = popCapByCityId?.get(c.id);
+      // Miasto na limicie bierze „potrzebe", ale — tak samo jak w `resolveEqualGrowthRationPlan`
+      // — nigdy wiecej niz miasta rosnace w tym kontrfaktyku.
+      c.poziomRacji = (cap !== undefined && c.population >= cap)
+        ? Math.min(WYZYWIENIE_POZIOM_NA_LIMICIE, level)
+        : Math.min(othersOriginal.get(c.id)!, level);
+    }
     recomputeCityFoodBalancesInEcon(econ.perCity, cities, rationParams, spichlerzByCity);
     const pool = simulateCityFoodCentralPool(zapasyPrzed, econ.perCity, ownerId);
+    const allFed = simulateCityFoodAllFed(zapasyPrzed, econ.perCity, ownerId);
     const targetMet = isRationBalanceTargetMet(
       zapasyPrzed, econ.perCity, ownerId, requireFlowBalance, kosztArmii,
     );
-    if (pool >= 0 && targetMet) {
+    if (pool >= 0 && allFed && targetMet) {
       maxSafe = level;
     }
   }
 
   city.poziomRacji = originalLevel;
+  for (const c of others) c.poziomRacji = othersOriginal.get(c.id)!;
   recomputeCityFoodBalancesInEcon(econ.perCity, cities, rationParams, spichlerzByCity);
   return clampPoziomRacji(maxSafe);
 }

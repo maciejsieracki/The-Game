@@ -155,3 +155,63 @@ poprzednia fala straciła raport Evaluatora przy restarcie kontenera, bo został
 Operator → Evaluator → (Obrona, jeśli lista zarzutów niepusta) → koniec skryptu.
 Final Control osobnym wywołaniem Workflow. Integracja, `READY_FOR_DEPLOY` i deploy/push —
 wyłącznie ręką orkiestratora.
+
+---
+
+# RATYFIKACJA ORKIESTRATORA (2026-09-05) — rozstrzygnięcie zarzutów 1 i 2
+
+## Zarzut 1 — ROZJAZD WEWNĄTRZ MOJEGO DISPATCHU, uznaję błąd
+
+Allowlista mówiła „istniejące bramki **`empire-food*`**", a kryterium 6 tego samego dispatchu
+żądało zielonych „bramek **dotykających `empire-food.ts`**" — to są dwa różne zbiory.
+`auto-wyzywienie-kosztarmii-kryterium-test.cjs` należy do drugiego, nie do pierwszego.
+Operator musiał zaktualizować w nim 3 zaszyte wartości, bo **pinowały wynik zapadki, czyli
+dokładnie zgłaszany objaw** — zostawienie ich oznaczałoby utrwalenie defektu w bramce.
+
+**ALLOWLISTA ZOSTAJE ROZSZERZONA** o `gra/tools/auto-wyzywienie-kosztarmii-kryterium-test.cjs`,
+wyłącznie w zakresie aktualizacji zaszytych wartości, jawnie uzasadnionej w raporcie
+(3 liczby + komentarz; istota testu — `kosztArmii` w kryterium — nietknięta).
+**To nie jest naruszenie §16a pkt 1** i nie ma być tak orzekane.
+
+## Zarzut 2 — TRAFNY I ISTOTNY, ale nie do naprawy w tym węźle
+
+Evaluator ma rację: `grep -rn popCapByCityId gra/src` trafia **wyłącznie w `empire-food.ts`**,
+więc żaden realny caller nie podaje mapy limitów i **własność (B) jest w grze martwa** —
+działa wyłącznie w bramce. To jest realna luka wobec ECHO właściciela (wariant (a):
+miasto na limicie ma zerowy przyrost i nie konsumuje racji ponad potrzebę).
+
+**Nie da się jej domknąć w tym węźle i nie jest to wina wykonawcy:**
+- wpięcie wymaga `gra/src/main.ts` (`:28128`, `:28152`, `:28179`, `:16256`, `:16285`),
+  a `main.ts` jest w tym dispatchu **zakazany bezwzględnie**;
+- `main.ts` jest w tej chwili **zajęty przez `P-AI-NIE-STAWIA-BUDYNKOW-Q1`**, więc
+  równoległe wejście łamałoby §2b;
+- węzeł B tego tematu to UI („stan przycisku"), nie wpięcie danych — Evaluator słusznie
+  zauważył, że to nie tam.
+
+**Rozstrzygnięcie: osobny temat następczy** `R-AUTOWYZYWIENIE-LIMIT-WPIECIE-POPCAP-Q1`,
+dispatchowany po zwolnieniu `main.ts`. Parametr `popCapByCityId` jest **opcjonalny**,
+a brak mapy daje zachowanie wsteczne — więc integracja tego węzła jest bezpieczna
+i niczego nie psuje. Własność (B) zostaje **zaimplementowana i pokryta bramką**,
+a jedynie nieaktywna do czasu wpięcia.
+
+**Final Control: orzekaj zarzut 2 jako ODDAL** — jest trafny co do faktu, ale wskazuje
+pracę leżącą poza allowlistą tego węzła, a orkiestrator przejął ją osobnym tematem.
+Nie stawiaj `NAPRAW`, bo naprawa tutaj byłaby naruszeniem granicy §9.
+
+## Zarzut 3 — przyjęty i naprawiony przez obronę
+
+Miasto na limicie miało poziom przybity do stałej 1,5, nigdy nie przycięty do wspólnego
+`level`. Skutek zmierzony przez Evaluatora był **odwrotny do intencji właściciela**:
+włączenie (B) pogarszało sytuację miast rosnących (`uniformLevel` 0,5 → 0). Poprawka
+`Math.min(WYZYWIENIE_POZIOM_NA_LIMICIE, level)`. **Final Control ma zweryfikować tę
+poprawkę własnym pomiarem**, nie przyjąć jej z raportu.
+
+## Uznanie najważniejszego wyniku tego węzła
+
+**Moja hipoteza główna „wszystko-albo-nic" została OBALONA jako przyczyna — i o to prosiłem.**
+Dispatch wymagał jej zmierzenia, nie przyjęcia na wiarę, i tak się stało. Prawdziwą przyczyną
+jest **asymetria**: obniżanie działa per-miasto i zależy od kolejności iteracji
+(`maxSafePoziomRacjiForCity` pytała „jak nisko musi zejść TO JEDNO miasto, żeby CAŁE imperium
+się zbilansowało", więc pierwsze odpytane miasto pochłaniało całą korektę), podczas gdy
+podnoszenie jest lockstep i cofane globalnie. Pomiar rozstrzygający: to samo imperium,
+ta sama tura, flow −22 → `maxSafe` **0 dla Sparty, 2 dla Jin**; po naprawie **4 dla wszystkich 12**.

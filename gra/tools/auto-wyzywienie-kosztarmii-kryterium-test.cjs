@@ -148,14 +148,31 @@ console.log('\n-- B. Naprawa: kosztArmii=20 przekazany -- Auto Wyżywienie DALEJ
 
   const atenyLvl = cities.find(c => c.id === 'ateny').poziomRacji;
   const miletLvl = cities.find(c => c.id === 'milet').poziomRacji;
-  ok(atenyLvl === 4, `naprawa: Ateny obniżone z 5,0 do 4,0 (got ${atenyLvl})`);
-  ok(miletLvl === 0, `naprawa: Milet obniżone z 0,5 do 0,0=WYZYWIENIE_MIN (got ${miletLvl})`);
+  // R-AUTOWYZYWIENIE-ROWNY-WZROST-Q1-A (aktualizacja zaszytych wartości, jawnie uzasadniona).
+  // DAWNE wartości: Ateny 4,0 i Milet 0,0. Brały się z LOCKSTEP-owego obniżania o
+  // WYZYWIENIE_STEP we wszystkich miastach naraz: Milet startował z 0,5, więc po jednym kroku
+  // siadał na WYZYWIENIE_MIN i tam ZOSTAWAŁ, a Ateny schodziły tylko z 5,0 do 4,0. Wynikiem był
+  // dokładnie objaw zgłoszony przez właściciela: Milet z DODATNIM bilansem lokalnym kurczył się
+  // (−10%/turę przy poziomie 0), a Ateny z UJEMNYM bilansem rosły (+4,5% przy poziomie 4).
+  // Ten test nigdy nie badał tego rozjazdu — pinował go jako stan zastany.
+  // Po naprawie obniżanie prowadzi `resolveEqualGrowthRationPlan`: WSPÓLNY poziom 1,0 dla obu
+  // miast (najwyższy, przy którym 63 produkcji pokrywa 32×poziom racji + 20 armii i nikt nie
+  // głoduje). ISTOTA tego testu — że `kosztArmii` należy do kryterium i obniżanie trwa aż
+  // Nadwyżka − kosztArmii ≥ 0 — jest NIENARUSZONA i sprawdzana asercją poniżej (31 ≥ 20).
+  // EN: former pins (Ateny 4.0 / Milet 0.0) encoded the lockstep ratchet that produced the
+  // reported symptom (positive-balance city shrinking, negative-balance city growing). The new
+  // equalizing allocator gives both cities the same level 1.0. This test's actual subject —
+  // kosztArmii being part of the criterion — is unchanged and still asserted (31 >= 20).
+  ok(atenyLvl === 1, `naprawa: Ateny obniżone z 5,0 do wspólnego poziomu 1,0 (got ${atenyLvl})`);
+  ok(miletLvl === 1, `naprawa: Milet podniesiony z 0,5 do wspólnego poziomu 1,0 -- nie jest już jedynym miastem spychanym na WYZYWIENIE_MIN (got ${miletLvl})`);
+  ok(atenyLvl === miletLvl,
+    `naprawa: OBA miasta na tym samym poziomie Wyżywienia -- koniec odwrotnej zależności (Ateny ${atenyLvl}, Milet ${miletLvl})`);
 
   const nadwyzkaFinal = computeEmpireCityFoodNadwyzka(econ.perCity, 0);
   ok(nadwyzkaFinal >= KOSZT_ARMII,
     `naprawa: PO korekcie, Nadwyżka miast (${nadwyzkaFinal}) >= kosztArmii (${KOSZT_ARMII}) -- prawdziwy PRZYROST ZAPASÓW tej tury >= 0 (${nadwyzkaFinal - KOSZT_ARMII})`);
-  ok(nadwyzkaFinal === 23,
-    `naprawa: wartość dokładna Nadwyżki finalnej = 23 (Ateny bilans=6 + Milet bilans=17) (got ${nadwyzkaFinal})`);
+  ok(nadwyzkaFinal === 31,
+    `naprawa: wartość dokładna Nadwyżki finalnej = 31 (63 produkcji − 32 kosztu racji przy poziomie 1,0) (got ${nadwyzkaFinal})`);
 }
 
 // ---------------------------------------------------------------------------
