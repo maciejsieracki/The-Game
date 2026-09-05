@@ -1,6 +1,17 @@
 # PLAN: Gorące krzesło (hot-seat) — dwóch graczy-ludzi przy jednym komputerze
 
-**Status:** PLAN — przed decyzjami ABC właściciela, przed dispatchem.
+**Status:** PLAN ZATWIERDZONY — wszystkie decyzje ABC (ABC-1, ABC-2, ABC-3 w §G oraz
+ABC-4 niżej) rozstrzygnięte przez właściciela. **Etap 0 dispatchowany 2026-09-05 w nocy**
+na wyraźne polecenie: „zacznij pracować nad wszystkimi etapami gorącego krzesła".
+
+### ABC-4 — format zapisu: ODPOWIEDŹ = BEZ MIGRACJI (2026-09-05)
+
+Zapis dostaje wersję **v3** i **stare zapisy przestają działać**. Właściciel wybrał ten
+wariant po opisaniu konsekwencji: każdy istniejący zapis z playtestów staje się bezużyteczny,
+w tym te służące do odtwarzania zgłoszeń. **Skutek dla planu:** Etap 7 NIE pisze funkcji
+migrującej v2→v3 — o jedną warstwę kodu i jedną klasę błędów mniej. Ma za to **jasno
+komunikować użytkownikowi**, że zapis jest w starym formacie, zamiast wywalać się po cichu
+albo wczytywać śmieci.
 **Data:** 2026-09-04
 **Wyzwalacz (właściciel):** „czy myślisz że wprowadzenie tak zwanego gorącego krzesła
 byłoby trudne? czyli żeby można było wybrać dwóch graczy na początku rozgrywki a nie
