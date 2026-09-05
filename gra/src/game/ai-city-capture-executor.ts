@@ -40,6 +40,13 @@ export interface ExecuteAiCityMoveOptions {
   cities: readonly AiCityMoveCity[];
   cityBuiltIds: readonly string[];
   hasCityDefenders: boolean;
+  /**
+   * Czy jednostka wykonująca rozkaz jest cywilna (osadnik/robotnik/zwiadowca).
+   * Cywil NIE przejmuje miasta (`tryAutoCaptureEmptyCityAt` wymaga kotwicy
+   * niecywilnej), więc nie wolno mu też wejść na heks obcego miasta — inaczej
+   * parkuje w cudzym mieście i traci turę bez efektu (parytet z graczem).
+   */
+  unitIsCivilian: boolean;
   targetVisible: boolean;
   canOccupyCityHex: boolean;
   blockedKeys: Set<string>;
@@ -84,6 +91,7 @@ export function executeAiCityMove(
       destinationCity,
       opts.cityBuiltIds,
       opts.hasCityDefenders,
+      opts.unitIsCivilian,
     );
 
   if (!canEnterEmptyCity && !opts.canOccupyCityHex) {

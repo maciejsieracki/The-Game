@@ -31529,6 +31529,10 @@ async function boot(): Promise<void> {
                       : [],
                     hasCityDefenders: destinationCity !== undefined
                       && hasCityDefenders(destinationCity, units),
+                    // Parytet z graczem: cywil nie przejmuje miasta (kotwica
+                    // `!isCivilianUnit` w tryAutoCaptureEmptyCityAt), więc nie
+                    // może też wejść na heks obcego miasta.
+                    unitIsCivilian: isCivilianUnit(u),
                     targetVisible,
                     canOccupyCityHex: canUnitOccupyCityHex(u.ownerId, cmd.toQ, cmd.toR, cities),
                     blockedKeys,

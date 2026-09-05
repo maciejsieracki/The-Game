@@ -21,7 +21,16 @@
  *  - tryb „rozluźnienie dla wszystkich": K3 wykonuje REALNĄ `canUnitOccupyCityHex`
  *    i `canCaptureCityWithoutBattle` dla gracza (0), barbarzyńcy (-1) i AI major (1) —
  *    zniesienie reguły dla wszystkich czerwieni A3;
- *  - tryb „rozlanie zakresu": K4 (miasto bronione / z murami / nieadiacencja).
+ *  - tryb „rozlanie zakresu": K4 (miasto bronione / z murami / nieadiacencja);
+ *  - PARYTET W STRONĘ SZERSZĄ (runda 1, obrona zarzutu 1): K7 — cywil AI nie może
+ *    wejść na heks obcego miasta, którego nie przejmuje; gracz jest tam odrzucany
+ *    bezwarunkowo, więc wyjątek dla AI musi być WĘŻSZY, nigdy szerszy;
+ *  - ASERCJA NEGATYWNA MUSI PILNOWAĆ GRANICY, NIE SKUTKU (obrona zarzutu 2):
+ *    każdy przypadek K4/K7 sprawdza też `moved === false` i niezmienioną pozycję —
+ *    samo `captured`/`ownerId` zostawało zielone po zdjęciu bramki obrońców (K8d);
+ *  - WIERNOŚĆ ODWZOROWANIA `tryAutoCaptureEmptyCityAt` (obrona zarzutu 3):
+ *    `onCapture` wykonuje WSZYSTKIE trzy warunki produkcyjne (kotwica niecywilna,
+ *    „miasto już moje", bramka obrońców), a A6g pilnuje, że produkcja ich nie zgubiła.
  *  - C-046 (tautologia testowa): ZERO kopii formuł. Każdy predykat jest importowany
  *    z prawdziwego modułu przez esbuild, a wpięcie w `main.ts` (żyjące w domknięciu
  *    `main()`, więc nieimportowalne) jest sprawdzane asercją na ŹRÓDLE.
@@ -48,6 +57,7 @@ const esbuild = (() => {
 
 const TAG = `ai-adiacencja-${process.pid}`;
 const EXECUTOR_TS = path.join(SRC, 'game', 'ai-city-capture-executor.ts');
+const CHM_TS = path.join(SRC, 'game', 'city-hex-movement.ts');
 const MAIN_TS = path.join(SRC, 'main.ts');
 const temps = [];
 function tmpFile(p) { temps.push(p); return p; }
@@ -74,7 +84,7 @@ const REAL = bundleEntry(
   + `export { canUnitOccupyCityHex, canAiEnterEmptyEnemyCity, addForeignCityBlocks } from ${JSON.stringify(SRC + '/game/city-hex-movement')};\n`
   + `export { canCaptureCityWithoutBattle, hasCityDefenders } from ${JSON.stringify(SRC + '/game/siegeDefenders')};\n`
   + `export { aiCityCaptureAllowed } from ${JSON.stringify(SRC + '/game/ai-fog')};\n`
-  + `export { keyOf, hexDistance } from ${JSON.stringify(SRC + '/units/setup')};\n`,
+  + `export { keyOf, hexDistance, isCivilianUnit } from ${JSON.stringify(SRC + '/units/setup')};\n`,
   'real',
 );
 
@@ -88,6 +98,26 @@ function bundleExecutorVariant(transform, label) {
   fs.writeFileSync(mutantPath, mutated, 'utf8');
   return bundleEntry(
     `export { executeAiCityMove } from ${JSON.stringify(mutantPath.replace(/\.ts$/, ''))};\n`,
+    label,
+  ).executeAiCityMove;
+}
+
+/** Egzekutor zbundlowany z MUTANTEM `city-hex-movement.ts` (bramki wejścia na
+ *  heks miasta żyją tam, nie w egzekutorze — bez tego nie da się udowodnić, że
+ *  asercje negatywne faktycznie ich pilnują). Oba mutanty leżą obok oryginałów,
+ *  żeby importy względne nadal się rozwiązywały. */
+function bundleExecutorWithMutatedChm(transform, label) {
+  const chmSource = fs.readFileSync(CHM_TS, 'utf8');
+  const chmMutated = transform(chmSource);
+  if (chmMutated === chmSource) throw new Error(`[${label}] kotwica mutacji city-hex-movement nie znaleziona`);
+  const chmMutant = tmpFile(path.join(SRC, 'game', `.${TAG}-${label}-chm.ts`));
+  fs.writeFileSync(chmMutant, chmMutated, 'utf8');
+  const exeSource = fs.readFileSync(EXECUTOR_TS, 'utf8')
+    .replace("from './city-hex-movement'", `from './.${TAG}-${label}-chm'`);
+  const exeMutant = tmpFile(path.join(SRC, 'game', `.${TAG}-${label}-exe.ts`));
+  fs.writeFileSync(exeMutant, exeSource, 'utf8');
+  return bundleEntry(
+    `export { executeAiCityMove } from ${JSON.stringify(exeMutant.replace(/\.ts$/, ''))};\n`,
     label,
   ).executeAiCityMove;
 }
@@ -121,12 +151,18 @@ function makeMap(w, h) {
   return { szerokoscQ: w, wysokoscR: h, hexes, seed: 42, riverPaths: [] };
 }
 const GAME_DATA = {
-  units: [{ Jednostka: 'Wojownik', Health: 30, Ruch: 2 }],
+  units: [
+    { Jednostka: 'Wojownik', Health: 30, Ruch: 2 },
+    { Jednostka: 'Robotnik', Health: 10, Ruch: 2 },
+    { Jednostka: 'Osadnik', Health: 10, Ruch: 2 },
+  ],
   buildings: [{ id: 'koszary', nazwa: 'Koszary' }],
   terrainYields: { terrain_types: [{ Teren: 'laka', Zywnosc: 4, Praca: 1, Handel: 1 }] },
   aiParams: {},
 };
-function makeWorld() {
+/** `unitSpec` pozwala podstawić jednostkę CYWILNĄ (robotnik/osadnik) w to samo
+ *  położenie co wojownik — parytet sprawdzany jest na identycznym świecie. */
+function makeWorld(unitSpec) {
   return {
     map: makeMap(10, 10),
     cities: [
@@ -134,10 +170,15 @@ function makeWorld() {
       { id: 'wrog-c1', ownerId: WROG_OWNER, q: 5, r: 5, name: 'Cel', population: 3 },
     ],
     units: [
-      { id: 'ai-u1', ownerId: AI_OWNER, typeId: 'Wojownik', category: 'miecznik', q: 5, r: 4, ruch: 2, ruchLeft: 2 },
+      Object.assign(
+        { id: 'ai-u1', ownerId: AI_OWNER, typeId: 'Wojownik', category: 'miecznik', q: 5, r: 4, ruch: 2, ruchLeft: 2 },
+        unitSpec ?? {},
+      ),
     ],
   };
 }
+const ROBOTNIK = { typeId: 'Robotnik', category: 'robotnik' };
+const OSADNIK = { typeId: 'Osadnik', category: 'osadnik' };
 
 /**
  * REALNY planista: `decideAITurn` z ai.ts. Zwraca komendę `move` na heks obcego miasta.
@@ -183,6 +224,7 @@ function runEngineMove(executeAiCityMove, world, move, opts = {}) {
     hasCityDefenders: destinationCity !== undefined
       && REAL.hasCityDefenders(destinationCity, world.units),
     targetVisible,
+    unitIsCivilian: REAL.isCivilianUnit(unit),
     canOccupyCityHex: REAL.canUnitOccupyCityHex(unit.ownerId, move.toQ, move.toR, world.cities),
     blockedKeys,
     destinationKey: REAL.keyOf(move.toQ, move.toR),
@@ -191,7 +233,16 @@ function runEngineMove(executeAiCityMove, world, move, opts = {}) {
         ? []
         : [{ q: toQ, r: toR }]
     ),
-    onCapture: (city, anchor) => {
+    // ODWZOROWANIE `tryAutoCaptureEmptyCityAt` (main.ts) — WSZYSTKIE trzy jego
+    // warunki, w tej samej kolejności, przez REALNE predykaty modułowe:
+    // kotwica niecywilna (main.ts:~26629), „miasto już moje", bramka obrońców.
+    // Pominięcie kotwicy w rundzie 1 było powodem, dla którego cywil AI parkujący
+    // w cudzym mieście przeszedł niezauważony. A6g pilnuje, że produkcja nadal
+    // ma dokładnie ten warunek.
+    onCapture: (city, arriving) => {
+      const anchor = [arriving].find(u => !REAL.isCivilianUnit(u));
+      if (!anchor) return false;
+      if (city.ownerId === anchor.ownerId) return false;
       if (!REAL.canCaptureCityWithoutBattle(city, world.units)) return false;
       city.ownerId = anchor.ownerId;
       captureLog.push(`${city.id}:${anchor.ownerId}`);
@@ -275,67 +326,103 @@ console.log('\n--- K3: parytet gracz / barbarzyńcy / AI major na WSPÓLNYCH bra
   // 3. Wyjątek dla AI jest DODANY, nie zastępuje reguły — i jest WĘŻSZY niż u gracza:
   //    wymaga adiacencji, braku obrońców i braku fortyfikacji. Świadoma asymetria,
   //    opisana w raporcie 01-operator-runda1.md (K3) — AI jest ostrożniejsze, nie luźniejsze.
-  eq(REAL.canAiEnterEmptyEnemyCity(AI_OWNER, 5, 4, { id: 'c', ownerId: WROG_OWNER, q: 5, r: 5 }, [], false), true,
+  eq(REAL.canAiEnterEmptyEnemyCity(AI_OWNER, 5, 4, { id: 'c', ownerId: WROG_OWNER, q: 5, r: 5 }, [], false, false), true,
     'K3e: ścieżka DODANA dla AI major (adiacencja + brak obrońców + brak fortyfikacji)');
-  eq(REAL.canAiEnterEmptyEnemyCity(AI_OWNER, 5, 4, { id: 'c', ownerId: AI_OWNER, q: 5, r: 5 }, [], false), false,
+  eq(REAL.canAiEnterEmptyEnemyCity(AI_OWNER, 5, 4, { id: 'c', ownerId: AI_OWNER, q: 5, r: 5 }, [], false, false), false,
     'K3f: wyjątek nie dotyczy własnego miasta');
+  // Parytet w drugą stronę: wyjątek dla AI nie może być SZERSZY niż reguła gracza.
+  eq(REAL.canAiEnterEmptyEnemyCity(AI_OWNER, 5, 4, { id: 'c', ownerId: WROG_OWNER, q: 5, r: 5 }, [], false, true), false,
+    'K3g: cywil AI NIE wchodzi na heks obcego miasta — tak jak każda jednostka gracza');
 }
 
 // ===========================================================================
 // K4 — ASERCJE NEGATYWNE: granica zakresu
 // ===========================================================================
 console.log('\n--- K4: granica zakresu — bronione / ufortyfikowane / nieadiacentne NIE są przejmowane ---');
+/**
+ * Asercja negatywna pilnuje CAŁEJ granicy, nie tylko jej skutku końcowego:
+ * `captured` i `ownerId` to za mało — usunięcie bramki `hasDefenders` zostawiało je
+ * zielone, a jednostka i tak wjeżdżała na heks BRONIONEGO miasta. Dlatego każdy
+ * przypadek sprawdza dodatkowo `moved === false` i NIEZMIENIONĄ pozycję jednostki.
+ */
+function assertNoEntry(executor, world, move, opts, tag, label) {
+  const target = world.cities.find(c => c.id === 'wrog-c1');
+  const unit = world.units.find(u => u.id === move.unitId);
+  const posBefore = `${unit.q},${unit.r}`;
+  const res = runEngineMove(executor, world, move, opts);
+  eq(res.captured, false, `${tag}a: ${label} — brak przejęcia`);
+  eq(target.ownerId, WROG_OWNER, `${tag}b: ${label} — ownerId zostaje 2`);
+  eq(res.moved, false, `${tag}c: ${label} — rozkaz ODRZUCONY (moved === false), nie „wjechał i nie przejął"`);
+  eq(`${unit.q},${unit.r}`, posBefore, `${tag}d: ${label} — jednostka NIE stoi na heksie miasta`);
+  return res;
+}
 {
   // miasto BRONIONE (obrońca na heksie miasta)
   const world = makeWorld();
   world.units.push({ id: 'wrog-u1', ownerId: WROG_OWNER, typeId: 'Wojownik', category: 'miecznik', q: 5, r: 5, ruch: 2, ruchLeft: 2, hp: 10 });
-  const target = world.cities.find(c => c.id === 'wrog-c1');
   const plan = planAiCityMove(world);
   const move = plan.move ?? { type: 'move', unitId: 'ai-u1', toQ: 5, toR: 5, targetCityId: 'wrog-c1' };
-  const res = runEngineMove(REAL.executeAiCityMove, world, move);
-  eq(res.captured, false, 'K4a: miasto BRONIONE nie jest przejmowane rozkazem move');
-  eq(target.ownerId, WROG_OWNER, 'K4b: miasto BRONIONE zachowuje ownerId === 2');
+  assertNoEntry(REAL.executeAiCityMove, world, move, {}, 'K4-BRONIONE', 'miasto BRONIONE');
 }
 {
   // miasto z MURAMI (fortyfikacja z cityBuilt)
   const world = makeWorld();
-  const target = world.cities.find(c => c.id === 'wrog-c1');
   const plan = planAiCityMove(world);
-  const res = runEngineMove(REAL.executeAiCityMove, world, plan.move, { cityBuiltIds: ['mury'] });
-  eq(res.captured, false, 'K4c: miasto z MURAMI nie jest przejmowane rozkazem move');
-  eq(target.ownerId, WROG_OWNER, 'K4d: miasto z MURAMI zachowuje ownerId === 2');
+  assertNoEntry(REAL.executeAiCityMove, world, plan.move, { cityBuiltIds: ['mury'] }, 'K4-MURY', 'miasto z MURAMI');
 }
 {
   // flaga maMur
   const world = makeWorld();
-  const target = world.cities.find(c => c.id === 'wrog-c1');
-  target.maMur = true;
+  world.cities.find(c => c.id === 'wrog-c1').maMur = true;
   const plan = planAiCityMove(world);
-  const res = runEngineMove(REAL.executeAiCityMove, world, plan.move);
-  eq(res.captured, false, 'K4e: miasto z flagą maMur nie jest przejmowane rozkazem move');
-  eq(target.ownerId, WROG_OWNER, 'K4f: miasto z flagą maMur zachowuje ownerId === 2');
+  assertNoEntry(REAL.executeAiCityMove, world, plan.move, {}, 'K4-MAMUR', 'miasto z flagą maMur');
 }
 {
   // brak adiacencji — zakaz „teleportu" na odległe miasto (zakaz rozlania na atak dystansowy)
   const world = makeWorld();
   world.units[0].q = 5;
   world.units[0].r = 2; // dystans 3 od miasta
-  const target = world.cities.find(c => c.id === 'wrog-c1');
-  const res = runEngineMove(REAL.executeAiCityMove, world, {
+  assertNoEntry(REAL.executeAiCityMove, world, {
     type: 'move', unitId: 'ai-u1', toQ: 5, toR: 5, targetCityId: 'wrog-c1',
-  });
-  eq(res.captured, false, 'K4g: miasto ODDALONE (dystans 3) nie jest przejmowane — brak ataku dystansowego');
-  eq(target.ownerId, WROG_OWNER, 'K4h: miasto ODDALONE zachowuje ownerId === 2');
+  }, {}, 'K4-DYSTANS', 'miasto ODDALONE (dystans 3, brak ataku dystansowego)');
 }
 {
   // rozkaz bez targetCityId — zwykły przemarsz nie może cicho przejąć miasta
   const world = makeWorld();
-  const target = world.cities.find(c => c.id === 'wrog-c1');
-  const res = runEngineMove(REAL.executeAiCityMove, world, {
+  assertNoEntry(REAL.executeAiCityMove, world, {
     type: 'move', unitId: 'ai-u1', toQ: 5, toR: 5,
+  }, {}, 'K4-BEZCELU', 'rozkaz move BEZ targetCityId');
+}
+
+// ===========================================================================
+// K7 — PARYTET CYWIL/WOJSKO: cywil AI nie wchodzi na heks obcego miasta
+// ===========================================================================
+console.log('\n--- K7: cywil AI (robotnik/osadnik) — ani przejęcia, ani parkowania w cudzym mieście ---');
+{
+  for (const [label, spec] of [['Robotnik', ROBOTNIK], ['Osadnik', OSADNIK]]) {
+    // 1. PLANISTA: rozkaz wjazdu na heks obcego miasta w ogóle nie powstaje
+    const world = makeWorld(spec);
+    const plan = planAiCityMove(world);
+    const ontoCity = plan.unitCmds.find(
+      c => c.type === 'move' && c.toQ === 5 && c.toR === 5,
+    );
+    eq(ontoCity, undefined, `K7a ${label}: planista NIE emituje rozkazu move na heks obcego miasta`);
+    assert(plan.unitCmds.length >= 1, `K7b ${label}: cywil dostaje mimo to inną komendę — tura nie jest stracona`);
+
+    // 2. SILNIK: nawet podany ręcznie rozkaz jest odrzucony (bramka niezależna od planisty)
+    const world2 = makeWorld(spec);
+    assertNoEntry(REAL.executeAiCityMove, world2, {
+      type: 'move', unitId: 'ai-u1', toQ: 5, toR: 5, targetCityId: 'wrog-c1',
+    }, {}, `K7-${label}`, `cywil ${label} na niebronionym obcym mieście`);
+  }
+  // 3. Asymetria jest CYWIL/WOJSKO, nie blanketowa blokada — wojownik w tym samym
+  //    świecie nadal przejmuje (inaczej „poprawka" cofnęłaby GOAL).
+  const worldMil = makeWorld();
+  const resMil = runEngineMove(REAL.executeAiCityMove, worldMil, {
+    type: 'move', unitId: 'ai-u1', toQ: 5, toR: 5, targetCityId: 'wrog-c1',
   });
-  eq(res.captured, false, 'K4i: rozkaz move BEZ targetCityId nie przejmuje miasta');
-  eq(target.ownerId, WROG_OWNER, 'K4j: rozkaz move BEZ targetCityId zostawia ownerId === 2');
+  eq(resMil.captured, true, 'K7c: ten sam rozkaz dla jednostki BOJOWEJ nadal przejmuje miasto (GOAL nietknięty)');
+  eq(worldMil.cities.find(c => c.id === 'wrog-c1').ownerId, AI_OWNER, 'K7d: ownerId 2 -> 1 dla jednostki bojowej');
 }
 
 // ===========================================================================
@@ -373,6 +460,10 @@ console.log('\n--- A5/A6: wpięcie w main.ts (anty-„naprawa na papierze") ---'
     'A6e: przed blokiem własnego miasta NIE ma warunku po ownerId napastnika');
   eq(/ownerId/.test(tail), false,
     'A6f: między bramką obrońców a przejęciem NIE ma filtra po ownerId — ścieżka osiągalna dla cywilizacji major');
+  // Kotwica niecywilna jest warunkiem, który harness odwzorowuje w `onCapture`.
+  // Gdyby produkcja go straciła, odwzorowanie przestałoby być wierne — stąd asercja.
+  assert(body.includes('const anchor = arrivingUnits.find(u => !isCivilianUnit(u));'),
+    'A6g: przejęcie wymaga kotwicy NIECYWILNEJ — ten sam warunek odwzorowuje onCapture bramki');
 }
 
 // ===========================================================================
@@ -422,8 +513,57 @@ function countRedsUnderExecutor(executor) {
   const res = runEngineMove(MUT_DROP_ADJACENCY, world, {
     type: 'move', unitId: 'ai-u1', toQ: 5, toR: 5,
   });
-  eq(res.captured, true, 'K6d: MUT-4 (rozluźnienie — przejęcie bez targetCityId) faktycznie przejmuje, czyli K4i/K4j złapałyby rozlanie');
-  eq(target.ownerId, AI_OWNER, 'K6e: MUT-4 zmienia ownerId, potwierdzając że asercje K4i/K4j nie są puste');
+  eq(res.captured, true, 'K6d: MUT-4 (rozluźnienie — przejęcie bez targetCityId) faktycznie przejmuje, czyli asercje K4-BEZCELU złapałyby rozlanie');
+  eq(target.ownerId, AI_OWNER, 'K6e: MUT-4 zmienia ownerId, potwierdzając że asercje K4-BEZCELU nie są puste');
+}
+
+// ===========================================================================
+// K8 — MUTACJE BRAMEK WEJŚCIA (city-hex-movement) — dowód, że K4/K7 pilnują granicy
+// ===========================================================================
+console.log('\n--- K8: mutacje city-hex-movement (asercje negatywne muszą czerwienieć) ---');
+function countRedsNoEntry(executor, unitSpec, extraUnits, opts) {
+  const world = makeWorld(unitSpec);
+  for (const u of extraUnits ?? []) world.units.push(u);
+  const unit = world.units[0];
+  const posBefore = `${unit.q},${unit.r}`;
+  const target = world.cities.find(c => c.id === 'wrog-c1');
+  if (opts && opts.maMur === true) target.maMur = true;
+  const res = runEngineMove(executor, world, {
+    type: 'move', unitId: 'ai-u1', toQ: 5, toR: 5, targetCityId: 'wrog-c1',
+  }, opts ?? {});
+  let reds = 0;
+  if (res.captured !== false) reds++;
+  if (target.ownerId !== WROG_OWNER) reds++;
+  if (res.moved !== false) reds++;
+  if (`${unit.q},${unit.r}` !== posBefore) reds++;
+  return reds;
+}
+{
+  eq(countRedsNoEntry(REAL.executeAiCityMove, ROBOTNIK), 0,
+    'K8a: kod produkcyjny — cywil AI: wszystkie cztery asercje K7 zielone');
+  const MUT_NO_CIVIL_GATE = bundleExecutorWithMutatedChm(
+    src => src.replace('  if (unitIsCivilian) return false;\n', ''),
+    'nocivil',
+  );
+  eq(countRedsNoEntry(MUT_NO_CIVIL_GATE, ROBOTNIK), 2,
+    'K8b: MUT-5 (zdjęta bramka cywila) — 2 czerwone (moved + pozycja); captured/ownerId BY NIE ZŁAPAŁY tego defektu');
+
+  const obronca = { id: 'wrog-u1', ownerId: WROG_OWNER, typeId: 'Wojownik', category: 'miecznik', q: 5, r: 5, ruch: 2, ruchLeft: 2, hp: 10 };
+  eq(countRedsNoEntry(REAL.executeAiCityMove, undefined, [obronca]), 0,
+    'K8c: kod produkcyjny — miasto BRONIONE: wszystkie cztery asercje K4 zielone');
+  const MUT_NO_DEFENDER_GATE = bundleExecutorWithMutatedChm(
+    src => src.replace('  if (hasDefenders) return false;\n', ''),
+    'nodef',
+  );
+  eq(countRedsNoEntry(MUT_NO_DEFENDER_GATE, undefined, [obronca]), 2,
+    'K8d: MUT-6 (zdjęta bramka obrońców) — 2 czerwone (moved + pozycja); to jest dokładnie dziura z rundy 1');
+
+  const MUT_NO_WALL_GATE = bundleExecutorWithMutatedChm(
+    src => src.replace('  if (city.maMur === true) return false;\n', ''),
+    'nowall',
+  );
+  eq(countRedsNoEntry(MUT_NO_WALL_GATE, undefined, [], { maMur: true }), 4,
+    'K8e: MUT-7 (zdjęta bramka maMur) — 4 czerwone (miasto ufortyfikowane zostałoby PRZEJĘTE: moved+pozycja+captured+ownerId)');
 }
 
 cleanup();

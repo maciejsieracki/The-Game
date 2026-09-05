@@ -36,6 +36,14 @@ export function canUnitOccupyCityHex(
  * gdy przejęcie bez bitwy jest dozwolone. Mury są osobną blokadą: samo
  * `canCaptureCityWithoutBattle` opisuje obrońców, ale nie zastępuje bramki
  * fortyfikacji.
+ *
+ * PARYTET Z GRACZEM (P-AI-BRAK-SCIEZKI-ZDOBYCIA-MIASTA-ADIACENCJA-Q1, runda 1,
+ * obrona zarzutu 1): `unitIsCivilian` jest bramką OBOWIĄZKOWĄ, nie kosmetyczną.
+ * Bez niej robotnik/osadnik AI wchodził na heks obcego miasta, którego NIE
+ * przejmował (`tryAutoCaptureEmptyCityAt` w `main.ts` wymaga kotwicy
+ * `!isCivilianUnit`) — czyli AI mogło coś, czego gracz nie może (gracz jest
+ * odrzucany bezwarunkowo przez `canUnitOccupyCityHex`), i tracił turę bez efektu.
+ * Wyjątek dla AI ma być WĘŻSZY od reguły gracza, nigdy szerszy.
  */
 export function canAiEnterEmptyEnemyCity(
   unitOwnerId: number,
@@ -44,8 +52,10 @@ export function canAiEnterEmptyEnemyCity(
   city: CityHexRef,
   cityBuiltIds: readonly string[],
   hasDefenders: boolean,
+  unitIsCivilian: boolean,
 ): boolean {
   if (city.ownerId === unitOwnerId) return false;
+  if (unitIsCivilian) return false;
   if (hexDistance(unitQ, unitR, city.q, city.r) !== 1) return false;
   if (hasDefenders) return false;
   if (city.maMur === true) return false;
