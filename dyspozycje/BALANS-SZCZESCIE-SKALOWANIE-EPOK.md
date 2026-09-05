@@ -70,6 +70,7 @@ formuła brzmi `x(e) = 0,2632 × (BUD(e) + 20 + 2 × NSUR(e))` i daje 10 / 14 / 
 | Podatki | **−10 … +10** | liniowo, 0% Zamożności = −10, 90% = +10 |
 | Wojna | **−5** | |
 | Bonus osiedla (pop 1–4) | **15 / 12 / 8 / 5** | pop ≥ 5 = 0 |
+| Cud świata (każdy z sześciu) | **+6** | działa na KAŻDE miasto właściciela |
 
 ### 3c. Wealth — max stały, próg rosnący
 
@@ -82,8 +83,8 @@ której dziś nie ma w sygnaturze.
 
 ### 3d. Zaopatrzenie obywateli
 
-`+2` za każdy dostarczony surowiec epoki, `−1` za brakujący. Skaluje się samo przez `NSUR(e)`.
-**Asymetria +2 / −1 jest świadoma** — właściciel zmienił tylko stronę dodatnią.
+**`+2` za każdy dostarczony surowiec epoki, `−2` za brakujący.** Symetrycznie.
+Skaluje się samo przez `NSUR(e)`, więc rozpiętość rośnie: ±4 / ±8 / ±10.
 
 ### 3e. Mianownik `szczescie_max_epoka`
 
@@ -141,6 +142,16 @@ Cztery wiersze liczyły to samo drugi raz i **wprowadzały gracza w błąd**:
 | `Ceramika (dostęp)` +1 | ceramika liczy się jako zwykły surowiec zaopatrzenia |
 | `Spichlerz działający` +1 | Spichlerz jest liczony jako budynek (+5) |
 
+Dwie kary usunięte z tego samego powodu — **skala proporcjonalna ±x już je zawiera**:
+
+| Kara | Wartość | Dlaczego zniknęła |
+|---|---:|---|
+| `szczescie_kara_obca_religia` | −4 | linia Religii daje już `−x` przy obcej religii |
+| `conquestUnstableHappinessPenalty` (podbój: obca kultura i religia) | −2 | obie linie dają już `−x` każda |
+
+Trzecia usunięta wcześniej: `szczescie_kara_wielkosc_miasta` (zagęszczenie −0,75 powyżej
+pop 5) — zastąpiona przez `szczescie_max_pop_wspolczynnik`, patrz §3f.
+
 ---
 
 ## 5. Prognoza dla przyszłych epok
@@ -162,11 +173,13 @@ historycznie obniżał ją o ok. 40–50% (118 → 70 w epoce 3).
 
 ## 6. Pozycje NIEROZSTRZYGNIĘTE — wymagają decyzji przy najbliższej okazji
 
-- **Kara za brakujący surowiec** `−1` wobec `+2` za dostarczony. Symetria wymagałaby `−2`.
-- **Kara „obca religia" `−4`** jako osobny wiersz (`society-breakdown.ts:590`) — po przejściu
-  religii na skalę proporcjonalną miasto z obcą religią dostanie `−x` z linii religii
-  **plus** `−4` z tego wiersza, a za obcą kulturę tylko `−x`. Kandydat do usunięcia.
-- **Podbój: obca kultura i religia naraz** `−2` — czy skalować z epoką.
+**Rozstrzygnięte 2026-09-05, już naniesione wyżej:** kara za brakujący surowiec → `−2`
+(symetria); kara „obca religia" `−4` → **usunięta**; podbój obca kultura i religia `−2` →
+**usunięta**; zagęszczenie → zastąpione współczynnikiem; wojna `−2` → **`−5`**;
+cuda → **+6** każdy.
+
+Zostają:
+
 - **Trzy martwe parametry** bez ani jednego użycia w `gra/src`:
   `szczescie_kara_obca_kultura` (−2), `szczescie_bonus_produkcja_wartosc` (0,1),
   `szczescie_bonus_wzrost_wartosc` (0,1).
@@ -177,24 +190,26 @@ historycznie obniżał ją o ok. 40–50% (118 → 70 w epoce 3).
 
 ## 7. Cuda świata — decyzja właściciela 2026-09-05
 
-Wszystkie sześć cudów dających szczęście podniesione do **+10 każdy**:
-`koloseum`, `roquepertuse`, `stupa_sanchi`, `mundo_perdido`, `palac_weiyang`, `posag_peruna`
-(było: 6 / 3 / 3 / 3 / 3 / 3).
+Sześć cudów dających szczęście ujednolicone na **+6 każdy**:
+`koloseum` (było 6), `roquepertuse`, `stupa_sanchi`, `mundo_perdido`, `palac_weiyang`,
+`posag_peruna` (wszystkie były 3).
 
-**Bonus działa na KAŻDE miasto właściciela** (`main.ts:3393`, `wonderCityYieldBonusForOwner`).
-Zmierzona waga przy `szMax` normalnym, miasto pop 8:
+**Bonus działa na KAŻDE miasto właściciela** (`main.ts:3393`, `wonderCityYieldBonusForOwner`) —
+to jest powód, dla którego wartość musi być umiarkowana. Waga przy `szMax` normalnym, pop 8:
 
 | Ile cudów | Punkty | % epoka 1 | % epoka 2 | % epoka 3 |
 |---:|---:|---:|---:|---:|
-| 1 | 10 | 25% | 15% | 11% |
-| 3 | 30 | 76% | 45% | 32% |
-| 6 | 60 | **151%** | **91%** | **65%** |
+| 1 | 6 | 15% | 9% | 6% |
+| 2 | 12 | 30% | 18% | 13% |
+| 3 | 18 | 45% | 27% | 19% |
+| 6 | 36 | 91% | 54% | 39% |
 
-Cała pula dodatnia bez cudów to 58 / 85 / 118 punktów, więc **sześć cudów daje więcej niż
-cała reszta razem w epoce 1**. Właściciel został o tym poinformowany; wartość +10 jest jego
-świadomym wyborem.
+**Kontekst decyzji:** właściciel wskazał, że jedna cywilizacja realnie zdobywa
+**1–2 cuda we wczesnych epokach, wyjątkowo 3**. Przy +10 trzy cuda dawałyby +30, czyli
+76% skali epoki 1 — uznane za przesadę i obniżone do +6. Przy trzech cudach wychodzi
+**+18, czyli 45%** skali epoki 1. Wartość +10 była rozważana i **świadomie odrzucona**.
 
----
+Wartość płaska, **nie skaluje się z epoką** — patrz §3b.
 
 ## 8. Kolejność wprowadzania przy nowej epoce
 
