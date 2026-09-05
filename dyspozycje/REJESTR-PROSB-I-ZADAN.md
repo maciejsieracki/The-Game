@@ -4825,3 +4825,34 @@ który właśnie zdjęto, i o przycisku, którego już nie ma. Operator **świad
 bo ratyfikacja mówiła „nic więcej w tym pliku" — zachowanie prawidłowe, ale zostawia ślad
 do sprzątnięcia. **STATUS: ZAREJESTROWANE, NIE DISPATCHOWANE.** Drobny, do połączenia
 z pierwszym tematem dotykającym tego pliku.
+
+**ECHO WŁAŚCICIELA (AskUserQuestion, 2026-09-04): „Stos, ale maksymalnie dwie karty".**
+Wiążące rozstrzygnięcie sprzeczności — **żadna ze stron sporu nie wygrywa w całości**.
+Karta źródłowa **zostaje widoczna** pod docelową (wbrew dzisiejszemu bezwarunkowemu
+`dismiss()` ze strony A), ale **głębokość stosu jest twardo ograniczona do 2** (wbrew
+nieograniczonemu stosowi ze strony B). Otwarcie trzeciej karty zamyka najstarszą.
+
+**Skutek dla obu istniejących kontraktów — oba wymagają korekty, żaden nie zostaje as-is:**
+- `P-ENTITYCARD-DIALOG-WIELOKROTNY-Q1` kryterium K1 („po kliknięciu linku krzyżowego zostaje
+  dokładnie 1 backdrop") **przestaje obowiązywać w tym brzmieniu** — ma być 2. Intencja
+  właściciela („żeby nie wszystkie włączały się naraz") zostaje spełniona przez SUFIT,
+  a nie przez zamykanie poprzedniej.
+- `entity-card-cross-links-nested-overlay-test.cjs:163-165` (`depthAfterB === 2`)
+  **staje się zgodne z nowym kontraktem** i prawdopodobnie zzielenieje bez zmian —
+  ale to wymaga sprawdzenia, nie założenia: asercje żądające `depthAfter === 2`
+  w `civpedia-caly-wiersz-przyciskiem-test.cjs` też trzeba przejrzeć **po jednej**,
+  bo część mogła zakładać stos NIEOGRANICZONY.
+- **Brakuje trzeciego przypadku i to jest nowa praca:** nigdzie dziś nie ma asercji na
+  otwarcie TRZECIEJ karty. Sufit trzeba zaimplementować i pokryć bramką od zera.
+
+**Zakres do dispatchu (`R-ENTITYCARD-JEDNA-KARTA-CZY-STOS-Q1`):** (1) `openDialog()`
+(`renderer.ts:474-479`) przestaje bezwarunkowo zamykać poprzednią kartę, a zaczyna
+egzekwować sufit 2; (2) nowa bramka na sekwencję A→B→C z asercją, że po C żyją dokładnie
+dwie karty i że zamknięta jest A, nie B; (3) przegląd 29 czerwonych asercji w dwóch
+istniejących bramkach — które zzielenieją same, a które utrwalały stos nieograniczony;
+(4) **martwy komentarz `renderer.ts:406-411` do poprawienia niezależnie od reszty** —
+opisuje zachowanie sprzed `P-ENTITYCARD-DIALOG-WIELOKROTNY-Q1` i dziś wprowadza w błąd.
+**Zastrzeżenie orkiestratora do zapisania w dispatchu:** przy suficie 2 trzeba rozstrzygnąć,
+co znaczy „zamknięcie karty B" — czy odsłania A (naturalne przy stosie), czy zamyka obie.
+To jest pytanie, na które wytwór sam nie odpowie; jeśli Operator na nie trafi,
+ma zatrzymać się na `DECISION_REQUIRED`, a nie wybierać.
