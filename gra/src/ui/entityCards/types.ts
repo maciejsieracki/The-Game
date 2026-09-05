@@ -35,6 +35,24 @@ export interface EntityCardRow {
   emphasize?: boolean;
   /** Jeśli podane — wiersz jest klikalny i otwiera kartę innej encji (T10). */
   linkTo?: { kind: EntityKind; id: string };
+  /** P-CIVPEDIA-KARTY-NAZWA-PRZYCISKIEM-Q1 — KTÓRY tekst wiersza NAZYWA encję z `linkTo`,
+   * a więc który ma dostać pudełko przycisku. Renderer nie jest w stanie tego wywnioskować,
+   * bo wiersze z `linkTo` mają w tym module DWA różne kształty:
+   *
+   *   `'value'` (DOMYŚLNY, zachowanie sprzed tego tematu) — `label` jest nazwą POLA,
+   *       a `value` nazwą encji. Tak wyglądają wiersze „Technologia: Brązownictwo",
+   *       „Zastępuje: Wojownik", „Ulepszenie bazowe: droga" (`unitAdapter`,
+   *       `improvementAdapter`, `wonderAdapter`). Nazwa encji JUŻ jest przyciskiem.
+   *   `'label'` — `label` jest nazwą encji, a `value` opisem/pustką. Tak wyglądają wiersze
+   *       sekcji Budynki/Jednostki/Ulepszenia terenu/Kolejne technologie/Zmiany ekonomiczne
+   *       karty technologii (`technologyAdapter`). Do tego tematu ich nazwa była zwykłym,
+   *       nieklikalnym tekstem, a przyciskiem był osobny `value` („Szczegóły →").
+   *
+   * Heurystyka „pusty `value` = przycisk na `label`" byłaby BŁĘDNA: w sekcji „Zmiany
+   * ekonomiczne" `label` to nazwa budynku, a `value` to jego efekt („+2 nauki") — pudełko
+   * wylądowałoby na efekcie, nie na nazwie encji. Stąd pole jawne, nie zgadywanie.
+   * Bez `linkTo` pole jest ignorowane. */
+  linkAnchor?: 'label' | 'value';
   /** Ikona per wiersz (T1b) — patrz `EntityCardRowIcon`. */
   icon?: EntityCardRowIcon;
   /** Tekst po prawej, osobny od `value` (np. rola/typ jednostki), wzorem

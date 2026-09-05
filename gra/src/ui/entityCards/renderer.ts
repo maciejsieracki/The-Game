@@ -130,13 +130,30 @@ function buildGridRowEl(row: EntityCardData['sections'][number]['rows'][number])
     iconEl.innerHTML = row.icon.svg;
     rowEl.appendChild(iconEl);
   }
-  const key = el('span', 'entity-card-row-key');
+  // P-CIVPEDIA-KARTY-NAZWA-PRZYCISKIEM-Q1: przyciskiem (pudełko + klik) jest ten tekst,
+  // który NAZYWA encję z `linkTo` — patrz `EntityCardRow.linkAnchor` w `types.ts`.
+  // `'label'` → nazwa encji stoi po lewej (sekcje Budynki/Jednostki/Ulepszenia/Kolejne
+  // technologie/Zmiany ekonomiczne karty technologii); brak pola albo `'value'` → nazwa
+  // encji stoi po prawej (wiersze „Technologia: X", „Zastępuje: Y"), czyli DOKŁADNIE
+  // dzisiejsze zachowanie, bez zmiany.
+  // Dokładnie JEDEN element wiersza niesie `data-entity-*` — nigdy oba naraz. Gdyby oba,
+  // „przycisk" byłby dwoma rozłącznymi prostokątami i asercja „pudełko == obszar łapiący
+  // klik" (GOAL 4 pkt 3, lekcja RUNDY 1 OBRONY) przestałaby cokolwiek znaczyć.
+  const anchorOnLabel = row.linkTo != null && row.linkAnchor === 'label';
+  const key = el(anchorOnLabel ? 'button' : 'span', 'entity-card-row-key');
   key.textContent = row.label;
-  const val = el(row.linkTo ? 'button' : 'span', 'entity-card-row-value');
+  if (row.linkTo && anchorOnLabel) {
+    key.setAttribute('data-entity-kind', row.linkTo.kind);
+    key.setAttribute('data-entity-id', row.linkTo.id);
+  }
+  const valIsLink = row.linkTo != null && !anchorOnLabel;
+  const val = el(valIsLink ? 'button' : 'span', 'entity-card-row-value');
   val.textContent = row.value;
   if (row.linkTo) {
-    val.setAttribute('data-entity-kind', row.linkTo.kind);
-    val.setAttribute('data-entity-id', row.linkTo.id);
+    if (valIsLink) {
+      val.setAttribute('data-entity-kind', row.linkTo.kind);
+      val.setAttribute('data-entity-id', row.linkTo.id);
+    }
     // Fallback hit-area na CAŁYM wierszu — patrz komentarz funkcji wyżej
     // (P-CIVPEDIA-KARTY-CALY-WIERSZ-PRZYCISKIEM-Q1). Obejmuje TERAZ każdy wiersz z
     // `linkTo`, niezależnie od tego czy `val` (przycisk po prawej) ma widoczną
@@ -617,6 +634,11 @@ export const ENTITY_CARD_CSS = `
    zamiast trzymac ja przy ikonie. Auto-margines przykleja etykiete do lewej, a wartosc
    do prawej krawedzi — niezaleznie od tego, czy ikona jest. */
 .entity-card-row-key{opacity:.72;margin-right:auto;}
+/* P-CIVPEDIA-KARTY-NAZWA-PRZYCISKIEM-Q1: pelny zestaw regul dla etykiety, ktora JEST nazwa
+   klikalnej encji (linkAnchor:'label'), lezy CELOWO nizej — patrz blok
+   button.entity-card-row-key za wspolnym pudelkiem przycisku.
+   UWAGA: ten arkusz zyje w literale szablonowym TS — zero znakow wstecznego apostrofu
+   w komentarzach, bo zamykaja literal i lamia parsowanie calego pliku. */
 /* BEZ text-align:right — sam flex (space-between + auto-margines etykiety) dosuwa pudelko
    wartosci do prawej krawedzi, wiec krotkie wartosci i tak sa wyrownane do prawej, a dlugie,
    zawijane opisy zostaja czytelnie wyrownane do lewej zamiast lamac sie w postrzepiona
@@ -636,6 +658,7 @@ export const ENTITY_CARD_CSS = `
    Wzorzec tla/obwodki jest 1:1 z .entity-card-action-secondary (nizej w tym arkuszu), wiec
    nie wprowadzamy nowego jezyka — tylko trzeci, najlzejszy szczebel tej samej skali.
    Zero zmian w DOM/atrybutach/listenerach — wylacznie CSS. */
+button.entity-card-row-key,
 button.entity-card-row-value,
 button.entity-card-row-action-text,
 button.entity-card-pill-text,
@@ -649,6 +672,7 @@ button.entity-card-civpedia-link{-webkit-appearance:none;appearance:none;
    88,1x22,2 px pomalowanego "przycisku" wobec 52,0x16,2 px realnie klikalnego tekstu,
    czyli ~41% szerokosci to byla martwa strefa z mylacym cursor:pointer. Pudelko MUSI
    pokrywac sie z obszarem klikalnym, inaczej "przycisk" jest tylko obrazkiem przycisku. */
+button.entity-card-row-key,
 button.entity-card-row-value,
 button.entity-card-row-action-text,
 button.entity-card-pill-text,
@@ -656,6 +680,7 @@ button.entity-card-civpedia-link{display:inline-block;padding:2px 10px;
   border:1px solid rgba(232,216,138,.42);border-radius:var(--tg-radius-btn,8px);
   background:linear-gradient(180deg,#161c28,#0a0d14);
   box-shadow:inset 0 1px 0 rgba(232,216,138,.1);}
+button.entity-card-row-key:hover,
 button.entity-card-row-value:hover,
 button.entity-card-row-action-text:hover,
 button.entity-card-pill-text:hover,
@@ -666,6 +691,18 @@ button.entity-card-civpedia-link:hover{border-color:var(--tg-gold-primary,#e8d88
    zachowuje przy tym DZISIEJSZE polozenie: przycisk zostaje tuz obok odznaki po lewej,
    zamiast zostac odrzucony na prawa krawedz przez justify-content:space-between wiersza. */
 button.entity-card-row-action-text{flex:0 1 auto;margin-right:auto;}
+/* P-CIVPEDIA-KARTY-NAZWA-PRZYCISKIEM-Q1 — nazwa encji jako przycisk (linkAnchor:'label').
+   Ten blok MUSI stac PO wspolnym pudelku przycisku wyzej, dokladnie jak siostrzana regula
+   button.entity-card-row-action-text linie wyzej: wspolny reset ustawia margin:0 przy TEJ
+   SAMEJ specyficznosci (0,1,1), wiec regula postawiona WCZESNIEJ zostalaby skasowana —
+   zmierzone na zywym Chromium w tej rundzie (przycisk nazwy ladowal na SRODKU wiersza).
+   opacity:1 zdejmuje wyciszenie .72 z .entity-card-row-key: nazwa encji jest teraz
+   elementem pierwszoplanowym, nie wyszarzona etykieta pola.
+   flex:0 1 auto + margin-right:auto trzymaja przycisk przy lewej krawedzi (tuz za ikona
+   wiersza, ktora zostaje jego SIOSTRA poza ramka — jak entity-card-pill-check przy
+   entity-card-pill-text), a wartosc/trailing przy prawej. Bez auto-marginesu wiersz
+   z ikona ma TRZY dzieci i justify-content:space-between wypycha nazwe na srodek. */
+button.entity-card-row-key{opacity:1;flex:0 1 auto;margin-right:auto;}
 /* Wiersze Budynki/Jednostki karty technologii maja PUSTE row.value (ECHO
    R-TECHNOLOGIA-KARTA-USUN-OPIS-BUDYNKI-JEDNOSTKI-Q1) — klikalny jest caly wiersz przez
    fallback .entity-card-row--linked. Bez tego wyjatku pusty przycisk narysowalby sie jako
@@ -680,6 +717,7 @@ button.entity-card-row-value:empty{border:0;background:none;box-shadow:none;padd
    w srodku) zachowuja dzisiejszy wyglad pigulki bez zmian — :has je omija. */
 .entity-card-pill:has(> button.entity-card-pill-text){
   background:none;border:0;border-radius:0;padding:0;cursor:default;box-shadow:none;}
+button.entity-card-row-key:focus-visible,
 button.entity-card-row-value:focus-visible,
 button.entity-card-row-action-text:focus-visible,
 button.entity-card-pill-text:focus-visible,

@@ -249,3 +249,72 @@ i TEJ SAMEJ gałęzi. Po 5 rundach: `LIMIT-5-EXCEEDED`.
 
 Operator → Evaluator (ponumerowane zarzuty) → Obrona (gdy lista niepusta) → koniec
 skryptu. Final Control osobno, integracja allowlist-only ręką orkiestratora.
+
+---
+
+# RUNDA 2 — RATYFIKACJA ROZSZERZENIA ALLOWLISTY (orkiestrator)
+
+DATA: 2026-09-04
+STATUS RUNDY 1: `DECISION_REQUIRED` — Operator i Evaluator niezależnie ustalili to samo.
+
+## Co ratyfikuję i dlaczego
+
+Regres 3 asercji `(B6)` siedzi w bramce **spoza allowlisty rundy 1**:
+`gra/tools/wydarzenia-zbadano-karta-tech-real-render-test.cjs` (baza `144/1` → HEAD `137/4`).
+
+Przyczyna jest jedna i udokumentowana: strażnik `clickRowLabel()` (ok. l. 273-297)
+**przerywa scenariusz BEZ kliknięcia**, gdy punkt etykiety należy do
+`button[data-entity-kind]`. Ten warunek napisano wtedy, gdy etykieta **nie była
+przyciskiem** — po GOAL 1 jest, więc strażnik blokuje własny scenariusz.
+
+**Dowód, że produkt jest sprawny, a wadą jest test:** kopia scratch ze zdjętym tym
+JEDNYM warunkiem daje `144/1`, czyli **dokładnie wynik bazy**, z pre-istniejącym `(B7)`
+identycznym co do wartości (`cardClientH:470, cardScrollH:690`). Zweryfikowane osobno
+przez Operatora i przez Evaluatora, na dwóch niezależnych przebiegach.
+
+**ALLOWLISTA ROZSZERZONA o:** `gra/tools/wydarzenia-zbadano-karta-tech-real-render-test.cjs`
+
+## R2-1 — jedyne zadanie tej rundy
+
+Zdejmij w tej bramce **wyłącznie** warunek przerywający scenariusz, gdy punkt etykiety
+należy do przycisku encji. Nic więcej w tym pliku.
+
+Kryterium: bramka wraca do `144/1`, a jedyny fail to pre-istniejące `(B7)` — **potwierdź
+parytet `(B7)` z bazą co do wartości**, nie tylko co do liczby.
+
+## GRANICE TEJ RUNDY
+
+- **NIE zmieniasz produktu.** GOAL 1-4 rundy 1 są zamknięte i zweryfikowane; ta runda
+  dotyka wyłącznie przestarzałego strażnika w jednej bramce.
+- Nie „naprawiasz przy okazji" pre-istniejącego `(B7)` — ma zostać, jest poza tematem.
+- Nie ruszasz pozostałych bramek pre-istniejąco czerwonych (niżej).
+
+## R2-2 — zapis do rejestru, bez naprawy
+
+Operator zgłosił rzecz, której **nie było w moim dispatchu wśród trzech znanych czerwonych
+bramek**, a która jest pre-istniejąca na bazie:
+- `civpedia-caly-wiersz-przyciskiem-test.cjs` — 19 faili,
+- `entity-card-cross-links-nested-overlay-test.cjs` — 10 faili.
+
+Wzorzec `depthBefore:1, depthAfter:1` przy poprawnym `cardTop` sugeruje **wspólną
+przyczynę: karta zagnieżdżona ZASTĘPUJE kartę źródłową zamiast kłaść się na niej**.
+**Nie naprawiaj tego w tej rundzie** — opisz w raporcie w 3-5 zdaniach, na tyle
+konkretnie, żeby orkiestrator mógł z tego założyć osobny temat bez powtarzania reconu.
+
+## PRZYZNANIE BŁĘDU AUTORA DISPATCHU (do wiadomości, nie do naprawy)
+
+Recon rundy 1 był w dwóch punktach nieprawdziwy i Operator słusznie go zakwestionował
+zamiast wykonać bezmyślnie:
+- **(F) było fałszywe:** `'Szczegóły →'` nie występowało „we wszystkich adapterach" —
+  tylko 3× w `technologyAdapter.ts` + 1× w `techDiscoveryNotice.ts`;
+  **`buildingAdapter.ts` nie ustawia `linkTo` NIGDZIE** (karta budynku nie ma linków
+  krzyżowych, więc nie było tam czego zamieniać).
+- **Polecenie „przenieś rolę przycisku z `value` na `label`" było niebezpieczne:**
+  wiersze z `linkTo` mają DWA kształty. W „Technologia: Brązownictwo" / „Zastępuje:
+  Wojownik" nazwą encji jest `value` i **już był przyciskiem** — ślepe przeniesienie
+  zrobiłoby przycisk ze słowa „Technologia". Rozwiązanie Operatora (`linkAnchor?:
+  'label'|'value'`, domyślnie `'value'` = dzisiejsze zachowanie) jest poprawne
+  i zaakceptowane.
+
+To jest wina autora dispatchu, nie wykonawcy. Zapisane, żeby przy kolejnych tematach
+tej rodziny nie powtórzyć założenia „skoro w jednym adapterze, to we wszystkich".

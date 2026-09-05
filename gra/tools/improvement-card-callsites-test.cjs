@@ -151,11 +151,33 @@ async function testCallSite1TechDiscoveryNotice() {
     check('sekcja "Ulepszenia terenu" (data-section-key="improvements") istnieje w DOM', !!sectionHeadRect, sectionHeadRect);
     if (sectionHeadRect) await page.mouse.click(sectionHeadRect.cx, sectionHeadRect.cy);
 
+    // P-CIVPEDIA-KARTY-NAZWA-PRZYCISKIEM-Q1 (GOAL 3) — DWIE zmiany w tym bloku, obie
+    // wymuszone pomiarem na żywym Chromium, nie domysłem:
+    //
+    // (a) SELEKTOR. Do tego tematu przyciskiem był `value` („Szczegóły →"), dziś jest nim
+    //     SAMA NAZWA ulepszenia (`.entity-card-row-key`, `linkAnchor:'label'`). Selektor
+    //     celuje więc w `button[data-entity-kind="improvement"]` — DOKŁADNIE ten sam
+    //     selektor, którym łapie klik delegacja w `renderEntityCard`, więc test jest
+    //     odporny na to, po której stronie wiersza stoi przycisk.
+    //
+    // (b) SCROLL PRZED HIT-TESTEM. Karta ma STAŁĄ wysokość `min(80vh,calc(100vh - 36px))`
+    //     z `overflow:auto` (R-CIVPEDIA-KARTY-SPOJNOSC-Q1-C, jawne żądanie właściciela).
+    //     Po rozwinięciu sekcji „Ulepszenia terenu" wiersz wypada PONIŻEJ przyciętego boxa
+    //     karty, więc `getBoundingClientRect()` zwraca punkt spoza karty, a `elementFromPoint`
+    //     trafia w `.tdn-back` pod spodem. To NIE jest defekt produktu — zmierzone na żywo
+    //     (1280x900, „Obróbka drewna"): karta scrollHeight 914 vs clientHeight 720, czyli
+    //     realnie przewijalna; wiersz przed scrollem top 813,6 przy dolnej krawędzi karty
+    //     811,0 (2,6 px poniżej cięcia); po przewinięciu KÓŁKIEM MYSZY (nie tylko API)
+    //     scrollTop 194, wiersz top 619,6, `elementFromPoint` = BUTTON, a realny klik
+    //     otwiera kartę `tartak`. Gracz dosięga wiersza normalnym scrollem — brakowało
+    //     tego kroku TESTOWI, nie graczowi. Dowód: `dowody/goal3-01..03-*.png` w katalogu
+    //     runu tematu. Bez tej linii test mierzyłby punkt, którego użytkownik nigdy nie klika.
     const linkRowInfo = await page.evaluate(() => {
       const host = document.getElementById('civ-tech-discovery-notice-host');
       const section = host?.querySelector('[data-section-key="improvements"]');
-      const btn = section?.querySelector('.entity-card-row-value[data-entity-kind="improvement"]');
+      const btn = section?.querySelector('button[data-entity-kind="improvement"]');
       if (!btn) return null;
+      btn.scrollIntoView({ block: 'center' });
       const r = btn.getBoundingClientRect();
       return {
         cx: r.left + r.width / 2, cy: r.top + r.height / 2,

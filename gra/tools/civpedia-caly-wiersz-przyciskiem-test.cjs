@@ -238,6 +238,94 @@ async function main() {
       return { rowInfo, hitEl, afterClick: { depthBefore, depthAfter, cardTop } };
     }
 
+    /** DOWÓD ZACHOWANIA fallbacku CAŁEGO WIERSZA (kontrakt
+     * `P-CIVPEDIA-KARTY-CALY-WIERSZ-PRZYCISKIEM-Q1`), przywrócony w OBRONIE rundy 1
+     * `P-CIVPEDIA-KARTY-NAZWA-PRZYCISKIEM-Q1`.
+     *
+     * Do tego tematu dowodem, że listener wiersza faktycznie DZIAŁA, była asercja
+     * „punkt etykiety NIE jest <button>" + otwarcie karty. Odkąd nazwa encji jest
+     * przyciskiem, klik w etykietę trafia zawsze w przycisk — a sama obecność atrybutów
+     * `data-row-entity-*` (`rowInfo.rowLinked`) dowodzi tylko OZNACZENIA wiersza, nie
+     * jego ZACHOWANIA. Ta funkcja klika w PUSTE POLE wiersza (60 px na prawo od prawej
+     * krawędzi przycisku, wewnątrz prostokąta wiersza), najpierw sprawdza
+     * `elementFromPoint`, że punkt NIE należy do żadnego `button[data-entity-kind]`,
+     * i dopiero potem klika — otwarcie karty może więc pochodzić WYŁĄCZNIE z listenera
+     * całego wiersza. */
+    async function clickRowGapAndInspect(kind, id, sectionKey, labelText) {
+      await page.evaluate(({ kind, id }) => {
+        window.CivpediaWiersz.openEntityCard(kind, id, { mode: 'dialog' });
+      }, { kind, id });
+      const gapInfo = await page.evaluate(({ sectionKey, labelText }) => {
+        const section = document.querySelector(`[data-section-key="${sectionKey}"]`);
+        if (!section) return { error: 'no-section' };
+        if (section.getAttribute('data-open') === '0') {
+          section.querySelector('.entity-card-section-head')?.click();
+        }
+        const rows = Array.from(section.querySelectorAll('.entity-card-row'));
+        const row = rows.find((r) => {
+          const key = r.querySelector('.entity-card-row-key, .entity-card-row-action-text');
+          return key && key.textContent === labelText;
+        });
+        if (!row) return { error: 'no-row' };
+        const btn = row.querySelector('button[data-entity-kind]');
+        if (!btn) return { error: 'no-button' };
+        btn.scrollIntoView({ block: 'center' });
+        const br = btn.getBoundingClientRect();
+        const rr = row.getBoundingClientRect();
+        // 60 px na prawo od przycisku, ale zawsze WEWNĄTRZ wiersza (clamp do prawej
+        // krawędzi minus 8 px) — inaczej przy wąskim wierszu klikalibyśmy poza nim.
+        const x = Math.min(br.right + 60, rr.right - 8);
+        const y = rr.top + rr.height / 2;
+        return { gx: x, gy: y, gapPx: +(x - br.right).toFixed(1), rowRight: +rr.right.toFixed(1), btnRight: +br.right.toFixed(1) };
+      }, { sectionKey, labelText });
+      if (gapInfo.error) return { gapInfo, gapHit: null, afterClick: null };
+
+      const gapHit = await page.evaluate(({ gx, gy }) => {
+        const el = document.elementFromPoint(gx, gy);
+        return el ? {
+          tag: el.tagName,
+          cls: String(el.className),
+          isButton: el.closest('button[data-entity-kind]') != null,
+          inLinkedRow: el.closest('.entity-card-row--linked, [data-row-entity-kind]') != null,
+        } : null;
+      }, gapInfo);
+
+      const depthBefore = await depth();
+      await page.mouse.click(gapInfo.gx, gapInfo.gy);
+      const depthAfter = await depth();
+      const cardTop = await page.evaluate(() => {
+        const bs = Array.from(document.querySelectorAll('.entity-card-backdrop'));
+        const card = bs[bs.length - 1]?.querySelector('.entity-card');
+        return card ? { kind: card.getAttribute('data-entity-kind'), id: card.getAttribute('data-entity-id') } : null;
+      });
+      return { gapInfo, gapHit, afterClick: { depthBefore, depthAfter, cardTop } };
+    }
+
+    /** Jedna para asercji: klik POZA przyciskiem, wewnątrz wiersza, otwiera właściwą kartę. */
+    async function checkRowGapFallback(tag, kind, id, sectionKey, labelText, expectKind, expectId) {
+      await closeAll();
+      const { gapInfo, gapHit, afterClick } = await clickRowGapAndInspect(kind, id, sectionKey, labelText);
+      if (gapInfo.error) {
+        check(`${tag} "${labelText}": fallback całego wiersza — punkt POZA przyciskiem daje się wyznaczyć`, false, gapInfo);
+        return;
+      }
+      check(`${tag} "${labelText}": punkt ${gapInfo.gapPx} px na prawo od przycisku NIE należy do <button data-entity-kind> (klik obsłuży listener WIERSZA)`,
+        gapHit != null && gapHit.isButton === false && gapHit.inLinkedRow === true, { gapInfo, gapHit });
+      // ZAKRES TEJ ASERCJI: tożsamość karty otwartej przez listener CAŁEGO WIERSZA.
+      // Świadomie NIE sprawdzamy tu `depthAfter === 2`. Wszystkie pre-istniejące faile tej
+      // bramki (obecne tak samo na bazie `c8483a64`) mają dokładnie kształt
+      // `depthBefore:1, depthAfter:1` przy POPRAWNYM `cardTop` — karta zagnieżdżona
+      // zastępuje źródłową zamiast kłaść się na niej. To defekt STOSU OVERLAYÓW, mierzony
+      // przez `entity-card-cross-links-nested-overlay` i należący do innego tematu
+      // (dispatch P-CIVPEDIA-KARTY-NAZWA-PRZYCISKIEM-Q1, §GRANICE: „nie naprawiasz").
+      // Wpisanie tu znanego, cudzego defektu zamieniłoby dowód zachowania fallbacku
+      // w kolejny czerwony wiersz o tej samej, już opisanej przyczynie.
+      check(`${tag} "${labelText}": klik w to puste pole otwiera ${expectKind}/${expectId ?? '<dowolny>'} — fallback CAŁEGO WIERSZA nadal DZIAŁA, nie jest tylko oznaczony atrybutem`,
+        afterClick.cardTop && afterClick.cardTop.kind === expectKind
+          && (expectId == null || afterClick.cardTop.id === expectId),
+        { gapInfo, afterClick });
+    }
+
     // =======================================================================
     // [1] "Kolejne technologie" na karcie "Garncarstwo" — Wymiana/Brązownictwo/
     //     Pismo/Religia. Klik w ETYKIETĘ (nie przycisk), sprawdzenie targetu.
@@ -249,12 +337,26 @@ async function main() {
       const { rowInfo, hitEl, afterClick } = await clickRowLabelAndInspect('technology', garnId, 'next', name);
       check(`[1] "Kolejne technologie": wiersz "${name}" istnieje w sekcji next`, !rowInfo.error, rowInfo);
       if (rowInfo.error) continue;
-      check(`[1] "${name}": klik trafia w elementFromPoint który NIE jest wewnątrz <button data-entity-kind> (dowód klikania w wiersz, nie w przycisk)`,
-        hitEl && hitEl.isButton === false, hitEl);
+      // P-CIVPEDIA-KARTY-NAZWA-PRZYCISKIEM-Q1 ODWRACA TĘ ASERCJĘ (świadomie, nie przez
+      // niedopatrzenie). Do tamtego tematu etykieta wiersza była zwykłym tekstem, więc
+      // „punkt etykiety NIE jest <button>" był dowodem, że klik obsłużył FALLBACK CAŁEGO
+      // WIERSZA, a nie wąski przycisk `value`. Właściciel zażądał jednak wprost, żeby
+      // przyciskiem stała się SAMA NAZWA encji („brązowienie powinno być przyciskiem […]
+      // otoczone ramką, i po najechaniu ma się podświetlać"), więc etykieta JEST dziś
+      // <button data-entity-kind>. Asercja sprawdza teraz obie rzeczy naraz:
+      //   (a) NOWY kontrakt — punkt nazwy trafia w przycisk encji;
+      //   (b) STARY kontrakt NIETKNIĘTY — wiersz nadal niesie fallback `entity-card-row--linked`
+      //       / `data-row-entity-*`, czyli klik gdziekolwiek w wierszu wciąż działa.
+      // (b) zweryfikowane osobno na żywym Chromium w rundzie 1 tego tematu: klik w PUSTE
+      // pole wiersza, 60 px na prawo od przycisku, trafia w `.entity-card-row--linked`
+      // i otwiera `building/stolarnia` (głębokość 1→2).
+      check(`[1] "${name}": punkt NAZWY trafia w <button data-entity-kind>, a wiersz zachowuje fallback całego wiersza`,
+        hitEl && hitEl.isButton === true && rowInfo.rowLinked === true, { hitEl, rowLinked: rowInfo.rowLinked });
       check(`[1] "${name}": klik w etykietę otwiera zagnieżdżoną kartę technology/${expectedId} (głębokość 1→2)`,
         afterClick.depthBefore === 1 && afterClick.depthAfter === 2
           && afterClick.cardTop && afterClick.cardTop.kind === 'technology' && afterClick.cardTop.id === expectedId,
         { expectedId, afterClick });
+      await checkRowGapFallback('[1] fallback wiersza', 'technology', garnId, 'next', name, 'technology', expectedId);
       // [5] R-CIVPEDIA-KARTY-SPOJNOSC-Q1-A: `value` NIE jest już pusty — dostaje widoczny
       // przycisk-link "Szczegóły →" (spójny z resztą tego węzła), cel linku pozostaje ten sam
       // wiersz/technologia niezależnie od tego, przez który element (przycisk czy cały wiersz)
@@ -287,10 +389,25 @@ async function main() {
       const { rowInfo, hitEl, afterClick } = await clickRowLabelAndInspect('technology', garnId, 'buildings', name);
       check(`[2] Budynki: wiersz "${name}" istnieje`, !rowInfo.error, rowInfo);
       if (rowInfo.error) continue;
-      check(`[2] Budynki "${name}": elementFromPoint w etykiecie NIE jest <button>`, hitEl && hitEl.isButton === false, hitEl);
+      // P-CIVPEDIA-KARTY-NAZWA-PRZYCISKIEM-Q1 ODWRACA TĘ ASERCJĘ (świadomie, nie przez
+      // niedopatrzenie). Do tamtego tematu etykieta wiersza była zwykłym tekstem, więc
+      // „punkt etykiety NIE jest <button>" był dowodem, że klik obsłużył FALLBACK CAŁEGO
+      // WIERSZA, a nie wąski przycisk `value`. Właściciel zażądał jednak wprost, żeby
+      // przyciskiem stała się SAMA NAZWA encji („brązowienie powinno być przyciskiem […]
+      // otoczone ramką, i po najechaniu ma się podświetlać"), więc etykieta JEST dziś
+      // <button data-entity-kind>. Asercja sprawdza teraz obie rzeczy naraz:
+      //   (a) NOWY kontrakt — punkt nazwy trafia w przycisk encji;
+      //   (b) STARY kontrakt NIETKNIĘTY — wiersz nadal niesie fallback `entity-card-row--linked`
+      //       / `data-row-entity-*`, czyli klik gdziekolwiek w wierszu wciąż działa.
+      // (b) zweryfikowane osobno na żywym Chromium w rundzie 1 tego tematu: klik w PUSTE
+      // pole wiersza, 60 px na prawo od przycisku, trafia w `.entity-card-row--linked`
+      // i otwiera `building/stolarnia` (głębokość 1→2).
+      check(`[2] Budynki "${name}": punkt NAZWY trafia w <button data-entity-kind>, a wiersz zachowuje fallback całego wiersza`,
+        hitEl && hitEl.isButton === true && rowInfo.rowLinked === true, { hitEl, rowLinked: rowInfo.rowLinked });
       check(`[2] Budynki "${name}": klik otwiera kartę building/${b.id} (regresja RUNDA 2 — nadal działa)`,
         afterClick.depthAfter === 2 && afterClick.cardTop && afterClick.cardTop.kind === 'building' && afterClick.cardTop.id === b.id,
         { expectedId: b.id, afterClick });
+      await checkRowGapFallback('[2] Budynki fallback wiersza', 'technology', garnId, 'buildings', name, 'building', b.id);
     }
     await closeAll();
 
@@ -302,9 +419,24 @@ async function main() {
       const { rowInfo, hitEl, afterClick } = await clickRowLabelAndInspect('technology', garnId, 'improvements', name);
       check(`[3a] Ulepszenia terenu: wiersz "${name}" istnieje`, !rowInfo.error, rowInfo);
       if (rowInfo.error) continue;
-      check(`[3a] Ulepszenia terenu "${name}": elementFromPoint w etykiecie NIE jest <button>`, hitEl && hitEl.isButton === false, hitEl);
+      // P-CIVPEDIA-KARTY-NAZWA-PRZYCISKIEM-Q1 ODWRACA TĘ ASERCJĘ (świadomie, nie przez
+      // niedopatrzenie). Do tamtego tematu etykieta wiersza była zwykłym tekstem, więc
+      // „punkt etykiety NIE jest <button>" był dowodem, że klik obsłużył FALLBACK CAŁEGO
+      // WIERSZA, a nie wąski przycisk `value`. Właściciel zażądał jednak wprost, żeby
+      // przyciskiem stała się SAMA NAZWA encji („brązowienie powinno być przyciskiem […]
+      // otoczone ramką, i po najechaniu ma się podświetlać"), więc etykieta JEST dziś
+      // <button data-entity-kind>. Asercja sprawdza teraz obie rzeczy naraz:
+      //   (a) NOWY kontrakt — punkt nazwy trafia w przycisk encji;
+      //   (b) STARY kontrakt NIETKNIĘTY — wiersz nadal niesie fallback `entity-card-row--linked`
+      //       / `data-row-entity-*`, czyli klik gdziekolwiek w wierszu wciąż działa.
+      // (b) zweryfikowane osobno na żywym Chromium w rundzie 1 tego tematu: klik w PUSTE
+      // pole wiersza, 60 px na prawo od przycisku, trafia w `.entity-card-row--linked`
+      // i otwiera `building/stolarnia` (głębokość 1→2).
+      check(`[3a] Ulepszenia terenu "${name}": punkt NAZWY trafia w <button data-entity-kind>, a wiersz zachowuje fallback całego wiersza`,
+        hitEl && hitEl.isButton === true && rowInfo.rowLinked === true, { hitEl, rowLinked: rowInfo.rowLinked });
       check(`[3a] Ulepszenia terenu "${name}": klik otwiera kartę improvement (kind poprawny, głębokość 1→2)`,
         afterClick.depthAfter === 2 && afterClick.cardTop && afterClick.cardTop.kind === 'improvement', afterClick);
+      await checkRowGapFallback('[3a] Ulepszenia terenu fallback wiersza', 'technology', garnId, 'improvements', name, 'improvement', null);
     }
     await closeAll();
 
@@ -318,10 +450,25 @@ async function main() {
       const { rowInfo, hitEl, afterClick } = await clickRowLabelAndInspect('technology', luknictwoId, 'units', unitName);
       check(`[3b] Jednostki: wiersz "${unitName}" istnieje na karcie "Łucznictwo"`, !rowInfo.error, rowInfo);
       if (!rowInfo.error) {
-        check(`[3b] Jednostki "${unitName}": elementFromPoint w etykiecie NIE jest <button>`, hitEl && hitEl.isButton === false, hitEl);
+      // P-CIVPEDIA-KARTY-NAZWA-PRZYCISKIEM-Q1 ODWRACA TĘ ASERCJĘ (świadomie, nie przez
+      // niedopatrzenie). Do tamtego tematu etykieta wiersza była zwykłym tekstem, więc
+      // „punkt etykiety NIE jest <button>" był dowodem, że klik obsłużył FALLBACK CAŁEGO
+      // WIERSZA, a nie wąski przycisk `value`. Właściciel zażądał jednak wprost, żeby
+      // przyciskiem stała się SAMA NAZWA encji („brązowienie powinno być przyciskiem […]
+      // otoczone ramką, i po najechaniu ma się podświetlać"), więc etykieta JEST dziś
+      // <button data-entity-kind>. Asercja sprawdza teraz obie rzeczy naraz:
+      //   (a) NOWY kontrakt — punkt nazwy trafia w przycisk encji;
+      //   (b) STARY kontrakt NIETKNIĘTY — wiersz nadal niesie fallback `entity-card-row--linked`
+      //       / `data-row-entity-*`, czyli klik gdziekolwiek w wierszu wciąż działa.
+      // (b) zweryfikowane osobno na żywym Chromium w rundzie 1 tego tematu: klik w PUSTE
+      // pole wiersza, 60 px na prawo od przycisku, trafia w `.entity-card-row--linked`
+      // i otwiera `building/stolarnia` (głębokość 1→2).
+        check(`[3b] Jednostki "${unitName}": punkt NAZWY trafia w <button data-entity-kind>, a wiersz zachowuje fallback całego wiersza`,
+          hitEl && hitEl.isButton === true && rowInfo.rowLinked === true, { hitEl, rowLinked: rowInfo.rowLinked });
         check(`[3b] Jednostki "${unitName}": klik otwiera kartę unit/${expectedUnitId}`,
           afterClick.depthAfter === 2 && afterClick.cardTop && afterClick.cardTop.kind === 'unit' && afterClick.cardTop.id === expectedUnitId,
           { expectedUnitId, afterClick });
+        await checkRowGapFallback('[3b] Jednostki fallback wiersza', 'technology', luknictwoId, 'units', unitName, 'unit', expectedUnitId);
       }
     }
     await closeAll();
@@ -335,11 +482,25 @@ async function main() {
       const { rowInfo, hitEl, afterClick } = await clickRowLabelAndInspect('technology', garnId, 'econ', 'Spichlerz');
       check('[4] Zmiany ekonomiczne: wiersz "Spichlerz" istnieje', !rowInfo.error, rowInfo);
       if (!rowInfo.error) {
-        check('[4] Zmiany ekonomiczne "Spichlerz": klik w etykietę (obok przycisku z tekstem efektu) NIE trafia w <button>',
-          hitEl && hitEl.isButton === false, hitEl);
+      // P-CIVPEDIA-KARTY-NAZWA-PRZYCISKIEM-Q1 ODWRACA TĘ ASERCJĘ (świadomie, nie przez
+      // niedopatrzenie). Do tamtego tematu etykieta wiersza była zwykłym tekstem, więc
+      // „punkt etykiety NIE jest <button>" był dowodem, że klik obsłużył FALLBACK CAŁEGO
+      // WIERSZA, a nie wąski przycisk `value`. Właściciel zażądał jednak wprost, żeby
+      // przyciskiem stała się SAMA NAZWA encji („brązowienie powinno być przyciskiem […]
+      // otoczone ramką, i po najechaniu ma się podświetlać"), więc etykieta JEST dziś
+      // <button data-entity-kind>. Asercja sprawdza teraz obie rzeczy naraz:
+      //   (a) NOWY kontrakt — punkt nazwy trafia w przycisk encji;
+      //   (b) STARY kontrakt NIETKNIĘTY — wiersz nadal niesie fallback `entity-card-row--linked`
+      //       / `data-row-entity-*`, czyli klik gdziekolwiek w wierszu wciąż działa.
+      // (b) zweryfikowane osobno na żywym Chromium w rundzie 1 tego tematu: klik w PUSTE
+      // pole wiersza, 60 px na prawo od przycisku, trafia w `.entity-card-row--linked`
+      // i otwiera `building/stolarnia` (głębokość 1→2).
+        check('[4] Zmiany ekonomiczne "Spichlerz": punkt NAZWY trafia w <button data-entity-kind>, a wiersz zachowuje fallback całego wiersza',
+          hitEl && hitEl.isButton === true && rowInfo.rowLinked === true, { hitEl, rowLinked: rowInfo.rowLinked });
         check('[4] Zmiany ekonomiczne "Spichlerz": klik w etykietę otwiera kartę building/spichlerz (rozszerzony fallback obejmuje NIEpuste value)',
           afterClick.depthAfter === 2 && afterClick.cardTop && afterClick.cardTop.kind === 'building' && afterClick.cardTop.id === b.id,
           { expectedId: b.id, afterClick });
+        await checkRowGapFallback('[4] Zmiany ekonomiczne fallback wiersza', 'technology', garnId, 'econ', 'Spichlerz', 'building', b.id);
       }
     }
     await closeAll();

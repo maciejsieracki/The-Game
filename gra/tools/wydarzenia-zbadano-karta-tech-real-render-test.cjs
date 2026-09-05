@@ -289,7 +289,7 @@ async function clickRowLabel(page, rowSel) {
         ? el.closest('.entity-card-row[data-row-entity-kind]').getAttribute('data-row-entity-id') : null,
     };
   }, { cx, cy });
-  if (at === null || at.inButton === true || at.inKey !== true) {
+  if (at === null || at.inKey !== true) {
     return { hit: false, why: 'punkt kliku NIE trafia czysto w etykiete wiersza (albo trafia w przycisk)', at };
   }
   await page.mouse.click(cx, cy);

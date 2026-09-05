@@ -163,13 +163,16 @@ export const technologyAdapter: EntityCardAdapter<RawTech> = (tech) => {
     const linkTo = resolveBuildingRow(b.id) != null ? ({ kind: 'building', id: b.id } as const) : undefined;
     return {
       label: b.nazwa ?? b.id,
-      // R-CIVPEDIA-KARTY-SPOJNOSC-Q1-A (GOAL pkt 1, odwrócenie
-      // P-CIVPEDIA-KARTY-CALY-WIERSZ-PRZYCISKIEM-Q1 wprost przez właściciela): widoczny
-      // przycisk-link, ten sam styl/etykieta co "Szczegóły →" ulepszeń terenu
-      // (techDiscoveryNotice.ts:576) — spójność wszystkich czterech typów wierszy.
-      value: linkTo ? 'Szczegóły →' : '',
+      // P-CIVPEDIA-KARTY-NAZWA-PRZYCISKIEM-Q1 (GOAL 1): tekst "Szczegóły →" ZNIKA, a
+      // przyciskiem staje się SAMA NAZWA budynku (`label`) — dokładnie tak, jak od początku
+      // wyglądała pigułka Wymagań (`button.entity-card-pill-text`), którą właściciel wskazał
+      // jako jedyny poprawnie zrobiony wiersz. To odwrócenie R-CIVPEDIA-KARTY-SPOJNOSC-Q1-A,
+      // które ujednoliciło te wiersze do OSOBNEGO przycisku akcji po prawej — właściciel
+      // prosił o coś innego: "brązowienie powinno być przyciskiem [...] otoczone ramką".
+      value: '',
       icon: { kind: 'svg', svg: buildingIconSvg(undefined, b.id) },
       linkTo,
+      linkAnchor: 'label',
     };
   });
   const buildingsSection: EntityCardSection = {
@@ -182,10 +185,11 @@ export const technologyAdapter: EntityCardAdapter<RawTech> = (tech) => {
     const linkTo = resolveUnitRow(slug) != null ? ({ kind: 'unit', id: slug } as const) : undefined;
     return {
       label: u.Jednostka,
-      // R-CIVPEDIA-KARTY-SPOJNOSC-Q1-A: patrz komentarz przy buildingsRows wyżej.
-      value: linkTo ? 'Szczegóły →' : '',
+      // P-CIVPEDIA-KARTY-NAZWA-PRZYCISKIEM-Q1: patrz komentarz przy buildingsRows wyżej.
+      value: '',
       icon: { kind: 'svg', svg: unitIconSvg(undefined, u.Jednostka) },
       linkTo,
+      linkAnchor: 'label',
     };
   });
   const unitsSection: EntityCardSection = {
@@ -208,6 +212,8 @@ export const technologyAdapter: EntityCardAdapter<RawTech> = (tech) => {
       // Link tylko gdy nazwa realnie odtworzyła się do klucza `terrain-improvements.json`
       // (`IMPROVEMENT_NAME_TO_KEY`) — bez tego nie mamy jednoznacznego `id` ulepszenia.
       linkTo: key != null ? { kind: 'improvement', id: key } : undefined,
+      // P-CIVPEDIA-KARTY-NAZWA-PRZYCISKIEM-Q1 (GOAL 1): przyciskiem jest nazwa ulepszenia.
+      linkAnchor: 'label',
     };
   });
   const improvementsSection: EntityCardSection = {
@@ -238,9 +244,14 @@ export const technologyAdapter: EntityCardAdapter<RawTech> = (tech) => {
     // nietknięty (nie jest celem linku, patrz komentarz wyżej) — `value` dostaje ten sam
     // widoczny przycisk-link co pozostałe trzy typy wierszy w tym zgłoszeniu.
     return {
-      label: t['Technologia'], value: 'Szczegóły →', trailing: `Wymaga też: ${otherPrereqs.join(', ')}`,
+      label: t['Technologia'], value: '', trailing: `Wymaga też: ${otherPrereqs.join(', ')}`,
       icon: icon ? { kind: 'svg', svg: icon } : undefined,
       linkTo: { kind: 'technology', id: nextSlug },
+      // P-CIVPEDIA-KARTY-NAZWA-PRZYCISKIEM-Q1 (GOAL 1): przyciskiem jest nazwa technologii
+      // docelowej (`label`), a nie osobne "Szczegóły →". `trailing` ("Wymaga też: ...")
+      // zostaje NIEtknięty — wymienia INNE technologie niż cel wiersza, więc jest adnotacją,
+      // nie przyciskiem (granica dispatchu).
+      linkAnchor: 'label',
     };
   });
   const nextTechsSection: EntityCardSection = {
@@ -267,6 +278,10 @@ export const technologyAdapter: EntityCardAdapter<RawTech> = (tech) => {
         label: b.nazwa ?? b.id, value: effect,
         icon: { kind: 'svg', svg: buildingIconSvg(undefined, b.id) },
         linkTo: buildingLinkTo,
+        // P-CIVPEDIA-KARTY-NAZWA-PRZYCISKIEM-Q1: pudełko przycisku MUSI trafić na nazwę
+        // budynku (`label`), nie na `value` — `value` to tu efekt ("+2 nauki"), czyli opis
+        // wiersza, nie nazwa encji, którą otwiera klik.
+        linkAnchor: 'label',
       });
     }
     if (b.utrzymanie != null) {
@@ -274,6 +289,8 @@ export const technologyAdapter: EntityCardAdapter<RawTech> = (tech) => {
         label: `${b.nazwa ?? b.id} — utrzymanie`, value: `${b.utrzymanie} złota na turę`,
         icon: { kind: 'svg', svg: buildingIconSvg(undefined, b.id) },
         linkTo: buildingLinkTo,
+        // P-CIVPEDIA-KARTY-NAZWA-PRZYCISKIEM-Q1: jw. — `value` to kwota utrzymania.
+        linkAnchor: 'label',
       });
     }
   }

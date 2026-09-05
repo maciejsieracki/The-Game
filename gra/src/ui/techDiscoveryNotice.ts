@@ -572,7 +572,16 @@ function showTechDiscoveryNoticeViaEntityCard(tech: TechRow, opts: ShowTechDisco
       rows: section.rows.map((row) => {
         const impKey = IMPROVEMENT_NAME_TO_KEY[row.label];
         if (!impKey) return row;
-        return { ...row, value: 'Szczegóły →', linkTo: { kind: 'improvement' as const, id: impKey } };
+        // P-CIVPEDIA-KARTY-NAZWA-PRZYCISKIEM-Q1 (GOAL 1): `value: 'Szczegóły →'` USUNIĘTE —
+        // przyciskiem jest SAMA NAZWA ulepszenia (`row.label`), tak jak w pigułce Wymagań.
+        // `linkAnchor` przychodzi już z `technologyAdapter` dla tych wierszy; ustawiany tu
+        // ponownie, bo ten call-site dopina `linkTo` TAKŻE tam, gdzie adapter go nie miał
+        // (nazwa nierozwiązana przez `IMPROVEMENT_NAME_TO_KEY` po stronie adaptera).
+        return {
+          ...row,
+          linkAnchor: 'label' as const,
+          linkTo: { kind: 'improvement' as const, id: impKey },
+        };
       }),
     };
   });
@@ -636,8 +645,13 @@ function addTdnCloseButton(card: HTMLElement, ariaLabel: string, onClose: () => 
 
 /**
  * P-WYDARZENIA-ZBADANO-KLIK-KARTA-TECH-Q1 (B) — link krzyżowy z karty technologii
- * („Ulepszenia terenu → Szczegóły →", ale też budynki/jednostki/kolejne technologie)
- * otwiera kartę docelową **OBOK**, w tym samym hoście, zamiast pod spodem.
+ * (sekcje „Ulepszenia terenu", budynki, jednostki, kolejne technologie) otwiera kartę
+ * docelową **OBOK**, w tym samym hoście, zamiast pod spodem.
+ *
+ * AKTUALIZACJA NAZEWNICTWA (P-CIVPEDIA-KARTY-NAZWA-PRZYCISKIEM-Q1): dawniej link niósł
+ * osobny przycisk „Szczegóły →" po prawej stronie wiersza i tak był tu opisany; ten tekst
+ * został usunięty z całego kodu — dziś klikalnym, oramkowanym przyciskiem jest SAMA NAZWA
+ * encji. Opisany niżej mechanizm nie zmienia się, zmienia się tylko element łapiący klik.
  *
  * DIAGNOZA POMIAROWA (żywe Chromium, przed naprawą): karta technologii NIE była zamykana —
  * host `#civ-tech-discovery-notice-host` zostawał w DOM, widoczny, `z-index:940`. Karta
