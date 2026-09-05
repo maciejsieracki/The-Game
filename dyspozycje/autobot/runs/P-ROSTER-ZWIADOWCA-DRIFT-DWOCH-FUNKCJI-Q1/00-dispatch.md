@@ -137,3 +137,80 @@ zamiast diffu, wynik bramki zamiast logu.
 
 Operator → Evaluator → (Obrona, jeśli lista zarzutów niepusta) → koniec skryptu.
 Final Control osobnym wywołaniem Workflow. Integracja i deploy — ręką orkiestratora.
+
+---
+
+## RATYFIKACJA ORKIESTRATORA (2026-09-05, po rundzie 1 `DECISION_REQUIRED`)
+
+**Diagnoza Operatora jest przyjęta w całości i obala moją hipotezę z sekcji RECON.**
+Sprawdziłem sam, w kodzie: `map-field-battle-test.cjs:155-157` to jest
+
+```js
+const atkWithScout = collectBattleRoster(hastati, [hastati, ally, scoutNeighbor, warrior2], 'attacker');
+assert(atkWithScout.length === 2 && !atkWithScout.some(u => u.typeId === 'Zwiadowca'), ...)
+```
+
+Fixture ma **cztery** jednostki, z czego `warrior2` to pełnoprawna jednostka bojowa
+ownera 0 w dystansie 1 od kotwicy. Roster ma więc poprawnie **trzy** pozycje.
+Człon `!some(Zwiadowca)` **już dziś przechodzi** — czerwieni się wyłącznie `length === 2`.
+
+**Rozjazdu dwóch funkcji NIE MA.** Zgłoszenie w rejestrze (moje) było błędne: oparłem je
+na etykiecie asercji, nie na jej treści. Zwiadowca jest wykluczany w obu funkcjach; różnica
+liczebności bierze się z różnych fixture'ów, a nie z różnych reguł.
+
+### Co robi runda 2 — NAPRAWA FIXTURE'U, NIE KODU GRY
+
+**Zakaz zmiany `gra/src/**` w tym temacie.** Zazielenienie asercji „naprawą kodu" usunęłoby
+z rosteru **jednostkę bojową sąsiadującą z kotwicą** — to byłaby realna zmiana balansu
+bitwy w polu, wprowadzona po cichu pod pozorem naprawy testu. Operator zmierzył to
+i nazwał wprost; miał rację, że się zatrzymał.
+
+**Przepisz asercję tak, żeby mierzyła swoją własną intencję, nie liczbę:**
+
+```js
+const atkWithScout = collectBattleRoster(hastati, [hastati, ally, scoutNeighbor, warrior2], 'attacker');
+const ids = new Set(atkWithScout.map(u => u.id));
+assert(!ids.has(scoutNeighbor.id), 'collectBattleRoster atk: adjacent scout excluded');
+assert(ids.has(hastati.id) && ids.has(ally.id) && ids.has(warrior2.id),
+  'collectBattleRoster atk: pozostale trzy jednostki bojowe ZOSTAJA w rosterze');
+```
+
+To jest **mocniejsze** niż `length === 2`, nie słabsze: stara wersja przechodziła też wtedy,
+gdy roster gubił dowolne dwie jednostki; nowa wymaga imiennie, że wypadł **dokładnie
+zwiadowca** i **nikt poza nim**. Liczba asercji rośnie z 20 na 21 — nie spada.
+
+**To NIE jest osłabienie, którego zabraniało kryterium 2.** Kryterium 2 chroniło przed
+zzieleniem testu kosztem jego wartości dowodowej. Tutaj wartość rośnie, a naprawiany jest
+fixture, który był sprzeczny z sąsiednią asercją `:152-153` — żadna zmiana `gra/src` nie
+mogła zazielenić obu naraz. Operator to udowodnił i to jest powód tej ratyfikacji.
+
+### Asercja parytetu — DOPISZ
+
+Operator świadomie jej nie dopisał, żeby nie zabetonować bramki przed decyzją. Decyzja
+zapadła: **dopisz ją.** Dla wspólnej kotwicy na heksie miasta `collectBattleRoster`
+i `collectAtkRosterNearCity` mają zwracać identyczny **zbiór ID** (nie listę — kolejność
+może się różnić). Parytet zachodzi już dziś; asercja ma go utrwalić, żeby funkcje nie
+rozjechały się w przyszłości. Docelowo bramka ma **22 asercje**.
+
+### Trzy znaleziska poboczne — ZAREJESTRUJ, NIE NAPRAWIAJ
+
+1. `gra/tools/_tmp-battle-roster-test.cjs` — zacommitowany plik roboczy udający bramkę.
+2. `collectDefRosterNearCity` nie filtruje po `ownerId`; kompensują to oba wywołania
+   (`siegeDefenders.ts:16`, `main.ts:25593`) — kruche, ale dziś działa.
+3. Asercja `map-field-battle-test.cjs:155` była wadliwą kopią `battle-roster-test.cjs:105-109`
+   (ta sama reguła, poprawny fixture, zielona). Kopiowanie asercji między bramkami bez
+   kopiowania fixture'u to tryb błędu wart zapisania.
+
+Wypisz je w raporcie jako OBSERWACJE. Rejestruje je orkiestrator, nie Ty.
+
+### KRYTERIA KOŃCA rundy 2 (zastępują punkty 1-3 z kryteriów rundy 1)
+
+1. `node gra/tools/map-field-battle-test.cjs` — **22/22**.
+2. `git diff <baza>..HEAD -- gra/src/` — **PUSTE**. Ani jednej zmiany w kodzie gry.
+3. Mutacja dowodowa: zmień predykat wykluczania cywila tak, żeby zwiadowca wracał do
+   rosteru — asercja `adjacent scout excluded` ma zaczerwienić. Cofnij przez KOPIĘ pliku,
+   `git diff --quiet`.
+4. Druga mutacja: usuń `warrior2` z rosteru w kodzie — nowa asercja „pozostałe trzy
+   jednostki bojowe ZOSTAJĄ" ma zaczerwienić. To jest dowód, że przepisana asercja
+   pilnuje czegoś, czego stara nie pilnowała.
+5. Punkty 5-7 z kryteriów rundy 1 bez zmian (tsc, pięć referencyjnych, sąsiedztwo).
