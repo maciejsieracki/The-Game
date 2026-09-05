@@ -32235,3 +32235,48 @@ worktree" w prompcie), czy raczej do skilla `civ-autobot-workflow` jako pozycja 
 orkiestratora („nie dispatchuj rundy N+1, dopóki skrypt rundy N nie zwrócił — Obrona jest
 trzecią fazą, nie osobnym wywołaniem"). Drugie jest tańsze i uderza w rzeczywistą przyczynę;
 pierwsze łapie też przypadek, w którym pomyli się inne narzędzie.
+
+---
+
+## P-AI-LISTA-BUDYNKOW-ZASZYTA-NIE-Z-PRODUKCJI-Q1 (2026-09-05, recon Operatora Garnizonu) · STATUS: **OTWARTE — zarejestrowane, nie dispatchowane; wlasciciel wybral doraźną łatkę, przyczyna zostaje**
+
+**Znalezisko:** AI wybiera budynki z **zaszytej na sztywno listy** `infraOrder`
+(`gra/src/game/ai.ts` ~linia 1471), a **nie** z `availableProduction`. Skutek: **każdy nowy
+budynek jest dla AI niewidzialny**, dopóki ktoś ręcznie nie dopisze go do tej listy.
+
+Wyszło przy nowym budynku Garnizon — AI nigdy by go nie postawiło, mimo że gracz owszem.
+
+**Decyzja właściciela (2026-09-05, ABC):** *„Dopisać Garnizon do listy AI od razu"* —
+podjęta **po wyraźnym opisaniu, że to łatka, a nie naprawa przyczyny**. Garnizon wchodzi
+do `infraOrder` jedną linią w rundzie 2 tematu `R-BUDYNEK-GARNIZON-NOWY-Q1`, z asercją
+w bramce, żeby łatka nie wypadła przy refaktorze.
+
+**Co zostaje do zrobienia w tym temacie:** przepiąć wybór budynków AI na `availableProduction`
+(albo inne źródło zgodne z danymi), żeby każdy przyszły budynek był dla AI widoczny
+automatycznie. **Do dispatchu po Prawie** — bez wartości Prawa AI nie ma czym wycenić
+budynków administracyjnych, więc naprawa bez tego byłaby ślepa.
+
+**Uwaga procesowa:** bramka `ai-buduje-budynki-test.cjs` jest przy tym defekcie **zielona
+(42/0)** i to nie jest jej wada — sprawdza, czy miasta AI mają *jakikolwiek* budynek, a nie
+czy AI potrafi postawić *każdy*. Luka parytetu per budynek jest dla niej niewidoczna.
+Naprawa musi dołożyć asercję innej klasy.
+
+---
+
+## P-BUDYNKI-TRZY-NIESPOJNOSCI-IKON-I-BUNDLA (2026-09-05, recon Operatora Garnizonu) · STATUS: **OTWARTE — zarejestrowane, nie naprawiane (poza zakresem tematu, w ktorym je znaleziono)**
+
+Trzy zastane drobiazgi znalezione przy dodawaniu Garnizonu, żadnego nie ruszaliśmy:
+
+1. **`trybunal` nie ma wpisu w `gra/src/ui/icons/brand/building-icon-map.json`** — leci na
+   heurystykę kategorii i dostaje `bld-admin` zamiast własnej ikony.
+2. **`bld-pretorium.svg` istnieje w repo, ale mapa kieruje `pretorium` na `bld-palac`** —
+   plik ikony jest martwy, a budynek pokazuje cudzy symbol.
+3. **`gra/tools/civpedia-gra-id-mostek-test.cjs` przy uruchomieniu NADPISUJE śledzony
+   `gra/src/data/wikiBundle.json`** — treść bez zmian, ale stempel `"generated"` dostaje
+   bieżącą datę. Bramka **brudzi `git status`** plikiem, którego temat może nie mieć
+   w allowliście; Operator Garnizonu wykrył to i musiał cofać `git checkout --`.
+   To jest ta sama klasa problemu co `P-BRAMKA-WSPOLDZIELONY-DIST-TMPDIR-Q1`: **bramka
+   z efektem ubocznym na śledzonym pliku.**
+
+Punkty 1 i 2 są kosmetyczne. **Punkt 3 jest procesowy i wart naprawy** — bramka nie powinna
+zmieniać śledzonych plików; powinna generować do katalogu tymczasowego i porównywać.
