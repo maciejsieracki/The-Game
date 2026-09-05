@@ -13,6 +13,26 @@ swoim wĹ‚asnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji d
 > Pakiet 3 z 2026-08-20 jest docs-only i nie tworzy wpisu ROBOCZA/KANON/FINALNA;
 > ten plik pozostaje wyłącznie rejestrem publikacji bundli.
 
+## ROBOCZA 15ef5bc3 - 2026-09-05 10:35 UTC - FALA 348: 8 tematow (walka, etykieta stolicy, karty CivPedia, pasek kolejki, mgla, szczescie, handel)
+
+|- md5 (pełne): 15ef5bc3ba66d84b83106015b6c35588 · stempel: ROBOCZA · label 15ef5bc3 · źródłowe commity integracji: `73037f75` + `1af06c38` + `f7a7eaf5` + `487b0cfc` + `86e28a6d` + `bec25312` + `5ef3ece3` + `8080f792`
+|- **`R-WALKA-PRZEWAGA-LICZEBNA-Q1`** — węzeł W1 (`487b0cfc`) i W2 (`5ef3ece3`), W3 skreślony przez właściciela. **Przewaga liczebna wreszcie się opłaca w OBU systemach walki.** Auto-bitwa: wykładnik strat 0,58 → 1,20 plus `L_MIN` przeniesiona z podłogi na jednostkę na podłogę na SUMIE składu — łączne straty zwycięzcy tworzą teraz ciąg **ściśle malejący** 0,3873 / 0,3656 / 0,3372 / 0,3045 / 0,2650 / 0,2300 dla stosunku sił 1,5 / 2 / 3 / 5 / 10 / 20. Wcześniej ciąg ROSŁ do 1,478 przy 20:1, czyli zwycięzca tracił więcej niż cała pokonana armia — to był zgłaszany absurd. Bitwa ręczna: obrońca oddaje **jeden kontratak na turę**, pierwszemu atakującemu, bez wyjątku dla fortyfikacji i miast (wewnątrz jednego starcia kontratak działa jak dotąd); do tego startowa kara morale `50% × log₁₀(r)` z sufitem 65%, gdzie `r` to stosunek **MOCY ważonej bieżącym HP**, nie liczebności — 20 Wojowników nie onieśmiela Falangi. Klamp dolny do progu ucieczki (ECHO właściciela): bez niego **cztery z 71 typów jednostek** startowały poniżej własnego progu i uciekały przed pierwszym ciosem.
+|- **`R-MAPA-ETYKIETA-STOLICY-NAZWA-MIASTA-Q1`** (`8080f792`, 4 rundy) — plakietka obcej stolicy niesie **samą nazwę miasta**: chińska stolica AI pokazuje `XI'AN` zamiast `QIN · CHIŃCZ…`. Naprawiona przy okazji ta sama pomyłka po stronie GRACZA — `playerCapitalFromPool` też czytał pulę państw, więc gracz-Chińczyk startował w mieście „Qin". Budżet nazwy 260 → 305: **0/15 przycięć we wszystkich trzech konfiguracjach**, łącznie z własną stolicą gracza mającą trzeci slot WZROST%; w całej puli 1500 nazw przycięcia spadły z 25 do 8; kolizji plakietka↔plakietka 0/45.
+|- **`P-CIVPEDIA-KARTY-NAZWA-PRZYCISKIEM-Q1`** (`bec25312`, 2 rundy) — nazwa encji jest **samym przyciskiem w ramce**, podświetlanym po najechaniu, spójnie z kartą technologii; osobny przycisk „Szczegóły →" usunięty. Wiersze z linkiem mają dwa kształty (raz przyciskiem ma być etykieta, raz wartość), więc doszedł `linkAnchor?: 'label'|'value'` — ślepa podmiana zrobiłaby przycisk ze słowa „Technologia".
+|- **`P-PANEL-KOLEJKA-PRODUKCJI-PASEK-POSTEPU-Q1`** (`86e28a6d`) — paski postępu w sekcji KOLEJKA PRODUKCJI, wzorem paska z PRODUKCJI NAUKI; procent liczbowy zostaje obok. Pięć przypadków brzegowych: 0%, 100% bez przelania, pozycja wstrzymana (pasek wygaszony), pozycja pusta, kikut przy 7%.
+|- **`P-MGLA-ODKRYCIE-SCIEZKA-INWARIANT-Q1`** (`1af06c38`) — **CZWARTE zgłoszenie tego samego błędu**: jednostka szybko przechodząca trasę (zwłaszcza rzeką) odkrywała mgłę dopiero na końcu. Czwarte miejsce to `scout-auto-explore.ts`. Dołożona bramka-inwariant skanująca CAŁE `gra/src` w trzech notacjach zapisu pozycji jednostki, żeby piąte miejsce nie mogło powstać po cichu.
+|- **`R-SZCZESCIE-AUDYT-A-SKALA-NORMALIZACJA-Q1`** (`f7a7eaf5`) — węzeł A audytu szczęścia: skala i normalizacja, zahardkodowane progi przeniesione do danych. Węzły B/C/D dostały własne ID i czekają w kolejce.
+|- **`R-HANDEL-WYMIANA-TECH-GATE-Q1`** (`73037f75`) — bramka technologiczna „Wymiana" dla całego handlu szlakowego.
+|- **Trzy błędy w zleceniach orkiestratora, wykryte przez wykonawców i naprawione:** (1) kryterium „plakietka nie zachodzi na sąsiednie heksy" było **niewykonalne przy każdym budżecie, także sprzed tematu** — mieści się pod nim 1 miasto z 15; zastąpione miarą kolizji plakietka↔plakietka; (2) kotwica bazy 305 wyprowadzona z zapisu `−100,0%`, którego formatter **nigdy nie produkuje** — Operator zostawił 305 z własnego pomiaru, dla marginesu, i zgłosił rozbieżność; (3) hipoteza „autowyżywienie jest wszystko-albo-nic" **obalona pomiarem** — prawdziwą przyczyną jest asymetria między obniżaniem per-miasto a podnoszeniem lockstep. We wszystkich trzech wypadkach wykonawca zatrzymał się i eskalował, zamiast naciągać odczyt zlecenia.
+|- **Znalezisko warte zapamiętania:** komentarz w `cityMapStatChip.ts` deklarował sufit bazy 391 px; faktyczny to **354**, bo `(391+158)×4 = 2196` przekracza gwarantowany w WebGL2 `MAX_TEXTURE_SIZE = 2048`. Udokumentowany „zapas na przyszłość" prowadziłby wprost w ścianę. Poprawiony komentarz ORAZ skrypt dowodowy — bez tego komentarz cytowałby dowód drukujący inną liczbę.
+|- Wszystkie tematy: pełny cykl AutoBot (Operator → Evaluator → Obrona → Final Control) przez Workflow, `tsc --noEmit` 0 błędów, 5 bramek referencyjnych (logic 213/213, tech-tree 19/19, research 33/33, unit-replace 13/13, combat 6/6) zielone po KAŻDEJ integracji, uruchomione przez orkiestratora na `main`, nie przepisane z raportów agentów. Bramki tematyczne: walka 123/123 + 24/24 + 43/43, etykieta 47/0, CivPedia 27/0, pasek 82/0, mgła 42/42.
+|- **`Gra-ROBOCZA-POLE-BITWY.html` PRZEBUDOWANE** (pierwszy raz od FALA 344) — węzeł W2 dotyka `battleScene.ts`. Nowe md5: `d4477b3eaed627e426c41b9f8d0ad1f1`, 57,3 MB.
+|- Bundle: 882 moduły, `Gra-ROBOCZA.html` 69,6 MB. Publikacja: `gra-robocza/Gra-ROBOCZA.html` + `Gra-ROBOCZA-POLE-BITWY.html` + manifest + 8 kopii PLAYTEST (md5 wszystkich ośmiu zweryfikowane jako identyczne z głównym bundlem).
+|- **Odstępstwo techniczne (jak w poprzednich FALACH):** publikacja odtworzona ręcznie w bashu/Node — `pwsh` nie istnieje w tym środowisku.
+|- W TOKU, poza tą falą: `P-AI-NIE-STAWIA-BUDYNKOW-Q1`, `R-AUTOWYZYWIENIE-ROWNY-WZROST-Q1-A`, `R-AUTOWYZYWIENIE-STAN-PRZYCISKU-Q1-B`.
+|- Szczegóły: rejestr w `REJESTR-PROSB-I-ZADAN.md`.
+|- **AKTUALNA**
+
 ## ROBOCZA 557c9cfb - 2026-09-04 19:20 UTC - FALA 347: 1 temat (nazwa ulepszenia „Wyrąb" → „Wycinka")
 
 |- md5 (pełne): 557c9cfbc714d21c2c889f6ca94216f2 · stempel: ROBOCZA · label 557c9cfb · źródłowy commit integracji: `a87da490`
@@ -27,7 +47,7 @@ swoim wĹ‚asnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji d
 |- **Odstępstwo techniczne (jak w poprzednich FALACH):** publikacja odtworzona ręcznie w bashu/Node — `pwsh` nie istnieje w tym środowisku.
 |- W TOKU, poza tą falą: `R-HANDEL-WYMIANA-TECH-GATE-Q1` (bramka technologiczna „Wymiana" dla całego handlu szlakowego — runda 1).
 |- Szczegóły: rejestr w `REJESTR-PROSB-I-ZADAN.md`.
-|- **AKTUALNA**
+|- **ZASTĄPIONA przez FALA 348**
 
 ## ROBOCZA 51e2e06b - 2026-09-04 17:45 UTC - FALA 346: 6 tematow (spojnosc kart CivPedia, mgla przy koncu tury, karta decyzji dyplomatycznej, limit tras handlowych)
 

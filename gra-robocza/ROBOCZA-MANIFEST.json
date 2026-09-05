@@ -1,8 +1,10 @@
 {
-  "publishedAt": "2026-09-04T00:00:00",
-  "sourceBuild": "/tmp/civ-dist-fala347",
+  "publishedAt": "2026-09-05T10:35:00",
+  "sourceBuild": "/tmp/civ-dist-fala348",
   "note": "Grywalna ROBOCZA. Plik: gra-robocza/Gra-ROBOCZA.html",
   "publisher": "Orkiestrator (Claude Code)",
   "bundle": "Gra-ROBOCZA.html",
-  "md5": "557c9cfbc714d21c2c889f6ca94216f2"
+  "md5": "15ef5bc3ba66d84b83106015b6c35588",
+  "bundlePoleBitwy": "Gra-ROBOCZA-POLE-BITWY.html",
+  "md5PoleBitwy": "d4477b3eaed627e426c41b9f8d0ad1f1"
 }
