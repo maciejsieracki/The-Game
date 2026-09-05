@@ -125,18 +125,40 @@ def _core_loss(ratio: float, p_exp: float) -> float:
     return L_MAX / (ratio ** p_exp)
 
 
+def _round4(x: float) -> float:
+    """Odpowiednik `Math.round(x * 10000) / 10000` z runtime TS.
+
+    Wbudowane `round()` Pythona zaokrągla „do parzystej" (bankierskie), a JS
+    zaokrągla połówki w górę — na granicy 0,00005 dawało to inny wynik niż
+    `auto-battle-power.ts`. Wartości strat są nieujemne, więc `floor(x+0.5)`
+    odtwarza `Math.round` dokładnie.
+    """
+    return math.floor(x * 10000.0 + 0.5) / 10000.0
+
+
 def winner_loss_pct(ratio: float, p_exp: float) -> float:
-    """Straty zwycięzcy danej strony (ATK lub DEF)."""
+    """Straty zwycięzcy danej strony (ATK lub DEF) — parytet z `winnerLossPct` TS.
+
+    L_MIN jest podłogą na SUMIE strat składu, nie na pojedynczej jednostce
+    (R-WALKA-PRZEWAGA-LICZEBNA-Q1-W1): zwrócony procent dotyczy jednostki,
+    a skład zwycięzcy liczy ~`ratio` jednostko-równoważników, więc podłoga na
+    jednostce dawała łączne straty `L_MIN × ratio`, rosnące z przewagą.
+
+    Kolejność: zaokrąglenie NAJPIERW, podłoga POTEM. Odwrotna kolejność kasuje
+    podłogę przy r ≳ 1863, bo procent na jednostkę spada poniżej 0,00005.
+    """
     core = _core_loss(ratio, p_exp)
     raw = COEF_ZWYCIECA * core
     cap = min(1.0, COEF_ZWYCIECA * L_MAX)
-    return round(max(L_MIN, min(cap, raw)), 4)
+    floor_pct = L_MIN / max(1.0, ratio)
+    rounded = _round4(min(cap, raw))
+    return max(floor_pct, rounded)
 
 
 def loser_loss_pct(ratio: float, p_exp: float) -> float:
-    """Straty przegranej strony ATK lub DEF."""
+    """Straty przegranej strony ATK lub DEF — parytet z `loserLossPct` TS."""
     core = _core_loss(ratio, p_exp)
-    return round(min(1.0, COEF_PRZEGRANY * (1.0 - core)), 4)
+    return _round4(min(1.0, COEF_PRZEGRANY * (1.0 - core)))
 
 
 def resolve_fight(m_atk: float, m_def: float) -> dict:
@@ -349,6 +371,14 @@ def main() -> None:
         help='np. "Hastati,Hastati" "Falanga"',
     )
     ap.add_argument(
+        "--resolve-json",
+        action="store_true",
+        help=(
+            "Tryb maszynowy dla bramek: czyta z stdin JSON [[m_atk, m_def], ...] "
+            "i wypisuje na stdout JSON z wynikami resolve_fight (bez ładowania units.json)."
+        ),
+    )
+    ap.add_argument(
         "--coef-zwyciezca",
         type=float,
         default=None,
@@ -369,6 +399,35 @@ def main() -> None:
     if overrides:
         merged = {**_load_params(), **overrides}
         _apply_params(merged)
+
+    if args.resolve_json:
+        pairs = json.loads(sys.stdin.read())
+        out = [
+            {
+                "m_atk": float(ma),
+                "m_def": float(md),
+                **resolve_fight(float(ma), float(md)),
+            }
+            for ma, md in pairs
+        ]
+        json.dump(
+            {
+                "params": {
+                    "L_MAX": L_MAX,
+                    "p_atk": P_ATK,
+                    "p_def": P_DEF,
+                    "L_MIN": L_MIN,
+                    "remis_pct": TIE_LOSS,
+                    "coef_zwyciezca": COEF_ZWYCIECA,
+                    "coef_przegrany": COEF_PRZEGRANY,
+                },
+                "results": out,
+            },
+            sys.stdout,
+        )
+        sys.stdout.write("\n")
+        return
+
     by_name = load_by_name()
 
     if args.scenarios:
