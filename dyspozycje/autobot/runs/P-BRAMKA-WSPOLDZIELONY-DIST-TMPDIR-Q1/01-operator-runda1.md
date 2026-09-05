@@ -42,7 +42,7 @@ przed/po, nie przeglądem kodu. Hak bierze teraz `fs`/`path`/`os` lokalnie.
 
 | # | Kryterium | Wynik |
 |---|---|---|
-| 1 | tabela wszystkich plików z pули grep | **62 wiersze** (54 z grepu + 8 gubionych); 59 DEFEKT / 3 BEZPIECZNY |
+| 1 | tabela wszystkich plikow z puli grep | **62 wiersze** (54 z grepu + 8 gubionych); 59 DEFEKT / 3 BEZPIECZNY |
 | 2 | oba potwierdzone pliki unikalne per przebieg | `ai-buduje-budynki-test.cjs:81`, `wydarzenia-zbadano-karta-tech-real-render-test.cjs:65` — TAK |
 | 3 | dowód reprodukcji: 2× równolegle PRZED i PO | patrz niżej |
 | 4 | nowa bramka zielona + czerwona po mutacji | **3/3 PASS**; mutacja R1/R2/R3 → `exit=1` każda; mutacje cofnięte |

@@ -112,11 +112,12 @@ async function main() {
   // Stala nazwa pliku/katalogu pod os.tmpdir() jest wspoldzielona przez KAZDY rownolegly
   // przebieg (takze z innego worktree): dwa biegi nadpisuja sobie ten sam artefakt, co
   // daje raz falszywy CZERWONY, raz falszywy ZIELONY. mkdtempSync rozlacza je z definicji.
-  const TMPDIR_RUN_DIR = fs.mkdtempSync(path.join(require('os').tmpdir(), 'civ-recruit-resource-strip-shots-'));
   // Zrzuty ZOSTAJA na dysku — sa DOWODEM wizualnym (R-PROC-AUTOBOT.md §9 pkt 6);
-  // unikalnosc chroni je przed nadpisaniem przez rownolegly bieg. Sciezke drukujemy.
-  console.log('[zrzuty] katalog tego przebiegu: ' + TMPDIR_RUN_DIR);
-  const SHOT_DIR = process.env.RECRUIT_STRIP_SHOT_DIR || TMPDIR_RUN_DIR;
+  // unikalnosc chroni je przed nadpisaniem przez rownolegly bieg. Katalog powstaje
+  // LENIWIE: przy jawnym RECRUIT_STRIP_SHOT_DIR nie tworzymy pustego smiecia.
+  const SHOT_DIR = process.env.RECRUIT_STRIP_SHOT_DIR
+    || fs.mkdtempSync(path.join(require('os').tmpdir(), 'civ-recruit-resource-strip-shots-'));
+  console.log('[zrzuty] katalog zrzutow tego przebiegu: ' + SHOT_DIR);
 
   // Odczyt REALNEGO DOM wyprodukowanego przez appendRecruitMilitaryResourceStrip —
   // dokładnie ten sam selektor co appendCityResourceStockStrip (panel budowy),
