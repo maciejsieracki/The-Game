@@ -506,15 +506,22 @@ ok(/ownCultureShare,/.test(panelSrc),
 {
   const wywolania = panelSrc.match(/wealthZadowolenie\([^)]*\)/g) || [];
   eq(wywolania.length, 3, '2i: cityPanel.ts ma 3 wywolania wealthZadowolenie');
+  // W panelu epoke niesie zmienna `era` (blok Porzadku) albo `epoch` (karty Wealth) —
+  // obie deklarowane jako `cfg.getEpoch?.(...) ?? 1`. Literal, wyrazenie stale albo inna
+  // nazwa = FAIL.
+  const NOSNIKI_EPOKI = ['era', 'epoch'];
   for (const w of wywolania) {
     const args = w.replace(/^wealthZadowolenie\(/, '').replace(/\)$/, '').split(',');
     eq(args.length, 3, '2i: wywolanie "' + w + '" podaje epoke (3 argumenty)');
-    eq(args[2].trim(), 'era',
-      '2i: trzecim argumentem "' + w + '" jest zmienna `era` z cfg.getEpoch, nie literal');
+    ok(NOSNIKI_EPOKI.includes(args[2].trim()),
+      '2i: trzecim argumentem "' + w + '" jest zmienna epoki z cfg.getEpoch, nie literal'
+      + ' -- got "' + args[2].trim() + '"');
   }
-  // ...a `era` w panelu faktycznie pochodzi z epoki wlasciciela miasta, nie ze stalej.
-  ok(/const era = cfg\.getEpoch\?\.\([^)]*\) \?\? 1;/.test(panelSrc),
-    '2i: `era` w cityPanel.ts pochodzi z cfg.getEpoch(ownerId)');
+  // ...a te zmienne faktycznie pochodza z epoki wlasciciela miasta, nie ze stalej.
+  for (const nazwa of NOSNIKI_EPOKI) {
+    ok(new RegExp('const ' + nazwa + ' = cfg\\.getEpoch\\?\\.\\([^)]*\\) \\?\\? 1;').test(panelSrc),
+      '2i: `' + nazwa + '` w cityPanel.ts pochodzi z cfg.getEpoch(ownerId)');
+  }
 }
 // (4) panel nie dokleja juz nadwyzki Garncarni do linii Budynkow (G3)
 eq(panelSrc.includes('computeGarncarniaSurplusZadowolenieByOwner'), false,
@@ -547,6 +554,27 @@ for (const era of [1, 2, 3]) {
       '2i: panel == silnik dla Religii, epoka ' + era + ', sklad ' + JSON.stringify(counts));
   }
 }
+// (6b) OBRONA runda 1, zarzut 6: karta Religii i wiersz rozpiski musza pokazac graczowi
+//      TE SAMA liczbe. Model zostaje dokladny (`proporcjonalneSzczescie` celowo nie
+//      zaokragla — to byloby strojenie liczby wlasciciela), zaokraglane jest wylacznie
+//      to, co idzie na ekran, i to jednym helperem po obu stronach.
+{
+  // najpierw dowod, ze sprawdzenie nie jest puste: przy x=23 i udziale 1/3 wartosc
+  // linii jest UlAMKOWA, wiec zaokraglenie faktycznie ma co zmienic.
+  const surowa = M.proporcjonalneSzczescie(M.kultReligScaleForEra(3, M.loadSocietyScaleParams(society, 'normal')), 1 / 3);
+  ok(Math.abs(surowa - Math.round(surowa)) > 1e-6,
+    '2i(6b): x=23, udzial 1/3 -> linia Religii jest ulamkowa (' + surowa + '), wiec test nie jest pusty');
+  ok(panelSrc.includes('function szPktDisplay('),
+    '2i(6b): cityPanel.ts ma JEDEN helper prezentacyjny szPktDisplay');
+  ok(/function religiaSzPunkty\([\s\S]{0,400}return szPktDisplay\(/.test(panelSrc),
+    '2i(6b): karta Religii formatuje punkty przez szPktDisplay');
+  ok(/function szLinesDoWyswietlenia\([\s\S]{0,300}szPktDisplay\(/.test(panelSrc),
+    '2i(6b): linie rozpiski Szczescia ida przez ten sam helper');
+  eq((panelSrc.match(/szLinesDoWyswietlenia\(state\.szLines\)/g) || []).length, 2,
+    '2i(6b): OBA miejsca renderujace linie Szczescia (blok % i karta szczegolow) uzywaja helpera');
+  eq((panelSrc.match(/for \(const l of state\.szLines\)/g) || []).length, 0,
+    '2i(6b): zadne miejsce nie renderuje juz surowych wartosci state.szLines');
+}
 // (7) SPOJNOSC WEWNETRZNA silnika (nie parytet z panelem!): `evaluateOrderFromBreakdown`
 //     wola `computeHappinessBreakdown` (society-breakdown.ts:983), wiec ta para pilnuje
 //     wylacznie tego, ze wejscie przechodzi przez obudowe bez zgubienia pola. OBRONA
@@ -567,6 +595,183 @@ for (const era of [1, 2, 3]) {
   eq(a.netto, b.netto, '2i: computeHappinessBreakdown == evaluateOrderFromBreakdown netto (epoka ' + era + ')');
   eq(a.szPct, b.szPct, '2i: ... i szPct (epoka ' + era + ')');
 }
+
+// ===========================================================================
+// 2i (8). PARYTET FUNKCJONALNY panel <-> silnik — przez URUCHOMIENIE panelu
+//
+// OBRONA runda 1, zarzut 1. Punkty (1)-(6) czytaja `cityPanel.ts` jako TEKST, a punkt (7)
+// porownuje silnik sam ze soba. Zaden z nich nie lapal realnego rozjazdu: Evaluator podmienil
+// w panelu `era` na literal `1` i bramka nadal byla zielona. Tutaj panel jest BUDOWANY
+// (esbuild + jsdom) i WYKONYWANY przez szew `__cityPanelOrderStateLocalForTest`, a wynik
+// porownywany z niezaleznie zlozonym wejsciem silnika — tak jak sklada je `main.ts:29140+`
+// (`sumBuildingHappinessFromBuiltIds` + `buildingLevelForEpoch`, `wealthZadowolenie(..., era)`,
+// `wonderCityYieldBonusForOwner` -> `haCuda`, `isOwnerAtWar` -> `atWar`).
+// Trzy mutacje, ktore ta sekcja lapie, a poprzednia wersja przepuszczala:
+//   * `wealthZadowolenie(..., era)` -> `..., 1`   (linia Wealth rozjezdza sie w epokach 2-3)
+//   * usuniecie `haCuda` z wejscia panelu        (do 36 pkt roznicy, G11)
+//   * `atWar` zamrozone na `false`               (5 pkt roznicy, G9)
+// ===========================================================================
+section('2i (8). parytet FUNKCJONALNY: uruchomiony cityPanel == silnik');
+
+const PANEL_ENTRY  = path.resolve(__dirname, '.szczescie-przebudowa-skali-panel-entry.ts');
+const PANEL_BUNDLE = path.resolve(__dirname, '.szczescie-przebudowa-skali-panel-bundle.cjs');
+fs.writeFileSync(PANEL_ENTRY, `
+export { __cityPanelOrderStateLocalForTest, configureCityPanel } from '../src/ui/cityPanel';
+export { buildingLevelForEpoch } from '../src/game/production';
+`, 'utf8');
+
+let P = null;
+try {
+  esbuild.buildSync({
+    entryPoints: [PANEL_ENTRY],
+    bundle: true,
+    platform: 'node',
+    format: 'cjs',
+    target: 'node18',
+    outfile: PANEL_BUNDLE,
+    absWorkingDir: GRA,
+    logLevel: 'silent',
+    resolveExtensions: ['.ts', '.js', '.json'],
+    // cityPanel ciagnie ikony brandowe (?raw) i Vite'owy import.meta.glob — w node trzeba
+    // podac loader i podmienic glob na pusta mape; to nie zmienia liczonej matematyki.
+    loader: { '.svg': 'text', '.png': 'dataurl', '.jpg': 'dataurl', '.webp': 'dataurl' },
+    define: { 'import.meta.glob': '__viteGlobShim' },
+    banner: { js: 'const __viteGlobShim = () => ({});' },
+  });
+  const { JSDOM } = require(path.resolve(GRA, 'node_modules', 'jsdom'));
+  const dom = new JSDOM('<!doctype html><html><body></body></html>', {
+    pretendToBeVisual: true, url: 'http://localhost/',
+  });
+  global.window = dom.window;
+  global.document = dom.window.document;
+  for (const [k, v] of [['navigator', dom.window.navigator], ['location', dom.window.location]]) {
+    try { Object.defineProperty(global, k, { value: v, configurable: true }); } catch (e) { /* juz ustawione */ }
+  }
+  global.HTMLElement = dom.window.HTMLElement;
+  global.Element = dom.window.Element;
+  global.Node = dom.window.Node;
+  global.getComputedStyle = dom.window.getComputedStyle;
+  global.requestAnimationFrame = cb => setTimeout(cb, 0);
+  global.cancelAnimationFrame = id => clearTimeout(id);
+  global.ResizeObserver = class { observe() {} unobserve() {} disconnect() {} };
+  P = require(PANEL_BUNDLE);
+} catch (e) {
+  P = null;
+  console.error('  [FAIL] 2i(8): nie udalo sie zbudowac/zaladowac cityPanel.ts: ' + (e.message || e));
+}
+// Brak harnessu = brak dowodu jednego toru. To FAIL, nie ciche pominiecie.
+ok(P !== null && typeof P.__cityPanelOrderStateLocalForTest === 'function',
+  '2i(8): harness panelu zbudowany (szew __cityPanelOrderStateLocalForTest dostepny)');
+
+if (P) {
+  // Scenariusze: rozne epoki, z cudami i bez, na wojnie i w pokoju, rozne udzialy kultury.
+  const SCENARIUSZE = [
+    { era: 1, haCuda: 0,  atWar: false, kult: 1.0, poziomW: 10, relCounts: { A: 10 },        pop: 4 },
+    { era: 2, haCuda: 12, atWar: false, kult: 0.5, poziomW: 20, relCounts: { A: 5, B: 5 },   pop: 6 },
+    { era: 3, haCuda: 36, atWar: true,  kult: 0.6, poziomW: 30, relCounts: { A: 3, B: 2 },   pop: 8 },
+    { era: 3, haCuda: 6,  atWar: true,  kult: 0.0, poziomW: 15, relCounts: { B: 9, A: 1 },   pop: 12 },
+    { era: 2, haCuda: 0,  atWar: true,  kult: 0.75, poziomW: 40, relCounts: { A: 3, B: 1 },  pop: 5 },
+  ];
+  for (const s of SCENARIUSZE) {
+    const etyk = 'epoka ' + s.era + ', cuda ' + s.haCuda + ', wojna ' + s.atWar + ', pop ' + s.pop;
+    const builtIds = builtIdsForEra(s.era);
+    const podzial = { procentPieniadz: 40, procentNauka: 20, procentLuksus: 40 };
+    const wskaznik = M.religionHappiness({ counts: s.relCounts }, 'A');
+    const upkeepDelta = 2 * (NSUR[s.era] - 1) - 2;   // czesc surowcow pokryta, czesc nie
+
+    // --- wejscie SILNIKA, zlozone tak jak w main.ts (niezaleznie od panelu) ---
+    const poziomBudynku = bdef => P.buildingLevelForEpoch(
+      bdef.epokaWejscia, s.era, bdef.maksPoziom, bdef.poziomTechGate ?? null, [],
+    );
+    const wejscieSilnika = {
+      difficulty: 'normal',
+      era: s.era,
+      population: s.pop,
+      buildingZadowolenie: M.sumBuildingHappinessFromBuiltIds(builtIds, buildings, poziomBudynku),
+      haRel: wskaznik,
+      ownCultureShare: s.kult,
+      haWealth: M.wealthZadowolenie(s.poziomW, wp, s.era),
+      haCuda: s.haCuda,
+      podzialHandlu: podzial,
+      atWar: s.atWar,
+      stolicaEasyBonus: false,
+      citizenResourceHappinessDelta: upkeepDelta,
+    };
+    // Prawo NIE jest przedmiotem tego tematu (§GRANICE), ale `porPct` liczy sie z obu
+    // polowek — wiec wejscie Prawa musi byc zlozone z tych samych `builtIds`, co panel,
+    // inaczej porownanie porPct mierzyloby roznice w scenariuszu, nie w kodzie.
+    const palacTier = builtIds.includes('palac_iii') ? 3
+      : builtIds.includes('palac_ii') ? 2
+      : builtIds.includes('palac') ? 1 : null;
+    const wejscieLaw = {
+      difficulty: 'normal', era: s.era, population: s.pop, garnizonCount: 0,
+      hasDomStarszyzny: builtIds.includes('dom_starszyzny'),
+      hasDworZarzadcy: builtIds.includes('dwor_zarzadcy'),
+      hasPretorium: builtIds.includes('pretorium'),
+      hasTrybunal: builtIds.includes('trybunal'),
+      hasSad: builtIds.includes('sad'),
+      palacTier,
+      brakGarnizonuKara: s.pop >= 6,
+      stolicaEasyBonus: false,
+    };
+    const silnik = M.evaluateOrderFromBreakdown(wejscieSilnika, wejscieLaw, society, 'normal');
+
+    // --- werdykt silnika podany panelowi dokladnie tak, jak robi to `main.ts` ---
+    const stanSilnika = {
+      szczescie: silnik.sz.netto,
+      porzadek: silnik.prawo.netto,
+      szPct: silnik.sz.szPct,
+      prawPct: silnik.prawo.prawPct,
+      porPct: silnik.porPct,
+      bandLabel: silnik.bandLabel,
+      szLines: silnik.sz.lines,
+      prawLines: silnik.prawo.lines,
+      progT1: 0,
+      progT2: 0,
+      citizenUpkeep: { happinessDelta: upkeepDelta, available: [], missing: [], lines: [] },
+    };
+    const city = {
+      id: 'test-city', ownerId: 0, q: 0, r: 0, population: s.pop,
+      wealthState: { poziom: s.poziomW, punkty: 0 },
+      ownCultureShare: s.kult,
+    };
+    P.configureCityPanel({
+      data: { buildings, societyParams: society, econParams: econ },
+      difficulty: 'normal',
+      getEpoch: () => s.era,
+      getBuiltBuildingIds: () => builtIds,
+      getUnlockedTechs: () => [],
+      getUnitsAt: () => [],
+      getCities: () => [city],
+      getReligionState: () => ({ dominujaca: 'A', udzialPct: 60, wplywSzczescie: wskaznik }),
+      getPodzialHandlu: () => podzial,
+      getOrderState: () => stanSilnika,
+      getTurn: () => 5,
+      getCapitalCityId: () => null,
+    });
+
+    const panel = P.__cityPanelOrderStateLocalForTest(city, { buildings, societyParams: society, econParams: econ });
+
+    // 1. KAZDA linia rozpiski identyczna co do id i wartosci.
+    const pl = panel.state.szLines || [];
+    const sl = silnik.sz.lines || [];
+    eq(pl.map(l => l.id).join('|'), sl.map(l => l.id).join('|'),
+      '2i(8): panel i silnik maja te same linie Szczescia (' + etyk + ')');
+    for (const l of sl) {
+      const p = pl.find(x => x.id === l.id);
+      near(p ? p.value : NaN, l.value,
+        '2i(8): linia "' + l.id + '" identyczna (' + etyk + ')', 1e-9);
+    }
+    // 2. ...i te same wyniki zbiorcze, ktorymi galaz `fromEngine: true` NADPISUJE werdykt.
+    near(panel.state.szPct, silnik.sz.szPct, '2i(8): szPct panelu == szPct silnika (' + etyk + ')', 1e-9);
+    near(panel.state.porPct, silnik.porPct, '2i(8): porPct panelu == porPct silnika (' + etyk + ')', 1e-9);
+    eq(panel.state.bandLabel, silnik.bandLabel, '2i(8): pasmo Porzadku identyczne (' + etyk + ')');
+    // netto w panelu jest zaokraglane do 1 miejsca (prezentacja), wiec porownanie z tolerancja
+    near(panel.state.szczescie, silnik.sz.netto, '2i(8): netto Szczescia identyczne (' + etyk + ')', 0.05);
+  }
+}
+
+try { fs.unlinkSync(PANEL_ENTRY); } catch (e) { /* nic */ }
 
 // ===========================================================================
 console.log('\n[szczescie-przebudowa-skali-test] ' + passed + ' OK, ' + failed + ' FAIL');

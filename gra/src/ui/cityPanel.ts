@@ -226,6 +226,7 @@ import {
   kultReligScaleForEra,
   proporcjonalneSzczescie,
   ownShareFromSignal,
+  type SocietyLine,
 } from '../game/society-breakdown';
 import {
   computeCitizenResourceDrain,
@@ -2958,6 +2959,26 @@ function PH(): string {
 // ---------------------------------------------------------------------------
 
 /**
+ * G15 (Evaluator runda 1, zarzut 6) — JEDNO zaokrąglenie PREZENTACYJNE punktów Szczęścia.
+ *
+ * `proporcjonalneSzczescie` celowo NIE zaokrągla (zaokrąglenie w modelu byłoby strojeniem
+ * liczby właściciela — `society-breakdown.ts:487`), więc przy nieparzystym `x` linia
+ * Kultury/Religii niesie ułamek (x=23, udział 1/3 → −7,666666666666666). Karta Religii
+ * pokazywała ten sam wkład zaokrąglony do −7,7, a wiersz rozpiski surowy — dwie różne
+ * liczby dla tej samej rzeczy w JEDNYM panelu. Od teraz obie strony przechodzą przez tę
+ * funkcję. Wartość w modelu (`netto`, `szPct`) zostaje dokładna — zaokrąglamy wyłącznie
+ * to, co widzi gracz.
+ */
+function szPktDisplay(v: number): number {
+  return Math.round(v * 10) / 10;
+}
+
+/** Kopia linii rozpiski Szczęścia do WYŚWIETLENIA — wartości przez `szPktDisplay`. */
+function szLinesDoWyswietlenia(lines: SocietyLine[] | undefined): SocietyLine[] | undefined {
+  return lines?.map(l => ({ ...l, value: szPktDisplay(l.value) }));
+}
+
+/**
  * G4 + G15 — `getReligionState().wplywSzczescie` to od 2026-09-05 ZNORMALIZOWANY wskaźnik
  * przewagi własnej religii [−1, +1] (`religionHappiness`), a nie punkty. Punkty powstają
  * dopiero po pomnożeniu przez `x(epoka)` = `szczescie_skala_kultura_religia` — DOKŁADNIE
@@ -2972,7 +2993,7 @@ function religiaSzPunkty(wskaznik: number, ownerId: number): number {
     kultReligScaleForEra(era, scale),
     ownShareFromSignal(wskaznik),
   );
-  return Math.round(pkt * 10) / 10;
+  return szPktDisplay(pkt);
 }
 
 function buildingHappinessSum(cityId: string, data: GameData, era: number, ownerId: number): number {
@@ -3084,6 +3105,22 @@ function computeOrderStateLocal(city: City, data: GameData): { state: OrderState
   const citizenUpkeep = cfg.getOrderState?.(city.id)?.citizenUpkeep
     ?? computeCitizenResourceDrain(era, ownerPopulationAll, ownerResourceStockAll(allCities, city.ownerId));
 
+  // G15 (Evaluator runda 1, zarzut 2): silnik podaje do rozpiski Szczęścia DWIE pozycje,
+  // których to przeliczenie wcześniej nie znało — `haCuda` (`wonderCityYieldBonusForOwner`,
+  // `main.ts`) i `atWar` (`isOwnerAtWar`, `main.ts`) — bo `CityPanelConfig` nie ma dla nich
+  // haka, a `main.ts` trzyma inny temat (§2b) i nie wolno go tu dopiąć. Rozjazd istniał
+  // przed tym tematem, ale G11 podniósł go z maks. 21 do 36 pkt (sześć cudów × +6), a G9
+  // z −2 do −5. To NIE jest kosmetyka: gałąź `fromEngine: true` w `resolveOrderState`
+  // celowo NADPISUJE `porPct`/`bandLabel`/`porzadek` wartościami stąd, więc gracz na wojnie
+  // i z cudami widział inne pasmo Porządku, niż egzekwuje silnik. Odczyt idzie z linii
+  // rozpiski, które silnik JUŻ policzył i wystawił przez `cfg.getOrderState` — ten sam hak,
+  // z którego wyżej bierzemy `citizenUpkeep`, więc żadna liczba nie powstaje tu drugi raz.
+  // Brak werdyktu silnika (sandbox/playtest, tura przed pierwszym przeliczeniem) → 0 i
+  // `false`, czyli dokładnie stare zachowanie.
+  const engineSzLines = cfg.getOrderState?.(city.id)?.szLines ?? null;
+  const haCuda = engineSzLines?.find(l => l.id === 'cuda')?.value ?? 0;
+  const atWar = engineSzLines ? engineSzLines.some(l => l.id === 'wojna') : false;
+
   const ordPctRaw = evaluateOrderFromBreakdown(
     {
       difficulty,
@@ -3093,8 +3130,9 @@ function computeOrderStateLocal(city: City, data: GameData): { state: OrderState
       haRel,
       ownCultureShare,
       haWealth,
+      haCuda,
       podzialHandlu: podzial,
-      atWar: false,
+      atWar,
       stolicaEasyBonus: stolicaBonus,
       citizenResourceHappinessDelta: citizenUpkeep.happinessDelta,
     },
@@ -3149,6 +3187,26 @@ function computeOrderStateLocal(city: City, data: GameData): { state: OrderState
     },
     fromEngine: false,
   };
+}
+
+/**
+ * G15 / kryterium 2i — SZEW dla bramki `gra/tools/szczescie-przebudowa-skali-test.cjs`.
+ *
+ * Zwraca DOKŁADNIE to, co panel liczy w gałęzi lokalnej (`computeOrderStateLocal`) — tej
+ * samej, którą `resolveOrderState` nakłada na werdykt silnika (`fromEngine: true` nadpisuje
+ * `porPct`/`bandLabel`/`porzadek`). Bramka URUCHAMIA tę funkcję (jsdom) i porównuje wynik
+ * z niezależnie zbudowanym wejściem silnika, zamiast — jak w rundzie 1 — czytać źródło
+ * `cityPanel.ts` regexem. Dzięki temu podmiana `era` na literał, zgubienie `haCuda` czy
+ * zamrożenie `atWar` faktycznie CZERWIENIĄ bramkę (Evaluator runda 1, zarzut 1: stary
+ * warunek `w.split(',').length === 3` przechodził po mutacji `era → 1`).
+ *
+ * Nie zmienia zachowania panelu: to jedno wywołanie istniejącej funkcji.
+ */
+export function __cityPanelOrderStateLocalForTest(
+  city: City,
+  data: GameData,
+): { state: OrderState; fromEngine: boolean } {
+  return computeOrderStateLocal(city, data);
 }
 
 function resolveCityHealth(city: City, map: GameMap, data: GameData): { total: number; lines: CityHealthLine[]; fromEngine: boolean } {
@@ -3211,7 +3269,8 @@ function renderSpoleczenstwo(mount: HTMLElement, city: City, data: GameData): vo
     pctSubheadHtml('chip-heart', 'Szczęście'),
     state.szPct,
     'linear-gradient(90deg,#3a8a5a,#7ad0a0)',
-    state.szLines,
+    // zarzut 6: jedno zaokrąglenie prezentacyjne — ta sama liczba, którą pokazuje karta Religii
+    szLinesDoWyswietlenia(state.szLines),
     'Brak składników wpływających na szczęście.',
   );
   appendCitizenUpkeepBlock(mount, state.citizenUpkeep, city.population);
@@ -3313,7 +3372,8 @@ function buildPorzadekDetailCard(city: City, state: OrderState): HTMLDivElement 
   if (state.szLines && state.szLines.length > 0) {
     appendDetailSection(card, 'Składniki Szczęścia (+/−)');
     const gs = appendDetailGrid(card);
-    for (const l of state.szLines) {
+    // zarzut 6: to samo zaokrąglenie prezentacyjne co w karcie Religii i w bloku Szczęścia
+    for (const l of szLinesDoWyswietlenia(state.szLines) ?? []) {
       gridDetailRow(gs, l.label, `${l.value >= 0 ? '+' : ''}${l.value}`);
     }
   }
