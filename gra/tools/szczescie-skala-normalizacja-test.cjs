@@ -471,7 +471,7 @@ console.log('\n6. Scenariusz ze zrzutu wlasciciela: pop 2, epoka 1, Sz netto 16,
   eq(szPrzed.szPct, 90.7, 'zrzut PRZED (skalowanie populacja wylaczone): SzPct = 90,7%');
   eq(prPrzed.prawPct, 40, 'zrzut PRZED: PrawPct = 40% (zrzut wlasciciela pokazywal 40%)');
   // pop 2 = populacja odniesienia, wiec PO zmianie ma byc IDENTYCZNIE — neutralnosc startowa.
-  eq(sz.szPct, szPrzed.szPct, 'zrzut PO zmianie: SzPct bez zmian wobec PRZED (114,3%)');
+  eq(sz.szPct, szPrzed.szPct, 'zrzut PO zmianie: SzPct bez zmian wobec PRZED (90,7%)');
   eq(pr.prawPct, prPrzed.prawPct, 'zrzut PO zmianie: PrawPct bez zmian wobec PRZED (40%)');
 }
 
