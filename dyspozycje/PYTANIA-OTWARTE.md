@@ -32186,3 +32186,42 @@ miasto-państwo) albo zamiana pełnego skanu `Object.keys(map.hexes)` na indeks 
 utrzymywany przyrostowo — obie opcje wymagają zmian w `ai.ts` poza allowlistą tej rundy
 (`gra/tools/city-state-offensive-perf-test.cjs` wyłącznie). Ten wpis jest wyłącznie
 zarejestrowaniem odkrycia (append-only, `STATUS: ZAMKNIĘTE`), nie autoryzacją naprawy.
+
+---
+
+## P-IZOLACJA-DWOCH-PISARZY-JEDEN-WORKTREE (2026-09-05, incydent własny orkiestratora) · STATUS: **OTWARTE — zarejestrowane, reguła już zastosowana w rundzie 3, brak dispatchu**
+
+**Co się stało.** W temacie `R-SZCZESCIE-PRZEBUDOWA-SKALI-Q1` między 21:18 a 21:27 UTC dwa
+procesy pisały **równolegle** do tego samego worktree `/home/user/wt-szczescie-skala` i tej samej
+gałęzi: Operator rundy 2 (przepisanie ośmiu bramek) oraz Operator w fazie Obrony rundy 1
+(zarzuty 1/2/6 Evaluatora). Zgłosili to **obaj, niezależnie**, jako fakt procesowy.
+
+**Przyczyna: mój błąd jako orkiestratora**, nie ich. Dispatchowałem rundę 2 nie czekając na
+zakończenie skryptu Workflow rundy 1, który ma trzy fazy (Operator → Evaluator → **Obrona**),
+a nie dwie. Faza Obrony jest częścią tej samej rundy i pracuje w tym samym worktree —
+`R-PROC-AUTOBOT.md` §3c mówi to wprost, ja policzyłem rundę 1 za zamkniętą po Evaluatorze.
+
+**Dlaczego nic nie zginęło — i dlaczego to nie jest zasługa procesu.** Obaj Operatorzy
+zachowali się wzorowo, każdy z własnej ostrożności:
+- commit **per plik**, po jawnych ścieżkach (`cityPanel.ts` świadomie pominięty przez Operatora
+  rundy 2, bo widział cudze mtime);
+- mutacje testowe cofane przez **kopię pliku**, nigdy przez `git checkout -- gra/`, które
+  skasowałoby niezacommitowaną pracę drugiego procesu.
+Gdyby którykolwiek użył `git add -A` albo `git checkout -- gra/` — a to są odruchy, nie
+egzotyka — praca drugiego zniknęłaby bez śladu i bez błędu.
+
+**Objaw, po którym to widać z zewnątrz:** licznik asercji tej samej bramki rósł między kolejnymi
+uruchomieniami tego samego agenta (446 → 496 → 503 → 511), a `git status` przestał być dowodem
+czyjejkolwiek pracy.
+
+**Reguła, którą zastosowałem od razu (runda 3 tego tematu, sekcja R3-E dispatchu):**
+> Zanim zaczniesz: `git log -1` i `git status` mają pokazywać oczekiwany commit i czyste drzewo.
+> Jeśli pokazują cokolwiek innego — **zatrzymaj się ze statusem `BLOCK`** zamiast pisać do drzewa,
+> w którym może pracować ktoś inny.
+
+**Do rozstrzygnięcia w osobnym temacie procesowym (nie dispatchuję teraz):** czy ta reguła ma
+trafić do `R-PROC-AUTOBOT.md` §2b jako stały wymóg każdego dispatchu (guard „jeden pisarz na
+worktree" w prompcie), czy raczej do skilla `civ-autobot-workflow` jako pozycja checklisty
+orkiestratora („nie dispatchuj rundy N+1, dopóki skrypt rundy N nie zwrócił — Obrona jest
+trzecią fazą, nie osobnym wywołaniem"). Drugie jest tańsze i uderza w rzeczywistą przyczynę;
+pierwsze łapie też przypadek, w którym pomyli się inne narzędzie.
