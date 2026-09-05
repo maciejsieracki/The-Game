@@ -35,8 +35,10 @@
  * Trzy części:
  *  A) TEKSTOWY PIN na main.ts -- istnienie wrappera z poprawną kolejnością (hide -> RAF ->
  *     oba flushe), migracja WSZYSTKICH 7 wcześniej cichych miejsc, `onBack` NIETKNIĘTY,
- *     i policzenie że w całym pliku zostały DOKŁADNIE 2 gołe wywołania `hideDiplomacyAudience()`
- *     (wewnątrz wrappera + w onBack) -- łapie przyszłe wywołanie, które ominie wrapper.
+ *     oraz IMIENNA KLASYFIKACJA wszystkich gołych wywołań `hideDiplomacyAudience()` w pliku:
+ *     dokładnie 3, każde w nazwanym i osiągalnym miejscu (wrapper + `onBack` + hak testowy
+ *     `__audienceRelTestDebug.closeAudience`, uzasadnienie i dowody w [A4]) -- łapie przyszłe
+ *     wywołanie omijające wrapper także wtedy, gdy ktoś podniósłby sam licznik.
  *  B) REALNA regresja UI (esbuild + jsdom, bundluje prawdziwy `ui/preBattle.ts`) -- mirror
  *     wrappera (main.ts się nie bundluje, patrz uzasadnienie w innych testach tej sesji,
  *     np. end-turn-modal-sequencing-test.cjs) używa PRAWDZIWEGO, zbundlowanego
@@ -121,15 +123,103 @@ const mainSrc = fs.readFileSync(MAIN_TS, 'utf8');
     '[A3] onBack zachował własny blok RAF: flushDeferredMergePrompts -> flushDeferredAutoPreBattle -> tryOpenNextFirstContactCard');
 }
 
-// A4) Policz WSZYSTKIE gołe wywołania hideDiplomacyAudience() w pliku (bez importu) --
-//     musi być DOKŁADNIE 2: wewnątrz wrappera + w onBack. Każde trzecie to regresja (ktoś
-//     ominął wrapper przy nowym miejscu zamknięcia audiencji).
+// A4) WSZYSTKIE gołe wywołania hideDiplomacyAudience() w pliku (bez importu) muszą być
+//     IMIENNIE ROZPOZNANE. Dopuszczone są DOKŁADNIE TRZY, każde w nazwanym, osiągalnym
+//     miejscu; czwarte (albo trzecie w innym miejscu niż nazwane) to regresja.
+//
+//     PODNIESIENIE PROGU 2 → 3 (P-DYPLO-DWA-TESTY-CZERWONE-ZASTANE-Q1, 2026-09-05).
+//     Trzecie wywołanie dołożył commit `af542199` (R-DYPLO-RELACJE-AI-AI-AUDIENCJA-Q1,
+//     Obrona rundy 1) jako HAK TESTOWY `window.__audienceRelTestDebug.closeAudience` —
+//     dźwignię dla Playwrighta, nie ścieżkę gracza. Dowód, że nie jest zbędne (a więc nie
+//     da się go po prostu usunąć): wołają je DWIE żywe bramki tego repo —
+//     `tools/dyplo-mapa-odkrycie-live-test.cjs` i
+//     `tools/diplomacy-relacje-ai-ai-audiencja-live-test.cjs` (asercja [A4e] niżej pilnuje,
+//     że ta osiągalność nie zniknie). Dowód, że nie musi iść przez wrapper: hak nie jest
+//     osiągalny ŻADNYM kliknięciem w grze (zero wywołań z `gra/src/**`), więc ryzyko, przed
+//     którym ta asercja broni — odroczona bitwa/scalenie uwięzione, bo gameplayowa ścieżka
+//     zamknięcia pominęła flush — w nim nie występuje. Wrapper dołożyłby tam flush w RAF,
+//     czyli mógłby wystrzelić modal preBattle w środku asercji tych dwóch bramek.
+//
+//     Sam licznik „ma być 3" byłby słabszy od poprzedniego „ma być 2": za miesiąc doszłoby
+//     czwarte i ktoś podniósłby próg do 4. Dlatego liczba idzie w parze z KLASYFIKACJĄ —
+//     każde z trzech wywołań musi leżeć w konkretnym, nazwanym miejscu, a każde
+//     nierozpoznane czerwieni bramkę niezależnie od licznika.
 {
   const importLineEnd = mainSrc.indexOf('\n', mainSrc.indexOf('showDiplomacyAudience, hideDiplomacyAudience'));
   const bodySrc = mainSrc.slice(importLineEnd);
-  const allBareCalls = (bodySrc.match(/hideDiplomacyAudience\(\);/g) || []).length;
-  ok(allBareCalls === 2,
-    `[A4] main.ts ma DOKLADNIE 2 gole wywolania hideDiplomacyAudience() poza importem (wrapper + onBack) -- got ${allBareCalls}. Nowe miejsce zamkniecia audiencji MUSI isc przez closeDiplomacyAudienceAndFlush().`);
+
+  const bareOffsets = [];
+  const bareRe = /hideDiplomacyAudience\(\);/g;
+  let m;
+  while ((m = bareRe.exec(bodySrc)) !== null) bareOffsets.push(importLineEnd + m.index);
+
+  ok(bareOffsets.length === 3,
+    `[A4] main.ts ma DOKLADNIE 3 gole wywolania hideDiplomacyAudience() poza importem (wrapper + onBack + hak testowy __audienceRelTestDebug.closeAudience) -- got ${bareOffsets.length}. Nowe miejsce zamkniecia audiencji MUSI isc przez closeDiplomacyAudienceAndFlush().`);
+
+  /** Zakres [start, end) nazwanego bloku, kotwiczony na treści (nie na numerze linii). */
+  function region(anchor, endMark) {
+    const s = mainSrc.indexOf(anchor);
+    if (s < 0) return null;
+    const e = mainSrc.indexOf(endMark, s);
+    return e > s ? [s, e] : null;
+  }
+  const inside = (off, r) => !!r && off >= r[0] && off < r[1];
+
+  // (1) WRAPPER closeDiplomacyAudienceAndFlush -- jedyne miejsce, przez które wolno zamykać
+  //     audiencję ze ścieżek gameplayowych innych niż „Wróć"/Escape.
+  const wrapper = region('function closeDiplomacyAudienceAndFlush(): void {', '\n    }');
+  const inWrapper = bareOffsets.filter(o => inside(o, wrapper));
+  const wrapperCallSites = (mainSrc.match(/closeDiplomacyAudienceAndFlush\(\);/g) || []).length;
+  ok(inWrapper.length === 1,
+    `[A4a] dokladnie 1 gole wywolanie lezy w ciele closeDiplomacyAudienceAndFlush() -- got ${inWrapper.length}`);
+  ok(wrapperCallSites >= 7,
+    `[A4a] OSIAGALNOSC #1: wrapper jest wolany z co najmniej 7 miejsc gameplayowych (patrz [A2]) -- got ${wrapperCallSites}`);
+
+  // (2) onBack audiencji -- klik „Wróć"/„Wyjście" i Escape; ma WŁASNY, wcześniej
+  //     zweryfikowany flush, dlatego celowo nie idzie przez wrapper.
+  const onBack = region('onBack: () => {', '\n        },');
+  const inOnBack = bareOffsets.filter(o => inside(o, onBack));
+  const audienceCfg = mainSrc.indexOf('showDiplomacyAudience({');
+  ok(inOnBack.length === 1,
+    `[A4b] dokladnie 1 gole wywolanie lezy w ciele onBack -- got ${inOnBack.length}`);
+  ok(audienceCfg >= 0 && !!onBack && onBack[0] > audienceCfg
+    && mainSrc.slice(audienceCfg, onBack[0]).includes('backLabel:'),
+    '[A4b] OSIAGALNOSC #2: onBack jest handlerem przycisku powrotu w konfiguracji showDiplomacyAudience({ ... backLabel ... })');
+
+  // (3) HAK TESTOWY __audienceRelTestDebug.closeAudience -- dzwignia dla Playwrighta,
+  //     nieosiagalna z UI gry.
+  const hook = region('(window as any).__audienceRelTestDebug = {', '\n    (window as any).__rebelNotifyTestDebug');
+  const inHook = bareOffsets.filter((o) => {
+    if (!inside(o, hook)) return false;
+    const lineStart = mainSrc.lastIndexOf('\n', o) + 1;
+    return mainSrc.slice(lineStart, o).includes('closeAudience:');
+  });
+  ok(inHook.length === 1,
+    `[A4c] dokladnie 1 gole wywolanie lezy w haku testowym __audienceRelTestDebug.closeAudience -- got ${inHook.length}`);
+  const srcCallers = (() => {
+    const dir = path.join(__dirname, '..', 'src');
+    const hits = [];
+    (function walk(d) {
+      for (const e of fs.readdirSync(d, { withFileTypes: true })) {
+        const p = path.join(d, e.name);
+        if (e.isDirectory()) walk(p);
+        else if (/\.ts$/.test(e.name) && fs.readFileSync(p, 'utf8').includes('__audienceRelTestDebug.closeAudience')) hits.push(e.name);
+      }
+    })(dir);
+    return hits;
+  })();
+  ok(srcCallers.length === 0,
+    `[A4c] hak pozostaje TYLKO hakiem: zero wywolan __audienceRelTestDebug.closeAudience z gra/src/** -- got ${srcCallers.join(', ')}`);
+  const gateCallers = fs.readdirSync(path.join(__dirname))
+    .filter(f => /\.cjs$/.test(f) && f !== path.basename(__filename))
+    .filter(f => fs.readFileSync(path.join(__dirname, f), 'utf8').includes('__audienceRelTestDebug.closeAudience'));
+  ok(gateCallers.length >= 1,
+    `[A4e] OSIAGALNOSC #3: hak jest faktycznie wolany przez co najmniej jedna zywa bramke w gra/tools/ (inaczej to martwy kod do usuniecia) -- got ${gateCallers.length}`);
+
+  // (4) Domkniecie: zaden goly hideDiplomacyAudience() nie moze zostac NIEROZPOZNANY.
+  const classified = inWrapper.length + inOnBack.length + inHook.length;
+  ok(classified === bareOffsets.length,
+    `[A4f] kazde gole wywolanie hideDiplomacyAudience() jest w jednym z trzech NAZWANYCH miejsc -- rozpoznano ${classified} z ${bareOffsets.length}. Nierozpoznane miejsce MUSI isc przez closeDiplomacyAudienceAndFlush().`);
 }
 
 // ---------------------------------------------------------------------------
