@@ -4907,8 +4907,46 @@ epoce — wczesniej epoka 3 nie schodzila ponizej +62%.
   w utrzymaniu na koncu gry. Lekarstwo (gdyby playtest to potwierdzil): kara rosnaca z epoka,
   ok. -1 / -1,7 / -2,5. **Wlasciciel swiadomie odlozyl to do playtestu.**
 
+14. **Bonus osiedla przeskalowany: `szczescie_bonus_osiedle_pop` = `[15, 12, 8, 5]`**
+    (pop 1 = +15, pop 4 = +5, liniowo pomiedzy; pop 5 i wyzej = 0). Bylo `[4, 3, 2, 1]`.
+    Powod: dotychczasowy bonus **znosil sie z nowa kara -1 za obywatela** i przy pop 4 dawal
+    netto **-3**. Po zmianie netto jest dodatnie na calym zakresie: **+14 / +10 / +5 / +1**.
+    Zmierzony skutek na REALNYM starcie (epoka 1, bez kompletu budynkow, Wealth zero,
+    podatki w srodku skali, polowa surowcow): osada pop 1 startuje na **75%**, a z dwoma
+    budynkami (Spichlerz + Studnia) na **90%**.
+    **Znany skutek uboczny, przyjety swiadomie:** przejscie pop 4 → 5 kosztuje **6 pkt naraz**
+    (bonus 5 → 0 plus jeden obywatel), czyli 12,5% `szMax` — jedyne urwisko w calej nowej skali.
+    Zlagodzenie wymagaloby rozszerzenia tablicy na pop 5, a warunek `p > 4` jest **zaszyty
+    w kodzie**, nie w danych (`society-breakdown.ts:218`).
+
 **STATUS: ZAREJESTROWANE, DO DISPATCHU.** DOMAIN: GAME. Wszystkie liczby pochodza od
 wlasciciela; Operator dostanie jawny **zakaz ich strojenia**.
+
+### KRYTYCZNE USTALENIE — przebudowa szczescia SAMA W SOBIE nie zmieni ani jednego buntu
+
+Znalezione przy pytaniu wlasciciela o najgorszy scenariusz. **Dwa niezalezne mechanizmy
+sprawiaja, ze dolna czesc skali szczescia dzis nie dziala:**
+
+1. **`clampPct` ma dolne obciecie na zerze** (`society-breakdown.ts:379-382`:
+   `Math.min(cap, Math.max(0, ...))`). Wszystkie ujemne procenty z analizy (-58%, -39%, -24%)
+   w grze wynosza po prostu **0%**. Ujemne szczescie nie istnieje.
+2. **Bunt zalezy od Porzadku, nie od szczescia:**
+   `PorPct = min(120, 0,5 x szPct + 0,5 x prawPct)` (`:800-809`). Pasma (`porPctBand`,
+   `:721-731`): Lad >= 90, Spokoj >= 70, Napiecie >= 50, Niepokoj >= 30, **Bunt >= 12**,
+   ponizej Bunt skrajny.
+
+**Skutek:** miasto z ZEROWYM szczesciem, ale z budynkami administracyjnymi (`prawPct` 91-101%),
+ma `PorPct` **45,5** — czyli lezy w pasmie **Niepokoj**, nie w buncie. Zeby przy zerowym
+szczesciu doszlo do buntu, `prawPct` musialby spasc **ponizej 24%**; zeby wpasc chocby
+w Niepokoj od dolu — ponizej 60%. Dzis minimum `prawPct` to **91%** (pop 8).
+
+**Prawo jest wiec kolem ratunkowym, ktorego nie da sie utracic** — polowa wzoru zawsze stoi
+na maksimum. Cala praca nad dolna polowa skali szczescia trafia w obciecie na zerze i w druga,
+nieruchoma polowe wzoru. **Bez przebudowy Prawa przebudowa szczescia nie zmieni zachowania
+gry w sytuacjach kryzysowych.** Dlatego kotwica przy Prawie musi byc scenariusz NAJGORSZY,
+a nie optymistyczny jak przy szczesciu.
+
+
 
 ## R-SZCZESCIE-AUDYT-B-WKLAD-BUDYNKOW-Q1 — POMIAR ORKIESTRATORA, WSTRZYMANY DO DECYZJI (2026-09-05)
 
