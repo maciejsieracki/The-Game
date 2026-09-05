@@ -127,16 +127,16 @@ w nią wcześniej katalog roboczy `civ-unit-panel-preview`, patrz defekt (c).
 
 ## BLOKADY
 
-- **~24 bramki wymagające headless Chromium nie zostały uruchomione pojedynczo** (rodzina
-  `zelazo-*`, `*-real-render-*`, `*-live-*`). Każda to `vite build` + realny Chromium,
-  rzędu kilkunastu–kilkudziesięciu minut; łącznie wielokrotność budżetu jednej rundy.
-  Ich zmiana jest mechanicznie identyczna z 20 zweryfikowanymi (ten sam blok, ta sama
-  podmiana literału) i wszystkie przechodzą `node --check`, ale **to nie jest to samo co
-  zielony przebieg** i nie udaję, że jest. Rekomendacja: osobny węzeł „przebieg bramek
-  render" (§12), albo jawna zgoda Evaluatora na próbkę.
-- Kolizja `/tmp` z tematem w `/home/user/wt-garnizon` (§2b) — mój kod jej już nie powoduje,
-  ale ich niezałatana kopia bramek nadal może kolidować z innymi. Do rozważenia przez
-  orkiestratora przy integracji kolejności.
+- **~24 bramki wymagające headless Chromium nie zostały uruchomione pojedynczo** (rodziny
+  `zelazo-*`, `*-real-render-*`, `*-live-*`) — każda to `vite build` + realny Chromium,
+  rzędu kilkunastu–kilkudziesięciu minut. Przeszły `node --check`, sprawdzenie zasięgu
+  modułu i kolejności deklaracji, ale **to nie jest to samo co zielony przebieg** i nie
+  udaję, że jest. Rekomendacja: osobny węzeł „przebieg bramek render" (§12).
+- Przekroczony limit ~400 słów narracji (§11) — świadomie: trzy defekty własnej naprawy
+  i ślepa plamka rekonesansu są ustaleniami, nie opisem pracy.
+- `/home/user/wt-garnizon` ma niezałataną kopię tych bramek i nadal pisze do
+  `/tmp/civ-ai-buduje-budynki` (§2b). Mój kod już tam nie sięga; kolejność integracji
+  do rozważenia przez orkiestratora.
 
 ## Tabela audytu (62 wiersze; nie liczy się do limitu 400 słów)
 
