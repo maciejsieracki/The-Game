@@ -5406,3 +5406,26 @@ Regres częściowy (`--ec-stack-dx` → 0) przechodzi czysto, 59/8 — czyli pro
 wyłącznie pełnego cofnięcia. **STATUS: ZAREJESTROWANE, NIE DISPATCHOWANE.** Do zrobienia
 razem z `P-BRAMKA-NESTED-OVERLAY-BRAK-SCROLLINTOVIEW-Q1` — obie to jednolinijkowe
 uodpornienia bramek kart.
+
+## PORZĄDKI W REJESTRZE (2026-09-05) — domknięcia i nadpisania statusów
+
+Przy sporządzaniu raportu otwartych tematów wyszły trzy pozycje z nieaktualnym statusem.
+Poprawiam je jawnie, zamiast zostawiać rozjazd między rejestrem a stanem `main`.
+
+**`R-AUTOWYZYWIENIE-GLOBALNY-BLOKER-I-STAN-PRZYCISKU-Q1` → ZAMKNIĘTY PRZEZ WĘZŁY.**
+Temat nadrzędny nie ma własnego commitu integracji i dlatego wyglądał na otwarty. Jest
+zrealizowany w całości przez dwa węzły: `R-AUTOWYZYWIENIE-ROWNY-WZROST-Q1-A` (`d618a8ae`)
+i `R-AUTOWYZYWIENIE-STAN-PRZYCISKU-Q1-B` (`7dab640b`). Zostają wyłącznie dwa tematy
+NASTĘPCZE, zarejestrowane osobno: `R-AUTOWYZYWIENIE-LIMIT-WPIECIE-POPCAP-Q1`
+i `R-SPICHLERZ-STAN-I-PRZELACZNIK-Q1`.
+
+**Trzy stare tematy Spichlerza — PRAWDOPODOBNIE WCHŁONIĘTE, do rozstrzygnięcia przy dispatchu
+`R-SPICHLERZ-STAN-I-PRZELACZNIK-Q1`:** `P-SPICHLERZ-AUTO-ZYWIENIE-MASOWY-PRZYCISK-Q1`
+(recon zamknięty, wstrzymane), `P-SPICHLERZ-AUTO-ZYWIENIE-PRZYCISK-TEKST-Q1` (to on ustalił,
+że przycisk ma być jednorazową AKCJĄ — decyzję tę właściciel **świadomie cofnął** ECHO „2+3"),
+`P-SPICHLERZ-AUTO-ZYWIENIE-TOAST-ZINDEX-Q1`. **Nie zamykam ich samodzielnie** — przy dispatchu
+tematu następczego trzeba sprawdzić, co z nich zostaje żywe, a co jest już nieaktualne.
+
+**`R-AUTO-WYZYWIENIE-KRYTERIUM-Q1` — do przeglądu przy węźle wpięcia `popCap`.** Dotyka tej
+samej funkcji, którą przebudował węzeł A; jego pierwotny opis może już nie odpowiadać
+kodowi po `d618a8ae`.
