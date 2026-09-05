@@ -1732,7 +1732,30 @@ export function decideBarbarianMoves(
 ): BarbCommand[] {
   const commands: BarbCommand[] = [];
   const engageOk = canEngageOwner ?? ((_targetOwnerId: number) => true);
-  const skipDefenselessCities = difficulty === 'normal' || difficulty === 'hard';
+  // P-BARBARZYNCY-KRAZENIE-NIEBRONIONE-Q1 (ECHO wlasciciela 2026-09-05, WIAZACE): dawniej
+  // `difficulty === 'normal' || difficulty === 'hard'` -- pamiec "to miasto juz odwiedzilem i
+  // nie da sie go zdobyc" byla WYLACZONA na `easy` (i dla wolajacych bez `difficulty`), przez
+  // co na latwym poziomie barbarzynca stal bezterminowo przy najblizszym niebronionym miescie
+  // i nigdy nie ruszal na bronione. Wlasciciel: "NAPRAWIC -- barbarzynca ma dokonac wyboru i
+  // isc", JEDNA regula na WSZYSTKICH poziomach trudnosci; jawnie odrzucil warianty "naprawic
+  // tylko na normalnym" i "zostawic jako ulge na latwym". SWIADOMIE przyjety skutek:
+  // barbarzyncy sa wyraznie grozniejsi na latwym poziomie -- to jest zamierzone, nie defekt.
+  // Stala (nie warunek) jest tu CELOWA: zostawia widoczny slad w miejscu usunietej bramki
+  // trudnosci i utrzymuje istniejacy dowod mutacyjny (barb-city-behavior-test.cjs sekcja 9)
+  // bez przepisywania go. Parametr `difficulty` zostaje w sygnaturze (uzywaja go wolajacy z
+  // main.ts przez `shouldAllowBarbCityCapture`), ale WYBOR CELU juz go nie czyta.
+  // / EN: formerly `difficulty === 'normal' || difficulty === 'hard'` -- the "already visited,
+  // cannot be taken" memory was OFF on `easy` (and for callers omitting `difficulty`), so on
+  // easy a barbarian parked next to the nearest undefended city forever and never marched on
+  // the defended one. Owner's binding ECHO (2026-09-05): ONE rule on ALL difficulty levels,
+  // "the barbarian must make a choice and go"; the "fix only on normal" and "keep it as an
+  // easy-mode relief" variants were explicitly rejected. KNOWINGLY accepted consequence:
+  // barbarians get markedly more dangerous on easy -- intended, not a defect. The constant
+  // (rather than a removed branch) is DELIBERATE: it keeps a visible marker where the
+  // difficulty gate used to be and keeps the existing mutation proof (barb-city-behavior-
+  // test.cjs section 9) working unchanged. `difficulty` stays in the signature (main.ts
+  // callers use it via `shouldAllowBarbCityCapture`), but TARGET SELECTION no longer reads it.
+  const skipDefenselessCities = true;
   // P-BARBARZYNCY-OSIEROCONE-POSCIG-LIMIT-Q1=B: `turn` domyślnie 0 gdy pominięty (wszyscy
   // istniejący wołający/testy) -- `orphanedAtTurn` jest wtedy ustawiane raz na 0 i
   // `turnNum - orphanedAtTurn` zawsze wychodzi 0, nigdy nie osiąga orphanedChaseTurnLimit
@@ -1844,170 +1867,146 @@ export function decideBarbarianMoves(
         if (!undefended) return true;
         return !clearedSet.includes(c.id);
       });
-      // F1 (Evaluator A, runda 5): warunek resetu musi patrzeć WYŁĄCZNIE na miasta
-      // NIEBRONIONE -- stary warunek `filtered.length === 0` był osiągalny tylko
-      // gdy na planszy NIE ISTNIEJE żadne miasto bronione (bronione miasto
-      // przechodzi filtr `filtered` bezwarunkowo, patrz `if (!undefended) return
-      // true;` wyżej), mimo że dokumentacja "RUNDA 4" przy sygnaturze funkcji mówi
-      // wprost: reset gdy zbiór wyklucza WSZYSTKIE DOSTĘPNE (niebronione) miasta.
-      // Na realnej planszy z garnizonami (prawie zawsze istnieje choć jedno
-      // bronione miasto) stary warunek nigdy się nie odpalał. Poprawka liczy
-      // zbiór miast niebronionych osobno i resetuje, gdy WSZYSTKIE z nich są w
-      // `clearedSet` -- niezależnie od tego, czy jeszcze istnieje jakieś bronione.
-      // Guard `undefendedCities.length > 0` chroni przed reset-em w kółko (co
-      // turę) na planszy bez ŻADNEGO niebronionego miasta -- `every()` na pustej
-      // tablicy jest z definicji `true`, co bez guarda resetowałoby zbiór, który i
-      // tak nie ma nic realnego do zresetowania.
-      // / EN: F1 (Evaluator A, round 5): the reset condition must look ONLY at
-      // UNDEFENDED cities -- the old `filtered.length === 0` condition was only
-      // reachable when NO defended city existed on the board at all (a defended
-      // city always passes the `filtered` filter unconditionally, see `if
-      // (!undefended) return true;` above), even though the "ROUND 4" doc-comment
-      // on the function signature literally says: reset once the set excludes
-      // EVERY AVAILABLE (undefended) city. On a real board with garrisons (almost
-      // always at least one defended city) the old condition never fired. The fix
-      // counts undefended cities separately and resets once ALL of them are in
-      // `clearedSet`, regardless of whether a defended city still exists. The
-      // `undefendedCities.length > 0` guard prevents resetting every single turn
-      // on a board with NO undefended city at all -- `every()` on an empty array
-      // is vacuously `true`, which without the guard would keep resetting a set
-      // that has nothing real to reset.
-      const undefendedCities = civCitiesBase.filter(c => !enemies.some(e => e.q === c.q && e.r === c.r));
-      if (undefendedCities.length > 0 && undefendedCities.every(c => clearedSet.includes(c.id))) {
-        // RUNDA 4: zbiór wykluczyłby WSZYSTKIE dostępne (niebronione) miasta -- ta
-        // jednostka odwiedziła już każde z nich. Reset zbioru = patrol zaczyna
-        // KOLEJNE OKRĄŻENIE (A -> B -> C -> A -> ...), zamiast trwale zamarznąć na
-        // pełnym zbiorze (co dawałoby: fallback niżej ZAWSZE aktywny, cel = zawsze
-        // dosłownie najbliższe miasto, czyli w praktyce jednostka na stałe "obozuje"
-        // przy ostatnio odwiedzonym, nigdy nie wracając do pozostałych). To jest
-        // ŚWIADOMY, OGRANICZONY wynik tej rundy (odwiedza wszystkie miasta po
-        // kolei, cyklicznie), NIE pełne zakończenie tematu -- patrz doc-comment
-        // "RUNDA 4" przy sygnaturze funkcji (ABC "puste miasto trwale odporne na
-        // przejęcie" pozostaje otwarte, poza zakresem).
-        // / EN: the set would exclude EVERY available (undefended) city -- this
-        // unit has already visited each one. Resetting the set = the patrol starts
-        // ANOTHER LAP (A -> B -> C -> A -> ...) instead of freezing permanently on
-        // a full set (which would mean: the fallback below is ALWAYS active,
-        // target = always literally the nearest city, i.e. in practice the unit
-        // permanently "camps" next to the last one visited, never returning to the
-        // others). This is a DELIBERATE, LIMITED outcome of this round (visits
-        // every city in turn, cyclically), NOT a full close-out of the topic --
-        // see the "ROUND 4" doc-comment on the function signature (the open ABC
-        // "undefended city permanently immune to capture" stays open, out of
-        // scope).
+      // HISTORIA WARUNKU RESETU (nie powtarzaj tych krokow -- kazdy byl ogloszony ostatnim):
+      //   runda 4: `filtered.length === 0` -- reset gdy zaden cel nie zostal.
+      //   runda 5 (F1): zamieniony na "odwiedzilem wszystkie NIEBRONIONE", bo runda 4 uznala,
+      //     ze na planszy z garnizonem reset "nigdy sie nie odpala". Odpalal sie rzadko, bo
+      //     RZADKO POWINIEN -- to nie byl defekt, tylko poprawne zachowanie wziete za defekt.
+      //   runda 6 (F1-LIVELOCK): reset do `[ostatnio odwiedzone]` zamiast `[]`, zeby jednostka
+      //     nie odbijala sie natychmiast na miasto, ktore wlasnie opuscila (rezim 1 niebronione).
+      //   runda 7: zmierzono, ze warunek z rundy 5 daje stabilne krazenie 22/44 tury przy >=2
+      //     niebronionych -- objaw zgloszony przez wlasciciela.
+      //   P-BARBARZYNCY-KRAZENIE-NIEBRONIONE-Q1 (ta runda): powrot do semantyki "reset dopiero
+      //     gdy NIE MA innego celu" + zachowany `[ostatnio odwiedzone]` z rundy 6. Uzasadnienie
+      //     i liczby przed/po -- w komentarzu przy samym warunku nizej.
+      // / EN: HISTORY OF THIS RESET CONDITION (do not repeat these steps -- each was announced
+      // as the last one): round 4 `filtered.length === 0` (reset when no target is left);
+      // round 5 (F1) swapped it for "I have visited every UNDEFENDED city", because round 4
+      // concluded the old condition "never fires" on a garrisoned board -- it fired rarely
+      // because it SHOULD fire rarely, correct behaviour mistaken for a defect; round 6
+      // (F1-LIVELOCK) reset to `[most-recently-visited]` instead of `[]`; round 7 measured that
+      // the round-5 condition produces the stable 22/44-turn circling the owner reported; this
+      // round returns to "reset only when nothing else is left", keeping round 6's
+      // `[most-recently-visited]`. Rationale and before/after numbers: comment on the condition
+      // itself below.
+      if (filtered.length === 0 && civCitiesBase.length > 0) {
+        // P-BARBARZYNCY-KRAZENIE-NIEBRONIONE-Q1 (RUNDA 1, ECHO wlasciciela 2026-09-05):
+        // WARUNEK RESETU = "nie zostal ZADEN inny cel", nie "odwiedzilem wszystkie
+        // niebronione". Reset czysci pamiec odwiedzonych miast, wiec kazde jego odpalenie
+        // ODSLANIA z powrotem miasta, ktore ta jednostka juz sprawdzila i porzucila. Dopoki
+        // na liscie `filtered` zostaje COKOLWIEK innego (typowo: miasto BRONIONE, ktore
+        // przechodzi filtr bezwarunkowo), reset jest szkodliwy -- zawraca jednostke na
+        // odwiedzone miasto zamiast pozwolic jej pojsc na to bronione.
         //
-        // F1-LIVELOCK (RUNDA 6, Evaluator A): czyszczenie do PUSTEJ tablicy (jak
-        // wyżej w komentarzu RUNDA 4) tworzy na planszy z DOKŁADNIE JEDNYM miastem
-        // niebronionym (+ >=1 bronionym) STABILNY 3-turowy cykl: jednostka dociera
-        // do jedynego niebronionego miasta -> zapisuje je -> warunek resetu
-        // odpala NATYCHMIAST (to JEDYNE niebronione miasto, `every()` na
-        // jednoelementowej tablicy) -> zbiór czyszczony do `[]` -> miasto znów
-        // "widoczne" jako cel (bo `filtered` w NASTĘPNEJ turze liczony jest z
-        // pustym `clearedSet`) -> jednostka wraca do niego -> w nieskończoność,
-        // NIGDY nie dociera do bronionego miasta obok. Naprawa: nowe okrążenie
-        // zaczyna z WYKLUCZONYM WYŁĄCZNIE ostatnio odwiedzonym miastem (ostatni
-        // element `clearedSet`, bo krok zapisu niżej zawsze dopisuje na koniec
-        // przez `.push`) -- jednostka nie odbija się z powrotem na miasto, które
-        // WŁAŚNIE opuściła, tylko idzie dalej (do bronionego, jeśli nic innego nie
-        // zostało). SPROSTOWANIE (RUNDA 7, Evaluator A -- poprzednia wersja tego zdania
-        // twierdziła błędnie, że to "dodatkowo usuwa" pełen problem): przy >=2 miastach
-        // niebronionych i >=1 bronionym reżim POZOSTAJE NIEROZWIĄZANY. Zweryfikowane
-        // wykonaniem: 2 miasta niebronione dają STABILNY cykl o OKRESIE 22 tur (potwierdzone
-        // na 300 turach), bronione miasto NIGDY nie zostaje osiągnięte bliżej niż 14 heksów;
-        // 3 miasta niebronione dają okres 44 tur, min. 19 heksów. Mechanizm: reset
-        // zostawiający WYŁĄCZNIE "ostatnio odwiedzone" natychmiast odsłania "przedostatnie" --
-        // 2-cykl zamiast oczekiwanego 3-cyklu. Ta naprawa rozwiązuje WYŁĄCZNIE wąski
-        // przypadek DOKŁADNIE 1 miasta niebronionego (patrz tabela 12 reżimów w raporcie
-        // rundy 6, rozszerzona niżej w rundzie 7; otwarte pytanie
-        // P-BARBARZYNCY-KRAZENIE-NIEBRONIONE-Q1 -- NIE regresja tej rundy, przed naprawą
-        // było identycznie źle w tym reżimie).
-        // Przy 0 bronionych (RUNDA 4/6b, `filtered` wychodzi puste i tak wraca do
-        // fallbacku `civCitiesBase` w TEJ SAMEJ turze) wynik jest DOWIEDLIWIE
-        // identyczny co przed tą poprawką -- zapis "arrival" w kroku niżej i tak
-        // natychmiast dopisuje z powrotem ostatnio odwiedzone miasto do zbioru
-        // (fizyczna obecność jednostki na jego heksie czyni je `nearestCity` tej
-        // samej decyzji), więc różnica między "wyczyść do []" a "wyczyść do
-        // [ostatnie]" znika w tej samej turze -- sekcja 6b w
-        // barb-city-behavior-test.cjs pozostaje zielona bez zmian.
-        // / EN: F1-LIVELOCK (ROUND 6, Evaluator A): clearing to an EMPTY array (as
-        // in the ROUND 4 comment above) forms a STABLE 3-turn cycle on a board
-        // with EXACTLY ONE undefended city (+ >=1 defended): the unit reaches the
-        // sole undefended city -> records it -> the reset condition fires
-        // IMMEDIATELY (it's the ONLY undefended city, `every()` on a one-element
-        // array) -> the set is cleared to `[]` -> the city becomes a "visible"
-        // target again (the NEXT turn's `filtered` is computed from an empty
-        // `clearedSet`) -> the unit returns to it -> forever, NEVER reaching the
-        // defended city nearby. Fix: the new lap starts with ONLY the
-        // most-recently-visited city excluded (the set's last element, since the
-        // write step below always `.push`es onto the end) -- the unit does not
-        // bounce straight back onto the city it just left, it moves on instead
-        // (to the defended one, if nothing else remains). CORRECTION (ROUND 7,
-        // Evaluator A -- the previous version of this sentence wrongly claimed this
-        // "additionally removes" the whole problem): with >=2 undefended cities and
-        // >=1 defended one the regime STAYS UNSOLVED. Verified by execution: 2
-        // undefended cities produce a STABLE cycle with PERIOD 22 turns (confirmed
-        // over 300 turns), the defended city is NEVER reached closer than 14 hexes;
-        // 3 undefended cities give a period of 44 turns, min. 19 hexes. Mechanism: a
-        // reset that leaves ONLY the "most-recently-visited" city excluded
-        // immediately exposes the "second-to-last" one -- a 2-cycle instead of the
-        // expected 3-cycle. This fix resolves ONLY the narrow case of EXACTLY 1
-        // undefended city (see the 12-regime table in the round-6 report, extended
-        // below in round 7; open question
-        // P-BARBARZYNCY-KRAZENIE-NIEBRONIONE-Q1 -- NOT a regression of this round,
-        // it was equally broken in this regime before the fix). With 0 defended cities
-        // (ROUND 4/6b, `filtered` comes out empty and falls straight back to the
-        // `civCitiesBase` fallback within the SAME turn) the outcome is PROVABLY
-        // identical to before this fix -- the "arrival" write below immediately
-        // re-adds the just-visited city to the set anyway (the unit's physical
-        // presence on its hex makes it `nearestCity` for that very decision), so
-        // the difference between "clear to []" and "clear to [last]" vanishes
-        // within the same turn -- section 6b in barb-city-behavior-test.cjs stays
-        // green unchanged.
+        // CO BYLO ZLE (stan sprzed tej rundy, warunek F1 z rundy 5:
+        // `undefendedCities.length > 0 && undefendedCities.every(c => clearedSet.includes(c.id))`):
+        // reset odpalal sie, gdy jednostka odwiedzila wszystkie NIEBRONIONE miasta -- NIEZALEZNIE
+        // od tego, ze bronione miasto wciaz czekalo jako w pelni poprawny cel. Reset do
+        // `[ostatnio odwiedzone]` natychmiast odslanial "przedostatnie", wiec jednostka
+        // zawracala. Zmierzone wykonaniem na 300 turach (2 miasta niebronione + 1 bronione,
+        // jednostka raid-ready, miasta q=6/16/26/36, bronione q=60): STABILNY cykl o okresie 20
+        // tur, bronione miasto NIGDY nieosiagniete (min. dystans 45 heksow, zero komend
+        // `attack`); 3 niebronione: okres 44, min. 34; 4 niebronione: okres 66, min. 24. Na
+        // `easy` (i bez `difficulty`) bylo jeszcze gorzej: jednostka parkowala przy pierwszym
+        // niebronionym miescie na stale, min. dystans 51 przez cale 300 tur. To bylo dokladnie
+        // zgloszenie wlasciciela. (Runda 7 zmierzyla na SWOJEJ geometrii 22/44 -- inna plansza,
+        // ten sam mechanizm; cytuje sie tu liczby z harnessu tej rundy.)
         //
-        // RUNDA 7 (Evaluator C) -- rozszerzenie tabeli 12 reżimów o 4. oś i pełną listę
-        // bit-identycznych. Oś 4 (pominięta w rejestrze operatora rundy 6): OSIĄGALNOŚĆ
-        // bronionego miasta (osiągalne / nieosiągalne -- inna wyspa, brak lądowego ani
-        // morskiego połączenia). Lista reżimów bit-identycznych przed/po tej naprawie:
-        // zweryfikowana wykonaniem jako WSZYSTKIE reżimy z 0 miast bronionych, niezależnie
-        // od liczby niebronionych i stanu raidReady -- realnie 8, nie 3 jak wcześniej
-        // wymieniono w rejestrze rundy 6 (fallback `civCitiesBase` w tej samej turze
-        // czyni różnicę "wyczyść do []" vs "wyczyść do [ostatnie]" niewidoczną, patrz
-        // akapit "Przy 0 bronionych" wyżej -- ten dowód obejmuje KAŻDĄ kombinację
-        // niebronione x raidReady przy 0 bronionych, nie tylko 3 wybrane wcześniej próbki).
+        // PO TEJ NAPRAWIE (te same scenariusze, ten sam harness, 300 tur): jednostka odwiedza
+        // kazde niebronione miasto DOKLADNIE RAZ, po czym idzie na bronione i wydaje komende
+        // `attack` -- 2 niebronione: tura 58; 3 niebronione: tura 59; 4 niebronione: tura 60.
+        // Liczby przed/po sa w raporcie rundy 1 tego tematu i w bramce
+        // gra/tools/barbarzyncy-krazenie-test.cjs (sekcje 1-3), nie sa twierdzeniem z lektury
+        // kodu. Wynik jest IDENTYCZNY dla `easy`/`normal`/`hard`/`undefined` -- jedna regula,
+        // zero warunkow per trudnosc (asercja bit-identycznosci logow, sekcja 4 tej bramki).
         //
-        // Nowy, łagodny brzegowy przypadek (Evaluator C, NIE naprawiony, tylko
-        // udokumentowany): reżim "1 miasto niebronione OSIĄGALNE + >=1 bronione
-        // NIEOSIĄGALNE" -- ta naprawa F1 zamienia dawny 3-turowy livelock na TRWAŁE
-        // zamrożenie jednostki bez własnego obozu (zweryfikowane: bezczynna od tury 5,
-        // 23/25 tur idle). To NIE jest nowa ścieżka błędu wprowadzona przez F1 -- to
-        // POSZERZENIE zasięgu już znanego, świadomie-poza-zakresem defektu
-        // `if (raidReady) continue` (ten sam, który dokumentuje sprostowanie F3 niżej)
-        // na reżim, w którym stary (błędny) reset do `[]` PRZYPADKIEM ciągle odsłaniał
-        // osiągalny cel (jedyne niebronione miasto), maskując ten defekt. Naprawa F1
-        // zamieniła jeden błąd (livelock) na inny (zamrożenie) -- to NIE jest regresja
-        // netto, ale wymaga jawnej dokumentacji, nie ciszy.
-        // / EN: ROUND 7 (Evaluator C) -- extends the 12-regime table with a 4th axis and
-        // the full bit-identical list. Axis 4 (omitted from the round-6 operator report):
-        // REACHABILITY of the defended city (reachable / unreachable -- different island,
-        // no land or sea connection). The list of regimes bit-identical before/after this
-        // fix: verified by execution as ALL regimes with 0 defended cities, regardless of
-        // the number of undefended cities or raidReady state -- actually 8, not 3 as
-        // earlier listed in the round-6 report (the `civCitiesBase` fallback within the
-        // same turn makes the "clear to []" vs "clear to [last]" difference invisible,
-        // see the "With 0 defended cities" paragraph above -- that proof covers EVERY
-        // undefended x raidReady combination at 0 defended, not just the 3 sampled
-        // originally).
+        // KIEDY reset NADAL sie odpala: wylacznie gdy `filtered` wyszlo puste, czyli KAZDE
+        // miasto cywilizacji na planszy jest niebronione I juz odwiedzone przez te jednostke.
+        // Wtedy nie ma dokad isc dalej i "kolejne okrazenie" jest jedynym sensownym
+        // zachowaniem -- ten sam fallback `civCitiesBase` co od rundy 2 dziala w TEJ SAMEJ
+        // turze. Guard `civCitiesBase.length > 0` chroni przed resetowaniem w kolko na planszy
+        // BEZ zadnego miasta cywilizacji (pusta lista dawalaby `filtered.length === 0` co ture,
+        // reset bez niczego realnego do zresetowania).
         //
-        // New, mild edge case (Evaluator C, NOT fixed, only documented): the regime
-        // "1 undefended city REACHABLE + >=1 defended city UNREACHABLE" -- this F1 fix
-        // turns the former 3-turn livelock into a PERMANENT freeze for a unit with no
-        // camp of its own (verified: idle from turn 5, 23/25 idle turns). This is NOT a
-        // new failure path introduced by F1 -- it WIDENS the reach of the already-known,
-        // deliberately-out-of-scope `if (raidReady) continue` defect (the same one the F3
-        // correction below documents) into a regime where the old (buggy) reset to `[]`
-        // HAPPENED to keep exposing a reachable target (the sole undefended city), masking
-        // that defect. The F1 fix swapped one bug (livelock) for another (freeze) -- not a
-        // net regression, but it requires explicit documentation, not silence.
+        // ZACHOWANY z rundy 6 (F1-LIVELOCK): reset czysci do `[ostatnio odwiedzone]`, nie do
+        // `[]`. Przy DOKLADNIE 1 miescie niebronionym i 0 bronionych czyszczenie do `[]`
+        // dawalo 3-turowy cykl (miasto natychmiast znow "widoczne" jako cel); pozostawienie
+        // ostatnio odwiedzonego trzyma jednostke przy niej zamiast odbijac ja w tam i z
+        // powrotem. Przy 0 miastach bronionych roznica "[]" vs "[ostatnie]" i tak znika w tej
+        // samej turze (zapis "arrival" nizej natychmiast dopisuje z powrotem miasto, przy
+        // ktorym jednostka fizycznie stoi) -- dowod wykonaniem z rundy 6/7 obejmuje WSZYSTKIE
+        // 8 rezimow z 0 bronionych (kazda kombinacja niebronione x raidReady), nie 3 probki.
+        //
+        // NIE NAPRAWIONE TA RUNDA, celowo i jawnie (poza zakresem, `if (raidReady) continue`
+        // to osobny, wciaz otwarty temat): rezim "niebronione OSIAGALNE + >=1 bronione
+        // NIEOSIAGALNE (inna wyspa)". Jednostka raid-ready odwiedza osiagalne miasto,
+        // `filtered` zostaje z samym bronionym-nieosiagalnym, filtr spojnych skladowych
+        // odrzuca je bez Dijkstry, petla celow konczy sie bez kandydata, a `if (raidReady)
+        // continue;` nizej pomija krok 4 (dryf do obozu) -- TRWALE zamrozenie bez komend.
+        // Zamieniony blad tez byl bledem: przed runda 6 byl tam 3-turowy livelock, runda 6
+        // zamienila go na zamrozenie. TA runda NIE zmienia tego rezimu ani na lepsze, ani na
+        // gorsze -- zweryfikowane wykonaniem: logi komend przed/po sa BIT-IDENTYCZNE (sekcja 6
+        // bramki barbarzyncy-krazenie-test.cjs mierzy to jawnie, bez asercji "0 komend jest
+        // ok" -- nie przypinamy bledu jako oczekiwanego zachowania).
+        // / EN: P-BARBARZYNCY-KRAZENIE-NIEBRONIONE-Q1 (ROUND 1, owner's binding ECHO
+        // 2026-09-05): the RESET CONDITION is now "no other target left at all", not "I have
+        // visited every undefended city". The reset clears the visited-city memory, so every
+        // time it fires it RE-EXPOSES cities this unit already inspected and abandoned. As
+        // long as anything else remains in `filtered` (typically a DEFENDED city, which
+        // passes the filter unconditionally), resetting is harmful -- it turns the unit back
+        // onto a visited city instead of letting it march on the defended one.
+        //
+        // WHAT WAS WRONG (state before this round, the round-5 F1 condition
+        // `undefendedCities.length > 0 && undefendedCities.every(c => clearedSet.includes(c.id))`):
+        // the reset fired once the unit had visited every UNDEFENDED city -- REGARDLESS of a
+        // defended city still waiting as a perfectly valid target. Resetting to
+        // `[most-recently-visited]` immediately re-exposed the "second-to-last" one, so the
+        // unit turned around. Measured by execution over 300 turns (2 undefended + 1 defended,
+        // raid-ready unit, cities at q=6/16/26/36, defended at q=60): a STABLE cycle of PERIOD
+        // 20, the defended city NEVER reached (min distance 45 hexes, zero `attack` commands); 3
+        // undefended: period 44, min 34; 4 undefended: period 66, min 24. On `easy` (and with
+        // `difficulty` omitted) it was even worse: the unit parked next to the first undefended
+        // city permanently, min distance 51 across all 300 turns. That was exactly the owner's
+        // report. (Round 7 measured 22/44 on ITS geometry -- a different board, the same
+        // mechanism; the numbers quoted here come from this round's harness.)
+        //
+        // AFTER THIS FIX (same scenarios, same harness, 300 turns): the unit visits each
+        // undefended city EXACTLY ONCE, then goes for the defended one and issues `attack` --
+        // 2 undefended: turn 58; 3 undefended: turn 59; 4 undefended: turn 60. The before/after
+        // numbers are in this topic's round-1 report and in the gate
+        // gra/tools/barbarzyncy-krazenie-test.cjs (sections 1-3); they are not a claim read off
+        // the code. The outcome is IDENTICAL for `easy`/`normal`/`hard`/`undefined` -- one rule,
+        // zero per-difficulty conditions (bit-identical command-log assertion, section 4).
+        //
+        // WHEN the reset still fires: only when `filtered` came out empty, i.e. EVERY civ city
+        // on the board is undefended AND already visited by this unit. There is then nowhere
+        // else to go and "another lap" is the only sensible behaviour -- the same
+        // `civCitiesBase` fallback as since round 2 applies within the SAME turn. The
+        // `civCitiesBase.length > 0` guard prevents resetting every single turn on a board with
+        // NO civ city at all (an empty list would make `filtered.length === 0` true every turn,
+        // resetting a set with nothing real to reset).
+        //
+        // KEPT from round 6 (F1-LIVELOCK): the reset clears to `[most-recently-visited]`, not
+        // to `[]`. With EXACTLY 1 undefended city and 0 defended, clearing to `[]` produced a
+        // 3-turn cycle (the city instantly became a "visible" target again); keeping the last
+        // visited one holds the unit there instead of bouncing it back and forth. With 0
+        // defended cities the "[]" vs "[last]" difference vanishes within the same turn anyway
+        // (the "arrival" write below immediately re-adds the city the unit physically stands
+        // next to) -- the round-6/7 proof by execution covers ALL 8 regimes with 0 defended
+        // cities (every undefended x raidReady combination), not 3 samples.
+        //
+        // NOT FIXED THIS ROUND, deliberately and openly (out of scope; `if (raidReady)
+        // continue` is a separate, still-open topic): the regime "undefended REACHABLE + >=1
+        // defended UNREACHABLE (different island)". A raid-ready unit visits the reachable
+        // city, `filtered` is left holding only the unreachable defended one, the land-component
+        // filter rejects it without Dijkstra, the target loop ends with no candidate, and
+        // `if (raidReady) continue;` below skips step 4 (drift to camp) -- a PERMANENT freeze
+        // with no commands. The swapped bug was a bug too: before round 6 that regime held a
+        // 3-turn livelock, round 6 turned it into a freeze. THIS round changes that regime
+        // neither for better nor worse -- verified by execution: the before/after command logs
+        // are BIT-IDENTICAL (section 6 of barbarzyncy-krazenie-test.cjs measures this
+        // explicitly, without asserting "0 commands is fine" -- we do not pin a bug as expected
+        // behaviour).
         const lastVisited = clearedSet[clearedSet.length - 1];
         unit.clearedCityIds = lastVisited !== undefined ? [lastVisited] : [];
       }
@@ -2075,6 +2074,51 @@ export function decideBarbarianMoves(
       targets.push({ q: c.q, r: c.r, d: hexDistance(unit.q, unit.r, c.q, c.r) });
     }
     targets.sort((a, b) => a.d - b.d);
+    // P-BARBARZYNCY-KRAZENIE-NIEBRONIONE-Q1 (RUNDA 1) -- OSTATNIA DESKA RATUNKU. Miasta
+    // odrzucone WYLACZNIE przez pamiec `clearedCityIds` (te, ktore ta jednostka juz odwiedzila)
+    // dopisujemy na SAM KONIEC listy kandydatow, za wszystkimi zwyklymi celami, posortowane
+    // wlasna odlegloscia. Skutek jest scisle DODATKOWY: dopoki cokolwiek z listy zwyklej jest
+    // osiagalne w `chaseRadius`, petla nizej konczy sie na nim i tych kandydatow nawet nie
+    // dotyka -- logi komend sa wtedy bit-identyczne ze stanem sprzed tej zmiany.
+    // PO CO: bez tego naprawa warunku resetu (wyzej) zamieniala w rezimie "niebronione
+    // OSIAGALNE + bronione NIEOSIAGALNE (inna wyspa)" dotychczasowe krazenie na TRWALE
+    // ZAMROZENIE -- jednostka odwiedzalaby kazde niebronione miasto raz, zostawala z samym
+    // bronionym-nieosiagalnym w `filtered`, a `if (raidReady) continue;` nizej pomija krok 4
+    // (dryf do obozu), wiec nie wydawalaby juz ZADNEJ komendy. Zmierzone na 300 turach: 2
+    // niebronione + 1 bronione nieosiagalne, jednostka raid-ready -- bez tej listy 287/300 tur
+    // bezczynnosci, z nia 0. To jest dokladnie tryb "zamiana jednego bledu na drugi", ktory
+    // runda 6 popelnila w tym samym rezimie (livelock -> zamrozenie); tutaj domykamy go zamiast
+    // powtorzyc. Przy okazji znika te samo zamrozenie w rezimie "1 niebronione osiagalne + >=1
+    // bronione nieosiagalne" (296/300 tur bezczynnosci przed, 0 po) -- ten, ktory werdykt
+    // zbiorczy rundy 6 kazal jawnie udokumentowac. NIE jest to naprawa `if (raidReady) continue`
+    // (osobny, wciaz otwarty temat): gdy NIE MA zadnego osiagalnego miasta -- takze wsrod juz
+    // odwiedzonych -- jednostka raid-ready nadal nie dostaje komendy, dokladnie jak dotad.
+    // / EN: LAST RESORT. Cities rejected SOLELY by the `clearedCityIds` memory (ones this unit
+    // has already visited) are appended at the VERY END of the candidate list, behind every
+    // ordinary target, sorted by their own distance. The effect is strictly ADDITIVE: as long
+    // as anything on the ordinary list is reachable within `chaseRadius`, the loop below stops
+    // there and never touches these -- command logs are then bit-identical to before this
+    // change. WHY: without it, the reset-condition fix above turned the regime "undefended
+    // REACHABLE + defended UNREACHABLE (different island)" from circling into a PERMANENT
+    // FREEZE -- the unit would visit each undefended city once, be left with only the
+    // unreachable defended one in `filtered`, and `if (raidReady) continue;` below skips step 4
+    // (drift to camp), so it would issue NO command at all. Measured over 300 turns: 2
+    // undefended + 1 unreachable defended, raid-ready unit -- 287/300 idle turns without this
+    // list, 0 with it. That is exactly the "swap one bug for another" mode round 6 committed in
+    // this same regime (livelock -> freeze); here we close it instead of repeating it. As a
+    // by-product the same freeze disappears in the "1 undefended reachable + >=1 defended
+    // unreachable" regime (296/300 idle turns before, 0 after) -- the one the round-6 collective
+    // verdict asked to be documented explicitly. This is NOT a fix for `if (raidReady) continue`
+    // (a separate, still-open topic): when NO city is reachable at all -- including the already
+    // visited ones -- a raid-ready unit still gets no command, exactly as before.
+    const consideredCityIds = new Set(civCities.map(c => c.id));
+    const revisitTargets: { q: number; r: number; d: number }[] = [];
+    for (const c of civCitiesBase) {
+      if (consideredCityIds.has(c.id)) continue;
+      revisitTargets.push({ q: c.q, r: c.r, d: hexDistance(unit.q, unit.r, c.q, c.r) });
+    }
+    revisitTargets.sort((a, b) => a.d - b.d);
+    targets.push(...revisitTargets);
     const homeCamp = homeCampForUnit(unit, camps, params.campControlRadius);
     // P-BARBARZYNCY-OSIEROCONE-Q1: `homeCamp === undefined` ma DWIE różne
     // przyczyny, które trzeba rozróżnić -- mylenie ich zepsuło test istniejący
@@ -2156,9 +2200,10 @@ export function decideBarbarianMoves(
     // (`if (raidReady) continue;` niżej), więc nie było żadnego fallbacku. Dowód
     // Evaluatora: 47/60 tur bezczynności. Teraz iterujemy po WSZYSTKICH
     // kandydatach (posortowanych rosnąco wg odległości) i bierzemy PIERWSZEGO
-    // OSIĄGALNEGO w zasięgu `chaseRadius` -- lista jest posortowana, więc jak
-    // tylko trafimy kandydata poza zasięgiem, dalsi też odpadają (`break`, nie
-    // `continue`).
+    // OSIĄGALNEGO w zasięgu `chaseRadius`. (RUNDA 1 P-BARBARZYNCY-KRAZENIE-
+    // NIEBRONIONE-Q1: dawniej `break` na pierwszym kandydacie poza zasięgiem --
+    // dziś `continue`, bo lista ma dwa posortowane segmenty; patrz komentarz przy
+    // samej linii niżej.)
     //
     // X3 KOREKTA (RUNDA 6, Evaluator B) -- poprzednie zdanie w tym miejscu
     // twierdziło: "Dopiero gdy WSZYSCY kandydaci w zasięgu są nieosiągalni,
@@ -2220,8 +2265,9 @@ export function decideBarbarianMoves(
     // when raidReady (`if (raidReady) continue;` below), so there was no fallback
     // at all. Evaluator's proof: 47/60 idle turns. Now we iterate over ALL
     // candidates (sorted ascending by distance) and take the FIRST REACHABLE one
-    // within `chaseRadius` -- the list is sorted, so as soon as we hit a
-    // candidate beyond range, later ones are too (`break`, not `continue`).
+    // within `chaseRadius`. (ROUND 1 of P-BARBARZYNCY-KRAZENIE-NIEBRONIONE-Q1: this
+    // used to `break` on the first out-of-range candidate -- today it `continue`s,
+    // because the list now has two sorted segments; see the comment at that line.)
     //
     // X3 CORRECTION (ROUND 6, Evaluator B) -- the sentence that used to sit here
     // claimed: "Only once EVERY candidate in range is unreachable is issuing no
@@ -2275,7 +2321,18 @@ export function decideBarbarianMoves(
     let movedToTarget = false;
     const unitComp = getLandComponents().get(keyOf(unit.q, unit.r));
     for (const cand of targets) {
-      if (cand.d > chaseRadius) break;
+      // P-BARBARZYNCY-KRAZENIE-NIEBRONIONE-Q1 (RUNDA 1): `continue`, NIE `break` -- lista ma od
+      // tej rundy DWA posortowane segmenty (zwykli kandydaci, potem juz-odwiedzone miasta jako
+      // ostatnia deska ratunku), wiec kandydat poza zasiegiem nie dowodzi juz, ze wszyscy dalsi
+      // tez sa poza zasiegiem. Wewnatrz segmentu wynik jest identyczny jak przy `break` (dalsi
+      // maja d >= tego, wiec i tak odpadaja) -- roznica to kilka porownan, zero dodatkowych
+      // wywolan Dijkstry, wiec budzet wydajnosciowy F2-PERF zostaje nienaruszony.
+      // / EN: `continue`, NOT `break` -- as of this round the list has TWO sorted segments
+      // (ordinary candidates, then already-visited cities as a last resort), so a candidate out
+      // of range no longer proves every later one is too. Within a segment the outcome is
+      // identical to `break` (later ones have d >= this one and fail anyway) -- the difference
+      // is a few comparisons, zero extra Dijkstra calls, so the F2-PERF budget is untouched.
+      if (cand.d > chaseRadius) continue;
       if (unitComp !== undefined) {
         const candComps = destComponentIds(map, getLandComponents(), cand.q, cand.r);
         if (!candComps.has(unitComp)) continue; // dowiedlnie inna wyspa/kontynent -- pomiń bez Dijkstry / provably a different island/continent -- skip without paying for Dijkstra

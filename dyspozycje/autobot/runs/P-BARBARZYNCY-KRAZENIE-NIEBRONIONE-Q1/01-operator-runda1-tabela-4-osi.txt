@@ -1,0 +1,124 @@
+nieb/bron/osiagalnosc/raidReady/trudnosc | PRZED -> PO | bit-identyczne?
+--------------------------------------------------------------------------------------------------------------
+0/0/OSIAG/raid/easy                | ZAMROZENIE 0-komend [idle 300/300] -> ZAMROZENIE 0-komend [idle 300/300] | TAK
+0/0/OSIAG/raid/normal              | ZAMROZENIE 0-komend [idle 300/300] -> ZAMROZENIE 0-komend [idle 300/300] | TAK
+0/0/OSIAG/raid/hard                | ZAMROZENIE 0-komend [idle 300/300] -> ZAMROZENIE 0-komend [idle 300/300] | TAK
+0/0/OSIAG/obóz/easy                | stoi/bezczynna [idle 299/300]  -> stoi/bezczynna [idle 299/300]  | TAK
+0/0/OSIAG/obóz/normal              | stoi/bezczynna [idle 299/300]  -> stoi/bezczynna [idle 299/300]  | TAK
+0/0/OSIAG/obóz/hard                | stoi/bezczynna [idle 299/300]  -> stoi/bezczynna [idle 299/300]  | TAK
+0/1/OSIAG/raid/easy                | dociera@39 [idle 0/40]         -> dociera@39 [idle 0/40]         | TAK
+0/1/OSIAG/raid/normal              | dociera@39 [idle 0/40]         -> dociera@39 [idle 0/40]         | TAK
+0/1/OSIAG/raid/hard                | dociera@39 [idle 0/40]         -> dociera@39 [idle 0/40]         | TAK
+0/1/OSIAG/obóz/easy                | stoi/bezczynna [idle 299/300]  -> stoi/bezczynna [idle 299/300]  | TAK
+0/1/OSIAG/obóz/normal              | stoi/bezczynna [idle 299/300]  -> stoi/bezczynna [idle 299/300]  | TAK
+0/1/OSIAG/obóz/hard                | stoi/bezczynna [idle 299/300]  -> stoi/bezczynna [idle 299/300]  | TAK
+0/1/NIEOS/raid/easy                | ZAMROZENIE 0-komend [idle 300/300] -> ZAMROZENIE 0-komend [idle 300/300] | TAK
+0/1/NIEOS/raid/normal              | ZAMROZENIE 0-komend [idle 300/300] -> ZAMROZENIE 0-komend [idle 300/300] | TAK
+0/1/NIEOS/raid/hard                | ZAMROZENIE 0-komend [idle 300/300] -> ZAMROZENIE 0-komend [idle 300/300] | TAK
+0/1/NIEOS/obóz/easy                | stoi/bezczynna [idle 299/300]  -> stoi/bezczynna [idle 299/300]  | TAK
+0/1/NIEOS/obóz/normal              | stoi/bezczynna [idle 299/300]  -> stoi/bezczynna [idle 299/300]  | TAK
+0/1/NIEOS/obóz/hard                | stoi/bezczynna [idle 299/300]  -> stoi/bezczynna [idle 299/300]  | TAK
+0/2/OSIAG/raid/easy                | dociera@39 [idle 0/40]         -> dociera@39 [idle 0/40]         | TAK
+0/2/OSIAG/raid/normal              | dociera@39 [idle 0/40]         -> dociera@39 [idle 0/40]         | TAK
+0/2/OSIAG/raid/hard                | dociera@39 [idle 0/40]         -> dociera@39 [idle 0/40]         | TAK
+0/2/OSIAG/obóz/easy                | stoi/bezczynna [idle 299/300]  -> stoi/bezczynna [idle 299/300]  | TAK
+0/2/OSIAG/obóz/normal              | stoi/bezczynna [idle 299/300]  -> stoi/bezczynna [idle 299/300]  | TAK
+0/2/OSIAG/obóz/hard                | stoi/bezczynna [idle 299/300]  -> stoi/bezczynna [idle 299/300]  | TAK
+0/2/NIEOS/raid/easy                | ZAMROZENIE 0-komend [idle 300/300] -> ZAMROZENIE 0-komend [idle 300/300] | TAK
+0/2/NIEOS/raid/normal              | ZAMROZENIE 0-komend [idle 300/300] -> ZAMROZENIE 0-komend [idle 300/300] | TAK
+0/2/NIEOS/raid/hard                | ZAMROZENIE 0-komend [idle 300/300] -> ZAMROZENIE 0-komend [idle 300/300] | TAK
+0/2/NIEOS/obóz/easy                | stoi/bezczynna [idle 299/300]  -> stoi/bezczynna [idle 299/300]  | TAK
+0/2/NIEOS/obóz/normal              | stoi/bezczynna [idle 299/300]  -> stoi/bezczynna [idle 299/300]  | TAK
+0/2/NIEOS/obóz/hard                | stoi/bezczynna [idle 299/300]  -> stoi/bezczynna [idle 299/300]  | TAK
+1/0/OSIAG/raid/easy                | stoi/bezczynna [idle 0/300]    -> stoi/bezczynna [idle 0/300]    | TAK
+1/0/OSIAG/raid/normal              | stoi/bezczynna [idle 0/300]    -> stoi/bezczynna [idle 0/300]    | TAK
+1/0/OSIAG/raid/hard                | stoi/bezczynna [idle 0/300]    -> stoi/bezczynna [idle 0/300]    | TAK
+1/0/OSIAG/obóz/easy                | stoi/bezczynna [idle 0/300]    -> stoi/bezczynna [idle 0/300]    | TAK
+1/0/OSIAG/obóz/normal              | stoi/bezczynna [idle 0/300]    -> stoi/bezczynna [idle 0/300]    | TAK
+1/0/OSIAG/obóz/hard                | stoi/bezczynna [idle 0/300]    -> stoi/bezczynna [idle 0/300]    | TAK
+1/1/OSIAG/raid/easy                | stoi/bezczynna [idle 0/300]    -> dociera@46 [idle 0/47]         | nie
+1/1/OSIAG/raid/normal              | dociera@46 [idle 0/47]         -> dociera@46 [idle 0/47]         | TAK
+1/1/OSIAG/raid/hard                | dociera@46 [idle 0/47]         -> dociera@46 [idle 0/47]         | TAK
+1/1/OSIAG/obóz/easy                | stoi/bezczynna [idle 0/300]    -> stoi/bezczynna [idle 0/300]    | TAK
+1/1/OSIAG/obóz/normal              | stoi/bezczynna [idle 294/300]  -> stoi/bezczynna [idle 0/300]    | nie
+1/1/OSIAG/obóz/hard                | stoi/bezczynna [idle 294/300]  -> stoi/bezczynna [idle 0/300]    | nie
+1/1/NIEOS/raid/easy                | stoi/bezczynna [idle 0/300]    -> stoi/bezczynna [idle 0/300]    | TAK
+1/1/NIEOS/raid/normal              | stoi/bezczynna [idle 296/300]  -> stoi/bezczynna [idle 0/300]    | nie
+1/1/NIEOS/raid/hard                | stoi/bezczynna [idle 296/300]  -> stoi/bezczynna [idle 0/300]    | nie
+1/1/NIEOS/obóz/easy                | stoi/bezczynna [idle 0/300]    -> stoi/bezczynna [idle 0/300]    | TAK
+1/1/NIEOS/obóz/normal              | stoi/bezczynna [idle 294/300]  -> stoi/bezczynna [idle 0/300]    | nie
+1/1/NIEOS/obóz/hard                | stoi/bezczynna [idle 294/300]  -> stoi/bezczynna [idle 0/300]    | nie
+1/2/OSIAG/raid/easy                | stoi/bezczynna [idle 0/300]    -> dociera@46 [idle 0/47]         | nie
+1/2/OSIAG/raid/normal              | dociera@46 [idle 0/47]         -> dociera@46 [idle 0/47]         | TAK
+1/2/OSIAG/raid/hard                | dociera@46 [idle 0/47]         -> dociera@46 [idle 0/47]         | TAK
+1/2/OSIAG/obóz/easy                | stoi/bezczynna [idle 0/300]    -> stoi/bezczynna [idle 0/300]    | TAK
+1/2/OSIAG/obóz/normal              | stoi/bezczynna [idle 294/300]  -> stoi/bezczynna [idle 0/300]    | nie
+1/2/OSIAG/obóz/hard                | stoi/bezczynna [idle 294/300]  -> stoi/bezczynna [idle 0/300]    | nie
+1/2/NIEOS/raid/easy                | stoi/bezczynna [idle 0/300]    -> stoi/bezczynna [idle 0/300]    | TAK
+1/2/NIEOS/raid/normal              | stoi/bezczynna [idle 296/300]  -> stoi/bezczynna [idle 0/300]    | nie
+1/2/NIEOS/raid/hard                | stoi/bezczynna [idle 296/300]  -> stoi/bezczynna [idle 0/300]    | nie
+1/2/NIEOS/obóz/easy                | stoi/bezczynna [idle 0/300]    -> stoi/bezczynna [idle 0/300]    | TAK
+1/2/NIEOS/obóz/normal              | stoi/bezczynna [idle 294/300]  -> stoi/bezczynna [idle 0/300]    | nie
+1/2/NIEOS/obóz/hard                | stoi/bezczynna [idle 294/300]  -> stoi/bezczynna [idle 0/300]    | nie
+2/0/OSIAG/raid/easy                | stoi/bezczynna [idle 0/300]    -> KRAZENIE okres 20 [idle 0/300] | nie
+2/0/OSIAG/raid/normal              | KRAZENIE okres 20 [idle 0/300] -> KRAZENIE okres 20 [idle 0/300] | TAK
+2/0/OSIAG/raid/hard                | KRAZENIE okres 20 [idle 0/300] -> KRAZENIE okres 20 [idle 0/300] | TAK
+2/0/OSIAG/obóz/easy                | stoi/bezczynna [idle 0/300]    -> stoi/bezczynna [idle 0/300]    | TAK
+2/0/OSIAG/obóz/normal              | stoi/bezczynna [idle 294/300]  -> stoi/bezczynna [idle 0/300]    | nie
+2/0/OSIAG/obóz/hard                | stoi/bezczynna [idle 294/300]  -> stoi/bezczynna [idle 0/300]    | nie
+2/1/OSIAG/raid/easy                | stoi/bezczynna [idle 0/300]    -> dociera@48 [idle 0/49]         | nie
+2/1/OSIAG/raid/normal              | KRAZENIE okres 20 [idle 0/300] -> dociera@48 [idle 0/49]         | nie
+2/1/OSIAG/raid/hard                | KRAZENIE okres 20 [idle 0/300] -> dociera@48 [idle 0/49]         | nie
+2/1/OSIAG/obóz/easy                | stoi/bezczynna [idle 0/300]    -> stoi/bezczynna [idle 0/300]    | TAK
+2/1/OSIAG/obóz/normal              | stoi/bezczynna [idle 294/300]  -> stoi/bezczynna [idle 0/300]    | nie
+2/1/OSIAG/obóz/hard                | stoi/bezczynna [idle 294/300]  -> stoi/bezczynna [idle 0/300]    | nie
+2/1/NIEOS/raid/easy                | stoi/bezczynna [idle 0/300]    -> stoi/bezczynna [idle 0/300]    | nie
+2/1/NIEOS/raid/normal              | KRAZENIE okres 20 [idle 29/300] -> stoi/bezczynna [idle 0/300]    | nie
+2/1/NIEOS/raid/hard                | KRAZENIE okres 20 [idle 29/300] -> stoi/bezczynna [idle 0/300]    | nie
+2/1/NIEOS/obóz/easy                | stoi/bezczynna [idle 0/300]    -> stoi/bezczynna [idle 0/300]    | TAK
+2/1/NIEOS/obóz/normal              | stoi/bezczynna [idle 294/300]  -> stoi/bezczynna [idle 0/300]    | nie
+2/1/NIEOS/obóz/hard                | stoi/bezczynna [idle 294/300]  -> stoi/bezczynna [idle 0/300]    | nie
+2/2/OSIAG/raid/easy                | stoi/bezczynna [idle 0/300]    -> dociera@48 [idle 0/49]         | nie
+2/2/OSIAG/raid/normal              | KRAZENIE okres 20 [idle 0/300] -> dociera@48 [idle 0/49]         | nie
+2/2/OSIAG/raid/hard                | KRAZENIE okres 20 [idle 0/300] -> dociera@48 [idle 0/49]         | nie
+2/2/OSIAG/obóz/easy                | stoi/bezczynna [idle 0/300]    -> stoi/bezczynna [idle 0/300]    | TAK
+2/2/OSIAG/obóz/normal              | stoi/bezczynna [idle 294/300]  -> stoi/bezczynna [idle 0/300]    | nie
+2/2/OSIAG/obóz/hard                | stoi/bezczynna [idle 294/300]  -> stoi/bezczynna [idle 0/300]    | nie
+2/2/NIEOS/raid/easy                | stoi/bezczynna [idle 0/300]    -> stoi/bezczynna [idle 0/300]    | nie
+2/2/NIEOS/raid/normal              | KRAZENIE okres 20 [idle 29/300] -> stoi/bezczynna [idle 0/300]    | nie
+2/2/NIEOS/raid/hard                | KRAZENIE okres 20 [idle 29/300] -> stoi/bezczynna [idle 0/300]    | nie
+2/2/NIEOS/obóz/easy                | stoi/bezczynna [idle 0/300]    -> stoi/bezczynna [idle 0/300]    | TAK
+2/2/NIEOS/obóz/normal              | stoi/bezczynna [idle 294/300]  -> stoi/bezczynna [idle 0/300]    | nie
+2/2/NIEOS/obóz/hard                | stoi/bezczynna [idle 294/300]  -> stoi/bezczynna [idle 0/300]    | nie
+3/0/OSIAG/raid/easy                | stoi/bezczynna [idle 0/300]    -> KRAZENIE okres 45 [idle 0/300] | nie
+3/0/OSIAG/raid/normal              | KRAZENIE okres 45 [idle 0/300] -> KRAZENIE okres 45 [idle 0/300] | TAK
+3/0/OSIAG/raid/hard                | KRAZENIE okres 45 [idle 0/300] -> KRAZENIE okres 45 [idle 0/300] | TAK
+3/0/OSIAG/obóz/easy                | stoi/bezczynna [idle 0/300]    -> stoi/bezczynna [idle 0/300]    | TAK
+3/0/OSIAG/obóz/normal              | stoi/bezczynna [idle 294/300]  -> stoi/bezczynna [idle 0/300]    | nie
+3/0/OSIAG/obóz/hard                | stoi/bezczynna [idle 294/300]  -> stoi/bezczynna [idle 0/300]    | nie
+3/1/OSIAG/raid/easy                | stoi/bezczynna [idle 0/300]    -> dociera@49 [idle 0/50]         | nie
+3/1/OSIAG/raid/normal              | KRAZENIE okres 45 [idle 0/300] -> dociera@49 [idle 0/50]         | nie
+3/1/OSIAG/raid/hard                | KRAZENIE okres 45 [idle 0/300] -> dociera@49 [idle 0/50]         | nie
+3/1/OSIAG/obóz/easy                | stoi/bezczynna [idle 0/300]    -> stoi/bezczynna [idle 0/300]    | TAK
+3/1/OSIAG/obóz/normal              | stoi/bezczynna [idle 294/300]  -> stoi/bezczynna [idle 0/300]    | nie
+3/1/OSIAG/obóz/hard                | stoi/bezczynna [idle 294/300]  -> stoi/bezczynna [idle 0/300]    | nie
+3/1/NIEOS/raid/easy                | stoi/bezczynna [idle 0/300]    -> stoi/bezczynna [idle 0/300]    | nie
+3/1/NIEOS/raid/normal              | KRAZENIE okres 45 [idle 13/300] -> stoi/bezczynna [idle 0/300]    | nie
+3/1/NIEOS/raid/hard                | KRAZENIE okres 45 [idle 13/300] -> stoi/bezczynna [idle 0/300]    | nie
+3/1/NIEOS/obóz/easy                | stoi/bezczynna [idle 0/300]    -> stoi/bezczynna [idle 0/300]    | TAK
+3/1/NIEOS/obóz/normal              | stoi/bezczynna [idle 294/300]  -> stoi/bezczynna [idle 0/300]    | nie
+3/1/NIEOS/obóz/hard                | stoi/bezczynna [idle 294/300]  -> stoi/bezczynna [idle 0/300]    | nie
+3/2/OSIAG/raid/easy                | stoi/bezczynna [idle 0/300]    -> dociera@49 [idle 0/50]         | nie
+3/2/OSIAG/raid/normal              | KRAZENIE okres 45 [idle 0/300] -> dociera@49 [idle 0/50]         | nie
+3/2/OSIAG/raid/hard                | KRAZENIE okres 45 [idle 0/300] -> dociera@49 [idle 0/50]         | nie
+3/2/OSIAG/obóz/easy                | stoi/bezczynna [idle 0/300]    -> stoi/bezczynna [idle 0/300]    | TAK
+3/2/OSIAG/obóz/normal              | stoi/bezczynna [idle 294/300]  -> stoi/bezczynna [idle 0/300]    | nie
+3/2/OSIAG/obóz/hard                | stoi/bezczynna [idle 294/300]  -> stoi/bezczynna [idle 0/300]    | nie
+3/2/NIEOS/raid/easy                | stoi/bezczynna [idle 0/300]    -> stoi/bezczynna [idle 0/300]    | nie
+3/2/NIEOS/raid/normal              | KRAZENIE okres 45 [idle 13/300] -> stoi/bezczynna [idle 0/300]    | nie
+3/2/NIEOS/raid/hard                | KRAZENIE okres 45 [idle 13/300] -> stoi/bezczynna [idle 0/300]    | nie
+3/2/NIEOS/obóz/easy                | stoi/bezczynna [idle 0/300]    -> stoi/bezczynna [idle 0/300]    | TAK
+3/2/NIEOS/obóz/normal              | stoi/bezczynna [idle 294/300]  -> stoi/bezczynna [idle 0/300]    | nie
+3/2/NIEOS/obóz/hard                | stoi/bezczynna [idle 294/300]  -> stoi/bezczynna [idle 0/300]    | nie
+--------------------------------------------------------------------------------------------------------------
+bit-identyczne: 60/120; zmienione: 60
