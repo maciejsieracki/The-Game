@@ -4902,3 +4902,60 @@ commituj OD RAZU po zapisaniu, nie zostawiaj go w pamięci procesu*. Do rozważe
 trwała zmiana `R-PROC-AUTOBOT.md` §11 — dziś kontrakt raportu mówi, CO ma zawierać raport,
 ale nie mówi, że ma być utrwalony w gicie przed przejściem do następnej roli.
 **STATUS: ZAREJESTROWANE, NIE DISPATCHOWANE.** DOMAIN: PROCESS.
+
+### `P-CIVPEDIA-KARTY-NAZWA-PRZYCISKIEM-Q1` — **ZINTEGROWANE** (`bec25312`, 2026-09-05)
+
+Obieg pełny przez dwie rundy: runda 1 (praca + obrona) → ratyfikacja orkiestratora →
+runda 2 (Operator PASS, Evaluator **zero zarzutów**) → **Final Control `PASS`**.
+
+**Efekt dla właściciela:** nazwa encji jest teraz samym przyciskiem w ramce, podświetlanym
+po najechaniu — spójnie z kartą technologii, o co prosił. Osobny przycisk „Szczegóły →"
+usunięty; skan `gra/src/**` potwierdza brak żywych wystąpień.
+
+**Rozwiązanie problemu, który omal nie zepsuł tematu:** wiersze z linkiem mają **dwa
+kształty** — raz przyciskiem ma być etykieta, raz wartość. W „Technologia: Brązownictwo"
+to wartość jest nazwą encji. Ślepa podmiana „etykieta zawsze przyciskiem" zrobiłaby
+przycisk ze słowa „Technologia". Rozwiązanie Operatora: `linkAnchor?: 'label'|'value'`
+z domyślną wartością `'value'`.
+
+**Runda 2 i jej realne ryzyko.** Zdjęto **martwy warunek strażnika** w bramce real-render:
+napisano go, gdy etykieta nie była przyciskiem, a po zmianie blokował własny scenariusz
+przed kliknięciem. To jest **zluzowanie testu**, więc bramka mogła stać się tautologiczna.
+Final Control obalił to własną mutacją — wyłączenie samego `page.mouse.click` czerwieni
+asercje skutku kliku (144/1 → 138/3). **Obszedł też pułapkę wspólnego katalogu `dist`
+w `os.tmpdir()`**, budując osobno dla bazy i HEAD (różne md5) — dzięki temu parytet
+nie mógł być fałszywy. To jest dokładnie ta klasa błędu, którą zarejestrowałem osobno
+jako `P-BRAMKA-WSPOLDZIELONY-DIST-TMPDIR-Q1`.
+
+**Bramki potwierdzone przez orkiestratora NA `main`:** `civpedia-karty-nazwa-przyciskiem`
+27/0, `improvement-card-callsites` 36/0, `unit-info-card-viewport-height-real-render` 35/0,
+`tech-discovery-card-real-click` 12/0, logic 213/213, tech-tree 19/19, research ALL GREEN,
+unit-replace 13/13, combat OK, `tsc --noEmit` exit 0.
+
+**Bramka `civpedia-caly-wiersz-przyciskiem`: 19 faili PRZED i PO — parytet zmierzony
+przeze mnie na `main` przez `git stash`.** Gałąź dokłada 22 nowe zielone asercje (44/63 → 66/85).
+Te 19 to znana sprzeczność kontraktów objęta `R-ENTITYCARD-JEDNA-KARTA-CZY-STOS-Q1`,
+**nie regres tej pracy**. Worktree sprzątnięty.
+
+**Nota Final Control do domknięcia:** raport Evaluatora rundy 2 nie istnieje w runie
+(przepadł przy restarcie), więc nie da się potwierdzić, że przeszedł 10 punktów §16a.
+Merytorykę pokrył Final Control samodzielnie — luka procesowa objęta
+`P-RESTART-KONTENERA-RAPORTY-W-PAMIECI-Q1`.
+
+### Dispatch autowyżywienia — rozbicie na dwa węzły (2026-09-05)
+
+Temat `R-AUTOWYZYWIENIE-GLOBALNY-BLOKER-I-STAN-PRZYCISKU-Q1` rozbity na dwa **rozłączne
+plikowo** węzły, dispatchowane równolegle (§2b spełnione):
+
+- **`R-AUTOWYZYWIENIE-ROWNY-WZROST-Q1-A`** (`empire-food.ts`) — przebudowa funkcji celu
+  z „podnoś racje wszystkim, dopóki się da" na wyrównywanie WZROSTU przy twardym warunku
+  braku głodu. Wchłania `R-AUTOWYZYWIENIE-LIMIT-LUDNOSCI-STOP-Q1` (ECHO: wariant (a)).
+  **Hipoteza „wszystko-albo-nic" zapisana jawnie jako DO POTWIERDZENIA LUB OBALENIA** —
+  recon orkiestratora jest wiążący co do OBJAWU (odwrotna zależność zmierzona na 12
+  miastach), nie co do PRZYCZYNY. Bramka ma **odrzucać wariant „zatrzymaj wszystkich"**,
+  który trywialnie zmniejsza rozrzut — to jest najłatwiejsza droga do fałszywego sukcesu.
+- **`R-AUTOWYZYWIENIE-STAN-PRZYCISKU-Q1-B`** (UI) — czytelny stan przełącznika.
+  **Defekt zgłoszony już wcześniej** (`R-AUTO-WYZYWIENIE-CHECKBOX-NA-PRZYCISK`, nadal
+  OTWARTE) i taki, przez który **właściciel nie mógł zdiagnozować własnej rozgrywki**
+  („chyba to autowyżywienie nie było włączone, ale ciężko mi się odnieść"). Zakaz zmiany
+  logiki przełączania — jeśli Operator odkryje wadę logiki, zgłasza notę do węzła A.
