@@ -44,7 +44,7 @@ Pierwotny tekst zachowany w commicie `1e5a850d`.
 Allowlista, 6 plików: `city-hex-movement.ts`, `ai-city-capture-executor.ts`, `ai.ts`,
 `main.ts` (JEDEN hunk — wyłącznie wywołanie `executeAiCityMove`),
 `gra/tools/ai-zdobycie-miasta-adiacencja-test.cjs`, raporty `01`/`03`. Zero `barbarians.ts` (§2b).
-SHA commita obrony: `git log -1` tej gałęzi.
+SHA commita obrony (kod + bramka + raporty): **`f86559fd`**. Ten wiersz z SHA dopisany commitem następnym (SHA nie może wskazywać commita, w którym sam leży).
 
 ## TESTY (po poprawkach)
 
