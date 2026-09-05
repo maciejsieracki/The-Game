@@ -6,7 +6,7 @@ TEMAT: P-BRAMKA-WSPOLDZIELONY-DIST-TMPDIR-Q1
 MODEL+EFFORT: Operator — Opus 5, effort high (§1a / C-052)
 GOAL: Żadna bramka w `gra/tools/` nie może dać wyniku zależnego od tego, czy w tej samej
 chwili biegnie inny przebieg — jej albo czyjkolwiek.
-ZMIANY/COMMIT: `9bc06495` — 59× `gra/tools/**/*.cjs` (wyłącznie ścieżka katalogu
+ZMIANY/COMMIT: `9bc06495` (naprawa + nowa bramka), `8cafb97e`, `71531e2c`, `ed4a5af6`
 tymczasowego + sprzątanie) + NOWY `gra/tools/bramki-tmpdir-unikalnosc-test.cjs`.
 Allowlista dotrzymana: `git status` pokazuje wyłącznie `gra/tools/`; zero `gra/src`,
 zero `gra/data`. Staging po jawnych ścieżkach, bez `git add -A`.
@@ -32,11 +32,18 @@ samego `/tmp/civ-ai-buduje-budynki`. Skala problemu jest więc większa niż w d
 **skasowałoby to cudzy przebieg w locie**. Komendę zablokował klasyfikator uprawnień, nie
 moja ostrożność. Do tej ścieżki już nie wracałem.
 
-**3. Sam wpadłem w „tryb trzeci" (ciche złamanie sprzątania) i złapałem to pomiarem.**
-Pierwsza wersja haka używała `fs` z zasięgu modułu. `era-change-notify-test.cjs` **nie
-requiruje `fs`** — `ReferenceError` wpadał w mój własny `catch` i sprzątanie po cichu nie
-robiło nic; artefakty z moim run-id zostawały na dysku. Wykryte porównaniem `ls /tmp`
-przed/po, nie przeglądem kodu. Hak bierze teraz `fs`/`path`/`os` lokalnie.
+**3. Sam wpadłem w „tryb trzeci" (ciche złamanie sprzątania) — TRZY RAZY, każdy raz
+wykryty pomiarem, nie przeglądem kodu.** To jest najważniejsza rzecz w tej rundzie:
+każdy z tych trzech błędów przechodził `node --check` i wyglądał poprawnie.
+
+| # | Defekt mojej własnej naprawy | Jak wykryty | Naprawa |
+|---|---|---|---|
+| a | Hak używał `fs` z zasięgu modułu, a `era-change-notify-test.cjs` **nie requiruje `fs`** → `ReferenceError` wpadał w mój własny `catch` i sprzątanie po cichu nie robiło NIC | porównanie `ls /tmp` przed/po — artefakty z moim run-id zostawały na dysku | `9bc06495`: hak bierze `fs`/`path`/`os` lokalnie |
+| b | W **8 plikach** pierwsze użycie `os.tmpdir()` było w ciele funkcji, więc transformator wstawił tam cały blok. `process.on('exit')` rejestrowałby się przy KAŻDYM wywołaniu, a run-id zmieniałby się między wywołaniami → dwa buildy jednej bramki trafiałyby do RÓŻNYCH katalogów | osobne sprawdzenie głębokości nawiasów klamrowych w miejscu deklaracji; `node --check` tego nie widzi | `71531e2c`: blok przeniesiony na poziom modułu, 57/57 na głębokości 0 |
+| c | Filtr keep haka omija nazwy ze słowem `preview` (zrzuty to dowód, §9 pkt 6) — ale `civ-unit-panel-preview` to katalog ROBOCZY (bundle + html), nie zrzuty; zostawałby na dysku po każdym przebiegu | wypisanie WSZYSTKICH nazw wpadających w filtr keep i sprawdzenie każdej z osobna | `ed4a5af6`: nazwa na `civ-unit-panel-build`; keep obejmuje teraz wyłącznie 4 realne katalogi zrzutów |
+
+Wniosek dla Evaluatora: teza „zmiana jest mechanicznie identyczna we wszystkich plikach"
+okazała się **fałszywa trzy razy**. To są trzy wymiary warte niezależnego sprawdzenia.
 
 ## Kryteria końca
 
