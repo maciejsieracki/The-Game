@@ -83,6 +83,16 @@ export interface BuildingRecord {
   utrzymanie:          number;
   przyrostUtrzymania:  number;
   techUnlock:          string;
+  /**
+   * G1 (R-SZCZESCIE-PRZEBUDOWA-SKALI-Q1, wlasciciel 2026-09-05): czy budynek daje
+   * Szczescie. Kryterium wlasciciela: czy MIESZKANIEC z budynku korzysta, czy tylko
+   * panstwo albo wojsko. Zrodlem prawdy jest pole `dajeSzczescie` w data/buildings.json
+   * (DANE, nie stala w kodzie) -- dodanie budynku w przyszlej epoce nie wymaga zmiany
+   * TypeScriptu, wystarczy sklasyfikowac go w danych tym samym kryterium.
+   * Brak pola = `false` (budynek bez Szczescia) -- cisza w danych NIE moze dawac
+   * ryczaltu, bo to dokladnie ten blad, ktory G1 usuwa.
+   */
+  dajeSzczescie?:      boolean;
   [key: string]: unknown;
 }
 
@@ -491,17 +501,33 @@ export function buildingValue(
   return Math.floor(buildingEffectAtLevel(b.baza[key], b.przyrost[key], level));
 }
 
-/** Każdy zbudowany budynek daje +1 szczęścia (decyzja Macieja 2026-07-22). */
+/**
+ * Ryczałt Szczęścia za budynek — ale WYŁĄCZNIE dla budynków oznaczonych w danych
+ * `dajeSzczescie: true` (G1, R-SZCZESCIE-PRZEBUDOWA-SKALI-Q1, właściciel 2026-09-05).
+ * Do 2026-09-05 obowiązywał każdy budynek bez wyjątku (decyzja Macieja 2026-07-22),
+ * przez co Mury, Koszary czy Warsztat oblężniczy podnosiły Szczęście miasta.
+ */
 export const BUILDING_HAPPINESS_BASE_PER_BUILDING = 1;
 
 /**
- * Szczęście z jednego budynku: globalne +1 + ewentualny bonus z `baza.zadowolenie`.
- * Np. Świątynia (zadowolenie 3, poziom 1) → 4; Mury (0) → 1.
+ * Czy ten budynek w ogóle daje Szczęście. Decyduje POLE DANYCH `dajeSzczescie`
+ * (data/buildings.json), nie lista w kodzie — G1. Brak pola = `false`: budynek
+ * niesklasyfikowany nie dostaje ryczałtu ani bonusu `baza.zadowolenie`.
+ */
+export function buildingGivesHappiness(b: { dajeSzczescie?: unknown }): boolean {
+  return b.dajeSzczescie === true;
+}
+
+/**
+ * Szczęście z jednego budynku: ryczałt +1 + ewentualny bonus z `baza.zadowolenie`,
+ * ale tylko dla budynku szczęściodajnego. Np. Świątynia (zadowolenie 2, poziom 1) → 3;
+ * Spichlerz (zadowolenie 4) → 5; Mury (`dajeSzczescie: false`) → DOKŁADNIE 0.
  */
 export function buildingHappinessAtLevel(
-  b: Pick<BuildingRecord, 'baza'>,
+  b: Pick<BuildingRecord, 'baza'> & { dajeSzczescie?: unknown },
   level: number,
 ): number {
+  if (!buildingGivesHappiness(b)) return 0;
   const extra = typeof b.baza.zadowolenie === 'number' && b.baza.zadowolenie !== 0
     ? buildingValue(b as BuildingRecord, level, 'zadowolenie')
     : 0;
@@ -515,6 +541,8 @@ export interface BuildingHappinessCatalogEntry {
   epokaWejscia: number;
   maksPoziom: number;
   poziomTechGate?: Record<string, string> | null;
+  /** G1: klasyfikacja szczęściodajności z data/buildings.json. Brak = false. */
+  dajeSzczescie?: unknown;
 }
 
 /** Suma szczęścia ze wszystkich zbudowanych budynków miasta. */

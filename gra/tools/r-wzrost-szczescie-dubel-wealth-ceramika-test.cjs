@@ -73,17 +73,42 @@ const happiness = M.computeHappinessBreakdown({
 }, null);
 eq(happiness.lines.find(line => line.id === 'wealth')?.value, 10,
   'Wealth jest jedną, jawną linią +10');
-eq(happiness.lines.find(line => line.id === 'ceramika')?.value, 1,
-  'Ceramika jest osobną linią +1 na miasto');
-eq(happiness.lines.find(line => line.id === 'spichlerz')?.value, 1,
-  'Spichlerz jest osobną linią +1 na miasto');
+// R-SZCZESCIE-PRZEBUDOWA-SKALI-Q1 G3 (wlasciciel 2026-09-05): wiersze „Ceramika (dostep)" +1
+// i „Spichlerz (dzialajacy)" +1 ZOSTALY USUNIETE z rozpiski Szczescia jako DUBLE — ceramika
+// liczy sie teraz jako zwykly surowiec zaopatrzenia (linia `zaopatrzenie_obywateli`, +-2 na
+// surowiec), a Spichlerz jako budynek szczesciodajny (+5 lacznie, G2).
+//
+// Tego wlasnie pilnowal ten temat (R-GARNCARNIA-CERAMIKA-SZCZESCIE-111-Q1): zeby bonus
+// per miasto NIE byl mnozony przez liczbe miast ownera — objaw „111". Wlasciwosc zostaje,
+// tylko po drugiej stronie: pola `ceramikaZadowolenie` / `spichlerzZadowolenie` sa teraz
+// IGNOROWANE, wiec zadne wejscie (1, 111, cokolwiek) nie moze juz wniesc ani punktu.
+// To jest MOCNIEJSZA bramka niz poprzednia: chroni przed przywroceniem dubla w ogole.
+eq(happiness.lines.find(line => line.id === 'ceramika')?.value, undefined,
+  'Ceramika NIE jest juz osobna linia rozpiski (G3 — liczy sie jako surowiec zaopatrzenia)');
+eq(happiness.lines.find(line => line.id === 'spichlerz')?.value, undefined,
+  'Spichlerz NIE jest juz osobna linia rozpiski (G3 — liczy sie jako budynek, +5)');
 eq(
   happiness.lines
     .filter(line => ['wealth', 'ceramika', 'spichlerz'].includes(line.id))
     .reduce((sum, line) => sum + line.value, 0),
-  12,
-  'kontrolowane kanały = Wealth 10 + Ceramika 1 + Spichlerz 1',
+  10,
+  'kontrolowane kanaly = sam Wealth 10; Ceramika i Spichlerz nie dokladaja sie drugi raz',
 );
+// Kontrola „111" po nowemu: wejscie 111 na obu polach ma zmienic netto o DOKLADNIE 0
+// wzgledem tego samego miasta bez tych pol. Gdyby ktos przywrocil wiersze, netto skoczy.
+{
+  const bezDubli = M.computeHappinessBreakdown({
+    population: 4, era: 2, buildingZadowolenie: 0, haWealth: 10,
+  }, null);
+  const z111 = M.computeHappinessBreakdown({
+    population: 4, era: 2, buildingZadowolenie: 0, haWealth: 10,
+    ceramikaZadowolenie: 111, spichlerzZadowolenie: 111,
+  }, null);
+  eq(z111.netto, bezDubli.netto,
+    'regula 111 po G3: ceramikaZadowolenie/spichlerzZadowolenie = 111 nie zmienia netto ani o punkt');
+  eq(z111.lines.length, bezDubli.lines.length,
+    'regula 111 po G3: liczba wierszy rozpiski bez zmian (zaden dubel nie wraca)');
+}
 
 const shared = {
   population: 4,
@@ -105,12 +130,29 @@ eq(M.ceramikaHappinessBonus(1000, true), 1, 'Ceramika pozostaje binarna, bez ska
 eq(M.ceramikaHappinessBonus(111, true), 1, 'reguła 111: dokładnie +1 dla 111 sztuk Ceramiki');
 eq(M.ceramikaHappinessBonus(111, false), 0, 'reguła 111: bez dostępu brak bonusu');
 eq(M.ceramikaHappinessBonus(0, true), 0, 'reguła 111: zerowy zapas nie jest dostępem');
-eq(M.computeGrowthHappinessNetto(10, true, true), 12,
-  'Podgląd wzrostu sumuje Wealth 10 + Ceramika 1 + Spichlerz 1 dokładnie raz');
-eq(M.computeGrowthHappinessNetto(10, false, true), 11,
-  'Działający Spichlerz pozostaje dokładnie +1 bez Ceramiki');
+// R-SZCZESCIE-PRZEBUDOWA-SKALI-Q1 G3 + ratyfikacja R3-D (2026-09-05): podglad wzrostu
+// PRZESTAL doliczac Ceramike +1 i Spichlerz +1. Rozpiska Szczescia przestala je liczyc
+// juz w rundzie 1 (ceramika = zwykly surowiec zaopatrzenia +-2, Spichlerz = budynek +5),
+// a ten drugi tor zostal wtedy przeoczony i rozjezdzal sie z silnikiem o 2 punkty.
+// Sprawdzana WLASCIWOSC tego tematu — „bonus per miasto nie moze byc mnozony przez liczbe
+// miast" (objaw 111) — nie znika, tylko jest teraz pilnowana MOCNIEJ: skoro oba kanaly
+// wnosza zero, zadne wejscie nie moze wniesc ani punktu, wiec dubel nie moze wrocic.
+eq(M.computeGrowthHappinessNetto(10, true, true), 10,
+  'Podglad wzrostu niesie SAM Wealth 10 (G3/R3-D: Ceramika i Spichlerz juz sie nie dolicza)');
+eq(M.computeGrowthHappinessNetto(10, false, true), 10,
+  'Dzialajacy Spichlerz nie dodaje juz osobnego +1 do podgladu wzrostu (liczy sie jako budynek, G2)');
 eq(M.computeGrowthHappinessNetto(10, false, false), 10,
-  'Brak działającego Spichlerza nie daje bonusu Szczęścia');
+  'Brak Ceramiki i dzialajacego Spichlerza — punkt odniesienia, ten sam wynik');
+// ASERCJA NEGATYWNA (dokladnie jak po stronie rozpiski, „regula 111" wyzej): podanie tych
+// pol na wejsciu nie zmienia wyniku w ZADNEJ kombinacji flag.
+for (const [maCeramike, maSpichlerz] of [[true, true], [true, false], [false, true], [false, false]]) {
+  eq(M.computeGrowthHappinessNetto(10, maCeramike, maSpichlerz),
+    M.computeGrowthHappinessNetto(10, false, false),
+    `R3-D: ceramika=${maCeramike} / spichlerz=${maSpichlerz} nie zmienia netto podgladu wzrostu`);
+}
+// Ten sam dowod na innej wartosci Wealth — zeby zgodnosc nie wynikala z jednej fixtury.
+eq(M.computeGrowthHappinessNetto(0, true, true), 0,
+  'R3-D: przy Wealth 0 flagi Ceramiki i Spichlerza tez wnosza dokladnie 0');
 
 // Scope guard: the helper is a committed part of this exact regression lane.
 eq(typeof M.computeGrowthHappinessNetto, 'function',

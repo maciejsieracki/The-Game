@@ -116,7 +116,11 @@ console.log('\n-- B. Koniec-do-konca: kara za wojne trafia TAKZE do miasta AI --
 
 const CITY_BASE = { population: 6, buildingZadowolenie: 0 };
 
-// 8. Gracz (owner 0) w wojnie -> linia 'wojna' w Szczesciu (parametr szczescie_kara_wojna, default -3)
+// 8. Gracz (owner 0) w wojnie -> linia 'wojna' w Szczesciu (parametr szczescie_kara_wojna).
+// R-SZCZESCIE-PRZEBUDOWA-SKALI-Q1 G9 (wlasciciel 2026-09-05): kara za wojne -2 -> -5;
+// wartosc domyslna w society-breakdown.ts poszla za nia. Sprawdzana wlasciwosc bez zmian:
+// wojna wnosi do rozpiski JEDNA, jawna linie ujemna o wartosci dokladnie z parametru
+// szczescie_kara_wojna -- i to samo dla miasta gracza, i dla miasta AI (parytet).
 {
   const rel = relMap([['0_2', 'wojna']]);
   const atWarPlayer = isOwnerAtWarInRelations(0, rel);
@@ -124,7 +128,7 @@ const CITY_BASE = { population: 6, buildingZadowolenie: 0 };
   const bp = computeHappinessBreakdown({ ...CITY_BASE, atWar: atWarPlayer });
   const wojnaLine = bp.lines.find(l => l.id === 'wojna');
   assert(!!wojnaLine, 'end-to-end gracz: linia "wojna" obecna w rozpisce Szczescia');
-  eq(wojnaLine.value, -3, 'end-to-end gracz: kara za wojne = -3 (domyslny parametr szczescie_kara_wojna)');
+  eq(wojnaLine.value, -5, 'end-to-end gracz: kara za wojne = -5 (domyslny parametr szczescie_kara_wojna, G9)');
 }
 
 // 9. Miasto AI (owner 2, ta sama relacja 0_2) -> TA SAMA kara za wojne (PARYTET -- to naprawia bug)
@@ -135,7 +139,25 @@ const CITY_BASE = { population: 6, buildingZadowolenie: 0 };
   const bp = computeHappinessBreakdown({ ...CITY_BASE, atWar: atWarAi });
   const wojnaLine = bp.lines.find(l => l.id === 'wojna');
   assert(!!wojnaLine, 'end-to-end AI: linia "wojna" obecna w rozpisce Szczescia (PRZED naprawa: zawsze nieobecna dla AI)');
-  eq(wojnaLine.value, -3, 'end-to-end AI: kara za wojne = -3, identyczna jak u gracza (parytet)');
+  eq(wojnaLine.value, -5, 'end-to-end AI: kara za wojne = -5, identyczna jak u gracza (parytet)');
+}
+
+// 9b. Antydryf: wartosc domyslna w TS i wiersz w society-params.json to TA SAMA liczba.
+// Bez tego G9 mozna by wprowadzic tylko w jednym nosniku, a bramka i tak by zzielieniala.
+{
+  const SOCIETY = JSON.parse(fs.readFileSync(path.resolve(GRA, 'data', 'society-params.json'), 'utf8'));
+  const zJson = SOCIETY.szczescie.szczescie_kara_wojna;
+  eq(zJson.normal, -5, 'society-params.json: szczescie_kara_wojna normal = -5 (G9)');
+  const rel = relMap([['0_2', 'wojna']]);
+  const bpJson = computeHappinessBreakdown({ ...CITY_BASE, atWar: isOwnerAtWarInRelations(0, rel), difficulty: 'normal' }, SOCIETY);
+  const bpDefault = computeHappinessBreakdown({ ...CITY_BASE, atWar: true });
+  eq(
+    bpJson.lines.find(l => l.id === 'wojna').value,
+    bpDefault.lines.find(l => l.id === 'wojna').value,
+    'kara z JSON == kara z domyslnej stalej TS (jedna liczba, nie dwie)',
+  );
+  eq(zJson.easy === zJson.normal && zJson.normal === zJson.hard, true,
+    'G13: kara za wojne ta sama na easy/normal/hard (trudnosc wylacznie przez szczescie_max_epoka)');
 }
 
 // 10. Trzeci owner (3) niezaangazowany w zadna wojne -> BRAK linii 'wojna' (kontrola negatywna)

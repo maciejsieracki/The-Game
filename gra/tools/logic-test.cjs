@@ -1366,11 +1366,29 @@ assert('religion: dominantReligion returns none for an empty city',
 assert('religion: dominance is exclusive at exactly 50% (must EXCEED the threshold)',
   dominantReligion({ counts: { A: 50, B: 50 } }, religionParams).religion === null);
 
-// religionHappiness: our religion -> bonus; foreign -> penalty; none -> small penalty.
+// religionHappiness: our religion -> bonus; foreign -> penalty; 50/50 -> exactly neutral.
+// R-SZCZESCIE-PRZEBUDOWA-SKALI-Q1 G4 (owner 2026-09-05) replaced the BINARY jump
+// (+zadowolenieDominujaca at 51% own, -karaObca at 49% -- an 8-point cliff on a single
+// convert) with a NORMALISED dominance indicator `2 * own_share - 1` in [-1, +1]. The
+// happiness POINTS are minted once, in computeHappinessBreakdown, by multiplying this
+// indicator by x(era) = szczescie_skala_kultura_religia -- so the engine and the city
+// panel cannot drift apart. The property this assertion guards is unchanged: our faith
+// in the majority helps, a foreign faith in the majority hurts, and the sign flips at
+// the same 50% line as before. What is deliberately GONE is the separate
+// `karaBrakReligii` case: on a proportional scale a 50/50 city is EXACTLY neutral, so a
+// split city now scores 0 instead of a small fixed penalty (owner's decision, G4 --
+// zadowolenieDominujaca / karaObca / karaBrakReligii stay in ReligionParams because the
+// empire panel still displays them, they just no longer steer Happiness).
 assert('religion: religionHappiness rewards our dominant religion and penalises a foreign one',
-  religionHappiness({ counts: { Faith1: 9, Faith2: 1 } }, 'Faith1', religionParams) === religionParams.zadowolenieDominujaca &&
-  religionHappiness({ counts: { Faith1: 9, Faith2: 1 } }, 'Faith2', religionParams) === religionParams.karaObca &&
-  religionHappiness({ counts: { A: 5, B: 5 } }, 'A', religionParams, true) === religionParams.karaBrakReligii);
+  religionHappiness({ counts: { Faith1: 9, Faith2: 1 } }, 'Faith1', religionParams) === 0.8 &&
+  religionHappiness({ counts: { Faith1: 9, Faith2: 1 } }, 'Faith2', religionParams) === -0.8 &&
+  religionHappiness({ counts: { A: 5, B: 5 } }, 'A', religionParams, true) === 0 &&
+  religionHappiness({ counts: { Only: 10 } }, 'Only', religionParams) === 1 &&
+  religionHappiness({ counts: { Only: 10 } }, 'Other', religionParams) === -1 &&
+  religionHappiness({ counts: { A: 3, B: 1 } }, 'A', religionParams) === 0.5,
+  `own90=${religionHappiness({ counts: { Faith1: 9, Faith2: 1 } }, 'Faith1', religionParams)} ` +
+  `foreign90=${religionHappiness({ counts: { Faith1: 9, Faith2: 1 } }, 'Faith2', religionParams)} ` +
+  `split=${religionHappiness({ counts: { A: 5, B: 5 } }, 'A', religionParams, true)}`);
 
 // REQUIRED: convertViaTemple shifts share toward the owner's religion; temple faster.
 const startState = { counts: { Pagan: 90, Owner: 10 } }; // owner religion minority

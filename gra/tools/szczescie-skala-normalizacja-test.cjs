@@ -78,6 +78,11 @@ function eq(a, b, msg) {
     console.error('  [FAIL] ' + msg + ' got ' + JSON.stringify(a) + ' expected ' + JSON.stringify(b));
   }
 }
+function near(a, b, msg, eps) {
+  const e = eps === undefined ? 1e-9 : eps;
+  if (Math.abs(a - b) < e) { passed++; console.log('  [OK] ' + msg); }
+  else { failed++; console.error('  [FAIL] ' + msg + ' got ' + JSON.stringify(a) + ' expected ~' + JSON.stringify(b)); }
+}
 /** Kopia JSON bez wskazanego klucza w bloku — do sprawdzenia fallbacku. */
 function withoutKey(block, key) {
   const clone = JSON.parse(JSON.stringify(SOCIETY));
@@ -106,10 +111,31 @@ function societyPrzedGoal2(diff, { bezCapu = false } = {}) {
 /** Podzial handlu ustawiony jawnie, zeby wynik nie zalezal od DEFAULT_PODZIAL_HANDLU. */
 const PODZIAL = { procentNauka: 20, procentPieniadz: 70, procentLuksus: 10 };
 
-// Stan SPRZED tematu — zahardkodowane w TS wartosci na bazie 2bb422aa.
+// Stan SPRZED tematu R-SZCZESCIE-AUDYT-A-SKALA-NORMALIZACJA-Q1 — zahardkodowane w TS
+// wartosci na bazie 2bb422aa. SZCZESCIE juz ich nie uzywa: R-SZCZESCIE-PRZEBUDOWA-SKALI-Q1
+// G13 (wlasciciel 2026-09-05) przestawil `szczescie_max_epoka` na tabele PER TRUDNOSC
+// (nizej, SZMAX_G13), bo trudnosc ma byc odtad wyrazana WYLACZNIE mianownikiem Szczescia.
+// PRAWO nie bylo objete ta decyzja i zostaje 50/75/100 — dlatego PRZED_PRAWMAX zyje dalej.
 const PRZED_SZMAX = { 1: 14, 2: 20, 3: 28 };
 const PRZED_PRAWMAX = { 1: 50, 2: 75, 3: 100 };
 const DIFFS = ['easy', 'normal', 'hard'];
+
+// Tabela G13 — liczby WLASCICIELA z 00-dispatch.md, przepisane wprost, nie wyliczone.
+const SZMAX_G13 = { easy: [20, 40, 60], normal: [30, 50, 70], hard: [35, 55, 80] };
+
+const PRZED_SZMAX_TAB = [14, 20, 28];
+
+/**
+ * Kopia danych ze stanem SPRZED G13: mianownik Szczescia wraca do 14/20/28 (i skalowanie
+ * populacja wylaczone). Sluzy do ODTWORZENIA objawu ze zgloszenia wlasciciela („im dalej
+ * w las, tym szczescie wyzsze" — rozwiniete miasto siedzialo na capie 120%), zeby bramka
+ * dalej pokazywala, PRZED czym broni, a nie tylko jak jest dzis.
+ */
+function societyPrzedG13(diff) {
+  const clone = societyPrzedGoal2(diff);
+  clone.szczescie.szczescie_max_epoka[diff] = [...PRZED_SZMAX_TAB];
+  return clone;
+}
 
 // ---------------------------------------------------------------------------
 console.log('\n1. GOAL 1 — rownowaznosc: przeniesienie stalych nie zmienia zachowania');
@@ -118,7 +144,25 @@ console.log('\n1. GOAL 1 — rownowaznosc: przeniesienie stalych nie zmienia zac
   // 1a. Liczby w JSON sa DOKLADNIE tymi, ktore byly zahardkodowane w TS.
   for (const diff of DIFFS) {
     const scale = M.loadSocietyScaleParams(SOCIETY, diff);
-    eq(scale.szMaxByEra.join(','), '14,20,28', `JSON szczescie_max_epoka ${diff} = 14,20,28 (jak SZMAX_DEFAULTS)`);
+    // PRZED G13 wszystkie trzy trudnosci mialy 14/20/28 — czyli DOKLADNIE stala SZMAX_DEFAULTS
+    // z TS. Ta asercja sprawdzala wtedy rownowaznosc przeniesienia stalej do JSON, ale przy
+    // rownych liczbach nie potrafila odroznic „wczytano z JSON" od „wzieto fallback z TS".
+    // PO G13 (liczby wlasciciela, 00-dispatch.md) tabela jest inna per trudnosc i INNA niz
+    // stala TS — wiec asercja pilnuje teraz obu rzeczy naraz: wartosci sa te, ktore podal
+    // wlasciciel, ORAZ loader faktycznie czyta plik, a nie fallback.
+    eq(scale.szMaxByEra.join(','), SZMAX_G13[diff].join(','),
+      `JSON szczescie_max_epoka ${diff} = ${SZMAX_G13[diff].join(',')} (G13, liczby wlasciciela)`);
+    // R-SZCZESCIE-PRZEBUDOWA-SKALI-Q1 R3-C: SZMAX_DEFAULTS zostal dosuniety do danych
+    // (30/50/70 = kolumna `normal`), wiec dla `normal` porownanie „liczby sie roznia"
+    // z definicji przestalo odrozniac JSON od fallbacku. Sprawdzana WLASCIWOSC — „loader
+    // faktycznie czyta plik, a nie stala w TS" — zostaje i jest teraz MOCNIEJSZA: zamiast
+    // liczyc na przypadkowa nierownosc liczb wstawiam do KOPII danych wartownika i zadam,
+    // zeby loader zwrocil dokladnie jego. Dziala na kazdej trudnosci, takze tam, gdzie
+    // dane i fallback sa rowne.
+    const wartownik = JSON.parse(JSON.stringify(SOCIETY));
+    wartownik.szczescie.szczescie_max_epoka[diff] = [997, 998, 999];
+    eq(M.loadSocietyScaleParams(wartownik, diff).szMaxByEra.join(','), '997,998,999',
+      `${diff}: szMaxByEra pochodzi z JSON, a nie z fallbacku SZMAX_DEFAULTS (wartownik w danych)`);
     eq(scale.prawMaxByEra.join(','), '50,75,100', `JSON prawo_max_epoka ${diff} = 50,75,100 (jak PRAWMAX_DEFAULTS)`);
     eq(scale.szPctCap, 120, `JSON szczescie_pct_cap ${diff} = 120 (jak SZ_PCT_CAP)`);
     eq(scale.prawPctCap, 100, `JSON prawo_pct_cap ${diff} = 100 (jak PRAW_PCT_CAP)`);
@@ -128,9 +172,11 @@ console.log('\n1. GOAL 1 — rownowaznosc: przeniesienie stalych nie zmienia zac
   //     lacznie z epokami poza tablica (4, 7 -> wartosc epoki 3).
   const scaleN = M.loadSocietyScaleParams(SOCIETY, 'normal');
   for (const era of [1, 2, 3, 4, 7]) {
-    const staraSz = PRZED_SZMAX[era] ?? PRZED_SZMAX[3];
+    // Sprawdzana wlasciwosc bez zmian: epoka POZA tablica (4, 7) dostaje wartosc epoki 3 —
+    // to jest sedno tej petli i to G13 nie ruszylo. Zmienily sie tylko same liczby Szczescia.
+    const oczekSz = SZMAX_G13.normal[era - 1] ?? SZMAX_G13.normal[2];
     const staraPraw = PRZED_PRAWMAX[era] ?? PRZED_PRAWMAX[3];
-    eq(M.szMaxForEra(era, scaleN), staraSz, `szMaxForEra(${era}) = ${staraSz} jak przed przeniesieniem`);
+    eq(M.szMaxForEra(era, scaleN), oczekSz, `szMaxForEra(${era}) = ${oczekSz} (G13 normal, epoka >3 -> wartosc epoki 3)`);
     eq(M.prawMaxForEra(era, scaleN), staraPraw, `prawMaxForEra(${era}) = ${staraPraw} jak przed przeniesieniem`);
   }
 
@@ -140,9 +186,21 @@ console.log('\n1. GOAL 1 — rownowaznosc: przeniesienie stalych nie zmienia zac
     { population: 2, era: 1, difficulty: 'normal', buildingZadowolenie: 13, podzialHandlu: PODZIAL },
     SOCIETY,
   );
-  eq(sz.netto, 16, 'pop 2 / epoka 1: netto Sz = 16 (13 budynkow + 3 Osiedle)');
-  eq(sz.szMax, 14, 'pop 2 / epoka 1: szMax = 14 (dokladnie jak przed zmiana)');
-  eq(sz.szPct, 114.3, 'pop 2 / epoka 1: SzPct = 114,3% (dokladnie jak przed zmiana)');
+  // PRZED R-SZCZESCIE-PRZEBUDOWA-SKALI-Q1 bylo tu: netto 16 (13 budynkow + 3 Osiedle),
+  // szMax 14, SzPct 114,3% — czyli „co do cyfry jak przed przeniesieniem stalych".
+  // Ta rownowaznosc zostala SWIADOMIE zerwana przez wlasciciela: G10 podniosl bonus osiedla
+  // przy pop 2 z +3 na +12, G7 zastapil siatke podatkow skala liniowa (udzial 10% -> -7,78),
+  // G4 dolozyl linie Kultury (+x = +10 przy 100% wlasnej), a G13 podniosl mianownik 14 -> 30.
+  // Sprawdzana wlasciwosc zostaje: JEDEN w pelni okreslony przebieg jest przybity do liczby,
+  // wraz z rozbiciem na skladniki — zeby zmiana ktoregokolwiek z nich nie przeszla po cichu.
+  const v1c = (id) => (sz.lines.find((l) => l.id === id) || { value: 0 }).value;
+  eq(v1c('budynki'), 13, 'pop 2 / epoka 1: skladnik Budynki = 13 (wejscie)');
+  eq(v1c('osiedle'), 12, 'pop 2 / epoka 1: skladnik Osiedle = +12 (G10, pop 2)');
+  eq(v1c('kultura'), 10, 'pop 2 / epoka 1: skladnik Kultura = +10 (G4, 100% wlasnej, x epoki 1)');
+  near(v1c('wysokie_podatki'), -70 / 9, 'pop 2 / epoka 1: skladnik podatki = -7,78 (G7, udzial 10%)');
+  near(sz.netto, 13 + 12 + 10 - 70 / 9, 'pop 2 / epoka 1: netto Sz = 27,22 (suma czterech skladnikow)');
+  eq(sz.szMax, 30, 'pop 2 / epoka 1: szMax = 30 (G13 normal, pop <= populacji odniesienia -> bez skalowania)');
+  eq(sz.szPct, 90.7, 'pop 2 / epoka 1: SzPct = 90,7%');
   const pr = M.computeLawBreakdown(
     { population: 2, era: 1, difficulty: 'normal', garnizonCount: 0 }, SOCIETY,
   );
@@ -155,21 +213,32 @@ console.log('\n1. GOAL 1 — rownowaznosc: przeniesienie stalych nie zmienia zac
 console.log('\n2. GOAL 1 — fallback: usuniecie wpisu z JSON daje wartosc ze stalej w TS');
 // ---------------------------------------------------------------------------
 {
-  eq(M.SZMAX_DEFAULTS[1], 14, 'stala TS SZMAX_DEFAULTS[1] = 14');
+  // R3-C (ratyfikacja orkiestratora 2026-09-05): fallback dosuniety do danych — 30/50/70,
+  // czyli kolumna `normal` z tabeli G13. Sprawdzana wlasciwosc bez zmian (fallback ISTNIEJE
+  // i jest brany, gdy society = null); zmienily sie wylacznie liczby, ktore niesie.
+  eq(M.SZMAX_DEFAULTS[1], 30, 'stala TS SZMAX_DEFAULTS[1] = 30 (R3-C)');
+  eq(M.SZMAX_DEFAULTS[2], 50, 'stala TS SZMAX_DEFAULTS[2] = 50 (R3-C)');
+  eq(M.SZMAX_DEFAULTS[3], 70, 'stala TS SZMAX_DEFAULTS[3] = 70 (R3-C)');
+  // WIAZANIE KOD <-> DANE, dolozone przez R3-C: fallback ma byc DOKLADNIE kolumna `normal`
+  // z society-params.json. Bez tej asercji przyszly rozjazd (ktos zmienia dane i zapomina
+  // o stalej, albo odwrotnie) siedzialby cicho — dokladnie tak, jak siedzial 14/20/28.
+  eq([M.SZMAX_DEFAULTS[1], M.SZMAX_DEFAULTS[2], M.SZMAX_DEFAULTS[3]].join(','),
+    M.loadSocietyScaleParams(SOCIETY, 'normal').szMaxByEra.join(','),
+    'R3-C: SZMAX_DEFAULTS === szczescie_max_epoka.normal z JSON (rozjazd kodu z danymi czerwieni bramke)');
   eq(M.PRAWMAX_DEFAULTS[1], 50, 'stala TS PRAWMAX_DEFAULTS[1] = 50');
   eq(M.SZ_PCT_CAP, 120, 'stala TS SZ_PCT_CAP = 120');
   eq(M.PRAW_PCT_CAP, 100, 'stala TS PRAW_PCT_CAP = 100');
 
   // society = null -> same stale z TS.
   const brakCalosci = M.loadSocietyScaleParams(null, 'normal');
-  eq(brakCalosci.szMaxByEra.join(','), '14,20,28', 'society=null -> szMaxByEra ze stalej TS');
+  eq(brakCalosci.szMaxByEra.join(','), '30,50,70', 'society=null -> szMaxByEra ze stalej TS (R3-C: 30,50,70)');
   eq(brakCalosci.prawMaxByEra.join(','), '50,75,100', 'society=null -> prawMaxByEra ze stalej TS');
   eq(brakCalosci.szPctCap, M.SZ_PCT_CAP, 'society=null -> szPctCap ze stalej TS');
   eq(brakCalosci.prawPctCap, M.PRAW_PCT_CAP, 'society=null -> prawPctCap ze stalej TS');
 
   // Usuniecie POJEDYNCZEGO wiersza — reszta nadal z JSON, brakujacy ze stalej.
   const bezSzEpoka = M.loadSocietyScaleParams(withoutKey('szczescie', 'szczescie_max_epoka'), 'normal');
-  eq(bezSzEpoka.szMaxByEra.join(','), '14,20,28', 'brak szczescie_max_epoka -> SZMAX_DEFAULTS z TS');
+  eq(bezSzEpoka.szMaxByEra.join(','), '30,50,70', 'brak szczescie_max_epoka -> SZMAX_DEFAULTS z TS (R3-C)');
   const bezPrawEpoka = M.loadSocietyScaleParams(withoutKey('prawo', 'prawo_max_epoka'), 'normal');
   eq(bezPrawEpoka.prawMaxByEra.join(','), '50,75,100', 'brak prawo_max_epoka -> PRAWMAX_DEFAULTS z TS');
   const bezCapu = M.loadSocietyScaleParams(withoutKey('szczescie', 'szczescie_pct_cap'), 'normal');
@@ -177,15 +246,27 @@ console.log('\n2. GOAL 1 — fallback: usuniecie wpisu z JSON daje wartosc ze st
   const bezWsp = M.loadSocietyScaleParams(
     withoutKey('szczescie', 'szczescie_max_pop_wspolczynnik'), 'normal',
   );
-  eq(bezWsp.szMaxPopWsp, M.FALLBACK_SOCIETY_SCALE.szMaxPopWsp,
-    'brak szczescie_max_pop_wspolczynnik -> wspolczynnik ze stalej TS');
+  // WIAZANIE KOD <-> DANE, dolozone przez R4 (ratyfikacja orkiestratora 2026-09-05).
+  // Poprzednia wersja tej asercji porownywala `bezWsp.szMaxPopWsp` z
+  // `M.FALLBACK_SOCIETY_SCALE.szMaxPopWsp`, czyli stala z TYM SAMYM modulem po obu stronach
+  // — tautologia. Final Control udowodnil ja mutacja FC-M10: podmiana
+  // SZ_MAX_POP_WSP_DEFAULT 0,048 -> 0,5 (10x obok) zostawiala SZESC bramek zielonych.
+  // Teraz fallback jest wiazany z wartoscia `normal` WCZYTANA Z society-params.json,
+  // dokladnie tak jak SZMAX_DEFAULTS po R3-C: rozjazd z KAZDEJ ze stron czerwieni bramke.
+  // Asercja na surowym JSON-ie jest pierwsza celowo — bez niej usuniecie wiersza z danych
+  // przywrociloby tautologie (obie strony spadlyby na ten sam fallback).
+  const wspNormalJSON = ((SOCIETY.szczescie || {})['szczescie_max_pop_wspolczynnik'] || {}).normal;
+  ok(typeof wspNormalJSON === 'number' && Number.isFinite(wspNormalJSON),
+    'R4: szczescie_max_pop_wspolczynnik.normal ISTNIEJE w society-params.json (bez tego wiersza asercja nizej stalaby sie tautologia)');
+  eq(bezWsp.szMaxPopWsp, wspNormalJSON,
+    'R4: brak szczescie_max_pop_wspolczynnik -> fallback z TS === szczescie_max_pop_wspolczynnik.normal z JSON (rozjazd kodu z danymi czerwieni bramke)');
 
   // Fallback dziala takze w pelnym przebiegu (nie tylko w loaderze).
   const szBezDanych = M.computeHappinessBreakdown(
     { population: 2, era: 2, difficulty: 'normal', buildingZadowolenie: 10 },
     withoutKey('szczescie', 'szczescie_max_epoka'),
   );
-  eq(szBezDanych.szMax, 20, 'przebieg bez wiersza JSON: szMax epoki 2 = 20 z fallbacku TS');
+  eq(szBezDanych.szMax, 50, 'przebieg bez wiersza JSON: szMax epoki 2 = 50 z fallbacku TS (R3-C)');
 }
 
 // ---------------------------------------------------------------------------
@@ -312,7 +393,11 @@ console.log('\n5. GOAL 2 — neutralnosc startowa (pop 1-2, epoka 1) i epoka jak
   for (const diff of DIFFS) {
     const scale = M.loadSocietyScaleParams(SOCIETY, diff);
     for (const pop of [1, 2]) {
-      eq(M.szMaxForCity(1, pop, scale), 14, `${diff}: pop ${pop} / epoka 1 -> szMax 14 (dzisiejsze, bez tolerancji)`);
+      // Wlasciwosc bez zmian: przy populacji <= populacji odniesienia (2) mianownik jest
+      // CZYSTA wartoscia epoki, bez zadnego skalowania. Zmienila sie tylko sama wartosc:
+      // 14 dla kazdej trudnosci -> tabela G13 wlasciciela, rozna per trudnosc.
+      eq(M.szMaxForCity(1, pop, scale), SZMAX_G13[diff][0],
+        `${diff}: pop ${pop} / epoka 1 -> szMax ${SZMAX_G13[diff][0]} (G13, bez skalowania populacja)`);
       eq(M.prawMaxForCity(1, pop, scale), 50, `${diff}: pop ${pop} / epoka 1 -> prawMax 50 (dzisiejsze, bez tolerancji)`);
     }
   }
@@ -326,9 +411,14 @@ console.log('\n5. GOAL 2 — neutralnosc startowa (pop 1-2, epoka 1) i epoka jak
   // Warunek 4: parametryzacja per trudnosc dziala i zachowuje konwencje easy < normal < hard.
   // OBA wspolczynniki — Szczescia i Prawa. (Runda 1, zarzut 2 Evaluatora: sprawdzany byl
   // wylacznie szMaxPopWsp, wiec zrownanie easy=hard dla Prawa przechodzilo bramke bez sladu.)
+  // R-SZCZESCIE-PRZEBUDOWA-SKALI-Q1 R3-A (decyzja wlasciciela 2026-09-05): wspolczynnik
+  // Szczescia to JEDNA liczba 0,04 na wszystkich trzech poziomach — uchyla 0,038/0,048/0,058.
+  // Asercja NIE znika, tylko odwraca znak oczekiwania: dalej pilnuje, zeby nikt nie wrocil
+  // do trojki per trudnosc (kontrakt G13: trudnosc wyrazana WYLACZNIE przez szczescie_max_epoka).
   const wspSz = DIFFS.map((d) => M.loadSocietyScaleParams(SOCIETY, d).szMaxPopWsp);
-  ok(wspSz[0] < wspSz[1] && wspSz[1] < wspSz[2],
-    `wspolczynnik Sz per trudnosc easy<normal<hard (${wspSz.join(' < ')})`);
+  ok(wspSz[0] === wspSz[1] && wspSz[1] === wspSz[2],
+    `R3-A: wspolczynnik Sz JEDEN na easy/normal/hard (${wspSz.join(' === ')})`);
+  eq(wspSz[1], 0.04, 'R3-A: wspolczynnik Sz = 0,04 (liczba wlasciciela, ten sam co prawo_max_pop_wspolczynnik)');
   const wspPr = DIFFS.map((d) => M.loadSocietyScaleParams(SOCIETY, d).prawMaxPopWsp);
   ok(wspPr[0] < wspPr[1] && wspPr[1] < wspPr[2],
     `wspolczynnik Prawa per trudnosc easy<normal<hard (${wspPr.join(' < ')})`);
@@ -383,12 +473,17 @@ console.log('\n6. Scenariusz ze zrzutu wlasciciela: pop 2, epoka 1, Sz netto 16,
   const pr = M.computeLawBreakdown(wPr, SOCIETY);
   console.log(`  PRZED: Sz ${szPrzed.netto}/${szPrzed.szMax} = ${szPrzed.szPct}% | Prawo ${prPrzed.netto}/${prPrzed.prawMax} = ${prPrzed.prawPct}%`);
   console.log(`  PO   : Sz ${sz.netto}/${sz.szMax} = ${sz.szPct}% | Prawo ${pr.netto}/${pr.prawMax} = ${pr.prawPct}%`);
-  eq(sz.netto, 16, 'zrzut: Szczescie netto = 16');
+  // Zrzut wlasciciela (114% / 40%) pochodzi sprzed R-SZCZESCIE-PRZEBUDOWA-SKALI-Q1 i po
+  // stronie SZCZESCIA jest juz nieodtwarzalny — G4/G7/G10/G13 zmienily i licznik, i mianownik
+  // tego samego miasta (netto 16 -> 27,22; szMax 14 -> 30; SzPct 114,3% -> 90,7%).
+  // Strona PRAWA nie byla objeta tematem i musi zgadzac sie ze zrzutem co do cyfry — dlatego
+  // asercja 40% zostaje bez zmian. Dla Szczescia przybijamy nowa liczbe tego samego miasta.
+  near(sz.netto, 13 + 12 + 10 - 70 / 9, 'zrzut: Szczescie netto = 27,22 (po G4/G7/G10)');
   eq(pr.netto, 20, 'zrzut: Prawo netto = 20');
-  eq(szPrzed.szPct, 114.3, 'zrzut PRZED: SzPct = 114,3% (zrzut wlasciciela pokazywal 114%)');
+  eq(szPrzed.szPct, 90.7, 'zrzut PRZED (skalowanie populacja wylaczone): SzPct = 90,7%');
   eq(prPrzed.prawPct, 40, 'zrzut PRZED: PrawPct = 40% (zrzut wlasciciela pokazywal 40%)');
   // pop 2 = populacja odniesienia, wiec PO zmianie ma byc IDENTYCZNIE — neutralnosc startowa.
-  eq(sz.szPct, szPrzed.szPct, 'zrzut PO zmianie: SzPct bez zmian wobec PRZED (114,3%)');
+  eq(sz.szPct, szPrzed.szPct, 'zrzut PO zmianie: SzPct bez zmian wobec PRZED (90,7%)');
   eq(pr.prawPct, prPrzed.prawPct, 'zrzut PO zmianie: PrawPct bez zmian wobec PRZED (40%)');
 }
 
@@ -408,7 +503,14 @@ console.log('\n7. Objaw zgloszony przez wlasciciela: rozwiniete miasto NIE dobij
   const dobijaPrzed = M.computeHappinessBreakdown(wejscie(31), PRZED);
   const dobijaPo = M.computeHappinessBreakdown(wejscie(31), SOCIETY);
   console.log(`  pop 12 / epoka 3 / 31 budynkow: netto ${dobijaPo.netto} | PRZED ${dobijaPrzed.szPct}% (szMax ${dobijaPrzed.szMax}) -> PO ${dobijaPo.szPct}% (szMax ${dobijaPo.szMax})`);
-  eq(dobijaPrzed.szPct, 120, 'PRZED zmiana rozwiniete miasto dobija do capu 120% (odtworzony objaw ze zgloszenia)');
+  // Objaw ze zgloszenia („im dalej w las, tym szczescie wyzsze") odtwarzamy na stanie sprzed
+  // OBU tematow: mianownik 14/20/28 (sprzed G13) i skalowanie populacja wylaczone (sprzed
+  // GOAL 2). Sam PRZED z dzisiejszym mianownikiem G13 juz go NIE pokazuje — bo wlasnie
+  // podniesienie mianownika 28 -> 70 jest ta czescia naprawy, ktora wniosl G13.
+  // Wlasciwosc bez zmian: bramka nadal odtwarza objaw, a nie tylko opisuje stan po naprawie.
+  const dobijaPrzedG13 = M.computeHappinessBreakdown(wejscie(31), societyPrzedG13('normal'));
+  eq(dobijaPrzedG13.szPct, 120, 'PRZED zmiana (mianownik 14/20/28) rozwiniete miasto dobija do capu 120% (odtworzony objaw ze zgloszenia)');
+  ok(dobijaPrzed.szPct < 120, `sam G13 (mianownik 28 -> 70) juz zbija miasto z capu: ${dobijaPrzed.szPct}%`);
   ok(dobijaPo.szPct < 120, `PO zmianie rozwiniete miasto NIE dobija automatycznie do capu (${dobijaPo.szPct}%)`);
   ok(dobijaPo.szMax > dobijaPrzed.szMax, `prog rosnie z miastem: szMax ${dobijaPrzed.szMax} -> ${dobijaPo.szMax}`);
 
@@ -455,8 +557,23 @@ console.log('\n8. Tabela prog(pop, epoka) — PRZED vs PO (normal), zapisana w r
     console.log(`  ${String(pop).padStart(3)} |${s.join('')}                          |${p.join('')}`);
   }
   // Kotwica liczbowa tabeli — gdyby ktos zmienil formule, tabela w raporcie przestaje zgadzac sie z kodem.
-  eq(M.szMaxForCity(1, 12, scale), 22.4, 'tabela: szMax(pop 12, epoka 1) = 22,4');
-  eq(M.szMaxForCity(3, 12, scale), 44.8, 'tabela: szMax(pop 12, epoka 3) = 44,8');
+  // Historia tych dwoch liczb: 22,4 / 44,8 (baza 14 / 28) -> 48,0 / 112,0 po G13 (baza 30 / 70,
+  // mnoznik populacji 0,048) -> 44,4 / 103,6 po R3-A (baza bez zmian, mnoznik 0,04 na kazdej
+  // trudnosci). Wlasciwosc bez zmian: tabela drukowana w raporcie jest przybita do kodu, wiec
+  // zmiana formuly ALBO wspolczynnika rozjezdza bramke.
+  // Rachunek: (1 + 0,04) ^ (12 - 2) = 1,48 (zaokraglone do 2 miejsc w popScaleMultiplier);
+  // 30 x 1,48 = 44,4 i 70 x 1,48 = 103,6.
+  eq(M.szMaxForCity(1, 12, scale), 44.4, 'tabela: szMax(pop 12, epoka 1) = 44,4 (G13 baza 30 x mnoznik 1,48 z R3-A)');
+  eq(M.szMaxForCity(3, 12, scale), 103.6, 'tabela: szMax(pop 12, epoka 3) = 103,6 (G13 baza 70 x mnoznik 1,48 z R3-A)');
+  // Kotwica samego mnoznika, zeby zmiana bazy nie zamaskowala zmiany wspolczynnika:
+  // stosunek prog(pop 12) / prog(pop 2) musi byc ten sam w kazdej epoce.
+  near(M.szMaxForCity(1, 12, scale) / M.szMaxForCity(1, 2, scale),
+    M.szMaxForCity(3, 12, scale) / M.szMaxForCity(3, 2, scale),
+    'mnoznik populacji nie zalezy od epoki (prog 12/prog 2 taki sam w epokach 1 i 3)');
+  // ...i jego WARTOSC, zapisana literalem — inaczej zmiana wspolczynnika przesunelaby obie
+  // strony powyzszego rownania jednoczesnie i przeszlaby bez sladu.
+  near(M.szMaxForCity(1, 12, scale) / M.szMaxForCity(1, 2, scale), 1.48,
+    'R3-A: mnoznik populacji na pop 12 = 1,48x (0,04 skladane na 10 mieszkancow ponad populacje odniesienia)');
   eq(M.prawMaxForCity(1, 12, scale), 74.5, 'tabela: prawMax(pop 12, epoka 1) = 74,5');
   eq(M.prawMaxForCity(3, 6, scale), 117, 'tabela: prawMax(pop 6, epoka 3) = 117,0');
 }

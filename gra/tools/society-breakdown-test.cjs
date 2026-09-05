@@ -23,7 +23,6 @@ export {
   orderEffectsFromPorPct,
   porPctBand,
   updateRevoltGrace,
-  happinessBucketsFromPct,
   loadRevoltParams,
   isOsiedleRevoltImmune,
   osiedlePopMax,
@@ -59,15 +58,29 @@ function ok(cond, msg) {
   if (cond) { passed++; console.log('  [OK] ' + msg); }
   else { failed++; console.error('  [FAIL] ' + msg); }
 }
+function near(a, b, msg, eps) {
+  const e = eps === undefined ? 1e-9 : eps;
+  if (Math.abs(a - b) < e) { passed++; console.log('  [OK] ' + msg); }
+  else { failed++; console.error('  [FAIL] ' + msg + ' got ' + JSON.stringify(a) + ' expected ~' + JSON.stringify(b)); }
+}
 
 console.log('\n[society-breakdown-test]\n');
 
-// Luksus bonus — nowa siatka co 10 p.p. (Maciej 2026-07-25). Bracket = floor(pct/10):
-// normal = [-1, 0, 1, 2, 3, 4, 5, 6, 7, 8] dla dziesiątek 0..9.
-eq(M.luksusHappinessBonus(25, null, 'normal'), 1, 'luksus 25% (bracket 20-29, idx2) -> +1');
-eq(M.luksusHappinessBonus(30, null, 'normal'), 2, 'luksus 30% (bracket 30-39, idx3) -> +2');
-eq(M.luksusHappinessBonus(50, null, 'normal'), 4, 'luksus 50% (bracket 50-59, idx5) -> +4');
-eq(M.luksusHappinessBonus(70, null, 'normal'), 6, 'luksus 70% (bracket 70-79, idx7) -> +6');
+// Luksus bonus — R-SZCZESCIE-PRZEBUDOWA-SKALI-Q1 G7 (właściciel 2026-09-05): siatka co
+// 10 p.p. (`szczescie_siatka_zamoznosc`, normal [-1..8]) zastąpiona SKALĄ LINIOWĄ:
+// 0% -> -10, 90% -> +10, liniowo pomiędzy, zero dokładnie przy 45%. Te cztery wywołania
+// idą z `society = null`, więc mierzą FALLBACK w TS, nie wiersze JSON — i to jest tu
+// wartość dodana: pilnują, żeby stała w kodzie nie rozjechała się z decyzją właściciela.
+// Sprawdzana właściwość bez zmian: udział Zamożności steruje linią podatków monotonicznie
+// i z tymi samymi krańcami skali; zmieniła się postać (schodki -> prosta) i rozpiętość.
+near(M.luksusHappinessBonus(25, null, 'normal'), -40 / 9, 'luksus 25% -> -4,44 (liniowo, poniżej 45%)');
+near(M.luksusHappinessBonus(30, null, 'normal'), -30 / 9, 'luksus 30% -> -3,33');
+near(M.luksusHappinessBonus(50, null, 'normal'), 10 / 9, 'luksus 50% -> +1,11 (powyżej 45%)');
+near(M.luksusHappinessBonus(70, null, 'normal'), 50 / 9, 'luksus 70% -> +5,56');
+// Krańce i punkt obojętny na samym fallbacku TS (bez JSON).
+eq(M.luksusHappinessBonus(0, null, 'normal'), -10, 'luksus 0% -> -10 (fallback TS = liczba właściciela)');
+eq(M.luksusHappinessBonus(90, null, 'normal'), 10, 'luksus 90% -> +10 (fallback TS)');
+eq(M.luksusHappinessBonus(45, null, 'normal'), 0, 'luksus 45% -> DOKŁADNIE 0 (fallback TS)');
 
 // Law garnizon
 const law = M.computeLawBreakdown({ garnizonCount: 5, era: 2 }, null);
@@ -97,8 +110,13 @@ const ord = M.computeOrderPctBreakdown(sz, pr, params);
 eq(ord.porPct > 0, true, 'PorPct > 0');
 eq(M.porPctBand(ord.porPct).length > 0, true, 'band ok');
 
-// R-GARNCARNIA-CERAMIKA-SZCZESCIE-111-Q1: dwa niezależne bonusy są binarne
-// i sumują się per miasto; żaden nie jest mnożony przez liczbę miast ownera.
+// R-GARNCARNIA-CERAMIKA-SZCZESCIE-111-Q1 pilnowało, żeby bonus PER MIASTO nie był mnożony
+// przez liczbę miast ownera (objaw „111"). R-SZCZESCIE-PRZEBUDOWA-SKALI-Q1 G3 (właściciel
+// 2026-09-05) usunął OBA te wiersze z rozpiski jako DUBLE: ceramika liczy się teraz jako
+// zwykły surowiec zaopatrzenia (linia `zaopatrzenie_obywateli`, ±2/surowiec), a Spichlerz
+// jako budynek szczęściodajny (+5 łącznie, G2). Właściwość „żadne wejście nie może wnieść
+// więcej niż należy" zostaje — po nowej stronie i mocniej: pola są IGNOROWANE, więc wejście
+// 111 nie może wnieść ani punktu, a dubel nie ma jak wrócić niezauważony.
 const ceramicAndGranary = M.computeHappinessBreakdown({
   population: 6,
   era: 2,
@@ -106,12 +124,17 @@ const ceramicAndGranary = M.computeHappinessBreakdown({
   ceramikaZadowolenie: 111,
   spichlerzZadowolenie: 111,
 }, null);
-eq(ceramicAndGranary.lines.find(l => l.id === 'ceramika')?.value, 1,
-  'R-GARNCARNIA...: Ceramika = dokładnie +1 na miasto (także przy wejściu 111)');
-eq(ceramicAndGranary.lines.find(l => l.id === 'spichlerz')?.value, 1,
-  'R-GARNCARNIA...: działający Spichlerz = dokładnie +1 na miasto (także przy wejściu 111)');
-eq(ceramicAndGranary.lines.filter(l => ['ceramika', 'spichlerz'].includes(l.id)).reduce((sum, line) => sum + line.value, 0), 2,
-  'R-GARNCARNIA...: Ceramika + Spichlerz = +2, bez owner-wide multiplication');
+const bezCeramikiISpichlerza = M.computeHappinessBreakdown({
+  population: 6,
+  era: 2,
+  buildingZadowolenie: 0,
+}, null);
+eq(ceramicAndGranary.lines.find(l => l.id === 'ceramika')?.value, undefined,
+  'G3: linia "Ceramika (dostęp)" USUNIĘTA z rozpiski (dubel wobec zaopatrzenia)');
+eq(ceramicAndGranary.lines.find(l => l.id === 'spichlerz')?.value, undefined,
+  'G3: linia "Spichlerz (działający)" USUNIĘTA z rozpiski (dubel wobec linii Budynki)');
+eq(ceramicAndGranary.netto, bezCeramikiISpichlerza.netto,
+  'reguła 111 po G3: ceramikaZadowolenie/spichlerzZadowolenie = 111 nie zmienia netto ani o punkt');
 
 // Tier mapping
 eq(M.tierFromPorPct(95), 'order', 'PorPct 95 -> order');
@@ -148,33 +171,65 @@ eq(g.graceTurnsLeft, 3, 'easy: PorPct 4% -> grace 3');
 eq(M.porPctBand(4, 5), 'bunt_skrajny', 'PorPct 4 < crit 5 -> skrajny');
 eq(M.porPctBand(6, 5), 'bunt', 'PorPct 6 >= crit 5 -> bunt not skrajny');
 
-// Buckets from pct
-const buckets = M.happinessBucketsFromPct(10, 80);
-eq(buckets.zadowoleni + buckets.kontentni + buckets.niezadowoleni, 10, 'buckets sum pop');
+// USUNIETE (R-SZCZESCIE-PRZEBUDOWA-SKALI-Q1 G14, wlasciciel 2026-09-05): asercja
+// `happinessBucketsFromPct(10, 80)` -> suma koszykow = populacja. Funkcja zostala usunieta
+// z society-breakdown.ts razem z siedmioma martwymi parametrami — byla pozostaloscia po
+// porzuconym modelu "liczby zadowolonych mieszkancow", zastapionym modelem procentowym
+// szPct -> PorPct, i nie miala ani jednego wywolania w gra/src poza wlasnym plikiem.
+// Ta wlasciwosc NIE MA odpowiednika w nowej mechanice — nie ma juz koszykow mieszkancow.
+// W jej miejsce (zeby liczba asercji nie spadla, a skan negatywny G14 zil takze tutaj)
+// sprawdzamy, ze funkcja faktycznie zniknela z modulu i nie wrocila bocznymi drzwiami.
+{
+  // Skan po ZRODLE, nie po bundlu: `typeof M.happinessBucketsFromPct === 'undefined'` byloby
+  // tautologia, bo entry point tej bramki i tak jej nie eksportuje. Czytamy plik.
+  const SRC_SB = fs.readFileSync(
+    path.resolve(__dirname, '..', 'src', 'game', 'society-breakdown.ts'), 'utf8',
+  );
+  ok(!/\bhappinessBucketsFromPct\b/.test(SRC_SB),
+    'G14: happinessBucketsFromPct nie wystepuje juz w society-breakdown.ts (zero wywolan w gra/src)');
+}
 
-// D-START-OSIEDLE: symulacja PorPct T1 pop=1 (cele 75/55/35)
+// D-START-OSIEDLE: symulacja PorPct w turze 1, pop=1, bez garnizonu.
+//
+// R-SZCZESCIE-PRZEBUDOWA-SKALI-Q1 (wlasciciel 2026-09-05) przestawil tu cztery rzeczy naraz:
+//   G10 — bonus osiedla `szczescie_bonus_osiedle_pop` [4,3,2,1] -> [15,12,8,5] (przy pop 1
+//         daje +15, bo stary bonus znosil sie z kara za wielkosc i przy pop 4 dawal netto ujemne),
+//   G7  — podatki: siatka -> skala liniowa, przy udziale Zamoznosci 10% to -7,78 zamiast 0/-1/-2,
+//   G4  — kultura i religia licza sie z UDZIALU wlasnej razy x(epoka) = 10/16/23,
+//   G13 — mianownik `szczescie_max_epoka` 14/20/28 -> 20/30/35 (epoka 1, easy/normal/hard).
+//
+// Dlatego stare cele 80 / 58 / 34 (wyliczone na siatce sprzed zmiany) sa NIEAKTUALNE.
+// Nowe liczby to POMIAR na parametrach wlasciciela, a nie liczba dobrana pod bramke —
+// tolerancja +-4 p.p. i pasmo zostaja bez zmian, tak jak byly.
+//
+// UWAGA na wejscia: `haKult` / `haRel` to od G4 ZNORMALIZOWANY wskaznik [-1,+1], a nie punkty.
+// Poprzednie wartosci 3 / 2 / 1 (punkty starej skali) po zmianie wszystkie obcinaja sie do +1,
+// czyli oznaczaly to samo — dlatego scenariusze dostaja teraz jawnie udzial 1,0 (nowe miasto
+// ma 100% wlasnej kultury i wlasnej religii), a JEDYNA roznica miedzy nimi to trudnosc.
+// To jest dokladnie wlasciwosc, ktora G13 obiecuje: trudnosc wyrazana WYLACZNIE mianownikiem.
 {
   const society = require('../data/society-params.json');
   const podzial = { procentNauka: 20, procentPieniadz: 70, procentLuksus: 10 };
-  const base = { era: 1, population: 1, buildingZadowolenie: 0, podzialHandlu: podzial, garnizonCount: 0 };
+  const base = {
+    era: 1, population: 1, buildingZadowolenie: 0, podzialHandlu: podzial, garnizonCount: 0,
+    ownCultureShare: 1, ownReligionShare: 1,
+  };
   const scenarios = [
-    // target podniesiony z 72 -> 80 (Maciej 2026-07-25): nowa siatka Sz od Zamożności daje
-    // na easy +2 pkt Sz przy udziale Zamożności 10% (bracket 10-19, easy[1]=2), podczas gdy
-    // stara siatka (progi od 30% wzwyż) dawała 0 poniżej 30% — PorPct realnie = 79,9% (era1
-    // SzMax=14, +2 pkt Sz = +100*2/14 ≈ +14,3 p.p. Sz%, ważone wagaSz=0,55 -> ok. +7,9 p.p. PorPct).
-    { diff: 'easy', haKult: 3, haRel: 3, target: 80, band: 'Spokój' },
-    { diff: 'normal', haKult: 2, haRel: 2, target: 58, band: 'Napięcie' },
-    { diff: 'hard', haKult: 1, haRel: 1, target: 34, band: 'Niepokój' },
+    { diff: 'easy', target: 94.8, band: 'Ład' },
+    { diff: 'normal', target: 73.4, band: 'Spokój' },
+    { diff: 'hard', target: 59.2, band: 'Napięcie' },
   ];
-  console.log('\n[D-START-OSIEDLE symulacja T1 pop=1, kult+rel, bez garnizonu]\n');
+  console.log('\n[D-START-OSIEDLE symulacja T1 pop=1, 100% wlasnej kultury i religii, bez garnizonu]\n');
+  const zmierzone = [];
   for (const s of scenarios) {
     const ord = M.evaluateOrderFromBreakdown(
-      { ...base, haKult: s.haKult, haRel: s.haRel, difficulty: s.diff },
+      { ...base, difficulty: s.diff },
       { ...base, difficulty: s.diff },
       society,
       s.diff,
     );
     const por = Math.round(ord.porPct * 10) / 10;
+    zmierzone.push(por);
     const osiedleSz = ord.sz.lines.find(l => l.id === 'osiedle');
     const osiedlePr = ord.prawo.lines.find(l => l.id === 'osiedle');
     console.log(
@@ -183,7 +238,14 @@ eq(buckets.zadowoleni + buckets.kontentni + buckets.niezadowoleni, 10, 'buckets 
       `osiedle Sz +${osiedleSz?.value ?? '?'} Praw +${osiedlePr?.value ?? '?'}`,
     );
     ok(Math.abs(por - s.target) <= 4, `${s.diff} PorPct ~${s.target}% (±4)`);
+    eq(ord.bandLabel, s.band, `${s.diff} pasmo startowe = ${s.band}`);
+    // G10: przy pop 1 bonus osiedla w Szczesciu to dokladnie +15, na kazdej trudnosci.
+    eq(osiedleSz?.value, 15, `${s.diff}: bonus osiedla przy pop 1 = +15 (G10, ta sama liczba na kazdej trudnosci)`);
   }
+  // G13 wprost: przy IDENTYCZNYCH wejsciach roznica miedzy poziomami bierze sie wylacznie
+  // z mianownika, wiec start musi byc scisle malejacy easy > normal > hard.
+  ok(zmierzone[0] > zmierzone[1] && zmierzone[1] > zmierzone[2],
+    `start scisle malejacy easy > normal > hard (${zmierzone.join(' > ')})`);
 }
 
 {
