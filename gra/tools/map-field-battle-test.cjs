@@ -6,6 +6,20 @@ const esbuild = require(path.resolve(__dirname, '..', 'node_modules', 'esbuild')
 
 const ENTRY = path.join(__dirname, '.map-field-battle-entry.ts');
 const OUT = path.join(__dirname, '.map-field-battle-bundle.cjs');
+const MUZYKA_STUB = path.resolve(__dirname, '.stubs', 'map-field-battle-muzyka-stub.ts');
+
+// mapFieldBattle.ts -> audio/muzyka-antyczna.ts -> audio/filePlayer.ts, który używa
+// `import.meta.glob` (mechanizm Vite; esbuild/Node tego nie ma) do odkrywania plików
+// .mp3 na dysku przy ewaluacji modułu — TypeError przed jakąkolwiek asercją. Wzorzec
+// (stub całego muzyka-antyczna.ts na granicy importu, nie samego filePlayer.ts) jak
+// w audio-stub.ts / recruit-strip-muzyka-stub.ts, używanych przez inne bramki z tym
+// samym transytywnym problemem.
+const stubMuzykaPlugin = {
+  name: 'stub-muzyka',
+  setup(build) {
+    build.onResolve({ filter: /audio\/muzyka-antyczna$/ }, () => ({ path: MUZYKA_STUB }));
+  },
+};
 
 fs.writeFileSync(
   ENTRY,
@@ -18,13 +32,19 @@ fs.writeFileSync(
   'utf8',
 );
 
-esbuild.buildSync({
+// esbuild.buildSync() nie przyjmuje pluginów ("Cannot use plugins in synchronous
+// API calls") — stubMuzykaPlugin wymaga async esbuild.build(), więc cała reszta
+// pliku (dawniej top-level) jedzie teraz w main() poniżej.
+async function main() {
+
+await esbuild.build({
   entryPoints: [ENTRY],
   bundle: true,
   platform: 'node',
   format: 'cjs',
   outfile: OUT,
   absWorkingDir: path.resolve(__dirname, '..'),
+  plugins: [stubMuzykaPlugin],
   logLevel: 'silent',
 });
 
@@ -207,6 +227,11 @@ const plan = planOpenCityFieldBattle(
     getTerrainAt: () => 'Rownina',
     getStructBonus: () => 0,
     unitDefFor: stubDef,
+    // fortifyScaledDefFor brakowało w tym fixture (deps object) od zawsze — TypeError
+    // "powerScaledDefFor is not a function" w preBattleSzanseAtkPct, niezwiazany z
+    // import.meta.glob; test-only uzupelnienie kontraktu MapFieldBattleLaunchDeps,
+    // bez ingerencji w gra/src. Patrz raport rundy 1 (osobne znalezisko).
+    fortifyScaledDefFor: stubDef,
     unitHealth: d => d.health,
     unitAtak: d => d.meleeAttack,
     civLabelForOwner: id => (id === 0 ? 'Gracz' : 'AI ' + id),
@@ -227,3 +252,10 @@ assert(router.kind === 'field_battle', 'router integration: open + defenders →
 
 console.log('---', ok, 'ok,', fail, 'fail');
 process.exit(fail > 0 ? 1 : 0);
+
+}
+
+main().catch((e) => {
+  console.error(e);
+  process.exit(1);
+});

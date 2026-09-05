@@ -81,12 +81,25 @@ async function main() {
     logLevel: 'silent',
   });
 
-  const dom = new JSDOM('<!DOCTYPE html><html><head></head><body></body></html>');
+  // `pretendToBeVisual: true` — jsdom daje wtedy PRAWDZIWĄ (timer-based) parę
+  // requestAnimationFrame/cancelAnimationFrame na window (nie stub w tym pliku).
+  // Potrzebne bo renderEntityCard(unit) → mountUnitMiniPreview → drainQueue()
+  // (unitMiniPreview.ts) woła requestAnimationFrame, którego gołe Node nie ma.
+  // Sam render 3D (WebGLRenderer) i tak nie zadziała pod jsdom (brak realnego
+  // WebGL) — ensureGl() w unitMiniPreview.ts łapie to w try/catch i zwraca
+  // null, więc kontrakt karty (DOM: sekcje/tytuł/atrybuty) mierzy się dalej,
+  // podglądu 3D po prostu nie ma (fallback tekstowy), bez zmiany zachowania
+  // w przeglądarce.
+  const dom = new JSDOM('<!DOCTYPE html><html><head></head><body></body></html>', {
+    pretendToBeVisual: true,
+  });
   global.window = dom.window;
   global.document = dom.window.document;
   global.HTMLElement = dom.window.HTMLElement;
   global.Node = dom.window.Node;
   global.MouseEvent = dom.window.MouseEvent;
+  global.requestAnimationFrame = dom.window.requestAnimationFrame.bind(dom.window);
+  global.cancelAnimationFrame = dom.window.cancelAnimationFrame.bind(dom.window);
   // Uwaga: NIE nadpisujemy global.navigator — Node już ma własny getter-only
   // `navigator`; `escapeOverlayStack.ts` obsługuje brak `navigator.keyboard` (Keyboard
   // Lock API) jako no-op, więc test działa bez podmiany.
