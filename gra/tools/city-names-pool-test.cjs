@@ -54,9 +54,15 @@ assert(M.validateNazwyKlastra(civs).length === 0, 'civs.json: 15×10 nazwyKlastr
 assert(M.validateCityNamesPools(pools, civs).length === 0, 'pule: 15×(100+10), bez duplikatów, sync z nazwyKlastra');
 
 assert(M.playerStartCityName(civs, 'grecy', pools) === 'Ateny', 'stolica gracza Grecy → Ateny');
-assert(M.clusterRivalCityName(civs, 'grecy', 1, pools) === 'Sparta', 'państwo-miasto [1] → Sparta');
-assert(M.clusterRivalCityName(civs, 'grecy', 9, pools) === 'Delfy', 'państwo-miasto [9] → Delfy');
-assert(M.clusterRivalCityName(civs, 'grecy', 10, pools) === 'Olimpia', 'overflow [10] → Olimpia (pula regularna, poza spawnem)');
+// R-NAZWY-MIAST-AUDYT-STOLICE-I-PANSTWA-Q1: `miasta_panstwa` Greków to już nie powtórki
+// stolic (Ateny…Delfy), tylko mniejsze poleis (Sykion…Maroneja) — stąd nowe wartości [1] i [9].
+assert(M.clusterRivalCityName(civs, 'grecy', 1, pools) === 'Fliunt', 'państwo-miasto [1] → Fliunt');
+assert(M.clusterRivalCityName(civs, 'grecy', 9, pools) === 'Maroneja', 'państwo-miasto [9] → Maroneja');
+// Overflow (indeks > MAX_MIAST_PANSTWA=9, więc w grze NIEOSIĄGALNY) bierze pierwszą nazwę
+// z puli regularnej spoza `miasta_panstwa`. Do rozdzielenia list była to „Olimpia", bo pierwsze
+// dziesięć nazw regularnych pokrywało się z pulą państw; przy pulach rozłącznych jest to już
+// „Ateny". Wartość zaszyta świadomie, żeby zmiana tej ścieżki nie przeszła po cichu.
+assert(M.clusterRivalCityName(civs, 'grecy', 10, pools) === 'Ateny', 'overflow [10] → Ateny (pula regularna, poza spawnem, indeks nieosiągalny w grze)');
 assert(M.clusterRivalCityName(civs, 'chinczycy', 1, pools) === 'Qi', 'Chińczycy państwo [1] → Qi (królestwo)');
 
 const used = new Set(['Ateny', 'Sparta', 'Korynt']);

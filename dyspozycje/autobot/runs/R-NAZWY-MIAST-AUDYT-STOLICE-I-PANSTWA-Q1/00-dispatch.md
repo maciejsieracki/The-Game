@@ -130,3 +130,63 @@ kontenera w tej sesji skasowały pracę trzymaną w pamięci procesu.
 
 Operator → Evaluator → (Obrona, jeśli lista zarzutów niepusta) → koniec skryptu.
 Final Control osobnym wywołaniem Workflow. Integracja i deploy — ręką orkiestratora.
+
+---
+
+# RATYFIKACJA ORKIESTRATORA (2026-09-05)
+
+## Zarzut 1 — ALLOWLISTA ROZSZERZONA o `gra/data/civs.json`
+
+Rozszerzenie **przyznane**. `validateCityNamesPools` (`gra/src/game/civ-names.ts:167-172`)
+wymaga `nazwyKlastra === miasta_panstwa`, więc bez zmiany `civs.json` kryterium 6 jest
+**mechanicznie nieosiągalne** — nie jest to poszerzanie zakresu, tylko konsekwencja
+walidatora, którego dispatch nie przewidział. To **plik danych**, nie kod; `gra/src/**`
+pozostaje zakazane bez zmian.
+
+Zakres dopuszczony wąsko: **wyłącznie pole `nazwyKlastra`**, wyłącznie dla tych cywilizacji,
+którym zmieniono `miasta_panstwa`. Evaluator potwierdził, że zmiana jest chirurgiczna
+(14× `nazwyKlastra`) — ma taka pozostać.
+
+## Zarzut 2 — obrona (b) PRZYJĘTA, sprawa idzie do OSOBNEGO tematu
+
+Obrona wykazała dowodem, że **ścieżka produkcyjna jest nietknięta**:
+`playerStartCityName(civs,'grecy',pools) === 'Ateny'` stoi zielone i niezmienione
+(`city-names-pool-test.cjs:56`). Zmieniona asercja (`civ-names-test.cjs:53`) testuje
+**wyłącznie fallback bez puli**, a `civ-names.ts:48-52` opisuje ten defekt jako **znany
+i naprawiony tylko na ścieżce z pulą**. Zarzut „bramka błogosławi regresję" nie stoi:
+bramka nadal pilnuje ścieżki, którą realnie chodzi gra.
+
+**Ale znalezisko jest realne i nie znika.** Po rozdzieleniu pul awaryjna stolica bez puli
+to dla 14 cywilizacji drugorzędny ośrodek (Grecy `Sykion`, Rzymianie `Nola`, Egipt `Tinis`,
+Asyria `Ekallatum`) zamiast stolicy właściwej. **Wcześniej ta ścieżka działała tylko dlatego,
+że pule się pokrywały** — czyli opierała się na defekcie, który ten temat właśnie usuwa.
+To jest ta sama klasa błędu co „stolica nazwana od państwa", tylko w martwej ścieżce.
+
+**Orkiestrator zakłada osobny temat** `P-CIV-NAMES-FALLBACK-BEZ-PULI-Q1` (wymaga
+`gra/src/game/civ-names.ts`, poza allowlistą tematu danych). **Nie jest to brak węzła
+bieżącego** i nie ma być tak orzekane.
+
+## Zarzuty 4, 5, 6 — TRAFIONE I NAPRAWIONE, dokładnie ta warstwa, o którą chodziło
+
+`Antinoupolis` (fundacja Hadriana, 130 n.e.), `Karanis` (ptolemejska, III w. p.n.e.)
+i `Meklemburg` (spolszczona nazwa niemiecka zamiast grodu obodryckiego) to **dokładnie
+te błędy, których żadna bramka nie wykryje** — dispatch mówił wprost, że weryfikacja
+historyczna jest jedyną niezautomatyzowaną warstwą kontroli tego tematu, i ta warstwa
+zadziałała. Podmiany (`Hebenu`, `Tjebu`, `Uznam`) przyjęte; przy okazji udział form
+greckich na liście egipskiej spadł z 6/10 do 4/10, co jest poprawą samą w sobie.
+
+## Zarzut 7 — ODRZUCENIE OBRONY PRZYJĘTE
+
+`Assur` → `Aszur` to **ta sama nazwa w dwóch transliteracjach**, a nie zmiana składu listy.
+Trzy binarne kryteria (1: dosłownie `Aszur` na pozycji 0; 3: dokładnie 100 pozycji;
+4: brak duplikatów) wymuszają dokładnie tę operację. Zdanie dispatchu „zmienia się wyłącznie
+pierwsza pozycja, nie skład listy" dotyczyło **zachowania `Ninive` i `Tyru`** — i one
+zostały. Obrona ma rację.
+
+## Do wiadomości Final Control
+
+Zmierzona liczba kolizji przed zmianą to **125**, nie 126 jak podawał mój recon
+(`celtowie` 9, bo `Závist` ≠ `Zavist` różnią się diakrytykiem). Wymieniono i tak wszystkie
+140 pozycji, bo warianty transliteracji (`Kanesh`/`Kanesz`, `Kiev`/`Kijów`,
+`Carchemish`/`Karkemisz`) to duplikaty faktyczne. **Rozbieżność 125 vs 126 jest po mojej
+stronie, nie po stronie wykonawcy** — nie stawiaj z tego zarzutu.
