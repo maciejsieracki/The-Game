@@ -28,6 +28,12 @@ process.on('exit', () => {
     }
   } catch { /* best-effort */ }
 });
+// Przerwanie (SIGTERM z `timeout`, SIGINT z Ctrl-C, SIGHUP) nie odpala haka `exit`.
+// Przekierowujemy je na process.exit(), zeby sprzatanie wyzej wykonalo sie tak samo.
+// SIGKILL jest nieprzechwytywalny i zostawi katalog — to jedyna luka i jest swiadoma.
+for (const sig of ['SIGINT', 'SIGTERM', 'SIGHUP']) {
+  process.on(sig, () => { process.exit(130); });
+}
 const BUNDLE = path.join(os.tmpdir(), `combat-bundle-legion-${TMPDIR_RUN_ID}.cjs`);
 const esbuild = path.join(GRA, 'node_modules', '.bin', 'esbuild');
 execSync(`"${esbuild}" "${path.join(GRA, 'src/game/combat.ts')}" --bundle --platform=node --format=cjs --outfile="${BUNDLE}"`, { stdio: 'pipe' });

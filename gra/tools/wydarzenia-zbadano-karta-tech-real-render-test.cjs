@@ -85,6 +85,12 @@ process.on('exit', () => {
     }
   } catch { /* best-effort */ }
 });
+// Przerwanie (SIGTERM z `timeout`, SIGINT z Ctrl-C, SIGHUP) nie odpala haka `exit`.
+// Przekierowujemy je na process.exit(), zeby sprzatanie wyzej wykonalo sie tak samo.
+// SIGKILL jest nieprzechwytywalny i zostawi katalog — to jedyna luka i jest swiadoma.
+for (const sig of ['SIGINT', 'SIGTERM', 'SIGHUP']) {
+  process.on(sig, () => { process.exit(130); });
+}
 const OUT_DIR = DIST_ARG !== null ? path.resolve(DIST_ARG) : path.join(require('os').tmpdir(), `civ-zbadano-karta-tech-dist-${TMPDIR_RUN_ID}`);
 const OUT_HTML = 'file://' + path.join(OUT_DIR, 'index.html') + '?playtest=mapa';
 

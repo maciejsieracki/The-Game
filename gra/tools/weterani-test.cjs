@@ -41,6 +41,12 @@ const TMPDIR_RUN_DIR = fs.mkdtempSync(path.join(os.tmpdir(), 'civ-weterani-'));
 // Unikalnosc bez sprzatania zamienilaby kolizje w staly wyciek dysku — kasujemy
 // WYLACZNIE wlasny katalog tego przebiegu.
 process.on('exit', () => { try { fs.rmSync(TMPDIR_RUN_DIR, { recursive: true, force: true }); } catch { /* best-effort */ } });
+// Przerwanie (SIGTERM z `timeout`, SIGINT z Ctrl-C, SIGHUP) nie odpala haka `exit`.
+// Przekierowujemy je na process.exit(), zeby sprzatanie wyzej wykonalo sie tak samo.
+// SIGKILL jest nieprzechwytywalny i zostawi katalog — to jedyna luka i jest swiadoma.
+for (const sig of ['SIGINT', 'SIGTERM', 'SIGHUP']) {
+  process.on(sig, () => { process.exit(130); });
+}
 function bundle(entry, outName) {
   const outfile = path.join(TMPDIR_RUN_DIR, outName);
   execSync(

@@ -85,6 +85,12 @@ process.on('exit', () => {
     }
   } catch { /* best-effort */ }
 });
+// Przerwanie (SIGTERM z `timeout`, SIGINT z Ctrl-C, SIGHUP) nie odpala haka `exit`.
+// Przekierowujemy je na process.exit(), zeby sprzatanie wyzej wykonalo sie tak samo.
+// SIGKILL jest nieprzechwytywalny i zostawi katalog — to jedyna luka i jest swiadoma.
+for (const sig of ['SIGINT', 'SIGTERM', 'SIGHUP']) {
+  process.on(sig, () => { process.exit(130); });
+}
 const OUT_DIR = path.join(os.tmpdir(), `civ-dist-perf-interaction-latency-${TMPDIR_RUN_ID}`);
 const OUT_HTML = 'file://' + path.join(OUT_DIR, 'index.html');
 const FALLBACK_CHROME = '/opt/pw-browsers/chromium-1194/chrome-linux/chrome';

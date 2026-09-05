@@ -34,6 +34,12 @@ process.on('exit', () => {
     }
   } catch { /* best-effort */ }
 });
+// Przerwanie (SIGTERM z `timeout`, SIGINT z Ctrl-C, SIGHUP) nie odpala haka `exit`.
+// Przekierowujemy je na process.exit(), zeby sprzatanie wyzej wykonalo sie tak samo.
+// SIGKILL jest nieprzechwytywalny i zostawi katalog — to jedyna luka i jest swiadoma.
+for (const sig of ['SIGINT', 'SIGTERM', 'SIGHUP']) {
+  process.on(sig, () => { process.exit(130); });
+}
 // Nazwa BEZ czlonu "preview": to katalog ROBOCZY (bundle + html), a nie zrzuty-dowody.
 // Hak sprzatajacy celowo omija nazwy z "shots"/"preview"/"zrzut", wiec stara nazwa
 // zostawialaby ten katalog na dysku po kazdym przebiegu. Wlasciwy produkt idzie do OUT.

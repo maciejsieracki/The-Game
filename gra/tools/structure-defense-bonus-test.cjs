@@ -91,6 +91,12 @@ process.on('exit', () => {
     }
   } catch { /* best-effort */ }
 });
+// Przerwanie (SIGTERM z `timeout`, SIGINT z Ctrl-C, SIGHUP) nie odpala haka `exit`.
+// Przekierowujemy je na process.exit(), zeby sprzatanie wyzej wykonalo sie tak samo.
+// SIGKILL jest nieprzechwytywalny i zostawi katalog — to jedyna luka i jest swiadoma.
+for (const sig of ['SIGINT', 'SIGTERM', 'SIGHUP']) {
+  process.on(sig, () => { process.exit(130); });
+}
 const COMBAT_BUNDLE = path.join(os.tmpdir(), `sdb-combat-bundle-${TMPDIR_RUN_ID}.cjs`);
 esbuild.buildSync({
   entryPoints: [path.join(GRA_DIR, 'src/game/combat.ts')],
