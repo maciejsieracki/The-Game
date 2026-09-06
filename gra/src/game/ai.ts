@@ -2793,11 +2793,17 @@ export function decideAITurn(
     }
 
     // 4b: adjacent enemy city -> move onto it (engine handles capture)
-    const adjacentEnemyCity = (clusterConsolidationPhase ? clusterEnemyCities : engageableEnemyCities).find(
-      ec => isWithinCityAttackRange(unit, ec, data),
-    ) ?? engageableEnemyCities.find(
-      ec => isWithinCityAttackRange(unit, ec, data),
-    );
+    // CYWIL NIE ZDOBYWA (P-AI-BRAK-SCIEZKI-ZDOBYCIA-MIASTA-ADIACENCJA-Q1, obrona
+    // zarzutu 1): osadnik/robotnik nie ma czym przejąć miasta (kotwica
+    // `!isCivilianUnit` w `tryAutoCaptureEmptyCityAt`), więc rozkaz wjazdu na heks
+    // obcego miasta byłby dla niego turą straconą bez efektu. Zwiadowca ma własną
+    // gałąź wyżej. Silnik trzyma tę samą granicę niezależnie (canAiEnterEmptyEnemyCity).
+    const adjacentEnemyCity = isCivilianUnit(unit) ? undefined
+      : (clusterConsolidationPhase ? clusterEnemyCities : engageableEnemyCities).find(
+        ec => isWithinCityAttackRange(unit, ec, data),
+      ) ?? engageableEnemyCities.find(
+        ec => isWithinCityAttackRange(unit, ec, data),
+      );
     if (adjacentEnemyCity !== undefined) {
       commands.push({
         type: 'move',
@@ -2896,7 +2902,12 @@ export function decideAITurn(
       }
 
       const step = firstStep(unit, map, targetCity.q, targetCity.r, units);
-      if (step !== null) {
+      // Cywil nie wjeżdża na heks obcego miasta (patrz 4b) — gdy pierwszym krokiem
+      // marszu jest sam heks celu, gałąź jest pomijana i jednostka dostaje niżej
+      // zwykłe zachowanie (wioska / patrol / idle) zamiast tury straconej.
+      const stepIsTargetCityHex = step !== null
+        && step.q === targetCity.q && step.r === targetCity.r;
+      if (step !== null && !(stepIsTargetCityHex && isCivilianUnit(unit))) {
         commands.push({
           type: 'move',
           unitId: unit.id,

@@ -135,3 +135,56 @@ sufiksem (PID albo losowy).
 `git -C <worktree> log -1 --oneline` i `git -C <worktree> status --short`. Oczekiwana baza
 i czyste drzewo. Rozbieżność → `BLOCK`, bez zapisu. Mutacje cofaj przez KOPIĘ pliku,
 nigdy przez `git checkout`.
+
+---
+
+## RATYFIKACJA ORKIESTRATORA — runda 2 (2026-09-06, po Final Control `FAIL`)
+
+Jeden `NAPRAW` i jedna pozycja do mojego rozstrzygnięcia. Obie poniżej.
+
+### R2-F1 (`NAPRAW`) — wpięcie `unitIsCivilian` w `main.ts` nie jest pilnowane żadną asercją
+
+Mutacja M3 Final Control **zostawia bramkę 84/84 zieloną**, po cichu wyłączając silnikową
+barierę wprowadzoną naprawą zarzutu 1. Blok A5 pilnuje `canOccupyCityHex` i sąsiadów,
+ale samego wpięcia — nie.
+
+To jest ta sama klasa, którą łapiemy dziś w czterech tematach naraz: **bramka opisuje kod,
+którego istnienia nie sprawdza**. Naprawa jest zielona, asercja jest zielona, a wyłączenie
+naprawy niczego nie czerwieni.
+
+**Dołóż asercję pilnującą wpięcia** i udowodnij ją **powtórzeniem mutacji M3** — bramka ma
+teraz czerwienieć, z podaną liczbą faili. Bez tego przebiegu runda jest niedomknięta.
+Liczba asercji rośnie, nie spada.
+
+### R2-F2 (moje rozstrzygnięcie) — `gra/src/game/ai-city-capture-executor.ts` poza allowlistą
+
+Final Control słusznie zauważył, że pliku **nie ma ani na allowliście, ani na liście
+zakazanych**. Zmiana była minimalna i **wymuszona przez `tsc`**.
+
+**Rozstrzygam: plik wchodzi do allowlisty, zmiana zostaje.** Powód: to jest plik utworzony
+przez samą naprawę, a nie cudzy plik wciągnięty do zakresu; bez niego naprawa nie kompiluje
+się. Allowlista rundy 1 była moja i była niepełna — **to mój błąd w dispatchu, nie
+przekroczenie zakresu przez Operatora.** Operator postąpił prawidłowo, zgłaszając to zamiast
+przemilczeć.
+
+**Granica zostaje ostra:** ani jednej innej zmiany w tym pliku ponad to, co wymusza `tsc`.
+W raporcie wypisz jego pełny diff — ma być tak mały, jak twierdzisz.
+
+### Czego runda 2 NIE robi
+
+Nie rusza zakresu z rundy 1 (przejęcie miasta niebronionego przez adiacencję).
+Nie dotyka `barbarians.ts` — trzyma go temat barbarzyńców (§2b).
+Nie rozszerza naprawy na miasta bronione — asercja negatywna z kryterium 4 zostaje.
+
+### KRYTERIA KOŃCA rundy 2
+
+1. Nowa asercja pilnująca wpięcia `unitIsCivilian`; mutacja M3 → **czerwona**, podaj liczbę faili.
+2. Liczba asercji w bramce **nie mniejsza** niż 84.
+3. Pełny diff `ai-city-capture-executor.ts` w raporcie, ograniczony do tego, co wymusza `tsc`.
+4. Asercja negatywna „miasto BRONIONE nadal nie jest przejmowane rozkazem `move`" —
+   nadal zielona i nadal nietautologiczna (pokaż mutacją).
+5. `tsc --noEmit` zielony; pięć bramek referencyjnych zielonych.
+6. Bramki gracza i barbarzyńców zielone — dzielą z AI tę samą funkcję przejęcia i to one
+   wyłapią przypadkowe rozluźnienie warunków.
+
+Mutacje cofaj przez KOPIĘ pliku, `git diff --quiet` po każdej.

@@ -5777,7 +5777,7 @@ kodowi po `d618a8ae`.
 | Temat | Pytanie | **Odpowiedz wlasciciela** | Skutek dla dispatchu |
 |---|---|---|---|
 | `P-BARBARZYNCY-KRAZENIE-NIEBRONIONE-Q1` | Czy krazenie jednostki miedzy >=2 niebronionymi miastami bez dotarcia do bronionego jest akceptowalne na easy/normal? (Na hard problem znika sam.) | **NAPRAWIC — barbarzynca ma dokonac wyboru i isc.** Jedna regula na wszystkich poziomach, bez warunku per trudnosc. | Zmierzony dzis cykl: okres 22 tury przy dwoch miastach, 44 przy trzech, bronione miasto nieosiagniete w 300 turach. Swiadomie przyjety skutek: barbarzyncy robia sie grozniejsi na latwym poziomie. |
-| `P-AI-BRAK-SCIEZKI-ZDOBYCIA-MIASTA-ADIACENCJA` | Duze AI nie ma zadnej dzialajacej sciezki zdobycia miasta przez adiacencje — `ai.ts:2517` emituje `move`, `canUnitOccupyCityHex` odrzuca bezwarunkowo, jednostka trafia do `unitActed` i traci ture. Gracz (3 wywolania) i barbarzyncy (1) maja `tryAutoCaptureEmptyCityAt`; cywilizacje major **zero**. | **NAPRAWIC — AI ma zdobywac miasta jak gracz.** | To jest wyrownanie parytetu, nie nowa funkcja. Swiadomie przyjety skutek: AI zaczyna realnie odbierac miasta sobie nawzajem i graczowi. |
+| `P-AI-BRAK-SCIEZKI-ZDOBYCIA-MIASTA-ADIACENCJA` | Duze AI nie ma zadnej dzialajacej sciezki zdobycia miasta przez adiacencje — `ai.ts:2517` emituje `move`, `canUnitOccupyCityHex` odrzuca bezwarunkowo, jednostka trafia do `unitActed` i traci ture. Gracz (3 wywolania) i barbarzyncy (1) maja `tryAutoCaptureEmptyCityAt`; cywilizacje major **zero**. **[SPROSTOWANIE 2026-09-06, Final Control R1 wlasny F3]: teza „cywilizacje major zero" byla juz nieaktualna od commitu `744c4374`, sprzed dispatchu tego tematu — parytet byl realnie zlamany, ale tylko dla JEDNOSTEK CYWILNYCH (`unitIsCivilian` nie bylo threadowane do `main.ts`), nie dla calej sciezki.** | **NAPRAWIC — AI ma zdobywac miasta jak gracz.** | To jest wyrownanie parytetu, nie nowa funkcja. Swiadomie przyjety skutek: AI zaczyna realnie odbierac miasta sobie nawzajem i graczowi. **STATUS: ZINTEGROWANE 2026-09-06** — `unitIsCivilian` dopisane do wywolania egzekutora w `main.ts` (parytet z `tryAutoCaptureEmptyCityAt`: cywil nie przejmuje miasta), bramka `gra/tools/ai-zdobycie-miasta-adiacencja-test.cjs` 88/88, Final Control rundy 2: zero NAPRAW, PASS. |
 | Gorace krzeslo, Etap 7 | Format zapisu musi dostac v3 (nie zniesie dwoch ludzi). Co ze starymi zapisami? | **BEZ MIGRACJI — stare zapisy przestaja dzialac.** | Tylko nowy format; o jedna warstwe kodu i jedna klase bledow mniej. **Konsekwencja przyjeta swiadomie po jej opisaniu: kazdy istniejacy zapis z playtestow staje sie bezuzyteczny, w tym te sluzace do odtwarzania zgloszen.** Etap 7 NIE pisze funkcji migrujacej v2->v3; ma za to jasno komunikowac uzytkownikowi, ze zapis jest w starym formacie, zamiast wywalac sie po cichu. |
 | `P-KOLOR-SUROWCE-MIASTO-VS-MAPA-Q1` | Ktora konwencja kolorow wygrywa przy sprzecznosci? | **Ta czesciej uzywana w kodzie.** | Operator liczy wystapienia i wybiera wariant obecny w wiekszej liczbie miejsc. Kazdy surowiec ze zmieniona wartoscia ma byc wymieniony w raporcie: przed i po. |
 
@@ -5863,3 +5863,33 @@ czyste — **nie jest to defekt tematu barbarzyncow**, bramki nie byly w nim zmi
 tak, zeby pisaly dowody PNG do wlasnego, tymczasowego katalogu (np. `os.tmpdir()` z unikalnym
 sufiksem, wzorem `dowody/n12-zrzuty-zywy-chromium.cjs`), nigdy do sledzonego katalogu runu
 innego tematu.
+
+## Cztery znaleziska Final Control R2 `P-AI-BRAK-SCIEZKI-ZDOBYCIA-MIASTA-ADIACENCJA-Q1` (2026-09-06)
+
+Temat zintegrowany (PASS, zero NAPRAW). Final Control zostawil cztery pozycje do osobnej
+rejestracji, wszystkie **ODDAL** (nie sa defektem tej rundy), ale warte zapisania:
+
+1. **FC-N2 (priorytet).** Wpiecie `targetVisible` w wywolanie egzekutora w `main.ts` nie jest
+   pilnowane przez ZADNA bramke — mutacja FC11 (`targetVisible` na sztywne `true`) zostaje
+   zielona w bramce tematu I w calej rodzinie (gracz/barbarzyncy/AI, 11 bramek). Kod sprzed
+   tego tematu, nie regresja — ale luka pokrycia realna. **STATUS: ZAREJESTROWANE, NIE
+   DISPATCHOWANE.** DOMAIN: INFRA. Zakres: nowa asercja (w ktorejs z bramek rodziny) pilnujaca
+   ze `targetVisible: false` blokuje ruch/przejecie.
+2. **FC-N1.** Asercja `K4-DYSTANS` w `ai-zdobycie-miasta-adiacencja-test.cjs` jest tautologiczna
+   dla mutacji FC4 (zdjecie bramki adiacencji zostawia BRAMKE TEMATU zielona), ALE ta sama
+   mutacja czerwieni `city-hex-movement-test` (12/13) i `ai-city-capture-integration-test`
+   (10/14) — pokrycie jest, tylko w innej bramce niz oczekiwano. Planista trzyma niezalezna
+   bramke `isWithinCityAttackRange` (`gra/src/game/ai.ts:800`, `hexDistance === 1`). **STATUS:
+   ZAREJESTROWANE, NIE DISPATCHOWANE.** DOMAIN: INFRA. Zakres: doprecyzowac komentarz przy
+   `K4-DYSTANS`, ze pokrycie lezy w bramkach sasiednich, nie w tej.
+3. **FC-N4.** Asercje `A5f-A5h` (egzekucja wyrazenia `unitIsCivilian`) przepuszczaja
+   behawioralnie rownowazna kopie formuly zamiast prawdziwego uzycia `isCivilianUnit` (FC13:
+   kopia formuly zamiast importu, 88/88 zielone). **STATUS: ZAREJESTROWANE, NIE
+   DISPATCHOWANE.** DOMAIN: INFRA. Zakres: dolozyc asercje ze wywolanie faktycznie uzywa
+   `isCivilianUnit` (np. przez podmiane funkcji w module i sprawdzenie ze wynik sie zmienia).
+4. **F4 (runda 1, kosmetyczne).** Crash bramki po wypisaniu faili obserwowany pod kilkoma
+   mutacjami (FC5/FC7/FC9/FC12), ale exit code zawsze `!= 0` przy tym, wiec falszywa zielen
+   jest niemozliwa. **STATUS: ZAREJESTROWANE, NIE DISPATCHOWANE.** DOMAIN: INFRA. Zakres:
+   `gra/tools/ai-zdobycie-miasta-adiacencja-test.cjs` — opakowac wypisywanie wyniku w
+   try/catch, zeby crash nie maskowal komunikatu diagnostycznego (nie wplywa na poprawnosc
+   wyniku, tylko na czytelnosc).
