@@ -607,8 +607,11 @@ html.civ-ui-zoom-active .civ-hud .b-wiki{padding:0 11px;font-size:11px;letter-sp
 .civ-hud .civ-hud-chip-val{font-size:15px;font-weight:700;color:var(--civ-gold-primary);}
 /* P-KOLOR-SUROWCE-MIASTO-VS-MAPA-Q1: kolor tozsamosci szesciu surowcow pochodzi
    WYLACZNIE z palety resourceColors.ts — z tego samego modulu czyta panel miasta.
-   Wczesniej Nauka miala tu wlasny literal #7cb4e4, nieobecny w kanonie tokenow. */
-${resourceColorClassCss('.civ-hud')}
+   Wczesniej Nauka miala tu wlasny literal #7cb4e4, nieobecny w kanonie tokenow.
+   Reguly palety sa DOKLEJANE PO tym literale szablonowym (patrz koniec ensureStyles),
+   a nie wstawiane wstawka szablonowa: build-panel-ulepszenia-scroll-real-render-test.cjs
+   replikuje ten literal i czerwienieje na kazdej wstawce spoza swojej mapy. Doklejenie
+   na koncu zachowuje tez kolejnosc kaskady wobec .civ-hud .civ-hud-chip-val. */
 .civ-hud .civ-hud-chip-rate{font-size:10px;color:var(--tg-green);}
 .civ-hud .civ-hud-chip-rate.warn{color:var(--tg-orange);}
 .civ-hud .hud-right{display:flex;align-items:center;gap:${HUD_GAP_MD_PX}px;flex-shrink:0;}
@@ -734,7 +737,7 @@ html.civ-ui-zoom-active .civ-hud-util-dock{
 `;
   const s = document.createElement('style');
   s.id = STYLE_ID;
-  s.textContent = css;
+  s.textContent = css + '\n' + resourceColorClassCss('.civ-hud') + '\n';
   document.head.appendChild(s);
 }
 
