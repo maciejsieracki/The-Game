@@ -158,11 +158,35 @@ export interface LawBreakdownInput {
    * nigdy suma.
    */
   palacTier?: 1 | 2 | 3 | null;
+  /**
+   * @deprecated R-PRAWO-PRZEBUDOWA-SKALI-Q1 D5 (właściciel 2026-09-05): kara
+   * `prawo_kara_brak_garnizonu` USUNIĘTA NA STAŁE — nie generuje już żadnej linii ani
+   * wpływu na netto/prawPct, ten kod jest CAŁKOWICIE NIEAKTYWNY (patrz computeLawBreakdown:
+   * brak odczytu tego pola). Pole zostaje wyłącznie w typie, bo `gra/src/main.ts` (poza
+   * allowlistą tego tematu — zakaz bezwzględny w 00-dispatch.md) wciąż przekazuje je jako
+   * property obiektu literalnego; usunięcie pola złamałoby `tsc --noEmit` w pliku, którego
+   * nie wolno tknąć. Konflikt zgłoszony: dyspozycje/autobot/runs/R-PRAWO-PRZEBUDOWA-SKALI-Q1/
+   * decision-abc.md. Powód braku ryzyka balansowego: pole jest martwe funkcjonalnie, nie
+   * wpływa na żadną grywalną wartość — usunięcie JSON-owego klucza i logiki jest kompletne.
+   */
   brakGarnizonuKara?: boolean;
-  /** Kara Prawa: niestabilny podbój bez garnizonu. */
+  /**
+   * @deprecated R-PRAWO-PRZEBUDOWA-SKALI-Q1 D5 — kara `prawo_kara_podboj_bez_garnizonu`
+   * USUNIĘTA NA STAŁE, ten kod jest CAŁKOWICIE NIEAKTYWNY. Patrz komentarz przy
+   * `brakGarnizonuKara` wyżej — ten sam powód (main.ts poza allowlistą) i to samo
+   * zgłoszenie konfliktu.
+   */
   conquestNoGarrisonPenalty?: number;
   /** D18-4: pierwsze miasto gracza na easy (T1–T10). */
   stolicaEasyBonus?: boolean;
+  /**
+   * R-PRAWO-PRZEBUDOWA-SKALI-Q1 D2/D3: budynek Garnizon (buildings.json id 'garnizon')
+   * zbudowany w tym mieście — WŁASNA, jednoznaczna linia w rozpisce (`garnizon_budynek`),
+   * odróżniona od `garnizon` (jednostki wojskowe stacjonujące w mieście, `garnizonCount`
+   * wyżej). Te dwa pola NIE są tym samym bytem — pułapka nazewnicza opisana w
+   * dyspozycje/autobot/runs/R-PRAWO-PRZEBUDOWA-SKALI-Q1/00-dispatch.md.
+   */
+  hasGarnizonBudynek?: boolean;
 }
 
 export const REVOLT_CRITICAL_POR_PCT = 12;
@@ -204,10 +228,19 @@ export const SZMAX_DEFAULTS: Readonly<Record<number, number>> = {
   3: SZMAX_BY_ERA_DEFAULT[2],
 };
 /**
- * Skala % Prawo — 5× jednostka (20) = 100%; 1 jedn. ≠ pełne Prawo (PT 2026-07).
- * Fallback dla `prawo.prawo_max_epoka` w society-params.json (GOAL 1 jw.).
+ * Fallback dla `prawo.prawo_max_epoka` w society-params.json.
+ * R-PRAWO-PRZEBUDOWA-SKALI-Q1 D3/D3a/D3b (właściciel 2026-09-05): dosunięty do danych —
+ * kolumna `normal` z JSON (40/65/85), uchyla poprzedni płaski fallback 50/75/100. Ta sama
+ * konwencja co SZMAX_BY_ERA_DEFAULT — fallback działa wyłącznie przy `society = null`.
  */
-const PRAWMAX_BY_ERA_DEFAULT: readonly [number, number, number] = [50, 75, 100];
+const PRAWMAX_BY_ERA_DEFAULT: readonly [number, number, number] = [40, 65, 85];
+/**
+ * R-PRAWO-PRZEBUDOWA-SKALI-Q1 D2/D3: Prawo z BUDYNKU Garnizon per epoka (25/35/47) —
+ * fallback dla `prawo.prawo_garnizon_budynek_epoka`. NIE mylić z `PRAW_GARNIZON_JEDNOSTKA`-
+ * podobnym mechanizmem jednostek wojskowych (poza kalibracją prawMax, D1) — to jest budynek,
+ * w kalibracji.
+ */
+const PRAWO_GARNIZON_BUDYNEK_BY_ERA_DEFAULT: readonly [number, number, number] = [25, 35, 47];
 /**
  * G4 — fallback dla `szczescie.szczescie_skala_kultura_religia` (decyzja właściciela
  * 2026-09-05: 10 / 16 / 23 dla epok 1–3). Wartość wiążąca żyje w JSON; ta stała działa
@@ -221,8 +254,13 @@ export const PRAWMAX_DEFAULTS: Readonly<Record<number, number>> = {
 };
 /** Fallback dla `szczescie.szczescie_pct_cap`. */
 export const SZ_PCT_CAP = 120;
-/** Fallback dla `prawo.prawo_pct_cap`. */
-export const PRAW_PCT_CAP = 100;
+/**
+ * Fallback dla `prawo.prawo_pct_cap`. R-PRAWO-PRZEBUDOWA-SKALI-Q1 D7 (właściciel
+ * 2026-09-05): 170, uchyla poprzednie 100 — zapas nad setką, żeby nadwyżka Pałacu i małych
+ * miast była widoczna. Uwaga: `computePorPct` (order.ts) ma WŁASNY cap 120 (`szczescie_pct_cap`),
+ * więc podniesienie tego capu NIE przepuszcza PorPct powyżej 120%.
+ */
+export const PRAW_PCT_CAP = 170;
 
 /**
  * R-SZCZESCIE-AUDYT-A-SKALA-NORMALIZACJA-Q1 (GOAL 2) — mianownik procentu rośnie z miastem.
@@ -250,7 +288,13 @@ export const PRAW_PCT_CAP = 100;
  * `gra/tools/szczescie-skala-normalizacja-test.cjs` (sekcja 2) — asercja R4.
  */
 export const SZ_MAX_POP_WSP_DEFAULT = 0.04;
-export const PRAW_MAX_POP_WSP_DEFAULT = 0.041;
+/**
+ * R-PRAWO-PRZEBUDOWA-SKALI-Q1 D4 (właściciel 2026-09-05): 0,04 — JEDNA wartość na
+ * easy/normal/hard, uchyla wcześniejsze 0,033/0,041/0,049 (fallback dosunięty do kolumny
+ * `normal` w JSON, ta sama konwencja co `SZ_MAX_POP_WSP_DEFAULT`). Ten sam współczynnik co
+ * Szczęście — wielkość miasta ma obciążać oba filary Porządku identycznie.
+ */
+export const PRAW_MAX_POP_WSP_DEFAULT = 0.04;
 export const SZ_MAX_POP_ODNIESIENIA_DEFAULT = 2;
 export const PRAW_MAX_POP_ODNIESIENIA_DEFAULT = 2;
 
@@ -329,6 +373,11 @@ export interface SocietyScaleParams {
   /** Mianownik % Prawa per epoka; indeks 0 = epoka 1. */
   prawMaxByEra: number[];
   /**
+   * R-PRAWO-PRZEBUDOWA-SKALI-Q1 D2/D3: Prawo z budynku Garnizon per epoka (25/35/47).
+   * Indeks 0 = epoka 1; epoki dalsze biorą ostatni wpis, jak `prawMaxByEra`.
+   */
+  prawGarnizonBudynekByEra: number[];
+  /**
    * G4: `x` per epoka dla linii Kultury i Religii (obie mają tę samą wartość).
    * Indeks 0 = epoka 1; epoki dalsze biorą ostatni wpis.
    */
@@ -350,6 +399,7 @@ export interface SocietyScaleParams {
 export const FALLBACK_SOCIETY_SCALE: Readonly<SocietyScaleParams> = Object.freeze({
   szMaxByEra: [...SZMAX_BY_ERA_DEFAULT],
   prawMaxByEra: [...PRAWMAX_BY_ERA_DEFAULT],
+  prawGarnizonBudynekByEra: [...PRAWO_GARNIZON_BUDYNEK_BY_ERA_DEFAULT],
   kultReligByEra: [...KULT_RELIG_BY_ERA_DEFAULT],
   szPctCap: SZ_PCT_CAP,
   prawPctCap: PRAW_PCT_CAP,
@@ -373,6 +423,9 @@ export function loadSocietyScaleParams(
   return {
     szMaxByEra: pickSocietyArray(szBlock, 'szczescie_max_epoka', difficulty, f.szMaxByEra),
     prawMaxByEra: pickSocietyArray(prBlock, 'prawo_max_epoka', difficulty, f.prawMaxByEra),
+    prawGarnizonBudynekByEra: pickSocietyArray(
+      prBlock, 'prawo_garnizon_budynek_epoka', difficulty, f.prawGarnizonBudynekByEra,
+    ),
     kultReligByEra: pickSocietyArray(
       szBlock, 'szczescie_skala_kultura_religia', difficulty, f.kultReligByEra,
     ),
@@ -475,6 +528,18 @@ export function prawMaxForEra(
   scale: SocietyScaleParams = FALLBACK_SOCIETY_SCALE,
 ): number {
   return maxFromEraTable(era, scale.prawMaxByEra);
+}
+
+/**
+ * R-PRAWO-PRZEBUDOWA-SKALI-Q1 D2/D3: Prawo z budynku Garnizon w danej epoce (25/35/47).
+ * NIE mylić z `prawo_garnizon_per_jednostka` (bonus za jednostki wojskowe, poza kalibracją
+ * prawMax, D1) — to jest budynek administracyjny, w kalibracji.
+ */
+export function prawGarnizonBudynekForEra(
+  era: number,
+  scale: SocietyScaleParams = FALLBACK_SOCIETY_SCALE,
+): number {
+  return maxFromEraTable(era, scale.prawGarnizonBudynekByEra);
 }
 
 /**
@@ -802,16 +867,18 @@ export function computeLawBreakdown(
     if (v) lines.push({ id: 'palac', label, value: v });
   }
 
-  if (input.brakGarnizonuKara) {
-    const v = pickSociety(prBlock, 'prawo_kara_brak_garnizonu', diff, -2);
-    if (v) lines.push({ id: 'brak_garnizonu', label: 'Brak garnizonu (duże miasto)', value: v });
-  }
-  if (input.conquestNoGarrisonPenalty) {
-    lines.push({
-      id: 'podboj_bez_garnizonu',
-      label: 'Podbój bez garnizonu',
-      value: input.conquestNoGarrisonPenalty,
-    });
+  // R-PRAWO-PRZEBUDOWA-SKALI-Q1 D5 (właściciel 2026-09-05, USUNIĘTE NA STAŁE — NIE
+  // PRZYWRACAĆ): `prawo_kara_brak_garnizonu` (−2) i `prawo_kara_podboj_bez_garnizonu` (−3).
+  // Obie sprawdzały jednostki wojskowe na heksie miasta, a wojsko wypada z Prawa (D1). Brak
+  // budynku Garnizon jest już ukarany tym, że nie daje swoich punktów (linia niżej) — druga
+  // kara za to samo byłaby podwójnym liczeniem, dokładnie jak usunięta kara „obca religia"
+  // przy szczęściu. `input.brakGarnizonuKara` / `input.conquestNoGarrisonPenalty` zostają w
+  // typie jako pola martwe wyłącznie z powodu main.ts poza allowlistą — patrz komentarz przy
+  // definicji pól w `LawBreakdownInput`.
+
+  if (input.hasGarnizonBudynek) {
+    const v = prawGarnizonBudynekForEra(era, scale);
+    if (v) lines.push({ id: 'garnizon_budynek', label: 'Garnizon (budynek)', value: v });
   }
 
   const pop = Math.max(0, Math.floor(input.population ?? 0));

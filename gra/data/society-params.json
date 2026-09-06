@@ -834,19 +834,12 @@
       "jednostka": "pkt Prawa",
       "opis": "Pałac III — Prawo rośnie z tierem Pałacu; Pretorium = 70% tej wartości (decyzja Macieja 2026-07-25, Pytania 27=A i 28)."
     },
-    "prawo_kara_brak_garnizonu": {
-      "easy": -1,
-      "normal": -2,
-      "hard": -3,
-      "jednostka": "pkt Prawa",
-      "opis": "Kara gdy pop≥6 i brak garnizonu (opcjonalne v1.0)."
-    },
-    "prawo_kara_podboj_bez_garnizonu": {
-      "easy": -2,
-      "normal": -3,
-      "hard": -4,
-      "jednostka": "pkt Prawa",
-      "opis": "Kara Prawa gdy po podboju obca kultura+religia i brak jednostek w mieście. [B-KULT-REL]"
+    "prawo_garnizon_budynek_epoka": {
+      "easy": [25, 35, 47],
+      "normal": [25, 35, 47],
+      "hard": [25, 35, 47],
+      "jednostka": "pkt Prawa (per epoka)",
+      "opis": "R-PRAWO-PRZEBUDOWA-SKALI-Q1 D2/D3 (decyzja właściciela 2026-09-05): Prawo z BUDYNKU Garnizon (buildings.json id 'garnizon', R-BUDYNEK-GARNIZON-NOWY-Q1) — filar kalibracji prawo_max_epoka (53/85/121 razem z Dom Starszyzny/Dwór Zarządcy+Trybunał/Pretorium+Trybunał+Sąd). Skaluje się z epoką, nie stała, żeby jego udział nie spadał z epoką (choroba rozwadniania jak przy religii). Ta sama wartość na easy/normal/hard — trudność Prawa idzie WYŁĄCZNIE mianownikiem (D3a). PUŁAPKA NAZEWNICZA — NIE MYLIĆ z `prawo_garnizon_per_jednostka` niżej: to jest zupełnie inny byt — bonus za JEDNOSTKI WOJSKOWE stacjonujące w mieście, świadomie POZA kalibracją prawMax (D1). Ten klucz tu to BUDYNEK administracyjny, W kalibracji. Linia w rozpisce ma własne id `garnizon_budynek`, odróżnione od `garnizon` (wojsko) — society-breakdown.ts."
     },
     "prawo_bonus_osada": {
       "easy": 4,
@@ -885,18 +878,18 @@
       "opis": "Populacja ≤ prog → bonus osady (D16-A)."
     },
     "prawo_max_epoka": {
-      "easy": [50, 75, 100],
-      "normal": [50, 75, 100],
-      "hard": [50, 75, 100],
+      "easy": [35, 55, 75],
+      "normal": [40, 65, 85],
+      "hard": [45, 75, 100],
       "jednostka": "pkt Prawa (mianownik %)",
-      "opis": "R-SZCZESCIE-AUDYT-A GOAL 1: mianownik PrawPct per epoka (indeks 0 = epoka 1; epoki dalsze biorą ostatni wpis). Przeniesione 1:1 z PRAWMAX_DEFAULTS w society-breakdown.ts — zero zmiany zachowania. Stała w TS zostaje wyłącznie jako fallback."
+      "opis": "R-PRAWO-PRZEBUDOWA-SKALI-Q1 D3/D3a/D3b (decyzja właściciela 2026-09-05): nowa tabela per trudność, uchyla płaskie [50,75,100]. Kalibracja: miasto ZWYKŁE (nie stolica) z kompletem budynków epoki wliczając budynek Garnizon (25/35/47) — sumy budynków 53/85/121. Mianownik CELOWO niższy niż suma budynków (małe miasto przebija 100%, nadwyżka widoczna pod sufitem 170 — prawo_pct_cap). Trudność wyrażana WYŁĄCZNIE mianownikiem (jak G13 Szczęścia) — jedyny sposób, żeby po D4 (współczynnik populacji płaski 0,04) Prawo nadal reagowało na wybór poziomu. Epoka 2/3 obniżone z pierwotnych 75/100 na 65/85 (D3b) — przy 75/100 ciąg 'ilu obywateli epoka umie rządzić' miał siodło (9,2→5,2→6,9), po poprawce rośnie (9,2→8,8→11,0). Wzór wyprowadzenia i kontrola wsteczna: dyspozycje/BALANS-PRAWO-PRZEBUDOWA.md §6e."
     },
     "prawo_pct_cap": {
-      "easy": 100,
-      "normal": 100,
-      "hard": 100,
+      "easy": 170,
+      "normal": 170,
+      "hard": 170,
       "jednostka": "%",
-      "opis": "R-SZCZESCIE-AUDYT-A GOAL 1: górne ograniczenie PrawPct (dawne PRAW_PCT_CAP w kodzie)."
+      "opis": "R-PRAWO-PRZEBUDOWA-SKALI-Q1 D7 (decyzja właściciela 2026-09-05): podniesione ze 100 na 170. Powód: Pałac (+35/+45/+55, tylko stolica) przy suficie 100 był niewidoczny — stolica zawsze siedziała na maksimum. Przy 170 stolica pokazuje ok. 145–166% i wkład Pałacu jest widoczny. Uwaga: PorPct (computePorPct, order.ts) ma WŁASNY, niezależny cap (`szczescie_pct_cap`=120) — podniesienie tego capu do 170 nie przepuszcza PorPct powyżej 120%, zmierzone w gra/tools/prawo-przebudowa-skali-test.cjs sekcja 3h."
     },
     "prawo_max_pop_odniesienia": {
       "easy": 2,
@@ -906,11 +899,11 @@
       "opis": "R-SZCZESCIE-AUDYT-A GOAL 2: populacja odniesienia mianownika Prawa — do tej wielkości włącznie próg dokładnie jak przed zmianą (neutralność startowa)."
     },
     "prawo_max_pop_wspolczynnik": {
-      "easy": 0.033,
-      "normal": 0.041,
-      "hard": 0.049,
+      "easy": 0.04,
+      "normal": 0.04,
+      "hard": 0.04,
       "jednostka": "× mianownika / 1 ludności (składane)",
-      "opis": "R-SZCZESCIE-AUDYT-A GOAL 2: prawMax = prawo_max_epoka[epoka] × (1 + wsp) ^ max(0, pop − prawo_max_pop_odniesienia). Składane, jak przy Szczęściu. Łagodniej niż Szczęście (normal 0,060 vs 0,072), bo źródła Prawa są grubo skwantowane (garnizon 20/jedn. z capem 5 jednostek, Pałac 35–55) i mają twardy cap 100% — zbyt stromy mianownik odciąłby duże miasta od osiągalnego Prawa zamiast wymagać od nich realnej administracji. Mnożniki końcowe na pop 12: easy 1,60× / normal 1,79× / hard 2,08×. Skutek graniczny (przeliczony niezależnie przez Operatora, Evaluatora i Final Control rundy 2 — poprzednia wersja tego opisu podawała 90,5% dla konfiguracji FIZYCZNIE NIEMOŻLIWEJ, mieszającej Pałac III z Pretorium: pierwszy jest budynkiem stolicy, drugi regionu, rozłączne twardo w production.ts). Realne wartości dla pop 12 z garnizonem 5 i pełną administracją WŁAŚCIWĄ dla wariantu miasta: STOLICA (Pałac I / II+Trybunał / III+Trybunał+Sąd) — easy i normal 100% we wszystkich epokach, hard 100% / 90,3% / 82,6%. REGION (Dom Starszyzny / Dwór Zarządcy+Trybunał / Pretorium+Trybunał+Sąd) — easy i normal 100%, hard 100% / 82% / 74,5%. Największe miasto na najwyższej trudności nie ma już darmowego 100% Prawa, a miasto regionalne jest wyraźnie trudniejsze do opanowania niż stolica — to jest zamierzone."
+      "opis": "R-PRAWO-PRZEBUDOWA-SKALI-Q1 D4 (decyzja właściciela 2026-09-05): JEDNA wartość 0,04 na easy/normal/hard, uchyla wcześniejsze 0,033/0,041/0,049. Ten sam współczynnik co szczescie_max_pop_wspolczynnik (R-SZCZESCIE-PRZEBUDOWA-SKALI-Q1 R3-A) — wielkość miasta ma obciążać oba filary Porządku (PorPct = 0,5×szPct + 0,5×prawPct) identycznie. Trudność Prawa jest odtąd wyrażana WYŁĄCZNIE przez prawo_max_epoka (D3a) — współczynnik populacyjny per trudność był ostatnim wyłomem od tej zasady. D4a (zasada wiążąca na przyszłe epoki, właściciel): rozrost miasta ma boleć, lekarstwem mają być NOWE BUDYNKI kolejnych epok, nie łagodzenie tego współczynnika."
     },
     "prawo_bonus_stolica_easy": {
       "easy": 1,

@@ -115,13 +115,22 @@ const PODZIAL = { procentNauka: 20, procentPieniadz: 70, procentLuksus: 10 };
 // wartosci na bazie 2bb422aa. SZCZESCIE juz ich nie uzywa: R-SZCZESCIE-PRZEBUDOWA-SKALI-Q1
 // G13 (wlasciciel 2026-09-05) przestawil `szczescie_max_epoka` na tabele PER TRUDNOSC
 // (nizej, SZMAX_G13), bo trudnosc ma byc odtad wyrazana WYLACZNIE mianownikiem Szczescia.
-// PRAWO nie bylo objete ta decyzja i zostaje 50/75/100 — dlatego PRZED_PRAWMAX zyje dalej.
+// PRAWO NIE BYLO OBJETE TA decyzja (zostawalo plaskie 50/75/100) — az do
+// R-PRAWO-PRZEBUDOWA-SKALI-Q1 (wlasciciel 2026-09-05, D3/D3a/D3b), ktory przeprowadzil
+// DOKLADNIE tę samą operację po stronie Prawa: tabela per trudnosc (PRAWMAX_D3 nizej),
+// bo po splaszczeniu `prawo_max_pop_wspolczynnik` do jednej liczby (D4) trudnosc Prawa
+// miala odtad WYLACZNIE ten jeden kanal. PRZED_PRAWMAX zostaje jako referencja
+// "sprzed R-PRAWO-PRZEBUDOWA-SKALI-Q1" (byla plaska 50/75/100), uzywana wylacznie tam,
+// gdzie test odtwarza HISTORYCZNY stan do porownania — nie jako oczekiwana wartosc dzisiaj.
 const PRZED_SZMAX = { 1: 14, 2: 20, 3: 28 };
 const PRZED_PRAWMAX = { 1: 50, 2: 75, 3: 100 };
 const DIFFS = ['easy', 'normal', 'hard'];
 
 // Tabela G13 — liczby WLASCICIELA z 00-dispatch.md, przepisane wprost, nie wyliczone.
 const SZMAX_G13 = { easy: [20, 40, 60], normal: [30, 50, 70], hard: [35, 55, 80] };
+// Tabela D3/D3a — liczby WLASCICIELA z R-PRAWO-PRZEBUDOWA-SKALI-Q1 00-dispatch.md,
+// przepisane wprost (nie wyliczone). Uchyla plaskie PRZED_PRAWMAX powyzej.
+const PRAWMAX_D3 = { easy: [35, 55, 75], normal: [40, 65, 85], hard: [45, 75, 100] };
 
 const PRZED_SZMAX_TAB = [14, 20, 28];
 
@@ -163,9 +172,15 @@ console.log('\n1. GOAL 1 — rownowaznosc: przeniesienie stalych nie zmienia zac
     wartownik.szczescie.szczescie_max_epoka[diff] = [997, 998, 999];
     eq(M.loadSocietyScaleParams(wartownik, diff).szMaxByEra.join(','), '997,998,999',
       `${diff}: szMaxByEra pochodzi z JSON, a nie z fallbacku SZMAX_DEFAULTS (wartownik w danych)`);
-    eq(scale.prawMaxByEra.join(','), '50,75,100', `JSON prawo_max_epoka ${diff} = 50,75,100 (jak PRAWMAX_DEFAULTS)`);
+    // R-PRAWO-PRZEBUDOWA-SKALI-Q1 D3/D3a (wlasciciel 2026-09-05): uchyla plaskie 50,75,100 —
+    // tabela teraz per trudnosc, patrz PRAWMAX_D3. Ta sama wlasciwosc co asercja Sz powyzej:
+    // liczby wlasciciela ORAZ loader faktycznie czyta plik.
+    eq(scale.prawMaxByEra.join(','), PRAWMAX_D3[diff].join(','),
+      `JSON prawo_max_epoka ${diff} = ${PRAWMAX_D3[diff].join(',')} (D3/D3a, liczby wlasciciela)`);
     eq(scale.szPctCap, 120, `JSON szczescie_pct_cap ${diff} = 120 (jak SZ_PCT_CAP)`);
-    eq(scale.prawPctCap, 100, `JSON prawo_pct_cap ${diff} = 100 (jak PRAW_PCT_CAP)`);
+    // D7 (wlasciciel 2026-09-05): 100 -> 170, zapas nad setka zeby nadwyzka Palacu/malych
+    // miast byla widoczna.
+    eq(scale.prawPctCap, 170, `JSON prawo_pct_cap ${diff} = 170 (D7, jak PRAW_PCT_CAP)`);
   }
 
   // 1b. Wynik na progu epoki identyczny ze starym `DEFAULTS[e] ?? DEFAULTS[3]`,
@@ -173,11 +188,14 @@ console.log('\n1. GOAL 1 — rownowaznosc: przeniesienie stalych nie zmienia zac
   const scaleN = M.loadSocietyScaleParams(SOCIETY, 'normal');
   for (const era of [1, 2, 3, 4, 7]) {
     // Sprawdzana wlasciwosc bez zmian: epoka POZA tablica (4, 7) dostaje wartosc epoki 3 —
-    // to jest sedno tej petli i to G13 nie ruszylo. Zmienily sie tylko same liczby Szczescia.
+    // to jest sedno tej petli. Liczby Szczescia zmienil G13; liczby Prawa zmienil D3/D3a
+    // (R-PRAWO-PRZEBUDOWA-SKALI-Q1) — `staraPraw` czyta odtad PRAWMAX_D3.normal zamiast
+    // plaskiego PRZED_PRAWMAX, bo klamra "epoka poza tablica -> ostatni wpis" ma teraz
+    // dzialac na NOWEJ tabeli, nie na historycznej.
     const oczekSz = SZMAX_G13.normal[era - 1] ?? SZMAX_G13.normal[2];
-    const staraPraw = PRZED_PRAWMAX[era] ?? PRZED_PRAWMAX[3];
+    const oczekPraw = PRAWMAX_D3.normal[era - 1] ?? PRAWMAX_D3.normal[2];
     eq(M.szMaxForEra(era, scaleN), oczekSz, `szMaxForEra(${era}) = ${oczekSz} (G13 normal, epoka >3 -> wartosc epoki 3)`);
-    eq(M.prawMaxForEra(era, scaleN), staraPraw, `prawMaxForEra(${era}) = ${staraPraw} jak przed przeniesieniem`);
+    eq(M.prawMaxForEra(era, scaleN), oczekPraw, `prawMaxForEra(${era}) = ${oczekPraw} (D3/D3a normal, epoka >3 -> wartosc epoki 3)`);
   }
 
   // 1c. Pelny przebieg na konkretnych liczbach: pop <= populacji odniesienia, czyli
@@ -205,8 +223,10 @@ console.log('\n1. GOAL 1 — rownowaznosc: przeniesienie stalych nie zmienia zac
     { population: 2, era: 1, difficulty: 'normal', garnizonCount: 0 }, SOCIETY,
   );
   eq(pr.netto, 20, 'pop 2 / epoka 1: netto Prawo = 20 (bonus Osiedla)');
-  eq(pr.prawMax, 50, 'pop 2 / epoka 1: prawMax = 50 (dokladnie jak przed zmiana)');
-  eq(pr.prawPct, 40, 'pop 2 / epoka 1: PrawPct = 40% (dokladnie jak przed zmiana)');
+  // R-PRAWO-PRZEBUDOWA-SKALI-Q1 D3 (wlasciciel 2026-09-05): prawMax era1 normal 50 -> 40.
+  // Pop 2 = populacja odniesienia (bez skalowania) wiec prawMax = wartosc czystej epoki.
+  eq(pr.prawMax, 40, 'pop 2 / epoka 1: prawMax = 40 (D3, tabela per trudnosc)');
+  eq(pr.prawPct, 50, 'pop 2 / epoka 1: PrawPct = 50% (20/40, po D3)');
 }
 
 // ---------------------------------------------------------------------------
@@ -225,14 +245,17 @@ console.log('\n2. GOAL 1 — fallback: usuniecie wpisu z JSON daje wartosc ze st
   eq([M.SZMAX_DEFAULTS[1], M.SZMAX_DEFAULTS[2], M.SZMAX_DEFAULTS[3]].join(','),
     M.loadSocietyScaleParams(SOCIETY, 'normal').szMaxByEra.join(','),
     'R3-C: SZMAX_DEFAULTS === szczescie_max_epoka.normal z JSON (rozjazd kodu z danymi czerwieni bramke)');
-  eq(M.PRAWMAX_DEFAULTS[1], 50, 'stala TS PRAWMAX_DEFAULTS[1] = 50');
+  // R-PRAWO-PRZEBUDOWA-SKALI-Q1 (wlasciciel 2026-09-05): PRAWMAX_DEFAULTS[1] 50 -> 40
+  // (D3, fallback dosuniety do kolumny `normal`), PRAW_PCT_CAP 100 -> 170 (D7) — ta sama
+  // konwencja "fallback === normal w JSON" co SZMAX_DEFAULTS/R3-C powyzej.
+  eq(M.PRAWMAX_DEFAULTS[1], 40, 'stala TS PRAWMAX_DEFAULTS[1] = 40 (D3)');
   eq(M.SZ_PCT_CAP, 120, 'stala TS SZ_PCT_CAP = 120');
-  eq(M.PRAW_PCT_CAP, 100, 'stala TS PRAW_PCT_CAP = 100');
+  eq(M.PRAW_PCT_CAP, 170, 'stala TS PRAW_PCT_CAP = 170 (D7)');
 
   // society = null -> same stale z TS.
   const brakCalosci = M.loadSocietyScaleParams(null, 'normal');
   eq(brakCalosci.szMaxByEra.join(','), '30,50,70', 'society=null -> szMaxByEra ze stalej TS (R3-C: 30,50,70)');
-  eq(brakCalosci.prawMaxByEra.join(','), '50,75,100', 'society=null -> prawMaxByEra ze stalej TS');
+  eq(brakCalosci.prawMaxByEra.join(','), '40,65,85', 'society=null -> prawMaxByEra ze stalej TS (D3)');
   eq(brakCalosci.szPctCap, M.SZ_PCT_CAP, 'society=null -> szPctCap ze stalej TS');
   eq(brakCalosci.prawPctCap, M.PRAW_PCT_CAP, 'society=null -> prawPctCap ze stalej TS');
 
@@ -240,7 +263,7 @@ console.log('\n2. GOAL 1 — fallback: usuniecie wpisu z JSON daje wartosc ze st
   const bezSzEpoka = M.loadSocietyScaleParams(withoutKey('szczescie', 'szczescie_max_epoka'), 'normal');
   eq(bezSzEpoka.szMaxByEra.join(','), '30,50,70', 'brak szczescie_max_epoka -> SZMAX_DEFAULTS z TS (R3-C)');
   const bezPrawEpoka = M.loadSocietyScaleParams(withoutKey('prawo', 'prawo_max_epoka'), 'normal');
-  eq(bezPrawEpoka.prawMaxByEra.join(','), '50,75,100', 'brak prawo_max_epoka -> PRAWMAX_DEFAULTS z TS');
+  eq(bezPrawEpoka.prawMaxByEra.join(','), '40,65,85', 'brak prawo_max_epoka -> PRAWMAX_DEFAULTS z TS (D3)');
   const bezCapu = M.loadSocietyScaleParams(withoutKey('szczescie', 'szczescie_pct_cap'), 'normal');
   eq(bezCapu.szPctCap, M.SZ_PCT_CAP, 'brak szczescie_pct_cap -> SZ_PCT_CAP z TS');
   const bezWsp = M.loadSocietyScaleParams(
@@ -395,10 +418,12 @@ console.log('\n5. GOAL 2 — neutralnosc startowa (pop 1-2, epoka 1) i epoka jak
     for (const pop of [1, 2]) {
       // Wlasciwosc bez zmian: przy populacji <= populacji odniesienia (2) mianownik jest
       // CZYSTA wartoscia epoki, bez zadnego skalowania. Zmienila sie tylko sama wartosc:
-      // 14 dla kazdej trudnosci -> tabela G13 wlasciciela, rozna per trudnosc.
+      // 14 dla kazdej trudnosci -> tabela G13 wlasciciela (Sz), rozna per trudnosc; analogicznie
+      // po stronie Prawa plaskie 50 -> tabela D3/D3a (PRAWMAX_D3), R-PRAWO-PRZEBUDOWA-SKALI-Q1.
       eq(M.szMaxForCity(1, pop, scale), SZMAX_G13[diff][0],
         `${diff}: pop ${pop} / epoka 1 -> szMax ${SZMAX_G13[diff][0]} (G13, bez skalowania populacja)`);
-      eq(M.prawMaxForCity(1, pop, scale), 50, `${diff}: pop ${pop} / epoka 1 -> prawMax 50 (dzisiejsze, bez tolerancji)`);
+      eq(M.prawMaxForCity(1, pop, scale), PRAWMAX_D3[diff][0],
+        `${diff}: pop ${pop} / epoka 1 -> prawMax ${PRAWMAX_D3[diff][0]} (D3/D3a, bez skalowania populacja)`);
     }
   }
   // Warunek 3: epoka nadal jest czynnikiem — przy tej samej populacji epoki roznia sie progiem.
@@ -419,13 +444,19 @@ console.log('\n5. GOAL 2 — neutralnosc startowa (pop 1-2, epoka 1) i epoka jak
   ok(wspSz[0] === wspSz[1] && wspSz[1] === wspSz[2],
     `R3-A: wspolczynnik Sz JEDEN na easy/normal/hard (${wspSz.join(' === ')})`);
   eq(wspSz[1], 0.04, 'R3-A: wspolczynnik Sz = 0,04 (liczba wlasciciela, ten sam co prawo_max_pop_wspolczynnik)');
+  // R-PRAWO-PRZEBUDOWA-SKALI-Q1 D4 (wlasciciel 2026-09-05): wspolczynnik Prawa splaszczony
+  // do JEDNEJ liczby 0,04 na wszystkich trzech poziomach — uchyla 0,033/0,041/0,049. Ten sam
+  // odwrot znaku co R3-A dla Sz powyzej: asercja NIE znika, pilnuje ze nikt nie wraca do
+  // trojki per trudnosc (D3a: trudnosc Prawa wyrazana WYLACZNIE przez prawo_max_epoka).
   const wspPr = DIFFS.map((d) => M.loadSocietyScaleParams(SOCIETY, d).prawMaxPopWsp);
-  ok(wspPr[0] < wspPr[1] && wspPr[1] < wspPr[2],
-    `wspolczynnik Prawa per trudnosc easy<normal<hard (${wspPr.join(' < ')})`);
-  // Rozroznienie musi byc widoczne w SAMYM PROGU, nie tylko w wartosci wspolczynnika.
+  ok(wspPr[0] === wspPr[1] && wspPr[1] === wspPr[2],
+    `D4: wspolczynnik Prawa JEDEN na easy/normal/hard (${wspPr.join(' === ')})`);
+  eq(wspPr[1], 0.04, 'D4: wspolczynnik Prawa = 0,04 (liczba wlasciciela, ten sam co szczescie_max_pop_wspolczynnik)');
+  // Rozroznienie per trudnosc musi byc widoczne w SAMYM PROGU (przez prawo_max_epoka, D3a),
+  // mimo ze wspolczynnik populacji jest teraz plaski.
   const progPop12 = DIFFS.map((d) => M.prawMaxForCity(3, 12, M.loadSocietyScaleParams(SOCIETY, d)));
   ok(progPop12[0] < progPop12[1] && progPop12[1] < progPop12[2],
-    `prawMax(pop 12, epoka 3) rozny per trudnosc (${progPop12.join(' < ')})`);
+    `prawMax(pop 12, epoka 3) rozny per trudnosc mimo plaskiego wspolczynnika (${progPop12.join(' < ')}) — D3a przez mianownik`);
   const progSzPop12 = DIFFS.map((d) => M.szMaxForCity(3, 12, M.loadSocietyScaleParams(SOCIETY, d)));
   ok(progSzPop12[0] < progSzPop12[1] && progSzPop12[1] < progSzPop12[2],
     `szMax(pop 12, epoka 3) rozny per trudnosc (${progSzPop12.join(' < ')})`);
@@ -476,15 +507,17 @@ console.log('\n6. Scenariusz ze zrzutu wlasciciela: pop 2, epoka 1, Sz netto 16,
   // Zrzut wlasciciela (114% / 40%) pochodzi sprzed R-SZCZESCIE-PRZEBUDOWA-SKALI-Q1 i po
   // stronie SZCZESCIA jest juz nieodtwarzalny — G4/G7/G10/G13 zmienily i licznik, i mianownik
   // tego samego miasta (netto 16 -> 27,22; szMax 14 -> 30; SzPct 114,3% -> 90,7%).
-  // Strona PRAWA nie byla objeta tematem i musi zgadzac sie ze zrzutem co do cyfry — dlatego
-  // asercja 40% zostaje bez zmian. Dla Szczescia przybijamy nowa liczbe tego samego miasta.
+  // Strona PRAWA: R-PRAWO-PRZEBUDOWA-SKALI-Q1 (wlasciciel 2026-09-05) zmienil rowniez
+  // mianownik Prawa (D3: era1 normal 50 -> 40), wiec zrzut wlasciciela (40%) jest odtad
+  // rowniez NIEODTWARZALNY co do cyfry — netto Prawa (20) nie zmienilo sie (bonus Osiedla
+  // poza allowlista tego tematu), ale prawMax tak, wiec PrawPct = 20/40 = 50%, nie 40%.
   near(sz.netto, 13 + 12 + 10 - 70 / 9, 'zrzut: Szczescie netto = 27,22 (po G4/G7/G10)');
-  eq(pr.netto, 20, 'zrzut: Prawo netto = 20');
+  eq(pr.netto, 20, 'zrzut: Prawo netto = 20 (bonus Osiedla, poza allowlista)');
   eq(szPrzed.szPct, 90.7, 'zrzut PRZED (skalowanie populacja wylaczone): SzPct = 90,7%');
-  eq(prPrzed.prawPct, 40, 'zrzut PRZED: PrawPct = 40% (zrzut wlasciciela pokazywal 40%)');
+  eq(prPrzed.prawPct, 50, 'zrzut PRZED: PrawPct = 50% (D3: prawMax era1 normal 50 -> 40, 20/40)');
   // pop 2 = populacja odniesienia, wiec PO zmianie ma byc IDENTYCZNIE — neutralnosc startowa.
   eq(sz.szPct, szPrzed.szPct, 'zrzut PO zmianie: SzPct bez zmian wobec PRZED (90,7%)');
-  eq(pr.prawPct, prPrzed.prawPct, 'zrzut PO zmianie: PrawPct bez zmian wobec PRZED (40%)');
+  eq(pr.prawPct, prPrzed.prawPct, 'zrzut PO zmianie: PrawPct bez zmian wobec PRZED (50%, D3)');
 }
 
 // ---------------------------------------------------------------------------
@@ -524,14 +557,21 @@ console.log('\n7. Objaw zgloszony przez wlasciciela: rozwiniete miasto NIE dobij
   const ordPrzed = M.evaluateOrderFromBreakdown(wejscie(20), prWejscie, PRZED, 'normal');
   console.log(`  Prawo pop 12 / epoka 3 (garnizon 5 + Palac III): netto ${prPo.netto} | PRZED ${prPrzed.prawPct}% (prawMax ${prPrzed.prawMax}) -> PO ${prPo.prawPct}% (prawMax ${prPo.prawMax})`);
   console.log(`  PorPct laczny pop 12 / epoka 3 / 20 budynkow + garnizon 5 + Palac III: PRZED ${ordPrzed.porPct}% (${ordPrzed.bandLabel}) -> PO ${ordPo.porPct}% (${ordPo.bandLabel})`);
-  eq(prPrzed.prawPct, 100, 'PRZED zmiana duze miasto dobija do capu Prawa 100%');
+  // R-PRAWO-PRZEBUDOWA-SKALI-Q1 D7 (wlasciciel 2026-09-05): cap Prawa 100 -> 170. "PRZED"
+  // tutaj to societyPrzedGoal2('normal') — klon AKTUALNEGO SOCIETY ze wspolczynnikiem
+  // populacji wyzerowanym (izoluje wylacznie GOAL 2), wiec dziedziczy NOWY cap 170 i NOWY
+  // prawMax era3 normal=85 (D3). netto 155 / prawMax 85 = 182,4%, wciaz nad sufitem — miasto
+  // dalej dobija do capu, tylko capu 170, nie 100.
+  eq(prPrzed.prawPct, 170, 'PRZED zmiana (GOAL2 wylaczone) duze miasto dobija do capu Prawa 170% (D7)');
   // UWAGA, jawnie: na normal miasto pop 12 z garnizonem 5 i Palacem III NADAL domyka Prawo
-  // do 100% (netto 155 / prawMax 149) — zrodla Prawa sa grubo skwantowane (garnizon 20/jedn.,
-  // Palac 35–55) i naleza do wezla C, nie do tego. Asercja z rundy 1 zadala tu wprost
-  // „< 100%", co bylo wlasnym wymaganiem Operatora, a nie kryterium dispatchu (GOAL 3 pkt 7
-  // mowi o capie 120% Szczescia) — i wymuszalo stromszy mianownik Prawa, niz pozwala warunek
-  // ciaglosci. Zamiast tego sprawdzamy WLASCIWOSC, ktora GOAL 2 faktycznie obiecuje: prog
-  // Prawa rosnie z miastem, wiec to samo netto daje w duzym miescie nizszy procent.
+  // powyzej 100% (netto 155 / prawMax 125,8 po D3/D4 = 123,2%) — zrodla Prawa sa grubo
+  // skwantowane (garnizon 20/jedn., Palac 35–55) i naleza do wezla C, nie do tego. Asercja
+  // z rundy 1 zadala tu wprost „< 100%", co bylo wlasnym wymaganiem Operatora, a nie
+  // kryterium dispatchu (GOAL 3 pkt 7 mowi o capie 120% Szczescia) — i wymuszalo stromszy
+  // mianownik Prawa, niz pozwala warunek ciaglosci. Zamiast tego sprawdzamy WLASCIWOSC, ktora
+  // GOAL 2 faktycznie obiecuje: prog Prawa rosnie z miastem, wiec to samo netto daje w duzym
+  // miescie nizszy procent (i D3 celowo trzyma mianownik ponizej sumy budynkow, wiec nawet
+  // duze miasto z pelna administracja przebija 100% — patrz sekcja 9).
   console.log(`  Prawo pop 12 / epoka 3, garnizon 5 + Palac III, per trudnosc: ${DIFFS.map((d) => `${d} ${M.computeLawBreakdown({ ...prWejscie, difficulty: d }, SOCIETY).prawPct}%`).join(' | ')}`);
   const prMale = M.computeLawBreakdown({ ...prWejscie, population: 2 }, SOCIETY);
   ok(prPo.prawMax > prMale.prawMax,
@@ -550,7 +590,7 @@ console.log('\n8. Tabela prog(pop, epoka) — PRZED vs PO (normal), zapisana w r
 // ---------------------------------------------------------------------------
 {
   const scale = M.loadSocietyScaleParams(SOCIETY, 'normal');
-  console.log('  pop | szMax e1  e2  e3 (PRZED 14 / 20 / 28) | prawMax e1  e2  e3 (PRZED 50 / 75 / 100)');
+  console.log('  pop | szMax e1  e2  e3 (PRZED 14 / 20 / 28) | prawMax e1  e2  e3 (D3 baza 40 / 65 / 85)');
   for (const pop of [1, 2, 4, 6, 8, 12]) {
     const s = [1, 2, 3].map((e) => M.szMaxForCity(e, pop, scale).toFixed(1).padStart(6));
     const p = [1, 2, 3].map((e) => M.prawMaxForCity(e, pop, scale).toFixed(1).padStart(6));
@@ -574,8 +614,12 @@ console.log('\n8. Tabela prog(pop, epoka) — PRZED vs PO (normal), zapisana w r
   // strony powyzszego rownania jednoczesnie i przeszlaby bez sladu.
   near(M.szMaxForCity(1, 12, scale) / M.szMaxForCity(1, 2, scale), 1.48,
     'R3-A: mnoznik populacji na pop 12 = 1,48x (0,04 skladane na 10 mieszkancow ponad populacje odniesienia)');
-  eq(M.prawMaxForCity(1, 12, scale), 74.5, 'tabela: prawMax(pop 12, epoka 1) = 74,5');
-  eq(M.prawMaxForCity(3, 6, scale), 117, 'tabela: prawMax(pop 6, epoka 3) = 117,0');
+  // R-PRAWO-PRZEBUDOWA-SKALI-Q1 D3 (wlasciciel 2026-09-05): baza era1/era3 normal 50/100 ->
+  // 40/85 — tabela per trudnosc, mnoznik populacji (D4) taki sam jak Sz (0,04, wiec ten sam
+  // mnoznik 1,48 na pop 12). 40 x 1,48 = 59,2. Era3 pop 6: excess=4, mnoznik (1,04)^4 = 1,17
+  // (zaokraglone), 85 x 1,17 = 99,45.
+  eq(M.prawMaxForCity(1, 12, scale), 59.2, 'tabela: prawMax(pop 12, epoka 1) = 59,2 (D3 baza 40 x mnoznik 1,48)');
+  eq(M.prawMaxForCity(3, 6, scale), 99.45, 'tabela: prawMax(pop 6, epoka 3) = 99,45 (D3 baza 85 x mnoznik 1,17)');
 }
 
 // ---------------------------------------------------------------------------
@@ -624,9 +668,15 @@ console.log('\n9. Osiagalnosc: duze miasto z REALNIE mozliwa administracja epoki
     3: { hasPretorium: true, hasTrybunal: true, hasSad: true },
   };
   // Wartosci oczekiwane PRZELICZONE na realnych konfiguracjach (nie przepisane z rundy 1).
+  // R-PRAWO-PRZEBUDOWA-SKALI-Q1 (wlasciciel 2026-09-05, D3/D3a/D3b/D4/D7) przestawil
+  // JEDNOCZESNIE mianownik (prawo_max_epoka), wspolczynnik populacji (0,04 plasko) i cap
+  // (170) — liczby ponizej PRZELICZONE PONOWNIE na nowym kodzie/danych, nie dopasowane
+  // recznie: hard juz nie domyka do capu, a easy/normal czesto SIEDZA na nowym suficie 170
+  // (D7: zapas nad setka ma pokazywac nadwyzke Palacu/malych miast, nie trzymac wszystkich
+  // duzych miast dokladnie na 100).
   const OCZEK = {
-    stolica: { easy: [100, 100, 100], normal: [100, 100, 100], hard: [100, 90.3, 82.6] },
-    region: { easy: [100, 100, 100], normal: [100, 100, 100], hard: [100, 82, 74.5] },
+    stolica: { easy: [170, 170, 170], normal: [170, 168.4, 151.8], hard: [132.1, 98.2, 89.9] },
+    region: { easy: [170, 170, 170], normal: [170, 155.9, 138.3], hard: [123.1, 89.2, 81.1] },
   };
   for (const [wariant, SET] of [['stolica', STOLICA], ['region', REGION]]) {
     for (const diff of DIFFS) {
@@ -644,7 +694,8 @@ console.log('\n9. Osiagalnosc: duze miasto z REALNIE mozliwa administracja epoki
   }
 
   // 9c. Wnioski, ktore te liczby faktycznie niosa — zamiast obalonego „domyka do 100% zawsze".
-  //     easy/normal: mianownik WYMAGA administracji, ale jej nie odcina — 100% nadal osiagalne.
+  //     easy/normal: mianownik WYMAGA administracji, ale jej nie odcina — 100% nadal osiagalne
+  //     i (D3, celowo) PRZEBIJANE, bo mianownik jest nizszy niz suma budynkow.
   const easyNormalMin = Math.min(
     ...[['stolica', STOLICA], ['region', REGION]].flatMap(([, SET]) => ['easy', 'normal'].flatMap(
       (diff) => [1, 2, 3].map((era) => M.computeLawBreakdown({
@@ -652,8 +703,8 @@ console.log('\n9. Osiagalnosc: duze miasto z REALNIE mozliwa administracja epoki
       }, SOCIETY).prawPct),
     )),
   );
-  eq(easyNormalMin, 100,
-    'easy i normal: pop 12 z garnizonem 5 i pelna administracja epoki domyka Prawo do 100% w epokach 1-3 (oba warianty)');
+  ok(easyNormalMin > 100,
+    `easy i normal: pop 12 z garnizonem 5 i pelna administracja epoki PRZEBIJA 100% Prawa w kazdej epoce/wariancie (D3: 100% osiagalne po komplecie budynkow, mianownik celowo nizszy) — min ${easyNormalMin}%`);
   //     hard: juz NIE domyka — i to jest zamierzone (hard ma byc trudny), ale nie wolno, zeby
   //     spadlo to miasto w pasmo ponizej „Spokoju" po samej stronie Prawa (patrz porPctBand).
   const hardMin = Math.min(

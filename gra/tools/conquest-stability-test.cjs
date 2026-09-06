@@ -127,9 +127,16 @@ const rk = CS.religionBuildingsFromIds(['kamienne_kregi']);
 eq(rk.hasKamienneKregi, true, 'kregi is religious building');
 
 // 6. penalties
+// NOTA (nie ten temat): 'unstable happiness penalty' jest znanym, pre-istniejacym FAIL
+// spoza R-PRAWO-PRZEBUDOWA-SKALI-Q1 -- szczescie_kara_podboj_podwojna_obca usunieta przez
+// R-SZCZESCIE-PRZEBUDOWA-SKALI-Q1 (G5), ktory nie zaktualizowal tej asercji. Nie naprawiamy
+// bramek czerwonych spoza tematu (R-PROC-AUTOBOT.md SS9) -- zostawione bez zmian.
 eq(CS.conquestUnstableHappinessPenalty(0, true, null, 'normal'), -2, 'unstable happiness penalty');
-eq(CS.conquestNoGarrisonLawPenalty(0, true, 0, null, 'normal'), -3, 'no garrison law penalty');
-eq(CS.conquestNoGarrisonLawPenalty(0, true, 2, null, 'normal'), 0, 'garrison clears law penalty');
+// R-PRAWO-PRZEBUDOWA-SKALI-Q1 D5 (wlasciciel 2026-09-05): prawo_kara_podboj_bez_garnizonu
+// USUNIETA NA STALE -- conquestNoGarrisonLawPenalty zwraca odtad ZAWSZE 0, niezaleznie od
+// garnizonu (przepisane, nie usuniete -- liczba asercji bez zmian).
+eq(CS.conquestNoGarrisonLawPenalty(0, true, 0, null, 'normal'), 0, 'no garrison law penalty: kara D5 usunieta na stale -> zawsze 0');
+eq(CS.conquestNoGarrisonLawPenalty(0, true, 2, null, 'normal'), 0, 'garrison present: law penalty zawsze 0 (D5)');
 eq(CS.conquestRevoltRiskMultiplier(0, true, 0), 1.5, 'revolt mult without garrison');
 eq(CS.conquestRevoltRiskMultiplier(0, true, 1), 1, 'revolt mult with garrison');
 

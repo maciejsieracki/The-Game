@@ -708,6 +708,12 @@ if (P) {
     // Prawo NIE jest przedmiotem tego tematu (§GRANICE), ale `porPct` liczy sie z obu
     // polowek — wiec wejscie Prawa musi byc zlozone z tych samych `builtIds`, co panel,
     // inaczej porownanie porPct mierzyloby roznice w scenariuszu, nie w kodzie.
+    // R-PRAWO-PRZEBUDOWA-SKALI-Q1 (wlasciciel 2026-09-05): `hasGarnizonBudynek` dolozone,
+    // bo cityPanel.ts (allowlista tamtego tematu) czyta odtad `builtIds.includes('garnizon')`
+    // — `builtIdsForEra` tutaj juz zawiera budynek 'garnizon' (epokaWejscia 1, R-BUDYNEK-
+    // GARNIZON-NOWY-Q1), wiec bez tego pola ta referencja i panel rozjezdzalyby sie w Prawie,
+    // mimo ze temat Prawa jest formalnie poza zakresem tego pliku. `brakGarnizonuKara` zostaje
+    // jako pole martwe (D5: kara usunieta na stale, silnik go juz nie czyta).
     const palacTier = builtIds.includes('palac_iii') ? 3
       : builtIds.includes('palac_ii') ? 2
       : builtIds.includes('palac') ? 1 : null;
@@ -718,6 +724,7 @@ if (P) {
       hasPretorium: builtIds.includes('pretorium'),
       hasTrybunal: builtIds.includes('trybunal'),
       hasSad: builtIds.includes('sad'),
+      hasGarnizonBudynek: builtIds.includes('garnizon'),
       palacTier,
       brakGarnizonuKara: s.pop >= 6,
       stolicaEasyBonus: false,

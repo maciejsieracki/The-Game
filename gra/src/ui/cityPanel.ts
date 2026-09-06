@@ -3067,11 +3067,6 @@ function computeOrderStateLocal(city: City, data: GameData): { state: OrderState
 
   const gCount = cfg.getUnitsAt?.(city.q, city.r)?.length ?? 0;
   const podzial = readPodzialHandlu(city, data);
-  // Sandbox playtest miasta (drawer w main.ts): bez jednostek na starcie — nie pokazuj „buntu skrajnego” w T1.
-  const playtestSandbox = typeof location !== 'undefined' && (
-    /PLAYTEST-MIASTO/i.test(location.pathname || '') ||
-    new URLSearchParams(location.search).get('playtest') === 'miasto'
-  );
   const allCities = cfg.getCities?.() ?? [];
   const gameTurn = cfg.getTurn?.() ?? 1;
   const stolicaBonus = stolicaEasyBonusActive(
@@ -3147,7 +3142,12 @@ function computeOrderStateLocal(city: City, data: GameData): { state: OrderState
       hasTrybunal: builtIds.includes('trybunal'),
       hasSad: builtIds.includes('sad'),
       palacTier: cityPalacTier(builtIds),
-      brakGarnizonuKara: !playtestSandbox && city.population >= 6 && gCount === 0,
+      // R-PRAWO-PRZEBUDOWA-SKALI-Q1 D5: `brakGarnizonuKara` USUNIĘTE stąd na stałe — kara
+      // skasowana z silnika (society-breakdown.ts); `playtestSandbox`, wyliczane wyłącznie
+      // dla tej kary, usunięte razem z nią.
+      // D2/D3: `hasGarnizonBudynek` — budynek Garnizon (id 'garnizon'), NIE mylić z gCount
+      // (jednostki wojskowe na heksie) — pułapka nazewnicza z 00-dispatch.md.
+      hasGarnizonBudynek: builtIds.includes('garnizon'),
       stolicaEasyBonus: stolicaBonus,
     },
     data.societyParams,
