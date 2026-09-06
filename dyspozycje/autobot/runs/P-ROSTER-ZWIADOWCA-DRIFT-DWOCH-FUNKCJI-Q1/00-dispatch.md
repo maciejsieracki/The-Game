@@ -214,3 +214,41 @@ Wypisz je w raporcie jako OBSERWACJE. Rejestruje je orkiestrator, nie Ty.
    jednostki bojowe ZOSTAJĄ" ma zaczerwienić. To jest dowód, że przepisana asercja
    pilnuje czegoś, czego stara nie pilnowała.
 5. Punkty 5-7 z kryteriów rundy 1 bez zmian (tsc, pięć referencyjnych, sąsiedztwo).
+
+## RATYFIKACJA ORKIESTRATORA (2026-09-06, odpowiedź na Z2 i Z12 Final Control rundy 2)
+
+**Z12** (kotwica POZA heksem miasta — `collectBattleRoster` i `collectAtkRosterNearCity`
+zwracają różne zbiory; doslowne kryterium 3 rundy 1 vs zakaz zmian `gra/src` w rundzie 2):
+**decyzja właściciela — różnica jest poprawna, zapisać jako zamierzoną.** Bitwa w polu toczy
+się na heksie kotwicy, bitwa o miasto na heksie miasta — to różne miejsca starcia, różnica
+w składzie dla kotwicy poza miastem jest z definicji uzasadniona, nie defektem. **Bez zmiany
+kodu.** Do wykonania: komentarz przy asercji parytetu w `map-field-battle-test.cjs`
+dopisujący wprost tę intencję (kotwica NA heksie miasta → parytet wymagany i sprawdzany;
+kotwica POZA heksem miasta → rozjazd jest zamierzony, nieobjęty tą asercją) — kosmetyczna
+poprawka dokumentacyjna w pliku już objętym allowlistą, nie nowa runda Operatora.
+
+**Z2** (`collectPlaytestBattleRoster` w `main.ts:24288-24293`/`playtestWalkaMapy.ts:113-128`
+nie wywołuje `shouldIncludeInBattleRoster` — sąsiadujący zwiadowca wchodzi do rosteru w trybie
+playtest, mimo że w normalnej grze nie wchodzi): **decyzja właściciela — zrównać z grą,
+playtest ma liczyć tak samo.** Naprawa wymaga `gra/src/main.ts`, bezwzględnie zakazanego
+w allowliście tego tematu (koliduje też z równoległym tematem trzymającym `ai.ts`/`main.ts`
+per §2b) — **nowy, osobny temat**, nie kontynuacja tej rundy.
+
+Rejestruję: **`P-ROSTER-PLAYTEST-ZWIADOWCA-WYKLUCZENIE-Q1`** — GOAL: `collectPlaytestBattleRoster`
+wywołuje `shouldIncludeInBattleRoster` (albo równoważny predykat wykluczania cywilów)
+identycznie jak `collectBattleRoster`, tak że sąsiadujący zwiadowca nie wchodzi do składu
+bitwy w trybie playtest tak samo jak w normalnej grze. Allowlista: `gra/src/main.ts` (funkcja
+`collectPlaytestBattleRoster`/wywołanie w `playtestWalkaMapy.ts`), `gra/src/game/playtestWalkaMapy.ts`,
+bramki dotykające playtestu składu bitwy. Zablokowany dopóki `main.ts` nie jest wolny wg §2b
+(kolejka: po zamknięciu tematów trzymających `main.ts`/`ai.ts` obecnie w locie).
+
+**Warunek integracji Z10 (Final Control, §16b pkt 6):** przed integracją tej rundy do `main`,
+orkiestrator koryguje `dyspozycje/REJESTR-PROSB-I-ZADAN.md:5045` — usuwa status
+„ZAREJESTROWANE, NIE DISPATCHOWANE" i obaloną tezę „dwie funkcje rozjechały się w jednym
+warunku" (runda 1 to obaliła i orkiestrator sam to ratyfikował), zastępując stanem faktycznym
+(temat zamknięty rundą 2, rozjazd nie istniał — był fixture'em, nie kodem gry).
+
+Agregat Final Control rundy 2: zero `NAPRAW`, dwa `DO DECYZJI CZŁOWIEKA` (oba wyżej zamknięte)
+→ temat **nie wraca** do Operatora. **NASTĘPNY KROK:** komentarz Z12 (kosmetyka w pliku
+allowlisty) + korekta rejestru (Z10) + integracja do `main` jednego pliku
+`gra/tools/map-field-battle-test.cjs`.
