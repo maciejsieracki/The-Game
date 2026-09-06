@@ -5943,3 +5943,42 @@ tabele wywolaniem/importem `cityPopulationCap` (lub odwrotnie), tak zeby istnial
 zrodlowy zapis progu.
 
 **Odblokowuje `R-PRAWO-PRZEBUDOWA-SKALI-Q1`** — blokada z 00-dispatch.md Prawa spelniona.
+
+## `R-PRAWO-PRZEBUDOWA-SKALI-Q1` — GAME — **ZINTEGROWANE 2026-09-06** (2 rundy, commit `a53bda0a`)
+
+Przebudowa skali Prawa wg D1-D7 wlasciciela: `prawo_max_epoka` per trudnosc (tabela
+[35,55,75]/[40,65,85]/[45,75,100]), wspolczynnik populacji `prawo_max_pop_wspolczynnik`=0,04
+plasko (bez skalowania trudnoscia), `prawo_pct_cap`=170. Dwie kary usuniete na stale
+(`prawo_kara_brak_garnizonu`, `prawo_kara_podboj_bez_garnizonu` — funkcje oznaczone
+`@deprecated`, zawsze zwracaja 0, wzor z `conquestUnstableHappinessPenalty`). Budynek
+Garnizon wpiety w kalibracje Prawa z wlasna linia panelu `garnizon_budynek` (odrebna od
+istniejacej wojskowej linii `garnizon` — kolizja nazewnicza pod sufitem 6 linii
+`linesHtml(...)` przetestowana wprost, sekcja 3j).
+
+Runda 1: Final Control **DECISION_REQUIRED** — dwa zarzuty do rozstrzygniecia wlasciciela:
+(1) krytyczny — `main.ts` (poza allowlista) nigdy nie ustawial `hasGarnizonBudynek` w
+realnej petli silnika, wiec bonus Garnizonu dzialalby tylko na panelu, nie w rozgrywce;
+(2) kosmetyczny — martwe bundle zawieraja stare klucze kar. Decyzja wlasciciela: rozszerzyc
+allowlist o dokladnie jedna linie main.ts i naprawic w rundzie 2 (zarzut 1), zignorowac
+zarzut 2 (nie warte sprzatania). Runda 2: `main.ts` dostal
+`hasGarnizonBudynek: builtIds.includes('garnizon'),` (jedna linia, wzor z `cityPanel.ts:3150`).
+Final Control rundy 2 poszedl dalej niz obrona: zbudowal `main.ts` niezaleznie przez
+`esbuild.build()` i wyciagnal wyrazenie ze SKOMPILOWANEGO WYJSCIA (4 wystapienia w bundlu),
+potwierdzajac parytet panel↔silnik przetrwal bundlowanie nienaruszony. Werdykt: **PASS**,
+zarzut #1 obrony **ODDAL** (obrona przyjela zarzut, dolozyla realny dowod).
+
+Bramka `gra/tools/prawo-przebudowa-skali-test.cjs`: **152/0** (nowa, rosla 134→142→151→152
+przez rundy). `tsc --noEmit` czyste, 5 bramek referencyjnych zielone (213/19/33/13/6).
+Rodzina Prawo/Porzadek/Szczescie: wszystkie zielone poza trzema znanymi, pre-istniejacymi
+czerwonymi (potwierdzone identyczne na bazie `025d899f` sprzed tego tematu, zero regresji):
+`conquest-stability-test` 1 FAIL (kara Szczescia z wczesniejszego, innego tematu),
+`szczescie-przebudowa-skali-test` 4 FAIL, `budynek-garnizon-test` 1 FAIL (temat AI),
+`border-march-wygasanie-test` 4 FAIL (temat dyplomacji).
+
+**Dwie decyzje DECISION_REQUIRED rozwiazane przez wlasciciela w tym temacie:** rozszerzenie
+allowlisty main.ts o jedna linie (przyjete) i pominiecie sprzatania martwych bundli
+(przyjete, odrzucone jako niewarte teraz).
+
+Zamyka zalezlnosc Garnizon → AI-produkcja → Prawo. **Odblokowuje wspolny deploy ROBOCZA
+(Garnizon + AI-produkcja + Prawo razem), zgodnie z ratyfikacja: „Garnizon wchodzi do main
+teraz, ale ROBOCZA czeka i wychodzi razem z Prawem".**
