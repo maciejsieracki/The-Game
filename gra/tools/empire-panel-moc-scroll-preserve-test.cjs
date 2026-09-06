@@ -102,9 +102,19 @@ function assert(label, cond, detail) {
  *  po prostu dac zly wynik; lapiemy to jako czysty FAIL zamiast wywalac caly proces testowy. */
 function safeRun(label, runner, args) {
   // Asercja jest wystawiana ZAWSZE (i przy sukcesie, i przy wyjatku) -- wczesniej powstawala
-  // tylko w gałęzi catch, przez co CAŁKOWITA liczba asercji bramki zalezala od tego, czy test
-  // przechodzi (47 gdy czerwona, 46 gdy zielona). Licznik asercji musi byc stały, bo kryteria
+  // tylko w gałęzi catch, przez co liczba asercji zmieniala sie o 1 zaleznie od tego, czy
+  // wycinek rzucil (47 gdy czerwona, 46 gdy zielona). Licznik ma byc stabilny, bo kryteria
   // koncowe tematow odwoluja sie do jego wartosci.
+  //
+  // ZAKRES TEJ GWARANCJI (sprostowanie 2026-09-06, Evaluator runda 1, zarzut 5 -- pierwotne
+  // sformulowanie „liczba asercji nie zalezy juz od wyniku bramki" bylo PRZESZACOWANE):
+  // stabilizowany jest wylacznie licznik samego safeRun. CALKOWITA liczba asercji nadal moze
+  // spasc, bo (a) asercje behawioralne siedza za `if (res)` i nie wykonuja sie, gdy runner jest
+  // null (wycinek niezbudowany) albo rzucil, (b) petla E3 skaluje sie z liczba auto-zaslepek.
+  // Zmierzone: dolozenie modulowej `function scrollTarget()` do empireDetailPanel.ts daje
+  // 34 pass / 19 fail = 53 asercje, nie 57. To jest zachowanie POPRAWNE (bramka jest wtedy
+  // czerwona i nazywa przyczyne przez E2), ale nie wolno go opisywac jako stalej liczby --
+  // kryterium „nie mniej niz N asercji" wolno czytac tylko na przebiegu ZIELONYM.
   const lbl = label + ': wykonanie nie rzucilo wyjatku (np. ReferenceError gdy naprawa/anchor brakuje)';
   if (!runner) {
     assert(lbl, false, 'runner is null (wycinek niezbudowany)');
@@ -500,6 +510,19 @@ try {
   ]);
   if (res4) {
     assert('S4: scrollTarget wyliczony poprawnie ("moc", bo block==="all" i pendingScrollSection="moc")', res4.scrollTarget === 'moc', res4.scrollTarget);
+    // Dodane 2026-09-06 (Evaluator runda 1, zarzut 4 -- LUKA POKRYCIA, pre-istniejaca).
+    // Odpowiednik tej asercji istnial dotad WYLACZNIE w S1, gdzie jest TAUTOLOGICZNY: S1 podaje
+    // pendingScrollSection juz jako `null` na wejsciu, wiec przechodzi takze wtedy, gdy
+    // `pendingScrollSection = null;` zniknie z render(). S4 to jedyny scenariusz z NIEPUSTYM
+    // pendingScrollSection ('moc'), wiec tylko tutaj asercja realnie cos lapie: bez zerowania
+    // zadanie skoku przetrwaloby do NASTEPNEGO render() i panel skoczylby do sekcji, ktorej
+    // uzytkownik juz nie zada. Dowod nietautologicznosci: usuniecie `pendingScrollSection = null;`
+    // z render() dawalo przed ta zmiana 57/57 (NIEZLAPANE), po niej 57/1.
+    assert(
+      'S4 (LUKA Z RUNDY 1): pendingScrollSection WYZEROWANE po zuzyciu -- zadanie skoku nie przecieka do nastepnego render()',
+      res4.pendingScrollSectionAfter === null,
+      res4.pendingScrollSectionAfter,
+    );
   }
   assert('S4: celowy skok -> requestAnimationFrame WYWOLANE (scrollToSection zaplanowane)', rafCalls === 1, rafCalls);
   assert(

@@ -116,3 +116,37 @@ sufiksem (PID albo losowy).
 `git -C <worktree> log -1 --oneline` i `git -C <worktree> status --short`. Oczekiwana baza
 i czyste drzewo. Rozbieżność → `BLOCK`, bez zapisu. Mutacje cofaj przez KOPIĘ pliku,
 nigdy przez `git checkout`.
+
+---
+
+## RATYFIKACJA ORKIESTRATORA (2026-09-06, po zarzutach Evaluatora rundy 1)
+
+Trzy pozycje jawnie oznaczone przez Evaluatora jako „do decyzji orkiestratora" — rozstrzygam.
+
+### Zarzut 1 — kryterium 7 („cała rodzina zielona") niespełnialne w tej allowliście
+
+**Zgoda z Evaluatorem: nie blokuje tematu.** Pięć czerwonych bramek jest zreprodukowanych
+jako pre-istniejące (diff nie rusza `gra/src/**` poza plikiem tematu), a ich naprawa (dwie
+opisują funkcję `renderDefaultPodzialPracySection()`, która nigdzie już nie istnieje)
+wymaga wejścia w pliki bramek spoza tej allowlisty. Rejestruję je jako osobny temat
+procesowy — patrz `P-BRAMKI-EMPIRE-PANEL-PIEC-CZERWONYCH-ZASTALE-Q1` w rejestrze.
+
+### Zarzut 3 — GOAL 2/3 zastane, nie wykonane jako praca
+
+**Rozjazd premisy dispatchu ze stanem repo, nie błąd wykonawcy.** Dispatch z 2026-09-05
+opisywał N12/N11 jako zadania do zrobienia; w rzeczywistości `24456a72` (2026-08-21) —
+przodek bazy tego tematu — już je naprawił. Operator prawidłowo zweryfikował stan
+dowodem zamiast wykonywać pracę nad nieistniejącym problemem. Werdykt Operatora
+(`PASS-WITH-NOTES`) zostaje.
+
+### Zarzut 6 — zrzuty PRZED nie są bazą tej rundy
+
+**Akceptowane jako formalna nota, nie zatajenie.** Naprawa (24456a72) poprzedza bazę tego
+tematu, więc odtworzenie stanu „przed" wymagało cofnięcia się przed nią — ujawnione wprost
+w `dowody/README.md` i w raporcie Operatora. Nie da się tego zrobić inaczej bez fałszowania
+historii.
+
+## KRYTERIA KOŃCA PO RATYFIKACJI
+
+Kryterium 7 zawężone do: **żadna bramka dotknięta przez ten temat nie jest czerwona**, a pięć
+pre-istniejących czerwonych jest zreprodukowanych i zarejestrowanych osobno.

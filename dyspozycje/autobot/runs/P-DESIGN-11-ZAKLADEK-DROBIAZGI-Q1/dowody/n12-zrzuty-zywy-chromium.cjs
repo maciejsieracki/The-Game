@@ -18,11 +18,32 @@ const os = require('os');
 const path = require('path');
 const { execSync } = require('child_process');
 
-const GRA = path.resolve(__dirname, '..');
-const REAL_GRA = fs.existsSync(path.join(GRA, 'src', 'main.ts'))
-  ? GRA
-  : '/home/user/wt-design-zakladki/gra';
-const { chromium } = require(path.join('/home/user/The-Game/gra', 'node_modules', 'playwright'));
+// Sprostowanie 2026-09-06 (Evaluator runda 1, nota o przenosnosci): dotad `REAL_GRA` mial
+// sztywny fallback na `/home/user/wt-design-zakladki/gra`, a playwright byl ladowany ze
+// sztywnej sciezki `/home/user/The-Game/gra/node_modules`. Odczyt byl nieszkodliwy, ale
+// harness byl NIEPRZENOSNY (i, co gorsza, w innym worktree po cichu mierzylby CUDZE zrodlo).
+// Teraz `gra/` jest szukane w gore od polozenia tego pliku, a playwright rozwiazywany
+// wzgledem znalezionego `gra/` -- z jawnym bledem zamiast cichego fallbacku.
+function findGra(startDir) {
+  let d = startDir;
+  for (let i = 0; i < 12; i++) {
+    const cand = path.join(d, 'gra');
+    if (fs.existsSync(path.join(cand, 'src', 'main.ts'))) return cand;
+    if (fs.existsSync(path.join(d, 'src', 'main.ts'))) return d;
+    const up = path.dirname(d);
+    if (up === d) break;
+    d = up;
+  }
+  throw new Error('nie znaleziono katalogu gra/ (z src/main.ts) w gore od ' + startDir
+    + ' -- uruchom harness z wnetrza worktree repozytorium');
+}
+const REAL_GRA = findGra(path.resolve(__dirname));
+const PLAYWRIGHT = path.join(REAL_GRA, 'node_modules', 'playwright');
+if (!fs.existsSync(PLAYWRIGHT)) {
+  throw new Error('brak playwright w ' + PLAYWRIGHT + ' -- zainstaluj zaleznosci w gra/');
+}
+console.log('[n12-shots] REAL_GRA=' + REAL_GRA);
+const { chromium } = require(PLAYWRIGHT);
 const FALLBACK_CHROME = '/opt/pw-browsers/chromium-1194/chrome-linux/chrome';
 
 const outIdx = process.argv.indexOf('--out');
@@ -70,11 +91,38 @@ function mirrorGra(dest, mutate) {
   return dest;
 }
 
+/** Odcisk zrodla wariantu -- md5 wszystkich .ts w `src/`. Sluzy do unewaznienia recyklingu
+ *  katalogu builda pod `--reuse` (sprostowanie 2026-09-06, Evaluator runda 1, nota):
+ *  short-circuit „index.html juz istnieje" byl DOKLADNIE wzorcem stalej nazwy, przed ktorym
+ *  ostrzega C-001 -- przy nieaktualnym `dist-` harness po cichu zrzucalby STARY kod jako dowod.
+ *  Ten sam blad dal juz w tym repo dwa falszywe wyniki bramek. Reuse jest teraz dozwolony
+ *  wylacznie gdy odcisk zrodla zgadza sie co do bajta; inaczej build jest powtarzany. */
+function srcFingerprint(srcDir) {
+  const crypto = require('crypto');
+  const h = crypto.createHash('md5');
+  const walk = (d) => {
+    for (const e of fs.readdirSync(d, { withFileTypes: true }).sort((a, b) => a.name < b.name ? -1 : 1)) {
+      if (e.name === 'node_modules' || e.name === '.git') continue;
+      const full = path.join(d, e.name);
+      if (e.isDirectory()) walk(full);
+      else if (e.name.endsWith('.ts')) { h.update(full.slice(srcDir.length)); h.update(fs.readFileSync(full)); }
+    }
+  };
+  walk(path.join(srcDir, 'src'));
+  return h.digest('hex');
+}
+
 function buildVariant(srcDir, label) {
   const outDir = path.join(TMP_ROOT, `dist-${label}`);
+  const fp = srcFingerprint(srcDir);
+  const fpFile = path.join(outDir, '.src-fingerprint');
   if (fs.existsSync(path.join(outDir, 'index.html'))) {
-    console.log(`[n12-shots] build (${label}) juz istnieje -> ${outDir}`);
-    return path.join(outDir, 'index.html');
+    const prev = fs.existsSync(fpFile) ? fs.readFileSync(fpFile, 'utf8').trim() : '';
+    if (prev === fp) {
+      console.log(`[n12-shots] build (${label}) aktualny (odcisk ${fp.slice(0, 8)}) -> ${outDir}`);
+      return path.join(outDir, 'index.html');
+    }
+    console.log(`[n12-shots] build (${label}) NIEAKTUALNY (odcisk ${prev.slice(0, 8) || 'brak'} != ${fp.slice(0, 8)}) -- przebudowuje`);
   }
   console.log(`[n12-shots] vite build (${label}) -> ${outDir}`);
   execSync(
@@ -84,6 +132,7 @@ function buildVariant(srcDir, label) {
   );
   const idx = path.join(outDir, 'index.html');
   if (!fs.existsSync(idx)) throw new Error(`build ${label} nie wyprodukowal index.html`);
+  fs.writeFileSync(fpFile, fp, 'utf8');
   return idx;
 }
 
