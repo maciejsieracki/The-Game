@@ -52,3 +52,59 @@ tabelę z dispatchu — zgodnie z jego własną instrukcją. Nie zmieniałem ża
 **Nie wymaga decyzji przed zamknięciem tematu** — obie sprawy nie blokują żadnego z sześciu
 binarnych kryteriów końca. Zapisane dla świadomości właściciela/orkiestratora, nie jako
 przeszkoda.
+
+## DECISION_REQUIRED (obrona runda 1, zarzut Evaluatora #1): `hasGarnizonBudynek` NIE ustawione w main.ts
+
+Potwierdzone: `main.ts:29179-29215` (wywołanie `evaluateOrderFromBreakdown` w realnej,
+per-turowej ścieżce) buduje drugi argument (`LawBreakdownInput`) i ustawia `hasDomStarszyzny`,
+`hasDworZarzadcy`, `hasPretorium`, `hasTrybunal`, `hasSad`, `palacTier`, `garnizonCount` — ale
+**NIE** ustawia `hasGarnizonBudynek`. Pole jest opcjonalne (`?:boolean`), więc `tsc --noEmit`
+tego nie łapie (brak własności nadmiarowej — to jest brak własności WYMAGANEJ, których TS nie
+wymusza dla pól opcjonalnych). Skutek zmierzony (nie hipotetyczny): w rzeczywistej rozgrywce
+**żadne miasto nie dostaje bonusu +25/35/47 z budynku Garnizon do Prawa** — silnik liczy tak,
+jakby `hasGarnizonBudynek` zawsze było `false`/`undefined`. To jest inne pole niż
+`brakGarnizonuKara`/`conquestNoGarrisonPenalty` (sekcja wyżej, ABC z rundy 1) — tamte są
+MARTWYMI polami usuniętej kary (main.ts je woła, silnik ich nie czyta, brak wpływu na
+gameplay); `hasGarnizonBudynek` jest ŻYWYM polem NOWEGO bonusu tego tematu, którego main.ts
+w ogóle nie woła — silnik by go użył, gdyby dostał `true`.
+
+**Dlaczego to nie zostało złapane w rundzie 1:** raport Operatora rundy 1 sprawdził parytet
+panel↔silnik WYŁĄCZNIE przez zbudowany harness `cityPanel.ts` (sekcja 3i) — a `cityPanel.ts`
+JEST na allowliście i JEST poprawiony (`hasGarnizonBudynek: builtIds.includes('garnizon')`,
+linia 3150). Test 3i nigdy nie dotykał `main.ts`, więc rozjazd panel↔silnik-per-turę pozostał
+niewidoczny — gracz w panelu miasta widzi poprawny bonus (podgląd), ale silnik gry (rebelia,
+`revoltGrace`, `shouldTriggerRebellion`) liczy bez niego.
+
+**Naprawa zablokowana allowlistą:** `gra/src/main.ts` jest na liście "Zakazane bezwzględnie"
+tego tematu — jedyna poprawka (dodanie `hasGarnizonBudynek: builtIds.includes('garnizon'),`
+przy linii 29211, analogicznie do `cityPanel.ts:3150`) wymaga dotknięcia tego pliku.
+**Nie poprawiam samodzielnie poza allowlistą (Tryb pierwszy w duchu — to nie jest liczba
+właściciela, ale to jest ta sama zasada: nie naginam granic tematu, żeby "ładnie domknąć").**
+
+**DECISION_REQUIRED dla orkiestratora/właściciela:** ten temat (`R-PRAWO-PRZEBUDOWA-SKALI-Q1`)
+NIE MOŻE być uznany za w pełni funkcjonalnie zamknięty, dopóki `main.ts:29211` nie dostanie
+jednej linii `hasGarnizonBudynek: builtIds.includes('garnizon'),`. Rekomendacja: albo (a)
+osobny, bardzo mały temat/patch na main.ts z dedykowaną allowlistą jednolinijkową, integrowany
+NATYCHMIAST po tym temacie (zanim ktokolwiek przetestuje bunt w realnej rozgrywce), albo (b)
+świadome rozszerzenie allowlisty tego tematu o dokładnie tę jedną linię, za zgodą właściciela.
+Do czasu tej decyzji: kryteria końca 1-6 tego tematu (skala, dane, testy, tsc, bramki
+referencyjne, rodzina Prawa) SĄ spełnione — ale kalibracja 53/85/121 (D3, zakładająca budynek
+Garnizon jako filar) jest **nieobecna w realnej rozgrywce** aż do tej poprawki.
+
+## Znalezisko (zarzut Evaluatora #2): dwa martwe bundle-artefakty + dodatkowe pliki HTML z literałami usuniętych kluczy kar
+
+Pełny grep repo (`grep -rn "prawo_kara_brak_garnizonu\|prawo_kara_podboj_bez_garnizonu" .`)
+ujawnia, poza źródłem/dokumentacją/dispatchem: `gra/tools/.pt-layout-bundle.cjs:6494`,
+`gra/tools/.diag-playtest-bundle.cjs:8202` (wskazane przez Evaluatora) ORAZ dodatkowo
+`Gra-podglad-POLE-BITWY.html`, `Gra-FINALNA.html`, `gra/Gra-podglad-POLE-BITWY.html`,
+`docs/archiwum-ux/Gra-podglad-*_TOPBAR-2026-06-26.html` (×2), `...OKOLICA-UX_PRE-IKONY...html`
+— wszystkie to **zbudowane snapshoty JS/bundle sprzed tego tematu** (najnowszy ostatnio
+zmieniony w commicie `546f6a51`, część jeszcze wcześniej), żaden nie jest importowany/wołany
+przez jakikolwiek aktywny plik źródłowy ani bramkę (`grep` po nazwach tych dwóch bundli w
+`gra/tools/*.cjs` i `package.json` — zero trafień poza samymi sobą). Żaden z tych plików jest
+na allowliście tego tematu. Kryterium końca 2, odczytane dosłownie ("nie występują w całym
+repo poza dokumentacją i dispatchem"), **nie jest w 100% spełnione** — te martwe artefakty
+literalnie zawierają stringi kluczy. Funkcjonalnie (żaden kod ich nie czyta) kryterium jest
+spełnione. **DECISION_REQUIRED (drugorzędne, nie blokujące):** orkiestrator decyduje, czy
+autoryzować osobne sprzątanie tych martwych plików (poza zakresem allowlisty tego tematu) —
+nie poprawiam ich samodzielnie tutaj.

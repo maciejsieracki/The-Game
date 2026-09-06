@@ -22,6 +22,10 @@
  *   3g  skan negatywny: dwa usuniete klucze kar nie wystepuja (dane + funkcjonalnie)
  *   3h  prawo_pct_cap=170 i pomiar, do ilu realnie dochodzi PorPct
  *   3i  parytet panel <-> silnik (cityPanel.ts zbudowany i URUCHOMIONY, nie porownany z soba)
+ *   3j  pulapka nazewnicza, druga czesc: realne ciecie linesHtml(s.prawLines, 6, pfx) w
+ *       orderPanel.ts (via buildOrderSectionHtml, WYWOLANE, nie surowa tablica lines[]) --
+ *       scenariusz stolicy z Palacem dajacy 6 linii Prawa, obie linie 'garnizon'/
+ *       'garnizon_budynek' widoczne w HTML PO cieciu (Evaluator runda 1, zarzut #3)
  *
  * ZNALEZISKO (zglaszane w raporcie, NIE poprawiane samodzielnie — Tryb pierwszy):
  * tabela "P" wlasciciela w 00-dispatch.md (easy 12,6/13,1/14,2; hard 6,2/5,2/6,9) zaklada
@@ -319,6 +323,7 @@ const PANEL_ENTRY = path.resolve(__dirname, '.prawo-przebudowa-skali-panel-entry
 const PANEL_BUNDLE = path.resolve(__dirname, '.prawo-przebudowa-skali-panel-bundle.cjs');
 fs.writeFileSync(PANEL_ENTRY, `
 export { __cityPanelOrderStateLocalForTest, configureCityPanel } from '../src/ui/cityPanel';
+export { buildOrderSectionHtml } from '../src/ui/orderPanel';
 `, 'utf8');
 
 let P_MOD = null;
@@ -447,6 +452,59 @@ if (P_MOD) {
     // dispatchu dotyczy WYLACZNIE rozpiski Prawa (asercje linii i prawPct wyzej) — to jest
     // dokladnie to, co sprawdzone.
   }
+}
+
+// ===========================================================================
+section('3j. sufit szesciu pozycji: realne ciecie linesHtml(s.prawLines, 6, pfx) w orderPanel.ts');
+// ===========================================================================
+// Evaluator runda 1, zarzut #3: sekcja 3i sprawdzala tylko obecnosc obu id w SUROWEJ tablicy
+// lines[], w scenariuszach dajacych maks. 5 linii -- nigdy nie przetestowano realnego
+// ciecia orderPanel.ts:167 (`linesHtml(s.prawLines, 6, pfx)`), ktore linesHtml prywatnie
+// wywoluje wewnatrz eksportowanego `buildOrderSectionHtml`. Scenariusz nizej to STOLICA z
+// Palacem III + komplet administracji epoki 3 + budynek Garnizon + garnizon wojskowy --
+// to jest dokladnie przypadek z pulapki nazewniczej dispatchu, ktorego brakowalo w 3i.
+if (P_MOD && typeof P_MOD.buildOrderSectionHtml === 'function') {
+  const wejscieLawStolica = {
+    difficulty: 'normal', era: 3, population: 12, garnizonCount: 5,
+    hasPretorium: true, hasTrybunal: true, hasSad: true, hasGarnizonBudynek: true,
+    palacTier: 3, stolicaEasyBonus: false,
+  };
+  const silnikLawStolica = M.computeLawBreakdown(wejscieLawStolica, society);
+  const idsStolica = silnikLawStolica.lines.map((l) => l.id);
+  eq(idsStolica.length, 6,
+    `3j: scenariusz stolicy (Palac III+pretorium+trybunal+sad+garnizon+budynek) daje DOKLADNIE 6 linii Prawa w silniku -- got [${idsStolica.join(',')}]`);
+  ok(idsStolica.includes('garnizon') && idsStolica.includes('garnizon_budynek'),
+    `3j: obie linie ('garnizon' wojsko, 'garnizon_budynek' budynek) obecne w tablicy lines[] SUROWEJ tego scenariusza`);
+
+  const sStolica = {
+    szczescie: 0, porzadek: silnikLawStolica.netto,
+    szPct: 50, prawPct: silnikLawStolica.prawPct, porPct: 50,
+    bandLabel: 'Ład', szLines: [], prawLines: silnikLawStolica.lines,
+    progT1: 0, progT2: 0,
+  };
+  const htmlStolica = P_MOD.buildOrderSectionHtml(sStolica, {});
+  ok(htmlStolica.includes('Garnizon (budynek)'),
+    '3j: HTML po REALNYM cieciu linesHtml(...,6,pfx) w orderPanel.ts nadal zawiera "Garnizon (budynek)" -- NIE zniknela pod sufitem szesciu pozycji (sedno pulapki nazewniczej, zarzut #3)');
+  ok(/Garnizon \(\d+ jedn\.\)/.test(htmlStolica),
+    '3j: HTML po cieciu nadal zawiera linie garnizonu wojskowego -- OBIE linie odrozniane naraz, zadna nie zgubiona');
+  ok(!htmlStolica.includes('<div>…</div>'),
+    '3j: przy dokladnie 6 liniach nie pojawia sie znacznik obciecia "…" (linesHtml dodaje go tylko gdy lines.length > max)');
+
+  // Kontrola negatywna (Tryb piaty): dodanie SIODMEJ linii (np. osiedle, maly pop) MUSI
+  // wypchnac cos poza sufit i HTML MUSI to sygnalizowac znacznikiem "…" -- dowodzi, ze test
+  // faktycznie mierzy ciecie, a nie zawsze przechodzi niezaleznie od liczby linii.
+  const wejscieLawStolica7 = { ...wejscieLawStolica, population: 3 }; // pop<=prog(4) -> +linia 'osiedle'
+  const silnikLawStolica7 = M.computeLawBreakdown(wejscieLawStolica7, society);
+  ok(silnikLawStolica7.lines.length === 7,
+    `3j (kontrola negatywna): obnizenie pop do 3 dodaje linie 'osiedle', suma = 7 linii w silniku -- got ${silnikLawStolica7.lines.length}`);
+  const sStolica7 = { ...sStolica, prawPct: silnikLawStolica7.prawPct, prawLines: silnikLawStolica7.lines };
+  const htmlStolica7 = P_MOD.buildOrderSectionHtml(sStolica7, {});
+  ok(htmlStolica7.includes('…'),
+    '3j (kontrola negatywna): przy 7 liniach linesHtml FAKTYCZNIE tnie i dodaje znacznik "…" -- dowod, ze asercje wyzej mierza realne ciecie, nie tautologie');
+  ok(htmlStolica7.includes('Garnizon (budynek)') && /Garnizon \(\d+ jedn\.\)/.test(htmlStolica7),
+    '3j (kontrola negatywna): nawet przy 7 liniach (ucieta 1) OBIE linie garnizonu nadal miesca sie w pierwszych 6 (kolejnosc push: garnizon,admin,trybunal,sad,palac,garnizon_budynek -- osiedle/stolica_easy pchane PO nich)');
+} else {
+  ok(false, '3j: buildOrderSectionHtml niedostepny z bundla panelu (patrz [FAIL] wyzej przy budowaniu)');
 }
 
 try { fs.unlinkSync(PANEL_ENTRY); } catch (e) { /* nic */ }
