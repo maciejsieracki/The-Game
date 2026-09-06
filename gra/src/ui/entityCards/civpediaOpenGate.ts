@@ -33,7 +33,11 @@
 /** Wynik próby otwarcia hasła CivPedii z karty encji.
  *  - `opened` — hub otwarty na właściwym haśle;
  *  - `no-entry` — hasła dla tej encji jeszcze nie napisano (najczęstsza ścieżka:
- *    16 z 41 budynków nie ma hasła — pomiar w raporcie tematu);
+ *    16 z 41 budynków nie ma hasła — pomiar odtwarzalny, sekcja POMIARY w
+ *    `dyspozycje/autobot/runs/P-ENTITYCARD-CIVPEDIA-KLIK-MARTWY-Q1/30-operator-runda1-obrona.md`.
+ *    Dispatch tematu podaje „25 z 42" — liczba odwrotna i na złej podstawie:
+ *    budynków jest 41 (`gra/data/buildings.json`), a 25 to hasła, które ISTNIEJĄ
+ *    (`docs/encyklopedia/budynki/`); brakuje 16);
  *  - `unavailable` — hub CivPedii nie istnieje w tym kontekście (np. karta
  *    renderowana w izolacji, przed `createWikiHubHud`). */
 export type CivpediaOpenResult = 'opened' | 'no-entry' | 'unavailable';

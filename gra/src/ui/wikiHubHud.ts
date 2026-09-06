@@ -193,7 +193,8 @@ let configRef: WikiHubHudConfig | null = null;
 // `bundle-wiki-for-game.cjs` z NAZWY PLIKU .md (myślniki, polskie „ł" gubione
 // przez NFD-strip: `włócznik.md` → slug `w-ocznik`), a identyfikatory gry z
 // `entityCards/slug.ts` (podkreślenia, pełna tabela diakrytyków: `wlocznik`).
-// Pomiar na żywych danych (raport tematu, sekcja POMIARY): przy samym
+// Pomiar na żywych danych (sekcja POMIARY w `dyspozycje/autobot/runs/
+// P-ENTITYCARD-CIVPEDIA-KLIK-MARTWY-Q1/30-operator-runda1-obrona.md`): przy samym
 // `slug === id` folder `jednostki` trafiał 13 z 75 jednostek. Mostek `gameIds`
 // (frontmatter `gra-id`) istnieje, ale jest wypełniony w 2 hasłach na 168 —
 // treść haseł jest poza allowlistą tego tematu (`docs/encyklopedia/**` zakazane),

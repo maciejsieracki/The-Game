@@ -88,6 +88,17 @@ export function buildEntityCardData(kind: EntityKind, id: string, ctx: EntityCar
   // placeholder (patrz komentarze tam), więc gdyby slug linku został tym, co wpisał adapter,
   // klik prowadziłby do innej encji niż karta — cichy, trudny do wykrycia rozjazd. `folder`
   // zostaje od adaptera (to on wie, w którym katalogu `docs/encyklopedia/` żyje jego rodzaj).
+  //
+  // ZASIĘG TEJ GWARANCJI — precyzyjnie, bo łatwo ją przecenić: obowiązuje WYŁĄCZNIE dla
+  // danych przechodzących przez `buildEntityCardData`. Istnieją żywe ścieżki, które wołają
+  // adapter BEZPOŚREDNIO i podają wynik do `renderEntityCard` z pominięciem tej normalizacji
+  // (`unitInfoCard.ts:72,91`, `cityPanel.ts:7381-7382,7697-7708`). Dziś jest to bezpieczne
+  // NIE dzięki tej linii, tylko dlatego, że oba adaptery wołane bezpośrednio mają slug równy
+  // id (`buildingAdapter`: `slug: building.id`; `unitAdapter`: `slug: unitToSlug(...)` = `id`),
+  // a adaptery z placeholderowym slugiem (`improvement`, `wonder`) bezpośrednio wołane nie są.
+  // Kto doda kolejnego bezpośredniego wołającego albo zmieni slug w tych dwóch adapterach —
+  // traci gwarancję bez żadnego sygnału z kompilatora. Wtedy normalizację trzeba przenieść
+  // do adapterów, a nie polegać na tym miejscu.
   const canonical: EntityCardData = { ...data, id };
   if (canonical.civpediaLink == null) return canonical;
   return { ...canonical, civpediaLink: { folder: canonical.civpediaLink.folder, slug: id } };
@@ -398,7 +409,9 @@ export function renderEntityCard(data: EntityCardData): HTMLElement {
     //
     // Komunikat zamiast ciszy (kryterium 2 dispatchu): `openCivpediaEntry` NIGDY nie rzuca
     // i zawsze zwraca rozróżnialny wynik. Ścieżka „brak hasła" jest częsta (16 z 41
-    // budynków, pomiar w raporcie tematu), więc musi być czytelna, a nie milcząca.
+    // budynków — pomiar i sprostowanie liczby z dispatchu w sekcji POMIARY raportu
+    // `runs/P-ENTITYCARD-CIVPEDIA-KLIK-MARTWY-Q1/30-operator-runda1-obrona.md`),
+    // więc musi być czytelna, a nie milcząca.
     // Ukrycie przycisku jest ZAKAZANE — właściciel odrzucił ten wariant.
     const note = el('p', 'entity-card-civpedia-note');
     note.setAttribute('role', 'status');
