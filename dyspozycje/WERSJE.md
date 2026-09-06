@@ -13,6 +13,16 @@ swoim wĹ‚asnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji d
 > Pakiet 3 z 2026-08-20 jest docs-only i nie tworzy wpisu ROBOCZA/KANON/FINALNA;
 > ten plik pozostaje wyłącznie rejestrem publikacji bundli.
 
+## ROBOCZA 24f3aee5 - 2026-09-06 22:10 UTC - FALA 352: Prawo (skala D1-D7), budynek Garnizon, AI produkcja z pelnego katalogu
+
+|- md5 (pełne): 24f3aee5ef28e3a94fe9e4e73e8c2327 · stempel: ROBOCZA · label 24f3aee5 · źródłowe commity integracji: `918e5993` (Garnizon) + `025d899f` (AI-produkcja) + `a53bda0a` (Prawo)
+|- **`R-PRAWO-PRZEBUDOWA-SKALI-Q1`** (`a53bda0a`, 2 rundy) — przebudowa skali Prawa wg D1-D7 właściciela: `prawo_max_epoka` per trudność, współczynnik populacji 0,04 płasko, cap 170, dwie kary usunięte na stałe. Budynek Garnizon wpięty w kalibrację z własną linią panelu `garnizon_budynek`. Krytyczna naprawa rundy 2: `main.ts` (realna pętla silnika, poza allowlistą) nigdy nie ustawiał `hasGarnizonBudynek` — bonus Garnizonu działałby tylko na panelu, nie w rozgrywce; allowlist rozszerzona o jedną linię, Final Control zweryfikował parytet panel↔silnik na SKOMPILOWANYM bundlu. Nowa bramka `prawo-przebudowa-skali-test.cjs` 152/0.
+|- **`R-BUDYNEK-GARNIZON-NOWY-Q1`** (`918e5993`, 3 rundy) — nowy budynek Garnizon (epoka 1, grupa „Prawo i administracja"), kompletny: rekord danych, ikona, karta encji, CivPedia, kolejka produkcji. Celowo bez efektu do czasu Prawa (`baza`/`przyrost` zerowe) — teraz Prawo dostarcza realny bonus.
+|- **`R-AI-PRODUKCJA-Z-DOSTEPNYCH-BUDYNKOW-Q1`** (`025d899f`, 3 rundy) — AI wybiera budynki z tego samego źródła co gracz, pokrycie 23/42 → **42/42**. Reguła „AI nigdy nie buduje Murów" usunięta na stałe (decyzja właściciela: AI ma budować mury, zwłaszcza pod zagrożeniem i w miastach przygranicznych). Spichlerz/Spichlerz II dostają realny, silny priorytet dokładnie gdy miasto jest na suficie populacji (progi difficulty-aware) — naprawiony realny bug: pierwsza wersja poprawki była martwa na trudności hard.
+|- tsc --noEmit 0 błędów · 5 bramek referencyjnych zielonych (logic 213/213, tech-tree 19/19, research 33/33, unit-replace 13/13, combat 6/6) · rodzina Prawo/Porządek/Szczęście zielona poza czterema znanymi, pre-istniejącymi czerwonymi (conquest-stability 1 FAIL, szczescie-przebudowa-skali 4 FAIL, budynek-garnizon-test 1 FAIL, border-march-wygasanie-test 4 FAIL — wszystkie potwierdzone niezwiązane z tą falą) · Vite build 883 modułów, singlefile.
+|- Bundle pola bitwy (`Gra-ROBOCZA-POLE-BITWY.html`) pominięty w tej fali — żaden z trzech tematów nie dotyka mechaniki walki polowej; md5 z FALI 351 zachowany bez zmian.
+|- **AKTUALNA**
+
 ## ROBOCZA 72f20026 - 2026-09-06 13:59 UTC - FALA 351: barbarzyncy, AI adiacencja, roster-zwiadowca r2, kopalnia
 
 |- md5 (pełne): 72f200267406d557992be46644639197 · stempel: ROBOCZA · label 72f20026 · źródłowy commit integracji: `eaa2ad3b`
@@ -21,7 +31,7 @@ swoim wĹ‚asnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji d
 |- **`P-ROSTER-ZWIADOWCA-DRIFT-DWOCH-FUNKCJI-Q1`** (`50c838ba` + `d65bb05a`, 2 rundy) — zgłoszony „rozjazd dwóch funkcji" okazał się fałszywy (błąd etykiety asercji, nie treści); realna przyczyna to wadliwy fixture bramki (czwarta jednostka bojowa w promieniu, licznik ślepy na nią). Runda 2 naprawia WYŁĄCZNIE fixture, zero zmian `gra/src` — asercja przepisana z licznika na kontrolę zbioru ID (mocniejsza), dopisana asercja parytetu obu funkcji. `map-field-battle-test.cjs` 19/1 → 22/22. Wyniesione jako osobne tematy: `collectPlaytestBattleRoster` nie wyklucza cywilów (naprawa wymaga `main.ts`, zablokowana §2b) i rozjazd dla kotwicy poza miastem (ratyfikowany jako zamierzony).
 |- **`P-KOPALNIA-PODSWIETLENIE-KOSMETYKA-Q1`** (`f5cf982a`) — cztery drobne poprawki kosmetyczne podświetlenia zasięgu kopalni (`rangeOverlay.ts`).
 |- tsc --noEmit 0 błędów · 5 bramek referencyjnych zielonych (logic 213/213, tech-tree 19/19, research 33/33, unit-replace 13/13, combat 6/6) · rodzina gracz/barbarzyńcy/AI zielona (11 bramek) · Vite build 882 modułów, singlefile.
-|- **AKTUALNA**
+|- ZASTĄPIONA przez FALA 352
 
 ## ROBOCZA 56c361a9 - 2026-09-06 06:47 UTC - FALA 350: przebudowa skali Szczescia (G1-G15 + R3/R4) + trzy tematy procesowe
 

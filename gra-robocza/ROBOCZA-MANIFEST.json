@@ -1,10 +1,10 @@
 {
-  "publishedAt": "2026-09-06T13:59:00",
-  "sourceBuild": "/tmp/civ-dist-13642-1788703077",
-  "note": "FALA 351 - barbarzyncy krazenie (jedna regula wszystkich trudnosci), AI zdobycie miasta przez adiacencje (parytet z graczem), domkniecie roster-zwiadowca runda 2 (naprawa fixture'u), kopalnia podswietlenie kosmetyka.",
+  "publishedAt": "2026-09-06T22:10:00",
+  "sourceBuild": "/tmp/civ-dist-prawo",
+  "note": "FALA 352 - R-PRAWO-PRZEBUDOWA-SKALI-Q1 (przebudowa skali Prawa D1-D7 + main.ts hasGarnizonBudynek), R-BUDYNEK-GARNIZON-NOWY-Q1 (budynek Garnizon), R-AI-PRODUKCJA-Z-DOSTEPNYCH-BUDYNKOW-Q1 (AI buduje z pelnego katalogu, priorytet Spichlerza/Akweduktu).",
   "publisher": "Orkiestrator (Claude Code)",
   "bundle": "Gra-ROBOCZA.html",
-  "md5": "72f200267406d557992be46644639197",
+  "md5": "24f3aee5ef28e3a94fe9e4e73e8c2327",
   "bundlePoleBitwy": "Gra-ROBOCZA-POLE-BITWY.html",
   "md5PoleBitwy": "d4477b3eaed627e426c41b9f8d0ad1f1"
 }
