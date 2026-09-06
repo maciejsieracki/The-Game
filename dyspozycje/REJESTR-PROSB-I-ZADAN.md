@@ -6010,3 +6010,26 @@ oblezenie 27/27, post-capture-law 25/25).
 
 Zamyka pozycję 1 kolejki `main.ts` (§2b). Następny w kolejce: `R-WYCINKA-DREWNO-50-I-KOMUNIKAT-CAP-Q1`
 (dyspozycja napisana, worktree `/home/user/wt-wycinka` założony, gotowy do dispatchu).
+
+## `R-WYCINKA-DREWNO-50-I-KOMUNIKAT-CAP-Q1` — GAME — **ZINTEGROWANE 2026-09-06** (1 runda, commit `4e38cece`)
+
+`wycinka.praca_per_tura`: **25 → 50** (ECHO właściciela: 50 łącznie, jednorazowo, bez
+rozkładania w czasie). Naprawiony przy okazji (ECHO 2): komunikat gracza „Wycinka: +X
+Drewna" liczył wartość SUROWĄ, sprzed przycięcia limitem magazynu — teraz pokazuje
+FAKTYCZNIE zapisaną (przyciętą) ilość, analogicznie do już poprawnej ścieżki AI w tym
+samym pliku. Rozbieżność „5 vs 25" z pierwotnego zgłoszenia właściciela zbadana, nie
+zgadywana: 5 to wartość sprzed własnej, wcześniejszej decyzji `R-EKONOMIA-SUROWCE-SKALA-5X-Q1`
+(2026-08-13, skalowanie ×5 całej gospodarki surowcowej) — nie efekt cichego przycięcia
+magazynem, inne źródło, udokumentowane w danych.
+
+Jedna runda, Operator→Evaluator→Final Control wszystkie **PASS**, zero zarzutów. Nowa
+bramka `gra/tools/wycinka-drewno-cap-test.cjs` (15/0, dowód realny na PRAWDZIWEJ
+`creditOwnerResourceStock`, nie mock), zaktualizowana `wyrab-wycinka-nazwa-live-test.cjs`
+(49/0). Trzy niezależne dowody mutacyjne (Operator, Evaluator, Final Control — każdy
+własną, różną mutacją) potwierdzają nietautologiczność. `tsc --noEmit` czyste, 5 bramek
+referencyjnych zielone (213/19/33/13/6).
+
+Zamyka pozycję 2 kolejki `main.ts` (§2b). Następny w kolejce: `R-WOJNA-WYMUSZONA-PAROWANIE-ZAMIAST-DOMINA-Q1`
+(recon mechanizmu domino wykonany, dyspozycja w przygotowaniu — otwarte pytanie do ABC:
+czy pula „podmiotów bez wojny" jest globalna, per-turowa, czy per-epoka, patrz recon w
+historii sesji).
