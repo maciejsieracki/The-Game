@@ -5810,3 +5810,17 @@ Brakuje 19 budynkow, w tym **calej grupy Prawo i administracja** (`dwor_zarzadcy
 **Dowod pre-istnienia (FC7, mutacja Final Control):** usuniecie calego rekordu `garnizon` z `buildings.json` zostawia obie bramki **bez zmiany** — `prereq` 51/8, `upgrade` 48/1. Czyli zero zwiazku z Garnizonem.
 
 DOMAIN: INFRA. Zakres: ustalic, czy 9 faili to realne defekty prereq/lancuchow ulepszen, czy bramki opisujace stan, ktorego juz nie ma — i odpowiednio naprawic kod albo przepisac asercje. **Zakaz osalabiania i usuwania asercji**; liczba nie moze spasc.
+
+## P-BRAMKI-EMPIRE-PANEL-PIEC-CZERWONYCH-ZASTALE-Q1 — INFRA (2026-09-06, znalezisko Evaluatora P-DESIGN-11-ZAKLADEK) · STATUS: ZAREJESTROWANE, NIE DISPATCHOWANE
+
+Piec bramek rodziny panelu imperium czerwonych, wszystkie zreprodukowane jako **pre-istniejace** (diff tematu design-zakladki nie rusza `gra/src/**` poza jednym plikiem):
+
+- `empire-food-b5-test.cjs` 25/3
+- `empire-panel-econ-slider-visibility-test.cjs` 57/3
+- `empire-panel-miasto-obywatele-content-test.cjs` 113/2
+- `empire-panel-sliders-always-visible-test.cjs` 6/2 (**SUPERSEDED**)
+- `hint-toast-zindex-empire-panel-test.cjs` (samo-uniewazniajaca sie, DOMAIN INFRA)
+
+**Przyczyna dwoch z pieciu ustalona:** `empire-panel-econ-slider-visibility` i `empire-panel-sliders-always-visible` opisuja `renderDefaultPodzialPracySection()` — funkcje **nieistniejaca juz nigdzie w `gra/src`** (jedyny slad to komentarz w `empirePanelSectionMap.ts:102`) — i **przecza sobie nawzajem** (jedna chce jej bramkowanej `sliderVis.showLaborSplit`, druga w sekcji ZASOBY). Naprawa lezy w plikach bramek.
+
+Zakres: ustalic dla pozostalych trzech, czy to realne defekty czy bramki opisujace nieistniejacy juz stan, i naprawic zgodnie z wynikiem — **zakaz usuwania i oslabiania asercji**, liczba nie moze spasc.
