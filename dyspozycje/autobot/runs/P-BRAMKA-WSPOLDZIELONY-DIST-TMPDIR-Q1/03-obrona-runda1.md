@@ -6,7 +6,9 @@ TEMAT: P-BRAMKA-WSPOLDZIELONY-DIST-TMPDIR-Q1
 MODEL+EFFORT: Operator (obrona) — Opus 5, effort high
 GOAL: Żadna bramka w `gra/tools/` nie może dać wyniku zależnego od tego, czy w tej samej
 chwili biegnie inny przebieg — jej albo czyjkolwiek.
-ZMIANY/COMMIT: `93f59ed9` (69 plików: 57× usunięcie handlerów sygnałów + sweep startowy,
+ZMIANY/COMMIT: `93f59ed9` (kod) → `0f3303fd` → `d5f5a9f9` → `b4f29af2` → `8fd077c6` →
+`d5f040bc` (raport). Zakres `1585db98..HEAD`: **69 plików, 68 w `gra/tools/` + katalog runu,
+zero poza allowlistą**, drzewo czyste. `93f59ed9` (69 plików: 57× usunięcie handlerów sygnałów + sweep startowy,
 11× naprawa dosłownych ścieżek `/tmp/`, `bramki-tmpdir-unikalnosc-test.cjs` + reguły R4/R5,
 katalog runu). Allowlista dotrzymana: cały diff w `gra/tools/**/*.cjs` i katalogu runu,
 staging po jawnych ścieżkach, zero `git add -A`, `git diff --check` czysty.
