@@ -441,6 +441,34 @@ console.log('\n--- A5/A6: wpięcie w main.ts (anty-„naprawa na papierze") ---'
   assert(window.includes('hasCityDefenders(destinationCity, units)'),
     'A5d: hasCityDefenders liczone z realnego stanu jednostek');
 
+  // --- A5e-A5h — WPIĘCIE `unitIsCivilian` (F1 Final Control, runda 2/5) ------
+  // Mutacja M3 (`unitIsCivilian: isCivilianUnit(u)` -> `false`) zostawiała bramkę
+  // 84/84 ZIELONĄ: A5 pilnował `canOccupyCityHex`, `onCapture` i `hasCityDefenders`,
+  // ale NIE tego pola — silnikową barierę cywila dało się wyłączyć po cichu.
+  // Asercja na SAM NAPIS byłaby asercją na ZAPIS, nie na ZACHOWANIE, więc wycinamy
+  // przekazywane WYRAŻENIE i URUCHAMIAMY je na dwóch jednostkach z tego samego świata:
+  // cywilnej i bojowej. Stała (`false`/`true`) ani wartość niezależna od jednostki
+  // nie przejdzie — a właśnie stałą podstawiała M3.
+  const civWire = /unitIsCivilian:\s*([^\n]+?),\s*\r?\n/.exec(window);
+  assert(civWire !== null, 'A5e: egzekutor w main.ts w ogóle dostaje pole unitIsCivilian');
+  const civExpr = civWire ? civWire[1].trim() : '<brak pola>';
+  let civOnCivilian = '<nie policzono>';
+  let civOnMilitary = '<nie policzono>';
+  let civEvalErr = null;
+  if (civWire) {
+    try {
+      const probe = new Function('isCivilianUnit', 'u', `return (${civExpr});`);
+      civOnCivilian = probe(REAL.isCivilianUnit, makeWorld(ROBOTNIK).units[0]);
+      civOnMilitary = probe(REAL.isCivilianUnit, makeWorld().units[0]);
+    } catch (e) { civEvalErr = String((e && e.message) || e); }
+  }
+  eq(civEvalErr, null,
+    `A5f: wyrazenie \`${civExpr}\` liczy sie z SAMEJ jednostki (isCivilianUnit + u) — wykonywalne poza domknieciem main()`);
+  eq(civOnCivilian, true,
+    `A5g: wpiecie ZWRACA true dla CYWILA (wyrazenie: \`${civExpr}\`) — stala albo wartosc niezalezna od jednostki czyni silnikowa bramke cywila MARTWA (mutacja M3)`);
+  eq(civOnMilitary, false,
+    `A5h: wpiecie ZWRACA false dla jednostki BOJOWEJ (wyrazenie: \`${civExpr}\`) — inaczej wpiecie odcina GOAL rundy 1`);
+
   const fnIdx = mainSrc.indexOf('function tryAutoCaptureEmptyCityAt(');
   assert(fnIdx > 0, 'A6a: tryAutoCaptureEmptyCityAt istnieje w main.ts');
   const captureIdx = mainSrc.indexOf('captureCityWithoutBattle(city, anchor, atkRoster);', fnIdx);
