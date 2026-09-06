@@ -99,7 +99,7 @@ GOAL: `empire-panel-moc-scroll-preserve-test.cjs` zielony (≥47 asercji) z jawn
 (a)/(b); ikona eyebrow spójna w czterech zakładkach z dowodem z żywego Chromium; komentarz przy
 `cityPoborMiniRekruci()` zgodny z faktem; N5/N9 bez zmian.
 ZMIANY/COMMIT: `gra/tools/empire-panel-moc-scroll-preserve-test.cjs` — `5b7c592c`;
-`dyspozycje/autobot/runs/P-DESIGN-11-ZAKLADEK-DROBIAZGI-Q1/` (raport + `dowody/`) — RAPORT_SHA.
+`dyspozycje/autobot/runs/P-DESIGN-11-ZAKLADEK-DROBIAZGI-Q1/` (raport + `dowody/`) — `5d41d3f4` (+ aktualizacja tego pola).
 `gra/src/ui/empireDetailPanel.ts` NIE zmieniany (werdykt (b) + naprawy N11/N12 obecne od `24456a72`).
 TESTY: moc-scroll-preserve 57/57 (było 38/9) · tsc 0 błędów · logic 213/213 · tech-tree 19/19 ·
 research 33/33 · unit-replace 13/13 · combat 6/6 · drobiazgi-runda2 33/33 · mutacje: 23/25, 45/11,
