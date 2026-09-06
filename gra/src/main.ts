@@ -455,7 +455,12 @@ import { showCityUnitPick, hideCityUnitPick, isCityUnitPickOpen } from './ui/cit
 import { showCityForeignPick, hideCityForeignPick, isCityForeignPickOpen } from './ui/cityForeignPick';
 import { showUnitForeignPick, hideUnitForeignPick, isUnitForeignPickOpen } from './ui/unitForeignPick';
 import { showUnitReplacePicker } from './ui/unitReplacePicker';
-import { showCityCaptureNotice } from './ui/cityCaptureNotice';
+import {
+  showCityCaptureNotice,
+  showCaptureReportNotice,
+  type CaptureReportRow,
+} from './ui/cityCaptureNotice';
+import { mocLabel } from './ui/power-labels';
 import { showArmyMergePanel, hideArmyMergePanel, isArmyMergePanelOpen } from './ui/armyMergePanel';
 import { showArmyMergePickPanel, hideArmyMergePickPanel, isArmyMergePickPanelOpen } from './ui/armyMergePickPanel';
 import { showArmySplitPanel, hideArmySplitPanel, isArmySplitPanelOpen } from './ui/armySplitPanel';
@@ -1341,6 +1346,134 @@ import {
   converterBuildingIdForRecipe,
   type RawConverterParamsJson,
 } from './game/converters';
+
+// ===========================================================================
+// R-MIASTA-ZDOBYCIE-RAPORT-TROFEA-Q1 — BLOK CZYSTY: POCZATEK
+// (markery `BLOK CZYSTY: POCZATEK/KONIEC` sa kontraktem z bramka
+//  tools/miasto-zdobycie-raport-test.cjs, ktora wycina ten fragment i URUCHAMIA go
+//  przez `new Function` — main.ts nie jest bundlowalny, patrz naglowek tamtej bramki.
+//  Blok NIE MOZE odwolywac sie do niczego z domkniecia main.ts: wszystko, czego
+//  potrzebuje (lacznie z etykieta Mocy w jezyku gracza), wchodzi przez `input`.)
+// ===========================================================================
+
+/** Ktory z trzech losow spotkal przejete miasto — decyduje o pozycjach „co przepadlo". */
+type CityCaptureReportKind = 'zwykle' | 'stolica' | 'eliminacja';
+
+/**
+ * Wejscie raportu zdobycia. Wszystkie liczby sa JUZ policzone przez silnik (to, co
+ * FAKTYCZNIE zmienilo stan) — ta funkcja nie liczy ekonomii i nie moze jej zmienic,
+ * tylko opisuje. Granica dispatchu: „ten temat zmienia wylacznie to, co gracz WIDZI".
+ */
+interface CityCaptureReportInput {
+  kind: CityCaptureReportKind;
+  /** Etykieta metryki Moc w jezyku gracza (`mocLabel()`), zeby blok zostal czysty i zeby
+   *  w tekscie dla gracza nie wyciekla wewnetrzna nazwa `Power` (defekt E4 dispatchu). */
+  mocEtykieta: string;
+  /** Ludnosc przejetego miasta. */
+  ludnosc: number;
+  /** Liczba budynkow, ktore przeszly razem z miastem. */
+  budynki: number;
+  /** Zloto FAKTYCZNIE przejete ze skarbca ofiary (juz po Math.floor). */
+  zloto: number;
+  /** Punkty nauki FAKTYCZNIE przejete (juz po Math.floor). */
+  nauka: number;
+  /** Liczba technologii skopiowanych zdobywcy. */
+  technologie: number;
+  /** Moc dopisana zdobywcy za te eliminacje. */
+  moc: number;
+  /** Zdobywca jest barbarzynca — ofiara traci, ale nikt nie dziedziczy lupu. */
+  barbarzyncaZdobywca: boolean;
+}
+
+/**
+ * GOAL 2 — buduje LISTE POZYCJI etykieta/wartosc, nie zdanie.
+ *
+ * Trzy zasady, wszystkie z dispatchu:
+ *  1. pozycja o wartosci zerowej NIE POWSTAJE (defekt E5: modal w trzech czwartych szumem);
+ *  2. gdy caly lup jest pusty — dokladnie JEDNA swiadoma linia „Lup: brak" (ECHO 1: zwykle
+ *     miasto nadal nie daje lupu, raport ma to powiedziec wprost, a nie udawac zdobycz);
+ *  3. kolejnosc: co przejelismy (miasto/ludnosc/budynki) -> co zdobylismy (lup) -> co
+ *     przepadlo (pula pracy / lup barbarzyncow).
+ *
+ * Etykieta i wartosc sa rozlaczne, wiec jednostka nie moze paść dwa razy (defekt E2
+ * „Nauka: +16 nauki”), a liczba mnoga nie jest w ogole potrzebna (defekt E3 „0 tech(y)”).
+ */
+function buildCityCaptureReportRows(input: CityCaptureReportInput): CaptureReportRow[] {
+  const rows: CaptureReportRow[] = [];
+
+  // --- 1. Co przejelismy (zawsze prawda, takze przy zwyklym miescie) ---
+  if (input.ludnosc > 0) rows.push({ label: 'Ludność', value: '+' + input.ludnosc, tone: 'gain', group: 'przejete' });
+  if (input.budynki > 0) rows.push({ label: 'Budynki', value: '+' + input.budynki, tone: 'gain', group: 'przejete' });
+
+  // --- 2. Lup (tylko pozycje niezerowe; barbarzynca nie dziedziczy niczego) ---
+  const lup: CaptureReportRow[] = [];
+  if (!input.barbarzyncaZdobywca) {
+    if (input.zloto > 0) lup.push({ label: 'Złoto ze skarbca', value: '+' + input.zloto, tone: 'gain', group: 'lup' });
+    if (input.nauka > 0) lup.push({ label: 'Punkty nauki', value: '+' + input.nauka, tone: 'gain', group: 'lup' });
+    if (input.technologie > 0) lup.push({ label: 'Technologie', value: '+' + input.technologie, tone: 'gain', group: 'lup' });
+    if (input.moc > 0) lup.push({ label: input.mocEtykieta, value: '+' + input.moc, tone: 'gain', group: 'lup' });
+  }
+  for (const r of lup) rows.push(r);
+
+  // --- 3. Co przepadlo ---
+  if (input.barbarzyncaZdobywca) {
+    // Galaz barbarzynska zachowuje swoj sens (uwaga recon E dispatchu): ofiara traci
+    // skarbiec i nauke, ale barbarzyncy ich nie dziedzicza.
+    rows.push({ label: 'Łup', value: 'przepadł — barbarzyńcy nie dziedziczą zdobyczy', tone: 'loss', group: 'lup' });
+  } else if (lup.length === 0) {
+    rows.push({ label: 'Łup', value: 'brak', tone: 'info', group: 'lup' });
+  }
+  if (input.kind !== 'zwykle') {
+    // GOAL 1 — pula pracy przepada NAPRAWDE i tylko ona; skarbiec jest wyzej, w lupie.
+    rows.push({ label: 'Pula pracy', value: 'przepadła — nie przechodzi na zdobywcę', tone: 'loss', group: 'strata' });
+  }
+  return rows;
+}
+
+/**
+ * Te same wiersze splaszczone do JEDNEJ linii — dla kanalow, ktore nie moga renderowac
+ * wierszy (toasty: kapitulacja glodowa, szturm muru, zdobywca-AI). Jedno zrodlo tresci,
+ * dwa nosniki — modal i toast nie moga sie rozjechac.
+ */
+function captureReportOneLine(rows: readonly CaptureReportRow[]): string {
+  return rows.map(r => r.label + ': ' + r.value).join(' \u00b7 ');
+}
+
+/**
+ * Skrot na KARTE panelu WYDARZENIA — sam lup. Karta ma niesc tresc skrocona, pelny bilans
+ * (co przejelismy + lup + co przepadlo) pokazuje modal po kliknieciu; ten sam podzial co
+ * `recordCivElimEvent` (karta) i `civElimNotice.ts` (modal). Bez tego karta eliminacji
+ * rozlewala sie na kilkanascie linii i zaslaniala pozostale wydarzenia tury.
+ */
+function captureReportShortLine(rows: readonly CaptureReportRow[]): string {
+  return captureReportOneLine(rows.filter(r => r.group === 'lup'));
+}
+
+/**
+ * OBRONA RUNDA 1, zarzut 2 — TE SAME liczby widziane przez OFIARE.
+ *
+ * `buildCityCaptureReportRows` opisuje przejecie z perspektywy ZDOBYWCY: kazda pozycja lupu
+ * dostaje znak `+` i ton `gain`. Gdy to GRACZ jest ofiara (`oldOwner === 0`), ten sam zestaw
+ * wierszy trafial na jego karte „Utracono miasto" i do jego modalu — i mowil mu, ze
+ * „Zloto ze skarbca +1234", na zielono, o zlocie, ktore mu WLASNIE zabrano. To ta sama klasa
+ * defektu, ktora usuwa GOAL 1 (komunikat zaprzeczajacy temu, co gra zrobila), tylko po stronie
+ * lustrzanej.
+ *
+ * Odwracamy WYLACZNIE prezentacje: pozycja zdobyta (`gain`, wartosc zaczynajaca sie od `+`)
+ * staje sie strata (`loss`, ta sama liczba ze znakiem minus). Pozycje juz stratne („Pula pracy
+ * przepadla") i informacyjne („Lup: brak") zostaja bez zmian — z obu stron znacza to samo.
+ * Liczby, etykiety, kolejnosc i ekonomia sie NIE zmieniaja.
+ * EN: mirrors the captor-side rows for the victim — a gain becomes the same number as a loss.
+ */
+function mirrorCaptureReportRowsForVictim(rows: readonly CaptureReportRow[]): CaptureReportRow[] {
+  return rows.map(r => (r.tone === 'gain' && r.value.startsWith('+')
+    ? { ...r, value: '\u2212' + r.value.slice(1), tone: 'loss' as const }
+    : { ...r }));
+}
+
+// ===========================================================================
+// R-MIASTA-ZDOBYCIE-RAPORT-TROFEA-Q1 — BLOK CZYSTY: KONIEC
+// ===========================================================================
 
 /**
  * BattleScene.worldTerrain input derived from a world-map hex: baza terenu +
@@ -8000,6 +8133,127 @@ async function boot(): Promise<void> {
       refreshD1bHud();
     }
 
+    /**
+     * R-MIASTA-ZDOBYCIE-RAPORT-TROFEA-Q1 (GOAL 3, ECHO 2 = „1+2") — pełna treść raportu
+     * zdobycia dla wpisu WYDARZENIA `capture-*` (klucz = SidePanelEvent.id). Karta w panelu
+     * niesie jedną linię, kliknięcie otwiera modal z WIERSZAMI (showCaptureReportNotice).
+     * Ten sam wzorzec co `civElimEventDetails` wyżej.
+     */
+    const cityCaptureEventDetails = new Map<string, {
+      title: string;
+      cityName: string;
+      subtitle: string;
+      rows: CaptureReportRow[];
+      rowsTitle: string;
+    }>();
+
+    const CITY_CAPTURE_EVENT_PREFIX = 'capture-';
+
+    /**
+     * R-MIASTA-ZDOBYCIE-RAPORT-TROFEA-Q1 (GOAL 3) — JEDYNY rejestrator trwałego wpisu
+     * „zdobycie miasta" w panelu WYDARZENIA. Wołany z WSZYSTKICH TRZECH lejków przejęcia
+     * (recon D dispatchu): `applyCityCaptureToMap` (wejście zbrojne: bitwa polowa o miasto,
+     * szturm muru, wejście do pustego miasta), `resolveSiegeSurrender` (kapitulacja głodowa)
+     * i `runCapitalCapturePlunder` (ścieżka stolicy/eliminacji). Trzeci jest wołany Z WNĘTRZA
+     * dwóch pierwszych, więc dla jednego przejęcia funkcja dostaje do dwóch wywołań —
+     * ZAMIERZONE: wygrywa PIERWSZE (stołeczne, najbogatsze w treść), kolejne dla tego samego
+     * miasta w tej samej turze są świadomym no-opem. Dzięki temu żaden lejek nie musi wiedzieć,
+     * czy któryś inny już zdążył zapisać wpis — i żaden nie może go zgubić.
+     *
+     * Panel wydarzeń jest panelem GRACZA: przejęcia bez udziału gracza (AI↔AI, barbarzyńcy↔AI)
+     * go nie dotyczą — ten sam warunek co w `recordWarDeclarationEvent` wyżej.
+     * EN: the single recorder for the persistent "city captured" Events entry, called from all
+     * THREE capture funnels; first write wins, later ones for the same city/turn are no-ops.
+     */
+    function recordCityCaptureEvent(args: {
+      cityId: string;
+      cityName: string;
+      oldOwner: number;
+      newOwner: number;
+      rows: readonly CaptureReportRow[];
+      victimLabel: string;
+      captorLabel: string;
+      /** Etykieta cywilizacji, którą TO przejęcie skasowało (null = przeżyła). */
+      eliminatedCivLabel?: string | null;
+    }): void {
+      if (args.oldOwner !== 0 && args.newOwner !== 0) return;
+      // OBRONA RUNDA 1, zarzut 3 — klucz dedupu niesie PARE WLASCICIELI, nie samo miasto.
+      // Dedup ma chronic przed potrojnym zapisem TEGO SAMEGO zdarzenia z trzech lejkow
+      // (recon D): tam wszystkie wywolania maja identyczna pare `oldOwner`/`newOwner`, wiec
+      // nadal wygrywa pierwsze, najbogatsze w tresc. Ale gdy gracz zdobywa miasto, a AI odbija
+      // je w swojej fazie TEJ SAMEJ tury, para jest ODWROTNA — to DRUGIE, osobne zdarzenie
+      // i musi dostac wlasny wpis. Wczesniej ginelo bez sladu (GOAL 3 wymaga trwalego wpisu
+      // dla KAZDEGO przejecia).
+      // EN: the dedup key carries the owner pair, so the three funnels of ONE capture still
+      // collapse into one entry, while a re-capture in the same turn gets its own.
+      const evId = CITY_CAPTURE_EVENT_PREFIX + turn + '-' + args.cityId
+        + '-' + args.oldOwner + '-' + args.newOwner;
+      if (cityCaptureEventDetails.has(evId)) return;
+
+      const playerCaptured = args.newOwner === 0;
+      const elim = args.eliminatedCivLabel ?? null;
+      // OBRONA RUNDA 1, zarzut 2: wiersze przychodza w perspektywie ZDOBYWCY. Gdy ofiara jest
+      // gracz, karta i modal dostaja te same liczby odwrocone na strate — inaczej gra mowilaby
+      // mu na zielono „+1234" o zlocie, ktore mu wlasnie zabrano.
+      const viewRows: readonly CaptureReportRow[] = playerCaptured
+        ? args.rows
+        : mirrorCaptureReportRowsForVictim(args.rows);
+      const oneLine = captureReportShortLine(viewRows);
+
+      const cardTitle = elim
+        ? 'ELIMINACJA: ' + elim
+        : (playerCaptured ? 'Zdobyto miasto: ' + args.cityName : 'Utracono miasto: ' + args.cityName);
+      const cardSubtitle = playerCaptured
+        ? oneLine
+        : 'Przejęte przez ' + args.captorLabel + ' — ' + oneLine;
+
+      cityCaptureEventDetails.set(evId, {
+        title: elim ? 'ELIMINACJA!' : (playerCaptured ? 'Miasto zdobyte' : 'Miasto utracone'),
+        cityName: args.cityName,
+        subtitle: elim
+          ? elim + ' — ostatnie miasto przejęte, cywilizacja wyeliminowana'
+          : (playerCaptured
+            ? 'Odebrane: ' + args.victimLabel
+            : 'Przejęte przez ' + args.captorLabel),
+        rows: [...viewRows],
+        // Naglowek listy nazywa to, co gracz na niej widzi: bilans ZDOBYCIA, gdy zdobywal,
+        // bilans STRATY, gdy tracil. „BILANS ZDOBYCIA" nad wlasna strata byl czescia zarzutu 2.
+        rowsTitle: playerCaptured ? 'Bilans zdobycia' : 'Bilans straty',
+      });
+
+      warEventLog.unshift({
+        id: evId,
+        icon: elim ? '\u{1F3F4}' : (playerCaptured ? '\u{1F3F0}' : '\u{1F6A9}'),
+        title: cardTitle,
+        subtitle: cardSubtitle,
+        kind: playerCaptured ? 'city' : 'enemy',
+        negative: !playerCaptured,
+      });
+      if (warEventLog.length > 8) warEventLog.length = 8;
+      refreshD1bHud();
+    }
+
+    /** Skrót karty `capture-*` — jedno źródło prawdy dla afordancji i dla akcji, dokładnie jak
+     *  `techDoneEventLinkFor`/`openTechDoneEventLink` (`game/side-panel-event-link.ts` jest poza
+     *  allowlistą tego tematu, więc rodzina mieszka w main.ts — ten sam precedens). */
+    function cityCaptureEventLinkFor(id: string): { label: string } | null {
+      return cityCaptureEventDetails.has(id) ? { label: 'Raport zdobycia' } : null;
+    }
+
+    /** `true` = zdarzenie należało do tej rodziny i zostało obsłużone (wołający kończy). */
+    function openCityCaptureEventLink(id: string): boolean {
+      const info = cityCaptureEventDetails.get(id);
+      if (!info) return false;
+      showCaptureReportNotice({
+        title: info.title,
+        cityName: info.cityName,
+        subtitle: info.subtitle,
+        rows: info.rows,
+        rowsTitle: info.rowsTitle,
+      });
+      return true;
+    }
+
     function recordWarDeclarationEvent(declarerId: number, targetId: number): void {
       if (declarerId !== 0 && targetId !== 0) return;
       if (isBarbarian(declarerId) || isBarbarian(targetId)) return;
@@ -8158,6 +8412,7 @@ async function boot(): Promise<void> {
       warEventLog.length = 0;
       borderMarchEventTargets.clear(); // N6: mapa celow kamery rowniez zerowana przy resecie
       civElimEventDetails.clear(); // RUNDA 5: para z warEventLog.length=0 wyzej, ten sam reset
+      cityCaptureEventDetails.clear(); // R-MIASTA-ZDOBYCIE-RAPORT-TROFEA-Q1: ten sam reset
       activeDeals = [];
       negotiationTable.length = 0;
       negotiationSeq = 0;
@@ -13160,11 +13415,36 @@ async function boot(): Promise<void> {
         // and MERGE it with the capitulation toast into ONE showHintMessage call (same
         // collision pattern/fix as Defekt A).
         const captureOutcome = runCapitalCapturePlunder(city, oldOwner, newOwner);
+        // R-MIASTA-ZDOBYCIE-RAPORT-TROFEA-Q1: odczyt szczeliny SYNCHRONICZNIE po wywolaniu.
+        const capitalReport = capitalCaptureReportSlot;
+        const surrenderRows = capitalReport?.rows ?? buildCityCaptureReportRows({
+          kind: 'zwykle',
+          mocEtykieta: mocLabel(),
+          ludnosc: Math.max(0, Math.floor(city.population)),
+          budynki: (cityBuilt.get(city.id) ?? []).length,
+          zloto: 0,
+          nauka: 0,
+          technologie: 0,
+          moc: 0,
+          barbarzyncaZdobywca: false,
+        });
+        // GOAL 3 -- LEJEK 2 z trzech (recon D): kapitulacja glodowa. No-op, gdy lejek
+        // stoleczny zapisal juz bogatszy wpis dla tego miasta w tej turze.
+        recordCityCaptureEvent({
+          cityId: city.id,
+          cityName: city.name,
+          oldOwner,
+          newOwner,
+          rows: surrenderRows,
+          victimLabel: civLabelForOwner(oldOwner),
+          captorLabel: civLabelForOwner(newOwner),
+          eliminatedCivLabel: captureOutcome?.eliminatedCivLabel ?? null,
+        });
         const capitulationBaseMsg =
           city.name + ' — kapitulacja z głodu! Miasto przejęte przez ' + civLabelForOwner(newOwner) + '.';
         const capitulationMsg = captureOutcome
           ? `${captureOutcome.eliminatedCivLabel} — ELIMINACJA! ${capitulationBaseMsg} ${captureOutcome.eliminatedDetails}`
-          : capitulationBaseMsg;
+          : `${capitulationBaseMsg} ${captureReportOneLine(surrenderRows)}`;
         showHintMessage(capitulationMsg, captureOutcome ? 6000 : 5500);
       } else {
         showHintMessage(city.name + ': głód — oblężenie zakończone bez przejęcia.', 4500);
@@ -20275,6 +20555,18 @@ async function boot(): Promise<void> {
         civElimEventDetails.delete(id);
         return;
       }
+      if (id.startsWith(CITY_CAPTURE_EVENT_PREFIX)) {
+        // R-MIASTA-ZDOBYCIE-RAPORT-TROFEA-Q1: wpis siedzi BEZPOSREDNIO w warEventLog
+        // (recordCityCaptureEvent), nie regeneruje sie co ture -- X musi usunac go TRWALE,
+        // tak samo jak 'war-'/'elim-cs-' wyzej, inaczej karta wroci w nastepnej turze.
+        const idx = warEventLog.findIndex(e => e.id === id);
+        if (idx >= 0) {
+          warEventLog.splice(idx, 1);
+          refreshD1bHud();
+        }
+        cityCaptureEventDetails.delete(id);
+        return;
+      }
       // N1 fix — logika w game/eot-event-defer.ts (dismissEotOrEraWarLogEntry), testowana
       // niezależnie od main.ts w tools/sidepanel-events-toolbar-test.cjs.
       if (id.startsWith(TECH_DONE_EVENT_PREFIX)) {
@@ -20946,7 +21238,11 @@ async function boot(): Promise<void> {
         // resolver (`techDoneEventLinkFor`, tuż nad tym blokiem) — z TĄ SAMĄ zasadą „jedno
         // źródło dla afordancji i dla akcji", tylko trzymane w `main.ts`, bo pure-moduł
         // `game/side-panel-event-link.ts` jest poza allowlistą tego tematu.
-        getEventLink: (ev) => (ev.blocking === true ? null : sidePanelEventLinkFor(ev.id)) ?? techDoneEventLinkFor(ev.id),
+        // R-MIASTA-ZDOBYCIE-RAPORT-TROFEA-Q1: rodzina `capture-*` doklada sie do tego samego
+        // lancucha (prefiksy rozlaczne), z ta sama zasada jednego zrodla dla afordancji i akcji.
+        getEventLink: (ev) => (ev.blocking === true ? null : sidePanelEventLinkFor(ev.id))
+          ?? techDoneEventLinkFor(ev.id)
+          ?? cityCaptureEventLinkFor(ev.id),
         onEventClick: (id) => {
           // P-WYDARZENIA-AUDYT-PRZEKIEROWANIA-Q1: skróty kart NIE-blokujących idą przez jedno
           // wspólne rozstrzygnięcie (`sidePanelEventLinkFor`), to samo, które steruje widoczną
@@ -20962,6 +21258,9 @@ async function boot(): Promise<void> {
           // rodziny mają rozłączne prefiksy, więc kolejność nie zmienia wyniku, ale jej
           // zgodność jest tym, co gwarantuje, że skrót i klik nie mogą się rozjechać.
           if (openTechDoneEventLink(id)) return;
+          // R-MIASTA-ZDOBYCIE-RAPORT-TROFEA-Q1: karta zdobycia/utraty miasta -- kolejnosc
+          // LUSTRZANA wobec `getEventLink` wyzej (prefiksy rozlaczne).
+          if (openCityCaptureEventLink(id)) return;
           if (id.startsWith('diplo-pend-')) {
             openDiplomacyPendingById(id);
             return;
@@ -25338,6 +25637,9 @@ async function boot(): Promise<void> {
       cityName: string;
       eliminatedCivLabel: string | null;
       eliminatedDetails: string | null;
+      /** R-MIASTA-ZDOBYCIE-RAPORT-TROFEA-Q1: bilans zdobycia takze dla szturmu muru — bez
+       *  tego jedyna sciezka zbrojna bez modalu konczyla sie samym „Szturm udany". */
+      reportRows: CaptureReportRow[];
     }
 
     function applyMapBattleOutcome(
@@ -25515,6 +25817,7 @@ async function boot(): Promise<void> {
             cityName: cityOnHex.name,
             eliminatedCivLabel: captureResult.eliminatedCivLabel,
             eliminatedDetails: captureResult.eliminatedDetails,
+            reportRows: captureResult.reportRows,
           });
         }
         if (!opts?.siegeContext && captureSucceeded) {
@@ -25526,6 +25829,7 @@ async function boot(): Promise<void> {
               onEnterCity: () => openCityPanelForPlayer(capturedCity),
               eliminatedCivLabel: captureResult.eliminatedCivLabel ?? undefined,
               eliminatedDetails: captureResult.eliminatedDetails ?? undefined,
+              reportRows: captureResult.reportRows,
             });
           }
         }
@@ -26153,9 +26457,22 @@ async function boot(): Promise<void> {
      * eliminacji, gdy zdobywcą jest AI (toast wystarcza, brak modalu), albo gdy to szczególny
      * przypadek zjednoczenia (własny modal Triumfu już to obsługuje).
      */
+    /**
+     * R-MIASTA-ZDOBYCIE-RAPORT-TROFEA-Q1: szczelina przekazania WIERSZY raportu stolecznego
+     * (Zdarzenie 1 „stolica, cywilizacja przezywa" ORAZ Zdarzenie 2 „eliminacja") do lejka
+     * wolajacego, ktory pokazuje modal. Sygnatura i kontrakt zwrotu
+     * `runCapitalCapturePlunder` sa zamrozone bramka tools/elimination-toast-merge-test.cjs
+     * (dokladnie trzy argumenty, `null` gdy nie ma czego pokazac w modalu ELIMINACJA), wiec
+     * wiersze wracaja ta jedna, jawnie zerowana szczelina zamiast szerszym typem zwrotu.
+     * Odczyt jest SYNCHRONICZNY, bezposrednio po wywolaniu — nic miedzy tymi dwiema liniami
+     * nie moze wolac tej funkcji ponownie.
+     */
+    let capitalCaptureReportSlot: { rows: CaptureReportRow[]; oneLine: string } | null = null;
+
     function runCapitalCapturePlunder(
       city: City, oldOwner: number, newOwner: number,
     ): CapitalCapturePlunderResult | null {
+      capitalCaptureReportSlot = null;
       // #25: frakcja rebeliancka (-99) nie jest realną cywilizacją — nie ma
       // skarbca/stolicy/Power. Bez tego guarda odbicie jej miasta wpadało w
       // ścieżkę "ostatnie miasto -> eliminacja": fałszywy komunikat ELIMINACJA
@@ -26217,8 +26534,37 @@ async function boot(): Promise<void> {
         } else {
           capitalCityIdByOwner.delete(oldOwner);
         }
+        // GOAL 1 (recon A dispatchu) — komunikat KLAMAL: skarbiec ofiary trafia W CALOSCI
+        // do zdobywcy (capital-capture.ts, `setTreasury(newOwner, ... + skarbiecPrzejety)`),
+        // a tekst mowil, ze „przepadl", i nie podawal kwoty. Przepada WYLACZNIE pula pracy
+        // (`setPracaPool(oldOwner, 0)` bez transferu) — te dwa losy sa teraz rozdzielone na
+        // dwie osobne pozycje raportu i nie da sie ich juz skleic w jedno zdanie.
+        // Ekonomia bez zmian: ponizej czytamy WYLACZNIE `outcome`, nic nie ustawiamy.
+        const capitalBarbCaptor = barbCaptor;
+        const capitalRows = buildCityCaptureReportRows({
+          kind: 'stolica',
+          mocEtykieta: mocLabel(),
+          ludnosc: Math.max(0, Math.floor(city.population)),
+          budynki: (cityBuilt.get(city.id) ?? []).length,
+          zloto: Math.floor(outcome.skarbiecPrzejety),
+          nauka: 0,
+          technologie: 0,
+          moc: 0,
+          barbarzyncaZdobywca: capitalBarbCaptor,
+        });
+        const capitalOneLine = captureReportOneLine(capitalRows);
+        capitalCaptureReportSlot = { rows: capitalRows, oneLine: capitalOneLine };
+        recordCityCaptureEvent({
+          cityId: city.id,
+          cityName: city.name,
+          oldOwner,
+          newOwner,
+          rows: capitalRows,
+          victimLabel: civLabelForOwner(oldOwner),
+          captorLabel: civLabelForOwner(newOwner),
+        });
         showHintMessage(
-          `${city.name}: stolica ${civLabelForOwner(oldOwner)} przejęta przez ${civLabelForOwner(newOwner)} — skarbiec i pula pracy przepadły.`,
+          `${city.name}: stolica ${civLabelForOwner(oldOwner)} przejęta przez ${civLabelForOwner(newOwner)}. ${capitalOneLine}`,
           5000,
         );
         markCityStateDirty();
@@ -26239,19 +26585,45 @@ async function boot(): Promise<void> {
         zdobyczePowerByOwner.set(newOwner, (zdobyczePowerByOwner.get(newOwner) ?? 0) + powerGain);
       }
       const eliminatedCivLabel = civLabelForOwner(oldOwner);
-      // R-MIASTA-ELIMINACJA-LUP-KWOTY-Q1: konkretne kwoty zamiast ogólnikowego
-      // "Skarbiec, nauka..." — gracz ma widzieć DOKŁADNIE ile złota/nauki przejęto
-      // (Math.floor spójnie z resztą UI, np. `zloto: Math.floor(player.skarbiec)` /
-      // `nauka: Math.floor(player.nauka)` przy HUD gracza).
-      const skarbiecKwota = Math.floor(outcome.skarbiecPrzejety);
-      const naukaKwota = Math.floor(outcome.naukaPrzejeta);
-      const skarbiecText = skarbiecKwota > 0
-        ? `Skarbiec: +${skarbiecKwota} złota.`
-        : 'Skarbiec był pusty.';
-      const naukaText = naukaKwota > 0 ? ` Nauka: +${naukaKwota} nauki.` : '';
-      const eliminatedDetails = barbCaptor
-        ? 'Skarbiec i nauka przepadły (barbarzyńcy nie dziedziczą łupu).'
-        : `${skarbiecText}${naukaText} ${outcome.techSkopiowane.length} tech(y) przejęte. Zdobycze Power: +${lostPower}.`;
+      // R-MIASTA-ELIMINACJA-LUP-KWOTY-Q1 (zachowane): gracz ma widziec DOKLADNIE ile
+      // zlota/nauki przejeto -- Math.floor spojnie z reszta UI.
+      // R-MIASTA-ZDOBYCIE-RAPORT-TROFEA-Q1, GOAL 2 (defekty E2-E5 dispatchu): te kwoty nie
+      // sklejaja sie juz w JEDNO zdanie. Powstaje LISTA POZYCJI etykieta/wartosc, w ktorej
+      //   * pozycja zerowa w ogole nie powstaje (E5 -- modal byl w trzech czwartych szumem),
+      //   * jednostka nie pada dwa razy (E2 "Nauka: +16 nauki"),
+      //   * znikaja deweloperskie skroty "tech(y)" (E3) i nieprzetlumaczone "Power" (E4 --
+      //     etykieta gracza to `mocLabel()` z ui/power-labels.ts, kanonicznie „Moc"),
+      //   * galaz barbarzynska zachowuje swoj sens (uwaga recon E) -- jako WLASNA pozycja
+      //     „Lup: przepadl -- barbarzyncy nie dziedzicza zdobyczy", a nie osobny string.
+      // `eliminatedDetails` zostaje jedna linia ZLOZONA Z TYCH SAMYCH wierszy, bo toasty
+      // (zdobywca-AI, kapitulacja glodowa, szturm muru) nie maja gdzie renderowac wierszy —
+      // jedno zrodlo tresci, dwa nosniki.
+      const eliminationRows = buildCityCaptureReportRows({
+        kind: 'eliminacja',
+        mocEtykieta: mocLabel(),
+        ludnosc: Math.max(0, Math.floor(city.population)),
+        budynki: (cityBuilt.get(city.id) ?? []).length,
+        zloto: Math.floor(outcome.skarbiecPrzejety),
+        nauka: Math.floor(outcome.naukaPrzejeta),
+        technologie: outcome.techSkopiowane.length,
+        // `powerGain`, nie `lostPower`: przy zdobywcy-barbarzyncy ofiara traci Moc, ale nikt
+        // jej nie dziedziczy (barbarianCapturedPowerGain) -- raport ma podawac kwote
+        // FAKTYCZNIE przejeta, nie utracona przez ofiare.
+        moc: powerGain,
+        barbarzyncaZdobywca: barbCaptor,
+      });
+      const eliminatedDetails = captureReportOneLine(eliminationRows);
+      capitalCaptureReportSlot = { rows: eliminationRows, oneLine: eliminatedDetails };
+      recordCityCaptureEvent({
+        cityId: city.id,
+        cityName: city.name,
+        oldOwner,
+        newOwner,
+        rows: eliminationRows,
+        victimLabel: eliminatedCivLabel,
+        captorLabel: civLabelForOwner(newOwner),
+        eliminatedCivLabel,
+      });
       const isTriumph = newOwner === 0 && shouldShowPlayerTriumphCityStateUnification({
         newOwner,
         oldOwner,
@@ -26458,6 +26830,8 @@ async function boot(): Promise<void> {
       lead: RuntimeUnit | null;
       eliminatedCivLabel: string | null;
       eliminatedDetails: string | null;
+      /** R-MIASTA-ZDOBYCIE-RAPORT-TROFEA-Q1: strukturalny bilans zdobycia (GOAL 2/4). */
+      reportRows: CaptureReportRow[];
     } {
       const oldOwner = city.ownerId;
       // R-MIASTA-REBELIA-OCHRONA-20-TUR-Q1: odczyt PRZED applyCityCaptureAfterBattle, które
@@ -26579,10 +26953,43 @@ async function boot(): Promise<void> {
       syncCityGarnizon(city);
       endMapSiege(city.id);
       const captureOutcome = runCapitalCapturePlunder(city, oldOwner, atkOwner);
+      // R-MIASTA-ZDOBYCIE-RAPORT-TROFEA-Q1: odczyt szczeliny SYNCHRONICZNIE po wywolaniu
+      // (nic pomiedzy nie moze wolac runCapitalCapturePlunder ponownie).
+      const capitalReport = capitalCaptureReportSlot;
+      // GOAL 4 (ECHO 1): zwykle miasto NADAL nie daje lupu -- raport ma to powiedziec
+      // wprost („Lup: brak"), a nie wymyslac zdobycz. Wiersze buduje ta sama czysta
+      // funkcja, wiec brak lupu wynika z tej samej reguly co pomijanie zer.
+      const reportRows = capitalReport?.rows ?? buildCityCaptureReportRows({
+        kind: 'zwykle',
+        mocEtykieta: mocLabel(),
+        ludnosc: Math.max(0, Math.floor(city.population)),
+        budynki: (cityBuilt.get(city.id) ?? []).length,
+        zloto: 0,
+        nauka: 0,
+        technologie: 0,
+        moc: 0,
+        // Zwykle miasto nie niesie lupu dla NIKOGO, wiec nie ma czego „nie odziedziczyc" --
+        // galaz barbarzynska dotyczy wylacznie sciezki stolecznej/eliminacji.
+        barbarzyncaZdobywca: false,
+      });
+      // GOAL 3 -- LEJEK 1 z trzech (recon D): wspolne wejscie zbrojne (bitwa polowa o miasto,
+      // szturm muru, wejscie do pustego miasta). No-op, gdy lejek stoleczny zapisal juz
+      // bogatszy wpis dla tego miasta w tej turze.
+      recordCityCaptureEvent({
+        cityId: city.id,
+        cityName: city.name,
+        oldOwner,
+        newOwner: atkOwner,
+        rows: reportRows,
+        victimLabel: civLabelForOwner(oldOwner),
+        captorLabel: civLabelForOwner(atkOwner),
+        eliminatedCivLabel: captureOutcome?.eliminatedCivLabel ?? null,
+      });
       return {
         lead,
         eliminatedCivLabel: captureOutcome?.eliminatedCivLabel ?? null,
         eliminatedDetails: captureOutcome?.eliminatedDetails ?? null,
+        reportRows,
       };
     }
 
@@ -26662,6 +27069,7 @@ async function boot(): Promise<void> {
           onEnterCity: () => openCityPanelForPlayer(city),
           eliminatedCivLabel: captureResult.eliminatedCivLabel ?? undefined,
           eliminatedDetails: captureResult.eliminatedDetails ?? undefined,
+          reportRows: captureResult.reportRows,
         });
       }
     }
@@ -26766,9 +27174,14 @@ async function boot(): Promise<void> {
           const who = atkOwner === 0 ? 'Gracz' : ('AI ' + atkOwner);
           const baseSzturmMsg = 'Szturm udany — ' + city.name + ' zdobyte przez ' + who + '!';
           const elimLabel = siegeCaptureInfo?.eliminatedCivLabel;
+          // R-MIASTA-ZDOBYCIE-RAPORT-TROFEA-Q1 (GOAL 4): szturm muru to jedyne wejscie zbrojne
+          // bez modalu — bez tej linii gracz nie widzial ZADNEGO bilansu, tylko „Szturm udany".
+          const szturmBilans = siegeCaptureInfo?.reportRows?.length
+            ? captureReportOneLine(siegeCaptureInfo.reportRows)
+            : '';
           const szturmMsg = elimLabel
             ? `${elimLabel} — ELIMINACJA! ${baseSzturmMsg} ${siegeCaptureInfo?.eliminatedDetails ?? ''}`.trim()
-            : baseSzturmMsg;
+            : `${baseSzturmMsg} ${szturmBilans}`.trim();
           showHintMessage(szturmMsg, elimLabel ? 6000 : 5000);
         } else if (res.winner === 'obronca') {
           showHintMessage('Szturm odparty — oblężenie trwa.', 4500);
@@ -33598,6 +34011,7 @@ async function boot(): Promise<void> {
       warEventLog.length = 0;
       borderMarchEventTargets.clear(); // N6: mapa celow kamery rowniez zerowana przy resecie
       civElimEventDetails.clear(); // RUNDA 5: para z warEventLog.length=0 wyzej, ten sam reset
+      cityCaptureEventDetails.clear(); // R-MIASTA-ZDOBYCIE-RAPORT-TROFEA-Q1: ten sam reset
       turn = 1;
       playerPracaPool = 0;
       budowaListaBiblioteka = [...EMPTY_BUDOWA_LISTA_BIBLIOTEKA];
