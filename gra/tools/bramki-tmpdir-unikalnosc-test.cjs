@@ -29,12 +29,20 @@
  *       Stąd biorą się zrzuty o stałych nazwach lądujące wprost w `\/tmp` (`recruit-*-test.cjs`).
  *   R3  nazwa ZE ZMIENNEJ: `path.join(os.tmpdir(), outName)` — wzorzec `weterani-test.cjs`
  *       i trzech pokrewnych. Rozstrzyga WYŁĄCZNIE treść argumentu: znacznik unikalności
- *       gdziekolwiek indziej w pliku nie czyni tej ścieżki unikalną (Final Control rundy 1
- *       wstawił tu z powrotem oryginalny defekt i bramka została zielona — patrz przy R3).
+ *       gdziekolwiek indziej w pliku nie czyni tej ścieżki unikalną — historia tej pułapki
+ *       (Final Control rundy 1 wstawił z powrotem oryginalny defekt, bramka została zielona)
+ *       stoi w komentarzu przy gałęzi R3 w kodzie, niżej.
  *   R4  konkatenacja `os.tmpdir() + '/nazwa'` — forma równoważna R1, niewidoczna dla `path.join`.
+ *       Łapie też wariant owinięty w szablon: `` `${os.tmpdir()}` + '/nazwa' ``.
  *   R5  DOSŁOWNA ścieżka `\/tmp\/...`, w pliku, który `os.tmpdir()` może nigdy nie wywołać.
- *   R6  interpolacja `` `${os.tmpdir()}/nazwa` `` w szablonie — jedyna forma, której nie widzi
+ *   R6  interpolacja `` `${os.tmpdir()}/nazwa` `` w szablonie — forma, której nie widzi
  *       żadna z R1-R5, a dziś najzwyklejszy sposób zapisu tej ścieżki.
+ *
+ * ZASIĘG TŁUMIKA (R4 i R6): znacznik unikalności zwalnia ze zgłoszenia tylko wtedy, gdy stoi
+ * w SAMYM WYRAŻENIU ŚCIEŻKI — nie „gdziekolwiek w tej samej linii". To ta sama klasa błędu,
+ * którą runda 2 usunęła z R3 (tam tłumik działał na poziomie CAŁEGO PLIKU): `` `${os.tmpdir()}
+ * /civ-x` ``; `console.log(process.pid);` w jednej linii zostawiało bramkę zieloną, bo `pid`
+ * użyty z zupełnie innego powodu wyciszał zgłoszenie.
  *
  * WZORZEC BEZPIECZNY, którego bramka NIE zgłasza (i którego nie wolno "poprawiać"):
  *   `fs.mkdtempSync(path.join(os.tmpdir(), 'prefix-'))` — unikalny z definicji kontraktu Node.
@@ -145,6 +153,41 @@ function isLiteralExpr(e) {
   return /^'[^']*'$/.test(e) || /^"[^"]*"$/.test(e) || (/^`[^`]*`$/.test(e) && !e.includes('${'));
 }
 
+/**
+ * Segment sciezki tuz po `${tmpdir}` W SZABLONIE: do pierwszej spacji, backticka albo
+ * cudzyslowu na ZEROWYM poziomie zagniezdzenia `${...}` (zeby `-${process.pid}` zostalo
+ * w srodku, a `\` console.log(process.pid)` juz nie). To jest cale wyrazenie sciezki
+ * i tylko na nim wolno pytac o znacznik unikalnosci.
+ */
+function templateSegmentAfter(rest) {
+  let depth = 0;
+  let out = '';
+  for (let i = 0; i < rest.length; i++) {
+    const c = rest[i];
+    if (c === '$' && rest[i + 1] === '{') { depth++; out += '${'; i++; continue; }
+    if (c === '}' && depth > 0) { depth--; out += c; continue; }
+    if (depth === 0 && (/\s/.test(c) || c === '`' || c === "'" || c === '"')) break;
+    out += c;
+  }
+  return out;
+}
+
+/** Reszta INSTRUKCJI po `os.tmpdir() +` — do pierwszego `;` poza literalem tekstowym. */
+function statementRestOf(rest) {
+  let instr = null;
+  for (let i = 0; i < rest.length; i++) {
+    const c = rest[i];
+    if (instr) {
+      if (c === '\\') { i++; continue; }
+      if (c === instr) instr = null;
+      continue;
+    }
+    if (c === '"' || c === "'" || c === '`') { instr = c; continue; }
+    if (c === ';') return rest.slice(0, i);
+  }
+  return rest;
+}
+
 let scanned = 0;
 for (const file of files) {
   const rel = path.relative(TOOLS_DIR, file);
@@ -219,20 +262,24 @@ for (const file of files) {
   // Forma rownowazna R1, ktorej `path.join` nie widzi. Bez tej reguly nowa bramka pisze
   // do wspoldzielonego katalogu i przechodzi na zielono — czyli scenariusz "55. bramka
   // za miesiac" nie jest zatrzymany, a to jest cala racja istnienia tej bramki.
-  const concatRe = new RegExp(TMPDIR_CALL + String.raw`\s*\+\s*`, 'g');
+  // Owiniecie w szablon (`` `${os.tmpdir()}` + '/nazwa' ``) to nadal ta sama konkatenacja:
+  // bez tej alternatywy zapis wpadal w SZCZELINE miedzy R4 a R6 — dla R6 po `}` stal backtick
+  // zamiast `/`, dla R4 po `os.tmpdir()` stal `}` zamiast `+`, wiec przechodzil na zielono.
+  const concatRe = new RegExp(
+    '(?:`\\$\\{\\s*' + TMPDIR_CALL + '\\s*\\}`|' + TMPDIR_CALL + ')' + String.raw`\s*\+\s*`, 'g');
   while ((m = concatRe.exec(src)) !== null) {
     const lineNo = src.slice(0, m.index).split('\n').length;
     const line = lines[lineNo - 1];
     if (isCommentLine(line)) continue;
-    // Reszta wyrazenia do konca instrukcji/linii — jesli nie ma w niej znacznika
-    // per-przebieg, sklejona sciezka jest stala.
-    const rest = src.slice(m.index + m[0].length).split('\n')[0];
+    // Reszta INSTRUKCJI (do `;`), nie reszta linii: znacznik postawiony za srednikiem,
+    // w zupelnie innym wyrazeniu, nie uzmiennia tej sciezki i nie moze tlumic zgloszenia.
+    const rest = statementRestOf(src.slice(m.index + m[0].length).split('\n')[0]);
     if (UNIQUE_MARK.test(rest)) continue;
     findings.push({ rule: 'R4', rel, lineNo, arg: rest.trim().slice(0, 60), line: line.trim() });
   }
 
   // --- R6: INTERPOLACJA `${<tmpdir>}/nazwa` w szablonie --------------------------------
-  // Czwarta forma TEJ SAMEJ rodziny i jedyna, ktorej nie widzi zadna z R1-R5: R1/R3 patrza
+  // SZOSTA regula, szosta notacja TEJ SAMEJ rodziny — i jedyna, ktorej nie widzi zadna z R1-R5: R1/R3 patrza
   // wylacznie na `path.join|resolve`, R2 na korzen po `=`/`||`, R4 na konkatenacje `+`,
   // a R5 na DOSLOWNY literal sciezki tymczasowej. Zapis `--outDir ${...}/civ-cos-dist`
   // nie jest zadnym z nich — a to najzwyklejszy wspolczesny sposob sklejenia tej sciezki,
@@ -247,7 +294,11 @@ for (const file of files) {
     // — to korzen, ktory ma juz swoja regule R2, i podwojne zgloszenie tylko szumi.
     const rest = src.slice(m.index + m[0].length).split('\n')[0];
     if (!rest.startsWith('/')) continue;
-    if (UNIQUE_MARK.test(rest)) continue;   // `}/civ-x-${process.pid}` jest juz unikalne
+    // Pytamy o znacznik WYLACZNIE w segmencie sciezki, nie w calej reszcie linii:
+    // `}/civ-x-${process.pid}` jest unikalne, ale `}/civ-x`; console.log(process.pid);`
+    // juz NIE — a stara wersja tlumila oba tak samo.
+    const seg = templateSegmentAfter(rest);
+    if (UNIQUE_MARK.test(seg)) continue;
     findings.push({ rule: 'R6', rel, lineNo, arg: rest.trim().slice(0, 60), line: line.trim() });
   }
 }
