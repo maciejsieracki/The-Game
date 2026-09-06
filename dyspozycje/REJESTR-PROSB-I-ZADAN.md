@@ -5100,6 +5100,29 @@ Etykieta `collectBattleRoster atk: adjacent scout excluded` opisywala INTENCJE, 
 zupelnie inny czlon tej samej asercji. Przed zarejestrowaniem tematu z czerwonej bramki trzeba
 przeczytac, KTORY warunek nie przechodzi — nie jak asercja sie nazywa.
 
+**Ratyfikacja wlasciciela 2026-09-06 na dwie pozycje wyniesione wyzej:**
+- **Rozjazd dla kotwicy poza heksem miasta (pozycja 2) — różnica jest poprawna, zapisać jako
+  zamierzoną.** Bez zmiany kodu; komentarz w `map-field-battle-test.cjs` przy asercji parytetu
+  przepisany, żeby to jawnie stwierdzać zamiast zostawiać jako otwarte pytanie.
+- **`collectPlaytestBattleRoster` (pozycja 1) — zrównać z grą, playtest ma liczyć tak samo.**
+  Naprawa wymaga `gra/src/main.ts`, poza allowlistą tego tematu — wydzielona jako nowy temat.
+
+## P-ROSTER-PLAYTEST-ZWIADOWCA-WYKLUCZENIE-Q1 — GAME (2026-09-06, wydzielone z tematu wyzej)
+
+**STATUS: ZAREJESTROWANE, NIE DISPATCHOWANE.** DOMAIN: GAME. GOAL:
+`collectPlaytestBattleRoster` (`gra/src/game/playtestWalkaMapy.ts:113-128`, wolana z
+`gra/src/main.ts:24288-24293` przy `playtestWalkaActive`) ma wywoływać
+`shouldIncludeInBattleRoster` (albo równoważny predykat wykluczania cywilów) identycznie jak
+`collectBattleRoster`, tak żeby sąsiadujący zwiadowca nie wchodził do składu bitwy w trybie
+playtest tak samo jak w normalnej grze. Dziś wchodzi — flaga zapala się wyłącznie przez
+`doStartPlaytestWalkaMapy()` (`main.ts:33740`), więc normalna gra nie jest dotknięta, ale
+playtest liczy skład bitwy inaczej niż gra.
+
+Allowlista: `gra/src/main.ts` (funkcja `collectPlaytestBattleRoster` / wywołanie w
+`playtestWalkaMapy.ts`), `gra/src/game/playtestWalkaMapy.ts`, bramki dotykające playtestu
+składu bitwy. **Zablokowany §2b** dopóki `main.ts`/`ai.ts` nie są wolne od tematów obecnie
+w locie (`P-AI-BRAK-SCIEZKI-ZDOBYCIA-MIASTA-ADIACENCJA-Q1` i inne trzymające `main.ts`).
+
 ## P-BRAMKA-AI-BUDYNKI-NIEZAREJESTROWANA-W-PROC-Q1 — PROCESS (2026-09-05, ustalenie Final Control)
 
 Final Control tematu `P-AI-NIE-STAWIA-BUDYNKOW-Q1` (runda 2, werdykt PASS) zauważył, że
@@ -5824,3 +5847,19 @@ Piec bramek rodziny panelu imperium czerwonych, wszystkie zreprodukowane jako **
 **Przyczyna dwoch z pieciu ustalona:** `empire-panel-econ-slider-visibility` i `empire-panel-sliders-always-visible` opisuja `renderDefaultPodzialPracySection()` — funkcje **nieistniejaca juz nigdzie w `gra/src`** (jedyny slad to komentarz w `empirePanelSectionMap.ts:102`) — i **przecza sobie nawzajem** (jedna chce jej bramkowanej `sliderVis.showLaborSplit`, druga w sekcji ZASOBY). Naprawa lezy w plikach bramek.
 
 Zakres: ustalic dla pozostalych trzech, czy to realne defekty czy bramki opisujace nieistniejacy juz stan, i naprawic zgodnie z wynikiem — **zakaz usuwania i oslabiania asercji**, liczba nie moze spasc.
+
+## P-BRAMKI-BARBARZYNCY-PISZA-DO-CUDZEGO-RUNU-Q1 — INFRA (2026-09-06, znalezisko Final Control §2b)
+
+Final Control tematu `P-BARBARZYNCY-KRAZENIE-NIEBRONIONE-Q1` zauwazyl podczas przebiegu calej
+rodziny bramek barbarzyncow, ze `gra/tools/barb-karencja-czas-trwania-real-render-test.cjs`
+oraz dwie bramki `barbarian-cooperation-grace*` zapisuja dowody PNG do **sledzonego** katalogu
+runu **innego** tematu: `dyspozycje/autobot/runs/R-DYPLO-WSPOLNA-WALKA-BARB-KARENCJA-Q1/dowody/`.
+Samo uruchomienie tych bramek brudzi drzewo poza wlasnym tematem i lamie guard §2b „czyste
+drzewo" kazdego rownoleglego tematu, ktory akurat trzyma inny worktree i sprawdza `git status
+--short`. Final Control przywrocil plik kopia blobu z `HEAD` (nie `git checkout`), drzewo
+czyste — **nie jest to defekt tematu barbarzyncow**, bramki nie byly w nim zmieniane.
+
+**STATUS: ZAREJESTROWANE, NIE DISPATCHOWANE.** DOMAIN: INFRA. Zakres: przepisac te trzy bramki
+tak, zeby pisaly dowody PNG do wlasnego, tymczasowego katalogu (np. `os.tmpdir()` z unikalnym
+sufiksem, wzorem `dowody/n12-zrzuty-zywy-chromium.cjs`), nigdy do sledzonego katalogu runu
+innego tematu.

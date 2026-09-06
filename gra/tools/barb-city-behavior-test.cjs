@@ -783,15 +783,18 @@ const P = Object.assign({}, FALLBACK_BARB_PARAMS, { aggroRadius: 6 });
 //    niezłapana, gdyby tego testu nie było (6b nie wystarcza -- tam NIE MA żadnego bronionego
 //    miasta na planszy, więc stary i nowy warunek są tam matematycznie równoważne).
 //
-//    WZMOCNIENIE RUNDA 6 (Evaluator C, pkt 1) -- stara wersja asercjonowała TYLKO, że zbiór
-//    *kiedyś w ciągu 60 tur* przestaje zawierać oba miasta naraz (`findIndex` po całym logu),
-//    nie przypinając KONKRETNEGO momentu ani nie dowodząc, że jednostka REALNIE kontynuuje
-//    patrol (nie zamiera po jednym okrążeniu). Dodane: (i) log śledzi teraz dystans do KAŻDEGO
-//    miasta przed decyzją (jak 6b), (ii) każde z cityU1/cityU2 ma >=2 "przyjazdy" (zdarzenia
-//    dystans>1 -> dystans<=1) w pełnym logu -- dowód, że patrol faktycznie kontynuuje, nie
-//    zamiera po jednym okrążeniu; (iii) reset następuje w PRZEWIDYWALNYM, PRZYPIĘTYM momencie
-//    -- DOKŁADNIE na wpisie bezpośrednio PO tym, w którym zbiór po raz pierwszy zawiera oba
-//    miasta naraz (`resetIdx === bothVisitedIdx + 1`, nie tylko "gdzieś później").
+//    ODWROCENIE ASERCJI -- P-BARBARZYNCY-KRAZENIE-NIEBRONIONE-Q1 (runda 1, ECHO wlasciciela
+//    2026-09-05, WIAZACE). Do rundy 7 ta sekcja asercjonowala, ze zbior SIE RESETUJE i ze kazde
+//    z cityU1/cityU2 ma >=2 "przyjazdy" -- czyli DOKLADNIE to krazenie, ktore wlasciciel kazal
+//    usunac ("NAPRAWIC -- barbarzynca ma dokonac wyboru i isc"). Ta plansza (2 niebronione +
+//    1 bronione obecne przez caly bieg) JEST scenariuszem ze zgloszenia. Asercje sa wiec
+//    odwrocone na niezmiennik z ECHO, nie oslabione: (i) oba niebronione miasta nadal MUSZA
+//    zostac odwiedzone (asercja zachowana bez zmian); (ii) kazde DOKLADNIE RAZ -- zero powrotow;
+//    (iii) zbior clearedCityIds po zawarciu obu NIGDY juz nie przestaje ich zawierac (reset sie
+//    NIE odpala, dopoki na planszy jest inny cel); (iv) dowod BEHAWIORALNY: po odwiedzeniu obu
+//    dystans do BRONIONEGO cityDist maleje monotonicznie do konca logu -- jednostka realnie idzie
+//    na bronione miasto zamiast zawracac. Liczba asercji rosnie (3 -> 5 + petla per-miasto).
+//    Dowod mutacyjny sekcji 10 nizej jest przepiety na te wersje i nadal jest zywy.
 // ============================================================================================
 {
   const map = makeMap(140, 8);
@@ -827,32 +830,33 @@ const P = Object.assign({}, FALLBACK_BARB_PARAMS, { aggroRadius: 6 });
     'MIMO obecności bronionego cityDist na tej samej planszy przez cały bieg ' +
     '(got bothVisitedIdx=' + bothVisitedIdx + ')');
 
+  // (iii) zbior NIE resetuje sie, dopoki na planszy zostaje inny cel (bronione cityDist).
   const resetIdx = bothVisitedIdx === -1 ? -1
     : log.findIndex((e, i) => i > bothVisitedIdx
         && !(e.clearedAfter.includes('cityU1') && e.clearedAfter.includes('cityU2')));
-  assert(resetIdx !== -1,
-    '6d (F1): PO odwiedzeniu OBU niebronionych miast naraz zbiór clearedCityIds RESETUJE SIĘ ' +
-    '(przestaje zawierać oba naraz) w pełnym logu ' + TURNS + ' tur -- mimo że cityDist ' +
-    '(bronione) jest obecne przez CAŁĄ symulację. Stary warunek (filtered.length===0) nigdy by ' +
-    'tego nie złapał, bo cityDist zawsze przechodzi filtr bezwarunkowo ' +
-    '(got resetIdx=' + resetIdx + ')');
-  if (bothVisitedIdx !== -1 && resetIdx !== -1) {
-    assert(resetIdx > bothVisitedIdx,
-      '6d: reset następuje PO turze, w której oba niebronione miasta zostały odwiedzone razem, nie przed');
-    // RUNDA 6 (Evaluator C, pkt 1a): moment resetu jest PRZEWIDYWALNY -- reset (mutacja zbioru w
-    // kroku 3) i zapis "arrival" (dopisanie ostatniego miasta) dzielą tę samą decyzję tylko gdy
-    // WCHODZĄC w tę turę zbiór już jest pełny; skoro `bothVisitedIdx` to WŁAŚNIE pierwszy wpis z
-    // pełnym zbiorem (zapisanym PO decyzji tej tury), warunek resetu (liczony na WEJŚCIU do
-    // KOLEJNEJ decyzji) odpala się dokładnie na wpisie bothVisitedIdx+1 -- nie "gdzieś później".
-    eq(resetIdx, bothVisitedIdx + 1,
-      '6d (F1, pkt 1a): reset następuje w PRZEWIDYWALNYM, PRZYPIĘTYM momencie -- dokładnie na ' +
-      'wpisie bezpośrednio PO tym, w którym zbiór po raz pierwszy zawiera oba miasta naraz ' +
-      `(bothVisitedIdx=${bothVisitedIdx}), nie tylko "gdzieś w logu później"`);
+  eq(resetIdx, -1,
+    '6d (KRAZENIE-Q1): PO odwiedzeniu OBU niebronionych miast zbior clearedCityIds JUZ NIGDY ' +
+    'ich nie gubi w pelnym logu ' + TURNS + ' tur -- reset sie NIE odpala, bo bronione cityDist ' +
+    'zostaje jako w pelni poprawny cel. Reset w tym momencie to bylo zrodlo krazenia 20/44/66 ' +
+    'tur ze zgloszenia wlasciciela (got resetIdx=' + resetIdx + ')');
+  // (iv) dowod BEHAWIORALNY: po odwiedzeniu obu jednostka realnie IDZIE na bronione miasto --
+  // dystans do cityDist nie rosnie ani razu i maleje netto do konca logu.
+  if (bothVisitedIdx !== -1 && bothVisitedIdx + 2 < log.length) {
+    const tail = log.slice(bothVisitedIdx + 1);
+    let wzrosty = 0;
+    for (let i = 1; i < tail.length; i++) if (tail[i].dist.cityDist > tail[i - 1].dist.cityDist) wzrosty++;
+    eq(wzrosty, 0,
+      '6d (KRAZENIE-Q1): po odwiedzeniu obu niebronionych miast dystans do BRONIONEGO cityDist ' +
+      `NIGDY nie rosnie (got ${wzrosty} wzrostow) -- zero zawracania na odwiedzone miasta`);
+    assert(tail[tail.length - 1].dist.cityDist < tail[0].dist.cityDist,
+      '6d (KRAZENIE-Q1): dystans do BRONIONEGO cityDist maleje NETTO na calym ogonie logu ' +
+      `(${tail[0].dist.cityDist} -> ${tail[tail.length - 1].dist.cityDist}) -- jednostka dokonala ` +
+      'wyboru i idzie, zamiast krazyc miedzy niebronionymi');
   }
 
-  // RUNDA 6 (Evaluator C, pkt 1b): dowód BEHAWIORALNY, nie tylko stanu wewnętrznego -- każde z
-  // dwóch miast ma >=2 "przyjazdy" (przejście dystans>1 -> dystans<=1) w PEŁNYM logu, dowodzące
-  // że patrol faktycznie KONTYNUUJE (wraca po resecie), nie zamiera po jednym okrążeniu.
+  // (ii) KAZDE niebronione miasto odwiedzone DOKLADNIE RAZ -- zero powrotow. Do rundy 7 ta sama
+  // funkcja sluzyla do asercji ">=2 przyjazdy" (patrol cykliczny); ECHO wlasciciela odwraca ten
+  // wymog, patrz naglowek sekcji.
   function arrivalCount(cid) {
     let count = 0;
     let wasThere = false;
@@ -865,10 +869,10 @@ const P = Object.assign({}, FALLBACK_BARB_PARAMS, { aggroRadius: 6 });
   }
   for (const cid of ['cityU1', 'cityU2']) {
     const n = arrivalCount(cid);
-    assert(n >= 2,
-      `6d (F1, pkt 1b): ${cid} ma >=2 przyjazdy (przejście dystans>1->dystans<=1) w pełnym logu ` +
-      `${TURNS} tur (got ${n}) -- dowód, że patrol faktycznie kontynuuje/wraca, nie zamiera po ` +
-      'jednym okrążeniu');
+    eq(n, 1,
+      `6d (KRAZENIE-Q1): ${cid} ma DOKLADNIE JEDEN przyjazd (przejscie dystans>1->dystans<=1) w ` +
+      `pelnym logu ${TURNS} tur (got ${n}) -- jednostka sprawdza kazde niebronione miasto raz i ` +
+      'idzie dalej; >=2 przyjazdy to wlasnie krazenie ze zgloszenia wlasciciela');
   }
 }
 
@@ -1398,16 +1402,20 @@ if (!process.argv.includes('--self-check-skip-mutation')) {
   }
 
   // ----------------------------------------------------------------------------------------
-  // 10. RUNDA 5, F1 -- dowód mutacyjny: cofnięcie warunku resetu do starego
-  //    `filtered.length === 0` (stan sprzed tej rundy) MUSI dać czerwono na sekcji 6d (plansza
-  //    MIESZANA) -- stary warunek nigdy się nie odpala, gdy istnieje choćby jedno bronione
-  //    miasto (przechodzi filtr bezwarunkowo), więc zbiór `clearedCityIds` rośnie bez końca i
-  //    reset nigdy nie następuje.
+  // 10. P-BARBARZYNCY-KRAZENIE-NIEBRONIONE-Q1 (runda 1) -- dowód mutacyjny PRZEPIĘTY: kierunek
+  //    mutacji jest odwrócony razem z sekcją 6d. Do rundy 7 mutowano warunek resetu z wersji
+  //    rundy 5 (`undefendedCities.every(...)`) na wersję rundy 4 (`filtered.length === 0`) i
+  //    wymagano czerwieni. Dziś wersja rundy 4 JEST kodem produkcyjnym (reset dopiero gdy nie
+  //    zostal ZADEN inny cel), a wersja rundy 5 jest mutantem: przywraca reset mimo obecnosci
+  //    bronionego miasta, czyli krazenie 20/44/66 tur ze zgloszenia wlasciciela -- sekcja 6d
+  //    (odwrocona) MUSI to zlapac.
   // ----------------------------------------------------------------------------------------
-  console.log('-- F1 (runda 5) / dowód mutacyjny: cofnięcie warunku resetu --');
+  console.log('-- F1/KRAZENIE-Q1 / dowód mutacyjny: przywrócenie resetu mimo obecności bronionego miasta --');
   {
-    const F1_NEW_LINE = 'if (undefendedCities.length > 0 && undefendedCities.every(c => clearedSet.includes(c.id))) {';
-    const F1_OLD_LINE = 'if (filtered.length === 0 && civCitiesBase.length > 0) {';
+    const F1_NEW_LINE = 'if (filtered.length === 0 && civCitiesBase.length > 0) {';
+    const F1_OLD_LINE =
+      'const undefendedCities = civCitiesBase.filter(c => !enemies.some(e => e.q === c.q && e.r === c.r));\n'
+      + '      if (undefendedCities.length > 0 && undefendedCities.every(c => clearedSet.includes(c.id))) {';
     const f1Occurrences = barbariansOriginal.split(F1_NEW_LINE).length - 1;
     assert(f1Occurrences === 1,
       `mutacja-setup F1: warunek resetu (nowa wersja) odnaleziony DOKŁADNIE RAZ w barbarians.ts (got ${f1Occurrences})`);
@@ -1415,9 +1423,9 @@ if (!process.argv.includes('--self-check-skip-mutation')) {
       const mutatedF1 = barbariansOriginal.replace(F1_NEW_LINE, F1_OLD_LINE);
       assert(mutatedF1 !== barbariansOriginal, 'mutacja-setup F1: cofnięcie faktycznie zmieniło źródło barbarians.ts');
       expectSelfCheckFails(new Map([[barbariansSrcPath, mutatedF1]]),
-        'F1: cofnięcie warunku resetu do starego "filtered.length === 0 && civCitiesBase.length > 0" ' +
-        '-- na planszy MIESZANEJ (sekcja 6d, bronione miasto obecne przez cały bieg) reset nigdy ' +
-        'się nie odpala, bo bronione miasto zawsze przechodzi filtr bezwarunkowo',
+        'KRAZENIE-Q1: przywrócenie warunku resetu z rundy 5 ("odwiedziłem wszystkie niebronione") ' +
+        '-- na planszy MIESZANEJ (sekcja 6d, bronione miasto obecne przez cały bieg) jednostka ' +
+        'znów zawraca na odwiedzone miasta zamiast iść na bronione',
         /FAIL:\s+6d/);
     }
   }
@@ -1460,30 +1468,49 @@ if (!process.argv.includes('--self-check-skip-mutation')) {
   }
 
   // ----------------------------------------------------------------------------------------
-  // 13. RUNDA 6, USTERKA 1 -- dowód mutacyjny: cofnięcie naprawy F1-LIVELOCK (Evaluator A) do
-  //    `unit.clearedCityIds = [];` (pełne czyszczenie, stan sprzed tej rundy) MUSI dać czerwono
-  //    na sekcji 6f (dokładnie 1 miasto niebronione + 1 bronione, jednostka NIE raid-ready) --
-  //    jednostka wraca do stanu opisanego przez Evaluatora A: nieskończone odbijanie się między
-  //    dwiema pozycjami wokół cityNear, NIGDY nie dociera do cityFar w budżecie 40 tur.
+  // 13. USTERKA 1 (runda 6) -- ASERCJA PRZESLANKI zamiast dowodu mutacyjnego.
+  //    P-BARBARZYNCY-KRAZENIE-NIEBRONIONE-Q1, runda 1, wersja po obronie (zarzut 6 Evaluatora).
+  //
+  //    HISTORIA. Do rundy 7 mutacja "cofnij F1-LIVELOCK do `unit.clearedCityIds = []`" byla
+  //    lapana czerwono przez sekcje 6f. Po zmianie warunku resetu (reset dopiero, gdy NIE
+  //    ZOSTAL zaden inny cel) ta mutacja stala sie ZACHOWANIOWO NEUTRALNA. Zmierzone dwoma
+  //    niezaleznymi przebiegami: (i) podproces self-check z mutantem przechodzi w calosci;
+  //    (ii) osobny harness na planszy 0 BRONIONYCH x {2,3} niebronione, jednostka raid-ready,
+  //    120 tur -- `[ostatnie]` i `[]` daja IDENTYCZNE liczby (tury bez komendy 0/0, realne
+  //    zmiany pozycji 97/104, przyjazdy 6/6 i 3/5/3, unikalne pozycje 9/29).
+  //    Powod: reset odpala sie juz tylko wtedy, gdy `filtered` jest puste, a wtedy fallback
+  //    `civCitiesBase` daje pelna liste w TEJ SAMEJ turze; w turze nastepnej zapis "arrival"
+  //    natychmiast dopisuje z powrotem miasto, przy ktorym jednostka fizycznie stoi -- oba
+  //    warianty zbiegaja sie w jednej turze.
+  //
+  //    PIERWSZA PROBA TEJ RUNDY BYLA ZLA i zostala wycofana: sekcja wolala `expectSelfCheckPasses`,
+  //    czyli WYMAGALA, zeby mutant byl ZIELONY. To odwraca sens bramki -- gdyby przyszla runda
+  //    dolozyla pokrycie i zaczela mutanta lapac, asercja zaczerwienialaby za DODANIE pokrycia.
+  //
+  //    CO ROBI TERAZ. Przypina PRZESLANKE, z ktorej rownowaznosc wynika, i tylko ja: warunek
+  //    resetu w barbarians.ts jest dokladnie `filtered.length === 0 && civCitiesBase.length > 0`,
+  //    a przypisanie resetu nie ma juz martwej galezi `: []` (przy tym warunku `clearedSet` jest
+  //    z definicji NIEPUSTY, wiec ostatni element nigdy nie jest `undefined`). Kazda zmiana
+  //    ktoregokolwiek z tych dwoch miejsc czerwieni te sekcje i zmusza do ponownego zmierzenia,
+  //    czy `[ostatnie]` nadal jest rownowazne `[]`. Zadnego mutanta nie wymaga sie tu zielonym.
+  //    Wlasciwy dowod mutacyjny warunku resetu zyje w sekcji 10 tego pliku (kierunek: mutant MUSI
+  //    zaczerwienic) -- ta sekcja go nie zastepuje.
   // ----------------------------------------------------------------------------------------
-  console.log('-- USTERKA 1 (runda 6) / dowód mutacyjny: cofnięcie naprawy F1-LIVELOCK --');
+  console.log('-- USTERKA 1 / asercja przeslanki: warunek resetu i brak martwej galezi --');
   {
-    const USTERKA1_NEW =
-      'const lastVisited = clearedSet[clearedSet.length - 1];\n'
-      + '        unit.clearedCityIds = lastVisited !== undefined ? [lastVisited] : [];';
-    const USTERKA1_OLD = '        unit.clearedCityIds = [];';
-    const u1Occurrences = barbariansOriginal.split(USTERKA1_NEW).length - 1;
-    assert(u1Occurrences === 1,
-      `mutacja-setup USTERKA 1: naprawa F1-LIVELOCK (nowa wersja) odnaleziona DOKŁADNIE RAZ w barbarians.ts (got ${u1Occurrences})`);
-    if (u1Occurrences === 1) {
-      const mutatedU1 = barbariansOriginal.replace(USTERKA1_NEW, USTERKA1_OLD);
-      assert(mutatedU1 !== barbariansOriginal, 'mutacja-setup USTERKA 1: cofnięcie faktycznie zmieniło źródło barbarians.ts');
-      expectSelfCheckFails(new Map([[barbariansSrcPath, mutatedU1]]),
-        'USTERKA 1: cofnięcie naprawy F1-LIVELOCK do pełnego czyszczenia "unit.clearedCityIds = []" ' +
-        '-- na planszy z DOKŁADNIE 1 miastem niebronionym + 1 bronionym (sekcja 6f) jednostka wraca ' +
-        'do 3-turowego cyklu odbijania i NIGDY nie dociera do bronionego miasta w 40 turach',
-        /FAIL:\s+6f/);
-    }
+    const RESET_WARUNEK = 'if (filtered.length === 0 && civCitiesBase.length > 0) {';
+    const RESET_PRZYPISANIE = 'unit.clearedCityIds = [clearedSet[clearedSet.length - 1]!];';
+    const MARTWA_GALAZ = 'lastVisited !== undefined ? [lastVisited] : []';
+    assert(barbariansOriginal.split(RESET_WARUNEK).length - 1 === 1,
+      'USTERKA 1 (przeslanka a): warunek resetu w barbarians.ts to DOKLADNIE ' +
+      '`filtered.length === 0 && civCitiesBase.length > 0`, wystepuje raz -- to on gwarantuje, ze ' +
+      '`clearedSet` jest niepusty w chwili resetu, czyli ze `[ostatnie]` i `[]` sa rownowazne');
+    assert(barbariansOriginal.split(RESET_PRZYPISANIE).length - 1 === 1,
+      'USTERKA 1 (przeslanka b): przypisanie resetu to DOKLADNIE ' +
+      '`unit.clearedCityIds = [clearedSet[clearedSet.length - 1]!];`, wystepuje raz');
+    assert(!barbariansOriginal.includes(MARTWA_GALAZ),
+      'USTERKA 1 (przeslanka c): martwa galaz `lastVisited !== undefined ? [lastVisited] : []` ' +
+      'NIE wrocila do barbarians.ts -- przy warunku (a) jest nieosiagalna');
   }
 
   // ----------------------------------------------------------------------------------------

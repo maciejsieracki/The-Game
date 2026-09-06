@@ -128,3 +128,32 @@ sufiksem (PID albo losowy).
 `git -C <worktree> log -1 --oneline` i `git -C <worktree> status --short`. Oczekiwana baza
 i czyste drzewo. Rozbieżność → `BLOCK`, bez zapisu. Mutacje cofaj przez KOPIĘ pliku,
 nigdy przez `git checkout`.
+
+## RATYFIKACJA ORKIESTRATORA (2026-09-06, odpowiedź na W1 Final Control)
+
+**W1** (`09-final-control.md`): ubytek jednego żywego dowodu mutacyjnego w
+`barb-city-behavior-test.cjs` (`expectSelfCheckFails` 8 → 7, netto 178 → 177 asercji),
+wymuszony naprawą nakazaną ECHO 2026-09-05 — zmutowany wariant stał się zachowaniowo
+martwy (potwierdzone przez Final Control własną sondą: 36 przebiegów × 400 tur, 3
+geometrie, logi bit-identyczne).
+
+**Decyzja właściciela: akceptuję udokumentowany ubytek — zabity dowód wypada.** Zamiennik
+(trzy asercje przesłanki, czerwienieją niezależnie od Operatora, Evaluatora i Final Control)
+stoi w miejscu usuniętego dowodu; nie jest wymagane zachowywanie martwego mutanta w formie
+historycznej. Temat **nie wraca** do Operatora — zero `NAPRAW` w agregacie Final Control,
+jedyna pozycja `DO DECYZJI CZŁOWIEKA` zamknięta tą ratyfikacją.
+
+**Warunki integracji z §7 Final Control — do wykonania przez orkiestratora, poza pracą
+Operatora:**
+1. Wpis nowej bramki `gra/tools/barbarzyncy-krazenie-test.cjs` (249/0) do §6
+   `R-PROC-AUTOBOT.md`.
+2. Sprostowanie dwóch zdezaktualizowanych wpisów w `dyspozycje/PYTANIA-OTWARTE.md`
+   (`:16636` stare `ECHO = A (2026-08-13)` sprzeczne z wiążącym ECHO 2026-09-05;
+   `:16180` status ABC mimo odpowiedzi właściciela).
+3. Rejestracja jako nowy temat (nie naprawa w tym temacie): bramki
+   `gra/tools/barb-karencja-czas-trwania-real-render-test.cjs` i dwie
+   `barbarian-cooperation-grace*` piszą dowody PNG do śledzionego katalogu runu
+   `R-DYPLO-WSPOLNA-WALKA-BARB-KARENCJA-Q1` — naruszenie §2b.
+
+**NASTĘPNY KROK:** integracja do `main` (allowlist-only, po wykonaniu trzech warunków
+wyżej), nie kolejna runda Operatora.

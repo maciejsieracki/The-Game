@@ -16177,9 +16177,12 @@ dokumentacji + wzmocnienie testu + jedna nowa, łagodna, udokumentowana granica)
    1-2-turowy artefakt" jest NIEPRAWDĄ; realnie stabilny cykl o okresie 22 (2 miasta) / 44 (3
    miasta), bronione miasto nieosiągnięte w 300 turach. NIE regresja (przed naprawą było tak samo
    źle), ale overclaim do sprostowania w PL+EN.
-2. **⛔ NOWE PYTANIE ABC, STATUS: **OTWARTE** (Evaluator A)** — `P-BARBARZYNCY-KRAZENIE-NIEBRONIONE-Q1`:
+2. **STATUS: ZAMKNIĘTE (odpowiedź właściciela 2026-09-05)** — `P-BARBARZYNCY-KRAZENIE-NIEBRONIONE-Q1`:
    czy krążenie jednostki między ≥2 niebronionymi miastami bez dotarcia do bronionego (na
    normal/easy) jest akceptowalne? Na hard problem znika sam (przejęcie usuwa miasto z puli).
+   **Odpowiedź: NAPRAWIĆ — barbarzyńca ma dokonać wyboru i iść, jedna reguła na wszystkich
+   poziomach trudności** (`REJESTR-PROSB-I-ZADAN.md`, ECHO 2026-09-05). Naprawa zintegrowana,
+   bramka `gra/tools/barbarzyncy-krazenie-test.cjs` 249/0.
 3. **Nowy, łagodny defekt do zarejestrowania (Evaluator C, 4. oś tabeli pominięta: OSIĄGALNOŚĆ)**
    — reżim "1 niebronione osiągalne + ≥1 bronione NIEOSIĄGALNE (inna wyspa)": F1 zamienia dawny
    livelock na TRWAŁE zamrożenie (idle 23/25 tur od t5, bez obozu). Nie nowa ścieżka — to
@@ -16633,12 +16636,20 @@ zostaje bez zmian do czasu osobnej decyzji; dispatch obejmuje wyłącznie przeni
 
 **STATUS: dispatch Operatora (Sonnet 5) w toku.**
 
-## ECHO P-BARBARZYNCY-KRAZENIE-NIEBRONIONE-Q1 = A (Maciej, 2026-08-13)
+## ECHO P-BARBARZYNCY-KRAZENIE-NIEBRONIONE-Q1 = A (Maciej, 2026-08-13) — **ZDEZAKTUALIZOWANE 2026-09-06**
+
+**Ten wpis jest ZASTĄPIONY wiążącym ECHO właściciela z 2026-09-05** (`REJESTR-PROSB-I-ZADAN.md`,
+sekcja „ECHO WŁAŚCICIELA 2026-09-05 (noc)"): krążenie jednostki barbarzyńskiej między ≥2
+niebronionymi miastami bez dotarcia do bronionego zostało uznane za defekt do **NAPRAWY** —
+„barbarzyńca ma dokonać wyboru i iść", jedna reguła na wszystkich poziomach trudności, bez
+warunku per trudność. Naprawa wykonana i zintegrowana (`P-BARBARZYNCY-KRAZENIE-NIEBRONIONE-Q1`,
+bramka `gra/tools/barbarzyncy-krazenie-test.cjs` 249/0, wpis w `R-PROC-AUTOBOT.md` §6).
+Poniższy tekst pozostaje jako zapis historyczny stanu na 2026-08-13, nie jako aktualny status.
 
 Akceptowalne — na `normal`/`easy` krążenie jednostki barbarzyńskiej między ≥2 niebronionymi
 miastami bez dotarcia do bronionego jest świadomie zaakceptowanym zachowaniem, nie błędem do
 naprawy. Runda 8 mechanizmu `clearedCityIds` NIE jest potrzebna. Zero kodu do zmiany —
-**ZAMKNIĘTE**. Mechanizm patrolu barbarzyńców (rundy 1-7) uznany za kompletny.
+~~ZAMKNIĘTE~~. Mechanizm patrolu barbarzyńców (rundy 1-7) uznany za kompletny.
 
 ## NUMER + ECHO: R-EKONOMIA-SUROWCE-SKALA-5X-Q1 — decyzja WŁASNA właściciela (2026-08-13)
 
