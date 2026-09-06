@@ -5061,9 +5061,44 @@ przypadek, dla ktorego dispatch mowil „celem nie jest zielono za wszelka cene"
 
 **Ta asercja czerwienila sie od zawsze — tylko nikt jej nie widzial**, bo bramka wywalala
 sie przed nia z `TypeError`. Naprawa INFRA odslonila defekt, ktory lezal pod spodem.
-**STATUS: ZAREJESTROWANE, NIE DISPATCHOWANE.** DOMAIN: GAME. Zakres: zrownac warunek
-wykluczania zwiadowcy w obu funkcjach i dodac asercje pilnujaca ich parytetu, zeby nie
-rozjechaly sie ponownie.
+**⚠ SPROSTOWANIE 2026-09-06 — TEZA POWYZEJ JEST BLEDNA. Zostawiam ja w calosci, zeby
+bylo widac, co dokladnie zglosilem zle, ale NIE WOLNO z niej korzystac.**
+
+**ROZJAZDU DWOCH FUNKCJI NIE MA.** Zwiadowca jest wykluczany w OBU: `collectBattleRoster`
+i `collectAtkRosterNearCity` wolaja ten sam predykat `shouldIncludeInBattleRoster`.
+Zglosilem ten temat na podstawie **etykiety asercji**, nie jej tresci — i to byl moj blad
+jako orkiestratora, wykryty przez Operatora w rundzie 1 (`DECISION_REQUIRED`, slusznie).
+
+**Prawdziwa przyczyna:** fixture asercji `map-field-battle-test.cjs:155-157` zawiera CZWARTA
+jednostke (`warrior2`, pelnoprawny wojownik ownera 0 w dystansie 1 od kotwicy), wiec roster
+ma poprawnie TRZY pozycje. Czerwienil sie wylacznie czlon `length === 2`; czlon
+`!some(Zwiadowca)` przechodzil od zawsze. Siostrzana bramka `battle-roster-test.cjs:105-109`
+testuje te sama regule poprawnym fixturem i jest zielona — asercja w `map-field-battle-test`
+byla jej **wadliwa kopia**: skopiowano regule bez fixture'u.
+
+**Co temat faktycznie zrobil (runda 2, ratyfikacja `7a19f591`):** naprawiono FIXTURE, nie kod
+gry. Asercja przepisana z licznika na kontrole ZBIORU ID — mocniejsza niz stara, bo stara
+przechodzila takze gdy roster gubil dowolne dwie jednostki. Dolozona asercja parytetu obu
+funkcji. **`git diff` w `gra/src` PUSTY** — zazielenienie „naprawa kodu" usunieloby z rosteru
+jednostke bojowa, czyli po cichu zmienilo balans bitwy w polu.
+
+**STATUS: ZINTEGROWANE** (Final Control 2026-09-06: zero NAPRAW, jedenascie ODDAL, dwa
+DO DECYZJI CZLOWIEKA lezace poza allowlista tego tematu — patrz nizej). DOMAIN: GAME.
+
+**Dwie pozycje wyniesione z tego tematu, obie do osobnej decyzji:**
+1. **`collectPlaytestBattleRoster`** (`playtestWalkaMapy.ts:113-128`, wolana z `main.ts:24288`
+   przy `playtestWalkaActive`) **w ogole nie wola** `shouldIncludeInBattleRoster` — sasiadujacy
+   zwiadowca WCHODZI tam do rosteru. To jest realny przypadek pierwotnego GOAL („sklad bitwy
+   zalezy od tego, ktora funkcja go policzyla"), tylko w CZWARTEJ funkcji rodziny. Dotyczy
+   wylacznie trybu playtestu (`doStartPlaytestWalkaMapy()`), nie normalnej gry.
+2. **Parytet zachodzi tylko dla kotwicy na heksie miasta.** Poza nim funkcje zwracaja rozne
+   zbiory — i to moze byc poprawne z definicji (bitwa w polu toczy sie na heksie kotwicy,
+   bitwa o miasto na heksie miasta). Asercja parytetu swiadomie tego nie przesadza.
+
+**Lekcja procesowa do zapamietania:** zglaszalem defekt z etykiety asercji zamiast z jej tresci.
+Etykieta `collectBattleRoster atk: adjacent scout excluded` opisywala INTENCJE, a czerwienil sie
+zupelnie inny czlon tej samej asercji. Przed zarejestrowaniem tematu z czerwonej bramki trzeba
+przeczytac, KTORY warunek nie przechodzi — nie jak asercja sie nazywa.
 
 ## P-BRAMKA-AI-BUDYNKI-NIEZAREJESTROWANA-W-PROC-Q1 — PROCESS (2026-09-05, ustalenie Final Control)
 
