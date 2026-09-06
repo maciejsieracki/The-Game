@@ -133,3 +133,19 @@ budynek jeszcze bez efektu), czy czeka i jest wydany **razem z nim**?
 Poza tą jedną pozycją temat jest zamknięty: bramki zielone, diff w allowliście, liczby
 właściciela zamrożone asercjami, `tsc --noEmit` zielony. Werdykt i dowody:
 `08-final-control-runda3.md`.
+
+## RATYFIKACJA ORKIESTRATORA (2026-09-06, odpowiedź na W-FC4)
+
+**Decyzja: Garnizon wchodzi do `main` TERAZ, ale ROBOCZA (wydanie graczowi) czeka i wychodzi
+RAZEM z Prawem.** `main` jest wewnętrznym drzewem integracji, nie tym, co widzi gracz —
+scalenie tam nie jest „wydaniem". Kolejność wykonawcza: (1) Garnizon → `main` (ten commit),
+(2) `R-AI-PRODUKCJA-Z-DOSTEPNYCH-BUDYNKOW-Q1` → `main` (blokuje Prawo, patrz jego własny
+dispatch), (3) `R-PRAWO-PRZEBUDOWA-SKALI-Q1` → `main`, (4) dopiero wtedy build+deploy ROBOCZA
+obejmujący wszystkie trzy naraz. **Wiążący zakaz dla orkiestratora: żaden deploy ROBOCZA
+między krokiem (1) a (3) nie może nastąpić** — inaczej gracz zobaczy Garnizon jako czysty
+koszt, dokładnie ryzyko opisane wyżej.
+
+Integracja do `main` wykonana zgodnie z warunkami z `08-final-control-runda3.md`:
+wpis do `REJESTR-PROSB-I-ZADAN.md` (§16b pkt 6), rejestracja `prereq-budynkow-test`/
+`upgrade-budynki-test` jako osobny temat INFRA (W-FC3), zapisanie trzech niespójności R2-E
+jako obserwacje. Zero `NAPRAW` w agregacie Final Control — temat integrowany bez zmian kodu.
