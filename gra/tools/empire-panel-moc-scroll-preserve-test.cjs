@@ -47,7 +47,33 @@
  * Każde `runReal(...)`/`runMutant(...)` jest owinięte w try/catch (nota Evaluatora): jeśli
  * naprawa/anchor tekstowy kiedyś zniknie, `new Function` na pustym/okrojonym wycinku rzuca
  * `ReferenceError` (np. `scrollTarget is not defined`) — bez try/catch cały proces testowy by
- * się wywalił zamiast wydrukować czytelne FAIL i przejść do kolejnych asercji.
+ * się wywalił zamiast wydrukować czytelne FAIL i przejść do kolejnych asercji. Asercja
+ * „wykonanie nie rzuciło wyjątku" jest wystawiana ZAWSZE (nie tylko w `catch`), żeby całkowita
+ * liczba asercji bramki nie zależała od tego, czy bramka jest zielona.
+ *
+ *   E. KONTRAKT ŚRODOWISKA WYCINKA (`P-DESIGN-11-ZAKLADEK-DROBIAZGI-Q1`/N1, 2026-09-06).
+ *      Bramka była pre-istniejąco CZERWONA (38 pass / 9 fail) — i **nie z powodu defektu panelu**.
+ *      `render()` urósł po jej napisaniu: między `bodyEl.innerHTML = body` a gałęzią scrolla woła
+ *      dziś także `queueMicrotask(wireMiastaColFilter)`, `wireMiastoScopeButtons()` i
+ *      `wireMiastoResFilter()` (dołożone przez późniejsze, niezwiązane tematy). Lista zaślepek
+ *      harnessu była ZAMROŻONA na trzech nazwach z chwili napisania, więc wycinek przerywał się
+ *      na `ReferenceError: wireMiastaColFilter is not defined` ZANIM dobiegał do gałęzi scrolla —
+ *      sześć asercji „wykonanie nie rzuciło wyjątku" i trzy behawioralne (S1/S4/MUTANT R2) padały
+ *      kaskadowo z tej jednej przyczyny. Werdykt: **bramka opisywała stan, którego już nie ma**;
+ *      `empireDetailPanel.ts` NIE był zmieniany przy tej naprawie.
+ *      Lista zaślepek jest teraz WYPROWADZANA z kodu (identyfikator użyty w wycinku, który jest
+ *      funkcją modułową `empireDetailPanel.ts`), więc kolejne wywołanie dołożone do `render()`
+ *      nie zaczerwieni bramki fałszywie. Żeby to udogodnienie nie stało się furtką do fałszywej
+ *      zieleni, sekcja E dokłada trzy własne asercje: `E1` (żaden identyfikator wycinka nie
+ *      zostaje nierozwiązany — funkcja zaimportowana z innego modułu jest nazwana wprost, nie
+ *      maskowana), `E2` (auto-zaślepka nie może przykryć nazwy nośnej dowodu, np. `scrollTarget`
+ *      czy `prevScrollTop` — inaczej harness udawałby zielono brak kotwicy naprawy) i `E3`
+ *      (każda auto-zaślepiona funkcja NIE dotyka `scrollTop` w swoim prawdziwym ciele — to
+ *      jedyny powód, dla którego wolno ją zastąpić no-opem).
+ *      Dowód nietautologiczności (mutacje na PRAWDZIWYM `empireDetailPanel.ts`, cofane kopią
+ *      pliku): usunięcie przywracania `prevScrollTop` → 23/25 czerwono; usunięcie gałęzi
+ *      `else if (resetScrollOnNextRender)` → 45/11 czerwono; dopisanie `bodyEl.scrollTop = 0`
+ *      do `wireMiastoResFilter()` → `E3` czerwone (56/1).
  *
  * Run from gra/: node tools/empire-panel-moc-scroll-preserve-test.cjs
  */
@@ -75,14 +101,21 @@ function assert(label, cond, detail) {
  *  lub jest okrojony (naprawa nieobecna), `new Function` moze rzucic ReferenceError zamiast
  *  po prostu dac zly wynik; lapiemy to jako czysty FAIL zamiast wywalac caly proces testowy. */
 function safeRun(label, runner, args) {
+  // Asercja jest wystawiana ZAWSZE (i przy sukcesie, i przy wyjatku) -- wczesniej powstawala
+  // tylko w gałęzi catch, przez co CAŁKOWITA liczba asercji bramki zalezala od tego, czy test
+  // przechodzi (47 gdy czerwona, 46 gdy zielona). Licznik asercji musi byc stały, bo kryteria
+  // koncowe tematow odwoluja sie do jego wartosci.
+  const lbl = label + ': wykonanie nie rzucilo wyjatku (np. ReferenceError gdy naprawa/anchor brakuje)';
   if (!runner) {
-    assert(label + ': runner dostepny (wycinek zbudowany)', false, 'runner is null');
+    assert(lbl, false, 'runner is null (wycinek niezbudowany)');
     return null;
   }
   try {
-    return runner(...args);
+    const out = runner(...args);
+    assert(lbl, true);
+    return out;
   } catch (e) {
-    assert(label + ': wykonanie nie rzucilo wyjatku (np. ReferenceError gdy naprawa/anchor brakuje)', false, e.message || String(e));
+    assert(lbl, false, e.message || String(e));
     return null;
   }
 }
@@ -223,18 +256,148 @@ function makeFakeBodyEl(initialScrollTop) {
  *  resetScrollOnNextRender jest zwykłym parametrem funkcji (jak pendingScrollSection już w
  *  rundzie 1) -- przypisanie w srodku (resetScrollOnNextRender = false) jest lokalne dla tego
  *  wywolania, nie wycieka do modulu, dokladnie jak w prawdziwym kodzie to modul-level let. */
-function buildRunner(snippet) {
-  return new Function(
-    'bodyEl', 'body', 'block', 'pendingScrollSection', 'resetScrollOnNextRender',
-    'wireMocViewButtons', 'requestAnimationFrame', 'scrollToSection',
+const EXPLICIT_PARAMS = [
+  'bodyEl', 'body', 'block', 'pendingScrollSection', 'resetScrollOnNextRender',
+  'wireMocViewButtons', 'requestAnimationFrame', 'scrollToSection',
+];
+
+/** Nazwy nosne DOWODU -- te NIE moga zostac zaslepione automatycznie. Gdyby ktoras trafila na
+ *  liste auto-zaslepek, znaczyloby to, ze kotwica naprawy zniknela ze zrodla, a harness po cichu
+ *  „naprawil" sobie brak — dokladnie ta klasa falszywej zieleni, przed ktora chroni sekcja E2. */
+const LOAD_BEARING = [
+  'bodyEl', 'body', 'block', 'pendingScrollSection', 'resetScrollOnNextRender',
+  'prevScrollTop', 'scrollTarget', 'wireMocViewButtons', 'requestAnimationFrame', 'scrollToSection',
+];
+
+/** Slowa kluczowe JS + globalne, ktore moga legalnie wystapic w wycinku bez zaslepki. */
+const JS_RESERVED_OR_GLOBAL = new Set([
+  'const', 'let', 'var', 'if', 'else', 'return', 'function', 'null', 'true', 'false', 'undefined',
+  'new', 'typeof', 'void', 'delete', 'in', 'of', 'for', 'while', 'do', 'switch', 'case', 'break',
+  'continue', 'try', 'catch', 'finally', 'throw', 'this', 'class', 'extends', 'super', 'async',
+  'await', 'yield', 'queueMicrotask', 'setTimeout', 'clearTimeout', 'setInterval', 'Promise',
+  'document', 'window', 'globalThis', 'console', 'Math', 'Array', 'Object', 'String', 'Number',
+  'Boolean', 'JSON', 'Map', 'Set', 'Date', 'Error', 'RegExp', 'Symbol', 'BigInt', 'Infinity', 'NaN',
+]);
+
+/** Usuwa komentarze i literaly '...' / "..." -- zeby skan identyfikatorow nie lapal slow z prozy
+ *  komentarzy (wycinek render() jest gesto komentowany dwujezycznie). */
+function stripCommentsAndQuotes(code) {
+  return code
+    .replace(/\/\*[\s\S]*?\*\//g, ' ')
+    .replace(/\/\/[^\n]*/g, ' ')
+    .replace(/'(?:\\[\s\S]|[^'\\])*'/g, "''")
+    .replace(/"(?:\\[\s\S]|[^"\\])*"/g, '""');
+}
+
+function identifiersUsedIn(code) {
+  const out = new Set();
+  const clean = stripCommentsAndQuotes(code);
+  for (const m of clean.matchAll(/(^|[^.\w$])([A-Za-z_$][\w$]*)/g)) out.add(m[2]);
+  return out;
+}
+
+/** Nazwy funkcji zadeklarowanych na poziomie MODULU w empireDetailPanel.ts. */
+function moduleFunctionNames(src) {
+  const out = new Set();
+  for (const m of src.matchAll(/^(?:export\s+)?function\s+([A-Za-z_$][\w$]*)/gm)) out.add(m[1]);
+  return out;
+}
+
+/** Zmienne zadeklarowane WEWNATRZ samego wycinka (const/let/var) -- nie wymagaja zaslepki. */
+function localsDeclaredIn(code) {
+  const out = new Set();
+  for (const m of stripCommentsAndQuotes(code).matchAll(/\b(?:const|let|var)\s+([A-Za-z_$][\w$]*)/g)) out.add(m[1]);
+  return out;
+}
+
+/** Buduje funkcje wykonywalna z DOSŁOWNEGO fragmentu źródła (snippet) + parametry-zaślepki
+ *  na wszystko, co fragment woła/czyta na zewnątrz (wireMocViewButtons/requestAnimationFrame/
+ *  scrollToSection/resetScrollOnNextRender) oraz + AUTO-ZASLEPKI (`extraStubNames`) na funkcje
+ *  modulowe, ktore render() wola miedzy podmiana innerHTML a galezia scrolla. Fragment sam
+ *  w sobie NIE jest przepisywany.
+ *  resetScrollOnNextRender jest zwykłym parametrem funkcji (jak pendingScrollSection już w
+ *  rundzie 1) -- przypisanie w srodku (resetScrollOnNextRender = false) jest lokalne dla tego
+ *  wywolania, nie wycieka do modulu, dokladnie jak w prawdziwym kodzie to modul-level let. */
+function buildRunner(snippet, extraStubNames) {
+  const extra = extraStubNames || [];
+  const fn = new Function(
+    ...EXPLICIT_PARAMS,
+    ...extra,
     snippet + '\nreturn { scrollTarget: scrollTarget, pendingScrollSectionAfter: pendingScrollSection, '
       + 'resetScrollOnNextRenderAfter: resetScrollOnNextRender };',
   );
+  // Auto-zaslepki sa DOKLEJANE na koncu listy argumentow, wiec wszystkie dotychczasowe wywolania
+  // runnera (8 argumentow) zostaja bez zmian.
+  return (...args) => fn(...args, ...extra.map(() => () => {}));
 }
+
+// --- E. KONTRAKT SRODOWISKA WYCINKA (dodane 2026-09-06, P-DESIGN-11-ZAKLADEK-DROBIAZGI-Q1/N1) ---
+// Dlaczego to istnieje: `render()` UROSL po napisaniu tej bramki. Miedzy `bodyEl.innerHTML = body`
+// a galezia scrolla wola dzis takze `queueMicrotask(wireMiastaColFilter)`, `wireMiastoScopeButtons()`
+// i `wireMiastoResFilter()` (dolozone przez pozniejsze, niezwiazane tematy). Harness mial ZAMROZONA
+// liste zaslepek (tylko wireMocViewButtons/requestAnimationFrame/scrollToSection), wiec wycinek
+// rzucal `ReferenceError: wireMiastaColFilter is not defined` ZANIM dobiegl do galezi scrolla --
+// 9 czerwonych asercji opisywalo brak w HARNESSIE, nie defekt panelu (weryfikacja: zadna z tych
+// trzech funkcji nie dotyka `scrollTop`, patrz E3 nizej). Lista zaslepek jest teraz WYPROWADZANA
+// z kodu, nie wpisana na sztywno, wiec kolejne wywolanie dolozone do render() nie zaczerwieni tej
+// bramki falszywie. E2/E3 pilnuja, zeby to udogodnienie nie stalo sie furtka do falszywej zieleni.
+console.log('E. Kontrakt srodowiska wycinka -- auto-zaslepki funkcji modulowych wolanych w render()');
+
+const moduleFns = moduleFunctionNames(panelSrc);
+const snippetIdents = identifiersUsedIn(realSnippet);
+const snippetLocals = localsDeclaredIn(realSnippet);
+const autoStubs = [...moduleFns]
+  .filter((n) => snippetIdents.has(n) && !EXPLICIT_PARAMS.includes(n))
+  .sort();
+console.log('   auto-zaslepki wykryte w wycinku: ' + (autoStubs.length ? autoStubs.join(', ') : '(brak)'));
+
+// E1 -- po zaslepieniu funkcji modulowych w wycinku NIE zostaje zaden nierozwiazany identyfikator.
+// Gdy ktos dolozy do render() wywolanie funkcji IMPORTOWANEJ z innego modulu, ta asercja nazwie ja
+// wprost, zamiast zostawiac mylacy ReferenceError w srodku dowodu behawioralnego.
+const unresolved = [...snippetIdents].filter((n) => (
+  !EXPLICIT_PARAMS.includes(n)
+  && !autoStubs.includes(n)
+  && !snippetLocals.has(n)
+  && !JS_RESERVED_OR_GLOBAL.has(n)
+)).sort();
+assert(
+  'E1: wycinek nie odwoluje sie do zadnego identyfikatora spoza {globalne JS, lokalne wycinka, jawne parametry, funkcje modulowe panelu}',
+  unresolved.length === 0,
+  unresolved,
+);
+
+// E2 -- auto-zaslepka NIE moze przykryc nazwy nosnej dowodu. Gdyby np. `scrollTarget` albo
+// `prevScrollTop` trafily na te liste, harness udawalby zielono brak kotwicy naprawy.
+const shadowed = autoStubs.filter((n) => LOAD_BEARING.includes(n));
+assert(
+  'E2: zadna auto-zaslepka nie przykrywa nazwy nosnej dowodu (bodyEl/prevScrollTop/scrollTarget/pendingScrollSection/resetScrollOnNextRender/...)',
+  shadowed.length === 0,
+  shadowed,
+);
+
+// E3 -- SEDNO werdyktu „bramka opisywala stan, ktorego juz nie ma, a nie defekt panelu":
+// zaslepienie tych funkcji jest uprawnione TYLKO dlatego, ze zadna z nich nie rusza `scrollTop`.
+// Gdyby ktorakolwiek go dotykala, no-op zaslepka ukrywalaby realna interakcje z naprawa scrolla,
+// a S1/S2/S3 dawalyby falszywa zielen. Sprawdzane na PRAWDZIWYCH cialach funkcji w zrodle.
+for (const fnName of autoStubs) {
+  const declIdx = panelSrc.search(new RegExp('^(?:export\\s+)?function\\s+' + fnName + '\\b', 'm'));
+  const nextDeclIdx = declIdx > -1
+    ? panelSrc.slice(declIdx + 1).search(/^(?:export\s+)?(?:function|const|let|class)\s/m)
+    : -1;
+  const fnBody = declIdx > -1
+    ? panelSrc.slice(declIdx, nextDeclIdx > -1 ? declIdx + 1 + nextDeclIdx : panelSrc.length)
+    : '';
+  assert(
+    `E3: auto-zaslepiona funkcja modulowa "${fnName}()" NIE dotyka scrollTop (wiec no-op zaslepka nie ukrywa interakcji z naprawa scrolla)`,
+    fnBody.length > 0 && !fnBody.includes('scrollTop'),
+    { fnName, znaleziona: fnBody.length > 0, zawieraScrollTop: fnBody.includes('scrollTop') },
+  );
+}
+console.log('');
 
 let runReal = null;
 try {
-  runReal = buildRunner(realSnippet);
+  runReal = buildRunner(realSnippet, autoStubs);
   assert('wycinek jest syntaktycznie poprawnym JS po wycieciu (new Function nie rzuca)', true);
 } catch (e) {
   assert('wycinek jest syntaktycznie poprawnym JS po wycieciu (new Function nie rzuca)', false, e.message || String(e));
@@ -362,7 +525,7 @@ assert('mutacja RUNDY 1 faktycznie zmienila wycinek (kotwica zamiany istnieje)',
 
 let runMutantR1 = null;
 try {
-  runMutantR1 = buildRunner(mutatedSnippetR1);
+  runMutantR1 = buildRunner(mutatedSnippetR1, autoStubs);
   assert('zmutowany (RUNDA 1) wycinek jest syntaktycznie poprawny (regresja nie psuje samej skladni)', true);
 } catch (e) {
   assert('zmutowany (RUNDA 1) wycinek jest syntaktycznie poprawny (regresja nie psuje samej skladni)', false, e.message || String(e));
@@ -405,7 +568,7 @@ assert('mutacja RUNDY 2 faktycznie zmienila wycinek (galaz usunieta)', mutatedSn
 
 let runMutantR2 = null;
 try {
-  runMutantR2 = mutatedSnippetR2 ? buildRunner(mutatedSnippetR2) : null;
+  runMutantR2 = mutatedSnippetR2 ? buildRunner(mutatedSnippetR2, autoStubs) : null;
   if (runMutantR2) assert('zmutowany (RUNDA 2) wycinek jest syntaktycznie poprawny (regresja nie psuje samej skladni)', true);
 } catch (e) {
   assert('zmutowany (RUNDA 2) wycinek jest syntaktycznie poprawny (regresja nie psuje samej skladni)', false, e.message || String(e));
