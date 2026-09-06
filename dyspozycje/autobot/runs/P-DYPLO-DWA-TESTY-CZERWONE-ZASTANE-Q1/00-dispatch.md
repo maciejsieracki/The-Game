@@ -117,3 +117,50 @@ już w tym repo dwa fałszywe wyniki bramek.
 `git -C <worktree> log -1 --oneline` i `git -C <worktree> status --short`. Oczekiwana baza
 i czyste drzewo. Rozbieżność → `BLOCK`, bez zapisu do drzewa. Mutacje weryfikacyjne cofaj
 przez KOPIĘ pliku, nigdy przez `git checkout`.
+
+---
+
+## RATYFIKACJA ORKIESTRATORA — runda 2 (2026-09-06, po Final Control `FAIL`)
+
+Final Control ma rację w obu pozycjach i obie są tej samej klasy: **asercja opisuje
+zapis, a nie zachowanie**. Bramka przechodzi, bo kod wygląda tak, jak się spodziewała,
+a nie dlatego, że robi to, co ma robić.
+
+### R2-U1 — `[A4]` liczy regexem wymagającym średnika
+
+`/hideDiplomacyAudience\(\);/g` **nie widzi** wywołania bez średnika. Mutacja F4 Final
+Control dowiodła tego wprost: nowa funkcja w `main.ts` z `closeAudienceNow: () =>
+hideDiplomacyAudience(),` **omija wrapper** i bramka zostaje zielona. To jest dokładnie
+ten scenariusz, przed którym `[A4]` ma chronić — trzecia ścieżka zamknięcia dopięta obok.
+
+**Napraw tak, żeby liczyła wywołania, nie znaki.** Przecinek, brak terminatora, wywołanie
+w wyrażeniu strzałkowym, w obiekcie, w argumencie — każde ma być policzone.
+**Dowód obowiązkowy:** powtórz mutację F4 i pokaż, że bramka teraz czerwienieje.
+
+### R2-U2 — `[A4c]` wymaga tego samego wiersza fizycznego
+
+Uznaje wywołanie za „w haku" tylko wtedy, gdy `closeAudience:` stoi w tej samej linii.
+Mutacja F2 (**czysto kosmetyczne** rozbicie haka na pięć linii, semantyka bit w bit ta sama)
+daje **43/2**. Czyli sformatowanie kodu przez kogokolwiek czerwieni bramkę bez żadnej
+zmiany zachowania — to jest fałszywy alarm, który z czasem nauczy wszystkich ją ignorować.
+
+**Zakotwicz semantycznie**, nie na układzie wierszy. **Dowód obowiązkowy:** powtórz
+mutację F2 i pokaż, że bramka zostaje zielona, a potem realną mutację (usunięcie wywołania
+z haka) i pokaż, że czerwienieje.
+
+### Zakres — wąski, nic poza nim
+
+Wyłącznie `gra/tools/diplomacy-audience-close-flush-test.cjs`.
+`dyplo-przemarsz-checkbox-przycisk-real-render-test.cjs` **nietknięty** — Final Control
+uznał go za domknięty. `gra/src/main.ts` **nietknięty** — to jest naprawa asercji, nie kodu.
+
+### KRYTERIA KOŃCA rundy 2
+
+1. Bramka zielona, liczba asercji **nie mniejsza** niż po rundzie 1.
+2. Mutacja F4 (wywołanie bez średnika, omijające wrapper) → **czerwona**, podaj liczbę faili.
+3. Mutacja F2 (rozbicie haka na pięć linii, bez zmiany semantyki) → **zielona**.
+4. Mutacja realna (usunięcie wywołania z haka) → **czerwona**.
+5. `git diff` wobec rundy 1 dotyka **wyłącznie** tego jednego pliku.
+6. `tsc --noEmit` zielony; pięć bramek referencyjnych zielonych; rodzina dyplomacji zielona.
+
+Mutacje cofaj przez KOPIĘ pliku, `git diff --quiet` po każdej.
