@@ -265,72 +265,13 @@ export function restoreBronzeForcedWarState(
 }
 
 /**
- * R-WOJNA-WYMUSZONA-REGULY-Q1 (Część B) — patrz komentarz analogiczny przy
- * `pickStoneForcedWarTargetIdCoordinated` (`forced-war-stone.ts`): identyczna reguła
- * koordynacji + fallbacku na gracza + limitu trudności, osobna kopia dla Brązu (jak
- * cała reszta pliku — Kamień/Brąz mają osobne rejestry stanu, ale te same reguły).
+ * R-WOJNA-WYMUSZONA-PAROWANIE-ZAMIAST-DOMINA-Q1: `pickBronzeForcedWarTargetIdCoordinated`
+ * (koordynacja per-owner + fallback na gracza) i `pickBronzeForcedWarDominoOwnerIds`
+ * (domino trójstronne) zniknęły stąd — main.ts woła teraz JEDNĄ wspólną procedurę,
+ * `assignForcedWarPairings` (`forced-war-common.ts`), RAZ na turę PRZED `ownerLoop`,
+ * dla wszystkich trzech epok naraz (ECHO właściciela: "Najpierw wszyscy mają wojnę,
+ * potem trójkąty" — parowanie 1v1 globalnie po podmiotach BEZ ŻADNEJ wojny, nieparzysta
+ * reszta dołącza jako trzeci do istniejącej pary). Progi miast/czasu/cooldownu i cały
+ * cykl pending/cycle/rest Brązu w tym pliku i main.ts zostają BEZ ZMIAN — zastąpiony jest
+ * wyłącznie WYBÓR pary, nie reszta mechanizmu.
  */
-export interface BronzeForcedWarCoordinatedPickOpts {
-  /** NAP / peaceLocked (w tym cooldown tej samej pary) / aktywny sojusz — jak dziś. */
-  blockedOwnerIds: ReadonlySet<number>;
-  /** Kandydaci (dowolna rola) już w JAKIEJKOLWIEK aktywnej wojnie (poza barbarzyńcami). */
-  candidatesAlreadyAtWarIds: ReadonlySet<number>;
-  poziomTrudnosci: 1 | 2 | 3;
-  /** Aktywne wojny wymuszone gracza jako CEL, Kamień+Brąz łącznie (main.ts liczy). */
-  playerActiveForcedWarCount: number;
-}
-
-export function pickBronzeForcedWarTargetIdCoordinated(
-  candidates: ReadonlyArray<BronzeForcedWarNeighborCandidate>,
-  referenceHex: { q: number; r: number } | undefined,
-  hexDistanceFn: (aq: number, ar: number, bq: number, br: number) => number,
-  opts: BronzeForcedWarCoordinatedPickOpts,
-): number | null {
-  const combinedBlocked = new Set<number>([
-    ...opts.blockedOwnerIds,
-    ...opts.candidatesAlreadyAtWarIds,
-  ]);
-  const picked = pickForcedWarTargetId(candidates, referenceHex, hexDistanceFn, combinedBlocked);
-  if (picked != null) return picked;
-  const playerInPoolIgnoringWar = candidates.some(c => c.ownerId === 0)
-    && !opts.blockedOwnerIds.has(0);
-  if (!playerInPoolIgnoringWar) return null;
-  if (opts.poziomTrudnosci === 2 && opts.playerActiveForcedWarCount >= 1) return null;
-  return 0;
-}
-
-/**
- * R-DYPLO-AI-WOJNA-TROJSTRONNA-Q1 — patrz komentarz analogiczny przy
- * `pickStoneForcedWarDominoOwnerIds` (`forced-war-stone.ts`): identyczna reguła, osobna
- * kopia dla Brązu (jak cała reszta pliku). Działa na PARACH JUŻ AKTYWNYCH Brązu
- * (`bronzeForceWarActiveByPairKey`, obie strony AI, `targetId !== 0`), nie na ownerach
- * dopiero szukających celu (to robi `pickBronzeForcedWarTargetIdCoordinated` wyżej).
- * Świadomie BEZ `poziomTrudnosci` (GOAL 4/ECHO 3) — limit "Normalny: gracz najwyżej w
- * jednej naraz" dotyczy WYŁĄCZNIE innego, węższego mechanizmu fallbacku wyżej.
- */
-export interface BronzeForcedWarActiveAiPair {
-  attackerId: number;
-  targetId: number;
-}
-
-export interface BronzeForcedWarDominoOpts {
-  /** Gracz ma już JAKĄKOLWIEK aktywną wojnę wymuszoną (Kamień+Brąz+Żelazo łącznie) — jeden, stabilny odczyt na całą turę. */
-  playerAlreadyHasActiveForcedWar: boolean;
-  /** Czy dany ownerId ma DZIŚ aktywny sojusz z graczem (ECHO 2: KTÓRAKOLWIEK strona blokuje całą parę). */
-  hasAllianceWithPlayer: (ownerId: number) => boolean;
-}
-
-export function pickBronzeForcedWarDominoOwnerIds(
-  activeAiPairs: ReadonlyArray<BronzeForcedWarActiveAiPair>,
-  opts: BronzeForcedWarDominoOpts,
-): ReadonlySet<number> {
-  const result = new Set<number>();
-  if (opts.playerAlreadyHasActiveForcedWar) return result;
-  for (const pair of activeAiPairs) {
-    if (pair.attackerId === 0 || pair.targetId === 0 || pair.attackerId === pair.targetId) continue;
-    if (opts.hasAllianceWithPlayer(pair.attackerId) || opts.hasAllianceWithPlayer(pair.targetId)) continue;
-    result.add(pair.attackerId);
-    result.add(pair.targetId);
-  }
-  return result;
-}

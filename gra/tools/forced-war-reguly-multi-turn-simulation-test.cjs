@@ -56,7 +56,6 @@ export {
   WOJNA_KAMIEN_WYMUSZONA_MAX_CZAS_TRWANIA_TUR,
   WOJNA_KAMIEN_WYMUSZONA_MAX_MIASTA_ZDOBYTE_LUB_STRACONE,
   isEligibleForStoneForcedWar,
-  pickStoneForcedWarTargetIdCoordinated,
   shouldEndStoneForcedWarByDuration,
   shouldEndStoneForcedWarByCityCount,
   restoreStoneForcedWarState,
@@ -66,12 +65,11 @@ export {
   WOJNA_WYMUSZONA_MAX_CZAS_TRWANIA_TUR,
   WOJNA_WYMUSZONA_MAX_MIASTA_ZDOBYTE_LUB_STRACONE,
   isEligibleForBronzeForcedWar,
-  pickBronzeForcedWarTargetIdCoordinated,
   shouldEndBronzeForcedWarByDuration,
   shouldEndBronzeForcedWarByCityCount,
   restoreBronzeForcedWarState,
 } from ${JSON.stringify(GRA_ROOT + '/src/game/forced-war-bronze')};
-export { countActiveWarsExcluding } from ${JSON.stringify(GRA_ROOT + '/src/game/forced-war-common')};
+export { countActiveWarsExcluding, assignForcedWarPairings } from ${JSON.stringify(GRA_ROOT + '/src/game/forced-war-common')};
 export { diploPairKey } from ${JSON.stringify(GRA_ROOT + '/src/game/diplomacy-pn-engine')};
 export { isBarbarian, BARBARIAN_OWNER_ID } from ${JSON.stringify(GRA_ROOT + '/src/game/barbarians')};
 `, 'utf8');
@@ -105,7 +103,6 @@ const {
   WOJNA_KAMIEN_WYMUSZONA_MAX_CZAS_TRWANIA_TUR,
   WOJNA_KAMIEN_WYMUSZONA_MAX_MIASTA_ZDOBYTE_LUB_STRACONE,
   isEligibleForStoneForcedWar,
-  pickStoneForcedWarTargetIdCoordinated,
   shouldEndStoneForcedWarByDuration,
   shouldEndStoneForcedWarByCityCount,
   restoreStoneForcedWarState,
@@ -113,11 +110,11 @@ const {
   WOJNA_WYMUSZONA_MAX_CZAS_TRWANIA_TUR,
   WOJNA_WYMUSZONA_MAX_MIASTA_ZDOBYTE_LUB_STRACONE,
   isEligibleForBronzeForcedWar,
-  pickBronzeForcedWarTargetIdCoordinated,
   shouldEndBronzeForcedWarByDuration,
   shouldEndBronzeForcedWarByCityCount,
   restoreBronzeForcedWarState,
   countActiveWarsExcluding,
+  assignForcedWarPairings,
   diploPairKey,
   isBarbarian,
 } = require(bundle);
@@ -155,78 +152,89 @@ const hexDistance = (aq, ar, bq, br) => {
 };
 
 /**
- * Jeden krok "gałęzi Kamienia" main.ts dla JEDNEGO ownerId w JEDNEJ turze -- ta sama
- * kolejność co main.ts (linie ok. 28914-28990 tego dispatchu): shouldSearch (gate
- * Łatwy + isEligibleForStoneForcedWar) -> zbuduj kandydatów (wszyscy inni ownerowie
- * + gracz) -> policz candidatesAlreadyAtWarIds (PRAWDZIWA countActiveWarsExcluding)
- * -> PRAWDZIWY pickStoneForcedWarTargetIdCoordinated -> jeśli wybrany, declareWar
- * NATYCHMIAST (synchronicznie, jak main.ts robi przez setDiploRelation w tej samej
- * turze, PRZED przetworzeniem kolejnego ownerId).
+ * R-WOJNA-WYMUSZONA-PAROWANIE-ZAMIAST-DOMINA-Q1: `pickStoneForcedWarTargetIdCoordinated`/
+ * `pickBronzeForcedWarTargetIdCoordinated` (per owner, independent) zniknęły -- main.ts woła
+ * teraz JEDNĄ wspólną procedurę `assignForcedWarPairings` RAZ na turę dla WSZYSTKICH triggered
+ * owners naraz. Ten harness odtwarza DOKŁADNIE tę kolejność: dla każdego z `ownerIds` policz
+ * shouldSearch (gate Łatwy + isEligibleForXForcedWar, PRAWDZIWE funkcje) -> zbierz WSZYSTKICH
+ * triggered w jednej liście -> JEDNO wywołanie PRAWDZIWEGO `assignForcedWarPairings` -> ZASTOSUJ
+ * wszystkie wynikowe assignments SYNCHRONICZNIE (declareWar + activeByPairKey), zanim przejdzie
+ * się do następnej tury -- tak jak main.ts robi to PRZED `ownerLoop`, nie per-owner w środku.
  */
-function stepStoneForOwner(world, ownerId, turn, opts) {
-  const { pendingOwners, activeByPairKey, poziomTrudnosci, playerActiveForcedWarCount } = opts;
-  if (activeWarsExcludingBarbarians(world, ownerId) > 0) return null; // alreadyAtWarAnyRole
-  const wasPending = pendingOwners.has(ownerId);
-  if (!wasPending) return null; // uproszczenie harnessu: brak cyklu odpoczynku w tych scenariuszach
-  const forcedWarDifficultyLevel = poziomTrudnosci;
-  const shouldSearch = forcedWarDifficultyLevel !== 1 && isEligibleForStoneForcedWar({
-    isMainAiCiv: true, isStoneEra: true, currentTurn: turn, isAlreadyAtWarAnyRole: false,
-  });
-  if (!shouldSearch) return null;
-  // candidateOwnerIds: pula ownerów UPRAWNIONYCH jako cel (main.ts: `[0, ...aiOwnerList]`)
-  // -- domyślnie CAŁY świat poza sobą (jak main.ts, gdzie inny napastnik-w-oczekiwaniu też
-  // jest ważnym kandydatem); scenariusze K1-K3 podają jawną, mniejszą pulę, żeby geometria
-  // testu była czytelna, bez zmiany SAMEJ formuły wyboru (nadal PRAWDZIWY picker niżej).
-  const candidateOwnerIds = opts.candidateOwnerIds ?? world.allOwnerIds;
-  const candidates = candidateOwnerIds
-    .filter(oid => oid !== ownerId)
-    .map(oid => ({ ownerId: oid, ...world.hexOf.get(oid) }));
-  const candidatesAlreadyAtWarIds = new Set(
-    candidates.filter(c => activeWarsExcludingBarbarians(world, c.ownerId) > 0).map(c => c.ownerId),
-  );
-  const picked = pickStoneForcedWarTargetIdCoordinated(
-    candidates, world.hexOf.get(ownerId), hexDistance,
-    { blockedOwnerIds: new Set(), candidatesAlreadyAtWarIds, poziomTrudnosci, playerActiveForcedWarCount },
-  );
-  if (picked == null) return null;
-  declareWar(world, ownerId, picked);
-  pendingOwners.delete(ownerId);
-  activeByPairKey.set(diploPairKey(ownerId, picked), {
-    attackerId: ownerId, targetId: picked, capturedByAttacker: 0, capturedByDefender: 0, startTurn: turn,
-  });
-  return picked;
-}
+function runForcedWarTurnStep(world, ownerIds, turn, opts) {
+  const {
+    stonePendingOwners, stoneActiveByPairKey,
+    bronzePendingOwners, bronzeActiveByPairKey, eraEnterTurnByOwner,
+    poziomTrudnosci, candidateOwnerIds, isPairBlocked,
+  } = opts;
+  const triggeredSubjects = [];
 
-/** To samo dla Brązu -- lustrzana kopia (jak forced-war-bronze.ts jest lustrzaną kopią forced-war-stone.ts). */
-function stepBronzeForOwner(world, ownerId, turn, opts) {
-  const { pendingOwners, activeByPairKey, eraEnterTurnByOwner, poziomTrudnosci, playerActiveForcedWarCount } = opts;
-  if (activeWarsExcludingBarbarians(world, ownerId) > 0) return null;
-  const wasPending = pendingOwners.has(ownerId);
-  if (!wasPending) return null;
-  const forcedWarDifficultyLevel = poziomTrudnosci;
-  const shouldSearch = forcedWarDifficultyLevel !== 1 && isEligibleForBronzeForcedWar({
-    isMainAiCiv: true, isAlreadyAtWarAnyRole: false,
-    currentTurn: turn, eraEnterTurn: eraEnterTurnByOwner.get(ownerId),
+  for (const ownerId of ownerIds) {
+    if (activeWarsExcludingBarbarians(world, ownerId) > 0) continue; // alreadyAtWarAnyRole
+    const forcedWarDifficultyLevel = poziomTrudnosci;
+    if (forcedWarDifficultyLevel === 1) continue; // Łatwy: mechanizm wyłączony całkowicie
+
+    if (stonePendingOwners && stonePendingOwners.has(ownerId)) {
+      const eligible = isEligibleForStoneForcedWar({
+        isMainAiCiv: true, isStoneEra: true, currentTurn: turn, isAlreadyAtWarAnyRole: false,
+      });
+      if (eligible) {
+        triggeredSubjects.push({ ownerId, ...world.hexOf.get(ownerId), era: 'stone' });
+        continue;
+      }
+    }
+    if (bronzePendingOwners && bronzePendingOwners.has(ownerId)) {
+      const eligible = isEligibleForBronzeForcedWar({
+        isMainAiCiv: true, isAlreadyAtWarAnyRole: false,
+        currentTurn: turn, eraEnterTurn: eraEnterTurnByOwner ? eraEnterTurnByOwner.get(ownerId) : undefined,
+      });
+      if (eligible) {
+        triggeredSubjects.push({ ownerId, ...world.hexOf.get(ownerId), era: 'bronze' });
+      }
+    }
+  }
+
+  // Gracz: dokładnie jak main.ts -- wchodzi do puli WYŁĄCZNIE gdy sam warless (dispatch
+  // krok 1), bez specjalnego wykluczania poza tym warunkiem.
+  const playerPool = candidateOwnerIds ?? world.allOwnerIds;
+  if (playerPool.includes(0) && activeWarsExcludingBarbarians(world, 0) === 0
+    && !triggeredSubjects.some(s => s.ownerId === 0)) {
+    triggeredSubjects.push({ ownerId: 0, ...world.hexOf.get(0) });
+  }
+
+  const existingActivePairs = [];
+  if (stoneActiveByPairKey) {
+    for (const st of stoneActiveByPairKey.values()) {
+      if (st.targetId !== 0) existingActivePairs.push({ ...st, era: 'stone' });
+    }
+  }
+  if (bronzeActiveByPairKey) {
+    for (const st of bronzeActiveByPairKey.values()) {
+      if (st.targetId !== 0) existingActivePairs.push({ ...st, era: 'bronze' });
+    }
+  }
+
+  const result = assignForcedWarPairings(triggeredSubjects, existingActivePairs, {
+    isPairBlocked: isPairBlocked ?? (() => false),
+    hexDistanceFn: hexDistance,
+    totalActiveForcedWarsByOwner: (id) => (activeWarsExcludingBarbarians(world, id) > 0 ? 1 : 0),
   });
-  if (!shouldSearch) return null;
-  const candidateOwnerIds = opts.candidateOwnerIds ?? world.allOwnerIds;
-  const candidates = candidateOwnerIds
-    .filter(oid => oid !== ownerId)
-    .map(oid => ({ ownerId: oid, ...world.hexOf.get(oid) }));
-  const candidatesAlreadyAtWarIds = new Set(
-    candidates.filter(c => activeWarsExcludingBarbarians(world, c.ownerId) > 0).map(c => c.ownerId),
-  );
-  const picked = pickBronzeForcedWarTargetIdCoordinated(
-    candidates, world.hexOf.get(ownerId), hexDistance,
-    { blockedOwnerIds: new Set(), candidatesAlreadyAtWarIds, poziomTrudnosci, playerActiveForcedWarCount },
-  );
-  if (picked == null) return null;
-  declareWar(world, ownerId, picked);
-  pendingOwners.delete(ownerId);
-  activeByPairKey.set(diploPairKey(ownerId, picked), {
-    attackerId: ownerId, targetId: picked, capturedByAttacker: 0, capturedByDefender: 0, startTurn: turn,
-  });
-  return picked;
+
+  const picks = new Map();
+  for (const a of result.assignments) {
+    declareWar(world, a.ownerId, a.targetId);
+    picks.set(a.ownerId, a.targetId);
+    if (a.era === 'stone' && stonePendingOwners) stonePendingOwners.delete(a.ownerId);
+    if (a.era === 'bronze' && bronzePendingOwners) bronzePendingOwners.delete(a.ownerId);
+    const targetMap = a.era === 'stone' ? stoneActiveByPairKey : bronzeActiveByPairKey;
+    if (targetMap) {
+      targetMap.set(diploPairKey(a.ownerId, a.targetId), {
+        attackerId: a.ownerId, targetId: a.targetId,
+        capturedByAttacker: 0, capturedByDefender: 0, startTurn: turn,
+      });
+    }
+  }
+  return { picks, unresolvedOwnerIds: result.unresolvedOwnerIds };
 }
 
 /** Krok co-turowy limitu czasu (main.ts resolveForcedWarDurationLimits, Część C). */
@@ -246,97 +254,108 @@ function resolveDurationLimitsStep(world, turn, stoneActive, bronzeActive) {
 console.log('R-WOJNA-WYMUSZONA-REGULY-Q1 — symulacja wielu tur silnika (kryteria 1-9)\n');
 
 // =============================================================================
-// K1: 3 AI próbujące niezależnie wybrać cel -> co najwyżej JEDNA atakuje danego kandydata.
-// =============================================================================
-console.log('--- K1: koordynacja -- 3 napastnicy AI, żaden wspólny cel nie dostaje 2 wypowiedzeń ---');
+// K1 (ADAPTACJA, R-WOJNA-WYMUSZONA-PAROWANIE-ZAMIAST-DOMINA-Q1): pulą kandydatów w NOWYM
+// algorytmie są WYŁĄCZNIE inne triggeredSubjects tej samej tury (dispatch krok 1-3) -- nie
+// dowolny, niekoniecznie-szukający civ jak w starym per-owner coordinated-pick (świadoma
+// różnica zachowania, patrz forced-war-common.ts komentarz nagłówkowy assignForcedWarPairings).
+// 6 triggered AI (parzysta liczba) -> JEDNO wywołanie runForcedWarTurnStep -> koordynacja
+// (żaden kandydat nie dostaje 2 wypowiedzeń) wynika z SAMEJ struktury algorytmu (dowiedzione
+// property-based w tools/wojna-wymuszona-parowanie-test.cjs Scenariusz 1/8) -- tu dowód
+// end-to-end przez PRAWDZIWE isEligibleForStoneForcedWar + PRAWDZIWY assignForcedWarPairings.
+console.log('--- K1: koordynacja -- 6 triggered AI, żaden wspólny cel nie dostaje 2 wypowiedzeń ---');
 {
   const world = makeWorld({
-    1: { q: 0, r: 0 }, 2: { q: 0, r: 0 }, 3: { q: 0, r: 0 },
-    4: { q: 1, r: 0 }, 5: { q: 5, r: 0 }, 6: { q: 10, r: 0 }, 0: { q: 20, r: 0 },
+    1: { q: 0, r: 0 }, 4: { q: 1, r: 0 },
+    2: { q: 10, r: 0 }, 5: { q: 11, r: 0 },
+    3: { q: 20, r: 0 }, 6: { q: 21, r: 0 },
   });
-  const pendingOwners = new Set([1, 2, 3]);
-  const activeByPairKey = new Map();
-  // candidateOwnerIds jawnie ograniczona do puli CELÓW {4,5,6,gracz} -- napastnicy 1/2/3
-  // (główni rywale, każdy sam też jest "głównym AI") NIE są sobie nawzajem celami w TYM
-  // scenariuszu (są ustawieni na tej samej pozycji referencyjnej właśnie po to, by mieć
-  // IDENTYCZNE preferencje odległości do 4/5/6 -- bez tego zawężenia daliby się sobie
-  // nawzajem jako "kandydat o dystansie 0", co jest realnym, ale INNYM scenariuszem niż
-  // ten, który K1 ma dowieść: koordynacja NAD WSPÓLNĄ pulą trzech wolnych celów).
-  const opts = {
-    pendingOwners, activeByPairKey, poziomTrudnosci: 2, playerActiveForcedWarCount: 0,
-    candidateOwnerIds: [4, 5, 6, 0],
-  };
+  const stonePendingOwners = new Set([1, 2, 3, 4, 5, 6]);
+  const stoneActiveByPairKey = new Map();
   const turn = WOJNA_KAMIEN_WYMUSZONA_START_TURY; // pierwsza tura, w której WOLNO szukać celu
-  const picks = [];
-  for (const ownerId of [1, 2, 3]) {
-    picks.push(stepStoneForOwner(world, ownerId, turn, opts));
-  }
-  eq(picks.length, 3, 'K1: wszyscy trzej napastnicy przetworzeni');
-  assert(picks.every(p => p != null), 'K1: każdy z trzech napastników znalazł JAKIŚ cel (mechanizm nie umiera)');
-  const uniqueTargets = new Set(picks);
-  eq(uniqueTargets.size, 3, 'K1: SEDNO -- trzej napastnicy wybrali TRZY RÓŻNE cele (żaden kandydat nie dostał 2 wypowiedzeń)');
-  eq(picks[0], 4, 'K1: napastnik 1 (pierwszy w kolejce) dostaje najbliższego wolnego kandydata (4)');
-  eq(picks[1], 5, 'K1: napastnik 2 widzi 4 już w wojnie (koordynacja) -> kolejny najbliższy wolny (5)');
-  eq(picks[2], 6, 'K1: napastnik 3 widzi 4 i 5 już w wojnie -> kolejny wolny (6)');
-  for (const [a, b] of [[1, 4], [2, 5], [3, 6]]) {
-    assert(isAtWar(world, a, b), `K1: relacja ${a}<->${b} faktycznie 'wojna' w świecie symulacji`);
-  }
-  assert(!isAtWar(world, 2, 4), 'K1: napastnik 2 NIE zaatakował 4 (już zajętego)');
-  assert(!isAtWar(world, 3, 4), 'K1: napastnik 3 NIE zaatakował 4');
-  assert(!isAtWar(world, 3, 5), 'K1: napastnik 3 NIE zaatakował 5 (już zajętego przez napastnika 2)');
+  const { picks, unresolvedOwnerIds } = runForcedWarTurnStep(
+    world, [1, 2, 3, 4, 5, 6], turn,
+    { stonePendingOwners, stoneActiveByPairKey, poziomTrudnosci: 2, candidateOwnerIds: [] },
+  );
+  eq(unresolvedOwnerIds.length, 0, 'K1: wszyscy sparowani (parzysta liczba, brak blokad)');
+  eq(picks.size, 6, 'K1: SEDNO -- wszyscy 6 dostają wpis, każda strona osobno (symetryczne pary)');
+  eq(picks.get(1), 4, 'K1: 1 najbliżej 4');
+  eq(picks.get(2), 5, 'K1: 2 najbliżej 5');
+  eq(picks.get(3), 6, 'K1: 3 najbliżej 6');
+  const targets = [...picks.values()];
+  eq(new Set(targets).size, targets.length, 'K1: WSZYSTKIE cele są różne od odpowiadających napastników (żaden kandydat nie dostał 2 wypowiedzeń od różnych par)');
+  assert(isAtWar(world, 1, 4) && isAtWar(world, 2, 5) && isAtWar(world, 3, 6), 'K1: trzy pary faktycznie w stanie wojna w świecie symulacji');
+  assert(!isAtWar(world, 1, 5) && !isAtWar(world, 2, 4), 'K1: żadnych krzyżowych wypowiedzeń spoza własnej pary');
 }
 
 // =============================================================================
-// K2 + K3: fallback na gracza, limit trudności.
+// K2: fallback na gracza gdy jedyny wolny triggered kandydat to gracz (nieparzysta reszta
+// dołącza jako trzeci do istniejącej pary, dispatch krok 4).
+// K3 (ADAPTACJA, ECHO: "bez twardego limitu wojen gracza"): stary limit trudności
+// Normalny/Trudny ZNIKA -- jedyny warunek to totalActiveForcedWarsByOwner(gracz)===0
+// (krok 2 ECHO), stosowany JEDNOLICIE bez rozróżnienia poziomu trudności. Gracz z JUŻ
+// aktywną wojną wymuszoną NIE wchodzi do puli triggered w ogóle (main.ts sprawdza to PRZED
+// dopisaniem gracza) -- test niżej dowodzi tego wprost, zamiast (usuniętego) rozróżnienia
+// poziomów trudności.
 // =============================================================================
-console.log('\n--- K2/K3: fallback na gracza gdy wszyscy kandydaci AI zajęci + limit trudności Normalnej ---');
+console.log('\n--- K2: fallback na gracza jako "trzeci" gdy AI już ma parę, gracz bez wojny ---');
 {
-  // Scenariusz: dwóch napastników (1,2), jeden wolny kandydat AI (4) i gracz (0).
-  // Napastnik 1 zajmuje jedynego wolnego AI (4). Napastnik 2 nie ma już żadnego
-  // wolnego kandydata AI -> K2: fallback na gracza.
-  const world = makeWorld({
-    1: { q: 0, r: 0 }, 2: { q: 0, r: 0 }, 4: { q: 1, r: 0 }, 0: { q: 2, r: 0 },
-  });
-  const pendingOwners = new Set([1, 2]);
-  const activeByPairKey = new Map();
+  // Napastnik 1 i AI 4 tworzą już istniejącą aktywną parę (jak po poprzedniej turze).
+  // Napastnik 2 jest jedynym DODATKOWO triggered tej tury, bez własnego partnera w puli
+  // warless (sam jeden) -> staje się leftover -> dołącza jako trzeci do pary 1<->4? NIE --
+  // K2 SEDNO dawnego scenariusza to fallback na GRACZA, więc gracz (warless) też jest w
+  // puli i jest bliżej -- ale skoro obaj (2 i gracz) są warless i para nieparzysta (2), oni
+  // PARUJĄ SIĘ ZE SOBĄ (dokładnie jak Scenariusz 4 w wojna-wymuszona-parowanie-test.cjs) --
+  // AI (2) jest stroną akcji, cel=gracz.
+  const world = makeWorld({ 1: { q: 0, r: 0 }, 4: { q: 1, r: 0 }, 2: { q: 5, r: 0 }, 0: { q: 6, r: 0 } });
+  declareWar(world, 1, 4);
+  const stoneActiveByPairKey = new Map([[diploPairKey(1, 4), {
+    attackerId: 1, targetId: 4, capturedByAttacker: 0, capturedByDefender: 0, startTurn: 1,
+  }]]);
+  const stonePendingOwners = new Set([2]);
   const turn = WOJNA_KAMIEN_WYMUSZONA_START_TURY;
-  // candidateOwnerIds jawnie ograniczona do puli CELÓW {AI4, gracz} -- patrz komentarz
-  // analogiczny w K1 wyżej (napastnicy 1/2/3 nie są sobie nawzajem celami w tym scenariuszu).
-  const targetPool = [4, 0];
-
-  const pick1 = stepStoneForOwner(world, 1, turn, {
-    pendingOwners, activeByPairKey, poziomTrudnosci: 2, playerActiveForcedWarCount: 0,
-    candidateOwnerIds: targetPool,
-  });
-  eq(pick1, 4, 'K2 setup: napastnik 1 zajmuje jedynego wolnego AI (4)');
-
-  const pick2Normal = stepStoneForOwner(world, 2, turn, {
-    pendingOwners, activeByPairKey, poziomTrudnosci: 2, playerActiveForcedWarCount: 0,
-    candidateOwnerIds: targetPool,
-  });
-  eq(pick2Normal, 0, 'K2: SEDNO -- wszyscy kandydaci AI zajęci, Normalny, gracz BEZ wojny wymuszonej -> fallback na gracza');
+  const { picks, unresolvedOwnerIds } = runForcedWarTurnStep(
+    world, [1, 2, 4], turn,
+    { stonePendingOwners, stoneActiveByPairKey, poziomTrudnosci: 2, candidateOwnerIds: [0] },
+  );
+  eq(unresolvedOwnerIds.length, 0, 'K2: gracz i napastnik 2 rozwiązani (sparowani ze sobą)');
+  eq(picks.get(2), 0, 'K2: SEDNO -- jedyny inny triggered (AI 2) i gracz są jedynymi warless -> parują się, cel AI2=gracz');
   assert(isAtWar(world, 2, 0), 'K2: napastnik 2 faktycznie wypowiedział wojnę graczowi w świecie symulacji');
+  assert(!picks.has(1) && !picks.has(4), 'K2: para 1<->4 (już aktywna, nie-triggered) nie dostaje nowych wpisów tej tury');
+}
 
-  // K3a: Normalny, gracz JUŻ MA 1 aktywną wojnę wymuszoną (ta z pick2Normal powyżej) ->
-  // TRZECI napastnik nie dostaje gracza jako fallback.
-  pendingOwners.add(3);
-  world.hexOf.set(3, { q: 0, r: 0 });
-  world.allOwnerIds.push(3);
-  const pick3Normal = stepStoneForOwner(world, 3, turn, {
-    pendingOwners, activeByPairKey, poziomTrudnosci: 2, playerActiveForcedWarCount: 1,
-    candidateOwnerIds: targetPool,
-  });
-  eq(pick3Normal, null, 'K3a: Normalny -- gracz już ma 1 wojnę wymuszoną, trzeci napastnik NIE dostaje go jako fallback');
-  assert(!isAtWar(world, 3, 0), 'K3a: napastnik 3 faktycznie NIE wypowiedział wojny graczowi');
-  assert(pendingOwners.has(3), 'K3a: napastnik 3 zostaje "pending" -- spróbuje ponownie później (nie ginie na stałe)');
-
-  // K3b: Trudny -- ten sam scenariusz, ale bez limitu -> napastnik 3 DOSTAJE gracza.
-  const pick3Hard = stepStoneForOwner(world, 3, turn, {
-    pendingOwners, activeByPairKey, poziomTrudnosci: 3, playerActiveForcedWarCount: 1,
-    candidateOwnerIds: targetPool,
-  });
-  eq(pick3Hard, 0, 'K3b: Trudny -- limit Normalnej NIE obowiązuje, napastnik 3 DOSTAJE gracza mimo już 1 aktywnej wojny');
-  assert(isAtWar(world, 3, 0), 'K3b: napastnik 3 faktycznie wypowiedział wojnę graczowi (gracz ma teraz 2 wojny wymuszone)');
+console.log('\n--- K3 (ECHO, "bez twardego limitu wojen gracza"): gracz z JUŻ aktywną wojną NIE wchodzi do puli w ogóle ---');
+{
+  // Gracz ma już aktywną wojnę wymuszoną z 4 (poprzednia tura) -> totalActiveForcedWarsByOwner(0)>0
+  // -> main.ts (i ten harness, wiernie) NIE dopisuje gracza do triggeredSubjects, NIEZALEŻNIE
+  // od poziomu trudności (dawny rozdział Normalny/Trudny zniknął -- ECHO: "gracz traktowany
+  // DOKŁADNIE jak każde AI", a każde AI już-w-wojnie też nie wchodzi do puli).
+  const world = makeWorld({ 3: { q: 0, r: 0 }, 0: { q: 1, r: 0 }, 4: { q: 2, r: 0 } });
+  declareWar(world, 0, 4); // gracz JUŻ ma aktywną wojnę wymuszoną (z poprzedniej tury)
+  const stoneActiveByPairKey = new Map([[diploPairKey(4, 0), {
+    attackerId: 4, targetId: 0, capturedByAttacker: 0, capturedByDefender: 0, startTurn: 1,
+  }]]);
+  const stonePendingOwners = new Set([3]);
+  const turn = WOJNA_KAMIEN_WYMUSZONA_START_TURY;
+  for (const poziomTrudnosci of [2, 3]) {
+    const worldCopy = makeWorld({ 3: { q: 0, r: 0 }, 0: { q: 1, r: 0 }, 4: { q: 2, r: 0 } });
+    declareWar(worldCopy, 0, 4);
+    const stoneActiveCopy = new Map(stoneActiveByPairKey);
+    const stonePendingCopy = new Set([3]);
+    const { unresolvedOwnerIds } = runForcedWarTurnStep(
+      worldCopy, [3, 4], turn,
+      { stonePendingOwners: stonePendingCopy, stoneActiveByPairKey: stoneActiveCopy, poziomTrudnosci, candidateOwnerIds: [0] },
+    );
+    // 4 nie jest triggered (para 4<->0 nie jest w bronzePending/stonePending -- już aktywna,
+    // nie searching), 3 JEST triggered ale JEDYNY warless (gracz wykluczony bo już w
+    // wojnie) -> 3 nie znajduje partnera w kroku 1-3, a jedyna istniejąca para (4,0) MA
+    // stronę 4 -- 3 mógłby dołączyć do niej jako trzeci (krok 4), ALE SEDNO testu to gracz:
+    // gracz (gdyby wciąż był warless) wszedłby do puli niezależnie od poziomTrudnosci -- tu
+    // dowodzimy że NIE wchodzi wcale, dopóki ma aktywną wojnę, bez rozróżnienia poziomu.
+    assert(
+      !worldCopy.relations.has(diploPairKey(3, 0)) || isAtWar(worldCopy, 3, 0) === false,
+      `K3 (poziomTrudnosci=${poziomTrudnosci}): gracz NIE dostaje drugiej wojny wymuszonej (już ma jedną) -- brak rozróżnienia poziomu trudności`,
+    );
+  }
 }
 
 // =============================================================================
@@ -353,15 +372,12 @@ console.log('\n--- K4: Łatwy -- zero wypowiedzeń z mechanizmu wymuszonego prze
   const eraEnterTurnByOwner = new Map([[1, 1], [2, 1]]);
   let anyForcedWarEver = false;
   for (let turn = 1; turn <= 60; turn++) {
-    for (const ownerId of [1, 2]) {
-      const sp = stepStoneForOwner(world, ownerId, turn, {
-        pendingOwners: stonePending, activeByPairKey: stoneActive, poziomTrudnosci: 1, playerActiveForcedWarCount: 0,
-      });
-      const bp = stepBronzeForOwner(world, ownerId, turn, {
-        pendingOwners: bronzePending, activeByPairKey: bronzeActive, eraEnterTurnByOwner, poziomTrudnosci: 1, playerActiveForcedWarCount: 0,
-      });
-      if (sp != null || bp != null) anyForcedWarEver = true;
-    }
+    const { picks } = runForcedWarTurnStep(world, [1, 2], turn, {
+      stonePendingOwners: stonePending, stoneActiveByPairKey: stoneActive,
+      bronzePendingOwners: bronzePending, bronzeActiveByPairKey: bronzeActive,
+      eraEnterTurnByOwner, poziomTrudnosci: 1, candidateOwnerIds: [],
+    });
+    if (picks.size > 0) anyForcedWarEver = true;
     resolveDurationLimitsStep(world, turn, stoneActive, bronzeActive);
   }
   assert(!anyForcedWarEver, 'K4: SEDNO -- na Łatwym ZERO wypowiedzeń wojny wymuszonej (Kamień+Brąz) w 60 turach × 2 ownerów');
@@ -382,24 +398,31 @@ console.log('\n--- K4: Łatwy -- zero wypowiedzeń z mechanizmu wymuszonego prze
 console.log('\n--- K5: próg startu -- Kamień tura 25, Brąz 25 tur od WŁASNEGO wejścia w epokę ---');
 {
   eq(WOJNA_KAMIEN_WYMUSZONA_START_TURY, 25, 'K5: stała Kamienia = 25 (nie 20)');
-  // Kamień: jeden napastnik, jeden wolny kandydat, krok po kroku od tury 1.
+  // Kamień: DWIE cywilizacje (1,4), OBIE triggered razem od tury 1 (dispatch krok 1 wymaga
+  // WZAJEMNEGO triggered partnera w puli -- świadoma różnica vs stary per-owner
+  // coordinated-pick, patrz komentarz K1 wyżej) -- SEDNO testu (próg 25 tur) mierzy się
+  // niezależnie od tego, kto jest partnerem.
   const worldStone = makeWorld({ 1: { q: 0, r: 0 }, 4: { q: 1, r: 0 } });
-  const stonePending = new Set([1]);
+  const stonePending = new Set([1, 4]);
   const stoneActive = new Map();
   let stoneFiredAtTurn = null;
   for (let turn = 1; turn <= 30 && stoneFiredAtTurn == null; turn++) {
-    const picked = stepStoneForOwner(worldStone, 1, turn, {
-      pendingOwners: stonePending, activeByPairKey: stoneActive, poziomTrudnosci: 2, playerActiveForcedWarCount: 0,
+    const { picks } = runForcedWarTurnStep(worldStone, [1, 4], turn, {
+      stonePendingOwners: stonePending, stoneActiveByPairKey: stoneActive, poziomTrudnosci: 2, candidateOwnerIds: [],
     });
-    if (picked != null) stoneFiredAtTurn = turn;
+    if (picks.has(1)) stoneFiredAtTurn = turn;
   }
   eq(stoneFiredAtTurn, 25, 'K5: Kamień -- pierwsze wypowiedzenie wojny wymuszonej dokładnie w turze 25, przy przejściu tura-po-turze od tury 1');
 
-  // Brąz: DWIE cywilizacje wchodzące w epokę Brąz w RÓŻNYCH turach gry (10 i 40) --
-  // próg 25 tur liczy się NIEZALEŻNIE od KAŻDEJ z tych dwóch tur, nie od startu gry.
+  // Brąz: DWIE PARY cywilizacji wchodzące w epokę Brąz w RÓŻNYCH turach gry (10 i 40) --
+  // próg 25 tur liczy się NIEZALEŻNIE od KAŻDEJ z tych dwóch tur, nie od startu gry. Civ 6
+  // (partner dedykowany A, WŁASNY eraEnterTurn=10, blisko A) i civ 7 (partner dedykowany B,
+  // eraEnterTurn=40, blisko B) zapewniają KAŻDEJ z par WZAJEMNIE triggered partnera dokładnie
+  // w chwili WŁASNEGO progu -- bez tego (dispatch krok 1: pula to WYŁĄCZNIE wzajemnie
+  // triggered podmioty) żadna z cywilizacji nie miałaby z kim się sparować.
   const worldBronze = makeWorld({
-    1: { q: 0, r: 0 }, 4: { q: 1, r: 0 }, // cywilizacja A: wchodzi w Brąz w turze 10
-    2: { q: 100, r: 0 }, 5: { q: 101, r: 0 }, // cywilizacja B: wchodzi w Brąz w turze 40
+    1: { q: 0, r: 0 }, 6: { q: 1, r: 0 },     // para A: 1<->6, wchodzi w Brąz w turze 10
+    2: { q: 100, r: 0 }, 7: { q: 101, r: 0 }, // para B: 2<->7, wchodzi w Brąz w turze 40
   });
   const bronzePending = new Set(); // ustawiane dokładnie w turze wejścia w epokę, jak syncOwnerEraFromResearch
   const bronzeActive = new Map();
@@ -407,18 +430,20 @@ console.log('\n--- K5: próg startu -- Kamień tura 25, Brąz 25 tur od WŁASNEG
   let firedA = null;
   let firedB = null;
   for (let turn = 1; turn <= 70; turn++) {
-    if (turn === 10) { bronzePending.add(1); eraEnterTurnByOwner.set(1, 10); }
-    if (turn === 40) { bronzePending.add(2); eraEnterTurnByOwner.set(2, 40); }
-    for (const ownerId of [1, 2]) {
-      const picked = stepBronzeForOwner(worldBronze, ownerId, turn, {
-        pendingOwners: bronzePending, activeByPairKey: bronzeActive, eraEnterTurnByOwner,
-        poziomTrudnosci: 2, playerActiveForcedWarCount: 0,
-      });
-      if (picked != null) {
-        if (ownerId === 1 && firedA == null) firedA = turn;
-        if (ownerId === 2 && firedB == null) firedB = turn;
-      }
+    if (turn === 10) {
+      bronzePending.add(1); eraEnterTurnByOwner.set(1, 10);
+      bronzePending.add(6); eraEnterTurnByOwner.set(6, 10);
     }
+    if (turn === 40) {
+      bronzePending.add(2); eraEnterTurnByOwner.set(2, 40);
+      bronzePending.add(7); eraEnterTurnByOwner.set(7, 40);
+    }
+    const { picks } = runForcedWarTurnStep(worldBronze, [1, 2, 6, 7], turn, {
+      bronzePendingOwners: bronzePending, bronzeActiveByPairKey: bronzeActive, eraEnterTurnByOwner,
+      poziomTrudnosci: 2, candidateOwnerIds: [],
+    });
+    if (picks.has(1) && firedA == null) firedA = turn;
+    if (picks.has(2) && firedB == null) firedB = turn;
   }
   eq(WOJNA_WYMUSZONA_START_TURY_OD_EPOKI, 25, 'K5: stała progu Brązu = 25 tur od epoki');
   eq(firedA, 35, 'K5: cywilizacja A weszła w Brąz w turze 10 -> pierwsza wojna wymuszona dokładnie w turze 35 (10+25)');
@@ -540,8 +565,17 @@ console.log('\n--- K9: Żelazo poza zakresem -- dowód tekstowy (main.ts, forced
     'K9: forced-war-iron.ts nie zawiera ŻADNEGO śladu tego dispatchu (plik NIETKNIĘTY)',
   );
   const mainSrc = fs.readFileSync(path.join(GRA_ROOT, 'src', 'main.ts'), 'utf8');
-  const ironBranchStart = mainSrc.indexOf('R-EPOKA-ZELAZO-WYMUSZONA-WOJNA-Q1: wymuszona wojna głównej cywilizacji');
-  const ironBranchEnd = mainSrc.indexOf('ironForceWarTargetId = ironPicked;', ironBranchStart);
+  // R-WOJNA-WYMUSZONA-PAROWANIE-ZAMIAST-DOMINA-Q1 przeniosła i uprościła gałąź selekcji
+  // Żelaza (pre-pass triggeredSubjects, patrz forced-war-trojstronna-main-guard-test.cjs i
+  // forced-war-iron-main-guard-test.cjs dla pełnego pokrycia OKABLOWANIA) -- stare kotwice
+  // tekstowe tego testu (sprzed tamtej naprawy) nie istnieją już w main.ts. K9 SEDNO
+  // (Część C R-WOJNA-WYMUSZONA-REGULY-Q1: Żelazo NIE dostaje pola `startTurn`, w
+  // odróżnieniu od Kamienia/Brązu) zostaje zweryfikowane na AKTUALNEJ lokalizacji gałęzi.
+  const ironBranchStart = mainSrc.indexOf('// Żelazo.');
+  const ironBranchEnd = mainSrc.indexOf(
+    "ironTriggeredSubjects.push({ ownerId, q: refCity.q, r: refCity.r, era: 'iron' });",
+    ironBranchStart,
+  );
   assert(ironBranchStart > -1 && ironBranchEnd > -1, 'K9: gałąź selekcji celu Żelaza nadal obecna i lokalizowalna w main.ts');
   const ironBranch = mainSrc.slice(ironBranchStart, ironBranchEnd);
   assert(

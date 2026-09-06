@@ -1090,8 +1090,6 @@ import {
   WOJNA_WYMUSZONA_COOLDOWN_TA_SAMA_CYWILIZACJA_TUR,
   WOJNA_WYMUSZONA_MAX_CZAS_TRWANIA_TUR,
   isEligibleForBronzeForcedWar,
-  pickBronzeForcedWarTargetIdCoordinated,
-  pickBronzeForcedWarDominoOwnerIds,
   shouldEndBronzeForcedWarByCityCount,
   shouldEndBronzeForcedWarByDuration,
   isRestingFromBronzeForcedWar,
@@ -1105,8 +1103,6 @@ import {
   WOJNA_KAMIEN_WYMUSZONA_COOLDOWN_TA_SAMA_CYWILIZACJA_TUR,
   WOJNA_KAMIEN_WYMUSZONA_MAX_CZAS_TRWANIA_TUR,
   isEligibleForStoneForcedWar,
-  pickStoneForcedWarTargetIdCoordinated,
-  pickStoneForcedWarDominoOwnerIds,
   shouldEndStoneForcedWarByCityCount,
   shouldEndStoneForcedWarByDuration,
   isRestingFromStoneForcedWar,
@@ -1120,14 +1116,19 @@ import {
   isEligibleForIronForcedWar,
   isIronEraEntry,
   pickIronForcedWarTargetId,
-  pickIronForcedWarDominoOwnerIds,
   shouldEndIronForcedWarByCityCount,
   isRestingFromIronForcedWar,
   serializeIronForcedWarState,
   restoreIronForcedWarState,
   type IronForcedWarPairState,
 } from './game/forced-war-iron';
-import { countActiveWarsExcluding } from './game/forced-war-common';
+import {
+  countActiveWarsExcluding,
+  countActiveForcedWarsForOwner,
+  assignForcedWarPairings,
+  type ForcedWarPairingSubject,
+  type ForcedWarPairingExistingPair,
+} from './game/forced-war-common';
 import { checkVictory, techIdsInGameScope, allTechInScopeResearched, OSTATNIA_EPOKA_GRY_V1, powerShare } from './game/victory';
 import type { VictoryPlayer, VictoryInput } from './game/victory';
 import {
@@ -30360,53 +30361,189 @@ async function boot(): Promise<void> {
               }
             }
 
-            // R-DYPLO-AI-WOJNA-TROJSTRONNA-Q1 (rozszerzenie R-DYPLO-AI-WOJNA-Z-GRACZEM-
-            // PARZYSTOSC-Q1): jeden, STABILNY odczyt "czy gracz ma już jakąkolwiek aktywną
-            // wojnę wymuszoną" NA CAŁĄ pętlę `ownerLoop` niżej — policzony TU, PRZED
-            // przetworzeniem jakiegokolwiek ownera, nie wewnątrz pętli jak istniejący
-            // `playerActiveForcedWarCount` (który świadomie JEST przeliczany per-owner, bo
-            // służy INNEMU, węższemu limitowi trudności "Normalny: najwyżej jedna naraz").
-            // Domino musi być JEDNĄ, skoordynowaną decyzją: gdyby ten odczyt siedział
-            // wewnątrz pętli (per owner), pierwszy przetworzony owner pary zdążyłby dopisać
-            // graczowi wojnę i DRUGI widziałby już wynik pierwszego — łamiąc kryterium "OBIE
-            // strony pary JEDNOCZEŚNIE, w TEJ SAMEJ turze" (GOAL 1, dispatch runy Q1).
-            // Świadomie liczy WSZYSTKIE TRZY epoki (Kamień+Brąz+Żelazo) — szerzej niż
-            // istniejący `playerActiveForcedWarCount` (tylko Kamień+Brąz), bo GOAL 1 mówi o
-            // "parze do walki" bez rozróżnienia epoki.
-            const playerAlreadyHasAnyActiveForcedWarThisTurn =
-              [...bronzeForceWarActiveByPairKey.values()].some(st => st.targetId === 0)
-              || [...stoneForceWarActiveByPairKey.values()].some(st => st.targetId === 0)
-              || [...ironForceWarActiveByPairKey.values()].some(st => st.targetId === 0);
-            // ECHO 2 właściciela: "chyba że jedną z nich łączy sojusz" — sojusz KTÓREJKOLWIEK
-            // strony pary z graczem blokuje CAŁĄ parę (main.ts `allianceFormalKindBetween`,
-            // ta sama funkcja co istniejący `stoneBlockedOwnerIds`/`bronzeBlockedOwnerIds`
-            // niżej, tylko względem gracza ownerId=0).
-            const dominoHasAllianceWithPlayer = (oid: number): boolean =>
-              allianceFormalKindBetween(activeDeals, oid, 0) !== null;
-            const dominoOpts = {
-              playerAlreadyHasActiveForcedWar: playerAlreadyHasAnyActiveForcedWarThisTurn,
-              hasAllianceWithPlayer: dominoHasAllianceWithPlayer,
-            };
-            const bronzeDominoOwnerIds = pickBronzeForcedWarDominoOwnerIds(
-              [...bronzeForceWarActiveByPairKey.values()]
-                .filter(st => st.targetId !== 0
-                  && !eliminatedOwners.has(st.attackerId)
-                  && !eliminatedOwners.has(st.targetId)),
-              dominoOpts,
+            // R-WOJNA-WYMUSZONA-PAROWANIE-ZAMIAST-DOMINA-Q1: JEDNA wspólna procedura
+            // (`assignForcedWarPairings`, forced-war-common.ts) zastępuje FUNKCJONALNIE oba
+            // dawne mechanizmy -- coordinated-pick (dawniej per owner, wewnątrz `ownerLoop`)
+            // I domino trójstronne (dawniej blok tuż wyżej) -- wołana RAZ na turę, TU, PRZED
+            // `ownerLoop`, dla wszystkich trzech epok naraz. ECHO właściciela (wiążące,
+            // dosłowne): "Najpierw wszyscy mają wojnę, potem trójkąty" -- podmioty BEZ ŻADNEJ
+            // aktywnej wojny wymuszonej (globalnie, wszystkie epoki + gracz razem) parowane
+            // 1v1 W PIERWSZEJ KOLEJNOŚCI; nieparzysta reszta dołącza jako TRZECI do istniejącej
+            // pary zamiast zostać bez wojny. Gracz traktowany DOKŁADNIE jak każde AI (bez
+            // specjalnego przypadku) -- jedyna asymetria (gracz nie ma własnego pola
+            // `xForceWarTargetId`) jest zaszyta wewnątrz `assignForcedWarPairings` samej.
+            //
+            // Krok A: dla każdej epoki, replika WARUNKU `shouldSearch` z dawnego per-owner
+            // bloku (main.ts poniżej w `ownerLoop` NIE liczy już celu sam -- tylko czyta
+            // wynik z `forcedWarAssignmentByOwner`) -- zebrana TU, PRZED pętlą, bo krok 1 ECHO
+            // wymaga znać WSZYSTKICH "triggered" tej tury NARAZ, nie jednego na raz.
+            const bronzeTriggeredSubjects: ForcedWarPairingSubject[] = [];
+            const stoneTriggeredSubjects: ForcedWarPairingSubject[] = [];
+            const ironTriggeredSubjects: ForcedWarPairingSubject[] = [];
+            for (const ownerId of aiOwnerList) {
+              if (
+                ownerId <= 0
+                || typCityCopyOwners.has(ownerId)
+                || isBarbarian(ownerId)
+                || eliminatedOwners.has(ownerId)
+                || isOwnerClusterCityState(ownerId, ownerCityStateOpts())
+              ) continue;
+              const refCity = cities.find(c => c.ownerId === ownerId);
+              if (!refCity) continue;
+              const alreadyAtWarAnyRole = countActiveWarsForOwnerExcludingBarbarians(ownerId) > 0;
+              const forcedWarDifficultyLevel = aiDiffLevelForOwner(ownerId);
+
+              // Brąz.
+              {
+                const wasPending = bronzeForceWarPendingOwners.has(ownerId);
+                const hasActiveForcedWarAsAttacker = [...bronzeForceWarActiveByPairKey.values()]
+                  .some(st => st.attackerId === ownerId);
+                const searchingAfterRest = !wasPending
+                  && bronzeForceWarCycleOwners.has(ownerId)
+                  && !hasActiveForcedWarAsAttacker
+                  && !alreadyAtWarAnyRole
+                  && !isRestingFromBronzeForcedWar(turn, bronzeForceWarRestUntilByOwner.get(ownerId));
+                const shouldSearch = forcedWarDifficultyLevel !== 1 && (wasPending
+                  ? isEligibleForBronzeForcedWar({
+                    isMainAiCiv: true,
+                    isAlreadyAtWarAnyRole: alreadyAtWarAnyRole,
+                    currentTurn: turn,
+                    eraEnterTurn: bronzeEraEnterTurnByOwner.get(ownerId),
+                  })
+                  : searchingAfterRest);
+                if (shouldSearch) {
+                  bronzeTriggeredSubjects.push({ ownerId, q: refCity.q, r: refCity.r, era: 'bronze' });
+                }
+              }
+
+              // Kamień. Replika WŁĄCZNIE z warunkiem "uzbrojenia" (`turn >=
+              // WOJNA_KAMIEN_WYMUSZONA_START_TURY && ...`) -- w dawnym kodzie owner mógł
+              // zostać uzbrojony i przeszukany W TEJ SAMEJ turze (uzbrojenie realnie
+              // MUTUJE `stoneForceWarPendingOwners` niżej w `ownerLoop`, nietknięte tą
+              // naprawą; tu tylko replika WARUNKU dla decyzji "czy szukać", żeby nie
+              // opóźnić pierwszego wypowiedzenia o jedną turę względem stanu sprzed naprawy).
+              {
+                const stoneArmedThisTurn =
+                  turn >= WOJNA_KAMIEN_WYMUSZONA_START_TURY
+                  && empireEpochForOwner(ownerId) === 1
+                  && !stoneForceWarPendingOwners.has(ownerId)
+                  && !stoneForceWarCycleOwners.has(ownerId);
+                const wasPending = stoneForceWarPendingOwners.has(ownerId) || stoneArmedThisTurn;
+                const hasActiveForcedWarAsAttacker = [...stoneForceWarActiveByPairKey.values()]
+                  .some(st => st.attackerId === ownerId);
+                const searchingAfterRest = !wasPending
+                  && stoneForceWarCycleOwners.has(ownerId)
+                  && empireEpochForOwner(ownerId) === 1
+                  && !hasActiveForcedWarAsAttacker
+                  && !alreadyAtWarAnyRole
+                  && !isRestingFromStoneForcedWar(turn, stoneForceWarRestUntilByOwner.get(ownerId));
+                const shouldSearch = forcedWarDifficultyLevel !== 1 && (wasPending
+                  ? isEligibleForStoneForcedWar({
+                    isMainAiCiv: true,
+                    isStoneEra: empireEpochForOwner(ownerId) === 1,
+                    currentTurn: turn,
+                    isAlreadyAtWarAnyRole: alreadyAtWarAnyRole,
+                  })
+                  : searchingAfterRest);
+                if (shouldSearch) {
+                  stoneTriggeredSubjects.push({ ownerId, q: refCity.q, r: refCity.r, era: 'stone' });
+                }
+              }
+
+              // Żelazo.
+              {
+                const wasPending = ironForceWarPendingOwners.has(ownerId);
+                const hasActiveForcedWarAsAttacker = [...ironForceWarActiveByPairKey.values()]
+                  .some(st => st.attackerId === ownerId);
+                const searchingAfterRest = !wasPending
+                  && ironForceWarCycleOwners.has(ownerId)
+                  && !hasActiveForcedWarAsAttacker
+                  && !alreadyAtWarAnyRole
+                  && !isRestingFromIronForcedWar(turn, ironForceWarRestUntilByOwner.get(ownerId));
+                const shouldSearch = wasPending
+                  ? isEligibleForIronForcedWar({
+                    isMainAiCiv: true,
+                    isAlreadyAtWarAnyRole: alreadyAtWarAnyRole,
+                    currentTurn: turn,
+                    eraEnterTurn: ironEraEnterTurnByOwner.get(ownerId),
+                  })
+                  : searchingAfterRest;
+                if (shouldSearch) {
+                  ironTriggeredSubjects.push({ ownerId, q: refCity.q, r: refCity.r, era: 'iron' });
+                }
+              }
+            }
+
+            // Krok B: CAŁKOWITA liczba aktywnych wojen wymuszonych per owner (krok 2 ECHO,
+            // GLOBALNA -- wszystkie trzy epoki + gracz razem, NIE per-epoka osobno).
+            const allActiveForcedWarPairsFlat: Array<{ attackerId: number; targetId: number }> = [
+              ...[...bronzeForceWarActiveByPairKey.values()]
+                .filter(st => !eliminatedOwners.has(st.attackerId) && !eliminatedOwners.has(st.targetId)),
+              ...[...stoneForceWarActiveByPairKey.values()]
+                .filter(st => !eliminatedOwners.has(st.attackerId) && !eliminatedOwners.has(st.targetId)),
+              ...[...ironForceWarActiveByPairKey.values()]
+                .filter(st => !eliminatedOwners.has(st.attackerId) && !eliminatedOwners.has(st.targetId)),
+            ];
+            const totalActiveForcedWarsByOwner = (ownerId: number): number =>
+              countActiveForcedWarsForOwner(ownerId, allActiveForcedWarPairsFlat);
+
+            // Krok C: gracz dołącza do puli "triggered" DOKŁADNIE jak dyspozycja każe --
+            // WYŁĄCZNIE gdy sam nie ma dziś żadnej aktywnej wojny wymuszonej, bez specjalnego
+            // wykluczania poza tym jednym warunkiem (dispatch krok 1).
+            const triggeredSubjects: ForcedWarPairingSubject[] = [
+              ...bronzeTriggeredSubjects, ...stoneTriggeredSubjects, ...ironTriggeredSubjects,
+            ];
+            const playerCity = cities.find(c => c.ownerId === 0);
+            if (playerCity && totalActiveForcedWarsByOwner(0) === 0) {
+              triggeredSubjects.push({ ownerId: 0, q: playerCity.q, r: playerCity.r });
+            }
+
+            // Krok D: pary już aktywne (dowolna epoka, AI<->AI, targetId!==0) -- pula do
+            // której leftover może dołączyć jako trzeci (krok 4 ECHO).
+            const existingActivePairsForJoin: ForcedWarPairingExistingPair[] = [
+              ...[...bronzeForceWarActiveByPairKey.values()]
+                .filter(st => st.targetId !== 0 && !eliminatedOwners.has(st.attackerId) && !eliminatedOwners.has(st.targetId))
+                .map(st => ({ attackerId: st.attackerId, targetId: st.targetId, era: 'bronze' as const })),
+              ...[...stoneForceWarActiveByPairKey.values()]
+                .filter(st => st.targetId !== 0 && !eliminatedOwners.has(st.attackerId) && !eliminatedOwners.has(st.targetId))
+                .map(st => ({ attackerId: st.attackerId, targetId: st.targetId, era: 'stone' as const })),
+              ...[...ironForceWarActiveByPairKey.values()]
+                .filter(st => st.targetId !== 0 && !eliminatedOwners.has(st.attackerId) && !eliminatedOwners.has(st.targetId))
+                .map(st => ({ attackerId: st.attackerId, targetId: st.targetId, era: 'iron' as const })),
+            ];
+
+            // Krok E: NAP / peaceLocked (w tym cooldown tej samej pary) / aktywny sojusz --
+            // symetryczny predykat, ta sama trójka warunków co dawne bronze/stoneBlockedOwnerIds
+            // (i domina, ECHO 2: KTÓRAKOLWIEK strona blokuje CAŁĄ parę), teraz jeden predykat
+            // zamiast osobnego zbioru per owner.
+            const isForcedWarPairBlocked = (a: number, b: number): boolean =>
+              hasTreaty(activeDeals, a, b, RodzajTraktatu.PaktNieagresji)
+              || isPeaceLockedBetween(a, b)
+              || allianceFormalKindBetween(activeDeals, a, b) !== null;
+
+            const forcedWarPairingResult = assignForcedWarPairings(
+              triggeredSubjects,
+              existingActivePairsForJoin,
+              {
+                isPairBlocked: isForcedWarPairBlocked,
+                hexDistanceFn: hexDistance,
+                totalActiveForcedWarsByOwner,
+              },
             );
-            const stoneDominoOwnerIds = pickStoneForcedWarDominoOwnerIds(
-              [...stoneForceWarActiveByPairKey.values()]
-                .filter(st => st.targetId !== 0
-                  && !eliminatedOwners.has(st.attackerId)
-                  && !eliminatedOwners.has(st.targetId)),
-              dominoOpts,
-            );
-            const ironDominoOwnerIds = pickIronForcedWarDominoOwnerIds(
-              [...ironForceWarActiveByPairKey.values()]
-                .filter(st => st.targetId !== 0
-                  && !eliminatedOwners.has(st.attackerId)
-                  && !eliminatedOwners.has(st.targetId)),
-              dominoOpts,
+            if (forcedWarPairingResult.unresolvedOwnerIds.length > 0) {
+              // ECHO, brzegowy przypadek: "wszystkie istniejące pary zablokowane sojuszem
+              // dla leftover" -- NIE zgadujemy. Owner zostaje bez przydziału tej tury
+              // (spróbuje ponownie następnej -- wasPending/cycleOwners nie są konsumowane
+              // tutaj, tylko w bloku sukcesu wypowiedz_wojne niżej).
+              console.error(
+                '[Wojna wymuszona] DECISION_REQUIRED: brak niezablokowanej sojuszem pary/'
+                + 'trójkąta dla ownerów [' + forcedWarPairingResult.unresolvedOwnerIds.join(', ')
+                + '] -- wszystkie istniejące pary zablokowane, lub brak jakiejkolwiek pary do '
+                + 'dołączenia. Przydział pominięty tej tury (ponowna próba w kolejnej).',
+              );
+            }
+            const forcedWarAssignmentByOwner = new Map(
+              forcedWarPairingResult.assignments.map(a => [a.ownerId, a] as const),
             );
 
             ownerLoop: for (let oi = startOi; oi < aiOwnerList.length; oi++) {
@@ -30900,7 +31037,7 @@ async function boot(): Promise<void> {
                     activeDeals, ownerId, otherId, RodzajTraktatu.PaktNieagresji,
                   ),
                   // B3 (R-EPOKA-BRAZU-WYMUSZONA-WOJNA runda 2, Evaluator FAIL): sojusz z tym
-                  // partnerem blokuje wymuszoną wojnę Brązu (main.ts bronzeBlockedOwnerIds +
+                  // partnerem blokuje wymuszoną wojnę Brązu (main.ts isForcedWarPairBlocked +
                   // ai.ts guard) — cywilizacje nie mają zrywać własnych sojuszy tym mechanizmem.
                   hasAllianceTreaty: allianceFormalKindBetween(activeDeals, ownerId, otherId) !== null,
                   resourceTradeOffer: resTradeAi
@@ -31136,121 +31273,27 @@ async function boot(): Promise<void> {
                 // declaration in the wypowiedz_wojne block below, so a civ that happens to
                 // already be at war (or has every candidate blocked) is retried next turn
                 // instead of permanently losing its one shot.
-                let bronzeForceWarTargetId: number | undefined;
-                let stoneForceWarTargetId: number | undefined;
-                let ironForceWarTargetId: number | undefined;
-                // R-WOJNA-WYMUSZONA-REGULY-Q1 (Część B): aktywne wojny wymuszone GRACZA
-                // jako CEL, Kamień+Brąz łącznie — jedyny wejściowy licznik dla limitu
-                // trudności Normalnej ("najwyżej jedna naraz"); Trudny go ignoruje, Łatwy
-                // nigdy tu nie dociera (mechanizm wyłączony niżej przy forcedWarDifficultyLevel).
-                const playerActiveForcedWarCount =
-                  [...bronzeForceWarActiveByPairKey.values()].filter(st => st.targetId === 0).length
-                  + [...stoneForceWarActiveByPairKey.values()].filter(st => st.targetId === 0).length;
-                if (
-                  ownerId > 0
-                  && !typCityCopyOwners.has(ownerId)
-                  && !isBarbarian(ownerId)
-                  && !eliminatedOwners.has(ownerId)
-                  && !isOwnerClusterCityState(ownerId, ownerCityStateOpts())
-                ) {
-                  const wasPending = bronzeForceWarPendingOwners.has(ownerId);
-                  const alreadyAtWarAnyRole = countActiveWarsForOwnerExcludingBarbarians(ownerId) > 0;
-                  const hasActiveForcedWarAsAttacker = [...bronzeForceWarActiveByPairKey.values()]
-                    .some(st => st.attackerId === ownerId);
-                  const searchingAfterRest = !wasPending
-                    && bronzeForceWarCycleOwners.has(ownerId)
-                    && !hasActiveForcedWarAsAttacker
-                    && !alreadyAtWarAnyRole
-                    && !isRestingFromBronzeForcedWar(turn, bronzeForceWarRestUntilByOwner.get(ownerId));
-                  // R-WOJNA-WYMUSZONA-REGULY-Q1 (Część B, Łatwy): cały mechanizm wojny
-                  // wymuszonej wyłączony — zero szukania celu z tego powodu (ani gracza, ani
-                  // AI), niezależnie od wasPending/searchingAfterRest.
-                  const forcedWarDifficultyLevel = aiDiffLevelForOwner(ownerId);
-                  const shouldSearch = forcedWarDifficultyLevel !== 1 && (wasPending
-                    ? isEligibleForBronzeForcedWar({
-                      isMainAiCiv: true,
-                      isAlreadyAtWarAnyRole: alreadyAtWarAnyRole,
-                      // R-WOJNA-WYMUSZONA-REGULY-Q1 (Część A): próg 25 tur od WEJŚCIA W BRĄZ
-                      // (nie od startu gry) — brak wpisu (stary zapis) pomija próg, patrz
-                      // komentarz przy `bronzeEraEnterTurnByOwner`.
-                      currentTurn: turn,
-                      eraEnterTurn: bronzeEraEnterTurnByOwner.get(ownerId),
-                    })
-                    : searchingAfterRest);
-                  if (shouldSearch) {
-                    const refCity = cities.find(c => c.ownerId === ownerId);
-                    // P-WOJNA-WYMUSZONA-TRZY-NAPRAWY-Q1 (c), NOWA DECYZJA właściciela
-                    // (2026-08-30, zastępuje Q2 z R-EPOKA-KAMIEN-WYMUSZONA-WOJNA-Q1): gracz
-                    // (ownerId 0) wchodzi do puli kandydatów NA RÓWNI z AI — dawny filtr
-                    // `oid > 0` wykluczał go wtórnie, mimo że `aiOwnerList` (budowany z
-                    // `u.ownerId > 0`/`c.ownerId > 0`, main.ts ok. linii 27636) wyklucza go
-                    // już STRUKTURALNIE u źródła. `[0, ...aiOwnerList]` dokłada go jawnie do
-                    // źródła tej konkretnej puli; `oid >= 0` (zamiast `oid > 0`) przepuszcza
-                    // 0, barbarzyńcy nadal wykluczeni przez `!isBarbarian(oid)` niżej.
-                    const bronzeCandidates = [0, ...aiOwnerList]
-                      .filter(oid =>
-                        oid !== ownerId
-                        && oid >= 0
-                        && !typCityCopyOwners.has(oid)
-                        && !isBarbarian(oid)
-                        && !eliminatedOwners.has(oid)
-                        && !isOwnerClusterCityState(oid, ownerCityStateOpts()),
-                      )
-                      .map(oid => {
-                        const c = cities.find(cc => cc.ownerId === oid);
-                        return c ? { ownerId: oid, q: c.q, r: c.r } : null;
-                      })
-                      .filter((c): c is { ownerId: number; q: number; r: number } => c !== null);
-                    // B3 (runda 2, Evaluator FAIL): sojusz z kandydatem blokuje wybór — obok
-                    // istniejącego NAP/peaceLocked, tym samym allianceFormalKindBetween co
-                    // zasila hasAllianceTreaty w relacjeDip AI↔AI wyżej.
-                    const bronzeBlockedOwnerIds = new Set(
-                      bronzeCandidates
-                        .filter(c =>
-                          hasTreaty(activeDeals, ownerId, c.ownerId, RodzajTraktatu.PaktNieagresji)
-                          || isPeaceLockedBetween(ownerId, c.ownerId)
-                          || allianceFormalKindBetween(activeDeals, ownerId, c.ownerId) !== null,
-                        )
-                        .map(c => c.ownerId),
-                    );
-                    // R-WOJNA-WYMUSZONA-REGULY-Q1 (Część B, WYZWALACZ: "jedna cywilizacja
-                    // wypowiada wojnę Jednej cywilizacji"): kandydat już w JAKIEJKOLWIEK
-                    // aktywnej wojnie (poza barbarzyńcami) wykluczony — LUSTRZANA ochrona do
-                    // istniejącej `alreadyAtWarAnyRole` po stronie napastnika, ta sama funkcja
-                    // (`countActiveWarsForOwnerExcludingBarbarians`), zastosowana teraz też do
-                    // KAŻDEGO kandydata (w tym gracza).
-                    const bronzeCandidatesAlreadyAtWarIds = new Set(
-                      bronzeCandidates
-                        .filter(c => countActiveWarsForOwnerExcludingBarbarians(c.ownerId) > 0)
-                        .map(c => c.ownerId),
-                    );
-                    const bronzePicked = pickBronzeForcedWarTargetIdCoordinated(
-                      bronzeCandidates,
-                      refCity ? { q: refCity.q, r: refCity.r } : undefined,
-                      hexDistance,
-                      {
-                        blockedOwnerIds: bronzeBlockedOwnerIds,
-                        candidatesAlreadyAtWarIds: bronzeCandidatesAlreadyAtWarIds,
-                        poziomTrudnosci: forcedWarDifficultyLevel,
-                        playerActiveForcedWarCount,
-                      },
-                    );
-                    if (bronzePicked != null) bronzeForceWarTargetId = bronzePicked;
-                  }
-                }
-                // R-DYPLO-AI-WOJNA-TROJSTRONNA-Q1 (GOAL 1/2): domino Brązu — NIEZALEŻNIE od
-                // `shouldSearch` wyżej (owner jest tu z definicji `alreadyAtWarAnyRole=true`,
-                // więc normalna ścieżka szukania celu go pomija). `bronzeDominoOwnerIds`
-                // policzone RAZ przed `ownerLoop` (patrz komentarz tam) — obie strony
-                // kwalifikującej się pary dostają cel=gracz w TEJ SAMEJ turze.
-                if (bronzeDominoOwnerIds.has(ownerId)) {
-                  bronzeForceWarTargetId = 0;
-                }
+                // R-WOJNA-WYMUSZONA-PAROWANIE-ZAMIAST-DOMINA-Q1: wybór celu (i dawne domino
+                // trójstronne) już rozstrzygnięty RAZ dla WSZYSTKICH ownerów, PRZED `ownerLoop`
+                // (`forcedWarAssignmentByOwner`, patrz komentarz tam) -- tu tylko odczyt per
+                // owner, z rozróżnieniem WŁASNEJ epoki (co najwyżej JEDNA z trzech pasuje,
+                // bo `bronzeTriggeredSubjects`/`stoneTriggeredSubjects`/`ironTriggeredSubjects`
+                // są rozłączne z definicji -- shouldSearch każdej epoki wymaga innego stanu
+                // pending/cycle/era ownera).
+                const forcedWarOwnAssignment = forcedWarAssignmentByOwner.get(ownerId);
+                let bronzeForceWarTargetId: number | undefined =
+                  forcedWarOwnAssignment?.era === 'bronze' ? forcedWarOwnAssignment.targetId : undefined;
+                let stoneForceWarTargetId: number | undefined =
+                  forcedWarOwnAssignment?.era === 'stone' ? forcedWarOwnAssignment.targetId : undefined;
+                let ironForceWarTargetId: number | undefined =
+                  forcedWarOwnAssignment?.era === 'iron' ? forcedWarOwnAssignment.targetId : undefined;
                 // R-EPOKA-KAMIEN-WYMUSZONA-WOJNA (Q1=A): po 20 turach od startu
                 // gry główna cywilizacja AI pozostająca w Kamieniu dostaje
                 // jednorazowy wpis pending. Wpis nie jest konsumowany przy samej
                 // próbie — dzięki temu wojna czeka, jeśli owner jest chwilowo w
-                // innej wojnie albo wszystkie cele są zablokowane.
+                // innej wojnie albo wszystkie cele są zablokowane. NIETKNIĘTE tą naprawą --
+                // to "uzbrojenie" triggera, nie WYBÓR pary (patrz replika warunku w
+                // `stoneArmedThisTurn` przed `ownerLoop`).
                 if (
                   turn >= WOJNA_KAMIEN_WYMUSZONA_START_TURY
                   && ownerId > 0
@@ -31263,180 +31306,6 @@ async function boot(): Promise<void> {
                   && !stoneForceWarCycleOwners.has(ownerId)
                 ) {
                   stoneForceWarPendingOwners.add(ownerId);
-                }
-                if (
-                  ownerId > 0
-                  && !typCityCopyOwners.has(ownerId)
-                  && !isBarbarian(ownerId)
-                  && !eliminatedOwners.has(ownerId)
-                  && !isOwnerClusterCityState(ownerId, ownerCityStateOpts())
-                ) {
-                  const wasPending = stoneForceWarPendingOwners.has(ownerId);
-                  const alreadyAtWarAnyRole = countActiveWarsForOwnerExcludingBarbarians(ownerId) > 0;
-                  const hasActiveForcedWarAsAttacker = [...stoneForceWarActiveByPairKey.values()]
-                    .some(st => st.attackerId === ownerId);
-                  const searchingAfterRest = !wasPending
-                    && stoneForceWarCycleOwners.has(ownerId)
-                    && empireEpochForOwner(ownerId) === 1
-                    && !hasActiveForcedWarAsAttacker
-                    && !alreadyAtWarAnyRole
-                    && !isRestingFromStoneForcedWar(
-                      turn,
-                      stoneForceWarRestUntilByOwner.get(ownerId),
-                    );
-                  // R-WOJNA-WYMUSZONA-REGULY-Q1 (Część B, Łatwy) — patrz komentarz analogiczny
-                  // przy Brązie wyżej: cały mechanizm wyłączony na Łatwym.
-                  const forcedWarDifficultyLevel = aiDiffLevelForOwner(ownerId);
-                  const shouldSearch = forcedWarDifficultyLevel !== 1 && (wasPending
-                    ? isEligibleForStoneForcedWar({
-                      isMainAiCiv: true,
-                      isStoneEra: empireEpochForOwner(ownerId) === 1,
-                      currentTurn: turn,
-                      isAlreadyAtWarAnyRole: alreadyAtWarAnyRole,
-                    })
-                    : searchingAfterRest);
-                  if (shouldSearch) {
-                    const refCity = cities.find(c => c.ownerId === ownerId);
-                    // P-WOJNA-WYMUSZONA-TRZY-NAPRAWY-Q1 (c) — patrz komentarz analogiczny
-                    // przy bronzeCandidates wyżej.
-                    const stoneCandidates = [0, ...aiOwnerList]
-                      .filter(oid =>
-                        oid !== ownerId
-                        && oid >= 0
-                        && !typCityCopyOwners.has(oid)
-                        && !isBarbarian(oid)
-                        && !eliminatedOwners.has(oid)
-                        && !isOwnerClusterCityState(oid, ownerCityStateOpts()),
-                      )
-                      .map(oid => {
-                        const c = cities.find(cc => cc.ownerId === oid);
-                        return c ? { ownerId: oid, q: c.q, r: c.r } : null;
-                      })
-                      .filter((c): c is { ownerId: number; q: number; r: number } => c !== null);
-                    const stoneBlockedOwnerIds = new Set(
-                      stoneCandidates
-                        .filter(c =>
-                          hasTreaty(activeDeals, ownerId, c.ownerId, RodzajTraktatu.PaktNieagresji)
-                          || isPeaceLockedBetween(ownerId, c.ownerId)
-                          || allianceFormalKindBetween(activeDeals, ownerId, c.ownerId) !== null,
-                        )
-                        .map(c => c.ownerId),
-                    );
-                    // R-WOJNA-WYMUSZONA-REGULY-Q1 (Część B) — patrz komentarz analogiczny przy
-                    // bronzeCandidatesAlreadyAtWarIds wyżej.
-                    const stoneCandidatesAlreadyAtWarIds = new Set(
-                      stoneCandidates
-                        .filter(c => countActiveWarsForOwnerExcludingBarbarians(c.ownerId) > 0)
-                        .map(c => c.ownerId),
-                    );
-                    const stonePicked = pickStoneForcedWarTargetIdCoordinated(
-                      stoneCandidates,
-                      refCity ? { q: refCity.q, r: refCity.r } : undefined,
-                      hexDistance,
-                      {
-                        blockedOwnerIds: stoneBlockedOwnerIds,
-                        candidatesAlreadyAtWarIds: stoneCandidatesAlreadyAtWarIds,
-                        poziomTrudnosci: forcedWarDifficultyLevel,
-                        playerActiveForcedWarCount,
-                      },
-                    );
-                    if (stonePicked != null) stoneForceWarTargetId = stonePicked;
-                  }
-                }
-                // R-DYPLO-AI-WOJNA-TROJSTRONNA-Q1 (GOAL 1/2): domino Kamienia — patrz
-                // komentarz analogiczny przy `bronzeDominoOwnerIds` wyżej.
-                if (stoneDominoOwnerIds.has(ownerId)) {
-                  stoneForceWarTargetId = 0;
-                }
-                // R-EPOKA-ZELAZO-WYMUSZONA-WOJNA-Q1: wymuszona wojna głównej cywilizacji
-                // z sąsiadem terytorialnym — (a) jednorazowo przy AWANSIE do Żelaza
-                // (ironForceWarPendingOwners, ustawione w syncOwnerEraFromResearch przez
-                // isIronEraEntry), (b) cyklicznie po odpoczynku od poprzedniej wojny
-                // wymuszonej Żelaza. Struktura 1:1 jak Brąz. Napastnik jest zawsze AI
-                // (`ownerId > 0` + `isOwnerClusterCityState(ownerId, …)` tutaj) — miasta-
-                // państwa/kopie/barbarzyńcy wykluczeni z roli napastnika. Cel: miasta-
-                // państwa/kopie/barbarzyńcy/wyeliminowani wykluczeni tak samo w puli
-                // kandydatów, ALE gracz (ownerId 0) od P-WOJNA-WYMUSZONA-TRZY-NAPRAWY-Q1
-                // (2026-08-30, NOWA DECYZJA właściciela, zastępuje Q2 z R-EPOKA-KAMIEN-
-                // WYMUSZONA-WOJNA-Q1 „cel to najbliższy sąsiad AI, NIE gracz") jest w tej
-                // puli NA RÓWNI z AI — patrz `oid >= 0` w budowie ironCandidates niżej.
-                // `wasPending` jest TYLKO ODCZYTEM — pending konsumuje dopiero faktyczny
-                // sukces w bloku wypowiedz_wojne niżej.
-                // EN: Iron-era forced war — one-shot on the Iron advance, then cyclic after
-                // rest. City-states/copies/barbarians excluded from both attacker and
-                // target roles; the PLAYER is now (2026-08-30 decision) INCLUDED as an
-                // eligible target on equal footing with AI, superseding the earlier
-                // "never the player" rule.
-                if (
-                  ownerId > 0
-                  && !typCityCopyOwners.has(ownerId)
-                  && !isBarbarian(ownerId)
-                  && !eliminatedOwners.has(ownerId)
-                  && !isOwnerClusterCityState(ownerId, ownerCityStateOpts())
-                ) {
-                  const wasPending = ironForceWarPendingOwners.has(ownerId);
-                  const alreadyAtWarAnyRole = countActiveWarsForOwnerExcludingBarbarians(ownerId) > 0;
-                  const hasActiveForcedWarAsAttacker = [...ironForceWarActiveByPairKey.values()]
-                    .some(st => st.attackerId === ownerId);
-                  const searchingAfterRest = !wasPending
-                    && ironForceWarCycleOwners.has(ownerId)
-                    && !hasActiveForcedWarAsAttacker
-                    && !alreadyAtWarAnyRole
-                    && !isRestingFromIronForcedWar(
-                      turn,
-                      ironForceWarRestUntilByOwner.get(ownerId),
-                    );
-                  const shouldSearch = wasPending
-                    ? isEligibleForIronForcedWar({
-                      isMainAiCiv: true,
-                      isAlreadyAtWarAnyRole: alreadyAtWarAnyRole,
-                      // R-WOJNA-WYMUSZONA-ZELAZO-PROG-TURY-Q1: próg 25 tur od WEJŚCIA W
-                      // ŻELAZO (nie od startu gry) — brak wpisu (stary zapis) pomija próg,
-                      // patrz komentarz przy `ironEraEnterTurnByOwner`.
-                      currentTurn: turn,
-                      eraEnterTurn: ironEraEnterTurnByOwner.get(ownerId),
-                    })
-                    : searchingAfterRest;
-                  if (shouldSearch) {
-                    const refCity = cities.find(c => c.ownerId === ownerId);
-                    // P-WOJNA-WYMUSZONA-TRZY-NAPRAWY-Q1 (c) — patrz komentarz analogiczny
-                    // przy bronzeCandidates wyżej.
-                    const ironCandidates = [0, ...aiOwnerList]
-                      .filter(oid =>
-                        oid !== ownerId
-                        && oid >= 0
-                        && !typCityCopyOwners.has(oid)
-                        && !isBarbarian(oid)
-                        && !eliminatedOwners.has(oid)
-                        && !isOwnerClusterCityState(oid, ownerCityStateOpts()),
-                      )
-                      .map(oid => {
-                        const c = cities.find(cc => cc.ownerId === oid);
-                        return c ? { ownerId: oid, q: c.q, r: c.r } : null;
-                      })
-                      .filter((c): c is { ownerId: number; q: number; r: number } => c !== null);
-                    const ironBlockedOwnerIds = new Set(
-                      ironCandidates
-                        .filter(c =>
-                          hasTreaty(activeDeals, ownerId, c.ownerId, RodzajTraktatu.PaktNieagresji)
-                          || isPeaceLockedBetween(ownerId, c.ownerId)
-                          || allianceFormalKindBetween(activeDeals, ownerId, c.ownerId) !== null,
-                        )
-                        .map(c => c.ownerId),
-                    );
-                    const ironPicked = pickIronForcedWarTargetId(
-                      ironCandidates,
-                      refCity ? { q: refCity.q, r: refCity.r } : undefined,
-                      hexDistance,
-                      { blockedOwnerIds: ironBlockedOwnerIds },
-                    );
-                    if (ironPicked != null) ironForceWarTargetId = ironPicked;
-                  }
-                }
-                // R-DYPLO-AI-WOJNA-TROJSTRONNA-Q1 (GOAL 1/2): domino Żelaza — patrz
-                // komentarz analogiczny przy `bronzeDominoOwnerIds` wyżej.
-                if (ironDominoOwnerIds.has(ownerId)) {
-                  ironForceWarTargetId = 0;
                 }
                 const diploInp: DiplomacjaInputs = {
                   myPlayerId: String(ownerId),
