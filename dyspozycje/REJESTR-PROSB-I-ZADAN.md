@@ -5781,3 +5781,32 @@ Brakuje 19 budynkow, w tym **calej grupy Prawo i administracja** (`dwor_zarzadcy
 **Skutek uboczny:** latka „dopisz garnizon do infraOrder" z `R-BUDYNEK-GARNIZON-NOWY-Q1` (ECHO z tej samej nocy) staje sie zbedna po przepieciu. Kryterium konca 6 nowego tematu kaze ja usunac i udowodnic asercja, ze Garnizon nadal jest dla AI dostepny. Latka zostaje na czas przejsciowy — daje efekt od razu, a jej usuniecie jest jednolinijkowe.
 
 **Do zapamietania procesowo:** bramka `ai-buduje-budynki-test.cjs` jest przy tym defekcie **ZIELONA (42/0)** i to nie jest jej wada — sprawdza, czy miasta AI maja *jakikolwiek* budynek, nie czy AI potrafi postawic *kazdy*. Defekt tej klasy wymaga bramki mierzacej **pokrycie katalogu**, czyli inna wielkosc. To jest wzorzec do zapamietania: zielona bramka nie dowodzi braku defektu w wymiarze, ktorego nie mierzy.
+
+## R-BUDYNEK-GARNIZON-NOWY-Q1 — GAME (2026-09-05/06, trzy rundy, Final Control zero NAPRAW)
+
+**Wyzwalacz (wlasciciel):** *„Przyjmijmy wiec, ze dokladamy budynek zwiazany nie z wojskiem, ale z prawem, o nazwie Garnizon"* — quasi-policja dajaca Prawo bez wojska, w odpowiedzi na ustalenie, ze same budynki administracyjne nie wystarczaja do utrzymania Prawa w wiekszych miastach.
+
+**Stan: GOTOWE, ZINTEGROWANE DO `main` WSTRZYMANE do czasu `R-PRAWO-PRZEBUDOWA-SKALI-Q1`.** Galaz `autobot/R-BUDYNEK-GARNIZON-NOWY-Q1` wypchnieta na origin (praca zabezpieczona). Powod wstrzymania — decyzja wlasciciela 2026-09-05 po przedstawieniu pomiaru: **Garnizon wydany przed tematem Prawa jest dla gracza czystym kosztem** (60 pkt Pracy + 60 Drewna z magazynu, 4 Pieniadza i −5 Drewna/ture), bo cala jego wartosc to Prawo, ktorego ten temat swiadomie nie wpina. Karta pokazuje „Efekty —". Wchodzi do ROBOCZEJ razem z Prawem, juz dzialajacy.
+
+**Liczby wlasciciela (ECHO 2026-09-05, propozycja Operatora zatwierdzona bez zmian):** `kosztBudowy` 30 (60 pkt Pracy na ekranie) · `przyrostKosztu` 6 · `utrzymanie` 2 · `przyrostUtrzymania` 1 · `koszt_surowce` drewno 30 · `maksPoziom` 1 · `epokaWejscia` 1 · `lokalizacja: region` · `techUnlock: "-"` (dostepny od startu, jak Palac i Dom Starszyzny) · `dajeSzczescie: false`. **Zamrozone asercjami** — mutacja `kosztBudowy` 30→31 czerwieni bramke tematu.
+
+**Wartosc Prawa 25/35/47 per epoka NIE jest jeszcze wpieta** — to zakres tematu Prawa.
+
+**Wytwor:** rekord w `buildings.json` (42 wstawienia, 0 usuniec) · wlasna ikona `bld-garnizon.svg` + wpis w `building-icon-map.json` · rys historyczny (Medzaj, *cohortes urbanae*, *vigiles*) · haslo CivPedii `docs/encyklopedia/budynki/garnizon.md` + bundle · jedna linia w `infraOrder` (lista budowy **panstw-miast**) · nowa bramka `budynek-garnizon-test.cjs` **83/0**.
+
+**Trzy rundy, bo dwie pierwsze mialy realne braki — wszystkie zlapane przez Evaluatora i Final Control, nie przez Operatora:**
+- runda 1 `DECISION_REQUIRED` — trzy pliki spoza allowlisty (slusznie zglosil zamiast improwizowac);
+- runda 2 `FAIL` — regres bramki `civpedia-budynki-historia` 136/0 → 138/3 (trzy zaszyte liczniki `25`, ta sama klasa co `grupy-budynkow-test`), zgubione pole BLOKADY, brak `decision-abc.md` (C-054), **falszywa etykieta asercji `[AI3]`** twierdzaca „bez tego AI nigdy go nie zbuduje";
+- runda 3 `PASS`/`DECISION_REQUIRED` — wszystko domkniete, liczniki **policzone z danych** zamiast zaszyte (mozliwe tutaj, bo bramka porownuje trzy niezalezne artefakty; w `grupy-budynkow-test` niemozliwe, bo `buildings.length` porownywaloby plik sam ze soba).
+
+**Blad orkiestratora do zapamietania:** zatwierdzilem latke „dopisz garnizon do listy AI", **nie sprawdziwszy, w ktorej galezi ta lista siedzi**. `infraOrder` jest w `if (opts.defensiveCopy)` (`ai.ts:1455`), czyli dotyczy **panstw-miast, nie cywilizacji AI** — duze AI Garnizonu nadal nie widzi. Operator wykonal zlecenie doslownie i zglosil rozbieznosc; to bylo prawidlowe. Naprawa dla duzego AI: `R-AI-PRODUKCJA-Z-DOSTEPNYCH-BUDYNKOW-Q1`.
+
+**Ostrzezenie wejsciowe dla tematu Prawa (W-FC5), wpisane do jego dispatchu:** w `society-params.json` sa juz cztery klucze `prawo_garnizon*` o **przeciwnej mechanice** (bonus za jednostke wojskowa, D1 — POZA `prawMax`), a `society-breakdown.ts:638-647` zajmuje **`id: 'garnizon'`** w tablicy `lines[]` cietej do szesciu pozycji przez `orderPanel.ts:167`. Bez rozroznienia gracz zobaczylby **dwie pozycje „Garnizon"** w rozpisce Porzadku.
+
+## P-BRAMKI-BUDYNKI-DWIE-CZERWONE-ZASTANE-Q1 — INFRA (2026-09-06, znalezisko Final Control Garnizonu) · STATUS: **ZAREJESTROWANE, NIE DISPATCHOWANE**
+
+`gra/tools/prereq-budynkow-test.cjs` **51/8** i `gra/tools/upgrade-budynki-test.cjs` **48/1** sa czerwone i **zadna z trzech rund tematu Garnizonu tego nie zglosila**, mimo ze obie leza w rodzinie budynkow.
+
+**Dowod pre-istnienia (FC7, mutacja Final Control):** usuniecie calego rekordu `garnizon` z `buildings.json` zostawia obie bramki **bez zmiany** — `prereq` 51/8, `upgrade` 48/1. Czyli zero zwiazku z Garnizonem.
+
+DOMAIN: INFRA. Zakres: ustalic, czy 9 faili to realne defekty prereq/lancuchow ulepszen, czy bramki opisujace stan, ktorego juz nie ma — i odpowiednio naprawic kod albo przepisac asercje. **Zakaz osalabiania i usuwania asercji**; liczba nie moze spasc.
