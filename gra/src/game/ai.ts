@@ -1407,28 +1407,72 @@ const AI_MAJOR_WALL_THREAT_BONUS = 180;
 const AI_MAJOR_WALL_BORDER_BONUS = 120;
 
 /**
- * Bonus do score Spichlerza (major AI, DECISION_REQUIRED #3 rundy 1 -- ratyfikacja
- * 2026-09-06). DECISION_REQUIRED NOWY (runda 2, zgłoszony w raporcie Operatora):
- * proxy-symulacja pokazuje, że wartość odtwarzająca historyczną wczesną pozycję
- * Spichlerza (2.-4. miejsce w kolejce) wymagałaby bonusu ~15-30, ale KAŻDA wartość
- * >=9 psuje chroniony gate `ai-jednostki-tylko-zakup-test.cjs` (44/0, kryterium
- * "AI nadal realnie rekrutuje jednostki w oknie majorEarly z canAfford zawsze
- * dostępnym") -- zmierzone bisekcją: 8 PRZECHODZI (44/0), 9 już nie (41/3, AI
- * przestaje w ogóle proponować jednostki). Wybrano WARTOŚĆ BEZPIECZNĄ (8) zamiast
- * ryzykować/osłabiać chroniony gate -- to tylko CZĘŚCIOWO odtwarza historyczną
- * pozycję. ŚLAD DOWODOWY (Obrona rundy 2, zarzut #4 Evaluatora, PRZYJĘTY --
- * poprzedni opis "11.->10." w raporcie Operatora rundy 2 był nieodtwarzalny, bez
- * parametrów scenariusza; poprawiony niżej z pełnymi parametrami i wydrukowanym
- * śladem w `03-operator-obrona-runda2.md`): metoda identyczna jak
- * `ai-produkcja-pokrycie-katalogu-test.cjs` (`chooseCityProduction` w pętli,
- * canAfford odrzuca WYŁĄCZNIE jednostki, katalog buduje się aż null), 3 miasta
- * (c1/c2/c3, ta sama konfiguracja co bramka `pokrycie-katalogu`), miasto c1,
- * `currentTurn: 60` -- bonus 0: Spichlerz na 12/42 pozycji; bonus 8 (ta stała):
- * Spichlerz na 11/42. Przesunięcie o 1 pozycję (12->11), NIE 2.-4. Właściciel
- * decyduje, czy 8 wystarcza, czy temat wraca po osobną kalibrację (np.
- * rozluźnienie majorEarly damping) poza tą rundą.
+ * Bonus do score Spichlerza/Spichlerza II (major AI). RUNDA 3 (ratyfikacja
+ * orkiestratora #2, 2026-09-06) ZASTĘPUJE poprzedni, płaski bonus (8, "wartość
+ * bezpieczna") mechanizmem WARUNKOWYM -- właściciel wprost odrzucił kosmetykę
+ * priorytetu: "Spichlerz podnosi limit populacji miasta z 5 do 8 [...] jeśli AI
+ * nigdy nie zbuduje Spichlerza, jego miasta są trwale zablokowane na populacji
+ * 5 -- na zawsze." To NIE jest pytanie o kolejność, tylko o to, czy miasta
+ * w ogóle rosną -- więc bonus musi zależeć od tego, czy miasto REALNIE tego
+ * potrzebuje TERAZ, nie od stałej wagi.
+ *
+ * DLACZEGO poprzedni płaski bonus utknął na 8: rundy 1-2 próbowały pojedynczej
+ * stałej dla WSZYSTKICH miast niezależnie od populacji -- każda wartość >=9
+ * psuła chroniony gate `ai-jednostki-tylko-zakup-test.cjs` (scenariusz B: 3
+ * miasta major AI, `population: 4`, sufit BEZ Spichlerza=5 -- patrz
+ * `granaryPriorityBonus` niżej). Zbadano PRZYCZYNĘ (zadanie 1 dispatchu, opcja
+ * (b)): ten scenariusz B jest DOKŁADNIE przypadkiem "miasto NIE jest jeszcze
+ * zablokowane" (populacja 4 < sufit 5, wciąż ma 1 punkt zapasu do wzrostu bez
+ * Spichlerza) -- fixture nie jest przestarzały, tylko trafia w gałąź, w której
+ * Spichlerz NIE powinien przebijać jednostek. Test pozostaje nietknięty
+ * (weryfikacja: patrz TESTY w raporcie).
+ *
+ * MECHANIZM: `granaryPriorityBonus()` liczy aktualny sufit populacji miasta z
+ * DOKŁADNIE tych samych progów co silnik ekonomii (`cityPopulationCap` w
+ * `economy.ts`, wartości "normal" z `econ-params.json`: bez budynku=5, ze
+ * Spichlerzem/Spichlerzem II bez Akweduktu=8, z Akweduktem=12 -- ai.ts nie
+ * importuje `economy.ts` wprost, żeby nie ciągnąć całego modułu ekonomii do
+ * testów jednostkowych AI, więc progi są zduplikowane jako nazwane stałe
+ * `AI_POP_CAP_*` niżej z jawnym odnośnikiem do źródła prawdy). Gdy miasto jest
+ * NA suficie (populacja >= aktualny sufit -- czyli faktycznie zablokowane,
+ * dokładnie problem właściciela) -- SILNY bonus, rangi Koszar/Biblioteki
+ * (`AI_MAJOR_GRANARY_PRIORITY_BONUS_STRONG`). Gdy miasto ma jeszcze zapas do
+ * sufitu (jak `ai-jednostki-tylko-zakup-test` B, populacja 4/5) -- SŁABY,
+ * niezmieniony bonus (`_WEAK` = dawne 8, zbisekcjonowane jako bezpieczne).
+ * Miasto z Akweduktem (sufit 12) nigdy nie dostaje silnego bonusu -- Spichlerz
+ * przestał być wąskim gardłem wzrostu.
+ *
+ * Ta sama funkcja obsługuje `spichlerz_ii` (Epoka 2, zadanie 2 dispatchu):
+ * gdy miasto ma już Spichlerz I bez Akweduktu, aktualny sufit to 8 -- silny
+ * bonus aktywuje się analogicznie, gdy populacja dogania ten wyższy próg.
  */
-const AI_MAJOR_SPICHLERZ_PRIORITY_BONUS = 8;
+const AI_MAJOR_GRANARY_PRIORITY_BONUS_WEAK = 8;
+/**
+ * Magnitude analogiczna do Koszar (+110)/Biblioteki (+90) -- Spichlerz ma być
+ * "jednym z pierwszych budynków", nie tylko przesunięty o 1 pozycję, gdy
+ * miasto realnie jest zablokowane na suficie populacji (patrz komentarz wyżej
+ * i dowód w tabeli symulacji 400 tur w raporcie).
+ */
+const AI_MAJOR_GRANARY_PRIORITY_BONUS_STRONG = 110;
+/** Sufit populacji BEZ Spichlerza/Akweduktu -- `economy.ts` `cityPopulationCap`, "normal" z econ-params.json (akwedukt_prog_ludnosci, domyślnie 5). */
+const AI_POP_CAP_NO_GRANARY = 5;
+/** Sufit populacji ZE Spichlerzem/Spichlerzem II, BEZ Akweduktu -- `economy.ts` `cityPopulationCap`, "normal" (spichlerz_prog_ludnosci, domyślnie 8). */
+const AI_POP_CAP_WITH_GRANARY_I = 8;
+
+/**
+ * Czy i jak mocno miasto POTRZEBUJE Spichlerza/Spichlerza II TERAZ (zadania 1-2
+ * dispatchu rundy 3) -- patrz komentarz przy stałych wyżej dla pełnego
+ * uzasadnienia. Zwraca 0 gdy Akwedukt już stoi (sufit 12, Spichlerz przestał
+ * być wąskim gardłem wzrostu).
+ */
+function granaryPriorityBonus(city: AICity, built: readonly string[]): number {
+  if (built.includes('akwedukt')) return 0;
+  const hasGranaryI = built.includes('spichlerz') || built.includes('spichlerz_ii');
+  const capNow = hasGranaryI ? AI_POP_CAP_WITH_GRANARY_I : AI_POP_CAP_NO_GRANARY;
+  return city.population >= capNow
+    ? AI_MAJOR_GRANARY_PRIORITY_BONUS_STRONG
+    : AI_MAJOR_GRANARY_PRIORITY_BONUS_WEAK;
+}
 
 /**
  * Margines (w heksach) dodany do sumy promieni terytorium własnego i obcego miasta
@@ -1731,32 +1775,31 @@ export function chooseCityProduction(
     const akademiaIdx = buildingCandidates.findIndex(c => c.id === 'akademia');
     if (akademiaIdx >= 0) buildingCandidates[akademiaIdx]!.score += 90;
   }
-  // WYJĄTEK od kryterium 1 (kolejny, PRZYWRÓCONY rundą 2 -- ratyfikacja 2026-09-06,
-  // DECISION_REQUIRED #3 rundy 1): literał 'spichlerz'. Dawny `infraOrder` (usunięty
-  // tym tematem) dawał Spichlerzowi podniesiony priorytet w udokumentowanej kolejce
-  // wczesnej gry (studnia -> garncarnia -> stolarnia -> spichlerz -> targowisko ->
-  // administracja). Po przejściu na czyste punktowanie grupowe Spichlerz (grupa
-  // "Żywność", baza 130) spada za CAŁĄ grupę "Produkcja surowców" (baza 140,
-  // 9 członków: stolarnia/garncarnia/kamieniarski/cegielnia/kuznia/odlewnia_brazu/
-  // odlewnia_zelaza/kuznia_zelaza/wielka_odlewnia) -- proxy-symulacja (esbuild, bez
-  // boostu, ślad dokładny w komentarzu przy stałej `AI_MAJOR_SPICHLERZ_PRIORITY_BONUS`
-  // niżej i w `03-operator-obrona-runda2.md`) pokazuje Spichlerz na 12/42 pozycji w
-  // scenariuszu 3 miasta/tura 60, nie na historyczną 4.
-  // Boost KONKRETNEGO istniejącego kandydata (ten sam wzorzec co Koszary/Biblioteka/
-  // Akademia wyżej) bez przebijania CAŁYCH wyższych warstw grup (Zdrowie/tańsza
-  // Produkcja surowców zostają przed nim, jeśli faktycznie tańsze -- to dodatek,
-  // nie flat score). WARTOŚĆ ograniczona przez chroniony gate (DECISION_REQUIRED
-  // NOWY, patrz komentarz przy stałej `AI_MAJOR_SPICHLERZ_PRIORITY_BONUS` wyżej):
-  // pełne odtworzenie historycznej 2.-4. pozycji wymagałoby bonusu ~15-30, ale to
-  // psuje `ai-jednostki-tylko-zakup-test` (44/0) -- 8 jest maksymalną BEZPIECZNĄ
-  // wartością (zmierzone bisekcją), częściowa poprawa (proxy: ok. 1 miejsce), nie
-  // pełne przywrócenie. TYLKO major AI (!opts.defensiveCopy) -- miasta-państwa
-  // (defensiveCopy) NIE dostają tego boostu: runda 1 usunęła stąd analogiczny hack
-  // (flat 250) jako "redundantny", a kryterium 5 tej rundy (miasta-państwa
-  // nietknięte) zabrania dowolnej zmiany tamtej gałęzi.
+  // WYJĄTEK od kryterium 1 (kolejny): literały 'spichlerz'/'spichlerz_ii'. Dawny
+  // `infraOrder` (usunięty tym tematem) dawał Spichlerzowi podniesiony priorytet
+  // w udokumentowanej kolejce wczesnej gry (studnia -> garncarnia -> stolarnia ->
+  // spichlerz -> targowisko -> administracja). Po przejściu na czyste punktowanie
+  // grupowe Spichlerz (grupa "Żywność", baza 130) spada za CAŁĄ grupę "Produkcja
+  // surowców" (baza 140).
+  //
+  // RUNDA 3 (ratyfikacja orkiestratora #2, 2026-09-06): poprzedni płaski bonus
+  // (8, jedyna wartość bezpieczna dla chronionego gate) ZASTĄPIONY WARUNKOWYM
+  // mechanizmem `granaryPriorityBonus()` (patrz komentarz przy stałych
+  // `AI_MAJOR_GRANARY_PRIORITY_BONUS_*` wyżej dla pełnego uzasadnienia i dowodu,
+  // że dawny gate mierzył dokładnie przypadek "miasto NIE jest jeszcze
+  // zablokowane" -- fixture population=4 < sufit=5). Boost KONKRETNEGO
+  // istniejącego kandydata (ten sam wzorzec co Koszary/Biblioteka/Akademia
+  // wyżej) bez przebijania CAŁYCH wyższych warstw grup. TYLKO major AI
+  // (!opts.defensiveCopy) -- miasta-państwa (defensiveCopy) NIE dostają tego
+  // boostu: runda 1 usunęła stąd analogiczny hack (flat 250) jako "redundantny",
+  // a kryterium 5 tej rundy (miasta-państwa nietknięte) zabrania dowolnej zmiany
+  // tamtej gałęzi.
   if (!opts.defensiveCopy) {
+    const granaryBonus = granaryPriorityBonus(city, built);
     const spichlerzIdx = buildingCandidates.findIndex(c => c.id === 'spichlerz');
-    if (spichlerzIdx >= 0) buildingCandidates[spichlerzIdx]!.score += AI_MAJOR_SPICHLERZ_PRIORITY_BONUS;
+    if (spichlerzIdx >= 0) buildingCandidates[spichlerzIdx]!.score += granaryBonus;
+    const spichlerzIiIdx = buildingCandidates.findIndex(c => c.id === 'spichlerz_ii');
+    if (spichlerzIiIdx >= 0) buildingCandidates[spichlerzIiIdx]!.score += granaryBonus;
   }
   candidates.push(...buildingCandidates);
 
