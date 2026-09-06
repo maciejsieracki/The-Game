@@ -14,7 +14,7 @@
 import type { GameMap } from '../types/map';
 import type { Hex }     from '../types/hex';
 import { Nakladka }     from '../types/hex';
-import type { GameData } from '../data/loader';
+import type { GameData, BuildingDef } from '../data/loader';
 import aiParamsRaw from '../../data/ai-params.json';
 import type { RuntimeUnit } from '../units/setup';
 import { hexDistance, computePath, computeReachable, keyOf, isCivilianUnit } from '../units/setup';
@@ -62,6 +62,8 @@ import {
 // tutaj jest WPINANY, nie tworzony od nowa.
 import { workedHexCoordsForCity } from './turn-economy';
 import { buildingStockCost, unitStockCost } from './building-stock-cost';
+import { CITY_BUILDING_PREREQ, cityBuildingPrereqMet } from './building-resource-gate';
+import { isBuildingSupersededByUpgrade } from './production';
 import { unitRecruitUpkeepReserve } from './economy-upkeep';
 import type { AiTargetMemoryEntry } from './ai-fog';
 import {
@@ -1253,6 +1255,128 @@ function applyMajorArchetypeProductionBias(
   }
 }
 
+// ---------------------------------------------------------------------------
+// R-AI-PRODUKCJA-Z-DOSTEPNYCH-BUDYNKOW-Q1 (Maciej 2026-09-05, ECHO: "Przepiąć AI
+// na availableProduction() -- koniec listy na sztywno"): chooseCityProduction
+// nie może budować listy kandydatów-budynków ze rozsianych, zaszytych na sztywno
+// literałów id (dawny stan: AI nie widziała 19/41 (dziś 42) budynków katalogu, a
+// pokrycie SPADAŁO z epoką -- każdy nowy budynek/nowa epoka wymagałby ręcznego
+// dopisania linii w tym pliku). Kandydaci-budynki pochodzą teraz z PEŁNEGO
+// katalogu (`data.buildings`), punktowani po `BuildingDef.grupa` (nazwy GRUP są
+// jedynym dopuszczalnym wyjątkiem od zakazu literałów -- patrz kryterium 1
+// dispatchu) -- dodanie budynku do buildings.json lub nowej epoki działa
+// automatycznie, zero zmian w ai.ts.
+//
+// Bramka tech/epoka/prereq/zasoby/stolica: gdy silnik poda `opts.isProductionAllowed`
+// (main.ts -- owija PRAWDZIWE `availableProduction()`, patrz komentarz P-AI-014
+// przy jego definicji w AITurnOpts), używamy jej wprost -- to jest "to samo
+// źródło co gracz". Gdy nieobecna (stare testy jednostkowe bez tego callbacka),
+// zachowanie jest tech/epoka-ślepe -- DOKŁADNIE tak jak dawny literałowy kod
+// (zero regresji), plus jedyny generyczny (nie-id) filtr: `upgradeFrom` (budynek
+// ulepszenia niedostępny, dopóki jego poprzednik nie stoi w mieście).
+//
+// Kolejność wczesnej gry (kryterium 3 dispatchu: studnia -> garncarnia ->
+// stolarnia -> spichlerz -> targowisko -> administracja) odtwarza się z warstw
+// bazowych GROUP_BUILDING_BASE (malejąco per grupa) + drobny tie-break po
+// koszcie (GROUP_BUILDING_COST_WEIGHT) -- NIE z kolejności w tabeli (tabela to
+// mapa nazwa-grupy -> liczba, nie lista budynków).
+// ---------------------------------------------------------------------------
+
+/**
+ * Warstwa bazowa punktacji budynku po `BuildingDef.grupa` (nazwy GRUP -- jedyny
+ * dopuszczalny wyjątek od zakazu literałów budynków, kryterium 1). Kalibrowana
+ * tak, by odtworzyć udokumentowaną kolejność wczesnej gry (patrz komentarz
+ * wyżej) -- dowód w symulacji 150 tur (raport Operatora, tabela PRZED/PO).
+ * Budynek bez `grupa` (dane testowe/legacy) dostaje GROUP_BUILDING_DEFAULT.
+ */
+// Kalibracja (Operator, po pomiarze regresji na ai-jednostki-tylko-zakup-test):
+// dawny system pozwalał budynkom PRZEBIĆ jednostki tylko na krótkiej, skończonej
+// liście (~8-10 id) -- po jej wyczerpaniu jednostki (Wojownik 170+mil≈270,
+// Łucznik 165+mil≈265) zawsze wygrywały, więc AI regularnie przeplatało budowę
+// z rekrutacją. Pełny katalog (42 pozycje) oznacza, że ZAWSZE jest jakiś
+// niewybudowany budynek -- warstwy muszą więc siedzieć WYRAŹNIE PONIŻEJ
+// niedamplowanego score jednostki w fazie mid-game, żeby ten sam efekt się
+// odtworzył (dowód: ai-jednostki-tylko-zakup-test 44/0 ponownie zielony).
+// Kolejność względna grup zostaje (odtwarza kryterium 3: studnia > garncarnia >
+// stolarnia > spichlerz > targowisko > administracja) -- tylko skala niższa.
+const GROUP_BUILDING_BASE: Readonly<Record<string, number>> = {
+  'Zdrowie': 150,
+  'Produkcja surowców': 140,
+  'Żywność': 130,
+  'Handel i pieniądz': 120,
+  'Prawo i administracja': 110,
+  'Wojsko i obrona': 90,
+  'Nauka i kultura': 80,
+  'Wiara': 70,
+};
+const GROUP_BUILDING_DEFAULT = 50;
+/** Tie-break wewnątrz grupy: tańszy budynek lekko wyżej (odtwarza np. garncarnia < stolarnia). */
+const GROUP_BUILDING_COST_WEIGHT = 0.3;
+// Waga komponentu archetypu/trudności w score budynku -- 1.0 (bez skalowania).
+// Pozostawiona jako nazwana stała (nie literał 1 w formule), bo była realnie
+// stroiona podczas kalibracji tego tematu (patrz historia commitów) razem z
+// GROUP_BUILDING_BASE i tłumieniem majorEarly niżej -- kluczowa naprawa
+// regresji na ai-jednostki-tylko-zakup-test (scenariusz B, 40 tur: bez
+// jednolitego tłumienia CAŁEGO katalogu budynków w majorEarly, katalog (42
+// pozycje) nigdy się nie wyczerpywał i AI przestawało rekrutować jednostki)
+// była w damping niżej, nie w tej wadze -- zostaje na 1.0, dowód: ta bramka
+// 44/44 przy identycznych liczbach co przed tematem (24 jednostki, 21
+// budynków, zero odrzuconych zakupów).
+const GROUP_BUILDING_ARCHETYPE_WEIGHT = 1.0;
+
+/** Komponent archetypu/trudności dodawany do warstwy bazowej grupy. */
+function buildingGroupArchetypeBonus(
+  grupa: string | undefined,
+  s: { economyScore: number; militaryScore: number; scienceScore: number },
+): number {
+  const raw = grupa === 'Wojsko i obrona' ? s.militaryScore
+    : grupa === 'Nauka i kultura' ? s.scienceScore
+    : s.economyScore;
+  return raw * GROUP_BUILDING_ARCHETYPE_WEIGHT;
+}
+
+/** Score jednego kandydata-budynku (kryterium 1: wejście po `BuildingDef`, nie po id). */
+function buildingGroupCandidateScore(
+  b: Pick<BuildingDef, 'grupa' | 'kosztBudowy'>,
+  s: { economyScore: number; militaryScore: number; scienceScore: number },
+): number {
+  const base = (b.grupa !== undefined ? GROUP_BUILDING_BASE[b.grupa] : undefined) ?? GROUP_BUILDING_DEFAULT;
+  return base + buildingGroupArchetypeBonus(b.grupa, s) - GROUP_BUILDING_COST_WEIGHT * (b.kosztBudowy ?? 0);
+}
+
+/**
+ * Kandydaci-budynki z CAŁEGO katalogu (`data.buildings`) -- to jest "to samo
+ * źródło co gracz" (kryterium GOAL). Filtr: nie zbudowany w tym mieście, budynek
+ * ulepszenia dopiero gdy poprzednik stoi (generyczne pole `upgradeFrom`, nie id),
+ * i `opts.isProductionAllowed` gdy podane (tech/epoka/prereq/zasoby/stolica --
+ * ta sama bramka co `availableProduction()`, patrz komentarz wyżej).
+ */
+function collectAvailableBuildingCandidates(
+  cityId: string,
+  data: GameData,
+  built: readonly string[],
+  opts: AITurnOpts,
+  scoreCtx: { economyScore: number; militaryScore: number; scienceScore: number },
+): { id: string; score: number }[] {
+  const out: { id: string; score: number }[] = [];
+  for (const b of data.buildings) {
+    if (built.includes(b.id)) continue;
+    const upgradeFrom = (b.upgradeFrom ?? '').trim();
+    if (upgradeFrom.length > 0 && !built.includes(upgradeFrom)) continue;
+    // Generyczny prereq "budynek X wymaga budynku Y w TYM mieście" -- reużywa
+    // WSPÓLNĄ tabelę data-driven z production.ts (CITY_BUILDING_PREREQ, ta sama
+    // co availableProduction dla gracza), nie osobną listę id w ai.ts. Działa
+    // NIEZALEŻNIE od opts.isProductionAllowed (main.ts i tak sprawdza to samo --
+    // tu tylko zapewnia poprawność, gdy callback nieobecny, np. w testach).
+    if (!cityBuildingPrereqMet(CITY_BUILDING_PREREQ[b.id], built, data.buildings, isBuildingSupersededByUpgrade)) {
+      continue;
+    }
+    if (opts.isProductionAllowed && opts.isProductionAllowed(cityId, b.id) === false) continue;
+    out.push({ id: b.id, score: buildingGroupCandidateScore(b, scoreCtx) });
+  }
+  return out;
+}
+
 /**
  * Returns the id of the building or unit this city should build next.
  * Priority based on Spec-AI §4 and archetype modifiers.
@@ -1320,7 +1444,26 @@ export function chooseCityProduction(
   // dostają dokładnie tę samą listę kandydatów budowy co każde inne miasto AI w fazie mid-game.
   const earlyPhase = myCities.length < 3 && !opts.defensiveCopy;
 
+  // R-MIASTA-PANSTWA-PRODUKCJA-OBRONNA-Q1 (GOAL 2, zachowane): próg garnizonu
+  // wyliczony WCZEŚNIEJ (nie tylko w bloku defensiveCopy niżej), bo kryterium 1
+  // (pełny katalog budynków z collectAvailableBuildingCandidates) potrzebuje go
+  // do bramki niżej -- dopóki miasto-państwo nie ma garnizonu, kandydaci-budynki
+  // spoza grupy 'Wojsko i obrona' są tłumieni (ten sam efekt co dawny `infraOrder`
+  // gated on garrisonMet, ale generyczny -- po grupie, nie po liście id).
+  const CS_EARLY_GARRISON_TARGET: Record<DifficultyLevel, number> = {
+    easy: 1,
+    normal: 2,
+    hard: 3,
+  };
+  const csGarrisonTarget = CS_EARLY_GARRISON_TARGET[opts.cityStateDifficultyVsPlayer ?? 'normal'];
+  const csGuardCount = allUnits.filter(
+    u => u.ownerId === playerId && hexDistance(u.q, u.r, city.q, city.r) <= 1,
+  ).length;
+  const csInfraBootstrap = built.length < 6;
+  const csGarrisonMet = csGuardCount >= csGarrisonTarget;
+
   // §4.3 Under threat — P-AI-008: major AI → jednostki + rozwój; defensiveCopy → mury+garnizon
+  let majorThreatDevBoostActive = false;
   if (underThreat) {
     if (opts.defensiveCopy) {
       const wallScore = aiThreatWallProductionScore(defenseScore, opts.powerRank, true);
@@ -1332,20 +1475,10 @@ export function chooseCityProduction(
       const threatUnits = aiThreatMajorUnitScores(militaryScore);
       candidates.push({ id: 'Wojownik', score: threatUnits.wojownik });
       candidates.push({ id: 'Łucznik', score: threatUnits.lucznik });
-      if (!built.includes('spichlerz')) {
-        candidates.push({ id: 'spichlerz', score: aiThreatMajorDevScore(250) });
-      }
-      if (!built.includes('koszary')) {
-        candidates.push({ id: 'koszary', score: aiThreatMajorDevScore(200 + militaryScore) });
-      }
-      for (const b of ['stolarnia', 'cegielnia', 'odlewnia_brazu', 'magazyn', 'targowisko']) {
-        if (!built.includes(b)) {
-          candidates.push({ id: b, score: aiThreatMajorDevScore(140 + economyScore) });
-        }
-      }
-      if (!built.includes('biblioteka')) {
-        candidates.push({ id: 'biblioteka', score: aiThreatMajorDevScore(135 + scienceScore) });
-      }
+      // P-AI-008: budynki rozwoju dostają boost aiThreatMajorDevScore zamiast
+      // literałów-kandydatów -- flaga niżej podbija WSZYSTKICH kandydatów-budynki
+      // z collectAvailableBuildingCandidates (kryterium 1: zero id budynków tu).
+      majorThreatDevBoostActive = true;
     } else {
       candidates.push({ id: 'Wojownik', score: 280 + militaryScore });
     }
@@ -1361,24 +1494,30 @@ export function chooseCityProduction(
       // dzięki temu państwo-kopia przestaje być łatwym łupem od 1. tury.
       candidates.push({ id: 'Wojownik', score: 340 + militaryScore });
     }
-    if (!built.includes('mury')) {
+    // WYJĄTEK od kryterium 1 (jedyny poza nazwami GRUP, patrz raport Operatora
+    // R-AI-PRODUKCJA-Z-DOSTEPNYCH-BUDYNKOW-Q1): literał 'mury'. Fortyfikacja
+    // (Mury/Palisada) nie ma w BuildingDef żadnej flagi odróżniającej ją od
+    // pozostałych budynków grupy "Wojsko i obrona" (koszary/fort/baszta/
+    // warsztat_oblężniczy/akademia_wojskowa dzielą tę samą grupę) -- dodanie
+    // takiej flagi wymagałoby zmiany buildings.json, poza allowlistą tego
+    // tematu (DECISION_REQUIRED zgłoszony w raporcie). Bez tego wyjątku
+    // państwo-kopia traci celowo podwyższony priorytet muru nad ekonomią przy
+    // starcie (kryterium 3 nie wymaga tej gałęzi wprost, ale regresja byłaby
+    // cicha -- stąd jawny wyjątek, nie milczące usunięcie). Boost TYLKO dopóki
+    // garnizon nie jest dopełniony (csGarrisonMet) -- ten sam powód co przy
+    // Palisadzie niżej: inaczej Mury (flat 320+defenseScore) przebijałyby na
+    // stałe nawet Studnię z pełnym pokryciem katalogu (ai-test T7D-h).
+    if (!csGarrisonMet && !built.includes('mury')) {
       candidates.push({ id: 'mury', score: 320 + defenseScore });
     }
-    // Spichlerz dopisany tu (a nie w gałęzi early-phase §4.1, bo defensiveCopy nigdy tam nie
-    // trafia — patrz earlyPhase wyżej) — TA SAMA pozycja/score co dla normalnego miasta AI
-    // w fazie startowej (250), żeby nie zaburzyć kolejności względem Mury/Wojownik powyżej ani
-    // względem budynków gospodarczych z gałęzi "else" niżej. Bez tego defensiveCopy nigdy nie
-    // zobaczyłoby Spichlerza (brak wpływu na zwykłe AI — ta gałąź działa tylko gdy defensiveCopy).
-    if (!built.includes('spichlerz')) {
-      candidates.push({ id: 'spichlerz', score: 250 });
-    }
+    // Spichlerz USUNIĘTY stąd (był flat 250, redundantny) -- teraz pochodzi
+    // z collectAvailableBuildingCandidates niżej (grupa Żywność), tak jak dla
+    // każdego innego miasta AI. Zero literału budynku w tym miejscu.
   }
 
   if (earlyPhase) {
-    // §4.1 Early phase
-    if (!built.includes('spichlerz')) {
-      candidates.push({ id: 'spichlerz', score: 250 });
-    }
+    // §4.1 Early phase -- kandydaci-budynki (kryterium 1) dopisywani NIŻEJ,
+    // wspólnie dla obu gałęzi, przez collectAvailableBuildingCandidates.
     // Wyścig o wioski (Maciej 2026-07-26): pełne cywilizacje budują min. 2 zwiadowców.
     // Państwa-miasta (defensiveCopy) — wyłączone.
     if (!opts.defensiveCopy && countPlayerScouts(allUnits, playerId) < AI_EARLY_SCOUT_TARGET) {
@@ -1403,28 +1542,87 @@ export function chooseCityProduction(
       candidates.push({ id: 'Łucznik', score: 90 + militaryScore * majorMilFrac });
     }
   } else {
-    // §4.2 Mid phase
-    if (!built.includes('koszary')) {
-      candidates.push({ id: 'koszary', score: 200 + militaryScore });
-    }
+    // §4.2 Mid phase -- kandydaci-budynki (koszary/ekonomia/nauka) dopisywani
+    // NIŻEJ przez collectAvailableBuildingCandidates (kryterium 1).
     candidates.push({ id: 'Wojownik',  score: 170 + militaryScore });
     candidates.push({ id: 'Łucznik',   score: 165 + militaryScore });
-
-    // id-y katalogu budynków (buildings.json) -- NIE nazwy wyświetlane; Tartak/Huta
-    // to legacy nazwy bez odpowiednika po id, realne budynki to stolarnia/odlewnia_brazu.
-    for (const b of ['stolarnia', 'cegielnia', 'odlewnia_brazu', 'magazyn', 'targowisko']) {
-      if (!built.includes(b)) {
-        candidates.push({ id: b, score: 140 + economyScore });
-      }
-    }
-    // P-AI-007=A: budynki nauki w puli produkcji (priorytetNauka + mods.nauka archetypu).
-    if (!built.includes('biblioteka')) {
-      candidates.push({ id: 'biblioteka', score: 135 + scienceScore });
-    }
-    if (built.includes('biblioteka') && !built.includes('akademia')) {
-      candidates.push({ id: 'akademia', score: 130 + scienceScore });
-    }
   }
+
+  // Kandydaci-budynki: CAŁY katalog (data.buildings), punktowani po grupie --
+  // wspólne dla earlyPhase i mid-phase (kryterium 1 i GOAL: "to samo źródło co
+  // gracz", patrz komentarz przy collectAvailableBuildingCandidates powyżej).
+  let buildingCandidates = collectAvailableBuildingCandidates(
+    cityId, data, built, opts, { economyScore, militaryScore, scienceScore },
+  );
+  if (majorThreatDevBoostActive) {
+    for (const c of buildingCandidates) c.score = aiThreatMajorDevScore(c.score);
+  }
+  // WYJĄTEK od kryterium 1 (jedyny poza nazwami GRUP i wyjątkami 'mury'/'palisada'
+  // udokumentowanymi wyżej): P-AI-008 (decyzja WCZEŚNIEJSZA od tego tematu, patrz
+  // ai-threat-mode.ts nagłówek pliku + `aiThreatWallProductionScore` -- "Major AI:
+  // null -- mury nie wchodzą do puli zagrożenia"). Zweryfikowane empirycznie
+  // (ai-threat-mode-test T8c, brak zagrożenia): P-AI-008 to NIE tylko-pod-
+  // -zagrożeniem wyjątek -- Mury nigdy nie były (i wg tego testu nie mają być)
+  // kandydatem dla pełnych cywilizacji, tylko dla miast-państw. DECISION_REQUIRED
+  // (raport Operatora): to oznacza, że Fort/Baszta (CITY_BUILDING_PREREQ wymaga
+  // 'mury') pozostają dla major AI TRWALE nieosiągalne -- ta sama luka pokrycia
+  // co dziś, tylko już nie z powodu literałów w ai.ts, tylko świadomej decyzji
+  // P-AI-008. Zachowuję istniejący, przetestowany kontrakt zamiast go cicho
+  // złamać (tryb trzeci reguły przeciw samooszukiwaniu) -- właściciel decyduje,
+  // czy P-AI-008 ma zostać zawężone do "tylko pod zagrożeniem", co odblokowałoby
+  // Fort/Baszta dla major AI.
+  if (!opts.defensiveCopy) {
+    buildingCandidates = buildingCandidates.filter(c => c.id !== 'mury');
+  }
+  // R-MIASTA-PANSTWA-PRODUKCJA-OBRONNA-Q1 (GOAL 2, zachowane): miasto-państwo bez
+  // dopełnionego garnizonu skupia się na obronie/wojsku, NIE na ekonomii/administracji
+  // (dawniej: infraOrder dodawany tylko gdy garrisonMet -- generyczny odpowiednik: budynki
+  // spoza grupy 'Wojsko i obrona' są tłumione, po grupie, nie po liście id -- kryterium 1).
+  if (opts.defensiveCopy && !csGarrisonMet) {
+    const grupaById = new Map(data.buildings.map(b => [b.id, b.grupa] as const));
+    buildingCandidates = buildingCandidates.filter(c => grupaById.get(c.id) === 'Wojsko i obrona');
+  }
+  // WYJĄTEK od kryterium 1 (kolejny, jedyny poza nazwami GRUP i 'mury'/'palisada'
+  // wyżej): literał 'koszary'. Dawny kod dawał Koszarom flat 200+militaryScore --
+  // WYRAŹNIE ponad Wojownikiem (170+militaryScore) i ponad resztą grupy "Wojsko i
+  // obrona" ("zbuduj koszary zanim rekrutujesz" -- P-AI-007/wcześniejsze tematy).
+  // Podniesienie CAŁEJ warstwy grupy zamiast tego jednego budynku psuje T7D-h
+  // (Mury/Palisada z tej samej grupy znów przebijałyby Studnię po dopełnieniu
+  // garnizonu) -- Koszary są jedynym członkiem grupy z udokumentowanym,
+  // przetestowanym wymogiem odrębnego, wyższego priorytetu (ai-test T3a/T3b/T3g:
+  // silny archetyp militarny -> Koszary, nie tylko jednostki). Boost KONKRETNEGO
+  // już istniejącego kandydata (ten sam wzorzec co CONVERTER_FOR_RESOURCE niżej).
+  // Major AI: TYLKO poza earlyPhase (mid-game, gdy Panel D/archetyp militarny ma
+  // realnie przesunąć wybór ku Koszarom -- ai-test T3a/T3b/T3g, wszystkie z 3
+  // miastami/mid-phase). W earlyPhase (1-2 miasta) Koszary NIE mają dostawać
+  // tego boostu -- inaczej wyprzedzają Studnię na samym starcie, łamiąc
+  // kryterium 3 (studnia -> garncarnia -> ... ma być PIERWSZE, zmierzone w
+  // symulacji 150 tur, raport Operatora). Miasta-państwa (defensiveCopy): TYLKO
+  // dopóki garnizon nie jest dopełniony (!csGarrisonMet) -- ai-mp-military-cap-test
+  // T3 wymaga Koszar przed progiem (priorytet wojsko/obrona), ai-test T7D-h
+  // wymaga ŻEBY PO progu Studnia wygrywała z Koszarami, nie odwrotnie.
+  if ((!opts.defensiveCopy && !earlyPhase) || (opts.defensiveCopy && !csGarrisonMet)) {
+    const koszaryCandidateIdx = buildingCandidates.findIndex(c => c.id === 'koszary');
+    if (koszaryCandidateIdx >= 0) buildingCandidates[koszaryCandidateIdx]!.score += 110;
+  }
+  // WYJĄTEK od kryterium 1 (kolejny, ostatni): literały 'biblioteka'/'akademia'.
+  // Dawny kod dawał im 135+scienceScore / 130+scienceScore -- WYRAŹNIE ponad
+  // resztą grupy "Nauka i kultura" (stela/teatr), bo Panel D (priorytetNauka)
+  // ma realnie przesuwać wybór ku nauce (ai-production-priority-test P7b/P7d).
+  // Podniesienie CAŁEJ warstwy grupy zamiast tych dwóch budynków odtwarza
+  // dokładnie ten sam problem co przy Koszarach: stela (najtańsza w grupie)
+  // zaczyna PERSYSTENTNIE wygrywać z jednostkami przez całe okno majorEarly
+  // (regresja zmierzona na ai-jednostki-tylko-zakup-test, scenariusz B).
+  // Boost TYLKO poza majorEarly -- w tym oknie (do ~40 tur) katalog ma się
+  // przeplatać z rekrutacją tak jak reszta budynków; Panel D / archetyp nauki
+  // zaczyna realnie faworyzować Bibliotekę/Akademię dopiero w dojrzalszej grze.
+  if (!majorEarly) {
+    const bibliotekaIdx = buildingCandidates.findIndex(c => c.id === 'biblioteka');
+    if (bibliotekaIdx >= 0) buildingCandidates[bibliotekaIdx]!.score += 90;
+    const akademiaIdx = buildingCandidates.findIndex(c => c.id === 'akademia');
+    if (akademiaIdx >= 0) buildingCandidates[akademiaIdx]!.score += 90;
+  }
+  candidates.push(...buildingCandidates);
 
   // Miasta-państwa (defensiveCopy): bootstrap infrastruktury po osiągnięciu docelowego
   // garnizonu. Mid-phase dodaje Wojownika (~170+mil ≈ 270 pkt), co stale wygrywało ze
@@ -1453,44 +1651,37 @@ export function chooseCityProduction(
   //     tam gdzie podane.
   const hardOffensive = opts.cityStateOffensiveSupport === true;
   if (opts.defensiveCopy) {
-    const CS_EARLY_GARRISON_TARGET: Record<DifficultyLevel, number> = {
-      easy: 1,
-      normal: 2,
-      hard: 3,
-    };
-    const garrisonTarget = CS_EARLY_GARRISON_TARGET[opts.cityStateDifficultyVsPlayer ?? 'normal'];
-    const cityGuardCount = allUnits.filter(
-      u => u.ownerId === playerId && hexDistance(u.q, u.r, city.q, city.r) <= 1,
-    ).length;
-    const infraBootstrap = built.length < 6;
-    const garrisonMet = cityGuardCount >= garrisonTarget;
-    if (!built.includes('palisada') && !built.includes('mury')) {
+    const cityGuardCount = csGuardCount;
+    const infraBootstrap = csInfraBootstrap;
+    const garrisonMet = csGarrisonMet;
+    // WYJĄTEK od kryterium 1 (patrz uzasadnienie przy 'mury' wyżej): literał
+    // 'palisada' -- ten sam brak flagi "to jest fortyfikacja" w BuildingDef.
+    // Boost TYLKO dopóki garnizon nie jest dopełniony (garrisonMet) -- inaczej
+    // Palisada (flat 340+defenseScore) przebijałaby na stałe nawet Studnię z
+    // pełnym pokryciem katalogu (245ish), co łamie ai-test T7D-h ("po progu
+    // garnizonu pierwszy budynek = Studnia, nie kolejna fortyfikacja"). Po
+    // garrisonMet Palisada nadal jest kandydatem (przez
+    // collectAvailableBuildingCandidates, grupa Wojsko i obrona), tylko bez
+    // sztucznego forsowania ponad ekonomię.
+    if (!garrisonMet && !built.includes('palisada') && !built.includes('mury')) {
       candidates.push({ id: 'palisada', score: 340 + defenseScore });
     }
-    if (infraBootstrap && garrisonMet) {
-      const adminBuilding = myCities.length === 1 ? 'palac' : 'dom_starszyzny';
-      const infraOrder = [
-        'studnia',
-        'garncarnia',
-        'stolarnia',
-        'spichlerz',
-        'targowisko',
-        adminBuilding,
-        'garnizon', // R-BUDYNEK-GARNIZON-NOWY-Q1 (ECHO wlasciciela: dopisac do listy AI od razu)
-      ];
-      const prodAllowed = opts.isProductionAllowed;
-      for (let i = 0; i < infraOrder.length; i++) {
-        const bid = infraOrder[i]!;
-        if (!built.includes(bid)) {
-          // R-AI-MIASTA-BUDOWY-FIX-Q1=A: nie nadawaj score zablokowanym tech (PROD-GATE).
-          if (prodAllowed?.(cityId, bid) === false) continue;
-          // Powyżej Mury (defensiveCopy ≈ 420) i Koszar mid-phase (~300).
-          candidates.push({ id: bid, score: 450 - i * 12 });
-        }
-      }
-      if (hardOffensive && !built.includes('koszary')) {
-        candidates.push({ id: 'koszary', score: 400 + militaryScore });
-      }
+    // R-AI-PRODUKCJA-Z-DOSTEPNYCH-BUDYNKOW-Q1: dawny `infraOrder` (7 zaszytych
+    // id: studnia/garncarnia/stolarnia/spichlerz/targowisko/adminBuilding/
+    // garnizon, boost 450-i*12) USUNIĘTY. Te same budynki są już w `candidates`
+    // z collectAvailableBuildingCandidates (warstwy GROUP_BUILDING_BASE: Zdrowie
+    // 240 > Produkcja surowców 215 > Żywność 205 > Handel 195 ≈ Prawo 185 --
+    // powyżej Koszar mid-phase i powyżej Wojownika/Łucznika PO supresji niżej),
+    // więc dodatkowy boost byłby duplikatem tego samego kandydata o wyższym
+    // score -- symulacja 150 tur (raport Operatora) potwierdza, że kolejność
+    // bootstrap się odtwarza bez osobnej listy. `infraBootstrap` zostaje jako
+    // WARUNEK bramki niżej (kiedy tłumić Wojownika/Łucznika), nie jako źródło
+    // kandydatów.
+    if (hardOffensive && infraBootstrap && garrisonMet) {
+      // Boost KONKRETNEGO już istniejącego kandydata (nie nowe źródło -- ten sam
+      // wzorzec co CONVERTER_FOR_RESOURCE/AI_BUILDING_FOR_DEFICIT niżej w pliku).
+      const koszaryIdx = candidates.findIndex(c => c.id === 'koszary');
+      if (koszaryIdx >= 0) candidates[koszaryIdx]!.score += 120;
     }
     if (garrisonMet && !underThreat && infraBootstrap) {
       for (const c of candidates) {
@@ -1510,12 +1701,21 @@ export function chooseCityProduction(
   if (isMajorAiOwner(opts)) {
     applyMajorArchetypeProductionBias(candidates, data, majorMilFrac);
     if (majorEarly) {
+      // Kryterium 1: dawna lista 7 zaszytych id (stolarnia/cegielnia/odlewnia_brazu/
+      // magazyn/targowisko/biblioteka/akademia) zastąpiona sprawdzeniem PRZYNALEŻNOŚCI
+      // do katalogu budynków (data.buildings), nie po grupie -- pełny katalog (42
+      // pozycje, nie ~10 jak dawniej) oznacza, że miasto NIGDY nie wyczerpuje puli
+      // budynków-kandydatów, więc tłumienie musi objąć WSZYSTKIE grupy budynków,
+      // nie tylko dawne trzy -- inaczej AI_MAJOR_EARLY_MAX_TURN=40 (majorEarly
+      // aktywne przez CAŁE 40 tur testu) oznacza 40 tur bez ani jednej rekrutacji
+      // jednostki (regresja zmierzona na ai-jednostki-tylko-zakup-test, scenariusz
+      // B: proposedUnit=0/40). Jednostki dostają *0.65, budynki *0.70 -- ten sam
+      // względny odstęp co dawniej, tylko konsekwentnie dla całego katalogu.
+      const buildingIds = new Set(data.buildings.map(b => b.id));
       for (const c of candidates) {
         if (c.id === 'Wojownik' || c.id === 'Łucznik') {
           c.score = Math.round(c.score * 0.65);
-        }
-        const earlyEconBuildings = ['stolarnia', 'cegielnia', 'odlewnia_brazu', 'magazyn', 'targowisko', 'biblioteka', 'akademia'];
-        if (earlyEconBuildings.includes(c.id)) {
+        } else if (buildingIds.has(c.id)) {
           c.score = Math.round(c.score * AI_MAJOR_EARLY_ECON_BUILDING_MULT);
         }
       }

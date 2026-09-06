@@ -83,17 +83,18 @@ function makeMap(w, h) {
 function makeGameData() {
   return {
     units: [{ Jednostka: 'Wojownik', Health: 30, Ruch: 2 }, { Jednostka: 'Łucznik', Health: 20, Ruch: 2 }],
+    // grupa/kosztBudowy: R-AI-PRODUKCJA-Z-DOSTEPNYCH-BUDYNKOW-Q1 -- wartosci 1:1 z buildings.json.
     buildings: [
-      { id: 'spichlerz', nazwa: 'Spichlerz' },
-      { id: 'koszary', nazwa: 'Koszary' },
-      { id: 'mury', nazwa: 'Mury' },
-      { id: 'stolarnia', nazwa: 'Stolarnia' },
-      { id: 'cegielnia', nazwa: 'Cegielnia' },
-      { id: 'odlewnia_brazu', nazwa: 'Odlewnia' },
-      { id: 'magazyn', nazwa: 'Magazyn' },
-      { id: 'targowisko', nazwa: 'Targowisko' },
-      { id: 'biblioteka', nazwa: 'Biblioteka' },
-      { id: 'akademia', nazwa: 'Akademia' },
+      { id: 'spichlerz', nazwa: 'Spichlerz', grupa: 'Żywność', kosztBudowy: 20 },
+      { id: 'koszary', nazwa: 'Koszary', grupa: 'Wojsko i obrona', kosztBudowy: 25 },
+      { id: 'mury', nazwa: 'Mury', grupa: 'Wojsko i obrona', kosztBudowy: 35 },
+      { id: 'stolarnia', nazwa: 'Stolarnia', grupa: 'Produkcja surowców', kosztBudowy: 20 },
+      { id: 'cegielnia', nazwa: 'Cegielnia', grupa: 'Produkcja surowców', kosztBudowy: 22 },
+      { id: 'odlewnia_brazu', nazwa: 'Odlewnia', grupa: 'Produkcja surowców', kosztBudowy: 28 },
+      { id: 'magazyn', nazwa: 'Magazyn', grupa: 'Handel i pieniądz', kosztBudowy: 20 },
+      { id: 'targowisko', nazwa: 'Targowisko', grupa: 'Handel i pieniądz', kosztBudowy: 25 },
+      { id: 'biblioteka', nazwa: 'Biblioteka', grupa: 'Nauka i kultura', kosztBudowy: 25 },
+      { id: 'akademia', nazwa: 'Akademia', grupa: 'Nauka i kultura', kosztBudowy: 70, upgradeFrom: 'biblioteka' },
     ],
     terrainYields: { terrain_types: [{ Teren: 'laka', Zywnosc: 4, Praca: 1, Handel: 1 }] },
     aiParams: {

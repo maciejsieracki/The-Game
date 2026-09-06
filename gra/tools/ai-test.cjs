@@ -120,12 +120,17 @@ function makeGameData(aiParamsOverride = {}) {
     ],
     // id-y zgodne z prawdziwym data/buildings.json -- ai.ts (chooseCityProduction)
     // klasyfikuje/dopasowuje budynki wylacznie po b.id (#31), nie po nazwie wyswietlanej.
+    // grupa/kosztBudowy: R-AI-PRODUKCJA-Z-DOSTEPNYCH-BUDYNKOW-Q1 -- punktowanie po
+    // BuildingDef.grupa, wartosci 1:1 z prawdziwego buildings.json (zestaw id-ow bez zmian).
     buildings: [
-      { id: 'spichlerz', nazwa: 'Spichlerz' }, { id: 'koszary', nazwa: 'Koszary' },
-      { id: 'mury', nazwa: 'Mury' },
-      { id: 'stolarnia', nazwa: 'Stolarnia' }, { id: 'cegielnia', nazwa: 'Cegielnia' },
-      { id: 'odlewnia_brazu', nazwa: 'Odlewnia brązu' },
-      { id: 'magazyn', nazwa: 'Magazyn' }, { id: 'targowisko', nazwa: 'Targowisko (Rynek)' },
+      { id: 'spichlerz', nazwa: 'Spichlerz', grupa: 'Żywność', kosztBudowy: 20 },
+      { id: 'koszary', nazwa: 'Koszary', grupa: 'Wojsko i obrona', kosztBudowy: 25 },
+      { id: 'mury', nazwa: 'Mury', grupa: 'Wojsko i obrona', kosztBudowy: 35 },
+      { id: 'stolarnia', nazwa: 'Stolarnia', grupa: 'Produkcja surowców', kosztBudowy: 20 },
+      { id: 'cegielnia', nazwa: 'Cegielnia', grupa: 'Produkcja surowców', kosztBudowy: 22 },
+      { id: 'odlewnia_brazu', nazwa: 'Odlewnia brązu', grupa: 'Produkcja surowców', kosztBudowy: 28 },
+      { id: 'magazyn', nazwa: 'Magazyn', grupa: 'Handel i pieniądz', kosztBudowy: 20 },
+      { id: 'targowisko', nazwa: 'Targowisko (Rynek)', grupa: 'Handel i pieniądz', kosztBudowy: 25 },
     ],
     terrainYields: {
       terrain_types: [
@@ -2501,9 +2506,9 @@ console.log('\n--- T7D-h: defensiveCopy z garnizonem (na progu) -> infrastruktur
   const guard2 = makeUnit('g1b', 4, 3, 3, 'miecznik');
   const dataCs = makeGameData();
   dataCs.buildings.push(
-    { id: 'studnia', nazwa: 'Studnia' },
-    { id: 'garncarnia', nazwa: 'Garncarnia' },
-    { id: 'palac', nazwa: 'Pałac' },
+    { id: 'studnia', nazwa: 'Studnia', grupa: 'Zdrowie', kosztBudowy: 15 },
+    { id: 'garncarnia', nazwa: 'Garncarnia', grupa: 'Produkcja surowców', kosztBudowy: 18 },
+    { id: 'palac', nazwa: 'Pałac', grupa: 'Prawo i administracja', kosztBudowy: 40 },
   );
   const diff = loadDifficultyParams(dataCs, 2);
   const pick = chooseCityProduction(
@@ -2526,9 +2531,9 @@ console.log('\n--- T7D-i: defensiveCopy bez garnizonu -> nadal Wojownik pierwszy
   const city = makeCity('cs2', 4, 1, 1);
   const dataCs = makeGameData();
   dataCs.buildings.push(
-    { id: 'studnia', nazwa: 'Studnia' },
-    { id: 'garncarnia', nazwa: 'Garncarnia' },
-    { id: 'palac', nazwa: 'Pałac' },
+    { id: 'studnia', nazwa: 'Studnia', grupa: 'Zdrowie', kosztBudowy: 15 },
+    { id: 'garncarnia', nazwa: 'Garncarnia', grupa: 'Produkcja surowców', kosztBudowy: 18 },
+    { id: 'palac', nazwa: 'Pałac', grupa: 'Prawo i administracja', kosztBudowy: 40 },
   );
   const diff = loadDifficultyParams(dataCs, 2);
   const pick = chooseCityProduction(
@@ -2552,9 +2557,9 @@ console.log('\n--- T7D-j: defensiveCopy + garnizon + isProductionAllowed odrzuca
   const guard = makeUnit('g3', 4, 3, 3, 'miecznik');
   const dataCs = makeGameData();
   dataCs.buildings.push(
-    { id: 'studnia', nazwa: 'Studnia' },
-    { id: 'garncarnia', nazwa: 'Garncarnia' },
-    { id: 'palac', nazwa: 'Pałac' },
+    { id: 'studnia', nazwa: 'Studnia', grupa: 'Zdrowie', kosztBudowy: 15 },
+    { id: 'garncarnia', nazwa: 'Garncarnia', grupa: 'Produkcja surowców', kosztBudowy: 18 },
+    { id: 'palac', nazwa: 'Pałac', grupa: 'Prawo i administracja', kosztBudowy: 40 },
   );
   const diff = loadDifficultyParams(dataCs, 2);
   const isProductionAllowed = (_cityId, itemId) => itemId === 'Wojownik';
@@ -2583,9 +2588,9 @@ console.log('\n--- T7D-k: defensiveCopy + garnizon (na progu) + isProductionAllo
   const guard2 = makeUnit('g4b', 4, 3, 3, 'miecznik');
   const dataCs = makeGameData();
   dataCs.buildings.push(
-    { id: 'studnia', nazwa: 'Studnia' },
-    { id: 'garncarnia', nazwa: 'Garncarnia' },
-    { id: 'palac', nazwa: 'Pałac' },
+    { id: 'studnia', nazwa: 'Studnia', grupa: 'Zdrowie', kosztBudowy: 15 },
+    { id: 'garncarnia', nazwa: 'Garncarnia', grupa: 'Produkcja surowców', kosztBudowy: 18 },
+    { id: 'palac', nazwa: 'Pałac', grupa: 'Prawo i administracja', kosztBudowy: 40 },
   );
   const diff = loadDifficultyParams(dataCs, 2);
   const isProductionAllowed = (_cityId, itemId) => itemId === 'studnia';
@@ -2859,7 +2864,7 @@ console.log('\n--- T14-p1-1c: majorEarly stolarnia score ×0.70 (ranking vs bibl
     makeCity('c3', 1, 8, 1),
   ];
   const dataP1 = makeGameData({ ekspansja_zagroz_zasieg: { wartosc: 5 } });
-  dataP1.buildings.push({ id: 'biblioteka', nazwa: 'Biblioteka' });
+  dataP1.buildings.push({ id: 'biblioteka', nazwa: 'Biblioteka', grupa: 'Nauka i kultura', kosztBudowy: 25 });
   const diff = loadDifficultyParams(dataP1, 2);
   const guard = makeUnit('g1', 1, 1, 1);
   const allowed = new Set(['stolarnia', 'biblioteka']);
