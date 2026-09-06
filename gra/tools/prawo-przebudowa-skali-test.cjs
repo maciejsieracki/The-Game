@@ -507,6 +507,62 @@ if (P_MOD && typeof P_MOD.buildOrderSectionHtml === 'function') {
   ok(false, '3j: buildOrderSectionHtml niedostepny z bundla panelu (patrz [FAIL] wyzej przy budowaniu)');
 }
 
+// ===========================================================================
+section('3k. parytet hasGarnizonBudynek: main.ts <-> cityPanel.ts, REALNE URUCHOMIENIE');
+// ===========================================================================
+// Operator runda 2: main.ts (budowa LawBreakdownInput, ok. linii 29206-29210) dostal nowa
+// linie `hasGarnizonBudynek: builtIds.includes('garnizon')`, analogiczna do juz istniejacej
+// w cityPanel.ts:3150. Ponizej WYCIAGAMY oba wyrazenia z realnych plikow zrodlowych i
+// URUCHAMIAMY je (new Function + wywolanie), nie tylko sprawdzamy istnienie tekstu --
+// zgodnie z zadaniem: dowod ma byc REALNYM URUCHOMIENIEM, nie samym istnieniem kodu.
+{
+  const mainTsPath = path.resolve(GRA, 'src', 'main.ts');
+  const cityPanelPath = path.resolve(GRA, 'src', 'ui', 'cityPanel.ts');
+  const mainTsSrc = fs.readFileSync(mainTsPath, 'utf8');
+  const cityPanelSrc = fs.readFileSync(cityPanelPath, 'utf8');
+
+  const RE = /hasGarnizonBudynek:\s*([^,\n]+),/;
+  const mainMatch = mainTsSrc.match(RE);
+  const panelMatch = cityPanelSrc.match(RE);
+
+  ok(mainMatch !== null, '3k: linia hasGarnizonBudynek znaleziona w main.ts (budowa LawBreakdownInput)');
+  ok(panelMatch !== null, '3k: linia hasGarnizonBudynek znaleziona w cityPanel.ts (referencja, juz istniejaca)');
+
+  if (mainMatch && panelMatch) {
+    // Kazde wyrazenie kompilowane do prawdziwej funkcji JS i WYWOLYWANE z realnym builtIds --
+    // nie porownanie stringow, tylko realne wykonanie obu wyrazen.
+    const mainFn = new Function('builtIds', 'return (' + mainMatch[1] + ');');
+    const panelFn = new Function('builtIds', 'return (' + panelMatch[1] + ');');
+
+    const SCENARIUSZE_3K = [
+      { etyk: 'miasto Z budynkiem Garnizon', builtIds: ['dom_starszyzny', 'garnizon', 'trybunal'] },
+      { etyk: 'miasto BEZ budynku Garnizon', builtIds: ['dom_starszyzny', 'trybunal'] },
+    ];
+    for (const s of SCENARIUSZE_3K) {
+      const mainVal = mainFn(s.builtIds);
+      const panelVal = panelFn(s.builtIds);
+      eq(typeof mainVal, 'boolean', `3k: ${s.etyk} -- wyrazenie main.ts realnie zwraca boolean (got ${JSON.stringify(mainVal)})`);
+      eq(mainVal, panelVal, `3k: ${s.etyk} -- main.ts i cityPanel.ts daja IDENTYCZNY hasGarnizonBudynek po realnym uruchomieniu`);
+
+      // Domkniecie: skoro hasGarnizonBudynek sie zgadza, silnik (computeLawBreakdown) z tym
+      // wejsciem musi konsekwentnie zawierac/nie-zawierac linie 'garnizon_budynek'.
+      const wejscieLaw3k = {
+        difficulty: 'normal', era: 3, population: 10, garnizonCount: 0,
+        hasDomStarszyzny: true, hasTrybunal: true,
+        hasGarnizonBudynek: mainVal,
+        palacTier: null, stolicaEasyBonus: false,
+      };
+      const silnikLaw3k = M.computeLawBreakdown(wejscieLaw3k, society);
+      const maBudynek = silnikLaw3k.lines.some((l) => l.id === 'garnizon_budynek');
+      eq(maBudynek, mainVal,
+        `3k: ${s.etyk} -- obecnosc linii 'garnizon_budynek' w silniku zgodna z realnie wyliczonym hasGarnizonBudynek (${mainVal})`);
+    }
+
+    ok(mainMatch[1].includes("'garnizon'") || mainMatch[1].includes('"garnizon"'),
+      '3k: wyrazenie main.ts realnie odwoluje sie do builtIds.includes(\'garnizon\') (kontrola negatywna przeciw tautologii)');
+  }
+}
+
 try { fs.unlinkSync(PANEL_ENTRY); } catch (e) { /* nic */ }
 try { fs.unlinkSync(ENTRY); } catch (e) { /* nic */ }
 

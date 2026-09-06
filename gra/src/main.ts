@@ -29208,6 +29208,7 @@ async function boot(): Promise<void> {
                   hasPretorium: builtIds.includes('pretorium'),
                   hasTrybunal: builtIds.includes('trybunal'),
                   hasSad: builtIds.includes('sad'),
+                  hasGarnizonBudynek: builtIds.includes('garnizon'),
                   palacTier: cityPalacTier(builtIds),
                   brakGarnizonuKara: city.population >= 6 && gCountLaw === 0,
                   conquestNoGarrisonPenalty: conquestNoGarPen,
