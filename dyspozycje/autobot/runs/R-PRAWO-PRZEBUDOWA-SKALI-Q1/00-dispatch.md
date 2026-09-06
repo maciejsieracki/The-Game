@@ -270,3 +270,35 @@ ze statusem `DECISION_REQUIRED`. Raport ok. 400 słów, destylat.
 
 Operator → Evaluator → (Obrona, jeśli lista zarzutów niepusta) → koniec skryptu.
 Final Control osobnym wywołaniem Workflow. Integracja i deploy — ręką orkiestratora.
+
+## RATYFIKACJA ORKIESTRATORA (2026-09-06, odpowiedź na DECISION_REQUIRED rundy 1)
+
+Final Control rundy 1 zamknął się na dwa `DECISION_REQUIRED`. Odpowiedzi właściciela:
+
+**#1 (KRYTYCZNE) — `main.ts:29205-29211` (funkcja budująca `LawBreakdownInput` w realnej,
+per-turowej ścieżce `evaluateOrderFromBreakdown`) nigdy nie ustawia `hasGarnizonBudynek`.**
+Skutek: żadne miasto nie dostaje w rozgrywce bonusu Prawa z budynku Garnizon (+25/35/47),
+mimo że cała kalibracja tego tematu (sumy 53/85/121) go zakłada — panel pokazuje poprawną
+liczbę, silnik (Bunt/Niepokój) liczy inną, niższą.
+
+**Decyzja: ALLOWLISTA ROZSZERZONA o `gra/src/main.ts`, WYŁĄCZNIE jedna linia** w miejscu
+budowy `LawBreakdownInput` (obok `hasDomStarszyzny`/`hasDworZarzadcy`/`hasPretorium`/
+`hasTrybunal`/`hasSad`, `main.ts:29206-29210`), analogiczna do już istniejącej linii w
+`cityPanel.ts:3150`:
+```ts
+hasGarnizonBudynek: builtIds.includes('garnizon'),
+```
+Zakaz dotykania czegokolwiek innego w `main.ts` poza tą jedną linią. Dodaj asercję (nowa
+sekcja bramki albo rozszerzenie 3i) potwierdzającą realnym uruchomieniem, że po tej
+poprawce panel i silnik (`main.ts`) dają identyczny `hasGarnizonBudynek` dla tego samego
+stanu miasta — nie tylko że kod istnieje, tylko że faktycznie się zgadza.
+
+**#2 (drugorzędne) — dwa martwe, niereferowane bundle (`.pt-layout-bundle.cjs`,
+`.diag-playtest-bundle.cjs`, sprzed bazy tematu) niosą tekstowo dwa usunięte klucze kar.**
+
+**Decyzja: ZIGNORUJ.** Nie są wołane przez żaden aktywny kod ani bramkę, poza allowlistą,
+zero ryzyka i zero pilności. Nie rejestruj nawet jako osobny temat — nie warte śledzenia.
+
+**NASTĘPNY KROK:** runda 2, ten sam Operator, ta sama gałąź, allowlista rozszerzona jak
+wyżej. Po Final Control rundy 2 (PASS) — integracja orkiestratora, następnie deploy ROBOCZA
+obejmujący Prawo + Garnizon + AI-produkcję razem.
