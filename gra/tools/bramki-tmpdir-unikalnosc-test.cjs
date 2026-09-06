@@ -22,12 +22,19 @@
  * (wszystkie piszące do wspólnego `\/tmp\/smoke_bundle_eval.js`, tego samego co `smoke.cjs`)
  * było przez to niewidoczne dla audytu. Ta bramka ich nie gubi.
  *
- * TRZY REGUŁY (każda z realnego przypadku w tym repo, nie z teorii):
+ * SZEŚĆ REGUŁ — jedna rodzina błędu w sześciu notacjach, każda z realnego przypadku w tym
+ * repo albo ze zmierzonej ucieczki mutacyjnej, nie z teorii:
  *   R1  stała nazwa dosłowna: `path.join(os.tmpdir(), 'civ-cos-dist')` — wzorzec obu incydentów.
  *   R2  KORZEŃ katalogu tymczasowego jako cel zapisu: `= os.tmpdir()` / `|| os.tmpdir()`.
  *       Stąd biorą się zrzuty o stałych nazwach lądujące wprost w `\/tmp` (`recruit-*-test.cjs`).
- *   R3  nazwa ze zmiennej w pliku BEZ jakiegokolwiek znacznika per-przebieg:
- *       `path.join(os.tmpdir(), outName)` — wzorzec `weterani-test.cjs` i trzech pokrewnych.
+ *   R3  nazwa ZE ZMIENNEJ: `path.join(os.tmpdir(), outName)` — wzorzec `weterani-test.cjs`
+ *       i trzech pokrewnych. Rozstrzyga WYŁĄCZNIE treść argumentu: znacznik unikalności
+ *       gdziekolwiek indziej w pliku nie czyni tej ścieżki unikalną (Final Control rundy 1
+ *       wstawił tu z powrotem oryginalny defekt i bramka została zielona — patrz przy R3).
+ *   R4  konkatenacja `os.tmpdir() + '/nazwa'` — forma równoważna R1, niewidoczna dla `path.join`.
+ *   R5  DOSŁOWNA ścieżka `\/tmp\/...`, w pliku, który `os.tmpdir()` może nigdy nie wywołać.
+ *   R6  interpolacja `` `${os.tmpdir()}/nazwa` `` w szablonie — jedyna forma, której nie widzi
+ *       żadna z R1-R5, a dziś najzwyklejszy sposób zapisu tej ścieżki.
  *
  * WZORZEC BEZPIECZNY, którego bramka NIE zgłasza (i którego nie wolno "poprawiać"):
  *   `fs.mkdtempSync(path.join(os.tmpdir(), 'prefix-'))` — unikalny z definicji kontraktu Node.
@@ -164,7 +171,7 @@ for (const file of files) {
 
   if (!src.includes('tmpdir')) continue;
   scanned++;
-  const fileHasUniqueMark = UNIQUE_MARK.test(src) || src.includes('mkdtempSync');
+  // Swiadomie NIE liczymy tu zadnego znacznika „na poziomie pliku" — patrz komentarz przy R3.
 
   // --- R1 + R3: `path.join|resolve(<tmpdir>, ARG...)` ----------------------------------
   const callRe = new RegExp(String.raw`path\.(?:join|resolve)\(\s*` + TMPDIR_CALL, 'g');
@@ -188,7 +195,13 @@ for (const file of files) {
     const allLiteral = segs.length > 0 && segs.every(isLiteralExpr);
     if (allLiteral) {
       findings.push({ rule: 'R1', rel, lineNo, arg, line: line.trim() });
-    } else if (!fileHasUniqueMark) {
+    } else {
+      // Runda 1 miala tu `else if (!fileHasUniqueMark)` — warunek NA POZIOMIE CALEGO PLIKU.
+      // Po naprawie 57 plikow kazdy z nich ma gdzies znacznik unikalnosci, wiec R3 byla
+      // w nich MARTWA: wstawienie z powrotem oryginalnego defektu (`path.join(os.tmpdir(),
+      // outName)` w `weterani-test.cjs:75`) zostawialo bramke ZIELONA. Zabezpieczenie przed
+      // nawrotem chronilo wylacznie dopoty, dopoki nawrotu nie bylo. Znacznik gdziekolwiek
+      // indziej w pliku NIE uzmiennia tej konkretnej sciezki — liczy sie wylacznie ARG.
       findings.push({ rule: 'R3', rel, lineNo, arg, line: line.trim() });
     }
   }
@@ -216,6 +229,26 @@ for (const file of files) {
     const rest = src.slice(m.index + m[0].length).split('\n')[0];
     if (UNIQUE_MARK.test(rest)) continue;
     findings.push({ rule: 'R4', rel, lineNo, arg: rest.trim().slice(0, 60), line: line.trim() });
+  }
+
+  // --- R6: INTERPOLACJA `${<tmpdir>}/nazwa` w szablonie --------------------------------
+  // Czwarta forma TEJ SAMEJ rodziny i jedyna, ktorej nie widzi zadna z R1-R5: R1/R3 patrza
+  // wylacznie na `path.join|resolve`, R2 na korzen po `=`/`||`, R4 na konkatenacje `+`,
+  // a R5 na DOSLOWNY literal sciezki tymczasowej. Zapis `--outDir ${...}/civ-cos-dist`
+  // nie jest zadnym z nich — a to najzwyklejszy wspolczesny sposob sklejenia tej sciezki,
+  // czyli doslownie scenariusz „55. bramka za miesiac", dla ktorego ta bramka istnieje.
+  const interpRe = new RegExp(String.raw`\$\{\s*` + TMPDIR_CALL + String.raw`\s*\}`, 'g');
+  while ((m = interpRe.exec(src)) !== null) {
+    const lineNo = src.slice(0, m.index).split('\n').length;
+    const line = lines[lineNo - 1];
+    if (isCommentLine(line)) continue;
+    // Liczy sie WYLACZNIE uzycie jako PREFIKS sciezki (`}/nazwa`). Samo `${...}` bez
+    // segmentu za nim (koniec szablonu, spacja, przecinek) nie wskazuje nowego celu zapisu
+    // — to korzen, ktory ma juz swoja regule R2, i podwojne zgloszenie tylko szumi.
+    const rest = src.slice(m.index + m[0].length).split('\n')[0];
+    if (!rest.startsWith('/')) continue;
+    if (UNIQUE_MARK.test(rest)) continue;   // `}/civ-x-${process.pid}` jest juz unikalne
+    findings.push({ rule: 'R6', rel, lineNo, arg: rest.trim().slice(0, 60), line: line.trim() });
   }
 }
 
