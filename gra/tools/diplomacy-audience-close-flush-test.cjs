@@ -39,6 +39,10 @@
  *     dokładnie 3, każde w nazwanym i osiągalnym miejscu (wrapper + `onBack` + hak testowy
  *     `__audienceRelTestDebug.closeAudience`, uzasadnienie i dowody w [A4]) -- łapie przyszłe
  *     wywołanie omijające wrapper także wtedy, gdy ktoś podniósłby sam licznik.
+ *     Runda 2: licznik i klasyfikacja liczą WYWOŁANIA na masce kodu (`maskNonCode`,
+ *     sekcja A0), nie literał `hideDiplomacyAudience();` ze średnikiem, a przynależność
+ *     do haka testowego kotwiczy na ZAKRESIE WŁASNOŚCI `closeAudience`, nie na wierszu
+ *     fizycznym -- dowody mutacyjne w `runs/P-DYPLO-DWA-TESTY-CZERWONE-ZASTANE-Q1/`.
  *  B) REALNA regresja UI (esbuild + jsdom, bundluje prawdziwy `ui/preBattle.ts`) -- mirror
  *     wrappera (main.ts się nie bundluje, patrz uzasadnienie w innych testach tej sesji,
  *     np. end-turn-modal-sequencing-test.cjs) używa PRAWDZIWEGO, zbundlowanego
@@ -71,6 +75,81 @@ function ok(cond, label) {
 const MAIN_TS = path.join(__dirname, '..', 'src', 'main.ts');
 const mainSrc = fs.readFileSync(MAIN_TS, 'utf8');
 
+// A0) MASKA NIE-KODU -- kopia main.ts tej samej DLUGOSCI, w ktorej tresc komentarzy,
+//     napisow i literalow szablonowych zamieniono na spacje (nowe linie zachowane).
+//     Dzieki rownej dlugosci offsety trafien liczone na masce sa offsetami w oryginale.
+//
+//     PO CO (runda 2, Final Control U1). Wczesniej [A2] i [A4] liczyly ZNAKI: literal
+//     `hideDiplomacyAudience();` -- ZE SREDNIKIEM. Wywolanie bez terminatora, zakonczone
+//     przecinkiem, albo w zwiezlym ciele strzalki w literale obiektu (`closeAudienceNow:
+//     () => hideDiplomacyAudience(),`) bylo dla bramki NIEWIDZIALNE: czwarta, omijajaca
+//     wrapper sciezka zamkniecia audiencji przechodzila na ZIELONO -- czyli dokladnie ta
+//     regresja, przed ktora [A4] ma bronic (mutacje F3/F4 Final Control, 45/0 mimo defektu).
+//     Teraz liczymy WYWOLANIA: nazwa + `(`, w dowolnym zapisie. Samo zdjecie srednika z
+//     regexu podnioslo by jednak licznik z 3 na 5, bo main.ts ma dwie WZMIANKI o
+//     `hideDiplomacyAudience()` w komentarzach -- dlatego liczymy na masce, a nie
+//     "naprawiamy" tego podniesieniem progu. [A4d] pilnuje, ze maska nie zjadla kodu.
+function maskNonCode(src) {
+  const out = src.split('');
+  const blank = (from, to) => {
+    for (let k = from; k < to && k < out.length; k++) if (out[k] !== '\n') out[k] = ' ';
+  };
+  const modes = [{ tplText: false, braces: 0 }];
+  let i = 0;
+  while (i < src.length) {
+    const top = modes[modes.length - 1];
+    const c = src[i];
+    if (top.tplText) {                                   // wnetrze literalu szablonowego
+      if (c === '\\') { blank(i, i + 2); i += 2; continue; }
+      if (c === '`') { blank(i, i + 1); modes.pop(); i += 1; continue; }
+      if (c === '$' && src[i + 1] === '{') {              // ${ ... } to znowu KOD
+        blank(i, i + 2); modes.push({ tplText: false, braces: 0, inTpl: true }); i += 2; continue;
+      }
+      blank(i, i + 1); i += 1; continue;
+    }
+    if (c === '/' && src[i + 1] === '/') {
+      let j = src.indexOf('\n', i); if (j < 0) j = src.length;
+      blank(i, j); i = j; continue;
+    }
+    if (c === '/' && src[i + 1] === '*') {
+      let j = src.indexOf('*/', i + 2); j = j < 0 ? src.length : j + 2;
+      blank(i, j); i = j; continue;
+    }
+    if (c === '"' || c === "'") {
+      let j = i + 1;
+      while (j < src.length && src[j] !== c && src[j] !== '\n') j += (src[j] === '\\' ? 2 : 1);
+      if (j < src.length && src[j] === c) { blank(i, j + 1); i = j + 1; continue; }
+      i += 1; continue;   // niezamkniety w tej linii -- NIE maskujemy (kierunek bezpieczny)
+    }
+    if (c === '`') { blank(i, i + 1); modes.push({ tplText: true, braces: 0 }); i += 1; continue; }
+    if (c === '{') { top.braces += 1; i += 1; continue; }
+    if (c === '}') {
+      if (top.braces === 0 && top.inTpl) { blank(i, i + 1); modes.pop(); i += 1; continue; }
+      top.braces = Math.max(0, top.braces - 1); i += 1; continue;
+    }
+    i += 1;
+  }
+  return out.join('');
+}
+const codeSrc = maskNonCode(mainSrc);
+
+/** Offsety WYWOLAN `name(...)` w KODZIE main.ts (nie w komentarzu/napisie), niezaleznie
+ *  od terminatora: `();`, `(),`, `()` na koncu linii, w argumencie, w ciele strzalki.
+ *  Deklaracja `function name(` wywolaniem nie jest i jest odfiltrowana. */
+function callOffsets(name) {
+  const re = new RegExp('\\b' + name + '\\s*\\(', 'g');
+  const hits = [];
+  let m;
+  while ((m = re.exec(codeSrc)) !== null) {
+    if (/\bfunction\s+$/.test(codeSrc.slice(Math.max(0, m.index - 24), m.index))) continue;
+    hits.push(m.index);
+  }
+  return hits;
+}
+const bareCallOffsets = callOffsets('hideDiplomacyAudience');
+const wrapperCallOffsets = callOffsets('closeDiplomacyAudienceAndFlush');
+const firstAfter = (offsets, from) => { const o = offsets.find(x => x > from); return o === undefined ? -1 : o; };
+
 // A1) Wrapper istnieje i ma poprawną kolejność: hide -> requestAnimationFrame -> oba flushe.
 {
   const fnStart = mainSrc.indexOf('function closeDiplomacyAudienceAndFlush(): void {');
@@ -101,8 +180,11 @@ const mainSrc = fs.readFileSync(MAIN_TS, 'utf8');
   for (const site of sites) {
     const anchorIdx = mainSrc.indexOf(site.anchor);
     ok(anchorIdx >= 0, `[A2] znaleziono kotwice dla "${site.label}"`);
-    const callIdx = anchorIdx >= 0 ? mainSrc.indexOf('closeDiplomacyAudienceAndFlush();', anchorIdx) : -1;
-    const bareIdx = anchorIdx >= 0 ? mainSrc.indexOf('hideDiplomacyAudience();', anchorIdx) : -1;
+    // Runda 2 (U1): oba szukania ida po WYWOLANIACH z maski kodu, nie po literale ze
+    // srednikiem -- inaczej goly `hideDiplomacyAudience()` bez terminatora, wstawiony PRZED
+    // wrapperem w tym miejscu, byl dla tej asercji niewidzialny.
+    const callIdx = anchorIdx >= 0 ? firstAfter(wrapperCallOffsets, anchorIdx) : -1;
+    const bareIdx = anchorIdx >= 0 ? firstAfter(bareCallOffsets, anchorIdx) : -1;
     ok(callIdx > anchorIdx && callIdx - anchorIdx < site.maxDist,
       `[A2] "${site.label}" wola closeDiplomacyAudienceAndFlush() (nie goly hideDiplomacyAudience()) w rozsadnej odleglosci od kotwicy`);
     ok(bareIdx < 0 || bareIdx > callIdx,
@@ -146,12 +228,9 @@ const mainSrc = fs.readFileSync(MAIN_TS, 'utf8');
 //     nierozpoznane czerwieni bramkę niezależnie od licznika.
 {
   const importLineEnd = mainSrc.indexOf('\n', mainSrc.indexOf('showDiplomacyAudience, hideDiplomacyAudience'));
-  const bodySrc = mainSrc.slice(importLineEnd);
 
-  const bareOffsets = [];
-  const bareRe = /hideDiplomacyAudience\(\);/g;
-  let m;
-  while ((m = bareRe.exec(bodySrc)) !== null) bareOffsets.push(importLineEnd + m.index);
+  // Liczymy WYWOLANIA (patrz A0/callOffsets), nie znaki -- z pominieciem linii importu.
+  const bareOffsets = bareCallOffsets.filter(o => o > importLineEnd);
 
   ok(bareOffsets.length === 3,
     `[A4] main.ts ma DOKLADNIE 3 gole wywolania hideDiplomacyAudience() poza importem (wrapper + onBack + hak testowy __audienceRelTestDebug.closeAudience) -- got ${bareOffsets.length}. Nowe miejsce zamkniecia audiencji MUSI isc przez closeDiplomacyAudienceAndFlush().`);
@@ -169,7 +248,7 @@ const mainSrc = fs.readFileSync(MAIN_TS, 'utf8');
   //     audiencję ze ścieżek gameplayowych innych niż „Wróć"/Escape.
   const wrapper = region('function closeDiplomacyAudienceAndFlush(): void {', '\n    }');
   const inWrapper = bareOffsets.filter(o => inside(o, wrapper));
-  const wrapperCallSites = (mainSrc.match(/closeDiplomacyAudienceAndFlush\(\);/g) || []).length;
+  const wrapperCallSites = wrapperCallOffsets.length;
   ok(inWrapper.length === 1,
     `[A4a] dokladnie 1 gole wywolanie lezy w ciele closeDiplomacyAudienceAndFlush() -- got ${inWrapper.length}`);
   ok(wrapperCallSites >= 7,
@@ -189,11 +268,34 @@ const mainSrc = fs.readFileSync(MAIN_TS, 'utf8');
   // (3) HAK TESTOWY __audienceRelTestDebug.closeAudience -- dzwignia dla Playwrighta,
   //     nieosiagalna z UI gry.
   const hook = region('(window as any).__audienceRelTestDebug = {', '\n    (window as any).__rebelNotifyTestDebug');
-  const inHook = bareOffsets.filter((o) => {
-    if (!inside(o, hook)) return false;
-    const lineStart = mainSrc.lastIndexOf('\n', o) + 1;
-    return mainSrc.slice(lineStart, o).includes('closeAudience:');
-  });
+
+  /** Zakres [start, end) WARTOSCI wlasnosci `nazwa:` wewnatrz zakresu `r` -- kotwiczenie
+   *  SEMANTYCZNE (parowanie nawiasow w kodzie), nie na wierszu fizycznym.
+   *
+   *  PO CO (runda 2, Final Control U2). Wczesniej [A4c] uznawalo wywolanie za "w haku"
+   *  tylko wtedy, gdy `closeAudience:` stalo w TYM SAMYM WIERSZU FIZYCZNYM. Czysto
+   *  kosmetyczne rozbicie haka na kilka linii -- semantyka bit w bit ta sama -- czerwienilo
+   *  bramke (mutacja F2 Final Control: 43/2). Falszywy alarm od `prettier` uczy wszystkich
+   *  ignorowac bramke, wiec kotwica idzie na WLASNOSC, nie na uklad wierszy: od dwukropka
+   *  do pierwszego `,` albo `}` na glebokosci 0. Zmiana NAZWY klucza nadal czerwieni. */
+  function propertyValueRange(r, propName) {
+    if (!r) return null;
+    const keyRe = new RegExp('(^|[\\s{,;\\[])' + propName + '\\s*:', 'g');
+    keyRe.lastIndex = r[0];
+    const hit = keyRe.exec(codeSrc);
+    if (!hit || hit.index >= r[1]) return null;
+    const start = hit.index + hit[0].length;
+    let depth = 0;
+    for (let k = start; k < r[1]; k++) {
+      const ch = codeSrc[k];
+      if (ch === '(' || ch === '[' || ch === '{') depth++;
+      else if (ch === ')' || ch === ']' || ch === '}') { if (depth === 0) return [start, k]; depth--; }
+      else if (ch === ',' && depth === 0) return [start, k];
+    }
+    return [start, r[1]];
+  }
+  const closeAudienceProp = propertyValueRange(hook, 'closeAudience');
+  const inHook = bareOffsets.filter(o => inside(o, closeAudienceProp));
   ok(inHook.length === 1,
     `[A4c] dokladnie 1 gole wywolanie lezy w haku testowym __audienceRelTestDebug.closeAudience -- got ${inHook.length}`);
   const srcCallers = (() => {
@@ -216,7 +318,27 @@ const mainSrc = fs.readFileSync(MAIN_TS, 'utf8');
   ok(gateCallers.length >= 1,
     `[A4e] OSIAGALNOSC #3: hak jest faktycznie wolany przez co najmniej jedna zywa bramke w gra/tools/ (inaczej to martwy kod do usuniecia) -- got ${gateCallers.length}`);
 
-  // (4) Domkniecie: zaden goly hideDiplomacyAudience() nie moze zostac NIEROZPOZNANY.
+  // (4) FAIL-SAFE MASKI: kazde wystapienie `hideDiplomacyAudience(` w main.ts, ktore maska
+  //     uznala za NIE-kod, musi faktycznie stac w komentarzu. Gdyby maska pomylila sie i
+  //     schowala realne wywolanie, licznik [A4] bylby cicho ZANIZONY -- czyli wrocilaby ta
+  //     sama klasa cichej zieleni, ktora naprawia ta runda. Wtedy bramka ma czerwieniec.
+  {
+    const nameRe = /hideDiplomacyAudience\s*\(/g;
+    const NAME = 'hideDiplomacyAudience';
+    const suspicious = [];
+    let r;
+    while ((r = nameRe.exec(mainSrc)) !== null) {
+      if (codeSrc.slice(r.index, r.index + NAME.length) === NAME) continue;   // widziane jako kod
+      const lineStart = mainSrc.lastIndexOf('\n', r.index) + 1;
+      const prefix = mainSrc.slice(lineStart, r.index).trim();
+      if (prefix.startsWith('//') || prefix.startsWith('*') || prefix.startsWith('/*')) continue;
+      suspicious.push(mainSrc.slice(lineStart, mainSrc.indexOf('\n', r.index)).trim().slice(0, 80));
+    }
+    ok(suspicious.length === 0,
+      `[A4d] maska nie-kodu nie zjadla zadnego WYWOLANIA -- kazde ukryte wystapienie ${NAME}( stoi w komentarzu. Podejrzane: ${suspicious.join(' | ')}`);
+  }
+
+  // (5) Domkniecie: zaden goly hideDiplomacyAudience() nie moze zostac NIEROZPOZNANY.
   const classified = inWrapper.length + inOnBack.length + inHook.length;
   ok(classified === bareOffsets.length,
     `[A4f] kazde gole wywolanie hideDiplomacyAudience() jest w jednym z trzech NAZWANYCH miejsc -- rozpoznano ${classified} z ${bareOffsets.length}. Nierozpoznane miejsce MUSI isc przez closeDiplomacyAudienceAndFlush().`);
