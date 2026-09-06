@@ -198,6 +198,16 @@ console.log('    Grupy w danych:', [...groupsInData].join(', '));
 // ===========================================================================
 console.log('\n--- D. P-AI-008 usunięta: zagrożenie/granica podnosi priorytet Murów ---');
 
+// UWAGA (Obrona rundy 2, zarzut #1 Evaluatora, PRZYJĘTY): (a)/(a2) niżej mierzą
+// wyłącznie POKRYCIE -- że P-AI-008 usunięta i mury/fort/baszta SĄ w ogóle wybieralne,
+// gdy zostają jedynym afordowalnym kandydatem (katalog prawie pełny, 39/42) -- ten
+// sam wynik wyszedłby przy zerowym bonusie zagrożenia/granicy, bo wtedy Mury i tak są
+// jedyną opcją. NIE dowodzą działania samego bonusu w polu KONKURENCYJNYM (inne,
+// wyżej punktowane budynki wciąż dostępne) -- to dowodzą T8d (zagrożenie) i T8h
+// (granica, dodany tą rundą) w `ai-threat-mode-test.cjs`, świeże miasto, katalog
+// konkurencyjny. (a)/(a2) zostają jako bramka POKRYCIA (nazwa pliku), nie jako
+// "dowód" mechanizmu bonusu -- to rozróżnienie było brakiem tej rundy.
+//
 // (a) Miasto ZAGROŻONE, prawie cały katalog już zbudowany (tylko mury/fort/baszta
 // + jednostki zostają kandydatami) -- pod tym sygnałem (underThreat, ten sam co
 // steruje resztą gałęzi #4.3 w ai.ts) Mury muszą wygrać punktacją.

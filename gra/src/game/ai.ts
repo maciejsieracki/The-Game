@@ -1391,8 +1391,20 @@ const MAJOR_FORTIFICATION_IDS = new Set(['mury', 'fort', 'baszta']);
 /** Bonus do score fortyfikacji, gdy miasto major AI jest ZAGROŻONE (underThreat). */
 const AI_MAJOR_WALL_THREAT_BONUS = 180;
 
-/** Bonus do score fortyfikacji, gdy miasto major AI jest PRZYGRANICZNE (isBorderCity). */
-const AI_MAJOR_WALL_BORDER_BONUS = 60;
+/**
+ * Bonus do score fortyfikacji, gdy miasto major AI jest PRZYGRANICZNE (isBorderCity).
+ * PODNIESIONY rundą 2 Obrony (zarzut #2 Evaluatora, PRZYJĘTY z dowodem -- patrz
+ * raport `03-operator-obrona-runda2.md`): wartość 60 nie miała mierzalnego wpływu
+ * na wybór AI w ŻADNYM niedegenerackim scenariuszu (bisekcja niezależna: próg
+ * przełamania bazy grupy "Wojsko i obrona" leży między 100 a 110, w tym samym
+ * scenariuszu konkurencyjnym co T8d dla progu zagrożenia -- świeże miasto, pełny
+ * katalog kandydatów, `chooseCityProduction` z `territoryNodes` obcego właściciela
+ * w zasięgu zamiast wroga). Ustawiono 120 (margines nad progiem 110, analogicznie
+ * do marginesu progu zagrożenia 180 nad jego własnym progiem przełamania) --
+ * zweryfikowano bisekcją, że NIE psuje żadnego chronionego gate (patrz TESTY w
+ * raporcie Obrony rundy 2).
+ */
+const AI_MAJOR_WALL_BORDER_BONUS = 120;
 
 /**
  * Bonus do score Spichlerza (major AI, DECISION_REQUIRED #3 rundy 1 -- ratyfikacja
@@ -1404,9 +1416,17 @@ const AI_MAJOR_WALL_BORDER_BONUS = 60;
  * dostępnym") -- zmierzone bisekcją: 8 PRZECHODZI (44/0), 9 już nie (41/3, AI
  * przestaje w ogóle proponować jednostki). Wybrano WARTOŚĆ BEZPIECZNĄ (8) zamiast
  * ryzykować/osłabiać chroniony gate -- to tylko CZĘŚCIOWO odtwarza historyczną
- * pozycję (przesuwa Spichlerz o ok. 1 miejsce w proxy-symulacji, nie na 2.-4.).
- * Właściciel decyduje, czy 8 wystarcza, czy temat wraca po osobną kalibrację
- * (np. rozluźnienie majorEarly damping) poza tą rundą.
+ * pozycję. ŚLAD DOWODOWY (Obrona rundy 2, zarzut #4 Evaluatora, PRZYJĘTY --
+ * poprzedni opis "11.->10." w raporcie Operatora rundy 2 był nieodtwarzalny, bez
+ * parametrów scenariusza; poprawiony niżej z pełnymi parametrami i wydrukowanym
+ * śladem w `03-operator-obrona-runda2.md`): metoda identyczna jak
+ * `ai-produkcja-pokrycie-katalogu-test.cjs` (`chooseCityProduction` w pętli,
+ * canAfford odrzuca WYŁĄCZNIE jednostki, katalog buduje się aż null), 3 miasta
+ * (c1/c2/c3, ta sama konfiguracja co bramka `pokrycie-katalogu`), miasto c1,
+ * `currentTurn: 60` -- bonus 0: Spichlerz na 12/42 pozycji; bonus 8 (ta stała):
+ * Spichlerz na 11/42. Przesunięcie o 1 pozycję (12->11), NIE 2.-4. Właściciel
+ * decyduje, czy 8 wystarcza, czy temat wraca po osobną kalibrację (np.
+ * rozluźnienie majorEarly damping) poza tą rundą.
  */
 const AI_MAJOR_SPICHLERZ_PRIORITY_BONUS = 8;
 
@@ -1718,8 +1738,10 @@ export function chooseCityProduction(
   // administracja). Po przejściu na czyste punktowanie grupowe Spichlerz (grupa
   // "Żywność", baza 130) spada za CAŁĄ grupę "Produkcja surowców" (baza 140,
   // 9 członków: stolarnia/garncarnia/kamieniarski/cegielnia/kuznia/odlewnia_brazu/
-  // odlewnia_zelaza/kuznia_zelaza/wielka_odlewnia) -- proxy-symulacja w raporcie
-  // Operatora (esbuild, bez boostu) pokazuje Spichlerz na 8-11. pozycji, nie na 4.
+  // odlewnia_zelaza/kuznia_zelaza/wielka_odlewnia) -- proxy-symulacja (esbuild, bez
+  // boostu, ślad dokładny w komentarzu przy stałej `AI_MAJOR_SPICHLERZ_PRIORITY_BONUS`
+  // niżej i w `03-operator-obrona-runda2.md`) pokazuje Spichlerz na 12/42 pozycji w
+  // scenariuszu 3 miasta/tura 60, nie na historyczną 4.
   // Boost KONKRETNEGO istniejącego kandydata (ten sam wzorzec co Koszary/Biblioteka/
   // Akademia wyżej) bez przebijania CAŁYCH wyższych warstw grup (Zdrowie/tańsza
   // Produkcja surowców zostają przed nim, jeśli faktycznie tańsze -- to dodatek,

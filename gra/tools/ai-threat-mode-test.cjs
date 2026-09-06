@@ -6,7 +6,8 @@
  * Mury/Fort/Baszta dostają teraz podniesiony priorytet pod zagrożeniem i w
  * miastach przygranicznych (patrz `ai.ts`, `MAJOR_FORTIFICATION_IDS`). T8d/T8e
  * niżej odwrócone na nowy kontrakt; T8b/T8c/T8f/T8g nietknięte (nie dotyczą
- * usuniętej reguły).
+ * usuniętej reguły). T8h DODANY Obroną rundy 2 (zarzut #2 Evaluatora) --
+ * scenariusz konkurencyjny jak T8d, ale dla bonusu GRANICZNEGO (bez zagrożenia).
  * Run from gra/: node tools/ai-threat-mode-test.cjs
  */
 
@@ -166,6 +167,29 @@ console.log('\n--- T8e: major AI rank 3 + zagrozenie -> Mury (P-AI-008 USUNIĘTA
     civAiProfile: { ekspansywnosc: 0, sklonnoscDoPodboju: 0, priorytetMilitarny: 5, priorytetEkonomia: 5, priorytetNauka: 5 },
   }, map, loadDifficultyParams(data, 2));
   assert(id === 'mury', 'runda 2: rank 3 + zagrozenie -> Mury (priorytet podniesiony, powerRank bez wpływu)');
+}
+
+console.log('\n--- T8h: border-only (BEZ zagrozenia) w scenariuszu konkurencyjnym jak T8d -> Mury ---');
+{
+  // Obrona rundy 2 (zarzut #2 Evaluatora, PRZYJĘTY z dowodem): asercje (a)/(a2) w
+  // ai-produkcja-pokrycie-katalogu-test.cjs są DEGENERACKIE (39/42 zbudowane, mury
+  // jedyny afordowalny kandydat niezależnie od bonusu) -- nie strzegą mechanizmu.
+  // Ten test odtwarza DOKŁADNIE scenariusz T8d (świeże miasto, katalog konkurencyjny
+  // mury/koszary/stolarnia/spichlerz, brak innych budynków) ale zamiast wroga w
+  // zasięgu podaje TYLKO `territoryNodes` obcego właściciela (border, zero threat)
+  // -- ten sam mechanizm co isBorderCity/D-IMPROVEMENTS. Wartość bonusu podniesiona
+  // tą rundą z 60 na 120 (patrz komentarz przy AI_MAJOR_WALL_BORDER_BONUS w ai.ts) --
+  // bisekcja niezależna: próg przełamania bazy grupy "Wojsko i obrona" (90+militaryScore)
+  // przez bazę "Produkcja surowców"/"Prawo i administracja" leży między 100 a 110 w
+  // tym dokładnym scenariuszu; 60 (wartość sprzed tej rundy) NIE wystarczał.
+  const data = makeData(7);
+  const borderNodes = [{ q: 6, r: 5, pop: 5, level: 1, ownerId: 2 }];
+  const id = chooseCityProduction('c1', midCities, [], 1, data, ZERO, {
+    cityBuildings: { c1: [] },
+    powerRank: 1,
+    territoryNodes: borderNodes,
+  }, map, loadDifficultyParams(data, 2));
+  assert(id === 'mury', 'runda 2 Obrony: miasto przygraniczne BEZ zagrozenia, katalog konkurencyjny -> Mury (bonus 120)');
 }
 
 console.log('\n--- T8f: defensiveCopy + zagrozenie + garnizon -> Palisada (fortyfikacja, po bootstrap) ---');
