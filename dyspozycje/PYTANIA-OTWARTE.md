@@ -32314,7 +32314,7 @@ czytelny komunikat zamiast ciszy.
 
 ---
 
-## R-AI-PARYTET-EPOKA-I-TECHNOLOGIE-Q1 (2026-09-06, znalezisko orkiestratora na pytanie właściciela o parytet) · STATUS: **OTWARTE — zmierzone, czeka na decyzję właściciela przed dispatchem**
+## R-AI-PARYTET-AUDYT-GLEBOKI-Q1 (2026-09-06, znalezisko orkiestratora na pytanie właściciela o parytet) · STATUS: **OTWARTE — TEMAT DO BARDZO GŁĘBOKIEGO AUDYTU, świadomie ODŁOŻONY przez właściciela; nie dispatchować bez jego sygnału**
 
 **Wyzwalacz (właściciel):** *„zasady, które obowiązują dla gracza, zawsze powinny tak samo
 obowiązywać dla AI. Mówię o mechanizmach balansu i wyliczania. Co chwilę dowiaduję się,
@@ -32364,6 +32364,41 @@ tak samo jak przy Szczęściu i Prawie.
 
 **Powiązane, ta sama klasa:** `R-AI-PRODUKCJA-Z-DOSTEPNYCH-BUDYNKOW-Q1` (AI nie widzi 19 z 41
 budynków). Oba to odstępstwa gracz/AI, których nikt nie zamawiał.
+
+---
+
+## DECYZJE WŁAŚCICIELA 2026-09-06 — dwie, obie wiążące
+
+**1. Kierunek naprawy: PARYTET.** *„Naprawić parytet — AI liczone własną epoką i własnymi
+technologiami."* Świadomie przyjęty skutek: AI dostanie większe magazyny i własne bramki
+technologiczne, czyli **zrobi się silniejsze**. Zgłoszenie tego jako „za duża zmiana trudności"
+będzie błędem.
+
+**2. Zakres pracy: BARDZO GŁĘBOKI AUDYT, nie punktowa naprawa.** *„Rozjazd w kodzie musisz
+zrobić jako zapisany temat do bardzo głębokiego audytu. Na razie zostaw ten temat."*
+
+**Ten temat NIE jest dispatchowany.** Czeka na jawny sygnał właściciela. Gdy ruszy, jego
+zakresem jest **inwentaryzacja WSZYSTKICH rozgałęzień gracz/AI w kodzie balansu i wyliczeń**,
+z tabelą per pozycja: gdzie różnica jest zamierzona (z datą i cytatem decyzji), a gdzie
+przypadkowa. Dopiero na tej podstawie plan naprawy.
+
+### Punkt startowy audytu — pięć odstępstw zmierzonych 2026-09-06, żadne niezamówione
+
+| # | Odstępstwo | Stan |
+|---|---|---|
+| 1 | `advanceCityEconomy` — AI liczone jako **epoka 1**, oceniane **technologiami gracza** (`main.ts` nie podaje `resolveOwnerEra`/`resolveOwnerTech`) | ten temat |
+| 2 | AI wybiera budynki z zaszytej listy, nie z `availableProduction` — **19 z 41 niewidocznych**, w epoce 3 tylko 3 z 13 | `R-AI-PRODUKCJA-Z-DOSTEPNYCH-BUDYNKOW-Q1`, dispatch gotowy |
+| 3 | `infraOrder` siedzi w gałęzi `if (opts.defensiveCopy)` — dotyczy **tylko państw-miast**, duże AI jej nie widzi | ujawnione przez Final Control Garnizonu |
+| 4 | `budowaTryb` resetowany na `'reczny'` przy każdym założeniu i przejęciu miasta AI | **NAPRAWIONE** `0afbb5d5` |
+| 5 | AI nie ma żadnej działającej ścieżki zdobycia miasta przez adiacencję; gracz i barbarzyńcy mają | `P-AI-BRAK-SCIEZKI-...-Q1`, w biegu |
+
+### Kanon — zapisane 2026-09-06
+
+Parytet gracz ↔ AI wszedł do `R-PROC-AUTOBOT.md` **§9 jako pozycja 11 granic nienaruszalnych**:
+odstępstwo wymaga jawnej decyzji właściciela, wpisu w rejestrze **oraz asercji w bramce
+pilnującej, że jest zamierzone**. Wpisana tam też droga, którą te odstępstwa wchodzą do kodu:
+**parametr opcjonalny z fallbackiem** — a bramka wołająca funkcję z rezolwerem testuje wtedy
+ścieżkę, której gra nigdy nie wykonuje, i jest zielona.
 
 ### Propozycja reguły kanonicznej (do decyzji właściciela)
 
