@@ -58,9 +58,31 @@ function ok(c, m) {
 // C. Każdy budynek ma przypisaną grupę — jedną z ośmiu dozwolonych.
 // ===========================================================================
 {
-  // KOSZTY-SUROWCOWE (Maciej 2026-07-27): 40 budynków od dodania Wielkiej odlewni
-  // (było 39 po Baszcie 41B).
-  ok(buildings.length === 40, `buildings.json ma 40 budynków (ma: ${buildings.length})`);
+  // ==========================================================================
+  // UWAGA DLA KAŻDEGO, KTO DODAJE NOWY BUDYNEK — CZYTAJ ZANIM URUCHOMISZ:
+  // liczniki niżej (TOTAL + expectedCounts per grupa) są ZASZYTE i NIE liczą się
+  // z danych. Każdy nowy rekord w `buildings.json` czerwieni tę bramkę, dopóki
+  // nie podbijesz TOTAL o 1 ORAZ licznika jego grupy o 1. To jest zamierzone:
+  // bramka ma wymusić świadomą decyzję „ten budynek ma należeć do tej grupy",
+  // a nie przepisywać stan danych do oczekiwań (test liczący z tego samego
+  // źródła co asercja jest tautologią i nie wykryłby nigdy zgubionego `grupa`).
+  // BUMP JEST OBOWIĄZKOWY, nie opcjonalny — bramka zostawiona na czerwono
+  // przestaje pilnować czegokolwiek dla wszystkich pozostałych budynków.
+  //
+  // Historia liczników:
+  //   2026-07-27 (KOSZTY-SUROWCOWE, Maciej) — 40 budynków po Wielkiej odlewni
+  //     (było 39 po Baszcie 41B); 'Wojsko i obrona' 5 -> 6 (Baszta, decyzja 41B).
+  //   2026-09-05 (R-BUDYNEK-GARNIZON-NOWY-Q1, runda 2) — 40 -> 42:
+  //     +1 'Wojsko i obrona' (6 -> 7) — DŁUG ZASTANY, nie z tego tematu: bramka
+  //       była czerwona już przed Garnizonem (41 budynków vs zaszyte 40), bo
+  //       licznika nie podbito przy tamtym budynku. Który to rekord — nie
+  //       odtwarzam: historia `gra/data/buildings.json` w tym worktree sięga
+  //       tylko `546f6a51` (2026-08-17), gdzie stan to już 41/7 (playbook C-058:
+  //       luka w danych to nota, nie zgadywanie).
+  //     +1 'Prawo i administracja' (8 -> 9) — Garnizon, ten temat.
+  // ==========================================================================
+  const TOTAL = 42;
+  ok(buildings.length === TOTAL, `buildings.json ma ${TOTAL} budynków (ma: ${buildings.length})`);
   ok(M.BUILDING_GROUP_ORDER.length === 8, 'BUILDING_GROUP_ORDER ma dokładnie 8 grup');
   const allowed = new Set(M.BUILDING_GROUP_ORDER);
   let missing = [];
@@ -73,10 +95,11 @@ function ok(c, m) {
   ok(unknownGroup.length === 0, `grupa każdego budynku to jedna z 8 dozwolonych (poza listą: ${unknownGroup.join(', ')})`);
 
   // Rozkład przypisań zgodny z tabelą z zadania (kontrola liczności każdej grupy).
-  // 'Wojsko i obrona' 5 -> 6 (Baszta dołącza obok Murów/Cytadeli, decyzja 41B).
+  // Suma expectedCounts MUSI równać się TOTAL — pilnuje tego asercja niżej, żeby
+  // podbicie jednego licznika bez drugiego nie przeszło niezauważone.
   const expectedCounts = {
-    'Prawo i administracja': 8,
-    'Wojsko i obrona': 6,
+    'Prawo i administracja': 9,
+    'Wojsko i obrona': 7,
     'Handel i pieniądz': 5,
     'Nauka i kultura': 4,
     'Wiara': 2,
@@ -90,7 +113,12 @@ function ok(c, m) {
     ok(counts[g] === n, `grupa "${g}" ma ${n} budynków (ma: ${counts[g] ?? 0})`);
   }
   const totalAssigned = Object.values(counts).reduce((a, b) => a + b, 0);
-  ok(totalAssigned === 40, `suma budynków we wszystkich grupach = 40 (ma: ${totalAssigned})`);
+  ok(totalAssigned === TOTAL, `suma budynków we wszystkich grupach = ${TOTAL} (ma: ${totalAssigned})`);
+  // Spójność samych oczekiwań: gdy ktoś podbije TOTAL, a zapomni o grupie (albo
+  // odwrotnie), ta asercja czerwieni się nawet przy zgodnych danych.
+  const expectedSum = Object.values(expectedCounts).reduce((a, b) => a + b, 0);
+  ok(expectedSum === TOTAL,
+    `suma expectedCounts (${expectedSum}) === TOTAL (${TOTAL}) — podbij OBA liczniki przy nowym budynku`);
 }
 
 // ===========================================================================

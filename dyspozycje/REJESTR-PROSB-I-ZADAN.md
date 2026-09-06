@@ -5893,3 +5893,26 @@ rejestracji, wszystkie **ODDAL** (nie sa defektem tej rundy), ale warte zapisani
    `gra/tools/ai-zdobycie-miasta-adiacencja-test.cjs` — opakowac wypisywanie wyniku w
    try/catch, zeby crash nie maskowal komunikatu diagnostycznego (nie wplywa na poprawnosc
    wyniku, tylko na czytelnosc).
+
+## `R-BUDYNEK-GARNIZON-NOWY-Q1` — GAME — **ZINTEGROWANE 2026-09-06** (§16b pkt 6, warunek Final Control)
+
+Nowy budynek **Garnizon** (epoka 1, grupa „Prawo i administracja"), kompletny na rowni z
+sasiadami: rekord w `buildings.json`, wlasna ikona SVG, karta encji, hasło CivPedii, wpis
+w kolejce produkcji, widoczny dla panelu Prawa. Trzy rundy, Final Control **PASS** (zero
+`NAPRAW`, jedno `DO DECYZJI CZLOWIEKA` — kolejnosc wydania, ratyfikowane: Garnizon wchodzi
+do `main` teraz, ale **ROBOCZA czeka i wychodzi razem z `R-PRAWO-PRZEBUDOWA-SKALI-Q1`**,
+zeby gracz nie zobaczyl budynku bez efektu, `baza`/`przyrost` sa celowo zerowe do czasu
+Prawa). Bramki: `budynek-garnizon-test` 83/0, `civpedia-budynki-historia-test` 141/0,
+`grupy-budynkow-test` 84/0.
+
+**Dwa znaleziska poboczne Final Control, zarejestrowane osobno:**
+1. **W-FC3 — dwie bramki rodziny budynkow czerwone NIEZALEZNIE od tego tematu** (dowiedzione
+   mutacja usuwajaca rekord Garnizon — te same liczby z rekordem i bez): `prereq-budynkow-test`
+   **51/8** (akademia/fort/swiatynia/baszta/akwedukt/laznia/akademia_wojskowa `status=locked`
+   mimo spelnionego prereq; Mennica) i `upgrade-budynki-test` **48/1** („no handel bonus on
+   bruk"). **STATUS: ZAREJESTROWANE, NIE DISPATCHOWANE.** DOMAIN: INFRA.
+2. **Trzy niespojnosci R2-E** (potwierdzone, nietkniete w tym temacie): brak wpisu `trybunal`
+   w `building-icon-map.json`; `bld-pretorium.svg` istnieje ale mapa go nie wskazuje;
+   `civpedia-gra-id-mostek-test.cjs` przy uruchomieniu brudzi sledzony `wikiBundle.json`
+   (nadpisuje stempel `generated`) — ta sama klasa bledu co bramki barbarzyncow piszace do
+   cudzego katalogu runu. **STATUS: ZAREJESTROWANE, NIE DISPATCHOWANE.** DOMAIN: INFRA.

@@ -3,18 +3,18 @@
  * civpedia-budynki-historia-test.cjs
  *
  * TEMAT: R-CIVPEDIA-BUDYNKI-Q1 — pierwszy batch treści CivPedii: dla
- * wszystkich 25 plików docs/encyklopedia/budynki/*.md sekcja
+ * KAŻDEGO pliku docs/encyklopedia/budynki/*.md sekcja
  * "## Rys historyczny" dopisana na końcu pliku, treść DOKŁADNIE zgodna
  * z polem `historia` odpowiadającego wpisu w gra/data/buildings.json.
  *
  * Pokrywa kryteria końca z 00-dispatch.md:
- * [1] Programowe porównanie KAŻDEGO z 25 plików .md z buildings.json —
+ * [1] Programowe porównanie KAŻDEGO pliku .md z buildings.json —
  *     treść pod "## Rys historyczny" === buildings.json[id].historia
  *     dokładnie (bez skrótów/parafraz).
  * [2] Istniejące sekcje "## Historia / decyzje" (changelog wiki, tam gdzie
  *     występują) pozostają nietknięte — dowód: string wciąż obecny
  *     w pliku, PRZED nową sekcją "## Rys historyczny".
- * [3] Żywy dowód w headless Chromium: 3 losowe hasła z tych 25 renderują
+ * [3] Żywy dowód w headless Chromium: 3 hasła z tego katalogu renderują
  *     w CivPedii (depth 'm') sekcję "Rys historyczny" z realną treścią
  *     (z realnego wikiBundle.json, nie fixture).
  *
@@ -66,13 +66,42 @@ function extractRysHistoryczny(content) {
 
 async function main() {
   // -------------------------------------------------------------------
-  // [1] + [2] Programowa iteracja po WSZYSTKICH 25 plikach.
+  // [1] + [2] Programowa iteracja po WSZYSTKICH plikach katalogu.
   // -------------------------------------------------------------------
   const buildings = JSON.parse(fs.readFileSync(BUILDINGS_JSON, 'utf8'));
   const byId = new Map(buildings.map((b) => [b.id, b]));
 
   const files = fs.readdirSync(BUDYNKI_DIR).filter((f) => f.endsWith('.md')).sort();
-  check('dokładnie 25 plików .md w docs/encyklopedia/budynki/', files.length === 25, files.length);
+  // =====================================================================
+  // LICZNIKI — NIE ZASZYWAJ ICH Z POWROTEM (R3-A, 2026-09-06,
+  // R-BUDYNEK-GARNIZON-NOWY-Q1 runda 3)
+  //
+  // Do rundy 2 ta bramka miała w TRZECH miejscach zaszytą liczbę `25` — rozmiar
+  // pierwszego batcha `R-CIVPEDIA-BUDYNKI-Q1` z lipca 2026. Dopisanie 26. hasła
+  // (`docs/encyklopedia/budynki/garnizon.md`) przestawiło bramkę z **136/0 na 138/3**,
+  // bez ani jednego realnego defektu treści. To ta sama klasa długu, którą R2-B
+  // naprawił w `grupy-budynkow-test.cjs`.
+  //
+  // TUTAJ liczniki DA SIĘ POLICZYĆ Z DANYCH i dlatego ich już nie ma. Powód: ta
+  // bramka pracuje na TRZECH niezależnych artefaktach — (1) plikach
+  // `docs/encyklopedia/budynki/*.md`, (2) rekordach `gra/data/buildings.json`,
+  // (3) WYGENEROWANYM I ZACOMMITOWANYM `gra/src/data/wikiBundle.json`. Porównanie
+  // liczności między dwoma RÓŻNYMI artefaktami nie jest tautologią: łapie dokładnie
+  // ten błąd, który ma łapać — hasło dopisane w `docs/`, ale bundle
+  // niezregenerowany (albo odwrotnie).
+  //
+  // W `grupy-budynkow-test.cjs` tak się NIE da: tam licznik `buildings.length === 40`
+  // porównywałby `buildings.json` SAM ZE SOBĄ (`X === X`, zawsze zielone), więc tam
+  // liczba musi zostać zaszyta i **wymaga bumpu przy każdym nowym budynku**.
+  //
+  // Jedyna liczba zostawiona tu na sztywno to DOLNA GRANICA batcha źródłowego.
+  // NIE jest licznikiem: nie wymaga bumpu przy dodaniu hasła, czerwieni się tylko,
+  // gdy ktoś skasuje hasła z pierwszego batcha. Nie zamieniaj jej z powrotem na `===`.
+  // =====================================================================
+  const BATCH_MIN = 25; // R-CIVPEDIA-BUDYNKI-Q1 (lipiec 2026) — granica, nie licznik
+  check(`docs/encyklopedia/budynki/: co najmniej ${BATCH_MIN} plików .md (batch źródłowy nie skurczył się)`,
+    files.length >= BATCH_MIN, files.length);
+  console.log(`[info] plików .md w docs/encyklopedia/budynki/: ${files.length}`);
 
   const results = [];
   for (const f of files) {
@@ -120,10 +149,16 @@ async function main() {
   // -------------------------------------------------------------------
   const realBundle = JSON.parse(fs.readFileSync(REAL_BUNDLE_PATH, 'utf8'));
   const budynkiEntries = realBundle.encyklopedia.filter((e) => e.folder === 'budynki');
-  check('realny wikiBundle.json: 25 wpisów folder=budynki', budynkiEntries.length === 25, budynkiEntries.length);
+  // Liczba POLICZONA Z DRUGIEGO ARTEFAKTU (patrz blok LICZNIKI wyżej): bundle jest
+  // generowany z katalogu `docs/encyklopedia/budynki/`, więc różnica liczności = bundle
+  // niezregenerowany po dopisaniu/usunięciu hasła. To NIE jest `X === X`.
+  check(`realny wikiBundle.json: liczba wpisów folder=budynki === liczba plików .md w docs/encyklopedia/budynki/ (bundle zregenerowany)`,
+    budynkiEntries.length === files.length, { bundle: budynkiEntries.length, docs: files.length });
   const withHistoria = budynkiEntries.filter((e) => e.historia && e.historia.length >= 100);
-  check('realny wikiBundle.json: WSZYSTKIE 25 wpisów budynki mają niepuste pole historia (≥100 znaków)',
-    withHistoria.length === 25, withHistoria.length);
+  // „WSZYSTKIE” liczone z danych — predykat jest treściowy, więc porównanie do własnej
+  // liczności zbioru NIE jest tautologią: jedno puste `historia` czerwieni asercję.
+  check('realny wikiBundle.json: WSZYSTKIE wpisy budynki mają niepuste pole historia (≥100 znaków)',
+    withHistoria.length === budynkiEntries.length, { zHistoria: withHistoria.length, wszystkich: budynkiEntries.length });
 
   // Wybór 3 haseł (deterministyczny — start, środek, koniec listy).
   const sample = [budynkiEntries[0], budynkiEntries[Math.floor(budynkiEntries.length / 2)], budynkiEntries[budynkiEntries.length - 1]];
