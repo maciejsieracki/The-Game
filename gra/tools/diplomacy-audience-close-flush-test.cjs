@@ -89,9 +89,15 @@ const mainSrc = fs.readFileSync(MAIN_TS, 'utf8');
 //     regexu podnioslo by jednak licznik z 3 na 5, bo main.ts ma dwie WZMIANKI o
 //     `hideDiplomacyAudience()` w komentarzach -- dlatego liczymy na masce, a nie
 //     "naprawiamy" tego podniesieniem progu. [A4d] pilnuje, ze maska nie zjadla kodu.
-function maskNonCode(src) {
+//
+//     `spansOut` (opcjonalny) zbiera KAZDY wyczyszczony zakres wraz z rodzajem
+//     (`comment`/`string`/`tpl`). Dzieki temu [A4d] pyta MASKE wprost, gdzie stoi ukryte
+//     wystapienie, zamiast zgadywac po wygladzie linii -- inaczej legalny napis w main.ts
+//     (np. `console.warn('hideDiplomacyAudience() nie zadzialalo')`) czerwienil bramke.
+function maskNonCode(src, spansOut) {
   const out = src.split('');
-  const blank = (from, to) => {
+  const blank = (from, to, kind) => {
+    if (spansOut) spansOut.push({ from, to: Math.min(to, out.length), kind: kind || 'tpl' });
     for (let k = from; k < to && k < out.length; k++) if (out[k] !== '\n') out[k] = ' ';
   };
   const modes = [{ tplText: false, braces: 0 }];
@@ -100,38 +106,43 @@ function maskNonCode(src) {
     const top = modes[modes.length - 1];
     const c = src[i];
     if (top.tplText) {                                   // wnetrze literalu szablonowego
-      if (c === '\\') { blank(i, i + 2); i += 2; continue; }
-      if (c === '`') { blank(i, i + 1); modes.pop(); i += 1; continue; }
+      if (c === '\\') { blank(i, i + 2, 'tpl'); i += 2; continue; }
+      if (c === '`') { blank(i, i + 1, 'tpl'); modes.pop(); i += 1; continue; }
       if (c === '$' && src[i + 1] === '{') {              // ${ ... } to znowu KOD
-        blank(i, i + 2); modes.push({ tplText: false, braces: 0, inTpl: true }); i += 2; continue;
+        blank(i, i + 2, 'tpl'); modes.push({ tplText: false, braces: 0, inTpl: true }); i += 2; continue;
       }
-      blank(i, i + 1); i += 1; continue;
+      blank(i, i + 1, 'tpl'); i += 1; continue;
     }
     if (c === '/' && src[i + 1] === '/') {
       let j = src.indexOf('\n', i); if (j < 0) j = src.length;
-      blank(i, j); i = j; continue;
+      blank(i, j, 'comment'); i = j; continue;
     }
     if (c === '/' && src[i + 1] === '*') {
       let j = src.indexOf('*/', i + 2); j = j < 0 ? src.length : j + 2;
-      blank(i, j); i = j; continue;
+      blank(i, j, 'comment'); i = j; continue;
     }
     if (c === '"' || c === "'") {
       let j = i + 1;
       while (j < src.length && src[j] !== c && src[j] !== '\n') j += (src[j] === '\\' ? 2 : 1);
-      if (j < src.length && src[j] === c) { blank(i, j + 1); i = j + 1; continue; }
+      if (j < src.length && src[j] === c) { blank(i, j + 1, 'string'); i = j + 1; continue; }
       i += 1; continue;   // niezamkniety w tej linii -- NIE maskujemy (kierunek bezpieczny)
     }
-    if (c === '`') { blank(i, i + 1); modes.push({ tplText: true, braces: 0 }); i += 1; continue; }
+    if (c === '`') { blank(i, i + 1, 'tpl'); modes.push({ tplText: true, braces: 0 }); i += 1; continue; }
     if (c === '{') { top.braces += 1; i += 1; continue; }
     if (c === '}') {
-      if (top.braces === 0 && top.inTpl) { blank(i, i + 1); modes.pop(); i += 1; continue; }
+      if (top.braces === 0 && top.inTpl) { blank(i, i + 1, 'tpl'); modes.pop(); i += 1; continue; }
       top.braces = Math.max(0, top.braces - 1); i += 1; continue;
     }
     i += 1;
   }
   return out.join('');
 }
-const codeSrc = maskNonCode(mainSrc);
+const maskSpans = [];
+const codeSrc = maskNonCode(mainSrc, maskSpans);
+const maskSpanKindAt = (off) => {
+  const s = maskSpans.find(x => off >= x.from && off < x.to);
+  return s ? s.kind : null;
+};
 
 /** Offsety WYWOLAN `name(...)` w KODZIE main.ts (nie w komentarzu/napisie), niezaleznie
  *  od terminatora: `();`, `(),`, `()` na koncu linii, w argumencie, w ciele strzalki.
@@ -267,7 +278,30 @@ const firstAfter = (offsets, from) => { const o = offsets.find(x => x > from); r
 
   // (3) HAK TESTOWY __audienceRelTestDebug.closeAudience -- dzwignia dla Playwrighta,
   //     nieosiagalna z UI gry.
-  const hook = region('(window as any).__audienceRelTestDebug = {', '\n    (window as any).__rebelNotifyTestDebug');
+  /** Zakres [start, end) literalu obiektowego przypisanego do haka -- domkniety PAROWANIEM
+   *  NAWIASOW na masce kodu, nie kotwica na SASIEDNIM haku.
+   *
+   *  PO CO (Final Control rundy 2, mutacja M7). Poprzednia wersja konczyla region literalem
+   *  `'\n    (window as any).__rebelNotifyTestDebug'` -- czyli WIERSZEM SASIADA. Czysto
+   *  kosmetyczne zlamanie tamtej linii (`(window as any)\n      .__rebelNotifyTestDebug = {`)
+   *  dawalo `region === null`, a stad [A4c] „got 0" + [A4f] -- 44/2 bez ZADNEJ zmiany
+   *  semantyki, w dodatku w haku, ktorego ta bramka w ogole nie pilnuje. To ten sam falszywy
+   *  alarm, ktory naprawiala U2, tylko przesuniety o jeden poziom na zewnatrz: usuniecie albo
+   *  przeformatowanie `__rebelNotifyTestDebug` czerwienilo asercje o `__audienceRelTestDebug`.
+   *  Teraz koniec regionu wyznacza wlasna klamra haka i nic poza nim. */
+  function debugHookRegion(hookName) {
+    const open = new RegExp('\\(window as any\\)\\s*\\.\\s*' + hookName + '\\s*=\\s*\\{').exec(codeSrc);
+    if (!open) return null;
+    let depth = 0;
+    for (let k = open.index + open[0].length - 1; k < codeSrc.length; k++) {
+      const ch = codeSrc[k];
+      if (ch === '{') depth += 1;
+      else if (ch === '}') { depth -= 1; if (depth === 0) return [open.index, k + 1]; }
+    }
+    return null;
+  }
+  const hook = debugHookRegion('__audienceRelTestDebug');
+  ok(!!hook, '[A4c] znaleziono i domknieto zakres haka (window as any).__audienceRelTestDebug = { ... }');
 
   /** Zakres [start, end) WARTOSCI wlasnosci `nazwa:` wewnatrz zakresu `r` -- kotwiczenie
    *  SEMANTYCZNE (parowanie nawiasow w kodzie), nie na wierszu fizycznym.
@@ -319,23 +353,59 @@ const firstAfter = (offsets, from) => { const o = offsets.find(x => x > from); r
     `[A4e] OSIAGALNOSC #3: hak jest faktycznie wolany przez co najmniej jedna zywa bramke w gra/tools/ (inaczej to martwy kod do usuniecia) -- got ${gateCallers.length}`);
 
   // (4) FAIL-SAFE MASKI: kazde wystapienie `hideDiplomacyAudience(` w main.ts, ktore maska
-  //     uznala za NIE-kod, musi faktycznie stac w komentarzu. Gdyby maska pomylila sie i
-  //     schowala realne wywolanie, licznik [A4] bylby cicho ZANIZONY -- czyli wrocilaby ta
-  //     sama klasa cichej zieleni, ktora naprawia ta runda. Wtedy bramka ma czerwieniec.
+  //     uznala za NIE-kod, musi lezec w zakresie, ktory maska SAMA zaraportowala jako
+  //     komentarz/napis/szablon. Gdyby maska pomylila sie i schowala realne wywolanie,
+  //     licznik [A4] bylby cicho ZANIZONY -- czyli wrocilaby ta sama klasa cichej zieleni,
+  //     ktora naprawia ta runda. Wtedy bramka ma czerwieniec.
+  //
+  //     Final Control rundy 2, mutacja M5: poprzednia wersja pytala o WYGLAD linii
+  //     (`//`, `*`, `/*`) i przez to czerwienila legalny napis --
+  //     `const s = 'hideDiplomacyAudience() w napisie';` dawalo 45/1. Napis nie jest kodem,
+  //     wiec zamaskowanie go jest POPRAWNE; falszywy alarm tej klasy uczy ignorowac bramke.
+  //     Teraz pytamy o rodzaj zakresu z `maskSpans`, a nie o wciecie.
   {
     const nameRe = /hideDiplomacyAudience\s*\(/g;
     const NAME = 'hideDiplomacyAudience';
+    const OK_KINDS = ['comment', 'string', 'tpl'];
     const suspicious = [];
     let r;
     while ((r = nameRe.exec(mainSrc)) !== null) {
       if (codeSrc.slice(r.index, r.index + NAME.length) === NAME) continue;   // widziane jako kod
-      const lineStart = mainSrc.lastIndexOf('\n', r.index) + 1;
-      const prefix = mainSrc.slice(lineStart, r.index).trim();
-      if (prefix.startsWith('//') || prefix.startsWith('*') || prefix.startsWith('/*')) continue;
-      suspicious.push(mainSrc.slice(lineStart, mainSrc.indexOf('\n', r.index)).trim().slice(0, 80));
+      if (OK_KINDS.includes(maskSpanKindAt(r.index))) continue;               // maska wie, czemu
+      suspicious.push(mainSrc.slice(mainSrc.lastIndexOf('\n', r.index) + 1, mainSrc.indexOf('\n', r.index)).trim().slice(0, 80));
     }
     ok(suspicious.length === 0,
-      `[A4d] maska nie-kodu nie zjadla zadnego WYWOLANIA -- kazde ukryte wystapienie ${NAME}( stoi w komentarzu. Podejrzane: ${suspicious.join(' | ')}`);
+      `[A4d] maska nie-kodu nie zjadla zadnego WYWOLANIA -- kazde ukryte wystapienie ${NAME}( lezy w zaraportowanym komentarzu/napisie/szablonie. Podejrzane: ${suspicious.join(' | ')}`);
+  }
+
+  // (4b) SELF-TEST MASKI na syntetycznej probce. Samo [A4d] pyta maske o jej wlasny werdykt,
+  //      wiec bez tego byloby prawie tautologia: maska, ktora zamaskuje CALY plik, przeszlaby
+  //      [A4d] (kazde ukryte wystapienie ma zaraportowany zakres) i cicho ZANIZYLA [A4].
+  //      Tu sprawdzamy maske na wejsciu o ZNANEJ odpowiedzi -- kod ma zostac widoczny,
+  //      nie-kod ma zniknac, a dlugosc i podzial na wiersze musza sie zachowac (bo [A4]
+  //      liczy offsety maski jako offsety oryginalu).
+  {
+    const F = [
+      'const a = zzz();',                       // 0 KOD -- widoczne
+      '// zzz() w komentarzu liniowym',         // 1 nie-kod
+      '/* zzz() w blokowym */ const b = 1;',    // 2 nie-kod
+      "const c = 'zzz() w napisie';",           // 3 nie-kod
+      'const d = `zzz() w szablonie`;',         // 4 nie-kod
+      'const e = `${zzz()}`;',                  // 5 KOD wewnatrz ${} -- widoczne
+      'const f = 1; // zzz() na koncu linii',   // 6 nie-kod (komentarz po kodzie)
+    ];
+    const fixture = F.join('\n');
+    const masked = maskNonCode(fixture);
+    const mLines = masked.split('\n');
+    const visible = (n) => mLines[n].includes('zzz(');
+    ok(masked.length === fixture.length && mLines.length === F.length,
+      `[A4d2] maska zachowuje dlugosc i podzial na wiersze -- ${masked.length}/${fixture.length}, ${mLines.length}/${F.length}`);
+    ok(visible(0) && visible(5),
+      '[A4d2] maska ZOSTAWIA kod: zwykle wywolanie i wywolanie w interpolacji ${...} szablonu');
+    ok(!visible(1) && !visible(2) && !visible(3) && !visible(4) && !visible(6),
+      '[A4d2] maska USUWA nie-kod: komentarz liniowy, blokowy, napis, tekst szablonu, komentarz po kodzie');
+    ok(masked.includes('const b = 1;') && masked.includes('const f = 1;'),
+      '[A4d2] maska nie zjada kodu stojacego obok nie-kodu w tym samym wierszu');
   }
 
   // (5) Domkniecie: zaden goly hideDiplomacyAudience() nie moze zostac NIEROZPOZNANY.
