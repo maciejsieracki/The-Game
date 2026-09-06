@@ -282,3 +282,95 @@ istnieje ale mapa kieruje `pretorium` na `bld-palac`, `civpedia-gra-id-mostek-te
 Nie wpina Garnizonu w Prawo (osobny temat `R-PRAWO-PRZEBUDOWA-SKALI-Q1`, wartości 25/35/47).
 Nie rusza obrony cywilnej ani Milicji (`P-MILICJA-OBRONA-CYWILNA-Q1`). Nie naprawia
 przyczyny problemu z listą AI. Nie rusza trzech zastanych niespójności z R2-E.
+
+---
+
+## RATYFIKACJA ORKIESTRATORA — runda 3 (2026-09-06, po Final Control `FAIL`)
+
+Final Control rundy 2 wykonał kawał roboty i **wszystkie trzy `NAPRAW` są trafne**. Runda 3
+robi dokładnie je, plus dwie pozycje procesowe. Trzy werdykty „DO DECYZJI CZŁOWIEKA"
+rozstrzygam niżej — dwa z nich właściciel już rozstrzygnął w ABC tej nocy.
+
+### R3-A. `NAPRAW` #2 — REGRES `civpedia-budynki-historia-test` 136/0 → 138/3
+
+Trzy zaszyte liczniki `25` (`:75`, `:123`, `:126`). To ta sama klasa co `grupy-budynkow-test`
+i ten sam błąd, który R2-B kazał naprawić w tamtym pliku — a tutaj przeoczyliśmy.
+
+**Popraw liczniki na stan faktyczny i dołóż komentarz**, że wymagają bumpu przy każdym nowym
+haśle CivPedii. **Jeśli da się je policzyć z danych zamiast zaszyć — zrób to** i napisz w raporcie,
+dlaczego było to możliwe tutaj, a (jeśli tak wyjdzie) niemożliwe w `grupy-budynkow-test`.
+Bramka ma wrócić do zera faili z liczbą asercji **nie mniejszą** niż 138.
+
+### R3-B. `NAPRAW` #3 — pole BLOKADY zgubiło dwie otwarte blokady rundy 1
+
+Raport rundy 2 przyjął dwie blokady rundy 1, ale nie przeniósł ich do swojego pola BLOKADY.
+**Odtwórz je w raporcie rundy 3** — blokada przyjęta, ale niedomknięta, musi być widoczna
+w każdym kolejnym raporcie, aż zniknie. Inaczej znika z pola widzenia dokładnie tak, jak
+zniknęła tutaj.
+
+### R3-C. `NAPRAW` #5 — brak `decision-abc.md` i brak wpisu w rejestrze
+
+C-054 wymaga `decision-abc.md` przy każdym `DECISION_REQUIRED`. Runda 1 go nie zapisała.
+**Utwórz go retroaktywnie** z trzema pytaniami rundy 1 i odpowiedziami właściciela
+(liczby 30/6/2/1/drewno 30 — zatwierdzone; lista AI — „dopisać od razu"; CivPedia — rozszerzona
+allowlista). Wpis do rejestru robi orkiestrator, nie Ty.
+
+### R3-D. `NAPRAW` W2 — etykieta asercji `[AI3]` kłamie
+
+Etykieta twierdzi „bez tego AI nigdy go nie zbuduje". **To jest nieprawda** i Final Control
+to udowodnił: `infraOrder` siedzi w gałęzi `if (opts.defensiveCopy)` (`ai.ts:1455`), czyli
+dotyczy **państw-miast**, a nie cywilizacji AI. Duże AI Garnizonu **nadal nie widzi**.
+
+**Przepisz etykietę na prawdę:** asercja pilnuje, że `garnizon` jest na liście budowy
+**państw-miast**. Nic więcej. Jeśli asercja przy okazji sugeruje pokrycie dużego AI —
+usuń tę sugestię, ale **nie usuwaj samej asercji**.
+
+### R3-E. `NAPRAW` W3 — brak Obrony rundy 2
+
+§16b pkt 3 wymaga odpowiedzi Obrony do **każdego** zarzutu. Runda 2 jej nie miała.
+Runda 3 ma pełny obieg: Operator → Evaluator → Obrona.
+
+### Trzy werdykty „DO DECYZJI CZŁOWIEKA" — rozstrzygnięcia
+
+**#1 — martwy klik „Więcej informacji" dla wszystkich 42 budynków.** Final Control ma rację,
+że kryterium 3 w brzmieniu dosłownym było **niewykonalne w allowliście**, bo defekt leży
+w `renderer.ts` i dotyczy całej rodziny kart (budynki, jednostki, technologie, ulepszenia),
+nie Garnizonu. **Właściciel rozstrzygnął w ABC: osobny temat na całą rodzinę kart.**
+Zdejmuję to z Garnizonu. Kryterium 3 uznaję za **spełnione w części wykonalnej**: hasło
+CivPedii istnieje i jest w bundlu; działający klik należy do tamtego tematu.
+**Zamiast zrzutu działającego kliku** dołóż asercję, że hasło `garnizon` jest obecne
+w `wikiBundle.json` i ma niepustą treść.
+
+**#4 i W1 — łatka AI bezczynna dla dużych cywilizacji.** Operator wykonał dokładnie to,
+co zlecała ratyfikacja („ani jednej innej zmiany w tym pliku"), i **zgłosił rozbieżność
+zamiast improwizować — to było prawidłowe**. Błąd był mój: zatwierdziłem łatkę, nie sprawdziwszy,
+w której gałęzi siedzi lista.
+**Łatka ZOSTAJE** — daje efekt dla państw-miast i nic nie psuje. Duże AI naprawia osobny,
+już zapisany temat `R-AI-PRODUKCJA-Z-DOSTEPNYCH-BUDYNKOW-Q1` (ECHO właściciela: przepiąć AI
+na `availableProduction()`, koniec listy na sztywno). **Nie próbuj naprawiać dużego AI w tej
+rundzie** — to jest zakres tamtego tematu i wejście tam złamie §2b.
+
+**W4 — rozjazd modelu (dispatch mówi Sonnet 5, prompt zlecił Opus 5).** Rozstrzygam:
+**Opus 5 był świadomym wyborem orkiestratora**, bo temat ma składnik wizualny (§9 poz. 6b:
+karta, ikona, zrzuty z Chromium) i wysoką cenę pomyłki w danych balansu. Rozbieżność
+zapisana; dispatch nie był zaktualizowany i to moja niedokładność, nie naruszenie.
+
+### KRYTERIA KOŃCA rundy 3
+
+1. `node gra/tools/civpedia-budynki-historia-test.cjs` — zielona, **≥138 asercji**.
+2. `node gra/tools/grupy-budynkow-test.cjs` — zielona (z rundy 2, ma pozostać).
+3. `node gra/tools/budynek-garnizon-test.cjs` — zielona; etykieta `[AI3]` zgodna z prawdą;
+   nowa asercja na obecność i niepustość hasła CivPedii w `wikiBundle.json`.
+4. `decision-abc.md` istnieje i zawiera trzy pytania rundy 1 z odpowiedziami.
+5. Pole BLOKADY raportu wymienia obie otwarte blokady rundy 1.
+6. `tsc --noEmit` zielony; pięć bramek referencyjnych zielonych.
+7. **Mutacja per naprawa:** zmień jeden licznik CivPedii → bramka czerwona; usuń hasło
+   `garnizon` z bundla → bramka tematu czerwona. Każdą cofnij przez KOPIĘ pliku,
+   `git diff --quiet`.
+8. `git diff` wobec rundy 2 **nie dotyka `gra/data/buildings.json`** — liczby właściciela
+   są zamrożone i runda 3 ich nie rusza.
+
+### Czego runda 3 NIE robi
+
+Nie naprawia kliku CivPedii (osobny temat na całą rodzinę kart). Nie rusza dużego AI
+(osobny temat). Nie zmienia ani jednej liczby balansu. Nie wpina Garnizonu w Prawo.
