@@ -28955,9 +28955,11 @@ async function boot(): Promise<void> {
               const drewnoCap = ownerResourceCap(
                 cities, cityBuilt, ownerId, data, _menuDifficulty, empireEpochForOwner(ownerId),
               );
-              creditOwnerResourceStock(cities, ownerId, 'drewno', drewnoCredit, drewnoCap);
+              const drewnoCredited = creditOwnerResourceStock(
+                cities, ownerId, 'drewno', drewnoCredit, drewnoCap,
+              );
               showHintMessage(
-                'Wycinka: +' + drewnoCredit + ' Drewna (pozostało ' + st.turnsLeft + ' tury)',
+                'Wycinka: +' + drewnoCredited + ' Drewna (pozostało ' + st.turnsLeft + ' tury)',
                 2000,
               );
             }
