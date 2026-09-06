@@ -6,120 +6,67 @@ TEMAT: P-BRAMKA-WSPOLDZIELONY-DIST-TMPDIR-Q1
 MODEL+EFFORT: Operator (obrona) — Opus 5, effort high
 GOAL: Żadna bramka w `gra/tools/` nie może dać wyniku zależnego od tego, czy w tej samej
 chwili biegnie inny przebieg — jej albo czyjkolwiek.
+ZMIANY/COMMIT: `93f59ed9` (69 plików: 57× usunięcie handlerów sygnałów + sweep startowy,
+11× naprawa dosłownych ścieżek `/tmp/`, `bramki-tmpdir-unikalnosc-test.cjs` + reguły R4/R5,
+katalog runu). Allowlista dotrzymana: cały diff w `gra/tools/**/*.cjs` i katalogu runu,
+staging po jawnych ścieżkach, zero `git add -A`, `git diff --check` czysty.
+**Zero zmian w asercjach, progach i logice pomiarowej** — zweryfikowane maszynowo na
+usuniętych liniach diffu (0 trafień `assert|check(|FAIL|prog|threshold|MARGIN`).
 RUNDY: 1/5 (druga faza tej samej rundy, nie nowa runda)
 NASTĘPNY KROK: Final Control (werdykt per zarzut, §3c)
 DEPLOY/PUSH: NIE WYKONANO
 
-**Sześć z siedmiu zarzutów przyjmuję — pięć poprawione w tej rundzie.** Żadnego nie
-odrzucam co do faktów; jeden odrzucam wyłącznie jako zarzut wobec Operatora (Z7).
+**Sześciu zarzutów nie podważam; pięć naprawiłem w tej rundzie.** Jeden (Z7) odrzucam
+wyłącznie jako zarzut wobec Operatora — co do treści zgadzam się z Evaluatorem.
 
-## Uwaga wstępna do izolacji
+## Izolacja — rozbieżność, która nie jest kolizją
 
-Prompt tej fazy każe oczekiwać HEAD `91877f11`. Drzewo było czyste, ale HEAD to
-`1585db98`. To nie jest kolizja: `git merge-base --is-ancestor 91877f11 HEAD` przechodzi,
-a wszystkie 16 commitów między nimi należy do tego tematu (9 Operatora, 4 Evaluatora).
-`91877f11` to baza fazy pierwszej — obrona z definicji startuje z HEAD po Evaluatorze.
-Nie zatrzymałem się na `BLOCK`, bo warunek „cokolwiek innego" dotyczy cudzej pracy
-w worktree, a tu jej nie ma.
+Prompt każe oczekiwać HEAD `91877f11`; drzewo było czyste, ale HEAD to `1585db98`.
+`git merge-base --is-ancestor 91877f11 HEAD` przechodzi, a wszystkie 16 commitów między
+nimi należy do tego tematu (9 moich, 4 Evaluatora). `91877f11` to baza fazy pierwszej —
+obrona z definicji startuje po Evaluatorze. Warunek `BLOCK` chroni przed cudzą pracą
+w worktree; takiej nie ma.
 
-## OBRONA per zarzut
+## Werdykt per zarzut (§3c pkt 2)
 
-### Z1 → PRZYJMUJĘ. Handlery sygnałów usunięte z 57 plików.
+| # | Odpowiedź | Dowód z wytworu |
+|---|---|---|
+| 1 | **PRZYJMUJĘ** | Minimalna reprodukcja `execSync('sleep 8')` + SIGTERM po 2 s: **bez** handlera `exit=143` natychmiast, **z** handlerem z `cf148d0e` sygnał połknięty, `SYNC DONE`, **`exit=0`**. Wariant „handler + re-raise" sprawdzony osobno — **też połknięty, `exit=0`**; ten sam handler POZA `execSync` działa (`exit=143`). Więc żaden wariant handlera nie jest bezpieczny: rejestracja zdejmuje domyślną akcję sygnału, a `execSync` (`vite build`) to większość czasu życia bramki. Blok usunięty z **57/57** plików (przed podmianą zweryfikowany jako bajt-w-bajt identyczny). Po naprawie na PRAWDZIWEJ bramce: SIGTERM w fazie `vite build (fix)` → martwa **<3 s, `exit=143`**. |
+| 2 | **PRZYJMUJĘ** | Mutacja `path.join(os.tmpdir(), 'civ-zz-mut6', 'dist')` w pliku ZE znacznikiem unikalności (czyli w każdym z 57 naprawionych) → bramka **`PASS=3 FAIL=0`, `exit=0`**. Przyczyna w kodzie: forma wieloargumentowa nie jest pojedynczym literałem, spadała do R3, a R3 tłumi `fileHasUniqueMark`. Konkatenacja (M2/M7) nie była łapana wcale. Po poprawce: M2 → `[R4] exit=1`, M6 → `[R1] exit=1`, M7 → `[R4] exit=1`; wszystkie cofnięte, bramka `PASS=3 FAIL=0`. |
+| 3 | **PRZYJMUJĘ** | Potwierdzone: 13 plików z dosłownym `/tmp/` i bez `os.tmpdir()`. `miasta-panstwa-wylaczone-ui-render-test.cjs:19` — stała nazwa **z `--emptyOutDir`**, czyli najwyższa klasa ryzyka z mojej własnej tabeli; `perf-long-session-live-test.cjs` pisał zrzut pod stałą nazwę mimo „naprawy". Przyczyna źródłowa: pula audytu była zdefiniowana przez `grep os.tmpdir()`, więc ta klasa była dla niej **niewidzialna z definicji**. Nowa **R5 skanuje KAŻDY plik**; naprawionych 11; mutacja M8 → `[R5] exit=1`, cofnięta. |
+| 4 | **PRZYJMUJĘ** | Kryterium binarne i w chwili raportu Evaluatora niespełnione. Uruchomiłem **wszystkie 26 zmodyfikowanych przeze mnie bramek Chromium** + `miasta-panstwa-wylaczone-ui-render-test.cjs` — tabela niżej. |
+| 5 | **PRZYJMUJĘ** | Eksperyment powtórzony metodą wskazaną przez Evaluatora: kopia kodu bazowego `91877f11` z **nazwą prywatną** `civ-obrona-z5-prywatny`, 2× równolegle → **`A=1 B=1`**, te same dwa objawy (`ENOTEMPTY … rmdir`, `failed to load config from`). Mechanizm dowiedziony bez dotknięcia ścieżki używanej przez inny worktree; plik roboczy i katalog usunięte, drzewo czyste. |
+| 6 | **PRZYJMUJĘ** | Narracja tego raportu ograniczona; materiał dowodowy §3c przeniesiony do tabel (dispatch: „tabela nie liczy się do limitu — jest wytworem"). Raportu `01` **nie skracam**: to dokument, który Evaluator faktycznie oceniał; przepisanie go po ocenie zaciemniłoby ślad dla Final Control (§13b). |
+| 7 | **ODRZUCAM jako zarzut wobec Operatora** (co do treści — zgoda) | Dowód z normy: §9 pkt 4 — „Zmiana samego procesu nigdy nie jedzie w allowliście tematu produktowego". Jedyny rejestr bramek to `R-PROC-AUTOBOT.md` §6, jawnie zakazany w allowliście dispatchu. Rejestracja **nie mogła** się tu wydarzyć bez naruszenia granicy `FAIL`. Przekazuję orkiestratorowi jako osobny temat `PROCESS`. |
 
-Zmierzone, nie rozważone. Minimalna reprodukcja (`execSync('sleep 8')` + SIGTERM po 2 s):
-bez handlera `exit=143` natychmiast; z handlerem z `cf148d0e` sygnał **połknięty**,
-proces dobiega końca, `exit=0`. Sprawdziłem też wariant „handler + re-raise", żeby nie
-naprawiać połowicznie: **też połknięty, `exit=0`**. Handler poza `execSync` działa
-(`exit=143`) — więc luka pokrywa dokładnie tę fazę, w której bramka spędza większość czasu.
-Wniosek: **żaden wariant handlera nie jest bezpieczny**, bo rejestracja zdejmuje domyślną
-akcję sygnału. Blok sygnałów usunięty ze wszystkich 57 plików (bajt-w-bajt identyczny,
-zweryfikowane przed podmianą).
+## Czym zastąpiłem handlery sygnałów (Z1)
 
-Zamiast niego **sweep startowy**: kasuje wyłącznie katalogi o sygnaturze `-<pid>-<6 znaków>`,
-których **proces już nie żyje** (`process.kill(pid,0)`, `EPERM` traktowane jak „żywy").
-Pomiar na przynętach: martwy PID → usunięty; **żywy PID → nietknięty**; `*-shots-*` →
-zachowany (§9 pkt 6); nazwa bez sygnatury → nietknięta. Przy okazji odzyskał dwie realne
-sieroty (`era-change-notify-bundle-5770-…`, `-7191-…`) — dowód, że wyciek był faktem.
+Sweep **startowy**, nie sygnałowy: kasuje wyłącznie wpisy o sygnaturze `-<pid>-<6 znaków>`,
+których **proces już nie żyje** (`process.kill(pid,0)`; `EPERM` = „żywy", czyli w stronę
+zachowawczą). Zmierzone na przynętach — martwy PID **usunięty**; żywy PID **nietknięty**;
+`*-shots-*` **zachowany** (§9 pkt 6); nazwa bez sygnatury **nietknięta**. Przy okazji
+odzyskał dwie realne sieroty (`era-change-notify-bundle-5770-…`, `-7191-…`) — wyciek był
+faktem, nie hipotezą. Katalog osierocony przez zabity przebieg został sprzątnięty przez
+sweep następnego. Nazwy bez sygnatury (m.in. niezałatane kopie w `wt-garnizon`) są poza
+zasięgiem sweepa z konstrukcji — §2b nietknięte.
 
-Na **prawdziwej bramce**: SIGTERM w fazie `vite build (fix)` → martwa w <3 s, **`exit=143`**,
-osierocony katalog sprzątnięty przez sweep następnego przebiegu.
-**Korekta własnego pomiaru:** pierwszy przebieg tego testu był nieważny — zabiłem podpowłokę
-(15221), nie node'a (15223), który przeżył. Powtórzone na PID node'a. Zgłaszam, bo dokładnie
-ten błąd pomiarowy mógłby mnie doprowadzić do fałszywego „naprawione".
-
-### Z2 → PRZYJMUJĘ. Reguła R4 dodana, R1 poprawiona.
-
-Potwierdzone mutacją: `path.join(os.tmpdir(), 'civ-zz-mut6', 'dist')` w pliku ZE znacznikiem
-unikalności (czyli w każdym z 57 naprawionych) → bramka **`PASS=3 FAIL=0`, `exit=0`**.
-Przyczyna w kodzie: forma wieloargumentowa nie jest pojedynczym literałem, więc spadała do
-R3, a R3 jest tłumione przez `fileHasUniqueMark`. Konkatenacja `os.tmpdir() + '/nazwa'`
-(M2, M7) nie była łapana w ogóle.
-Poprawka: R1 klasyfikuje po **każdym segmencie** (`splitTopLevel`), nowa **R4** łapie
-konkatenację w obu notacjach. Po mutacji: M2 → `[R4] exit=1`, M6 → `[R1] exit=1`,
-M7 → `[R4] exit=1`. Wszystkie cofnięte, bramka `PASS=3 FAIL=0`.
-
-### Z3 → PRZYJMUJĘ. Nowa reguła R5 + 11 plików naprawionych.
-
-Zarzut trafny co do faktu i co do przyczyny: pula audytu była zdefiniowana przez
-`grep os.tmpdir()`, więc klasa z dosłownym `/tmp/…` była dla niej **niewidzialna z definicji** —
-ta sama ślepota, którą sam zgłaszałem przy `.smoke-*`, tylko o krok dalej.
-Potwierdzone: 13 plików z dosłownym `/tmp/` i bez `os.tmpdir()`;
-`miasta-panstwa-wylaczone-ui-render-test.cjs:19` to stała nazwa **z `--emptyOutDir`**, czyli
-najwyższa klasa ryzyka z mojej własnej tabeli; `perf-long-session-live-test.cjs` pisał zrzut
-pod stałą nazwę mimo że plik był „naprawiony".
-
-**R5 skanuje KAŻDY plik**, nie tylko te z `tmpdir`. Naprawione 11 plików, z rozróżnieniem,
-którego wcześniej nie było:
-- cel zapisu konsumowany **w tym samym procesie** (DIST/WORK/build) → sufiks
-  `-${TMPDIR_RUN_ID}`, czyli sygnatura sprzątana przez sweep;
-- **wytwór do odczytania później** (raporty `--out`, zrzuty) → sufiks `-p${process.pid}`:
-  unikalny, ale **celowo poza sygnaturą sweepa**, żeby sweep nie skasował dowodu.
-
-Whitelist 4 pozycji, każda z powodem, wzorem `mgla-sciezka-inwariant-test.cjs`: wyłącznie
-ścieżki **czytane**. Dwa przebiegi czytające ten sam katalog sobie nie przeszkadzają;
-każdy CEL ZAPISU whitelisty nie dostaje. Mutacja M8 (`'/tmp/civ-zz-mut8-dist'` w pliku bez
-`os.tmpdir()`) → `[R5] exit=1`, cofnięta.
-
-### Z4 → PRZYJMUJĘ. Bramki Chromium uruchomione.
-
-Kryterium binarne i w chwili raportu Evaluatora niespełnione — nie broniłem tego wtedy
-i nie bronię teraz. Uruchomiłem **wszystkie 26 zmodyfikowanych przeze mnie bramek Chromium**
-plus `miasta-panstwa-wylaczone-ui-render-test.cjs`. Wyniki w tabeli niżej.
-
-### Z5 → PRZYJMUJĘ. Eksperyment PRZED powtórzony bezpiecznie.
-
-Zarzut trafny: eksperyment użył kanonicznej, współdzielonej nazwy w czasie, gdy sam
-zapisałem, że `wt-garnizon` z niej korzysta — czyli wytworzyłem dokładnie tę szkodę,
-którą temat ma likwidować. Powtórzone metodą wskazaną przez Evaluatora: kopia kodu
-bazowego `91877f11` z **nazwą prywatną** `civ-obrona-z5-prywatny`, dwa przebiegi równolegle.
-Wynik: **`A=1 B=1`**, te same dwa objawy (`ENOTEMPTY … rmdir`, `failed to load config from`).
-Mechanizm dowiedziony bez dotknięcia cudzej ścieżki; plik roboczy i katalog usunięte.
-
-### Z6 → PRZYJMUJĘ dla tego raportu.
-
-Narracja tej obrony mieści się w ~400 słowach (tabele i cytaty pomiarów nie liczą się —
-§11 / dispatch). Raportu `01` **nie skracam**: to dokument, który Evaluator faktycznie
-oceniał, a przepisywanie go po ocenie zaciemniłoby ślad dla Final Control (§13b).
-
-### Z7 → ODRZUCAM jako zarzut wobec Operatora, PRZYJMUJĘ co do treści.
-
-Dowód z normy, nie z opinii: §9 pkt 4 — „Zmiana samego procesu nigdy nie jedzie
-w allowliście tematu produktowego". Jedyny rejestr bramek to `docs/decyzje/R-PROC-AUTOBOT.md`
-§6, jawnie zakazany w allowliście dispatchu. Rejestracja **nie mogła** się tu wydarzyć
-bez naruszenia granicy. Przekazuję orkiestratorowi jako osobny temat `PROCESS`.
-Sam Evaluator klasyfikuje to tak samo.
+**Korekta własnego pomiaru:** pierwszy przebieg testu zabijalności był NIEWAŻNY — zabiłem
+podpowłokę (PID 15221), nie node'a (15223), który przeżył. Powtórzone na PID node'a.
+Zgłaszam, bo ten właśnie błąd pomiarowy mógł mnie doprowadzić do fałszywego „naprawione".
 
 ## DO DECYZJI CZŁOWIEKA
 
 **Domyślne nazwy katalogów raportowych `--out`** (`flaga-mp-*`, `wojny-kamien-ev/fc`).
-Uczyniłem je unikalnymi, bo stała nazwa łamie GOAL. Ale te katalogi są **wytworem dla
-człowieka**, a nie artefaktem wewnętrznym: jeśli ktoś ma zapisany stały `/tmp/ev-wojny-out`
-w swoim nawyku albo skrypcie, zmiana domyślnej nazwy mu go psuje. Wytwór sam nie
-rozstrzyga, czy te narzędzia są martwymi jednorazówkami z zamkniętych tematów (tak
-sugerują nazwy `ev`/`fc`/`audyt`), czy żywym warsztatem. Wywołanie z jawnym `--out`
-jest nietknięte w obu wariantach.
+Uczyniłem je unikalnymi, bo stała nazwa łamie GOAL, ale są to **wytwory dla człowieka**,
+nie artefakty wewnętrzne: komu w nawyku albo w skrypcie siedzi stały `/tmp/ev-wojny-out`,
+temu zmiana domyślnej nazwy go psuje. Wytwór sam nie rozstrzyga, czy to martwe
+jednorazówki z zamkniętych tematów (tak sugerują nazwy `ev`/`fc`/`audyt`), czy żywy
+warsztat. Wywołanie z jawnym `--out` jest nietknięte w obu wariantach. Rozróżnienie, które
+zastosowałem: cel konsumowany w tym samym procesie (DIST/WORK) dostaje sufiks sprzątany
+przez sweep; wytwór do odczytania później (raporty, zrzuty) dostaje sufiks `-p<pid>`
+**celowo poza sygnaturą sweepa**, żeby sweep nie skasował dowodu.
 
-## TESTY (uruchomione w tej fazie)
+## TESTY (uruchomione w tej fazie, nie przepisane)
 
 | bramka | wynik |
 |---|---|
@@ -130,5 +77,11 @@ jest nietknięte w obu wariantach.
 | `unit-replace-test` | **13/13** |
 | `combat-test` | **6/6** |
 | `mgla-sciezka-inwariant-test` | **42/42** |
-| `bramki-tmpdir-unikalnosc-test` | **PASS=3 FAIL=0**; mutacje M2/M6/M7/M8 → `exit=1` (R4/R1/R4/R5), cofnięte |
+| `bramki-tmpdir-unikalnosc-test` | **PASS=3 FAIL=0**; M2→R4, M6→R1, M7→R4, M8→R5, każda `exit=1`, wszystkie cofnięte |
 
+15 szybkich bramek zmodyfikowanych w tym temacie, każda osobno — **wszystkie `exit=0`**:
+`_tmp-battle-roster`, `_tmp-siege` 11/11, `city-defense-terrain-gate` 34/34,
+`counter-migration` 15/15, `defense-breakdown` 44/44, `era-change-notify` 8/8,
+`fortify-pole` 41/41, `teren-walki-etapy`, `walka-jeden-kontratak` 24/24,
+`walka-morale-przewaga-mocy` 123/123, `hud-moc-warstwa`, `hud-obywatele-chip` 20/20,
+`moc-ranking-rozjazd`, `structure-defense-bonus` 8/8, `weterani`.
