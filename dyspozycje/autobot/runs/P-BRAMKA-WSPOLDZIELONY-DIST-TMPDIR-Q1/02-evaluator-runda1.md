@@ -61,7 +61,11 @@ bezpieczne (`mkdtempSync` / `process.pid`).
 | `mgla-sciezka-inwariant-test` (bramka odniesienia, nietknięta) | 42/42 |
 | „tryb trzeci" — sprzątanie | `comm -13` na listingu `/tmp` przed/po 15 bramkach → **zero nowych pozostałości** |
 | 6 bramek czerwonych — czy pre-istniejące | podmieniłem każdą na wersję z `91877f11` i uruchomiłem: **identyczna przyczyna i `exit=1` w obu wersjach**, wszystkie sześć |
-| kryt. 3, część PO (2× równolegle na HEAD) | POMIAR W TOKU — uzupełniony osobnym commitem |
+| kryt. 3, część PO (2× równolegle na HEAD) | **`A=0 B=0`, `PASS=42 FAIL=0` w obu**; katalogi `…-9801-84b7zj` i `…-9803-fa6pdy`, oba sprzątnięte; **zero** błędów katalogowych; 42 asercje i **wszystkie 261 linii logu identyczne** po znormalizowaniu run-id (`diff` = 0 różnic) |
+
+Kryterium 3 PO wypada u mnie **lepiej niż w raporcie**: Operator zgłaszał 81 różniących
+się linii w informacyjnym zrzucie MUT-B (`p=277` vs `p=278`); u mnie oba logi są identyczne
+co do linii, więc ta niedeterminacja nie odtworzyła się.
 
 **Czego nie odtworzyłem i dlaczego:** części PRZED kryterium 3 nie powtarzam. Kod bazowy
 pisze do współdzielonego `/tmp/civ-ai-buduje-budynki`, a `wt-garnizon` używa tego katalogu
@@ -73,11 +77,14 @@ przebieg — §2b. Mechanizm potwierdzam odczytem: `TMP_ROOT` → `root-<wariant
 
 **1. Blok sygnałów połyka `SIGTERM` i odbiera bramkom zabijalność — a raport twierdzi
 coś przeciwnego.** `gra/tools/ai-buduje-budynki-test.cjs:107-109` i **57 plików** z tym
-samym blokiem, z czego **24 używają `execSync`/`spawnSync`**. Zmierzyłem na minimalnej
-reprodukcji tego samego wzorca: `kill -TERM` na PID node'a w trakcie `execSync` **przed**
-zmianą → natychmiastowa śmierć, `exit=143`; **po** zmianie → sygnał zjedzony w całości,
-proces dobiega do końca i kończy się **`exit=0`**. Raport (sekcja „czwarty defekt")
-podaje dla tego przypadku `exit=143` — to jest nieprawda mierzalna w 20 sekund.
+samym blokiem, z czego **24 używają `execSync`/`spawnSync`**. Zmierzone dwa razy:
+(a) minimalna reprodukcja wzorca — `kill -TERM` na PID node'a w trakcie `execSync`
+**przed** zmianą → natychmiastowa śmierć, `exit=143`; **po** zmianie → sygnał zjedzony
+w całości, proces dobiega do końca i kończy się **`exit=0`**;
+(b) **na prawdziwej bramce**: `kill -TERM` na PID node'a `ai-buduje-budynki-test.cjs`
+w fazie `vite build (fix)` — po 12 s ŻYJE, po 30 s ŻYJE i przeszedł do `vite build (mut-a)`.
+Raport (sekcja „czwarty defekt") podaje dla tego przypadku `exit=143` — to jest nieprawda
+mierzalna w 30 sekund.
 Znaczenie dla GOAL: udokumentowanym wyjściem z incydentu z dispatchu było „po ubiciu obu
 i przebiegu pojedynczym"; ta zmiana odbiera to wyjście dla fazy buildu. Dodatkowo
 przerwany przebieg raportuje teraz `0` zamiast `143`, czyli **fałszywy zielony** —
