@@ -1,10 +1,10 @@
 {
-  "publishedAt": "2026-09-06T06:47:00",
-  "sourceBuild": "/tmp/civ-dist-fala350-6098",
-  "note": "FALA 350 - przebudowa skali Szczescia (G1-G15 + R3/R4) plus trzy tematy procesowe.",
+  "publishedAt": "2026-09-06T13:59:00",
+  "sourceBuild": "/tmp/civ-dist-13642-1788703077",
+  "note": "FALA 351 - barbarzyncy krazenie (jedna regula wszystkich trudnosci), AI zdobycie miasta przez adiacencje (parytet z graczem), domkniecie roster-zwiadowca runda 2 (naprawa fixture'u), kopalnia podswietlenie kosmetyka.",
   "publisher": "Orkiestrator (Claude Code)",
   "bundle": "Gra-ROBOCZA.html",
-  "md5": "56c361a9ddd55ee4fb81dfcd6244a353",
+  "md5": "72f200267406d557992be46644639197",
   "bundlePoleBitwy": "Gra-ROBOCZA-POLE-BITWY.html",
   "md5PoleBitwy": "d4477b3eaed627e426c41b9f8d0ad1f1"
 }

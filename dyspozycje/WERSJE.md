@@ -13,6 +13,16 @@ swoim wĹ‚asnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji d
 > Pakiet 3 z 2026-08-20 jest docs-only i nie tworzy wpisu ROBOCZA/KANON/FINALNA;
 > ten plik pozostaje wyłącznie rejestrem publikacji bundli.
 
+## ROBOCZA 72f20026 - 2026-09-06 13:59 UTC - FALA 351: barbarzyncy, AI adiacencja, roster-zwiadowca r2, kopalnia
+
+|- md5 (pełne): 72f200267406d557992be46644639197 · stempel: ROBOCZA · label 72f20026 · źródłowy commit integracji: `eaa2ad3b`
+|- **`P-BARBARZYNCY-KRAZENIE-NIEBRONIONE-Q1`** (`d65bb05a`, ECHO właściciela 2026-09-05) — barbarzyńca stojący przed wyborem celu podejmuje decyzję i idzie, zamiast krążyć między niebronionymi miastami bez końca. Jedna reguła na wszystkich poziomach trudności — zmierzony efekt uboczny świadomie przyjęty: barbarzyńcy stają się groźniejsi na easy. Nowa bramka `barbarzyncy-krazenie-test.cjs` 249/0. Siostrzana `barb-city-behavior-test.cjs` 178→177 asercji (jeden żywy dowód mutacyjny stał się zachowaniowo martwy przez tę naprawę) — ubytek ratyfikowany przez właściciela.
+|- **`P-AI-BRAK-SCIEZKI-ZDOBYCIA-MIASTA-ADIACENCJA-Q1`** (`eaa2ad3b`, 2 rundy, ECHO właściciela 2026-09-05) — duże AI dostaje działającą ścieżkę zdobycia sąsiedniego, niebronionego obcego miasta — parytet z graczem i barbarzyńcami (`tryAutoCaptureEmptyCityAt`). Runda 2 domyka parytet dla jednostek cywilnych: cywil AI nie przejmuje miasta, tak jak u gracza. Nowa bramka `ai-zdobycie-miasta-adiacencja-test.cjs` 88/88. Final Control PASS, cztery drobne luki pokrycia zarejestrowane osobno.
+|- **`P-ROSTER-ZWIADOWCA-DRIFT-DWOCH-FUNKCJI-Q1`** (`50c838ba` + `d65bb05a`, 2 rundy) — zgłoszony „rozjazd dwóch funkcji" okazał się fałszywy (błąd etykiety asercji, nie treści); realna przyczyna to wadliwy fixture bramki (czwarta jednostka bojowa w promieniu, licznik ślepy na nią). Runda 2 naprawia WYŁĄCZNIE fixture, zero zmian `gra/src` — asercja przepisana z licznika na kontrolę zbioru ID (mocniejsza), dopisana asercja parytetu obu funkcji. `map-field-battle-test.cjs` 19/1 → 22/22. Wyniesione jako osobne tematy: `collectPlaytestBattleRoster` nie wyklucza cywilów (naprawa wymaga `main.ts`, zablokowana §2b) i rozjazd dla kotwicy poza miastem (ratyfikowany jako zamierzony).
+|- **`P-KOPALNIA-PODSWIETLENIE-KOSMETYKA-Q1`** (`f5cf982a`) — cztery drobne poprawki kosmetyczne podświetlenia zasięgu kopalni (`rangeOverlay.ts`).
+|- tsc --noEmit 0 błędów · 5 bramek referencyjnych zielonych (logic 213/213, tech-tree 19/19, research 33/33, unit-replace 13/13, combat 6/6) · rodzina gracz/barbarzyńcy/AI zielona (11 bramek) · Vite build 882 modułów, singlefile.
+|- **AKTUALNA**
+
 ## ROBOCZA 56c361a9 - 2026-09-06 06:47 UTC - FALA 350: przebudowa skali Szczescia (G1-G15 + R3/R4) + trzy tematy procesowe
 
 |- md5 (pełne): 56c361a9ddd55ee4fb81dfcd6244a353 · stempel: ROBOCZA · label 56c361a9 · źródłowy commit integracji: `04660f9d`
@@ -23,7 +33,7 @@ swoim wĹ‚asnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji d
 |- **`P-IZOLACJA-DWOCH-PISARZY-JEDEN-WORKTREE`** (`00fa9fc9`) — proces. `R-PROC-AUTOBOT.md` §2b dostaje regułę **jeden pisarz na worktree, w każdej chwili**, z rozróżnieniem od istniejącej reguły o dwóch RÓŻNYCH tematach. Sedno: skrypt Workflow ma TRZY fazy, więc **runda N kończy się dopiero, gdy skrypt zwróci wynik**, nie po Evaluatorze. Guard `git log -1` + `git status` z instrukcją `BLOCK` w każdym prompcie; mutacje cofane przez kopię pliku, nigdy `git checkout`. Incydent źródłowy: trzy wystąpienia w jednym temacie, praca ocalała wyłącznie dzięki ostrożności agentów.
 |- **`P-BRAMKA-AI-BUDYNKI-NIEZAREJESTROWANA-W-PROC-Q1`** (`00fa9fc9`) — do tabeli bramek §6 dopisane trzy bramki, które powstały w ostatnich falach i nigdzie nie figurowały (`ai-buduje-budynki` 42/0 z zakazem osłabiania `A7`, `map-field-battle` 20/20, `entity-card-contract` 75/0), plus reguła: **nowa bramka istnieje dopiero wtedy, gdy jest w tabeli §6** — inaczej weryfikator zamówiony jako trwały cicho umiera.
 |- **`P-AUDYT-STATUS-OTWARTE-REGEX-SLEPOTA`** (`9ad5d3ed`) — komenda kontrolna z `CLAUDE.md` §0c widziała **31 z 71** realnie otwartych pozycji, bo łapała wyłącznie formę kanoniczną. Poprawiona w obu zawsze-ładowanych nośnikach. Wariant „normalizacja 29 wpisów" odrzucony jako niepotrzebne ryzyko zmiany treści.
-|- **AKTUALNA**
+|- ZASTĄPIONA przez FALA 351
 
 ## ROBOCZA df1c0a87 - 2026-09-05 18:20 UTC - FALA 349: 8 tematow (AI stawia budynki, dwie bramki INFRA, autowyzywienie x2, nazwy miast, sufit kart, symulator py, etykieta miasta)
 
