@@ -88,12 +88,36 @@ process.on('exit', () => {
     }
   } catch { /* best-effort */ }
 });
-// Przerwanie (SIGTERM z `timeout`, SIGINT z Ctrl-C, SIGHUP) nie odpala haka `exit`.
-// Przekierowujemy je na process.exit(), zeby sprzatanie wyzej wykonalo sie tak samo.
-// SIGKILL jest nieprzechwytywalny i zostawi katalog — to jedyna luka i jest swiadoma.
-for (const sig of ['SIGINT', 'SIGTERM', 'SIGHUP']) {
-  process.on(sig, () => { process.exit(130); });
-}
+// SPRZATANIE PO PRZERWANYM PRZEBIEGU — BEZ dotykania dyspozycji sygnalow.
+// Wczesniejsza wersja rejestrowala tu handlery SIGINT/SIGTERM/SIGHUP. To bylo GORSZE niz
+// wyciek katalogu. Rejestracja handlera zdejmuje domyslna akcje sygnalu, a sygnal
+// dostarczony w trakcie synchronicznego `execSync` (`vite build` — czyli wiekszosc czasu
+// zycia tej bramki) NIE odpala handlera JS w ogole i zostaje POLKNIETY. Zmierzone na
+// minimalnej reprodukcji i na tej bramce: bez handlera SIGTERM daje `exit=143` natychmiast,
+// z handlerem proces zyje dalej i konczy sie `exit=0`. Bramka tracila zabijalnosc, a
+// przerwany przebieg raportowal SUKCES — dokladnie ten falszywy ZIELONY, ktory ten temat
+// ma likwidowac. Dlatego handlerow sygnalow tu nie ma i byc nie moze.
+// Zamiast tego przy STARCIE kasujemy wlasne osierocone katalogi z poprzednich przebiegow,
+// ktorych proces juz nie zyje. Dziala takze po SIGKILL, nieprzechwytywalnym z definicji.
+(() => {
+  const nfs = require('fs'); const npath = require('path'); const nos = require('os');
+  // Sygnatura nazw nadawana przez ten temat: `<baza>-<pid>-<6 znakow>` (+ ewent. rozszerzenie).
+  const STALE = /-(\d+)-[a-z0-9]{6}(?:\.[A-Za-z0-9]+)?$/;
+  const alive = (pid) => {
+    try { process.kill(pid, 0); return true; } catch (e) { return e.code === 'EPERM'; }
+  };
+  try {
+    for (const ent of nfs.readdirSync(nos.tmpdir())) {
+      const m = STALE.exec(ent);
+      if (!m) continue;
+      if (/shots|preview|zrzut/i.test(ent)) continue;   // zrzuty sa DOWODEM (§9 pkt 6)
+      const pid = Number(m[1]);
+      // Cudzy (albo wlasny) ZYWY przebieg zostaje nietkniety — kasujemy wylacznie sieroty.
+      if (!Number.isInteger(pid) || pid === process.pid || alive(pid)) continue;
+      try { nfs.rmSync(npath.join(nos.tmpdir(), ent), { recursive: true, force: true }); } catch { /* best-effort */ }
+    }
+  } catch { /* best-effort */ }
+})();
 const OUTDIR = path.resolve(os.tmpdir(), `civ-zelazo-t8-bundles-${TMPDIR_RUN_ID}`);
 const FALLBACK_CHROME = '/opt/pw-browsers/chromium-1194/chrome-linux/chrome';
 const Z3_TS = path.resolve(GRA, 'src', 'render', 'jednostki-z3-plemiona.ts');

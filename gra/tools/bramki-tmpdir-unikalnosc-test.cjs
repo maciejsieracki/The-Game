@@ -47,6 +47,23 @@ const TMPDIR_CALL = String.raw`(?:os\.tmpdir\(\)|require\((?:'os'|"os")\)\.tmpdi
 /** Znaczniki, które czynią nazwę unikalną per przebieg. */
 const UNIQUE_MARK = /process\.pid|Math\.random|TMPDIR_RUN_ID|TMPDIR_RUN_DIR/;
 
+/**
+ * Jedyne dopuszczone DOSLOWNE sciezki `/tmp/...` — kazda z powodem, wzorem jawnej
+ * whitelisty `mgla-sciezka-inwariant-test.cjs`. Wpis wolno dodac TYLKO dla sciezki
+ * czytanej, nigdy zapisywanej: wejscie moze byc wspoldzielone, bo dwa przebiegi
+ * czytajace ten sam katalog sobie nie przeszkadzaja. Kazdy CEL ZAPISU musi byc
+ * unikalny per przebieg i whitelisty nie dostanie.
+ */
+const TMP_LITERAL_WHITELIST = {
+  // domyslne WEJSCIE: rozpakowany wczesniej stan bazowy, tylko odczyt (nadpisywalne env-em)
+  'ev4-kryteria-check.cjs::/tmp/ev4-przed-r3/gra/src': true,
+  // domyslne WEJSCIE analizy: katalog raportu wyprodukowanego wczesniej przez inne narzedzie
+  'wojny-kamien-ev-analiza.cjs::/tmp/ev-out': true,
+  'wojny-zelazo-analiza.cjs::/tmp/zelazo-out': true,
+  // domyslne WEJSCIE: rozpakowany checkout stanu pre-main, wylacznie odczyt
+  'miasta-panstwa-wylaczone-test.cjs::/tmp/claude-0/-home-user-The-Game/cbf4a126-dca3-5f50-bfb0-2a747b18a590/scratchpad/pre-main/gra': true,
+};
+
 let pass = 0;
 let fail = 0;
 const findings = [];
@@ -95,20 +112,62 @@ function nameArgAfter(src, idxAfterTmpdirCall) {
 const files = listCjs(TOOLS_DIR).sort();
 check('skan objął jakiekolwiek pliki .cjs w tools/', files.length > 0, files.length);
 
+/** Rozbicie listy argumentow po przecinkach NAJWYZSZEGO poziomu. */
+function splitTopLevel(argSrc) {
+  const out = []; let depth = 0, cur = '', instr = null;
+  for (let i = 0; i < argSrc.length; i++) {
+    const c = argSrc[i];
+    if (instr) {
+      cur += c;
+      if (c === '\\') { cur += argSrc[++i] || ''; continue; }
+      if (c === instr) instr = null;
+      continue;
+    }
+    if (c === '"' || c === "'" || c === '`') { instr = c; cur += c; continue; }
+    if (c === '(' || c === '[' || c === '{') depth++;
+    else if (c === ')' || c === ']' || c === '}') depth--;
+    if (c === ',' && depth === 0) { out.push(cur.trim()); cur = ''; continue; }
+    cur += c;
+  }
+  if (cur.trim()) out.push(cur.trim());
+  return out;
+}
+
+/** Czy wyrazenie jest STALYM literalem tekstowym (bez interpolacji)? */
+function isLiteralExpr(e) {
+  return /^'[^']*'$/.test(e) || /^"[^"]*"$/.test(e) || (/^`[^`]*`$/.test(e) && !e.includes('${'));
+}
+
 let scanned = 0;
 for (const file of files) {
   const rel = path.relative(TOOLS_DIR, file);
   const src = fs.readFileSync(file, 'utf8');
+  const lines = src.split('\n');
+
+  // --- R5: DOSLOWNA sciezka '/tmp/...' — klasa CALKOWICIE poza zasiegiem R1-R4 ----------
+  // Plik moze nigdy nie wywolac os.tmpdir() i mimo to pisac do wspoldzielonego katalogu
+  // (np. `const OUT_DIR = '/tmp/civ-dist-...'` + `--emptyOutDir`). Dlatego ta regula
+  // dziala na KAZDYM pliku, nie tylko na tych z `tmpdir` — inaczej audyt oparty na
+  // `grep os.tmpdir()` nie zobaczylby ich nigdy, tak jak nie zobaczyl za pierwszym razem.
+  const litRe = /(['"`])\/tmp\/([^'"`\n]*)\1/g;
+  let lm;
+  while ((lm = litRe.exec(src)) !== null) {
+    const lineNo = src.slice(0, lm.index).split('\n').length;
+    const line = lines[lineNo - 1];
+    if (isCommentLine(line)) continue;
+    // (bez literalu '/tmp/' w tym miejscu — inaczej detektor zglaszalby sam siebie)
+    const full = lm[0].slice(1, -1);
+    if (UNIQUE_MARK.test(line)) continue;              // nazwa juz uzmienniona w tej linii
+    if (TMP_LITERAL_WHITELIST[rel + '::' + full]) continue;   // wejscie tylko-do-odczytu
+    findings.push({ rule: 'R5', rel, lineNo, arg: full, line: line.trim() });
+  }
+
   if (!src.includes('tmpdir')) continue;
   scanned++;
-  const lines = src.split('\n');
   const fileHasUniqueMark = UNIQUE_MARK.test(src) || src.includes('mkdtempSync');
 
-  // --- R1 + R3: `path.join|resolve(<tmpdir>, ARG)` -------------------------------------
-  const joinRe = new RegExp(String.raw`path\.(?:join|resolve)\(\s*` + TMPDIR_CALL + String.raw`\s*\)?`, 'g');
-  // (uwaga: dopasowujemy do domkniecia wywolania tmpdir, dalej idzie recznie liczony ARG)
+  // --- R1 + R3: `path.join|resolve(<tmpdir>, ARG...)` ----------------------------------
   const callRe = new RegExp(String.raw`path\.(?:join|resolve)\(\s*` + TMPDIR_CALL, 'g');
-  void joinRe;
   let m;
   while ((m = callRe.exec(src)) !== null) {
     const lineNo = src.slice(0, m.index).split('\n').length;
@@ -122,8 +181,12 @@ for (const file of files) {
     if (arg === null) continue;
     if (UNIQUE_MARK.test(arg)) continue;
 
-    const isLiteral = /^'[^']*'$/.test(arg) || /^"[^"]*"$/.test(arg) || (/^`[^`]*`$/.test(arg) && !arg.includes('${'));
-    if (isLiteral) {
+    // `path.join(tmpdir, 'a', 'b')` to nadal STALA sciezka. Liczy sie kazdy segment:
+    // gdyby patrzec tylko na pierwszy argument jako calosc, forma wieloargumentowa
+    // wpadalaby do R3 i znikala w kazdym pliku majacym gdziekolwiek znacznik unikalnosci.
+    const segs = splitTopLevel(arg);
+    const allLiteral = segs.length > 0 && segs.every(isLiteralExpr);
+    if (allLiteral) {
       findings.push({ rule: 'R1', rel, lineNo, arg, line: line.trim() });
     } else if (!fileHasUniqueMark) {
       findings.push({ rule: 'R3', rel, lineNo, arg, line: line.trim() });
@@ -137,6 +200,22 @@ for (const file of files) {
     const line = lines[lineNo - 1];
     if (isCommentLine(line)) continue;
     findings.push({ rule: 'R2', rel, lineNo, arg: '(korzen os.tmpdir())', line: line.trim() });
+  }
+
+  // --- R4: KONKATENACJA `os.tmpdir() + '/nazwa'` ----------------------------------------
+  // Forma rownowazna R1, ktorej `path.join` nie widzi. Bez tej reguly nowa bramka pisze
+  // do wspoldzielonego katalogu i przechodzi na zielono — czyli scenariusz "55. bramka
+  // za miesiac" nie jest zatrzymany, a to jest cala racja istnienia tej bramki.
+  const concatRe = new RegExp(TMPDIR_CALL + String.raw`\s*\+\s*`, 'g');
+  while ((m = concatRe.exec(src)) !== null) {
+    const lineNo = src.slice(0, m.index).split('\n').length;
+    const line = lines[lineNo - 1];
+    if (isCommentLine(line)) continue;
+    // Reszta wyrazenia do konca instrukcji/linii — jesli nie ma w niej znacznika
+    // per-przebieg, sklejona sciezka jest stala.
+    const rest = src.slice(m.index + m[0].length).split('\n')[0];
+    if (UNIQUE_MARK.test(rest)) continue;
+    findings.push({ rule: 'R4', rel, lineNo, arg: rest.trim().slice(0, 60), line: line.trim() });
   }
 }
 
