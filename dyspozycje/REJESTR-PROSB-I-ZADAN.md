@@ -5982,3 +5982,31 @@ allowlisty main.ts o jedna linie (przyjete) i pominiecie sprzatania martwych bun
 Zamyka zalezlnosc Garnizon → AI-produkcja → Prawo. **Odblokowuje wspolny deploy ROBOCZA
 (Garnizon + AI-produkcja + Prawo razem), zgodnie z ratyfikacja: „Garnizon wchodzi do main
 teraz, ale ROBOCZA czeka i wychodzi razem z Prawem".**
+
+## `R-MIASTA-ZDOBYCIE-RAPORT-TROFEA-Q1` — GAME — **ZINTEGROWANE 2026-09-06** (2 rundy, commit `6d082b9a`)
+
+Modal zdobycia miasta i eliminacji pokazuje **strukturalny raport** (złoto/nauka/technologie
+przejęte/Power/budynki) zamiast ogólników, plus wpis w panelu wydarzeń — zgodnie z ECHO
+właściciela (1) „bez nowej mechaniki" i (2) „modal ORAZ wpis w panelu". **Ekonomia przejęcia
+nietknięta** — kto co dostaje przy zdobyciu stolicy/eliminacji/zwykłym mieście zostaje
+dokładnie jak dotąd; temat zmienia wyłącznie to, co gracz WIDZI.
+
+Runda 1 zakończyła się `DECISION_REQUIRED` — sprzeczność w samym dispatchu, nie defekt
+wytworu: bramka `gra/tools/eliminacja-lup-kwoty-test.cjs` asercjonowała dosłowny literał
+sklejanego stringa, który GOAL kazał usunąć z `main.ts`. Rozstrzygnięcie: rozszerzyć
+allowlistę o tę bramkę i przepisać ją na nową strukturę w rundzie 2, bez osłabienia (**zakaz
+podmiany asercji na słabsze**, próg ≥24). Runda 2: bramka przepisana na strukturę
+`reportRows` — **24 → 35 asercji**, mapowanie 1:1 udokumentowane zdanie po zdaniu (Evaluator
+i Final Control zweryfikowali NIEZALEŻNIE, nie zaufali deklaracji Operatora), naprawiony
+twardy crash `ReferenceError: eliminatedDetails is not defined`, dowód nietautologiczności
+powtórzony przez wszystkie trzy role (Operator, Evaluator, Final Control) własnymi,
+RÓŻNYMI mutacjami.
+
+Final Control rundy 2: **PASS**, zero `NAPRAW`, zero nowych defektów ponad to co już
+zgłoszone. Bramki: `eliminacja-lup-kwoty-test` 35/0, nowa `miasto-zdobycie-raport-test`
+95/0, `tsc --noEmit` czyste, 5 bramek referencyjnych zielone (213/19/33/13/6), rodzina
+capture/eliminacja zielona (capital-capture 86/86, elimination-toast-merge 54/54,
+oblezenie 27/27, post-capture-law 25/25).
+
+Zamyka pozycję 1 kolejki `main.ts` (§2b). Następny w kolejce: `R-WYCINKA-DREWNO-50-I-KOMUNIKAT-CAP-Q1`
+(dyspozycja napisana, worktree `/home/user/wt-wycinka` założony, gotowy do dispatchu).
