@@ -32280,3 +32280,34 @@ Trzy zastane drobiazgi znalezione przy dodawaniu Garnizonu, żadnego nie ruszali
 
 Punkty 1 i 2 są kosmetyczne. **Punkt 3 jest procesowy i wart naprawy** — bramka nie powinna
 zmieniać śledzonych plików; powinna generować do katalogu tymczasowego i porównywać.
+
+---
+
+## P-ENTITYCARD-CIVPEDIA-KLIK-MARTWY-Q1 (2026-09-06, znalezisko Final Control Garnizonu) · STATUS: **OTWARTE — dispatch napisany, czeka na wolne miejsce w kolejce**
+
+**Przycisk „Więcej informacji (Civpedia)" na kartach encji nie robi NIC — dla żadnej encji
+w grze.** Nie chodzi o brakujące hasła, tylko o to, że klik nigdzie nie trafia.
+
+Potwierdzone odczytem kodu przez orkiestratora:
+- `entityCards/renderer.ts:375-384` — przycisk dostaje atrybuty `data-civpedia-folder`
+  i `data-civpedia-slug`, **bez żadnego `addEventListener`**;
+- `:434` — jedyny delegowany listener łapie selektorem `button[data-entity-kind]`,
+  którego ten przycisk **nie ma**;
+- `openEncyEntry` — trzy wystąpienia w całym `gra/src`, wszystkie w `wikiHubHud.ts`
+  (typ, definicja, eksport). **Zero wywołań z kodu kart.**
+
+**Skala: cztery rodzaje kart** (budynek, jednostka, technologia, ulepszenie terenu),
+wszystkie tryby (dialog, inline, hover).
+
+**Dlaczego przeżyło dziesięć tematów migracji kart (T1–T10):** istniejące bramki sprawdzają,
+że atrybuty `data-civpedia-*` **są ustawione** — i one są. Nikt nie sprawdził, czy klik
+cokolwiek robi. To jest wzorzec do zapamiętania: **asercja na atrybut nie jest asercją
+na zachowanie.**
+
+**ECHO właściciela (2026-09-06):** *„Osobny temat na całą rodzinę kart"* — odrzucił wariant
+„ukryć przycisk zamiast go naprawiać". Zdjęte z `R-BUDYNEK-GARNIZON-NOWY-Q1`, gdzie kryterium
+w brzmieniu dosłownym było niewykonalne w allowliście.
+
+**Nie mylić z drugim brakiem:** 25 z 42 budynków nie ma hasła w CivPedii. To niezależna
+sprawa — ten temat naprawia klik, nie uzupełnia treści. Ścieżka „brak hasła" ma dawać
+czytelny komunikat zamiast ciszy.
