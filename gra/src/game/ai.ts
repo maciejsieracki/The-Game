@@ -1379,6 +1379,74 @@ function collectAvailableBuildingCandidates(
   return out;
 }
 
+// ---------------------------------------------------------------------------
+// R-AI-PRODUKCJA-Z-DOSTEPNYCH-BUDYNKOW-Q1 runda 2 (Maciej, ratyfikacja 2026-09-06):
+// usunięcie P-AI-008 dla major AI -- Mury/Fort/Baszta dostają podniesiony priorytet
+// pod zagrożeniem i w miastach przygranicznych, patrz komentarz przy wywołaniu niżej.
+// ---------------------------------------------------------------------------
+
+/** Budynki fortyfikacyjne, których score jest podbijany pod zagrożeniem/na granicy. */
+const MAJOR_FORTIFICATION_IDS = new Set(['mury', 'fort', 'baszta']);
+
+/** Bonus do score fortyfikacji, gdy miasto major AI jest ZAGROŻONE (underThreat). */
+const AI_MAJOR_WALL_THREAT_BONUS = 180;
+
+/** Bonus do score fortyfikacji, gdy miasto major AI jest PRZYGRANICZNE (isBorderCity). */
+const AI_MAJOR_WALL_BORDER_BONUS = 60;
+
+/**
+ * Bonus do score Spichlerza (major AI, DECISION_REQUIRED #3 rundy 1 -- ratyfikacja
+ * 2026-09-06). DECISION_REQUIRED NOWY (runda 2, zgłoszony w raporcie Operatora):
+ * proxy-symulacja pokazuje, że wartość odtwarzająca historyczną wczesną pozycję
+ * Spichlerza (2.-4. miejsce w kolejce) wymagałaby bonusu ~15-30, ale KAŻDA wartość
+ * >=9 psuje chroniony gate `ai-jednostki-tylko-zakup-test.cjs` (44/0, kryterium
+ * "AI nadal realnie rekrutuje jednostki w oknie majorEarly z canAfford zawsze
+ * dostępnym") -- zmierzone bisekcją: 8 PRZECHODZI (44/0), 9 już nie (41/3, AI
+ * przestaje w ogóle proponować jednostki). Wybrano WARTOŚĆ BEZPIECZNĄ (8) zamiast
+ * ryzykować/osłabiać chroniony gate -- to tylko CZĘŚCIOWO odtwarza historyczną
+ * pozycję (przesuwa Spichlerz o ok. 1 miejsce w proxy-symulacji, nie na 2.-4.).
+ * Właściciel decyduje, czy 8 wystarcza, czy temat wraca po osobną kalibrację
+ * (np. rozluźnienie majorEarly damping) poza tą rundą.
+ */
+const AI_MAJOR_SPICHLERZ_PRIORITY_BONUS = 8;
+
+/**
+ * Margines (w heksach) dodany do sumy promieni terytorium własnego i obcego miasta
+ * przy wykrywaniu "miasta przygranicznego" -- ratyfikacja 2026-09-06 wprost każe
+ * użyć ISTNIEJĄCEGO sposobu rozpoznawania granicy (`opts.territoryNodes` +
+ * `cityTerritoryRadius`, ten sam mechanizm co D-IMPROVEMENTS/planCityImprovements
+ * wyżej w pliku), nie wymyślać nowej metryki. Wartość mniejsza niż
+ * `AI_THREAT_RANGE_DEFAULT` (7) celowo -- "przygraniczne" ma znaczyć "sąsiaduje z
+ * terytorium innej cywilizacji", nie "wróg gdziekolwiek w promieniu zagrożenia".
+ */
+const AI_BORDER_DETECTION_MARGIN_HEX = 3;
+
+/**
+ * Czy `city` sąsiaduje z terytorium innej cywilizacji ("miasto przygraniczne",
+ * ratyfikacja 2026-09-06). Reużywa `opts.territoryNodes` (silnik podaje
+ * `buildAllTerritoryNodes()` WSZYSTKICH właścicieli, patrz definicja pola w
+ * `AITurnOpts` -- ten sam mechanizm co D-IMPROVEMENTS) -- promienie terytorium
+ * (własny, z populacji miasta, i obcy, z `TerritoryNode.pop`) nachodzą na siebie
+ * w zasięgu `AI_BORDER_DETECTION_MARGIN_HEX`. Brak `territoryNodes` (stare
+ * wywołania/testy bez tego pola) -> false, zero regresji.
+ */
+function isBorderCity(
+  city: AICity,
+  ownerId: number,
+  territoryNodes: readonly TerritoryNode[] | undefined,
+): boolean {
+  if (!territoryNodes || territoryNodes.length === 0) return false;
+  const ownRadius = cityTerritoryRadius({ q: city.q, r: city.r, pop: city.population, level: 1 });
+  for (const node of territoryNodes) {
+    if (node.ownerId === ownerId) continue;
+    const foreignRadius = cityTerritoryRadius(node);
+    if (hexDistance(city.q, city.r, node.q, node.r) <= ownRadius + foreignRadius + AI_BORDER_DETECTION_MARGIN_HEX) {
+      return true;
+    }
+  }
+  return false;
+}
+
 /**
  * Returns the id of the building or unit this city should build next.
  * Priority based on Spec-AI §4 and archetype modifiers.
@@ -1559,22 +1627,41 @@ export function chooseCityProduction(
   if (majorThreatDevBoostActive) {
     for (const c of buildingCandidates) c.score = aiThreatMajorDevScore(c.score);
   }
-  // WYJĄTEK od kryterium 1 (jedyny poza nazwami GRUP i wyjątkami 'mury'/'palisada'
-  // udokumentowanymi wyżej): P-AI-008 (decyzja WCZEŚNIEJSZA od tego tematu, patrz
-  // ai-threat-mode.ts nagłówek pliku + `aiThreatWallProductionScore` -- "Major AI:
-  // null -- mury nie wchodzą do puli zagrożenia"). Zweryfikowane empirycznie
-  // (ai-threat-mode-test T8c, brak zagrożenia): P-AI-008 to NIE tylko-pod-
-  // -zagrożeniem wyjątek -- Mury nigdy nie były (i wg tego testu nie mają być)
-  // kandydatem dla pełnych cywilizacji, tylko dla miast-państw. DECISION_REQUIRED
-  // (raport Operatora): to oznacza, że Fort/Baszta (CITY_BUILDING_PREREQ wymaga
-  // 'mury') pozostają dla major AI TRWALE nieosiągalne -- ta sama luka pokrycia
-  // co dziś, tylko już nie z powodu literałów w ai.ts, tylko świadomej decyzji
-  // P-AI-008. Zachowuję istniejący, przetestowany kontrakt zamiast go cicho
-  // złamać (tryb trzeci reguły przeciw samooszukiwaniu) -- właściciel decyduje,
-  // czy P-AI-008 ma zostać zawężone do "tylko pod zagrożeniem", co odblokowałoby
-  // Fort/Baszta dla major AI.
-  if (!opts.defensiveCopy) {
-    buildingCandidates = buildingCandidates.filter(c => c.id !== 'mury');
+  // R-AI-PRODUKCJA-Z-DOSTEPNYCH-BUDYNKOW-Q1 runda 2 (Maciej, ratyfikacja 2026-09-06,
+  // ECHO dosłowne: "Usuńmy regułę 'AI nigdy nie buduje murów'; to jest bez sensu. AI
+  // powinno budować mury, zwłaszcza w sytuacji, kiedy jest zagrożone. I zwłaszcza w
+  // miastach przygranicznych."). USUNIĘTA reguła P-AI-008 dla major AI (filtr, który
+  // tu wcześniej stał, usuwał 'mury' z buildingCandidates bezwarunkowo dla pełnych
+  // cywilizacji -- runda 1, DECISION_REQUIRED #2). Mury/Fort/Baszta (grupa "Wojsko i
+  // obrona", jak koszary/warsztat_oblężniczy/akademia_wojskowa) wchodzą teraz do
+  // NORMALNEGO punktowania z collectAvailableBuildingCandidates -- zero specjalnego
+  // filtra, zero wyjątku. `ai-threat-mode.ts` (`aiThreatWallProductionScore` zwracające
+  // null dla major AI, poza allowlistą tego tematu) jest odtąd STARĄ, nieużywaną dla
+  // tej gałęzi dokumentacją P-AI-008 -- flagowane w raporcie jako martwy komentarz do
+  // sprzątnięcia osobnym tematem, NIE naprawiane tu ("nie naprawiamy przy okazji", C-025).
+  //
+  // Priorytet PODNIESIONY (nie sztywne odblokowanie -- ECHO wprost tego zakazuje) w
+  // dwóch sytuacjach, obie używają ISTNIEJĄCYCH sygnałów, żadna nowa metryka:
+  //  (a) miasto ZAGROŻONE -- ten sam `underThreat`, który steruje resztą gałęzi §4.3
+  //      wyżej (`threatUnits`/`majorThreatDevBoostActive`, linia ok. 1467);
+  //  (b) miasto PRZYGRANICZNE -- `isBorderCity()` niżej, reużywa `opts.territoryNodes`
+  //      (silnik podaje `buildAllTerritoryNodes()` WSZYSTKICH właścicieli, ten sam
+  //      mechanizm co D-IMPROVEMENTS/`territoryOwnerAt` wyżej w pliku, patrz definicja
+  //      pola `territoryNodes` w `AITurnOpts`) -- NIE nowa metryka odległości. Brak
+  //      `territoryNodes` (stare testy bez tego pola) -> `isBorderCity` zwraca false,
+  //      zero regresji.
+  // Bonus jest DODAWANY do istniejącego score grupowego (nie flat score) -- Mury nadal
+  // konkurują normalnie z resztą katalogu poza tymi dwoma sytuacjami (asercja (b) w
+  // bramce tematu: AI NIE buduje Murów masowo bez powodu).
+  if (!opts.defensiveCopy && isMajorAiOwner(opts)) {
+    const isBorder = isBorderCity(city, playerId, opts.territoryNodes);
+    if (underThreat || isBorder) {
+      const fortificationBonus =
+        (underThreat ? AI_MAJOR_WALL_THREAT_BONUS : 0) + (isBorder ? AI_MAJOR_WALL_BORDER_BONUS : 0);
+      for (const c of buildingCandidates) {
+        if (MAJOR_FORTIFICATION_IDS.has(c.id)) c.score += fortificationBonus;
+      }
+    }
   }
   // R-MIASTA-PANSTWA-PRODUKCJA-OBRONNA-Q1 (GOAL 2, zachowane): miasto-państwo bez
   // dopełnionego garnizonu skupia się na obronie/wojsku, NIE na ekonomii/administracji
@@ -1623,6 +1710,31 @@ export function chooseCityProduction(
     if (bibliotekaIdx >= 0) buildingCandidates[bibliotekaIdx]!.score += 90;
     const akademiaIdx = buildingCandidates.findIndex(c => c.id === 'akademia');
     if (akademiaIdx >= 0) buildingCandidates[akademiaIdx]!.score += 90;
+  }
+  // WYJĄTEK od kryterium 1 (kolejny, PRZYWRÓCONY rundą 2 -- ratyfikacja 2026-09-06,
+  // DECISION_REQUIRED #3 rundy 1): literał 'spichlerz'. Dawny `infraOrder` (usunięty
+  // tym tematem) dawał Spichlerzowi podniesiony priorytet w udokumentowanej kolejce
+  // wczesnej gry (studnia -> garncarnia -> stolarnia -> spichlerz -> targowisko ->
+  // administracja). Po przejściu na czyste punktowanie grupowe Spichlerz (grupa
+  // "Żywność", baza 130) spada za CAŁĄ grupę "Produkcja surowców" (baza 140,
+  // 9 członków: stolarnia/garncarnia/kamieniarski/cegielnia/kuznia/odlewnia_brazu/
+  // odlewnia_zelaza/kuznia_zelaza/wielka_odlewnia) -- proxy-symulacja w raporcie
+  // Operatora (esbuild, bez boostu) pokazuje Spichlerz na 8-11. pozycji, nie na 4.
+  // Boost KONKRETNEGO istniejącego kandydata (ten sam wzorzec co Koszary/Biblioteka/
+  // Akademia wyżej) bez przebijania CAŁYCH wyższych warstw grup (Zdrowie/tańsza
+  // Produkcja surowców zostają przed nim, jeśli faktycznie tańsze -- to dodatek,
+  // nie flat score). WARTOŚĆ ograniczona przez chroniony gate (DECISION_REQUIRED
+  // NOWY, patrz komentarz przy stałej `AI_MAJOR_SPICHLERZ_PRIORITY_BONUS` wyżej):
+  // pełne odtworzenie historycznej 2.-4. pozycji wymagałoby bonusu ~15-30, ale to
+  // psuje `ai-jednostki-tylko-zakup-test` (44/0) -- 8 jest maksymalną BEZPIECZNĄ
+  // wartością (zmierzone bisekcją), częściowa poprawa (proxy: ok. 1 miejsce), nie
+  // pełne przywrócenie. TYLKO major AI (!opts.defensiveCopy) -- miasta-państwa
+  // (defensiveCopy) NIE dostają tego boostu: runda 1 usunęła stąd analogiczny hack
+  // (flat 250) jako "redundantny", a kryterium 5 tej rundy (miasta-państwa
+  // nietknięte) zabrania dowolnej zmiany tamtej gałęzi.
+  if (!opts.defensiveCopy) {
+    const spichlerzIdx = buildingCandidates.findIndex(c => c.id === 'spichlerz');
+    if (spichlerzIdx >= 0) buildingCandidates[spichlerzIdx]!.score += AI_MAJOR_SPICHLERZ_PRIORITY_BONUS;
   }
   candidates.push(...buildingCandidates);
 

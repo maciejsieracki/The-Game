@@ -146,26 +146,23 @@ const majorCities = [
 ];
 const majorVisited = simulateCoverage({ currentTurn: 100 }, majorCities, [], 1);
 
-// WYJĄTEK udokumentowany w raporcie Operatora (P-AI-008, ai-threat-mode.ts):
-// major AI (pełne cywilizacje) NIGDY nie buduje Murów -- fortyfikacja zostaje
-// dla miast-państw. Fort/Baszta wymagają Murów w mieście (CITY_BUILDING_PREREQ),
-// więc są dla major AI TRWALE nieosiągalne, dopóki ta decyzja nie zostanie
-// zawężona przez właściciela (DECISION_REQUIRED w raporcie Operatora).
-const MAJOR_AI_UNREACHABLE = new Set(['mury', 'fort', 'baszta']);
-const majorExpected = buildings
-  .map(b => b.id)
-  .filter(id => !MAJOR_AI_UNREACHABLE.has(id));
+// R-AI-PRODUKCJA-Z-DOSTEPNYCH-BUDYNKOW-Q1 runda 2 (Maciej, ratyfikacja 2026-09-06):
+// P-AI-008 ("major AI nigdy nie buduje Murów") USUNIĘTA CAŁKOWICIE -- Mury/Fort/
+// Baszta wchodzą teraz do normalnego punktowania grupowego dla major AI (patrz
+// `ai.ts`, blok przy `MAJOR_FORTIFICATION_IDS`). Dawny wyjątek `MAJOR_AI_UNREACHABLE`
+// (mury/fort/baszta) USUNIĘTY z tej bramki -- kryterium 2 dispatchu ("pokrycie 41/41",
+// dziś 42/42) obejmuje TERAZ cały katalog bez wyjątku dla major AI.
+const majorExpected = buildings.map(b => b.id);
 
-console.log(`    Major AI: ${majorVisited.size + MAJOR_AI_UNREACHABLE.size} / ${TOTAL_BUILDINGS} (katalog pełny),`
-  + ` ${majorVisited.size} / ${majorExpected.length} (bez wyjątku P-AI-008 mury/fort/baszta)`);
+console.log(`    Major AI: ${majorVisited.size} / ${TOTAL_BUILDINGS} (pełny katalog, zero wyjątku P-AI-008)`);
 
 const missingForMajor = majorExpected.filter(id => !majorVisited.has(id));
 if (missingForMajor.length > 0) {
-  console.log('    BRAKUJĄCE (major AI, poza udokumentowanym wyjątkiem):', missingForMajor.join(', '));
+  console.log('    BRAKUJĄCE (major AI):', missingForMajor.join(', '));
 }
 assert(
   missingForMajor.length === 0,
-  `Major AI osiąga wszystkie ${majorExpected.length} budynków poza udokumentowanym wyjątkiem P-AI-008 (brakuje: ${missingForMajor.join(', ') || 'brak'})`,
+  `Major AI osiąga wszystkie ${majorExpected.length} budynków katalogu, zero wyjątku P-AI-008 (brakuje: ${missingForMajor.join(', ') || 'brak'})`,
 );
 
 // ===========================================================================
@@ -193,6 +190,66 @@ console.log(`    Miasto-państwo: ${csVisited.size} / ${TOTAL_BUILDINGS}`);
 console.log('\n--- C. Nazwy grup użyte w scoringu (jedyny dopuszczalny wyjątek, kryterium 1) ---');
 const groupsInData = new Set(buildings.map(b => b.grupa).filter(g => g !== undefined));
 console.log('    Grupy w danych:', [...groupsInData].join(', '));
+
+// ===========================================================================
+// D. Ratyfikacja 2026-09-06 -- P-AI-008 (major AI nigdy nie buduje Murów) USUNIĘTA.
+//    Trzy asercje wymagane wprost: (a) AI buduje Mury pod zagrożeniem, (b) AI NIE
+//    buduje Murów masowo bez powodu, (c) miasto-państwo nietknięte.
+// ===========================================================================
+console.log('\n--- D. P-AI-008 usunięta: zagrożenie/granica podnosi priorytet Murów ---');
+
+// (a) Miasto ZAGROŻONE, prawie cały katalog już zbudowany (tylko mury/fort/baszta
+// + jednostki zostają kandydatami) -- pod tym sygnałem (underThreat, ten sam co
+// steruje resztą gałęzi #4.3 w ai.ts) Mury muszą wygrać punktacją.
+const almostAllBuilt = buildings.map(b => b.id).filter(id => id !== 'mury' && id !== 'fort' && id !== 'baszta');
+const threatEnemy = [{ id: 'e1', ownerId: 2, q: 5, r: 6, typeId: 'wojownik', category: 'wojownik', ruch: 2, ruchLeft: 2 }];
+const threatCity = { id: 'ct1', ownerId: 1, q: 5, r: 5, population: 5, name: 'T' };
+const pickUnderThreat = chooseCityProduction(
+  'ct1', [threatCity], threatEnemy, 1, dataFull, ZERO_MODS,
+  { currentTurn: 100, cityBuildings: { ct1: almostAllBuilt }, canAfford: (_c, id) => !unitNames.has(id) },
+  map, diff,
+);
+console.log(`    (a) Miasto zagrożone, katalog prawie pełny -> wybór: ${pickUnderThreat}`);
+assert(pickUnderThreat === 'mury', `(a) Major AI pod zagrożeniem buduje Mury zamiast dalej rekrutować (wybrano: ${pickUnderThreat})`);
+
+// (a2) To samo miasto, BEZ zagrożenia, ale PRZYGRANICZNE (opts.territoryNodes ma
+// obcego właściciela w zasięgu -- ten sam mechanizm co D-IMPROVEMENTS wyżej w ai.ts,
+// NIE nowa metryka) -- bonus graniczny SAM wystarcza, żeby Mury wygrały.
+const borderTerritoryNodes = [{ q: 5, r: 12, pop: 5, level: 1, ownerId: 2 }];
+const pickBorderOnly = chooseCityProduction(
+  'ct1', [threatCity], [], 1, dataFull, ZERO_MODS,
+  {
+    currentTurn: 100, cityBuildings: { ct1: almostAllBuilt },
+    canAfford: (_c, id) => !unitNames.has(id), territoryNodes: borderTerritoryNodes,
+  },
+  map, diff,
+);
+console.log(`    (a2) Miasto przygraniczne (bez zagrożenia), katalog prawie pełny -> wybór: ${pickBorderOnly}`);
+assert(pickBorderOnly === 'mury', `(a2) Major AI w mieście przygranicznym buduje Mury nawet bez bieżącego zagrożenia (wybrano: ${pickBorderOnly})`);
+
+// (b) Świeże miasto (nic nie zbudowane), BEZ zagrożenia i BEZ danych o granicy
+// (opts.territoryNodes nieobecne) -- Mury NIE mogą być pierwszym wyborem "bez
+// powodu"; katalog ma dziesiątki tańszych/wyżej punktowanych budynków ekonomicznych.
+const freshCity = { id: 'cf1', ownerId: 1, q: 5, r: 5, population: 5, name: 'F' };
+const pickNoReason = chooseCityProduction(
+  'cf1', [freshCity, { ...freshCity, id: 'cf2', q: 10 }, { ...freshCity, id: 'cf3', q: 15 }], [], 1, dataFull, ZERO_MODS,
+  { currentTurn: 100, cityBuildings: { cf1: [] }, canAfford: (_c, id) => !unitNames.has(id) },
+  map, diff,
+);
+console.log(`    (b) Miasto świeże, bez zagrożenia/granicy -> wybór: ${pickNoReason}`);
+assert(pickNoReason !== 'mury', `(b) Major AI bez zagrożenia/granicy NIE wybiera Murów jako pierwszy budynek (wybrano: ${pickNoReason})`);
+
+// (c) Miasto-państwo (defensiveCopy) -- gałąź NIETKNIĘTA tą rundą: bez garnizonu,
+// pierwszy wybór to nadal jednostka obronna (Wojownik), tak jak przed tym tematem.
+const csFreshCity = { id: 'csf1', ownerId: 4, q: 3, r: 3, population: 3, name: 'CSF' };
+const pickCsNoGuard = chooseCityProduction(
+  'csf1', [csFreshCity], [], 4, dataFull, ZERO_MODS,
+  { defensiveCopy: true, cityStateDifficultyVsPlayer: 'normal', currentTurn: 1, cityBuildings: { csf1: [] } },
+  map, diff,
+);
+console.log(`    (c) Miasto-państwo bez garnizonu -> wybór: ${pickCsNoGuard}`);
+assert(pickCsNoGuard === 'Wojownik', `(c) Miasto-państwo nietknięte -- pierwszy wybór bez garnizonu nadal Wojownik (wybrano: ${pickCsNoGuard})`);
+assert(csVisited.size === TOTAL_BUILDINGS, `(c) Miasto-państwo nietknięte -- pokrycie katalogu nadal ${TOTAL_BUILDINGS}/${TOTAL_BUILDINGS} (dziś: ${csVisited.size})`);
 
 console.log('\n========================================');
 console.log(`ai-produkcja-pokrycie-katalogu-test: ${passed} passed, ${failed} failed`);
