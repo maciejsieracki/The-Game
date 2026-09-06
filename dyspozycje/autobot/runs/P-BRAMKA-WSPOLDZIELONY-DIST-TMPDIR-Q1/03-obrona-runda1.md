@@ -94,6 +94,13 @@ wolniej, ale wynik znaczy to, co znaczy. Sam sweep pod tym obciążeniem zachowa
 poprawnie — w szczycie sześć katalogów z sygnaturą, **wszystkie z żywym PID-em, zero
 skasowanych**, katalogi zrzutów nietknięte.
 
+Przy zmniejszaniu równoległości ubiłem sygnałem dwie osierocone bramki i dostałem
+**niezamierzone potwierdzenie obu połówek naprawy Z1 naraz**: obie zginęły od `SIGTERM`
+natychmiast (przed naprawą połknęłyby go), a ich katalogi robocze zniknęły przy starcie
+następnej bramki — **poza katalogiem `…-shots-…`, który sweep zachował**, bo zrzut jest
+dowodem (§9 pkt 6). Zabijalność i sprzątanie zadziałały w warunkach produkcyjnych, nie
+na przynętach.
+
 ## TESTY (uruchomione w tej fazie, nie przepisane)
 
 | bramka | wynik |
