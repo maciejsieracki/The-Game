@@ -17,6 +17,7 @@ import { technologyAdapter } from './technologyAdapter';
 import { improvementAdapter } from './improvementAdapter';
 import { wonderAdapter } from './wonderAdapter';
 import { defaultOwnerColor, mountUnitMiniPreview } from '../unitMiniPreview';
+import { openCivpediaEntry } from './civpediaOpenGate';
 import type {
   EntityCardData,
   EntityCardCtx,
@@ -81,7 +82,15 @@ export function buildEntityCardData(kind: EntityKind, id: string, ctx: EntityCar
   // `terrain-improvements.json` nie niesie własnego klucza obiektu, patrz
   // `improvementAdapter.ts`). Zapobiega cichemu rozjazdowi `id` używanego do
   // zapytania od `id` w zwróconych danych.
-  return { ...data, id };
+  //
+  // P-ENTITYCARD-CIVPEDIA-KLIK-MARTWY-Q1: `civpediaLink.slug` podlega DOKŁADNIE tej samej
+  // gwarancji, z tego samego powodu. Adaptery `improvement`/`wonder` liczą swoje `id` jako
+  // placeholder (patrz komentarze tam), więc gdyby slug linku został tym, co wpisał adapter,
+  // klik prowadziłby do innej encji niż karta — cichy, trudny do wykrycia rozjazd. `folder`
+  // zostaje od adaptera (to on wie, w którym katalogu `docs/encyklopedia/` żyje jego rodzaj).
+  const canonical: EntityCardData = { ...data, id };
+  if (canonical.civpediaLink == null) return canonical;
+  return { ...canonical, civpediaLink: { folder: canonical.civpediaLink.folder, slug: id } };
 }
 
 /** Buduje jeden wiersz 'grid' — label/value zwykłe, plus opcjonalne icon/trailing/badge
@@ -380,7 +389,35 @@ export function renderEntityCard(data: EntityCardData): HTMLElement {
     btn.textContent = 'Więcej informacji (Civpedia)';
     btn.setAttribute('data-civpedia-folder', link.folder);
     btn.setAttribute('data-civpedia-slug', link.slug);
+    // P-ENTITYCARD-CIVPEDIA-KLIK-MARTWY-Q1 — do tego tematu na TYM przycisku kończyła się
+    // cała ścieżka: dwa atrybuty i ZERO `addEventListener`. Delegowany listener karty
+    // (niżej) łapie selektorem `button[data-entity-kind]`, którego ten przycisk nie ma i
+    // mieć nie powinien (`data-entity-kind` identyfikuje CEL linku krzyżowego, czyli inną
+    // KARTĘ, a ten przycisk prowadzi do HASŁA encyklopedii — inny kanał, ECHO Q2=A).
+    // Dlatego własny, bezpośredni listener, a nie rozszerzanie tamtego selektora.
+    //
+    // Komunikat zamiast ciszy (kryterium 2 dispatchu): `openCivpediaEntry` NIGDY nie rzuca
+    // i zawsze zwraca rozróżnialny wynik. Ścieżka „brak hasła" jest częsta (16 z 41
+    // budynków, pomiar w raporcie tematu), więc musi być czytelna, a nie milcząca.
+    // Ukrycie przycisku jest ZAKAZANE — właściciel odrzucił ten wariant.
+    const note = el('p', 'entity-card-civpedia-note');
+    note.setAttribute('role', 'status');
+    note.setAttribute('aria-live', 'polite');
+    note.hidden = true;
+    btn.addEventListener('click', () => {
+      const result = openCivpediaEntry(link.folder, link.slug);
+      if (result === 'opened') {
+        note.hidden = true;
+        return;
+      }
+      note.textContent =
+        result === 'no-entry'
+          ? `Civpedia nie ma jeszcze hasła „${data.title}". Ten wpis czeka na napisanie.`
+          : 'Civpedia jest w tej chwili niedostępna — otwórz ją przyciskiem księgi na pasku narzędzi.';
+      note.hidden = false;
+    });
     footer.appendChild(btn);
+    footer.appendChild(note);
     card.appendChild(footer);
   }
 
@@ -847,6 +884,13 @@ button.entity-card-civpedia-link:focus-visible{outline:2px solid var(--tg-focus-
   color:inherit;font:inherit;opacity:.8;cursor:pointer;padding:2px 0;}
 .entity-card--compact .entity-card-medallion{width:24px;height:24px;}
 .entity-card-footer{padding:8px 14px;border-top:1px solid rgba(232,216,138,.18);}
+/* P-ENTITYCARD-CIVPEDIA-KLIK-MARTWY-Q1 (kryterium 2): komunikat "brak hasla" pod
+   przyciskiem. Ostrzegawcza zoltawa barwa rodziny .entity-card-row-badge--warn, ale bez
+   pudelka badge'a — to zdanie do przeczytania, nie etykieta. Atrybut hidden na elemencie
+   wystarcza (przegladarki maja [hidden]{display:none} w UA-stylesheet); CELOWO nie
+   nadpisujemy tu display, zeby hidden nie przestal dzialac. */
+.entity-card-civpedia-note{margin:6px 0 0;font-size:12px;line-height:1.35;
+  color:var(--tg-warn,#e8c86a);opacity:.92;}
 .entity-card-actions{display:flex;gap:8px;padding:10px 14px;border-top:1px solid rgba(232,216,138,.18);}
 /* P-CIVPEDIA-KARTY-AKCJE-PRZYCISKI-NIEOSTYLOWANE-Q1: brakujace od T1 (c1365bfa) reguly dla
    samych PRZYCISKOW AKCJI karty. Kontener liczby mnogiej (.entity-card-actions, linia wyzej)

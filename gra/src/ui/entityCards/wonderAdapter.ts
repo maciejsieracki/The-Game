@@ -145,7 +145,11 @@ export const wonderAdapter: EntityCardAdapter<WonderRow> = (wonder) => {
     subtitle: subtitleParts.length > 0 ? subtitleParts.join(' · ') : undefined,
     medallion: { kind: 'icon', svg: WONDER_ICON_SVG },
     sections: [availabilitySection, costSection, technologySection, bonusSection],
-    civpediaLink: null,
+    // P-ENTITYCARD-CIVPEDIA-KLIK-MARTWY-Q1 — uzasadnienie jak w `unitAdapter.ts`.
+    // Folder = katalog `docs/encyklopedia/cuda/`. Cuda są PIĄTYM rodzajem karty tej samej
+    // rodziny (`EntityKind` w `types.ts`), nienazwanym w RECON dispatchu, ale z tym samym,
+    // jednolinijkowym defektem i tym samym rendererem; wypisane jawnie w raporcie.
+    civpediaLink: { folder: 'cuda', slug: wonder.id },
     // `wonder.uwagi` CELOWO nierenderowane — patrz nagłówek pliku.
     historicalNote: hasValue(wonder.historia) ? text(wonder.historia) : undefined,
   };

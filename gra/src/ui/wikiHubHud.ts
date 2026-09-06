@@ -9,6 +9,8 @@ import { ensureBrandRootTokens, CIV_BRAND_SCOPE_VARS } from './brandTokenVars';
 import { bindHudPanelOutsideDismiss } from './hudPanelDismiss';
 import { SIDE_PANEL_LEFT, SIDE_PANEL_TOP } from './sidePanelLayout';
 import { pushOverlay, popOverlay } from './escapeOverlayStack';
+import { slugify } from './entityCards/slug';
+import { setCivpediaEntryOpener, type CivpediaOpenResult } from './entityCards/civpediaOpenGate';
 
 export interface WikiHubHudConfig {
   onClose?: () => void;
@@ -176,6 +178,90 @@ function ensureStyles(): void {
 
 let api: WikiHubHudApi | null = null;
 let configRef: WikiHubHudConfig | null = null;
+
+// ---------------------------------------------------------------------------
+// P-ENTITYCARD-CIVPEDIA-KLIK-MARTWY-Q1 — most karta encji → hub CivPedii.
+//
+// CZYSTA ADDYCJA: nic powyżej ani poniżej nie jest zmieniane. `openEncyEntry`
+// (metoda `api`, definicja w domknięciu `createWikiHubHud`) zachowuje dokładnie
+// dotychczasowe zachowanie i sygnaturę — dispatch zabrania zmieniać zachowanie
+// huba dla istniejących wołających. Nowa warstwa leży OBOK i deleguje do niej,
+// podając slug, który na pewno trafia w istniejący fallback `slug === id`.
+//
+// DRUGA CZĘŚĆ DEFEKTU (dispatch G1: „czy folder/slug faktycznie odpowiadają
+// argumentom openEncyEntry"): NIE odpowiadają. Slugi haseł powstają w
+// `bundle-wiki-for-game.cjs` z NAZWY PLIKU .md (myślniki, polskie „ł" gubione
+// przez NFD-strip: `włócznik.md` → slug `w-ocznik`), a identyfikatory gry z
+// `entityCards/slug.ts` (podkreślenia, pełna tabela diakrytyków: `wlocznik`).
+// Pomiar na żywych danych (raport tematu, sekcja POMIARY): przy samym
+// `slug === id` folder `jednostki` trafiał 13 z 75 jednostek. Mostek `gameIds`
+// (frontmatter `gra-id`) istnieje, ale jest wypełniony w 2 hasłach na 168 —
+// treść haseł jest poza allowlistą tego tematu (`docs/encyklopedia/**` zakazane),
+// więc dopasowanie musi być tolerancyjne PO STRONIE KODU, nie danych.
+// ---------------------------------------------------------------------------
+
+/** Klucze porównawcze hasła, odporne na rozjazd „slug pliku .md" vs „id gry":
+ * ten sam algorytm (`entityCards/slug.ts`, pełna tabela polskich diakrytyków)
+ * przyłożony do obu pól hasła. `slugify` sprowadza myślniki do `_`, więc
+ * `w-ocznik` → `w_ocznik` (to wciąż nie jest `wlocznik` — ratuje dopiero klucz
+ * z `title`, bo `Włócznik` → `wlocznik`). Stąd dwa klucze, nie jeden. */
+function encyKeysOf(entry: EncyEntry): string[] {
+  return [slugify(entry.slug), slugify(entry.title)];
+}
+
+/**
+ * Rozwiązuje parę (folder, id gry) na hasło encyklopedii. Kolejność jest istotna
+ * i celowa — od najbardziej jawnego do najbardziej tolerancyjnego, a każdy stopień
+ * przeszukuje CAŁY folder, żeby luźne trafienie wcześniejszego hasła nigdy nie
+ * wygrało z dokładnym trafieniem późniejszego:
+ *
+ *   1. `gameIds` — jawny mostek z frontmatteru `gra-id` (np. `kopalnia.md`
+ *      obsługuje `kopalnia_miedzi/_zelaza/_cyny/_zlota`). Ma pierwszeństwo,
+ *      dokładnie jak w istniejącym `findEncyByGameId`.
+ *   2. `slug === id` — dokładne trafienie, dzisiejsze zachowanie.
+ *   3. klucz znormalizowany — ratuje 36 jednostek i pozostałe hasła
+ *      wielowyrazowe, których slug pliku .md rozjechał się z id gry.
+ */
+function findEncyEntryForGameId(folder: string, gameId: string): EncyEntry | undefined {
+  const inFolder = ENCY.filter((e) => e.folder === folder);
+  const byBridge = inFolder.find((e) => e.gameIds.includes(gameId));
+  if (byBridge !== undefined) return byBridge;
+  const byExactSlug = inFolder.find((e) => e.slug === gameId);
+  if (byExactSlug !== undefined) return byExactSlug;
+  const key = slugify(gameId);
+  return inFolder.find((e) => encyKeysOf(e).includes(key));
+}
+
+/** Czy hasło dla tej encji w ogóle istnieje — bez otwierania panelu. Pozwala
+ * bramce tematu rozdzielić „brak hasła" od „hub nieaktywny". */
+export function hasWikiEncyEntry(folder: string, gameId: string): boolean {
+  return findEncyEntryForGameId(folder, gameId) !== undefined;
+}
+
+/**
+ * Otwiera hasło CivPedii dla encji gry — punkt wejścia dla kart encji.
+ *
+ * Wzorzec jest ten sam co dla `showWikiHubHud`/`toggleWikiHubHud`/`hideWikiHubHud`
+ * na końcu tego pliku: wolna funkcja modułowa delegująca do singletona `api`
+ * (dziś konsumowana przez `main.ts:1065-1067`). Nowość jest jedna — zwraca
+ * ROZRÓŻNIALNY wynik zamiast `void`, żeby wołający mógł pokazać graczowi
+ * czytelny komunikat zamiast ciszy (kryterium 2 dispatchu).
+ */
+export function openWikiHubEncyEntry(folder: string, gameId: string): CivpediaOpenResult {
+  const entry = findEncyEntryForGameId(folder, gameId);
+  if (entry === undefined) return 'no-entry';
+  if (api === null) return 'unavailable';
+  // Podajemy DOKŁADNY slug znalezionego hasła — wewnętrzne `findEncyByGameId`
+  // trafia wtedy swoim istniejącym fallbackiem `slug === id`, więc ścieżka
+  // otwierania panelu (`show` + `openEncy`) zostaje nietknięta.
+  api.openEncyEntry(entry.folder, entry.slug);
+  return 'opened';
+}
+
+// Rejestracja w szwie — wzorem `hud.ts:1558` (`setDiploOpenChecker(...)`).
+// Wykonuje się przy załadowaniu modułu; `main.ts` importuje `wikiHubHud`
+// (`showWikiHubHud`/`toggleWikiHubHud`), więc w żywej grze zawsze się wykona.
+setCivpediaEntryOpener(openWikiHubEncyEntry);
 
 export function createWikiHubHud(config: WikiHubHudConfig): WikiHubHudApi {
   ensureStyles();

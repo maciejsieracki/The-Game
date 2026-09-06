@@ -203,7 +203,12 @@ export const unitAdapter: EntityCardAdapter<UnitDef> = (unit) => {
     subtitle,
     medallion: { kind: 'icon', svg: iconSvg },
     sections: [characteristicsSection, combatSection, economySection, requirementsSection, statusesSection],
-    civpediaLink: null,
+    // P-ENTITYCARD-CIVPEDIA-KLIK-MARTWY-Q1: do tego tematu było tu `null`, więc stopka
+    // z przyciskiem „Więcej informacji (Civpedia)" w ogóle NIE POWSTAWAŁA dla jednostek
+    // (`renderer.ts` renderuje ją wyłącznie pod `if (data.civpediaLink)`) — defekt głębszy
+    // niż „klik nie działa". Folder = katalog `docs/encyklopedia/jednostki/`; `slug` i tak
+    // zostaje znormalizowany do kanonicznego `id` zapytania przez `buildEntityCardData`.
+    civpediaLink: { folder: 'jednostki', slug: unitToSlug(unit.Jednostka) },
     statusBadges: isSuperUnit ? ['Super-jednostka'] : undefined,
     // `Historia` (capitalizowane, konwencja `units.json` — zgodna z `Jednostka`/
     // `Surowiec`) — pole NIE jest jeszcze zadeklarowane w `UnitDef` (dodadzą je
