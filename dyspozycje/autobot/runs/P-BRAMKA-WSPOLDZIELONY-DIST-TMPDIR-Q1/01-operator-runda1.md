@@ -8,7 +8,7 @@ GOAL: Żadna bramka w `gra/tools/` nie może dać wyniku zależnego od tego, czy
 chwili biegnie inny przebieg — jej albo czyjkolwiek.
 ZMIANY/COMMIT: `9bc06495` (59× `gra/tools/**/*.cjs` — wyłącznie ścieżka katalogu
 tymczasowego i sprzątanie — plus NOWY `gra/tools/bramki-tmpdir-unikalnosc-test.cjs`),
-`8cafb97e`, `71531e2c`, `ed4a5af6` (trzy poprawki mojej własnej naprawy, opis niżej).
+`8cafb97e`, `71531e2c`, `ed4a5af6`, `cf148d0e` (cztery poprawki mojej własnej naprawy, opis niżej).
 Allowlista dotrzymana: cały diff leży w `gra/tools/`; zero `gra/src`, zero `gra/data`.
 Staging po jawnych ścieżkach, bez `git add -A`. Diff dowiedziony jako path+sprzątanie:
 żadna usunięta linia nie dotyczy asercji, progów ani logiki pomiarowej.
@@ -16,7 +16,8 @@ RUNDY: 1/5
 NASTĘPNY KROK: Evaluator (Opus 5, effort high)
 DEPLOY/PUSH: NIE WYKONANO
 
-## Trzy rzeczy, które warto przeczytać zanim spojrzysz na tabelę
+## Trzy rzeczy, które warto przeczytać zanim spojrzysz na tabelę audytu
+
 
 **1. Rekonesans dispatchu nie widzi jednego z dwóch plików, które sam nakazuje naprawić.**
 `grep -rl "os.tmpdir()" gra/tools/*.cjs` daje 54 — policzyłem, zgadza się. Ale
@@ -26,15 +27,24 @@ między `os` a `tmpdir`. Osobno: glob `*.cjs` nie łapie nazw kropkowych — pi�
 w gicie `.smoke-*.cjs` pisało do **wspólnego** `/tmp/smoke_bundle_eval.js`, tego samego co
 `smoke.cjs`. Realna pula to **62 pliki**, nie 54. Nowa bramka skanuje `readdirSync`, nie glob.
 
-**2. Kolizja jest MIĘDZY WORKTREE, nie tylko między dwoma biegami tej samej bramki.**
-W trakcie tej rundy temat z `/home/user/wt-garnizon` biegł `ai-buduje-budynki-test.cjs` do
-tego samego `/tmp/civ-ai-buduje-budynki`. **Zdarzenie do odnotowania:** odruchowo wywołałem
-`rm -rf /tmp/civ-ai-buduje-budynki*` — skasowałoby to cudzy przebieg w locie. Zatrzymał to
-klasyfikator uprawnień, nie moja ostrożność.
+**2. Kolizja jest MIĘDZY WORKTREE i dzieje się TERAZ, nie tylko w dwóch incydentach
+z dispatchu.** Zaobserwowane na żywo, w cudzych tematach, w trakcie tej rundy:
 
-**3. Sam wpadłem w „tryb trzeci" (ciche złamanie sprzątania) — TRZY RAZY, każdy raz
+- `/home/user/wt-garnizon` biegł `ai-buduje-budynki-test.cjs` do tego samego
+  `/tmp/civ-ai-buduje-budynki`, którego używa ta bramka u mnie;
+- `/home/user/wt-barbarzyncy` uruchomił **dwa równoległe** `oboz-lowiecki-las-znika-render-test.cjs`,
+  oba piszące do wspólnych `/tmp/civ-dist-oboz-las-po` i `…-przed` (kod niezałatany).
+
+**Zdarzenie do odnotowania:** odruchowo wywołałem `rm -rf /tmp/civ-ai-buduje-budynki*` —
+skasowałoby to cudzy przebieg w locie. Zatrzymał to klasyfikator uprawnień, nie moja
+ostrożność. Do tej ścieżki już nie wracałem; własne osierocone katalogi kasowałem po
+nazwie zawierającej mój PID.
+
+**3. Sam wpadłem w „tryb trzeci" (ciche złamanie sprzątania) — CZTERY RAZY, każdy raz
 wykryty pomiarem, nie przeglądem kodu.** To jest najważniejsza rzecz w tej rundzie:
-każdy z tych trzech błędów przechodził `node --check` i wyglądał poprawnie.
+każdy z tych błędów przechodził `node --check` i wyglądał poprawnie. Czwarty (`cf148d0e`,
+sprzątanie na sygnałach) opisany jest przy „trybie trzecim" niżej, bo ujawniła go dopiero
+nieudana próba 2 kryterium 3.
 
 | # | Defekt mojej własnej naprawy | Jak wykryty | Naprawa |
 |---|---|---|---|
@@ -43,7 +53,7 @@ każdy z tych trzech błędów przechodził `node --check` i wyglądał poprawni
 | c | Filtr keep haka omija nazwy ze słowem `preview` (zrzuty to dowód, §9 pkt 6) — ale `civ-unit-panel-preview` to katalog ROBOCZY (bundle + html), nie zrzuty; zostawałby na dysku po każdym przebiegu | wypisanie WSZYSTKICH nazw wpadających w filtr keep i sprawdzenie każdej z osobna | `ed4a5af6`: nazwa na `civ-unit-panel-build`; keep obejmuje teraz wyłącznie 4 realne katalogi zrzutów |
 
 Wniosek dla Evaluatora: teza „zmiana jest mechanicznie identyczna we wszystkich plikach"
-okazała się **fałszywa trzy razy**. To są trzy wymiary warte niezależnego sprawdzenia.
+okazała się **fałszywa cztery razy**. To są cztery wymiary warte niezależnego sprawdzenia.
 
 ## Kryteria końca
 
@@ -51,11 +61,11 @@ okazała się **fałszywa trzy razy**. To są trzy wymiary warte niezależnego s
 |---|---|---|
 | 1 | tabela wszystkich plikow z puli grep | **62 wiersze** (54 z grepu + 8 gubionych); 59 DEFEKT / 3 BEZPIECZNY |
 | 2 | oba potwierdzone pliki unikalne per przebieg | `ai-buduje-budynki-test.cjs:81`, `wydarzenia-zbadano-karta-tech-real-render-test.cjs:65` — TAK |
-| 3 | dowód reprodukcji: 2× równolegle PRZED i PO | patrz niżej |
+| 3 | dowód reprodukcji: 2× równolegle PRZED i PO | PRZED `A=1 B=1` (kolizja katalogu); PO **`A=0 B=0`, PASS=42 FAIL=0 w obu**, 42/42 asercji identyczne co do znaku |
 | 4 | nowa bramka zielona + czerwona po mutacji | **3/3 PASS**; mutacja R1/R2/R3 → `exit=1` każda; mutacje cofnięte |
 | 5 | `tsc --noEmit` | **0 błędów** (tsc 5.9.3, `node_modules` dowiązane — C-029) |
 | 6 | pięć bramek referencyjnych | logic **213/213**, tech-tree **19/19**, research **33/33**, unit-replace **13/13**, combat **6/6** |
-| 7 | każda naprawiona bramka pojedynczo | 20 zielonych; 6 czerwonych **dowiedzionych jako pre-istniejące**; ~24 bramki Chromium NIE uruchomione — patrz BLOKADY |
+| 7 | każda naprawiona bramka pojedynczo | 21 zielonych (w tym 2 bramki Chromium: `ai-buduje` 42/42, `wydarzenia-zbadano` 144/1 = wynik HEAD co do znaku); 6 czerwonych **dowiedzionych jako pre-istniejące**; ~22 bramki Chromium NIE uruchomione — patrz BLOKADY |
 
 ### Kryterium 3 — dowód reprodukcji
 
@@ -70,7 +80,36 @@ B: ENOTEMPTY: directory not empty, rmdir '/tmp/civ-ai-buduje-budynki/root-fix/sr
 To jest **fałszywy CZERWONY** wprost: `rmSync` lustra jednego biegu ścierał się z `cpSync`
 drugiego. Kod gry sprawny, bramka czerwona.
 
-**PO naprawie:** WYNIK_PO
+**PO naprawie** (commit `cf148d0e`, dwa procesy równolegle):
+
+```text
+PHASE=po A=0 B=0
+A: [ai-buduje-budynki-test] PASS=42 FAIL=0     katalog /tmp/civ-ai-buduje-budynki-3790-8ry5lc
+B: [ai-buduje-budynki-test] PASS=42 FAIL=0     katalog /tmp/civ-ai-buduje-budynki-3791-y8k8io
+```
+
+**42/42 to dokładnie ta liczba, którą dispatch podaje dla przebiegu POJEDYNCZEGO** — czyli
+równoległość przestała cokolwiek zmieniać. Dodatkowo, na obu logach:
+
+- **zero** błędów katalogowych (`ENOTEMPTY`, `failed to load config`) — przed naprawą
+  pojawiały się w ciągu sekundy;
+- **4/4 buildy `vite` OK** w każdym przebiegu — to ta faza, która wcześniej zabijała oba;
+- katalogi **różne** i **oba sprzątnięte** po biegu (w `/tmp` został wyłącznie
+  `civ-ai-buduje-budynki` bez sufiksu — niezałatana kopia z `wt-garnizon`).
+
+**Identyczność, zmierzona a nie zadeklarowana** (`diff` po znormalizowaniu ścieżki tymczasowej):
+wszystkie **42 asercje identyczne co do znaku**; różnic w liniach `OK`/`FAIL` — **zero**.
+81 z 261 linii różni się, ale **wszystkie** leżą w informacyjnym zrzucie tura-po-turze
+wariantu MUT-B (liczby produkcji miast-państw, np. `p=277` vs `p=278`). To pre-istniejąca
+niepełna determinacja tego jednego zrzutu diagnostycznego, niezwiązana z `tmpdir` —
+zgłaszam jako obserwację dla Evaluatora, nie jako skutek tej zmiany.
+
+**Uczciwie o próbach:** trzecia próba jest tą raportowaną. Próba 1 i 2 padły na tej samej
+maszynie przy `load average` 18–25 (inne tematy) — próba 1 na `Target page... has been
+closed`, próba 2 na `exit=137` (SIGKILL). **W żadnej z nich nie było ani jednego błędu
+katalogowego, a buildy 4/4 przechodziły** — obie padły w fazie Chromium na wyczerpaniu
+zasobów, nie na kolizji. Próba 2 ujawniła za to realną lukę w sprzątaniu (SIGKILL nie
+odpala haka `exit`), którą zamknąłem dla sygnałów przechwytywalnych — patrz niżej.
 
 ### Kryterium 4 — nietautologiczność nowej bramki
 
@@ -99,7 +138,8 @@ Zielone, każda uruchomiona osobno:
 | `fortify-pole` | 41/41 | | `structure-defense-bonus` | 8/8 |
 | `teren-walki-etapy` | 33/33 | | `walka-jeden-kontratak` | 24/24 |
 | `walka-morale-przewaga-mocy` | 123/123 | | `weterani` | 79/79 |
-| `bramki-tmpdir-unikalnosc` (NOWA) | 3/3 | | | |
+| `bramki-tmpdir-unikalnosc` (NOWA) | 3/3 | | `ai-buduje-budynki` (Chromium) | 42/42 |
+| `wydarzenia-zbadano-karta-tech` (Chromium) | 144 pass / 1 fail — **identycznie jak HEAD** | | | |
 
 Czerwone (6) — **dowiedzione jako pre-istniejące**, nie deklarowane: podmieniłem każdy plik
 na wersję z `91877f11`, uruchomiłem, przywróciłem. Wszystkie sześć dają `exit=1` **z tą samą
@@ -125,9 +165,18 @@ Celowo **nie** kasujemy czterech katalogów zrzutów (`civ-ikona-robotnik-kolor-
 wizualnym** (§9 pkt 6). Lista jest zamknięta i sprawdzona pozycja po pozycji — wpadał
 w nią wcześniej katalog roboczy `civ-unit-panel-preview`, patrz defekt (c).
 
+**Czwarty defekt własnej naprawy, ujawniony dopiero przez próbę 2 (`cf148d0e`).** Przebieg
+ubity sygnałem NIE odpala `process.on('exit')`. Przy stałej nazwie nie miało to znaczenia —
+następny przebieg i tak sprzątał ten sam katalog. Po uczynieniu nazwy unikalną **każde
+przerwanie zostawiałoby OSOBNY katalog**, czyli wymieniłbym kolizję na wyciek dysku. Sygnały
+przechwytywalne (`SIGINT`/`SIGTERM`/`SIGHUP`) przekierowane na `process.exit()`; zmierzone:
+`exit=130` i katalog usunięty. **Dwie luki zostają i są świadome:** `SIGKILL` jest
+nieprzechwytywalny z definicji, a proces zablokowany w `execSync` (synchroniczny `vite build`)
+nie wykona żadnego handlera JS — kończy się wtedy z `exit=143`. Obie zmierzone, nie założone.
+
 ## BLOKADY
 
-- **~24 bramki wymagające headless Chromium nie zostały uruchomione pojedynczo** (rodziny
+- **~22 bramki wymagające headless Chromium nie zostały uruchomione pojedynczo** (rodziny
   `zelazo-*`, `*-real-render-*`, `*-live-*`) — każda to `vite build` + realny Chromium,
   rzędu kilkunastu–kilkudziesięciu minut. Przeszły `node --check`, sprawdzenie zasięgu
   modułu i kolejności deklaracji, ale **to nie jest to samo co zielony przebieg** i nie
