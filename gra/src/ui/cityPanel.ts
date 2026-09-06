@@ -2459,6 +2459,15 @@ ${resourceColorClassCss('.civ-cs')}
 .civ-v-w3-chip:focus-visible{outline:2px solid var(--gold);outline-offset:2px;}
 .civ-v-w3-chip{--civ-res-self:var(--civ-gold-primary);}
 .civ-v-w3-chip-icon{display:flex;align-items:center;justify-content:center;color:var(--civ-res-self);font-size:1.15em;line-height:1;}
+/* Ikona chipa jest wstrzykiwana jako brandowy <svg class="civ-cs-chip-ic"> ze stroke
+   przepisanym na currentColor — a reguła .civ-cs .civ-cs-chip-ic{color:var(--gold)}
+   o swoistości (0,2,0) BIJE dziedziczenie z .civ-v-w3-chip-icon (0,1,0). Bez reguły niżej
+   ikona surowca w panelu miasta maluje się kolorem --gold scope'u, a nie paletą: dziś obie
+   wartości są równe #e8d88a, więc rozjazdu nie widać gołym okiem, ale MUTACJA PALETY NIE
+   RUSZA IKONY (złapane w rundzie 1 — zrzut mutacji panelu miasta wyszedł bajtowo identyczny
+   ze zrzutem PO). Trzy klasy = (0,3,0), więc wygrywa niezależnie od kolejności w arkuszu.
+   Pilnuje tego asercja A5f w tools/kolor-surowce-spojnosc-test.cjs. */
+.civ-v-w3-chip .civ-v-w3-chip-icon .civ-cs-chip-ic{color:var(--civ-res-self);}
 .civ-v-w3-chip-icon .civ-v-loaf-ic{width:1.2em;height:1.3em;}
 .civ-v-w3-sci-med{display:inline-flex;align-items:center;justify-content:center;
   width:1.35em;height:1.35em;border-radius:50%;flex-shrink:0;

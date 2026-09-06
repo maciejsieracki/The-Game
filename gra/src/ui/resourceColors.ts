@@ -16,14 +16,29 @@
  *     miasta (ikona i wartość paska W3), `--civ-gold-primary`, `--gold` w scope
  *     `.civ-cs`. Warianty odrzucone: #e8b84a (zapas w pasku W3 panelu miasta,
  *     1 miejsce), #e0b24a (`.civ-detail-scope`), #d9a441 (panel imperium).
- *   • `--tg-science-blue` #5a9bd4 — asset `res-science.svg`/`tb-science*.svg`,
- *     pierścień postępu badań, `--civ-science`, `--blue` w `.civ-cs`
- *     (4 miejsca renderu w panelu miasta). Warianty odrzucone: #7cb4e4
- *     (3 miejsca renderu), #8ec5ff (panel imperium).
+ *   • `--tg-science-blue` #5a9bd4 — assety marki Nauki (`res-science.svg`,
+ *     `tier1/res-science-24|40.svg`, `tier2/tb-science-24|40.svg`), pierścień
+ *     postępu badań (`scienceProgressRing.ts`), `scienceOwlIcon.ts`,
+ *     `scienceHubHud.ts --sci`, `--blue` w scope `.civ-cs` — 10 miejsc wobec
+ *     4 dla odrzuconego #7cb4e4 (`hud.ts:607`, `cityPanel.ts:2451`,
+ *     `mapToolbarHud.ts:61` i `:73` — liczba poprawiona po recon Evaluatora,
+ *     runda 1 podawała 3) i 1 dla #8ec5ff w tych plikach.
  *
  * CO TEN MODUŁ OBEJMUJE: kolor TOŻSAMOŚCI surowca — element, który mówi
- * „to jest ten surowiec" (ikona/medalion, wartość zapasu, wartość chipa).
- * CZEGO NIE OBEJMUJE: kolory STANU (zielony przyrost / czerwony deficyt /
+ * „to jest ten surowiec": ikona chipa (brandowy svg ze `stroke:currentColor`),
+ * wartość chipa i wartość zapasu, na obu ekranach z pary.
+ *
+ * CZEGO NIE OBEJMUJE (1) — MEDALIONY. Okrągły medalion pod ikoną
+ * (`.civ-hud-chip-med`, `.civ-v-w3-sci-med`) to GRADIENT TŁA z dwóch odcieni
+ * (#f4e0a0→#a9861f złoty, #8fb6e0→#3a5f8a naukowy), a nie jeden kolor
+ * tożsamości — paleta trzymająca JEDNĄ wartość nie ma czym go zastąpić.
+ * Medaliony są już spójne między panelem miasta a HUD mapy (zmierzone
+ * w Chromium, runda 1) i stoją jawnie na whiteliście A6 bramki tematu;
+ * ich ujednolicenie z paletą byłoby zmianą kolorystyki do decyzji właściciela.
+ * Ten akapit i whitelist A6 mówią to samo — sprzeczność opisu ze stanem kodu
+ * była zarzutem 7 Evaluatora w rundzie 1.
+ *
+ * CZEGO NIE OBEJMUJE (2): kolory STANU (zielony przyrost / czerwony deficyt /
  * pomarańczowe ostrzeżenie). Stan jest wspólną konwencją obu ekranów i jest
  * ortogonalny do tożsamości surowca — HUD mapy koloruje tempo na zielono
  * (`.civ-hud-chip-rate`), panel miasta koloruje tempo tego miasta i deltę

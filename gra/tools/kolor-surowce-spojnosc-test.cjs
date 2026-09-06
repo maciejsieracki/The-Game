@@ -65,9 +65,16 @@ function read(p) {
   return fs.readFileSync(p, 'utf8');
 }
 
-/** Usuwa komentarze blokowe i liniowe — komentarz wolno cytować stary kolor. */
+/**
+ * Usuwa komentarze blokowe i liniowe — w komentarzu wolno cytować stary kolor.
+ * Komentarz blokowy zastępujemy TYLOMA SAMYMI ZNAKAMI NOWEJ LINII, ile zjadł:
+ * inaczej numery linii w raporcie A6 rozjeżdżają się względem pliku i wskazują
+ * na przypadkowe miejsce (w rundzie 1 rozjazd sięgał ~250 linii).
+ */
 function stripComments(src) {
-  return src.replace(/\/\*[\s\S]*?\*\//g, '').replace(/^[ \t]*\/\/.*$/gm, '');
+  return src
+    .replace(/\/\*[\s\S]*?\*\//g, (m) => m.replace(/[^\n]/g, ''))
+    .replace(/^[ \t]*\/\/.*$/gm, '');
 }
 
 // ---------------------------------------------------------------------------
@@ -152,6 +159,17 @@ if (citySrc) {
     const rule = new RegExp(`\\${sel}\\{[^}]*color:var\\(--civ-res-self\\)`).test(cityCode);
     check(`A5e ${sel} czyta kolor tożsamości z palety`, rule, sel);
   }
+  /**
+   * A5f — IKONA CHIPA W3. Brandowy `<svg class="civ-cs-chip-ic">` dostaje `stroke:currentColor`,
+   * więc o jego kolorze decyduje `color` — a `.civ-cs .civ-cs-chip-ic{color:var(--gold)}`
+   * (swoistość 0,2,0) BIJE dziedziczenie po `.civ-v-w3-chip-icon` (0,1,0). Bez reguły
+   * o swoistości 0,3,0 ikona surowca maluje się `--gold` scope'u, a nie paletą: dziś obie
+   * wartości są równe #e8d88a, więc na ekranie różnicy nie widać, ale MUTACJA PALETY NIE
+   * RUSZA IKONY. Dokładnie ten fałszywy zielony przepuścił rundę 1 (zrzut mutacji panelu
+   * miasta wyszedł bajtowo identyczny ze zrzutem PO — zarzut 2 Evaluatora).
+   */
+  check('A5f ikona chipa W3 czyta kolor z palety mocniej niż .civ-cs .civ-cs-chip-ic',
+    /\.civ-v-w3-chip \.civ-v-w3-chip-icon \.civ-cs-chip-ic\{color:var\(--civ-res-self\)/.test(cityCode));
 }
 
 // ---------------------------------------------------------------------------
@@ -181,17 +199,45 @@ const RES_MARKER = /(res-work|res-food|res-treasury|res-science|res-culture|res-
 const COLOR_LITERAL = /#[0-9a-fA-F]{3,8}\b/;
 const LEGACY_CLASS = /['"](gold|blue)['"]/;
 
+/**
+ * JEDNOSTKA SKANU = LINIA **ORAZ** CAŁA DEKLARACJA CSS `selektor{…}`.
+ * Sam skan po liniach jest ślepy na regułę łamaną na dwie linie — selektor zostaje
+ * w jednej, literał koloru w drugiej, i żadna z nich nie ma kompletu (nazwa surowca
+ * + kolor). W tym pliku reguły łamane na dwie linie są normą, więc obejście paletą
+ * mogło wjechać bez alarmu samym przeniesieniem `color:` do następnej linii.
+ * Dlatego do skanu dokładamy widok „logiczny": każdą parę selektor+ciało sklejamy
+ * w jeden ciąg i sprawdzamy tak samo. Numer linii = linia selektora.
+ */
+const CSS_SELECTOR = /^[\s.#:>+~*\[\]="'a-zA-Z0-9_-]+$/;   // bez nawiasów, backticków, `=>`
+const CSS_BODY = /^[^`={}]*:[^`={}]*;[^`={}]*$/;           // deklaracje `prop:wartość;`
+function scanUnits(code) {
+  const units = code.split('\n').map((line, i) => ({ n: i + 1, text: line }));
+  const re = /([^{}\n][^{}]*)\{([^{}]*)\}/g;
+  let m;
+  while ((m = re.exec(code)) !== null) {
+    if (!/\n/.test(m[0])) continue;                     // jednoliniowe łapie skan po liniach
+    const sel = m[1].split('\n').pop().trim() ? m[1] : m[1];
+    // Tylko REGUŁY CSS. Blok JS (`{ icon: …, cls: 'gold' }`, ciało funkcji, literał
+    // szablonowy) ma nawiasy, `=>` albo backtick — i tu nie wchodzi, inaczej A6
+    // czerwieniałoby na zwykłym kodzie zamiast na obejściu palety.
+    if (!CSS_SELECTOR.test(sel.replace(/\n/g, ' ')) || !CSS_BODY.test(m[2].replace(/\n/g, ' '))) continue;
+    const n = code.slice(0, m.index).split('\n').length;
+    units.push({ n, text: m[0].replace(/\s*\n\s*/g, ' ') });
+  }
+  return units;
+}
+
 const bypasses = [];
 for (const f of COVERED) {
   const src = read(f);
   if (src === null) continue;
   const base = path.basename(f);
-  stripComments(src).split('\n').forEach((line, i) => {
-    if (!RES_MARKER.test(line)) return;
-    if (!COLOR_LITERAL.test(line) && !LEGACY_CLASS.test(line)) return;
-    if (A6_WHITELIST.some(w => w.file === base && line.includes(w.needle))) return;
-    bypasses.push(`${base}:${i + 1}: ${line.trim().slice(0, 140)}`);
-  });
+  for (const u of scanUnits(stripComments(src))) {
+    if (!RES_MARKER.test(u.text)) continue;
+    if (!COLOR_LITERAL.test(u.text) && !LEGACY_CLASS.test(u.text)) continue;
+    if (A6_WHITELIST.some(w => w.file === base && u.text.includes(w.needle))) continue;
+    bypasses.push(`${base}:${u.n}: ${u.text.trim().slice(0, 140)}`);
+  }
 }
 check('A6 żaden z sześciu surowców nie dostaje koloru z pominięciem palety',
   bypasses.length === 0, bypasses);
