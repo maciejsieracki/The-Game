@@ -88,28 +88,20 @@ A: [ai-buduje-budynki-test] PASS=42 FAIL=0     katalog /tmp/civ-ai-buduje-budynk
 B: [ai-buduje-budynki-test] PASS=42 FAIL=0     katalog /tmp/civ-ai-buduje-budynki-3791-y8k8io
 ```
 
-**42/42 to dokładnie ta liczba, którą dispatch podaje dla przebiegu POJEDYNCZEGO** — czyli
-równoległość przestała cokolwiek zmieniać. Dodatkowo, na obu logach:
+**42/42 to ta sama liczba, którą dispatch podaje dla przebiegu POJEDYNCZEGO** — równoległość
+przestała cokolwiek zmieniać. W obu logach: zero błędów katalogowych (przed naprawą
+pojawiały się w ciągu sekundy), 4/4 buildy `vite` OK, katalogi różne i oba sprzątnięte.
 
-- **zero** błędów katalogowych (`ENOTEMPTY`, `failed to load config`) — przed naprawą
-  pojawiały się w ciągu sekundy;
-- **4/4 buildy `vite` OK** w każdym przebiegu — to ta faza, która wcześniej zabijała oba;
-- katalogi **różne** i **oba sprzątnięte** po biegu (w `/tmp` został wyłącznie
-  `civ-ai-buduje-budynki` bez sufiksu — niezałatana kopia z `wt-garnizon`).
+**Identyczność zmierzona, nie zadeklarowana** (`diff` po znormalizowaniu ścieżki tymczasowej):
+**42 asercje identyczne co do znaku, zero różnic w liniach `OK`/`FAIL`**. Różni się 81 z 261
+linii, ale wyłącznie w informacyjnym zrzucie tura-po-turze wariantu MUT-B (`p=277` vs `p=278`)
+— pre-istniejąca niepełna determinacja tego zrzutu, niezwiązana z `tmpdir`. Zgłaszam jako
+obserwację dla Evaluatora, nie jako skutek tej zmiany.
 
-**Identyczność, zmierzona a nie zadeklarowana** (`diff` po znormalizowaniu ścieżki tymczasowej):
-wszystkie **42 asercje identyczne co do znaku**; różnic w liniach `OK`/`FAIL` — **zero**.
-81 z 261 linii różni się, ale **wszystkie** leżą w informacyjnym zrzucie tura-po-turze
-wariantu MUT-B (liczby produkcji miast-państw, np. `p=277` vs `p=278`). To pre-istniejąca
-niepełna determinacja tego jednego zrzutu diagnostycznego, niezwiązana z `tmpdir` —
-zgłaszam jako obserwację dla Evaluatora, nie jako skutek tej zmiany.
-
-**Uczciwie o próbach:** trzecia próba jest tą raportowaną. Próba 1 i 2 padły na tej samej
-maszynie przy `load average` 18–25 (inne tematy) — próba 1 na `Target page... has been
-closed`, próba 2 na `exit=137` (SIGKILL). **W żadnej z nich nie było ani jednego błędu
-katalogowego, a buildy 4/4 przechodziły** — obie padły w fazie Chromium na wyczerpaniu
-zasobów, nie na kolizji. Próba 2 ujawniła za to realną lukę w sprzątaniu (SIGKILL nie
-odpala haka `exit`), którą zamknąłem dla sygnałów przechwytywalnych — patrz niżej.
+**Uczciwie o próbach:** raportowana jest trzecia. Próby 1–2 padły przy `load average` 18–25
+(inne tematy na tej maszynie): na `Target page has been closed` i na `exit=137` (SIGKILL).
+W obu **zero błędów katalogowych i buildy 4/4** — padły na wyczerpaniu zasobów, nie na
+kolizji. Próba 2 ujawniła za to realną lukę w sprzątaniu, patrz niżej.
 
 ### Kryterium 4 — nietautologiczność nowej bramki
 
@@ -165,14 +157,13 @@ Celowo **nie** kasujemy czterech katalogów zrzutów (`civ-ikona-robotnik-kolor-
 wizualnym** (§9 pkt 6). Lista jest zamknięta i sprawdzona pozycja po pozycji — wpadał
 w nią wcześniej katalog roboczy `civ-unit-panel-preview`, patrz defekt (c).
 
-**Czwarty defekt własnej naprawy, ujawniony dopiero przez próbę 2 (`cf148d0e`).** Przebieg
-ubity sygnałem NIE odpala `process.on('exit')`. Przy stałej nazwie nie miało to znaczenia —
-następny przebieg i tak sprzątał ten sam katalog. Po uczynieniu nazwy unikalną **każde
-przerwanie zostawiałoby OSOBNY katalog**, czyli wymieniłbym kolizję na wyciek dysku. Sygnały
-przechwytywalne (`SIGINT`/`SIGTERM`/`SIGHUP`) przekierowane na `process.exit()`; zmierzone:
-`exit=130` i katalog usunięty. **Dwie luki zostają i są świadome:** `SIGKILL` jest
-nieprzechwytywalny z definicji, a proces zablokowany w `execSync` (synchroniczny `vite build`)
-nie wykona żadnego handlera JS — kończy się wtedy z `exit=143`. Obie zmierzone, nie założone.
+**Czwarty defekt własnej naprawy (`cf148d0e`), ujawniony przez próbę 2.** Przebieg ubity
+sygnałem nie odpala `process.on('exit')`. Przy stałej nazwie nie miało to znaczenia — sprzątał
+następny przebieg. Po uczynieniu nazwy unikalną **każde przerwanie zostawiałoby OSOBNY
+katalog**, czyli wymieniłbym kolizję na wyciek dysku. Sygnały przechwytywalne przekierowane na
+`process.exit()`; zmierzone `exit=130` i katalog usunięty. **Dwie luki zostają, obie świadome
+i zmierzone:** `SIGKILL` jest nieprzechwytywalny, a proces zablokowany w `execSync`
+(synchroniczny `vite build`) nie wykona żadnego handlera JS — kończy się `exit=143`.
 
 ## BLOKADY
 
