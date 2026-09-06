@@ -179,16 +179,16 @@
     },
     "surowiecOdblokowany": null,
     "teren": "Las",
-    "warunek": "jednorazowo +25 Drewna, potem teren traci nakładkę Lasu",
+    "warunek": "jednorazowo +50 Drewna, potem teren traci nakładkę Lasu",
     "koszt_praca": 2.5,
     "tech": null,
     "wycinka": {
-      "praca_per_tura": 25,
+      "praca_per_tura": 50,
       "tury": 1,
       "usuwa_nakladke": "las"
     },
     "odblokowuje": "",
-    "uwagi": "R-TECH-KARTA-BOCZNA-KLIK-WIERSZ-REGRES-Q1 (2026-09-03): tekst gracza w `warunek` skrócony z surowej notatki deweloperskiej — pełna historia decyzji zachowana tu. Oryginał: koszt 2.5 Pracy na start; plon +25 Drewna × 1 tura (surowiec do puli państwa, Maciej 2026-07-24; R-EKONOMIA-SUROWCE-SKALA-5X-Q1 Runda 2, Maciej 2026-08-13, B2: x5 -> 25, bylo 5 -- koszt startu 2.5 Pracy (Maciej 2026-08-17) NIE jest surowcem budowlanym, zostaje bez zmian); potem teren bazowy bez lasu",
+    "uwagi": "R-WYCINKA-DREWNO-50-I-KOMUNIKAT-CAP-Q1 (Operator 2026-09-06, ECHO właściciela): praca_per_tura 25 -> 50, jednorazowo (tury=1 bez zmian), koszt_praca 2.5 bez zmian. R-TECH-KARTA-BOCZNA-KLIK-WIERSZ-REGRES-Q1 (2026-09-03): tekst gracza w `warunek` skrócony z surowej notatki deweloperskiej — pełna historia decyzji zachowana tu. Oryginał: koszt 2.5 Pracy na start; plon +25 Drewna × 1 tura (surowiec do puli państwa, Maciej 2026-07-24; R-EKONOMIA-SUROWCE-SKALA-5X-Q1 Runda 2, Maciej 2026-08-13, B2: x5 -> 25, bylo 5 -- koszt startu 2.5 Pracy (Maciej 2026-08-17) NIE jest surowcem budowlanym, zostaje bez zmian); potem teren bazowy bez lasu",
     "historia": "Karczowanie lasu pod potrzeby rolnictwa i budownictwa to proces towarzyszący ekspansji rolniczych społeczności od neolitu — w Europie znany jako gospodarka żarowa, praktykowana też niezależnie w tropikalnych lasach Ameryki Środkowej i Azji Południowo-Wschodniej. Drewno wycięte z lasu było surowcem uniwersalnym: budulcem dla domów i statków, opałem, a po przetworzeniu na węgiel drzewny — paliwem potrzebnym do wytopu metali. Sam wyrąb, wykonywany kamiennymi, a później żelaznymi toporami, był pracą żmudną i czasochłonną, dlatego często wspomagano go ogniem, wypalając poszycie i mniejsze drzewa, by ułatwić dalsze karczowanie. Skala średniowiecznego wyrębu lasów w Europie Zachodniej, związana z rosnącą populacją i potrzebą nowych pól uprawnych, trwale zmieniła krajobraz kontynentu, zamieniając rozległe puszcze w mozaikę pól i wsi. W wielu regionach świata deforestacja pod uprawę pozostaje procesem kontrowersyjnym do dziś, co pokazuje, jak dawna praktyka gospodarcza wciąż kształtuje debaty współczesności."
   },
   "tartak": {

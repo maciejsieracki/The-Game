@@ -237,8 +237,10 @@ async function main() {
   const mainTs = fs.readFileSync(path.join(GRA, 'src', 'main.ts'), 'utf8');
   check('[3] main.ts: hint zaznaczenia akcji wycinki zawiera "Wycinka" (nie "Wyrąb")',
     mainTs.includes("'Wycinka' + costPart + ': +20 Pracy/turę przez 3 tury"));
-  check('[3] main.ts: hint po zbiorze Drewna zawiera "Wycinka" (nie "Wyrąb")',
-    mainTs.includes("'Wycinka: +' + drewnoCredit + ' Drewna"));
+  check('[3] main.ts: hint po zbiorze Drewna zawiera "Wycinka" (nie "Wyrąb") -- pokazuje'
+    + ' FAKTYCZNIE zapisana (przycieta do capu) ilosc drewnoCredited, nie surowa'
+    + ' drewnoCredit (R-WYCINKA-DREWNO-50-I-KOMUNIKAT-CAP-Q1)',
+    mainTs.includes("'Wycinka: +' + drewnoCredited + ' Drewna"));
   check('[3] main.ts: log konsoli AI zawiera "Wycinka" (opcjonalne, dla spojnosci)',
     mainTs.includes('] Wycinka @ (${cmd.q},${cmd.r})'));
 
