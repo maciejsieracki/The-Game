@@ -66,6 +66,34 @@ zastosowałem: cel konsumowany w tym samym procesie (DIST/WORK) dostaje sufiks s
 przez sweep; wytwór do odczytania później (raporty, zrzuty) dostaje sufiks `-p<pid>`
 **celowo poza sygnaturą sweepa**, żeby sweep nie skasował dowodu.
 
+## Dwie obserwacje z tej fazy (nie zarzuty — ustalenia)
+
+**1. `miasta-panstwa-wylaczone-ui-render-test.cjs` jest czerwona PRE-ISTNIEJĄCO.**
+Nie deklaruję tego — zmierzyłem tą samą metodą, której użyłem przy szóstce czerwonych
+w rundzie 1: podmieniłem plik na wersję z `91877f11` i uruchomiłem. **Obie wersje dają
+`11 pass, 1 fail`, na tej samej asercji** (`log silnika "[NewGame] Mapa: …" pojawił się`).
+Moja zmiana dotyczy wyłącznie nazwy katalogu buildu i nie ma z tą asercją związku.
+Plik przywrócony, drzewo czyste.
+
+**2. Bramka `mgla-odkrycie-wzdluz-sciezki-live-render-test.cjs` brudzi repo poza
+jakąkolwiek allowlistą.** Zapisuje zrzuty do **śledzonego w gicie** katalogu CUDZEGO
+tematu (`dyspozycje/autobot/runs/P-MGLA-ODKRYCIE-SCIEZKA-INWARIANT-Q1/dowody/`) — samo
+jej uruchomienie zmodyfikowało `live-02-po-turze.png`. Przywróciłem plik (`git checkout`),
+drzewo jest czyste i tej zmiany NIE commituję. To ta sama klasa co temat tej rundy —
+wspólny, stały cel zapisu, do którego pisze więcej niż jeden przebieg — tyle że wewnątrz
+repo, nie w `/tmp`, więc żadna z reguł R1–R5 jej nie widzi. **Nie naprawiam tego sam:**
+przeniesienie katalogu zrzutów zmienia miejsce, w którym cudzy zamknięty temat trzyma
+swój dowód wizualny (§9 pkt 6), a tego wytwór nie rozstrzyga. Kandydat na osobny temat.
+
+## Obciążenie maszyny — dlaczego zmniejszyłem równoległość
+
+Przy czterech bramkach Chromium naraz `load average` sięgnął **13,9**. To ten sam zakres,
+w którym padły próby 1–2 z rundy 1 (18–25) — a bramka przewrócona brakiem CPU raportuje
+`FAIL`, którego nikt nie odróżni od regresu. Zszedłem na dwa równoległe przebiegi:
+wolniej, ale wynik znaczy to, co znaczy. Sam sweep pod tym obciążeniem zachował się
+poprawnie — w szczycie sześć katalogów z sygnaturą, **wszystkie z żywym PID-em, zero
+skasowanych**, katalogi zrzutów nietknięte.
+
 ## TESTY (uruchomione w tej fazie, nie przepisane)
 
 | bramka | wynik |
