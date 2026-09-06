@@ -457,9 +457,14 @@ export const RELIGION_RANGE_STYLE: RangeOverlayStyle = {
  * da się postawić, świecą na jasnoniebiesko z przezroczystością 30 %.
  *
  * Widoczność tej warstwy jest wymaganiem, nie ozdobnikiem: wszystkie cztery kopalnie
- * kwalifikują się wyłącznie na Wzgórzach i Górach. Płaski krążek o promieniu
- * 0,97·HEX_R byłby w większości zasłonięty przez bryłę reliefu, pozostawiając
- * jedynie wąski pierścień — dlatego ogólne podświetlenie kopalni było niewidoczne.
+ * kwalifikują się wyłącznie na Wzgórzach i Górach, a tam płaski krążek o promieniu
+ * 0,97·HEX_R chowa się za bryłą reliefu. POMIAR (raycast po `powierzchniaReliefuY`,
+ * 5 wariantów × 720 kierunków, na wysokości krążka = `yOffset` 0,06 nad wierzchem
+ * pryzmu): promień przesłaniania wynosi 0,78–0,92·HEX_R dla Wzgórza i 0,71–0,82·HEX_R
+ * dla Góry, więc odsłonięty zostaje pierścień o szerokości 0,06–0,26·HEX_R, czyli
+ * 11–46 % pola krążka. Krążek NIE znikał zatem w całości, a dla wariantów Góry
+ * odsłonięta część sięga niemal połowy pola — ale to, co zostawało, to samo obrzeże
+ * heksa oderwane od jego środka, i dlatego podświetlenie było w praktyce nieczytelne.
  *
  * P-KOPALNIA-PODSWIETLENIE-KOSMETYKA-N2 = C (właściciel, 2026-08-18):
  * widoczność jest rozwiązana geometrią `hugTerrainRelief`, a nie globalnym
