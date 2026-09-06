@@ -54,6 +54,16 @@ zasięgiem sweepa z konstrukcji — §2b nietknięte.
 podpowłokę (PID 15221), nie node'a (15223), który przeżył. Powtórzone na PID node'a.
 Zgłaszam, bo ten właśnie błąd pomiarowy mógł mnie doprowadzić do fałszywego „naprawione".
 
+## Luka, która ZOSTAJE (zgłaszam, nie ukrywam)
+
+Cztery pliki używają `fs.mkdtempSync(path.join(os.tmpdir(), 'civ-…-'))` — `weterani`,
+`hud-moc-warstwa`, `hud-obywatele-chip`, `moc-ranking-rozjazd`. Unikalność mają
+z definicji kontraktu Node (GOAL spełniony), ale ich nazwy **nie niosą PID-a**, więc
+sweep nie ma jak orzec, czy katalog jest sierotą, czy własnością żywego przebiegu —
+i celowo ich nie rusza. Przerwany przebieg tej czwórki zostawi katalog na dysku.
+Nie „naprawiam" tego przez zgadywanie po czasie modyfikacji: skasowanie katalogu
+żywej bramki jest gorsze niż jeden zostawiony katalog.
+
 ## DO DECYZJI CZŁOWIEKA
 
 **Domyślne nazwy katalogów raportowych `--out`** (`flaga-mp-*`, `wojny-kamien-ev/fc`).
