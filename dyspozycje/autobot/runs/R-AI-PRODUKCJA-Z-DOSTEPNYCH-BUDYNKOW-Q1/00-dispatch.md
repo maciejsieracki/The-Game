@@ -5,8 +5,9 @@ RUNDA: 1/5
 DATA: 2026-09-05
 DOMAIN: GAME
 ŚCIEŻKA: A (Workflow)
-MODEL+EFFORT: Operator — Opus 5, effort high; Evaluator — Opus 5, effort high;
-Final Control — Opus 5, effort high.
+MODEL+EFFORT: Operator — Sonnet 5, effort medium; Evaluator — Sonnet 5, effort high;
+Final Control — Sonnet 5, effort high (SS5a regula bazowa — nie jest to temat wizualny,
+poprawione 2026-09-06, poprzednia wersja bledna).
 
 ## WYZWALACZ (właściciel, dosłownie)
 
