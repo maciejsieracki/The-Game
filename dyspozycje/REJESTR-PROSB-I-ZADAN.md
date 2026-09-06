@@ -5916,3 +5916,30 @@ Prawa). Bramki: `budynek-garnizon-test` 83/0, `civpedia-budynki-historia-test` 1
    `civpedia-gra-id-mostek-test.cjs` przy uruchomieniu brudzi sledzony `wikiBundle.json`
    (nadpisuje stempel `generated`) — ta sama klasa bledu co bramki barbarzyncow piszace do
    cudzego katalogu runu. **STATUS: ZAREJESTROWANE, NIE DISPATCHOWANE.** DOMAIN: INFRA.
+
+## `R-AI-PRODUKCJA-Z-DOSTEPNYCH-BUDYNKOW-Q1` — GAME — **ZINTEGROWANE 2026-09-06** (3 rundy)
+
+AI wybiera budynki z tego samego zrodla co gracz (`availableProduction()`), punktowane po
+grupie budynku — zero zaszytych id jako zrodla kandydatow. Pokrycie 23/42 → 39/42 (runda 1)
+→ **42/42** (runda 2, po usunieciu na stale reguly „major AI nigdy nie buduje Murow" —
+decyzja wlasciciela). Runda 3 (na zadanie wlasciciela, po ujawnieniu ze Spichlerz/Akwedukt
+steruja limitem populacji miasta 5→8→12): Spichlerz/Spichlerz II dostaja realny, silny
+priorytet dokladnie gdy miasto jest na suficie populacji, progi difficulty-aware
+(easy/normal/hard) — naprawiony realny bug (Evaluator wykryl, ze pierwsza wersja poprawki
+byla martwa na trudnosci hard). Final Control rundy 3: **PASS**, zero `NAPRAW`.
+
+Nowa bramka `gra/tools/ai-produkcja-pokrycie-katalogu-test.cjs` (6/6, 42/42 z danych, nie
+zaszyte). Kryterium 4 (pelna symulacja 150 tur w prawdziwym silniku) **swiadomie odroczone**
+do nocnego przebiegu i weryfikacji wlasciciela w playteście — nie jest defektem tego
+zamkniecia.
+
+**Znalezisko architektoniczne do rejestracji (Obrona rundy 3, uczciwie zgloszone jako
+ryzyko, nie blad):** `granaryPriorityBonus()` w `ai.ts` duplikuje progi populacji z
+`economy.ts`/`econ-params.json` recznie (nowa tabela `AI_POP_CAP_NO_GRANARY_BY_DIFFICULTY`),
+zamiast importowac istniejaca funkcje `cityPopulationCap`. Dwa niezalezne zrodla tej samej
+liczby moga sie rozjechac przy przyszlej zmianie balansu populacji.
+**STATUS: ZAREJESTROWANE, NIE DISPATCHOWANE.** DOMAIN: INFRA. Zakres: zastapic reczna
+tabele wywolaniem/importem `cityPopulationCap` (lub odwrotnie), tak zeby istnial jeden
+zrodlowy zapis progu.
+
+**Odblokowuje `R-PRAWO-PRZEBUDOWA-SKALI-Q1`** — blokada z 00-dispatch.md Prawa spelniona.
