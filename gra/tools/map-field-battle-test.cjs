@@ -204,11 +204,11 @@ assert(atkNear.length === 2 && !atkNear.some(u => u.typeId === 'Zwiadowca'),
 // battleHex, zbiory sie rozjada i asercja czerwienieje (zweryfikowane mutacyjnie).
 // `size > 1` broni przed tautologia „oba zbiory puste".
 //
-// UWAGA (kandydat do decyzji wlasciciela, NIE rozstrzygany przez ten test): dla kotwicy
-// POZA heksem miasta funkcje zwracaja ROZNE zbiory — zmierzone na tym fixture: kotwica u0
-// (5,0) daje field ["u-anchor-city","u0","u2","u3"] vs city ["u-anchor-city","u0","u2"].
+// UWAGA (ratyfikacja wlasciciela 2026-09-06, celowo NIE rozstrzygane przez ten test): dla
+// kotwicy POZA heksem miasta funkcje zwracaja ROZNE zbiory — zmierzone na tym fixture: kotwica
+// u0 (5,0) daje field ["u-anchor-city","u0","u2","u3"] vs city ["u-anchor-city","u0","u2"].
 // Bitwa w polu toczy sie na heksie kotwicy, a bitwa o miasto na heksie miasta — to sa rozne
-// miejsca starcia, wiec roznica moze byc zamierzona. Ta asercja jej NIE przesadza.
+// miejsca starcia; roznica jest ZAMIERZONA, nie defektem. Ta asercja jej swiadomie nie przesadza.
 const parityOnCity = { ...hastati, id: 'u-anchor-city', q: openCity.q, r: openCity.r };
 const parityUnits = [parityOnCity, hastati, ally, scoutNeighbor, warrior2, garrison, farAlly];
 const parityField = new Set(collectBattleRoster(parityOnCity, parityUnits, 'attacker').map(u => u.id));
