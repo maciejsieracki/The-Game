@@ -1429,18 +1429,33 @@ const AI_MAJOR_WALL_BORDER_BONUS = 120;
  *
  * MECHANIZM: `granaryPriorityBonus()` liczy aktualny sufit populacji miasta z
  * DOKŁADNIE tych samych progów co silnik ekonomii (`cityPopulationCap` w
- * `economy.ts`, wartości "normal" z `econ-params.json`: bez budynku=5, ze
- * Spichlerzem/Spichlerzem II bez Akweduktu=8, z Akweduktem=12 -- ai.ts nie
- * importuje `economy.ts` wprost, żeby nie ciągnąć całego modułu ekonomii do
- * testów jednostkowych AI, więc progi są zduplikowane jako nazwane stałe
- * `AI_POP_CAP_*` niżej z jawnym odnośnikiem do źródła prawdy). Gdy miasto jest
- * NA suficie (populacja >= aktualny sufit -- czyli faktycznie zablokowane,
- * dokładnie problem właściciela) -- SILNY bonus, rangi Koszar/Biblioteki
- * (`AI_MAJOR_GRANARY_PRIORITY_BONUS_STRONG`). Gdy miasto ma jeszcze zapas do
- * sufitu (jak `ai-jednostki-tylko-zakup-test` B, populacja 4/5) -- SŁABY,
- * niezmieniony bonus (`_WEAK` = dawne 8, zbisekcjonowane jako bezpieczne).
- * Miasto z Akweduktem (sufit 12) nigdy nie dostaje silnego bonusu -- Spichlerz
- * przestał być wąskim gardłem wzrostu.
+ * `economy.ts`, `econ-params.json`: bez budynku -- `akwedukt_prog_ludnosci`,
+ * SKALUJE SIĘ z trudnością (easy=6/normal=5/hard=4); ze Spichlerzem/Spichlerzem
+ * II bez Akweduktu -- `spichlerz_prog_ludnosci`, PŁASKIE 8 na wszystkich
+ * trudnościach; z Akweduktem=12 -- ai.ts nie importuje `economy.ts` wprost, żeby
+ * nie ciągnąć całego modułu ekonomii do testów jednostkowych AI, więc progi są
+ * zduplikowane jako nazwane stałe `AI_POP_CAP_*` niżej z jawnym odnośnikiem do
+ * źródła prawdy). Gdy miasto jest NA suficie (populacja >= aktualny sufit --
+ * czyli faktycznie zablokowane, dokładnie problem właściciela) -- SILNY bonus,
+ * rangi Koszar/Biblioteki (`AI_MAJOR_GRANARY_PRIORITY_BONUS_STRONG`). Gdy
+ * miasto ma jeszcze zapas do sufitu (jak `ai-jednostki-tylko-zakup-test` B,
+ * populacja 4 < sufit "normal"=5) -- SŁABY, niezmieniony bonus (`_WEAK` = dawne
+ * 8, zbisekcjonowane jako bezpieczne). Miasto z Akweduktem (sufit 12) nigdy nie
+ * dostaje silnego bonusu -- Spichlerz przestał być wąskim gardłem wzrostu.
+ *
+ * TRUDNOŚĆ (P-GRANARY-BONUS-IGNORUJE-TRUDNOSC, Evaluator runda 3, PRZYJĘTE):
+ * sufit BEZ Spichlerza skaluje się z `opts.menuDifficulty`
+ * (`AI_POP_CAP_NO_GRANARY_BY_DIFFICULTY`, ten sam wzorzec co
+ * `CS_EARLY_GARRISON_TARGET` wyżej w pliku) -- na "hard" miasto zablokowane na
+ * populacji 4 dostawało dawniej tylko WEAK (kod porównywał do sztywnego 5),
+ * więc Spichlerz nigdy nie wchodził do budowy (dowód: proxy-symulacja 400 tur,
+ * raport Operatora obrony rundy 3). Fixture `ai-jednostki-tylko-zakup-test`
+ * scenariusz B (`population: 4`, bez `menuDifficulty`) domyślnie "normal" --
+ * 4<5 poprawnie WEAK, zero zmiany. Sufit ZE Spichlerzem I
+ * (`AI_POP_CAP_WITH_GRANARY_I`) NIE skaluje się -- `econ-params.json`
+ * `spichlerz_prog_ludnosci` jest płaskie 8/8/8 na wszystkich trudnościach.
+ * Brak `opts.menuDifficulty` (stare wywołania/testy, w tym chroniony gate) ->
+ * domyślnie "normal" -- zero zmiany zachowania dla testów bez tego pola.
  *
  * Ta sama funkcja obsługuje `spichlerz_ii` (Epoka 2, zadanie 2 dispatchu):
  * gdy miasto ma już Spichlerz I bez Akweduktu, aktualny sufit to 8 -- silny
@@ -1454,21 +1469,32 @@ const AI_MAJOR_GRANARY_PRIORITY_BONUS_WEAK = 8;
  * i dowód w tabeli symulacji 400 tur w raporcie).
  */
 const AI_MAJOR_GRANARY_PRIORITY_BONUS_STRONG = 110;
-/** Sufit populacji BEZ Spichlerza/Akweduktu -- `economy.ts` `cityPopulationCap`, "normal" z econ-params.json (akwedukt_prog_ludnosci, domyślnie 5). */
-const AI_POP_CAP_NO_GRANARY = 5;
-/** Sufit populacji ZE Spichlerzem/Spichlerzem II, BEZ Akweduktu -- `economy.ts` `cityPopulationCap`, "normal" (spichlerz_prog_ludnosci, domyślnie 8). */
+/** Sufit populacji BEZ Spichlerza/Akweduktu, wg trudności -- `economy.ts` `cityPopulationCap`, `econ-params.json` `akwedukt_prog_ludnosci` (easy=6/normal=5/hard=4). Wzorzec identyczny z `CS_EARLY_GARRISON_TARGET`. */
+const AI_POP_CAP_NO_GRANARY_BY_DIFFICULTY: Record<DifficultyLevel, number> = {
+  easy: 6,
+  normal: 5,
+  hard: 4,
+};
+/** Sufit populacji ZE Spichlerzem/Spichlerzem II, BEZ Akweduktu -- `economy.ts` `cityPopulationCap`, `econ-params.json` `spichlerz_prog_ludnosci` -- PŁASKIE 8 na wszystkich trudnościach (nie skaluje się, w przeciwieństwie do `akwedukt_prog_ludnosci`). */
 const AI_POP_CAP_WITH_GRANARY_I = 8;
 
 /**
  * Czy i jak mocno miasto POTRZEBUJE Spichlerza/Spichlerza II TERAZ (zadania 1-2
  * dispatchu rundy 3) -- patrz komentarz przy stałych wyżej dla pełnego
  * uzasadnienia. Zwraca 0 gdy Akwedukt już stoi (sufit 12, Spichlerz przestał
- * być wąskim gardłem wzrostu).
+ * być wąskim gardłem wzrostu). `menuDifficulty` brakujący (stare
+ * wywołania/testy) -> "normal", zero zmiany zachowania.
  */
-function granaryPriorityBonus(city: AICity, built: readonly string[]): number {
+function granaryPriorityBonus(
+  city: AICity,
+  built: readonly string[],
+  menuDifficulty: DifficultyLevel | undefined,
+): number {
   if (built.includes('akwedukt')) return 0;
   const hasGranaryI = built.includes('spichlerz') || built.includes('spichlerz_ii');
-  const capNow = hasGranaryI ? AI_POP_CAP_WITH_GRANARY_I : AI_POP_CAP_NO_GRANARY;
+  const capNow = hasGranaryI
+    ? AI_POP_CAP_WITH_GRANARY_I
+    : AI_POP_CAP_NO_GRANARY_BY_DIFFICULTY[menuDifficulty ?? 'normal'];
   return city.population >= capNow
     ? AI_MAJOR_GRANARY_PRIORITY_BONUS_STRONG
     : AI_MAJOR_GRANARY_PRIORITY_BONUS_WEAK;
@@ -1795,7 +1821,7 @@ export function chooseCityProduction(
   // a kryterium 5 tej rundy (miasta-państwa nietknięte) zabrania dowolnej zmiany
   // tamtej gałęzi.
   if (!opts.defensiveCopy) {
-    const granaryBonus = granaryPriorityBonus(city, built);
+    const granaryBonus = granaryPriorityBonus(city, built, opts.menuDifficulty);
     const spichlerzIdx = buildingCandidates.findIndex(c => c.id === 'spichlerz');
     if (spichlerzIdx >= 0) buildingCandidates[spichlerzIdx]!.score += granaryBonus;
     const spichlerzIiIdx = buildingCandidates.findIndex(c => c.id === 'spichlerz_ii');
