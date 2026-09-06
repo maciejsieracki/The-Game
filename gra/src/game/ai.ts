@@ -1286,7 +1286,9 @@ function applyMajorArchetypeProductionBias(
  * Warstwa bazowa punktacji budynku po `BuildingDef.grupa` (nazwy GRUP -- jedyny
  * dopuszczalny wyjątek od zakazu literałów budynków, kryterium 1). Kalibrowana
  * tak, by odtworzyć udokumentowaną kolejność wczesnej gry (patrz komentarz
- * wyżej) -- dowód w symulacji 150 tur (raport Operatora, tabela PRZED/PO).
+ * wyżej). Kryterium 3 dispatchu (ślad z symulacji) i kryterium 4 (symulacja
+ * 150 tur PRZED/PO) NIE są jeszcze dostarczone w raporcie Operatora --
+ * zarzut Evaluatora runda 1 #3/#2, patrz DECISION_REQUIRED w raporcie rundy 2.
  * Budynek bez `grupa` (dane testowe/legacy) dostaje GROUP_BUILDING_DEFAULT.
  */
 // Kalibracja (Operator, po pomiarze regresji na ai-jednostki-tylko-zakup-test):
