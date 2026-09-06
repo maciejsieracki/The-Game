@@ -55,8 +55,10 @@ Klucz palety chipa W3 wyprowadzany z istniejącego `data-res-stat`, BEZ zmiany s
 
 `ed81fcdc` — `gra/src/ui/resourceColors.ts` (NOWY), `gra/tools/kolor-surowce-spojnosc-test.cjs`
 (NOWY), `gra/src/ui/{cityPanel,hud,mapToolbarHud,brandTokenVars}.ts`.
-Zrzuty: `dowody/{przed,po,mutacja}-*.png` (18 plików). Allowlista zachowana, wyłącznie
-`gra/src/ui/` + `gra/tools/`; bez `git add -A`.
+`9ca58908` — raport + `dowody/{przed,po,mutacja}-*.png` (18 plików).
+`44a358ea` — `gra/src/ui/hud.ts`: reguły palety doklejane ZA literałem szablonowym CSS
+(patrz TESTY, regresja nr 2). Allowlista zachowana, wyłącznie `gra/src/ui/`, `gra/tools/`
+i katalog runu; bez `git add -A`, commity po jawnych ścieżkach.
 
 ## TESTY
 
@@ -67,7 +69,10 @@ Zrzuty: `dowody/{przed,po,mutacja}-*.png` (18 plików). Allowlista zachowana, wy
   71 szybkich → 60 zielonych, 11 czerwonych; **10 z nich czerwone identycznie na bazie**
   `094be1db` (porównanie na kopii bazy w `/tmp`, nie `git checkout`) — pre-istniejące;
   jedyna realna regresja (`hud-miasto-stock-tempo-test` 46/25) naprawiona → 71/0.
-  22 real-render — wynik w sekcji „Bramki real-render" niżej.
+  22 real-render → 18 zielonych; `entity-card-action-buttons` (30/1) i
+  `wydarzenia-zbadano-karta-tech` (144/1) czerwone IDENTYCZNIE na bazie — pre-istniejące;
+  `build-panel-ulepszenia-scroll` i `sidepanel-blocking-card-cutoff` po naprawie (`44a358ea`)
+  zielone 43/0 i 47/0, tak jak na bazie.
 - **Mutacja (nietautologiczność):** `praca: #e8d88a → #ff3fb0` w palecie → nowa bramka
   CZERWONA (`A2b praca` FAIL, exit 1) ORAZ zmiana widoczna na obu zrzutach
   (`mutacja-hud-mapy-lewy.png` — magenta „Praca 0"; `mutacja-panel-miasta-*` — ikona
@@ -86,6 +91,21 @@ Brak. Allowlista nie wyszła poza `gra/src/ui/` i `gra/tools/`.
    w liczeniu wystąpień.
 2. Panel cywilizacji ma własne, wciąż rozjechane odcienie (patrz G1) — poza zakresem.
 3. Raport przekracza ~400 słów, bo tabela G1 jest twardym kryterium końca.
+4. **Dwie regresje złapane i naprawione w rundzie, obie w cudzych bramkach — bez dotykania
+   ich plików:** (1) `hud-miasto-stock-tempo-test` pilnuje POZYCJI argumentów
+   `w3CityChip(...)` — nowy parametr ją zbił; klucz palety wyprowadzam z istniejącego
+   `data-res-stat`. (2) `build-panel-ulepszenia-scroll` replikuje literał szablonowy CSS
+   HUD-u i czerwienieje na nieznanej wstawce `${…}`; reguły palety są teraz doklejane
+   za literałem. Obie bramki wróciły do wyniku bazowego.
+5. **Incydent własny (C-019, zgłaszam sam):** sprzątając pliki nadpisane przez cudze bramki
+   (`entity-card-diorama` przepisuje `runs/R-KARTA-JEDNOSTKI-3D-.../dowody/*.png`,
+   `et-turn-lbl` tworzy `gra/tools/.shots-et-turn-lbl/`) puściłem pętlę po
+   `git diff --name-only`, która cofnęła też MOJĄ niezacommitowaną poprawkę `hud.ts`.
+   Wykryte natychmiast, poprawka odtworzona i zacommitowana (`44a358ea`), bramki
+   przeliczone na finalnym kodzie. Wniosek: sprzątanie cudzych artefaktów tylko po
+   JAWNEJ liście ścieżek, nigdy po `git diff --name-only`.
+6. Zrzuty PO i MUTACJA przeliczone na finalnym kodzie — bajtowo identyczne z zacommitowanymi
+   (render deterministyczny, `git status` czysty po powtórce).
 
 RUNDY: 1/5
 NASTĘPNY KROK: Evaluator (Opus 5, effort high) — weryfikacja G1, palety i mutacji.
