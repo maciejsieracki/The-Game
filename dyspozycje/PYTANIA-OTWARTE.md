@@ -32311,3 +32311,63 @@ w brzmieniu dosłownym było niewykonalne w allowliście.
 **Nie mylić z drugim brakiem:** 25 z 42 budynków nie ma hasła w CivPedii. To niezależna
 sprawa — ten temat naprawia klik, nie uzupełnia treści. Ścieżka „brak hasła" ma dawać
 czytelny komunikat zamiast ciszy.
+
+---
+
+## R-AI-PARYTET-EPOKA-I-TECHNOLOGIE-Q1 (2026-09-06, znalezisko orkiestratora na pytanie właściciela o parytet) · STATUS: **OTWARTE — zmierzone, czeka na decyzję właściciela przed dispatchem**
+
+**Wyzwalacz (właściciel):** *„zasady, które obowiązują dla gracza, zawsze powinny tak samo
+obowiązywać dla AI. Mówię o mechanizmach balansu i wyliczania. Co chwilę dowiaduję się,
+że gracz ma trochę inaczej, a AI ma trochę inaczej."*
+
+**Szukałem potwierdzenia i znalazłem coś większego niż lista budynków.**
+
+### Znalezisko
+
+`advanceCityEconomy` (`gra/src/game/turn-economy.ts:1850-1851`) przyjmuje **dwa opcjonalne**
+parametry: `resolveOwnerEra` i `resolveOwnerTech`. Gdy ich nie ma, działają fallbacki:
+
+```ts
+eraForOwner(ownerId) = resolveOwnerEra ? resolveOwnerEra(ownerId) : (ownerId === 0 ? playerEra : 1)   // :1436-1437
+ownerTech           = resolveOwnerTech ? resolveOwnerTech(ownerId) : playerZbadane                     // :1826
+```
+
+**`gra/src/main.ts` — jedyny wywołujący w żywej grze — NIE PODAJE ŻADNEGO Z NICH.**
+Zweryfikowane: `grep -n "resolveOwnerEra\|resolveOwnerTech" gra/src/main.ts` → **zero trafień**;
+realne wywołanie (`main.ts:28231`) podaje pozycyjnie `player.era, player.zbadane` i kończy się
+bez tych rezolwerów. Siedem miejsc w `turn-economy.ts` używa wzorca `ownerId === 0 ? playerEra : 1`.
+
+### Skutek w żywej grze
+
+1. **Każde miasto AI jest liczone jako epoka 1**, niezależnie od tego, w jakiej epoce naprawdę
+   jest ta cywilizacja. Dotyczy m.in. pojemności magazynu (`ownerResourceCapacityPerType`).
+2. **Każdy właściciel AI jest oceniany technologiami GRACZA.** `walutaOdkryta` i pochodne
+   liczą się AI według tego, co odkrył gracz — nie według tego, co odkryło AI.
+
+### Dlaczego nikt tego nie zauważył — to jest sedno
+
+**Bramki podają te rezolwery.** `ai-praca-podzial-tura1-seed-test`, `magazyn-era-scaling-test`,
+`converter-era-scaling-test`, `empire-food-b5-test`, `plony-budynkow-test`,
+`praca-global-default-live-test` — wszystkie wołają `advanceCityEconomy` **z** `resolveOwnerEra`.
+Czyli **bramki testują ścieżkę, której żywa gra nigdy nie wykonuje**, i są zielone.
+
+To jest strukturalnie ten sam błąd co `SZ_MAX_POP_WSP_DEFAULT` w temacie Szczęścia: fallback,
+który kłamie, i asercja, która go nie dotyka. Tam mutacja 0,048 → 0,5 zostawiła sześć bramek
+zielonych. Tu jest gorzej, bo fallback nie jest awaryjny — **jest jedyną ścieżką produkcyjną**.
+
+### Zakres do rozstrzygnięcia przed dispatchem
+
+To NIE jest naprawa jednej linii. Przekazanie prawdziwej epoki i prawdziwych technologii AI
+**zmienia balans całej gry AI** — pojemności magazynów, skalowanie ekonomii, bramki walutowe.
+Kierunek jest oczywisty (parytet), ale skala skutku wymaga pomiaru i decyzji właściciela,
+tak samo jak przy Szczęściu i Prawie.
+
+**Powiązane, ta sama klasa:** `R-AI-PRODUKCJA-Z-DOSTEPNYCH-BUDYNKOW-Q1` (AI nie widzi 19 z 41
+budynków). Oba to odstępstwa gracz/AI, których nikt nie zamawiał.
+
+### Propozycja reguły kanonicznej (do decyzji właściciela)
+
+Wpisać do `R-PROC-AUTOBOT.md` §9 jako granicę: **mechanizmy balansu i wyliczeń obowiązują
+identycznie gracza i AI; każde odstępstwo wymaga jawnej, zapisanej decyzji właściciela
+i asercji w bramce, która pilnuje, że odstępstwo jest zamierzone.** Dziś takich odstępstw
+jest co najmniej pięć i żadne nie było zamówione.
