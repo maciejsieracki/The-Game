@@ -113,6 +113,25 @@ Wciągnięcie go do `prawMax` byłoby złamaniem D1, powtórzonym dziesięć raz
 Przed jakąkolwiek zmianą klucza zawierającego `garnizon` **sprawdź, o który z tych dwóch
 bytów chodzi**, i napisz to w raporcie.
 
+### Druga część tej pułapki — KOLIZJA W ROZPISCE PANELU (znalezisko Final Control Garnizonu)
+
+**`society-breakdown.ts:638-647` zajmuje już `id: 'garnizon'`** w tablicy `lines[]` —
+i jest to linia **garnizonu WOJSKOWEGO**. Tablica jest cięta do **sześciu pozycji** przez
+`orderPanel.ts:167`.
+
+Jeśli dołożysz linię budynku Garnizon pod tym samym `id`, stanie się jedno z dwóch, oba złe:
+**gracz zobaczy dwie pozycje „Garnizon"** w rozpisce Porządku i nie odróżni, która jest która,
+albo jedna wypchnie drugą poza sufit sześciu pozycji i **zniknie bez śladu**.
+
+W `society-params.json` czekają na to samo **cztery** klucze z tym rdzeniem:
+`:806`, `:813`, `:876`, `:883` (`prawo_garnizon*` / `…garnizonu`).
+
+**Wymagane w tym temacie:** nadaj linii budynku **własne, jednoznaczne `id`** i **własną
+etykietę widoczną dla gracza**, odróżniającą budynek od stacjonującego wojska. Dołóż asercję,
+że obie linie mogą wystąpić naraz i **obie są widoczne** przy sufcie sześciu pozycji —
+albo, jeśli sufit na to nie pozwala, zgłoś to jako `DECISION_REQUIRED` z pomiarem,
+zamiast po cichu zgubić jedną z nich.
+
 ## CZEGO TEN TEMAT NIE ROBI
 
 - **Nie tworzy budynku Garnizon** — robi to `R-BUDYNEK-GARNIZON-NOWY-Q1` (osobny temat,
