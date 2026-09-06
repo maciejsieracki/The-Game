@@ -28,14 +28,16 @@ NIE zgadywać ani nie zmieniać ECHO — cel liczbowy jest jednoznaczny: **`prac
 1. `gra/data/terrain-improvements.json` → `wycinka.praca_per_tura`: **25 → 50**. Jedna liczba,
    bez zmiany `tury` (zostaje 1 — jednorazowo, zgodnie z ECHO 1).
 2. **PROBLEM 2 — komunikat gracza liczy PRZED przycięciem magazynu, nie PO:**
-   `gra/src/main.ts` (ścieżka gracza, ok. linii 28529-28549): `drewnoCredit` (wartość surowa,
-   przed capem) jest używana WPROST w `showHintMessage('Wycinka: +' + drewnoCredit + ...)`,
-   podczas gdy realny, zapisany do magazynu kredyt to zwrócona wartość
-   `creditOwnerResourceStock(...)` (przycięta do `drewnoCap`). Ścieżka AI (ok. linii
-   31961-31980) robi to POPRAWNIE — używa zwróconej wartości `drewnoCredited`, nie surowej
-   `drewnoCredit`. Napraw ścieżkę gracza analogicznie do AI: komunikat ma pokazywać FAKTYCZNIE
-   zapisaną ilość, nie zamierzoną. Precedens tej klasy błędu w komentarzu kodu:
-   `P-MAGAZYN-PRZEKROCZENIE-LIMITU-GLINA-DREWNO`.
+   `gra/src/main.ts` (ścieżka gracza, ok. linii 28942-28962 — **numery linii zweryfikowane
+   PO integracji `R-MIASTA-ZDOBYCIE-RAPORT-TROFEA-Q1` i rebase tego worktree na `origin/main`,
+   Operator MUSI zweryfikować je ponownie grepem przed edycją, nie ufać ślepo tym liczbom**):
+   `drewnoCredit` (wartość surowa, przed capem) jest używana WPROST w
+   `showHintMessage('Wycinka: +' + drewnoCredit + ...)`, podczas gdy realny, zapisany do
+   magazynu kredyt to zwrócona wartość `creditOwnerResourceStock(...)` (przycięta do
+   `drewnoCap`). Ścieżka AI (ok. linii 32374-32388) robi to POPRAWNIE — używa zwróconej
+   wartości `drewnoCredited`, nie surowej `drewnoCredit`. Napraw ścieżkę gracza analogicznie
+   do AI: komunikat ma pokazywać FAKTYCZNIE zapisaną ilość, nie zamierzoną. Precedens tej
+   klasy błędu w komentarzu kodu: `P-MAGAZYN-PRZEKROCZENIE-LIMITU-GLINA-DREWNO`.
 3. Przy okazji (tylko jeśli tanio, nie rozszerzaj zakresu): fallbacki `?? 20`/`?? 3` w
    `gra/src/game/improvement-tech.ts` (`readMeta`, pola `pracaPerTura`/`tury`) są martwe,
    bo `terrain-improvements.json` zawsze ma `wycinka.praca_per_tura` — zostaw jak jest, chyba
@@ -59,8 +61,8 @@ NIE zgadywać ani nie zmieniać ECHO — cel liczbowy jest jednoznaczny: **`prac
 
 - `gra/data/terrain-improvements.json`
 - `gra/src/main.ts` (**wyłącznie** okolice wywołania `creditOwnerResourceStock`/
-  `showHintMessage('Wycinka: ...')` ok. linii 28529-28549 — analogiczna naprawa do wzorca AI
-  w tym samym pliku ok. linii 31961-31980; zakaz zmian gdziekolwiek indziej w main.ts)
+  `showHintMessage('Wycinka: ...')` ok. linii 28942-28962 — analogiczna naprawa do wzorca AI
+  w tym samym pliku ok. linii 32374-32388; zakaz zmian gdziekolwiek indziej w main.ts)
 - `gra/src/game/improvement-tech.ts` (tylko jeśli naprawa #2 tego wymaga)
 - `gra/tools/*wyrab*.cjs`, `gra/tools/*clearing*.cjs`, `gra/tools/*wycink*.cjs` (istniejące,
   do zaktualizowania) lub nowa bramka `gra/tools/wycinka-drewno-cap-test.cjs`
@@ -75,9 +77,9 @@ Zakaz `git add -A` i `git add .`.
 ## IZOLACJA
 
 Worktree `/home/user/wt-wycinka`, gałąź `autobot/R-WYCINKA-DREWNO-50-I-KOMUNIKAT-CAP-Q1`,
-baza jawnie `origin/main` (commit `74c63357`, PO integracji Prawa/Garnizon/AI-produkcja) —
-potwierdź `git log -1` PRZED pracą (SS2b: jeden pisarz na worktree, cała runda kończy się
-dopiero gdy skrypt Workflow zwróci wynik).
+baza jawnie `origin/main` (po rebase: `60f35d2c`, PO integracji Prawa/Garnizon/AI-produkcja
+ORAZ `R-MIASTA-ZDOBYCIE-RAPORT-TROFEA-Q1`) — potwierdź `git log -1` PRZED pracą (SS2b: jeden
+pisarz na worktree, cała runda kończy się dopiero gdy skrypt Workflow zwróci wynik).
 
 C-001, brzmienie dosłowne: „Zakaz `npm run build`/`dev` w `gra/` (export-data nadpisuje JSON)
 — dozwolona komenda: `node ./node_modules/vite/bin/vite.js build --outDir dist --emptyOutDir`.
@@ -85,11 +87,11 @@ Jedyna dozwolona kompilacja: `node ./node_modules/typescript/bin/tsc --noEmit`; 
 `node tools/*-test.cjs` nie są objęte zakazem. `--outDir` MUSI wskazywać katalog poza drzewem
 repo.
 
-**Kolejka `main.ts` (§2b — jeden temat dotykający main.ts naraz):** ten temat dispatchowany
-DOPIERO po zakończeniu (integracji lub jawnym odłożeniu) `R-MIASTA-ZDOBYCIE-RAPORT-TROFEA-Q1`
-i `R-HANDEL-DOCHOD-PRZEZ-PODZIAL-MIASTA-Q1` (oba już zamknięte/w końcowej fazie na moment
-napisania tej dyspozycji). Po tym temacie w kolejce: `R-WOJNA-WYMUSZONA-PAROWANIE-ZAMIAST-DOMINA-Q1`,
-`R-RELIGIA-KONWERSJA-PO-PODBOJU-Q1`, `P-PODBOJ-KOLEJKA-BUDYNEK-NIEMOZLIWY-Q1`.
+**Kolejka `main.ts` (§2b — jeden temat dotykający main.ts naraz):** `R-HANDEL-DOCHOD-PRZEZ-PODZIAL-MIASTA-Q1`
+(`e9606371`) i `R-MIASTA-ZDOBYCIE-RAPORT-TROFEA-Q1` (`6d082b9a`) już zintegrowane do `main` —
+ten temat jest teraz PIERWSZY w kolejce, dispatch może ruszyć od razu. Po tym temacie w
+kolejce: `R-WOJNA-WYMUSZONA-PAROWANIE-ZAMIAST-DOMINA-Q1`, `R-RELIGIA-KONWERSJA-PO-PODBOJU-Q1`,
+`P-PODBOJ-KOLEJKA-BUDYNEK-NIEMOZLIWY-Q1`.
 
 ## PROCEDURA NAPRAWCZA PRZY FAIL
 
