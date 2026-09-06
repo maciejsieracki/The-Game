@@ -1,10 +1,10 @@
 {
-  "publishedAt": "2026-09-05T18:20:00",
-  "sourceBuild": "/tmp/civ-dist-fala349",
-  "note": "Grywalna ROBOCZA. Plik: gra-robocza/Gra-ROBOCZA.html",
+  "publishedAt": "2026-09-06T06:47:00",
+  "sourceBuild": "/tmp/civ-dist-fala350-6098",
+  "note": "FALA 350 - przebudowa skali Szczescia (G1-G15 + R3/R4) plus trzy tematy procesowe.",
   "publisher": "Orkiestrator (Claude Code)",
   "bundle": "Gra-ROBOCZA.html",
-  "md5": "df1c0a8724d25af6e12acf160fb63410",
+  "md5": "56c361a9ddd55ee4fb81dfcd6244a353",
   "bundlePoleBitwy": "Gra-ROBOCZA-POLE-BITWY.html",
   "md5PoleBitwy": "d4477b3eaed627e426c41b9f8d0ad1f1"
 }
