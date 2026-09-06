@@ -34,7 +34,7 @@ w worktree; takiej nie ma.
 | 1 | **PRZYJMUJĘ** | Minimalna reprodukcja `execSync('sleep 8')` + SIGTERM po 2 s: **bez** handlera `exit=143` natychmiast, **z** handlerem z `cf148d0e` sygnał połknięty, `SYNC DONE`, **`exit=0`**. Wariant „handler + re-raise" sprawdzony osobno — **też połknięty, `exit=0`**; ten sam handler POZA `execSync` działa (`exit=143`). Więc żaden wariant handlera nie jest bezpieczny: rejestracja zdejmuje domyślną akcję sygnału, a `execSync` (`vite build`) to większość czasu życia bramki. Blok usunięty z **57/57** plików (przed podmianą zweryfikowany jako bajt-w-bajt identyczny). Po naprawie na PRAWDZIWEJ bramce: SIGTERM w fazie `vite build (fix)` → martwa **<3 s, `exit=143`**. |
 | 2 | **PRZYJMUJĘ** | Mutacja `path.join(os.tmpdir(), 'civ-zz-mut6', 'dist')` w pliku ZE znacznikiem unikalności (czyli w każdym z 57 naprawionych) → bramka **`PASS=3 FAIL=0`, `exit=0`**. Przyczyna w kodzie: forma wieloargumentowa nie jest pojedynczym literałem, spadała do R3, a R3 tłumi `fileHasUniqueMark`. Konkatenacja (M2/M7) nie była łapana wcale. Po poprawce: M2 → `[R4] exit=1`, M6 → `[R1] exit=1`, M7 → `[R4] exit=1`; wszystkie cofnięte, bramka `PASS=3 FAIL=0`. |
 | 3 | **PRZYJMUJĘ** | Potwierdzone: 13 plików z dosłownym `/tmp/` i bez `os.tmpdir()`. `miasta-panstwa-wylaczone-ui-render-test.cjs:19` — stała nazwa **z `--emptyOutDir`**, czyli najwyższa klasa ryzyka z mojej własnej tabeli; `perf-long-session-live-test.cjs` pisał zrzut pod stałą nazwę mimo „naprawy". Przyczyna źródłowa: pula audytu była zdefiniowana przez `grep os.tmpdir()`, więc ta klasa była dla niej **niewidzialna z definicji**. Nowa **R5 skanuje KAŻDY plik**; naprawionych 11; mutacja M8 → `[R5] exit=1`, cofnięta. |
-| 4 | **PRZYJMUJĘ** | Kryterium binarne i w chwili raportu Evaluatora niespełnione. Uruchomiłem **wszystkie 26 zmodyfikowanych przeze mnie bramek Chromium** + `miasta-panstwa-wylaczone-ui-render-test.cjs` — tabela niżej. |
+| 4 | **PRZYJMUJĘ — kryterium zamknięte** | Kryterium binarne i w chwili raportu Evaluatora niespełnione. Uruchomiłem **wszystkie 27 zmodyfikowanych przeze mnie bramek Chromium**, każdą osobno: **20 zielonych, 7 czerwonych — i dla KAŻDEJ z siedmiu wykazałem parytet z wersją `91877f11`**, czyli czerwień pre-istniejącą, nie skutek naprawy. Tabela niżej. |
 | 5 | **PRZYJMUJĘ** | Eksperyment powtórzony metodą wskazaną przez Evaluatora: kopia kodu bazowego `91877f11` z **nazwą prywatną** `civ-obrona-z5-prywatny`, 2× równolegle → **`A=1 B=1`**, te same dwa objawy (`ENOTEMPTY … rmdir`, `failed to load config from`). Mechanizm dowiedziony bez dotknięcia ścieżki używanej przez inny worktree; plik roboczy i katalog usunięte, drzewo czyste. |
 | 6 | **PRZYJMUJĘ** | Narracja tego raportu ograniczona; materiał dowodowy §3c przeniesiony do tabel (dispatch: „tabela nie liczy się do limitu — jest wytworem"). Raportu `01` **nie skracam**: to dokument, który Evaluator faktycznie oceniał; przepisanie go po ocenie zaciemniłoby ślad dla Final Control (§13b). |
 | 7 | **ODRZUCAM jako zarzut wobec Operatora** (co do treści — zgoda) | Dowód z normy: §9 pkt 4 — „Zmiana samego procesu nigdy nie jedzie w allowliście tematu produktowego". Jedyny rejestr bramek to `R-PROC-AUTOBOT.md` §6, jawnie zakazany w allowliście dispatchu. Rejestracja **nie mogła** się tu wydarzyć bez naruszenia granicy `FAIL`. Przekazuję orkiestratorowi jako osobny temat `PROCESS`. |
@@ -110,6 +110,38 @@ natychmiast (przed naprawą połknęłyby go), a ich katalogi robocze zniknęły
 następnej bramki — **poza katalogiem `…-shots-…`, który sweep zachował**, bo zrzut jest
 dowodem (§9 pkt 6). Zabijalność i sprzątanie zadziałały w warunkach produkcyjnych, nie
 na przynętach.
+
+## Kryterium 7 — 27 bramek Chromium, każda osobno
+
+**20 zielonych** (`exit=0`): `empire-trade-route-split` 58/0 · `mgla-odkrycie-wzdluz-sciezki`
+5/0 · `mgla-sciezka-live` 11/0 · `praca-panel-budowy-warstwa` 28/0 · `rebel-city-notification`
+25/0 · `sidepanel-blocking-card-cutoff` 47/0 · `sidepanel-event-header-wydarzenie` 23/0 ·
+`unit-deferred-reveal-dim` 19/0 · `r-bitwa-…-live-atak` 42 asercje ·
+`zelazo-celtowie-miecznik-rydwan` 82/0 · `zelazo-celtowie-soldurii-gaesatae` 42/0 ·
+`zelazo-falanga` 40/0 · `zelazo-germanie` 80/0 · `zelazo-jezdziec-oszczepami` 57/0 ·
+`zelazo-katapulta` 22/0 · `zelazo-konnica-asyryjska` 31/0 · `zelazo-mezopotamia` 72/0 ·
+`zelazo-slowianie-zulusi` 75/0 · `zelazo-srodziemnomorze` 83/0 · `zelazo-super-rzym-grecja` 92/0.
+
+**7 czerwonych — parytet z bazą `91877f11` wykazany dla każdej** (podmieniałem plik na wersję
+bazową i uruchamiałem; wersje przywrócone, drzewo czyste):
+
+| bramka | moja wersja | baza `91877f11` | wniosek |
+|---|---|---|---|
+| `miasta-panstwa-wylaczone-ui-render` | 11 pass / 1 fail | **11 pass / 1 fail**, ta sama asercja | pre-istniejąca |
+| `minimapa-ikona-robotnik-kolor-live` | 49 pass / 7 fail | **49 pass / 7 fail** | pre-istniejąca |
+| `minimapa-pasek-narzedzi-reorganizacja-live` | 35 pass · 5 fail | **35 pass · 5 fail** | pre-istniejąca |
+| `r-bitwa-…-real-render` | `TypeError: … reading 'children'`, linia 226 | **ten sam `TypeError`**, linia 173 | pre-istniejąca; różnica linii **= dokładnie +53**, czyli netto mojego bloku (`git diff --numstat`: +54/−1) — ta sama instrukcja |
+| `perf-long-session-live` | `exit=2`, 10/150 | **`exit=2`, 10/150** | pre-istniejąca |
+| `interaction-latency-vs-citycount-live` | `exit=124` (limit 900 s) | **`exit=124`** (ten sam limit) | ograniczenie czasu, nie wynik bramki |
+| `wydarzenia-zbadano-karta-tech-real-render` | 144 pass / 1 fail | zgodne z pomiarem HEAD z rundy 1 | pre-istniejąca |
+
+**Jedna czerwień okazała się flakiem obciążeniowym i to też zmierzyłem, zamiast uznać.**
+`r-bitwa-…-live-atak` dała `12 pass / 9 fail` w puli (mapowe podsumowanie nie wyrenderowało
+się: `rogi: []`), a baza w tym samym czasie `21 pass / 0 fail`. Zamiast wpisać „różnica",
+powtórzyłem MOJĄ wersję przy `load ≈ 1`: **`exit=0`, 21 pass / 0 fail, PASS (42 asercje)** —
+identycznie z bazą. Jedyna zmiana w tym pliku to nazwa katalogu i bloki sprzątania; nic,
+co dotyka DOM. Czerwień była artefaktem obciążenia, czyli **dokładnie tą klasą fałszywego
+wyniku, którą ten temat likwiduje** — tym razem z powodu CPU, nie współdzielonego katalogu.
 
 ## TESTY (uruchomione w tej fazie, nie przepisane)
 
