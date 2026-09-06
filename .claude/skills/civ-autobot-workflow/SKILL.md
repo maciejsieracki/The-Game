@@ -42,19 +42,47 @@ incydentu, który to ujawnił: `playbook.md` C-061.
 - Nie wystawia `READY_FOR_DEPLOY`.
 - Nie integruje kodu do drzewa głównego poza zatwierdzonym zakresem/allowlistą.
 - Nie commituje, nie pushuje, nie deployuje.
-- Final Control, integracja (allowlist-only, per plik i per hunk — C-059) i cały
-  deploy/push dzieją się **poza** tym skryptem Workflow, ręką orkiestratora, po jego
-  zakończeniu — dokładnie jak w dispatchu ręcznym.
+- **Final Control od 2026-09-06 należy DO skryptu** (ECHO właściciela — patrz §2a niżej).
+  Integracja (allowlist-only, per plik i per hunk — C-059), `READY_FOR_DEPLOY` i cały
+  deploy/push dzieją się **poza** tym skryptem, ręką orkiestratora.
 - Nie resetuje ani nie prowadzi samodzielnie licznika rund (C-050) ani ledgeru
   dispatchu (C-051) — to prowadzi orkiestrator, poza samym skryptem.
 
 **Od 2026-08-29 (`R-PROC-AUTOBOT.md` §3c) skrypt ma TRZY fazy, nie dwie, gdy
 Evaluator zwróci zarzuty:** Operator → Evaluator (zarzuty, lista może być pusta)
 → Operator, ta sama rola, drugie wywołanie `agent()` (Obrona — TYLKO gdy lista
-niepusta) → koniec skryptu, Final Control nadal osobnym wywołaniem Workflow poza
-tym skryptem, jak dotąd. Obrona NIE zwiększa licznika rund — jest częścią tej
+niepusta) → **Final Control, w tym samym skrypcie** (zmiana z 2026-09-06, §2a niżej)
+→ koniec skryptu. Obrona NIE zwiększa licznika rund — jest częścią tej
 samej rundy Operator→Evaluator. Gdy lista zarzutów jest pusta, skrypt kończy się
 po dwóch fazach jak w wersji sprzed 2026-08-29.
+
+## 2a. Final Control JEST w skrypcie — zmiana z 2026-09-06 (ECHO właściciela)
+
+**Było:** skrypt kończył się po Obronie, a Final Control szedł osobnym wywołaniem Workflow,
+ręką orkiestratora. **Jest:** skrypt ma cztery fazy i kończy się dopiero werdyktem Final Control.
+
+**Powód — zmierzony, nie teoretyczny.** W nocy z 5 na 6 września sześć tematów skończyło
+Obronę między 23:15 a 03:05 i **czekało 3,5–7,5 godziny** na Final Control, bo orkiestrator
+go nie odpalił. Kontener zrestartował się o 06:36, ale to nie było przyczyną — praca była
+skończona wiele godzin wcześniej. **Wąskim gardłem był jeden brakujący ruch orkiestratora
+między dwoma fazami, które i tak następują po sobie automatycznie.**
+
+**Niezależność Final Control jest zachowana** — i to jest warunek, bez którego ta zmiana
+byłaby regresem. Każda faza to osobne wywołanie `agent()` z **własnym, czystym kontekstem**;
+bycie w tym samym skrypcie nie daje Final Control dostępu do rozumowania Operatora ani
+Evaluatora. Dostaje dokładnie to, co dostawał przy osobnym wywołaniu: raporty z worktree
+i własne uruchomienia bramek. Orkiestrator nadal ma obowiązek składać mu zarzuty i obronę
+**bez etykiet ról** (§3c).
+
+**Czego ta zmiana NIE dotyka.** Integracja, `READY_FOR_DEPLOY` i deploy/push zostają poza
+skryptem, wyłącznie ręką orkiestratora (C-042, C-044). Skrypt nadal niczego nie integruje
+i nie pushuje.
+
+**Bramki zostają per rola** — ECHO właściciela z tego samego dnia, świadomie przyjęty koszt.
+Zmierzone przy trzech falach naraz: pięć bramek referencyjnych **84 s**, `tsc --noEmit`
+**65 s**, load average **23 na 4 rdzeniach**. Każda rola uruchamia komplet, bo niezależna
+weryfikacja Evaluatora i Final Control jest warta tego procesora. Nie „optymalizuj" tego
+bez ECHO.
 
 ## 3. Szkielet skryptu — PRZYBLIŻONY, wymaga potwierdzenia w realnym środowisku
 
@@ -136,7 +164,7 @@ export default async function autobotOperatorEvaluator(input) {
   }
 
   // PASS / PASS-WITH-NOTES: skrypt Workflow KOŃCZY SIĘ TUTAJ.
-  // Final Control, integracja, READY_FOR_DEPLOY i deploy/push są POZA tym skryptem
+  // Integracja, READY_FOR_DEPLOY i deploy/push są POZA tym skryptem (Final Control JEST w nim)
   // (C-042, C-044) — Workflow ich nie wystawia i nie wykonuje.
   return {
     status: "PASS_TO_FINAL_CONTROL",
@@ -180,7 +208,8 @@ export default async function autobotOperatorEvaluator(input) {
       zakaz cofania mutacji przez `git checkout` (tylko przez kopię pliku).
 - [ ] Model i effort per rola zapisane w raporcie etapu, jak przy dispatchu ręcznym
       (analogicznie do C-052 dla Codex `multi_agent_v1`).
-- [ ] Po zakończeniu skryptu: Final Control, integracja allowlist-only (C-059),
+- [ ] Skrypt zawiera CZTERY fazy: Operator → Evaluator → (Obrona) → **Final Control** (§2a).
+- [ ] Po zakończeniu skryptu: integracja allowlist-only (C-059),
       `READY_FOR_DEPLOY` i deploy/push wykonuje orkiestrator, nie ten skrypt.
 - [ ] Raport końcowy jawnie stwierdza, że dispatch przebiegł Ścieżką A (Workflow),
       nie Ścieżką B (prompt) — patrz playbook C-061.

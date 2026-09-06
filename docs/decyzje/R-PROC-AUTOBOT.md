@@ -235,6 +235,33 @@ Kończy proces wyłącznie wtedy, gdy uwagi są kosmetyczne **i zostały zapisan
 osobny temat w rejestrze** — nie zostawione w raporcie jako wolna uwaga, której
 nikt później nie znajdzie. Final Control ma to sprawdzić jawnie (§16).
 
+### 3b-bis. Final Control należy DO skryptu Workflow — od 2026-09-06 (ECHO właściciela)
+
+**Zmiana:** skrypt Ścieżki A ma **cztery** fazy, nie trzy, i kończy się werdyktem Final
+Control: Operator → Evaluator → (Obrona, gdy lista zarzutów niepusta) → **Final Control**.
+Poprzednio Final Control szedł osobnym wywołaniem Workflow, ręką orkiestratora.
+
+**Powód — zmierzony.** W nocy z 5 na 6 września 2026 sześć tematów skończyło Obronę między
+23:15 a 03:05 i **czekało 3,5–7,5 godziny** na Final Control, bo orkiestrator go nie odpalił.
+Restart kontenera o 06:36 nie był przyczyną — praca była skończona wiele godzin wcześniej
+(sprawdzone znacznikami commitów). Wąskim gardłem był **jeden brakujący ruch orkiestratora
+między dwoma fazami, które i tak następują po sobie**. Cała nocna praca ośmiu agentów stała
+bezużytecznie do rana.
+
+**Niezależność Final Control jest zachowana — to warunek tej zmiany, nie jej efekt uboczny.**
+Każda faza to osobne wywołanie agenta z własnym, czystym kontekstem; wspólny skrypt nie daje
+Final Control wglądu w rozumowanie Operatora ani Evaluatora. Dostaje to samo co przedtem:
+raporty z worktree i własne uruchomienia bramek. Obowiązek składania mu zarzutów i obrony
+**bez etykiet ról** (§3c) obowiązuje bez zmian.
+
+**Granica pozostaje nienaruszona:** integracja, `READY_FOR_DEPLOY` i deploy/push są **poza**
+skryptem, wyłącznie ręką orkiestratora (§9 poz. 8). Skrypt niczego nie integruje i nie pushuje.
+
+**Bramki zostają per rola.** ECHO właściciela z tego samego dnia, świadomie przyjęty koszt
+procesora. Zmierzone przy trzech falach naraz: pięć bramek referencyjnych **84 s**,
+`tsc --noEmit` **65 s**, load average **23 na 4 rdzeniach**. Niezależna weryfikacja Evaluatora
+i Final Control jest warta tego kosztu — **nie wolno tego „optymalizować" bez ECHO**.
+
 ### 3c. Zarzuty, obrona, werdykt per zarzut (sędzia) — obowiązuje od 2026-08-29
 
 Zmienia się **forma** wyniku Evaluatora i sposób, w jaki Final Control orzeka — nie
