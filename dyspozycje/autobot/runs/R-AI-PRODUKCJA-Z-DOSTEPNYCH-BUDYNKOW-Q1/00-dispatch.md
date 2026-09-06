@@ -245,3 +245,59 @@ nie liczy się do limitu słów raportu.
 **NASTĘPNY KROK po tej ratyfikacji:** runda 2, ten sam Operator, ta sama gałąź. Po Final
 Control rundy 2 (jeśli PASS albo PASS z jawnie odroczonym kryterium 4) — integracja
 orkiestratora, natychmiast odblokowuje `R-PRAWO-PRZEBUDOWA-SKALI-Q1`.
+
+## RATYFIKACJA ORKIESTRATORA #2 (2026-09-06, po Final Control rundy 2 — Spichlerz PODNIESIONY DO RANGI KRYTERIUM KOŃCA, nie kosmetyki)
+
+Final Control rundy 2 zamknął się na jeden `DECISION_REQUIRED`: bonus Spichlerza ograniczony
+do bezpiecznej wartości 8 (wyżej łamie chroniony `ai-jednostki-tylko-zakup-test`), co w
+proxy-symulacji **nie zmienia wcale**, czy Spichlerz w ogóle wchodzi do kolejki budowy w
+oknie 400 tur (plateau na jednostkach po 8 budynkach, identyczne przed i po bonusie).
+
+**Właściciel wyjaśnił, dlaczego to nie jest kosmetyka priorytetu, tylko realny defekt
+rozgrywki:** Spichlerz podnosi limit populacji miasta z 5 do 8, Akwedukt z 8 do 12. **Jeśli
+AI nigdy nie zbuduje Spichlerza, jego miasta są trwale zablokowane na populacji 5 — na
+zawsze.** To nie jest pytanie o kolejność, to pytanie o to, czy miasta AI w ogóle rosną.
+
+**Rozstrzygnięcie właściciela — dosłowne, wiążące:** „Sprawdź, aby spichlerz był jednym z
+pierwszych budynków, które buduje się w epoce kamienia [Epoka 1] przez AI, a kiedy jednym
+z pierwszych z epoki brązu [Epoka 2, `spichlerz_ii`], o ile nie pierwszym. Oczywiście tak
+szybko, jak jest dostępna technologia dla AI, która to umożliwia. I to jest rozwiązanie
+problemu."
+
+### Zadanie rundy 3
+
+1. **`spichlerz` (Epoka 1) ma być jednym z PIERWSZYCH budynków budowanych przez major AI**
+   — nie „bezpieczna wartość +8", tylko realny, wysoki priorytet analogiczny do `koszary`
+   (+110) / `biblioteka` (+90). Znajdź i napraw PRAWDZIWĄ przyczynę, dla której podniesienie
+   bonusu ponad 8 łamie `ai-jednostki-tylko-zakup-test` (44/0 → 41/3 przy 9) — nie omijaj
+   tego przez sztuczne ograniczenie liczby. Możliwe kierunki do zbadania (wybierz ten, który
+   pasuje do realnego mechanizmu, nie zgaduj): (a) test ma nieaktualne założenie o tym, co
+   AI powinno wybrać w swoim scenariuszu, i wymaga aktualizacji zgodnie z nowym kontraktem
+   (analogicznie do napraw bramek w innych tematach tej sesji) — ale TYLKO jeśli faktycznie
+   jest przestarzały, nie na siłę; (b) bonus Spichlerza powinien być WARUNKOWY — silny, gdy
+   miasto zbliża się do sufitu populacji 5 (a więc realnie potrzebuje Spichlerza, żeby
+   rosnąć), słaby/zerowy gdy populacja jest daleko od sufitu (scenariusz testu chroni
+   dokładnie ten drugi przypadek — sprawdź, czy fixture testu faktycznie odpowiada miastu
+   niezagrożonemu sufitem populacji); (c) inny mechanizm, jeśli znajdziesz lepszy.
+2. **`spichlerz_ii` (Epoka 2) — jeden z pierwszych, jeśli nie pierwszy** budynek Epoki 2
+   budowany przez major AI, natychmiast gdy tech na niego jest dostępne. Zastosuj tę samą
+   logikę/mechanizm co w punkcie 1.
+3. **Akwedukt — zweryfikuj, nie zakładaj.** Wg symulacji Final Control rundy 1 Akwedukt już
+   wchodzi wcześnie (3. budynek w kolejności 8-budynkowego plateau) — potwierdź to WŁASNYM
+   pomiarem w tej rundzie i wypisz w raporcie. Jeśli potwierdzone — zero zmian dla Akweduktu.
+   Jeśli NIE — potraktuj identycznie jak Spichlerz.
+4. **Dowód wymagany: pokaż, że plateau po tej rundzie NAPRAWDĘ zawiera Spichlerz** (i
+   Akwedukt/spichlerz_ii, jeśli dotyczy) — powtórz tę samą 400-turową proxy-symulację (bez
+   `canAfford`) co Final Control rundy 1/2 i pokaż nowy skład pierwszych ~10 budynków. Samo
+   „podniosłem liczbę" bez dowodu z symulacji nie wystarczy — to dokładnie luka, którą
+   właściciel właśnie zidentyfikował w rundzie 2.
+5. Chroniony gate `ai-jednostki-tylko-zakup-test` — **zero osłabienia bez dowodu, że jego
+   scenariusz nie jest tym, w którym Spichlerz naprawdę jest potrzebny.** Jeśli po zbadaniu
+   okaże się, że test faktycznie trzeba zaktualizować (bo jego założenie koliduje z tym, co
+   właściciel właśnie kazał zrobić) — zrób to jawnie, z uzasadnieniem per pozycja, nie po
+   cichu.
+6. Kryterium 4 (150 tur w prawdziwym silniku) — nadal odroczone do nocnego przebiegu,
+   bez zmian.
+
+**NASTĘPNY KROK:** runda 3, ten sam Operator, ta sama gałąź. Dopiero po PASS rundy 3 —
+integracja orkiestratora i odblokowanie `R-PRAWO-PRZEBUDOWA-SKALI-Q1`.

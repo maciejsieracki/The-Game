@@ -161,8 +161,22 @@ console.log('\n--- T2: chooseCityProduction — L3 pokój vs L2 (major mid-game)
   eq(pickL3, 'Łucznik', 'T2b: L3 pokój → Łucznik (Wojownik 230 po −40 < Łucznik 265)');
 }
 
-console.log('\n--- T3: L3 + underThreat → kara nie stosuje się (wojsko wygrywa) ---');
+console.log('\n--- T3: L3 + underThreat → kara nie stosuje się do jednostek ---');
 {
+  // R-AI-PRODUKCJA-Z-DOSTEPNYCH-BUDYNKOW-Q1 runda 2 (Maciej, ratyfikacja 2026-09-06):
+  // z tych 6 budynków testowego katalogu (`makeData`), `builtMid` ma już zbudowane
+  // koszary/spichlerz/cegielnia/magazyn -- jedyne DWA pozostałe kandydaci-budynki to
+  // 'mury' i 'stolarnia'. Przed tą rundą 'mury' był filtrowany z kandydatów major AI
+  // bezwarunkowo (P-AI-008, USUNIĘTE tą rundą, patrz ai.ts) -- Wojownik wygrywał z
+  // automatu. Po usunięciu tej reguły Mury pod zagrożeniem (underThreat) dostają
+  // udokumentowany bonus (AI_MAJOR_WALL_THREAT_BONUS) i TERAZ WYGRYWAJĄ z Wojownikiem
+  // -- to jest ZAMIERZONY skutek ratyfikacji ("AI powinno budować mury, zwłaszcza
+  // kiedy jest zagrożone"), nie regresja tego testu. Sam fakt, że kara L3 NIE stosuje
+  // się do Wojownika pod zagrożeniem (pierwotny cel T3), jest już bezpośrednio i
+  // niezależnie pokryty przez T1d (`applyL3PeaceWarriorPenalty` wprost, bez
+  // konkurencji z innymi kandydatami) -- ta asercja tylko dopisuje, że nowy kontrakt
+  // (Mury > Wojownik pod zagrożeniem, gdy Mury są jedynym/najlepszym dostępnym
+  // budynkiem) faktycznie działa w pełnym pipeline.
   const enemy = {
     id: 'e1', ownerId: 2, typeId: 'Wojownik', q: 6, r: 5, ruch: 2, ruchLeft: 2,
   };
@@ -172,7 +186,7 @@ console.log('\n--- T3: L3 + underThreat → kara nie stosuje się (wojsko wygryw
     map,
     loadDifficultyParams(data, 3),
   );
-  eq(pick, 'Wojownik', 'T3a: L3 underThreat → Wojownik (threat score, bez kary pokoju)');
+  eq(pick, 'mury', 'T3a: L3 underThreat, tylko mury/stolarnia dostępne → Mury (nowy priorytet rundy 2, P-AI-008 usunięta)');
 }
 
 console.log(`\n=== ai-balans-step2-test: ${passed} passed, ${failed} failed ===`);

@@ -92,11 +92,14 @@ function makeUnit(id, ownerId, q, r, typeId) {
 
 function makeGameData() {
   return {
+    // grupa/kosztBudowy: R-AI-PRODUKCJA-Z-DOSTEPNYCH-BUDYNKOW-Q1 -- chooseCityProduction
+    // punktuje teraz kandydatów-budynki po BuildingDef.grupa (nie po id), więc fixture
+    // musi nieść te pola tak jak realny buildings.json (wartości 1:1 z katalogu).
     buildings: [
-      { id: 'mury', nazwa: 'Mury' },
-      { id: 'spichlerz', nazwa: 'Spichlerz' },
-      { id: 'studnia', nazwa: 'Studnia' },
-      { id: 'koszary', nazwa: 'Koszary' },
+      { id: 'mury', nazwa: 'Mury', grupa: 'Wojsko i obrona', kosztBudowy: 35 },
+      { id: 'spichlerz', nazwa: 'Spichlerz', grupa: 'Żywność', kosztBudowy: 20 },
+      { id: 'studnia', nazwa: 'Studnia', grupa: 'Zdrowie', kosztBudowy: 15 },
+      { id: 'koszary', nazwa: 'Koszary', grupa: 'Wojsko i obrona', kosztBudowy: 25 },
     ],
     units: [],
     terrainYields: { terrain_types: [{ Teren: 'Równina', Zywnosc: 2, Praca: 1 }] },

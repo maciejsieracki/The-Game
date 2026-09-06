@@ -168,7 +168,15 @@ const SCENARIOS = [
     },
     expectL2Pick: 'Wojownik',
     expectL3PeacePickNot: 'Wojownik',
-    expectL3ThreatPick: 'Wojownik',
+    // R-AI-PRODUKCJA-Z-DOSTEPNYCH-BUDYNKOW-Q1 runda 2 (Maciej, ratyfikacja 2026-09-06):
+    // P-AI-008 ("major AI nigdy nie buduje Murów") USUNIĘTA -- w tym scenariuszu
+    // testowym (`makeData`) jedynymi pozostałymi kandydatami-budynkami są 'mury' i
+    // 'stolarnia' (koszary/spichlerz/cegielnia/magazyn już w `builtMid`); pod
+    // zagrożeniem, z profilem neutralnym 5/5/5, Mury (nowy priorytet zagrożenia,
+    // `AI_MAJOR_WALL_THREAT_BONUS`) TERAZ wygrywają z Wojownikiem -- ZAMIERZONY
+    // skutek ratyfikacji, nie regresja. Militarny archetyp (military-8-5-5, niżej)
+    // podnosi militaryScore na tyle, że Wojownik nadal wygrywa -- oba są prawidłowe.
+    expectL3ThreatPick: 'mury',
   },
   {
     id: 'military-8-5-5',

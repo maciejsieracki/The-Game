@@ -1,6 +1,13 @@
 'use strict';
 /**
- * ai-threat-mode-test.cjs — P-AI-008 (zagrożenie major AI: jednostki+rozwój, nie mury).
+ * ai-threat-mode-test.cjs — tryb zagrożenia major AI (jednostki+rozwój+Mury).
+ * P-AI-008 ("major AI nigdy nie buduje Murów") USUNIĘTA rundą 2 tematu
+ * R-AI-PRODUKCJA-Z-DOSTEPNYCH-BUDYNKOW-Q1 (Maciej, ratyfikacja 2026-09-06) --
+ * Mury/Fort/Baszta dostają teraz podniesiony priorytet pod zagrożeniem i w
+ * miastach przygranicznych (patrz `ai.ts`, `MAJOR_FORTIFICATION_IDS`). T8d/T8e
+ * niżej odwrócone na nowy kontrakt; T8b/T8c/T8f/T8g nietknięte (nie dotyczą
+ * usuniętej reguły). T8h DODANY Obroną rundy 2 (zarzut #2 Evaluatora) --
+ * scenariusz konkurencyjny jak T8d, ale dla bonusu GRANICZNEGO (bez zagrożenia).
  * Run from gra/: node tools/ai-threat-mode-test.cjs
  */
 
@@ -132,18 +139,25 @@ console.log('\n--- T8c: wrog w 6 hex przy zasiegu 5 -> brak zagrozenia ---');
   assert(id !== 'mury', 'zasieg 5 + wrog 6 hex -> nie Mury z trybu zagrozenia');
 }
 
-console.log('\n--- T8d: major AI lider Mocy + zagrozenie -> nie Mury (jednostka/rozwój) ---');
+console.log('\n--- T8d: major AI lider Mocy + zagrozenie -> Mury (P-AI-008 USUNIĘTA rundą 2) ---');
 {
+  // R-AI-PRODUKCJA-Z-DOSTEPNYCH-BUDYNKOW-Q1 runda 2 (Maciej, ratyfikacja 2026-09-06):
+  // P-AI-008 ("major AI nigdy nie buduje Murów pod zagrożeniem") USUNIĘTA na
+  // WPROST życzenie właściciela ("AI powinno budować mury, zwłaszcza kiedy jest
+  // zagrożone"). Ten test wcześniej sprawdzał DOKŁADNIE tę usuniętą regułę --
+  // odwrócona asercja (Mury TERAZ wygrywają) jest zamierzonym skutkiem, nie
+  // regresją. powerRank (lider Mocy) nie jest częścią nowej reguły (nowe sygnały
+  // to wyłącznie underThreat i isBorderCity, patrz ai.ts) -- nie zmienia wyniku.
   const data = makeData(7);
   const enemy = { id: 'e2', ownerId: 2, typeId: 'Wojownik', category: 'miecznik', q: 6, r: 5, ruch: 2, ruchLeft: 2 };
   const id = chooseCityProduction('c1', midCities, [enemy], 1, data, ZERO, {
     cityBuildings: { c1: [] },
     powerRank: 1,
   }, map, loadDifficultyParams(data, 2));
-  assert(id !== 'mury', 'P-AI-008: rank 1 + zagrozenie -> nie Mury (prefer jednostki/rozwój)');
+  assert(id === 'mury', 'runda 2: rank 1 + zagrozenie -> Mury (priorytet podniesiony, P-AI-008 usunięta)');
 }
 
-console.log('\n--- T8e: major AI rank 3 + zagrozenie -> bez Murów ---');
+console.log('\n--- T8e: major AI rank 3 + zagrozenie -> Mury (P-AI-008 USUNIĘTA rundą 2) ---');
 {
   const data = makeData(7);
   const enemy = { id: 'e3', ownerId: 2, typeId: 'Wojownik', category: 'miecznik', q: 6, r: 5, ruch: 2, ruchLeft: 2 };
@@ -152,7 +166,30 @@ console.log('\n--- T8e: major AI rank 3 + zagrozenie -> bez Murów ---');
     powerRank: 3,
     civAiProfile: { ekspansywnosc: 0, sklonnoscDoPodboju: 0, priorytetMilitarny: 5, priorytetEkonomia: 5, priorytetNauka: 5 },
   }, map, loadDifficultyParams(data, 2));
-  assert(id !== 'mury', 'rank 3 + zagrozenie -> nie Mury');
+  assert(id === 'mury', 'runda 2: rank 3 + zagrozenie -> Mury (priorytet podniesiony, powerRank bez wpływu)');
+}
+
+console.log('\n--- T8h: border-only (BEZ zagrozenia) w scenariuszu konkurencyjnym jak T8d -> Mury ---');
+{
+  // Obrona rundy 2 (zarzut #2 Evaluatora, PRZYJĘTY z dowodem): asercje (a)/(a2) w
+  // ai-produkcja-pokrycie-katalogu-test.cjs są DEGENERACKIE (39/42 zbudowane, mury
+  // jedyny afordowalny kandydat niezależnie od bonusu) -- nie strzegą mechanizmu.
+  // Ten test odtwarza DOKŁADNIE scenariusz T8d (świeże miasto, katalog konkurencyjny
+  // mury/koszary/stolarnia/spichlerz, brak innych budynków) ale zamiast wroga w
+  // zasięgu podaje TYLKO `territoryNodes` obcego właściciela (border, zero threat)
+  // -- ten sam mechanizm co isBorderCity/D-IMPROVEMENTS. Wartość bonusu podniesiona
+  // tą rundą z 60 na 120 (patrz komentarz przy AI_MAJOR_WALL_BORDER_BONUS w ai.ts) --
+  // bisekcja niezależna: próg przełamania bazy grupy "Wojsko i obrona" (90+militaryScore)
+  // przez bazę "Produkcja surowców"/"Prawo i administracja" leży między 100 a 110 w
+  // tym dokładnym scenariuszu; 60 (wartość sprzed tej rundy) NIE wystarczał.
+  const data = makeData(7);
+  const borderNodes = [{ q: 6, r: 5, pop: 5, level: 1, ownerId: 2 }];
+  const id = chooseCityProduction('c1', midCities, [], 1, data, ZERO, {
+    cityBuildings: { c1: [] },
+    powerRank: 1,
+    territoryNodes: borderNodes,
+  }, map, loadDifficultyParams(data, 2));
+  assert(id === 'mury', 'runda 2 Obrony: miasto przygraniczne BEZ zagrozenia, katalog konkurencyjny -> Mury (bonus 120)');
 }
 
 console.log('\n--- T8f: defensiveCopy + zagrozenie + garnizon -> Palisada (fortyfikacja, po bootstrap) ---');
