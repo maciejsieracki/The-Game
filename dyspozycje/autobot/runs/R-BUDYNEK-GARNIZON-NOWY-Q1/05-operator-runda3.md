@@ -5,7 +5,7 @@ DOMAIN: GAME
 TEMAT: R-BUDYNEK-GARNIZON-NOWY-Q1
 GOAL: Nowy budynek Garnizon — kompletny, na równi z każdym innym budynkiem w grze (bez wpinania do Prawa i bez obrony cywilnej).
 MODEL+EFFORT: Opus 5, effort high.
-ZMIANY/COMMIT: `gra/tools/civpedia-budynki-historia-test.cjs` (+51/−14), `gra/tools/budynek-garnizon-test.cjs` (+48/−5), nowy `runs/R-BUDYNEK-GARNIZON-NOWY-Q1/decision-abc.md`, ten raport. Wszystko w allowliście rundy 3. **Zero zmian w `gra/data/buildings.json`** — `git diff dc355979 -- gra/data/buildings.json` pusty (kryterium 8). Zero `git add -A`. SHA w commicie tego raportu.
+ZMIANY/COMMIT: `gra/tools/civpedia-budynki-historia-test.cjs` (+51/−14), `gra/tools/budynek-garnizon-test.cjs` (+48/−5), nowy `runs/R-BUDYNEK-GARNIZON-NOWY-Q1/decision-abc.md`, ten raport. Wszystko w allowliście rundy 3. **Zero zmian w `gra/data/buildings.json`** — `git diff dc355979 -- gra/data/buildings.json` pusty (kryterium 8). Zero `git add -A`. Wszystko w jednym commicie **`d8ad4cef`** na gałęzi `autobot/R-BUDYNEK-GARNIZON-NOWY-Q1` (baza `ff81dce5` potwierdzona `git merge-base --is-ancestor` przed pracą); to zdanie z numerem SHA dopisane commitem następującym, bo commit nie może zawierać własnego skrótu.
 TESTY: `civpedia-budynki-historia-test` **138/3 → 141/0** · `budynek-garnizon-test` **80/0 → 83/0** · `grupy-budynkow-test` **84/0** · `tsc --noEmit` exit 0 · pięć referencyjnych: logic 213/213, tech-tree 19/0, research 33/0, unit-replace 13/0, combat 6/6. Trzy przebiegi mutacyjne, każdy cofnięty KOPIĄ pliku, `git diff --quiet` czysto po każdym.
 BLOKADY: dwie otwarte blokady rundy 1 (odtworzone niżej — R3-B) + jedna nowa procesowa. Żadna nie blokuje pracy tej rundy.
 RUNDY: 3/5
