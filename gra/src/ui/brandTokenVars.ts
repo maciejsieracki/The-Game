@@ -5,6 +5,7 @@
  */
 
 import brandTokensCss from './icons/brand/tokens.css?raw';
+import { RESOURCE_COLOR_ROOT_CSS } from './resourceColors';
 
 /** Alias --civ-* → --tg-* (kompatybilność istniejącego lane UI). */
 const CIV_ALIASES_CSS = `
@@ -74,7 +75,7 @@ html *::-webkit-scrollbar-corner {
 `;
 
 /** :root — zmienne globalne (wstrzykiwane raz na dokument). */
-export const CIV_BRAND_ROOT_CSS = brandTokensCss + CIV_ALIASES_CSS + CIV_GLOBAL_SCROLLBAR_CSS;
+export const CIV_BRAND_ROOT_CSS = brandTokensCss + CIV_ALIASES_CSS + RESOURCE_COLOR_ROOT_CSS + CIV_GLOBAL_SCROLLBAR_CSS;
 
 /** Alias lokalny w scope menu/kreator (kompatybilność ze starymi var(--gold)). */
 export const CIV_BRAND_SCOPE_VARS = `
@@ -103,11 +104,12 @@ export const CIV_BRAND_SCOPE_VARS = `
   --radius-lg: var(--civ-radius-panel);
 `;
 
-const ROOT_STYLE_ID = 'civ-brand-root-css-w2-scroll';
+const ROOT_STYLE_ID = 'civ-brand-root-css-w3-res';
 
 /** Jednorazowe wstrzyknięcie :root tokenów. */
 export function ensureBrandRootTokens(): void {
   document.getElementById('civ-brand-root-css')?.remove();
+  document.getElementById('civ-brand-root-css-w2-scroll')?.remove();
   if (document.getElementById(ROOT_STYLE_ID)) return;
   const style = document.createElement('style');
   style.id = ROOT_STYLE_ID;

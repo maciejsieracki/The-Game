@@ -177,6 +177,12 @@ import { techIconSvg } from './techIcons';
 import { showTechDiscoveryNotice } from './techDiscoveryNotice';
 import { ensureBrandRootTokens, CIV_BRAND_SCOPE_VARS } from './brandTokenVars';
 import {
+  resourceColorClassCss,
+  resourceTextClass,
+  resourceScopeClass,
+  type ResourceColorKey,
+} from './resourceColors';
+import {
   freshWealthState,
   loadWealthParams,
   wealthCap,
@@ -1838,13 +1844,18 @@ function statChipBrand(iconId: string, label: string, value: string, cls: string
 
 /** Chipy bilansu plonów (W4 / B-02) — zawsze SVG brand, bez emoji. */
 function plonyChipRowHtml(view: CityView): string {
-  const foodCls = view.zywnoscNetto > 0 ? 'green' : view.zywnoscNetto < 0 ? 'red' : 'gold';
+  // P-KOLOR-SUROWCE-MIASTO-VS-MAPA-Q1: tożsamość surowca z palety; klasa stanu tylko
+  // dla Żywności (deficyt). „Pieniądz" miał tu 'blue' — Skarbiec pokazywał się jako
+  // niebieski w panelu miasta i jako złoty na HUD mapy, przy tej samej wielkości.
+  const foodCls = view.zywnoscNetto > 0 ? 'green'
+    : view.zywnoscNetto < 0 ? 'red'
+    : resourceTextClass('zywnosc');
   return (
     statChipBrand('res-food', 'Żyw.', signed(view.zywnoscNetto), foodCls) +
-    statChipBrand('res-work', 'Praca', signed(view.praca), 'gold') +
-    statChipBrand('res-treasury', 'Pieniądz', signed(view.pieniadz), 'blue') +
-    statChipBrand('res-science', 'Nauka', signed(view.nauka), 'blue') +
-    statChipBrand('res-culture', 'Kult.', signed(view.kultura), 'gold')
+    statChipBrand('res-work', 'Praca', signed(view.praca), resourceTextClass('praca')) +
+    statChipBrand('res-treasury', 'Pieniądz', signed(view.pieniadz), resourceTextClass('skarbiec')) +
+    statChipBrand('res-science', 'Nauka', signed(view.nauka), resourceTextClass('nauka')) +
+    statChipBrand('res-culture', 'Kult.', signed(view.kultura), resourceTextClass('kultura'))
   );
 }
 
@@ -1929,6 +1940,13 @@ function ensureStyles(): void {
   --gold:var(--civ-gold-primary);--green:var(--civ-success);--red:var(--civ-danger);
   --blue:var(--civ-science);--happy:var(--civ-gold-primary);
   font-family:var(--civ-font-ui);font-size:16px;}
+/* P-KOLOR-SUROWCE-MIASTO-VS-MAPA-Q1: paleta szesciu surowcow — jedno zrodlo prawdy
+   (resourceColors.ts), to samo, z ktorego czyta HUD mapy swiata (hud.ts).
+   Dwa poziomy swoistosci: goly selektor dla paska W3 (renderowanego poza .civ-cs)
+   i wariant z prefiksem .civ-cs, ktory musi wygrac z istniejaca regula
+   .civ-cs .gold o swoistosci (0,2,0). */
+${resourceColorClassCss()}
+${resourceColorClassCss('.civ-cs')}
 .civ-cs *{box-sizing:border-box;}
 .civ-cs-backdrop{flex:1 1 55%;min-width:0;background:rgba(8,10,18,0.58);pointer-events:auto;cursor:default;}
 .civ-cs-drawer{flex:0 0 45%;width:45%;max-width:720px;min-width:300px;height:100%;pointer-events:auto;
@@ -2439,7 +2457,8 @@ function ensureStyles(): void {
   cursor:pointer;border-radius:4px;font-family:inherit;color:inherit;}
 .civ-v-w3-chip:hover{background:rgba(212,175,90,0.1);}
 .civ-v-w3-chip:focus-visible{outline:2px solid var(--gold);outline-offset:2px;}
-.civ-v-w3-chip-icon{display:flex;align-items:center;justify-content:center;color:#e8d88a;font-size:1.15em;line-height:1;}
+.civ-v-w3-chip{--civ-res-self:var(--civ-gold-primary);}
+.civ-v-w3-chip-icon{display:flex;align-items:center;justify-content:center;color:var(--civ-res-self);font-size:1.15em;line-height:1;}
 .civ-v-w3-chip-icon .civ-v-loaf-ic{width:1.2em;height:1.3em;}
 .civ-v-w3-sci-med{display:inline-flex;align-items:center;justify-content:center;
   width:1.35em;height:1.35em;border-radius:50%;flex-shrink:0;
@@ -2447,8 +2466,7 @@ function ensureStyles(): void {
 .civ-v-w3-sci-med .civ-science-owl-ic{width:0.82em;height:0.82em;color:#0a1628;}
 .civ-v-w3-chip-icon .civ-science-owl-ic{width:1.05em;height:1.05em;color:#0a1628;}
 .civ-v-w3-chip-lbl{font-size:0.95em;color:#a8a090;font-weight:600;}
-.civ-v-w3-chip-val{font-size:1.08em;font-weight:700;color:#e8d88a;}
-.civ-v-w3-chip-val.blue{color:#7cb4e4;}
+.civ-v-w3-chip-val{font-size:1.08em;font-weight:700;color:var(--civ-res-self);}
 .civ-v-w3-chip-val.green{color:var(--green);}
 .civ-v-w3-chip-val.red{color:var(--red);}
 /* R-HUD-MIASTO-STAN-CYWILIZACJI: wkład TEGO miasta — mała liczba obok dużej sumy
@@ -2458,7 +2476,7 @@ function ensureStyles(): void {
 .civ-v-w3-chip-delta.red{color:var(--red);}
 /* R-HUD-MIASTO-STOCK-TEMPO-TRZY-ELEMENTY: trzeci element — realny ZAPAS całej
    cywilizacji, w nawiasie, ZŁOTY (odrębny kolor od tempa), pod małą liczbą. */
-.civ-v-w3-chip-stock{font-size:0.62em;font-weight:700;margin-left:0.18em;line-height:1;color:#e8b84a;}
+.civ-v-w3-chip-stock{font-size:0.62em;font-weight:700;margin-left:0.18em;line-height:1;color:var(--civ-res-self);}
 .civ-v-w3-chip-sep{width:1px;height:1.45em;background:rgba(232,216,138,0.2);flex-shrink:0;}
 .civ-v-w3-top-actions{display:flex;align-items:center;gap:0.75rem;flex-shrink:0;margin-left:0.35rem;}
 .civ-v-exit-map-btn{display:inline-flex;align-items:center;gap:0.38em;padding:0.38em 0.85em 0.38em 0.65em;
@@ -3991,7 +4009,7 @@ function renderKultura(mount: HTMLElement, city: City, view: CityView | null): v
   } else {
     const kult = view ? view.kultura : 0;
     const row = el('div', 'rsb');
-    row.innerHTML = `<span class="gold">${cityPanelChipIconWrap('res-culture', 14)} ${signed(kult)}</span><span class="muted">podgląd</span>`;
+    row.innerHTML = `<span class="${resourceTextClass('kultura')}">${cityPanelChipIconWrap('res-culture', 14)} ${signed(kult)}</span><span class="muted">podgląd</span>`;
     mount.appendChild(row);
   }
 }
@@ -4552,9 +4570,9 @@ function appendPodzialHandlu(
 
   const grid = el('div', 'handel-chip-grid');
   grid.innerHTML =
-    statChipBrand('res-treasury', 'Skarb', `+${est.skarb} · ${split.procentPieniadz}%`, 'gold')
+    statChipBrand('res-treasury', 'Skarb', `+${est.skarb} · ${split.procentPieniadz}%`, resourceTextClass('skarbiec'))
       .replace('<span class="chip">', '<span class="chip handel-card-skarb">') +
-    statChipBrand('res-science', 'Nauka', `+${est.nauka} · ${split.procentNauka}%`, 'blue')
+    statChipBrand('res-science', 'Nauka', `+${est.nauka} · ${split.procentNauka}%`, resourceTextClass('nauka'))
       .replace('<span class="chip">', '<span class="chip handel-card-nauka">') +
     statChipBrand('chip-happiness', HANDEL_ZAMOZNOSC_LABEL, `+${est.zam} · ${split.procentLuksus}%`, 'happy')
       .replace('<span class="chip">', '<span class="chip handel-card-zam">') +
@@ -4585,8 +4603,8 @@ function appendPodzialHandlu(
     row.appendChild(inp);
     sliders.appendChild(row);
   };
-  makeSlider('procentPieniadz', 'Skarb', 'gold');
-  makeSlider('procentNauka', 'Nauka', 'blue', 'slider-nauka', MAX_PROCENT_NAUKA);
+  makeSlider('procentPieniadz', 'Skarb', resourceTextClass('skarbiec'));
+  makeSlider('procentNauka', 'Nauka', resourceTextClass('nauka'), 'slider-nauka', MAX_PROCENT_NAUKA);
   makeSlider('procentLuksus', HANDEL_ZAMOZNOSC_LABEL, 'happy');
   // R-USTAWIENIA-GLOBALNE-LOKALNE (Maciej 2026-08-10): "Skarbiec i Nauka to JEDNA
   // grupa" -- JEDEN przycisk Indywidualne dla całego suwaka (Skarb+Nauka+Zamożność
@@ -4923,7 +4941,7 @@ function appendPodzialPracyInfo(
 
   const chips = el('div', 'chip-row praca-split-chips');
   chips.innerHTML =
-    statChipBrand('res-work', 'Miasto', praca ? signed(praca.total) : '—', 'gold') +
+    statChipBrand('res-work', 'Miasto', praca ? signed(praca.total) : '—', resourceTextClass('praca')) +
     statChipBrand('cp-buildings', 'Budynki', praca ? `+${praca.doBudynkow}` : '—', 'gold') +
     statChipBrand('chip-crate', PULA_LBL, praca ? `+${praca.doPuli}` : '—', 'blue');
   mount.appendChild(chips);
@@ -4933,7 +4951,7 @@ function appendPodzialPracyInfo(
   const rowTotal = el('div', 'psi-row');
   rowTotal.innerHTML =
     `<span class="psi-lbl">${psiRowLabel('res-work', 'Praca w mieście')}</span>` +
-    `<span class="psi-val gold">${praca ? signed(praca.total) + cityPanelChipIconWrap('res-work', 16) : '—'}</span>`;
+    `<span class="psi-val ${resourceTextClass('praca')}">${praca ? signed(praca.total) + cityPanelChipIconWrap('res-work', 16) : '—'}</span>`;
   info.appendChild(rowTotal);
 
   const rowBud = el('div', 'psi-row');
@@ -4971,7 +4989,7 @@ function appendPodzialPracyInfo(
     : 'Jednostki kupujesz za złoto ze skarbca (zakładka Rekrut.)';
   rowSkarb.innerHTML =
     `<span class="psi-lbl">${psiRowLabel('res-treasury', 'Skarbiec', skarbTip)}</span>` +
-    `<span class="psi-val gold">${skarb}${skarbDelta !== 0 ? ` (${signed(skarbDelta)})` : ''}` +
+    `<span class="psi-val ${resourceTextClass('skarbiec')}">${skarb}${skarbDelta !== 0 ? ` (${signed(skarbDelta)})` : ''}` +
     `${rqSub ? `<div class="psi-sub">${rqSub}</div>` : ''}</span>`;
   info.appendChild(rowSkarb);
 
@@ -10061,6 +10079,23 @@ export function clearCityPanelUxMode(): void {
   disposeHoverDetailDock();
 }
 
+/**
+ * P-KOLOR-SUROWCE-MIASTO-VS-MAPA-Q1: `data-res-stat` chipa JEST tożsamością surowca,
+ * więc kolor bierzemy z niego, a nie z dodatkowego argumentu — dzięki temu ikona,
+ * wartość i zapas jednego chipa nie mogą wskazać dwóch różnych surowców, a sygnatura
+ * `w3CityChip(...)` (pilnowana pozycyjnie przez hud-miasto-stock-tempo-test.cjs
+ * z R-HUD-MIASTO-STOCK-TEMPO-TRZY-ELEMENTY) zostaje nietknięta.
+ * `zloto` to historyczny identyfikator statystyki Skarbca.
+ */
+const W3_STAT_RES_KEY: Record<string, ResourceColorKey | undefined> = {
+  praca: 'praca',
+  zywnosc: 'zywnosc',
+  zloto: 'skarbiec',
+  nauka: 'nauka',
+  kultura: 'kultura',
+  religia: 'religia',
+};
+
 function w3CityChip(
   icon: string,
   label: string,
@@ -10072,11 +10107,15 @@ function w3CityChip(
    *  cywilizacji (suma wszystkich miast). Duża liczba (`val`) = tempo TEGO miasta.
    *  / EN: small number = civ-wide rate; big number (`val`) = this city's rate. */
   civRate?: number,
-  /** Trzeci element `(N)`, złoty: realny ZAPAS całej cywilizacji (ta sama wielkość
-   *  co duża liczba na głównym HUD mapy). / EN: gold civ-wide stock. */
+  /** Trzeci element `(N)`: realny ZAPAS całej cywilizacji — ta sama wielkość co duża
+   *  liczba na głównym HUD mapy, więc od P-KOLOR-SUROWCE-MIASTO-VS-MAPA-Q1 nosi ten sam
+   *  kolor TOŻSAMOŚCI surowca co tam (paleta), a nie własny odcień złota.
+   *  / EN: civ-wide stock — same quantity as the map HUD big number, same palette color. */
   civStock?: number,
 ): string {
-  return `<button type="button" class="civ-v-w3-chip civ-v-res-interactive" data-res-stat="${statId}" ` +
+  const resKey = W3_STAT_RES_KEY[statId];
+  const resScope = resKey ? ` ${resourceScopeClass(resKey)}` : '';
+  return `<button type="button" class="civ-v-w3-chip${resScope} civ-v-res-interactive" data-res-stat="${statId}" ` +
     `title="${hint.replace(/"/g, '&quot;')}" aria-label="${hint.replace(/"/g, '&quot;')}">` +
     `<span class="civ-v-w3-chip-icon">${icon}</span>` +
     `<span class="civ-v-w3-chip-lbl">${label}</span>` +
@@ -10155,9 +10194,12 @@ function buildCityOnlyW3FlankChips(
   const pracaCls = chip.praca.big > 0 ? 'green' : chip.praca.big < 0 ? 'red' : '';
   const foodCls = chip.zywnosc.big > 0 ? 'green' : chip.zywnosc.big < 0 ? 'red' : '';
   const goldCls = chip.zloto.big > 0 ? 'green' : chip.zloto.big < 0 ? 'red' : '';
-  const naukaCls = chip.nauka.big > 0 ? 'blue' : chip.nauka.big < 0 ? 'red' : 'blue';
-  const kultCls = chip.kultura.big > 0 ? 'gold' : chip.kultura.big < 0 ? 'red' : '';
-  const relCls = chip.religia.big > 0 ? 'gold' : chip.religia.big < 0 ? 'red' : '';
+  // P-KOLOR-SUROWCE-MIASTO-VS-MAPA-Q1: klasa niesie już WYŁĄCZNIE stan (deficyt),
+  // tożsamość surowca daje paleta przez `--civ-res-self`. Wcześniej Nauka wpisywała tu
+  // 'blue', a Kultura/Religia 'gold' — dwa literały tożsamości poza jakimkolwiek kanonem.
+  const naukaCls = chip.nauka.big < 0 ? 'red' : '';
+  const kultCls = chip.kultura.big < 0 ? 'red' : '';
+  const relCls = chip.religia.big < 0 ? 'red' : '';
 
   const economyRow = [
     w3CityChip(
@@ -10683,13 +10725,13 @@ function renderHandelSlidersPanel(mount: HTMLElement, city: City, view: CityView
         cls: 'gold',
         title: `Brutto ~${est.brutto} · korupcja −${est.korupcja}`,
       },
-      { icon: cityPanelChipIcon('res-treasury', 14), label: 'Pieniądz', value: `${signed(view.pieniadz)}`, cls: 'blue' },
-      { icon: cityPanelChipIcon('res-science', 14), label: 'Nauka', value: `${signed(view.nauka)}`, cls: 'blue' },
+      { icon: cityPanelChipIcon('res-treasury', 14), label: 'Pieniądz', value: `${signed(view.pieniadz)}`, cls: resourceTextClass('skarbiec') },
+      { icon: cityPanelChipIcon('res-science', 14), label: 'Nauka', value: `${signed(view.nauka)}`, cls: resourceTextClass('nauka') },
       {
         icon: cityPanelChipIcon('res-culture', 14),
         label: 'Kultura',
         value: `${signed(view.kultura)}`,
-        cls: 'gold',
+        cls: resourceTextClass('kultura'),
       },
     ]);
   }
@@ -11149,12 +11191,12 @@ function renderTopStatsBar(mount: HTMLElement, city: City, view: CityView | null
         cell('res-population', 'Ludność', String(city.population)),
         cell('cp-order', 'Epoka', String(epoch)),
         cell('field-food', 'Żywność', signed(view.zywnoscNetto), view.zywnoscNetto >= 0 ? 'green' : 'red'),
-        cell('res-work', 'Praca', signed(view.praca), 'gold'),
-        cell('res-treasury', 'Pieniądz', signed(view.pieniadz), 'blue'),
-        cell('res-science', 'Nauka', signed(view.nauka), 'blue'),
-        cell('res-culture', 'Kultura', signed(view.kultura), 'gold'),
+        cell('res-work', 'Praca', signed(view.praca), resourceTextClass('praca')),
+        cell('res-treasury', 'Pieniądz', signed(view.pieniadz), resourceTextClass('skarbiec')),
+        cell('res-science', 'Nauka', signed(view.nauka), resourceTextClass('nauka')),
+        cell('res-culture', 'Kultura', signed(view.kultura), resourceTextClass('kultura')),
         por != null ? cell('cp-order', 'Porządek', `${por.toFixed(0)}%`, por >= 60 ? 'green' : por >= 30 ? 'gold' : 'red') : '',
-        skarb != null ? cell('res-treasury', 'Skarb', String(skarb), 'gold') : '',
+        skarb != null ? cell('res-treasury', 'Skarb', String(skarb), resourceTextClass('skarbiec')) : '',
       ].join('')
     : cell('cp-order', '—', 'Brak danych', 'muted');
 
