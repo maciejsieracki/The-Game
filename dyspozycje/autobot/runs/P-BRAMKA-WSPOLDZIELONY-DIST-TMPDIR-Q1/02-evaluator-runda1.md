@@ -117,7 +117,7 @@ wspólnym `TMP_ROOT`.
 
 **6. Narracja raportu ~874 słów przy limicie ~400 (§11)** — 2,2×, policzone po odjęciu
 tabel i bloków kodu. §11 kwalifikuje to jako `PASS-WITH-NOTES`, nie `FAIL`, ale „wraca
-do skrócenia". (Ten raport liczy ~700 słów narracji — też nad limitem; zapisuję to
+do skrócenia". (Ten raport liczy ~870 słów narracji — też nad limitem; zapisuję to
 o sobie, nie tylko o Operatorze.)
 
 **7. Nowa bramka nie jest nigdzie zarejestrowana — nikt jej nie uruchomi.** Jedyny rejestr
