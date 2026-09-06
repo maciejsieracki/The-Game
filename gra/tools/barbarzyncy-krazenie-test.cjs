@@ -253,12 +253,25 @@ for (const n of [2, 3, 4]) {
 // ==============================================================================================
 // 6. Rezim "niebronione OSIAGALNE + bronione NIEOSIAGALNE (inna wyspa)". To jest ten sam rezim, w
 //    ktorym runda 6 zamienila livelock na TRWALE zamrozenie (werdykt zbiorczy rundy 6, punkt 3).
-//    Sama naprawa warunku resetu POWTORZYLABY ten blad (zmierzone: 287/300 tur bez komendy przy
-//    2 niebronionych, 296/300 przy 1). Lista "ostatniej deski ratunku" w decideBarbarianMoves to
-//    domyka. Asercja mowi tylko tyle, ile jest udowodnione: jednostka NIE jest trwale zamrozona.
-//    Swiadomie NIE asercjonujemy tu "dociera do bronionego" -- ono jest NIEOSIAGALNE i zadna
-//    naprawa tego nie zmieni; asercja "0 komend jest ok" tez sie tu nie pojawia, bo przypielaby
-//    blad jako oczekiwane zachowanie.
+//
+//    PRZEPISANA W RUNDZIE 1 PO ZARZUCIE EVALUATORA (obrona). Poprzednia wersja miala JEDNA
+//    asercje `eq(idle, 0)` opisana jako "jednostka NIE jest zamrozona" -- to bylo twierdzenie
+//    szersze niz pomiar. Zmierzone niezaleznie, BASE (`022b82aa`) vs HEAD, 300 tur, md5 logu
+//    komend (2 niebronione, normal/hard): BASE `cd7cef7e70`, 241 realnych zmian pozycji, 29 tur
+//    bez komendy; HEAD `00e2ab78d0`, 11 realnych zmian pozycji, 0 tur bez komendy, ale tylko
+//    1 UNIKALNA POZYCJA w ostatnich 60 turach. Innymi slowy: HEAD zamienia bezczynnosc na
+//    komende `move` na heks juz odwiedzonego miasta, ktora silnik na easy/normal odrzuca
+//    (canUnitOccupyCityHex) -- jednostka stoi. Na `hard` ta sama komenda jest realnym przejeciem
+//    pustego miasta, ale to rozstrzyga SILNIK (main.ts), nie ten modul.
+//
+//    CO WIEC ASERCJONUJEMY, doslownie i nie wiecej: (a) komenda jest wydawana w kazdej turze;
+//    (b) ZERO KRAZENIA -- kazde osiagalne niebronione miasto odwiedzone DOKLADNIE RAZ (to jest
+//    cel tego tematu i to sie w tym rezimie poprawia); (c) jednostka realnie dochodzi do
+//    osiagalnego miasta (>=1 zmiana pozycji). NIE asercjonujemy "dociera do bronionego" (jest
+//    NIEOSIAGALNE), NIE asercjonujemy "porusza sie do konca biegu" (nie porusza -- i nie
+//    udajemy, ze porusza), NIE asercjonujemy tez "0 komend jest ok" (to przypielaby blad jako
+//    oczekiwane zachowanie). Trwaly bezruch po wyczerpaniu osiagalnych celow to `if (raidReady)
+//    continue` -- OSOBNY, WCIAZ OTWARTY temat, poza zakresem tego dispatchu.
 // ==============================================================================================
 for (const nUndef of [1, 2, 3]) {
   for (const d of ['easy', 'normal', 'hard']) {
@@ -271,18 +284,39 @@ for (const nUndef of [1, 2, 3]) {
     const guard = enemy('g1', 50, 2);
     const unit = barb('bNieos', 10, 2, { campId: 'destroyed-camp' }); // raidReady -> krok 4 pominiety
     const P = Object.assign({}, FALLBACK_BARB_PARAMS, { aggroRadius: 6 });
-    let idle = 0;
+    let idle = 0, realMoves = 0;
+    const arrivals = {}; const wasAt = {};
+    for (const c of undef) { arrivals[c.id] = 0; wasAt[c.id] = false; }
     for (let t = 0; t < TURNS; t++) {
       const cmd = decideBarbarianMoves([unit], [guard], cities, [], map, P, undefined, d)[0];
       if (!cmd) { idle++; continue; }
       if (cmd.type === 'attack') break;
       if (cmd.type === 'move' && canUnitOccupyCityHex(unit.ownerId, cmd.toQ, cmd.toR, cities)) {
+        if (unit.q !== cmd.toQ || unit.r !== cmd.toR) realMoves++;
         unit.q = cmd.toQ; unit.r = cmd.toR;
       }
+      for (const c of undef) {
+        const near = hexDist(unit.q, unit.r, c.q, c.r) <= 1;
+        if (near && !wasAt[c.id]) arrivals[c.id]++;
+        wasAt[c.id] = near;
+      }
     }
+    // (a) -- doslownie tylko to: komenda jest wydawana. NIE "jednostka sie porusza".
     eq(idle, 0,
+      `6 (${nUndef} niebronione OSIAGALNE + 1 bronione NIEOSIAGALNE, difficulty=${d}): w KAZDEJ ` +
+      `z ${TURNS} tur pada komenda (got ${idle} tur bez komendy). UWAGA: ta asercja NIE mowi, ze ` +
+      'jednostka sie porusza -- patrz naglowek sekcji i asercje (c)');
+    // (b) -- to jest cel tematu i to jest w tym rezimie realna poprawa wzgledem BASE.
+    for (const cid of Object.keys(arrivals)) {
+      eq(arrivals[cid], 1,
+        `6 (${nUndef} niebronione OSIAGALNE + 1 bronione NIEOSIAGALNE, difficulty=${d}): ${cid} ` +
+        'odwiedzone DOKLADNIE RAZ -- zero krazenia (BASE odwiedzalo je wielokrotnie)');
+    }
+    // (c) -- jednostka realnie sie przemieszcza do osiagalnych miast, komenda nie jest pusta od poczatku.
+    assert(realMoves >= 1,
       `6 (${nUndef} niebronione OSIAGALNE + 1 bronione NIEOSIAGALNE, difficulty=${d}): jednostka ` +
-      `raid-ready NIE jest zamrozona -- zero tur bez komendy w ${TURNS} turach (got ${idle})`);
+      `realnie zmienia pozycje co najmniej raz (got ${realMoves}) -- komenda nie jest pusta od ` +
+      'pierwszej tury');
   }
 }
 
@@ -326,6 +360,139 @@ for (const nUndef of [1, 2, 3]) {
   assert(cmds.length >= 1,
     `8 (M3): jednostka na terenie o nieskonczonym koszcie dostaje >=1 komende (got ${cmds.length})`);
   eq(cmds[0]?.type, 'move', '8 (M3): komenda to ruch, nie zamrozenie');
+}
+
+// ==============================================================================================
+// 10. SCIEZKA PRODUKCYJNA -- `turn` PRZEKAZANY i ZYWY OBOZ, dokladnie jak wola main.ts.
+//     Zarzut Evaluatora (runda 1): sekcje 1-3 wolaja `decideBarbarianMoves` BEZ dziewiatego
+//     argumentu `turn`, a `main.ts:32209-32212` go przekazuje; przy pominietym `turn` jednostka
+//     OSIEROCONA ma `orphanedAtTurn=0` i `chaseRadius=Infinity` na zawsze, czego produkcja nie
+//     wytwarza (`orphanedChaseTurnLimit=10`). Zarzut co do POKRYCIA jest sluszny i ta sekcja go
+//     domyka; teza "naprawa nie dziala na sciezce produkcyjnej" jest natomiast obalona pomiarem
+//     ponizej.
+//
+//     Konfiguracja: jednostka ma `campId` ZYWEGO obozu (dokladnie tak nadaje go `tickCamps`,
+//     patrz `campId: camp.id` przy spawnie), obóz ma pelny garnizon (`unitsPerCamp=2` jednostki
+//     w `campControlRadius`), a `turn` jest przekazywany w KAZDYM wywolaniu. Dla takiej jednostki
+//     `homeCampForUnit` zwraca obóz PO ID, niezaleznie od odleglosci, wiec `raidReady` jest
+//     prawdziwe stale i `turn` nie ma na nia wplywu -- co jest tu udowodnione wykonawczo:
+//     log komend jest identyczny z `turn` i bez `turn`.
+//
+//     Garnizon ma `inGarnizon: true` CELOWO: bez tego `planBarbarianRally` (barbarians.ts,
+//     `group.length < 2` / `gathered`) zbiera cala grupe o tym samym `campId` z powrotem do obozu
+//     i jednostka NIGDY nie dochodzi do kodu wyboru celu -- wtedy BASE i HEAD sa trywialnie
+//     identyczne i scenariusz nie mierzy niczego. To jest pulapka tej konfiguracji.
+//
+//     ZMIERZONE, BASE (`022b82aa`) vs HEAD, `turn` przekazany, 300 tur:
+//       2 niebronione: BASE cykl o okresie 22, `attack` NIGDY, 14 przyjazdow do KAZDEGO miasta
+//         -> HEAD `attack` w turze 58, kazde miasto raz, zero powtorzen stanu.
+//       3 niebronione: BASE okres 44 -> HEAD `attack` w turze 59.
+//       4 niebronione: BASE okres 66 -> HEAD `attack` w turze 60.
+//       BASE z `turn` i bez `turn` daje ten sam log (md5 `93d70635`) -- `turn` NIE jest tu
+//       czynnikiem, bo `raidReady` bierze sie z zywego obozu, nie z osierocenia.
+// ==============================================================================================
+function simulateProd(nUndef, difficulty) {
+  const map = makeMap(70, 8);
+  const undef = [];
+  for (let i = 0; i < nUndef; i++) undef.push(city(`u${i + 1}`, 6 + i * 10, 4));
+  const def = city('def', 60, 4);
+  const cities = undef.concat([def]);
+  const guard = enemy('guard', 60, 4);
+  const camps = [{ id: 'camp1', q: 2, r: 4, spawnCooldown: 5 }];
+  const unit = barb('bProd', 10, 4, { campId: 'camp1' });
+  const barbs = [unit, barb('gar1', 2, 4, { inGarnizon: true }), barb('gar2', 3, 4, { inGarnizon: true })];
+  const P = Object.assign({}, FALLBACK_BARB_PARAMS, { aggroRadius: 6 });
+
+  const seen = new Map(); const cmdLog = [];
+  const arrivals = {}; const wasAt = {};
+  for (const c of undef) { arrivals[c.id] = 0; wasAt[c.id] = false; }
+  let attackTurn = -1, cyclePeriod = -1, idle = 0, realMoves = 0;
+
+  for (let t = 0; t < TURNS; t++) {
+    // `turn` PRZEKAZANY -- dziewiaty argument, dokladnie jak main.ts:32209-32212.
+    const all = decideBarbarianMoves(barbs, [guard], cities, camps, map, P, undefined, difficulty, t);
+    const cmd = all.find(c => c.unitId === 'bProd');
+    cmdLog.push(cmd ? (cmd.type === 'move' ? `m${cmd.toQ},${cmd.toR}` : cmd.type) : 'idle');
+    if (!cmd) idle++;
+    if (cmd && cmd.type === 'attack') { attackTurn = t; break; }
+    if (cmd && cmd.type === 'move' && canUnitOccupyCityHex(unit.ownerId, cmd.toQ, cmd.toR, cities)) {
+      if (unit.q !== cmd.toQ || unit.r !== cmd.toR) realMoves++;
+      unit.q = cmd.toQ; unit.r = cmd.toR;
+    }
+    for (const c of undef) {
+      const near = hexDist(unit.q, unit.r, c.q, c.r) <= 1;
+      if (near && !wasAt[c.id]) arrivals[c.id]++;
+      wasAt[c.id] = near;
+    }
+    const key = `${unit.q},${unit.r}|${(unit.clearedCityIds ?? []).slice().sort().join('+')}`;
+    if (cyclePeriod === -1 && seen.has(key)) cyclePeriod = t - seen.get(key);
+    if (!seen.has(key)) seen.set(key, t);
+  }
+  return { attackTurn, cyclePeriod, arrivals, idle, realMoves, cmdLog };
+}
+{
+  const prod = {};
+  for (const n of [2, 3, 4]) for (const d of DIFFS) prod[`${n}|${d === undefined ? 'pominiety' : d}`] = simulateProd(n, d);
+  for (const n of [2, 3, 4]) {
+    for (const d of DIFFS) {
+      const label = d === undefined ? 'pominiety' : d;
+      const r = prod[`${n}|${label}`];
+      eq(r.cyclePeriod, -1,
+        `10 (SCIEZKA PRODUKCYJNA, turn przekazany, zywy obóz, ${n} niebronionych, difficulty=${label}): ` +
+        `ZERO powtorzen stanu (got cyclePeriod=${r.cyclePeriod}) -- BASE ma tu cykl 22/44/66`);
+      for (const cid of Object.keys(r.arrivals)) {
+        eq(r.arrivals[cid], 1,
+          `10 (SCIEZKA PRODUKCYJNA, ${n} niebronionych, difficulty=${label}): ${cid} odwiedzone ` +
+          'DOKLADNIE RAZ (BASE: 14 przyjazdow do kazdego)');
+      }
+      assert(r.attackTurn >= 0 && r.attackTurn < TURNS,
+        `10 (SCIEZKA PRODUKCYJNA, ${n} niebronionych, difficulty=${label}): komenda 'attack' na ` +
+        `BRONIONE miasto w budzecie ${TURNS} tur (got attackTurn=${r.attackTurn}) -- BASE: NIGDY`);
+      eq(r.idle, 0,
+        `10 (SCIEZKA PRODUKCYJNA, ${n} niebronionych, difficulty=${label}): zero tur bez komendy`);
+      assert(r.realMoves >= 40,
+        `10 (SCIEZKA PRODUKCYJNA, ${n} niebronionych, difficulty=${label}): jednostka REALNIE ` +
+        `przemieszcza sie w kierunku celu (got ${r.realMoves} zmian pozycji) -- to odroznia ruch ` +
+        'od komendy bez skutku');
+    }
+    const base = prod[`${n}|normal`].cmdLog.join(';');
+    for (const label of ['easy', 'hard', 'pominiety']) {
+      assert(prod[`${n}|${label}`].cmdLog.join(';') === base,
+        `10 (SCIEZKA PRODUKCYJNA, ${n} niebronionych): log komend dla difficulty=${label} jest ` +
+        'BIT-IDENTYCZNY z normal -- jedna regula takze przy przekazanym `turn`');
+    }
+  }
+}
+
+// ==============================================================================================
+// 11. DWA SEGMENTY LISTY KANDYDATOW -- `continue`, nie `break` (barbarians.ts, petla `for (const
+//     cand of targets)`). Od tej rundy lista ma dwa POSORTOWANE OSOBNO segmenty: zwykli kandydaci,
+//     a za nimi miasta odrzucone przez pamiec ("ostatnia deska ratunku"). Kandydat poza
+//     `chaseRadius` w PIERWSZYM segmencie nie dowodzi juz, ze wszyscy dalsi tez sa poza zasiegiem
+//     -- `break` gubi caly drugi segment. Scenariusz konstruuje dokladnie ta sytuacje:
+//     jednostka NIE raid-ready (brak campId, brak obozow -> chaseRadius = aggroRadius = 6),
+//     jedyny zwykly kandydat (miasto BRONIONE D) ma d=20 > 6, a jedyny kandydat "ostatniej deski"
+//     (miasto A, juz odwiedzone, w pamieci `clearedCityIds`) ma d=1 <= 6.
+//     Zmierzone: `continue` -> 1 komenda `move` na (11,1); `break` -> 0 komend. Dowod mutacyjny 9e.
+// ==============================================================================================
+{
+  const map = makeMap(40, 3);
+  const A = city('A', 11, 1);       // niebronione, JUZ ODWIEDZONE -> segment "ostatniej deski"
+  const D = city('D', 30, 1);       // bronione, zwykly kandydat, d=20 > chaseRadius
+  const guardD = enemy('gD', 30, 1);
+  const u = barb('bSeg', 10, 1, { clearedCityIds: ['A'] }); // brak campId i obozow -> NIE raid-ready
+  const P = Object.assign({}, FALLBACK_BARB_PARAMS, { aggroRadius: 6 });
+  const cmds = decideBarbarianMoves([u], [guardD], [A, D], [], map, P, undefined, 'normal');
+  eq(cmds.length, 1,
+    '11 (dwa segmenty listy celow): jednostka NIE raid-ready ze zwyklym kandydatem POZA ' +
+    `chaseRadius i kandydatem "ostatniej deski" W zasiegu dostaje DOKLADNIE 1 komende (got ${cmds.length}) ` +
+    '-- przy `break` zamiast `continue` petla konczy sie na kandydacie D i komend jest 0');
+  eq(cmds[0]?.type, 'move', '11 (dwa segmenty listy celow): komenda to ruch');
+  if (cmds[0]?.type === 'move') {
+    eq(`${cmds[0].toQ},${cmds[0].toR}`, '11,1',
+      '11 (dwa segmenty listy celow): ruch idzie na kandydata z DRUGIEGO segmentu (miasto A, d=1), ' +
+      'nie na nieosiagalnego w zasiegu kandydata D');
+  }
 }
 
 // ==============================================================================================
@@ -374,7 +541,7 @@ if (!process.argv.includes('--self-check-skip-mutation')) {
     eq(n, 1, '9a mutacja-setup: warunek resetu odnaleziony DOKLADNIE RAZ w barbarians.ts');
     if (n === 1) expectFails(ORIG.replace(NOWY, STARY),
       '9a: warunek resetu cofniety do wersji rundy 5 -- jednostka znow krazy miedzy niebronionymi',
-      /FAIL:\s+[123] /);
+      /FAIL:\s+(10 |[123] )/);
   }
 
   // 9b. Cofniecie JEDNEJ REGULY: przywrocenie bramki trudnosci -- sekcja 4 (bit-identycznosc) i
@@ -406,6 +573,22 @@ if (!process.argv.includes('--self-check-skip-mutation')) {
       '9c (M2b): etykietowanie ostrzejsze niz runtime -- w pelni osiagalny cel za sciana Wzgorz ' +
       'odrzucony PRZED proba Dijkstry',
       /FAIL:\s+7 /);
+  }
+
+  // 9e. Cofniecie `continue` -> `break` w petli kandydatow: sekcja 11 MUSI zaczerwienic.
+  //     (Zarzut 4 Evaluatora, runda 1: trzecia czesc naprawy byla bez pokrycia -- mutacja
+  //     odwrotna dawala komplet zielony, bo we WSZYSTKICH dotychczasowych scenariuszach
+  //     jednostka byla raid-ready i `chaseRadius=Infinity` czynil oba segmenty nierozroznialnymi.)
+  console.log('-- 9e / mutacja: `continue` cofniete do `break` w petli kandydatow --');
+  {
+    const NOWY = '      if (cand.d > chaseRadius) continue;';
+    const STARY = '      if (cand.d > chaseRadius) break;';
+    const n = ORIG.split(NOWY).length - 1;
+    eq(n, 1, '9e mutacja-setup: linia `if (cand.d > chaseRadius) continue;` odnaleziona DOKLADNIE RAZ');
+    if (n === 1) expectFails(ORIG.replace(NOWY, STARY),
+      '9e: `break` zamiast `continue` -- pierwszy kandydat poza chaseRadius ucina caly segment ' +
+      '"ostatniej deski ratunku", jednostka nie dostaje zadnej komendy',
+      /FAIL:\s+11 /);
   }
 
   // 9d. M3 -- cofniecie fallbacku `unitComp === undefined`: sekcja 8 MUSI zaczerwienic.

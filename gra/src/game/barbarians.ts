@@ -1924,9 +1924,18 @@ export function decideBarbarianMoves(
         // miasto cywilizacji na planszy jest niebronione I juz odwiedzone przez te jednostke.
         // Wtedy nie ma dokad isc dalej i "kolejne okrazenie" jest jedynym sensownym
         // zachowaniem -- ten sam fallback `civCitiesBase` co od rundy 2 dziala w TEJ SAMEJ
-        // turze. Guard `civCitiesBase.length > 0` chroni przed resetowaniem w kolko na planszy
-        // BEZ zadnego miasta cywilizacji (pusta lista dawalaby `filtered.length === 0` co ture,
-        // reset bez niczego realnego do zresetowania).
+        // turze. Guard `civCitiesBase.length > 0` jest OBRONNY, nie behawioralny --
+        // SPROSTOWANIE (runda 1, obrona; poprzednia wersja twierdzila, ze "chroni przed
+        // resetowaniem w kolko", czyli przypisywala mu skutek, ktorego zaden pomiar nie
+        // pokazuje). Na planszy BEZ zadnego miasta cywilizacji `filtered.length === 0` jest
+        // prawda co ture, wiec bez guarda reset odpalalby sie co ture -- ale `clearedSet` jest
+        // wtedy z reguly pusty i przypisanie nie zmienia niczego obserwowalnego. Zmierzone:
+        // usuniecie guarda (mutacja M-E3 Evaluatora) nie zaczerwienia ZADNEJ bramki rodziny
+        // barbarzyncow -- barbarzyncy-krazenie, barb-city-behavior i barbarians-test zostaja
+        // zielone. Guard zostaje jako zabezpieczenie przed skroceniem NIEPUSTEJ pamieci do
+        // jednego wpisu, gdy wszystkie miasta cywilizacji znikaja z listy (np. zostaja przejete
+        // przez barbarzyncow i wypada je filtr `isBarbarian` wyzej) -- to jest jedyne, co robi,
+        // i wynika to z odczytu warunku, nie z pomiaru.
         //
         // ZACHOWANY z rundy 6 (F1-LIVELOCK): reset czysci do `[ostatnio odwiedzone]`, nie do
         // `[]`. Przy DOKLADNIE 1 miescie niebronionym i 0 bronionych czyszczenie do `[]`
@@ -1944,10 +1953,30 @@ export function decideBarbarianMoves(
         // odrzuca je bez Dijkstry, petla celow konczy sie bez kandydata, a `if (raidReady)
         // continue;` nizej pomija krok 4 (dryf do obozu) -- TRWALE zamrozenie bez komend.
         // Zamieniony blad tez byl bledem: przed runda 6 byl tam 3-turowy livelock, runda 6
-        // zamienila go na zamrozenie. TA runda NIE zmienia tego rezimu ani na lepsze, ani na
-        // gorsze -- zweryfikowane wykonaniem: logi komend przed/po sa BIT-IDENTYCZNE (sekcja 6
-        // bramki barbarzyncy-krazenie-test.cjs mierzy to jawnie, bez asercji "0 komend jest
-        // ok" -- nie przypinamy bledu jako oczekiwanego zachowania).
+        // zamienila go na zamrozenie.
+        //
+        // SPROSTOWANIE (runda 1, obrona -- poprzednia wersja tego akapitu twierdzila, ze "logi
+        // komend przed/po sa BIT-IDENTYCZNE"; to byla NIEPRAWDA i zostalo obalone trzema
+        // niezaleznymi pomiarami). Zmierzone wykonaniem, plansza 70x5, sciana morza q=44,
+        // niebronione q=6/16/26 r=2, bronione q=50 r=2 (za sciana), jednostka osierocona
+        // raid-ready, 300 tur, BASE (`022b82aa`) vs HEAD, md5 logu komend:
+        //   2 niebronione, normal/hard: BASE `cd7cef7e70` (241 realnych zmian pozycji, 29 tur
+        //     bez komendy) vs HEAD `00e2ab78d0` (11 realnych zmian pozycji, 0 tur bez komendy).
+        //   3 niebronione, normal/hard: BASE `b9314d677b` (260 / 13) vs HEAD `c73be52345` (22 / 0).
+        //   1 niebronione, normal/hard: BASE `c11f299bdd` (3 / 296) vs HEAD `7d234f1a96` (3 / 0).
+        // Logi NIE sa bit-identyczne w zadnym z tych wierszy -- ta runda ZMIENIA ten rezim.
+        //
+        // CO DOKLADNIE sie zmienia i czego to NIE naprawia: znika krazenie (BASE odwiedza kazde
+        // niebronione miasto wielokrotnie, HEAD dokladnie raz) i znika liczba tur BEZ KOMENDY
+        // (29/13/296 -> 0). NIE znika bezruch: po odwiedzeniu ostatniego osiagalnego miasta
+        // jednostka HEAD wydaje co ture komende `move` na heks tego miasta i -- na easy/normal,
+        // gdzie silnik takiego wejscia nie dopuszcza (canUnitOccupyCityHex) -- stoi w miejscu
+        // (1 unikalna pozycja w ostatnich 60 turach). Bezczynnosc zostala zamieniona na komende
+        // bez skutku ruchowego; na `hard` ta sama komenda jest realnym przejeciem pustego miasta
+        // (P-BARBARZYNCY-PUSTE-MIASTO-PRZEJECIE-Q1=B), wiec skutek zalezy od poziomu trudnosci
+        // SILNIKA, nie od wyboru celu tutaj. Trwaly bezruch po wyczerpaniu osiagalnych celow to
+        // nadal `if (raidReady) continue` -- OSOBNY, WCIAZ OTWARTY temat, ktorego ta runda NIE
+        // domyka i nie oglasza domknietym.
         // / EN: P-BARBARZYNCY-KRAZENIE-NIEBRONIONE-Q1 (ROUND 1, owner's binding ECHO
         // 2026-09-05): the RESET CONDITION is now "no other target left at all", not "I have
         // visited every undefended city". The reset clears the visited-city memory, so every
@@ -1982,9 +2011,17 @@ export function decideBarbarianMoves(
         // on the board is undefended AND already visited by this unit. There is then nowhere
         // else to go and "another lap" is the only sensible behaviour -- the same
         // `civCitiesBase` fallback as since round 2 applies within the SAME turn. The
-        // `civCitiesBase.length > 0` guard prevents resetting every single turn on a board with
-        // NO civ city at all (an empty list would make `filtered.length === 0` true every turn,
-        // resetting a set with nothing real to reset).
+        // `civCitiesBase.length > 0` guard is DEFENSIVE, not behavioural -- CORRECTION (round 1,
+        // defence; the previous wording claimed it "prevents resetting over and over", i.e. it
+        // attributed an effect no measurement shows). On a board with NO civ city at all
+        // `filtered.length === 0` holds every turn, so without the guard the reset would fire
+        // every turn -- but `clearedSet` is then normally empty and the assignment changes
+        // nothing observable. Measured: removing the guard (the Evaluator's M-E3 mutation)
+        // reddens NO gate in the barbarian family -- barbarzyncy-krazenie, barb-city-behavior
+        // and barbarians-test all stay green. The guard remains as a safeguard against
+        // truncating a NON-EMPTY memory to a single entry when every civ city drops off the
+        // list (e.g. captured by barbarians and filtered out by `isBarbarian` above) -- that is
+        // all it does, and it is read off the condition, not backed by a measurement.
         //
         // KEPT from round 6 (F1-LIVELOCK): the reset clears to `[most-recently-visited]`, not
         // to `[]`. With EXACTLY 1 undefended city and 0 defended, clearing to `[]` produced a
@@ -2002,13 +2039,41 @@ export function decideBarbarianMoves(
         // filter rejects it without Dijkstra, the target loop ends with no candidate, and
         // `if (raidReady) continue;` below skips step 4 (drift to camp) -- a PERMANENT freeze
         // with no commands. The swapped bug was a bug too: before round 6 that regime held a
-        // 3-turn livelock, round 6 turned it into a freeze. THIS round changes that regime
-        // neither for better nor worse -- verified by execution: the before/after command logs
-        // are BIT-IDENTICAL (section 6 of barbarzyncy-krazenie-test.cjs measures this
-        // explicitly, without asserting "0 commands is fine" -- we do not pin a bug as expected
-        // behaviour).
-        const lastVisited = clearedSet[clearedSet.length - 1];
-        unit.clearedCityIds = lastVisited !== undefined ? [lastVisited] : [];
+        // 3-turn livelock, round 6 turned it into a freeze.
+        //
+        // CORRECTION (round 1, defence -- the previous version of this paragraph claimed the
+        // before/after command logs are "BIT-IDENTICAL"; that was FALSE and was refuted by three
+        // independent measurements). Measured by execution, 70x5 board, sea wall at q=44,
+        // undefended at q=6/16/26 r=2, defended at q=50 r=2 (behind the wall), orphaned
+        // raid-ready unit, 300 turns, BASE (`022b82aa`) vs HEAD, md5 of the command log:
+        //   2 undefended, normal/hard: BASE `cd7cef7e70` (241 real position changes, 29 turns
+        //     with no command) vs HEAD `00e2ab78d0` (11 real position changes, 0 such turns).
+        //   3 undefended, normal/hard: BASE `b9314d677b` (260 / 13) vs HEAD `c73be52345` (22 / 0).
+        //   1 undefended, normal/hard: BASE `c11f299bdd` (3 / 296) vs HEAD `7d234f1a96` (3 / 0).
+        // The logs are NOT bit-identical on any of those rows -- this round DOES change the regime.
+        //
+        // WHAT exactly changes, and what it does NOT fix: the circling disappears (BASE visits
+        // each undefended city many times, HEAD exactly once) and so do the turns with NO command
+        // (29/13/296 -> 0). The standstill does NOT: after visiting the last reachable city the
+        // HEAD unit issues a `move` onto that city's hex every turn and -- on easy/normal, where
+        // the engine refuses that entry (canUnitOccupyCityHex) -- stays put (1 unique position
+        // over the last 60 turns). Idleness was traded for a command with no movement effect; on
+        // `hard` that same command is a real capture of an empty city
+        // (P-BARBARZYNCY-PUSTE-MIASTO-PRZEJECIE-Q1=B), so the effect depends on the ENGINE's
+        // difficulty rule, not on target selection here. The permanent standstill once reachable
+        // targets are exhausted is still `if (raidReady) continue` -- a SEPARATE, STILL-OPEN
+        // topic that this round does NOT close and does not claim to.
+        // ZARZUT 6 (runda 1, obrona): galaz `: []` byla MARTWA i zostala usunieta. Dowod z
+        // warunku wyzej: reset odpala sie wylacznie przy `filtered.length === 0 &&
+        // civCitiesBase.length > 0`. `filtered` puste znaczy, ze KAZDE miasto z `civCitiesBase`
+        // jest niebronione I jest w `clearedSet`; skoro `civCitiesBase` jest niepuste, to
+        // `clearedSet` tez jest niepuste, wiec `clearedSet[clearedSet.length - 1]` NIGDY nie
+        // jest `undefined` w tym miejscu. / EN: the `: []` branch was DEAD and has been removed.
+        // Proof from the condition above: the reset fires only when `filtered.length === 0 &&
+        // civCitiesBase.length > 0`; an empty `filtered` means EVERY city in `civCitiesBase` is
+        // undefended AND in `clearedSet`, so a non-empty `civCitiesBase` implies a non-empty
+        // `clearedSet` -- the last element is never `undefined` here.
+        unit.clearedCityIds = [clearedSet[clearedSet.length - 1]!];
       }
       // Fallback niezmieniony od rundy 2 (potwierdzony przez 3 rundy Evaluatorów):
       // gdy przefiltrowana lista wyszłaby pusta, filtr się NIE stosuje (pełna lista
@@ -2086,11 +2151,18 @@ export function decideBarbarianMoves(
     // bronionym-nieosiagalnym w `filtered`, a `if (raidReady) continue;` nizej pomija krok 4
     // (dryf do obozu), wiec nie wydawalaby juz ZADNEJ komendy. Zmierzone na 300 turach: 2
     // niebronione + 1 bronione nieosiagalne, jednostka raid-ready -- bez tej listy 287/300 tur
-    // bezczynnosci, z nia 0. To jest dokladnie tryb "zamiana jednego bledu na drugi", ktory
-    // runda 6 popelnila w tym samym rezimie (livelock -> zamrozenie); tutaj domykamy go zamiast
-    // powtorzyc. Przy okazji znika te samo zamrozenie w rezimie "1 niebronione osiagalne + >=1
-    // bronione nieosiagalne" (296/300 tur bezczynnosci przed, 0 po) -- ten, ktory werdykt
-    // zbiorczy rundy 6 kazal jawnie udokumentowac. NIE jest to naprawa `if (raidReady) continue`
+    // bezczynnosci, z nia 0.
+    // SPROSTOWANIE ZAKRESU (runda 1, obrona): "0 tur bezczynnosci" znaczy DOKLADNIE tyle, ze
+    // komenda jest wydawana co ture -- NIE znaczy, ze jednostka sie porusza. Zmierzone w tym
+    // samym rezimie: po odwiedzeniu ostatniego OSIAGALNEGO miasta jednostka wydaje co ture
+    // komende `move` na jego heks i na easy/normal stoi w miejscu (1 unikalna pozycja w
+    // ostatnich 60 turach, 11 realnych zmian pozycji na 300 tur). Ta lista USUWA KRAZENIE i
+    // usuwa tury bez komendy; NIE usuwa bezruchu. Zdanie "zamrozenia znikaja" bylo overclaimem
+    // i zostalo stad usuniete. To samo dotyczy rezimu "1 niebronione osiagalne + >=1 bronione
+    // nieosiagalne" (296/300 tur bez komendy przed, 0 po -- przy 3 realnych zmianach pozycji w
+    // OBU przypadkach): werdykt zbiorczy rundy 6 kazal ten rezim jawnie UDOKUMENTOWAC i to jest
+    // tutaj zrobione, ale nie jest on tym samym zamkniety.
+    // NIE jest to naprawa `if (raidReady) continue`
     // (osobny, wciaz otwarty temat): gdy NIE MA zadnego osiagalnego miasta -- takze wsrod juz
     // odwiedzonych -- jednostka raid-ready nadal nie dostaje komendy, dokladnie jak dotad.
     // / EN: LAST RESORT. Cities rejected SOLELY by the `clearedCityIds` memory (ones this unit
@@ -2104,11 +2176,18 @@ export function decideBarbarianMoves(
     // unreachable defended one in `filtered`, and `if (raidReady) continue;` below skips step 4
     // (drift to camp), so it would issue NO command at all. Measured over 300 turns: 2
     // undefended + 1 unreachable defended, raid-ready unit -- 287/300 idle turns without this
-    // list, 0 with it. That is exactly the "swap one bug for another" mode round 6 committed in
-    // this same regime (livelock -> freeze); here we close it instead of repeating it. As a
-    // by-product the same freeze disappears in the "1 undefended reachable + >=1 defended
-    // unreachable" regime (296/300 idle turns before, 0 after) -- the one the round-6 collective
-    // verdict asked to be documented explicitly. This is NOT a fix for `if (raidReady) continue`
+    // list, 0 with it.
+    // SCOPE CORRECTION (round 1, defence): "0 idle turns" means EXACTLY that a command is issued
+    // every turn -- it does NOT mean the unit moves. Measured in the same regime: after visiting
+    // the last REACHABLE city the unit issues a `move` onto that city's hex every turn and on
+    // easy/normal stays put (1 unique position over the last 60 turns, 11 real position changes
+    // across 300 turns). This list REMOVES THE CIRCLING and removes the turns with no command;
+    // it does NOT remove the standstill. The sentence "the freeze disappears" was an overclaim
+    // and has been removed from here. The same holds for the "1 undefended reachable + >=1
+    // defended unreachable" regime (296/300 turns with no command before, 0 after -- with 3 real
+    // position changes in BOTH cases): the round-6 collective verdict asked for that regime to be
+    // DOCUMENTED explicitly, which is done here, but it is not thereby closed.
+    // This is NOT a fix for `if (raidReady) continue`
     // (a separate, still-open topic): when NO city is reachable at all -- including the already
     // visited ones -- a raid-ready unit still gets no command, exactly as before.
     const consideredCityIds = new Set(civCities.map(c => c.id));

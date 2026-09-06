@@ -1350,32 +1350,6 @@ if (!process.argv.includes('--self-check-skip-mutation')) {
     return mutantFailed;
   }
 
-  /**
-   * P-BARBARZYNCY-KRAZENIE-NIEBRONIONE-Q1 (runda 1): odwrotnosc expectSelfCheckFails --
-   * uruchamia podproces z podmieniona trescia i wymaga, zeby przeszedl ZIELONO. Sluzy do
-   * przypiecia RÓWNOWAŻNOŚCI dwóch wariantów jednego fragmentu kodu (patrz USTERKA 1 nizej):
-   * gdy przyszla zmiana sprawi, ze warianty przestana byc rownowazne, ta asercja zaczerwieni
-   * i zmusi do ponownego przemyslenia, zamiast po cichu zostawic nieprawdziwy komentarz.
-   */
-  function expectSelfCheckPasses(mutations, label) {
-    const backups = new Map();
-    for (const [p] of mutations) backups.set(p, fs.readFileSync(p, 'utf8'));
-    let ok = false;
-    try {
-      for (const [p, content] of mutations) fs.writeFileSync(p, content, 'utf8');
-      execSync(`node ${JSON.stringify(__filename)} --self-check-skip-mutation`, {
-        cwd: __dirname, stdio: 'pipe', timeout: 60000,
-      });
-      ok = true;
-    } catch (e) {
-      ok = false;
-    } finally {
-      for (const [p, orig] of backups) fs.writeFileSync(p, orig, 'utf8');
-    }
-    assert(ok, `rownowaznosc [${label}] potwierdzona: podproces self-check przechodzi ZIELONO z podmienionym wariantem`);
-    return ok;
-  }
-
   console.log('\n-- Sekcja 9 / dowód mutacyjny: cofnięcie CAŁEJ naprawy RUNDY 4 do stanu RUNDY 3 --');
   {
     const filterStartMarker = 'if (skipDefenselessCities) {';
@@ -1494,37 +1468,49 @@ if (!process.argv.includes('--self-check-skip-mutation')) {
   }
 
   // ----------------------------------------------------------------------------------------
-  // 13. USTERKA 1 (runda 6) PRZEKWALIFIKOWANA na dowód RÓWNOWAŻNOŚCI --
-  //    P-BARBARZYNCY-KRAZENIE-NIEBRONIONE-Q1, runda 1. Do rundy 7 mutacja "cofnij F1-LIVELOCK do
-  //    `unit.clearedCityIds = []`" byla lapana czerwono przez sekcje 6f. Po zmianie warunku resetu
-  //    (reset dopiero gdy NIE ZOSTAL zaden inny cel) ta mutacja jest ZACHOWANIOWO NEUTRALNA i
-  //    ZADNA sekcja jej nie lapie -- zweryfikowane WYKONANIEM, nie rozumowaniem: podproces z
-  //    mutacja przechodzi 143/143. Powod: reset odpala sie juz tylko wtedy, gdy `filtered` jest
-  //    puste (wszystkie miasta niebronione i odwiedzone), a wtedy fallback `civCitiesBase` i tak
-  //    daje pelna liste w TEJ SAMEJ turze, zas w turze nastepnej petla celow i tak przeskakuje
-  //    zablokowany heks miasta, przy ktorym jednostka stoi -- wiec "[] " i "[ostatnie]" prowadza
-  //    do tej samej komendy. Zamiast usunac dowod (to byloby oslabienie bramki) albo udawac, ze
-  //    mutant jest lapany (to byloby klamstwo), przypinamy FAKT: warianty sa rownowazne. Gdy
-  //    przyszla runda to zmieni, ta asercja zaczerwieni i zmusi do decyzji, czy `[ostatnie]`
-  //    nadal ma sens. Kod produkcyjny NIE jest zmieniany ta runda -- refinement rundy 6 zostaje.
+  // 13. USTERKA 1 (runda 6) -- ASERCJA PRZESLANKI zamiast dowodu mutacyjnego.
+  //    P-BARBARZYNCY-KRAZENIE-NIEBRONIONE-Q1, runda 1, wersja po obronie (zarzut 6 Evaluatora).
+  //
+  //    HISTORIA. Do rundy 7 mutacja "cofnij F1-LIVELOCK do `unit.clearedCityIds = []`" byla
+  //    lapana czerwono przez sekcje 6f. Po zmianie warunku resetu (reset dopiero, gdy NIE
+  //    ZOSTAL zaden inny cel) ta mutacja stala sie ZACHOWANIOWO NEUTRALNA. Zmierzone dwoma
+  //    niezaleznymi przebiegami: (i) podproces self-check z mutantem przechodzi w calosci;
+  //    (ii) osobny harness na planszy 0 BRONIONYCH x {2,3} niebronione, jednostka raid-ready,
+  //    120 tur -- `[ostatnie]` i `[]` daja IDENTYCZNE liczby (tury bez komendy 0/0, realne
+  //    zmiany pozycji 97/104, przyjazdy 6/6 i 3/5/3, unikalne pozycje 9/29).
+  //    Powod: reset odpala sie juz tylko wtedy, gdy `filtered` jest puste, a wtedy fallback
+  //    `civCitiesBase` daje pelna liste w TEJ SAMEJ turze; w turze nastepnej zapis "arrival"
+  //    natychmiast dopisuje z powrotem miasto, przy ktorym jednostka fizycznie stoi -- oba
+  //    warianty zbiegaja sie w jednej turze.
+  //
+  //    PIERWSZA PROBA TEJ RUNDY BYLA ZLA i zostala wycofana: sekcja wolala `expectSelfCheckPasses`,
+  //    czyli WYMAGALA, zeby mutant byl ZIELONY. To odwraca sens bramki -- gdyby przyszla runda
+  //    dolozyla pokrycie i zaczela mutanta lapac, asercja zaczerwienialaby za DODANIE pokrycia.
+  //
+  //    CO ROBI TERAZ. Przypina PRZESLANKE, z ktorej rownowaznosc wynika, i tylko ja: warunek
+  //    resetu w barbarians.ts jest dokladnie `filtered.length === 0 && civCitiesBase.length > 0`,
+  //    a przypisanie resetu nie ma juz martwej galezi `: []` (przy tym warunku `clearedSet` jest
+  //    z definicji NIEPUSTY, wiec ostatni element nigdy nie jest `undefined`). Kazda zmiana
+  //    ktoregokolwiek z tych dwoch miejsc czerwieni te sekcje i zmusza do ponownego zmierzenia,
+  //    czy `[ostatnie]` nadal jest rownowazne `[]`. Zadnego mutanta nie wymaga sie tu zielonym.
+  //    Wlasciwy dowod mutacyjny warunku resetu zyje w sekcji 10 tego pliku (kierunek: mutant MUSI
+  //    zaczerwienic) -- ta sekcja go nie zastepuje.
   // ----------------------------------------------------------------------------------------
-  console.log('-- USTERKA 1 (przekwalifikowana) / dowód równoważności: "[]" vs "[ostatnie odwiedzone]" --');
+  console.log('-- USTERKA 1 / asercja przeslanki: warunek resetu i brak martwej galezi --');
   {
-    const USTERKA1_NEW =
-      'const lastVisited = clearedSet[clearedSet.length - 1];\n'
-      + '        unit.clearedCityIds = lastVisited !== undefined ? [lastVisited] : [];';
-    const USTERKA1_OLD = '        unit.clearedCityIds = [];';
-    const u1Occurrences = barbariansOriginal.split(USTERKA1_NEW).length - 1;
-    assert(u1Occurrences === 1,
-      `mutacja-setup USTERKA 1: naprawa F1-LIVELOCK (nowa wersja) odnaleziona DOKŁADNIE RAZ w barbarians.ts (got ${u1Occurrences})`);
-    if (u1Occurrences === 1) {
-      const mutatedU1 = barbariansOriginal.replace(USTERKA1_NEW, USTERKA1_OLD);
-      assert(mutatedU1 !== barbariansOriginal, 'mutacja-setup USTERKA 1: cofnięcie faktycznie zmieniło źródło barbarians.ts');
-      expectSelfCheckPasses(new Map([[barbariansSrcPath, mutatedU1]]),
-        'USTERKA 1 / KRAZENIE-Q1: "unit.clearedCityIds = []" vs "[ostatnie odwiedzone]" -- pod ' +
-        'warunkiem resetu "dopiero gdy nie zostal zaden inny cel" oba warianty daja IDENTYCZNE ' +
-        'komendy we wszystkich scenariuszach tego pliku');
-    }
+    const RESET_WARUNEK = 'if (filtered.length === 0 && civCitiesBase.length > 0) {';
+    const RESET_PRZYPISANIE = 'unit.clearedCityIds = [clearedSet[clearedSet.length - 1]!];';
+    const MARTWA_GALAZ = 'lastVisited !== undefined ? [lastVisited] : []';
+    assert(barbariansOriginal.split(RESET_WARUNEK).length - 1 === 1,
+      'USTERKA 1 (przeslanka a): warunek resetu w barbarians.ts to DOKLADNIE ' +
+      '`filtered.length === 0 && civCitiesBase.length > 0`, wystepuje raz -- to on gwarantuje, ze ' +
+      '`clearedSet` jest niepusty w chwili resetu, czyli ze `[ostatnie]` i `[]` sa rownowazne');
+    assert(barbariansOriginal.split(RESET_PRZYPISANIE).length - 1 === 1,
+      'USTERKA 1 (przeslanka b): przypisanie resetu to DOKLADNIE ' +
+      '`unit.clearedCityIds = [clearedSet[clearedSet.length - 1]!];`, wystepuje raz');
+    assert(!barbariansOriginal.includes(MARTWA_GALAZ),
+      'USTERKA 1 (przeslanka c): martwa galaz `lastVisited !== undefined ? [lastVisited] : []` ' +
+      'NIE wrocila do barbarians.ts -- przy warunku (a) jest nieosiagalna');
   }
 
   // ----------------------------------------------------------------------------------------
