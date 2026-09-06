@@ -18,22 +18,6 @@ import type { Difficulty } from './order';
 import { sameCultureCircle } from './diplomacy-display';
 import { clearCityCultureMix } from './society-inputs';
 
-interface RawParamRow {
-  easy: number;
-  normal: number;
-  hard: number;
-}
-
-function pick(
-  row: RawParamRow | undefined,
-  difficulty: Difficulty,
-  fallback: number,
-): number {
-  if (!row) return fallback;
-  const v = row[difficulty];
-  return typeof v === 'number' && Number.isFinite(v) ? v : fallback;
-}
-
 /** Udział własnej kultury < 50% — obca kultura dominuje. */
 export function isForeignCultureDominant(ownCultureShare: number): boolean {
   return ownCultureShare < 0.5;
@@ -178,18 +162,21 @@ export function conquestUnstableHappinessPenalty(
   return 0;
 }
 
-/** Kara Prawa gdy podbój niestabilny i brak garnizonu. */
+/**
+ * @deprecated R-PRAWO-PRZEBUDOWA-SKALI-Q1 D5 (właściciel 2026-09-05): kara
+ * `prawo_kara_podboj_bez_garnizonu` USUNIĘTA NA STAŁE — zawsze 0, ten sam wzorzec co
+ * `conquestUnstableHappinessPenalty` wyżej. Do usunięcia razem z wywołaniem w `main.ts`,
+ * gdy ten plik będzie wolny (main.ts poza allowlistą tego tematu, zakaz bezwzględny —
+ * patrz dyspozycje/autobot/runs/R-PRAWO-PRZEBUDOWA-SKALI-Q1/decision-abc.md).
+ */
 export function conquestNoGarrisonLawPenalty(
-  ownCultureShare: number,
-  foreignReligionDominant: boolean,
-  garnizonCount: number,
-  society: SocietyParamsLike | null | undefined,
-  difficulty: Difficulty = 'normal',
+  _ownCultureShare: number,
+  _foreignReligionDominant: boolean,
+  _garnizonCount: number,
+  _society: SocietyParamsLike | null | undefined,
+  _difficulty: Difficulty = 'normal',
 ): number {
-  if (garnizonCount > 0) return 0;
-  if (!isConquestUnstable(ownCultureShare, foreignReligionDominant)) return 0;
-  const pr = (society?.prawo ?? {}) as Record<string, RawParamRow>;
-  return pick(pr.prawo_kara_podboj_bez_garnizonu, difficulty, -3);
+  return 0;
 }
 
 /** Mnożnik ryzyka buntu gdy niestabilny podbój bez garnizonu (1 = brak zmiany). */

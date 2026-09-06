@@ -82,9 +82,13 @@ eq(M.luksusHappinessBonus(0, null, 'normal'), -10, 'luksus 0% -> -10 (fallback T
 eq(M.luksusHappinessBonus(90, null, 'normal'), 10, 'luksus 90% -> +10 (fallback TS)');
 eq(M.luksusHappinessBonus(45, null, 'normal'), 0, 'luksus 45% -> DOKŁADNIE 0 (fallback TS)');
 
-// Law garnizon
+// Law garnizon (society=null -> fallback TS, nie JSON)
+// R-PRAWO-PRZEBUDOWA-SKALI-Q1 (wlasciciel 2026-09-05): fallback prawMaxByEra era2 = 65
+// (D3b, dosuniete do kolumny normal), prawPctCap fallback = 170 (D7). 5 jednostek x 20 pkt
+// (fallback prawo_garnizon_per_jednostka) = 100 netto; 100/65*100 = 153,8% (bez ciecia na
+// starym cap=100 -- nowy cap 170 go nie tnie). Liczba PRZELICZONA, nie przepisana z pamieci.
 const law = M.computeLawBreakdown({ garnizonCount: 5, era: 2 }, null);
-eq(law.prawPct, 100, '5 jednostek -> PrawPct 100%');
+near(law.prawPct, 153.8, '5 jednostek, era 2, fallback TS -> PrawPct 153,8% (D3b+D7)', 0.05);
 
 // Pałac > 1 jednostka garnizonu (normal)
 const society = require('../data/society-params.json');
@@ -202,6 +206,13 @@ eq(M.porPctBand(6, 5), 'bunt', 'PorPct 6 >= crit 5 -> bunt not skrajny');
 // Nowe liczby to POMIAR na parametrach wlasciciela, a nie liczba dobrana pod bramke —
 // tolerancja +-4 p.p. i pasmo zostaja bez zmian, tak jak byly.
 //
+// R-PRAWO-PRZEBUDOWA-SKALI-Q1 (wlasciciel 2026-09-05) przestawil polowe Prawa tego samego
+// scenariusza: prawo_max_epoka era1 50->35/40/45 per trudnosc (D3), prawo_max_pop_wspolczynnik
+// 0,033/0,041/0,049->0,04 plasko (D4), prawo_pct_cap 100->170 (D7), obie kary za brak garnizonu
+// usuniete (D5, i tak nie dotyczyly tego scenariusza: garnizonCount=0 ale population=1 <
+// prog kary). Cele PONOWNIE PRZELICZONE (nie przepisane z pamieci, patrz pomiar w raporcie
+// Operatora rundy 1): 94,8/73,4/59,2 -> 107,1/80,4/61,9. Pasma bez zmian.
+//
 // UWAGA na wejscia: `haKult` / `haRel` to od G4 ZNORMALIZOWANY wskaznik [-1,+1], a nie punkty.
 // Poprzednie wartosci 3 / 2 / 1 (punkty starej skali) po zmianie wszystkie obcinaja sie do +1,
 // czyli oznaczaly to samo — dlatego scenariusze dostaja teraz jawnie udzial 1,0 (nowe miasto
@@ -215,9 +226,9 @@ eq(M.porPctBand(6, 5), 'bunt', 'PorPct 6 >= crit 5 -> bunt not skrajny');
     ownCultureShare: 1, ownReligionShare: 1,
   };
   const scenarios = [
-    { diff: 'easy', target: 94.8, band: 'Ład' },
-    { diff: 'normal', target: 73.4, band: 'Spokój' },
-    { diff: 'hard', target: 59.2, band: 'Napięcie' },
+    { diff: 'easy', target: 107.1, band: 'Ład' },
+    { diff: 'normal', target: 80.4, band: 'Spokój' },
+    { diff: 'hard', target: 61.9, band: 'Napięcie' },
   ];
   console.log('\n[D-START-OSIEDLE symulacja T1 pop=1, 100% wlasnej kultury i religii, bez garnizonu]\n');
   const zmierzone = [];
