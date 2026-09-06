@@ -5,8 +5,9 @@ RUNDA: 1/5
 DATA: 2026-09-05
 DOMAIN: GAME
 ŚCIEŻKA: A (Workflow)
-MODEL+EFFORT: Operator — Opus 5, effort high; Evaluator — Opus 5, effort high;
-Final Control — Opus 5, effort high.
+MODEL+EFFORT: Operator — Sonnet 5, effort medium; Evaluator — Sonnet 5, effort high;
+Final Control — Sonnet 5, effort high (SS5a regula bazowa — nie jest to temat wizualny,
+poprawione 2026-09-06, poprzednia wersja bledna).
 
 ## WYZWALACZ (właściciel, dosłownie)
 
@@ -179,3 +180,68 @@ ze statusem `DECISION_REQUIRED`. Raport ok. 400 słów PLUS tabela pokrycia i ta
 
 Operator → Evaluator → (Obrona, jeśli lista zarzutów niepusta) → koniec skryptu.
 Final Control osobnym wywołaniem Workflow. Integracja i deploy — ręką orkiestratora.
+
+## RATYFIKACJA ORKIESTRATORA (2026-09-06, odpowiedź na DECISION_REQUIRED #1-#4 rundy 1)
+
+Final Control rundy 1 zamknął się na `DECISION_REQUIRED`: pokrycie 39/42 działa
+(`chooseCityProduction` czyta z `availableProduction()`/katalogu, nie z zaszytej listy),
+ale zostawił cztery decyzje produktowe i jedno poważne, niepotwierdzone ryzyko
+(trwały „plateau" AI na jednostkach po 8 budynkach w symulacji proxy bez `canAfford`).
+Odpowiedzi właściciela:
+
+**#1 i #4 (13 zaszytych literałów id budynków w `chooseCityProduction` — 5 udokumentowanych
+dla fortyfikacji/priorytetu + 8 w logice konwerterów/deficytów surowców) — PRZYJĘTE JAKO
+UDOKUMENTOWANY WYJĄTEK.** Cel „nowy budynek nie wymaga linii w `ai.ts`" jest spełniony dla
+zwykłych budynków produkcyjnych; tych 13 to specjalne haki (fortyfikacja, konwertery), nie
+zwykła lista kandydatów do budowy. **Bez zmian kodu w rundzie 2** — zamknij jako rozstrzygnięte,
+wypisz w raporcie pełną listę 13 z uzasadnieniem per pozycja (dziedzictwo z rund 1, Obrony,
+Final Control). Pole w `buildings.json` (dla pełnej eliminacji ostatnich 8) **NIE jest
+zamawiane** — poza zakresem, nie rejestruj nawet jako osobny temat, chyba że sam znajdziesz
+w tym mocny powód.
+
+**#2 (P-AI-008 „major AI nigdy nie buduje Murów") — USUŃ REGUŁĘ CAŁKOWICIE, nie tylko
+zawężaj.** Dosłowna decyzja właściciela: „Usuńmy regułę „AI nigdy nie buduje murów"; to jest
+bez sensu. AI powinno budować mury, zwłaszcza w sytuacji, kiedy jest zagrożone. I zwłaszcza
+w miastach przygranicznych." Zakres pracy w tej rundzie:
+1. Usuń filtr `!opts.defensiveCopy` blokujący `'mury'` z kandydatów major AI (`ai.ts` ok.
+   l.1576-1578 wg Final Control) — Mury (i pochodne Fort/Baszta, które ich wymagają jako
+   prereq) wchodzą do normalnego punktowania po grupie „Wojsko i obrona", na równi z resztą.
+2. **Podnieś priorytet Murów, gdy miasto jest ZAGROŻONE** (użyj istniejącego sygnału
+   zagrożenia, tego samego co steruje inną logiką `underThreat` w `ai.ts` — znajdź go i
+   opisz, który to jest) — bonus do wyniku kandydata `'mury'`/`'fort'`/`'baszta'` w tym stanie,
+   nie sztywne odblokowanie tylko wtedy.
+3. **Podnieś priorytet Murów w miastach PRZYGRANICZNYCH** (sąsiadujących z terytorium innej
+   cywilizacji lub blisko krawędzi kontrolowanego obszaru — znajdź i użyj istniejącego
+   sposobu, w jaki gra już rozpoznaje „miasto przygraniczne", jeśli taki istnieje; jeśli nie
+   istnieje, zgłoś to jako `DECISION_REQUIRED`, nie wymyślaj nowej metryki samodzielnie).
+4. Miasta-państwa (`defensiveCopy`) już budują Mury bez zmian — nie dotykaj tej gałęzi.
+5. Dodaj/rozszerz asercje w bramce tematu i w rodzinie `ai-*` pilnujące: (a) major AI
+   buduje Mury pod zagrożeniem, (b) major AI NIE buduje Murów masowo bez powodu (nie chodzi
+   o to, żeby każde miasto zawsze stawiało Mury pierwsze), (c) miasto-państwo nietknięte.
+
+**#3 (priorytet Spichlerza) — PRZYWRÓĆ JAKO WYJĄTEK.** Właściciel: „Zadaj przywrócenia
+priorytetu Spichlerza jako wyjątku." Dodaj Spichlerz do listy udokumentowanych wyjątków
+(razem z Murami/Palisadą/Koszarami/Biblioteką/Akademią) z podniesionym priorytetem
+odtwarzającym jego dawną wczesną pozycję w kolejce budowy — pokaż to śladem z symulacji
+(ta sama metoda proxy co w rundach 1, esbuild bez Vite/Chromium, jawnie nazwana jako proxy,
+nie pełny silnik).
+
+**Kryterium 4 (pełna symulacja 150 tur w PRAWDZIWYM silniku, z realną ekonomią) —
+ODROCZONE, NIE BLOKUJE tej rundy.** Właściciel: „Możemy zrobić, ale nie w tej rundzie.
+Puścimy to dopiero na noc. Najpierw trzeba zamknąć inne tematy. Poza tym ja też to sprawdzę
+w PlayTeście." Runda 2 NIE musi dostarczyć tego dowodu, żeby dostać `PASS` — zamiast tego
+zarejestruj to jawnie w raporcie jako **otwarte ryzyko do zweryfikowania nocnym przebiegiem
+i osobiście przez właściciela w playteście**, nie jako zamknięte kryterium. Final Control
+rundy 2 ocenia to jako świadomie odroczone, nie jako brak.
+
+**NOWE (życzenie właściciela, poza formalnymi DECISION_REQUIRED, ale do wykonania w tej
+samej rundzie skoro i tak przeglądasz priorytety):** przygotuj w raporcie **pełną tabelę
+priorytetów wszystkich 42 budynków, per epoka**, pokazującą wynik/wagę grupy, jaką
+`chooseCityProduction` faktycznie im dziś przypisuje (po zmianach z tej rundy) — żeby
+właściciel mógł sam przejrzeć i ręcznie ustalić kolejność, zamiast zgadywać po pojedynczych
+zgłoszeniach jak Spichlerz. To jest DODATKOWY wytwór (jak tabela pokrycia/symulacji) —
+nie liczy się do limitu słów raportu.
+
+**NASTĘPNY KROK po tej ratyfikacji:** runda 2, ten sam Operator, ta sama gałąź. Po Final
+Control rundy 2 (jeśli PASS albo PASS z jawnie odroczonym kryterium 4) — integracja
+orkiestratora, natychmiast odblokowuje `R-PRAWO-PRZEBUDOWA-SKALI-Q1`.
