@@ -107,3 +107,29 @@ Nic, co blokuje ten temat na poziomie decyzji ABC. Dwie **blokady przyjęte i ni
 aż zostaną zamknięte: (a) twarda zależność kolejności deployu wobec
 `R-PRAWO-PRZEBUDOWA-SKALI-Q1`, (b) kolizja nazewnicza `prawo_garnizon*` /
 `society-breakdown.ts:638-647`. Szczegóły w `05-operator-runda3.md` §BLOKADY.
+
+---
+
+## Pytanie 4 — kolejność wydania Garnizonu wobec tematu Prawa (dopisane przez Final Control, runda 3, 2026-09-06)
+
+**STATUS: OTWARTE — jedyna niezamknięta pozycja tematu.**
+
+**Skąd się bierze:** blokada zgłoszona w rundzie 1, przyjęta, przenoszona przez rundy 2 i 3,
+nigdy nierozstrzygnięta. Ratyfikacja rundy 3 rozstrzygnęła trzy inne pozycje „DO DECYZJI
+CZŁOWIEKA" poprzedniego Final Control (martwy klik CivPedii, zasięg łatki AI, model roli),
+tej **nie**.
+
+**Co mówi kod:** `garnizon.baza` i `garnizon.przyrost` są w całości zerowe — cały efekt
+budynku to wartość Prawa, którą wprowadza dopiero `R-PRAWO-PRZEBUDOWA-SKALI-Q1`
+(`society-params.json`, `society-breakdown.ts`, `main.ts`, `cityPanel.ts` — wszystkie poza
+allowlistą tego tematu). Sekcja „Efekty" na karcie jest pusta.
+
+**Co to znaczy dla gracza, jeśli Garnizon wyjdzie pierwszy:** 60 pkt Pracy + 60 Drewna
+jednorazowo, potem 4 Pieniądza i −5 Drewna na turę — bez żadnej korzyści. Czysty koszt.
+
+**Pytanie:** Garnizon wchodzi do `main`/na ROBOCZĄ **przed** tematem Prawa (świadomie, jako
+budynek jeszcze bez efektu), czy czeka i jest wydany **razem z nim**?
+
+Poza tą jedną pozycją temat jest zamknięty: bramki zielone, diff w allowliście, liczby
+właściciela zamrożone asercjami, `tsc --noEmit` zielony. Werdykt i dowody:
+`08-final-control-runda3.md`.
