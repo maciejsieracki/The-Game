@@ -303,11 +303,18 @@ function partA() {
 //
 // DLACZEGO ASERCJA NA ŹRÓDLE, A NIE NA ZACHOWANIU: AI nie wybiera budynków
 // z `availableProduction`, tylko z list wpisanych ręcznie w `ai.ts` — a to
-// znaczy, że KAŻDY nowy budynek jest dla AI niewidoczny, dopóki ktoś nie dopisze
-// go do listy. Właściciel świadomie przyjął łatkę (ECHO: „Dopisać Garnizon do
-// listy AI od razu"), naprawa przyczyny jest osobnym tematem
-// `P-AI-LISTA-BUDYNKOW-ZASZYTA-NIE-Z-PRODUKCJI-Q1`. Ta asercja pilnuje, żeby
-// łatka nie wypadła przy pierwszym refaktorze `ai.ts` — bez niej zniknie po cichu.
+// znaczy, że KAŻDY nowy budynek jest dla takiej listy niewidoczny, dopóki ktoś
+// nie dopisze go ręcznie. Właściciel świadomie przyjął łatkę (ECHO: „Dopisać
+// Garnizon do listy AI od razu"), naprawa przyczyny jest osobnym tematem
+// (`R-AI-PRODUKCJA-Z-DOSTEPNYCH-BUDYNKOW-Q1` — przepiąć AI na
+// `availableProduction()`). Ta asercja pilnuje, żeby łatka nie wypadła przy
+// pierwszym refaktorze `ai.ts` — bez niej zniknie po cichu.
+//
+// R3-D (2026-09-06, runda 3): etykieta [AI3] brzmiała wcześniej „bez tego AI nigdy
+// go nie zbuduje" i to była NIEPRAWDA — sugerowała pokrycie dużego AI, którego ta
+// linia nie daje. Final Control rundy 2 wykazał to na kodzie. Etykieta poniżej mówi
+// dziś dokładnie tyle, ile asercja faktycznie pilnuje. Nie przywracaj starej wersji
+// i nie cytuj tej asercji jako dowodu parytetu gracz/AI.
 //
 // ZAKRES ŁATKI — CZYTAJ, ZANIM UZNASZ TO ZA „PARYTET GRACZ/AI": `infraOrder` leży
 // wewnątrz gałęzi `if (opts.defensiveCopy)`, a `defensiveCopy` ustawiane jest
@@ -333,7 +340,7 @@ function partAI() {
     .filter(Boolean);
   check('[AI2] sanity: parser wyłuskał REALNĄ listę, nie pustkę (studnia + adminBuilding + >=6 pozycji)',
     items.includes('studnia') && items.includes('adminBuilding') && items.length >= 6, items);
-  check('[AI3] `garnizon` JEST na liście infraOrder w ai.ts (bez tego AI nigdy go nie zbuduje)',
+  check('[AI3] `garnizon` JEST na liście budowy PAŃSTW-MIAST (`infraOrder`, gałąź `if (opts.defensiveCopy)`, ai.ts:1455) — asercja NIE mówi nic o cywilizacjach AI, te mają osobne listy i Garnizonu nadal nie widzą',
     items.includes('garnizon'), items);
   console.log(`[info] infraOrder = [${items.join(', ')}]`);
 }
@@ -361,6 +368,11 @@ function partWiki() {
   const bundle = JSON.parse(fs.readFileSync(WIKI_BUNDLE, 'utf8'));
   const entry = bundle.encyklopedia.find((e) => e.folder === 'budynki' && e.slug === 'garnizon');
   check('[W4] wygenerowany wikiBundle.json zawiera hasło budynki/garnizon', !!entry);
+  // [R3-E1] — patrz blok [R3-E] niżej. Stoi PRZED guardem świadomie: asercja na
+  // OBECNOŚĆ hasła musi się wykonać dokładnie wtedy, gdy hasła nie ma. Mutacja M2
+  // rundy 3 (usunięcie wpisu z bundla) pokazała, że za guardem byłaby nieosiągalna.
+  check('[R3-E1] hasło budynki/garnizon jest OBECNE w wygenerowanym wikiBundle.json (kryterium 3 w części wykonalnej)',
+    !!bundle.encyklopedia.find((e) => e.folder === 'budynki' && e.slug === 'garnizon'));
   if (!entry) return null;
   check('[W5] hasło w bundlu ma niepuste wikiS / wikiM / historia',
     entry.wikiS.length > 40 && entry.wikiM.length > 200 && entry.historia.length > 200,
@@ -375,6 +387,29 @@ function partWiki() {
     resolve('budynki', 'garnizon') === entry, (resolve('budynki', 'garnizon') || {}).slug);
   check('[W7] sanity: resolver NIE trafia dla nieistniejącego id (asercja nie jest zawsze-zielona)',
     resolve('budynki', 'garnizon-ktorego-nie-ma') === undefined);
+
+  // -------------------------------------------------------------------------
+  // [R3-E] ZASTĘPUJE ZDJĘTE KRYTERIUM „DZIAŁAJĄCY KLIK CIVPEDII" (runda 3).
+  //
+  // Kryterium 3 rundy 2 żądało zrzutu z żywego kliku „Więcej informacji (Civpedia)".
+  // Final Control udowodnił, że ten przycisk jest martwy dla WSZYSTKICH 42 budynków
+  // (`renderer.ts:378-382` ustawia atrybuty, listener `:434` łapie wyłącznie
+  // `button[data-entity-kind]`), więc defekt dotyczy całej rodziny kart, nie Garnizonu.
+  // Właściciel zdjął to kryterium z tego tematu i skierował do osobnego tematu na całą
+  // rodzinę kart. W zamian ratyfikacja rundy 3 zamawia asercję na to, co JEST w zakresie:
+  // hasło `garnizon` obecne w `wikiBundle.json` i z NIEPUSTĄ treścią.
+  // Te trzy asercje ([R3-E1] wyżej, [R3-E2]/[R3-E3] niżej) są celowo mocniejsze od
+  // [W4]/[W5]: sprawdzają treść po `trim()` (biały znak to nie treść) oraz brak
+  // wypełniacza zamiast tekstu.
+  // -------------------------------------------------------------------------
+  const pola = ['title', 'wikiS', 'wikiM', 'historia'];
+  const puste = pola.filter((k) => typeof entry[k] !== 'string' || entry[k].trim().length === 0);
+  check('[R3-E2] treść hasła jest NIEPUSTA po trim() w każdym polu title/wikiS/wikiM/historia',
+    puste.length === 0, { puste });
+  const wypelniacz = pola.filter((k) => /\b(TODO|TBD|Lorem ipsum|placeholder|do uzupełnienia)\b/i.test(String(entry[k] || '')));
+  check('[R3-E3] treść hasła nie jest wypełniaczem (brak TODO/TBD/placeholder/„do uzupełnienia")',
+    wypelniacz.length === 0, { wypelniacz });
+
   return entry;
 }
 
