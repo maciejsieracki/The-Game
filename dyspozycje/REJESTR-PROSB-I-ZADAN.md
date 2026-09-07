@@ -6347,3 +6347,25 @@ tematu) — naprawione tym samym wzorcem, dokładnie klasa błędu, którą ta b
 (dowód, że meta-bramka faktycznie działa na żywym, rosnącym repo, nie tylko na zamrożonej
 bazie). Final Control (runda 2): PASS, własna bateria 10 mutacji (6 celowo czerwonych,
 4 celowo zielone) — zero rozbieżności z oczekiwaniem.
+
+## `P-ENTITYCARD-CIVPEDIA-KLIK-MARTWY-Q1` — GAME/wizualny — **ZINTEGROWANE 2026-09-07** (1 runda, commit `7d507ed6`)
+
+Przycisk „Więcej informacji (Civpedia)" na kartach encji nie robił nic — dla żadnej encji w
+grze (budynek/jednostka/technologia/ulepszenie, wszystkie tryby: dialog/inline/hover). Nowy
+szew `civpediaOpenGate.ts` (wzorzec 1:1 z istniejącym `unitCtxDockDiploGate.ts`) łączy
+przycisk z realnym `openEncyEntry` w `wikiHubHud.ts`. Brak hasła → czytelny komunikat
+„Civpedia nie ma jeszcze hasła [Nazwa]. Ten wpis czeka na napisanie." zamiast ciszy
+(jawnie odrzucony wariant: ciche ukrycie przycisku — zablokowany osobną bramką).
+
+Drugi, głębszy defekt znaleziony przy okazji: rozjazd slug↔id w trzecim stopniu dopasowania
+`findEncyEntryForGameId` mógłby otwierać CUDZE hasło zamiast żadnego — naprawiony i pokryty
+osobną asercją. Final Control zweryfikował wszystkie 4 zarzuty Evaluatora niezależnie
+(`ODDAL` każdy, trzy już naprawione przez Obronę) i dołożył pięć własnych mutacji. Pięć
+zrzutów z żywego Chromium obejrzanych wizualnie (nie tylko policzonych, zgodnie z wymogiem
+tematów wizualnych). Nowa bramka `entitycard-civpedia-klik-test.cjs` 71/0.
+
+---
+
+**Domyka kolejkę siedmiu tematów uruchomioną w pętli AutoBot 2026-09-07: bramki zastane,
+dyplo-testy, węzeł E audytu Prawo/Szczęście, design-zakładki, kolor-surowce, bramka-tmpdir,
+civpedia-klik — wszystkie zintegrowane, worktree usunięte.**
