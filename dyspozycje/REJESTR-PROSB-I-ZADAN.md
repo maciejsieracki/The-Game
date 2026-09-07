@@ -6071,5 +6071,34 @@ Bramki: nowa `wojna-wymuszona-parowanie-test.cjs` 47/0. Cała rodzina `forced-wa
 (17 plików, w tym dwa live-testy Playwright na realnym Chromium) zielona. `tsc --noEmit`
 czyste, 5 bramek referencyjnych zielone (213/19/33/13/6).
 
-Zamyka pozycję 3 kolejki `main.ts` (§2b). Następny w kolejce: `R-RELIGIA-KONWERSJA-PO-PODBOJU-Q1`,
-potem `P-PODBOJ-KOLEJKA-BUDYNEK-NIEMOZLIWY-Q1`.
+Zamyka pozycję 3 kolejki `main.ts` (§2b).
+
+## `R-RELIGIA-KONWERSJA-PO-PODBOJU-Q1` — GAME — **ZINTEGROWANE 2026-09-07** (1 runda, commit `1da7a6bd`)
+
+Obca religia po podboju nigdy nie stawała się dominująca — mechanizm konwersji
+(`convertViaTemple`) istniał, ale nigdy się nie odpalał, bo zdobywca dostawał **0%** obecności
+religijnej w mieście zdobytym w różnym okręgu kulturowym (`cityRelig` w ogóle nietknięty).
+ECHO właściciela: „Pełna symetria z kulturą" — nowa funkcja `onCityCapturedReligion`
+(`gra/src/game/culture-religion.ts`), strukturalny odpowiednik już istniejącego
+`onCityCapturedCulture` (`conquest-stability.ts`, **nietknięty**): ten sam okrąg kulturowy →
+100% nowego właściciela (bez zmian, już symetryczne), różny okrąg → inwersja `1-prevShare`
+przełożona na `ReligionState.counts`. `main.ts` woła nową funkcję **bezwarunkowo** (usunięty
+warunek blokujący religię w różnym okręgu — rdzeń zgłaszanego problemu).
+
+Evaluator własną kontrolą (miasto z 3+ religiami w `counts`) znalazł DWA potwierdzone błędy
+zachowania populacji w pierwszej wersji formuły: (1) suma po podziale mogła PRZEKROCZYĆ
+populację przy ≥3 „trzecich" religiach (naiwne zaokrąglanie bez zabezpieczenia), (2) suma
+mogła być MNIEJSZA niż populacja i dawać fałszywą 100% dominację, gdy `previousOwnerReligion`
+było `null` a `counts` puste (np. odbicie miasta z rąk barbarzyńców). Obrona naprawiła oba:
+metoda największej reszty (Hamiltona) zamiast „ostatni klucz dostaje resztę", jawna gałąź
+fallback zamiast cichego porzucenia populacji. Final Control: **PASS**, własny fuzz 3000
+prób (3-8 religii, losowa populacja) — zero naruszeń zachowania populacji.
+
+Potwierdzone przy okazji: punkt 3 ECHO (zniesienie binarnej kary religii) był już spełniony
+przez G4 `R-SZCZESCIE-PRZEBUDOWA-SKALI-Q1` (zintegrowane wcześniej) — zero zmian tam, tylko
+weryfikacja.
+
+Bramki: nowa `religia-konwersja-po-podboju-test.cjs` (12/0), `culture-religion-test.cjs`
+(65/0) bez regresji. `tsc --noEmit` czyste, 5 bramek referencyjnych zielone (213/19/33/13/6).
+
+Zamyka pozycję 4 kolejki `main.ts` (§2b). Ostatni w kolejce: `P-PODBOJ-KOLEJKA-BUDYNEK-NIEMOZLIWY-Q1`.
