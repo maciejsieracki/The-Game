@@ -688,6 +688,20 @@ export interface CityYieldContext {
    */
   premiaHandluTrasHandlowych?: number;
   /**
+   * R-HANDEL-DOCHOD-PRZEZ-PODZIAL-MIASTA-Q1 (ECHO wlasciciela, "Pelna integracja: przed
+   * mnoznikiem Wealth"): dochod DYSTANSOWY z tras handlowych tego miasta
+   * (computeTradeRouteIncomeByCity w trade-routes.ts, wolany w main.ts, przekazany przez
+   * advanceCityEconomy/previewCityEconomy jako tradeIncomeByCity.get(city.id)). PRZEDTEM
+   * dodawany OSOBNO do skarbca miasta PO mnozniku Wealth (pieniadzZTras w turn-economy.ts) --
+   * TERAZ wchodzi tu, do wspolnej puli handelBrutto, wiec przechodzi przez korupcje/Waluta+
+   * Mennica i podzial suwakami Handlu (nauka/zloto/luksus) DOKLADNIE tak jak reszta Daniny,
+   * a finalny pieniadz jest mnozony przez Wealth jak kazdy inny strumien miasta. Domyslnie 0
+   * (brak tras) tak, zeby istniejace literaly ctx zostaly wazne. NIE mylic z
+   * premiaHandluTrasHandlowych powyzej (osobny mechanizm -- premia budynkowa za SAM fakt
+   * posiadania trasy z budynkiem, nie dochod dystansowy).
+   */
+  dochodTrasHandlowych?: number;
+  /**
    * Zadanie 2 (2026-07-23): liczba Garncarni ZBUDOWANYCH W TYM MIESCIE (nie civ-wide).
    * Kazda dodaje +budynekGarncarniaBonusZywnosci (domyslnie 10%) do lokalnej Zywnosci
    * brutto, stackuje addytywnie: ×(1 + wartosc × liczbaGarncarni). Domyslnie 0 (brak
@@ -992,6 +1006,13 @@ export function cityYieldPerTurn(
   const premiaTrasHandlowych = ctx.premiaHandluTrasHandlowych ?? 0;
   if (premiaTrasHandlowych > 0) {
     handelBrutto += premiaTrasHandlowych;
+  }
+  // R-HANDEL-DOCHOD-PRZEZ-PODZIAL-MIASTA-Q1: dochod dystansowy z tras handlowych (patrz
+  // CityYieldContext.dochodTrasHandlowych) -- wpiety TU, wiec przechodzi przez korupcje/
+  // Waluta+Mennica (Step 5) i podzial suwakami Handlu (Step 6+7) razem z reszta Daniny.
+  const dochodTrasHandlowych = ctx.dochodTrasHandlowych ?? 0;
+  if (dochodTrasHandlowych > 0) {
+    handelBrutto += dochodTrasHandlowych;
   }
 
   // --- Step 5 (renumbered from 6): Apply corruption/waste -- dotyczy WYLACZNIE

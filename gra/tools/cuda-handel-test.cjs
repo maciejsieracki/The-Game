@@ -10,8 +10,11 @@
  *   2. Właściciel Z cudem -> dochód podniesiony o zadany %, konkretne liczby.
  *   3. Dwa cuda tego typu -> kumulacja ADDYTYWNA (rekomendacja właściciela),
  *      NIE mnożna.
- *   4. Bonus NIE dotyka Daniny (handelBrutto/pieniadzBrutto miasta identyczne
- *      z cudem i bez niego) -- SEDNO decyzji właściciela, najważniejsza asercja.
+ *   4. Bonus modyfikuje WYŁĄCZNIE tradeIncomeByCity (computeTradeRouteIncomeByCity) --
+ *      od R-HANDEL-DOCHOD-PRZEZ-PODZIAL-MIASTA-Q1 (2026-09-07) dochód z tras wchodzi do
+ *      wspólnej puli Daniny PRZED mnożnikiem Wealth, więc pieniadzBrutto miasta z cudem
+ *      RÓŚNIE wraz z podniesionym dochodem z tras -- to oczekiwane, NIE regresja; kontrola
+ *      to miasto f4 (bez cudu/zmiany), które musi zostać identyczne.
  *   5. Parytet AI: cud należący do AI daje AI dokładnie ten sam bonus (zero
  *      gałęzi po ownerId).
  *
@@ -161,10 +164,21 @@ const bonusPetraEra7 = M.sumWonderTradeRouteBonusForOwner(['petra'], 7, 'lad');
 eq(bonusPetraEra7, 0, '3c: Petra po absolut (era 7) -> bonus wygasl (0)');
 
 // ---------------------------------------------------------------------------
-// 4. SEDNO: bonus NIE dotyka Daniny (handelBrutto/pieniadzBrutto miasta) --
-//    identyczne z cudem i bez niego. To jest najwazniejsza asercja tego testu.
+// 4. SEDNO (ZAKTUALIZOWANE R-HANDEL-DOCHOD-PRZEZ-PODZIAL-MIASTA-Q1, ECHO wlasciciela
+//    "Pelna integracja: przed mnoznikiem Wealth"): PRZEDTEM pieniadzZTras ladowal
+//    CZYSTO do skarbca PO calej sciezce Daniny -- wiec cud podnoszacy TYLKO
+//    tradeIncomeByCity strukturalnie NIE MOGL dotknac pieniadzBrutto (handelBrutto).
+//    TERAZ dochod z tras wchodzi do WSPOLNEJ puli handelBrutto PRZED podzialem/Wealth
+//    (patrz cuda-handel-test historia gita dla starej wersji tej sekcji) -- wiec
+//    pieniadzBrutto miasta z cudem RESNIE wraz z podniesionym tradeIncomeByCity. To
+//    NIE jest regresja CUDA-HANDEL-01: cud dalej modyfikuje WYLACZNIE
+//    tradeIncomeByCity (dowod w sekcjach 1-3 powyzej, na poziomie
+//    computeTradeRouteIncomeByCity, calkowicie NIEZALEZNYM od advanceCityEconomy) --
+//    nie dostaje ZADNEGO dodatkowego mnoznika (Targowisko/civHandelMult/korupcja)
+//    ponad to, co dostalby kazdy inny dochod z tras tej samej wielkosci. Kontrolna
+//    asercja (f4, ktore nie ma cudu) dalej musi byc BAJT W BAJT identyczna.
 // ---------------------------------------------------------------------------
-console.log('\n-- 4. SEDNO: Danina (pieniadzBrutto) identyczna z cudem i bez cudu --');
+console.log('\n-- 4. Cud modyfikuje WYLACZNIE tradeIncomeByCity -- pelna integracja z Danina jest oczekiwana --');
 
 function buildMap() {
   const hexes = {};
@@ -199,16 +213,29 @@ function runTick4(tradeIncomeByCity) {
 const tick4Base = runTick4(new Map([['p4', 8], ['f4', 8]]));
 const tick4WithWonder = runTick4(new Map([['p4', 9], ['f4', 8]])); // TYLKO p4 (owner Petry) dostaje +1
 
-eq(tick4Base.p4.pieniadzBrutto, tick4WithWonder.p4.pieniadzBrutto,
-  '4: SEDNO -- pieniadzBrutto (Danina, PRZED dochodem z tras) miasta p4 IDENTYCZNE z cudem i bez niego');
+// KONTROLA (bez zmian): f4 nie posiada cudu ani zmienionego tradeIncomeByCity -- musi
+// zostac bajt w bajt identyczne, cud AI/gracza nie moze "przeciekac" do INNEGO miasta.
 eq(tick4Base.f4.pieniadzBrutto, tick4WithWonder.f4.pieniadzBrutto,
-  '4: pieniadzBrutto miasta f4 (obca cyw, bez zmiany dochodu) rowniez identyczne (kontrola)');
+  '4: pieniadzBrutto miasta f4 (obca cyw, bez zmiany dochodu) identyczne (kontrola, bez zmian)');
+eq(tick4Base.f4.pieniadz, tick4WithWonder.f4.pieniadz,
+  '4: pieniadz koncowy miasta f4 identyczny (kontrola, bez zmian)');
 
-// A dochod z tras (pieniadzZTras) i finalny pieniadz -- ROZNE, dokladnie o +1 (9 vs 8).
+// pieniadzZTras miasta p4 (RAPORTOWANA surowa kwota z tras, patrz komentarz w
+// turn-economy.ts) -- dalej wyzszy o dokladnie +1 (8->9, efekt cudu), NIEZMIENIONE
+// zachowanie computeTradeRouteIncomeByCity -- cud NIE zostal dotkniety tym tematem.
 eq(tick4WithWonder.p4.pieniadzZTras - tick4Base.p4.pieniadzZTras, 1,
-  '4: pieniadzZTras miasta p4 wyzszy o dokladnie +1 (8->9, efekt cudu) -- to jedyna roznica');
-eq(tick4WithWonder.p4.pieniadz - tick4Base.p4.pieniadz, 1,
-  '4: pieniadz koncowy (skarbiec) wyzszy o dokladnie +1 -- caly efekt idzie do Handlu, zero do Daniny');
+  '4: pieniadzZTras miasta p4 wyzszy o dokladnie +1 (8->9, efekt cudu, wzor tras nietkniety)');
+
+// NOWE (zastepuje strukturalna izolacje sprzed tego tematu): pieniadzBrutto (PRZED
+// mnoznikiem Wealth) miasta p4 TERAZ ROSNIE wraz z podniesionym tradeIncomeByCity --
+// dowod pelnej integracji z Danina (ECHO wlasciciela). Dokladna wielkosc splitu suwakami
+// Handlu/Targowiska jest juz sprawdzona osobno, z wieksza (nieokragla) kwota tras, w
+// trade-routes-income-test.cjs sekcja H2/H2a/H2b -- tu przy delcie=1 floor() moze
+// pochlonac przyrost Nauki/Luksusu, wiec sprawdzamy tylko monotonicznosc + brak spadku.
+assert(tick4WithWonder.p4.pieniadzBrutto >= tick4Base.p4.pieniadzBrutto,
+  `4: pieniadzBrutto miasta p4 NIE MALEJE z cudem (got ${tick4WithWonder.p4.pieniadzBrutto} vs baza ${tick4Base.p4.pieniadzBrutto}) -- dochod z tras jest juz w puli PRZED Wealth`);
+assert(tick4WithWonder.p4.pieniadz >= tick4Base.p4.pieniadz,
+  `4: pieniadz koncowy miasta p4 NIE MALEJE z cudem (got ${tick4WithWonder.p4.pieniadz} vs baza ${tick4Base.p4.pieniadz})`);
 
 // ---------------------------------------------------------------------------
 // 5. PARYTET AI: cud nalezacy do AI (ownerId != 0) daje AI DOKLADNIE ten sam bonus.

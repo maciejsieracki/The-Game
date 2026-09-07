@@ -1096,8 +1096,11 @@ export interface CityEconomyTick {
   /**
    * Handel E3: dochod dystansowy z tras handlowych dotykajacych to miasto
    * (trade-routes.ts computeTradeRouteIncomeByCity) -- juz WLICZONY w `pieniadz`
-   * powyzej (dodany PO mnozniku Wealth, wiec "czysto" do skarbca), a tutaj
-   * wystawiony osobno wylacznie do rozbicia w UI. 0 gdy miasto nie ma tras.
+   * powyzej PRZED mnoznikiem Wealth (wpiety do handelBrutto w economy.ts przez
+   * ctx.dochodTrasHandlowych, wiec przechodzi przez korupcje, Waluta+Mennica i
+   * suwak podzialHandlu razem z reszta Daniny -- NIE "czysto" do skarbca), a tutaj
+   * wystawiony osobno wylacznie do rozbicia w UI (surowa kwota trasy). 0 gdy
+   * miasto nie ma tras.
    */
   pieniadzZTras: number;
   // WIRE 4: oblezenie
@@ -2035,6 +2038,9 @@ export function previewCityEconomy(
       civHandelMult,
       civNaukaMult,
       premiaHandluTrasHandlowych: premiaTrasHandlowych,
+      // R-HANDEL-DOCHOD-PRZEZ-PODZIAL-MIASTA-Q1: HUD preview musi zgadzac sie z realnym
+      // tickiem (advanceCityEconomy) -- ten sam punkt wpiecia dochodu z tras (patrz tam).
+      dochodTrasHandlowych: tradeIncomeByCity.get(city.id) ?? 0,
       // Zadanie 2 (2026-07-23): Garncarnia +Zywnosc% LOKALNIE -- liczba sztuk w TYM miescie.
       liczbaGarncarni: runtimeBuiltIds.filter(id => id === 'garncarnia').length,
     };
@@ -2066,9 +2072,10 @@ export function previewCityEconomy(
       wealthParams,
       wealthImmunity ? { minPoziom: 1 } : undefined,
     );
+    // yld.pieniadz JUZ zawiera dochod z tras (ctx.dochodTrasHandlowych powyzej) -- patrz
+    // komentarz przy pieniadzPoWealth w advanceCityEconomy.
     const pieniadzPoWealth = Math.floor(yld.pieniadz * wt.mnoznik);
-    // Handel E3: dochod dystansowy z tras -- CZYSTO do skarbca, dodany PO mnozniku
-    // Wealth (nie jest mnozony przez niego).
+    // Wylacznie wartosc do raportu/UI (breakdown "dochod z tras") -- nie dodawac ponownie.
     const pieniadzZTras = tradeIncomeByCity.get(city.id) ?? 0;
 
     // NAPRAWA CACHE/LIVE (Maciej 2026-08-10, znalezisko B): PRZEDTEM czytano `city.podzialPracy`
@@ -2097,7 +2104,7 @@ export function previewCityEconomy(
         cityId: city.id,
         ownerId: city.ownerId,
         praca: yld.praca,
-        pieniadz: pieniadzPoWealth + pieniadzZTras,
+        pieniadz: pieniadzPoWealth,
         pieniadzBrutto: yld.pieniadz,
         zywnoscNetto: 0,
         nauka: yld.nauka,
@@ -2150,7 +2157,10 @@ export function previewCityEconomy(
       cityId: city.id,
       ownerId: city.ownerId,
       praca: yld.praca,
-      pieniadz: pieniadzPoWealth + pieniadzZTras,
+      // pieniadzPoWealth JUZ zawiera dochod z tras (ctx.dochodTrasHandlowych, wpiety w
+      // handelBrutto w economy.ts) -- NIE dodawac pieniadzZTras ponownie (podwojne liczenie,
+      // por. komentarz przy pieniadzPoWealth wyzej).
+      pieniadz: pieniadzPoWealth,
       pieniadzBrutto: yld.pieniadz,
       zywnoscNetto: foodBal.bilansLokalny,
       nauka: yld.nauka,
@@ -2597,6 +2607,10 @@ export function advanceCityEconomy(
       civHandelMult,         // RDY-01: bonus_zloto handel (Grecy +15%)
       civNaukaMult,          // RDY-01: bonus_nauka (Inkowie +15%)
       premiaHandluTrasHandlowych: premiaTrasHandlowych, // T4: suma 0.05*dochod per trasa Z BUDYNKIEM
+      // R-HANDEL-DOCHOD-PRZEZ-PODZIAL-MIASTA-Q1 (ECHO wlasciciela): dochod dystansowy z tras
+      // handlowych -- TERAZ wpiety do puli handelBrutto (economy.ts) zamiast dodawany osobno
+      // po mnozniku Wealth (patrz pieniadzZTras nizej -- juz TYLKO wartosc do raportu/UI).
+      dochodTrasHandlowych:  tradeIncomeByCity.get(city.id) ?? 0,
       // Zadanie 2 (2026-07-23): Garncarnia +Zywnosc% LOKALNIE -- liczba sztuk w TYM miescie.
       liczbaGarncarni:       runtimeBuiltIds.filter(id => id === 'garncarnia').length,
     };
@@ -2637,10 +2651,17 @@ export function advanceCityEconomy(
     // Zapisz nowy stan Wealth na obiekt City (dynamiczne pole)
     city.wealthState = { poziom: wt.poziom, pula: wt.pula };
 
-    // Pieniadz po mnozniku Wealth (KONTRAKT: mnozi strumien podatku, nie nauka/luksus)
+    // Pieniadz po mnozniku Wealth (KONTRAKT: mnozi strumien podatku, nie nauka/luksus).
+    // R-HANDEL-DOCHOD-PRZEZ-PODZIAL-MIASTA-Q1: yld.pieniadz JUZ zawiera dochod z tras
+    // (ctx.dochodTrasHandlowych powyzej, wpiety do handelBrutto w economy.ts) -- wiec ten
+    // mnoznik teraz obejmuje TAKZE dochod z tras, zgodnie z ECHO "Pelna integracja: przed
+    // mnoznikiem Wealth".
     const pieniadzPoWealth = Math.floor(yld.pieniadz * wt.mnoznik);
-    // Handel E3: dochod dystansowy z tras -- CZYSTO do skarbca, dodany PO mnozniku
-    // Wealth (nie jest mnozony przez niego). Kredytowany OBU miastom trasy (Q8=B).
+    // Handel E3 (PRZEBUDOWANE): pieniadzZTras jest TERAZ wylacznie wartoscia do
+    // raportu/UI (breakdown "dochod z tras" w main.ts) -- SUROWY dochod dystansowy z tras
+    // PRZED przejsciem przez suwaki Handlu i mnoznik Wealth (juz wliczony do
+    // pieniadzPoWealth wyzej). NIE dodawac go ponownie do pieniadz nizej (podwojne
+    // liczenie) -- kredytowany OBU miastom trasy (Q8=B) w samym tradeIncomeByCity.
     const pieniadzZTras = tradeIncomeByCity.get(city.id) ?? 0;
 
     // WIRE 2: splitPraca
@@ -2684,7 +2705,9 @@ export function advanceCityEconomy(
         cityId:            city.id,
         ownerId:           city.ownerId,
         praca:             yld.praca,
-        pieniadz:          pieniadzPoWealth + pieniadzZTras,
+        // pieniadzPoWealth JUZ zawiera dochod z tras (ctx.dochodTrasHandlowych, wpiety w
+        // yld.pieniadz powyzej) -- nie dodawac pieniadzZTras ponownie (podwojne liczenie).
+        pieniadz:          pieniadzPoWealth,
         pieniadzBrutto:    yld.pieniadz,
         zywnoscNetto:      0,           // brak dochodu podczas oblezenia
         nauka:             yld.nauka,
@@ -2766,13 +2789,14 @@ export function advanceCityEconomy(
 
     magazynPoTurze = city.wzrostUlamkowy ?? 0;
 
-    incomeByOwner.set(city.ownerId, (incomeByOwner.get(city.ownerId) ?? 0) + pieniadzPoWealth + pieniadzZTras);
+    // pieniadzPoWealth JUZ zawiera dochod z tras -- patrz komentarz przy jego wyliczeniu wyzej.
+    incomeByOwner.set(city.ownerId, (incomeByOwner.get(city.ownerId) ?? 0) + pieniadzPoWealth);
 
     const tick: CityEconomyTick = {
       cityId:            city.id,
       ownerId:           city.ownerId,
       praca:             yld.praca,
-      pieniadz:          pieniadzPoWealth + pieniadzZTras,
+      pieniadz:          pieniadzPoWealth,
       pieniadzBrutto:    yld.pieniadz,
       zywnoscNetto:      foodBal.bilansLokalny,
       nauka:             yld.nauka,

@@ -54,7 +54,7 @@ export {
   tradeRouteBuildingBonusForRoute, TRADE_ROUTE_BUILDING_BONUS_RATE,
 } from '../src/game/trade-routes';
 export { cityYieldPerTurn } from '../src/game/economy';
-export { advanceCityEconomy } from '../src/game/turn-economy';
+export { advanceCityEconomy, previewCityEconomy } from '../src/game/turn-economy';
 export { ensureCitySaveDefaults } from '../src/game/cities';
 `, 'utf8');
 
@@ -527,10 +527,12 @@ assert(yld2.handelBrutto > yld1.handelBrutto && yld3.handelBrutto > yld2.handelB
   'G: handelBrutto rosnie monotonicznie z rosnaca premia tras (2 < 5 < 8)');
 
 // ---------------------------------------------------------------------------
-// H. Integracja advanceCityEconomy: pieniadzZTras CZYSTO do skarbca (bez Wealth),
-//    obie strony (gracz + obca cyw) zarabiaja z tej samej trasy.
+// H. Integracja advanceCityEconomy: dochod z tras TERAZ przechodzi przez pelna sciezke
+//    Daniny (suwaki Handlu + mnoznik Wealth) -- R-HANDEL-DOCHOD-PRZEZ-PODZIAL-MIASTA-Q1,
+//    ECHO wlasciciela "Pelna integracja: przed mnoznikiem Wealth" -- obie strony
+//    (gracz + obca cyw) nadal zarabiaja z tej samej trasy (Q8=B, bez zmian).
 // ---------------------------------------------------------------------------
-console.log('\n-- H. advanceCityEconomy: pieniadzZTras w skarbcu, obie strony, bez Wealth --');
+console.log('\n-- H. advanceCityEconomy: dochod z tras przez suwaki Handlu + mnoznik Wealth --');
 function makeRuntimeCity(id, ownerId, q) {
   const c = { id, ownerId, q, r: 0, name: id, population: 4 };
   TR.ensureCitySaveDefaults(c);
@@ -569,10 +571,21 @@ const withTrade = runTickH(
   new Map([['pH', TRADE_AMOUNT], ['fH', TRADE_AMOUNT]]),
   new Map(), // T4: premia z tras Z BUDYNKIEM=0 tutaj -- sprawdzana osobno w H3/H4
 );
-eq(withTrade.pH.pieniadzZTras, TRADE_AMOUNT, 'H2: pieniadzZTras gracza = kwota trasy');
+eq(withTrade.pH.pieniadzZTras, TRADE_AMOUNT, 'H2: pieniadzZTras gracza = kwota trasy (nadal RAPORTOWANY osobno, ale juz nie dodawany osobno)');
 eq(withTrade.fH.pieniadzZTras, TRADE_AMOUNT, 'H2: pieniadzZTras obcej cyw = kwota trasy (obie strony zarabiaja)');
-eq(withTrade.pH.pieniadz - base.pH.pieniadz, TRADE_AMOUNT,
-  'H2: pieniadz gracza wzrasta DOKLADNIE o kwote trasy (bez mnoznika Wealth, brak premii tras handlowych w tym wywolaniu)');
+// R-HANDEL-DOCHOD-PRZEZ-PODZIAL-MIASTA-Q1 (ECHO wlasciciela, "Pelna integracja: przed
+// mnoznikiem Wealth"): dochod z tras NIE jest juz dodawany CZYSTO do skarbca -- wchodzi do
+// wspolnej puli handelBrutto (economy.ts), przechodzi przez Targowisko/korupcje/Waluta+
+// Mennica i jest DZIELONY suwakami Handlu (tu: domyslnie 60% Pieniadz / 20% Nauka / 20%
+// Luksus) razem z reszta Daniny, dopiero potem mnozony przez Wealth -- wiec przyrost
+// pieniadza NIE jest juz rowny surowej kwocie trasy (byl przed ta zmiana, patrz historia
+// gita). Trzy niezalezne dowody pelnej integracji zamiast starej rownosci 1:1:
+eq(withTrade.pH.pieniadzBrutto > base.pH.pieniadzBrutto, true,
+  'H2a: pieniadzBrutto (PRZED mnoznikiem Wealth) gracza WZROSL dzieki trasie -- dowod ze dochod z tras jest juz w puli PRZED Wealth (przedtem pieniadzBrutto = yld.pieniadz BEZ tras, niezmieniony)');
+eq(withTrade.pH.nauka > base.pH.nauka, true,
+  'H2b: Nauka gracza WZROSLA dzieki trasie -- dowod ze dochod z tras jest dzielony suwakiem Handlu (nauka/zloto/luksus), nie ladowany czysto do skarbca');
+assert(withTrade.pH.pieniadz - base.pH.pieniadz !== TRADE_AMOUNT,
+  `H2c: przyrost pieniadza gracza (${withTrade.pH.pieniadz - base.pH.pieniadz}) juz NIE rowna sie surowej kwocie trasy (${TRADE_AMOUNT}) -- czesc poszla do Nauki/Luksusu, reszta przeszla przez Targowisko/korupcje/Wealth`);
 
 // H3: premiaHandluTrasHandlowych>0 w tym samym wywolaniu podnosi tez Handel-z-pol
 // (osobny kanal) -- pieniadzBrutto (przed dochodem z tras) powinien byc >= baseline.
@@ -588,6 +601,44 @@ const onlyPremia = runTickH(new Map(), new Map([['pH', 5], ['fH', 5]]));
 assert(onlyPremia.pH.pieniadzBrutto > base.pH.pieniadzBrutto,
   'H4: premiaHandluTrasHandlowych=5 (bez dochodu $ z tras) podnosi pieniadzBrutto gracza wzgledem 0 premii');
 eq(onlyPremia.pH.pieniadzZTras, 0, 'H4: (kontrola) pieniadzZTras=0 gdy tradeIncomeByCity puste');
+
+// H5 (Evaluator zarzut 1, runda obrony): previewCityEconomy (HUD) MUSI zwracac ten sam
+// `pieniadz` co advanceCityEconomy (realny tick) dla tego samego stanu -- inaczej gracz
+// widzi na HUD projekcje niezgodna z tym, co faktycznie wpadnie do skarbca. Wolane z
+// niezerowym tradeIncomeByCity (dokladnie ten przypadek, ktory poprzednio przeoczono:
+// previewCityEconomy w galezi nie-oblezeniowej wciaz dodawal pieniadzZTras DRUGI RAZ).
+function runPreviewH(tradeIncomeByCity, tradeRouteBuildingBonusByCity) {
+  const cities = [
+    { ...pH, wealthState: { ...pH.wealthState } },
+    { ...fH, wealthState: { ...fH.wealthState } },
+  ];
+  const preview = TR.previewCityEconomy(
+    cities, map, gameData, 'normal', builtH,
+    1, playerZbadaneH, new Map(), new Map(), undefined, undefined,
+    tradeRouteBuildingBonusByCity, tradeIncomeByCity,
+  );
+  return {
+    pH: preview.perCity.find(t => t.cityId === 'pH'),
+    fH: preview.perCity.find(t => t.cityId === 'fH'),
+  };
+}
+
+const tickWithTrade = runTickH(
+  new Map([['pH', TRADE_AMOUNT], ['fH', TRADE_AMOUNT]]),
+  new Map(),
+);
+const previewWithTrade = runPreviewH(
+  new Map([['pH', TRADE_AMOUNT], ['fH', TRADE_AMOUNT]]),
+  new Map(),
+);
+eq(previewWithTrade.pH.pieniadz, tickWithTrade.pH.pieniadz,
+  'H5a: previewCityEconomy.pieniadz (gracz, HUD) == advanceCityEconomy.pieniadz (realny tick) z dochodem z tras -- brak podwojnego liczenia w preview');
+eq(previewWithTrade.fH.pieniadz, tickWithTrade.fH.pieniadz,
+  'H5b: previewCityEconomy.pieniadz (obca cyw, HUD) == advanceCityEconomy.pieniadz (realny tick) z dochodem z tras');
+// Kontrola regresji na starym bledzie: gdyby preview wciaz dodawal pieniadzZTras drugi raz,
+// roznica bylaby DOKLADNIE +TRADE_AMOUNT wzgledem realnego ticku.
+assert(previewWithTrade.pH.pieniadz !== tickWithTrade.pH.pieniadz + TRADE_AMOUNT,
+  'H5d: (kontrola regresji) preview NIE odtwarza starego podwojnego liczenia (+TRADE_AMOUNT ponad realny tick)');
 
 // ---------------------------------------------------------------------------
 // I. Priorytet lądu BEZWARUNKOWY w detectBestConnection (T2, ECHO Q5 finalne
