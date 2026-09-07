@@ -1,10 +1,10 @@
 {
-  "publishedAt": "2026-09-07T13:40:00",
-  "sourceBuild": "/tmp/civ-dist-fala355",
-  "note": "FALA 355 - domkniecie CALEGO audytu balansu szczescia/Prawa (wezel E, ostatni) + dwie pary zastanych czerwonych bramek: R-SZCZESCIE-AUDYT-E-ETYKIETY-PANELU-Q1 (tooltip rozniajacy wklad tej tury od stalej wagi mechanizmu w panelu Porzadku), P-DYPLO-DWA-TESTY-CZERWONE-ZASTANE-Q1 (naprawa dwoch zastanych bramek dyplomacji, test-only), P-BRAMKI-ZASTANE-CZERWONE-Q1 (naprawa dwoch zastanych bramek building-queue-refund/barb-city-capture, test-only).",
+  "publishedAt": "2026-09-07T15:20:00",
+  "sourceBuild": "/tmp/civ-dist-fala356",
+  "note": "FALA 356 - domkniecie calej kolejki 7 tematow: P-KOLOR-SUROWCE-MIASTO-VS-MAPA-Q1 (jedno zrodlo prawdy dla kolorow szesciu surowcow, panel miasta vs HUD mapy), P-ENTITYCARD-CIVPEDIA-KLIK-MARTWY-Q1 (klik Wiecej informacji Civpedia wpiety we wszystkie karty encji), P-DESIGN-11-ZAKLADEK-DROBIAZGI-Q1 (naprawa czerwonej bramki panelu imperium, test-only), P-DYPLO-DWA-TESTY-CZERWONE-ZASTANE-Q1 i P-BRAMKI-ZASTANE-CZERWONE-Q1 (test-only), P-BRAMKA-WSPOLDZIELONY-DIST-TMPDIR-Q1 (test-only, infrastruktura bramek).",
   "publisher": "Orkiestrator (Claude Code)",
   "bundle": "Gra-ROBOCZA.html",
-  "md5": "1c24560ce998edd71f83f78d91c7a796",
+  "md5": "20de07b92cf75d594726cc47f115aa31",
   "bundlePoleBitwy": "Gra-ROBOCZA-POLE-BITWY.html",
   "md5PoleBitwy": "d4477b3eaed627e426c41b9f8d0ad1f1"
 }

@@ -13,6 +13,18 @@ swoim wĹ‚asnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji d
 > Pakiet 3 z 2026-08-20 jest docs-only i nie tworzy wpisu ROBOCZA/KANON/FINALNA;
 > ten plik pozostaje wyłącznie rejestrem publikacji bundli.
 
+## ROBOCZA 20de07b9 - 2026-09-07 15:20 UTC - FALA 356: kolor-surowce + civpedia-klik + trzy pary bramek test-only
+
+|- md5 (pełne): 20de07b92cf75d594726cc47f115aa31 · stempel: ROBOCZA · label 20de07b9 · źródłowe commity integracji: `0f3c0fb1` (kolor-surowce) + `7d507ed6` (civpedia-klik) + `64cfbe31` (design-zakladki) + `bdc02718`/`47ab0f3d`/`57c327d9` (test-only, już w FALI 355/356 łącznie)
+|- **`P-KOLOR-SUROWCE-MIASTO-VS-MAPA-Q1`** (`0f3c0fb1`, 1 runda) — jeden surowiec = jeden kolor, jedno źródło prawdy. Nowy moduł `resourceColors.ts` przepięty w `brandTokenVars.ts`/`cityPanel.ts`/`hud.ts`/`mapToolbarHud.ts`. Skarbiec ujednolicony na złoto (`#e8d88a`, 7 wystąpień vs 3 dla błękitu), zgodnie z ekranem odniesienia właściciela. Final Control zweryfikował 8 zarzutów własnym licznikiem pikseli na 18 PNG + własną mutacją w żywym Chromium. Nowa bramka `kolor-surowce-spojnosc-test.cjs` 34/34.
+|- **`P-ENTITYCARD-CIVPEDIA-KLIK-MARTWY-Q1`** (`7d507ed6`, 1 runda) — przycisk „Więcej informacji (Civpedia)" nie robił nic dla żadnej encji. Nowy szew `civpediaOpenGate.ts` (wzorzec z `unitCtxDockDiploGate.ts`) łączy przycisk z `openEncyEntry`. Brak hasła → czytelny komunikat, nie cisza. Przy okazji naprawiony rozjazd slug↔id, który mógłby otwierać cudze hasło. Nowa bramka `entitycard-civpedia-klik-test.cjs` 71/0, pięć zrzutów z żywego Chromium obejrzanych wizualnie.
+|- **`P-DESIGN-11-ZAKLADEK-DROBIAZGI-Q1`** (`64cfbe31`, 1 runda, test-only) — `empire-panel-moc-scroll-preserve-test.cjs` było pre-istniejąco czerwone; ustalone czytaniem kodu, że opisywało nieaktualny stan (kod panelu poprawny przez cały czas). Bramka przepisana 47→58 asercji.
+|- **Test-only, bez wpływu na bundle** (już zdeployowane w treści kodu testowego, nie gry): `P-DYPLO-DWA-TESTY-CZERWONE-ZASTANE-Q1`, `P-BRAMKI-ZASTANE-CZERWONE-Q1`, `P-BRAMKA-WSPOLDZIELONY-DIST-TMPDIR-Q1` — trzy pary/grupy zastanych czerwonych bramek naprawionych bez zmiany kodu produkcyjnego.
+|- tsc --noEmit 0 błędów · 5 bramek referencyjnych zielonych (logic 213/213, tech-tree 19/19, research 33/33, unit-replace 13/13, combat 6/6) · Vite build 885 modułów, singlefile.
+|- Bundle pola bitwy (`Gra-ROBOCZA-POLE-BITWY.html`) pominięty — żaden z tematów nie dotyka mechaniki walki polowej; md5 z FALI 353 zachowany bez zmian.
+|- **Domyka CAŁĄ kolejkę siedmiu tematów uruchomioną w pętli AutoBot 2026-09-07.**
+|- **AKTUALNA**
+
 ## ROBOCZA 1c24560c - 2026-09-07 13:40 UTC - FALA 355: wezel E (OSTATNI audytu Prawo/Szczescie) + dwie pary zastanych bramek
 
 |- md5 (pełne): 1c24560ce998edd71f83f78d91c7a796 · stempel: ROBOCZA · label 1c24560c · źródłowe commity integracji: `39de5e26` (węzeł E) + `bdc02718` (dyplo-testy) + `47ab0f3d` (bramki zastane)
@@ -21,7 +33,7 @@ swoim wĹ‚asnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji d
 |- **`P-BRAMKI-ZASTANE-CZERWONE-Q1`** (`47ab0f3d`, 1 runda, test-only) — kolejne dwie zastane czerwone bramki, obie zdiagnozowane jako testy niedopasowane do już obowiązujących danych/kodu, nie regresje. `building-queue-refund-test.cjs`: stary literał kosztu (10) sprzed zmiany danych stolarni — naprawiony na realne 50. `barb-city-capture-cluster-test.cjs`: sonda „2h-static" miała za małe stałe okno (4000 znaków), po legalnym wzroście kodu funkcji dystans wzrósł do 6412 — okno wyznaczane teraz dynamicznie. Zero zmian w kodzie produkcyjnym.
 |- tsc --noEmit 0 błędów · 5 bramek referencyjnych zielonych (logic 213/213, tech-tree 19/19, research 33/33, unit-replace 13/13, combat 6/6) · Vite build 883 modułów, singlefile.
 |- Bundle pola bitwy (`Gra-ROBOCZA-POLE-BITWY.html`) pominięty — żaden z trzech tematów nie dotyka mechaniki walki polowej; md5 z FALI 353 zachowany bez zmian.
-|- **AKTUALNA**
+|- ZASTĄPIONA przez FALA 356
 
 ## ROBOCZA e2356846 - 2026-09-07 11:15 UTC - FALA 354: domkniecie audytu balansu szczescia/Prawa (wezel C + D)
 
