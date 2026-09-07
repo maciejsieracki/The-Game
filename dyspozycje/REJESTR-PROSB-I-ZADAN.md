@@ -78,6 +78,7 @@ historycznych wierszy poniżej; wpisy bez jednoznacznego dowodu nie są tu zgady
 | `P-AI-LISTA-BUDYNKOW-ZASZYTA-NIE-Z-PRODUKCJI-Q1` | `ZINTEGROWANE (korekta statusu, 2026-09-07)` | Przyczyna (`infraOrder` zaszyta lista) już USUNIĘTA wcześniej pod `R-AI-PRODUKCJA-Z-DOSTEPNYCH-BUDYNKOW-Q1` (zintegrowane 2026-09-06) — potwierdzone komentarzem w `ai.ts`. `PYTANIA-OTWARTE.md` miało stały wpis „OTWARTE"; poprawione (`7440cf8a`). Nic do dispatchu. |
 | `P-AI-GRANARY-PROG-POPULACJI-DUPLIKAT-Q1` | `ZINTEGROWANE` | Commit `0ba33bc5`. Znalezisko Obrony `R-AI-PRODUKCJA-Z-DOSTEPNYCH-BUDYNKOW-Q1` (duplikat progów populacji `ai.ts` vs `economy.ts`) — potwierdzono że duplikacja jest ŚWIADOMA (komentarz w `ai.ts`, `granaryPriorityBonus()`), więc NIE zaimportowano `cityPopulationCap` do `ai.ts`. Zamiast tego nowa bramka-strażnik `ai-granary-prog-populacji-spojnosc-test.cjs` (12/12) porównuje ręczne stałe z realną funkcją/danymi dla easy/normal/hard, dowód mutacyjny potwierdzony niezależnie przez Final Control. Zero zmian w `gra/src/game/ai.ts`. Szczegóły: sekcja `R-AI-PRODUKCJA-Z-DOSTEPNYCH-BUDYNKOW-Q1` wyżej (linia ok. 5958). Nic do dispatchu. |
 | `P-AI-ZDOBYCIE-MIASTA-CZTERY-LUKI-Q1` | `ZINTEGROWANE` | Commit `c21c3b1c`. Cztery luki pokrycia z Final Control `P-AI-BRAK-SCIEZKI-ZDOBYCIA-MIASTA-ADIACENCJA-Q1` (FC-N2/FC-N1/FC-N4/F4) — bramka `ai-zdobycie-miasta-adiacencja-test.cjs` 88/88→96/96, zero asercji usuniętych/osłabionych, zero zmian mechaniki. Final Control niezależnie odtworzył dowody mutacyjne FC-N2 (targetVisible) i FC-N4 (isCivilianUnit) na tymczasowo zmutowanym kodzie produkcyjnym. Szczegóły: sekcja „Cztery znaleziska Final Control R2" wyżej (linia ok. 5894). Nic do dispatchu. |
+| `R-HOTSEAT-ETAP-0-HUMAN-OWNERS-Q1` | `ZINTEGROWANE` | Commit `94c475ec`. Etap 0 planu `docs/decyzje/PLAN-HOT-SEAT-2-GRACZY.md` — nowy moduł `gra/src/game/human-owners.ts` (kontrakt §B1) + martwa flaga `hotSeatEnabled()` w `main.ts` (+18/−0, zero zmiany istniejących linii). Żywy stan/aliasy świadomie odłożone do Etapu 1 (brak konsumenta dziś). Nowa bramka 29/29, Final Control potwierdził zero regresji własną próbką 9 bramek AI/dyplomacji przed/po. Szczegóły wyżej (linia ok. 4643). Następny krok: Etap 1. |
 
 ### Zasada migracji i historii
 
@@ -4639,6 +4640,40 @@ w fali:** `R-WALKA-PRZEWAGA-LICZEBNA-Q1` (węzły W1/W2 — `auto-battle-*`, `co
 `battleScene.ts`), `R-NAZWY-MIAST-AUDYT-STOLICE-I-PANSTWA-Q1` (pule nazw + `cluster-spawn.ts`),
 `R-AUTOWYZYWIENIE-GLOBALNY-BLOKER-I-STAN-PRZYCISKU-Q1` (`empire-food.ts` + panel Spichlerza).
 To są trzy najbliższe dispatche.
+
+## `R-HOTSEAT-ETAP-0-HUMAN-OWNERS-Q1` — INFRA — **ZINTEGROWANE 2026-09-07** (commit `94c475ec`)
+
+Pierwszy realny temat wykonawczy `docs/decyzje/PLAN-HOT-SEAT-2-GRACZY.md` — Etap 0 z §C
+(„game/human-owners.ts + hotSeatEnabled() + humanSeats + aliasy. Zero podmian."). Dispatchowany
+po domknięciu całego zawisłego backlogu spoza hot-seatu (FALA 359), na wyraźne polecenie
+właściciela. Zakres tej rundy świadomie zawężony do bezpiecznego rdzenia: nowy, bezstanowy
+moduł `gra/src/game/human-owners.ts` (kontrakt §B1: `HUMAN_OWNER_PRIMARY`, `HumanSeats`,
+`isHumanOwner`/`isActiveHuman`/`isAiOwner`/`nextHumanSeat`/`isHotSeat`, sentinele
+barbarzyńcy/rebelianta zaimportowane z realnych stałych `barbarians.ts`/`society-breakdown.ts`,
+nie zgadnięte) + nowa, martwa funkcja `hotSeatEnabled()` w `main.ts` obok
+`civFogShortcutsEnabled()` (`main.ts` +18/−0, zero zmiany istniejących linii). Żywy stan
+(`humanSeats`/`playerStateByHuman`/`exploredByHuman`) i aliasy (`isHuman`/`isMe`/`ME`) z §B1
+**świadomie odłożone do Etapu 1** — decyzja orkiestratora, nie zmiana architektury planu:
+pierwszym realnym konsumentem tych pól jest Etap 1 (31× `ownerId > 0` → `isAiOwner`), więc
+nie ma sensu zgadywać ich docelowego kształtu (m.in. typu `PlayerState`) zanim mają pierwszego
+użytkownika. Final Control potwierdził zero regresji własną, niezależną próbką 9 bramek
+AI/dyplomacji uruchomionych na main.ts podmienionym na wersję sprzed commita i z powrotem —
+wyniki bit-identyczne. Nowa bramka `hotseat-human-owners-test.cjs` 29/29.
+
+**Uwaga proceduralna:** nagłówek planu twierdził „Etap 0 dispatchowany 2026-09-05 w nocy" —
+sprawdzone bezpośrednio (plik nie istniał), nieprawdziwe/nieaktualne; skorygowane w samym
+planie (`docs/decyzje/PLAN-HOT-SEAT-2-GRACZY.md`, commit `0a86a07e`).
+
+**Anomalia zgłoszona przez Operatora i potwierdzona przez Final Control (nie blokuje tego
+tematu):** w worktree tego tematu pojawił się obcy, nieśledzony plik
+`dyspozycje/autobot/runs/P-DYPLO-PRZEMARSZ-DUPLIKAT-AKTYWNY-Q1/dowody/render.png` — temat o
+tym ID nie jest znany tej sesji/rejestrowi. Potwierdzone poza obydwoma commitami tematu i poza
+allowlistą, worktree poza tym czysty. Pozostawiony nietknięty (nieznane pochodzenie). Warte
+odnotowania dla właściciela jako otwarta anomalia procesowa, nie temat do dispatchu.
+
+**Następny krok:** Etap 1 (`docs/decyzje/PLAN-HOT-SEAT-2-GRACZY.md` §C, wiersz „1") — 31×
+`ownerId > 0` → `isAiOwner`, behawioralny no-op, kryterium „gotowe" = 20 tur playtestu bez
+różnicy w logach.
 
 ## R-HOTSEAT-MULTIPLAYER-HOSTING-Q1 — temat na przyszłość (rejestracja 2026-09-04, noc)
 
