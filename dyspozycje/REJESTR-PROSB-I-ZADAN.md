@@ -6171,6 +6171,37 @@ czyste, 5 bramek referencyjnych zielone (213/19/33/13/6).
 
 Zamyka pozycję 3 kolejki `main.ts` (§2b).
 
+**ECHO właściciela 2026-09-07 (zgłoszenie na żywo, zrzut ekranu banera „BOOT ERROR" w
+turze 1):** decyzja „gracz bez progu tury, dokładnie jak AI" (wyżej) zrewidowana. Odkryty
+efekt uboczny: gracz dołącza do puli `triggeredSubjects` od tury 1 (jedyny warunek: zero
+aktywnych wojen wymuszonych), podczas gdy AI (Brąz/Żelazo/Kamień) mają próg 25 tur — gracz
+zostaje nierozstrzygnięty (`unresolvedOwnerIds`) KAŻDĄ turę od 1 do ~25, co samo w sobie
+jest nieszkodliwe, ale ujawniło NIEZALEŻNY bug wyświetlania (patrz niżej,
+`R-WOJNA-WYMUSZONA-PROG-TURY-GRACZ-Q1`). Właściciel wybrał: **dodać próg tury również dla
+gracza**, spójnie z AI — cofnięcie wcześniejszej „bez specjalnego przypadku". Dispatch:
+`R-WOJNA-WYMUSZONA-PROG-TURY-GRACZ-Q1`.
+
+## `R-WOJNA-WYMUSZONA-PROG-TURY-GRACZ-Q1` — GAME+INFRA — dispatchowany 2026-09-07
+
+Dwa połączone znaleziska z jednego zgłoszenia właściciela na żywo (zrzut ekranu, tura 1,
+świeża gra): czerwony baner „THE GAME — BOOT ERROR" pokazał
+`console.error('[Wojna wymuszona] DECISION_REQUIRED: brak niezablokowanej sojuszem
+pary/trójkąta dla ownerów [0]...')`.
+
+1. **GAME — próg tury dla gracza (ECHO wyżej):** dodać próg tury (rekomendowane: `turn >=
+   25`, spójnie z `WOJNA_KAMIEN_WYMUSZONA_START_TURY`/`WOJNA_WYMUSZONA_START_TURY_OD_EPOKI`
+   = 25) do warunku w „Kroku C" (`main.ts`, dołączenie gracza do `triggeredSubjects`) —
+   dziś jedyny warunek to `totalActiveForcedWarsByOwner(0) === 0`, bez żadnego progu.
+2. **INFRA — „BOOT ERROR CATCHER" (`gra/index.html`) przechwytuje `console.error`
+   BEZTERMINOWO**, nie tylko podczas ładowania bundla (mimo komentarza „catches
+   bundle-eval errors") — każdy zwykły, oczekiwany `console.error` z logiki gry (nie tylko
+   ten wyżej) zamienia się w rosnący, nigdy nieczyszczony czerwony baner „crash" widoczny
+   dla gracza. Naprawa: ograniczyć przechwytywanie do faktycznego okna bootowania (albo
+   polegać wyłącznie na `window.onerror`/`unhandledrejection`, które łapią realne
+   nieobsłużone wyjątki — `console.error` sam w sobie nie oznacza żadnej katastrofy).
+
+Pełny dispatch: `dyspozycje/autobot/runs/R-WOJNA-WYMUSZONA-PROG-TURY-GRACZ-Q1/00-dispatch.md`.
+
 ## `R-RELIGIA-KONWERSJA-PO-PODBOJU-Q1` — GAME — **ZINTEGROWANE 2026-09-07** (1 runda, commit `1da7a6bd`)
 
 Obca religia po podboju nigdy nie stawała się dominująca — mechanizm konwersji
