@@ -220,14 +220,25 @@ ok(fnBody.includes('happiness,'),
   'buildEmpireDetailSnap() zwraca pole happiness w obiekcie wynikowym');
 
 // Trade route cityId — poza buildEmpireDetailSnap() (osobna funkcja buildEmpireTradeSnap).
-ok(mainSrc.includes('cityId: r.fromCityId,') && mainSrc.includes('cityName: myCity?.name ?? r.fromCityId,'),
-  'buildEmpireTradeSnap(): EmpireTradeRouteRow.cityId = r.fromCityId (TradeRoute), obok cityName istniejącego');
+// R2-2 (generalizacja GOAL 4-5): gracz bywa stroną `to` trasy, nie tylko `from` —
+// `side.myCityId` wybiera właściwą stronę (r.ownerId===0 ? fromCityId : toCityId),
+// więc cityId/cityName muszą pochodzić z `side`, nie z literału `r.fromCityId`.
+ok(mainSrc.includes('cityId: side.myCityId,') && mainSrc.includes('cityName: myCity?.name ?? side.myCityId,'),
+  'buildEmpireTradeSnap(): EmpireTradeRouteRow.cityId = side.myCityId (strona gracza trasy, po R2-2), obok cityName istniejącego');
+ok(mainSrc.includes('const side = r.ownerId === 0')
+  && mainSrc.includes('myCityId: r.fromCityId, partnerCityId: r.toCityId')
+  && mainSrc.includes('myCityId: r.toCityId, partnerCityId: r.fromCityId'),
+  'R2-2: side.myCityId pochodzi z prawdziwego wyboru strony gracza (fromCityId gdy ownerId===0, inaczej toCityId), nie z halucynowanej wartości');
 
 // T6: rozkład dochodu per trasa liczony WYŁĄCZNIE funkcją silnika, nie własną kopią wzoru.
 // Gdyby ktoś wrócił do literału `0.05 *` w buildEmpireTradeSnap, panel stałby się CZWARTYM
 // miejscem liczącym tę samą premię — dokładnie precedens P-HANDEL-SZLAKI-WZOR-DUPLIKAT-Q1.
-ok(mainSrc.includes('const premiaBudynku = tradeRouteBuildingBonusForRoute(r, incomeParams);'),
-  'T6: buildEmpireTradeSnap() liczy premię 5% przez tradeRouteBuildingBonusForRoute() (trade-routes.ts), nie własnym wzorem');
+// R2-2 (zarzut 3): premia liczona per-side realnym wywołaniem silnika, potem ×2 dla trasy
+// WEWNĘTRZNEJ (oba miasta gracza) — analogicznie do `income` wyżej — pośredni krok przez
+// `premiaBudynkuPerSide`, ale ZERO duplikatu formuły: jedyne źródło liczby to wywołanie funkcji.
+ok(mainSrc.includes('const premiaBudynkuPerSide = tradeRouteBuildingBonusForRoute(r, incomeParams);')
+  && mainSrc.includes('const premiaBudynku = bothPlayer ? premiaBudynkuPerSide * 2 : premiaBudynkuPerSide;'),
+  'T6: buildEmpireTradeSnap() liczy premię 5% przez tradeRouteBuildingBonusForRoute() (trade-routes.ts), nie własnym wzorem (×2 tylko dla trasy wewnętrznej, R2-2)');
 ok(mainSrc.includes('budynekOdblokowany: r.budynekOdblokowany,') && mainSrc.includes('premiaBudynku,'),
   'T6: buildEmpireTradeSnap() przekazuje do snapa oba pola rozkładu (flaga budynku + kwota 5%)');
 {
