@@ -6029,7 +6029,47 @@ bramka `gra/tools/wycinka-drewno-cap-test.cjs` (15/0, dowód realny na PRAWDZIWE
 własną, różną mutacją) potwierdzają nietautologiczność. `tsc --noEmit` czyste, 5 bramek
 referencyjnych zielone (213/19/33/13/6).
 
-Zamyka pozycję 2 kolejki `main.ts` (§2b). Następny w kolejce: `R-WOJNA-WYMUSZONA-PAROWANIE-ZAMIAST-DOMINA-Q1`
-(recon mechanizmu domino wykonany, dyspozycja w przygotowaniu — otwarte pytanie do ABC:
-czy pula „podmiotów bez wojny" jest globalna, per-turowa, czy per-epoka, patrz recon w
-historii sesji).
+Zamyka pozycję 2 kolejki `main.ts` (§2b).
+
+## `R-WOJNA-WYMUSZONA-PAROWANIE-ZAMIAST-DOMINA-Q1` — GAME — **ZINTEGROWANE 2026-09-07** (2 rundy, commit `1a7a48e9`)
+
+Mechanizm „domino" wojen wymuszonych (Kamień/Brąz/Żelazo) zastąpiony parowaniem 1v1 zgodnie
+z ECHO właściciela: *„Najpierw wszyscy mają wojnę, potem trójkąty."* Cywilizacje BEZ żadnej
+aktywnej wojny parowane 1v1 w pierwszej kolejności (gracz traktowany DOKŁADNIE jak każde
+AI, bez specjalnego przypadku i bez twardego limitu — świadomie odrzucone przez właściciela),
+nieparzysta reszta dołącza jako trzeci do istniejącej pary. Naprawia zgłoszony incydent
+(sojusznik gracza w istniejącej parze AI↔AI kończył bez żadnej wojny, bo cała para była
+blokowana sojuszem bez zastępczego przydziału).
+
+Rozstrzygnięcie zakresu orkiestratora (przed dispatchem, nie eskalowane do właściciela —
+korekta procesu/routingu): nowy algorytm zastępuje FUNKCJONALNIE oba dawne mechanizmy
+(coordinated-pick per-owner ORAZ domino-redirect), bo samo kryterium binarne z ECHO
+(„zero wojen niedopuszczalne, dopóki ktoś ma ≥2") jest niezmiennikiem globalnym, którego
+samo przepisanie warstwy domino nie gwarantowało — luka mogła powstać już w coordinated-pick.
+
+**Runda 1: Final Control FAIL.** Dwa zarzuty Evaluatora: (1) zakres zmian w `main.ts` sięgał
+głębiej niż literalny zapis allowlisty (wewnątrz `ownerLoop`, nie tylko punkt wywołania) —
+Final Control: **ODDAL**, bo sekcja „Rozstrzygnięcie zakresu" tego samego dispatchu już to
+jawnie dopuszczała, GOAL fizycznie niewykonalny inaczej; (2) algorytm parowania (krok 3) był
+ZACHŁANNY, nie gwarantował maksymalnego dopasowania — adwersaryjna konstrukcja Evaluatora
+(4 podmioty, zapętlone blokady sojuszu/NAP) pokazała przypadek gdzie zachłanny wybór
+zostawiał 2 podmioty bez pary mimo istniejącego pełnego rozwiązania. Obrona **PRZYJĘŁA** i
+przepisała krok 3 na dokładny max-matching (DP na bitmasce) — Final Control potwierdził
+**NAPRAW zrealizowane**. Mimo to runda 1 zamknięta jako FAIL: dwie bramki pozostały czerwone
+(pokrycie mutacyjne `forced-war-iron-mutant-probe.cjs` niepełne dla nowego kodu, stary
+`forced-war-trojstronna-domino-live-test.cjs` oczekiwał usuniętego zachowania „obie strony
+domina atakują" zamiast nowego „cel dla jednej wybranej strony").
+
+**Runda 2:** obie bramki naprawione (mapowanie usunięta→nowa mutacja udokumentowane
+1:1 dla każdej z 8 martwych mutacji), zero zmian w logice (wyłącznie dwa pliki testowe).
+Final Control rundy 2: **PASS całości** — własny fuzz niezmiennika binarnego (4000+ prób,
+n=7-12, gęstość blokad 20-80%) i dwie własne konstrukcje adwersaryjne (9- i 10-podmiotowe)
+zero naruszeń; potwierdzone bezpośrednie wpięcie w produkcyjną pętlę `main.ts` (nie tylko
+w testach); zero zmian w `ai.ts` przez CAŁY temat (potwierdzone niezależnie w obu rundach).
+
+Bramki: nowa `wojna-wymuszona-parowanie-test.cjs` 47/0. Cała rodzina `forced-war-*`
+(17 plików, w tym dwa live-testy Playwright na realnym Chromium) zielona. `tsc --noEmit`
+czyste, 5 bramek referencyjnych zielone (213/19/33/13/6).
+
+Zamyka pozycję 3 kolejki `main.ts` (§2b). Następny w kolejce: `R-RELIGIA-KONWERSJA-PO-PODBOJU-Q1`,
+potem `P-PODBOJ-KOLEJKA-BUDYNEK-NIEMOZLIWY-Q1`.
