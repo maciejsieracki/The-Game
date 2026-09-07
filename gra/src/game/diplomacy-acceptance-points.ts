@@ -254,6 +254,7 @@ function computePeaceAcceptanceSides(
     treatyEffectivePn: playerTreatyPw,
     relationModPct: modPct,
     relationModLabel: modLabel,
+    relCurrent: relTotal,
     mode,
     accepted: peaceAccepted && asymBalance >= 0,
     statusLabel: asymBalance < 0
@@ -272,6 +273,7 @@ function computePeaceAcceptanceSides(
     balancePn: asymBalance,
     treatyBasePn: treatyBase,
     treatyEffectivePn: partnerTreatyPw,
+    relCurrent: relTotal,
     mode,
     accepted: peaceAccepted && asymBalance >= 0,
     statusLabel: asymBalance < 0
