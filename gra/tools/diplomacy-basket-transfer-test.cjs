@@ -16,6 +16,7 @@ export {
   createEmptyBasketTransferContext,
   resetBasketTransferGrantSeq,
 } from '../src/game/diplomacy-basket-transfer.ts';
+export { TRADE_TECH } from '../src/game/trade-routes.ts';
 `, 'utf8');
 
 esbuild.buildSync({
@@ -173,6 +174,53 @@ const tierCatalog = [
   c = B.grantTechToOwner('Lowiectwo', 9, c).context;
   const r = B.grantTechToOwner('Garncarstwo2', 9, c);
   ok(r.granted, 'Garncarstwo2 PO zbadaniu Lowiectwo (ta sama epoka, niższy tier) → przyznane');
+}
+
+// -----------------------------------------------------------------------
+// R-HANDEL-WYMIANA-DAR-DEADLOCK-Q1 (2026-09-07): grantTechToOwner musi PRZEPUŚCIĆ
+// TRADE_TECH ("Wymiana") do odbiorcy BEZ jej prereqów (Garncarstwo + Rolnictwo +
+// Oswojenie zwierzat) — wyjątek PUNKTOWY. Kontrola regresu: Kolo (inna tech,
+// niezależny prereq: Rolnictwo) MUSI nadal być odrzucona w tych samych warunkach —
+// dowód, że wyjątek nie rozluźnia reguły dla wszystkich technologii.
+// -----------------------------------------------------------------------
+console.log('grantTechToOwner — wyjątek TRADE_TECH (R-HANDEL-WYMIANA-DAR-DEADLOCK-Q1)');
+
+const { TRADE_TECH } = B;
+
+// Katalog celowo BEZ Epoka/Poziom (jak w diplomacy-tech-trade-test.cjs) — izoluje
+// oś prereq od epoch/tier-gate, które NADAL obowiązują dla TRADE_TECH (dispatch:
+// "epoch-gate/epoch-tier-gate nadal obowiązują — to inne zabezpieczenia, nie ruszać
+// ich"); pokryte już osobno w scenariuszach 3/4/7/8 wyżej.
+const tradeTechCatalog = [
+  { Technologia: 'Garncarstwo' },
+  { Technologia: 'Rolnictwo' },
+  { Technologia: 'Oswojenie zwierzat' },
+  { Technologia: TRADE_TECH, 'Wymaga (prereq)': 'Garncarstwo + Rolnictwo + Oswojenie zwierzat' },
+  { Technologia: 'Kolo', 'Wymaga (prereq)': 'Rolnictwo' },
+];
+
+// 9) Odbiorca 11 BEZ ŻADNEGO prereq TRADE_TECH → transfer "Wymiany" MUSI się powieść
+//    (wyjątek punktowy), a "ownerHasTradeTech" (tu: obecność TRADE_TECH w
+//    researchedByOwner odbiorcy — dokładnie to co odczytuje unlockedTechSetForOwner
+//    w main.ts::ownerHasTradeTech) musi być true PO transferze.
+{
+  let c = B.createEmptyBasketTransferContext(tradeTechCatalog);
+  const r = B.grantTechToOwner(TRADE_TECH, 11, c);
+  ok(r.granted, `${TRADE_TECH} BEZ prereqów odbiorcy → PRZYZNANA (wyjątek punktowy)`);
+  ok(
+    r.context.researchedByOwner.get(11)?.has(TRADE_TECH) === true,
+    'ownerHasTradeTech(11) po transferze → true (Wymiana w zbadanych odbiorcy)',
+  );
+}
+
+// 10) KONTROLA REGRESU: te same warunki (brak prereq), ale INNA technologia (Kolo,
+//     prereq: Rolnictwo) → nadal ODRZUCONA. Dowodzi, że wyjątek jest punktowy, nie
+//     ogólnym rozluźnieniem reguły prereq-dla-odbiorcy.
+{
+  let c = B.createEmptyBasketTransferContext(tradeTechCatalog);
+  const r = B.grantTechToOwner('Kolo', 11, c);
+  ok(!r.granted, 'KONTROLA REGRESU: Kolo bez zbadanego Rolnictwo → nadal NIE przyznane (reguła ogólna nietknięta)');
+  ok(!r.context.researchedByOwner.get(11)?.has('Kolo'), 'Kolo NIE trafia do zbadanych owner 11');
 }
 
 try { fs.unlinkSync(ENTRY); fs.unlinkSync(BUNDLE); } catch (_) {}

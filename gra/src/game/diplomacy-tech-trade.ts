@@ -12,6 +12,7 @@
  * zbadana przez obie strony nigdy nie trafia do żadnej z list — wymiana nic by nie zmieniła.
  */
 import { epochGateMet, epochTierGateMet, findTech, prerequisitesOf, type ResearchTechDef } from './research';
+import { TRADE_TECH } from './trade-routes';
 
 export function tradeableTechIdsForSide(
   ownKnown: ReadonlySet<string>,
@@ -40,7 +41,15 @@ export function techIdsWithPrereqsMetForRecipient(
   return techIds.filter(id => {
     const def = findTech(techCatalog, id);
     if (!def) return true;
-    return prerequisitesOf(def).every((p) => recipientKnown.has(p))
+    // R-HANDEL-WYMIANA-DAR-DEADLOCK-Q1 (2026-09-07): wyjątek PUNKTOWY wyłącznie dla
+    // TRADE_TECH ("Wymiana") — jej jedynym sensownym zastosowaniem jest odblokowanie
+    // handlu z partnerem, który sam jeszcze nie doszedł do jej prereqów (Garncarstwo +
+    // Rolnictwo + Oswojenie zwierząt), więc wymóg prereq-dla-odbiorcy tworzyłby dla niej
+    // zamknięte koło bez wyjścia. Epoch-gate/epoch-tier-gate nadal obowiązują — to inne
+    // zabezpieczenia. WSZYSTKIE pozostałe technologie nadal wymagają zbadanych
+    // prereqów u odbiorcy (P-HANDEL-TECH-BRAK-PREREQ-PO-FILTRZE, bez zmian).
+    const prereqsMet = id === TRADE_TECH || prerequisitesOf(def).every((p) => recipientKnown.has(p));
+    return prereqsMet
       && epochGateMet(def, techCatalog, recipientKnown)
       && epochTierGateMet(def, techCatalog, recipientKnown);
   });

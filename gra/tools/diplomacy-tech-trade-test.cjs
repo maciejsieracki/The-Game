@@ -39,6 +39,7 @@ async function main() {
     const entry = path.resolve(__dirname, '.dip-tech-trade-entry.ts');
     fs.writeFileSync(entry, `
 export { tradeableTechIdsForSide, techIdsWithPrereqsMetForRecipient } from '../src/game/diplomacy-tech-trade.ts';
+export { TRADE_TECH } from '../src/game/trade-routes.ts';
 `);
     esbuild.buildSync({
       entryPoints: [entry],
@@ -49,7 +50,7 @@ export { tradeableTechIdsForSide, techIdsWithPrereqsMetForRecipient } from '../s
       absWorkingDir: path.resolve(__dirname, '..'),
       logLevel: 'silent',
     });
-    const { tradeableTechIdsForSide, techIdsWithPrereqsMetForRecipient } = require(BUNDLE);
+    const { tradeableTechIdsForSide, techIdsWithPrereqsMetForRecipient, TRADE_TECH } = require(BUNDLE);
 
     // Scenariusz: gracz (offering) zna 'rolnictwo' i 'garncarstwo'; responder zna
     // 'garncarstwo' i 'ceramika'. Wspólna: garncarstwo. Tylko-offering: rolnictwo.
@@ -159,6 +160,42 @@ export { tradeableTechIdsForSide, techIdsWithPrereqsMetForRecipient } from '../s
       const recipientKnown = new Set(['Lowiectwo']);
       const out = techIdsWithPrereqsMetForRecipient(['Garncarstwo2'], recipientKnown, tierCatalog);
       ok(out.includes('Garncarstwo2'), 'Garncarstwo2 PO zbadaniu Lowiectwo (ta sama epoka, niższy tier) → NA liście odbiorcy');
+    }
+
+    // -----------------------------------------------------------------------
+    // R-HANDEL-WYMIANA-DAR-DEADLOCK-Q1 (2026-09-07): wyjątek PUNKTOWY dla TRADE_TECH
+    // ("Wymiana") od reguły prereq-dla-odbiorcy — patrz 00-dispatch.md. Katalog z
+    // realnymi prereqami TRADE_TECH (Garncarstwo + Rolnictwo + Oswojenie zwierząt),
+    // plus jedna NIEZALEŻNA technologia (Kolo, prereq: Rolnictwo) jako kontrola
+    // regresu: wyjątek MUSI być punktowy, nie ogólnym rozluźnieniem.
+    // -----------------------------------------------------------------------
+    console.log('techIdsWithPrereqsMetForRecipient — wyjątek TRADE_TECH (R-HANDEL-WYMIANA-DAR-DEADLOCK-Q1)');
+
+    const tradeTechCatalog = [
+      { Technologia: 'Garncarstwo' },
+      { Technologia: 'Rolnictwo' },
+      { Technologia: 'Oswojenie zwierzat' },
+      { Technologia: TRADE_TECH, 'Wymaga (prereq)': 'Garncarstwo + Rolnictwo + Oswojenie zwierzat' },
+      { Technologia: 'Kolo', 'Wymaga (prereq)': 'Rolnictwo' },
+    ];
+
+    // g) Odbiorca BEZ ŻADNEGO z prereqów TRADE_TECH → "Wymiana" MIMO TO na liście
+    //    (wyjątek punktowy), ale Kolo (inna tech z brakującym prereq Rolnictwo)
+    //    NADAL odpada — kontrola regresu, wyjątek nie jest ogólny.
+    {
+      const recipientKnown = new Set();
+      const out = techIdsWithPrereqsMetForRecipient([TRADE_TECH, 'Kolo'], recipientKnown, tradeTechCatalog);
+      ok(out.includes(TRADE_TECH), 'Wymiana BEZ prereqów odbiorcy → NA liście (wyjątek punktowy)');
+      ok(!out.includes('Kolo'), 'KONTROLA REGRESU: Kolo BEZ prereq Rolnictwo → nadal NIE na liście (reguła ogólna nietknięta)');
+    }
+
+    // h) Kontrola pozytywna: odbiorca MA Rolnictwo → Kolo wraca (reguła ogólna
+    //    działa normalnie, niezależnie od wyjątku TRADE_TECH).
+    {
+      const recipientKnown = new Set(['Rolnictwo']);
+      const out = techIdsWithPrereqsMetForRecipient([TRADE_TECH, 'Kolo'], recipientKnown, tradeTechCatalog);
+      ok(out.includes('Kolo'), 'Kolo PO zbadaniu Rolnictwo → na liście (reguła ogólna działa)');
+      ok(out.includes(TRADE_TECH), 'Wymiana nadal na liście (prereqy odbiorcy teraz częściowo spełnione, ale i tak by przeszła)');
     }
 
     try { fs.unlinkSync(entry); } catch (_) {}

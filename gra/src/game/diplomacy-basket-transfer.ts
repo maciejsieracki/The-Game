@@ -4,6 +4,7 @@
  */
 import type { ResearchTechDef } from './research';
 import { epochGateMet, epochTierGateMet, findTech, prerequisitesOf } from './research';
+import { TRADE_TECH } from './trade-routes';
 
 /** Trwały dostęp boolean do surowca (od grantora u grantee). */
 export interface SurowiecBooleanGrant {
@@ -96,7 +97,12 @@ export function grantTechToOwner(
   // Gated za `ctx.techCatalog` tak samo jak walidacja „nieznana technologia" wyżej —
   // wołający bez katalogu (np. stare testy) świadomie pomija tę walidację.
   if (def && ctx.techCatalog) {
-    const prereqsMet = prerequisitesOf(def).every((p) => current.has(p));
+    // R-HANDEL-WYMIANA-DAR-DEADLOCK-Q1 (2026-09-07): wyjątek PUNKTOWY wyłącznie dla
+    // TRADE_TECH ("Wymiana") — patrz uzasadnienie przy analogicznym wyjątku w
+    // techIdsWithPrereqsMetForRecipient (diplomacy-tech-trade.ts). Bez tego wyjątku tutaj
+    // filtr listy przepuściłby "Wymianę", ale ten drugi, niezależny gate i tak by
+    // odrzucił faktyczny transfer — naprawa byłaby tylko kosmetyczna.
+    const prereqsMet = id === TRADE_TECH || prerequisitesOf(def).every((p) => current.has(p));
     const epochOk = epochGateMet(def, ctx.techCatalog, current);
     const tierOk = epochTierGateMet(def, ctx.techCatalog, current);
     if (!prereqsMet || !epochOk || !tierOk) {
