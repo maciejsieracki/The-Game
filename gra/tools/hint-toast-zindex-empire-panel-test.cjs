@@ -30,8 +30,23 @@
  * literze kryterium 1 (`elementFromPoint` NIE dowiodłoby niczego w żadną stronę), nie
  * osłabieniem go.
  *
+ * PRZYPIS RUNDA 1 (P-BRAMKA-HINT-TOAST-ZINDEX-SELFINVALIDATING-Q1): pierwotnie bundle BEFORE
+ * był budowany z `origin/main` -- ruchomym punktem odniesienia. Gdy naprawa opisana niżej
+ * została zintegrowana do `main`, `origin/main` przestał być "przed" i harness zaczął przerywać
+ * się własnym wyjątkiem (samounieważniająca kontrola bezpieczeństwa). Zamrożenie dokładnego SHA
+ * sprzed integracji (8c20c849, rodzic commita naprawy 3dc1b31f -- zweryfikowany jako osiągalny
+ * w pełnej historii repo, `git log --all`, i ancestor `origin/main`) okazało się NIEWYSTARCZAJĄCE:
+ * pełny historyczny main.ts przy BIEŻĄCYCH plikach pomocniczych (np. `ai-cs-absorption.ts`,
+ * ewoluowały niezależnie od tej naprawy) nie buduje się (`unitTriggersSisterAllianceThreat is
+ * not exported`) -- historia jest osiągalna, ale całe drzewo plików z tamtego punktu już nie
+ * jest spójne z bieżącym kodem poza main.ts. Naprawiono wzorcem MUTACYJNYM (patrz
+ * `FIXED_ZINDEX_LINE`/`BROKEN_ZINDEX_LINE`/`buildBeforeBundle` niżej w kodzie): cofamy WYŁĄCZNIE
+ * jedną linię formuły z-index w kopii bieżącego main.ts, reszta drzewa (w tym zależności)
+ * zostaje bieżąca -- ten sam wzorzec dowodu co inne bramki tej sesji.
+ *
  * CO PILNUJE TEN TEST (żywy, zbudowany `vite build`, prawdziwy headless Chromium):
- *  (1) PRZED naprawą (bundle zbudowany z main.ts z `origin/main`, BEZ zmiany): kliknięcie
+ *  (1) PRZED naprawą (bundle zbudowany z bieżącego main.ts z RĘCZNIE cofniętą formułą z-index,
+ *      patrz przypis wyżej): kliknięcie
  *      „Włącz Auto-Żywienie" przy otwartym panelu imperium daje toast na z-index 320 —
  *      obliczony numerycznie NIŻSZY niż backdrop (449) — i piksel w środku toastu jest
  *      WIDOCZNIE PRZYCIEMNIONY (jasność poniżej progu) — dokładne odtworzenie zgłoszenia.
@@ -67,6 +82,25 @@ const OUT_AFTER = path.join(GRA_DIR, 'dist-hint-toast-zindex-empire-panel-test-a
 const OUT_BEFORE = path.join(GRA_DIR, 'dist-hint-toast-zindex-empire-panel-test-before');
 const FALLBACK_CHROME = '/opt/pw-browsers/chromium-1194/chrome-linux/chrome';
 
+/** Formuła z-index PRZED naprawą (dokładnie main.ts:12303 w commicie 8c20c849 -- rodzic
+ * 3dc1b31f, commita który wprowadził naprawę) i formuła PO naprawie -- używane wyłącznie do
+ * MUTACJI bieżącego main.ts (patrz `buildBeforeBundle` niżej), nie do budowania z historycznego
+ * pliku w całości. RUNDA 1 (P-BRAMKA-HINT-TOAST-ZINDEX-SELFINVALIDATING-Q1) próbowała najpierw
+ * zamrożonego SHA-committed pliku w całości (`git show 8c20c849:gra/src/main.ts`) -- SHA jest
+ * osiągalny w pełnej historii (`git log --all`) i jest ancestorem `origin/main`
+ * (`git merge-base --is-ancestor 3dc1b31f origin/main` -> tak), więc to nie był problem z
+ * historią. Problem: main.ts z 8c20c849 importuje z INNYCH plików (np. `ai-cs-absorption.ts`),
+ * które w międzyczasie ewoluowały niezależnie od tej naprawy -- podstawienie starego main.ts
+ * przy bieżących plikach pomocniczych łamie build (`unitTriggersSisterAllianceThreat is not
+ * exported`), więc pełny "PRZED" z historii już nie jest odtwarzalny bez cofania całego drzewa
+ * plików (poza zakresem tej bramki). Naprawiono wzorcem MUTACYJNYM (ten sam co inne bramki tej
+ * sesji, patrz dispatch GOAL pkt 3): cofamy WYŁĄCZNIE tę jedną linię formuły z-index w kopii
+ * bieżącego main.ts, zostawiając resztę bieżącego drzewa (w tym wszystkie zależności) bez
+ * zmian -- brak ryzyka driftu zależności, bo budujemy zawsze na bieżącym main.ts.
+ */
+const FIXED_ZINDEX_LINE = "hintToast.style.zIndex = isPreBattleOpen() ? '9950' : ((isMainMenuOpen() || isEmpireDetailPanelOpen()) ? '600' : '320');";
+const BROKEN_ZINDEX_LINE = "hintToast.style.zIndex = isPreBattleOpen() ? '9950' : (isMainMenuOpen() ? '600' : '320');";
+
 let pass = 0;
 let fail = 0;
 function assert(label, cond, detail) {
@@ -83,15 +117,19 @@ function buildBundle(outDirAbs) {
   }
 }
 
-/** Buduje bundle BEFORE z main.ts DOKŁADNIE takim, jaki jest w origin/main (bez tej naprawy),
- * bez trwałej modyfikacji pliku w repo -- zapis/przywrócenie otacza wyłącznie build. */
+/** Buduje bundle BEFORE MUTUJĄC bieżący main.ts: cofa WYŁĄCZNIE formułę z-index toastu do
+ * stanu sprzed naprawy (patrz komentarz przy `FIXED_ZINDEX_LINE`/`BROKEN_ZINDEX_LINE` powyżej),
+ * zostawiając resztę pliku i wszystkie zależności bieżące -- kopia w pamięci, zapis/przywrócenie
+ * dysku otacza wyłącznie build, bez trwałej modyfikacji main.ts w repo. Jeśli bieżący main.ts
+ * nie zawiera już DOKŁADNIE oczekiwanej naprawionej linii (np. formuła z-index zmieniła się od
+ * napisania tej bramki) -- rzuca jawnie, zamiast po cichu budować bundle identyczny z AFTER. */
 function buildBeforeBundle() {
   const fixedSrc = fs.readFileSync(MAIN_TS, 'utf8');
-  const legacySrc = execSync('git show origin/main:gra/src/main.ts', { cwd: GRA_DIR, maxBuffer: 1024 * 1024 * 64 }).toString('utf8');
-  if (legacySrc.includes('isEmpireDetailPanelOpen()) ? \'600\'')) {
-    throw new Error('origin/main:gra/src/main.ts już zawiera naprawę -- BEFORE bundle nie byłby "przed"');
+  if (!fixedSrc.includes(FIXED_ZINDEX_LINE)) {
+    throw new Error('main.ts nie zawiera oczekiwanej naprawionej linii formuły z-index -- bramka wymaga aktualizacji (formuła zmieniła się od napisania tej bramki)');
   }
-  fs.writeFileSync(MAIN_TS, legacySrc, 'utf8');
+  const mutatedSrc = fixedSrc.replace(FIXED_ZINDEX_LINE, BROKEN_ZINDEX_LINE);
+  fs.writeFileSync(MAIN_TS, mutatedSrc, 'utf8');
   try {
     buildBundle(OUT_BEFORE);
   } finally {
@@ -324,7 +362,7 @@ async function main() {
 
   console.log('[hint-toast-zindex-empire-panel-test] budowanie bundla AFTER (bieżący main.ts z naprawą)...');
   buildBundle(OUT_AFTER);
-  console.log('[hint-toast-zindex-empire-panel-test] budowanie bundla BEFORE (main.ts z origin/main, bez naprawy)...');
+  console.log('[hint-toast-zindex-empire-panel-test] budowanie bundla BEFORE (bieżący main.ts z ręcznie cofniętą formułą z-index, reszta bez zmian)...');
   buildBeforeBundle();
 
   const { consoleErrors: beforeErrors, luminance: beforeLuminance } = await scenarioPrzedNaprawa(chromium);
