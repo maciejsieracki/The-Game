@@ -32249,7 +32249,14 @@ pierwsze łapie też przypadek, w którym pomyli się inne narzędzie.
 
 ---
 
-## P-AI-LISTA-BUDYNKOW-ZASZYTA-NIE-Z-PRODUKCJI-Q1 (2026-09-05, recon Operatora Garnizonu) · STATUS: **OTWARTE — zarejestrowane, nie dispatchowane; wlasciciel wybral doraźną łatkę, przyczyna zostaje**
+## P-AI-LISTA-BUDYNKOW-ZASZYTA-NIE-Z-PRODUKCJI-Q1 (2026-09-05, recon Operatora Garnizonu) · STATUS: **ZAMKNIĘTE 2026-09-07 (korekta) — przyczyna naprawiona pod innym ID**
+
+**KOREKTA 2026-09-07 (audyt backlogu):** ten wpis wisiał jako „OTWARTE" mimo że dokładnie
+opisana tu przyczyna (`infraOrder` zaszyty na sztywno zamiast `availableProduction`) została
+już naprawiona tematem `R-AI-PRODUKCJA-Z-DOSTEPNYCH-BUDYNKOW-Q1` (ZINTEGROWANE 2026-09-06,
+`dyspozycje/REJESTR-PROSB-I-ZADAN.md:5929`) — potwierdzone bezpośrednio w kodzie:
+`gra/src/game/ai.ts` (komentarz przy `collectAvailableBuildingCandidates`) mówi wprost
+„dawny `infraOrder` (...) USUNIĘTY. Te same budynki są już w `candidates`". Nic do dispatchu.
 
 **Znalezisko:** AI wybiera budynki z **zaszytej na sztywno listy** `infraOrder`
 (`gra/src/game/ai.ts` ~linia 1471), a **nie** z `availableProduction`. Skutek: **każdy nowy
