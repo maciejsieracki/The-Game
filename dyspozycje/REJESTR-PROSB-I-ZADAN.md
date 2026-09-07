@@ -6330,3 +6330,20 @@ bramki. Nowa bramka `kolor-surowce-spojnosc-test.cjs` 34/34.
 Nota (nie blokada): `cityPanel.ts:10040` ma szkielet ładowania biorący złoto z innego scope'u
 niż paleta (dziś obie wartości równe, zero różnicy dla gracza) — zarejestrowane do rozważenia
 przy następnym temacie tego obszaru, nie wymaga działania teraz.
+
+## `P-BRAMKA-WSPOLDZIELONY-DIST-TMPDIR-Q1` — INFRA — **ZINTEGROWANE 2026-09-07** (2 rundy, commit `57c327d9`)
+
+Klasa błędu współdzielonego katalogu/pliku tymczasowego (`os.tmpdir()`) między RÓWNOLEGLE
+biegnącymi bramkami — dwa potwierdzone, przeciwstawne przypadki: fałszywy zielony (dwa
+przebiegi mieszały wspólny `dist`, dając złudny parytet) i fałszywy czerwony (dwa równoległe
+przebiegi z `--emptyOutDir` kasowały sobie nawzajem katalog). Audyt wszystkich 66 plików
+`gra/tools/*.cjs` używających `os.tmpdir()` (z 981 `.cjs` łącznie) — każda stała nazwa
+katalogu/pliku dostała unikalny sufiks per przebieg (`process.pid`, losowy, albo
+`fs.mkdtempSync` gdzie już było poprawne). Zero zmiany asercji/progów/logiki pomiarowej
+którejkolwiek bramki. Nowa meta-bramka `bramki-tmpdir-unikalnosc-test.cjs` złapała PRZY
+SAMEJ INTEGRACJI jedno dodatkowe, realne naruszenie na dzisiejszym `main`
+(`prawo-przebudowa-skali-test.cjs:577`, dopisane przez inny temat integrowany po bazie tego
+tematu) — naprawione tym samym wzorcem, dokładnie klasa błędu, którą ta bramka ma łapać
+(dowód, że meta-bramka faktycznie działa na żywym, rosnącym repo, nie tylko na zamrożonej
+bazie). Final Control (runda 2): PASS, własna bateria 10 mutacji (6 celowo czerwonych,
+4 celowo zielone) — zero rozbieżności z oczekiwaniem.
