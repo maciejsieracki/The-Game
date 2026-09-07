@@ -213,6 +213,20 @@ eq(M.porPctBand(6, 5), 'bunt', 'PorPct 6 >= crit 5 -> bunt not skrajny');
 // prog kary). Cele PONOWNIE PRZELICZONE (nie przepisane z pamieci, patrz pomiar w raporcie
 // Operatora rundy 1): 94,8/73,4/59,2 -> 107,1/80,4/61,9. Pasma bez zmian.
 //
+// R-SZCZESCIE-AUDYT-C-PRAWO-I-OSIEDLA-Q1 (wezel C, ratyfikacja orkiestratora runda 2):
+// `prawo_bonus_osiedle_pop` wygladzony [32,24,16,10]/[28,20,14,8]/[22,16,10,6] ->
+// [10,7,5,3]/[8,6,4,2]/[7,5,3,2] (pop1 spada z 32/28/22 na 10/8/7). Ten scenariusz (pop=1,
+// bez garnizonu, bez administracji) ma PrawPct zlozony WYLACZNIE z tego jednego bonusu —
+// wiec cel PorPct i etykieta pasma sa BEZPOSREDNIA funkcja tej tablicy i musza byc PONOWNIE
+// PRZELICZONE, nie zostac literalem sprzed naprawy. Nie da sie tego sprawdzic „z danych" bez
+// odtworzenia formuly kombinujacej Sz/Prawo w samym tescie (co byloby ucieczka mutacyjna,
+// C-046) — to jest WIEC SWIADOMIE, udokumentowany wybor: bramka sprawdza KONKRETNA, dzisiejsza
+// wartosc jako czesc kontraktu produktowego (czy nowe miasto startuje w okreslonym pasmie
+// komfortu), nie wlasciwosc formuly. Zmierzone (`node tools/society-breakdown-test.cjs`,
+// ta sama metodologia co poprzednie przeliczenia w tym bloku): 107,1/80,4/61,9 -> 78,9/55,4/43,6,
+// pasma Lad/Spokoj/Napiecie -> Spokoj/Napiecie/Niepokoj (mapowanie stara->nowa ponizej,
+// w tablicy `scenarios`). Tolerancja +-4 p.p. bez zmian.
+//
 // UWAGA na wejscia: `haKult` / `haRel` to od G4 ZNORMALIZOWANY wskaznik [-1,+1], a nie punkty.
 // Poprzednie wartosci 3 / 2 / 1 (punkty starej skali) po zmianie wszystkie obcinaja sie do +1,
 // czyli oznaczaly to samo — dlatego scenariusze dostaja teraz jawnie udzial 1,0 (nowe miasto
@@ -225,10 +239,14 @@ eq(M.porPctBand(6, 5), 'bunt', 'PorPct 6 >= crit 5 -> bunt not skrajny');
     era: 1, population: 1, buildingZadowolenie: 0, podzialHandlu: podzial, garnizonCount: 0,
     ownCultureShare: 1, ownReligionShare: 1,
   };
+  // Mapowanie stara->nowa (wezel C prawo_bonus_osiedle_pop, patrz komentarz nad blokiem):
+  //   easy   107,1% Lad      -> 78,9% Spokoj
+  //   normal  80,4% Spokoj   -> 55,4% Napiecie
+  //   hard    61,9% Napiecie -> 43,6% Niepokoj
   const scenarios = [
-    { diff: 'easy', target: 107.1, band: 'Ład' },
-    { diff: 'normal', target: 80.4, band: 'Spokój' },
-    { diff: 'hard', target: 61.9, band: 'Napięcie' },
+    { diff: 'easy', target: 78.9, band: 'Spokój' },
+    { diff: 'normal', target: 55.4, band: 'Napięcie' },
+    { diff: 'hard', target: 43.6, band: 'Niepokój' },
   ];
   console.log('\n[D-START-OSIEDLE symulacja T1 pop=1, 100% wlasnej kultury i religii, bez garnizonu]\n');
   const zmierzone = [];

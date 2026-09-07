@@ -222,11 +222,24 @@ console.log('\n1. GOAL 1 — rownowaznosc: przeniesienie stalych nie zmienia zac
   const pr = M.computeLawBreakdown(
     { population: 2, era: 1, difficulty: 'normal', garnizonCount: 0 }, SOCIETY,
   );
-  eq(pr.netto, 20, 'pop 2 / epoka 1: netto Prawo = 20 (bonus Osiedla)');
+  // R-SZCZESCIE-AUDYT-C-PRAWO-I-OSIEDLA-Q1 (wezel C, ratyfikacja orkiestratora runda 2):
+  // netto Prawa przy pop 2/brak garnizonu/brak administracji to WYLACZNIE bonus Osiedla
+  // (pickOsiedlePopBonus, pop 2 -> idx 1) — pod tym scenariuszem netto = 20 bylo HARDKODEM
+  // na wartosc klucza `prawo_bonus_osiedle_pop.normal[1]` SPRZED wygladzenia wezla C (20).
+  // Wezel C przeliczyl ten klucz na [8,6,4,2] (normal[1]=6) — asercja przepisana na ODCZYT
+  // Z DANYCH zamiast literalu, zeby przyszla zmiana skali nie czerwieniła tej bramki po cichu.
+  // Mapowanie stara->nowa: `eq(pr.netto, 20, ...)` -> `eq(pr.netto, SOCIETY.prawo.prawo_bonus_osiedle_pop.normal[1], ...)`.
+  const osiedlePop2Normal = SOCIETY.prawo.prawo_bonus_osiedle_pop.normal[1];
+  eq(pr.netto, osiedlePop2Normal,
+    `pop 2 / epoka 1: netto Prawo = bonus Osiedla z danych (prawo_bonus_osiedle_pop.normal[1] = ${osiedlePop2Normal})`);
   // R-PRAWO-PRZEBUDOWA-SKALI-Q1 D3 (wlasciciel 2026-09-05): prawMax era1 normal 50 -> 40.
   // Pop 2 = populacja odniesienia (bez skalowania) wiec prawMax = wartosc czystej epoki.
   eq(pr.prawMax, 40, 'pop 2 / epoka 1: prawMax = 40 (D3, tabela per trudnosc)');
-  eq(pr.prawPct, 50, 'pop 2 / epoka 1: PrawPct = 50% (20/40, po D3)');
+  // PrawPct = 100 * netto / prawMax, zaokraglone do 1 miejsca po przecinku i przycięte capem
+  // (ta sama formula co `pctFromNetto`/`clampPct` w society-breakdown.ts) — liczona z danych,
+  // nie z literalu. Mapowanie stara->nowa: `eq(pr.prawPct, 50, ...)` -> obliczenie z osiedlePop2Normal.
+  eq(pr.prawPct, Math.min(M.PRAW_PCT_CAP, Math.round((100 * osiedlePop2Normal / 40) * 10) / 10),
+    `pop 2 / epoka 1: PrawPct = 100*netto/prawMax z danych (${osiedlePop2Normal}/40)`);
 }
 
 // ---------------------------------------------------------------------------
@@ -504,6 +517,7 @@ console.log('\n6. Scenariusz ze zrzutu wlasciciela: pop 2, epoka 1, Sz netto 16,
   const pr = M.computeLawBreakdown(wPr, SOCIETY);
   console.log(`  PRZED: Sz ${szPrzed.netto}/${szPrzed.szMax} = ${szPrzed.szPct}% | Prawo ${prPrzed.netto}/${prPrzed.prawMax} = ${prPrzed.prawPct}%`);
   console.log(`  PO   : Sz ${sz.netto}/${sz.szMax} = ${sz.szPct}% | Prawo ${pr.netto}/${pr.prawMax} = ${pr.prawPct}%`);
+  const osiedlePop2Normal = SOCIETY.prawo.prawo_bonus_osiedle_pop.normal[1];
   // Zrzut wlasciciela (114% / 40%) pochodzi sprzed R-SZCZESCIE-PRZEBUDOWA-SKALI-Q1 i po
   // stronie SZCZESCIA jest juz nieodtwarzalny — G4/G7/G10/G13 zmienily i licznik, i mianownik
   // tego samego miasta (netto 16 -> 27,22; szMax 14 -> 30; SzPct 114,3% -> 90,7%).
@@ -512,9 +526,19 @@ console.log('\n6. Scenariusz ze zrzutu wlasciciela: pop 2, epoka 1, Sz netto 16,
   // rowniez NIEODTWARZALNY co do cyfry — netto Prawa (20) nie zmienilo sie (bonus Osiedla
   // poza allowlista tego tematu), ale prawMax tak, wiec PrawPct = 20/40 = 50%, nie 40%.
   near(sz.netto, 13 + 12 + 10 - 70 / 9, 'zrzut: Szczescie netto = 27,22 (po G4/G7/G10)');
-  eq(pr.netto, 20, 'zrzut: Prawo netto = 20 (bonus Osiedla, poza allowlista)');
+  // R-SZCZESCIE-AUDYT-C-PRAWO-I-OSIEDLA-Q1 (wezel C): `prawo_bonus_osiedle_pop` NIE JEST
+  // JUZ poza allowlista — wezel C go wygladzil. Mapowanie stara->nowa:
+  // `eq(pr.netto, 20, ...)` -> `eq(pr.netto, osiedlePop2Normal, ...)` (odczyt z danych,
+  // ten sam klucz uzyty wyzej w bloku 1c).
+  eq(pr.netto, osiedlePop2Normal,
+    `zrzut: Prawo netto = bonus Osiedla z danych (prawo_bonus_osiedle_pop.normal[1] = ${osiedlePop2Normal})`);
   eq(szPrzed.szPct, 90.7, 'zrzut PRZED (skalowanie populacja wylaczone): SzPct = 90,7%');
-  eq(prPrzed.prawPct, 50, 'zrzut PRZED: PrawPct = 50% (D3: prawMax era1 normal 50 -> 40, 20/40)');
+  // Mapowanie stara->nowa: `eq(prPrzed.prawPct, 50, ...)` -> ta sama formula
+  // pctFromNetto/clampPct co wyzej, na tym samym `osiedlePop2Normal` (societyPrzedGoal2
+  // zeruje WYLACZNIE wspolczynnik skalowania populacji, nie klucz Osiedla — prawMax
+  // pozostaje 40 dla pop 2 = populacja odniesienia).
+  eq(prPrzed.prawPct, Math.min(M.PRAW_PCT_CAP, Math.round((100 * osiedlePop2Normal / 40) * 10) / 10),
+    `zrzut PRZED: PrawPct = 100*netto/prawMax z danych (${osiedlePop2Normal}/40)`);
   // pop 2 = populacja odniesienia, wiec PO zmianie ma byc IDENTYCZNIE — neutralnosc startowa.
   eq(sz.szPct, szPrzed.szPct, 'zrzut PO zmianie: SzPct bez zmian wobec PRZED (90,7%)');
   eq(pr.prawPct, prPrzed.prawPct, 'zrzut PO zmianie: PrawPct bez zmian wobec PRZED (50%, D3)');
