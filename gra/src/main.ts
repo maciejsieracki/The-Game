@@ -899,7 +899,7 @@ import { loadCultureParams, accumulateCulture, cultureHappiness, cityBorderRadiu
          makeRng, type CultureCity, type ReligionState,
          spreadReligion, type ReligionNeighbor,
          aggregateReligionEmpire, resolveCityReligionState, defaultCityReligionState,
-         religionCompositionBreakdown,
+         religionCompositionBreakdown, onCityCapturedReligion,
          isEmptyReligionState, type CivsDataLike } from './game/culture-religion';
 import {
   applyPostCentralPopulationGrowth,
@@ -26944,10 +26944,26 @@ async function boot(): Promise<void> {
       // 'grecy' fallback (aiOwnerCivMap.get(negative id) === undefined), which could
       // accidentally "match" sameCultureCircle against a Greek-playing victim and swap
       // the city's religion for the barbarians' (nonexistent) one.
-      if (!isBarbarian(atkOwner) && sameCultureCircle(civKeyForOwnerId(atkOwner), civKeyForOwnerId(oldOwner))) {
+      // R-RELIGIA-KONWERSJA-PO-PODBOJU-Q1: bezwarunkowe wywolanie (SAME okrag ->
+      // 100% nowego wlasciciela jak dotad; ROZNY okrag -> inwersja `1 - prevShare`
+      // przelozona na `counts`, symetrycznie z `onCityCapturedCulture`). Ten sam
+      // guard barbarzynski (isBarbarian(atkOwner) -> pomin, zeby nie fingowac
+      // religii barbarzyncow przez fallback 'grecy' w civKeyForOwnerId) co przed
+      // naprawa -- opts.civKeyForOwner niesie ten sam sameCultureCircle check co
+      // onCityCapturedCulture, wiec nie duplikujemy drugiego zabezpieczenia przed
+      // tym samym P-BARB-CAPTURE-GUARD.
+      if (!isBarbarian(atkOwner)) {
         cityRelig.set(
           city.id,
-          defaultCityReligionState(city.population, ownerReligionForOwnerId(atkOwner)),
+          onCityCapturedReligion(
+            cityRelig.get(city.id) ?? { counts: {} },
+            city.population,
+            ownerReligionForOwnerId(atkOwner),
+            ownerReligionForOwnerId(oldOwner),
+            atkOwner,
+            oldOwner,
+            { civKeyForOwner: civKeyForOwnerId },
+          ),
         );
       }
       if (atkOwner === 0) playerEverOwnedCity = true;

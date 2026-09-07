@@ -602,6 +602,8 @@ export function isKnownCiv(
   return list.some((c) => c && c.Cywilizacja === civName);
 }
 
+import { sameCultureCircle } from './diplomacy-display';
+
 // ---------------------------------------------------------------------------
 // ReligionState + dominantReligion
 // ---------------------------------------------------------------------------
@@ -727,6 +729,98 @@ export function defaultCityReligionState(
   const pop = Math.max(0, Math.floor(population));
   if (!ownReligion || pop <= 0) return { counts: {} };
   return { counts: { [ownReligion]: pop } };
+}
+
+export interface CityCaptureReligionOpts {
+  /** Np. civKeyForOwnerId z silnika — do sprawdzenia tego samego okręgu kulturowego. */
+  civKeyForOwner?: (ownerId: number) => string;
+}
+
+/**
+ * Po podboju: mix religii (R-RELIGIA-KONWERSJA-PO-PODBOJU-Q1) — strukturalny
+ * odpowiednik `onCityCapturedCulture` (conquest-stability.ts), przełożony na
+ * model `counts` (religia to Record<string, number>, nie skalarne pole jak
+ * `ownCultureShare`).
+ *
+ * SAME okrąg kulturowy → pełna zgodność, 100% nowego właściciela
+ * (`defaultCityReligionState`) — ZAMIERZONE, zostaje jak dziś, symetryczne
+ * z kulturą.
+ *
+ * RÓŻNY okrąg → DOKŁADNIE ta sama inwersja co kultura (`1 - prevShare`),
+ * gdzie `prevShare` = `religionOwnShare(state, previousOwnerReligion)` (udział
+ * poprzedniego właściciela sprzed podboju). Udział NOWEGO właściciela w
+ * populacji miasta = `1 - prevShare`; reszta populacji (`remaining`) idzie:
+ *   - gdy w `counts` nie ma trzecich religii poza starym/nowym właścicielem:
+ *     w całości do STAREGO właściciela (czyste tłumaczenie 2-stronnego wzoru
+ *     kultury: stary<->nowy, tak jak `1 - prev` / `prev` sumują się do 1),
+ *   - gdy są trzecie religie (miasto miało >2 wyznania przed podbojem,
+ *     np. po wcześniejszym `spreadReligion`): rozdzielone PROPORCJONALNIE do
+ *     ich dotychczasowego udziału wzajemnego (bez starego/nowego właściciela),
+ *     przeskalowane tak by sumować się do `remaining`. To NIE jest nowa liczba
+ *     balansu — to jedyny spójny sposób rozdzielić "resztę" gdy jest więcej niż
+ *     dwie strony, bez arbitralnie promowania jednej z trzecich religii.
+ *
+ * Pure; zwraca świeży stan.
+ */
+export function onCityCapturedReligion(
+  state: ReligionState,
+  population: number,
+  newOwnerReligion: string | null | undefined,
+  previousOwnerReligion: string | null | undefined,
+  newOwnerId?: number,
+  previousOwnerId?: number,
+  opts?: CityCaptureReligionOpts,
+): ReligionState {
+  if (newOwnerId === undefined || previousOwnerId === undefined || newOwnerId === previousOwnerId) {
+    return state;
+  }
+  const civKey = opts?.civKeyForOwner;
+  if (civKey && sameCultureCircle(civKey(newOwnerId), civKey(previousOwnerId))) {
+    return defaultCityReligionState(population, newOwnerReligion ?? null);
+  }
+  if (!newOwnerReligion) return state;
+
+  const prevShare = religionOwnShare(state, previousOwnerReligion ?? null);
+  const newShare = Math.max(0, Math.min(1, 1 - prevShare));
+  const totalExisting = totalAdherents(state);
+  const total = totalExisting > 0 ? totalExisting : Math.max(0, Math.floor(population));
+  if (total <= 0) return { counts: {} };
+
+  const newCount = Math.round(newShare * total);
+  const remaining = total - newCount;
+
+  const others: Record<string, number> = {};
+  let othersTotal = 0;
+  for (const k in state.counts) {
+    if (k === newOwnerReligion) continue;
+    if (previousOwnerReligion && k === previousOwnerReligion) continue;
+    const v = state.counts[k];
+    if (typeof v === 'number' && Number.isFinite(v) && v > 0) {
+      others[k] = v;
+      othersTotal += v;
+    }
+  }
+
+  const nextCounts: Record<string, number> = {};
+  if (othersTotal > 0 && remaining > 0) {
+    const keys = Object.keys(others).sort();
+    let assigned = 0;
+    keys.forEach((k, i) => {
+      const share = others[k]! / othersTotal;
+      const amount = i === keys.length - 1 ? remaining - assigned : Math.round(share * remaining);
+      if (amount > 0) nextCounts[k] = amount;
+      assigned += amount;
+    });
+  } else if (previousOwnerReligion && remaining > 0) {
+    // Bez trzecich religii: caly "remaining" wraca do STAREGO wlasciciela --
+    // czysta translacja 2-stronnego wzoru kultury (stary<->nowy sumuja sie do 1).
+    nextCounts[previousOwnerReligion] = remaining;
+  }
+  if (newCount > 0) {
+    nextCounts[newOwnerReligion] = (nextCounts[newOwnerReligion] ?? 0) + newCount;
+  }
+
+  return { counts: nextCounts };
 }
 
 /**
