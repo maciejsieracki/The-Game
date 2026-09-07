@@ -6,6 +6,7 @@
 
 import type { GameMap } from '../types/map';
 import type { City } from './cities';
+import { wasIndependentCityStateBeforeCapture } from './cities';
 import { isBarbarian } from './barbarians';
 import { onCityCapturedCulture } from './conquest-stability';
 import { applyPostCaptureLawOnCapture } from './post-capture-law';
@@ -417,6 +418,10 @@ export function applyCityCaptureAfterBattle(
   captureOpts?: CityCaptureOpts,
 ): RuntimeUnit | null {
   const prevOwner = city.ownerId;
+  // R-MIASTA-LIMIT-PODBOJ-PROWENIENCJA-CYWILIZACJA-Q1: odczyt PRZED clearCityStateFlagOnCapture
+  // (wołane niżej z main.ts przez captureOpts.onOwnerChanged, PO ustawieniu city.ownerId) —
+  // patrz cities.ts, wasIndependentCityStateBeforeCapture.
+  const wasIndependentCityState = wasIndependentCityStateBeforeCapture(city);
   for (let i = units.length - 1; i >= 0; i--) {
     const u = units[i]!;
     if (u.ownerId === city.ownerId && u.q === city.q && u.r === city.r) {
@@ -483,10 +488,19 @@ export function applyCityCaptureAfterBattle(
   // prevents a premature `delete` at the barbarian capture step itself, nothing more.
   if (!isBarbarian(atkOwner)) applyPostCaptureLawOnCapture(city, atkOwner, prevOwner);
   city.ownerId = atkOwner;
-  // R-MIASTA-LIMIT-PODBOJ-SILA-LICZY-SIE-Q1: przejęte siłą miasto LICZY SIĘ
-  // do limitu miast danej epoki nowego właściciela (odwrócenie wcześniejszej
-  // decyzji R-MIASTA-LIMIT-PODBÓJ-Q1=A, na wyraźne życzenie właściciela).
-  // Flaga `foundedByOwner` pozostaje więc niezmieniona (zwykle `true`).
+  // R-MIASTA-LIMIT-PODBOJ-SILA-LICZY-SIE-Q1: przejęte siłą miasto domyślnie LICZY SIĘ
+  // do limitu miast danej epoki nowego właściciela (odwrócenie wcześniejszej decyzji
+  // R-MIASTA-LIMIT-PODBÓJ-Q1=A, na wyraźne życzenie właściciela) — `foundedByOwner`
+  // pozostaje więc niezmieniony (zwykle `true`), CHYBA że poniższy podprzypadek mówi
+  // inaczej.
+  // R-MIASTA-LIMIT-PODBOJ-PROWENIENCJA-CYWILIZACJA-Q1 (ECHO właściciela 2026-09-07,
+  // odwraca CZĘŚCIOWO powyższą regułę): jeśli poprzedni właściciel to już była PEŁNOPRAWNA
+  // CYWILIZACJA (miasto NIE było w momencie tego podboju niezależnym, nigdy wcześniej
+  // nieprzejętym miastem-państwem — patrz wasIndependentCityStateBeforeCapture), zdobyte
+  // miasto NIE liczy się do limitu zdobywcy, bo jest wynikiem wojny z inną cywilizacją, nie
+  // organicznej ekspansji. Podbój niezależnego miasta-państwa (wasIndependentCityState===true)
+  // zostaje BEZ ZMIAN — nadal liczy się.
+  if (!wasIndependentCityState) city.foundedByOwner = false;
   city.oblegane = false;
   if (city.rebelState) city.rebelState = false;
   // B2 (Evaluator RUNDA 1: FAIL) — patrz komentarz przy CityCaptureOpts.onOwnerChanged wyżej.

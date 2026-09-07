@@ -201,6 +201,7 @@ import {
   resolveEffectiveUlepszenia,
   normalizePodzialHandlu,
   isAutoBudowaTryb,
+  wasIndependentCityStateBeforeCapture,
   type City,
   type BudowaFocus,
   type BudowaTryb,
@@ -13413,6 +13414,8 @@ async function boot(): Promise<void> {
       let citySiegeOwnerChanged = false;
       if (newOwner !== null && newOwner !== city.ownerId) {
         const oldOwner = city.ownerId;
+        // R-MIASTA-LIMIT-PODBOJ-PROWENIENCJA-CYWILIZACJA-Q1: odczyt PRZED gaszeniem flagi (cities.ts).
+        const wasIndependentCityState = wasIndependentCityStateBeforeCapture(city);
         // R-MIASTA-REBELIA-OCHRONA-20-TUR-Q1: odczyt PRZED applyPostCaptureLawOnCapture,
         // które kasuje bezwarunkowo rebelPreviousOwnerId/rebelProtectionTurnsRemaining —
         // patrz REGULA PRZECIW SAMOOSZUKIWANIU dispatchu (kolejność operacji w tym lejku).
@@ -13427,10 +13430,17 @@ async function boot(): Promise<void> {
         // głodowa to DRUGA ścieżka przejęcia miasta — oznaczenie miasta-państwa gasi się
         // tak samo jak przy podboju bojowym, inaczej flaga wędruje do zdobywcy.
         if (clearCityStateFlagOnCapture(city)) markCityStateDirty();
-        // R-MIASTA-LIMIT-PODBOJ-SILA-LICZY-SIE-Q1: kapitulacja głodowa LICZY SIĘ
-        // do limitu miast danej epoki nowego właściciela (odwrócenie wcześniejszej
-        // decyzji R-MIASTA-LIMIT-PODBÓJ-Q1=A, na wyraźne życzenie właściciela).
-        // Flaga `foundedByOwner` pozostaje więc niezmieniona (zwykle `true`).
+        // R-MIASTA-LIMIT-PODBOJ-SILA-LICZY-SIE-Q1: kapitulacja głodowa domyślnie LICZY SIĘ
+        // do limitu miast danej epoki nowego właściciela (odwrócenie wcześniejszej decyzji
+        // R-MIASTA-LIMIT-PODBÓJ-Q1=A, na wyraźne życzenie właściciela) — `foundedByOwner`
+        // pozostaje więc niezmieniony (zwykle `true`), CHYBA że poniższy podprzypadek mówi
+        // inaczej.
+        // R-MIASTA-LIMIT-PODBOJ-PROWENIENCJA-CYWILIZACJA-Q1 (ECHO właściciela 2026-09-07,
+        // odwraca CZĘŚCIOWO powyższą regułę): jeśli poprzedni właściciel to już była
+        // PEŁNOPRAWNA CYWILIZACJA (miasto NIE było w momencie TEJ kapitulacji niezależnym,
+        // nigdy wcześniej nieprzejętym miastem-państwem), zdobyte miasto NIE liczy się do
+        // limitu zdobywcy. Podbój niezależnego miasta-państwa zostaje BEZ ZMIAN.
+        if (!wasIndependentCityState) city.foundedByOwner = false;
         // B1 (Evaluator FAIL runda 1, R-EPOKA-BRAZU-WYMUSZONA-WOJNA): kapitulacja głodowa
         // to DRUGIE (obok applyCityCaptureToMap) miejsce, gdzie city.ownerId się zmienia w
         // wyniku wojny — dla par AI↔AI to dziś JEDYNA droga zakończenia wojny poza tym

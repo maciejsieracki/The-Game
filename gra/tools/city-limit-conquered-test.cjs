@@ -1,21 +1,31 @@
 'use strict';
 /**
- * R-MIASTA-LIMIT-PODBOJ-SILA-LICZY-SIE-Q1 — miasto zdobyte SIŁĄ (bitwa lub
- * kapitulacja głodowa) LICZY SIĘ do limitu miast danej epoki nowego
- * właściciela, dokładnie tak samo jak miasto założone osadnikiem. Odwrócenie
- * wcześniejszej decyzji R-MIASTA-LIMIT-PODBÓJ-Q1=A (miasta podbite miały być
- * WYJĘTE spod limitu) — na wyraźne, dwukrotnie potwierdzone życzenie
- * właściciela.
+ * R-MIASTA-LIMIT-PODBOJ-SILA-LICZY-SIE-Q1 (2026-09-01) — miasto zdobyte SIŁĄ (bitwa lub
+ * kapitulacja głodowa) LICZY SIĘ do limitu miast danej epoki nowego właściciela, dokładnie
+ * tak samo jak miasto założone osadnikiem. Odwrócenie wcześniejszej decyzji
+ * R-MIASTA-LIMIT-PODBÓJ-Q1=A (miasta podbite miały być WYJĘTE spod limitu).
+ *
+ * R-MIASTA-LIMIT-PODBOJ-PROWENIENCJA-CYWILIZACJA-Q1 (2026-09-07) — CZĘŚCIOWE odwrócenie
+ * powyższego, na wyraźne ECHO właściciela: rozróżniamy PROWENIENCJĘ zdobytego miasta wg
+ * właściciela BEZPOŚREDNIO PRZED tą konkretną konkwistą:
+ * - zdobyte BEZPOŚREDNIO od niezależnego (nigdy wcześniej nieprzejętego) miasta-państwa
+ *   (`city.startCityState === true` tuż przed TĄ konkwistą) → LICZY SIĘ do limitu zdobywcy
+ *   (BEZ ZMIAN względem R-MIASTA-LIMIT-PODBOJ-SILA-LICZY-SIE-Q1);
+ * - zdobyte od INNEJ CYWILIZACJI (czy to jej własne od zawsze miasto, czy miasto-państwo,
+ *   które ta cywilizacja WCZEŚNIEJ sama przejęła — `city.startCityState !== true` tuż przed
+ *   TĄ konkwistą) → NIE LICZY SIĘ do limitu zdobywcy (`city.foundedByOwner = false`).
  *
  * Kontrakt:
  * - limit blokuje kolejne foundingi po wyczerpaniu puli;
- * - miasto przejęte przez wojnę (bitwa LUB kapitulacja głodowa) ZUŻYWA tę
- *   samą pulę co miasto założone osadnikiem;
- * - gracz i AI używają tej samej bramki, a przejęcie gracz/AI/MP przechodzi
- *   przez wspólny mechanizm bez dodatkowej bramki foundingowej;
- * - `annexCityStateToOwner` (wchłonięcie dyplomatyczne) pozostaje nietknięte
- *   — miasta wchłonięte ZACHOWUJĄ swoje `foundedByOwner` (zwykle `true`) i
- *   już dziś liczą się do limitu, bez potrzeby jakiejkolwiek zmiany.
+ * - miasto przejęte BEZPOŚREDNIO od niezależnego miasta-państwa (bitwa LUB kapitulacja
+ *   głodowa) ZUŻYWA tę samą pulę co miasto założone osadnikiem;
+ * - miasto przejęte siłą OD INNEJ CYWILIZACJI (czy to jej własne miasto, czy miasto-
+ *   -państwo które ta cywilizacja wcześniej sama przejęła) NIE zużywa puli;
+ * - gracz i AI używają tej samej bramki, a przejęcie gracz/AI/MP przechodzi przez wspólny
+ *   mechanizm bez dodatkowej bramki foundingowej;
+ * - `annexCityStateToOwner` (wchłonięcie dyplomatyczne) pozostaje nietknięte — miasta
+ *   wchłonięte ZACHOWUJĄ swoje `foundedByOwner` (zwykle `true`) i już dziś liczą się do
+ *   limitu, bez potrzeby jakiejkolwiek zmiany (poza zakresem tego zlecenia).
  *
  * Uruchomienie: z katalogu gra: node tools/city-limit-conquered-test.cjs
  */
@@ -33,6 +43,7 @@ export {
   canFoundCity,
   foundCityAt,
   countsTowardCityFoundingLimit,
+  wasIndependentCityStateBeforeCapture,
 } from '../src/game/cities';
 export { applyCityCaptureAfterBattle } from '../src/game/post-battle-map';
 `, 'utf8');
@@ -58,6 +69,7 @@ const {
   canFoundCity,
   foundCityAt,
   countsTowardCityFoundingLimit,
+  wasIndependentCityStateBeforeCapture,
   applyCityCaptureAfterBattle,
 } = require(BUNDLE_FILE);
 
@@ -86,7 +98,7 @@ function makeMap(size = 32) {
   return { hexes, szerokoscQ: size, wysokoscR: size };
 }
 
-function makeCity(id, ownerId, q, r, foundedByOwner = true) {
+function makeCity(id, ownerId, q, r, opts = {}) {
   return {
     id,
     ownerId,
@@ -94,7 +106,8 @@ function makeCity(id, ownerId, q, r, foundedByOwner = true) {
     r,
     name: id,
     population: 1,
-    foundedByOwner,
+    foundedByOwner: opts.foundedByOwner !== undefined ? opts.foundedByOwner : true,
+    ...(opts.startCityState !== undefined ? { startCityState: opts.startCityState } : {}),
   };
 }
 
@@ -121,7 +134,7 @@ const foundedCities = [
   [0, 12], [12, 12], [18, 0], [0, 18], [18, 18],
 ].map(([q, r], i) => makeCity(`founded-${i}`, 0, q, r));
 
-console.log('\n-- czysta logika limitu (miasto ZDOBYTE liczy się jak założone) --');
+console.log('\n-- czysta logika limitu (miasto ZDOBYTE od niezależnego miasta-państwa liczy się jak założone) --');
 assert(
   countsTowardCityFoundingLimit(foundedCities[0]) === true,
   'miasto założone samodzielnie zużywa limit zakładania',
@@ -139,44 +152,127 @@ assert(
   'founding oznacza nowe miasto jako założone przez właściciela',
 );
 
-console.log('\n-- REALNY scenariusz właściciela: podbój bitewny -> próba założenia -> odrzucenie --');
-// Gracz (ownerId=0) jest DOKŁADNIE przy limicie epoki kamienia (9 miast
-// założonych, baza limitu = 10 => wolne jeszcze jedno miejsce), zdobywa w
-// bitwie JESZCZE JEDNO miasto wroga (ownerId=1). Realny
-// `applyCityCaptureAfterBattle` (bez przepisanej logiki) ma przenieść
-// własność i (po tej zmianie) NIE oznaczać miasta jako wyjętego spod limitu.
-const enemyCity = makeCity('enemy-captured', 1, 15, 15, true);
-const attackerRoster = [makeAttackerUnit('atk-1', 0, 14, 15)];
-const unitsOnMap = [makeAttackerUnit('atk-1', 0, 14, 15)];
-
-applyCityCaptureAfterBattle(enemyCity, attackerRoster, 0, unitsOnMap, 'atk-1');
-
+console.log('\n-- SCENARIUSZ (i): podbój NIEZALEŻNEGO miasta-państwa (nigdy wcześniej nieprzejętego) --');
+// Miasto-państwo NIGDY wcześniej nieprzejęte (startCityState=true tuż przed TĄ konkwistą).
+// Gracz (ownerId=0) jest DOKŁADNIE przy limicie epoki kamienia (9 miast założonych, baza
+// limitu = 10 => wolne jeszcze jedno miejsce), zdobywa je w bitwie od niezależnej frakcji
+// miasta-państwa (ownerId=2, `startCityState: true`). Ten podprzypadek MUSI zostać BEZ ZMIAN
+// względem R-MIASTA-LIMIT-PODBOJ-SILA-LICZY-SIE-Q1 -- to jest właśnie ECHO właściciela:
+// "wszystkie państwa i miasta liczą się do limitu... mówię tu... o państwach-miastach...
+// jak i o innych; one wliczają się do limitu".
+const independentCityState = makeCity('cs-independent', 2, 15, 15, { foundedByOwner: true, startCityState: true });
 assert(
-  enemyCity.ownerId === 0,
-  'realny applyCityCaptureAfterBattle przenosi własność miasta na zdobywcę',
-);
-assert(
-  enemyCity.foundedByOwner === true,
-  'realny applyCityCaptureAfterBattle NIE ustawia foundedByOwner=false (miasto zdobyte siłą liczy się do limitu)',
-);
-assert(
-  countsTowardCityFoundingLimit(enemyCity) === true,
-  'miasto zdobyte w bitwie zużywa pulę miast zakładanych tak samo jak miasto założone',
+  wasIndependentCityStateBeforeCapture(independentCityState) === true,
+  'kontrola: miasto-państwo nigdy wcześniej nieprzejęte jest rozpoznane jako niezależne PRZED konkwistą',
 );
 
-const citiesAfterCapture = [...foundedCities.slice(0, 9), enemyCity];
-const foundingBlockedAfterCapture = canFoundCity(29, 29, citiesAfterCapture, map, foundingOpts);
+applyCityCaptureAfterBattle(
+  independentCityState,
+  [makeAttackerUnit('atk-cs', 0, 14, 15)],
+  0,
+  [makeAttackerUnit('atk-cs', 0, 14, 15)],
+  'atk-cs',
+);
+
 assert(
-  foundingBlockedAfterCapture.ok === false
-    && foundingBlockedAfterCapture.reason === 'limit miast na tej epoce',
-  'DOKŁADNY scenariusz właściciela: 9 miast założonych + 1 zdobyte siłą = limit 10 wyczerpany, '
+  independentCityState.ownerId === 0,
+  'podbój niezależnego miasta-państwa przenosi własność na zdobywcę',
+);
+assert(
+  independentCityState.foundedByOwner === true,
+  'SCENARIUSZ (i): podbój BEZPOŚREDNIO od niezależnego miasta-państwa NIE ustawia foundedByOwner=false '
+    + '(regres R-MIASTA-LIMIT-PODBOJ-SILA-LICZY-SIE-Q1 -- ten podprzypadek zostaje BEZ ZMIAN)',
+);
+assert(
+  countsTowardCityFoundingLimit(independentCityState) === true,
+  'miasto zdobyte BEZPOŚREDNIO od niezależnego miasta-państwa nadal zużywa pulę miast zakładanych',
+);
+
+const citiesAfterIndependentCapture = [...foundedCities.slice(0, 9), independentCityState];
+const foundingBlockedAfterIndependentCapture = canFoundCity(29, 29, citiesAfterIndependentCapture, map, foundingOpts);
+assert(
+  foundingBlockedAfterIndependentCapture.ok === false
+    && foundingBlockedAfterIndependentCapture.reason === 'limit miast na tej epoce',
+  'SCENARIUSZ (i): 9 miast założonych + 1 zdobyte od niezależnego miasta-państwa = limit 10 wyczerpany, '
     + 'próba założenia NOWEGO miasta osadnikiem jest odrzucona przez canFoundCity',
 );
 
-const belowLimitBeforeCapture = canFoundCity(29, 29, foundedCities.slice(0, 9), map, foundingOpts);
+console.log('\n-- SCENARIUSZ (ii): podbój zwykłego miasta INNEJ CYWILIZACJI (nigdy nie było miastem-państwem) --');
+// Miasto od zawsze własne innej cywilizacji (ownerId=1), brak startCityState -- to jest
+// właśnie "wynik wojny z inną cywilizacją" z ECHO właściciela, NIE organicznej ekspansji.
+const foreignCivCity = makeCity('foreign-civ-city', 1, 15, 21, { foundedByOwner: true });
 assert(
-  belowLimitBeforeCapture.ok === true,
-  'kontrola: przed zdobyciem (9/10) founding był jeszcze dozwolony -- to zdobycie, nie coś innego, zamyka pulę',
+  wasIndependentCityStateBeforeCapture(foreignCivCity) === false,
+  'kontrola: zwykłe miasto innej cywilizacji NIE jest rozpoznane jako niezależne miasto-państwo',
+);
+
+applyCityCaptureAfterBattle(
+  foreignCivCity,
+  [makeAttackerUnit('atk-civ', 0, 14, 21)],
+  0,
+  [makeAttackerUnit('atk-civ', 0, 14, 21)],
+  'atk-civ',
+);
+
+assert(
+  foreignCivCity.ownerId === 0,
+  'podbój miasta innej cywilizacji przenosi własność na zdobywcę',
+);
+assert(
+  foreignCivCity.foundedByOwner === false,
+  'SCENARIUSZ (ii): podbój zwykłego miasta INNEJ CYWILIZACJI ustawia foundedByOwner=false '
+    + '(NIE liczy się do limitu zdobywcy -- ZMIANA wprowadzona tym tematem)',
+);
+assert(
+  countsTowardCityFoundingLimit(foreignCivCity) === false,
+  'miasto zdobyte od innej cywilizacji NIE zużywa puli miast zakładanych',
+);
+
+const citiesAfterForeignCapture = [...foundedCities.slice(0, 9), foreignCivCity];
+const foundingAllowedAfterForeignCapture = canFoundCity(29, 29, citiesAfterForeignCapture, map, foundingOpts);
+assert(
+  foundingAllowedAfterForeignCapture.ok === true,
+  'SCENARIUSZ (ii): 9 miast założonych + 1 zdobyte od innej cywilizacji = limit 10 NIE wyczerpany '
+    + '(zdobyte miasto nie zużywa puli), founding NOWEGO miasta osadnikiem jest nadal dozwolony',
+);
+
+console.log('\n-- SCENARIUSZ (iii): podbój miasta-państwa, które WCZEŚNIEJ przejęła inna cywilizacja --');
+// Miasto-państwo (ownerId=1 -- inna cywilizacja), które TA cywilizacja SAMA przejęła
+// wcześniej od stanu niezależnego (startCityState już zgaszone przy TAMTYM przejęciu,
+// foundedByOwner=false z tamtej konkwisty). Teraz gracz (ownerId=0) odbiera je SIŁĄ tej
+// cywilizacji -- to jest właśnie rozróżnienie, którego domaga się ECHO właściciela: "nawet
+// jeśli wcześniej były państwem-miastem zdobytym przez tę cywilizację, nie zalicza się do
+// limitu, ponieważ są wynikiem wojny z inną cywilizacją".
+const reconqueredCityState = makeCity('cs-already-conquered-by-other-civ', 1, 15, 27, {
+  foundedByOwner: false,
+  startCityState: false,
+});
+assert(
+  wasIndependentCityStateBeforeCapture(reconqueredCityState) === false,
+  'kontrola: miasto-państwo już raz przejęte przez inną cywilizację NIE jest rozpoznane jako niezależne',
+);
+
+applyCityCaptureAfterBattle(
+  reconqueredCityState,
+  [makeAttackerUnit('atk-reconq', 0, 14, 27)],
+  0,
+  [makeAttackerUnit('atk-reconq', 0, 14, 27)],
+  'atk-reconq',
+);
+
+assert(
+  reconqueredCityState.ownerId === 0,
+  'odebranie miasta-państwa innej cywilizacji przenosi własność na nowego zdobywcę',
+);
+assert(
+  reconqueredCityState.foundedByOwner === false,
+  'SCENARIUSZ (iii): podbój miasta-państwa, które WCZEŚNIEJ przejęła inna cywilizacja, '
+    + 'zostawia (a nie tylko zostawia -- jawnie ustawia) foundedByOwner=false -- NIE liczy się do limitu, '
+    + 'dokładnie tak jak zwykłe miasto tej cywilizacji',
+);
+assert(
+  countsTowardCityFoundingLimit(reconqueredCityState) === false,
+  'miasto-państwo odebrane innej cywilizacji (która sama je wcześniej przejęła) NIE zużywa puli miast zakładanych',
 );
 
 console.log('\n-- recon ścieżek gracz/AI/MP (podbój bitewny + kapitulacja głodowa) --');
@@ -224,12 +320,16 @@ assert(
   'AI sprawdza ten sam limit w wykonaniu foundCityAt',
 );
 assert(
-  !battleCapture.includes('city.foundedByOwner = false'),
-  'podbój po bitwie NIE wyjmuje miasta spod limitu (foundedByOwner pozostaje niezmienione)',
+  battleCapture.includes('wasIndependentCityStateBeforeCapture(city)')
+    && battleCapture.includes('if (!wasIndependentCityState) city.foundedByOwner = false;'),
+  'podbój po bitwie rozróżnia prowenincję: wyjmuje spod limitu WYŁĄCZNIE gdy poprzedni właściciel '
+    + 'to już była cywilizacja (R-MIASTA-LIMIT-PODBOJ-PROWENIENCJA-CYWILIZACJA-Q1)',
 );
 assert(
-  !surrender.includes('city.foundedByOwner = false'),
-  'kapitulacja z głodu NIE wyjmuje miasta spod limitu (foundedByOwner pozostaje niezmienione)',
+  surrender.includes('wasIndependentCityStateBeforeCapture(city)')
+    && surrender.includes('if (!wasIndependentCityState) city.foundedByOwner = false;'),
+  'kapitulacja z głodu rozróżnia prowenincję: wyjmuje spod limitu WYŁĄCZNIE gdy poprzedni właściciel '
+    + 'to już była cywilizacja (R-MIASTA-LIMIT-PODBOJ-PROWENIENCJA-CYWILIZACJA-Q1)',
 );
 assert(
   emptyCapture.includes('applyCityCaptureToMap(')
@@ -247,7 +347,8 @@ const annexBody = functionBody(mainSrc, 'function annexCityStateToOwner(');
 assert(
   annexBody.length > 0 && !annexBody.includes('foundedByOwner'),
   'annexCityStateToOwner nie dotyka foundedByOwner -- wchłonięcie dyplomatyczne już dziś liczy '
-    + 'wchłonięte miasta do limitu (miasta zachowują swoje pierwotne foundedByOwner), zero zmian potrzebnych',
+    + 'wchłonięte miasta do limitu (miasta zachowują swoje pierwotne foundedByOwner), zero zmian potrzebnych '
+    + '(poza zakresem tego zlecenia)',
 );
 
 console.log(`\n=== city-limit-conquered-test: ${passed} passed, ${failed} failed ===`);

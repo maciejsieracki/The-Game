@@ -1068,6 +1068,40 @@ export function countsTowardCityFoundingLimit(city: Pick<City, 'foundedByOwner'>
   return city.foundedByOwner !== false;
 }
 
+/**
+ * R-MIASTA-LIMIT-PODBOJ-PROWENIENCJA-CYWILIZACJA-Q1: czy miasto było, TUŻ PRZED tym
+ * KONKRETNYM podbojem, jeszcze niezależnym miastem-państwem (nigdy wcześniej nie
+ * przejętym przez żadną cywilizację) — a nie już własnością innej cywilizacji (czy to
+ * dlatego że ta cywilizacja sama je założyła, czy dlatego że wcześniej przejęła je jako
+ * miasto-państwo).
+ *
+ * `city.startCityState` jest ustawiane na `true` WYŁĄCZNIE przy generacji mapy, dla
+ * startowych miast-państw klastra (`main.ts`, `foundCityAt` w `spawnClusterSameTypeRivals`/
+ * `spawnPendingForeignClusters`) — nigdy nie jest ponownie ustawiane na `true` później.
+ * Gaśnie NA MIEŚCIE przy KAŻDYM przejęciu (`clearCityStateFlagOnCapture`,
+ * `game/display-names.ts`) i zostaje zgaszone trwale — więc `true` odczytane w tym
+ * miejscu oznacza, że TA cywilizacja/gracz jest PIERWSZYM zdobywcą tego miasta w całej
+ * partii, a `false`/`undefined` oznacza, że poprzedni właściciel to już pełnoprawna
+ * cywilizacja (sama założyła to miasto, albo wcześniej sama przejęła je jako miasto-
+ * -państwo — oba te przypadki traktujemy identycznie, zgodnie z ECHO właściciela).
+ *
+ * KRYTYCZNE: wołający MUSI odczytać ten predykat PRZED `clearCityStateFlagOnCapture`
+ * (które gasi flagę NA TYM WŁAŚNIE przejęciu) — w obu dzisiejszych miejscach zmiany
+ * `city.ownerId` przy podboju (`post-battle-map.ts` `applyCityCaptureAfterBattle`,
+ * `main.ts` `resolveSiegeSurrender`) `clearCityStateFlagOnCapture` jest wołane PO
+ * ustawieniu nowego właściciela (przez hak `onOwnerChanged`/wprost), więc odczyt na
+ * samym początku tych funkcji jest bezpieczny.
+ *
+ * Świadomie NIE rozróżnia barbarzyńców/rebeliantów jako poprzedniego właściciela — poza
+ * zakresem tego zlecenia (patrz raport operatora rundy 1: nie ma to wpływu na trzy
+ * binarne scenariusze testowe z dispatchu, ECHO mówi wprost o "innej cywilizacji").
+ */
+export function wasIndependentCityStateBeforeCapture(
+  city: Pick<City, 'startCityState'>,
+): boolean {
+  return city.startCityState === true;
+}
+
 export function canFoundCity(
   q: number,
   r: number,
