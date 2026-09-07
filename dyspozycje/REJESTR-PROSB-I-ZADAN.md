@@ -6307,3 +6307,26 @@ zweryfikował niezależnie wszystkie zarzuty pięcioma własnymi mutacjami produ
 bramek w rodzinie „panel imperium” (37 zielonych / 5 czerwonych z 42 uruchomionych),
 niezwiązanych z tym tematem — kandydat na osobny przyszły temat
 `P-BRAMKI-EMPIRE-PANEL-PIEC-CZERWONYCH-ZASTALE-Q1`.
+
+## `P-KOLOR-SUROWCE-MIASTO-VS-MAPA-Q1` — GAME/wizualny — **ZINTEGROWANE 2026-09-07** (1 runda, commit `0f3c0fb1`)
+
+Zgłoszenie właściciela sprzed miesiąca: różne miejsca gry używają różnych kolorów dla tych
+samych sześciu surowców (Praca, Żywność, Skarbiec, Nauka, Kultura, Religia) między panelem
+miasta a HUD-em mapy. Recon (G1, obowiązkowy przed jakąkolwiek zmianą) potwierdził rozjazd —
+brak dziś centralnej palety (`grep RESOURCE_COLOR`/`kolorSurowca` = 0 trafień). Nowy moduł
+`gra/src/ui/resourceColors.ts` jako jedno źródło prawdy, przepięty w `brandTokenVars.ts`,
+`cityPanel.ts`, `hud.ts`, `mapToolbarHud.ts`. Zwycięzca dla Skarbca: złoto (`#e8d88a`) —
+7 wystąpień w kodzie i sam asset marki `res-treasury.svg`, wobec 3 dla błękitu (etykieta
+„Pieniądz”) — zgodne z ekranem odniesienia właściciela (HUD mapy). Zero nowych kolorów,
+wybór wyłącznie spośród już używanych wariantów — to nie jest nowa decyzja kolorystyczna.
+
+Final Control zweryfikował wszystkie 8 zarzutów Evaluatora niezależnie (`ODDAL` każdy):
+własny licznik pikseli PNG na wszystkich 18 zrzutów dowodowych, własna mutacja w żywym
+Chromium (Skarbiec, inny surowiec niż mutacja Operatora, własny build), trzy własne mutacje
+statyczne kodu (reguła CSS złamana na dwie linie, zmiana palety religii, literał klasy
+zamiast funkcji) — wszystkie potwierdziły nietautologiczność naprawy przez czerwienienie
+bramki. Nowa bramka `kolor-surowce-spojnosc-test.cjs` 34/34.
+
+Nota (nie blokada): `cityPanel.ts:10040` ma szkielet ładowania biorący złoto z innego scope'u
+niż paleta (dziś obie wartości równe, zero różnicy dla gracza) — zarejestrowane do rozważenia
+przy następnym temacie tego obszaru, nie wymaga działania teraz.
