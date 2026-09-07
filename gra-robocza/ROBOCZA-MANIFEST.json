@@ -1,10 +1,10 @@
 {
-  "publishedAt": "2026-09-07T18:10:00",
-  "sourceBuild": "/tmp/civ-dist-fala359",
-  "note": "FALA 359 - deploy rejestrowy (bez zmiany bundla): domkniecie P-AI-GRANARY-PROG-POPULACJI-DUPLIKAT-Q1 i P-AI-ZDOBYCIE-MIASTA-CZTERY-LUKI-Q1, oba tematy test-only (wylacznie gra/tools/**), zero zmian w gra/src i gra/data. Surowy build vite bit-for-bit identyczny z FALA 358 (md5 stempla rozni sie wylacznie przez znacznik czasu wstrzykiwany przy kazdej publikacji).",
+  "publishedAt": "2026-09-07T21:15:00",
+  "sourceBuild": "/tmp/civ-dist-fala360",
+  "note": "FALA 360 - R-WOJNA-WYMUSZONA-PROG-TURY-GRACZ-Q1: naprawiony zywy bug zgloszony przez wlasciciela (baner \"THE GAME - BOOT ERROR\" w turze 1 swiezej gry). (1) Gracz dolacza do puli parowania wojny wymuszonej dopiero od tury 25, spojnie z AI (wczesniej: od tury 1, bez progu). (2) Usuniety BOOT ERROR CATCHER w index.html przechwytujacy console.error bezterminowo - kazdy zwykly log gry zamienial sie w rosnacy czerwony baner \"crash\". Takze etapy hot-seat 0-3 (fundament, bez zadnego wplywu na dzisiejsza rozgrywke jednoosobowa) sa juz zawarte w tym buildzie.",
   "publisher": "Orkiestrator (Claude Code)",
   "bundle": "Gra-ROBOCZA.html",
-  "md5": "2c4d4f38b8af357b1595fbcb81f3f982",
+  "md5": "611ff10db8a6f8509f298e71872c2dd5",
   "bundlePoleBitwy": "Gra-ROBOCZA-POLE-BITWY.html",
   "md5PoleBitwy": "d4477b3eaed627e426c41b9f8d0ad1f1"
 }

@@ -13,6 +13,18 @@ swoim wĹ‚asnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji d
 > Pakiet 3 z 2026-08-20 jest docs-only i nie tworzy wpisu ROBOCZA/KANON/FINALNA;
 > ten plik pozostaje wyłącznie rejestrem publikacji bundli.
 
+## ROBOCZA 611ff10d - 2026-09-07 21:15 UTC - FALA 360: wojna wymuszona — próg tury gracza + naprawa banera BOOT ERROR
+
+|- md5 (pełne): 611ff10db8a6f8509f298e71872c2dd5 · stempel: ROBOCZA · label 611ff10d · źródłowy commit integracji: `8a9a1271` (`R-WOJNA-WYMUSZONA-PROG-TURY-GRACZ-Q1`, 3 rundy)
+|- **Zgłoszenie na żywo właściciela** (zrzut ekranu, tura 1 świeżej gry): czerwony baner „THE GAME — BOOT ERROR" na całą szerokość ekranu. Dwa połączone bugi:
+|- **(1) GAME — brak progu tury dla gracza w parowaniu wojny wymuszonej.** Gracz dołączał do puli parowania od tury 1 (jedyny warunek: zero aktywnych wojen wymuszonych), podczas gdy AI (Brąz/Żelazo/Kamień) ma próg 25 tur — ECHO właściciela: dodać próg również dla gracza, spójnie z AI (cofnięcie wcześniejszej decyzji „bez specjalnego przypadku"). Naprawione: `turn >= WOJNA_KAMIEN_WYMUSZONA_START_TURY` (=25) w „Kroku C" (`main.ts`).
+|- **(2) INFRA — „BOOT ERROR CATCHER" w `gra/index.html` przechwytywał `console.error` BEZTERMINOWO**, nie tylko podczas ładowania bundla — każdy zwykły, oczekiwany `console.error` z logiki gry zamieniał się w rosnący, nigdy nieczyszczony czerwony baner „crash". Usunięty override; `window.onerror`/`unhandledrejection` zostają (łapią realne nieobsłużone wyjątki).
+|- Runda 2 zakończyła się FAIL: Evaluator znalazł 5 zastałych bramek testowych kodujących STARE zachowanie gracza (bez progu tury) — wszystkie naprawione re-anchorem (regex/mutant na nowy trzywarunkowy blok; 3 live testy Playwright dostały fast-forward realnymi `endTurn()` do tury ≥25 przed wywołaniem haków testowych, SEDNO każdego testu zachowane). Final Control (runda 3) **PASS** — własna, niezależna próbka bramek + przeliczenie plików na dysku (rodzina `forced-war-*-test.cjs` ma realnie 14 plików). Zero zmian progów AI (bronze/stone/iron) przez cały temat.
+|- **Build zawiera też Etapy 0-3 planu hot-seat** (`docs/decyzje/PLAN-HOT-SEAT-2-GRACZY.md`, commity `94c475ec`/`87b33da3`/`f3c0becf`/`302ea837`, zintegrowane wcześniej tego dnia) — fundament + mgła wojny + akcesory ekonomiczne per-człowiek, wszystkie behawioralne no-opy przy dzisiejszym jednym fotelu, dowiedzione trzykrotnie niezależnie na każdym etapie. Zero widocznej zmiany rozgrywki jednoosobowej.
+|- tsc --noEmit 0 błędów · 5 bramek referencyjnych zielonych (logic 213/213, tech-tree 19/19, research 33/33, unit-replace 13/13, combat 6/6) · rodzina `forced-war-*`/`wojna-wymuszona-*` (14+2 plików) + `boot-error-catcher-console-error-test` zielone · Vite build 886 modułów, singlefile.
+|- Bundle pola bitwy (`Gra-ROBOCZA-POLE-BITWY.html`) pominięty — temat nie dotyka mechaniki walki polowej; md5 z FALI 353 zachowany bez zmian.
+|- **AKTUALNA**
+
 ## ROBOCZA 2c4d4f38 - 2026-09-07 18:10 UTC - FALA 359: deploy rejestrowy — dwa tematy test-only, zero zmiany bundla
 
 |- md5 (pełne): 2c4d4f38b8af357b1595fbcb81f3f982 · stempel: ROBOCZA · label 2c4d4f38 · źródłowe commity integracji: `0ba33bc5` (granary) + `c21c3b1c` (cztery-luki)
