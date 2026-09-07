@@ -71,6 +71,12 @@ historycznych wierszy poniżej; wpisy bez jednoznacznego dowodu nie są tu zgady
 | `P-ENTITYCARD-CIVPEDIA-KLIK-MARTWY-Q1` | `ZINTEGROWANE` | Commit `7d507ed6`. Nowy szew `civpediaOpenGate.ts`, przycisk „Więcej informacji (Civpedia)" na kartach encji teraz działa. Szczegóły niżej (linia ok. 6351). Nic do dispatchu. |
 | `P-BRAMKI-EMPIRE-PANEL-PIEC-CZERWONYCH-ZASTALE-Q1` | `ZINTEGROWANE — wszystkie 4 sub-tematy zamknięte 2026-09-07` | Pięć zastałych czerwonych bramek panelu imperium (znalezisko przy `P-DESIGN-11-ZAKLADEK-DROBIAZGI-Q1`). **A** `P-BRAMKI-EMPIRE-PODZIALPRACY-SEKCJA-ZASTALE-Q1` — commit `8da2d3fc`. **B** `P-BRAMKA-EMPIRE-FOOD-B5-ZASTALA-Q1` — commit `9dc11a43`. **C** `P-BRAMKA-EMPIRE-OBYWATELE-TRADE-SNAP-Q1` — commit `90526476` (po ECHO właściciela: przekotwiczyć test na `side.myCityId`/`premiaBudynkuPerSide`, generalizacja R2-2). **D** `P-BRAMKA-HINT-TOAST-ZINDEX-SELFINVALIDATING-Q1` — commit `3ca16653` (harness self-invalidating naprawiony metodą mutacyjną). Wszystkie worktree usunięte. Nic do dispatchu. Szczegóły niżej (linie ok. 6375-6480). |
 | `P-HANDEL-SZLAKI-WZOR-DUPLIKAT-Q1` | `OTWARTE, niski priorytet — status z 2026-08-22, NIE zweryfikowane ponownie 2026-09-07` | Wzór dochodu z tras zduplikowany w 2 miejscach `main.ts` (panel Handlu + chip HUD) zamiast jednej wspólnej funkcji `trade-routes.ts::computeTradeRouteIncomeByCity`. Możliwe że rozwiązane przy okazji `R-HANDEL-SZLAKI-PRZEBUDOWA-Q1` (T1-T6, zakończone) — WYMAGA potwierdzenia reconem przed dispatchem/zamknięciem, nie zakładać żadnego stanu bez sprawdzenia. |
+| `R-HANDEL-DOCHOD-PRZEZ-PODZIAL-MIASTA-Q1` | `ZINTEGROWANE, DEPLOY-ROBOCZA FALA 357` | Commit `269de23a`. Dochód z tras handlowych (`dochodTrasHandlowych`) przeniesiony do `handelBrutto` w `economy.ts` przed mnożnikiem Wealth, usunięty stary „czysty" doliczek `pieniadzZTras` po Wealth w `turn-economy.ts` (obie gałęzie siege/normal, `advanceCityEconomy`+`previewCityEconomy`). Evaluator złapał realny FAIL (podwójne liczenie w `previewCityEconomy` gałąź non-siege, bug HUD-owy) — naprawiony w Obronie. Zero zmian w `trade-routes.ts` (sam wzór dochodu nietknięty). Zdeployowane FALA 357 (`b737a950`). |
+| `R-DYPLO-CLAMP-PLATNOSC-PROPORCJONALNA-Q1` | `ZINTEGROWANE` | Commit `c1d5d9f6`. Zgłoszony bug (AI/miasta-państwa żądają pełnej ilości surowca płacąc 0) był już naprawiony wcześniej (`546f6a51`, 2026-08-17) — `clampBasketItemsToAffordable` w `diplomacy-ai-balance.ts` już redukuje proporcjonalnie. Operator dodał 5 nowych testów (`diplomacy-ai-balance-test.cjs`, 31→36) potwierdzających zachowanie. Nic do dispatchu. |
+| `P-SCIENCEHUB-TOOLTIP-EMOJI-ZAMIAST-IKON-Q1` | `ZINTEGROWANE, DEPLOY-ROBOCZA FALA 358` | Commit `1fbe1551`. Tooltip huba badań (`sciencePicker.ts::techRequirementItems()`) pokazuje teraz ikony marki per encja zamiast surowych emoji, spójnie z listą huba i panelem miasta. Nowy test real-render (141/0, 9 zrzutów Chromium PRZED/PO w `dyspozycje/autobot/runs/.../dowody-wizualne/`). Zdeployowane FALA 358 (`3f06cba6`). |
+| `P-MGLA-ODKRYCIE-TELEPORT-KONIEC-TURY-Q1` | `ZINTEGROWANE (korekta statusu, 2026-09-07)` | Znaleziono JUŻ zintegrowane pod commitem `cb067a17` (nie tym ID) — zweryfikowane bezpośrednio (bramka 16/16 zielona). Rejestr błędnie oznaczał temat jako „DISPATCHOWANE"/w toku; poprawione. Stara, martwa lokalna gałąź `autobot/P-MGLA-ODKRYCIE-TELEPORT-KONIEC-TURY-Q1` usunięta. Nic do dispatchu. |
+| `P-AI-LISTA-BUDYNKOW-ZASZYTA-NIE-Z-PRODUKCJI-Q1` | `ZINTEGROWANE (korekta statusu, 2026-09-07)` | Przyczyna (`infraOrder` zaszyta lista) już USUNIĘTA wcześniej pod `R-AI-PRODUKCJA-Z-DOSTEPNYCH-BUDYNKOW-Q1` (zintegrowane 2026-09-06) — potwierdzone komentarzem w `ai.ts`. `PYTANIA-OTWARTE.md` miało stały wpis „OTWARTE"; poprawione (`7440cf8a`). Nic do dispatchu. |
+| `P-AI-GRANARY-PROG-POPULACJI-DUPLIKAT-Q1` | `ZINTEGROWANE` | Commit `0ba33bc5`. Znalezisko Obrony `R-AI-PRODUKCJA-Z-DOSTEPNYCH-BUDYNKOW-Q1` (duplikat progów populacji `ai.ts` vs `economy.ts`) — potwierdzono że duplikacja jest ŚWIADOMA (komentarz w `ai.ts`, `granaryPriorityBonus()`), więc NIE zaimportowano `cityPopulationCap` do `ai.ts`. Zamiast tego nowa bramka-strażnik `ai-granary-prog-populacji-spojnosc-test.cjs` (12/12) porównuje ręczne stałe z realną funkcją/danymi dla easy/normal/hard, dowód mutacyjny potwierdzony niezależnie przez Final Control. Zero zmian w `gra/src/game/ai.ts`. Szczegóły: sekcja `R-AI-PRODUKCJA-Z-DOSTEPNYCH-BUDYNKOW-Q1` wyżej (linia ok. 5958). Nic do dispatchu. |
 
 ### Zasada migracji i historii
 
@@ -5960,9 +5966,16 @@ ryzyko, nie blad):** `granaryPriorityBonus()` w `ai.ts` duplikuje progi populacj
 `economy.ts`/`econ-params.json` recznie (nowa tabela `AI_POP_CAP_NO_GRANARY_BY_DIFFICULTY`),
 zamiast importowac istniejaca funkcje `cityPopulationCap`. Dwa niezalezne zrodla tej samej
 liczby moga sie rozjechac przy przyszlej zmianie balansu populacji.
-**STATUS: ZAREJESTROWANE, NIE DISPATCHOWANE.** DOMAIN: INFRA. Zakres: zastapic reczna
-tabele wywolaniem/importem `cityPopulationCap` (lub odwrotnie), tak zeby istnial jeden
-zrodlowy zapis progu.
+**STATUS: ZAMKNIĘTE 2026-09-07 pod `P-AI-GRANARY-PROG-POPULACJI-DUPLIKAT-Q1`, commit
+`0ba33bc5`.** Po przeczytaniu komentarza przy `granaryPriorityBonus()` potwierdzono, że
+duplikacja jest ŚWIADOMA i CELOWA (ai.ts celowo nie importuje economy.ts, żeby nie ciągnąć
+całego modułu ekonomii do testów jednostkowych AI) — **NIE** zastąpiono ręcznej tabeli
+importem. Zamiast tego dodano bramkę-strażnika `gra/tools/ai-granary-prog-populacji-spojnosc-test.cjs`
+(12/12), która dla easy/normal/hard porównuje `AI_POP_CAP_NO_GRANARY_BY_DIFFICULTY` i
+`AI_POP_CAP_WITH_GRANARY_I` z realnym `cityPopulationCap()`/`econ-params.json` (dowód
+mutacyjny: rozjechanie jednej stałej realnie czerwieni bramkę, potwierdzone niezależnie
+przez Final Control na innej stałej niż Operator/Evaluator). Zero zmian w `gra/src/game/ai.ts`
+— udokumentowany kompromis architektoniczny zachowany.
 
 **Odblokowuje `R-PRAWO-PRZEBUDOWA-SKALI-Q1`** — blokada z 00-dispatch.md Prawa spelniona.
 
