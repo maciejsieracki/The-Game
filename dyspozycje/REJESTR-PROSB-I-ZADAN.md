@@ -82,6 +82,7 @@ historycznych wierszy poniżej; wpisy bez jednoznacznego dowodu nie są tu zgady
 | `P-AI-GRANARY-PROG-POPULACJI-DUPLIKAT-Q1` | `ZINTEGROWANE` | Commit `0ba33bc5`. Znalezisko Obrony `R-AI-PRODUKCJA-Z-DOSTEPNYCH-BUDYNKOW-Q1` (duplikat progów populacji `ai.ts` vs `economy.ts`) — potwierdzono że duplikacja jest ŚWIADOMA (komentarz w `ai.ts`, `granaryPriorityBonus()`), więc NIE zaimportowano `cityPopulationCap` do `ai.ts`. Zamiast tego nowa bramka-strażnik `ai-granary-prog-populacji-spojnosc-test.cjs` (12/12) porównuje ręczne stałe z realną funkcją/danymi dla easy/normal/hard, dowód mutacyjny potwierdzony niezależnie przez Final Control. Zero zmian w `gra/src/game/ai.ts`. Szczegóły: sekcja `R-AI-PRODUKCJA-Z-DOSTEPNYCH-BUDYNKOW-Q1` wyżej (linia ok. 5958). Nic do dispatchu. |
 | `P-AI-ZDOBYCIE-MIASTA-CZTERY-LUKI-Q1` | `ZINTEGROWANE` | Commit `c21c3b1c`. Cztery luki pokrycia z Final Control `P-AI-BRAK-SCIEZKI-ZDOBYCIA-MIASTA-ADIACENCJA-Q1` (FC-N2/FC-N1/FC-N4/F4) — bramka `ai-zdobycie-miasta-adiacencja-test.cjs` 88/88→96/96, zero asercji usuniętych/osłabionych, zero zmian mechaniki. Final Control niezależnie odtworzył dowody mutacyjne FC-N2 (targetVisible) i FC-N4 (isCivilianUnit) na tymczasowo zmutowanym kodzie produkcyjnym. Szczegóły: sekcja „Cztery znaleziska Final Control R2" wyżej (linia ok. 5894). Nic do dispatchu. |
 | `R-HOTSEAT-ETAP-0-HUMAN-OWNERS-Q1` | `ZINTEGROWANE` | Commit `94c475ec`. Etap 0 planu `docs/decyzje/PLAN-HOT-SEAT-2-GRACZY.md` — nowy moduł `gra/src/game/human-owners.ts` (kontrakt §B1) + martwa flaga `hotSeatEnabled()` w `main.ts` (+18/−0, zero zmiany istniejących linii). Żywy stan/aliasy świadomie odłożone do Etapu 1 (brak konsumenta dziś). Nowa bramka 29/29, Final Control potwierdził zero regresji własną próbką 9 bramek AI/dyplomacji przed/po. Szczegóły wyżej (linia ok. 4643). Następny krok: Etap 1. |
+| `R-MIASTA-LIMIT-PODBOJ-PROWENIENCJA-CYWILIZACJA-Q1` | `ZINTEGROWANE` | Commit `ad805957`. Limit miast rozróżnia proweniencję: zdobyte od niezależnego miasta-państwa liczy się (bez zmian), odebrane innej cywilizacji (nawet jeśli ta wcześniej przejęła je jako miasto-państwo) przestaje się liczyć — częściowe odwrócenie `R-MIASTA-LIMIT-PODBOJ-SILA-LICZY-SIE-Q1` (2026-09-01). Operator→Evaluator→Final Control PASS, 3 scenariusze testowe. Szczegóły wyżej (linia ok. 6816). Nic do dispatchu. |
 | `R-HOTSEAT-ETAP-1-OWNERID-ISAIOWNER-Q1` | `ZINTEGROWANE` | Commit `87b33da3`. Etap 1 planu hot-seat — świeży audyt: 22 realne miejsca `ownerId>0`, 10 podmienionych na `isAiOwner(humanSeats,...)` (priorytet: `aiOwnerList` w pętli tur AI), 12 świadomie nietkniętych (semantyka `isMajorAiOwner`/miasto-państwo, inny zakres). Behawioralny no-op potwierdzony trzykrotnie (bramka + 93 bramki referencyjne/AI/dyplomacji identyczne przed/po). Szczegóły wyżej (linia ok. 4643a). Następny krok: Etap 2 (mgła wojny — najwyższe ryzyko fazy). |
 | `R-HOTSEAT-ETAP-2-MGLA-WOJNY-Q1` | `ZINTEGROWANE` | Commit `f3c0becf`. Etap 2 planu hot-seat (najwyższe ryzyko fazy) — `ME()`/`exploredByHuman` scaffold + migracja całej warstwy renderu/wykrywania widoczności mgły (`ownPlayerVisibleHexes`/`currentVisible`/`refreshFog`/`cityFogVisible`/`unitsVisibleOnMap`/`applyFogVisibility`/`getMinimapData`) na `ME()`. Behawioralny no-op potwierdzony trzykrotnie niezależnie (hash treści zbioru `explored` identyczny przed/po, żywy Chromium). Save/load, dyplomacja-ujawnianie i granica terytorium świadomie poza zakresem (inne etapy planu). Szczegóły wyżej (linia ok. 4643b). Następny krok: Etap 3. |
 | `R-HOTSEAT-ETAP-3-AKCESORY-EKONOMIA-Q1` | `ZINTEGROWANE` | Commit `302ea837`. Etap 3 planu hot-seat — `isHuman(ownerId)` alias + `playerStateByHuman` scaffold (zero kopii), osiem funkcji-akcesorów ekonomicznych (skarbiec/Praca/Nauka/era/zbadane technologie) przepisanych z `ownerId===0` na `isHuman(ownerId)`. `isPlayerOwner` w `difficulty-cost.ts` świadomie nietknięty (Final Control zgrepował wszystkie wywołania, potwierdził bezpieczeństwo). Behawioralny no-op potwierdzony trzykrotnie (bramka 52/52 + 5 bramek ekonomii/AI zielone i identyczne przed/po). Szczegóły wyżej (linia ok. 4643c). Następny krok: Etap 4 (rozcięcie `triggerPlayerEndTurn` — najwyższe ryzyko CAŁEGO planu). |
@@ -6812,3 +6813,22 @@ bramka wraca), (2) AI proponując "goły" pokój powinno żądać surowców/zło
 wyrównać bilans zamiast oddawać za darmo — oba w toku jako
 `R-DYPLO-POKOJ-KIERUNEK-I-ZADANIE-AI-Q1` (Operator→Evaluator, Workflow, worktree
 `/home/user/wt-dyplo-pokoj-kierunek-zadanie`).
+
+## `R-MIASTA-LIMIT-PODBOJ-PROWENIENCJA-CYWILIZACJA-Q1` — GAME — **ZINTEGROWANE 2026-09-07** (commit `ad805957`)
+
+Żywe zgłoszenie właściciela: "zdobyte państwa innych cywilizacji nie powinny liczyć się
+do maksymalnej puli miast... ta sama zasada nie dotyczy miast-państw". Recon ustalił,
+że sytuacja faktyczna była ODWROTNA niż właściciel sądził: od `R-MIASTA-LIMIT-PODBOJ-SILA-LICZY-SIE-Q1`
+(2026-09-01, `2a95f7dd`) OBA typy podbitych miast (zwykłe i miasta-państwa) liczyły się
+do limitu jednakowo. Doprecyzowana decyzja: miasto zdobyte bezpośrednio od NIEZALEŻNEGO
+(nigdy wcześniej nieprzejętego) miasta-państwa nadal liczy się (bez zmian); miasto
+odebrane siłą INNEJ CYWILIZACJI — nawet jeśli to ona sama wcześniej przejęła je jako
+miasto-państwo — przestaje się liczyć. Nowa `wasIndependentCityStateBeforeCapture`
+(`cities.ts`) czyta `city.startCityState` PRZED `clearCityStateFlagOnCapture` w obu
+funnelach zdobycia (`post-battle-map.ts`, `main.ts:resolveSiegeSurrender`). Formuła
+samego limitu (`cityLimitBase`, `base+(era-1)*5`) nietknięta. Operator→Evaluator→Final
+Control, wszystkie PASS, zero zarzutów; 3 scenariusze testowe (zwykłe miasto obcej
+cywilizacji / miasto-państwo wcześniej przejęte przez inną cywilizację / niezależne
+miasto-państwo) pokryte osobnymi asercjami (`city-limit-conquered-test.cjs`, 24/24).
+Świadomie poza zakresem: `annexCityStateToOwner` (wchłonięcie dyplomatyczne) — już dziś
+liczy wchłonięte miasta do limitu, zero zmian potrzebnych. Nic do dispatchu.
