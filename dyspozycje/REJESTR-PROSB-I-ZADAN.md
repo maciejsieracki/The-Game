@@ -83,6 +83,8 @@ historycznych wierszy poniżej; wpisy bez jednoznacznego dowodu nie są tu zgady
 | `R-HOTSEAT-ETAP-2-MGLA-WOJNY-Q1` | `ZINTEGROWANE` | Commit `f3c0becf`. Etap 2 planu hot-seat (najwyższe ryzyko fazy) — `ME()`/`exploredByHuman` scaffold + migracja całej warstwy renderu/wykrywania widoczności mgły (`ownPlayerVisibleHexes`/`currentVisible`/`refreshFog`/`cityFogVisible`/`unitsVisibleOnMap`/`applyFogVisibility`/`getMinimapData`) na `ME()`. Behawioralny no-op potwierdzony trzykrotnie niezależnie (hash treści zbioru `explored` identyczny przed/po, żywy Chromium). Save/load, dyplomacja-ujawnianie i granica terytorium świadomie poza zakresem (inne etapy planu). Szczegóły wyżej (linia ok. 4643b). Następny krok: Etap 3. |
 | `R-HOTSEAT-ETAP-3-AKCESORY-EKONOMIA-Q1` | `ZINTEGROWANE` | Commit `302ea837`. Etap 3 planu hot-seat — `isHuman(ownerId)` alias + `playerStateByHuman` scaffold (zero kopii), osiem funkcji-akcesorów ekonomicznych (skarbiec/Praca/Nauka/era/zbadane technologie) przepisanych z `ownerId===0` na `isHuman(ownerId)`. `isPlayerOwner` w `difficulty-cost.ts` świadomie nietknięty (Final Control zgrepował wszystkie wywołania, potwierdził bezpieczeństwo). Behawioralny no-op potwierdzony trzykrotnie (bramka 52/52 + 5 bramek ekonomii/AI zielone i identyczne przed/po). Szczegóły wyżej (linia ok. 4643c). Następny krok: Etap 4 (rozcięcie `triggerPlayerEndTurn` — najwyższe ryzyko CAŁEGO planu). |
 | `R-HOTSEAT-ETAP-4-RECON-END-TURN-Q1` | `ZAMKNIĘTE (dokument)` | Commit `72345570`. Recon-only (zero kodu) dla Etapu 4 — najwyższe ryzyko całego planu hot-seat. Kompletna mapa 16 faz `triggerPlayerEndTurn()` (4469 linii), lokalizacja `turn++`, plan rozcięcia na `endActiveHumanTurn()`/`runWorldEndTurn()`/`advanceSeat()` z automatyzowalnym dowodem no-op. Kilka realnych znalezisk (kod „światowy" w bloku „gracza", identyfikatory odroczonych zdarzeń zawężone do `ownerId===0`, zależność `nextTurnNum` między fazami). Szczegóły wyżej (linia ok. 4643d). Następny krok: dispatch implementacji Etapu 4 (osobny temat, w oparciu o ten dokument). |
+| `R-HOTSEAT-ETAP4PREP-DEFERRED-OWNER-GUARDS-Q1` | `ZINTEGROWANE` | Commit `e2c765ac`. Podetap przygotowawczy do Etapu 4 — DWA z trzech odroczonych `ownerId===0` z recon (Ryzyko #4): `promptMergeIfCoLocated` (main.ts:10908) i `pendingAutoRationForNextTurn` (main.ts:28907) → `isHuman(ownerId)`. Trzecie miejsce (`deferredPlayerUnitRevealIds`, main.ts:30095) świadomie pominięte — Final Control potwierdził INNYM, silniejszym uzasadnieniem (`afterPlayerUnitSpawned` ma własny osobny guard + flush bierze tylko ostatni id z kolejki; wymaga zmiany struktury, nie prostej podmiany). Bramka `hotseat-etap3-akcesory-test` 52→64. Operator→Evaluator→Final Control, wszystkie trzy PASS, zero zarzutów. Szczegóły wyżej (linia ok. 4799). Nic do dispatchu z tego tematu — pełne rozcięcie `triggerPlayerEndTurn` (Etap 4 właściwy) wciąż niedispatchowane. |
+| `R-HOTSEAT-ETAP4-NOOP-HARNESS-Q1` | `W TOKU (Operator→Evaluator, Workflow)` | Worktree `/home/user/wt-hotseat-etap4-noop-harness`, baza `a5bb7651`. Buduje bramkę dowodu no-op z recon §6.2 (`gra/tools/hotseat-etap4-noop-test.cjs`, 30-turowa headless symulacja + hash SHA-256 stanu, deterministyczny `Math.random`) — zero zmian w `main.ts`, wyłącznie nowa infrastruktura testowa przygotowująca przyszłą, faktyczną rundę rozcięcia. Dispatch: `dyspozycje/autobot/runs/R-HOTSEAT-ETAP4-NOOP-HARNESS-Q1/00-dispatch.md`. Wynik jeszcze nieodebrany. |
 | `R-WOJNA-WYMUSZONA-PROG-TURY-GRACZ-Q1` | `ZINTEGROWANE, DEPLOY-ROBOCZA` | Commit `8a9a1271`, 3 rundy (runda 2 FAIL naprawiony). Żywy bug zgłoszony przez właściciela (zrzut ekranu, baner „BOOT ERROR" w turze 1) — dwa fixy: (1) próg tury `turn>=25` dla dołączenia gracza do puli parowania wojny wymuszonej, spójny z AI; (2) usunięcie bezterminowego przechwytywania `console.error` w `gra/index.html` (BOOT ERROR CATCHER), które zamieniało każdy zwykły log w czerwony baner „crash". 5 zastałych bramek testowych naprawionych (re-anchor, SEDNO zachowane). Final Control PASS, własna niezależna próbka + przeliczenie plików (realnie 14, nie 15/17). Pełne podsumowanie wyżej (linia ok. 6280). Nic do dispatchu. |
 
 ### Zasada migracji i historii
@@ -4795,6 +4797,39 @@ nie kod — zgodnie z dyspozycją). Pełny dokument:
 **Następny krok:** dispatch implementacji Etapu 4 jako osobny temat, w oparciu o ten
 dokument — prawdopodobnie rozbity na kilka rund/podetapów (np. najpierw przeniesienie
 kodu „światowego" osadzonego w bloku gracza, potem właściwe rozcięcie funkcji).
+
+## `R-HOTSEAT-ETAP4PREP-DEFERRED-OWNER-GUARDS-Q1` — GAME/INFRA — **ZAMKNIĘTE 2026-09-07** (commit `e2c765ac`)
+
+Podetap przygotowawczy do Etapu 4, dispatchowany w wolnym slocie fan-outu (limit 2)
+podczas oczekiwania na dojrzalszy plan pelnego rozciecia `triggerPlayerEndTurn()`.
+Zakres celowo waski: DWA z trzech odroczonych miejsc `ownerId===0` znalezionych w
+recon Etapu 4 (Ryzyko #4), NIE dotyka struktury samej funkcji.
+
+- `main.ts:10908` `!rep || rep.ownerId !== 0` → `!rep || !isHuman(rep.ownerId)`
+  wewnątrz `promptMergeIfCoLocated` (guard "czy przenoszona jednostka należy do
+  fotela człowieka").
+- `main.ts:28907` `ownerId === 0` → `isHuman(ownerId)` wewnątrz pętli
+  auto-racjonowania, `pendingAutoRationForNextTurn` (guard "czy pokazać HUD-owi
+  notyfikację").
+- Trzecie miejsce (`deferredPlayerUnitRevealIds`, `main.ts:30095`) świadomie
+  POZOSTAWIONE poza tą rundą — Final Control potwierdził dodatkowym, silniejszym
+  uzasadnieniem niż podane przez Operatora/Evaluatora: `afterPlayerUnitSpawned`
+  (main.ts:11078-11097) ma WŁASNY, osobny hardkodowany guard `u.ownerId !== 0`, a
+  `flushDeferredPlayerUnitReveals` bierze tylko OSTATNI id z kolejki — naiwna
+  podmiana samego zewnętrznego guarda byłaby niespójna z resztą mechanizmu. Ten
+  trzeci punkt wymaga osobnej rundy ze zmianą struktury kolejki (nie prostej
+  podmiany warunku) — NIE dispatchować go tą samą metodą.
+- Bramka `hotseat-etap3-akcesory-test.cjs` rozszerzona 52→64: nowe sekcje 7-8
+  dowodzą matematycznie `isHuman(id)===(id===0)` dla pełnej domeny
+  `[0, 1, 2, 42, BARBARIAN_OWNER_ID=-1, REBEL_FACTION_OWNER_ID=-99]`.
+
+Ścieżka AutoBot: Operator → Evaluator → Final Control, WSZYSTKIE trzy fazy PASS,
+zero zarzutów, zero rund napraw. Pełne testy: `tsc --noEmit` 0 błędów,
+`hotseat-etap3-akcesory-test` 64/64, `hotseat-etap1-ownerid-test` 14/14,
+`hotseat-human-owners-test` 29/29, `army-merge-dismiss-bounce-test` 16/16,
+`army-merge-stackgroupid-test` 11045/11045 (fuzz), `merge-decor-no-regress-test`
+49/49, plus 5 bramek referencyjnych (`logic-test` 213/213, `tech-tree-test` 19/19,
+`research-test` 33/33, `unit-replace-test` 13/13, `combat-test` 6/6).
 
 ## R-HOTSEAT-MULTIPLAYER-HOSTING-Q1 — temat na przyszłość (rejestracja 2026-09-04, noc)
 
