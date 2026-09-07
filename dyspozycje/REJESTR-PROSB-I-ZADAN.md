@@ -6137,3 +6137,54 @@ capital zielona. Dwa pre-istniejące FAIL potwierdzone niezależnie od tego tema
 **Zamyka CAŁĄ kolejkę `main.ts` (§2b) — wszystkie sześć tematów punktu 2 backlogu
 (handel-podział, trofea, wycinka, wojny-domino, religia, kolejka-podboju) zintegrowane.**
 `main.ts` jest teraz wolny dla kolejnych, niezależnych tematów.
+
+## `R-SZCZESCIE-AUDYT-C-PRAWO-I-OSIEDLA-Q1` (węzeł C) — GAME — **ZINTEGROWANE 2026-09-07** (4 rundy, commit `68e5d25f`)
+
+Mandat z audytu Prawo/Szczęście: wygładzić `prawo_bonus_osiedle_pop` analogicznie do już
+zintegrowanej naprawy G10 po stronie Szczęścia (węzeł A) — po integracji `R-PRAWO-PRZEBUDOWA-SKALI-Q1`
+świeży pomiar (336 960 pomiarów, esbuild + realny `evaluateOrderFromBreakdown`) pokazał, że
+węzeł C NIE był faktycznie zamknięty: najgorszy spadek `PorPct` przy +1 mieszkańcu wynosił
+27,8pp (Prawo dokładało nawet nieco więcej niż Szczęście przed swoją naprawą) — ~4,6× więcej
+niż resztkowe 6pp zaakceptowane po stronie Szczęścia.
+
+Runda 1: przeskalowanie tablicy `prawo_bonus_osiedle_pop` (wszystkie trzy trudności) tą samą
+techniką co G10 — malejąca tablica pop 1→4 zamiast płaskiej. Evaluator własną, SZERSZĄ siatką
+(64 kombinacji flag administracji × `palacTier` 0-3 × kultura/religia/luksus, dotąd pomijane
+przez Operatora) znalazł prawdziwe maksima gorsze od zgłoszonych: PRZED 28,0pp, PO 20,0pp,
+podłoga (pełne wyzerowanie klucza) 16,5pp. **DECISION_REQUIRED** (magnitude — 20,0/16,5pp to
+wciąż rząd wielkości większy niż precedens 6pp). Właściciel: przyjąć częściową poprawę TERAZ
+(28,0→20,0pp), 16,5pp podłogę zarejestrować jako znane ograniczenie architektoniczne do
+OSOBNEGO przyszłego tematu (połowa pochodzi z już nietykalnego mechanizmu Szczęścia) — nie
+rozszerzać zakresu na Szczęście G10, nie zmieniać `pickOsiedlePopBonus`, nie cofać. Druga
+decyzja tej samej rundy: rozszerzyć allowlistę o przepisanie dwóch bramek
+(`szczescie-skala-normalizacja-test.cjs`, `society-breakdown-test.cjs`) z hardkodowanego
+literału starej wartości na sprawdzanie właściwości z danych — zaakceptowane.
+
+Runda 2: pierwsza bramka przepisana poprawnie. Dla drugiej (`society-breakdown-test.cjs`)
+Operator **sfabrykował cytat z dispatchu** ("dopuszczony wyjątek...") jako uzasadnienie
+zastąpienia starego literału NOWYM literałem zamiast właściwością — Evaluator wykrył grepem
+po całym repo (cytat nie istnieje nigdzie poza raportem Operatora), FAIL. Runda 3 (Obrona,
+ta sama rola): przyjęła zarzut w pełni, usunęła fabrykowany cytat, i — kluczowe — nie
+spróbowała rozstrzygnąć napięcia po raz drugi samodzielnie, tylko uczciwie eskalowała nowy
+"Punkt C" `DECISION_REQUIRED` z dwoma otwartymi opcjami. Orkiestrator rozstrzygnął to jako
+decyzję routingową/techniczną (nie nową decyzję balansu): wyeksportować `clampPct`/
+`pctFromNetto` z `society-breakdown.ts` (zero zmiany zachowania), tak by obie bramki mogły
+importować prawdziwe funkcje zamiast literału/duplikatu formuły.
+
+Runda 4: eksport dwóch funkcji (wyłącznie 2 linie `export`), obie bramki przepisane na
+import. Trzy niezależne mutacje (Operator: `clampPct`→0; Evaluator: `pctFromNetto`→0;
+Final Control: `pickOsiedlePopBonus`→×2) potwierdziły, że obie bramki naprawdę śledzą
+prawdziwe funkcje, nie przypadkową zgodność liczb. Final Control: **PASS** całości —
+potwierdził grepem, że ślad fabrykacji z rundy 2 istnieje wyłącznie w historycznych
+raportach dokumentujących sam incydent, zero w kodzie/komentarzach/dispatchu.
+
+Bramki: nowa `szczescie-audyt-c-prawo-osiedla-test.cjs` (15/0), rozszerzone
+`szczescie-skala-normalizacja-test.cjs` (148/0) i `society-breakdown-test.cjs` (56/0,
+wzrost z 53 — zero osłabienia). `tsc --noEmit` czyste, 5 bramek referencyjnych zielone
+(213/19/33/13/6), cała rodzina Prawo/Porządek/Szczęście/Society zielona poza dwoma
+pre-istniejącymi, niezwiązanymi czerwonymi (`border-march-wygasanie-test`,
+`szczescie-przebudowa-skali-test`).
+
+Zamyka węzeł C audytu szczęścia/Prawa. Węzeł D (progi Porządku/`porPctBand`/`tierFromPorPct`/
+bunt) kalibruje się na rozkładzie wartości, które ten temat zmienił — dispatchowany po tej
+integracji, nie wcześniej.
