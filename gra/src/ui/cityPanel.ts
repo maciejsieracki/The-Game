@@ -3302,6 +3302,27 @@ function renderSpoleczenstwo(mount: HTMLElement, city: City, data: GameData): vo
         prawRow.textContent = `Prawo: ${Math.round(state.prawWkladPct)}% wkładu`;
         wkladBox.appendChild(szRow);
         wkladBox.appendChild(prawRow);
+        // R-SZCZESCIE-AUDYT-E-ETYKIETY-PANELU-Q1: powyzsze % to WYNIK tej tury (zalezy od
+        // biezacego Szczescia/Prawa w miescie, rosnie/maleje z turami) -- NIE stala regula
+        // gry, mimo ze slowo "wkladu" juz odroznia to od "wagi". Realna, stala waga
+        // mechanizmu (porzadek_waga_szczescie/porzadek_waga_prawo, society-params.json,
+        // biezaca trudnosc) jest doklejona nizej jako punkt odniesienia -- odczyt przez TĘ
+        // SAMĄ funkcję co silnik (`loadOrderParams`, juz zaimportowana, juz uzywana wyzej w
+        // tym pliku przy `computeOrderStateLocal`), zero przeliczania formuly Porzadku tutaj.
+        const difficultyDlaWagi = cfg.difficulty ?? 'normal';
+        const wagaParams = loadOrderParams(data.societyParams, difficultyDlaWagi);
+        const wagaSzPct = Math.round(wagaParams.wagaSzczescie * 100);
+        const wagaPrawPct = Math.round(wagaParams.wagaPrawo * 100);
+        const wkladWyjasnienie =
+          `Powyższy % to wkład TEJ TURY do wyniku Porządku -- zależy od bieżącego ` +
+          `Szczęścia/Prawa w mieście i zmienia się z turami, to NIE jest stała reguła gry. ` +
+          `Stała waga bazowa mechanizmu (trudność: ${difficultyDlaWagi}): ` +
+          `Szczęście ${wagaSzPct}% / Prawo ${wagaPrawPct}%.`;
+        wkladBox.title = wkladWyjasnienie;
+        const wkladHint = el('div', 'civ-w4-wklad-hint');
+        wkladHint.textContent = `Waga bazowa (${difficultyDlaWagi}): Szczęście ${wagaSzPct}% / Prawo ${wagaPrawPct}%`;
+        wkladHint.title = wkladWyjasnienie;
+        wkladBox.appendChild(wkladHint);
         porBlock.appendChild(wkladBox);
       }
       if (state.revoltWarning && state.revoltGraceRemaining != null) {
