@@ -13,13 +13,21 @@ swoim wĹ‚asnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji d
 > Pakiet 3 z 2026-08-20 jest docs-only i nie tworzy wpisu ROBOCZA/KANON/FINALNA;
 > ten plik pozostaje wyłącznie rejestrem publikacji bundli.
 
+## ROBOCZA 7d15afb2 - 2026-09-07 17:35 UTC - FALA 358: ikony marki w tooltipie drzewka technologii
+
+|- md5 (pełne): 7d15afb2638625312e409e38288e5ae0 · stempel: ROBOCZA · label 7d15afb2 · źródłowy commit integracji: `1fbe1551`
+|- **`P-SCIENCEHUB-TOOLTIP-EMOJI-ZAMIAST-IKON-Q1`** (`1fbe1551`, 1 runda + obrona) — tooltip drzewka technologii (sekcja „Warunek badania:") emitował surowe emoji zamiast ikon marki — druga, niezależna instancja buga naprawionego już dla listy huba badań. Nowy producent danych `techRequirementItems()` renderowany wspólnym resolverem `unlockIconSvg` z `brandAssets.ts`, ta sama ikona co w liście huba i panelu miasta. Obrona naprawiła 2 zarzuty Evaluatora (Opus 5): fixture bramki bez produkcyjnego filtra placeholderów (dodano żywe pokrycie na podmienionej `tech.json`) oraz rozjazd etykieta/ikona dla pól wielowartościowych (usunięto `firstLabel()`, pętla per człon). Nowa bramka `science-picker-tooltip-icons-real-render-test.cjs` 141/0, 9 żywych zrzutów Chromium PRZED/PO.
+|- tsc --noEmit 0 błędów · 5 bramek referencyjnych zielonych (logic 213/213, tech-tree 19/19, research 33/33, unit-replace 13/13, combat 6/6) · Vite build 885 modułów, singlefile.
+|- Bundle pola bitwy (`Gra-ROBOCZA-POLE-BITWY.html`) pominięty — temat nie dotyka mechaniki walki polowej; md5 z FALI 353 zachowany bez zmian.
+|- **AKTUALNA**
+
 ## ROBOCZA 8940a7b5 - 2026-09-07 17:05 UTC - FALA 357: dochod z tras handlowych przez pelna sciezke Daniny
 
 |- md5 (pełne): 8940a7b51d60d838904f92d012921c69 · stempel: ROBOCZA · label 8940a7b5 · źródłowy commit integracji: `269de23a`
 |- **`R-HANDEL-DOCHOD-PRZEZ-PODZIAL-MIASTA-Q1`** (`269de23a`, 1 runda + obrona) — dochód z tras handlowych ładował się dotąd w całości i „czysto" do skarbca, dodany PO mnożniku Wealth, pomijając zarówno mnożnik zamożności jak i suwaki Handlu (nauka/złoto/luksus). **ECHO właściciela: „Pełna integracja: przed mnożnikiem Wealth"** — dochód z tras wchodzi teraz do `handelBrutto` (`economy.ts`, nowe pole `CityYieldContext.dochodTrasHandlowych`) PRZED mnożnikiem Wealth, dzielony suwakami Handlu razem z resztą Daniny. Wzór samego dochodu z tras (`trade-routes.ts`) nietknięty. Evaluator złapał FAIL rundy 1 (jedno przeoczone miejsce podwójnego liczenia w `previewCityEconomy`, wpływające na projekcję HUD-u przy skarbcu), Obrona naprawiła w tej samej rundzie + dodała test parytetu preview/realny-tick, zweryfikowany mutacyjnie. `trade-routes-income-test` 119→122/122, `cuda-handel-test` 26/26, `wealth-test` 36/36 + 8 pobocznych bramek handlu/ekonomii bez regresji. **Skutek uboczny jawnie zaakceptowany przez właściciela: łączny dochód z handlu rośnie** (część strumienia idzie teraz do nauki/luksusu, ale suma wartości miasta jest wyższa).
 |- tsc --noEmit 0 błędów · 5 bramek referencyjnych zielonych (logic 213/213, tech-tree 19/19, research 33/33, unit-replace 13/13, combat 6/6) · Vite build 885 modułów, singlefile.
 |- Bundle pola bitwy (`Gra-ROBOCZA-POLE-BITWY.html`) pominięty — temat nie dotyka mechaniki walki polowej; md5 z FALI 353 zachowany bez zmian.
-|- **AKTUALNA**
+|- **ZASTĄPIONA przez FALA 358**
 
 ## ROBOCZA 20de07b9 - 2026-09-07 15:20 UTC - FALA 356: kolor-surowce + civpedia-klik + trzy pary bramek test-only
 

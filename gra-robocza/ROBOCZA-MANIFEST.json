@@ -1,10 +1,10 @@
 {
-  "publishedAt": "2026-09-07T17:05:00",
-  "sourceBuild": "/tmp/civ-dist-fala357",
-  "note": "FALA 357 - R-HANDEL-DOCHOD-PRZEZ-PODZIAL-MIASTA-Q1: dochod z tras handlowych przechodzi teraz przez pelna sciezke Daniny (handelBrutto, PRZED mnoznikiem Wealth), dzielony suwakami Handlu na nauke/zloto/luksus, zamiast ladowac czysto do skarbca PO mnozniku Wealth. ECHO wlasciciela: pelna integracja jak reszta dochodu miasta; jawnie zaakceptowany wzrost lacznego dochodu z handlu.",
+  "publishedAt": "2026-09-07T17:35:00",
+  "sourceBuild": "/tmp/civ-dist-fala358",
+  "note": "FALA 358 - P-SCIENCEHUB-TOOLTIP-EMOJI-ZAMIAST-IKON-Q1: tooltip drzewka technologii (sekcja Warunek badania) pokazuje teraz ikony marki per encja zamiast surowych emoji, identyczne jak w liscie huba badan i panelu miasta. Etykieta i ikona zawsze z tego samego czlonu dla pol wielowartosciowych.",
   "publisher": "Orkiestrator (Claude Code)",
   "bundle": "Gra-ROBOCZA.html",
-  "md5": "8940a7b51d60d838904f92d012921c69",
+  "md5": "7d15afb2638625312e409e38288e5ae0",
   "bundlePoleBitwy": "Gra-ROBOCZA-POLE-BITWY.html",
   "md5PoleBitwy": "d4477b3eaed627e426c41b9f8d0ad1f1"
 }
