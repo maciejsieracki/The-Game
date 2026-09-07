@@ -6229,3 +6229,38 @@ Society zielona poza dwoma pre-istniejącymi, niezwiązanymi czerwonymi
 **Zamyka CAŁY audyt balansu szczęścia/Prawa** (`R-MIASTA-SZCZESCIE-PRAWO-BALANS-AUDYT-Q1`):
 węzły A i C zintegrowane, B pokryty wcześniej przez `R-SZCZESCIE-PRZEBUDOWA-SKALI-Q1`, D
 zamknięty tym commitem, E (etykiety panelu) poza zakresem tej sesji.
+
+## `P-DYPLO-DWA-TESTY-CZERWONE-ZASTANE-Q1` — INFRA — **ZINTEGROWANE 2026-09-07** (2 rundy, commit `bdc02718`)
+
+Dwie zastane czerwone bramki dyplomacji, potwierdzone niezależne od jakiegokolwiek diffu
+(Final Control poprzedniego tematu zrobił `git stash -u` i dostał ten sam wynik). Bramka 1
+(`diplomacy-audience-close-flush-test.cjs`): trzecie, gołe wywołanie `hideDiplomacyAudience()`
+w `main.ts` okazało się REALNĄ, potrzebną ścieżką (nie duplikatem) — próg podniesiony 2→3 z
+komentarzem nazywającym trzecią ścieżkę. Final Control (runda 2) własną kontrolą mutacyjną
+(10 mutacji) znalazł i naprawił DWA dodatkowe fałszywe alarmy tej samej klasy: kotwiczenie
+regionu-haka na tekście SĄSIADA zamiast własnej klamry, i maskowanie legalnego stringu
+(`const s = 'hideDiplomacyAudience() ...'`) jako „podejrzanego" — `maskNonCode()` teraz
+rozróżnia realnie comment/string/template, z self-testem przeciw tautologii (sabotaż maski
+→ 15 FAIL, dowód że nie jest pusta). 46→51 asercji. Bramka 2
+(`dyplo-przemarsz-checkbox-przycisk-real-render-test.cjs`): self-check przekotwiczony z
+kruchego offsetu na odporny fragment — `PRZERWANE`→23/23 PASS. Zero zmian w `main.ts`
+(potwierdzone dwukrotnie, w tym 10 mutacji weryfikacyjnych Final Control, każda cofnięta
+kopią pliku).
+
+## `P-BRAMKI-ZASTANE-CZERWONE-Q1` — PROCESS — **ZINTEGROWANE 2026-09-07** (1 runda, commit `47ab0f3d`)
+
+Dwie kolejne zastane czerwone bramki (zarejestrowane wcześniej, Final Control tematu
+`P-PODBOJ-KOLEJKA-BUDYNEK-NIEMOZLIWY-Q1`), obie zdiagnozowane PRZED dispatchem jako testy
+niedopasowane do już obowiązujących danych/kodu, nie regresje. `building-queue-refund-test.cjs`:
+literał kosztu Drewna (10) pochodził sprzed zmiany danych stolarni na
+`koszt_surowce.drewno=25` — naprawiony na realne 50 (25× mnożnik FALA2 ×2), scenariusz puli
+podniesiony na stan osiągalny w grze (pula ≥ koszt przed enqueue, zgodnie z afordancją
+`canAffordBuildingStock`). `barb-city-capture-cluster-test.cjs`: sonda „2h-static" miała za
+małe stałe okno (4000 znaków) do wyszukania resetu kolejki barbarzyńców w `main.ts` — po
+legalnym wzroście kodu funkcji `applyCityCaptureToMap` (m.in. przez
+`P-PODBOJ-KOLEJKA-BUDYNEK-NIEMOZLIWY-Q1`) dystans wzrósł do 6412 znaków, test fałszywie
+czerwienił w pełni poprawny, nietknięty kod. Okno wyznaczane teraz dynamicznie (koniec
+funkcji = najbliższy sibling na tym samym wcięciu), odporne na przyszły wzrost. Evaluator
+złapał jeden drobny błąd liczbowy w raporcie Operatora (odziedziczony z samego dispatchu),
+Obrona sprostowała — zero wpływu na wynik binarny. Final Control: PASS, trzecia niezależna
+próba mutacyjna (inna metoda niż Operator/Evaluator) potwierdziła dowód.
