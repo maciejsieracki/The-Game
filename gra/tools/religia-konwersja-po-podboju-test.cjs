@@ -207,6 +207,78 @@ const afterMix = onCityCapturedReligion(
   check('newOwnerId === previousOwnerId: no-op (zwraca ten sam stan)', after === state);
 }
 
+// -----------------------------------------------------------------------
+// 5) REGULA PRZECIW SAMOOSZUKIWANIU -- 3+ religie "trzecie" w counts:
+//    poprzednia redystrybucja "ostatni klucz dostaje reszte" mogla przy
+//    skumulowanych zaokragleniach wyjsc na ujemna dla ostatniego klucza
+//    (po cichu pominieta przez `if (amount > 0)`), ale wczesniej przypisane
+//    (za duze) klucze zostawaly -- suma > populacja. Metoda najwiekszej
+//    reszty (Hamilton) musi to eliminowac dla dowolnej liczby "trzecich"
+//    religii.
+// -----------------------------------------------------------------------
+{
+  const population = 6;
+  const before = { counts: { keltyzm: 2, a: 1, b: 1, c: 1, d: 1 } };
+  const after = onCityCapturedReligion(
+    before,
+    population,
+    'rzym_bogowie',
+    'keltyzm',
+    0,
+    1,
+    { civKeyForOwner: civKeyDifferentCircle },
+  );
+  const sum = Object.values(after.counts).reduce((a, b) => a + b, 0);
+  const anyNegative = Object.values(after.counts).some((v) => v < 0);
+  check(
+    'RÓŻNY okrąg (5 religii w counts, 4 "trzecie"): suma = populacja, brak ujemnych',
+    sum === population && !anyNegative,
+    `counts=${JSON.stringify(after.counts)} sum=${sum} population=${population}`,
+  );
+}
+{
+  // Wieksza proba (7 "trzecich" religii, nierowne wagi) -- stres na metode
+  // najwiekszej reszty przy wielu remisach ulamkowych.
+  const before = { counts: { old: 10, e1: 37, e2: 41, e3: 53, e4: 29 } };
+  const total = Object.values(before.counts).reduce((a, b) => a + b, 0);
+  const after = onCityCapturedReligion(before, total, 'newrel', 'old', 0, 1, {
+    civKeyForOwner: civKeyDifferentCircle,
+  });
+  const sum = Object.values(after.counts).reduce((a, b) => a + b, 0);
+  const anyNegative = Object.values(after.counts).some((v) => v < 0);
+  check(
+    'RÓŻNY okrąg (5 kluczy, nierówne wagi): suma = populacja, brak ujemnych',
+    sum === total && !anyNegative,
+    `counts=${JSON.stringify(after.counts)} sum=${sum} total=${total}`,
+  );
+}
+
+// -----------------------------------------------------------------------
+// 6) previousOwnerReligion=null i brak "trzecich" religii w counts (np.
+//    odbicie miasta trzymanego wczesniej przez barbarzyncow, bez
+//    zainicjalizowanego ReligionState) -- `remaining` nie moze cicho zniknac
+//    z ksiegowosci (dawniej: suma < population, zawyzona dominacja zdobywcy).
+// -----------------------------------------------------------------------
+{
+  const population = 100;
+  const before = { counts: {} };
+  const after = onCityCapturedReligion(
+    before,
+    population,
+    'rzym_bogowie',
+    null,
+    0,
+    1,
+    { civKeyForOwner: civKeyDifferentCircle },
+  );
+  const sum = Object.values(after.counts).reduce((a, b) => a + b, 0);
+  check(
+    'previousOwnerReligion=null, counts pusty: suma = population (remaining nie znika)',
+    sum === population,
+    `counts=${JSON.stringify(after.counts)} sum=${sum} population=${population}`,
+  );
+}
+
 console.log('');
 console.log(`religia-konwersja-po-podboju-test: ${pass} passed, ${fail} failed`);
 try {

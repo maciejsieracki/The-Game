@@ -803,18 +803,40 @@ export function onCityCapturedReligion(
 
   const nextCounts: Record<string, number> = {};
   if (othersTotal > 0 && remaining > 0) {
+    // Metoda najwiekszej reszty (Hamilton): floor dla wszystkich, potem
+    // dosypac brakujace jednostki kluczom z najwieksza czescia ulamkowa --
+    // gwarantuje sume dokladnie `remaining`, bez ujemnych wartosci nawet gdy
+    // trzecich religii jest 3 i wiecej (zaokraglenia "ostatni dostaje reszte"
+    // mogly przy 3+ kluczach wyjsc na minus i po cichu zjesc populacje).
     const keys = Object.keys(others).sort();
-    let assigned = 0;
+    const shares = keys.map((k) => (others[k]! / othersTotal) * remaining);
+    const floors = shares.map((s) => Math.floor(s));
+    let assigned = floors.reduce((a, b) => a + b, 0);
+    let leftover = remaining - assigned;
+    const order = keys
+      .map((k, i) => ({ k, i, frac: shares[i]! - floors[i]! }))
+      .sort((a, b) => b.frac - a.frac || a.k.localeCompare(b.k));
+    const amounts = floors.slice();
+    for (let j = 0; j < order.length && leftover > 0; j++) {
+      amounts[order[j]!.i]! += 1;
+      leftover--;
+    }
     keys.forEach((k, i) => {
-      const share = others[k]! / othersTotal;
-      const amount = i === keys.length - 1 ? remaining - assigned : Math.round(share * remaining);
-      if (amount > 0) nextCounts[k] = amount;
-      assigned += amount;
+      if (amounts[i]! > 0) nextCounts[k] = amounts[i]!;
     });
   } else if (previousOwnerReligion && remaining > 0) {
     // Bez trzecich religii: caly "remaining" wraca do STAREGO wlasciciela --
     // czysta translacja 2-stronnego wzoru kultury (stary<->nowy sumuja sie do 1).
     nextCounts[previousOwnerReligion] = remaining;
+  } else if (!previousOwnerReligion && othersTotal <= 0 && remaining > 0) {
+    // Brak starego wlasciciela w danych (np. odbicie miasta trzymanego
+    // wczesniej przez barbarzyncow) I brak trzecich religii: nie ma zadnych
+    // realnych danych do inwersji "kto traci remaining". Ciche porzucenie
+    // gubilo populacje z ksiegowosci (suma < population) i sztucznie zawyzalo
+    // dominacje nowego wlasciciela (np. 50/50 zamiast 50/100). Konserwatywnie:
+    // remaining trafia do nowego wlasciciela (jak przy SAME-okregu) -- suma
+    // zostaje zachowana i udzial jest uczciwy wobec faktycznie obecnych danych.
+    nextCounts[newOwnerReligion] = (nextCounts[newOwnerReligion] ?? 0) + remaining;
   }
   if (newCount > 0) {
     nextCounts[newOwnerReligion] = (nextCounts[newOwnerReligion] ?? 0) + newCount;
