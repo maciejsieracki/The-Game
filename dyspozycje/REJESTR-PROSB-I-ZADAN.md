@@ -63,6 +63,7 @@ historycznych wierszy poniżej; wpisy bez jednoznacznego dowodu nie są tu zgady
 | `P-HANDEL-SZLAKI-WZOR-DUPLIKAT-Q1` | `OTWARTE, niski priorytet` | Wzór dochodu z tras zduplikowany w 2 miejscach `main.ts` (panel Handlu + chip HUD) zamiast jednej wspólnej funkcji z `trade-routes.ts::computeTradeRouteIncomeByCity`. Ryzyko cichego rozjazdu przy przyszłej zmianie wzoru. Czysto techniczny refaktor, nie wymaga ABC. Pełny opis w `PYTANIA-OTWARTE.md`. |
 | `P-SCIENCE-HUB-TEST-BASELINE-2-4-Q1` | `ZINTEGROWANE` | Przyczyna: stary próg `>=5` w teście od początku (era Kamień ma stabilnie 4 technologie Poziom=1 bez prereq). Naprawiony na `>=4` + komentarz. Zero zmian w `gra/src/`/`gra/data/`. Operator→Evaluator→Final Control PASS. Zintegrowane do `main`. |
 | `R-MIASTA-SZCZESCIE-PRAWO-BALANS-AUDYT-Q1` | `ZINTEGROWANE — CAŁY audyt zamknięty 2026-09-07` | Węzły A-E wszystkie domknięte (A,C zintegrowane wcześniej; B pokryty przez `R-SZCZESCIE-PRZEBUDOWA-SKALI-Q1`; D `5cee546d` — zero zmiany, progi już odporne; E `39de5e26` — tooltip wagi bazowej). Szczegóły: sekcje `R-SZCZESCIE-AUDYT-D-...`/`R-SZCZESCIE-AUDYT-E-...` niżej w tym pliku (linie ok. 6190-6291). Nic do dispatchu. |
+| `R-DYPLO-RELACJA-ETYKIETA-BLEDNA-Q1` | `ZINTEGROWANE` | Commit `22aea4fc`. Fałszywa etykieta "Relacja 100" w Stole negocjacji pokoju naprawiona — `relCurrent` teraz ustawiane na realną wartość (relSigned=-71→relTotal=29), bramka bilansu PW dla pokoju nietknięta (nadal zawsze aktywna, kanon `P-DYPLO-BILANS-GATE` runda 4). Operator→Evaluator→Final Control PASS. Szczegóły wyżej (linia ok. 6799). Następny krok: `R-DYPLO-POKOJ-KIERUNEK-I-ZADANIE-AI-Q1` w toku. |
 | `P-SZCZESCIE-MALE-MIASTO-100PCT-BEZ-BUDYNKOW-Q1` | `ZAMKNIĘTE (ECHO: zostaw)` | Zrzut właściciela: Szczęście 100% w mieście 1 mieszk. bez wkładu budynków. Policzone dokładnie: `szMax=30` (era 1, pop≤próg odniesienia), suma linii niebudynkowych ze zrzutu = dokładnie 30 → 100%. Nie błąd — efekt niskiego mianownika + duży bonus Osiedla/Kultury-Religii przy pop.1. ECHO właściciela: „Zostaw jak jest". Przy okazji dispatchowany osobny temat UI `R-PORZADEK-PANEL-PUNKTY-ABSOLUTNE-Q1` (pokazanie netto/max obok %, w toku). Szczegóły wyżej (linia ok. 6398). |
 | `R-PORZADEK-PANEL-PUNKTY-ABSOLUTNE-Q1` | `ZINTEGROWANE` | Commit `652855db`. Bloki Szczęście/Prawo panelu miasta + karta szczegółów Porządku pokazują teraz punkty netto/max obok procentu (np. "27% (9/35 pkt)") — zero zmiany formuły/zaokrąglenia procentu, wartości wprost z `society-breakdown.ts` (`ordPct.sz.szMax`/`ordPct.prawo.prawMax`). Operator→Evaluator (2 zarzuty: brak ostrzeżenia o legacy polu `state.porzadek` — PRZYJĘTE, dopisano komentarz; niespójność zaokrągleń pkt vs. % — ODDALONE, strukturalny artefakt trzech niezależnie zaokrąglanych liczb, istniał już przed tematem)→Final Control PASS (oba zarzuty ODDAL). Żywy zrzut Playwright 10/10. Nic do dispatchu. |
 | `P-DYPLO-DWA-TESTY-CZERWONE-ZASTANE-Q1` | `ZINTEGROWANE` | Commit `bdc02718`. Dwie zastałe czerwone bramki dyplomacji przekotwiczone na aktualny kod, plus Final Control naprawił 2 dodatkowe fałszywe alarmy tej samej klasy w `maskNonCode()`. Szczegóły niżej (linia ok. 6233). Nic do dispatchu. |
@@ -6790,3 +6791,24 @@ cofnięcie tej samej linii w `gra/src/main.ts` realnie czerwieni bramkę, przywr
 
 **Zamyka CAŁĄ rodzinę `P-BRAMKI-EMPIRE-PANEL-PIEC-CZERWONYCH-ZASTALE-Q1`** (sub-tematy A-D,
 patrz wpisy wyżej): wszystkie zintegrowane, worktree usunięte.
+
+## `R-DYPLO-RELACJA-ETYKIETA-BLEDNA-Q1` — GAME — **ZINTEGROWANE 2026-09-07** (commit `22aea4fc`)
+
+Żywe zgłoszenie właściciela (zrzut Stołu negocjacji pokoju: "My oferujemy 145 PW (baza
+500, Relacja −71% siła)" ale wiersz "WPŁYW RELACJI NA DEAL" pokazywał fałszywe "Relacja
+100"). Przyczyna: `computePeaceAcceptanceSides()` (`buildPlayerSide`/`buildPartnerSide`,
+`diplomacy-acceptance-points.ts`) nigdy nie ustawiało `relCurrent` — UI zawsze czytał
+fallback 100. Naprawa: `relCurrent: relTotal` w obu builderach, ta sama wartość co
+faktycznie użyta do modyfikatora PW (relSigned=-71 → relTotal=29). WYŁĄCZNIE etykieta
+informacyjna — bramka bilansu PW dla pokoju (`P-DYPLO-BILANS-GATE` runda 4, zawsze
+aktywny "Przyjmij") NIETKNIĘTA. Operator→Evaluator→Final Control, wszystkie PASS, zero
+zarzutów. Final Control dodatkowo uruchomił 6 bramek pominiętych przez Evaluatora — też
+zielone; 2 pre-istniejące czerwone stany (niezwiązane) potwierdzone identyczne na czystym
+`origin/main` sprzed tematu. Nic do dispatchu z tego tematu.
+
+Przy tej samej rozmowie właściciel doprecyzował dalej mechanikę pokoju: (1) bramka
+bilansu ma być KIERUNKOWA (partner proponuje → bez bramki jak dziś; gracz proponuje →
+bramka wraca), (2) AI proponując "goły" pokój powinno żądać surowców/złota żeby
+wyrównać bilans zamiast oddawać za darmo — oba w toku jako
+`R-DYPLO-POKOJ-KIERUNEK-I-ZADANIE-AI-Q1` (Operator→Evaluator, Workflow, worktree
+`/home/user/wt-dyplo-pokoj-kierunek-zadanie`).
