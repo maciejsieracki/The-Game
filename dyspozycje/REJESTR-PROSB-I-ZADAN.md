@@ -5868,10 +5868,13 @@ drzewo" kazdego rownoleglego tematu, ktory akurat trzyma inny worktree i sprawdz
 --short`. Final Control przywrocil plik kopia blobu z `HEAD` (nie `git checkout`), drzewo
 czyste — **nie jest to defekt tematu barbarzyncow**, bramki nie byly w nim zmieniane.
 
-**STATUS: ZAREJESTROWANE, NIE DISPATCHOWANE.** DOMAIN: INFRA. Zakres: przepisac te trzy bramki
-tak, zeby pisaly dowody PNG do wlasnego, tymczasowego katalogu (np. `os.tmpdir()` z unikalnym
-sufiksem, wzorem `dowody/n12-zrzuty-zywy-chromium.cjs`), nigdy do sledzonego katalogu runu
-innego tematu.
+**STATUS: ZINTEGROWANE** (`2b9d724e`, 2026-09-07). Diagnoza pokazała, że tylko JEDNA z trzech
+wskazanych bramek faktycznie pisała do katalogu runu: `barb-karencja-czas-trwania-real-render-
+test.cjs` (naprawiona — `SHOT_DIR` na `fs.mkdtempSync(os.tmpdir())`, unikalny per proces).
+Obie `barbarian-cooperation-grace*` okazały się fałszywym trafieniem reconu — nie zapisują
+niczego do żadnego katalogu runów (tylko do własnych, gitignorowanych plików w `gra/tools/`),
+zero zmiany potrzebne. 13/13, zero osłabienia, zero zmian w `gra/src/**`. Potwierdzone czyste
+repo po uruchomieniu wszystkich trzech bramek. Operator→Evaluator→Final Control wszystkie PASS.
 
 ## Cztery znaleziska Final Control R2 `P-AI-BRAK-SCIEZKI-ZDOBYCIA-MIASTA-ADIACENCJA-Q1` (2026-09-06)
 
