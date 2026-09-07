@@ -77,6 +77,7 @@ historycznych wierszy poniżej; wpisy bez jednoznacznego dowodu nie są tu zgady
 | `P-MGLA-ODKRYCIE-TELEPORT-KONIEC-TURY-Q1` | `ZINTEGROWANE (korekta statusu, 2026-09-07)` | Znaleziono JUŻ zintegrowane pod commitem `cb067a17` (nie tym ID) — zweryfikowane bezpośrednio (bramka 16/16 zielona). Rejestr błędnie oznaczał temat jako „DISPATCHOWANE"/w toku; poprawione. Stara, martwa lokalna gałąź `autobot/P-MGLA-ODKRYCIE-TELEPORT-KONIEC-TURY-Q1` usunięta. Nic do dispatchu. |
 | `P-AI-LISTA-BUDYNKOW-ZASZYTA-NIE-Z-PRODUKCJI-Q1` | `ZINTEGROWANE (korekta statusu, 2026-09-07)` | Przyczyna (`infraOrder` zaszyta lista) już USUNIĘTA wcześniej pod `R-AI-PRODUKCJA-Z-DOSTEPNYCH-BUDYNKOW-Q1` (zintegrowane 2026-09-06) — potwierdzone komentarzem w `ai.ts`. `PYTANIA-OTWARTE.md` miało stały wpis „OTWARTE"; poprawione (`7440cf8a`). Nic do dispatchu. |
 | `P-AI-GRANARY-PROG-POPULACJI-DUPLIKAT-Q1` | `ZINTEGROWANE` | Commit `0ba33bc5`. Znalezisko Obrony `R-AI-PRODUKCJA-Z-DOSTEPNYCH-BUDYNKOW-Q1` (duplikat progów populacji `ai.ts` vs `economy.ts`) — potwierdzono że duplikacja jest ŚWIADOMA (komentarz w `ai.ts`, `granaryPriorityBonus()`), więc NIE zaimportowano `cityPopulationCap` do `ai.ts`. Zamiast tego nowa bramka-strażnik `ai-granary-prog-populacji-spojnosc-test.cjs` (12/12) porównuje ręczne stałe z realną funkcją/danymi dla easy/normal/hard, dowód mutacyjny potwierdzony niezależnie przez Final Control. Zero zmian w `gra/src/game/ai.ts`. Szczegóły: sekcja `R-AI-PRODUKCJA-Z-DOSTEPNYCH-BUDYNKOW-Q1` wyżej (linia ok. 5958). Nic do dispatchu. |
+| `P-AI-ZDOBYCIE-MIASTA-CZTERY-LUKI-Q1` | `ZINTEGROWANE` | Commit `c21c3b1c`. Cztery luki pokrycia z Final Control `P-AI-BRAK-SCIEZKI-ZDOBYCIA-MIASTA-ADIACENCJA-Q1` (FC-N2/FC-N1/FC-N4/F4) — bramka `ai-zdobycie-miasta-adiacencja-test.cjs` 88/88→96/96, zero asercji usuniętych/osłabionych, zero zmian mechaniki. Final Control niezależnie odtworzył dowody mutacyjne FC-N2 (targetVisible) i FC-N4 (isCivilianUnit) na tymczasowo zmutowanym kodzie produkcyjnym. Szczegóły: sekcja „Cztery znaleziska Final Control R2" wyżej (linia ok. 5894). Nic do dispatchu. |
 
 ### Zasada migracji i historii
 
@@ -5896,30 +5897,33 @@ repo po uruchomieniu wszystkich trzech bramek. Operator→Evaluator→Final Cont
 Temat zintegrowany (PASS, zero NAPRAW). Final Control zostawil cztery pozycje do osobnej
 rejestracji, wszystkie **ODDAL** (nie sa defektem tej rundy), ale warte zapisania:
 
+**WSZYSTKIE CZTERY ZAMKNIĘTE 2026-09-07 pod `P-AI-ZDOBYCIE-MIASTA-CZTERY-LUKI-Q1`, commit
+`c21c3b1c`.** Bramka `ai-zdobycie-miasta-adiacencja-test.cjs` 88/88 → 96/96, zero asercji
+usuniętych/osłabionych. Final Control niezależnie odtworzył dowody mutacyjne FC-N2 i FC-N4
+(własna, tymczasowa mutacja kodu produkcyjnego w `gra/src/game/ai-city-capture-executor.ts`
+i `gra/src/main.ts`, przywrócona po weryfikacji). Zero zmian mechaniki/kodu produkcyjnego.
+
 1. **FC-N2 (priorytet).** Wpiecie `targetVisible` w wywolanie egzekutora w `main.ts` nie jest
    pilnowane przez ZADNA bramke — mutacja FC11 (`targetVisible` na sztywne `true`) zostaje
    zielona w bramce tematu I w calej rodzinie (gracz/barbarzyncy/AI, 11 bramek). Kod sprzed
-   tego tematu, nie regresja — ale luka pokrycia realna. **STATUS: ZAREJESTROWANE, NIE
-   DISPATCHOWANE.** DOMAIN: INFRA. Zakres: nowa asercja (w ktorejs z bramek rodziny) pilnujaca
-   ze `targetVisible: false` blokuje ruch/przejecie.
+   tego tematu, nie regresja — ale luka pokrycia realna. **STATUS: ZAMKNIĘTE** — nowa asercja
+   K9a-f (`ai-zdobycie-miasta-adiacencja-test.cjs`), dowód mutacyjny potwierdzony niezależnie
+   przez Final Control na kodzie produkcyjnym.
 2. **FC-N1.** Asercja `K4-DYSTANS` w `ai-zdobycie-miasta-adiacencja-test.cjs` jest tautologiczna
    dla mutacji FC4 (zdjecie bramki adiacencji zostawia BRAMKE TEMATU zielona), ALE ta sama
    mutacja czerwieni `city-hex-movement-test` (12/13) i `ai-city-capture-integration-test`
    (10/14) — pokrycie jest, tylko w innej bramce niz oczekiwano. Planista trzyma niezalezna
    bramke `isWithinCityAttackRange` (`gra/src/game/ai.ts:800`, `hexDistance === 1`). **STATUS:
-   ZAREJESTROWANE, NIE DISPATCHOWANE.** DOMAIN: INFRA. Zakres: doprecyzowac komentarz przy
-   `K4-DYSTANS`, ze pokrycie lezy w bramkach sasiednich, nie w tej.
+   ZAMKNIĘTE** — komentarz doprecyzowany, zero zmiany logiki/wyniku asercji.
 3. **FC-N4.** Asercje `A5f-A5h` (egzekucja wyrazenia `unitIsCivilian`) przepuszczaja
    behawioralnie rownowazna kopie formuly zamiast prawdziwego uzycia `isCivilianUnit` (FC13:
-   kopia formuly zamiast importu, 88/88 zielone). **STATUS: ZAREJESTROWANE, NIE
-   DISPATCHOWANE.** DOMAIN: INFRA. Zakres: dolozyc asercje ze wywolanie faktycznie uzywa
-   `isCivilianUnit` (np. przez podmiane funkcji w module i sprawdzenie ze wynik sie zmienia).
+   kopia formuly zamiast importu, 88/88 zielone). **STATUS: ZAMKNIĘTE** — nowe asercje A5i/A5j
+   (podmiana `isCivilianUnit` na atrapę zwracającą sentinel), dowód mutacyjny potwierdzony
+   niezależnie przez Final Control.
 4. **F4 (runda 1, kosmetyczne).** Crash bramki po wypisaniu faili obserwowany pod kilkoma
    mutacjami (FC5/FC7/FC9/FC12), ale exit code zawsze `!= 0` przy tym, wiec falszywa zielen
-   jest niemozliwa. **STATUS: ZAREJESTROWANE, NIE DISPATCHOWANE.** DOMAIN: INFRA. Zakres:
-   `gra/tools/ai-zdobycie-miasta-adiacencja-test.cjs` — opakowac wypisywanie wyniku w
-   try/catch, zeby crash nie maskowal komunikatu diagnostycznego (nie wplywa na poprawnosc
-   wyniku, tylko na czytelnosc).
+   jest niemozliwa. **STATUS: ZAMKNIĘTE** — wypisanie wyniku końcowego opakowane w try/catch,
+   exit code bez zmian.
 
 ## `R-BUDYNEK-GARNIZON-NOWY-Q1` — GAME — **ZINTEGROWANE 2026-09-06** (§16b pkt 6, warunek Final Control)
 
