@@ -63,6 +63,7 @@ historycznych wierszy poniżej; wpisy bez jednoznacznego dowodu nie są tu zgady
 | `P-HANDEL-SZLAKI-WZOR-DUPLIKAT-Q1` | `OTWARTE, niski priorytet` | Wzór dochodu z tras zduplikowany w 2 miejscach `main.ts` (panel Handlu + chip HUD) zamiast jednej wspólnej funkcji z `trade-routes.ts::computeTradeRouteIncomeByCity`. Ryzyko cichego rozjazdu przy przyszłej zmianie wzoru. Czysto techniczny refaktor, nie wymaga ABC. Pełny opis w `PYTANIA-OTWARTE.md`. |
 | `P-SCIENCE-HUB-TEST-BASELINE-2-4-Q1` | `ZINTEGROWANE` | Przyczyna: stary próg `>=5` w teście od początku (era Kamień ma stabilnie 4 technologie Poziom=1 bez prereq). Naprawiony na `>=4` + komentarz. Zero zmian w `gra/src/`/`gra/data/`. Operator→Evaluator→Final Control PASS. Zintegrowane do `main`. |
 | `R-MIASTA-SZCZESCIE-PRAWO-BALANS-AUDYT-Q1` | `ZINTEGROWANE — CAŁY audyt zamknięty 2026-09-07` | Węzły A-E wszystkie domknięte (A,C zintegrowane wcześniej; B pokryty przez `R-SZCZESCIE-PRZEBUDOWA-SKALI-Q1`; D `5cee546d` — zero zmiany, progi już odporne; E `39de5e26` — tooltip wagi bazowej). Szczegóły: sekcje `R-SZCZESCIE-AUDYT-D-...`/`R-SZCZESCIE-AUDYT-E-...` niżej w tym pliku (linie ok. 6190-6291). Nic do dispatchu. |
+| `P-SZCZESCIE-MALE-MIASTO-100PCT-BEZ-BUDYNKOW-Q1` | `ZAMKNIĘTE (ECHO: zostaw)` | Zrzut właściciela: Szczęście 100% w mieście 1 mieszk. bez wkładu budynków. Policzone dokładnie: `szMax=30` (era 1, pop≤próg odniesienia), suma linii niebudynkowych ze zrzutu = dokładnie 30 → 100%. Nie błąd — efekt niskiego mianownika + duży bonus Osiedla/Kultury-Religii przy pop.1. ECHO właściciela: „Zostaw jak jest". Przy okazji dispatchowany osobny temat UI `R-PORZADEK-PANEL-PUNKTY-ABSOLUTNE-Q1` (pokazanie netto/max obok %, w toku). Szczegóły wyżej (linia ok. 6398). |
 | `P-DYPLO-DWA-TESTY-CZERWONE-ZASTANE-Q1` | `ZINTEGROWANE` | Commit `bdc02718`. Dwie zastałe czerwone bramki dyplomacji przekotwiczone na aktualny kod, plus Final Control naprawił 2 dodatkowe fałszywe alarmy tej samej klasy w `maskNonCode()`. Szczegóły niżej (linia ok. 6233). Nic do dispatchu. |
 | `P-BRAMKI-ZASTANE-CZERWONE-Q1` | `ZINTEGROWANE` | Commit `47ab0f3d`. `building-queue-refund-test.cjs` (literał kosztu Drewna nieaktualny) + `barb-city-capture-cluster-test.cjs` (okno sondy za małe po legalnym wzroście kodu). Szczegóły niżej (linia ok. 6250). Nic do dispatchu. |
 | `P-DESIGN-11-ZAKLADEK-DROBIAZGI-Q1` | `ZINTEGROWANE` | Commit `64cfbe31`. N1 (`empire-panel-moc-scroll-preserve-test.cjs` zastałe 38/9→47/58) + N11/N12 już naprawione wcześniej. Wydzieliło `P-BRAMKI-EMPIRE-PANEL-PIEC-CZERWONYCH-ZASTALE-Q1` (patrz niżej). Szczegóły niżej (linia ok. 6292). Nic do dispatchu. |
@@ -6394,6 +6395,31 @@ Bramki: nowa `religia-konwersja-po-podboju-test.cjs` (12/0), `culture-religion-t
 (65/0) bez regresji. `tsc --noEmit` czyste, 5 bramek referencyjnych zielone (213/19/33/13/6).
 
 Zamyka pozycję 4 kolejki `main.ts` (§2b).
+
+## `P-SZCZESCIE-MALE-MIASTO-100PCT-BEZ-BUDYNKOW-Q1` — INFORMATIONAL — ECHO WŁAŚCICIELA 2026-09-07, ZAMKNIĘTE BEZ ZMIANY KODU
+
+Żywa obserwacja właściciela (zrzut panelu miasta 1 mieszk./epoka 1): Szczęście na 100%
+mimo zera wkładu budynków. Orkiestrator policzył dokładnie z silnika
+(`society-breakdown.ts`): dla pop.1/epoka 1, `szMax=30` (mianownik, era 1 fallback ×
+`popScaleMultiplier`=1 bo pop≤`szMaxPopOdniesienia`=2), a suma linii NIEBUDYNKOWYCH z
+tego zrzutu (Kultura +10, Religia +10, Wealth +1, Osiedle(1 mieszk.) +15, Wysokie
+podatki −10, Zaopatrzenie obywateli +4) daje `netto=30` — **dokładnie** `szMax`, więc
+`szPct=100%` bez udziału jakiegokolwiek budynku. Nie błąd — matematyczny efekt niskiego
+mianownika przy bardzo małej populacji w połączeniu z dużym bonusem Osiedla (+15 dla
+pop.1, `szczescie_bonus_osiedle_pop`) i pełną (100%) Kulturą+Religią własną w mieście
+bez mixu.
+
+ECHO właściciela (pytanie z 3 opcjami: zostaw / zbadaj szerzej / zmień konkretną
+wartość teraz): **„Zostaw jak jest"** — brak zmiany kodu, brak dispatchu. Zapisane
+wyłącznie żeby przyszły agent nie pomylił tego z niezgłoszonym błędem i nie dispatchował
+tego samego audytu ponownie — jeśli temat wróci (np. przy większych miastach), zacząć
+od tej notatki i przeliczenia analogicznego dla realnej populacji z nowego zgłoszenia.
+
+Osobno, PRZY OKAZJI tej samej rozmowy: właściciel poprosił o wyświetlanie w panelu
+miasta punktów bezwzględnych (netto/max), nie tylko procentu, dla bloków Szczęście i
+Prawo — to osobny temat, DISPATCHOWANY jako
+`R-PORZADEK-PANEL-PUNKTY-ABSOLUTNE-Q1` (Operator→Evaluator w toku, Workflow), zero
+zmiany balansu, wyłącznie UI. Patrz `dyspozycje/autobot/runs/R-PORZADEK-PANEL-PUNKTY-ABSOLUTNE-Q1/00-dispatch.md`.
 
 ## `P-PODBOJ-KOLEJKA-BUDYNEK-NIEMOZLIWY-Q1` — GAME — **ZINTEGROWANE 2026-09-07** (1 runda, commit `ea1033cf`)
 
