@@ -6264,3 +6264,27 @@ funkcji = najbliższy sibling na tym samym wcięciu), odporne na przyszły wzros
 złapał jeden drobny błąd liczbowy w raporcie Operatora (odziedziczony z samego dispatchu),
 Obrona sprostowała — zero wpływu na wynik binarny. Final Control: PASS, trzecia niezależna
 próba mutacyjna (inna metoda niż Operator/Evaluator) potwierdziła dowód.
+
+## `R-SZCZESCIE-AUDYT-E-ETYKIETY-PANELU-Q1` (węzeł E) — GAME/wizualny — **ZINTEGROWANE 2026-09-07** (1 runda, commit `39de5e26`)
+
+Ostatni węzeł całego audytu balansu szczęścia/Prawa. Panel Porządku pokazywał
+„Szczęście: X% wkładu / Prawo: Y% wkładu” — tekst technicznie poprawny (mówi „wkładu”, nie
+„waga”), ale bez punktu odniesienia gracz mógł odczytać ten wynik TEJ TURY jako stałą regułę
+mechanizmu, podczas gdy rzeczywista, stała waga (`porzadek_waga_szczescie`/
+`porzadek_waga_prawo`) to co innego (normal 50/50). Naprawa: tooltip + widoczna linia
+„Waga bazowa (<trudność>): Szczęście A% / Prawo B%” w `gra/src/ui/cityPanel.ts`, z realną
+wartością czytaną przez `loadOrderParams` (ta sama funkcja co silnik) — zero zmiany formuły
+(`orderContributionPct`/`computePorPct` nietknięte). Operator ustalił, czytając realny
+przepływ, że `orderPanel.ts` nie wymaga zmiany (wbrew wstępnemu założeniu dispatchu) —
+`cfg`/`data` z realną trudnością były już w zasięgu w miejscu renderowania.
+
+Dowód wizualny (temat wizualny, wymóg bezwarunkowy): nowa bramka real-render
+(`szczescie-audyt-e-etykiety-panelu-real-render-test.cjs`, żywy Chromium/Playwright, 18/0)
+potwierdzająca, że wyświetlana waga realnie podąża za `society-params.json` (nie hardkod —
+zweryfikowane mutacją danych w pamięci i realnym odczytem `hard`), plus dowód mutacyjny
+(usunięcie fragmentu → bramka czerwienieje, potwierdzone dwiema niezależnymi metodami cięcia
+kodu przez Evaluatora i Final Control). Rozszerzona `porzadek-panel-czytelnosc-test.cjs`
+81→93 asercji, zero osłabienia.
+
+**Zamyka CAŁY audyt balansu szczęścia/Prawa** (`R-MIASTA-SZCZESCIE-PRAWO-BALANS-AUDYT-Q1`):
+węzły A, B, C, D, E — wszystkie domknięte.
