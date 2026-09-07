@@ -6188,3 +6188,44 @@ pre-istniejącymi, niezwiązanymi czerwonymi (`border-march-wygasanie-test`,
 Zamyka węzeł C audytu szczęścia/Prawa. Węzeł D (progi Porządku/`porPctBand`/`tierFromPorPct`/
 bunt) kalibruje się na rozkładzie wartości, które ten temat zmienił — dispatchowany po tej
 integracji, nie wcześniej.
+
+## `R-SZCZESCIE-AUDYT-D-PROGI-I-BUNT-Q1` (węzeł D) — GAME — **ZINTEGROWANE 2026-09-07** (1 runda, commit `5cee546d`)
+
+Ostatni węzeł audytu balansu szczęścia/Prawa. Zadanie POMIAROWE z warunkowym fixem — po
+redukcji najgorszego skoku `PorPct` przy +1 mieszkańcu w węźle C (28,0pp→20,0pp, podłoga
+16,5pp), pasma `porPctBand` (szerokość 20pp: 90/70/50/30/próg krytyczny) są rzędu wielkości
+tego skoku. Pytanie audytu (nie założenie): czy jakiś przyrost populacji o 1 przeskakuje
+więcej niż jedno pasmo naraz, czy `tierFromPorPct` (osobny, ręcznie zsynchronizowany zestaw
+progów 90/30) może rozjechać się z `porPctBand`, i czy mechanizm karencji buntu
+(`updateRevoltGrace`) daje pełne ostrzeżenie nawet przy najostrzejszym możliwym skoku.
+
+Wynik na pełnej siatce (3 trudności × 3 epoki × pop 1-14 × warianty administracji/garnizonu/
+wojny/kultury/religii/luksusu, ~10,45 mln komórek, ~9,7 mln przejść pop→pop+1): **żaden**
+przyrost populacji nie przeskakuje więcej niż jednego pasma (najgorszy zmierzony przypadek:
+easy/era1/pop3→4, bunt→bunt_skrajny), zero konfliktów kierunku między `porPctBand` a
+`tierFromPorPct`, a karencja nigdy nie pozwala rebelii wystartować przed pełnymi
+`graceTurns+1` turami ostrzeżenia, niezależnie od gwałtowności skoku (sprawdzone na 4 typach
+trajektorii × 3 trudności + realna trajektoria pop 1-14). **Zero zmiany kodu/danych** —
+progi są już dziś odporne na skok zmierzony wcześniej w tym samym audycie. To jest ważny,
+poprawny wynik audytu, nie porażka: dispatch jawnie dopuszczał zamknięcie bez zmiany.
+
+Evaluator rundy 1 znalazł DWA zarzuty integralności artefaktu (nie wniosku merytorycznego):
+(1) komentarz w nowej bramce odwoływał się do funkcji `measurePop5PlusStability`, która nie
+istnieje w tym pliku — skopiowana z `szczescie-audyt-c-prawo-osiedla-test.cjs` bez
+przeniesienia implementacji, przy okazji maskująca zawężenie siatki do pop 1-6 zamiast
+wymaganych w dispatchu pop 1-14; (2) raport mylnie sugerował świadome objęcie bramek
+border/territory/diplomacy, podczas gdy grep dispatchu łapał tylko jeden plik diplomacji
+przez przypadkowy podciąg „order". Obrona (ta sama runda) przyjęła oba, rozszerzyła siatkę
+do pełnego pop 1-14 (wynik merytorycznie identyczny — Evaluator zmierzył to samo niezależnie
+jeszcze PRZED naprawą) i skorygowała etykietę zakresu. Final Control: **PASS**, trzecia,
+niezależna implementacja pomiaru (własny skrypt, inna próbka) potwierdziła ten sam najgorszy
+przypadek.
+
+Bramki: nowa `szczescie-audyt-d-progi-bunt-test.cjs` (18/0). `tsc --noEmit` czyste,
+5 bramek referencyjnych zielone (213/19/33/13/6), cała rodzina Prawo/Porządek/Szczęście/
+Society zielona poza dwoma pre-istniejącymi, niezwiązanymi czerwonymi
+(`border-march-wygasanie-test`, `szczescie-przebudowa-skali-test`).
+
+**Zamyka CAŁY audyt balansu szczęścia/Prawa** (`R-MIASTA-SZCZESCIE-PRAWO-BALANS-AUDYT-Q1`):
+węzły A i C zintegrowane, B pokryty wcześniej przez `R-SZCZESCIE-PRZEBUDOWA-SKALI-Q1`, D
+zamknięty tym commitem, E (etykiety panelu) poza zakresem tej sesji.
