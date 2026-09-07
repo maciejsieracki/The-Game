@@ -53,7 +53,6 @@ export {
   WOJNA_WYMUSZONA_MAX_CZAS_TRWANIA_TUR,
   isEligibleForBronzeForcedWar,
   pickBronzeForcedWarTargetId,
-  pickBronzeForcedWarTargetIdCoordinated,
   shouldEndBronzeForcedWarByCityCount,
   shouldEndBronzeForcedWarByDuration,
   isRestingFromBronzeForcedWar,
@@ -90,7 +89,6 @@ const {
   WOJNA_WYMUSZONA_MAX_CZAS_TRWANIA_TUR,
   isEligibleForBronzeForcedWar,
   pickBronzeForcedWarTargetId,
-  pickBronzeForcedWarTargetIdCoordinated,
   shouldEndBronzeForcedWarByCityCount,
   shouldEndBronzeForcedWarByDuration,
   isRestingFromBronzeForcedWar,
@@ -184,51 +182,12 @@ assert(
   'startTurn undefined (stary zapis) → currentTurn - currentTurn === 0, NIGDY nie kończy samym tym wywołaniem',
 );
 
-console.log('\n--- R-WOJNA-WYMUSZONA-REGULY-Q1 (Część B): pickBronzeForcedWarTargetIdCoordinated ---');
-{
-  const hexDistanceCoord = (aq, ar, bq, br) => {
-    const dq = aq - bq, dr = ar - br;
-    return (Math.abs(dq) + Math.abs(dq + dr) + Math.abs(dr)) / 2;
-  };
-  const coordCandidates = [
-    { ownerId: 0, q: 0, r: 0 },
-    { ownerId: 4, q: 5, r: 5 },
-    { ownerId: 6, q: 9, r: 9 },
-  ];
-  const refHex = { q: 0, r: 0 };
-  eq(
-    pickBronzeForcedWarTargetIdCoordinated(coordCandidates, refHex, hexDistanceCoord, {
-      blockedOwnerIds: new Set(), candidatesAlreadyAtWarIds: new Set(),
-      poziomTrudnosci: 2, playerActiveForcedWarCount: 0,
-    }),
-    0,
-    'brak wykluczeń → gracz najbliższy wygrywa normalnie',
-  );
-  eq(
-    pickBronzeForcedWarTargetIdCoordinated(coordCandidates, refHex, hexDistanceCoord, {
-      blockedOwnerIds: new Set(), candidatesAlreadyAtWarIds: new Set([0, 4, 6]),
-      poziomTrudnosci: 2, playerActiveForcedWarCount: 0,
-    }),
-    0,
-    'wszyscy kandydaci już w wojnie, Normalny, gracz bez aktywnej wojny wymuszonej → fallback na gracza',
-  );
-  eq(
-    pickBronzeForcedWarTargetIdCoordinated(coordCandidates, refHex, hexDistanceCoord, {
-      blockedOwnerIds: new Set(), candidatesAlreadyAtWarIds: new Set([0, 4, 6]),
-      poziomTrudnosci: 2, playerActiveForcedWarCount: 1,
-    }),
-    null,
-    'Normalny, gracz już ma 1 aktywną wojnę wymuszoną → fallback NIE aktywuje się',
-  );
-  eq(
-    pickBronzeForcedWarTargetIdCoordinated(coordCandidates, refHex, hexDistanceCoord, {
-      blockedOwnerIds: new Set(), candidatesAlreadyAtWarIds: new Set([0, 4, 6]),
-      poziomTrudnosci: 3, playerActiveForcedWarCount: 5,
-    }),
-    0,
-    'Trudny → fallback działa niezależnie od liczby istniejących wojen gracza',
-  );
-}
+// R-WOJNA-WYMUSZONA-PAROWANIE-ZAMIAST-DOMINA-Q1: sekcja "pickBronzeForcedWarTargetIdCoordinated"
+// USUNIĘTA -- funkcja zniknęła z forced-war-bronze.ts (main.ts woła teraz JEDNĄ wspólną
+// procedurę, `assignForcedWarPairings` z forced-war-common.ts, dowiedzioną osobno w
+// tools/wojna-wymuszona-parowanie-test.cjs). `pickBronzeForcedWarTargetId` (bez koordynacji,
+// T9 niżej) zostaje NIETKNIĘTA -- to nadal prawdziwy rdzeń wyboru najbliższego kandydata,
+// używany PRZEZ `assignForcedWarPairings`.
 
 console.log('\n--- T9: pickBronzeForcedWarTargetId — najbliższy sąsiad terytorialny ---');
 const candidates = [

@@ -1,13 +1,19 @@
 'use strict';
 
 /**
- * Tekstowa bramka wiązania R-DYPLO-AI-WOJNA-TROJSTRONNA-Q1 z main.ts. Czysty kontrakt
- * (pickStoneForcedWarDominoOwnerIds/pickBronzeForcedWarDominoOwnerIds/
- * pickIronForcedWarDominoOwnerIds) jest testowany w forced-war-trojstronna-test.cjs;
- * tutaj sprawdzamy WYŁĄCZNIE OKABLOWANIE w main.ts: snapshot policzony RAZ na turę PRZED
- * `ownerLoop` (nie per-owner -- inaczej "jednocześnie" z GOAL 1 nie zachodzi), użycie
- * wyniku w KAŻDEJ z trzech epok, i brak `poziomTrudnosci` w opcjach domina (GOAL 4:
- * mechanizm NIE dziedziczy limitu "Normalny: gracz najwyżej w jednej naraz").
+ * Tekstowa bramka wiązania R-WOJNA-WYMUSZONA-PAROWANIE-ZAMIAST-DOMINA-Q1 z main.ts.
+ *
+ * PRZEPISANA od zera tą naprawą: dawne domino trójstronne (pickStoneForcedWarDominoOwnerIds/
+ * pickBronzeForcedWarDominoOwnerIds/pickIronForcedWarDominoOwnerIds, per-era, uruchamiane
+ * przed `ownerLoop`) zniknęło FUNKCJONALNIE, zastąpione JEDNĄ wspólną procedurą
+ * `assignForcedWarPairings` (forced-war-common.ts), wołaną RAZ na turę PRZED `ownerLoop`, dla
+ * wszystkich trzech epok (Kamień/Brąz/Żelazo) NARAZ. Kontrakt czysty tej procedury jest
+ * dowiedziony osobno w `tools/wojna-wymuszona-parowanie-test.cjs` (property-based, wiele
+ * scenariuszy, w tym inwariant binarny ECHO). Ta bramka sprawdza WYŁĄCZNIE OKABLOWANIE w
+ * main.ts: pre-pass zbierający triggeredSubjects (Brąz+Kamień+Żelazo -- Żelazo pokryte też w
+ * forced-war-iron-main-guard-test.cjs), pulę existingActivePairsForJoin z WSZYSTKICH trzech
+ * map, jedno wywołanie `assignForcedWarPairings` przed `ownerLoop`, log DECISION_REQUIRED przy
+ * unresolvedOwnerIds, i odczyt wyniku per owner (bronze/stone) z `forcedWarAssignmentByOwner`.
  */
 
 const fs = require('fs');
@@ -29,82 +35,109 @@ function count(text) {
   return (main.match(new RegExp(text, 'g')) || []).length;
 }
 
-console.log('R-DYPLO-AI-WOJNA-TROJSTRONNA-Q1 — main.ts guards');
-
-check(
-  'main.ts importuje trzy funkcje domina, po jednej per epoka',
-  main.includes('pickStoneForcedWarDominoOwnerIds')
-    && main.includes('pickBronzeForcedWarDominoOwnerIds')
-    && main.includes('pickIronForcedWarDominoOwnerIds'),
-);
+console.log('R-WOJNA-WYMUSZONA-PAROWANIE-ZAMIAST-DOMINA-Q1 — main.ts guards (okablowanie)');
 
 const ownerLoopIdx = main.indexOf('ownerLoop: for (let oi = startOi');
-const snapshotIdx = main.indexOf('const playerAlreadyHasAnyActiveForcedWarThisTurn');
+const preLoopIdx = main.indexOf('const bronzeTriggeredSubjects: ForcedWarPairingSubject[] = [];');
+const assignIdx = main.indexOf('const forcedWarPairingResult = assignForcedWarPairings(');
+
 check(
-  'snapshot "gracz ma już parę" jest policzony RAZ, PRZED ownerLoop (nie per-owner) -- '
-  + 'inaczej pierwszy przetworzony owner pary zdążyłby dopisać graczowi wojnę i drugi '
-  + 'widziałby już wynik pierwszego, łamiąc "jednocześnie" (GOAL 1)',
-  ownerLoopIdx > 0 && snapshotIdx > 0 && snapshotIdx < ownerLoopIdx,
-);
-check(
-  'snapshot występuje DOKŁADNIE raz (nie jest przeliczany ponownie wewnątrz pętli per-owner)',
-  count('const playerAlreadyHasAnyActiveForcedWarThisTurn') === 1,
-);
-check(
-  'snapshot łączy WSZYSTKIE TRZY epoki (Kamień+Brąz+Żelazo), szerzej niż istniejący '
-  + 'playerActiveForcedWarCount (tylko Kamień+Brąz)',
-  /playerAlreadyHasAnyActiveForcedWarThisTurn =\s*\n\s*\[\.\.\.bronzeForceWarActiveByPairKey\.values\(\)\]\.some\(st => st\.targetId === 0\)\s*\n\s*\|\| \[\.\.\.stoneForceWarActiveByPairKey\.values\(\)\]\.some\(st => st\.targetId === 0\)\s*\n\s*\|\| \[\.\.\.ironForceWarActiveByPairKey\.values\(\)\]\.some\(st => st\.targetId === 0\)/.test(main),
+  'main.ts importuje assignForcedWarPairings i typy z forced-war-common (nie osobne funkcje '
+    + 'domina per epoka -- USUNIĘTE)',
+  main.includes('assignForcedWarPairings')
+    && main.includes("type ForcedWarPairingSubject")
+    && main.includes("type ForcedWarPairingExistingPair")
+    && !main.includes('pickBronzeForcedWarDominoOwnerIds')
+    && !main.includes('pickStoneForcedWarDominoOwnerIds')
+    && !main.includes('pickIronForcedWarDominoOwnerIds')
+    && !main.includes('pickBronzeForcedWarTargetIdCoordinated')
+    && !main.includes('pickStoneForcedWarTargetIdCoordinated'),
 );
 
 check(
-  'ECHO 2: sojusz KTÓREJKOLWIEK strony z graczem sprawdzany przez allianceFormalKindBetween '
-  + '(ownerId, gracz=0)',
-  /dominoHasAllianceWithPlayer = \(oid: number\): boolean =>\s*\n\s*allianceFormalKindBetween\(activeDeals, oid, 0\) !== null/.test(main),
+  'pre-pass (triggeredSubjects, budowa puli) jest policzony RAZ, PRZED ownerLoop (nie per-owner) '
+  + '-- ECHO: "Najpierw wszyscy mają wojnę, potem trójkąty" wymaga znać WSZYSTKICH triggered '
+  + 'tej tury NARAZ, zanim ktokolwiek dostanie przydział',
+  preLoopIdx > 0 && ownerLoopIdx > 0 && preLoopIdx < ownerLoopIdx,
+);
+check(
+  'wywołanie assignForcedWarPairings występuje RAZ, PRZED ownerLoop (nie wewnątrz pętli per-owner)',
+  assignIdx > 0 && assignIdx < ownerLoopIdx
+    && count('const forcedWarPairingResult = assignForcedWarPairings\\(') === 1,
 );
 
 check(
-  'GOAL 4 (ECHO 3, "bez dodatkowego łagodzenia"): dominoOpts NIE przekazuje poziomTrudnosci '
-  + '-- domino nie dziedziczy limitu "Normalny: gracz najwyżej w jednej naraz" istniejącego '
-  + 'fallbacku (ten limit dotyczy WYŁĄCZNIE pickXForcedWarTargetIdCoordinated, nie domina)',
-  /const dominoOpts = \{\s*\n\s*playerAlreadyHasActiveForcedWar: playerAlreadyHasAnyActiveForcedWarThisTurn,\s*\n\s*hasAllianceWithPlayer: dominoHasAllianceWithPlayer,\s*\n\s*\};/.test(main)
-    && !/dominoOpts = \{[\s\S]{0,200}poziomTrudnosci/.test(main),
-);
-
-for (const [nazwa, mapName, pickFn, setName, targetVar] of [
-  ['Brąz', 'bronzeForceWarActiveByPairKey', 'pickBronzeForcedWarDominoOwnerIds', 'bronzeDominoOwnerIds', 'bronzeForceWarTargetId'],
-  ['Kamień', 'stoneForceWarActiveByPairKey', 'pickStoneForcedWarDominoOwnerIds', 'stoneDominoOwnerIds', 'stoneForceWarTargetId'],
-  ['Żelazo', 'ironForceWarActiveByPairKey', 'pickIronForcedWarDominoOwnerIds', 'ironDominoOwnerIds', 'ironForceWarTargetId'],
-]) {
-  check(
-    `${nazwa}: ${setName} liczony z aktywnych par AI-vs-AI (targetId !== 0), z wykluczeniem eliminowanych`,
-    new RegExp(
-      `const ${setName} = ${pickFn}\\(\\s*\\n\\s*\\[\\.\\.\\.${mapName}\\.values\\(\\)\\]\\s*\\n\\s*\\.filter\\(st => st\\.targetId !== 0\\s*\\n\\s*&& !eliminatedOwners\\.has\\(st\\.attackerId\\)\\s*\\n\\s*&& !eliminatedOwners\\.has\\(st\\.targetId\\)\\),\\s*\\n\\s*dominoOpts,\\s*\\n\\s*\\);`,
-    ).test(main),
-  );
-  check(
-    `${nazwa}: owner w ${setName} dostaje ${targetVar} = 0 NIEZALEŻNIE od shouldSearch/alreadyAtWarAnyRole `
-    + '(domino musi zadziałać właśnie DLATEGO, że owner jest już w innej wojnie)',
-    new RegExp(`if \\(${setName}\\.has\\(ownerId\\)\\) \\{\\s*\\n\\s*${targetVar} = 0;\\s*\\n\\s*\\}`).test(main),
-  );
-}
-
-// Regresja mutacyjna (dowód nietautologiczności): usunięcie okablowania domina jest
-// wykrywalne przez powyższe asercje -- symulujemy to na kopii tekstu main.ts w locie,
-// bez zapisu na dysk.
-const mutatedMissingBronzeWire = main.replace(
-  'if (bronzeDominoOwnerIds.has(ownerId)) {\n                  bronzeForceWarTargetId = 0;\n                }\n',
-  '',
+  'pre-pass zbiera triggeredSubjects Brązu (bronzeTriggeredSubjects.push) i Kamienia '
+    + '(stoneTriggeredSubjects.push) -- Żelazo pokryte w forced-war-iron-main-guard-test.cjs',
+  /bronzeTriggeredSubjects\.push\(\{ ownerId, q: refCity\.q, r: refCity\.r, era: 'bronze' \}\)/.test(main)
+    && /stoneTriggeredSubjects\.push\(\{ ownerId, q: refCity\.q, r: refCity\.r, era: 'stone' \}\)/.test(main),
 );
 check(
-  'regresja mutacyjna: usunięcie okablowania Brązu w main.ts jest wykrywalne (test czerwienieje)',
-  mutatedMissingBronzeWire !== main
-    && !/if \(bronzeDominoOwnerIds\.has\(ownerId\)\) \{\s*\n\s*bronzeForceWarTargetId = 0;\s*\n\s*\}/.test(mutatedMissingBronzeWire),
+  'triggeredSubjects finalny to złączenie WSZYSTKICH trzech epok, PLUS gracz (dopisany osobno)',
+  /const triggeredSubjects: ForcedWarPairingSubject\[\] = \[\s*\n\s*\.\.\.bronzeTriggeredSubjects, \.\.\.stoneTriggeredSubjects, \.\.\.ironTriggeredSubjects,\s*\n\s*\];/.test(main),
 );
 
 check(
-  'GOAL 3: ai.ts (ogólna ścieżka decyzyjna Priorytet 4) NIE jest importowany/rozszerzony '
-  + 'przez ten temat -- main.ts nadal woła WYŁĄCZNIE istniejące, niezmienione pola '
-  + 'diploInp.*ForceWarTargetId (ten sam kanał co stary fallback, ai.ts poza allowlistą)',
+  'existingActivePairsForJoin łączy WSZYSTKIE trzy mapy aktywnych par (AI<->AI, targetId!==0, '
+    + 'bez eliminowanych), każda otagowana WŁASNĄ erą -- krok 4 ECHO (leftover dołącza do '
+    + 'DOWOLNEJ epoki)',
+  /const existingActivePairsForJoin: ForcedWarPairingExistingPair\[\] = \[/.test(main)
+    && /era: 'bronze' as const/.test(main)
+    && /era: 'stone' as const/.test(main)
+    && /era: 'iron' as const/.test(main),
+);
+
+check(
+  'ECHO, brzegowy przypadek: unresolvedOwnerIds NIEPUSTE loguje DECISION_REQUIRED (nie zgaduje, '
+    + 'nie crashuje) -- owner zostaje bez przydziału tej tury',
+  /if \(forcedWarPairingResult\.unresolvedOwnerIds\.length > 0\) \{[\s\S]{0,400}?console\.error\(\s*\n\s*'\[Wojna wymuszona\] DECISION_REQUIRED:/.test(main),
+);
+
+check(
+  'wynik czytany do forcedWarAssignmentByOwner (Map<ownerId, assignment>) z assignments zwróconych '
+    + 'przez assignForcedWarPairings',
+  /const forcedWarAssignmentByOwner = new Map\(\s*\n\s*forcedWarPairingResult\.assignments\.map\(a => \[a\.ownerId, a\] as const\),\s*\n\s*\);/.test(main),
+);
+
+check(
+  'Brąz: bronzeForceWarTargetId czytany z forcedWarAssignmentByOwner z rozróżnieniem WŁASNEJ ery '
+    + '(era === \'bronze\'), nie z usuniętego domina/coordinated',
+  main.includes("forcedWarOwnAssignment?.era === 'bronze' ? forcedWarOwnAssignment.targetId : undefined"),
+);
+check(
+  'Kamień: stoneForceWarTargetId czytany z forcedWarAssignmentByOwner z rozróżnieniem WŁASNEJ ery '
+    + '(era === \'stone\')',
+  main.includes("forcedWarOwnAssignment?.era === 'stone' ? forcedWarOwnAssignment.targetId : undefined"),
+);
+check(
+  'Żelazo: ironForceWarTargetId czytany z forcedWarAssignmentByOwner z rozróżnieniem WŁASNEJ ery '
+    + '(era === \'iron\')',
+  main.includes("forcedWarOwnAssignment?.era === 'iron' ? forcedWarOwnAssignment.targetId : undefined"),
+);
+
+check(
+  'ECHO 2 (sojusz KTÓREJKOLWIEK strony blokuje CAŁĄ parę): isForcedWarPairBlocked sprawdza NAP, '
+    + 'blokadę pokoju (w tym cooldown tej samej pary) i sojusz -- symetryczny predykat dla '
+    + 'WSZYSTKICH par (nowych i dołączeń do istniejących), nie tylko względem gracza',
+  /const isForcedWarPairBlocked = \(a: number, b: number\): boolean =>\s*\n\s*hasTreaty\(activeDeals, a, b, RodzajTraktatu\.PaktNieagresji\)\s*\n\s*\|\| isPeaceLockedBetween\(a, b\)\s*\n\s*\|\| allianceFormalKindBetween\(activeDeals, a, b\) !== null;/.test(main),
+);
+
+// Regresja mutacyjna (dowód nietautologiczności): usunięcie odczytu Brązu z assignmentu jest
+// wykrywalne przez powyższe asercje -- symulujemy to na kopii tekstu main.ts w locie.
+const mutatedMissingBronzeRead = main.replace(
+  "forcedWarOwnAssignment?.era === 'bronze' ? forcedWarOwnAssignment.targetId : undefined",
+  'undefined',
+);
+check(
+  'regresja mutacyjna: usunięcie odczytu Brązu z forcedWarAssignmentByOwner jest wykrywalne '
+    + '(test czerwienieje)',
+  mutatedMissingBronzeRead !== main
+    && !mutatedMissingBronzeRead.includes("forcedWarOwnAssignment?.era === 'bronze' ? forcedWarOwnAssignment.targetId : undefined"),
+);
+
+check(
+  'GOAL 3 (nietknięte tą naprawą): ai.ts nadal woła WYŁĄCZNIE istniejące, niezmienione pola '
+    + 'diploInp.*ForceWarTargetId (ten sam kanał co stary fallback/domino, ai.ts poza allowlistą)',
   main.includes('diploInp.stoneForceWarTargetId = stoneForceWarTargetId;')
     && main.includes('diploInp.ironForceWarTargetId = ironForceWarTargetId;'),
 );

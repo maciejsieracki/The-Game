@@ -58,9 +58,17 @@ check(
   'guard wyklucza player/CS/barbarzyńców/eliminowanych',
   /ownerId > 0[\s\S]{0,300}!typCityCopyOwners\.has\(ownerId\)[\s\S]{0,300}!isBarbarian\(ownerId\)[\s\S]{0,300}!eliminatedOwners\.has\(ownerId\)/.test(main),
 );
+// R-WOJNA-WYMUSZONA-PAROWANIE-ZAMIAST-DOMINA-Q1: `stoneBlockedOwnerIds` (per-owner filtr)
+// zniknęło -- zastąpione JEDNYM symetrycznym `isForcedWarPairBlocked`, wspólnym dla
+// wszystkich trzech epok (patrz forced-war-trojstronna-main-guard-test.cjs dla pełnego
+// dowodu, ta sama trójka warunków NAP/peaceLock/sojusz zachowana 1:1).
 check(
-  'Stone target filtruje NAP, peace lock i sojusz',
-  /stoneBlockedOwnerIds[\s\S]{0,700}hasTreaty\(activeDeals, ownerId, c\.ownerId, RodzajTraktatu\.PaktNieagresji\)[\s\S]{0,300}isPeaceLockedBetween\(ownerId, c\.ownerId\)[\s\S]{0,300}allianceFormalKindBetween\(activeDeals, ownerId, c\.ownerId\) !== null/.test(main),
+  'Stone target filtruje NAP, peace lock i sojusz -- przez isForcedWarPairBlocked, wspólny '
+    + 'predykat zastępujący dawne stoneBlockedOwnerIds',
+  /const isForcedWarPairBlocked = \(a: number, b: number\): boolean =>\s*\n\s*hasTreaty\(activeDeals, a, b, RodzajTraktatu\.PaktNieagresji\)\s*\n\s*\|\| isPeaceLockedBetween\(a, b\)\s*\n\s*\|\| allianceFormalKindBetween\(activeDeals, a, b\) !== null;/.test(main)
+    // Świadomie NIE zero-wystąpień "stoneBlockedOwnerIds" -- nazwa żyje dziś WYŁĄCZNIE w
+    // komentarzu historycznym (main.ts, przy isForcedWarPairBlocked), nie w kodzie.
+    && !/const stoneBlockedOwnerIds/.test(main),
 );
 check(
   'Stone target jest przekazywany do decideAIDiplomacy',
@@ -140,13 +148,15 @@ check(
 // bloku opcji z wywołania oraz usunięcie samego pola playerActiveForcedWarCount osobno
 // oba czerwienią tę asercję.
 // ---------------------------------------------------------------------------
+// R-WOJNA-WYMUSZONA-PAROWANIE-ZAMIAST-DOMINA-Q1: `pickStoneForcedWarTargetIdCoordinated`
+// zniknęła z main.ts (i z forced-war-stone.ts) -- zastąpiona JEDNĄ wspólną procedurą
+// `assignForcedWarPairings` wołaną RAZ na turę PRZED `ownerLoop`. Patrz analogiczny komentarz
+// w forced-war-bronze-main-guard-test.cjs.
 check(
-  'main.ts: pickStoneForcedWarTargetIdCoordinated() wołane z KOMPLETEM opcji Części B -- '
-  + 'candidatesAlreadyAtWarIds (kandydat już w innej wojnie wykluczony), poziomTrudnosci '
-  + '(wyłącznik Łatwego/limit Normalnego), playerActiveForcedWarCount (limit "gracz najwyżej '
-  + 'w jednej naraz" dla Normalnego, WSPÓLNY licznik Kamień+Brąz) -- OBOK istniejącego '
-  + 'blockedOwnerIds',
-  /const stonePicked = pickStoneForcedWarTargetIdCoordinated\(\s*\n\s*stoneCandidates,\s*\n\s*refCity \? \{ q: refCity\.q, r: refCity\.r \} : undefined,\s*\n\s*hexDistance,\s*\n\s*\{\s*\n\s*blockedOwnerIds: stoneBlockedOwnerIds,\s*\n\s*candidatesAlreadyAtWarIds: stoneCandidatesAlreadyAtWarIds,\s*\n\s*poziomTrudnosci: forcedWarDifficultyLevel,\s*\n\s*playerActiveForcedWarCount,\s*\n\s*\},\s*\n\s*\);/.test(main),
+  'main.ts: stoneForceWarTargetId ustawiane z forcedWarAssignmentByOwner (nowy rdzeń '
+    + 'parowania), nie z usuniętego pickStoneForcedWarTargetIdCoordinated',
+  main.includes("forcedWarOwnAssignment?.era === 'stone' ? forcedWarOwnAssignment.targetId : undefined")
+    && !main.includes('pickStoneForcedWarTargetIdCoordinated'),
 );
 
 console.log(`WYNIK: ${passed} PASS, ${failed} FAIL`);

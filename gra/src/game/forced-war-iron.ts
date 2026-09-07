@@ -285,38 +285,8 @@ export function restoreIronForcedWarState(
 }
 
 /**
- * R-DYPLO-AI-WOJNA-TROJSTRONNA-Q1 — patrz komentarz analogiczny przy
- * `pickStoneForcedWarDominoOwnerIds` (`forced-war-stone.ts`): identyczna reguła, osobna
- * kopia dla Żelaza (jak cała reszta pliku). Żelazo, w odróżnieniu od Kamienia/Brązu, NIE ma
- * dziś żadnej "coordinated pick" (żaden fallback na gracza z wyczerpanej puli, żaden
- * `candidatesAlreadyAtWarIds`) — ta funkcja jest niezależna od tamtego braku: działa
- * WYŁĄCZNIE na PARACH JUŻ AKTYWNYCH Żelaza (`ironForceWarActiveByPairKey`, obie strony AI,
- * `targetId !== 0`), nie na wyborze nowego celu. Świadomie BEZ `poziomTrudnosci` (GOAL
- * 4/ECHO 3) — Żelazo i tak nigdy nie miało tego limitu, więc tu nie ma czego wyłączać.
+ * R-WOJNA-WYMUSZONA-PAROWANIE-ZAMIAST-DOMINA-Q1: `pickIronForcedWarDominoOwnerIds` zniknęła
+ * stąd — main.ts woła teraz JEDNĄ wspólną procedurę, `assignForcedWarPairings`
+ * (`forced-war-common.ts`), RAZ na turę PRZED `ownerLoop`, dla wszystkich trzech epok naraz.
+ * Progi miast/cooldownu i cykl pending/cycle/rest Żelaza w tym pliku i main.ts zostają BEZ ZMIAN.
  */
-export interface IronForcedWarActiveAiPair {
-  attackerId: number;
-  targetId: number;
-}
-
-export interface IronForcedWarDominoOpts {
-  /** Gracz ma już JAKĄKOLWIEK aktywną wojnę wymuszoną (Kamień+Brąz+Żelazo łącznie) — jeden, stabilny odczyt na całą turę. */
-  playerAlreadyHasActiveForcedWar: boolean;
-  /** Czy dany ownerId ma DZIŚ aktywny sojusz z graczem (ECHO 2: KTÓRAKOLWIEK strona blokuje całą parę). */
-  hasAllianceWithPlayer: (ownerId: number) => boolean;
-}
-
-export function pickIronForcedWarDominoOwnerIds(
-  activeAiPairs: ReadonlyArray<IronForcedWarActiveAiPair>,
-  opts: IronForcedWarDominoOpts,
-): ReadonlySet<number> {
-  const result = new Set<number>();
-  if (opts.playerAlreadyHasActiveForcedWar) return result;
-  for (const pair of activeAiPairs) {
-    if (pair.attackerId === 0 || pair.targetId === 0 || pair.attackerId === pair.targetId) continue;
-    if (opts.hasAllianceWithPlayer(pair.attackerId) || opts.hasAllianceWithPlayer(pair.targetId)) continue;
-    result.add(pair.attackerId);
-    result.add(pair.targetId);
-  }
-  return result;
-}

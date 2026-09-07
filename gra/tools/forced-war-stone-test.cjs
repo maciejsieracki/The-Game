@@ -21,7 +21,6 @@ export {
   WOJNA_KAMIEN_WYMUSZONA_MAX_CZAS_TRWANIA_TUR,
   isEligibleForStoneForcedWar,
   pickStoneForcedWarTargetId,
-  pickStoneForcedWarTargetIdCoordinated,
   shouldEndStoneForcedWarByCityCount,
   shouldEndStoneForcedWarByDuration,
   isRestingFromStoneForcedWar,
@@ -67,7 +66,6 @@ try {
     WOJNA_KAMIEN_WYMUSZONA_MAX_CZAS_TRWANIA_TUR: maxDurationTurns,
     isEligibleForStoneForcedWar,
     pickStoneForcedWarTargetId,
-    pickStoneForcedWarTargetIdCoordinated,
     shouldEndStoneForcedWarByCityCount,
     shouldEndStoneForcedWarByDuration,
     isRestingFromStoneForcedWar,
@@ -113,83 +111,11 @@ try {
     Math.abs(aq - bq) + Math.abs(aq - bq + ar - br) + Math.abs(ar - br)
   ) / 2;
 
-  console.log('--- R-WOJNA-WYMUSZONA-REGULY-Q1 (Część B): pickStoneForcedWarTargetIdCoordinated ---');
-  {
-    const coordCandidates = [
-      { ownerId: 0, q: 0, r: 0 },  // gracz — najbliżej
-      { ownerId: 4, q: 5, r: 5 },  // AI wolny, dalej
-      { ownerId: 6, q: 9, r: 9 },  // AI już w innej wojnie
-    ];
-    const refHex = { q: 0, r: 0 };
-    eq(
-      pickStoneForcedWarTargetIdCoordinated(coordCandidates, refHex, distance, {
-        blockedOwnerIds: new Set(),
-        candidatesAlreadyAtWarIds: new Set(),
-        poziomTrudnosci: 2,
-        playerActiveForcedWarCount: 0,
-      }),
-      0,
-      'brak wykluczeń -> gracz najbliższy wygrywa normalnie (nie fallback)',
-    );
-    eq(
-      pickStoneForcedWarTargetIdCoordinated(coordCandidates, refHex, distance, {
-        blockedOwnerIds: new Set(),
-        candidatesAlreadyAtWarIds: new Set([0, 4]),
-        poziomTrudnosci: 2,
-        playerActiveForcedWarCount: 0,
-      }),
-      6,
-      'gracz i AI4 już w wojnie -> AI6 (jedyny wolny) wybrany normalnie',
-    );
-    eq(
-      pickStoneForcedWarTargetIdCoordinated(coordCandidates, refHex, distance, {
-        blockedOwnerIds: new Set(),
-        candidatesAlreadyAtWarIds: new Set([0, 4, 6]),
-        poziomTrudnosci: 2,
-        playerActiveForcedWarCount: 0,
-      }),
-      0,
-      'WSZYSCY kandydaci (w tym gracz) już w wojnie, Normalny, gracz BEZ aktywnej wojny wymuszonej -> fallback na gracza',
-    );
-    eq(
-      pickStoneForcedWarTargetIdCoordinated(coordCandidates, refHex, distance, {
-        blockedOwnerIds: new Set(),
-        candidatesAlreadyAtWarIds: new Set([0, 4, 6]),
-        poziomTrudnosci: 2,
-        playerActiveForcedWarCount: 1,
-      }),
-      null,
-      'Normalny, gracz JUŻ MA 1 aktywną wojnę wymuszoną -> fallback NIE aktywuje się, null',
-    );
-    eq(
-      pickStoneForcedWarTargetIdCoordinated(coordCandidates, refHex, distance, {
-        blockedOwnerIds: new Set(),
-        candidatesAlreadyAtWarIds: new Set([0, 4, 6]),
-        poziomTrudnosci: 3,
-        playerActiveForcedWarCount: 3,
-      }),
-      0,
-      'Trudny, gracz ma już 3 aktywne wojny wymuszone -> fallback NADAL działa (brak limitu)',
-    );
-    eq(
-      pickStoneForcedWarTargetIdCoordinated(
-        [{ ownerId: 4, q: 5, r: 5 }], refHex, distance,
-        { blockedOwnerIds: new Set(), candidatesAlreadyAtWarIds: new Set([4]), poziomTrudnosci: 3, playerActiveForcedWarCount: 0 },
-      ),
-      null,
-      'gracz w ogóle NIE JEST w oryginalnej puli kandydatów -> brak fallbacku mimo Trudnego',
-    );
-    eq(
-      pickStoneForcedWarTargetIdCoordinated(coordCandidates, refHex, distance, {
-        blockedOwnerIds: new Set([0]), // gracz zablokowany NAP/peaceLocked/sojuszem
-        candidatesAlreadyAtWarIds: new Set([4, 6]),
-        poziomTrudnosci: 3,
-        playerActiveForcedWarCount: 0,
-      }),
-      null,
-      'gracz zablokowany NAP/peaceLocked/sojuszem (nie tylko "już w wojnie") -> fallback go NIE ignoruje, null',
-    );
-  }
+  // R-WOJNA-WYMUSZONA-PAROWANIE-ZAMIAST-DOMINA-Q1: sekcja "pickStoneForcedWarTargetIdCoordinated"
+  // USUNIĘTA -- funkcja zniknęła z forced-war-stone.ts (main.ts woła teraz JEDNĄ wspólną
+  // procedurę, `assignForcedWarPairings` z forced-war-common.ts, dowiedzioną osobno w
+  // tools/wojna-wymuszona-parowanie-test.cjs). `pickStoneForcedWarTargetId` (bez koordynacji,
+  // niżej) zostaje NIETKNIĘTA -- to nadal prawdziwy rdzeń wyboru najbliższego kandydata.
 
   const candidates = [
     { ownerId: 3, q: 8, r: 8 },

@@ -71,9 +71,15 @@ check(
 // ---------------------------------------------------------------------------
 // 2. Napastnik: gracz / miasto-państwo / barbarzyńca / wyeliminowany nigdy nie atakuje.
 // ---------------------------------------------------------------------------
+// R-WOJNA-WYMUSZONA-PAROWANIE-ZAMIAST-DOMINA-Q1: guard napastnika (gracz/kopia/barbarzyńca/
+// wyeliminowany/miasto-państwo) przeniesiony do WSPÓLNEJ pętli pre-pass PRZED `ownerLoop`
+// (`bronzeTriggeredSubjects`/`stoneTriggeredSubjects`/`ironTriggeredSubjects`, jeden guard dla
+// wszystkich trzech epok, zamiast trzech osobnych kopii) -- `wasPending` Żelaza czytany
+// wewnątrz tego samego, wspólnie strzeżonego bloku pętli.
 check(
-  'guard napastnika wyklucza gracza (ownerId > 0), kopie typu, barbarzyńców, wyeliminowanych i miasta-państwa',
-  /ownerId > 0\s*\n\s*&& !typCityCopyOwners\.has\(ownerId\)\s*\n\s*&& !isBarbarian\(ownerId\)\s*\n\s*&& !eliminatedOwners\.has\(ownerId\)\s*\n\s*&& !isOwnerClusterCityState\(ownerId, ownerCityStateOpts\(\)\)\s*\n\s*\) \{\s*\n\s*const wasPending = ironForceWarPendingOwners\.has\(ownerId\);/.test(main),
+  'guard napastnika (wspólna pętla pre-pass) wyklucza gracza, kopie typu, barbarzyńców, '
+    + 'wyeliminowanych i miasta-państwa PRZED zebraniem wasPending Żelaza',
+  /const bronzeTriggeredSubjects: ForcedWarPairingSubject\[\] = \[\];[\s\S]{0,320}?ownerId <= 0\s*\n\s*\|\| typCityCopyOwners\.has\(ownerId\)\s*\n\s*\|\| isBarbarian\(ownerId\)\s*\n\s*\|\| eliminatedOwners\.has\(ownerId\)\s*\n\s*\|\| isOwnerClusterCityState\(ownerId, ownerCityStateOpts\(\)\)\s*\n\s*\) continue;[\s\S]{0,4200}?const wasPending = ironForceWarPendingOwners\.has\(ownerId\);/.test(main),
 );
 check(
   'kwalifikacja napastnika przechodzi przez isEligibleForIronForcedWar (isMainAiCiv + brak wojny w dowolnej roli)',
@@ -95,18 +101,32 @@ check(
 //    kandydatów; GRACZ (ownerId 0) natomiast, od P-WOJNA-WYMUSZONA-TRZY-NAPRAWY-Q1
 //    (2026-08-30, zastępuje Q2 z R-EPOKA-KAMIEN-WYMUSZONA-WOJNA-Q1), TAK — na równi z AI.
 // ---------------------------------------------------------------------------
+// R-WOJNA-WYMUSZONA-PAROWANIE-ZAMIAST-DOMINA-Q1: pula kandydatów per-owner (ironCandidates)
+// i pickIronForcedWarTargetId (wołane per owner z main.ts) zniknęły -- main.ts woła teraz
+// JEDNĄ wspólną procedurę `assignForcedWarPairings` (forced-war-common.ts) RAZ na turę, dla
+// WSZYSTKICH trzech epok naraz (triggeredSubjects łączy bronze+stone+iron+gracz). Gracz
+// nadal wchodzi do puli NA RÓWNI z AI (dispatch krok 1: "gracz traktowany DOKŁADNIE jak
+// każde AI") -- teraz przez jawne dopisanie playerCity do triggeredSubjects, WARUNKOWANE
+// wyłącznie brakiem aktywnej wojny wymuszonej gracza (nie rolą/typem jak dawniej AI).
 check(
-  'pula kandydatów Żelaza WŁĄCZA gracza (oid >= 0, źródło [0, ...aiOwnerList]) — '
-    + 'wyklucza wyłącznie kopie, barbarzyńców, wyeliminowanych i miasta-państwa',
-  /const ironCandidates = \[0, \.\.\.aiOwnerList\]\s*\n\s*\.filter\(oid =>\s*\n\s*oid !== ownerId\s*\n\s*&& oid >= 0\s*\n\s*&& !typCityCopyOwners\.has\(oid\)\s*\n\s*&& !isBarbarian\(oid\)\s*\n\s*&& !eliminatedOwners\.has\(oid\)\s*\n\s*&& !isOwnerClusterCityState\(oid, ownerCityStateOpts\(\)\),/.test(main),
+  'gracz dołącza do wspólnej puli triggeredSubjects (na równi z AI) WYŁĄCZNIE gdy sam nie ma '
+    + 'dziś żadnej aktywnej wojny wymuszonej -- bez specjalnego wykluczania poza tym warunkiem',
+  /const playerCity = cities\.find\(c => c\.ownerId === 0\);\s*\n\s*if \(playerCity && totalActiveForcedWarsByOwner\(0\) === 0\) \{\s*\n\s*triggeredSubjects\.push\(\{ ownerId: 0, q: playerCity\.q, r: playerCity\.r \}\);/.test(main),
 );
 check(
-  'Iron target filtruje NAP, blokadę pokoju i sojusz z celem',
-  /ironBlockedOwnerIds[\s\S]{0,700}hasTreaty\(activeDeals, ownerId, c\.ownerId, RodzajTraktatu\.PaktNieagresji\)[\s\S]{0,300}isPeaceLockedBetween\(ownerId, c\.ownerId\)[\s\S]{0,300}allianceFormalKindBetween\(activeDeals, ownerId, c\.ownerId\) !== null/.test(main),
+  'isForcedWarPairBlocked (NAP, blokada pokoju, sojusz) -- ten sam symetryczny predykat dla '
+    + 'WSZYSTKICH trzech epok, zastępuje dawne ironBlockedOwnerIds/bronzeBlockedOwnerIds/stoneBlockedOwnerIds',
+  /const isForcedWarPairBlocked = \(a: number, b: number\): boolean =>\s*\n\s*hasTreaty\(activeDeals, a, b, RodzajTraktatu\.PaktNieagresji\)\s*\n\s*\|\| isPeaceLockedBetween\(a, b\)\s*\n\s*\|\| allianceFormalKindBetween\(activeDeals, a, b\) !== null;/.test(main),
 );
 check(
-  'wybór celu przechodzi przez pickIronForcedWarTargetId z blockedOwnerIds',
-  /pickIronForcedWarTargetId\(\s*\n\s*ironCandidates,[\s\S]{0,300}\{ blockedOwnerIds: ironBlockedOwnerIds \}/.test(main),
+  'wybór celu (wszystkich trzech epok naraz, w tym Żelaza) przechodzi przez assignForcedWarPairings '
+    + 'z isForcedWarPairBlocked i hexDistanceFn: hexDistance',
+  /const forcedWarPairingResult = assignForcedWarPairings\(\s*\n\s*triggeredSubjects,\s*\n\s*existingActivePairsForJoin,\s*\n\s*\{\s*\n\s*isPairBlocked: isForcedWarPairBlocked,\s*\n\s*hexDistanceFn: hexDistance,\s*\n\s*totalActiveForcedWarsByOwner,\s*\n\s*\},\s*\n\s*\);/.test(main),
+);
+check(
+  'wynik przydziału Żelaza czytany z forcedWarAssignmentByOwner (nie z usuniętego pickIronForcedWarTargetId w pętli)',
+  main.includes("forcedWarOwnAssignment?.era === 'iron' ? forcedWarOwnAssignment.targetId : undefined")
+    && !/pickIronForcedWarTargetId\(\s*\n\s*ironCandidates/.test(main),
 );
 check(
   'Iron target jest przekazywany do decideAIDiplomacy',

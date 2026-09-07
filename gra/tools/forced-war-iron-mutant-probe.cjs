@@ -52,6 +52,13 @@ const MUTATIONS = [
   { id: 'M04-cooldown', file: 'iron', gates: [PURE], why: 'cooldown pary 20 → 10 tur',
     find: 'export const WOJNA_ZELAZO_WYMUSZONA_COOLDOWN_TA_SAMA_CYWILIZACJA_TUR = 20;',
     replace: 'export const WOJNA_ZELAZO_WYMUSZONA_COOLDOWN_TA_SAMA_CYWILIZACJA_TUR = 10;' },
+  // R-WOJNA-WYMUSZONA-PAROWANIE-ZAMIAST-DOMINA-Q1 runda 2: brakująca mutacja (nigdy nie
+  // istniała, nie tylko martwa kotwica) na progu startu Żelaza wprowadzonym przez
+  // R-WOJNA-WYMUSZONA-ZELAZO-PROG-TURY-Q1 — dopisana, żeby zamknąć jedyną pozostałą
+  // dziurę w pokryciu kontraktu czystego po naprawie M09/M10.
+  { id: 'M04b-prog-startu-tury', file: 'iron', gates: [PURE], why: 'próg startu Żelaza 25 → 10 tur od wejścia w epokę',
+    find: 'export const WOJNA_ZELAZO_WYMUSZONA_START_TURY_OD_EPOKI = 25;',
+    replace: 'export const WOJNA_ZELAZO_WYMUSZONA_START_TURY_OD_EPOKI = 10;' },
 
   // --- forced-war-iron.ts: wyzwalacz awansu --------------------------------------
   { id: 'M05-entry-sztywne-2-3', file: 'iron', gates: [PURE], why: 'wyzwalacz tylko dla dokładnie 2→3 (gubi skok 1→3)',
@@ -68,10 +75,15 @@ const MUTATIONS = [
     replace: '  return false;' },
 
   // --- forced-war-iron.ts: kwalifikacja napastnika --------------------------------
-  { id: 'M09-eligible-zawsze', file: 'iron', gates: [PURE], why: 'kwalifikacja zawsze true (gracz/CS i owner w wojnie przechodzą)',
-    find: '  return inp.isMainAiCiv && !inp.isAlreadyAtWarAnyRole;', replace: '  return true;' },
+  // R-WOJNA-WYMUSZONA-PAROWANIE-ZAMIAST-DOMINA-Q1 runda 2: kotwica M09/M10 była martwa
+  // (Final Control runda 1: pre-istniejąca, poza zakresem tego tematu) — treść funkcji
+  // zmieniła się wcześniej pod R-WOJNA-WYMUSZONA-ZELAZO-PROG-TURY-Q1 (dodanie
+  // `turnThresholdMet`), nie pod tym tematem. Poprawiona WYŁĄCZNIE kotwica tekstowa,
+  // sens i cel mutacji bez zmian.
+  { id: 'M09-eligible-zawsze', file: 'iron', gates: [PURE], why: 'kwalifikacja zawsze true (gracz/CS, owner w wojnie i próg tury przechodzą)',
+    find: '  return inp.isMainAiCiv && !inp.isAlreadyAtWarAnyRole && turnThresholdMet;', replace: '  return true;' },
   { id: 'M10-eligible-nigdy', file: 'iron', gates: [PURE], why: 'kwalifikacja zawsze false',
-    find: '  return inp.isMainAiCiv && !inp.isAlreadyAtWarAnyRole;', replace: '  return false;' },
+    find: '  return inp.isMainAiCiv && !inp.isAlreadyAtWarAnyRole && turnThresholdMet;', replace: '  return false;' },
 
   // --- forced-war-iron.ts: wybór celu --------------------------------------------
   { id: 'M11-pick-bez-blokad', file: 'iron', gates: [PURE], why: 'blockedOwnerIds ignorowane przy wyborze celu',
@@ -297,91 +309,139 @@ const MUTATIONS = [
   // --- main.ts -------------------------------------------------------------------
   { id: 'M37-main-import', file: 'main', gates: [GUARD], why: 'import modułu Żelaza zerwany',
     find: "} from './game/forced-war-iron';", replace: "} from './game/forced-war-iron-nieistnieje';" },
-  { id: 'M38-main-wyzwalacz-prog-tury', file: 'main', gates: [GUARD], why: 'wyzwalacz awansu podmieniony na próg tury (dokładnie to, czego dispatch zakazuje)',
+  // R-WOJNA-WYMUSZONA-PAROWANIE-ZAMIAST-DOMINA-Q1 runda 2: M38-M44 (poniżej) celowały w
+  // usunięty w rundzie 1 kod per-owner (`pickIronForcedWarTargetId` w pętli, `ironCandidates`,
+  // `ironBlockedOwnerIds`) — po naprawie zarzutu 2 tego kodu już nie ma, kotwice martwe.
+  // Zastąpione mutacjami na NOWYM kodzie pre-pass (`assignForcedWarPairings` i punkt
+  // wywołania w main.ts, main.ts ok. 1949-1958/30383-30532/31283-31289) — patrz mapowanie
+  // usunięta→nowa w raporcie Operatora rundy 2.
+  { id: 'M38a-main-wyzwalacz-prog-tury', file: 'main', gates: [GUARD], why: 'wyzwalacz awansu podmieniony na próg tury (dokładnie to, czego dispatch zakazuje) — NASTĘPCA dawnego M38',
     find: `      if (
         isIronEraEntry(prev, next)
         && !isOwnerClusterCityState(ownerId, ownerCityStateOpts())
       ) {
         ironForceWarPendingOwners.add(ownerId);
+        // R-WOJNA-WYMUSZONA-ZELAZO-PROG-TURY-Q1: zapamiętaj TURĘ awansu — próg „25 tur od
+        // początku epoki" dla Żelaza liczy się od TEGO momentu, nie od startu gry ani od
+        // wejścia w Brąz (analogicznie do \`bronzeEraEnterTurnByOwner.set\` wyżej).
+        ironEraEnterTurnByOwner.set(ownerId, turn);
       }`,
     replace: `      if (
         turn >= WOJNA_ZELAZO_WYMUSZONA_ODPOCZYNEK_TUR
         && !isOwnerClusterCityState(ownerId, ownerCityStateOpts())
       ) {
         ironForceWarPendingOwners.add(ownerId);
+        ironEraEnterTurnByOwner.set(ownerId, turn);
       }` },
-  { id: 'M39-main-napastnik-barbarzynca', file: 'main', gates: [GUARD], why: 'barbarzyńca dopuszczony jako napastnik wymuszonej wojny Żelaza',
-    find: `                  && !isBarbarian(ownerId)
-                  && !eliminatedOwners.has(ownerId)
-                  && !isOwnerClusterCityState(ownerId, ownerCityStateOpts())
-                ) {
-                  const wasPending = ironForceWarPendingOwners.has(ownerId);`,
-    replace: `                  && !eliminatedOwners.has(ownerId)
-                  && !isOwnerClusterCityState(ownerId, ownerCityStateOpts())
-                ) {
-                  const wasPending = ironForceWarPendingOwners.has(ownerId);` },
-  { id: 'M40-main-bez-eligible', file: 'main', gates: [GUARD], why: 'kwalifikacja napastnika omija isEligibleForIronForcedWar',
-    find: `                    ? isEligibleForIronForcedWar({
-                      isMainAiCiv: true,
-                      isAlreadyAtWarAnyRole: alreadyAtWarAnyRole,
-                    })`,
-    replace: '                    ? !alreadyAtWarAnyRole' },
-  { id: 'M41-main-cykl-bez-wojny', file: 'main', gates: [GUARD], why: 'cykl po odpoczynku nie sprawdza już trwającej wojny',
-    find: `                    && !hasActiveForcedWarAsAttacker
-                    && !alreadyAtWarAnyRole
-                    && !isRestingFromIronForcedWar(`,
-    replace: `                    && !hasActiveForcedWarAsAttacker
-                    && !isRestingFromIronForcedWar(` },
-  { id: 'M42-main-gracz-wykluczony-z-puli', file: 'main', gates: [GUARD],
-    why: 'P-WOJNA-WYMUSZONA-TRZY-NAPRAWY-Q1 (c), 2026-08-30: GRACZ z powrotem wykluczony '
-      + 'z puli celów (regresja do wcześniejszej, ODWRÓCONEJ decyzji Q2 z '
-      + 'R-EPOKA-KAMIEN-WYMUSZONA-WOJNA-Q1) — asercja main-guard musi to złapać',
-    find: `                    const ironCandidates = [0, ...aiOwnerList]
-                      .filter(oid =>
-                        oid !== ownerId
-                        && oid >= 0
-                        && !typCityCopyOwners.has(oid)
-                        && !isBarbarian(oid)
-                        && !eliminatedOwners.has(oid)
-                        && !isOwnerClusterCityState(oid, ownerCityStateOpts()),
-                      )
-                      .map(oid => {
-                        const c = cities.find(cc => cc.ownerId === oid);
-                        return c ? { ownerId: oid, q: c.q, r: c.r } : null;
-                      })
-                      .filter((c): c is { ownerId: number; q: number; r: number } => c !== null);
-                    const ironBlockedOwnerIds`,
-    replace: `                    const ironCandidates = aiOwnerList
-                      .filter(oid =>
-                        oid !== ownerId
-                        && oid > 0
-                        && !typCityCopyOwners.has(oid)
-                        && !isBarbarian(oid)
-                        && !eliminatedOwners.has(oid)
-                        && !isOwnerClusterCityState(oid, ownerCityStateOpts()),
-                      )
-                      .map(oid => {
-                        const c = cities.find(cc => cc.ownerId === oid);
-                        return c ? { ownerId: oid, q: c.q, r: c.r } : null;
-                      })
-                      .filter((c): c is { ownerId: number; q: number; r: number } => c !== null);
-                    const ironBlockedOwnerIds` },
-  { id: 'M43-main-bez-peacelock-w-puli', file: 'main', gates: [GUARD], why: 'blokada pokoju (cooldown pary) nie wyklucza już celu',
-    find: `                          hasTreaty(activeDeals, ownerId, c.ownerId, RodzajTraktatu.PaktNieagresji)
-                          || isPeaceLockedBetween(ownerId, c.ownerId)
-                          || allianceFormalKindBetween(activeDeals, ownerId, c.ownerId) !== null,
-                        )
-                        .map(c => c.ownerId),
-                    );
-                    const ironPicked`,
-    replace: `                          hasTreaty(activeDeals, ownerId, c.ownerId, RodzajTraktatu.PaktNieagresji)
-                          || allianceFormalKindBetween(activeDeals, ownerId, c.ownerId) !== null,
-                        )
-                        .map(c => c.ownerId),
-                    );
-                    const ironPicked` },
-  { id: 'M44-main-pick-bez-blokad', file: 'main', gates: [GUARD], why: 'wybór celu bez przekazania blockedOwnerIds',
-    find: '                      { blockedOwnerIds: ironBlockedOwnerIds },', replace: '                      undefined,' },
+  { id: 'M38b-main-wyzwalacz-bez-clusterstate', file: 'main', gates: [GUARD], why: 'wyzwalacz awansu Żelaza przestaje wykluczać miasta-państwa/kopie',
+    find: `      if (
+        isIronEraEntry(prev, next)
+        && !isOwnerClusterCityState(ownerId, ownerCityStateOpts())
+      ) {
+        ironForceWarPendingOwners.add(ownerId);`,
+    replace: `      if (
+        isIronEraEntry(prev, next)
+      ) {
+        ironForceWarPendingOwners.add(ownerId);` },
+  { id: 'M38c-main-wyzwalacz-bez-eraentry-set', file: 'main', gates: [GUARD], why: 'wyzwalacz awansu Żelaza przestaje zapamiętywać turę wejścia w epokę (próg 25 tur nie ma od czego liczyć)',
+    find: `        ironForceWarPendingOwners.add(ownerId);
+        // R-WOJNA-WYMUSZONA-ZELAZO-PROG-TURY-Q1: zapamiętaj TURĘ awansu — próg „25 tur od
+        // początku epoki" dla Żelaza liczy się od TEGO momentu, nie od startu gry ani od
+        // wejścia w Brąz (analogicznie do \`bronzeEraEnterTurnByOwner.set\` wyżej).
+        ironEraEnterTurnByOwner.set(ownerId, turn);
+      }`,
+    replace: `        ironForceWarPendingOwners.add(ownerId);
+      }` },
+  { id: 'M39-main-napastnik-barbarzynca', file: 'main', gates: [GUARD], why: 'barbarzyńca dopuszczony jako napastnik wspólnej pętli pre-pass (Brąz/Kamień/Żelazo naraz) — NASTĘPCA dawnego M39',
+    find: `              if (
+                ownerId <= 0
+                || typCityCopyOwners.has(ownerId)
+                || isBarbarian(ownerId)
+                || eliminatedOwners.has(ownerId)
+                || isOwnerClusterCityState(ownerId, ownerCityStateOpts())
+              ) continue;`,
+    replace: `              if (
+                ownerId <= 0
+                || typCityCopyOwners.has(ownerId)
+                || eliminatedOwners.has(ownerId)
+                || isOwnerClusterCityState(ownerId, ownerCityStateOpts())
+              ) continue;` },
+  { id: 'M40a-main-bez-eligible', file: 'main', gates: [GUARD], why: 'kwalifikacja napastnika Żelaza omija isEligibleForIronForcedWar — NASTĘPCA dawnego M40',
+    find: `                const shouldSearch = wasPending
+                  ? isEligibleForIronForcedWar({
+                    isMainAiCiv: true,
+                    isAlreadyAtWarAnyRole: alreadyAtWarAnyRole,
+                    currentTurn: turn,
+                    eraEnterTurn: ironEraEnterTurnByOwner.get(ownerId),
+                  })
+                  : searchingAfterRest;`,
+    replace: `                const shouldSearch = wasPending
+                  ? !alreadyAtWarAnyRole
+                  : searchingAfterRest;` },
+  { id: 'M40b-main-eligible-bez-progu-tury', file: 'main', gates: [GUARD], why: 'wywołanie isEligibleForIronForcedWar traci currentTurn/eraEnterTurn (próg 25 tur nigdy nie sprawdzany)',
+    find: `                  ? isEligibleForIronForcedWar({
+                    isMainAiCiv: true,
+                    isAlreadyAtWarAnyRole: alreadyAtWarAnyRole,
+                    currentTurn: turn,
+                    eraEnterTurn: ironEraEnterTurnByOwner.get(ownerId),
+                  })`,
+    replace: `                  ? isEligibleForIronForcedWar({
+                    isMainAiCiv: true,
+                    isAlreadyAtWarAnyRole: alreadyAtWarAnyRole,
+                  })` },
+  { id: 'M41-main-cykl-bez-wojny', file: 'main', gates: [GUARD], why: 'cykl po odpoczynku Żelaza nie sprawdza już trwającej wojny w dowolnej roli — NASTĘPCA dawnego M41',
+    find: `                const searchingAfterRest = !wasPending
+                  && ironForceWarCycleOwners.has(ownerId)
+                  && !hasActiveForcedWarAsAttacker
+                  && !alreadyAtWarAnyRole
+                  && !isRestingFromIronForcedWar(turn, ironForceWarRestUntilByOwner.get(ownerId));`,
+    replace: `                const searchingAfterRest = !wasPending
+                  && ironForceWarCycleOwners.has(ownerId)
+                  && !hasActiveForcedWarAsAttacker
+                  && !isRestingFromIronForcedWar(turn, ironForceWarRestUntilByOwner.get(ownerId));` },
+  { id: 'M42-main-gracz-zawsze-w-puli', file: 'main', gates: [GUARD],
+    why: 'ECHO krok 1 (gracz jak każde AI): gracz dołącza do triggeredSubjects BEZWARUNKOWO, '
+      + 'nie tylko gdy sam nie ma dziś żadnej aktywnej wojny wymuszonej — NASTĘPCA dawnego M42 '
+      + '(które pilnowało odwrotnej regresji: wykluczenia gracza z puli)',
+    find: `            const playerCity = cities.find(c => c.ownerId === 0);
+            if (playerCity && totalActiveForcedWarsByOwner(0) === 0) {
+              triggeredSubjects.push({ ownerId: 0, q: playerCity.q, r: playerCity.r });
+            }`,
+    replace: `            const playerCity = cities.find(c => c.ownerId === 0);
+            if (playerCity) {
+              triggeredSubjects.push({ ownerId: 0, q: playerCity.q, r: playerCity.r });
+            }` },
+  { id: 'M43-main-bez-peacelock-w-blokadzie', file: 'main', gates: [GUARD], why: 'blokada pokoju (cooldown pary) nie wyklucza już pary w assignForcedWarPairings — NASTĘPCA dawnego M43',
+    find: `            const isForcedWarPairBlocked = (a: number, b: number): boolean =>
+              hasTreaty(activeDeals, a, b, RodzajTraktatu.PaktNieagresji)
+              || isPeaceLockedBetween(a, b)
+              || allianceFormalKindBetween(activeDeals, a, b) !== null;`,
+    replace: `            const isForcedWarPairBlocked = (a: number, b: number): boolean =>
+              hasTreaty(activeDeals, a, b, RodzajTraktatu.PaktNieagresji)
+              || allianceFormalKindBetween(activeDeals, a, b) !== null;` },
+  { id: 'M44a-main-pick-bez-dystansu', file: 'main', gates: [GUARD], why: 'assignForcedWarPairings wołane bez hexDistanceFn (parowanie przestaje respektować odległość) — NASTĘPCA dawnego M44',
+    find: `            const forcedWarPairingResult = assignForcedWarPairings(
+              triggeredSubjects,
+              existingActivePairsForJoin,
+              {
+                isPairBlocked: isForcedWarPairBlocked,
+                hexDistanceFn: hexDistance,
+                totalActiveForcedWarsByOwner,
+              },
+            );`,
+    replace: `            const forcedWarPairingResult = assignForcedWarPairings(
+              triggeredSubjects,
+              existingActivePairsForJoin,
+              {
+                isPairBlocked: isForcedWarPairBlocked,
+                totalActiveForcedWarsByOwner,
+              },
+            );` },
+  { id: 'M44b-main-wynik-zelaza-z-innej-epoki', file: 'main', gates: [GUARD], why: 'wynik przydziału Żelaza czytany spod etykiety epoki Brązu (owner Żelaza nigdy nie dostaje celu)',
+    find: `                let ironForceWarTargetId: number | undefined =
+                  forcedWarOwnAssignment?.era === 'iron' ? forcedWarOwnAssignment.targetId : undefined;`,
+    replace: `                let ironForceWarTargetId: number | undefined =
+                  forcedWarOwnAssignment?.era === 'bronze' ? forcedWarOwnAssignment.targetId : undefined;` },
   { id: 'M45-main-bez-przekazania-celu', file: 'main', gates: [GUARD], why: 'cel Żelaza nie trafia do decideAIDiplomacy (mechanizm martwy)',
     find: '                diploInp.ironForceWarTargetId = ironForceWarTargetId;\n', replace: '' },
   { id: 'M46-main-bez-cyklu', file: 'main', gates: [GUARD], why: 'udany DOW nie zapisuje ownera do cyklu (wojna raz i koniec)',
@@ -431,13 +491,38 @@ const MUTATIONS = [
   { id: 'M55-main-bez-restore', file: 'main', gates: [GUARD], why: 'odczyt zapisu nie odtwarza stanu Żelaza',
     find: '      const ironForceWarRestored = restoreIronForcedWarState({',
     replace: '      const ironForceWarRestored = restoreIronForcedWarStateX({' },
-  { id: 'M56-main-bez-resetu-nowej-gry', file: 'main', gates: [GUARD], why: 'nowa gra dziedziczy rejestry Żelaza z poprzedniej rozgrywki',
+  // R-WOJNA-WYMUSZONA-PAROWANIE-ZAMIAST-DOMINA-Q1 runda 2: dawne M56 zakotwiczało blok
+  // reset-nowej-gry SPRZED wstawienia `ironEraEnterTurnByOwner.clear()` między
+  // `ironForceWarPendingOwners.clear()` a `ironForceWarCycleOwners.clear()`
+  // (R-WOJNA-WYMUSZONA-ZELAZO-PROG-TURY-Q1) — kotwica martwa. Zastąpione dwiema
+  // mutacjami na aktualnym kształcie tego samego bloku + trzema na okablowaniu
+  // `ironEraEnterTurnByOwner` (deklaracja/save/restore), patrz mapowanie w raporcie.
+  { id: 'M56a-main-reset-bez-eraentry-clear', file: 'main', gates: [GUARD], why: 'reset nowej gry nie czyści ironEraEnterTurnByOwner (reużyte ownerId dziedziczą licznik z poprzedniej gry) — NASTĘPCA dawnego M56',
     find: `      ironForceWarPendingOwners.clear();
-      ironForceWarCycleOwners.clear();
-      ironForceWarRestUntilByOwner.clear();
+      // R-WOJNA-WYMUSZONA-ZELAZO-PROG-TURY-Q1: to samo dla tury wejścia w Żelazo per-owner.
+      ironEraEnterTurnByOwner.clear();
+      ironForceWarCycleOwners.clear();`,
+    replace: `      ironForceWarPendingOwners.clear();
+      ironForceWarCycleOwners.clear();` },
+  { id: 'M56b-main-reset-bez-active-clear', file: 'main', gates: [GUARD], why: 'reset nowej gry dziedziczy pary aktywne wymuszonej wojny Żelaza z poprzedniej rozgrywki',
+    find: `      ironForceWarRestUntilByOwner.clear();
       ironForceWarActiveByPairKey.clear();
-      barbCamps = [];`,
-    replace: '      barbCamps = [];' },
+      // R-WOJNA-BRAZ-CZYSZCZENIE-NOWA-GRA-Q1: nowa gra bez przeładowania strony nie może`,
+    replace: `      ironForceWarRestUntilByOwner.clear();
+      // R-WOJNA-BRAZ-CZYSZCZENIE-NOWA-GRA-Q1: nowa gra bez przeładowania strony nie może` },
+  { id: 'M56c-main-eraentry-deklaracja-przemianowana', file: 'main', gates: [GUARD], why: 'rejestr ironEraEnterTurnByOwner przemianowany (deklaracja) — wiązanie z resztą kodu zerwane',
+    find: '    const ironEraEnterTurnByOwner = new Map<number, number>();',
+    replace: '    const ironEraEnterTurnByOwnerZZZ = new Map<number, number>();' },
+  { id: 'M56d-main-save-bez-eraentry', file: 'main', gates: [GUARD], why: 'save snapshot gubi ironEraEnterTurnByOwner (próg 25 tur zeruje się po każdym save/load)',
+    find: '          ironEraEnterTurnByOwner: Array.from(ironEraEnterTurnByOwner.entries()),\n',
+    replace: '' },
+  { id: 'M56e-main-restore-bez-length-guard', file: 'main', gates: [GUARD], why: 'restoreGameFromSave odtwarza ironEraEnterTurnByOwner bez guardu długości (traci symetrię z bronzeEraEnterTurnByOwner)',
+    find: `      if (savedIronEraEnterTurn?.length) {
+        for (const [oid, t] of savedIronEraEnterTurn) ironEraEnterTurnByOwner.set(oid, t);
+      }`,
+    replace: `      if (savedIronEraEnterTurn) {
+        for (const [oid, t] of savedIronEraEnterTurn) ironEraEnterTurnByOwner.set(oid, t);
+      }` },
   { id: 'M57-main-regresja-kamienia', file: 'main', gates: [GUARD], why: 'REGRESJA: import modułu Kamienia zerwany',
     find: "} from './game/forced-war-stone';", replace: "} from './game/forced-war-stoneZZZ';" },
   { id: 'M58-main-rejestr-cycle', file: 'main', gates: [GUARD], why: 'rejestr cycleOwners Żelaza przemianowany (deklaracja)',

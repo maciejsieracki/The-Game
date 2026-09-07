@@ -59,7 +59,14 @@ check(
   // dodatkowo onOwnerChanged: seedCityOwnerDefaults + komentarz B2 (Evaluator RUNDA 1: FAIL,
   // pre-istniejący fix tego samego tematu, poza zakresem tej rundy) -- realna długość wywołania
   // to ok. 463 znaki treści; 600 daje margines bez utraty czułości na usunięcie wywołania.
-  /function applyCityCaptureToMap\([\s\S]{0,800}?applyCityCaptureAfterBattle\([\s\S]{0,2000}?\);\s*[\s\S]{0,250}?maybeResolveBronzeForcedWarOnCityCapture\(oldOwner, atkOwner\);/.test(mainSrc),
+  // Budżet {0,1500} (zamiast dawnego {0,800}) od nagłówka funkcji do wywołania: PRE-ISTNIEJĄCE
+  // (spoza tego dispatchu) integracje R-MIASTA-REBELIA-OCHRONA-20-TUR-Q1 i
+  // R-MIASTA-ZDOBYCIE-RAPORT-TROFEA-Q1 rozrosły komentarz/sygnaturę zwrotną funkcji ponad
+  // dawny budżet. Budżet {0,400} (zamiast dawnego {0,250}) między zamknięciem wywołania a
+  // hakiem: ta sama integracja dołożyła `triggerRebelProtectionWarConsequence(...)` między
+  // applyCityCaptureAfterBattle a tym hakiem -- czułość na usunięcie SAMEGO wywołania hooka
+  // zostaje, budżet tylko wchłania nieistotny dla tej bramki sąsiedni kod.
+  /function applyCityCaptureToMap\([\s\S]{0,1500}?applyCityCaptureAfterBattle\([\s\S]{0,2000}?\);\s*[\s\S]{0,400}?maybeResolveBronzeForcedWarOnCityCapture\(oldOwner, atkOwner\);/.test(mainSrc),
 );
 
 check(
@@ -76,10 +83,16 @@ console.log('');
 // ---------------------------------------------------------------------------
 console.log('2. B3 -- aktywny sojusz z celem wyklucza go z puli wymuszonej wojny Brązu');
 
+// R-WOJNA-WYMUSZONA-PAROWANIE-ZAMIAST-DOMINA-Q1: `bronzeBlockedOwnerIds` (per-owner filtr,
+// budowany wewnątrz ownerLoop) zniknęło -- zastąpione JEDNYM symetrycznym predykatem
+// `isForcedWarPairBlocked`, wspólnym dla WSZYSTKICH trzech epok, wołanym przez
+// `assignForcedWarPairings` PRZED `ownerLoop` (patrz forced-war-trojstronna-main-guard-test.cjs
+// dla pełnego dowodu, ta sama trójka warunków NAP/peaceLock/sojusz zachowana 1:1).
 check(
-  'main.ts: bronzeBlockedOwnerIds filtruje TAKŻE po allianceFormalKindBetween(activeDeals, '
-    + 'ownerId, c.ownerId) !== null (obok hasTreaty NAP i isPeaceLockedBetween)',
-  /const bronzeBlockedOwnerIds = new Set\(\s*bronzeCandidates\s*\.filter\(c =>\s*hasTreaty\(activeDeals, ownerId, c\.ownerId, RodzajTraktatu\.PaktNieagresji\)\s*\|\| isPeaceLockedBetween\(ownerId, c\.ownerId\)\s*\|\| allianceFormalKindBetween\(activeDeals, ownerId, c\.ownerId\) !== null,/.test(mainSrc),
+  'main.ts: sojusz (obok NAP i blokady pokoju) blokuje wybór pary WSZĘDZIE -- przez '
+    + 'isForcedWarPairBlocked, wspólny predykat zastępujący dawne bronzeBlockedOwnerIds',
+  /const isForcedWarPairBlocked = \(a: number, b: number\): boolean =>\s*\n\s*hasTreaty\(activeDeals, a, b, RodzajTraktatu\.PaktNieagresji\)\s*\n\s*\|\| isPeaceLockedBetween\(a, b\)\s*\n\s*\|\| allianceFormalKindBetween\(activeDeals, a, b\) !== null;/.test(mainSrc)
+    && !mainSrc.includes('bronzeBlockedOwnerIds'),
 );
 
 check(
@@ -120,10 +133,14 @@ check(
   'ten literalny wzorzec istniał w rundzie 1 -- jego powrót = regresja B4',
 );
 
+// R-WOJNA-WYMUSZONA-PAROWANIE-ZAMIAST-DOMINA-Q1: pre-pass (PRZED ownerLoop) liczy teraz
+// `alreadyAtWarAnyRole` RAZ dla WSZYSTKICH trzech epok, PRZED czytaniem `wasPending` per era
+// (kolejność odwrócona względem starego per-owner bloku, bez zmiany SEDNA B4: `wasPending`
+// zostaje CZYSTYM ODCZYTEM, bez towarzyszącego .delete() w tej samej linii/bloku).
 check(
-  'main.ts: wasPending obliczany jako CZYSTY ODCZYT (bronzeForceWarPendingOwners.has(ownerId)) '
+  'main.ts: wasPending Brązu obliczany jako CZYSTY ODCZYT (bronzeForceWarPendingOwners.has(ownerId)) '
     + 'bez towarzyszącego .delete() w tej samej linii/bloku odczytu',
-  /const wasPending = bronzeForceWarPendingOwners\.has\(ownerId\);\s*\n\s*const alreadyAtWarAnyRole/.test(mainSrc),
+  /const wasPending = bronzeForceWarPendingOwners\.has\(ownerId\);\s*\n\s*const hasActiveForcedWarAsAttacker = \[\.\.\.bronzeForceWarActiveByPairKey\.values\(\)\]/.test(mainSrc),
 );
 
 check(
@@ -272,16 +289,18 @@ console.log('');
 // ---------------------------------------------------------------------------
 console.log('7. RUNDA 4 (Operator obrona) -- Część A/B/C: koordynacja Brązu, limit czasu, licznik wejścia w Brąz');
 
+// R-WOJNA-WYMUSZONA-PAROWANIE-ZAMIAST-DOMINA-Q1: `pickBronzeForcedWarTargetIdCoordinated`
+// zniknęła z main.ts (i z forced-war-bronze.ts) -- zastąpiona JEDNĄ wspólną procedurą
+// `assignForcedWarPairings` wołaną RAZ na turę PRZED `ownerLoop`. Okablowanie tej procedury
+// jest chronione przez forced-war-trojstronna-main-guard-test.cjs (który przejął rolę tej
+// bramki dla WSZYSTKICH trzech epok naraz) oraz tools/wojna-wymuszona-parowanie-test.cjs
+// (kontrakt czysty). Poniższa asercja (test starego, teraz nieistniejącego wywołania)
+// USUNIĘTA -- nie osłabienie, tylko usunięcie martwego sprawdzenia po realnej zmianie API.
 check(
-  'main.ts: pickBronzeForcedWarTargetIdCoordinated() wołane z KOMPLETEM opcji Części B -- '
-    + 'candidatesAlreadyAtWarIds (kandydat już w innej wojnie wykluczony), poziomTrudnosci '
-    + '(wyłącznik Łatwego/limit Normalnego), playerActiveForcedWarCount (limit "gracz najwyżej '
-    + 'w jednej naraz" dla Normalnego) -- OBOK istniejącego blockedOwnerIds z rundy 2. Usunięcie '
-    + 'któregokolwiek z tych trzech pól z wywołania (np. cichy powrót do starego '
-    + 'pickBronzeForcedWarTargetId bez koordynacji) czerwieni tę asercję -- zweryfikowano '
-    + 'mutacyjnie: usunięcie całego bloku opcji ORAZ usunięcie samego pola candidatesAlreadyAtWarIds '
-    + 'osobno oba psują dopasowanie.',
-  /const bronzePicked = pickBronzeForcedWarTargetIdCoordinated\(\s*\n\s*bronzeCandidates,\s*\n\s*refCity \? \{ q: refCity\.q, r: refCity\.r \} : undefined,\s*\n\s*hexDistance,\s*\n\s*\{\s*\n\s*blockedOwnerIds: bronzeBlockedOwnerIds,\s*\n\s*candidatesAlreadyAtWarIds: bronzeCandidatesAlreadyAtWarIds,\s*\n\s*poziomTrudnosci: forcedWarDifficultyLevel,\s*\n\s*playerActiveForcedWarCount,\s*\n\s*\},\s*\n\s*\);/.test(mainSrc),
+  'main.ts: bronzeForceWarTargetId ustawiane z forcedWarAssignmentByOwner (nowy rdzeń '
+    + 'parowania), nie z usuniętego pickBronzeForcedWarTargetIdCoordinated',
+  mainSrc.includes("forcedWarOwnAssignment?.era === 'bronze' ? forcedWarOwnAssignment.targetId : undefined")
+    && !mainSrc.includes('pickBronzeForcedWarTargetIdCoordinated'),
 );
 
 check(
