@@ -90,8 +90,8 @@ const params = M.buildEmpireFoodParams({
   const ef = M.advanceEmpireFood(econ, units, states, upkeep, params);
   const t = ef.byOwner.get(0);
   ok(t.spichlerzStolicy === 16, 'pula przed wojskiem = 16');
-  ok(t.wojsko === 2, 'koszt wojska = 2 (×2 R-STAWKI)');
-  ok(states.get(0).zapasyPanstwa === 14, 'po wojsku zostaje 14');
+  ok(t.wojsko === 4, 'koszt wojska = 4 (R_STAWKI_FALA1_FALA2_MULT ×4, r-stawki-strojenie.ts:12)');
+  ok(states.get(0).zapasyPanstwa === 12, 'po wojsku zostaje 12 (16-4)');
 }
 
 // Q6: cap 500 + Spichlerz I (epoka 1) -- P-MAGAZYN-SKALOWANIE-EPOKA-Q1 (Maciej
@@ -209,7 +209,7 @@ ok(
   };
   const ef = M.advanceEmpireFood(econ, units, states, upkeep, params);
   ok(ef.byOwner.get(0).spichlerzStolicy === 6, 'miasta zasilają centralę przed wojskiem');
-  ok(states.get(0).zapasyPanstwa === 4, 'wojsko zjada po miastach — 6-2=4');
+  ok(states.get(0).zapasyPanstwa === 2, 'wojsko zjada po miastach — 6-4=2 (koszt R_STAWKI_FALA1_FALA2_MULT ×4)');
   ok(ef.byOwner.get(0).glodWojska === false, 'wojsko nie głoduje gdy zapasy po armii >= 0');
 }
 
