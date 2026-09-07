@@ -68,18 +68,23 @@ console.log('-- building-queue-refund: enqueue pobór + cancel zwrot --');
   const stolarnia = buildings.find(b => b.id === 'stolarnia');
   assert(!!stolarnia, 'buildings.json: stolarnia istnieje');
   const cost = M.buildingStockCost(stolarnia);
-  eq(cost.drewno, 10, 'stolarnia koszt_surowce.drewno FALA2×2 = 10');
+  eq(cost.drewno, 50, 'stolarnia koszt_surowce.drewno=25 × FALA2×2 = 50 (buildingStockCost realna)');
 
+  // Pula PRZED enqueue musi być >= cost (stan osiągalny w grze: enqueue jest wołane
+  // dopiero po pozytywnym canAffordBuildingStock na tej samej sumie — main.ts/cityPanel.ts).
+  // Żadne z miast osobno nie pokrywa całego kosztu (22<50, 33<50) — pobór jest
+  // rozproszony po obu miastach (deductBuildingStockCostAcrossCities bierze najpierw
+  // z miasta o największym zapasie: c2 w całości, potem resztę z c1).
   const cities = makeCities([
-    { id: 'c1', ownerId: 0, surowce: { drewno: 3 } },
-    { id: 'c2', ownerId: 0, surowce: { drewno: 12 } },
+    { id: 'c1', ownerId: 0, surowce: { drewno: 22 } },
+    { id: 'c2', ownerId: 0, surowce: { drewno: 33 } },
   ]);
   const before = M.ownerResourceStock(cities, 0, 'drewno');
-  eq(before, 15, 'pula państwa przed enqueue: 3+12=15');
+  eq(before, 55, 'pula państwa przed enqueue: 22+33=55 (>= kosztu 50)');
 
   M.deductBuildingStockCostAcrossCities(cities, 0, cost);
   const afterEnqueue = M.ownerResourceStock(cities, 0, 'drewno');
-  eq(afterEnqueue, 5, 'po enqueue: 15-10=5 drewna w puli');
+  eq(afterEnqueue, 5, 'po enqueue: 55-50=5 drewna w puli');
 
   M.refundBuildingStockCostAcrossCities(cities, 0, cost);
   const afterCancel = M.ownerResourceStock(cities, 0, 'drewno');

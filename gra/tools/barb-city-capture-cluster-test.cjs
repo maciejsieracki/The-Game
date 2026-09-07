@@ -368,7 +368,31 @@ const citiesTs = fs.readFileSync(citiesTsPath, 'utf8');
   // prawdziwe TYLKO dla nowej produkcji, nie dla odziedziczonej.
   const idxApplyCapture = mainTs.indexOf('function applyCityCaptureToMap(');
   assert(idxApplyCapture !== -1, '2h-static: main.ts definiuje applyCityCaptureToMap');
-  const windowApplyCapture = mainTs.slice(idxApplyCapture, idxApplyCapture + 4000);
+  // RUNDA 4 (Operator, P-BRAMKI-ZASTANE-CZERWONE-Q1): okno NIE jest już stałą liczbą
+  // znaków (4000 -> od dawna za ciasne: blok `if (isBarbarian(atkOwner))` leży dziś
+  // 6412 znaków od `idxApplyCapture`, po integracji kolejnych tematów w TEJ SAMEJ
+  // funkcji -- każdy przyszły dopisek w main.ts przed tym blokiem psułby stałą na nowo).
+  // Zamiast liczby -- szukamy KOŃCA SAMEJ FUNKCJI: następnej deklaracji (`function `/
+  // `const `/`let `/`var `) na DOKŁADNIE tym samym poziomie wcięcia co
+  // `function applyCityCaptureToMap(` (sąsiad w tym samym bloku nadrzędnym). W
+  // sformatowanym kodzie (Prettier/tsc) to naturalna granica końca funkcji -- rośnie
+  // razem z nią automatycznie, bez ręcznej aktualizacji stałej przy każdym powiększeniu.
+  // Brak dopasowania (np. reformat zmieniający styl wcięć) -> fallback do dużego,
+  // jawnie oznaczonego okna zamiast cichego ucięcia.
+  const funcLineStart = mainTs.lastIndexOf('\n', idxApplyCapture) + 1;
+  const funcIndent = mainTs.slice(funcLineStart, idxApplyCapture);
+  assert(/^ +$/.test(funcIndent),
+    '2h-static (okno): `function applyCityCaptureToMap(` ma wcięcie wyłącznie spacjami '
+    + '(założenie mechanizmu wyznaczania końca okna po sąsiedniej deklaracji)');
+  const siblingRe = new RegExp('\\n' + funcIndent + '(?:function |const |let |var )', 'g');
+  siblingRe.lastIndex = idxApplyCapture + 'function applyCityCaptureToMap('.length;
+  const siblingMatch = siblingRe.exec(mainTs);
+  const FALLBACK_WINDOW = 40000; // jawny, hojny fallback -- nigdy cichy 4000 sprzed naprawy
+  const windowEnd = siblingMatch ? siblingMatch.index : idxApplyCapture + FALLBACK_WINDOW;
+  assert(windowEnd - idxApplyCapture > 6412,
+    '2h-static (okno): wyznaczony koniec okna pokrywa z zapasem dzisiejszy zmierzony offset '
+    + '6412 (dziś: ' + (windowEnd - idxApplyCapture) + ' znaków)');
+  const windowApplyCapture = mainTs.slice(idxApplyCapture, windowEnd);
   const resetRe =
     /if\s*\(\s*isBarbarian\(atkOwner\)\s*\)\s*\{\s*[\s\S]{0,200}?cityProd\.set\(city\.id,\s*\{\s*kolejka:\s*\[\],\s*postep:\s*0\s*\}\);/;
   const resetMatch = resetRe.exec(windowApplyCapture);
