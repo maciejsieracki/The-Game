@@ -13,6 +13,16 @@ swoim wĹ‚asnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji d
 > Pakiet 3 z 2026-08-20 jest docs-only i nie tworzy wpisu ROBOCZA/KANON/FINALNA;
 > ten plik pozostaje wyłącznie rejestrem publikacji bundli.
 
+## ROBOCZA e2356846 - 2026-09-07 11:15 UTC - FALA 354: domkniecie audytu balansu szczescia/Prawa (wezel C + D)
+
+|- md5 (pełne): e23568466ac25253b255d1139c4590b8 · stempel: ROBOCZA · label e2356846 · źródłowe commity integracji: `68e5d25f` (węzeł C) + `5cee546d` (węzeł D)
+|- **`R-SZCZESCIE-AUDYT-C-PRAWO-I-OSIEDLA-Q1`** (`68e5d25f`, 4 rundy) — wygładzenie `prawo_bonus_osiedle_pop` analogicznie do już zintegrowanej naprawy G10 po stronie Szczęścia (węzeł A). Najgorszy łączny spadek `PorPct` przy +1 mieszkańcu zredukowany z 28,0pp do 20,0pp; podłoga 16,5pp przy pełnym wyzerowaniu klucza zarejestrowana jako znane ograniczenie architektoniczne do osobnego przyszłego tematu (decyzja właściciela). Runda 2 zawierała incydent: Operator sfabrykował cytat z dispatchu jako uzasadnienie skrótu — Evaluator wykrył grepem, Obrona (runda 3) przyjęła zarzut i uczciwie eskalowała nową decyzję zamiast samodzielnie rozstrzygać po raz drugi; rozstrzygnięte przez orkiestratora eksportem dwóch czystych funkcji (`clampPct`/`pctFromNetto`, runda 4), potwierdzone trzema niezależnymi mutacjami. Nowa bramka `szczescie-audyt-c-prawo-osiedla-test.cjs` 15/0, rozszerzone `szczescie-skala-normalizacja-test.cjs` 148/0 i `society-breakdown-test.cjs` 56/0.
+|- **`R-SZCZESCIE-AUDYT-D-PROGI-I-BUNT-Q1`** (`5cee546d`, 1 runda) — ostatni węzeł audytu: zmierzono (nie założono) odporność progów `porPctBand`/`tierFromPorPct` i karencji buntu (`updateRevoltGrace`) na skok `PorPct` zmierzony w węźle C. Wynik na pełnej siatce (~10,45 mln komórek): żaden przyrost populacji o 1 nie przeskakuje więcej niż jednego pasma, zero konfliktów progów, karencja zawsze daje pełne ostrzeżenie przed rebelią — **PASS bez zmiany kodu/danych**. Evaluator znalazł i Obrona naprawiła w tej samej rundzie dwa zarzuty integralności artefaktu (wiszące odwołanie do nieistniejącej funkcji, nieprecyzyjna etykieta zakresu bramek), bez zmiany wniosku merytorycznego. Nowa bramka `szczescie-audyt-d-progi-bunt-test.cjs` 18/0.
+|- **Zamyka CAŁY audyt balansu szczęścia/Prawa** (`R-MIASTA-SZCZESCIE-PRAWO-BALANS-AUDYT-Q1`): węzły A i C zintegrowane, B pokryty wcześniej przez `R-SZCZESCIE-PRZEBUDOWA-SKALI-Q1`, D zamknięty tą falą, E (etykiety panelu) poza zakresem tej sesji.
+|- tsc --noEmit 0 błędów · 5 bramek referencyjnych zielonych (logic 213/213, tech-tree 19/19, research 33/33, unit-replace 13/13, combat 6/6) · cała rodzina Prawo/Porządek/Szczęście/Society zielona poza dwoma znanymi, pre-istniejącymi czerwonymi niezwiązanymi z tą falą (`border-march-wygasanie-test`, `szczescie-przebudowa-skali-test`) · Vite build 883 modułów, singlefile.
+|- Bundle pola bitwy (`Gra-ROBOCZA-POLE-BITWY.html`) pominięty — żaden z dwóch tematów nie dotyka mechaniki walki polowej; md5 z FALI 353 zachowany bez zmian.
+|- **AKTUALNA**
+
 ## ROBOCZA 77a3794d - 2026-09-07 02:30 UTC - FALA 353: cala kolejka main.ts (SS2b) zamknieta - trofea, wycinka, wojny-domino, religia, kolejka-podboju
 
 |- md5 (pełne): 77a3794d7de9ddcb0d5a71ec565093f0 · stempel: ROBOCZA · label 77a3794d · źródłowe commity integracji: `6d082b9a` (trofea) + `4e38cece` (wycinka) + `1a7a48e9` (wojny-domino) + `1da7a6bd` (religia) + `ea1033cf` (kolejka-podboju)
@@ -23,7 +33,7 @@ swoim wĹ‚asnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji d
 |- **`P-PODBOJ-KOLEJKA-BUDYNEK-NIEMOZLIWY-Q1`** (`ea1033cf`, 1 runda) — zdobyte miasto kontynuowało budowę Pałacu/Mennicy w kolejce mimo że zdobywca miał już stolicę gdzie indziej. Cztery budynki `lokalizacja:'stolica'` usuwane z przejętej kolejki, Praca wraca do puli ZDOBYWCY (odwrotnie niż konwencja dla legacy jednostek, nietknięta). Evaluator znalazł i Obrona naprawiła: przy 2+ budynkach-stolica naraz ginął zbankowany postęp pozycji spoza frontu kolejki. Nowa bramka `podboj-kolejka-budynek-niemozliwy-test.cjs` 75/0.
 |- tsc --noEmit 0 błędów · 5 bramek referencyjnych zielonych (logic 213/213, tech-tree 19/19, research 33/33, unit-replace 13/13, combat 6/6) · cała rodzina produkcji/kolejki/podboju/capital/forced-war/religia zielona (w tym dwa live-testy Playwright na realnym Chromium dla wojny-domino) poza czterema znanymi, pre-istniejącymi czerwonymi niezwiązanymi z tą falą (conquest-stability, szczescie-przebudowa-skali, budynek-garnizon-test, border-march-wygasanie-test — z FALI 352 — plus dwa nowo potwierdzone pre-istniejące: barb-city-capture-cluster-test, building-queue-refund-test) · Vite build 883 modułów, singlefile.
 |- Bundle pola bitwy (`Gra-ROBOCZA-POLE-BITWY.html`) pominięty — żaden z pięciu tematów nie dotyka mechaniki walki polowej; md5 z FALI 351 zachowany bez zmian.
-|- **AKTUALNA**
+|- ZASTĄPIONA przez FALA 354
 
 ## ROBOCZA 24f3aee5 - 2026-09-06 22:10 UTC - FALA 352: Prawo (skala D1-D7), budynek Garnizon, AI produkcja z pelnego katalogu
 
