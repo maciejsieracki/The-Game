@@ -52,6 +52,15 @@ function ok(c, m) {
 
 const CITY = { id: 'c1', q: 0, r: 0, ownerId: 0, population: 5 };
 
+// Zapas magazynu państwa duży ponad wszelki koszt_surowce budynków użytych w tym pliku
+// (drewno/kamień/cegła) — PYTANIE-84/SUROW-CIV-01 (2026-07-23/24, poprzedza ten plik testowy
+// z 2026-07-25) dodało eraBuildingCatalog/buildableProduction bramkę afordancji NIEZALEŻNĄ od
+// CITY_BUILDING_PREREQ (production.ts `resourceOk` / building-stock-cost.ts
+// `canAffordBuildingStock`). Ten plik testuje WYŁĄCZNIE prerekwizyt miejski (kolejność budowy),
+// więc magazyn musi być z góry "pełny", żeby afordancja nigdy nie maskowała wyniku prereq —
+// zgodny wzorzec z tools/deposit-building-gate-test.cjs (empireResourceStock w ctx).
+const AMPLE_STOCK = { drewno: 999, kamien: 999, cegla: 999 };
+
 function baseCtx(overrides) {
   return Object.assign({
     epoch: 3,
@@ -60,6 +69,7 @@ function baseCtx(overrides) {
     isCapital: true,
     ownerId: 0,
     difficulty: 'normal',
+    empireResourceStock: AMPLE_STOCK,
   }, overrides);
 }
 
@@ -91,13 +101,19 @@ function buildIds(techs, ctxOverrides) {
 
 // ===========================================================================
 // 1b. ZLOTO (2026-07-25): Mennica niedostępna bez Targowiska w tym mieście, NAWET z
-//     aktywnym dostępem do Złota (activeResourceLabels) — obie bramki muszą być spełnione.
+//     dostępem do Złota — obie bramki muszą być spełnione.
+//     Pole `activeResourceLabels` użyte tu pierwotnie jest DEAD od DOSTEP-SUROWCE-Q1
+//     (building-resource-gate.ts: `isAccessOnlyResourceLabel` @deprecated, zawsze false,
+//     `buildingResourceGateMet` bierze parametr `_activeLabels` z podkreśleniem — celowo
+//     nieużywany) — jedyna bramka złota to `empireResourceStock.zloto` (magazyn państwa),
+//     stąd 7 asercji niżej faktycznie testowało "bez dostępu do złota" niezależnie od tego,
+//     co było wpisane w activeResourceLabels.
 // ===========================================================================
 {
   const techs = ['Waluta'];
-  ok(!buildIds(techs, { epoch: 2, activeResourceLabels: ['Złoto'] }).includes('mennica'),
+  ok(!buildIds(techs, { epoch: 2, empireResourceStock: { zloto: 10 } }).includes('mennica'),
     'Mennica NIEDOSTĘPNA bez Targowiska w mieście (mimo dostępu do Złota)');
-  ok(buildIds(techs, { epoch: 2, activeResourceLabels: ['Złoto'], builtBuildingIds: ['targowisko'] }).includes('mennica'),
+  ok(buildIds(techs, { epoch: 2, empireResourceStock: { zloto: 10 }, builtBuildingIds: ['targowisko'] }).includes('mennica'),
     'Mennica DOSTĘPNA z Targowiskiem w mieście + dostępem do Złota');
   ok(!buildIds(techs, { epoch: 2, builtBuildingIds: ['targowisko'] }).includes('mennica'),
     'Mennica NIEDOSTĘPNA z Targowiskiem, ale BEZ dostępu do Złota');

@@ -182,11 +182,19 @@ function ok(c, m) {
   ok(drogi['Wymaga (prereq)'] === 'Inżynieria + Budownictwo', 'Drogi brukowane prereq ABC-23');
 }
 
-// ABC-24: droga brukowana tylko +2 ruch
+// ABC-24 (stan na dzień napisania -- 2026-07 ranek): droga brukowana miała wtedy tylko
+// +2 ruch, bez bonusu Handlu. R-DROGI-RUCH-HANDEL-Q1 (Maciej 2026-08-14, udokumentowane
+// wprost w data/terrain-improvements.json: pola `bonus_ruch_uwaga`/`uwagi` budynku
+// droga_brukowana) to legalnie zmieniło: ruch przeszedł z odejmowania (to pole bonus_ruch
+// zostaje jako "MARTWE POLE", nieczytane już przez road-movement.ts) na dzielenie stałą
+// ROAD_BRUK_MOVE_SPEED_MULT, a Handel (plon heksa) dostał udokumentowany bonus 2->3/turę.
+// `bonus_ruch` samo pole nadal istnieje w JSON (historyczna migawka) więc pierwsza asercja
+// zostaje bez zmian; druga przekotwiczona na aktualny, udokumentowany w danych stan.
 {
   const bruk = terrain.droga_brukowana;
-  ok(bruk.bonus_ruch === 2, 'bonus_ruch 2');
-  ok(!bruk.bonus || Object.keys(bruk.bonus).length === 0, 'no handel bonus on bruk');
+  ok(bruk.bonus_ruch === 2, 'bonus_ruch 2 (pole historyczne/martwe od R-DROGI-RUCH-HANDEL-Q1)');
+  ok(bruk.bonus && bruk.bonus.handel === 3,
+    'handel bonus 3 na bruku (R-DROGI-RUCH-HANDEL-Q1, Maciej 2026-08-14 -- udokumentowane w JSON)');
 }
 
 // upgrade chain depth (UPG-LOC max 3 — sanity). GRUPY-BUDYNKOW (Maciej 2026-07-25):
