@@ -1,0 +1,85 @@
+{
+  "przed": [
+    {
+      "tab": "surowce",
+      "file": "PRZED-surowce.png",
+      "eyebrow": "MAGAZYN PAŃSTWA",
+      "hasHdrRow": true,
+      "hasIconSvg": true,
+      "iconBox": {
+        "w": 14,
+        "h": 14
+      }
+    },
+    {
+      "tab": "handel",
+      "file": "PRZED-handel.png",
+      "eyebrow": "HANDEL — SZLAKI HANDLOWE",
+      "hasHdrRow": true,
+      "hasIconSvg": false,
+      "iconBox": null
+    },
+    {
+      "tab": "armia",
+      "file": "PRZED-armia.png",
+      "eyebrow": "ARMIA",
+      "hasHdrRow": true,
+      "hasIconSvg": false,
+      "iconBox": null
+    },
+    {
+      "tab": "kultura",
+      "file": "PRZED-kultura.png",
+      "eyebrow": "KULTURA IMPERIUM",
+      "hasHdrRow": true,
+      "hasIconSvg": false,
+      "iconBox": null
+    }
+  ],
+  "po": [
+    {
+      "tab": "surowce",
+      "file": "PO-surowce.png",
+      "eyebrow": "MAGAZYN PAŃSTWA",
+      "hasHdrRow": true,
+      "hasIconSvg": true,
+      "iconBox": {
+        "w": 14,
+        "h": 14
+      }
+    },
+    {
+      "tab": "handel",
+      "file": "PO-handel.png",
+      "eyebrow": "HANDEL — SZLAKI HANDLOWE",
+      "hasHdrRow": true,
+      "hasIconSvg": true,
+      "iconBox": {
+        "w": 14,
+        "h": 14
+      }
+    },
+    {
+      "tab": "armia",
+      "file": "PO-armia.png",
+      "eyebrow": "ARMIA",
+      "hasHdrRow": true,
+      "hasIconSvg": true,
+      "iconBox": {
+        "w": 14,
+        "h": 14
+      }
+    },
+    {
+      "tab": "kultura",
+      "file": "PO-kultura.png",
+      "eyebrow": "KULTURA IMPERIUM",
+      "hasHdrRow": true,
+      "hasIconSvg": true,
+      "iconBox": {
+        "w": 14,
+        "h": 14
+      }
+    }
+  ]
+}
