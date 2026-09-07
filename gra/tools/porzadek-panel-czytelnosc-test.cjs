@@ -492,6 +492,68 @@ console.log('\n-- K. orderContributionPct -- prawWkladPct PINOWANY jako dopełni
   );
 }
 
+// ===========================================================================
+// L. R-SZCZESCIE-AUDYT-E-ETYKIETY-PANELU-Q1 -- tooltip/wyjaśnienie przy „N% wkładu"
+// rozróżniające wkład TEJ TURY (wynik, zmienny) od stałej wagi bazowej mechanizmu
+// (porzadek_waga_szczescie/porzadek_waga_prawo, society-params.json, bieżąca trudność).
+// Zero zmiany formuły -- WYŁĄCZNIE dodanie kontekstu do już policzonych liczb (szWkladPct/
+// prawWkladPct nietknięte, patrz sekcja G wyżej). Dowód numeryczny "wartość podąża za
+// danymi" (D18-A: normal 50/50, hard 45/55) i dowód mutacyjny (nietautologiczność, kod
+// legacy realnie czerwienieje) -- w bramce real-render (żywy Chromium, Playwright):
+// szczescie-audyt-e-etykiety-panelu-real-render-test.cjs.
+// ===========================================================================
+console.log('\n-- L. cityPanel.ts (tekst): tooltip „N% wkładu" rozróżnia WYNIK tej tury od STAŁEJ wagi --');
+{
+  const CITY_PANEL_TS = path.join(GRA, 'src', 'ui', 'cityPanel.ts');
+  const src = fs.readFileSync(CITY_PANEL_TS, 'utf8');
+
+  function windowBetween(startMarker, endMarker, fromIdx = 0) {
+    const s = src.indexOf(startMarker, fromIdx);
+    if (s < 0) return { start: -1, end: -1, body: '' };
+    const e = src.indexOf(endMarker, s + startMarker.length);
+    if (e < 0) return { start: s, end: -1, body: '' };
+    return { start: s, end: e, body: src.slice(s, e) };
+  }
+
+  const rs = windowBetween(
+    'function renderSpoleczenstwo(mount: HTMLElement, city: City, data: GameData): void {',
+    '\nfunction ',
+  );
+  assert(rs.start > -1, 'L0: znaleziono function renderSpoleczenstwo(...) w cityPanel.ts (ta sama funkcja co sekcja G/F)');
+
+  assert(
+    /loadOrderParams\(data\.societyParams,\s*difficultyDlaWagi\)/.test(rs.body),
+    'L1 (zabija regresję do hardkodu): waga wyświetlana w tooltipie czyta się przez `loadOrderParams(data.societyParams, ...)` -- TĘ SAMĄ funkcję co silnik (computeOrderStateLocal), nie osobno przeliczoną ani zahardkodowaną stałą',
+  );
+  assert(
+    /const difficultyDlaWagi = cfg\.difficulty \?\? 'normal';/.test(rs.body),
+    'L2: trudność użyta do wagi pochodzi z `cfg.difficulty` (config panelu), nie ze sztywnego literału -- łatwo/normal/hard realnie przełączają wyświetloną wagę',
+  );
+  assert(
+    /wagaSzPct = Math\.round\(wagaParams\.wagaSzczescie \* 100\)/.test(rs.body) && /wagaPrawPct = Math\.round\(wagaParams\.wagaPrawo \* 100\)/.test(rs.body),
+    'L3: procent wagi liczony z `wagaParams.wagaSzczescie`/`wagaParams.wagaPrawo` (wynik loadOrderParams), nie z literału liczbowego',
+  );
+
+  assert(rs.body.includes('wkladBox.title = wkladWyjasnienie;'), 'L4: kontener `.civ-w4-wklad` (wkladBox) dostaje natywny tooltip (`.title`), ten sam wzorzec co inne tooltipy w tym pliku (np. `bilans.title`, `chip.title`)');
+  assert(/TEJ TURY/.test(rs.body), 'L5: treść tooltipu nazywa wyświetlany % wprost „TEJ TURY" (wynik zmienny z turami)');
+  assert(/[Ss]tała waga bazowa/.test(rs.body), 'L6: treść tooltipu nazywa drugą wielkość wprost „stała waga bazowa" (mechanizm, nie wynik)');
+  assert(/NIE jest stała reguła gry/.test(rs.body), 'L7: tooltip WPROST zaprzecza, że wyświetlany % wkładu jest stałą regułą gry -- rdzeń GOAL tego tematu');
+
+  assert(
+    /const wkladHint = el\('div', 'civ-w4-wklad-hint'\);/.test(rs.body) && rs.body.includes('wkladBox.appendChild(wkladHint);'),
+    'L8: DODATKOWA linia tekstu (`.civ-w4-wklad-hint`) dołączona jako OSOBNY element DOM widoczny bez hoveru -- nie tylko atrybut `title` (dowód „tekst faktycznie widoczny" dla tematu wizualnego, real-render test robi z tego zrzut)',
+  );
+  assert(
+    /wkladHint\.textContent = `Waga bazowa \(\$\{difficultyDlaWagi\}\): Szczęście \$\{wagaSzPct\}% \/ Prawo \$\{wagaPrawPct\}%`;/.test(rs.body),
+    'L9: widoczna linia interpoluje trudność i OBIE wagi ze zmiennych (`difficultyDlaWagi`/`wagaSzPct`/`wagaPrawPct`), nie z literału -- guard przeciw regresji do zahardkodowanego "50%"',
+  );
+
+  // Guard przeciw regresji formuły: sekcja L dotyka WYŁĄCZNIE kontekstu/tooltipu, nie liczenia
+  // szWkladPct/prawWkladPct -- te dwie linie (sekcja G) muszą zostać bajt w bajt.
+  assert(rs.body.includes("szRow.textContent = `Szczęście: ${Math.round(state.szWkladPct)}% wkładu`;"), 'L10 (guard zero-regresji formuły): wiersz „Szczęście: N% wkładu" liczony DOKŁADNIE jak przed tym tematem (state.szWkladPct, Math.round) -- ta poprawka jest czysto opisowa');
+  assert(rs.body.includes("prawRow.textContent = `Prawo: ${Math.round(state.prawWkladPct)}% wkładu`;"), 'L11 (guard zero-regresji formuły): wiersz „Prawo: N% wkładu" liczony DOKŁADNIE jak przed tym tematem');
+}
+
 console.log(`\nporzadek-panel-czytelnosc-test: ${passed} passed, ${failed} failed`);
 try { fs.unlinkSync(ENTRY_FILE); } catch (e) { /* noop */ }
 try { fs.unlinkSync(BUNDLE_FILE); } catch (e) { /* noop */ }
