@@ -1008,9 +1008,14 @@ function renderSkarbiecSection(
   const stan = Math.round(economy.bogactwo ?? 0);
   const nettoCls = netto < 0 ? 'neg' : 'pos';
 
+  // R-HUD-ZETONY-EKONOMIA-BRUTTO-Q1 (Maciej 2026-09-07, ECHO właściciela — brutto na
+  // WSZYSTKICH trzech żetonach/nagłówkach, spójnie z Pracą): hero pokazuje WPŁYWY BRUTTO
+  // (`wplywy`, przed utrzymaniem), nie `netto` — redukcja do netto zostaje w tabeli bilansu
+  // niżej ("Netto skarbiec"). Kolor (`nettoCls`) zostaje kluczowany NETTEM — to on realnie
+  // ostrzega, że skarbiec się kurczy, niezależnie od tego, że hero pokazuje teraz brutto.
   let h = '<div class="civ-emp-sect" data-section="skarbiec">'
     + '<div class="civ-emp-eyebrow">SKARBIEC IMPERIUM</div>'
-    + `<div class="civ-emp-hero ${nettoCls}">Netto ${treasuryBalanceSignedTxt(netto)} / turę</div>`;
+    + `<div class="civ-emp-hero ${nettoCls}">Wpływy brutto ${treasuryBalanceSignedTxt(wplywy)} / turę</div>`;
 
   if (rows.length === 0) {
     h += `<div class="civ-emp-hero-sub">Stan skarbca <b>${stan}</b></div>`
@@ -1222,9 +1227,13 @@ function laborSliderFillStyle(pctUlepszeniaTrack: number): string {
 /**
  * R-DESIGN-11-ZAKLADEK faza 2 (Maciej 2026-08-1x) — Klatka 2: Praca dostaje własny blok
  * top-level, wzorem Skarbca (faza 1). Hero = suma Pracy/turę imperium (Budynki+Pula tej tury,
- * sumowane z `cityEcon`, NIE `economy.pracaRate` — ten opisuje przyrost NETTO puli po utrzymaniu,
- * inna liczba, patrz box PULA IMPERIUM niżej gdzie `economy.pracaRate` jest pokazywany osobno,
- * tak samo jak Skarbiec pokazuje „netto" osobno od sum tabeli per-miasto).
+ * sumowane z `cityEcon`), inna liczba niż box PULA IMPERIUM niżej.
+ *
+ * R-HUD-ZETONY-EKONOMIA-BRUTTO-Q1 (Maciej 2026-09-07, ECHO właściciela): box PULA IMPERIUM
+ * pokazywał dotąd `economy.pracaRate` (NETTO, po odjęciu wszystkich 4 znanych drenaży tej
+ * tury) — teraz pokazuje BRUTTO (`wplywBrutto` = pracaRate + upkeep + autoUlepszeniaKoszt +
+ * cudaKoszt), redukcja do netto zostaje wyłącznie w bokach UTRZYMANIE/AUTO-ULEPSZENIA/CUDA NA
+ * MAPIE i w stopce niżej — spójnie z żetonem HUD (`hud.ts`, `pracaWplywBrutto()`).
  */
 function renderPracaSection(
   rows: EmpireDetailSnap['cityEcon'],
@@ -1251,6 +1260,15 @@ function renderPracaSection(
   // UTRZYMANIE ULEPSZEŃ, żeby nie mieszał się z saldem netto na głównym żetonie
   // (zgłoszenie właściciela: "Praca 39 -10" mylące, powinno być w podsumowaniu).
   const autoUlepszeniaKoszt = Math.round(economy.pracaAutoUlepszeniaKoszt ?? 0);
+  // R-HUD-ZETONY-EKONOMIA-BRUTTO-Q1 (Maciej 2026-09-07): CZWARTY drenaż — Cuda na
+  // mapie — dotąd bez własnego wystawionego pola (brakujące dociągnięcie zlecone
+  // tym tematem), teraz dostępny jako `economy.pracaCudaKoszt`, tak samo jak
+  // `pracaAutoUlepszeniaKoszt` wyżej.
+  const cudaKoszt = Math.round(economy.pracaCudaKoszt ?? 0);
+  // ECHO właściciela: nagłówek „PULA IMPERIUM" (box niżej) pokazuje BRUTTO (przed
+  // WSZYSTKIMI 4 drenażami tej tury), nie `rate` (netto) — redukcja do netto zostaje
+  // wyłącznie w rozpisce boxów UTRZYMANIE/AUTO-ULEPSZENIA/CUDA NA MAPIE niżej.
+  const wplywBrutto = rate + upkeep + autoUlepszeniaKoszt + cudaKoszt;
 
   h += `<div class="civ-emp-hero pos">${total} Pracy / turę</div>`
     + `<div class="civ-emp-hero-sub"><b>${sumBudynki}</b> do budynków · <b>${sumPula}</b> do puli imperium · `
@@ -1271,7 +1289,7 @@ function renderPracaSection(
   // liczby). Regres po R-PRACA-JEDEN-SUWAK-UI-Q1 (który usuwał DRUGI <input>, nie
   // ten nieinteraktywny banner) — ten temat usuwa właśnie ten banner.
   h += '<div class="civ-emp-two">'
-    + `<div class="civ-emp-box"><div class="k">PULA IMPERIUM</div><div class="v">${stock} ${deltaHtml(rate)}</div></div>`
+    + `<div class="civ-emp-box"><div class="k">PULA IMPERIUM</div><div class="v">${stock} ${deltaHtml(wplywBrutto)}</div></div>`
     + `<div class="civ-emp-box"><div class="k">UTRZYMANIE ULEPSZEŃ</div>`
     + `<div class="v"${upkeep > 0 ? ' style="color:#e07a7a"' : ''}>−${upkeep} `
     + '<span style="font-size:11px;color:#7d8798;font-weight:600">z puli</span></div></div>'
@@ -1283,6 +1301,13 @@ function renderPracaSection(
     // bez kontenera grid (margin-top:12px zachowany 1:1 z `.civ-emp-two`).
     h += `<div class="civ-emp-box" style="margin-top:12px"><div class="k">AUTO-ULEPSZENIA (AI)</div>`
       + `<div class="v" style="color:#e07a7a">−${autoUlepszeniaKoszt} `
+      + '<span style="font-size:11px;color:#7d8798;font-weight:600">z puli</span></div></div>';
+  }
+  if (cudaKoszt > 0) {
+    // R-HUD-ZETONY-EKONOMIA-BRUTTO-Q1: ten sam wzorzec co AUTO-ULEPSZENIA wyżej —
+    // pojedynczy box, pełnoszerokościowy poza gridem `.civ-emp-two`.
+    h += `<div class="civ-emp-box" style="margin-top:12px"><div class="k">CUDA NA MAPIE</div>`
+      + `<div class="v" style="color:#e07a7a">−${cudaKoszt} `
       + '<span style="font-size:11px;color:#7d8798;font-weight:600">z puli</span></div></div>';
   }
 
@@ -1306,6 +1331,9 @@ function renderPracaSection(
   }
   if (autoUlepszeniaKoszt > 0) {
     h += `<div class="civ-emp-foot">Auto-ulepszenia AI (gracz): −${autoUlepszeniaKoszt} Praca z puli w tej turze — koszt terenu postawionego automatycznie (tryb: auto).</div>`;
+  }
+  if (cudaKoszt > 0) {
+    h += `<div class="civ-emp-foot">Cuda na mapie: −${cudaKoszt} Praca z puli w tej turze — postęp budowy Cudów z globalnej puli Pracy imperium.</div>`;
   }
 
   h += renderEmpirePracaBudgetSplitSection();

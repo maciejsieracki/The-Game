@@ -10545,6 +10545,14 @@ async function boot(): Promise<void> {
      *  ZMIANY -- to pole tylko DOKUMENTUJE jeden z jego istniejących
      *  składników, nie zmienia sumy. */
     let _lastPracaAutoUlepszeniaKoszt: number = 0;
+    /** R-HUD-ZETONY-EKONOMIA-BRUTTO-Q1 (Maciej 2026-09-07): drenaż „Cuda na mapie" --
+     *  Praca zużyta przez `advanceOwnerWonderMapBuilds(0, ...)` w ostatniej turze
+     *  (patrz `_lastPracaRate -= usedPlayer` niżej) -- civ-wide, wyłącznie do
+     *  wyświetlenia (rozbicie brutto→netto w tooltipie HUD / „PULA IMPERIUM"),
+     *  analogicznie do `_lastPracaAutoUlepszeniaKoszt`. Był 4. (ostatnim) z 4
+     *  drenaży `_lastPracaRate` bez własnego, osobno wystawionego pola -- żeton/
+     *  panel rekonstruował brutto z tylko 3 z 4 składników. */
+    let _lastPracaCudaKoszt: number = 0;
     let _lastKultura: number = 0;
     let _lastPracaRate: number = 0;
     /** P-PRACA-IMPERIUM-PULA-NIE-AKUMULUJE-REGRES2-Q1 (Maciej 2026-08-22): koniec tury
@@ -17339,6 +17347,7 @@ async function boot(): Promise<void> {
         pracaRate: Math.round(_lastPracaRate),
         pracaUpkeep: Math.round(_lastPracaUpkeep),
         pracaAutoUlepszeniaKoszt: Math.round(_lastPracaAutoUlepszeniaKoszt),
+        pracaCudaKoszt: Math.round(_lastPracaCudaKoszt),
         nauka: Math.floor(player.nauka),
         naukaRate: Math.floor(_lastNaukaRate),
         kultura: Math.floor(_lastKultura),
@@ -29163,6 +29172,7 @@ async function boot(): Promise<void> {
           const playerCityCount = cities.filter(c => c.ownerId === 0).length;
           _lastPracaRate = 0;
           _lastPracaAutoUlepszeniaKoszt = 0;
+          _lastPracaCudaKoszt = 0;
           _lastPieniadzRate = playerEcon.pieniadz;
           _lastNaukaRate = playerEcon.nauka;
           _lastKulturaRate = playerEcon.kultura;
@@ -30302,6 +30312,10 @@ async function boot(): Promise<void> {
                 // (Cuda na mapie), więc stan wizualnie "nie akumulował się" mimo
                 // dodatniego wskaźnika -- patrz analogiczna naprawa upkeep Pracy wyżej.
                 _lastPracaRate -= usedPlayer;
+                // R-HUD-ZETONY-EKONOMIA-BRUTTO-Q1: zapisz ten drenaż osobno (jak
+                // `_lastPracaAutoUlepszeniaKoszt`), żeby żeton/panel mógł zrekonstruować
+                // pełne brutto (netto + upkeep + auto-ulepszenia + cuda-na-mapie).
+                _lastPracaCudaKoszt += usedPlayer;
               }
               for (const oid of new Set(wonderBuildSites.map(s => s.ownerId).filter(id => id > 0))) {
                 const pool = aiPracaPoolByOwner.get(oid) ?? 0;
@@ -34144,6 +34158,7 @@ async function boot(): Promise<void> {
       _lastPracaRate = 0;
       _lastPracaUpkeep = 0;
       _lastPracaAutoUlepszeniaKoszt = 0;
+      _lastPracaCudaKoszt = 0;
       _lastPieniadzRate = 0;
       _lastBogactwoRate = 0;
       _lastBogactwoHandel = 0;
@@ -35793,6 +35808,7 @@ async function boot(): Promise<void> {
       _lastPracaRate = 0;
       _lastPracaUpkeep = 0;
       _lastPracaAutoUlepszeniaKoszt = 0;
+      _lastPracaCudaKoszt = 0;
       _lastBogactwoRate = 0;
       _lastBogactwoHandel = 0;
       _lastBogactwoUtrzymanieBudynkow = 0;

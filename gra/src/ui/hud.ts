@@ -97,6 +97,12 @@ export interface HudState {
    *  ostatniej turze — już wliczona (odjęta) w `pracaRate`, do rozbicia osobno
    *  w tooltipie/panelu (nie na głównym żetonie, patrz zgłoszenie właściciela). */
   pracaAutoUlepszeniaKoszt?: number;
+  /** R-HUD-ZETONY-EKONOMIA-BRUTTO-Q1 (Maciej 2026-09-07): civ-wide Praca zużyta na
+   *  postęp Cudów na mapie (`advanceOwnerWonderMapBuilds`) w ostatniej turze — już
+   *  wliczona (odjęta) w `pracaRate`, do rozbicia osobno w tooltipie/panelu, ostatni
+   *  (4.) z 4 znanych drenaży brutto→netto Pracy, analogicznie do
+   *  `pracaAutoUlepszeniaKoszt`/`pracaUpkeep`. */
+  pracaCudaKoszt?: number;
   /** B5 — zapasy państwa (wojsko), nie magazyn miasta. */
   zywnoscLabel: string;
   /** B5-SP — max zapasów (100 × Spichlerze); 0 = brak magazynu armii. */
@@ -826,25 +832,55 @@ function skarbiecChipTitle(s: HudState): string {
  * wchodził WYŁĄCZNIE do salda netto na głównym żetonie, mylnie się z nim
  * łącząc ("Praca 39 -10" zamiast +80 do puli) -- teraz to osobna, podpisana
  * pozycja w rozbiciu tooltipu, tak jak `pracaUpkeep`.
+ *
+ * R-HUD-ZETONY-EKONOMIA-BRUTTO-Q1 (Maciej 2026-09-07, ECHO właściciela odwraca
+ * poprzednią decyzję na to samo pytanie): CZWARTY składnik dołączony do sumy —
+ * `pracaCudaKoszt` ("Cuda na mapie"), dotąd brakujący w rekonstrukcji brutto
+ * (rozbicie liczyło tylko 3 z 4 znanych drenaży). Właściciel: „nie powinienem
+ * widzieć na żetonie +22, tylko łącznie +22 i 76" — więc GŁÓWNA liczba żetonu
+ * (`renderBarD1B` niżej) TERAZ pokazuje to samo brutto co w rozpisce tooltipu
+ * (`pracaChipTitle` niżej, ten sam wzór policzony inline — CELOWO NIE woła tej
+ * funkcji: `tools/praca-auto-ulepszenia-koszt-split-test.cjs` wycina i uruchamia
+ * ciało `pracaChipTitle` w izolacji przez brace-matching, więc ta funkcja musi
+ * pozostać SAMOWYSTARCZALNA, bez zależności na inne top-level funkcje modułu),
+ * redukcja do netto zostaje WYŁĄCZNIE w tej rozpisce.
  */
+function pracaWplywBrutto(s: HudState): number {
+  const netto = s.pracaRate ?? 0;
+  const utrzymanie = s.pracaUpkeep ?? 0;
+  const autoUlepszenia = s.pracaAutoUlepszeniaKoszt ?? 0;
+  const cudaNaMapie = s.pracaCudaKoszt ?? 0;
+  return netto + utrzymanie + autoUlepszenia + cudaNaMapie;
+}
+
 function pracaChipTitle(s: HudState): string {
   const base = 'Praca — bilans na turę';
   const netto = s.pracaRate ?? 0;
   const utrzymanie = s.pracaUpkeep ?? 0;
   const autoUlepszenia = s.pracaAutoUlepszeniaKoszt ?? 0;
-  const wplywBrutto = netto + utrzymanie + autoUlepszenia;
+  const cudaNaMapie = s.pracaCudaKoszt ?? 0;
+  const wplywBrutto = netto + utrzymanie + autoUlepszenia + cudaNaMapie;
   return `${base}: Wpływ do puli imperium: ${signed(wplywBrutto)} pkt Pracy`
     + ` · Utrzymanie ulepszeń surowcowych: ${signed(-utrzymanie)} pkt Pracy`
     + ` · Auto-ulepszenia AI (gracz): ${signed(-autoUlepszenia)} pkt Pracy`
+    + ` · Cuda na mapie: ${signed(-cudaNaMapie)} pkt Pracy`
     + ` · Razem netto: ${signed(netto)} pkt Pracy. Kliknij po szczegóły.`;
 }
 
+/**
+ * R-HUD-ZETONY-EKONOMIA-BRUTTO-Q1 (Maciej 2026-09-07): Nauka nie ma dziś ŻADNEGO
+ * drenażu civ-wide analogicznego do Pracy/Skarbca (żadne ulepszenie/Cud nie kosztuje
+ * Nauki z puli — sprawdzone w main.ts, `naukaRate`/`_lastNaukaRate` jest przypisywany
+ * WPROST z `playerEcon.nauka`, bez żadnego następnego odjęcia) — więc brutto i netto
+ * są tu DZIŚ tą samą liczbą; główny żeton pokazuje więc już brutto bez żadnej zmiany
+ * wartości, tylko wcześniejszy opis w tooltipie mylnie sugerował istnienie redukcji.
+ */
 function naukaChipTitle(s: HudState): string {
   const stock = Math.floor(s.nauka);
   const rate = s.naukaRate ?? 0;
   return `Nauka — badania technologiczne`
     + ` · Duża liczba: ${stock} pkt Nauki (skumulowane do bieżącej technologii)`
-    + ` · Zielone +N: ${signed(rate)} pkt Nauki/turę (przyrost netto)`
+    + ` · Zielone +N: ${signed(rate)} pkt Nauki/turę (brutto = netto, brak dziś drenaży Nauki)`
     + ` · Kliknij po szczegóły.`;
 }
 
@@ -1028,7 +1064,12 @@ function withChipRangeActive(html: string, active: boolean): string {
   return html.replace('class="civ-hud-chip civ-hud-chip-click"', 'class="civ-hud-chip civ-hud-chip-click civ-hud-chip-range-on"');
 }
 
-function renderBarD1B(s: HudState): string {
+// R-HUD-ZETONY-EKONOMIA-BRUTTO-Q1: `export` dodany WYŁĄCZNIE po to, żeby bramka
+// `tools/hud-zetony-ekonomia-brutto-live-test.cjs` mogła zaimportować i realnie
+// wyrenderować ten sam, niezmodyfikowany kod w prawdziwym Chromium (żywy zrzut,
+// nie atrapa) — zero zmiany zachowania w main.ts/hud.ts (funkcja nadal wołana
+// tylko wewnętrznie w tym module, jak dotąd).
+export function renderBarD1B(s: HudState): string {
   const powerIconHtml = powerCenterIconHtml(s);
   const leftHeadChips: string[] = [
     chip6cHtml({
@@ -1036,7 +1077,10 @@ function renderBarD1B(s: HudState): string {
       label: 'Skarbiec',
       value: String(s.bogactwo),
       valClass: ` ${resourceTextClass('skarbiec')}`,
-      rate: signed(s.bogactwoRate ?? 0),
+      // R-HUD-ZETONY-EKONOMIA-BRUTTO-Q1: żeton pokazuje WPŁYWY BRUTTO (przed
+      // utrzymaniem budynków/jednostek), nie `bogactwoRate` (netto) — redukcja do
+      // netto zostaje wyłącznie w rozpisce `skarbiecChipTitle()` i w panelu.
+      rate: signed(s.bogactwoWplywyBrutto ?? s.bogactwoRate ?? 0),
       act: 'skarbiec',
       title: skarbiecChipTitle(s),
     }),
@@ -1046,7 +1090,12 @@ function renderBarD1B(s: HudState): string {
       label: 'Praca',
       value: String(s.praca),
       valClass: ` ${resourceTextClass('praca')}`,
-      rate: signed(s.pracaRate),
+      // R-HUD-ZETONY-EKONOMIA-BRUTTO-Q1: żeton pokazuje WPŁYW BRUTTO do puli
+      // imperium (przed utrzymaniem/auto-ulepszeniami/Cudami na mapie), nie
+      // `pracaRate` (netto) — redukcja do netto zostaje wyłącznie w rozpisce
+      // `pracaChipTitle()` i w panelu. Ostrzeżenie (`rateWarn`) nadal patrzy na
+      // netto — to realny sygnał, że pula SIĘ KURCZY, niezależnie od brutto.
+      rate: signed(pracaWplywBrutto(s)),
       rateWarn: s.pracaRate < 0,
       act: 'praca',
       title: pracaChipTitle(s),
