@@ -9537,6 +9537,24 @@ async function boot(): Promise<void> {
     }
     const FOG_DEV_SHORTCUTS = civFogShortcutsEnabled();
 
+    /**
+     * Etap 0 hot-seat (R-HOTSEAT-ETAP-0-HUMAN-OWNERS-Q1, docs/decyzje/PLAN-HOT-SEAT-2-GRACZY.md
+     * §B1/§C wiersz "0"). Flaga funkcjonalna WŁASNA, celowo NIE dzieli mechanizmu z
+     * `civFogShortcutsEnabled()` powyżej -- osobna zmienna Vite (VITE_CIV_HOTSEAT) i osobny
+     * parametr URL (?hotseat=1). Docelowe zachowanie (Etapy 4-5, 7): `false` w
+     * `Gra-FINALNA.html`, `true` w `gra-robocza/Gra-ROBOCZA.html`. W TEJ rundzie funkcja
+     * jest świadomie martwym kodem -- nigdzie nie jest wywoływana, niczego nie bramkuje.
+     */
+    function hotSeatEnabled(): boolean {
+      const envFlag = import.meta.env.VITE_CIV_HOTSEAT;
+      if (envFlag === '1' || envFlag === 'true') return true;
+      if (typeof location !== 'undefined') {
+        const q = new URLSearchParams(location.search);
+        if (q.get('hotseat') === '1') return true;
+      }
+      return false;
+    }
+
     /** Galeria jednostek (G) — TYLKO vite `import.meta.env.DEV`. Nigdy w ROBOCZA/produkcji. */
     function unitGalleryShortcutEnabled(): boolean {
       return import.meta.env.DEV === true;
