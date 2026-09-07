@@ -5835,13 +5835,22 @@ Brakuje 19 budynkow, w tym **calej grupy Prawo i administracja** (`dwor_zarzadcy
 
 **Ostrzezenie wejsciowe dla tematu Prawa (W-FC5), wpisane do jego dispatchu:** w `society-params.json` sa juz cztery klucze `prawo_garnizon*` o **przeciwnej mechanice** (bonus za jednostke wojskowa, D1 — POZA `prawMax`), a `society-breakdown.ts:638-647` zajmuje **`id: 'garnizon'`** w tablicy `lines[]` cietej do szesciu pozycji przez `orderPanel.ts:167`. Bez rozroznienia gracz zobaczylby **dwie pozycje „Garnizon"** w rozpisce Porzadku.
 
-## P-BRAMKI-BUDYNKI-DWIE-CZERWONE-ZASTANE-Q1 — INFRA (2026-09-06, znalezisko Final Control Garnizonu) · STATUS: **ZAREJESTROWANE, NIE DISPATCHOWANE**
+## P-BRAMKI-BUDYNKI-DWIE-CZERWONE-ZASTANE-Q1 — INFRA (2026-09-06, znalezisko Final Control Garnizonu) · STATUS: **ZINTEGROWANE** (`4700fc77`, 2026-09-07)
 
-`gra/tools/prereq-budynkow-test.cjs` **51/8** i `gra/tools/upgrade-budynki-test.cjs` **48/1** sa czerwone i **zadna z trzech rund tematu Garnizonu tego nie zglosila**, mimo ze obie leza w rodzinie budynkow.
+`gra/tools/prereq-budynkow-test.cjs` **51/8** i `gra/tools/upgrade-budynki-test.cjs` **48/1** byly czerwone i **zadna z trzech rund tematu Garnizonu tego nie zglosila**, mimo ze obie leza w rodzinie budynkow.
 
 **Dowod pre-istnienia (FC7, mutacja Final Control):** usuniecie calego rekordu `garnizon` z `buildings.json` zostawia obie bramki **bez zmiany** — `prereq` 51/8, `upgrade` 48/1. Czyli zero zwiazku z Garnizonem.
 
-DOMAIN: INFRA. Zakres: ustalic, czy 9 faili to realne defekty prereq/lancuchow ulepszen, czy bramki opisujace stan, ktorego juz nie ma — i odpowiednio naprawic kod albo przepisac asercje. **Zakaz osalabiania i usuwania asercji**; liczba nie moze spasc.
+Wszystkie 9 asercji potwierdzone jako kategoria (a) — stary test, nie realny defekt (ten sam
+`CITY_BUILDING_PREREQ` pilnuje `eraBuildingCatalog` i realnej ścieżki gameplay
+`availableProduction`, potwierdzone niezależnie przez Evaluatora i Final Control): 7×
+`eraBuildingCatalog` wymagało `empireResourceStock` w `baseCtx` (dodano `AMPLE_STOCK`); 1×
+Mennica czytała martwe pole `activeResourceLabels` (`isAccessOnlyResourceLabel` zawsze zwraca
+`false`) — przekotwiczone na realną bramkę `empireResourceStock.zloto`; 1× „no handel bonus na
+bruk" zakładało 0, ale `bonus.handel=3` to udokumentowana decyzja `R-DROGI-RUCH-HANDEL-Q1`
+(2026-08-14). 59/59 i 49/49 (było 51/8, 48/1), zero osłabienia. Trzy niezależne rewersje Final
+Control potwierdziły, że każdy fix trafia dokładnie w zamierzoną asercję. Zero zmian w
+`gra/src/**`/`gra/data/**`.
 
 ## P-BRAMKI-EMPIRE-PANEL-PIEC-CZERWONYCH-ZASTALE-Q1 — INFRA (2026-09-06, znalezisko Evaluatora P-DESIGN-11-ZAKLADEK) · STATUS: ZAREJESTROWANE, NIE DISPATCHOWANE
 
@@ -5922,7 +5931,8 @@ Prawa). Bramki: `budynek-garnizon-test` 83/0, `civpedia-budynki-historia-test` 1
    mutacja usuwajaca rekord Garnizon — te same liczby z rekordem i bez): `prereq-budynkow-test`
    **51/8** (akademia/fort/swiatynia/baszta/akwedukt/laznia/akademia_wojskowa `status=locked`
    mimo spelnionego prereq; Mennica) i `upgrade-budynki-test` **48/1** („no handel bonus on
-   bruk"). **STATUS: ZAREJESTROWANE, NIE DISPATCHOWANE.** DOMAIN: INFRA.
+   bruk"). **STATUS: ZINTEGROWANE** — patrz `P-BRAMKI-BUDYNKI-DWIE-CZERWONE-ZASTANE-Q1` wyżej
+   w tym pliku (`4700fc77`, 2026-09-07). DOMAIN: INFRA.
 2. **Trzy niespojnosci R2-E** (potwierdzone, nietkniete w tym temacie): brak wpisu `trybunal`
    w `building-icon-map.json`; `bld-pretorium.svg` istnieje ale mapa go nie wskazuje;
    `civpedia-gra-id-mostek-test.cjs` przy uruchomieniu brudzi sledzony `wikiBundle.json`
