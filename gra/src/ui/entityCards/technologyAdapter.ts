@@ -218,7 +218,7 @@ export const technologyAdapter: EntityCardAdapter<RawTech> = (tech) => {
   });
   const improvementsSection: EntityCardSection = {
     key: 'improvements', title: 'Ulepszenia terenu', rows: improvementsRows,
-    collapsible: true, openDefault: false,
+    collapsible: true, openDefault: true,
   };
 
   // --- Kolejne technologie -------------------------------------------------------------------
@@ -298,7 +298,7 @@ export const technologyAdapter: EntityCardAdapter<RawTech> = (tech) => {
     econRows.push({ label: 'Dostęp do surowca', value: resourceUnlocked });
   }
   const econSection: EntityCardSection = {
-    key: 'econ', title: 'Zmiany ekonomiczne', rows: econRows, collapsible: true, openDefault: false,
+    key: 'econ', title: 'Zmiany ekonomiczne', rows: econRows, collapsible: true, openDefault: true,
   };
 
   // --- Wymagania (pigułki z checkmarkiem, layout='pills') -------------------------------------

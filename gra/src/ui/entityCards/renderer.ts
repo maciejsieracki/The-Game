@@ -700,7 +700,18 @@ export const ENTITY_CARD_CSS = `
   --ec-stack-dx:clamp(0px,calc(50vw - 366px),72px);
   --ec-stack-dy:clamp(0px,calc(10vh - 24px),56px);}
 .entity-card-dialog{position:relative;height:min(80vh,calc(100vh - 32px));overflow:auto;
-  margin:auto 0;}
+  margin:auto 0;scrollbar-gutter:stable;scrollbar-width:thin;
+  scrollbar-color:rgba(232,216,138,.55) rgba(20,26,34,.9);}
+/* R-ENTITYCARD-ROZWINIETE-SEKCJE-SCROLLBAR-Q1 (ECHO wlasciciela) — pasek przewijania ma byc
+   TRWALE WIDOCZNY, nie tylko podczas aktywnego scrolla (overlay-scrollbary na macOS/dotykowych
+   sa domyslnie niewidoczne dopoki uzytkownik nie zacznie przewijac — to byl zglaszany problem).
+   scrollbar-width:thin + scrollbar-color powyzej pokrywaja Firefox; ponizej WebKit/Chromium.
+   Kolorystyka spojna z reszta karty: tor = tlo karty, uchwyt = zloty akcent obramowan. */
+.entity-card-dialog::-webkit-scrollbar{width:12px;}
+.entity-card-dialog::-webkit-scrollbar-track{background:rgba(20,26,34,.9);border-radius:8px;}
+.entity-card-dialog::-webkit-scrollbar-thumb{background:rgba(232,216,138,.55);
+  border-radius:8px;border:2px solid rgba(20,26,34,.9);}
+.entity-card-dialog::-webkit-scrollbar-thumb:hover{background:rgba(232,216,138,.75);}
 /* R-ENTITYCARD-JEDNA-KARTA-CZY-STOS-Q1 (ECHO wlasciciela 2026-09-05, WIAZACE) — sufit dwoch
    kart: openDialog nadaje kazdemu zywemu backdropowi data-ec-stack-depth (0 = najstarsza,
    ostatnia = wierzchnia). Karta wierzchnia jest PRZESUNIETA w prawo i w dol o --ec-stack-dx/dy,
