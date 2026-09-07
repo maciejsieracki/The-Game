@@ -121,35 +121,74 @@ function cleanup() {
   try { fs.rmdirSync(STUB_DIR); } catch (_) { /* ok */ }
 }
 
-/* Mutacja W LOCIE — odtwarza dokładnie stan SPRZED tej zmiany (dwa checkboxy zamiast
- * przycisków cdb-chip). Nie dotyka repo. Kontrola nietautologiczności: `mutation.applied`. */
-const mutation = { html: 0, read: 0 };
-const HTML_PO = `      body = '<label>Traktat przemarszu</label>'
-        + '<div class="cdb-chip-row">'
-        + '<button type="button" id="cdb-treaty-mil" class="cdb-chip cdb-treaty-mil'
-        + (state.borderMilitary ? ' selected' : '') + '">Wariant wojskowy (+ opłata)</button>'
-        + '<button type="button" id="cdb-treaty-barb" class="cdb-chip cdb-treaty-barb'
-        + (state.barbarianCooperation ? ' selected' : '') + '">Wspólna walka z barbarzyńcami (3 tury)</button>'
-        + '</div>'
-        + '<p class="cdb-sub">Opłata cywilne: ' + feeC + ' ¤ · wojskowe: ' + feeM + ' ¤ (jednorazowo)</p>';`;
-const HTML_PRZED = `      body = '<label>Traktat przemarszu</label>'
-        + '<div class="cdb-row" style="display:flex;gap:8px;align-items:center;margin:6px 0">'
-        + '<input type="checkbox" id="cdb-treaty-mil" class="cdb-treaty-mil"' + (state.borderMilitary ? ' checked' : '') + ' />'
-        + '<label for="cdb-treaty-mil" style="margin:0">Wariant wojskowy (+ opłata)</label></div>'
-        + '<div class="cdb-row" style="display:flex;gap:8px;align-items:center;margin:6px 0">'
-        + '<input type="checkbox" id="cdb-treaty-barb" class="cdb-treaty-barb"' + (state.barbarianCooperation ? ' checked' : '') + ' />'
-        + '<label for="cdb-treaty-barb" style="margin:0">Wspólna walka z barbarzyńcami (3 tury)</label></div>'
-        + '<p class="cdb-sub">Opłata cywilne: ' + feeC + ' ¤ · wojskowe: ' + feeM + ' ¤ (jednorazowo)</p>';`;
-const READ_PO = `    state.borderMilitary = document.querySelector('.cdb-treaty-mil')?.classList.contains('selected') ?? false;
-    state.barbarianCooperation = document.querySelector('.cdb-treaty-barb')?.classList.contains('selected') ?? false;`;
-const READ_PRZED = `    state.borderMilitary = (document.querySelector('.cdb-treaty-mil') as HTMLInputElement)?.checked ?? false;
-    state.barbarianCooperation = (document.querySelector('.cdb-treaty-barb') as HTMLInputElement)?.checked ?? false;`;
-const CLICK_PO = `    box.querySelectorAll('.cdb-treaty-mil, .cdb-treaty-barb').forEach(btn => {
-      btn.addEventListener('click', () => {
-        btn.classList.toggle('selected');
-        refresh();
-      });
-    });`;
+/* Mutacja W LOCIE — odtwarza stan SPRZED tej zmiany (dwa checkboxy zamiast przycisków
+ * cdb-chip). Nie dotyka repo. Kontrola nietautologiczności: liczniki w `mutation`.
+ *
+ * KOTWICZENIE SEMANTYCZNE (P-DYPLO-DWA-TESTY-CZERWONE-ZASTANE-Q1, 2026-09-05).
+ * Poprzednia wersja kotwiczyła mutację na DOSŁOWNYCH, wielolinijkowych blokach źródła
+ * (cały `body = ...` case'a '4', cały blok listenera). Wystarczyło, że sąsiedni temat
+ * `R-DYPLO-WSPOLNA-WALKA-BARB-KARENCJA-Q1` dołożył do tego samego `body` linię
+ * `+ barbDurationSection` i skrócił etykietę („Wspólna walka z barbarzyńcami (3 tury)" →
+ * „Wspólna walka z barbarzyńcami"), żeby dopasowanie przestało trafiać: `mutation.html === 0`
+ * i cała bramka kończyła się `PRZERWANE` — czyli nie mierzyła NICZEGO, mimo że sam mechanizm
+ * przemarszu był sprawny. Kotwice są teraz zbudowane wyłącznie z rzeczy, które NIE zmieniają
+ * się przy przesunięciu kodu:
+ *   - identyfikatory elementów: `cdb-treaty-mil` / `cdb-treaty-barb`,
+ *   - nazwy pól stanu: `state.borderMilitary` / `state.barbarianCooperation`,
+ *   - unikalny selektor listenera: `'.cdb-treaty-mil, .cdb-treaty-barb'`.
+ * Treść etykiety jest PRZECHWYTYWANA ze źródła i przenoszona do wariantu PRZED, więc zmiana
+ * etykiety nie rozspaja mutacji (a asercje etykiet niżej sprawdzają rdzeń tekstu, nie sufiks
+ * dopisywany/zdejmowany przez inne tematy). Koniec bloku listenera wyznacza dopasowanie
+ * nawiasów, nie wcięcie ani numer linii. */
+const mutation = { html: 0, read: 0, click: 0 };
+
+/** Kotwica: przycisk chipa o danym `id`, sterowany danym polem `state.*`. Grupa 1 = etykieta. */
+function chipButtonRe(id, stateProp) {
+  return new RegExp(
+    "\\+\\s*'<button type=\"button\" id=\"" + id + "\" class=\"cdb-chip " + id + "'"
+    + "\\s*\\+\\s*\\(state\\." + stateProp + " \\? ' selected' : ''\\)"
+    + "\\s*\\+\\s*'\">([\\s\\S]*?)</button>'",
+  );
+}
+/** Wariant PRZED: natywny checkbox + `<label for>` z TĄ SAMĄ etykietą co przechwycona. */
+function checkboxPrzed(id, stateProp, label) {
+  return "+ '<div class=\"cdb-row\" style=\"display:flex;gap:8px;align-items:center;margin:6px 0\">'"
+    + "\n        + '<input type=\"checkbox\" id=\"" + id + "\" class=\"" + id + "\"'"
+    + " + (state." + stateProp + " ? ' checked' : '') + ' />'"
+    + "\n        + '<label for=\"" + id + "\" style=\"margin:0\">" + label + "</label></div>'";
+}
+const CHIP_BUTTONS = [
+  { id: 'cdb-treaty-mil', stateProp: 'borderMilitary' },
+  { id: 'cdb-treaty-barb', stateProp: 'barbarianCooperation' },
+];
+
+/** Kotwica odczytu: `state.<pole> = ...classList.contains('selected')` dla danego selektora. */
+function selectedReadRe(stateProp, id) {
+  return new RegExp(
+    "state\\." + stateProp + "\\s*=\\s*document\\.querySelector\\('\\." + id + "'\\)"
+    + "\\?\\.classList\\.contains\\('selected'\\)\\s*\\?\\?\\s*false;",
+  );
+}
+function checkedReadPrzed(stateProp, id) {
+  return "state." + stateProp + " = (document.querySelector('." + id
+    + "') as HTMLInputElement)?.checked ?? false;";
+}
+
+/** Wycina blok `<anchor>...(...)` dopasowując nawiasy — odporne na wcięcie i treść ciała. */
+const CLICK_ANCHOR = "box.querySelectorAll('.cdb-treaty-mil, .cdb-treaty-barb').forEach(";
+function cutBalancedCall(src, anchor) {
+  const start = src.indexOf(anchor);
+  if (start < 0) return null;
+  let i = start + anchor.length - 1; // stoi na '(' z `.forEach(`
+  let depth = 0;
+  for (; i < src.length; i++) {
+    if (src[i] === '(') depth++;
+    else if (src[i] === ')') { depth--; if (depth === 0) { i++; break; } }
+  }
+  if (depth !== 0) return null;
+  if (src[i] === ';') i++;
+  return src.slice(0, start) + src.slice(i);
+}
 
 const revertFixPlugin = {
   name: 'revert-przemarsz-checkbox-fix',
@@ -157,15 +196,29 @@ const revertFixPlugin = {
     build.onLoad({ filter: /diplomacyTradeBasket\.ts$/ }, (args) => {
       if (path.resolve(args.path) !== DIPLO_BASKET) return null;
       let src = fs.readFileSync(args.path, 'utf8');
-      const out1 = src.replace(HTML_PO, HTML_PRZED);
-      if (out1 !== src) mutation.html++;
-      src = out1;
-      const out2 = src.replace(READ_PO, READ_PRZED);
-      if (out2 !== src) mutation.read++;
-      src = out2;
-      // Klik-handler przycisku (PO) usuwamy przy PRZED — checkbox nie potrzebuje go, ma
-      // natywne 'change' (już obsłużone przez istniejącą listę selektorów w refresh()).
-      src = src.replace(CLICK_PO, '');
+
+      // (1) HTML: `<button class="cdb-chip ...">` → `<input type="checkbox">` + `<label for>`.
+      for (const btn of CHIP_BUTTONS) {
+        const re = chipButtonRe(btn.id, btn.stateProp);
+        const m = src.match(re);
+        if (!m) continue;
+        src = src.replace(re, () => checkboxPrzed(btn.id, btn.stateProp, m[1]));
+        mutation.html++;
+      }
+
+      // (2) Odczyt: klasa `selected` → natywne `.checked`.
+      for (const btn of CHIP_BUTTONS) {
+        const re = selectedReadRe(btn.stateProp, btn.id);
+        if (!re.test(src)) continue;
+        src = src.replace(re, checkedReadPrzed(btn.stateProp, btn.id));
+        mutation.read++;
+      }
+
+      // (3) Klik-handler przycisku (PO) znika przy PRZED — checkbox przełącza się natywnie,
+      //     a stan i tak czytany jest z `.checked` przy składaniu payloadu.
+      const cut = cutBalancedCall(src, CLICK_ANCHOR);
+      if (cut !== null) { src = cut; mutation.click++; }
+
       return { contents: src, loader: 'ts', resolveDir: path.dirname(args.path) };
     });
   },
@@ -309,11 +362,13 @@ async function main() {
 
   await buildBundle(BUNDLE_PO, false);
   await buildBundle(BUNDLE_PRZED, true);
-  check('(0) mutacja PRZED faktycznie przywróciła checkboxy (HTML) — test nie jest tautologiczny',
-    mutation.html === 1, mutation.html);
-  check('(0b) mutacja PRZED faktycznie przywróciła odczyt `.checked` — test nie jest tautologiczny',
-    mutation.read === 1, mutation.read);
-  if (mutation.html !== 1 || mutation.read !== 1) {
+  check('(0) mutacja PRZED przywróciła OBA checkboxy (HTML) — test nie jest tautologiczny',
+    mutation.html === 2, mutation.html);
+  check('(0b) mutacja PRZED przywróciła OBA odczyty `.checked` — test nie jest tautologiczny',
+    mutation.read === 2, mutation.read);
+  check('(0c) mutacja PRZED usunęła klik-handler przycisków (kotwica `.cdb-treaty-mil, .cdb-treaty-barb`)',
+    mutation.click === 1, mutation.click);
+  if (mutation.html !== 2 || mutation.read !== 2 || mutation.click !== 1) {
     console.log('\nPRZERWANE: nie udało się odtworzyć stanu sprzed zmiany — kod się przesunął.');
     cleanup();
     process.exit(1);
@@ -340,9 +395,11 @@ async function main() {
     let ui = await page.evaluate(() => window.__milUi());
     check('(PRZED-2) render to <input> (checkbox), nie <button>',
       ui && ui.milTag === 'INPUT' && ui.barbTag === 'INPUT', ui);
+    // Rdzeń etykiety, bez sufiksu czasu trwania: `R-DYPLO-WSPOLNA-WALKA-BARB-KARENCJA-Q1`
+    // zdjął z przycisku „(3 tury)" (czas wybierają teraz chipy `.cdb-chip-barbturns`).
     check('(PRZED-3) etykiety bez zmian', ui
       && /Wariant wojskowy \(\+ opłata\)/.test(ui.milText || '')
-      && /Wspólna walka z barbarzyńcami \(3 tury\)/.test(ui.barbText || ''), ui);
+      && /Wspólna walka z barbarzyńcami/.test(ui.barbText || ''), ui);
     check('(PRZED-4) start: oba pola OFF', ui && ui.milOn === false && ui.barbOn === false, ui);
     await shot(page, '00-przed-checkboxy.png');
 
@@ -381,7 +438,7 @@ async function main() {
       ui && ui.milTag === 'BUTTON' && ui.barbTag === 'BUTTON', ui);
     check('(PO-3) etykiety identyczne jak PRZED', ui
       && /Wariant wojskowy \(\+ opłata\)/.test(ui.milText || '')
-      && /Wspólna walka z barbarzyńcami \(3 tury\)/.test(ui.barbText || ''), ui);
+      && /Wspólna walka z barbarzyńcami/.test(ui.barbText || ''), ui);
     check('(PO-4) start: oba przyciski BEZ klasy selected', ui && ui.milOn === false && ui.barbOn === false, ui);
     const chipClass = await page.evaluate(() => {
       const box = document.querySelector('.civ-diplo-basket');
