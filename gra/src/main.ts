@@ -9642,11 +9642,11 @@ async function boot(): Promise<void> {
      *  (R-DYPLO-SOJUSZ-WIDOCZNOSC-CIAGLA-Q1 runda 2). */
     function ownPlayerVisibleHexes(): Set<string> {
       const visible = new Set<string>();
-      for (const u of units.filter(u => u.ownerId === 0)) {
+      for (const u of units.filter(u => u.ownerId === ME())) {
         const sight = unitSight(u);
         for (const k of computeVisibleAt(u.q, u.r, map, sight)) visible.add(k);
       }
-      for (const c of cities.filter(c => c.ownerId === 0)) {
+      for (const c of cities.filter(c => c.ownerId === ME())) {
         const kultura = (c as { kultura?: number }).kultura ?? 0;
         const sight = citySightRadius(c.population, kultura);
         if (sight <= 0) continue;
@@ -9678,7 +9678,7 @@ async function boot(): Promise<void> {
     function currentVisible(): Set<string> {
       const visible = ownPlayerVisibleHexes();
       for (const oid of aiOwnerCivMap.keys()) {
-        if (allianceFormalKindBetween(activeDeals, 0, oid) === null) continue;
+        if (allianceFormalKindBetween(activeDeals, ME(), oid) === null) continue;
         for (const k of currentVisibleForOwner(oid)) visible.add(k);
       }
       if (visible.size > 0) return visible;
@@ -9726,7 +9726,7 @@ async function boot(): Promise<void> {
 
     cityFogVisible = (city, vis) => {
       if (!fogOn) return true;
-      if (city.ownerId === 0) return true;
+      if (city.ownerId === ME()) return true;
       return (vis ?? currentVisible()).has(keyOf(city.q, city.r));
     };
 
@@ -10025,7 +10025,7 @@ async function boot(): Promise<void> {
      * Garnizon (inGarnizon) — token na heksie miasta gracza (koszary).
      */
     function visibleUnitsList(vis: Set<string>): RuntimeUnit[] {
-      return unitsVisibleOnMap(units, vis, 0);
+      return unitsVisibleOnMap(units, vis, ME());
     }
 
     /**
@@ -10068,7 +10068,10 @@ async function boot(): Promise<void> {
       markMinimapDirty(); // D11: zmiana mgły/mapy → minimapa do przerysowania (poza tym pomijana)
       const vis = currentVisible();
       updateDiplomaticDiscovery(vis);
-      addExplored(explored, vis);
+      // R-HOTSEAT-ETAP-2-MGLA-WOJNY-Q1: zapis do exploredByHuman.get(ME()), który w tej
+      // rundzie jest DOSŁOWNIE tym samym obiektem co `explored` (patrz deklaracja
+      // exploredByHuman) — behawioralny no-op, przygotowanie pod rundę 2.
+      addExplored(exploredByHuman.get(ME())!, vis);
       const exploredForRender = fogExploredForRender();
       const useFogRender = fogOn || revealAllLand;
       // GRAFIKA-TEREN-2: uzgodnij meshe wiosek/obozów z aktualnym stanem (reconcile idempotentny;
@@ -10085,7 +10088,7 @@ async function boot(): Promise<void> {
         syncSettlementMeshFog(vis, exploredForRender);
         syncWorkerFieldOverlayFog(workerFieldOverlayGroup, vis, exploredForRender, true);
         syncUnitsRender(visibleUnitsList(vis));
-        cityRenderer.applyFogVisibility(vis, true, 0);
+        cityRenderer.applyFogVisibility(vis, true, ME());
         wonderRenderer.applyFogVisibility(vis, true);
       } else {
         setFog(ALL_KEYS, ALL_KEYS);
@@ -10094,7 +10097,7 @@ async function boot(): Promise<void> {
         syncSettlementMeshFog(ALL_KEYS, ALL_KEYS);
         syncWorkerFieldOverlayFog(workerFieldOverlayGroup, ALL_KEYS, ALL_KEYS, false);
         syncUnitsRender(visibleUnitsList(ALL_KEYS));
-        cityRenderer.applyFogVisibility(ALL_KEYS, false, 0);
+        cityRenderer.applyFogVisibility(ALL_KEYS, false, ME());
         wonderRenderer.applyFogVisibility(ALL_KEYS, false);
       }
       if (d1bHudActive) refreshD1bHud();
@@ -10279,6 +10282,23 @@ async function boot(): Promise<void> {
     // (gra/src/game/human-owners.ts, Etap 0). Dziś zawsze dokładnie jeden fotel
     // człowieka -- behawioralny no-op, patrz bramka hotseat-etap1-ownerid-test.cjs.
     let humanSeats: HumanSeats = { humanOwnerIds: [HUMAN_OWNER_PRIMARY], activeHumanOwnerId: HUMAN_OWNER_PRIMARY };
+    /** R-HOTSEAT-ETAP-2-MGLA-WOJNY-Q1: ownerId aktywnego fotela człowieka — alias
+     *  na `humanSeats.activeHumanOwnerId`. Dziś zawsze `HUMAN_OWNER_PRIMARY` (jeden
+     *  fotel człowieka), behawioralny no-op. Zastępuje zaszyte literały `0` w
+     *  wywołaniach funkcji renderu/widoczności już przyjmujących ownerId jako
+     *  parametr (patrz PLAN-HOT-SEAT-2-GRACZY.md §B2). */
+    function ME(): number {
+      return humanSeats.activeHumanOwnerId;
+    }
+    /** R-HOTSEAT-ETAP-2-MGLA-WOJNY-Q1 (scaffold, runda 1): per-fotel-człowieka
+     *  odkryte heksy. Dziś zawiera dokładnie jeden wpis, `ME() -> explored` —
+     *  DOSŁOWNIE ten sam obiekt Set co istniejący globalny `explored` (nie kopia),
+     *  więc `exploredByHuman.get(ME())` i `explored` są identyczne co do treści z
+     *  definicji, nie tylko przypadkiem. `explored` zostaje jako źródło prawdy w
+     *  tej rundzie (liczne miejsca zapisu/odczytu spoza refreshFog, w tym
+     *  save/load — poza zakresem tej rundy, patrz raport); pełne odseparowanie
+     *  na osobne Sety per fotel to runda 2 tego samego tematu. */
+    const exploredByHuman: Map<number, Set<string>> = new Map([[HUMAN_OWNER_PRIMARY, explored]]);
     overlayDepositEra = player.era;
     fillAiOwnerCivMap(_menuCivId, _gameSeed);
 
@@ -21277,7 +21297,7 @@ async function boot(): Promise<void> {
             {
               visible: vis,
               explored: fogExploredForRender(),
-              playerOwnerId: 0,
+              playerOwnerId: ME(),
               fogOn,
             },
           );
