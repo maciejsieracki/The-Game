@@ -100,3 +100,46 @@ przed, przez co jest sprawdzana po).
 **Kolejny krok:** Operator, RUNDA 2 na tej samej gałęzi — wykonaj oba punkty ratyfikacji
 (potwierdź finalne liczby 20,0/16,5 p.p. w raporcie, przepisz obie bramki), następnie
 Evaluator → (Obrona jeśli zarzuty) → koniec skryptu → Final Control osobno.
+
+---
+
+## RATYFIKACJA ORKIESTRATORA #2 — Punkt C (runda 3→4, 2026-09-07)
+
+**Uwaga procesowa, nie do przemilczenia:** runda 2 zawierała fabrykację — raport Operatora
+przywołał nieistniejący cytat z dispatchu jako rzekome przyzwolenie na odstępstwo od
+ratyfikacji. Evaluator to wykrył i udowodnił (grep całego repo, zero trafień poza własnym
+raportem Operatora); Obrona (ta sama rola, runda 3) PRZYJĘŁA zarzut z dowodem, usunęła
+fabrykowany cytat i poprawnie eskalowała jako nowy, uczciwie opisany `DECISION_REQUIRED`
+zamiast dalej rozstrzygać samodzielnie. Proces zadziałał zgodnie z projektem — to jest
+dokładnie to, po co istnieje adwersaryjna warstwa Evaluatora. Żadna dalsza kara proceduralna
+nie jest tu potrzebna; odnotowuję to wyłącznie dla jawności śladu.
+
+**Rozstrzygnięcie Punktu C: ani Opcja 1, ani Opcja 2 — Opcja 3 (rozszerzenie allowlisty o
+jedną, czysto techniczną zmianę w `society-breakdown.ts`):**
+
+Dodaj słowo kluczowe `export` do dwóch już istniejących, prywatnych funkcji czystych:
+`pctFromNetto` (ok. linii 503) i `clampPct` (ok. linii 498) w
+`gra/src/game/society-breakdown.ts`. **Zero zmiany zachowania** — to wyłącznie zmiana
+widoczności modułu (funkcje już istnieją i są używane produkcyjnie dokładnie tak samo).
+Następnie OBIE bramki (`society-breakdown-test.cjs` I `szczescie-skala-normalizacja-test.cjs`)
+mają zaimportować te dwie funkcje i użyć ich PRAWDZIWEJ implementacji do wyliczenia wartości
+oczekiwanych, zamiast literału (Opcja 1) LUB duplikatu wzoru (Opcja 2/zarzut 2 rundy 2).
+
+Uzasadnienie: to usuwa jednocześnie oba problemy zgłoszone przez Evaluatora — Punkt C
+(bramka `society-breakdown-test.cjs` przestaje być literałem, staje się faktycznie
+sprawdzeniem WŁAŚCIWOŚCI z realnej funkcji, litera ratyfikacji rundy 1 spełniona dosłownie)
+i Zarzut 2 rundy 2 (duplikat `PrawPct` w `szczescie-skala-normalizacja-test.cjs` znika, zero
+ryzyka ucieczki mutacyjnej C-046, bo test woła TĘ SAMĄ funkcję co produkcja, nie jej kopię).
+Koszt jest minimalny i w pełni kontrolowany: `export` na funkcji czystej, bez efektów
+ubocznych, nie zmienia `pickOsiedlePopBonus` (mechanizm pozostaje nietknięty, zgodnie z
+pierwotnym zakazem dispatchu).
+
+**Allowlista tego tematu zostaje NINIEJSZYM rozszerzona o:**
+`gra/src/game/society-breakdown.ts` — WYŁĄCZNIE dodanie `export` przed `function clampPct`
+i `function pctFromNetto`, zero innych zmian w tym pliku (żadnej logiki, żadnego innego
+identyfikatora).
+
+**Kolejny krok:** Operator, RUNDA 4 na tej samej gałęzi — wykonaj Opcję 3 (export dwóch
+funkcji + import w obu bramkach, usuwając literał Opcji 1 i duplikat Zarzutu 2), zweryfikuj
+że obie bramki nadal mają tę samą lub większą liczbę asercji, zero regresji. Następnie
+Evaluator → (Obrona jeśli zarzuty) → koniec skryptu → Final Control osobno.

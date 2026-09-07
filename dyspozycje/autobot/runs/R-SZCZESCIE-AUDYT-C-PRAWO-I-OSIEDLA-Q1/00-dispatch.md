@@ -89,6 +89,10 @@ Operator/Evaluator/Final Control.
   `gra/tools/szczescie-skala-normalizacja-test.cjs` i `gra/tools/society-breakdown-test.cjs`
   — WYŁĄCZNIE przepisanie hardkodowanych asercji na starą wartość `prawo_bonus_osiedle_pop`
   na sprawdzanie z danych, zero osłabienia liczby asercji, mapowanie stara→nowa w raporcie.
+- **Rozszerzenie z RATYFIKACJI ORKIESTRATORA #2 (runda 3→4, Punkt C, `decision-abc.md`):**
+  `gra/src/game/society-breakdown.ts` — WYŁĄCZNIE dodanie `export` przed
+  `function clampPct` i `function pctFromNetto` (ok. linii 498/503), zero innych zmian w tym
+  pliku. Obie bramki mają zaimportować i użyć tych dwóch funkcji zamiast literału/duplikatu.
 - `dyspozycje/autobot/runs/R-SZCZESCIE-AUDYT-C-PRAWO-I-OSIEDLA-Q1/**`
 
 Zakazane bezwzględnie: pliki z sekretami, `docs/decyzje/**`, `.git/**`, `dyspozycje/WERSJE.md`,
