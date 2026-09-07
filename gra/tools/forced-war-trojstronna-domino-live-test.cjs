@@ -24,17 +24,34 @@
  * jest "oszukane": KTO ma tę parę i ŻE gracz już je odkrył (normalnie ustawia to zwiad na
  * mapie) — TEMPO dojścia do scenariusza, nie MECHANIZM domina ani wypowiedzenia wojny.
  *
+ * R-WOJNA-WYMUSZONA-PAROWANIE-ZAMIAST-DOMINA-Q1 runda 2: asercje D/E/F/G przepisane pod
+ * NOWY algorytm (`assignForcedWarPairings`, forced-war-common.ts). Stare domino dawało cel
+ * OBU stronom pary jednocześnie; nowy algorytm (krok 4 dispatchu: leftover dołącza jako
+ * trzeci do istniejącej pary) daje cel TYLKO JEDNEJ, deterministycznie wybranej stronie —
+ * `chosenSide = Math.min(pair.attackerId, pair.targetId)` (forced-war-common.ts). Hak
+ * `forceBronzeForcedWarDominoOnPlayer()` ustawia `targetId = max(wszystkie ownerId) + 1000`,
+ * więc `attackerId < targetId` ZAWSZE — wybraną stroną jest deterministycznie attacker.
+ * Sens testu (realna gra w przeglądarce dowodzi, że mechanizm faktycznie działa) bez zmian,
+ * tylko oczekiwany wynik dostosowany do nowego kształtu.
+ *
  * Pokrycie:
  *  A. Bootstrap `?playtest=mapa` dobiega końca.
  *  B. `forceBronzeForcedWarDominoOnPlayer()` faktycznie zakłada drugą stronę i parę.
  *  C. Realny `triggerPlayerEndTurn()` dobiega końca.
- *  D. SEDNO kryterium 1 (GOAL 1): OBIE strony (attacker i target) wypowiadają wojnę
- *     graczowi W TEJ SAMEJ turze -- nie tylko jedna.
- *  E. SEDNO kryterium 2 / ECHO 2 (GOAL 2): druga rozgrywka tego samego scenariusza, ale
- *     strona-napastnik ma aktywny sojusz z graczem -- ŻADNA strona nie wypowiada wojny.
+ *  D. SEDNO kryterium 1 (GOAL 1, nowy kształt): TYLKO wybrana strona (attacker, niższy
+ *     ownerId) wypowiada wojnę graczowi -- target (wyższy ownerId) NIE, bo już ma pełny
+ *     przydział przez samą parę z attackerem (krok 2 ECHO: nikt nie zostaje z zerem wojen,
+ *     ale też nikt nie dostaje dwóch przydziałów w tym samym kroku 4).
+ *  E. SEDNO kryterium 2 / ECHO 2 (GOAL 2): sojusz strony-NAPASTNIKA z graczem blokuje CAŁĄ
+ *     parę dla dołączenia gracza jako leftover -- brak innej pary do dołączenia ->
+ *     `unresolvedOwnerIds` (DECISION_REQUIRED), ŻADNA strona nie wypowiada wojny.
  *  F. Wariant ECHO 2 "KTÓRAKOLWIEK strona": sojusz akurat strony-obrońcy blokuje TĘ SAMĄ
- *     parę.
- *  G. Zero console.error / pageerror w trakcie scenariuszy D/E/F.
+ *     parę tak samo -- ten sam unresolved/DECISION_REQUIRED, żadna strona nie wypowiada wojny.
+ *  G. Konsola: w scenariuszu D zero console.error/pageerror; w E/F DOKŁADNIE jeden
+ *     oczekiwany log `DECISION_REQUIRED` dla ownerId gracza (0) na scenariusz -- ECHO
+ *     "brzegowy przypadek: wszystkie pary zablokowane -> DECISION_REQUIRED, nie zgaduj" z
+ *     dispatchu jest SPODZIEWANYM zachowaniem tu, nie regresją; jakikolwiek INNY
+ *     console.error/pageerror nadal jest FAIL.
  *
  * Bramka (z katalogu gra/): node tools/forced-war-trojstronna-domino-live-test.cjs
  */
@@ -186,21 +203,28 @@ async function main() {
     assert('bootstrap zakończony: citiesLen>0', world0.citiesLen > 0, world0);
     assert('bootstrap zakończony: turn===1', world0.turn === 1, world0);
 
-    console.log('\n-- B/C/D. Scenariusz 1 (GOAL 1, kryterium 1): para bez sojuszu -- OBIE strony wypowiadają wojnę w TEJ SAMEJ turze --');
+    console.log('\n-- B/C/D. Scenariusz 1 (GOAL 1, nowy kształt): para bez sojuszu -- TYLKO wybrana strona (attacker, niższy ownerId) wypowiada wojnę --');
+    const preS1 = consoleErrors.length;
     const s1 = await playDominoScenario(page, consoleErrors, null);
     assert(
-      'po turze: attacker WYPOWIEDZIAŁ wojnę graczowi (domino, strona 1/2)',
+      'po turze: attacker (wybrana strona, niższy ownerId) WYPOWIEDZIAŁ wojnę graczowi -- SEDNO GOAL 1 nowego algorytmu',
       s1.relAttAfter === 'wojna',
       s1,
     );
     assert(
-      'po turze: target TEŻ wypowiedział wojnę graczowi, W TEJ SAMEJ turze (domino, strona 2/2 -- SEDNO GOAL 1)',
-      s1.relTgtAfter === 'wojna',
+      'po turze: target (WYŻSZY ownerId, ta sama para) NIE wypowiedział wojny -- nowy algorytm daje cel TYLKO JEDNEJ stronie, nie obu jak stare domino',
+      s1.relTgtAfter !== 'wojna',
       s1,
     );
+    assert(
+      'scenariusz 1: zero console.error/pageerror (para niezablokowana, przydział jednoznaczny -- brak DECISION_REQUIRED)',
+      consoleErrors.length === preS1,
+      consoleErrors.slice(preS1),
+    );
 
-    console.log('\n-- E. Scenariusz 2 (GOAL 2/ECHO 2): sojusz strony-NAPASTNIKA z graczem -- ŻADNA strona nie wypowiada wojny --');
+    console.log('\n-- E. Scenariusz 2 (GOAL 2/ECHO 2): sojusz strony-NAPASTNIKA z graczem -- ŻADNA strona nie wypowiada wojny, DECISION_REQUIRED oczekiwany --');
     await gotoPlaytestMapa(page);
+    const preS2 = consoleErrors.length;
     const s2 = await playDominoScenario(page, consoleErrors, 'attacker');
     assert(
       'po turze: attacker (sojusznik gracza) NIE wypowiedział wojny -- mechanizm zablokowany dla całej pary',
@@ -212,9 +236,16 @@ async function main() {
       s2.relTgtAfter !== 'wojna',
       s2,
     );
+    assert(
+      'scenariusz 2: DOKŁADNIE jeden log DECISION_REQUIRED dla ownerId gracza (0) -- ECHO brzegowy przypadek, spodziewane, nie regresja',
+      consoleErrors.slice(preS2).length === 1
+        && consoleErrors.slice(preS2).every(m => /DECISION_REQUIRED/.test(m) && /\[0\]/.test(m)),
+      consoleErrors.slice(preS2),
+    );
 
-    console.log('\n-- F. Scenariusz 3 (ECHO 2 "KTÓRAKOLWIEK strona"): sojusz strony-OBROŃCY z graczem -- ta sama blokada --');
+    console.log('\n-- F. Scenariusz 3 (ECHO 2 "KTÓRAKOLWIEK strona"): sojusz strony-OBROŃCY z graczem -- ta sama blokada, DECISION_REQUIRED oczekiwany --');
     await gotoPlaytestMapa(page);
+    const preS3 = consoleErrors.length;
     const s3 = await playDominoScenario(page, consoleErrors, 'defender');
     assert(
       'po turze: target (sojusznik gracza) NIE wypowiedział wojny',
@@ -226,10 +257,26 @@ async function main() {
       s3.relAttAfter !== 'wojna',
       s3,
     );
+    assert(
+      'scenariusz 3: DOKŁADNIE jeden log DECISION_REQUIRED dla ownerId gracza (0) -- ten sam brzegowy przypadek co scenariusz 2',
+      consoleErrors.slice(preS3).length === 1
+        && consoleErrors.slice(preS3).every(m => /DECISION_REQUIRED/.test(m) && /\[0\]/.test(m)),
+      consoleErrors.slice(preS3),
+    );
 
-    console.log('\n-- G. Konsola czysta przez wszystkie 3 scenariusze --');
-    assert('zero console.error / pageerror w całym scenariuszu', consoleErrors.length === 0, consoleErrors);
-    if (consoleErrors.length) console.error('   konsola:', consoleErrors.join(' | '));
+    console.log('\n-- G. Zero console.error/pageerror NIEOCZEKIWANYCH przez wszystkie 3 scenariusze --');
+    const unexpectedConsoleErrors = consoleErrors.filter(m => !(/DECISION_REQUIRED/.test(m) && /\[0\]/.test(m)));
+    assert(
+      'zero console.error/pageerror POZA oczekiwanymi DECISION_REQUIRED[0] scenariuszy E/F',
+      unexpectedConsoleErrors.length === 0,
+      unexpectedConsoleErrors,
+    );
+    assert(
+      'dokładnie 2 oczekiwane logi DECISION_REQUIRED[0] łącznie (jeden w E, jeden w F) -- scenariusz D (bez blokady) nie generuje żadnego',
+      consoleErrors.length === 2,
+      consoleErrors,
+    );
+    if (unexpectedConsoleErrors.length) console.error('   konsola (nieoczekiwane):', unexpectedConsoleErrors.join(' | '));
 
     await page.close();
   } finally {
