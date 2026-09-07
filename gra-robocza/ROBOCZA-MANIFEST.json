@@ -1,10 +1,10 @@
 {
-  "publishedAt": "2026-09-06T22:10:00",
-  "sourceBuild": "/tmp/civ-dist-prawo",
-  "note": "FALA 352 - R-PRAWO-PRZEBUDOWA-SKALI-Q1 (przebudowa skali Prawa D1-D7 + main.ts hasGarnizonBudynek), R-BUDYNEK-GARNIZON-NOWY-Q1 (budynek Garnizon), R-AI-PRODUKCJA-Z-DOSTEPNYCH-BUDYNKOW-Q1 (AI buduje z pelnego katalogu, priorytet Spichlerza/Akweduktu).",
+  "publishedAt": "2026-09-07T02:30:00",
+  "sourceBuild": "/tmp/civ-dist-fala353",
+  "note": "FALA 353 - cala kolejka main.ts (SS2b) zamknieta: R-MIASTA-ZDOBYCIE-RAPORT-TROFEA-Q1 (strukturalny raport zdobycia miasta), R-WYCINKA-DREWNO-50-I-KOMUNIKAT-CAP-Q1 (25->50 drewna), R-WOJNA-WYMUSZONA-PAROWANIE-ZAMIAST-DOMINA-Q1 (parowanie 1v1 zamiast domino), R-RELIGIA-KONWERSJA-PO-PODBOJU-Q1 (odwrocenie udzialu religii po podboju), P-PODBOJ-KOLEJKA-BUDYNEK-NIEMOZLIWY-Q1 (usuniecie budynkow-stolica z przejetej kolejki).",
   "publisher": "Orkiestrator (Claude Code)",
   "bundle": "Gra-ROBOCZA.html",
-  "md5": "24f3aee5ef28e3a94fe9e4e73e8c2327",
+  "md5": "77a3794d7de9ddcb0d5a71ec565093f0",
   "bundlePoleBitwy": "Gra-ROBOCZA-POLE-BITWY.html",
   "md5PoleBitwy": "d4477b3eaed627e426c41b9f8d0ad1f1"
 }
