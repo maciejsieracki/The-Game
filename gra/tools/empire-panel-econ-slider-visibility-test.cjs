@@ -226,36 +226,78 @@ function main() {
   assert('renderDefaultHandelSplitSection() występuje w sekcji dokładnie raz', taxCallCount === 1);
   assert('...i WYŁĄCZNIE pod warunkiem if(sliderVis.showTaxSplit) (nie bezwarunkowo)', taxGuardedCount === 1 && taxCallCount === taxGuardedCount);
 
-  const laborCallCount = (sectionBody.match(/renderDefaultPodzialPracySection\(\);/g) || []).length;
-  const laborGuardedCount = (sectionBody.match(/if\s*\(sliderVis\.showLaborSplit\)\s*zasoby \+= renderDefaultPodzialPracySection\(\);/g) || []).length;
-  assert('renderDefaultPodzialPracySection() występuje w sekcji dokładnie raz', laborCallCount === 1);
-  assert('...i WYŁĄCZNIE pod warunkiem if(sliderVis.showLaborSplit) (nie bezwarunkowo)', laborGuardedCount === 1 && laborCallCount === laborGuardedCount);
+  // P-BRAMKI-EMPIRE-PODZIALPRACY-SEKCJA-ZASTALE-Q1 (2026-09-07): `renderDefaultPodzialPracySection()`
+  // nie istnieje już w `gra/src` — R-DESIGN-11-ZAKLADEK faza 2 (Maciej 2026-08-1x, zatwierdzony
+  // refaktor, potwierdzony czytaniem kodu, nie zmiana balansu) przeniósł suwak „Domyślny podział
+  // pracy" z wiersza wewnątrz sekcji „ZASOBY IMPERIUM" (bramkowanego `if(sliderVis.showLaborSplit)`)
+  // do WŁASNEGO bloku top-level „PRACA IMPERIUM" (`renderPracaSection()` -> unikalne wywołanie
+  // `renderEmpirePracaBudgetSplitSection()`, patrz komentarz nad tą funkcją). `sliderVis.showLaborSplit`
+  // nadal istnieje i jest liczone (empirePanelSectionMap.ts) i nadal chronione Wymogami 1-3 wyżej
+  // (czysta funkcja), ale DZIŚ nie bramkuje już niczego w empireDetailPanel.ts — o widoczności
+  // suwaka Pracy decyduje wyłącznie routing bloku (`block === 'praca'` w przełączniku `body`,
+  // patrz niżej), analogicznie do Skarbca/Nauki/Religii, które dostały ten sam traktament w tej
+  // samej fazie. Duplikacja między zakładkami (pierwotny zgłoszony błąd 469f3152) jest dziś
+  // strukturalnie niemożliwa: `body` składa się z jednej zmiennej `block`, więc sekcja PRACA i
+  // sekcja ZASOBY IMPERIUM nigdy nie renderują się jednocześnie — silniejsza gwarancja niż
+  // pojedynczy `if`, nie słabsza. Poniższe asercje odtwarzają semantykę oryginalnego Wymogu 4 dla
+  // Pracy (dokładnie jedno wystąpienie realnego wywołania + dowód mutacyjny) na dzisiejszym
+  // kształcie kodu, zamiast szukać tekstu, który już nie istnieje.
+  assert('renderDefaultPodzialPracySection() NIE istnieje już w empireDetailPanel.ts (potwierdzone, nie zgadywane — patrz nota wyżej)',
+    !/renderDefaultPodzialPracySection/.test(panelSrc));
 
-  // Mutacja: przywrócenie dosłownego zgłoszonego błędu (MUT3 z raportu Evaluatora) — oba wywołania
-  // bez guardu. Test MUSI złapać to czerwono. Pomijana w trybie --self-check-skip-mutation, żeby
-  // uniknąć nieskończonej rekurencji (ten tryb uruchamia TEN SAM plik na zmutowanym źródle i
+  const laborCallCount = (panelSrc.match(/renderEmpirePracaBudgetSplitSection\(\);/g) || []).length;
+  assert('renderEmpirePracaBudgetSplitSection() (dzisiejsza nazwa suwaka Pracy) występuje w PLIKU dokładnie raz',
+    laborCallCount === 1);
+  assert('renderEmpirePracaBudgetSplitSection() NIE występuje w sekcji ZASOBY IMPERIUM (mechanizm żyje dziś we własnym bloku top-level "praca", nie jako wiersz ekonomii)',
+    !/renderEmpirePracaBudgetSplitSection\(\)/.test(sectionBody));
+
+  const pracaBodyGuardCount = (panelSrc.match(/if\s*\(block === 'praca'\)\s*body \+= praca;/g) || []).length;
+  assert("...i dołączenie sekcji PRACA do body bramkowane WYŁĄCZNIE warunkiem if (block === 'praca') (jedyna ścieżka widoczności suwaka, nie 'all'/bezwarunkowo)",
+    pracaBodyGuardCount === 1);
+
+  // Mutacja: przywrócenie dosłownego zgłoszonego błędu (MUT3 z raportu Evaluatora) — wywołanie
+  // suwaka bez guardu. Test MUSI złapać to czerwono. Pomijane w trybie --self-check-skip-mutation,
+  // żeby uniknąć nieskończonej rekurencji (ten tryb uruchamia TEN SAM plik na zmutowanym źródle i
   // oczekuje, że powyższe asercje złapią to czerwono).
   if (!process.argv.includes('--self-check-skip-mutation')) {
-    console.log('\n-- Wymóg 4 / mutacja MUT3: przywrócenie bezwarunkowych wywołań suwaków --');
-    const backup = panelSrc;
-    const mutated = panelSrc.replace(
-      'if (sliderVis.showTaxSplit) zasoby += renderDefaultHandelSplitSection();\n  if (sliderVis.showLaborSplit) zasoby += renderDefaultPodzialPracySection();',
-      'zasoby += renderDefaultHandelSplitSection();\n  zasoby += renderDefaultPodzialPracySection();',
-    );
-    assert('mutacja MUT3 faktycznie zmieniła źródło (kotwica zamiany istnieje)', mutated !== backup);
-
-    fs.writeFileSync(PANEL_TS, mutated, 'utf8');
     const { execSync } = require('child_process');
-    let mutantFailed = false;
+    const backup = panelSrc;
+
+    console.log('\n-- Wymóg 4 / mutacja MUT3a: przywrócenie bezwarunkowego wywołania suwaka podatku --');
+    const mutatedTax = panelSrc.replace(
+      'if (sliderVis.showTaxSplit) zasoby += renderDefaultHandelSplitSection();',
+      'zasoby += renderDefaultHandelSplitSection();',
+    );
+    assert('mutacja MUT3a faktycznie zmieniła źródło (kotwica zamiany istnieje)', mutatedTax !== backup);
+    fs.writeFileSync(PANEL_TS, mutatedTax, 'utf8');
+    let mutantFailedTax = false;
     try {
       execSync(`node ${__filename} --self-check-skip-mutation`, { cwd: __dirname, stdio: 'pipe' });
     } catch (e) {
-      mutantFailed = true;
+      mutantFailedTax = true;
     } finally {
       fs.writeFileSync(PANEL_TS, backup, 'utf8');
     }
-    assert('mutacja MUT3 (bezwarunkowe wywołania, dosłowny zgłoszony błąd) łapana czerwono przez Wymóg 4', mutantFailed);
-    assert('empireDetailPanel.ts przywrócony do stanu oryginalnego po mutacji', fs.readFileSync(PANEL_TS, 'utf8') === backup);
+    assert('mutacja MUT3a (bezwarunkowe wywołanie suwaka podatku, dosłowny zgłoszony błąd) łapana czerwono przez Wymóg 4', mutantFailedTax);
+    assert('empireDetailPanel.ts przywrócony do stanu oryginalnego po mutacji MUT3a', fs.readFileSync(PANEL_TS, 'utf8') === backup);
+
+    console.log('\n-- Wymóg 4 / mutacja MUT3b: przywrócenie bezwarunkowego dołączenia sekcji PRACA do body (dzisiejszy odpowiednik dla architektury bloków top-level) --');
+    const mutatedLabor = panelSrc.replace(
+      "if (block === 'praca') body += praca;",
+      'body += praca;',
+    );
+    assert('mutacja MUT3b faktycznie zmieniła źródło (kotwica zamiany istnieje)', mutatedLabor !== backup);
+    fs.writeFileSync(PANEL_TS, mutatedLabor, 'utf8');
+    let mutantFailedLabor = false;
+    try {
+      execSync(`node ${__filename} --self-check-skip-mutation`, { cwd: __dirname, stdio: 'pipe' });
+    } catch (e) {
+      mutantFailedLabor = true;
+    } finally {
+      fs.writeFileSync(PANEL_TS, backup, 'utf8');
+    }
+    assert('mutacja MUT3b (bezwarunkowe dołączenie sekcji PRACA do body niezależnie od bloku, dzisiejszy odpowiednik zgłoszonego błędu) łapana czerwono przez Wymóg 4', mutantFailedLabor);
+    assert('empireDetailPanel.ts przywrócony do stanu oryginalnego po mutacji MUT3b', fs.readFileSync(PANEL_TS, 'utf8') === backup);
   }
 
   console.log(`\n${pass} pass · ${fail} fail`);

@@ -32,6 +32,19 @@
  * file's assertions were rewritten to match; treat it as a thin supplementary regression guard
  * for the original b80426ff bug (no slider ever globally unreachable), not the source of truth.
  *
+ * P-BRAMKI-EMPIRE-PODZIALPRACY-SEKCJA-ZASTALE-Q1 (2026-09-07): drugie przekotwiczenie.
+ * `renderDefaultPodzialPracySection()` nie istnieje już w `gra/src` — R-DESIGN-11-ZAKLADEK faza 2
+ * (Maciej, zatwierdzony refaktor) przeniósł suwak Pracy z wiersza sekcji „ZASOBY IMPERIUM" do
+ * WŁASNEGO bloku top-level „praca" (`renderEmpirePracaBudgetSplitSection()`, wywołane raz w
+ * `renderPracaSection()`, dołączane do `body` wyłącznie przez `if (block === 'praca') body +=
+ * praca;` — nie już przez `sliderVis.showLaborSplit`, patrz pełne uzasadnienie w
+ * empire-panel-econ-slider-visibility-test.cjs Wymóg 4). Asercje Pracy niżej przekotwiczone na ten
+ * kształt, zachowując cel „nie globalnie martwe". OPERATOR ZALECA (DECISION_REQUIRED, nie
+ * wykonano samodzielnie): ten plik pokrywa się dziś niemal 1:1 z Wymogiem 4 tamtego pliku — jego
+ * jedyny unikalny wkład to Wymóg 1 (filtr `onlyEconId` na pętli `econRows`, C-PANEL=B), reszta jest
+ * duplikatem o słabszym dowodzie (bez mutacji na żywym procesie). Rozważ usunięcie na rzecz
+ * przeniesienia Wymogu 1 do głównej bramki.
+ *
  * Run from gra/: node tools/empire-panel-sliders-always-visible-test.cjs
  */
 const fs = require('fs');
@@ -71,8 +84,12 @@ ok(/if\s*\(onlyEconId\s*&&\s*r\.id\s*!==\s*onlyEconId\)\s*continue;/.test(sectio
 // ---------------------------------------------------------------------------
 ok(/renderDefaultHandelSplitSection\(\)/.test(sectionBody),
   'renderDefaultHandelSplitSection() (suwak Skarbiec+Nauka) obecne w sekcji ZASOBY IMPERIUM');
-ok(/renderDefaultPodzialPracySection\(\)/.test(sectionBody),
-  'renderDefaultPodzialPracySection() (suwak Praca) obecne w sekcji ZASOBY IMPERIUM');
+// Przekotwiczone 2026-09-07 (patrz nagłówek): renderDefaultPodzialPracySection() nie istnieje już
+// w src — mechanizm żyje dziś jako renderEmpirePracaBudgetSplitSection() we WŁASNYM bloku
+// top-level "praca", nie jako wiersz sekcji ZASOBY IMPERIUM. Sprawdzamy więc obecność w CAŁYM
+// pliku (nie sectionBody) — zachowuje cel oryginalnej asercji: suwak nie jest globalnie martwy.
+ok(/renderEmpirePracaBudgetSplitSection\(\)/.test(src),
+  'renderEmpirePracaBudgetSplitSection() (dawniej renderDefaultPodzialPracySection, suwak Praca) obecne w pliku (nie usunięte / nie globalnie martwe)');
 
 // ---------------------------------------------------------------------------
 // Wymóg 3 (PRZEPISANY 2026-08-12, patrz nagłówek SUPERSEDED powyżej): stary wymóg „żadne z tych
@@ -84,17 +101,21 @@ ok(/renderDefaultPodzialPracySection\(\)/.test(sectionBody),
 // ---------------------------------------------------------------------------
 ok(/if\s*\(sliderVis\.showTaxSplit\)\s*zasoby \+= renderDefaultHandelSplitSection\(\);/.test(sectionBody),
   'renderDefaultHandelSplitSection() bramkowane przez sliderVis.showTaxSplit (dzisiejszy kontrakt, nie stała false/usunięte)');
-ok(/if\s*\(sliderVis\.showLaborSplit\)\s*zasoby \+= renderDefaultPodzialPracySection\(\);/.test(sectionBody),
-  'renderDefaultPodzialPracySection() bramkowane przez sliderVis.showLaborSplit (dzisiejszy kontrakt, nie stała false/usunięte)');
+// Przekotwiczone 2026-09-07: guard dzisiaj to routing bloku (`block === 'praca'`), nie
+// `sliderVis.showLaborSplit` (patrz nagłówek) — `sliderVis.showLaborSplit` samo w sobie nadal
+// istnieje i jest chronione w empire-panel-econ-slider-visibility-test.cjs, ale nic w
+// empireDetailPanel.ts już go nie konsumuje do bramkowania tego suwaka.
+ok(/if\s*\(block === 'praca'\)\s*body \+= praca;/.test(src),
+  "renderEmpirePracaBudgetSplitSection() (suwak Praca) bramkowane przez if (block === 'praca') (dzisiejszy kontrakt bloków top-level, nie stała false/usunięte)");
 
 // Kontrola przytomności: gdyby ktoś usunął OBA wywołania całkowicie (suwaki globalnie martwe —
 // regres z b80426ff w nowej postaci), powyższe dwie asercje muszą złapać to czerwono.
 const deletedSection = sectionBody
-  .replace('if (sliderVis.showTaxSplit) zasoby += renderDefaultHandelSplitSection();', '')
-  .replace('if (sliderVis.showLaborSplit) zasoby += renderDefaultPodzialPracySection();', '');
+  .replace('if (sliderVis.showTaxSplit) zasoby += renderDefaultHandelSplitSection();', '');
+const deletedSrc = src.replace("if (block === 'praca') body += praca;", '');
 const deletedStillMatches =
   /if\s*\(sliderVis\.showTaxSplit\)\s*zasoby \+= renderDefaultHandelSplitSection\(\);/.test(deletedSection)
-  || /if\s*\(sliderVis\.showLaborSplit\)\s*zasoby \+= renderDefaultPodzialPracySection\(\);/.test(deletedSection);
+  || /if\s*\(block === 'praca'\)\s*body \+= praca;/.test(deletedSrc);
 ok(!deletedStillMatches,
   'kontrola przytomności: symulowane całkowite usunięcie obu wywołań jest wykrywalne przez ten sam regex (nie próżny test)');
 
