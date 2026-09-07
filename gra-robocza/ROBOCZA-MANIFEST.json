@@ -1,10 +1,10 @@
 {
-  "publishedAt": "2026-09-07T17:35:00",
-  "sourceBuild": "/tmp/civ-dist-fala358",
-  "note": "FALA 358 - P-SCIENCEHUB-TOOLTIP-EMOJI-ZAMIAST-IKON-Q1: tooltip drzewka technologii (sekcja Warunek badania) pokazuje teraz ikony marki per encja zamiast surowych emoji, identyczne jak w liscie huba badan i panelu miasta. Etykieta i ikona zawsze z tego samego czlonu dla pol wielowartosciowych.",
+  "publishedAt": "2026-09-07T18:10:00",
+  "sourceBuild": "/tmp/civ-dist-fala359",
+  "note": "FALA 359 - deploy rejestrowy (bez zmiany bundla): domkniecie P-AI-GRANARY-PROG-POPULACJI-DUPLIKAT-Q1 i P-AI-ZDOBYCIE-MIASTA-CZTERY-LUKI-Q1, oba tematy test-only (wylacznie gra/tools/**), zero zmian w gra/src i gra/data. Surowy build vite bit-for-bit identyczny z FALA 358 (md5 stempla rozni sie wylacznie przez znacznik czasu wstrzykiwany przy kazdej publikacji).",
   "publisher": "Orkiestrator (Claude Code)",
   "bundle": "Gra-ROBOCZA.html",
-  "md5": "7d15afb2638625312e409e38288e5ae0",
+  "md5": "2c4d4f38b8af357b1595fbcb81f3f982",
   "bundlePoleBitwy": "Gra-ROBOCZA-POLE-BITWY.html",
   "md5PoleBitwy": "d4477b3eaed627e426c41b9f8d0ad1f1"
 }

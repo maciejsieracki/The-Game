@@ -13,13 +13,23 @@ swoim wĹ‚asnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji d
 > Pakiet 3 z 2026-08-20 jest docs-only i nie tworzy wpisu ROBOCZA/KANON/FINALNA;
 > ten plik pozostaje wyłącznie rejestrem publikacji bundli.
 
+## ROBOCZA 2c4d4f38 - 2026-09-07 18:10 UTC - FALA 359: deploy rejestrowy — dwa tematy test-only, zero zmiany bundla
+
+|- md5 (pełne): 2c4d4f38b8af357b1595fbcb81f3f982 · stempel: ROBOCZA · label 2c4d4f38 · źródłowe commity integracji: `0ba33bc5` (granary) + `c21c3b1c` (cztery-luki)
+|- **`P-AI-GRANARY-PROG-POPULACJI-DUPLIKAT-Q1`** (`0ba33bc5`, 1 runda) — nowa bramka-strażnik `ai-granary-prog-populacji-spojnosc-test.cjs` (12/12) porównująca ręczne stałe progów populacji AI (`ai.ts`) z realną `cityPopulationCap()`/`econ-params.json` dla easy/normal/hard. Duplikacja stałych POZOSTAJE — potwierdzona jako świadomy, udokumentowany kompromis architektoniczny (ai.ts celowo nie importuje economy.ts) — bramka jedynie zabezpiecza przed cichym rozjazdem. Zero zmian w `gra/src/game/ai.ts`.
+|- **`P-AI-ZDOBYCIE-MIASTA-CZTERY-LUKI-Q1`** (`c21c3b1c`, 1 runda) — cztery luki pokrycia z Final Control `P-AI-BRAK-SCIEZKI-ZDOBYCIA-MIASTA-ADIACENCJA-Q1`: nowa asercja `targetVisible=false` blokuje ruch/przejęcie (FC-N2, z dowodem mutacyjnym), doprecyzowany komentarz przy `K4-DYSTANS` (FC-N1), asercje odróżniające prawdziwe wywołanie `isCivilianUnit` od kopii formuły (FC-N4), try/catch wokół wypisania wyniku (F4). `ai-zdobycie-miasta-adiacencja-test.cjs` 88/88→96/96, zero asercji osłabionych/usuniętych.
+|- **Oba tematy wyłącznie `gra/tools/**` — zero zmian w `gra/src`/`gra/data`.** Surowy build vite (`vite build --outDir`, przed wstrzyknięciem stempla) jest bit-for-bit identyczny z FALA 358 (`cmp` bez różnic) — jedyna różnica md5 w tym wpisie pochodzi ze znacznika czasu wstrzykiwanego przez `inject-build-stamp.cjs` przy każdej publikacji, nie ze zmiany treści. Ten deploy jest wykonany na wyraźne polecenie właściciela („zrób deploy do roboczej" po zamknięciu obu tematów), nie z powodu zmiany zachowania gry.
+|- tsc --noEmit 0 błędów · 5 bramek referencyjnych zielonych (logic 213/213, tech-tree 19/19, research 33/33, unit-replace 13/13, combat 6/6) · Vite build 885 modułów, singlefile.
+|- Bundle pola bitwy (`Gra-ROBOCZA-POLE-BITWY.html`) pominięty — żaden temat nie dotyka mechaniki walki polowej; md5 z FALI 353 zachowany bez zmian.
+|- **AKTUALNA**
+
 ## ROBOCZA 7d15afb2 - 2026-09-07 17:35 UTC - FALA 358: ikony marki w tooltipie drzewka technologii
 
 |- md5 (pełne): 7d15afb2638625312e409e38288e5ae0 · stempel: ROBOCZA · label 7d15afb2 · źródłowy commit integracji: `1fbe1551`
 |- **`P-SCIENCEHUB-TOOLTIP-EMOJI-ZAMIAST-IKON-Q1`** (`1fbe1551`, 1 runda + obrona) — tooltip drzewka technologii (sekcja „Warunek badania:") emitował surowe emoji zamiast ikon marki — druga, niezależna instancja buga naprawionego już dla listy huba badań. Nowy producent danych `techRequirementItems()` renderowany wspólnym resolverem `unlockIconSvg` z `brandAssets.ts`, ta sama ikona co w liście huba i panelu miasta. Obrona naprawiła 2 zarzuty Evaluatora (Opus 5): fixture bramki bez produkcyjnego filtra placeholderów (dodano żywe pokrycie na podmienionej `tech.json`) oraz rozjazd etykieta/ikona dla pól wielowartościowych (usunięto `firstLabel()`, pętla per człon). Nowa bramka `science-picker-tooltip-icons-real-render-test.cjs` 141/0, 9 żywych zrzutów Chromium PRZED/PO.
 |- tsc --noEmit 0 błędów · 5 bramek referencyjnych zielonych (logic 213/213, tech-tree 19/19, research 33/33, unit-replace 13/13, combat 6/6) · Vite build 885 modułów, singlefile.
 |- Bundle pola bitwy (`Gra-ROBOCZA-POLE-BITWY.html`) pominięty — temat nie dotyka mechaniki walki polowej; md5 z FALI 353 zachowany bez zmian.
-|- **AKTUALNA**
+|- **ZASTĄPIONA przez FALA 359**
 
 ## ROBOCZA 8940a7b5 - 2026-09-07 17:05 UTC - FALA 357: dochod z tras handlowych przez pelna sciezke Daniny
 
