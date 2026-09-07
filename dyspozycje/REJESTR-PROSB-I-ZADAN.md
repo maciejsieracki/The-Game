@@ -69,7 +69,7 @@ historycznych wierszy poniżej; wpisy bez jednoznacznego dowodu nie są tu zgady
 | `P-KOLOR-SUROWCE-MIASTO-VS-MAPA-Q1` | `ZINTEGROWANE` | Commit `0f3c0fb1`. Nowy `resourceColors.ts`, Skarbiec ujednolicony do złota. Szczegóły niżej (linia ok. 6311). Nic do dispatchu. |
 | `P-BRAMKA-WSPOLDZIELONY-DIST-TMPDIR-Q1` | `ZINTEGROWANE` | Commit `57c327d9`. Audyt 66 plików `gra/tools/*.cjs` z `os.tmpdir()`, nowa meta-bramka `bramki-tmpdir-unikalnosc-test.cjs` złapała 1 dodatkowe naruszenie na żywym `main` przy integracji. Szczegóły niżej (linia ok. 6334). Nic do dispatchu. |
 | `P-ENTITYCARD-CIVPEDIA-KLIK-MARTWY-Q1` | `ZINTEGROWANE` | Commit `7d507ed6`. Nowy szew `civpediaOpenGate.ts`, przycisk „Więcej informacji (Civpedia)" na kartach encji teraz działa. Szczegóły niżej (linia ok. 6351). Nic do dispatchu. |
-| `P-BRAMKI-EMPIRE-PANEL-PIEC-CZERWONYCH-ZASTALE-Q1` | `W TOKU — rozbity na 4 sub-tematy (A/B zintegrowane, C/D w Final Control 2026-09-07)` | Pięć zastałych czerwonych bramek panelu imperium (znalezisko przy `P-DESIGN-11-ZAKLADEK-DROBIAZGI-Q1`). **A** `P-BRAMKI-EMPIRE-PODZIALPRACY-SEKCJA-ZASTALE-Q1` — ZINTEGROWANE, commit `8da2d3fc` (Final Control oddalił zarzut o możliwą regresję UX suwaka Pracy — spójny wzorzec 8 sekcji, nie anomalia). **B** `P-BRAMKA-EMPIRE-FOOD-B5-ZASTALA-Q1` — ZINTEGROWANE, commit `9dc11a43` (mnożnik R-STAWKI ×4 nie ×2). **C** `P-BRAMKA-EMPIRE-OBYWATELE-TRADE-SNAP-Q1` — DO-INTEGRACJI, runda 2 PASS (Final Control w toku); ECHO właściciela 2026-09-07: przekotwiczyć test na `side.myCityId`/`premiaBudynkuPerSide` (generalizacja R2-2, semantyka zachowana). **D** `P-BRAMKA-HINT-TOAST-ZINDEX-SELFINVALIDATING-Q1` — DO-INTEGRACJI, runda 1 PASS (Final Control w toku); harness naprawiony metodą mutacyjną (zamrożony SHA historyczny okazał się niebudowalny na dzisiejszych zależnościach). Worktree: `/home/user/wt-empire-obywatele-trade-snap`, `/home/user/wt-hint-toast-zindex-selfinvalidating`. Szczegóły niżej (linie ok. 6375-6470+). |
+| `P-BRAMKI-EMPIRE-PANEL-PIEC-CZERWONYCH-ZASTALE-Q1` | `W TOKU — rozbity na 4 sub-tematy (A/B/C zintegrowane, D w Final Control 2026-09-07)` | Pięć zastałych czerwonych bramek panelu imperium (znalezisko przy `P-DESIGN-11-ZAKLADEK-DROBIAZGI-Q1`). **A** `P-BRAMKI-EMPIRE-PODZIALPRACY-SEKCJA-ZASTALE-Q1` — ZINTEGROWANE, commit `8da2d3fc`. **B** `P-BRAMKA-EMPIRE-FOOD-B5-ZASTALA-Q1` — ZINTEGROWANE, commit `9dc11a43`. **C** `P-BRAMKA-EMPIRE-OBYWATELE-TRADE-SNAP-Q1` — ZINTEGROWANE, commit `90526476` (po ECHO właściciela: przekotwiczyć test na `side.myCityId`/`premiaBudynkuPerSide`, generalizacja R2-2). **D** `P-BRAMKA-HINT-TOAST-ZINDEX-SELFINVALIDATING-Q1` — DO-INTEGRACJI, runda 1 PASS (Final Control w toku); harness naprawiony metodą mutacyjną. Worktree pozostałe: `/home/user/wt-hint-toast-zindex-selfinvalidating`. Szczegóły niżej (linie ok. 6375-6450+). |
 | `P-HANDEL-SZLAKI-WZOR-DUPLIKAT-Q1` | `OTWARTE, niski priorytet — status z 2026-08-22, NIE zweryfikowane ponownie 2026-09-07` | Wzór dochodu z tras zduplikowany w 2 miejscach `main.ts` (panel Handlu + chip HUD) zamiast jednej wspólnej funkcji `trade-routes.ts::computeTradeRouteIncomeByCity`. Możliwe że rozwiązane przy okazji `R-HANDEL-SZLAKI-PRZEBUDOWA-Q1` (T1-T6, zakończone) — WYMAGA potwierdzenia reconem przed dispatchem/zamknięciem, nie zakładać żadnego stanu bez sprawdzenia. |
 
 ### Zasada migracji i historii
@@ -6143,9 +6143,18 @@ capital zielona. Dwa pre-istniejące FAIL potwierdzone niezależnie od tego tema
 `barb-city-capture-cluster-test` (92/1) i `building-queue-refund-test` (2/3) —
 **STATUS: ZAREJESTROWANE, NIE DISPATCHOWANE.** DOMAIN: INFRA/GAME. Do zbadania osobno.
 
-**Zamyka CAŁĄ kolejkę `main.ts` (§2b) — wszystkie sześć tematów punktu 2 backlogu
-(handel-podział, trofea, wycinka, wojny-domino, religia, kolejka-podboju) zintegrowane.**
+**Zamyka kolejkę `main.ts` (§2b) — pięć z sześciu tematów punktu 2 backlogu
+(trofea, wycinka, wojny-domino, religia, kolejka-podboju) zintegrowane.**
 `main.ts` jest teraz wolny dla kolejnych, niezależnych tematów.
+
+**KOREKTA 2026-09-07 (audyt backlogu):** poprzednie zdanie w tym wierszu błędnie liczyło
+„handel-podział" jako szósty zamknięty temat. **Sprawdzone bezpośrednio w kodzie
+(`gra/src/game/turn-economy.ts:2687,2775`): dochód z tras handlowych nadal ląduje wprost w
+skarbcu jako `pieniadzZTras`, osobno od `pieniadzPoWealth` — mechanizm podziału miasta
+(nauka/złoto) i mnożnika Wealth NIE przechodzi przez niego.** Właściwy ID tego tematu to
+`R-HANDEL-DOCHOD-PRZEZ-PODZIAL-MIASTA-Q1` (patrz wpis niżej w historii, ok. linii 4516) —
+nadal `ZAREJESTROWANE, NIE DISPATCHOWANE`, nie zamknięty. Nie ufaj tej linii bez ponownego
+sprawdzenia kodu.
 
 ## `R-SZCZESCIE-AUDYT-C-PRAWO-I-OSIEDLA-Q1` (węzeł C) — GAME — **ZINTEGROWANE 2026-09-07** (4 rundy, commit `68e5d25f`)
 
@@ -6422,3 +6431,27 @@ było potrzeba.
 
 Bramki: 57/3→65/65 i 6/2→8/8 (dowód mutacyjny MUT3a/MUT3b zachowany, realnie czerwieni bramkę).
 Zero zmian w `gra/src/**`. Zintegrowano commitem `8da2d3fc`, worktree usunięte.
+
+---
+
+## P-BRAMKA-EMPIRE-OBYWATELE-TRADE-SNAP-Q1 — zamknięty (2026-09-07)
+
+Sub-temat C rodziny `P-BRAMKI-EMPIRE-PANEL-PIEC-CZERWONYCH-ZASTALE-Q1`. `empire-panel-miasto-
+obywatele-content-test.cjs` (113/2) szukał dwóch literałów sprzed generalizacji R2-2 w
+`buildEmpireTradeSnap()` (`main.ts`): `cityId: r.fromCityId` i literalne wywołanie premii
+budynkowej wprost do `premiaBudynku`.
+
+Runda 1 (diagnostyczna, zgodnie z dispatchem): Operator, Evaluator i Obrona zgodnie ustalili
+**DECISION_REQUIRED** — obie asercje są kategorii (c), nie (a): `cityId` dziś pochodzi z
+`side.myCityId = r.ownerId===0 ? r.fromCityId : r.toCityId` (gracz może być stroną `to` trasy,
+nie tylko `from`), a premia budynkowa przechodzi przez zmienną pośrednią `premiaBudynkuPerSide`
+z warunkowym ×2 dla tras wewnętrznych — w obu przypadkach mechanizm działa poprawnie i bez
+duplikatu formuły (`tradeRouteBuildingBonusForRoute()` z `trade-routes.ts`, zgodnie z doktryną
+C-046), zmienił się tylko dokładny kształt kodu. **ECHO właściciela 2026-09-07:** przekotwiczyć
+test na dzisiejszy kod.
+
+Runda 2: obie asercje przekotwiczone na `side.myCityId`/`premiaBudynkuPerSide`, plus jedna nowa
+asercja wzmacniająca (weryfikuje realne rozgałęzienie `side`). 113/2 → 116/116, zero osłabienia.
+Operator→Evaluator→Obrona→Final Control wszystkie PASS, Final Control niezależnie porównał
+wszystkie 7 nowych kotwic character-for-character z `main.ts`. Zero zmian w `gra/src/**`.
+Zintegrowano commitem `90526476`, worktree usunięte.
