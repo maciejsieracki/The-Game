@@ -110,8 +110,9 @@ check(
 // wyłącznie brakiem aktywnej wojny wymuszonej gracza (nie rolą/typem jak dawniej AI).
 check(
   'gracz dołącza do wspólnej puli triggeredSubjects (na równi z AI) WYŁĄCZNIE gdy sam nie ma '
-    + 'dziś żadnej aktywnej wojny wymuszonej -- bez specjalnego wykluczania poza tym warunkiem',
-  /const playerCity = cities\.find\(c => c\.ownerId === 0\);\s*\n\s*if \(playerCity && totalActiveForcedWarsByOwner\(0\) === 0\) \{\s*\n\s*triggeredSubjects\.push\(\{ ownerId: 0, q: playerCity\.q, r: playerCity\.r \}\);/.test(main),
+    + 'dziś żadnej aktywnej wojny wymuszonej ORAZ minął próg tury (R-WOJNA-WYMUSZONA-PROG-TURY-'
+    + 'GRACZ-Q1, turn >= WOJNA_KAMIEN_WYMUSZONA_START_TURY) -- bez innego specjalnego wykluczania',
+  /const playerCity = cities\.find\(c => c\.ownerId === 0\);\s*\n\s*if \(\s*\n\s*playerCity\s*\n\s*&& turn >= WOJNA_KAMIEN_WYMUSZONA_START_TURY\s*\n\s*&& totalActiveForcedWarsByOwner\(0\) === 0\s*\n\s*\) \{\s*\n\s*triggeredSubjects\.push\(\{ ownerId: 0, q: playerCity\.q, r: playerCity\.r \}\);/.test(main),
 );
 check(
   'isForcedWarPairBlocked (NAP, blokada pokoju, sojusz) -- ten sam symetryczny predykat dla '

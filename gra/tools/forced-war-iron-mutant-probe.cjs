@@ -401,10 +401,15 @@ const MUTATIONS = [
                   && !isRestingFromIronForcedWar(turn, ironForceWarRestUntilByOwner.get(ownerId));` },
   { id: 'M42-main-gracz-zawsze-w-puli', file: 'main', gates: [GUARD],
     why: 'ECHO krok 1 (gracz jak każde AI): gracz dołącza do triggeredSubjects BEZWARUNKOWO, '
-      + 'nie tylko gdy sam nie ma dziś żadnej aktywnej wojny wymuszonej — NASTĘPCA dawnego M42 '
+      + 'nie tylko gdy sam nie ma dziś żadnej aktywnej wojny wymuszonej i minął próg tury '
+      + '(R-WOJNA-WYMUSZONA-PROG-TURY-GRACZ-Q1) — NASTĘPCA dawnego M42 '
       + '(które pilnowało odwrotnej regresji: wykluczenia gracza z puli)',
     find: `            const playerCity = cities.find(c => c.ownerId === 0);
-            if (playerCity && totalActiveForcedWarsByOwner(0) === 0) {
+            if (
+              playerCity
+              && turn >= WOJNA_KAMIEN_WYMUSZONA_START_TURY
+              && totalActiveForcedWarsByOwner(0) === 0
+            ) {
               triggeredSubjects.push({ ownerId: 0, q: playerCity.q, r: playerCity.r });
             }`,
     replace: `            const playerCity = cities.find(c => c.ownerId === 0);

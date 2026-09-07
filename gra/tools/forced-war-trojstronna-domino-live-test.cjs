@@ -34,10 +34,26 @@
  * Sens testu (realna gra w przeglądarce dowodzi, że mechanizm faktycznie działa) bez zmian,
  * tylko oczekiwany wynik dostosowany do nowego kształtu.
  *
+ * R-WOJNA-WYMUSZONA-PROG-TURY-GRACZ-Q1 runda 2 (ZARZUT 1 Evaluatora, piąta zastała bramka
+ * pominięta w rundzie 1/allowlist 00b): gracz dołącza do puli `triggeredSubjects`
+ * (main.ts, Krok D → `assignForcedWarPairings`) dopiero od `turn >= WOJNA_KAMIEN_WYMUSZONA_
+ * START_TURY` (=25) — dokładnie ta sama zmiana Kroku C tego tematu. Bez fast-forwardu ten
+ * test bootstrapuje na turze 1 i robi TYLKO JEDNĄ turę (do tury 2) — gracz fizycznie nie
+ * może zostać wybraną stroną domina w tym oknie, więc scenariusz D pokazywał
+ * `relAttAfter:"neutralni"` zamiast `"wojna"`, a E/F nie generowały żadnego DECISION_REQUIRED.
+ * Naprawa: identyczny wzorzec co `forced-war-player-target-live-test.cjs`/
+ * `forced-war-iron-player-target-live-test.cjs` (ta sama runda) — fast-forward REALNYMI
+ * `endTurn()` do tury 24 PRZED `forceBronzeForcedWarDominoOnPlayer()`, wołany OSOBNO w
+ * KAŻDYM z trzech scenariuszy (każdy zaczyna od świeżego `gotoPlaytestMapa` = tura 1, bo to
+ * jedyny prosty sposób na czysty stan domina bez reimplementowania resetu). Sens testu
+ * (realna gra w przeglądarce dowodzi, że mechanizm domina faktycznie działa) bez zmian.
+ *
  * Pokrycie:
  *  A. Bootstrap `?playtest=mapa` dobiega końca.
+ *  A2. Fast-forward realnymi `endTurn()` do tury 24 (próg gracza jeszcze nie minął),
+ *      wołany osobno w każdym z trzech scenariuszy.
  *  B. `forceBronzeForcedWarDominoOnPlayer()` faktycznie zakłada drugą stronę i parę.
- *  C. Realny `triggerPlayerEndTurn()` dobiega końca.
+ *  C. Realny `triggerPlayerEndTurn()` dobiega końca (tura 24 → 25, próg spełniony).
  *  D. SEDNO kryterium 1 (GOAL 1, nowy kształt): TYLKO wybrana strona (attacker, niższy
  *     ownerId) wypowiada wojnę graczowi -- target (wyższy ownerId) NIE, bo już ma pełny
  *     przydział przez samą parę z attackerem (krok 2 ECHO: nikt nie zostaje z zerem wojen,
@@ -104,6 +120,34 @@ async function launchBrowser(chromium) {
 
 async function wait(ms) { return new Promise((r) => setTimeout(r, ms)); }
 
+// R-WOJNA-WYMUSZONA-PROG-TURY-GRACZ-Q1 (runda 2): identyczny wzorzec i identyczne uzasadnienie
+// co `advanceTurnBySettledEndTurn()` w `forced-war-player-target-live-test.cjs` (ta sama runda)
+// -- realny `__eraTestDebug.endTurn()` w pętli, `pullPlayerUnitsHome()` przed każdym wywołaniem
+// (chroni WYŁĄCZNIE pozycję jednostek gracza, ZERO nowego haka produkcyjnego), settle wykrywany
+// po rosnącym `turn` (nie po true->false `isEndTurnInProgress()`, bo na ubogich w jednostki
+// wczesnych turach ten stan potrafi nigdy nie zostać zaobserwowane w oknie pollingu), z realnym
+// natywnym DOM-owym kliknięciem przycisku "Auto" modalu preBattle gdyby AI/barbarzyńca mimo to
+// zainicjowała bitwę blisko gracza.
+async function advanceTurnBySettledEndTurn(page) {
+  await page.evaluate(() => window.__rebelProtectionTestDebug.pullPlayerUnitsHome());
+  const before = await page.evaluate(() => window.__eraTestDebug.getWorldState().turn);
+  await page.evaluate(() => window.__eraTestDebug.endTurn());
+  const t0 = Date.now();
+  while (Date.now() - t0 < 90000) {
+    const [turnNow, inProg] = await page.evaluate(() => [
+      window.__eraTestDebug.getWorldState().turn,
+      window.__eraTestDebug.isEndTurnInProgress(),
+    ]);
+    if (turnNow > before && !inProg) return true;
+    await page.evaluate(() => {
+      const btn = document.querySelector('.pb-overlay [data-act="auto"]');
+      if (btn) btn.click();
+    });
+    await wait(200);
+  }
+  return false;
+}
+
 async function gotoPlaytestMapa(page) {
   await page.goto(OUT_HTML, { waitUntil: 'load', timeout: 120000 });
   await page.waitForSelector('.civ-hud, .civ-ux-frame, .civ-cs', { timeout: 120000 });
@@ -127,6 +171,21 @@ async function gotoPlaytestMapa(page) {
  *  scenariuszami przez świeży `gotoPlaytestMapa` (najprostszy sposób na czysty stan bez
  *  reimplementowania resetu domina). */
 async function playDominoScenario(page, consoleErrors, allianceSide) {
+  // A2. Fast-forward do tury 24 (próg gracza R-WOJNA-WYMUSZONA-PROG-TURY-GRACZ-Q1 = 25) --
+  // patrz komentarz nagłówkowy pliku i `advanceTurnBySettledEndTurn()`. Sandbox
+  // `?playtest=mapa` (jeden realny AI) jest z natury niezrównoważony na 24 tury -- ten sam
+  // zabezpieczający hak i to samo uzasadnienie co `perf-long-session-live-test.cjs`/
+  // `rebel-protection-live-test.cjs`/`forced-war-player-target-live-test.cjs` (wyłącza
+  // WYŁĄCZNIE checkVictory dla tej sesji testowej).
+  await page.evaluate(() => window.__rebelProtectionTestDebug.disableVictoryCheckForTest());
+  for (let i = 0; i < 23; i++) {
+    // eslint-disable-next-line no-await-in-loop
+    const settled = await advanceTurnBySettledEndTurn(page);
+    if (!settled) throw new Error(`fast-forward domina: endTurn #${i + 1} nie ustabilizował się`);
+  }
+  const worldFF = await page.evaluate(() => window.__eraTestDebug.getWorldState());
+  assert('fast-forward zakończony: turn===24 (próg gracza jeszcze NIE minął)', worldFF.turn === 24, worldFF);
+
   const forced = await page.evaluate(
     (side) => window.__eraTestDebug.forceBronzeForcedWarDominoOnPlayer(side ? { allianceSide: side } : undefined),
     allianceSide ?? null,

@@ -24,11 +24,6 @@
       window.addEventListener('unhandledrejection',function(e){
         showBootErr('Unhandled rejection: '+String(e.reason));
       });
-      var _ce=console.error;
-      console.error=function(){
-        showBootErr(Array.prototype.join.call(arguments,' '));
-        _ce.apply(console,arguments);
-      };
     })();
   </script>
     <meta charset="UTF-8" />

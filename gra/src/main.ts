@@ -30647,14 +30647,19 @@ async function boot(): Promise<void> {
             const totalActiveForcedWarsByOwner = (ownerId: number): number =>
               countActiveForcedWarsForOwner(ownerId, allActiveForcedWarPairsFlat);
 
-            // Krok C: gracz dołącza do puli "triggered" DOKŁADNIE jak dyspozycja każe --
-            // WYŁĄCZNIE gdy sam nie ma dziś żadnej aktywnej wojny wymuszonej, bez specjalnego
-            // wykluczania poza tym jednym warunkiem (dispatch krok 1).
+            // Krok C: gracz dołącza do puli "triggered" gdy sam nie ma dziś żadnej aktywnej
+            // wojny wymuszonej ORAZ minął próg tury (R-WOJNA-WYMUSZONA-PROG-TURY-GRACZ-Q1 —
+            // ta sama wartość liczbowa co próg AI, liczona od startu gry jak Kamień, nie od
+            // wejścia gracza w epokę jak Brąz/Żelazo -- gracz nie ma odrębnego "wejścia w epokę").
             const triggeredSubjects: ForcedWarPairingSubject[] = [
               ...bronzeTriggeredSubjects, ...stoneTriggeredSubjects, ...ironTriggeredSubjects,
             ];
             const playerCity = cities.find(c => c.ownerId === 0);
-            if (playerCity && totalActiveForcedWarsByOwner(0) === 0) {
+            if (
+              playerCity
+              && turn >= WOJNA_KAMIEN_WYMUSZONA_START_TURY
+              && totalActiveForcedWarsByOwner(0) === 0
+            ) {
               triggeredSubjects.push({ ownerId: 0, q: playerCity.q, r: playerCity.r });
             }
 
