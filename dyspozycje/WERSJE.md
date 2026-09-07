@@ -13,6 +13,16 @@ swoim wĹ‚asnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji d
 > Pakiet 3 z 2026-08-20 jest docs-only i nie tworzy wpisu ROBOCZA/KANON/FINALNA;
 > ten plik pozostaje wyłącznie rejestrem publikacji bundli.
 
+## ROBOCZA 1c24560c - 2026-09-07 13:40 UTC - FALA 355: wezel E (OSTATNI audytu Prawo/Szczescie) + dwie pary zastanych bramek
+
+|- md5 (pełne): 1c24560ce998edd71f83f78d91c7a796 · stempel: ROBOCZA · label 1c24560c · źródłowe commity integracji: `39de5e26` (węzeł E) + `bdc02718` (dyplo-testy) + `47ab0f3d` (bramki zastane)
+|- **`R-SZCZESCIE-AUDYT-E-ETYKIETY-PANELU-Q1`** (`39de5e26`, 1 runda) — ostatni węzeł całego audytu balansu szczęścia/Prawa. Panel Porządku pokazywał „Szczęście: X% wkładu / Prawo: Y% wkładu" bez punktu odniesienia — gracz mógł odczytać wynik TEJ TURY jako stałą regułę mechanizmu. Dodany tooltip + widoczna linia „Waga bazowa (trudność): Szczęście A% / Prawo B%" z realną wartością czytaną przez `loadOrderParams` (ta sama funkcja co silnik, zero duplikatu/hardkodu). Zero zmiany formuły Porządku. Dowód wizualny: nowa bramka real-render (żywy Chromium/Playwright) potwierdzająca, że waga realnie śledzi `society-params.json`, plus dowód mutacyjny na dwóch niezależnych metodach cięcia kodu. Rozszerzona `porzadek-panel-czytelnosc-test.cjs` 81→93 asercji. **Zamyka CAŁY audyt `R-MIASTA-SZCZESCIE-PRAWO-BALANS-AUDYT-Q1`** (węzły A-E wszystkie domknięte).
+|- **`P-DYPLO-DWA-TESTY-CZERWONE-ZASTANE-Q1`** (`bdc02718`, 2 rundy, test-only) — dwie zastane czerwone bramki dyplomacji. Trzecie, gołe wywołanie `hideDiplomacyAudience()` w `main.ts` okazało się realną, potrzebną ścieżką — próg podniesiony 2→3. Final Control własną kontrolą mutacyjną znalazł i naprawił dwa dodatkowe fałszywe alarmy (kotwiczenie na tekście sąsiada, maskowanie legalnego stringu jako „podejrzanego"). 46→51 asercji. Druga bramka: self-check przekotwiczony z kruchego offsetu na odporny fragment. Zero zmian w `main.ts`.
+|- **`P-BRAMKI-ZASTANE-CZERWONE-Q1`** (`47ab0f3d`, 1 runda, test-only) — kolejne dwie zastane czerwone bramki, obie zdiagnozowane jako testy niedopasowane do już obowiązujących danych/kodu, nie regresje. `building-queue-refund-test.cjs`: stary literał kosztu (10) sprzed zmiany danych stolarni — naprawiony na realne 50. `barb-city-capture-cluster-test.cjs`: sonda „2h-static" miała za małe stałe okno (4000 znaków), po legalnym wzroście kodu funkcji dystans wzrósł do 6412 — okno wyznaczane teraz dynamicznie. Zero zmian w kodzie produkcyjnym.
+|- tsc --noEmit 0 błędów · 5 bramek referencyjnych zielonych (logic 213/213, tech-tree 19/19, research 33/33, unit-replace 13/13, combat 6/6) · Vite build 883 modułów, singlefile.
+|- Bundle pola bitwy (`Gra-ROBOCZA-POLE-BITWY.html`) pominięty — żaden z trzech tematów nie dotyka mechaniki walki polowej; md5 z FALI 353 zachowany bez zmian.
+|- **AKTUALNA**
+
 ## ROBOCZA e2356846 - 2026-09-07 11:15 UTC - FALA 354: domkniecie audytu balansu szczescia/Prawa (wezel C + D)
 
 |- md5 (pełne): e23568466ac25253b255d1139c4590b8 · stempel: ROBOCZA · label e2356846 · źródłowe commity integracji: `68e5d25f` (węzeł C) + `5cee546d` (węzeł D)
@@ -21,7 +31,7 @@ swoim wĹ‚asnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji d
 |- **Zamyka CAŁY audyt balansu szczęścia/Prawa** (`R-MIASTA-SZCZESCIE-PRAWO-BALANS-AUDYT-Q1`): węzły A i C zintegrowane, B pokryty wcześniej przez `R-SZCZESCIE-PRZEBUDOWA-SKALI-Q1`, D zamknięty tą falą, E (etykiety panelu) poza zakresem tej sesji.
 |- tsc --noEmit 0 błędów · 5 bramek referencyjnych zielonych (logic 213/213, tech-tree 19/19, research 33/33, unit-replace 13/13, combat 6/6) · cała rodzina Prawo/Porządek/Szczęście/Society zielona poza dwoma znanymi, pre-istniejącymi czerwonymi niezwiązanymi z tą falą (`border-march-wygasanie-test`, `szczescie-przebudowa-skali-test`) · Vite build 883 modułów, singlefile.
 |- Bundle pola bitwy (`Gra-ROBOCZA-POLE-BITWY.html`) pominięty — żaden z dwóch tematów nie dotyka mechaniki walki polowej; md5 z FALI 353 zachowany bez zmian.
-|- **AKTUALNA**
+|- ZASTĄPIONA przez FALA 355
 
 ## ROBOCZA 77a3794d - 2026-09-07 02:30 UTC - FALA 353: cala kolejka main.ts (SS2b) zamknieta - trofea, wycinka, wojny-domino, religia, kolejka-podboju
 
