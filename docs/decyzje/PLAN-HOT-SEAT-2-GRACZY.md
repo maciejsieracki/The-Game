@@ -1,8 +1,13 @@
 # PLAN: Gorące krzesło (hot-seat) — dwóch graczy-ludzi przy jednym komputerze
 
 **Status:** PLAN ZATWIERDZONY — wszystkie decyzje ABC (ABC-1, ABC-2, ABC-3 w §G oraz
-ABC-4 niżej) rozstrzygnięte przez właściciela. **Etap 0 dispatchowany 2026-09-05 w nocy**
-na wyraźne polecenie: „zacznij pracować nad wszystkimi etapami gorącego krzesła".
+ABC-4 niżej) rozstrzygnięte przez właściciela.
+
+**KOREKTA 2026-09-07:** poprzednia wersja tego nagłówka twierdziła „Etap 0 dispatchowany
+2026-09-05 w nocy" — nieaktualne/nieprawdziwe, potwierdzone bezpośrednim sprawdzeniem
+systemu plików (`gra/src/game/human-owners.ts` nie istniał). Właściciel wstrzymał ten
+temat do czasu domknięcia zawisłego backlogu poza hot-seatem; Etap 0 faktycznie
+dispatchowany dopiero 2026-09-07, patrz `dyspozycje/REJESTR-PROSB-I-ZADAN.md`.
 
 ### ABC-4 — format zapisu: ODPOWIEDŹ = BEZ MIGRACJI (2026-09-05)
 
