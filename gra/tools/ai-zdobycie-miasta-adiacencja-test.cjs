@@ -379,6 +379,16 @@ function assertNoEntry(executor, world, move, opts, tag, label) {
 }
 {
   // brak adiacencji — zakaz „teleportu" na odległe miasto (zakaz rozlania na atak dystansowy)
+  // FC-N1 (Final Control, temat P-AI-BRAK-SCIEZKI-ZDOBYCIA-MIASTA-ADIACENCJA-Q1, runda 2):
+  // K4-DYSTANS jest tu TAUTOLOGICZNA dla mutacji „zdjęcie bramki adiacencji" — ta mutacja
+  // zostawia BRAMKĘ TEMATU (tę bramkę) zieloną, bo `assertNoEntry` sprawdza tylko wynik
+  // wobec REAL egzekutora, nie mutanta adiacencji. Realne pokrycie tej konkretnej mutacji
+  // leży w bramkach SĄSIEDNICH: `city-hex-movement-test.cjs` (12/13 czerwienieje) i
+  // `ai-city-capture-integration-test.cjs` (10/14 czerwienieje) — obie ćwiczą
+  // `isWithinCityAttackRange`/`hexDistance === 1` (`gra/src/game/ai.ts:802`) bezpośrednio.
+  // Ta asercja tutaj i tak zostaje: pilnuje PARYTETU (K4 = brak wejścia niezależnie od
+  // przyczyny), nie jest usuwana ani osłabiana — tylko jej faktyczny właściciel pokrycia
+  // mutacji adiacencji jest gdzie indziej. Zero zmiany logiki tej asercji.
   const world = makeWorld();
   world.units[0].q = 5;
   world.units[0].r = 2; // dystans 3 od miasta
@@ -469,6 +479,29 @@ console.log('\n--- A5/A6: wpięcie w main.ts (anty-„naprawa na papierze") ---'
   eq(civOnMilitary, false,
     `A5h: wpiecie ZWRACA false dla jednostki BOJOWEJ (wyrazenie: \`${civExpr}\`) — inaczej wpiecie odcina GOAL rundy 1`);
 
+  // --- A5i-A5j — FC-N4 (Final Control, runda 2): dowód, że wpięcie w main.ts
+  // FAKTYCZNIE WOŁA `isCivilianUnit`, a nie behawioralnie równoważną KOPIĘ formuły.
+  // A5g/A5h same nie odróżniają tych dwóch przypadków: kopia formuły
+  // (`u.category === 'robotnik' || u.category === 'osadnik'`) dałaby te same
+  // wartości true/false co prawdziwe wywołanie. Podmieniamy `isCivilianUnit` na
+  // ATRAPĘ zwracającą SENTINEL niemożliwy do uzyskania inną drogą — jeśli
+  // `civExpr` faktycznie WOŁA przekazaną funkcję (nie kopiuje jej ciała), wynik
+  // wykonania wyrażenia to dokładnie ten sentinel; kopia formuły zwróciłaby
+  // zawsze `true`/`false`, nigdy sentinel.
+  const FAKE_CIV_SENTINEL = 'FC-N4-ATRAPA-CYWIL';
+  const FAKE_MIL_SENTINEL = 'FC-N4-ATRAPA-WOJSKO';
+  let civOnCivilianFake = '<nie policzono>';
+  let civOnMilitaryFake = '<nie policzono>';
+  if (civWire) {
+    const probe = new Function('isCivilianUnit', 'u', `return (${civExpr});`);
+    civOnCivilianFake = probe(() => FAKE_CIV_SENTINEL, makeWorld(ROBOTNIK).units[0]);
+    civOnMilitaryFake = probe(() => FAKE_MIL_SENTINEL, makeWorld().units[0]);
+  }
+  eq(civOnCivilianFake, FAKE_CIV_SENTINEL,
+    `A5i (FC-N4): podmiana isCivilianUnit na atrapę zwracającą sentinel PRZECHODZI przez wpięcie (wyrazenie: \`${civExpr}\`) — kopia formuły zwróciłaby true/false, nigdy sentinel atrapy`);
+  eq(civOnMilitaryFake, FAKE_MIL_SENTINEL,
+    `A5j (FC-N4): jak wyżej dla jednostki bojowej — inny sentinel dla innej atrapy, dowód że wpięcie woła PRZEKAZANĄ funkcję modułową, nie zaszytą kopię`);
+
   const fnIdx = mainSrc.indexOf('function tryAutoCaptureEmptyCityAt(');
   assert(fnIdx > 0, 'A6a: tryAutoCaptureEmptyCityAt istnieje w main.ts');
   const captureIdx = mainSrc.indexOf('captureCityWithoutBattle(city, anchor, atkRoster);', fnIdx);
@@ -492,6 +525,97 @@ console.log('\n--- A5/A6: wpięcie w main.ts (anty-„naprawa na papierze") ---'
   // Gdyby produkcja go straciła, odwzorowanie przestałoby być wierne — stąd asercja.
   assert(body.includes('const anchor = arrivingUnits.find(u => !isCivilianUnit(u));'),
     'A6g: przejęcie wymaga kotwicy NIECYWILNEJ — ten sam warunek odwzorowuje onCapture bramki');
+}
+
+// ===========================================================================
+// K9 — FC-N2: targetVisible=false BLOKUJE ruch/przejęcie (main.ts wpięcie)
+// ===========================================================================
+console.log('\n--- K9: targetVisible=false (mgła) blokuje wejście na obce miasto (FC-N2) ---');
+/**
+ * FC-N2 (Final Control, temat P-AI-BRAK-SCIEZKI-ZDOBYCIA-MIASTA-ADIACENCJA-Q1, runda 2):
+ * wpięcie `targetVisible` w wywołanie egzekutora nie było pilnowane przez ŻADNĄ bramkę
+ * rodziny — mutacja „targetVisible na sztywne true" zostawała zieloną wszędzie, bo K1-K8
+ * zawsze liczą świat z pełną widocznością (`aiCityCaptureAllowed` zawsze true). K9 liczy
+ * `targetVisible` z REALNEJ `aiCityCaptureAllowed` na PUSTYM zbiorze widocznych heksów
+ * (mgła zakrywa cel) — tak jak `main.ts` robi to PRZED wywołaniem egzekutora — i sprawdza
+ * FAKT blokady (moved/captured/pozycja), nie samą flagę.
+ */
+function runEngineMoveFog(executor, world, move, visibleHexes) {
+  const unit = world.units.find(u => u.id === move.unitId);
+  const destinationCity = world.cities.find(
+    c => c.q === move.toQ && c.r === move.toR && c.ownerId !== unit.ownerId,
+  );
+  // Bez wcześniejszego bail-outu w harnessie (inaczej jak w `runEngineMove`) —
+  // K9 celowo pilnuje WŁASNEJ bramki egzekutora na `opts.targetVisible`, nie
+  // pre-checku harnessu, żeby dowód mutacyjny MUT-8 (pole wewnątrz egzekutora
+  // podmienione na sztywne `true`) miał gdzie się objawić.
+  const targetVisible = destinationCity === undefined
+    || REAL.aiCityCaptureAllowed(move.targetCityId, destinationCity, visibleHexes, true, REAL.keyOf);
+  const blockedKeys = REAL.addForeignCityBlocks(new Set(), unit.ownerId, world.cities);
+  for (const other of world.units) {
+    if (other.id !== unit.id) blockedKeys.add(REAL.keyOf(other.q, other.r));
+  }
+  return executor({
+    command: move,
+    unit,
+    cities: world.cities,
+    cityBuiltIds: [],
+    hasCityDefenders: destinationCity !== undefined
+      && REAL.hasCityDefenders(destinationCity, world.units),
+    targetVisible,
+    unitIsCivilian: REAL.isCivilianUnit(unit),
+    canOccupyCityHex: REAL.canUnitOccupyCityHex(unit.ownerId, move.toQ, move.toR, world.cities),
+    blockedKeys,
+    destinationKey: REAL.keyOf(move.toQ, move.toR),
+    computePath: (_u, toQ, toR, blocked) => (
+      blocked.has(REAL.keyOf(toQ, toR)) || REAL.hexDistance(unit.q, unit.r, toQ, toR) !== 1
+        ? []
+        : [{ q: toQ, r: toR }]
+    ),
+    onCapture: (city, arriving) => {
+      if (REAL.isCivilianUnit(arriving)) return false;
+      if (city.ownerId === arriving.ownerId) return false;
+      if (!REAL.canCaptureCityWithoutBattle(city, world.units)) return false;
+      city.ownerId = arriving.ownerId;
+      return true;
+    },
+  });
+}
+{
+  const world = makeWorld();
+  const plan = planAiCityMove(world);
+  const target = world.cities.find(c => c.id === 'wrog-c1');
+  const posBefore = `${world.units[0].q},${world.units[0].r}`;
+  // mgła: zbiór widocznych heksów PUSTY -> cel niewidoczny -> aiCityCaptureAllowed === false
+  const res = runEngineMoveFog(REAL.executeAiCityMove, world, plan.move, new Set());
+  eq(res.moved, false, 'K9a: targetVisible=false (mgła) — rozkaz ODRZUCONY (moved=false)');
+  eq(res.captured, false, 'K9b: targetVisible=false (mgła) — brak przejęcia');
+  eq(target.ownerId, WROG_OWNER, 'K9c: targetVisible=false (mgła) — cities[].ownerId bez zmiany');
+  eq(`${world.units[0].q},${world.units[0].r}`, posBefore,
+    'K9d: targetVisible=false (mgła) — jednostka NIE stoi na heksie miasta');
+}
+{
+  // DOWÓD MUTACYJNY: `targetVisible` w egzekutorze zamieniony na sztywne `true`
+  // (dokładnie mutacja FC-N2 z geneza tego tematu) — ten sam świat mgłowy, ta sama
+  // komenda, ale mgła przestaje blokować. K9a-K9d powyżej złapałyby tę mutację na
+  // REALNYM kodzie; ten blok dowodzi, że złapałyby, uruchamiając K9-równoważne
+  // sprawdzenia NA MUTANCIE i pokazując, że wynik się odwraca (2 z 4 przechodzą
+  // w przeciwną stronę — captured/ownerId), tak jak K6/K8 dowodzą to dla innych mutacji.
+  const MUT_FORCE_VISIBLE = bundleExecutorVariant(
+    src => src.replace(
+      '    && opts.targetVisible\n    && canAiEnterEmptyEnemyCity(',
+      '    && true\n    && canAiEnterEmptyEnemyCity(',
+    ),
+    'forcevisible',
+  );
+  const world = makeWorld();
+  const plan = planAiCityMove(world);
+  const target = world.cities.find(c => c.id === 'wrog-c1');
+  const res = runEngineMoveFog(MUT_FORCE_VISIBLE, world, plan.move, new Set());
+  eq(res.captured, true,
+    'K9e: MUT-8 (targetVisible na sztywne true) — mgła PRZESTAJE blokować, przejęcie przechodzi mimo niewidoczności (dowód, że K9a-K9d na kodzie REALNYM faktycznie łapałyby tę mutację)');
+  eq(target.ownerId, AI_OWNER,
+    'K9f: MUT-8 — ownerId zmienia się mimo mgły (potwierdzenie, że asercje K9a-K9d nie są puste — bez naprawy [REAL] fałszywie zielone by nie było, bo REAL blokuje; z mutacją [MUT-8] łapiemy czerwień)');
 }
 
 // ===========================================================================
@@ -595,7 +719,14 @@ function countRedsNoEntry(executor, unitSpec, extraUnits, opts) {
 }
 
 cleanup();
-console.log(fail
-  ? `\nFAIL ${ok}/${ok + fail}`
-  : `\nAI-ZDOBYCIE-MIASTA-ADIACENCJA OK (${ok}/${ok})`);
+// F4 (Final Control, runda 2): crash PRZY wypisywaniu wyniku (np. konsola przerwana)
+// nie może zamaskować komunikatu diagnostycznego — exit code i tak jest już `!= 0`
+// przy każdym crashu (fałszywa zieleń niemożliwa), to wyłącznie czytelność.
+try {
+  console.log(fail
+    ? `\nFAIL ${ok}/${ok + fail}`
+    : `\nAI-ZDOBYCIE-MIASTA-ADIACENCJA OK (${ok}/${ok})`);
+} catch (e) {
+  console.error(`[ai-zdobycie-miasta-adiacencja] crash przy wypisywaniu wyniku: ${(e && e.message) || e}`);
+}
 process.exit(fail ? 1 : 0);
