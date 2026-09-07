@@ -2179,6 +2179,7 @@ ${resourceColorClassCss('.civ-cs')}
 .civ-cs .civ-w4-subhd{font-size:0.68em;letter-spacing:.14em;text-transform:uppercase;color:#a08030;margin-bottom:0.22em;
   display:flex;justify-content:space-between;align-items:baseline;gap:0.35em;}
 .civ-cs .civ-w4-subhd-pct{color:#e8e0c8;font-weight:600;letter-spacing:normal;text-transform:none;flex-shrink:0;}
+.civ-cs .civ-w4-subhd-pts{color:#a09880;font-weight:400;letter-spacing:normal;text-transform:none;margin-left:0.35em;}
 .civ-cs .civ-w4-pct-bar{height:8px;border-radius:5px;background:rgba(255,255,255,.08);overflow:hidden;margin-bottom:0.28em;}
 .civ-cs .civ-w4-pct-fill{height:100%;border-radius:5px;}
 .civ-cs .civ-w4-inline-breakdown{font-size:0.74em;line-height:1.65;margin-bottom:0.55em;}
@@ -3064,6 +3065,11 @@ function resolveOrderState(city: City, data: GameData): { state: OrderState; fro
         // (computed), inaczej wkład%×2 nie sumowałby się do 100 względem wyświetlanego porPct.
         szWkladPct: computed.state.szWkladPct,
         prawWkladPct: computed.state.prawWkladPct,
+        // R-PORZADEK-PANEL-PUNKTY-ABSOLUTNE-Q1: silnik (main.ts, poza allowlistą tego tematu)
+        // jeszcze nie wystawia szMax/prawMax w `cityOrderState` — dociągamy je z TEGO SAMEGO
+        // przeliczenia lokalnego, które i tak już nadpisuje prawPct/prawLines/porPct wyżej.
+        szMax: computed.state.szMax,
+        prawMax: computed.state.prawMax,
       },
       fromEngine: true,
     };
@@ -3198,6 +3204,8 @@ function computeOrderStateLocal(city: City, data: GameData): { state: OrderState
       porzadek: ordPct.prawo.netto,
       szPct: ordPct.sz.szPct,
       prawPct: ordPct.prawo.prawPct,
+      szMax: ordPct.sz.szMax,
+      prawMax: ordPct.prawo.prawMax,
       porPct: ordPct.porPct,
       bandLabel: ordPct.bandLabel,
       szLines: ordPct.sz.lines,
@@ -3299,6 +3307,9 @@ function renderSpoleczenstwo(mount: HTMLElement, city: City, data: GameData): vo
     // zarzut 6: jedno zaokrąglenie prezentacyjne — ta sama liczba, którą pokazuje karta Religii
     szLinesDoWyswietlenia(state.szLines),
     'Brak składników wpływających na szczęście.',
+    undefined,
+    // `state.szczescie` = netto pkt Szczęścia (zgodnie z nazwą pola, bez pułapki nazewniczej).
+    state.szMax != null ? `(${Math.round(state.szczescie)}/${Math.round(state.szMax)} pkt)` : undefined,
   );
   appendCitizenUpkeepBlock(mount, state.citizenUpkeep, city.population);
   appendW4PctMetricBlock(
@@ -3308,6 +3319,13 @@ function renderSpoleczenstwo(mount: HTMLElement, city: City, data: GameData): vo
     'linear-gradient(90deg,#3a8a5a,#7ad0a0)',
     state.prawLines,
     'Brak składników wpływających na prawo.',
+    undefined,
+    // UWAGA nazewnicza (evaluator R1, zarzut 1): `state.porzadek` to LEGACY pole niosące
+    // netto pkt PRAWA (`orderPanel.ts:18` — "Legacy pkt prawa / pole porzadek historyczne"),
+    // NIE to samo co `state.porPct` ("Porządek łącznie" kilka linii niżej). Zweryfikowane
+    // ręcznie na żywym silniku (debug-hook, runda 1: netto=9.4 → tu Math.round(9.4)=9).
+    // Nie mylić przy przyszłej edycji tego bloku.
+    state.prawMax != null ? `(${Math.round(state.porzadek)}/${Math.round(state.prawMax)} pkt)` : undefined,
   );
 
   appendW4PctMetricBlock(
@@ -3394,8 +3412,21 @@ function buildPorzadekDetailCard(city: City, state: OrderState): HTMLDivElement 
   appendDetailSection(card, 'Stan tego miasta');
   const g0 = appendDetailGrid(card);
   gridDetailRow(g0, 'Porządek łącznie', `${Math.round(por)}% — ${bandName}`);
-  gridDetailRow(g0, 'Szczęście', `${Math.round(sz)}%`);
-  gridDetailRow(g0, 'Prawo', `${Math.round(praw)}%`);
+  gridDetailRow(
+    g0, 'Szczęście',
+    state.szMax != null
+      ? `${Math.round(sz)}% (${Math.round(state.szczescie)}/${Math.round(state.szMax)} pkt)`
+      : `${Math.round(sz)}%`,
+  );
+  // UWAGA nazewnicza (evaluator R1, zarzut 1): `state.porzadek` to LEGACY pole niosące netto
+  // pkt PRAWA (`orderPanel.ts:18`), NIE to samo co `por`/`state.porPct` ("Porządek łącznie")
+  // użyty wyżej w tej samej funkcji — nie mylić przy przyszłej edycji.
+  gridDetailRow(
+    g0, 'Prawo',
+    state.prawMax != null
+      ? `${Math.round(praw)}% (${Math.round(state.porzadek)}/${Math.round(state.prawMax)} pkt)`
+      : `${Math.round(praw)}%`,
+  );
   if (state.revoltWarning && state.revoltGraceRemaining != null) {
     gridDetailRow(g0, 'Alert buntu', `${state.revoltGraceRemaining} tur(y) na reakcję`);
   }
@@ -4500,11 +4531,17 @@ function appendW4PctMetricBlock(
   lines: BreakdownLine[] | undefined,
   emptyHint: string,
   afterBar?: (block: HTMLElement) => void,
+  // R-PORZADEK-PANEL-PUNKTY-ABSOLUTNE-Q1: netto/max w punktach obok procentu, np. "(30/30 pkt)"
+  // — WYŁĄCZNIE dodatkowe wyświetlanie, żadna z tych liczb nie jest tu liczona od nowa.
+  pointsLabel?: string,
 ): void {
   const block = el('div', 'civ-breakdown-block civ-w4-metric');
   const sub = el('div', 'civ-w4-subhd');
   if (pct != null) {
-    sub.innerHTML = `${titleHtml}<span class="civ-w4-subhd-pct">${Math.round(pct)}%</span>`;
+    const ptsHtml = pointsLabel
+      ? `<span class="civ-w4-subhd-pts">${pointsLabel}</span>`
+      : '';
+    sub.innerHTML = `${titleHtml}<span class="civ-w4-subhd-pct">${Math.round(pct)}%${ptsHtml}</span>`;
   } else if (titleHtml.includes('<')) {
     sub.innerHTML = titleHtml;
   } else {

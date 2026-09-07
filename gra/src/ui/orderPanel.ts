@@ -24,6 +24,14 @@ export interface OrderState {
   /** Procent Porządku łączny. */
   porPct?: number;
   /**
+   * R-PORZADEK-PANEL-PUNKTY-ABSOLUTNE-Q1: mianownik (100%) Szczęścia/Prawa w punktach —
+   * `society-breakdown.ts` (`HappinessPctBreakdown.szMax` / `LawPctBreakdown.prawMax`), już
+   * liczony w silniku, tu wyłącznie przeniesiony do UI (obok istniejącego `szPct`/`prawPct`)
+   * żeby panel mógł pokazać "netto / max pkt" obok procentu, nie tylko sam procent.
+   */
+  szMax?: number;
+  prawMax?: number;
+  /**
    * P-PORZADEK-PANEL-CZYTELNOSC-ROZBICIE (Maciej 2026-08-12): % wkładu Szczęścia/Prawa do
    * `porPct` tej tury (`orderContributionPct`, `society-breakdown.ts`). Oba razem = 100 gdy
    * oba obecne.
