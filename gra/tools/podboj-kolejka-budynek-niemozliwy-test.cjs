@@ -282,6 +282,15 @@ for (const { label, runner } of RUNNERS) {
       PROD.filterQueue, capitalCityIdForOwner);
     eq(resultProd.kolejka.length, 1, `D: budynek nie-stolica (${regionBuilding.id}) ZOSTAJE w kolejce niezależnie od stolicy zdobywcy`);
     eq(pool.get(NEW_OWNER) ?? 0, 0, 'D: zero zwrotu Pracy dla budynku nie-stolica');
+    // R-PODBOJ-ELIMINACJA-PULA-PRACY-TRANSFER-Q1 (2026-09-07), weryfikacja czesci (b)
+    // dispatchu ("budynek w budowie ma zostac zachowany na takim etapie, na jakim byl
+    // budowany"): NIE WYSTARCZY, ze pozycja "zostaje w kolejce" (asercja wyzej) -- musi
+    // ZACHOWAC KONKRETNA LICZBE postepu, nie zostac wyzerowana przy przejsciu. `postep: 5`
+    // to zebrana Praca na froncie kolejki (CityProduction.postep, ODREBNE od
+    // ProductionItem.postep uzywanego dla zbankowanych pozycji poza frontem, patrz test E
+    // wyzej) -- musi przetrwac przejecie miasta NIETKNIETA, dokladnie 5, nie 0.
+    eq(resultProd.postep, 5, 'D: postęp frontu kolejki (5) PRZETRWAŁ przejęcie miasta -- NIE wyzerowany');
+    eq(resultProd.kolejka[0]?.id, regionBuilding.id, 'D: front kolejki to WCIĄŻ ten sam budynek nie-stołeczny (nie wymieniony)');
   }
 
   // E (Evaluator RUNDA 1, ZARZUT 1 -- REGUŁA PRZECIW SAMOOSZUKIWANIU dyspozycji, "Pałac

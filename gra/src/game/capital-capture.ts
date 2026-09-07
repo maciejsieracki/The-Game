@@ -10,7 +10,12 @@
  *     - Nauka / techy / Power -> bez zmian.
  *
  *   ZDARZENIE 2 — przejęcie OSTATNIEGO miasta = ELIMINACJA:
- *     - Skarbiec + pula pracy jak w Zdarzeniu 1.
+ *     - Skarbiec jak w Zdarzeniu 1 (w całości do zwycięzcy).
+ *     - PULA PRACY (od 2026-09-07, ECHO właściciela,
+ *       P-PODBOJ-ELIMINACJA-PULA-PRACY-TRANSFER-Q1 — ODWRACA CZĘŚĆ kanonu 2026-08-09
+ *       WYŁĄCZNIE dla tego zdarzenia): -> w całości do zwycięzcy (DODANA do jego
+ *       istniejącej puli), pokonany 0. Zdarzenie 1 (stolica bez eliminacji) zostaje
+ *       BEZ ZMIAN — pula nadal przepada tam, gdzie cywilizacja przeżywa.
  *     - PLUS: pula punktów nauki pokonanego -> w całości do zwycięzcy.
  *     - PLUS: techy pokonanego, których zwycięzca NIE MA -> skopiowane (pokonanemu
  *       zostają też — kopiujemy, nie odbieramy).
@@ -149,6 +154,9 @@ export interface CapitalCaptureOutcome {
   skarbiecPrzejety: number;
   /** Nauka przejęta (0 poza Zdarzeniem 2). */
   naukaPrzejeta: number;
+  /** Pula pracy przejęta od ofiary (0 poza Zdarzeniem 2 — przy Zdarzeniu 1 pula
+   *  ZAWSZE przepada, patrz komentarz przy `access.setPracaPool` niżej). */
+  pracaPoolPrzejeta: number;
   /** Id techów skopiowanych zwycięzcy (puste poza Zdarzeniem 2), posortowane. */
   techSkopiowane: string[];
   /** True = Zdarzenie 2 (eliminacja) — caller (main.ts) musi doczyścić rostery/dyplomację. */
@@ -193,7 +201,22 @@ export function applyCapitalCapturePlunder(
   }
   access.setTreasury(oldOwner, 0);
 
-  // --- Pula pracy: zawsze przepada (NIE idzie do zwycięzcy) ---
+  // --- Pula pracy ---
+  // ECHO właściciela 2026-09-07 (P-PODBOJ-ELIMINACJA-PULA-PRACY-TRANSFER-Q1), ODWRACA
+  // CZĘŚĆ kanonu 2026-08-09 (036173f7: "pula pracy zawsze przepada, dotyczy to obu
+  // typów właścicieli jednakowo") — WYŁĄCZNIE dla Zdarzenia 2 (eliminacja). Zdarzenie 1
+  // (stolica, cywilizacja przeżywa z innymi miastami) zostaje BEZ ZMIAN: pula przepada,
+  // NIE idzie do zwycięzcy — właściciel wybrał wprost transfer tylko "po zajęciu
+  // ostatniego miasta, czyli ostatniej stolicy" (eliminacja), nie przy zwykłej utracie
+  // stolicy. Wzorzec identyczny ze skarbcem wyżej: dodaj do puli zdobywcy, POTEM wyzeruj
+  // ofiarę (ofiara i tak już nie istnieje jako cywilizacja, ale dla spójności stanu).
+  let pracaPoolPrzejeta = 0;
+  if (eliminacja) {
+    pracaPoolPrzejeta = access.getPracaPool(oldOwner);
+    if (pracaPoolPrzejeta > 0) {
+      access.setPracaPool(newOwner, access.getPracaPool(newOwner) + pracaPoolPrzejeta);
+    }
+  }
   access.setPracaPool(oldOwner, 0);
 
   let naukaPrzejeta = 0;
@@ -224,6 +247,7 @@ export function applyCapitalCapturePlunder(
     newOwner,
     skarbiecPrzejety,
     naukaPrzejeta,
+    pracaPoolPrzejeta,
     techSkopiowane,
     newCapitalIdForOldOwner,
     eliminacja,
@@ -248,8 +272,15 @@ export function disbandOwnerUnits<T extends { ownerId: number }>(units: readonly
 
 /**
  * Owijka `OwnerResourceAccess`, w której zapisy DO `newOwner` (skarbiec/nauka/
- * techy) są no-opowane — barbarzyńcy nie dziedziczą łupu. Odczyty i zapisy DO
- * innych ownerów (w praktyce: ofiary, `oldOwner`) przechodzą bez zmian.
+ * techy/pula pracy) są no-opowane — barbarzyńcy nie dziedziczą łupu. Odczyty i
+ * zapisy DO innych ownerów (w praktyce: ofiary, `oldOwner`) przechodzą bez zmian.
+ *
+ * `setPracaPool` dołączony 2026-09-07 (P-PODBOJ-ELIMINACJA-PULA-PRACY-TRANSFER-Q1)
+ * — dopóki pula pracy ZAWSZE przepadała (nigdy nie trafiała do `newOwner`), nie
+ * było czego no-opować tutaj; teraz, gdy Zdarzenie 2 (eliminacja) dopisuje pulę
+ * ofiary do `newOwner`, ten sam "barbarzyńcy nie dziedziczą łupu" musi objąć i ją,
+ * inaczej barbarzyński zdobywca dostawałby na konto pulę, której realnie nie
+ * używa (asymetria z resztą łupu, bez pokrycia w spec).
  */
 export function barbarianCaptorResourceAccess(
   base: OwnerResourceAccess,
@@ -258,6 +289,7 @@ export function barbarianCaptorResourceAccess(
   return {
     ...base,
     setTreasury: (oid, v) => { if (oid !== newOwner) base.setTreasury(oid, v); },
+    setPracaPool: (oid, v) => { if (oid !== newOwner) base.setPracaPool(oid, v); },
     setNaukaPool: (oid, v) => { if (oid !== newOwner) base.setNaukaPool(oid, v); },
     addResearchedTechs: (oid, ids) => { if (oid !== newOwner) base.addResearchedTechs(oid, ids); },
   };

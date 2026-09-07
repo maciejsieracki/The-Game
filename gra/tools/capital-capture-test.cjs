@@ -218,7 +218,10 @@ console.log('2. Zdarzenie 1 -- przejecie stolicy, cywilizacja przezywa');
   eq(access.getTreasury(2), 600, 'skarbiec newOwner += 500 (100+500)');
 
   // Pula pracy AI (ownerId 1 traktowany tu jako "ma pule" tylko w teście) --
-  // reguła: PRZEPADA, nie idzie do newOwner.
+  // reguła: PRZEPADA, nie idzie do newOwner (P-PODBOJ-ELIMINACJA-PULA-PRACY-TRANSFER-Q1,
+  // regresja NAROZNA: to jest DOKLADNIE podprzypadek, ktory dispatch wyraznie zostawia
+  // BEZ ZMIAN -- transfer dotyczy WYLACZNIE eliminacji, patrz test 3 nizej).
+  eq(res.pracaPoolPrzejeta, 0, 'Zdarzenie 1 (stolica, cyw przezywa): pracaPoolPrzejeta = 0 -- BEZ transferu');
   eq(access.getPracaPool(1), 0, 'pula pracy oldOwner zawsze zeruje sie (getPracaPool zwraca fallback dla ownerId!=0 wiec i tak 0)');
 
   // Nauka/techy BEZ ZMIAN w Zdarzeniu 1.
@@ -253,7 +256,16 @@ console.log('3. Zdarzenie 2 -- ostatnie miasto = eliminacja (pelny transfer)');
   eq(access.getTreasury(0), 0, 'skarbiec pokonanego = 0');
   eq(access.getTreasury(9), 200, 'skarbiec zwyciezcy += 200');
 
-  eq(access.getPracaPool(0), 0, 'pula pracy pokonanego wyzerowana (przepada, nie do zwyciezcy)');
+  // P-PODBOJ-ELIMINACJA-PULA-PRACY-TRANSFER-Q1 (2026-09-07, ECHO wlasciciela): przy
+  // ELIMINACJI pula pracy pokonanego PRZECHODZI (dodaje sie) do puli zwyciezcy, zamiast
+  // byc zerowana bez transferu -- ODWRACA CZESC kanonu 2026-08-09 WYLACZNIE dla tego
+  // zdarzenia (Zdarzenie 1 "stolica przezywa" zostaje bez zmian, patrz test 2 wyzej).
+  // fake-access (`makeAccess`) traktuje ownerId 0 jako "ma pule pracy" wiec i newOwner=9
+  // tu NIE dostalby zapisu w realnym mocku main.ts (AI tez ma pule -- `aiPracaPoolByOwner`),
+  // ale ten test uzywa `makeSymmetricAccess`-podobnego seeda dla newOwner, wiec sprawdzamy
+  // WYLACZNIE `res.pracaPoolPrzejeta` (odczyt niezalezny od maski ownerId w mocku).
+  eq(res.pracaPoolPrzejeta, 77, 'pracaPoolPrzejeta = 77 (cala pula pokonanego, PRZED liczba)');
+  eq(access.getPracaPool(0), 0, 'pula pracy pokonanego wyzerowana PO transferze');
 
   eq(res.naukaPrzejeta, 45, 'Zdarzenie 2: cala nauka pokonanego przejeta');
   eq(access.getNaukaPool(0), 0, 'nauka pokonanego = 0 po eliminacji');
@@ -550,6 +562,84 @@ console.log('14. applyBarbarianAwareCapitalCapturePlunder -- oba guardy zintegro
     const resDirect = applyCapitalCapturePlunder(city('cityNormal', 2), 1, 2, citiesAfter, accessDirect);
     deepEq(resWrapped, resDirect, '14c: gracz/AI vs gracz/AI -- wynik IDENTYCZNY z gołym applyCapitalCapturePlunder');
     eq(accessWrapped.getTreasury(2), accessDirect.getTreasury(2), '14c: skarbiec newOwner identyczny (bez owijki barbarzyńskiej)');
+  }
+}
+
+// ===========================================================================
+// 16. R-PODBOJ-ELIMINACJA-PULA-PRACY-TRANSFER-Q1 (2026-09-07, ECHO wlasciciela) --
+//     transfer puli pracy PRZY ELIMINACJI, z realnym `makeSymmetricAccess` (newOwner
+//     TEZ obserwowalnie posiada pule -- w przeciwienstwie do `makeAccess` uzytego w
+//     testach 2-3 wyzej, gdzie newOwner=9/AI ma pule zamaskowana na 0 w mocku).
+//     Liczby PRZED/PO obu stron -- dokladnie to, czego wymaga regula przeciw
+//     samooszukiwaniu dispatchu.
+// ===========================================================================
+console.log('16. Transfer puli pracy PRZY ELIMINACJI -- liczby PRZED/PO obu stron');
+{
+  // 16a. Zdobywca ma JUZ niezerowa wlasna pule (30) -- transfer ma sie DODAC, nie zastapic.
+  const citiesAfter = [city('cityOstatnie', 7)];
+  const access = makeSymmetricAccess({ praca: { 3: 120, 7: 30 } });
+  eq(access.getPracaPool(3), 120, 'PRZED: pula ofiary (oldOwner=3) = 120');
+  eq(access.getPracaPool(7), 30, 'PRZED: pula zdobywcy (newOwner=7) = 30 (wlasna, sprzed zdarzenia)');
+
+  const res = applyCapitalCapturePlunder(city('cityOstatnie', 7), 3, 7, citiesAfter, access);
+  assert(res !== null && res.eliminacja === true, 'jedyne miasto ofiary -> eliminacja');
+  eq(res.pracaPoolPrzejeta, 120, 'outcome.pracaPoolPrzejeta = 120 (cala pula ofiary sprzed zdarzenia)');
+
+  eq(access.getPracaPool(3), 0, 'PO: pula ofiary (oldOwner=3) = 0 (wyzerowana)');
+  eq(access.getPracaPool(7), 150, 'PO: pula zdobywcy (newOwner=7) = 150 -- DOKLADNIE 30+120, DODANA nie zastapiona');
+
+  // 16b. KONTROLA REGRESJI (dispatch, kryterium binarne): zdobycie stolicy BEZ eliminacji
+  //      (ofiara ma jeszcze INNE miasto) -- pula ofiary WCIAZ zeruje sie BEZ transferu,
+  //      dokladnie jak przed ta zmiana (kanon 2026-08-09 niezmieniony dla TEGO podprzypadku).
+  const citiesAfterNonElim = [city('cityStolica', 8), city('cityDrugie', 4)];
+  const accessNonElim = makeSymmetricAccess({ praca: { 4: 90, 8: 15 } });
+  eq(accessNonElim.getPracaPool(4), 90, 'PRZED (nie-eliminacja): pula ofiary (oldOwner=4) = 90');
+  eq(accessNonElim.getPracaPool(8), 15, 'PRZED (nie-eliminacja): pula zdobywcy (newOwner=8) = 15');
+
+  const resNonElim = applyCapitalCapturePlunder(
+    city('cityStolica', 8), 4, 8, citiesAfterNonElim, accessNonElim,
+  );
+  assert(resNonElim !== null && resNonElim.eliminacja === false, 'oldOwner ma jeszcze cityDrugie -> NIE eliminacja');
+  eq(resNonElim.pracaPoolPrzejeta, 0, 'nie-eliminacja: outcome.pracaPoolPrzejeta = 0 (bez transferu, regula binarna dispatchu)');
+  eq(accessNonElim.getPracaPool(4), 0, 'PO (nie-eliminacja): pula ofiary (oldOwner=4) = 0 (wyzerowana, BEZ transferu)');
+  eq(accessNonElim.getPracaPool(8), 15, 'PO (nie-eliminacja): pula zdobywcy (newOwner=8) NIETKNIETA -- nadal 15, nie 105');
+}
+
+// ===========================================================================
+// 17. Barbarzynski zdobywca PRZY ELIMINACJI: ofiara TRACI pule pracy normalnie, ale
+//     barbarzyncy NIC nie dziedzicza (setPracaPool DO newOwner no-opowany, dolaczony do
+//     `barbarianCaptorResourceAccess` w tej samej rundzie -- symetrycznie ze
+//     skarbcem/nauka/technologiami wyzej w sekcji 12/14).
+// ===========================================================================
+console.log('17. Barbarzynski zdobywca + eliminacja -- pula pracy NIE trafia na konto barbarzyncow');
+{
+  const citiesAfter = [city('cityBarbCaptor', BARBARIAN_OWNER_ID)];
+  const access = makeSymmetricAccess({ praca: { 6: 88, [BARBARIAN_OWNER_ID]: 0 } });
+  const res = applyBarbarianAwareCapitalCapturePlunder(
+    city('cityBarbCaptor', BARBARIAN_OWNER_ID), 6, BARBARIAN_OWNER_ID, citiesAfter, access, undefined, isBarbarian,
+  );
+  assert(res !== null && res.eliminacja === true, 'ostatnie miasto ofiary -> eliminacja');
+  eq(res.pracaPoolPrzejeta, 88, 'outcome nadal raportuje kwote UTRACONA przez ofiare (88), jak skarbiecPrzejety w 14b');
+  eq(access.getPracaPool(6), 0, 'ofiara TRACI pule pracy normalnie (wyzerowana)');
+  eq(access.getPracaPool(BARBARIAN_OWNER_ID), 0, 'pula NIE trafia na konto barbarzyncow (setPracaPool DO newOwner no-opowany)');
+
+  // 17b. Owijka bezposrednio: setPracaPool DO newOwner no-op, DO innego ownera przechodzi.
+  {
+    const calls = [];
+    const store = new Map();
+    const spy = {
+      getTreasury: () => 0, setTreasury: () => {},
+      getPracaPool: (oid) => store.get(oid) ?? 0,
+      setPracaPool: (oid, v) => { calls.push([oid, v]); store.set(oid, v); },
+      getNaukaPool: () => 0, setNaukaPool: () => {},
+      getResearchedTechs: () => new Set(), addResearchedTechs: () => {},
+    };
+    const wrapped = barbarianCaptorResourceAccess(spy, 9);
+    wrapped.setPracaPool(9, 500);
+    eq(calls.length, 0, '17b: setPracaPool(newOwner=9, ...) no-opowany (0 wywolan base)');
+    wrapped.setPracaPool(3, 40);
+    eq(calls.length, 1, '17b: setPracaPool(oldOwner=3, ...) PRZECHODZI do base');
+    deepEq(calls[0], [3, 40], '17b: przepuszczone wywolanie ma niezmienione argumenty');
   }
 }
 

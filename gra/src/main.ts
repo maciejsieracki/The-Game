@@ -1396,6 +1396,11 @@ interface CityCaptureReportInput {
    * pokazujemy dokladnie to, co faktycznie przechodzi na zdobywce w KAZDYM przypadku.
    */
   surowce?: Record<string, number>;
+  /** Pula pracy ofiary PRZEJETA przez zdobywce — WYLACZNIE `kind==='eliminacja'`
+   *  (P-PODBOJ-ELIMINACJA-PULA-PRACY-TRANSFER-Q1, 2026-09-07). Dla `kind==='stolica'`
+   *  ZAWSZE 0 (pula tam nadal przepada bez transferu, kanon 2026-08-09 niezmieniony
+   *  dla tego podprzypadku) — wywolujacy dla `kind==='stolica'` powinien przekazac 0. */
+  pracaPoolPrzejeta: number;
 }
 
 /**
@@ -1452,8 +1457,40 @@ function buildCityCaptureReportRows(input: CityCaptureReportInput): CaptureRepor
   } else if (lup.length === 0) {
     rows.push({ label: 'Łup', value: 'brak', tone: 'info', group: 'lup' });
   }
-  if (input.kind !== 'zwykle') {
-    // GOAL 1 — pula pracy przepada NAPRAWDE i tylko ona; skarbiec jest wyzej, w lupie.
+  if (input.kind === 'eliminacja') {
+    // P-PODBOJ-ELIMINACJA-PULA-PRACY-TRANSFER-Q1 (2026-09-07, ECHO wlasciciela) — WYLACZNIE
+    // eliminacja: pula pracy ofiary PRZESZLA do zdobywcy (capital-capture.ts,
+    // `pracaPoolPrzejeta`). Galaz barbarzynska (uwaga recon E, tak jak zloto/nauka/tech
+    // wyzej): `access.setPracaPool` DO barbarzynskiego newOwner jest no-opowany
+    // (barbarianCaptorResourceAccess) -- ofiara traci normalnie, ale barbarzyncy NIC nie
+    // dziedzicza, wiec tekst dla tej galezi zostaje "przepadla", NIE "+N".
+    if (input.barbarzyncaZdobywca) {
+      if (input.pracaPoolPrzejeta > 0) {
+        rows.push({
+          label: 'Pula pracy',
+          value: 'przepadła — barbarzyńcy nie dziedziczą zdobyczy',
+          tone: 'loss',
+          group: 'strata',
+        });
+      }
+    } else if (input.pracaPoolPrzejeta > 0) {
+      // Wartosc zerowa NIE POWSTAJE jako wiersz (zasada 1 wyzej) -- pusta pula ofiary to
+      // po prostu brak tej pozycji, nie falszywe "+0". `group: 'strata'` (NIE 'lup') --
+      // krotka karta panelu WYDARZENIA (captureReportShortLine) niesie WYLACZNIE grupe
+      // 'lup' (zloto/nauka/tech/moc), a ta pozycja -- jak ludnosc/budynki/dawne "pula
+      // pracy przepadla" -- zostaje treascia WYLACZNIE pelnego modalu, zeby karta nie
+      // rozrosla sie ponad swoj dotychczasowy zakres (kontrakt bramka
+      // miasto-zdobycie-raport-test.cjs, sekcja 9-0b).
+      rows.push({
+        label: 'Pula pracy',
+        value: '+' + input.pracaPoolPrzejeta + ' — przejęta od wyeliminowanej cywilizacji',
+        tone: 'gain',
+        group: 'strata',
+      });
+    }
+  } else if (input.kind === 'stolica') {
+    // GOAL 1 (kanon 2026-08-09, NIEZMIENIONY dla tego podprzypadku) — pula pracy
+    // przepada NAPRAWDE i tylko ona; skarbiec jest wyzej, w lupie.
     rows.push({ label: 'Pula pracy', value: 'przepadła — nie przechodzi na zdobywcę', tone: 'loss', group: 'strata' });
   }
   return rows;
@@ -13575,6 +13612,7 @@ async function boot(): Promise<void> {
           moc: 0,
           barbarzyncaZdobywca: false,
           surowce: city.surowce,
+          pracaPoolPrzejeta: 0,
         });
         // GOAL 3 -- LEJEK 2 z trzech (recon D): kapitulacja glodowa. No-op, gdy lejek
         // stoleczny zapisal juz bogatszy wpis dla tego miasta w tej turze.
@@ -26700,6 +26738,9 @@ async function boot(): Promise<void> {
           moc: 0,
           barbarzyncaZdobywca: capitalBarbCaptor,
           surowce: city.surowce,
+          // Zdarzenie 1 (stolica, cywilizacja przezywa) -- pula pracy NADAL przepada bez
+          // transferu (kanon 2026-08-09 niezmieniony dla TEGO podprzypadku), wiec zawsze 0.
+          pracaPoolPrzejeta: 0,
         });
         const capitalOneLine = captureReportOneLine(capitalRows);
         capitalCaptureReportSlot = { rows: capitalRows, oneLine: capitalOneLine };
@@ -26761,6 +26802,13 @@ async function boot(): Promise<void> {
         moc: powerGain,
         barbarzyncaZdobywca: barbCaptor,
         surowce: city.surowce,
+        // P-PODBOJ-ELIMINACJA-PULA-PRACY-TRANSFER-Q1 -- pula pracy ofiary FAKTYCZNIE
+        // przejeta (capital-capture.ts, `applyCapitalCapturePlunder`); dla zdobywcy-
+        // barbarzynca zapis DO newOwner jest no-opowany (barbarianCaptorResourceAccess),
+        // ale `outcome.pracaPoolPrzejeta` nadal raportuje kwote UTRACONA przez ofiare (ten
+        // sam wzorzec co `skarbiecPrzejety` wyzej) -- buildCityCaptureReportRows() sam
+        // rozroznia galaz barbarzynska i pokazuje "przepadla", nie "+N", w tym przypadku.
+        pracaPoolPrzejeta: Math.floor(outcome.pracaPoolPrzejeta),
       });
       const eliminatedDetails = captureReportOneLine(eliminationRows);
       capitalCaptureReportSlot = { rows: eliminationRows, oneLine: eliminatedDetails };
@@ -27172,6 +27220,7 @@ async function boot(): Promise<void> {
         // galaz barbarzynska dotyczy wylacznie sciezki stolecznej/eliminacji.
         barbarzyncaZdobywca: false,
         surowce: city.surowce,
+        pracaPoolPrzejeta: 0,
       });
       // GOAL 3 -- LEJEK 1 z trzech (recon D): wspolne wejscie zbrojne (bitwa polowa o miasto,
       // szturm muru, wejscie do pustego miasta). No-op, gdy lejek stoleczny zapisal juz

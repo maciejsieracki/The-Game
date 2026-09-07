@@ -129,6 +129,7 @@ const BAZA = {
   technologie: 0,
   moc: 0,
   barbarzyncaZdobywca: false,
+  pracaPoolPrzejeta: 0,
 };
 
 // ===========================================================================
@@ -293,9 +294,14 @@ console.log('6. Zwykłe miasto — raport mówi prawdę: co przejęto i że łup
 // ===========================================================================
 console.log('7. Gałąź barbarzyńska — ofiara traci, barbarzyńcy nie dziedziczą');
 {
+  // P-PODBOJ-ELIMINACJA-PULA-PRACY-TRANSFER-Q1 (2026-09-07): `pracaPoolPrzejeta: 77`
+  // -- ofiara STRACIŁA 77 (outcome.pracaPoolPrzejeta w main.ts raportuje realną kwotę
+  // utraconą przez ofiarę, patrz capital-capture-test.cjs 17), ale barbarzyński
+  // zdobywca jej NIE DZIEDZICZY (setPracaPool DO newOwner no-opowany) -- ma to nadal
+  // brzmieć jak strata ofiary, nie „+77" sugerujące, że barbarzyńcy coś zyskali.
   const rows = build({
     ...BAZA, kind: 'eliminacja', zloto: 1234, nauka: 88, technologie: 3, moc: 0,
-    barbarzyncaZdobywca: true,
+    pracaPoolPrzejeta: 77, barbarzyncaZdobywca: true,
   });
   const lup = rowFor(rows, 'Łup');
   ok(lup !== null && /barbarzyńcy nie dziedziczą/.test(lup.value),
@@ -303,8 +309,9 @@ console.log('7. Gałąź barbarzyńska — ofiara traci, barbarzyńcy nie dziedz
   ok(rowFor(rows, 'Złoto ze skarbca') === null && rowFor(rows, 'Punkty nauki') === null
     && rowFor(rows, 'Technologie') === null,
     '7b: mimo niezerowych kwot ŻADNA pozycja nie przypisuje ich barbarzyńcom');
-  ok(rowFor(rows, 'Pula pracy') !== null,
-    '7c: pula pracy ofiary przepada tak samo — strata ofiary, nie nagroda zdobywcy');
+  const praca = rowFor(rows, 'Pula pracy');
+  ok(praca !== null && /przepad/.test(praca.value) && !praca.value.startsWith('+'),
+    '7c: pula pracy ofiary przepada tak samo (barbarzyńcy jej nie dziedziczą) — strata ofiary, nie nagroda zdobywcy');
 }
 
 // ===========================================================================
@@ -360,16 +367,22 @@ console.log('9. Wpis w panelu WYDARZENIA + szczegóły po kliknięciu');
 {
   // Karta niesie tresc SKROCONA (sam lup), modal — pelny bilans. Ten sam podzial co
   // recordCivElimEvent (karta) / civElimNotice.ts (modal).
-  const rows = build({ ...BAZA, kind: 'eliminacja', zloto: 1234, nauka: 16, technologie: 2, moc: 418 });
+  // pracaPoolPrzejeta: 250 -- P-PODBOJ-ELIMINACJA-PULA-PRACY-TRANSFER-Q1 (2026-09-07):
+  // przy ELIMINACJI (bez barbarzyńcy) pula pracy ofiary jest PRZEJĘTA, nie "przepadła".
+  const rows = build({
+    ...BAZA, kind: 'eliminacja', zloto: 1234, nauka: 16, technologie: 2, moc: 418,
+    pracaPoolPrzejeta: 250,
+  });
   const krotka = shortLine(rows);
   const pelna = oneLine(rows);
   ok(krotka.length < pelna.length, '9-0a: skrót na kartę jest krótszy niż pełny bilans');
   ok(!krotka.includes('Ludność') && !krotka.includes('Pula pracy'),
-    '9-0b: karta pomija „co przejęliśmy" i „co przepadło" — to jest treść modalu');
+    '9-0b: karta pomija „co przejęliśmy" i „co przepadło/przejęto poza łupem" — to jest treść modalu');
   ok(krotka.includes('Złoto ze skarbca: +1234') && krotka.includes('Moc: +418'),
     '9-0c: karta niesie sam łup, z faktycznymi kwotami');
-  ok(pelna.includes('Ludność: +4') && pelna.includes('Pula pracy: przepadła — nie przechodzi na zdobywcę'),
-    '9-0d: modal dostaje PEŁNY bilans, nic z niego nie ginie');
+  ok(pelna.includes('Ludność: +4')
+    && pelna.includes('Pula pracy: +250 — przejęta od wyeliminowanej cywilizacji'),
+    '9-0d: modal dostaje PEŁNY bilans, w tym pulę pracy PRZEJĘTĄ (nie "przepadła") przy eliminacji');
   ok(shortLine(build({ ...BAZA, kind: 'zwykle' })) === 'Łup: brak',
     '9-0e: zwykłe miasto — karta mówi wprost „Łup: brak"');
 }

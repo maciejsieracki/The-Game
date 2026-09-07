@@ -338,17 +338,27 @@ console.log('4. Żywy dowód -- realna eliminacja w capital-capture.ts -> raport
 
   // Gracz (ownerId 0) eliminuje AI (ownerId 3) -- jedyne miasto AI, skarbiec 1500,
   // pula nauki 63, dwa techy brakujace zwyciezcy. Liczby identyczne jak przed przepisaniem.
+  // pula pracy 90 (P-PODBOJ-ELIMINACJA-PULA-PRACY-TRANSFER-Q1, 2026-09-07, ECHO
+  // wlasciciela) -- dodana tutaj wlasnie w tej rundzie, zeby "zywy dowod" (realny
+  // applyCapitalCapturePlunder + realny call-site z main.ts) pokazywal transfer
+  // konkretna liczba, nie tylko brak regresji przy pustej puli.
   const citiesAfter = [city('cityLast', 0)];
   const access = makeAccess({
     skarbiec: { 3: 1500, 0: 0 },
     nauka: { 3: 63 },
     techy: { 3: ['brazownictwo', 'kolo'], 0: [] },
   });
+  access.setPracaPool(3, 90);
+  ok(access.getPracaPool(0) === 0 && access.getPracaPool(3) === 90,
+    '4a-praca-PRZED: pula pracy PRZED zdarzeniem -- zdobywca(0)=0, ofiara(3)=90');
   const outcome = applyCapitalCapturePlunder(city('cityLast', 0), 3, 0, citiesAfter, access);
   ok(outcome !== null, '4a: realna eliminacja -> outcome niepusty [<- 4a]');
   eq(outcome && outcome.eliminacja, true, '4b: eliminacja=true (ostatnie miasto AI) [<- 4b]');
   eq(outcome && outcome.skarbiecPrzejety, 1500, '4c: outcome.skarbiecPrzejety = 1500 (realny wynik silnika) [<- 4c]');
   eq(outcome && outcome.naukaPrzejeta, 63, '4d: outcome.naukaPrzejeta = 63 (realny wynik silnika) [<- 4d]');
+  eq(outcome && outcome.pracaPoolPrzejeta, 90, '4d-praca: outcome.pracaPoolPrzejeta = 90 (realny wynik silnika)');
+  ok(access.getPracaPool(0) === 90 && access.getPracaPool(3) === 0,
+    '4d-praca-PO: pula pracy PO zdarzeniu -- zdobywca(0)=90 (0+90, DODANA), ofiara(3)=0 (wyzerowana)');
 
   const powerGain = 420; // niezalezne od lupu -- symuluje barbarianCapturedPowerGain(lostPower, false)
   const real = renderEliminationReport(outcome, false, powerGain, mocLabel(), 4, 3);
@@ -360,8 +370,10 @@ console.log('4. Żywy dowód -- realna eliminacja w capital-capture.ts -> raport
   eq(
     real && real.line,
     'Ludność: +4 · Budynki: +3 · Złoto ze skarbca: +1500 · Punkty nauki: +63'
-    + ' · Technologie: +2 · Moc: +420 · Pula pracy: przepadła — nie przechodzi na zdobywcę',
-    '4e: pełny raport z REALNEGO outcome silnika (1500 złota, 63 nauki, 2 techy, 420 Mocy) [<- 4e]',
+    + ' · Technologie: +2 · Moc: +420'
+    + ' · Pula pracy: +90 — przejęta od wyeliminowanej cywilizacji',
+    '4e: pełny raport z REALNEGO outcome silnika (1500 złota, 63 nauki, 2 techy, 420 Mocy, 90 puli pracy'
+    + ' PRZEJĘTEJ od P-PODBOJ-ELIMINACJA-PULA-PRACY-TRANSFER-Q1) [<- 4e]',
   );
   eq(real && rowFor(real.rows, 'Złoto ze skarbca') && rowFor(real.rows, 'Złoto ze skarbca').value, '+1500',
     '4f: kwota złota z silnika trafia do WŁASNEJ pozycji raportu [<- 4e]');
