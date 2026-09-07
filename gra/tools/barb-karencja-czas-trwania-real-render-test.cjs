@@ -18,6 +18,7 @@
  * Usage (z gra/): node tools/barb-karencja-czas-trwania-real-render-test.cjs
  */
 const fs = require('fs');
+const os = require('os');
 const path = require('path');
 const esbuild = require(path.resolve(__dirname, '..', 'node_modules', 'esbuild'));
 
@@ -35,10 +36,12 @@ const BUNDLE_PO = path.resolve(__dirname, '.bkct-bundle-po.js');
 const BUNDLE_PRZED = path.resolve(__dirname, '.bkct-bundle-przed.js');
 const FALLBACK_CHROME = '/opt/pw-browsers/chromium-1194/chrome-linux/chrome';
 const DIPLO_BASKET = path.resolve(GRA, 'src', 'ui', 'diplomacyTradeBasket.ts');
-const SHOT_DIR = path.resolve(
-  GRA, '..', 'dyspozycje', 'autobot', 'runs',
-  'R-DYPLO-WSPOLNA-WALKA-BARB-KARENCJA-Q1', 'dowody',
-);
+// P-BRAMKI-BARBARZYNCY-PISZA-DO-CUDZEGO-RUNU-Q1: dowody PNG szly do SLEDZONEGO katalogu runu
+// INNEGO tematu (R-DYPLO-WSPOLNA-WALKA-BARB-KARENCJA-Q1/dowody/) -- kazdy rownolegly przebieg
+// (takze z innego worktree) brudzil cudze drzewo i lamal guard "czyste drzewo". Wzorzec
+// naprawy jak w n12-zrzuty-zywy-chromium.cjs / P-BRAMKA-WSPOLDZIELONY-DIST-TMPDIR-Q1
+// (57c327d9): WLASNY katalog pod os.tmpdir(), unikalny per proces (mkdtempSync + pid).
+const SHOT_DIR = fs.mkdtempSync(path.join(os.tmpdir(), `bkct-dowody-${process.pid}-`));
 
 let pass = 0;
 let fail = 0;
