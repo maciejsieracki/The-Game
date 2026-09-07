@@ -6288,3 +6288,22 @@ kodu przez Evaluatora i Final Control). Rozszerzona `porzadek-panel-czytelnosc-t
 
 **Zamyka CAŁY audyt balansu szczęścia/Prawa** (`R-MIASTA-SZCZESCIE-PRAWO-BALANS-AUDYT-Q1`):
 węzły A, B, C, D, E — wszystkie domknięte.
+
+## `P-DESIGN-11-ZAKLADEK-DROBIAZGI-Q1` — GAME/wizualny — **ZINTEGROWANE 2026-09-07** (1 runda, commit `64cfbe31`)
+
+Pięć drobiazgów zostawionych świadomie po rundzie 2 panelu imperium (N1/N5/N9/N11/N12) —
+jeden okazał się realną pracą. N1 (rdzeń tematu): `empire-panel-moc-scroll-preserve-test.cjs`
+było pre-istniejąco czerwone (38/9) mimo że poprzedni commit twierdził „wszystkie zielone”.
+Ustalone przez czytanie kodu (nie zgadywanie): `render()` w `empireDetailPanel.ts` urosło po
+napisaniu bramki — zachowanie panelu było poprawne przez cały czas, to bramka opisywała
+nieaktualny stan. `empireDetailPanel.ts` NIE zmieniany, bramka przepisana na aktualny
+kontrakt (47→58 asercji, zero osłabienia). N11 (etykieta komentarza) i N12 (spójność ikony
+„eyebrow” w 4 zakładkach) okazały się już naprawione wcześniej (commit `24456a72`),
+potwierdzone dowodem z żywego Chromium (PRZED 1/4 zakładek z ikoną, PO 4/4). N5 i N9
+świadomie pozostawione bez zmian (pre-istniejące, niemylące, poza zakresem). Final Control
+zweryfikował niezależnie wszystkie zarzuty pięcioma własnymi mutacjami produkcyjnego kodu.
+
+**Znalezisko przy okazji, ZAREJESTROWANE, NIE DISPATCHOWANE:** pięć pre-istniejąco czerwonych
+bramek w rodzinie „panel imperium” (37 zielonych / 5 czerwonych z 42 uruchomionych),
+niezwiązanych z tym tematem — kandydat na osobny przyszły temat
+`P-BRAMKI-EMPIRE-PANEL-PIEC-CZERWONYCH-ZASTALE-Q1`.
