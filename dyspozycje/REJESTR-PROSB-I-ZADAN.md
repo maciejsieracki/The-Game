@@ -79,6 +79,7 @@ historycznych wierszy poniżej; wpisy bez jednoznacznego dowodu nie są tu zgady
 | `P-AI-GRANARY-PROG-POPULACJI-DUPLIKAT-Q1` | `ZINTEGROWANE` | Commit `0ba33bc5`. Znalezisko Obrony `R-AI-PRODUKCJA-Z-DOSTEPNYCH-BUDYNKOW-Q1` (duplikat progów populacji `ai.ts` vs `economy.ts`) — potwierdzono że duplikacja jest ŚWIADOMA (komentarz w `ai.ts`, `granaryPriorityBonus()`), więc NIE zaimportowano `cityPopulationCap` do `ai.ts`. Zamiast tego nowa bramka-strażnik `ai-granary-prog-populacji-spojnosc-test.cjs` (12/12) porównuje ręczne stałe z realną funkcją/danymi dla easy/normal/hard, dowód mutacyjny potwierdzony niezależnie przez Final Control. Zero zmian w `gra/src/game/ai.ts`. Szczegóły: sekcja `R-AI-PRODUKCJA-Z-DOSTEPNYCH-BUDYNKOW-Q1` wyżej (linia ok. 5958). Nic do dispatchu. |
 | `P-AI-ZDOBYCIE-MIASTA-CZTERY-LUKI-Q1` | `ZINTEGROWANE` | Commit `c21c3b1c`. Cztery luki pokrycia z Final Control `P-AI-BRAK-SCIEZKI-ZDOBYCIA-MIASTA-ADIACENCJA-Q1` (FC-N2/FC-N1/FC-N4/F4) — bramka `ai-zdobycie-miasta-adiacencja-test.cjs` 88/88→96/96, zero asercji usuniętych/osłabionych, zero zmian mechaniki. Final Control niezależnie odtworzył dowody mutacyjne FC-N2 (targetVisible) i FC-N4 (isCivilianUnit) na tymczasowo zmutowanym kodzie produkcyjnym. Szczegóły: sekcja „Cztery znaleziska Final Control R2" wyżej (linia ok. 5894). Nic do dispatchu. |
 | `R-HOTSEAT-ETAP-0-HUMAN-OWNERS-Q1` | `ZINTEGROWANE` | Commit `94c475ec`. Etap 0 planu `docs/decyzje/PLAN-HOT-SEAT-2-GRACZY.md` — nowy moduł `gra/src/game/human-owners.ts` (kontrakt §B1) + martwa flaga `hotSeatEnabled()` w `main.ts` (+18/−0, zero zmiany istniejących linii). Żywy stan/aliasy świadomie odłożone do Etapu 1 (brak konsumenta dziś). Nowa bramka 29/29, Final Control potwierdził zero regresji własną próbką 9 bramek AI/dyplomacji przed/po. Szczegóły wyżej (linia ok. 4643). Następny krok: Etap 1. |
+| `R-HOTSEAT-ETAP-1-OWNERID-ISAIOWNER-Q1` | `ZINTEGROWANE` | Commit `87b33da3`. Etap 1 planu hot-seat — świeży audyt: 22 realne miejsca `ownerId>0`, 10 podmienionych na `isAiOwner(humanSeats,...)` (priorytet: `aiOwnerList` w pętli tur AI), 12 świadomie nietkniętych (semantyka `isMajorAiOwner`/miasto-państwo, inny zakres). Behawioralny no-op potwierdzony trzykrotnie (bramka + 93 bramki referencyjne/AI/dyplomacji identyczne przed/po). Szczegóły wyżej (linia ok. 4643a). Następny krok: Etap 2 (mgła wojny — najwyższe ryzyko fazy). |
 
 ### Zasada migracji i historii
 
@@ -4674,6 +4675,29 @@ odnotowania dla właściciela jako otwarta anomalia procesowa, nie temat do disp
 **Następny krok:** Etap 1 (`docs/decyzje/PLAN-HOT-SEAT-2-GRACZY.md` §C, wiersz „1") — 31×
 `ownerId > 0` → `isAiOwner`, behawioralny no-op, kryterium „gotowe" = 20 tur playtestu bez
 różnicy w logach.
+
+## `R-HOTSEAT-ETAP-1-OWNERID-ISAIOWNER-Q1` — INFRA — **ZINTEGROWANE 2026-09-07** (commit `87b33da3`)
+
+Etap 1 z §C planu hot-seat: pierwszy realny konsument `isAiOwner` z Etapu 0. Świeży audyt
+(nie ufano „31" z planu, nieaktualne) znalazł **22 realne miejsca** kodu semantyki
+`ownerId > 0` w `gra/src/**` (39 surowych trafień grepem, reszta komentarze) — z czego **10
+podmienionych** na `isAiOwner(humanSeats, ownerId)` (wyłącznie `main.ts`, priorytet:
+`aiOwnerList` w pętli tur AI, dokładnie miejsce z „ukrytej pułapki" opisanej w planie §0
+pkt 3) i **12 świadomie nietkniętych** — inna semantyka: `isMajorAiOwner`-w-przebraniu
+(major AI, wyklucza też miasto-państwo; istniejąca, osobna funkcja w `game/owner-utils.ts`,
+nietknięta) albo identyfikacja „czy to miasto-państwo" (inna oś niż „czy to człowiek").
+Nowa żywa zmienna `humanSeats` (single-human `[HUMAN_OWNER_PRIMARY]`) w `main.ts` obok
+`const player`. Behawioralny no-op potwierdzony trzykrotnie niezależnie (Operator, Evaluator,
+Final Control): bramka jednostkowa `isAiOwner(humanSeats,id)===(id>0)` + pełny zestaw 93
+bramek referencyjnych/AI/dyplomacji identyczny przed/po (`git stash`/`stash pop`). Evaluator
+znalazł jeden pominięty alias w audycie (`main.ts:31339`, `oid>0` zamiast `ownerId>0`) —
+Obrona przyjęła, skorygowała liczbę (21→22), zero zmiany kodu (klasyfikacja: nietknięte,
+poprawnie). Final Control niezależnie potwierdził klasyfikację i rozszerzonym własnym grepem
+wykluczył dalsze przeoczenia.
+
+**Następny krok:** Etap 2 (`docs/decyzje/PLAN-HOT-SEAT-2-GRACZY.md` §C, wiersz „2") — mgła
+wojny/widoczność, oznaczony w planie jako **najwyższe ryzyko** tej fazy („pełny wyciek mapy"
+bez tej naprawy) — wymaga szczególnie starannego dispatchu.
 
 ## R-HOTSEAT-MULTIPLAYER-HOSTING-Q1 — temat na przyszłość (rejestracja 2026-09-04, noc)
 
