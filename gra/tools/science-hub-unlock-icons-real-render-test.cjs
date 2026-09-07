@@ -148,10 +148,23 @@ async function main() {
   const pickerSrc = fs.readFileSync(SCIENCE_PICKER_TS, 'utf8');
   const hubSrc = fs.readFileSync(SCIENCE_HUB_TS, 'utf8');
 
-  const unlockFnIdx = pickerSrc.indexOf('export function techUnlockItems');
+  // Kotwica (0) liczy się na KODZIE, nie na komentarzach, i sięga do końca funkcji, nie
+  // do sztywnych 1400 znaków (P-SCIENCEHUB-TOOLTIP-EMOJI-ZAMIAST-IKON-Q1). Poprzednia
+  // wersja brała okno stałej długości od nagłówka `techUnlockItems`, więc wciągała
+  // sąsiedni kod i komentarze; gdy pod spodem stanął blok dokumentacyjny CYTUJĄCY stan
+  // sprzed poprawki (razem z glifami 🏛/🌾), bramka czerwieniała mimo że sama funkcja
+  // była nietknięta — fałszywy alarm, którego jedynym „lekarstwem" byłoby usunięcie
+  // komentarza wyjaśniającego. Logika listy huba badań ani jedna asercja merytoryczna
+  // nie zmienia się tu ani o jotę: zmienia się wyłącznie sposób wycinania fragmentu.
+  const stripComments = (s) => s.replace(/\/\*[\s\S]*?\*\//g, '').replace(/^[ \t]*\/\/.*$/gm, '');
+  const pickerCode = stripComments(pickerSrc);
+  const unlockFnIdx = pickerCode.indexOf('export function techUnlockItems');
   check('(0) sciencePicker.ts eksportuje techUnlockItems() zamiast techUnlockSummary()',
-    unlockFnIdx > -1 && !/export function techUnlockSummary/.test(pickerSrc));
-  const unlockFnBody = unlockFnIdx > -1 ? pickerSrc.slice(unlockFnIdx, unlockFnIdx + 1400) : '';
+    unlockFnIdx > -1 && !/export function techUnlockSummary/.test(pickerCode));
+  const unlockFnEnd = pickerCode.indexOf('\n}', unlockFnIdx);
+  const unlockFnBody = unlockFnIdx > -1
+    ? pickerCode.slice(unlockFnIdx, unlockFnEnd > unlockFnIdx ? unlockFnEnd + 2 : unlockFnIdx + 1400)
+    : '';
   check('(0) techUnlockItems() nie emituje już żadnego generycznego emoji',
     unlockFnBody !== '' && !ANY_EMOJI.test(unlockFnBody), unlockFnBody.slice(0, 120));
   check('(0) scienceHubHud.ts nie wstawia już wiersza „Odblok." jednym textContent',

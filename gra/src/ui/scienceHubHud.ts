@@ -51,8 +51,15 @@ export interface ScienceHubEntry {
  * surowiec → `mapResourceIconSvg` (kluczowany etykietą gry).
  * Rozmiar nadaje CSS (`.sh-unlock-ic svg{width:100%;height:100%}`), więc wszystkie
  * trzy resolvery mogą zwracać swój natywny rozmiar.
+ *
+ * `export` (P-SCIENCEHUB-TOOLTIP-EMOJI-ZAMIAST-IKON-Q1): tę samą funkcję reużywa
+ * `sciencePicker.ts::buildTooltipHTML()` w sekcji „Warunek badania:" tooltipa
+ * drzewka — druga powierzchnia UI, ten sam resolver, jedno źródło zamiast drugiej
+ * kopii tego samego `switch`. Zero zmian w logice i zachowaniu listy huba badań:
+ * dodany jest wyłącznie modyfikator widoczności (ten sam wzorzec, co `export` na
+ * `IMPROVEMENT_NAME_TO_KEY` w `techDiscoveryNotice.ts` w temacie poprzednim).
  */
-function unlockIconSvg(item: TechUnlockItem): string {
+export function unlockIconSvg(item: TechUnlockItem): string {
   switch (item.kind) {
     // `def` z `kategoria` jest tu OBOWIĄZKOWE, nie kosmetyczne: dla budynku spoza
     // `building-icon-map.json` (np. `trybunal` z technologii „Kodeks")

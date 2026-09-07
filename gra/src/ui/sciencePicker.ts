@@ -20,7 +20,12 @@ import { scaledResearchCost, type GameDifficulty } from '../game/difficulty-cost
 import { scienceOwlIconHtml } from './icons/scienceOwlIcon';
 import { techIconSvg } from './techIcons';
 import type { ScienceHubEntry, ScienceHubPlanEntry, ScienceHubProgress } from './scienceHubHud';
-import { refreshScienceHubIfOpen } from './scienceHubHud';
+// `unlockIconSvg` — ten sam resolver marki, którym renderuje się wiersz „Odblok."
+// w hubie badań (P-SCIENCEHUB-TOOLTIP-EMOJI-ZAMIAST-IKON-Q1). Import wartościowy z
+// `scienceHubHud` już tu istnieje (`refreshScienceHubIfOpen`), więc ta linia nie
+// dokłada żadnej nowej krawędzi w grafie modułów — dopisuje tylko drugą nazwę do
+// istniejącego importu.
+import { refreshScienceHubIfOpen, unlockIconSvg } from './scienceHubHud';
 import { buildHubTechEntries } from './scienceHubSnapshotLogic';
 // Reużycie, nie druga kopia tej samej pętli: `IMPROVEMENT_NAME_TO_KEY` (nazwa ulepszenia
 // → ImprovementKey, zbudowana z terrain-improvements.json) już istnieje i działa w
@@ -369,6 +374,89 @@ export function techUnlockItems(slug: string): TechUnlockItem[] {
     items.push({ kind: 'ulepszenie', label: ter, iconKey: IMPROVEMENT_NAME_TO_KEY[ter] ?? ter });
   }
   return items;
+}
+
+// ---------------------------------------------------------------------------
+// Warunek badania — sekcja „Warunek badania:" w tooltipie drzewka
+// (P-SCIENCEHUB-TOOLTIP-EMOJI-ZAMIAST-IKON-Q1)
+//
+// Druga, niezależna instancja tej samej klasy błędu, co naprawiony wiersz „Odblok."
+// w hubie badań. Do 2026-09-07 `buildTooltipHTML()` składała tę sekcję jako płaski
+// STRING z zaszytym, generycznym glifem na całą kategorię:
+//     reqs.push('🏛 budynek: ' + esc(node.wymaganyBudynek));
+//     reqs.push('🌾 ulepszenie: ' + esc(node.wymaganeUlepszenie));
+// czyli JEDEN znak dla KAŻDEGO budynku i JEDEN dla KAŻDEGO ulepszenia terenu,
+// niezależnie od tego, o którą encję chodzi. Ta sama „Cegielnia", która w panelu
+// miasta ma swoją ikonę marki, w tooltipie drzewka dostawała 🏛.
+//
+// Teraz producent zwraca DANE (`TechRequirementItem[]`), a ikonę marki rozwiązuje
+// render tym samym `unlockIconSvg()` z `scienceHubHud.ts`, którego używa wiersz
+// „Odblok." — jeden resolver na obie powierzchnie, więc rozjazd między nimi jest
+// z definicji niemożliwy. Etykiety widziane przez gracza są zachowane 1:1;
+// zmienia się wyłącznie ikona przed nimi.
+// ---------------------------------------------------------------------------
+
+/**
+ * Jeden warunek badania. `prefix` to słowo wiodące widziane przez gracza
+ * („budynek:" / „ulepszenie:") — dokładnie to, co stało po glifie przed zmianą;
+ * `item` niesie etykietę i klucz dla resolvera marki (ten sam kształt danych,
+ * co pozycja wiersza „Odblok.", żeby obie powierzchnie szły jednym renderem).
+ */
+export interface TechRequirementItem {
+  prefix: string;
+  item: TechUnlockItem;
+}
+
+/** Wszystkie człony wartości rozdzielonej przecinkami, bez pustych. */
+function splitLabels(raw: string): string[] {
+  return raw.split(',').map(s => s.trim()).filter(s => s !== '');
+}
+
+/**
+ * Warunki badania tech jako dane do renderu z ikonami marki (tooltip drzewka).
+ *
+ * JEDNA POZYCJA NA JEDEN CZŁON pola, nie jedna na całe pole. Dopóki ikoną był glif
+ * kategorii (🏛), wartość w rodzaju „Cegielnia, Koszary" mogła stać w jednym wierszu:
+ * glif nie udawał żadnej konkretnej encji, więc niczemu nie przeczył. Ikona marki
+ * udaje KONKRETNĄ encję — przy jednej pozycji na całe pole gracz zobaczyłby ikonę
+ * samej Cegielni przy etykiecie wymieniającej dwa budynki, czyli ikonę SPRZECZNĄ
+ * z tekstem obok (regresja wprowadzona przez ten temat, nie istniejąca przed nim).
+ * Rozbicie po przecinku daje każdej encji własną ikonę i utrzymuje niezmiennik:
+ * etykieta i ikona w jednym wierszu opisują TĘ SAMĄ encję. Na dzisiejszych danych
+ * (żadna wartość nie zawiera przecinka) render jest co do znaku taki sam jak przed
+ * zmianą — regułę pilnuje bramka na danych syntetycznych, nie „dzisiejsze dane".
+ *
+ * `isPlaceholderLabel()` (reużyta z tematu poprzedniego, nie pisana od nowa) jest
+ * tu KONIECZNA z tego samego powodu, co tam: `tech.json` zapisuje „brak warunku"
+ * także jako widoczny placeholder („—"), a `.trim()` go nie odsiewa. Stary glif
+ * kategorii niczego nie udawał; ikona marki udaje KONKRETNĄ encję — przy myślniku
+ * stanęłaby prawdziwa ikona Farmy (`improvementIconSvg('—')` → `_default` =
+ * `imp-farm`), czytelna jak „ta technologia wymaga Farmy". Pusta lista pozycji
+ * kasuje w konsumencie całą sekcję, nie zostawia nagłówka nad niczym.
+ */
+export function techRequirementItems(slug: string): TechRequirementItem[] {
+  const node = TECH_MAP.get(slug);
+  if (!node) return [];
+  const out: TechRequirementItem[] = [];
+  for (const bud of splitLabels(node.wymaganyBudynek)) {
+    if (isPlaceholderLabel(bud)) continue;
+    // `def` z `kategoria` — nie samo id — bo inaczej budynek spoza
+    // `building-icon-map.json` spada na `bld-default`, a `cityPanel.ts` rysuje
+    // dla niego ikonę kategorii: ten sam budynek, dwie różne ikony w grze.
+    const ref = buildingIconRefForName(bud);
+    out.push({
+      prefix: 'budynek:',
+      item: { kind: 'budynek', label: bud, iconKey: ref.id, iconCategory: ref.kategoria },
+    });
+  }
+  for (const key of splitLabels(node.wymaganeUlepszenie)) {
+    if (isPlaceholderLabel(key)) continue;
+    out.push({
+      prefix: 'ulepszenie:',
+      item: { kind: 'ulepszenie', label: key, iconKey: IMPROVEMENT_NAME_TO_KEY[key] ?? key },
+    });
+  }
+  return out;
 }
 
 function prereqHint(node: TechNode): string {
@@ -1041,12 +1129,19 @@ function buildTooltipHTML(node: TechNode, status: NodeStatus): string {
     }).join('')}</ul>`;
   }
   // Warunek odblokowania badania: budynek w mieście i/lub ulepszenie na mapie.
-  if (node.wymaganyBudynek || node.wymaganeUlepszenie) {
-    const reqs: string[] = [];
-    if (node.wymaganyBudynek) reqs.push('🏛 budynek: ' + esc(node.wymaganyBudynek));
-    if (node.wymaganeUlepszenie) reqs.push('🌾 ulepszenie: ' + esc(node.wymaganeUlepszenie));
+  // Ikona marki PER ENCJA (P-SCIENCEHUB-TOOLTIP-EMOJI-ZAMIAST-IKON-Q1) — poprzednio
+  // stały tu dwa zaszyte glify kategorii (🏛/🌾), jeden na każdy budynek i jeden na
+  // każde ulepszenie. `unlockIconSvg` to DOKŁADNIE ten resolver, którym idzie wiersz
+  // „Odblok." w hubie badań; SVG wchodzi w `innerHTML` tooltipa (etykiety nadal przez
+  // `esc()`, więc z danych nie da się wstrzyknąć HTML-a), a rozmiar nadaje CSS
+  // `.tt-req-ic svg{width:100%;height:100%}`.
+  const reqItems = techRequirementItems(node.id);
+  if (reqItems.length > 0) {
     h += `<div class="tt-section" style="margin-top:6px;color:#c08830;font-size:0.68em;text-transform:uppercase">Warunek badania:</div>`;
-    h += `<ul class="tt-items">${reqs.map(rq => `<li>${rq}</li>`).join('')}</ul>`;
+    h += `<ul class="tt-items">${reqItems.map(rq =>
+      `<li><span class="tt-req-ic" data-req-kind="${esc(rq.item.kind)}" data-req-icon-key="${esc(rq.item.iconKey)}">${unlockIconSvg(rq.item)}</span>`
+      + `<span class="tt-req-label">${esc(rq.prefix)} ${esc(rq.item.label)}</span></li>`,
+    ).join('')}</ul>`;
   }
   if (node.odblokujeBudynek) {
     h += `<div class="tt-section" style="margin-top:6px;color:#907030;font-size:0.68em;text-transform:uppercase">Odblokowuje budynki:</div>`;
@@ -1197,6 +1292,11 @@ function ensureStyles(): void {
 .civ-sci-tooltip .tt-section{margin-top:12px;color:#907030;font-size:0.68em;text-transform:uppercase;letter-spacing:0.5px;}
 .civ-sci-tooltip .tt-items{margin-top:4px;padding-left:26px;color:#cebe70;}
 .civ-sci-tooltip .tt-items li{list-style:disc;margin:2px 0;font-size:1.48rem;}
+/* Slot ikony marki w „Warunek badania:" — rozmiar w em, żeby ikona rosła razem
+   z tekstem pozycji; svg width:100% neutralizuje natywne atrybuty resolvera. */
+.civ-sci-tooltip .tt-req-ic{display:inline-flex;align-items:center;justify-content:center;
+  width:1.15em;height:1.15em;vertical-align:-0.22em;margin-right:0.32em;flex:0 0 auto;}
+.civ-sci-tooltip .tt-req-ic svg{width:100%;height:100%;display:block;}
 /* Legend */
 .civ-sci .cs-legend{
   display:flex;flex-wrap:wrap;gap:8px 20px;
