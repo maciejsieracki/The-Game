@@ -283,6 +283,34 @@ for (const { label, runner } of RUNNERS) {
     eq(resultProd.kolejka.length, 1, `D: budynek nie-stolica (${regionBuilding.id}) ZOSTAJE w kolejce niezależnie od stolicy zdobywcy`);
     eq(pool.get(NEW_OWNER) ?? 0, 0, 'D: zero zwrotu Pracy dla budynku nie-stolica');
   }
+
+  // E (Evaluator RUNDA 1, ZARZUT 1 -- REGUŁA PRZECIW SAMOOSZUKIWANIU dyspozycji, "Pałac
+  // po Mennicy"): DWA budynki-stolica naraz w kolejce, DRUGI (nie-frontowy) niesie WŁASNY
+  // zbankowany `item.postep` (stan po `promoteToFront()` z reorderu UI: gracz cofnął
+  // budynek z frontu). Oba muszą zniknąć z kolejki i CAŁA Praca -- front (prod.postep=37)
+  // ORAZ zbankowany postęp drugiego budynku (item.postep=20) -- musi trafić do puli
+  // ZDOBYWCY, łącznie 57, zero utraty.
+  {
+    const OLD_OWNER = 1, NEW_OWNER = 2, CITY_ID = 'miasto-dwa-palace';
+    const city = { id: CITY_ID, ownerId: NEW_OWNER };
+    const cityProd = new Map([[CITY_ID, {
+      kolejka: [
+        { kind: 'budynek', id: 'mennica', nazwa: 'mennica', koszt: 90, postep: 0 },
+        { kind: 'budynek', id: 'palac', nazwa: 'palac', koszt: 120, postep: 20 },
+      ],
+      postep: 37, // aktywny postęp frontu (mennica)
+    }]]);
+    const data = { buildings: buildingsJson };
+    const { ownerPracaPool, setOwnerPracaPool, pool } = makePool();
+    const sanitizeProductionQueue = makeSanitizeProductionQueue(setOwnerPracaPool, ownerPracaPool);
+    const capitalCityIdForOwner = (ownerId) => (ownerId === NEW_OWNER ? 'inna-stolica-zdobywcy' : 'stolica-starego');
+    const resultProd = runner(city, OLD_OWNER, NEW_OWNER, cityProd, data,
+      PROD.sanitizeBuildQueue, setOwnerPracaPool, ownerPracaPool, sanitizeProductionQueue,
+      PROD.filterQueue, capitalCityIdForOwner);
+    eq(resultProd.kolejka.length, 0, 'E: oba budynki-stolica (mennica+palac) usunięte z kolejki');
+    eq(pool.get(NEW_OWNER) ?? 0, 57, 'E: PEŁNA Praca (front 37 + zbankowany item.postep drugiego budynku 20 = 57) trafia do puli ZDOBYWCY, nic nie ginie');
+    eq(pool.get(OLD_OWNER) ?? 0, 0, 'E: POPRZEDNI właściciel nic nie dostaje');
+  }
 }
 
 console.log(`\npodboj-kolejka-budynek-niemozliwy-test: ${passed} passed, ${failed} failed`);
