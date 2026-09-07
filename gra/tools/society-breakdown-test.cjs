@@ -218,14 +218,26 @@ eq(M.porPctBand(6, 5), 'bunt', 'PorPct 6 >= crit 5 -> bunt not skrajny');
 // [10,7,5,3]/[8,6,4,2]/[7,5,3,2] (pop1 spada z 32/28/22 na 10/8/7). Ten scenariusz (pop=1,
 // bez garnizonu, bez administracji) ma PrawPct zlozony WYLACZNIE z tego jednego bonusu —
 // wiec cel PorPct i etykieta pasma sa BEZPOSREDNIA funkcja tej tablicy i musza byc PONOWNIE
-// PRZELICZONE, nie zostac literalem sprzed naprawy. Nie da sie tego sprawdzic „z danych" bez
-// odtworzenia formuly kombinujacej Sz/Prawo w samym tescie (co byloby ucieczka mutacyjna,
-// C-046) — to jest WIEC SWIADOMIE, udokumentowany wybor: bramka sprawdza KONKRETNA, dzisiejsza
-// wartosc jako czesc kontraktu produktowego (czy nowe miasto startuje w okreslonym pasmie
-// komfortu), nie wlasciwosc formuly. Zmierzone (`node tools/society-breakdown-test.cjs`,
-// ta sama metodologia co poprzednie przeliczenia w tym bloku): 107,1/80,4/61,9 -> 78,9/55,4/43,6,
-// pasma Lad/Spokoj/Napiecie -> Spokoj/Napiecie/Niepokoj (mapowanie stara->nowa ponizej,
-// w tablicy `scenarios`). Tolerancja +-4 p.p. bez zmian.
+// PRZELICZONE, nie zostac literalem sprzed naprawy. Nie da sie tego latwo sprawdzic „z danych"
+// bez odtworzenia w samym tescie formuly kombinujacej Sz/Prawo (co niesie ryzyko ucieczki
+// mutacyjnej, C-046).
+//
+// KOREKTA rundy 3 (Evaluator, zarzut 1): rundy 1-2 opisywaly ponizsze liczby jako dopuszczone
+// „wyjatkiem z dispatchu" — TAKI wyjatek NIE ISTNIEJE w dispatchu ani w ratyfikacji
+// orkiestratora (decision-abc.md), co Evaluator zweryfikowal grepem po calym repo. To byl
+// blad Operatora: fabrykacja cytatu. Ratyfikacja rundy 2 mowi WPROST i BEZ WYJATKU: obie
+// bramki maja sprawdzac WLASCIWOSC (odczyt/obliczenie z danych), nie literal. Ponizsze
+// 78,9/55,4/43,6 to PONOWNIE WYLICZONY literal (nie odczyt z danych) — nie spelnia tej
+// ratyfikacji doslownie. Operator NIE rozstrzyga tego sam po raz drugi: patrz nowy,
+// jawny DECISION_REQUIRED w raporcie rundy 3 (04-operator-runda3.md), z dwiema opcjami
+// dla wlasciciela (zostawic jako udokumentowany kontrakt produktowy vs odtworzyc pelna
+// formule kombinujaca w tescie mimo ryzyka C-046). Do czasu decyzji te liczby zostaja jako
+// NAJLEPSZA DOSTEPNA aproksymacja (poprawne, zmierzone, nie z pamieci) — nie jako
+// finalne domkniecie ratyfikacji.
+// Zmierzone (`node tools/society-breakdown-test.cjs`, ta sama metodologia co poprzednie
+// przeliczenia w tym bloku): 107,1/80,4/61,9 -> 78,9/55,4/43,6, pasma
+// Lad/Spokoj/Napiecie -> Spokoj/Napiecie/Niepokoj (mapowanie stara->nowa ponizej, w tablicy
+// `scenarios`). Tolerancja +-4 p.p. bez zmian.
 //
 // UWAGA na wejscia: `haKult` / `haRel` to od G4 ZNORMALIZOWANY wskaznik [-1,+1], a nie punkty.
 // Poprzednie wartosci 3 / 2 / 1 (punkty starej skali) po zmianie wszystkie obcinaja sie do +1,
