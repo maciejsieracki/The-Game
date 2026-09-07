@@ -423,6 +423,68 @@ const baseCmd = {
 
 
 
+// R-DYPLO-CLAMP-PLATNOSC-PROPORCJONALNA-Q1: recon (P-DYPLO-KARTA-DECYZJI-BILANS-SKROT-Q1,
+// GOAL 4) opisał realny przypadek — proponent (miasto-państwo) płaci 12 zł/turę × 10 tur
+// (turnsMultiplier=10), skarbiec < 10 zł → CAŁA pozycja złota znika z koszyka zamiast
+// zredukować się proporcjonalnie. Żywe wywołanie (esbuild + node, bez zgadywania) pokazuje:
+// dla środkowego zakresu skarbca (>= 1 jednostka × turnsMultiplier) `clampBasketItemsToAffordable`
+// JUŻ liczy proporcjonalnie (maxAffordableQty: Math.min(qty, floor(fundusz/(perUnit*mult)))) —
+// nie usuwa całości. Testy niżej domykają lukę pokrycia (typy zloto/praca/zywnosc pod
+// clampBasketItemsToAffordable nie miały tu WCALE testu jednostkowego — tylko surowiec_ilosc
+// miał powyżej) i blokują regresję na dokładnie zgłoszonym mechanizmie.
+console.log('R-DYPLO-CLAMP-PLATNOSC-PROPORCJONALNA-Q1 — clampBasketItemsToAffordable proporcjonalnie (zloto/praca/zywnosc)');
+
+{
+  // Binarne kryterium tematu: skarbiec starcza na 60% pełnej kwoty → oferta 60% ilości.
+  const ownerCtx = { gold: 0, praca: 0, foodReserve: 60, stock: {}, pakietWielkosc: 1 };
+  const items = [{ typ: 'zywnosc', id: 'zywnosc', ilosc: 100 }];
+  const clamped = B.clampBasketItemsToAffordable(items, ownerCtx, 1, 'once');
+  ok(clamped.length === 1 && clamped[0].ilosc === 60,
+    `zywnosc: skarbiec starcza na 60% → ilość redukowana do 60 (nie usunięta), got ${JSON.stringify(clamped)}`);
+}
+
+{
+  // Dokładna reprodukcja z GOAL 4 P-DYPLO-KARTA-DECYZJI-BILANS-SKROT-Q1: 12 zł/turę × 10 tur
+  // (turnsMultiplier=10), skarbiec=60 → pokrywa dokładnie 50% pełnej kwoty (120) → 6 zł/turę,
+  // NIE usunięcie całej pozycji.
+  const ownerCtx = { gold: 60, praca: 0, foodReserve: 0, stock: {}, pakietWielkosc: 1 };
+  const items = [{ typ: 'zloto', id: 'zloto', ilosc: 12 }];
+  const clamped = B.clampBasketItemsToAffordable(items, ownerCtx, 10, 'once');
+  ok(clamped.length === 1 && clamped[0].ilosc === 6,
+    `zloto per_turn×turns: skarbiec=60/120 (50%) → 6 zł/turę zredukowane proporcjonalnie, nie [], got ${JSON.stringify(clamped)}`);
+}
+
+{
+  // praca — ten sam wzorzec proporcjonalny co zloto/zywnosc.
+  const ownerCtx = { gold: 0, praca: 30, foodReserve: 0, stock: {}, pakietWielkosc: 1 };
+  const items = [{ typ: 'praca', id: 'praca', ilosc: 50 }];
+  const clamped = B.clampBasketItemsToAffordable(items, ownerCtx, 1, 'once');
+  ok(clamped.length === 1 && clamped[0].ilosc === 30,
+    `praca: skarbiec starcza na 60% → ilość redukowana do 30 (nie usunięta), got ${JSON.stringify(clamped)}`);
+}
+
+{
+  // Brzeg: skarbiec = 0 nadal poprawnie USUWA pozycję (nie regresja, wymagane zachowanie).
+  const ownerCtx = { gold: 0, praca: 0, foodReserve: 0, stock: {}, pakietWielkosc: 1 };
+  const items = [{ typ: 'zloto', id: 'zloto', ilosc: 12 }];
+  const clamped = B.clampBasketItemsToAffordable(items, ownerCtx, 10, 'once');
+  ok(clamped.length === 0, `zloto: skarbiec=0 nadal usuwa pozycję (got ${JSON.stringify(clamped)})`);
+}
+
+{
+  // Wąski róg z GOAL 4 (skarbiec>0, ale < 1 jednostka × turnsMultiplier — tu 8 < 10): floor
+  // matematycznie NIE MOŻE dać >0 bez przekroczenia budżetu (1 zł/turę × 10 tur = 10 > 8) —
+  // konwencja floor w tym pliku (patrz diplomacyNormalizeSurowiecIlosc: "floor, NIGDY cicho
+  // zaakceptowana" nadpłata) wyklucza zaokrąglanie w górę tutaj. To NIE jest regresja tego
+  // tematu — usunięcie pozycji jest jedyną bezpieczną (bez nadpłaty) odpowiedzią przy tej
+  // ziarnistości. Test dokumentuje świadomie ten róg, żeby nie był ponownie mylony z GOAL 4.
+  const ownerCtx = { gold: 8, praca: 0, foodReserve: 0, stock: {}, pakietWielkosc: 1 };
+  const items = [{ typ: 'zloto', id: 'zloto', ilosc: 12 }];
+  const clamped = B.clampBasketItemsToAffordable(items, ownerCtx, 10, 'once');
+  ok(clamped.length === 0,
+    `zloto: skarbiec=8 < 1×turnsMultiplier(10) → floor bezpiecznie usuwa (bez nadpłaty), udokumentowany róg, got ${JSON.stringify(clamped)}`);
+}
+
 {
 
   const ownerCtx = { gold: 90, praca: 0, foodReserve: 0, stock: {}, pakietWielkosc: 10 };
