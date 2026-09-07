@@ -1223,7 +1223,7 @@ import {
   negotiationStillValid, resolveNegotiationAsResponder, negotiationToLegacyPending,
   negotiationAsProposal, proposalHasResourceAccess,
   hasPendingNegotiationForPair, findOwnOutgoingNegotiation, allowsMultipleOwnOutgoingNegotiations,
-  treatyEvalRelationTotal,
+  treatyEvalRelationTotal, treatyBasePnFromConfig,
   NEGOTIATION_MAX_ROUNDS, NEGOTIATION_EXPIRY_TURNS,
 } from './game/diplomacy-proposals';
 import {
@@ -1294,6 +1294,10 @@ import {
 import {
   adjustZaplataPerTuraForZeroBalance,
   trimProposalForZeroBalance,
+  // R-DYPLO-POKOJ-KIERUNEK-I-ZADANIE-AI-Q1 CZĘŚĆ B: rozszerzenie generatora AI o 'pokoj'
+  // (dotąd wyłącznie handel/traktaty handlowe) — patrz enqueueNegotiationFromAiCmd niżej.
+  peaceOfferAiRequestPn,
+  peaceOfferAiRequestBasket,
 } from './game/diplomacy-ai-offer-balance';
 import {
   wiarygodnoscStartowa,
@@ -15678,6 +15682,42 @@ async function boot(): Promise<void> {
         };
       }
 
+      // R-DYPLO-POKOJ-KIERUNEK-I-ZADANIE-AI-Q1 CZĘŚĆ B (Maciej, ECHO 2026-09-07): AI, zamiast
+      // oddawać "goły" pokój (payload={}, patrz aiCommandToPendingProposal case 'zaproponuj_pokoj')
+      // za darmo, ma zażądać surowców/złota od gracza, żeby wyrównać WŁASNY bilans PW do
+      // bliskiego zera — NOWA logika (rozszerzenie mechanizmu trymowania D-DYPLO-AI-OFERTA-ZERO
+      // na 'pokoj', którego dotąd NIE obejmował — recon dispatchu tej rundy: dotąd wyłącznie
+      // handel/traktaty handlowe). `oferuj_trybut_za_pokoj` (AI płaci ZA pokój przy krytycznej
+      // słabości, priorytet 1 wyżej w decideAIDiplomacy) NIETKNIĘTE — inny, odwrotny stan AI.
+      //
+      // ZWERYFIKOWANE NA POCZĄTKU PRACY (reguła przeciw samooszukiwaniu tego dispatchu): guard
+      // main.ts:15627-15633 (dziś przesunięty, patrz `if (!clampedPayload) return;` niżej —
+      // `clampNegotiationPayloadToRealResources`, main.ts ok. linii 9220-9225) faktycznie odrzuca
+      // KAŻDY payload bez giveItems/receiveItems/goldOnce — recon miał rację. Dziś, PRZED tą
+      // zmianą, "goły" pokój AI (payload={}) jest więc odrzucany JUŻ TU (clampedPayload=null),
+      // ani razu nie trafia na stół negocjacji — sprzeczne z tym, że właściciel twierdzi, że
+      // widział taką ofertę (prawdopodobnie inny/starszy stan gry albo inna droga UI, poza
+      // zakresem tego zlecenia do wyjaśnienia). Ta runda naprawia to STRUKTURALNIE: skoro AI
+      // teraz zawsze dopisuje `receiveItems` (gdy bilans niekorzystny — patrz niżej), payload
+      // przestaje być pusty i przechodzi przez ten guard normalnie, jak każda inna oferta.
+      if (workingCmd.type === 'zaproponuj_pokoj') {
+        const relForPeace = getDiploRelation(ownerId, 0);
+        const difficultyForPeace = effectiveGameDifficultyForOwner(ownerId);
+        const basePnPeace = treatyBasePnFromConfig('pokoj', converted.payload);
+        // givePn/receivePn AI = 0/0 — payload dziś zawsze goły w tym miejscu (żaden branch
+        // wyżej nie dotyczy 'zaproponuj_pokoj'); gdyby to się kiedyś zmieniło, resolveProposalPn
+        // czytałby realne wartości, ale dziś jest to poza zakresem (payload:{} zawsze).
+        const neededPn = peaceOfferAiRequestPn(
+          0, 0, relationTotal(relForPeace), basePnPeace, difficultyForPeace,
+        );
+        if (neededPn > 0) {
+          const requestItems = peaceOfferAiRequestBasket(neededPn, quantityTradableGoodOptions(0));
+          if (requestItems.length > 0) {
+            converted.payload = { ...converted.payload, receiveItems: requestItems };
+          }
+        }
+      }
+
       const clampedPayload = clampAiProposalPayloadToRealResources(ownerId, converted.payload);
       if (!clampedPayload) return;
       const relForBalance = getDiploRelation(ownerId, 0);
@@ -16308,7 +16348,15 @@ async function boot(): Promise<void> {
       siblingOverride?: { givePn: number; receivePn: number },
     ): { accepted: boolean; reason?: string; pwBalance?: number } {
       const sibling = siblingOverride ?? livePackageSiblingFor(entry);
-      const ctx = buildProposalEvalContext(entry.proposerOwnerId, entry.responderOwnerId, sibling);
+      // R-DYPLO-POKOJ-KIERUNEK-I-ZADANIE-AI-Q1: `authorOwnerId` DYNAMICZNY (entry, aktualizowany
+      // przez applyCounterOffer po każdej kontrofercie) dopisany do ctx — jedyny konsument to
+      // case 'pokoj' w evaluateProposal (diplomacy-proposals.ts), żeby bramka bilansu PW patrzyła
+      // na to, KTO TERAZ autoryzuje warunki, nie na statyczny entry.proposerOwnerId (patrz
+      // komentarz `authorOwnerId` przy ProposalEvalContext — to jest DOKŁADNIE ta różnica).
+      const ctx = {
+        ...buildProposalEvalContext(entry.proposerOwnerId, entry.responderOwnerId, sibling),
+        authorOwnerId: entry.authorOwnerId,
+      };
       const relTotal = treatyEvalRelationTotal(ctx.relation);
       const incoming = entry.awaitingOwnerId === 0;
       if (incoming) {

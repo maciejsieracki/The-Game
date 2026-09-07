@@ -9,6 +9,7 @@ import type { BasketItem } from './diplomacy-pn-engine';
 import type { ProposalPayload } from './diplomacy-proposals';
 import {
   diplomacyFairGivePn,
+  diplomacyHandelSurowiecCenaZaBlok,
   diplomacyHandelSurowiecKrok,
   diplomacyPnPraca,
   diplomacyPnSurowiecIlosc,
@@ -204,7 +205,12 @@ export function playerBenefitSurplusByRole(
   return -responderPwSurplus(receivePn, givePn, relTotal, fairness);
 }
 
-function pnToPaymentAmount(paymentTyp: 'zloto' | 'praca', targetPn: number): number {
+/**
+ * R-DYPLO-POKOJ-KIERUNEK-I-ZADANIE-AI-Q1: eksportowana (była lokalna) — jedyny konsument
+ * spoza tego pliku to `peaceOfferAiRequestBasket` niżej (fallback złota, ta sama konwersja
+ * PN→ilość co reszta generatora AI, żeby nie duplikować wzoru).
+ */
+export function pnToPaymentAmount(paymentTyp: 'zloto' | 'praca', targetPn: number): number {
   if (targetPn <= 0) return 0;
   if (paymentTyp === 'zloto') {
     const perUnit = diplomacyPnZloto(1);
@@ -488,6 +494,96 @@ export function trimProposalForZeroBalance(
   let p = trimProposalGoldForZeroBalance(payload, relTotal, difficulty, pnOpts, fairness);
   p = trimResourcePaymentTradeForZeroBalance(p, relTotal, difficulty, pnOpts, fairness);
   return p;
+}
+
+/**
+ * R-DYPLO-POKOJ-KIERUNEK-I-ZADANIE-AI-Q1 CZĘŚĆ B (Maciej, ECHO 2026-09-07): bilans PW z
+ * WŁASNEJ perspektywy AI dla oferty pokoju, którą AI SAMO proponuje (proposerOwnerId=AI,
+ * `aiGivePn`/`aiReceivePn` = give/receive AI-jako-proponenta, TA SAMA konwencja co reszta
+ * tego pliku). Reużywa DOKŁADNIE `treatyBaseFairnessGap` — jedyne źródło tej matematyki,
+ * TA SAMA formuła, którą `evaluateProposal` (diplomacy-proposals.ts, case 'pokoj', gałąź
+ * `!proposerIsPlayer`) naprawdę policzy przy ocenie TEJ SAMEJ propozycji — więc generator i
+ * bramka celują w DOKŁADNIE tę samą liczbę (ten sam wzorzec co `responderPwSurplus` dla
+ * handlu/traktatów handlowych wyżej w tym pliku).
+ *
+ * UWAGA ZNAKU — zweryfikowane empirycznie (dyplo-bilans-gate-n-e1-reprodukcja-runda3-test.cjs
+ * TEST 2: AI daje 300 PW za darmo → `evaluateProposal.pwBalance` idzie W GÓRĘ, z −450 na −150
+ * przy złej relacji): `evaluateProposal`'s `pokojPwBalance = -gap` jest liczbą Z PERSPEKTYWY
+ * GRACZA (dodatnia = korzystne DLA GRACZA — jego własny komentarz "AI dorzuciło coś ekstra do
+ * pokoju"). Bilans z perspektywy AI jest więc DOKŁADNIE odwrotny: `aiOwnBilans =
+ * -pokojPwBalance = +gap`. Konsekwencja (zweryfikowana testem tej rundy,
+ * dyplo-pokoj-kierunek-runda1-test.cjs, sekcja CZĘŚĆ B): dla PUSTEGO koszyka podczas wojny ta
+ * liczba wychodzi NIEKORZYSTNA dla AI (ujemna) przy WYSOKIEJ (surowej, bez `clampRelationForWar`
+ * — ta sama gałąź evaluateProposal używa RAW `relationTotal`, nie wojennie ograniczonej)
+ * Relacji — bo `partnerTreatyPnRequired` (flat baza 500) jest wtedy < `effectiveTreatyPnRequired`
+ * (skalowane Relacją, rośnie z nią) — i KORZYSTNA (dodatnia) przy niskiej Relacji, dokładnie
+ * ODWROTNIE niż potoczna intuicja "zła relacja = gorzej dla AI" mogłaby sugerować. Ten sam,
+ * już wcześniej zweryfikowany (rundy 2-4 P-DYPLO-BILANS-GATE) kierunek formuły — tu tylko
+ * odczytany z odwrotnej (AI) strony. Zgłoszone w raporcie tej rundy jako rozbieżność ze
+ * słownym przykładem dispatchu ("relacja niska") — matematyka jest jednoznaczna i pokryta
+ * testem regresji, więc to ONA rozstrzyga kierunek, nie przykład.
+ */
+export function peaceOfferAiOwnBilans(
+  aiGivePn: number,
+  aiReceivePn: number,
+  relTotal: number,
+  basePn: number,
+): number {
+  if (basePn <= 0) return 0;
+  return treatyBaseFairnessGap(basePn, aiGivePn, aiReceivePn, relTotal);
+}
+
+/**
+ * Ile PW (≥0) AI powinno dodatkowo zażądać od gracza (receiveItems/goldOnce), żeby WŁASNY
+ * bilans oferty pokoju wyrównać do granicy tolerancji `aiOfferPwSurplusTolerance` (ten sam
+ * cel „bliski zera w tolerancji", NIE dokładnie 0 — wzorzec `trimProposalGoldForZeroBalance`
+ * wyżej). 0 gdy bilans AI już w tolerancji (goły pokój jest już OK) albo gdy Łatwy
+ * (`aiOfferTargetsZeroBalance`=false, stare zachowanie: gratisy OK) albo brak bazy traktatu.
+ */
+export function peaceOfferAiRequestPn(
+  aiGivePn: number,
+  aiReceivePn: number,
+  relTotal: number,
+  basePn: number,
+  difficulty: GameDifficulty = 'normal',
+): number {
+  if (!aiOfferTargetsZeroBalance(difficulty) || basePn <= 0) return 0;
+  const bilans = peaceOfferAiOwnBilans(aiGivePn, aiReceivePn, relTotal, basePn);
+  const tolerance = aiOfferPwSurplusTolerance(difficulty);
+  if (bilans >= -tolerance) return 0;
+  return Math.ceil(-tolerance - bilans);
+}
+
+/**
+ * Zbuduj `receiveItems` (żądanie od gracza) warte ~`neededPn` PW — wzorzec wyboru dobra
+ * „na czym AI faktycznie zależy" analogiczny do `computeQuickDealBasket` (diplomacy-pn-engine.ts,
+ * sekcja `theirQtyPriced`): najtańszy PN/blok surowiec ILOŚCIOWY partnera (gracza) pierwszy,
+ * fallback złoto gdy partner nie ma żadnego wycenialnego surowca (ten sam fallback co
+ * `computeQuickDealBasket` stosuje dla giveItems, tu lustrzanie dla receiveItems). Ilość
+ * przycięta do realnego zapasu partnera (`maxQty`) — resztę affordability (skarbiec złota)
+ * dopilnowuje downstream `clampNegotiationPayloadToRealResources` (main.ts), jak dla każdej
+ * innej propozycji AI.
+ */
+export function peaceOfferAiRequestBasket(
+  neededPn: number,
+  theirQuantityResourceOptions: readonly { id: string; label: string; maxQty: number }[],
+): BasketItem[] {
+  if (neededPn <= 0) return [];
+  const priced = theirQuantityResourceOptions
+    .map(o => ({ ...o, pnPerBlok: diplomacyHandelSurowiecCenaZaBlok(o.id) ?? 0, krok: diplomacyHandelSurowiecKrok(o.id) }))
+    .filter(o => o.pnPerBlok > 0 && o.krok > 0 && o.maxQty >= o.krok)
+    .sort((a, b) => a.pnPerBlok - b.pnPerBlok);
+  if (priced.length > 0) {
+    const pick = priced[0]!;
+    const maxBloki = Math.floor(pick.maxQty / pick.krok);
+    const bloki = Math.min(maxBloki, Math.max(1, Math.ceil(neededPn / pick.pnPerBlok)));
+    const qty = bloki * pick.krok;
+    if (qty >= pick.krok) {
+      return [{ typ: 'surowiec_ilosc', id: pick.id, ilosc: qty }];
+    }
+  }
+  const goldAmount = pnToPaymentAmount('zloto', neededPn);
+  return goldAmount > 0 ? [{ typ: 'zloto', id: 'zloto', ilosc: goldAmount }] : [];
 }
 
 /** Wybierz najmniejszą kwotę złota (słodzik), która przechodzi bramkę akceptacji. */

@@ -235,6 +235,19 @@ export interface ProposalEvalContext {
    */
   hasTradeTechProposer?: boolean;
   hasTradeTechResponder?: boolean;
+  /**
+   * R-DYPLO-POKOJ-KIERUNEK-I-ZADANIE-AI-Q1 (Maciej, ECHO 2026-09-07): autor AKTUALNYCH
+   * warunków na stole — DYNAMICZNY, zmienia się po każdej kontrofercie (patrz
+   * `PendingNegotiation.authorOwnerId`/`applyCounterOffer`), W ODRÓŻNIENIU od
+   * `proposal.proposerOwnerId` (STAŁY od rundy 1, patrz komentarz przy `PendingNegotiation`).
+   * Używane WYŁĄCZNIE przez `case 'pokoj'` niżej, żeby bramkę bilansu PW oprzeć o to, KTO
+   * TERAZ autoryzuje warunki (kierunek 'own'/'incoming' z perspektywy gracza), nie o to, kto
+   * zainicjował rundę 1 — inaczej po kontrofercie (proponent=partner, ale gracz właśnie
+   * wylicytował nowe warunki) bramka patrzyłaby na niewłaściwą stronę. `undefined` (wywołujący
+   * spoza stołu negocjacji, np. `evaluatePendingFromAI`/`generateCounterOffer` — bez pojęcia
+   * kontroferty) = fallback na `proposerOwnerId` (bit-identyczne ze stanem sprzed tej rundy).
+   */
+  authorOwnerId?: number;
 }
 
 export interface ProposalEvalResult {
@@ -1303,6 +1316,32 @@ export function evaluateProposal(
       // to była ta usunięta tutaj i martwa treatyPnGate 'pokoj' — patrz komentarz przy
       // `peaceProposalOfferPn`/`treatyPnGate` wyżej w pliku, samospełniający się warunek,
       // NIGDY nie blokuje, bez zmian tej rundy).
+      //
+      // R-DYPLO-POKOJ-KIERUNEK-I-ZADANIE-AI-Q1 (Maciej, ECHO 2026-09-07, doprecyzowanie/
+      // częściowe odwrócenie runda 4 wyżej — cytat dosłowny): "Jeżeli inna cywilizacja lub
+      // państwo-miasto proponuje mi pokój, to nawet jeżeli bilans jest ujemny, powinienem
+      // mieć możliwość zaakceptowania (...). Ale jeżeli ja chcę zaproponować pokój, a bilans
+      // jest ujemny, muszę go wyrównać." Bramka wraca, ale KIERUNKOWO — wyłącznie gdy GRACZ
+      // jest autorem AKTUALNYCH warunków (a nie po prostu proponentem rundy 1, patrz komentarz
+      // `authorOwnerId` przy `ProposalEvalContext`). `ctx.authorOwnerId` (DYNAMICZNY,
+      // `PendingNegotiation.authorOwnerId`, main.ts::previewNegotiationEntry) — fallback na
+      // statyczny `proposerOwnerId` gdy wywołujący nie ma pojęcia kontroferty (bit-identyczne
+      // ze stanem sprzed tej rundy dla `evaluatePendingFromAI`/`generateCounterOffer`).
+      // ZASTRZEŻENIE ARCHITEKTONICZNE (recon dispatchu): użycie tu statycznego `proposerIsPlayer`
+      // zamiast dynamicznego autora dałoby ten sam błąd co runda 4 próbowała naprawić, tylko
+      // przesunięty — po kontrofercie gracza na propozycję partnera, `proposerOwnerId` nadal
+      // wskazuje na partnera, mimo że to gracz autoryzuje warunki NA STOLE TERAZ (kryterium
+      // testowe tej rundy, patrz dyplo-pokoj-kierunek-runda1-test.cjs).
+      const authorOwnerId = ctx.authorOwnerId ?? proposerOwnerId;
+      const authorIsPlayer = authorOwnerId === (pnOpts.playerOwnerId ?? 0);
+      if (authorIsPlayer && pokojPwBalance != null && pokojPwBalance < 0) {
+        return {
+          accepted: false,
+          pwBalance: pokojPwBalance,
+          reason: `Brakuje ${Math.abs(pokojPwBalance)} PW do uczciwej oferty pokoju @ Relacji `
+            + `(baza ${basePn} PW) — dopłać, by wysłać`,
+        };
+      }
       return { accepted: true, pwBalance: pokojPwBalance, reason: 'Warunki pokoju spełnione', oneShotTrade: true };
     }
 
