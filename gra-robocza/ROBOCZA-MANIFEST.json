@@ -1,10 +1,10 @@
 {
-  "publishedAt": "2026-09-07T15:20:00",
-  "sourceBuild": "/tmp/civ-dist-fala356",
-  "note": "FALA 356 - domkniecie calej kolejki 7 tematow: P-KOLOR-SUROWCE-MIASTO-VS-MAPA-Q1 (jedno zrodlo prawdy dla kolorow szesciu surowcow, panel miasta vs HUD mapy), P-ENTITYCARD-CIVPEDIA-KLIK-MARTWY-Q1 (klik Wiecej informacji Civpedia wpiety we wszystkie karty encji), P-DESIGN-11-ZAKLADEK-DROBIAZGI-Q1 (naprawa czerwonej bramki panelu imperium, test-only), P-DYPLO-DWA-TESTY-CZERWONE-ZASTANE-Q1 i P-BRAMKI-ZASTANE-CZERWONE-Q1 (test-only), P-BRAMKA-WSPOLDZIELONY-DIST-TMPDIR-Q1 (test-only, infrastruktura bramek).",
+  "publishedAt": "2026-09-07T17:05:00",
+  "sourceBuild": "/tmp/civ-dist-fala357",
+  "note": "FALA 357 - R-HANDEL-DOCHOD-PRZEZ-PODZIAL-MIASTA-Q1: dochod z tras handlowych przechodzi teraz przez pelna sciezke Daniny (handelBrutto, PRZED mnoznikiem Wealth), dzielony suwakami Handlu na nauke/zloto/luksus, zamiast ladowac czysto do skarbca PO mnozniku Wealth. ECHO wlasciciela: pelna integracja jak reszta dochodu miasta; jawnie zaakceptowany wzrost lacznego dochodu z handlu.",
   "publisher": "Orkiestrator (Claude Code)",
   "bundle": "Gra-ROBOCZA.html",
-  "md5": "20de07b92cf75d594726cc47f115aa31",
+  "md5": "8940a7b51d60d838904f92d012921c69",
   "bundlePoleBitwy": "Gra-ROBOCZA-POLE-BITWY.html",
   "md5PoleBitwy": "d4477b3eaed627e426c41b9f8d0ad1f1"
 }

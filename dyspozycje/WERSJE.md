@@ -13,6 +13,14 @@ swoim wĹ‚asnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji d
 > Pakiet 3 z 2026-08-20 jest docs-only i nie tworzy wpisu ROBOCZA/KANON/FINALNA;
 > ten plik pozostaje wyłącznie rejestrem publikacji bundli.
 
+## ROBOCZA 8940a7b5 - 2026-09-07 17:05 UTC - FALA 357: dochod z tras handlowych przez pelna sciezke Daniny
+
+|- md5 (pełne): 8940a7b51d60d838904f92d012921c69 · stempel: ROBOCZA · label 8940a7b5 · źródłowy commit integracji: `269de23a`
+|- **`R-HANDEL-DOCHOD-PRZEZ-PODZIAL-MIASTA-Q1`** (`269de23a`, 1 runda + obrona) — dochód z tras handlowych ładował się dotąd w całości i „czysto" do skarbca, dodany PO mnożniku Wealth, pomijając zarówno mnożnik zamożności jak i suwaki Handlu (nauka/złoto/luksus). **ECHO właściciela: „Pełna integracja: przed mnożnikiem Wealth"** — dochód z tras wchodzi teraz do `handelBrutto` (`economy.ts`, nowe pole `CityYieldContext.dochodTrasHandlowych`) PRZED mnożnikiem Wealth, dzielony suwakami Handlu razem z resztą Daniny. Wzór samego dochodu z tras (`trade-routes.ts`) nietknięty. Evaluator złapał FAIL rundy 1 (jedno przeoczone miejsce podwójnego liczenia w `previewCityEconomy`, wpływające na projekcję HUD-u przy skarbcu), Obrona naprawiła w tej samej rundzie + dodała test parytetu preview/realny-tick, zweryfikowany mutacyjnie. `trade-routes-income-test` 119→122/122, `cuda-handel-test` 26/26, `wealth-test` 36/36 + 8 pobocznych bramek handlu/ekonomii bez regresji. **Skutek uboczny jawnie zaakceptowany przez właściciela: łączny dochód z handlu rośnie** (część strumienia idzie teraz do nauki/luksusu, ale suma wartości miasta jest wyższa).
+|- tsc --noEmit 0 błędów · 5 bramek referencyjnych zielonych (logic 213/213, tech-tree 19/19, research 33/33, unit-replace 13/13, combat 6/6) · Vite build 885 modułów, singlefile.
+|- Bundle pola bitwy (`Gra-ROBOCZA-POLE-BITWY.html`) pominięty — temat nie dotyka mechaniki walki polowej; md5 z FALI 353 zachowany bez zmian.
+|- **AKTUALNA**
+
 ## ROBOCZA 20de07b9 - 2026-09-07 15:20 UTC - FALA 356: kolor-surowce + civpedia-klik + trzy pary bramek test-only
 
 |- md5 (pełne): 20de07b92cf75d594726cc47f115aa31 · stempel: ROBOCZA · label 20de07b9 · źródłowe commity integracji: `0f3c0fb1` (kolor-surowce) + `7d507ed6` (civpedia-klik) + `64cfbe31` (design-zakladki) + `bdc02718`/`47ab0f3d`/`57c327d9` (test-only, już w FALI 355/356 łącznie)
@@ -23,7 +31,7 @@ swoim wĹ‚asnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji d
 |- tsc --noEmit 0 błędów · 5 bramek referencyjnych zielonych (logic 213/213, tech-tree 19/19, research 33/33, unit-replace 13/13, combat 6/6) · Vite build 885 modułów, singlefile.
 |- Bundle pola bitwy (`Gra-ROBOCZA-POLE-BITWY.html`) pominięty — żaden z tematów nie dotyka mechaniki walki polowej; md5 z FALI 353 zachowany bez zmian.
 |- **Domyka CAŁĄ kolejkę siedmiu tematów uruchomioną w pętli AutoBot 2026-09-07.**
-|- **AKTUALNA**
+|- **ZASTĄPIONA przez FALA 357**
 
 ## ROBOCZA 1c24560c - 2026-09-07 13:40 UTC - FALA 355: wezel E (OSTATNI audytu Prawo/Szczescie) + dwie pary zastanych bramek
 
