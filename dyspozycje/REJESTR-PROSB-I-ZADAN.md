@@ -93,7 +93,9 @@ historycznych wierszy poniżej; wpisy bez jednoznacznego dowodu nie są tu zgady
 | `R-HOTSEAT-ETAP-3-AKCESORY-EKONOMIA-Q1` | `ZINTEGROWANE` | Commit `302ea837`. Etap 3 planu hot-seat — `isHuman(ownerId)` alias + `playerStateByHuman` scaffold (zero kopii), osiem funkcji-akcesorów ekonomicznych (skarbiec/Praca/Nauka/era/zbadane technologie) przepisanych z `ownerId===0` na `isHuman(ownerId)`. `isPlayerOwner` w `difficulty-cost.ts` świadomie nietknięty (Final Control zgrepował wszystkie wywołania, potwierdził bezpieczeństwo). Behawioralny no-op potwierdzony trzykrotnie (bramka 52/52 + 5 bramek ekonomii/AI zielone i identyczne przed/po). Szczegóły wyżej (linia ok. 4643c). Następny krok: Etap 4 (rozcięcie `triggerPlayerEndTurn` — najwyższe ryzyko CAŁEGO planu). |
 | `R-HOTSEAT-ETAP-4-RECON-END-TURN-Q1` | `ZAMKNIĘTE (dokument)` | Commit `72345570`. Recon-only (zero kodu) dla Etapu 4 — najwyższe ryzyko całego planu hot-seat. Kompletna mapa 16 faz `triggerPlayerEndTurn()` (4469 linii), lokalizacja `turn++`, plan rozcięcia na `endActiveHumanTurn()`/`runWorldEndTurn()`/`advanceSeat()` z automatyzowalnym dowodem no-op. Kilka realnych znalezisk (kod „światowy" w bloku „gracza", identyfikatory odroczonych zdarzeń zawężone do `ownerId===0`, zależność `nextTurnNum` między fazami). Szczegóły wyżej (linia ok. 4643d). Następny krok: dispatch implementacji Etapu 4 (osobny temat, w oparciu o ten dokument). |
 | `R-HOTSEAT-ETAP4PREP-DEFERRED-OWNER-GUARDS-Q1` | `ZINTEGROWANE` | Commit `e2c765ac`. Podetap przygotowawczy do Etapu 4 — DWA z trzech odroczonych `ownerId===0` z recon (Ryzyko #4): `promptMergeIfCoLocated` (main.ts:10908) i `pendingAutoRationForNextTurn` (main.ts:28907) → `isHuman(ownerId)`. Trzecie miejsce (`deferredPlayerUnitRevealIds`, main.ts:30095) świadomie pominięte — Final Control potwierdził INNYM, silniejszym uzasadnieniem (`afterPlayerUnitSpawned` ma własny osobny guard + flush bierze tylko ostatni id z kolejki; wymaga zmiany struktury, nie prostej podmiany). Bramka `hotseat-etap3-akcesory-test` 52→64. Operator→Evaluator→Final Control, wszystkie trzy PASS, zero zarzutów. Szczegóły wyżej (linia ok. 4799). Nic do dispatchu z tego tematu — pełne rozcięcie `triggerPlayerEndTurn` (Etap 4 właściwy) wciąż niedispatchowane. |
-| `R-HOTSEAT-ETAP4-NOOP-HARNESS-Q1` | `W TOKU (Operator→Evaluator, Workflow)` | Worktree `/home/user/wt-hotseat-etap4-noop-harness`, baza `a5bb7651`. Buduje bramkę dowodu no-op z recon §6.2 (`gra/tools/hotseat-etap4-noop-test.cjs`, 30-turowa headless symulacja + hash SHA-256 stanu, deterministyczny `Math.random`) — zero zmian w `main.ts`, wyłącznie nowa infrastruktura testowa przygotowująca przyszłą, faktyczną rundę rozcięcia. Dispatch: `dyspozycje/autobot/runs/R-HOTSEAT-ETAP4-NOOP-HARNESS-Q1/00-dispatch.md`. Wynik jeszcze nieodebrany. |
+| `R-HOTSEAT-ETAP4-NOOP-HARNESS-Q1` | `W TOKU (Obrona PASS, czeka Final Control)` | Worktree `/home/user/wt-hotseat-etap4-noop-harness`, baza `a5bb7651`. Buduje bramkę dowodu no-op z recon §6.2 (`gra/tools/hotseat-etap4-noop-test.cjs`, 30-turowa headless symulacja + hash SHA-256 stanu, deterministyczny `Math.random`) — zero zmian w `main.ts`. Operator runda 1 PASS (commit `a44cb440`); Evaluator FAIL — 2 zarzuty realne (Run B crashował w 3/3 prób Evaluatora różnych turach — niestabilność bramki, plus zawis zamiast szybkiego BLOCK przy crashu przeglądarki); Obrona PRZYJĘŁA oba, naprawiła (`runOnceWithRetry` + `closeBrowserSafely` z race+SIGKILL fallback, commit `027b1c1d`), zweryfikowana 2× czystym PASS 30/30 po poprawce. Runda 1/5 (Obrona nie zwiększa licznika). Następny krok: Final Control (Sonnet 5), potem integracja. Dispatch: `dyspozycje/autobot/runs/R-HOTSEAT-ETAP4-NOOP-HARNESS-Q1/`. |
+| `R-ENTITYCARD-ROZWINIETE-SEKCJE-SCROLLBAR-Q1` | `W TOKU (runda 2, korekta modelu na Opus 5)` | Worktree `/home/user/wt-entitycard-rozwiniete-scrollbar`, baza `e29a772f`. GOAL: sekcje karty encji domyślnie rozwinięte (`openDefault: false→true` w `technologyAdapter.ts`) + trwale widoczny pasek przewijania (`.entity-card-dialog` CSS). Runda 1 (Operator+Evaluator błędnie na Sonnet 5, commit `a391307f`) — Evaluator sam zgłosił naruszenie proceduralne §5a (temat wizualny wymaga Opus 5) — orkiestrator potwierdził i zdyspozycjonował rundę 2 na `claude-opus-5` dla obu ról, weryfikującą (nie od zera) istniejący commit własnym żywym zrzutem Chromium. Wynik rundy 2 jeszcze nieodebrany. Dispatch: `dyspozycje/autobot/runs/R-ENTITYCARD-ROZWINIETE-SEKCJE-SCROLLBAR-Q1/`. |
+| `R-ULEPSZENIA-FARMA-IRYGACJA-BYDLO-STACK-Q1` | `ZINTEGROWANE` | Commit `a3649f23`. Usunięte wzajemne wykluczanie irygacja/bydło w `canAddFoodLayer()` (`gra/src/map/improvement-build.ts`) — pole z rzeką może mieć jednocześnie farmę+irygację+bydło (grafika już na to pozwalała, mechanika nie). Kanon `KANON-ULEPSZENIA-ZYWNOSC-HODOWLA.md` rozszerzony append-only (§11). Operator→Evaluator→Final Control PASS, żywy zrzut Chromium (build+render potrójnego stosu). Bramka tematu 133/134 (1 fail pre-istniejący, potwierdzony identyczny na czystej bazie przez Final Control, niezwiązany z tym diffem). 5 bramek referencyjnych zielone. Nic do dispatchu. |
 | `R-WOJNA-WYMUSZONA-PROG-TURY-GRACZ-Q1` | `ZINTEGROWANE, DEPLOY-ROBOCZA` | Commit `8a9a1271`, 3 rundy (runda 2 FAIL naprawiony). Żywy bug zgłoszony przez właściciela (zrzut ekranu, baner „BOOT ERROR" w turze 1) — dwa fixy: (1) próg tury `turn>=25` dla dołączenia gracza do puli parowania wojny wymuszonej, spójny z AI; (2) usunięcie bezterminowego przechwytywania `console.error` w `gra/index.html` (BOOT ERROR CATCHER), które zamieniało każdy zwykły log w czerwony baner „crash". 5 zastałych bramek testowych naprawionych (re-anchor, SEDNO zachowane). Final Control PASS, własna niezależna próbka + przeliczenie plików (realnie 14, nie 15/17). Pełne podsumowanie wyżej (linia ok. 6280). Nic do dispatchu. |
 
 ### Zasada migracji i historii
@@ -6930,3 +6932,30 @@ niekorzystną sytuację, zgodnie z już istniejącą matematyką; brak nowego za
 5/8 historycznych testów `P-DYPLO-BILANS-GATE` runda2/runda3 czerwienieje —
 udokumentowany, oczekiwany skutek świadomego zawężenia tamtej decyzji, nie
 regresja. Nic do dispatchu.
+
+## `R-ULEPSZENIA-FARMA-IRYGACJA-BYDLO-STACK-Q1` — GAME — **ZINTEGROWANE 2026-09-07** (commit `a3649f23`)
+
+Żywe zgłoszenie właściciela: grafika terenu już dopuszczała jednoczesne umieszczenie
+Farmy, Irygacji i Bydła na tym samym polu (przy dostępie do rzeki), ale mechanika
+(`canAddFoodLayer()`, `gra/src/map/improvement-build.ts`) nadal wymuszała wzajemne
+wykluczenie między gałęziami irygacja/bydło (`&& !hasB`/`&& !hasI`). Naprawa: usunięcie
+tych dwóch klauzul — warunki rzeki/złóż w `qualifies()` nietknięte, zmiana WYŁĄCZNIE
+dotyczy współwystępowania trzech konkretnych ulepszeń. Bonus sumuje się wprost
+(+10 żywność / +9 praca / +8 handel z `terrain-improvements.json`, prosta suma
+nieograniczona w `applyImprovementBonuses`) — świadomie duża przewaga pól z dostępem
+do wody, zgodnie z intencją właściciela ("ogromna przewaga miejsc z dostępem do wody").
+Kanon `docs/decyzje/KANON-ULEPSZENIA-ZYWNOSC-HODOWLA.md` rozszerzony append-only (§11).
+
+Operator→Evaluator→Final Control PASS. Final Control niezależnie: (a) potwierdził
+zakres diffu ograniczony do dwóch case'ów `irygacja`/`bydlo`; (b) sprawdził kanon
+zmieniony wyłącznie przez dopisanie (zero usuniętych linii); (c) uruchomił bramkę
+tematu `map-improvement-qualify-test.cjs` — 133 pass/1 fail ("oboz lowiecki OK na
+laka+las") i NIEZALEŻNIE zweryfikował przez tymczasowy `git worktree` na czystej
+bazie (`3f7c68e3`) że ten sam fail istnieje tam identycznie (130/131) — pre-istniejący,
+niezwiązany z tym tematem; (d) otworzył oba dowodowe zrzuty Chromium (toast budowy
+potrójnego stosu + zbliżenie renderu) i uznał je za wystarczające bez żądania
+lepszego zbliżenia, bo silnik danych (`getPlacedLayers`/`tileYield`) niezależnie
+dowodzi obecności wszystkich trzech warstw niezależnie od jakości ikony na zrzucie;
+(e) 5 bramek referencyjnych zielone (logic 213/213, tech-tree 19/19, research 33/33,
+unit-replace 13/13, combat 6/6); `tsc --noEmit` czysty. Integracja bezkonfliktowa
+(allowlist-only, 9 plików). Nic do dispatchu.
