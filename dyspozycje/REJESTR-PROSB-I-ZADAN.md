@@ -81,6 +81,7 @@ historycznych wierszy poniżej; wpisy bez jednoznacznego dowodu nie są tu zgady
 | `R-HOTSEAT-ETAP-0-HUMAN-OWNERS-Q1` | `ZINTEGROWANE` | Commit `94c475ec`. Etap 0 planu `docs/decyzje/PLAN-HOT-SEAT-2-GRACZY.md` — nowy moduł `gra/src/game/human-owners.ts` (kontrakt §B1) + martwa flaga `hotSeatEnabled()` w `main.ts` (+18/−0, zero zmiany istniejących linii). Żywy stan/aliasy świadomie odłożone do Etapu 1 (brak konsumenta dziś). Nowa bramka 29/29, Final Control potwierdził zero regresji własną próbką 9 bramek AI/dyplomacji przed/po. Szczegóły wyżej (linia ok. 4643). Następny krok: Etap 1. |
 | `R-HOTSEAT-ETAP-1-OWNERID-ISAIOWNER-Q1` | `ZINTEGROWANE` | Commit `87b33da3`. Etap 1 planu hot-seat — świeży audyt: 22 realne miejsca `ownerId>0`, 10 podmienionych na `isAiOwner(humanSeats,...)` (priorytet: `aiOwnerList` w pętli tur AI), 12 świadomie nietkniętych (semantyka `isMajorAiOwner`/miasto-państwo, inny zakres). Behawioralny no-op potwierdzony trzykrotnie (bramka + 93 bramki referencyjne/AI/dyplomacji identyczne przed/po). Szczegóły wyżej (linia ok. 4643a). Następny krok: Etap 2 (mgła wojny — najwyższe ryzyko fazy). |
 | `R-HOTSEAT-ETAP-2-MGLA-WOJNY-Q1` | `ZINTEGROWANE` | Commit `f3c0becf`. Etap 2 planu hot-seat (najwyższe ryzyko fazy) — `ME()`/`exploredByHuman` scaffold + migracja całej warstwy renderu/wykrywania widoczności mgły (`ownPlayerVisibleHexes`/`currentVisible`/`refreshFog`/`cityFogVisible`/`unitsVisibleOnMap`/`applyFogVisibility`/`getMinimapData`) na `ME()`. Behawioralny no-op potwierdzony trzykrotnie niezależnie (hash treści zbioru `explored` identyczny przed/po, żywy Chromium). Save/load, dyplomacja-ujawnianie i granica terytorium świadomie poza zakresem (inne etapy planu). Szczegóły wyżej (linia ok. 4643b). Następny krok: Etap 3. |
+| `R-HOTSEAT-ETAP-3-AKCESORY-EKONOMIA-Q1` | `ZINTEGROWANE` | Commit `302ea837`. Etap 3 planu hot-seat — `isHuman(ownerId)` alias + `playerStateByHuman` scaffold (zero kopii), osiem funkcji-akcesorów ekonomicznych (skarbiec/Praca/Nauka/era/zbadane technologie) przepisanych z `ownerId===0` na `isHuman(ownerId)`. `isPlayerOwner` w `difficulty-cost.ts` świadomie nietknięty (Final Control zgrepował wszystkie wywołania, potwierdził bezpieczeństwo). Behawioralny no-op potwierdzony trzykrotnie (bramka 52/52 + 5 bramek ekonomii/AI zielone i identyczne przed/po). Szczegóły wyżej (linia ok. 4643c). Następny krok: Etap 4 (rozcięcie `triggerPlayerEndTurn` — najwyższe ryzyko CAŁEGO planu). |
 
 ### Zasada migracji i historii
 
@@ -4727,6 +4728,35 @@ zakresem): `refreshTerritoryBorderOverlay` (main.ts ok. 11587) ma niezmigrowany 
 
 **Następny krok:** Etap 3 (`docs/decyzje/PLAN-HOT-SEAT-2-GRACZY.md` §C, wiersz „3") —
 `playerStateByHuman`, przepisanie akcesorów ekonomicznych.
+
+## `R-HOTSEAT-ETAP-3-AKCESORY-EKONOMIA-Q1` — INFRA — **ZINTEGROWANE 2026-09-07** (commit `302ea837`)
+
+Etap 3 z §C planu hot-seat (plan ocenia tę kategorię jako „bezpieczny"). Nowy alias
+`isHuman(ownerId)` (cienki wrapper na `isHumanOwner` z `human-owners.ts`) i scaffold
+`playerStateByHuman` (`Map`, jeden wpis `HUMAN_OWNER_PRIMARY`, DOSŁOWNIE te same
+obiekty/pola co dziś — `player`, `playerPracaPool` przez komórkę getter/setter dla
+prymitywu, zero kopii, ten sam wzorzec co `exploredByHuman` z Etapu 2). Osiem funkcji-
+akcesorów przepisanych: `empireEpochForOwner`/`initOwnerEra`, `ownerTreasury`/
+`setOwnerTreasury`, `ownerPracaPool`/`setOwnerPracaPool` (zapis cache `_lastPraca`
+zachowany), `ownerNaukaPool`/`setOwnerNaukaPool`, `ownerResearchedTechs`/
+`addOwnerResearchedTechs`. `isPlayerOwner` w `game/difficulty-cost.ts` świadomie
+nietknięty — Final Control niezależnie zgrepował WSZYSTKIE jej wywołania w repo i
+potwierdził, że jedyni konsumenci (`scaledResearchCost`, main.ts) hardkodują `ownerId=0`
+w kontekście gracza wprost; zmiana byłaby osobną decyzją produktową, nie tego tematu.
+
+Behawioralny no-op potwierdzony trzykrotnie niezależnie (Operator, Evaluator, Final
+Control, każdy własnym `git stash`/`checkout` + uruchomieniem bramek): nowa bramka
+52/52 (osiem funkcji × ownerId 0/1/2/42 × odczyt/zapis), `difficulty-cost-test`/
+`wealth-test`/`ai-major-economy-test`/`ai-praca-podzial-tura1-seed-test`/
+`ai-praca-split-parity-test` zielone i identyczne przed/po (jeden pre-istniejący,
+niezwiązany fail w `ai-praca-split-parity-test` potwierdzony identyczny w obu
+przebiegach przez wszystkie trzy role). 5 bramek referencyjnych zielone.
+
+**Następny krok:** Etap 4 (`docs/decyzje/PLAN-HOT-SEAT-2-GRACZY.md` §C, wiersz „4") —
+rozcięcie `triggerPlayerEndTurn()` na `endActiveHumanTurn()`/`runWorldEndTurn()` —
+plan oznacza to jako **najwyższe ryzyko całego planu** (4500 linii w najgorętszym
+pliku repo, 103 commity/30 dni w tym samym rejonie) — wymaga szczególnie ostrożnego
+dispatchu, prawdopodobnie rozbicia na wiele rund.
 
 ## R-HOTSEAT-MULTIPLAYER-HOSTING-Q1 — temat na przyszłość (rejestracja 2026-09-04, noc)
 
