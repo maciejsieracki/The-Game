@@ -64,6 +64,7 @@ import { brandIconSvg, civIconSvg } from './icons/brandAssets';
 import { leaderPortraitUrl } from './leaderPortraits';
 import { ensureBrandRootTokens, CIV_BRAND_SCOPE_VARS } from './brandTokenVars';
 import { chip6cHtml, chip6cSep } from './hudChip6c';
+import { resourceColorClassCss, resourceTextClass } from './resourceColors';
 import { installHudTitleTooltips } from './hudTitleTooltip';
 import { createLeaderBannersHud, type LeaderBannersHudApi } from './leaderBannersHud';
 import { createContextPanelHud, type ContextPanelHudApi } from './contextPanelHud';
@@ -604,7 +605,13 @@ html.civ-ui-zoom-active .civ-hud .b-wiki{padding:0 11px;font-size:11px;letter-sp
 .civ-hud .civ-hud-chip-med svg:not(.civ-science-prog-ring){width:17px;height:17px;display:block;}
 .civ-hud .civ-hud-chip-lbl{font-size:11px;color:var(--civ-text-muted);}
 .civ-hud .civ-hud-chip-val{font-size:15px;font-weight:700;color:var(--civ-gold-primary);}
-.civ-hud .civ-hud-chip-val.science{color:#7cb4e4;}
+/* P-KOLOR-SUROWCE-MIASTO-VS-MAPA-Q1: kolor tozsamosci szesciu surowcow pochodzi
+   WYLACZNIE z palety resourceColors.ts — z tego samego modulu czyta panel miasta.
+   Wczesniej Nauka miala tu wlasny literal #7cb4e4, nieobecny w kanonie tokenow.
+   Reguly palety sa DOKLEJANE PO tym literale szablonowym (patrz koniec ensureStyles),
+   a nie wstawiane wstawka szablonowa: build-panel-ulepszenia-scroll-real-render-test.cjs
+   replikuje ten literal i czerwienieje na kazdej wstawce spoza swojej mapy. Doklejenie
+   na koncu zachowuje tez kolejnosc kaskady wobec .civ-hud .civ-hud-chip-val. */
 .civ-hud .civ-hud-chip-rate{font-size:10px;color:var(--tg-green);}
 .civ-hud .civ-hud-chip-rate.warn{color:var(--tg-orange);}
 .civ-hud .hud-right{display:flex;align-items:center;gap:${HUD_GAP_MD_PX}px;flex-shrink:0;}
@@ -730,7 +737,7 @@ html.civ-ui-zoom-active .civ-hud-util-dock{
 `;
   const s = document.createElement('style');
   s.id = STYLE_ID;
-  s.textContent = css;
+  s.textContent = css + '\n' + resourceColorClassCss('.civ-hud') + '\n';
   document.head.appendChild(s);
 }
 
@@ -1028,6 +1035,7 @@ function renderBarD1B(s: HudState): string {
       iconId: 'res-treasury',
       label: 'Skarbiec',
       value: String(s.bogactwo),
+      valClass: ` ${resourceTextClass('skarbiec')}`,
       rate: signed(s.bogactwoRate ?? 0),
       act: 'skarbiec',
       title: skarbiecChipTitle(s),
@@ -1037,6 +1045,7 @@ function renderBarD1B(s: HudState): string {
       iconId: 'res-work',
       label: 'Praca',
       value: String(s.praca),
+      valClass: ` ${resourceTextClass('praca')}`,
       rate: signed(s.pracaRate),
       rateWarn: s.pracaRate < 0,
       act: 'praca',
@@ -1047,6 +1056,7 @@ function renderBarD1B(s: HudState): string {
       iconId: 'res-food',
       label: 'Spichlerz',
       value: formatFoodHudLabel(s),
+      valClass: ` ${resourceTextClass('zywnosc')}`,
       rate: signed(s.zywnoscRate ?? 0),
       // P-SPICHLERZ-ZERO-MYLACE: chip czerwony też przy niedokarmionych miastach, nie
       // tylko przy głodzie wojska/ujemnym tempie — sam kolor ma sygnalizować deficyt.
@@ -1063,7 +1073,7 @@ function renderBarD1B(s: HudState): string {
       value: String(Math.floor(s.nauka)),
       rate: signed(s.naukaRate ?? 0),
       medVariant: 'science',
-      valClass: ' science',
+      valClass: ` ${resourceTextClass('nauka')}`,
       act: 'nauka',
       title: naukaChipTitle(s),
       researchProgress: resolveResearchProgress(s),
@@ -1144,6 +1154,7 @@ function renderBarD1B(s: HudState): string {
       iconId: 'res-culture',
       label: 'Kultura',
       value: String(Math.floor(s.kultura)),
+      valClass: ` ${resourceTextClass('kultura')}`,
       rate: signed(s.kulturaRate ?? 0),
       act: 'kultura',
       title: kulturaChipTitle(s),
@@ -1153,6 +1164,7 @@ function renderBarD1B(s: HudState): string {
       iconId: 'res-religion',
       label: 'Religia',
       value: String(Math.round(s.religionStock ?? 0)),
+      valClass: ` ${resourceTextClass('religia')}`,
       rate: signed(s.religionRate ?? 0),
       act: 'religia',
       title: religiaChipTitle(s),
