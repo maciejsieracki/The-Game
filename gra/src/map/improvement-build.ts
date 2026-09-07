@@ -796,11 +796,17 @@ export function canAddFoodLayer(existing: readonly string[], newKey: string): bo
       if (ex.length === 0) return true;
       return ex.length === 1 && (hasI || hasB);
     case 'irygacja':
+      // R-ULEPSZENIA-FARMA-IRYGACJA-BYDLO-STACK-Q1 (2026-09-07, ECHO właściciela):
+      // farma+irygacja (jak dotąd) LUB farma+irygacja+bydlo (nowe) — jedyny warunek to
+      // obecność farmy; obecność bydła już NIE blokuje (dawne `&& !hasB` usunięte).
       if (ex.length === 0) return true;
-      return ex.length === 1 && hasF && !hasB;
+      return hasF;
     case 'bydlo':
+      // R-ULEPSZENIA-FARMA-IRYGACJA-BYDLO-STACK-Q1 (2026-09-07, ECHO właściciela):
+      // farma+bydlo (jak dotąd) LUB farma+irygacja+bydlo (nowe) — jedyny warunek to
+      // obecność farmy; obecność irygacji już NIE blokuje (dawne `&& !hasI` usunięte).
       if (ex.length === 0) return true;
-      return ex.length === 1 && hasF && !hasI;
+      return hasF;
     default:
       return false;
   }

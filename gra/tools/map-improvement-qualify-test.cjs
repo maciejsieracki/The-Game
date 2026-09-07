@@ -178,13 +178,30 @@ ok(!qA7small('lodzie_rybackie', 9, 0), 'A-R7: lodzie morze OUTSIDE territory (po
 ok(M.canAddFoodLayer([], 'farma'), 'layer: empty + farma');
 ok(M.canAddFoodLayer(['farma'], 'irygacja'), 'AC-M3: farma+irygacja');
 ok(M.canAddFoodLayer(['farma'], 'bydlo'), 'AC-M4: farma+bydlo');
-ok(!M.canAddFoodLayer(['farma', 'irygacja'], 'bydlo'), 'AC-M4: no farma+irygacja+bydlo');
-ok(!M.canAddFoodLayer(['farma', 'bydlo'], 'irygacja'), 'AC-M4: no farma+bydlo+irygacja');
+// R-ULEPSZENIA-FARMA-IRYGACJA-BYDLO-STACK-Q1 (2026-09-07, ECHO wlasciciela): kanon
+// odwrocony w tej czesci — farma+irygacja+bydlo NAJEDNYM heksie jest teraz DOZWOLONE
+// (bylo: `ok(!M.canAddFoodLayer(...), 'AC-M4: no farma+irygacja+bydlo')` x2, zakaz XOR).
+ok(M.canAddFoodLayer(['farma', 'irygacja'], 'bydlo'), 'R-STACK-Q1: farma+irygacja+bydlo (dodanie bydla)');
+ok(M.canAddFoodLayer(['farma', 'bydlo'], 'irygacja'), 'R-STACK-Q1: farma+bydlo+irygacja (dodanie irygacji)');
+// Podprzypadek NIE zmieniony celowo (dispatch §1): irygacja+bydlo BEZ farmy nadal
+// niedozwolone — obie warstwy nadal wymagaja obecnosci farmy w `ex`.
+ok(!M.canAddFoodLayer(['bydlo'], 'irygacja'), 'R-STACK-Q1: nadal brak irygacja+bydlo BEZ farmy');
+ok(!M.canAddFoodLayer(['irygacja'], 'bydlo'), 'R-STACK-Q1: nadal brak irygacja+bydlo BEZ farmy (odwrotna kolejnosc)');
 ok(!M.canAddFoodLayer(['owce'], 'farma'), 'AC-M5: owce solo blocks farma');
 const placed = new Map([['2,0', ['bydlo']]]);
 const qRzymUnlock = qual({ civ: 'rzym', placed });
 ok(qRzymUnlock('bydlo', 8, 0), 'AC-M4: bydlo layer on hex with farma (with unlock)');
-ok(!qRzym('irygacja', 0, 0), 'AC-M4: irygacja blocked when farma+bydlo');
+// AC-M4 (nieaktualne od R-STACK-Q1): hex 0,0 nie ma rzeki w sasiedztwie (rzeka jest przy
+// 0,2/6,2) — irygacja jest tu blokowana przez WARUNEK TERENOWY (brak rzeki), NIE juz
+// przez limit warstw zywnosci (ten limit teraz dopuszcza trojke). Test nadal PASS, ale
+// z innego powodu — patrz test na hexie z rzeka nizej.
+ok(!qRzym('irygacja', 0, 0), 'irygacja blocked: brak rzeki w sasiedztwie (NIE limit warstw)');
+const qRzymRiverFarmaBydlo = qual({
+  civ: 'rzym',
+  placed: new Map([['0,2', ['farma', 'bydlo']]]),
+});
+ok(qRzymRiverFarmaBydlo('irygacja', 0, 2),
+  'R-STACK-Q1: irygacja qualifies na farma+bydlo PRZY RZECE (trojka mozliwa)');
 ok(qRzymUnlock('bydlo', 1, 0), 'bydlo after empire unlock from pastwisko on zloze');
 
 const qInkaE3 = qual({ civ: 'inkowie', era: 3, placed: new Map([['2,0', ['bydlo']]]) });
@@ -375,8 +392,12 @@ const impactOwceTartak = M.computeImprovementBuildImpact('owce', hexes['10,0'], 
 ok(impactOwceTartak, 'impact NIE-null: owce on las+tartak (zakaz cofniety)');
 ok(impactOwceTartak && impactOwceTartak.removedImprovements.length === 0,
   'owce NIE zdejmuja tartaku (inny sektor)');
+// R-ULEPSZENIA-FARMA-IRYGACJA-BYDLO-STACK-Q1 (2026-09-07): bylo
+//   `ok(farmaIrr === null, 'kanon: bydlo blocked on farma+irygacja (no replace)')`
+// Kanon odwrocony (ECHO wlasciciela) — bydlo teraz DOZWOLONE na farma+irygacja (trojka).
 const farmaIrr = M.computeImprovementBuildImpact('bydlo', hexes['0,0'], ['farma', 'irygacja']);
-ok(farmaIrr === null, 'kanon: bydlo blocked on farma+irygacja (no replace)');
+ok(farmaIrr !== null && farmaIrr.removedImprovements.length === 0,
+  'R-STACK-Q1: bydlo dozwolone na farma+irygacja (trojka, bez usuwania warstw)');
 
 const clayHex = { terenBazowy: TB.Rownina, nakladka: NK.ZlozeGliny };
 ok(!M.hexSuppressesDepositOverlay({ ...clayHex, ulepszenia: ['farma'] }), 'BUG-FARMA-GLINA: farma NIE chowa gliny');
