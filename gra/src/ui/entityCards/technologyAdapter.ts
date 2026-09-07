@@ -331,7 +331,9 @@ export const technologyAdapter: EntityCardAdapter<RawTech> = (tech) => {
       actionsSection, buildingsSection, unitsSection, improvementsSection,
       nextTechsSection, econSection, requirementsSection, emptySection,
     ],
-    civpediaLink: null,
+    // P-ENTITYCARD-CIVPEDIA-KLIK-MARTWY-Q1 — uzasadnienie jak w `unitAdapter.ts`.
+    // Folder = katalog `docs/encyklopedia/technologie/`.
+    civpediaLink: { folder: 'technologie', slug: technologyIdFromName(tech['Technologia']) },
     // Paginacja jednostek (previewLimit) sprzęga się z kompaktowym nagłówkiem karty —
     // wzorem `tdn-card--compact`/`wireInteractions()` w `techDiscoveryNotice.ts` (T1b).
     compactHeaderOnExpand: true,

@@ -1,0 +1,67 @@
+[
+  {
+    "file": "01-budynek-z-haslem",
+    "kind": "building",
+    "id": "biblioteka",
+    "title": "Biblioteka",
+    "hasButton": true,
+    "folder": "budynki",
+    "slug": "biblioteka",
+    "clicked": true,
+    "wikiOpen": false,
+    "wikiTitle": null,
+    "note": null
+  },
+  {
+    "file": "02-jednostka",
+    "kind": "unit",
+    "id": "wlocznik",
+    "title": "Włócznik",
+    "hasButton": false,
+    "folder": null,
+    "slug": null,
+    "clicked": false,
+    "wikiOpen": false,
+    "wikiTitle": null,
+    "note": null
+  },
+  {
+    "file": "03-technologia",
+    "kind": "technology",
+    "id": "brazownictwo",
+    "title": "Brązownictwo",
+    "hasButton": false,
+    "folder": null,
+    "slug": null,
+    "clicked": false,
+    "wikiOpen": false,
+    "wikiTitle": null,
+    "note": null
+  },
+  {
+    "file": "04-ulepszenie-terenu",
+    "kind": "improvement",
+    "id": "farma",
+    "title": "Farma",
+    "hasButton": false,
+    "folder": null,
+    "slug": null,
+    "clicked": false,
+    "wikiOpen": false,
+    "wikiTitle": null,
+    "note": null
+  },
+  {
+    "file": "05-budynek-brak-hasla",
+    "kind": "building",
+    "id": "akwedukt",
+    "title": "Akwedukt",
+    "hasButton": true,
+    "folder": "budynki",
+    "slug": "akwedukt",
+    "clicked": true,
+    "wikiOpen": false,
+    "wikiTitle": null,
+    "note": null
+  }
+]

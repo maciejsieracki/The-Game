@@ -1,0 +1,72 @@
+[
+  {
+    "file": "01-budynek-z-haslem",
+    "kind": "building",
+    "id": "biblioteka",
+    "title": "Biblioteka",
+    "hasButton": true,
+    "folder": "budynki",
+    "slug": "biblioteka_nieistniejacy_mutB",
+    "clicked": true,
+    "hitsSelf": true,
+    "wikiOpen": false,
+    "wikiTitle": null,
+    "note": "Civpedia nie ma jeszcze hasła „Biblioteka\". Ten wpis czeka na napisanie."
+  },
+  {
+    "file": "02-jednostka",
+    "kind": "unit",
+    "id": "wlocznik",
+    "title": "Włócznik",
+    "hasButton": true,
+    "folder": "jednostki",
+    "slug": "wlocznik_nieistniejacy_mutB",
+    "clicked": true,
+    "hitsSelf": true,
+    "wikiOpen": false,
+    "wikiTitle": null,
+    "note": "Civpedia nie ma jeszcze hasła „Włócznik\". Ten wpis czeka na napisanie."
+  },
+  {
+    "file": "03-technologia",
+    "kind": "technology",
+    "id": "brazownictwo",
+    "title": "Brązownictwo",
+    "hasButton": true,
+    "folder": "technologie",
+    "slug": "brazownictwo_nieistniejacy_mutB",
+    "clicked": true,
+    "hitsSelf": true,
+    "wikiOpen": false,
+    "wikiTitle": null,
+    "note": "Civpedia nie ma jeszcze hasła „Brązownictwo\". Ten wpis czeka na napisanie."
+  },
+  {
+    "file": "04-ulepszenie-terenu",
+    "kind": "improvement",
+    "id": "farma",
+    "title": "Farma",
+    "hasButton": true,
+    "folder": "ulepszenia",
+    "slug": "farma_nieistniejacy_mutB",
+    "clicked": true,
+    "hitsSelf": true,
+    "wikiOpen": false,
+    "wikiTitle": null,
+    "note": "Civpedia nie ma jeszcze hasła „Farma\". Ten wpis czeka na napisanie."
+  },
+  {
+    "file": "05-budynek-brak-hasla",
+    "kind": "building",
+    "id": "akwedukt",
+    "title": "Akwedukt",
+    "hasButton": true,
+    "folder": "budynki",
+    "slug": "akwedukt_nieistniejacy_mutB",
+    "clicked": true,
+    "hitsSelf": true,
+    "wikiOpen": false,
+    "wikiTitle": null,
+    "note": "Civpedia nie ma jeszcze hasła „Akwedukt\". Ten wpis czeka na napisanie."
+  }
+]

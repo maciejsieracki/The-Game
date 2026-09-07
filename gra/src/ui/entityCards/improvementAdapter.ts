@@ -210,7 +210,11 @@ export const improvementAdapter: EntityCardAdapter<ImprovementRow> = (improvemen
     subtitle: subtitleParts.length > 0 ? subtitleParts.join(' · ') : undefined,
     medallion: { kind: 'icon', svg: key ? improvementIconSvg(key, 34) : PLACEHOLDER_ICON_SVG },
     sections: [bonusSection, requirementsSection, resourceSection, unlockSection],
-    civpediaLink: null,
+    // P-ENTITYCARD-CIVPEDIA-KLIK-MARTWY-Q1 — uzasadnienie jak w `unitAdapter.ts`.
+    // Folder = katalog `docs/encyklopedia/ulepszenia/`. `slug` jest tu placeholderem
+    // z tego samego powodu co `id` wyżej — `buildEntityCardData` nadpisze go kanonicznym
+    // `id` zapytania, więc rozjazd placeholdera i realnego klucza jest niemożliwy.
+    civpediaLink: { folder: 'ulepszenia', slug: key ?? nazwa },
     historicalNote: hasValue(improvement.historia) ? text(improvement.historia) : undefined,
   };
 };
