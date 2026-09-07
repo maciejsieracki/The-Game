@@ -64,6 +64,8 @@ historycznych wierszy poniżej; wpisy bez jednoznacznego dowodu nie są tu zgady
 | `P-SCIENCE-HUB-TEST-BASELINE-2-4-Q1` | `ZINTEGROWANE` | Przyczyna: stary próg `>=5` w teście od początku (era Kamień ma stabilnie 4 technologie Poziom=1 bez prereq). Naprawiony na `>=4` + komentarz. Zero zmian w `gra/src/`/`gra/data/`. Operator→Evaluator→Final Control PASS. Zintegrowane do `main`. |
 | `R-MIASTA-SZCZESCIE-PRAWO-BALANS-AUDYT-Q1` | `ZINTEGROWANE — CAŁY audyt zamknięty 2026-09-07` | Węzły A-E wszystkie domknięte (A,C zintegrowane wcześniej; B pokryty przez `R-SZCZESCIE-PRZEBUDOWA-SKALI-Q1`; D `5cee546d` — zero zmiany, progi już odporne; E `39de5e26` — tooltip wagi bazowej). Szczegóły: sekcje `R-SZCZESCIE-AUDYT-D-...`/`R-SZCZESCIE-AUDYT-E-...` niżej w tym pliku (linie ok. 6190-6291). Nic do dispatchu. |
 | `R-DYPLO-RELACJA-ETYKIETA-BLEDNA-Q1` | `ZINTEGROWANE` | Commit `22aea4fc`. Fałszywa etykieta "Relacja 100" w Stole negocjacji pokoju naprawiona — `relCurrent` teraz ustawiane na realną wartość (relSigned=-71→relTotal=29), bramka bilansu PW dla pokoju nietknięta (nadal zawsze aktywna, kanon `P-DYPLO-BILANS-GATE` runda 4). Operator→Evaluator→Final Control PASS. Szczegóły wyżej (linia ok. 6799). Następny krok: `R-DYPLO-POKOJ-KIERUNEK-I-ZADANIE-AI-Q1` w toku. |
+| `R-HANDEL-WYMIANA-DAR-DEADLOCK-Q1` | `ZINTEGROWANE` | Commit `ed0b518b`. Punktowy wyjątek: technologia "Wymiana" da się podarować bez jej prereqów u odbiorcy (deadlock: bez tego partner nigdy nie mógł odblokować handlu). Decyzja projektowa orkiestratora W NOCY, bez ECHO właściciela — do potwierdzenia rano. Operator→Evaluator→Final Control PASS. Szczegóły wyżej (linia ok. 6864). |
+| `R-HUD-ZETONY-EKONOMIA-BRUTTO-Q1` | `ZINTEGROWANE` | Commit `7147ba87`. Żetony Praca/Skarbiec/Nauka na brutto (ECHO właściciela: "wszystkie trzy", odwraca dawny wzorzec netto-na-żetonie). Operator→Evaluator→Final Control PASS. Szczegóły wyżej (linia ok. 6878). |
 | `P-SZCZESCIE-MALE-MIASTO-100PCT-BEZ-BUDYNKOW-Q1` | `ZAMKNIĘTE (ECHO: zostaw)` | Zrzut właściciela: Szczęście 100% w mieście 1 mieszk. bez wkładu budynków. Policzone dokładnie: `szMax=30` (era 1, pop≤próg odniesienia), suma linii niebudynkowych ze zrzutu = dokładnie 30 → 100%. Nie błąd — efekt niskiego mianownika + duży bonus Osiedla/Kultury-Religii przy pop.1. ECHO właściciela: „Zostaw jak jest". Przy okazji dispatchowany osobny temat UI `R-PORZADEK-PANEL-PUNKTY-ABSOLUTNE-Q1` (pokazanie netto/max obok %, w toku). Szczegóły wyżej (linia ok. 6398). |
 | `R-PORZADEK-PANEL-PUNKTY-ABSOLUTNE-Q1` | `ZINTEGROWANE` | Commit `652855db`. Bloki Szczęście/Prawo panelu miasta + karta szczegółów Porządku pokazują teraz punkty netto/max obok procentu (np. "27% (9/35 pkt)") — zero zmiany formuły/zaokrąglenia procentu, wartości wprost z `society-breakdown.ts` (`ordPct.sz.szMax`/`ordPct.prawo.prawMax`). Operator→Evaluator (2 zarzuty: brak ostrzeżenia o legacy polu `state.porzadek` — PRZYJĘTE, dopisano komentarz; niespójność zaokrągleń pkt vs. % — ODDALONE, strukturalny artefakt trzech niezależnie zaokrąglanych liczb, istniał już przed tematem)→Final Control PASS (oba zarzuty ODDAL). Żywy zrzut Playwright 10/10. Nic do dispatchu. |
 | `P-DYPLO-DWA-TESTY-CZERWONE-ZASTANE-Q1` | `ZINTEGROWANE` | Commit `bdc02718`. Dwie zastałe czerwone bramki dyplomacji przekotwiczone na aktualny kod, plus Final Control naprawił 2 dodatkowe fałszywe alarmy tej samej klasy w `maskNonCode()`. Szczegóły niżej (linia ok. 6233). Nic do dispatchu. |
@@ -6870,3 +6872,31 @@ pola dodane w sąsiednich liniach), rozwiązane ręcznie zachowując OBA pola
 po scaleniu (`capital-capture-test` 107/107, `miasto-zdobycie-raport-test` 105/105,
 `eliminacja-lup-kwoty-test` 38/38, `podboj-kolejka-budynek-niemozliwy-test` 79/79,
 5 bramek referencyjnych). Nic do dispatchu.
+
+## `R-HANDEL-WYMIANA-DAR-DEADLOCK-Q1` — GAME — **ZINTEGROWANE 2026-09-07** (commit `ed0b518b`)
+
+Żywe zgłoszenie właściciela: technologia "Wymiana" (jedyna odblokowująca CAŁY handel
+z partnerem) nie dawała się podarować/przehandlować cywilizacji Harappa, mimo jej
+posiadania. Recon ujawnił realny deadlock kompozycyjny między dwiema OSOBNO poprawnymi,
+wcześniej zamkniętymi decyzjami: `R-HANDEL-WYMIANA-TECH-GATE-Q1` (cały handel wymaga
+zbadanej "Wymiany" przez partnera) + `P-HANDEL-TECH-BRAK-PREREQ-PO-FILTRZE` (dar
+technologii wymaga zbadanych jej prereqów przez odbiorcę) — razem: partnera bez
+Garncarstwa/Rolnictwa/Oswojenia zwierząt nie dało się nigdy podciągnąć przez dar.
+Naprawa: punktowy wyjątek WYŁĄCZNIE dla `TRADE_TECH`="Wymiana" w
+`techIdsWithPrereqsMetForRecipient` i `grantTechToOwner` — reguła ogólna (prereq dla
+wszystkich innych technologii) nietknięta, potwierdzone kontrolą regresu (Koło nadal
+blokowane). **Decyzja projektowa podjęta autonomicznie przez orkiestratora w nocy**
+(właściciel spał) — odwracalna, do ABC jeśli właściciel się nie zgodzi. Operator→
+Evaluator→Final Control PASS, zero zarzutów.
+
+## `R-HUD-ZETONY-EKONOMIA-BRUTTO-Q1` — GAME — **ZINTEGROWANE 2026-09-07** (commit `7147ba87`)
+
+Żywe zgłoszenie właściciela (po ECHO na 3 opcje, wybrał "Wszystkie trzy na brutto"):
+żetony HUD Praca/Skarbiec/Nauka pokazywały netto (po odjęciu kosztów) zamiast łącznego
+przyrostu. To odwraca wcześniejszy, identyczny wzorzec (netto na żetonie, brutto tylko
+w tooltipie) obowiązujący od dawna dla wszystkich trzech surowców — po przedstawieniu
+że to ta sama, świadoma wcześniejsza decyzja, właściciel zdecydował się ją odwrócić
+teraz dla spójności zamiast robić wyjątek tylko dla Pracy. Dociągnięto brakujące pole
+`_lastPracaCudaKoszt` (drenaż "Cuda na mapie"), żeby brutto Pracy było kompletne. Zapas
+puli (liczba przed "+X") bez zmian. Operator→Evaluator→Final Control PASS, zero
+zarzutów, żywy zrzut trzech żetonów jednocześnie na brutto.
