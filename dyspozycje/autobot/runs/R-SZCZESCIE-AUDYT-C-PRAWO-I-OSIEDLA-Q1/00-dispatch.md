@@ -85,6 +85,10 @@ Operator/Evaluator/Final Control.
 - `gra/data/society-params.json` (WYŁĄCZNIE klucz `prawo_bonus_osiedle_pop`)
 - Bramka: rozszerzenie istniejącej (`prawo-przebudowa-skali-test.cjs` lub podobnej) LUB nowa
   `gra/tools/szczescie-audyt-c-prawo-osiedla-test.cjs` — uzasadnij wybór w raporcie
+- **Rozszerzenie z RATYFIKACJI ORKIESTRATORA (runda 2, `decision-abc.md`):**
+  `gra/tools/szczescie-skala-normalizacja-test.cjs` i `gra/tools/society-breakdown-test.cjs`
+  — WYŁĄCZNIE przepisanie hardkodowanych asercji na starą wartość `prawo_bonus_osiedle_pop`
+  na sprawdzanie z danych, zero osłabienia liczby asercji, mapowanie stara→nowa w raporcie.
 - `dyspozycje/autobot/runs/R-SZCZESCIE-AUDYT-C-PRAWO-I-OSIEDLA-Q1/**`
 
 Zakazane bezwzględnie: pliki z sekretami, `docs/decyzje/**`, `.git/**`, `dyspozycje/WERSJE.md`,

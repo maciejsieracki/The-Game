@@ -70,3 +70,33 @@ Do rozstrzygnięcia: czy rozszerzyć allowlistę o te dwie bramki (przeliczenie 
 NOWE, zmierzone wartości — analogicznie jak własna bramka tego tematu), czy zostawić je
 czerwone do osobnego, następnego tematu porządkującego (ryzyko: czerwone bramki w rodzinie
 Prawo/Szczęście do czasu tamtego tematu).
+
+---
+
+## RATYFIKACJA ORKIESTRATORA (decyzja właściciela, 2026-09-07)
+
+**Punkt A — magnitude:** „Przyjmij częściową poprawę teraz" (rekomendacja). Temat zamyka się
+na zmierzonym wyniku **20,0 p.p.** (liczba Evaluatora/Obrony po naprawie zarzutu 1, szersza
+i dokładniejsza siatka niż pierwotne 19,3 p.p. Operatora) — realna redukcja z 28,0 p.p.
+Podłoga **16,5 p.p.** (połowa pochodząca z nietkniętego tu urwiska `szczescie_bonus_osiedle_pop`)
+zostaje **jawnie zarejestrowana jako znane ograniczenie architektoniczne** w rejestrze
+zamknięcia tego tematu — kandydat do osobnego, większego tematu w przyszłości (wymagałby
+albo ponownego dotknięcia już zintegrowanych liczb Szczęścia G10, albo zmiany samego
+mechanizmu `pickOsiedlePopBonus` w kodzie na łagodne wygaszanie zamiast twardego progu —
+obie opcje ODRZUCONE dla TEGO tematu, nie są w jego zakresie).
+
+**Punkt B — allowlista bramek:** „Rozszerz allowlistę o te dwie bramki" (rekomendacja).
+Allowlista tego tematu zostaje NINIEJSZYM rozszerzona o:
+- `gra/tools/szczescie-skala-normalizacja-test.cjs`
+- `gra/tools/society-breakdown-test.cjs`
+
+Obie bramki mają zostać przepisane na sprawdzanie WŁAŚCIWOŚCI (odczyt z
+`society-params.json`/obliczenie oczekiwanej wartości z danych), nie literału starej liczby —
+dokładnie ten sam wzorzec co przy `eliminacja-lup-kwoty-test.cjs` w temacie Prawa tej samej
+sesji. **Zakaz osłabienia:** liczba realnych asercji w obu plikach nie może spaść, każda
+zastąpiona asercja musi mieć udokumentowane mapowanie stara→nowa w raporcie (co sprawdzała
+przed, przez co jest sprawdzana po).
+
+**Kolejny krok:** Operator, RUNDA 2 na tej samej gałęzi — wykonaj oba punkty ratyfikacji
+(potwierdź finalne liczby 20,0/16,5 p.p. w raporcie, przepisz obie bramki), następnie
+Evaluator → (Obrona jeśli zarzuty) → koniec skryptu → Final Control osobno.
