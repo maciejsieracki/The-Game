@@ -6389,3 +6389,27 @@ Operator→Evaluator (Ścieżka A, Workflow, Sonnet 5) runda 1: PASS, zero zarzu
 (Sonnet 5, effort high): PASS po własnej niezależnej weryfikacji (uruchomienie bramki, tsc,
 odczyt kodu `economy-upkeep.ts`/`r-stawki-strojenie.ts`). Bramka: 25/3 → 28/0. Zintegrowano
 commitem `9dc11a43`, worktree usunięte.
+
+---
+
+## P-BRAMKI-EMPIRE-PODZIALPRACY-SEKCJA-ZASTALE-Q1 — zamknięty (2026-09-07)
+
+Sub-temat A rodziny `P-BRAMKI-EMPIRE-PANEL-PIEC-CZERWONYCH-ZASTALE-Q1`. Dwie bramki
+(`empire-panel-econ-slider-visibility-test.cjs` 57/3, `empire-panel-sliders-always-visible-test.cjs`
+6/2, SUPERSEDED) odwoływały się tekstowo do `renderDefaultPodzialPracySection()`, funkcji, która
+nigdy nie istniała w `gra/src` poza komentarzem (`empirePanelSectionMap.ts:102`). Mechanizm
+suwaka „Domyślny podział pracy" żyje dziś jako `renderEmpirePracaBudgetSplitSection()` we
+własnym top-level bloku „praca" (refaktor R-DESIGN-11-ZAKLADEK Faza 2, commit `9a539197`).
+
+Evaluator podniósł zarzut, że suwak jest dziś nieosiągalny w pełnym przeglądzie panelu
+(`block==='all'`), sugerując możliwą regresję UX zamiast zwykłej naprawy testu (GOAL pkt 4
+dispatchu wprost wymagał w takim wypadku `DECISION_REQUIRED`). Final Control **oddalił** zarzut
+po własnym niezależnym odczycie kodu i historii git: brak `block==='all' ||` dla sekcji Praca
+nie jest anomalią — to spójny, świadomy wzorzec współdzielony przez 8 sekcji (skarbiec, praca,
+nauka, religia, miasto, obywatele, spichlerz, armia) wprowadzony Fazami 1-3 refaktoru „11
+zakładek"; komentarz kontraktowy w `empirePanelSectionMap.ts` jest tylko nieaktualną
+dokumentacją sprzed refaktoru (nota poza zakresem tematu). Żadnej eskalacji do właściciela nie
+było potrzeba.
+
+Bramki: 57/3→65/65 i 6/2→8/8 (dowód mutacyjny MUT3a/MUT3b zachowany, realnie czerwieni bramkę).
+Zero zmian w `gra/src/**`. Zintegrowano commitem `8da2d3fc`, worktree usunięte.
