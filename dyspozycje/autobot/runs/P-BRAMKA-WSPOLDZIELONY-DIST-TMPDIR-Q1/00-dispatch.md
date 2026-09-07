@@ -135,3 +135,57 @@ ze statusem `DECISION_REQUIRED`. Raport maksymalnie ok. 400 słów PLUS tabela a
 
 Operator → Evaluator → (Obrona, jeśli lista zarzutów niepusta) → koniec skryptu.
 Final Control osobnym wywołaniem Workflow. Integracja i deploy — ręką orkiestratora.
+
+---
+
+## RATYFIKACJA ORKIESTRATORA — runda 2 (2026-09-06, po Final Control `FAIL`)
+
+**Praca rundy 1 jest bardzo dobra i nie wraca do przerobienia.** Audyt objął 62 pliki
+(pula szersza niż moje 54 z reconu — policzyłeś sam i miałeś rację), dowód reprodukcji
+wykonany wzorowo: PRZED **A=1 B=0** przy dwóch równoległych przebiegach tego samego kodu,
+PO **A=0 B=0, 42/42 identyczne**. Dokładnie o to chodziło.
+
+`FAIL` wynika z **dwóch linii w nowej bramce** — nie z naprawy 57 plików.
+
+### R2-FC1 (`NAPRAW`) — warunek tłumi regułę R3 na poziomie całego pliku
+
+`gra/tools/bramki-tmpdir-unikalnosc-test.cjs:191` — `} else if (!fileHasUniqueMark) {`.
+
+Po naprawie **wszystkie 57 plików mają znacznik unikalności**, więc R3 jest w nich
+**martwa**. Final Control wstawił z powrotem **dosłownie tę linię, którą Twoja własna tabela
+audytu klasyfikuje jako DEFEKT** (`weterani-test.cjs:75`, `path.join(os.tmpdir(), outName)`)
+— i bramka została zielona.
+
+To jest najgorszy możliwy stan bramki anty-nawrotowej: chroni przed nawrotem tylko dopóty,
+dopóki nawrotu nie ma. Poprawka `} else {` łapie mutację (`[R3] weterani-test.cjs:75 →
+exit=1`) i daje **zero fałszywych alarmów** na HEAD oraz na drzewie symulowanej integracji —
+zmierzone przez Final Control, potwierdź własnym przebiegiem.
+
+### R2-FC2 (`NAPRAW`) — `` `${os.tmpdir()}/nazwa` `` niewidzialne dla R1–R5
+
+Ta sama rodzina, inny zapis. Dołóż jedną regułą w tej samej rundzie.
+
+### Trzy pozycje, których runda 2 NIE rusza
+
+- **FC-4** (sufiks `-p<pid>` w domyślnych katalogach raportowych) — żaden plik w repo ich
+  nie konsumuje. Zostaje.
+- **FC-5, FC-6** — obserwacje bez naprawy, poza allowlistą.
+- **Zarzut 6** (§11, limit słów) — raporty mają 912/873/1058 słów narracji. §11 sama
+  ogranicza konsekwencję do `PASS-WITH-NOTES`, więc **nie jest to powód zwrotu**.
+  Rozstrzygam spór o priorytet: **zachowaj ślad, nie przepisuj raportów po ocenie** (§13b).
+  Historia rundy jest warta więcej niż zgodność z limitem.
+- **Zarzut 7** (bramka niezarejestrowana w §6) — **moje zadanie, nie Twoje.** §9 poz. 4
+  zabrania zmiany procesu w allowliście tematu produktowego. Zrobię to osobno.
+
+### KRYTERIA KOŃCA rundy 2
+
+1. `} else {` zamiast `} else if (!fileHasUniqueMark) {`.
+2. Reguła na `` `${os.tmpdir()}/nazwa` `` dołożona.
+3. **Powtórz mutację FC-M7** (przywróć oryginalny defekt do `weterani-test.cjs:75`) —
+   bramka ma **czerwienieć**, podaj liczbę faili. Poprzednio zostawała zielona.
+4. **Powtórz mutację FC-M5** (`` `${os.tmpdir()}/nazwa` ``) — ma czerwienieć.
+5. **Zero fałszywych alarmów** na czystym HEAD — bramka zielona, podaj wynik.
+6. Liczba asercji w bramce **nie mniejsza** niż po rundzie 1.
+7. `tsc --noEmit` zielony; pięć bramek referencyjnych zielonych.
+
+Mutacje cofaj przez KOPIĘ pliku, `git diff --quiet` po każdej.

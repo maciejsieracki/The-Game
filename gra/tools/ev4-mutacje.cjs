@@ -14,7 +14,11 @@ const fs = require('fs');
 const path = require('path');
 const cp = require('child_process');
 const GRA = path.resolve(__dirname, '..');
-const WORK = '/tmp/ev4-mut-gra';
+// P-BRAMKA-WSPOLDZIELONY-DIST-TMPDIR-Q1: cel zapisu unikalny per przebieg.
+// Sygnatura `-<pid>-<6 znakow>` jest ta sama, ktorej uzywaja bramki w tools/ — osierocony
+// katalog po przerwanym przebiegu sprzata startowy sweep dowolnej z nich.
+const TMPDIR_RUN_ID = `${process.pid}-${Math.random().toString(36).slice(2, 8)}`;
+const WORK = `/tmp/ev4-mut-gra-${TMPDIR_RUN_ID}`;
 const BRAMKA = process.env.EV4_BRAMKA || 'ai4-popyt-obywatele-test.cjs';
 
 function swiezaKopia() {

@@ -32,8 +32,12 @@ const argOf = (flag, dflt) => {
 };
 const SEEDS = argOf('--seeds', '777').split(',').map(s => parseInt(s.trim(), 10));
 const TURNS = parseInt(argOf('--turns', '60'), 10);
-const OUT_DIR = path.resolve(argOf('--out', '/tmp/ev-wojny-out'));
-const DIST = path.resolve(argOf('--dist', '/tmp/civ-ev-wojny'));
+// P-BRAMKA-WSPOLDZIELONY-DIST-TMPDIR-Q1: cel zapisu unikalny per przebieg.
+// Sygnatura `-<pid>-<6 znakow>` jest ta sama, ktorej uzywaja bramki w tools/ — osierocony
+// katalog po przerwanym przebiegu sprzata startowy sweep dowolnej z nich.
+const TMPDIR_RUN_ID = `${process.pid}-${Math.random().toString(36).slice(2, 8)}`;
+const OUT_DIR = path.resolve(argOf('--out', `/tmp/ev-wojny-out-p${process.pid}`));
+const DIST = path.resolve(argOf('--dist', `/tmp/civ-ev-wojny-${TMPDIR_RUN_ID}`));
 const TAG = argOf('--tag', 'base');
 const SKIP_BUILD = process.argv.includes('--skip-build');
 const FALLBACK_CHROME = '/opt/pw-browsers/chromium-1194/chrome-linux/chrome';

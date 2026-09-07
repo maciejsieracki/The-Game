@@ -27,7 +27,11 @@ const path = require('path');
 const { execFileSync } = require('child_process');
 
 const GRA = path.resolve(__dirname, '..');
-const DIST = process.env.ZELAZO_AUDYT_DIST || '/tmp/civ-dist-zelazo-wojna-op-audyt';
+// P-BRAMKA-WSPOLDZIELONY-DIST-TMPDIR-Q1: cel zapisu unikalny per przebieg.
+// Sygnatura `-<pid>-<6 znakow>` jest ta sama, ktorej uzywaja bramki w tools/ — osierocony
+// katalog po przerwanym przebiegu sprzata startowy sweep dowolnej z nich.
+const TMPDIR_RUN_ID = `${process.pid}-${Math.random().toString(36).slice(2, 8)}`;
+const DIST = process.env.ZELAZO_AUDYT_DIST || `/tmp/civ-dist-zelazo-wojna-op-audyt-${TMPDIR_RUN_ID}`;
 const FALLBACK_CHROME = '/opt/pw-browsers/chromium-1194/chrome-linux/chrome';
 
 const argOf = (flag, dflt) => {

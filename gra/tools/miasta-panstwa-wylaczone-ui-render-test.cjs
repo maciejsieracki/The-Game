@@ -16,7 +16,11 @@ const { execSync } = require('child_process');
 const GRA_DIR = path.resolve(__dirname, '..');
 // IZOLACJA (00-dispatch.md): jedyna dozwolona komenda buildu w tym temacie —
 // outDir POZA drzewem repo (/tmp), zgodnie z R-PROC-AUTOBOT.md §9 pkt 1.
-const OUT_DIR = '/tmp/civ-dist-miasta-panstwa-wylaczone';
+// P-BRAMKA-WSPOLDZIELONY-DIST-TMPDIR-Q1: cel zapisu unikalny per przebieg.
+// Sygnatura `-<pid>-<6 znakow>` jest ta sama, ktorej uzywaja bramki w tools/ — osierocony
+// katalog po przerwanym przebiegu sprzata startowy sweep dowolnej z nich.
+const TMPDIR_RUN_ID = `${process.pid}-${Math.random().toString(36).slice(2, 8)}`;
+const OUT_DIR = `/tmp/civ-dist-miasta-panstwa-wylaczone-${TMPDIR_RUN_ID}`;
 const OUT_HTML = 'file://' + path.join(OUT_DIR, 'index.html');
 const FALLBACK_CHROME = '/opt/pw-browsers/chromium-1194/chrome-linux/chrome';
 

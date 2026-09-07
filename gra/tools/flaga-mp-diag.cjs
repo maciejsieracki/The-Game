@@ -21,8 +21,12 @@ const argOf = (flag, dflt) => {
 };
 const SEED = parseInt(argOf('--seed', '111'), 10);
 const TURNS = parseInt(argOf('--turns', '30'), 10);
-const OUT_DIR = path.resolve(argOf('--out', '/tmp/flaga-diag'));
-const DIST = path.resolve(argOf('--dist', '/tmp/civ-dist-flaga-op-diag'));
+// P-BRAMKA-WSPOLDZIELONY-DIST-TMPDIR-Q1: cel zapisu unikalny per przebieg.
+// Sygnatura `-<pid>-<6 znakow>` jest ta sama, ktorej uzywaja bramki w tools/ — osierocony
+// katalog po przerwanym przebiegu sprzata startowy sweep dowolnej z nich.
+const TMPDIR_RUN_ID = `${process.pid}-${Math.random().toString(36).slice(2, 8)}`;
+const OUT_DIR = path.resolve(argOf('--out', `/tmp/flaga-diag-p${process.pid}`));
+const DIST = path.resolve(argOf('--dist', `/tmp/civ-dist-flaga-op-diag-${TMPDIR_RUN_ID}`));
 const FALLBACK_CHROME = '/opt/pw-browsers/chromium-1194/chrome-linux/chrome';
 
 const wait = ms => new Promise(r => setTimeout(r, ms));

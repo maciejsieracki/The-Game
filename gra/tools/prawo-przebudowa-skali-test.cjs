@@ -574,7 +574,7 @@ section('3k. parytet hasGarnizonBudynek: main.ts <-> cityPanel.ts, REALNE URUCHO
   // JAWNIE ujawnione jako swiadomy kompromis, nie ukryty pod "main.ts zbudowany i wykonany".
   const os = require('os');
   const cp = require('child_process');
-  const buildScript = path.join(os.tmpdir(), '.prawo-3k-maints-buildcheck.mjs');
+  const buildScript = path.join(os.tmpdir(), `.prawo-3k-maints-buildcheck-${process.pid}.mjs`);
   fs.writeFileSync(buildScript, `
     import esbuild from ${JSON.stringify(path.resolve(GRA, 'node_modules', 'esbuild', 'lib', 'main.js'))};
     const stubWorker = {
