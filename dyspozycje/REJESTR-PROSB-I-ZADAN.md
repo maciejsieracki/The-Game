@@ -6101,4 +6101,39 @@ weryfikacja.
 Bramki: nowa `religia-konwersja-po-podboju-test.cjs` (12/0), `culture-religion-test.cjs`
 (65/0) bez regresji. `tsc --noEmit` czyste, 5 bramek referencyjnych zielone (213/19/33/13/6).
 
-Zamyka pozycję 4 kolejki `main.ts` (§2b). Ostatni w kolejce: `P-PODBOJ-KOLEJKA-BUDYNEK-NIEMOZLIWY-Q1`.
+Zamyka pozycję 4 kolejki `main.ts` (§2b).
+
+## `P-PODBOJ-KOLEJKA-BUDYNEK-NIEMOZLIWY-Q1` — GAME — **ZINTEGROWANE 2026-09-07** (1 runda, commit `ea1033cf`)
+
+Zdobyte miasto-państwo (albo dowolne miasto) kontynuowało w kolejce budowę Pałacu i innych
+budynków „jedyny w cywilizacji", mimo że zdobywca nie mógł go postawić (miał już stolicę
+gdzie indziej). ECHO właściciela: „Cała nadwyżka powinna trafić do głównej puli, ponieważ w
+cywilizacji może być tylko jeden pałac" — zwrot Pracy **do puli ZDOBYWCY** (świadomie
+odwrotnie niż istniejąca, osobna konwencja dla legacy jednostek w tej samej kolejce, która
+zwraca do poprzedniego właściciela — nietknięta), zakres **wszystkie** niemożliwe do
+postawienia budynki, nie tylko Pałac.
+
+Mechanizm „jedyny w cywilizacji" okazał się emergentny z pola `BuildingDef.lokalizacja:
+'stolica'` (nie osobna flaga) — dotyczy czterech budynków: `palac`, `palac_ii`, `palac_iii`,
+`mennica`. Nowy filtr w obu miejscach przejęcia miasta (`gra/src/main.ts`, podbój bojowy i
+kapitulacja głodowa) usuwa z przejętej kolejki pozycje `lokalizacja:'stolica'`, których
+zdobywca nie może dokończyć, i zwraca zebraną Pracę jego puli.
+
+Evaluator własnym testem (kolejka z 2+ budynków-stolica naraz, drugi z własnym zbankowanym
+postępem — dokładnie scenariusz wskazany w dyspozycji jako obowiązkowy do sprawdzenia)
+znalazł realny defekt: tylko front kolejki miał swój postęp zwracany, zbankowany postęp
+pozostałych usuwanych pozycji znikał bez śladu (ani do zdobywcy, ani do poprzedniego
+właściciela). Obrona naprawiła (lokalne sumowanie w `main.ts`, bez ruszania współdzielonej
+`filterQueue()` w `production.ts` — poza zakresem). Final Control: **PASS** całości, własny
+test potwierdził naprawę dla 3-4 budynków-stolica naraz i kolejek mieszanych
+legacy+budynek-stolica (zero przecieku między pulami).
+
+Bramki: nowa `podboj-kolejka-budynek-niemozliwy-test.cjs` (75/0). `tsc --noEmit` czyste,
+5 bramek referencyjnych zielone (213/19/33/13/6), cała rodzina produkcji/kolejki/podboju/
+capital zielona. Dwa pre-istniejące FAIL potwierdzone niezależnie od tego tematu:
+`barb-city-capture-cluster-test` (92/1) i `building-queue-refund-test` (2/3) —
+**STATUS: ZAREJESTROWANE, NIE DISPATCHOWANE.** DOMAIN: INFRA/GAME. Do zbadania osobno.
+
+**Zamyka CAŁĄ kolejkę `main.ts` (§2b) — wszystkie sześć tematów punktu 2 backlogu
+(handel-podział, trofea, wycinka, wojny-domino, religia, kolejka-podboju) zintegrowane.**
+`main.ts` jest teraz wolny dla kolejnych, niezależnych tematów.
