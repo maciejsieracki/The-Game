@@ -1165,7 +1165,7 @@ import {
   qualifiesForMajorAiDifficultyBonus,
 } from './game/ai-difficulty-bonus';
 import { isMajorAiOwner } from './game/owner-utils';
-import { type HumanSeats, HUMAN_OWNER_PRIMARY, isAiOwner } from './game/human-owners';
+import { type HumanSeats, HUMAN_OWNER_PRIMARY, isAiOwner, isHumanOwner } from './game/human-owners';
 import {
   pickAutoImprovements,
   AUTO_ULEPSZENIA_PRACA_RESERVE,
@@ -1891,12 +1891,12 @@ async function boot(): Promise<void> {
     }
 
     function empireEpochForOwner(ownerId: number): number {
-      if (ownerId === 0) return player.era;
+      if (isHuman(ownerId)) return playerStateByHuman.get(ownerId)!.era;
       return ownerEraByOwner.get(ownerId) ?? gameStartEra();
     }
 
     function initOwnerEra(ownerId: number, era = 1): void {
-      if (ownerId === 0) return;
+      if (isHuman(ownerId)) return;
       const e = Math.max(1, Math.min(10, era));
       ownerEraByOwner.set(ownerId, e);
       ownerStartEraByOwner.set(ownerId, e);
@@ -10290,6 +10290,12 @@ async function boot(): Promise<void> {
     function ME(): number {
       return humanSeats.activeHumanOwnerId;
     }
+    /** R-HOTSEAT-ETAP-3-AKCESORY-EKONOMIA-Q1: cienki alias na `isHumanOwner`
+     *  (`game/human-owners.ts`) dla czytelności w akcesorach ekonomicznych
+     *  poniżej. Zero logiki własnej — samo przekazanie `humanSeats`. */
+    function isHuman(ownerId: number): boolean {
+      return isHumanOwner(humanSeats, ownerId);
+    }
     /** R-HOTSEAT-ETAP-2-MGLA-WOJNY-Q1 (scaffold, runda 1): per-fotel-człowieka
      *  odkryte heksy. Dziś zawiera dokładnie jeden wpis, `ME() -> explored` —
      *  DOSŁOWNIE ten sam obiekt Set co istniejący globalny `explored` (nie kopia),
@@ -10299,6 +10305,26 @@ async function boot(): Promise<void> {
      *  save/load — poza zakresem tej rundy, patrz raport); pełne odseparowanie
      *  na osobne Sety per fotel to runda 2 tego samego tematu. */
     const exploredByHuman: Map<number, Set<string>> = new Map([[HUMAN_OWNER_PRIMARY, explored]]);
+    /** R-HOTSEAT-ETAP-3-AKCESORY-EKONOMIA-Q1 (scaffold): per-fotel-człowieka stan
+     *  ekonomii/badań. Dziś dokładnie jeden wpis, `HUMAN_OWNER_PRIMARY -> player`
+     *  — DOSŁOWNIE ten sam obiekt `PlayerState` co istniejący `player` (nie
+     *  kopia), więc `.skarbiec`/`.nauka`/`.zbadane`/`.era` czytane przez ten
+     *  scaffold są identyczne co do treści z odczytem `player.X` wprost, z
+     *  definicji. Pokrywa cztery z ośmiu akcesorów (treasury/nauka/zbadane/era);
+     *  `playerPracaPool` NIE jest polem `player` (osobna luźna zmienna liczbowa
+     *  `let`), więc nie da się jej zaliasować w tej samej mapie bez kopii —
+     *  patrz `pracaPoolByHuman` niżej (komórka z getterem/setterem zamykająca
+     *  się nad `playerPracaPool`, żeby zachować "zero kopii" mimo że to
+     *  primitywa, nie obiekt). */
+    const playerStateByHuman: Map<number, PlayerState> = new Map([[HUMAN_OWNER_PRIMARY, player]]);
+    /** Komórka-alias (getter/setter) nad `playerPracaPool` — czytanie/pisanie
+     *  przez `.praca` faktycznie czyta/pisze TĘ SAMĄ zmienną `playerPracaPool`,
+     *  nie kopię. Jedyny sposób na "zero kopii" scaffold nad primitywem w JS. */
+    const playerPracaCell = {
+      get praca(): number { return playerPracaPool; },
+      set praca(v: number) { playerPracaPool = v; },
+    };
+    const pracaPoolByHuman: Map<number, { praca: number }> = new Map([[HUMAN_OWNER_PRIMARY, playerPracaCell]]);
     overlayDepositEra = player.era;
     fillAiOwnerCivMap(_menuCivId, _gameSeed);
 
@@ -26006,11 +26032,11 @@ async function boot(): Promise<void> {
     // -----------------------------------------------------------------------
 
     function ownerTreasury(ownerId: number): number {
-      return ownerId === 0 ? player.skarbiec : (aiSkarbiecByOwner.get(ownerId) ?? 0);
+      return isHuman(ownerId) ? playerStateByHuman.get(ownerId)!.skarbiec : (aiSkarbiecByOwner.get(ownerId) ?? 0);
     }
     function setOwnerTreasury(ownerId: number, value: number): void {
       const v = Math.max(0, value);
-      if (ownerId === 0) player.skarbiec = v;
+      if (isHuman(ownerId)) playerStateByHuman.get(ownerId)!.skarbiec = v;
       else aiSkarbiecByOwner.set(ownerId, v);
     }
     /** D-IMPROVEMENTS: AI MA teraz pulę Pracy (aiPracaPoolByOwner) -- buduje z niej
@@ -26018,12 +26044,12 @@ async function boot(): Promise<void> {
      *  applyCapitalCapturePlunder wywołuje setPracaPool(oldOwner, 0) bezwarunkowo
      *  (pula PRZEPADA, nie do zwycięzcy) -- symetryczne z graczem. */
     function ownerPracaPool(ownerId: number): number {
-      return ownerId === 0 ? playerPracaPool : (aiPracaPoolByOwner.get(ownerId) ?? 0);
+      return isHuman(ownerId) ? pracaPoolByHuman.get(ownerId)!.praca : (aiPracaPoolByOwner.get(ownerId) ?? 0);
     }
     function setOwnerPracaPool(ownerId: number, value: number): void {
       const v = Math.max(0, value);
-      if (ownerId === 0) {
-        playerPracaPool = v;
+      if (isHuman(ownerId)) {
+        pracaPoolByHuman.get(ownerId)!.praca = v;
         _lastPraca = playerPracaPool;
       } else {
         aiPracaPoolByOwner.set(ownerId, v);
@@ -26039,12 +26065,12 @@ async function boot(): Promise<void> {
      */
 
     function ownerNaukaPool(ownerId: number): number {
-      return ownerId === 0 ? player.nauka : (aiNaukaPoolByOwner.get(ownerId) ?? 0);
+      return isHuman(ownerId) ? playerStateByHuman.get(ownerId)!.nauka : (aiNaukaPoolByOwner.get(ownerId) ?? 0);
     }
     function setOwnerNaukaPool(ownerId: number, value: number): void {
       const v = Math.max(0, value);
-      if (ownerId === 0) {
-        player.nauka = v;
+      if (isHuman(ownerId)) {
+        playerStateByHuman.get(ownerId)!.nauka = v;
         return;
       }
       aiNaukaPoolByOwner.set(ownerId, v);
@@ -26115,11 +26141,11 @@ async function boot(): Promise<void> {
       }
     }
     function ownerResearchedTechs(ownerId: number): ReadonlySet<string> {
-      return ownerId === 0 ? player.zbadane : (aiResearchDone.get(ownerId) ?? new Set<string>());
+      return isHuman(ownerId) ? playerStateByHuman.get(ownerId)!.zbadane : (aiResearchDone.get(ownerId) ?? new Set<string>());
     }
     function addOwnerResearchedTechs(ownerId: number, ids: Iterable<string>): void {
-      if (ownerId === 0) {
-        for (const id of ids) player.zbadane.add(id);
+      if (isHuman(ownerId)) {
+        for (const id of ids) playerStateByHuman.get(ownerId)!.zbadane.add(id);
         return;
       }
       if (!aiResearchDone.has(ownerId)) aiResearchDone.set(ownerId, new Set<string>());
