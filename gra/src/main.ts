@@ -13385,7 +13385,28 @@ async function boot(): Promise<void> {
           if (migrated.refundedPraca > 0) {
             setOwnerPracaPool(oldOwner, ownerPracaPool(oldOwner) + migrated.refundedPraca);
           }
-          cityProd.set(city.id, sanitizeProductionQueue(newOwner, migrated.prod));
+          const sanitizedSurrenderProd = sanitizeProductionQueue(newOwner, migrated.prod);
+          // P-PODBOJ-KOLEJKA-BUDYNEK-NIEMOZLIWY-Q1: kapitulacja głodowa może przekazać
+          // nowemu właścicielowi kolejkę z budynkiem `lokalizacja:'stolica'` (Pałac
+          // I/II/III, Mennica) odziedziczonym po poprzednim właścicielu -- w danej
+          // cywilizacji może być tylko JEDEN Pałac (buildingLocationAllowed w
+          // production.ts, egzekwowane przez isCapital=capitalCityIdForOwner(ownerId)).
+          // Jeśli to zdobyte miasto NIE jest (po zmianie city.ownerId powyżej) stolicą
+          // NOWEGO właściciela, taki budynek jest niebudowalny i musi zniknąć z kolejki
+          // -- zebrana Praca wraca do puli ZDOBYWCY (ECHO właściciela, odwrotnie niż
+          // legacy-jednostki wyżej, celowo -- NIE ujednolicać z oldOwner powyżej).
+          const isSurrenderNewCapital = capitalCityIdForOwner(newOwner) === city.id;
+          const { prod: capitalFilteredSurrenderProd, forfeitedPostep: forfeitedCapitalOnlySurrender } =
+            isSurrenderNewCapital
+              ? { prod: sanitizedSurrenderProd, forfeitedPostep: 0 }
+              : filterQueue(sanitizedSurrenderProd, (item) => {
+                  if (item.kind !== 'budynek') return true;
+                  return data.buildings.find(b => b.id === item.id)?.lokalizacja !== 'stolica';
+                });
+          if (forfeitedCapitalOnlySurrender > 0) {
+            setOwnerPracaPool(newOwner, ownerPracaPool(newOwner) + forfeitedCapitalOnlySurrender);
+          }
+          cityProd.set(city.id, capitalFilteredSurrenderProd);
         }
         if (city.rebelState) city.rebelState = false;
         // B2 (Evaluator RUNDA 1: FAIL): zdobycie przez oblężenie na mapie musi
@@ -26932,7 +26953,29 @@ async function boot(): Promise<void> {
           if (migrated.refundedPraca > 0) {
             setOwnerPracaPool(oldOwner, ownerPracaPool(oldOwner) + migrated.refundedPraca);
           }
-          cityProd.set(city.id, sanitizeProductionQueue(atkOwner, migrated.prod));
+          const sanitizedCaptureProd = sanitizeProductionQueue(atkOwner, migrated.prod);
+          // P-PODBOJ-KOLEJKA-BUDYNEK-NIEMOZLIWY-Q1: podbój bojowy może przekazać
+          // zdobywcy kolejkę z budynkiem `lokalizacja:'stolica'` (Pałac I/II/III,
+          // Mennica) odziedziczonym po poprzednim właścicielu -- w danej cywilizacji
+          // może być tylko JEDEN Pałac (buildingLocationAllowed w production.ts,
+          // egzekwowane przez isCapital=capitalCityIdForOwner(ownerId)). Jeśli to
+          // zdobyte miasto NIE jest (po zmianie city.ownerId wyżej, w
+          // applyCityCaptureAfterBattle) stolicą ZDOBYWCY, taki budynek jest
+          // niebudowalny i musi zniknąć z kolejki -- zebrana Praca wraca do puli
+          // ZDOBYWCY (ECHO właściciela, odwrotnie niż legacy-jednostki wyżej,
+          // celowo -- NIE ujednolicać z oldOwner powyżej).
+          const isCaptureNewCapital = capitalCityIdForOwner(atkOwner) === city.id;
+          const { prod: capitalFilteredCaptureProd, forfeitedPostep: forfeitedCapitalOnlyCapture } =
+            isCaptureNewCapital
+              ? { prod: sanitizedCaptureProd, forfeitedPostep: 0 }
+              : filterQueue(sanitizedCaptureProd, (item) => {
+                  if (item.kind !== 'budynek') return true;
+                  return data.buildings.find(b => b.id === item.id)?.lokalizacja !== 'stolica';
+                });
+          if (forfeitedCapitalOnlyCapture > 0) {
+            setOwnerPracaPool(atkOwner, ownerPracaPool(atkOwner) + forfeitedCapitalOnlyCapture);
+          }
+          cityProd.set(city.id, capitalFilteredCaptureProd);
         }
       }
       // P-BARB-CAPTURE-GUARD RUNDA 2 (Evaluator, punkt 1 -- kontekst): barbarzyńcy nie
