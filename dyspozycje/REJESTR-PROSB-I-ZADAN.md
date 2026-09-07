@@ -69,7 +69,7 @@ historycznych wierszy poniżej; wpisy bez jednoznacznego dowodu nie są tu zgady
 | `P-KOLOR-SUROWCE-MIASTO-VS-MAPA-Q1` | `ZINTEGROWANE` | Commit `0f3c0fb1`. Nowy `resourceColors.ts`, Skarbiec ujednolicony do złota. Szczegóły niżej (linia ok. 6311). Nic do dispatchu. |
 | `P-BRAMKA-WSPOLDZIELONY-DIST-TMPDIR-Q1` | `ZINTEGROWANE` | Commit `57c327d9`. Audyt 66 plików `gra/tools/*.cjs` z `os.tmpdir()`, nowa meta-bramka `bramki-tmpdir-unikalnosc-test.cjs` złapała 1 dodatkowe naruszenie na żywym `main` przy integracji. Szczegóły niżej (linia ok. 6334). Nic do dispatchu. |
 | `P-ENTITYCARD-CIVPEDIA-KLIK-MARTWY-Q1` | `ZINTEGROWANE` | Commit `7d507ed6`. Nowy szew `civpediaOpenGate.ts`, przycisk „Więcej informacji (Civpedia)" na kartach encji teraz działa. Szczegóły niżej (linia ok. 6351). Nic do dispatchu. |
-| `P-BRAMKI-EMPIRE-PANEL-PIEC-CZERWONYCH-ZASTALE-Q1` | `W TOKU — rozbity na 4 sub-tematy (A/B/C zintegrowane, D w Final Control 2026-09-07)` | Pięć zastałych czerwonych bramek panelu imperium (znalezisko przy `P-DESIGN-11-ZAKLADEK-DROBIAZGI-Q1`). **A** `P-BRAMKI-EMPIRE-PODZIALPRACY-SEKCJA-ZASTALE-Q1` — ZINTEGROWANE, commit `8da2d3fc`. **B** `P-BRAMKA-EMPIRE-FOOD-B5-ZASTALA-Q1` — ZINTEGROWANE, commit `9dc11a43`. **C** `P-BRAMKA-EMPIRE-OBYWATELE-TRADE-SNAP-Q1` — ZINTEGROWANE, commit `90526476` (po ECHO właściciela: przekotwiczyć test na `side.myCityId`/`premiaBudynkuPerSide`, generalizacja R2-2). **D** `P-BRAMKA-HINT-TOAST-ZINDEX-SELFINVALIDATING-Q1` — DO-INTEGRACJI, runda 1 PASS (Final Control w toku); harness naprawiony metodą mutacyjną. Worktree pozostałe: `/home/user/wt-hint-toast-zindex-selfinvalidating`. Szczegóły niżej (linie ok. 6375-6450+). |
+| `P-BRAMKI-EMPIRE-PANEL-PIEC-CZERWONYCH-ZASTALE-Q1` | `ZINTEGROWANE — wszystkie 4 sub-tematy zamknięte 2026-09-07` | Pięć zastałych czerwonych bramek panelu imperium (znalezisko przy `P-DESIGN-11-ZAKLADEK-DROBIAZGI-Q1`). **A** `P-BRAMKI-EMPIRE-PODZIALPRACY-SEKCJA-ZASTALE-Q1` — commit `8da2d3fc`. **B** `P-BRAMKA-EMPIRE-FOOD-B5-ZASTALA-Q1` — commit `9dc11a43`. **C** `P-BRAMKA-EMPIRE-OBYWATELE-TRADE-SNAP-Q1` — commit `90526476` (po ECHO właściciela: przekotwiczyć test na `side.myCityId`/`premiaBudynkuPerSide`, generalizacja R2-2). **D** `P-BRAMKA-HINT-TOAST-ZINDEX-SELFINVALIDATING-Q1` — commit `3ca16653` (harness self-invalidating naprawiony metodą mutacyjną). Wszystkie worktree usunięte. Nic do dispatchu. Szczegóły niżej (linie ok. 6375-6480). |
 | `P-HANDEL-SZLAKI-WZOR-DUPLIKAT-Q1` | `OTWARTE, niski priorytet — status z 2026-08-22, NIE zweryfikowane ponownie 2026-09-07` | Wzór dochodu z tras zduplikowany w 2 miejscach `main.ts` (panel Handlu + chip HUD) zamiast jednej wspólnej funkcji `trade-routes.ts::computeTradeRouteIncomeByCity`. Możliwe że rozwiązane przy okazji `R-HANDEL-SZLAKI-PRZEBUDOWA-Q1` (T1-T6, zakończone) — WYMAGA potwierdzenia reconem przed dispatchem/zamknięciem, nie zakładać żadnego stanu bez sprawdzenia. |
 
 ### Zasada migracji i historii
@@ -6455,3 +6455,28 @@ asercja wzmacniająca (weryfikuje realne rozgałęzienie `side`). 113/2 → 116/
 Operator→Evaluator→Obrona→Final Control wszystkie PASS, Final Control niezależnie porównał
 wszystkie 7 nowych kotwic character-for-character z `main.ts`. Zero zmian w `gra/src/**`.
 Zintegrowano commitem `90526476`, worktree usunięte.
+
+---
+
+## P-BRAMKA-HINT-TOAST-ZINDEX-SELFINVALIDATING-Q1 — zamknięty (2026-09-07)
+
+Sub-temat D (ostatni) rodziny `P-BRAMKI-EMPIRE-PANEL-PIEC-CZERWONYCH-ZASTALE-Q1`.
+`hint-toast-zindex-empire-panel-test.cjs` przerywał się własnym `Error` w `buildBeforeBundle`
+(nie FAIL asercji) — harness buduje dwa bundle ("PRZED"/"PO") żeby dowieść nietautologiczności
+naprawy z-index tooltipa/toastu, a `origin/main` od dawna już zawierał tę naprawę, więc harness
+sam wykrywał, że nie ma prawdziwego "PRZED" do zbudowania.
+
+Operator ustalił dokładny SHA "PRZED" (`8c20c849`, rodzic commita naprawy `3dc1b31f`) —
+osiągalny w pełnej historii git, ALE niebudowalny na dzisiejszych zależnościach
+(`ai-cs-absorption.ts` ewoluował niezależnie, `unitTriggersSisterAllianceThreat` już nie
+eksportowane w tamtej wersji). Przełączono na wzorzec mutacyjny (ten sam co inne bramki tej
+sesji): `buildBeforeBundle` kopiuje bieżący `main.ts`, cofa WYŁĄCZNIE jedną, zweryfikowaną
+literałem linię formuły z-index, buduje bundle z tą jedną cofniętą linią, oryginał przywracany
+w `finally` niezależnie od wyniku builda. Dowód na żywo (Final Control, niezależnie): ręczne
+cofnięcie tej samej linii w `gra/src/main.ts` realnie czerwieni bramkę, przywrócenie zieleni.
+
+18/0, pełny wynik zamiast przerwanego wyjątku. Zero zmian w `gra/src/**`. Zintegrowano commitem
+`3ca16653`, worktree usunięte.
+
+**Zamyka CAŁĄ rodzinę `P-BRAMKI-EMPIRE-PANEL-PIEC-CZERWONYCH-ZASTALE-Q1`** (sub-tematy A-D,
+patrz wpisy wyżej): wszystkie zintegrowane, worktree usunięte.
