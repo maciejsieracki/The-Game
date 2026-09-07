@@ -6369,3 +6369,23 @@ tematów wizualnych). Nowa bramka `entitycard-civpedia-klik-test.cjs` 71/0.
 **Domyka kolejkę siedmiu tematów uruchomioną w pętli AutoBot 2026-09-07: bramki zastane,
 dyplo-testy, węzeł E audytu Prawo/Szczęście, design-zakładki, kolor-surowce, bramka-tmpdir,
 civpedia-klik — wszystkie zintegrowane, worktree usunięte.**
+
+---
+
+## P-BRAMKA-EMPIRE-FOOD-B5-ZASTALA-Q1 — zamknięty (2026-09-07)
+
+Sub-temat B rodziny `P-BRAMKI-EMPIRE-PANEL-PIEC-CZERWONYCH-ZASTALE-Q1` (pięć zastałych
+czerwonych bramek panelu imperium, znalezionych przy okazji `P-DESIGN-11-ZAKLADEK-DROBIAZGI-Q1`).
+
+`gra/tools/empire-food-b5-test.cjs` (25/3) zakładał koszt żywności wojska ×2 („R-STAWKI"),
+ale `unitFoodPerTurn` dziś mnoży przez `R_STAWKI_FALA1_FALA2_MULT` = `R_STAWKI_KOSZT_MULT`(2)
+× `R_STAWKI_FALA2_MULT`(2) = ×4 — FALA2 dołożyła drugi mnożnik już po napisaniu tego
+scenariusza testowego, nigdy w nim nie odzwierciedlony. Klasyczny „test podążający za już
+wdrożoną zmianą" (`PROCEDURA-NUMER-ABC-COMMIT-DEPLOY.md` §3b), bez ABC-first. Literały
+(wojsko=4, zapasy 12/2) wyprowadzone z realnego uruchomienia silnika (Operator, potem
+niezależnie zweryfikowane przez Evaluatora i Final Control). Zero zmian w `gra/src/**`.
+
+Operator→Evaluator (Ścieżka A, Workflow, Sonnet 5) runda 1: PASS, zero zarzutów. Final Control
+(Sonnet 5, effort high): PASS po własnej niezależnej weryfikacji (uruchomienie bramki, tsc,
+odczyt kodu `economy-upkeep.ts`/`r-stawki-strojenie.ts`). Bramka: 25/3 → 28/0. Zintegrowano
+commitem `9dc11a43`, worktree usunięte.
