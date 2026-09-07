@@ -83,6 +83,7 @@ historycznych wierszy poniżej; wpisy bez jednoznacznego dowodu nie są tu zgady
 | `R-HOTSEAT-ETAP-2-MGLA-WOJNY-Q1` | `ZINTEGROWANE` | Commit `f3c0becf`. Etap 2 planu hot-seat (najwyższe ryzyko fazy) — `ME()`/`exploredByHuman` scaffold + migracja całej warstwy renderu/wykrywania widoczności mgły (`ownPlayerVisibleHexes`/`currentVisible`/`refreshFog`/`cityFogVisible`/`unitsVisibleOnMap`/`applyFogVisibility`/`getMinimapData`) na `ME()`. Behawioralny no-op potwierdzony trzykrotnie niezależnie (hash treści zbioru `explored` identyczny przed/po, żywy Chromium). Save/load, dyplomacja-ujawnianie i granica terytorium świadomie poza zakresem (inne etapy planu). Szczegóły wyżej (linia ok. 4643b). Następny krok: Etap 3. |
 | `R-HOTSEAT-ETAP-3-AKCESORY-EKONOMIA-Q1` | `ZINTEGROWANE` | Commit `302ea837`. Etap 3 planu hot-seat — `isHuman(ownerId)` alias + `playerStateByHuman` scaffold (zero kopii), osiem funkcji-akcesorów ekonomicznych (skarbiec/Praca/Nauka/era/zbadane technologie) przepisanych z `ownerId===0` na `isHuman(ownerId)`. `isPlayerOwner` w `difficulty-cost.ts` świadomie nietknięty (Final Control zgrepował wszystkie wywołania, potwierdził bezpieczeństwo). Behawioralny no-op potwierdzony trzykrotnie (bramka 52/52 + 5 bramek ekonomii/AI zielone i identyczne przed/po). Szczegóły wyżej (linia ok. 4643c). Następny krok: Etap 4 (rozcięcie `triggerPlayerEndTurn` — najwyższe ryzyko CAŁEGO planu). |
 | `R-HOTSEAT-ETAP-4-RECON-END-TURN-Q1` | `ZAMKNIĘTE (dokument)` | Commit `72345570`. Recon-only (zero kodu) dla Etapu 4 — najwyższe ryzyko całego planu hot-seat. Kompletna mapa 16 faz `triggerPlayerEndTurn()` (4469 linii), lokalizacja `turn++`, plan rozcięcia na `endActiveHumanTurn()`/`runWorldEndTurn()`/`advanceSeat()` z automatyzowalnym dowodem no-op. Kilka realnych znalezisk (kod „światowy" w bloku „gracza", identyfikatory odroczonych zdarzeń zawężone do `ownerId===0`, zależność `nextTurnNum` między fazami). Szczegóły wyżej (linia ok. 4643d). Następny krok: dispatch implementacji Etapu 4 (osobny temat, w oparciu o ten dokument). |
+| `R-WOJNA-WYMUSZONA-PROG-TURY-GRACZ-Q1` | `ZINTEGROWANE, DEPLOY-ROBOCZA` | Commit `8a9a1271`, 3 rundy (runda 2 FAIL naprawiony). Żywy bug zgłoszony przez właściciela (zrzut ekranu, baner „BOOT ERROR" w turze 1) — dwa fixy: (1) próg tury `turn>=25` dla dołączenia gracza do puli parowania wojny wymuszonej, spójny z AI; (2) usunięcie bezterminowego przechwytywania `console.error` w `gra/index.html` (BOOT ERROR CATCHER), które zamieniało każdy zwykły log w czerwony baner „crash". 5 zastałych bramek testowych naprawionych (re-anchor, SEDNO zachowane). Final Control PASS, własna niezależna próbka + przeliczenie plików (realnie 14, nie 15/17). Pełne podsumowanie wyżej (linia ok. 6280). Nic do dispatchu. |
 
 ### Zasada migracji i historii
 
@@ -6277,12 +6278,43 @@ jest nieszkodliwe, ale ujawniło NIEZALEŻNY bug wyświetlania (patrz niżej,
 gracza**, spójnie z AI — cofnięcie wcześniejszej „bez specjalnego przypadku". Dispatch:
 `R-WOJNA-WYMUSZONA-PROG-TURY-GRACZ-Q1`.
 
-## `R-WOJNA-WYMUSZONA-PROG-TURY-GRACZ-Q1` — GAME+INFRA — dispatchowany 2026-09-07
+## `R-WOJNA-WYMUSZONA-PROG-TURY-GRACZ-Q1` — GAME+INFRA — **ZINTEGROWANE 2026-09-07** (3 rundy, commit `8a9a1271`)
 
 Dwa połączone znaleziska z jednego zgłoszenia właściciela na żywo (zrzut ekranu, tura 1,
 świeża gra): czerwony baner „THE GAME — BOOT ERROR" pokazał
 `console.error('[Wojna wymuszona] DECISION_REQUIRED: brak niezablokowanej sojuszem
 pary/trójkąta dla ownerów [0]...')`.
+
+**PODSUMOWANIE KOŃCOWE (dla innych agentów — temat w pełni zamknięty, nic do dispatchu):**
+
+1. **GAME (naprawione):** gracz dołącza do puli parowania wojny wymuszonej dopiero od
+   `turn >= WOJNA_KAMIEN_WYMUSZONA_START_TURY` (=25), spójnie z AI — `main.ts`, „Krok C"
+   przydziału. Cofa wcześniejszą decyzję „gracz bez specjalnego przypadku" z
+   `R-WOJNA-WYMUSZONA-PAROWANIE-ZAMIAST-DOMINA-Q1` (nowe ECHO właściciela, wyżej).
+2. **INFRA (naprawione):** `gra/index.html`, blok „BOOT ERROR CATCHER" — usunięty
+   override `console.error` (przechwytywał BEZTERMINOWO, nie tylko podczas ładowania
+   bundla, zamieniając każdy zwykły `console.error` w rosnący czerwony baner „crash").
+   `window.onerror`/`unhandledrejection` zostają nietknięte (nadal łapią realne
+   nieobsłużone wyjątki).
+3. **Runda 2 (FAIL → naprawiony):** Evaluator znalazł 5 zastałych bramek testowych
+   kodujących STARE zachowanie gracza (bez progu tury) — wszystkie naprawione
+   re-anchorem (regex/mutant na nowy trzywarunkowy blok Kroku C; 3 live testy Playwright
+   dostały fast-forward realnymi `endTurn()` do tury ≥25 przed wywołaniem haków
+   testowych — SEDNO każdego testu, czyli dowód że mechanizm faktycznie działa dla
+   gracza, zachowane, tylko przesunięte za próg). Zero zmian progów AI
+   (bronze/stone/iron) przez cały temat.
+4. **Final Control PASS** (runda 3) — własna, niezależna próbka bramek + przeliczenie
+   plików na dysku (skorygowana rozbieżność liczbowa z rundy 2: rodzina
+   `forced-war-*-test.cjs` ma realnie **14** plików, nie 15/17).
+
+**Bramki (wszystkie zielone, potwierdzone przez Final Control):** 14 plików
+`forced-war-*-test.cjs` + `forced-war-iron-mutant-probe.cjs` + `wojna-wymuszona-parowanie-test.cjs`
+(47/47, niezmieniony) + 2 nowe bramki (`wojna-wymuszona-prog-tury-gracz-test.cjs` 9/9,
+`boot-error-catcher-console-error-test.cjs` 8/8) + 5 bramek referencyjnych. `tsc --noEmit`
+czysto.
+
+**Nic do dalszego dispatchu w tym temacie.** Deploy do ROBOCZA wykonany osobno, patrz
+`WERSJE.md`.
 
 1. **GAME — próg tury dla gracza (ECHO wyżej):** dodać próg tury (rekomendowane: `turn >=
    25`, spójnie z `WOJNA_KAMIEN_WYMUSZONA_START_TURY`/`WOJNA_WYMUSZONA_START_TURY_OD_EPOKI`
