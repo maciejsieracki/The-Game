@@ -11,6 +11,14 @@
  * KAŻDEJ z ośmiu funkcji-akcesorów z main.ts, dla ownerId=0 (gracz) i co
  * najmniej dwóch dodatnich ownerId (AI).
  *
+ * Rozszerzenie R-HOTSEAT-ETAP4PREP-DEFERRED-OWNER-GUARDS-Q1 (runda 1): ten sam
+ * dowód dla dwóch DODATKOWYCH miejsc main.ts spoza akcesorów ekonomicznych --
+ * guard PRZED odłożeniem promptu scalenia (`promptMergeIfCoLocated`,
+ * `rep.ownerId !== 0` -> `!isHuman(rep.ownerId)`) i guard zapisu
+ * `pendingAutoRationForNextTurn` (`ownerId === 0` -> `isHuman(ownerId)`) --
+ * dla pełnej domeny: 0, dodatnie AI, sentinel barbarzyńcy (-1), sentinel
+ * rebelianta (-99).
+ *
  * Metoda: odtwarza WERSJĘ SPRZED (kod dosłownie skopiowany z main.ts przed tą
  * rundą) i WERSJĘ PO (kod dosłownie skopiowany z main.ts po tej rundzie) jako
  * dwie niezależne implementacje nad tym samym stanem startowym, woła obie z
@@ -38,6 +46,8 @@ const BUNDLE_FILE = path.resolve(__dirname, '.hotseat-etap3-akcesory-bundle.cjs'
 
 const ENTRY_TS = `
 export { HUMAN_OWNER_PRIMARY, isHumanOwner } from '../src/game/human-owners';
+export { BARBARIAN_OWNER_ID } from '../src/game/barbarians';
+export { REBEL_FACTION_OWNER_ID } from '../src/game/society-breakdown';
 `;
 
 fs.writeFileSync(ENTRY_FILE, ENTRY_TS);
@@ -69,7 +79,7 @@ try {
   try { fs.unlinkSync(BUNDLE_FILE); } catch { /* best-effort */ }
 }
 
-const { HUMAN_OWNER_PRIMARY, isHumanOwner } = mod;
+const { HUMAN_OWNER_PRIMARY, isHumanOwner, BARBARIAN_OWNER_ID, REBEL_FACTION_OWNER_ID } = mod;
 
 let pass = 0;
 let fail = 0;
@@ -283,6 +293,32 @@ const ALL_IDS = [0, ...AI_IDS];
     const sB2 = freshState(); before.addOwnerResearchedTechs(sB2, id, ['Q', 'R']);
     const sA2 = freshState(); afterImpl(sA2).addOwnerResearchedTechs(id, ['Q', 'R']);
     assertEq(afterImpl(sA2).ownerResearchedTechs(id), before.ownerResearchedTechs(sB2, id), `addOwnerResearchedTechs(${id},[Q,R])->ownerResearchedTechs PRZED===PO`);
+  }
+}
+
+// =====================================================================
+// Rozszerzenie R-HOTSEAT-ETAP4PREP-DEFERRED-OWNER-GUARDS-Q1: dwa guardy
+// odroczonych zdarzeń spoza akcesorów ekonomicznych (patrz nagłówek pliku).
+// Domena pełna: gracz (0), AI (dodatnie), barbarzyńca, rebeliant.
+// =====================================================================
+const isHuman = (ownerId) => isHumanOwner(humanSeats, ownerId);
+const FULL_DOMAIN = [0, ...AI_IDS, BARBARIAN_OWNER_ID, REBEL_FACTION_OWNER_ID];
+
+// 7) promptMergeIfCoLocated guard: `rep.ownerId !== 0` -> `!isHuman(rep.ownerId)`
+{
+  for (const id of FULL_DOMAIN) {
+    const before7 = id !== 0; // stary guard: return-uje (odrzuca) gdy PRAWDA
+    const after7 = !isHuman(id); // nowy guard
+    assertEq(after7, before7, `promptMergeIfCoLocated guard rep.ownerId=${id}: !isHuman===(ownerId!==0)`);
+  }
+}
+
+// 8) pendingAutoRationForNextTurn guard: `ownerId === 0` -> `isHuman(ownerId)`
+{
+  for (const id of FULL_DOMAIN) {
+    const before8 = id === 0; // stary guard: zapisuje pendingAutoRationForNextTurn gdy PRAWDA
+    const after8 = isHuman(id); // nowy guard
+    assertEq(after8, before8, `pendingAutoRationForNextTurn guard ownerId=${id}: isHuman===(ownerId===0)`);
   }
 }
 

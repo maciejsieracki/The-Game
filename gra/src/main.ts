@@ -10907,7 +10907,7 @@ async function boot(): Promise<void> {
       if (movedUnitIds.length === 0) return;
       const movedSet = new Set(movedUnitIds);
       const rep = units.find(x => x.id === movedUnitIds[0]);
-      if (!rep || rep.ownerId !== 0) return;
+      if (!rep || !isHuman(rep.ownerId)) return;
 
       const onHex = coLocatedForMergePrompt(units, rep.q, rep.r, rep.ownerId);
       const existing = onHex.filter(x => !movedSet.has(x.id));
@@ -28904,7 +28904,7 @@ async function boot(): Promise<void> {
               });
               if (autoRationResult.adjusted) {
                 autoRationAnyAdjusted = true;
-                if (ownerId === 0) {
+                if (isHuman(ownerId)) {
                   pendingAutoRationForNextTurn = autoRationResult;
                 }
               }
