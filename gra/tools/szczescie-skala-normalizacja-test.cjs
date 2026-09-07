@@ -40,6 +40,8 @@ export {
   PRAWMAX_DEFAULTS,
   SZ_PCT_CAP,
   PRAW_PCT_CAP,
+  pctFromNetto,
+  clampPct,
 } from '../src/game/society-breakdown';
 export { loadOrderParams, FALLBACK_ORDER_PARAMS } from '../src/game/order';
 `, 'utf8');
@@ -236,20 +238,17 @@ console.log('\n1. GOAL 1 — rownowaznosc: przeniesienie stalych nie zmienia zac
   // Pop 2 = populacja odniesienia (bez skalowania) wiec prawMax = wartosc czystej epoki.
   eq(pr.prawMax, 40, 'pop 2 / epoka 1: prawMax = 40 (D3, tabela per trudnosc)');
   // PrawPct = 100 * netto / prawMax, zaokraglone do 1 miejsca po przecinku i przycięte capem
-  // (ta sama formula co `pctFromNetto`/`clampPct` w society-breakdown.ts) — liczona z danych,
-  // nie z literalu. Mapowanie stara->nowa: `eq(pr.prawPct, 50, ...)` -> obliczenie z osiedlePop2Normal.
+  // — liczone PRAWDZIWA funkcja produkcyjna `pctFromNetto`/`clampPct`, nie literalem ani
+  // duplikatem formuly.
   //
-  // KOREKTA rundy 3 (Evaluator, zarzut 2, niska waga): formula ponizej jest REPLIKA
-  // `pctFromNetto`/`clampPct`, nie importem — bo te funkcje nie sa `export`owane, a
-  // `society-breakdown.ts` jest bezwzglednie poza allowlista tego tematu (nie moglismy ich
-  // wyeksportowac). To jest ograniczenie NARZUCONE przez allowlist, NIE swiadoma technika
-  // „unikania tautologii" (odwrotnie: duplikat formuly w tescie to WLASNIE czynnik RYZYKA
-  // ucieczki mutacyjnej C-046, bo test nie wykryje rozjazdu, gdyby produkcyjne
-  // zaokraglanie/cap w `pctFromNetto`/`clampPct` sie zmienilo). Zweryfikowane mutacja
-  // `normal[1]`->99 (przywrocona): w PRAKTYCE dzis asercja poprawnie sledzi dane, ale to
-  // wezsze ryzyko niz pelna tautologia, nie brak ryzyka.
-  eq(pr.prawPct, Math.min(M.PRAW_PCT_CAP, Math.round((100 * osiedlePop2Normal / 40) * 10) / 10),
-    `pop 2 / epoka 1: PrawPct = 100*netto/prawMax z danych (${osiedlePop2Normal}/40)`);
+  // KOREKTA rundy 4 (Opcja 3 ratyfikacji orkiestratora #2): `pctFromNetto`/`clampPct` sa teraz
+  // `export`owane z `society-breakdown.ts` (wezel C tej rundy, allowlista rozszerzona
+  // wylacznie o to slowo kluczowe, zero zmiany zachowania) — duplikat formuly z rundy 3
+  // (ryzyko ucieczki mutacyjnej C-046, bo test nie wykrywalby rozjazdu przy zmianie
+  // zaokraglania/capu w produkcji) zastapiony bezposrednim importem tej samej funkcji, ktorej
+  // uzywa produkcja.
+  eq(pr.prawPct, M.pctFromNetto(osiedlePop2Normal, 40, M.PRAW_PCT_CAP),
+    `pop 2 / epoka 1: PrawPct = pctFromNetto(netto, prawMax, cap) z danych (${osiedlePop2Normal}/40)`);
 }
 
 // ---------------------------------------------------------------------------
@@ -543,12 +542,12 @@ console.log('\n6. Scenariusz ze zrzutu wlasciciela: pop 2, epoka 1, Sz netto 16,
   eq(pr.netto, osiedlePop2Normal,
     `zrzut: Prawo netto = bonus Osiedla z danych (prawo_bonus_osiedle_pop.normal[1] = ${osiedlePop2Normal})`);
   eq(szPrzed.szPct, 90.7, 'zrzut PRZED (skalowanie populacja wylaczone): SzPct = 90,7%');
-  // Mapowanie stara->nowa: `eq(prPrzed.prawPct, 50, ...)` -> ta sama formula
-  // pctFromNetto/clampPct co wyzej, na tym samym `osiedlePop2Normal` (societyPrzedGoal2
+  // Mapowanie stara->nowa: `eq(prPrzed.prawPct, 50, ...)` -> ten sam import
+  // `M.pctFromNetto` co wyzej, na tym samym `osiedlePop2Normal` (societyPrzedGoal2
   // zeruje WYLACZNIE wspolczynnik skalowania populacji, nie klucz Osiedla — prawMax
   // pozostaje 40 dla pop 2 = populacja odniesienia).
-  eq(prPrzed.prawPct, Math.min(M.PRAW_PCT_CAP, Math.round((100 * osiedlePop2Normal / 40) * 10) / 10),
-    `zrzut PRZED: PrawPct = 100*netto/prawMax z danych (${osiedlePop2Normal}/40)`);
+  eq(prPrzed.prawPct, M.pctFromNetto(osiedlePop2Normal, 40, M.PRAW_PCT_CAP),
+    `zrzut PRZED: PrawPct = pctFromNetto(netto, prawMax, cap) z danych (${osiedlePop2Normal}/40)`);
   // pop 2 = populacja odniesienia, wiec PO zmianie ma byc IDENTYCZNIE — neutralnosc startowa.
   eq(sz.szPct, szPrzed.szPct, 'zrzut PO zmianie: SzPct bez zmian wobec PRZED (90,7%)');
   eq(pr.prawPct, prPrzed.prawPct, 'zrzut PO zmianie: PrawPct bez zmian wobec PRZED (50%, D3)');

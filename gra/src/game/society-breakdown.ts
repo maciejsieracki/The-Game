@@ -495,12 +495,12 @@ function resolvePalacTier(input: Pick<LawBreakdownInput, 'palacTier' | 'hasPalac
   return 0;
 }
 
-function clampPct(x: number, cap: number): number {
+export function clampPct(x: number, cap: number): number {
   if (!Number.isFinite(x)) return 0;
   return Math.min(cap, Math.max(0, Math.round(x * 10) / 10));
 }
 
-function pctFromNetto(netto: number, max: number, cap: number): number {
+export function pctFromNetto(netto: number, max: number, cap: number): number {
   const m = max > 0 ? max : 1;
   return clampPct(100 * netto / m, cap);
 }

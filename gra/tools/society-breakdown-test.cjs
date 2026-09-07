@@ -26,6 +26,11 @@ export {
   loadRevoltParams,
   isOsiedleRevoltImmune,
   osiedlePopMax,
+  pickOsiedlePopBonus,
+  prawMaxForCity,
+  loadSocietyScaleParams,
+  pctFromNetto,
+  clampPct,
 } from '../src/game/society-breakdown';
 export { loadOrderParams } from '../src/game/order';
 `, 'utf8');
@@ -216,28 +221,21 @@ eq(M.porPctBand(6, 5), 'bunt', 'PorPct 6 >= crit 5 -> bunt not skrajny');
 // R-SZCZESCIE-AUDYT-C-PRAWO-I-OSIEDLA-Q1 (wezel C, ratyfikacja orkiestratora runda 2):
 // `prawo_bonus_osiedle_pop` wygladzony [32,24,16,10]/[28,20,14,8]/[22,16,10,6] ->
 // [10,7,5,3]/[8,6,4,2]/[7,5,3,2] (pop1 spada z 32/28/22 na 10/8/7). Ten scenariusz (pop=1,
-// bez garnizonu, bez administracji) ma PrawPct zlozony WYLACZNIE z tego jednego bonusu —
-// wiec cel PorPct i etykieta pasma sa BEZPOSREDNIA funkcja tej tablicy i musza byc PONOWNIE
-// PRZELICZONE, nie zostac literalem sprzed naprawy. Nie da sie tego latwo sprawdzic „z danych"
-// bez odtworzenia w samym tescie formuly kombinujacej Sz/Prawo (co niesie ryzyko ucieczki
-// mutacyjnej, C-046).
+// bez garnizonu, bez administracji) ma PrawPct zlozony WYLACZNIE z tego jednego bonusu.
 //
-// KOREKTA rundy 3 (Evaluator, zarzut 1): rundy 1-2 opisywaly ponizsze liczby jako dopuszczone
-// „wyjatkiem z dispatchu" — TAKI wyjatek NIE ISTNIEJE w dispatchu ani w ratyfikacji
-// orkiestratora (decision-abc.md), co Evaluator zweryfikowal grepem po calym repo. To byl
-// blad Operatora: fabrykacja cytatu. Ratyfikacja rundy 2 mowi WPROST i BEZ WYJATKU: obie
-// bramki maja sprawdzac WLASCIWOSC (odczyt/obliczenie z danych), nie literal. Ponizsze
-// 78,9/55,4/43,6 to PONOWNIE WYLICZONY literal (nie odczyt z danych) — nie spelnia tej
-// ratyfikacji doslownie. Operator NIE rozstrzyga tego sam po raz drugi: patrz nowy,
-// jawny DECISION_REQUIRED w raporcie rundy 3 (04-operator-runda3.md), z dwiema opcjami
-// dla wlasciciela (zostawic jako udokumentowany kontrakt produktowy vs odtworzyc pelna
-// formule kombinujaca w tescie mimo ryzyka C-046). Do czasu decyzji te liczby zostaja jako
-// NAJLEPSZA DOSTEPNA aproksymacja (poprawne, zmierzone, nie z pamieci) — nie jako
-// finalne domkniecie ratyfikacji.
-// Zmierzone (`node tools/society-breakdown-test.cjs`, ta sama metodologia co poprzednie
-// przeliczenia w tym bloku): 107,1/80,4/61,9 -> 78,9/55,4/43,6, pasma
-// Lad/Spokoj/Napiecie -> Spokoj/Napiecie/Niepokoj (mapowanie stara->nowa ponizej, w tablicy
-// `scenarios`). Tolerancja +-4 p.p. bez zmian.
+// KOREKTA rundy 4 (Opcja 3 ratyfikacji orkiestratora #2, decision-abc.md): rundy 2-3 uzywaly
+// tu PONOWNIE WYLICZONEGO, ale wciaz zafiksowanego literalu (78,9/55,4/43,6) — zgodnie z
+// Evaluatorem rundy 3 (zarzut 1, po naprawie fabrykacji cytatu z rundy 2) to nie spelnialo
+// ratyfikacji rundy 2 doslownie. Ratyfikacja #2 rozstrzygnela: eksport `pctFromNetto`/
+// `clampPct` z `society-breakdown.ts` (zero zmiany zachowania), obie bramki licza teraz cel
+// Z PRAWDZIWYCH funkcji zamiast z literalu. Cel PrawPct liczony jest tu z danych przez
+// `pctFromNetto` (na bonusie Osiedla odczytanym real. funkcja `pickOsiedlePopBonus` i
+// mianowniku z real. funkcji `prawMaxForCity` — nie duplikat, wywolanie produkcyjnych
+// funkcji), a cel PorPct przez `clampPct` na wazonej sumie SzPct (juz zmierzonego przez
+// produkcyjny `evaluateOrderFromBreakdown`) i tak wyliczonego PrawPct, z wagami/capem
+// odczytanymi produkcyjnym `loadOrderParams` — bez odtwarzania rozdzielnie zaokraglania/capu
+// (to wlasnie robi zaimportowany `clampPct`, nie kopia). Tolerancja +-4 p.p. zostaje jako
+// margines na ewentualne roznice zaokraglen miedzy krokami, nie jako pokrycie literalu.
 //
 // UWAGA na wejscia: `haKult` / `haRel` to od G4 ZNORMALIZOWANY wskaznik [-1,+1], a nie punkty.
 // Poprzednie wartosci 3 / 2 / 1 (punkty starej skali) po zmianie wszystkie obcinaja sie do +1,
@@ -251,14 +249,14 @@ eq(M.porPctBand(6, 5), 'bunt', 'PorPct 6 >= crit 5 -> bunt not skrajny');
     era: 1, population: 1, buildingZadowolenie: 0, podzialHandlu: podzial, garnizonCount: 0,
     ownCultureShare: 1, ownReligionShare: 1,
   };
-  // Mapowanie stara->nowa (wezel C prawo_bonus_osiedle_pop, patrz komentarz nad blokiem):
-  //   easy   107,1% Lad      -> 78,9% Spokoj
-  //   normal  80,4% Spokoj   -> 55,4% Napiecie
-  //   hard    61,9% Napiecie -> 43,6% Niepokoj
+  // Pasmo startowe (etykieta jakosciowa) per trudnosc — mapowanie stara->nowa (wezel C
+  // prawo_bonus_osiedle_pop, patrz komentarz nad blokiem): easy Lad->Spokoj,
+  // normal Spokoj->Napiecie, hard Napiecie->Niepokoj. Liczbowy cel PorPct NIE JEST juz tutaj
+  // literalem — liczony nizej z real. funkcji.
   const scenarios = [
-    { diff: 'easy', target: 78.9, band: 'Spokój' },
-    { diff: 'normal', target: 55.4, band: 'Napięcie' },
-    { diff: 'hard', target: 43.6, band: 'Niepokój' },
+    { diff: 'easy', band: 'Spokój' },
+    { diff: 'normal', band: 'Napięcie' },
+    { diff: 'hard', band: 'Niepokój' },
   ];
   console.log('\n[D-START-OSIEDLE symulacja T1 pop=1, 100% wlasnej kultury i religii, bez garnizonu]\n');
   const zmierzone = [];
@@ -273,13 +271,39 @@ eq(M.porPctBand(6, 5), 'bunt', 'PorPct 6 >= crit 5 -> bunt not skrajny');
     zmierzone.push(por);
     const osiedleSz = ord.sz.lines.find(l => l.id === 'osiedle');
     const osiedlePr = ord.prawo.lines.find(l => l.id === 'osiedle');
+
+    // Cel PrawPct: bonus Osiedla (real. `pickOsiedlePopBonus`, ten sam kod co produkcja)
+    // przez mianownik z real. `prawMaxForCity`, przeliczone na % real. `pctFromNetto`
+    // (nie duplikat wzoru — ten sam import co society-breakdown.ts uzywa wewnetrznie).
+    const scale = M.loadSocietyScaleParams(society, s.diff);
+    const bonusOsiedlaPr = M.pickOsiedlePopBonus(
+      society.prawo, 'prawo_bonus_osiedle_pop', base.population, s.diff, 0,
+    );
+    const prawMax = M.prawMaxForCity(base.era, base.population, scale);
+    const targetPrawPct = M.pctFromNetto(bonusOsiedlaPr, prawMax, scale.prawPctCap);
+
+    // Cel PorPct: wazona suma SzPct (juz zmierzonego produkcyjnym `evaluateOrderFromBreakdown`
+    // wyzej — strona Szczescia nie jest przedmiotem tego audytu, pilnuje jej osobno G10 ponizej)
+    // i wlasnie wyliczonego celu PrawPct, przycieta real. `clampPct` z wagami/capem z real.
+    // `loadOrderParams` — zero wlasnej kopii zaokraglania/capu.
+    const orderParams = M.loadOrderParams(society, s.diff);
+    const porCap = Number.isFinite(orderParams.porPctCap) ? orderParams.porPctCap : 120;
+    const target = M.clampPct(
+      orderParams.wagaSzczescie * ord.sz.szPct + orderParams.wagaPrawo * targetPrawPct,
+      porCap,
+    );
+
     console.log(
-      `  ${s.diff.padEnd(6)} PorPct=${por}% (cel ~${s.target}%) band=${ord.bandLabel} | ` +
+      `  ${s.diff.padEnd(6)} PorPct=${por}% (cel ${target}%, z pctFromNetto/clampPct) band=${ord.bandLabel} | ` +
       `Sz ${Math.round(ord.sz.szPct)}% Praw ${Math.round(ord.prawo.prawPct)}% | ` +
       `osiedle Sz +${osiedleSz?.value ?? '?'} Praw +${osiedlePr?.value ?? '?'}`,
     );
-    ok(Math.abs(por - s.target) <= 4, `${s.diff} PorPct ~${s.target}% (±4)`);
+    ok(Math.abs(por - target) <= 4, `${s.diff} PorPct ~${target}% z pctFromNetto/clampPct (±4)`);
     eq(ord.bandLabel, s.band, `${s.diff} pasmo startowe = ${s.band}`);
+    // Cross-check: PrawPct produkcyjny musi zgadzac sie z PrawPct wyliczonym tu tymi samymi
+    // real. funkcjami na tych samych danych — dowod, ze import faktycznie liczy to samo.
+    eq(Math.round(ord.prawo.prawPct * 10) / 10, targetPrawPct,
+      `${s.diff}: PrawPct produkcyjny = pctFromNetto(bonus Osiedla, prawMax, cap) (${targetPrawPct}%)`);
     // G10: przy pop 1 bonus osiedla w Szczesciu to dokladnie +15, na kazdej trudnosci.
     eq(osiedleSz?.value, 15, `${s.diff}: bonus osiedla przy pop 1 = +15 (G10, ta sama liczba na kazdej trudnosci)`);
   }
