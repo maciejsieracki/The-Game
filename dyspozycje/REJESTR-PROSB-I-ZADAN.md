@@ -82,6 +82,7 @@ historycznych wierszy poniżej; wpisy bez jednoznacznego dowodu nie są tu zgady
 | `R-HOTSEAT-ETAP-1-OWNERID-ISAIOWNER-Q1` | `ZINTEGROWANE` | Commit `87b33da3`. Etap 1 planu hot-seat — świeży audyt: 22 realne miejsca `ownerId>0`, 10 podmienionych na `isAiOwner(humanSeats,...)` (priorytet: `aiOwnerList` w pętli tur AI), 12 świadomie nietkniętych (semantyka `isMajorAiOwner`/miasto-państwo, inny zakres). Behawioralny no-op potwierdzony trzykrotnie (bramka + 93 bramki referencyjne/AI/dyplomacji identyczne przed/po). Szczegóły wyżej (linia ok. 4643a). Następny krok: Etap 2 (mgła wojny — najwyższe ryzyko fazy). |
 | `R-HOTSEAT-ETAP-2-MGLA-WOJNY-Q1` | `ZINTEGROWANE` | Commit `f3c0becf`. Etap 2 planu hot-seat (najwyższe ryzyko fazy) — `ME()`/`exploredByHuman` scaffold + migracja całej warstwy renderu/wykrywania widoczności mgły (`ownPlayerVisibleHexes`/`currentVisible`/`refreshFog`/`cityFogVisible`/`unitsVisibleOnMap`/`applyFogVisibility`/`getMinimapData`) na `ME()`. Behawioralny no-op potwierdzony trzykrotnie niezależnie (hash treści zbioru `explored` identyczny przed/po, żywy Chromium). Save/load, dyplomacja-ujawnianie i granica terytorium świadomie poza zakresem (inne etapy planu). Szczegóły wyżej (linia ok. 4643b). Następny krok: Etap 3. |
 | `R-HOTSEAT-ETAP-3-AKCESORY-EKONOMIA-Q1` | `ZINTEGROWANE` | Commit `302ea837`. Etap 3 planu hot-seat — `isHuman(ownerId)` alias + `playerStateByHuman` scaffold (zero kopii), osiem funkcji-akcesorów ekonomicznych (skarbiec/Praca/Nauka/era/zbadane technologie) przepisanych z `ownerId===0` na `isHuman(ownerId)`. `isPlayerOwner` w `difficulty-cost.ts` świadomie nietknięty (Final Control zgrepował wszystkie wywołania, potwierdził bezpieczeństwo). Behawioralny no-op potwierdzony trzykrotnie (bramka 52/52 + 5 bramek ekonomii/AI zielone i identyczne przed/po). Szczegóły wyżej (linia ok. 4643c). Następny krok: Etap 4 (rozcięcie `triggerPlayerEndTurn` — najwyższe ryzyko CAŁEGO planu). |
+| `R-HOTSEAT-ETAP-4-RECON-END-TURN-Q1` | `ZAMKNIĘTE (dokument)` | Commit `72345570`. Recon-only (zero kodu) dla Etapu 4 — najwyższe ryzyko całego planu hot-seat. Kompletna mapa 16 faz `triggerPlayerEndTurn()` (4469 linii), lokalizacja `turn++`, plan rozcięcia na `endActiveHumanTurn()`/`runWorldEndTurn()`/`advanceSeat()` z automatyzowalnym dowodem no-op. Kilka realnych znalezisk (kod „światowy" w bloku „gracza", identyfikatory odroczonych zdarzeń zawężone do `ownerId===0`, zależność `nextTurnNum` między fazami). Szczegóły wyżej (linia ok. 4643d). Następny krok: dispatch implementacji Etapu 4 (osobny temat, w oparciu o ten dokument). |
 
 ### Zasada migracji i historii
 
@@ -4757,6 +4758,42 @@ rozcięcie `triggerPlayerEndTurn()` na `endActiveHumanTurn()`/`runWorldEndTurn()
 plan oznacza to jako **najwyższe ryzyko całego planu** (4500 linii w najgorętszym
 pliku repo, 103 commity/30 dni w tym samym rejonie) — wymaga szczególnie ostrożnego
 dispatchu, prawdopodobnie rozbicia na wiele rund.
+
+## `R-HOTSEAT-ETAP-4-RECON-END-TURN-Q1` — INFORMATIONAL — **ZAMKNIĘTE 2026-09-07** (commit `72345570`, dokument, zero kodu)
+
+Runda czysto rekonesansowa (celowo, dana skala ryzyka Etapu 4 — plan oznacza rozcięcie
+`triggerPlayerEndTurn()` jako najwyższe ryzyko CAŁEGO planu hot-seat, nie tylko fazy).
+Kompletna mapa 16 faz funkcji (dziś 4469 linii, `main.ts:28497-32966`), lokalizacja
+`turn++` (28647), lista 3 miejsc wywołania funkcji poza definicją, konkretny plan
+rozcięcia na `endActiveHumanTurn()`/`runWorldEndTurn()`/`advanceSeat()` z automatyzowalnym
+dowodem no-op (multi-turn headless sim + hash stanu).
+
+**Kluczowe znaleziska warte zapamiętania przed dispatchem implementacji:**
+- Kod „światowy" osadzony tekstowo w bloku „gracza" PRZED `turn++` (musi trafić do
+  `runWorldEndTurn()`): czyszczenie `cityOrderState.bunt` dla WSZYSTKICH miast (nie tylko
+  gracza), `evictForeignUnitsFromCityHexes`, reset ruchu wszystkich jednostek.
+- Kilka identyfikatorów odroczonych zdarzeń twardo zawężonych do `ownerId===0`
+  (`deferredMergePrompts` via `promptMergeIfCoLocated` guard, `pendingAutoRationForNextTurn`)
+  — mechanizm faktycznie zadziałałby dla człowieka #2 w hot-seat, ale notyfikacja/kolejka
+  UI by go pominęła (cichy, nie od razu widoczny bug klasy „mechanika działa, komunikat
+  nie").
+- `nextTurnNum` obliczane w fazie „gracza", używane w wielu miejscach fazy „świata" —
+  „dosłowny copy-paste" założony przez plan zostawiłby martwe odwołanie do zmiennej z
+  zewnętrznego domknięcia bez jawnego przekazania/przeliczenia.
+- Struktura rekurencyjna `runAiPhase` (wznawia się po modalu bitwy AI→gracz,
+  `aiCmdResume`) z udokumentowanym w kodzie race między `endTurnInProgress` a
+  faktycznym zamknięciem modalu — komplikuje granicę `runWorldEndTurn()`/UI bardziej niż
+  zakłada plan §H5b.
+
+Evaluator znalazł 5 zarzutów (luki w mapie/planie Operatora), wszystkie PRZYJĘTE i
+naniesione w rundzie 2 tego samego tematu. Final Control NIE dispatchowany (dokument,
+nie kod — zgodnie z dyspozycją). Pełny dokument:
+`dyspozycje/autobot/runs/R-HOTSEAT-ETAP-4-RECON-END-TURN-Q1/01-operator-runda1-analiza.md`
+(554 linie).
+
+**Następny krok:** dispatch implementacji Etapu 4 jako osobny temat, w oparciu o ten
+dokument — prawdopodobnie rozbity na kilka rund/podetapów (np. najpierw przeniesienie
+kodu „światowego" osadzonego w bloku gracza, potem właściwe rozcięcie funkcji).
 
 ## R-HOTSEAT-MULTIPLAYER-HOSTING-Q1 — temat na przyszłość (rejestracja 2026-09-04, noc)
 
