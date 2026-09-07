@@ -844,7 +844,7 @@ import {
 import {
   buildingStockCost, unitStockCost, canAffordBuildingStock,
   ownerResourceStockAll, deductBuildingStockCostAcrossCities, creditOwnerResourceStock,
-  missingStockFor, stockResourceLabel,
+  missingStockFor, stockResourceLabel, EMPIRE_STOCK_RESOURCE_KEYS,
 } from './game/building-stock-cost';
 import { empireHasKopalniaNaZlozuZelaza, hasZelazoAccess } from './game/zelazo-access';
 import { empireHasKopalniaNaZlozuCyny, cityHasOdlewniaForCyna } from './game/cyna-access';
@@ -1386,6 +1386,16 @@ interface CityCaptureReportInput {
   moc: number;
   /** Zdobywca jest barbarzynca — ofiara traci, ale nikt nie dziedziczy lupu. */
   barbarzyncaZdobywca: boolean;
+  /**
+   * R-PODBOJ-SUROWCE-BILANS-BRAK-WIERSZA-Q1: magazyn `City.surowce` przejetego miasta,
+   * odczytany niezaleznie od zmiany `ownerId` — mechanika transferu juz dzis dziala po
+   * cichu (`applyCityCaptureAfterBattle`/`capital-capture.ts` nigdy nie zeruja
+   * `city.surowce`, zmieniaja wylacznie `ownerId`), ten wiersz WYLACZNIE to komunikuje.
+   * Celowo NIE gated przez `barbarzyncaZdobywca` — w odroznieniu od zlota/nauki/
+   * technologii ten magazyn nie ma osobnej sciezki „barbarzyncy nie dziedzicza", wiec
+   * pokazujemy dokladnie to, co faktycznie przechodzi na zdobywce w KAZDYM przypadku.
+   */
+  surowce?: Record<string, number>;
 }
 
 /**
@@ -1407,6 +1417,22 @@ function buildCityCaptureReportRows(input: CityCaptureReportInput): CaptureRepor
   // --- 1. Co przejelismy (zawsze prawda, takze przy zwyklym miescie) ---
   if (input.ludnosc > 0) rows.push({ label: 'Ludność', value: '+' + input.ludnosc, tone: 'gain', group: 'przejete' });
   if (input.budynki > 0) rows.push({ label: 'Budynki', value: '+' + input.budynki, tone: 'gain', group: 'przejete' });
+  // R-PODBOJ-SUROWCE-BILANS-BRAK-WIERSZA-Q1: surowce z magazynu miasta przechodza na
+  // zdobywce fizycznie ZAWSZE (ownerId sie zmienia, `city.surowce` nigdy nie jest
+  // zerowany) -- ten wiersz wylacznie to komunikuje, jedna pozycja na kazdy niezerowy
+  // surowiec, w stalej kolejnosci `EMPIRE_STOCK_RESOURCE_KEYS`. Pomija zera (ta sama
+  // zasada co reszta tej funkcji) i pokazuje takze klucze SPOZA tej listy (przyszlosciowe
+  // surowce), zeby zaden magazyn nie zniknal po cichu z raportu.
+  if (input.surowce) {
+    const seen = new Set<string>();
+    const pushSurowiec = (key: string, value: number) => {
+      if (seen.has(key) || !(value > 0)) return;
+      seen.add(key);
+      rows.push({ label: stockResourceLabel(key), value: '+' + Math.floor(value), tone: 'gain', group: 'przejete' });
+    };
+    for (const key of EMPIRE_STOCK_RESOURCE_KEYS) pushSurowiec(key, input.surowce[key] ?? 0);
+    for (const key of Object.keys(input.surowce)) pushSurowiec(key, input.surowce[key] ?? 0);
+  }
 
   // --- 2. Lup (tylko pozycje niezerowe; barbarzynca nie dziedziczy niczego) ---
   const lup: CaptureReportRow[] = [];
@@ -13548,6 +13574,7 @@ async function boot(): Promise<void> {
           technologie: 0,
           moc: 0,
           barbarzyncaZdobywca: false,
+          surowce: city.surowce,
         });
         // GOAL 3 -- LEJEK 2 z trzech (recon D): kapitulacja glodowa. No-op, gdy lejek
         // stoleczny zapisal juz bogatszy wpis dla tego miasta w tej turze.
@@ -26672,6 +26699,7 @@ async function boot(): Promise<void> {
           technologie: 0,
           moc: 0,
           barbarzyncaZdobywca: capitalBarbCaptor,
+          surowce: city.surowce,
         });
         const capitalOneLine = captureReportOneLine(capitalRows);
         capitalCaptureReportSlot = { rows: capitalRows, oneLine: capitalOneLine };
@@ -26732,6 +26760,7 @@ async function boot(): Promise<void> {
         // FAKTYCZNIE przejeta, nie utracona przez ofiare.
         moc: powerGain,
         barbarzyncaZdobywca: barbCaptor,
+        surowce: city.surowce,
       });
       const eliminatedDetails = captureReportOneLine(eliminationRows);
       capitalCaptureReportSlot = { rows: eliminationRows, oneLine: eliminatedDetails };
@@ -27142,6 +27171,7 @@ async function boot(): Promise<void> {
         // Zwykle miasto nie niesie lupu dla NIKOGO, wiec nie ma czego „nie odziedziczyc" --
         // galaz barbarzynska dotyczy wylacznie sciezki stolecznej/eliminacji.
         barbarzyncaZdobywca: false,
+        surowce: city.surowce,
       });
       // GOAL 3 -- LEJEK 1 z trzech (recon D): wspolne wejscie zbrojne (bitwa polowa o miasto,
       // szturm muru, wejscie do pustego miasta). No-op, gdy lejek stoleczny zapisal juz

@@ -37,6 +37,7 @@ const esbuild = require('esbuild');
 const GRA = path.resolve(__dirname, '..');
 const mainSrc = fs.readFileSync(path.resolve(GRA, 'src', 'main.ts'), 'utf8');
 const noticeSrc = fs.readFileSync(path.resolve(GRA, 'src', 'ui', 'cityCaptureNotice.ts'), 'utf8');
+const stockSrc = fs.readFileSync(path.resolve(GRA, 'src', 'game', 'building-stock-cost.ts'), 'utf8');
 
 let pass = 0;
 let fail = 0;
@@ -80,6 +81,21 @@ ok(!!pureBlock && pureBlock.includes('function buildCityCaptureReportRows('),
 ok(!!pureBlock && pureBlock.includes('function captureReportOneLine('),
   '0c: blok zawiera captureReportOneLine');
 
+// R-PODBOJ-SUROWCE-BILANS-BRAK-WIERSZA-Q1: BLOK CZYSTY teraz woła `stockResourceLabel`
+// i `EMPIRE_STOCK_RESOURCE_KEYS` z game/building-stock-cost.ts (jedyny slownik nazw
+// surowcow w kodzie -- dispatch zakazal wymyslania nowego). Ten plik nie importuje
+// modulow (BLOK CZYSTY jest wycinany i uruchamiany w izolacji), wiec doklejamy TEN SAM
+// fragment zrodlowy (bez `export`, zeby dzialal jako zwykla deklaracja w `new Function`)
+// PRZED blokiem -- jedno zrodlo prawdy (samo zrodlo), zero zduplikowanego slownika.
+const stockDepsStart = stockSrc.indexOf('export const STOCK_RESOURCE_LABEL');
+const stockDepsFnEnd = stockSrc.indexOf('\n}', stockSrc.indexOf('export function stockResourceLabel'));
+const stockDeps = stockDepsStart >= 0 && stockDepsFnEnd > stockDepsStart
+  ? stockSrc.slice(stockDepsStart, stockDepsFnEnd + 2) : null;
+ok(stockDeps !== null && stockDeps.includes('EMPIRE_STOCK_RESOURCE_KEYS')
+  && stockDeps.includes('function stockResourceLabel'),
+  '0e: wycięto STOCK_RESOURCE_LABEL + EMPIRE_STOCK_RESOURCE_KEYS + stockResourceLabel z building-stock-cost.ts');
+const pureBlockWithDeps = (stockDeps || '').replace(/^export /gm, '') + '\n' + (pureBlock || '');
+
 let build = null;
 let oneLine = null;
 let shortLine = null;
@@ -87,7 +103,7 @@ let mirror = null;
 /** Ochrona przed tautologią: gdy funkcji nie ma w bloku, sekcja 11 czerwienieje, nie wybucha. */
 const mirror0 = rows => (typeof mirror === 'function' ? mirror(rows) : null);
 try {
-  const api = runTs(pureBlock,
+  const api = runTs(pureBlockWithDeps,
     'return { buildCityCaptureReportRows, captureReportOneLine, captureReportShortLine,'
     + ' mirrorCaptureReportRowsForVictim };');
   build = api.buildCityCaptureReportRows;
@@ -466,6 +482,48 @@ console.log('12. Dedup chroni przed potrójnym zapisem JEDNEGO zdarzenia, nie ka
     '12f: klucz nadal zaczyna się prefiksem rodziny (✕ i klik po nim rozpoznają wpis)');
   ok(rec.includes('if (cityCaptureEventDetails.has(evId)) return;'),
     '12g: sam mechanizm no-opu zostaje — zmieniła się WYŁĄCZNIE ziarnistość klucza');
+}
+
+// ===========================================================================
+// 13. R-PODBOJ-SUROWCE-BILANS-BRAK-WIERSZA-Q1 — nowy wiersz „surowce zdobyte".
+// ===========================================================================
+console.log('13. Surowce miasta w bilansie zdobycia — dokladna liczba, zera pominiete');
+{
+  const rows = build({ ...BAZA, kind: 'zwykle', surowce: { drewno: 42, kamien: 0, zelazo: 7 } });
+  const drewno = rowFor(rows, 'Drewno');
+  const zelazo = rowFor(rows, 'Żelazo');
+  ok(drewno !== null && drewno.value === '+42',
+    '13a: wiersz "Drewno" niesie DOKLADNA liczbe +42 z city.surowce');
+  ok(zelazo !== null && zelazo.value === '+7',
+    '13b: wiersz "Żelazo" niesie DOKLADNA liczbe +7 z city.surowce');
+  ok(rowFor(rows, 'Kamień') === null,
+    '13c: surowiec o wartosci 0 NIE tworzy wiersza (ta sama zasada co reszta funkcji)');
+  ok(drewno.group === 'przejete' && zelazo.group === 'przejete',
+    '13d: wiersze surowcow naleza do grupy "co przejelismy", nie do lupu');
+  ok(labels(rows).indexOf('Drewno') < labels(rows).indexOf('Łup'),
+    '13e: surowce miasta wypisane PRZED sekcja Lup (kolejnosc: co przejelismy -> lup)');
+}
+{
+  // Barbarzynca-zdobywca: zloto/nauka/technologie NIE dziedziczone, ale surowce miasta
+  // TAK -- mechanizm transferu (ownerId) nie rozroznia barbarzyncy, wiec raport tez nie.
+  const rows = build({
+    ...BAZA, kind: 'eliminacja', zloto: 500, surowce: { glina: 13 }, barbarzyncaZdobywca: true,
+  });
+  const glina = rowFor(rows, 'Glina');
+  ok(glina !== null && glina.value === '+13',
+    '13f: barbarzynca-zdobywca WIDZI przejete surowce miasta (mechanizm ich nie wyklucza)');
+  ok(rowFor(rows, 'Złoto ze skarbca') === null,
+    '13g: kontrola: zloto ze skarbca nadal NIE przechodzi na barbarzyncow (bez zmian)');
+}
+{
+  const rows = build({ ...BAZA, kind: 'zwykle', surowce: undefined });
+  ok(rows.filter(r => r.group === 'przejete' && r.label !== 'Ludność' && r.label !== 'Budynki').length === 0,
+    '13h: brak `surowce` w wejsciu (kompatybilnosc wsteczna) — zero nowych wierszy, brak wyjatku');
+}
+{
+  const rows = build({ ...BAZA, kind: 'zwykle', surowce: { drewno: 3.9 } });
+  ok(rowFor(rows, 'Drewno').value === '+3',
+    '13i: wartosc niecalkowita jest floorowana, spojnie z reszta raportu (Math.floor)');
 }
 
 console.log('');

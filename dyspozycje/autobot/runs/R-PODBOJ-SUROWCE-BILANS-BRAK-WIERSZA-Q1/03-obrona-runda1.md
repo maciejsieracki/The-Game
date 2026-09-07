@@ -1,0 +1,10 @@
+STATUS: PASS
+DOMAIN: GAME
+TEMAT: R-PODBOJ-SUROWCE-BILANS-BRAK-WIERSZA-Q1
+ZMIANY-COMMIT: worktree `/home/user/wt-podboj-surowce-bilans`, commity zweryfikowane 1876c216 (kod) + a626bde2 (raport Operatora) + cb510d8e (raport Evaluatora); ten plik = obrona rundy 1. Brak nowych zmian w gra/ — obrona jest wyłącznie odpowiedzią dowodową na zarzut.
+TESTY: niezależna weryfikacja zarzutu evaluatora: `grep -n "buildCityCaptureReportRows"` main.ts -> 4 wywołania (linie ~13557, 26682, 26740, 27152 w bieżącym stanie pliku); potwierdzone Readem, że `city.ownerId = newOwner` (main.ts:13451) poprzedza wywołanie `runCapitalCapturePlunder` (main.ts:13554), wewnątrz którego leżą pozostałe 3 wywołania buildCityCaptureReportRows -- a więc odczyt `surowce: city.surowce` we WSZYSTKICH 4 miejscach faktycznie następuje PO zmianie ownerId. Dodatkowo zweryfikowałem grepem `\.surowce\s*=` w main.ts + building-stock-cost.ts + diplomacy-basket-transfer.ts: jedyny zapis do `city.surowce` na całej ścieżce między ownerId a odczytem to main.ts:9441, który leży w gałęzi transferu koszyka dyplomatycznego (`surowiec_ilosc`), nie na ścieżce podboju/kapitulacji -- więc nie jest wołany między tymi dwiema liniami. Odczyt PRZED i PO są więc funkcjonalnie tożsame.
+BLOKADY: brak
+RUNDY: 1/5 (obrona nie zwiększa licznika)
+NASTEPNY KROK: Evaluator/Final Control -> decyzja o zamknięciu tematu.
+OBRONA: 1 -> PRZYJMUJE. Dowód: niezależna weryfikacja (Read main.ts:13451 vs 13554/13567 oraz odpowiadające linie w pozostałych 3 wywołaniach zagnieżdżonych w runCapitalCapturePlunder) potwierdza, że kolejność faktyczna to ownerId->surowce, czyli odwrotnie niż literalna treść zlecenia ("PRZED, nie PO"). Zgadzam się z evaluatorem, że jest to funkcjonalnie neutralne (grep po całym gra/src potwierdza brak jakiejkolwiek modyfikacji `city.surowce` na ścieżce wykonania między zmianą ownerId a odczytem raportu), więc nie kwalifikuję tego jako defekt wymagający poprawki kodu -- ale przyjmuję zarzut jako trafny co do litery zlecenia i zostawiam notatkę dla Final Control, zgodnie z sugestią evaluatora, zamiast go odrzucać.
+DEPLOY/PUSH: NIE WYKONANO
