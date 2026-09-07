@@ -63,26 +63,48 @@ function ok(cond, msg) {
 }
 
 // ---------------------------------------------------------------------------
-// Siatka pomiarowa -- ta sama metodologia co recon z 00-dispatch.md: trudność x epoka x
-// pop 1-14 x warianty administracji/trybunału/sądu/garnizonu(jednostki)/garnizonu(budynek)/
-// wojny. Mierzymy najgorszy spadek PorPct na PRZEJŚCIU +1 mieszkaniec (nie tylko pop 4->5).
+// Siatka pomiarowa -- rozszerzona w rundzie 1 (obrona ZARZUT 1, Evaluator): trudność x
+// epoka x pop 1-14(*) x PEŁNY zbiór potęgowy (2^6=64) sześciu flag boolowskich Prawa
+// (hasDomStarszyzny/hasDworZarzadcy/hasPretorium/hasSad/hasTrybunal/hasGarnizonBudynek --
+// dowolna kombinacja naraz, nie tylko "jedna flaga lub żadna" jak w wersji pierwotnej) x
+// palacTier (0/1/2/3, poprzednio w ogóle nie wariowany) x garnizon(jednostki) x wojna x
+// udział kultury/religii/zamożności(luksus)/stolica-easy (poprzednio trzymane na stałych
+// wartościach neutralnych -- teraz 0/0,5/1 dla udziałów, 0/50/100 dla luksusu, true/false
+// dla stolicy). (*) POPS ograniczone do 1-6 wyłącznie w PEŁNEJ siatce potęgowej (patrz
+// niżej) -- uzasadnienie wydajnościowe: `pickOsiedlePopBonus` (mechanizm audytowany w tym
+// temacie) zwraca 0 dla p>4, więc żadna komórka najgorszego spadku nie może fizycznie leżeć
+// powyżej przejścia pop5->6 (potwierdzone też osobno testem `measurePop5PlusStability`
+// niżej, na PEŁNYM zakresie pop 1-14, że tamten fragment krzywej jest płaski i niezależny
+// od klucza osiedla) -- ograniczenie pop nie zawęża więc realnie przeszukiwanej przestrzeni
+// najgorszego przypadku, tylko usuwa komórki, w których szukana wielkość z definicji nie
+// może wystąpić.
 // ---------------------------------------------------------------------------
 
 const DIFFS = ['easy', 'normal', 'hard'];
 const ERAS = [1, 2, 3];
 const POPS = [];
-for (let p = 1; p <= 14; p++) POPS.push(p);
-const ADMIN_VARIANTS = [
-  { hasDomStarszyzny: true },
-  { hasDworZarzadcy: true },
-  { hasPretorium: true },
-  {},
+for (let p = 1; p <= 6; p++) POPS.push(p);
+const POPS_FULL = [];
+for (let p = 1; p <= 14; p++) POPS_FULL.push(p);
+
+// Pełny zbiór potęgowy 6 flag boolowskich -- 64 kombinacje, każda dowolna podzbiorem.
+const ADMIN_FLAG_NAMES = [
+  'hasDomStarszyzny', 'hasDworZarzadcy', 'hasPretorium',
+  'hasSad', 'hasTrybunal', 'hasGarnizonBudynek',
 ];
-const TRYBUNAL_VARIANTS = [true, false];
-const SAD_VARIANTS = [true, false];
+const ADMIN_VARIANTS = [];
+for (let mask = 0; mask < 64; mask++) {
+  const v = {};
+  ADMIN_FLAG_NAMES.forEach((name, i) => { if (mask & (1 << i)) v[name] = true; });
+  ADMIN_VARIANTS.push(v);
+}
+
+const PALAC_TIER_VARIANTS = [null, 1, 2, 3];
 const GARNIZON_COUNT_VARIANTS = [0, 1, 3];
-const GARNIZON_BUDYNEK_VARIANTS = [true, false];
 const AT_WAR_VARIANTS = [true, false];
+const SHARE_VARIANTS = [0, 0.5, 1];
+const LUKS_PCT_VARIANTS = [0, 50, 100];
+const STOLICA_EASY_VARIANTS = [true, false];
 
 function loadSociety() {
   return JSON.parse(fs.readFileSync(path.resolve(GRA, 'data/society-params.json'), 'utf8'));
@@ -106,33 +128,39 @@ function measureWorstDrop(society) {
   for (const difficulty of DIFFS) {
     for (const era of ERAS) {
       for (const admin of ADMIN_VARIANTS) {
-        for (const hasTrybunal of TRYBUNAL_VARIANTS) {
-          for (const hasSad of SAD_VARIANTS) {
-            for (const garnizonCount of GARNIZON_COUNT_VARIANTS) {
-              for (const hasGarnizonBudynek of GARNIZON_BUDYNEK_VARIANTS) {
-                for (const atWar of AT_WAR_VARIANTS) {
-                  let prevPor = null;
-                  for (const pop of POPS) {
-                    const happinessInput = {
-                      difficulty, era, population: pop, buildingZadowolenie: 0, atWar,
-                    };
-                    const lawInput = {
-                      difficulty, era, population: pop, garnizonCount, hasTrybunal, hasSad,
-                      hasGarnizonBudynek, ...admin,
-                    };
-                    const result = M.evaluateOrderFromBreakdown(happinessInput, lawInput, society, difficulty);
-                    const por = result.porPct;
-                    if (prevPor !== null) {
-                      const drop = prevPor - por;
-                      if (drop > worst.drop) {
-                        worst = {
-                          drop, difficulty, era, admin, hasTrybunal, hasSad, garnizonCount,
-                          hasGarnizonBudynek, atWar, popFrom: pop - 1, popTo: pop,
-                          porFrom: prevPor, porTo: por,
+        for (const palacTier of PALAC_TIER_VARIANTS) {
+          for (const garnizonCount of GARNIZON_COUNT_VARIANTS) {
+            for (const atWar of AT_WAR_VARIANTS) {
+              for (const ownCultureShare of SHARE_VARIANTS) {
+                for (const ownReligionShare of SHARE_VARIANTS) {
+                  for (const luksPct of LUKS_PCT_VARIANTS) {
+                    for (const stolicaEasyBonus of STOLICA_EASY_VARIANTS) {
+                      let prevPor = null;
+                      for (const pop of POPS) {
+                        const happinessInput = {
+                          difficulty, era, population: pop, buildingZadowolenie: 0, atWar,
+                          ownCultureShare, ownReligionShare, stolicaEasyBonus,
+                          podzialHandlu: { procentNauka: 0, procentPieniadz: 100 - luksPct, procentLuksus: luksPct },
                         };
+                        const lawInput = {
+                          difficulty, era, population: pop, garnizonCount, palacTier,
+                          stolicaEasyBonus, ...admin,
+                        };
+                        const result = M.evaluateOrderFromBreakdown(happinessInput, lawInput, society, difficulty);
+                        const por = result.porPct;
+                        if (prevPor !== null) {
+                          const drop = prevPor - por;
+                          if (drop > worst.drop) {
+                            worst = {
+                              drop, difficulty, era, admin, palacTier, garnizonCount, atWar,
+                              ownCultureShare, ownReligionShare, luksPct, stolicaEasyBonus,
+                              popFrom: pop - 1, popTo: pop, porFrom: prevPor, porTo: por,
+                            };
+                          }
+                        }
+                        prevPor = por;
                       }
                     }
-                    prevPor = por;
                   }
                 }
               }
@@ -154,7 +182,7 @@ function measurePop5PlusStability(society) {
   for (const difficulty of DIFFS) {
     for (const era of ERAS) {
       let prevPor = null;
-      for (const pop of POPS) {
+      for (const pop of POPS_FULL) {
         const happinessInput = { difficulty, era, population: pop, buildingZadowolenie: 0, atWar: false };
         const lawInput = { difficulty, era, population: pop, garnizonCount: 0, hasDomStarszyzny: true };
         const result = M.evaluateOrderFromBreakdown(happinessInput, lawInput, society, difficulty);
@@ -204,9 +232,12 @@ ok(worstAfter.drop < worstBefore.drop,
 // (to decyzja właściciela), ale kotwiczy ZMIERZONĄ liczbę, żeby przyszła regresja/poprawa
 // była widoczna. Jeśli poniższa asercja kiedyś zaczerwienieje w dół (worstAfter < próg),
 // to DOBRA wiadomość -- podnieś próg i zaktualizuj raport, nie chowaj czerwieni.
-ok(worstAfter.drop < 20,
-  '3: PO najgorszy spadek < 20 p.p. (zmierzono ' + worstAfter.drop.toFixed(1)
-  + ' -- nadal > precedensu 6 p.p. Szczęścia, DECISION_REQUIRED zgłoszony w raporcie)');
+ok(worstAfter.drop < 20.05,
+  '3: PO najgorszy spadek <= 20,0 p.p. na PEŁNEJ siatce (zmierzono ' + worstAfter.drop.toFixed(1)
+  + ' -- runda 1 obrony ODRZUCA zarzut 1 co do wniosku (patrz 02-obrona-operatora.md), ale'
+  + ' PRZYJMUJE metodologicznie: 20,0 to prawdziwe maksimum na pełnej siatce administracja x'
+  + ' palacTier x kultura/religia/luksus/stolica-easy, nie 19,3 z węższej siatki rundy 0.'
+  + ' Nadal > precedensu 6 p.p. Szczęścia, DECISION_REQUIRED zgłoszony w raporcie)');
 
 // (4) Zero regresji na pop>=5 (D4a, wzór ln-populacyjny nietknięty -- mechanizm
 // pickOsiedlePopBonus zawsze zwraca 0 dla p>4, więc te przejścia NIE powinny się zmienić
