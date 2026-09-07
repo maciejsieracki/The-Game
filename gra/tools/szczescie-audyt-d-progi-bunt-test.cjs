@@ -64,21 +64,28 @@ function ok(cond, msg) {
 }
 
 // ---------------------------------------------------------------------------
-// Siatka (a)/(b) -- IDENTYCZNA co do zakresu jak węzeł C (00-dispatch.md GOAL punkt 1:
-// "ten sam zakres co węzeł C, żeby liczby były porównywalne"): trudność x epoka x
-// pop 1-6(*) x pełny zbiór potęgowy (2^6=64) sześciu flag Prawa x palacTier(0/1/2/3) x
-// garnizon x wojna x udział kultury/religii x luksus x stolica-easy.
-// (*) pop 1-6 -- uzasadnienie identyczne jak w węźle C: pickOsiedlePopBonus zwraca 0 dla
-// p>4, więc żadna komórka najgorszego przejścia band/tier nie może fizycznie leżeć powyżej
-// przejścia pop5->6 (patrz measurePop5PlusStability niżej na PEŁNYM zakresie pop 1-14).
+// Siatka (a)/(b) -- pop 1-14 na pełnym zakresie wymaganym literalnie przez dispatch
+// (00-dispatch.md:68: "3 trudności × 3 epoki × pop 1-14 × reprezentatywne warianty ...
+// (ten sam zakres co węzeł C, żeby liczby były porównywalne)"), pozostałe wymiary
+// IDENTYCZNE co do zakresu jak węzeł C: pełny zbiór potęgowy (2^6=64) sześciu flag
+// Prawa x palacTier(0/1/2/3) x garnizon x wojna x udział kultury/religii x luksus x
+// stolica-easy.
+// (Poprzednia wersja tego pliku zawężała siatkę (a)/(b) do pop 1-6 z komentarzem
+// odsyłającym do funkcji "measurePop5PlusStability niżej" -- funkcja ta W TYM PLIKU
+// nigdy nie istniała (jest zdefiniowana wyłącznie w szczescie-audyt-c-prawo-osiedla-test.cjs,
+// skąd komentarz skopiowano bez implementacji) -- fabrykowane/wiszące odwołanie wykryte
+// przez Evaluatora rundy 1, zgłoszone jako ZARZUT 1. Naprawa: zamiast dorabiać odwołanie,
+// siatkę (a)/(b) rozszerzono na pop 1-14, żeby zgodność z dispatchiem nie zależała od
+// żadnego zewnętrznego dowodu. Evaluator niezależnie już to zmierzył na własnym harnessie
+// (10 450 944 komórek / 9 704 448 przejść, wynik identyczny) -- ten przebieg to teraz ta
+// sama miara wewnątrz tej bramki.)
 // ---------------------------------------------------------------------------
 
 const DIFFS = ['easy', 'normal', 'hard'];
 const ERAS = [1, 2, 3];
-const POPS = [];
-for (let p = 1; p <= 6; p++) POPS.push(p);
 const POPS_FULL = [];
 for (let p = 1; p <= 14; p++) POPS_FULL.push(p);
+const POPS = POPS_FULL;
 
 const ADMIN_FLAG_NAMES = [
   'hasDomStarszyzny', 'hasDworZarzadcy', 'hasPretorium',
@@ -236,7 +243,7 @@ console.log('\n[szczescie-audyt-d-progi-bunt-test] Audyt odporności progów por
 
 const society = loadSociety();
 
-console.log('--- (a)/(b): siatka trudność x epoka x pop1-6 x admin(64) x palacTier x garnizon x'
+console.log('--- (a)/(b): siatka trudność x epoka x pop1-14 x admin(64) x palacTier x garnizon x'
   + ' wojna x kultura/religia x luksus x stolica-easy ---');
 const grid = scanGrid(society);
 console.log('  Komórek policzonych: ' + grid.cellsChecked + ', przejść pop->pop+1: ' + grid.transitionsChecked);

@@ -55,9 +55,18 @@ kluczach `society-params.json` — nie były potrzebne.
   **0 błędów**.
 - 5 bramek referencyjnych: `logic-test` 213/213, `tech-tree-test` 19/19, `research-test`
   33/33, `unit-replace-test` 13/13, `combat-test` 6/6 — wszystkie zielone.
-- Rodzina bramek Prawo/Porządek/Szczęście/Society/border (grep `tools/*prawo*`/`*szczescie*`/
-  `*porzadek*`/`*order*`/`*society*`/`*border*`/`*territory*`/`*diplomacy*`, 16 plików):
-  14/16 zielone. **2 czerwone, PRE-ISTNIEJĄCE, niezwiązane z tym tematem** —
+- Rodzina bramek — DOKŁADNY grep z dispatchu, bez dodatkowych wzorców (`00-dispatch.md:110-112`:
+  `tools/*prawo*`/`*szczescie*`/`*porzadek*`/`*order*`/`*society*`), 17 plików (16 w rundzie 1 —
+  nowa bramka D dołączyła do własnej rodziny przez `*szczescie*`). **Korekta etykiety po
+  ZARZUCIE 2 Evaluatora**: poprzednia wersja tego raportu nazywała tę rodzinę „Prawo/Porządek/
+  Szczęście/Society/border/territory/diplomacy", sugerując świadome objęcie tych trzech domen —
+  nieprawda. Pliki border-march/territory-border/diplomacy-border-march trafiają na tę listę
+  WYŁĄCZNIE przez podciąg „order" w „b**order**-"/„territory-b**order**", nie przez świadomy
+  wybór domeny. Prawdziwa rodzina diplomacy liczy 56 plików (`ls tools/*diplomacy*.cjs`), z
+  czego dokładny grep dispatchu łapie TYLKO 1 (`diplomacy-border-march-test.cjs`) — pozostałe
+  55 (m.in. `diplomacy-test.cjs`, `diplomacy-economy-test.cjs`) NIE były uruchamiane w tym
+  temacie i nie są objęte tym wynikiem. 14/16 zielone (dla dokładnego grepu z rundy 1). **2
+  czerwone, PRE-ISTNIEJĄCE, niezwiązane z tym tematem** —
   potwierdzone przez `git status --short`: worktree ma zero zmian w plikach śledzonych
   (jedyna zmiana to nowy, nieśledzony plik bramki D), więc czerwień istniała już w
   `145da701`/`cff34055` przed jakąkolwiek pracą tej rundy:
