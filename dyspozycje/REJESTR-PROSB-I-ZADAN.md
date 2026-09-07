@@ -80,6 +80,7 @@ historycznych wierszy poniżej; wpisy bez jednoznacznego dowodu nie są tu zgady
 | `P-AI-ZDOBYCIE-MIASTA-CZTERY-LUKI-Q1` | `ZINTEGROWANE` | Commit `c21c3b1c`. Cztery luki pokrycia z Final Control `P-AI-BRAK-SCIEZKI-ZDOBYCIA-MIASTA-ADIACENCJA-Q1` (FC-N2/FC-N1/FC-N4/F4) — bramka `ai-zdobycie-miasta-adiacencja-test.cjs` 88/88→96/96, zero asercji usuniętych/osłabionych, zero zmian mechaniki. Final Control niezależnie odtworzył dowody mutacyjne FC-N2 (targetVisible) i FC-N4 (isCivilianUnit) na tymczasowo zmutowanym kodzie produkcyjnym. Szczegóły: sekcja „Cztery znaleziska Final Control R2" wyżej (linia ok. 5894). Nic do dispatchu. |
 | `R-HOTSEAT-ETAP-0-HUMAN-OWNERS-Q1` | `ZINTEGROWANE` | Commit `94c475ec`. Etap 0 planu `docs/decyzje/PLAN-HOT-SEAT-2-GRACZY.md` — nowy moduł `gra/src/game/human-owners.ts` (kontrakt §B1) + martwa flaga `hotSeatEnabled()` w `main.ts` (+18/−0, zero zmiany istniejących linii). Żywy stan/aliasy świadomie odłożone do Etapu 1 (brak konsumenta dziś). Nowa bramka 29/29, Final Control potwierdził zero regresji własną próbką 9 bramek AI/dyplomacji przed/po. Szczegóły wyżej (linia ok. 4643). Następny krok: Etap 1. |
 | `R-HOTSEAT-ETAP-1-OWNERID-ISAIOWNER-Q1` | `ZINTEGROWANE` | Commit `87b33da3`. Etap 1 planu hot-seat — świeży audyt: 22 realne miejsca `ownerId>0`, 10 podmienionych na `isAiOwner(humanSeats,...)` (priorytet: `aiOwnerList` w pętli tur AI), 12 świadomie nietkniętych (semantyka `isMajorAiOwner`/miasto-państwo, inny zakres). Behawioralny no-op potwierdzony trzykrotnie (bramka + 93 bramki referencyjne/AI/dyplomacji identyczne przed/po). Szczegóły wyżej (linia ok. 4643a). Następny krok: Etap 2 (mgła wojny — najwyższe ryzyko fazy). |
+| `R-HOTSEAT-ETAP-2-MGLA-WOJNY-Q1` | `ZINTEGROWANE` | Commit `f3c0becf`. Etap 2 planu hot-seat (najwyższe ryzyko fazy) — `ME()`/`exploredByHuman` scaffold + migracja całej warstwy renderu/wykrywania widoczności mgły (`ownPlayerVisibleHexes`/`currentVisible`/`refreshFog`/`cityFogVisible`/`unitsVisibleOnMap`/`applyFogVisibility`/`getMinimapData`) na `ME()`. Behawioralny no-op potwierdzony trzykrotnie niezależnie (hash treści zbioru `explored` identyczny przed/po, żywy Chromium). Save/load, dyplomacja-ujawnianie i granica terytorium świadomie poza zakresem (inne etapy planu). Szczegóły wyżej (linia ok. 4643b). Następny krok: Etap 3. |
 
 ### Zasada migracji i historii
 
@@ -4698,6 +4699,34 @@ wykluczył dalsze przeoczenia.
 **Następny krok:** Etap 2 (`docs/decyzje/PLAN-HOT-SEAT-2-GRACZY.md` §C, wiersz „2") — mgła
 wojny/widoczność, oznaczony w planie jako **najwyższe ryzyko** tej fazy („pełny wyciek mapy"
 bez tej naprawy) — wymaga szczególnie starannego dispatchu.
+
+## `R-HOTSEAT-ETAP-2-MGLA-WOJNY-Q1` — INFRA — **ZINTEGROWANE 2026-09-07** (commit `f3c0becf`)
+
+Etap 2 z §C planu hot-seat — plan sam oznacza tę kategorię jako **najwyższe ryzyko** fazy
+0-6 (jedyna, obok Etapu 4/5, w tej klasie). Nowy `ME()` alias (dziś zawsze
+`HUMAN_OWNER_PRIMARY`) i `exploredByHuman: Map<number, Set<string>>` (dziś jeden wpis,
+DOSŁOWNIE ten sam obiekt `Set` co stary `explored`, nie kopia — świadomy scaffold).
+Literały `0` podmienione na `ME()` w całej warstwie renderu/wykrywania widoczności mgły:
+`ownPlayerVisibleHexes`, `currentVisible`, `refreshFog`, `cityFogVisible`,
+`unitsVisibleOnMap`, `cityRenderer.applyFogVisibility` (×2), `getMinimapData`. Evaluator
+znalazł jeden pominięty przypadek (`cityFogVisible`, ten sam mechanizm renderu co reszta) —
+Obrona przyjęła i naprawiła w tej samej rundzie. Behawioralny no-op potwierdzony
+TRZYKROTNIE niezależnie (Operator, Evaluator, Final Control): treść zbioru `explored`
+(hash sha256 posortowanych kluczy, nie tylko rozmiar) identyczna PRZED/PO na wielu
+deterministycznych scenariuszach, żywy Chromium. 8 bramek mgły/widoczności + 5
+referencyjnych zielone; dwa pre-istniejące FAIL potwierdzone niezwiązane (jeden to efekt
+osobnego, wcześniejszego refaktoru dyplomacji, drugi to znany, osobno naprawiany bug
+„Wojna wymuszona" — patrz `R-WOJNA-WYMUSZONA-PROG-TURY-GRACZ-Q1`).
+
+Final Control jawnie rozstrzygnął zakres: save/load (Etap 7), ujawnianie terytorium przy
+traktacie (Etap 6, dyplomacja) i granica terytorium (`main.ts` ok. 11587, Etap 6e, render)
+świadomie POZA zakresem tej rundy — inne kategorie planu, potwierdzone dosłownym
+brzmieniem GOAL/GRANIC dispatchu, nie ukryty brak. Odnotowana, nie naprawiona (poza
+zakresem): `refreshTerritoryBorderOverlay` (main.ts ok. 11587) ma niezmigrowany literał
+`ownerId === 0` — nota na przyszły temat kategorii „granica terytorium".
+
+**Następny krok:** Etap 3 (`docs/decyzje/PLAN-HOT-SEAT-2-GRACZY.md` §C, wiersz „3") —
+`playerStateByHuman`, przepisanie akcesorów ekonomicznych.
 
 ## R-HOTSEAT-MULTIPLAYER-HOSTING-Q1 — temat na przyszłość (rejestracja 2026-09-04, noc)
 
