@@ -1165,6 +1165,7 @@ import {
   qualifiesForMajorAiDifficultyBonus,
 } from './game/ai-difficulty-bonus';
 import { isMajorAiOwner } from './game/owner-utils';
+import { type HumanSeats, HUMAN_OWNER_PRIMARY, isAiOwner } from './game/human-owners';
 import {
   pickAutoImprovements,
   AUTO_ULEPSZENIA_PRACA_RESERVE,
@@ -1997,8 +1998,8 @@ async function boot(): Promise<void> {
 
     function allAiOwnerIdsOnMap(): number[] {
       const ids = new Set<number>();
-      for (const c of cities) if (c.ownerId > 0) ids.add(c.ownerId);
-      for (const u of units) if (u.ownerId > 0) ids.add(u.ownerId);
+      for (const c of cities) if (isAiOwner(humanSeats, c.ownerId)) ids.add(c.ownerId);
+      for (const u of units) if (isAiOwner(humanSeats, u.ownerId)) ids.add(u.ownerId);
       for (const oid of aiOwnerCivMap.keys()) ids.add(oid);
       return [...ids].sort((a, b) => a - b);
     }
@@ -7492,7 +7493,7 @@ async function boot(): Promise<void> {
         for (const [oid, label] of savedNames) ownerDisplayName.set(oid, label);
       }
       for (const c of saved.cities) {
-        if (c.ownerId > 0 && !ownerDisplayName.has(c.ownerId)) {
+        if (isAiOwner(humanSeats, c.ownerId) && !ownerDisplayName.has(c.ownerId)) {
           ownerDisplayName.set(c.ownerId, c.name);
         }
       }
@@ -10274,6 +10275,10 @@ async function boot(): Promise<void> {
     // this object after each economy tick, and auto-research spends the science.
     // See src/game/playerState.ts for the banking + research semantics.
     const player: PlayerState = createPlayerState();
+    // R-HOTSEAT-ETAP-1-OWNERID-ISAIOWNER-Q1: pierwszy realny konsument isAiOwner
+    // (gra/src/game/human-owners.ts, Etap 0). Dziś zawsze dokładnie jeden fotel
+    // człowieka -- behawioralny no-op, patrz bramka hotseat-etap1-ownerid-test.cjs.
+    let humanSeats: HumanSeats = { humanOwnerIds: [HUMAN_OWNER_PRIMARY], activeHumanOwnerId: HUMAN_OWNER_PRIMARY };
     overlayDepositEra = player.era;
     fillAiOwnerCivMap(_menuCivId, _gameSeed);
 
@@ -10737,7 +10742,7 @@ async function boot(): Promise<void> {
     // Barbarzyńcy (ownerId ujemne): pływają tylko już-zaokrętowani (Ludy Morza).
     function ownerHasSeafaring(ownerId: number): boolean {
       if (ownerId === 0) return player.zbadane.has(EMBARK_TECH);
-      if (ownerId > 0) return aiResearchDone.get(ownerId)?.has(EMBARK_TECH) === true;
+      if (isAiOwner(humanSeats, ownerId)) return aiResearchDone.get(ownerId)?.has(EMBARK_TECH) === true;
       return false;
     }
 
@@ -21997,7 +22002,7 @@ async function boot(): Promise<void> {
       aiCaptureFormerRebelCity: (cityId: string): { aiOwnerId: number; cityOwnerIdAfter: number } => {
         const city = cities.find(x => x.id === cityId);
         if (!city) throw new Error('aiCaptureFormerRebelCity: city not found: ' + cityId);
-        const anchor = units.find(u => u.ownerId > 0 && !isBarbarian(u.ownerId) && !isCivilianUnit(u));
+        const anchor = units.find(u => isAiOwner(humanSeats, u.ownerId) && !isBarbarian(u.ownerId) && !isCivilianUnit(u));
         if (!anchor) throw new Error('aiCaptureFormerRebelCity: no eligible AI unit in this world');
         captureCityWithoutBattle(city, anchor, [anchor]);
         return { aiOwnerId: anchor.ownerId, cityOwnerIdAfter: city.ownerId };
@@ -22076,7 +22081,7 @@ async function boot(): Promise<void> {
        * jednostki — mechanizm przejęcia jest identyczny niezależnie od tego, czy ten
        * ownerId ma gdzieś jeszcze inne miasto w tym małym sandboxie). */
       pickTwoAiOwners: (): { a: number; b: number } | null => {
-        const realAi = cities.find(c => c.ownerId > 0 && !isBarbarian(c.ownerId));
+        const realAi = cities.find(c => isAiOwner(humanSeats, c.ownerId) && !isBarbarian(c.ownerId));
         if (!realAi) return null;
         const maxId = Math.max(
           0,
@@ -29237,7 +29242,7 @@ async function boot(): Promise<void> {
             // Bank skarbca AI — per owner (nie econ.total*)
             const aiOwnerIds = new Set<number>();
             for (const c of cities) {
-              if (c.ownerId > 0) aiOwnerIds.add(c.ownerId);
+              if (isAiOwner(humanSeats, c.ownerId)) aiOwnerIds.add(c.ownerId);
             }
             for (const oid of aiOwnerIds) {
               const aiEcon = sumEconomyForOwner(econ, oid);
@@ -29376,7 +29381,7 @@ async function boot(): Promise<void> {
             // -- przeliczamy niezależnie z tych samych miast (identyczna definicja).
             const gdAiOwnerIds = new Set<number>();
             for (const c of cities) {
-              if (c.ownerId > 0) gdAiOwnerIds.add(c.ownerId);
+              if (isAiOwner(humanSeats, c.ownerId)) gdAiOwnerIds.add(c.ownerId);
             }
             const gdOwnerIds = new Set<number>([0, ...gdAiOwnerIds, ...goldDeficitStates.keys()]);
             for (const oid of gdOwnerIds) {
@@ -30388,8 +30393,8 @@ async function boot(): Promise<void> {
             reconcileAllOwnerErasFromResearch();
             const aiOwnerList = aiCmdResume?.ownerList ?? (() => {
               const s = new Set<number>();
-              for (const u of units) { if (u.ownerId > 0) s.add(u.ownerId); }
-              for (const c of cities) { if (c.ownerId > 0) s.add(c.ownerId); }
+              for (const u of units) { if (isAiOwner(humanSeats, u.ownerId)) s.add(u.ownerId); }
+              for (const c of cities) { if (isAiOwner(humanSeats, c.ownerId)) s.add(c.ownerId); }
               for (const oid of eliminatedOwners) s.delete(oid); // cywilizacje skasowane nie grają
               return [...s];
             })();
