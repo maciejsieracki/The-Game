@@ -319,8 +319,11 @@ console.log('7. Gałąź barbarzyńska — ofiara traci, barbarzyńcy nie dziedz
 // ===========================================================================
 console.log('8. Modal renderuje WIERSZE, nie jeden sklejony string');
 {
-  const fnStart = noticeSrc.indexOf('function reportRowsHtml(');
-  ok(fnStart >= 0, '8a: znaleziono reportRowsHtml w ui/cityCaptureNotice.ts');
+  // R-PODBOJ-RAPORT-SEKCJE-ROZWIJANE-Q1: `reportRowsHtml` teraz woła `rowHtml()` (wydzielona,
+  // bo obie sekcje -- główna i zwijana -- renderują wiersze tym samym helperem), zdefiniowana
+  // TUŻ PRZED nią w pliku -- wycięcie zaczyna się od `rowHtml`, żeby `new Function` miała obie.
+  const fnStart = noticeSrc.indexOf('function rowHtml(');
+  ok(fnStart >= 0, '8a: znaleziono reportRowsHtml (+ rowHtml) w ui/cityCaptureNotice.ts');
   const fnEnd = fnStart >= 0 ? noticeSrc.indexOf('\nfunction modalIcon(', fnStart) : -1;
   ok(fnEnd > fnStart, '8b: znaleziono koniec reportRowsHtml');
   const fnCode = fnStart >= 0 && fnEnd > fnStart ? noticeSrc.slice(fnStart, fnEnd) : '';
@@ -515,6 +518,12 @@ console.log('13. Surowce miasta w bilansie zdobycia — dokladna liczba, zera po
     '13d: wiersze surowcow naleza do grupy "co przejelismy", nie do lupu');
   ok(labels(rows).indexOf('Drewno') < labels(rows).indexOf('Łup'),
     '13e: surowce miasta wypisane PRZED sekcja Lup (kolejnosc: co przejelismy -> lup)');
+  ok(drewno.collapsible === true && zelazo.collapsible === true,
+    '13j (R-PODBOJ-RAPORT-SEKCJE-ROZWIJANE-Q1): wiersze surowcow oznaczone `collapsible: true`'
+    + ' — traktuja jako pozycje zwijanej sekcji, nie glownej');
+  const ludnoscRow = rowFor(rows, 'Ludność');
+  ok(ludnoscRow !== null && !ludnoscRow.collapsible,
+    '13k: Ludność NIE jest collapsible — zostaje glowna pozycja zawsze widoczna');
 }
 {
   // Barbarzynca-zdobywca: zloto/nauka/technologie NIE dziedziczone, ale surowce miasta
@@ -537,6 +546,57 @@ console.log('13. Surowce miasta w bilansie zdobycia — dokladna liczba, zera po
   const rows = build({ ...BAZA, kind: 'zwykle', surowce: { drewno: 3.9 } });
   ok(rowFor(rows, 'Drewno').value === '+3',
     '13i: wartosc niecalkowita jest floorowana, spojnie z reszta raportu (Math.floor)');
+}
+
+// ===========================================================================
+// 14. R-PODBOJ-RAPORT-SEKCJE-ROZWIJANE-Q1 — sekcja rozwijana dla surowcow, zero utraty.
+// ===========================================================================
+console.log('14. Modal: glowne pozycje zawsze widoczne, surowce w zwijanej sekcji');
+{
+  const fnStart2 = noticeSrc.indexOf('function rowHtml(');
+  const fnEnd2 = noticeSrc.indexOf('\nfunction modalIcon(', fnStart2);
+  const fnCode2 = fnStart2 >= 0 && fnEnd2 > fnStart2 ? noticeSrc.slice(fnStart2, fnEnd2) : '';
+  const render = runTs(
+    'function esc(s: string): string { return s; }\n' + fnCode2,
+    'return reportRowsHtml;',
+  );
+  const rows = [
+    { label: 'Ludność', value: '+4', tone: 'gain' },
+    { label: 'Punkty nauki', value: '+22', tone: 'gain' },
+    { label: 'Pula pracy', value: '+38 — przejęta od wyeliminowanej cywilizacji', tone: 'gain' },
+    { label: 'Drewno', value: '+12', tone: 'gain', collapsible: true },
+    { label: 'Kamień', value: '+50', tone: 'gain', collapsible: true },
+    { label: 'Glina', value: '+130', tone: 'gain', collapsible: true },
+  ];
+  const html = render(rows);
+  ok(html.includes('<details class="civ-ccn-more">'),
+    '14a: surowce renderuja sie wewnatrz natywnego <details> (zwijalny bez wlasnego JS)');
+  ok(!/<details[^>]*\bopen\b/.test(html),
+    '14b: sekcja surowcow jest domyslnie ZWINIETA (brak atrybutu open)');
+  ok(html.includes('Pokaż wszystkie surowce (3)'),
+    '14c: naglowek rozwijania podaje LICZBE pozycji wewnatrz (3 surowce)');
+  const totalRowCount = (html.match(/class="civ-ccn-row /g) || []).length;
+  eq(totalRowCount, 6, '14d: WSZYSTKIE 6 pozycji renderuja sie jako wiersze — zero utraconych');
+  const mainIdx = html.indexOf('>Ludność<');
+  const detailsIdx = html.indexOf('<details');
+  ok(mainIdx >= 0 && mainIdx < detailsIdx,
+    '14e: glowne pozycje (Ludność) renderuja sie PRZED sekcja rozwijana surowcow');
+  ok(html.indexOf('>Drewno<') > detailsIdx,
+    '14f: Drewno jest WEWNATRZ sekcji rozwijanej, nie w glownej liscie');
+  ok(html.indexOf('>Punkty nauki<') < detailsIdx && html.indexOf('>Pula pracy<') < detailsIdx,
+    '14g: Punkty nauki i Pula pracy zostaja glownymi, zawsze widocznymi pozycjami');
+  // Same wiersze, ale BEZ zadnej flagi collapsible -- wsteczna zgodnosc (wolajacy sprzed
+  // tego tematu, ktorzy nie ustawiaja pola): wszystko w sekcji glownej, brak <details>.
+  const rowsNoFlags = rows.map(({ collapsible, ...r }) => r);
+  const htmlNoFlags = render(rowsNoFlags);
+  ok(!htmlNoFlags.includes('<details'),
+    '14h: bez zadnej flagi `collapsible` NIE powstaje sekcja rozwijana (wsteczna zgodnosc)');
+  eq((htmlNoFlags.match(/class="civ-ccn-row /g) || []).length, 6,
+    '14i: te same 6 pozycji nadal renderuja sie w calosci, tylko wszystkie w sekcji glownej');
+  // Brak surowcow w ogole -- brak <details>, tylko glowne pozycje.
+  const htmlOnlyMain = render(rows.filter(r => !r.collapsible));
+  ok(!htmlOnlyMain.includes('<details'),
+    '14j: bez zadnej pozycji collapsible w ogole nie powstaje pusta sekcja rozwijana');
 }
 
 console.log('');

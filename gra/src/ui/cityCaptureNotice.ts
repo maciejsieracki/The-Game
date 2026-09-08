@@ -57,6 +57,21 @@ export interface CaptureReportRow {
    *  nieść treść skróconą, a pełną pokazuje modal po kliknięciu (ten sam podział co
    *  `recordCivElimEvent` ↔ `civElimNotice.ts`). Render ignoruje to pole. */
   group?: 'przejete' | 'lup' | 'strata';
+  /**
+   * R-PODBOJ-RAPORT-SEKCJE-ROZWIJANE-Q1: gdy `true`, pozycja trafia do domyślnie
+   * ZWINIĘTEJ sekcji „Pokaż wszystkie surowce" zamiast do głównej, zawsze widocznej
+   * listy. WYŁĄCZNIE surowce z magazynu miasta (`EMPIRE_STOCK_RESOURCE_KEYS` i przyszłe
+   * spoza tej listy) dostają `collapsible: true` — lista surowców rośnie z czasem, a
+   * Ludność/Budynki/Złoto/Punkty nauki/Technologie/Moc/Pula pracy/Łup zostają jako stały,
+   * mały zestaw głównych pozycji (właściciel: „najważniejsze na wierzchu, reszta
+   * rozwijana"). Pole domyślnie `undefined`/`false` — WSTECZNIE ZGODNE: wołający, którzy
+   * nie ustawiają tego pola (stare wiersze), lądują w sekcji głównej jak dotychczas, więc
+   * żadna istniejąca pozycja nie znika ani nie zmienia miejsca po cichu.
+   * EN: rows flagged `collapsible: true` render inside a collapsed-by-default disclosure
+   * instead of the always-visible main list — used exclusively for the growing list of
+   * empire stock resources, so the small fixed set of headline rows never grows unbounded.
+   */
+  collapsible?: boolean;
 }
 
 function ensureStyles(): void {
@@ -103,6 +118,19 @@ function ensureStyles(): void {
 .civ-ccn-row-gain .civ-ccn-row-val{color:#9fe0a4;}
 .civ-ccn-row-loss .civ-ccn-row-val{color:#e0a49f;}
 .civ-ccn-row-info .civ-ccn-row-val{color:#e8d88a;}
+.civ-ccn-more{margin:2px 0 0;}
+.civ-ccn-more-sum{
+  list-style:none;cursor:pointer;user-select:none;
+  display:flex;align-items:center;justify-content:space-between;gap:8px;
+  padding:8px 1px;font-size:11px;font-weight:700;color:var(--gold-dim);
+  border-top:1px solid rgba(232,216,138,0.16);
+}
+.civ-ccn-more-sum::-webkit-details-marker{display:none;}
+.civ-ccn-more-sum::marker{content:'';}
+.civ-ccn-more-chevron{transition:transform .15s ease;font-size:10px;line-height:1;}
+.civ-ccn-more[open] .civ-ccn-more-chevron{transform:rotate(90deg);}
+.civ-ccn-more-sum:hover{color:var(--gold);}
+.civ-ccn-more-body{padding-top:2px;}
 .civ-ccn-foot{padding:0 22px 22px;}
 .civ-ccn-actions{display:flex;flex-direction:column;gap:8px;}
 .civ-ccn-btn{
@@ -139,17 +167,40 @@ function esc(s: string): string {
  * w jednym `<div class="civ-ccn-elim-sub">`, żadne „ułożenie" nie było możliwe.
  * Pusta lista → pusty string (nagłówek „Bilans" też się nie pojawia).
  * EN: every entry becomes its own row element with separate label/value spans.
+ *
+ * R-PODBOJ-RAPORT-SEKCJE-ROZWIJANE-Q1: pozycje z `collapsible: true` (WYŁĄCZNIE surowce
+ * magazynu miasta — patrz komentarz pola w `CaptureReportRow`) trafiają do osobnej,
+ * domyślnie ZWINIĘTEJ sekcji `<details>` z podsumowaniem „Pokaż wszystkie surowce (N)".
+ * Natywny `<details>`/`<summary>` — zero JS na toggle, zero stanu do synchronizowania,
+ * klawiatura i czytniki ekranu dostają rozwijanie za darmo. Reszta pozycji (główne:
+ * Ludność/Budynki/Złoto/Punkty nauki/Technologie/Moc/Pula pracy/Łup) renderuje się jak
+ * dotychczas, ZAWSZE widoczna, bez klikania — zero utraconych pozycji w obu sekcjach.
+ * EN: rows flagged `collapsible` render inside a native, collapsed-by-default <details>
+ * disclosure; everything else stays in the always-visible main list, unchanged.
  */
+function rowHtml(r: CaptureReportRow): string {
+  return '<div class="civ-ccn-row civ-ccn-row-' + (r.tone ?? 'info') + '">'
+    + '<span class="civ-ccn-row-lbl">' + esc(r.label) + '</span>'
+    + '<span class="civ-ccn-row-val">' + esc(r.value) + '</span>'
+  + '</div>';
+}
+
 function reportRowsHtml(rows: readonly CaptureReportRow[] | undefined, title?: string): string {
   if (!rows || rows.length === 0) return '';
-  const body = rows.map(r =>
-    '<div class="civ-ccn-row civ-ccn-row-' + (r.tone ?? 'info') + '">'
-      + '<span class="civ-ccn-row-lbl">' + esc(r.label) + '</span>'
-      + '<span class="civ-ccn-row-val">' + esc(r.value) + '</span>'
-    + '</div>').join('');
+  const mainRows = rows.filter(r => !r.collapsible);
+  const moreRows = rows.filter(r => r.collapsible);
+  const moreHtml = moreRows.length === 0 ? '' :
+    '<details class="civ-ccn-more">'
+      + '<summary class="civ-ccn-more-sum">'
+        + '<span>Pokaż wszystkie surowce (' + moreRows.length + ')</span>'
+        + '<span class="civ-ccn-more-chevron">▸</span>'
+      + '</summary>'
+      + '<div class="civ-ccn-more-body">' + moreRows.map(rowHtml).join('') + '</div>'
+    + '</details>';
   return '<div class="civ-ccn-rows">'
     + '<div class="civ-ccn-rows-hdr">' + esc(title ?? 'Bilans zdobycia') + '</div>'
-    + body
+    + mainRows.map(rowHtml).join('')
+    + moreHtml
     + '</div>';
 }
 

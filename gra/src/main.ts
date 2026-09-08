@@ -1446,7 +1446,13 @@ function buildCityCaptureReportRows(input: CityCaptureReportInput): CaptureRepor
     const pushSurowiec = (key: string, value: number) => {
       if (seen.has(key) || !(value > 0)) return;
       seen.add(key);
-      rows.push({ label: stockResourceLabel(key), value: '+' + Math.floor(value), tone: 'gain', group: 'przejete' });
+      // R-PODBOJ-RAPORT-SEKCJE-ROZWIJANE-Q1: `collapsible: true` -- lista surowcow rosnie
+      // z czasem (dzis 14 kluczy w EMPIRE_STOCK_RESOURCE_KEYS + przyszle spoza listy), wiec
+      // trafiaja do zwijanej sekcji modalu, NIE do zawsze-widocznych glownych pozycji
+      // (Ludnosc/Budynki/Zloto/Punkty nauki/Technologie/Moc/Pula pracy/Lup zostaja bez
+      // zmiany miejsca -- maly, staly zestaw). Render (cityCaptureNotice.ts) i tak pokazuje
+      // KAZDA pozycje, tylko za jednym kliknieciem zamiast od razu.
+      rows.push({ label: stockResourceLabel(key), value: '+' + Math.floor(value), tone: 'gain', group: 'przejete', collapsible: true });
     };
     for (const key of EMPIRE_STOCK_RESOURCE_KEYS) pushSurowiec(key, input.surowce[key] ?? 0);
     for (const key of Object.keys(input.surowce)) pushSurowiec(key, input.surowce[key] ?? 0);
