@@ -101,13 +101,13 @@ async function scenario(browser, bundle) {
     // Real available preview uses its actual hover event; queue/front use real click.
     availableRow.dispatchEvent(new MouseEvent('mouseenter', { bubbles: true }));
     await new Promise(r => setTimeout(r, 260));
-    const availableCard = !!document.querySelector('.detail-card');
+    const availableCard = !!document.querySelector('.entity-card.bld-detail-card');
     window.__dispose();
-    queueIcon?.click(); const queueCard = !!document.querySelector('.detail-card');
+    queueIcon?.click(); const queueCard = !!document.querySelector('.entity-card.bld-detail-card');
     const afterQueue = JSON.stringify(prod.kolejka);
     window.__dispose();
-    activeIcon?.click(); const activeCard = !!document.querySelector('.detail-card');
-    return { availableCard, queueCard, activeCard, before: snapshot, after: afterQueue, calls, queueIcon: !!queueIcon, activeIcon: !!activeIcon, cards: document.querySelectorAll('.detail-card').length };
+    activeIcon?.click(); const activeCard = !!document.querySelector('.entity-card.bld-detail-card');
+    return { availableCard, queueCard, activeCard, before: snapshot, after: afterQueue, calls, queueIcon: !!queueIcon, activeIcon: !!activeIcon, cards: document.querySelectorAll('.entity-card.bld-detail-card').length };
   });
   await page.close(); return { result, errors };
 }
