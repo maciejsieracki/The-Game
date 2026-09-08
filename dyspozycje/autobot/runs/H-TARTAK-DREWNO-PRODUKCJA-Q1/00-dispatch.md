@@ -24,6 +24,7 @@ Produkcja Drewna z każdego zbudowanego Tartaku wynosi 200/turę w epoce 1 i ro�
 3. PRAWDA: sumowanie produkcji terytorialnej stosuje epokę właściciela i pozostawia pozostałe ulepszenia oraz surowce bez zmian.
 4. PRAWDA: test tematu obejmuje co najmniej: jedną epokę, wszystkie trzy epoki, dwa Tartaki, brak Tartaku, przypadek niepoprawnej epoki oraz mutację formuły, która powoduje czerwony test.
 5. PRAWDA: istniejące bramki ekonomii, typecheck i testy regresyjne przechodzą bez nowych regresji.
+6. PRAWDA: raport Operatora zawiera audyt po zmianie dla wszystkich ulepszeń produkujących surowiec terytorialny — nazwa ulepszenia, surowiec, wartość bazowa i wartości w epokach 1–3 — oraz osobno pokazuje sumowanie wielu Tartaków.
 
 ## ALLOWLISTA — nic poza tym
 
@@ -31,6 +32,7 @@ Produkcja Drewna z każdego zbudowanego Tartaku wynosi 200/turę w epoce 1 i ro�
 - `gra/src/game/terrain-improvements.ts` — czysty resolver produkcji Tartaku z parametrem epoki, jeśli jest konieczny.
 - `gra/src/game/turn-economy.ts` — przekazanie epoki właściciela do naliczania produkcji, wyłącznie jeśli wymagane przez istniejącą architekturę.
 - `gra/tools/tartak-drewno-epoka-test.cjs` — nowy test regresyjny tematu.
+- `dyspozycje/autobot/runs/H-TARTAK-DREWNO-PRODUKCJA-Q1/02-production-audit.md` — audyt wartości produkcji surowców po zmianie, jeśli Operator wydzieli go jako osobny artefakt.
 - `dyspozycje/autobot/runs/H-TARTAK-DREWNO-PRODUKCJA-Q1/00-dispatch.md`.
 - `dyspozycje/autobot/runs/H-TARTAK-DREWNO-PRODUKCJA-Q1/01-operator.md`.
 
