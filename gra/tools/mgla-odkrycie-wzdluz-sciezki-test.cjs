@@ -184,8 +184,15 @@ assert(/import\s*\{[^}]*\bcomputeVisibleAlongPath\b[^}]*\}\s*from\s*'\.\/game\/v
 
 // Blok "zakonczenie animowanego ruchu" (renderLoop): nowy kod MUSI wystapic PRZED
 // checkVillageRewardsAlongPath(pathHexes) w tym samym bloku `if (pathHexes.length > 0) {`.
+// Strażnik "czy to moj fotel" bywa wyrażony różnymi, RÓWNOWAŻNYMI zapisami w czasie
+// (literał `ownerId === 0`, `isMe(u.ownerId)` po Etapie 6a, `u.ownerId === humanOwnerId`
+// w hotseat) -- test sprawdza ZACHOWANIE (jakis strażnik tożsamości + kolejność wywołań),
+// nie literalny tekst konkretnego zapisu (P-AUDYT... R-HOTSEAT-ETAP6A-FOLLOWUP-MGLA-TEST-Q1).
+const OWNER_GUARD = '(?:u\\.ownerId === 0|isMe\\(u\\.ownerId\\)|u\\.ownerId === humanOwnerId)';
 const animBlockMatch = mainSrc.match(
-  /if \(pathHexes\.length > 0\) \{([\s\S]*?)if \(u\.ownerId === 0\) hutCollected = checkVillageRewardsAlongPath\(pathHexes\);/,
+  new RegExp(
+    'if \\(pathHexes\\.length > 0\\) \\{([\\s\\S]*?)if \\(' + OWNER_GUARD + '\\) hutCollected = checkVillageRewardsAlongPath\\(pathHexes\\);',
+  ),
 );
 assert(animBlockMatch !== null,
   'static: blok "if (pathHexes.length > 0)" (koniec animacji) znaleziony, z checkVillageRewardsAlongPath(pathHexes) po nim');
@@ -198,8 +205,11 @@ if (animBlockMatch) {
 }
 
 // Blok applyMarchSegmentInstant: analogicznie, PRZED checkVillageRewardsAlongPath(result.movePath).
+// (patrz OWNER_GUARD wyzej -- ten sam wachlarz rownowaznych straznikow tozsamosci).
 const instantBlockMatch = mainSrc.match(
-  /if \(result\.movePath\.length > 0\) \{([\s\S]*?)if \(u\.ownerId === 0\) hutCollected = checkVillageRewardsAlongPath\(result\.movePath\);/,
+  new RegExp(
+    'if \\(result\\.movePath\\.length > 0\\) \\{([\\s\\S]*?)if \\(' + OWNER_GUARD + '\\) hutCollected = checkVillageRewardsAlongPath\\(result\\.movePath\\);',
+  ),
 );
 assert(instantBlockMatch !== null,
   'static: blok "if (result.movePath.length > 0)" (applyMarchSegmentInstant) znaleziony, z checkVillageRewardsAlongPath(result.movePath) po nim');
@@ -216,9 +226,18 @@ assert(/function refreshFog\(opts\?\s*:\s*\{\s*skipVeteranEducation\?\s*:\s*bool
   'static: refreshFog() zachowal DOKLADNIE ta sama sygnature (bez nowego parametru extraVisible) -- zamierzone, patrz raport');
 
 // currentVisible() (widocznosc TERAZ, z pozycji koncowej) pozostaje NIETKNIETA -- ta sama
-// petla po jednostkach/miastach z pozycji BIEZACEJ, zero wzmianki o sciezce.
-assert(/function currentVisible\(\): Set<string> \{[\s\S]{0,400}?for \(const u of units\.filter\(u => u\.ownerId === 0\)\) \{[\s\S]{0,200}?computeVisibleAt\(u\.q, u\.r, map, sight\)/.test(mainSrc),
-  'static: currentVisible() nadal liczy WYLACZNIE z biezacej pozycji jednostek (u.q, u.r) -- nietkniete');
+// petla po jednostkach/miastach z pozycji BIEZACEJ, zero wzmianki o sciezce. Dopuszczalne
+// SA DWA rownowazne ksztalty zrodla: (a) petla inline w currentVisible() filtrujaca
+// `u.ownerId === 0`, albo (b) currentVisible() delegujaca do `ownPlayerVisibleHexes()`
+// (np. po R-DYPLO-SOJUSZ...), ktora filtruje po `u.ownerId === ME()` -- w obu przypadkach
+// zrodlem widocznosci WLASNEGO gracza pozostaje BIEZACA pozycja jednostek (u.q, u.r), zero
+// heksow sciezki. Test sprawdza to ZACHOWANIE, nie jeden literalny zapis identyfikatora.
+const currentVisibleInline = /function currentVisible\(\): Set<string> \{[\s\S]{0,400}?for \(const u of units\.filter\(u => u\.ownerId === 0\)\) \{[\s\S]{0,200}?computeVisibleAt\(u\.q, u\.r, map, sight\)/.test(mainSrc);
+const currentVisibleDelegated =
+  /function currentVisible\(\): Set<string> \{[\s\S]{0,300}?ownPlayerVisibleHexes\(\)/.test(mainSrc)
+  && /function ownPlayerVisibleHexes\(\): Set<string> \{[\s\S]{0,400}?for \(const u of units\.filter\(u => u\.ownerId === ME\(\)\)\) \{[\s\S]{0,200}?computeVisibleAt\(u\.q, u\.r, map, sight\)/.test(mainSrc);
+assert(currentVisibleInline || currentVisibleDelegated,
+  'static: currentVisible() nadal liczy WYLACZNIE z biezacej pozycji jednostek (u.q, u.r) -- nietkniete (inline lub przez ownPlayerVisibleHexes())');
 
 console.log('\n' + pass + ' pass, ' + fail + ' fail');
 process.exit(fail ? 1 : 0);
