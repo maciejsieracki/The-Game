@@ -593,6 +593,13 @@ export interface CityPanelConfig {
    * stolica, obecna stolica NIE oblegana) i wykonuje transfer; za darmo (Q1=A).
    */
   onSetCapital?: (cityId: string) => void;
+  /**
+   * R-HOTSEAT-ETAP6B-UI-Q1: „czy to miasto/jednostka gracza (aktywnego fotela)" —
+   * wstrzykiwane z main.ts (`isMe(ownerId)`, Etap 6a), wzorzec identyczny do
+   * `game/army-cycle.ts` (`cyclablePlayerArmyLeadsBase`). Brak hooka -> domyślnie
+   * `ownerId === 0` (stare zachowanie, callerzy jeszcze nie migrujący).
+   */
+  isMe?: (ownerId: number) => boolean;
 }
 
 let cfg: CityPanelConfig = {};
@@ -600,6 +607,11 @@ let cfg: CityPanelConfig = {};
 /** Inject engine hooks.  Merges into any previous config; call once at startup. */
 export function configureCityPanel(config: CityPanelConfig): void {
   cfg = { ...cfg, ...config };
+}
+
+/** R-HOTSEAT-ETAP6B-UI-Q1: patrz `CityPanelConfig.isMe` — domyślnie `ownerId === 0`. */
+function isMeCity(ownerId: number): boolean {
+  return cfg.isMe?.(ownerId) ?? (ownerId === 0);
 }
 
 // ---------------------------------------------------------------------------
@@ -4631,7 +4643,7 @@ function appendPodzialHandlu(
   }
 
   const split = readPodzialHandlu(city, data);
-  const player = city.ownerId === 0;
+  const player = isMeCity(city.ownerId);
   const editable = player && !!cfg.onPodzialHandluChange;
   const est = estimateHandelChips(view, split);
 
@@ -5088,7 +5100,7 @@ function renderPodzialPracy(
   const praca = view ? cityPracaSplit(city, view, data) : null;
   const pctB = praca?.pctBudynki ?? pctCfg.procentBudynki;
   const pctU = praca?.pctPuli ?? procentPuliImperiumZBudynkow(pctB);
-  const player = city.ownerId === 0;
+  const player = isMeCity(city.ownerId);
   // R-PRACA-JEDEN-PODZIAL-Q1 pkt 5: suwak NIE jest zablokowany. Ustawia lokalna
   // wartosc; gdy rozni sie od globalnej, „Indywidualne" zapala sie SAMO, a powrot do
   // wartosci globalnej je gasi (logika: `applyCityPodzialPracyChange` w main.ts).
@@ -5302,7 +5314,7 @@ function renderMagazyn(mount: HTMLElement, city: City, view: CityView | null): v
   }
   mount.appendChild(bilans);
 
-  const player = city.ownerId === 0;
+  const player = isMeCity(city.ownerId);
   const rationEditable = player && !!cfg.onCityRationChange;
   // maxSafe już policzony wyżej (przed foodSplit) -- nie duplikuj wywołania.
   // / EN: maxSafe already computed above (before foodSplit) -- do not duplicate the call.
@@ -8278,7 +8290,7 @@ function renderProd(mount: HTMLElement, city: City, view: CityView | null): void
   const data = gameData();
   const pracaSplit = view ? cityPracaSplit(city, view, data) : null;
   const pracaBud = pracaSplit?.doBudynkow ?? 0;
-  const player = city.ownerId === 0; // AI cities -> read-only (no build/queue controls)
+  const player = isMeCity(city.ownerId); // AI cities -> read-only (no build/queue controls)
   const hasBuildQueue = prod.kolejka.length > 1;
   const hasRecruitQueue = (prod.rekrutacja ?? []).length > 0;
   const hasAutoToolbar = !!(player && cfg.getBudowaState?.(city.id));
@@ -8587,7 +8599,7 @@ function renderBuildList(
   titleRow.appendChild(previewLbl);
   mount.appendChild(titleRow);
   if (!data) { mount.appendChild(el('div', 'muted', 'Brak danych gry')); return; }
-  if (city.ownerId !== 0) { mount.appendChild(el('div', 'muted', 'Miasto rywala — budowa niedostępna (podgląd).')); return; }
+  if (!isMeCity(city.ownerId)) { mount.appendChild(el('div', 'muted', 'Miasto rywala — budowa niedostępna (podgląd).')); return; }
   // SUROW-UI-B1: pasek „ikona + ilość" surowców magazynowanych (Total War-style),
   // nad listą budowy — patrz mockup „Surowce magazyn i formy v1" KLATKA B kontekst 2.
   appendCityResourceStockStrip(mount, city);
@@ -8745,7 +8757,7 @@ function renderPurchasableUnits(
     mount.appendChild(el('div', 'ptitle', '<span>Rekrutuj jednostkę (za Pieniądz)</span>'));
   }
   if (!data) { mount.appendChild(el('div', 'muted', 'Brak danych gry')); return; }
-  if (city.ownerId !== 0) {
+  if (!isMeCity(city.ownerId)) {
     mount.appendChild(el('div', 'muted', 'Miasto rywala — zakup niedostępny (podgląd).'));
     return;
   }
@@ -10020,7 +10032,7 @@ function drawerTabButtons(): string {
 
 function skeleton(city: City, view: CityView | null): string {
   const epoch = cfg.getEpoch?.(city.ownerId) ?? 1;
-  const owner = city.ownerId === 0 ? 'Gracz' : 'AI';
+  const owner = isMeCity(city.ownerId) ? 'Gracz' : 'AI';
   const multi = ownerCities(city).length > 1;
   const navDis = multi ? '' : 'disabled';
   const fsbtns = SCALES.map(s =>
@@ -10494,7 +10506,7 @@ function capitalBadgeOrButtonHtml(city: City): string {
   if (capitalId != null && capitalId === city.id) {
     return `<span class="civ-v-w3-capital-badge" title="Stolica">★ Stolica</span>`;
   }
-  if (city.ownerId !== 0 || !cfg.onSetCapital) return '';
+  if (!isMeCity(city.ownerId) || !cfg.onSetCapital) return '';
   const allCitiesForCapital = cfg.getCities?.() ?? [];
   const capitalCity = capitalId ? allCitiesForCapital.find(c => c.id === capitalId) : null;
   const besieged = !!capitalCity?.oblegane;

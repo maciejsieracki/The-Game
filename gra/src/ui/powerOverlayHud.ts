@@ -142,6 +142,15 @@ export function showPowerOverlay(
   onClose?: () => void,
   onRefresh?: () => void,
   mocIconSvg?: string,
+  /**
+   * R-HOTSEAT-ETAP6B-UI-Q1: „czy ten ownerId to Ty (aktywny fotel człowieka)" —
+   * wstrzykiwane przez wywołującego (`main.ts`, `isMe(ownerId)`), wzorzec identyczny
+   * do `game/army-cycle.ts` (`cyclablePlayerArmyLeadsBase`). Domyślnie `ownerId === 0`
+   * (stare zachowanie) — dzisiejszy jedyny caller (`ui/hud.ts`, poza allowlistą tego
+   * tematu) nie przekazuje hooka, więc korzysta z tego samego, behawioralnie
+   * identycznego domyślnego zachowania.
+   */
+  isMe: (ownerId: number) => boolean = (ownerId) => ownerId === 0,
 ): void {
   hidePowerOverlay();
   ensureStyles();
@@ -191,7 +200,7 @@ export function showPowerOverlay(
       + '<th class="num">Praca</th><th class="num">Kol.∅</th><th class="num">Kol.▶</th>'
       + '</tr></thead><tbody>';
     for (const d of data.diagMajorAi) {
-      const cls = d.ownerId === 0 ? ' class="player"' : '';
+      const cls = isMe(d.ownerId) ? ' class="player"' : '';
       html += '<tr' + cls + '><td>' + esc(d.label) + '</td>'
         + '<td class="num">' + Math.round(d.moc) + '</td>'
         + '<td class="num">' + d.miasta + '</td>'

@@ -3985,7 +3985,7 @@ async function boot(): Promise<void> {
 
     function wonderPlacementContext() {
       const playerCities = cities
-        .filter(c => c.ownerId === 0)
+        .filter(c => isMe(c.ownerId))
         .map(c => ({
           q: c.q,
           r: c.r,
@@ -4007,7 +4007,7 @@ async function boot(): Promise<void> {
     }
 
     function wonderHudTargetLabel(): string | null {
-      const sites = wonderBuildSites.filter(s => s.ownerId === 0);
+      const sites = wonderBuildSites.filter(s => isMe(s.ownerId));
       if (sites.length === 0) {
         return 'Kliknij hex w swoim terytorium';
       }
@@ -4022,7 +4022,7 @@ async function boot(): Promise<void> {
 
     function wonderHudEntries() {
       const buildingIds = new Set(
-        wonderBuildSites.filter(s => s.ownerId === 0).map(s => s.wonderId),
+        wonderBuildSites.filter(s => isMe(s.ownerId)).map(s => s.wonderId),
       );
       return listBuildableWondersForOwner(0).map(w => ({
         id: w.id,
@@ -5521,8 +5521,8 @@ async function boot(): Promise<void> {
         map,
         hexWorkedForMagazyn,
         cityName: cityOn?.name ?? null,
-        cityIsCityState: cityOn != null && cityOn.ownerId !== 0 && !!cityOn.startCityState,
-        cityOwnerLabel: cityOn != null && cityOn.ownerId !== 0
+        cityIsCityState: cityOn != null && !isMe(cityOn.ownerId) && !!cityOn.startCityState,
+        cityOwnerLabel: cityOn != null && !isMe(cityOn.ownerId)
           ? ownerDiploLabel(cityOn.ownerId)
           : null,
         cityPopulation: cityOn?.population ?? null,
@@ -5637,7 +5637,7 @@ async function boot(): Promise<void> {
       const combat = unitCardCombatFor(u, def);
       const zasieg = normFieldVal(def['Zasi\u0119g'] ?? def['Zasieg'], 0);
       const expanded = unitSideDetailExpanded;
-      const stackState = !opts.readOnly && u.ownerId === 0
+      const stackState = !opts.readOnly && isMe(u.ownerId)
         ? buildArmyStackHudStateInner()
         : null;
       const isArmy = stackState != null && stackState.unitCount > 1;
@@ -5654,7 +5654,7 @@ async function boot(): Promise<void> {
         category: u.category,
         zasieg,
         expanded,
-        expandable: u.ownerId === 0 || opts.readOnly === true,
+        expandable: isMe(u.ownerId) || opts.readOnly === true,
         stackCards: isArmy ? stackState.cards : undefined,
         actions: stackState?.actions,
         inGarnizon: status.inGarnizon,
@@ -5692,13 +5692,13 @@ async function boot(): Promise<void> {
       if (!isWorldMapUnitMode()) return null;
       if (selectedId !== null) {
         const own = units.find(x => x.id === selectedId);
-        if (own && own.ownerId === 0) {
+        if (own && isMe(own.ownerId)) {
           return buildUnitContextTooltipForUnit(own);
         }
       }
       if (foreignUnitInspectId !== null) {
         const foreign = units.find(x => x.id === foreignUnitInspectId);
-        if (foreign && foreign.ownerId !== 0) {
+        if (foreign && !isMe(foreign.ownerId)) {
           return buildUnitContextTooltipForUnit(foreign, {
             readOnly: true,
             ownerLabel: ownerDiploLabel(foreign.ownerId),
@@ -5744,7 +5744,7 @@ async function boot(): Promise<void> {
         }
       }
       if (unitMsg) {
-        const ownSelected = selectedId !== null && units.some(x => x.id === selectedId && x.ownerId === 0);
+        const ownSelected = selectedId !== null && units.some(x => x.id === selectedId && isMe(x.ownerId));
         return {
           kind: 'unit',
           html: unitMsg,
@@ -6267,7 +6267,7 @@ async function boot(): Promise<void> {
 
     function buildPlayerCityListEntries(): CityListEntry[] {
       return cities
-        .filter(c => c.ownerId === 0)
+        .filter(c => isMe(c.ownerId))
         .map(c => {
           const prod = cityProd.get(c.id);
           const front = prod ? frontItem(prod) : null;
@@ -6293,7 +6293,7 @@ async function boot(): Promise<void> {
     }
 
     function buildPlayerArmyListEntries(): ArmyListEntry[] {
-      const playerUnits = units.filter(u => u.ownerId === 0);
+      const playerUnits = units.filter(u => isMe(u.ownerId));
       const stacks = new Map<string, typeof playerUnits>();
       for (const u of playerUnits) {
         // C-GARN-Q1: ufortyfikowane jednostki grupuj po heksie miasta (jak armia),
@@ -6497,7 +6497,7 @@ async function boot(): Promise<void> {
 
     function buildPlayerDiploSummary(): DiploPlayerSummary {
       const civKey = civKeyForOwner(0);
-      const playerCities = cities.filter(c => c.ownerId === 0);
+      const playerCities = cities.filter(c => isMe(c.ownerId));
       const lines = formatDiploPlayerSummaryLines({
         // R-MOC-HUD-GLOWNY-Q1=C: podsumowanie gracza na liście dyplomacji ("Moc: X",
         // "Ranking mocy: Y. z Z") -> EFEKTYWNA, jak reszta warstwy UI Mocy.
@@ -6505,7 +6505,7 @@ async function boot(): Promise<void> {
         powerRank: buildAbsolutePowerRankEffective(),
         wiarygodnosc: getWiarygodnosc(0),
         population: playerCities.reduce((s, c) => s + c.population, 0),
-        armyCount: units.filter(u => u.ownerId === 0).length,
+        armyCount: units.filter(u => isMe(u.ownerId)).length,
       });
       return {
         name: ownerDiploLabel(0),
@@ -6714,6 +6714,13 @@ async function boot(): Promise<void> {
       refreshResearchUiSurfaces();
     }
 
+    // R-HOTSEAT-ETAP6B-UI-Q1 (znalezisko Etapu 6c recon, main.ts:6717-6731): CZWARTY,
+    // niezależny write-site cache `_lastPlayerCityEcon`, obok U1/U2 i write-site'u
+    // `runWorldEndTurn()` (patrz komentarz przy sygnaturze `runWorldEndTurn` niżej).
+    // Drugi parametr `ownerId` PODŁĄCZONY realnie -- wywołanie z `runWorldEndTurn()`
+    // przekazuje `humanOwnerId` (właściciel tury), wywołanie z `refreshLiveEmpireRatesUnsafe()`
+    // (U2, live-preview poza końcem tury) przekazuje `ME()` (aktywny fotel) -- dokładnie
+    // ten sam podział jak dla pozostałych 11 zmiennych `_last*`.
     function refreshPlayerCityEcon(
       perCity: Array<{
         cityId: string;
@@ -6726,9 +6733,10 @@ async function boot(): Promise<void> {
         doBudynkow: number;
         nauka: number;
       }>,
+      ownerId: number,
     ): void {
       _lastPlayerCityEcon = perCity
-        .filter(tk => tk.ownerId === 0)
+        .filter(tk => tk.ownerId === ownerId)
         .map(tk => {
           const c = cities.find(x => x.id === tk.cityId);
           return {
@@ -6738,8 +6746,8 @@ async function boot(): Promise<void> {
             pieniadzBrutto: Math.round(tk.pieniadzBrutto),
             pieniadzZTras: Math.round(tk.pieniadzZTras),
             wealthMnoznik: tk.wealthMnoznik,
-            utrzymanieBudynkow: buildingUpkeepForCityId(tk.cityId, 0),
-            utrzymanieSurowcowBudynkow: buildingResourceUpkeepForCityId(tk.cityId, 0),
+            utrzymanieBudynkow: buildingUpkeepForCityId(tk.cityId, ownerId),
+            utrzymanieSurowcowBudynkow: buildingResourceUpkeepForCityId(tk.cityId, ownerId),
             utrzymanieGarnizonu: c ? garrisonUpkeepForCity(c) : 0,
             doPuli: Math.round(tk.doPuli),
             doBudynkow: Math.round(tk.doBudynkow),
@@ -13887,6 +13895,7 @@ async function boot(): Promise<void> {
 
     const siegePanelActions = {
       onBesiege: (cityId: string) => commitBesiege(cityId),
+      isMe: (ownerId: number) => isMe(ownerId),
       onStorm: (ctx: MapSiegeContext) => launchSiegeStormFromMap(ctx),
       onRetreat: (cityId: string) => {
         endMapSiege(cityId);
@@ -14620,7 +14629,7 @@ async function boot(): Promise<void> {
           ...borderMarchEventLog,
         ];
       for (const city of cities) {
-        if (city.ownerId !== 0) continue;
+        if (!isMe(city.ownerId)) continue;
         const st = cityOrderState.get(city.id);
         if (st?.revoltWarning && st.revoltGraceRemaining != null && !st.bunt && !st.rebelState) {
           events.push({
@@ -14724,7 +14733,7 @@ async function boot(): Promise<void> {
           if (cityId === undefined) return null;
           // Miasto mogło zostać utracone/zniknąć (to jeden z powodów zerwania szlaku) —
           // panel miasta jest gracz-only, więc bez tego sprawdzenia skrót prowadziłby donikąd.
-          const city = cities.find(c => c.id === cityId && c.ownerId === 0);
+          const city = cities.find(c => c.id === cityId && isMe(c.ownerId));
           return city ? { kind, label: sidePanelEventLinkLabel(kind) } : null;
         }
         case 'diplo-wars':
@@ -14767,7 +14776,7 @@ async function boot(): Promise<void> {
         }
         case 'city-panel': {
           const cityId = tradeRouteEventPlayerCityIds.get(id);
-          const city = cityId === undefined ? undefined : cities.find(c => c.id === cityId && c.ownerId === 0);
+          const city = cityId === undefined ? undefined : cities.find(c => c.id === cityId && isMe(c.ownerId));
           if (!city) return false;
           openCityPanelForPlayer(city);
           return true;
@@ -15046,7 +15055,7 @@ async function boot(): Promise<void> {
 
     function buildCultureOverlayData(): CultureOverlayData {
       const cp = loadCultureParams(data.societyParams, _menuDifficulty);
-      const pc = cities.filter(c => c.ownerId === 0);
+      const pc = cities.filter(c => isMe(c.ownerId));
       const thresholds = [...cultureThresholds(cp)];
       const cityRows = pc.map(c => {
         const kultura = Math.floor((c as { kultura?: number }).kultura ?? 0);
@@ -15093,7 +15102,7 @@ async function boot(): Promise<void> {
       const tick = getLastEmpireFoodTick(0);
       const zapasy = Math.floor(getEmpireFoodReserve(0));
       const maxCap = getEmpireFoodMaxCap(0) || projectPlayerFoodMaxCap();
-      const cityNameById = new Map(cities.filter(c => c.ownerId === 0).map(c => [c.id, c.name]));
+      const cityNameById = new Map(cities.filter(c => isMe(c.ownerId)).map(c => [c.id, c.name]));
       const perCityRows = (tick?.perCityRows ?? []).map(r => ({
         cityId: r.cityId,
         name: cityNameById.get(r.cityId) ?? r.name,
@@ -15174,7 +15183,7 @@ async function boot(): Promise<void> {
           realizuje: String(b.realizuje ?? ''),
         }))
         .filter(b => b.opis.length > 0);
-      const pc = cities.filter(c => c.ownerId === 0);
+      const pc = cities.filter(c => isMe(c.ownerId));
       const { regenMult, maxMult } = mpMults;
       const cityEcon = pc.map(c => {
         const tk = _lastPlayerCityEcon.find(t => t.cityId === c.id);
@@ -15283,7 +15292,7 @@ async function boot(): Promise<void> {
       );
       let rekruciMax = 0;
       for (const c of pc) rekruciMax += cityManpowerMax(c.population, epoka, maxMult);
-      const unitsOnMap = units.filter(u => u.ownerId === 0 && u.category !== 'osadnik').length;
+      const unitsOnMap = units.filter(u => isMe(u.ownerId) && u.category !== 'osadnik').length;
 
       // R-DESIGN-11-ZAKLADEK faza 2 (Maciej 2026-08-1x) — Klatka 3: box „BADANE TERAZ" w Nauce.
       // TA SAMA czysta funkcja `getResearchState()` już wołana dla sciencePicker/scienceHubHud
@@ -15460,7 +15469,7 @@ async function boot(): Promise<void> {
      * komentarz mówił „tradeRoutes zawiera wyłącznie pary gracz<->obca cyw.". Po
      * generalizacji z tego tematu (GOAL 4 — dowolne pary właścicieli, w tym AI↔AI;
      * GOAL 5 — trasy WEWNĘTRZNE każdej cywilizacji) to nieprawda, więc panel filtruje
-     * po stronie trasy: gracz musi być stroną (ownerId===0 lub toOwnerId===0).
+     * po stronie trasy: gracz musi być stroną (isMe(ownerId) lub isMe(toOwnerId)).
      *
      * DECYZJA (R2-2, „trasa wewnętrzna ma dać sensowny wiersz — zdecyduj i uzasadnij";
      * wersja OSTATECZNA po zarzucie 3 Evaluatora, runda 2): trasa WEWNĘTRZNA gracza
@@ -15514,7 +15523,7 @@ async function boot(): Promise<void> {
         // R2-2: gracz musi być STRONĄ trasy — panel imperium jest widokiem gracza
         // (ownerId=0), a `tradeRoutes` zawiera od GOAL 4-5 także trasy AI↔AI i
         // wewnętrzne obcych cywilizacji.
-        .filter(r => r.status === 'polaczony' && (r.ownerId === 0 || r.toOwnerId === 0))
+        .filter(r => r.status === 'polaczony' && (isMe(r.ownerId) || isMe(r.toOwnerId)))
         // R2-2 (DECYZJA po zarzucie 3 Evaluatora, runda 2): DOKŁADNIE JEDEN wiersz na
         // JEDNĄ trasę — także dla trasy WEWNĘTRZNEJ gracza (oba miasta jego).
         //
@@ -15534,11 +15543,11 @@ async function boot(): Promise<void> {
         // obcym), a zakładka „Handel" i tak pokazuje w wierszu OBIE nazwy miast
         // (`cityName` ↔ `partnerCityName`), więc żadna informacja nie znika.
         .map(r => {
-          const bothPlayer = r.ownerId === 0 && r.toOwnerId === 0;
-          // Strona gracza: dla trasy zewnętrznej ta, której ownerId===0 (po
+          const bothPlayer = isMe(r.ownerId) && isMe(r.toOwnerId);
+          // Strona gracza: dla trasy zewnętrznej ta, dla której isMe(ownerId) (po
           // generalizacji GOAL 4-5 gracz bywa stroną `to`, nie tylko `from`); dla
           // wewnętrznej kanonicznie `from`.
-          const side = r.ownerId === 0
+          const side = isMe(r.ownerId)
             ? { rowId: r.id, myCityId: r.fromCityId, partnerCityId: r.toCityId, partnerOwnerId: r.toOwnerId }
             : { rowId: r.id, myCityId: r.toCityId, partnerCityId: r.fromCityId, partnerOwnerId: r.ownerId };
           {
@@ -15643,7 +15652,7 @@ async function boot(): Promise<void> {
         if (seenDealPartners.has(partnerId)) continue;
         seenDealPartners.add(partnerId);
         // R2-2 (zarzut 4 Evaluatora, runda 2): filtr SYMETRYCZNY. Do rundy 1 warunek
-        // `r.ownerId === 0 && r.toOwnerId === partnerId` był wystarczający, bo generator
+        // `isMe(r.ownerId) && r.toOwnerId === partnerId` był wystarczający, bo generator
         // dopuszczał wyłącznie kierunek gracz->obcy. Po generalizacji (GOAL 4-5) kierunek
         // kanoniczny wynika z ownerId (ownerA<ownerB), więc dla KAŻDEGO partnera trasa
         // jest zapisana jako `partner -> gracz`, nie `gracz -> partner` — asymetryczny
@@ -15651,7 +15660,7 @@ async function boot(): Promise<void> {
         // fałszywy `blockReason` („brak połączenia") z `diagnoseMissingTradeRouteForPartner`.
         const hasActiveRoute = tradeRoutes.some(
           r => r.status === 'polaczony'
-            && ((r.ownerId === 0 && r.toOwnerId === partnerId)
+            && ((isMe(r.ownerId) && r.toOwnerId === partnerId)
               || (r.ownerId === partnerId && r.toOwnerId === 0)),
         );
         let blockReason: string | undefined;
@@ -15702,7 +15711,7 @@ async function boot(): Promise<void> {
 
     function buildReligionOverlayData(): ReligionOverlayData {
       const rp = loadReligionParams(data.societyParams, _menuDifficulty);
-      const pc = cities.filter(c => c.ownerId === 0);
+      const pc = cities.filter(c => isMe(c.ownerId));
       const stateRel = ownerReligionForOwnerId(0) ?? '—';
       let dominantCityCount = 0;
       let foreignCityCount = 0;
@@ -17238,7 +17247,7 @@ async function boot(): Promise<void> {
     }
 
     function refreshLiveEmpireRatesUnsafe(): void {
-      const playerCities = cities.filter(c => c.ownerId === 0);
+      const playerCities = cities.filter(c => isMe(c.ownerId));
       if (playerCities.length === 0) {
         _liveFoodBrutto = 0;
         return;
@@ -17246,7 +17255,7 @@ async function boot(): Promise<void> {
       const ownerCivMap = new Map<number, string>();
       ownerCivMap.set(0, (player.civType as string) || 'grecy');
       for (const [oid, civ] of aiOwnerCivMap) ownerCivMap.set(oid, civ);
-      // D7: licz ekonomię TYLKO miast gracza (HUD używa wyłącznie ownerId===0).
+      // D7: licz ekonomię TYLKO miast gracza (HUD używa wyłącznie isMe(ownerId)).
       // Wcześniej szło `cities` (gracz + całe AI) → O(wszystkie miasta) na każdym updateHud
       // = główny koszt wejścia do miasta na Super Huge (14 s w pomiarze).
       const preview = previewCityEconomy(
@@ -17306,7 +17315,7 @@ async function boot(): Promise<void> {
       // te sama pare liczb z econ.upkeepByOwner). previewOwnerUpkeep liczy je TYMI
       // SAMYMI prymitywami (upkeepBalance), tylko przed koncem tury.
       const playerEconUnitsForUpkeep: EconUnit[] = units
-        .filter(u => u.ownerId === 0)
+        .filter(u => isMe(u.ownerId))
         .map(u => ({ ownerId: u.ownerId, typeId: u.typeId, camping: false, onOwnTerritory: true }));
       const bogactwoUpkeepPreview = previewOwnerUpkeep(
         0, playerCities, data, _menuDifficulty, cityBuilt, playerEconUnitsForUpkeep,
@@ -17338,7 +17347,7 @@ async function boot(): Promise<void> {
       const pracaQueueEmpty: boolean[] = [];
       const pracaPaused: boolean[] = [];
       for (const tk of preview.perCity) {
-        if (tk.ownerId !== 0 || tk.oblegany) continue;
+        if (!isMe(tk.ownerId) || tk.oblegany) continue;
         const prod = cityProd.get(tk.cityId);
         pracaTicks.push({ doBudynkow: tk.doBudynkow, doPuli: tk.doPuli });
         pracaQueueEmpty.push(frontItem(prod ?? { kolejka: [], postep: 0 }) === null);
@@ -17389,15 +17398,15 @@ async function boot(): Promise<void> {
       }
       let brutto = 0;
       for (const tk of preview.perCity) {
-        if (tk.ownerId !== 0 || tk.oblegany) continue;
+        if (!isMe(tk.ownerId) || tk.oblegany) continue;
         brutto += Math.max(0, tk.zywnoscNetto);
       }
       _liveFoodBrutto = brutto;
       for (const tk of preview.perCity) {
-        if (tk.ownerId === 0) lastCityKulturaTick.set(tk.cityId, tk.kultura);
+        if (isMe(tk.ownerId)) lastCityKulturaTick.set(tk.cityId, tk.kultura);
       }
       if (!skipCityEconOverwriteFreshFromEndTurn) {
-        refreshPlayerCityEcon(preview.perCity);
+        refreshPlayerCityEcon(preview.perCity, ME());
       }
     }
 
@@ -17415,7 +17424,7 @@ async function boot(): Promise<void> {
           ) : 0;
         epokaPostep = koszt > 0 ? Math.min(1, player.nauka / koszt) : 0;
       }
-      const pc = cities.filter(c => c.ownerId === 0);
+      const pc = cities.filter(c => isMe(c.ownerId));
       const pop = pc.reduce((s, c) => s + c.population, 0);
       const pobor = empirePoborTotals(cities, 0, player.era, civManpowerMultsForOwner(0).maxMult);
       const chips = collectDiploChipCounts();
@@ -17461,7 +17470,7 @@ async function boot(): Promise<void> {
       // (GOAL 4: pary dowolnych właścicieli, w tym AI↔AI; GOAL 5: trasy WEWNĘTRZNE
       // każdej cywilizacji). Bez filtra chip pokazywałby dochód handlowy CAŁEGO świata
       // — objaw z wyzwalacza tematu („Handel +542"), spotęgowany o ~15 cywilizacji AI.
-      // Filtr: gracz musi być STRONĄ trasy (ownerId===0 lub toOwnerId===0).
+      // Filtr: gracz musi być STRONĄ trasy (isMe(ownerId) lub isMe(toOwnerId)).
       //
       // TRASA WEWNĘTRZNA GRACZA (obie strony to gracz) — dwa różne pytania, dwie różne
       // odpowiedzi, oba zweryfikowane w tools/trade-routes-hud-filter-test.cjs:
@@ -17491,7 +17500,7 @@ async function boot(): Promise<void> {
       let handelRouteCount = 0;
       for (const r of tradeRoutes) {
         if (r.status !== 'polaczony') continue;
-        const fromPlayer = r.ownerId === 0;
+        const fromPlayer = isMe(r.ownerId);
         const toPlayer = r.toOwnerId === 0;
         if (!fromPlayer && !toPlayer) continue; // R2-1: cudza trasa (AI↔AI / wewnętrzna obcych)
         // CUDA-HANDEL-01: chip HUD musi odzwierciedlać ten sam bonus % cudów, co
@@ -17509,7 +17518,7 @@ async function boot(): Promise<void> {
       for (const c of pc) {
         rekruciRegenPerTurn += cityManpowerSnapshot(c, player.era, mpMults.regenMult, mpMults.maxMult).regenPerTurn;
       }
-      const armyUnitsOnMap = units.filter(u => u.ownerId === 0 && u.category !== 'osadnik').length;
+      const armyUnitsOnMap = units.filter(u => isMe(u.ownerId) && u.category !== 'osadnik').length;
       // P-SPICHLERZ-ZERO-MYLACE (ECHO C Maciej 2026-08-10): ta sama liczba miast niedokarmionych,
       // co panel imperium (buildEmpireFoodSnap → perCityRows) — chip HUD „Spichlerz" ma pokazywać
       // spójnie ten sam deficyt, nie tylko głód wojska. / EN: same unfed-city count as the empire
@@ -17748,9 +17757,9 @@ async function boot(): Promise<void> {
     function buildDiploTreasury() {
       return {
         getPieniadze: (ownerId: number) =>
-          ownerId === 0 ? player.skarbiec : (aiSkarbiecByOwner.get(ownerId) ?? 0),
+          isMe(ownerId) ? player.skarbiec : (aiSkarbiecByOwner.get(ownerId) ?? 0),
         add: (ownerId: number, delta: number) => {
-          if (ownerId === 0) player.skarbiec += delta;
+          if (isMe(ownerId)) player.skarbiec += delta;
           else aiSkarbiecByOwner.set(ownerId, Math.max(0, (aiSkarbiecByOwner.get(ownerId) ?? 0) + delta));
         },
       };
@@ -20336,7 +20345,7 @@ async function boot(): Promise<void> {
     function buildArmyStackHudStateInner(): ArmyStackHudState | null {
       if (selectedId === null) return null;
       const active = units.find(x => x.id === selectedId);
-      if (!active || active.ownerId !== 0) return null;
+      if (!active || !isMe(active.ownerId)) return null;
       const stack = playerStackAt(active);
       if (stack.length > 1) syncStackRuchLeft(stack);
       const stackRuch = stackRuchLeft(stack);
@@ -21098,7 +21107,7 @@ async function boot(): Promise<void> {
         getCities: buildPlayerCityListEntries,
         onSelectCity: (cityId) => {
           const c = cities.find(x => x.id === cityId);
-          if (!c || c.ownerId !== 0) return;
+          if (!c || !isMe(c.ownerId)) return;
           hideArmyListHud();
           openCityPanelForPlayer(c);
           refreshD1bHud();
@@ -21120,7 +21129,7 @@ async function boot(): Promise<void> {
           refreshD1bHud();
         },
         onOpenUnitCard: (unitId, unitTypeId) => {
-          const runtimeUnit = units.find(u => u.id === unitId && u.ownerId === 0);
+          const runtimeUnit = units.find(u => u.id === unitId && isMe(u.ownerId));
           const resolvedTypeId = runtimeUnit?.typeId ?? unitTypeId;
           const unitDef = data.units.find(u => u.Jednostka === resolvedTypeId);
           if (!unitDef) return;
@@ -21302,14 +21311,14 @@ async function boot(): Promise<void> {
           onExit: () => exitBuildMode(),
           isOpen: () => buildModeOpen,
           canFoundCity: () => {
-            const pc = cities.filter(c => c.ownerId === 0);
+            const pc = cities.filter(c => isMe(c.ownerId));
             if (pc.length === 0) return true;
             return true;
           },
           getFoundCityCostLabel: () =>
-            foundCityCostLabel(!isSubsequentFoundCity(cities.filter(c => c.ownerId === 0), 0)),
+            foundCityCostLabel(!isSubsequentFoundCity(cities.filter(c => isMe(c.ownerId)), ME())),
           getFoundCityLockHint: () => {
-            const pc = cities.filter(c => c.ownerId === 0);
+            const pc = cities.filter(c => isMe(c.ownerId));
             if (pc.length === 0) return null;
             const aff = evaluateFoundCityAffordance(playerPracaPool, pc, 0);
             return aff.ok ? null : aff.reason ?? null;
@@ -21354,7 +21363,7 @@ async function boot(): Promise<void> {
             refreshD1bHud();
           },
           listPlayerCities: () =>
-            cities.filter(c => c.ownerId === 0).map(c => ({ id: c.id, name: c.name })),
+            cities.filter(c => isMe(c.ownerId)).map(c => ({ id: c.id, name: c.name })),
           getUlepszeniaCityId: () => ensureUlepszeniaHudCityId(),
           onUlepszeniaCityIdChange: (cityId: string) => {
             ulepszeniaHudCityId = cityId;
@@ -21698,17 +21707,17 @@ async function boot(): Promise<void> {
       configureEmpireHandelSplit({
         getOwnerDefault: (ownerId) => ownerDefaultPodzialHandlu.get(ownerId) ?? null,
         onOwnerDefaultChange: (ownerId, split) => {
-          if (ownerId !== 0) return;
-          ownerDefaultPodzialHandlu.set(0, normalizePodzialHandlu(split));
+          if (!isMe(ownerId)) return;
+          ownerDefaultPodzialHandlu.set(ME(), normalizePodzialHandlu(split));
           markCityStateDirty();
           updateHud();
         },
         getDaninaLabel: () => {
-          const capId = capitalCityIdForOwner(0);
+          const capId = capitalCityIdForOwner(ME());
           return resolveDaninaLabel(
-            unlockedTechsForOwner(0).includes('Waluta'),
+            unlockedTechsForOwner(ME()).includes('Waluta'),
             mennicaWStolicy(capId, capId ? cityBuilt.get(capId) : undefined),
-            ownerZlotoAccessForMennicaEffective(0),
+            ownerZlotoAccessForMennicaEffective(ME()),
           );
         },
       });
@@ -21719,8 +21728,8 @@ async function boot(): Promise<void> {
       configureEmpireGlobalDefaults({
         getOwnerDefaultPodzialPracy: (ownerId) => ownerDefaultPodzialPracy.get(ownerId) ?? null,
         onOwnerDefaultPodzialPracyChange: (ownerId, split) => {
-          if (ownerId !== 0) return;
-          ownerDefaultPodzialPracy.set(0, {
+          if (!isMe(ownerId)) return;
+          ownerDefaultPodzialPracy.set(ME(), {
             procentBudynki: clampPodzialPracyBudynkiPercent(split.procentBudynki),
           });
           markCityStateDirty();
@@ -21728,10 +21737,10 @@ async function boot(): Promise<void> {
         },
         getOwnerDefaultPoziomRacji: (ownerId) => ownerDefaultPoziomRacji.get(ownerId) ?? null,
         onOwnerDefaultPoziomRacjiChange: (ownerId, poziom) => {
-          if (ownerId !== 0) return;
+          if (!isMe(ownerId)) return;
           const clamped = clampPoziomRacji(poziom);
-          ownerDefaultPoziomRacji.set(0, clamped);
-          broadcastPoziomRacjiToOwnerCities(cities, 0, clamped);
+          ownerDefaultPoziomRacji.set(ME(), clamped);
+          broadcastPoziomRacjiToOwnerCities(cities, ME(), clamped);
           markCityStateDirty();
           updateHud();
         },
@@ -21740,8 +21749,8 @@ async function boot(): Promise<void> {
         // Wzorem onOwnerDefaultPoziomRacjiChange/broadcastPoziomRacjiToOwnerCities wyżej, ale
         // to NIE jest stan trwały ani toggle -- kliknięcie po prostu stosuje wartość teraz.
         onOwnerSetAutoWyzywienieForAll: (ownerId) => {
-          if (ownerId !== 0) return;
-          broadcastAutoWyzywienieToOwnerCities(cities, 0);
+          if (!isMe(ownerId)) return;
+          broadcastAutoWyzywienieToOwnerCities(cities, ME());
           showHintMessage('Auto-Żywienie włączone we wszystkich miastach bez indywidualnego ustawienia', 2800);
           markCityStateDirty();
           updateHud();
@@ -21848,7 +21857,7 @@ async function boot(): Promise<void> {
         // partnerId='0', a `dipLayer` (patrz naprawa b) byłby 'pre_contact' dla komend
         // DOTYCZĄCYCH gracza, słusznie kasując DOW na niego (D3-Q2, bez regresji).
         diplomaticallyDiscoveredOwners.add(attackerId);
-        const playerCity = cities.find(c => c.ownerId === 0);
+        const playerCity = cities.find(c => isMe(c.ownerId));
         if (playerCity) { playerCity.q = attacker.q; playerCity.r = attacker.r; }
         return { attackerId };
       },
@@ -21878,7 +21887,7 @@ async function boot(): Promise<void> {
           if (st.attackerId === attackerId) ironForceWarActiveByPairKey.delete(key);
         }
         diplomaticallyDiscoveredOwners.add(attackerId);
-        const playerCity = cities.find(c => c.ownerId === 0);
+        const playerCity = cities.find(c => isMe(c.ownerId));
         if (playerCity) { playerCity.q = attacker.q; playerCity.r = attacker.r; }
         return { attackerId };
       },
@@ -22050,7 +22059,7 @@ async function boot(): Promise<void> {
         workedHex: { q: number; r: number } | null;
         unworkedHex: { q: number; r: number } | null;
       } => {
-        const city = cities.find(c => c.ownerId === 0);
+        const city = cities.find(c => isMe(c.ownerId));
         if (!city) return { workedHex: null, unworkedHex: null };
         const nodes = buildAllTerritoryNodes();
         const workedCoords = workedHexCoordsForCity(city, map, nodes, siblingClaimedHexKeysForCity(city));
@@ -22079,7 +22088,7 @@ async function boot(): Promise<void> {
       // z `findTestHexes` do scenariusza ulepszenia surowcowego (kryterium 3a) i musi
       // przetestować wycinkę lasu (kryterium 3b) na ODDZIELNYM heksie.
       findFreshUnworkedHex: (): { q: number; r: number } | null => {
-        const city = cities.find(c => c.ownerId === 0);
+        const city = cities.find(c => isMe(c.ownerId));
         if (!city) return null;
         const nodes = buildAllTerritoryNodes();
         const workedCoords = workedHexCoordsForCity(city, map, nodes, siblingClaimedHexKeysForCity(city));
@@ -22165,7 +22174,7 @@ async function boot(): Promise<void> {
         tradeRouteEventPlayerCityIds.set(id, cityId);
       },
       firstPlayerCity: (): { id: string; name: string } | null => {
-        const c = cities.find(x => x.ownerId === 0);
+        const c = cities.find(x => isMe(x.ownerId));
         return c ? { id: c.id, name: c.name } : null;
       },
       linkFor: (id: string): SidePanelEventLink | null => sidePanelEventLinkFor(id),
@@ -22301,7 +22310,7 @@ async function boot(): Promise<void> {
     // isEndTurnInProgress) — bez duplikowania tych metod tutaj.
     (window as any).__rebelNotifyTestDebug = {
       getPlayerCity: (): { id: string; name: string; population: number } | null => {
-        const c = cities.find(x => x.ownerId === 0);
+        const c = cities.find(x => isMe(x.ownerId));
         return c ? { id: c.id, name: c.name, population: c.population } : null;
       },
       /** Steruje WYŁĄCZNIE wejściami: populacja ponad próg immunitetu osiedla (5, tuż
@@ -22396,11 +22405,11 @@ async function boot(): Promise<void> {
        * fizycznie stoją jednostki gracza.
        */
       pullPlayerUnitsHome: (): number => {
-        const home = cities.find(c => c.ownerId === 0);
+        const home = cities.find(c => isMe(c.ownerId));
         if (!home) return 0;
         let moved = 0;
         for (const u of units) {
-          if (u.ownerId !== 0) continue;
+          if (!isMe(u.ownerId)) continue;
           if (u.q === home.q && u.r === home.r) continue;
           u.q = home.q;
           u.r = home.r;
@@ -22440,7 +22449,7 @@ async function boot(): Promise<void> {
        * kształt pól, jaki REALNY `markCityRebellionStarted` + main.ts (~27780,
        * `city.rebelState=true; city.ownerId=REBEL_FACTION_OWNER_ID`) zapisują przy
        * naturalnym buncie — uogólniony na dowolnego `rebelPrevOwnerId`. Dzisiejszy
-       * naturalny trigger buntu dotyczy WYŁĄCZNIE miast gracza (`ownerId===0`, main.ts,
+       * naturalny trigger buntu dotyczy WYŁĄCZNIE miast gracza (`isMe(ownerId)`, main.ts,
        * fakt stanu wyjściowego — patrz RECON/GOAL 7 dispatchu), więc dla scenariusza
        * "AI traci miasto na rzecz buntu" (kryterium 3, symetria gracz/AI) nie istnieje
        * dziś żaden naturalny trigger do odtworzenia — ten hak testuje SYMETRIĘ logiki
@@ -22661,8 +22670,8 @@ async function boot(): Promise<void> {
       },
       hideHotSeatHandoff: (): void => hideHotSeatHandoff(),
       /** R-HOTSEAT-ETAP5-SWITCH-HUMAN-Q1 runda 2 (Evaluator Zarzut #1): gra NIE nadaje
-       * graczowi (`ownerId===0`) żadnej jednostki automatycznie po `foundPlayerStartCity()`
-       * (potwierdzone niezależnie przez Evaluatora rundy 1 — `units` dla `ownerId===0` puste
+       * graczowi (`isMe(ownerId)`) żadnej jednostki automatycznie po `foundPlayerStartCity()`
+       * (potwierdzone niezależnie przez Evaluatora rundy 1 — `units` dla `isMe(ownerId)` puste
        * przed i po). Jedyna REALNA droga do pierwszej jednostki gracza to kolejka produkcji
        * miasta (`advanceRecruitmentGated`, main.ts ~30334+) po wielu turach — wymagałoby
        * wołania `triggerPlayerEndTurn()`/`runWorldEndTurn()`, zakazanego allowlistą tego
@@ -22987,6 +22996,7 @@ async function boot(): Promise<void> {
     // --- Konfiguracja panelu miasta ---
     configureCityPanel({
       data,
+      isMe: (ownerId: number) => isMe(ownerId),
       difficulty: _menuDifficulty,
       getCities: () => cities,
       getTradeRoutes: () => tradeRoutes,
@@ -23075,7 +23085,7 @@ async function boot(): Promise<void> {
       getPodzialHandluOverride: (cityId: string) => cities.find(c => c.id === cityId)?.podzialHandluOverride === true,
       onPodzialHandluChange: (cityId: string, split) => {
         const c = cities.find(ct => ct.id === cityId);
-        if (c && c.ownerId === 0) {
+        if (c && isMe(c.ownerId)) {
           // R-USTAWIENIA-GLOBALNE-LOKALNE (grupa "Skarbiec+Nauka", Maciej 2026-08-10):
           // wzorem onPodzialPracyChange niżej -- bez override suwak zmienia wartość
           // globalną imperium (broadcast na miasta bez override); z override — tylko
@@ -23097,7 +23107,7 @@ async function boot(): Promise<void> {
       },
       onPodzialHandluOverrideToggle: (cityId: string) => {
         const c = cities.find(ct => ct.id === cityId);
-        if (!c || c.ownerId !== 0) return;
+        if (!c || !isMe(c.ownerId)) return;
         const next = !c.podzialHandluOverride;
         if (next) {
           // Zamroź bieżącą (globalną) wartość jako lokalną punkt startowy override.
@@ -23148,6 +23158,7 @@ async function boot(): Promise<void> {
 
     configurePreBattle({
       getCivBonusy: civBonusyForOwnerId,
+      isMe: (ownerId: number) => isMe(ownerId),
       // P-KONIEC-TURY-ZDARZENIA-NACHODZA-NA-SIEBIE: wpięcie hooka dla automatycznych
       // (opts.auto) wywołań showPreBattle -- guard sprawdza WYŁĄCZNIE audiencję i panel
       // scalenia armii oraz karta ukończenia badań, nie generyczny stos overlayów (ten
@@ -26622,7 +26633,7 @@ async function boot(): Promise<void> {
 
     /** Domyślne miasto w HUD auto-ulepszeń (stolica gracza lub pierwsze miasto). */
     function ensureUlepszeniaHudCityId(): string | null {
-      const pc = cities.filter(c => c.ownerId === 0);
+      const pc = cities.filter(c => isMe(c.ownerId));
       if (pc.length === 0) return null;
       if (ulepszeniaHudCityId && pc.some(c => c.id === ulepszeniaHudCityId)) {
         return ulepszeniaHudCityId;
@@ -28244,7 +28255,7 @@ async function boot(): Promise<void> {
     function currentSaveLabel(kind: SaveLabelKind = 'manual'): string {
       const capId = capitalCityIdForOwner(0);
       let headline = capId ? (cities.find(c => c.id === capId)?.name ?? '') : '';
-      if (!headline) headline = cities.find(c => c.ownerId === 0)?.name ?? '';
+      if (!headline) headline = cities.find(c => isMe(c.ownerId))?.name ?? '';
       if (!headline) {
         headline = clusterPlayerStartCityName
           || playerStartCityName(data.civs, _menuCivId, data.cityNamesPools);
@@ -28962,7 +28973,20 @@ async function boot(): Promise<void> {
       aiCmdResume = null;
     }
 
-    async function runWorldEndTurn(): Promise<void> {
+    // R-HOTSEAT-ETAP6B-UI-Q1 (KRYTYCZNE ZNALEZISKO recon, potwierdzone Obroną rundy 1):
+    // TRZECI, niezależny write-site cache `_last*` (obok U1 `updateHud()` i U2
+    // `refreshLiveEmpireRatesUnsafe()`) -- podłączony na PRAWDZIWY parametr `humanOwnerId`
+    // (ten sam wzorzec haka co klaster D+F Etapu 6a, `endActiveHumanTurn(humanOwnerId)`,
+    // jedyny caller niżej). Migracja obejmuje wyłącznie literały `ownerId===0`/`.get(0)`
+    // BEZPOŚREDNIO w main.ts feedujące cache `_last*` tej funkcji (11 zmiennych: Ludność,
+    // Bogactwo×4 + Rate, przez `_lastPlayerCityEcon`/`refreshPlayerCityEcon` wyżej) --
+    // NIE obejmuje `popBeforeTick`/`_lastWealthLevel`/`_lastWealthMnoznik`/drugiego
+    // przeliczenia `_lastKultura` (main.ts, dalej w tej funkcji) ani zależności wewnątrz
+    // `game/turn-economy.ts` (`sumEconomyForPlayerCities`, literał poza main.ts/allowlistą
+    // tego tematu) -- te pozycje jawnie zgłoszone Evaluatorowi jako rozliczone Etapowi 6c
+    // (ekonomia, recon `R-HOTSEAT-ETAP6C-RECON-ECONOMY-Q1` §4 Klaster G), sekwencjonowanemu
+    // po tym temacie właśnie dlatego, że dotyka tej samej funkcji.
+    async function runWorldEndTurn(humanOwnerId: number): Promise<void> {
       const nextTurnNum = turn + 1;
         // B2-Q5: wyczyść flagi buntu z poprzedniej tury (chip/ikona do końca tury).
         for (const st of cityOrderState.values()) {
@@ -29468,8 +29492,8 @@ async function boot(): Promise<void> {
               finalizeHexClearing(hexKey);
             }
           }
-          refreshPlayerCityEcon(econ.perCity);
-          _lastLudnoscRate = cities.filter(c => c.ownerId === 0).reduce((s, c) => s + c.population, 0) - popBeforeTick;
+          refreshPlayerCityEcon(econ.perCity, humanOwnerId);
+          _lastLudnoscRate = cities.filter(c => c.ownerId === humanOwnerId).reduce((s, c) => s + c.population, 0) - popBeforeTick;
           {
             const pc = cities.filter(c => c.ownerId === 0);
             if (pc.length > 0) {
@@ -29583,7 +29607,7 @@ async function boot(): Promise<void> {
             player.nauka    += naukaGracza;
 
             // --- Subtract upkeep from treasury (economy-upkeep s.6.4) ---
-            const playerBalance = econ.upkeepByOwner.get(0);
+            const playerBalance = econ.upkeepByOwner.get(humanOwnerId);
             if (playerBalance && playerBalance.utrzymanieRazem > 0) {
               player.skarbiec -= playerBalance.utrzymanieRazem;
               if (playerBalance.deficyt) {
@@ -29595,11 +29619,11 @@ async function boot(): Promise<void> {
               }
             }
             // --- Subtract building resource upkeep from owner stock (1/type/building/turę) ---
-            const playerResUpkeep = econ.resourceUpkeepByOwner.get(0);
+            const playerResUpkeep = econ.resourceUpkeepByOwner.get(humanOwnerId);
             if (playerResUpkeep && Object.keys(playerResUpkeep).length > 0) {
-              const poolBefore = ownerResourceStockAll(cities, 0);
+              const poolBefore = ownerResourceStockAll(cities, humanOwnerId);
               const missingRes = missingStockFor(poolBefore, playerResUpkeep);
-              deductBuildingStockCostAcrossCities(cities, 0, playerResUpkeep);
+              deductBuildingStockCostAcrossCities(cities, humanOwnerId, playerResUpkeep);
               if (Object.keys(missingRes).length > 0) {
                 console.warn(
                   '[Ekonomia] Brak surowców na utrzymanie budynków: ' +
@@ -29616,13 +29640,13 @@ async function boot(): Promise<void> {
             _lastBogactwoHandel = playerEcon.pieniadzZTras;
             _lastBogactwoUtrzymanieBudynkow = playerBalance?.utrzymanieBudynki ?? 0;
             _lastBogactwoUtrzymanieJednostek = playerBalance?.utrzymanieJednostki ?? 0;
-            _lastBogactwoUtrzymanieSurowcow = { ...(econ.resourceUpkeepByOwner.get(0) ?? {}) };
+            _lastBogactwoUtrzymanieSurowcow = { ...(econ.resourceUpkeepByOwner.get(humanOwnerId) ?? {}) };
             _lastBogactwoRate = pieniadzGracza - (playerBalance?.utrzymanieRazem ?? 0);
             // P-SUROWCE-BRAK-SZCZEGOLOW-ZUZYCIA: publikuj rozbicie budynki/wojsko WPROST z
             // silnika (panel Surowców „Zobacz szczegóły") — ta sama tura, te same rekordy co
             // powyżej (resourceUpkeepByOwner), tylko przed scaleniem (turn-economy.ts).
-            buildingResourceUpkeepByOwner.set(0, { ...(econ.resourceUpkeepBuildingsByOwner.get(0) ?? {}) });
-            unitResourceUpkeepByOwner.set(0, { ...(econ.resourceUpkeepUnitsByOwner.get(0) ?? {}) });
+            buildingResourceUpkeepByOwner.set(humanOwnerId, { ...(econ.resourceUpkeepBuildingsByOwner.get(humanOwnerId) ?? {}) });
+            unitResourceUpkeepByOwner.set(humanOwnerId, { ...(econ.resourceUpkeepUnitsByOwner.get(humanOwnerId) ?? {}) });
 
             // Bank skarbca AI — per owner (nie econ.total*)
             const aiOwnerIds = new Set<number>();
@@ -33452,7 +33476,7 @@ async function boot(): Promise<void> {
         clearPlayerUnitSelectionStateOnly();
         setTurnTransition(6, 'Zakończenie ruchów gracza…', 'Gracz', nextTurnNum);
         await yieldTurnTransitionUi();
-        await runWorldEndTurn();
+        await runWorldEndTurn(humanOwnerId);
         } catch (errEndTurn) {
           console.error('[EndTurn] Blad przejscia tury:', errEndTurn);
         } finally {
@@ -34086,6 +34110,7 @@ async function boot(): Promise<void> {
       // Rebuild city panel config with new difficulty
       configureCityPanel({
         data,
+        isMe: (ownerId: number) => isMe(ownerId),
         difficulty: _menuDifficulty,
         getCities: () => cities,
         getTradeRoutes: () => tradeRoutes,
@@ -34229,6 +34254,7 @@ async function boot(): Promise<void> {
       });
       configurePreBattle({
         getCivBonusy: civBonusyForOwnerId,
+        isMe: (ownerId: number) => isMe(ownerId),
         // P-KONIEC-TURY-ZDARZENIA-NACHODZA-NA-SIEBIE: wpięcie hooka dla automatycznych
         // (opts.auto) wywołań showPreBattle -- guard sprawdza WYŁĄCZNIE audiencję i panel
         // scalenia armii oraz karta ukończenia badań, nie generyczny stos overlayów (ten

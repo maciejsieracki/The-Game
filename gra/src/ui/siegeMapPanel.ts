@@ -16,6 +16,12 @@ export interface SiegeMapPanelActions {
   onStorm: (ctx: MapSiegeContext) => void;
   onRetreat: (cityId: string) => void;
   onQueueMachine?: (cityId: string, kind: SiegeMachineKind) => void;
+  /**
+   * R-HOTSEAT-ETAP6B-UI-Q1: „czy ten ownerId to Ty (aktywny fotel człowieka)" —
+   * wstrzykiwane z main.ts (`isMe(ownerId)`, Etap 6a), wzorzec identyczny do
+   * `game/army-cycle.ts`. Brak hooka -> domyślnie `ownerId === 0` (stare zachowanie).
+   */
+  isMe?: (ownerId: number) => boolean;
 }
 
 let root: HTMLDivElement | null = null;
@@ -168,7 +174,8 @@ function tagHtml(iconId: string, text: string, extraClass = ''): string {
 }
 
 function ownerLabel(ownerId: number): string {
-  return ownerId === 0 ? 'Gracz' : ('AI ' + ownerId);
+  const isMe = actions?.isMe?.(ownerId) ?? (ownerId === 0);
+  return isMe ? 'Gracz' : ('AI ' + ownerId);
 }
 
 function handleSiegeMapEscape(): void {

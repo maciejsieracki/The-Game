@@ -133,6 +133,12 @@ export interface PreBattleConfig {
    * they always show immediately, as before.
    */
   isOtherEndTurnModalOpen?: () => boolean;
+  /**
+   * R-HOTSEAT-ETAP6B-UI-Q1: „czy ten ownerId to Ty (aktywny fotel człowieka)" —
+   * wstrzykiwane z main.ts (`isMe(ownerId)`, Etap 6a), wzorzec identyczny do
+   * `game/army-cycle.ts`. Brak hooka -> domyślnie `ownerId === 0` (stare zachowanie).
+   */
+  isMe?: (ownerId: number) => boolean;
 }
 
 export interface PreBattleCallbacks {
@@ -573,10 +579,11 @@ function unitSubtitle(unit: PreBattleUnit): string {
   return 'Atak ' + String(unit.atak);
 }
 
-/** Czy dana strona (rola atk/def) to gracz -- ownerId===0 gdy znane, inaczej wg canRetreat
- * (canRetreat!==false => atakujacy to gracz; canRetreat===false => obronca to gracz). */
+/** Czy dana strona (rola atk/def) to gracz -- isMe(ownerId) gdy znane (R-HOTSEAT-ETAP6B-UI-Q1,
+ * domyślnie ownerId===0 gdy hook nie wstrzyknięty), inaczej wg canRetreat (canRetreat!==false =>
+ * atakujacy to gracz; canRetreat===false => obronca to gracz). */
 function isPlayerSide(side: PreBattleSide, role: 'atk' | 'def', canRetreat: boolean): boolean {
-  if (side.ownerId !== undefined) return side.ownerId === 0;
+  if (side.ownerId !== undefined) return pbCfg.isMe?.(side.ownerId) ?? (side.ownerId === 0);
   return canRetreat ? role === 'atk' : role === 'def';
 }
 
