@@ -2,7 +2,7 @@ STATUS: PASS
 DOMAIN: GAME
 TEMAT: H-TARTAK-DREWNO-PRODUKCJA-Q1
 GOAL: Tartak produkuje 200 Drewna/turę w epoce 1, 300 w epoce 2 i 450 w epoce 3; +50% multiplikatywnie na epokę właściciela.
-ZMIANY/COMMIT: allowlista: gra/data/terrain-improvements.json, gra/src/game/terrain-improvements.ts, gra/src/game/turn-economy.ts, gra/src/main.ts, gra/tools/tartak-drewno-epoka-test.cjs, 02-production-audit.md; stan bazowy przed obroną eb7df3d3; commit naprawy obrony zostanie wpisany po zapisie zmian.
+ZMIANY/COMMIT: allowlista: gra/data/terrain-improvements.json, gra/src/game/terrain-improvements.ts, gra/src/game/turn-economy.ts, gra/src/main.ts, gra/tools/tartak-drewno-epoka-test.cjs, 02-production-audit.md; stan bazowy przed obroną eb7df3d3; commit naprawy obrony 95b094b55008c97902a7d5a63997c602738ad466 (korekta tego śladu jest w kolejnym commicie dokumentacyjnym).
 TESTY: `npm run typecheck` PASS; `node tools/tartak-drewno-epoka-test.cjs` PASS 14 assertions (0/1/2 Tartaki, epoki 1-3, niepoprawna epoka 0, wykonywalna mutacja formuły 1.5→1.0 = 4 czerwone przypadki, mutacja mapy, Kamieniołom bez regresji); `node tools/logic-test.cjs` PASS 213/213; `node tools/tech-tree-test.cjs` PASS 19/19; `node tools/research-test.cjs` PASS 33/33; `node tools/unit-replace-test.cjs` PASS 13/13; `node tools/combat-test.cjs` PASS 6/6; `git diff --check` PASS.
 BLOKADY: brak.
 RUNDY: 1/5
