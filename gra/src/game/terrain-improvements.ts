@@ -171,6 +171,23 @@ const TERRITORY_YIELD_IMPROVEMENTS: ReadonlySet<string> = new Set([
   'warzelnia_soli', 'stadnina', 'kopalnia_zlota',
 ]);
 
+/** Produkcja Tartaku i Kamieniołomu rośnie o 50% za każdą kolejną epokę. */
+const ERA_SCALED_RESOURCE_IMPROVEMENTS: ReadonlySet<string> = new Set(['tartak', 'kamieniolom']);
+
+function normalizeProductionEra(era: number | undefined): 1 | 2 | 3 {
+  return era === 2 || era === 3 ? era : 1;
+}
+
+export function resourceProductionAmountForEra(
+  key: string,
+  baseAmount: number,
+  era: number | undefined = 1,
+): number {
+  if (!ERA_SCALED_RESOURCE_IMPROVEMENTS.has(key)) return baseAmount;
+  const normalizedEra = normalizeProductionEra(era);
+  return Math.round(baseAmount * Math.pow(1.5, normalizedEra - 1));
+}
+
 /** Fallback bezpieczenstwa gdy JSON nie ma pola `surowiec_ilosc_tura` (wszystkie 7
  *  ulepszen produkcyjnych maja dzis jawna wartosc w JSON -- patrz komentarz wyzej;
  *  galaz NIEOSIAGALNA w praktyce dzis, ale skalowana x5 dla spojnosci --
@@ -195,12 +212,14 @@ function territoryYieldAmountForKey(key: string): number {
 export function territoryResourceYieldForImprovement(
   key: string,
   zloze?: string | null,
+  era: number | undefined = 1,
 ): TerritoryResourceYield | null {
   const norm = normalizeImprovementKey(key);
   if (!norm || !TERRITORY_YIELD_IMPROVEMENTS.has(norm)) return null;
+  const amount = (): number => resourceProductionAmountForEra(norm, territoryYieldAmountForKey(norm), era);
   switch (norm) {
-    case 'tartak':          return { resourceKey: 'drewno', amount: territoryYieldAmountForKey(norm) };
-    case 'kamieniolom':     return { resourceKey: 'kamien', amount: territoryYieldAmountForKey(norm) };
+    case 'tartak':          return { resourceKey: 'drewno', amount: amount() };
+    case 'kamieniolom':     return { resourceKey: 'kamien', amount: amount() };
     case 'glinianka':       return { resourceKey: 'glina',  amount: territoryYieldAmountForKey(norm) };
     case 'kopalnia_miedzi': return { resourceKey: 'ruda',   amount: territoryYieldAmountForKey(norm) };
     case 'kopalnia_zelaza': return { resourceKey: 'ruda_zelaza', amount: territoryYieldAmountForKey(norm) };

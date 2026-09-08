@@ -29,7 +29,7 @@ Produkcja Kamienia z każdego zbudowanego Kamieniołomu wynosi 200 Kamienia/tur�
 - `gra/data/terrain-improvements.json` — wartość i opis produkcji Kamieniołomu.
 - `gra/src/game/terrain-improvements.ts` — resolver produkcji, wyłącznie jeśli wymagane.
 - `gra/src/game/turn-economy.ts` — naliczanie, wyłącznie jeśli wymagane.
-- `gra/tools/kamieniolom-kamien-produkcja-test.cjs` — nowy test regresyjny tematu.
+- `gra/tools/kamieniolom-kamien-epoka-test.cjs` — nowy test regresyjny tematu.
 - `dyspozycje/autobot/runs/H-KAMIENIOLOM-KAMIEN-PRODUKCJA-Q1/02-production-audit.md` — audyt wartości produkcji surowców po zmianie, jeśli Operator wydzieli go jako osobny artefakt.
 - `dyspozycje/autobot/runs/H-KAMIENIOLOM-KAMIEN-PRODUKCJA-Q1/00-dispatch.md`.
 - `dyspozycje/autobot/runs/H-KAMIENIOLOM-KAMIEN-PRODUKCJA-Q1/01-operator.md`.

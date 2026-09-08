@@ -785,6 +785,7 @@ export function computeTerritoryResourceYieldByCity(
   cities: ReadonlyArray<Pick<City, 'id' | 'q' | 'r' | 'ownerId'>>,
   map: GameMap,
   territoryNodes: readonly TerritoryNode[],
+  resolveOwnerEra: OwnerEraResolver = () => 1,
 ): TerritoryResourceYieldByCity {
   const out = new Map<string, Partial<Record<TerritoryResourceKey, number>>>();
   if (!cities.length) return out;
@@ -813,7 +814,9 @@ export function computeTerritoryResourceYieldByCity(
     if (!cityId) continue;
 
     for (const key of impKeys) {
-      const yieldRow = territoryResourceYieldForImprovement(key, (hex as { zloze?: string }).zloze);
+      const yieldRow = territoryResourceYieldForImprovement(
+        key, (hex as { zloze?: string }).zloze, resolveOwnerEra(owner),
+      );
       if (!yieldRow) continue;
       const rec = out.get(cityId) ?? {};
       rec[yieldRow.resourceKey] = (rec[yieldRow.resourceKey] ?? 0) + yieldRow.amount;
@@ -1462,7 +1465,12 @@ function simulateResourcePipelineForPreview(
   // owner pool before Garncarnia/Cegielnia run.  This is deliberately computed
   // from snapshots so preview remains read-only.
   const lostToSiblingByCity = computeLostToNearerSiblingByCity(cities, map);
-  const territoryResourceByCity = computeTerritoryResourceYieldByCity(cities, map, territoryNodes);
+  const territoryResourceByCity = computeTerritoryResourceYieldByCity(
+    cities,
+    map,
+    territoryNodes,
+    resolveOwnerEra ?? ((ownerId: number) => ownerId === 0 ? playerEra : 1),
+  );
   const workedMagazynByCity = computeWorkedMagazynYieldsByCity(
     cities, map, territoryNodes, lostToSiblingByCity,
   );
@@ -2322,7 +2330,12 @@ export function advanceCityEconomy(
 
   // SUROW-TERYT-01 (Maciej 2026-07-23): surowce logistyczne per ulepszenie w
   // terytorium, niezaleznie od workedTiles -- liczone RAZ dla calej tury (nie per-city).
-  const territoryResourceByCity = computeTerritoryResourceYieldByCity(cities, map, territoryNodes);
+  const territoryResourceByCity = computeTerritoryResourceYieldByCity(
+    cities,
+    map,
+    territoryNodes,
+    resolveOwnerEra ?? ((ownerId: number) => ownerId === 0 ? playerEra : 1),
+  );
 
   // ZADANIE 1 (Maciej 2026-07-23): upkeep Pracy civ-wide za ulepszenia surowcowe
   // -- liczone RAZ dla calej tury (per owner, nie per-city, patrz komentarz przy
