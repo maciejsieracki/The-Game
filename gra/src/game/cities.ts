@@ -542,6 +542,26 @@ export const HANDEL_PCT_STEP = 10;
 /** Maksymalny procent budżetu, który można przeznaczyć na Naukę (hard cap). / EN: maximum percentage of budget for Science. */
 export const MAX_PROCENT_NAUKA = 60;
 
+/**
+ * P-AI-BADANIA-ZACOFANIE-Q1: budzet Nauki AI (cywilizacja glowna) jest teraz STALY,
+ * rownie MAX_PROCENT_NAUKA — NIEZALEZNY od wojny/pokoju/fazy gry/kryzysu finansowego.
+ * Zgloszenie wlasciciela: „Ja juz jestem w epoce brazu i za chwile wejde do zelaza, a oni
+ * ledwo maja kilka technologii... Powinno byc ustalenie maksymalnie 60% od razu... Nie
+ * powinno byc sterowania tym aspektem przez AI". Dawna dynamika w decideAIEconomySliders
+ * (game/ai.ts) trzymala procentNauka na 20% przez cala faze early game (isMajorAi &&
+ * isEarlyGame, ok. 25-40 tur) i cofala o krok przy kazdej wojnie/kryzysie finansowym —
+ * przy typowej agresywnosci AI cywilizacje bywaly w wojnie znaczna czesc partii, wiec 60%
+ * bylo osiagane bardzo pozno albo nigdy (zmierzone: diag-nauka-fixed-60.cjs PRZED fixem,
+ * procentNauka spadal do 0% w oknach wojny). Dokladnie ten sam wzorzec co
+ * AI_FIXED_PROCENT_BUDYNKI (R-AI-PRACA-PODZIAL-STALY-50-50-Q1) wyzej w tym pliku — tam
+ * rowniez usunieto dynamike reagujaca na wojne, ktora potrafila zepchnac inny budzet do
+ * skrajnej wartosci. Gracz (ownerId===0) BEZ ZMIAN — jego suwak Handlu pozostaje w pelni
+ * reczny (podlega wylacznie MAX_PROCENT_NAUKA jak dotychczas, patrz clamp nizej w tym
+ * pliku), bez early-game-freeze i bez war/money-crisis auto-decrementu, ktorych AI teraz
+ * rowniez nie ma.
+ */
+export const AI_FIXED_PROCENT_NAUKA = MAX_PROCENT_NAUKA;
+
 export function snapHandelPct(n: number): number {
   return Math.max(0, Math.min(100, Math.round(n / HANDEL_PCT_STEP) * HANDEL_PCT_STEP));
 }

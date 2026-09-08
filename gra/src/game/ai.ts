@@ -23,7 +23,7 @@ import {
   type DifficultyLevel,
 } from './city-state-difficulty';
 import type { City }       from './cities';
-import { canFoundCity, MAX_PROCENT_NAUKA, MAX_PROCENT_PULI_IMPERIUM, AI_FIXED_PROCENT_BUDYNKI }    from './cities';
+import { canFoundCity, MAX_PROCENT_NAUKA, MAX_PROCENT_PULI_IMPERIUM, AI_FIXED_PROCENT_BUDYNKI, AI_FIXED_PROCENT_NAUKA }    from './cities';
 import { evaluateFoundCityAffordance } from './city-founding';
 import {
   aiBypassClusterConsolidation,
@@ -5575,6 +5575,21 @@ export function decideAIEconomySliders(
     changed = true;
   }
 
+  // P-AI-BADANIA-ZACOFANIE-Q1: procentNauka jest teraz STALY (AI_FIXED_PROCENT_NAUKA=
+  // MAX_PROCENT_NAUKA=60) dla major AI, NIEZALEZNY od wojny/pokoju/fazy gry/kryzysu
+  // finansowego (dawniej: 20% zamrozone przez cala faze early game, -krok w kazdej wojnie,
+  // -krok w kryzysie finansowym, +krok tylko w pokoju spoza early game bez kryzysu — patrz
+  // komentarz przy AI_FIXED_PROCENT_NAUKA w cities.ts). Dokladnie ten sam wzorzec co blok
+  // AI_FIXED_PROCENT_BUDYNKI wyzej — swiadomie POZA blokiem `minOdstepTur` nizej (ten
+  // cooldown chroni przed oscylacja suwakow REAGUJACYCH na zmienny stan gry; procentNauka
+  // juz nie reaguje na nic, wiec nie ma czego wygaszac). Dotyczy WYLACZNIE major AI
+  // (`inp.isMajorAi`) — miasta-panstwo (defensiveCopy) i gracz (ownerId===0, poza ta
+  // funkcja w ogole) nie sa ruszane tym blokiem.
+  if (inp.isMajorAi && procentNauka !== AI_FIXED_PROCENT_NAUKA) {
+    procentNauka = AI_FIXED_PROCENT_NAUKA;
+    changed = true;
+  }
+
   // Major early: zawsze max wzrost (procentRozwoj=100) jeśli Spichlerz państwa nie jest
   // ujemny. Nie czekamy na minOdstepTur — między korektami nie można tracić tur na niskie
   // racje. Deficyt żywności (< deficytZapasowProg) nadal obniża suwak w bloku poniżej.
@@ -5601,32 +5616,35 @@ export function decideAIEconomySliders(
       if (next !== procentRozwoj) { procentRozwoj = next; changed = true; }
     }
 
-    // Utrzymanie Pieniądza: gdy skarbiec nie pokrywa kosztów — więcej Handlu→Pieniądz.
-    if (
-      inp.isMajorAi
-      && inp.treasuryGold !== undefined
-      && inp.upkeepGoldCost !== undefined
-      && inp.treasuryGold < inp.upkeepGoldCost
-    ) {
-      const nextNauka = Math.max(0, Math.min(MAX_PROCENT_NAUKA, procentNauka - params.krokProcentPracaNauka));
-      if (nextNauka !== procentNauka) { procentNauka = nextNauka; changed = true; }
-    }
-
-    if (inp.atWar) {
-      const nextNauka = Math.max(0, Math.min(MAX_PROCENT_NAUKA, procentNauka - params.krokProcentPracaNauka));
-      if (nextNauka !== procentNauka) { procentNauka = nextNauka; changed = true; }
-    } else if (!inp.isMajorAi || !inp.isEarlyGame) {
-      // Pokój, nie major-early (lub nie major): korekta Nauki niżej. procentBudynki NIE
-      // jest tu już w ogóle dotykany (R-AI-PRACA-PODZIAL-STALY-50-50-Q1 — stały, patrz blok
-      // AI_FIXED_PROCENT_BUDYNKI wyżej w tej funkcji) — ten warunek dotyczy WYŁĄCZNIE Nauki.
-      // Pieniądze: najpierw upkeep budynki+armia — w kryzysie nie zwiększamy Nauki kosztem Pieniądza.
-      const moneyCrisis = inp.isMajorAi
-        && inp.treasuryGold !== undefined
+    // P-AI-BADANIA-ZACOFANIE-Q1: dynamika ponizej (utrzymanie Pieniadza w kryzysie
+    // finansowym, wojna/pokoj) dotyczy odtad WYLACZNIE non-major AI (miasta-panstwo /
+    // defensiveCopy) — major AI ma procentNauka juz narzucone bezwarunkowo na
+    // AI_FIXED_PROCENT_NAUKA wyzej w tej funkcji, wiec ten blok go NIE dotyczy (bez tego
+    // gate'u ponizsze decrementy nadpisywalyby stala tuz po jej ustawieniu).
+    if (!inp.isMajorAi) {
+      // Utrzymanie Pieniądza: gdy skarbiec nie pokrywa kosztów — więcej Handlu→Pieniądz.
+      if (
+        inp.treasuryGold !== undefined
         && inp.upkeepGoldCost !== undefined
-        && inp.treasuryGold < inp.upkeepGoldCost;
-      if (!moneyCrisis) {
-        const nextNauka = Math.min(MAX_PROCENT_NAUKA, procentNauka + params.krokProcentPracaNauka);
+        && inp.treasuryGold < inp.upkeepGoldCost
+      ) {
+        const nextNauka = Math.max(0, Math.min(MAX_PROCENT_NAUKA, procentNauka - params.krokProcentPracaNauka));
         if (nextNauka !== procentNauka) { procentNauka = nextNauka; changed = true; }
+      }
+
+      if (inp.atWar) {
+        const nextNauka = Math.max(0, Math.min(MAX_PROCENT_NAUKA, procentNauka - params.krokProcentPracaNauka));
+        if (nextNauka !== procentNauka) { procentNauka = nextNauka; changed = true; }
+      } else {
+        // Pokój: korekta Nauki wyżej. Pieniądze: najpierw upkeep budynki+armia — w
+        // kryzysie nie zwiększamy Nauki kosztem Pieniądza.
+        const moneyCrisis = inp.treasuryGold !== undefined
+          && inp.upkeepGoldCost !== undefined
+          && inp.treasuryGold < inp.upkeepGoldCost;
+        if (!moneyCrisis) {
+          const nextNauka = Math.min(MAX_PROCENT_NAUKA, procentNauka + params.krokProcentPracaNauka);
+          if (nextNauka !== procentNauka) { procentNauka = nextNauka; changed = true; }
+        }
       }
     }
   }

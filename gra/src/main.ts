@@ -190,6 +190,7 @@ import {
   DEFAULT_ULEPSZENIA_WOLNO_WYCINAC_LAS,
   MAX_PODZIAL_PRACY_BUDYNKI_PERCENT,
   AI_FIXED_PROCENT_BUDYNKI,
+  AI_FIXED_PROCENT_NAUKA,
   clampUlepszeniaPracaPercent,
   clampPodzialPracyBudynkiPercent,
   podzialPracyZProcentuPuli,
@@ -5018,7 +5019,21 @@ async function boot(): Promise<void> {
       ownerDefaultPodzialHandlu.set(0, freshOwnerDefaultPodzialHandlu());
       for (const ai of aiStartHexes) {
         if (!ownerDefaultPodzialHandlu.has(ai.ownerId)) {
-          ownerDefaultPodzialHandlu.set(ai.ownerId, freshOwnerDefaultPodzialHandlu());
+          // P-AI-BADANIA-ZACOFANIE-Q1 (Runda 2, luka tury 1 -- Obrona Rundy 1, Zarzut 1,
+          // PRZYJĘTE): dokładnie ten sam wzorzec co ownerDefaultPodzialPracy/
+          // AI_FIXED_PROCENT_BUDYNKI wyżej w tym pliku. freshOwnerDefaultPodzialHandlu()
+          // zwraca DEFAULT_PODZIAL_HANDLU.procentNauka=20 (default GRACZA) -- bez tej
+          // gałęzi każdy nowy owner AI startował turę 1 z procentNauka=20, bo
+          // advanceCityEconomy czyta ten seed PRZED pierwszym wywołaniem
+          // decideAIEconomySliders w tej samej turze. Seeduj AI (ownerId!==0, gracz zawsze
+          // ma ownerId 0) od razu na AI_FIXED_PROCENT_NAUKA, żeby okno tury 1 nie istniało.
+          // Żywo zweryfikowane w diag-nauka-fixed-60.cjs (kolejność zgodna z main.ts).
+          ownerDefaultPodzialHandlu.set(
+            ai.ownerId,
+            ai.ownerId === 0
+              ? freshOwnerDefaultPodzialHandlu()
+              : { ...DEFAULT_PODZIAL_HANDLU, procentNauka: AI_FIXED_PROCENT_NAUKA },
+          );
         }
       }
     }
@@ -5124,6 +5139,23 @@ async function boot(): Promise<void> {
         ownerDefaultPodzialPracy.set(
           c.ownerId,
           c.ownerId === 0 ? freshOwnerDefaultPodzialPracy() : { procentBudynki: AI_FIXED_PROCENT_BUDYNKI },
+        );
+      }
+      if (!ownerDefaultPodzialHandlu.has(c.ownerId)) {
+        // P-AI-BADANIA-ZACOFANIE-Q1 (Runda 2, dispatch pkt. "sprawdź seedCityOwnerDefaults"
+        // -- POTWIERDZONE jako osobna, realna ścieżka tej samej luki): ta funkcja jest
+        // wołana z 9 miejsc przy zmianie city.ownerId (podbój/kapitulacja/rebelia/
+        // przejęcie dyplomatyczne), niezależnie od initOwnerDefaultPodzialHandlu i od
+        // dwóch pozostałych seedów (spawn miasta-państwa / test wymuszonej wojny) --
+        // owner mógł tu pojawić się po raz pierwszy bez przejścia przez żaden z nich.
+        // Bez tej gałęzi resolveCityPodzialHandlu (main.ts niżej) dostawał `undefined`
+        // z mapy i padał na DEFAULT_PODZIAL_HANDLU.procentNauka=20 (default GRACZA) dla
+        // tego ownera AI, dokładnie ta sama klasa błędu co ownerDefaultPodzialPracy wyżej.
+        ownerDefaultPodzialHandlu.set(
+          c.ownerId,
+          c.ownerId === 0
+            ? freshOwnerDefaultPodzialHandlu()
+            : { ...DEFAULT_PODZIAL_HANDLU, procentNauka: AI_FIXED_PROCENT_NAUKA },
         );
       }
       if (!ownerDefaultPoziomRacji.has(c.ownerId)) {
@@ -8799,7 +8831,16 @@ async function boot(): Promise<void> {
             goldDeficitStates.set(sc.ownerId, freshGoldDeficitState());
           }
           if (!ownerDefaultPodzialHandlu.has(sc.ownerId)) {
-            ownerDefaultPodzialHandlu.set(sc.ownerId, freshOwnerDefaultPodzialHandlu());
+            // P-AI-BADANIA-ZACOFANIE-Q1 (Runda 2): wzorzec identyczny jak
+            // initOwnerDefaultPodzialHandlu wyżej -- nowo powstały owner AI w trakcie gry
+            // (nowe miasto-państwo/cywilizacja spawnowana tutaj) nie może dziedziczyć
+            // domyślnego procentNauka=20 gracza.
+            ownerDefaultPodzialHandlu.set(
+              sc.ownerId,
+              sc.ownerId === 0
+                ? freshOwnerDefaultPodzialHandlu()
+                : { ...DEFAULT_PODZIAL_HANDLU, procentNauka: AI_FIXED_PROCENT_NAUKA },
+            );
           }
           seedCityOwnerDefaults(c);
           if (clusterCapitalOwnerIds.has(sc.ownerId)) {
@@ -22023,7 +22064,15 @@ async function boot(): Promise<void> {
         if (!empireFoodStates.has(targetId)) empireFoodStates.set(targetId, freshEmpireFoodState());
         if (!goldDeficitStates.has(targetId)) goldDeficitStates.set(targetId, freshGoldDeficitState());
         if (!ownerDefaultPodzialHandlu.has(targetId)) {
-          ownerDefaultPodzialHandlu.set(targetId, freshOwnerDefaultPodzialHandlu());
+          // P-AI-BADANIA-ZACOFANIE-Q1 (Runda 2): wzorzec identyczny jak
+          // initOwnerDefaultPodzialHandlu wyżej -- targetId tutaj jest zawsze AI (test
+          // wymuszonej wojny), ale gałąź zachowana dla parytetu z pozostałymi miejscami.
+          ownerDefaultPodzialHandlu.set(
+            targetId,
+            targetId === 0
+              ? freshOwnerDefaultPodzialHandlu()
+              : { ...DEFAULT_PODZIAL_HANDLU, procentNauka: AI_FIXED_PROCENT_NAUKA },
+          );
         }
         reconcileAllOwnerErasFromResearch();
 

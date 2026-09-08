@@ -45,6 +45,7 @@ const BUNDLE_FILE = path.resolve(__dirname, '.ai-slider-bundle.cjs');
 
 fs.writeFileSync(ENTRY_FILE, `
 export { decideAIEconomySliders, loadAiSliderParams } from '../src/game/ai';
+export { MAX_PROCENT_NAUKA, AI_FIXED_PROCENT_NAUKA } from '../src/game/cities';
 `, 'utf8');
 
 try {
@@ -65,7 +66,7 @@ try {
 }
 
 const M = require(BUNDLE_FILE);
-const { decideAIEconomySliders, loadAiSliderParams } = M;
+const { decideAIEconomySliders, loadAiSliderParams, MAX_PROCENT_NAUKA, AI_FIXED_PROCENT_NAUKA } = M;
 
 let passed = 0, failed = 0;
 function assert(cond, msg) { if (cond) { passed++; } else { failed++; console.error('FAIL:', msg); } }
@@ -271,6 +272,86 @@ console.log('\n-- E. loadAiSliderParams: czytanie z econ-params.json + fallback 
     'normal',
   );
   eq(p.minOdstepTur, 3, 'niepoprawny wiersz -> fallback minOdstepTur=3');
+}
+
+console.log('\n-- F. P-AI-BADANIA-ZACOFANIE-Q1: procentNauka major AI STALY (AI_FIXED_PROCENT_NAUKA=MAX_PROCENT_NAUKA) --');
+
+// 20. AI_FIXED_PROCENT_NAUKA === MAX_PROCENT_NAUKA (60) -- dokladnie liczba wlasciciela.
+{
+  eq(AI_FIXED_PROCENT_NAUKA, 60, 'AI_FIXED_PROCENT_NAUKA === 60');
+  eq(AI_FIXED_PROCENT_NAUKA, MAX_PROCENT_NAUKA, 'AI_FIXED_PROCENT_NAUKA === MAX_PROCENT_NAUKA');
+}
+
+// 21. Major AI, early game, tura 1: procentNauka od razu 60 (bez zamrozenia na 20%).
+{
+  const r = decideAIEconomySliders(
+    inp({ isMajorAi: true, isEarlyGame: true, turn: 1, lastSliderChangeTurn: null, zapasyPanstwa: 50 }),
+    PARAMS,
+  );
+  eq(r.procentNauka, 60, 'major AI early game tura 1 -> procentNauka=60 od razu');
+}
+
+// 22. Major AI w wojnie -> procentNauka NIE spada ponizej 60 (dawniej -krok).
+{
+  const r = decideAIEconomySliders(
+    inp({ isMajorAi: true, isEarlyGame: false, atWar: true, zapasyPanstwa: 25 }),
+    PARAMS,
+  );
+  eq(r.procentNauka, 60, 'major AI w wojnie -> procentNauka=60 (bez spadku)');
+}
+
+// 23. Major AI w kryzysie finansowym (treasuryGold < upkeepGoldCost) -> procentNauka nadal 60.
+{
+  const r = decideAIEconomySliders(
+    inp({
+      isMajorAi: true, isEarlyGame: false, atWar: false, zapasyPanstwa: 25,
+      treasuryGold: 10, upkeepGoldCost: 100,
+    }),
+    PARAMS,
+  );
+  eq(r.procentNauka, 60, 'major AI w kryzysie finansowym -> procentNauka=60 (bez spadku)');
+}
+
+// 24. Major AI, pokoj, bez kryzysu, poza early game -> nadal dokladnie 60 (nie 20+krok).
+{
+  const r = decideAIEconomySliders(
+    inp({ isMajorAi: true, isEarlyGame: false, atWar: false, zapasyPanstwa: 25 }),
+    PARAMS,
+  );
+  eq(r.procentNauka, 60, 'major AI pokoj poza early game -> procentNauka=60 (nie +krok od 20)');
+}
+
+// 25. Wieloturęowa symulacja (owner-loop, jak main.ts): niezaleznie od wojny/pokoju/
+// kryzysu/early-game, procentNauka major AI jest 60 NA KAZDEJ turze od pierwszej.
+{
+  let current = { procentRozwoj: 100, procentBudynki: 70, procentNauka: 20 };
+  let lastChange = null;
+  let allSixty = true;
+  for (let turn = 1; turn <= 60; turn++) {
+    const atWar = turn >= 20 && turn < 35;
+    const isEarlyGame = turn <= 40;
+    const treasuryGold = turn % 7 === 0 ? 5 : 500;   // co 7 tur -- kryzys finansowy
+    const upkeepGoldCost = 50;
+    const r = decideAIEconomySliders(
+      { zapasyPanstwa: 60, atWar, turn, lastSliderChangeTurn: lastChange,
+        current, isMajorAi: true, isEarlyGame, treasuryGold, upkeepGoldCost },
+      PARAMS,
+    );
+    if (r.changed) { current = { procentRozwoj: r.procentRozwoj, procentBudynki: r.procentBudynki, procentNauka: r.procentNauka }; lastChange = turn; }
+    if (current.procentNauka !== 60) { allSixty = false; }
+  }
+  eq(allSixty, true, 'petla 60 tur (wojna+kryzys+early game przeplatane) -> procentNauka=60 KAZDA tura');
+}
+
+// 26. Non-major AI (miasto-panstwo, defensiveCopy) NIE jest ruszane tym fixem -- stara
+// dynamika (wojna -krok) zostaje, dokladnie jak przed tym tematem (allowlista: fix
+// dotyczy WYLACZNIE major AI, patrz kryterium konca dispatchu).
+{
+  const r = decideAIEconomySliders(
+    inp({ isMajorAi: false, atWar: true, zapasyPanstwa: 25 }),
+    PARAMS,
+  );
+  eq(r.procentNauka, 10, 'non-major AI w wojnie -> stara dynamika (procentNauka -10), fix jej nie dotyczy');
 }
 
 console.log(`\nai-slider-test: ${passed} passed, ${failed} failed`);
