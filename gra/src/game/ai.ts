@@ -2951,6 +2951,11 @@ export function decideAITurn(
 
   const myUnits      = units.filter(u => u.ownerId === playerId);
   const myCities     = cities.filter(c => c.ownerId === playerId);
+  // P-AI-BARBARZYNCY-PRIORYTET-ELIMINACJA-Q1: migawka WSZYSTKICH wrogich jednostek, BEZ
+  // filtra `opts.visibleHexes` — wyłącznie do wykrywania zagrożeń na własnym terytorium
+  // (homeThreats niżej). AI zna własną ziemię niezależnie od bieżącej linii wzroku; nie
+  // używane przy wyborze celów ofensywnych (te nadal przez `engageableEnemyUnits` niżej).
+  const enemyAllUnitsRegardlessOfVisibility = units.filter(u => u.ownerId !== playerId);
   const enemyUnits   = units.filter(
     u => u.ownerId !== playerId
       && (opts.visibleHexes === undefined || opts.visibleHexes.has(keyOf(u.q, u.r))),
@@ -3080,7 +3085,29 @@ export function decideAITurn(
   // wymagające obrony domu — warunek DOKŁADNY liczony OSOBNO dla każdego miasta (patrz
   // isHomeDefenseThreatForCity). Przydział obrońców (najbliższy-dostępny) liczony RAZ, przed
   // pętlą ruchu — statyczna migawka stanu na początek tury tego gracza AI.
-  const homeThreats = engageableEnemyUnits.filter(
+  //
+  // P-AI-BARBARZYNCY-PRIORYTET-ELIMINACJA-Q1 (runda 1): `engageableEnemyUnits` jest
+  // WCZEŚNIEJ przefiltrowane przez `opts.visibleHexes` (realna mgła wojny AI,
+  // P-AI-BRAK-POJECIA-MGLY-Q1) — czyli citySightRadius(pop, kultura) = terytorium +
+  // pierścień kultury (max 3). Home-defense obiecuje wykrywanie do terytorium+4
+  // (2×AI_HOME_DEFENSE_VICINITY_HEX). Ponieważ 3 < 4 ZAWSZE (nawet przy maks. kulturze),
+  // istnieje pierścień 1-4 heksów, w którym `isHomeDefenseThreatForCity` zwraca true, ale
+  // wróg nigdy nie trafia do `engageableEnemyUnits` — formuła jest martwym kodem dla
+  // każdego zagrożenia poza faktycznym zasięgiem wzroku miasta/jednostek (typowo: obóz/
+  // jednostka barbarzyńska w lesie/górach między miastami, gdy cały garnizon AI jest
+  // zaangażowany w odległą wojnę — dokładnie zrzut właściciela). Dowód: symulacja PRZED
+  // naprawą w dyspozycje/autobot/runs/P-AI-BARBARZYNCY-PRIORYTET-ELIMINACJA-Q1/.
+  // Naprawa: zagrożenia na WŁASNYM terytorium (i jego bezpośredniej okolicy) AI zna
+  // zawsze — to nie jest "mgła nieznanego terenu" tylko własna ziemia — więc `homeThreats`
+  // liczone jest z `enemyUnits` (już przefiltrowanych przez `aiCanEngageOwner`, ale BEZ
+  // filtra widoczności) zamiast z `engageableEnemyUnits`. Barierę parytetu gracz↔AI to nie
+  // dotyczy (reguła dotyczy wyłącznie AI, dispatch pkt 4). Żaden inny mechanizm (marsz na
+  // wroga, cele ofensywne, dyplomacja) nie zmienia źródła — nadal używa
+  // `engageableEnemyUnits`/`engageableEnemyCities` z pełnym filtrem mgły.
+  const knownEnemyUnitsForHomeDefense = enemyAllUnitsRegardlessOfVisibility.filter(
+    u => aiCanEngageOwner(opts, u.ownerId),
+  );
+  const homeThreats = knownEnemyUnitsForHomeDefense.filter(
     eu => myCities.some(city => isHomeDefenseThreatForCity(eu.q, eu.r, city)),
   );
   const homeDefenderAssignments = assignHomeDefenders(homeThreats, myUnits, myCities);

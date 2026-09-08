@@ -52,6 +52,8 @@ const ENTRY_TS = `
 export { decideAITurn, isHomeDefenseThreatForCity, assignHomeDefenders, AI_HOME_DEFENSE_VICINITY_HEX } from ${JSON.stringify(AI_SRC + '/game/ai')};
 export { hexDistance } from ${JSON.stringify(AI_SRC + '/units/setup')};
 export { cityTerritoryRadius } from ${JSON.stringify(AI_SRC + '/map/territory')};
+export { computePlayerVisibility, buildUnitSightResolver, DEFAULT_SIGHT } from ${JSON.stringify(AI_SRC + '/game/visibility')};
+export { BARBARIAN_OWNER_ID } from ${JSON.stringify(AI_SRC + '/game/barbarians')};
 `;
 
 fs.writeFileSync(ENTRY_FILE, ENTRY_TS, 'utf8');
@@ -76,6 +78,7 @@ const AI = require(BUNDLE_FILE);
 const {
   decideAITurn, isHomeDefenseThreatForCity, assignHomeDefenders,
   AI_HOME_DEFENSE_VICINITY_HEX, hexDistance, cityTerritoryRadius,
+  computePlayerVisibility, buildUnitSightResolver, DEFAULT_SIGHT, BARBARIAN_OWNER_ID,
 } = AI;
 
 // --- tiny assertion framework ----------------------------------------------
@@ -309,6 +312,51 @@ console.log('\n--- T6: formuła isHomeDefenseThreatForCity -- dokładna granica 
       `T6 pop=${pop}: dystans=${detectRadius + 1} (1 hex za granicą) -> zagrożenie NIEWYKRYTE`,
     );
   }
+}
+
+// ---------------------------------------------------------------------------
+// T7 (P-AI-BARBARZYNCY-PRIORYTET-ELIMINACJA-Q1, runda 1): ODTWORZENIE ZGŁOSZENIA
+// właściciela (Rzym, garnizon skoncentrowany na odległej wojnie, barbarzyńca na własnej
+// ziemi ignorowany). Root cause (dowiedziony PRZED/PO w
+// dyspozycje/autobot/runs/P-AI-BARBARZYNCY-PRIORYTET-ELIMINACJA-Q1/): `homeThreats`
+// liczone było z `engageableEnemyUnits`, który jest WCZEŚNIEJ przefiltrowany przez
+// `opts.visibleHexes` (realna mgła wojny AI). citySightRadius (terytorium + pierścień
+// kultury, max +3) jest ZAWSZE mniejszy niż zasięg obrony domu (terytorium +
+// 2×AI_HOME_DEFENSE_VICINITY_HEX = +4) — więc barbarzyńca 10 hex od miasta pop=8
+// (terytorium=8, sight=8, zasięg obrony=12) spełnia `isHomeDefenseThreatForCity` (true),
+// ale nigdy nie trafiał do `engageableEnemyUnits`, więc formuła nigdy nie była wołana na
+// nim. Naprawa: `homeThreats` liczone teraz z `enemyAllUnitsRegardlessOfVisibility`
+// (bez filtra widoczności, wciąż z `aiCanEngageOwner`) — AI zna zagrożenia na WŁASNYM
+// terytorium niezależnie od bieżącej linii wzroku swoich jednostek/miast.
+// ---------------------------------------------------------------------------
+console.log('\n--- T7 (P-AI-BARBARZYNCY-PRIORYTET-ELIMINACJA-Q1): barb w zasięgu obrony domu, ALE poza faktyczną widocznością AI (citySight) -- garnizon musi mimo to ruszyć na obronę, nie na odległą wojnę ---');
+{
+  const map = makeMap(80, 80);
+  const myCity = makeCity('c1', 1, 40, 40, 8); // terytorium=8, sight=8 (kultura=0), zasięg obrony=8+4=12
+  const distantEnemyCity = makeCity('ec1', 2, 5, 40, 10);
+  const armyUnit = makeUnit('army1', 1, 40, 40, 'miecznik');
+  const barb = makeUnit('barb1', BARBARIAN_OWNER_ID, 40, 50, 'miecznik'); // dystans 10: <=12 (obrona), >8 (sight)
+
+  eq(hexDistance(barb.q, barb.r, myCity.q, myCity.r), 10, 'T7 setup: barb 10 hex od miasta');
+  assert(isHomeDefenseThreatForCity(barb.q, barb.r, myCity) === true,
+    'T7 setup: formuła isHomeDefenseThreatForCity uznaje barba za zagrożenie (10 <= 12)');
+
+  const sightResolver = buildUnitSightResolver([{ Jednostka: 'Wojownik', Health: 30, Ruch: 2, 'Widok pola': 2 }], DEFAULT_SIGHT);
+  const aiVisibleHexes = computePlayerVisibility({
+    map, playerUnits: [armyUnit], playerCities: [myCity], unitSight: sightResolver,
+  });
+  assert(!aiVisibleHexes.has(`${barb.q},${barb.r}`),
+    'T7 setup: barb POZA faktyczną widocznością AI (citySight=8 < dystans 10) -- dokładnie luka odtworzona z żywej symulacji');
+
+  const opts = {
+    visibleHexes: aiVisibleHexes,
+    canEngageOwner: () => true,
+    rememberedTargets: [{ q: distantEnemyCity.q, r: distantEnemyCity.r, targetOwnerId: 2, kind: 'city', targetId: 'ec1' }],
+  };
+  const result = decideAITurn(1, [armyUnit, barb], [myCity, distantEnemyCity], map, data, opts);
+  const cmd = result.find(c => c.unitId === 'army1');
+  assert(cmd !== undefined && cmd.type === 'move' && cmd.toR > 40,
+    `T7: army1 rusza W STRONĘ niewidocznego (ale własnoterytorialnego) barbarzyńcy (toR>40), NIE w stronę odległej wojny (got ${JSON.stringify(cmd)})`);
 }
 
 // ---------------------------------------------------------------------------
