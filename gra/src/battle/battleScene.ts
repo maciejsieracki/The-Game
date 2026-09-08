@@ -5422,7 +5422,8 @@ export class BattleScene {
     // w tym trybie jest celowo pomijana, nie tylko lagodzona.
     const siegeDefenderNeverDoctrine = ru.side === 'def' && this.siegeWallCol >= 0;
     if (!this._manualMode && !siegeDefenderNeverDoctrine) {
-      if (this._isUnitDoctrineAuto(ru) && ru.playerOrder.type === 'none') {
+      if (this._isUnitDoctrineAuto(ru)) {
+        if (ru.playerOrder.type !== 'none') ru.playerOrder = { type: 'none' };
         const meta = this._effectiveMetaForUnit(ru);
         if (meta.doctrine !== 'manual') {
           if (this._executeGroupDoctrineStep(ru, meta, done)) return;
