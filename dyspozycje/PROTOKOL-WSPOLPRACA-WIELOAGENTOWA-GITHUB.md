@@ -135,7 +135,25 @@ prefixem, analogicznie do wiersza Hermesa.
 
 ## 3. Workflow Workera — krok po kroku
 
-1. **Fetch świeżego `main`:**
+0. **Zdobądź repozytorium, ZANIM zrobisz cokolwiek innego** — bez tego nie masz nawet
+   dostępu do reszty tego pliku ani do kodu gry:
+   - Jeśli **nie masz jeszcze lokalnej kopii** tego repo w swoim środowisku:
+     ```
+     git clone https://github.com/maciejsieracki/The-Game.git
+     cd The-Game
+     ```
+   - Jeśli **masz już lokalną kopię** z wcześniejszej pracy:
+     ```
+     cd The-Game
+     git checkout main
+     git pull origin main
+     ```
+   Dopiero teraz masz świeży `main` na dysku i możesz kontynuować od kroku 1. Jeśli w
+   trakcie pracy (kroki 1-11 niżej) minie dłuższa chwila — powtórz `git fetch origin main`
+   przed otwarciem PR, żeby sprawdzić czy `main` się nie przesunął (patrz też §9).
+
+1. **Fetch świeżego `main`** (jeśli dopiero co zrobiłeś krok 0, `origin/main` już masz
+   aktualny — ten fetch jest tu na wypadek, gdyby między krokiem 0 a teraz minął czas):
    ```
    git fetch origin main
    git checkout -b hermes/<PEŁNE-ID> origin/main
