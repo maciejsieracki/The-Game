@@ -31,11 +31,60 @@ push na `main`.
 
 | Rola | Kto | Co robi | Push na `main`? |
 |---|---|---|---|
-| **Orkiestrator/Integrator** | jedna, ustalona sesja Claude Code (ta, która prowadzi plan hot-seat i pisze ten dokument) | przyjmuje gotowe PR-y od Workerów, weryfikuje je niezależnie, scala do `main`, aktualizuje `WERSJE.md`/`REJESTR-PROSB-I-ZADAN.md`, robi deploy do `gra-robocza/` | **TAK — wyłącznie ona** |
-| **Worker** (np. Hermes) | Ty, czytelniku tego pliku, i każdy kolejny agent w tej samej roli | diagnozuje/implementuje JEDEN temat na własnej gałęzi, dowodzi poprawności własnymi bramkami, otwiera Pull Request | **NIGDY** |
+| **Orkiestrator/Operator/Integrator** | jedna, ustalona sesja Claude Code (ta, która prowadzi plan hot-seat i pisze ten dokument) | **integruje** PR-y wszystkich Workerów (weryfikuje niezależnie, scala do `main`, aktualizuje `WERSJE.md`/`REJESTR-PROSB-I-ZADAN.md`, robi deploy do `gra-robocza/`) **i dodatkowo może sama implementować** kod (dziś: plan hot-seat, Etapy 6-8) — te dwie role są połączone w jednej sesji, nie rozdzielone | **TAK — wyłącznie ona** |
+| **Agent tematyczny (Worker)** — np. Hermes | zewnętrzny agent/sesja z własnym, **trwałym zakresem** przypisanym przez właściciela (patrz §1a) | w ramach SWOJEGO zakresu: diagnozuje/implementuje temat na własnej gałęzi, dowodzi poprawności własnymi bramkami, otwiera Pull Request | **NIGDY** |
 
-Jeśli nie jesteś pewien, czy jesteś Workerem — **jesteś Workerem**, chyba że właściciel
-jawnie i pisemnie (w pliku albo w wiadomości, którą możesz zacytować) powiedział inaczej.
+Jeśli nie jesteś pewien, czy jesteś Agentem tematycznym/Workerem — **jesteś nim**, chyba że
+właściciel jawnie i pisemnie (w pliku albo w wiadomości, którą możesz zacytować) powiedział
+inaczej.
+
+---
+
+## 1a. Rejestr agentów i zakresów
+
+Podział jest **wg podsystemu gry** — stałe domeny odpowiadające istniejącym obszarom
+`gra/src`/`main.ts` (te same kategorie, których ta sesja użyła do rozbicia planu hot-seat).
+Każdy agent tematyczny dostaje **jedną domenę na stałe** (allowlista tematu, który akurat
+robi, musi mieścić się w jego domenie) — **z wyjątkiem agenta typu „intake"**, który z
+definicji nie ma jednej stałej domeny, tylko przyjmuje bieżące zgłoszenia właściciela
+niezależnie od obszaru.
+
+**Aktywne przypisania:**
+
+| Agent | Typ zakresu | Zakres | Branch prefix | ID prefix |
+|---|---|---|---|---|
+| Orkiestrator/Operator (ta sesja) | plan + integracja | plan hot-seat (Etapy 6-8, `docs/decyzje/PLAN-HOT-SEAT-2-GRACZY.md`) + integracja WSZYSTKICH PR-ów niezależnie od domeny | `autobot/` | `R-`/`P-`/`C-` (istniejący rejestr) |
+| **Hermes** | **intake — dowolna domena** | bieżące zgłoszenia właściciela (bugi/prośby), niezależnie od podsystemu gry | `hermes/` | `H-` |
+| *(wolne)* | tematyczny, sztywna domena | *(przypisze właściciel, gdy dojdzie kolejny agent)* | *(np. `<nazwa>/`)* | *(np. `<L>-`)* |
+
+**Taksonomia domen podsystemowych** (do przypisywania kolejnym agentom tematycznym w
+miarę jak będą dochodzić — dziś żadna nie ma jeszcze własnego, stałego agenta poza
+Hermesem-intake):
+
+| Domena | Orientacyjny zakres plików | Stan na dziś |
+|---|---|---|
+| Dyplomacja | `main.ts` (klaster dyplomacji), `game/forced-war-*.ts`, `game/diplomacy-border-march.ts` | **AKTYWNE u Orkiestratora** (Etap 6d planu hot-seat, w toku — pozostałe ~116 miejsc) |
+| Ekonomia | `main.ts` (klaster ekonomii), `game/economy*.ts`, `game/turn-economy.ts` | zamknięte w hot-seat (Etap 6c) — względnie bezpieczne, ale sprawdź świeżo |
+| Render/Kamera | `main.ts` (klaster render/kamera) | **AKTYWNE u Orkiestratora** (Etap 6e planu hot-seat, w toku) |
+| UI/HUD | `main.ts` (panele/HUD), `ui/*.ts` | zamknięte w hot-seat (Etap 6b) — względnie bezpieczne |
+| Start gry / wybór cywilizacji | `main.ts` (AI-roster, start), `game/cluster-start.ts` | częściowo zamknięte (Etap 6f część i); część (ii) — nowa funkcjonalność — otwarta, wymaga projektu |
+| Save/Load | `main.ts` (save/load), `game/save.ts` | zamknięte (Etap 7, format v3) |
+| Walka/Bitwa | `game/combat*.ts`, pliki pola bitwy | niedotknięte przez plan hot-seat |
+| AI (logika przeciwnika) | `game/ai.ts` i pochodne | niedotknięte przez plan hot-seat |
+| Mapa/Teren | `map/*.ts`, ulepszenia, zasoby, mgła wojny | niedotknięte przez plan hot-seat |
+| Treść/CivPedia | dane jednostek/technologii/budynków, encyklopedia | niedotknięte przez plan hot-seat |
+
+**Jak Hermes (albo kolejny agent intake) korzysta z tej tabeli:** przed rozpoczęciem
+tematu w konkretnym podsystemie sprawdź kolumnę „Stan na dziś" — jeśli domena jest
+oznaczona **AKTYWNE u Orkiestratora**, Twoje zgłoszenie może kolidować z pracą w toku;
+zrób węższy fix (poza ryzykownym obszarem) albo zapytaj właściciela przed startem, zamiast
+zakładać że masz wolną rękę. Domeny bez adnotacji „AKTYWNE" są dziś bezpieczne, ale i tak
+sprawdź otwarte PR-y (§9) — ta tabela jest aktualizowana przez Orkiestratora okresowo, nie
+w czasie rzeczywistym.
+
+Gdy właściciel przypisze komuś sztywną domenę tematyczną (nie intake) — Orkiestrator
+dopisze wiersz w tabeli „Aktywne przypisania" z nazwą agenta, branch prefixem i ID
+prefixem, analogicznie do wiersza Hermesa.
 
 ---
 
@@ -143,16 +192,21 @@ jawnie i pisemnie (w pliku albo w wiadomości, którą możesz zacytować) powie
 
 ## 4. Nazewnictwo — ID i gałęzie
 
+Prefiksy ID i gałęzi są przypisane PER AGENT w tabeli §1a — nie wymyślaj własnych. Jeśli
+jesteś Hermesem:
+
 - **ID tematu:** `H-<KRÓTKI-TEMAT-WIELKIMI-LITERAMI>-Q<n>`, np. `H-DYPLOMACJA-TOAST-BLAD-Q1`.
   Prefiks `H-` (nie `R-`/`P-`/`C-` — te są już zajęte przez istniejący rejestr projektu)
   gwarantuje, że Twoje ID nigdy nie zderzy się z ID nadanym przez Orkiestratora albo innego
-  Workera.
-- **Nazwa gałęzi:** zawsze `hermes/<PEŁNE-ID>` (dosłownie prefiks `hermes/`, nawet jeśli
-  Twoim wewnętrznym imieniem jest coś innego — to jest umówiony prefiks dla „zewnętrzny
-  Worker przez GitHub"; jeśli w tej roli działa więcej niż jeden zewnętrzny agent
-  jednocześnie, właściciel poda Ci inny, unikalny prefiks do użycia zamiast `hermes/`).
-- Jedno ID = jeden temat = jedna gałąź = jeden PR. Nie mieszaj kilku niepowiązanych napraw
-  w jednym PR.
+  agenta.
+- **Nazwa gałęzi:** zawsze `hermes/<PEŁNE-ID>`.
+
+Jeśli jesteś kolejnym agentem tematycznym (nie Hermesem) — właściciel przypisze Ci wiersz
+w tabeli §1a z Twoim własnym prefiksem ID i brancha; użyj dokładnie tego, co tam wpisano,
+nie `hermes/`/`H-`.
+
+Jedno ID = jeden temat = jedna gałąź = jeden PR. Nie mieszaj kilku niepowiązanych napraw
+w jednym PR, nawet w ramach tej samej domeny.
 
 ---
 
@@ -250,6 +304,9 @@ maszynach nie da się zrobić bez współdzielonego stanu — więc podstawowym 
 jest **dyscyplina zakresu, nie technologia**:
 
 - Trzymaj się WĄSKO tematu, który dostałeś — nie „poprawiaj przy okazji" sąsiedniego kodu.
+- **Sprawdź tabelę domen w §1a** — jeśli Twój temat wpada w domenę oznaczoną „AKTYWNE u
+  Orkiestratora" (albo u innego przypisanego agenta), to Twoja pierwsza linia obrony,
+  tańsza niż przegląd PR-ów.
 - Przed rozpoczęciem sprawdź listę otwartych PR-ów w repo (nawet pobieżnie) — jeśli widzisz
   PR dotykający tych samych plików/funkcji, zapytaj właściciela zamiast ryzykować konflikt.
 - Jeśli Twój PR czeka na integrację dłużej niż dzień i wiesz, że ktoś inny mógł w tym
