@@ -373,10 +373,18 @@ export function clearLastEmpireFoodTicks(): void {
 
 // --- SPICH-AUTO-Q1: auto-obniżenie racji do bilansu miast = 0 (przed wojskiem) ---
 
-/** R-AUTO-RACJE-RAISE-Q5=A: auto obniżanie+podnoszenie Wyżywienia. Gracz: tylko gdy flaga WŁ. AI: zawsze. */
-export function isCityAutoWyzywienieEnabled(city: City, opts?: { forceAuto?: boolean }): boolean {
+/**
+ * R-AUTO-RACJE-RAISE-Q5=A: auto obniżanie+podnoszenie Wyżywienia. Gracz: tylko gdy flaga WŁ. AI: zawsze.
+ * R-HOTSEAT-ETAP6C-ECONOMY-Q1: `humanOwnerIds` (domyślnie `[0]`, zachowanie identyczne jak
+ * przed tą zmianą dla wołających, którzy go nie podają) -- zastępuje zaszyty literał `0`.
+ */
+export function isCityAutoWyzywienieEnabled(
+  city: City,
+  opts?: { forceAuto?: boolean },
+  humanOwnerIds: readonly number[] = [0],
+): boolean {
   if (opts?.forceAuto) return true;
-  if (city.ownerId !== 0) return true;
+  if (!humanOwnerIds.includes(city.ownerId)) return true;
   return city.autoWyzywienie === true;
 }
 
@@ -950,10 +958,13 @@ export function maxSafePoziomRacjiForCity(opts: {
   kosztArmii?: number;
   /** R-AUTOWYZYWIENIE-ROWNY-WZROST-Q1-A własność (B) — patrz `EqualGrowthRationPlanOpts.popCapByCityId`. */
   popCapByCityId?: ReadonlyMap<string, number>;
+  /** R-HOTSEAT-ETAP6C-ECONOMY-Q1: fotele człowieka (domyślnie `[0]`, zachowanie identyczne
+   *  jak przed tą zmianą dla wołających, którzy go nie podają) -- zastępuje zaszyty literał `0`. */
+  humanOwnerIds?: readonly number[];
 }): PoziomRacji {
   const {
     cityId, ownerId, cities, econ, zapasyPrzed, rationParams, spichlerzByCity, kosztArmii = 0,
-    popCapByCityId,
+    popCapByCityId, humanOwnerIds = [0],
   } = opts;
   const city = cities.find(c => c.id === cityId);
   if (!city || city.ownerId !== ownerId) return WYZYWIENIE_MIN;
@@ -981,7 +992,7 @@ export function maxSafePoziomRacjiForCity(opts: {
   // giving no real protection. For the player maxSafe must be the highest level at which THIS
   // turn's flow (nadwyzka) is non-negative. Every current caller in main.ts passes ownerId=0 only
   // (grep-confirmed in the Operator report) — the gate is explicit for any future AI caller.
-  const requireFlowBalance = ownerId === 0;
+  const requireFlowBalance = humanOwnerIds.includes(ownerId);
 
   for (const level of WYZYWIENIE_LEVELS) {
     city.poziomRacji = level;

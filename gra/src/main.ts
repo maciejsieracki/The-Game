@@ -1986,7 +1986,7 @@ async function boot(): Promise<void> {
      * legacy single-tech-advance path (they never build wonders or run a full tree).
      */
     function syncOwnerEraFromResearch(ownerId: number): boolean {
-      if (ownerId === 0) return false;
+      if (isHuman(ownerId)) return false;
       const startEra = ownerStartEraByOwner.get(ownerId) ?? ownerEraByOwner.get(ownerId) ?? gameStartEra();
       const done = aiResearchDone.get(ownerId) ?? new Set<string>();
       const prev = ownerEraByOwner.get(ownerId) ?? startEra;
@@ -2168,7 +2168,7 @@ async function boot(): Promise<void> {
     }
 
     function countTechForOwner(ownerId: number): number {
-      if (ownerId === 0) return player.zbadane.size;
+      if (isHuman(ownerId)) return ownerResearchedTechs(ownerId).size;
       return aiResearchDone.get(ownerId)?.size ?? 0;
     }
 
@@ -3470,9 +3470,8 @@ async function boot(): Promise<void> {
       return row ?? { ikonaId: civType, epokaWejscia: 'kamien' };
     }
 
-    function unlockedTechSetForOwner(ownerId: number): Set<string> {
-      if (ownerId === 0) return player.zbadane;
-      return aiResearchDone.get(ownerId) ?? new Set<string>();
+    function unlockedTechSetForOwner(ownerId: number): ReadonlySet<string> {
+      return ownerResearchedTechs(ownerId);
     }
 
     function parseWonderProdId(id: string): string | null {
@@ -7729,9 +7728,7 @@ async function boot(): Promise<void> {
     }
 
     function unlockedTechsForOwner(ownerId: number): string[] {
-      return ownerId === 0
-        ? Array.from(player.zbadane)
-        : Array.from(aiResearchDone.get(ownerId) ?? new Set<string>());
+      return Array.from(ownerResearchedTechs(ownerId));
     }
 
     /**
@@ -29103,7 +29100,11 @@ async function boot(): Promise<void> {
           const ownerCivMap = new Map<number, string>();
           ownerCivMap.set(0, (player.civType as string) || 'grecy');
           for (const [oid, civ] of aiOwnerCivMap) ownerCivMap.set(oid, civ);
-          const popBeforeTick = cities.filter(c => c.ownerId === 0).reduce((s, c) => s + c.population, 0);
+          // R-HOTSEAT-ETAP6C-ECONOMY-Q1: `humanOwnerId` (nie zaszyty `0`) -- musi zgadzać się z
+          // filtrem "po" tego samego cache w `_lastLudnoscRate` niżej (już podłączonym na
+          // `humanOwnerId` przez Etap 6b), inaczej różnica populacji byłaby liczona między
+          // DWOMA różnymi ownerami dla drugiego fotela człowieka.
+          const popBeforeTick = cities.filter(c => c.ownerId === humanOwnerId).reduce((s, c) => s + c.population, 0);
 
           // --- Handel E3: odswiez trasy handlowe gracz<->obca cywilizacja ---
           recomputeTradeRoutesNow(true);
@@ -29267,13 +29268,14 @@ async function boot(): Promise<void> {
                 zapasyPrzed: foodSt.zapasyPanstwa,
                 rationParams: efParams.rationParams,
                 spichlerzByCity: spichlerzByCityForAuto,
-                onlyAutoManaged: ownerId === 0,
+                onlyAutoManaged: isHuman(ownerId),
                 // R-AUTO-WYZYWIENIE-CEL-BILANS-NIEUJEMNY (gracz, rozpoznanie #4): cel to flow
-                // tej tury >=0, nie tylko stock-based pokrycie rezerwą — WYŁĄCZNIE gracz, AI
+                // tej tury >=0, nie tylko stock-based pokrycie rezerwą — WYŁĄCZNIE fotele
+                // człowieka (R-HOTSEAT-ETAP6C-ECONOMY-Q1: isHuman, nie tylko ownerId 0), AI
                 // zostaje przy dawnym zachowaniu (empire-food.ts:isRationBalanceTargetMet).
-                // EN: player-only (finding #4): target is this turn's flow >=0, not just
+                // EN: human-seats-only (finding #4): target is this turn's flow >=0, not just
                 // stock-based reserve coverage — AI keeps prior behavior.
-                requireFlowBalance: ownerId === 0,
+                requireFlowBalance: isHuman(ownerId),
                 kosztArmii: kosztArmiiForOwner,
               });
               if (autoRationResult.adjusted) {
@@ -29291,8 +29293,8 @@ async function boot(): Promise<void> {
                   zapasyPrzed: foodSt.zapasyPanstwa,
                   rationParams: efParams.rationParams,
                   spichlerzByCity: spichlerzByCityForAuto,
-                  requireProductionSurplus: ownerId === 0,
-                  onlyAutoManaged: ownerId === 0,
+                  requireProductionSurplus: isHuman(ownerId),
+                  onlyAutoManaged: isHuman(ownerId),
                   kosztArmii: kosztArmiiForOwner,
                 });
                 if (raiseResult.adjusted) {
@@ -29304,26 +29306,31 @@ async function boot(): Promise<void> {
               refreshEconomyFoodTotals(econ);
             }
 
-            // Q3=A (review): clamp Wyżywienia gracza do maxSafe przed rozliczeniem —
-            // stary zapis / spadek produkcji bez ruszania suwaka nie może grać powyżej limitu.
+            // Q3=A (review): clamp Wyżywienia KAŻDEGO fotela człowieka do maxSafe przed
+            // rozliczeniem -- stary zapis / spadek produkcji bez ruszania suwaka nie może
+            // grać powyżej limitu. R-HOTSEAT-ETAP6C-ECONOMY-Q1: pętla po `humanSeats.
+            // humanOwnerIds` (nie tylko literał `0`) -- inaczej drugi fotel człowieka nigdy
+            // nie dostałby tego clampa i mógłby grać ponad bezpieczny poziom Wyżywienia.
             {
-              const foodSt0 = empireFoodStates.get(0) ?? freshEmpireFoodState();
               let clampedAny = false;
-              for (const city of cities) {
-                if (city.ownerId !== 0) continue;
-                const maxSafe = maxSafePoziomRacjiForCity({
-                  cityId: city.id,
-                  ownerId: 0,
-                  cities,
-                  econ,
-                  zapasyPrzed: foodSt0.zapasyPanstwa,
-                  rationParams: efParams.rationParams,
-                  spichlerzByCity: spichlerzByCityForAuto,
-                });
-                const cur = getCityRationLevel(city);
-                if (cur > maxSafe) {
-                  city.poziomRacji = maxSafe;
-                  clampedAny = true;
+              for (const hOid of humanSeats.humanOwnerIds) {
+                const foodSt0 = empireFoodStates.get(hOid) ?? freshEmpireFoodState();
+                for (const city of cities) {
+                  if (city.ownerId !== hOid) continue;
+                  const maxSafe = maxSafePoziomRacjiForCity({
+                    cityId: city.id,
+                    ownerId: hOid,
+                    cities,
+                    econ,
+                    zapasyPrzed: foodSt0.zapasyPanstwa,
+                    rationParams: efParams.rationParams,
+                    spichlerzByCity: spichlerzByCityForAuto,
+                  });
+                  const cur = getCityRationLevel(city);
+                  if (cur > maxSafe) {
+                    city.poziomRacji = maxSafe;
+                    clampedAny = true;
+                  }
                 }
               }
               if (clampedAny) {
@@ -29443,9 +29450,13 @@ async function boot(): Promise<void> {
           } catch (errEf) {
             console.error('[EmpireFood] Blad ticku:', errEf);
           }
-          // P3a: HUD + pula pracy — tylko miasta gracza (econ.total* = suma WSZYSTKICH cywilizacji).
-          const playerEcon = sumEconomyForPlayerCities(econ, cities);
-          const playerCityCount = cities.filter(c => c.ownerId === 0).length;
+          // P3a: HUD + pula pracy — tylko miasta AKTYWNEGO fotela człowieka (`humanOwnerId`,
+          // ten którego tura się kończy; econ.total* = suma WSZYSTKICH cywilizacji).
+          // R-HOTSEAT-ETAP6C-ECONOMY-Q1: `humanOwnerId` zamiast zaszytego `0` (HUD cache,
+          // zawsze per aktywny fotel, wzorem 6b) — bankowanie WSZYSTKICH ludzi jest osobne,
+          // patrz pętla `humanSeats.humanOwnerIds` w bloku "Bank treasury" niżej.
+          const playerEcon = sumEconomyForPlayerCities(econ, cities, humanOwnerId);
+          const playerCityCount = cities.filter(c => c.ownerId === humanOwnerId).length;
           _lastPracaRate = 0;
           _lastPracaAutoUlepszeniaKoszt = 0;
           _lastPracaCudaKoszt = 0;
@@ -29457,7 +29468,7 @@ async function boot(): Promise<void> {
           if (territoryBorderVisible) refreshTerritoryBorderOverlay();
           refreshTradeRoutesOverlay();
           for (const [hexKey, st] of hexClearingStates) {
-            if (st.ownerId !== 0) continue;
+            if (!isHuman(st.ownerId)) continue;
             const { pracaGrant, expired } = tickHexClearing(st);
             if (pracaGrant > 0) {
               // Maciej 2026-07-24: wyrąb daje DREWNO (surowiec do puli państwa), nie Pracę —
@@ -29507,7 +29518,9 @@ async function boot(): Promise<void> {
           refreshPlayerCityEcon(econ.perCity, humanOwnerId);
           _lastLudnoscRate = cities.filter(c => c.ownerId === humanOwnerId).reduce((s, c) => s + c.population, 0) - popBeforeTick;
           {
-            const pc = cities.filter(c => c.ownerId === 0);
+            // R-HOTSEAT-ETAP6C-ECONOMY-Q1: `humanOwnerId` (nie zaszyty `0`) -- `_lastWealthLevel`/
+            // `_lastWealthMnoznik` to cache HUD aktywnego fotela, wzorem `_lastLudnoscRate` wyżej.
+            const pc = cities.filter(c => c.ownerId === humanOwnerId);
             if (pc.length > 0) {
               let sumW = 0;
               let sumM = 0;
@@ -29612,53 +29625,71 @@ async function boot(): Promise<void> {
           }
 
           // --- Bank treasury + science, then auto-research (13B-finish + 7B) ---
+          // R-HOTSEAT-ETAP6C-ECONOMY-Q1: ten blok jest REALNYM ZAPISEM ekonomii tury (nie
+          // odczytem HUD) — dawniej zahardkodowany na `player`/ownerId 0. `runWorldEndTurn()`
+          // biegnie raz na koniec RUNDY (architektura (a), `advanceSeat`/`endActiveHumanTurn`),
+          // więc musi zbankować KAŻDY fotel człowieka (`humanSeats.humanOwnerIds`), nie tylko
+          // `humanOwnerId` (fotel, którego tura właśnie się kończy) — inaczej drugi fotel
+          // człowieka nigdy nie dostałby swojego dochodu/utrzymania. Skarbiec NIE jest
+          // podłogowany do 0 tutaj (symetria z gałęzią AI niżej, R-DEFICYT-ZLOTA-KARA-Q1) —
+          // dlatego zapis idzie WPROST do `playerStateByHuman.get(hOid)`, nie przez
+          // `setOwnerTreasury`/`setOwnerNaukaPool` (Etap 3), które podłogowują. Cache `_last*`
+          // (HUD) pozostaje singularny — aktualizowany wyłącznie dla `humanOwnerId` (fotel,
+          // którego tura właśnie się kończy), wzorem Etapu 6b.
           try {
-            const pieniadzGracza = playerEcon.pieniadz;
-            const naukaGracza = playerEcon.nauka;
-            player.skarbiec += pieniadzGracza;
-            player.nauka    += naukaGracza;
+            for (const hOid of humanSeats.humanOwnerIds) {
+              const hEcon = hOid === humanOwnerId ? playerEcon : sumEconomyForPlayerCities(econ, cities, hOid);
+              const hState = playerStateByHuman.get(hOid)!;
+              hState.skarbiec += hEcon.pieniadz;
+              hState.nauka    += hEcon.nauka;
 
-            // --- Subtract upkeep from treasury (economy-upkeep s.6.4) ---
-            const playerBalance = econ.upkeepByOwner.get(humanOwnerId);
-            if (playerBalance && playerBalance.utrzymanieRazem > 0) {
-              player.skarbiec -= playerBalance.utrzymanieRazem;
-              if (playerBalance.deficyt) {
-                console.warn(
-                  '[Ekonomia] Deficyt! Utrzymanie=' + playerBalance.utrzymanieRazem +
-                  ' Dochod=' + Math.round(pieniadzGracza) +
-                  ' Saldo=' + Math.round(playerBalance.saldo),
-                );
+              // --- Subtract upkeep from treasury (economy-upkeep s.6.4) ---
+              const hBalance = econ.upkeepByOwner.get(hOid);
+              if (hBalance && hBalance.utrzymanieRazem > 0) {
+                hState.skarbiec -= hBalance.utrzymanieRazem;
+                if (hBalance.deficyt) {
+                  console.warn(
+                    '[Ekonomia] Deficyt! Utrzymanie=' + hBalance.utrzymanieRazem +
+                    ' Dochod=' + Math.round(hEcon.pieniadz) +
+                    ' Saldo=' + Math.round(hBalance.saldo),
+                  );
+                }
+              }
+              // --- Subtract building resource upkeep from owner stock (1/type/building/turę) ---
+              const hResUpkeep = econ.resourceUpkeepByOwner.get(hOid);
+              if (hResUpkeep && Object.keys(hResUpkeep).length > 0) {
+                const poolBefore = ownerResourceStockAll(cities, hOid);
+                const missingRes = missingStockFor(poolBefore, hResUpkeep);
+                deductBuildingStockCostAcrossCities(cities, hOid, hResUpkeep);
+                if (Object.keys(missingRes).length > 0) {
+                  console.warn(
+                    '[Ekonomia] Brak surowców na utrzymanie budynków: ' +
+                    Object.entries(missingRes)
+                      .map(([k, v]) => `${v} ${stockResourceLabel(k)}`)
+                      .join(', '),
+                  );
+                }
+              }
+              // P-SUROWCE-BRAK-SZCZEGOLOW-ZUZYCIA: publikuj rozbicie budynki/wojsko WPROST z
+              // silnika (panel Surowców „Zobacz szczegóły") — ta sama tura, te same rekordy co
+              // powyżej (resourceUpkeepByOwner), tylko przed scaleniem (turn-economy.ts).
+              // Dla KAŻDEGO fotela człowieka (nie tylko `humanOwnerId`) — parytet z AI niżej.
+              buildingResourceUpkeepByOwner.set(hOid, { ...(econ.resourceUpkeepBuildingsByOwner.get(hOid) ?? {}) });
+              unitResourceUpkeepByOwner.set(hOid, { ...(econ.resourceUpkeepUnitsByOwner.get(hOid) ?? {}) });
+
+              if (hOid === humanOwnerId) {
+                // NAPRAWA HUD-SKARBIEC (Maciej 2026-07-26): utrwal SKŁADNIKI realnego bilansu
+                // tej tury (nie tylko rate.pieniadz), zeby "+N" przy Skarbcu na HUD (po tym
+                // ticku, przed nastepnym refreshLiveEmpireRates) i jego rozbicie w podpowiedzi
+                // pokazywaly dokladnie to co wlasnie zaszlo, a nie sama projekcje. Cache
+                // singularny (HUD aktywnego fotela) -- patrz komentarz przy pętli wyżej.
+                _lastBogactwoHandel = hEcon.pieniadzZTras;
+                _lastBogactwoUtrzymanieBudynkow = hBalance?.utrzymanieBudynki ?? 0;
+                _lastBogactwoUtrzymanieJednostek = hBalance?.utrzymanieJednostki ?? 0;
+                _lastBogactwoUtrzymanieSurowcow = { ...(econ.resourceUpkeepByOwner.get(hOid) ?? {}) };
+                _lastBogactwoRate = hEcon.pieniadz - (hBalance?.utrzymanieRazem ?? 0);
               }
             }
-            // --- Subtract building resource upkeep from owner stock (1/type/building/turę) ---
-            const playerResUpkeep = econ.resourceUpkeepByOwner.get(humanOwnerId);
-            if (playerResUpkeep && Object.keys(playerResUpkeep).length > 0) {
-              const poolBefore = ownerResourceStockAll(cities, humanOwnerId);
-              const missingRes = missingStockFor(poolBefore, playerResUpkeep);
-              deductBuildingStockCostAcrossCities(cities, humanOwnerId, playerResUpkeep);
-              if (Object.keys(missingRes).length > 0) {
-                console.warn(
-                  '[Ekonomia] Brak surowców na utrzymanie budynków: ' +
-                  Object.entries(missingRes)
-                    .map(([k, v]) => `${v} ${stockResourceLabel(k)}`)
-                    .join(', '),
-                );
-              }
-            }
-            // NAPRAWA HUD-SKARBIEC (Maciej 2026-07-26): utrwal SKŁADNIKI realnego bilansu
-            // tej tury (nie tylko rate.pieniadz), zeby "+N" przy Skarbcu na HUD (po tym
-            // ticku, przed nastepnym refreshLiveEmpireRates) i jego rozbicie w podpowiedzi
-            // pokazywaly dokladnie to co wlasnie zaszlo, a nie sama projekcje.
-            _lastBogactwoHandel = playerEcon.pieniadzZTras;
-            _lastBogactwoUtrzymanieBudynkow = playerBalance?.utrzymanieBudynki ?? 0;
-            _lastBogactwoUtrzymanieJednostek = playerBalance?.utrzymanieJednostki ?? 0;
-            _lastBogactwoUtrzymanieSurowcow = { ...(econ.resourceUpkeepByOwner.get(humanOwnerId) ?? {}) };
-            _lastBogactwoRate = pieniadzGracza - (playerBalance?.utrzymanieRazem ?? 0);
-            // P-SUROWCE-BRAK-SZCZEGOLOW-ZUZYCIA: publikuj rozbicie budynki/wojsko WPROST z
-            // silnika (panel Surowców „Zobacz szczegóły") — ta sama tura, te same rekordy co
-            // powyżej (resourceUpkeepByOwner), tylko przed scaleniem (turn-economy.ts).
-            buildingResourceUpkeepByOwner.set(humanOwnerId, { ...(econ.resourceUpkeepBuildingsByOwner.get(humanOwnerId) ?? {}) });
-            unitResourceUpkeepByOwner.set(humanOwnerId, { ...(econ.resourceUpkeepUnitsByOwner.get(humanOwnerId) ?? {}) });
 
             // Bank skarbca AI — per owner (nie econ.total*)
             const aiOwnerIds = new Set<number>();
@@ -29706,8 +29737,15 @@ async function boot(): Promise<void> {
             }
 
             // Auto-research: spend banked science on the cheapest available tech.
+            // R-HOTSEAT-ETAP6C-ECONOMY-Q1: `researchGateForOwner(humanOwnerId)` (nie zaszyty
+            // `0`) -- `researchStep(player, ...)` NADAL operuje na singularnym `player`
+            // (== `playerStateByHuman.get(HUMAN_OWNER_PRIMARY)`), więc auto-research/toasty
+            // awansu epoki są w tej rundzie CELOWO NIE uogólnione na drugi fotel człowieka
+            // (patrz raport tej rundy: `player.era`/`setEra`/`showTechTreeView` i cała ścieżka
+            // toastów jest z definicji jednoosobowa, wymaga osobnej rundy UI per-fotel) --
+            // tylko literał `ownerId===0` usunięty, no-op zachowany (`humanOwnerId===0` dziś zawsze).
             const prevPlayerEra = player.era;
-            const step = researchStep(player, data.tech, researchGateForOwner(0), _menuDifficulty);
+            const step = researchStep(player, data.tech, researchGateForOwner(humanOwnerId), _menuDifficulty);
             // R-EPOKA-CUD-WARUNEK-AWANSU: bramka pełna (komplet tech epoki + cud E) —
             // przeliczana PO researchStep, przed decyzją o notyfikacji awansu.
             reconcilePlayerEraFromResearch();
@@ -30117,7 +30155,12 @@ async function boot(): Promise<void> {
               // dotyczy właściciela TEGO miasta, nie tylko gracza (ownerId 0) — patrz
               // `isOwnerAtWar` (dawne `isPlayerAtWar`, zawsze zwracało false dla AI).
               const ownerAtWar = isOwnerAtWar(city.ownerId);
-              const stolicaBonus = stolicaEasyBonusActive(difficulty, turn, city, cities, 10, capitalCityIdForOwner(0));
+              // R-HOTSEAT-ETAP6C-ECONOMY-Q1: `capitalCityIdForOwner(city.ownerId)` (nie zaszyty
+              // `0`) -- `isPlayerCapitalCity` wewnątrz już porównuje do WŁAŚCICIELA `city`
+              // (patrz society-inputs.ts), więc literał `0` tutaj psuł bonus stolicy easy dla
+              // każdego innego ownera niż 0 (AI/drugi fotel człowieka) niezależnie od migracji
+              // wewnątrz funkcji -- realna luka odkryta przy tej migracji, nie tylko literał.
+              const stolicaBonus = stolicaEasyBonusActive(difficulty, turn, city, cities, 10, capitalCityIdForOwner(city.ownerId));
               const revoltParams = loadRevoltParams(data.societyParams, difficulty);
               const ownerEraForUpkeep = empireEpochForOwner(city.ownerId);
               // R-ZUZYCIE-SUROWCOW-OBYWATELE: ownerId-agnostyczne — dotyczy gracza, dużej AI
@@ -30210,7 +30253,15 @@ async function boot(): Promise<void> {
               } else {
                 graceUpd = updateRevoltGrace(city.revoltGraceRemaining, ordPct.porPct, revoltParams);
                 city.revoltGraceRemaining = graceUpd.revoltGraceRemaining;
-                if (graceUpd.shouldTriggerRebellion && city.ownerId === 0 && !city.rebelState) {
+                // R-HOTSEAT-ETAP6C-ECONOMY-Q1 (decyzja main.ts:30169 z dispatchu): mechanika
+                // buntu-do-frakcji-rebeliantów jest ŚWIADOMIE ograniczona do miast CZŁOWIEKA
+                // (REBEL_FACTION_OWNER_ID, main.ts:27055: "bunt miasta GRACZA") — AI nie ma
+                // odpowiednika (brak `markCityRebellionStarted` dla AI gdziekolwiek w main.ts,
+                // sprawdzone grepem). To jest (c) ekonomia/społeczeństwo (porządek publiczny
+                // -> bunt), więc migruję literał `0` na `isHuman(...)`, ZACHOWUJĄC granicę
+                // "tylko człowiek" -- drugi fotel człowieka dostaje TĘ SAMĄ mechanikę buntu,
+                // AI nadal jej nie ma (brak regresu, brak nowej funkcjonalności dla AI).
+                if (graceUpd.shouldTriggerRebellion && isHuman(city.ownerId) && !city.rebelState) {
                   markCityRebellionStarted(city);
                   city.rebelState = true;
                   city.ownerId = REBEL_FACTION_OWNER_ID;
@@ -30300,9 +30351,7 @@ async function boot(): Promise<void> {
               if (prod0BezLegacy !== prod0) { prod0 = prod0BezLegacy; cityProd.set(cid, prod0); }
               if (autoManageCities.has(cid) || isMajorAiOwner(city.ownerId, isCityStateOwner)) {
                 try {
-                  const unlockedTechs = city.ownerId === 0
-                    ? Array.from(player.zbadane)
-                    : Array.from(aiResearchDone.get(city.ownerId) ?? new Set<string>());
+                  const unlockedTechs = Array.from(ownerResearchedTechs(city.ownerId));
                   const builtForCity = cityBuilt.get(cid) ?? [];
                   const ownImprovements = placedImprovementsForOwner(city.ownerId);
                   const amDecision = autoManageCity(
@@ -30386,10 +30435,16 @@ async function boot(): Promise<void> {
                   queueEmpty,
                 );
                 if (poolGain > 0) {
-                  if (city.ownerId === 0) {
-                    playerPracaPool += poolGain;
-                    _lastPraca = playerPracaPool;
-                    _lastPracaRate += poolGain;
+                  if (isHuman(city.ownerId)) {
+                    // R-HOTSEAT-ETAP6C-ECONOMY-Q1: zapis PRZEZ akcesor Etapu 3 (nie wprost do
+                    // `playerPracaPool`), żeby drugi fotel człowieka trafiał do WŁASNEJ puli
+                    // (`pracaPoolByHuman.get(city.ownerId)`), nie do puli fotela `HUMAN_OWNER_
+                    // PRIMARY`. Cache `_last*` jest singularny (HUD) -- aktualizowany tylko dla
+                    // fotela, którego tura właśnie się kończy (`humanOwnerId`), wzorem Etapu 6b.
+                    setOwnerPracaPool(city.ownerId, ownerPracaPool(city.ownerId) + poolGain);
+                    if (city.ownerId === humanOwnerId) {
+                      _lastPracaRate += poolGain;
+                    }
                   } else {
                     aiPracaPoolByOwner.set(
                       city.ownerId,
@@ -30406,10 +30461,13 @@ async function boot(): Promise<void> {
               cityProd.set(cid, prodPo);
               // Nadwyżka po ukończeniu budynku (reszta doBudynkow) — nie dotyczy pustej kolejki.
               if (overflowToPool && overflowToPool > 0) {
-                if (city.ownerId === 0) {
-                  playerPracaPool += overflowToPool;
-                  _lastPraca = playerPracaPool;
-                  _lastPracaRate += overflowToPool;
+                if (isHuman(city.ownerId)) {
+                  // R-HOTSEAT-ETAP6C-ECONOMY-Q1: jak wyżej (poolGain) — akcesor Etapu 3,
+                  // nie zapis wprost do `playerPracaPool`.
+                  setOwnerPracaPool(city.ownerId, ownerPracaPool(city.ownerId) + overflowToPool);
+                  if (city.ownerId === humanOwnerId) {
+                    _lastPracaRate += overflowToPool;
+                  }
                 } else {
                   // D-IMPROVEMENTS: nadmiar Pracy kolejki AI (miasto nie ma co budować) ->
                   // pula empire-wide AI, symetryczne z graczem.
@@ -30649,17 +30707,30 @@ async function boot(): Promise<void> {
             // R-AUTO-ULEPSZENIA-Q1=C: auto-ulepszenia terenu gracza — po ekonomii, przed AI.
             // Q4=A: commit od razu na EOT (bez pendingImprovementsTurn / cofnięcia).
             try {
-              const autoImpCities = cities.filter(c => {
-                if (c.ownerId !== 0) return false;
-                return effectiveUlepszeniaForCity(c).tryb === 'auto';
-              });
-              if (autoImpCities.length > 0 && playerPracaPool > AUTO_ULEPSZENIA_PRACA_RESERVE) {
-                const territoryNodesAuto = buildAllTerritoryNodes();
-                // P-HEKS-SPOR-SASIAD: liczone RAZ przed pętlą po miastach (nie per-city
-                // wewnątrz getWorkedHexKeys niżej) -- ta sama wydajnościowa zasada co w
-                // advanceCityEconomy/collectWorkedHexOwnerMap.
-                const lostToSiblingByCityAuto = computeLostToNearerSiblingByCity(cities, map);
-                const playerCivArch = civTypeForOwner(0);
+              // R-HOTSEAT-ETAP6C-ECONOMY-Q1 (runda 2, ZARZUT #1 Evaluatora): pętla PO
+              // WSZYSTKICH `humanSeats.humanOwnerIds`, nie jeden przebieg pod zaszytym
+              // ownerId 0 z filtrem wstępnym `isHuman`. Filtr wstępny bez pętli mieszał
+              // miasta drugiego fotela do PULI/ARCHETYPU/TECHNOLOGII fotela 0 (gorsze niż
+              // przed migracją, gdzie czyste `ownerId===0` wykluczało drugiego człowieka
+              // całkowicie). Każdy fotel dostaje TERAZ własną pulę (`ownerPracaPool`/
+              // `setOwnerPracaPool`, ten sam akcesor co blok bankowania wyżej), własny
+              // archetyp/technologie/deficyt/terytorium. Cache `_last*` (HUD singularny)
+              // aktualizowany WYŁĄCZNIE dla fotela `humanOwnerId` (którego tura się kończy),
+              // wzorem komentarza przy blokach poolGain/overflowToPool wyżej.
+              const territoryNodesAuto = buildAllTerritoryNodes();
+              // P-HEKS-SPOR-SASIAD: liczone RAZ przed pętlą po miastach/fotelach (nie
+              // per-city ani per-fotel wewnątrz getWorkedHexKeys niżej) -- ta sama
+              // wydajnościowa zasada co w advanceCityEconomy/collectWorkedHexOwnerMap.
+              const lostToSiblingByCityAuto = computeLostToNearerSiblingByCity(cities, map);
+              for (const hOid of humanSeats.humanOwnerIds) {
+                const autoImpCities = cities.filter(c => {
+                  if (c.ownerId !== hOid) return false;
+                  return effectiveUlepszeniaForCity(c).tryb === 'auto';
+                });
+                const hOidPracaPool = ownerPracaPool(hOid);
+                if (autoImpCities.length > 0 && hOidPracaPool > AUTO_ULEPSZENIA_PRACA_RESERVE) {
+                let playerPracaPool = hOidPracaPool;
+                const playerCivArch = civTypeForOwner(hOid);
                 const workingPlaced = new Map(placedImprovements);
                 // R-AI-WYRAB-PRZY-RZECE-FARMY-Q1 (runda 4, ZASADA 3): raport nadwyżki dla
                 // AI GRACZA. Automat gracza SYGNALIZUJE nadwyżkę i NIC nie przesuwa —
@@ -30668,12 +30739,12 @@ async function boot(): Promise<void> {
                 const playerSurplusReport = freshSurplusReport();
                 const picks = pickAutoImprovements({
                   cities: autoImpCities,
-                  ownerId: 0,
+                  ownerId: hOid,
                   map,
                   territoryNodes: territoryNodesAuto,
                   placedImprovements: workingPlaced,
                   pracaAvailable: playerPracaPool,
-                  unlockedTechs: unlockedTechSetForOwner(0),
+                  unlockedTechs: unlockedTechSetForOwner(hOid),
                   pracaSurplusThreshold: AUTO_ULEPSZENIA_PRACA_RESERVE,
                   // R4-Q2=C: `skipWyrab` przestaje być stałą `true` — decyduje przełącznik
                   // „wolno wycinać las" (państwo albo override miasta), domyślnie WYŁĄCZONY,
@@ -30684,7 +30755,7 @@ async function boot(): Promise<void> {
                   // samą żywność; niedobór surowca otwiera resztę listy (picker sam pilnuje,
                   // że trzech pozostałych profili to NIE dotyczy).
                   demandDriven: true,
-                  resourceDeficitKeys: resourceDeficitKeysForOwner(0),
+                  resourceDeficitKeys: resourceDeficitKeysForOwner(hOid),
                   surplusReport: playerSurplusReport,
                   civArchetype: playerCivArch,
                   isImprovementAllowedForCiv: (key, civ) => isImprovementAllowedForCiv(key, civ),
@@ -30716,7 +30787,7 @@ async function boot(): Promise<void> {
                   const hexKey = keyOf(pick.q, pick.r);
                   const hexForImprovement = map.hexes[hexKey];
                   if (!hexForImprovement) continue;
-                  if (!isTerritoryHexOwnedBy(pick.q, pick.r, 0, territoryNodesAuto)) continue;
+                  if (!isTerritoryHexOwnedBy(pick.q, pick.r, hOid, territoryNodesAuto)) continue;
                   const prevLayers = workingPlaced.get(hexKey) ?? placedImprovements.get(hexKey) ?? [];
                   if (prevLayers.includes(pick.key)) continue;
                   // R4-Q2=C: `wyrab` to typ `wycinka`, NIE stała warstwa `placedImprovements`
@@ -30732,10 +30803,16 @@ async function boot(): Promise<void> {
                     if (hexForImprovement.nakladka !== Nakladka.Las) continue;
                     if (hexClearingStates.has(hexKey)) continue;
                     playerPracaPool -= pick.kosztPraca;
-                    _lastPraca = playerPracaPool;
-                    _lastPracaRate -= pick.kosztPraca;
-                    _lastPracaAutoUlepszeniaKoszt += pick.kosztPraca;
-                    const clrAuto = freshClearingState(pick.key, 0);
+                    // R-HOTSEAT-ETAP6C-ECONOMY-Q1 (runda 2): cache `_last*` jest singularny
+                    // (HUD aktywnego fotela) -- aktualizowany WYŁĄCZNIE gdy `hOid` to fotel,
+                    // którego tura się właśnie kończy, wzorem bloku poolGain/overflowToPool
+                    // (linie ~30426/30452).
+                    if (hOid === humanOwnerId) {
+                      _lastPraca = playerPracaPool;
+                      _lastPracaRate -= pick.kosztPraca;
+                      _lastPracaAutoUlepszeniaKoszt += pick.kosztPraca;
+                    }
+                    const clrAuto = freshClearingState(pick.key, hOid);
                     if (clrAuto) hexClearingStates.set(hexKey, clrAuto);
                     spawnClearingMesh(hexKey);
                     const metaWyrab = getImprovementMeta(pick.key);
@@ -30761,39 +30838,55 @@ async function boot(): Promise<void> {
                     continue; // już wycięte (wyścig — obronnie, patrz komentarz wyżej)
                   }
                   playerPracaPool -= pick.kosztPraca;
-                  _lastPraca = playerPracaPool;
-                  // R-PRACA-SUWAKI-DUPLIKAT-I-CAP-MIASTO-Q1 (Wątek D): jak wyżej --
-                  // auto-ulepszenia zużywają pulę TEJ SAMEJ tury bez odjęcia od
-                  // wyświetlanej stawki.
-                  _lastPracaRate -= pick.kosztPraca;
-                  _lastPracaAutoUlepszeniaKoszt += pick.kosztPraca;
+                  // R-HOTSEAT-ETAP6C-ECONOMY-Q1 (runda 2): jak w gałęzi wycinki wyżej --
+                  // cache `_last*` aktualizowany wyłącznie dla fotela kończącego turę.
+                  if (hOid === humanOwnerId) {
+                    _lastPraca = playerPracaPool;
+                    // R-PRACA-SUWAKI-DUPLIKAT-I-CAP-MIASTO-Q1 (Wątek D): jak wyżej --
+                    // auto-ulepszenia zużywają pulę TEJ SAMEJ tury bez odjęcia od
+                    // wyświetlanej stawki.
+                    _lastPracaRate -= pick.kosztPraca;
+                    _lastPracaAutoUlepszeniaKoszt += pick.kosztPraca;
+                  }
                   const nextLayers: PlacedLayers = [...prevLayers, pick.key];
                   placedImprovements.set(hexKey, nextLayers);
                   workingPlaced.set(hexKey, nextLayers);
                   syncHexUlepszenieFields(hexKey, nextLayers);
-                  registerFortNodeIfNeeded(pick.key, pick.q, pick.r, 0);
+                  registerFortNodeIfNeeded(pick.key, pick.q, pick.r, hOid);
                   spawnImprovementMesh(hexKey);
                   syncResourceOverlayAtHex(hexKey);
                   const meta = getImprovementMeta(pick.key);
                   toastLines.push(`${meta?.nazwa ?? pick.key} @ (${pick.q},${pick.r})`);
                 }
-                if (toastLines.length === 1) {
-                  showHintMessage(`Auto ulepszenie: ${toastLines[0]}`, 3200);
-                } else if (toastLines.length > 1) {
-                  showHintMessage(`Auto ulepszenia: ${toastLines.length}× (−Praca)`, 3200);
+                // R-HOTSEAT-ETAP6C-ECONOMY-Q1 (runda 2): toast to informacja UI dla
+                // fotela AKTUALNIE OGLĄDANEGO -- pokazujemy WYŁĄCZNIE dla `humanOwnerId`
+                // (fotel kończący turę); dla pozostałych foteli w tej samej pętli
+                // pomijamy, tak jak cache `_last*`.
+                if (hOid === humanOwnerId) {
+                  if (toastLines.length === 1) {
+                    showHintMessage(`Auto ulepszenie: ${toastLines[0]}`, 3200);
+                  } else if (toastLines.length > 1) {
+                    showHintMessage(`Auto ulepszenia: ${toastLines.length}× (−Praca)`, 3200);
+                  }
+                  // ZASADA 3 dla AI GRACZA: WYŁĄCZNIE sygnał. Automat gracza NIE dotyka
+                  // `pracaAutoPercent` ani żadnego innego suwaka — decyzja o przesunięciu
+                  // środków na budynki należy do gracza (ECHO właściciela: „gracz sam
+                  // zauważy, że ma za dużo zapasów na ulepszenia, może odpowiednio
+                  // przesunąć suwak na rzecz budynków"). Sygnał pokazuje się tylko wtedy,
+                  // gdy automat NIC nie postawił — inaczej zjadałby toast z listą ulepszeń.
+                  if (playerSurplusReport.surplus && toastLines.length === 0) {
+                    showHintMessage(
+                      'Automat ulepszeń: nadwyżka budżetu Pracy — brak niedoboru surowców i brak pól '
+                      + 'z obywatelami do ulepszenia. Rozważ przesunięcie suwaka na rzecz budynków.',
+                      4200,
+                    );
+                  }
                 }
-                // ZASADA 3 dla AI GRACZA: WYŁĄCZNIE sygnał. Automat gracza NIE dotyka
-                // `pracaAutoPercent` ani żadnego innego suwaka — decyzja o przesunięciu
-                // środków na budynki należy do gracza (ECHO właściciela: „gracz sam zauważy,
-                // że ma za dużo zapasów na ulepszenia, może odpowiednio przesunąć suwak na
-                // rzecz budynków"). Sygnał pokazuje się tylko wtedy, gdy automat NIC nie
-                // postawił — inaczej zjadałby toast z listą ulepszeń.
-                if (playerSurplusReport.surplus && toastLines.length === 0) {
-                  showHintMessage(
-                    'Automat ulepszeń: nadwyżka budżetu Pracy — brak niedoboru surowców i brak pól '
-                    + 'z obywatelami do ulepszenia. Rozważ przesunięcie suwaka na rzecz budynków.',
-                    4200,
-                  );
+                // R-HOTSEAT-ETAP6C-ECONOMY-Q1 (runda 2): zapis reszty puli PRZEZ akcesor
+                // Etapu 3 z powrotem do WŁASNEJ puli fotela `hOid` (ten sam wzorzec co
+                // blok bankowania wyżej) — bez tego zużycie Pracy w tej pętli ginęłoby po
+                // wyjściu z bloku (lokalny `let playerPracaPool` cieniuje zmienną modułu).
+                setOwnerPracaPool(hOid, playerPracaPool);
                 }
               }
             } catch (errAutoImp) {
@@ -30806,8 +30899,9 @@ async function boot(): Promise<void> {
             // `markCityStateDirty()` + `updateHud()` na końcu tej funkcji (patrz komentarz
             // przy deklaracji flagi i przy jej konsumpcji w refreshLiveEmpireRatesUnsafe).
             _pracaRateFreshFromEndTurn = true;
+            // R-HOTSEAT-ETAP6C-ECONOMY-Q1: `humanOwnerId` (nie zaszyty `0`) -- HUD aktywnego fotela.
             _lastKultura = cities
-              .filter(c => c.ownerId === 0)
+              .filter(c => c.ownerId === humanOwnerId)
               .reduce((s, c) => s + ((c as { kultura?: number }).kultura ?? 0), 0);
             _lastReligionSpreadTotal = religionSpreadThisTurn;
           } catch (errMiasto) {

@@ -80,17 +80,24 @@ export function cultureMixBreakdown(
  * capital-capture.ts, żeby przy 10+ miastach globalnie "city10" nie wygrywał
  * leksykograficznie z faktycznie starszym "city9").
  */
+/**
+ * R-HOTSEAT-ETAP6C-ECONOMY-Q1: `humanOwnerIds` (domyślnie `[0]`, zachowanie identyczne
+ * jak przed tą zmianą dla wołających, którzy go nie podają) -- zastępuje zaszyte literały
+ * `0`; filtr wyszukiwania najstarszego miasta porównuje teraz do WŁAŚCICIELA `city`
+ * (dowolny fotel człowieka), nie do samego literału `0`.
+ */
 export function isPlayerCapitalCity(
   city: City,
   allCities: readonly City[],
   designatedCapitalId?: string | null,
+  humanOwnerIds: readonly number[] = [0],
 ): boolean {
-  if (city.ownerId !== 0) return false;
+  if (!humanOwnerIds.includes(city.ownerId)) return false;
   if (designatedCapitalId != null) return designatedCapitalId === city.id;
   let first: City | null = null;
   let firstOrder = Number.POSITIVE_INFINITY;
   for (const c of allCities) {
-    if (c.ownerId !== 0) continue;
+    if (c.ownerId !== city.ownerId) continue;
     const order = cityFoundOrder(c.id);
     if (!first || order < firstOrder) {
       first = c;

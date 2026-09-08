@@ -40,9 +40,21 @@ export type GameDifficulty = 'easy' | 'normal' | 'hard';
  */
 export const GLOBAL_RESEARCH_COST_MULT = R_STAWKI_KOSZT_MULT;
 
-/** Gracz ludzki — ownerId 0. Wszystko inne (AI, miasta-panstwa) = strona AI. */
-export function isPlayerOwner(ownerId: number): boolean {
-  return ownerId === 0;
+/**
+ * Gracz ludzki — domyślnie ownerId 0. Wszystko inne (AI, miasta-panstwa) = strona AI.
+ * R-HOTSEAT-ETAP6C-ECONOMY-Q1: `humanOwnerIds` parametryzowalny (domyślnie `[0]`, czyli
+ * IDENTYCZNE zachowanie jak przed tą zmianą dla każdego wołającego, który go nie poda) —
+ * pozwala docelowo podłączyć `humanSeats.humanOwnerIds` zamiast zaszytego literału `0`.
+ * Pełne przełączenie WSZYSTKICH wołających (production.ts/cityPanel.ts) na realny
+ * `humanSeats.humanOwnerIds` świadomie odłożone (patrz raport tej rundy) — koszty
+ * budynków/jednostek/badań i próg wzrostu populacji mają zbyt duży promień rażenia na
+ * mechaniczną podmianę w jednej rundzie bez osobnej weryfikacji balansu gry.
+ */
+export function isPlayerOwner(
+  ownerId: number,
+  humanOwnerIds: readonly number[] = [0],
+): boolean {
+  return humanOwnerIds.includes(ownerId);
 }
 
 /**
@@ -52,10 +64,11 @@ export function isPlayerOwner(ownerId: number): boolean {
 export function getCostMultiplierForOwner(
   ownerId: number,
   difficulty: GameDifficulty,
+  humanOwnerIds: readonly number[] = [0],
 ): number {
   if (difficulty === 'normal') return 1;
-  if (difficulty === 'easy') return isPlayerOwner(ownerId) ? 1 : 2;
-  return isPlayerOwner(ownerId) ? 2 : 1;
+  if (difficulty === 'easy') return isPlayerOwner(ownerId, humanOwnerIds) ? 1 : 2;
+  return isPlayerOwner(ownerId, humanOwnerIds) ? 2 : 1;
 }
 
 /** Koszt po tempie + mnoznik trudnosci (minimum 1). */
@@ -63,8 +76,9 @@ export function applyDifficultyCostMultiplier(
   costAfterPace: number,
   ownerId: number,
   difficulty: GameDifficulty,
+  humanOwnerIds: readonly number[] = [0],
 ): number {
-  const mult = getCostMultiplierForOwner(ownerId, difficulty);
+  const mult = getCostMultiplierForOwner(ownerId, difficulty, humanOwnerIds);
   return Math.max(1, Math.round(costAfterPace * mult));
 }
 
@@ -75,6 +89,7 @@ export function scaledResearchCost(
   ownerId: number,
   difficulty: GameDifficulty,
   epoka?: string | null,
+  humanOwnerIds: readonly number[] = [0],
 ): number {
   const afterTempo = applyTempoKoszt(baseCost, tempo);
   let afterGlobal = Math.max(1, Math.round(afterTempo * GLOBAL_RESEARCH_COST_MULT));
@@ -82,7 +97,7 @@ export function scaledResearchCost(
   if (isResearchEraFala2Extra(epoka)) {
     afterGlobal = Math.max(1, Math.round(afterGlobal * R_STAWKI_FALA2_MULT));
   }
-  return applyDifficultyCostMultiplier(afterGlobal, ownerId, difficulty);
+  return applyDifficultyCostMultiplier(afterGlobal, ownerId, difficulty, humanOwnerIds);
 }
 
 /**
@@ -92,10 +107,11 @@ export function scaledResearchCost(
 export function getPopulationGrowthDifficultyMultiplier(
   ownerId: number,
   difficulty: GameDifficulty,
+  humanOwnerIds: readonly number[] = [0],
 ): number {
   if (difficulty === 'normal') return 1;
-  if (difficulty === 'easy') return isPlayerOwner(ownerId) ? 1 : 2;
-  return isPlayerOwner(ownerId) ? 2 : 0.5;
+  if (difficulty === 'easy') return isPlayerOwner(ownerId, humanOwnerIds) ? 1 : 2;
+  return isPlayerOwner(ownerId, humanOwnerIds) ? 2 : 0.5;
 }
 
 /** Tempo kreatora x trudnosc — laczny mnoznik progu wzrostu. */

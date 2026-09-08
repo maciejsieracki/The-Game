@@ -1208,15 +1208,19 @@ export function sumEconomyForOwner(
 }
 
 /**
- * HUD gracza — suma tylko z miast obecnych w `cities` (ownerId 0).
+ * HUD gracza — suma tylko z miast JEDNEGO ownera obecnych w `cities` (domyślnie
+ * ownerId 0 -- zachowanie sprzed R-HOTSEAT-ETAP6C-ECONOMY-Q1, gdy parametr pominięty).
  * Bezpieczniejsze niż sam ownerId w ticku (ochrona przed starymi save / rozjazdem).
+ * R-HOTSEAT-ETAP6C-ECONOMY-Q1: `ownerId` parametryzowalny -- wołający (main.ts) decyduje
+ * per fotel (`isHuman`/`humanOwnerIds`), zamiast zaszytego literału `0`.
  */
 export function sumEconomyForPlayerCities(
   result: Pick<EconomyTickResult, 'perCity'>,
   cities: ReadonlyArray<{ id: string; ownerId: number }>,
+  ownerId = 0,
 ): OwnerEconomySum {
   const playerCityIds = new Set(
-    cities.filter(c => c.ownerId === 0).map(c => c.id),
+    cities.filter(c => c.ownerId === ownerId).map(c => c.id),
   );
   let pieniadz = 0;
   let nauka = 0;
