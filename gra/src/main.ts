@@ -1020,8 +1020,11 @@ import {
   saveToLocal, loadFromLocal, listSaves,
   setLastPlayedSlotId, checkSaveIntegrity, AUTOSAVE_SLOT_ID,
   FSA_SLOT_PREFIX,
+  SAVE_VERSION,
+  IncompatibleSaveFormatError,
   type SaveGame,
   type SaveToLocalResult,
+  type GraczSaveV3,
 } from './game/save';
 import { serializeMapForSave } from './map/mapSnapshot';
 import { loadMapForSave } from './game/load-map-source';
@@ -28314,28 +28317,44 @@ async function boot(): Promise<void> {
         ironForceWarRestUntilByOwner,
         ironForceWarActiveByPairKey,
       );
+      // R-HOTSEAT-ETAP7-SAVELOAD-Q1 (v3, ABC-4): `gracze[]`/`exploredByHuman` per-human
+      // ZASTĘPUJĄ pojedyncze `gracz`/`explored` (tylko gracz 0). Kształt
+      // `Array<[ownerId, X]>` -- zgodny z idiomem reszty pliku dla map per-owner
+      // (aiSkarbiecByOwner itp. niżej) -- wychodzi wprost z `Array.from(...entries())`,
+      // bo `playerStateByHuman`/`exploredByHuman` SĄ w runtime `Map<number, X>`
+      // (main.ts ok. 10393/10421) -- zero przekształceń pośrednich.
+      const graczeSave: Array<[number, GraczSaveV3]> = Array.from(
+        playerStateByHuman.entries(),
+        ([oid, ps]) => [oid, {
+          skarbiec: ps.skarbiec,
+          nauka:    ps.nauka,
+          era:      ps.era,
+          zbadane:  Array.from(ps.zbadane),
+          badana:   ps.badana,
+          researchQueue: ps.researchQueue.slice(),
+          tempoGry: ps.tempoGry,
+          buildingCostPace: ps.buildingCostPace,
+          kosztJednostekPace: ps.kosztJednostekPace,
+          wzrostLudnosciPace: ps.wzrostLudnosciPace,
+          ruchSwiataPace: ps.ruchSwiataPace,
+        }] as [number, GraczSaveV3],
+      );
+      const exploredByHumanSave: Array<[number, string[]]> = Array.from(
+        exploredByHuman.entries(),
+        ([oid, set]) => [oid, Array.from(set)] as [number, string[]],
+      );
       return {
-        wersja: 2,
+        wersja: SAVE_VERSION,
         tura: turn,
         seed: _gameSeed,
         units: units.slice(),
         cities: cities.slice(),
-        explored: Array.from(explored),
+        exploredByHuman: exploredByHumanSave,
+        gracze: graczeSave,
+        humanOwnerIds: humanSeats.humanOwnerIds.slice(),
+        activeHumanOwnerId: humanSeats.activeHumanOwnerId,
         autoMarch: marchSave.autoMarch,
         plannedMarches: marchSave.plannedMarches,
-        gracz: {
-          skarbiec: player.skarbiec,
-          nauka:    player.nauka,
-          era:      player.era,
-          zbadane:  Array.from(player.zbadane),
-          badana:   player.badana,
-          researchQueue: player.researchQueue.slice(),
-          tempoGry: player.tempoGry,
-          buildingCostPace: player.buildingCostPace,
-          kosztJednostekPace: player.kosztJednostekPace,
-          wzrostLudnosciPace: player.wzrostLudnosciPace,
-          ruchSwiataPace: player.ruchSwiataPace,
-        },
         cityProd:       cityProdSave,
         cityBuilt:      cityBuiltSave,
         aiResearchDone: aiResSave,
@@ -34390,7 +34409,12 @@ async function boot(): Promise<void> {
       };
       const mapSize = (meta?.loadMapSize as string) || 'Standardowy';
       const civId = (meta?.loadCivId as string) || 'grecy';
-      const era = saved.gracz?.era ?? 1;
+      // R-HOTSEAT-ETAP7-SAVELOAD-Q1: v3 usuwa pojedyncze pole `gracz` (zastąpione
+      // przez `gracze[]` per-human, patrz restoreGameFromSave niżej) -- ta gałąź to
+      // fallback dla zapisu BEZ meta.newGameParams (rzadka ścieżka), więc era liczona
+      // z wpisu HUMAN_OWNER_PRIMARY (0), zgodnie z dotychczasową semantyką "era gracza".
+      const graczPrimary = saved.gracze?.find(([oid]) => oid === HUMAN_OWNER_PRIMARY)?.[1];
+      const era = graczPrimary?.era ?? 1;
       const epochId = era >= 3 ? 'zelazo' : era >= 2 ? 'braz' : 'kamien';
       const mq = mapQualityTierFromSave(saved);
       const bundle = bundledMapQualityPreset(mq);
@@ -35624,9 +35648,15 @@ async function boot(): Promise<void> {
         // mógłby POKAZAĆ zapis z dysku (summarizeFsaSaveSlots), ale kliknięcie
         // go zawsze kończyło się "Nie można wczytać tego zapisu" (loadFromLocal
         // szuka w localStorage klucza, który nigdy tam nie istniał).
+        // R-HOTSEAT-ETAP7-SAVELOAD-Q1: `{ rethrowIncompatible: true }` -- WYŁĄCZNIE
+        // ta ścieżka (realna próba wczytania jednego wybranego slotu) chce, żeby
+        // `IncompatibleSaveFormatError` przebiła się do `catch` niżej (dedykowany
+        // komunikat ABC-4). summarizeSaveSlots() (saveLoadDialog.ts) woła
+        // `loadFromLocal` BEZ tej flagi -- jej listing musi przetrwać nieczytelny
+        // pojedynczy slot, nie tylko ten format.
         const saved = slotId.startsWith(FSA_SLOT_PREFIX)
           ? await loadFsaAutosaveFile(slotId.slice(FSA_SLOT_PREFIX.length))
-          : await loadFromLocal(slotId);
+          : await loadFromLocal(slotId, { rethrowIncompatible: true });
         if (!saved) {
           diagWarn('load', `brak danych slot=${slotId}`);
           showHintMessage('Nie można wczytać tego zapisu.', 3000);
@@ -35768,6 +35798,21 @@ async function boot(): Promise<void> {
         diagInfo('load', `OK tura=${turn} miasta=${cities.length} seed=${_gameSeed}`);
         setLastPlayedSlotId(slotId);
       } catch (e) {
+        // R-HOTSEAT-ETAP7-SAVELOAD-Q1 (ABC-4): gałąź DEDYKOWANA dla starego formatu
+        // zapisu (wersja < 3, save.ts::deserializeGame), wzorem istniejącej gałęzi
+        // `fatal.length > 0` wyżej w tej samej funkcji. `IncompatibleSaveFormatError`
+        // przebija się tu z `loadFromLocal()` (save.ts, rethrow celowy). KOLEJNOŚĆ
+        // `openStartupMainMenu()` PRZED `showHintMessage()` jest OBOWIĄZKOWA -- ten
+        // sam mechanizm N-ZINDEX-TOAST co gałąź `ok===false` niżej w tej funkcji:
+        // `showHintMessage()` czyta `isMainMenuOpen()` SYNCHRONICZNIE, więc odwrotna
+        // kolejność zamalowałaby toast pod `.civ-menu` (z-index 500 > 320) na całe
+        // 6000ms -- realne naruszenie ABC-4 ("jasno komunikować").
+        if (e instanceof IncompatibleSaveFormatError) {
+          diagWarn('load', e.message);
+          if (!fromInGamePause) openStartupMainMenu();
+          showHintMessage(e.message, 6000);
+          return;
+        }
         diagError('load', e instanceof Error ? e.message : String(e));
         showHintMessage(
           fromInGamePause
@@ -35904,31 +35949,76 @@ async function boot(): Promise<void> {
       // seedCityOwnerDefaults are safe here.
       reconcileAllWorkedTiles(cities, buildAllTerritoryNodes(), computeLostToNearerSiblingByCity(cities, map));
       playerEverOwnedCity = cities.some(c => c.ownerId === 0);
-      explored.clear();
-      for (const k of saved.explored ?? []) explored.add(k);
+      // R-HOTSEAT-ETAP7-SAVELOAD-Q1 (v3): `gracze[]`/`exploredByHuman` ZASTĘPUJĄ
+      // pojedyncze `gracz`/`explored`. Odtwarzamy WSZYSTKIE fotele z zapisu do
+      // `playerStateByHuman`/`exploredByHuman` (Etapy 0/2/3/5), a nie tylko gracza 0 --
+      // przy `humanOwnerIds=[0]` (single-player/no-op §7a recon) to jest DOKŁADNIE
+      // dzisiejsze zachowanie, bo `exploredByHuman.get(0)`/`playerStateByHuman.get(0)`
+      // są ALIASAMI (tą samą referencją co) `explored`/`player` (main.ts ok.
+      // 10409/10421) -- mutacja przez mapę mutuje też zmienne modułu wprost.
+      humanSeats = {
+        humanOwnerIds: saved.humanOwnerIds.slice(),
+        activeHumanOwnerId: saved.activeHumanOwnerId,
+      };
+      // UWAGA (alias): `exploredByHuman.get(HUMAN_OWNER_PRIMARY)` jest DZIŚ dosłownie
+      // `explored` (main.ts ok. 10409, ten sam obiekt Set, nie kopia) -- zliczne inne
+      // miejsca w tym pliku (33+, patrz ABC-4/recon §2) czytają `explored` WPROST, nie
+      // przez mapę. `exploredByHuman.clear()` + `.set(0, new Set(...))` podmieniłoby ten
+      // Set na NOWY obiekt i po cichu ROZERWAŁO alias -- `explored` zostałby pusty/stary,
+      // a caly kod czytający go wprost widziałby dane sprzed load'u. Dlatego gracz 0 jest
+      // odtwarzany przez MUTACJĘ istniejącego `explored` (clear+add), dokładnie jak w
+      // kodzie v2 sprzed tej zmiany; TYLKO pozostali ludzcy właściciele (owner > 0)
+      // dostają nowy `Set` w mapie.
+      exploredByHuman.clear();
+      for (const [oid, keys] of saved.exploredByHuman) {
+        if (oid === HUMAN_OWNER_PRIMARY) {
+          explored.clear();
+          for (const k of keys) explored.add(k);
+          exploredByHuman.set(HUMAN_OWNER_PRIMARY, explored);
+        } else {
+          exploredByHuman.set(oid, new Set(keys));
+        }
+      }
+      // Gracz 0 (HUMAN_OWNER_PRIMARY) MUSI zawsze mieć wpis -- akcesory
+      // owner-agnostyczne (ME(), currentVisibleForOwner itd.) i `explored`/`player`
+      // (aliasy gracza 0, patrz wyżej) zakładają jego istnienie niezależnie od
+      // zawartości `saved.humanOwnerIds`. Brak wpisu w zapisie -> `explored` po prostu
+      // czyścimy (zero odkrytych heksów), zero nowego obiektu -- alias zostaje żywy.
+      if (!exploredByHuman.has(HUMAN_OWNER_PRIMARY)) {
+        explored.clear();
+        exploredByHuman.set(HUMAN_OWNER_PRIMARY, explored);
+      }
       revealAllLand = false;
-      if (saved.gracz) {
-        player.skarbiec = saved.gracz.skarbiec ?? 0;
-        player.nauka    = saved.gracz.nauka ?? 0;
-        player.era      = saved.gracz.era ?? 1;
-        player.badana   = saved.gracz.badana ?? null;
-        player.researchQueue = Array.isArray(saved.gracz.researchQueue) ? saved.gracz.researchQueue.slice() : [];
-        player.zbadane  = new Set<string>(saved.gracz.zbadane ?? []);
-        player.tempoGry = saved.gracz.tempoGry ?? 'standardowa';
-        player.buildingCostPace = saved.gracz.buildingCostPace
+      playerStateByHuman.clear();
+      for (const [oid, g] of saved.gracze) {
+        const ps = oid === HUMAN_OWNER_PRIMARY ? player : createPlayerState();
+        ps.skarbiec = g.skarbiec ?? 0;
+        ps.nauka    = g.nauka ?? 0;
+        ps.era      = g.era ?? 1;
+        ps.badana   = g.badana ?? null;
+        ps.researchQueue = Array.isArray(g.researchQueue) ? g.researchQueue.slice() : [];
+        ps.zbadane  = new Set<string>(g.zbadane ?? []);
+        ps.tempoGry = (g.tempoGry ?? 'standardowa') as PlayerState['tempoGry'];
+        ps.buildingCostPace = g.buildingCostPace
           ?? (saved.meta?.newGameParams as NewGameParams | undefined)?.advanced?.buildingCostPace
           ?? 'niski';
-        player.kosztJednostekPace = saved.gracz.kosztJednostekPace
+        ps.kosztJednostekPace = g.kosztJednostekPace
           ?? (saved.meta?.newGameParams as NewGameParams | undefined)?.advanced?.kosztJednostekPace
           ?? 'niski';
-        player.wzrostLudnosciPace = saved.gracz.wzrostLudnosciPace
+        ps.wzrostLudnosciPace = g.wzrostLudnosciPace
           ?? (saved.meta?.newGameParams as NewGameParams | undefined)?.advanced?.wzrostLudnosciPace
           ?? 'wysoki';
         // RUCH-SWIATA-TEMPO: stary zapis bez pola -> 'krotki' (x1, zero zmiany zachowania).
-        player.ruchSwiataPace = saved.gracz.ruchSwiataPace
+        ps.ruchSwiataPace = g.ruchSwiataPace
           ?? (saved.meta?.newGameParams as NewGameParams | undefined)?.advanced?.ruchSwiataPace
           ?? 'krotki';
+        playerStateByHuman.set(oid, ps);
       }
+      // Gracz 0 MUSI zawsze mieć wpis w `playerStateByHuman` -- z tych samych
+      // powodów co `exploredByHuman` wyżej (`player` jest jego alias runtime).
+      // Zapis bez wpisu gracza 0 w `gracze[]` nie powinien się zdarzyć (v3 zawsze
+      // go pisze), ale broniamy się defensywnie zamiast zakładać poprawność JSON-a.
+      if (!playerStateByHuman.has(HUMAN_OWNER_PRIMARY)) playerStateByHuman.set(HUMAN_OWNER_PRIMARY, player);
       overlayDepositEra = player.era;
       cityProd.clear();
       if (saved.cityProd) {

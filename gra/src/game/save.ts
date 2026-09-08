@@ -78,6 +78,10 @@ import type { TradeRoute } from './trade-routes';
 import { isValidMapSnapshot, type SerializedMapData } from '../map/mapSnapshot';
 import { Nakladka, Ulepszenie } from '../types/hex';
 import { idbGetItem, idbSetItem, idbRemoveItem, idbListKeys, idbIsAvailable } from './idb-storage';
+import type { BuildingCostPace } from './building-cost-tempo';
+import type { KosztJednostekPace } from './unit-cost-tempo';
+import type { WzrostLudnosciPace } from './population-growth-tempo';
+import type { RuchSwiataPace } from './ruch-swiata-tempo';
 
 /**
  * B3 (Evaluator, migracja IDB runda 2): re-export -- UI (saveLoadDialog.ts)
@@ -101,8 +105,34 @@ export { idbIsAvailable as isIdbAvailable };
 /**
  * Current save format version.  Bumped whenever the SaveGame shape changes in
  * a backward-incompatible way; deserializeGame() rejects unknown majors.
+ *
+ * R-HOTSEAT-ETAP7-SAVELOAD-Q1 (ABC-4, właściciel 2026-09-05, patrz
+ * docs/decyzje/PLAN-HOT-SEAT-2-GRACZY.md §ABC-4): bump 2->3 dla per-human
+ * `gracze`/`exploredByHuman`/`humanOwnerIds`/`activeHumanOwnerId`, ŚWIADOMIE
+ * BEZ funkcji migrującej v2->v3 — stare zapisy (wersja < 3) mają dać czytelny
+ * `IncompatibleSaveFormatError`, nie próbę wczytania śmieci (patrz
+ * deserializeGame niżej).
  */
-export const SAVE_VERSION = 2;
+export const SAVE_VERSION = 3;
+
+/**
+ * Rzucany przez {@link deserializeGame} gdy `wersja < 3` — zapis pochodzi
+ * sprzed formatu hot-seat i NIE JEST migrowany (ABC-4: właściciel wybrał
+ * wariant bez migracji, każdy zapis z playtestów sprzed tej zmiany staje się
+ * bezużyteczny, ale użytkownik dostaje jasny komunikat zamiast cichej awarii
+ * albo wczytania śmieci — `saved.gracze` byłoby `undefined` bez tego strażnika).
+ * Odróżnialny od generycznego `Error` (niepoprawny JSON, uszkodzony zapis),
+ * żeby wołający (main.ts::loadGameFromSlot) mógł pokazać dedykowany tekst.
+ */
+export class IncompatibleSaveFormatError extends Error {
+  constructor(public readonly wersja: number) {
+    super(
+      'Ten zapis pochodzi ze starszej wersji gry (v' + wersja + ') sprzed trybu ' +
+      'gorącego krzesła i nie może być wczytany. Rozpocznij nową grę.',
+    );
+    this.name = 'IncompatibleSaveFormatError';
+  }
+}
 
 /** localStorage key prefix under which save slots are stored. */
 export const SAVE_PREFIX = 'thegame.save.';
@@ -283,6 +313,26 @@ export async function loadSaveSlotMeta(slot: string): Promise<SaveSlotMeta | nul
  * is a string[] rather than a Set<string>, because Sets do not survive JSON --
  * the integrator converts the runtime `Set<string>` to an array (and back).
  */
+/**
+ * v3 (R-HOTSEAT-ETAP7-SAVELOAD-Q1): per-human ekonomia/badania — jeden wpis
+ * `SaveGame.gracze` na fotel ludzki. Pola i typy 1:1 z runtime `PlayerState`
+ * (game/playerState.ts), w tym `*Pace` jako string-union (NIE `number`) z ich
+ * modułów źródłowych — importy wyżej.
+ */
+export interface GraczSaveV3 {
+  skarbiec: number;
+  nauka: number;
+  era: number;
+  zbadane: string[];
+  badana: string | null;
+  researchQueue: string[];
+  tempoGry: string;
+  buildingCostPace: BuildingCostPace;
+  kosztJednostekPace: KosztJednostekPace;
+  wzrostLudnosciPace: WzrostLudnosciPace;
+  ruchSwiataPace: RuchSwiataPace;
+}
+
 export interface SaveGame {
   /** Save format version; must match SAVE_VERSION to load. */
   wersja: number;
@@ -303,17 +353,40 @@ export interface SaveGame {
   cities: City[];
 
   /**
-   * Fog-of-war explored hex keys ("q,r").  Stored as an array; the runtime
-   * holds a Set<string> -- convert with Array.from(explored) on save and
-   * new Set(save.explored) on load.
+   * v3 (R-HOTSEAT-ETAP7-SAVELOAD-Q1): fog-of-war explored hex keys ("q,r"),
+   * PER HUMAN OWNER — klucz = ownerId, wartość = Array.from(Set<string>) tego
+   * fotela. Zastępuje pole `explored` (jeden globalny Set, tylko gracz 0).
+   * Runtime trzyma to jako `Map<number, Set<string>>` (main.ts::exploredByHuman)
+   * — konwersja `Array.from(exploredByHuman.entries()).map(([oid,s]) =>
+   * [oid, Array.from(s)])` na zapisie, odwrotnie na wczytaniu.
    */
-  explored: string[];
+  exploredByHuman: Array<[number, string[]]>;
 
   /**
-   * Optional player economy / treasury snapshot.  Loosely typed (`any`)
-   * because main.ts does not yet keep a single discrete player-economy object
-   * (economy is derived per turn).  Fill once such a structure exists.
+   * v3: per-human snapshot ekonomii/badań gracza — klucz = ownerId. Zastępuje
+   * pojedyncze pole `gracz` (tylko gracz 0). Runtime: main.ts::playerStateByHuman
+   * (`Map<number, PlayerState>`), `Array.from(playerStateByHuman.entries())`
+   * daje ten kształt bez przekształceń pośrednich.
    */
+  gracze: Array<[number, GraczSaveV3]>;
+
+  /** v3: fotele ludzkie w chwili zapisu — z main.ts::humanSeats.humanOwnerIds. */
+  humanOwnerIds: number[];
+
+  /** v3: aktywny fotel w chwili zapisu — z main.ts::humanSeats.activeHumanOwnerId. */
+  activeHumanOwnerId: number;
+
+  /**
+   * @deprecated v2, USUNIĘTE z zapisu v3 (serializeGame/buildSaveGameSnapshot
+   * go już nie wypisują). Zostaje w typie WYŁĄCZNIE opcjonalnie, żeby kod
+   * czytający surowy, niezweryfikowany JSON (przed odrzuceniem w
+   * deserializeGame — patrz IncompatibleSaveFormatError) nadal się kompilował.
+   * ŻADEN kod v3 nie powinien czytać tego pola — zapis w starym formacie jest
+   * odrzucany PRZED dotarciem do jakiegokolwiek konsumenta (ABC-4: bez migracji).
+   */
+  explored?: string[];
+
+  /** @deprecated v2, patrz `explored` wyżej — ten sam powód, ta sama zasada. */
   gracz?: any;
 
   /**
@@ -603,6 +676,19 @@ export function deserializeGame(json: string): SaveGame {
   if (Number.isNaN(ver)) {
     throw new Error('deserializeGame: brak lub niepoprawne pole wersja');
   }
+  // R-HOTSEAT-ETAP7-SAVELOAD-Q1 (ABC-4): próg TWARDY `< 3`, celowo NIE
+  // generyczne `< SAVE_VERSION` — v3 jest jednorazowym cięciem nakazanym przez
+  // właściciela (bez migracji v2->v3), nie precedensem "każdy stary zapis
+  // zawsze odrzucony". Przyszłe pola opcjonalne nadal mogą być dodawane bez
+  // bumpu SAVE_VERSION (patrz komentarz przy polu `tradeRoutes` niżej) — ten
+  // strażnik dotyczy WYŁĄCZNIE granicy 2->3 (`gracz`/`explored` ->
+  // `gracze`/`exploredByHuman`/`humanOwnerIds`/`activeHumanOwnerId`).
+  // Musi wyprzedzić destrukturyzację niżej: bez tego strażnika `saved.gracze`
+  // byłoby `undefined` dla zapisu v2, a pętla po nim dałaby cicho zero
+  // graczy zamiast czytelnego błędu (dokładnie zachowanie zakazane ABC-4).
+  if (ver < 3) {
+    throw new IncompatibleSaveFormatError(ver);
+  }
   if (ver > SAVE_VERSION) {
     throw new Error(
       'deserializeGame: wersja zapisu ' + ver +
@@ -620,8 +706,10 @@ export function deserializeGame(json: string): SaveGame {
     seed: typeof obj.seed === 'number' ? obj.seed : undefined,
     units: Array.isArray(obj.units) ? (obj.units as RuntimeUnit[]) : [],
     cities: Array.isArray(obj.cities) ? (obj.cities as City[]) : [],
-    explored: Array.isArray(obj.explored) ? (obj.explored as string[]) : [],
-    gracz: obj.gracz,
+    exploredByHuman: Array.isArray(obj2.exploredByHuman) ? obj2.exploredByHuman : [],
+    gracze: Array.isArray(obj2.gracze) ? obj2.gracze : [],
+    humanOwnerIds: Array.isArray(obj2.humanOwnerIds) ? obj2.humanOwnerIds : [0],
+    activeHumanOwnerId: typeof obj2.activeHumanOwnerId === 'number' ? obj2.activeHumanOwnerId : 0,
     cityProd:       obj2.cityProd,
     cityBuilt:      obj2.cityBuilt,
     aiResearchDone: Array.isArray(obj2.aiResearchDone) ? obj2.aiResearchDone : undefined,
@@ -774,9 +862,22 @@ export async function saveToLocal(slot: string, s: SaveGame): Promise<SaveToLoca
  *   - neither backend has the slot,
  *   - the stored JSON is invalid or fails version validation.
  *
- * Browser-safe: never throws; any deserialize error collapses to null.
+ * Browser-safe: any deserialize error collapses to null UNLESS
+ * `opts.rethrowIncompatible` is set AND the error is specifically
+ * `IncompatibleSaveFormatError` (v3, ABC-4, R-HOTSEAT-ETAP7-SAVELOAD-Q1) — that
+ * combination rethrows so a caller that WANTS to show a dedicated "old save
+ * format" message (main.ts::loadGameFromSlot) can do so instead of getting an
+ * indistinguishable `null`. Defaults to the original silent-null behaviour so
+ * OTHER existing callers (e.g. ui/saveLoadDialog.ts::summarizeSaveSlots(),
+ * which falls back to this function for legacy saves lacking a separate meta
+ * header) are UNCHANGED — that caller iterates every stored slot to build the
+ * "Load game" list and must keep skipping an unreadable one instead of the
+ * whole listing throwing.
  */
-export async function loadFromLocal(slot: string): Promise<SaveGame | null> {
+export async function loadFromLocal(
+  slot: string,
+  opts?: { rethrowIncompatible?: boolean },
+): Promise<SaveGame | null> {
   let raw = await idbGetItem(SAVE_PREFIX + slot);
   if (raw === null) {
     const storage = getStorage();
@@ -791,7 +892,18 @@ export async function loadFromLocal(slot: string): Promise<SaveGame | null> {
   if (raw === null) return null;
   try {
     return deserializeGame(raw);
-  } catch {
+  } catch (e) {
+    // R-HOTSEAT-ETAP7-SAVELOAD-Q1: gdy WOŁAJĄCY jawnie o to poprosił
+    // (`opts.rethrowIncompatible`), `IncompatibleSaveFormatError` (zapis < v3,
+    // ABC-4 bez migracji) przebija się do niego, żeby użytkownik dostał
+    // dedykowany, czytelny komunikat zamiast ogólnego "Nie można wczytać tego
+    // zapisu." nieodróżnialnego od pliku uszkodzonego (main.ts::loadGameFromSlot
+    // ustawia tę flagę). BEZ flagi (domyślnie, wszyscy pozostali wołający, w tym
+    // summarizeSaveSlots() w saveLoadDialog.ts budujący listę "Wczytaj grę" ze
+    // WSZYSTKICH slotów) zachowanie jest DOKŁADNIE takie jak przed tą zmianą —
+    // każdy błąd deserializacji, ten włącznie, kolapsuje cicho do `null`, żeby
+    // jeden nieczytelny slot nie wywrócił całej listy.
+    if (opts?.rethrowIncompatible && e instanceof IncompatibleSaveFormatError) throw e;
     return null;
   }
 }
