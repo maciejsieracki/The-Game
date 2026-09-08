@@ -496,10 +496,20 @@ function aiCanEngageOwner(opts: AITurnOpts, targetOwnerId: number): boolean {
   return opts.canEngageOwner ? opts.canEngageOwner(targetOwnerId) : true;
 }
 
-/** Omijanie konsolidacji klastra — wyłączone przy deadline do t.100 (AI-CS-CLUSTER-DIFF). */
-function aiMayBypassClusterConsolidation(ekspansywnosc: number, opts: AITurnOpts): boolean {
+/**
+ * Omijanie konsolidacji klastra — wyłączone przy deadline do t.100 (AI-CS-CLUSTER-DIFF).
+ * P-AI-EKSPANSJA-ODBUDOWA-MIAST-PO-WOJNIE-Q1: `recovering` (cywilizacja poniżej niedawnego
+ * szczytu liczby miast, patrz aiIsRecoveringCityCount) omija konsolidację klastra TAK SAMO
+ * jak profil ekspansywny — ale NIE omija twardego zakazu w trakcie deadline'u wojny o klaster
+ * (clusterConquestDeadlineActive ma pierwszeństwo, świadomie niezmieniony zakres AI-CS-CLUSTER-DIFF).
+ */
+function aiMayBypassClusterConsolidation(
+  ekspansywnosc: number,
+  opts: AITurnOpts,
+  recovering = false,
+): boolean {
   if (opts.clusterConquestDeadlineActive) return false;
-  return aiBypassClusterConsolidation(ekspansywnosc);
+  return recovering || aiBypassClusterConsolidation(ekspansywnosc);
 }
 
 /**
@@ -959,6 +969,82 @@ function aiColonizationAggressiveMode(opts: AITurnOpts, myCities: AICity[]): boo
     && aiHasColonizationReadyCity(myCities, opts.poziomTrudnosci);
 }
 
+// ---------------------------------------------------------------------------
+// P-AI-EKSPANSJA-ODBUDOWA-MIAST-PO-WOJNIE-Q1: odbudowa po utracie miast w wojnie.
+// Diagnoza (dowód w gra/tools/ai-city-recovery-test.cjs): ŻADNA bramka foundingu nie
+// uwzględniała kontekstu "właśnie straciłem miasta" — clusterConsolidationPhase /
+// isLocalExpansionPhase blokowały founding identycznie na historycznym szczycie i tuż
+// po stracie 2-3 miast w wojnie. Mechanizm: śledzimy w pamięci (per playerId, okno
+// AI_CITY_RECOVERY_WINDOW_TURNS tur) niedawny szczyt liczby miast; spadek o co najmniej
+// AI_CITY_RECOVERY_LOSS_THRESHOLD poniżej tego szczytu omija (analogicznie do istniejącego
+// aiMayBypassClusterConsolidation/aggressiveColonization) blokadę konsolidacji klastra —
+// BEZ zmiany limitu 1 miasto/turę (C-AI-EKSP-Q1) i BEZ zmiany withinTerritory.
+// ---------------------------------------------------------------------------
+
+/** Okno (w turach) do liczenia "niedawnego szczytu" liczby miast cywilizacji. */
+const AI_CITY_RECOVERY_WINDOW_TURNS = 15;
+/** Minimalny spadek poniżej niedawnego szczytu, by uznać cywilizację za "w odbudowie". */
+const AI_CITY_RECOVERY_LOSS_THRESHOLD = 1;
+
+/** Historia liczby miast per playerId, tylko wpisy w oknie AI_CITY_RECOVERY_WINDOW_TURNS. */
+const aiCityCountHistory = new Map<number, Array<{ turn: number; count: number }>>();
+
+/** Test-only / nowa gra: czyści historię liczby miast (izolacja między symulacjami). */
+export function resetAiCityCountHistory(): void {
+  aiCityCountHistory.clear();
+}
+
+function recordAiCityCount(playerId: number, turn: number, count: number): void {
+  let hist = aiCityCountHistory.get(playerId);
+  if (hist && hist.length > 0 && turn < hist[hist.length - 1]!.turn) {
+    // Tura cofnęła się względem ostatniego zapisu dla tego playerId -- moduł
+    // ai.ts żyje dłużej niż jedna gra w tej samej sesji przeglądarki (nowa gra
+    // bez pełnego przeładowania strony), więc stara historia z POPRZEDNIEJ gry
+    // nie może zanieczyszczać "niedawnego szczytu" nowej gry (mogłaby inaczej
+    // przetrwać setki tur, bo `cutoff = turn - okno` wypada wtedy ujemny i nic
+    // starego nie odpada -- zgłoszone jako ZARZUT 2 Evaluatora, runda 1,
+    // PRZYJĘTY: naprawione tu, w ai.ts, bez zależności od wywołania resetu z
+    // main.ts, który jest poza allowlistą tego tematu).
+    hist = [];
+    aiCityCountHistory.set(playerId, hist);
+  } else if (!hist) {
+    hist = [];
+    aiCityCountHistory.set(playerId, hist);
+  }
+  const last = hist[hist.length - 1];
+  if (last && last.turn === turn) {
+    last.count = count;
+  } else {
+    hist.push({ turn, count });
+  }
+  const cutoff = turn - AI_CITY_RECOVERY_WINDOW_TURNS;
+  while (hist.length > 0 && hist[0]!.turn < cutoff) hist.shift();
+}
+
+function recentCityPeak(playerId: number, turn: number): number {
+  const hist = aiCityCountHistory.get(playerId) ?? [];
+  const cutoff = turn - AI_CITY_RECOVERY_WINDOW_TURNS;
+  let peak = 0;
+  for (const h of hist) {
+    if (h.turn >= cutoff && h.count > peak) peak = h.count;
+  }
+  return peak;
+}
+
+/**
+ * Cywilizacja jest poniżej niedawnego (ostatnie AI_CITY_RECOVERY_WINDOW_TURNS tur) szczytu
+ * liczby miast o co najmniej AI_CITY_RECOVERY_LOSS_THRESHOLD — typowo po utracie miast w
+ * wojnie. Rejestruje bieżący stan jako efekt uboczny (wywołanie idempotentne w obrębie tej
+ * samej tury — kolejne wywołanie w tej samej turze nadpisuje wpis, nie dubluje historii).
+ */
+function aiIsRecoveringCityCount(opts: AITurnOpts, myCities: AICity[], playerId: number): boolean {
+  const turn = opts.currentTurn ?? 0;
+  const count = myCities.length;
+  recordAiCityCount(playerId, turn, count);
+  const peak = recentCityPeak(playerId, turn);
+  return peak - count >= AI_CITY_RECOVERY_LOSS_THRESHOLD;
+}
+
 function aiMaxFoundingPerTurn(
   cities: ReadonlyArray<{ ownerId: number; startCityState?: boolean }>,
   opts: AITurnOpts,
@@ -1013,17 +1099,21 @@ export function isLocalExpansionPhase(
   const colonizationReady = aiHasColonizationReadyCity(myCities, opts.poziomTrudnosci);
   const freeCs = countFreeIndependentCityStates(allCities, opts.vassalizedCityStateOwnerIds);
   const aggressiveColonization = aiColonizationAggressiveMode(opts, myCities);
+  // P-AI-EKSPANSJA-ODBUDOWA-MIAST-PO-WOJNIE-Q1: poniżej niedawnego szczytu liczby miast
+  // (patrz aiIsRecoveringCityCount) -> omijamy blokadę konsolidacji klastra tak jak przy
+  // profilu ekspansywnym/agresywnej kolonizacji.
+  const recovering = aiIsRecoveringCityCount(opts, myCities, playerId);
 
   // R-AI-KOLONIZACJA: epoki 1–3 lub brak wolnych MP — nie blokuj skautami/wioskami.
   if ((aggressiveColonization || (freeCs === 0 && colonizationReady)) && !opts.clusterConquestDeadlineActive) {
-    if (clusterTargets.length > 0 && !aiMayBypassClusterConsolidation(ekspansywnosc, opts)) return true;
+    if (clusterTargets.length > 0 && !aiMayBypassClusterConsolidation(ekspansywnosc, opts, recovering)) return true;
     return false;
   }
 
   const turn = opts.currentTurn ?? 0;
   if (turn >= AI_LOCAL_PHASE_MAX_TURN) return false;
 
-  if (clusterTargets.length > 0 && !aiMayBypassClusterConsolidation(ekspansywnosc, opts)) return true;
+  if (clusterTargets.length > 0 && !aiMayBypassClusterConsolidation(ekspansywnosc, opts, recovering)) return true;
 
   if (countPlayerScouts(units, playerId) < 1) return true;
 
@@ -2671,9 +2761,12 @@ export function planCityFounding(
   const ekspansywnosc = opts.civAiProfile?.ekspansywnosc ?? 0;
   const clusterConsolidationPhase = (opts.clusterStateTargets ?? []).length > 0;
   const aggressiveColonization = aiColonizationAggressiveMode(opts, myCities);
+  // P-AI-EKSPANSJA-ODBUDOWA-MIAST-PO-WOJNIE-Q1: poniżej niedawnego szczytu liczby miast ->
+  // wyższy priorytet foundingu, omija blokadę konsolidacji klastra jak profil ekspansywny.
+  const recovering = aiIsRecoveringCityCount(opts, myCities, playerId);
   if (
     clusterConsolidationPhase
-    && !aiMayBypassClusterConsolidation(ekspansywnosc, opts)
+    && !aiMayBypassClusterConsolidation(ekspansywnosc, opts, recovering)
     && !(aggressiveColonization && !opts.clusterConquestDeadlineActive)
   ) return null;
   const treasuryPraca = aiTreasuryPracaForFounding(opts.pracaAvailable ?? 0, ekspansywnosc);
