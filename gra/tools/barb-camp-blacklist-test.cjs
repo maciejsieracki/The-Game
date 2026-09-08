@@ -129,21 +129,38 @@ const blockedKey = `${baseline[0].q},${baseline[0].r}`;
     '2-edge: blacklist is exact-hex, not a neighbor-radius ban');
 }
 
-// 3. Save/load roundtrip and old-save migration contract.
+// 3. Save/load roundtrip and safe-default contract for the optional field.
 {
   const save = {
-    wersja: 2, tura: 4, units: [], cities: [], explored: [],
+    wersja: 3, tura: 4, units: [], cities: [],
+    exploredByHuman: [], gracze: [], humanOwnerIds: [0], activeHumanOwnerId: 0,
     meta: { barbCamps: [], clearedBarbCampHexes: [blockedKey] },
   };
   const roundTrip = deserializeGame(serializeGame(save));
   eq(JSON.stringify(roundTrip.meta.clearedBarbCampHexes), JSON.stringify([blockedKey]),
     '3: save/load preserves the cleared-hex blacklist');
 
-  const oldSave = deserializeGame(JSON.stringify({
-    wersja: 1, tura: 4, units: [], cities: [], explored: [], meta: { barbCamps: [] },
+  const saveWithoutBlacklist = deserializeGame(JSON.stringify({
+    wersja: 3, tura: 4, units: [], cities: [],
+    exploredByHuman: [], gracze: [], humanOwnerIds: [0], activeHumanOwnerId: 0,
+    meta: { barbCamps: [] },
   }));
-  assert(oldSave.meta?.clearedBarbCampHexes === undefined,
-    '3: old save without blacklist field loads without inventing blocked hexes');
+  assert(saveWithoutBlacklist.meta?.clearedBarbCampHexes === undefined,
+    '3: v3 save without the optional blacklist field loads without inventing blocked hexes');
+
+  // v3: a pre-hot-seat save (wersja < 3) has no gracze/exploredByHuman shape to
+  // read from at all -- ABC-4 (no v2->v3 migration) rejects it up front rather
+  // than silently loading zero players.
+  let incompatibleThrew = false;
+  try {
+    deserializeGame(JSON.stringify({
+      wersja: 2, tura: 4, units: [], cities: [], explored: [], meta: { barbCamps: [] },
+    }));
+  } catch (e) {
+    incompatibleThrew = e && e.name === 'IncompatibleSaveFormatError';
+  }
+  assert(incompatibleThrew,
+    '3: a pre-v3 save throws IncompatibleSaveFormatError instead of loading (ABC-4, no migration)');
 }
 
 // 4. Production source wiring: destruction records the hex, spawn receives the set,

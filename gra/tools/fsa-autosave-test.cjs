@@ -224,7 +224,10 @@ console.log('--- 5. Brak window (plain Node) -- bezpieczna degradacja ---');
   let writeResult;
   let writeThrew = false;
   try {
-    writeResult = await fsa.fsaRotatingAutosaveWrite(0, { wersja: 1, tura: 1, seed: 1, units: [], cities: [], explored: [] });
+    writeResult = await fsa.fsaRotatingAutosaveWrite(0, {
+      wersja: 3, tura: 1, seed: 1, units: [], cities: [],
+      exploredByHuman: [], gracze: [], humanOwnerIds: [0], activeHumanOwnerId: 0,
+    });
   } catch (e) {
     writeThrew = true;
   }
@@ -317,10 +320,14 @@ console.log('--- 5. Brak window (plain Node) -- bezpieczna degradacja ---');
   {
     const files = {
       'civ-autosave-3.json': JSON.stringify({
-        wersja: 2, tura: 42, seed: 7, units: [], cities: [], explored: [],
+        wersja: 3, tura: 42, seed: 7, units: [], cities: [],
+        exploredByHuman: [], gracze: [], humanOwnerIds: [0], activeHumanOwnerId: 0,
         meta: { label: 'Test dysk', savedAt: '2026-08-10T10:00:00.000Z' },
       }),
-      'civ-autosave-7.json': JSON.stringify({ wersja: 2, tura: 10, seed: 3, units: [], cities: [], explored: [] }),
+      'civ-autosave-7.json': JSON.stringify({
+        wersja: 3, tura: 10, seed: 3, units: [], cities: [],
+        exploredByHuman: [], gracze: [], humanOwnerIds: [0], activeHumanOwnerId: 0,
+      }),
       'notes.txt': 'plik spoza konwencji nazw rotacji -- powinien byc pominiety',
     };
     const fakeDirHandle = {
