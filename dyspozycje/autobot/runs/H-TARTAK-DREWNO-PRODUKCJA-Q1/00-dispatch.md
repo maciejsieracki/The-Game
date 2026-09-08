@@ -31,6 +31,7 @@ Produkcja Drewna z każdego zbudowanego Tartaku wynosi 200/turę w epoce 1 i ro�
 - `gra/data/terrain-improvements.json` — wartość i opis produkcji Tartaku.
 - `gra/src/game/terrain-improvements.ts` — czysty resolver produkcji Tartaku z parametrem epoki, jeśli jest konieczny.
 - `gra/src/game/turn-economy.ts` — przekazanie epoki właściciela do naliczania produkcji, wyłącznie jeśli wymagane przez istniejącą architekturę.
+- `gra/src/main.ts` — przekazanie tej samej epoki właściciela do odczytu stawek/HUD, wyłącznie w zakresie koniecznym do zachowania zgodności podglądu z rzeczywistym naliczaniem; korekta allowlisty po zarzucie Evaluatora, bez zmiany zakresu funkcjonalnego.
 - `gra/tools/tartak-drewno-epoka-test.cjs` — nowy test regresyjny tematu.
 - `dyspozycje/autobot/runs/H-TARTAK-DREWNO-PRODUKCJA-Q1/02-production-audit.md` — audyt wartości produkcji surowców po zmianie, jeśli Operator wydzieli go jako osobny artefakt.
 - `dyspozycje/autobot/runs/H-TARTAK-DREWNO-PRODUKCJA-Q1/00-dispatch.md`.

@@ -32,8 +32,11 @@ Tylko Tartak jest skalowany w tym temacie: `200 × 1.5^(epoka-1)`, czyli
 | 2 | 400 | 600 | 900 |
 
 Sumy są addytywne per zbudowane ulepszenie i trafiają do puli surowca właściciela.
-Test obejmuje również mutację mapy: dodanie drugiego Tartaku zmienia wynik E3 z
-450 na 900, oraz regresję Kamieniołomu (50 w każdej epoce).
+Test obejmuje również: jawny przypadek niepoprawnej epoki 0 (bezpieczny fallback do
+epoki 1), wykonywalną mutację formuły `Math.pow(1.5, era - 1)` →
+`Math.pow(1.0, era - 1)` (4 czerwone przypadki, bez zmian produkcyjnych po teście),
+mutację mapy (dodanie drugiego Tartaku zmienia wynik E3 z 450 na 900) oraz regresję
+Kamieniołomu (50 w każdej epoce).
 
 ## Zakres i ograniczenia
 
