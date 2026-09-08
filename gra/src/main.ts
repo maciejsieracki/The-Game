@@ -21039,7 +21039,7 @@ async function boot(): Promise<void> {
         canEndTurn: () => canPlayerInitiateEndTurn(),
         hideEndTurn: () => playtestWalkaActive,
         getBlockingCount: () => countBlockingEvents(),
-        onEndTurn: () => triggerPlayerEndTurn(),
+        onEndTurn: () => advanceSeat(),
         onOpenMenu: () => {
           if (isMainMenuOpen() || isNewGameFlowOpen()) return;
           toggleGamePauseMenu();
@@ -21627,7 +21627,7 @@ async function boot(): Promise<void> {
         return { remaining: remaining.Technologia as string, era1Count: era1.length };
       },
       getPlayerState: () => ({ era: player.era, zbadaneSize: player.zbadane.size, nauka: player.nauka, badana: player.badana }),
-      endTurn: () => triggerPlayerEndTurn(),
+      endTurn: () => advanceSeat(),
       getToast: () => {
         const el = document.getElementById('civ-hint-toast') as HTMLElement | null;
         if (!el) return null;
@@ -32988,7 +32988,16 @@ async function boot(): Promise<void> {
         await yieldTurnTransitionUi();
     }
 
-    function triggerPlayerEndTurn(): void {
+    // R-HOTSEAT-ETAP4B-SPLIT-Q1 (Krok 2): faza 0-6 dawnej `triggerPlayerEndTurn()`, wydzielona
+    // pod jawną nazwą. `humanOwnerId` (dziś zawsze HUMAN_OWNER_PRIMARY) jest dziś NIEUŻYWANY w
+    // ciele -- podłączenie punktowych literałów `0` (np. runScoutsAutoExplore, main.ts ok.
+    // 28590) do tego argumentu jest ŚWIADOMIE odłożone do Etapu 6 (tabela B2 planu hot-seat),
+    // zgodnie z dyspozycją tej rundy -- nie poszerzamy zakresu tego już-ryzykownego tematu.
+    // Architektura (a) (patrz raport rundy): `runWorldEndTurn()` pozostaje wołana Z WEWNĄTRZ tej
+    // funkcji, dokładnie jak po Etapie 4a -- `advanceSeat()` niżej jest dziś cienkim punktem
+    // wejścia, nie osobnym orkiestratorem obu faz z własnym try/catch/finally.
+    function endActiveHumanTurn(humanOwnerId: number): void {
+      void humanOwnerId; // patrz komentarz wyżej -- zarezerwowane pod Etap 6/8, nieużywane dziś
       healStuckDeferredPreBattleQueueOnEndTurnAttempt();
       if (!canPlayerInitiateEndTurn()) {
         console.warn('[EndTurn] triggerPlayerEndTurn: odrzucono (canPlayerInitiateEndTurn=false)');
@@ -33156,6 +33165,23 @@ async function boot(): Promise<void> {
       })();
     }
 
+    // R-HOTSEAT-ETAP4B-SPLIT-Q1 (Krok 3): orkiestrator foteli. Dziś (jeden fotel człowieka,
+    // humanSeats.humanOwnerIds.length === 1) koniec tury AKTYWNEGO człowieka jest bezwarunkowo
+    // ostatnim -- nie ma kogo jeszcze pytać, więc nic więcej tu nie trzeba robić (patrz komentarz
+    // przy endActiveHumanTurn wyżej: runWorldEndTurn() jest wołana Z WEWNĄTRZ niej, architektura
+    // (a)). Wszystkie TRZY zewnętrzne call-site'y (HUD "Zakończ turę", __eraTestDebug.endTurn,
+    // skrót klawiszowy "N") wołają teraz TĘ funkcję, nie triggerPlayerEndTurn() bezpośrednio.
+    function advanceSeat(): void {
+      endActiveHumanTurn(HUMAN_OWNER_PRIMARY);
+    }
+
+    // Zachowana jako cienki alias (decyzja stylu z recon §6.1 Krok 3) -- dziś bez wywołań z tego
+    // pliku (wszystkie call-site'y podłączone na advanceSeat()), ale pozostaje spójna z
+    // dziesiątkami komentarzy opisowych w main.ts, które wciąż odwołują się do tej nazwy.
+    function triggerPlayerEndTurn(): void {
+      advanceSeat();
+    }
+
     window.addEventListener('keydown', (e: KeyboardEvent) => {
       // --- Escape: close city panel / exit build mode ---
       if (e.key === 'Escape') {
@@ -33280,7 +33306,7 @@ async function boot(): Promise<void> {
           return;
         }
         e.preventDefault();
-        triggerPlayerEndTurn();
+        advanceSeat();
         return;
       }
     });
