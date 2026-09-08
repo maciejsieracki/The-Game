@@ -192,7 +192,6 @@ import {
   AI_FIXED_PROCENT_BUDYNKI,
   clampUlepszeniaPracaPercent,
   clampPodzialPracyBudynkiPercent,
-  procentPuliImperiumZBudynkow,
   podzialPracyZProcentuPuli,
   MAX_PROCENT_PULI_IMPERIUM,
   MIN_PROCENT_PULI_IMPERIUM_ZASADA3_NADWYZKA,
@@ -5231,17 +5230,6 @@ async function boot(): Promise<void> {
     /** R-MIASTO-USTAWIENIA-GLOBALNE-VS-LOKALNE=A: analogiczne readery dla trzy nowe pola. */
     function effectivePodzialPracy(city: City): CityPodzialPracy {
       return resolveCityPodzialPracy(city, ownerDefaultPodzialPracy.get(city.ownerId));
-    }
-
-    /**
-     * R-PRACA-JEDEN-PODZIAL-Q1: udzial Pracy trafiajacy do puli imperium (= budzet
-     * ulepszen terenu) dla CALEGO imperium. Nie jest osobnym suwakiem — jest
-     * dopelnieniem jedynego podzialu `ownerDefaultPodzialPracy` do 100%.
-     * `effectivePracaSplitForOwner` (drugi, niezalezny suwak) zostal USUNIETY.
-     */
-    function procentPuliImperiumForOwner(ownerId: number): number {
-      const def = ownerDefaultPodzialPracy.get(ownerId);
-      return procentPuliImperiumZBudynkow(def?.procentBudynki);
     }
 
     /**

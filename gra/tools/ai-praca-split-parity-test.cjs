@@ -206,10 +206,24 @@ console.log('5. Strażnik routingu main.ts i brak drugiego splitu w planie AI');
     !mainSource.includes('pracaPoolInflowByOwner'),
     'main.ts nie liczy już żadnego budżetu ulepszeń z tegorocznego przyrostu puli',
   );
+  // P-MARTWY-KOD-PROCENT-PULI-IMPERIUM-Q1 — AKTUALIZACJA ASERCJI, jawnie uzasadniona:
+  //   CO PILNOWAŁA: że gracz i AI czytają udział ulepszeń jako dopełnienie jedynego
+  //     podziału `ownerDefaultPodzialPracy` (100 − procentBudynki), przez wspólny helper
+  //     `procentPuliImperiumForOwner(0)`.
+  //   DLACZEGO STARY WARUNEK PRZESTAŁ BYĆ PRAWDĄ: R-PRACA-JEDEN-PODZIAL-Q1 runda 2 (F1)
+  //     zmieniła mechanizm koperty ulepszeń na `pracaAutoPercent% × SKUMULOWANA pula`
+  //     (osobna polityka `UlepszeniaEmpirePolicy.pracaAutoPercent`, NIE dopełnienie
+  //     `procentBudynki` do 100%). `procentPuliImperiumForOwner` przestała mieć
+  //     jakiegokolwiek wywołującego w main.ts — potwierdzone też wcześniej przez
+  //     Evaluator/Final Control w R-PRACA-PANEL-BUDOWY-WLASCIWA-WARSTWA-Q1 (martwa po
+  //     usunięciu `getEmpirePracaSplit`). Test pinował nieistniejący już mechanizm;
+  //     funkcję usunięto (P-MARTWY-KOD-PROCENT-PULI-IMPERIUM-Q1).
+  //   CO PILNUJE TERAZ: ta sama własność parytetu, wyrażona przez obowiązującą formułę —
+  //     gracz i AI czytają udział ulepszeń z tego samego pola `pracaAutoPercent`.
   assert(
-    mainSource.includes('procentPuliImperiumForOwner(0)')
-      && mainSource.includes('function procentPuliImperiumForOwner('),
-    'gracz i AI czytają udział ulepszeń jako dopełnienie jedynego podziału',
+    mainSource.includes('pracaBudgetPercent: playerUlepszeniaPolicy.pracaAutoPercent')
+      && mainSource.includes('Math.min(100, ulepszeniaEmpireForOwner(ownerId).pracaAutoPercent)'),
+    'gracz i AI czytają udział ulepszeń z tego samego pola pracaAutoPercent (parytet)',
   );
   assert(
     mainSource.includes('ownerDefaultPodzialPracy: Array.from(ownerDefaultPodzialPracy.entries())')
