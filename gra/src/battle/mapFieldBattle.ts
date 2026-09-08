@@ -103,6 +103,26 @@ export interface MapFieldBattleLaunchDeps {
       defLabel: string;
       atkCivLabel?: string;
       defCivLabel?: string;
+      /** R-BITWA-PORTRET-GRACZA-ZNIKNIETY-Q1 (runda 2): bez tych pól medaliony
+       * mapowego podsumowania (postBattleSummary.buildCommanderCorner) spadały na
+       * generyczny PB_SVG.commander dla OBU stron -- `civIconId` brakujący czyni
+       * `leaderPortraitUrl` niewywoływalnym (`!civIconId` gate), a brakujące
+       * `isCityState`/`isBarbarian` nie zmieniają tego wyniku (oba `undefined` są
+       * falsy), więc żadna z trzech gałęzi ikony (portret/symbol kultury/czaszka)
+       * się nie trafia. Dotyczy WYŁĄCZNIE ataku na miasto BEZ MURU z mapy świata
+       * (`launchFieldBattleFromMap` -- jedyny wołający tego typu w main.ts) --
+       * siostrzana ścieżka szturmu oblężniczego (main.ts, mur) ma te pola od
+       * dawna. Dane są już policzone przez `preBattleSideFromRoster` w tym samym
+       * pliku (`civId`/`era`/`isCityState`/`isBarbarian`) -- tu WYŁĄCZNIE
+       * przekazanie, zero nowego liczenia. */
+      atkCivIconId?: string;
+      defCivIconId?: string;
+      atkIsCityState?: boolean;
+      defIsCityState?: boolean;
+      atkIsBarbarian?: boolean;
+      defIsBarbarian?: boolean;
+      atkEra?: number;
+      defEra?: number;
       teren?: string;
       placeLabel?: string;
     },
@@ -412,6 +432,17 @@ export function launchFieldBattleFromMap(
       defLabel: pbInfo.obronca.nazwa,
       atkCivLabel: pbInfo.atakujacy.cywilizacja,
       defCivLabel: pbInfo.obronca.cywilizacja,
+      // R-BITWA-PORTRET-GRACZA-ZNIKNIETY-Q1 (runda 2): patrz komentarz przy typie
+      // `summary` w MapFieldBattleLaunchDeps -- pbInfo już liczy te pola
+      // (preBattleSideFromRoster wyżej w tym pliku), tu wyłącznie przekazanie.
+      atkCivIconId: pbInfo.atakujacy.civId,
+      defCivIconId: pbInfo.obronca.civId,
+      atkIsCityState: pbInfo.atakujacy.isCityState,
+      defIsCityState: pbInfo.obronca.isCityState,
+      atkIsBarbarian: pbInfo.atakujacy.isBarbarian,
+      defIsBarbarian: pbInfo.obronca.isBarbarian,
+      atkEra: pbInfo.atakujacy.era,
+      defEra: pbInfo.obronca.era,
       teren: plan.terrain,
       placeLabel: plan.city.name,
     };
