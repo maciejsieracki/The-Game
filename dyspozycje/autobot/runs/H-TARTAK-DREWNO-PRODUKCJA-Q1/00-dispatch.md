@@ -9,18 +9,18 @@ MODEL + EFFORT per rola: Operator GPT-5.6 Luna High / Evaluator GPT-5.6 Luna Hig
 
 ## WYZWALACZ
 
-Bezpośrednia decyzja właściciela z 2026-09-08: produkcja Drewna przez Tartak ma wzrosnąć z 50 do 100, a następnie zwiększać się o 50% przy każdej kolejnej epoce. Temat jest nowy i niezależny od blokady trzody na lesie, kosztu budynków oraz karty kolejki.
+Bezpośrednia korekta decyzji właściciela z 2026-09-08: produkcja Drewna przez Tartak ma wzrosnąć z 50 do 200, a następnie zwiększać się o 50% przy każdej kolejnej epoce. Temat jest nowy i niezależny od blokady trzody na lesie, kosztu budynków oraz karty kolejki.
 
-Wcześniejsza reguła 50/turę i wcześniejsze decyzje dotyczące Tartaku nie są wystarczającym założeniem dla nowej wartości — aktualna decyzja właściciela z tego zgłoszenia jest nadrzędna dla tego tematu. Nie zmieniaj innych ulepszeń ani innych surowców.
+Wcześniejsza wersja tego dispatchu zakładała 100/turę, ale została zastąpiona najnowszą decyzją właściciela przed uruchomieniem Operatora. Nie zmieniaj innych ulepszeń ani innych surowców.
 
 ## GOAL
 
-Produkcja Drewna z każdego zbudowanego Tartaku wynosi 100/turę w epoce 1 i rośnie multiplikatywnie o 50% za każdą następną epokę właściciela: 150 w epoce 2 i 225 w epoce 3.
+Produkcja Drewna z każdego zbudowanego Tartaku wynosi 200/turę w epoce 1 i rośnie multiplikatywnie o 50% za każdą następną epokę właściciela: 300 w epoce 2 i 450 w epoce 3.
 
 ## KRYTERIA KOŃCA — binarne PRAWDA/FAŁSZ
 
-1. PRAWDA: źródło danych Tartaku ma wartość bazową 100/turę; sprawdzenie obejmuje `terrain-improvements.json` i resolver produkcji.
-2. PRAWDA: resolver zwraca dokładnie 100, 150 i 225 dla epok 1, 2 i 3.
+1. PRAWDA: źródło danych Tartaku ma wartość bazową 200/turę; sprawdzenie obejmuje `terrain-improvements.json` i resolver produkcji.
+2. PRAWDA: resolver zwraca dokładnie 200, 300 i 450 dla epok 1, 2 i 3.
 3. PRAWDA: sumowanie produkcji terytorialnej stosuje epokę właściciela i pozostawia pozostałe ulepszenia oraz surowce bez zmian.
 4. PRAWDA: test tematu obejmuje co najmniej: jedną epokę, wszystkie trzy epoki, dwa Tartaki, brak Tartaku, przypadek niepoprawnej epoki oraz mutację formuły, która powoduje czerwony test.
 5. PRAWDA: istniejące bramki ekonomii, typecheck i testy regresyjne przechodzą bez nowych regresji.
@@ -44,7 +44,7 @@ Baza: `origin/main`
 
 ## REGUŁA PRZECIW SAMOOSZUKIWANIU
 
-Nie wystarczy sprawdzenie tekstu JSON ani pojedynczej wartości. Test musi importować rzeczywisty resolver/naliczanie produkcji i dowodzić epok 1–3, agregacji wielu Tartaków, braku produkcji bez Tartaku oraz czerwieni po mutacji formuły. Nie uznawaj wartości 100 w danych za dowód, że ścieżka ekonomii faktycznie jej używa.
+Nie wystarczy sprawdzenie tekstu JSON ani pojedynczej wartości. Test musi importować rzeczywisty resolver/naliczanie produkcji i dowodzić epok 1–3, agregacji wielu Tartaków, braku produkcji bez Tartaku oraz czerwieni po mutacji formuły. Nie uznawaj wartości 200 w danych za dowód, że ścieżka ekonomii faktycznie jej używa.
 
 ## PROCEDURA NAPRAWCZA PRZY FAIL
 
