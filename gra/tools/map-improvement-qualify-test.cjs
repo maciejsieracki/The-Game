@@ -316,23 +316,15 @@ ok(forestHint({
   'forest hint: enemy territory overlap');
 
 ok(M.isOwceBaseTerrain(TB.Wzgorza, NK.Brak), 'owce terrain: open hill');
-// R-ULEPSZENIA-HODOWLA-LAS-ODBLOKOWANA-Q1 (ECHO wlasciciela 2026-08-27: „Tak, odwracamy —
-// wszystkie trzy") UCHYLA zakaz z 2026-07-29 („hodowla zwierzeca zabroniona na nakladce Las").
-// Piec asercji nizej odwroconych razem z regula; poprzednie brzmienie zostaje w komentarzu,
-// bo historia decyzji jest tu czescia kanonu:
-//   ok(!M.isOwceBaseTerrain(TB.Wzgorza, NK.Las), 'owce terrain: hill+las blocked');
-//   ok(!qRzym('owce', 10, 0), 'owce NOT on wzgorza+las (BUG owce/tartak)');
-//   ok(!qRzym('bydlo', 2, 1), 'bydlo NOT on laka+las (hodowla zablokowana na lesie)');
-//   ok(M.isLivestockImprovementBlockedOnForest('bydlo', NK.Las), 'livestock blocked on las: bydlo');
-//   ok(!M.computeImprovementBuildImpact('bydlo', hexes['2,1'], []), 'impact null: bydlo on las');
-ok(M.isOwceBaseTerrain(TB.Wzgorza, NK.Las), 'owce terrain: hill+las DOZWOLONE (zakaz cofniety)');
+// Farma i owce zachowują blokadę lasu; Trzoda ma tę samą blokadę.
+ok(!M.isOwceBaseTerrain(TB.Wzgorza, NK.Las), 'owce terrain: hill+las zablokowane');
 ok(M.isOwceBaseTerrain(TB.Wzgorza, NK.ZlozeOwiec), 'owce terrain: zloze owiec');
 ok(!M.isOwceBaseTerrain(TB.Wzgorza, NK.ZlozeGliny), 'owce terrain: inna nakladka nadal blokuje');
 ok(!M.isOwceBaseTerrain(TB.Laka, NK.Las), 'owce terrain: las na Lace to NIE wzgorze');
-ok(qRzym('owce', 10, 0), 'owce OK on wzgorza+las (zakaz cofniety 2026-08-27)');
-ok(qRzym('bydlo', 2, 1), 'bydlo OK on laka+las (zakaz cofniety 2026-08-27)');
-ok(!M.isImprovementBlockedOnForest('bydlo', NK.Las), 'las NIE blokuje bydla');
-ok(!M.isImprovementBlockedOnForest('owce', NK.Las), 'las NIE blokuje owiec');
+ok(!qRzym('owce', 10, 0), 'owce NIE na wzgorza+las');
+ok(!qRzym('bydlo', 2, 1), 'bydlo NIE na laka+las');
+ok(M.isImprovementBlockedOnForest('bydlo', NK.Las), 'las blokuje bydlo');
+ok(M.isImprovementBlockedOnForest('owce', NK.Las), 'las blokuje owce');
 ok(!M.isImprovementBlockedOnForest('lama', NK.Las), 'las NIE blokuje lamy');
 // P-STADNINA-LAS-NIEROZSTRZYGNIETE-Q1 (ECHO wlasciciela 2026-09-03): zakaz stadniny na lesie
 // COFNIETY — stadnina jest ulepszeniem surowcowym (jak glinianka/tartak/kopalnie), nie
@@ -360,7 +352,7 @@ const qRzymKonUnlocked = qual({ civ: 'rzym', tradeRouteKonUnlocked: true });
 ok(qRzymKonUnlocked('stadnina', 3, 1), 'ZYWY TEST GOAL 1: stadnina KWALIFIKUJE SIE na Lace+Las po odblokowaniu Konia');
 ok(M.computeImprovementBuildImpact('stadnina', hexes['3,1'], []) !== null,
   'ZYWY TEST: gate commitu (computeImprovementBuildImpact) NIE blokuje stadniny na Lace+Las');
-ok(M.computeImprovementBuildImpact('bydlo', hexes['2,1'], []), 'impact NIE-null: bydlo on las');
+ok(!M.computeImprovementBuildImpact('bydlo', hexes['2,1'], []), 'impact null: bydlo on las');
 ok(!qInka('irygacja', 3, 1), 'irygacja NOT on laka+las (wymaga wyrębu)');
 hexes['1,2'] = mkHex(1, 2, TB.Laka, NK.Las);
 ok(!qInka('irygacja', 1, 2), 'irygacja NOT on laka+las przy rzece');
@@ -375,11 +367,12 @@ ok(!M.isImprovementBlockedOnForest('tartak', NK.Las), 'forest coexist: tartak');
 ok(!M.isImprovementBlockedOnForest('droga', NK.Las), 'droga allowed on las (las zostaje)');
 ok(!M.computeImprovementBuildImpact('irygacja', hexes['3,1'], []), 'impact null: irygacja on las');
 ok(qInka('tartak', 2, 1), 'tartak OK on laka+las (ulepszenie leśne)');
-ok(qInka('oboz_lowiecki', 2, 1), 'oboz lowiecki OK on laka+las');
+
 const qOwceOpen = qual({ civ: 'rzym', placed: new Map([['1,1', ['owce']]]) });
 ok(qOwceOpen('owce', 0, 1), 'owce on open wzgorza after unlock');
 const placedTartak = new Map([['10,0', ['tartak']]]);
 const qTartakReplace = qual({ civ: 'rzym', placed: placedTartak });
+ok(qTartakReplace('oboz_lowiecki', 10, 0), 'oboz lowiecki OK on laka+las with tartak');
 ok(qTartakReplace('oboz_lowiecki', 10, 0), 'oboz qualifies with tartak on same las hex');
 const repObozTartak = M.improvementsReplacedByBuild('oboz_lowiecki', ['tartak']);
 ok(repObozTartak.length === 0, 'oboz does NOT replace tartak (coexist)');
@@ -390,20 +383,13 @@ const qObozThenTartak = qual({ civ: 'rzym', placed: placedOboz });
 ok(qObozThenTartak('tartak', 10, 0), 'tartak qualifies when oboz already on hex');
 const rep = M.improvementsReplacedByBuild('oboz_lowiecki', ['tartak']);
 ok(rep.length === 0, 'impact: oboz replaces tartak — regresja usunieta');
-// R-ULEPSZENIA-HODOWLA-LAS-ODBLOKOWANA-Q1 (2026-08-27): bylo
-//   ok(!M.computeImprovementBuildImpact('owce', hexes['10,0'], ['tartak']), 'impact null: owce on las+tartak');
-// Owce na Wzgorzu z Lasem sa juz dozwolone, a tartak siedzi w sektorze 'las' (owce: 'hodowla'),
-// wiec sektory wolno wspolistnieja i tartak NIE jest zdejmowany.
+// Owce zachowują blokadę lasu; tartak pozostaje nietknięty przez tę regułę.
 const impactOwceTartak = M.computeImprovementBuildImpact('owce', hexes['10,0'], ['tartak']);
-ok(impactOwceTartak, 'impact NIE-null: owce on las+tartak (zakaz cofniety)');
-ok(impactOwceTartak && impactOwceTartak.removedImprovements.length === 0,
-  'owce NIE zdejmuja tartaku (inny sektor)');
-// R-ULEPSZENIA-FARMA-IRYGACJA-BYDLO-STACK-Q1 (2026-09-07): bylo
-//   `ok(farmaIrr === null, 'kanon: bydlo blocked on farma+irygacja (no replace)')`
-// Kanon odwrocony (ECHO wlasciciela) — bydlo teraz DOZWOLONE na farma+irygacja (trojka).
+ok(!impactOwceTartak, 'impact null: owce on las+tartak');
+// Trzoda pozostaje zablokowana na lesie niezależnie od innych warstw.
 const farmaIrr = M.computeImprovementBuildImpact('bydlo', hexes['0,0'], ['farma', 'irygacja']);
 ok(farmaIrr !== null && farmaIrr.removedImprovements.length === 0,
-  'R-STACK-Q1: bydlo dozwolone na farma+irygacja (trojka, bez usuwania warstw)');
+  'R-STACK-Q1: bydlo nadal dozwolone na otwartym heksie obok farmy+irygacji');
 
 const clayHex = { terenBazowy: TB.Rownina, nakladka: NK.ZlozeGliny };
 ok(!M.hexSuppressesDepositOverlay({ ...clayHex, ulepszenia: ['farma'] }), 'BUG-FARMA-GLINA: farma NIE chowa gliny');

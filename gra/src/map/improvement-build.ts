@@ -430,7 +430,7 @@ export function isStadninaBlockedOnForest(_key: string, _nakladka: Nakladka): bo
  */
 const FOREST_COEXIST_IMPROVEMENT_KEYS = new Set<string>([
   'tartak', 'oboz_lowiecki', 'glinianka',
-  'owce', 'bydlo', 'lama', 'stadnina',
+  'lama', 'stadnina',
 ]);
 
 /**
@@ -446,6 +446,11 @@ const FOREST_BLOCKED_IMPROVEMENT_KEYS = new Set<string>([
   // tego wpisu farmę dałoby się zacommitować ścieżką pomijającą panel budowy (dokładnie
   // ta dziura, którą temat obozu łowieckiego znalazł jako P7).
   'farma',
+  // Trzoda wymaga najpierw usunięcia lasu; ten wpis jest także drugim gate'em
+  // dla rzeczywistej ścieżki applyBuildRequest poza panelem.
+  'bydlo',
+  // Owce zachowują istniejącą blokadę budowy na lesie.
+  'owce',
 ]);
 
 /**
@@ -477,6 +482,7 @@ export function isImprovementBlockedOnForest(key: string, nakladka: Nakladka): b
  * IMPROVEMENT_KEYS`), dla których zdanie ogólne niżej jest poprawne bez wyjątku.
  */
 export function getImprovementForestBlockHint(key: string): string {
+  if (key === 'bydlo') return 'Aby zbudować Trzodę na tym polu, najpierw usuń las.';
   const name = improvementDisplayName(key);
   return `${name} na lesie zabroniona — najpierw wyrąb las (Wycinka w panelu ulepszeń).`;
 }
@@ -497,7 +503,6 @@ export function getImprovementForestBlockHint(key: string): string {
 export function isOwceBaseTerrain(teren: TerenBazowy, nakladka: Nakladka): boolean {
   if (teren !== TerenBazowy.Wzgorza) return false;
   if (nakladka === Nakladka.ZlozeOwiec) return true;
-  if (nakladka === Nakladka.Las) return true;
   return nakladka === Nakladka.Brak;
 }
 
