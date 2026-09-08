@@ -11968,6 +11968,16 @@ async function boot(): Promise<void> {
     let ghostChipHex: { q: number; r: number } | null = null;
     let ghostChipLabel = '';
     let ghostChipValid = false;
+    /**
+     * P-DROGI-BUDOWA-WYJASNIENIE-TOOLTIP-Q1: powód niedostępności heksa pokazywany pod
+     * „Niedozwolone" w chipie hover trybu budowy. Wyłącznie opisowy tekst UI — NIE zmienia
+     * `isRoadQualified`/`qualifies()` (map/improvement-build.ts), tylko tłumaczy graczowi ich
+     * wynik. `null`/'' → chip wraca do samego „Niedozwolone" (zachowanie sprzed tego tematu).
+     * EN: reason text shown under "Niedozwolone" in the build-mode hover chip — purely
+     * descriptive UI, does not change the engine's qualification logic, only explains its
+     * result to the player.
+     */
+    let ghostChipReason = '';
 
     const ghostChip = document.createElement('div');
     ghostChip.id = 'civ-build-ghost-chip';
@@ -12072,15 +12082,30 @@ async function boot(): Promise<void> {
         ghostChip.style.display = 'none';
         return;
       }
-      ghostChip.innerHTML = '<span style="font-size:16px;line-height:1">' + ghostChipLabel + '</span>'
-        + '<span>' + (ghostChipValid ? 'Kliknij hex' : 'Niedozwolone') + '</span>';
+      // P-DROGI-BUDOWA-WYJASNIENIE-TOOLTIP-Q1: druga linia z powodem (np. dla 'droga' —
+      // wymóg spójności sieci) tylko gdy niedozwolone I mamy tekst; flex-direction:column
+      // ustawiane inline niżej, żeby nie dotykać wspólnego cssText chipu dla innych trybów.
+      ghostChip.style.flexDirection = (!ghostChipValid && ghostChipReason) ? 'column' : 'row';
+      ghostChip.style.alignItems = (!ghostChipValid && ghostChipReason) ? 'flex-start' : 'center';
+      ghostChip.innerHTML = '<span style="display:flex;align-items:center;gap:6px">'
+        + '<span style="font-size:16px;line-height:1">' + ghostChipLabel + '</span>'
+        + '<span>' + (ghostChipValid ? 'Kliknij hex' : 'Niedozwolone') + '</span></span>'
+        + (!ghostChipValid && ghostChipReason
+          ? '<span style="color:#ffb199;font-size:11px;max-width:220px">' + ghostChipReason + '</span>'
+          : '');
       ghostChip.style.borderColor = ghostChipValid ? 'rgba(255,212,121,0.75)' : 'rgba(255,102,85,0.85)';
       ghostChip.style.display = 'flex';
       ghostChip.style.left = Math.round(pos.x + 14) + 'px';
       ghostChip.style.top = Math.round(pos.y - 40) + 'px';
     }
 
-    function setBuildGhostChip(q: number, r: number, label: string, valid: boolean): void {
+    function setBuildGhostChip(
+      q: number,
+      r: number,
+      label: string,
+      valid: boolean,
+      reason = '',
+    ): void {
       if (!chipOverCanvas || !buildModeOpen) {
         ghostChipHex = null;
         ghostChip.style.display = 'none';
@@ -12089,6 +12114,7 @@ async function boot(): Promise<void> {
       ghostChipHex = { q, r };
       ghostChipLabel = label;
       ghostChipValid = valid;
+      ghostChipReason = reason;
       syncBuildGhostChipDom();
     }
 
@@ -12173,7 +12199,14 @@ async function boot(): Promise<void> {
         if (ok) showGhostImprovement(hit.q, hit.r);
         else removeGhostImprovement();
         const ic = IMPROVEMENT_CHIP[activeImprovementKey] ?? '🔨';
-        setBuildGhostChip(hit.q, hit.r, ic, ok);
+        // P-DROGI-BUDOWA-WYJASNIENIE-TOOLTIP-Q1: zgłoszenie właściciela — gracz nie rozumiał,
+        // dlaczego drogę można stawiać tylko w wybranych miejscach. Reguła (isRoadQualified,
+        // map/improvement-build.ts, BEZ ZMIAN w tym temacie) jest świadoma i poprawna — brakowało
+        // tylko wyjaśnienia w UI. Komunikat tylko opisowy, nie wpływa na `ok`/qualifies().
+        const reason = (!ok && activeImprovementKey === 'droga')
+          ? 'Droga musi łączyć się z miastem lub już istniejącą drogą'
+          : '';
+        setBuildGhostChip(hit.q, hit.r, ic, ok, reason);
         return;
       }
       removeBuildGhosts();
@@ -24484,7 +24517,14 @@ async function boot(): Promise<void> {
         } else if (!nodes.length && !isPlayerTerritoryHex(hit.q, hit.r, playerCityNodes(), nodes, ME())) {
           showBuildTerritoryBlockedHint(hit.q, hit.r);
         } else if (!buildApi.canBuild(activeImprovementKey, hit.q, hit.r)) {
-          showHintMessage('Nie można tu zbudować (teren / złoże)', 2500);
+          // P-DROGI-BUDOWA-WYJASNIENIE-TOOLTIP-Q1: to samo wyjaśnienie co chip hover wyżej —
+          // opisowe, nie zmienia canBuild()/qualifies().
+          showHintMessage(
+            activeImprovementKey === 'droga'
+              ? 'Droga musi łączyć się z miastem lub już istniejącą drogą'
+              : 'Nie można tu zbudować (teren / złoże)',
+            2500,
+          );
         } else {
           showHintMessage('Wymaga technologii', 2500);
         }
