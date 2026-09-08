@@ -28640,140 +28640,13 @@ async function boot(): Promise<void> {
       aiCmdResume = null;
     }
 
-    function triggerPlayerEndTurn(): void {
-      healStuckDeferredPreBattleQueueOnEndTurnAttempt();
-      if (!canPlayerInitiateEndTurn()) {
-        console.warn('[EndTurn] triggerPlayerEndTurn: odrzucono (canPlayerInitiateEndTurn=false)');
-        hintEndTurnBlocked();
-        return;
-      }
-      console.warn('[EndTurn] triggerPlayerEndTurn: START tura', turn);
-      if (PERF_DEBUG) {
-        // P-PERF-SPOWOLNIENIE-PO-60-TURACH: migawka liczników na START każdej tury gracza --
-        // porównaj trend między turami (rosnące improvementMeshes/resourceOverlays z tury na
-        // turę przy STAŁEJ liczbie miast wskazywałoby na wyciek, nie na naturalny wzrost gry).
-        console.info(
-          '[perfDebug] EOT start tura=' + turn + ' · units=' + units.length + ' · cities=' + cities.length
-          + ' · improvementMeshes=' + improvementMeshes.size + ' · resourceOverlays=' + resourceOverlays.length
-          + ' · villageMeshes=' + villageMeshes.size + ' · campMeshes=' + campMeshes.size
-          + ' · drawCalls=' + (renderer.info.render.calls) + ' · geometries=' + (renderer.info.memory.geometries)
-          + ' · textures=' + (renderer.info.memory.textures),
-        );
-      }
-      endTurnInProgress = true;
-      endTurnStartedAt = Date.now();
-      void (async () => {
-        try {
-        const nextTurnNum = turn + 1;
-        beginTurnTransition(nextTurnNum);
-        await yieldTurnTransitionUi();
-
+    async function runWorldEndTurn(): Promise<void> {
+      const nextTurnNum = turn + 1;
         // B2-Q5: wyczyść flagi buntu z poprzedniej tury (chip/ikona do końca tury).
         for (const st of cityOrderState.values()) {
           if (st.bunt) st.bunt = undefined;
         }
-
-        // Snap any in-flight animation to its destination.
-        let endTurnAnimHutCollected = false;
-        if (isAnimating && anim !== null) {
-          const u = units.find(x => x.id === anim!.id);
-          if (u) {
-            const stack = anim.movingStackIds
-              .map(sid => units.find(x => x.id === sid))
-              .filter((su): su is RuntimeUnit => su != null);
-            for (const su of stack) {
-              su.q = anim.destQ;
-              su.r = anim.destR;
-            }
-            // P-MGLA-ODKRYCIE-TELEPORT-KONIEC-TURY-Q1: koniec tury podczas trwajacej animacji
-            // marszu teleportuje jednostke na anim.destQ/destR (koniec sciezki) -- bez tego
-            // wywolania mgla pomijala heksy POSRODKU anim.pathHexes, dokladnie ten sam wzorzec
-            // co juz naprawione main.ts:32200-32205 (koniec animacji) i main.ts:22295 (ruch
-            // instant). Musi wystapic PRZED checkVillageRewardsAlongPath/
-            // checkBarbCampDestructionAlongPath ponizej -- mgla odkrywa sciezke, zanim nagrody/
-            // zniszczenia wzdluz tej samej sciezki sa liczone.
-            if (anim.pathHexes.length > 0) {
-              for (const su of stack) {
-                addExplored(explored, computeVisibleAlongPath(anim.pathHexes, map, unitSight(su)));
-              }
-            }
-            deductStackRuchLeft(stack, anim.cost);
-            // TEMAT #15: woda -> zaokrętowanie, ląd -> zejście na ląd.
-            applyEmbarkStateAfterMove(stack, map);
-            if (u.ownerId === 0 && anim.pathHexes.length > 0) {
-              endTurnAnimHutCollected = checkVillageRewardsAlongPath(anim.pathHexes);
-            }
-            if (anim.pathHexes.length > 0) {
-              // P-BARBARZYNCY-USUWANIE-SEMANTYKA-Q1: `anim` jest zawsze
-              // jednostką gracza (jedyne miejsce ustawiające `anim` to
-              // startAnimatedMove, playerStackAt) -- nigdy barbarzyńcą.
-              // / EN: `anim` always tracks a player unit (the sole assignment
-              // site is startAnimatedMove/playerStackAt) -- never a barbarian.
-              checkBarbCampDestructionAlongPath(anim.pathHexes);
-              const bonusChanged = applyCityVisitBonusesAlongPath(
-                stack,
-                anim.pathHexes,
-                u.ownerId === 0,
-              );
-              if (bonusChanged) syncUnitsRender();
-            }
-            tryAutoCaptureEmptyCityAt(anim.destQ, anim.destR, stack);
-          }
-          anim = null;
-          isAnimating = false;
-          stopMarch(); // SFX marsz: animacja ucięta (koniec tury) — ucisz pętlę
-        }
-        // Zwiadowcy gracza: auto-zwiedzanie nieużytego ruchu (mgła + kontakt z obcymi).
-        {
-          let scoutHutCollected = false;
-          const scoutExplore = runScoutsAutoExplore(
-            units,
-            map,
-            explored,
-            0,
-            unitSight,
-            Math.random,
-            (u) => {
-              // P-MGLA-ODKRYCIE-SCIEZKA-INWARIANT-Q1 — CZWARTE miejsce tego samego wzorca.
-              // `advanceScoutAutoExplore` (scout-auto-explore.ts:234) przestawia `unit.q/r`
-              // KROK PO KROKU w petli `while (unit.ruchLeft > 0)` — zwiadowca z duzym
-              // budzetem ruchu (rzeka: plaski koszt 1/heks, units/setup.ts:628) przechodzi
-              // w JEDNEJ turze kilkanascie heksow. Jedynym odkryciem bylo `refreshFog()`
-              // PO calej petli (nizej) — a ono liczy WYLACZNIE z pozycji KONCOWEJ
-              // (`currentVisible()`), wiec heksy POSRODKU trasy nie trafialy do `explored`.
-              // `advanceScoutAutoExplore` prowadzi wprawdzie wlasny `workingExplored`, ale
-              // to LOKALNA kopia (`new Set(explored)`), porzucana po powrocie z funkcji.
-              // Hak `onAfterStep` jest wolany po KAZDYM kroku, wiec odkrycie z biezacego
-              // heksu w tym haku jest rownowazne odkryciu wzdluz calej sciezki — i jest
-              // jedynym wpieciem osiagalnym z main.ts (scout-auto-explore.ts jest poza
-              // allowlista tematu).
-              revealAlongPathForStack([u], [{ q: u.q, r: u.r }]);
-              if (u.ownerId === 0) {
-                if (checkVillageRewardAt(u.q, u.r)) scoutHutCollected = true;
-              }
-              // P-BARBARZYNCY-USUWANIE-SEMANTYKA-Q1: runScoutsAutoExplore filtruje
-              // wewnętrznie do playerOwnerId (0) -- `u` jest zawsze graczem, nigdy
-              // barbarzyńcą. / EN: runScoutsAutoExplore filters internally to
-              // playerOwnerId (0) -- `u` is always the player, never a barbarian.
-              checkBarbCampDestroyedAt(u.q, u.r);
-              if (applyCityVisitBonusesAtHex(u, u.q, u.r, u.ownerId === 0)) {
-                syncUnitsRender();
-              }
-            },
-          );
-          if (scoutExplore.movedUnitIds.length > 0) {
-            syncUnitsRender();
-            const suppressVeteranTip = endTurnAnimHutCollected || scoutHutCollected;
-            refreshFog(suppressVeteranTip ? { skipVeteranEducation: true } : undefined);
-            // SFX marsz: ruch BEZ animacji (teleport) — jednorazowy akcent, nie
-            // pętla. Zawsze jednostki gracza -> bez sprawdzania widoczności.
-            if (sfxUnitsEnabled) playMarchAccent(scoutExplore.movedUnitIds.length);
-          }
-        }
         evictForeignUnitsFromCityHexes();
-        // C-RUCH: kontynuacja wieloturowej trasy na KONIEC tury gracza (pozostałe MP),
-        // nie na starcie kolejnej — gracz może w tej turze zmienić kierunek.
-        runPlannedMarchesAtPlayerEndTurn();
         // Restore movement for all units
         movedByPlayerThisTurn.clear();
         for (const u of units) {
@@ -28787,9 +28660,6 @@ async function boot(): Promise<void> {
           // one fresh retreat again.
           if (u.retreatedThisTurn) u.retreatedThisTurn = false;
         }
-        clearPlayerUnitSelectionStateOnly();
-        setTurnTransition(6, 'Zakończenie ruchów gracza…', 'Gracz', nextTurnNum);
-        await yieldTurnTransitionUi();
         turn++;
 
         // R-ULEPSZENIA-FARMA-LESIE-USUN-ISTNIEJACE-Q1 — TRWAJĄCA PARTIA (stan b) oraz
@@ -33116,6 +32986,140 @@ async function boot(): Promise<void> {
         }
         setTurnTransition(100, `Tura ${turn} — twoja kolej`, 'Gracz', turn);
         await yieldTurnTransitionUi();
+    }
+
+    function triggerPlayerEndTurn(): void {
+      healStuckDeferredPreBattleQueueOnEndTurnAttempt();
+      if (!canPlayerInitiateEndTurn()) {
+        console.warn('[EndTurn] triggerPlayerEndTurn: odrzucono (canPlayerInitiateEndTurn=false)');
+        hintEndTurnBlocked();
+        return;
+      }
+      console.warn('[EndTurn] triggerPlayerEndTurn: START tura', turn);
+      if (PERF_DEBUG) {
+        // P-PERF-SPOWOLNIENIE-PO-60-TURACH: migawka liczników na START każdej tury gracza --
+        // porównaj trend między turami (rosnące improvementMeshes/resourceOverlays z tury na
+        // turę przy STAŁEJ liczbie miast wskazywałoby na wyciek, nie na naturalny wzrost gry).
+        console.info(
+          '[perfDebug] EOT start tura=' + turn + ' · units=' + units.length + ' · cities=' + cities.length
+          + ' · improvementMeshes=' + improvementMeshes.size + ' · resourceOverlays=' + resourceOverlays.length
+          + ' · villageMeshes=' + villageMeshes.size + ' · campMeshes=' + campMeshes.size
+          + ' · drawCalls=' + (renderer.info.render.calls) + ' · geometries=' + (renderer.info.memory.geometries)
+          + ' · textures=' + (renderer.info.memory.textures),
+        );
+      }
+      endTurnInProgress = true;
+      endTurnStartedAt = Date.now();
+      void (async () => {
+        try {
+        const nextTurnNum = turn + 1;
+        beginTurnTransition(nextTurnNum);
+        await yieldTurnTransitionUi();
+
+        // Snap any in-flight animation to its destination.
+        let endTurnAnimHutCollected = false;
+        if (isAnimating && anim !== null) {
+          const u = units.find(x => x.id === anim!.id);
+          if (u) {
+            const stack = anim.movingStackIds
+              .map(sid => units.find(x => x.id === sid))
+              .filter((su): su is RuntimeUnit => su != null);
+            for (const su of stack) {
+              su.q = anim.destQ;
+              su.r = anim.destR;
+            }
+            // P-MGLA-ODKRYCIE-TELEPORT-KONIEC-TURY-Q1: koniec tury podczas trwajacej animacji
+            // marszu teleportuje jednostke na anim.destQ/destR (koniec sciezki) -- bez tego
+            // wywolania mgla pomijala heksy POSRODKU anim.pathHexes, dokladnie ten sam wzorzec
+            // co juz naprawione main.ts:32200-32205 (koniec animacji) i main.ts:22295 (ruch
+            // instant). Musi wystapic PRZED checkVillageRewardsAlongPath/
+            // checkBarbCampDestructionAlongPath ponizej -- mgla odkrywa sciezke, zanim nagrody/
+            // zniszczenia wzdluz tej samej sciezki sa liczone.
+            if (anim.pathHexes.length > 0) {
+              for (const su of stack) {
+                addExplored(explored, computeVisibleAlongPath(anim.pathHexes, map, unitSight(su)));
+              }
+            }
+            deductStackRuchLeft(stack, anim.cost);
+            // TEMAT #15: woda -> zaokrętowanie, ląd -> zejście na ląd.
+            applyEmbarkStateAfterMove(stack, map);
+            if (u.ownerId === 0 && anim.pathHexes.length > 0) {
+              endTurnAnimHutCollected = checkVillageRewardsAlongPath(anim.pathHexes);
+            }
+            if (anim.pathHexes.length > 0) {
+              // P-BARBARZYNCY-USUWANIE-SEMANTYKA-Q1: `anim` jest zawsze
+              // jednostką gracza (jedyne miejsce ustawiające `anim` to
+              // startAnimatedMove, playerStackAt) -- nigdy barbarzyńcą.
+              // / EN: `anim` always tracks a player unit (the sole assignment
+              // site is startAnimatedMove/playerStackAt) -- never a barbarian.
+              checkBarbCampDestructionAlongPath(anim.pathHexes);
+              const bonusChanged = applyCityVisitBonusesAlongPath(
+                stack,
+                anim.pathHexes,
+                u.ownerId === 0,
+              );
+              if (bonusChanged) syncUnitsRender();
+            }
+            tryAutoCaptureEmptyCityAt(anim.destQ, anim.destR, stack);
+          }
+          anim = null;
+          isAnimating = false;
+          stopMarch(); // SFX marsz: animacja ucięta (koniec tury) — ucisz pętlę
+        }
+        // Zwiadowcy gracza: auto-zwiedzanie nieużytego ruchu (mgła + kontakt z obcymi).
+        {
+          let scoutHutCollected = false;
+          const scoutExplore = runScoutsAutoExplore(
+            units,
+            map,
+            explored,
+            0,
+            unitSight,
+            Math.random,
+            (u) => {
+              // P-MGLA-ODKRYCIE-SCIEZKA-INWARIANT-Q1 — CZWARTE miejsce tego samego wzorca.
+              // `advanceScoutAutoExplore` (scout-auto-explore.ts:234) przestawia `unit.q/r`
+              // KROK PO KROKU w petli `while (unit.ruchLeft > 0)` — zwiadowca z duzym
+              // budzetem ruchu (rzeka: plaski koszt 1/heks, units/setup.ts:628) przechodzi
+              // w JEDNEJ turze kilkanascie heksow. Jedynym odkryciem bylo `refreshFog()`
+              // PO calej petli (nizej) — a ono liczy WYLACZNIE z pozycji KONCOWEJ
+              // (`currentVisible()`), wiec heksy POSRODKU trasy nie trafialy do `explored`.
+              // `advanceScoutAutoExplore` prowadzi wprawdzie wlasny `workingExplored`, ale
+              // to LOKALNA kopia (`new Set(explored)`), porzucana po powrocie z funkcji.
+              // Hak `onAfterStep` jest wolany po KAZDYM kroku, wiec odkrycie z biezacego
+              // heksu w tym haku jest rownowazne odkryciu wzdluz calej sciezki — i jest
+              // jedynym wpieciem osiagalnym z main.ts (scout-auto-explore.ts jest poza
+              // allowlista tematu).
+              revealAlongPathForStack([u], [{ q: u.q, r: u.r }]);
+              if (u.ownerId === 0) {
+                if (checkVillageRewardAt(u.q, u.r)) scoutHutCollected = true;
+              }
+              // P-BARBARZYNCY-USUWANIE-SEMANTYKA-Q1: runScoutsAutoExplore filtruje
+              // wewnętrznie do playerOwnerId (0) -- `u` jest zawsze graczem, nigdy
+              // barbarzyńcą. / EN: runScoutsAutoExplore filters internally to
+              // playerOwnerId (0) -- `u` is always the player, never a barbarian.
+              checkBarbCampDestroyedAt(u.q, u.r);
+              if (applyCityVisitBonusesAtHex(u, u.q, u.r, u.ownerId === 0)) {
+                syncUnitsRender();
+              }
+            },
+          );
+          if (scoutExplore.movedUnitIds.length > 0) {
+            syncUnitsRender();
+            const suppressVeteranTip = endTurnAnimHutCollected || scoutHutCollected;
+            refreshFog(suppressVeteranTip ? { skipVeteranEducation: true } : undefined);
+            // SFX marsz: ruch BEZ animacji (teleport) — jednorazowy akcent, nie
+            // pętla. Zawsze jednostki gracza -> bez sprawdzania widoczności.
+            if (sfxUnitsEnabled) playMarchAccent(scoutExplore.movedUnitIds.length);
+          }
+        }
+        // C-RUCH: kontynuacja wieloturowej trasy na KONIEC tury gracza (pozostałe MP),
+        // nie na starcie kolejnej — gracz może w tej turze zmienić kierunek.
+        runPlannedMarchesAtPlayerEndTurn();
+        clearPlayerUnitSelectionStateOnly();
+        setTurnTransition(6, 'Zakończenie ruchów gracza…', 'Gracz', nextTurnNum);
+        await yieldTurnTransitionUi();
+        await runWorldEndTurn();
         } catch (errEndTurn) {
           console.error('[EndTurn] Blad przejscia tury:', errEndTurn);
         } finally {
