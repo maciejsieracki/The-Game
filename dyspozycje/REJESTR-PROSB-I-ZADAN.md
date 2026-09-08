@@ -7198,24 +7198,55 @@ pokrycia obrońcy domu od licznika frontów dotyczy WYŁĄCZNIE zagrożeń barba
 (runda 2) niezależną mutacją potwierdził fix (54/55 bez niego, 55/55 z nim) i
 bezkonfliktowy merge test na aktualny `origin/main` przed integracją.
 
+## `P-BITWA-AUTO-LUCZNICY-NIE-RUSZAJA-Q1` — GAME — **ZINTEGROWANE 2026-09-08** (commit `a04c1d21`)
+
+Zgłoszenie właściciela: w trybie AUTO bitwy łucznicy/jednostki dystansowe stoją bezczynnie
+mimo dyspozycji ataku, podczas gdy piechota rusza normalnie. Root cause: `ru.playerOrder`
+używany jest jako wewnętrzna buchalteria doktryny (`_executeGroupDoctrineStep`/
+`_executeSkirmishDoctrineStep` zapisują tam "ruch w toku") — gdy doktrynalny ruch nie ląduje
+dokładnie na docelowym polu w jednej akcji (kolizja formacji, typowe w ciasnym szyku, częściej
+dotyka tylnych szeregów), stara bramka `playerOrder.type === 'none'` trwale blokuje jednostkę
+z doktryny do końca bitwy. Fix: w trybie AUTO bramka nie wymaga już `playerOrder.type ===
+'none'` — resztkowa buchalteria jest jawnie czyszczona przed oceną doktryny. **Konflikt
+plikowy z równolegle prowadzonym `P-BITWA-OBRONCY-PRZED-MUREM-Q1`** (ta sama funkcja
+`_activateUnit`) rozwiązany sekwencyjnie: obrońcy-mur zintegrowany pierwszy (`6094c585`), ten
+temat scalony na aktualny stan z ręcznym połączeniem obu warunków (potwierdzone przez Final
+Control obu tematów niezależnie). Runda 2: jedyny zarzut Final Control rundy 1 dotyczył
+anchoringu nowej bramki źródłowej (`bitwa-auto-doktryna-playerorder-zrodlo-test.cjs`, literalny
+string zgubiony po scaleniu z warunkiem muru) — naprawiony zamianą na regex tolerujący
+dodatkowe warunki. Final Control finalny (własna, niezależna weryfikacja od zera) PASS. Testy:
+`tsc --noEmit` czysty, 5 bramek referencyjnych zielone, nowy test 6/6 (mutacyjnie
+potwierdzony), `bitwa-obroncy-mur-kolumny-test.cjs` 9/9 (zero regresji drugiego tematu).
+
 ## Nowe zgłoszenia w toku (2026-09-08, jeszcze nie zamknięte)
 
-- `P-BITWA-AUTO-LUCZNICY-NIE-RUSZAJA-Q1` (GAME) — w trybie AUTO łucznicy/jednostki
-  dystansowe stoją bezczynnie mimo dyspozycji ataku. Root cause: `ru.playerOrder`
-  używany jako wewnętrzna buchalteria doktryny — gdy doktrynalny ruch nie ląduje
-  dokładnie na docelowym polu w jednej akcji (kolizja formacji), stara bramka
-  `playerOrder.type === 'none'` trwale blokuje jednostkę z doktryny od tej tury.
-  Fix na branchu (`58e450be`+Obrona `01b3a24c`), **konflikt plikowy z już
-  zintegrowanym `P-BITWA-OBRONCY-PRZED-MUREM-Q1`** (ta sama funkcja
-  `_activateUnit`) — Final Control dla scalonego stanu w toku.
-- Plan przebudowy kart budynków i jednostek (opis/top3/wymagania/sekcje rozwijane)
-  zaakceptowany przez właściciela w rozmowie — dwa przykładowe prototypy (Opus 5,
-  żywe zrzuty Chromium) zaakceptowane, jeszcze nieformalny dispatch AutoBot dla
-  pełnej fali wdrożenia (adaptery, renderer, `types.ts`, treść per budynek/jednostka).
-- Zgłoszenie właściciela o ekonomii stadnin/koni (odblokowanie stadniny bez konia na
-  polu za 50 koni, w tym drogą handlu) — zbadane (istnieje "Model B" darmowego
-  odblokowania empire-wide, `gra/src/game/livestock-unlock.ts`), jeszcze nie
-  formalnie dispatchowane jako osobny temat.
-- Niejasne zgłoszenie właściciela o pustym wierszu "Surowce" w górnym HUD (w
-  przeciwieństwie do wypełnionych Skarbiec/Praca/Spichlerz/Nauka) — zadano pytanie
-  doprecyzowujące, odpowiedź właściciela jeszcze nie otrzymana.
+- `P-STADNINA-KONIE-KOSZT-ROZBUDOWY-Q1` (GAME) — dispatchowany formalnie (runda 2 w toku,
+  Workflow): stadnina poza złożem konia ma kosztować 50 koni z magazynu imperium zamiast
+  dzisiejszego darmowego odblokowania empire-wide (Model B). Runda 1 potwierdziła że handel
+  koniem już działa end-to-end bez zmian kodu; runda 2 wpina realny magazyn i odjęcie w
+  `main.ts` (allowlist rozszerzona punktowo przez orkiestratora).
+- `P-KARTA-PRZEBUDOWA-UKLAD-Q1` (GAME) — dispatchowany formalnie (Operator/Evaluator w toku,
+  Workflow): nowy układ sekcji kart budynków/jednostek zaakceptowany przez właściciela (opis/
+  top3/wymagania/rys historyczny na pozycji 4/sekcje rozwijane), w tym formalne uchylenie
+  starej decyzji `P-KARTA-OPIS-PRZED-STATYSTYKAMI-Q1` (ABC właściciela: "Przenieś wszędzie").
+  Wyłącznie infrastruktura/układ — masowe autorstwo treści per encja to osobna, przyszła fala.
+- `P-MIASTA-ZBYT-BLISKO-SIEBIE-Q1` (GAME) — dispatchowany formalnie (Operator/Evaluator w toku,
+  Workflow): inne cywilizacje stawiają miasta na sąsiadujących heksach. Zweryfikowany żywy
+  dowód ("URUK — KOLONIA" bezpośrednio przy stolicy) wskazuje na `pickBonusCityHex`
+  (`ai-difficulty-bonus.ts`) — bonusowe miasto startowe trudności celowo bierze bezpośredniego
+  sąsiada stolicy, pomijając sprawdzenie minimalnego dystansu.
+- `P-WOJNA-EPOKI-NAJTRUDNIEJSZY-NIE-WYBUCHA-Q1` (GAME) — dispatchowany formalnie (Operator/
+  Evaluator w toku, Workflow): wymuszona wojna epoki nie wybucha na najtrudniejszym poziomie.
+  Właściciel POTWIERDZIŁ żywym dowodem z własnej rozgrywki wiodącą hipotezę: wojna nie wybucha
+  dopóki strony "się nie poznają" (brak kontaktu dyplomatycznego) — określił to jako
+  "wytrych"/exploit.
+- `P-AI-WOJNA-WCZESNA-FAZA-MIASTA-PANSTWA-Q1` (GAME) — dispatchowany formalnie (Operator/
+  Evaluator w toku, Workflow): zgłoszenie właściciela — dwie cywilizacje AI bardzo szybko
+  podbiły wszystkich sąsiadów przez zwykłe (niewymuszone) wojny AI-vs-AI, które nie mają
+  bezpiecznika "pokój po 2 miastach" (ten bezpiecznik istnieje wyłącznie w mechanizmach
+  wymuszonej wojny). Przez pierwsze 25 tur zwykłe wojny AI-vs-AI mają być wstrzymane (ataki na
+  miasta-państwa i wojny wymuszone bez zmian).
+- Niejasne zgłoszenie właściciela o pustym wierszu "Surowce" w górnym HUD — **WYJAŚNIONE, NIE
+  BUG**: to jest świadoma decyzja z 2026-07-24 (`hud.ts`, komentarz "bez liczby na chipie") —
+  chip celowo pokazuje tylko ikonę + alert, bez liczby "X/Y", klik otwiera pełny panel
+  magazynu. Zero dispatchu potrzebne.
