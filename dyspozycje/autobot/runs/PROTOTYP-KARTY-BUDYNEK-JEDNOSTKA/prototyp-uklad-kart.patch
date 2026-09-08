@@ -1,0 +1,877 @@
+diff --git a/gra/data/buildings.json b/gra/data/buildings.json
+index 272cbde8..2e0df8b2 100644
+--- a/gra/data/buildings.json
++++ b/gra/data/buildings.json
+@@ -957,7 +957,23 @@
+     "koszt_surowce": {
+       "drewno": 40,
+       "kamien": 40
+-    }
++    },
++    "_TRESC_PRZYKLADOWA": "PROTOTYP-KARTY-BUDYNEK-JEDNOSTKA — pola \"opis\" i \"top3\" ponizej to TRESC PRZYKLADOWA (placeholder) wstawiona wylacznie po to, zeby pokazac nowy uklad karty. NIE jest to finalna tresc redakcyjna; pisanie opisow dla wszystkich encji to osobna, pozniejsza fala prac.",
++    "opis": "Koszary to stały garnizon miasta: miejsce, w którym rekruci przechodzą musztrę, zanim trafią na front. Każda jednostka, która odwiedzi miasto z Koszarami, zyskuje trwałą premię do parametrów miękkich.",
++    "top3": [
++      {
++        "tytul": "+20% do parametrów jednostek",
++        "tekst": "Trwały bonus dla każdej jednostki, która odwiedziła to miasto (wszystko poza Pancerzem). Kumuluje się z Akademią wojskową i Warsztatem oblężniczym do +50%."
++      },
++      {
++        "tytul": "+2 Pracy na turę, +1 za poziom",
++        "tekst": "Stały dopływ punktów Pracy do produkcji miasta; na drugim poziomie już +3."
++      },
++      {
++        "tytul": "Fundament ścieżki wojskowej",
++        "tekst": "Wymaga Wojskowości i otwiera dalszą rozbudowę zaplecza militarnego miasta."
++      }
++    ]
+   },
+   {
+     "id": "magazyn",
+diff --git a/gra/data/units.json b/gra/data/units.json
+index 21daf516..2fcacfb6 100644
+--- a/gra/data/units.json
++++ b/gra/data/units.json
+@@ -764,7 +764,23 @@
+     "missileAttack": 4,
+     "fieldPower": 57.5,
+     "Utrzymanie surowiec": "Żelazo",
+-    "Utrzymanie surowiec (ilość)": 10
++    "Utrzymanie surowiec (ilość)": 10,
++    "_TRESC_PRZYKLADOWA": "PROTOTYP-KARTY-BUDYNEK-JEDNOSTKA — pola \"Opis\" i \"Top3\" ponizej to TRESC PRZYKLADOWA (placeholder) wstawiona wylacznie po to, zeby pokazac nowy uklad karty. NIE jest to finalna tresc redakcyjna.",
++    "Opis": "Hastati to pierwsza linia rzymskiego manipułu — młodzi miecznicy, którzy rozpoczynają starcie salwą pilum i dopiero potem wchodzą do walki wręcz. Rzymski zamiennik Wojownika z mieczem i tarczą, dostępny od Hutnictwa żelaza.",
++    "Top3": [
++      {
++        "tytul": "Pilum przed zwarciem",
++        "tekst": "Zasięg 2 heksów pozwala osłabić przeciwnika, zanim linie się zetkną."
++      },
++      {
++        "tytul": "Trzon linii wręcz",
++        "tekst": "Wysokie HP i pancerz utrzymują front, dopóki cięższa piechota nie wejdzie do walki."
++      },
++      {
++        "tytul": "Kontra na włóczników",
++        "tekst": "Premia do ataku przeciw typom Spearman; unikaj wystawiania jej na jazdę."
++      }
++    ]
+   },
+   {
+     "Jednostka": "Triari",
+diff --git a/gra/src/ui/entityCards/buildingAdapter.ts b/gra/src/ui/entityCards/buildingAdapter.ts
+index 4d0e4552..c0c856ce 100644
+--- a/gra/src/ui/entityCards/buildingAdapter.ts
++++ b/gra/src/ui/entityCards/buildingAdapter.ts
+@@ -33,7 +33,7 @@
+  */
+ import type { BuildingDef } from '../../data/loader';
+ import buildingsData from '../../../data/buildings.json';
+-import { buildingIconSvg } from '../icons/brandAssets';
++import { brandIconSvg, buildingIconSvg } from '../icons/brandAssets';
+ import {
+   buildingEffectAtLevel,
+   buildingWorkCost,
+@@ -46,6 +46,7 @@ import type { BuildingRecord } from '../../game/economy';
+ import { buildingStockCost, stockResourceLabel } from '../../game/building-stock-cost';
+ import { mnoznikRoleForBuildingId, cumulativeMnoznikForBuildingId } from '../../game/unit-building-bonuses';
+ import { buildingStructuralDefenseBonusLine } from '../../game/building-upgrades';
++import { resolveTechnologyRow, technologyIdFromName } from './registry';
+ import type { EntityCardAdapter, EntityCardRow, EntityCardSection } from './types';
+ 
+ const ALL_BUILDINGS = buildingsData as unknown as BuildingDef[];
+@@ -149,33 +150,130 @@ const DEFAULT_CITY_STATE: BuildingCardCityState = {
+   ownerId: 0,
+ };
+ 
++/** PROTOTYP-KARTY-BUDYNEK-JEDNOSTKA — ikona marki per rodzaj plonu. Kontrakt
++ * `EntityCardRow.icon` istnieje od T1b i nie był dotąd użyty przez ten adapter; nowy układ
++ * wprost żąda „oddzielonego bloku Efekty z ikonami per surowiec". Klucze są tymi samymi
++ * plikami `src/ui/icons/brand/res-*.svg`, których używa HUD — zero nowych zasobów. */
++const YIELD_ICON_ID: Record<string, string> = {
++  praca: 'res-work',
++  pieniadz: 'res-treasury',
++  zywnosc: 'res-food',
++  nauka: 'res-science',
++  kultura: 'res-culture',
++  zadowolenie: 'chip-heart',
++  obrona: 'chip-garrison',
++};
++
++function yieldIcon(key: string): EntityCardRow['icon'] {
++  const svg = brandIconSvg(YIELD_ICON_ID[key] ?? 'chip-crate', 16);
++  return svg ? { kind: 'svg', svg } : undefined;
++}
++
++/** PROTOTYP — treść opisowa (`opis`, `top3`) NIE istnieje jeszcze w `BuildingDef`; w danych
++ * jest wypełniona WYŁĄCZNIE dla przykładowego budynku i jawnie oznaczona jako przykładowa
++ * (`_TRESC_PRZYKLADOWA`). Czytamy ją bezpiecznie spoza typowanego kształtu — dokładnie tym
++ * samym wzorcem, co `historicalNoteOf()` wyżej i `unitAdapter.ts::extra()`. */
++function descriptionOf(building: BuildingDef): string | undefined {
++  const t = text((building as unknown as Record<string, unknown>).opis);
++  return t !== '' ? t : undefined;
++}
++
++interface Top3Entry { tytul?: unknown; tekst?: unknown }
++
++function top3Of(building: BuildingDef): EntityCardRow[] {
++  const raw = (building as unknown as Record<string, unknown>).top3;
++  if (!Array.isArray(raw)) return [];
++  return raw
++    .map((item) => {
++      if (typeof item === 'string') return { label: text(item), value: '' };
++      const o = (item ?? {}) as Top3Entry;
++      return { label: text(o.tytul), value: text(o.tekst) };
++    })
++    .filter((r) => r.label !== '' || r.value !== '');
++}
++
+ export const buildingAdapter: EntityCardAdapter<BuildingDef> = (building, ctx) => {
+   const cityState = (ctx.city as BuildingCardCityState | undefined) ?? DEFAULT_CITY_STATE;
+   const displayLevel = cityState.displayLevel;
++  const sections: EntityCardSection[] = [];
++
++  // ============================================================================================
++  // PROTOTYP-KARTY-BUDYNEK-JEDNOSTKA — zaakceptowany przez właściciela układ karty BUDYNKU.
++  // Kolejność bloków (nagłówek → wymagania → opis → top3 → charakterystyka → efekty →
++  // koszt budowy → koszt utrzymania → poziomy → rys historyczny → CivPedia) jest WIĄŻĄCA;
++  // dlatego każdy blok jest osobną sekcją w `sections`, a nie polem renderowanym w stałym
++  // miejscu przez renderer (patrz komentarz przy `layout: 'prose'` w `types.ts`).
++  // ============================================================================================
+ 
+-  // --- Charakterystyka — 1:1 z `buildBuildingDetailCard` sekcja „Charakterystyka" -------
++  // --- 2. WYMAGANIA — skonsolidowany blok (dotąd: samotny wiersz „Wymagania" NA DOLE karty,
++  // a technologia w ogóle poza adapterem — dokładał ją host przez `appendTechDetailBlock`) ----
++  const reqRows: EntityCardRow[] = [];
++  const techName = text(building.techUnlock);
++  if (techName !== '' && !isEmptyDataVal(techName)) {
++    const techSlug = technologyIdFromName(techName);
++    const row: EntityCardRow = { label: 'Wymagana technologia', value: techName };
++    // Link tylko gdy technologia realnie istnieje w `tech.json` (ten sam warunek co
++    // `unitAdapter.ts` — nigdy nie zgadujemy celu linku).
++    if (techSlug != null && resolveTechnologyRow(techSlug) != null) {
++      row.linkTo = { kind: 'technology', id: techSlug };
++    }
++    reqRows.push(row);
++  }
++  const upgradeFrom = text((building as unknown as Record<string, unknown>).upgradeFrom);
++  if (upgradeFrom !== '' && !isEmptyDataVal(upgradeFrom)) {
++    const prev = ALL_BUILDINGS.find((b) => b.id === upgradeFrom);
++    reqRows.push({
++      label: 'Wymagany budynek',
++      value: prev ? prev.nazwa : upgradeFrom,
++      linkTo: prev ? { kind: 'building', id: prev.id } : undefined,
++    });
++  }
++  const stockCostDetail = buildingStockCost(building);
++  const stockKeys = Object.keys(stockCostDetail);
++  // ŚWIADOMY BRAK wiersza „wymagane surowce do odblokowania" (pkt 2 zaakceptowanego układu):
++  // `buildings.json` nie zna takiego progu — jedyne surowce w danych budynku to JEDNORAZOWY
++  // KOSZT budowy pobierany z magazynu państwa (`koszt_surowce` → `buildingStockCost`), który
++  // stoi niżej w bloku „Koszt budowy". Powielenie go tutaj dawało dwa razy tę samą liczbę pod
++  // dwoma różnymi nagłówkami (zmierzone na zrzucie rundy 1 prototypu). Gdy dane kiedyś dostaną
++  // realny próg odblokowania (np. „wymaga dostępu do żelaza"), wiersz wraca TUTAJ.
++  if (building.wymagania && !isEmptyDataVal(building.wymagania)) {
++    reqRows.push({ label: 'Dodatkowe warunki', value: text(building.wymagania) });
++  }
++  if (reqRows.length === 0) reqRows.push({ label: 'Wymagania', value: 'brak — dostępny od startu' });
++  sections.push({ key: 'requirements', title: 'Wymagania', rows: reqRows });
++
++  // --- 3. OPIS — 1-2 zdania prozy o mechanice (nowy blok, layout 'prose') --------------------
++  const opis = descriptionOf(building);
++  if (opis) {
++    sections.push({ key: 'description', title: 'Opis', rows: [{ label: '', value: opis }], layout: 'prose' });
++  }
++
++  // --- 4. TOP 3 — trzy najważniejsze punkty, wizualnie wyróżnione (nowy blok) ----------------
++  const top3 = top3Of(building);
++  if (top3.length > 0) {
++    sections.push({ key: 'top3', title: 'Top 3', rows: top3, layout: 'top3' });
++  }
++
++  // --- 5. CHARAKTERYSTYKA — BEZ poziomu (poziom poszedł do nagłówka jako pigułka) ------------
+   const charRows: EntityCardRow[] = [
+     { label: 'Kategoria', value: text(building.kategoria) },
+     { label: 'Epoka wejścia', value: epochLabelNum(building.epokaWejscia) },
+     { label: 'Typ', value: building.wielokrotny ? 'Wielokrotny' : 'Unikalny w mieście' },
+   ].filter((r) => hasVal(r.value));
+-  if (displayLevel > 1 || building.maksPoziom > 1) {
+-    charRows.push({
+-      label: 'Poziom w tym mieście',
+-      value: cityState.hasCity
+-        ? `L${displayLevel} (epoka miasta — jak liczy silnik)`
+-        : `L1 (podgląd; w mieście rośnie z epoką, max ${building.maksPoziom})`,
+-    });
+-  }
+-  const charSection: EntityCardSection = { key: 'characteristics', title: 'Charakterystyka', rows: charRows };
++  sections.push({ key: 'characteristics', title: 'Charakterystyka', rows: charRows });
+ 
+-  // --- Plony i efekty — 1:1 z `buildBuildingDetailCard` sekcja „Plony i efekty" ----------
++  // --- 6. EFEKTY (plony) — osobny blok z ikoną per surowiec ----------------------------------
+   const yieldRows: EntityCardRow[] = [];
+   for (const y of YIELD_BRAND) {
+     const baza = building.baza[y.key] ?? 0;
+     const inc = building.przyrost[y.key] ?? 0;
+     if (baza === 0 && inc === 0) continue;
+-    yieldRows.push({ label: y.label, value: formatYieldDetailValue(baza, inc, displayLevel) });
++    yieldRows.push({
++      label: y.label,
++      value: formatYieldDetailValue(baza, inc, displayLevel),
++      icon: yieldIcon(String(y.key)),
++      emphasize: true,
++    });
+     const scale = formatYieldScaleRow(building, baza, inc);
+     if (scale) yieldRows.push({ label: `${y.label} — skala poziomów`, value: scale });
+   }
+@@ -186,46 +284,54 @@ export const buildingAdapter: EntityCardAdapter<BuildingDef> = (building, ctx) =
+       const label = mnoznikRole === 'pancerz'
+         ? 'Pancerz (jednostki, trwale)'
+         : 'Parametry poza Pancerzem (jednostki, trwale)';
+-      yieldRows.push({ label, value: `+${cumulative}%` });
++      const svg = brandIconSvg('tb-army', 16);
++      yieldRows.push({
++        label,
++        value: `+${cumulative}%`,
++        icon: svg ? { kind: 'svg', svg } : undefined,
++        emphasize: true,
++      });
+     }
+   }
+   const defenseLine = buildingStructuralDefenseBonusLine(building.id);
+-  if (defenseLine) yieldRows.push({ label: 'Obrona strukturalna', value: defenseLine });
++  if (defenseLine) {
++    const svg = brandIconSvg('chip-garrison', 16);
++    yieldRows.push({ label: 'Obrona strukturalna', value: defenseLine, icon: svg ? { kind: 'svg', svg } : undefined });
++  }
+   if (yieldRows.length === 0) yieldRows.push({ label: 'Efekty', value: '—' });
+-  const yieldSection: EntityCardSection = {
+-    key: 'yield', title: 'Plony i efekty (przychód na turę)', rows: yieldRows,
+-  };
++  sections.push({ key: 'yield', title: 'Efekty (na turę)', rows: yieldRows });
+ 
+-  // --- Koszty budowy i utrzymania — 1:1 z `buildBuildingDetailCard` ----------------------
++  // --- 7. KOSZTY — DWA ROZDZIELONE BLOKI (dotąd jedna sekcja „Koszty budowy i utrzymania",
++  // w której koszt jednorazowy i wydatek co-turowy stały wymieszane, wiersz przy wierszu) ----
+   const baseWork = itemCost('budynek', building.id, { buildings: ALL_BUILDINGS, units: [] }, 1);
+   const workCost = buildingWorkCost(baseWork, undefined, cityState.buildCostPace, cityState.ownerId, cityState.difficulty);
+-  const upkeepGold = buildingUpkeep(building as unknown as BuildingRecord, 1);
+-  const upkeepResources = buildingResourceUpkeep(building);
+-  const stockCostDetail = buildingStockCost(building);
+-  const costRows: EntityCardRow[] = [
+-    { label: 'Koszt budowy (jednorazowy)', value: `${workCost} pkt Pracy` },
++  const buildCostRows: EntityCardRow[] = [
++    { label: 'Praca (jednorazowo)', value: `${workCost} pkt Pracy`, emphasize: true },
+   ];
+   if (building.przyrostKosztu) {
+-    costRows.push({ label: 'Przyrost kosztu budowy', value: `+${building.przyrostKosztu} pkt Pracy / poziom` });
+-  }
+-  costRows.push({ label: 'Utrzymanie (co turę)', value: formatUpkeepValue(upkeepGold, upkeepResources) });
+-  if (building.przyrostUtrzymania) {
+-    costRows.push({
+-      label: 'Przyrost utrzymania', value: `+${building.przyrostUtrzymania} pkt Pieniądza / poziom`,
+-    });
++    buildCostRows.push({ label: 'Przyrost za poziom', value: `+${building.przyrostKosztu} pkt Pracy / poziom` });
+   }
+-  const stockKeys = Object.keys(stockCostDetail);
+   if (stockKeys.length > 0) {
+-    costRows.push({
+-      label: 'Koszt surowcowy (jednorazowy)',
++    buildCostRows.push({
++      label: 'Surowce (jednorazowo)',
+       value: `${stockKeys.map((k) => `${stockCostDetail[k]} ${stockResourceLabel(k)}`).join(' + ')} — z magazynu państwa`,
+     });
+   }
+-  const costSection: EntityCardSection = { key: 'cost', title: 'Koszty budowy i utrzymania', rows: costRows };
++  sections.push({ key: 'cost-build', title: 'Koszt budowy', rows: buildCostRows });
+ 
+-  const sections: EntityCardSection[] = [charSection, yieldSection, costSection];
++  const upkeepGold = buildingUpkeep(building as unknown as BuildingRecord, 1);
++  const upkeepResources = buildingResourceUpkeep(building);
++  const upkeepRows: EntityCardRow[] = [
++    { label: 'Co turę', value: formatUpkeepValue(upkeepGold, upkeepResources), emphasize: true },
++  ];
++  if (building.przyrostUtrzymania) {
++    upkeepRows.push({
++      label: 'Przyrost za poziom', value: `+${building.przyrostUtrzymania} pkt Pieniądza / poziom`,
++    });
++  }
++  sections.push({ key: 'cost-upkeep', title: 'Koszt utrzymania', rows: upkeepRows });
+ 
+-  // --- Poziomy — conditional (maksPoziom > 1), 1:1 -----------------------------------------
++  // --- 8. POZIOMY — bez zmian względem dzisiejszej karty --------------------------------------
+   if (building.maksPoziom > 1) {
+     const lvlRows: EntityCardRow[] = [{ label: 'Maks. poziom', value: String(building.maksPoziom) }];
+     const names = building.nazwyPoziomow.slice(0, building.maksPoziom).filter(Boolean);
+@@ -233,24 +339,40 @@ export const buildingAdapter: EntityCardAdapter<BuildingDef> = (building, ctx) =
+     sections.push({ key: 'levels', title: 'Poziomy', rows: lvlRows });
+   }
+ 
+-  // --- Wymagania budynku — conditional, 1:1 -----------------------------------------------
+-  if (building.wymagania && !isEmptyDataVal(building.wymagania)) {
++  // --- 9. RYS HISTORYCZNY — jako SEKCJA na właściwej pozycji (przedostatnia), a nie przez
++  // `EntityCardData.historicalNote`. Powód: renderer renderuje `historicalNote` w STAŁYM
++  // miejscu — tuż POD nagłówkiem, NAD wszystkimi sekcjami (P-KARTA-OPIS-PRZED-STATYSTYKAMI-Q1)
++  // — a zaakceptowany układ każe mu stać jako pkt 9, POD Poziomami. Przeniesienie tego
++  // renderowania w rendererze zmieniłoby układ WSZYSTKICH pięciu rodzajów kart naraz (także
++  // technologii/ulepszenia/cudu, dziś nieprzebudowanych) i jest DECYZJĄ DO PODJĘCIA przy
++  // pełnej przebudowie — patrz raport prototypu. Tu: sekcja `prose` z własnym kluczem,
++  // stylowana kursywą przez `[data-section-key="historia"]`.
++  const historia = historicalNoteOf(building);
++  if (historia) {
+     sections.push({
+-      key: 'requirements',
+-      title: 'Wymagania budynku',
+-      rows: [{ label: 'Wymagania', value: text(building.wymagania) }],
++      key: 'historia', title: 'Rys historyczny', rows: [{ label: '', value: historia }], layout: 'prose',
+     });
+   }
+ 
++  // --- 1. NAGŁÓWEK — POZIOM/EPOKA jako pigułki na samej górze ---------------------------------
++  const headerChips = [
++    `Epoka ${epochLabelNum(building.epokaWejscia)}`,
++    building.maksPoziom > 1
++      ? `Poziom L${cityState.hasCity ? displayLevel : 1}/${building.maksPoziom}`
++      : 'Jeden poziom',
++  ];
++
+   return {
+     kind: 'building',
+     id: building.id,
+     title: building.nazwa,
+     subtitle: text(building.kategoria) || undefined,
+     medallion: { kind: 'icon', svg: buildingIconSvg(building, building.id) },
++    headerChips,
+     sections,
+     civpediaLink: { folder: 'budynki', slug: building.id },
+-    historicalNote: historicalNoteOf(building),
++    // `historicalNote` CELOWO nieustawione — rys historyczny jest tu sekcją na pozycji 9
++    // (patrz komentarz wyżej), a ustawienie obu pól naraz zdublowałoby ten sam akapit.
+   };
+ };
+ 
+diff --git a/gra/src/ui/entityCards/renderer.ts b/gra/src/ui/entityCards/renderer.ts
+index 62a45871..f057fd59 100644
+--- a/gra/src/ui/entityCards/renderer.ts
++++ b/gra/src/ui/entityCards/renderer.ts
+@@ -212,6 +212,65 @@ function buildPillRowEl(row: EntityCardData['sections'][number]['rows'][number])
+   return pill;
+ }
+ 
++/** PROTOTYP-KARTY-BUDYNEK-JEDNOSTKA — `layout: 'prose'`: jeden akapit pełnej szerokości.
++ * Treść bierzemy z `row.value`, a gdy puste — z `row.label`, żeby adapter mógł zapisać
++ * jednozdaniowy opis w dowolnym z dwóch pól bez cichej pustki na karcie. Zero siatki
++ * label/value: proza ma płynąć przez całą szerokość karty (patrz `types.ts`). */
++function buildProseRowEl(row: EntityCardData['sections'][number]['rows'][number]): HTMLElement {
++  const p = el('p', 'entity-card-prose');
++  p.textContent = row.value !== '' ? row.value : row.label;
++  return p;
++}
++
++/** PROTOTYP-KARTY-BUDYNEK-JEDNOSTKA — `layout: 'top3'`: numerowana, wyróżniona pozycja
++ * („pigułka") z tytułem (`row.label`) i tekstem (`row.value`). Numer jest liczony z
++ * pozycji w sekcji, więc adapter podaje same treści, nie ozdobniki. `row.icon` (kontrakt
++ * sprzed tego tematu) jest honorowany — zastępuje numer, gdy adapter go poda. */
++function buildTop3RowEl(
++  row: EntityCardData['sections'][number]['rows'][number],
++  index: number,
++): HTMLElement {
++  const item = el('div', 'entity-card-top3-item');
++  const rank = el('span', 'entity-card-top3-rank');
++  rank.setAttribute('aria-hidden', 'true');
++  if (row.icon) rank.innerHTML = row.icon.svg;
++  else rank.textContent = String(index + 1);
++  const body = el('div', 'entity-card-top3-body');
++  const title = el('b', 'entity-card-top3-title');
++  title.textContent = row.label;
++  body.appendChild(title);
++  if (row.value !== '') {
++    const textEl = el('span', 'entity-card-top3-text');
++    textEl.textContent = row.value;
++    body.appendChild(textEl);
++  }
++  item.append(rank, body);
++  return item;
++}
++
++/** Klasa kontenera wierszy per layout (jedno miejsce prawdy zamiast trzech ternarnych
++ * `layout === 'pills' ? ... : ...` rozsianych po `buildSectionEl`). */
++function rowsContainerClass(layout: 'grid' | 'pills' | 'prose' | 'top3'): string {
++  if (layout === 'pills') return 'entity-card-section-pills';
++  if (layout === 'prose') return 'entity-card-section-prose';
++  if (layout === 'top3') return 'entity-card-section-top3';
++  return 'entity-card-section-grid';
++}
++
++/** Jeden wiersz per layout — patrz `rowsContainerClass`. `index` jest globalny w obrębie
++ * sekcji (nie w obrębie kontenera), żeby numeracja `top3` nie zaczynała się od nowa w
++ * części schowanej za „Pokaż pozostałe N". */
++function buildRowElForLayout(
++  layout: 'grid' | 'pills' | 'prose' | 'top3',
++  row: EntityCardData['sections'][number]['rows'][number],
++  index: number,
++): HTMLElement {
++  if (layout === 'pills') return buildPillRowEl(row);
++  if (layout === 'prose') return buildProseRowEl(row);
++  if (layout === 'top3') return buildTop3RowEl(row, index);
++  return buildGridRowEl(row);
++}
++
+ /** Buduje jedną sekcję karty — akordeon (jeśli `collapsible`), layout grid/pills,
+  * paginacja `previewLimit`, badge listy płaskiej na dole (bez zmian z T1). `cardEl`
+  * jest potrzebny wyłącznie do sprzężenia „Pokaż pozostałe N" z
+@@ -231,22 +290,22 @@ function buildSectionEl(
+   heading.appendChild(headingLabel);
+ 
+   const layout = section.layout ?? 'grid';
+-  const grid = el('div', layout === 'pills' ? 'entity-card-section-pills' : 'entity-card-section-grid');
++  const grid = el('div', rowsContainerClass(layout));
+   const previewLimit = section.previewLimit;
+   const showAll = previewLimit == null || previewLimit >= section.rows.length;
+   const visibleRows = showAll ? section.rows : section.rows.slice(0, Math.max(0, previewLimit));
+   const hiddenRows = showAll ? [] : section.rows.slice(Math.max(0, previewLimit));
+-  for (const row of visibleRows) {
+-    grid.appendChild(layout === 'pills' ? buildPillRowEl(row) : buildGridRowEl(row));
+-  }
++  visibleRows.forEach((row, i) => {
++    grid.appendChild(buildRowElForLayout(layout, row, i));
++  });
+   let restEl: HTMLElement | null = null;
+   let moreBtn: HTMLButtonElement | null = null;
+   if (hiddenRows.length > 0) {
+-    restEl = el('div', layout === 'pills' ? 'entity-card-section-pills' : 'entity-card-section-grid');
++    restEl = el('div', rowsContainerClass(layout));
+     restEl.hidden = true;
+-    for (const row of hiddenRows) {
+-      restEl.appendChild(layout === 'pills' ? buildPillRowEl(row) : buildGridRowEl(row));
+-    }
++    hiddenRows.forEach((row, i) => {
++      restEl!.appendChild(buildRowElForLayout(layout, row, visibleRows.length + i));
++    });
+     moreBtn = el('button', 'entity-card-more');
+     moreBtn.type = 'button';
+     moreBtn.textContent = `Pokaż pozostałe ${hiddenRows.length}`;
+@@ -357,6 +416,18 @@ export function renderEntityCard(data: EntityCardData): HTMLElement {
+     }
+   }
+   titleWrap.appendChild(titleRow);
++  // PROTOTYP-KARTY-BUDYNEK-JEDNOSTKA (pkt 1 obu układów): POZIOM/EPOKA jako pigułki w
++  // nagłówku, nad podtytułem — zamiast zakopanego wiersza w „Charakterystyce" na dole.
++  // Pusta/nieustawiona tablica = zero węzłów (żadnego pustego kontenera w DOM).
++  if (data.headerChips && data.headerChips.length > 0) {
++    const chips = el('div', 'entity-card-header-chips');
++    for (const chip of data.headerChips) {
++      const chipEl = el('span', 'entity-card-header-chip');
++      chipEl.textContent = chip;
++      chips.appendChild(chipEl);
++    }
++    titleWrap.appendChild(chips);
++  }
+   if (data.subtitle) {
+     const sub = el('div', 'entity-card-subtitle');
+     sub.textContent = data.subtitle;
+@@ -1071,4 +1142,63 @@ button.entity-card-civpedia-link:focus-visible{outline:2px solid var(--tg-focus-
+ /* KOTWICA KOŃCOWA bloku R-KARTA-JEDNOSTKI-3D-EKSPOZYCJA-UX-Q1 — mutacja w
+    tools/entity-card-diorama-real-render-test.cjs wycina dokładnie ten zakres. Nowe reguły
+    dopisuj PO tej linii. */
++/* PROTOTYP-KARTY-BUDYNEK-JEDNOSTKA — KOTWICA POCZATKOWA nowego, zaakceptowanego ukladu kart
++   (naglowek z pigulkami POZIOM/EPOKA, sekcja Opis w prozie, sekcja Top 3, wyrazniejsze
++   naglowki sekcji rozdzielajace bloki Koszt budowy / Koszt utrzymania). Wszystkie reguly
++   sa ADDYTYWNE: dotycza wylacznie klas, ktorych zaden dotychczasowy adapter nie generuje
++   (.entity-card-header-chip*, .entity-card-section-prose, .entity-card-prose,
++   .entity-card-section-top3, .entity-card-top3-*), wiec karty technologii/ulepszenia/cudu
++   renderuja sie bez zmiany do czasu ich wlasnej przebudowy. */
++.entity-card-header-chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:5px;}
++.entity-card-header-chip{border-radius:999px;padding:2px 10px;font-size:11px;font-weight:700;
++  letter-spacing:.06em;text-transform:uppercase;
++  background:rgba(232,216,138,.16);border:1px solid rgba(232,216,138,.42);
++  color:#f0e3ab;text-shadow:none;}
++/* Sekcja „Opis" — akapit prozy przez CALA szerokosc karty. Celowo BEZ kursywy i bez
++   wyciszenia .entity-card-historia-text: to jest zdanie o MECHANICE (co budynek robi w
++   grze), a nie ciekawostka historyczna — dwa rozne rejestry musza byc rozroznialne. */
++.entity-card-section-prose{display:block;}
++.entity-card-prose{margin:0 0 6px;font-size:13px;line-height:1.5;color:#ded3ae;}
++.entity-card-prose:last-child{margin-bottom:0;}
++/* Sekcja „Top 3" — trzy wyroznione punkty z numerem porzadkowym. Ta sama zlota rodzina
++   kolorow co reszta karty, ale wlasne pudelko z lewym rantem: punkt ma byc czytelny
++   „na rzut oka" (wlasciciel: „krotkie pigulki, wizualnie wyroznione"), a nie kolejnym
++   wierszem siatki. */
++.entity-card-section-top3{display:flex;flex-direction:column;gap:6px;}
++.entity-card-top3-item{display:flex;align-items:flex-start;gap:9px;padding:7px 10px;
++  border-radius:8px;border:1px solid rgba(232,216,138,.22);border-left:3px solid rgba(232,216,138,.6);
++  background:linear-gradient(180deg,rgba(232,216,138,.11),rgba(232,216,138,.04));}
++.entity-card-top3-rank{flex:none;width:20px;height:20px;border-radius:50%;
++  display:flex;align-items:center;justify-content:center;
++  background:rgba(232,216,138,.85);color:#2e2708;font-size:11px;font-weight:800;line-height:1;}
++.entity-card-top3-body{min-width:0;display:flex;flex-direction:column;gap:1px;}
++.entity-card-top3-title{font-size:13px;font-weight:700;color:#f0e3ab;}
++.entity-card-top3-text{font-size:12.5px;line-height:1.4;opacity:.85;overflow-wrap:anywhere;}
++/* Naglowki sekcji — w nowym ukladzie karta ma ich WIECEJ i niosa realny podzial
++   („Koszt budowy" vs „Koszt utrzymania", „Statystyki podstawowe" vs „zaawansowane"),
++   wiec przestaja byc ledwie widoczna szara etykieta opacity .8.
++   Specyficznosc (0,2,1)/(0,2,0) jest tu KONIECZNA, nie ozdobna: wczesniejsza regula
++   '.entity-card-section h3' (0,1,1) narzuca font-size:13px i opacity:.8, a
++   '.entity-card-section-head' (0,1,0) ustawia font:inherit. Sama klasa by przegrala.
++   UWAGA: zero znakow wstecznego apostrofu w tym arkuszu - zamykaja literal szablonowy. */
++.entity-card-section h3.entity-card-section-heading,
++.entity-card-section button.entity-card-section-head{font-size:11px;font-weight:700;
++  letter-spacing:.1em;text-transform:uppercase;color:var(--tg-gold-primary,#e8d88a);
++  opacity:.85;margin:0 0 5px;}
++.entity-card-section{padding-top:2px;}
++/* Sekcja zwinieta (collapsible, openDefault:false) — glowa akordeonu ma wygladac na
++   klikalna takze wtedy, gdy jest zwinieta i nie widac pod nia tresci. */
++.entity-card-section button.entity-card-section-head:hover{opacity:1;}
++.entity-card-section[data-open="0"]{border-radius:8px;border:1px dashed rgba(232,216,138,.25);
++  padding:6px 8px;margin-left:-8px;margin-right:-8px;}
++.entity-card-section[data-open="0"] button.entity-card-section-head{margin:0;}
++/* „Rys historyczny" jako SEKCJA na wlasciwej pozycji (pkt 9 zaakceptowanego ukladu), a nie
++   przez EntityCardData.historicalNote renderowane w STALYM miejscu pod naglowkiem. Rejestr
++   wizualny zostaje ten sam co .entity-card-historia-text (kursywa, wyciszony kolor, cienki
++   separator u gory), zeby ciekawostka nadal odrozniala sie od tresci mechanicznych. */
++.entity-card-section[data-section-key="historia"]{border-top:1px solid rgba(232,216,138,.18);
++  padding-top:8px;margin-top:12px;}
++.entity-card-section[data-section-key="historia"] .entity-card-prose{font-style:italic;
++  font-size:12.5px;color:var(--tg-text-muted,#a89f80);}
++/* KOTWICA KONCOWA PROTOTYP-KARTY-BUDYNEK-JEDNOSTKA */
+ `;
+diff --git a/gra/src/ui/entityCards/types.ts b/gra/src/ui/entityCards/types.ts
+index cd7def90..5ccce1e1 100644
+--- a/gra/src/ui/entityCards/types.ts
++++ b/gra/src/ui/entityCards/types.ts
+@@ -85,8 +85,25 @@ export interface EntityCardSection {
+   /** Tryb renderowania wierszy sekcji: `'grid'` (domyślny, siatka label/value jak dziś)
+    * albo `'pills'` — zawijana lista pigułek z trailing „✓", wzorem
+    * `techDiscoveryNotice.ts:435-438` (T1b, sekcja "Wymagania"). W trybie `'pills'`
+-   * renderer używa `row.label` jako tekstu pigułki (`row.value` ignorowane). */
+-  layout?: 'grid' | 'pills';
++   * renderer używa `row.label` jako tekstu pigułki (`row.value` ignorowane).
++   *
++   * PROTOTYP-KARTY-BUDYNEK-JEDNOSTKA (nowy, zaakceptowany układ kart) dokłada dwa tryby —
++   * oba CZYSTO ADDYTYWNE (żaden dzisiejszy adapter ich nie używa, więc samo ich istnienie
++   * nie zmienia ani jednej istniejącej karty):
++   *
++   *   `'prose'` — sekcja „Opis": wiersze renderują się jako AKAPITY pełnej szerokości
++   *       (`row.value`, a gdy puste — `row.label`), bez siatki etykieta/wartość. Siatka
++   *       `label:value` jest strukturalnie zła dla 1-2 zdań prozy: `space-between` dosuwa
++   *       tekst do prawej krawędzi i zawija go w wąskiej kolumnie obok pustej etykiety.
++   *       Alternatywa (osobne pole `EntityCardData.description` renderowane w STAŁYM
++   *       miejscu, wzorem `historicalNote`) została świadomie odrzucona: właściciel
++   *       zamówił ŚCISŁĄ kolejność bloków od góry do dołu, a stałe miejsce w rendererze
++   *       odbiera adapterowi kontrolę nad kolejnością.
++   *   `'top3'` — sekcja „Top 3": każdy wiersz to wyróżniona pozycja z numerem porządkowym,
++   *       tytułem (`row.label`) i tekstem (`row.value`). To NIE jest `section.badges`
++   *       (płaska lista stringów, bez struktury tytuł/tekst) ani `highlighted`
++   *       (wyróżnia CAŁĄ sekcję, a nie pojedyncze punkty w środku). */
++  layout?: 'grid' | 'pills' | 'prose' | 'top3';
+ }
+ 
+ /** Medalion nagłówka karty: statyczna ikona SVG albo montowany 3D-podgląd jednostki. */
+@@ -117,6 +134,14 @@ export interface EntityCardData {
+   title: string;
+   subtitle?: string;
+   medallion: EntityCardMedallion;
++  /** PROTOTYP-KARTY-BUDYNEK-JEDNOSTKA — „POZIOM/EPOKA na samej górze" (pkt 1 obu
++   * zaakceptowanych układów). Krótkie, kilkuznakowe pigułki renderowane W NAGŁÓWKU
++   * (diorama), NAD podtytułem: np. `['Epoka Brąz', 'Poziom L1/2']`. Dotąd te informacje
++   * leżały zakopane w sekcji „Charakterystyka" na dole karty albo sklejone przecinkami
++   * w `subtitle` — właściciel wprost zażądał wyciągnięcia ich na górę. `subtitle` zostaje
++   * (jedno zdanie kategorii/roli); pigułki niosą to, co gracz porównuje między encjami.
++   * `undefined`/pusta tablica = zero węzłów w DOM (żadnego pustego kontenera). */
++  headerChips?: string[];
+   sections: EntityCardSection[];
+   /** ECHO Q2=A: kanał 2 obok karty, nie scalanie treści. `null`/brak = brak linku. */
+   civpediaLink?: EntityCardCivpediaLink | null;
+diff --git a/gra/src/ui/entityCards/unitAdapter.ts b/gra/src/ui/entityCards/unitAdapter.ts
+index 2eb13db1..c3094240 100644
+--- a/gra/src/ui/entityCards/unitAdapter.ts
++++ b/gra/src/ui/entityCards/unitAdapter.ts
+@@ -80,6 +80,24 @@ function collectCounters(unit: UnitDef): string[] {
+     .filter(Boolean);
+ }
+ 
++/** PROTOTYP-KARTY-BUDYNEK-JEDNOSTKA — treść opisowa (`Opis`, `Top3`) NIE istnieje jeszcze w
++ * `UnitDef`; w `units.json` jest wypełniona WYŁĄCZNIE dla przykładowej jednostki i jawnie
++ * oznaczona jako przykładowa (`_TRESC_PRZYKLADOWA`). Czytamy ją tym samym, bezpiecznym
++ * wzorcem co `extra()` wyżej (pola spoza typowanego kształtu). */
++interface Top3Entry { tytul?: unknown; tekst?: unknown }
++
++function top3Of(unit: UnitDef): EntityCardRow[] {
++  const raw = (unit as unknown as Record<string, unknown>).Top3;
++  if (!Array.isArray(raw)) return [];
++  return raw
++    .map((item) => {
++      if (typeof item === 'string') return { label: text(item), value: '' };
++      const o = (item ?? {}) as Top3Entry;
++      return { label: text(o.tytul), value: text(o.tekst) };
++    })
++    .filter((r) => r.label !== '' || r.value !== '');
++}
++
+ export const unitAdapter: EntityCardAdapter<UnitDef> = (unit) => {
+   const isSuperUnit = unit['Super-jednostka'] === 'TAK';
+   const category = categoryOf(
+@@ -88,112 +106,168 @@ export const unitAdapter: EntityCardAdapter<UnitDef> = (unit) => {
+     isSuperUnit,
+     unit.Typ,
+   );
++  const sections: EntityCardSection[] = [];
++
++  // ============================================================================================
++  // PROTOTYP-KARTY-BUDYNEK-JEDNOSTKA — zaakceptowany przez właściciela układ karty JEDNOSTKI.
++  // Kolejność bloków (nagłówek → wymagania → opis → top3 → charakterystyka → statystyki
++  // podstawowe → statystyki zaawansowane w sekcji rozwijanej → kontry → koszt rekrutacji →
++  // utrzymanie → rys historyczny → CivPedia) jest WIĄŻĄCA. Dwie zmiany strukturalne wobec
++  // stanu sprzed prototypu: (a) 18 wierszy „Statystyk bojowych" leżących płasko jest teraz
++  // rozbite na 7 podstawowych (zawsze widoczne) + resztę w sekcji domyślnie ZWINIĘTEJ;
++  // (b) „Kontry" wychodzą z sekcji „Wymagania i kontry" — dwie niepowiązane treści sklejone
++  // pod jednym tytułem — do własnego bloku.
++  // ============================================================================================
++
++  // --- 2. WYMAGANIA — technologia / kultura / (budynek rekrutujący, gdy dane go niosą) --------
++  const techName = text(unit.Tech);
++  // T10 LINKOWANIE-KRZYZOWE (bez zmian): link tylko gdy `resolveTechnologyRow` faktycznie
++  // znajdzie wiersz — `unit.Tech` bywa placeholderem "-"/"—" albo nazwą spoza `tech.json`.
++  const techSlug = techName ? technologyIdFromName(techName) : null;
++  const techRow: EntityCardRow = { label: 'Wymagana technologia', value: techName };
++  if (techSlug != null && resolveTechnologyRow(techSlug) != null) {
++    techRow.linkTo = { kind: 'technology', id: techSlug };
++  }
++  const reqRows: EntityCardRow[] = [
++    techRow,
++    { label: 'Wymagana kultura', value: text(unit.Kultura) },
++    // „Budynek rekrutujący" — `units.json` NIE niesie dziś takiego pola dla żadnej jednostki;
++    // wiersz powstaje tylko wtedy, gdy dane je dostarczą (zero pustych wierszy na karcie).
++    { label: 'Budynek rekrutujący', value: extra(unit, 'Budynek') },
++  ].filter((r) => hasValue(r.value));
++  if (reqRows.length === 0) reqRows.push({ label: 'Wymagania', value: 'brak — dostępna od startu' });
++  sections.push({ key: 'requirements', title: 'Wymagania', rows: reqRows });
++
++  // --- 3. OPIS — 1-2 zdania prozy o roli jednostki (nowy blok, layout 'prose') ----------------
++  const opis = extra(unit, 'Opis');
++  if (opis) {
++    sections.push({ key: 'description', title: 'Opis', rows: [{ label: '', value: opis }], layout: 'prose' });
++  }
+ 
+-  // --- Charakterystyka — dotąd TYLKO w karcie rekrutacji (`cityPanel.ts::buildUnitDetailCard`
+-  // sekcja „Charakterystyka"), T6 dodaje do wspólnego adaptera (patrz nagłówek pliku) --------
++  // --- 4. TOP 3 — trzy najważniejsze cechy/rola (nowy blok) -----------------------------------
++  const top3 = top3Of(unit);
++  if (top3.length > 0) {
++    sections.push({ key: 'top3', title: 'Top 3', rows: top3, layout: 'top3' });
++  }
++
++  // --- 5. CHARAKTERYSTYKA — Linia / Klasa / Typ / Zastępuje -----------------------------------
++  const replacesName = text(unit['W zamian za']);
++  const replacesSlug = replacesName ? unitToSlug(replacesName) : null;
++  const replacesRow: EntityCardRow = { label: 'Zastępuje', value: replacesName };
++  if (replacesSlug != null && resolveUnitRow(replacesSlug) != null) {
++    replacesRow.linkTo = { kind: 'unit', id: replacesSlug };
++  }
+   const characteristicsRows: EntityCardRow[] = [
+     { label: 'Linia', value: text(unit['Rola (linia)']) },
+     { label: 'Klasa', value: extra(unit, 'Klasa') },
++    { label: 'Typ', value: text(unit.Typ) },
++    replacesRow,
+   ].filter((r) => hasValue(r.value));
+-  const characteristicsSection: EntityCardSection = {
+-    key: 'characteristics', title: 'Charakterystyka', rows: characteristicsRows,
+-  };
++  sections.push({ key: 'characteristics', title: 'Charakterystyka', rows: characteristicsRows });
+ 
+-  // --- Statystyki bojowe — 1:1 z `unitInfoCard.ts` (`combat` sekcja); wiersze poniżej
+-  // „Przebicie" dodane w T6 — dotąd TYLKO w karcie rekrutacji (patrz nagłówek pliku) --------
+-  const progDezercji = unit['Próg dezercji (% health)'];
+-  const combatRows: EntityCardRow[] = [
+-    { label: 'Atak', value: text(unit.Atak) },
+-    { label: 'Obrona', value: text(unit.Obrona) },
+-    { label: 'HP', value: text(unit.Health) },
+-    { label: 'Ruch', value: hasValue(unit.Ruch) ? `${text(unit.Ruch)} hex` : '' },
+-    { label: 'Zasięg', value: text(unit['Zasięg ataku (hex)']), emphasize: true },
+-    { label: 'Atak dystansowy', value: text(unit['Atak dystansowy']), emphasize: true },
++  // --- 6a. STATYSTYKI BOJOWE — PODSTAWOWE, zawsze widoczne ------------------------------------
++  const basicRows: EntityCardRow[] = [
++    { label: 'Atak', value: text(unit.Atak), emphasize: true },
++    { label: 'Obrona', value: text(unit.Obrona), emphasize: true },
++    { label: 'HP', value: text(unit.Health), emphasize: true },
+     { label: 'Pancerz', value: text(unit.Pancerz) },
+     { label: 'Przebicie', value: text(unit.Przebicie) },
++    { label: 'Ruch', value: hasValue(unit.Ruch) ? `${text(unit.Ruch)} hex` : '' },
++    { label: 'Zasięg', value: hasValue(unit['Zasięg ataku (hex)']) ? `${text(unit['Zasięg ataku (hex)'])} hex` : '' },
++  ].filter((r) => hasValue(r.value));
++  sections.push({ key: 'combat', title: 'Statystyki bojowe', rows: basicRows });
++
++  // --- 6b. STATYSTYKI ZAAWANSOWANE — sekcja ROZWIJANA, domyślnie ZWINIĘTA ---------------------
++  // Wzorzec 1:1 z „Pokaż wszystkie surowce (N)" w `cityCaptureNotice.ts:190-195`: rzadziej
++  // czytane pozycje chowają się za jednym kliknięciem, a licznik w tytule mówi ILE ich jest,
++  // żeby zwinięta sekcja nie wyglądała na pustą. Kontrakt `EntityCardSection.collapsible` +
++  // `openDefault:false` istnieje od T1 — zero nowych pól dla tego bloku.
++  const progDezercji = unit['Próg dezercji (% health)'];
++  const advancedRows: EntityCardRow[] = [
+     { label: 'Obrażenia broni', value: text(unit.Uderzenie) },
++    { label: 'Atak dystansowy', value: text(unit['Atak dystansowy']) },
+     { label: 'Bonus szarży', value: extra(unit, 'Bonus szarży') },
+-    { label: 'Ruch (bitwa)', value: hasValue(unit['Ruch w bitwie (heksy)']) ? `${text(unit['Ruch w bitwie (heksy)'])} hex` : '' },
++    { label: 'Ruch w bitwie', value: hasValue(unit['Ruch w bitwie (heksy)']) ? `${text(unit['Ruch w bitwie (heksy)'])} hex` : '' },
+     { label: 'Pociski', value: text(unit['Ilość pocisków']) },
+     { label: 'Widok pola', value: hasValue(unit['Widok pola']) ? `${text(unit['Widok pola'])} hex` : '' },
+-    { label: 'Kara flanki', value: hasValue(unit['Kara obrony z flanki (%)']) ? `${text(unit['Kara obrony z flanki (%)'])}%` : '' },
+-    { label: 'Kara od tyłu', value: hasValue(unit['Kara obrony z tyłu (%)']) ? `${text(unit['Kara obrony z tyłu (%)'])}%` : '' },
++    { label: 'Kara obrony z flanki', value: hasValue(unit['Kara obrony z flanki (%)']) ? `${text(unit['Kara obrony z flanki (%)'])}%` : '' },
++    { label: 'Kara obrony z tyłu', value: hasValue(unit['Kara obrony z tyłu (%)']) ? `${text(unit['Kara obrony z tyłu (%)'])}%` : '' },
+     { label: 'Próg dezercji', value: progDezercji != null ? `${Math.round(Number(progDezercji) * 100)}% HP` : '' },
+     { label: 'Morale bazowe', value: extra(unit, 'Morale bazowe') },
+     { label: 'Morale ucieczki', value: extra(unit, 'Morale ucieczki') },
+   ].filter((r) => hasValue(r.value));
+-  const combatSection: EntityCardSection = { key: 'combat', title: 'Statystyki bojowe', rows: combatRows };
++  if (advancedRows.length > 0) {
++    sections.push({
++      key: 'combat-advanced',
++      title: `Statystyki zaawansowane (${advancedRows.length})`,
++      rows: advancedRows,
++      collapsible: true,
++      openDefault: false,
++    });
++  }
++
++  // --- 7. KONTRY — własny blok (dotąd sklejone z Wymaganiami pod tytułem „Wymagania i kontry")
++  // Nadal CELOWO bez `linkTo` (T10): `Cel (typ)` z `counters.json` to KATEGORIA typu jednostki,
++  // nie pojedyncza, rozwiązywalna encja. Zmiana wobec stanu sprzed prototypu jest wyłącznie
++  // układowa: jedna zlepiona linia przecinkowa → osobne pigułki, po jednej na kontrę.
++  const counters = collectCounters(unit);
++  if (counters.length > 0) {
++    sections.push({
++      key: 'counters',
++      title: 'Kontry (bonusy przeciw typom)',
++      rows: counters.map((c) => ({ label: c, value: '' })),
++      layout: 'pills',
++    });
++  }
+ 
+-  // --- Koszty i utrzymanie — 1:1 z `unitInfoCard.ts` (`economy` sekcja) ---------------------
+-  const economyRows: EntityCardRow[] = [
+-    { label: 'Koszt Pieniądza', value: text(unit['Pieniądz (koszt)']) },
++  // --- 8. KOSZTY — DWA ROZDZIELONE BLOKI (dotąd jedna sekcja „Koszty i utrzymanie") -----------
++  const recruitRows: EntityCardRow[] = [
++    { label: 'Pieniądz (jednorazowo)', value: text(unit['Pieniądz (koszt)']), emphasize: true },
+     {
+-      label: 'Koszt surowca',
++      label: 'Surowiec (jednorazowo)',
+       value: hasValue(unit.Surowiec) ? `${text(unit.Surowiec)} × ${text(unit['Surowiec (ilość)'])}` : '',
+     },
+-    { label: 'Utrzymanie Pieniądza/turę', value: text(unit['Utrzymanie (Pieniądz/turę)']) },
++    { label: 'Ludność', value: text(unit.Ludność) },
++  ].filter((r) => hasValue(r.value));
++  sections.push({ key: 'cost-recruit', title: 'Koszt rekrutacji', rows: recruitRows });
++
++  const upkeepRows: EntityCardRow[] = [
++    { label: 'Pieniądz / turę', value: text(unit['Utrzymanie (Pieniądz/turę)']), emphasize: true },
+     {
+-      label: 'Utrzymanie surowca/turę',
++      label: 'Surowiec / turę',
+       value: hasValue(unit['Utrzymanie surowiec'])
+         ? `${text(unit['Utrzymanie surowiec'])} × ${text(unit['Utrzymanie surowiec (ilość)'])}` : '',
+     },
+-    { label: 'Ludność', value: text(unit.Ludność) },
+-    { label: 'Żywność/turę', value: text(unit['żywność/turę']) },
++    { label: 'Żywność / turę', value: text(unit['żywność/turę']) },
+   ].filter((r) => hasValue(r.value));
+-  const economySection: EntityCardSection = { key: 'economy', title: 'Koszty i utrzymanie', rows: economyRows };
++  sections.push({ key: 'cost-upkeep', title: 'Utrzymanie', rows: upkeepRows });
+ 
+-  // --- Wymagania i kontry — 1:1 z `unitInfoCard.ts` (`requirements` sekcja, w tym „Kontry") --
+-  const counters = collectCounters(unit);
+-  const techName = text(unit.Tech);
+-  // T10 LINKOWANIE-KRZYZOWE: `unit.Tech` niesie nazwę technologii, ale bywa placeholderem
+-  // "-"/"—" (brak wymogu) LUB (potwierdzone reconem na realnych danych, np. wiersz
+-  // `irygacja` w `terrain-improvements.json`) nazwą, która nie istnieje w `tech.json` —
+-  // link tylko gdy `resolveTechnologyRow` faktycznie znajdzie wiersz (nigdy nie zgadujemy).
+-  const techSlug = techName ? technologyIdFromName(techName) : null;
+-  const techRow: EntityCardRow = { label: 'Technologia', value: techName };
+-  if (techSlug != null && resolveTechnologyRow(techSlug) != null) {
+-    techRow.linkTo = { kind: 'technology', id: techSlug };
+-  }
+-  const replacesName = text(unit['W zamian za']);
+-  // "Zastępuje" — nazwa jednostki-poprzednika; link tylko gdy realnie istnieje w
+-  // `UNIT_MAP` (ten sam wzorzec zabezpieczenia co dla „Technologia" wyżej).
+-  const replacesSlug = replacesName ? unitToSlug(replacesName) : null;
+-  const replacesRow: EntityCardRow = { label: 'Zastępuje', value: replacesName };
+-  if (replacesSlug != null && resolveUnitRow(replacesSlug) != null) {
+-    replacesRow.linkTo = { kind: 'unit', id: replacesSlug };
+-  }
+-  const requirementsRows: EntityCardRow[] = [
+-    techRow,
+-    { label: 'Kultura', value: text(unit.Kultura) },
+-    replacesRow,
+-  ].filter((r) => hasValue(r.value));
+-  // „Kontry" — CELOWO bez `linkTo` (T10): `Cel (typ)`/`Typ atakujący` w `counters.json`
+-  // są kategoriami TYPU jednostki (np. "Mount", "Distance"), którymi dzieli się wiele
+-  // różnych jednostek naraz — nie ma tu jednoznacznego, pojedynczego `id` encji do podpięcia
+-  // (patrz dyspozycja T10: "NIE dodawaj linkTo tam gdzie nie ma jednoznacznego,
+-  // rozwiazywalnego ID"). Kontrakt `EntityCardRow.badge` niesie JEDEN badge na wiersz
+-  // (patrz `types.ts`), nie listę pigułek pod jednym wierszem jak dawny
+-  // `appendBadgeRow()`. Zamiast rozszerzać `types.ts`/`renderer.ts` (poza allowlistą T4),
+-  // kontry trafiają jako pojedynczy wiersz z wartościami połączonymi przecinkiem —
+-  // treść identyczna (te same pary cel/bonus), układ inny (delta świadoma, wzorem
+-  // precedensu T3 „treść równoważna, nie identyczny HTML").
+-  if (counters.length > 0) {
+-    requirementsRows.push({ label: 'Kontry', value: counters.join(', ') });
+-  }
+-  const requirementsSection: EntityCardSection = {
+-    key: 'requirements', title: 'Wymagania i kontry', rows: requirementsRows,
+-  };
++  // --- „Statusy" — sekcja PUSTA, ale MUSI ISTNIEĆ. Nowy układ nie przewiduje własnej treści
++  // statusów (informacja „wymaga technologii" jest teraz wprost w bloku Wymagania), ale
++  // `unitInfoCard.ts:86` mapuje sekcje po kluczu `'statuses'` i dopina do jej `badges`
++  // `options.statusLines` (status bojowy jednostki na mapie). Usunięcie sekcji ucięłoby te
++  // linie po cichu, bez błędu kompilatora. Sekcja bez wierszy i bez badge'ów NIE tworzy
++  // żadnego węzła w DOM (`renderEntityCard` pomija takie sekcje), więc na karcie bez
++  // statusów jest niewidzialna — dokładnie jak trzeba.
++  sections.push({ key: 'statuses', title: 'Statusy', rows: [] });
+ 
+-  // --- Statusy — część niezależna od `options.statusLines` (dopełniane w unitInfoCard.ts) ---
+-  const statusesSection: EntityCardSection = {
+-    key: 'statuses',
+-    title: 'Statusy',
+-    rows: [],
+-    badges: [hasValue(unit.Tech) ? 'wymaga technologii z danych' : 'brak wymogu'],
+-  };
++  // --- 9. RYS HISTORYCZNY — jako SEKCJA na pozycji 9, nie przez `EntityCardData.historicalNote`
++  // (renderer renderuje `historicalNote` w STAŁYM miejscu pod nagłówkiem — patrz identyczny
++  // komentarz w `buildingAdapter.ts`; przeniesienie tego jest decyzją na pełną przebudowę).
++  const historia = extra(unit, 'Historia');
++  if (historia) {
++    sections.push({
++      key: 'historia', title: 'Rys historyczny', rows: [{ label: '', value: historia }], layout: 'prose',
++    });
++  }
+ 
+   const iconSvg = unitInfographicSvg(unit, unit.Jednostka, 34) || PLACEHOLDER_ICON_SVG;
+-  const subtitle = [text(unit.Epoka), text(unit.Typ), unitInfographicLabel(category)]
++  // --- 1. NAGŁÓWEK — epoka jako pigułka na samej górze; podtytuł zostaje przy roli/typie -----
++  const headerChips = [
++    hasValue(unit.Epoka) ? `Epoka ${text(unit.Epoka)}` : '',
++    hasValue(unit.Kultura) ? `Kultura ${text(unit.Kultura)}` : '',
++  ].filter(Boolean);
++  const subtitle = [text(unit.Typ), unitInfographicLabel(category)]
+     .filter(Boolean).join(' · ') || undefined;
+ 
+   return {
+@@ -202,19 +276,10 @@ export const unitAdapter: EntityCardAdapter<UnitDef> = (unit) => {
+     title: unit.Jednostka,
+     subtitle,
+     medallion: { kind: 'icon', svg: iconSvg },
+-    sections: [characteristicsSection, combatSection, economySection, requirementsSection, statusesSection],
+-    // P-ENTITYCARD-CIVPEDIA-KLIK-MARTWY-Q1: do tego tematu było tu `null`, więc stopka
+-    // z przyciskiem „Więcej informacji (Civpedia)" w ogóle NIE POWSTAWAŁA dla jednostek
+-    // (`renderer.ts` renderuje ją wyłącznie pod `if (data.civpediaLink)`) — defekt głębszy
+-    // niż „klik nie działa". Folder = katalog `docs/encyklopedia/jednostki/`; `slug` i tak
+-    // zostaje znormalizowany do kanonicznego `id` zapytania przez `buildEntityCardData`.
++    headerChips,
++    sections,
+     civpediaLink: { folder: 'jednostki', slug: unitToSlug(unit.Jednostka) },
+     statusBadges: isSuperUnit ? ['Super-jednostka'] : undefined,
+-    // `Historia` (capitalizowane, konwencja `units.json` — zgodna z `Jednostka`/
+-    // `Surowiec`) — pole NIE jest jeszcze zadeklarowane w `UnitDef` (dodadzą je
+-    // dopiero batche treści, T-KARTY-HISTORIA-INFRA-Q1 to wyłącznie infrastruktura);
+-    // `extra()` już bezpiecznie czyta pola spoza typowanego kształtu i zwraca ''
+-    // (→ undefined tu) gdy brak/puste, patrz definicja `extra()` wyżej.
+-    historicalNote: extra(unit, 'Historia') || undefined,
++    // `historicalNote` CELOWO nieustawione — patrz sekcja `historia` wyżej.
+   };
+ };
