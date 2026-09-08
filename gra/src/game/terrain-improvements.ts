@@ -146,7 +146,7 @@ export function applyImprovementBonuses(yld: TileYield, improvementKeys: readonl
 // Wartosci REALNE (terrain-improvements.json; R-EKONOMIA-SUROWCE-SKALA-5X-Q1,
 // Maciej 2026-08-13, ×5 vs stan sprzed tej decyzji -- ZASTEPUJE korekte 2026-08-12 nizej;
 // zloto WYLACZONE ze skalowania -- waluta, nie surowiec budowlany):
-//   Tartak->drewno 50 (bylo 10) · Glinianka->glina 50 (bylo 10) · Kamieniolom->kamien 50 (bylo 10) ·
+//   Tartak->drewno 200 (baza epoka 1; +50% mnożnikowo na epokę właściciela: 200/300/450) · Glinianka->glina 50 · Kamieniolom->kamien 50 ·
 //   Kopalnia miedzi->ruda 20 (bylo 4) · Kopalnia (zloze zelaza)->ruda_zelaza 20 (bylo 4) ·
 //   Warzelnia soli->sol 50 (bylo 10) · Stadnina->kon 25 (bylo 5) · Kopalnia zlota->zloto 1 (BEZ ZMIAN).
 // EN: rates above are current as of 2026-08-13 (R-EKONOMIA-SUROWCE-SKALA-5X-Q1, ×5 vs the
@@ -180,6 +180,13 @@ const TERRITORY_YIELD_IMPROVEMENTS: ReadonlySet<string> = new Set([
  *  in practice -- scaled x5 for consistency with the live rates, was 2). */
 export const TERRITORY_YIELD_DEFAULT_AMOUNT = 10;
 
+/** Tartak skaluje bazę +50% mnożnikowo na epokę właściciela: 200/300/450. */
+export function tartakDrewnoEraMultiplier(ownerEra: number = 1): number {
+  if (!Number.isFinite(ownerEra)) return 1;
+  const era = Math.max(1, Math.floor(ownerEra));
+  return Math.pow(1.5, era - 1);
+}
+
 function territoryYieldAmountForKey(key: string): number {
   const row = IMPROVEMENTS[key];
   const v = row?.surowiec_ilosc_tura;
@@ -195,11 +202,12 @@ function territoryYieldAmountForKey(key: string): number {
 export function territoryResourceYieldForImprovement(
   key: string,
   zloze?: string | null,
+  ownerEra: number = 1,
 ): TerritoryResourceYield | null {
   const norm = normalizeImprovementKey(key);
   if (!norm || !TERRITORY_YIELD_IMPROVEMENTS.has(norm)) return null;
   switch (norm) {
-    case 'tartak':          return { resourceKey: 'drewno', amount: territoryYieldAmountForKey(norm) };
+    case 'tartak':          return { resourceKey: 'drewno', amount: territoryYieldAmountForKey(norm) * tartakDrewnoEraMultiplier(ownerEra) };
     case 'kamieniolom':     return { resourceKey: 'kamien', amount: territoryYieldAmountForKey(norm) };
     case 'glinianka':       return { resourceKey: 'glina',  amount: territoryYieldAmountForKey(norm) };
     case 'kopalnia_miedzi': return { resourceKey: 'ruda',   amount: territoryYieldAmountForKey(norm) };

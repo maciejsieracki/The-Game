@@ -3088,7 +3088,9 @@ async function boot(): Promise<void> {
      */
     function empireTerritoryResourceRatesForOwner(ownerId: number): Partial<Record<string, number>> {
       const territoryNodes = buildAllTerritoryNodes();
-      const byCity = computeTerritoryResourceYieldByCity(cities, map, territoryNodes);
+      const byCity = computeTerritoryResourceYieldByCity(
+        cities, map, territoryNodes, empireEpochForOwner,
+      );
       const workedByCity = computeWorkedMagazynYieldsByCity(cities, map, territoryNodes);
       const out: Record<string, number> = {};
       for (const c of cities) {
