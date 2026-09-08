@@ -22,6 +22,7 @@
 
 import * as THREE from 'three';
 import type { City } from '../game/cities';
+import { HUMAN_OWNER_PRIMARY } from '../game/human-owners';
 import { formatCityMapLabel } from '../game/display-names';
 import type { GameMap } from '../types/map';
 import type { Hex } from '../types/hex';
@@ -653,7 +654,7 @@ export class CityRenderer {
    * Ukryj obce miasta poza bieżącym zasięgiem widzenia (jak jednostki AI).
    * Wywoływane z refreshFog() po ruchu jednostek / zmianie mgły.
    */
-  applyFogVisibility(vis: ReadonlySet<string>, fogOn: boolean, playerOwnerId = 0): void {
+  applyFogVisibility(vis: ReadonlySet<string>, fogOn: boolean, playerOwnerId = HUMAN_OWNER_PRIMARY): void {
     for (const grp of this.models.values()) {
       if (!fogOn) {
         grp.visible = true;
@@ -781,7 +782,7 @@ export class CityRenderer {
     options?: CityRenderOptions,
   ): string {
     return formatCityMapLabel(city, {
-      playerOwnerId: options?.playerOwnerId ?? 0,
+      playerOwnerId: options?.playerOwnerId ?? HUMAN_OWNER_PRIMARY,
       isCapital,
       civDisplayName: options?.getCivDisplayName?.(city.ownerId),
       isCityStateOwner: options?.isCityStateOwner?.(city.ownerId) ?? false,
@@ -800,7 +801,7 @@ export class CityRenderer {
     const prod = options?.getProduction?.(city.id) ?? null;
     const front = prod ? frontItem(prod) : null;
     const ownerCol = (options?.ownerColorFn ?? ownerColor)(city.ownerId);
-    const playerId = options?.playerOwnerId ?? 0;
+    const playerId = options?.playerOwnerId ?? HUMAN_OWNER_PRIMARY;
     const isPlayerCity = city.ownerId === playerId;
     const hoverExpanded = options?.hoverStatChipCityId === city.id;
     const prodPaused = prod?.wstrzymana === true;

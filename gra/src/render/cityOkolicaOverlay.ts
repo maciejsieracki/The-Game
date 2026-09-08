@@ -12,6 +12,7 @@ import { buildRangeOverlayGroup, disposeRangeOverlayGroup, type RangeOverlayStyl
 import { GAME_MAP_RENDER_STYLE, terrainSurfaceTopY } from './mapRenderStyle';
 import { hexKeysWithinRadius, type TileYield } from '../game/okolica';
 import { hexHasCoveringTerrainImprovement } from '../game/terrain-improvements';
+import { HUMAN_OWNER_PRIMARY } from '../game/human-owners';
 import { hexDistance } from '../units/setup';
 import { workerOwnerColorRgba } from './workerFieldOverlay';
 
@@ -295,7 +296,7 @@ export function buildCityOkolicaOverlayGroup(
       if (parts.length === 0) continue;
 
       const worker = params.workedKeys.has(key);
-      const sprite = makeLabelSprite(parts, worker, params.ownerId ?? 0);
+      const sprite = makeLabelSprite(parts, worker, params.ownerId ?? HUMAN_OWNER_PRIMARY);
       placeYieldLabelSprite(sprite, map, q, r);
       labels.add(sprite);
     }

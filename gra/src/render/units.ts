@@ -26,6 +26,7 @@
 
 import * as THREE from 'three';
 import { clientRectToNdc } from '../input/picker';
+import { HUMAN_OWNER_PRIMARY } from '../game/human-owners';
 import type { GameMap } from '../types/map';
 import type { Hex } from '../types/hex';
 import { TerenBazowy } from '../types/hex';
@@ -5795,7 +5796,7 @@ export class UnitRenderer {
 
   /** Kolor obwódki jednostki wg relacji z graczem (neutral=zielony, wrogi=czerwony). */
   private ringStanceForOwner: (ownerId: number) => UnitRingStance = (ownerId) =>
-    ownerId === 0 ? 'own' : 'hostile';
+    ownerId === HUMAN_OWNER_PRIMARY ? 'own' : 'hostile';
 
   /** Tint modelu jednostki; domyślnie stara paleta OWNER_COLORS. */
   private ownerColorFn: (ownerId: number) => number = ownerColor;
@@ -6461,7 +6462,7 @@ export class UnitRenderer {
   }
 
   /** Gruba złota heksagonalna obwódka na zaznaczonym polu armii (Q-ARMIA-1). */
-  setSelectionHex(q: number, r: number, ownerId = 0): void {
+  setSelectionHex(q: number, r: number, ownerId = HUMAN_OWNER_PRIMARY): void {
     this.clearSelectionHex();
     const hex = this.hexGrid.get(`${q},${r}`);
     const topY = hex ? terrainTopY(hex) : 0;

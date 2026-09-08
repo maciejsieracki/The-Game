@@ -2451,6 +2451,21 @@ async function boot(): Promise<void> {
      *  `ME()`. Fallback `?? HUMAN_OWNER_PRIMARY` = dzisiejszy literał `0` w
      *  `playerOwnerId` — zero zmiany zachowania, czysta infrastruktura. */
     let meForRender: (() => number) | undefined;
+    /** R-HOTSEAT-ETAP6E-RENDER-Q1: odpowiedniki isMe()/ME() bezpieczne w kodzie,
+     *  który może wykonać się PRZED deklaracją prawdziwych isMe()/ME() w boot()
+     *  (ten sam powód co `meForRender` wyżej -- `_cityRenderOpts()` i funkcje nim
+     *  zasilane, wołane per miasto WEWNĄTRZ pierwszego, bezwarunkowego
+     *  `cityRenderer.sync()` L~2513: `civTypeForOwner` (przez `ownerColorFn`),
+     *  `cityMapOutlineKindForOwner`, `civDisplayNameForOwner`,
+     *  `portraitForceCultureIcon` -- wszystkie wywoływane per-miasto z wnętrza
+     *  `cities.ts::sync()` w TEJ SAMEJ, pierwszej klatce, długo przed `let
+     *  humanSeats` L~10385). Po podpięciu `meForRender = ME` (L~10398) zwracają
+     *  DOKŁADNIE to, co realne `isMe()`/`ME()` -- zero różnicy behawioralnej po
+     *  boot, czysta infrastruktura TDZ-safety, nie konkurencyjny alias. Funkcje
+     *  wołane WYŁĄCZNIE z kontekstów zdarzeniowych (po pełnym boot) używają
+     *  realnych `isMe()`/`ME()` wprost -- patrz uzasadnienie w raporcie rundy. */
+    function meNow(): number { return meForRender?.() ?? HUMAN_OWNER_PRIMARY; }
+    function isMeSafe(ownerId: number): boolean { return ownerId === meNow(); }
     /** Pigułka miasta: hover rozszerzony (R-DESIGN-PANEL-MIASTA-Q4=B). */
     let statChipHoverCityId: string | null = null;
     const _cityRenderOpts = (): CityRenderOptions => {
@@ -2463,7 +2478,7 @@ async function boot(): Promise<void> {
       return {
         getEra:   (ownerId: number) => empireEpochForOwner(ownerId),
         getCiv:   (ownerId: number) => {
-          const civId = ownerId === 0
+          const civId = isMeSafe(ownerId)
             ? (player.civType as string || _menuCivId || 'grecja')
             : (aiOwnerCivMap.get(ownerId) ?? 'grecja');
           return ikonaIdToBronzeCiv(civId);
@@ -2493,7 +2508,7 @@ async function boot(): Promise<void> {
         ownerColorFn: civColorFn,
         getBuiltBuildingIds: (cityId) => cityBuiltIdsForRender?.(cityId) ?? [],
         getCivIconId: (ownerId) =>
-          ownerId === 0
+          isMeSafe(ownerId)
             ? (player.civType as string || _menuCivId || 'grecy')
             : (aiOwnerCivMap.get(ownerId) ?? 'grecy'),
         getProduction: (cityId) => cityProdForRender?.(cityId) ?? null,
@@ -3443,7 +3458,7 @@ async function boot(): Promise<void> {
     let wondersPickerEl: HTMLDivElement | null = null;
 
     function civTypeForOwner(ownerId: number): string {
-      if (ownerId === 0) return String(player.civType || _menuCivId || 'grecy');
+      if (isMeSafe(ownerId)) return String(player.civType || _menuCivId || 'grecy');
       return aiOwnerCivMap.get(ownerId) ?? 'grecy';
     }
 
@@ -3464,8 +3479,8 @@ async function boot(): Promise<void> {
      * them, so they land on red through the very same path as any other enemy.
      */
     function relationColorFn(ownerId: number): number {
-      if (ownerId === 0) return civColorFn(0);
-      return relationBorderColor(getDiploRelation(0, ownerId).status);
+      if (isMe(ownerId)) return civColorFn(ME());
+      return relationBorderColor(getDiploRelation(ME(), ownerId).status);
     }
 
     function civKolorHexFn(ownerId: number): string {
@@ -5384,7 +5399,7 @@ async function boot(): Promise<void> {
       }
       const cityId = getOpenCityPanelCityId();
       const city = cityId ? cities.find(c => c.id === cityId) : undefined;
-      if (!city || city.ownerId !== 0) {
+      if (!city || !isMe(city.ownerId)) {
         disposeOkolicaOverlay();
         return;
       }
@@ -7989,9 +8004,9 @@ async function boot(): Promise<void> {
     }
 
     function unitRingStanceForPlayer(ownerId: number): UnitRingStance {
-      if (ownerId === 0) return 'own';
+      if (isMe(ownerId)) return 'own';
       if (isBarbarian(ownerId)) return 'hostile';
-      if (getDiploRelation(0, ownerId).status === 'wojna') return 'hostile';
+      if (getDiploRelation(ME(), ownerId).status === 'wojna') return 'hostile';
       return 'neutral';
     }
 
@@ -8094,14 +8109,14 @@ async function boot(): Promise<void> {
       return shouldForceCultureIconForOwner(ownerId, {
         ...ownerCityStateOpts(),
         clusterCapitalOwnerIds,
-        playerCivKey: civTypeForOwner(0),
+        playerCivKey: civTypeForOwner(meNow()),
         ownerCivKey: civTypeForOwner(ownerId),
       });
     }
 
     function civDisplayNameForOwner(ownerId: number): string | undefined {
-      const civKey = ownerId === 0
-        ? civTypeForOwner(0)
+      const civKey = isMeSafe(ownerId)
+        ? civTypeForOwner(meNow())
         : aiOwnerCivMap.get(ownerId);
       if (!civKey) return undefined;
       const row = data.civs.cywilizacje.find(
@@ -11755,7 +11770,7 @@ async function boot(): Promise<void> {
         territoryNodes: buildAllTerritoryNodes(),
       });
       if (workedByOwner.size === 0) return;
-      workerFieldOverlayGroup = syncWorkerFieldOverlay(scene, null, map, workedByOwner, 0);
+      workerFieldOverlayGroup = syncWorkerFieldOverlay(scene, null, map, workedByOwner, ME());
       const useFogRender = fogOn || revealAllLand;
       if (useFogRender) {
         syncWorkerFieldOverlayFog(workerFieldOverlayGroup, currentVisible(), fogExploredForRender(), true);
@@ -11875,7 +11890,7 @@ async function boot(): Promise<void> {
       if (!(territoryBorderVisible || isCityPanelOpen())) return;
       const nodes = buildAllTerritoryNodes();
       const byOwner = collectTerritoryHexKeysByOwner(map, nodes, (key, ownerId) => {
-        if (ownerId === 0) return true;
+        if (isMe(ownerId)) return true;
         if (!fogOn) return true;
         const vis = currentVisible();
         const explored = fogExploredForRender();
@@ -17790,13 +17805,17 @@ async function boot(): Promise<void> {
 
     /** Obwódka heksu miasta na mapie świata — kolor wg relacji z graczem (Maciej 2026-07-03). */
     function cityMapOutlineKindForOwner(ownerId: number): CityMapOutlineKind {
-      if (ownerId === 0) return 'player';
-      const rel = getDiploRelation(0, ownerId);
+      // R-HOTSEAT-ETAP6E-RENDER-Q1: `getMapOutlineKind` w `_cityRenderOpts()` jest
+      // wołane per miasto WEWNĄTRZ pierwszego, bezwarunkowego `cityRenderer.sync()`
+      // (L~2513) -- `isMeSafe`/`meNow()`, nie realne `isMe()`/`ME()` (TDZ, patrz
+      // komentarz przy `meNow()` wyżej).
+      if (isMeSafe(ownerId)) return 'player';
+      const rel = getDiploRelation(meNow(), ownerId);
       if (rel.status === 'wojna') return 'war';
       if (rel.status === 'sojusz') return 'ally';
       for (const d of activeDeals) {
         if (!isAllianceDealKind(d.rodzaj)) continue;
-        if (dealInvolvesOwners(d, 0, ownerId)) return 'ally';
+        if (dealInvolvesOwners(d, meNow(), ownerId)) return 'ally';
       }
       return 'neutral';
     }
