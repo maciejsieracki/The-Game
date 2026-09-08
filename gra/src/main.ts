@@ -2435,6 +2435,13 @@ async function boot(): Promise<void> {
     let cityBuiltIdsForRender: ((cityId: string) => readonly string[]) | undefined;
     /** Podpinane po deklaracji cityProd — pigułka: glif produkcji always-on lite. */
     let cityProdForRender: ((cityId: string) => import('./game/production').CityProduction | null) | undefined;
+    /** R-HOTSEAT-ETAP6E-PREREQ-BOOT-TDZ-Q1: forward-declare identyczny ze wzorcem
+     *  cityBuiltIdsForRender/cityProdForRender wyżej — `_cityRenderOpts()` jest
+     *  wołane bezwarunkowo na starcie (patrz `cityRenderer.sync` niżej), długo
+     *  PRZED deklaracją `ME()` (~L10384). Podpinane zaraz po prawdziwej deklaracji
+     *  `ME()`. Fallback `?? HUMAN_OWNER_PRIMARY` = dzisiejszy literał `0` w
+     *  `playerOwnerId` — zero zmiany zachowania, czysta infrastruktura. */
+    let meForRender: (() => number) | undefined;
     /** Pigułka miasta: hover rozszerzony (R-DESIGN-PANEL-MIASTA-Q4=B). */
     let statChipHoverCityId: string | null = null;
     const _cityRenderOpts = (): CityRenderOptions => {
@@ -2484,7 +2491,7 @@ async function boot(): Promise<void> {
         getOwnerResourceStock: (ownerId) => ownerSurowcePoolFor(ownerId),
         getProductionItemStockCost: (item) => productionItemStockCostForRender(item),
         hoverStatChipCityId: statChipHoverCityId,
-        playerOwnerId: 0,
+        playerOwnerId: meForRender?.() ?? HUMAN_OWNER_PRIMARY,
         isCityStateOwner: portraitForceCultureIcon,
         // MAP-UX-MARKER-Q1=C + MAP-UX-CLUSTER-LABEL-Q1=B+C — marker stolicy na pigułce
         // (złota obwódka + korona) i nazwa cywilizacji dla stolicy obcego państwa.
@@ -10384,6 +10391,11 @@ async function boot(): Promise<void> {
     function ME(): number {
       return humanSeats.activeHumanOwnerId;
     }
+    // R-HOTSEAT-ETAP6E-PREREQ-BOOT-TDZ-Q1: podpięcie forward-declare z L~2438
+    // (analogicznie do cityBuiltIdsForRender/cityProdForRender przy cityBuilt/cityProd)
+    // — od tego miejsca `_cityRenderOpts()` w kolejnych wywołaniach (poza pierwszym,
+    // sprzed tej linii) czyta realny ME() zamiast fallbacku.
+    meForRender = ME;
     /** R-HOTSEAT-ETAP-3-AKCESORY-EKONOMIA-Q1: cienki alias na `isHumanOwner`
      *  (`game/human-owners.ts`) dla czytelności w akcesorach ekonomicznych
      *  poniżej. Zero logiki własnej — samo przekazanie `humanSeats`. */
