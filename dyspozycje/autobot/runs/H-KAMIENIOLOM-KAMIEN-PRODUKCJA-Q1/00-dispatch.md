@@ -9,19 +9,20 @@ MODEL + EFFORT per rola: Operator GPT-5.6 Luna High / Evaluator GPT-5.6 Luna Hig
 
 ## WYZWALACZ
 
-Bezpośrednia decyzja właściciela z 2026-09-08: produkcja Kamienia w Kamieniołomie ma zostać zwiększona dwukrotnie. Temat jest osobny od korekty produkcji Drewna w Tartaku, aby oba parametry i testy były rozdzielone.
+Bezpośrednia korekta decyzji właściciela z 2026-09-08: produkcja Kamienia w Kamieniołomie ma wynosić 200/turę w epoce 1 i rosnąć o 50% przy każdej kolejnej epoce. Temat jest osobny od korekty produkcji Drewna w Tartaku, aby oba parametry i testy były rozdzielone.
 
 ## GOAL
 
-Produkcja Kamienia z każdego zbudowanego Kamieniołomu wynosi 100 Kamienia/turę zamiast obecnych 50, bez zmiany produkcji innych ulepszeń, kosztów budowy ani kosztów surowców.
+Produkcja Kamienia z każdego zbudowanego Kamieniołomu wynosi 200 Kamienia/turę w epoce 1, 300 w epoce 2 i 450 w epoce 3, bez zmiany produkcji innych ulepszeń, kosztów budowy ani kosztów surowców.
 
 ## KRYTERIA KOŃCA — binarne PRAWDA/FAŁSZ
 
-1. PRAWDA: dane Kamieniołomu mają wartość `surowiec_ilosc_tura: 100`.
-2. PRAWDA: rzeczywisty resolver i naliczanie terytorialne zwracają 100 za jeden Kamieniołom, 200 za dwa i 0 bez Kamieniołomu.
+1. PRAWDA: dane Kamieniołomu mają wartość bazową `surowiec_ilosc_tura: 200`.
+2. PRAWDA: rzeczywisty resolver i naliczanie terytorialne uwzględniają epokę i zwracają 200/300/450 za jeden Kamieniołom w epokach 1/2/3, odpowiednio 400/600/900 za dwa i 0 bez Kamieniołomu.
 3. PRAWDA: produkcja Tartaku, Glinianki, kopalń i innych ulepszeń pozostaje bez zmian.
-4. PRAWDA: test tematu obejmuje jeden/dwa/brak Kamieniołomów oraz mutację wartości, która powoduje czerwony test.
+4. PRAWDA: test tematu obejmuje jeden/dwa/brak Kamieniołomów, wszystkie trzy epoki oraz mutację wartości/formuły, która powoduje czerwony test.
 5. PRAWDA: typecheck i istniejące bramki ekonomii przechodzą bez nowych regresji.
+6. PRAWDA: raport Operatora zawiera audyt po zmianie dla wszystkich ulepszeń produkujących surowiec terytorialny — nazwa ulepszenia, surowiec, wartość bazowa i wartości w epokach 1–3 — oraz osobno pokazuje sumowanie wielu Kamieniołomów.
 
 ## ALLOWLISTA — nic poza tym
 
@@ -29,6 +30,7 @@ Produkcja Kamienia z każdego zbudowanego Kamieniołomu wynosi 100 Kamienia/tur�
 - `gra/src/game/terrain-improvements.ts` — resolver produkcji, wyłącznie jeśli wymagane.
 - `gra/src/game/turn-economy.ts` — naliczanie, wyłącznie jeśli wymagane.
 - `gra/tools/kamieniolom-kamien-produkcja-test.cjs` — nowy test regresyjny tematu.
+- `dyspozycje/autobot/runs/H-KAMIENIOLOM-KAMIEN-PRODUKCJA-Q1/02-production-audit.md` — audyt wartości produkcji surowców po zmianie, jeśli Operator wydzieli go jako osobny artefakt.
 - `dyspozycje/autobot/runs/H-KAMIENIOLOM-KAMIEN-PRODUKCJA-Q1/00-dispatch.md`.
 - `dyspozycje/autobot/runs/H-KAMIENIOLOM-KAMIEN-PRODUKCJA-Q1/01-operator.md`.
 
