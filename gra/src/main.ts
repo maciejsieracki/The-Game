@@ -1062,7 +1062,13 @@ import {
   isTechTreeViewOpen,
   refreshTechTreeViewIfOpen,
 } from './ui/techTreeView';
-import { pushOverlay, popOverlay } from './ui/escapeOverlayStack';
+import { pushOverlay, popOverlay, top } from './ui/escapeOverlayStack';
+// R-HOTSEAT-ETAP5-SWITCH-HUMAN-Q1: moduł izolowany, ZERO call-site'u produkcyjnego w tej
+// rundzie (wzorzec Etapu 0) — importowany WYŁĄCZNIE do użytku wewnątrz haka testowego
+// `__hotSeatTestDebug` (recon §4.2: `hotSeatHandoffOpen: isHotSeatHandoffOpen()` w
+// `snapshotVisibleState()`; `showHotSeatHandoff`/`hideHotSeatHandoff` potrzebne dla dowodu
+// "brak migotania", recon §4.2 pkt 8).
+import { showHotSeatHandoff, hideHotSeatHandoff, isHotSeatHandoffOpen } from './ui/hotSeatHandoff';
 import { buildingGateMet, improvementGateMet } from './game/research';
 import {
   createWikiHubHud,
@@ -9750,7 +9756,19 @@ async function boot(): Promise<void> {
         for (const k of currentVisibleForOwner(oid)) visible.add(k);
       }
       if (visible.size > 0) return visible;
-      if (playerStartHex !== null) {
+      /* R-HOTSEAT-ETAP5-SWITCH-HUMAN-Q1 runda 2 (Evaluator runda 1, Zarzut #2): fallback
+       * na `playerStartHex`/`startRevealRadius` ma sens WYŁĄCZNIE dla oryginalnego fotela
+       * (`HUMAN_OWNER_PRIMARY`) w trakcie JEGO WŁASNEGO onboardingu, przed założeniem
+       * pierwszego miasta — `playerStartHex`/`startRevealRadius` NIE są per-owner (znany
+       * dług, nierozwiązany w tej rundzie — pełna migracja na Map<ownerId,...> to osobny
+       * temat). Bez strażnika `ME() === HUMAN_OWNER_PRIMARY` ten fallback odsłaniał okolicę
+       * startową fotela A każdemu KOLEJNEMU fotelowi (`switchActiveHuman()` na fotel bez
+       * miasta/jednostek), co wyciekało do `exploredByHuman` tego fotela przez
+       * `refreshFog()` — dokładnie ten wyciek, który znalazł Evaluator. No-op dla fotela A/
+       * gry jednoosobowej: `ME() === HUMAN_OWNER_PRIMARY` jest tam zawsze prawdziwe, więc
+       * zachowanie fotela A jest identyczne jak przed tą zmianą (patrz bramka referencyjna
+       * `river-fog-visibility-test.cjs` — no-op dowiedziony realnym uruchomieniem). */
+      if (ME() === HUMAN_OWNER_PRIMARY && playerStartHex !== null) {
         return computeVisibleAt(playerStartHex.q, playerStartHex.r, map, startRevealRadius);
       }
       return new Set<string>();
@@ -10393,6 +10411,143 @@ async function boot(): Promise<void> {
       set praca(v: number) { playerPracaPool = v; },
     };
     const pracaPoolByHuman: Map<number, { praca: number }> = new Map([[HUMAN_OWNER_PRIMARY, playerPracaCell]]);
+
+    /**
+     * R-HOTSEAT-ETAP5-SWITCH-HUMAN-Q1: przełącza fotel aktywnego człowieka i zamyka/czyści
+     * WSZYSTKO co dziś jest globalne (bez klucza właściciela), żeby żaden ślad fotela
+     * odchodzącego nie przeciekł do nowego aktywnego. Projekt: `dyspozycje/autobot/runs/
+     * R-HOTSEAT-ETAP5-RECON-SWITCH-HUMAN-Q1/01-operator-runda1-analiza.md` §2 (7 kroków,
+     * 3 rundy Evaluatora, każdy krok uzasadniony tam z numerami linii). NOWA, IZOLOWANA
+     * funkcja — dokładnie wzorzec Etapu 0 (`human-owners.ts` istniał "martwy" zanim
+     * cokolwiek go wołało): BEZ eksportu, BEZ call-site'u produkcyjnego w tej rundzie —
+     * wołana WYŁĄCZNIE z haka testowego `__hotSeatTestDebug` niżej. Przyszły `advanceSeat()`
+     * (Etap 4b, osobny temat) będzie jedynym produkcyjnym wołającym.
+     */
+    function switchActiveHuman(newActiveOwnerId: number): void {
+      if (newActiveOwnerId === humanSeats.activeHumanOwnerId) return; // no-op, nie ma do kogo przełączać
+
+      // KROK 0 (recon §1d/§1e-bis — prerekwizyt, MUSI być pierwszy: bez tego `refreshFog()`
+      // niżej rzuca na `exploredByHuman.get(ME())!` będącym `undefined`, a akcesory
+      // ekonomiczne Etapu 3 crashują analogicznie na `playerStateByHuman.get(ME())!`).
+      if (!exploredByHuman.has(newActiveOwnerId)) exploredByHuman.set(newActiveOwnerId, new Set());
+      if (!playerStateByHuman.has(newActiveOwnerId)) playerStateByHuman.set(newActiveOwnerId, createPlayerState());
+      if (!pracaPoolByHuman.has(newActiveOwnerId)) pracaPoolByHuman.set(newActiveOwnerId, { praca: 0 });
+
+      // KROK 1 — zamknij WSZYSTKIE panele/modale aktywnego (starego) fotela. Zamyka, NIE
+      // przywraca (kryterium planu: "żaden panel poprzednika"). Kolejność: najpierw
+      // blokujące modale end-turn/bitwy, potem panele HUD, na końcu menu. Rozszerzenie
+      // istniejącego precedensu `__sidePanelLinkTestDebug.closeAll()` (main.ts, hak
+      // testowy istniejący od dawna, pokrywał 3/17) na wszystkich 17 paneli (recon §1c).
+      if (isPreBattleOpen()) hidePreBattle();
+      if (isDiplomacyAudienceOpen()) hideDiplomacyAudience();
+      if (isDiploListHudOpen()) hideDiploListHud();
+      hideCityPanel();
+      hideEmpireDetailPanel();
+      hideSiegeMapPanel();
+      hideArmyMergePanel();
+      hideArmyMergePickPanel();
+      hideArmySplitPanel();
+      hideArmyListHud();
+      hideCityListHud();
+      hideDiplomacyPanel();
+      hideGamePauseMenu();
+      hideHexContextPanel();
+      hideMainMenu();
+      hideSaveLoadDialog();
+      hideScienceHubHud();
+      hideWikiHubHud();
+      document.getElementById('civ-elim-notice-host')?.remove(); // wzorzec z closeAll()
+
+      // KROK 1b (recon §1c-bis, Evaluator runda 1 zarzut #1) — wygaś globalny toast
+      // `#civ-hint-toast` RĘCZNIE. `hideHintMessage()` NIE ISTNIEJE — jedyne wygaszenie w
+      // dzisiejszym kodzie to własny `setTimeout` `showHintMessage()` (main.ts:13141+).
+      // Bez tego kroku tekst hinta specyficzny dla akcji fotela A (np. "Za mało
+      // rekrutów...") zostaje widoczny fotelowi B aż do (do 4500ms) wygaśnięcia timera.
+      if (hintOverrideTimer !== null) { clearTimeout(hintOverrideTimer); hintOverrideTimer = null; }
+      hintToast.style.display = 'none';
+
+      // KROK 1c (recon §1c-ter, Evaluator runda 1 zarzut #2 + runda 2 zarzut #2) — zamknij
+      // globalny build-mode/found-city-mode (main.ts:2513, 11457-11459). Ryzyko WYŻSZE niż
+      // info-leak: bez tego fotel B pierwszym kliknięciem na mapie przejmuje i wykonuje
+      // NIEDOKOŃCZONĄ akcję budowy/założenia miasta fotela A.
+      exitBuildMode(); // gałąź guard-false (isAwaitingFirstPlayerCity()===false): to
+      // wywołanie faktycznie czyści wizualia + popOverlay('build-mode') (main.ts:12456+).
+      //
+      // exitBuildMode() jest NO-OPEM (main.ts:12462, `if (isAwaitingFirstPlayerCity())
+      // return;`), gdy isAwaitingFirstPlayerCity() jest prawdą (invariant R-PIERWSZE-MIASTO,
+      // Maciej 2026-07-24) — realistyczny scenariusz wczesnej gry hot-seat (każdy fotel
+      // zaczyna bez miasta). Świadome, udokumentowane ODSTĄPIENIE od tego invariantu W
+      // KONTEKŚCIE handoff między fotelami (NIE w kontekście Escape/PPM/toggle w ramach
+      // JEDNEGO fotela, którego invariant pierwotnie dotyczył) — decyzja orkiestratora,
+      // autonomiczna, do potwierdzenia ABC rano (dispatch tego tematu, sekcja "DECYZJE Z
+      // RECON"; recon §1c-ter/§6 pkt 6). Odtwarzamy tu RĘCZNIE dokładnie to, co
+      // exitBuildMode() zrobiłoby PO guardzie — WSZYSTKIE efekty, nie tylko 4 zmienne stanu
+      // (recon runda 3, Evaluator runda 2 zarzut #2: wersja rundy 2 pomijała
+      // clearBuildModeVisuals()/popOverlay('build-mode'), zostawiając duszek budowy
+      // widoczny i martwy wpis na wspólnym escapeOverlayStack).
+      if (isAwaitingFirstPlayerCity()) {
+        buildModeOpen = false;
+        foundCityMode = false;
+        activeImprovementKey = null;
+        activeWonderId = null;
+        clearBuildModeVisuals(); // chowa ghostChip/ghostGroup/ghostCityGroup/mine-overlay —
+        // main.ts:12350-12354 — bez tego duszek budowy fotela A może zostać widoczny
+        // fotelowi B.
+        popOverlay('build-mode'); // zdejmuje wpis fotela A ze WSPÓLNEGO escapeOverlayStack —
+        // bez tego pierwszy Escape fotela B trafia w martwy wpis fotela A.
+      }
+
+      // KROK 2 — zaznaczenie/marsze: zamknij, nie przywracaj (kryterium planu).
+      clearPlayerUnitSelectionStateOnly();
+      selectedId = null;
+      plannedMarches.clear();
+
+      // KROK 3 — dzienniki zdarzeń: WYCZYŚĆ (nie filtruj — recon §1b: `SidePanelEvent` nie
+      // ma pola ownera w ogóle, filtrowanie fizycznie niemożliwe bez tagowania wszystkich
+      // push-site'ów, poza zakresem tej rundy — jawny dług do Etapu 6, dispatch "DECYZJE Z
+      // RECON" §6 pkt 2/4). Wzorzec identyczny do `__sidePanelLinkTestDebug.seedEvents()`
+      // (main.ts, `warEventLog.length = 0`).
+      warEventLog.length = 0;
+      villageEventLog.length = 0;
+      tradeRouteEventLog.length = 0;
+      rationAutoEventLog.length = 0;
+      borderMarchEventLog.length = 0;
+      dismissedSidePanelEventIds.clear();
+      deferredPlayerUnitRevealIds.clear();
+      deferredMergePrompts.length = 0;
+      deferredEotHints.length = 0;
+      pendingAutoRationForNextTurn = null;
+
+      // KROK 4 — przełącz fotel (PO zamknięciu/wyczyszczeniu powyżej, PRZED refreshem
+      // niżej — refreshFog()/updateHud()/focusCameraOnOwnerCapital muszą już widzieć
+      // NOWEGO aktywnego, inaczej przeliczą/wycentrują fotel odchodzący).
+      humanSeats = { ...humanSeats, activeHumanOwnerId: newActiveOwnerId };
+
+      // KROK 5 — invalidacja cache'y HUD (recon §1a, 18 zmiennych klastra + 2 tej samej
+      // klasy poza nim). Zerowanie, NIE przeliczanie — `refreshLiveEmpireRatesUnsafe()`
+      // (main.ts:17077) jest dziś zahardkodowana na `ownerId===0`/singleton `player` i
+      // przeliczy DALEJ dane fotela 0, dopóki nie zostanie osobno zamigrowana na `ME()`
+      // (poza zakresem tej rundy — dispatch "DECYZJE Z RECON" §6 pkt 1: Etap 6 zakresowo).
+      _lastPraca = 0; _lastPracaUpkeep = 0; _lastPracaAutoUlepszeniaKoszt = 0;
+      _lastPracaCudaKoszt = 0; _lastKultura = 0; _lastPracaRate = 0;
+      _lastKulturaRate = 0; _lastPieniadzRate = 0; _lastWealthLevel = 1;
+      _lastWealthMnoznik = 1; _lastNaukaRate = 0; _lastLudnoscRate = 0;
+      _lastBogactwoRate = 0; _lastBogactwoHandel = 0;
+      _lastBogactwoUtrzymanieBudynkow = 0; _lastBogactwoUtrzymanieJednostek = 0;
+      _lastBogactwoUtrzymanieSurowcow = {}; _lastPlayerCityEcon = [];
+      _pracaRateFreshFromEndTurn = false; _liveFoodBrutto = 0;
+      markCityStateDirty(); // empireEconDirty=true, powerDirty=true, _maxSafeRationCache.clear()
+
+      // KROK 6 — kamera: skok na stolicę nowego aktywnego (funkcja już generyczna po
+      // ownerId, main.ts:26316 — żadna nowa "pamięć kamery per fotel" nie jest potrzebna).
+      focusCameraOnOwnerCapital(newActiveOwnerId);
+
+      // KROK 7 — odśwież widoki zależne od ME(): fog/minimapa/HUD są już w pełni
+      // sparametryzowane (recon §1d/§1e) — samo wywołanie wystarcza.
+      refreshFog();
+      updateHud();
+    }
+
     overlayDepositEra = player.era;
     fillAiOwnerCivMap(_menuCivId, _gameSeed);
 
@@ -22451,6 +22606,165 @@ async function boot(): Promise<void> {
         if (!playerStartHex) return false;
         return tryFoundPlayerCityAt(playerStartHex.q, playerStartHex.r);
       },
+    };
+
+    // R-HOTSEAT-ETAP5-SWITCH-HUMAN-Q1 — hak testowy WYŁĄCZNIE dla
+    // `tools/hotseat-etap5-no-leak-test.cjs`, wzorzec identyczny do
+    // `__sidePanelLinkTestDebug`/`__eraTestDebug`/`__musicEraTestDebug` (wołany WYŁĄCZNIE z
+    // Playwright). Projekt: recon §4.2. `seedSecondSeat` wstrzykuje drugi fotel + syntetyczny,
+    // RÓŻNY stan gry — jedyna droga do stanu 2-fotelowego W TEŚCIE, dopóki Etap 7 (drugi fotel
+    // w kreatorze) nie istnieje. `switchActiveHuman`/`isAwaitingFirstPlayerCity` wołają wprost
+    // funkcje zdefiniowane wyżej w tym samym domknięciu (Scenariusz B bramki potrzebuje drugiej,
+    // by potwierdzić że handoff ćwiczy gałąź guard-true KROKU 1c, nie tylko guard-false).
+    // `snapshotVisibleState()` rozszerza `__sidePanelLinkTestDebug.openViews()` (3/17 paneli) na
+    // WSZYSTKICH 17 + fog/kamera/logi/toast/build-mode/ghost-chip/escapeOverlayStack — kompletna
+    // asercja "no leak" (recon §4.2, 3 rundy Evaluatora).
+    (window as any).__hotSeatTestDebug = {
+      seedSecondSeat: (ownerId: number, opts: {
+        exploredKeys?: string[]; skarbiec?: number;
+        // Bramka "no leak" (tools/hotseat-etap5-no-leak-test.cjs) potrzebuje, żeby fotel B
+        // MIAŁ stolicę — inaczej `switchActiveHuman()` KROK 6 (`focusCameraOnOwnerCapital`)
+        // trafia w gałąź "Brak stolicy na mapie" (main.ts) i legalnie POKAZUJE NOWY hint,
+        // co fałszywie wyglądałoby jak "wyciek toastu" w asercji `hintToastVisible`. Zamiast
+        // zakładać nowe miasto (canFoundCity wymaga realnego, wolnego lądu — niepotrzebne
+        // ryzyko trafienia w zajęty/wodny heks w wygenerowanej mapie), przypisujemy istniejące
+        // miasto-państwo (już poprawnie umiejscowione przez realną generację świata) nowemu
+        // fotelowi — REALNA geometria mapy, zero zgadywania współrzędnych.
+        reassignCityId?: string;
+      }): void => {
+        humanSeats = {
+          humanOwnerIds: [...humanSeats.humanOwnerIds, ownerId],
+          activeHumanOwnerId: humanSeats.activeHumanOwnerId,
+        };
+        exploredByHuman.set(ownerId, new Set(opts.exploredKeys ?? []));
+        const ps = createPlayerState();
+        if (opts.skarbiec !== undefined) ps.skarbiec = opts.skarbiec;
+        playerStateByHuman.set(ownerId, ps);
+        pracaPoolByHuman.set(ownerId, { praca: 0 });
+        if (opts.reassignCityId !== undefined) {
+          const c = cities.find(x => x.id === opts.reassignCityId);
+          if (c) c.ownerId = ownerId;
+        }
+      },
+      switchActiveHuman: (ownerId: number): void => switchActiveHuman(ownerId),
+      isAwaitingFirstPlayerCity: (): boolean => isAwaitingFirstPlayerCity(),
+      showHotSeatHandoff: (fromLabel: string, toLabel: string): void => {
+        showHotSeatHandoff({ fromLabel, toLabel }, () => hideHotSeatHandoff());
+      },
+      hideHotSeatHandoff: (): void => hideHotSeatHandoff(),
+      /** R-HOTSEAT-ETAP5-SWITCH-HUMAN-Q1 runda 2 (Evaluator Zarzut #1): gra NIE nadaje
+       * graczowi (`ownerId===0`) żadnej jednostki automatycznie po `foundPlayerStartCity()`
+       * (potwierdzone niezależnie przez Evaluatora rundy 1 — `units` dla `ownerId===0` puste
+       * przed i po). Jedyna REALNA droga do pierwszej jednostki gracza to kolejka produkcji
+       * miasta (`advanceRecruitmentGated`, main.ts ~30334+) po wielu turach — wymagałoby
+       * wołania `triggerPlayerEndTurn()`/`runWorldEndTurn()`, zakazanego allowlistą tego
+       * dispatchu (Etap 4b, osobny temat). Ten hak spawnuje jednostkę TESTOWO (wzorzec 1:1 z
+       * istniejącym `__rebelProtectionTestDebug.captureViaBattle` wyżej — klon szablonu
+       * jednostki wojskowej z przepisanym `ownerId`): jedyna sztuczność jest w SPAWNIE
+       * jednostki — samo ZAZNACZENIE w teście idzie potem REALNĄ `selectPlayerUnit()`
+       * (przez istniejący `__mglaSciezkaTestDebug.selectUnit`), dokładnie tą samą ścieżką,
+       * której używa klik gracza. Zwraca `null`, gdy w tym świecie nie ma ŻADNEJ jednostki
+       * wojskowej do sklonowania (test odróżnia to od cichego no-opu). */
+      spawnTestUnitForPlayer: (q: number, r: number): string | null => {
+        const template = units.find(u => !isCivilianUnit(u));
+        if (!template) return null;
+        const id = 'hotseat5_testunit_' + Math.random().toString(36).slice(2);
+        units.push({ ...template, id, ownerId: 0, q, r, ruchLeft: template.ruch });
+        return id;
+      },
+      /** R-HOTSEAT-ETAP5-SWITCH-HUMAN-Q1 runda 2b: DIAGNOZA REALNA timeoutu na
+       * `.civ-build-panel .civ-build-item[data-key]:not(.locked)` (checkpoint 2268cee7),
+       * potwierdzone żywym zrzutem HTML panelu (nie zgadywaniem): na świeżym starcie gry
+       * (epoka startowa = Brąz, `Tech wcześniejszych epok` już nadaje WSZYSTKIE tech Epoki
+       * Kamień, w tym `Rolnictwo`/`Oswojenie zwierząt` — pierwsza hipoteza tej rundy, "brak
+       * zbadanej technologii", była BŁĘDNA, obalona tym zrzutem) każda pozycja terenowa MA
+       * już odblokowaną technologię, ale jest mimo to `.locked` z hintem „Za mało Pracy:
+       * potrzeba 40 P, masz 0 P" — `playerPracaPool` (main.ts) startuje od zera, a
+       * KAŻDE ulepszenie terenu (`terrain-improvements.json`) ma `koszt_praca > 0`
+       * (`scaleImprovementWorkCost` ×2 wg `r-stawki-strojenie.ts`) — więc na prawdziwym
+       * turze 1, zaraz po założeniu stolicy, ŻADNA pozycja nie jest klikalna dla PRAWDZIWEGO
+       * gracza też (trzeba poczekać na akumulację Pracy z miasta) — to nie jest błąd gry,
+       * to jest stan, którego bramka nie może ominąć bez wstrzyknięcia Pracy. Ten hak
+       * dodaje `amount` do `playerPracaPool` (ta sama zmienna, którą odejmuje realny
+       * `applyBuildRequest` przy budowie — main.ts:12556+) — jedyna sztuczność jest w
+       * WYSOKOŚCI puli na starcie (odpowiednik kilku przepracowanych tur), samo odjęcie
+       * kosztu przy kliknięciu ulepszenia idzie dalej REALNĄ ścieżką silnika. */
+      grantTestPraca: (amount: number): void => { playerPracaPool += amount; },
+      /** Realne otwarcie panelu miasta fotela A (`openCityPanelForPlayer`, main.ts) — zwraca
+       * `false` gdy `cityId` nie istnieje, żeby test odróżnił "miasto nie znalezione" od
+       * cichego no-opu. */
+      openCityPanelForTest: (cityId: string): boolean => {
+        const c = cities.find(x => x.id === cityId);
+        if (!c) return false;
+        openCityPanelForPlayer(c);
+        return true;
+      },
+      /** R-HOTSEAT-ETAP5-SWITCH-HUMAN-Q1 runda 2: zamknięcie panelu miasta (REALNA
+       * `hideCityPanelFull()`, dokładnie ta sama ścieżka co przycisk „Wróć na mapę"/Esc) —
+       * bramka "no leak" potrzebuje tego PRZED wejściem w build-mode: `openCityPanelForPlayer`
+       * woła `setMapHudChromeSuppressed(true)` (cityPanel.ts), co ukrywa `.civ-map-toolbar`
+       * (hud.ts `applyMapChromeVisibility`) — bez zamknięcia panelu przycisk „Budowa ulepszeń"
+       * jest realnie NIEKLIKALNY (dokładnie tak, jak dla prawdziwego gracza), więc test musi
+       * zamknąć panel, zanim spróbuje kliknąć toolbar, inaczej sam sobie symulowałby stan
+       * nieosiągalny dla realnego gracza. */
+      closeCityPanelForTest: (): void => { hideCityPanelFull(); },
+      /** Realny skok kamery na stolicę dowolnego ownera (`focusCameraOnOwnerCapital`,
+       * ta sama funkcja, którą woła KROK 6 `switchActiveHuman()`) — do ustawienia znanego
+       * stanu "PRZED" w bramce "no leak", żeby handoff miał co realnie zmienić. */
+      focusCameraOnOwnerCapitalForTest: (ownerId: number): void => focusCameraOnOwnerCapital(ownerId),
+      /** Odczyt stanu widocznego dla asercji "no leak" — patrz recon §4.2. */
+      snapshotVisibleState: (): Record<string, unknown> => ({
+        activeHumanOwnerId: humanSeats.activeHumanOwnerId,
+        exploredKeysForActive: [...(exploredByHuman.get(ME()) ?? [])],
+        selectedId,
+        plannedMarchesSize: plannedMarches.size,
+        cameraFocus: camCtrl.getFocusState(),
+        warEventLogLen: warEventLog.length,
+        villageEventLogLen: villageEventLog.length,
+        tradeRouteEventLogLen: tradeRouteEventLog.length,
+        rationAutoEventLogLen: rationAutoEventLog.length,
+        borderMarchEventLogLen: borderMarchEventLog.length,
+        openPanels: {
+          cityPanel: isCityPanelOpen(),
+          preBattle: isPreBattleOpen(),
+          diplomacyAudience: isDiplomacyAudienceOpen(),
+          diploList: isDiploListHudOpen(),
+          empirePanel: isEmpireDetailPanelOpen(),
+          siegeMap: isSiegeMapPanelOpen(),
+          armyMerge: isArmyMergePanelOpen(),
+          armyMergePick: isArmyMergePickPanelOpen(),
+          armySplit: isArmySplitPanelOpen(),
+          mainMenu: isMainMenuOpen(),
+          diplomacyPanel: isDiplomacyPanelOpen(),
+          armyListHud: isArmyListHudOpen(),
+          cityListHud: isCityListHudOpen(),
+          gamePauseMenu: isGamePauseMenuOpen(),
+          // `hideHexContextPanel()` (main.ts) czyta wprost `hexDetailHex`/`foreignUnitInspectId`
+          // jako stan "otwarty" — panel jest pochodną tych dwóch, brak osobnego predykatu
+          // eksportowanego z modułu (funkcja lokalna w tym samym domknięciu, nie w ui/*.ts).
+          hexContextPanel: hexDetailHex !== null || foreignUnitInspectId !== null,
+          saveLoadDialog: isSaveLoadDialogOpen(),
+          scienceHubHud: isScienceHubHudOpen(),
+          wikiHubHud: isWikiHubHudOpen(),
+          civElimModal: document.getElementById('civ-elim-notice-host') !== null,
+        },
+        hotSeatHandoffOpen: isHotSeatHandoffOpen(),
+        hintToastVisible: hintToast.style.display !== 'none',
+        // R-HOTSEAT-ETAP5-SWITCH-HUMAN-Q1 runda 2b: KROK 6 `switchActiveHuman()`
+        // (`focusCameraOnOwnerCapital`) woła `showHintMessage(...)` BEZWARUNKOWO -- zarówno
+        // gdy fotel przejmuje realną stolicę ("Stolica: X"), jak i gdy jej nie ma jeszcze
+        // ("Brak stolicy na mapie..."). Toast widoczny PO switchu jest więc LEGALNY,
+        // zamierzony (KROK 1b czyści hint fotela A PRZED tym wywołaniem — patrz main.ts) —
+        // asercja "no leak" musi więc porównywać TREŚĆ (fotel A nie przetrwał), nie samą
+        // widoczność (`hintToastVisible`, zostawione bez zmian dla kompatybilności wstecznej).
+        hintToastText: hintToast.innerHTML,
+        buildModeOpen,
+        foundCityMode,
+        activeImprovementKey,
+        activeWonderId,
+        ghostChipVisible: ghostChip.style.display !== 'none',
+        escapeOverlayTopId: top()?.id ?? null,
+      }),
     };
 
     // P-AI-NIE-STAWIA-BUDYNKOW-Q1 — hak testowy WYŁĄCZNIE dla
