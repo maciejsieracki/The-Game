@@ -7090,14 +7090,132 @@ Runda 2 w toku, dispatch `07-dispatch-runda2.md`. Uwaga uboczna z rundy 1 (niebl
 symulacja pokazała głębszy deficyt skarbca po fixie — do rozważenia osobny mechanizm
 ratunkowy przy niskim skarbcu, poza zakresem tego tematu.
 
+## `P-AI-ULEPSZENIA-BUDOWA-ZNIKOMA-Q1` — GAME — **ZINTEGROWANE 2026-09-08** (commit `3131d411`, rundy 2+3)
+
+Zgłoszenie właściciela: AI buduje znikomą ilość ulepszeń terenu (surowcowych) mimo
+wolnych heksów. Root cause: `planCityImprovements` wołał `pickAutoImprovements`
+JEDNYM wspólnym wywołaniem dla żywności i surowców z `onlyWorked=true` — kategorie
+konkurowały o wspólny slot/heks, surowcowe systematycznie przegrywały z żywnościowymi.
+Runda 2: rozbicie na `foodPicks` (bez zmian, `onlyWorked=true`) i `resourcePicks`
+(nowe, `onlyWorked=false` — surowce budowane bez ograniczenia do obrabianych heksów,
+promień `cityTerritoryRadius(node)+1`), zastosowane identycznie dla głównego AI i
+kopii obronnych/miast-państw. Efekt uboczny: wzrost ulepszeń żywnościowych ~1.5-1.8×
+(usunięcie konkurencji o slot) — właściciel ABC: **zaakceptowane jako pozytywny,
+zamierzony skutek uboczny**, zero zmian kodu w tym punkcie. Runda 3: bramka
+referencyjna tematu `ai-ulepszenia-malo-budowane-test.cjs` (scenariusz ZASADA 3,
+wykrywanie „nadwyżki") spadła z 13/13 do 8/13, bo scenariusz nadwyżki rzadziej
+występuje gdy surowce budują się prawie wszędzie w promieniu miasta (~700+ heksów) —
+właściciel ABC: **przeprojektować scenariusz bramki** (parametry testu, nie balans
+gry). Operator przeprojektował scenariusz (rozmiar testowej mapy/miasta, nie liczby
+silnika), zweryfikowany mutacyjnie. Wszystkie bramki zielone, `tsc --noEmit` czysty.
+
+## `P-BUDOWA-AUTO-NIE-LADUJE-ULEPSZEN-Q1` — GAME — **ZINTEGROWANE** (commit `c2e6514d`)
+
+Zgłoszenie właściciela: automatyczna budowa nie ładuje ulepszeń budynków (drugi
+poziom, "Ulepsz") do puli produkcji, gdy lista nowych budynków jest pusta. Naprawa:
+`gra/src/game/auto-manage.ts` — nowe `buildUpgradeCandidates`/`pickForTryb`,
+`pickAutoBuildItem` przebudowane na logikę dwupoziomową (najpierw nowe budynki,
+ulepszenia jako fallback) we wszystkich 3 trybach (`priorytet`/`lista`/`zrownowazone`).
+Operator→Evaluator→Final Control PASS, zero regresji.
+
+## `P-BITWA-PORTRET-GRACZA-ZNIKNIETY-Q1` — GAME — **ZINTEGROWANE** (commit `4e3d2515`)
+
+Regres portretu na ekranie Wynik bitwy: atak gracza na miasto-państwo BEZ muru
+oblężniczego (osobna ścieżka `mapFieldBattle.ts::launchFieldBattleFromMap`) tracił 8
+pól tożsamości strony (`atkCivIconId/defCivIconId/atkIsCityState/defIsCityState/
+atkIsBarbarian/defIsBarbarian/atkEra/defEra`), które 3 inne miejsca wywołania w
+`main.ts` już miały (z `R-BITWA-ETYKIETA-TOZSAMOSC-STRONY-Q1`) — skutek: generyczna
+sylwetka zamiast portretu/ikony miasta-państwa dla obu stron. Naprawa: przekazanie
+już obliczonych `pbInfo.atakujacy/obronca.{civId,era,isCityState,isBarbarian}`.
+Ten plik był POZA pierwotną allowlistą dispatchu (nieznana wcześniej równoległa
+ścieżka field_battle-bez-muru) — orkiestrator retroaktywnie zaakceptował rozszerzenie
+allowlisty. Operator (2 rundy, regres pierwotnie niereprodukowalny gracz-vs-AI, potem
+zawężony do gracz-vs-miasto-państwo)→Evaluator→Final Control PASS.
+
+## `P-AI-EKSPANSJA-ODBUDOWA-MIAST-PO-WOJNIE-Q1` — GAME — **ZINTEGROWANE** (commit `4ef9cfb6`)
+
+Zgłoszenie właściciela: AI nie odbudowuje miast utraconych w wojnie mimo posiadanych
+środków, mimo że szybkie osiąganie maksymalnej liczby miast powinno być priorytetem.
+Naprawa: przyspieszona odbudowa miast po wojnie (mechanizm i dokładny próg — patrz
+raporty w `dyspozycje/autobot/runs/P-AI-EKSPANSJA-ODBUDOWA-MIAST-PO-WOJNIE-Q1/`).
+Obrona rundy 1 znalazła i naprawiła DWA błędy głębsze niż zgłoszone: (1) test
+porównawczy PRZED/PO używał `git show HEAD:...` z już przesuniętym HEAD — naprawione
+przypięciem do stałego SHA rodzica; (2) `aiCityCountHistory` (mapa modułowa) nigdy nie
+była czyszczona przy nowej grze/wczytaniu (w przeciwieństwie do sióstr jak
+`aiSkarbiecByOwner`) — mogła przeciekać dziesiątki-setki tur przy niskim numerze tury
+na nowej grze; naprawione samodetekcją cofnięcia numeru tury per `playerId` wewnątrz
+allowlisty tematu, bez dotykania `main.ts`. Operator→Evaluator→Obrona (2 zarzuty
+przyjęte)→Final Control PASS.
+
+## `P-MARTWY-KOD-PROCENT-PULI-IMPERIUM-Q1` — PROCESS — **ZINTEGROWANE** (commit `c98515ea`)
+
+Porządkowe: martwa, nigdy niewywoływana funkcja `procentPuliImperiumForOwner` w
+`main.ts`, znaleziona przy okazji diagnozy `P-AI-ULEPSZENIA-BUDOWA-ZNIKOMA-Q1`, psuła
+jedną asercję w `ai-praca-split-parity-test.cjs` (realna logika podziału działa
+poprawnie gdzie indziej — rozjazd dotyczył wyłącznie martwego kodu z testem, zero
+wpływu na rozgrywkę). Właściciel: zająć się samodzielnie przez zwykły proces, bez
+dalszego angażowania właściciela — dispatchowane jako pełny temat AutoBot (nie
+obejście procesu). Usunięcie martwej funkcji + naprawa testu. Operator→Evaluator→Final
+Control PASS. Zamknięto też przy okazji stary, osobny wpis
+`P-PRACA-MARTWE-PROCENT-PULI-IMPERIUM-FOR-OWNER-Q1` w tym rejestrze (linia ~3230,
+`OTWARTE — porządkowe` → `ZAMKNIĘTE 2026-09-08 przez P-MARTWY-KOD-PROCENT-PULI-IMPERIUM-Q1`).
+
+## `P-BITWA-OBRONCY-PRZED-MUREM-Q1` — GAME — **ZINTEGROWANE** (commit `6094c585`)
+
+Zgłoszenie właściciela (2 zrzuty ekranu): obrońcy w bitwie oblężniczej stoją PRZED
+murem (po stronie atakującego) zamiast na/za murem. Root cause potwierdzony żywą
+sceną: `_activateUnit` — gałąź doktryny AUTO (`if (!this._manualMode) {...}`) nie miała
+wyłączenia dla strony obrony przy aktywnym murze, więc `_executeGroupDoctrineStep`
+liczył cel doktryny "steady" jako 2 kolumny w stronę atakującego i wykonywał ten ruch
+ZANIM kod dotarł do dedykowanej blokady "SIEGE DEFENDER HOLD" kilkadziesiąt linii
+niżej — obrońcy schodzili 1 kolumnę przed mur już w 1. turze AUTO. Naprawa: nowa
+zmienna `siegeDefenderNeverDoctrine = ru.side === 'def' && this.siegeWallCol >= 0`,
+strona obrony przy murze całkowicie pomija gałąź doktryny. Drugi, niezależny fix w tym
+samym temacie: `_placeUnitsOneSide` delegował do `_placeSiegeDefenders` tylko dla
+strony `'atk'` — poprawione żeby też obejmowało `'def'`+`siegeMode` (wcześniej
+nieosiągalne z istniejących miejsc wywołania, nowy test woła prywatną metodę wprost
+przez debug-hook `window.__lastBattleScene`). Evaluator znalazł 2 zarzuty (dokładna
+liczba "2/28" niereprodukowalna — skorygowana na "zależna od kolejności tur, tylko
+`>0`"; brak testu dla drugiego fixu — dodany), oba PRZYJĘTE i naprawione w Obronie.
+**Konflikt plikowy z `P-BITWA-AUTO-LUCZNICY-NIE-RUSZAJA-Q1`** (ta sama funkcja
+`_activateUnit`) rozwiązany sekwencyjnie — ten temat zintegrowany pierwszy.
+
+## `P-AI-ARMIA-ROZPROSZENIE-BRAK-KONCENTRACJI-Q1` — GAME — **ZINTEGROWANE 2026-09-08** (commit `fa161a79`, rundy 1+2)
+
+Zgłoszenie właściciela: AI ma miały łączyć armie w jedną dużą siłę (dzieloną tylko przy
+zagrożeniu z dwóch stron), obserwowane totalne rozproszenie jednostek mimo istniejącego
+mechanizmu koncentracji (`army-concentration.ts`). Runda 1: `countThreatFronts` liczył
+KAŻDE pojedyncze zagrożenie jako osobny front nawet gdy już miało przydzielonego
+obrońcę domu — każdy błąkający się barbarzyniec koło miasta sztucznie podnosił
+`targetClusterCount`, blokując łączenie wolnych jednostek (5 miast + 1 nieszkodliwy
+barbarzyniec każde → klastry rosły 5→10 zamiast maleć, zmierzone żywo). Runda 2
+(Evaluator, FAIL): fix rundy 1 psuł odwrotny scenariusz — dwa realne, geograficznie
+odrębne fronty wojenne z przydzielonymi obrońcami domu na obu miały
+`threatFrontCount` sprowadzany do 0 i sztucznie podnoszony do 1, więc rezerwy obu
+miast łączyły się cross-front mimo trwającej wojny z dwóch stron. Naprawa: odejmowanie
+pokrycia obrońcy domu od licznika frontów dotyczy WYŁĄCZNIE zagrożeń barbarzyńskich
+(`ownerId===0`), front od cywilizacji w stanie wojny liczy się zawsze. Final Control
+(runda 2) niezależną mutacją potwierdził fix (54/55 bez niego, 55/55 z nim) i
+bezkonfliktowy merge test na aktualny `origin/main` przed integracją.
+
 ## Nowe zgłoszenia w toku (2026-09-08, jeszcze nie zamknięte)
 
-- `P-AI-EKSPANSJA-ODBUDOWA-MIAST-PO-WOJNIE-Q1` (GAME) — AI nie odbudowuje utraconych
-  w wojnie miast mimo posiadanych środków. Dispatch Operator→Evaluator w toku.
-- `P-MARTWY-KOD-PROCENT-PULI-IMPERIUM-Q1` (PROCESS) — martwa funkcja
-  `procentPuliImperiumForOwner` w `main.ts` psuje jedną asercję w
-  `ai-praca-split-parity-test.cjs`. Dispatch Operator→Evaluator w toku.
+- `P-BITWA-AUTO-LUCZNICY-NIE-RUSZAJA-Q1` (GAME) — w trybie AUTO łucznicy/jednostki
+  dystansowe stoją bezczynnie mimo dyspozycji ataku. Root cause: `ru.playerOrder`
+  używany jako wewnętrzna buchalteria doktryny — gdy doktrynalny ruch nie ląduje
+  dokładnie na docelowym polu w jednej akcji (kolizja formacji), stara bramka
+  `playerOrder.type === 'none'` trwale blokuje jednostkę z doktryny od tej tury.
+  Fix na branchu (`58e450be`+Obrona `01b3a24c`), **konflikt plikowy z już
+  zintegrowanym `P-BITWA-OBRONCY-PRZED-MUREM-Q1`** (ta sama funkcja
+  `_activateUnit`) — Final Control dla scalonego stanu w toku.
 - Plan przebudowy kart budynków i jednostek (opis/top3/wymagania/sekcje rozwijane)
   zaakceptowany przez właściciela w rozmowie — dwa przykładowe prototypy (Opus 5,
-  żywe zrzuty Chromium) w toku, jeszcze nieformalny dispatch AutoBot (czeka na
-  akceptację prototypu przed pełną falą wdrożenia).
+  żywe zrzuty Chromium) zaakceptowane, jeszcze nieformalny dispatch AutoBot dla
+  pełnej fali wdrożenia (adaptery, renderer, `types.ts`, treść per budynek/jednostka).
+- Zgłoszenie właściciela o ekonomii stadnin/koni (odblokowanie stadniny bez konia na
+  polu za 50 koni, w tym drogą handlu) — zbadane (istnieje "Model B" darmowego
+  odblokowania empire-wide, `gra/src/game/livestock-unlock.ts`), jeszcze nie
+  formalnie dispatchowane jako osobny temat.
+- Niejasne zgłoszenie właściciela o pustym wierszu "Surowce" w górnym HUD (w
+  przeciwieństwie do wypełnionych Skarbiec/Praca/Spichlerz/Nauka) — zadano pytanie
+  doprecyzowujące, odpowiedź właściciela jeszcze nie otrzymana.
