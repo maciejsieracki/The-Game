@@ -7238,6 +7238,28 @@ sekcji na 3 typach kart, zerowy diff pozostałych adapterów, brak regresji `uni
 mają po 1/2 pre-istniejących FAIL potwierdzonych identycznych na czystym `origin/main`
 (dot. `cityPanel.ts`, poza zakresem tematu, zero diff) — brak regresji.
 
+## `P-AI-WOJNA-WCZESNA-FAZA-MIASTA-PANSTWA-Q1` — GAME — **ZINTEGROWANE 2026-09-08** (commit `8b95a381`)
+
+Zgłoszenie właściciela: dwie cywilizacje AI bardzo szybko podbiły wszystkich sąsiadów przez
+zwykłe (niewymuszone) wojny AI-vs-AI, które nie mają bezpiecznika "pokój po 2 miastach" — ten
+bezpiecznik istnieje wyłącznie w mechanizmach wymuszonej wojny epoki
+(`shouldEndXForcedWarByCityCount` w `forced-war-*.ts`). Zwykłe wypowiedzenie wojny (Priorytet 4
+w `decideAIDiplomacy`) nie rozróżniało dotąd partnera (główna cywilizacja vs miasto-państwo)
+ani numeru tury. Naprawa: nowa stała `AI_MAJOR_EARLY_NO_WAR_TURNS=25` — przez pierwsze 25 tur
+zwykłe wojny między dwiema głównymi cywilizacjami są wstrzymane; ataki na miasta-państwa i
+wszystkie ścieżki wymuszonej wojny pozostają całkowicie bez zmian (strukturalnie osobne
+priorytety w tej samej funkcji); po turze 25 zachowanie wraca do normy. Decyzja orkiestratora:
+fragment prozy zgłoszenia ("dopóki nie będzie wojny epoki") potraktowany jako opis tego samego
+okna 25-turowego, nie jako drugi, niezależny warunek końca — formalne binarne kryterium
+wymagało wyłącznie progu 25 tur. `main.ts` całkowicie nietknięty (brak kolizji z równolegle
+integrowanym `P-WOJNA-EPOKI-NAJTRUDNIEJSZY-NIE-WYBUCHA-Q1`, który dotyka tego samego pliku).
+Żywy dowód (własna symulacja Final Control, 3 cywilizacje + 2 miasta-państwa + 1 aktywna wojna
+wymuszona, tury 1-30): 0 wojen major-vs-major w oknie, 100 ataków na miasta-państwa bez zmian,
+wojna wymuszona bez zmian, powrót zwykłych wojen po turze 25. Testy: `tsc --noEmit` czysty, 5
+bramek referencyjnych zielone, `ai-test.cjs` 291/4 (4 pre-istniejące fail potwierdzone
+identyczne), nowe `ai-early-no-major-war-test.cjs` 14/14 i `ai-early-city-founding-pace-test.cjs`
+2/2.
+
 ## Nowe zgłoszenia w toku (2026-09-08, jeszcze nie zamknięte)
 
 - `P-STADNINA-KONIE-KOSZT-ROZBUDOWY-Q1` (GAME) — dispatchowany formalnie (runda 2 w toku,
@@ -7255,12 +7277,6 @@ mają po 1/2 pre-istniejących FAIL potwierdzonych identycznych na czystym `orig
   Właściciel POTWIERDZIŁ żywym dowodem z własnej rozgrywki wiodącą hipotezę: wojna nie wybucha
   dopóki strony "się nie poznają" (brak kontaktu dyplomatycznego) — określił to jako
   "wytrych"/exploit.
-- `P-AI-WOJNA-WCZESNA-FAZA-MIASTA-PANSTWA-Q1` (GAME) — dispatchowany formalnie (Operator/
-  Evaluator w toku, Workflow): zgłoszenie właściciela — dwie cywilizacje AI bardzo szybko
-  podbiły wszystkich sąsiadów przez zwykłe (niewymuszone) wojny AI-vs-AI, które nie mają
-  bezpiecznika "pokój po 2 miastach" (ten bezpiecznik istnieje wyłącznie w mechanizmach
-  wymuszonej wojny). Przez pierwsze 25 tur zwykłe wojny AI-vs-AI mają być wstrzymane (ataki na
-  miasta-państwa i wojny wymuszone bez zmian).
 - Niejasne zgłoszenie właściciela o pustym wierszu "Surowce" w górnym HUD — **WYJAŚNIONE, NIE
   BUG**: to jest świadoma decyzja z 2026-07-24 (`hud.ts`, komentarz "bez liczby na chipie") —
   chip celowo pokazuje tylko ikonę + alert, bez liczby "X/Y", klik otwiera pełny panel
