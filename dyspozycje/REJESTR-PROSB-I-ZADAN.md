@@ -7260,13 +7260,33 @@ bramek referencyjnych zielone, `ai-test.cjs` 291/4 (4 pre-istniejące fail potwi
 identyczne), nowe `ai-early-no-major-war-test.cjs` 14/14 i `ai-early-city-founding-pace-test.cjs`
 2/2.
 
+## `P-STADNINA-KONIE-KOSZT-ROZBUDOWY-Q1` — GAME — **ZINTEGROWANE 2026-09-08** (commit `509791e3`, rundy 1-3)
+
+Model B (2026-07-09, ABC-18) dawał pierwszej stadninie na złożu konia darmowe, empire-wide
+odblokowanie WSZYSTKICH kolejnych stadnin gdziekolwiek w imperium. Wg zgłoszenia właściciela
+to się zmienia WYŁĄCZNIE dla stadniny/konia: stadnina NA złożu pozostaje całkowicie darmowa,
+ale KAŻDA kolejna stadnina POZA złożem wymaga teraz jednorazowej zapłaty 50 sztuk konia z
+magazynu imperium — powtarzalny koszt per stadnina, nie stała bramka odblokowania. Bydło/owce/
+lama (ta sama rodzina funkcji) bez zmian. Runda 1: potwierdzono że handel koniem już działał
+end-to-end bez zmian kodu. Runda 2: wpięcie realnego magazynu do bramki budowy i odjęcie przy
+potwierdzeniu (`main.ts::commitBuildRequest`) — zakończona dwoma DECISION_REQUIRED: (1) brak
+żywego dowodu na realnym kodzie silnika (tylko równoległa symulacja); (2) `auto-improvements.ts`
+(AI) po retirowaniu Modelu B trwale tracił zdolność budowy stadniny poza złożem. Runda 3
+(decyzje orkiestratora): (1) dwie nowe metody testowe w już istniejącym obiekcie
+`__buildRequestTestDebug` (wzorem `forceCopperDeposit`/`forceForestNoDeposit`) umożliwiły
+prawdziwą bramkę Chromium wołającą realny `applyBuildRequest`→`commitBuildRequest`; (2) wpięcie
+tego samego odczytu magazynu do `auto-improvements.ts`, symetrycznie do gracza — odrzucono
+opcję "świadoma regresja AI" zgodnie z udokumentowaną, wysoką wagą projektu dla kategorii błędu
+"AI przestaje budować coś, co wcześniej budowało". Testy: `tsc --noEmit` czysty, 5 bramek
+referencyjnych zielone, `stadnina-kon-koszt-test.cjs` 17/17, `stadnina-kon-koszt-live-test.cjs`
+19/19 (żywy Chromium), `hodowla-las-test.cjs` 112/112 (w tym żywy dowód że AI faktycznie
+wybiera budowę), `stadnina-las-test.cjs` 28/28, `hex-tooltip-stadnina-kopalnia-cyny-test.cjs`
+29/29. Dług jawnie zgłoszony, poza zakresem: AI nie ma dostępu do konia przez handel
+(`tradeRouteKonUnlocked` zawsze `false` dla AI); tooltip hexa nie pokazuje liczbowo "X/50 koni"
+(zastąpiony czytelnym toastem, który spełnia binarne kryterium).
+
 ## Nowe zgłoszenia w toku (2026-09-08, jeszcze nie zamknięte)
 
-- `P-STADNINA-KONIE-KOSZT-ROZBUDOWY-Q1` (GAME) — dispatchowany formalnie (runda 2 w toku,
-  Workflow): stadnina poza złożem konia ma kosztować 50 koni z magazynu imperium zamiast
-  dzisiejszego darmowego odblokowania empire-wide (Model B). Runda 1 potwierdziła że handel
-  koniem już działa end-to-end bez zmian kodu; runda 2 wpina realny magazyn i odjęcie w
-  `main.ts` (allowlist rozszerzona punktowo przez orkiestratora).
 - `P-MIASTA-ZBYT-BLISKO-SIEBIE-Q1` (GAME) — dispatchowany formalnie (Operator/Evaluator w toku,
   Workflow): inne cywilizacje stawiają miasta na sąsiadujących heksach. Zweryfikowany żywy
   dowód ("URUK — KOLONIA" bezpośrednio przy stolicy) wskazuje na `pickBonusCityHex`
