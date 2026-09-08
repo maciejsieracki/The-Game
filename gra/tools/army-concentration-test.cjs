@@ -335,6 +335,127 @@ function runTurns(myUnits, cities, map, nTurns) {
     'scenario 3: jeśli defender dostaje ruch, to lokalny (w stronę zagrożenia przy mieście), nie odległy marsz koncentracji/front-merge');
 }
 
+// ---------------------------------------------------------------------------
+// SCENARIO 4 (P-AI-ARMIA-ROZPROSZENIE-BRAK-KONCENTRACJI-Q1): regression guard —
+// każde miasto ma swój OSOBNY, niegroźny (nigdy adiacentny/atakujący), oddalony
+// barbarzyniec w zasięgu isHomeDefenseThreatForCity. Przed naprawą TEN SAM
+// zdefiniowany zagrożenie był liczony PODWÓJNIE: raz jako przydzielony obrońca
+// domu (poprawnie wykluczony z front-merge), raz DRUGI RAZ jako osobny "front"
+// w countThreatFronts — sztucznie zrównując targetClusterCount z liczbą miast i
+// blokując połączenie WOLNYCH (nieprzydzielonych) jednostek. Dowód mierzony
+// żywo (diag-realistic.cjs, scenariusz B): PRZED naprawą klastry ROSNĄ 5 -> 10
+// w 40 turach; PO naprawie wolne jednostki realnie się konsolidują.
+// ---------------------------------------------------------------------------
+{
+  const cities4 = [
+    { id: 'cap', ownerId: 1, q: 30, r: 30, name: 'Stolica', population: 8 },
+    { id: 'c1', ownerId: 1, q: 12, r: 30, name: 'C1', population: 5 },
+    { id: 'c2', ownerId: 1, q: 48, r: 30, name: 'C2', population: 5 },
+    { id: 'c3', ownerId: 1, q: 30, r: 12, name: 'C3', population: 5 },
+    { id: 'c4', ownerId: 1, q: 30, r: 48, name: 'C4', population: 5 },
+  ];
+  const myUnits4 = [];
+  for (const c of cities4) { myUnits4.push(unit(`${c.id}-a`, c.q, c.r)); myUnits4.push(unit(`${c.id}-b`, c.q + 1, c.r)); }
+  const barbs4 = cities4.map(c => unit(`barb-${c.id}`, c.q + 6, c.r, { ownerId: 0 }));
+  const map4 = bigMap(60, 60);
+  let clustersAtEnd = null;
+  for (let t = 0; t < 40; t++) {
+    for (const u of myUnits4) u.ruchLeft = u.ruch;
+    const cmds = C.decideAITurn(1, [...myUnits4, ...barbs4], cities4, map4, testData, { civType: 'grecy', currentTurn: t });
+    for (const cmd of cmds) {
+      if (cmd.type !== 'move') continue;
+      const u = myUnits4.find(x => x.id === cmd.unitId);
+      if (u === undefined) continue;
+      u.q = cmd.toQ; u.r = cmd.toR;
+    }
+    if (t === 39) clustersAtEnd = C.clusterUnitsByProximity(myUnits4, C.ARMY_CONCENTRATION_RADIUS).length;
+  }
+  ok(clustersAtEnd !== null && clustersAtEnd < 10,
+    `scenario 4: 5 miast z 1 nieszkodliwym barbarzyńcą każde (5 obsłużonych "frontów") -- po 40 turach klastrów=${clustersAtEnd}, MUSI być < 10 (przed naprawą: 10, każda jednostka osobno -- front-merge nigdy nie łączył wolnych jednostek, bo obsłużone zagrożenia liczyły się DODATKOWO jako fronty)`);
+  ok(clustersAtEnd !== null && clustersAtEnd <= 6,
+    `scenario 4: mutation guard na dokładną wartość zmierzoną po naprawie (klastrów=${clustersAtEnd}, oczekiwane <=6 -- 5 obrońców domu poprawnie zostają osobno + wolne jednostki realnie się łączą)`);
+}
+
+// ---------------------------------------------------------------------------
+// SCENARIO 5 (Evaluator runda 1, zarzut 1+2; przeprojektowane runda 2, Evaluator zarzut 1):
+// regression guard z REALNYMI miastami (niepustą `myCities`, w przeciwieństwie do scenario 2)
+// i DWOMA geograficznie odrębnymi, PRAWDZIWYMI frontami wojennymi (ownerId 2, nie
+// barbarzyńca) -- każdy front dostaje przydzielonego obrońcę domu (jak w typowej grze), plus
+// osobne jednostki rezerwowe (nie-obrończe) przy każdym mieście. Kryterium: rezerwy NIE
+// łączą się cross-front mimo że threatFrontCount po odjęciu pokrycia przez obrońców realnych
+// fronów pozostaje >= 2 (fix rundy 2: tylko pokrycie zagrożeń barbarzyńskich, ownerId 0,
+// odejmuje się od frontu). Dowód regresji PRZED tą naprawą (runda 1, ea70b768): Evaluator
+// zmierzył żywo, że rezerwy maszerują dziesiątki heksów i łączą się w jeden klaster mimo
+// dwóch osobnych realnych ataków.
+//
+// RUNDA 2, zarzut 1, punkt A (za mało rezerw wchłania planArmyConcentration): z 3 rezerwami/
+// miasto (== ARMY_CONCENTRATION_MIN_UNITS) jedna strona (deterministycznie A, niższe q/r
+// wygrywa remis w planArmyConcentration) była w KAŻDEJ turze w całości wchłaniana przez
+// lokalną koncentrację (ai.ts ~3226) i wykluczana z `frontMergeExcluded` -- do
+// planArmyFrontMerge trafiał więc zawsze i wyłącznie JEDEN klaster (druga strona), a
+// `entries.length <= target` (army-concentration.ts:250) blokowało scalanie bez względu na
+// `threatFrontCount`/fix. Naprawa: 2 rezerwy/miasto (< ARMY_CONCENTRATION_MIN_UNITS=3) --
+// `planArmyConcentration` nie znajduje żadnej grupy >=3 jednostek, więc `concentration===null`
+// i OBIE rezerwy trafiają nienaruszone do `planArmyFrontMerge` jako 2 osobne klastry.
+//
+// RUNDA 2, zarzut 1, punkt B (drugi, niezależny defekt znaleziony przy weryfikacji punktu A):
+// oryginalne rezerwy stały na q=-3 -- POZA `bigMap(60,60)`, który tworzy heksy WYŁĄCZNIE dla
+// q,r w [0,60). Jednostka na nieistniejącym heksie nigdy nie dostaje `firstStep` (brak węzła
+// startowego w danych mapy), więc scenariusz nie generował ŻADNEGO ruchu dla rezerw w ogóle --
+// niezależnie od tego, co obliczył `planArmyFrontMerge`. Zweryfikowane bezpośrednio (debug log
+// `DEBUG_FRONT` w `ai.ts`, usunięty po weryfikacji): z cofniętym filtrem `ownerId===0`
+// `planArmyFrontMerge` faktycznie zwracał rozkaz cross-front (`b-r1/b-r2 -> (-3,1)`), ale
+// `commands` nigdy nie dostawało odpowiadającego mu `type:'move'`, bo `firstStep` z/do heksu
+// poza mapą nie zwraca kroku -- test PASS-ował z powodu, który nie ma nic wspólnego z logiką
+// frontów. Naprawa: wszystkie jednostki na heksach z zakresu mapy (q,r >= 0), obie strony
+// nadal >4 (promień koncentracji) od siebie, żeby nie tworzyć fałszywego wspólnego klastra
+// startowego. Mutacyjnie potwierdzone PO obu naprawach (patrz raport obrony rundy 2): z
+// cofniętym filtrem `ownerId===0` scenariusz TERAZ faktycznie czerwienieje.
+// ---------------------------------------------------------------------------
+{
+  const cityA = { id: 'cityA', ownerId: 1, q: 0, r: 0, name: 'A', population: 6 };
+  const cityB = { id: 'cityB', ownerId: 1, q: 0, r: 50, name: 'B', population: 6 };
+  const cities5 = [cityA, cityB];
+  // Obrońcy domu (najbliżsi dostępni) + jednostki rezerwowe (dalej od zagrożenia, mają
+  // zostać niewykorzystane przez assignHomeDefenders i podlegać wyłącznie front-merge).
+  // Celowo 2 rezerwy/miasto (< ARMY_CONCENTRATION_MIN_UNITS=3, patrz punkt A wyżej) i
+  // WYŁĄCZNIE współrzędne q,r >= 0, czyli na faktycznej mapie (patrz punkt B wyżej).
+  const myUnits5 = [
+    unit('a-def', 1, 0), unit('a-r1', 1, 5), unit('a-r2', 1, 6),
+    unit('b-def', 1, 50), unit('b-r1', 1, 45), unit('b-r2', 1, 44),
+  ];
+  // Realni wrogowie (ownerId 2, w stanie wojny) tuż przy każdym mieście -- każdy trafia do
+  // homeDefenderAssignments (jest najbliższym zagrożeniem swojego miasta) ORAZ jest w zasięgu
+  // engageableEnemyUnits (widoczność miasta obejmuje sąsiedztwo).
+  const enemyA = unit('enemyA', 3, 0, { ownerId: 2 });
+  const enemyB = unit('enemyB', 3, 50, { ownerId: 2 });
+  const map5 = bigMap(60, 60);
+  let everCrossFrontCluster5 = false;
+  const clusterSizeHistory5 = [];
+  for (let t = 0; t < 15; t++) {
+    for (const u of myUnits5) u.ruchLeft = u.ruch;
+    const allUnits = [...myUnits5, enemyA, enemyB];
+    const cmds = C.decideAITurn(1, allUnits, cities5, map5, testData, { civType: 'grecy', currentTurn: t });
+    for (const cmd of cmds) {
+      if (cmd.type !== 'move') continue;
+      const u = myUnits5.find(x => x.id === cmd.unitId);
+      if (u === undefined) continue;
+      u.q = cmd.toQ; u.r = cmd.toR;
+    }
+    const clusters = C.clusterUnitsByProximity(myUnits5, C.ARMY_CONCENTRATION_RADIUS);
+    clusterSizeHistory5.push(Math.max(...clusters.map(g => g.length)));
+    for (const group of clusters) {
+      const hasA = group.some(u => u.id.startsWith('a-'));
+      const hasB = group.some(u => u.id.startsWith('b-'));
+      if (hasA && hasB) everCrossFrontCluster5 = true;
+    }
+  }
+  ok(!everCrossFrontCluster5,
+    `scenario 5, żywa symulacja 15 tur, DWA REALNI fronty (ownerId 2, z miastami i przydzielonymi obrońcami domu): ŻADEN klaster nie łączy rezerw miasta A z rezerwami miasta B mimo że oba zagrożenia dostają obrońcę domu (przebieg maks. rozmiaru klastra: ${clusterSizeHistory5.join(',')}) -- regresja z rundy 1 (Evaluator, zarzut 1) NIE występuje`);
+  ok(myUnits5.find(u => u.id === 'a-r1').r < 10 && myUnits5.find(u => u.id === 'b-r1').r > 40,
+    'scenario 5: po 15 turach rezerwy obu miast nadal przy SWOICH frontach, żadna nie została odciągnięta w stronę drugiego');
+}
+
 console.log(`army-concentration-test: ${passed} passed, ${failed} failed`);
 try { fs.unlinkSync(entry); } catch {}
 try { fs.unlinkSync(bundle); } catch {}

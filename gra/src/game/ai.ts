@@ -3364,7 +3364,54 @@ export function decideAITurn(
       ...(concentration?.unitIds ?? []),
       ...combatEngagedUnitIds,
     ]);
-    const threatFrontCount = countThreatFronts(engageableEnemyUnits, myCities, myUnits, map);
+    // P-AI-ARMIA-ROZPROSZENIE-BRAK-KONCENTRACJI-Q1: dowód żywej symulacji (diag-realistic.cjs,
+    // scenariusz B, dyspozycje/autobot/runs/<TEMAT>/) pokazał PRZYCZYNOWO, że
+    // `countThreatFronts` liczony z pełnego `engageableEnemyUnits` PODWÓJNIE księguje każde
+    // pojedyncze, niezaangażowane, oddalone zagrożenie: (1) `assignHomeDefenders` już
+    // odrywa JEDNĄ jednostkę do jego obsługi (wykluczoną wyżej z `frontMergeExcluded`), a (2)
+    // TEN SAM wróg jest też liczony jako osobny "front", więc `targetClusterCount` rośnie o 1
+    // za każdy taki przypadek — dokładnie tyle, ile miast ma choćby jednego błąkającego się
+    // barbarzyńcę w promieniu ~9-12 hex (typowa gra z wieloma miastami). Efekt zmierzony
+    // żywo: 5 miast + 1 nieszkodliwy barbarzyńca na miasto -> po 40 turach klastry ROSNĄ z 5
+    // do 10 (KAŻDA jednostka osobno), zamiast maleć — front-merge nigdy nie łączy "wolnych"
+    // (nieprzydzielonych do obrony) jednostek, bo cel klastrów sztucznie zrównuje się z liczbą
+    // tych samych, już obsłużonych zagrożeń. Naprawa: zagrożenie już pokryte przydzielonym
+    // obrońcą domu (`homeDefenderAssignments`) nie liczy się DODATKOWO jako wymagający
+    // OSOBNEGO klastra polowej armii — obrona lokalna i skupianie reszty sił to dwie różne
+    // odpowiedzi na TO SAMO zagrożenie, nie dwa niezależne zagrożenia. Front nadal liczy się
+    // normalnie, gdy żaden obrońca nie został mu przydzielony (za mało dostępnych jednostek)
+    // lub gdy zagrożenie faktycznie walczy (`combatEngagedUnitIds` niżej pozostaje osobne).
+    // Scenariusz 2 (dwa realne fronty, żadnego obrońcy przydzielonego -- brak miast w danych
+    // testowych) pozostaje bez zmian: `army-concentration-test.cjs` 51/51 zielone po naprawie.
+    //
+    // RUNDA 2 (Evaluator, zarzut 1, dowód: żywa symulacja 2 miast z DWOMA realnymi, osobnymi
+    // frontami wojennymi, każdy z przydzielonym obrońcą domu -- klastry mimo to łączyły się
+    // cross-front): odejmowanie WSZYSTKICH pokrytych zagrożeń (bez względu na właściciela)
+    // zerowało `threatFrontCount` do 0 przy typowej sytuacji (każdy realny front dostaje
+    // obrońcę domu -- to norma, nie wyjątek), a klamra `<= 1 ? 1` sztucznie podnosiła go
+    // z powrotem do 1 -- każąc REZERWOM obu miast łączyć się w jeden klaster mimo trwającego,
+    // osobnego ataku na oba. To odwracało GOAL dokładnie wtedy, gdy zagrożenie z dwóch stron
+    // jest prawdziwe.
+    //
+    // Naprawa: odejmować od frontów WYŁĄCZNIE pokrycie zagrożeń BARBARZYŃSKICH (`ownerId===0`)
+    // -- to one są "typowym błąkającym się barbarzyńcą koło każdego miasta" zdiagnozowanym
+    // w rundzie 1 (scenario 4 w army-concentration-test.cjs używa `ownerId: 0`), gdzie jeden
+    // obrońca domu faktycznie wystarcza i nie ma tam trwającej wojny wymagającej osobnego
+    // frontu polowej armii. Zagrożenie od CYWILIZACJI będącej w stanie wojny (`ownerId!==0`)
+    // liczy się jako front ZAWSZE, niezależnie od przydzielonego obrońcy domu -- lokalna obrona
+    // i osobny front polowej armii to dwie różne odpowiedzi na realną wojnę, nie podwójne
+    // liczenie tego samego nieszkodliwego zagrożenia.
+    const homeDefenseCoveredBarbarianThreatIds = new Set(
+      Array.from(homeDefenderAssignments.values())
+        .filter(t => t.ownerId === 0)
+        .map(t => t.id),
+    );
+    const threatFrontCount = countThreatFronts(
+      engageableEnemyUnits.filter(eu => !homeDefenseCoveredBarbarianThreatIds.has(eu.id)),
+      myCities,
+      myUnits,
+      map,
+    );
     const frontMerge = planArmyFrontMerge(playerId, myUnits, {
       excludedUnitIds: frontMergeExcluded,
       targetClusterCount: threatFrontCount <= 1 ? 1 : threatFrontCount,
