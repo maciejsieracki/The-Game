@@ -245,7 +245,9 @@ const poWyrebie = M.stripImprovementsWhenForestRemoved(['owce', 'bydlo', 'lama',
 ok(poWyrebie.includes('owce') && poWyrebie.includes('bydlo') && poWyrebie.includes('lama'),
   'WYRAB: hodowla zostaje po wyrebie (las nie jest jej warunkiem)');
 ok(!poWyrebie.includes('oboz_lowiecki'), 'KONTROLA WYRAB: oboz lowiecki nadal znika po wyrebie');
-ok(poWyrebie.includes('tartak'), 'KONTROLA WYRAB: tartak nadal zostaje po wyrebie');
+// R-ULEPSZENIA-TARTAK-LAS-ZALEZNOSC-Q1 (2026-09-07): odwrocenie kanonu -- tartak teraz
+// znika po wyrebie tak samo jak oboz lowiecki (oba wymagaja lasu do budowy).
+ok(!poWyrebie.includes('tartak'), 'KONTROLA WYRAB: tartak znika po wyrebie (R-ULEPSZENIA-TARTAK-LAS-ZALEZNOSC-Q1, 2026-09-07)');
 
 // =====================================================================================
 // (4) AUTOMAT MIASTA I AI CYWILIZACJI — pickAutoImprovements (jedna funkcja dla obu)

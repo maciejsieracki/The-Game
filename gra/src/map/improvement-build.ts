@@ -172,9 +172,18 @@ const TARTAK_TERENY = new Set<TerenBazowy>([
  * obóz poza lasem powstający normalną rozgrywką (gracz i AI) — dziura P7 znaleziona przez
  * Evaluatora i Final Control rundy 1.
  *
+ * R-ULEPSZENIA-TARTAK-LAS-ZALEZNOSC-Q1 (2026-09-07, ŚWIADOME ODWRÓCENIE wcześniejszego
+ * kanonu poniżej): zgłoszenie właściciela — "po usunięciu lasu obóz łowiecki zniknął, a
+ * tartak został, a też powinien zniknąć, bo może istnieć tylko w lesie" (dwa zrzuty ekranu
+ * tego samego heksa, przed i po wycince). Tartak wymaga lasu DO BUDOWY dokładnie tak samo
+ * jak obóz łowiecki (`qualifies()`, case 'tartak' wyżej w tym pliku) — więc dla spójności
+ * oba znikają, gdy las znika. Poprzednia decyzja "tartak zostaje" (patrz historia niżej)
+ * dotyczyła INNEGO scenariusza (wizualnego znikania lasu na wzgórzu,
+ * R-ULEPSZENIA-OBOZ-LOWIECKI-LAS-ZNIKA-I-TEREN-Q1, 2026-09-02), nie tego zgłoszonego wprost
+ * scenariusza ręcznej wycinki pod istniejącym tartakiem. Test przekotwiczony w
+ * tools/map-improvement-qualify-test.cjs: „tartak stays" → „tartak removed too".
+ *
  * Świadomie POZA tym zbiorem (nie dopisywać bez decyzji właściciela):
- *  • `tartak`   — kanon wprost: las zostaje przy tartaku (asercja
- *                 tools/map-improvement-qualify-test.cjs: „tartak stays when forest removed").
  *  • `farma`    — od 2026-08-27 (R-ULEPSZENIA-FARMA-NIE-W-LESIE-Q1) farma w ogóle nie
  *                 kwalifikuje się na heksie z lasem, więc Las nie jest jej warunkiem —
  *                 jest jej przeszkodą. Farma JUŻ STOJĄCA na lesie (postawiona legalnie wg
@@ -186,9 +195,10 @@ const TARTAK_TERENY = new Set<TerenBazowy>([
  */
 const FOREST_DEPENDENT_IMPROVEMENT_KEYS = new Set<string>([
   'oboz_lowiecki',
+  'tartak',
 ]);
 
-/** Po usunięciu lasu z heksa — odfiltruj ulepszenia zależne od nakładki Las (tartak NIE — kanon: las zostaje przy tartaku). */
+/** Po usunięciu lasu z heksa — odfiltruj ulepszenia zależne od nakładki Las (od R-ULEPSZENIA-TARTAK-LAS-ZALEZNOSC-Q1, 2026-09-07: tartak też znika, patrz komentarz przy stałej wyżej). */
 export function stripImprovementsWhenForestRemoved(layers: readonly string[]): string[] {
   return layers.filter(key => !FOREST_DEPENDENT_IMPROVEMENT_KEYS.has(key));
 }

@@ -233,12 +233,16 @@ console.log('\n=== C. ODWROTNIE: co MA zostać po wyrębie (ziarno 31415) ===');
   }
   ok(keys.length >= 5, 'C0 istotność: mapa 31415 ma co najmniej 5 heksów z lasem', String(keys.length));
 
+  // R-ULEPSZENIA-TARTAK-LAS-ZALEZNOSC-Q1 (2026-09-07): ŚWIADOME ODWRÓCENIE kanonu
+  // "tartak zostaje po wyrębie" -- zgłoszenie właściciela z dowodem zrzutów przed/po
+  // wycince. Tartak teraz znika razem z lasem, dokładnie jak obóz łowiecki (C1/C2
+  // przekotwiczone z "ZOSTAJE" na "ZNIKA").
   place(map, placed, keys[0], ['tartak']);
   A.finalizeHexClearing(keys[0]);
-  ok(JSON.stringify(placed.get(keys[0])) === JSON.stringify(['tartak']),
-    'C1 TARTAK ZOSTAJE po wyrębie (kanon: las zostaje przy tartaku)', JSON.stringify(placed.get(keys[0])));
-  ok(JSON.stringify(map.hexes[keys[0]].ulepszenia) === JSON.stringify(['tartak']),
-    'C2 tartak zostaje też w polach heksa (nie skasowany po cichu)', JSON.stringify(map.hexes[keys[0]].ulepszenia));
+  ok((placed.get(keys[0]) || []).length === 0,
+    'C1 TARTAK ZNIKA po wyrębie (R-ULEPSZENIA-TARTAK-LAS-ZALEZNOSC-Q1, 2026-09-07 -- odwrocenie kanonu)', JSON.stringify(placed.get(keys[0])));
+  ok((map.hexes[keys[0]].ulepszenia || []).length === 0,
+    'C2 tartak znika też z pól heksa (nie zostaje po cichu)', JSON.stringify(map.hexes[keys[0]].ulepszenia));
 
   place(map, placed, keys[1], ['farma']);
   A.finalizeHexClearing(keys[1]);
@@ -250,10 +254,12 @@ console.log('\n=== C. ODWROTNIE: co MA zostać po wyrębie (ziarno 31415) ===');
   ok(JSON.stringify(placed.get(keys[2])) === JSON.stringify(['glinianka']),
     'C4 GLINIANKA ZOSTAJE (warunek = złoże gliny, nie las)', JSON.stringify(placed.get(keys[2])));
 
+  // R-ULEPSZENIA-TARTAK-LAS-ZALEZNOSC-Q1 (2026-09-07): tartak dołączył do oboz_lowiecki
+  // wśród znikających -- C5/C6 przekotwiczone (było: "znika WYŁĄCZNIE obóz").
   place(map, placed, keys[3], ['tartak', 'oboz_lowiecki', 'droga']);
   A.finalizeHexClearing(keys[3]);
-  ok(JSON.stringify(placed.get(keys[3])) === JSON.stringify(['tartak', 'droga']),
-    'C5 heks mieszany: znika WYŁĄCZNIE obóz, kolejność reszty zachowana', JSON.stringify(placed.get(keys[3])));
+  ok(JSON.stringify(placed.get(keys[3])) === JSON.stringify(['droga']),
+    'C5 heks mieszany: znika tartak I obóz (oba leśne, R-ULEPSZENIA-TARTAK-LAS-ZALEZNOSC-Q1), kolejność reszty zachowana', JSON.stringify(placed.get(keys[3])));
   ok(map.hexes[keys[3]].improvementKey === 'droga',
     'C6 heks mieszany: improvementKey przeliczony na ostatnią pozostałą warstwę', String(map.hexes[keys[3]].improvementKey));
 
@@ -311,7 +317,9 @@ console.log('\n=== D. SKALA: 5 map × wszystkie heksy z lasem, ścieżka GRACZA 
   ok(hexy >= 200, 'D0 istotność: próba ma co najmniej 200 heksów z lasem', String(hexy));
   ok(zostalGracz === 0, 'D1 GRACZ: obóz nie został poza lasem na ŻADNYM heksie', String(zostalGracz));
   ok(zostalAI === 0, 'D2 AI: obóz nie został poza lasem na ŻADNYM heksie', String(zostalAI));
-  ok(tartakZostal === tartakOgolem, 'D3 TARTAK został na WSZYSTKICH heksach (kanon)',
+  // R-ULEPSZENIA-TARTAK-LAS-ZALEZNOSC-Q1 (2026-09-07): odwrócenie kanonu -- tartak
+  // teraz znika na WSZYSTKICH heksach po wyrębie, dokładnie jak obóz łowiecki (D1/D2).
+  ok(tartakZostal === 0, 'D3 TARTAK znika na WSZYSTKICH heksach (R-ULEPSZENIA-TARTAK-LAS-ZALEZNOSC-Q1, 2026-09-07 -- odwrocenie kanonu)',
     tartakZostal + '/' + tartakOgolem);
 }
 

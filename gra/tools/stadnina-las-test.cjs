@@ -165,10 +165,11 @@ ok(warstwyPoWyrebie.length === 1,
   'kontrola: wyrab nie dodaje ani nie usuwa nic innego z warstwy stadniny');
 // Kontrola rozroznienia mechanizmow: obóz lowiecki (zalezny OD lasu) NADAL znika identycznie —
 // dowod, ze poprawka nie "wylaczyla" calego mechanizmu wyrebu, tylko dolaczyla stadnine do
-// listy NIEZALEZNYCH od lasu (jak tartak).
+// listy NIEZALEZNYCH od lasu. R-ULEPSZENIA-TARTAK-LAS-ZALEZNOSC-Q1 (2026-09-07, ODWROCENIE
+// kanonu): tartak juz NIE jest niezalezny od lasu -- dolaczyl do oboz_lowiecki wsrod znikajacych.
 const mieszanePoWyrebie = M.stripImprovementsWhenForestRemoved(['stadnina', 'tartak', 'oboz_lowiecki', 'farma']);
 ok(mieszanePoWyrebie.includes('stadnina'), 'GOAL 2 (mix): stadnina przetrwa wsrod innych warstw');
-ok(mieszanePoWyrebie.includes('tartak'), 'kontrola: tartak przetrwa (kanon, niezmieniony)');
+ok(!mieszanePoWyrebie.includes('tartak'), 'kontrola: tartak znika (R-ULEPSZENIA-TARTAK-LAS-ZALEZNOSC-Q1, 2026-09-07 -- odwrocenie kanonu)');
 ok(mieszanePoWyrebie.includes('farma'), 'kontrola: farma NIE jest usuwana TA funkcja (osobny mechanizm, patrz sekcja 4)');
 ok(!mieszanePoWyrebie.includes('oboz_lowiecki'), 'kontrola: oboz lowiecki NADAL znika (zalezny od lasu, temat go nie rusza)');
 

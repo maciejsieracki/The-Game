@@ -247,7 +247,11 @@ ok(!qOverlap('tartak', 4, 0), 'tartak NOT on Sparta-owned forest (territory over
 ok(qOverlap('wyrab', 2, 1), 'wyrab OK on player-owned forest');
 ok(qOverlap('tartak', 2, 1), 'tartak OK on player-owned forest');
 
-ok(M.stripImprovementsWhenForestRemoved(['farma', 'tartak', 'droga']).join(',') === 'farma,tartak,droga', 'tartak stays when forest removed (kanon)');
+// R-ULEPSZENIA-TARTAK-LAS-ZALEZNOSC-Q1 (2026-09-07): ŚWIADOME ODWRÓCENIE poprzedniego
+// kanonu ("tartak stays when forest removed") — zgłoszenie właściciela z dowodem zrzutów
+// ekranu przed/po wycince: tartak wymaga lasu do budowy dokładnie jak obóz łowiecki, więc
+// dla spójności też znika, gdy las znika. Farma/droga (niezależne od lasu) nadal przetrwają.
+ok(M.stripImprovementsWhenForestRemoved(['farma', 'tartak', 'droga']).join(',') === 'farma,droga', 'tartak removed too when forest removed (R-ULEPSZENIA-TARTAK-LAS-ZALEZNOSC-Q1, 2026-09-07 -- odwrocenie kanonu)');
 
 function forestHint(opts = {}) {
   return M.getForestBuildBlockReason({
@@ -339,12 +343,14 @@ ok(!M.isStadninaBlockedOnForest('stadnina', NK.Las), 'stadnina JUZ NIE blokowana
 ok(!M.isStadninaBlockedOnForest('stadnina', NK.Brak), 'stadnina poza lasem nie blokowana');
 ok(!M.isStadninaBlockedOnForest('bydlo', NK.Las), 'predykat stadniny nie lapie bydla');
 ok(!M.isImprovementBlockedOnForest('stadnina', NK.Las), 'las NIE blokuje stadniny (gate commitu, jak glinianka)');
-// Zywy test przetrwania: usuniecie lasu (wyrab) NIE zabiera stadniny z heksa — dokladnie jak
-// tartak, w przeciwienstwie do obozu lowieckiego (kontrola rozroznienia mechanizmow nizej).
+// Zywy test przetrwania: usuniecie lasu (wyrab) NIE zabiera stadniny z heksa (niezalezna
+// od lasu, jak glinianka). R-ULEPSZENIA-TARTAK-LAS-ZALEZNOSC-Q1 (2026-09-07, ODWROCENIE
+// kanonu): tartak JUZ NIE jest kontrola "przetrwa" -- teraz znika razem z oboz_lowiecki,
+// bo oba wymagaja lasu do budowy.
 const stadninaPoWyrebie = M.stripImprovementsWhenForestRemoved(['stadnina', 'tartak', 'oboz_lowiecki']);
 ok(stadninaPoWyrebie.includes('stadnina'), 'stadnina PRZETRWA wyrab lasu (niezalezna od lasu, jak glinianka)');
-ok(stadninaPoWyrebie.includes('tartak'), 'kontrola: tartak przetrwa wyrab (kanon)');
-ok(!stadninaPoWyrebie.includes('oboz_lowiecki'), 'kontrola: oboz lowiecki NADAL znika po wyrebie (inny mechanizm)');
+ok(!stadninaPoWyrebie.includes('tartak'), 'tartak znika po wyrebie (R-ULEPSZENIA-TARTAK-LAS-ZALEZNOSC-Q1, 2026-09-07 -- odwrocenie kanonu "tartak stays")');
+ok(!stadninaPoWyrebie.includes('oboz_lowiecki'), 'kontrola: oboz lowiecki NADAL znika po wyrebie (ten sam mechanizm co tartak teraz)');
 // Zywy test kwalifikacji budowy: heks '3,1' = Laka + Las (zdefiniowany wyzej), gracz ma
 // imperialne odblokowanie Konia (surowiecOdblokowany='kon', symulowane tradeRouteKonUnlocked
 // zeby izolowac regule lasu od reguly zloza — bez tego kazda asercja bylaby tautologiczna, patrz

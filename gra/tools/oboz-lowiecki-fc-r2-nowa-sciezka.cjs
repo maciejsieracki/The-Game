@@ -110,10 +110,12 @@ ok(F_CITY !== null && /cityKeepsImprovement/.test(F_CITY),
     'B3 oboz znika przy zalozeniu miasta na lesie — macierza B, nie nowym filtrem');
   ok(map.hexes[lasKey].nakladka !== Nakladka.Las,
     'B4 las pod miastem faktycznie znika (kanon macierzy B) — a mimo to strip sie nie odpala');
-  // kontrola: gdyby ktos podpial strip do zakladania miasta, tartak by przezyl (bo strip go nie rusza),
-  // ale oboz i tak by znikl — wiec dowodem NIEzmiany jest B1+B2 (tekst) razem z B3 (pomiar).
-  ok(stripImprovementsWhenForestRemoved(prev).includes('tartak'),
-    'B5 kontrola: gdyby strip tu dzialal, tartak by zostal — czyli B3 wynika z macierzy B, nie ze stripa');
+  // R-ULEPSZENIA-TARTAK-LAS-ZALEZNOSC-Q1 (2026-09-07): odwrocenie kanonu -- strip TERAZ
+  // usuwa rowniez tartak (nie tylko oboz), wiec kontrola B5 juz nie moze uzyc tartaku jako
+  // znacznika "strip sie nie odpalil". Dowodem NIEzmiany zostaje B1+B2 (tekst) razem z B3
+  // (pomiar) -- kontrola B5 przeniesiona na `droga`, ktora strip nigdy nie usuwa.
+  ok(stripImprovementsWhenForestRemoved(prev).includes('droga'),
+    'B5 kontrola: gdyby strip tu dzialal, droga (niezalezna od lasu) by zostala — czyli B3 wynika z macierzy B, nie ze stripa');
 }
 
 // ---------------------------------------------------------------- C
@@ -159,14 +161,17 @@ console.log('\n=== E. CZY FILTR NIE JEST ZA SZEROKI — kazdy klucz z danych prz
 {
   const data = JSON.parse(fs.readFileSync(path.resolve(__dirname, '..', 'data', 'terrain-improvements.json'), 'utf8'));
   const keys = Object.keys(data).filter(k => k !== '_meta');
+  // R-ULEPSZENIA-TARTAK-LAS-ZALEZNOSC-Q1 (2026-09-07): odwrocenie kanonu -- strip TERAZ
+  // usuwa DWA klucze (oboz_lowiecki + tartak), nie jeden.
   const usuwane = keys.filter(k => !stripImprovementsWhenForestRemoved([k]).includes(k));
   console.log('  kluczy w terrain-improvements.json: ' + keys.length + ' | usuwane przez strip: ' + JSON.stringify(usuwane));
-  ok(usuwane.length === 1 && usuwane[0] === 'oboz_lowiecki',
-    'E1 strip usuwa DOKLADNIE jeden klucz i jest nim oboz_lowiecki', JSON.stringify(usuwane));
+  ok(usuwane.length === 2 && usuwane.includes('oboz_lowiecki') && usuwane.includes('tartak'),
+    'E1 strip usuwa DOKLADNIE dwa klucze: oboz_lowiecki i tartak (R-ULEPSZENIA-TARTAK-LAS-ZALEZNOSC-Q1)', JSON.stringify(usuwane));
   const wszystko = stripImprovementsWhenForestRemoved(keys);
-  ok(wszystko.length === keys.length - 1 && !wszystko.includes('oboz_lowiecki'),
-    'E2 podanie wszystkich kluczy naraz zabiera dokladnie jeden (brak efektu kolejnosci)');
-  ok(stripImprovementsWhenForestRemoved(['tartak']).includes('tartak'), 'E3 tartak zostaje (kanon)');
+  ok(wszystko.length === keys.length - 2 && !wszystko.includes('oboz_lowiecki') && !wszystko.includes('tartak'),
+    'E2 podanie wszystkich kluczy naraz zabiera dokladnie dwa (brak efektu kolejnosci)');
+  ok(!stripImprovementsWhenForestRemoved(['tartak']).includes('tartak'),
+    'E3 tartak znika (R-ULEPSZENIA-TARTAK-LAS-ZALEZNOSC-Q1, 2026-09-07 -- odwrocenie kanonu)');
   ok(stripImprovementsWhenForestRemoved(['farma']).includes('farma'), 'E4 farma zostaje (swiadomie, osobna decyzja)');
   const dwa = stripImprovementsWhenForestRemoved(['oboz_lowiecki', 'oboz_lowiecki', 'droga']);
   ok(JSON.stringify(dwa) === JSON.stringify(['droga']), 'E5 duplikat klucza tez znika (filtr, nie splice)');

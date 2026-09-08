@@ -545,8 +545,10 @@ async function main() {
       JSON.stringify(hex.ulepszenia ?? null));
   }
 
-  // --- P7-C: TARTAK NIE ZNIKA (kanon) — OSOBNA asercja ---------------------
-  // Łatwo go zgubić pisząc filtr zbyt szeroko: tartak też wymaga Nakladka.Las przy budowie.
+  // --- P7-C: TARTAK ZNIKA (R-ULEPSZENIA-TARTAK-LAS-ZALEZNOSC-Q1, 2026-09-07) --
+  // ŚWIADOME ODWRÓCENIE poprzedniego kanonu "tartak nie znika" -- zgłoszenie właściciela
+  // z dowodem zrzutów ekranu przed/po wycince: tartak wymaga lasu do budowy dokładnie
+  // jak obóz łowiecki, więc dla spójności też znika, gdy las znika.
   {
     const { mp, key } = mkLasHex(2026, predLas);
     ok(!!key, 'P7-C0 warunek istotności: mapa 2026 ma heks z lasem');
@@ -557,15 +559,15 @@ async function main() {
     wyrabGracza(mp, placedT, key);
     console.log(`     [tartak] po wyrębie ${key}: nakladka=${hex.nakladka} placed=${JSON.stringify(placedT.get(key) ?? null)} hex.ulepszenia=${JSON.stringify(hex.ulepszenia ?? null)}`);
     ok(hex.nakladka === Nakladka.Brak, 'P7-C1 warunek istotności: las zdjęty także w tym przebiegu');
-    ok((placedT.get(key) ?? []).includes('tartak'),
-      'P7-C2 TARTAK NIE ZNIKA przy wyrębie (kanon: las zostaje przy tartaku)',
+    ok(!(placedT.get(key) ?? []).includes('tartak'),
+      'P7-C2 TARTAK ZNIKA przy wyrębie (R-ULEPSZENIA-TARTAK-LAS-ZALEZNOSC-Q1, 2026-09-07 -- odwrocenie kanonu)',
       JSON.stringify(placedT.get(key) ?? null));
-    ok((hex.ulepszenia ?? []).includes('tartak'),
-      'P7-C3 tartak zostaje także w polach heksa (nie skasowany po cichu)',
+    ok(!(hex.ulepszenia ?? []).includes('tartak'),
+      'P7-C3 tartak znika także z pól heksa (nie zostaje po cichu)',
       JSON.stringify(hex.ulepszenia ?? null));
   }
 
-  // --- P7-D: heks mieszany — znika WYŁĄCZNIE obóz, reszta bez zmian --------
+  // --- P7-D: heks mieszany — znika tartak I obóz, reszta bez zmian --------
   {
     const { mp, key } = mkLasHex(7, predLas);
     const hex = mp.hexes[key];
@@ -574,15 +576,16 @@ async function main() {
     wyrabGracza(mp, placedMix, key);
     const po = placedMix.get(key) ?? [];
     console.log(`     [mix] po wyrębie ${key}: ${JSON.stringify(po)}`);
-    ok(po.join(',') === 'tartak,droga',
-      'P7-D1 heks mieszany: po wyrębie zostaje dokładnie [tartak, droga] — znika tylko obóz',
+    ok(po.join(',') === 'droga',
+      'P7-D1 heks mieszany: po wyrębie zostaje dokładnie [droga] — znika tartak i obóz (oba leśne, R-ULEPSZENIA-TARTAK-LAS-ZALEZNOSC-Q1)',
       JSON.stringify(po));
   }
 
   // --- P7-E: świadomie NIEUSUWANE, choć Las bywa ich warunkiem -------------
   // farma: Las jest warunkiem tylko na Wzgórzach (isFarmBaseTerrain); kasowanie cudzej farmy
   // to osobna decyzja właściciela (kryt. 6 rundy 1), a kanon trzyma ją w
-  // tools/map-improvement-qualify-test.cjs („tartak stays…" — ta sama asercja obejmuje farmę).
+  // tools/map-improvement-qualify-test.cjs (od 2026-09-07 tartak NIE jest już w tym samym
+  // zbiorze co farma — patrz R-ULEPSZENIA-TARTAK-LAS-ZALEZNOSC-Q1).
   // glinianka: warunkiem jest złoże gliny, nie las.
   {
     const zostaja = M.stripImprovementsWhenForestRemoved(

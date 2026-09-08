@@ -30514,6 +30514,24 @@ async function boot(): Promise<void> {
                     toastLines.push(`${metaWyrab?.nazwa ?? pick.key} @ (${pick.q},${pick.r})`);
                     continue;
                   }
+                  // R-ULEPSZENIA-TARTAK-LAS-ZALEZNOSC-Q1 (2026-09-08, runda 2 — ZARZUT #1
+                  // Evaluatora): analogiczny strażnik jak w komicie AI wyżej. W TEJ pętli
+                  // (automat gracza) nie ma dziś okna wyścigu, które by go uczyniło
+                  // wykonywalnym: jedyne w tej samej turze usunięcie lasu przed tym punktem to
+                  // `tickHexClearing` (linia ~29233, kilkaset linii WCZEŚNIEJ w tej samej
+                  // funkcji EOT niż wywołanie `pickAutoImprovements` ~30441) — `picks` powstaje
+                  // już PO nim, więc widzi aktualną nakładkę. Wewnątrz TEJ pętli wyrąb gracza
+                  // (branch `typ === 'wycinka'` wyżej) NIE usuwa lasu instant — startuje tylko
+                  // wieloturowe `hexClearingStates`/`tickHexClearing`, więc żaden wcześniejszy
+                  // `pick` w tym samym przebiegu nie może ściąć lasu pod kolejnym pickiem w tej
+                  // samej turze. Strażnik dodany mimo to — obronnie, dla parytetu strukturalnego
+                  // ze ścieżką AI i jako zabezpieczenie na wypadek przyszłej zmiany kolejności
+                  // komitów w tej pętli (np. gdyby wyrąb gracza kiedyś też zaczął usuwać las
+                  // instant) — patrz test E1/E2 w tartak-oboz-wyscig-race-test.cjs.
+                  if ((pick.key === 'tartak' || pick.key === 'oboz_lowiecki')
+                    && hexForImprovement.nakladka !== Nakladka.Las) {
+                    continue; // już wycięte (wyścig — obronnie, patrz komentarz wyżej)
+                  }
                   playerPracaPool -= pick.kosztPraca;
                   _lastPraca = playerPracaPool;
                   // R-PRACA-SUWAKI-DUPLIKAT-I-CAP-MIASTO-Q1 (Wątek D): jak wyżej --
@@ -32575,6 +32593,19 @@ async function boot(): Promise<void> {
                       `[AI ${ownerId}] Wycinka @ (${cmd.q},${cmd.r}) (-${koszt} Pracy, +${drewnoCredited} Drewna)`,
                     );
                     continue;
+                  }
+
+                  // R-ULEPSZENIA-TARTAK-LAS-ZALEZNOSC-Q1 (2026-09-07): tartak/oboz_lowiecki
+                  // wymagają lasu DO BUDOWY (qualifies(), improvement-build.ts ~1077/~1095), ale
+                  // plan komitu AI mógł powstać wcześniej w tej samej turze, gdy hex jeszcze miał
+                  // las -- zanim inny komit (wyrąb własny albo innego miasta, patrz strażnik
+                  // `wyrąb` wyżej: "już wycięte (wyścig miast)") zdążył usunąć nakładkę. Bez tej
+                  // ponownej weryfikacji AI stawiało tartak/obóz na hexie bez lasu (zgłoszenie
+                  // właściciela: "system znowu stawia tartak i obóz łowiecki w miejscu, gdzie w
+                  // ogóle nie ma lasu"). Analogiczny strażnik jak przy `wyrab` powyżej.
+                  if ((cmd.key === 'tartak' || cmd.key === 'oboz_lowiecki')
+                    && hexForImprovement.nakladka !== Nakladka.Las) {
+                    continue; // już wycięte (wyścig miast)
                   }
 
                   const prevLayers = placedImprovements.get(hexKey) ?? [];
