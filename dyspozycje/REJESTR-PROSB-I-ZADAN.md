@@ -7285,6 +7285,33 @@ wybiera budowę), `stadnina-las-test.cjs` 28/28, `hex-tooltip-stadnina-kopalnia-
 (`tradeRouteKonUnlocked` zawsze `false` dla AI); tooltip hexa nie pokazuje liczbowo "X/50 koni"
 (zastąpiony czytelnym toastem, który spełnia binarne kryterium).
 
+## `P-WOJNA-EPOKI-NAJTRUDNIEJSZY-NIE-WYBUCHA-Q1` — GAME — **ZINTEGROWANE 2026-09-08** (commit `c966f6b1`)
+
+Wymuszona wojna epoki (Kamień/Brąz/Żelazo) wypowiadana NA GRACZA nie wybuchała na
+najtrudniejszym poziomie trudności — właściciel potwierdził żywym dowodem z własnej
+rozgrywki wiodącą hipotezę: wojna nie wybuchała dopóki strony "się nie poznają" (brak
+kontaktu dyplomatycznego), co określił jako "wytrych"/exploit. Przyczyna: komendy
+wymuszonej wojny epoki celujące w gracza przechodziły przez pełną bramkę `dipLayer`
+("pre_contact", D3-Q2) tak samo jak zwykłe, niewymuszone wypowiedzenia wojny AI —
+mimo że wojna wymuszona ma wybuchać niezależnie od stanu "poznania" stron. Fix:
+nowy klasyfikator `isForcedEpochWarDeclareCmd` routuje takie komendy przez
+`dipLayerIgnoringPlayerFog` zamiast `dipLayer`; dodatkowo napastnik zostaje jawnie
+zarejestrowany jako odkryty (`diplomaticallyDiscoveredOwners`/
+`diplomaticContactEstablished`) w momencie wypowiedzenia wymuszonej wojny na gracza,
+przed `recordWarDeclarationEvent` (naprawia zarzut Evaluatora rundy 1: bez tego
+wojna wybuchała, ale napastnik pozostawał formalnie "nieodkryty"). Nowe bramki:
+`forced-war-player-pre-contact-gate-test.cjs` (45/45, unit, realne funkcje silnika),
+`forced-war-player-no-contact-live-test.cjs` (14/14, żywy Chromium, realny
+`endTurn()`). Final Control: `tsc --noEmit` czysty, 5 bramek referencyjnych zielone,
+18 bramek forced-war/dyplomacji zielone (zero regresji),
+`forced-war-player-target-live-test.cjs` 12/12 (regresja "gracz już poznał").
+`gra/src/game/ai-difficulty-bonus.ts` nietknięte — brak kolizji z równoległym tematem
+`P-MIASTA-ZBYT-BLISKO-SIEBIE-Q1`. Poza zakresem, zarejestrowane jako przyszłe tematy:
+(1) `clusterForceWarTargetId` ma strukturalnie ten sam defekt braku odkrycia;
+(2) degradacja karty wydarzenia wojny w logu do `kind:'info'` przy obcinaniu
+współdzielonej kolejki `deferredEotHints` (kandydat na
+`P-WYDARZENIA-WOJNA-KARTA-PRZYCIETA-Q1`).
+
 ## Nowe zgłoszenia w toku (2026-09-08, jeszcze nie zamknięte)
 
 - `P-MIASTA-ZBYT-BLISKO-SIEBIE-Q1` (GAME) — dispatchowany formalnie (Operator/Evaluator w toku,
@@ -7292,11 +7319,6 @@ wybiera budowę), `stadnina-las-test.cjs` 28/28, `hex-tooltip-stadnina-kopalnia-
   dowód ("URUK — KOLONIA" bezpośrednio przy stolicy) wskazuje na `pickBonusCityHex`
   (`ai-difficulty-bonus.ts`) — bonusowe miasto startowe trudności celowo bierze bezpośredniego
   sąsiada stolicy, pomijając sprawdzenie minimalnego dystansu.
-- `P-WOJNA-EPOKI-NAJTRUDNIEJSZY-NIE-WYBUCHA-Q1` (GAME) — dispatchowany formalnie (Operator/
-  Evaluator w toku, Workflow): wymuszona wojna epoki nie wybucha na najtrudniejszym poziomie.
-  Właściciel POTWIERDZIŁ żywym dowodem z własnej rozgrywki wiodącą hipotezę: wojna nie wybucha
-  dopóki strony "się nie poznają" (brak kontaktu dyplomatycznego) — określił to jako
-  "wytrych"/exploit.
 - Niejasne zgłoszenie właściciela o pustym wierszu "Surowce" w górnym HUD — **WYJAŚNIONE, NIE
   BUG**: to jest świadoma decyzja z 2026-07-24 (`hud.ts`, komentarz "bez liczby na chipie") —
   chip celowo pokazuje tylko ikonę + alert, bez liczby "X/Y", klik otwiera pełny panel
