@@ -317,40 +317,43 @@ async function main() {
   // [4] GRANICA empireUnlocks -- silnik pozwala BEZ lokalnego złoża (odblokowanie imperium),
   //     tooltip świadomie NIE -- udokumentowane jako OCZEKIWANE, nie regresja.
   // ============================================================================================
-  console.log('\n[4] granica: empireUnlocks (stan imperium, nie własność heksu) świadomie POMINIĘTA w tooltipie');
+  // P-STADNINA-KONIE-KOSZT-ROZBUDOWY-Q1 (runda 2): dawny mechanizm "empireUnlocks liczony z
+  // placedImprovements" (stadnina już postawiona na złożu odblokowuje 'kon' empire-wide, DARMO,
+  // wszędzie) jest RETIROWANY dla stadniny (Model B, patrz livestock-unlock.ts). Granica, którą
+  // ta sekcja pilnuje ("silnik zna stan gracza/imperium szerszy niż tooltip"), nadal jest
+  // prawdziwa -- tylko urządzeniem dowodowym jest dziś `horseStockAvailable >= 50` (magazyn
+  // imperium), nie pamięć "już gdzieś zbudowano stadninę".
+  console.log('\n[4] granica: horseStockAvailable (stan imperium, nie własność heksu) świadomie POMINIĘTA w tooltipie');
   {
     const hexCity = mkHex(0, 0, TB.Rownina, NK.Brak, undefined);
-    // Stadnina JUŻ POSTAWIONA na złożu konia gdzie indziej w imperium -- odblokowuje 'kon' empire-wide.
-    const hexDepositBuilt = mkHex(5, 0, TB.Rownina, NK.ZlozeKonia, undefined);
-    hexDepositBuilt.ulepszenie = 'stadnina';
     // Heks testowy -- BEZ lokalnego złoża konia -- jedyny sposób, by silnik i tak pozwolił, to
-    // odblokowanie imperium z hexDepositBuilt.
+    // magazyn imperium >= 50 'kon' (dowieziony przez wołającego, patrz horseStockAvailable niżej).
     const hexNoDeposit = mkHex(10, 0, TB.Rownina, NK.Brak, undefined);
 
     const map = {
       hexes: {
         '0,0': hexCity,
-        '5,0': hexDepositBuilt,
         '10,0': hexNoDeposit,
       },
       riverPaths: [],
       startPositions: [{ q: 0, r: 0 }],
     };
-    const cityNodes = [{ q: 0, r: 0, pop: 5, level: 3 }, { q: 5, r: 0, pop: 5, level: 3 }, { q: 10, r: 0, pop: 5, level: 3 }];
+    const cityNodes = [{ q: 0, r: 0, pop: 5, level: 3 }, { q: 10, r: 0, pop: 5, level: 3 }];
     const territoryNodes = [
       { q: 0, r: 0, pop: 5, level: 3, ownerId: 0 },
-      { q: 5, r: 0, pop: 5, level: 3, ownerId: 0 },
       { q: 10, r: 0, pop: 5, level: 3, ownerId: 0 },
     ];
-    const qualifies = buildImprovementQualifier({ map, cityNodes, territoryNodes, playerOwnerIdNum: 0 });
+    const qualifies = buildImprovementQualifier({
+      map, cityNodes, territoryNodes, playerOwnerIdNum: 0, horseStockAvailable: 50,
+    });
 
-    const engineAllowsViaEmpireUnlock = qualifies('stadnina', 10, 0);
-    assert(engineAllowsViaEmpireUnlock === true,
-      '[4] kontrola: SILNIK pozwala budować stadninę BEZ lokalnego złoża, bo imperium ma już odblokowane \'kon\' (empireUnlocks) -- to realne zachowanie createQualifier(), nie założenie');
+    const engineAllowsViaEmpireStock = qualifies('stadnina', 10, 0);
+    assert(engineAllowsViaEmpireStock === true,
+      '[4] kontrola: SILNIK pozwala budować stadninę BEZ lokalnego złoża, bo magazyn imperium ma >= 50 \'kon\' (horseStockAvailable) -- to realne zachowanie createQualifier(), nie założenie');
 
     const tooltipShowsWithoutLocalDeposit = tooltipShows(hexNoDeposit, 'Stadnina');
     assert(tooltipShowsWithoutLocalDeposit === false,
-      '[4] OCZEKIWANE (nie regresja): tooltip NIE pokazuje Stadniny na heksie bez lokalnego złoża, mimo że silnik by na to pozwolił -- empireUnlocks to stan imperium, świadomie pominięty w hex-property-only tooltipie (jak terytorium/tech)');
+      '[4] OCZEKIWANE (nie regresja): tooltip NIE pokazuje Stadniny na heksie bez lokalnego złoża, mimo że silnik by na to pozwolił -- horseStockAvailable to stan imperium, świadomie pominięty w hex-property-only tooltipie (jak terytorium/tech)');
 
     // Kontrola: NA SAMYM hexDepositBuilt (z lokalnym złożem) tooltip i silnik zgadzają się --
     // granica dotyczy WYŁĄCZNIE braku lokalnego złoża + odblokowania gdzie indziej.

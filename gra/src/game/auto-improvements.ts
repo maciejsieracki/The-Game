@@ -511,6 +511,29 @@ export function pickAutoImprovements(opts: PickAutoImprovementsOpts): AutoImprov
     }
   }
 
+  // P-STADNINA-KONIE-KOSZT-ROZBUDOWY-Q1 (runda 3, decyzja orkiestratora Zarzut 2): TEN SAM
+  // odczyt magazynu 'kon' imperium co main.ts::citySurowceSumForOwner/refreshBuildApi
+  // (symetrycznie do gracza) — żeby AI/automat miasta mogło budować stadninę POZA złożem konia
+  // gdy magazyn imperium ma >= STADNINA_HORSE_COST (50), zamiast trwale tracić tę zdolność po
+  // retirowaniu Modelu B (livestock-unlock.ts, runda 2). `cities` tu to ZAWSZE realne obiekty
+  // `City` (game/cities.ts) zawężone przez wołającego do JEDNEGO ownera (main.ts:
+  // `autoImpCities` filtrowane po `c.ownerId === hOid`; ai.ts: `myCities`, komentarz tamże:
+  // "AutoImprovementCity jest tylko WĘŻSZYM widokiem tego samego obiektu") — `AutoImprovementCity`
+  // po prostu nie deklaruje pola `surowce` w swoim (węższym) typie, mimo że ono tam jest w
+  // runtime. Sumowanie PO `ownerId === ownerId` (defensywnie, na wypadek gdyby wołający kiedyś
+  // przekazał mieszaną listę) — bez zmiany sygnatury `pickAutoImprovements` ani wołających
+  // (main.ts/ai.ts), więc naprawa mieści się WYŁĄCZNIE w tym pliku (allowlista rundy 3).
+  const horseStockAvailable = cities.reduce((sum, c) => {
+    if (c.ownerId !== ownerId) return sum;
+    const surowce = (c as unknown as { surowce?: Record<string, number> }).surowce;
+    return sum + (surowce?.kon ?? 0);
+  }, 0);
+  // `tradeRouteKonUnlocked` (Temat #4, trasa handlowa) NIE jest dziś derywowalne z samych
+  // `AutoImprovementCity`/`cities` — wymagałoby dowiezienia `tradeRouteResourceGrants` przez
+  // wołającego (main.ts/ai.ts, POZA allowlistą tej rundy). Zostaje `false` (bezpieczny domyślny,
+  // TAKI SAM jak zachowanie AI PRZED tą rundą — brak regresji, tylko brak jeszcze tej DRUGIEJ,
+  // niezależnej ścieżki darmowego dostępu dla automatu; osobny wąski dodatek jeśli właściciel
+  // zechce równości również na tym torze).
   const state: ImprovementBuildState = {
     map,
     cityNodes: cities.map(c => ({ q: c.q, r: c.r, pop: c.population, level: 1 })),
@@ -520,6 +543,8 @@ export function pickAutoImprovements(opts: PickAutoImprovementsOpts): AutoImprov
     researchedTechs: unlockedTechs,
     playerCivArchetype: civArchetype,
     playerEra,
+    horseStockAvailable,
+    tradeRouteKonUnlocked: false,
   };
   const qualifies = buildImprovementQualifier(state);
 

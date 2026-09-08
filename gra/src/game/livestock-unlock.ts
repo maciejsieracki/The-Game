@@ -131,19 +131,45 @@ export function computeEmpireLivestockUnlocks(
 }
 
 /**
- * Model B (Maciej 2026-07-09): hodowla (Pastwisko/Owczarnia/Zagroda lam) = CZYSTE ulepszenie
- * budowane jak farma — BEZ złoża/„zarodka" (złoża zwierzęce usunięte z mapy). Tylko KOŃ zostaje
- * surowcem: stadnina wymaga złoża konia LUB imperialnego odblokowania 'kon'.
+ * Koszt jednorazowy (w sztukach 'kon' z magazynu imperium) za każdą stadninę POZA złożem
+ * konia — P-STADNINA-KONIE-KOSZT-ROZBUDOWY-Q1 (runda 2, liczba jawna właściciela). NIE jest
+ * to stała bramka odblokowania: każda kolejna stadnina poza złożem płaci OSOBNE 50.
+ */
+export const STADNINA_HORSE_COST = 50;
+
+/**
+ * Model B (Maciej 2026-07-09) BYŁO: hodowla (Pastwisko/Owczarnia/Zagroda lam) = CZYSTE
+ * ulepszenie budowane jak farma — BEZ złoża/„zarodka". Tylko KOŃ zostawał surowcem: stadnina
+ * wymagała złoża konia LUB imperialnego odblokowania 'kon' — RAZ zbudowana na złożu odblokowywała
+ * WSZYSTKIE kolejne stadniny DARMO, gdziekolwiek w imperium.
+ *
+ * P-STADNINA-KONIE-KOSZT-ROZBUDOWY-Q1 (runda 2, 2026-09-08, ODWRÓCENIE WYŁĄCZNIE dla stadniny):
+ * ten darmowy-po-pierwszej-stadninie mechanizm (dawne `empireUnlocks.has('kon')` liczone przez
+ * `computeEmpireLivestockUnlocks` z `placedImprovements`) jest RETIROWANY — właściciel wprost:
+ * "musimy zapłacić 50 koni [...] Gdy w surowcach będzie 50 koni, można postawić stadninę".
+ * Zastąpione: (a) złoże konia NA TYM heksie — bez zmian, zawsze darmowe; (b) aktualny stan
+ * magazynu imperium (`horseStockAvailable`, dowożony przez wołającego z tego samego odczytu co
+ * `citySurowceSumForOwner`/panel Surowców) >= STADNINA_HORSE_COST W CHWILI sprawdzania —
+ * odjęcie 50 następuje osobno, przy realnym potwierdzeniu budowy (main.ts::commitBuildRequest),
+ * NIE tutaj (ta funkcja jest czystym predykatem, wołanym wielokrotnie do samego sprawdzania
+ * czy przycisk ma być aktywny); (c) `tradeRouteKonUnlocked` (Temat #4 „Handel E3b", odrębny,
+ * już wcześniej wdrożony mechanizm — aktywna trasa handlowa z cywilizacją mającą dostęp do konia)
+ * ZOSTAJE bez zmian jako NIEZALEŻNA, wcześniej zaakceptowana ścieżka darmowego dostępu — nie jest
+ * to część Modelu B retirowanego tym tematem, tylko osobna funkcja gry (patrz
+ * docs/encyklopedia/pojecia/szlaki-handlowe.md — "Dostęp do surowców przez trasę").
  * (Bramka cywilizacji/epoki jest osobno w isLivestockAllowed.)
  */
 export function isLivestockUnlockedForPlacement(
   improvementKey: string,
   hex: { nakladka?: Nakladka },
-  empireUnlocks: ReadonlySet<LivestockKey>,
+  tradeRouteKonUnlocked: boolean,
+  horseStockAvailable: number,
 ): boolean {
   const norm = normalizeImprovementKey(improvementKey) ?? improvementKey;
   if (norm === 'stadnina') {
-    return hexHasHorseDeposit(hex) || empireUnlocks.has('kon');
+    return hexHasHorseDeposit(hex)
+      || tradeRouteKonUnlocked
+      || horseStockAvailable >= STADNINA_HORSE_COST;
   }
   return true; // bydlo/owce/lama — bez wymogu złoża
 }

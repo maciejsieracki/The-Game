@@ -124,7 +124,11 @@ console.log('\nAC-E3: Model B — bydlo bez złoża (aktywny dostęp lokalny)');
     { ownerId: 'p1' },
   );
   ok(access.includes('Trzoda (krowa/świnia)'), 'Model B: bydlo w zasięgu → active Trzoda');
-  ok(M.isLivestockUnlockedForPlacement('bydlo', map.hexes['1,0'], new Set()), 'bydlo bez unlock — zawsze dozwolone');
+  // P-STADNINA-KONIE-KOSZT-ROZBUDOWY-Q1 (runda 2): sygnatura isLivestockUnlockedForPlacement
+  // zmieniona z (key, hex, empireUnlocks:Set) na (key, hex, tradeRouteKonUnlocked:boolean,
+  // horseStockAvailable:number) — bydlo ignoruje oba (zawsze true), więc test bez zmian
+  // znaczeniowych, tylko dopasowana sygnatura.
+  ok(M.isLivestockUnlockedForPlacement('bydlo', map.hexes['1,0'], false, 0), 'bydlo bez unlock — zawsze dozwolone');
 }
 
 console.log('\nAC-E4: Inkowie era<3');

@@ -120,22 +120,30 @@ const map = { hexes, riverPaths: [], startPositions: [{ q: 0, r: 0 }] };
 const cityNodes = [{ q: 0, r: 0, pop: 10, level: 1 }];
 const territoryNodes = Object.values(hexes).map(h => ({ q: h.coords.q, r: h.coords.r, pop: 10, level: 1, ownerId: 0 }));
 
-// Imperium ma JUŻ stadninę na złożu konia — empireUnlocks.has('kon') liczony PRODUKCYJNIE
-// przez computeEmpireLivestockUnlocks (main.ts robi dokładnie to samo w createQualifier).
+// Imperium ma JUŻ stadninę na złożu konia.
+// P-STADNINA-KONIE-KOSZT-ROZBUDOWY-Q1 (runda 2): dawne "empireUnlocks.has('kon') liczony
+// PRODUKCYJNIE przez computeEmpireLivestockUnlocks" (Model B — pierwsza stadnina na złożu
+// odblokowuje WSZYSTKIE kolejne DARMO) jest RETIROWANE dla stadniny. Warunek istotności tej
+// bramki (izolacja reguły lasu od reguły złoża/kosztu — patrz nagłówek pliku) jest teraz
+// dostarczany przez `horseStockAvailable: 50` (magazyn imperium W CHWILI sprawdzania), NIE
+// przez pamięć "już gdzieś zbudowano stadninę".
 const placedImprovements = new Map([['0,0', ['stadnina']]]);
 
 function qual() {
   return M.buildImprovementQualifier({
     map, cityNodes, territoryNodes, playerOwnerIdNum: 0,
     playerCivArchetype: 'rzym', playerEra: 1, placedImprovements,
+    horseStockAvailable: 50,
   });
 }
 
-console.log('\n--- (0) warunek istotnosci: imperium MA odblokowanego Konia ---');
-const empireUnlocks = M.computeEmpireLivestockUnlocks(placedImprovements, map, null);
-ok(empireUnlocks.has('kon'), 'computeEmpireLivestockUnlocks (SCIEZKA PRODUKCYJNA) odblokowuje kon ze zloza + stadniny');
-ok(M.isLivestockUnlockedForPlacement('stadnina', FOREST_HEX, empireUnlocks),
-  'isLivestockUnlockedForPlacement: stadnina bez zloza NA TYM hexie, ale imperium ma kon');
+console.log('\n--- (0) warunek istotnosci: imperium MA >= 50 koni w magazynie ---');
+ok(M.isLivestockUnlockedForPlacement('stadnina', FOREST_HEX, false, 50),
+  'isLivestockUnlockedForPlacement: stadnina bez zloza NA TYM hexie, magazyn >= 50 kon');
+ok(!M.isLivestockUnlockedForPlacement('stadnina', FOREST_HEX, false, 49),
+  'KONTROLA runda 2: magazyn < 50 (bez zloza, bez trasy) juz NIE odblokowuje stadniny (Model B retirowany)');
+ok(M.isLivestockUnlockedForPlacement('stadnina', FOREST_HEX, true, 0),
+  'KONTROLA runda 2: tradeRouteKonUnlocked (Temat #4, osobna sciezka) nadal odblokowuje za darmo bez zmian');
 
 console.log('\n--- (1) KRYTERIUM 1: kwalifikacja budowy na Laka/Rownina + Las ---');
 const q = qual();

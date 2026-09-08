@@ -12537,6 +12537,11 @@ async function boot(): Promise<void> {
           // Temat #4: Stadnina bez własnego złoża konia, gdy gracz ma aktywny
           // grant "z trasy" na Konia (patrz ImprovementBuildState.tradeRouteKonUnlocked).
           tradeRouteKonUnlocked: hasTradeRouteResourceAccess(tradeRouteResourceGrants, 0, 'kon'),
+          // P-STADNINA-KONIE-KOSZT-ROZBUDOWY-Q1 (runda 2): stan magazynu 'kon' imperium W
+          // CHWILI sprawdzania — ten sam odczyt co citySurowceSumForOwner/panel Surowców —
+          // dowieziony do bramki qualifies()/isLivestockUnlockedForPlacement (koszt 50 poza
+          // złożem konia, patrz commitBuildRequest niżej dla realnego odjęcia przy budowie).
+          horseStockAvailable: citySurowceSumForOwner(0).kon ?? 0,
           // R-FORT-STRAZNICA-ROZSZERZA-ZASIEG-ZAKLADANIA krok 2, Q1=B doprecyzowanie:
           // wymóg fizycznej obecności WŁASNEJ jednostki przy budowie fort/posterunek
           // POZA własnym terytorium.
@@ -12937,8 +12942,36 @@ async function boot(): Promise<void> {
         return;
       }
 
+      // P-STADNINA-KONIE-KOSZT-ROZBUDOWY-Q1 (runda 2): stadnina POZA złożem konia wymaga
+      // zapłaty 50 'kon' z magazynu imperium (jednorazowo, PER postawiona stadnina — NIE stała
+      // bramka odblokowania, każda kolejna płaci osobne 50). Na złożu konia (Nakladka.ZlozeKonia)
+      // — bez zmian, zawsze darmowa, zero warunku magazynu. Ten sam magazyn co czyta panel
+      // Surowców / citySurowceSumForOwner (SUROW-CIV-01). Bramka `qualifies()`
+      // (map/improvement-build.ts) już nie powinna była dopuścić kliku bez pokrycia — ten
+      // warunek jest DEFENSYWNY (drugi punkt kontroli tuż przed realną mutacją magazynu),
+      // wzorem istniejącego zapasowego komunikatu Pracy tuż wyżej.
+      const stadninaPozaZlozem = req.key === 'stadnina' && hex.nakladka !== Nakladka.ZlozeKonia;
+      if (stadninaPozaZlozem) {
+        const horseStockNow = citySurowceSumForOwner(0).kon ?? 0;
+        if (horseStockNow < 50) {
+          showHintMessage(
+            'Za mało koni: potrzeba 50, masz ' + Math.floor(horseStockNow)
+              + ' — stadnina poza złożem konia kosztuje 50 koni z magazynu imperium.',
+            4500,
+          );
+          return;
+        }
+      }
+
       playerPracaPool -= req.kosztPraca;
       _lastPraca = playerPracaPool;
+
+      if (stadninaPozaZlozem) {
+        // Odjęcie DOKŁADNIE 50 'kon' — ten sam wzorzec mutacji magazynu (rozproszony po
+        // miastach ownera) co deductBuildingStockCostAcrossCities gdzie indziej w tym pliku
+        // (koszt_surowce budynków), nie osobna, równoległa ścieżka.
+        deductBuildingStockCostAcrossCities(cities, 0, { kon: 50 });
+      }
 
       const rm = new Set(impact.removedImprovements);
       const prev = (placedImprovements.get(req.hexKey) ?? []).filter(k => !rm.has(k));
@@ -22236,6 +22269,41 @@ async function boot(): Promise<void> {
       // Czyta REALNY `hexClearingStates` (ten sam Map co w `applyBuildRequest`) — dowód,
       // że wycinka faktycznie wystartowała (nie cichy no-op).
       isClearing: (q: number, r: number): boolean => hexClearingStates.has(`${q},${r}`),
+      // P-STADNINA-KONIE-KOSZT-ROZBUDOWY-Q1 (runda 3, decyzja orkiestratora Zarzut 1):
+      // DOKŁADNIE dwie nowe metody testowe dopisane do tego samego, już-scalonego obiektu,
+      // wzorem `forceCopperDeposit`/`forceForestNoDeposit` powyżej.
+      // Setter magazynu 'kon' imperium: ustawia SUMĘ 'kon' widzianą przez
+      // `citySurowceSumForOwner(ownerId)` (ten sam odczyt co realny `commitBuildRequest`/
+      // `ImprovementBuildState.horseStockAvailable`) na DOKŁADNIE `amount` — zeruje 'kon' we
+      // wszystkich miastach ownera poza pierwszym, po czym ustawia 'kon' pierwszego miasta na
+      // `amount`. Deterministyczne dla żywej bramki, bez potrzeby symulowania handlu/produkcji.
+      setCityKonStock: (ownerId: number, amount: number): boolean => {
+        const ownerCities = cities.filter(c => c.ownerId === ownerId);
+        if (ownerCities.length === 0) return false;
+        ownerCities.forEach((c, i) => {
+          c.surowce = c.surowce ?? {};
+          c.surowce.kon = i === 0 ? amount : 0;
+        });
+        return true;
+      },
+      // Wymusza złoże konia (`Nakladka.ZlozeKonia`) na WSKAZANYM heksie — REALNY test wyjątku
+      // złożowego `hexHasHorseDeposit`/`isLivestockUnlockedForPlacement` (ta sama funkcja co
+      // bramka budowy gracza i automat AI).
+      forceHorseDeposit: (q: number, r: number): boolean => {
+        const h = map.hexes[`${q},${r}`];
+        if (!h) return false;
+        h.nakladka = Nakladka.ZlozeKonia;
+        return true;
+      },
+      // Wymusza BRAK złoża konia (heks „poza złożem") na WSKAZANYM heksie — żeby test mógł
+      // dowieść realnego odjęcia 50 'kon' przy `commitBuildRequest` (koszt dotyczy WYŁĄCZNIE
+      // stadniny poza złożem).
+      forceNoHorseDeposit: (q: number, r: number): boolean => {
+        const h = map.hexes[`${q},${r}`];
+        if (!h) return false;
+        if (h.nakladka === Nakladka.ZlozeKonia) h.nakladka = Nakladka.Brak;
+        return true;
+      },
       unlockAllTech: (): void => {
         player.zbadane = new Set(data.tech.map(t => t.Technologia as string));
       },

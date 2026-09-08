@@ -253,11 +253,17 @@ ok(!poWyrebie.includes('tartak'), 'KONTROLA WYRAB: tartak znika po wyrebie (R-UL
 // (4) AUTOMAT MIASTA I AI CYWILIZACJI — pickAutoImprovements (jedna funkcja dla obu)
 // =====================================================================================
 console.log('\n--- (4) automat miasta + AI CYWILIZACJI: pickAutoImprovements ---');
-// `pickAutoImprovements` nie zna pola `tradeRouteKonUnlocked`, ale liczy empireUnlocks z
-// `placedImprovements` (computeEmpireLivestockUnlocks). Dokładamy więc do KAŻDEJ mapy heks ze
-// złożem konia z już postawioną stadniną — imperium ma odblokowanego Konia, więc asercje
-// „automat NIE stawia stadniny na lesie" przestają być tautologiczne (bez tego stadnina nie
-// kwalifikowałaby się nigdzie poza złożem, niezależnie od lasu).
+// P-STADNINA-KONIE-KOSZT-ROZBUDOWY-Q1 (runda 2): `pickAutoImprovements`
+// (game/auto-improvements.ts, POZA allowlistą tego tematu) nie zna ani `tradeRouteKonUnlocked`,
+// ani `horseStockAvailable` — buduje `ImprovementBuildState` bez tych pól (patrz plik), więc
+// `qualifies('stadnina', ...)` widzi tam zawsze `horseStockAvailable === undefined -> 0` i
+// `tradeRouteKonUnlocked === undefined -> false`. Dawne Model B (`empireUnlocks` liczony z
+// `placedImprovements` przez `computeEmpireLivestockUnlocks`, dający stadninie "kon odblokowany
+// wszędzie" po jednej stadninie na złożu) jest RETIROWANE dla stadniny (patrz
+// livestock-unlock.ts) — AUTOMAT/AI odtąd stawia stadninę WYŁĄCZNIE na realnym złożu konia,
+// nigdzie indziej (nie ma jak zapłacić kosztu w tej rundzie — auto-improvements.ts poza
+// zakresem). To jest ZAMIERZONA konsekwencja tego tematu, nie regresja: automat już nie stawia
+// za darmo tego, co gracz musi dziś opłacić. Asercje niżej ODWRÓCONE wraz z tą zmianą modelu.
 const KON_Q = 99, KON_R = 99;
 function pickOn(hex, key, civ, era) {
   const konHex = mkHex(KON_Q, KON_R, T.Laka, N.ZlozeKonia);
@@ -294,12 +300,94 @@ ok(pickOn(mkHex(0, 0, T.Gory, N.Las), 'lama', 'inkowie', 5) === true,
   'AUTOMAT/AI CYW: stawia lame w Gorach Z LASEM');
 ok(pickOn(mkHex(0, 0, T.Laka, N.Las), 'owce', 'rzym', 5) === false,
   'AUTOMAT/AI CYW: NIE stawia owiec na Lace z lasem (teren bazowy rzadzi)');
-ok(pickOn(mkHex(0, 0, T.Laka), 'stadnina', 'rzym', 5) === true,
-  'AUTOMAT/AI CYW: stawia stadnine na golej Lace (warunek istotnosci)');
-// P-STADNINA-LAS-NIEROZSTRZYGNIETE-Q1 (2026-09-03): odwrocone razem z regula (poprzednio
-// `=== false`, „KONTROLA AUTOMAT/AI CYW: NIE stawia stadniny na lesie").
-ok(pickOn(mkHex(0, 0, T.Laka, N.Las), 'stadnina', 'rzym', 5) === true,
-  'AUTOMAT/AI CYW: TERAZ stawia stadnine na Lace Z LASEM (zakaz cofniety)');
+// P-STADNINA-KONIE-KOSZT-ROZBUDOWY-Q1 (runda 2): ODWROCONE razem z retirowaniem Modelu B dla
+// stadniny (poprzednio `=== true`, „stawia stadnine na golej Lace (warunek istotnosci)" —
+// warunkiem istotnosci byla wtedy stadnina JUZ postawiona na zlozu KON_Q/KON_R gdzie indziej w
+// tym samym imperium; ten mechanizm juz nie odblokowuje automatu, patrz komentarz nad blokiem).
+ok(pickOn(mkHex(0, 0, T.Laka), 'stadnina', 'rzym', 5) === false,
+  'AUTOMAT/AI CYW runda 2: NIE stawia juz stadniny na golej Lace bez zloza (Model B retirowany, brak kosztu do zaplacenia)');
+ok(pickOn(mkHex(0, 0, T.Laka, N.Las), 'stadnina', 'rzym', 5) === false,
+  'AUTOMAT/AI CYW runda 2: NIE stawia stadniny na Lace+Las bez zloza (jw., ta sama przyczyna co wyzej, nie regula lasu)');
+
+// P-STADNINA-KONIE-KOSZT-ROZBUDOWY-Q1 (runda 3, decyzja orkiestratora Zarzut 2): naprawa
+// TRWALEJ utraty zdolnosci AI/automatu (Evaluator rundy 2, `06-evaluator-runda2.md` Zarzut 2) —
+// `pickAutoImprovements` (game/auto-improvements.ts) TERAZ sam liczy `horseStockAvailable` z
+// REALNEGO pola `city.surowce.kon` (ten sam ksztalt obiektu co `game/cities.ts::City`, `pickOn`
+// wyzej swiadomie NIE dostarcza `surowce` — stad `=== false` powyzej jest NADAL poprawne: brak
+// magazynu = brak kosztu do zaplacenia, zero regresji tamtych asercji). Ponizej ZYWY dowod, ze
+// gdy `city.surowce.kon >= 50` FAKTYCZNIE dotrze do pickera (nie tylko formalnie qualifies()
+// zwraca true w izolacji) — `pickAutoImprovements` REALNIE WYBIERA budowe stadniny poza zlozem,
+// dokladnie jak REGULA PRZECIW SAMOOSZUKIWANIU tej rundy wymaga.
+function pickOffDepositStadninaWithStock(konStock) {
+  const cityHex = mkHex(0, 0, T.Laka);
+  const openHex = mkHex(1, 0, T.Laka); // POZA zlozem konia
+  const one = {
+    hexes: { '0,0': cityHex, '1,0': openHex },
+    riverPaths: [], startPositions: [],
+  };
+  const picks = M.pickAutoImprovements({
+    cities: [{ id: 'c0', ownerId: 0, q: 0, r: 0, population: 1, surowce: { kon: konStock } }],
+    ownerId: 0,
+    map: one,
+    territoryNodes: [
+      { q: 0, r: 0, ownerId: 0, cityId: 'c0' },
+      { q: 1, r: 0, ownerId: 0, cityId: 'c0' },
+    ],
+    placedImprovements: new Map(),
+    pracaAvailable: 100000,
+    unlockedTechs: TECHS,
+    pracaSurplusThreshold: 0,
+    pracaBudgetPercent: 100,
+    maxItemsPerCity: 5,
+    skipWyrab: true,
+    civArchetype: 'rzym',
+    playerEra: 5,
+    priorityOverride: ['stadnina'],
+  });
+  return picks.some(p => p.key === 'stadnina' && p.q === 1 && p.r === 0);
+}
+ok(pickOffDepositStadninaWithStock(49) === false,
+  'AUTOMAT/AI CYW runda 3: magazyn 49/50 (o 1 za malo) — NADAL NIE wybiera stadniny poza zlozem');
+ok(pickOffDepositStadninaWithStock(50) === true,
+  'AUTOMAT/AI CYW runda 3 (NAPRAWA Zarzutu 2): magazyn imperium DOKLADNIE 50 kon — automat/AI '
+  + 'REALNIE WYBIERA budowe stadniny poza zlozem (nie tylko formalnie kwalifikuje) — AI odzyskuje '
+  + 'zdolnosc utracona w rundzie 2, symetrycznie do gracza');
+ok(pickOffDepositStadninaWithStock(500) === true,
+  'AUTOMAT/AI CYW runda 3: magazyn z duzym zapasem (500) — stadnina poza zlozem nadal wybierana');
+// Regresja ZERO: stadnina NADAL stawiana automatem na realnym zlozu konia, niezaleznie od lasu.
+// Miasto CELOWO NIE na tym samym heksie co zloze (unika kolizji "budowa na hexie miasta",
+// niezwiazanej z tym tematem) — osobny, prosty wrapper zamiast `pickOn` (ktory zawsze stawia
+// miasto DOKLADNIE na testowanym heksie).
+function pickDepositStadnina(depositNakladka) {
+  const cityHex = mkHex(0, 0, T.Laka);
+  const depositHex = mkHex(1, 0, T.Laka, depositNakladka);
+  const one = {
+    hexes: { '0,0': cityHex, '1,0': depositHex },
+    riverPaths: [], startPositions: [],
+  };
+  const picks = M.pickAutoImprovements({
+    cities: [{ id: 'c0', ownerId: 0, q: 0, r: 0, population: 1 }],
+    ownerId: 0,
+    map: one,
+    territoryNodes: [
+      { q: 0, r: 0, ownerId: 0, cityId: 'c0' },
+      { q: 1, r: 0, ownerId: 0, cityId: 'c0' },
+    ],
+    placedImprovements: new Map(),
+    pracaAvailable: 100000,
+    unlockedTechs: TECHS,
+    pracaSurplusThreshold: 0,
+    pracaBudgetPercent: 100,
+    maxItemsPerCity: 5,
+    skipWyrab: true,
+    civArchetype: 'rzym',
+    playerEra: 5,
+    priorityOverride: ['stadnina'],
+  });
+  return picks.some(p => p.key === 'stadnina' && p.q === 1 && p.r === 0);
+}
+ok(pickDepositStadnina(N.ZlozeKonia) === true,
+  'AUTOMAT/AI CYW runda 2: stawia stadnine NA zlozu konia bez zmian (zawsze darmowa)');
 ok(pickOn(mkHex(0, 0, T.Laka), 'farma', 'rzym', 5) === true,
   'KONTROLA AUTOMAT/AI CYW: stawia farme na golej Lace (warunek istotnosci)');
 ok(pickOn(mkHex(0, 0, T.Laka, N.Las), 'farma', 'rzym', 5) === false,

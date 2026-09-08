@@ -22,7 +22,6 @@ import { hexKeysWithinRadius } from '../game/okolica';
 import { isWaterTerrain } from '../units/setup';
 import terrainImprovements from '../../data/terrain-improvements.json';
 import {
-  computeEmpireLivestockUnlocks,
   isLivestockAllowed,
   isLivestockUnlockedForPlacement,
   livestockKeyFromImprovement,
@@ -81,6 +80,17 @@ export interface ImprovementBuildState {
    * playerOwnerIdNum, 'kon')) — ten moduł nie zna tras handlowych.
    */
   tradeRouteKonUnlocked?: boolean;
+  /**
+   * P-STADNINA-KONIE-KOSZT-ROZBUDOWY-Q1 (runda 2): stan magazynu 'kon' IMPERIUM (civ-wide,
+   * ten sam odczyt co `citySurowceSumForOwner`/panel Surowców w main.ts) W CHWILI sprawdzania —
+   * bramka `qualifies()` dla `stadnina` POZA złożem konia wymaga >= STADNINA_HORSE_COST (50)
+   * (livestock-unlock.ts). Brak pola / undefined = 0 (bezpieczny domyślny — brak dowiezionego
+   * stanu magazynu NIGDY nie odblokowuje budowy za darmo). Retiruje dawne Model B
+   * (`empireUnlocks.has('kon')` z `computeEmpireLivestockUnlocks(placedImprovements)`) WYŁĄCZNIE
+   * dla stadniny — `tradeRouteKonUnlocked` wyżej zostaje osobną, wcześniej zaakceptowaną ścieżką
+   * darmowego dostępu (Temat #4), bez zmian.
+   */
+  horseStockAvailable?: number;
   /**
    * R-FORT-STRAZNICA-ROZSZERZA-ZASIEG-ZAKLADANIA krok 2, Q1=B doprecyzowanie
    * (Maciej 2026-08-09): klucze "q,r" heksow, na ktorych aktualnie stoi WLASNA
@@ -912,15 +922,14 @@ function createQualifier(state: ImprovementBuildState) {
   const ownUnitHexKeys = state.ownUnitHexKeys ?? new Set<string>();
   const riverHexSet = buildRiverHexSet(map);
   const placedMap = buildPlacedImprovementsMap(map, state.placedImprovements);
-  const empireUnlocks = computeEmpireLivestockUnlocks(
-    placedMap as ReadonlyMap<string, string | readonly string[]>,
-    map,
-    state.playerOwnerId,
-  );
-  // Temat #4: grant "z trasy handlowej" dolicza się do własnego odblokowania —
-  // OR, nie substytut (własny grant zawsze wygrywa, trasa tylko dokłada 'kon'
-  // gdy jeszcze go nie ma).
-  if (state.tradeRouteKonUnlocked) empireUnlocks.add('kon');
+  // P-STADNINA-KONIE-KOSZT-ROZBUDOWY-Q1 (runda 2): dawne `empireUnlocks` (Model B —
+  // computeEmpireLivestockUnlocks(placedMap) dającе "kon" na stałe po pierwszej stadninie na
+  // złożu) RETIROWANE dla stadniny — isLivestockUnlockedForPlacement dziś sprawdza realny stan
+  // magazynu (horseStockAvailable) + osobną ścieżkę tradeRouteKonUnlocked (Temat #4, bez zmian).
+  // bydlo/owce/lama nigdy nie używały tego zbioru (zawsze zwracają true niezależnie), więc
+  // computeEmpireLivestockUnlocks(placedMap) nie jest tu już w ogóle potrzebne.
+  const tradeRouteKonUnlocked = !!state.tradeRouteKonUnlocked;
+  const horseStockAvailable = state.horseStockAvailable ?? 0;
 
   function inPlayerTerritory(q: number, r: number): boolean {
     if (territoryNodes.length > 0) {
@@ -1005,13 +1014,13 @@ function createQualifier(state: ImprovementBuildState) {
         terrainOk = FLAT_FARM.has(teren)
           && inPlayerTerritory(q, r)
           && isLivestockAllowed(playerCivArchetype, key, playerEra)
-          && isLivestockUnlockedForPlacement(key, hex, empireUnlocks);
+          && isLivestockUnlockedForPlacement(key, hex, tradeRouteKonUnlocked, horseStockAvailable);
         break;
       case 'owce':
         terrainOk = isOwceBaseTerrain(teren, nakladka)
           && inPlayerTerritory(q, r)
           && isLivestockAllowed(playerCivArchetype, key, playerEra)
-          && isLivestockUnlockedForPlacement(key, hex, empireUnlocks);
+          && isLivestockUnlockedForPlacement(key, hex, tradeRouteKonUnlocked, horseStockAvailable);
         break;
       // R-ULEPSZENIA-HODOWLA-LAS-ODBLOKOWANA-Q1 (2026-08-27): jw. — lama kwalifikuje się na
       // Wzgórzach/Górach niezależnie od nakładki Las (bramka cywilizacji Inków bez zmian).
@@ -1020,7 +1029,7 @@ function createQualifier(state: ImprovementBuildState) {
           && (TERRAIN_ALLOW.lama?.has(teren) ?? false)
           && inPlayerTerritory(q, r)
           && isLivestockAllowed(playerCivArchetype, key, playerEra)
-          && isLivestockUnlockedForPlacement(key, hex, empireUnlocks);
+          && isLivestockUnlockedForPlacement(key, hex, tradeRouteKonUnlocked, horseStockAvailable);
         break;
       // P-STADNINA-LAS-NIEROZSTRZYGNIETE-Q1 (ECHO właściciela 2026-09-03): stadnina jest
       // ulepszeniem SUROWCOWYM (jak glinianka/tartak/kopalnie), nie pastwiskiem — nakładka
@@ -1028,12 +1037,14 @@ function createQualifier(state: ImprovementBuildState) {
       // USUNIĘTY (funkcja zawsze zwraca `false` od tej rundy, patrz jej komentarz). Warunek
       // terenu bazowego (Łąka/Równina) BEZ ZMIAN — nakładka Las nie zastępuje terenBazowy pod
       // spodem, więc heks Łąka/Równina z Lasem nadal spełnia `teren === Laka || Rownina`.
+      // P-STADNINA-KONIE-KOSZT-ROZBUDOWY-Q1 (runda 2): dawny jawny `hex.nakladka ===
+      // Nakladka.ZlozeKonia ||` USUNIĘTY stąd — isLivestockUnlockedForPlacement już sprawdza
+      // złoże konia WEWNĄTRZ siebie (hexHasHorseDeposit), plus teraz koszt/magazyn realny.
       case 'stadnina':
         terrainOk = inPlayerTerritory(q, r)
           && (teren === TerenBazowy.Laka || teren === TerenBazowy.Rownina)
           && isLivestockAllowed(playerCivArchetype, key, playerEra)
-          && (hex.nakladka === Nakladka.ZlozeKonia
-            || isLivestockUnlockedForPlacement(key, hex, empireUnlocks));
+          && isLivestockUnlockedForPlacement(key, hex, tradeRouteKonUnlocked, horseStockAvailable);
         break;
       case 'droga':
         return TERENY_LADU.has(teren) && inPlayerTerritory(q, r) && isRoadQualified(q, r);
