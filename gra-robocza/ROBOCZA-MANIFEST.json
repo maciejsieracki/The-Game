@@ -1,10 +1,10 @@
 {
-  "publishedAt": "2026-09-08T00:10:00",
-  "sourceBuild": "/tmp/civ-dist-fala361",
-  "note": "FALA 361 - domkniecie backlogu zywych zgloszen wlasciciela z tej sesji: (1) R-ULEPSZENIA-FARMA-IRYGACJA-BYDLO-STACK-Q1 - farma+irygacja+bydlo moga wspolistniec na jednym polu z dostepem do wody. (2) R-HOTSEAT-ETAP4-NOOP-HARNESS-Q1 - nowa bramka dowodu no-op pod przyszle rozciecie triggerPlayerEndTurn (zero zmian w main.ts). (3) R-ENTITYCARD-ROZWINIETE-SEKCJE-SCROLLBAR-Q1 - karta technologii: sekcje domyslnie rozwiniete + trwaly pasek przewijania. (4) R-ULEPSZENIA-TARTAK-LAS-ZALEZNOSC-Q1 - straznik wyscigu przy budowie tartak/oboz_lowiecki + tartak znika razem z lasem (odwrocenie kanonu, do potwierdzenia ABC). Wczesniej tego dnia rowniez: R-DYPLO-RELACJA-ETYKIETA-BLEDNA-Q1, R-HANDEL-WYMIANA-DAR-DEADLOCK-Q1, R-DYPLO-POKOJ-KIERUNEK-I-ZADANIE-AI-Q1, R-HUD-ZETONY-EKONOMIA-BRUTTO-Q1, R-PODBOJ-SUROWCE-BILANS-BRAK-WIERSZA-Q1, R-PODBOJ-ELIMINACJA-PULA-PRACY-TRANSFER-Q1, R-MIASTA-LIMIT-PODBOJ-PROWENIENCJA-CYWILIZACJA-Q1.",
+  "publishedAt": "2026-09-08T13:24:00",
+  "sourceBuild": "gra/dist (commit 6ce48d7d)",
+  "note": "FALA 362 - hotseat 2 graczy: 5 z 7 etapow planu zintegrowane i zdeployowane w tej fali (wszystkie no-op dla dzisiejszego jednego gracza, aktywacja hot-seat sama w sobie poza zakresem tego planu - Etap 8). Etap 6a (migracja 42 miejsc input na isMe()), Etap 6b (78 miejsc UI na isMe()/ME()), Etap 6c (32 miejsca ekonomia na isHuman()), Etap 6d podzbior (20 funkcji silnika dyplomacji na isHuman/isMe/ME(), pod-etap NIE w pelni zamkniety - pozostale ~116 miejsc czekaja na decyzje wlasciciela co do zakresu), Etap 6f czesc(i) (3 funkcje AI-roster - wyklucz wszystkich humanOwnerIds z puli AI), Etap 7 (format zapisu v3: gracze[]/exploredByHuman/humanOwnerIds/activeHumanOwnerId, ZERO migracji v2->v3 zgodnie z ABC-4, czytelny komunikat dla starego formatu). Etap 6e (render/kamera, 27 miejsc) w toku rownolegle, poza ta fala.",
   "publisher": "Orkiestrator (Claude Code)",
   "bundle": "Gra-ROBOCZA.html",
-  "md5": "a7cc9af3f7d14be38821ac51a959a887",
+  "md5": "030e23c0a897480a72b30fc78130807d",
   "bundlePoleBitwy": "Gra-ROBOCZA-POLE-BITWY.html",
   "md5PoleBitwy": "d4477b3eaed627e426c41b9f8d0ad1f1"
 }

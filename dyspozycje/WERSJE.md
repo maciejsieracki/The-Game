@@ -13,6 +13,15 @@ swoim wĹ‚asnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji d
 > Pakiet 3 z 2026-08-20 jest docs-only i nie tworzy wpisu ROBOCZA/KANON/FINALNA;
 > ten plik pozostaje wyłącznie rejestrem publikacji bundli.
 
+## ROBOCZA 030e23c0 - 2026-09-08 13:24 UTC - FALA 362: hot-seat 2 graczy — 5 z 7 etapów planu
+
+|- md5 (pełne): 030e23c0a897480a72b30fc78130807d · stempel: ROBOCZA · label 030e23c0 · źródłowe commity integracji: `4e7a5491`+`27c8a31b` (Etap 6a input, 42 miejsca + follow-up bramki), `e9e6a325` (Etap 6b UI, 78 miejsc), `7dcb3c21` (Etap 6e-prereq — fix TDZ bootstrapu renderu), `c271f065` (Etap 6c ekonomia, 32 miejsca), `0a1b6b7e` (Etap 6f część(i) — AI-roster wyklucza wszystkich humanOwnerIds), `67f20587` (Etap 7 save/load v3), `6ce48d7d` (Etap 6d podzbiór — 20 funkcji silnika dyplomacji)
+|- **Zakres:** implementacja `docs/decyzje/PLAN-HOT-SEAT-2-GRACZY.md` Etapy 6a/6b/6c/6d(podzbiór)/6f(część i)/7 — migracja aliasu `isMe()`/`isHuman()` w main.ts (input, UI/HUD, ekonomia, 20 funkcji dyplomacji, AI-roster) + nowy format zapisu v3 (`gracze[]`/`exploredByHuman`/`humanOwnerIds`/`activeHumanOwnerId`, zero migracji v2→v3 zgodnie z ABC-4, czytelny komunikat dla starego formatu zamiast crasha). Wszystko potwierdzone no-op dla dzisiejszego jednego gracza (`humanOwnerIds=[0]`) każdą bramką dowodu; realna zmiana zachowania dowiedziona nietautologicznie scenariuszem symulowanym `humanOwnerIds=[0,1]`. Sama aktywacja trybu hot-seat (Etap 8) pozostaje poza zakresem tego planu.
+|- **Niedomknięte świadomie:** Etap 6d — tylko 20 z ≥136 zidentyfikowanych miejsc (pozostałe + dev-harness + `diplomacy-border-march.ts` czekają na decyzję właściciela co do dalszego zakresu). Etap 6e (render/kamera, 27 miejsc) i Etap 6f część (ii) (nowa funkcjonalność — drugi heks startowy/druga cywilizacja w menu) poza tą falą, w toku/do zaprojektowania osobno.
+|- Build: `node ./node_modules/vite/bin/vite.js build --outDir dist --emptyOutDir` (kanon C-001), 887 modułów. Bramki na commit `6ce48d7d`: `tsc --noEmit` 0 błędów; 5 bramek referencyjnych logic 213/213, tech-tree 19/19, research 33/33, unit-replace 13/13, combat 6/6; plus bramki własne każdego etapu (patrz raporty `dyspozycje/autobot/runs/R-HOTSEAT-ETAP6*-Q1/`, `R-HOTSEAT-ETAP7-SAVELOAD-Q1/`). Deploy wykonany do `gra-robocza/`; push wykonany do `origin/main`.
+|- Bundle pola bitwy (`Gra-ROBOCZA-POLE-BITWY.html`) pominięty — żaden temat tej fali nie dotyka mechaniki walki polowej; md5 poprzedni zachowany bez zmian.
+|- **AKTUALNA**
+
 ## ROBOCZA a7cc9af3 - 2026-09-08 00:10 UTC - FALA 361: domknięcie backlogu żywych zgłoszeń (4 tematy) + Etap 4 hot-seat (bramka no-op)
 
 |- md5 (pełne): a7cc9af3f7d14be38821ac51a959a887 · stempel: ROBOCZA · label a7cc9af3 · źródłowe commity integracji: `a3649f23` (farma+irygacja+bydło), `2a99ec69` (hot-seat noop-harness), `fb10a248` (entity-card rozwinięte+scrollbar), `2e57c2dd` (tartak/las)

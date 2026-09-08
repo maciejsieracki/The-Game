@@ -7564,3 +7564,21 @@ GOAL: dokończyć pakiety dokumentacyjne 1–3 i domknąć AutoBot bez zmian w `
 CZEKAM-NA: osobne polecenie właściciela przed deploy/push; bez niego nic nie publikować.
 
 ---
+
+## [2026-09-08] DEPLOY ROBOCZA FALA 362 — hot-seat 2 graczy, 5 z 7 etapów planu
+
+Hasło właściciela otrzymane wprost („zrób teraz deploy do roboczej ... i potem zrób git push").
+GOAL: opublikować `origin/main` @ `6ce48d7d` do `gra-robocza/` i wypchnąć wszystko na `origin/main`.
+|- Zintegrowane w tej fali: Etap 6a (input, 42 miejsca), Etap 6b (UI, 78 miejsc), Etap 6c
+   (ekonomia, 32 miejsca), Etap 6d podzbiór (20 funkcji dyplomacji — pod-etap NIE w pełni
+   zamknięty, ~116 miejsc czeka na decyzję właściciela), Etap 6f część (i) (AI-roster),
+   Etap 7 (save/load v3, ABC-4). Etap 6e (render/kamera) w toku równolegle, poza tą falą.
+|- Build: `vite build --outDir dist --emptyOutDir`, 887 modułów. `tsc --noEmit` 0 błędów,
+   5 bramek referencyjnych zielone (213/19/33/13/6). Deploy do `gra-robocza/Gra-ROBOCZA.html`,
+   md5 `030e23c0a897480a72b30fc78130807d`, wpis `WERSJE.md` FALA 362.
+|- Push: `origin/main` do `6ce48d7d` + commit deployu.
+|- Właściciel rozważa równoległą sesję na osobnym agencie do nowych zgłoszeń; koordynacja
+   push/integracji (kto pushuje, kto tylko przygotowuje wsady) jeszcze NIE ustalona ostatecznie
+   — patrz czat z właścicielem, decyzja w toku.
+
+---
