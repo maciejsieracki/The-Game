@@ -492,10 +492,13 @@ function buildingLocationAllowed(
 }
 
 /**
- * Maciej 2026-07-22: globalna korekta balansu — koszt Pracy budynkow x0.5 (flat).
- * Dotyczy tylko budynkow (nie jednostek); przed asymetria trudnosci.
+ * Maciej 2026-09-08: cel H-BUDYNKI-KOSZT-PRACY-50-Q1 — efektywny koszt
+ * Pracy wszystkich budynków ma spaść o 50% względem aktualnego origin/main.
+ * R_STAWKI_KOSZT_MULT i R_STAWKI_FALA2_MULT są współdzielonymi mnożnikami
+ * innych domen; nie zmieniamy ich tutaj. Dlatego mnożnik budynków schodzi z
+ * 0.5 do 0.25, a stacking 0.25 × 2 × 2 daje 1.0 × kosztu z buildings.json.
  */
-export const GLOBAL_BUILDING_PROD_MULT = 0.5;
+export const GLOBAL_BUILDING_PROD_MULT = 0.25;
 
 /** Koszt Pracy budynku: ulga cywilizacji + tempo kreatora + globalny balans + asymetria trudnosci. */
 export function buildingWorkCost(
