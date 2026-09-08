@@ -4381,6 +4381,25 @@ export class BattleScene {
     return result;
   }
 
+  /**
+   * P-BITWA-OBRONCY-PRZED-MUREM-Q1: dowod zywy (nie inspekcja kodu) — po
+   * KAZDYM (re)rozstawieniu jednostek zapisuje rzeczywiste kolumny obrony i
+   * muru do `window.__siegeColTestDebug` (tylko w przegladarce; no-op w
+   * SSR/node). Czytane przez tools/bitwa-obroncy-mur-kolumny-test.cjs.
+   * Zero wplywu na rozgrywke — czysty odczyt stanu juz obliczonego wyzej.
+   */
+  private _debugRecordSiegeColumns(): void {
+    if (typeof window === 'undefined') return;
+    const w = window as unknown as { __siegeColTestDebug?: unknown[]; __lastBattleScene?: unknown };
+    w.__lastBattleScene = this;
+    if (!Array.isArray(w.__siegeColTestDebug)) w.__siegeColTestDebug = [];
+    w.__siegeColTestDebug.push({
+      wallCol: this.siegeWallCol,
+      def: this.def.map(u => ({ q: u.q, r: u.r, onWallWalkway: u.onWallWalkway })),
+      atk: this.atk.map(u => u.q),
+    });
+  }
+
   // -------------------------------------------------------------------------
   // Private: battlefield (SQUARE grid of flat tiles)
   // -------------------------------------------------------------------------
@@ -5174,6 +5193,7 @@ export class BattleScene {
       this.atk = place(atkArr, 'atk', atkFront, atkStep, Dir.E);
       this.def = place(defArr, 'def', defFront, defStep, Dir.W);
     }
+    this._debugRecordSiegeColumns();
   }
 
   // -------------------------------------------------------------------------
@@ -5385,7 +5405,23 @@ export class BattleScene {
     }
 
     // AUTO bitwy: jednostki z autoPlay wykonuja doktryne (Szturm, Atak, Obrona, …)
-    if (!this._manualMode) {
+    //
+    // P-BITWA-OBRONCY-PRZED-MUREM-Q1: obroncy w bitwie z murem (ru.side==='def'
+    // && this.siegeWallCol>=0) SA WYLACZENI z tej galezi. Zmierzone zywym
+    // dowodem (AUTO-rozegranie bitwy, klawisz R / _toggleManualMode): bez tego
+    // wylaczenia _executeGroupDoctrineStep liczy cel doktryny "steady" jako
+    // `_forwardCol('def', q, 2)` -- DWIE kolumny w kierunku atakujacego (na
+    // zachod) -- i wykonuje ten ruch, ZANIM kod w ogole dotrze do dedykowanej
+    // blokady "SIEGE DEFENDER HOLD" kilkadziesiat linii nizej (ta blokada
+    // istnieje wlasnie po to, zeby obroncy NIGDY nie wychodzili zza/z muru, ale
+    // stoi PO tej galezi, wiec nigdy jej nie chroni). Skutek zmierzony na
+    // zywej scenie: obroncy z muru (onWallWalkway) schodza JEDNA kolumne PRZED
+    // mur (q = siegeWallCol-1) juz w 1. turze trybu AUTO. Obronca w oblezeniu
+    // ma dokladnie jedno zachowanie -- trzymac mur/tyly (patrz "SIEGE DEFENDER
+    // HOLD" + `ru.onWallWalkway` galezie nizej) -- wiec doktryna dla tej strony
+    // w tym trybie jest celowo pomijana, nie tylko lagodzona.
+    const siegeDefenderNeverDoctrine = ru.side === 'def' && this.siegeWallCol >= 0;
+    if (!this._manualMode && !siegeDefenderNeverDoctrine) {
       if (this._isUnitDoctrineAuto(ru) && ru.playerOrder.type === 'none') {
         const meta = this._effectiveMetaForUnit(ru);
         if (meta.doctrine !== 'manual') {
@@ -15695,6 +15731,21 @@ export class BattleScene {
       return;
     }
 
+    // P-BITWA-OBRONCY-PRZED-MUREM-Q1: strona 'def' w trybie obleznia MUSI
+    // przejsc przez ten sam _placeSiegeDefenders co poczatkowe rozstawienie w
+    // _placeUnits (galaz `siegeMode && this.siegeWallCol >= 0` kilka linii
+    // nizej dla 'atk') -- NIE przez generyczny wzor frontCol/rankStep ponizej,
+    // ktory liczy kolumny wzgledem srodka pola (DEPLOY_DEF_FRONT_COL / kol.
+    // ~36), a nie wzgledem muru (siegeWallCol, kol. ~40). Bez tej galezi Reset
+    // podczas fazy rozstawiania (gracz jako obronca oblezenia) stawial
+    // obroncow PRZED murem, po stronie atakujacego -- zmierzone zywym dowodem
+    // w tools/bitwa-obroncy-mur-kolumny-test.cjs (B) przed ta naprawa.
+    if (side === 'def' && siegeMode && this.siegeWallCol >= 0) {
+      this.def = this._placeSiegeDefenders(saved);
+      this._debugRecordSiegeColumns();
+      return;
+    }
+
     const SIEGE_ATK_FRONT_COL = 2;
     const SIEGE_ATK_COL_STEP  = 1;
     let frontCol: number;
@@ -15879,6 +15930,7 @@ export class BattleScene {
     }
     if (side === 'atk') this.atk = placed;
     else this.def = placed;
+    this._debugRecordSiegeColumns();
   }
 
   /**
