@@ -6377,7 +6377,7 @@ async function boot(): Promise<void> {
      * Kontakt formalny = automatyczny przy pierwszym odkryciu (karta informacyjna).
      */
     function isActiveDiploOwner(ownerId: number): boolean {
-      if (ownerId === 0 || isBarbarian(ownerId) || eliminatedOwners.has(ownerId)) return false;
+      if (isMe(ownerId) || isBarbarian(ownerId) || eliminatedOwners.has(ownerId)) return false;
       if (aiOwnerCivMap.has(ownerId)) return true;
       return cities.some(c => c.ownerId === ownerId) || units.some(u => u.ownerId === ownerId);
     }
@@ -6505,24 +6505,24 @@ async function boot(): Promise<void> {
     }
 
     function buildPlayerDiploSummary(): DiploPlayerSummary {
-      const civKey = civKeyForOwner(0);
+      const civKey = civKeyForOwner(ME());
       const playerCities = cities.filter(c => isMe(c.ownerId));
       const lines = formatDiploPlayerSummaryLines({
         // R-MOC-HUD-GLOWNY-Q1=C: podsumowanie gracza na liście dyplomacji ("Moc: X",
         // "Ranking mocy: Y. z Z") -> EFEKTYWNA, jak reszta warstwy UI Mocy.
-        militaryPower: objectivePowerForOwnerEffective(0),
+        militaryPower: objectivePowerForOwnerEffective(ME()),
         powerRank: buildAbsolutePowerRankEffective(),
-        wiarygodnosc: getWiarygodnosc(0),
+        wiarygodnosc: getWiarygodnosc(ME()),
         population: playerCities.reduce((s, c) => s + c.population, 0),
         armyCount: units.filter(u => isMe(u.ownerId)).length,
       });
       return {
-        name: ownerDiploLabel(0),
-        ikonaId: civTypeForOwner(0),
-        kolorHex: civKolorHexFn(0),
+        name: ownerDiploLabel(ME()),
+        ikonaId: civTypeForOwner(ME()),
+        kolorHex: civKolorHexFn(ME()),
         cultureLabel: civCultureLabelForKey(civKey),
-        epochLabel: epochLabelForOwner(0),
-        era: empireEpochForOwner(0),
+        epochLabel: epochLabelForOwner(ME()),
+        era: empireEpochForOwner(ME()),
         personalityTags: diplomacyPersonalityTags(civKey),
         detailLine: lines.detailLine,
         metaLine: lines.metaLine,
@@ -8346,15 +8346,15 @@ async function boot(): Promise<void> {
     }
 
     function recordWarDeclarationEvent(declarerId: number, targetId: number): void {
-      if (declarerId !== 0 && targetId !== 0) return;
+      if (!isMe(declarerId) && !isMe(targetId)) return;
       if (isBarbarian(declarerId) || isBarbarian(targetId)) return;
 
       const evId = `war-${turn}-${declarerId}-${targetId}`;
       if (warEventLog.some(e => e.id === evId)) return;
 
-      const enemyOwnerId = declarerId === 0 ? targetId : declarerId;
+      const enemyOwnerId = isMe(declarerId) ? targetId : declarerId;
       const enemyName = ownerDiploLabel(enemyOwnerId);
-      const title = declarerId === 0
+      const title = isMe(declarerId)
         ? 'Wypowiedzieliśmy wojnę: ' + enemyName
         : enemyName + ' wypowiedziało wojnę';
 
@@ -8365,8 +8365,8 @@ async function boot(): Promise<void> {
         const parts = key.split('_').map(Number);
         if (parts.length !== 2) continue;
         const [a, b] = parts;
-        if (a !== 0 && b !== 0) continue;
-        const oid = a === 0 ? b! : a!;
+        if (!isMe(a!) && !isMe(b!)) continue;
+        const oid = isMe(a!) ? b! : a!;
         if (!contacted.has(oid)) continue;
         enemyNames.add(ownerDiploLabel(oid));
       }
@@ -8838,7 +8838,7 @@ async function boot(): Promise<void> {
       // Two filters, since the rebuild is O(hexes × cities) over every owner: AI↔AI pairs
       // change no band color, and the AI turn rewrites the player relation every turn for
       // trust/respect without touching the status.
-      if ((a === 0 || b === 0) && prevStatus !== rel.status) refreshTerritoryBorderOverlay();
+      if ((isMe(a) || isMe(b)) && prevStatus !== rel.status) refreshTerritoryBorderOverlay();
     }
 
     function refreshCityMapOutlines(): void {
@@ -9182,9 +9182,9 @@ async function boot(): Promise<void> {
       event: DiplomaticEvent,
       params?: Partial<DiplomacyParams>,
     ): Relation {
-      const playerInPair = a === 0 || b === 0;
+      const playerInPair = isHuman(a) || isHuman(b);
       const wiarygodnosc =
-        cur.status === 'wojna' || !playerInPair ? undefined : getWiarygodnosc(0);
+        cur.status === 'wojna' || !playerInPair ? undefined : getWiarygodnosc(isHuman(a) ? a : b);
       const next = applyDiplomaticEvent(cur, event, params, wiarygodnosc);
       const dZ = next.zaufanie - cur.zaufanie;
       const dR = next.respekt - cur.respekt;
@@ -9856,8 +9856,8 @@ async function boot(): Promise<void> {
 
     /** Czy gracz (0) jest w stanie wojny z danym właścicielem (barbarzyńcy = zawsze tak). */
     function playerIsAtWarWith(ownerId: number): boolean {
-      if (ownerId === 0) return false;
-      return areEnemyOwners(0, ownerId);
+      if (isMe(ownerId)) return false;
+      return areEnemyOwners(ME(), ownerId);
     }
 
     /** Wypowiedzenie wojny gracza — ten sam efekt co audiencja dyplomatyczna (akcja 11). */
@@ -9912,7 +9912,7 @@ async function boot(): Promise<void> {
         return;
       }
       chargeWarDeclarationCredibility(attackerId, defenderId);
-      breakTreatiesOnWar(attackerId, defenderId, attackerId === 0);
+      breakTreatiesOnWar(attackerId, defenderId, isMe(attackerId));
       applyAllianceObligationsOnWar(attackerId, defenderId);
       setDiploRelation(
         attackerId,
@@ -9924,11 +9924,11 @@ async function boot(): Promise<void> {
           'wojna_wypowiedziana',
         ),
       );
-      if (defenderId === 0 || attackerId === 0) {
+      if (isMe(defenderId) || isMe(attackerId)) {
         pruneTributeNegotiationsBetween(attackerId, defenderId);
         recordWarDeclarationEvent(attackerId, defenderId);
       }
-      if (defenderId === 0) {
+      if (isMe(defenderId)) {
         pruneInvalidNegotiations();
         showHintMessage('\u2694 ' + ownerDiploLabel(attackerId) + ' wypowiada wojnę (ultimatum)', 4500);
         updateDiplomacyAudience();
@@ -17650,8 +17650,8 @@ async function boot(): Promise<void> {
         const parts = key.split('_').map(Number);
         if (parts.length !== 2) continue;
         const [a, b] = parts;
-        if (a !== 0 && b !== 0) continue;
-        const oid = a === 0 ? b! : a!;
+        if (!isMe(a!) && !isMe(b!)) continue;
+        const oid = isMe(a!) ? b! : a!;
         if (!contacted.has(oid)) continue;
         const civId = aiOwnerCivMap.get(oid);
         wars.push({ civName: ownerDiploLabel(oid), civId, ownerId: oid });
@@ -17667,7 +17667,7 @@ async function boot(): Promise<void> {
         const parts = key.split('_').map(Number);
         if (parts.length !== 2) continue;
         const [a, b] = parts;
-        if (a === 0 || b === 0) continue;
+        if (isMe(a!) || isMe(b!)) continue;
         if (!contacted.has(a!) && !contacted.has(b!)) continue;
         out.push({
           civA: ownerDiploLabel(a!),
@@ -17712,7 +17712,7 @@ async function boot(): Promise<void> {
 
     /** Kontakt dyplomatyczny = automatyczny przy odkryciu na mapie (Maciej 2026-07-28). */
     function establishDiplomaticContact(ownerId: number): void {
-      if (ownerId === 0 || isBarbarian(ownerId)) return;
+      if (isMe(ownerId) || isBarbarian(ownerId)) return;
       diplomaticContactEstablished.add(ownerId);
     }
 
@@ -17750,7 +17750,7 @@ async function boot(): Promise<void> {
       const current = getDiplomaticContacts();
       const newlySeen: number[] = [];
       for (const oid of current) {
-        if (oid === 0) continue;
+        if (isMe(oid)) continue;
         if (!lastDiplomaticContactsSnapshot.has(oid)) newlySeen.push(oid);
       }
       lastDiplomaticContactsSnapshot = new Set(current);
@@ -17960,13 +17960,13 @@ async function boot(): Promise<void> {
       const sameCulture = sameCultureCircle(civKeyForOwner(a), civKeyForOwner(b));
       const religionA = ownerReligionForOwnerId(a);
       const religionB = ownerReligionForOwnerId(b);
-      const playerInPair = a === 0 || b === 0;
+      const playerInPair = isHuman(a) || isHuman(b);
       return {
         turn,
         aktywnyHandel: hasSzlakowTreaty(activeDeals, a, b),
         pokojTrustTier: resolvePokojTrustTier(activeDeals, a, b, {
-          contactEstablished: a === 0 ? diplomaticContactEstablished.has(b)
-            : (b === 0 ? diplomaticContactEstablished.has(a) : true),
+          contactEstablished: isHuman(a) ? diplomaticContactEstablished.has(b)
+            : (isHuman(b) ? diplomaticContactEstablished.has(a) : true),
           atWar,
         }),
         dobraWolaAktywna: false,
@@ -17976,7 +17976,7 @@ async function boot(): Promise<void> {
         karaWspolnaGranica:
           cities.filter(c => c.ownerId === a).length > 2 && cities.filter(c => c.ownerId === b).length > 2
           && ownersShareLandBorderLive(a, b),
-        wiarygodnoscSelf: atWar || !playerInPair ? undefined : getWiarygodnosc(0),
+        wiarygodnoscSelf: atWar || !playerInPair ? undefined : getWiarygodnosc(isHuman(a) ? a : b),
       };
     }
 
@@ -17992,20 +17992,20 @@ async function boot(): Promise<void> {
       const dip = _diplomacyParams();
       const log = diplomacyFactorLog.get(diploPairKey(a, b)) ?? [];
       const atWar = rel.status === 'wojna';
-      const civA = a === 0 ? (player.civType ?? 'rzymianie') : (aiOwnerCivMap.get(a) ?? 'grecy');
-      const civB = b === 0 ? (player.civType ?? 'rzymianie') : (aiOwnerCivMap.get(b) ?? 'grecy');
+      const civA = isHuman(a) ? (player.civType ?? 'rzymianie') : (aiOwnerCivMap.get(a) ?? 'grecy');
+      const civB = isHuman(b) ? (player.civType ?? 'rzymianie') : (aiOwnerCivMap.get(b) ?? 'grecy');
       const sameCulture = sameCultureCircle(civKeyForOwner(a), civKeyForOwner(b));
       const religionA = ownerReligionForOwnerId(a);
       const religionB = ownerReligionForOwnerId(b);
       const sameTypCiv = civA === civB;
-      const playerMpOtherId = a === 0 ? b : (b === 0 ? a : -1);
+      const playerMpOtherId = isHuman(a) ? b : (isHuman(b) ? a : -1);
       const isPlayerSameCivCityState =
         playerMpOtherId >= 0 && typCityCopyOwners.has(playerMpOtherId) && sameTypCiv;
       const continuous: ContinuousFactorFlags = {
         aktywnyHandel: hasSzlakowTreaty(activeDeals, a, b),
         pokojTrustTier: resolvePokojTrustTier(activeDeals, a, b, {
-          contactEstablished: a === 0 ? diplomaticContactEstablished.has(b)
-            : (b === 0 ? diplomaticContactEstablished.has(a) : true),
+          contactEstablished: isHuman(a) ? diplomaticContactEstablished.has(b)
+            : (isHuman(b) ? diplomaticContactEstablished.has(a) : true),
           atWar,
         }),
         wspolnaReligia: sameCulture && !!religionA && !!religionB && religionA === religionB,
@@ -18685,7 +18685,7 @@ async function boot(): Promise<void> {
       chargeWarDeclarationCredibility(allyId, mustDeclareWarOn, {
         skipN2AllianceDefense,
       });
-      breakTreatiesOnWar(allyId, mustDeclareWarOn, allyId === 0);
+      breakTreatiesOnWar(allyId, mustDeclareWarOn, isMe(allyId));
       setDiploRelation(
         allyId,
         mustDeclareWarOn,
@@ -18755,8 +18755,8 @@ async function boot(): Promise<void> {
           const obCtx = buildAllianceWarObligationCtx(allyId, ob.mustDeclareWarOn, attackerId, victimId);
           if (!aiHonorsAllianceWarObligation(allyId, ob.mustDeclareWarOn, attackerId, victimId, obCtx)) {
             if (
-              allyId !== 0
-              && (attackerId === 0 || victimId === 0 || ob.mustDeclareWarOn === 0)
+              !isMe(allyId)
+              && (isMe(attackerId) || isMe(victimId) || isMe(ob.mustDeclareWarOn))
             ) {
               showHintMessage(
                 'Sojusznik ' + ownerDiploLabel(allyId) + ' odmawia pomocy — sojusz zerwany',
@@ -18766,17 +18766,17 @@ async function boot(): Promise<void> {
             continue;
           }
 
-          if (allyId === 0) {
+          if (isMe(allyId)) {
             pendingPlayer.push({ ob, attackerId, victimId });
             continue;
           }
 
-          if (ob.mustDeclareWarOn === 0) {
+          if (isMe(ob.mustDeclareWarOn)) {
             showHintMessage(
               '\u2694 Sojusznik ' + ownerDiploLabel(allyId) + ' dołącza do wojny z tobą!',
               4500,
             );
-          } else if (victimId === 0 || attackerId === 0) {
+          } else if (isMe(victimId) || isMe(attackerId)) {
             showHintMessage(
               '\u2694 Sojusznik ' + ownerDiploLabel(allyId) + ' wchodzi do wojny z: ' + ownerDiploLabel(ob.mustDeclareWarOn),
               4500,
@@ -18816,8 +18816,8 @@ async function boot(): Promise<void> {
             _diplomacyParams().wiarygodnoscN4OdmowaObowiazkuSojuszu,
           ),
           onFulfill: () => {
-            joinAllyToWar(0, ob.mustDeclareWarOn, aId);
-            joinedWarOwnerIds.push(0);
+            joinAllyToWar(ME(), ob.mustDeclareWarOn, aId);
+            joinedWarOwnerIds.push(ME());
             showHintMessage(
               'Wypełniasz sojusz — wojna z: ' + ownerDiploLabel(ob.mustDeclareWarOn),
               4500,
@@ -19117,9 +19117,9 @@ async function boot(): Promise<void> {
         const { payerOwnerId, receiverOwnerId } = pair;
         const cur = getDiploRelation(payerOwnerId, receiverOwnerId);
         setDiploRelation(payerOwnerId, receiverOwnerId, applyDiploEventTracked(payerOwnerId, receiverOwnerId, cur, 'trybut_odmowa'));
-        if (payerOwnerId === 0) {
+        if (isMe(payerOwnerId)) {
           showHintMessage('Trybut zerwany — brak środków w skarbcu', 3500);
-        } else if (receiverOwnerId === 0) {
+        } else if (isMe(receiverOwnerId)) {
           showHintMessage(
             'Trybut zerwany — casus belli przeciw ' + ownerDiploLabel(payerOwnerId),
             3500,
@@ -19135,15 +19135,15 @@ async function boot(): Promise<void> {
       }
       for (const msg of messages) console.log('[Dyplomacja]', msg);
       for (const oid of getDiplomaticContacts()) {
-        if (oid === 0) continue;
-        const meta = getDiploPairMeta(0, oid);
+        if (isMe(oid)) continue;
+        const meta = getDiploPairMeta(ME(), oid);
         if (meta.dobraWolaRemainingTur > 0) {
-          const rel = getDiploRelation(0, oid);
+          const rel = getDiploRelation(ME(), oid);
           const ticked = tickDobraWolaOnRelation(rel, meta);
-          setDiploRelation(0, oid, ticked.rel);
-          setDiploPairMeta(0, oid, ticked.meta);
+          setDiploRelation(ME(), oid, ticked.rel);
+          setDiploPairMeta(ME(), oid, ticked.meta);
         }
-        syncRelationFromDeals(0, oid);
+        syncRelationFromDeals(ME(), oid);
       }
       applyBorderMarchPenaltiesEndTurn();
     }
@@ -19876,23 +19876,23 @@ async function boot(): Promise<void> {
     ): Omit<DiplomacyActionLockContext, 'actionId'> {
       const atWar = rel.status === 'wojna';
       const hasSojusz = activeDeals.some(
-        d => dealInvolvesOwners(d, 0, ownerId) && isAllianceDealKind(d.rodzaj),
+        d => dealInvolvesOwners(d, ME(), ownerId) && isAllianceDealKind(d.rodzaj),
       );
-      const brokenIds = atWar ? [] : treatiesBrokenByWar(activeDeals, 0, ownerId);
+      const brokenIds = atWar ? [] : treatiesBrokenByWar(activeDeals, ME(), ownerId);
       const breakingDeal = brokenIds.length > 0
         ? activeDeals.find(d => d.id === brokenIds[0])
         : undefined;
-      const wasalDeal = findWasalDeal(activeDeals, 0, ownerId);
+      const wasalDeal = findWasalDeal(activeDeals, ME(), ownerId);
       return {
         contact: true,
         atWar,
         relTotal,
         zaufanie: rel.zaufanie ?? 0,
         respekt: rel.respekt ?? 0,
-        hasNap: hasTreaty(activeDeals, 0, ownerId, RodzajTraktatu.PaktNieagresji),
-        hasHandel: hasSzlakowTreaty(activeDeals, 0, ownerId),
+        hasNap: hasTreaty(activeDeals, ME(), ownerId, RodzajTraktatu.PaktNieagresji),
+        hasHandel: hasSzlakowTreaty(activeDeals, ME(), ownerId),
         hasTradeConnection: citiesHaveTradeConnection(
-          cities.filter(c => c.ownerId === 0),
+          cities.filter(c => isMe(c.ownerId)),
           cities.filter(c => c.ownerId === ownerId),
           map,
           cityBuilt,
@@ -19902,17 +19902,17 @@ async function boot(): Promise<void> {
         // R-HANDEL-WYMIANA-TECH-GATE-Q1 GOAL 2: bramka techniczna dla propozycji
         // Umowy Szlaków (case '5', diplomacy-locks.ts) — MY zawsze gracz (0) w
         // tym kontekście, ONI to `ownerId` (partner).
-        hasTradeTechSelf: ownerHasTradeTech(0),
+        hasTradeTechSelf: ownerHasTradeTech(ME()),
         hasTradeTechOther: ownerHasTradeTech(ownerId),
-        hasWymiana: hasWymianaTreaty(activeDeals, 0, ownerId),
+        hasWymiana: hasWymianaTreaty(activeDeals, ME(), ownerId),
         hasSojusz,
         // P-DYPLO-PRZEMARSZ-DUPLIKAT-AKTYWNY-Q1: traktat przemarszu jest symetryczny
         // (hasTreaty normalizuje parę stron przez pairKey) — sprawdzamy WSZYSTKIE trzy
         // odmiany jednocześnie (cywilny/wojskowy/wspólna walka z barbarzyńcami).
         hasGranice: (
-          hasTreaty(activeDeals, 0, ownerId, RodzajTraktatu.OtwartGranice)
-          || hasTreaty(activeDeals, 0, ownerId, RodzajTraktatu.PrawoWojskowePrzemarszu)
-          || hasTreaty(activeDeals, 0, ownerId, RodzajTraktatu.WspolnaWalkaBarbarzyncy)
+          hasTreaty(activeDeals, ME(), ownerId, RodzajTraktatu.OtwartGranice)
+          || hasTreaty(activeDeals, ME(), ownerId, RodzajTraktatu.PrawoWojskowePrzemarszu)
+          || hasTreaty(activeDeals, ME(), ownerId, RodzajTraktatu.WspolnaWalkaBarbarzyncy)
         ),
         breaksTreatyLabel: breakingDeal ? treatyDisplayLabel(breakingDeal.rodzaj) : undefined,
         sellableTechCount: getSellableTechForPlayer(ownerId).length,
@@ -20069,14 +20069,14 @@ async function boot(): Promise<void> {
       if (isDiploPairSummaryOpen()) hideDiploPairSummary();
       if (isDiploListHudOpen()) hideDiploListHud();
       diplomacyAudienceOwnerId = ownerId;
-      const playerCivName = civDisplayNameForKey(civTypeForOwner(0));
+      const playerCivName = civDisplayNameForKey(civTypeForOwner(ME()));
       showDiplomacyAudience({
         ownerId,
         otherCivId: civKeyForOwner(ownerId),
         getState: () => {
           const contacted = getDiplomaticContacts();
           if (!contacted.has(ownerId)) return null;
-          const rel = getDiploRelation(0, ownerId);
+          const rel = getDiploRelation(ME(), ownerId);
           const layer = diplomacyLayerForOwner(
             ownerId,
             simplifiedDiplomacyOwners,
@@ -20088,42 +20088,42 @@ async function boot(): Promise<void> {
           // trafiają do formatPowerRelationLine w TEJ SAMEJ linii porównawczej
           // ("Twoja moc X vs Y"); gdyby tylko jedna strona liczyła efektywnie,
           // porównanie i wynikowy Respekt byłyby fałszywe.
-          const playerPower = objectivePowerForOwnerEffective(0);
+          const playerPower = objectivePowerForOwnerEffective(ME());
           const otherPower = objectivePowerForOwnerEffective(ownerId);
           const powerLine = formatPowerRelationLine(playerPower, otherPower);
           const respektNorm = powerLine.respekt;
-          const pairMeta = getDiploPairMeta(0, ownerId);
+          const pairMeta = getDiploPairMeta(ME(), ownerId);
           const dip = _diplomacyParams();
           let _fsPakt = false;
           let _fsTrade = false;
           for (const d of activeDeals) {
-            if (!d.strony.includes(0) || !d.strony.includes(ownerId)) continue;
+            if (!d.strony.includes(ME()) || !d.strony.includes(ownerId)) continue;
             const k = normalizeTreatyKind(d.rodzaj);
             if (k === RodzajTraktatu.PaktNieagresji) _fsPakt = true;
             else if (k === RodzajTraktatu.UmowaSzlakow) _fsTrade = true;
           }
           const formalStatus = resolveFormalDiplomaticStatus({
             relationStatus: rel.status,
-            allianceFormalKind: allianceFormalKindBetween(activeDeals, 0, ownerId),
+            allianceFormalKind: allianceFormalKindBetween(activeDeals, ME(), ownerId),
             hasNap: _fsPakt,
             hasTrade: _fsTrade,
             contactEstablished: diplomaticContactEstablished.has(ownerId),
           });
           const audienceActionsList = buildAudienceActions(ownerId, layer);
-          const dominantTreaty = dominantTreatyForFormalStatus(formalStatus.kind, 0, ownerId);
+          const dominantTreaty = dominantTreatyForFormalStatus(formalStatus.kind, ME(), ownerId);
           const formalStatusDetail = dominantTreaty ? {
             sinceTurns: dominantTreaty.zawartaTura !== undefined
               ? Math.max(0, turn - dominantTreaty.zawartaTura)
               : undefined,
             breakPenaltyLabel: treatyBreakPenaltyLabel(dominantTreaty),
           } : undefined;
-          const tickCtxAudience = buildDiplomacyTickCtxForPair(0, ownerId);
+          const tickCtxAudience = buildDiplomacyTickCtxForPair(ME(), ownerId);
           const atWarAudience = rel.status === 'wojna';
           const zaufanieDeltaPerTurn = computeTickZaufanieDelta(tickCtxAudience, atWarAudience);
           return {
             formalStatus,
             formalStatusDetail,
-            playerTitle: 'Władca · ' + epochLabelForOwner(0),
+            playerTitle: 'Władca · ' + epochLabelForOwner(ME()),
             playerCivName,
             otherTitle: 'Przedstawiciel',
             otherCivName: ownerDiploLabel(ownerId),
@@ -20141,7 +20141,7 @@ async function boot(): Promise<void> {
             otherPower,
             powerRatioLabel: powerLine.ratioLabel,
             personalityTags: diplomacyPersonalityTags(civKeyForOwner(ownerId)),
-            activeTreaties: activeTreatiesForPair(0, ownerId),
+            activeTreaties: activeTreatiesForPair(ME(), ownerId),
             otherEpochLabel: epochLabelForOwner(ownerId),
             otherIkonaId: civTypeForOwner(ownerId),
             otherWodz: leaderNameForOwnerId(ownerId) ?? undefined,
@@ -20149,7 +20149,7 @@ async function boot(): Promise<void> {
             otherKolorHex: civKolorHexFn(ownerId),
             otherIsCityState: portraitForceCultureIcon(ownerId),
             otherCultureLabel: civCultureLabelForKey(civKeyForOwner(ownerId)),
-            cultureCircleSame: sameCultureCircle(civKeyForOwner(0), civKeyForOwner(ownerId)),
+            cultureCircleSame: sameCultureCircle(civKeyForOwner(ME()), civKeyForOwner(ownerId)),
             thresholds: {
               sojuszZaufanie: dip.progSojuszZaufanie,
               techZaufanie: dip.progWymianaTechZaufanie,
@@ -20160,27 +20160,27 @@ async function boot(): Promise<void> {
             actions: audienceActionsList,
             pendingNegotiations: buildPendingNegotiationRows(ownerId, audienceActionsList),
             otherRelations: buildAudienceOtherRelations(ownerId),
-            relationBreakdown: getRelationBreakdown(0, ownerId),
+            relationBreakdown: getRelationBreakdown(ME(), ownerId),
             playerSkarbiec: Math.floor(player.skarbiec),
             playerZlotoPerTura: Math.floor(_lastPieniadzRate),
             sojuszPotencjal: sojuszPotencjalForPair(zaufanieNorm, respektNorm, dip),
-            playerGoodsCats: tradeGoodsCategoriesForOwner(0),
+            playerGoodsCats: tradeGoodsCategoriesForOwner(ME()),
             otherGoodsCats: tradeGoodsCategoriesForOwner(ownerId),
-            playerIkonaId: civTypeForOwner(0),
-            playerWodz: leaderNameForOwnerId(0) ?? undefined,
-            playerKolorHex: civKolorHexFn(0),
-            playerEra: empireEpochForOwner(0),
-            playerWiarygodnosc: getWiarygodnosc(0),
+            playerIkonaId: civTypeForOwner(ME()),
+            playerWodz: leaderNameForOwnerId(ME()) ?? undefined,
+            playerKolorHex: civKolorHexFn(ME()),
+            playerEra: empireEpochForOwner(ME()),
+            playerWiarygodnosc: getWiarygodnosc(ME()),
             playerWiarygodnoscRozbicie: rozbicieWiarygodnosci(
-              getWiarygodnoscEvents(0),
-              getWiarygodnoscStreamEntries(0),
+              getWiarygodnoscEvents(ME()),
+              getWiarygodnoscStreamEntries(ME()),
               wiarygodnoscStartowa(_menuDifficulty),
               turn,
               _menuDifficulty,
             ),
             playerWiarygodnoscBreakdown: buildWiarygodnoscBreakdown(
-              getWiarygodnoscEvents(0),
-              getWiarygodnoscStreamEntries(0),
+              getWiarygodnoscEvents(ME()),
+              getWiarygodnoscStreamEntries(ME()),
               wiarygodnoscStartowa(_menuDifficulty),
               turn,
               _menuDifficulty,
@@ -20235,7 +20235,7 @@ async function boot(): Promise<void> {
         onFocusCapital: handleDiploFocusCapital,
         getCivBonusy: civBonusyForOwnerId,
         getNegotiationContext: (actionId: string) => {
-          const rel = getDiploRelation(0, ownerId);
+          const rel = getDiploRelation(ME(), ownerId);
           const dip = _diplomacyParams();
           const csPop = cities
             .filter(c => c.ownerId === ownerId)
@@ -20255,7 +20255,7 @@ async function boot(): Promise<void> {
             relacjaTotal: audienceRelTotal(ownerId, rel),
             atWar: rel.status === 'wojna',
             negotiationActionId: actionId,
-            trustPnGainedThisTurn: getDiploPairMeta(0, ownerId).trustPnGainedThisTurn,
+            trustPnGainedThisTurn: getDiploPairMeta(ME(), ownerId).trustPnGainedThisTurn,
             progDarRelacja: diplomacyProgDarRelacja(undefined, _menuDifficulty),
             progHandelRelacja: dip.progHandelRelacja,
             wchloniecieGoldRequired: graczWchloniecieKosztZloto(csPop, dip),
@@ -20263,18 +20263,18 @@ async function boot(): Promise<void> {
             // (readItemFromForm zawsze dostawal cityId='' -> null). Transfer w silniku dziala
             // per-panstwo (empireFoodStates/zapasyPanstwa), nie per-miasto (main.ts:3592-3601).
             cityOptions: cities
-              .filter(c => c.ownerId === 0)
+              .filter(c => isMe(c.ownerId))
               .map(c => ({ id: c.id, label: c.name, spichlerz: c.magazynZywnosci ?? 0 })),
             receiveCityOptions: cities
               .filter(c => c.ownerId === ownerId)
               .map(c => ({ id: c.id, label: c.name, spichlerz: c.magazynZywnosci ?? 0 })),
             // Zaległość #3 (2026-07-23): resourceOptions PER STRONA — realnie posiadane dobra
             // (diplomacy-goods.ts), nie globalny katalog identyczny po obu stronach.
-            resourceOptions: priceableTradableGoodOptions(0),
-            giveResourceOptions: priceableTradableGoodOptions(0),
+            resourceOptions: priceableTradableGoodOptions(ME()),
+            giveResourceOptions: priceableTradableGoodOptions(ME()),
             receiveResourceOptions: priceableTradableGoodOptions(ownerId),
             // C-DYP-SUROWCE-Q1=B (2026-07-23): surowce ILOŚCIOWE per STRONA (magazyn miast).
-            giveQuantityResourceOptions: quantityTradableGoodOptions(0),
+            giveQuantityResourceOptions: quantityTradableGoodOptions(ME()),
             receiveQuantityResourceOptions: quantityTradableGoodOptions(ownerId),
             // Zaległość #1 (SZYBKA UMOWA) — górny limit złota-dopełniacza w propozycji.
             playerSkarbiec: Math.floor(player.skarbiec),
@@ -20288,11 +20288,11 @@ async function boot(): Promise<void> {
               const result = evaluateProposal(
                 {
                   actionId: 'handel',
-                  proposerOwnerId: 0,
+                  proposerOwnerId: ME(),
                   responderOwnerId: ownerId,
                   payload: { givePn, receivePn },
                 },
-                buildProposalEvalContext(0, ownerId),
+                buildProposalEvalContext(ME(), ownerId),
               );
               return { accepted: result.accepted, pwBalance: result.pwBalance };
             },
@@ -27356,7 +27356,7 @@ async function boot(): Promise<void> {
         }
         console.log(
           `[Dyplomacja] R-WOJNA-WYMUSZONA-REGULY-Q1: limit czasu (${WOJNA_KAMIEN_WYMUSZONA_MAX_CZAS_TRWANIA_TUR} `
-          + `tur) — auto-pokój Kamień AI${st.attackerId}↔AI${st.targetId === 0 ? 'gracz' : `AI${st.targetId}`}`,
+          + `tur) — auto-pokój Kamień AI${st.attackerId}↔AI${isHuman(st.targetId) ? 'gracz' : `AI${st.targetId}`}`,
         );
         finalizePeaceTreatyBetween(
           st.attackerId, st.targetId, WOJNA_KAMIEN_WYMUSZONA_COOLDOWN_TA_SAMA_CYWILIZACJA_TUR,
@@ -27372,7 +27372,7 @@ async function boot(): Promise<void> {
         }
         console.log(
           `[Dyplomacja] R-WOJNA-WYMUSZONA-REGULY-Q1: limit czasu (${WOJNA_WYMUSZONA_MAX_CZAS_TRWANIA_TUR} `
-          + `tur) — auto-pokój Brąz AI${st.attackerId}↔AI${st.targetId === 0 ? 'gracz' : `AI${st.targetId}`}`,
+          + `tur) — auto-pokój Brąz AI${st.attackerId}↔AI${isHuman(st.targetId) ? 'gracz' : `AI${st.targetId}`}`,
         );
         finalizePeaceTreatyBetween(
           st.attackerId, st.targetId, WOJNA_WYMUSZONA_COOLDOWN_TA_SAMA_CYWILIZACJA_TUR,
