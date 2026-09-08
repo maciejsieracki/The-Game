@@ -6984,3 +6984,120 @@ dowodzi obecności wszystkich trzech warstw niezależnie od jakości ikony na zr
 (e) 5 bramek referencyjnych zielone (logic 213/213, tech-tree 19/19, research 33/33,
 unit-replace 13/13, combat 6/6); `tsc --noEmit` czysty. Integracja bezkonfliktowa
 (allowlist-only, 9 plików). Nic do dispatchu.
+
+## `R-HOTSEAT-ETAP6D-RECON-REMAINDER-Q1` — PROCESS — **ZINTEGROWANE 2026-09-08** (commit `acb5f3e0`)
+
+Kontynuacja `R-HOTSEAT-ETAP6D-DIPLOMACY-ENGINE-Q1` (20 funkcji dyplomacji już
+zmigrowanych, komit `6ce48d7d`) — pełna inwentaryzacja POZOSTAŁYCH miejsc kategorii
+dyplomacja. Nowe znalezisko: `playerDeclareWarOnOwner` miało **9** hardcoków ownerId
+literału (nie 7, jak wskazywał wcześniejszy recon), oraz nowa, wcześniej niezmapowana
+rodzina 14-16 funkcji "tabeli negocjacyjnej". Runda przeszła 5/5 rund z powtarzającym
+się błędem cytowań/arytmetyki (złe numery linii, zła sygnatura funkcji, złe sumy) —
+po `LIMIT-5-EXCEEDED` orkiestrator osobiście zweryfikował i poprawił ręcznie dwa
+ostatnie błędy cytowania (Podetap A "7 miejsc"→"9 miejsc", Podetap B wewnętrznie
+niespójne "13 funkcji"→"16→15 funkcji", suma końcowa "7+24+9+24+22=86"→"9+24+9+24+22=88"),
+udokumentowane jawnie w samym dokumencie i w tym wpisie — decyzja orkiestratora, nie
+kolejna runda agenta, uzasadniona zerowym ryzykiem (docs-only, żadna zmiana kodu).
+Finalny podział na Podetapy A–E (~88 miejsc łącznie) czeka na indywidualny dispatch
+każdego podetapu. Etap 6d NADAL NIE jest w pełni zamknięty — Podetapy A-E i pozycje
+poza zakresem (dev-harness/border-march.ts) zostają w tyle do osobnego zaplanowania.
+
+## `R-HOTSEAT-ETAP6E-RENDER-Q1` — GAME — **ZINTEGROWANE 2026-09-08** (commit `b51d6c50`)
+
+Etap 6e (kategoria render/kamera, ~15+27 miejsc w dwóch rundach) hot-seat wieloosobowego:
+migracja literałów `ownerId=0` w klastrze render (`civTypeForOwner`, `relationColorFn`,
+`unitRingStanceForPlayer`, `cityMapOutlineKindForOwner`, `civDisplayNameForOwner`,
+`portraitForceCultureIcon`, `_cityRenderOpts`, `syncWorkerFieldOverlay`,
+`refreshTerritoryBorderOverlay`, `syncOkolicaOverlay`) na `isMe()`/`ME()`/`isMeSafe()`/
+`meNow()`. Nowa bramka `hotseat-etap6e-render-noop-test.cjs` (3× vite build + 3×
+Chromium × 20 tur, PRZED/PO identyczne, czerwienieje na mutacji `ME()`→`-999`).
+Operator→Evaluator→Obrona (runda 2, zero zarzutów)→Final Control PASS. Final Control
+niezależnie zweryfikował nakładanie z już zintegrowanym `R-HOTSEAT-ETAP6B-UI-Q1` (zero
+konfliktu) i błąd numeracji z rundy 1 recon (6 lokalizacji, potwierdził że to inne
+funkcje — dyplomacja PN i handler kliknięcia Etap 6a, nie `cityRenderer.sync`). 5 bramek
+referencyjnych zielone, `tsc --noEmit` czysty.
+
+## `P-AI-ULEPSZENIA-BUDOWA-ZNIKOMA-Q1` — GAME — recon runda 1 **ZINTEGROWANY** (commit
+`c814ab1f`), **DECISION_REQUIRED runda 2 w toku**
+
+Zgłoszenie właściciela: AI buduje znikomą ilość ulepszeń terenu mimo dużego terytorium.
+Runda 1 (docs-only): werdykt — `planCityImprovements` (`ai.ts`) hardcoduje
+`getOnlyWorked:()=>true` dla AI (gracz ma przełącznik w UI); kontrfaktyk (wyłączenie)
+dał 4.6×-6.6× więcej zbudowanych ulepszeń w symulacji 3×150 tur. Właściciel ODRZUCIŁ
+rekomendację (globalne wyłączenie `onlyWorked`) i wskazał precyzyjniejszą regułę:
+ulepszenia żywnościowe zostają ograniczone do obrabianych heksów, surowcowe (tartak/
+kamieniołom/glinianka/kopalnia żelaza) bez ograniczenia — dla AI (państwa, miasta,
+inne cywilizacje). Wskazał też alternatywną hipotezę: blokada przekazywania Pracy do
+puli ulepszeń / budżet budynków marnowany bo technologie nie są rozwijane (powiązanie
+z `P-AI-BADANIA-ZACOFANIE-Q1` niżej). Runda 2 w toku na tej samej gałęzi, dispatch
+`07-dispatch-runda2.md`.
+
+## `P-DROGI-BUDOWA-WYJASNIENIE-TOOLTIP-Q1` — GAME — **ZINTEGROWANE 2026-09-08** (commit `d602c99f`)
+
+Zgłoszenie właściciela: niezrozumiałe ograniczenie miejsc budowy drogi. Orkiestrator
+zweryfikował że `isRoadQualified()` (`improvement-build.ts`) to świadomy, poprawny
+mechanizm spójności sieci (nowy odcinek musi sąsiadować z miastem lub istniejącą
+drogą) — NIE bug. Dodano tooltip wyjaśniający regułę graczowi (drugi wiersz chipa
+trybu budowy, liczony z prawdziwego wyniku silnika `getQualifyingHexes`, nie
+reimplementacji). Zero zmian w `improvement-build.ts`. Operator→Evaluator (zero
+zarzutów)→Final Control PASS. Nowa bramka `drogi-tooltip-real-render-test.cjs` 12/12
+(real Chromium). 5 bramek referencyjnych zielone, `tsc --noEmit` czysty.
+
+## `R-MENU-TRUDNOSC-TOOLTIP-ROZNICE-Q1` — GAME — **ZINTEGROWANE 2026-09-08** (commit `bed9162e`)
+
+Tooltip przy głównym selektorze trudności (`newGameFlow.ts`, krok "Ustawienia
+Rozgrywki") ze świeżo zweryfikowanymi różnicami Normal/Hard (koszt gracza ×2, tempo
+wzrostu populacji, cap ludności, bonus produkcji/nauki/walki AI, bonus startowy,
+agresywność AI, progi dyplomacji, barbarzyńcy) — odpowiedź na pytanie właściciela o
+realny kierunek trudności (osobno ustalono że oś miast-państw jest odrębna, dwuwariantowa:
+`_menuCityStateDifficulty` AI-facing odwrócona / `_menuCityStateDifficultyVsPlayer`
+player-facing wprost, obie nadpisywalne wspólnym suwakiem Zaawansowane — decyzja
+C-025/C-026 z 2026-08-10, pozostawiona bez zmian). Operator→Evaluator (zero
+zarzutów, w tym test mutacyjny potwierdzający nietautologiczność)→Final Control PASS.
+Nowa bramka `menu-trudnosc-tooltip-real-render-test.cjs` 25/25 (real Chromium, 3
+poziomy). 5 bramek referencyjnych zielone, `tsc --noEmit` czysty.
+
+## `P-AI-BARBARZYNCY-PRIORYTET-ELIMINACJA-Q1` — GAME — **ZINTEGROWANE 2026-09-08** (commit `f32f1b3f`)
+
+Zgłoszenie właściciela (zrzut mapy, Rzym): AI ignoruje barbarzyńców na własnym
+terytorium, wojska skupione gdzie indziej, mimo udokumentowanej decyzji
+`P-AI-NIE-BRONI-WLASNYCH-MIAST-PRZED-BARBARZYNCAMI` (ECHO A, 2026-08-09). Root cause:
+`homeThreats` liczone z `engageableEnemyUnits`, wcześniej przefiltrowanego przez
+`opts.visibleHexes` (mgła wojny AI) — `citySightRadius` (terytorium+max3 kultura) jest
+ZAWSZE mniejszy niż zasięg wykrywania zagrożeń domowych (terytorium+4), więc formuła
+nigdy nie widziała zagrożeń poza faktycznym zasięgiem wzroku AI. Naprawa: nowa migawka
+`enemyAllUnitsRegardlessOfVisibility`, `homeThreats` liczone z niej. Operator→Evaluator
+(zero zarzutów, regresja zweryfikowana na starym kodzie jako realna)→Final Control
+PASS. Nowa bramka `ai-home-defense-vs-barbarians-test.cjs` 42/42. 5 bramek
+referencyjnych zielone, `tsc --noEmit` czysty.
+
+## `P-AI-BADANIA-ZACOFANIE-Q1` — GAME — runda 1 **ZINTEGROWANY** (commit `7eef00bf`
+na topic branch, jeszcze NIE scalony do main), **runda 2 w toku**
+
+Zgłoszenie właściciela: AI drastycznie w tyle technologicznie (gracz epoka brązu/żelaza,
+AI ledwo kilka pierwszych technologii). Root cause: `procentNauka` (budżet Nauki AI)
+startuje z 20% i jest zamrożony przez całą fazę early game (25-40 tur), potem cofany
+wojną/kryzysem finansowym — mimo że sufit `MAX_PROCENT_NAUKA=60` już istnieje
+(`R-NAUKA-LIMIT-60-PROC-BUDZETU-Q1`). Runda 1: nowa stała `AI_FIXED_PROCENT_NAUKA=60`,
+bezwarunkowy override w `decideAIEconomySliders` dla AI — symulacja PRZED/PO pokazała
+~3.3× więcej technologii w połowie gry. Evaluator/Obrona rundy 1 znalazły i PRZYJĘŁY
+realny zarzut: naprawa nie obejmowała tury 1 (ani nowo powstałego ownera AI w trakcie
+gry) bo `ownerDefaultPodzialHandlu` seeduje się domyślnym 20% bez gałęzi AI-specyficznej
+w `main.ts`, poza ówczesną allowlistą. Orkiestrator autoryzował (bez ABC) rozszerzenie
+allowlisty o 3 konkretne miejsca w `main.ts` — dokładnie ten sam, już zaakceptowany
+wzorzec co dla `AI_FIXED_PROCENT_BUDYNKI`/`ownerDefaultPodzialPracy` w tym samym pliku.
+Runda 2 w toku, dispatch `07-dispatch-runda2.md`. Uwaga uboczna z rundy 1 (nieblokująca):
+symulacja pokazała głębszy deficyt skarbca po fixie — do rozważenia osobny mechanizm
+ratunkowy przy niskim skarbcu, poza zakresem tego tematu.
+
+## Nowe zgłoszenia w toku (2026-09-08, jeszcze nie zamknięte)
+
+- `P-AI-EKSPANSJA-ODBUDOWA-MIAST-PO-WOJNIE-Q1` (GAME) — AI nie odbudowuje utraconych
+  w wojnie miast mimo posiadanych środków. Dispatch Operator→Evaluator w toku.
+- `P-MARTWY-KOD-PROCENT-PULI-IMPERIUM-Q1` (PROCESS) — martwa funkcja
+  `procentPuliImperiumForOwner` w `main.ts` psuje jedną asercję w
+  `ai-praca-split-parity-test.cjs`. Dispatch Operator→Evaluator w toku.
+- Plan przebudowy kart budynków i jednostek (opis/top3/wymagania/sekcje rozwijane)
+  zaakceptowany przez właściciela w rozmowie — dwa przykładowe prototypy (Opus 5,
+  żywe zrzuty Chromium) w toku, jeszcze nieformalny dispatch AutoBot (czeka na
+  akceptację prototypu przed pełną falą wdrożenia).
