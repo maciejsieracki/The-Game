@@ -4641,6 +4641,22 @@ export const PROG_SOJUSZ = 0.6;
  */
 export const PROG_HANDEL = 0.5;
 
+/**
+ * P-AI-WOJNA-WCZESNA-FAZA-MIASTA-PANSTWA-Q1 (właściciel, 2026-09-08): przez pierwsze
+ * N tur główne cywilizacje AI nie wypowiadają sobie nawzajem "zwykłej" (niewymuszonej,
+ * Priorytet 4) wojny — mają skupić się na zakładaniu miast i (jeśli sytuacja sprzyja)
+ * atakowaniu wyłącznie miast-państw. Dotyczy WYŁĄCZNIE ścieżki Priorytetu 4 (poniżej);
+ * wymuszone wojny epoki (cluster/bronze/stone/iron ForceWarTargetId) są całkowicie poza
+ * zakresem tej stałej i pozostają nietknięte. Po turze > AI_MAJOR_EARLY_NO_WAR_TURNS LUB
+ * po wystąpieniu wymuszonej wojny epoki danej cywilizacji (obsłużone poza tą funkcją —
+ * silnik przestaje przekazywać ograniczenie po tym zdarzeniu) AI wraca do dzisiejszego
+ * zachowania.
+ * EN: for the first N turns, major AI civs do not declare "ordinary" (non-forced,
+ * Priority 4) war on each other — only forced era wars and attacks on city-states are
+ * unaffected.
+ */
+export const AI_MAJOR_EARLY_NO_WAR_TURNS = 25;
+
 // ---------------------------------------------------------------------------
 // Typy wejścia / wyjścia
 // ---------------------------------------------------------------------------
@@ -5360,10 +5376,22 @@ export function decideAIDiplomacy(
     // i przewadze militarnej (rw >= PROG_WOJNA_SILA=0.6) wypowiada wojne.
     // Uwaga: przy rw >= PROG_TRYBUT=0.7 i agresja < 0.75 — trybut juz przejety w P3.
     // Przy rw >= PROG_TRYBUT=0.7 i agresja >= 0.75 — P3 nie przejal, wiec trafiamy tu.
+    // P-AI-WOJNA-WCZESNA-FAZA-MIASTA-PANSTWA-Q1: w oknie pierwszych
+    // AI_MAJOR_EARLY_NO_WAR_TURNS tur ta ścieżka (WYŁĄCZNIE ta — wymuszone wojny epoki
+    // mają osobne priorytety wyżej i nie są tu dotknięte) nie wypowiada wojny drugiej
+    // GŁÓWNEJ cywilizacji AI (rel.isMinorCivPartner === false/undefined ORAZ partner nie
+    // jest graczem); ataki na miasta-państwa (isMinorCivPartner === true) I wojny z
+    // graczem (partnerId === '0', konwencja main.ts — GOAL dotyczy WYŁĄCZNIE AI↔AI, nie
+    // AI↔gracz) pozostają bez zmian przez całe okno.
+    const earlyNoMajorWarWindow =
+      (inp.currentTurn ?? 0) <= AI_MAJOR_EARLY_NO_WAR_TURNS
+      && !rel.isMinorCivPartner
+      && rel.partnerId !== '0';
     if (
       !rel.stanWojny &&
       !rel.peaceLocked &&
       !rel.hasNapTreaty &&
+      !earlyNoMajorWarWindow &&
       stance.willingnessWar > 0 &&
       rw >= effProgWojnaSila &&
       effAgresja >= effProgWojnaAgresja &&

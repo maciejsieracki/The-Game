@@ -1488,9 +1488,12 @@ console.log('\n--- T9a: decideAIDiplomacy - silny+agresywny+wrogi -> wypowiedz_w
 {
   // respektWzgledny=0.7 >= PROG_WOJNA_SILA(0.6), agresja=0.8 >= PROG_WOJNA_AGRESJA(0.5)
   // relacja: zaufanie=5+respekt=5=10 < progMinimalnyRelacja(30) -> wrogie
+  // P-AI-WOJNA-WCZESNA-FAZA-MIASTA-PANSTWA-Q1: currentTurn=30 (> okno 25 tur) — ten test
+  // sprawdza sam mechanizm progu Priorytetu 4, niezaleznie od nowego wczesnego okna.
   const cmds = decideAIDiplomacy({
     myPlayerId: 'ai-1',
     agresja: 0.8,
+    currentTurn: 30,
     relacje: [{
       partnerId: 'rzym-1',
       relation: { zaufanie: 5, respekt: 5, status: 'neutralni' },
@@ -1624,9 +1627,12 @@ console.log('\n--- T9h: decideAIDiplomacy - wiele relacji mieszanych -> komendy 
   // Partner A: b. slaby w wojnie -> oferuj_trybut_za_pokoj
   // Partner B: przyjazny -> brak komendy
   // Partner C: silny agresywny wrogi -> wypowiedz_wojne
+  // P-AI-WOJNA-WCZESNA-FAZA-MIASTA-PANSTWA-Q1: currentTurn=30 (> okno 25 tur) — partner C
+  // testuje sam prog Priorytetu 4, nie nowe wczesne okno.
   const cmds = decideAIDiplomacy({
     myPlayerId: 'ai-1',
     agresja: 0.75,
+    currentTurn: 30,
     // skarbiecGold wymagane dla oferuj_trybut_za_pokoj (partner A) -- patrz T9d.
     skarbiecGold: 100,
     relacje: [
@@ -1664,9 +1670,11 @@ console.log('\n--- T9i: decideAIDiplomacy - max 1 komenda per partner ---');
 
 console.log('\n--- T9j: decideAIDiplomacy - powod jest niepustym stringiem ---');
 {
+  // P-AI-WOJNA-WCZESNA-FAZA-MIASTA-PANSTWA-Q1: currentTurn=30 (> okno 25 tur).
   const cmds = decideAIDiplomacy({
     myPlayerId: 'ai-1',
     agresja: 0.8,
+    currentTurn: 30,
     relacje: [{
       partnerId: 'rzym-1',
       relation: { zaufanie: 5, respekt: 5, status: 'neutralni' },
@@ -1928,9 +1936,11 @@ console.log('\n--- T4S-d: decideAIDiplomacy - wyzszy agresjaMnoznik czesciej wyp
   // Bez mnoznika: effAgresja=0.4 < PROG_ВОЙНА_AGRESJA(0.5) -> BRAK wypowiedzenia
   // Z mnoznikiem 1.5: effAgresja=min(1,0.6) >= 0.5 -> WYPOWIADA wojne
   
+  // P-AI-WOJNA-WCZESNA-FAZA-MIASTA-PANSTWA-Q1: currentTurn=30 (> okno 25 tur).
   const relInput = {
     myPlayerId: 'ai-1',
     agresja: 0.4,
+    currentTurn: 30,
     relacje: [{
       partnerId: 'rzym-1',
       relation: { zaufanie: 5, respekt: 5, status: 'neutralni' },
