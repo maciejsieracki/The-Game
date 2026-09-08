@@ -660,6 +660,38 @@ const SETT: Setting[] = UI_PARAMS.nowa_gra.ustawienia.map(s => ({
   idx: s.domyslny,
 }));
 
+/**
+ * R-MENU-TRUDNOSC-TOOLTIP-ROZNICE-Q1: rozszerzone treści tooltipa (info-icon,
+ * ten sam mechanizm co opcje Zaawansowane) głównego selektora trudności —
+ * czysto opisowe, ZERO zmian liczb balansu. Nadpisuje `descs` z data/ui-params.json
+ * (poza allowlistą tego tematu) treścią świeżo zweryfikowaną w kodzie źródłowym
+ * (difficulty-cost.ts, ai.ts, ai-difficulty-bonus.ts, diplomacy.ts, barbarians.ts,
+ * economy.ts / econ-params.json). Kolejność opcji zakładana ['Łatwy','Normalny','Trudny']
+ * — zabezpieczona dopasowaniem po treści `opts`, nie po samym indeksie.
+ */
+function applyDifficultyTooltipContent(): void {
+  const row = SETT.find(x => x.key === 'difficulty');
+  if (!row) return;
+  const idxEasy = row.opts.indexOf('Łatwy');
+  const idxNormal = row.opts.indexOf('Normalny');
+  const idxHard = row.opts.indexOf('Trudny');
+  if (idxEasy < 0 || idxNormal < 0 || idxHard < 0) return; // struktura się zmieniła — nie zgaduj, zostaw oryginał
+  row.descs[idxEasy] =
+    'Gracz płaci ×1 (AI/miasta-państwa ×2 za budynki/jednostki/badania), rośnie normalnie ' +
+    '(AI ×2 wolniej). AI bez bonusu produkcji/nauki/walki, mniej agresywna. Barbarzyńcy nie ' +
+    'przejmują miast. Trudność miast-państw ma osobne ustawienie w Zaawansowane.';
+  row.descs[idxNormal] =
+    'Symetryczne koszty i tempo wzrostu — gracz i AI na tych samych mnożnikach (×1). ' +
+    'AI: +10% produkcji, +1 nauki/turę, bez bonusu walki. Umiarkowana agresja i częstość ' +
+    'barbarzyńców. Trudność miast-państw ma osobne ustawienie w Zaawansowane.';
+  row.descs[idxHard] =
+    'Gracz płaci ×2 za budynki/jednostki/badania i rośnie ×2 wolniej (AI rośnie ×2 szybciej). ' +
+    'AI: +25% produkcji, +2 nauki/turę, +5% do walki. Dodatkowo: AI agresywniejsza dyplomatycznie ' +
+    'i militarnie, ostrzejsze progi dyplomacji, więcej barbarzyńców (mogą przejąć puste miasto) i ' +
+    'częstsze najazdy morskie. Trudność miast-państw ma osobne ustawienie w Zaawansowane.';
+}
+applyDifficultyTooltipContent();
+
 /** Skaluje opcje miast-państw do wybranej wielkości mapy. */
 function syncMiastaPanstwaOptions(): void {
   const mapRow = SETT.find(x => x.key === 'map_size');
@@ -717,6 +749,7 @@ function resetSettingsFromParams(): void {
     });
   }
   syncMapScaleOptions();
+  applyDifficultyTooltipContent();
   advOpts = { ...DEFAULT_ADVANCED };
 }
 
