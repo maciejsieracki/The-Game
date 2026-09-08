@@ -2490,6 +2490,37 @@ function improvementPriorityForDeficits(
 const AI_IMPROVEMENT_PRACA_SURPLUS = 30;
 
 /**
+ * P-AI-ULEPSZENIA-BUDOWA-ZNIKOMA-Q1 (runda 2, ECHO właściciela 2026-09-08): „jeśli chodzi
+ * o żywnościowe ulepszenia, to tylko tam, gdzie są obywatele, ale surowce mogą być budowane
+ * bez problemu wszędzie […] zasada ogólna dla AI, zarówno państw, miast, jak i innych
+ * cywilizacji". Rozbija dotychczasowy JEDEN globalny `getOnlyWorked: () => true` (hardcoded
+ * niżej w `planCityImprovements`) na logikę PER KATEGORIA ulepszenia. Kategoria „żywność" =
+ * klucze z NIEZEROWYM `bonus.zywnosc` w `gra/data/terrain-improvements.json` (sprawdzone
+ * świeżo tą rundą, `node -e` na surowym JSON, nie na istniejącym eksporcie
+ * `ULEPSZENIA_ZYWNOSCIOWE` z `auto-improvements.ts` -- TEN Set ma inny, udokumentowany cel
+ * tam, w komentarzu przy jego deklaracji, i POMIJA `warzelnia_soli`, mimo że produkuje
+ * `zywnosc: 1`):
+ *   farma:3, irygacja:5, bydlo:2, owce:1, lama:1, oboz_lowiecki:1, tarasy:3,
+ *   lodzie_rybackie:2, warzelnia_soli:1.
+ * Wszystkie pozostałe klucze `AI_IMPROVEMENT_PRIORITY` (tartak, kamieniolom, glinianka,
+ * kopalnia_miedzi/zelaza/cyny, stadnina, posterunek, droga, droga_brukowana, fort) mają
+ * `bonus.zywnosc` zerowy/nieobecny -- kategoria „surowce/infrastruktura", BEZ ograniczenia
+ * do heksów obrabianych dla AI (zgodnie z regułą właściciela: „inne nie-żywnościowe […]
+ * wszędzie"). `wyrab` ZOSTAJE przy kategorii żywnościowej (onlyWorked=true): to KROK
+ * WSTĘPNY sekwencji „wyrąb→farma" (ZASADA 1, R-AI-WYRAB-PRZY-RZECE-FARMY-Q1 runda 4), nie
+ * samodzielne ulepszenie surowcowe -- przeniesienie do kategorii bez ograniczeń
+ * rozjeżdżałoby tę mechanikę bez potrzeby (dispatch tej rundy jej nie dotyka).
+ * Dotyczy WYŁĄCZNIE ścieżki AI (`planCityImprovements`, wołane też przez city-state/kopie
+ * obronne przez `decideDefensiveCopyTurn` -- „zarówno państw, miast, jak i innych
+ * cywilizacji" z ECHO właściciela): gracz zachowuje swój dotychczasowy, ręczny przełącznik
+ * UI „tylko pola z obywatelami" bez zmian (nie czyta tej stałej).
+ */
+const AI_IMPROVEMENT_ZYWNOSCIOWE_KEYS: ReadonlySet<ImprovementKey> = new Set<ImprovementKey>([
+  'farma', 'irygacja', 'bydlo', 'owce', 'lama', 'oboz_lowiecki', 'tarasy', 'lodzie_rybackie',
+  'warzelnia_soli',
+]);
+
+/**
  * D-IMPROVEMENTS: planuje maks. JEDNO ulepszenie terenu NA MIASTO na turę dla
  * AI `ownerId` (throttling wydajności -- patrz raport pkt d). Reużywa
  * `buildImprovementQualifier` (map/improvement-build.ts) -- IDENTYCZNA
@@ -2566,43 +2597,108 @@ function planCityImprovements(
     return set;
   };
 
-  const picks = pickAutoImprovements({
+  const fullPriority = improvementPriorityForDeficits(
+    AI_IMPROVEMENT_PRIORITY,
+    opts.resourceDeficitKeys,
+  );
+  // P-AI-ULEPSZENIA-BUDOWA-ZNIKOMA-Q1 (runda 2): `wyrab` zostaje w koszyku żywnościowym
+  // (onlyWorked=true) -- patrz komentarz przy `AI_IMPROVEMENT_ZYWNOSCIOWE_KEYS`.
+  const foodPriority = fullPriority.filter(
+    k => AI_IMPROVEMENT_ZYWNOSCIOWE_KEYS.has(k) || k === 'wyrab',
+  );
+  const resourcePriority = fullPriority.filter(
+    k => !AI_IMPROVEMENT_ZYWNOSCIOWE_KEYS.has(k) && k !== 'wyrab',
+  );
+
+  const sharedOpts = {
     cities: myCities,
     ownerId,
     map,
     territoryNodes,
-    placedImprovements: opts.placedImprovements,
-    pracaAvailable,
     unlockedTechs: opts.improvementTechs ?? new Set<string>(),
     pracaSurplusThreshold: 0,
     // ZASADA 1 (runda 4): AI CYWILIZACJI buduje domyślnie samą żywność; pełna lista
     // otwiera się dopiero na czas niedoboru surowca (`resourceDeficitKeys`).
     demandDriven: true,
     resourceDeficitKeys: opts.resourceDeficitKeys,
+    // ZASADA 3 (runda 4): diagnostyka nadwyżki dla silnika (main.ts). Dzielona przez OBA
+    // wywołania niżej -- wszystkie pola tego raportu są ustawiane WYŁĄCZNIE na `true`
+    // (nigdy resetowane z powrotem na `false`), więc dwa kolejne wywołania na TYM SAMYM
+    // obiekcie są bezpieczne (monotoniczne OR, nie nadpisanie).
+    surplusReport: opts.improvementSurplusReport,
+    // P-PRACA-SPLIT-FALA292-NIEPEŁNY-Q1: AI podlega temu samemu
+    // absolutnemu splitowi całej puli co gracz. Picker nie może wykonać
+    // drugiego, procentowego podziału na już wydzielonym budżecie.
+    pracaBudgetPercent: 100,
+    maxItemsPerCity: 1,
+    skipWyrab: false,
+    civArchetype: opts.civType,
+    playerEra: opts.civEra ?? 1,
+  };
+
+  // WYWOŁANIE 1 — kategoria ŻYWNOŚCIOWA: zachowanie bez zmian (onlyWorked=true), pełny
+  // budżet ulepszeń dostępny najpierw (jak dotąd -- żywność jest zawsze na początku
+  // `AI_IMPROVEMENT_PRIORITY`/`fullPriority`, więc kolejność wydatku jest identyczna z
+  // pojedynczym wywołaniem sprzed tej rundy).
+  const foodPicks = pickAutoImprovements({
+    ...sharedOpts,
+    placedImprovements: opts.placedImprovements,
+    pracaAvailable,
     // ZASADA 2 (runda 4): domyślnie WŁĄCZONE dla AI CYWILIZACJI (wyjątek złożowy
     // egzekwuje sam picker — patrz `hexAllowsKey` w auto-improvements.ts).
     getOnlyWorked: () => true,
     // Rzutowanie na AICity (= City) jest bezpieczne: `myCities` to pełne obiekty miast
     // tego AI; `AutoImprovementCity` jest tylko WĘŻSZYM widokiem tego samego obiektu.
     getWorkedHexKeys: city => workedHexKeysForAiCity(city as AICity),
-    // ZASADA 3 (runda 4): diagnostyka nadwyżki dla silnika (main.ts).
-    surplusReport: opts.improvementSurplusReport,
-    // P-PRACA-SPLIT-FALA292-NIEPEŁNY-Q1: AI podlega temu samemu
-    // absolutnemu splitowi całej puli co gracz. Picker nie może wykonać
-    // drugiego, procentowego podziału na już wydzielonym budżecie.
-    pracaBudgetPercent: 100,
     improvementBudgetCap: improvementBudget,
-    maxItemsPerCity: 1,
-    skipWyrab: false,
-    civArchetype: opts.civType,
-    playerEra: opts.civEra ?? 1,
-    priorityOverride: improvementPriorityForDeficits(
-      AI_IMPROVEMENT_PRIORITY,
-      opts.resourceDeficitKeys,
-    ),
+    priorityOverride: foodPriority,
+  });
+  const foodSpent = foodPicks.reduce((s, p) => s + p.kosztPraca, 0);
+
+  // Scalony stan `placedImprovements` PRZED wywołaniem 2, żeby ono widziało to, co
+  // wywołanie 1 już postawiło TĘ SAMĄ turę (unika podwójnego stawiania tej samej warstwy
+  // na tym samym heksie i respektuje np. próg lasu/FAZA 0, patrz komentarz w
+  // auto-improvements.ts przy `workingPlaced`).
+  const mergedPlaced = new Map<string, string[]>();
+  if (opts.placedImprovements) {
+    for (const [hk, v] of opts.placedImprovements) {
+      mergedPlaced.set(hk, Array.isArray(v) ? [...v] : [v]);
+    }
+  }
+  const foodPickedCityIds = new Set<string>();
+  for (const p of foodPicks) {
+    const hk = `${p.q},${p.r}`;
+    mergedPlaced.set(hk, [...(mergedPlaced.get(hk) ?? []), p.key]);
+    foodPickedCityIds.add(p.cityId);
+  }
+
+  // P-AI-ULEPSZENIA-BUDOWA-ZNIKOMA-Q1 (runda 2, Evaluator/Operator znalezisko własne przy
+  // testowaniu): bez tego wykluczenia dwa NIEZALEŻNE wywołania `maxItemsPerCity: 1` (jedno
+  // na żywność, jedno na surowce) dają miastu do DWÓCH ulepszeń/turę zamiast dotychczasowego
+  // JEDNEGO -- co w symulacji PRZED/PO windowało też liczbę ŻYWNOŚCIOWYCH ulepszeń (bo
+  // wcześniej dzieliły z surowcowymi TEN SAM jeden slot na hex-po-hexie, teraz każda
+  // kategoria dostawała WŁASNY), łamiąc wprost kryterium 4 dispatchu („żywnościowe zostają
+  // na tym samym poziomie co dziś"). Naprawa: miasto, które W TEJ TURZE dostało już pick
+  // żywnościowy, jest WYKLUCZONE z wywołania 2 -- surowce dostają swój (nieograniczony
+  // hexowo) strzał WYŁĄCZNIE w miastach, gdzie żywność nic nie znalazła, zachowując
+  // dotychczasowy limit „maks. 1 ulepszenie/miasto/turę" 1:1 z kodem sprzed tej rundy.
+  const citiesForResource = myCities.filter(c => !foodPickedCityIds.has(c.id));
+
+  // WYWOŁANIE 2 — kategoria SUROWCOWA/INFRASTRUKTURALNA: BEZ ograniczenia do heksów
+  // obrabianych (ECHO właściciela runda 2: „surowce mogą być budowane bez problemu
+  // wszędzie"), z resztą budżetu i puli po wywołaniu 1, WYŁĄCZNIE dla miast bez picku
+  // żywnościowego tej tury.
+  const resourcePicks = citiesForResource.length === 0 ? [] : pickAutoImprovements({
+    ...sharedOpts,
+    cities: citiesForResource,
+    placedImprovements: mergedPlaced,
+    pracaAvailable: Math.max(0, pracaAvailable - foodSpent),
+    getOnlyWorked: () => false,
+    improvementBudgetCap: Math.max(0, improvementBudget - foodSpent),
+    priorityOverride: resourcePriority,
   });
 
-  return picks.map(p => ({
+  return [...foodPicks, ...resourcePicks].map(p => ({
     type: 'buildImprovement' as const,
     ownerId: p.ownerId,
     q: p.q,

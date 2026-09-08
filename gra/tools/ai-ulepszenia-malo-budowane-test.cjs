@@ -59,8 +59,44 @@
  * samej nadwyzki, zgodnie z pomiarem Evaluatora. Raport obrony jest o tym jawny wobec
  * wlasciciela.
  *
+ * PRZEPROJEKTOWANIE SCENARIUSZA (P-AI-ULEPSZENIA-BUDOWA-ZNIKOMA-Q1, runda 3, ECHO
+ * wlasciciela 2026-09-08): runda 2 tego tematu zdjela ograniczenie „tylko heksy
+ * obrabiane" z kategorii surowcowej AI (`getOnlyWorked: () => false` w WYWOLANIU 2
+ * `planCityImprovements`, ai.ts) — surowce skanuja teraz PELNY promien terytorium
+ * (`cityTerritoryRadius(node)+1`, realna funkcja silnika, NIEZALEZNA od tego, ile
+ * wezlow terytorium przekazuje ten harness). Przy dotychczasowych parametrach
+ * SCENARIUSZA (mapa 36x28, populacja do 14 -> promien 15, ~700+ kandydackich
+ * heksow/miasto) kandydaci surowcowi praktycznie NIGDY sie nie wyczerpuja w 80
+ * turach — `anyCandidate` zostawal `true` przez caly bieg (zmierzone: 0/400 tur
+ * nadwyzki na 5 ziarnach), wiec ZASADA 3 (przedmiot tej bramki) nie mala jak
+ * zadzialac — bramka spadla z 13/13 do 8/13 nie dlatego, ze silnik jest zepsuty
+ * (jest zgodny z ECHO wlasciciela), tylko dlatego, ze scenariusz przestal
+ * generowac obserwowalne zdarzenie nadwyzki.
+ * Naprawa (Sciezka (a) z dispatchu — zmniejszenie mapy/promienia W SAMYM
+ * SCENARIUSZU, nie w silniku): mapa 20x16 (byla 36x28), `POP_CAP=8` (byl 14, wiec
+ * realny promien terytorium — TA SAMA funkcja `cityRangeForPopulation` co w grze —
+ * wychodzi max 8+1=9 zamiast 15, ~217 zamiast ~721 hex-kandydatow), odstep miedzy
+ * miastami w `pickCitySpots` zmniejszony z 8 na 5 (dopasowanie do mniejszej mapy,
+ * inaczej `pickCitySpots` nie znajdowalby 3 miast), `TURNS` z 80 na 160 (populacja
+ * i tak stabilizuje sie do t~=16-28; dodatkowe tury sluza WYCZERPANIU kandydatow na
+ * mniejszej mapie, co przy 80 turach jeszcze nie nastepowalo — zmierzone empirycznie
+ * przyrostowo: 80 tur wciaz 0 nadwyzki, 160 tur daje ~37% tur z `anyCandidate=false`
+ * na obu wariantach PRZED/PO). Zero stalych balansu (`gra/data/*.json`, `ai.ts`,
+ * `auto-improvements.ts`) dotkniete — wylacznie parametry TEGO harnessu (rozmiar
+ * mapy testowej, cap populacji testowej, odstep miast testowych, liczba tur testu).
+ * Wybor wzgledem opcji (b) dispatchu (zdefiniowac nadwyzke w oknie startowym): (a)
+ * daje test BLISZSZY oryginalnemu zamiarowi bramki (mierzy TEN SAM observable —
+ * `anyCandidate`/`surplus` przez cala populacje ustabilizowana, nie tylko wczesna
+ * gre) i nie wymaga nowej definicji „nadwyzki" ani nowych metryk — mniej kruche,
+ * bo nie wprowadza drugiego, rownoleglego pojecia nadwyzki do utrzymania.
+ * Dowod mutacyjny (Operator runda 3, ZATRZYMANY po weryfikacji — NIE w commicie):
+ * `MIN_PROCENT_PULI_IMPERIUM_ZASADA3_NADWYZKA` (cities.ts) tymczasowo zmienione
+ * 10->0 -> bramka 13 PASS/0 FAIL spada do 10 PASS/3 FAIL (Krok 2/3 podloga trzyma,
+ * Obrona zarzutu 1 x2) -> przywrocone do 10, bramka wraca do 13/0. Potwierdza, ze
+ * przeprojektowany scenariusz FAKTYCZNIE wykrywa regres ZASADY 3, nie jest pusty.
+ *
  * Uruchomienie: node tools/ai-ulepszenia-malo-budowane-test.cjs
- * Env: AI_MALO_SEEDS="7,99,512,4242,1337"  AI_MALO_TURNS=80
+ * Env: AI_MALO_SEEDS="7,99,512,4242,1337"  AI_MALO_TURNS=160
  */
 const fs = require('fs');
 const path = require('path');
@@ -108,9 +144,9 @@ const TECHS = new Set([
   'Wojskowość', 'Żegluga', 'Gospodarka wodna', 'Drogi brukowane', 'Matematyka',
 ]);
 const SEEDS = (process.env.AI_MALO_SEEDS || '7,99,512,4242,1337').split(',').map(s => Number(s.trim()));
-const TURNS = Number(process.env.AI_MALO_TURNS || 80);
+const TURNS = Number(process.env.AI_MALO_TURNS || 160); // runda 3: 80->160, patrz naglowek pliku
 const POP_START = 4;
-const POP_CAP = 14;
+const POP_CAP = 8; // runda 3: 14->8 (zmniejsza realny promien terytorium, patrz naglowek)
 const POP_GROWTH_EVERY = 4; // 1 obywatel na miasto co N tur — przybliżenie realnego wzrostu
 const AI_BASELINE_PROCENT_BUDYNKI = 50; // patrz uzasadnienie w nagłówku pliku
 const INCOME_BASE = 8;
@@ -139,7 +175,7 @@ function pickCitySpots(map, n) {
   scored.sort((a, b) => (b.land - a.land) || (a.q - b.q) || (a.r - b.r));
   const out = [];
   for (const s of scored) {
-    if (out.every(o => Math.abs(o.q - s.q) + Math.abs(o.r - s.r) > 8)) out.push(s);
+    if (out.every(o => Math.abs(o.q - s.q) + Math.abs(o.r - s.r) > 5)) out.push(s); // runda 3: 8->5 (mapa mniejsza, patrz naglowek)
     if (out.length >= n) break;
   }
   return out;
@@ -162,7 +198,7 @@ function territoryFor(map, cx, cy, ownerId, cityId, pop) {
 function runOwner(seed, redirectPct, opts) {
   opts = opts || {};
   const deficitFor = opts.deficitFor || (() => []);
-  const map = M.generateMap(36, 28, seed, 'kontynenty');
+  const map = M.generateMap(20, 16, seed, 'kontynenty'); // runda 3: 36x28->20x16 (patrz naglowek)
   const spots = pickCitySpots(map, 3);
   const OWNER = 1;
   const cities = spots.map((s, i) => ({
