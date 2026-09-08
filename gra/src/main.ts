@@ -21993,6 +21993,64 @@ async function boot(): Promise<void> {
         if (playerCity) { playerCity.q = attacker.q; playerCity.r = attacker.r; }
         return { attackerId };
       },
+      // P-WOJNA-EPOKI-NAJTRUDNIEJSZY-NIE-WYBUCHA-Q1: lustro `forceBronzeForcedWarOnPlayer`
+      // wyżej, JEDYNA różnica -- CELOWO POMIJA `diplomaticallyDiscoveredOwners.add(attackerId)`,
+      // żeby inscenizować DOKŁADNIE zgłoszony scenariusz właściciela: gracz nigdy nie "poznał"
+      // (nie odkrył na mapie) AI, której wymuszona wojna epoki wybiera go jako cel. PRZED tą
+      // naprawą (patrz gating w `ownerLoop`/`dipCmdsPlayerFacingForcedWar` wyżej) `dipLayer`
+      // dla tego ownera jest 'pre_contact' i komenda `wypowiedz_wojne` jest kasowana CAŁKOWICIE
+      // -- ta funkcja + `isDiplomaticallyDiscovered` niżej dają żywy dowód PRZED/PO (patrz
+      // `tools/forced-war-player-no-contact-live-test.cjs`). Miasto gracza NIE jest
+      // przesuwane na pozycję attackera (colokacja ustawiałaby widoczność/odkrycie jako
+      // efekt uboczny renderowania mgły) -- zamiast tego pozostaje NA MIEJSCU, wystarczająco
+      // daleko, żeby nie wejść w promień widzenia attackera; celowość gracza jako cel
+      // (pickForcedWarTargetId, forced-war-common.ts, NIETKNIĘTY) jest zagwarantowana przez
+      // wyzerowanie wszystkich pozostałych AI z eligibility (isBarbarian wykluczone z definicji,
+      // pozostałe otrzymują pending=false przez brak wpisu w bronzeForceWarPendingOwners/
+      // bronzeForceWarCycleOwners, więc jedynym podmiotem w puli warless-bronze tej tury
+      // pozostaje attackerId, a gracz jest jego jedynym możliwym kandydatem po stronie
+      // pickForcedWarTargetId, patrz test).
+      forceBronzeForcedWarOnPlayerNoContact: (): { attackerId: number } => {
+        const attacker = cities.find(c =>
+          c.ownerId > 0
+          && !typCityCopyOwners.has(c.ownerId)
+          && !isBarbarian(c.ownerId)
+          && !eliminatedOwners.has(c.ownerId)
+          && !isOwnerClusterCityState(c.ownerId, ownerCityStateOpts()),
+        );
+        if (!attacker) throw new Error('forceBronzeForcedWarOnPlayerNoContact: brak eligible AI ownera w tym świecie');
+        const attackerId = attacker.ownerId;
+        for (const oid of allPowerOwnerIds()) {
+          if (oid === attackerId || isBarbarian(oid)) continue;
+          const rel = getDiploRelation(attackerId, oid);
+          if (rel.status === 'wojna') setDiploRelation(attackerId, oid, { ...rel, status: 'neutralni' });
+        }
+        bronzeForceWarPendingOwners.add(attackerId);
+        bronzeForceWarCycleOwners.delete(attackerId);
+        for (const [key, st] of [...bronzeForceWarActiveByPairKey.entries()]) {
+          if (st.attackerId === attackerId) bronzeForceWarActiveByPairKey.delete(key);
+        }
+        // Wyklucz WSZYSTKIE inne AI z puli "warless-bronze" tej tury -- attackerId musi
+        // zostać jedynym podmiotem `bronzeTriggeredSubjects` żeby gracz (jedyny pozostały
+        // kandydat, patrz komentarz nagłówkowy) był deterministycznie wybrany jako cel.
+        for (const c of cities) {
+          const oid = c.ownerId;
+          if (oid <= 0 || oid === attackerId || isBarbarian(oid) || typCityCopyOwners.has(oid)) continue;
+          bronzeForceWarPendingOwners.delete(oid);
+          bronzeForceWarCycleOwners.delete(oid);
+        }
+        // BRAK diplomaticallyDiscoveredOwners.add(attackerId) -- to jest CAŁY sens tego haka.
+        // Dodatkowo: KASUJEMY ewentualny wpis, gdyby fast-forward `endTurn()` sandboxa
+        // `?playtest=mapa` (jeden AI, mała mapa) zdążył go ustawić naturalnie przez realną
+        // widoczność PRZED wywołaniem tego haka (obserwowane empirycznie w tej rundzie: do
+        // tury 24 gracz i jedyne AI tego sandboxa już się "widzieli"). To NIE zmienia
+        // mechanizmu odkrycia (D-START-3A, computeDiplomaticContacts, NIETKNIĘTE) -- tylko
+        // resetuje stan TEGO jednego ownera dla tej jednej, kontrolowanej próby testowej,
+        // dokładnie tak jak resztę stanu (wojny, pending) kilka linii wyżej.
+        diplomaticallyDiscoveredOwners.delete(attackerId);
+        return { attackerId };
+      },
+      isDiplomaticallyDiscovered: (ownerId: number): boolean => diplomaticallyDiscoveredOwners.has(ownerId),
       // R-WOJNA-ZELAZO-DOWOD-ROZGRYWKA-Q1: lustro `forceBronzeForcedWarOnPlayer` wyżej,
       // 1:1 te same zasady, dla Żelaza. Hak WYŁĄCZNIE steruje danymi wejściowymi (kto ma
       // pending wpis Żelaza, kto jest odkryty, gdzie stoi miasto gracza) — sama decyzja i
@@ -32192,9 +32250,40 @@ async function boot(): Promise<void> {
                   partitionDiplomacyCommandsForPlayerFog(
                     Array.isArray(dipCmdsRaw) ? dipCmdsRaw : [],
                   );
+                // P-WOJNA-EPOKI-NAJTRUDNIEJSZY-NIE-WYBUCHA-Q1: `wypowiedz_wojne` wymuszonej
+                // wojny epoki (Kamień/Brąz/Żelazo) NA GRACZA jest "z udziałem gracza" więc
+                // trafia do `dipCmdsPlayerFacing` powyżej i BEZ tej naprawy przechodziłby
+                // przez `dipLayer` pełną bramką D3-Q2 — dokładnie tak jak zwykłe (niewymuszone)
+                // wypowiedzenie wojny na gracza. Efekt (potwierdzony żywym dowodem właściciela
+                // z jego rozgrywki, dispatch): dopóki gracz nie odkrył/nie "poznał" tej AI na
+                // mapie (`contactedOwners` pusty dla ownerId), `dipLayer==='pre_contact'` i
+                // `filterDiplomacyCommandsForLayer` kasuje komendę CAŁKOWICIE — wymuszona wojna
+                // epoki nigdy nie wybucha, mimo że `assignForcedWarPairings`/`isEligibleForXForcedWar`
+                // poprawnie wybrały gracza jako cel (main.ts) i `decideAIDiplomacy` (ai.ts)
+                // poprawnie wygenerowała komendę. To jest DOKŁADNIE "wytrych" opisany przez
+                // właściciela: unikanie wojny wymuszonej samym nie-poznaniem cywilizacji.
+                //
+                // Naprawa: identyfikujemy TĘ KONKRETNĄ komendę po `powod` (stały prefiks
+                // ustawiany przez `decideAIDiplomacy` wyłącznie w gałęziach forced-war epoki,
+                // ai.ts — NIETKNIĘTE, poza allowlistą tego dispatchu, tylko czytane tu jako
+                // istniejący, publiczny kontrakt komendy) i filtrujemy ją WARSTWĄ BEZ MGŁY
+                // GRACZA (`dipLayerIgnoringPlayerFog`), dokładnie jak AI↔AI wyżej — zamiast
+                // `dipLayer`. Zwykłe (niewymuszone) wypowiedzenie wojny na gracza (bez tego
+                // `powod`) zostaje NIETKNIĘTE: nadal przez `dipLayer`, nadal kasowane bez
+                // kontaktu — D3-Q2 bez regresji, patrz `tools/p-wojna-wymuszona-trzy-naprawy-test.cjs`.
+                const FORCED_EPOCH_WAR_POWOD_RE = /^R-EPOKA-(BRAZU|KAMIEN|ZELAZO)-WYMUSZONA-WOJNA:/;
+                const isForcedEpochWarDeclareCmd = (c: AIDiplomacyCommand): boolean =>
+                  c.type === 'wypowiedz_wojne'
+                  && typeof c.powod === 'string'
+                  && FORCED_EPOCH_WAR_POWOD_RE.test(c.powod);
+                const dipCmdsPlayerFacingForcedWar = dipCmdsPlayerFacing.filter(isForcedEpochWarDeclareCmd);
+                const dipCmdsPlayerFacingNormal = dipCmdsPlayerFacing.filter(
+                  c => !isForcedEpochWarDeclareCmd(c),
+                );
                 const dipCmdsLayered = filterCityStateTributeCommands(
                   [
-                    ...filterDiplomacyCommandsForLayer(dipCmdsPlayerFacing, dipLayer),
+                    ...filterDiplomacyCommandsForLayer(dipCmdsPlayerFacingNormal, dipLayer),
+                    ...filterDiplomacyCommandsForLayer(dipCmdsPlayerFacingForcedWar, dipLayerIgnoringPlayerFog),
                     ...filterDiplomacyCommandsForLayer(dipCmdsAiToAiWar, dipLayerIgnoringPlayerFog),
                   ],
                   isOwnerClusterCityState(ownerId, ownerCityStateOpts()),
@@ -32297,6 +32386,24 @@ async function boot(): Promise<void> {
                           `[Dyplomacja] R-EPOKA-ZELAZO-WYMUSZONA-WOJNA: AI${ownerId} `
                           + `wypowiada wymuszoną wojnę sąsiadowi AI${targetId}`,
                         );
+                      }
+                      // P-WOJNA-EPOKI-NAJTRUDNIEJSZY-NIE-WYBUCHA-Q1 (runda 1, obrona Zarzutu 1
+                      // Evaluatora): skuteczne wypowiedzenie wymuszonej wojny epoki NA GRACZA
+                      // musi też ujawnić napastnika -- dokładnie tak, jak dispatch proponował
+                      // ważyć w opcji (a) ("tak jak realnie wypowiedzenie wojny ujawnia
+                      // przeciwnika"). Bez tego panel dyplomacji (`buildAudienceActions`/
+                      // `playerDiplomacyActionAllowed`, oba liczą `diplomacyLayerForOwner`
+                      // z `contactedOwners`=`diplomaticallyDiscoveredOwners`) nadal pokazywał
+                      // 'pre_contact'/"Brak kontaktu" dla ownerId mimo realnej wojny (relacja
+                      // ='wojna') -- gracz nie mógł nawet zaproponować pokoju stronie, z którą
+                      // faktycznie walczy. Ograniczone WYŁĄCZNIE do komend z `powod` wymuszonej
+                      // wojny epoki (ta sama klasyfikacja `isForcedEpochWarDeclareCmd` co przy
+                      // gatingu wyżej) -- zwykłe (niewymuszone) DOW AI na gracza NIETKNIĘTE,
+                      // nadal nie ujawniają automatycznie napastnika (bez zmian, D3-Q2 jak
+                      // dotychczas).
+                      if (targetId === 0 && isForcedEpochWarDeclareCmd(cmd)) {
+                        diplomaticallyDiscoveredOwners.add(ownerId);
+                        diplomaticContactEstablished.add(ownerId);
                       }
                       if (targetId === 0 || ownerId === 0) {
                         pruneTributeNegotiationsBetween(ownerId, targetId);
