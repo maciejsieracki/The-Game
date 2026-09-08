@@ -7554,7 +7554,7 @@ async function boot(): Promise<void> {
         const ownerIds = [...new Set([
           ...saved.cities.map(c => c.ownerId),
           ...saved.units.map(u => u.ownerId),
-        ].filter(id => id !== 0))].sort((a, b) => a - b);
+        ].filter(id => isAiOwner(humanSeats, id)))].sort((a, b) => a - b);
         const civId = player.civType || _menuCivId || 'grecy';
         const allCivIds = civIdsAvailableAtGameEpoch(
           data.civs.cywilizacje as Parameters<typeof civIdsAvailableAtGameEpoch>[0],
