@@ -8203,7 +8203,23 @@ function appendBuildQueueSection(
         grip.title = 'Przeciągnij, aby zmienić kolejność';
         qi.appendChild(grip);
       }
-      qi.appendChild(productionQueueIconSpan(data, it));
+      const queueIcon = productionQueueIconSpan(data, it);
+      qi.appendChild(queueIcon);
+      if (data && it.kind === 'budynek') {
+        const queueDef = findBuildingDef(data, it.id);
+        if (queueDef) {
+          // Read-only karta kolejki: celowo bez `item`, aby karta nie dostała
+          // przycisków budowy/usunięcia ani żadnego callbacku mutującego kolejkę.
+          attachInteractiveDetail(
+            queueIcon,
+            () => buildBuildingBuildTabDetailCard(queueDef, data, city, {
+              ctx: productionCtxForCity(city),
+              techs: cfg.getUnlockedTechs?.(city.ownerId) ?? [],
+            }),
+            { delayMs: 260, sideHint: 'auto' },
+          );
+        }
+      }
       const qLabel = el('span');
       qLabel.style.cssText = 'flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;';
       qLabel.textContent = it.nazwa;
@@ -8327,6 +8343,21 @@ function renderProd(mount: HTMLElement, city: City, view: CityView | null): void
     const row = el('div');
     row.style.cssText = 'display:flex;gap:0.55em;align-items:flex-start;';
     appendProductionPicon(row, data, front);
+    if (data && front.kind === 'budynek') {
+      const frontIcon = row.querySelector('.picon') as HTMLElement | null;
+      const frontDef = findBuildingDef(data, front.id);
+      if (frontIcon && frontDef) {
+        // Read-only karta aktywnego budynku; podgląd nie dotyka `setProd`.
+        attachInteractiveDetail(
+          frontIcon,
+          () => buildBuildingBuildTabDetailCard(frontDef, data, city, {
+            ctx: productionCtxForCity(city),
+            techs: cfg.getUnlockedTechs?.(city.ownerId) ?? [],
+          }),
+          { delayMs: 260, sideHint: 'auto' },
+        );
+      }
+    }
     const body = el('div');
     body.style.flex = '1';
     body.innerHTML =
