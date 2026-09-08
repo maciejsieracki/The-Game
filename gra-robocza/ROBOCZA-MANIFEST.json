@@ -1,10 +1,10 @@
 {
-  "publishedAt": "2026-09-07T21:15:00",
-  "sourceBuild": "/tmp/civ-dist-fala360",
-  "note": "FALA 360 - R-WOJNA-WYMUSZONA-PROG-TURY-GRACZ-Q1: naprawiony zywy bug zgloszony przez wlasciciela (baner \"THE GAME - BOOT ERROR\" w turze 1 swiezej gry). (1) Gracz dolacza do puli parowania wojny wymuszonej dopiero od tury 25, spojnie z AI (wczesniej: od tury 1, bez progu). (2) Usuniety BOOT ERROR CATCHER w index.html przechwytujacy console.error bezterminowo - kazdy zwykly log gry zamienial sie w rosnacy czerwony baner \"crash\". Takze etapy hot-seat 0-3 (fundament, bez zadnego wplywu na dzisiejsza rozgrywke jednoosobowa) sa juz zawarte w tym buildzie.",
+  "publishedAt": "2026-09-08T00:10:00",
+  "sourceBuild": "/tmp/civ-dist-fala361",
+  "note": "FALA 361 - domkniecie backlogu zywych zgloszen wlasciciela z tej sesji: (1) R-ULEPSZENIA-FARMA-IRYGACJA-BYDLO-STACK-Q1 - farma+irygacja+bydlo moga wspolistniec na jednym polu z dostepem do wody. (2) R-HOTSEAT-ETAP4-NOOP-HARNESS-Q1 - nowa bramka dowodu no-op pod przyszle rozciecie triggerPlayerEndTurn (zero zmian w main.ts). (3) R-ENTITYCARD-ROZWINIETE-SEKCJE-SCROLLBAR-Q1 - karta technologii: sekcje domyslnie rozwiniete + trwaly pasek przewijania. (4) R-ULEPSZENIA-TARTAK-LAS-ZALEZNOSC-Q1 - straznik wyscigu przy budowie tartak/oboz_lowiecki + tartak znika razem z lasem (odwrocenie kanonu, do potwierdzenia ABC). Wczesniej tego dnia rowniez: R-DYPLO-RELACJA-ETYKIETA-BLEDNA-Q1, R-HANDEL-WYMIANA-DAR-DEADLOCK-Q1, R-DYPLO-POKOJ-KIERUNEK-I-ZADANIE-AI-Q1, R-HUD-ZETONY-EKONOMIA-BRUTTO-Q1, R-PODBOJ-SUROWCE-BILANS-BRAK-WIERSZA-Q1, R-PODBOJ-ELIMINACJA-PULA-PRACY-TRANSFER-Q1, R-MIASTA-LIMIT-PODBOJ-PROWENIENCJA-CYWILIZACJA-Q1.",
   "publisher": "Orkiestrator (Claude Code)",
   "bundle": "Gra-ROBOCZA.html",
-  "md5": "611ff10db8a6f8509f298e71872c2dd5",
+  "md5": "a7cc9af3f7d14be38821ac51a959a887",
   "bundlePoleBitwy": "Gra-ROBOCZA-POLE-BITWY.html",
   "md5PoleBitwy": "d4477b3eaed627e426c41b9f8d0ad1f1"
 }

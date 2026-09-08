@@ -13,6 +13,18 @@ swoim wĹ‚asnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji d
 > Pakiet 3 z 2026-08-20 jest docs-only i nie tworzy wpisu ROBOCZA/KANON/FINALNA;
 > ten plik pozostaje wyłącznie rejestrem publikacji bundli.
 
+## ROBOCZA a7cc9af3 - 2026-09-08 00:10 UTC - FALA 361: domknięcie backlogu żywych zgłoszeń (4 tematy) + Etap 4 hot-seat (bramka no-op)
+
+|- md5 (pełne): a7cc9af3f7d14be38821ac51a959a887 · stempel: ROBOCZA · label a7cc9af3 · źródłowe commity integracji: `a3649f23` (farma+irygacja+bydło), `2a99ec69` (hot-seat noop-harness), `fb10a248` (entity-card rozwinięte+scrollbar), `2e57c2dd` (tartak/las)
+|- **`R-ULEPSZENIA-FARMA-IRYGACJA-BYDLO-STACK-Q1`** — usunięte wzajemne wykluczanie irygacja/bydło w `canAddFoodLayer()`; pole z dostępem do rzeki może mieć jednocześnie farmę+irygację+bydło (grafika już na to pozwalała, mechanika nie). Świadomie duża przewaga pól z wodą, zgodnie z intencją właściciela.
+|- **`R-HOTSEAT-ETAP4-NOOP-HARNESS-Q1`** — nowa bramka dowodu no-op (`hotseat-etap4-noop-test.cjs`, 30-turowa headless symulacja, hash SHA-256 stanu, deterministyczny `Math.random`) pod przyszłą, faktyczną rundę rozcięcia `triggerPlayerEndTurn()` (Etap 4 planu hot-seat, najwyższe ryzyko całego planu). Zero zmian w `main.ts` — wyłącznie infrastruktura testowa.
+|- **`R-ENTITYCARD-ROZWINIETE-SEKCJE-SCROLLBAR-Q1`** — karta technologii: sekcje „Ulepszenia terenu"/„Zmiany ekonomiczne" domyślnie rozwinięte (bez klikania) + trwale widoczny, stylowany pasek przewijania `.entity-card-dialog`. Dispatchowane i zweryfikowane na Opus 5 (wyjątek graficzny/wizualny §5a) po samokorekcie proceduralnej rundy 1.
+|- **`R-ULEPSZENIA-TARTAK-LAS-ZALEZNOSC-Q1`** — (A, bug) strażnik ponownej weryfikacji lasu przed komitem budowy tartak/obóz łowiecki (naprawia wyścig: budowa mogła dojść do skutku na heksie, który w tej samej turze utracił las przez inny komit). (B, **decyzja projektowa orkiestratora, autonomiczna w nocy, DO POTWIERDZENIA RANO — ABC**) tartak dołączony do zbioru ulepszeń usuwanych razem z lasem — znika teraz tak jak obóz łowiecki, odwracając wcześniejszy, wyłącznie w kodzie udokumentowany kanon (dotyczył innego scenariusza — wizualnego znikania lasu na wzgórzu).
+|- Wcześniej tego dnia zintegrowane i w tym buildzie: `R-DYPLO-RELACJA-ETYKIETA-BLEDNA-Q1`, `R-HANDEL-WYMIANA-DAR-DEADLOCK-Q1` (**decyzja autonomiczna orkiestratora, ABC**), `R-DYPLO-POKOJ-KIERUNEK-I-ZADANIE-AI-Q1`, `R-HUD-ZETONY-EKONOMIA-BRUTTO-Q1`, `R-PODBOJ-SUROWCE-BILANS-BRAK-WIERSZA-Q1`, `R-PODBOJ-ELIMINACJA-PULA-PRACY-TRANSFER-Q1`, `R-MIASTA-LIMIT-PODBOJ-PROWENIENCJA-CYWILIZACJA-Q1`.
+|- tsc --noEmit 0 błędów na całości · 5 bramek referencyjnych zielonych na każdej integracji (logic 213/213, tech-tree 19/19, research 33/33, unit-replace 13/13, combat 6/6) · Vite build 886 modułów, singlefile.
+|- Bundle pola bitwy (`Gra-ROBOCZA-POLE-BITWY.html`) pominięty — żaden temat tej fali nie dotyka mechaniki walki polowej; md5 z FALI 353 zachowany bez zmian.
+|- **AKTUALNA**
+
 ## ROBOCZA 611ff10d - 2026-09-07 21:15 UTC - FALA 360: wojna wymuszona — próg tury gracza + naprawa banera BOOT ERROR
 
 |- md5 (pełne): 611ff10db8a6f8509f298e71872c2dd5 · stempel: ROBOCZA · label 611ff10d · źródłowy commit integracji: `8a9a1271` (`R-WOJNA-WYMUSZONA-PROG-TURY-GRACZ-Q1`, 3 rundy)
