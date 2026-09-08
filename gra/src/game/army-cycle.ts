@@ -45,14 +45,24 @@ export function isUnitActiveForCycle(u: RuntimeUnit): boolean {
  * / EN: shared implementation of the player-army cycling list (1 lead per hex; spatial order).
  * `requireMoves=true` → only stacks with moves left this turn (Space, post-move "drum" auto-cycle).
  * `requireMoves=false` → all active stacks regardless of moves (HUD ◀▶ arrows).
+ *
+ * R-HOTSEAT-ETAP6A-INPUT-Q1: moduł jest CZYSTY (zero stanu gry, nie importuje
+ * `human-owners.ts`) -- `isMe` jest wstrzykiwane przez main.ts (woła
+ * `(u) => isMe(u.ownerId)` z jego własnego `isMe(ownerId)`), dokładnie jak już
+ * istniejące `canMove`, zamiast literału `ownerId === 0`. Wartość domyślna
+ * poniżej (`u.ownerId === 0`) jest wyłącznie dla ISTNIEJĄCYCH callerów spoza
+ * allowlisty tego tematu (np. `tools/scout-explore-deselect-cycle-test.cjs`),
+ * którzy jeszcze nie wstrzykują `isMe` -- behawioralnie identyczna z kodem
+ * sprzed tej rundy, więc nie zmienia ich wyniku.
  */
 export function cyclablePlayerArmyLeadsBase(
   units: ReadonlyArray<RuntimeUnit>,
   requireMoves: boolean,
   canMove: (u: RuntimeUnit) => boolean,
+  isMe: (u: RuntimeUnit) => boolean = (u) => u.ownerId === 0,
 ): RuntimeUnit[] {
   const playerUnits = units.filter(
-    u => u.ownerId === 0 && isUnitActiveForCycle(u) && (!requireMoves || canMove(u)),
+    u => isMe(u) && isUnitActiveForCycle(u) && (!requireMoves || canMove(u)),
   );
   // Grupowanie MUSI iść po stackRenderKey (tożsamość STOSU + POZYCJA + garnizon) — patrz
   // komentarz BB2 przy stackRenderKey w armyMerge.ts. / EN: grouping MUST use stackRenderKey

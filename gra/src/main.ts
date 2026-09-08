@@ -5813,7 +5813,7 @@ async function boot(): Promise<void> {
     function syncPlayerUnitSelectionOnMap(): void {
       if (selectedId === null) return;
       const u = units.find(x => x.id === selectedId);
-      if (!u || u.ownerId !== 0) return;
+      if (!u || !isMe(u.ownerId)) return;
       unitRenderer.setSelectionHex(u.q, u.r, u.ownerId);
       if (isSiegeMapPanelOpen()) {
         reachable = new Set<string>();
@@ -5930,7 +5930,7 @@ async function boot(): Promise<void> {
 
     function selectPlayerUnit(unitId: string, keepListOpen = false, preserveDetailExpanded = false): void {
       const u = units.find(x => x.id === unitId);
-      if (!u || u.ownerId !== 0) return;
+      if (!u || !isMe(u.ownerId)) return;
       // R-SCOUT-ZWIEDZAJ-HIGHLIGHT 2026-08-04: NIE czyść autoExplore przy zaznaczeniu —
       // inaczej przycisk Zwiedzaj nigdy nie pokazuje stanu WŁ (złota ramka 3px).
       // Wyjście z auto: toggle Zwiedzaj / rozkaz marszu (planMarchTo) — jak Czuwaj.
@@ -5980,13 +5980,13 @@ async function boot(): Promise<void> {
     /** Wszystkie armie gracza (1 wiodąca/heks) z DOSTĘPNYM RUCHEM — kolejność przestrzenna.
      * Używane przez Spację i auto-cykl „bęben” po wyczerpaniu ruchu. */
     function cyclablePlayerArmyLeads(): RuntimeUnit[] {
-      return cyclablePlayerArmyLeadsBase(units, true, stackCanMove);
+      return cyclablePlayerArmyLeadsBase(units, true, stackCanMove, (u) => isMe(u.ownerId));
     }
 
     /** Wszystkie armie gracza (1 wiodąca/heks), NIEZALEŻNIE od dostępnego ruchu — kolejność
      * przestrzenna. Używane przez strzałki HUD ◀▶ (decyzja właściciela 2026-08-08). */
     function cyclablePlayerArmyLeadsAll(): RuntimeUnit[] {
-      return cyclablePlayerArmyLeadsBase(units, false, stackCanMove);
+      return cyclablePlayerArmyLeadsBase(units, false, stackCanMove, (u) => isMe(u.ownerId));
     }
 
     /**
@@ -10382,6 +10382,14 @@ async function boot(): Promise<void> {
     function isHuman(ownerId: number): boolean {
       return isHumanOwner(humanSeats, ownerId);
     }
+    /** R-HOTSEAT-ETAP6A-INPUT-Q1: cienki alias „czy ten ownerId to aktywny fotel
+     *  człowieka". Odróżnia się od `isHuman(ownerId)` (pyta „czy TEN ownerId jest
+     *  KTÓRYMKOLWIEK fotelem człowieka") -- `isMe` pyta „czy to JA (aktywny
+     *  fotel)". Dziś behawioralny no-op wobec `ownerId === 0`, bo jest tylko jeden
+     *  fotel (`ME() === HUMAN_OWNER_PRIMARY === 0` zawsze). */
+    function isMe(ownerId: number): boolean {
+      return ownerId === ME();
+    }
     /** R-HOTSEAT-ETAP-2-MGLA-WOJNY-Q1 (scaffold, runda 1): per-fotel-człowieka
      *  odkryte heksy. Dziś zawiera dokładnie jeden wpis, `ME() -> explored` —
      *  DOSŁOWNIE ten sam obiekt Set co istniejący globalny `explored` (nie kopia),
@@ -11340,7 +11348,7 @@ async function boot(): Promise<void> {
     function openSplitPanelForSelected(): void {
       if (selectedId === null) return;
       const active = units.find(x => x.id === selectedId);
-      if (!active || active.ownerId !== 0) return;
+      if (!active || !isMe(active.ownerId)) return;
       // BB2: rozdzielamy WYŁĄCZNIE własny stos aktywnej jednostki (stackGroupIdOf),
       // nie każdego, kto akurat dzieli ten sam heks — dwie niezależne armie na
       // wspólnym origin (po wcześniejszym „Zostaw osobno") nie mają się mieszać
@@ -11446,7 +11454,7 @@ async function boot(): Promise<void> {
               // BB2: „ci, którzy zostali" = ta sama grupa co przed rozdzieleniem
               // (activeGroupId, ustalone PRZED mutacją) — nie każdy właściciela na
               // heksie, gdyby akurat dzielił go z inną, niezależną armią.
-              const remain = visibleStackOnHex(units, srcQ, srcR, 0, activeGroupId);
+              const remain = visibleStackOnHex(units, srcQ, srcR, ME(), activeGroupId);
               if (remain.length > 1) syncStackRuchLeft(remain);
             }
           }
@@ -11478,7 +11486,7 @@ async function boot(): Promise<void> {
     function openMergePanelForSelected(): void {
       if (selectedId === null) return;
       const active = units.find(x => x.id === selectedId);
-      if (!active || active.ownerId !== 0) return;
+      if (!active || !isMe(active.ownerId)) return;
       const stack = playerStackAt(active);
       const srcQ = active.q;
       const srcR = active.r;
@@ -21525,7 +21533,7 @@ async function boot(): Promise<void> {
             if (isAwaitingFirstPlayerCity()) return false;
             if (selectedId === null) return false;
             const u = units.find(x => x.id === selectedId);
-            if (!u || u.ownerId !== 0) return false;
+            if (!u || !isMe(u.ownerId)) return false;
             return canMergeSelectedStack(u, playerStackAt(u));
           },
           onMerge: () => {
@@ -21535,7 +21543,7 @@ async function boot(): Promise<void> {
             if (isAwaitingFirstPlayerCity()) return false;
             if (selectedId === null) return false;
             const u = units.find(x => x.id === selectedId);
-            if (!u || u.ownerId !== 0) return false;
+            if (!u || !isMe(u.ownerId)) return false;
             // BB2: musi być spójne z openSplitPanelForSelected — ten sam
             // stackGroupId, inaczej przycisk „Rozdziel" włącza się (bo hex ma
             // ≥2 jednostki właściciela z INNEJ armii), a panel i tak nic nie
@@ -23380,7 +23388,7 @@ async function boot(): Promise<void> {
       }
       if (isCityUnitPickOpen()) return false;
       const u = units.find(x => x.id === selectedId);
-      if (!u || u.ownerId !== 0) return false;
+      if (!u || !isMe(u.ownerId)) return false;
       clearScoutAutoExplore(u);
       if (u.oblegaCityId) {
         const sc = cities.find(c => c.id === u.oblegaCityId);
@@ -23398,7 +23406,7 @@ async function boot(): Promise<void> {
       const attackTarget = attackUnitId
         ? units.find(x => x.id === attackUnitId)
         : units.find(
-          x => x.q === destQ && x.r === destR && x.ownerId !== 0 && x.ownerId !== u.ownerId,
+          x => x.q === destQ && x.r === destR && !isMe(x.ownerId) && x.ownerId !== u.ownerId,
         );
       if (attackTarget && !currentVisible().has(keyOf(attackTarget.q, attackTarget.r))) {
         showHintMessage('Cel niewidoczny (mgła).', 3500);
@@ -23586,9 +23594,9 @@ async function boot(): Promise<void> {
       processMarchQueue();
     }
 
-    function executePlannedMarchesEndTurn(): void {
+    function executePlannedMarchesEndTurn(humanOwnerId: number): void {
       const ids = units
-        .filter(u => u.ownerId === 0 && plannedMarches.has(u.id)
+        .filter(u => u.ownerId === humanOwnerId && plannedMarches.has(u.id)
           && !movedByPlayerThisTurn.has(u.id)
           && planningStackRuchLeft(playerStackAt(u)) > 0)
         .map(u => u.id);
@@ -23596,11 +23604,11 @@ async function boot(): Promise<void> {
     }
 
     /** Zastosuj segment marszu bez animacji (koniec tury gracza — przed odnowieniem MP). */
-    function applyMarchSegmentInstant(unitId: string): boolean {
+    function applyMarchSegmentInstant(unitId: string, humanOwnerId: number): boolean {
       if (isAwaitingFirstPlayerCity()) return false;
       const u = units.find(x => x.id === unitId);
       const dest = plannedMarches.get(unitId);
-      if (!u || !dest || u.ownerId !== 0) return false;
+      if (!u || !dest || u.ownerId !== humanOwnerId) return false;
 
       const stack = playerStackAt(u);
       const stackRuch = planningStackRuchLeft(stack);
@@ -23643,10 +23651,10 @@ async function boot(): Promise<void> {
         for (const su of stack) {
           addExplored(explored, computeVisibleAlongPath(result.movePath, map, unitSight(su)));
         }
-        if (u.ownerId === 0) hutCollected = checkVillageRewardsAlongPath(result.movePath);
-        // P-BARBARZYNCY-USUWANIE-SEMANTYKA-Q1: `u` jest zawsze graczem (guard
-        // `u.ownerId !== 0` wyżej) -- nigdy barbarzyńcą, więc bez isBarbarian.
-        // / EN: `u` is always the player (ownerId !== 0 guard above) -- never
+        if (u.ownerId === humanOwnerId) hutCollected = checkVillageRewardsAlongPath(result.movePath);
+        // P-BARBARZYNCY-USUWANIE-SEMANTYKA-Q1: `u` jest zawsze fotelem `humanOwnerId`
+        // (guard wyżej) -- nigdy barbarzyńcą, więc bez isBarbarian.
+        // / EN: `u` is always seat `humanOwnerId` (guard above) -- never
         // a barbarian, so no isBarbarian check needed here.
         campDestroyed = checkBarbCampDestructionAlongPath(result.movePath);
         const bonusChanged = applyCityVisitBonusesAlongPath(
@@ -23678,12 +23686,12 @@ async function boot(): Promise<void> {
      * Kontynuacja zaplanowanych marszy na KONIEC tury gracza (nie na starcie kolejnej).
      * Zużywa pozostałe MP bieżącej tury; jednostki z rozkazem gracza w tej turze są pomijane.
      */
-    function runPlannedMarchesAtPlayerEndTurn(): void {
-      executePlannedMarchesEndTurn();
+    function runPlannedMarchesAtPlayerEndTurn(humanOwnerId: number): void {
+      executePlannedMarchesEndTurn(humanOwnerId);
       while (marchExecQueue.length > 0) {
         const id = marchExecQueue.shift()!;
         if (!plannedMarches.has(id)) continue;
-        if (!applyMarchSegmentInstant(id)) continue;
+        if (!applyMarchSegmentInstant(id, humanOwnerId)) continue;
       }
       syncUnitsRender();
     }
@@ -24265,7 +24273,7 @@ async function boot(): Promise<void> {
       }
 
       const uSel = units.find(x => x.id === selectedId);
-      if (!uSel || uSel.ownerId !== 0) {
+      if (!uSel || !isMe(uSel.ownerId)) {
         applyMapCanvasCursor(CURSOR_MAP_DEFAULT);
         if (hoverKey !== null) { hoverKey = null; unitRenderer.clearPathRoute(); }
         return;
@@ -24392,7 +24400,7 @@ async function boot(): Promise<void> {
       if (isCityPanelOpen()) {
         const panelCityId = getOpenCityPanelCityId();
         const panelCity = panelCityId ? cities.find(c => c.id === panelCityId) : undefined;
-        if (panelCity && panelCity.ownerId === 0) {
+        if (panelCity && isMe(panelCity.ownerId)) {
           const rad = cityRangeForPopulation(panelCity.population);
           const d = hexDistance(panelCity.q, panelCity.r, hit.q, hit.r);
           if (d > 0 && d <= rad && map.hexes[keyOf(hit.q, hit.r)]) {
@@ -24423,9 +24431,9 @@ async function boot(): Promise<void> {
         const req = buildApi.handleHexClick(hit.q, hit.r);
         if (req) return;
         const nodes = buildAllTerritoryNodes();
-        if (nodes.length > 0 && !isTerritoryHexOwnedBy(hit.q, hit.r, 0, nodes)) {
+        if (nodes.length > 0 && !isTerritoryHexOwnedBy(hit.q, hit.r, ME(), nodes)) {
           showBuildTerritoryBlockedHint(hit.q, hit.r);
-        } else if (!nodes.length && !isPlayerTerritoryHex(hit.q, hit.r, playerCityNodes(), nodes, 0)) {
+        } else if (!nodes.length && !isPlayerTerritoryHex(hit.q, hit.r, playerCityNodes(), nodes, ME())) {
           showBuildTerritoryBlockedHint(hit.q, hit.r);
         } else if (!buildApi.canBuild(activeImprovementKey, hit.q, hit.r)) {
           showHintMessage('Nie można tu zbudować (teren / złoże)', 2500);
@@ -24441,7 +24449,7 @@ async function boot(): Promise<void> {
       // Tryb okolicy na mapie 3D (legacy — po „Mapa” w starym drawerze)
       if (okolicaMapEditCityId) {
         const okCity = cities.find(c => c.id === okolicaMapEditCityId);
-        if (okCity && okCity.ownerId === 0) {
+        if (okCity && isMe(okCity.ownerId)) {
           const rad = cityRangeForPopulation(okCity.population);
           const d = hexDistance(okCity.q, okCity.r, hit.q, hit.r);
           if (d > 0 && d <= rad && map.hexes[keyOf(hit.q, hit.r)]) {
@@ -24470,7 +24478,7 @@ async function boot(): Promise<void> {
       const clickedCity = cities.find(c => c.q === hit.q && c.r === hit.r);
       if (clickedCity) {
         const sel = selectedId !== null ? units.find(u => u.id === selectedId) : null;
-        const playerSel = sel && sel.ownerId === 0 ? sel : null;
+        const playerSel = sel && isMe(sel.ownerId) ? sel : null;
 
         const dispatchMapEnemyCityClick = (action: MapEnemyCityClickAction): void => {
           switch (action.kind) {
@@ -24531,7 +24539,7 @@ async function boot(): Promise<void> {
         };
 
         if (playerSel) {
-          if (clickedCity.ownerId === 0) {
+          if (isMe(clickedCity.ownerId)) {
             if (planMarchTo(clickedCity.q, clickedCity.r)) return;
             showHintMessage(clickedCity.name + ' — brak trasy do miasta.', 3500);
             return;
@@ -24540,7 +24548,7 @@ async function boot(): Promise<void> {
             city: clickedCity,
             selectedUnit: playerSel,
             units,
-            playerOwnerId: 0,
+            playerOwnerId: ME(),
             isCityVisible: city =>
               !fogOn || currentVisible().has(keyOf(city.q, city.r)),
           });
@@ -24563,8 +24571,8 @@ async function boot(): Promise<void> {
           return;
         }
 
-        if (clickedCity.ownerId === 0) {
-          const stackOnCity = visibleStackOnHex(units, hit.q, hit.r, 0);
+        if (isMe(clickedCity.ownerId)) {
+          const stackOnCity = visibleStackOnHex(units, hit.q, hit.r, ME());
           if (stackOnCity.length > 0) {
             const rep = unitAtRepresentative(hit.q, hit.r, units, unitAttackScore) ?? stackOnCity[0]!;
             const stackHpSum = stackOnCity.reduce(
@@ -24596,7 +24604,7 @@ async function boot(): Promise<void> {
           city: clickedCity,
           selectedUnit: sel ?? null,
           units,
-          playerOwnerId: 0,
+          playerOwnerId: ME(),
           isCityVisible: city =>
             !fogOn || currentVisible().has(keyOf(city.q, city.r)),
         });
@@ -24621,7 +24629,7 @@ async function boot(): Promise<void> {
 
       const cu = unitAtRepresentative(hit.q, hit.r, units, unitAttackScore);
 
-      if (cu && cu.ownerId === 0) {
+      if (cu && isMe(cu.ownerId)) {
         const sel = selectedId !== null ? units.find(x => x.id === selectedId) : null;
         const hitKey = keyOf(hit.q, hit.r);
         if (sel && sel.id !== cu.id && sel.q === cu.q && sel.r === cu.r) {
@@ -24631,13 +24639,13 @@ async function boot(): Promise<void> {
         } else {
           selectPlayerUnit(cu.id);
         }
-      } else if (selectedId !== null && cu !== null && cu.ownerId !== 0) {
+      } else if (selectedId !== null && cu !== null && !isMe(cu.ownerId)) {
         // MAP PLAYER ATTACK: jednostka → jednostka (sąsiad) → preBattle C-01
         const atkUnit = units.find(x => x.id === selectedId);
-        if (atkUnit && atkUnit.ownerId === 0 && stackCanMove(atkUnit) &&
+        if (atkUnit && isMe(atkUnit.ownerId) && stackCanMove(atkUnit) &&
             hexDistance(atkUnit.q, atkUnit.r, cu.q, cu.r) <= 1) {
           withPlayerWarConsent(cu.ownerId, () => openPlayerMapUnitAttack(atkUnit, cu));
-        } else if (atkUnit && atkUnit.ownerId === 0) {
+        } else if (atkUnit && isMe(atkUnit.ownerId)) {
           if (!stackCanMove(atkUnit)) {
             showHintMessage('Brak ruchu — zakończ turę lub wybierz inną jednostkę.', 3500);
           } else if (!currentVisible().has(keyOf(cu.q, cu.r))) {
@@ -24657,10 +24665,10 @@ async function boot(): Promise<void> {
         }
       } else if (selectedId !== null) {
         const sel = units.find(x => x.id === selectedId);
-        if (sel && sel.ownerId === 0) {
+        if (sel && isMe(sel.ownerId)) {
           planMarchTo(hit.q, hit.r);
         }
-      } else if (cu !== null && cu.ownerId !== 0) {
+      } else if (cu !== null && !isMe(cu.ownerId)) {
         offerForeignUnitInteraction(cu);
       } else {
         clearForeignUnitInspect();
@@ -25276,7 +25284,7 @@ async function boot(): Promise<void> {
 
     /** MAP PLAYER ATTACK: jednostka → jednostka (sąsiad) → preBattle C-01 */
     function openPlayerMapUnitAttack(atkUnit: RuntimeUnit, defUnit: RuntimeUnit): void {
-      if (atkUnit.ownerId === 0 && defUnit.ownerId !== 0 && !playerIsAtWarWith(defUnit.ownerId)) {
+      if (isMe(atkUnit.ownerId) && !isMe(defUnit.ownerId) && !playerIsAtWarWith(defUnit.ownerId)) {
         withPlayerWarConsent(defUnit.ownerId, () => openPlayerMapUnitAttackCore(atkUnit, defUnit));
         return;
       }
@@ -33303,15 +33311,16 @@ async function boot(): Promise<void> {
     }
 
     // R-HOTSEAT-ETAP4B-SPLIT-Q1 (Krok 2): faza 0-6 dawnej `triggerPlayerEndTurn()`, wydzielona
-    // pod jawną nazwą. `humanOwnerId` (dziś zawsze HUMAN_OWNER_PRIMARY) jest dziś NIEUŻYWANY w
-    // ciele -- podłączenie punktowych literałów `0` (np. runScoutsAutoExplore, main.ts ok.
-    // 28590) do tego argumentu jest ŚWIADOMIE odłożone do Etapu 6 (tabela B2 planu hot-seat),
-    // zgodnie z dyspozycją tej rundy -- nie poszerzamy zakresu tego już-ryzykownego tematu.
-    // Architektura (a) (patrz raport rundy): `runWorldEndTurn()` pozostaje wołana Z WEWNĄTRZ tej
-    // funkcji, dokładnie jak po Etapie 4a -- `advanceSeat()` niżej jest dziś cienkim punktem
-    // wejścia, nie osobnym orkiestratorem obu faz z własnym try/catch/finally.
+    // pod jawną nazwą. R-HOTSEAT-ETAP6A-INPUT-Q1: `humanOwnerId` (dziś zawsze
+    // HUMAN_OWNER_PRIMARY, podawany przez jedyne wywołanie niżej) jest teraz PODŁĄCZONY do
+    // wszystkich 13 pozycji klastra D+F (D1-D3 w `executePlannedMarchesEndTurn`/
+    // `applyMarchSegmentInstant`, F1-F5 fizycznie w tym ciele, F6-F10 w `renderLoop`) --
+    // zastępuje dawne punktowe literały `0` (`runScoutsAutoExplore` i in.), zgodnie z tabelą B2
+    // planu hot-seat. Architektura (a) (patrz raport rundy): `runWorldEndTurn()` pozostaje
+    // wołana Z WEWNĄTRZ tej funkcji, dokładnie jak po Etapie 4a -- `advanceSeat()` niżej jest
+    // dziś cienkim punktem wejścia, nie osobnym orkiestratorem obu faz z własnym
+    // try/catch/finally.
     function endActiveHumanTurn(humanOwnerId: number): void {
-      void humanOwnerId; // patrz komentarz wyżej -- zarezerwowane pod Etap 6/8, nieużywane dziś
       healStuckDeferredPreBattleQueueOnEndTurnAttempt();
       if (!canPlayerInitiateEndTurn()) {
         console.warn('[EndTurn] triggerPlayerEndTurn: odrzucono (canPlayerInitiateEndTurn=false)');
@@ -33366,7 +33375,7 @@ async function boot(): Promise<void> {
             deductStackRuchLeft(stack, anim.cost);
             // TEMAT #15: woda -> zaokrętowanie, ląd -> zejście na ląd.
             applyEmbarkStateAfterMove(stack, map);
-            if (u.ownerId === 0 && anim.pathHexes.length > 0) {
+            if (u.ownerId === humanOwnerId && anim.pathHexes.length > 0) {
               endTurnAnimHutCollected = checkVillageRewardsAlongPath(anim.pathHexes);
             }
             if (anim.pathHexes.length > 0) {
@@ -33379,7 +33388,7 @@ async function boot(): Promise<void> {
               const bonusChanged = applyCityVisitBonusesAlongPath(
                 stack,
                 anim.pathHexes,
-                u.ownerId === 0,
+                u.ownerId === humanOwnerId,
               );
               if (bonusChanged) syncUnitsRender();
             }
@@ -33396,7 +33405,7 @@ async function boot(): Promise<void> {
             units,
             map,
             explored,
-            0,
+            humanOwnerId,
             unitSight,
             Math.random,
             (u) => {
@@ -33414,15 +33423,16 @@ async function boot(): Promise<void> {
               // jedynym wpieciem osiagalnym z main.ts (scout-auto-explore.ts jest poza
               // allowlista tematu).
               revealAlongPathForStack([u], [{ q: u.q, r: u.r }]);
-              if (u.ownerId === 0) {
+              if (u.ownerId === humanOwnerId) {
                 if (checkVillageRewardAt(u.q, u.r)) scoutHutCollected = true;
               }
               // P-BARBARZYNCY-USUWANIE-SEMANTYKA-Q1: runScoutsAutoExplore filtruje
-              // wewnętrznie do playerOwnerId (0) -- `u` jest zawsze graczem, nigdy
-              // barbarzyńcą. / EN: runScoutsAutoExplore filters internally to
-              // playerOwnerId (0) -- `u` is always the player, never a barbarian.
+              // wewnętrznie do playerOwnerId (`humanOwnerId`) -- `u` jest zawsze fotelem
+              // `humanOwnerId`, nigdy barbarzyńcą. / EN: runScoutsAutoExplore filters
+              // internally to playerOwnerId (`humanOwnerId`) -- `u` is always seat
+              // `humanOwnerId`, never a barbarian.
               checkBarbCampDestroyedAt(u.q, u.r);
-              if (applyCityVisitBonusesAtHex(u, u.q, u.r, u.ownerId === 0)) {
+              if (applyCityVisitBonusesAtHex(u, u.q, u.r, u.ownerId === humanOwnerId)) {
                 syncUnitsRender();
               }
             },
@@ -33438,7 +33448,7 @@ async function boot(): Promise<void> {
         }
         // C-RUCH: kontynuacja wieloturowej trasy na KONIEC tury gracza (pozostałe MP),
         // nie na starcie kolejnej — gracz może w tej turze zmienić kierunek.
-        runPlannedMarchesAtPlayerEndTurn();
+        runPlannedMarchesAtPlayerEndTurn(humanOwnerId);
         clearPlayerUnitSelectionStateOnly();
         setTurnTransition(6, 'Zakończenie ruchów gracza…', 'Gracz', nextTurnNum);
         await yieldTurnTransitionUi();
@@ -33584,7 +33594,7 @@ async function boot(): Promise<void> {
           }
         } else if (selectedId !== null) {
           const sel = units.find(x => x.id === selectedId);
-          if (sel && sel.ownerId === 0) {
+          if (sel && isMe(sel.ownerId)) {
             foundQ = sel.q;
             foundR = sel.r;
           }
@@ -33716,18 +33726,18 @@ async function boot(): Promise<void> {
               for (const su of stack) {
                 addExplored(explored, computeVisibleAlongPath(pathHexes, map, unitSight(su)));
               }
-              if (u.ownerId === 0) hutCollected = checkVillageRewardsAlongPath(pathHexes);
+              if (isMe(u.ownerId)) hutCollected = checkVillageRewardsAlongPath(pathHexes);
               campDestroyed = checkBarbCampDestructionAlongPath(pathHexes);
               const bonusChanged = applyCityVisitBonusesAlongPath(
                 stack,
                 pathHexes,
-                u.ownerId === 0,
+                isMe(u.ownerId),
               );
               if (bonusChanged) syncUnitsRender();
             } else {
-              if (u.ownerId === 0) hutCollected = checkVillageRewardAt(destQ, destR);
+              if (isMe(u.ownerId)) hutCollected = checkVillageRewardAt(destQ, destR);
               campDestroyed = checkBarbCampDestroyedAt(destQ, destR);
-              if (u.ownerId === 0 && applyCityVisitBonusesAtHex(u, destQ, destR, true)) {
+              if (isMe(u.ownerId) && applyCityVisitBonusesAtHex(u, destQ, destR, true)) {
                 syncUnitsRender();
               }
             }
@@ -33777,7 +33787,7 @@ async function boot(): Promise<void> {
           // C: auto-cykl „bęben" — jednostka gracza wyczerpała ruch (bez marszu
           // wieloturowego w toku) → przejdź do następnej armii, która wciąż ma dostępny ruch
           // (te same semantyki co Spacja — R-SPACJA-KOLEJNA-JEDNOSTKA-PETLA).
-          if (u && u.ownerId === 0 && selectedId === finishedId
+          if (u && isMe(u.ownerId) && selectedId === finishedId
               && !stackCanMove(u) && !plannedMarches.has(finishedId)
               && !isAnimating && isWorldMapUnitMode()) {
             cycleToAdjacentPlayerUnit(finishedId, 1);
