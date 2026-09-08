@@ -9,12 +9,30 @@ const esbuild = require(path.resolve(__dirname, '..', 'node_modules', 'esbuild')
 const GRA = path.resolve(__dirname, '..');
 const ENTRY = path.join(__dirname, '.kamieniolom-kamien-epoka-entry.ts');
 const BUNDLE = path.join(__dirname, '.kamieniolom-kamien-epoka-bundle.cjs');
+const MUTATED_TERRAIN = path.resolve(__dirname, '..', 'src/game/.kamieniolom-kamien-epoka-mutated.ts');
+const formulaModule = process.env.MUTATE_FORMULA
+  ? '../src/game/.kamieniolom-kamien-epoka-mutated'
+  : '../src/game/terrain-improvements';
+
+if (process.env.MUTATE_FORMULA) {
+  const sourcePath = path.resolve(__dirname, '..', 'src/game/terrain-improvements.ts');
+  const source = fs.readFileSync(sourcePath, 'utf8');
+  const mutated = source.replace('Math.pow(1.5, normalizedEra - 1)', 'Math.pow(1.4, normalizedEra - 1)');
+  if (mutated === source) throw new Error('Nie znaleziono formuły epoki do mutacji');
+  fs.writeFileSync(MUTATED_TERRAIN, mutated, 'utf8');
+}
+const cleanup = () => {
+  if (fs.existsSync(ENTRY)) fs.unlinkSync(ENTRY);
+  if (fs.existsSync(BUNDLE)) fs.unlinkSync(BUNDLE);
+  if (fs.existsSync(MUTATED_TERRAIN)) fs.unlinkSync(MUTATED_TERRAIN);
+};
+process.on('exit', cleanup);
 
 fs.writeFileSync(ENTRY, `
 export {
   territoryResourceYieldForImprovement,
-  resourceProductionAmountForEra,
 } from '../src/game/terrain-improvements';
+export { resourceProductionAmountForEra } from '${formulaModule}';
 export { computeTerritoryResourceYieldByCity } from '../src/game/turn-economy';
 export { buildTerritoryNodesFromCities } from '../src/map/territory-work';
 `, 'utf8');
@@ -72,9 +90,8 @@ for (const [era, expected] of [[1, 200], [2, 300], [3, 450]]) {
 }
 
 console.log('-- Mutacja formuły --');
-const formulaBase = process.env.MUTATE_FORMULA ? 199 : 200;
-eq(M.resourceProductionAmountForEra('kamieniolom', formulaBase, 2), 300,
-  'mutacja formuły/bazy (MUTATE_FORMULA=1) musi zaczerwienić test');
+eq(M.resourceProductionAmountForEra('kamieniolom', 200, 2), 300,
+  'mutacja samej formuły/mnożnika epoki (MUTATE_FORMULA=1) musi zaczerwienić test');
 
 console.log(`\n${passed} PASS, ${failed} FAIL`);
 process.exitCode = failed ? 1 : 0;

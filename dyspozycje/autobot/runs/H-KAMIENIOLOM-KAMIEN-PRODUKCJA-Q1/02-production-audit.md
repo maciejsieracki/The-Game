@@ -1,6 +1,6 @@
 # Audyt produkcji surowców terytorialnych
 
-Temat: `H-KAMIENIOLOM-KAMIEN-PRODUKCJA-Q1`  
+Temat: `H-KAMIENIOLOM-KAMIEN-PRODUKCJA-Q1`
 Stan: po implementacji Operatora, 2026-09-08
 
 ## Reguła naliczania
