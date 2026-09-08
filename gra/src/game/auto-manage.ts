@@ -26,6 +26,9 @@ import {
 } from './okolica';
 import {
   buildableProduction,
+  buildingLevelForEpoch,
+  buildingProductionItem,
+  buildingTypeQueued,
   frontItem,
   splitPraca,
   type CityProduction,
@@ -263,6 +266,77 @@ function affordableCandidates(
   });
 }
 
+/**
+ * P-BUDOWA-AUTO-NIE-LADUJE-ULEPSZEN-Q1 (2026-09-08): drugi poziom puli auto-budowy --
+ * ulepszenia POZIOMU budynkow juz zbudowanych w tym miescie (przycisk manualny "Ulepsz" w
+ * cityPanel.ts, ta sama funkcja co tam: buildingLevelForEpoch + buildingProductionItem, ten
+ * sam ProductionItem{id} co juz zbudowany budynek, ale na wyzszym poziomie kosztu).
+ *
+ * DIAGNOZA (zywa symulacja, gra/tools/.probe-ulepszenia.cjs, PRZED naprawa): `buildableProduction`
+ * (production.ts) celowo WYKLUCZA z listy kandydatow kazdy budynek juz w `builtBuildingIds`
+ * (`buildingTypeCommitted`) -- to poprawne dla NOWYCH budynkow (nie budujemy dwa razy tego
+ * samego), ale oznacza ze podniesienie poziomu (ten sam `id`, wyzszy `targetLevel`) NIGDY nie
+ * trafia do `candidates`, wiec `pickAutoBuildItem` nie moze go wybrac w ZADNYM z trzech trybow
+ * (`priorytet`/`lista`/`zrownowazone` dziela ta sama liste `candidates`) -- jedna wspolna wada,
+ * nie trzy osobne. Ulepszenia w relacji `upgradeFrom` (inny `id`, np. `odlewnia_zelaza`) NIE sa
+ * dotkniete -- juz sa zwyklymi kandydatami w `buildableProduction`.
+ */
+function buildUpgradeCandidates(
+  city: Readonly<City>,
+  prod: Readonly<CityProduction>,
+  data: ProductionData,
+  input: Pick<AutoManageInput, 'unlockedTechs' | 'ctx' | 'ownerSurowcePool'>,
+): ProductionItem[] {
+  const ctx = input.ctx ?? {};
+  const epoch = Number.isFinite(ctx.epoch) ? (ctx.epoch as number) : 1;
+  const built = ctx.builtBuildingIds ?? [];
+  const unlockedTechs = input.unlockedTechs ?? [];
+  const surowcePool = input.ownerSurowcePool ?? city.surowce;
+
+  const items: ProductionItem[] = [];
+  const seen = new Set<string>();
+  for (const id of built) {
+    if (seen.has(id)) continue;
+    seen.add(id);
+    const def = data.buildings.find(b => b.id === id);
+    if (!def || !(def.maksPoziom > 1)) continue;
+    if (buildingTypeQueued(id, prod.kolejka)) continue;
+    const targetLevel = buildingLevelForEpoch(def.epokaWejscia, epoch, def.maksPoziom, def.poziomTechGate, unlockedTechs);
+    if (targetLevel <= 1) continue;
+    const item = buildingProductionItem(id, data, targetLevel, ctx.civBonusy, ctx.buildingCostPace, ctx.ownerId, ctx.difficulty);
+    if (!item) continue;
+    const cost = buildingStockCost(def);
+    if (Object.keys(cost).length > 0 && !canAffordBuildingStock(surowcePool, cost)) continue;
+    items.push(item);
+  }
+  return items;
+}
+
+/** Selekcja wg trybu miasta -- wspolna dla puli "nowe budynki" i puli fallback "ulepszenia". */
+function pickForTryb(
+  tryb: 'priorytet' | 'lista' | 'zrownowazone',
+  candidates: readonly ProductionItem[],
+  city: Readonly<City>,
+  data: ProductionData,
+): ProductionItem | null {
+  if (candidates.length === 0) return null;
+
+  if (tryb === 'lista') {
+    return pickNextFromBudowaLista(city.budowaLista ?? [], candidates);
+  }
+
+  if (tryb === 'zrownowazone') {
+    return bestCandidateForFocus(candidates as ProductionItem[], data, 'zrownowazone');
+  }
+
+  const typy = budowaPriorytetTypowFor(city);
+  for (const focus of typy) {
+    const pick = bestCandidateForFocus(candidates as ProductionItem[], data, focus);
+    if (pick) return pick;
+  }
+  return null;
+}
+
 export function pickAutoBuildItem(
   city: Readonly<City>,
   prod: Readonly<CityProduction>,
@@ -273,21 +347,24 @@ export function pickAutoBuildItem(
   const tryb = city.budowaTryb ?? DEFAULT_BUDOWA_TRYB;
   if (tryb !== 'priorytet' && tryb !== 'lista' && tryb !== 'zrownowazone') return null;
 
+  // Poziom 1: nowe budynki (i upgrade'y typu upgradeFrom -- juz zwykli kandydaci tutaj).
   const candidates = affordableCandidates(city, data, input);
-  if (candidates.length === 0) return null;
+  const pick = pickForTryb(tryb, candidates, city, data);
+  if (pick) return pick;
 
+  // Poziom 2 (fallback, R-BUDOWA-AUTO-ULEPSZENIA-Q1): pula nowych budynkow wyczerpana/bez
+  // dopasowania (np. lista/ognisko gracza nie wskazuje zadnego dostepnego nowego budynku) --
+  // zaladuj ulepszenia POZIOMU budynkow juz zbudowanych, zamiast zostawiac auto-budowe bezczynna
+  // mimo dostepnych "Ulepsz" w panelu manualnym.
+  const upgrades = buildUpgradeCandidates(city, prod, data, input);
+  if (upgrades.length === 0) return null;
+
+  const upgradePick = pickForTryb(tryb, upgrades, city, data);
+  if (upgradePick) return upgradePick;
   if (tryb === 'lista') {
-    return pickNextFromBudowaLista(city.budowaLista ?? [], candidates);
-  }
-
-  if (tryb === 'zrownowazone') {
-    return bestCandidateForFocus(candidates, data, 'zrownowazone');
-  }
-
-  const typy = budowaPriorytetTypowFor(city);
-  for (const focus of typy) {
-    const pick = bestCandidateForFocus(candidates, data, focus);
-    if (pick) return pick;
+    // Lista gracza nie wymienia zadnego z dostepnych id ulepszen -- zamiast bezczynnosci,
+    // wybierz najlepsze dostepne ulepszenie wg tego samego profilu co tryb 'zrownowazone'.
+    return bestCandidateForFocus(upgrades, data, 'zrownowazone');
   }
   return null;
 }
