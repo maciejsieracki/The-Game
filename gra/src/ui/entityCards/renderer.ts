@@ -212,6 +212,65 @@ function buildPillRowEl(row: EntityCardData['sections'][number]['rows'][number])
   return pill;
 }
 
+/** P-KARTA-PRZEBUDOWA-UKLAD-Q1 — `layout: 'prose'`: jeden akapit pełnej szerokości.
+ * Treść bierzemy z `row.value`, a gdy puste — z `row.label`, żeby adapter mógł zapisać
+ * jednozdaniowy opis w dowolnym z dwóch pól bez cichej pustki na karcie. Zero siatki
+ * label/value: proza ma płynąć przez całą szerokość karty (patrz `types.ts`). */
+function buildProseRowEl(row: EntityCardData['sections'][number]['rows'][number]): HTMLElement {
+  const p = el('p', 'entity-card-prose');
+  p.textContent = row.value !== '' ? row.value : row.label;
+  return p;
+}
+
+/** P-KARTA-PRZEBUDOWA-UKLAD-Q1 — `layout: 'top3'`: numerowana, wyróżniona pozycja
+ * („pigułka") z tytułem (`row.label`) i tekstem (`row.value`). Numer liczony z pozycji
+ * w sekcji, więc adapter podaje same treści, nie ozdobniki. `row.icon` (kontrakt sprzed
+ * tego tematu) jest honorowany — zastępuje numer, gdy adapter go poda. */
+function buildTop3RowEl(
+  row: EntityCardData['sections'][number]['rows'][number],
+  index: number,
+): HTMLElement {
+  const item = el('div', 'entity-card-top3-item');
+  const rank = el('span', 'entity-card-top3-rank');
+  rank.setAttribute('aria-hidden', 'true');
+  if (row.icon) rank.innerHTML = row.icon.svg;
+  else rank.textContent = String(index + 1);
+  const body = el('div', 'entity-card-top3-body');
+  const title = el('b', 'entity-card-top3-title');
+  title.textContent = row.label;
+  body.appendChild(title);
+  if (row.value !== '') {
+    const textEl = el('span', 'entity-card-top3-text');
+    textEl.textContent = row.value;
+    body.appendChild(textEl);
+  }
+  item.append(rank, body);
+  return item;
+}
+
+/** Klasa kontenera wierszy per layout — jedno miejsce prawdy zamiast ternarnych
+ * `layout === 'pills' ? ... : ...` rozsianych po `buildSectionEl`. */
+function rowsContainerClass(layout: 'grid' | 'pills' | 'prose' | 'top3'): string {
+  if (layout === 'pills') return 'entity-card-section-pills';
+  if (layout === 'prose') return 'entity-card-section-prose';
+  if (layout === 'top3') return 'entity-card-section-top3';
+  return 'entity-card-section-grid';
+}
+
+/** Jeden wiersz per layout — patrz `rowsContainerClass`. `index` jest globalny w obrębie
+ * sekcji (nie w obrębie kontenera „reszta"), żeby numeracja `top3` nie zaczynała się od
+ * nowa w części schowanej za „Pokaż pozostałe N". */
+function buildRowElForLayout(
+  layout: 'grid' | 'pills' | 'prose' | 'top3',
+  row: EntityCardData['sections'][number]['rows'][number],
+  index: number,
+): HTMLElement {
+  if (layout === 'pills') return buildPillRowEl(row);
+  if (layout === 'prose') return buildProseRowEl(row);
+  if (layout === 'top3') return buildTop3RowEl(row, index);
+  return buildGridRowEl(row);
+}
+
 /** Buduje jedną sekcję karty — akordeon (jeśli `collapsible`), layout grid/pills,
  * paginacja `previewLimit`, badge listy płaskiej na dole (bez zmian z T1). `cardEl`
  * jest potrzebny wyłącznie do sprzężenia „Pokaż pozostałe N" z
@@ -231,22 +290,23 @@ function buildSectionEl(
   heading.appendChild(headingLabel);
 
   const layout = section.layout ?? 'grid';
-  const grid = el('div', layout === 'pills' ? 'entity-card-section-pills' : 'entity-card-section-grid');
+  const grid = el('div', rowsContainerClass(layout));
   const previewLimit = section.previewLimit;
   const showAll = previewLimit == null || previewLimit >= section.rows.length;
   const visibleRows = showAll ? section.rows : section.rows.slice(0, Math.max(0, previewLimit));
   const hiddenRows = showAll ? [] : section.rows.slice(Math.max(0, previewLimit));
-  for (const row of visibleRows) {
-    grid.appendChild(layout === 'pills' ? buildPillRowEl(row) : buildGridRowEl(row));
-  }
+  visibleRows.forEach((row, i) => {
+    grid.appendChild(buildRowElForLayout(layout, row, i));
+  });
   let restEl: HTMLElement | null = null;
   let moreBtn: HTMLButtonElement | null = null;
   if (hiddenRows.length > 0) {
-    restEl = el('div', layout === 'pills' ? 'entity-card-section-pills' : 'entity-card-section-grid');
+    restEl = el('div', rowsContainerClass(layout));
     restEl.hidden = true;
-    for (const row of hiddenRows) {
-      restEl.appendChild(layout === 'pills' ? buildPillRowEl(row) : buildGridRowEl(row));
-    }
+    const rest = restEl;
+    hiddenRows.forEach((row, i) => {
+      rest.appendChild(buildRowElForLayout(layout, row, visibleRows.length + i));
+    });
     moreBtn = el('button', 'entity-card-more');
     moreBtn.type = 'button';
     moreBtn.textContent = `Pokaż pozostałe ${hiddenRows.length}`;
@@ -357,6 +417,19 @@ export function renderEntityCard(data: EntityCardData): HTMLElement {
     }
   }
   titleWrap.appendChild(titleRow);
+  // P-KARTA-PRZEBUDOWA-UKLAD-Q1 (pkt 1/6 układu karty budynku): POZIOM/EPOKA jako
+  // pigułki w nagłówku, nad podtytułem — zastępuje wiersz „Poziom w tym mieście"
+  // zakopany dotąd w sekcji „Charakterystyka" (patrz `buildingAdapter.ts`). Pusta/
+  // nieustawiona tablica = zero węzłów (żadnego pustego kontenera w DOM).
+  if (data.headerChips && data.headerChips.length > 0) {
+    const chips = el('div', 'entity-card-header-chips');
+    for (const chip of data.headerChips) {
+      const chipEl = el('span', 'entity-card-header-chip');
+      chipEl.textContent = chip;
+      chips.appendChild(chipEl);
+    }
+    titleWrap.appendChild(chips);
+  }
   if (data.subtitle) {
     const sub = el('div', 'entity-card-subtitle');
     sub.textContent = data.subtitle;
@@ -365,31 +438,59 @@ export function renderEntityCard(data: EntityCardData): HTMLElement {
   header.appendChild(titleWrap);
   card.appendChild(header);
 
-  // Rys historyczny (T-KARTY-HISTORIA-INFRA-Q1, kolejność odwrócona przez
-  // P-KARTA-OPIS-PRZED-STATYSTYKAMI-Q1) — renderowany WYŁĄCZNIE gdy
-  // `data.historicalNote` jest niepuste (adapter przycina biały tekst i zwraca
-  // `undefined` dla braku danych, patrz `types.ts`), więc karty bez jeszcze
-  // dopisanej historii (100% dziś) NIE dostają pustej/białej sekcji w DOM — zero
-  // węzła `.entity-card-historia` zamiast pustego kontenera. Umieszczony PO
-  // headerze/tytule/medalionie, PRZED sekcjami mechanicznymi (`body`) — opis
-  // fabularny ma poprzedzać statystyki, zgodnie z żądaniem właściciela.
-  if (data.historicalNote) {
+  // Rys historyczny — renderowany WYŁĄCZNIE gdy `data.historicalNote` jest niepuste
+  // (adapter przycina biały tekst i zwraca `undefined` dla braku danych, patrz
+  // `types.ts`), więc karty bez wypełnionej historii NIE dostają pustej/białej sekcji
+  // w DOM — zero węzła `.entity-card-historia` zamiast pustego kontenera.
+  //
+  // POZYCJA (P-KARTA-PRZEBUDOWA-UKLAD-Q1, uchyla w całości wcześniejszą
+  // P-KARTA-OPIS-PRZED-STATYSTYKAMI-Q1 „zawsze zaraz po nagłówku, przed wszystkimi
+  // sekcjami"): JEDEN wspólny punkt pozycjonowania dla WSZYSTKICH 5 kinds — wstawiany
+  // do `body` na STAŁYM indeksie `HISTORIA_SECTION_INDEX` (liczonym w surowej tablicy
+  // `data.sections`, NIE w liczbie faktycznie wyrenderowanych/niepustych sekcji), a
+  // nie osobno per adapter. Dla `building`/`unit` (przebudowanych w
+  // P-KARTA-PRZEBUDOWA-UKLAD-Q1) sekcje „Wymagania"/„Opis" zajmują zawsze indeksy 0/1
+  // (Opis jako zarezerwowany, choćby pusty slot — patrz komentarz w
+  // `buildingAdapter.ts`/`unitAdapter.ts`), więc indeks 2 = dokładnie „zaraz po Opisie"
+  // (pozycja 4 zaakceptowanego układu). Adaptery NIE przebudowane w tym temacie
+  // (`technologyAdapter`/`improvementAdapter`/`wonderAdapter`) dostają tę samą regułę
+  // bez zmiany własnej struktury sekcji — historia po prostu ląduje na indeksie 2 ich
+  // istniejącej listy, co jest świadomym, zaakceptowanym przesunięciem („dla WSZYSTKICH
+  // typów encji", `00-dispatch.md`), nie regresją: brak crashu, historia nadal w pełni
+  // widoczna, tylko niżej niż dotąd.
+  const HISTORIA_SECTION_INDEX = 2;
+  function buildHistoriaEl(note: string): HTMLElement {
     const historia = el('div', 'entity-card-historia');
     const sep = el('div', 'entity-card-historia-sep');
     sep.setAttribute('aria-hidden', 'true');
     historia.appendChild(sep);
+    // Etykieta WŁASNEJ nazwanej sekcji, dosłownie "Rys historyczny" (00-dispatch.md
+    // §4, pozycja 4) — Evaluator runda 1 (02-evaluator-runda1.md, zarzut 1) słusznie
+    // wskazał, że separator+kursywa bez podpisu nie spełnia tego dosłownego wymogu.
+    // Ten sam znacznik `h3.entity-card-section-heading` co `buildSectionEl`, żeby
+    // wyglądem pasował do reszty sekcji karty mimo że to nie `<section>` z tablicy.
+    const heading = el('h3', 'entity-card-section-heading');
+    const headingLabel = el('span', 'entity-card-section-heading-label');
+    headingLabel.textContent = 'Rys historyczny';
+    heading.appendChild(headingLabel);
+    historia.appendChild(heading);
     const p = el('p', 'entity-card-historia-text');
-    p.textContent = data.historicalNote;
+    p.textContent = note;
     historia.appendChild(p);
-    card.appendChild(historia);
+    return historia;
   }
+  const historiaEl = data.historicalNote ? buildHistoriaEl(data.historicalNote) : null;
 
   const body = el('div', 'entity-card-body');
-  for (const section of data.sections) {
-    if (section.rows.length === 0 && (!section.badges || section.badges.length === 0)) continue;
+  data.sections.forEach((section, i) => {
+    if (historiaEl && i === HISTORIA_SECTION_INDEX) body.appendChild(historiaEl);
+    if (section.rows.length === 0 && (!section.badges || section.badges.length === 0)) return;
     const sectionEl = buildSectionEl(section, card, data.compactHeaderOnExpand === true);
     body.appendChild(sectionEl);
-  }
+  });
+  // Zbyt mało sekcji, żeby dotrzeć do indeksu wstawienia (np. karta fixture z jedną
+  // sekcją w teście) — historia i tak musi się pojawić, więc trafia na koniec `body`.
+  if (historiaEl && data.sections.length <= HISTORIA_SECTION_INDEX) body.appendChild(historiaEl);
   card.appendChild(body);
 
   if (data.civpediaLink) {
@@ -962,12 +1063,36 @@ button.entity-card-civpedia-link:focus-visible{outline:2px solid var(--tg-focus-
 /* T-KARTY-HISTORIA-INFRA-Q1: "Rys historyczny" — stylistycznie odrebna od sekcji
    mechanicznych (kursywa, przyciszony kolor, delikatny separator w gorze) zgodnie z
    dispatchem ("ciekawostka, nie dana do optymalizacji rozgrywki"). Renderowana tylko
-   gdy data.historicalNote jest niepuste (patrz renderEntityCard/types.ts). */
-.entity-card-historia{padding:2px 14px 12px;}
+   gdy data.historicalNote jest niepuste (patrz renderEntityCard/types.ts).
+   P-KARTA-PRZEBUDOWA-UKLAD-Q1: teraz dziecko .entity-card-body (ktory juz ma wlasny
+   padding poziomy 14px), wiec zero wlasnego paddingu poziomego tutaj — inaczej
+   podwojony odstep od krawedzi karty wzgledem sekcji obok. */
+.entity-card-historia{padding:2px 0 10px;margin-bottom:2px;}
 .entity-card-historia-sep{height:1px;margin:0 0 8px;
   background:linear-gradient(90deg,rgba(232,216,138,.32),rgba(232,216,138,0));}
 .entity-card-historia-text{margin:0;font-style:italic;font-size:12.5px;line-height:1.5;
   color:var(--tg-text-muted,#a89f80);}
+/* P-KARTA-PRZEBUDOWA-UKLAD-Q1 — pigulki naglowka (Epoka/Poziom, dzis wylacznie karta
+   budynku) i nowe layouty sekcji 'prose'/'top3' (Opis/Top 3, addytywne — zaden adapter
+   sprzed tego tematu ich nie uzywal, wiec istniejace karty renderuja sie bez zmiany). */
+.entity-card-header-chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:5px;}
+.entity-card-header-chip{border-radius:999px;padding:2px 10px;font-size:11px;font-weight:700;
+  letter-spacing:.06em;text-transform:uppercase;
+  background:rgba(232,216,138,.16);border:1px solid rgba(232,216,138,.42);
+  color:#f0e3ab;text-shadow:none;}
+.entity-card-section-prose{display:block;}
+.entity-card-prose{margin:0 0 6px;font-size:13px;line-height:1.5;color:#ded3ae;}
+.entity-card-prose:last-child{margin-bottom:0;}
+.entity-card-section-top3{display:flex;flex-direction:column;gap:6px;}
+.entity-card-top3-item{display:flex;align-items:flex-start;gap:9px;padding:7px 10px;
+  border-radius:8px;border:1px solid rgba(232,216,138,.22);border-left:3px solid rgba(232,216,138,.6);
+  background:linear-gradient(180deg,rgba(232,216,138,.11),rgba(232,216,138,.04));}
+.entity-card-top3-rank{flex:none;width:20px;height:20px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  background:rgba(232,216,138,.85);color:#2e2708;font-size:11px;font-weight:800;line-height:1;}
+.entity-card-top3-body{min-width:0;display:flex;flex-direction:column;gap:1px;}
+.entity-card-top3-title{font-size:13px;font-weight:700;color:#f0e3ab;}
+.entity-card-top3-text{font-size:12.5px;line-height:1.4;opacity:.85;overflow-wrap:anywhere;}
 /* R-KARTA-JEDNOSTKI-3D-EKSPOZYCJA-UX-Q1 — DIORAMA (Wariant A z zaakceptowanej makiety).
    Reguły .entity-card-header/.entity-card-medallion/.entity-card-title-wrap WYŻEJ zostają
    nietknięte i pełnią teraz rolę BAZY dla trybu kompaktowego; ten blok nadpisuje je dla

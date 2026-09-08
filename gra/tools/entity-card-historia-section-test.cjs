@@ -20,7 +20,14 @@
  * [3] Fixture z ustawionym `historicalNote` (WYŁĄCZNIE w danych testu, NIE w
  *     `gra/data/**`) renderuje sekcję `.entity-card-historia` z dokładnie tym
  *     tekstem, stylistycznie odróżnioną (kursywa) od sekcji mechanicznych
- *     (kryterium 3).
+ *     (kryterium 3). POZYCJA (P-KARTA-PRZEBUDOWA-UKLAD-Q1, odwraca asercję z
+ *     poprzedniej wersji tego testu — ABC właściciela 2026-09-08 uchyliło w całości
+ *     P-KARTA-OPIS-PRZED-STATYSTYKAMI-Q1 „zawsze zaraz po nagłówku, przed wszystkimi
+ *     sekcjami"): renderer wstawia Rys historyczny na WSPÓLNYM, stałym indeksie 2
+ *     tablicy `sections` (patrz `renderer.ts::renderEntityCard`), NIE przed pierwszą
+ *     sekcją. Fixture ma tylko 1 sekcję (< indeks wstawienia), więc historia ląduje
+ *     na KOŃCU `body` — sprawdzone pozycyjnie: `.entity-card-historia` NASTĘPUJE w
+ *     DOM po ostatniej `.entity-card-section`, nie odwrotnie.
  * [4] Realne encje z dzisiejszych danych (`historia`/`Historia` jeszcze nie
  *     ustawione nigdzie — batche treści dopiszą je osobno) NIE pokazują sekcji
  *     `.entity-card-historia` w DOM w ŻADNYM z 4 kinds (kryterium 4) — zero
@@ -218,14 +225,23 @@ async function main() {
       withHasSection: historiaEl !== null,
       withText: textEl ? textEl.textContent : null,
       withFontStyleItalic: textEl ? getComputedStyle(textEl).fontStyle === 'italic' : false,
-      // Rys historyczny musi być NAD wszystkimi sekcjami mechanicznymi (P-KARTA-OPIS-PRZED-STATYSTYKAMI-Q1)
-      // — sprawdzone pozycyjnie: .entity-card-historia poprzedza w DOM pierwszy
-      // węzeł-dziecko klasy .entity-card-section (nie odwrotnie).
-      historiaBeforeSections: (() => {
+      // Evaluator runda 1 (02-evaluator-runda1.md, zarzut 1, KRYTYCZNY): sam separator
+      // + kursywa bez podpisu NIE jest "WŁASNĄ nazwaną sekcją" wymaganą przez
+      // 00-dispatch.md — dosłowny tekst "Rys historyczny" musi być w DOM.
+      withLabelText: historiaEl ? historiaEl.textContent : null,
+      withHasLiteralLabel: historiaEl
+        ? Array.from(historiaEl.querySelectorAll('*')).some((n) => n.textContent.trim() === 'Rys historyczny')
+        : false,
+      // P-KARTA-PRZEBUDOWA-UKLAD-Q1: Rys historyczny wstawiany na wspólnym, stałym
+      // indeksie 2 tablicy `sections` — fixture ma tylko 1 sekcję (< indeks wstawienia),
+      // więc historia ląduje NA KOŃCU `body`, PO ostatniej sekcji mechanicznej —
+      // sprawdzone pozycyjnie: .entity-card-historia NASTĘPUJE w DOM po ostatnim
+      // węźle-dziecku klasy .entity-card-section (nie odwrotnie).
+      historiaAfterSections: (() => {
         const sections = Array.from(cardWith.querySelectorAll('.entity-card-section'));
-        const firstSection = sections[0];
-        if (!firstSection || !historiaEl) return false;
-        return !!(historiaEl.compareDocumentPosition(firstSection) & Node.DOCUMENT_POSITION_FOLLOWING);
+        const lastSection = sections[sections.length - 1];
+        if (!lastSection || !historiaEl) return false;
+        return !!(lastSection.compareDocumentPosition(historiaEl) & Node.DOCUMENT_POSITION_FOLLOWING);
       })(),
       withoutHasSection: cardWithout.querySelector('.entity-card-historia') !== null,
     };
@@ -233,7 +249,8 @@ async function main() {
   check('[3] fixture z historicalNote: sekcja ".entity-card-historia" obecna', fixture.withHasSection);
   check('[3] fixture: tekst sekcji === dokładnie tekst fixture (bez okrojenia)', fixture.withText === fixtureText, fixture.withText);
   check('[3] fixture: tekst renderuje się kursywą (font-style:italic — stylistycznie odróżniona od sekcji mechanicznych)', fixture.withFontStyleItalic);
-  check('[3] fixture: sekcja "Rys historyczny" jest NAD (przed) wszystkimi sekcjami mechanicznymi w DOM', fixture.historiaBeforeSections);
+  check('[3] fixture: sekcja zawiera DOSŁOWNĄ etykietę "Rys historyczny" w DOM (00-dispatch.md — WŁASNA nazwana sekcja, nie "Historia"/"Historical note" bez podpisu)', fixture.withHasLiteralLabel, fixture.withLabelText);
+  check('[3] fixture: sekcja "Rys historyczny" jest PO (za) wszystkimi sekcjami mechanicznymi w DOM (P-KARTA-PRZEBUDOWA-UKLAD-Q1, indeks wstawienia > liczba sekcji fixture)', fixture.historiaAfterSections);
   check('[4] fixture BEZ historicalNote: sekcja ".entity-card-historia" NIEOBECNA (zero pustego bloku)', fixture.withoutHasSection === false);
 
   // ---------------------------------------------------------------------
@@ -274,6 +291,44 @@ async function main() {
       check(`[4] realna karta ${r.kind}/${r.id}: sekcja "Rys historyczny" obecna WTEDY I TYLKO WTEDY, gdy pole źródłowe jest niepuste (dziś: ${r.fieldNonEmpty})`,
         r.historiaExists === r.fieldNonEmpty, r);
     }
+  }
+
+  // ---------------------------------------------------------------------
+  // [6] P-KARTA-PRZEBUDOWA-UKLAD-Q1 — pozycja 4 na REALNYCH kartach budynku/jednostki:
+  //     Rys historyczny musi wylądować DOKŁADNIE między sekcją „Wymagania" (indeks 0) a
+  //     „Charakterystyka" (dziś pierwsza NIEPUSTA sekcja po Wymaganiach — sekcje
+  //     „Opis"/„Top 3" są dziś zawsze puste/pominięte w DOM, 0 encji ma jeszcze te dane).
+  //     Dowód nietautologiczności: sprawdzamy TAKŻE, że budynek/jednostka realnie mają
+  //     niepuste pole źródłowe historii (inaczej test przechodziłby nawet gdyby historia
+  //     w ogóle się nie renderowała).
+  // ---------------------------------------------------------------------
+  await page.evaluate(() => { document.getElementById('root').innerHTML = ''; });
+  const positionCheck = await page.evaluate(() => {
+    const out = {};
+    for (const [kind, id, resolveRow, sourceField] of [
+      ['building', 'stolarnia', window.__resolveBuildingRow, 'historia'],
+      ['unit', window.__unitToSlug('Wojownik'), window.__resolveUnitRow, 'Historia'],
+    ]) {
+      const row = resolveRow(id);
+      const fieldNonEmpty = typeof row?.[sourceField] === 'string' && row[sourceField].trim().length > 0;
+      const data = window.__buildEntityCardData(kind, id, {});
+      const card = window.__renderEntityCard(data);
+      document.getElementById('root').appendChild(card);
+      const body = card.querySelector('.entity-card-body');
+      const orderedKeys = Array.from(body.children).map((child) =>
+        child.classList.contains('entity-card-historia') ? '__historia__' : child.getAttribute('data-section-key'));
+      out[`${kind}/${id}`] = { fieldNonEmpty, orderedKeys };
+      card.remove();
+    }
+    return out;
+  });
+  for (const [key, r] of Object.entries(positionCheck)) {
+    check(`[6] ${key}: pole źródłowe historii realnie niepuste (dowód nietautologiczności)`, r.fieldNonEmpty, r);
+    const reqIdx = r.orderedKeys.indexOf('requirements');
+    const histIdx = r.orderedKeys.indexOf('__historia__');
+    const charIdx = r.orderedKeys.indexOf('characteristics');
+    check(`[6] ${key}: kolejność DOM Wymagania → Rys historyczny → Charakterystyka === ${JSON.stringify(r.orderedKeys)}`,
+      reqIdx === 0 && histIdx === 1 && charIdx === 2, r.orderedKeys);
   }
 
   // ---------------------------------------------------------------------

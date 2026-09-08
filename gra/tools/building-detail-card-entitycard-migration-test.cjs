@@ -120,9 +120,13 @@ async function main() {
     check('Epoka wejścia === "Kamień" (epokaWejscia=1)', rowByLabel(charRows, 'Epoka wejścia')?.value === 'Kamień');
     check('Typ === "Unikalny w mieście" (wielokrotny nieustawiony)',
       rowByLabel(charRows, 'Typ')?.value === 'Unikalny w mieście');
-    check('Poziom w tym mieście: hasCity=true → "L2 (epoka miasta — jak liczy silnik)"',
-      rowByLabel(charRows, 'Poziom w tym mieście')?.value === 'L2 (epoka miasta — jak liczy silnik)',
-      rowByLabel(charRows, 'Poziom w tym mieście')?.value);
+    // P-KARTA-PRZEBUDOWA-UKLAD-Q1 (pkt 6): „Poziom w tym mieście" opuścił Charakterystykę —
+    // poziom/epoka są teraz pigułkami w nagłówku (`headerChips`), nie wierszem tej sekcji.
+    check('BRAK wiersza "Poziom w tym mieście" w Charakterystyce (przeniesiony do headerChips)',
+      rowByLabel(charRows, 'Poziom w tym mieście') === undefined);
+    check('headerChips === ["Epoka Kamień", "Poziom L2/3"] (hasCity=true, displayLevel=2, maksPoziom=3)',
+      Array.isArray(data.headerChips) && data.headerChips.join('|') === 'Epoka Kamień|Poziom L2/3',
+      data.headerChips);
 
     // --- Plony i efekty (baza.praca=5, przyrost.praca=3, displayLevel=2) ----
     const yieldRows = bySectionKey.yield ? bySectionKey.yield.rows : [];
@@ -140,24 +144,27 @@ async function main() {
     check('brak innych plonów (pieniądz/żywność/etc. wszystkie 0) — tylko 2 wiersze Pracy',
       yieldRows.length === 2, JSON.stringify(yieldRows));
 
-    // --- Koszty budowy i utrzymania -----------------------------------------
-    const costRows = bySectionKey.cost ? bySectionKey.cost.rows : [];
-    check('sekcja "cost" obecna', !!bySectionKey.cost);
-    check('wiersz "Koszt budowy (jednorazowy)" obecny i kończy się na "pkt Pracy"',
-      /pkt Pracy$/.test(rowByLabel(costRows, 'Koszt budowy (jednorazowy)')?.value ?? ''),
-      rowByLabel(costRows, 'Koszt budowy (jednorazowy)')?.value);
-    check('wiersz "Przyrost kosztu budowy" === "+10 pkt Pracy / poziom" (przyrostKosztu=10, niezależne od pace/difficulty)',
-      rowByLabel(costRows, 'Przyrost kosztu budowy')?.value === '+10 pkt Pracy / poziom',
-      rowByLabel(costRows, 'Przyrost kosztu budowy')?.value);
-    check('wiersz "Utrzymanie (co turę)" obecny', !!rowByLabel(costRows, 'Utrzymanie (co turę)'));
-    check('BRAK wiersza "Przyrost utrzymania" (przyrostUtrzymania=0 w danych)',
-      !rowByLabel(costRows, 'Przyrost utrzymania'));
-    const stockRow = rowByLabel(costRows, 'Koszt surowcowy (jednorazowy)');
+    // --- Koszt budowy / Koszt utrzymania — P-KARTA-PRZEBUDOWA-UKLAD-Q1 pkt 8: DWIE osobne
+    // sekcje zamiast dawnej pojedynczej "cost" ---------------------------------------------
+    const buildCostRows = bySectionKey['cost-build'] ? bySectionKey['cost-build'].rows : [];
+    const upkeepCostRows = bySectionKey['cost-upkeep'] ? bySectionKey['cost-upkeep'].rows : [];
+    check('sekcja "cost-build" obecna', !!bySectionKey['cost-build']);
+    check('sekcja "cost-upkeep" obecna', !!bySectionKey['cost-upkeep']);
+    check('wiersz "Praca (jednorazowo)" obecny i kończy się na "pkt Pracy"',
+      /pkt Pracy$/.test(rowByLabel(buildCostRows, 'Praca (jednorazowo)')?.value ?? ''),
+      rowByLabel(buildCostRows, 'Praca (jednorazowo)')?.value);
+    check('wiersz "Przyrost za poziom" (koszt budowy) === "+10 pkt Pracy / poziom" (przyrostKosztu=10, niezależne od pace/difficulty)',
+      rowByLabel(buildCostRows, 'Przyrost za poziom')?.value === '+10 pkt Pracy / poziom',
+      rowByLabel(buildCostRows, 'Przyrost za poziom')?.value);
+    check('wiersz "Co turę" (utrzymanie) obecny', !!rowByLabel(upkeepCostRows, 'Co turę'));
+    check('BRAK wiersza "Przyrost za poziom" w utrzymaniu (przyrostUtrzymania=0 w danych)',
+      !rowByLabel(upkeepCostRows, 'Przyrost za poziom'));
+    const stockRow = rowByLabel(buildCostRows, 'Surowce (jednorazowo)');
     // `buildingStockCost()` skaluje ×2 vs JSON (R-NADMIAR-POOLS FALA2, `building-stock-cost.ts`
     // nagłówek) — koszt_surowce.drewno=25 w danych → 50 w karcie, TA SAMA funkcja co dawny
     // `buildBuildingDetailCard`, więc to parytet, nie regresja (zweryfikowane czytaniem
     // `game/building-stock-cost.ts::buildingStockCost`/`scaleStockCostRecord`).
-    check('wiersz "Koszt surowcowy (jednorazowy)" zawiera "50" (drewno=25 ×2 FALA2) i "— z magazynu państwa"',
+    check('wiersz "Surowce (jednorazowo)" zawiera "50" (drewno=25 ×2 FALA2) i "— z magazynu państwa"',
       !!stockRow && stockRow.value.includes('50') && stockRow.value.includes('— z magazynu państwa'),
       stockRow && stockRow.value);
 
@@ -169,18 +176,21 @@ async function main() {
       rowByLabel(lvlRows, 'Nazwy')?.value === 'Warsztat drewna → Stolarnia → Manufaktura drewna',
       rowByLabel(lvlRows, 'Nazwy')?.value);
 
-    // --- Wymagania budynku -----------------------------------------------------
+    // --- Wymagania (P-KARTA-PRZEBUDOWA-UKLAD-Q1 pkt 2: skonsolidowane, sekcja jest teraz
+    // ZAWSZE sekcja o kluczu "requirements" na indeksie 0, nie warunkowa jak dawniej) --------
     const reqRows = bySectionKey.requirements ? bySectionKey.requirements.rows : [];
-    check('sekcja "requirements" obecna (wymagania niepuste w danych)', !!bySectionKey.requirements);
-    check('Wymagania === tekst z buildings.json',
-      rowByLabel(reqRows, 'Wymagania')?.value === 'Drewno w magazynie państwa (na koszt budowy i bramkę surowca)');
+    check('sekcja "requirements" obecna', !!bySectionKey.requirements);
+    check('Wymagana technologia === "Obróbka drewna" (building.techUnlock)',
+      rowByLabel(reqRows, 'Wymagana technologia')?.value === 'Obróbka drewna',
+      rowByLabel(reqRows, 'Wymagana technologia')?.value);
+    check('Dodatkowe warunki === tekst z buildings.json (building.wymagania)',
+      rowByLabel(reqRows, 'Dodatkowe warunki')?.value === 'Drewno w magazynie państwa (na koszt budowy i bramkę surowca)');
 
-    // --- Tryb podglądu bez miasta (ctx.city pominięte) — L1 fallback ---------
+    // --- Tryb podglądu bez miasta (ctx.city pominięte) — L1 fallback, teraz w headerChips ---
     const previewData = buildEntityCardData('building', 'stolarnia', {});
-    const previewChar = previewData.sections.find((s) => s.key === 'characteristics').rows;
-    check('bez ctx.city: "Poziom w tym mieście" === "L1 (podgląd; w mieście rośnie z epoką, max 3)"',
-      rowByLabel(previewChar, 'Poziom w tym mieście')?.value === 'L1 (podgląd; w mieście rośnie z epoką, max 3)',
-      rowByLabel(previewChar, 'Poziom w tym mieście')?.value);
+    check('bez ctx.city: headerChips === ["Epoka Kamień", "Poziom L1/3"] (fallback L1)',
+      Array.isArray(previewData.headerChips) && previewData.headerChips.join('|') === 'Epoka Kamień|Poziom L1/3',
+      previewData.headerChips);
 
     // --- Render DOM — smoke check że dane renderują się bez wyjątku ----------
     const cardEl = renderEntityCard(data);

@@ -85,8 +85,21 @@ export interface EntityCardSection {
   /** Tryb renderowania wierszy sekcji: `'grid'` (domyślny, siatka label/value jak dziś)
    * albo `'pills'` — zawijana lista pigułek z trailing „✓", wzorem
    * `techDiscoveryNotice.ts:435-438` (T1b, sekcja "Wymagania"). W trybie `'pills'`
-   * renderer używa `row.label` jako tekstu pigułki (`row.value` ignorowane). */
-  layout?: 'grid' | 'pills';
+   * renderer używa `row.label` jako tekstu pigułki (`row.value` ignorowane).
+   *
+   * P-KARTA-PRZEBUDOWA-UKLAD-Q1 dokłada dwa tryby — oba CZYSTO ADDYTYWNE (żaden adapter
+   * sprzed tego tematu ich nie używał, więc samo ich istnienie nie zmienia żadnej
+   * istniejącej karty):
+   *
+   *   `'prose'` — sekcja „Opis": wiersze renderują się jako AKAPITY pełnej szerokości
+   *       (`row.value`, a gdy puste — `row.label`), bez siatki etykieta/wartość. Siatka
+   *       `label:value` jest strukturalnie zła dla 1-2 zdań prozy (dosuwa tekst do
+   *       prawej krawędzi obok pustej etykiety).
+   *   `'top3'` — sekcja „Top 3": każdy wiersz to wyróżniona pozycja z numerem
+   *       porządkowym, tytułem (`row.label`) i tekstem (`row.value`). To NIE jest
+   *       `section.badges` (płaska lista stringów, bez struktury tytuł/tekst) ani
+   *       `highlighted` (wyróżnia CAŁĄ sekcję, nie pojedyncze punkty w środku). */
+  layout?: 'grid' | 'pills' | 'prose' | 'top3';
 }
 
 /** Medalion nagłówka karty: statyczna ikona SVG albo montowany 3D-podgląd jednostki. */
@@ -117,6 +130,12 @@ export interface EntityCardData {
   title: string;
   subtitle?: string;
   medallion: EntityCardMedallion;
+  /** P-KARTA-PRZEBUDOWA-UKLAD-Q1 — pigułki krótkich etykiet (np. `['Epoka Brąz',
+   * 'Poziom L1/2']`) renderowane W NAGŁÓWKU karty, nad podtytułem. Dziś ustawiane
+   * wyłącznie przez `buildingAdapter.ts` (Epoka/Poziom — usunięte z sekcji
+   * „Charakterystyka", zgodnie z zaakceptowanym układem karty budynku, pkt 1/6).
+   * `undefined`/pusta tablica = zero węzłów w DOM (żadnego pustego kontenera). */
+  headerChips?: string[];
   sections: EntityCardSection[];
   /** ECHO Q2=A: kanał 2 obok karty, nie scalanie treści. `null`/brak = brak linku. */
   civpediaLink?: EntityCardCivpediaLink | null;
@@ -130,14 +149,19 @@ export interface EntityCardData {
    * rendererze, nie da się rozwiązać lokalnie w obrębie samej sekcji). */
   compactHeaderOnExpand?: boolean;
   /** Rys historyczny (T-KARTY-HISTORIA-INFRA-Q1, infrastruktura) — pojedynczy akapit
-   * prozy fabularnej/edukacyjnej (wzorem Civilopedii), renderowany przez `renderer.ts`
-   * na SAMYM KOŃCU karty, POD wszystkimi sekcjami mechanicznymi (`sections`) —
-   * stylistycznie odróżniony (kursywa, delikatny separator), bo to ciekawostka, nie
-   * dana do optymalizacji rozgrywki. `undefined`/pusty string = sekcja NIE istnieje w
-   * DOM (żadnej pustej/białej sekcji) — dopóki batche treści nie wypełnią pola
-   * źródłowego (`historia`/`Historia`) w danych, WSZYSTKIE karty dziś nie mają tej
-   * sekcji. Adapter jest odpowiedzialny za przycięcie białych znaków i przekazanie
-   * `undefined`, gdy pole źródłowe jest puste/nieustawione. */
+   * prozy fabularnej/edukacyjnej (wzorem Civilopedii), stylistycznie odróżniony
+   * (kursywa, delikatny separator), bo to ciekawostka, nie dana do optymalizacji
+   * rozgrywki. `undefined`/pusty string = sekcja NIE istnieje w DOM (żadnej
+   * pustej/białej sekcji). Adapter jest odpowiedzialny za przycięcie białych znaków i
+   * przekazanie `undefined`, gdy pole źródłowe jest puste/nieustawione.
+   *
+   * POZYCJA (P-KARTA-PRZEBUDOWA-UKLAD-Q1, uchyla w całości wcześniejszą
+   * P-KARTA-OPIS-PRZED-STATYSTYKAMI-Q1 „zawsze zaraz po nagłówku"): `renderer.ts`
+   * wstawia ten akapit na JEDNYM, wspólnym dla WSZYSTKICH 5 kinds punkcie w środku
+   * `sections` (stały indeks 2 tej tablicy — patrz komentarz w
+   * `renderer.ts::renderEntityCard`), nie zaraz pod nagłówkiem i nie na końcu.
+   * Dla `building`/`unit` (przebudowanych w tym temacie) odpowiada to dokładnie
+   * pozycji 4 zaakceptowanego układu — zaraz po sekcji „Opis" (indeks 1). */
   historicalNote?: string;
 }
 

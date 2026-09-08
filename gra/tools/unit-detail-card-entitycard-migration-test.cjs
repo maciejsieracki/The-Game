@@ -121,43 +121,50 @@ async function main() {
     rowByLabel(charRows, 'Klasa')?.value === String(unit.Klasa ?? ''),
     { got: rowByLabel(charRows, 'Klasa')?.value, want: unit.Klasa });
 
-  // --- Statystyki bojowe: pola T4 (bez zmian) + pola T6 (dodane) --------------------------
-  check('sekcja "combat" obecna', !!bySectionKey.combat);
+  // --- Statystyki bojowe: PODSTAWOWE (T4, bez zmian) + ZAAWANSOWANE (T6, dodane; od
+  // P-KARTA-PRZEBUDOWA-UKLAD-Q1 rozdzielone na sekcję "combat" i "combat-advanced"
+  // collapsible, patrz pkt 7 zaakceptowanego układu) ---------------------------------------
+  check('sekcja "combat" (podstawowe) obecna', !!bySectionKey.combat);
+  check('sekcja "combat-advanced" (zaawansowane, collapsible) obecna',
+    !!bySectionKey['combat-advanced'] && bySectionKey['combat-advanced'].collapsible === true
+    && bySectionKey['combat-advanced'].openDefault === false);
   const combatRows = bySectionKey.combat ? bySectionKey.combat.rows : [];
+  const advRows = bySectionKey['combat-advanced'] ? bySectionKey['combat-advanced'].rows : [];
   check('Atak (T4, bez zmian) === u.Atak', rowByLabel(combatRows, 'Atak')?.value === String(unit.Atak));
   check('Obrona (T4, bez zmian) === u.Obrona', rowByLabel(combatRows, 'Obrona')?.value === String(unit.Obrona));
-  check('Obrażenia broni (T6, NOWE) === u.Uderzenie', rowByLabel(combatRows, 'Obrażenia broni')?.value === String(unit.Uderzenie));
-  check('Ruch (bitwa) (T6, NOWE) === "4 hex"', rowByLabel(combatRows, 'Ruch (bitwa)')?.value === '4 hex',
-    rowByLabel(combatRows, 'Ruch (bitwa)')?.value);
-  check('Widok pola (T6, NOWE) === "2 hex"', rowByLabel(combatRows, 'Widok pola')?.value === '2 hex',
-    rowByLabel(combatRows, 'Widok pola')?.value);
-  check('Kara flanki (T6, NOWE) === "15%"', rowByLabel(combatRows, 'Kara flanki')?.value === '15%',
-    rowByLabel(combatRows, 'Kara flanki')?.value);
-  check('Kara od tyłu (T6, NOWE) === "30%"', rowByLabel(combatRows, 'Kara od tyłu')?.value === '30%',
-    rowByLabel(combatRows, 'Kara od tyłu')?.value);
-  check('Próg dezercji (T6, NOWE) === "40% HP" (0.4 × 100, zaokrąglone, parytet z dawnym `fmt`)',
-    rowByLabel(combatRows, 'Próg dezercji')?.value === '40% HP', rowByLabel(combatRows, 'Próg dezercji')?.value);
-  check('Morale bazowe (T6, NOWE) === "50"', rowByLabel(combatRows, 'Morale bazowe')?.value === '50',
-    rowByLabel(combatRows, 'Morale bazowe')?.value);
-  check('Morale ucieczki (T6, NOWE) === "22"', rowByLabel(combatRows, 'Morale ucieczki')?.value === '22',
-    rowByLabel(combatRows, 'Morale ucieczki')?.value);
+  check('Obrażenia broni (T6, NOWE, dziś w combat-advanced) === u.Uderzenie', rowByLabel(advRows, 'Obrażenia broni')?.value === String(unit.Uderzenie));
+  check('Ruch (bitwa) (T6, NOWE, dziś w combat-advanced) === "4 hex"', rowByLabel(advRows, 'Ruch (bitwa)')?.value === '4 hex',
+    rowByLabel(advRows, 'Ruch (bitwa)')?.value);
+  check('Widok pola (T6, NOWE, dziś w combat-advanced) === "2 hex"', rowByLabel(advRows, 'Widok pola')?.value === '2 hex',
+    rowByLabel(advRows, 'Widok pola')?.value);
+  check('Kara flanki (T6, NOWE, dziś w combat-advanced) === "15%"', rowByLabel(advRows, 'Kara flanki')?.value === '15%',
+    rowByLabel(advRows, 'Kara flanki')?.value);
+  check('Kara od tyłu (T6, NOWE, dziś w combat-advanced) === "30%"', rowByLabel(advRows, 'Kara od tyłu')?.value === '30%',
+    rowByLabel(advRows, 'Kara od tyłu')?.value);
+  check('Próg dezercji (T6, NOWE, dziś w combat-advanced) === "40% HP" (0.4 × 100, zaokrąglone, parytet z dawnym `fmt`)',
+    rowByLabel(advRows, 'Próg dezercji')?.value === '40% HP', rowByLabel(advRows, 'Próg dezercji')?.value);
+  check('Morale bazowe (T6, NOWE, dziś w combat-advanced) === "50"', rowByLabel(advRows, 'Morale bazowe')?.value === '50',
+    rowByLabel(advRows, 'Morale bazowe')?.value);
+  check('Morale ucieczki (T6, NOWE, dziś w combat-advanced) === "22"', rowByLabel(advRows, 'Morale ucieczki')?.value === '22',
+    rowByLabel(advRows, 'Morale ucieczki')?.value);
   check('Bonus szarży (T6, NOWE): pominięty jako pusty wiersz (Wojownik nie ma tego pola w danych — parytet "brakujące pola pomijane" z T4)',
-    !rowByLabel(combatRows, 'Bonus szarży'));
+    !rowByLabel(advRows, 'Bonus szarży'));
 
   const pociskiUnit = units.find((u) => u.Jednostka === 'Procarz');
   check('fixture: "Procarz" istnieje (ma niepuste "Ilość pocisków")', !!pociskiUnit);
   if (pociskiUnit) {
     const builtPociski = unitAdapter(pociskiUnit, {});
-    const combatPociski = builtPociski.sections.find((s) => s.key === 'combat').rows;
-    check('Pociski (T6, NOWE) === u["Ilość pocisków"] (fixture "Procarz")',
-      rowByLabel(combatPociski, 'Pociski')?.value === String(pociskiUnit['Ilość pocisków']),
-      rowByLabel(combatPociski, 'Pociski')?.value);
+    const advPociski = builtPociski.sections.find((s) => s.key === 'combat-advanced').rows;
+    check('Pociski (T6, NOWE, dziś w combat-advanced) === u["Ilość pocisków"] (fixture "Procarz")',
+      rowByLabel(advPociski, 'Pociski')?.value === String(pociskiUnit['Ilość pocisków']),
+      rowByLabel(advPociski, 'Pociski')?.value);
   }
 
-  // --- Kontry (T4, bez zmian w T6 — dziedziczone przez wspólny adapter) -------------------
-  const reqRows = bySectionKey.requirements ? bySectionKey.requirements.rows : [];
-  check('Kontry (T4, dziedziczone w T6): wiersz "Kontry" obecny dla jednostki z wpisem w counters.json',
-    !!rowByLabel(reqRows, 'Kontry'));
+  // --- Kontry — P-KARTA-PRZEBUDOWA-UKLAD-Q1 pkt 8: własna sekcja "counters" (dotąd sklejone
+  // z Wymaganiami pod "Wymagania i kontry") ------------------------------------------------
+  const countersSection = bySectionKey.counters;
+  check('Kontry (T4, przeniesione w P-KARTA-PRZEBUDOWA-UKLAD-Q1 do własnej sekcji "counters"): sekcja obecna dla jednostki z wpisem w counters.json',
+    !!countersSection && countersSection.rows.length > 0, countersSection);
 
   // --- Render DOM — smoke check że rozszerzone dane renderują się bez wyjątku -------------
   const cardEl = renderEntityCard(built);
