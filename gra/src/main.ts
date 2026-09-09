@@ -8563,11 +8563,15 @@ async function boot(): Promise<void> {
       zlozeGrants = [];
       basketTransferCtx = createEmptyBasketTransferContext(data.tech);
       _dipUnitSeq = 0;
+      // R-HOTSEAT-ETAP6D-PODETAP-C-Q1: literał `0` -> HUMAN_OWNER_PRIMARY (isHuman-owy
+      // alias wartościowy, patrz human-owners.ts). Inicjalizacja startowych relacji
+      // WSZYSTKICH par przy tworzeniu świata zapisuje stan PARY, nie ekran aktywnego
+      // fotela -- stąd HUMAN_OWNER_PRIMARY, nie ME(). Behawioralny no-op (dziś zawsze 0).
       for (const [oid, rel] of plan.startRelations) {
         setDiploRelation(
-          0,
+          HUMAN_OWNER_PRIMARY,
           oid,
-          applyWiarygodnoscD4ToRelation(rel, getWiarygodnosc(0), getWiarygodnosc(oid)),
+          applyWiarygodnoscD4ToRelation(rel, getWiarygodnosc(HUMAN_OWNER_PRIMARY), getWiarygodnosc(oid)),
         );
       }
 
@@ -8683,15 +8687,17 @@ async function boot(): Promise<void> {
         // NIE dotyka głównych cywilizacji obcego typu (te startuja przez
         // startRelationForPair(false) bez korekty, patrz plan.startRelations w
         // cluster-start.ts / main.ts linia ~3223).
+        // R-HOTSEAT-ETAP6D-PODETAP-C-Q1: literał `0` -> HUMAN_OWNER_PRIMARY (isHuman-owy
+        // alias wartościowy) — wiarygodność DLA PARY nowego rywala, silnik nie HUD.
         setDiploRelation(
-          0, ownerId,
+          HUMAN_OWNER_PRIMARY, ownerId,
           applyWiarygodnoscD4ToRelation(
             applyCityStateDifficultyTrust(
               startRelationForPlayerSameCivCityState(),
               // C-025/C-026: zaufanie PM↔GRACZ na starcie — oś PM-vs-gracz, wprost z trudności gry.
               _menuCityStateDifficultyVsPlayer,
             ),
-            getWiarygodnosc(0),
+            getWiarygodnosc(HUMAN_OWNER_PRIMARY),
             getWiarygodnosc(ownerId),
           ),
         );
@@ -16916,15 +16922,19 @@ async function boot(): Promise<void> {
       refreshD1bHud();
     }
 
+    // R-HOTSEAT-ETAP6D-PODETAP-C-Q1: literały `0` -> isMe()/ME() (decyzja orkiestratora
+    // dispatchu, po pełnym Read: pętla operuje WYŁĄCZNIE na pendingDiplomacyInbox, oferty
+    // DO aktywnego fotela — targetId:'0' string niżej to pole ProposalPayload/AIDiplomacyCommand,
+    // NIE ten sam hardkod ownerId, zostaje bez zmian). Behawioralny no-op (dziś ME() === 0).
     function resolvePendingDiplomacy(id: string, accept: boolean): void {
       const idx = pendingDiplomacyInbox.findIndex(p => p.id === id);
       if (idx < 0) return;
       const p = pendingDiplomacyInbox[idx]!;
       pendingDiplomacyInbox.splice(idx, 1);
-      const curRel = getDiploRelation(0, p.ownerId);
+      const curRel = getDiploRelation(ME(), p.ownerId);
       if (accept) {
         if (p.cmdType === 'zaproponuj_pokoj') {
-          finalizePeaceTreatyBetween(0, p.ownerId);
+          finalizePeaceTreatyBetween(ME(), p.ownerId);
           showHintMessage('Pokój z: ' + p.civName, 4000);
         } else {
           const cmd = {
@@ -16944,13 +16954,13 @@ async function boot(): Promise<void> {
             zaplataPerTura: p.zaplataPerTura,
             turns: p.resTurns,
           } as AIDiplomacyCommand;
-          const pending = aiCommandToPendingProposal(cmd, p.ownerId, 0, turn);
+          const pending = aiCommandToPendingProposal(cmd, p.ownerId, ME(), turn);
           if (pending) {
             const result = resolvePlayerAcceptsAiPending(
               pending, turn, undefined,
               { hasTradeTech: ownerHasTradeTech }, // R-HANDEL-WYMIANA-TECH-GATE-Q1 GOAL 3 (difficulty: undefined -> default 'normal', zachowanie bez zmian)
             );
-            applyProposalOutcome(p.ownerId, 0, result, pending.payload, pending.actionId);
+            applyProposalOutcome(p.ownerId, ME(), result, pending.payload, pending.actionId);
             if (result.accepted) showHintMessage('Przyjęto: ' + p.civName, 3500);
           } else {
             showHintMessage('Zaakceptowano: ' + p.civName, 3500);
@@ -16958,7 +16968,7 @@ async function boot(): Promise<void> {
         }
       } else {
         if (p.cmdType === 'zadaj_trybut' || p.cmdType === 'oferuj_trybut_za_pokoj') {
-          setDiploRelation(0, p.ownerId, applyDiploEventTracked(0, p.ownerId, curRel, 'trybut_odmowa'));
+          setDiploRelation(ME(), p.ownerId, applyDiploEventTracked(ME(), p.ownerId, curRel, 'trybut_odmowa'));
         }
         if (p.cmdType === 'zaproponuj_handel') {
           aiOneShotGiftLastTurn.set(p.ownerId, turn);
@@ -18858,11 +18868,14 @@ async function boot(): Promise<void> {
       const brokenTreatyIds = treatiesBrokenByRefusal(obligations, joinedWarOwnerIds);
       if (brokenTreatyIds.length) {
         const brokenSet = new Set(brokenTreatyIds);
+        // R-HOTSEAT-ETAP6D-PODETAP-C-Q1: literał `0` -> isMe()/ME() (decyzja orkiestratora
+        // dispatchu — spójność z siostrzanymi joinAllyToWar/applyAllianceObligationsOnWar,
+        // już isMe w ENGINE). Behawioralny no-op (dziś ME() === 0 zawsze).
         const playerRefusalAllies = new Set<number>();
         for (const deal of activeDeals) {
           if (!brokenSet.has(deal.id)) continue;
-          if (deal.strony[0] === 0) playerRefusalAllies.add(deal.strony[1]);
-          else if (deal.strony[1] === 0) playerRefusalAllies.add(deal.strony[0]);
+          if (isMe(deal.strony[0])) playerRefusalAllies.add(deal.strony[1]);
+          else if (isMe(deal.strony[1])) playerRefusalAllies.add(deal.strony[0]);
         }
         activeDeals = removeTreatiesById(activeDeals, brokenTreatyIds);
         for (const allyId of playerRefusalAllies) {
@@ -18870,7 +18883,7 @@ async function boot(): Promise<void> {
             'Sojusz zerwany — ' + ownerDiploLabel(allyId) + ' nie wszedł do wojny',
             4500,
           );
-          syncRelationFromDeals(0, allyId);
+          syncRelationFromDeals(ME(), allyId);
         }
       }
     }
@@ -36827,7 +36840,10 @@ async function boot(): Promise<void> {
       const savedNegotiations = saved.meta?.negotiationTable as PendingNegotiation[] | undefined;
       if (savedNegotiations?.length) {
         for (const entry of savedNegotiations) {
-          const otherOwnerId = entry.proposerOwnerId === 0 ? entry.responderOwnerId : entry.proposerOwnerId;
+          // R-HOTSEAT-ETAP6D-PODETAP-C-Q1: literał `0` -> isMe() (spójne z rodziną §1b
+          // stołu negocjacyjnego, ten sam typ danych negotiationTable, tylko wczytywany
+          // z zapisu). Behawioralny no-op (dziś ME() === 0 zawsze).
+          const otherOwnerId = isMe(entry.proposerOwnerId) ? entry.responderOwnerId : entry.proposerOwnerId;
           if (!diplomaticContactEstablished.has(otherOwnerId)) continue;
           negotiationTable.push(entry);
         }
@@ -36893,8 +36909,10 @@ async function boot(): Promise<void> {
       }
       syncBasketResearchFromEngine();
       _dipUnitSeq = 0;
+      // R-HOTSEAT-ETAP6D-PODETAP-C-Q1: literały `0` -> isMe()/ME() — kontakty odkryte
+      // przez aktywny fotel. Behawioralny no-op (dziś ME() === 0 zawsze).
       for (const oid of diplomaticContactEstablished) {
-        if (oid !== 0) syncRelationFromDeals(0, oid);
+        if (!isMe(oid)) syncRelationFromDeals(ME(), oid);
       }
       const savedSiegeTurns = saved.meta?.siegeTurnByCity as Array<[string, number]> | undefined;
       if (savedSiegeTurns?.length) {
