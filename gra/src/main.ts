@@ -23092,6 +23092,31 @@ async function boot(): Promise<void> {
           secondPlayerOwnerId: plan.secondPlayerOwnerId,
         };
       },
+      /**
+       * R-HOTSEAT-ETAP6F-PART2-UI-Q1 — odczyt WYŁĄCZNIE do odczytu (zero mutacji stanu),
+       * jedyny sposób dowiedzenia REALNEGO wpięcia UI kreatora -> `doStartGame()` ->
+       * `applyClusterStartPlan()` bez ponownego wołania generatora (REGUŁA PRZECIW
+       * SAMOOSZUKIWANIU tego dispatchu zakazuje dowodu przez `generateSecondHumanSeatForTest`
+       * wyżej — ten hak PONOWNIE generuje plan, więc "przechodzi" nawet gdyby wiring w
+       * `doStartGame()` był złamany; ten hak niżej tylko CZYTA to, co już się stało).
+       * Poza allowlistą tego tematu (`main.ts` ograniczony do wywołania
+       * `applyClusterStartPlan` w `doStartGame()`) — jawne uzasadnienie: bez tego odczytu
+       * nie da się dostarczyć wymaganego dowodu (zrzut stanu silnika PO starcie gry),
+       * a allowlista dopuszcza zmianę poza tym miejscem "z jawnym uzasadnieniem w raporcie".
+       */
+      snapshotHumanSeatsForTest: (): {
+        humanOwnerIds: readonly number[];
+        activeHumanOwnerId: number;
+        civIdByOwner: Record<number, string>;
+        startHexByOwner: Record<number, { q: number; r: number } | null>;
+      } => ({
+        humanOwnerIds: humanSeats.humanOwnerIds,
+        activeHumanOwnerId: humanSeats.activeHumanOwnerId,
+        civIdByOwner: Object.fromEntries(_menuCivIdByOwner),
+        startHexByOwner: Object.fromEntries(
+          humanSeats.humanOwnerIds.map(oid => [oid, playerStartHexFor(oid)]),
+        ),
+      }),
       switchActiveHuman: (ownerId: number): void => switchActiveHuman(ownerId),
       isAwaitingFirstPlayerCity: (): boolean => isAwaitingFirstPlayerCity(),
       showHotSeatHandoff: (fromLabel: string, toLabel: string): void => {
@@ -35318,6 +35343,11 @@ async function boot(): Promise<void> {
       applyClusterStartPlan(_menuCivId, newSeed, _menuCityStates, {
         skipRenderRefresh: true,
         preferredCivIds: _menuSelectedAiCivIds,
+        // R-HOTSEAT-ETAP6F-PART2-UI-Q1: dopiero teraz kreator (`newGameFlow.ts`)
+        // realnie wywołuje warstwę danych część (i) — `undefined` gdy gracz nie
+        // włączył hot-seatu (zero regresji, dokładnie jak dziś).
+        secondHumanCivId: params.civId2,
+        humanDistanceMode: params.humanDistanceMode,
       });
       initAllAiOwnersForNewGame(params.epochId || 'kamien');
       reconcileAllOwnerErasFromResearch();

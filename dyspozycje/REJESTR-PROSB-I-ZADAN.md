@@ -7533,6 +7533,70 @@ zielone, zero regresji Etapu 1/5/6f część (i). Następny krok: dispatch
 `R-HOTSEAT-ETAP6F-PART2-UI-Q1` (krok kreatora dla fotela 2, wariant sekwencyjny + selektor
 trybu dystansu) — OSTATNI pod-temat całego planu hot-seat 0-7.
 
+## `R-HOTSEAT-ETAP6F-PART2-UI-Q1` — GAME — **ZINTEGROWANE 2026-09-09**, EtapY 0-7 planu hot-seat W PEŁNI ZAMKNIĘTE
+
+Drugi i OSTATNI pod-temat części (ii) Etapu 6f — realne UI kreatora „Nowa Gra" dla fotela
+2 (hot-seat), domykające jednocześnie CAŁY plan `PLAN-HOT-SEAT-2-GRACZY.md` Etapy 0-7.
+Zgodnie z ABC z recon (`R-HOTSEAT-ETAP6F-PART2-RECON-Q1`): przełącznik „drugi gracz"
+domyślnie WYŁĄCZONY w kroku 4 kreatora (`newGameFlow.ts`), po włączeniu — dodatkowy
+podekran fotela 2 (Wariant A sekwencyjny) reużywający wzorzec kafelków cywilizacji,
+kafelek już wybrany przez fotel 1 wyszarzony/nieklikalny (wykluczenie duplikatu, ABC-Q3),
+selektor trybu odległości blisko/daleko/losowo (ABC-Q4), heks startowy nadal algorytmiczny
+(ABC-Q1, generator z części DATA). `doStartGame()` w `main.ts` teraz przekazuje
+`params.civId2`/`params.humanDistanceMode` do `applyClusterStartPlan(...)` —
+domknięcie luki jawnie zostawionej przez `R-HOTSEAT-ETAP6F-PART2-DATA-Q1`.
+Operator→Evaluator (effort high, zero zarzutów po niezależnym uruchomieniu wszystkich
+bramek w worktree)→Final Control (effort high, czwarta niezależna weryfikacja: pełny
+`git diff` linia po linii, `grep` potwierdzający zero call-site produkcyjnych dla nowego
+debug-hooka, przeczytanie scenariusza testu w całości) — PASS bez poprawek, 1/5 rund.
+Jedno świadome, uzasadnione i zaakceptowane odstępstwo od literalnej allowlisty `main.ts`:
+czysto-odczytowy hak `__hotSeatTestDebug.snapshotHumanSeatsForTest()` (zero mutacji,
+jedyne wywołania w nowym pliku testowym) — niezbędny do dostarczenia dowodu wymaganego
+regułą anty-samooszukiwania (stan silnika PO realnym `doStartGame()`, bez maskującego
+ponownego wołania generatora). Nowa bramka `hotseat-etap6f-part2-ui-test.cjs`: PASS
+(scenariusz a: domyślnie zero regresji jednoosobowej; b+c: realny hot-seat z dwoma różnymi
+cywilizacjami i różnymi heksami startowymi, weryfikowane zrzutem silnika po starcie, plus
+dowód że kafelek fotela 1 jest no-opem w ekranie fotela 2; d: quick-start/dev-shortcut bez
+zmian). `tsc --noEmit` czysty, 5 bramek referencyjnych zielone,
+`hotseat-etap6f-part2-data-test.cjs` 24/24 (zero regresji części i). Zintegrowane
+allowlist-only do `main` po niezależnym, czwartym uruchomieniu wszystkich bramek w
+głównym drzewie roboczym.
+
+**Skutek dla całego planu**: Etapy 0-7 (`PLAN-HOT-SEAT-2-GRACZY.md`) są teraz w pełni
+zamknięte i grywalne — gracz może z menu włączyć drugi fotel ludzki, wybrać mu
+cywilizację i tryb odległości, i grać hot-seat od startu do końca tury z prawidłową
+migracją wszystkich kategorii A1-A10. **Etap 8** (pełna dyplomacja gracz↔gracz, ABC-1=C
+z 2026-09-04) pozostaje jawnie odłożony jako osobny, duży temat — recon
+`R-HOTSEAT-ETAP8-DYPLOMACJA-RECON-Q1` (niżej) przygotowuje jego dispatch. **Etap 9**
+(multiplayer sieciowy) poza zakresem obu.
+
+## `R-HOTSEAT-ETAP8-DYPLOMACJA-RECON-Q1` — INFORMATIONAL — **ZINTEGROWANE (dokument, recon projektowy)**
+
+Recon (docs-only, zero zmian w `gra/`) Etapu 8 planu hot-seat — pełna dyplomacja
+gracz↔gracz (ABC-1=C z 2026-09-04, jawnie odłożona „po ustabilizowaniu Etapów 0-7").
+Inwentaryzacja z cytatami plik+linia: (1) warstwa silnika już generalizuje na dowolną
+parę `ownerId` (`getDiploRelation` z dowodem użycia AI↔AI, `ActiveDeal.strony`,
+`diploPairKey`, `diplomacy-layers.ts`), ale każde DZISIEJSZE wywołanie w praktyce polega
+na literalnym `playerOwnerId=0` — „silnik potrafi", nie „silnik już obsługuje" bez
+zmian; (2) 9 plików UI dyplomacji (panel, modal negocjacji, banner, hudy, koszyk
+handlowy, audiencja) — zero `ME()`, ale architektura 1:1 (moduł-singleton, „gracz"/„Ty"
+jako jedyna tożsamość widza) uniemożliwia dziś pokazanie dwóch perspektyw naraz;
+(3) `hotSeatHandoff.ts` rozwiązuje jednorazowe przekazanie tury, ale negocjacja to
+potencjalnie wiele przejść w jednej sesji — reużywalny per-przejście, ale bez gotowej
+pętli „czyja kolej"; (4) dodatkowo znaleziona luka NIEZALEŻNA od Etapu 8: kontakt/
+odkrycie dyplomatyczne (`diplomaticallyDiscoveredOwners`/`diplomaticContactEstablished`,
+`main.ts:7940-7943`) to wciąż globalny `Set<number>`, nie per-fotel `Map` — fotel B widzi
+jako „odkryte" to, co odkrył fotel A. 3 warianty projektowe negocjacji (handoff
+sekwencyjny / wspólny ekran bez ukrywania / hybryda) z za/przeciw, 6 pytań ABC bez
+sugerowanego rozstrzygnięcia (ukrywanie informacji: realna wartość czy teatr; rola AI;
+zakres `RodzajTraktatu`; punkt wejścia UI; który wariant; relacja do luki kontaktu —
+naprawić przed Etapem 8 czy razem z nim). Operator→Evaluator (runda 2 po korekcie
+ścieżki orkiestratora w rundzie 1 — plik istniał od początku, błąd był w prompt
+Evaluatora, nie w pracy Operatora): PASS-WITH-NOTES, 2 drobne niedokładności off-by-one
+w numerach linii cytatów (treść merytorycznie poprawna), ~23 pozostałe cytaty dokładne.
+Final Control nie dotyczy (docs-only). **Implementacja Etapu 8 wymaga osobnej decyzji
+właściciela** co do 6 pytań ABC powyżej — poza zakresem automatycznego dispatchu.
+
 ## Nowe zgłoszenia w toku (2026-09-08, jeszcze nie zamknięte)
 
 - Niejasne zgłoszenie właściciela o pustym wierszu "Surowce" w górnym HUD — **WYJAŚNIONE, NIE

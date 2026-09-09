@@ -100,6 +100,20 @@ export interface NewGameParams {
   civId2?: string;
   /** Etykieta PL nazwy cywilizacji fotela 2 (analogicznie do `civName`), gdy `civId2` ustawione. */
   civName2?: string;
+  /**
+   * R-HOTSEAT-ETAP6F-PART2-UI-Q1: tryb odległości heksu startowego fotela 2
+   * względem fotela 1 (ABC-Q4). `undefined` gdy `civId2` nie jest ustawione
+   * (hot-seat wyłączony) — bez efektu w generatorze (`cluster-start.ts`).
+   * Literal-union MUSI zostać zsynchronizowany ręcznie z `HumanDistanceMode`
+   * w `map/cluster-spawn.ts` — ten moduł UI jest świadomie odcięty (DECOUPLED,
+   * patrz nagłówek pliku) od importów z `game/`/`map/` (wzorzec identyczny do
+   * `BarbariansLevel` powyżej).
+   * / EN: distance mode for seat 2's start hex relative to seat 1 (ABC-Q4).
+   * `undefined` when `civId2` is unset (hot-seat off) — no effect in the
+   * generator. Manually kept in sync with `HumanDistanceMode` in
+   * `map/cluster-spawn.ts` (same pattern as `BarbariansLevel` above).
+   */
+  humanDistanceMode?: HumanDistanceMode;
   /** Etykieta PL epoki (np. Epoka Kamienia). */
   epoch: string;
   /** Id epoki dla silnika: kamien | braz | zelazo. */
@@ -170,6 +184,13 @@ export interface NewGameParams {
  */
 export type BarbariansLevel = 'latwy' | 'normalny' | 'trudny' | 'brak';
 export type VictoryMode = 'moc' | 'dominacja' | 'moc_i_dominacja';
+/**
+ * R-HOTSEAT-ETAP6F-PART2-UI-Q1 (ABC-Q4) — MUSI zostać zsynchronizowany ręcznie
+ * z `HumanDistanceMode` w `game/cluster-start.ts`/`map/cluster-spawn.ts`.
+ * / EN: MUST stay manually in sync with `HumanDistanceMode` in
+ * `game/cluster-start.ts`/`map/cluster-spawn.ts`.
+ */
+export type HumanDistanceMode = 'blisko' | 'daleko' | 'losowo';
 
 export interface NewGameAdvancedOptions {
   barbariansLevel: BarbariansLevel;
@@ -787,6 +808,18 @@ let selCiv: string | null = null;
  * unchanged). Consumed programmatically only — no new wizard screen here.
  */
 let selCiv2: string | null = null;
+/**
+ * R-HOTSEAT-ETAP6F-PART2-UI-Q1: świadomy przełącznik gracza — `false` (domyślnie
+ * WYŁĄCZONY) = zero wpływu na dzisiejszą ścieżkę jednoosobową. Jedyne miejsce,
+ * które ustawia `selCiv2`/`humanDistanceMode` na coś innego niż wartość domyślna
+ * jest ekran fotela 2 (`renderSeat2Step`), osiągalny WYŁĄCZNIE gdy ta flaga jest
+ * `true`.
+ */
+let hotSeatEnabled = false;
+/** ABC-Q4 — tryb odległości fotela 2. Bez efektu, dopóki `hotSeatEnabled===false`. */
+let humanDistanceMode: HumanDistanceMode = 'losowo';
+/** Czy krok 4 pokazuje ekran fotela 2 (podekran, NIE osobna pozycja `curStep`/`STEP_LABELS`). */
+let showSeat2Screen = false;
 let selEpoch = 'kamien';
 /**
  * R-KONFIGURATOR-WYBOR-CYWILIZACJI-PRZECIWNIKA: typy AI wybrane w kreatorze (krok
@@ -992,6 +1025,14 @@ function ensureStyles(): void {
 .civ-newgame .btn-adv{background:transparent;border:1px solid var(--bd-mid);color:var(--tx2);font-size:12px;letter-spacing:.15em;text-transform:uppercase;padding:9px 28px;cursor:pointer;border-radius:var(--radius);font-family:Arial,sans-serif;}
 .civ-newgame .btn-adv:hover{color:var(--tx);background:rgba(255,255,255,.03);}
 .civ-newgame .sett-note{font-size:11px;color:var(--tx-muted);text-align:center;max-width:700px;margin:.35rem auto 0;font-family:Arial,sans-serif;line-height:1.4;}
+/* R-HOTSEAT-ETAP6F-PART2-UI-Q1: przełącznik hot-seat (krok 4) + ekran fotela 2. */
+.civ-newgame .seat2-toggle-row{max-width:700px;margin:.6rem auto 0;display:flex;justify-content:center;}
+.civ-newgame .seat2-toggle-btn{background:transparent;border:1px solid var(--bd-mid);color:var(--tx2);font-size:12px;letter-spacing:.1em;padding:9px 22px;cursor:pointer;border-radius:var(--radius);font-family:Arial,sans-serif;}
+.civ-newgame .seat2-toggle-btn.on{border-color:var(--gold);color:var(--gold-light);background:rgba(201,168,76,.08);}
+.civ-newgame .seat2-dist{max-width:700px;margin:1rem auto 0;}
+.civ-newgame .seat2-dist-row{display:flex;gap:10px;justify-content:center;margin-top:.5rem;}
+.civ-newgame .seat2-dist-opt{background:var(--bg-card);border:1.5px solid var(--bd-sub);color:var(--tx2);font-size:12px;letter-spacing:.1em;text-transform:uppercase;padding:9px 22px;cursor:pointer;border-radius:var(--radius);font-family:Arial,sans-serif;}
+.civ-newgame .seat2-dist-opt.sel{border-color:var(--gold);color:var(--gold-light);background:rgba(201,168,76,.1);}
 /* PROTOTYP ZMIANA 1: prawa kolumna kroku 4 — panel Cywilizacje przeciwnika.
    overflow:hidden + .ai-civ-scroll{flex:1;overflow-y:auto} = ten sam wzorzec co
    .adv-modal/.adv-modal-body (kolumna z limitem wysokości, scroll TYLKO wewnątrz
@@ -1148,6 +1189,119 @@ function renderCivStep(host: HTMLElement): void {
   layout.appendChild(gridPanel);
   layout.appendChild(detail);
   host.appendChild(layout);
+}
+
+/**
+ * R-HOTSEAT-ETAP6F-PART2-UI-Q1 — analogiczny do `ensureSelCivForEpoch`, ale
+ * wyklucza `selCiv` (ABC-Q3, wykluczenie duplikatu — obrona w głębi, warstwa
+ * danych i tak rzuca przy duplikacie w `buildClusterStartPlan`).
+ */
+function ensureSelCiv2ForEpoch(): void {
+  const list = civsForEpoch(selEpoch).filter(c => c.id !== selCiv);
+  if (list.length === 0) {
+    selCiv2 = null;
+    return;
+  }
+  if (!selCiv2 || selCiv2 === selCiv || !list.some(c => c.id === selCiv2)) {
+    selCiv2 = list[0]!.id;
+  }
+}
+
+function selectedCiv2(): CivOption | null {
+  return civs().find(c => c.id === selCiv2) ?? null;
+}
+
+const DISTANCE_MODE_LABELS: Record<HumanDistanceMode, string> = {
+  blisko: 'Blisko',
+  daleko: 'Daleko',
+  losowo: 'Losowo',
+};
+
+/**
+ * R-HOTSEAT-ETAP6F-PART2-UI-Q1 — ekran wyboru cywilizacji fotela 2 (hot-seat) +
+ * selektor trybu odległości (ABC-Q4). Podekran kroku 4 (`showSeat2Screen`), NIE
+ * osobna pozycja `curStep`/`STEP_LABELS` (ABC-Q2, Wariant A "sekwencyjny" —
+ * fotel 1 przechodzi standardową ścieżkę bez zmian, dopiero POTEM ten ekran).
+ * Wzorzec kafelków 1:1 z `renderCivStep` (linie ok. 1097-1151 przed tą zmianą).
+ */
+function renderSeat2Step(host: HTMLElement): void {
+  ensureSelCiv2ForEpoch();
+  const available = civsForEpoch(selEpoch);
+  host.appendChild(el(
+    'div',
+    'epoch-navhint',
+    'Fotel 2 (hot-seat) — wybierz cywilizację drugiego gracza. Cywilizacja fotela 1 jest niedostępna.',
+  ));
+
+  const layout = el('div', 'civ-layout');
+  const grid = el('div', 'civ-grid');
+  for (const c of available) {
+    const isPlayer1Civ = c.id === selCiv; // ABC-Q3: obrona w głębi — wyszarzone, nieklikalne.
+    const isSel = selCiv2 === c.id;
+    const card = el('div', 'card' + (isSel ? ' sel' : '') + (isPlayer1Civ ? ' disabled' : ''));
+    card.innerHTML = civMedallionHtml(c.id, isSel, 'card', c.kolorHex) + '<div class="cn">' + c.name + '</div>';
+    if (isPlayer1Civ) {
+      (card as HTMLElement).title = 'Cywilizacja fotela 1 — niedostępna dla fotela 2.';
+    } else {
+      card.addEventListener('click', () => { selCiv2 = c.id; render(); });
+    }
+    grid.appendChild(card);
+  }
+  if (available.length <= 1) {
+    grid.appendChild(el('div', 'cn', 'Brak innej cywilizacji dostępnej w tej epoce dla fotela 2.'));
+  }
+
+  const detail = el('div', 'detail');
+  const c2 = selectedCiv2();
+  if (!c2) {
+    const empty = el('div', 'empty');
+    empty.innerHTML = '<div class="arr">&#8592;</div><div>Wybierz cywilizację fotela 2 z siatki.</div>';
+    detail.appendChild(empty);
+  } else {
+    const head = el('div', 'civ-dh');
+    head.innerHTML = civMedallionHtml(c2.id, true, 'detail', c2.kolorHex) + '<div><div class="dn">' + c2.name + '</div><div class="civ-dmeta">Cywilizacja fotela 2</div></div>';
+    detail.appendChild(head);
+    const ds = el('div', 'civ-ds');
+    ds.appendChild(el('div', 'dlbl', 'Cechy &amp; bonusy'));
+    if (c2.styl) appendBonusRow(ds, c2.styl);
+    for (const b of (c2.bonusy ?? [])) appendBonusRow(ds, b);
+    detail.appendChild(ds);
+  }
+  const gridPanel = el('div', 'civ-grid-panel');
+  gridPanel.appendChild(grid);
+  layout.appendChild(gridPanel);
+  layout.appendChild(detail);
+  host.appendChild(layout);
+
+  const distBox = el('div', 'start-preview seat2-dist');
+  distBox.appendChild(el('div', 'kh', 'Odległość heksu startowego fotela 2 (ABC-Q4)'));
+  const distRow = el('div', 'seat2-dist-row');
+  (Object.keys(DISTANCE_MODE_LABELS) as HumanDistanceMode[]).forEach(mode => {
+    const btn = el(
+      'button',
+      'seat2-dist-opt' + (humanDistanceMode === mode ? ' sel' : ''),
+      DISTANCE_MODE_LABELS[mode],
+    );
+    btn.addEventListener('click', () => { humanDistanceMode = mode; render(); });
+    distRow.appendChild(btn);
+  });
+  distBox.appendChild(distRow);
+  host.appendChild(distBox);
+
+  const actions = el('div', 'sett-actions');
+  const back = el('button', 'btn-adv', '&#8592; Wstecz (ustawienia)');
+  back.addEventListener('click', () => { showSeat2Screen = false; render(); });
+  actions.appendChild(back);
+  const start = el('button', 'start', '&#9670; ROZPOCZNIJ GRE &#9670;') as HTMLButtonElement;
+  const canStart = !!selCiv2 && selCiv2 !== selCiv && civsForEpoch(selEpoch).some(c => c.id === selCiv2);
+  start.disabled = !canStart;
+  start.addEventListener('click', () => {
+    if (!canStart) return;
+    curStep = 5;
+    render();
+  });
+  actions.appendChild(start);
+  host.appendChild(actions);
 }
 
 function epochTechSummary(epochId: string): string {
@@ -1557,12 +1711,38 @@ function renderSettStep(host: HTMLElement): void {
     host.appendChild(box);
   }
 
+  // R-HOTSEAT-ETAP6F-PART2-UI-Q1: przełącznik hot-seat, domyślnie WYŁĄCZONY
+  // (`hotSeatEnabled===false`) — zero wpływu na dzisiejszą ścieżkę
+  // jednoosobową, dopóki gracz świadomie nie kliknie (ABC-Q2 Wariant A).
+  const seat2Row = el('div', 'seat2-toggle-row');
+  const seat2Btn = el(
+    'button',
+    'seat2-toggle-btn' + (hotSeatEnabled ? ' on' : ''),
+    (hotSeatEnabled ? '&#9745;' : '&#9744;') + ' Dodaj drugiego gracza (hot-seat)',
+  );
+  seat2Btn.addEventListener('click', () => {
+    hotSeatEnabled = !hotSeatEnabled;
+    if (!hotSeatEnabled) {
+      // Wyłączenie = pełny reset do stanu domyślnego (zero regresji).
+      selCiv2 = null;
+      humanDistanceMode = 'losowo';
+      showSeat2Screen = false;
+    }
+    markNewGamePrefsDirtyAndSave();
+    render();
+  });
+  seat2Row.appendChild(seat2Btn);
+  host.appendChild(seat2Row);
+
   const actions = el('div', 'sett-actions');
   const advBtn = el('button', 'btn-adv', '&#9881;&nbsp; Zaawansowane opcje');
   advBtn.addEventListener('click', showAdvancedModal);
   actions.appendChild(advBtn);
   const start = el('button', 'start', '&#9670; ROZPOCZNIJ GRE &#9670;');
-  start.addEventListener('click', () => { curStep = 5; render(); });
+  start.addEventListener('click', () => {
+    if (hotSeatEnabled) { showSeat2Screen = true; render(); }
+    else { curStep = 5; render(); }
+  });
   actions.appendChild(start);
   host.appendChild(actions);
   host.appendChild(el(
@@ -1627,6 +1807,11 @@ function buildParams(): NewGameParams {
     civName: c ? c.name : '',
     civId2: selCiv2 ?? undefined,
     civName2: c2 ? c2.name : undefined,
+    // R-HOTSEAT-ETAP6F-PART2-UI-Q1: gate na `selCiv2` (nie samo `hotSeatEnabled`) —
+    // `selCiv2` jest `null` zawsze, dopóki gracz nie dotarł do ekranu fotela 2
+    // (`renderSeat2Step`), więc `undefined` tutaj jest gwarantowane na dzisiejszej
+    // ścieżce jednoosobowej niezależnie od stanu przełącznika.
+    humanDistanceMode: selCiv2 ? humanDistanceMode : undefined,
     epoch: ep ? ep.name : '',
     epochId: selEpoch,
     difficulty: settingValue('difficulty'),
@@ -1815,7 +2000,7 @@ function render(): void {
     const n = i + 1;
     const si = el('div', 'si' + (n < curStep ? ' done' : n === curStep ? ' active' : ''));
     si.innerHTML = '<div class="si-b"><div class="si-n">' + n + '</div><span class="si-l">' + lbl + '</span></div>';
-    if (n < curStep) si.addEventListener('click', () => { curStep = n; render(); });
+    if (n < curStep) si.addEventListener('click', () => { curStep = n; showSeat2Screen = false; render(); });
     bar.appendChild(si);
     if (n < STEP_LABELS.length) bar.appendChild(el('div', 'si-c'));
   });
@@ -1848,8 +2033,13 @@ function render(): void {
     content.appendChild(el('div', 'sh', '<h2>Wybór Cywilizacji</h2>'));
     renderCivStep(content);
   } else if (curStep === 4) {
-    content.appendChild(el('div', 'sh', '<h2>Ustawienia Rozgrywki</h2>'));
-    renderSettStep(content);
+    if (showSeat2Screen) {
+      content.appendChild(el('div', 'sh', '<h2>Fotel 2 &mdash; Drugi Gracz</h2>'));
+      renderSeat2Step(content);
+    } else {
+      content.appendChild(el('div', 'sh', '<h2>Ustawienia Rozgrywki</h2>'));
+      renderSettStep(content);
+    }
   } else {
     renderGenStep(content);
   }
@@ -1861,7 +2051,13 @@ function render(): void {
   if (curStep >= 2 && curStep <= 4) {
     const nav = el('div', 'nav');
     const back = el('button', 'nb back', '&#8592; Wstecz');
-    back.addEventListener('click', () => { curStep -= 1; render(); });
+    back.addEventListener('click', () => {
+      // R-HOTSEAT-ETAP6F-PART2-UI-Q1: na kroku 4 z otwartym ekranem fotela 2,
+      // "Wstecz" wraca do ustawień (podekran), nie do kroku 3.
+      if (curStep === 4 && showSeat2Screen) { showSeat2Screen = false; }
+      else { curStep -= 1; }
+      render();
+    });
     const info = el('div', 'ni', 'Krok ' + curStep + ' z 5');
     nav.appendChild(back);
     nav.appendChild(info);
@@ -1922,6 +2118,9 @@ export function showNewGameFlow(config: NewGameFlowConfig): void {
   curStep = 1;
   selCiv = DEFAULT_PLAYER_CIV_ID;
   selCiv2 = null;
+  hotSeatEnabled = false;
+  humanDistanceMode = 'losowo';
+  showSeat2Screen = false;
   selEpoch = DEFAULT_START_EPOCH_ID;
   selAiCivIds = [];
   ensureSelCivForEpoch();
