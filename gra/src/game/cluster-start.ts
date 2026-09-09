@@ -10,21 +10,38 @@ import {
   buildClusterSpawnPlan,
   buildSameTypeRivalCandidateHexes,
   displayLabelForSlot,
+  pickSecondHumanStartHex,
   type ClusterSpawnPlan,
   type ClusterSpawnSlot,
   type ForeignTypeClusterGroup,
+  type HumanDistanceMode,
 } from '../map/cluster-spawn';
 import { startRelationForPair } from './diplomacy-layers';
 import type { Relation } from './diplomacy';
 import { hexDistance } from '../units/setup';
 import { MIN_CITY_DISTANCE, MIN_CITY_DISTANCE_START_CITY_STATE } from './cities';
 
-export type { ClusterSpawnSlot, ClusterSpawnPlan, ForeignTypeClusterGroup };
+export type { ClusterSpawnSlot, ClusterSpawnPlan, ForeignTypeClusterGroup, HumanDistanceMode };
 export { buildSameTypeRivalSlots, buildSameTypeRivalCandidateHexes } from '../map/cluster-spawn';
 
 export interface ClusterStartPlan {
   playerStartHex: { q: number; r: number };
   playerStartCityName: string;
+  /**
+   * R-HOTSEAT-ETAP6F-PART2-DATA-Q1: heks startowy DRUGIEGO człowieka
+   * (hot-seat), algorytmicznie zarezerwowany przez generator (ABC-Q1) — `null`
+   * gdy `BuildClusterStartInput.secondHumanCivId` nie było podane (dzisiejsze
+   * single-player, no-op) LUB gdy generator nie znalazł żadnego legalnego
+   * heksu (skrajny przypadek bardzo małej mapy).
+   */
+  secondPlayerStartHex: { q: number; r: number } | null;
+  /**
+   * ownerId zarezerwowany dla drugiego człowieka — wyliczony jako pierwszy
+   * wolny numer PO wszystkich ownerId zajętych przez AI/rywali tego samego
+   * typu w TYM planie (zero kolizji z rosterem AI). `null` symetrycznie do
+   * `secondPlayerStartHex`.
+   */
+  secondPlayerOwnerId: number | null;
   aiStartHexes: Array<{ q: number; r: number; ownerId: number }>;
   spawnCities: Array<{ q: number; r: number; ownerId: number; name: string }>;
   /** Obcy typ → pełny klaster (MAP-P1-01). */
@@ -68,10 +85,45 @@ export interface BuildClusterStartInput {
    * unchanged behaviour (today's deterministic ROSTER_KLUCZE).
    */
   preferredCivIds?: readonly string[];
+  /**
+   * R-HOTSEAT-ETAP6F-PART2-DATA-Q1: cywilizacja DRUGIEGO fotela ludzkiego
+   * (hot-seat). `undefined` = brak drugiego człowieka — generator zachowuje
+   * się DOKŁADNIE jak dziś (zero nowego heksu, zero nowego ownerId, dowód
+   * no-op tego tematu). Musi różnić się od `playerCivId` — inaczej
+   * `buildClusterStartPlan` rzuca (ABC-Q3, wykluczenie duplikatu, symetrycznie
+   * do wykluczenia cywilizacji AI przez `_menuSelectedAiCivIds`).
+   */
+  secondHumanCivId?: string;
+  /**
+   * Tryb dystansu między dwoma heksami-ludźmi (ABC-Q4). Domyślnie `'losowo'`
+   * gdy `secondHumanCivId` jest podane, a tryb pominięty. Bez efektu, gdy
+   * `secondHumanCivId` nie jest podane.
+   */
+  humanDistanceMode?: HumanDistanceMode;
+  /**
+   * Jawne ownerId dla drugiego człowieka (np. z `humanSeats.humanOwnerIds[1]`
+   * po stronie wołającego). Gdy pominięte, generator wylicza pierwszy wolny
+   * numer po wszystkich ownerId AI z tego planu — bezpieczny fallback dla
+   * wołających, którzy jeszcze nie mają ustalonej numeracji foteli.
+   */
+  secondHumanOwnerId?: number;
 }
 
 /** Pełny plan startu — konsumuje SILNIK w doStartGame(). */
 export function buildClusterStartPlan(input: BuildClusterStartInput): ClusterStartPlan {
+  // ABC-Q3 (wykluczenie duplikatu): fotel 2 NIE może wybrać tę samą
+  // cywilizację co fotel 1 — symetrycznie do wykluczenia cywilizacji AI przez
+  // `_menuSelectedAiCivIds`. Rzucamy tu, w generatorze, bo to jedyne miejsce
+  // tego pod-tematu (dane/generator, zero UI) gwarantowane do wywołania przed
+  // faktycznym rezerwowaniem drugiego heksu — cichy fallback ukryłby błędne
+  // wywołanie zamiast go zgłosić.
+  if (input.secondHumanCivId !== undefined && input.secondHumanCivId === input.playerCivId) {
+    throw new Error(
+      `buildClusterStartPlan: secondHumanCivId ('${input.secondHumanCivId}') nie może być ` +
+      `identyczne z playerCivId — ABC-Q3, wykluczenie duplikatu cywilizacji fotela 2.`,
+    );
+  }
+
   const spawnPlan = buildClusterSpawnPlan({
     map: input.map,
     civs: input.civs,
@@ -225,9 +277,52 @@ export function buildClusterStartPlan(input: BuildClusterStartInput): ClusterSta
     ...promotedCapitalOwnerIds,
   ];
 
+  // R-HOTSEAT-ETAP6F-PART2-DATA-Q1: rezerwacja algorytmiczna drugiego heksu
+  // startowego (ABC-Q1) — WYŁĄCZNIE gdy wołający jawnie poprosił o drugą
+  // cywilizację człowieka. Bez `input.secondHumanCivId` te dwa pola zostają
+  // `null` i reszta funkcji jest nietknięta — dowód no-op dla single-player.
+  let secondPlayerStartHex: { q: number; r: number } | null = null;
+  let secondPlayerOwnerId: number | null = null;
+  if (input.secondHumanCivId !== undefined) {
+    const mode: HumanDistanceMode = input.humanDistanceMode ?? 'losowo';
+    // Zarzut 1 Evaluatora (runda 2): wyklucz kolizję drugiego heksu z
+    // WSZYSTKIMI już umiejscowionymi/zarezerwowanymi miastami tego planu —
+    // zaakceptowane miasta AI (`aiStartHexes`/`spawnCities`, PO filtrze
+    // kolizji z pętli wyżej, więc bez "widmowych" odrzuconych slotów) oraz
+    // zarezerwowane-ale-jeszcze-niespawnione miasta-państwa
+    // (`spawnPlan.pendingSameTypeRivalHexes`) — dokładnie ten sam zestaw
+    // pozycji, którego dystans do siebie nawzajem generator już pilnuje
+    // (`acceptedForDistance` wyżej), rozszerzony o drugiego człowieka.
+    const occupiedHexes: Array<{ q: number; r: number }> = [
+      ...aiStartHexes.map(a => ({ q: a.q, r: a.r })),
+      ...spawnPlan.pendingSameTypeRivalHexes,
+    ];
+    secondPlayerStartHex = pickSecondHumanStartHex(
+      input.map,
+      spawnPlan.playerStartHex,
+      mode,
+      input.seed,
+      MIN_CITY_DISTANCE_START_CITY_STATE,
+      occupiedHexes,
+    );
+    if (secondPlayerStartHex) {
+      // Zero kolizji z rosterem AI tego planu: pierwszy wolny numer PO
+      // wszystkich ownerId już zajętych (sloty zaakceptowane + deferred
+      // same-type rivals), chyba że wołający jawnie podał własny.
+      const reservedOwnerIds = [
+        ...aiStartHexes.map(a => a.ownerId),
+        ...spawnPlan.pendingSameTypeRivalOwnerIds,
+      ];
+      secondPlayerOwnerId = input.secondHumanOwnerId
+        ?? Math.max(0, ...reservedOwnerIds) + 1;
+    }
+  }
+
   return {
     playerStartHex: spawnPlan.playerStartHex,
     playerStartCityName: spawnPlan.playerStartCityName,
+    secondPlayerStartHex,
+    secondPlayerOwnerId,
     aiStartHexes,
     spawnCities,
     foreignTypeClusters,

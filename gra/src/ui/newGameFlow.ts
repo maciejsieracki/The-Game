@@ -85,6 +85,21 @@ export interface NewGameParams {
   /** ikonaId z civs.json (np. rzymianie) — NIE etykieta PL. */
   civId: string;
   civName: string;
+  /**
+   * R-HOTSEAT-ETAP6F-PART2-DATA-Q1: cywilizacja DRUGIEGO fotela ludzkiego
+   * (hot-seat). `undefined` = brak drugiego człowieka — zachowanie DOKŁADNIE
+   * jak dziś (Etap 1 default `humanOwnerIds=[0]`). Heks drugiego człowieka
+   * jest algorytmiczny (ABC-Q1), nie klikany — ten pod-temat dostarcza
+   * WYŁĄCZNIE pole danych, zero nowego ekranu kreatora (UI to następny
+   * pod-temat, `R-HOTSEAT-ETAP6F-PART2-UI-Q1`). Musi różnić się od `civId`
+   * (ABC-Q3, wykluczenie duplikatu) — walidacja po stronie generatora
+   * (`buildClusterStartPlan`), nie tutaj.
+   * / EN: second human seat's civ (hot-seat). `undefined` = no second human —
+   * behaviour identical to today. Data field only, no UI in this sub-topic.
+   */
+  civId2?: string;
+  /** Etykieta PL nazwy cywilizacji fotela 2 (analogicznie do `civName`), gdy `civId2` ustawione. */
+  civName2?: string;
   /** Etykieta PL epoki (np. Epoka Kamienia). */
   epoch: string;
   /** Id epoki dla silnika: kamien | braz | zelazo. */
@@ -760,6 +775,18 @@ function resetSettingsFromParams(): void {
 let rootEl: HTMLDivElement | null = null;
 let curStep = 1;
 let selCiv: string | null = null;
+/**
+ * R-HOTSEAT-ETAP6F-PART2-DATA-Q1: drugi slot stanu modułu, analogiczny do
+ * `selCiv`, dla cywilizacji DRUGIEGO fotela ludzkiego (hot-seat). `null` =
+ * brak drugiego człowieka (dzisiejsze zachowanie, bit-w-bit). Używany
+ * PROGRAMOWO (przyszły UI z `R-HOTSEAT-ETAP6F-PART2-UI-Q1` lub test) — ZERO
+ * nowego ekranu/kroku kreatora w tym pod-temacie, żaden kod w tym pliku dziś
+ * nie zapisuje do tej zmiennej poza resetem nowej gry.
+ * / EN: second module-state slot, mirroring `selCiv`, for the SECOND human
+ * seat's civ (hot-seat). `null` = no second human (today's behaviour,
+ * unchanged). Consumed programmatically only — no new wizard screen here.
+ */
+let selCiv2: string | null = null;
 let selEpoch = 'kamien';
 /**
  * R-KONFIGURATOR-WYBOR-CYWILIZACJI-PRZECIWNIKA: typy AI wybrane w kreatorze (krok
@@ -1590,9 +1617,16 @@ function buildParams(): NewGameParams {
       })
     : undefined;
   const seed = Math.floor(Math.random() * 1_000_000);
+  // R-HOTSEAT-ETAP6F-PART2-DATA-Q1: `selCiv2` nie jest dziś zapisywany przez
+  // żaden ekran kreatora (zero UI w tym pod-temacie) — w praktyce zawsze
+  // `null`, więc `civId2`/`civName2` są zawsze `undefined` na dzisiejszej
+  // ścieżce menu (no-op). Pole istnieje dla przyszłego UI i testów.
+  const c2 = selCiv2 ? civs().find(x => x.id === selCiv2) ?? null : null;
   return {
     civId: selCiv ?? DEFAULT_PLAYER_CIV_ID,
     civName: c ? c.name : '',
+    civId2: selCiv2 ?? undefined,
+    civName2: c2 ? c2.name : undefined,
     epoch: ep ? ep.name : '',
     epochId: selEpoch,
     difficulty: settingValue('difficulty'),
@@ -1887,6 +1921,7 @@ export function showNewGameFlow(config: NewGameFlowConfig): void {
   prefsDirty = false;
   curStep = 1;
   selCiv = DEFAULT_PLAYER_CIV_ID;
+  selCiv2 = null;
   selEpoch = DEFAULT_START_EPOCH_ID;
   selAiCivIds = [];
   ensureSelCivForEpoch();

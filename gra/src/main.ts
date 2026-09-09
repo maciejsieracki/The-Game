@@ -1634,6 +1634,16 @@ async function boot(): Promise<void> {
      *  difficulty, not inverted. */
     let _menuCityStateDifficultyVsPlayer: 'easy' | 'normal' | 'hard' = 'normal';
     let _menuCivId: string = 'rzymianie'; // E1 default: Rzymianie
+    /**
+     * R-HOTSEAT-ETAP6F-PART2-DATA-Q1: `_menuCivId` per-fotel, wzorem
+     * `playerStateByHuman`/`exploredByHuman` (Etap 1). Dziś (single-player)
+     * zawsze dokładnie jeden wpis: `HUMAN_OWNER_PRIMARY -> _menuCivId` (ustawiany
+     * w `applyMenuParams`, zsynchronizowany z `_menuCivId` — czyste odczyty
+     * `_menuCivId` w ~30 miejscach main.ts NIE są tym tematem ruszane, zero
+     * zmiany zachowania). Drugi wpis istnieje WYŁĄCZNIE gdy
+     * `applyClusterStartPlan` dostał `secondHumanCivId`.
+     */
+    let _menuCivIdByOwner: Map<number, string> = new Map([[HUMAN_OWNER_PRIMARY, _menuCivId]]);
     let _menuMapSize: string = 'Standardowy'; // E1 default map size
     let _menuRivals: number = 6; // default rival count (skalowane w kreatorze)
     let _menuCivTypesCount: number = 7;
@@ -2541,6 +2551,22 @@ async function boot(): Promise<void> {
       q: startPlacements.playerStart.q,
       r: startPlacements.playerStart.r,
     };
+    /**
+     * R-HOTSEAT-ETAP6F-PART2-DATA-Q1: `playerStartHex` per-owner — trzyma
+     * WŁAŚCIWY heks startowy dla KAŻDEGO fotela ludzkiego, nie tylko
+     * `HUMAN_OWNER_PRIMARY`. Zawsze zsynchronizowana z `playerStartHex` dla
+     * `HUMAN_OWNER_PRIMARY` (jedyne miejsce przypisania obu:
+     * `applyClusterStartPlan`) — single-player czyta z niej dokładnie tę samą
+     * wartość co dziś z `playerStartHex`, bit-w-bit. Drugi wpis istnieje
+     * WYŁĄCZNIE gdy `applyClusterStartPlan` dostał `secondHumanCivId`.
+     */
+    let playerStartHexByOwner: Map<number, { q: number; r: number }> = new Map([
+      [HUMAN_OWNER_PRIMARY, { q: startPlacements.playerStart.q, r: startPlacements.playerStart.r }],
+    ]);
+    /** Heks startowy dla `ownerId` — `null` gdy ten fotel nie ma zarejestrowanego heksu. */
+    function playerStartHexFor(ownerId: number): { q: number; r: number } | null {
+      return playerStartHexByOwner.get(ownerId) ?? null;
+    }
     /** Pozycje startowe AI (miasta AI — osobny batch CYWILIZACJE/SILNIK). */
     let aiStartHexes = startPlacements.aiStarts;
     /** Promień oświetlenia startu (z trudności menu). */
@@ -8479,7 +8505,14 @@ async function boot(): Promise<void> {
       playerCivId: string,
       seed: number,
       rywaleNaKlaster: number,
-      opts?: { skipRenderRefresh?: boolean; preferredCivIds?: readonly string[] },
+      opts?: {
+        skipRenderRefresh?: boolean;
+        preferredCivIds?: readonly string[];
+        /** R-HOTSEAT-ETAP6F-PART2-DATA-Q1: cywilizacja fotela 2 (hot-seat), `undefined` = brak — no-op. */
+        secondHumanCivId?: string;
+        /** ABC-Q4: tryb dystansu między dwoma heksami-ludźmi. Bez efektu bez `secondHumanCivId`. */
+        humanDistanceMode?: 'blisko' | 'daleko' | 'losowo';
+      },
     ): void {
       const plan = buildClusterStartPlan({
         map,
@@ -8497,9 +8530,41 @@ async function boot(): Promise<void> {
         // only active one on new-game start) — instead of round 1's dead wiring
         // into assignAiCivTypes.
         preferredCivIds: opts?.preferredCivIds,
+        secondHumanCivId: opts?.secondHumanCivId,
+        humanDistanceMode: opts?.humanDistanceMode,
       });
 
       playerStartHex = { ...plan.playerStartHex };
+      // R-HOTSEAT-ETAP6F-PART2-DATA-Q1: `playerStartHexByOwner` zsynchronizowana
+      // z `playerStartHex` dla `HUMAN_OWNER_PRIMARY` — jedyne miejsce, gdzie
+      // `playerStartHex` jest przypisywany, więc jedyne miejsce potrzebne do
+      // synchronizacji. Drugi wpis WYŁĄCZNIE gdy generator faktycznie
+      // zarezerwował drugi heks (`plan.secondPlayerStartHex`).
+      playerStartHexByOwner = new Map([[HUMAN_OWNER_PRIMARY, { ...plan.playerStartHex }]]);
+      if (plan.secondPlayerStartHex && plan.secondPlayerOwnerId !== null) {
+        const secondOwnerId = plan.secondPlayerOwnerId;
+        playerStartHexByOwner.set(secondOwnerId, { ...plan.secondPlayerStartHex });
+        if (!humanSeats.humanOwnerIds.includes(secondOwnerId)) {
+          humanSeats = {
+            humanOwnerIds: [...humanSeats.humanOwnerIds, secondOwnerId],
+            activeHumanOwnerId: humanSeats.activeHumanOwnerId,
+          };
+        }
+        if (opts?.secondHumanCivId) {
+          _menuCivIdByOwner.set(secondOwnerId, opts.secondHumanCivId);
+          const chosenCiv2 = (data.civs.cywilizacje as any[]).find(
+            (c: any) => (c.ikonaId ?? '') === opts.secondHumanCivId,
+          );
+          playerCivTypeByHuman.set(secondOwnerId, opts.secondHumanCivId);
+          playerCivBonusyByHuman.set(
+            secondOwnerId,
+            chosenCiv2 && Array.isArray(chosenCiv2.bonusy) ? chosenCiv2.bonusy : [],
+          );
+        }
+        if (!exploredByHuman.has(secondOwnerId)) exploredByHuman.set(secondOwnerId, new Set());
+        if (!playerStateByHuman.has(secondOwnerId)) playerStateByHuman.set(secondOwnerId, createPlayerState());
+        if (!pracaPoolByHuman.has(secondOwnerId)) pracaPoolByHuman.set(secondOwnerId, { praca: 0 });
+      }
       aiStartHexes = [];
       pendingForeignSpawnCities = plan.spawnCities.slice();
       clusterPlayerStartCityName = plan.playerStartCityName;
@@ -9850,19 +9915,29 @@ async function boot(): Promise<void> {
       }
       if (visible.size > 0) return visible;
       /* R-HOTSEAT-ETAP5-SWITCH-HUMAN-Q1 runda 2 (Evaluator runda 1, Zarzut #2): fallback
-       * na `playerStartHex`/`startRevealRadius` ma sens WYŁĄCZNIE dla oryginalnego fotela
-       * (`HUMAN_OWNER_PRIMARY`) w trakcie JEGO WŁASNEGO onboardingu, przed założeniem
-       * pierwszego miasta — `playerStartHex`/`startRevealRadius` NIE są per-owner (znany
-       * dług, nierozwiązany w tej rundzie — pełna migracja na Map<ownerId,...> to osobny
-       * temat). Bez strażnika `ME() === HUMAN_OWNER_PRIMARY` ten fallback odsłaniał okolicę
+       * na heks startowy/`startRevealRadius` ma sens WYŁĄCZNIE dla fotela AKTYWNIE
+       * onboardującego się (`ME()`), w trakcie JEGO WŁASNEGO onboardingu, przed
+       * założeniem pierwszego miasta. Bez strażnika ten fallback odsłaniał okolicę
        * startową fotela A każdemu KOLEJNEMU fotelowi (`switchActiveHuman()` na fotel bez
        * miasta/jednostek), co wyciekało do `exploredByHuman` tego fotela przez
-       * `refreshFog()` — dokładnie ten wyciek, który znalazł Evaluator. No-op dla fotela A/
-       * gry jednoosobowej: `ME() === HUMAN_OWNER_PRIMARY` jest tam zawsze prawdziwe, więc
-       * zachowanie fotela A jest identyczne jak przed tą zmianą (patrz bramka referencyjna
-       * `river-fog-visibility-test.cjs` — no-op dowiedziony realnym uruchomieniem). */
-      if (ME() === HUMAN_OWNER_PRIMARY && playerStartHex !== null) {
-        return computeVisibleAt(playerStartHex.q, playerStartHex.r, map, startRevealRadius);
+       * `refreshFog()` — dokładnie ten wyciek, który znalazł Evaluator.
+       *
+       * R-HOTSEAT-ETAP6F-PART2-DATA-Q1: strażnik `ME() === HUMAN_OWNER_PRIMARY` (znany
+       * dług per §recon, main.ts:9774-9779 historycznie) zastąpiony per-owner lookupem
+       * `playerStartHexFor(ME())` — czyta WŁAŚCIWY heks dla AKTYWNEGO fotela, nie tylko
+       * `HUMAN_OWNER_PRIMARY`. No-op dla fotela A/gry jednoosobowej:
+       * `playerStartHexByOwner` ma dziś zawsze dokładnie jeden wpis
+       * (`HUMAN_OWNER_PRIMARY -> playerStartHex`, zsynchronizowany w
+       * `applyClusterStartPlan`), więc `playerStartHexFor(ME())` zwraca dokładnie to
+       * samo, co dawny `ME() === HUMAN_OWNER_PRIMARY ? playerStartHex : null` (patrz
+       * bramka referencyjna `river-fog-visibility-test.cjs` — no-op dowiedziony realnym
+       * uruchomieniem). Drugi fotel korzysta z tego samego fallbacku podczas WŁASNEGO
+       * onboardingu wyłącznie gdy generator zarejestrował dla niego heks
+       * (`applyClusterStartPlan` z `secondHumanCivId` — dziś zawsze pominięte, więc
+       * `playerStartHexByOwner` nie ma drugiego wpisu na żadnej dzisiejszej ścieżce). */
+      const meStartHex = playerStartHexFor(ME());
+      if (meStartHex !== null) {
+        return computeVisibleAt(meStartHex.q, meStartHex.r, map, startRevealRadius);
       }
       return new Set<string>();
     }
@@ -10509,6 +10584,19 @@ async function boot(): Promise<void> {
      *  się nad `playerPracaPool`, żeby zachować "zero kopii" mimo że to
      *  primitywa, nie obiekt). */
     const playerStateByHuman: Map<number, PlayerState> = new Map([[HUMAN_OWNER_PRIMARY, player]]);
+    /**
+     * R-HOTSEAT-ETAP6F-PART2-DATA-Q1: `player.civType`/`player.civBonusy` (jeden
+     * globalny obiekt `player`, oś odrębna od `playerStateByHuman` — recon §2
+     * pkt 4) rozszerzone na per-owner. Dziś (single-player) zawsze dokładnie
+     * jeden wpis, zsynchronizowany z `player.civType`/`player.civBonusy` —
+     * konsumenci `player.civType`/`_menuCivId` w main.ts NIE są tym tematem
+     * ruszane. Drugi wpis istnieje WYŁĄCZNIE gdy `applyClusterStartPlan` dostał
+     * `secondHumanCivId`.
+     */
+    const playerCivTypeByHuman: Map<number, string> = new Map([[HUMAN_OWNER_PRIMARY, player.civType as string]]);
+    const playerCivBonusyByHuman: Map<number, unknown[]> = new Map([
+      [HUMAN_OWNER_PRIMARY, Array.isArray(player.civBonusy) ? player.civBonusy : []],
+    ]);
     /** Komórka-alias (getter/setter) nad `playerPracaPool` — czytanie/pisanie
      *  przez `.praca` faktycznie czyta/pisze TĘ SAMĄ zmienną `playerPracaPool`,
      *  nie kopię. Jedyny sposób na "zero kopii" scaffold nad primitywem w JS. */
@@ -22931,6 +23019,79 @@ async function boot(): Promise<void> {
           if (c) c.ownerId = ownerId;
         }
       },
+      /**
+       * R-HOTSEAT-ETAP6F-PART2-DATA-Q1 — hak testowy WYŁĄCZNIE dla
+       * `tools/hotseat-etap6f-part2-data-test.cjs` (headless, bez DOM — woła REALNĄ
+       * `applyClusterStartPlan`/`buildClusterStartPlan`/`buildClusterSpawnPlan` na
+       * ETAPIE GENERACJI klastra, nie tylko przejęcia istniejącego miasta jak
+       * `seedSecondSeat` wyżej — REGUŁA PRZECIW SAMOOSZUKIWANIU tego dispatchu).
+       * Re-uruchamia dokładnie tę samą funkcję, którą woła `doStartGame()` na
+       * nowej grze, na TEJ SAMEJ, już wygenerowanej mapie/seedzie — jedyna
+       * sztuczność jest w tym, ŻE test może to wywołać powtórnie z innym
+       * `secondCivId`/`mode`, nie w SAMEJ logice generatora.
+       */
+      generateSecondHumanSeatForTest: (
+        secondCivId: string,
+        mode: 'blisko' | 'daleko' | 'losowo',
+      ): {
+        secondOwnerId: number | null;
+        secondHex: { q: number; r: number } | null;
+        primaryHex: { q: number; r: number } | null;
+        primaryCivId: string;
+        secondCivIdApplied: string | null;
+        humanOwnerIds: readonly number[];
+      } => {
+        applyClusterStartPlan(_menuCivId, clusterStartSeed, _menuCityStates, {
+          preferredCivIds: _menuSelectedAiCivIds,
+          secondHumanCivId: secondCivId,
+          humanDistanceMode: mode,
+        });
+        const secondOwnerId = humanSeats.humanOwnerIds.length > 1
+          ? humanSeats.humanOwnerIds[humanSeats.humanOwnerIds.length - 1]!
+          : null;
+        return {
+          secondOwnerId,
+          secondHex: secondOwnerId !== null ? playerStartHexFor(secondOwnerId) : null,
+          primaryHex: playerStartHexFor(HUMAN_OWNER_PRIMARY),
+          primaryCivId: _menuCivId,
+          secondCivIdApplied: secondOwnerId !== null ? (_menuCivIdByOwner.get(secondOwnerId) ?? null) : null,
+          humanOwnerIds: humanSeats.humanOwnerIds,
+        };
+      },
+      /** Rzuca wprost `buildClusterStartPlan` (bez wpięcia w stan main.ts) —
+       *  potrzebne bramce do potwierdzenia wykluczenia duplikatu (ABC-Q3) bez
+       *  mutowania żywego stanu gry przy oczekiwanym błędzie. */
+      buildClusterStartPlanForTest: (input: {
+        playerCivId: string;
+        secondHumanCivId?: string;
+        humanDistanceMode?: 'blisko' | 'daleko' | 'losowo';
+        seed?: number;
+        secondHumanOwnerId?: number;
+      }): {
+        playerStartHex: { q: number; r: number };
+        secondPlayerStartHex: { q: number; r: number } | null;
+        secondPlayerOwnerId: number | null;
+      } => {
+        const plan = buildClusterStartPlan({
+          map,
+          civs: data.civs,
+          seed: input.seed ?? clusterStartSeed,
+          playerCivId: input.playerCivId,
+          rywaleNaKlaster: _menuCityStates,
+          aktywneTypy: _menuCivTypesCount || aktywneTypyFromMapLabel(_menuMapSize),
+          startEpochId: _menuEpochId || 'kamien',
+          cityNamesPools: data.cityNamesPools,
+          preferredCivIds: _menuSelectedAiCivIds,
+          secondHumanCivId: input.secondHumanCivId,
+          humanDistanceMode: input.humanDistanceMode,
+          secondHumanOwnerId: input.secondHumanOwnerId,
+        });
+        return {
+          playerStartHex: plan.playerStartHex,
+          secondPlayerStartHex: plan.secondPlayerStartHex,
+          secondPlayerOwnerId: plan.secondPlayerOwnerId,
+        };
+      },
       switchActiveHuman: (ownerId: number): void => switchActiveHuman(ownerId),
       isAwaitingFirstPlayerCity: (): boolean => isAwaitingFirstPlayerCity(),
       showHotSeatHandoff: (fromLabel: string, toLabel: string): void => {
@@ -34452,6 +34613,20 @@ async function boot(): Promise<void> {
       };
       _menuCitySupport = citySupportByDifficulty[_menuCityStateDifficultyVsPlayer] ?? 'normal';
       _menuCivId = params.civId || 'rzymianie';
+      // R-HOTSEAT-ETAP6F-PART2-DATA-Q1: `_menuCivIdByOwner` zsynchronizowana z
+      // `_menuCivId` dla `HUMAN_OWNER_PRIMARY`; drugi wpis dopisuje dopiero
+      // `applyClusterStartPlan` (potrzebuje wynikowego ownerId z generatora),
+      // zerujemy tu ewentualny stan z poprzedniej gry — no-op dla single-player.
+      _menuCivIdByOwner = new Map([[HUMAN_OWNER_PRIMARY, _menuCivId]]);
+      if (params.civId2 !== undefined && params.civId2 === _menuCivId) {
+        // ABC-Q3: fotel 2 nie może powielać fotela 1 — zamiast cichego
+        // zignorowania, jawny warning; realna rezerwacja i tak dzieje się w
+        // `applyClusterStartPlan`/`buildClusterStartPlan`, które rzuca w tym
+        // przypadku (patrz `game/cluster-start.ts`).
+        console.warn(
+          `[NewGame] civId2 '${params.civId2}' identyczne z civId gracza 1 — zignorowane (ABC-Q3)`,
+        );
+      }
       _menuMapSize = params.mapSize || 'Standardowy';
       _menuCivTypesCount = params.civTypesCount || defaultCivTypesFromMapLabel(_menuMapSize);
       _menuSelectedAiCivIds = Array.isArray(params.selectedAiCivIds) ? [...params.selectedAiCivIds] : [];
@@ -34492,6 +34667,10 @@ async function boot(): Promise<void> {
           player.civBonusy = [];
           console.warn(`[NewGame] Nacja '${_menuCivId}' nie znaleziona w civs.json — brak bonusów`);
         }
+        // R-HOTSEAT-ETAP6F-PART2-DATA-Q1: synchronizacja per-owner, zero zmiany
+        // odczytu `player.civType`/`player.civBonusy` gdziekolwiek indziej.
+        playerCivTypeByHuman.set(HUMAN_OWNER_PRIMARY, player.civType as string);
+        playerCivBonusyByHuman.set(HUMAN_OWNER_PRIMARY, Array.isArray(player.civBonusy) ? player.civBonusy : []);
         // Runda 2 R-KONFIGURATOR-...: ten wypełniacz jest nieszkodliwym stanem
         // przejściowym — na ścieżce nowej gry `doStartGame` woła POTEM zawsze
         // `applyClusterStartPlan()`, który robi `aiOwnerCivMap.clear()` i

@@ -418,6 +418,76 @@ export function buildClusterSpawnPlan(input: BuildClusterSpawnInput): ClusterSpa
   };
 }
 
+/**
+ * R-HOTSEAT-ETAP6F-PART2-DATA-Q1 (ABC-Q4): tryb dystansu między dwoma heksami-
+ * ludźmi. MECHANIZM w generatorze, nie UI — sam selektor widoczny dla gracza
+ * to następny pod-temat (`R-HOTSEAT-ETAP6F-PART2-UI-Q1`).
+ */
+export type HumanDistanceMode = 'blisko' | 'daleko' | 'losowo';
+
+/**
+ * R-HOTSEAT-ETAP6F-PART2-DATA-Q1: wybiera heks startowy DRUGIEGO człowieka
+ * względem heksu PIERWSZEGO (`primaryHex`), respektując `minDistance` (te same
+ * progi co inne miasta startowe — `MIN_CITY_DISTANCE`/`MIN_CITY_DISTANCE_START_
+ * CITY_STATE`, przekazywane przez wołającego z `game/cities.ts`, nie
+ * duplikowane tutaj) i regułę terenu identyczną z pierwszym heksem
+ * (`landHexesFromMap` — ten sam filtr ląd/woda/góry/polarny co reszta
+ * generatora, nie równoległy system).
+ *
+ * Tryb steruje WYŁĄCZNIE tym, z JAKIEJ CZĘŚCI puli lądowych kandydatów (wg
+ * dystansu od `primaryHex`) losujemy: `'blisko'` = najbliższe 10% (powyżej
+ * `minDistance`), `'daleko'` = najdalsze 10%, `'losowo'` = cała pula
+ * kandydatów równomiernie. Deterministyczne (seedowany `mulberry32`, ten sam
+ * generator co reszta klastra) — ten sam `seed` + `mode` zawsze daje ten sam
+ * heks.
+ *
+ * Zwraca `null`, gdy na mapie nie ma ŻADNEGO lądowego heksu ≥ `minDistance`
+ * od `primaryHex` (skrajny przypadek bardzo małej mapy) — wołający ma wtedy
+ * jawny sygnał braku, nie cichy fallback na `(0,0)`.
+ *
+ * RUNDA 2 (Zarzut 1 Evaluatora, POTWIERDZONY własną symulacją Evaluatora: 8
+ * dokładnych kolizji na 180 planów, seed=23/27/35/38 i in.): `occupiedHexes`
+ * — pozycje już zajęte w TYM planie klastra (miasta AI `aiStartHexes`/
+ * `spawnCities` + zarezerwowane-ale-jeszcze-niespawnione `pendingSameType-
+ * RivalHexes`), wykluczane TYM SAMYM progiem `minDistance` co dystans od
+ * `primaryHex` — nie tylko dokładne trafienie w tę samą pozycję, tak samo jak
+ * reszta generatora traktuje `MIN_CITY_DISTANCE`/`MIN_CITY_DISTANCE_START_
+ * CITY_STATE` jako promień wykluczenia, nie punktowy test kolizji. Domyślnie
+ * pusta lista — zachowanie no-op dla wołających sprzed tej naprawy.
+ */
+export function pickSecondHumanStartHex(
+  map: GameMap,
+  primaryHex: { q: number; r: number },
+  mode: HumanDistanceMode,
+  seed: number,
+  minDistance: number,
+  occupiedHexes: ReadonlyArray<{ q: number; r: number }> = [],
+): { q: number; r: number } | null {
+  const land = landHexesFromMap(map);
+  const withDist = land
+    .map(h => ({ q: h.q, r: h.r, d: hexDistanceAxial(h.q, h.r, primaryHex.q, primaryHex.r) }))
+    .filter(h => h.d >= minDistance)
+    .filter(h => occupiedHexes.every(o => hexDistanceAxial(h.q, h.r, o.q, o.r) >= minDistance));
+  if (withDist.length === 0) return null;
+  withDist.sort((a, b) => a.d - b.d);
+
+  let pool: typeof withDist;
+  if (mode === 'blisko') {
+    const count = Math.max(1, Math.ceil(withDist.length * 0.1));
+    pool = withDist.slice(0, count);
+  } else if (mode === 'daleko') {
+    const count = Math.max(1, Math.ceil(withDist.length * 0.1));
+    pool = withDist.slice(-count);
+  } else {
+    pool = withDist;
+  }
+
+  const rng = mulberry32(seed ^ 0x5eed2f00);
+  const idx = Math.min(pool.length - 1, Math.floor(rng() * pool.length));
+  const picked = pool[idx];
+  return picked ? { q: picked.q, r: picked.r } : null;
+}
+
 /** Etykieta bazowa ownera AI (N-2A: nazwa miasta z puli klastra; dopisek → display-names przy UI). */
 export function displayLabelForSlot(
   _civs: CivsData,
