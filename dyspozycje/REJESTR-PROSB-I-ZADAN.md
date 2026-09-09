@@ -7369,11 +7369,28 @@ testu)→Obrona→Final Control PASS. Nowe bramki: `hotseat-etap6d-podetap-c-mig
 bramek referencyjnych + 3 bramki save/load (`forced-war-iron-era-enter-turn-save-load-test`,
 `fort-nodes-save-load-test`, `save-load-sort-test`) bez regresji.
 
+## `R-HOTSEAT-ETAP6D-PODETAP-E-Q1` — GAME — **ZINTEGROWANE 2026-09-09** (commit `4e07a9aa`)
+
+Podetap E kontynuacji Etapu 6d (dyplomacja, plan hot-seat) — cała rodzina 15 funkcji
+operujących na `negotiationTable` (stół negocjacyjny/audiencja) zmigrowana na
+`isMe()`/`ME()`. `applyProposalOutcome` świadomie nietknięta (już sparametryzowana).
+Runda 1 miała 3 zarzuty Evaluatora: (1) brak raportu Operatora — Obrona zrekonstruowała;
+(2) bramka jednostkowa sprawdzała wyłącznie regexem tekst wycięty z main.ts, nigdy go nie
+wykonując (dokładnie błąd anty-samooszukiwania z `P-STADNINA-KONIE-KOSZT-ROZBUDOWY-Q1`
+rundy 2) — Obrona naprawiła nową bramką `exec-test.cjs` (realne wykonanie wyciętych ciał
+funkcji przez `esbuild.transformSync`+`new Function`); (3) brak żywego dowodu Chromium dla
+`handleNegotiationCounter` — Final Control rozstrzygnął samodzielnie jako wystarczające:
+osobiście zmutował main.ts ręcznie i potwierdził, że `exec-test.cjs` faktycznie złapał
+regresję (23/24 FAIL), nie tylko deklarował że łapie. Nowe bramki:
+`hotseat-etap6d-podetap-e-source-test.cjs` (77/77), `-exec-test.cjs` (24/24),
+`-live-test.cjs` (13/13, żywy Chromium). `tsc --noEmit` czysty, 5 bramek referencyjnych
+zielone. Poboczna, nieblokująca uwaga Final Control: regex `ARG_HARDCODE_RE` w
+`source-test.cjs` nie łapie hardkodu poza 2. pozycją argumentu — drobny temat PROCESS do
+osobnej rejestracji, nie wpływa na poprawność migracji.
+
 ## Nowe zgłoszenia w toku (2026-09-08, jeszcze nie zamknięte)
 
 - Niejasne zgłoszenie właściciela o pustym wierszu "Surowce" w górnym HUD — **WYJAŚNIONE, NIE
   BUG**: to jest świadoma decyzja z 2026-07-24 (`hud.ts`, komentarz "bez liczby na chipie") —
   chip celowo pokazuje tylko ikonę + alert, bez liczby "X/Y", klik otwiera pełny panel
   magazynu. Zero dispatchu potrzebne.
-- `R-HOTSEAT-ETAP6D-PODETAP-E-Q1` (GAME) — Operator/Evaluator/Obrona w toku (worktree
-  `/home/user/wt-6d-PODETAP-E`).
