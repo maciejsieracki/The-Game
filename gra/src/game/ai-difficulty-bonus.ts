@@ -5,10 +5,10 @@
 
 import type { GameMap } from '../types/map';
 import type { City } from './cities';
-import { canFoundCity } from './cities';
+import { canFoundCity, MIN_CITY_DISTANCE } from './cities';
 import { isBarbarian } from './barbarians';
 import type { DifficultyParams } from './ai';
-import { hexNeighborCoords } from '../units/setup';
+import { hexDistance } from '../units/setup';
 
 /** Domyślny typ jednostki bonusowej startowej (epoka kamień). */
 export const AI_DIFFICULTY_BONUS_UNIT_TYPE = 'Wojownik';
@@ -142,17 +142,44 @@ export function cityStateStartUnitCount(difficulty: 'easy' | 'normal' | 'hard'):
   return 0;
 }
 
-/** Sąsiad stolicy nadający się na dodatkowe miasto startowe AI. */
+/**
+ * P-MIASTA-ZBYT-BLISKO-SIEBIE-Q1: NAJBLIŻSZY heks wokół stolicy, który FAKTYCZNIE
+ * spełnia normalny warunek minimalnego dystansu (`canFoundCity` bez żadnego
+ * obejścia/`clusterStartSlot`) — dokładnie ta sama reguła, która obowiązuje każde
+ * inne miasto. Wcześniej funkcja sprawdzała WYŁĄCZNIE bezpośrednich sąsiadów
+ * stolicy (odległość=1) i wołała `canFoundCity(..., { clusterStartSlot: true })`,
+ * czyli JEDNOCZEŚNIE prosiła o hex bliżej niż `MIN_CITY_DISTANCE` i kazała
+ * pominąć jedyny mechanizm, który mógłby to odrzucić — stąd np. „URUK — KOLONIA"
+ * bezpośrednio przy stolicy „Uruk" (zgłoszenie właściciela 2026-09-08).
+ * Przeszukuje rosnący promień (dolna granica = `MIN_CITY_DISTANCE`, żadna nowa
+ * liczba balansu) i zwraca pierwszy legalny hex w kolejności rosnącej odległości.
+ */
 export function pickBonusCityHex(
   map: GameMap,
   cities: City[],
   capitalQ: number,
   capitalR: number,
 ): { q: number; r: number } | null {
-  const neighbors = hexNeighborCoords(capitalQ, capitalR);
-  for (const n of neighbors) {
-    const { ok } = canFoundCity(n.q, n.r, cities, map, { clusterStartSlot: true });
-    if (ok) return n;
+  // Promień wyszukiwania: wielokrotność MIN_CITY_DISTANCE (istniejąca stała) —
+  // nie balansowa liczba, tylko bezpieczna górna granica przeszukiwania; poza
+  // nią kolonia jest po prostu zablokowana (istniejąca ścieżka `extraCitiesBlocked`
+  // w `planMajorAiDifficultyStartBonuses`, bez zmiany semantyki).
+  const maxRadius = MIN_CITY_DISTANCE * 3;
+  const candidates: Array<{ q: number; r: number; d: number }> = [];
+  for (let dq = -maxRadius; dq <= maxRadius; dq++) {
+    for (let dr = -maxRadius; dr <= maxRadius; dr++) {
+      if (dq === 0 && dr === 0) continue;
+      const q = capitalQ + dq;
+      const r = capitalR + dr;
+      const d = hexDistance(capitalQ, capitalR, q, r);
+      if (d > maxRadius) continue;
+      candidates.push({ q, r, d });
+    }
+  }
+  candidates.sort((a, b) => a.d - b.d);
+  for (const c of candidates) {
+    const { ok } = canFoundCity(c.q, c.r, cities, map);
+    if (ok) return { q: c.q, r: c.r };
   }
   return null;
 }

@@ -8812,10 +8812,30 @@ async function boot(): Promise<void> {
       const toSpawn = pendingForeignSpawnCities.slice();
       pendingForeignSpawnCities = [];
 
+      // P-MIASTA-ZBYT-BLISKO-SIEBIE-Q1 runda 2 (Zarzut 2+3 Evaluatora, POTWIERDZONE
+      // empirycznie: 71/29485 par w symulacji realnej kolejności spawnu, wzorzec
+      // "ownerN-KOLONIA-BONUS <-> ownerN+1-panstwo" — kolonia bonusowa stolicy
+      // klastra kolidująca z pierwszym miastem-państwem TEGO SAMEGO klastra,
+      // założonym chwilę później w tej samej pętli). `clusterStartSlot=true` tu
+      // pomijał JEDYNY runtime-check dystansu, opierając się wyłącznie na
+      // `acceptedForDistance` z `buildClusterStartPlan` — który nic nie wie o (a)
+      // rywalach tego samego typu spawnowanych chwilę wcześniej w
+      // `spawnPendingSameTypeRivals` (Zarzut 2) ani (b) kolonii bonusowej trudności
+      // spawnowanej W TRAKCIE tej samej pętli, kilka linii niżej
+      // (`grantDifficultyStartBonusesForMajorCapital`/`pickBonusCityHex`, Zarzut 3)
+      // — obie pozycje istnieją TYLKO w runtime `cities`, nigdy w planie. Naprawa:
+      // `clusterStartSlot` usunięte (domyślne `false`) — realny `canFoundCity`
+      // sprawdza teraz KAŻDY slot względem AKTUALNEGO stanu `cities` (gracz +
+      // rywale + wszystko założone dotąd w tej pętli, kolonie bonusowe włącznie).
+      // Dla slotów WEWNĄTRZ jednego klastra to no-op (już wzajemnie w normie po
+      // naprawie `buildClusterStartPlan`, próg identyczny) — check odrzuca
+      // WYŁĄCZNIE nowe kolizje z pozycjami nieznanymi w chwili budowy planu,
+      // dokładnie ten sam wzorzec odrzucenia/backfill co `_scRejected` niżej
+      // (już dziś obsługiwany, tylko wcześniej nigdy nie trafiany przez dystans).
       let _scFounded = 0, _scRejected = 0;
       for (const sc of toSpawn) {
         const isCS = simplifiedDiplomacyOwners.has(sc.ownerId) || typCityCopyOwners.has(sc.ownerId);
-        const c = foundCityAt(sc.q, sc.r, sc.ownerId, cities, map, sc.name, isCS, true);
+        const c = foundCityAt(sc.q, sc.r, sc.ownerId, cities, map, sc.name, isCS);
         if (c) {
           if (isCS) {
             c.startCityState = true;
