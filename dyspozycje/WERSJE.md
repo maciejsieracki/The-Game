@@ -13,6 +13,30 @@ swoim wĹ‚asnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji d
 > Pakiet 3 z 2026-08-20 jest docs-only i nie tworzy wpisu ROBOCZA/KANON/FINALNA;
 > ten plik pozostaje wyłącznie rejestrem publikacji bundli.
 
+## ROBOCZA f74ae8c8 - 2026-09-09 20:10 UTC - FALA 367: Etap 6f hot-seat UI — CAŁY PLAN HOT-SEAT 0-7 ZAMKNIĘTY
+
+|- md5 (pełne): f74ae8c8c53ae19c8c76a5b5b8f25358 · stempel: ROBOCZA · label f74ae8c8 · zakres
+  commitów: `c40b71ee..f8b303e9` (od źródła FALI 366 do obecnego `main`) · pole bitwy:
+  `Gra-ROBOCZA-POLE-BITWY.html` md5 `6deb45d265b82b4eb27e990c345a79c1` (NIEZMIENIONE — poza
+  zakresem tego tematu)
+|- **`R-HOTSEAT-ETAP6F-PART2-UI-Q1`** (commit `f8b303e9`) — drugi i OSTATNI pod-temat części
+  (ii) Etapu 6f: realny ekran kreatora „Nowa Gra" dla fotela 2 (hot-seat) — przełącznik
+  domyślnie wyłączony, po włączeniu podekran wyboru cywilizacji fotela 2 (kafelek fotela 1
+  wyszarzony, wykluczenie duplikatu) + selektor trybu odległości blisko/daleko/losowo.
+  `doStartGame()` teraz przekazuje `civId2`/`humanDistanceMode` do `applyClusterStartPlan`
+  — domyka lukę jawnie zostawioną przez `R-HOTSEAT-ETAP6F-PART2-DATA-Q1` (FALA 366).
+  **Skutek: Etapy 0-7 całego `PLAN-HOT-SEAT-2-GRACZY.md` są teraz w pełni zamknięte i
+  grywalne** — gracz może z menu włączyć drugi fotel ludzki i grać hot-seat od startu do
+  końca tury. Operator→Evaluator→Final Control PASS, 1/5 rund, zero zarzutów po
+  niezależnej weryfikacji na trzech poziomach (Evaluator, Final Control, orkiestrator przy
+  integracji). Nowa bramka `hotseat-etap6f-part2-ui-test.cjs` PASS (scenariusze a-d, realne
+  kliknięcia Playwright przez cały kreator), zero regresji `hotseat-etap6f-part2-data-test.cjs`
+  (24/24), `tsc --noEmit` czysty, 5 bramek referencyjnych zielone.
+|- **`R-HOTSEAT-ETAP8-DYPLOMACJA-RECON-Q1`** (docs-only, bez wpływu na bundle) — recon
+  Etapu 8 (pełna dyplomacja gracz↔gracz, jawnie odłożona od 2026-09-04): inwentaryzacja
+  silnik/UI z cytatami plik+linia, 3 warianty projektowe negocjacji, 6 pytań ABC gotowych
+  do decyzji właściciela. Implementacja poza zakresem tej fali.
+
 ## ROBOCZA 491fd88a - 2026-09-09 19:20 UTC - FALA 366: naprawa ikon budynków + Etap 6f hot-seat (dane, bez UI)
 
 |- md5 (pełne): 491fd88acdea68a66ecaa8d7663869bf · stempel: ROBOCZA · label 491fd88a · zakres
