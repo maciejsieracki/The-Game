@@ -7471,17 +7471,22 @@ co przy integracji Podetapu B tego dnia — złapany przed jakąkolwiek błędn�
   `attachInteractiveDetail`, zero callbacków mutujących). Bramka
   `building-queue-detail-card-test.cjs`: 8/8, żywy Chromium, mutacja anchoru czerwieni.
 - Wszystkie trzy: `tsc --noEmit` czysty po każdej integracji.
-- **`H-TRZODA-LAS-BLOKADA-Q1` (PR #137) — NIE ZINTEGROWANY, wstrzymany.** Diff faktycznie
-  cofa fragment jawnej, datowanej decyzji właściciela (`R-ULEPSZENIA-HODOWLA-LAS-ODBLOKOWANA-Q1`,
-  ECHO 2026-08-27 „Tak, odwracamy — wszystkie trzy" — owce/bydło/lama odblokowane na lesie):
-  PR opisuje się jako „block cattle... preserve sheep block", ale kod i testy realnie
-  blokują NA LESIE zarówno `bydlo` JAK I `owce` (dziś oba odblokowane na `main`, potwierdzone
-  świeżym odczytem `isOwceBaseTerrain`/`FOREST_COEXIST_IMPROVEMENT_KEYS`) — opis PR-a
-  niezgodny z jego własnym skutkiem. Dodatkowo PR nie ma żadnego dokumentu dispatch/operator/
-  evaluator/final-control (jedyny z pięciu bez śladu procesu), mimo deklaracji "Final Control
-  PASS" w opisie. Balans wymaga ABC właściciela — czeka na decyzję, czy zamierzone jest
-  zablokowanie WYŁĄCZNIE bydła (owce zostają odblokowane zgodnie z ECHO 2026-08-27), czy
-  jednak cofnięcie całej decyzji z 2026-08-27.
+- **`H-TRZODA-LAS-BLOKADA-Q1` (PR #137, commit `39b22dee`) — ZINTEGROWANY 2026-09-09, po ECHO
+  właściciela.** Diff faktycznie cofał fragment jawnej, datowanej decyzji właściciela
+  (`R-ULEPSZENIA-HODOWLA-LAS-ODBLOKOWANA-Q1`, ECHO 2026-08-27 „Tak, odwracamy — wszystkie
+  trzy" — owce/bydło/lama odblokowane na lesie): PR opisywał się jako „block cattle...
+  preserve sheep block", ale kod i testy realnie blokowały NA LESIE zarówno `bydlo` JAK I
+  `owce` — opis PR-a niezgodny z jego własnym skutkiem. Zapytany wprost, właściciel
+  potwierdził **cofnięcie całej decyzji z 2026-08-27** (nie tylko część dla bydła) — owce i
+  bydło ponownie zablokowane na lesie, lama zostaje odblokowana. PR nie miał żadnego
+  dokumentu dispatch/operator/evaluator/final-control (jedyny z pięciu bez śladu procesu),
+  mimo deklaracji "Final Control PASS" w opisie — zintegrowany po pełnej, niezależnej
+  weryfikacji orkiestratora. Skutek uboczny znaleziony i naprawiony: dwa inne, niezwiązane
+  pliki testowe (`stadnina-las-test.cjs`, `oboz-lowiecki-las-znika-render-test.cjs`) miały
+  własne asercje "zero regresji" oparte na starym kanonie — zaktualizowane. Jedna pozostająca
+  awaria w `oboz-lowiecki-las-znika-render-test.cjs` (`TERRAIN_ALLOW.lodzie_rybackie`) jest
+  przedistniejąca i niezwiązana (potwierdzone identycznym wynikiem na czystym `main` sprzed
+  tej integracji).
 
 ## Nowe zgłoszenia w toku (2026-09-08, jeszcze nie zamknięte)
 
