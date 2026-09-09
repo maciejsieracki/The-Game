@@ -7388,6 +7388,26 @@ zielone. Poboczna, nieblokująca uwaga Final Control: regex `ARG_HARDCODE_RE` w
 `source-test.cjs` nie łapie hardkodu poza 2. pozycją argumentu — drobny temat PROCESS do
 osobnej rejestracji, nie wpływa na poprawność migracji.
 
+## `R-HOTSEAT-ETAP6D-PODETAP-B-Q1` — GAME — **ZINTEGROWANE 2026-09-09** (commit `93040dbe`)
+
+Podetap B kontynuacji Etapu 6d (dyplomacja, plan hot-seat) — klaster HUD/panelu dyplomacji.
+15 funkcji zmigrowane na `isMe()`/`ME()`: `relationColorFn`, `unitRingStanceForPlayer`,
+`playerFormalRelationLabel`, `cityMapOutlineKindForOwner`, `buildPlayerDiploRelations`,
+`buildDiploPairSummaryData`, `buildAudienceActions`, `buildPendingNegotiationRows`,
+`foreignCivsMissingTradeTreatyForCity`, `collectDiploChipCounts`,
+`enqueueNegotiationFromAiCmd`, `buildEmpireDetailSnap`, `applyBorderMarchPenaltiesEndTurn`,
+`currentVisibleForOwner`, `peacefulArchetypeForOwner`. `handleNegotiationReject` świadomie
+nietknięta (już zmigrowana w Podetapie E). Operator→Evaluator 3 rundy (zawężanie asercji
+`exec-test.cjs` z agregowanych na per-call-site — runda 1 i 2 złapały po jednym
+niepokrytym miejscu: `collectDiploChipCounts`/`enqueueNegotiationFromAiCmd`, potem brakująca
+wartość graniczna `PLAYER=7` w mocku `contacted`)→Final Control PASS (dodatkowa, samodzielna
+mutacja L15032 potwierdzona jako czerwieniąca). Nowe bramki:
+`hotseat-etap6d-podetap-b-exec-test.cjs` (48/48, realne wykonanie przez
+`esbuild.transformSync`+`new Function`, mutacja `isMe()`→zawsze `false` czerwieni każde
+wywołanie niezależnie), `hotseat-etap6d-podetap-b-live-test.cjs` (12/12, żywy Chromium,
+mutacja `ME()`→99 czerwieni panel imperium/miasta i szczegóły wiersza dyplomacji).
+`tsc --noEmit` czysty, 5 bramek referencyjnych zielone.
+
 ## Nowe zgłoszenia w toku (2026-09-08, jeszcze nie zamknięte)
 
 - Niejasne zgłoszenie właściciela o pustym wierszu "Surowce" w górnym HUD — **WYJAŚNIONE, NIE
