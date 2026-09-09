@@ -13,6 +13,33 @@ swoim wĹ‚asnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji d
 > Pakiet 3 z 2026-08-20 jest docs-only i nie tworzy wpisu ROBOCZA/KANON/FINALNA;
 > ten plik pozostaje wyłącznie rejestrem publikacji bundli.
 
+## ROBOCZA 77ed7560 - 2026-09-09 11:35 UTC - FALA 365: 5 tematów agenta Hermes (koszt/produkcja/UI/balans)
+
+|- md5 (pełne): 77ed7560d5d67ac1f7099bf644065532 · stempel: ROBOCZA · label 77ed7560 · zakres
+  commitów: `f61d2089..24892d1f` (od źródła FALI 364 do obecnego `main`) · pole bitwy:
+  `Gra-ROBOCZA-POLE-BITWY.html` md5 `6542c502defefdadd2e168c988761ea0`
+|- **Pierwsza fala z zewnętrznego agenta "Hermes"** (protokół
+  `dyspozycje/PROTOKOL-WSPOLPRACA-WIELOAGENTOWA-GITHUB.md` — Hermes pracuje na gałęziach
+  `hermes/<ID>`, przekazuje wyłącznie przez PR, integrację i push robi wyłącznie orkiestrator).
+  Przy review orkiestrator wykrył i naprawił: metadane "base sha" wszystkich pięciu PR-ów były
+  NIEZGODNE z faktycznym punktem rozgałęzienia (zweryfikowana prawdziwa baza: `ebb24d78`).
+  5 tematów: `H-BUDYNKI-KOSZT-PRACY-50-Q1` (PR #133, commit `8917b870`) — koszt Pracy budynków
+  -50% (`GLOBAL_BUILDING_PROD_MULT` 0.5→0.25); `H-KAMIENIOLOM-KAMIEN-PRODUKCJA-Q1` (PR #135,
+  commit `9175f031`, **wchłania też PR #134** `H-TARTAK-DREWNO-PRODUKCJA-Q1` który niezależnie
+  zaimplementował identyczną mechanikę w tych samych plikach — konflikt rozstrzygnięty na
+  korzyść supersetu #135) — produkcja terytorialna Kamieniołomu i Tartaku +50%/epokę
+  (200/300/450); `H-BUDOWA-KARTA-KOLEJKA-Q1` (PR #136, commit `e4386dab`) — realny, read-only
+  podgląd karty encji dla budynku w kolejce/aktywnej budowie; `H-TRZODA-LAS-BLOKADA-Q1` (PR
+  #137, commit `39b22dee`) — po ECHO właściciela **cofnięto całą decyzję**
+  `R-ULEPSZENIA-HODOWLA-LAS-ODBLOKOWANA-Q1` z 2026-08-27: owce i bydło ponownie zablokowane na
+  lesie, lama zostaje odblokowana (PR opisywał się jako "block cattle only", ale realny skutek
+  blokował też owce — rozbieżność wykryta przy review i rozstrzygnięta wprost przez
+  właściciela). Naprawione skutki uboczne w 2 niezwiązanych bramkach
+  (`stadnina-las-test.cjs`, `oboz-lowiecki-las-znika-render-test.cjs`) miały własne asercje
+  oparte na starym kanonie.
+|- Wszystkie bramki tematów zielone (175/175, 20/20, 8/8, 113/113+133/133+28/28), 5 bramek
+  referencyjnych zielone, `tsc --noEmit` czysty.
+
 ## ROBOCZA 7f0dd431 - 2026-09-09 10:57 UTC - FALA 364: Etap 6d hot-seat (dyplomacja) W PEŁNI ZAMKNIĘTY — ostatnie dwa z pięciu podetapów
 
 |- md5 (pełne): 7f0dd431a904a2b41917978b8c515d9e · stempel: ROBOCZA · label 7f0dd431 · zakres

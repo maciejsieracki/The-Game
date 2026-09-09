@@ -1,10 +1,10 @@
 {
-  "publishedAt": "2026-09-09T10:57:00",
-  "sourceBuild": "gra/dist (commit 72495fb5)",
-  "note": "FALA 364 - Etap 6d (dyplomacja) planu hot-seat w pelni zamkniety, ostatnie dwa z pieciu podetapow: (1) R-HOTSEAT-ETAP6D-PODETAP-B-Q1 - klaster HUD/panelu dyplomacji (15 funkcji: relationColorFn, buildPlayerDiploRelations, buildAudienceActions, buildPendingNegotiationRows, buildEmpireDetailSnap i inne) migracja na isMe()/ME(); (2) R-HOTSEAT-ETAP6D-PODETAP-D-Q1 (OSTATNI podetap) - duplikat tick dyplomacji wewnatrz runWorldEndTurn (Blok A: miasto-panstwo wypowiada wymuszona wojne graczowi; Blok B: per-AI-owner tick dyplomacji), 34 literaly 0->ME(). Oba tematy przeszly pelny cykl Operator->Evaluator->(Obrona)->Final Control (Podetap D w 2 rundach, z odkryciem i naprawa metodologicznego ograniczenia zywych bramek Chromium jednoosobowych oraz krytycznej wady tautologicznej we wlasnej bramce mutacyjnej), wszystkie bramki referencyjne, bramki forced-war/dyplomacji i zywe bramki Chromium zielone, tsc czysty. Z ta integracja Etap 6 (a-f, z wyjatkiem Etapu 6f czesci (ii) - nowa funkcjonalnosc drugiego fotela startowego, poza zakresem migracji) i Etap 7 (save/load v3) planu hot-seat sa w pelni zamkniete.",
+  "publishedAt": "2026-09-09T11:35:00",
+  "sourceBuild": "gra/dist (commit 24892d1f)",
+  "note": "FALA 365 - 5 tematow agenta zewnetrznego 'Hermes' (protokol dyspozycje/PROTOKOL-WSPOLPRACA-WIELOAGENTOWA-GITHUB.md), zintegrowanych po niezaleznym review orkiestratora: (1) H-BUDYNKI-KOSZT-PRACY-50-Q1 (PR #133) - GLOBAL_BUILDING_PROD_MULT 0.5->0.25, koszt Pracy wszystkich budynkow -50%; (2) H-KAMIENIOLOM-KAMIEN-PRODUKCJA-Q1 (PR #135, wchlania tez PR #134 H-TARTAK-DREWNO-PRODUKCJA-Q1 ktory niezaleznie implementowal ta sama mechanike) - produkcja terytorialna Kamieniolomu i Tartaku +50%/epoke (200/300/450 w epokach 1/2/3); (3) H-BUDOWA-KARTA-KOLEJKA-Q1 (PR #136) - kolejka budowy i aktywny budynek w cityPanel dostaja realny, read-only podglad karty encji; (4) H-TRZODA-LAS-BLOKADA-Q1 (PR #137) - po ECHO wlasciciela (2026-09-09) cofnieto cala decyzje R-ULEPSZENIA-HODOWLA-LAS-ODBLOKOWANA-Q1 z 2026-08-27: owce i bydlo ponownie zablokowane na lesie (najpierw wymagany wyreb), lama pozostaje odblokowana. Wszystkie piec tematow przeszlo pelny cykl Operator->(Evaluator->Final Control PASS/READY_FOR_INTEGRATION po stronie Hermesa dla 133/135/136, PR #137 bez dokumentow procesu ale zweryfikowany i uzupelniony przez orkiestratora), niezalezna weryfikacja prawdziwej bazy scalenia (ebb24d78, nie zadeklarowane w metadanych PR-ow), rozstrzygniety konflikt dwoch rownoleglych PR-ow (134 vs 135), naprawione 2 kolizyjne bramki innych, niezwiazanych tematow (stadnina-las-test.cjs, oboz-lowiecki-las-znika-render-test.cjs). Wszystkie bramki referencyjne zielone, tsc czysty.",
   "publisher": "Orkiestrator (Claude Code)",
   "bundle": "Gra-ROBOCZA.html",
-  "md5": "7f0dd431a904a2b41917978b8c515d9e",
+  "md5": "77ed7560d5d67ac1f7099bf644065532",
   "bundlePoleBitwy": "Gra-ROBOCZA-POLE-BITWY.html",
-  "md5PoleBitwy": "5fe60b3fb72e3cb4d2618c0f844bac24"
+  "md5PoleBitwy": "6542c502defefdadd2e168c988761ea0"
 }
