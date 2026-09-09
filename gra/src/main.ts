@@ -9933,7 +9933,7 @@ async function boot(): Promise<void> {
     /** Wypowiedzenie wojny gracza — ten sam efekt co audiencja dyplomatyczna (akcja 11). */
     function playerDeclareWarOnOwner(ownerId: number): boolean {
       const civName = ownerDiploLabel(ownerId);
-      if (isPeaceLockedBetween(0, ownerId)) {
+      if (isPeaceLockedBetween(ME(), ownerId)) {
         showHintMessage('Traktat pokoju — nie możesz wypowiedzieć wojny: ' + civName, 4000);
         return false;
       }
@@ -9947,16 +9947,16 @@ async function boot(): Promise<void> {
         showHintMessage('Nie możesz teraz wypowiedzieć wojny: ' + civName, 4000);
         return false;
       }
-      chargeWarDeclarationCredibility(0, ownerId);
-      breakTreatiesOnWar(0, ownerId, true);
-      applyAllianceObligationsOnWar(0, ownerId);
+      chargeWarDeclarationCredibility(ME(), ownerId);
+      breakTreatiesOnWar(ME(), ownerId, true);
+      applyAllianceObligationsOnWar(ME(), ownerId);
       setDiploRelation(
-        0,
+        ME(),
         ownerId,
-        applyDiploEventTracked(0, ownerId, getDiploRelation(0, ownerId), 'wojna_wypowiedziana'),
+        applyDiploEventTracked(ME(), ownerId, getDiploRelation(ME(), ownerId), 'wojna_wypowiedziana'),
       );
-      pruneTributeNegotiationsBetween(0, ownerId);
-      recordWarDeclarationEvent(0, ownerId);
+      pruneTributeNegotiationsBetween(ME(), ownerId);
+      recordWarDeclarationEvent(ME(), ownerId);
       pruneInvalidNegotiations();
       showHintMessage('\u2694 Wypowiedziałeś wojnę: ' + civName, 4500);
       updateDiplomacyAudience();
