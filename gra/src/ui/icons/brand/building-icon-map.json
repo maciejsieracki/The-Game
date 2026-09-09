@@ -39,7 +39,8 @@
     "warsztat_oblezniczy": "bld-warsztat_oblezniczy",
     "akademia_wojskowa": "bld-akademia_wojskowa",
     "sad": "bld-sad",
-    "pretorium": "bld-palac",
+    "pretorium": "bld-pretorium",
+    "trybunal": "bld-admin",
     "garnizon": "bld-garnizon",
     "_default": "bld-default"
   }

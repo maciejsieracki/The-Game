@@ -202,14 +202,27 @@ console.log('=== T9 civpedia-gra-id-mostek-test ===\n');
 }
 
 // 7) Idempotentność generatora (uruchomienie 2x -> identyczny wynik)
+// UWAGA: generator (bundle-wiki-for-game.cjs) pisze zawsze do śledzonego
+// BUNDLE_PATH -- nie ma parametru zmieniającego katalog wyjściowy, więc
+// naprawdę go uruchamiamy (bez mocków, zgodnie z sensem testu), ale
+// zapamiętujemy oryginalną zawartość PRZED i przywracamy ją bajt w bajt
+// PO -- w finally, niezależnie od wyniku -- żeby bramka nie brudziła
+// `git status` dla pliku danych (P-BUDYNKI-TRZY-NIESPOJNOSCI-IKON-I-BUNDLA).
 {
   const genScript = path.join(ROOT, 'gra', 'tools', 'bundle-wiki-for-game.cjs');
   const { execFileSync } = require('child_process');
-  execFileSync(process.execPath, [genScript], { stdio: 'pipe' });
-  const run1 = fs.readFileSync(BUNDLE_PATH, 'utf8');
-  execFileSync(process.execPath, [genScript], { stdio: 'pipe' });
-  const run2 = fs.readFileSync(BUNDLE_PATH, 'utf8');
-  check('node bundle-wiki-for-game.cjs jest idempotentny (2. przebieg bez zmian)', run1 === run2);
+  const original = fs.readFileSync(BUNDLE_PATH, 'utf8');
+  try {
+    execFileSync(process.execPath, [genScript], { stdio: 'pipe' });
+    const run1 = fs.readFileSync(BUNDLE_PATH, 'utf8');
+    execFileSync(process.execPath, [genScript], { stdio: 'pipe' });
+    const run2 = fs.readFileSync(BUNDLE_PATH, 'utf8');
+    check('node bundle-wiki-for-game.cjs jest idempotentny (2. przebieg bez zmian)', run1 === run2);
+  } finally {
+    fs.writeFileSync(BUNDLE_PATH, original, 'utf8');
+    const restored = fs.readFileSync(BUNDLE_PATH, 'utf8');
+    check('BUNDLE_PATH przywrócony bajt w bajt po teście idempotentności (git status czysty)', restored === original);
+  }
 }
 
 console.log('');
