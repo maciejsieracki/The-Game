@@ -7408,6 +7408,43 @@ wywołanie niezależnie), `hotseat-etap6d-podetap-b-live-test.cjs` (12/12, żywy
 mutacja `ME()`→99 czerwieni panel imperium/miasta i szczegóły wiersza dyplomacji).
 `tsc --noEmit` czysty, 5 bramek referencyjnych zielone.
 
+## `R-HOTSEAT-ETAP6D-PODETAP-D-Q1` — GAME — **ZINTEGROWANE 2026-09-09** (commit `aeb247bb`) — OSTATNI podetap, Etap 6d w pełni zamknięty
+
+Podetap D (ostatni z pięciu: A, C, E, B, D) Etapu 6d planu hot-seat (dyplomacja) —
+duplikat tick dyplomacji wewnątrz `runWorldEndTurn`, najwyższe ryzyko całego etapu (serce
+pętli końca tury). 34 literały `0`→`ME()` w dwóch inline'owanych blokach: Blok A (ok.
+main.ts:31238-31293, "DOW klastra PM NA GRACZA" — miasto-państwo wypowiada wymuszoną wojnę
+graczowi, 13 podmian) i Blok B (ok. main.ts:31850-31948, per-AI-owner tick dyplomacji, osobny
+kod od `runDiplomacyTurnTick`, 21 podmian). Zero styku z
+`isForcedEpochWarDeclareCmd`/`dipLayerIgnoringPlayerFog`
+(`P-WOJNA-EPOKI-NAJTRUDNIEJSZY-NIE-WYBUCHA-Q1`).
+
+Runda 1: Operator zmigrował oba bloki, ale Evaluator wykazał fundamentalne ograniczenie
+metodologiczne — żywa bramka Chromium jednoosobowa nie może odróżnić `ME()` od literału `0`,
+bo w scenariuszu jednoosobowym `ME()` zawsze równa się `0` (odtworzone ręcznie: identyczny
+wynik przed/po "mutacji"). Decyzja orkiestratora: runda 2 dostarcza dowód przez nowy
+`exec-test.cjs` (wzorem Podetapów B/E) zamiast droższego scenariusza dwuosobowego hot-seat.
+Runda 2: nowa bramka `hotseat-etap6d-podetap-d-exec-test.cjs` (ekstrakcja kotwica+brace-
+matching, bo bloki to inline `if(){}` bez własnej sygnatury funkcji, mock `ME()=7`).
+Evaluator wykrył krytyczną wadę — funkcja `ok()` miała furtkę czyniącą asercje mutacyjne
+strukturalnie niezdolnymi do FAILA niezależnie od realnego efektu mutacji (potwierdzone
+eksperymentalnie: 41/0 nawet przy zneutralizowanej mutacji). Obrona naprawiła nową funkcją
+`okMutation()` bez furtki (dowód po naprawie: 36 PASS/5 FAIL przy tej samej neutralizacji).
+Final Control PASS — potwierdził własną, trzecią niezależną mutacją na dysku, oddalił oba
+zarzuty jako naprawione. Ubocznie: zdublowany, równoległy dispatch Evaluatora sprzed
+kompaktowania sesji dokończył się już po zamknięciu tej rundy i niezależnie potwierdził te
+same ustalenia, świadomie nie nadpisując istniejących raportów.
+
+Nowa bramka: `hotseat-etap6d-podetap-d-exec-test.cjs` (41/41, realne wykonanie przez
+`esbuild.transformSync`+`new Function`, mutacja na dysku w obu blokach niezależnie
+czerwieni). `tsc --noEmit` czysty, 5 bramek referencyjnych zielone, 16 bramek forced-war/
+dyplomacji zielone, 2 żywe bramki Chromium zielone (`forced-war-player-no-contact-live-test`
+14/14, `forced-war-player-target-live-test` 12/12).
+
+**Wraz z tą integracją Etap 6d (dyplomacja) planu hot-seat jest w pełni zamknięty** — wszystkie
+5 podetapów (A, C, E, B, D) zintegrowane: `1c612447`, `8a7405b9`, `4e07a9aa`, `93040dbe`,
+`aeb247bb`.
+
 ## Nowe zgłoszenia w toku (2026-09-08, jeszcze nie zamknięte)
 
 - Niejasne zgłoszenie właściciela o pustym wierszu "Surowce" w górnym HUD — **WYJAŚNIONE, NIE
