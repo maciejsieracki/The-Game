@@ -7354,13 +7354,26 @@ zachowana. Operator→Evaluator (zero zarzutów)→Final Control PASS. Nowe bram
 wojny w audiencji). `tsc --noEmit` czysty, 5 bramek referencyjnych zielone, sąsiedni
 `hotseat-etap6d-diplomacy-engine-test.cjs` bez regresji.
 
+## `R-HOTSEAT-ETAP6D-PODETAP-C-Q1` — GAME — **ZINTEGROWANE 2026-09-09** (commit `8a7405b9`)
+
+Podetap C kontynuacji Etapu 6d (dyplomacja, plan hot-seat) — silnik: inicjalizacja i
+save/load. 5 funkcji main.ts zmigrowane: `applyClusterStartPlan`,
+`spawnPendingSameTypeRivals` → `isHuman`/`HUMAN_OWNER_PRIMARY` (stan pary, nie ekran
+aktywnego fotela); `finalizeAllianceObligationRefusals`, `resolvePendingDiplomacy`,
+`restoreGameFromSave` → `isMe()`/`ME()`. Dwie alias-decyzje orkiestratora z dispatchu
+potwierdzone niezależnie przez Final Control (przesledzenie wszystkich producentów
+`pendingDiplomacyInbox`). Operator→Evaluator (1 zarzut kosmetyczny w docstringu
+testu)→Obrona→Final Control PASS. Nowe bramki: `hotseat-etap6d-podetap-c-migracja-test.cjs`
+(35/35, dowód PRE≠PO + mutacja), `hotseat-etap6d-podetap-c-live-saveload-test.cjs` (7/7,
+żywy Chromium, realny cykl gra→zapis→wczytanie→kontynuacja). `tsc --noEmit` czysty, 5
+bramek referencyjnych + 3 bramki save/load (`forced-war-iron-era-enter-turn-save-load-test`,
+`fort-nodes-save-load-test`, `save-load-sort-test`) bez regresji.
+
 ## Nowe zgłoszenia w toku (2026-09-08, jeszcze nie zamknięte)
 
 - Niejasne zgłoszenie właściciela o pustym wierszu "Surowce" w górnym HUD — **WYJAŚNIONE, NIE
   BUG**: to jest świadoma decyzja z 2026-07-24 (`hud.ts`, komentarz "bez liczby na chipie") —
   chip celowo pokazuje tylko ikonę + alert, bez liczby "X/Y", klik otwiera pełny panel
   magazynu. Zero dispatchu potrzebne.
-- `R-HOTSEAT-ETAP6D-PODETAP-C-Q1` (GAME) — Operator/Evaluator/Obrona zielone (worktree
-  `/home/user/wt-6d-PODETAP-C`), Final Control w toku.
 - `R-HOTSEAT-ETAP6D-PODETAP-E-Q1` (GAME) — Operator/Evaluator/Obrona w toku (worktree
   `/home/user/wt-6d-PODETAP-E`).
