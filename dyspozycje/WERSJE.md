@@ -13,6 +13,38 @@ swoim wĹ‚asnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji d
 > Pakiet 3 z 2026-08-20 jest docs-only i nie tworzy wpisu ROBOCZA/KANON/FINALNA;
 > ten plik pozostaje wyłącznie rejestrem publikacji bundli.
 
+## ROBOCZA 7f0dd431 - 2026-09-09 10:57 UTC - FALA 364: Etap 6d hot-seat (dyplomacja) W PEŁNI ZAMKNIĘTY — ostatnie dwa z pięciu podetapów
+
+|- md5 (pełne): 7f0dd431a904a2b41917978b8c515d9e · stempel: ROBOCZA · label 7f0dd431 · zakres
+  commitów: `cb667e5d..72495fb5` (od źródła FALI 363 do obecnego `main`) · pole bitwy:
+  `Gra-ROBOCZA-POLE-BITWY.html` md5 `5fe60b3fb72e3cb4d2618c0f844bac24`
+|- **Hot-seat — Etap 6d (dyplomacja) w pełni zamknięty, wszystkie 5 podetapów zintegrowane:**
+  `R-HOTSEAT-ETAP6D-PODETAP-B-Q1` (commit `93040dbe`) — klaster HUD/panelu dyplomacji, 15 funkcji
+  (`relationColorFn`, `unitRingStanceForPlayer`, `playerFormalRelationLabel`,
+  `buildPlayerDiploRelations`, `buildDiploPairSummaryData`, `buildAudienceActions`,
+  `buildPendingNegotiationRows`, `collectDiploChipCounts`, `enqueueNegotiationFromAiCmd`,
+  `buildEmpireDetailSnap` i 5 innych) migracja z literału `0` na `isMe()`/`ME()` — 3 rundy
+  Evaluatora zawężające asercje bramki `exec-test.cjs` z agregowanych na per-call-site, Final
+  Control PASS z dodatkową samodzielną mutacją. `R-HOTSEAT-ETAP6D-PODETAP-D-Q1` (commit
+  `aeb247bb`, **OSTATNI podetap Etapu 6d, najwyższe ryzyko całego Etapu 6** — serce pętli końca
+  tury) — duplikat tick dyplomacji wewnątrz `runWorldEndTurn`: Blok A (miasto-państwo wypowiada
+  wymuszoną wojnę graczowi, 13 miejsc) i Blok B (per-AI-owner tick dyplomacji, osobny kod od
+  `runDiplomacyTurnTick`, 21 miejsc), 34 literały `0`→`ME()`. 2 rundy: runda 1 odkryła
+  fundamentalne ograniczenie metodologiczne (żywa bramka Chromium jednoosobowa nie może
+  odróżnić `ME()` od literału `0`, bo w scenariuszu jednoosobowym są behawioralnie identyczne);
+  runda 2 dostarczyła dowód przez nowy `exec-test.cjs` (mock `ME()=7`), Evaluator wykrył i
+  Obrona naprawiła krytyczną wadę tautologiczną własnej bramki mutacyjnej (funkcja `ok()` miała
+  furtkę czyniącą asercje mutacyjne niezdolnymi do FAILA), Final Control PASS z trzecią
+  niezależną mutacją potwierdzającą naprawę. **Z tą integracją Etap 6 (a-f) i Etap 7 (save/load
+  v3) planu hot-seat są w pełni zamknięte** — jedyny pozostały niezrealizowany fragment to Etap
+  6f część (ii): drugi heks startowy + drugi wybór cywilizacji w menu (NOWA funkcjonalność, nie
+  migracja literałów; recon `7cd680e6` gotowy, wariant sekwencyjny wybrany przez właściciela,
+  implementacja do dispatchu osobno).
+|- Wszystkie bramki referencyjne (logic/tech-tree/research/unit-replace/combat), 16+ bramek
+  forced-war/dyplomacji i żywe bramki Chromium (`forced-war-player-no-contact-live-test`,
+  `forced-war-player-target-live-test`, `hotseat-etap6d-podetap-b-live-test`) zielone. `tsc
+  --noEmit` czysty.
+
 ## ROBOCZA 50e9fe98 - 2026-09-09 05:58 UTC - FALA 363: Etap 6e hot-seat (render/kamera) + 2 zgłoszenia bugów + ok. 17 innych tematów GAME
 
 |- md5 (pełne): 50e9fe981ed2ab8fac5c8dfc58faf7aa · stempel: ROBOCZA · label 50e9fe98 · zakres commitów: `6ce48d7d..cb667e5d` (od źródła FALI 362 do obecnego `main`)

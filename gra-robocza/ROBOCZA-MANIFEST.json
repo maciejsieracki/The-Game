@@ -1,10 +1,10 @@
 {
-  "publishedAt": "2026-09-09T05:58:00",
-  "sourceBuild": "gra/dist (commit cb667e5d)",
-  "note": "FALA 363 - dwa zgloszenia bledow zamkniete i zintegrowane: (1) P-WOJNA-EPOKI-NAJTRUDNIEJSZY-NIE-WYBUCHA-Q1 - wymuszona wojna epoki na gracza nie wybuchala dopoki strony sie 'nie poznaly' (brak kontaktu dyplomatycznego), naprawiono routing komend przez dipLayerIgnoringPlayerFog + jawna rejestracja odkrycia napastnika przy wypowiedzeniu wymuszonej wojny; (2) P-MIASTA-ZBYT-BLISKO-SIEBIE-Q1 - miasta AI/miasta-panstwa powstawaly ponizej minimalnego dystansu (m.in. kolonia bonusowa trudnosci tuz przy stolicy), naprawiono pickBonusCityHex + brak runtime-checku dystansu w spawnPendingForeignClusters + niespojnosc foreignTypeClusters/clusterCapitalOwnerIds/typCityCopyOwners po odrzuceniu kolizji. Oba tematy przeszly pelny cykl Operator->Evaluator->(Obrona)->Final Control, wszystkie bramki referencyjne i bramki rodziny tematu zielone, tsc czysty.",
+  "publishedAt": "2026-09-09T10:57:00",
+  "sourceBuild": "gra/dist (commit 72495fb5)",
+  "note": "FALA 364 - Etap 6d (dyplomacja) planu hot-seat w pelni zamkniety, ostatnie dwa z pieciu podetapow: (1) R-HOTSEAT-ETAP6D-PODETAP-B-Q1 - klaster HUD/panelu dyplomacji (15 funkcji: relationColorFn, buildPlayerDiploRelations, buildAudienceActions, buildPendingNegotiationRows, buildEmpireDetailSnap i inne) migracja na isMe()/ME(); (2) R-HOTSEAT-ETAP6D-PODETAP-D-Q1 (OSTATNI podetap) - duplikat tick dyplomacji wewnatrz runWorldEndTurn (Blok A: miasto-panstwo wypowiada wymuszona wojne graczowi; Blok B: per-AI-owner tick dyplomacji), 34 literaly 0->ME(). Oba tematy przeszly pelny cykl Operator->Evaluator->(Obrona)->Final Control (Podetap D w 2 rundach, z odkryciem i naprawa metodologicznego ograniczenia zywych bramek Chromium jednoosobowych oraz krytycznej wady tautologicznej we wlasnej bramce mutacyjnej), wszystkie bramki referencyjne, bramki forced-war/dyplomacji i zywe bramki Chromium zielone, tsc czysty. Z ta integracja Etap 6 (a-f, z wyjatkiem Etapu 6f czesci (ii) - nowa funkcjonalnosc drugiego fotela startowego, poza zakresem migracji) i Etap 7 (save/load v3) planu hot-seat sa w pelni zamkniete.",
   "publisher": "Orkiestrator (Claude Code)",
   "bundle": "Gra-ROBOCZA.html",
-  "md5": "50e9fe981ed2ab8fac5c8dfc58faf7aa",
+  "md5": "7f0dd431a904a2b41917978b8c515d9e",
   "bundlePoleBitwy": "Gra-ROBOCZA-POLE-BITWY.html",
-  "md5PoleBitwy": "f98bf0692a340d01fbe7fbd7d0980e55"
+  "md5PoleBitwy": "5fe60b3fb72e3cb4d2618c0f844bac24"
 }
