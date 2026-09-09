@@ -13,6 +13,29 @@ swoim wĹ‚asnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji d
 > Pakiet 3 z 2026-08-20 jest docs-only i nie tworzy wpisu ROBOCZA/KANON/FINALNA;
 > ten plik pozostaje wyłącznie rejestrem publikacji bundli.
 
+## ROBOCZA 491fd88a - 2026-09-09 19:20 UTC - FALA 366: naprawa ikon budynków + Etap 6f hot-seat (dane, bez UI)
+
+|- md5 (pełne): 491fd88acdea68a66ecaa8d7663869bf · stempel: ROBOCZA · label 491fd88a · zakres
+  commitów: `2c1049b7..c40b71ee` (od źródła FALI 365 do obecnego `main`) · pole bitwy:
+  `Gra-ROBOCZA-POLE-BITWY.html` md5 `6deb45d265b82b4eb27e990c345a79c1`
+|- **`P-BUDYNKI-TRZY-NIESPOJNOSCI-IKON-I-BUNDLA`** (commit `7ac340c1`) — `pretorium` dostaje
+  własną ikonę (`bld-pretorium`, wcześniej martwy plik SVG), `trybunal` dostaje jawny wpis
+  mapy ikon (`bld-admin`, dokumentujący istniejącą heurystykę kategorii "Administracja"),
+  naprawiona bramka `civpedia-gra-id-mostek-test.cjs`, która nadpisywała śledzony
+  `wikiBundle.json` przy teście idempotentności generatora (brudziła `git status`) — teraz
+  przywraca oryginalną treść bajt w bajt w `finally`.
+|- **`R-HOTSEAT-ETAP6F-PART2-DATA-Q1`** (commit `a59874e6`) — pierwszy z dwóch pod-tematów
+  ostatniego brakującego fragmentu planu hot-seat (Etap 6f część ii): warstwa danych +
+  generatora dla drugiego heksu startowego i drugiej cywilizacji człowieka (struktury
+  per-owner w `main.ts`, mechanizm trybu dystansu blisko/daleko/losowo w generatorze klastra,
+  wykluczenie duplikatu cywilizacji). **ZERO nowego UI** — brak widocznego efektu w grze,
+  dopóki nie powstanie następny pod-temat (`R-HOTSEAT-ETAP6F-PART2-UI-Q1`, krok kreatora dla
+  fotela 2). Evaluator znalazł i Obrona naprawiła w tej samej rundzie krytyczny błąd: drugi
+  heks mógł kolidować z istniejącymi miastami AI (potwierdzone empirycznie, naprawione
+  dodaniem wykluczenia pozycji zajętych).
+|- Oba tematy: pełny cykl Operator→Evaluator→(Obrona)→Final Control, wszystkie bramki
+  referencyjne i bramki rodziny tematu zielone, `tsc --noEmit` czysty.
+
 ## ROBOCZA 77ed7560 - 2026-09-09 11:35 UTC - FALA 365: 5 tematów agenta Hermes (koszt/produkcja/UI/balans)
 
 |- md5 (pełne): 77ed7560d5d67ac1f7099bf644065532 · stempel: ROBOCZA · label 77ed7560 · zakres

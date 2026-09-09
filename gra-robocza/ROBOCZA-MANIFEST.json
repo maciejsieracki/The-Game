@@ -1,10 +1,10 @@
 {
-  "publishedAt": "2026-09-09T11:35:00",
-  "sourceBuild": "gra/dist (commit 24892d1f)",
-  "note": "FALA 365 - 5 tematow agenta zewnetrznego 'Hermes' (protokol dyspozycje/PROTOKOL-WSPOLPRACA-WIELOAGENTOWA-GITHUB.md), zintegrowanych po niezaleznym review orkiestratora: (1) H-BUDYNKI-KOSZT-PRACY-50-Q1 (PR #133) - GLOBAL_BUILDING_PROD_MULT 0.5->0.25, koszt Pracy wszystkich budynkow -50%; (2) H-KAMIENIOLOM-KAMIEN-PRODUKCJA-Q1 (PR #135, wchlania tez PR #134 H-TARTAK-DREWNO-PRODUKCJA-Q1 ktory niezaleznie implementowal ta sama mechanike) - produkcja terytorialna Kamieniolomu i Tartaku +50%/epoke (200/300/450 w epokach 1/2/3); (3) H-BUDOWA-KARTA-KOLEJKA-Q1 (PR #136) - kolejka budowy i aktywny budynek w cityPanel dostaja realny, read-only podglad karty encji; (4) H-TRZODA-LAS-BLOKADA-Q1 (PR #137) - po ECHO wlasciciela (2026-09-09) cofnieto cala decyzje R-ULEPSZENIA-HODOWLA-LAS-ODBLOKOWANA-Q1 z 2026-08-27: owce i bydlo ponownie zablokowane na lesie (najpierw wymagany wyreb), lama pozostaje odblokowana. Wszystkie piec tematow przeszlo pelny cykl Operator->(Evaluator->Final Control PASS/READY_FOR_INTEGRATION po stronie Hermesa dla 133/135/136, PR #137 bez dokumentow procesu ale zweryfikowany i uzupelniony przez orkiestratora), niezalezna weryfikacja prawdziwej bazy scalenia (ebb24d78, nie zadeklarowane w metadanych PR-ow), rozstrzygniety konflikt dwoch rownoleglych PR-ow (134 vs 135), naprawione 2 kolizyjne bramki innych, niezwiazanych tematow (stadnina-las-test.cjs, oboz-lowiecki-las-znika-render-test.cjs). Wszystkie bramki referencyjne zielone, tsc czysty.",
+  "publishedAt": "2026-09-09T19:20:00",
+  "sourceBuild": "gra/dist (commit c40b71ee)",
+  "note": "FALA 366 - dwa tematy: (1) P-BUDYNKI-TRZY-NIESPOJNOSCI-IKON-I-BUNDLA - pretorium dostaje wlasna ikone (bld-pretorium, wczesniej martwy plik), trybunal dostaje jawny wpis mapy ikon (bld-admin, dokumentuje istniejaca heurystyke kategorii), naprawiona bramka civpedia-gra-id-mostek-test.cjs ktora nadpisywala sledzony wikiBundle.json; (2) R-HOTSEAT-ETAP6F-PART2-DATA-Q1 - pierwszy z dwoch pod-tematow ostatniego brakujacego fragmentu planu hot-seat (Etap 6f czesc ii): warstwa danych+generatora dla drugiego heksu startowego i drugiej cywilizacji czlowieka, ZERO nowego UI (brak widocznego efektu w grze dopoki nie powstanie pod-temat UI kreatora). Oba tematy przeszly pelny cykl Operator->Evaluator->(Obrona)->Final Control, wszystkie bramki referencyjne i bramki rodziny tematu zielone, tsc czysty.",
   "publisher": "Orkiestrator (Claude Code)",
   "bundle": "Gra-ROBOCZA.html",
-  "md5": "77ed7560d5d67ac1f7099bf644065532",
+  "md5": "491fd88acdea68a66ecaa8d7663869bf",
   "bundlePoleBitwy": "Gra-ROBOCZA-POLE-BITWY.html",
-  "md5PoleBitwy": "6542c502defefdadd2e168c988761ea0"
+  "md5PoleBitwy": "6deb45d265b82b4eb27e990c345a79c1"
 }
