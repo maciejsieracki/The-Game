@@ -31242,9 +31242,9 @@ async function boot(): Promise<void> {
                 if (!typCityCopyOwners.has(csOwnerId)) continue;
                 if (!isOwnerPlayerSameCivType(csOwnerId)) continue;
                 if (!diplomaticallyDiscoveredOwners.has(csOwnerId)) continue;
-                const relToPlayer = getDiploRelation(csOwnerId, 0);
+                const relToPlayer = getDiploRelation(csOwnerId, ME());
                 const hasTradeBlock = activeDeals.some(d => {
-                  if (!dealInvolvesOwners(d, 0, csOwnerId)) return false;
+                  if (!dealInvolvesOwners(d, ME(), csOwnerId)) return false;
                   const k = normalizeTreatyKind(d.rodzaj);
                   if (
                     k === RodzajTraktatu.UmowaSzlakow
@@ -31252,13 +31252,13 @@ async function boot(): Promise<void> {
                     || k === RodzajTraktatu.UmowaHandlowa
                   ) return true;
                   return (d.handelSurowiecCykliczny?.length ?? 0) > 0;
-                }) || hasActiveResourceTradeDealForPair(0, csOwnerId);
+                }) || hasActiveResourceTradeDealForPair(ME(), csOwnerId);
                 clusterWarMembers.push({
                   ownerId: csOwnerId,
                   atWarWithPlayer: relToPlayer.status === 'wojna',
                   hasTradeOrResourceTreatyWithPlayer: hasTradeBlock,
-                  peaceLockedWithPlayer: isPeaceLockedBetween(csOwnerId, 0),
-                  hasNapWithPlayer: hasTreaty(activeDeals, csOwnerId, 0, RodzajTraktatu.PaktNieagresji),
+                  peaceLockedWithPlayer: isPeaceLockedBetween(csOwnerId, ME()),
+                  hasNapWithPlayer: hasTreaty(activeDeals, csOwnerId, ME(), RodzajTraktatu.PaktNieagresji),
                 });
               }
               const clusterDowOwners = resolveClusterCityStateWarOnPlayer(
@@ -31269,15 +31269,15 @@ async function boot(): Promise<void> {
               );
               for (const csOwnerId of clusterDowOwners) {
                 try {
-                  chargeWarDeclarationCredibility(csOwnerId, 0);
-                  breakTreatiesOnWar(csOwnerId, 0, false);
-                  applyAllianceObligationsOnWar(csOwnerId, 0);
+                  chargeWarDeclarationCredibility(csOwnerId, ME());
+                  breakTreatiesOnWar(csOwnerId, ME(), false);
+                  applyAllianceObligationsOnWar(csOwnerId, ME());
                   const newRel = applyDiploEventTracked(
-                    csOwnerId, 0, getDiploRelation(csOwnerId, 0), 'wojna_wypowiedziana',
+                    csOwnerId, ME(), getDiploRelation(csOwnerId, ME()), 'wojna_wypowiedziana',
                   );
-                  setDiploRelation(csOwnerId, 0, newRel);
-                  pruneTributeNegotiationsBetween(csOwnerId, 0);
-                  recordWarDeclarationEvent(csOwnerId, 0);
+                  setDiploRelation(csOwnerId, ME(), newRel);
+                  pruneTributeNegotiationsBetween(csOwnerId, ME());
+                  recordWarDeclarationEvent(csOwnerId, ME());
                   console.log(
                     `[Dyplomacja] PM${csOwnerId} wypowiada wojne graczowi (trudnosc PM=hard, klaster 60%)`,
                   );
@@ -31850,9 +31850,9 @@ async function boot(): Promise<void> {
               if (diplomaticallyDiscoveredOwners.has(ownerId)) {
                 const militaryRatio = militaryRatioFromArmyM(
                   sumArmyMForOwner(ownerId),
-                  sumArmyMForOwner(0),
+                  sumArmyMForOwner(ME()),
                 );
-                const rel = getDiploRelation(0, ownerId);
+                const rel = getDiploRelation(ME(), ownerId);
                 const dipCtx: AIDiplomacyContext = {
                   isMinorCiv: false,
                   militaryRatio,
@@ -31861,46 +31861,46 @@ async function boot(): Promise<void> {
                 };
                 const plrTyp = ((player.civType ?? 'rzymianie') as TypCywilizacji);
                 const aiStub: Player = { ownerId, typCywilizacji: aiTyp } as unknown as Player;
-                const humanStub: Player = { ownerId: 0, typCywilizacji: plrTyp } as unknown as Player;
+                const humanStub: Player = { ownerId: ME(), typCywilizacji: plrTyp } as unknown as Player;
                 void aiDiplomacyStance(aiStub, humanStub, rel, dipCtx);
 
-                const potPlr = objectivePowerByOwner.get(0)?.power ?? 0;
+                const potPlr = objectivePowerByOwner.get(ME())?.power ?? 0;
                 const respektAI = computeRespekt(potAI, potPlr);
                 const relWithRespekt = { ...rel, respekt: respektAI };
-                setDiploRelation(0, ownerId, relWithRespekt);
+                setDiploRelation(ME(), ownerId, relWithRespekt);
 
                 const relStatus = (relWithRespekt as Relation).status;
                 const tickCtx: TickCtx = {
                   turn,
                   aktywnyHandel: activeDeals.some(
-                    d => dealInvolvesOwners(d, 0, ownerId)
+                    d => dealInvolvesOwners(d, ME(), ownerId)
                       && normalizeTreatyKind(d.rodzaj) === RodzajTraktatu.UmowaSzlakow,
                   ),
-                  pokojTrustTier: resolvePokojTrustTier(activeDeals, 0, ownerId, {
+                  pokojTrustTier: resolvePokojTrustTier(activeDeals, ME(), ownerId, {
                     contactEstablished: diplomaticContactEstablished.has(ownerId),
                     atWar: relStatus === 'wojna',
                   }),
                   dobraWolaAktywna: false,
                   wspolnyWrog: false,
                   wspolnaReligia: (() => {
-                    const sameCulture = sameCultureCircle(civKeyForOwner(0), civKeyForOwner(ownerId));
-                    const pr = ownerReligionForOwnerId(0);
+                    const sameCulture = sameCultureCircle(civKeyForOwner(ME()), civKeyForOwner(ownerId));
+                    const pr = ownerReligionForOwnerId(ME());
                     const ar = ownerReligionForOwnerId(ownerId);
                     return sameCulture && !!pr && !!ar && pr === ar;
                   })(),
                   odmiennaReligia: false,
                   karaWspolnaGranica:
                     cities.filter(c => c.ownerId === ownerId).length > 2 &&
-                    cities.filter(c => c.ownerId === 0).length > 2 &&
-                    ownersShareLandBorderLive(ownerId, 0),
-                  wiarygodnoscSelf: relStatus === 'wojna' ? undefined : getWiarygodnosc(0),
+                    cities.filter(c => c.ownerId === ME()).length > 2 &&
+                    ownersShareLandBorderLive(ownerId, ME()),
+                  wiarygodnoscSelf: relStatus === 'wojna' ? undefined : getWiarygodnosc(ME()),
                 };
                 const relTicked = tickDiplomacy(relWithRespekt as any, tickCtx);
-                setDiploRelation(0, ownerId, relTicked as unknown as Relation);
+                setDiploRelation(ME(), ownerId, relTicked as unknown as Relation);
 
                 const respektWzglednyPlr = (potAI + potPlr) > 0 ? potAI / (potAI + potPlr) : 0.5;
                 const hasTradeConnectionToPlayer = citiesHaveTradeConnection(
-                  cities.filter(c => c.ownerId === 0),
+                  cities.filter(c => c.ownerId === ME()),
                   cities.filter(c => c.ownerId === ownerId),
                   map,
                   cityBuilt,
@@ -31909,12 +31909,12 @@ async function boot(): Promise<void> {
                 );
                 const aiHandlowosc = resolveArchetypeTrade(aiTyp, ARCHETYPE_TRADE[aiTyp] ?? 0.5);
                 const resourceTradeOfferRaw = relStatus !== 'wojna'
-                  && !hasActiveResourceTradeDealForPair(0, ownerId)
+                  && !hasActiveResourceTradeDealForPair(ME(), ownerId)
                   && canAiProposeResourceTrade(turn, aiResourceTradeLastProposalTurn.get(ownerId))
-                  ? pickResourceTradeRelOffer(ownerId, 0, aiHandlowosc)
+                  ? pickResourceTradeRelOffer(ownerId, ME(), aiHandlowosc)
                   : null;
                 relacjeDip.push({
-                  partnerId: '0',
+                  partnerId: String(ME()),
                   relation: relTicked as unknown as Relation,
                   respektWzgledny: respektWzglednyPlr,
                   stanWojny: (relTicked as any).status === 'wojna',
@@ -31934,16 +31934,16 @@ async function boot(): Promise<void> {
                         powod: resourceTradeOfferRaw.powod,
                       }
                     : undefined,
-                  hasActiveResourceTradeDeal: hasActiveResourceTradeDealForPair(0, ownerId),
+                  hasActiveResourceTradeDeal: hasActiveResourceTradeDealForPair(ME(), ownerId),
                   lastResourceTradeProposalTurn: aiResourceTradeLastProposalTurn.get(ownerId),
-                  partnerTypCywilizacji: civKeyForOwner(0),
+                  partnerTypCywilizacji: civKeyForOwner(ME()),
                   hasNapTreaty: hasTreaty(
-                    activeDeals, ownerId, 0, RodzajTraktatu.PaktNieagresji,
+                    activeDeals, ownerId, ME(), RodzajTraktatu.PaktNieagresji,
                   ),
                   contactEstablished: diplomaticContactEstablished.has(ownerId),
                   mapContact: contactedOwners.has(ownerId),
                   lastAudienceRequestTurn: aiAudienceLastRequestTurn.get(ownerId),
-                  peaceLocked: isPeaceLockedBetween(ownerId, 0),
+                  peaceLocked: isPeaceLockedBetween(ownerId, ME()),
                 });
               }
 
