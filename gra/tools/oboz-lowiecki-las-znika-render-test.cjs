@@ -558,8 +558,11 @@ async function main() {
   // Ponizsze asercje pilnuja, zeby opis przy poprawce nie rozjechal sie z kodem ponownie.
   // -------------------------------------------------------------------------
   console.log('\n-- (G) opis == zachowanie: predykat lasu vs. warunek terenu --');
-  const OCZEKIWANE_PRZEPUSZCZONE = ['bydlo', 'lama', 'lodzie_rybackie', 'oboz_lowiecki', 'owce'];
-  check('ZYWY predykat przepuszcza DOKLADNIE 5 kluczy zywnosciowych (nie 4)',
+  // H-TRZODA-LAS-BLOKADA-Q1 (2026-09-09, ECHO wlasciciela: cofniecie R-ULEPSZENIA-HODOWLA-
+  // LAS-ODBLOKOWANA-Q1 z 2026-08-27) zablokowalo owce/bydlo na lesie z powrotem -- predykat
+  // dzis przepuszcza juz nie piec, tylko trzy klucze zywnosciowe.
+  const OCZEKIWANE_PRZEPUSZCZONE = ['lama', 'lodzie_rybackie', 'oboz_lowiecki'];
+  check('ZYWY predykat przepuszcza DOKLADNIE 3 klucze zywnosciowe (H-TRZODA-LAS-BLOKADA-Q1)',
     Array.isArray(po.out.foodKeysOnForest)
       && po.out.foodKeysOnForest.length === OCZEKIWANE_PRZEPUSZCZONE.length
       && OCZEKIWANE_PRZEPUSZCZONE.every((k, i) => po.out.foodKeysOnForest[i] === k),

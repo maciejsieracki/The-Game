@@ -181,14 +181,15 @@ ok(!mieszanePoWyrebie.includes('tartak'), 'kontrola: tartak znika (R-ULEPSZENIA-
 ok(mieszanePoWyrebie.includes('farma'), 'kontrola: farma NIE jest usuwana TA funkcja (osobny mechanizm, patrz sekcja 4)');
 ok(!mieszanePoWyrebie.includes('oboz_lowiecki'), 'kontrola: oboz lowiecki NADAL znika (zalezny od lasu, temat go nie rusza)');
 
-console.log('\n--- (3) KRYTERIUM 3: regresja ZERO na owce/bydlo/lama ---');
-// Ten temat NIE dotyka R-ULEPSZENIA-HODOWLA-LAS-ODBLOKOWANA-Q1 — owce/bydlo/lama musza
-// zachowac DOKLADNIE swoje dzisiejsze zachowanie (podlegaja regule lasu z 2026-07-29/08-27,
-// nie zostaly przesuniete do zadnej innej kategorii przez ten fix).
-ok(M.isImprovementBlockedOnForest('owce', N.Las) === false, 'kontrola: las nadal NIE blokuje owiec (bez zmian)');
-ok(M.isImprovementBlockedOnForest('bydlo', N.Las) === false, 'kontrola: las nadal NIE blokuje bydla (bez zmian)');
+console.log('\n--- (3) KRYTERIUM 3: regresja ZERO na lama; owce/bydlo wg H-TRZODA-LAS-BLOKADA-Q1 ---');
+// H-TRZODA-LAS-BLOKADA-Q1 (2026-09-09, ECHO wlasciciela: cofniecie calej decyzji
+// R-ULEPSZENIA-HODOWLA-LAS-ODBLOKOWANA-Q1 z 2026-08-27) zablokowalo owce/bydlo na lesie
+// z powrotem -- ten temat (stadnina) go nie dotyka, ale asercje "zero regresji" nizej musza
+// odzwierciedlac AKTUALNY kanon, nie stan sprzed 2026-09-09. Lama zostaje odblokowana.
+ok(M.isImprovementBlockedOnForest('owce', N.Las) === true, 'kontrola: las blokuje owce (H-TRZODA-LAS-BLOKADA-Q1, 2026-09-09)');
+ok(M.isImprovementBlockedOnForest('bydlo', N.Las) === true, 'kontrola: las blokuje bydlo (H-TRZODA-LAS-BLOKADA-Q1, 2026-09-09)');
 ok(M.isImprovementBlockedOnForest('lama', N.Las) === false, 'kontrola: las nadal NIE blokuje lamy (bez zmian)');
-ok(M.isOwceBaseTerrain(T.Wzgorza, N.Las) === true, 'kontrola: owce na Wzgorzu+Las bez zmian (regula terenu bazowego)');
+ok(M.isOwceBaseTerrain(T.Wzgorza, N.Las) === false, 'kontrola: owce na Wzgorzu+Las zablokowane (H-TRZODA-LAS-BLOKADA-Q1)');
 ok(M.isStadninaBlockedOnForest('owce', N.Las) === false, 'kontrola: predykat historyczny stadniny nigdy nie lapal owiec');
 ok(M.isStadninaBlockedOnForest('bydlo', N.Las) === false, 'kontrola: predykat historyczny stadniny nigdy nie lapal bydla');
 

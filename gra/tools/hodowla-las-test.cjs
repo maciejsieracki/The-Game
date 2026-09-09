@@ -129,15 +129,15 @@ function stateForWholeMap(map, civ, era, placed) {
 // (1) PREDYKATY TERENU — reguła w izolacji
 // =====================================================================================
 console.log('\n--- (1) predykaty terenu ---');
-ok(M.isOwceBaseTerrain(T.Wzgorza, N.Las) === true, 'owce: Wzgorza + Las DOZWOLONE (zakaz cofniety)');
+ok(M.isOwceBaseTerrain(T.Wzgorza, N.Las) === false, 'owce: Wzgorza + Las nadal zablokowane');
 ok(M.isOwceBaseTerrain(T.Wzgorza, N.Brak) === true, 'owce: gole Wzgorza bez zmian');
 ok(M.isOwceBaseTerrain(T.Wzgorza, N.ZlozeOwiec) === true, 'owce: zloze owiec bez zmian');
 ok(M.isOwceBaseTerrain(T.Wzgorza, N.ZlozeGliny) === false, 'owce: inna nakladka NADAL blokuje');
 ok(M.isOwceBaseTerrain(T.Laka, N.Las) === false, 'owce: Las na Lace to nie Wzgorza (teren bazowy rzadzi)');
 ok(M.isOwceBaseTerrain(T.Gory, N.Las) === false, 'owce: Las w Gorach nie kwalifikuje');
 
-ok(M.isImprovementBlockedOnForest('owce', N.Las) === false, 'las NIE blokuje owiec');
-ok(M.isImprovementBlockedOnForest('bydlo', N.Las) === false, 'las NIE blokuje bydla');
+ok(M.isImprovementBlockedOnForest('owce', N.Las) === true, 'las nadal blokuje owce');
+ok(M.isImprovementBlockedOnForest('bydlo', N.Las) === true, 'las blokuje bydlo');
 ok(M.isImprovementBlockedOnForest('lama', N.Las) === false, 'las NIE blokuje lamy');
 
 // P-STADNINA-LAS-NIEROZSTRZYGNIETE-Q1 (2026-09-03): stadnina ODBLOKOWANA na lesie, jak
@@ -185,9 +185,9 @@ const smap = { hexes, riverPaths: [], startPositions: [{ q: 0, r: 0 }] };
 const qRzym = M.buildImprovementQualifier(stateForWholeMap(smap, 'rzym', 5));
 const qInka = M.buildImprovementQualifier(stateForWholeMap(smap, 'inkowie', 5));
 
-ok(qRzym('owce', 1, 0) === true, 'GRACZ: owce na Wzgorzu Z LASEM');
-ok(qRzym('bydlo', 2, 0) === true, 'GRACZ: bydlo na Lace Z LASEM');
-ok(qRzym('bydlo', 3, 0) === true, 'GRACZ: bydlo na Rowninie Z LASEM');
+ok(qRzym('owce', 1, 0) === false, 'GRACZ: owce na Wzgorzu Z LASEM zablokowane');
+ok(qRzym('bydlo', 2, 0) === false, 'GRACZ: bydlo na Lace Z LASEM zablokowane');
+ok(qRzym('bydlo', 3, 0) === false, 'GRACZ: bydlo na Rowninie Z LASEM zablokowane');
 ok(qInka('lama', 1, 0) === true, 'GRACZ: lama na Wzgorzu Z LASEM (Inkowie)');
 ok(qInka('lama', 4, 0) === true, 'GRACZ: lama w Gorach Z LASEM (Inkowie)');
 
@@ -222,23 +222,24 @@ ok(qInkaE1('bydlo', 2, 0) === false, 'KONTROLA: Inkowie epoka 1 — bydlo nadal 
 // (3) GATE COMMITU — computeImprovementBuildImpact (ścieżka omijająca panel budowy)
 // =====================================================================================
 console.log('\n--- (3) gate commitu: computeImprovementBuildImpact ---');
-ok(M.computeImprovementBuildImpact('owce', hexes['1,0'], []) !== null, 'COMMIT: owce na Wzgorzu+Las przechodzi');
-ok(M.computeImprovementBuildImpact('bydlo', hexes['2,0'], []) !== null, 'COMMIT: bydlo na Lace+Las przechodzi');
+ok(M.computeImprovementBuildImpact('owce', hexes['1,0'], []) === null, 'COMMIT: owce na Wzgorzu+Las zablokowane');
+ok(M.computeImprovementBuildImpact('bydlo', hexes['2,0'], []) === null, 'COMMIT: bydlo na Lace+Las zablokowane');
 ok(M.computeImprovementBuildImpact('lama', hexes['4,0'], []) !== null, 'COMMIT: lama w Gorach+Las przechodzi');
 ok(M.computeImprovementBuildImpact('owce', hexes['2,0'], []) === null, 'COMMIT: owce na Lace+Las nadal null');
 // P-STADNINA-LAS-NIEROZSTRZYGNIETE-Q1 (2026-09-03): odwrocone razem z regula (poprzednio
 // `=== null`, „KONTROLA COMMIT: stadnina na lesie null").
 ok(M.computeImprovementBuildImpact('stadnina', hexes['2,0'], []) !== null, 'COMMIT: stadnina na Lace+Las przechodzi (zakaz cofniety)');
 ok(M.computeImprovementBuildImpact('farma', hexes['2,0'], []) === null, 'KONTROLA COMMIT: farma na lesie null');
+ok(M.getImprovementForestBlockHint('bydlo') === 'Aby zbudować Trzodę na tym polu, najpierw usuń las.',
+  'COMMIT: bydlo ma dokladny tooltip blokady lasu');
 
-// Współistnienie sektorów: tartak ('las') + hodowla ('hodowla') na tym samym zalesionym heksie.
-const impOwceTartak = M.computeImprovementBuildImpact('owce', hexes['1,0'], ['tartak']);
-ok(impOwceTartak !== null, 'COMMIT: owce obok tartaku na tym samym lesie');
-ok(impOwceTartak && impOwceTartak.removedImprovements.length === 0, 'COMMIT: owce NIE zdejmuja tartaku');
-ok(impOwceTartak && impOwceTartak.removesForest === false, 'COMMIT: budowa hodowli NIE usuwa lasu (bez wyrebu)');
-const impOwceOboz = M.computeImprovementBuildImpact('owce', hexes['1,0'], ['oboz_lowiecki']);
-ok(impOwceOboz !== null && impOwceOboz.removedImprovements.length === 0,
-  'COMMIT: owce obok obozu lowieckiego (sektor lowiectwo != hodowla)');
+// Inne ulepszenie hodowlane (lama) zachowuje dotychczasowe współistnienie sektorów.
+const impLamaTartak = M.computeImprovementBuildImpact('lama', hexes['4,0'], ['tartak']);
+ok(impLamaTartak !== null, 'COMMIT: lama obok tartaku na tym samym lesie');
+ok(impLamaTartak && impLamaTartak.removedImprovements.length === 0, 'COMMIT: lama NIE zdejmuje tartaku');
+ok(impLamaTartak && impLamaTartak.removesForest === false, 'COMMIT: budowa hodowli NIE usuwa lasu (bez wyrebu)');
+const impLamaOboz = M.computeImprovementBuildImpact('lama', hexes['4,0'], ['oboz_lowiecki']);
+ok(impLamaOboz !== null, 'COMMIT: lama obok obozu lowieckiego (sektor lowiectwo != hodowla)');
 
 // Wyrąb spod hodowli: hodowla NIE jest zależna od lasu, więc zostaje na heksie.
 const poWyrebie = M.stripImprovementsWhenForestRemoved(['owce', 'bydlo', 'lama', 'tartak', 'oboz_lowiecki']);
@@ -292,10 +293,10 @@ function pickOn(hex, key, civ, era) {
   });
   return picks.some(p => p.key === key && p.q === hex.coords.q && p.r === hex.coords.r);
 }
-ok(pickOn(mkHex(0, 0, T.Wzgorza, N.Las), 'owce', 'rzym', 5) === true,
-  'AUTOMAT/AI CYW: stawia owce na Wzgorzu Z LASEM');
-ok(pickOn(mkHex(0, 0, T.Laka, N.Las), 'bydlo', 'rzym', 5) === true,
-  'AUTOMAT/AI CYW: stawia bydlo na Lace Z LASEM');
+ok(pickOn(mkHex(0, 0, T.Wzgorza, N.Las), 'owce', 'rzym', 5) === false,
+  'AUTOMAT/AI CYW: NIE stawia owiec na Wzgorzu Z LASEM');
+ok(pickOn(mkHex(0, 0, T.Laka, N.Las), 'bydlo', 'rzym', 5) === false,
+  'AUTOMAT/AI CYW: NIE stawia bydla na Lace Z LASEM');
 ok(pickOn(mkHex(0, 0, T.Gory, N.Las), 'lama', 'inkowie', 5) === true,
   'AUTOMAT/AI CYW: stawia lame w Gorach Z LASEM');
 ok(pickOn(mkHex(0, 0, T.Laka, N.Las), 'owce', 'rzym', 5) === false,
@@ -437,8 +438,8 @@ for (const seed of [90210, 777, 31415]) {
   // z powodu braku odblokowania/terenu, a nie z powodu zakazu lasu.
   ok(stadninaBezLasu > 0, `mapa ${seed}: stadnina kwalifikuje sie POZA lasem (warunek istotnosci)`);
   ok(farmaBezLasu > 0, `mapa ${seed}: farma kwalifikuje sie POZA lasem (warunek istotnosci)`);
-  ok(owceLas > 0, `mapa ${seed}: owce kwalifikuja sie na >0 heksach z lasem`);
-  ok(bydloLas > 0, `mapa ${seed}: bydlo kwalifikuje sie na >0 heksach z lasem`);
+  ok(owceLas === 0, `mapa ${seed}: owce nie kwalifikuja sie na lesie`);
+  ok(bydloLas === 0, `mapa ${seed}: bydlo nie kwalifikuje sie na lesie`);
   ok(lamaLas > 0, `mapa ${seed}: lama kwalifikuje sie na >0 heksach z lasem`);
   // P-STADNINA-LAS-NIEROZSTRZYGNIETE-Q1 (2026-09-03): odwrocone razem z regula (poprzednio
   // `stadninaLas === 0`, „KONTROLA mapa ${seed}: stadnina na 0 heksach z lasem") — stadnina
