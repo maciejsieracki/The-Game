@@ -7312,13 +7312,38 @@ wojna wybuchała, ale napastnik pozostawał formalnie "nieodkryty"). Nowe bramki
 współdzielonej kolejki `deferredEotHints` (kandydat na
 `P-WYDARZENIA-WOJNA-KARTA-PRZYCIETA-Q1`).
 
+## `P-MIASTA-ZBYT-BLISKO-SIEBIE-Q1` — GAME — **ZINTEGROWANE 2026-09-09** (commit `3c05d9ea`, rundy 1-3)
+
+Zgłoszenie właściciela: inne cywilizacje stawiały miasta na sąsiadujących heksach
+("URUK — KOLONIA" bezpośrednio przy stolicy gracza), mimo istniejącej reguły
+MIN_CITY_DISTANCE/MIN_CITY_DISTANCE_START_CITY_STATE w `canFoundCity`. Zidentyfikowano i
+naprawiono TRZY niezależne kanały bypassu tej reguły, wszystkie sprowadzające się do braku
+realnej weryfikacji dystansu w runtime dla slotów zakładanych z `clusterStartSlot: true`:
+(1) `pickBonusCityHex` (`ai-difficulty-bonus.ts`) brała wyłącznie bezpośrednich sąsiadów
+stolicy (dystans=1) i pomijała sprawdzenie dystansu — bezpośrednia przyczyna zgłoszenia,
+naprawiona przeszukiwaniem rosnącego promienia + realnym `canFoundCity`; (2)
+`spawnPendingForeignClusters` (`main.ts`) zakładała miasta obcych klastrów przez
+`foundCityAt(..., clusterStartSlot: true)` — dystans nigdy nie sprawdzany w runtime,
+naprawiona zdjęciem tej flagi, więc każdy slot jest teraz sprawdzany realnym `canFoundCity`
+względem faktycznego stanu miast; (3) `buildClusterStartPlan` (`cluster-start.ts`)
+rejestrowała każdy slot planu PRZED sprawdzeniem kolizji międzyklastrowej — odrzucony slot
+zostawiał "widmowego" właściciela bez żadnego miasta na mapie, naprawiona przeniesieniem
+rejestracji na po sprawdzeniu kolizji (runda 2 wykryła i naprawiła regresję referencyjnej
+bramki `cluster-start-test.cjs` wprowadzoną tym fixem — `foreignTypeClusters`/
+`clusterCapitalOwnerIds`/`typCityCopyOwners` musiały zostać przefiltrowane symetrycznie;
+runda 3 domknęła rzadki przypadek brzegowy, gdy stolica klastra sama koliduje). Nowa
+bramka: `miasta-zbyt-blisko-test.cjs` (23329/23329 par bez naruszenia dystansu, 0 widmowych
+właścicieli, 25768/25768 par w realnej symulacji kolejności spawnu main.ts). Final Control:
+`tsc --noEmit` czysty, `cluster-start-test.cjs` 396/19 (19 FAIL identycznych z origin/main,
+potwierdzone niezwiązane z tematem w każdej z 3 rund), 5 bramek referencyjnych zielone.
+`miasta-panstwa-wylaczone-test.cjs` 52/3 — 3 FAIL oczekiwane (bajt-identyczność
+referencyjnego PRE-bundla vs celowo zmieniony `buildClusterStartPlan`), referencyjny bundel
+do zaktualizowania osobno. Poza zakresem, zarejestrowane jako przyszłe tematy:
+`clusterForceWarTargetId` ma strukturalnie ten sam defekt braku odkrycia (analogiczny do
+kanału 3 tego tematu, ale w innym miejscu kodu).
+
 ## Nowe zgłoszenia w toku (2026-09-08, jeszcze nie zamknięte)
 
-- `P-MIASTA-ZBYT-BLISKO-SIEBIE-Q1` (GAME) — dispatchowany formalnie (Operator/Evaluator w toku,
-  Workflow): inne cywilizacje stawiają miasta na sąsiadujących heksach. Zweryfikowany żywy
-  dowód ("URUK — KOLONIA" bezpośrednio przy stolicy) wskazuje na `pickBonusCityHex`
-  (`ai-difficulty-bonus.ts`) — bonusowe miasto startowe trudności celowo bierze bezpośredniego
-  sąsiada stolicy, pomijając sprawdzenie minimalnego dystansu.
 - Niejasne zgłoszenie właściciela o pustym wierszu "Surowce" w górnym HUD — **WYJAŚNIONE, NIE
   BUG**: to jest świadoma decyzja z 2026-07-24 (`hud.ts`, komentarz "bez liczby na chipie") —
   chip celowo pokazuje tylko ikonę + alert, bez liczby "X/Y", klik otwiera pełny panel
