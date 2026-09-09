@@ -7488,6 +7488,26 @@ co przy integracji Podetapu B tego dnia — złapany przed jakąkolwiek błędn�
   przedistniejąca i niezwiązana (potwierdzone identycznym wynikiem na czystym `main` sprzed
   tej integracji).
 
+## `P-BUDYNKI-TRZY-NIESPOJNOSCI-IKON-I-BUNDLA` — INFRA — **ZINTEGROWANE 2026-09-09** (commit `7ac340c1`)
+
+Trzy niezależne, drobne niespójności znalezione przez recon Operatora Garnizonu (2026-09-05,
+`PYTANIA-OTWARTE.md:28284`), dotychczas zarejestrowane ale niedispatchowane — dispatchowane
+równolegle z Etapem 6f część (ii) (zero wspólnych plików, drugi slot fan-outu). `pretorium`
+mapował na `bld-palac` zamiast `bld-pretorium` (plik istniał, był martwy) — naprawione.
+`trybunal` nie miał własnego wpisu w mapie ikon, dostawał `bld-admin` przez cichą heurystykę
+kategorii „Administracja" (`brandAssets.ts`) — dodany jawny wpis dokumentujący tę ścieżkę
+(dedykowanej ikony trybunału nie ma w repo — narysowanie nowego SVG to osobny temat, poza
+zakresem tej naprawy tekstowej). `civpedia-gra-id-mostek-test.cjs` nadpisywał śledzony
+`wikiBundle.json` przy teście idempotentności generatora, brudząc `git status` — naprawione:
+oryginalna treść zapamiętywana przed uruchomieniem generatora i przywracana bajt w bajt w
+`finally`, z asercją potwierdzającą przywrócenie. Operator→Evaluator (zero zarzutów)→Final
+Control PASS — wszystkie trzy role zweryfikowały niezależnie: pliki SVG (`test -f`), realną
+ścieżkę heurystyki, oraz mechanizm przywracania (Final Control ręcznie zasymulował brak
+przywrócenia w roboczej kopii i potwierdził że `git status` faktycznie się wtedy brudzi —
+dowód nietautologiczności). `tsc --noEmit` czysty, 5 bramek referencyjnych zielone,
+`civpedia-gra-id-mostek-test.cjs` PASS z potwierdzonym czystym `git status` dla
+`wikiBundle.json` przed i po.
+
 ## Nowe zgłoszenia w toku (2026-09-08, jeszcze nie zamknięte)
 
 - Niejasne zgłoszenie właściciela o pustym wierszu "Surowce" w górnym HUD — **WYJAŚNIONE, NIE
