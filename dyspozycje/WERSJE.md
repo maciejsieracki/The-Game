@@ -13,6 +13,49 @@ swoim wĹ‚asnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji d
 > Pakiet 3 z 2026-08-20 jest docs-only i nie tworzy wpisu ROBOCZA/KANON/FINALNA;
 > ten plik pozostaje wyłącznie rejestrem publikacji bundli.
 
+## ROBOCZA 50e9fe98 - 2026-09-09 05:58 UTC - FALA 363: Etap 6e hot-seat (render/kamera) + 2 zgłoszenia bugów + ok. 17 innych tematów GAME
+
+|- md5 (pełne): 50e9fe981ed2ab8fac5c8dfc58faf7aa · stempel: ROBOCZA · label 50e9fe98 · zakres commitów: `6ce48d7d..cb667e5d` (od źródła FALI 362 do obecnego `main`)
+|- **Hot-seat:** `R-HOTSEAT-ETAP6E-RENDER-Q1` (commit `b51d6c50`) — migracja 27 miejsc render/kamera
+  (`civTypeForOwner`, `relationColorFn`, `unitRingStanceForPlayer`, `cityMapOutlineKindForOwner`,
+  `civDisplayNameForOwner`, `portraitForceCultureIcon`, `_cityRenderOpts`,
+  `syncWorkerFieldOverlay`, `refreshTerritoryBorderOverlay`, `syncOkolicaOverlay`) z literału `0`
+  na `isMe()`/`ME()`/`isMeSafe()`/`meNow()` — Etap 6e **W PEŁNI ZAMKNIĘTY** (obie rundy, Final
+  Control PASS, bramka no-op 3×vite+3×Chromium×20 tur czerwienieje na mutacji). Etap 6d
+  pozostaje częściowo otwarty (20/~108 funkcji zmigrowanych do tej fali — recon-remainder
+  `acb5f3e0` doprecyzował pozostały zakres na ok. 88 miejsc w 5 podetapach A-E, Podetapy A/C/E
+  dispatchowane równolegle PO tej fali, jeszcze nie zintegrowane). Etap 6f część (ii) — recon
+  zakończony (`7cd680e6`, drugi heks startowy/druga cywilizacja w menu), implementacja czeka.
+|- **Dwa świeże zgłoszenia właściciela zamknięte pełnym cyklem Operator→Evaluator→(Obrona)→Final
+  Control:** `P-WOJNA-EPOKI-NAJTRUDNIEJSZY-NIE-WYBUCHA-Q1` (`c966f6b1` — wymuszona wojna epoki na
+  gracza nie wybuchała dopóki strony się "nie poznały"; naprawiono routing przez
+  `dipLayerIgnoringPlayerFog` + jawną rejestrację odkrycia napastnika) i
+  `P-MIASTA-ZBYT-BLISKO-SIEBIE-Q1` (`3c05d9ea` — miasta AI/miasta-państwa poniżej minimalnego
+  dystansu, m.in. kolonia bonusowa tuż przy stolicy; naprawiono `pickBonusCityHex` + brak
+  runtime-checku dystansu w `spawnPendingForeignClusters` + niespójność
+  `foreignTypeClusters`/`clusterCapitalOwnerIds`/`typCityCopyOwners` po odrzuceniu kolizji, 3
+  rundy, wszystkie zarzuty Evaluatora naprawione).
+|- **Pozostałe tematy GAME zintegrowane w tym zakresie commitów** (każdy własny cykl
+  Operator→Evaluator→Final Control, patrz `dyspozycje/autobot/runs/<ID>/` i REJESTR):
+  `P-STADNINA-KONIE-KOSZT-ROZBUDOWY-Q1`, `P-AI-WOJNA-WCZESNA-FAZA-MIASTA-PANSTWA-Q1`,
+  `P-KARTA-PRZEBUDOWA-UKLAD-Q1`, `P-BITWA-AUTO-LUCZNICY-NIE-RUSZAJA-Q1`,
+  `P-AI-ARMIA-ROZPROSZENIE-BRAK-KONCENTRACJI-Q1`, `P-BITWA-OBRONCY-PRZED-MUREM-Q1`,
+  `P-AI-ULEPSZENIA-BUDOWA-ZNIKOMA-Q1` (rundy 1-3), `P-BITWA-PORTRET-GRACZA-ZNIKNIETY-Q1`,
+  `P-BUDOWA-AUTO-NIE-LADUJE-ULEPSZEN-Q1`, `P-AI-BADANIA-ZACOFANIE-Q1` (rundy 1-2),
+  `P-AI-EKSPANSJA-ODBUDOWA-MIAST-PO-WOJNIE-Q1`, `P-MARTWY-KOD-PROCENT-PULI-IMPERIUM-Q1`,
+  `R-MENU-TRUDNOSC-TOOLTIP-ROZNICE-Q1`, `P-AI-BARBARZYNCY-PRIORYTET-ELIMINACJA-Q1`,
+  `P-DROGI-BUDOWA-WYJASNIENIE-TOOLTIP-Q1`, `R-PODBOJ-RAPORT-SEKCJE-ROZWIJANE-Q1`,
+  `P-HOTSEAT-ETAP7-FIXTURE-BUMP-Q1` (bump fixture testowych do formatu v3).
+|- Build: `node ./node_modules/vite/bin/vite.js build --outDir /tmp/civ-dist --emptyOutDir`
+  (kanon C-001), 887 modułów. Bramki na `cb667e5d`: `tsc --noEmit` 0 błędów; 5 bramek
+  referencyjnych zielone (logic 213/213, tech-tree 19/19, research 33/33, unit-replace 13/13,
+  combat 6/6) — zweryfikowane bezpośrednio przez orkiestratora po integracji obu świeżych
+  tematów. Deploy wykonany do `gra-robocza/` na wyraźne polecenie właściciela ("wdróż"); push
+  wykonany do `origin/main`.
+|- Bundle pola bitwy (`Gra-ROBOCZA-POLE-BITWY.html`) PRZEBUDOWANY tą falą (`vite.oblezenie-bitwa.config.ts`,
+  579 modułów) — md5 `f98bf0692a340d01fbe7fbd7d0980e55`.
+|- **AKTUALNA**
+
 ## ROBOCZA 030e23c0 - 2026-09-08 13:24 UTC - FALA 362: hot-seat 2 graczy — 5 z 7 etapów planu
 
 |- md5 (pełne): 030e23c0a897480a72b30fc78130807d · stempel: ROBOCZA · label 030e23c0 · źródłowe commity integracji: `4e7a5491`+`27c8a31b` (Etap 6a input, 42 miejsca + follow-up bramki), `e9e6a325` (Etap 6b UI, 78 miejsc), `7dcb3c21` (Etap 6e-prereq — fix TDZ bootstrapu renderu), `c271f065` (Etap 6c ekonomia, 32 miejsca), `0a1b6b7e` (Etap 6f część(i) — AI-roster wyklucza wszystkich humanOwnerIds), `67f20587` (Etap 7 save/load v3), `6ce48d7d` (Etap 6d podzbiór — 20 funkcji silnika dyplomacji)

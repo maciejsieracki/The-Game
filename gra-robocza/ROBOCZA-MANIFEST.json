@@ -1,10 +1,10 @@
 {
-  "publishedAt": "2026-09-08T13:24:00",
-  "sourceBuild": "gra/dist (commit 6ce48d7d)",
-  "note": "FALA 362 - hotseat 2 graczy: 5 z 7 etapow planu zintegrowane i zdeployowane w tej fali (wszystkie no-op dla dzisiejszego jednego gracza, aktywacja hot-seat sama w sobie poza zakresem tego planu - Etap 8). Etap 6a (migracja 42 miejsc input na isMe()), Etap 6b (78 miejsc UI na isMe()/ME()), Etap 6c (32 miejsca ekonomia na isHuman()), Etap 6d podzbior (20 funkcji silnika dyplomacji na isHuman/isMe/ME(), pod-etap NIE w pelni zamkniety - pozostale ~116 miejsc czekaja na decyzje wlasciciela co do zakresu), Etap 6f czesc(i) (3 funkcje AI-roster - wyklucz wszystkich humanOwnerIds z puli AI), Etap 7 (format zapisu v3: gracze[]/exploredByHuman/humanOwnerIds/activeHumanOwnerId, ZERO migracji v2->v3 zgodnie z ABC-4, czytelny komunikat dla starego formatu). Etap 6e (render/kamera, 27 miejsc) w toku rownolegle, poza ta fala.",
+  "publishedAt": "2026-09-09T05:58:00",
+  "sourceBuild": "gra/dist (commit cb667e5d)",
+  "note": "FALA 363 - dwa zgloszenia bledow zamkniete i zintegrowane: (1) P-WOJNA-EPOKI-NAJTRUDNIEJSZY-NIE-WYBUCHA-Q1 - wymuszona wojna epoki na gracza nie wybuchala dopoki strony sie 'nie poznaly' (brak kontaktu dyplomatycznego), naprawiono routing komend przez dipLayerIgnoringPlayerFog + jawna rejestracja odkrycia napastnika przy wypowiedzeniu wymuszonej wojny; (2) P-MIASTA-ZBYT-BLISKO-SIEBIE-Q1 - miasta AI/miasta-panstwa powstawaly ponizej minimalnego dystansu (m.in. kolonia bonusowa trudnosci tuz przy stolicy), naprawiono pickBonusCityHex + brak runtime-checku dystansu w spawnPendingForeignClusters + niespojnosc foreignTypeClusters/clusterCapitalOwnerIds/typCityCopyOwners po odrzuceniu kolizji. Oba tematy przeszly pelny cykl Operator->Evaluator->(Obrona)->Final Control, wszystkie bramki referencyjne i bramki rodziny tematu zielone, tsc czysty.",
   "publisher": "Orkiestrator (Claude Code)",
   "bundle": "Gra-ROBOCZA.html",
-  "md5": "030e23c0a897480a72b30fc78130807d",
+  "md5": "50e9fe981ed2ab8fac5c8dfc58faf7aa",
   "bundlePoleBitwy": "Gra-ROBOCZA-POLE-BITWY.html",
-  "md5PoleBitwy": "d4477b3eaed627e426c41b9f8d0ad1f1"
+  "md5PoleBitwy": "f98bf0692a340d01fbe7fbd7d0980e55"
 }
