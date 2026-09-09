@@ -7445,6 +7445,44 @@ dyplomacji zielone, 2 żywe bramki Chromium zielone (`forced-war-player-no-conta
 5 podetapów (A, C, E, B, D) zintegrowane: `1c612447`, `8a7405b9`, `4e07a9aa`, `93040dbe`,
 `aeb247bb`.
 
+## Hermes (agent zewnętrzny, PR-y GitHub) — 4 tematy zintegrowane 2026-09-09
+
+Zgodnie z `dyspozycje/PROTOKOL-WSPOLPRACA-WIELOAGENTOWA-GITHUB.md` — Hermes pracuje na
+gałęziach `hermes/<ID>`, przekazuje wyłącznie przez PR, integracja i push do `main` robi
+WYŁĄCZNIE orkiestrator (ta sesja). Przy review wykryto że PR-y bazowały na metadanych
+"base sha" (`048da24a`) NIEZGODNYCH z faktycznym punktem rozgałęzienia — prawdziwa,
+zweryfikowana baza wszystkich pięciu gałęzi to `ebb24d78` (ten sam błąd metodologiczny
+co przy integracji Podetapu B tego dnia — złapany przed jakąkolwiek błędną aplikacją).
+
+- **`H-BUDYNKI-KOSZT-PRACY-50-Q1`** (PR #133, commit `8917b870`) — `GLOBAL_BUILDING_PROD_MULT`
+  0.5→0.25 (kolejne półowienie efektywnego kosztu Pracy budynków, koszt surowcowy bez zmian).
+  Bramka `budynki-koszt-pracy-50-test.cjs`: 175/175.
+- **`H-KAMIENIOLOM-KAMIEN-PRODUKCJA-Q1`** (PR #135, commit `9175f031`) — produkcja
+  terytorialna Kamieniołomu i Tartaku +50%/epokę (200/300/450 w epokach 1/2/3), wspólny
+  mechanizm `resourceProductionAmountForEra`. **Rozstrzygnięty konflikt**: PR #134
+  (`H-TARTAK-DREWNO-PRODUKCJA-Q1`) niezależnie zaimplementował identyczny wynik dla Tartaku
+  innym mechanizmem w tych samych plikach (oba PR-y nie widziały nawzajem swoich zmian) —
+  PR #135 zintegrowany w całości jako kanoniczny (jego własna bramka jawnie testuje i Tartak),
+  z PR #134 przejęty wyłącznie hunk `main.ts` (wiring `empireEpochForOwner`, jedyny konsument
+  nietknięty przez PR #135). Bramka `kamieniolom-kamien-epoka-test.cjs`: 20/20 (mutacja
+  formuły poprawnie czerwieni 1 asercję).
+- **`H-BUDOWA-KARTA-KOLEJKA-Q1`** (PR #136, commit `e4386dab`) — kolejka budowy i aktywny
+  budynek w `cityPanel` dostają realny podgląd karty encji (read-only, istniejący
+  `attachInteractiveDetail`, zero callbacków mutujących). Bramka
+  `building-queue-detail-card-test.cjs`: 8/8, żywy Chromium, mutacja anchoru czerwieni.
+- Wszystkie trzy: `tsc --noEmit` czysty po każdej integracji.
+- **`H-TRZODA-LAS-BLOKADA-Q1` (PR #137) — NIE ZINTEGROWANY, wstrzymany.** Diff faktycznie
+  cofa fragment jawnej, datowanej decyzji właściciela (`R-ULEPSZENIA-HODOWLA-LAS-ODBLOKOWANA-Q1`,
+  ECHO 2026-08-27 „Tak, odwracamy — wszystkie trzy" — owce/bydło/lama odblokowane na lesie):
+  PR opisuje się jako „block cattle... preserve sheep block", ale kod i testy realnie
+  blokują NA LESIE zarówno `bydlo` JAK I `owce` (dziś oba odblokowane na `main`, potwierdzone
+  świeżym odczytem `isOwceBaseTerrain`/`FOREST_COEXIST_IMPROVEMENT_KEYS`) — opis PR-a
+  niezgodny z jego własnym skutkiem. Dodatkowo PR nie ma żadnego dokumentu dispatch/operator/
+  evaluator/final-control (jedyny z pięciu bez śladu procesu), mimo deklaracji "Final Control
+  PASS" w opisie. Balans wymaga ABC właściciela — czeka na decyzję, czy zamierzone jest
+  zablokowanie WYŁĄCZNIE bydła (owce zostają odblokowane zgodnie z ECHO 2026-08-27), czy
+  jednak cofnięcie całej decyzji z 2026-08-27.
+
 ## Nowe zgłoszenia w toku (2026-09-08, jeszcze nie zamknięte)
 
 - Niejasne zgłoszenie właściciela o pustym wierszu "Surowce" w górnym HUD — **WYJAŚNIONE, NIE
