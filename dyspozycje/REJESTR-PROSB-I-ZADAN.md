@@ -7342,9 +7342,25 @@ do zaktualizowania osobno. Poza zakresem, zarejestrowane jako przyszłe tematy:
 `clusterForceWarTargetId` ma strukturalnie ten sam defekt braku odkrycia (analogiczny do
 kanału 3 tego tematu, ale w innym miejscu kodu).
 
+## `R-HOTSEAT-ETAP6D-PODETAP-A-Q1` — GAME — **ZINTEGROWANE 2026-09-09** (commit `1c612447`)
+
+Podetap A kontynuacji Etapu 6d planu hot-seat (dyplomacja) — patrz
+`R-HOTSEAT-ETAP6D-RECON-REMAINDER-Q1` dla pełnego podziału pozostałych ~88 miejsc na 5
+podetapów A-E. `playerDeclareWarOnOwner` (main.ts) migrowana z 9 literałów `0` na `ME()`,
+symetrycznie do już zmigrowanej sąsiedniej `ownerDeclareWarOn`. Sygnatura `boolean`
+zachowana. Operator→Evaluator (zero zarzutów)→Final Control PASS. Nowe bramki:
+`hotseat-etap6d-podetap-a-test.cjs` (9/9, dowód PRE≠PO + mutacja), 
+`hotseat-etap6d-podetap-a-live-test.cjs` (6/6, żywy Chromium, klik przycisku wypowiedzenia
+wojny w audiencji). `tsc --noEmit` czysty, 5 bramek referencyjnych zielone, sąsiedni
+`hotseat-etap6d-diplomacy-engine-test.cjs` bez regresji.
+
 ## Nowe zgłoszenia w toku (2026-09-08, jeszcze nie zamknięte)
 
 - Niejasne zgłoszenie właściciela o pustym wierszu "Surowce" w górnym HUD — **WYJAŚNIONE, NIE
   BUG**: to jest świadoma decyzja z 2026-07-24 (`hud.ts`, komentarz "bez liczby na chipie") —
   chip celowo pokazuje tylko ikonę + alert, bez liczby "X/Y", klik otwiera pełny panel
   magazynu. Zero dispatchu potrzebne.
+- `R-HOTSEAT-ETAP6D-PODETAP-C-Q1` (GAME) — Operator/Evaluator/Obrona zielone (worktree
+  `/home/user/wt-6d-PODETAP-C`), Final Control w toku.
+- `R-HOTSEAT-ETAP6D-PODETAP-E-Q1` (GAME) — Operator/Evaluator/Obrona w toku (worktree
+  `/home/user/wt-6d-PODETAP-E`).
