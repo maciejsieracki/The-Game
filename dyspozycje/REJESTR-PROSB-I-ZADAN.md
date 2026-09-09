@@ -7508,6 +7508,31 @@ dowód nietautologiczności). `tsc --noEmit` czysty, 5 bramek referencyjnych zie
 `civpedia-gra-id-mostek-test.cjs` PASS z potwierdzonym czystym `git status` dla
 `wikiBundle.json` przed i po.
 
+## `R-HOTSEAT-ETAP6F-PART2-DATA-Q1` — GAME — **ZINTEGROWANE 2026-09-09** (commit `a59874e6`)
+
+Pierwszy z dwóch pod-tematów części (ii) Etapu 6f (ostatni brakujący fragment planu hot-seat
+poza samym UI kreatora) — warstwa DANYCH + GENERATORA dla drugiego heksu startowego i drugiej
+cywilizacji człowieka, zgodnie z decyzjami ABC właściciela (heks algorytmiczny, wariant
+sekwencyjny UI w następnym pod-temacie, wykluczenie duplikatu cywilizacji, tryb dystansu
+blisko/daleko/losowo jako mechanizm generatora). Zero nowego UI/DOM w tej rundzie. Nowe
+struktury per-owner w `main.ts` (wzorem `playerStateByHuman`/`exploredByHuman` Etapu 1),
+naprawiony hardkodowany strażnik `ME()===HUMAN_OWNER_PRIMARY` w `currentVisible()` →
+`playerStartHexFor(ME())` — dokładnie miejsce wskazane w recon. Operator→Evaluator (1 zarzut
+KRYTYCZNY: drugi heks mógł kolidować z istniejącymi miastami AI, potwierdzone empirycznie
+8/180 na niezależnym skrypcie Evaluatora)→Obrona (naprawione w tej samej rundzie,
+`occupiedHexes` = `aiStartHexes`+`pendingSameTypeRivalHexes`, dowód 0/120 po naprawie)→Final
+Control PASS (własny niezależny test 1500 planów, 0 kolizji; drugi, drobny zarzut o
+niekompletnym spięciu `civId2` do produkcyjnego `doStartGame` oddalony jako bezpieczny no-op,
+świadomie odłożony do UI pod-tematu razem z selektorem trybu dystansu). Dwie jawnie zgłoszone
+i zaakceptowane blokady zakresu: (1) konsumenci `playerStartHex` poza jednym strażnikiem
+(kamera, save, założenie pierwszego miasta) pozostają singularne — nieosiągalne bez UI
+drugiego fotela; (2) drugi heks jest warstwą post-processing nad `buildClusterSpawnPlan`, nie
+wpięty w sam algorytm alokacji klastrów AI (`clusters.ts` poza allowlistą). Nowa bramka
+`hotseat-etap6f-part2-data-test.cjs`: 24/24. `tsc --noEmit` czysty, 5 bramek referencyjnych
+zielone, zero regresji Etapu 1/5/6f część (i). Następny krok: dispatch
+`R-HOTSEAT-ETAP6F-PART2-UI-Q1` (krok kreatora dla fotela 2, wariant sekwencyjny + selektor
+trybu dystansu) — OSTATNI pod-temat całego planu hot-seat 0-7.
+
 ## Nowe zgłoszenia w toku (2026-09-08, jeszcze nie zamknięte)
 
 - Niejasne zgłoszenie właściciela o pustym wierszu "Surowce" w górnym HUD — **WYJAŚNIONE, NIE
