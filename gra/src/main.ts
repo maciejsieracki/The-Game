@@ -14836,8 +14836,8 @@ async function boot(): Promise<void> {
       // z AI, LUB kontroferta AI na propozycję gracza) też trafiają do kolejki zdarzeń
       // tury, jak stary pendingDiplomacyInbox (zachowanie „zwróć uwagę" nie regresuje).
       for (const n of negotiationTable) {
-        if (n.awaitingOwnerId !== 0) continue;
-        const aiOwnerId = n.proposerOwnerId === 0 ? n.responderOwnerId : n.proposerOwnerId;
+        if (!isMe(n.awaitingOwnerId)) continue;
+        const aiOwnerId = isMe(n.proposerOwnerId) ? n.responderOwnerId : n.proposerOwnerId;
         events.push({
           id: n.id,
           icon: '\u{1F91D}',
@@ -14957,9 +14957,9 @@ async function boot(): Promise<void> {
         out.push({ id: p.id, ownerId: p.ownerId });
       }
       for (const n of negotiationTable) {
-        if (n.awaitingOwnerId !== 0) continue;
+        if (!isMe(n.awaitingOwnerId)) continue;
         if (dismissedSidePanelEventIds.has(n.id)) continue;
-        const aiOwnerId = n.proposerOwnerId === 0 ? n.responderOwnerId : n.proposerOwnerId;
+        const aiOwnerId = isMe(n.proposerOwnerId) ? n.responderOwnerId : n.proposerOwnerId;
         out.push({ id: n.id, ownerId: aiOwnerId });
       }
       return out;
@@ -15012,7 +15012,7 @@ async function boot(): Promise<void> {
     function openDiplomacyAudienceForNegotiation(negotiationId: string): void {
       const entry = negotiationTable.find(n => n.id === negotiationId);
       if (!entry) return;
-      const aiOwnerId = entry.proposerOwnerId === 0 ? entry.responderOwnerId : entry.proposerOwnerId;
+      const aiOwnerId = isMe(entry.proposerOwnerId) ? entry.responderOwnerId : entry.proposerOwnerId;
       diplomacyAudienceSourceEventId = negotiationId;
       // Przychodząca propozycja AI: audiencja z kartą „Oczekujące propozycje" (Przyjmij/
       // Odrzuć/Kontruj). NIE auto-otwieramy pustego kreatora „Handel jednorazowy" — Maciej
@@ -16163,7 +16163,7 @@ async function boot(): Promise<void> {
 
     /** Partner AI (ownerId≠0) dla wpisu stołu gracz↔AI — proposerOwnerId lub responderOwnerId, którykolwiek nie jest graczem. */
     function negotiationPartnerOwnerIdOf(entry: Pick<PendingNegotiation, 'proposerOwnerId' | 'responderOwnerId'>): number {
-      return entry.proposerOwnerId === 0 ? entry.responderOwnerId : entry.proposerOwnerId;
+      return isMe(entry.proposerOwnerId) ? entry.responderOwnerId : entry.proposerOwnerId;
     }
 
     /**
@@ -16270,10 +16270,10 @@ async function boot(): Promise<void> {
         const result = outcome.kind === 'accepted' ? outcome.result : { accepted: false as const, reason: outcome.reason };
         applyProposalOutcome(entry.proposerOwnerId, entry.responderOwnerId, result, entry.payload, entry.actionId);
         if (outcome.kind === 'rejected' && entry.payload.warThreat) {
-          if (entry.proposerOwnerId === 0) {
+          if (isMe(entry.proposerOwnerId)) {
             playerDeclareWarOnOwner(entry.responderOwnerId);
-          } else if (entry.responderOwnerId === 0) {
-            ownerDeclareWarOn(entry.proposerOwnerId, 0);
+          } else if (isMe(entry.responderOwnerId)) {
+            ownerDeclareWarOn(entry.proposerOwnerId, ME());
           }
         }
         // R-BRAK-KOMUNIKATU-ELIMINACJA-CYWILIZACJI RUNDA 4, Defekt A: dla przyjętego
@@ -16317,7 +16317,7 @@ async function boot(): Promise<void> {
       // (patrz packageSiblingPn), inaczej rozstrzygnięcie i usunięcie sąsiada wcześniej w
       // TEJ SAMEJ pętli zgubiłoby jego kredyt dla traktatu ocenianego później.
       const scopeIds = negotiationTable
-        .filter(n => n.awaitingOwnerId === ownerId && (n.proposerOwnerId === 0 || n.responderOwnerId === 0))
+        .filter(n => n.awaitingOwnerId === ownerId && (isMe(n.proposerOwnerId) || isMe(n.responderOwnerId)))
         .map(n => n.id);
       const siblingByTreatyId = new Map<string, { givePn: number; receivePn: number }>();
       for (const id of scopeIds) {
@@ -16329,7 +16329,7 @@ async function boot(): Promise<void> {
       for (let ni = negotiationTable.length - 1; ni >= 0; ni--) {
         const entry = negotiationTable[ni]!;
         if (entry.awaitingOwnerId !== ownerId) continue;
-        if (entry.proposerOwnerId !== 0 && entry.responderOwnerId !== 0) continue;
+        if (!isMe(entry.proposerOwnerId) && !isMe(entry.responderOwnerId)) continue;
         resolveNegotiationEntryAt(ni, siblingByTreatyId.get(entry.id));
         changed = true;
       }
@@ -16370,7 +16370,7 @@ async function boot(): Promise<void> {
         if (isDiplomacyPanelOpen()) updateDiplomacyPanel();
         return;
       }
-      if (entry.awaitingOwnerId !== 0) {
+      if (!isMe(entry.awaitingOwnerId)) {
         const aiPreview = previewNegotiationEntry(entry, siblingOverride);
         if (!aiPreview.accepted) {
           showHintMessage('Nie można wysłać — ' + (aiPreview.reason ?? 'oferta nieuczciwa dla partnera'), 4000);
@@ -16403,7 +16403,7 @@ async function boot(): Promise<void> {
       const idx = negotiationTable.findIndex(n => n.id === negotiationId);
       if (idx < 0) return;
       const entry = negotiationTable[idx]!;
-      if (entry.awaitingOwnerId !== 0) {
+      if (!isMe(entry.awaitingOwnerId)) {
         negotiationTable.splice(idx, 1);
         showHintMessage('Wycofano propozycję z stołu', 3500);
         refreshD1bHud();
@@ -16413,8 +16413,8 @@ async function boot(): Promise<void> {
       }
       negotiationTable.splice(idx, 1);
       const aiPartnerId = negotiationPartnerOwnerId(entry.proposerOwnerId, entry.responderOwnerId);
-      if (entry.payload.warThreat && entry.proposerOwnerId !== 0) {
-        ownerDeclareWarOn(entry.proposerOwnerId, 0);
+      if (entry.payload.warThreat && !isMe(entry.proposerOwnerId)) {
+        ownerDeclareWarOn(entry.proposerOwnerId, ME());
       }
       rejectedOfferCooldowns = recordRejectedOffer(
         rejectedOfferCooldowns,
@@ -16423,8 +16423,8 @@ async function boot(): Promise<void> {
         turn,
       );
       if (entry.actionId === 'trybut_zadanie' || entry.actionId === 'trybut_oferta') {
-        const cur = getDiploRelation(0, aiPartnerId);
-        setDiploRelation(0, aiPartnerId, applyDiploEventTracked(0, aiPartnerId, cur, 'trybut_odmowa'));
+        const cur = getDiploRelation(ME(), aiPartnerId);
+        setDiploRelation(ME(), aiPartnerId, applyDiploEventTracked(ME(), aiPartnerId, cur, 'trybut_odmowa'));
       }
       showDiplomacyProposalBanner(false, 'Odrzucono propozycję');
       refreshD1bHud();
@@ -16480,7 +16480,7 @@ async function boot(): Promise<void> {
      */
     function actionableNegotiationIdsForPair(ownerId: number): string[] {
       return getNegotiationsForPair(ownerId)
-        .filter(n => n.awaitingOwnerId === 0 || n.awaitingOwnerId === ownerId)
+        .filter(n => isMe(n.awaitingOwnerId) || n.awaitingOwnerId === ownerId)
         .map(n => n.id)
         .sort((a, b) => a.localeCompare(b));
     }
@@ -16534,13 +16534,13 @@ async function boot(): Promise<void> {
       const idx = negotiationTable.findIndex(n => n.id === negotiationId);
       if (idx < 0) return;
       const entry = negotiationTable[idx]!;
-      if (entry.awaitingOwnerId !== 0 || !canPlayerCounterNegotiation(entry)) {
+      if (!isMe(entry.awaitingOwnerId) || !canPlayerCounterNegotiation(entry)) {
         showHintMessage('Limit rund osiągnięty — możesz tylko przyjąć lub odrzucić', 3500);
         return;
       }
-      const aiOwnerId = entry.proposerOwnerId === 0 ? entry.responderOwnerId : entry.proposerOwnerId;
+      const aiOwnerId = isMe(entry.proposerOwnerId) ? entry.responderOwnerId : entry.proposerOwnerId;
       const { uiPayload } = buildProposalFromPayload(aiOwnerId, payload);
-      negotiationTable[idx] = applyCounterOffer(entry, uiPayload, 0, turn);
+      negotiationTable[idx] = applyCounterOffer(entry, uiPayload, ME(), turn);
       refreshD1bHud();
       updateDiplomacyAudience();
       if (isDiplomacyPanelOpen()) updateDiplomacyPanel();
@@ -16593,7 +16593,7 @@ async function boot(): Promise<void> {
       const idx = negotiationTable.findIndex(n => n.id === negotiationId);
       if (idx < 0) return;
       const entry = negotiationTable[idx]!;
-      if (entry.awaitingOwnerId === 0) return;
+      if (isMe(entry.awaitingOwnerId)) return;
       resolveNegotiationEntryAt(idx, siblingOverride);
       refreshD1bHud();
       updateDiplomacyAudience();
@@ -16603,8 +16603,8 @@ async function boot(): Promise<void> {
     /** A1-Q18 / C-DYP-Q1=A: wpisy stołu WIDOCZNE dla gracza (własne + przychodzące), dla danej pary z ownerId. */
     function getNegotiationsForPair(ownerId: number): PendingNegotiation[] {
       return negotiationTable.filter(n =>
-        (n.proposerOwnerId === ownerId && n.responderOwnerId === 0)
-        || (n.proposerOwnerId === 0 && n.responderOwnerId === ownerId),
+        (n.proposerOwnerId === ownerId && isMe(n.responderOwnerId))
+        || (isMe(n.proposerOwnerId) && n.responderOwnerId === ownerId),
       );
     }
 
@@ -16624,7 +16624,7 @@ async function boot(): Promise<void> {
     function negotiationSummary(entry: PendingNegotiation, compact = false): string {
       const p = entry.payload;
       if (!p) return entry.actionId;
-      const incoming = entry.proposerOwnerId !== 0;
+      const incoming = !isMe(entry.proposerOwnerId);
       const basketDetail = formatNegotiationDealPlayerSummary(p, incoming, { omitTotal: compact });
       switch (entry.actionId) {
         case 'nap':
@@ -16684,7 +16684,7 @@ async function boot(): Promise<void> {
         authorOwnerId: entry.authorOwnerId,
       };
       const relTotal = treatyEvalRelationTotal(ctx.relation);
-      const incoming = entry.awaitingOwnerId === 0;
+      const incoming = isMe(entry.awaitingOwnerId);
       if (incoming) {
         const playerAccept = previewIncomingPlayerAccept(
           entry.actionId,
@@ -19954,9 +19954,9 @@ async function boot(): Promise<void> {
       actionId: import('./game/diplomacy-proposals').ProposalActionId,
     ): PendingNegotiation | undefined {
       return negotiationTable.find(n =>
-        n.awaitingOwnerId === 0
+        isMe(n.awaitingOwnerId)
         && n.proposerOwnerId === ownerId
-        && n.responderOwnerId === 0
+        && isMe(n.responderOwnerId)
         && n.actionId === actionId,
       );
     }
