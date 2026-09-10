@@ -7746,6 +7746,25 @@ zwykłe wojny AI↔AI · Q2 = NIE dodawać ochrony przed eliminacją małych cyw
 zakresem) · Q3 = wyłącznie AI↔AI, wojny z udziałem gracza bez zmian**. Dispatch naprawy:
 `R-AI-WOJNY-ZWYKLE-CAP-DWA-MIASTA-Q1` (uruchomiony przez Workflow Operator→Evaluator→Obrona).
 
+## `R-KARTY-OPIS-TOP3-Q1` — GAME — FALA TREŚCI W TOKU (start 2026-09-10)
+
+Podczas weryfikacji `P-KARTA-PRZEBUDOWA-UKLAD-Q1` (kolejność sekcji budynku/jednostki)
+potwierdziłem przeciw surowym danym: kolejność jest w 100% zgodna z planem, ale sekcje
+„Opis" i „Top 3" są strukturalnie obecne w kodzie (`buildingAdapter.ts`/`unitAdapter.ts`)
+i renderują pustkę dla KAŻDEGO z 42 budynków i 75 jednostek — pola `opis`/`top3`
+(budynki, małe litery) / `Opis`/`Top3` (jednostki, wielka litera) nie istnieją jeszcze
+w `buildings.json`/`units.json`. Świadomie odłożone jako „przyszła fala" przez
+`P-KARTA-PRZEBUDOWA-UKLAD-Q1` (temat wyłącznie infrastrukturalny). Właściciel
+potwierdził start tej fali NA ŻYWO 2026-09-10, wzorem `R-KARTY-HISTORIA-Q1`
+(analogiczna fala dla „Rys historyczny", 16 tematów treści, zamknięta).
+
+Pierwsza partia: `R-KARTY-OPIS-TOP3-B1-Q1` (14 budynków, ta sama lista co
+`R-KARTY-HISTORIA-B1-Q1` — celowa spójność, jedna karta referencyjna pokaże od razu
+wszystkie 3 nowe sekcje naraz). Kolejne partie budynków (B2/B3) i jednostek (U1-U6+)
+dispatchowane w kolejnych falach, w miarę zwalniania się zasobów sandboxa (4 rdzenie,
+kilka tematów AutoBot już równolegle w toku). Nowy wymóg właściciela: każdy temat tej
+fali dostarcza obowiązkowy żywy zrzut ekranu karty po zmianach.
+
 ## Nowe zgłoszenia w toku (2026-09-08, jeszcze nie zamknięte)
 
 - Niejasne zgłoszenie właściciela o pustym wierszu "Surowce" w górnym HUD — **WYJAŚNIONE, NIE
