@@ -728,6 +728,12 @@
     "wymagania": "Wybudowane Kamienne kręgi w tym mieście",
     "uwagi": "B-KULT-REL + KULT-BUD-02: budynek RELIGIJNY -- konwersja religii +4%/t (religia_konwersja_swiatynia, additive do bazy); plon kultury OK, bez bonusu konwersji kultury. GRUPY-BUDYNKOW (Maciej 2026-07-25): Świątynia to NIEZALEZNY budynek obok Kamiennych kregow (nie zastepuje ich, upgradeFrom usuniety) -- oba stoja w miescie osobno. Kultura/Zadowolenie rozdzielone (3=1+2 wzgledem Kamiennych kregow, oba pola), zeby wklad Kamiennych kregow nie liczyl sie dwa razy.",
     "historia": "Świątynia jako budowla sakralna towarzyszy człowiekowi od zarania cywilizacji, będąc miejscem, gdzie społeczność gromadziła się, by oddawać cześć bóstwom, składać ofiary i szukać pocieszenia w obliczu nieznanego. Od sumeryjskich zigguratów, przez egipskie kompleksy w Karnaku, po greckie Partenony, świątynie łączyły funkcję religijną z rolą skarbca, archiwum i ośrodka administracyjnego państwa. Kapłani zarządzający świątyniami często dysponowali ogromnym majątkiem i wpływami politycznymi porównywalnymi z władzą monarchów, kontrolując dziesięciny, ziemię i zapasy zboża. Budowa świątyni bywała dziełem pokoleń — wymagała nie tylko środków, lecz i wiedzy astronomicznej, geometrycznej i inżynierskiej, by właściwie zorientować budowlę względem stron świata. Do dziś ruiny dawnych świątyń pozostają najtrwalszymi świadectwami duchowości i ambicji architektonicznych minionych cywilizacji.",
+    "opis": "Świątynia pogłębia życie duchowe miasta, zwiększając kulturę i zadowolenie mieszkańców oraz przyspieszając szerzenie się religii.",
+    "top3": [
+      { "tytul": "Kultura i zadowolenie", "tekst": "Dodaje po 2 punkty Kultury i zadowolenia, rosnące o kolejny punkt każdego z nich z każdym poziomem rozbudowy." },
+      { "tytul": "Przyspiesza konwersję religijną", "tekst": "Jako budynek religijny zwiększa tempo szerzenia się religii w mieście o dodatkowe 4% na turę." },
+      { "tytul": "Wymaga Kamiennych kręgów", "tekst": "Można ją wybudować tylko w mieście, w którym stoją już Kamienne kręgi, i otwiera ją technologia Religia." }
+    ],
     "techUnlock": "Religia",
     "koszt_surowce": {
       "drewno": 30,
@@ -781,6 +787,12 @@
     "wymagania": "",
     "uwagi": "3a: poziom 6 (Obserwatorium) i wyzej wymaga odkrycia technologii Astronomia — patrz poziomTechGate. Akademia stoi obok jako niezależny budynek (GRUPY-BUDYNKOW, Maciej 2026-07-25) -- jej Nauka/Kultura rozdzielone, by nie liczyć wkładu Biblioteki dwa razy.",
     "historia": "Biblioteka jako instytucja gromadząca wiedzę zapisaną na glinianych tabliczkach, zwojach papirusu czy pergaminie sięga starożytnej Mezopotamii, gdzie archiwa świątynne i pałacowe przechowywały teksty prawne, literackie i astronomiczne. Najsłynniejszym przykładem pozostaje Biblioteka Aleksandryjska, założona w III wieku p.n.e., która gromadziła setki tysięcy zwojów i przyciągała uczonych z całego basenu Morza Śródziemnego, stając się symbolem starożytnej nauki. Utrzymanie takiej instytucji wymagało armii skrybów kopiujących teksty ręcznie, ponieważ każdy egzemplarz trzeba było przepisać, by wiedza mogła się rozprzestrzeniać i przetrwać zniszczenie oryginału. Klasztory średniowiecznej Europy, jak irlandzkie skryptoria czy biblioteka klasztoru w Sankt Gallen, przejęły tę rolę po upadku Rzymu, ocalając teksty antyczne dla kolejnych pokoleń. Dopiero wynalazek druku w XV wieku uczynił wiedzę zawartą w bibliotekach dostępną na skalę niespotykaną wcześniej w dziejach ludzkości.",
+    "opis": "Biblioteka gromadzi i rozpowszechnia wiedzę, napędzając rozwój naukowy miasta i wzmacniając jego kulturę.",
+    "top3": [
+      { "tytul": "Wzrost Nauki", "tekst": "Dodaje 3 punkty Nauki, rosnące o kolejne 2 z każdym poziomem rozbudowy." },
+      { "tytul": "Wzrost Kultury", "tekst": "Dodaje 2 punkty Kultury, rosnące o kolejny punkt z każdym poziomem rozbudowy." },
+      { "tytul": "Otwiera Pismo", "tekst": "Budowla staje się dostępna po zbadaniu technologii Pismo, fundamentu dalszego rozwoju nauki." }
+    ],
     "techUnlock": "Pismo",
     "poziomTechGate": {
       "6": "Astronomia"
@@ -826,6 +838,12 @@
     "wymagania": "",
     "uwagi": "Studnia miejska — dostęp do czystej wody (+Zdrowie proxy). Osobno: Łaźnia publiczna (termy rzymskie, epoka Żelaza). SPEC-KOSZTY-SUROWCOWE-BUDYNKOW 2026-07-25: epoka Kamienia = wylacznie drewno.",
     "historia": "Studnia to jedna z najstarszych form infrastruktury wodnej, pozwalająca osadom sięgać po wodę gruntową tam, gdzie brakowało rzeki czy jeziora na powierzchni. Już w epoce neolitu ludzie kopali głębokie szyby wzmacniane drewnem lub kamieniem, a najstarsze zachowane studnie, jak te odkryte w Cypr czy Izraelu, liczą sobie ponad osiem tysięcy lat. Dostęp do stałego źródła czystej wody decydował o tym, gdzie w ogóle mogła powstać trwała osada, a studnie publiczne stawały się naturalnym miejscem spotkań mieszkańców, wymiany plotek i lokalnych wieści. W starożytnym Rzymie i miastach islamskiego świata budowano studnie ozdobne z kamiennym cembrowaniem i mechanizmami wyciągowymi, traktując je jako element prestiżu miejskiego obok fontann. Utrzymanie studni w czystości było sprawą życia i śmierci — zanieczyszczona woda gruntowa bywała przyczyną epidemii dziesiątkujących całe miasta, co czyniło troskę o studnie jednym z pierwszych obowiązków władz lokalnych.",
+    "opis": "Studnia zapewnia mieszkańcom dostęp do czystej wody, poprawiając zadowolenie w mieście.",
+    "top3": [
+      { "tytul": "Wzrost zadowolenia", "tekst": "Dodaje 1 punkt zadowolenia, rosnący o kolejny punkt z każdym poziomem rozbudowy." },
+      { "tytul": "Otwiera drogę do Akweduktu", "tekst": "Wybudowana Studnia jest warunkiem koniecznym do postawienia w tym mieście Akweduktu." },
+      { "tytul": "Otwiera Gospodarkę wodną", "tekst": "Budowla staje się dostępna po zbadaniu technologii Gospodarka wodna." }
+    ],
     "techUnlock": "Gospodarka wodna",
     "koszt_surowce": {
       "drewno": 25
@@ -867,6 +885,12 @@
     "wymagania": "Wybudowana Studnia w tym mieście",
     "uwagi": "T-TECH-6: zdrowie++ i cap ludności (turn-economy). DECYZJA 54b (Maciej 2026-07-25): Akwedukt wymaga Studni w tym samym mieście -- prerekwyzyt w CITY_BUILDING_PREREQ (building-resource-gate.ts), sprawdzany w production.ts.",
     "historia": "Akwedukt to system kanałów i mostów wodnych przenoszących wodę na duże odległości dzięki wykorzystaniu naturalnego spadku terenu, doprowadzony do perfekcji przez inżynierów starożytnego Rzymu. Rzymskie akwedukty, jak Pont du Gard we Francji czy Aqua Claudia zaopatrująca stolicę imperium, potrafiły dostarczać wodę z gór odległych o dziesiątki kilometrów, zasilając publiczne fontanny, łaźnie i prywatne domy najzamożniejszych obywateli. Budowa takich konstrukcji wymagała niezwykle precyzyjnych pomiarów niwelacyjnych, ponieważ spadek musiał być na tyle łagodny, by woda płynęła stabilnie, a jednocześnie wystarczający, by nie stanęła w miejscu. Wiele akweduktów prowadzono częściowo pod ziemią dla ochrony przed skażeniem i sabotażem, ujawniając swoją monumentalną architekturę jedynie tam, gdzie trzeba było pokonać doliny na wysokich arkadach. Dostęp do obfitej, czystej wody dzięki akweduktom umożliwił rozwój wielkich metropolii starożytności, których populacja znacznie przewyższała możliwości utrzymywane wyłącznie przez lokalne studnie.",
+    "opis": "Akwedukt doprowadza wodę do miasta, podnosząc zadowolenie mieszkańców i pozwalając miastu utrzymać większą populację.",
+    "top3": [
+      { "tytul": "Wzrost zadowolenia", "tekst": "Dodaje 2 punkty zadowolenia, rosnące o kolejny punkt z każdym poziomem rozbudowy." },
+      { "tytul": "Wymaga Studni", "tekst": "Można go wybudować wyłącznie w mieście, w którym stoi już Studnia." },
+      { "tytul": "Otwiera Budownictwo", "tekst": "Budowla staje się dostępna po zbadaniu technologii Budownictwo." }
+    ],
     "techUnlock": "Budownictwo",
     "koszt_surowce": {
       "drewno": 30,
@@ -909,6 +933,12 @@
     "wymagania": "Tylko w stolicy. Dostęp do Złota (własna Kopalnia złota gdziekolwiek w imperium ALBO aktywny szlak handlowy z cywilizacją posiadającą złoto) + wybudowane Targowisko w stolicy",
     "uwagi": "T-TECH-6: mnoznik handlu→pieniądz (economy.ts), imperium-wide gdy Waluta odkryta (pytanie 71/C). Maciej 2026-07-25: bramka złota (DEPOSIT_LINKED_BUILDING_LABELS) + prerekwizyt Targowiska w tym samym mieście (CITY_BUILDING_PREREQ, decyzja 54c=A). Pytanie 70/B (2026-07-25): Mennica WYŁĄCZNIE w stolicy, jedna sztuka na cywilizację (wynika automatycznie z 'lokalizacja':'stolica' -- jedna stolica na cywilizację). Stare zapisy z Mennicą w mieście regionalnym NIE są cofane -- budynek zostaje, bramka dotyczy tylko budowania NOWYCH.",
     "historia": "Mennica to instytucja odpowiedzialna za bicie monet — proces, który zrewolucjonizował handel, zastępując uciążliwą wymianę barterową ujednoliconym środkiem płatniczym o gwarantowanej wartości. Pierwsze monety pojawiły się w Lidii w VII wieku p.n.e., wybijane z elektronu, naturalnego stopu złota i srebra, a ich pieczęć poświadczała wagę i czystość kruszcu bez konieczności każdorazowego ważenia. Kontrola nad mennicą była jednym z najpilniej strzeżonych przywilejów władcy, ponieważ prawo do bicia monety oznaczało realną władzę gospodarczą, a fałszowanie monety karano niekiedy śmiercią. Rzymskie mennice rozsiane po całym imperium pozwalały legionom i urzędnikom otrzymywać żołd w jednolitej walucie akceptowanej od Brytanii po Syrię, spajając gospodarczo rozległe terytorium. Wraz z rozwojem państw mennice stawały się coraz bardziej wyrafinowane technicznie, wprowadzając zabezpieczenia przeciw fałszerstwom i precyzyjne wzory tłoczone w metalu pod ogromnym naciskiem.",
+    "opis": "Mennica bije monetę w stolicy, zwiększając dochód pieniężny cywilizacji i pozwalając w pełni wykorzystać dostęp do złota.",
+    "top3": [
+      { "tytul": "Wzrost dochodu", "tekst": "Dodaje 3 punkty pieniądza, rosnące o kolejne 2 z każdym poziomem rozbudowy." },
+      { "tytul": "Wymaga złota i Targowiska", "tekst": "Można ją wybudować wyłącznie w stolicy, przy dostępie do złota i wybudowanym w niej Targowisku." },
+      { "tytul": "Otwiera Walutę", "tekst": "Budowla staje się dostępna po zbadaniu technologii Waluta." }
+    ],
     "techUnlock": "Waluta",
     "lokalizacja": "stolica",
     "koszt_surowce": {
@@ -952,6 +982,12 @@
     "wymagania": "",
     "uwagi": "Palisada drewniana (Maciej 2026-07-28, korekta 2026-07-29): wczesna obrona miasta w epoce Kamienia, odblokowana po Obróbce drewna -- przed kamiennymi Murami (tech Budownictwo, epoka Brąz). Obrona miasta WYŁĄCZNIE procentowa: +100% Obrony -- patrz miasto-params.json bonus_obrona_palisada_proc + game/city-defense.ts cityWallDefenseBonusPercent. Kamienne Mury (+200%) zastępują bonus palisady (nie stackują). Po ukończeniu Murów palisada jest usuwana z cityBuilt (production.ts).",
     "historia": "Palisada to najprostsza i zarazem jedna z najstarszych form fortyfikacji — rząd zaostrzonych pali wbitych pionowo w ziemię, tworzący barierę chroniącą osadę przed dzikimi zwierzętami i najeźdźcami. Stosowano ją powszechnie od epoki neolitu, gdy pierwsze wioski rolnicze musiały bronić zgromadzonych zapasów zboża i inwentarza przed łupieżcami, a materiał budowlany — drewno — był łatwo dostępny niemal wszędzie. Celtyckie i germańskie osady grodowe otaczały się rozbudowanymi palisadami wzmacnianymi wałem ziemnym i fosą, tworząc umocnienia zwane oppidami, które potrafiły odeprzeć nawet zorganizowane oblężenia rzymskie. Budowa palisady nie wymagała specjalistycznej wiedzy inżynierskiej ani drogich materiałów, dzięki czemu mogła powstać szybko siłami samych mieszkańców w obliczu bezpośredniego zagrożenia. Choć drewniane umocnienia ustępowały trwałością murom kamiennym i były podatne na ogień, przez tysiąclecia stanowiły podstawową linię obrony większości osad na świecie.",
+    "opis": "Palisada to najwcześniejsza fortyfikacja miasta, zwiększająca procentowo jego obronę, dopóki nie zastąpią jej kamienne Mury.",
+    "top3": [
+      { "tytul": "Bonus obrony miasta", "tekst": "Zwiększa obronę miasta o stały bonus +100%, niezależnie od poziomu rozbudowy." },
+      { "tytul": "Zastępowana przez Mury", "tekst": "Po wybudowaniu kamiennych Murów w tym mieście, dających wyższy bonus, Palisada zostaje usunięta jako zbędna." },
+      { "tytul": "Otwiera Obróbkę drewna", "tekst": "Budowla staje się dostępna po zbadaniu technologii Obróbka drewna, pierwszej fortyfikacji dostępnej w grze." }
+    ],
     "techUnlock": "Obróbka drewna",
     "odblokowuje": "maMur",
     "koszt_surowce": {
@@ -994,6 +1030,12 @@
     "wymagania": "",
     "uwagi": "Obrona miasta WYLACZNIE procentowa (Maciej 2026-07-25): Mury +200% Obrony broniacym sie jednostkom -- patrz miasto-params.json bonus_obrona_mur_proc + main.ts structureDefenseBonusFor. Ten wpis nie niesie juz platowego bonusu Obrony. Cytadela stoi teraz obok jako niezależny budynek (GRUPY-BUDYNKOW, Maciej 2026-07-25) -- nie następca w upgradeFrom. Od 2026-07-25 dochodzi TRZECI niezależny budynek obronny -- Baszta (+100% dodatkowo, decyzja 41B).",
     "historia": "Mury obronne z kamienia lub cegły zastępowały drewniane palisady tam, gdzie osada rosła na tyle, by uzasadnić kosztowną, lecz znacznie trwalszą inwestycję w kamienną fortyfikację. Legendarne mury Babilonu, opisywane przez greckich historyków jako jeden z cudów świata, czy potężne mury Konstantynopola, które przez tysiąc lat odpierały najeźdźców, pokazują, jak decydującą rolę odgrywały fortyfikacje miejskie w przetrwaniu cywilizacji. Budowa takich murów angażowała tysiące robotników przez lata, a ich grubość i wysokość musiały nadążać za rozwojem technik oblężniczych — od taranów i wież oblężniczych po katapulty i machiny miotające kamienie. Miasta otoczone solidnymi murami mogły wytrzymać długotrwałe oblężenia, gromadząc zapasy żywności i wody, podczas gdy wróg tracił czas, zasoby i morale pod ich murami. Upadek wielu murów obronnych w erze prochu strzelniczego, gdy artyleria zaczęła kruszyć nawet najgrubsze kamienne bastiony, symbolicznie zamknął epokę, w której wysokie mury gwarantowały bezpieczeństwo miasta.",
+    "opis": "Mury z kamienia zapewniają miastu solidną obronę, znacznie skuteczniejszą niż drewniana Palisada.",
+    "top3": [
+      { "tytul": "Bonus obrony miasta", "tekst": "Zwiększa obronę miasta o stały bonus +200%, zastępując słabszy bonus Palisady." },
+      { "tytul": "Współpracuje z Basztą", "tekst": "Bonus obronny Murów sumuje się z niezależną Basztą, dodatkowo wzmacniającą obronę miasta." },
+      { "tytul": "Otwiera Budownictwo", "tekst": "Budowla staje się dostępna po zbadaniu technologii Budownictwo." }
+    ],
     "techUnlock": "Budownictwo",
     "odblokowuje": "maMur",
     "koszt_surowce": {
@@ -1037,6 +1079,12 @@
     "wymagania": "",
     "uwagi": "Mnoznik = +20% parametry miekkie (Sciezka B, wszystko poza Pancerzem) dla jednostek, ktore odwiedzily to miasto (kumuluje sie z Akademia wojskowa/Warsztat oblezniczy, max +50%). Akademia wojskowa stoi obok jako niezależny budynek (GRUPY-BUDYNKOW, Maciej 2026-07-25) -- jej Praca rozdzielona, by nie liczyć wkładu Koszar dwa razy.",
     "historia": "Koszary jako stałe miejsce zakwaterowania i szkolenia żołnierzy pojawiły się wraz z profesjonalizacją wojska, gdy armie przestały być doraźnym pospolitym ruszeniem, a stały się stałą, zorganizowaną siłą państwa. Rzymskie legiony budowały rozbudowane obozy stałe — castra — z uporządkowaną siatką ulic, magazynami broni i kwaterami dowódców, które w wielu przypadkach dały początek europejskim miastom, jak York czy Kolonia. W koszarach żołnierze przechodzili codzienny trening musztry, władania bronią i taktyki, a życie skoszarowane sprzyjało budowaniu dyscypliny oraz więzi między towarzyszami broni niezbędnej na polu bitwy. Utrzymanie stałych koszar wymagało od państwa stabilnych dochodów podatkowych, ponieważ żołnierze zawodowi musieli otrzymywać regularny żołd, wyżywienie i wyposażenie niezależnie od tego, czy akurat toczyła się wojna. Rozwój koszarowego systemu wojskowego w nowożytnej Europie, szczególnie za czasów monarchii absolutnych, umożliwił władcom utrzymywanie licznych stałych armii gotowych do mobilizacji w każdej chwili.",
+    "opis": "Koszary szkolą i przygotowują wojsko, podnosząc parametry bojowe jednostek odwiedzających to miasto.",
+    "top3": [
+      { "tytul": "Wzrost Pracy", "tekst": "Dodaje 2 punkty Pracy, rosnące o kolejny punkt z każdym poziomem rozbudowy." },
+      { "tytul": "Wzmacnia jednostki", "tekst": "Daje +20% do parametrów bojowych jednostek, które odwiedziły to miasto, kumulując się z Akademią wojskową i Warsztatem oblężniczym do maksymalnie +50%." },
+      { "tytul": "Otwiera Wojskowość", "tekst": "Budowla staje się dostępna po zbadaniu technologii Wojskowość." }
+    ],
     "techUnlock": "Wojskowość",
     "koszt_surowce": {
       "drewno": 40,
@@ -1079,6 +1127,12 @@
     "wymagania": "",
     "uwagi": "",
     "historia": "Magazyn państwowy to budowla służąca do gromadzenia zapasów surowców, broni i zaopatrzenia niezbędnych do funkcjonowania administracji i wojska w czasach pokoju i kryzysu. Starożytne imperia, od Egiptu po Chiny, budowały rozległe sieci magazynów wzdłuż szlaków handlowych i granic, by zaopatrywać garnizony i urzędników bez konieczności każdorazowego transportu towarów z odległych prowincji. Chińskie magazyny zbożowe funkcjonujące w ramach systemu „ping-cang” pozwalały władzom stabilizować ceny żywności, sprzedając zapasy w latach nieurodzaju i skupując nadwyżki w latach obfitych plonów. Zarządzanie magazynem wymagało sprawnej biurokracji — skrybowie i urzędnicy prowadzili szczegółowe rejestry przychodów i rozchodów, a kradzież z magazynu państwowego karano surowo jako przestępstwo przeciw całej wspólnocie. Sprawnie działające magazyny były jednym z filarów stabilności państwa, pozwalając przetrwać wojny, klęski żywiołowe i długie kampanie wojskowe bez załamania zaopatrzenia.",
+    "opis": "Magazyn gromadzi zapasy i usprawnia gospodarkę miasta, dając dodatkową produkcję i dochód.",
+    "top3": [
+      { "tytul": "Wzrost Pracy i dochodu", "tekst": "Dodaje po 1 punkcie Pracy i pieniądza, rosnących o kolejny punkt każdego z nich z każdym poziomem rozbudowy." },
+      { "tytul": "Niski koszt utrzymania", "tekst": "Wymaga jedynie 1 punktu utrzymania na pierwszym poziomie, bez dodatkowego wzrostu kosztu przy rozbudowie." },
+      { "tytul": "Otwiera Handel", "tekst": "Budowla staje się dostępna po zbadaniu technologii Handel." }
+    ],
     "techUnlock": "Handel",
     "koszt_surowce": {
       "drewno": 50,
@@ -1121,6 +1175,12 @@
     "wymagania": "",
     "uwagi": "Nie wymaga utrzymania. WYJĄTEK zatwierdzony (SPEC-KOSZTY-SUROWCOWE-BUDYNKOW 2026-07-25): zostaje na kamieniu mimo epoki Kamienia (Stonehenge z bali łamałby zgodność historyczną).",
     "historia": "Stela to pionowa płyta kamienna z rzeźbą lub inskrypcją, wznoszona od czasów najdawniejszych cywilizacji dla upamiętnienia zwycięstw, praw, granic czy zmarłych władców. Egipska Stela Rozetska, spisana w trzech systemach pisma, stała się w XIX wieku kluczem do odczytania hieroglifów i otworzyła nowoczesną egiptologię jako naukę. Mezopotamskie stele, jak Kodeks Hammurabiego wyryty na czarnym bazalcie, publicznie ogłaszały prawa państwa, umieszczając je w widocznych miejscach, by każdy poddany mógł — przynajmniej teoretycznie — poznać zasady, którymi rządziło się jego państwo. Stawianie steli było aktem politycznym równie istotnym jak samo wydarzenie, które upamiętniała — władcy wykorzystywali je do propagandy, przedstawiając siebie jako pogromców wrogów i ulubieńców bogów. Choć wiele stel uległo zniszczeniu lub zostało wtórnie wykorzystanych jako materiał budowlany, te, które przetrwały, stanowią dziś bezcenne źródło wiedzy o prawie, religii i polityce starożytnych społeczeństw.",
+    "opis": "Stela upamiętnia ważne wydarzenia i władców, budując kulturowy prestiż miasta bez obciążania jego budżetu.",
+    "top3": [
+      { "tytul": "Wzrost Kultury", "tekst": "Dodaje 1 punkt Kultury, rosnący o kolejny punkt z każdym poziomem rozbudowy." },
+      { "tytul": "Brak kosztów utrzymania", "tekst": "Nie wymaga żadnego utrzymania, niezależnie od poziomu rozbudowy." },
+      { "tytul": "Otwiera Murarstwo", "tekst": "Budowla staje się dostępna po zbadaniu technologii Murarstwo." }
+    ],
     "techUnlock": "Murarstwo",
     "koszt_surowce": {
       "kamien": 30
@@ -1166,6 +1226,12 @@
     "wymagania": "-",
     "uwagi": "B-PALAC-TIER I (Kamień): 1/miasto; bez kosztu surowcowego (C-PALAC-Q1=A, start pula=0); tylko kosztBudowy Praca; bonus bazowy ×1; upgrade→Pałac II. LANCUCH W GORE (decyzja Maciej 2026-07-25): maksPoziom=1 -- wartosc stala per tier, rosnie WYLACZNIE przez awans na Pałac II. Pole 'przyrost' zostaje w danych jako notatka na przyszlosc, obecnie martwe.",
     "historia": "Pierwsze siedziby władzy w dziejach ludzkości bywały skromnymi domostwami wodzów plemiennych — drewnianymi lub glinianymi budowlami wyróżniającymi się z otoczenia jedynie rozmiarem i położeniem w centrum osady. To właśnie tam gromadzili się starsi rodu, by naradzać się w sprawach wojny, podziału łupów i sporów między klanami, a sam wódz musiał swą pozycję potwierdzać nie tyle przepychem budowli, co osobistym autorytetem i skutecznością w boju. Archeolodzy odnajdują ślady takich wczesnych „domów wodza” w osadach epoki brązu na terenie całej Europy i Bliskiego Wschodu — nieco większe fundamenty, ślady palenisk ceremonialnych i pozostałości darów składanych władcy przez poddanych. W społecznościach bez pisma to właśnie taki dom pełnił funkcję sądu, skarbca i miejsca przyjmowania obcych posłów jednocześnie, będąc namacalnym centrum władzy plemiennej. Z czasem coraz trwalsza pozycja wodzów przełożyła się na coraz ambitniejsze budowle, torując drogę ku prawdziwym pałacom epok późniejszych.",
+    "opis": "Pałac to serce administracji cywilizacji, dający stały, wysoki wkład w kulturę i zadowolenie w stolicy.",
+    "top3": [
+      { "tytul": "Kultura i zadowolenie", "tekst": "Dodaje stałe 5 punktów Kultury i 2 punkty zadowolenia w stolicy." },
+      { "tytul": "Wyłącznie w stolicy", "tekst": "Można go wybudować tylko raz, w stolicy cywilizacji." },
+      { "tytul": "Otwiera rozbudowę do Pałacu II", "tekst": "Stanowi pierwsze ogniwo łańcucha rozbudowy, umożliwiając późniejszy awans na Pałac II." }
+    ],
     "techUnlock": "-",
     "lokalizacja": "stolica"
   },
@@ -1206,6 +1272,12 @@
     "wymagania": "upgrade Pałac I",
     "uwagi": "B-PALAC-TIER II (Brąz): bramka drewno+kamień; bonus ×1,5 względem I; upgrade→Pałac III. LANCUCH W GORE: maksPoziom=1 -- wartosc stala per tier, rosnie WYLACZNIE przez awans. Pole 'przyrost' zostaje w danych jako notatka na przyszlosc, obecnie martwe.",
     "historia": "Wraz z rozwojem państw epoki brązu siedziby władców zyskały monumentalny charakter, czego najlepszym świadectwem są pałace mykeńskie i minojskie, jak słynny kompleks w Knossos na Krecie z jego labiryntem korytarzy i freskami przedstawiającymi skoki przez byki. Pałace te pełniły funkcję znacznie szerszą niż dzisiejsza rezydencja — były zarazem centrum administracyjnym, skarbcem, warsztatem rzemieślniczym i archiwum, gdzie na glinianych tabliczkach zapisywano pismem linearnym B szczegółowe rejestry zbiorów i podatków. Mykeński wanaks, władca-król, rządził z takiego kompleksu, kontrolując produkcję rolną i rzemieślniczą całego regionu poprzez rozbudowaną biurokrację pałacową. Grube mury cyklopowe otaczające niektóre z tych rezydencji, jak w Tirynsie czy Mykenach, świadczą o tym, że pałac musiał być jednocześnie twierdzą zdolną wytrzymać najazd w niespokojnych czasach późnej epoki brązu. Nagły upadek tej cywilizacji pałacowej około 1200 roku p.n.e., wciąż nie do końca wyjaśniony przez historyków, pogrążył region na wieki w okresie zwanym greckimi wiekami ciemnymi.",
+    "opis": "Pałac II to rozbudowana siedziba władzy, zastępująca pierwotny Pałac i dająca stały, wyższy wkład w kulturę i zadowolenie stolicy.",
+    "top3": [
+      { "tytul": "Kultura i zadowolenie", "tekst": "Dodaje stałe 8 punktów Kultury i 3 punkty zadowolenia w stolicy, o 1,5 raza więcej niż Pałac I." },
+      { "tytul": "Wymaga awansu z Pałacu I", "tekst": "Powstaje wyłącznie jako rozbudowa istniejącego Pałacu, zastępując go w tym samym mieście." },
+      { "tytul": "Otwiera rozbudowę do Pałacu III", "tekst": "Stanowi drugie ogniwo łańcucha, umożliwiając późniejszy awans na Pałac III." }
+    ],
     "techUnlock": "-",
     "lokalizacja": "stolica",
     "koszt_surowce": {
@@ -1250,6 +1322,12 @@
     "wymagania": "upgrade Pałac II",
     "uwagi": "B-PALAC-TIER III (Żelazo): bramka drewno+cegła; bonus ×2,25 względem I (×1,5²). LANCUCH W GORE: maksPoziom=1 (koniec lancucha, jak Pretorium) -- wartosc stala, epoki 4+ jeszcze nie ma.",
     "historia": "Epoka żelaza przyniosła powstanie wielkich imperiów terytorialnych, których władcy wznosili pałace o rozmachu dotąd niespotykanym — jak asyryjski pałac Sargona II w Chorsabadzie strzeżony przez monumentalne rzeźby uskrzydlonych byków lamassu, czy późniejsza rezydencja perskich królów w Persepolis z jej rozległym tarasem audiencyjnym. Takie pałace projektowano tak, by onieśmielać przybyszów i poddanych już od pierwszego kroku — długie procesyjne schody, kolumnowe sale tronowe i reliefy przedstawiające podbite ludy składające dary miały jasno komunikować potęgę władcy każdemu, kto przekraczał ich progi. Rozbudowana biurokracja imperialna, obejmująca satrapów, skrybów i poborców podatkowych, operowała właśnie z takich ośrodków, koordynując zarządzanie terytoriami rozciągającymi się na tysiące kilometrów. Pałace tej epoki łączyły często funkcję świecką z religijną, umieszczając w swych murach kaplice i ołtarze poświęcone bogom opiekującym się dynastią panującą. Zniszczenie Persepolis przez wojska Aleksandra Wielkiego w 330 roku p.n.e. stało się symbolicznym końcem jednej z najpotężniejszych tradycji pałacowych starożytnego świata.",
+    "opis": "Pałac III to szczytowa forma siedziby władzy, dająca stały, najwyższy wkład w kulturę i zadowolenie stolicy w obecnym łańcuchu rozbudowy.",
+    "top3": [
+      { "tytul": "Kultura i zadowolenie", "tekst": "Dodaje stałe 11 punktów Kultury i 5 punktów zadowolenia w stolicy, ponad dwukrotnie więcej niż Pałac I." },
+      { "tytul": "Wymaga awansu z Pałacu II", "tekst": "Powstaje wyłącznie jako rozbudowa istniejącego Pałacu II, zastępując go w tym samym mieście." },
+      { "tytul": "Koniec obecnego łańcucha", "tekst": "Jest na razie najwyższym stopniem rozbudowy Pałacu, bez dalszego awansu w obecnych epokach gry." }
+    ],
     "techUnlock": "-",
     "lokalizacja": "stolica",
     "koszt_surowce": {
@@ -1295,6 +1373,12 @@
     "wymaganySurowiec": "zelazo",
     "uwagi": "Mnoznik = +15% Pancerz (Sciezka A) dla jednostek, ktore odwiedzily to miasto (kumuluje sie z Kuznia brazu/Wielka Kuznia, max +45%); wymaga dostepu do zelaza. NAPRAWIONE OGNIWO (decyzja Maciej 2026-07-25): dopisano upgradeFrom='kuznia' -- Kuźnia żelaza zastępuje teraz Kuźnię brązu (jak Pałac), zamiast stać obok niej w mieście. LANCUCH W GORE: maksPoziom=1 -- wartosc stala per tier, rosnie WYLACZNIE przez awans na Wielka Kuznia. Pole 'przyrost' zostaje w danych jako notatka na przyszlosc, obecnie martwe.",
     "historia": "Kuźnia żelaza to warsztat kowalski wyspecjalizowany w obróbce żelaza na potrzeby wojska — metalu, który wraz z upowszechnieniem technik hutniczych zaczął wypierać brąz jako podstawowy surowiec na broń i uzbrojenie ochronne. W przeciwieństwie do brązu żelazo wymagało znacznie wyższych temperatur wytopu, lecz było surowcem szerzej dostępnym geograficznie, co uniezależniało kowali od dalekosiężnego handlu cyną i miedzią charakterystycznego dla wcześniejszych epok. Kowale-zbrojmistrzy pracujący przy takich kuźniach musieli opanować sztukę nawęglania i hartowania żelaza, by uzyskać ostrza wystarczająco twarde do przecinania zbroi przeciwnika, jednocześnie zachowując elastyczność zapobiegającą pękaniu w walce. Celtyckie i germańskie plemiona słynęły z wysokiej jakości mieczy żelaznych, budząc respekt nawet wśród zorganizowanych legionów rzymskich, które musiały dostosować własne uzbrojenie do tej konkurencji. Rozprzestrzenienie się kuźni żelaza po Europie i Azji w I tysiącleciu p.n.e. zdemokratyzowało dostęp do solidnego oręża, zmieniając trwale charakter wojen prowadzonych przez ówczesne ludy.",
+    "opis": "Kuźnia żelaza wytwarza uzbrojenie z żelaza, dając wysoką produkcję i wzmacniając pancerz jednostek odwiedzających to miasto.",
+    "top3": [
+      { "tytul": "Wysoka produkcja", "tekst": "Dodaje stałe 8 punktów Pracy i 2 punkty pieniądza." },
+      { "tytul": "Wzmacnia pancerz jednostek", "tekst": "Daje +15% do Pancerza jednostek, które odwiedziły to miasto, kumulując się z Kuźnią brązu i Wielką Kuźnią do maksymalnie +45%." },
+      { "tytul": "Wymaga dostępu do żelaza", "tekst": "Powstaje jako rozbudowa Kuźni brązu i wymaga dostępu do żelaza w imperium." }
+    ],
     "techUnlock": "Hutnictwo żelaza",
     "koszt_surowce": {
       "drewno": 40,
