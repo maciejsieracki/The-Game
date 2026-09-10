@@ -1,10 +1,10 @@
 {
-  "publishedAt": "2026-09-10T21:15:00",
-  "sourceBuild": "gra/dist (commit 5ff7a3a2)",
-  "note": "FALA 371 - dwa tematy: (1) P-KARTA-PRZEBUDOWA-UKLAD-ULEPSZENIE-Q1: karta ulepszenia terenu dostaje sections[0]=Wymagania, sections[1]=Charakterystyka (dawna sekcja Bonusy rozszerzona o Typ), dzieki czemu niezmieniony mechanizm renderer.ts wstawia Rys historyczny w tej samej pozycji co dla budynku/jednostki. Operator->Evaluator(zero zarzutow)->Final Control PASS z zywym zrzutem ekranu karty Tartak. (2) R-KARTY-OPIS-TOP3-B1-Q1: pierwsza fala tresci - dopisane pola opis+top3 dla 14 budynkow (stolarnia, kamieniarski, kuznia, odlewnia_brazu, odlewnia_zelaza, wielka_odlewnia, targowisko, port, port_wielki, spichlerz, spichlerz_ii, garncarnia, cegielnia, kamienne_kregi). Operator->Evaluator(FAIL: 4 wpisy top3 opisywaly zmyslony wzrost per-poziom dla budynkow z maksPoziom=1 gdzie przyrost jest martwy)->Obrona(naprawione). Przy integracji naprawiona tez przestarzala asercja testu entity-card-historia-section-test.cjs (sztywne indeksy DOM -> wzgledna kolejnosc), technika bez wplywu na balans. Zero regresji, 5 bramek referencyjnych zielone. Karta technologii i naprawa wojen AI (KRYTYCZNA, jedna cywilizacja AI dominowala mape) sa jeszcze w toku Final Control - beda w kolejnej fali.",
+  "publishedAt": "2026-09-10T22:10:00",
+  "sourceBuild": "gra/dist (commit bb21200c)",
+  "note": "FALA 372 - P-KARTA-PRZEBUDOWA-UKLAD-TECH-Q1: karta technologii dostaje sections[0]=Wymagania, sections[1]=Charakterystyka (Koszt nauki/Epoka/Poziom/Surowiec-wymog-badania), niezmieniony renderer.ts wstawia Rys historyczny w tej samej pozycji co dla budynku/jednostki/ulepszenia. 4 osobne sekcje odblokowan (Budynki/Jednostki/Ulepszenia terenu/Kolejne technologie) niescalone, tylko przesuniete nizej. Operator->Evaluator(zero zarzutow)->Final Control PASS z zywym zrzutem ekranu karty Zegluga. Nowa bramka karta-technologia-uklad-real-render-test.cjs 11/11. Zero regresji, 5 bramek referencyjnych zielone. TYM SAMYM wszystkie CZTERY typy kart encji (budynek/jednostka/ulepszenie/technologia) maja teraz spojny uklad - P-KARTA-PRZEBUDOWA-UKLAD-TECH-ULEPSZENIE-Q1 jako calosc ZAMKNIETY.",
   "publisher": "Orkiestrator (Claude Code)",
   "bundle": "Gra-ROBOCZA.html",
-  "md5": "79c44cd8e8022f6c1c42964b432581c8",
+  "md5": "abef72cc2226e912eed3493a6623465f",
   "bundlePoleBitwy": "Gra-ROBOCZA-POLE-BITWY.html",
   "md5PoleBitwy": "6deb45d265b82b4eb27e990c345a79c1"
 }

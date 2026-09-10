@@ -13,6 +13,23 @@ swoim wĹ‚asnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji d
 > Pakiet 3 z 2026-08-20 jest docs-only i nie tworzy wpisu ROBOCZA/KANON/FINALNA;
 > ten plik pozostaje wyłącznie rejestrem publikacji bundli.
 
+## ROBOCZA abef72cc - 2026-09-10 22:10 UTC - FALA 372: karta technologii — komplet 4/4 kart encji
+
+|- md5 (pełne): abef72cc2226e912eed3493a6623465f · stempel: ROBOCZA · label abef72cc · zakres
+  commitów: `7f00ebf2..bb21200c` (od poprzedniej fali do obecnego `main`) · pole bitwy:
+  `Gra-ROBOCZA-POLE-BITWY.html` md5 `6deb45d265b82b4eb27e990c345a79c1` (NIEZMIENIONE)
+|- **`P-KARTA-PRZEBUDOWA-UKLAD-TECH-Q1`** (commit `a23ce049`) — karta technologii dostaje
+  `sections[0]=Wymagania`, `sections[1]=Charakterystyka` (Koszt nauki/Epoka/Poziom/
+  Surowiec-wymóg-badania), niezmieniony `HISTORIA_SECTION_INDEX=2` wstawia Rys historyczny
+  w tej samej pozycji co dla budynku/jednostki/ulepszenia. 4 osobne sekcje odblokowań
+  (Budynki/Jednostki/Ulepszenia terenu/Kolejne technologie) niescalone, tylko przesunięte
+  niżej. Operator→Evaluator (zero zarzutów)→Final Control PASS (żywy zrzut ekranu karty
+  „Żegluga"). Nowa bramka `karta-technologia-uklad-real-render-test.cjs` 11/11 PASS. Zero
+  regresji, 5 bramek referencyjnych zielone.
+|- **Tym samym wszystkie CZTERY typy kart encji (budynek/jednostka/ulepszenie/technologia)
+  mają teraz spójny układ Wymagania→Charakterystyka→Rys historyczny→reszta** —
+  `P-KARTA-PRZEBUDOWA-UKLAD-TECH-ULEPSZENIE-Q1` jako całość ZAMKNIĘTY.
+
 ## ROBOCZA 79c44cd8 - 2026-09-10 21:15 UTC - FALA 371: karta ulepszenia terenu + pierwsza fala treści Opis/Top3
 
 |- md5 (pełne): 79c44cd8e8022f6c1c42964b432581c8 · stempel: ROBOCZA · label 79c44cd8 · zakres
