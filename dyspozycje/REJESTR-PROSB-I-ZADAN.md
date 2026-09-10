@@ -7641,6 +7641,44 @@ czysty, 5 bramek referencyjnych zielone, zero regresji `hotseat-etap5-no-leak-te
 przy `switchActiveHuman()` — udokumentowany, wcześniej odłożony dług Etapu 6; nie
 wpływał na ten scenariusz (pierwsze miasto zawsze darmowe).
 
+## `R-HOTSEAT-DYPLO-KONTAKT-PER-FOTEL-Q1` — GAME — **ZINTEGROWANE 2026-09-10** (commit `15455164`)
+
+Warunek wstępny Etapu 8 (ABC-Q6 z `R-HOTSEAT-ETAP8-DYPLOMACJA-RECON-Q1`): kontakt/odkrycie
+dyplomatyczne (`diplomaticContactEstablished`, `diplomaticallyDiscoveredOwners`,
+`diplomaticDiscoveryPopupShown`, main.ts) było globalnym `Set<number>`, nie per-fotel —
+fotel B dziedziczył odkrycia fotela A. Zmigrowane na `Map<humanOwnerId, Set<ownerId>>`,
+wzorem `exploredByHuman` (Etap 1) i `playerEverOwnedCityByOwner` (temat powyżej). ~99
+call-site w `main.ts`: odczyty domyślnie `ME()`, zapisy wg kontekstu (jawny `humanOwnerId`
+gdy dostępny, np. `isHuman(a)`/`isHuman(b)` ternary, `targetId===0` w protokole komend AI).
+Wsteczna kompatybilność save/load: stary płaski format → `HUMAN_OWNER_PRIMARY`.
+
+Operator→Evaluator (3 zarzuty rundy 1: (1) brak niezależnej repliki twierdzenia że
+BLOCK na krytycznej bramce `hotseat-drugi-fotel-tura-test` to infra, nie regresja —
+własna replikacja Evaluatora dała asymetryczny wynik 0/3 vs 1/2 budzący wątpliwość;
+(2) niejawna niestabilność nowej bramki tematu; (3) brak realnego testu wstecznej
+kompatybilności save/load, tylko deklaracja z czytania kodu)→Obrona (wszystkie 3
+PRZYJĘTE: 5+5 sekwencyjnych, nierównoległych uruchomień `hotseat-drugi-fotel-tura-test`
+dało IDENTYCZNY wzorzec 2/5=2/5 na kodzie Operatora i na `origin/main` — potwierdzona
+symetryczna flakowość sandboxa [world-gen headless swiftshader timeout], nie regresja;
+uczciwie ujawniona niestabilność nowej bramki tematu tej samej natury; dodany realny
+test `runScenarioLegacySaveCompat` przez faktyczne `buildSaveGameSnapshot()`/
+`restoreGameFromSave()`, nie reimplementację)→Evaluator runda 2 (potwierdził kod
+poprawny, ale własna replika ograniczona czasem [9-13 min/uruchomienie] — 1+1 próbki
+konsystentne z tezą infra, choć niepełne; dodatkowo znalazł niezgłoszone 3 zaktualizowane
+istniejące pliki testowe — objęte allowlistą, luka WYŁĄCZNIE w raportowaniu)→Final
+Control (własna dodatkowa próbka 1+1: OBIE strony BLOCK na identycznym punkcie awarii —
+ZERO asymetrii, wzmacnia tezę infra; wszystkie 3 zarzuty ODDALONE, PASS). Przy integracji
+orkiestrator znalazł i naprawił 2 dodatkowe FAIL w `hotseat-etap6d-podetap-d-exec-test.cjs`
+(stałe numery linii przesunięte +32 przez kod dodany wcześniej w pliku podczas rundy
+Obrony — mechaniczna korekta, zweryfikowana świeżym przeliczeniem ekstraktora, zero
+zmiany logiki). `tsc --noEmit` czysty, 5 bramek referencyjnych zielone, nowa bramka
+`hotseat-dyplo-kontakt-per-fotel-test.cjs` PASS (3 scenariusze: główny, regresja
+jednoosobowa, legacy save/load), zero regresji `hotseat-etap5-no-leak-test`,
+`hotseat-etap6f-part2-data-test`, `hotseat-etap6f-part2-ui-test`,
+`hotseat-drugi-fotel-tura-test` (wszystkie potwierdzone PASS po ponownych próbach —
+sandbox pod dużym obciążeniem, load average ~4.0 na 4 rdzeniach, testy Chromium
+uruchamiane sekwencyjnie, nigdy równolegle).
+
 ## Nowe zgłoszenia w toku (2026-09-08, jeszcze nie zamknięte)
 
 - Niejasne zgłoszenie właściciela o pustym wierszu "Surowce" w górnym HUD — **WYJAŚNIONE, NIE

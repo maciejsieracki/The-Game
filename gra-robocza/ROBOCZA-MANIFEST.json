@@ -1,10 +1,10 @@
 {
-  "publishedAt": "2026-09-10T00:15:00",
-  "sourceBuild": "gra/dist (commit 21045e29)",
-  "note": "FALA 368 - KRYTYCZNY fix zgloszony na zywo przez wlasciciela: drugi fotel hot-seat nigdy nie dostawal tury. Dwie przyczyny naprawione: advanceSeat() mial na sztywno endActiveHumanTurn(HUMAN_OWNER_PRIMARY) (switchActiveHuman() z Etapu 5 nigdy nie byla wolana produkcyjnie - fotel 2 nigdy nie stawal sie aktywny), playerEverOwnedCity byl globalnym singletonem, nie per-fotel (fotel 2 nigdy nie dostalby wlasnego trybu \"zaloz pierwsze miasto\"). Naprawiony tez literalny ownerId===0 w 5 miejscach zwiazanych z zakladaniem miasta (foundingTerritoryOpts, canFoundPlayerCityAt, tryFoundPlayerCityAt, resolveFoundCityName, beginOnboardingFoundCity) i playerStartHex->playerStartHexFor(ME()) w reveal/kamerze. Operator->Evaluator(FAIL runda 1, 2 zarzuty)->Obrona(oba naprawione)->Evaluator runda 2(zero zarzutow)->Final Control(PASS, wlasny niezalezny skrypt real-UI). Nowa bramka hotseat-drugi-fotel-tura-test.cjs 4/4 PASS, tsc czysty, 5 bramek referencyjnych zielone, zero regresji hotseat-etap5-no-leak-test/hotseat-etap6f-part2-data-test/hotseat-etap6f-part2-ui-test. Pole bitwy NIEZMIENIONE - poza zakresem tego tematu.",
+  "publishedAt": "2026-09-10T16:20:00",
+  "sourceBuild": "gra/dist (commit 15455164)",
+  "note": "FALA 369 - R-HOTSEAT-DYPLO-KONTAKT-PER-FOTEL-Q1: kontakt/odkrycie dyplomatyczne migrowane z globalnego singletona na per-fotel (Map<humanOwnerId, Set<ownerId>>, wzorem exploredByHuman). Fotel B nie dziedziczy juz odkryc fotela A (przed ta poprawka: gdy fotel A odkryl AI(X), fotel B tez widzial AI(X) jako odkryte, nawet gdy sam tam nigdy nie byl). ~99 miejsc w main.ts zmigrowanych, wsteczna kompatybilnosc save/load ze starym plaskim formatem. To byl warunek wstepny (ABC-Q6) do dispatchu Etapu 8 (pelna dyplomacja gracz-gracz). Operator->Evaluator(3 zarzuty: replika testu regresji, niejawna flakowosc nowej bramki, brak testu save/load)->Obrona(wszystkie przyjete i naprawione)->Evaluator runda2->Final Control PASS. Zero regresji na wszystkich istniejacych bramkach hot-seat. Pole bitwy NIEZMIENIONE - poza zakresem tego tematu.",
   "publisher": "Orkiestrator (Claude Code)",
   "bundle": "Gra-ROBOCZA.html",
-  "md5": "1c61c139c340b79e5532f7fb873e08f9",
+  "md5": "77fe3743f751e59a481e3ac5d243d749",
   "bundlePoleBitwy": "Gra-ROBOCZA-POLE-BITWY.html",
   "md5PoleBitwy": "6deb45d265b82b4eb27e990c345a79c1"
 }

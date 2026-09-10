@@ -13,6 +13,24 @@ swoim wĹ‚asnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji d
 > Pakiet 3 z 2026-08-20 jest docs-only i nie tworzy wpisu ROBOCZA/KANON/FINALNA;
 > ten plik pozostaje wyłącznie rejestrem publikacji bundli.
 
+## ROBOCZA 77fe3743 - 2026-09-10 16:20 UTC - FALA 369: kontakt dyplomatyczny per-fotel (warunek wstępny Etapu 8)
+
+|- md5 (pełne): 77fe3743f751e59a481e3ac5d243d749 · stempel: ROBOCZA · label 77fe3743 · zakres
+  commitów: `9bc0f67d..15455164` (od dispatchu do obecnego `main`) · pole bitwy:
+  `Gra-ROBOCZA-POLE-BITWY.html` md5 `6deb45d265b82b4eb27e990c345a79c1` (NIEZMIENIONE)
+|- **`R-HOTSEAT-DYPLO-KONTAKT-PER-FOTEL-Q1`** (commit `15455164`) — kontakt/odkrycie
+  dyplomatyczne (3 struktury `main.ts`) było globalnym singletonem, nie per-fotel — fotel B
+  dziedziczył odkrycia fotela A (jeśli fotel A odkrył AI(X), fotel B też widział je jako
+  odkryte, nawet gdy sam tam nigdy nie był). Zmigrowane na `Map<humanOwnerId, Set<ownerId>>`,
+  wzorem `exploredByHuman`. ~99 miejsc w `main.ts`, wsteczna kompatybilność save/load ze
+  starym płaskim formatem. Warunek wstępny (ABC-Q6, recon Etapu 8) domknięty — Etap 8
+  (pełna dyplomacja gracz↔gracz) może teraz być dispatchowany jako implementacja.
+  Operator→Evaluator (3 zarzuty rundy 1, wszystkie dotyczące rzetelności weryfikacji, nie
+  poprawności kodu)→Obrona (wszystkie przyjęte i naprawione, dowód 5+5 identyczny wzorzec
+  z `origin/main` potwierdzający symetryczną flakowość sandboxa)→Evaluator runda 2→Final
+  Control PASS. Nowa bramka `hotseat-dyplo-kontakt-per-fotel-test.cjs` (3 scenariusze).
+  Zero regresji na wszystkich istniejących bramkach hot-seat.
+
 ## ROBOCZA 1c61c139 - 2026-09-10 00:15 UTC - FALA 368: KRYTYCZNY fix — drugi fotel hot-seat wreszcie dostaje turę
 
 |- md5 (pełne): 1c61c139c340b79e5532f7fb873e08f9 · stempel: ROBOCZA · label 1c61c139 · zakres
