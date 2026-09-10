@@ -7787,6 +7787,15 @@ uruchomione równolegle przez Workflow. Obie partie mają wpisaną wprost lekcj�
 Evaluatora rundy B1 (zakaz fabrykowania wzrostu „z każdym poziomem" dla budynków z
 `maksPoziom=1`, gdzie `przyrost` jest martwe).
 
+**`R-KARTY-OPIS-TOP3-B2-Q1` — ZINTEGROWANE 2026-09-10 (commit `599f7e1a`).** 14
+budynków: świątynia, biblioteka, studnia, akwedukt, mennica, palisada, mury, koszary,
+magazyn, stela, pałac I/II/III, kuźnia żelaza. Operator→Evaluator zero zarzutów.
+Weryfikacja własna orkiestratora (bez osobnego Final Control — content-only, jak B1):
+niezależny spot-check wszystkich 5 budynków z `maksPoziom=1` przeciw treści `top3`
+(regex na frazy sugerujące progresję poziomową) — zero fałszywych trafień. `tsc`
+czysty, `entity-card-historia-section-test` 36/36, `entity-card-contract-test` 75/75,
+`civpedia-budynki-historia-test` 141/141, 5 bramek referencyjnych zielone.
+
 ## `P-KARTA-PRZEBUDOWA-UKLAD-TECH-Q1` — GAME — **ZINTEGROWANE 2026-09-10** (commit `a23ce049`)
 
 Ostatnia część tematu `P-KARTA-PRZEBUDOWA-UKLAD-TECH-ULEPSZENIE-Q1` — karta technologii.
