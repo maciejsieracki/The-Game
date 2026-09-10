@@ -1,10 +1,10 @@
 {
-  "publishedAt": "2026-09-09T20:10:00",
-  "sourceBuild": "gra/dist (commit f8b303e9)",
-  "note": "FALA 367 - R-HOTSEAT-ETAP6F-PART2-UI-Q1: UI kreatora \"Nowa Gra\" dla drugiego fotela hot-seat (wybor cywilizacji fotela 2 z wykluczeniem duplikatu, selektor trybu odleglosci blisko/daleko/losowo), wpiete w doStartGame()->applyClusterStartPlan. Domyslnie wylaczone, zero regresji jednoosobowej. TYM SAMYM CALY PLAN HOT-SEAT ETAPY 0-7 JEST W PELNI ZAMKNIETY I GRYWALNY z menu. Dolaczony rowniez docs-only recon R-HOTSEAT-ETAP8-DYPLOMACJA-RECON-Q1 (bez wplywu na bundle). Operator->Evaluator->Final Control PASS 1/5 rund, tsc czysty, 5 bramek referencyjnych zielone, nowa bramka hotseat-etap6f-part2-ui-test.cjs PASS (scenariusze a-d), zero regresji hotseat-etap6f-part2-data-test.cjs (24/24). Pole bitwy (Gra-ROBOCZA-POLE-BITWY.html) NIEZMIENIONE w tej fali - zakres tego tematu go nie dotyka.",
+  "publishedAt": "2026-09-10T00:15:00",
+  "sourceBuild": "gra/dist (commit 21045e29)",
+  "note": "FALA 368 - KRYTYCZNY fix zgloszony na zywo przez wlasciciela: drugi fotel hot-seat nigdy nie dostawal tury. Dwie przyczyny naprawione: advanceSeat() mial na sztywno endActiveHumanTurn(HUMAN_OWNER_PRIMARY) (switchActiveHuman() z Etapu 5 nigdy nie byla wolana produkcyjnie - fotel 2 nigdy nie stawal sie aktywny), playerEverOwnedCity byl globalnym singletonem, nie per-fotel (fotel 2 nigdy nie dostalby wlasnego trybu \"zaloz pierwsze miasto\"). Naprawiony tez literalny ownerId===0 w 5 miejscach zwiazanych z zakladaniem miasta (foundingTerritoryOpts, canFoundPlayerCityAt, tryFoundPlayerCityAt, resolveFoundCityName, beginOnboardingFoundCity) i playerStartHex->playerStartHexFor(ME()) w reveal/kamerze. Operator->Evaluator(FAIL runda 1, 2 zarzuty)->Obrona(oba naprawione)->Evaluator runda 2(zero zarzutow)->Final Control(PASS, wlasny niezalezny skrypt real-UI). Nowa bramka hotseat-drugi-fotel-tura-test.cjs 4/4 PASS, tsc czysty, 5 bramek referencyjnych zielone, zero regresji hotseat-etap5-no-leak-test/hotseat-etap6f-part2-data-test/hotseat-etap6f-part2-ui-test. Pole bitwy NIEZMIENIONE - poza zakresem tego tematu.",
   "publisher": "Orkiestrator (Claude Code)",
   "bundle": "Gra-ROBOCZA.html",
-  "md5": "f74ae8c8c53ae19c8c76a5b5b8f25358",
+  "md5": "1c61c139c340b79e5532f7fb873e08f9",
   "bundlePoleBitwy": "Gra-ROBOCZA-POLE-BITWY.html",
   "md5PoleBitwy": "6deb45d265b82b4eb27e990c345a79c1"
 }

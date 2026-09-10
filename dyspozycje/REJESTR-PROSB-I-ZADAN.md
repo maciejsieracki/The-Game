@@ -7597,6 +7597,50 @@ w numerach linii cytatów (treść merytorycznie poprawna), ~23 pozostałe cytat
 Final Control nie dotyczy (docs-only). **Implementacja Etapu 8 wymaga osobnej decyzji
 właściciela** co do 6 pytań ABC powyżej — poza zakresem automatycznego dispatchu.
 
+## `R-HOTSEAT-DRUGI-FOTEL-NIE-DOSTAJE-TURY-Q1` — GAME — **ZINTEGROWANE 2026-09-10** (commit `21045e29`) — KRYTYCZNY
+
+Zgłoszenie właściciela na żywo tuż po FALA 367: po włączeniu hot-seat i zakończeniu tury
+fotel 1 zostawał aktywny na zawsze, fotel 2 nigdy się nie pojawiał. Znalezione DWIE
+przyczyny w rdzeniu pętli tury, obie istniejące od Etapu 4b/5 (nigdy wcześniej
+nieobserwowalne, bo do FALA 367 nie było UI tworzącego realny drugi fotel):
+
+1. `advanceSeat()` miał na sztywno `endActiveHumanTurn(HUMAN_OWNER_PRIMARY)` —
+   `switchActiveHuman()` (w pełni zbudowana w Etapie 5, zamyka panele/izoluje mgłę per
+   fotel) nigdy nie miała produkcyjnego call-site'u, tylko testowy hak. Komentarz przy
+   obu funkcjach jawnie dokumentował intencję („Przyszły `advanceSeat()` będzie jedynym
+   produkcyjnym wołającym") — nigdy niedotrzymaną.
+2. `playerEverOwnedCity` był globalnym `boolean` (nie per-fotel) — po założeniu miasta
+   przez fotel 1 fotel 2 nigdy nie dostałby własnego trybu „załóż pierwsze miasto"
+   (`isAwaitingFirstPlayerCity()` zawsze `false`). Ten dług był JAWNIE nazwany i
+   świadomie odłożony w zamknięciu `R-HOTSEAT-ETAP6F-PART2-DATA-Q1` („nieosiągalne bez
+   UI drugiego fotela") — UI właśnie powstało, dług stał się aktywny.
+
+Naprawione: realna orkiestracja foteli w `advanceSeat()` (nowy `seatsFinishedThisRound:
+Set<number>`, następny nieprzetworzony fotel → `switchActiveHuman()` bez przejścia
+świata, ostatni fotel → realne `endActiveHumanTurn()` + powrót na pierwszy fotel po
+świecie), `playerEverOwnedCity` → `playerEverOwnedCityByOwner: Set<number>` (6 miejsc
+zapisu zmigrowanych), naprawiony literalny `ownerId===0` w `foundingTerritoryOpts` +
+audyt ujawnił 4 dodatkowe miejsca tej samej natury (`canFoundPlayerCityAt`,
+`tryFoundPlayerCityAt`, `resolveFoundCityName`, `beginOnboardingFoundCity`) — bez nich
+miasto założone przez fotel 2 trafiłoby do fotela 1. `playerStartHex` (singularny) →
+`playerStartHexFor(ME())` w reveal/kamerze/river-fog. Operator→Evaluator (**FAIL runda
+1**, 2 zarzuty: brak wspólnego strażnika `canPlayerInitiateEndTurn()` w gałęzi
+przełączenia fotela — skrót „N" mógł oddać turę mimo trwającej bitwy/pre-battle; brak
+resetu `seatsFinishedThisRound` przy Load Game bez pełnego przeładowania strony)→Obrona
+(oba PRZYJĘTE, naprawione w tej samej rundzie, dowód testem dla każdego)→Evaluator
+runda 2 (zero zarzutów po pełnej, niezależnej weryfikacji)→Final Control (PASS, WŁASNY
+niezależny skrypt Playwright — realne kliknięcia canvas dla founding, realny klik HUD +
+klawisz „N" dla końca tury, numer tury czytany z prawdziwego paska HUD — 17/17 asercji,
+zero NAPRAW). Nowa bramka `hotseat-drugi-fotel-tura-test.cjs`: 4/4 PASS (scenariusz
+główny (a)-(g), regresja jednoosobowa, oba zarzuty Evaluatora z osobna). `tsc --noEmit`
+czysty, 5 bramek referencyjnych zielone, zero regresji `hotseat-etap5-no-leak-test.cjs`,
+`hotseat-etap6f-part2-data-test.cjs`, `hotseat-etap6f-part2-ui-test.cjs`.
+
+**Uwaga do przyszłego tematu (nie blokuje tego)**: `playerPracaPool`/`player.*`
+(skarbiec/nauka/era) pozostają singletonami niezsynchronizowanymi z aktywnym fotelem
+przy `switchActiveHuman()` — udokumentowany, wcześniej odłożony dług Etapu 6; nie
+wpływał na ten scenariusz (pierwsze miasto zawsze darmowe).
+
 ## Nowe zgłoszenia w toku (2026-09-08, jeszcze nie zamknięte)
 
 - Niejasne zgłoszenie właściciela o pustym wierszu "Surowce" w górnym HUD — **WYJAŚNIONE, NIE

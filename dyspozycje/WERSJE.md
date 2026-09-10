@@ -13,6 +13,24 @@ swoim wĹ‚asnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji d
 > Pakiet 3 z 2026-08-20 jest docs-only i nie tworzy wpisu ROBOCZA/KANON/FINALNA;
 > ten plik pozostaje wyłącznie rejestrem publikacji bundli.
 
+## ROBOCZA 1c61c139 - 2026-09-10 00:15 UTC - FALA 368: KRYTYCZNY fix — drugi fotel hot-seat wreszcie dostaje turę
+
+|- md5 (pełne): 1c61c139c340b79e5532f7fb873e08f9 · stempel: ROBOCZA · label 1c61c139 · zakres
+  commitów: `6940406b..21045e29` (od dispatchu do obecnego `main`) · pole bitwy:
+  `Gra-ROBOCZA-POLE-BITWY.html` md5 `6deb45d265b82b4eb27e990c345a79c1` (NIEZMIENIONE)
+|- **`R-HOTSEAT-DRUGI-FOTEL-NIE-DOSTAJE-TURY-Q1`** (commit `21045e29`) — zgłoszenie
+  właściciela na żywo tuż po FALA 367: fotel 2 hot-seat nigdy nie stawał się aktywny.
+  Przyczyna 1: `advanceSeat()` miał na sztywno `endActiveHumanTurn(HUMAN_OWNER_PRIMARY)`
+  — `switchActiveHuman()` (zbudowana w Etapie 5) nigdy nie miała produkcyjnego
+  call-site'u. Przyczyna 2: `playerEverOwnedCity` był globalnym singletonem, nie
+  per-fotel — fotel 2 nigdy nie dostałby własnego trybu „załóż pierwsze miasto". Obie
+  naprawione + audyt ujawnił 4 dodatkowe miejsca literalnego `ownerId===0` w tym samym
+  obszarze (za- kładanie pierwszego miasta), też naprawione. Operator→Evaluator (FAIL
+  runda 1, 2 zarzuty)→Obrona (oba naprawione, dowód testem)→Evaluator runda 2 (zero
+  zarzutów)→Final Control (PASS, własny niezależny skrypt real-UI, 17/17 asercji).
+  Nowa bramka `hotseat-drugi-fotel-tura-test.cjs` 4/4 PASS, `tsc --noEmit` czysty,
+  5 bramek referencyjnych zielone, zero regresji 3 istniejących bramek hot-seat.
+
 ## ROBOCZA f74ae8c8 - 2026-09-09 20:10 UTC - FALA 367: Etap 6f hot-seat UI — CAŁY PLAN HOT-SEAT 0-7 ZAMKNIĘTY
 
 |- md5 (pełne): f74ae8c8c53ae19c8c76a5b5b8f25358 · stempel: ROBOCZA · label f74ae8c8 · zakres
