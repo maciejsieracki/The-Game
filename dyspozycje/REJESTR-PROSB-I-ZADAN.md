@@ -7710,6 +7710,32 @@ Integracja: `tsc --noEmit` czysty, nowa bramka `budmode-ulepszenia-sort-locked-r
 (logic-test 213/213, tech-tree-test 19/19, research-test 33/33, unit-replace-test 13/13,
 combat-test 6/6).
 
+## `R-AI-WOJNY-PODBOJ-DOMINACJA-Q1` — GAME — **KRYTYCZNE, ZGŁOSZONE NA ŻYWO 2026-09-10, RECON W TOKU**
+
+Zgłoszenie właściciela (na żywo, priorytet maksymalny — bugs-first): cywilizacje AI na
+wczesnym etapie gry wypowiadają sobie wojny i bardzo szybko (praktycznie jedną jednostką)
+podbijają całe cywilizacje. Skutek zaobserwowany wprost: **jedna cywilizacja AI zajęła
+WSZYSTKIE inne cywilizacje AI poza cywilizacją gracza** — zamiast mapy z 5-6 przeciwnikami,
+zostaje jeden dominujący gracz AI. Właściciel przywołuje DWIE wcześniej rzekomo ustalone
+reguły (dosłowne cytaty, do zweryfikowania w reconie czy i gdzie są zaimplementowane):
+
+1. **Reguła A (start gry):** „przez pierwsze 25 tur, dopóki nie ma tak zwanej wojny
+   wymuszonej, czyli wojny epoki, te państwa nie powinny wypowiadać sobie wojen i atakować".
+2. **Reguła B (limit podboju + cooldown):** „wojna trwa do zdobycia pierwszych dwóch
+   państw/miast, a potem jest pokój. Najwcześniej kolejna wojna może wybuchnąć dopiero za
+   20 tur".
+
+Recon (agent Explore, w toku) sprawdza: (a) czy istnieje udokumentowana decyzja właściciela
+dla którejkolwiek z reguł (`docs/decyzje/*.md`, `dyspozycje/**/*.md`) z dokładną treścią; (b)
+czy i gdzie którakolwiek reguła jest zaimplementowana w `gra/src/main.ts`; (c) jeśli
+zaimplementowana ale nie działa — hipoteza dlaczego (off-by-one, warunek nigdy prawdziwy,
+blokada tylko UI, itp.); (d) czy istnieje coś strukturalnego powodującego natychmiastowy
+upadek CAŁEJ cywilizacji po jednej przegranej bitwie (brak rezerw/odwrotu), niezależnie od
+reguł A/B. Po odebraniu wyniku recona: albo bezpośredni dispatch naprawy (jeśli reguła
+istnieje i ma konkretny, zlokalizowany defekt), albo pełne ABC (jeśli brak reguły w kodzie i
+trzeba ustalić dokładne parametry mechaniki od zera lub od nowa — zgodnie z `R-PROC-ABC-BALANS`,
+zmiana balansu wojny AI ZAWSZE wymaga ABC, nawet przy pewnej diagnozie).
+
 ## Nowe zgłoszenia w toku (2026-09-08, jeszcze nie zamknięte)
 
 - Niejasne zgłoszenie właściciela o pustym wierszu "Surowce" w górnym HUD — **WYJAŚNIONE, NIE
