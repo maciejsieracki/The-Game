@@ -13,6 +13,30 @@ swoim wĹ‚asnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji d
 > Pakiet 3 z 2026-08-20 jest docs-only i nie tworzy wpisu ROBOCZA/KANON/FINALNA;
 > ten plik pozostaje wyłącznie rejestrem publikacji bundli.
 
+## ROBOCZA 79c44cd8 - 2026-09-10 21:15 UTC - FALA 371: karta ulepszenia terenu + pierwsza fala treści Opis/Top3
+
+|- md5 (pełne): 79c44cd8e8022f6c1c42964b432581c8 · stempel: ROBOCZA · label 79c44cd8 · zakres
+  commitów: `881f680b..5ff7a3a2` (od poprzedniej fali do obecnego `main`) · pole bitwy:
+  `Gra-ROBOCZA-POLE-BITWY.html` md5 `6deb45d265b82b4eb27e990c345a79c1` (NIEZMIENIONE)
+|- **`P-KARTA-PRZEBUDOWA-UKLAD-ULEPSZENIE-Q1`** (commit `85a846c6`) — karta ulepszenia
+  terenu dostaje `sections[0]=Wymagania`, `sections[1]=Charakterystyka` (dawna sekcja
+  „Bonusy" rozszerzona o wiersz „Typ", pełni teraz tę rolę) — niezmieniony mechanizm
+  `renderer.ts` (`HISTORIA_SECTION_INDEX=2`) wstawia Rys historyczny w tej samej
+  strukturalnej pozycji co dla budynku/jednostki. Operator→Evaluator (zero zarzutów)→
+  Final Control PASS (żywy zrzut ekranu karty „Tartak"). Nowa bramka
+  `improvement-card-uklad-sekcji-test.cjs` 12/12 PASS.
+|- **`R-KARTY-OPIS-TOP3-B1-Q1`** (commit `e2d9f765`) — pierwsza fala treści: dopisane pola
+  `opis`+`top3` dla 14 budynków (stolarnia, kamieniarski, kuźnia, odlewnia brązu/żelaza,
+  wielka odlewnia, targowisko, port, port wielki, spichlerz I/II, garncarnia, cegielnia,
+  kamienne kręgi). Operator→Evaluator FAIL (4 z 14 wpisów `top3` opisywały zmyślony wzrost
+  „z każdym poziomem" dla budynków z `maksPoziom=1`, gdzie `przyrost` jest potwierdzone
+  martwe)→Obrona (wszystkie 4 naprawione na realny, płaski efekt). Przy integracji
+  naprawiona też przestarzała asercja `entity-card-historia-section-test.cjs` (sztywne
+  indeksy DOM → względna kolejność), technika bez wpływu na balans.
+|- Zero regresji, 5 bramek referencyjnych zielone dla obu tematów. Karta technologii i
+  krytyczna naprawa wojen AI (dominacja jednej cywilizacji) są w toku Final Control —
+  trafią do kolejnej fali.
+
 ## ROBOCZA 762e211a - 2026-09-10 17:05 UTC - FALA 370: sortowanie listy ulepszeń terenu (dostępne nad zablokowanymi)
 
 |- md5 (pełne): 762e211a481dc87735a0f6eb256e031d · stempel: ROBOCZA · label 762e211a · zakres

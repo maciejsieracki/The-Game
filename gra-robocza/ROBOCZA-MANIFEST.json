@@ -1,10 +1,10 @@
 {
-  "publishedAt": "2026-09-10T17:05:00",
-  "sourceBuild": "gra/dist (commit 881f680b)",
-  "note": "FALA 370 - P-BUDMODE-DOSTEPNE-NA-GORZE-Q1: lista \"Ulepszenia terenu\" w panelu trybu budowy sortuje teraz dostepne pozycje nad zablokowanymi (brak technologii LUB niewystarczajaca Praca), wzorem sortu juz istniejacego w panelu dyplomacji (diplomacyAudience.ts). locked liczone raz per wiersz, ta sama wartosc uzyta do sortu i renderu. Cuda swiata i sekcja Miasto celowo nietkniete. Operator->Evaluator(1 zarzut interpretacyjny o allowlistcie)->Final Control PASS (ODDAL). Nowa bramka budmode-ulepszenia-sort-locked-real-render-test.cjs (10/10), zaktualizowana build-panel-ulepszenia-scroll-real-render-test.cjs (43/43, korekta sceny testowej wymuszona przez sort). Zero regresji na bramkach Pracy/panelu budowy. Pole bitwy NIEZMIENIONE - poza zakresem tego tematu.",
+  "publishedAt": "2026-09-10T21:15:00",
+  "sourceBuild": "gra/dist (commit 5ff7a3a2)",
+  "note": "FALA 371 - dwa tematy: (1) P-KARTA-PRZEBUDOWA-UKLAD-ULEPSZENIE-Q1: karta ulepszenia terenu dostaje sections[0]=Wymagania, sections[1]=Charakterystyka (dawna sekcja Bonusy rozszerzona o Typ), dzieki czemu niezmieniony mechanizm renderer.ts wstawia Rys historyczny w tej samej pozycji co dla budynku/jednostki. Operator->Evaluator(zero zarzutow)->Final Control PASS z zywym zrzutem ekranu karty Tartak. (2) R-KARTY-OPIS-TOP3-B1-Q1: pierwsza fala tresci - dopisane pola opis+top3 dla 14 budynkow (stolarnia, kamieniarski, kuznia, odlewnia_brazu, odlewnia_zelaza, wielka_odlewnia, targowisko, port, port_wielki, spichlerz, spichlerz_ii, garncarnia, cegielnia, kamienne_kregi). Operator->Evaluator(FAIL: 4 wpisy top3 opisywaly zmyslony wzrost per-poziom dla budynkow z maksPoziom=1 gdzie przyrost jest martwy)->Obrona(naprawione). Przy integracji naprawiona tez przestarzala asercja testu entity-card-historia-section-test.cjs (sztywne indeksy DOM -> wzgledna kolejnosc), technika bez wplywu na balans. Zero regresji, 5 bramek referencyjnych zielone. Karta technologii i naprawa wojen AI (KRYTYCZNA, jedna cywilizacja AI dominowala mape) sa jeszcze w toku Final Control - beda w kolejnej fali.",
   "publisher": "Orkiestrator (Claude Code)",
   "bundle": "Gra-ROBOCZA.html",
-  "md5": "762e211a481dc87735a0f6eb256e031d",
+  "md5": "79c44cd8e8022f6c1c42964b432581c8",
   "bundlePoleBitwy": "Gra-ROBOCZA-POLE-BITWY.html",
   "md5PoleBitwy": "6deb45d265b82b4eb27e990c345a79c1"
 }
