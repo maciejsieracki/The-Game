@@ -7877,15 +7877,30 @@ Stolarnia nie była wśród 4 poprawianych budynków.
   chip celowo pokazuje tylko ikonę + alert, bez liczby "X/Y", klik otwiera pełny panel
   magazynu. Zero dispatchu potrzebne.
 
-## `R-HOTSEAT-FOTEL2-CYWILIZACJA-BLEDNA-Q1` — GAME — KRYTYCZNE, ZGŁOSZONE NA ŻYWO 2026-09-10, RECON W TOKU
+## `R-HOTSEAT-FOTEL2-CYWILIZACJA-BLEDNA-Q1` — GAME — KRYTYCZNE, ZGŁOSZONE NA ŻYWO 2026-09-10, DISPATCHOWANE (Operator→Evaluator w toku)
 
 Zgłoszenie właściciela na żywo, testując właśnie wdrożoną ROBOCZĄ (FALA 373): grając
 Grecją (fotel 1), przy starcie hot-seat wybrał dla fotela 2 cywilizację **Rzym** — ale
 fotel 2 faktycznie dostał **Grecję** (tę samą co fotel 1, „dwie Grecje"), nie Rzym. Dodatkowo
 fotel 2 wylądował obok Egiptu, otoczony miastami-państwami NIEZWIązanymi z Rzymem — zero
-własnych miast-państw tej cywilizacji. Dwa możliwe, powiązane problemy: (a) wybór
-cywilizacji dla fotela 2 w ekranie startowym hot-seat nie jest respektowany/zapisywany
-poprawnie, fotel 2 dziedziczy cywilizację fotela 1; (b) rozstawienie miast-państw nie
-uwzględnia cywilizacji faktycznie przypisanej fotelowi 2 (może być konsekwencją (a), może
-być niezależnym błędem). Recon w toku (Explore agent) — zanim padnie diagnoza, nie
-zgadywać przyczyny.
+własnych miast-państw tej cywilizacji.
+
+Recon (Explore agent) ZAKOŃCZONY — dwa NIEZALEŻNE root-causy:
+- **(B)** `civTypeForOwner(ownerId)` (main.ts:3519) czyta `isMeSafe(ownerId)` (=
+  „czy to AKTUALNIE aktywny fotel"), nie „czy to jakikolwiek człowiek" — więc
+  którykolwiek fotel akurat ma turę, dostaje GLOBALNĄ `player.civType`/`_menuCivId`
+  (ustawianą raz dla fotela 1, nigdy dla fotela 2). Poprawne dane per-fotel
+  (`_menuCivIdByOwner`, `playerCivTypeByHuman`) ISTNIEJĄ i są zapisywane poprawnie —
+  nic ich po prostu nie czyta.
+- **(C)** `spawnPendingSameTypeRivals`/`pendingSameTypeRivalCount` (main.ts:7619,
+  8764) to JEDNORAZOWA globalna kolejka miast-państw powiązana z cywilizacją fotela
+  1 — drenowana do zera przy pierwszej założonej stolicy. Fotel 2, zakładając
+  stolicę z inną cywilizacją później, nie dostaje NIC.
+- Potwierdzona luka testowa: `hotseat-etap6f-part2-{data,ui}-test.cjs` sprawdzają
+  wyłącznie stronę ZAPISU (mapy per-owner), nigdy odczyt/konsumpcję ani miasta-
+  -państwa fotela 2 — dlatego oba defekty przeszły niezauważone od Etapu 5/6.
+
+Dispatch napisany i uruchomiony: `dyspozycje/autobot/runs/R-HOTSEAT-FOTEL2-CYWILIZACJA-BLEDNA-Q1/00-dispatch.md`.
+Wymaga naprawy OBU defektów naraz + nowej bramki pokrywającej realny odczyt i
+generowanie miast-państw (nie tylko zapis) + żywego dowodu 2-graczowego (Grecja
+vs Rzym) pokazującego poprawną cywilizację i własne miasta-państwa dla OBU foteli.
