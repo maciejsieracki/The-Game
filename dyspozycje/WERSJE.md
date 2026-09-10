@@ -13,6 +13,26 @@ swoim wĹ‚asnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji d
 > Pakiet 3 z 2026-08-20 jest docs-only i nie tworzy wpisu ROBOCZA/KANON/FINALNA;
 > ten plik pozostaje wyłącznie rejestrem publikacji bundli.
 
+## ROBOCZA 762e211a - 2026-09-10 17:05 UTC - FALA 370: sortowanie listy ulepszeń terenu (dostępne nad zablokowanymi)
+
+|- md5 (pełne): 762e211a481dc87735a0f6eb256e031d · stempel: ROBOCZA · label 762e211a · zakres
+  commitów: `15455164..881f680b` (od poprzedniej fali do obecnego `main`) · pole bitwy:
+  `Gra-ROBOCZA-POLE-BITWY.html` md5 `6deb45d265b82b4eb27e990c345a79c1` (NIEZMIENIONE)
+|- **`P-BUDMODE-DOSTEPNE-NA-GORZE-Q1`** (commit `881f680b`) — lista „Ulepszenia terenu"
+  w panelu trybu budowy (`buildModeHud.ts`) mieszała dostępne i zablokowane (brak
+  technologii LUB niewystarczająca Praca) pozycje bez sortowania. Zastosowany dokładnie
+  ten sam wzorzec sortu co w panelu dyplomacji (`diplomacyAudience.ts:1840`):
+  `.sort((x,y)=>Number(x.locked)-Number(y.locked))`, sort stabilny, `locked` liczone raz
+  per wiersz i re-używane do sortu i renderu. Sekcje „Cuda świata" i „Miasto" celowo
+  nietknięte. Operator→Evaluator (1 zarzut interpretacyjny: allowlista wymieniała plik
+  testowy w liczbie pojedynczej, zmienione 2 pliki testowe)→Final Control PASS (zarzut
+  ODDALONY — wzorzec glob w allowlisty, druga zmiana to udokumentowana korekta danych
+  wejściowych sceny testu scrolla wymuszona przez sam sort, nie osłabienie asercji).
+  Nowa bramka `budmode-ulepszenia-sort-locked-real-render-test.cjs` (10/10 PASS,
+  dowiedziona nietautologiczność), zaktualizowana `build-panel-ulepszenia-scroll-real-render-test.cjs`
+  (43/43 PASS). Zero regresji `praca-budmode-slider-max-real-render-test.cjs` (13/13),
+  `praca-auto-ulepszenia-koszt-split-test.cjs` (20/20), 5 bramek referencyjnych zielone.
+
 ## ROBOCZA 77fe3743 - 2026-09-10 16:20 UTC - FALA 369: kontakt dyplomatyczny per-fotel (warunek wstępny Etapu 8)
 
 |- md5 (pełne): 77fe3743f751e59a481e3ac5d243d749 · stempel: ROBOCZA · label 77fe3743 · zakres

@@ -7679,6 +7679,37 @@ jednoosobowa, legacy save/load), zero regresji `hotseat-etap5-no-leak-test`,
 sandbox pod dużym obciążeniem, load average ~4.0 na 4 rdzeniach, testy Chromium
 uruchamiane sekwencyjnie, nigdy równolegle).
 
+## `P-BUDMODE-DOSTEPNE-NA-GORZE-Q1` — GAME — **ZINTEGROWANE 2026-09-10** (commit `881f680b`)
+
+Zgłoszenie właściciela na żywo (ze zrzutem ekranu): lista „Ulepszenia terenu" w panelu
+trybu budowy (`buildModeHud.ts`) mieszała dostępne i zablokowane (brak technologii LUB
+niewystarczająca Praca) pozycje w jednej, nieposortowanej kolejności. Właściciel chciał
+dostępne na górze, zablokowane poniżej — dokładnie jak już działa panel dyplomacji.
+Zastosowany DOKŁADNIE ten sam wzorzec co `diplomacyAudience.ts:1840`
+(`.sort((x,y)=>Number(x.locked)-Number(y.locked))`, sort stabilny): `locked` liczone raz
+per wiersz (`techLocked || insufficientPraca`) PRZED pętlą renderującą, ta sama wartość
+użyta i do sortu, i do renderu (bez duplikacji logiki). Sekcje „Cuda świata" i
+„Miasto"/„Załóż miasto" celowo nietknięte — zgłoszenie dotyczyło wyłącznie listy
+ulepszeń terenu.
+
+Operator→Evaluator (1 zarzut, interpretacyjny: allowlista wymieniała „odpowiedni plik
+gra/tools/*-test.cjs" w liczbie pojedynczej, Operator zmienił 2 pliki testowe — nowa
+bramka + kolizyjna korekta sceny istniejącego testu scrolla)→Final Control (WERDYKT:
+ODDAL — wzorzec glob w allowlisty czyta się jako kategoria, nie limit „jeden plik";
+druga zmiana to udokumentowana, w pełni uzasadniona korekta danych wejściowych sceny
+testowej wymuszona przez sam sort tego tematu [poprzednie założenie testu „ostatni DOM =
+odblokowany Fort" przestało być prawdziwe], nie osłabienie żadnej asercji; własna
+weryfikacja Final Control [uruchomienie obu testów + diff `buildModeHud.ts` linia po
+linii] potwierdziła zero rozbieżności z raportami Operatora/Evaluatora — PASS).
+
+Integracja: `tsc --noEmit` czysty, nowa bramka `budmode-ulepszenia-sort-locked-real-render-test.cjs`
+10/10 PASS (dowiedziona nietautologiczność: 9/10 bez poprawki źródła), zmieniona bramka
+`build-panel-ulepszenia-scroll-real-render-test.cjs` 43/43 PASS, zero regresji
+`praca-budmode-slider-max-real-render-test.cjs` (13/13) i
+`praca-auto-ulepszenia-koszt-split-test.cjs` (20/20), 5 bramek referencyjnych zielone
+(logic-test 213/213, tech-tree-test 19/19, research-test 33/33, unit-replace-test 13/13,
+combat-test 6/6).
+
 ## Nowe zgłoszenia w toku (2026-09-08, jeszcze nie zamknięte)
 
 - Niejasne zgłoszenie właściciela o pustym wierszu "Surowce" w górnym HUD — **WYJAŚNIONE, NIE

@@ -1,10 +1,10 @@
 {
-  "publishedAt": "2026-09-10T16:20:00",
-  "sourceBuild": "gra/dist (commit 15455164)",
-  "note": "FALA 369 - R-HOTSEAT-DYPLO-KONTAKT-PER-FOTEL-Q1: kontakt/odkrycie dyplomatyczne migrowane z globalnego singletona na per-fotel (Map<humanOwnerId, Set<ownerId>>, wzorem exploredByHuman). Fotel B nie dziedziczy juz odkryc fotela A (przed ta poprawka: gdy fotel A odkryl AI(X), fotel B tez widzial AI(X) jako odkryte, nawet gdy sam tam nigdy nie byl). ~99 miejsc w main.ts zmigrowanych, wsteczna kompatybilnosc save/load ze starym plaskim formatem. To byl warunek wstepny (ABC-Q6) do dispatchu Etapu 8 (pelna dyplomacja gracz-gracz). Operator->Evaluator(3 zarzuty: replika testu regresji, niejawna flakowosc nowej bramki, brak testu save/load)->Obrona(wszystkie przyjete i naprawione)->Evaluator runda2->Final Control PASS. Zero regresji na wszystkich istniejacych bramkach hot-seat. Pole bitwy NIEZMIENIONE - poza zakresem tego tematu.",
+  "publishedAt": "2026-09-10T17:05:00",
+  "sourceBuild": "gra/dist (commit 881f680b)",
+  "note": "FALA 370 - P-BUDMODE-DOSTEPNE-NA-GORZE-Q1: lista \"Ulepszenia terenu\" w panelu trybu budowy sortuje teraz dostepne pozycje nad zablokowanymi (brak technologii LUB niewystarczajaca Praca), wzorem sortu juz istniejacego w panelu dyplomacji (diplomacyAudience.ts). locked liczone raz per wiersz, ta sama wartosc uzyta do sortu i renderu. Cuda swiata i sekcja Miasto celowo nietkniete. Operator->Evaluator(1 zarzut interpretacyjny o allowlistcie)->Final Control PASS (ODDAL). Nowa bramka budmode-ulepszenia-sort-locked-real-render-test.cjs (10/10), zaktualizowana build-panel-ulepszenia-scroll-real-render-test.cjs (43/43, korekta sceny testowej wymuszona przez sort). Zero regresji na bramkach Pracy/panelu budowy. Pole bitwy NIEZMIENIONE - poza zakresem tego tematu.",
   "publisher": "Orkiestrator (Claude Code)",
   "bundle": "Gra-ROBOCZA.html",
-  "md5": "77fe3743f751e59a481e3ac5d243d749",
+  "md5": "762e211a481dc87735a0f6eb256e031d",
   "bundlePoleBitwy": "Gra-ROBOCZA-POLE-BITWY.html",
   "md5PoleBitwy": "6deb45d265b82b4eb27e990c345a79c1"
 }
