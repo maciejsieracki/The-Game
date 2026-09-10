@@ -1427,7 +1427,13 @@
       "drewno": 60,
       "cegla": 80
     },
-    "historia": "Wielka kuźnia to warsztat metalurgiczny zdolny do wytopu stali w skali przemysłowej — przełomu, który starożytni hutnicy osiągali dzięki takim technikom jak indyjski tygiel wootz czy chińskie piece dmuchawowe zdolne do osiągania temperatur pozwalających na płynny wytop żelaza. Stal, twardsza i bardziej elastyczna od zwykłego żelaza, wymagała precyzyjnej kontroli zawartości węgla oraz wielokrotnego przekuwania, umiejętności przekazywanej z mistrza na ucznia przez pokolenia w zamkniętych cechach kowalskich. Miecze z damasceńskiej stali, słynące z charakterystycznego falistego wzoru i legendarnej ostrości, budziły grozę krzyżowców spotykających się z nimi na Bliskim Wschodzie. Rozwój takich hut wymagał zorganizowanego zaplecza — stałych dostaw rudy, węgla drzewnego i wykwalifikowanej siły roboczej — co czyniło je jednymi z pierwszych ośrodków protoprzemysłowych w historii. Panowanie nad sekretami produkcji wysokiej jakości stali dawało realną przewagę militarną, zmieniając losy niejednej kampanii wojennej."
+    "historia": "Wielka kuźnia to warsztat metalurgiczny zdolny do wytopu stali w skali przemysłowej — przełomu, który starożytni hutnicy osiągali dzięki takim technikom jak indyjski tygiel wootz czy chińskie piece dmuchawowe zdolne do osiągania temperatur pozwalających na płynny wytop żelaza. Stal, twardsza i bardziej elastyczna od zwykłego żelaza, wymagała precyzyjnej kontroli zawartości węgla oraz wielokrotnego przekuwania, umiejętności przekazywanej z mistrza na ucznia przez pokolenia w zamkniętych cechach kowalskich. Miecze z damasceńskiej stali, słynące z charakterystycznego falistego wzoru i legendarnej ostrości, budziły grozę krzyżowców spotykających się z nimi na Bliskim Wschodzie. Rozwój takich hut wymagał zorganizowanego zaplecza — stałych dostaw rudy, węgla drzewnego i wykwalifikowanej siły roboczej — co czyniło je jednymi z pierwszych ośrodków protoprzemysłowych w historii. Panowanie nad sekretami produkcji wysokiej jakości stali dawało realną przewagę militarną, zmieniając losy niejednej kampanii wojennej.",
+    "opis": "Wielka Kuźnia to ostatni stopień łańcucha kuźni, dający miastu dużą, stałą produkcję i wzmacniający pancerz wszystkich jednostek imperium, wymagający dostępu do stali.",
+    "top3": [
+      { "tytul": "Stała produkcja pracy i pieniędzy", "tekst": "Daje 20 punktów Pracy i 5 Pieniędzy miastu — wartość stała, budynek nie ma dalszych poziomów." },
+      { "tytul": "Wzmocnienie pancerza", "tekst": "Dodaje +15% Pancerza jednostkom imperium, nie kumulując się z Kuźnią żelaza, którą zastępuje." },
+      { "tytul": "Wymaga stali", "tekst": "Działa wyłącznie przy dostępie do stali w imperium i jest ulepszeniem Kuźni żelaza, kończącym łańcuch kuźni." }
+    ]
   },
   {
     "id": "fort",
@@ -1470,7 +1476,13 @@
       "drewno": 50,
       "kamien": 100
     },
-    "historia": "Cytadela to ufortyfikowany rdzeń miasta, odrębna twierdza wzniesiona wewnątrz lub obok murów miejskich, zdolna do samodzielnej obrony nawet po upadku reszty osady. Cytadela w Aleppo, wznosząca się na sztucznym wzgórzu ponad starym miastem, przetrwała oblężenia krzyżowców, Mongołów i licznych późniejszych najeźdźców dzięki potężnym murom i jedynej, starannie bronionej drodze dostępu. Podobną rolę pełniła cytadela kairska wzniesiona przez Saladyna, łącząca funkcje militarne z rezydencją władcy i skarbcem państwowym. Garnizony stacjonujące w cytadelach służyły też jako ostatnia linia kontroli nad zbuntowaną ludnością miejską, co czyniło te budowle równie użytecznymi przeciw wrogom zewnętrznym, co przeciw wewnętrznym niepokojom. Budowa cytadeli wymagała ogromnych nakładów kamienia i pracy, lecz jej istnienie potrafiło odstraszyć najeźdźcę jeszcze przed rozpoczęciem oblężenia."
+    "historia": "Cytadela to ufortyfikowany rdzeń miasta, odrębna twierdza wzniesiona wewnątrz lub obok murów miejskich, zdolna do samodzielnej obrony nawet po upadku reszty osady. Cytadela w Aleppo, wznosząca się na sztucznym wzgórzu ponad starym miastem, przetrwała oblężenia krzyżowców, Mongołów i licznych późniejszych najeźdźców dzięki potężnym murom i jedynej, starannie bronionej drodze dostępu. Podobną rolę pełniła cytadela kairska wzniesiona przez Saladyna, łącząca funkcje militarne z rezydencją władcy i skarbcem państwowym. Garnizony stacjonujące w cytadelach służyły też jako ostatnia linia kontroli nad zbuntowaną ludnością miejską, co czyniło te budowle równie użytecznymi przeciw wrogom zewnętrznym, co przeciw wewnętrznym niepokojom. Budowa cytadeli wymagała ogromnych nakładów kamienia i pracy, lecz jej istnienie potrafiło odstraszyć najeźdźcę jeszcze przed rozpoczęciem oblężenia.",
+    "opis": "Cytadela to niezależna budowla obronna wznoszona obok Murów, wzmacniająca odporność miasta na atak i wymagająca wcześniej ukończonych fortyfikacji miejskich.",
+    "top3": [
+      { "tytul": "Dodatkowa obrona miasta", "tekst": "Daje +100% obrony broniącym się jednostkom, kumulując się z bonusem Murów i Baszty." },
+      { "tytul": "Wymaga Murów", "tekst": "Można ją wybudować dopiero po ukończeniu Murów w tym samym mieście." },
+      { "tytul": "Odblokowana przez Inżynierię", "tekst": "Dostępna po zbadaniu technologii Inżynieria, niezależnie od pozostałych budowli obronnych." }
+    ]
   },
   {
     "id": "baszta",
@@ -1513,7 +1525,13 @@
       "drewno": 50,
       "kamien": 100
     },
-    "historia": "Baszta to wysunięta wieża obronna wbudowana w linię murów miejskich, pozwalająca obrońcom razić nieprzyjaciela ogniem bocznym wzdłuż całej kurtyny muru, a nie tylko wprost przed sobą. Średniowieczne miasta europejskie otaczały się wieńcami baszt rozmieszczonych w regularnych odstępach, każda zdolna do niezależnej obrony nawet po przełamaniu sąsiednich odcinków muru. Wewnątrz baszt często mieściły się cechy rzemieślnicze odpowiedzialne za ich utrzymanie i obronę w razie ataku, co widać do dziś w nazwach zachowanych wież, takich jak baszta krawiecka czy baszta rzeźnicza. Strzelnice, dostosowane najpierw do łuków, a później do broni palnej, ewoluowały wraz z rozwojem uzbrojenia oblężniczego. Wraz z upowszechnieniem artylerii prochowej wysokie, wąskie baszty straciły przewagę na rzecz niższych, grubszych bastionów zdolnych wchłonąć uderzenie kul armatnich."
+    "historia": "Baszta to wysunięta wieża obronna wbudowana w linię murów miejskich, pozwalająca obrońcom razić nieprzyjaciela ogniem bocznym wzdłuż całej kurtyny muru, a nie tylko wprost przed sobą. Średniowieczne miasta europejskie otaczały się wieńcami baszt rozmieszczonych w regularnych odstępach, każda zdolna do niezależnej obrony nawet po przełamaniu sąsiednich odcinków muru. Wewnątrz baszt często mieściły się cechy rzemieślnicze odpowiedzialne za ich utrzymanie i obronę w razie ataku, co widać do dziś w nazwach zachowanych wież, takich jak baszta krawiecka czy baszta rzeźnicza. Strzelnice, dostosowane najpierw do łuków, a później do broni palnej, ewoluowały wraz z rozwojem uzbrojenia oblężniczego. Wraz z upowszechnieniem artylerii prochowej wysokie, wąskie baszty straciły przewagę na rzecz niższych, grubszych bastionów zdolnych wchłonąć uderzenie kul armatnich.",
+    "opis": "Baszta to trzecia, niezależna budowla obronna miasta, dokładana obok Murów i Cytadeli, dodatkowo wzmacniająca odporność broniących się jednostek.",
+    "top3": [
+      { "tytul": "Dodatkowa obrona miasta", "tekst": "Daje +100% obrony broniącym się jednostkom, dodatkowo ponad bonus Murów i Cytadeli." },
+      { "tytul": "Wymaga Murów", "tekst": "Można ją wybudować dopiero po ukończeniu Murów w tym samym mieście." },
+      { "tytul": "Niezależna budowla", "tekst": "Nie zastępuje Murów ani Cytadeli — wszystkie trzy stoją w mieście osobno, dając razem największy bonus obrony." }
+    ]
   },
   {
     "id": "warsztat_oblezniczy",
@@ -1556,7 +1574,13 @@
       "drewno": 50,
       "kamien": 50
     },
-    "historia": "Warsztat oblężniczy to miejsce, w którym budowano i konserwowano wielkie machiny wojenne służące do zdobywania ufortyfikowanych miast — trebusze, katapulty, tarany oraz ruchome wieże oblężnicze. Asyryjscy inżynierowie już w IX wieku p.n.e. konstruowali okute metalem tarany zdolne kruszyć mury glinianych miast Bliskiego Wschodu, a rzymscy legioniści przy oblężeniu Masady w 73 roku n.e. wznieśli ziemną rampę i wieże oblężnicze o rozmiarach dotąd niespotykanych. Budowa trebusza kontrwagowego, zdolnego miotać kilkusetkilogramowe pociski na setki metrów, wymagała precyzyjnych obliczeń ciesielskich i była zadaniem dla wyspecjalizowanych rzemieślników towarzyszących armii w kampanii. Chińscy inżynierowie wojskowi już w czasach dynastii Song opisywali w traktatach szczegółowe plany budowy takich urządzeń, traktując oblężniczą inżynierię jako odrębną dziedzinę wiedzy. Upowszechnienie artylerii prochowej w XV wieku, symbolicznie przypieczętowane zdobyciem Konstantynopola przez armaty sułtana Mehmeda II, uczyniło tradycyjne machiny oblężnicze przestarzałymi w ciągu jednego pokolenia."
+    "historia": "Warsztat oblężniczy to miejsce, w którym budowano i konserwowano wielkie machiny wojenne służące do zdobywania ufortyfikowanych miast — trebusze, katapulty, tarany oraz ruchome wieże oblężnicze. Asyryjscy inżynierowie już w IX wieku p.n.e. konstruowali okute metalem tarany zdolne kruszyć mury glinianych miast Bliskiego Wschodu, a rzymscy legioniści przy oblężeniu Masady w 73 roku n.e. wznieśli ziemną rampę i wieże oblężnicze o rozmiarach dotąd niespotykanych. Budowa trebusza kontrwagowego, zdolnego miotać kilkusetkilogramowe pociski na setki metrów, wymagała precyzyjnych obliczeń ciesielskich i była zadaniem dla wyspecjalizowanych rzemieślników towarzyszących armii w kampanii. Chińscy inżynierowie wojskowi już w czasach dynastii Song opisywali w traktatach szczegółowe plany budowy takich urządzeń, traktując oblężniczą inżynierię jako odrębną dziedzinę wiedzy. Upowszechnienie artylerii prochowej w XV wieku, symbolicznie przypieczętowane zdobyciem Konstantynopola przez armaty sułtana Mehmeda II, uczyniło tradycyjne machiny oblężnicze przestarzałymi w ciągu jednego pokolenia.",
+    "opis": "Warsztat oblężniczy to zaplecze do budowy ciężkiego sprzętu oblężniczego, wzmacniające jednostki stacjonujące w mieście i otwierające dostęp do Katapulty.",
+    "top3": [
+      { "tytul": "Odblokowuje Katapultę", "tekst": "Umożliwia budowę Katapulty w tym mieście." },
+      { "tytul": "Wzmocnienie jednostek", "tekst": "Daje +10% parametrów jednostkom, które odwiedziły miasto, kumulując się z bonusem Koszar i Akademii wojskowej." },
+      { "tytul": "Wymaga Koszar", "tekst": "Można go wybudować dopiero po wybudowaniu Koszar lub ich ulepszenia — Akademii wojskowej." }
+    ]
   },
   {
     "id": "akademia",
@@ -1598,7 +1622,13 @@
       "drewno": 40,
       "cegla": 70
     },
-    "historia": "Akademia to nazwa wywodząca się od gaju poświęconego herosowi Akademosowi pod Atenami, gdzie w IV wieku p.n.e. Platon założył szkołę filozoficzną łączącą naukę o etyce, matematyce i polityce z życiem wspólnotowym uczniów. W przeciwieństwie do wcześniejszych, nieformalnych kręgów sofistów, Akademia Platońska posiadała ciągłość instytucjonalną, przetrwawszy pod kierownictwem kolejnych scholarchów niemal dziewięćset lat, aż do zamknięcia przez cesarza Justyniana w 529 roku. Nauczanie odbywało się poprzez dialog i wspólne dociekanie, a nie bierne przyswajanie gotowych twierdzeń, co czyniło Akademię wzorem dla późniejszych uniwersytetów średniowiecznej Europy. Wśród jej uczniów znalazł się Arystoteles, który spędził tam dwadzieścia lat, zanim założył własną szkołę, Liceum. Idea akademii jako miejsca systematycznego kształcenia elit intelektualnych odrodziła się w epoce renesansu we Florencji, gdzie na nowo połączono filozofię grecką z chrześcijańską teologią."
+    "historia": "Akademia to nazwa wywodząca się od gaju poświęconego herosowi Akademosowi pod Atenami, gdzie w IV wieku p.n.e. Platon założył szkołę filozoficzną łączącą naukę o etyce, matematyce i polityce z życiem wspólnotowym uczniów. W przeciwieństwie do wcześniejszych, nieformalnych kręgów sofistów, Akademia Platońska posiadała ciągłość instytucjonalną, przetrwawszy pod kierownictwem kolejnych scholarchów niemal dziewięćset lat, aż do zamknięcia przez cesarza Justyniana w 529 roku. Nauczanie odbywało się poprzez dialog i wspólne dociekanie, a nie bierne przyswajanie gotowych twierdzeń, co czyniło Akademię wzorem dla późniejszych uniwersytetów średniowiecznej Europy. Wśród jej uczniów znalazł się Arystoteles, który spędził tam dwadzieścia lat, zanim założył własną szkołę, Liceum. Idea akademii jako miejsca systematycznego kształcenia elit intelektualnych odrodziła się w epoce renesansu we Florencji, gdzie na nowo połączono filozofię grecką z chrześcijańską teologią.",
+    "opis": "Akademia to niezależny ośrodek nauki i kultury, wznoszony obok Biblioteki, dodatkowo podnoszący zadowolenie mieszkańców miasta.",
+    "top3": [
+      { "tytul": "Nauka i kultura miasta", "tekst": "Zwiększa naukę i kulturę miasta, licząc się osobno od wkładu Biblioteki, by nie dublować jej efektu." },
+      { "tytul": "Zadowolenie mieszkańców", "tekst": "Dodatkowo podnosi zadowolenie w mieście." },
+      { "tytul": "Wymaga Biblioteki", "tekst": "Można ją wybudować dopiero po wybudowaniu Biblioteki w tym mieście; odblokowana przez Filozofię." }
+    ]
   },
   {
     "id": "teatr",
@@ -1641,7 +1671,13 @@
       "drewno": 40,
       "cegla": 50
     },
-    "historia": "Teatr grecki narodził się z religijnych obrzędów ku czci boga Dionizosa, podczas których chóry recytowały hymny zwane dytyrambami, zanim Ajschylos, Sofokles i Eurypides przekształcili te występy w pełnoprawny dramat sceniczny rozgrywany przed tysiącami widzów. Amfiteatr w Epidauros, wzniesiony w IV wieku p.n.e., słynął z akustyki tak doskonałej, że widz siedzący w ostatnim, trzydziestym czwartym rzędzie słyszał szept aktora ze sceny bez żadnego wzmocnienia. Rzymianie przejęli grecką formę teatru, dodając bardziej rozbudowaną scenografię oraz kryte zadaszenia chroniące widzów przed słońcem, a przedstawienia komediowe Plauta i Terencjusza cieszyły się ogromną popularnością wśród wszystkich warstw społecznych. Teatr pełnił też funkcję polityczną — ateńskie przedstawienia tragiczne były okazją do publicznej debaty nad sprawami wspólnoty, a maski aktorskie pozwalały jednemu wykonawcy grać kilka ról bez ujawniania tożsamości. Tradycja teatralna przetrwała upadek Cesarstwa Rzymskiego w formie okrojonej, by w pełni odrodzić się dopiero w renesansowej Europie."
+    "historia": "Teatr grecki narodził się z religijnych obrzędów ku czci boga Dionizosa, podczas których chóry recytowały hymny zwane dytyrambami, zanim Ajschylos, Sofokles i Eurypides przekształcili te występy w pełnoprawny dramat sceniczny rozgrywany przed tysiącami widzów. Amfiteatr w Epidauros, wzniesiony w IV wieku p.n.e., słynął z akustyki tak doskonałej, że widz siedzący w ostatnim, trzydziestym czwartym rzędzie słyszał szept aktora ze sceny bez żadnego wzmocnienia. Rzymianie przejęli grecką formę teatru, dodając bardziej rozbudowaną scenografię oraz kryte zadaszenia chroniące widzów przed słońcem, a przedstawienia komediowe Plauta i Terencjusza cieszyły się ogromną popularnością wśród wszystkich warstw społecznych. Teatr pełnił też funkcję polityczną — ateńskie przedstawienia tragiczne były okazją do publicznej debaty nad sprawami wspólnoty, a maski aktorskie pozwalały jednemu wykonawcy grać kilka ról bez ujawniania tożsamości. Tradycja teatralna przetrwała upadek Cesarstwa Rzymskiego w formie okrojonej, by w pełni odrodzić się dopiero w renesansowej Europie.",
+    "opis": "Teatr to budynek kultury i rozrywki mieszkańców, którego efekty zostały włączone do Akademii i nie jest budowany jako osobna konstrukcja.",
+    "top3": [
+      { "tytul": "Kultura miasta", "tekst": "Podnosi poziom kultury w mieście." },
+      { "tytul": "Zadowolenie mieszkańców", "tekst": "Dodatkowo zwiększa zadowolenie mieszkańców." },
+      { "tytul": "Wliczony w Akademię", "tekst": "Jego efekt jest dziś liczony razem z Akademią, zamiast być budowany osobno." }
+    ]
   },
   {
     "id": "sad",
@@ -1683,7 +1719,13 @@
       "drewno": 30,
       "cegla": 50
     },
-    "historia": "Instytucja sądu jako miejsca publicznego rozstrzygania sporów sięga starożytnej Mezopotamii, gdzie już Kodeks Hammurabiego z około 1750 roku p.n.e. spisywał precyzyjne kary za konkretne przewinienia, wymagając od sędziów jawnego uzasadnienia wyroków przed zgromadzoną społecznością. W klasycznych Atenach sądy przysięgłych, zwane heliaja, liczyły nawet kilkuset obywateli losowanych spośród mieszkańców miasta, co miało chronić wyroki przed przekupstwem pojedynczego sędziego. Rzymskie prawo cywilne, skodyfikowane później w prawie justyniańskim, wprowadziło rozróżnienie między prawem publicznym a prywatnym, tworząc podstawy terminologii prawniczej używanej w Europie przez kolejne stulecia. Średniowieczne sądy grodzkie łączyły często funkcję wymiaru sprawiedliwości z administracją lokalną, a sędzia bywał jednocześnie poborcą podatków i zarządcą miejskich zapasów. Powstanie stałych budynków sądowych, oddzielonych od siedziby władcy, oznaczało stopniowe wyodrębnianie się władzy sądowniczej jako niezależnej gałęzi rządzenia."
+    "historia": "Instytucja sądu jako miejsca publicznego rozstrzygania sporów sięga starożytnej Mezopotamii, gdzie już Kodeks Hammurabiego z około 1750 roku p.n.e. spisywał precyzyjne kary za konkretne przewinienia, wymagając od sędziów jawnego uzasadnienia wyroków przed zgromadzoną społecznością. W klasycznych Atenach sądy przysięgłych, zwane heliaja, liczyły nawet kilkuset obywateli losowanych spośród mieszkańców miasta, co miało chronić wyroki przed przekupstwem pojedynczego sędziego. Rzymskie prawo cywilne, skodyfikowane później w prawie justyniańskim, wprowadziło rozróżnienie między prawem publicznym a prywatnym, tworząc podstawy terminologii prawniczej używanej w Europie przez kolejne stulecia. Średniowieczne sądy grodzkie łączyły często funkcję wymiaru sprawiedliwości z administracją lokalną, a sędzia bywał jednocześnie poborcą podatków i zarządcą miejskich zapasów. Powstanie stałych budynków sądowych, oddzielonych od siedziby władcy, oznaczało stopniowe wyodrębnianie się władzy sądowniczej jako niezależnej gałęzi rządzenia.",
+    "opis": "Sąd to instytucja wymiaru sprawiedliwości podnosząca kulturę i zadowolenie mieszkańców oraz ograniczająca korupcję w mieście.",
+    "top3": [
+      { "tytul": "Kultura i zadowolenie", "tekst": "Zwiększa kulturę miasta i podnosi zadowolenie mieszkańców płynące z praworządności." },
+      { "tytul": "Ograniczenie korupcji", "tekst": "Zmniejsza poziom korupcji w mieście." },
+      { "tytul": "Odblokowany przez Prawo", "tekst": "Dostępny po zbadaniu technologii Prawo, bez dodatkowych wymagań budowlanych." }
+    ]
   },
   {
     "id": "dom_starszyzny",
@@ -1725,7 +1767,13 @@
     "koszt_surowce": {
       "drewno": 30
     },
-    "historia": "Rada starszych to jedna z najstarszych form sprawowania władzy zbiorowej, obecna już w plemiennych społecznościach neolitycznych, gdzie doświadczenie i wiek uznawano za naturalne źródło autorytetu w sprawach spornych i decyzjach dotyczących całej wspólnoty. Spartańska gerusia, licząca dwudziestu ośmiu starców powyżej sześćdziesiątego roku życia, posiadała prawo weta wobec uchwał zgromadzenia ludowego i przygotowywała projekty ustaw poddawane później pod głosowanie. Podobną rolę pełniła rzymska kuria w czasach królewskich, zrzeszająca głowy najstarszych rodów jeszcze przed powstaniem senatu jako odrębnej instytucji. W wielu społecznościach afrykańskich i wśród rdzennej ludności Ameryki Północnej rady starszych do dziś zachowują funkcję mediacyjną, rozstrzygając spory sąsiedzkie bez odwoływania się do formalnego prawodawstwa państwowego. Dom, w którym takie rady się zbierały, stawał się naturalnym centrum życia publicznego osady, miejscem, gdzie ścierały się interesy poszczególnych rodów i klanów."
+    "historia": "Rada starszych to jedna z najstarszych form sprawowania władzy zbiorowej, obecna już w plemiennych społecznościach neolitycznych, gdzie doświadczenie i wiek uznawano za naturalne źródło autorytetu w sprawach spornych i decyzjach dotyczących całej wspólnoty. Spartańska gerusia, licząca dwudziestu ośmiu starców powyżej sześćdziesiątego roku życia, posiadała prawo weta wobec uchwał zgromadzenia ludowego i przygotowywała projekty ustaw poddawane później pod głosowanie. Podobną rolę pełniła rzymska kuria w czasach królewskich, zrzeszająca głowy najstarszych rodów jeszcze przed powstaniem senatu jako odrębnej instytucji. W wielu społecznościach afrykańskich i wśród rdzennej ludności Ameryki Północnej rady starszych do dziś zachowują funkcję mediacyjną, rozstrzygając spory sąsiedzkie bez odwoływania się do formalnego prawodawstwa państwowego. Dom, w którym takie rady się zbierały, stawał się naturalnym centrum życia publicznego osady, miejscem, gdzie ścierały się interesy poszczególnych rodów i klanów.",
+    "opis": "Dom Starszyzny to pierwszy szczebel administracji miast regionalnych, będący głównym źródłem porządku prawnego, zanim miasto dorobi się wyższych urzędów.",
+    "top3": [
+      { "tytul": "Podstawa porządku prawnego", "tekst": "Jest głównym źródłem Prawa w mieście regionalnym na najwcześniejszym etapie rozwoju." },
+      { "tytul": "Niewielka produkcja", "tekst": "Dodaje niewielką ilość pracy, pieniędzy i kultury miastu." },
+      { "tytul": "Początek łańcucha administracji", "tekst": "Może zostać zastąpiony przez Dwór Zarządcy, a następnie przez Pretorium." }
+    ]
   },
   {
     "id": "dwor_zarzadcy",
@@ -1769,7 +1817,13 @@
       "drewno": 30,
       "kamien": 30
     },
-    "historia": "Dwór zarządcy prowincji stanowił lokalny ośrodek władzy imperialnej, z którego namiestnik nadzorował pobór podatków, wymiar sprawiedliwości oraz utrzymanie porządku na powierzonym mu terytorium w imieniu odległego władcy centralnego. Perscy satrapowie, zarządzający rozległymi prowincjami imperium Achemenidów, dysponowali własnym dworem, skarbem i niekiedy nawet siłami zbrojnymi, co czyniło ich niemal małymi królami podlegającymi jedynie formalnie Wielkiemu Królowi w Persepolis. Chińscy gubernatorzy prowincji za czasów dynastii Han musieli składać cesarzowi regularne raporty ze stanu upraw i nastrojów społecznych w ramach systemu egzaminów urzędniczych poprzedzających objęcie stanowiska. Odległość od stolicy oznaczała w praktyce znaczną swobodę decyzyjną namiestnika, co regularnie prowadziło do napięć między lojalnością wobec centrum a pokusą budowania własnej, niezależnej bazy władzy. Dwory takie stawały się też ośrodkami lokalnej kultury, przyciągając rzemieślników, uczonych i kupców szukających patronatu możnego urzędnika."
+    "historia": "Dwór zarządcy prowincji stanowił lokalny ośrodek władzy imperialnej, z którego namiestnik nadzorował pobór podatków, wymiar sprawiedliwości oraz utrzymanie porządku na powierzonym mu terytorium w imieniu odległego władcy centralnego. Perscy satrapowie, zarządzający rozległymi prowincjami imperium Achemenidów, dysponowali własnym dworem, skarbem i niekiedy nawet siłami zbrojnymi, co czyniło ich niemal małymi królami podlegającymi jedynie formalnie Wielkiemu Królowi w Persepolis. Chińscy gubernatorzy prowincji za czasów dynastii Han musieli składać cesarzowi regularne raporty ze stanu upraw i nastrojów społecznych w ramach systemu egzaminów urzędniczych poprzedzających objęcie stanowiska. Odległość od stolicy oznaczała w praktyce znaczną swobodę decyzyjną namiestnika, co regularnie prowadziło do napięć między lojalnością wobec centrum a pokusą budowania własnej, niezależnej bazy władzy. Dwory takie stawały się też ośrodkami lokalnej kultury, przyciągając rzemieślników, uczonych i kupców szukających patronatu możnego urzędnika.",
+    "opis": "Dwór Zarządcy to drugi szczebel administracji miast regionalnych, zastępujący Dom Starszyzny i dający większy porządek prawny oraz produkcję.",
+    "top3": [
+      { "tytul": "Wyższy porządek prawny", "tekst": "Daje więcej Prawa niż Dom Starszyzny, który zastępuje w mieście." },
+      { "tytul": "Większa produkcja", "tekst": "Zwiększa produkcję pracy, pieniędzy i kultury względem poprzedniego szczebla administracji." },
+      { "tytul": "Wymaga ulepszenia", "tekst": "Powstaje wyłącznie jako ulepszenie Domu Starszyzny, po zbadaniu Kodeksu." }
+    ]
   },
   {
     "id": "pretorium",
@@ -1813,7 +1867,13 @@
       "drewno": 40,
       "cegla": 50
     },
-    "historia": "Pretorium to pierwotnie namiot lub kwatera dowódcy w rzymskim obozie wojskowym, ustawiana zawsze w centralnym punkcie obozu na przecięciu głównych dróg, skąd wódz mógł obserwować całość rozłożonych wokół legionów. Z czasem termin ten zaczął oznaczać także rezydencję namiestnika prowincji rzymskiej, budynek łączący funkcję sądową, administracyjną i reprezentacyjną — to właśnie w pretorium namiestnika Judei w Jerozolimie, według relacji ewangelicznych, odbył się proces Jezusa z Nazaretu. Archeolodzy odkryli pozostałości okazałych pretoriów w takich miastach jak Kartagina czy Trewir, gdzie mozaikowe posadzki i prywatne łaźnie świadczyły o wysokim statusie rezydujących tam urzędników. Pretorium pełniło również funkcję garnizonu, zapewniając namiestnikowi ochronę osobistą, zanim nazwa ta na stałe skojarzyła się ze słynną gwardią cesarską w samym Rzymie. Budynek ten symbolizował fizyczną obecność władzy imperialnej w odległych zakątkach rozległego państwa, przypominając mieszkańcom prowincji, komu podlegają."
+    "historia": "Pretorium to pierwotnie namiot lub kwatera dowódcy w rzymskim obozie wojskowym, ustawiana zawsze w centralnym punkcie obozu na przecięciu głównych dróg, skąd wódz mógł obserwować całość rozłożonych wokół legionów. Z czasem termin ten zaczął oznaczać także rezydencję namiestnika prowincji rzymskiej, budynek łączący funkcję sądową, administracyjną i reprezentacyjną — to właśnie w pretorium namiestnika Judei w Jerozolimie, według relacji ewangelicznych, odbył się proces Jezusa z Nazaretu. Archeolodzy odkryli pozostałości okazałych pretoriów w takich miastach jak Kartagina czy Trewir, gdzie mozaikowe posadzki i prywatne łaźnie świadczyły o wysokim statusie rezydujących tam urzędników. Pretorium pełniło również funkcję garnizonu, zapewniając namiestnikowi ochronę osobistą, zanim nazwa ta na stałe skojarzyła się ze słynną gwardią cesarską w samym Rzymie. Budynek ten symbolizował fizyczną obecność władzy imperialnej w odległych zakątkach rozległego państwa, przypominając mieszkańcom prowincji, komu podlegają.",
+    "opis": "Pretorium to najwyższy szczebel administracji miast regionalnych, kończący łańcuch ulepszeń zaczęty przez Dom Starszyzny i Dwór Zarządcy.",
+    "top3": [
+      { "tytul": "Najwyższy porządek prawny", "tekst": "Daje najwięcej Prawa spośród budynków administracji regionalnej, kończąc łańcuch ulepszeń." },
+      { "tytul": "Największa produkcja w łańcuchu", "tekst": "Zapewnia największą produkcję pracy, pieniędzy i kultury wśród budynków tego łańcucha." },
+      { "tytul": "Wymaga ulepszenia", "tekst": "Powstaje wyłącznie jako ulepszenie Dworu Zarządcy, po zbadaniu Prawa." }
+    ]
   },
   {
     "id": "trybunal",
@@ -1855,7 +1915,13 @@
       "drewno": 30,
       "kamien": 40
     },
-    "historia": "Trybun ludowy to urząd ustanowiony w Rzymie w 494 roku p.n.e. w wyniku secesji plebejuszy, mający chronić zwykłych obywateli przed nadużyciami władzy patrycjuszowskich urzędników poprzez prawo weta wobec decyzji senatu i konsulów. Osoba trybuna była nietykalna — sacrosanctitas — a jakikolwiek zamach na jego życie czy godność uznawano za świętokradztwo karane śmiercią, co miało zagwarantować mu odwagę w przeciwstawianiu się możnym. Miejsce, w którym trybun urzędował i przyjmował skargi obywateli, z czasem przekształciło się w rozbudowaną instytucję sądową rozstrzygającą spory sięgające poza pierwotny zakres ochrony plebejuszy. Późniejsze trybunały, jak Trybunał Koronny w Rzeczypospolitej powołany w 1578 roku, przejęły od Rzymian ideę niezależnego, objazdowego sądu wyższej instancji, wolnego od bezpośredniego wpływu monarchy. Napięcia między trybunami a senatem, szczególnie w czasach reform Grakchów w II wieku p.n.e., pokazały, jak łatwo instytucja stworzona do ochrony ludu mogła stać się areną gwałtownej walki politycznej."
+    "historia": "Trybun ludowy to urząd ustanowiony w Rzymie w 494 roku p.n.e. w wyniku secesji plebejuszy, mający chronić zwykłych obywateli przed nadużyciami władzy patrycjuszowskich urzędników poprzez prawo weta wobec decyzji senatu i konsulów. Osoba trybuna była nietykalna — sacrosanctitas — a jakikolwiek zamach na jego życie czy godność uznawano za świętokradztwo karane śmiercią, co miało zagwarantować mu odwagę w przeciwstawianiu się możnym. Miejsce, w którym trybun urzędował i przyjmował skargi obywateli, z czasem przekształciło się w rozbudowaną instytucję sądową rozstrzygającą spory sięgające poza pierwotny zakres ochrony plebejuszy. Późniejsze trybunały, jak Trybunał Koronny w Rzeczypospolitej powołany w 1578 roku, przejęły od Rzymian ideę niezależnego, objazdowego sądu wyższej instancji, wolnego od bezpośredniego wpływu monarchy. Napięcia między trybunami a senatem, szczególnie w czasach reform Grakchów w II wieku p.n.e., pokazały, jak łatwo instytucja stworzona do ochrony ludu mogła stać się areną gwałtownej walki politycznej.",
+    "opis": "Trybunał to wczesna forma administracji lokalnej, dająca porządek i ograniczająca korupcję, słabsza jednak niż Sąd czy Pretorium.",
+    "top3": [
+      { "tytul": "Dochód i zadowolenie", "tekst": "Zwiększa dochód pieniężny i zadowolenie mieszkańców, a wartość ta rośnie z każdym z dwóch poziomów budynku." },
+      { "tytul": "Wczesny porządek administracyjny", "tekst": "Ogranicza korupcję jeszcze zanim miasto zbuduje Sąd lub Pretorium." },
+      { "tytul": "Odblokowany przez Kodeks", "tekst": "Dostępny wcześnie, zaraz po zbadaniu technologii Kodeks." }
+    ]
   },
   {
     "id": "garnizon",
@@ -1897,7 +1963,13 @@
     "koszt_surowce": {
       "drewno": 30
     },
-    "historia": "Straż pilnująca porządku w mieście jest niemal tak stara jak samo miasto — w Mezopotamii i Egipcie oddziały wartownicze strzegły bram, spichlerzy i świątynnych skarbców, a ich obecność bywała warunkiem, by kupiec odważył się zostawić towar na noc. Egipscy Medżaj, początkowo nubijscy zwiadowcy, z czasem przekształcili się w formację pilnującą nekropolii i osad, jedną z pierwszych znanych służb porządkowych oddzielonych od armii polowej. W Atenach porządku na agorze pilnowali scytyjscy łucznicy, publiczni niewolnicy podlegli urzędnikom, a nie dowódcom wojskowym, co miało chronić obywateli przed samowolą uzbrojonych rodaków. Rzym doczekał się cohortes urbanae oraz vigiles — oddziałów, które gasiły pożary, rozdzielały bijatyki i pilnowały nocnych ulic, podlegając prefektowi miasta, nie legionowi. Wspólną cechą tych formacji było to, że stacjonowały na stałe: wojsko odchodziło na wojnę, a garnizon zostawał i odpowiadał za to, żeby prawo obowiązywało również wtedy, gdy armii nie było w pobliżu."
+    "historia": "Straż pilnująca porządku w mieście jest niemal tak stara jak samo miasto — w Mezopotamii i Egipcie oddziały wartownicze strzegły bram, spichlerzy i świątynnych skarbców, a ich obecność bywała warunkiem, by kupiec odważył się zostawić towar na noc. Egipscy Medżaj, początkowo nubijscy zwiadowcy, z czasem przekształcili się w formację pilnującą nekropolii i osad, jedną z pierwszych znanych służb porządkowych oddzielonych od armii polowej. W Atenach porządku na agorze pilnowali scytyjscy łucznicy, publiczni niewolnicy podlegli urzędnikom, a nie dowódcom wojskowym, co miało chronić obywateli przed samowolą uzbrojonych rodaków. Rzym doczekał się cohortes urbanae oraz vigiles — oddziałów, które gasiły pożary, rozdzielały bijatyki i pilnowały nocnych ulic, podlegając prefektowi miasta, nie legionowi. Wspólną cechą tych formacji było to, że stacjonowały na stałe: wojsko odchodziło na wojnę, a garnizon zostawał i odpowiadał za to, żeby prawo obowiązywało również wtedy, gdy armii nie było w pobliżu.",
+    "opis": "Garnizon to stała straż porządkowa miasta regionalnego, zapewniająca prawo niezależnie od tego, czy w mieście aktualnie stacjonuje wojsko.",
+    "top3": [
+      { "tytul": "Stałe źródło Prawa", "tekst": "Zapewnia miastu Prawo niezależnie od tymczasowej obecności wojska, które może opuścić miasto na wyprawę." },
+      { "tytul": "Poza łańcuchem administracji", "tekst": "To osobny budynek, nie część łańcucha Dom Starszyzny → Dwór Zarządcy → Pretorium." },
+      { "tytul": "Przetrwa podbój", "tekst": "Nie znika przy zdobyciu miasta — nowy właściciel dziedziczy go jak każdy inny budynek." }
+    ]
   },
   {
     "id": "laznia_publiczna",
@@ -1939,7 +2011,13 @@
       "drewno": 40,
       "cegla": 60
     },
-    "historia": "Rzymskie termy publiczne były znacznie więcej niż miejscem higieny osobistej — stanowiły centra życia towarzyskiego, gdzie obywatele niezależnie od majątku spędzali długie godziny, przechodząc kolejno przez zimne, letnie i gorące baseny, korzystając z sal do ćwiczeń, bibliotek oraz ogrodów. Termy Karakalli w Rzymie, mogące jednocześnie pomieścić kilka tysięcy kąpiących się, wykorzystywały zaawansowany system hipokaustów — podłóg podgrzewanych gorącym powietrzem krążącym w podziemnych kanałach, technologię wymagającą stałej obsługi dbającej o piece. Wstęp do term był zazwyczaj bardzo tani lub darmowy, finansowany przez możnych patronów lub samo państwo, co czyniło je jedną z niewielu przestrzeni, gdzie senator i rzemieślnik dzielili tę samą przestrzeń publiczną. Podobną tradycję kąpieli publicznych rozwinęły osmańskie hammamy, łączące rzymskie dziedzictwo term z rytuałami czystości islamu, wciąż aktywnie działające w wielu miastach Bliskiego Wschodu. Upadek zachodniego Cesarstwa Rzymskiego i zerwanie sieci akweduktów doprowadziły do stopniowego zaniku wielkich term publicznych w średniowiecznej Europie na kolejne stulecia."
+    "historia": "Rzymskie termy publiczne były znacznie więcej niż miejscem higieny osobistej — stanowiły centra życia towarzyskiego, gdzie obywatele niezależnie od majątku spędzali długie godziny, przechodząc kolejno przez zimne, letnie i gorące baseny, korzystając z sal do ćwiczeń, bibliotek oraz ogrodów. Termy Karakalli w Rzymie, mogące jednocześnie pomieścić kilka tysięcy kąpiących się, wykorzystywały zaawansowany system hipokaustów — podłóg podgrzewanych gorącym powietrzem krążącym w podziemnych kanałach, technologię wymagającą stałej obsługi dbającej o piece. Wstęp do term był zazwyczaj bardzo tani lub darmowy, finansowany przez możnych patronów lub samo państwo, co czyniło je jedną z niewielu przestrzeni, gdzie senator i rzemieślnik dzielili tę samą przestrzeń publiczną. Podobną tradycję kąpieli publicznych rozwinęły osmańskie hammamy, łączące rzymskie dziedzictwo term z rytuałami czystości islamu, wciąż aktywnie działające w wielu miastach Bliskiego Wschodu. Upadek zachodniego Cesarstwa Rzymskiego i zerwanie sieci akweduktów doprowadziły do stopniowego zaniku wielkich term publicznych w średniowiecznej Europie na kolejne stulecia.",
+    "opis": "Łaźnia publiczna to budynek zdrowia poprawiający higienę i zadowolenie mieszkańców, wznoszony po wybudowaniu Studni.",
+    "top3": [
+      { "tytul": "Zadowolenie i kultura", "tekst": "Zwiększa zadowolenie mieszkańców oraz kulturę miasta." },
+      { "tytul": "Niewielki dodatek żywności", "tekst": "Dodaje też niewielką ilość żywności dzięki lepszej higienie mieszkańców." },
+      { "tytul": "Wymaga Studni", "tekst": "Można ją wybudować dopiero po wybudowaniu Studni w tym mieście; odblokowana przez Medycynę." }
+    ]
   },
   {
     "id": "akademia_wojskowa",
@@ -1981,6 +2059,12 @@
       "drewno": 50,
       "cegla": 70
     },
-    "historia": "Akademia wojskowa jako sformalizowana instytucja kształcąca oficerów w oderwaniu od praktyki bojowej na polu bitwy powstała stosunkowo późno — pruska Akademia Wojenna założona w 1810 roku z inicjatywy reformatorów takich jak Gerhard von Scharnhorst wprowadziła systematyczne nauczanie strategii, logistyki i taktyki jako odrębnej dyscypliny naukowej. Wcześniej oficerowie zdobywali umiejętności głównie poprzez służbę pod okiem doświadczonych dowódców lub, jak w przypadku janczarskiej szkoły Enderun w Imperium Osmańskim, poprzez wieloletnie, rygorystyczne szkolenie od dzieciństwa łączące musztrę z naukami humanistycznymi. Brytyjska Królewska Akademia Wojskowa w Sandhurst kładła nacisk na charakter przywódczy kadetów równie mocno co na wiedzę techniczną, wychodząc z założenia, że dowódca musi najpierw zyskać zaufanie podwładnych. Programy takich akademii obejmowały matematykę stosowaną do balistyki, inżynierię fortyfikacyjną oraz studia nad kampaniami historycznymi analizowanymi jako studia przypadków. Absolwenci akademii wojskowych, tworząc zawodowy korpus oficerski oddany raczej państwu niż osobie monarchy, odegrali kluczową rolę w kształtowaniu nowoczesnych, scentralizowanych armii narodowych XIX wieku."
+    "historia": "Akademia wojskowa jako sformalizowana instytucja kształcąca oficerów w oderwaniu od praktyki bojowej na polu bitwy powstała stosunkowo późno — pruska Akademia Wojenna założona w 1810 roku z inicjatywy reformatorów takich jak Gerhard von Scharnhorst wprowadziła systematyczne nauczanie strategii, logistyki i taktyki jako odrębnej dyscypliny naukowej. Wcześniej oficerowie zdobywali umiejętności głównie poprzez służbę pod okiem doświadczonych dowódców lub, jak w przypadku janczarskiej szkoły Enderun w Imperium Osmańskim, poprzez wieloletnie, rygorystyczne szkolenie od dzieciństwa łączące musztrę z naukami humanistycznymi. Brytyjska Królewska Akademia Wojskowa w Sandhurst kładła nacisk na charakter przywódczy kadetów równie mocno co na wiedzę techniczną, wychodząc z założenia, że dowódca musi najpierw zyskać zaufanie podwładnych. Programy takich akademii obejmowały matematykę stosowaną do balistyki, inżynierię fortyfikacyjną oraz studia nad kampaniami historycznymi analizowanymi jako studia przypadków. Absolwenci akademii wojskowych, tworząc zawodowy korpus oficerski oddany raczej państwu niż osobie monarchy, odegrali kluczową rolę w kształtowaniu nowoczesnych, scentralizowanych armii narodowych XIX wieku.",
+    "opis": "Akademia wojskowa to niezależny, zaawansowany ośrodek szkolenia wojska, wznoszony obok Koszar i wzmacniający jednostki stacjonujące w mieście.",
+    "top3": [
+      { "tytul": "Wzmocnienie jednostek", "tekst": "Daje +20% parametrów jednostkom w mieście, kumulując się z bonusem Koszar, a także Warsztatu oblężniczego." },
+      { "tytul": "Dodatkowa produkcja", "tekst": "Dodaje pracę i pieniądze miastu, ponad wkład Koszar." },
+      { "tytul": "Wymaga Koszar", "tekst": "Można ją wybudować dopiero po wybudowaniu Koszar w tym mieście; odblokowana przez Sztukę wojenną." }
+    ]
   }
 ]
