@@ -7746,6 +7746,21 @@ zwykłe wojny AI↔AI · Q2 = NIE dodawać ochrony przed eliminacją małych cyw
 zakresem) · Q3 = wyłącznie AI↔AI, wojny z udziałem gracza bez zmian**. Dispatch naprawy:
 `R-AI-WOJNY-ZWYKLE-CAP-DWA-MIASTA-Q1` (uruchomiony przez Workflow Operator→Evaluator→Obrona).
 
+**ZINTEGROWANE 2026-09-10 (commit `10fd9eea`).** `maybeResolveRegularWarOnCityCapture`
+w `main.ts` reużywa dokładnie ten sam mechanizm co wojny wymuszone —
+`shouldEndForcedWarByCityCount` (próg 2, ta sama stała) i `finalizePeaceTreatyBetween`
+(cooldown 20 tur, ta sama stała) — wołana z tych samych dwóch funneli co trzy istniejące
+funkcje forced-war. Wyłącznie AI↔AI (Q3), pary z aktywną wojną wymuszoną pomijane (zero
+podwójnego liczenia), `ai.ts` nietknięte (`isPeaceLockedBetween()` już bezwarunkowo
+gate'uje każde `wypowiedz_wojne`). Operator (raport niekompletny)→Evaluator (5 zarzutów:
+nowa bramka sama nie przechodziła, scenariusz testu użył mapy z JEDNYM realnym AI więc
+1. zdobycie eliminowało cywilizację przed 2., fast-forward do tury >25 nie był
+wymuszony/fail-fast, brak sprzątania w `eliminateOwner()`, osierocony proces
+Chromium)→Obrona (wszystkie 5 przyjęte i naprawione)→Final Control PASS (niezależna
+weryfikacja całego diffu main.ts + 22 bramki: nowa bramka 2x, 15 bramek regresji
+wojny wymuszonej/reguły 25-turowej, 5 bramek referencyjnych — wszystkie zielone). Nowa
+bramka `ai-wojny-zwykle-cap-dwa-miasta-test.cjs` 22/22 PASS.
+
 ## `P-KARTA-PRZEBUDOWA-UKLAD-ULEPSZENIE-Q1` — GAME — **ZINTEGROWANE 2026-09-10** (commit `85a846c6`)
 
 Część „ulepszenie terenu" tematu `P-KARTA-PRZEBUDOWA-UKLAD-TECH-ULEPSZENIE-Q1` (ABC:
