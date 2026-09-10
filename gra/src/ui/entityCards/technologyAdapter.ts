@@ -19,6 +19,14 @@
  * od samych danych technologii) zostaje budowany w `techDiscoveryNotice.ts` —
  * ten adapter dostarcza tylko treść niezależną od trybu otwarcia karty
  * (sekcje + domyślny `subtitle`/medalion), tak jak pozostałe trzy adaptery.
+ *
+ * Kolejność `sections` (P-KARTA-PRZEBUDOWA-UKLAD-TECH-Q1, `00-dispatch.md`): Wymagania →
+ * Charakterystyka (NOWA — Koszt nauki/Epoka/Poziom/Surowiec-wymóg) → [Rys historyczny,
+ * wstawiany przez `renderer.ts::renderEntityCard` na NIETKNIĘTYM, stałym indeksie 2] →
+ * Co możesz teraz zrobić → Budynki → Jednostki → Ulepszenia terenu → Kolejne technologie
+ * (4 sekcje odblokowań, ABC Q1 właściciela: NIE scalać, tylko przenieść) → Zmiany
+ * ekonomiczne → (pusta, gdy brak odblokowań). Wzajemna kolejność tej ostatniej piątki
+ * zostaje jak przed tym tematem — tylko przesunięta niżej, za miejsce wstawienia historii.
  */
 import buildingsData from '../../../data/buildings.json';
 import unitsData from '../../../data/units.json';
@@ -26,6 +34,7 @@ import terrainImprovementsData from '../../../data/terrain-improvements.json';
 import techData from '../../../data/tech.json';
 import { techIconSvg } from '../techIcons';
 import { buildingIconSvg, unitIconSvg, improvementIconSvg } from '../icons/brandAssets';
+import { naukaCostSuffix } from '../naukaLabel';
 import type { RawTech } from './registry';
 import { resolveBuildingRow, resolveUnitRow, technologyIdFromName, unitToSlug } from './registry';
 import type { EntityCardAdapter, EntityCardRow, EntityCardSection } from './types';
@@ -102,6 +111,19 @@ const ALL_TECHS = (techData as unknown as { technologie: RawTech[] }).technologi
  * pusty string) gdy pole brakuje lub jest puste. */
 function historicalNoteOf(tech: RawTech): string | undefined {
   const v = (tech as unknown as Record<string, unknown>)['Historia'];
+  const t = typeof v === 'string' ? v.trim() : '';
+  return t !== '' ? t : undefined;
+}
+
+/** `Dostęp do surowca.` (kropka w nazwie pola z `tech.json` — konwencja tego pliku,
+ * patrz analogiczne `Odblokowuje surowiec.`) — pole NIE jest zadeklarowane w `RawTech`
+ * (`registry.ts` poza allowlistą tego tematu, patrz `00-dispatch.md`), więc czytamy je
+ * bezpiecznie spoza typowanego kształtu, tym samym wzorcem co `historicalNoteOf` wyżej.
+ * To jest surowiec WYMAGANY do zbadania tej technologii (np. „Dostęp do drewna" dla
+ * „Łucznictwo") — inne pole niż `Odblokowuje surowiec.` (surowiec, który technologia
+ * ODBLOKOWUJE, już czytany niżej jako `resourceUnlocked`); brak duplikacji treści. */
+function resourceAccessOf(tech: RawTech): string | undefined {
+  const v = (tech as unknown as Record<string, unknown>)['Dostęp do surowca.'];
   const t = typeof v === 'string' ? v.trim() : '';
   return t !== '' ? t : undefined;
 }
@@ -301,7 +323,8 @@ export const technologyAdapter: EntityCardAdapter<RawTech> = (tech) => {
     key: 'econ', title: 'Zmiany ekonomiczne', rows: econRows, collapsible: true, openDefault: true,
   };
 
-  // --- Wymagania (pigułki z checkmarkiem, layout='pills') -------------------------------------
+  // --- Wymagania (pigułki z checkmarkiem, layout='pills') — sections[0] wg nowego układu
+  // (P-KARTA-PRZEBUDOWA-UKLAD-TECH-Q1, 00-dispatch.md GOAL pkt 1). ---------------------------
   const requirementsSection: EntityCardSection = {
     key: 'requirements', title: 'Wymagania', layout: 'pills',
     rows: requirements.map((r) => {
@@ -309,6 +332,28 @@ export const technologyAdapter: EntityCardAdapter<RawTech> = (tech) => {
       return { label: r, value: '', linkTo: { kind: 'technology', id: reqSlug } as const };
     }),
     badges: requirements.length > 0 ? [`${requirements.length} · spełnione`] : undefined,
+  };
+
+  // --- Charakterystyka (NOWA, P-KARTA-PRZEBUDOWA-UKLAD-TECH-Q1 GOAL pkt 2) — sections[1],
+  // zaraz po Wymaganiach i zaraz PRZED miejscem wstawienia Rysu historycznego przez
+  // `renderer.ts::renderEntityCard` (`HISTORIA_SECTION_INDEX = 2`, NIETKNIĘTY w tym temacie).
+  // Styl analogiczny do `buildingAdapter.ts`/`unitAdapter.ts` (`characteristics` key, prosta
+  // lista `label`/`value`, wiersz pominięty gdy brak danych — zero wymyślonej treści).
+  // ŚWIADOMIE bez „Dostęp do surowca" pod tą etykietą — ten tekst już istnieje w `econSection`
+  // (`resourceUnlocked`, linia niżej w tym samym pliku), ale opisuje INNE pole (`Odblokowuje
+  // surowiec.` — co ta technologia DAJE), podczas gdy tu chodzi o `Dostęp do surowca.` — co
+  // ta technologia WYMAGA do zbadania (patrz `resourceAccessOf` wyżej). Etykieta „Surowiec
+  // (wymóg badania)" żeby uniknąć wizualnej duplikacji z „Dostęp do surowca" w Zmianach
+  // ekonomicznych mimo wspólnego rdzenia słownego. -------------------------------------------
+  const resourceAccess = resourceAccessOf(tech);
+  const charRows: EntityCardRow[] = [
+    { label: 'Koszt nauki', value: `${tech['Koszt nauki']}${naukaCostSuffix()}` },
+    tech['Epoka'] ? { label: 'Epoka', value: tech['Epoka'] } : null,
+    tech['Poziom'] != null ? { label: 'Poziom', value: String(tech['Poziom']) } : null,
+    resourceAccess ? { label: 'Surowiec (wymóg badania)', value: resourceAccess } : null,
+  ].filter((r): r is EntityCardRow => r != null);
+  const characteristicsSection: EntityCardSection = {
+    key: 'characteristics', title: 'Charakterystyka', rows: charRows,
   };
 
   const anyContent = actionRows.length > 0 || buildingsRows.length > 0 || unitsRows.length > 0
@@ -327,9 +372,15 @@ export const technologyAdapter: EntityCardAdapter<RawTech> = (tech) => {
     title: tech['Technologia'],
     subtitle: tech['Epoka'] ? `Epoka ${tech['Epoka']}` : undefined,
     medallion: { kind: 'icon', svg: iconSvg },
+    // P-KARTA-PRZEBUDOWA-UKLAD-TECH-Q1 (00-dispatch.md GOAL): sections[0]=Wymagania,
+    // sections[1]=Charakterystyka — `renderer.ts::renderEntityCard` wstawia Rys historyczny
+    // na STAŁYM, NIETKNIĘTYM indeksie 2, więc ląduje dokładnie „zaraz po Charakterystyce"
+    // (odpowiednik „zaraz po Opisie" dla budynku/jednostki). Reszta (4 osobne sekcje
+    // odblokowań, Q1 właściciela: NIE scalać) i Zmiany ekonomiczne zostają w niezmienionej
+    // WZAJEMNEJ kolejności, tylko przesunięte niżej za miejsce wstawienia historii.
     sections: [
-      actionsSection, buildingsSection, unitsSection, improvementsSection,
-      nextTechsSection, econSection, requirementsSection, emptySection,
+      requirementsSection, characteristicsSection, actionsSection, buildingsSection,
+      unitsSection, improvementsSection, nextTechsSection, econSection, emptySection,
     ],
     // P-ENTITYCARD-CIVPEDIA-KLIK-MARTWY-Q1 — uzasadnienie jak w `unitAdapter.ts`.
     // Folder = katalog `docs/encyklopedia/technologie/`.
