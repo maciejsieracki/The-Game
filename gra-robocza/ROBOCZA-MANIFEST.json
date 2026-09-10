@@ -1,10 +1,10 @@
 {
-  "publishedAt": "2026-09-10T22:45:00",
-  "sourceBuild": "gra/dist (commit a464f752)",
-  "note": "FALA 373 - R-AI-WOJNY-ZWYKLE-CAP-DWA-MIASTA-Q1: KRYTYCZNY fix zgloszenia na zywo (jedna cywilizacja AI podbila wszystkie inne cywilizacje AI poza graczem). Zwykle wojny AI-AI (Priorytet 4, po turze 25) nie mialy zadnego automatycznego bezpiecznika konczenia wojny - dostaly teraz DOKLADNIE ten sam mechanizm co wojny wymuszone epoki: 2 miasta zdobyte/stracone -> wymuszony pokoj + cooldown 20 tur (reuzyte te same stale i funkcje, ai.ts nietkniete). Wylacznie AI-AI, wojny z udzialem gracza bez zmian, pary z aktywna wojna wymuszona pomijane. Operator->Evaluator(5 zarzutow, w tym scenariusz testu na mapie z jednym AI powodujacy przedwczesna eliminacje)->Obrona(wszystkie naprawione)->Final Control PASS (niezalezna weryfikacja pelnego diffu main.ts + 22 bramki: nowa 2x, 15 regresji wojny wymuszonej/25-turowej, 5 referencyjnych - wszystkie zielone). Nowa bramka ai-wojny-zwykle-cap-dwa-miasta-test.cjs 22/22.",
+  "publishedAt": "2026-09-10T23:14:00",
+  "sourceBuild": "gra/dist (commit b22cfc20)",
+  "note": "FALA 374 - R-KARTY-OPIS-TOP3-B3-Q1: OSTATNIA partia budynkow fali tresci Opis/Top3 (14: wielka_kuznia, fort, baszta, warsztat_oblezniczy, akademia, teatr, sad, dom_starszyzny, dwor_zarzadcy, pretorium, trybunal, laznia_publiczna, akademia_wojskowa, garnizon). Garnizon dodatkowo dostal opis+top3 mimo ze mial juz historia z wczesniejszego, niezaleznego tematu (zalozenie dispatchu ze jej brakowalo bylo bledne, ale nieszkodliwe - operator nie nadpisal istniejacej tresci). Operator->Evaluator zero zarzutow. Weryfikacja wlasna orkiestratora (content-only jak B1/B2): before/after porownanie pol wszystkich 14 wpisow (Python) - zero zmian poza opis/top3 (i niezmieniona historia dla garnizon), zero wpisow spoza listy. 13/14 budynkow ma maksPoziom=1 - spot-check regexem (frazy progresji poziomowej) na opis+top3: zero trafien. tsc czysty, entity-card-historia-section-test 36/36, entity-card-contract-test 75/75, civpedia-budynki-historia-test 141/141, 5 bramek referencyjnych zielone. Zamyka cala fale budynkow R-KARTY-OPIS-TOP3-Q1 (B1+B2+B3, 42/42) - pozostaja wylacznie jednostki (U1-U6+, 75 jednostek).",
   "publisher": "Orkiestrator (Claude Code)",
   "bundle": "Gra-ROBOCZA.html",
-  "md5": "d2eba4da3f7e34f16e414c4da3a3103b",
+  "md5": "32ed2ec14f9b2d5f29820fd9ce1ff8c4",
   "bundlePoleBitwy": "Gra-ROBOCZA-POLE-BITWY.html",
   "md5PoleBitwy": "6deb45d265b82b4eb27e990c345a79c1"
 }

@@ -13,6 +13,28 @@ swoim wĹ‚asnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji d
 > Pakiet 3 z 2026-08-20 jest docs-only i nie tworzy wpisu ROBOCZA/KANON/FINALNA;
 > ten plik pozostaje wyłącznie rejestrem publikacji bundli.
 
+## ROBOCZA 32ed2ec1 - 2026-09-10 23:14 UTC - FALA 374: fala treści B3 — OSTATNIA partia budynków (Opis/Top3)
+
+|- md5 (pełne): 32ed2ec14f9b2d5f29820fd9ce1ff8c4 · stempel: ROBOCZA · label 32ed2ec1 · zakres
+  commitów: `a464f752..b22cfc20` (od poprzedniej fali do obecnego `main`) · pole bitwy:
+  `Gra-ROBOCZA-POLE-BITWY.html` md5 `6deb45d265b82b4eb27e990c345a79c1` (NIEZMIENIONE)
+|- **`R-KARTY-OPIS-TOP3-B3-Q1`** (commit `3c19b0b9`) — 14 budynków, OSTATNIA partia
+  budynków fali treści `R-KARTY-OPIS-TOP3-Q1`: wielka_kuznia, fort, baszta,
+  warsztat_oblezniczy, akademia, teatr, sad, dom_starszyzny, dwor_zarzadcy, pretorium,
+  trybunal, laznia_publiczna, akademia_wojskowa, garnizon. „Garnizon" dostał dodatkowo
+  `opis`/`top3` mimo że miał już `historia` z wcześniejszego, niezależnego tematu
+  (`R-BUDYNEK-GARNIZON-NOWY-Q1`) — założenie dispatchu, że jej brakowało, było błędne,
+  ale nieszkodliwe (Operator poprawnie nie nadpisał istniejącej treści). Operator→Evaluator
+  zero zarzutów. Weryfikacja własna orkiestratora (content-only, jak B1/B2): porównanie
+  before/after wszystkich pól każdego z 14 wpisów (Python) potwierdziło zero zmian poza
+  `opis`/`top3` (i niezmienioną `historia` dla garnizon), zero wpisów spoza listy. 13/14
+  budynków ma `maksPoziom=1` — spot-check regexem (frazy progresji poziomowej) na
+  `opis`+`top3` wszystkich 13: zero trafień. `jq` valid, `tsc --noEmit` czysty,
+  `entity-card-historia-section-test` 36/36, `entity-card-contract-test` 75/75,
+  `civpedia-budynki-historia-test` 141/141, 5 bramek referencyjnych zielone. **Zamyka
+  całą falę budynków `R-KARTY-OPIS-TOP3-Q1` (B1+B2+B3, 42/42 budynków) — pozostają
+  wyłącznie jednostki (U1-U6+, 75 jednostek).**
+
 ## ROBOCZA d2eba4da - 2026-09-10 22:45 UTC - FALA 373: KRYTYCZNY fix — dominacja jednej cywilizacji AI
 
 |- md5 (pełne): d2eba4da3f7e34f16e414c4da3a3103b · stempel: ROBOCZA · label d2eba4da · zakres
