@@ -1099,6 +1099,7 @@ import {
   WOJNA_WYMUSZONA_ODPOCZYNEK_TUR,
   WOJNA_WYMUSZONA_COOLDOWN_TA_SAMA_CYWILIZACJA_TUR,
   WOJNA_WYMUSZONA_MAX_CZAS_TRWANIA_TUR,
+  WOJNA_WYMUSZONA_MAX_MIASTA_ZDOBYTE_LUB_STRACONE,
   isEligibleForBronzeForcedWar,
   shouldEndBronzeForcedWarByCityCount,
   shouldEndBronzeForcedWarByDuration,
@@ -1136,6 +1137,7 @@ import {
   countActiveWarsExcluding,
   countActiveForcedWarsForOwner,
   assignForcedWarPairings,
+  shouldEndForcedWarByCityCount,
   type ForcedWarPairingSubject,
   type ForcedWarPairingExistingPair,
 } from './game/forced-war-common';
@@ -1928,6 +1930,27 @@ async function boot(): Promise<void> {
     const bronzeForceWarRestUntilByOwner = new Map<number, number>();
     /** Aktywne wojny wymuszone Brązu, klucz = diploPairKey(attackerId, targetId) — liczniki miast do auto-pokoju. / EN: active Bronze forced wars, keyed by diploPairKey — city counters driving auto-peace. */
     const bronzeForceWarActiveByPairKey = new Map<string, BronzeForcedWarPairState>();
+    /**
+     * R-AI-WOJNY-ZWYKLE-CAP-DWA-MIASTA-Q1: liczniki zdobytych miast dla ZWYKŁYCH (nie
+     * wymuszonych epoki) wojen AI↔AI, klucz = diploPairKey(a, b). Osobny od
+     * bronze/stone/iron ForceWarActiveByPairKey — pary z aktywną wojną wymuszoną mają
+     * WŁASNY mechanizm i są tu jawnie wykluczone (zero podwójnego liczenia). `ownerA`/
+     * `ownerB` = para w stałej kolejności (Math.min/Math.max), żeby przypisanie licznika
+     * było deterministyczne niezależnie od tego, kto akurat zdobywa. Leniwa inicjalizacja:
+     * brak wpisu = 0/0 przy pierwszym zdarzeniu zdobycia tej pary. Sprzątane centralnie w
+     * `finalizePeaceTreatyBetween` (jedyne miejsce, gdzie status pary realnie przechodzi
+     * z 'wojna' na 'pokoj' w grze) — zapobiega „przeciekowi" licznika do następnej wojny
+     * tej samej pary po cooldownie. Prosta struktura, celowo BEZ przechodzenia przez
+     * `serializeForcedWarState`/`restoreForcedWarState` (to jest dla całego, bardziej
+     * złożonego systemu parowania wojen wymuszonych, którego ten temat nie używa).
+     * EN: capture counters for REGULAR (non-forced-epoch) AI↔AI wars, keyed by
+     * diploPairKey. Separate registry from bronze/stone/iron; pairs with an active forced
+     * war are explicitly excluded. Cleaned up centrally in finalizePeaceTreatyBetween.
+     */
+    const regularWarCapturedByPairKey = new Map<
+      string,
+      { ownerA: number; ownerB: number; capturedByA: number; capturedByB: number }
+    >();
     /**
      * R-EPOKA-KAMIEN-WYMUSZONA-WOJNA: osobny rejestr od Brązu. Ochrona startowa
      * kończy się po 20 turach gry; dalej cykl działa według tych samych reguł
@@ -9087,6 +9110,13 @@ async function boot(): Promise<void> {
       );
     }
 
+    /** R-AI-WOJNY-ZWYKLE-CAP-DWA-MIASTA-Q1: sprząta licznik zwykłej wojny AI↔AI co pokój tej
+     * pary (auto-pokój po progu miast LUB zwykła negocjacja) — bez tego przeciekałby do
+     * następnej wojny tej samej pary po cooldownie. */
+    function cleanupRegularWarOnPeace(proposerId: number, responderId: number): void {
+      regularWarCapturedByPairKey.delete(diploPairKey(proposerId, responderId));
+    }
+
     /**
      * Zawarcie pokoju + blokada DOW na PEACE_TREATY_LOCK_TURNS tur (lub `lockTurnsOverride`,
      * jeśli podane).
@@ -9124,6 +9154,7 @@ async function boot(): Promise<void> {
       cleanupStoneForcedWarOnPeace(proposerId, responderId);
       // R-EPOKA-ZELAZO-WYMUSZONA-WOJNA-Q1: osobny rejestr Żelaza, ta sama zasada.
       cleanupIronForcedWarOnPeace(proposerId, responderId);
+      cleanupRegularWarOnPeace(proposerId, responderId);
       // R-EPOKA-BRAZU-WYMUSZONA-WOJNA: pokój między tą parą (jakkolwiek zawarty — auto-pokój
       // po progu miast LUB zwykła negocjacja AI/gracza) kończy ewentualną aktywną wojnę
       // wymuszoną — sprzątamy stan i uzbrajamy odpoczynek napastnika PRZED szukaniem
@@ -14041,6 +14072,7 @@ async function boot(): Promise<void> {
         maybeResolveBronzeForcedWarOnCityCapture(oldOwner, newOwner);
         maybeResolveStoneForcedWarOnCityCapture(oldOwner, newOwner);
         maybeResolveIronForcedWarOnCityCapture(oldOwner, newOwner);
+        maybeResolveRegularWarOnCityCapture(oldOwner, newOwner);
         // P-REKRUTACJA-JEDNOSTEK-TYLKO-SKARBIEC-Q1=B: kapitulacja głodowa
         // jest drugim (obok podboju bojowego) wejściem przejęcia miasta. Legacy
         // jednostki z kolejki Pracy nie mogą przejść do nowego właściciela;
@@ -23012,6 +23044,79 @@ async function boot(): Promise<void> {
       },
     };
 
+    // R-AI-WOJNY-ZWYKLE-CAP-DWA-MIASTA-Q1: hak testowy WYŁĄCZNIE do
+    // `tools/ai-wojny-zwykle-cap-dwa-miasta-test.cjs` — REGUŁA PRZECIW SAMOOSZUKIWANIU
+    // dispatchu zakazuje uznania kryteriów (a)-(d) za spełnione bez REALNEJ sekwencji zmiany
+    // `city.ownerId` przez faktyczne funkcje silnika (nie przez ręczne wywołanie samej nowej
+    // funkcji w izolacji). Hak steruje WYŁĄCZNIE danymi wejściowymi (kto ma z kim relację
+    // 'wojna', czyje miasto jest gdzie przed próbą przejęcia, czy para ma już aktywną wojnę
+    // WYMUSZONĄ epoki) — sam LICZNIK, PRÓG i AUTO-POKÓJ idą przez REALNY
+    // `maybeResolveRegularWarOnCityCapture` wołany z wnętrza REALNEGO
+    // `captureCityWithoutBattle`/`resolveSiegeSurrender` (`__rebelProtectionTestDebug.
+    // captureViaBattle`/`captureViaSiegeSurrender` powyżej, reużyte tu bez zmian).
+    // `resetCityOwnerForTest` NIE jest zdarzeniem przejęcia (nie woła żadnego funnela wojny)
+    // — steruje WYŁĄCZNIE tym, kto ma miasto PRZED kolejną, REALNĄ próbą przejęcia, dokładnie
+    // jak `stageRebelCity` wyżej.
+    (window as any).__aiWojnyZwykleCapTestDebug = {
+      declareRegularWarBetween: (a: number, b: number): void => {
+        setDiploRelation(a, b, applyDiploEventTracked(a, b, getDiploRelation(a, b), 'wojna_wypowiedziana'));
+      },
+      getRegularWarCaptured: (
+        a: number,
+        b: number,
+      ): { capturedByA: number; capturedByB: number } | null => {
+        const st = regularWarCapturedByPairKey.get(diploPairKey(a, b));
+        return st ? { capturedByA: st.capturedByA, capturedByB: st.capturedByB } : null;
+      },
+      resetCityOwnerForTest: (cityId: string, ownerId: number): void => {
+        const c = cities.find(x => x.id === cityId);
+        if (!c) throw new Error('resetCityOwnerForTest: city not found: ' + cityId);
+        c.ownerId = ownerId;
+      },
+      stageBronzeForcedWarActiveForTest: (attackerId: number, targetId: number): void => {
+        bronzeForceWarActiveByPairKey.set(diploPairKey(attackerId, targetId), {
+          attackerId, targetId, capturedByAttacker: 0, capturedByDefender: 0,
+        });
+      },
+      clearBronzeForcedWarActiveForTest: (attackerId: number, targetId: number): void => {
+        bronzeForceWarActiveByPairKey.delete(diploPairKey(attackerId, targetId));
+      },
+      // R-AI-WOJNY-ZWYKLE-CAP-DWA-MIASTA-Q1 (naprawa runda 2, zarzut Evaluatora #2):
+      // `?playtest=mapa` ma z definicji DOKŁADNIE JEDNO miasto per realny AI owner —
+      // scenariusz testu potrzebuje aiA z co najmniej DWOMA miastami, żeby 1. zdobycie
+      // testowego miasta NIE było jednocześnie ostatnim miastem tego ownera (co uruchamiałoby
+      // produkcyjny `eliminateOwner()` i kasowało `diplomacyRelations` PRZED 2. zdobyciem —
+      // dokładnie przyczyna źródłowa opisana w zarzucie #2). Zakłada drugie miasto z dala od
+      // istniejących (ten sam wzorzec ring-scan co `forceBronzeForcedWarDominoOnPlayer` wyżej),
+      // BEZ zerowania istniejących relacji wojny tego ownera (w przeciwieństwie do tamtego
+      // hooka) — to jest jedyna różnica: tu chcemy wojnę aiA<->aiB NIETKNIĘTĄ.
+      ensureSecondCityForOwner: (ownerId: number): boolean => {
+        const anchor = cities.find(c => c.ownerId === ownerId);
+        if (!anchor) return false;
+        const MIN_RING = 15;
+        const MAX_RING = 60;
+        let extraCity: import('./game/cities').City | null = null;
+        outerHexScan: for (let ring = MIN_RING; ring <= MAX_RING; ring++) {
+          for (let dq = -ring; dq <= ring; dq++) {
+            for (let dr = -ring; dr <= ring; dr++) {
+              if (Math.max(Math.abs(dq), Math.abs(dr), Math.abs(dq + dr)) !== ring) continue;
+              const q = anchor.q + dq, r = anchor.r + dr;
+              if (cities.some(c => c.q === q && c.r === r)) continue;
+              const found = foundCityAt(q, r, ownerId, cities, map, 'Drugie Miasto Test AI', false, true);
+              if (found) { extraCity = found; break outerHexScan; }
+            }
+          }
+        }
+        if (!extraCity) return false;
+        cities.push(extraCity);
+        finalizeCityFounding(extraCity, extraCity.q, extraCity.r);
+        seedCityOwnerDefaults(extraCity);
+        if (!empireFoodStates.has(ownerId)) empireFoodStates.set(ownerId, freshEmpireFoodState());
+        if (!goldDeficitStates.has(ownerId)) goldDeficitStates.set(ownerId, freshGoldDeficitState());
+        return true;
+      },
+    };
+
     // R-MIASTA-PANSTWA-STARTOWE-JEDNOSTKI-Q1 (Operator obrona runda 1, Evaluator zarzut 1):
     // hak testowy WYŁĄCZNIE do `tools/city-state-start-units-live-test.cjs` — REGUŁA
     // PRZECIW SAMOOSZUKIWANIU dispatchu zakazuje uznania kryteriów końca 1/2 za spełnione
@@ -27588,6 +27693,14 @@ async function boot(): Promise<void> {
           ironForceWarActiveByPairKey.delete(key);
         }
       }
+      // R-AI-WOJNY-ZWYKLE-CAP-DWA-MIASTA-Q1 (naprawa runda 2, zarzut Evaluatora #4):
+      // ten sam sprzątacz dla licznika zwykłych wojen AI↔AI co bronze/stone/iron wyżej —
+      // martwy ownerId nie powinien zostawiać wpisu w regularWarCapturedByPairKey.
+      for (const [key, st] of Array.from(regularWarCapturedByPairKey.entries())) {
+        if (st.ownerA === ownerId || st.ownerB === ownerId) {
+          regularWarCapturedByPairKey.delete(key);
+        }
+      }
 
       for (const key of Array.from(diplomacyRelations.keys())) {
         if (diploPairKeyHasOwner(key, ownerId)) diplomacyRelations.delete(key);
@@ -28047,6 +28160,55 @@ async function boot(): Promise<void> {
       );
     }
 
+    /**
+     * R-AI-WOJNY-ZWYKLE-CAP-DWA-MIASTA-Q1: bezpiecznik dla ZWYKŁYCH (niewymuszonych epoki)
+     * wojen AI↔AI — bez niego taka wojna mogła eskalować aż do całkowitego podboju jednej
+     * cywilizacji przez drugą (żywy bug właściciela, `R-AI-WOJNY-PODBOJ-DOMINACJA-Q1`).
+     * Reużywa DOKŁADNIE tego samego progu i cooldownu co wojny wymuszone epoki
+     * (`WOJNA_WYMUSZONA_MAX_MIASTA_ZDOBYTE_LUB_STRACONE=2`,
+     * `WOJNA_WYMUSZONA_COOLDOWN_TA_SAMA_CYWILIZACJA_TUR=20`) — właściciel Q1: "rozszerz TEN
+     * SAM mechanizm, nie wymyślaj nowych progów/wartości". Wywoływana z OBU tych samych
+     * funneli zmiany `city.ownerId` co trzy funkcje forced-war wyżej, ZARAZ PO nich.
+     * Q3: wyłącznie AI↔AI — wojny z udziałem gracza (ownerId===0 po którejkolwiek stronie)
+     * są no-op. Pary z aktywną wojną WYMUSZONĄ (bronze/stone/iron) są no-op tutaj — mają
+     * własny mechanizm, zero podwójnego liczenia/podwójnego pokoju.
+     * EN: safety valve for REGULAR (non-forced-epoch) AI↔AI wars, reusing the exact same
+     * threshold/cooldown as the epoch forced-war mechanism per owner decision Q1. AI↔AI
+     * only (Q3); pairs already tracked by a forced-war registry are no-ops here.
+     */
+    function maybeResolveRegularWarOnCityCapture(oldOwner: number, newOwner: number): void {
+      if (oldOwner === newOwner) return;
+      if (oldOwner === 0 || newOwner === 0) return; // Q3: wyłącznie AI↔AI, gracz bez zmian.
+      const pairKey = diploPairKey(oldOwner, newOwner);
+      // Para z aktywną wojną WYMUSZONĄ epoki ma własny bezpiecznik — zero podwójnego liczenia.
+      if (
+        bronzeForceWarActiveByPairKey.has(pairKey)
+        || stoneForceWarActiveByPairKey.has(pairKey)
+        || ironForceWarActiveByPairKey.has(pairKey)
+      ) {
+        return;
+      }
+      if (getDiploRelation(oldOwner, newOwner).status !== 'wojna') return;
+      const ownerA = Math.min(oldOwner, newOwner);
+      const ownerB = Math.max(oldOwner, newOwner);
+      const st = regularWarCapturedByPairKey.get(pairKey)
+        ?? { ownerA, ownerB, capturedByA: 0, capturedByB: 0 };
+      if (newOwner === ownerA) st.capturedByA++;
+      else st.capturedByB++;
+      if (!shouldEndForcedWarByCityCount(
+        st.capturedByA, st.capturedByB, WOJNA_WYMUSZONA_MAX_MIASTA_ZDOBYTE_LUB_STRACONE,
+      )) {
+        regularWarCapturedByPairKey.set(pairKey, st);
+        return;
+      }
+      regularWarCapturedByPairKey.delete(pairKey);
+      console.log(
+        `[Dyplomacja] R-AI-WOJNY-ZWYKLE-CAP-DWA-MIASTA: auto-pokój AI${ownerA}↔AI${ownerB} `
+        + `(zdobyte ${st.capturedByA}/stracone ${st.capturedByB})`,
+      );
+      finalizePeaceTreatyBetween(ownerA, ownerB, WOJNA_WYMUSZONA_COOLDOWN_TA_SAMA_CYWILIZACJA_TUR);
+    }
+
     /** ST-2/ST-3: przejęcie miasta — tylko obrońca na centrum (B); pierścień zostaje. */
     /** `eliminatedCivLabel`/`eliminatedDetails` — patrz komentarz `runCapitalCapturePlunder`:
      * niepuste WYŁĄCZNIE gdy to przejęcie eliminuje ostatnie miasto danej cywilizacji I
@@ -28107,6 +28269,7 @@ async function boot(): Promise<void> {
       maybeResolveBronzeForcedWarOnCityCapture(oldOwner, atkOwner);
       maybeResolveStoneForcedWarOnCityCapture(oldOwner, atkOwner);
       maybeResolveIronForcedWarOnCityCapture(oldOwner, atkOwner);
+      maybeResolveRegularWarOnCityCapture(oldOwner, atkOwner);
       // Domknięcie luki temat 8 batcha 7-10 (miasta barbarzyńskie -- zob. wpięcie
       // tickBarbarianCityGarrisons niżej w ticku barbarzyńców): capture NIE czyścił
       // odziedziczonej kolejki budowy ofiary -- budynek W TOKU (front kolejki, np.
@@ -29110,6 +29273,10 @@ async function boot(): Promise<void> {
           bronzeForceWarCycleOwners: bronzeForceWarSave.cycleOwners,
           bronzeForceWarRestUntilByOwner: bronzeForceWarSave.restUntilByOwner,
           bronzeForceWarActiveByPairKey: bronzeForceWarSave.activeByPairKey,
+          // R-AI-WOJNY-ZWYKLE-CAP-DWA-MIASTA-Q1: bez tego wpisu licznik zdobytych miast
+          // zwykłych wojen AI↔AI zerowałby się po każdym save/load (mechanizm celowo NIE
+          // przechodzi przez serializeForcedWarState, patrz komentarz przy deklaracji mapy).
+          regularWarCapturedByPairKey: Array.from(regularWarCapturedByPairKey.entries()),
           stoneForceWarPendingOwners: stoneForceWarSave.pendingOwners,
           stoneForceWarCycleOwners: stoneForceWarSave.cycleOwners,
           stoneForceWarRestUntilByOwner: stoneForceWarSave.restUntilByOwner,
@@ -35587,6 +35754,9 @@ async function boot(): Promise<void> {
       bronzeForceWarRestUntilByOwner.clear();
       bronzeForceWarActiveByPairKey.clear();
       barbCamps = [];
+      // R-AI-WOJNY-ZWYKLE-CAP-DWA-MIASTA-Q1: nowa gra bez przeładowania strony nie może
+      // dziedziczyć liczników zwykłych wojen AI↔AI z poprzedniej rozgrywki (ownerId reużywane).
+      regularWarCapturedByPairKey.clear();
       clearedBarbCampHexes.clear();
       // Audyt #43: cityRelig/autoManageCities przezywaly restart (id 'cityN'
       // koliduja miedzy rozgrywkami) -- nowe miasto dziedziczylo zombie stan
@@ -36971,6 +37141,15 @@ async function boot(): Promise<void> {
       // limit czasu trwania liczy od TERAZ zamiast ciąć wojnę natychmiast po wczytaniu.
       for (const [key, st] of bronzeForceWarRestored.activeByPairKey) {
         bronzeForceWarActiveByPairKey.set(key, { ...st, startTurn: st.startTurn ?? turn });
+      }
+      // R-AI-WOJNY-ZWYKLE-CAP-DWA-MIASTA-Q1: brak wpisu (stary zapis sprzed tej naprawy) =
+      // bezpieczny pusty stan (mechanizm po prostu nieaktywny dla tej gry), nie wyjątek.
+      regularWarCapturedByPairKey.clear();
+      const savedRegularWarCaptured = saved.meta?.regularWarCapturedByPairKey as
+        | Array<[string, { ownerA: number; ownerB: number; capturedByA: number; capturedByB: number }]>
+        | undefined;
+      if (savedRegularWarCaptured?.length) {
+        for (const [key, st] of savedRegularWarCaptured) regularWarCapturedByPairKey.set(key, st);
       }
       // R-WOJNA-WYMUSZONA-REGULY-Q1 (Część A): odtworzenie tury wejścia w Brąz per-owner —
       // brak wpisu dla danego ownera (stary zapis) = `undefined`, `isEligibleForBronzeForcedWar`
