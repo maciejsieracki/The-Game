@@ -2571,7 +2571,15 @@ async function boot(): Promise<void> {
     let aiStartHexes = startPlacements.aiStarts;
     /** Promień oświetlenia startu (z trudności menu). */
     let startRevealRadius = startRevealRadiusForDifficulty('normal');
-    let playerEverOwnedCity = false;
+    /**
+     * R-HOTSEAT-DRUGI-FOTEL-NIE-DOSTAJE-TURY-Q1 (Przyczyna 2): per-owner, wzorem
+     * `playerStateByHuman`/`exploredByHuman` — dawniej pojedynczy globalny `boolean`
+     * (`ownerId===0` na zawsze), więc fotel 1 zakładający pierwsze miasto trwale
+     * blokował fotelowi 2 tryb "załóż pierwsze miasto" (isAwaitingFirstPlayerCity()
+     * czytała TĘ SAMĄ flagę niezależnie od ME()). Wszystkie 6 miejsc zapisu (dawniej
+     * main.ts:12825/14016/28051/35807/36033/36472) zmigrowane na ten Set.
+     */
+    let playerEverOwnedCityByOwner: Set<number> = new Set<number>();
     /** Tryb „Załóż miasto” w panelu budowy (A-START-01/05). */
     let foundCityMode = false;
 
@@ -7725,6 +7733,16 @@ async function boot(): Promise<void> {
       endTurnStartedAt = 0;
       aiTurnAwaitingBattle = false;
       aiCmdResume = null;
+      // R-HOTSEAT-DRUGI-FOTEL-NIE-DOSTAJE-TURY-Q1 (runda 2, Evaluator zarzut #2):
+      // `seatsFinishedThisRound` (main.ts, przy `humanSeats`) jest DOKŁADNIE tą samą klasą
+      // "stanu sesji przeżywającego Nową grę/load bez pełnego reloadu strony", dla której ten
+      // hub istnieje -- `doStartGame()` i `prepareSessionForLoad()` wołają WYŁĄCZNIE tę funkcję
+      // (nie osobne resety), a `humanSeats` sam JEST poprawnie odtwarzany przy load (patrz
+      // `prepareSessionForLoad`/load-path niżej w pliku), więc bez tej linii Set niósł fotele
+      // "skończone" z sesji SPRZED Nowej gry/loadu do nowej gry z tymi samymi ownerId --
+      // pierwszy koniec tury po loadzie mógł natychmiast uznać rundę za kompletną i przejść
+      // świat, mimo że żaden fotel załadowanej gry jeszcze nie grał w tej rundzie.
+      seatsFinishedThisRound.clear();
       // N2 (Evaluator, werdykt 6936d4d3, 2026-08-16): ta sama klasa wycieku co F4 wyżej —
       // awans epoki w trakcie fazy EOT ustawia pending toast, a load innej gry w tym oknie
       // zerował endTurnInProgress, ale NIE pending, więc oryginalna async sekwencja i tak
@@ -9816,8 +9834,15 @@ async function boot(): Promise<void> {
       explored.clear();
     }
 
-    function isAwaitingFirstPlayerCity(): boolean {
-      return computeAwaitingFirstPlayerCity(playerEverOwnedCity, cities);
+    /**
+     * R-HOTSEAT-DRUGI-FOTEL-NIE-DOSTAJE-TURY-Q1: `ownerId` opcjonalny, domyślnie
+     * `ME()` (aktywny fotel) — wszystkie dzisiejsze wywołania bezparametrowe (patrz
+     * dispatch tego tematu) NIE wymagają zmiany, bo domyślny `ME()` jest dokładnie
+     * tym, czego potrzebują. `foundingTerritoryOpts`/`switchActiveHuman` wołają z
+     * jawnym `ownerId`, żeby sprawdzić fotel, który WŁAŚNIE staje się aktywny.
+     */
+    function isAwaitingFirstPlayerCity(ownerId: number = ME()): boolean {
+      return computeAwaitingFirstPlayerCity(playerEverOwnedCityByOwner.has(ownerId), cities, ownerId);
     }
 
     function isInStartReveal(q: number, r: number): boolean {
@@ -9825,7 +9850,7 @@ async function boot(): Promise<void> {
         q,
         r,
         isAwaitingFirstPlayerCity(),
-        playerStartHex,
+        playerStartHexFor(ME()),
         startRevealRadius,
         hexDistance,
       );
@@ -9840,7 +9865,11 @@ async function boot(): Promise<void> {
      * WYŁĄCZNIE dodatkowe węzły do tej listy, żadnego innego skutku terytorialnego.
      */
     function foundingTerritoryOpts(ownerId: number): { withinTerritory?: (q: number, r: number) => boolean } {
-      if (ownerId === 0 && isAwaitingFirstPlayerCity()) return {};
+      // R-HOTSEAT-DRUGI-FOTEL-NIE-DOSTAJE-TURY-Q1 (Przyczyna 3): literalny `ownerId===0`
+      // naprawiony na `isMe(ownerId)` (czy TEN ownerId to aktywny fotel) razem z
+      // `isAwaitingFirstPlayerCity(ownerId)` per-owner — dla fotela 2 aktywnego to samo
+      // pytanie, które dawniej dawało poprawną odpowiedź WYŁĄCZNIE dla fotela 1.
+      if (isMe(ownerId) && isAwaitingFirstPlayerCity(ownerId)) return {};
       const nodes = cityNodesForOwner(ownerId);
       const extendedNodes = foundingNodesForOwner(ownerId, nodes, fortNodes);
       if (extendedNodes.length === 0) return {};
@@ -9852,9 +9881,12 @@ async function boot(): Promise<void> {
     /** Walidacja założenia miasta gracza (pierwsze miasto tylko w oświetlonym kręgu startu). */
     function canFoundPlayerCityAt(q: number, r: number): { ok: boolean; reason: string } {
       const playerEra = player.era ?? 1; // R-MIASTA-LIMIT-PER-EPOKA-Q1 / EN: city limit per era
+      // R-HOTSEAT-DRUGI-FOTEL-NIE-DOSTAJE-TURY-Q1 (audyt, ta sama natura co Przyczyna 3):
+      // `ownerId` literalny 0 -> `ME()` — inaczej fotel 2 zakładałby "swoje" pierwsze
+      // miasto sprawdzone/zarejestrowane WCIĄŻ jako fotel 1 (territory/limit miast).
       const base = canFoundCity(q, r, cities, map, {
-        ...foundingTerritoryOpts(0),
-        ownerId: 0,
+        ...foundingTerritoryOpts(ME()),
+        ownerId: ME(),
         ownerEra: playerEra,
         gameConfig: { cityLimitBase: _menuCityLimitBase },
       });
@@ -9974,8 +10006,11 @@ async function boot(): Promise<void> {
 
     /** Klucze oświetlonego kręgu startu — rzeki widoczne przed założeniem pierwszego miasta. */
     function startRevealKeysForRiverFog(): Set<string> | undefined {
-      if (!isAwaitingFirstPlayerCity() || playerStartHex === null) return undefined;
-      return computeVisibleAt(playerStartHex.q, playerStartHex.r, map, startRevealRadius);
+      // R-HOTSEAT-DRUGI-FOTEL-NIE-DOSTAJE-TURY-Q1 (Przyczyna 4): `playerStartHex`
+      // (singularny, zawsze fotel 1) -> `playerStartHexFor(ME())`.
+      const meStartHex = playerStartHexFor(ME());
+      if (!isAwaitingFirstPlayerCity() || meStartHex === null) return undefined;
+      return computeVisibleAt(meStartHex.q, meStartHex.r, map, startRevealRadius);
     }
 
     cityFogVisible = (city, vis) => {
@@ -10536,6 +10571,12 @@ async function boot(): Promise<void> {
     // (gra/src/game/human-owners.ts, Etap 0). Dziś zawsze dokładnie jeden fotel
     // człowieka -- behawioralny no-op, patrz bramka hotseat-etap1-ownerid-test.cjs.
     let humanSeats: HumanSeats = { humanOwnerIds: [HUMAN_OWNER_PRIMARY], activeHumanOwnerId: HUMAN_OWNER_PRIMARY };
+    /** R-HOTSEAT-DRUGI-FOTEL-NIE-DOSTAJE-TURY-Q1: fotele ludzkie, które już kliknęły
+     *  "Zakończ turę" W BIEŻĄCEJ RUNDZIE (`advanceSeat()` niżej) -- pusty zbiór = runda
+     *  jeszcze nie zaczęta / świeżo zresetowana. Czyszczony PRZEZ `advanceSeat()` w
+     *  momencie, gdy OSTATNI nieprzetworzony fotel właśnie skończył (świat/AI za chwilę
+     *  faktycznie przejdzie), żeby nowa runda startowała pusta. */
+    let seatsFinishedThisRound: Set<number> = new Set<number>();
     /** R-HOTSEAT-ETAP-2-MGLA-WOJNY-Q1: ownerId aktywnego fotela człowieka — alias
      *  na `humanSeats.activeHumanOwnerId`. Dziś zawsze `HUMAN_OWNER_PRIMARY` (jeden
      *  fotel człowieka), behawioralny no-op. Zastępuje zaszyte literały `0` w
@@ -10740,6 +10781,14 @@ async function boot(): Promise<void> {
       // sparametryzowane (recon §1d/§1e) — samo wywołanie wystarcza.
       refreshFog();
       updateHud();
+      // UWAGA: `beginOnboardingFoundCity()` NIE jest wołane tutaj -- `switchActiveHuman()`
+      // jest ogólnym, "no-leak" building-blockiem (kontrakt bramki
+      // `hotseat-etap5-no-leak-test.cjs` Scenariusz B: świeżo przełączony fotel bez miasta
+      // NIE dostaje automatycznie otwartego build-mode/found-city-mode -- test seeduje
+      // fotel B celowo BEZ miasta i asercjuje `buildModeOpen===false` PO switchu). Realny
+      // onboarding "załóż pierwsze miasto" dla fotela wchodzącego w rundę idzie z
+      // `advanceSeat()` (jedynego produkcyjnego wywołującego handoff między fotelami w
+      // trakcie gry) -- patrz tam.
     }
 
     overlayDepositEra = player.era;
@@ -12741,7 +12790,12 @@ async function boot(): Promise<void> {
     }
 
     function beginOnboardingFoundCity(): void {
-      if (cities.some(c => c.ownerId === 0)) return;
+      // R-HOTSEAT-DRUGI-FOTEL-NIE-DOSTAJE-TURY-Q1 (audyt, ta sama natura co Przyczyny
+      // 3/4): guard i heks skupienia kamery były zaszyte na fotel 1 (`ownerId===0`,
+      // `playerStartHex` singularny) — bez tej naprawy `switchActiveHuman()` (KROK
+      // dodatkowy niżej) wołałby tę funkcję dla fotela 2, ale ona i tak skupiłaby
+      // kamerę na heksie fotela 1 i sprawdziłaby cudze miasta.
+      if (cities.some(c => c.ownerId === ME())) return;
       buildModeOpen = true;
       foundCityMode = true;
       activeImprovementKey = null;
@@ -12749,8 +12803,9 @@ async function boot(): Promise<void> {
       refreshBuildHighlight();
       refreshD1bHud();
       enterBuildModeEscapeOverlay();
-      if (playerStartHex) {
-        const focusPos = axialToWorld(playerStartHex.q, playerStartHex.r, HEX_R);
+      const meStartHex = playerStartHexFor(ME());
+      if (meStartHex) {
+        const focusPos = axialToWorld(meStartHex.q, meStartHex.r, HEX_R);
         camCtrl.focusAt(focusPos.x, focusPos.z, 22);
       }
       showHintMessage(
@@ -12760,12 +12815,14 @@ async function boot(): Promise<void> {
     }
 
     function resolveFoundCityName(): string {
+      // R-HOTSEAT-DRUGI-FOTEL-NIE-DOSTAJE-TURY-Q1 (audyt): literalny `0` -> `ME()` --
+      // inaczej podpowiedź nazwy dla fotela 2 liczyłaby się z miast fotela 1.
       return suggestPlayerFoundCityName(
         data.cityNamesPools,
-        civTypeForOwner(0),
+        civTypeForOwner(ME()),
         cities,
         civTypeForOwner,
-        0,
+        ME(),
       ) || clusterPlayerStartCityName || playerStartCityName(data.civs, _menuCivId, data.cityNamesPools);
     }
 
@@ -12784,8 +12841,10 @@ async function boot(): Promise<void> {
         showHintMessage('Nie można założyć: ' + res.reason, 3000);
         return false;
       }
-      const playerCities = cities.filter(c => c.ownerId === 0);
-      const aff = evaluateFoundCityAffordance(playerPracaPool, playerCities, 0);
+      // R-HOTSEAT-DRUGI-FOTEL-NIE-DOSTAJE-TURY-Q1 (audyt): literalny `0` -> `ME()` --
+      // to jest ownerId FAKTYCZNIE zakładającego miasto fotela (aktywny w chwili kliku/B).
+      const playerCities = cities.filter(c => c.ownerId === ME());
+      const aff = evaluateFoundCityAffordance(playerPracaPool, playerCities, ME());
       if (!aff.ok) {
         showHintMessage(aff.reason ?? 'Nie stać', 3000);
         return false;
@@ -12801,7 +12860,9 @@ async function boot(): Promise<void> {
           sourceCityName = src.name;
         }
       }
-      const c = foundCityAt(q, r, 0, cities, map, name);
+      // R-HOTSEAT-DRUGI-FOTEL-NIE-DOSTAJE-TURY-Q1 (audyt): literalny `0` -> `ME()` --
+      // bez tego miasto założone przez fotel 2 trafiałoby do fotela 1 (błędny właściciel).
+      const c = foundCityAt(q, r, ME(), cities, map, name);
       if (!c) {
         showHintMessage('Nie udało się założyć miasta (hex zablokowany)', 3000);
         return false;
@@ -12822,7 +12883,9 @@ async function boot(): Promise<void> {
       spawnPendingForeignClusters();
       refreshFog();
       cityRenderer.sync(cities, _cityRenderOpts());
-      playerEverOwnedCity = true;
+      // R-HOTSEAT-DRUGI-FOTEL-NIE-DOSTAJE-TURY-Q1 (Przyczyna 2, miejsce zapisu 1/6):
+      // per-owner (`ME()` == fotel, który właśnie założył TO miasto, patrz `c.ownerId` wyżej).
+      playerEverOwnedCityByOwner.add(ME());
       exitBuildMode();
       hideCityPanelFull();
       clearPlayerUnitSelection();
@@ -12844,7 +12907,7 @@ async function boot(): Promise<void> {
       // R-PIERWSZE-MIASTO (Maciej 2026-07-24): dopóki gracz nie ma pierwszego miasta,
       // tryb zakładania miasta jest NIEWYJŚCIOWY — jeden choke-point zamyka wszystkie
       // furtki (Escape, PPM, toggle 🔨, dismissMapOverlayModes). Udane założenie ustawia
-      // playerEverOwnedCity=true PRZED wywołaniem exitBuildMode, więc poprawne zamknięcie
+      // playerEverOwnedCityByOwner.add(ME()) PRZED wywołaniem exitBuildMode, więc poprawne zamknięcie
       // po założeniu działa (isAwaitingFirstPlayerCity() już false).
       if (isAwaitingFirstPlayerCity()) return;
       buildModeOpen = false;
@@ -14013,7 +14076,10 @@ async function boot(): Promise<void> {
           if (u.q === city.q && u.r === city.r && u.ownerId === oldOwner) units.splice(i, 1);
         }
         syncCityGarnizon(city);
-        if (newOwner === 0) playerEverOwnedCity = true;
+        // R-HOTSEAT-DRUGI-FOTEL-NIE-DOSTAJE-TURY-Q1 (Przyczyna 2, miejsce zapisu 2/6):
+        // per-owner z ISTNIEJĄCEJ zmiennej `newOwner` z kontekstu (NIE ME() -- ten
+        // callsite przejmuje miasto kapitulacją, aktywny fotel może być kimś innym).
+        playerEverOwnedCityByOwner.add(newOwner);
         // R-BRAK-KOMUNIKATU-ELIMINACJA-CYWILIZACJI RUNDA 3, Defekt B (ścieżka 1): kapitulacja
         // głodowa nie ma modalu (nie podbój bojowy) — dawniej wynik runCapitalCapturePlunder()
         // był ignorowany, więc gdy TO przejęcie eliminowało ostatnie miasto ORAZ zdobywcą był
@@ -23118,7 +23184,51 @@ async function boot(): Promise<void> {
         ),
       }),
       switchActiveHuman: (ownerId: number): void => switchActiveHuman(ownerId),
-      isAwaitingFirstPlayerCity: (): boolean => isAwaitingFirstPlayerCity(),
+      isAwaitingFirstPlayerCity: (ownerId?: number): boolean =>
+        ownerId === undefined ? isAwaitingFirstPlayerCity() : isAwaitingFirstPlayerCity(ownerId),
+      /**
+       * R-HOTSEAT-DRUGI-FOTEL-NIE-DOSTAJE-TURY-Q1 — hak testowy WYŁĄCZNIE dla
+       * `tools/hotseat-drugi-fotel-tura-test.cjs`. Zero reimplementacji logiki
+       * foundowania: woła DOKŁADNIE `tryFoundPlayerCityAt(q, r)` (ta sama funkcja, którą
+       * wywołuje realny klik na mapie / skrót `B`, patrz `handleFoundCityMapClick`/
+       * keydown-handler main.ts), na `playerStartHexFor(ME())` -- heksie WŁAŚCIWYM dla
+       * fotela AKTYWNEGO w chwili wywołania (w przeciwieństwie do starszego
+       * `foundPlayerStartCity()` wyżej, zaszytego na globalny `playerStartHex` fotela 1 --
+       * ten hak jest per-owner, żeby dowieść, że fotel 2 zakłada miasto na WŁASNYM heksie).
+       */
+      foundPlayerCityForActiveSeat: (): boolean => {
+        const meStartHex = playerStartHexFor(ME());
+        if (!meStartHex) return false;
+        return tryFoundPlayerCityAt(meStartHex.q, meStartHex.r);
+      },
+      /**
+       * R-HOTSEAT-DRUGI-FOTEL-NIE-DOSTAJE-TURY-Q1 (runda 2, Evaluator zarzut #1) — hak
+       * testowy WYŁĄCZNIE dla `tools/hotseat-drugi-fotel-tura-test.cjs`. Inscenizuje REALNY
+       * strażnik `canPlayerInitiateEndTurn()` (`aiTurnAwaitingBattle`, ta sama flaga, którą
+       * ustawia realna faza bitwy AI, main.ts ~33209) BEZ rozgrywania bitwy — jedyna
+       * sztuczność jest we WŁĄCZENIU flagi, `advanceSeat()`/`canPlayerInitiateEndTurn()`
+       * wołane potem przez test są NIETKNIĘTE, REALNE funkcje produkcyjne.
+       *
+       * Ustawia RÓWNIEŻ `battleUiResolving` (ta sama flaga, main.ts:10532/26581) — bez tego
+       * `healStaleEndTurnBlockers()` (pierwsza linia `canPlayerInitiateEndTurn()`, main.ts
+       * ~29340) uznałby samo `aiTurnAwaitingBattle===true` bez ŻADNEGO otwartego preBattle za
+       * OSIEROCONE ("stale") i wyzerował je PRZED dotarciem do właściwego strażnika —
+       * dokładnie klasa zdarzenia, dla której `healStaleEndTurnBlockers` istnieje (F3/N1/RUNDA
+       * 3, komentarze tamże). `battleUiResolving` jest jedynym z trzech warunków `!preBattle
+       * && !battleUiResolving && !hasPendingAutoPreBattle()` osiągalnym BEZ realnego UI bitwy.
+       */
+      forceAiTurnAwaitingBattleForTest: (value: boolean): void => {
+        aiTurnAwaitingBattle = value;
+        battleUiResolving = value;
+      },
+      /** Odczyt rozmiaru `seatsFinishedThisRound` — WYŁĄCZNIE do odczytu, zero mutacji
+       *  (patrz `snapshotHumanSeatsForTest` wyżej dla tego samego wzorca uzasadnienia). */
+      seatsFinishedThisRoundSizeForTest: (): number => seatsFinishedThisRound.size,
+      /** Woła DOKŁADNIE `prepareSessionForLoad()` — tę samą funkcję, którą realna ścieżka
+       *  `loadGameFromSlot()` woła jako PIERWSZY krok (main.ts) przed odczytem zapisu.
+       *  Zero reimplementacji: nie duplikuje warunku „reset seatsFinishedThisRound", tylko
+       *  woła sam hub resetu, dokładnie jak produkcyjny load. */
+      prepareSessionForLoadForTest: (): void => { prepareSessionForLoad(); },
       showHotSeatHandoff: (fromLabel: string, toLabel: string): void => {
         showHotSeatHandoff({ fromLabel, toLabel }, () => hideHotSeatHandoff());
       },
@@ -28048,7 +28158,9 @@ async function boot(): Promise<void> {
           ),
         );
       }
-      if (atkOwner === 0) playerEverOwnedCity = true;
+      // R-HOTSEAT-DRUGI-FOTEL-NIE-DOSTAJE-TURY-Q1 (Przyczyna 2, miejsce zapisu 3/6):
+      // per-owner z ISTNIEJĄCEJ zmiennej `atkOwner` z kontekstu (NIE ME()).
+      playerEverOwnedCityByOwner.add(atkOwner);
       syncCityGarnizon(city);
       endMapSiege(city.id);
       const captureOutcome = runCapitalCapturePlunder(city, oldOwner, atkOwner);
@@ -33859,7 +33971,11 @@ async function boot(): Promise<void> {
               cities,
               gracz: 0,
               liczbaOsadnikow: settlersCount,
-              graczKiedysMialMiasto: playerEverOwnedCity,
+              // R-HOTSEAT-DRUGI-FOTEL-NIE-DOSTAJE-TURY-Q1: migracja Set<owner> -- ten system
+              // zwycięstwa jest już dziś scoped na `gracz: 0`/`potegaGracza: ...(0)` (linie
+              // sąsiednie), więc czytamy per-owner wpis DOKŁADNIE dla fotela 1 -- zero zmiany
+              // semantyki tego, wcześniej niezależnego, systemu.
+              graczKiedysMialMiasto: playerEverOwnedCityByOwner.has(HUMAN_OWNER_PRIMARY),
               potegaGracza: objectivePowerForOwner(0),
               potegiWszystkich,
               graczEra: player.era,
@@ -34100,6 +34216,12 @@ async function boot(): Promise<void> {
         setTurnTransition(6, 'Zakończenie ruchów gracza…', 'Gracz', nextTurnNum);
         await yieldTurnTransitionUi();
         await runWorldEndTurn(humanOwnerId);
+        // R-HOTSEAT-DRUGI-FOTEL-NIE-DOSTAJE-TURY-Q1 (Przyczyna 1): świat/AI właśnie
+        // przeszedł (runda była KOMPLETNA -- advanceSeat() woła endActiveHumanTurn()
+        // wyłącznie dla OSTATNIEGO fotela w rundzie) -- nowa runda zaczyna się od
+        // PIERWSZEGO fotela ludzkiego. No-op dla gry jednoosobowej i dla single-seat
+        // (switchActiveHuman ma wczesny return gdy cel == już aktywny fotel).
+        switchActiveHuman(humanSeats.humanOwnerIds[0]!);
         } catch (errEndTurn) {
           console.error('[EndTurn] Blad przejscia tury:', errEndTurn);
         } finally {
@@ -34136,14 +34258,73 @@ async function boot(): Promise<void> {
       })();
     }
 
-    // R-HOTSEAT-ETAP4B-SPLIT-Q1 (Krok 3): orkiestrator foteli. Dziś (jeden fotel człowieka,
-    // humanSeats.humanOwnerIds.length === 1) koniec tury AKTYWNEGO człowieka jest bezwarunkowo
-    // ostatnim -- nie ma kogo jeszcze pytać, więc nic więcej tu nie trzeba robić (patrz komentarz
-    // przy endActiveHumanTurn wyżej: runWorldEndTurn() jest wołana Z WEWNĄTRZ niej, architektura
-    // (a)). Wszystkie TRZY zewnętrzne call-site'y (HUD "Zakończ turę", __eraTestDebug.endTurn,
-    // skrót klawiszowy "N") wołają teraz TĘ funkcję, nie triggerPlayerEndTurn() bezpośrednio.
+    // R-HOTSEAT-DRUGI-FOTEL-NIE-DOSTAJE-TURY-Q1 (Przyczyna 1): orkiestrator foteli --
+    // REALNA implementacja (dawniej placeholder z Etapu 4b: wołał WYŁĄCZNIE
+    // endActiveHumanTurn(HUMAN_OWNER_PRIMARY), nigdy switchActiveHuman() -- fotel 2
+    // nigdy nie stawał się aktywny, patrz dispatch tego tematu). `seatsFinishedThisRound`
+    // (main.ts, przy `humanSeats`) trzyma fotele, które już kliknęły "Zakończ turę" W TEJ
+    // RUNDZIE -- gdy jest jeszcze nieprzetworzony fotel, przełącz na niego (BEZ przejścia
+    // świata/AI -- runda nie jest kompletna, dopóki nie skończą WSZYSCY ludzie); gdy
+    // aktywny fotel był OSTATNIM, zresetuj zbiór na nową rundę i dopiero TERAZ wywołaj
+    // `endActiveHumanTurn()` (realne przejście świata -- bankuje WSZYSTKIE fotele przez
+    // pętle po `humanSeats.humanOwnerIds`, patrz Etap 6c). Powrót aktywnego fotela na
+    // PIERWSZY fotel po zakończeniu świata jest w `endActiveHumanTurn` (patrz komentarz
+    // tam, zaraz po `await runWorldEndTurn`). Single-player (`humanOwnerIds.length===1`)
+    // jest bezwarunkowym no-opem tej pętli: `nextSeat` zawsze `undefined` już przy
+    // pierwszym (i jedynym) fotelu, więc świat przechodzi PRZY PIERWSZYM kliknięciu,
+    // bez dodatkowego kroku (kryterium regresji tego dispatchu). Wszystkie TRZY zewnętrzne
+    // call-site'y (HUD "Zakończ turę", __eraTestDebug.endTurn, skrót klawiszowy "N")
+    // wołają TĘ funkcję, nie triggerPlayerEndTurn()/endActiveHumanTurn() bezpośrednio.
     function advanceSeat(): void {
-      endActiveHumanTurn(HUMAN_OWNER_PRIMARY);
+      // R-HOTSEAT-DRUGI-FOTEL-NIE-DOSTAJE-TURY-Q1 (runda 2, Evaluator zarzut #1):
+      // JEDEN wspólny strażnik dla OBIE gałęzie ("przełącz na następny fotel" i
+      // "ostatni fotel -> świat"), zamiast dublować podzbiór warunków tylko dla
+      // gałęzi "ostatni fotel" (jak w rundzie 1). `canPlayerInitiateEndTurn()`
+      // egzekwuje TU, PRZED jakimkolwiek dotknięciem `seatsFinishedThisRound`:
+      // playtestWalkaActive, isAwaitingFirstPlayerCity, isPreBattleOpen/
+      // hasPendingAutoPreBattle, galleryOn, gameOver, endTurnInProgress,
+      // aiTurnAwaitingBattle/aiCmdResume -- dokładnie ta sama funkcja, którą
+      // `endActiveHumanTurn()` i tak wywołuje jako swój pierwszy strażnik (L34050),
+      // więc gałąź "ostatni fotel" niżej go i tak przechodziła; brakowało go w
+      // gałęzi "następny fotel", jedynym strażnikiem której był dotąd
+      // `isAwaitingFirstPlayerCity()`. Skrót klawiszowy "N" (jedyny z trzech
+      // call-site'ów advanceSeat() bez własnej bramki) korzysta teraz z tego
+      // samego strażnika co HUD/`__eraTestDebug`.
+      //
+      // To zamyka też race z endTurnInProgress: dopóki `endActiveHumanTurn()` nie
+      // dotarł do swojego `finally` (endTurnInProgress gaśnie TAM, PO
+      // `switchActiveHuman(humanOwnerIds[0])` -- main.ts, wnętrze
+      // `endActiveHumanTurn`), powtórne "N"/HUD/`__eraTestDebug` trafia w ten
+      // guard i wychodzi PRZED dotknięciem `seatsFinishedThisRound` lub aktywnego
+      // fotela -- żadnej modyfikacji stanu fotela W TRAKCIE trwającej tranzycji
+      // świata.
+      if (!canPlayerInitiateEndTurn()) {
+        hintEndTurnBlocked();
+        return;
+      }
+      const activeId = humanSeats.activeHumanOwnerId;
+      seatsFinishedThisRound.add(activeId);
+      const nextSeat = humanSeats.humanOwnerIds.find(id => !seatsFinishedThisRound.has(id));
+      if (nextSeat !== undefined) {
+        switchActiveHuman(nextSeat);
+        // R-HOTSEAT-DRUGI-FOTEL-NIE-DOSTAJE-TURY-Q1 (GOAL): fotel WCHODZĄCY w rundę bez
+        // miasta dostaje WŁASNY tryb "załóż pierwsze miasto" -- ten sam punkt wejścia, którym
+        // `doStartGame()` uruchamia go dla fotela 1 na starcie gry (main.ts,
+        // `beginOnboardingFoundCity()`), per-owner (`ME()` == `nextSeat` po switchu wyżej).
+        // CELOWO NIE w `switchActiveHuman()` samym (ten jest ogólnym "no-leak"
+        // building-blockiem -- kontrakt bramki `hotseat-etap5-no-leak-test.cjs` Scenariusz B
+        // wymaga, żeby SAM switch nie otwierał automatycznie build-mode).
+        if (isAwaitingFirstPlayerCity()) beginOnboardingFoundCity();
+        return;
+      }
+      // Wszystkie fotele skończyły turę w tej rundzie -- reset PRZED wołaniem
+      // endActiveHumanTurn(), żeby nowa runda (po realnym przejściu świata) startowała
+      // z pustym zbiorem "skończonych" fotoli. Guard wyżej już zablokował wejście tutaj,
+      // dopóki `endTurnInProgress` z poprzedniej rundy nie zgasł w `finally`
+      // `endActiveHumanTurn()`, więc ten `clear()` nie może już wyścigać się z
+      // tranzycją poprzedniej rundy.
+      seatsFinishedThisRound.clear();
+      endActiveHumanTurn(activeId);
     }
 
     // Zachowana jako cienki alias (decyzja stylu z recon §6.1 Krok 3) -- dziś bez wywołań z tego
@@ -35250,7 +35431,9 @@ async function boot(): Promise<void> {
       movedByPlayerThisTurn.clear();
       marchExecQueue.length = 0;
       pendingMarchHint = null;
-      playerEverOwnedCity = false;
+      // R-HOTSEAT-DRUGI-FOTEL-NIE-DOSTAJE-TURY-Q1 (Przyczyna 2, miejsce zapisu 4/6):
+      // reset pełnej gry -- czyści WSZYSTKICH właścicieli, nie tylko fotel 1.
+      playerEverOwnedCityByOwner.clear();
       veteranEnemyEducationShown = false;
       warEventLog.length = 0;
       borderMarchEventTargets.clear(); // N6: mapa celow kamery rowniez zerowana przy resecie
@@ -35559,7 +35742,9 @@ async function boot(): Promise<void> {
       diplomaticallyDiscoveredOwners.clear();
       resetDiplomaticDiscoveryUiState();
       setDiploRelation(0, preset.aiOwnerId, { zaufanie: 0, respekt: 30, status: 'wojna' });
-      playerEverOwnedCity = false;
+      // R-HOTSEAT-DRUGI-FOTEL-NIE-DOSTAJE-TURY-Q1 (Przyczyna 2, miejsce zapisu 5/6):
+      // reset scenariusza playtest -- czyści WSZYSTKICH właścicieli.
+      playerEverOwnedCityByOwner.clear();
 
       cities.length = 0;
       tradeRoutes.length = 0;
@@ -35804,7 +35989,11 @@ async function boot(): Promise<void> {
       diplomaticContactEstablished.clear();
       diplomaticallyDiscoveredOwners.clear();
       resetDiplomaticDiscoveryUiState();
-      playerEverOwnedCity = true;
+      // R-HOTSEAT-DRUGI-FOTEL-NIE-DOSTAJE-TURY-Q1 (Przyczyna 2, miejsce zapisu 6/6):
+      // scenariusz playtest miasta -- zawsze zakłada fotel 1 (HUMAN_OWNER_PRIMARY),
+      // ten preset nie zna drugiego fotela.
+      playerEverOwnedCityByOwner.clear();
+      playerEverOwnedCityByOwner.add(HUMAN_OWNER_PRIMARY);
 
       cities.length = 0;
       tradeRoutes.length = 0;
@@ -36030,7 +36219,10 @@ async function boot(): Promise<void> {
       diplomaticallyDiscoveredOwners.add(preset.aiOwnerId);
       setDiploRelation(0, preset.aiOwnerId, { zaufanie: 0, respekt: 30, status: 'wojna' });
 
-      playerEverOwnedCity = true;
+      // R-HOTSEAT-DRUGI-FOTEL-NIE-DOSTAJE-TURY-Q1: scenariusz playtest mapy -- zawsze
+      // zakłada fotel 1 (HUMAN_OWNER_PRIMARY), ten preset nie zna drugiego fotela.
+      playerEverOwnedCityByOwner.clear();
+      playerEverOwnedCityByOwner.add(HUMAN_OWNER_PRIMARY);
 
       cities.length = 0;
       tradeRoutes.length = 0;
@@ -36469,7 +36661,13 @@ async function boot(): Promise<void> {
       // finishes BEFORE this call -- see loadGameFromSlot), so the same arguments as
       // seedCityOwnerDefaults are safe here.
       reconcileAllWorkedTiles(cities, buildAllTerritoryNodes(), computeLostToNearerSiblingByCity(cities, map));
-      playerEverOwnedCity = cities.some(c => c.ownerId === 0);
+      // R-HOTSEAT-DRUGI-FOTEL-NIE-DOSTAJE-TURY-Q1: per-owner, dla WSZYSTKICH fotoli
+      // ludzkich z zapisu (nie tylko fotela 1) -- ten sam heurystyczny odczyt "ma
+      // miasto teraz" jak dawny kod, powielony dla każdego `saved.humanOwnerIds`.
+      playerEverOwnedCityByOwner.clear();
+      for (const oid of saved.humanOwnerIds) {
+        if (cities.some(c => c.ownerId === oid)) playerEverOwnedCityByOwner.add(oid);
+      }
       // R-HOTSEAT-ETAP7-SAVELOAD-Q1 (v3): `gracze[]`/`exploredByHuman` ZASTĘPUJĄ
       // pojedyncze `gracz`/`explored`. Odtwarzamy WSZYSTKIE fotele z zapisu do
       // `playerStateByHuman`/`exploredByHuman` (Etapy 0/2/3/5), a nie tylko gracza 0 --
