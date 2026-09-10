@@ -118,7 +118,11 @@ console.log('1. playerFormalRelationLabel — realne wykonanie\n');
       getDiploRelation: (a, b) => { captured.relArgs = [a, b]; return { status: 'pokoj' }; },
       resolveFormalDiplomaticStatus: (ctx) => { captured.ctx = ctx; return { label: 'X' }; },
       allianceFormalKindBetween: (deals, a, b) => { captured.allianceArgs = [a, b]; return null; },
-      diplomaticContactEstablished: new Set([4]),
+      // R-HOTSEAT-DYPLO-KONTAKT-PER-FOTEL-Q1: `diplomaticContactEstablished` (Set) ->
+      // `diplomaticContactEstablishedSet(humanOwnerId = ME())` (akcesor per-fotel main.ts) --
+      // ciało funkcji woła akcesor bez argumentu (domyślny ME()), mock ignoruje arg i zwraca
+      // to samo, co dawny płaski Set -- zero zmiany w tym, co ten test dowodzi.
+      diplomaticContactEstablishedSet: () => new Set([4]),
       isMe, ME,
     };
     const fn = compileRealFunction('playerFormalRelationLabel', Object.keys(mocks), mocks);

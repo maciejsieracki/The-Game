@@ -5635,7 +5635,7 @@ async function boot(): Promise<void> {
         allianceFormalKind: allianceFormalKindBetween(activeDeals, ME(), ownerId),
         hasNap,
         hasTrade,
-        contactEstablished: diplomaticContactEstablished.has(ownerId),
+        contactEstablished: diplomaticContactEstablishedSet().has(ownerId),
       }).label;
     }
 
@@ -6497,7 +6497,7 @@ async function boot(): Promise<void> {
           armyCount: units.filter(u => u.ownerId === otherId).length,
           cultureLabel: civCultureLabelForKey(civKeyForOwner(otherId)),
           epochLabel: epochLabelForOwner(otherId),
-          contactEstablished: diplomaticContactEstablished.has(otherId),
+          contactEstablished: diplomaticContactEstablishedSet().has(otherId),
           activeTreaties: activeTreatyLabelsForPair(activeDeals, ME(), otherId),
           wiarygodnosc: getWiarygodnosc(otherId),
         });
@@ -7955,12 +7955,47 @@ async function boot(): Promise<void> {
     const wiarygodnoscCyclicDeliveryOkThisTurn = new Map<string, boolean>();
     /** D4-W10-A+: trwały dostęp do złoża (active=false w wojnie). */
     let zlozeGrants: ZlozeGrant[] = [];
-    /** D3-Q2: nacje, z którymi gracz nawiązał kontakt dyplomatyczny (save/load w meta). */
-    const diplomaticContactEstablished = new Set<number>();
-    /** Odkryte na mapie (widoczne choć raz) — osobno od formalnego kontaktu. */
-    const diplomaticallyDiscoveredOwners = new Set<number>();
-    /** Odkrycie w mgle — auto-okno audiencji już pokazane (save/load meta). */
-    const diplomaticDiscoveryPopupShown = new Set<number>();
+    /**
+     * D3-Q2, per-fotel (R-HOTSEAT-DYPLO-KONTAKT-PER-FOTEL-Q1): nacje, z którymi
+     * KAŻDY fotel-człowiek OSOBNO nawiązał kontakt dyplomatyczny (save/load w meta).
+     * Klucz = humanOwnerId fotela PATRZĄCEGO, wartość = zbiór ownerId AI skontaktowanych
+     * przez TEN fotel. Wzorem `exploredByHuman` (main.ts ok. 10615). Dostęp WYŁĄCZNIE
+     * przez `diplomaticContactEstablishedSet(humanOwnerId = ME())` niżej — nigdy bezpośrednio.
+     */
+    const diplomaticContactEstablishedByHuman = new Map<number, Set<number>>();
+    /**
+     * Odkryte na mapie (widoczne choć raz) — per-fotel, osobno od formalnego kontaktu.
+     * Ten sam wzorzec co wyżej — dostęp przez `diplomaticallyDiscoveredOwnersSet(humanOwnerId = ME())`
+     * (albo `getDiplomaticContacts(humanOwnerId = ME())`, alias historyczny).
+     */
+    const diplomaticallyDiscoveredOwnersByHuman = new Map<number, Set<number>>();
+    /**
+     * Odkrycie w mgle — auto-okno audiencji już pokazane, per-fotel (save/load meta).
+     * Dostęp przez `diplomaticDiscoveryPopupShownSet(humanOwnerId = ME())`.
+     */
+    const diplomaticDiscoveryPopupShownByHuman = new Map<number, Set<number>>();
+    /**
+     * Akcesory per-fotel dla trzech map wyżej — wzorem `isAwaitingFirstPlayerCity(ownerId = ME())`
+     * (R-HOTSEAT-DRUGI-FOTEL-NIE-DOSTAJE-TURY-Q1). `ME()` jest zdefiniowane niżej (main.ts ok.
+     * 10585) jako `function` — hoisting deklaracji funkcji w JS/TS sprawia, że odwołanie się do
+     * niej TUTAJ (w treści funkcji poniżej, wykonywanej później, nie w tym miejscu pliku) jest
+     * bezpieczne mimo że fizycznie poprzedza jej definicję w źródle.
+     */
+    function diplomaticContactEstablishedSet(humanOwnerId: number = ME()): Set<number> {
+      let s = diplomaticContactEstablishedByHuman.get(humanOwnerId);
+      if (!s) { s = new Set<number>(); diplomaticContactEstablishedByHuman.set(humanOwnerId, s); }
+      return s;
+    }
+    function diplomaticallyDiscoveredOwnersSet(humanOwnerId: number = ME()): Set<number> {
+      let s = diplomaticallyDiscoveredOwnersByHuman.get(humanOwnerId);
+      if (!s) { s = new Set<number>(); diplomaticallyDiscoveredOwnersByHuman.set(humanOwnerId, s); }
+      return s;
+    }
+    function diplomaticDiscoveryPopupShownSet(humanOwnerId: number = ME()): Set<number> {
+      let s = diplomaticDiscoveryPopupShownByHuman.get(humanOwnerId);
+      if (!s) { s = new Set<number>(); diplomaticDiscoveryPopupShownByHuman.set(humanOwnerId, s); }
+      return s;
+    }
     let lastDiplomaticContactsSnapshot = new Set<number>();
     /** Pierwsze odkrycie w mgle — kolejka kart informacyjnych (bez pełnej audiencji). */
     const pendingFirstContactCards: number[] = [];
@@ -8622,8 +8657,8 @@ async function boot(): Promise<void> {
       for (const oid of plan.typCityCopyOwners) typCityCopyOwners.add(oid);
 
       diplomacyRelations.clear();
-      diplomaticContactEstablished.clear();
-      diplomaticallyDiscoveredOwners.clear();
+      diplomaticContactEstablishedByHuman.clear();
+      diplomaticallyDiscoveredOwnersByHuman.clear();
       resetDiplomaticDiscoveryUiState();
       veteranEnemyEducationShown = false;
       warEventLog.length = 0;
@@ -10183,8 +10218,8 @@ async function boot(): Promise<void> {
         diplomacyAvailable: !isBarbarian(ownerId),
         onInfo: () => showForeignCityHexContext(city.q, city.r),
         onDiplomacy: () => {
-          diplomaticallyDiscoveredOwners.add(ownerId);
-          diplomaticContactEstablished.add(ownerId);
+          diplomaticallyDiscoveredOwnersSet().add(ownerId);
+          diplomaticContactEstablishedSet().add(ownerId);
           openDiplomacyAudience(ownerId);
         },
       });
@@ -10207,8 +10242,8 @@ async function boot(): Promise<void> {
         diplomacyAvailable: !isBarbarian(ownerId),
         onInfo: () => inspectForeignUnit(u),
         onDiplomacy: () => {
-          diplomaticallyDiscoveredOwners.add(ownerId);
-          diplomaticContactEstablished.add(ownerId);
+          diplomaticallyDiscoveredOwnersSet().add(ownerId);
+          diplomaticContactEstablishedSet().add(ownerId);
           openDiplomacyAudience(ownerId);
         },
       });
@@ -16082,7 +16117,7 @@ async function boot(): Promise<void> {
     }
 
     function enqueueDiplomacyPendingFromCmd(ownerId: number, cmd: AIDiplomacyCommand): void {
-      if (!diplomaticContactEstablished.has(ownerId)) return;
+      if (!diplomaticContactEstablishedSet().has(ownerId)) return;
       const balance = aiSkarbiecByOwner.get(ownerId) ?? 0;
       const enriched = enrichAiCommandWithTreasury(cmd, balance);
       if (!enriched) return;
@@ -17979,22 +18014,22 @@ async function boot(): Promise<void> {
       return out;
     }
 
-    function getDiplomaticContacts(): Set<number> {
-      return diplomaticallyDiscoveredOwners;
+    function getDiplomaticContacts(humanOwnerId: number = ME()): Set<number> {
+      return diplomaticallyDiscoveredOwnersSet(humanOwnerId);
     }
 
     /** Aktualizuje trwały zbiór odkrytych nacji wg bieżącego zasięgu widzenia. */
     function updateDiplomaticDiscovery(visible: ReadonlySet<string>): void {
       const seenNow = computeDiplomaticContacts(visible, cities, units);
       for (const oid of seenNow) {
-        if (!eliminatedOwners.has(oid)) diplomaticallyDiscoveredOwners.add(oid);
+        if (!eliminatedOwners.has(oid)) diplomaticallyDiscoveredOwnersSet().add(oid);
       }
     }
 
     function resetDiplomaticDiscoveryUiState(): void {
       lastDiplomaticContactsSnapshot = new Set<number>();
       pendingFirstContactCards.length = 0;
-      diplomaticDiscoveryPopupShown.clear();
+      diplomaticDiscoveryPopupShownByHuman.clear();
       diplomaticContactTrackingReady = false;
     }
 
@@ -18015,7 +18050,7 @@ async function boot(): Promise<void> {
     /** Kontakt dyplomatyczny = automatyczny przy odkryciu na mapie (Maciej 2026-07-28). */
     function establishDiplomaticContact(ownerId: number): void {
       if (isMe(ownerId) || isBarbarian(ownerId)) return;
-      diplomaticContactEstablished.add(ownerId);
+      diplomaticContactEstablishedSet().add(ownerId);
     }
 
     /** Po starcie / wczytaniu — bez auto-popupu dla już widocznych AI. */
@@ -18060,8 +18095,8 @@ async function boot(): Promise<void> {
 
       for (const oid of newlySeen) {
         establishDiplomaticContact(oid);
-        if (diplomaticDiscoveryPopupShown.has(oid)) continue;
-        diplomaticDiscoveryPopupShown.add(oid);
+        if (diplomaticDiscoveryPopupShownSet().has(oid)) continue;
+        diplomaticDiscoveryPopupShownSet().add(oid);
         pendingFirstContactCards.push(oid);
       }
       requestAnimationFrame(() => tryOpenNextFirstContactCard());
@@ -18271,8 +18306,8 @@ async function boot(): Promise<void> {
         turn,
         aktywnyHandel: hasSzlakowTreaty(activeDeals, a, b),
         pokojTrustTier: resolvePokojTrustTier(activeDeals, a, b, {
-          contactEstablished: isHuman(a) ? diplomaticContactEstablished.has(b)
-            : (isHuman(b) ? diplomaticContactEstablished.has(a) : true),
+          contactEstablished: isHuman(a) ? diplomaticContactEstablishedSet(a).has(b)
+            : (isHuman(b) ? diplomaticContactEstablishedSet(b).has(a) : true),
           atWar,
         }),
         dobraWolaAktywna: false,
@@ -18310,8 +18345,8 @@ async function boot(): Promise<void> {
       const continuous: ContinuousFactorFlags = {
         aktywnyHandel: hasSzlakowTreaty(activeDeals, a, b),
         pokojTrustTier: resolvePokojTrustTier(activeDeals, a, b, {
-          contactEstablished: isHuman(a) ? diplomaticContactEstablished.has(b)
-            : (isHuman(b) ? diplomaticContactEstablished.has(a) : true),
+          contactEstablished: isHuman(a) ? diplomaticContactEstablishedSet(a).has(b)
+            : (isHuman(b) ? diplomaticContactEstablishedSet(b).has(a) : true),
           atWar,
         }),
         wspolnaReligia: sameCulture && !!religionA && !!religionB && religionA === religionB,
@@ -18665,9 +18700,9 @@ async function boot(): Promise<void> {
         `${labelA} ↔ ${labelB} — ${cmd.powod}`,
       );
       const playerSeesA = getDiplomaticContacts().has(proposerId)
-        || diplomaticallyDiscoveredOwners.has(proposerId);
+        || diplomaticallyDiscoveredOwnersSet().has(proposerId);
       const playerSeesB = getDiplomaticContacts().has(targetId)
-        || diplomaticallyDiscoveredOwners.has(targetId);
+        || diplomaticallyDiscoveredOwnersSet().has(targetId);
       if (playerSeesA && playerSeesB) {
         showHintMessage(`${labelA} handluje z ${labelB}`, 4000);
       }
@@ -18705,7 +18740,7 @@ async function boot(): Promise<void> {
     ): void {
       if (!getDiplomaticContacts().has(ownerId)) return;
       aiAudienceLastRequestTurn.set(ownerId, turn);
-      diplomaticContactEstablished.add(ownerId);
+      diplomaticContactEstablishedSet().add(ownerId);
       const motive = cmd.motive ?? 'chcą rozmawiać';
       showHintMessage(
         `${ownerDiploLabel(ownerId)} prosi o audiencję — ${motive}`,
@@ -19820,9 +19855,9 @@ async function boot(): Promise<void> {
         }
         return eligible[0]!;
       },
-      prepareContact: (ownerId: number): void => {
-        diplomaticallyDiscoveredOwners.add(ownerId);
-        setDiploRelation(0, ownerId, { zaufanie: 100, respekt: 100, status: 'neutralni' });
+      prepareContact: (ownerId: number, humanOwnerId: number = HUMAN_OWNER_PRIMARY): void => {
+        diplomaticallyDiscoveredOwnersSet(humanOwnerId).add(ownerId);
+        setDiploRelation(humanOwnerId, ownerId, { zaufanie: 100, respekt: 100, status: 'neutralni' });
       },
       /** SETUP (dispatch kryterium 1: "skonstruuj stan gry gdzie gracz NIE ma odkrytego
        *  terytorium sąsiedniej cywilizacji AI") — usuwa z `explored` WYŁĄCZNIE heksy z bieżącej
@@ -19852,8 +19887,8 @@ async function boot(): Promise<void> {
     // tematu — unia widoczności — powstaje WYŁĄCZNIE przez `currentVisible()`/`refreshFog()`
     // wołane z realnego `endTurn()` (`__eraTestDebug.endTurn`), nigdy tu reimplementowany.
     (window as any).__sojuszWidocznoscTestDebug = {
-      formAllianceWithOwner: (ownerId: number): string => {
-        diplomaticallyDiscoveredOwners.add(ownerId);
+      formAllianceWithOwner: (ownerId: number, humanOwnerId: number = HUMAN_OWNER_PRIMARY): string => {
+        diplomaticallyDiscoveredOwnersSet(humanOwnerId).add(ownerId);
         const id = 'test-sojusz-widocznosc-0-' + ownerId;
         activeDeals.push({
           id, rodzaj: RodzajTraktatu.SojuszPelny, strony: [0, ownerId], wygasaTura: null,
@@ -20416,7 +20451,7 @@ async function boot(): Promise<void> {
             allianceFormalKind: allianceFormalKindBetween(activeDeals, ME(), ownerId),
             hasNap: _fsPakt,
             hasTrade: _fsTrade,
-            contactEstablished: diplomaticContactEstablished.has(ownerId),
+            contactEstablished: diplomaticContactEstablishedSet().has(ownerId),
           });
           const audienceActionsList = buildAudienceActions(ownerId, layer);
           const dominantTreaty = dominantTreatyForFormalStatus(formalStatus.kind, ME(), ownerId);
@@ -20465,7 +20500,7 @@ async function boot(): Promise<void> {
             },
             tier: relationTier(rel),
             layer: layer === 'pre_contact' ? 'full' : layer,
-            contactEstablished: diplomaticContactEstablished.has(ownerId),
+            contactEstablished: diplomaticContactEstablishedSet().has(ownerId),
             actions: audienceActionsList,
             pendingNegotiations: buildPendingNegotiationRows(ownerId, audienceActionsList),
             otherRelations: buildAudienceOtherRelations(ownerId),
@@ -22177,13 +22212,13 @@ async function boot(): Promise<void> {
         // z perspektywy gracza; bez tego relacjeDip (main.ts) nie zbudowałaby wpisu
         // partnerId='0', a `dipLayer` (patrz naprawa b) byłby 'pre_contact' dla komend
         // DOTYCZĄCYCH gracza, słusznie kasując DOW na niego (D3-Q2, bez regresji).
-        diplomaticallyDiscoveredOwners.add(attackerId);
+        diplomaticallyDiscoveredOwnersSet().add(attackerId);
         const playerCity = cities.find(c => isMe(c.ownerId));
         if (playerCity) { playerCity.q = attacker.q; playerCity.r = attacker.r; }
         return { attackerId };
       },
       // P-WOJNA-EPOKI-NAJTRUDNIEJSZY-NIE-WYBUCHA-Q1: lustro `forceBronzeForcedWarOnPlayer`
-      // wyżej, JEDYNA różnica -- CELOWO POMIJA `diplomaticallyDiscoveredOwners.add(attackerId)`,
+      // wyżej, JEDYNA różnica -- CELOWO POMIJA `diplomaticallyDiscoveredOwnersSet().add(attackerId)`,
       // żeby inscenizować DOKŁADNIE zgłoszony scenariusz właściciela: gracz nigdy nie "poznał"
       // (nie odkrył na mapie) AI, której wymuszona wojna epoki wybiera go jako cel. PRZED tą
       // naprawą (patrz gating w `ownerLoop`/`dipCmdsPlayerFacingForcedWar` wyżej) `dipLayer`
@@ -22228,7 +22263,7 @@ async function boot(): Promise<void> {
           bronzeForceWarPendingOwners.delete(oid);
           bronzeForceWarCycleOwners.delete(oid);
         }
-        // BRAK diplomaticallyDiscoveredOwners.add(attackerId) -- to jest CAŁY sens tego haka.
+        // BRAK diplomaticallyDiscoveredOwnersSet().add(attackerId) -- to jest CAŁY sens tego haka.
         // Dodatkowo: KASUJEMY ewentualny wpis, gdyby fast-forward `endTurn()` sandboxa
         // `?playtest=mapa` (jeden AI, mała mapa) zdążył go ustawić naturalnie przez realną
         // widoczność PRZED wywołaniem tego haka (obserwowane empirycznie w tej rundzie: do
@@ -22236,10 +22271,43 @@ async function boot(): Promise<void> {
         // mechanizmu odkrycia (D-START-3A, computeDiplomaticContacts, NIETKNIĘTE) -- tylko
         // resetuje stan TEGO jednego ownera dla tej jednej, kontrolowanej próby testowej,
         // dokładnie tak jak resztę stanu (wojny, pending) kilka linii wyżej.
-        diplomaticallyDiscoveredOwners.delete(attackerId);
+        diplomaticallyDiscoveredOwnersSet().delete(attackerId);
         return { attackerId };
       },
-      isDiplomaticallyDiscovered: (ownerId: number): boolean => diplomaticallyDiscoveredOwners.has(ownerId),
+      isDiplomaticallyDiscovered: (ownerId: number, humanOwnerId: number = ME()): boolean =>
+        diplomaticallyDiscoveredOwnersSet(humanOwnerId).has(ownerId),
+      // R-HOTSEAT-DYPLO-KONTAKT-PER-FOTEL-Q1, OBRONA R1 zarzut 3 — dowód wstecznej
+      // kompatybilności NA ŚCIEŻCE WCZYTANIA ZAPISU, nie z czytania kodu. Wzorzec 1:1 z
+      // `__aiBuildingsTestDebug.saveLoadRoundTrip` (P-AI-NIE-STAWIA-BUDYNKOW-Q1): REALNE
+      // `buildSaveGameSnapshot()`, degradacja `meta.*` do STAREGO, płaskiego `number[]`
+      // (format sprzed tej migracji — jedno globalne, jednoosobowe znaczenie), REALNE
+      // `restoreGameFromSave()` (ta sama funkcja co "Wczytaj grę"/`loadGameFromSlot`,
+      // NIE reimplementacja logiki rozgałęzienia main.ts ok. 37100-37150). Wejście:
+      // płaski zbiór ownerId (dowolna kombinacja), wymieszany ze wszystkich trzech pól.
+      saveLoadLegacyDiplomaticFormat: (ownerIds: number[]): {
+        primaryContact: number[]; primaryDiscovered: number[]; primaryPopupShown: number[];
+        otherHumansHaveAny: boolean;
+      } => {
+        const snap = buildSaveGameSnapshot('hotseat-dyplo-kontakt-per-fotel-legacy-test');
+        const meta = snap.meta as Record<string, unknown>;
+        meta.diplomaticContactEstablished = ownerIds.slice();
+        meta.diplomaticallyDiscoveredOwners = ownerIds.slice();
+        meta.diplomaticDiscoveryPopupShown = ownerIds.slice();
+        restoreGameFromSave(snap);
+        const humanIds = (humanSeats.humanOwnerIds || []).slice();
+        const otherHumans = humanIds.filter((h) => h !== HUMAN_OWNER_PRIMARY);
+        const otherHumansHaveAny = otherHumans.some((h) => (
+          diplomaticContactEstablishedSet(h).size > 0
+          || diplomaticallyDiscoveredOwnersSet(h).size > 0
+          || diplomaticDiscoveryPopupShownSet(h).size > 0
+        ));
+        return {
+          primaryContact: Array.from(diplomaticContactEstablishedSet(HUMAN_OWNER_PRIMARY)),
+          primaryDiscovered: Array.from(diplomaticallyDiscoveredOwnersSet(HUMAN_OWNER_PRIMARY)),
+          primaryPopupShown: Array.from(diplomaticDiscoveryPopupShownSet(HUMAN_OWNER_PRIMARY)),
+          otherHumansHaveAny,
+        };
+      },
       // R-WOJNA-ZELAZO-DOWOD-ROZGRYWKA-Q1: lustro `forceBronzeForcedWarOnPlayer` wyżej,
       // 1:1 te same zasady, dla Żelaza. Hak WYŁĄCZNIE steruje danymi wejściowymi (kto ma
       // pending wpis Żelaza, kto jest odkryty, gdzie stoi miasto gracza) — sama decyzja i
@@ -22265,7 +22333,7 @@ async function boot(): Promise<void> {
         for (const [key, st] of [...ironForceWarActiveByPairKey.entries()]) {
           if (st.attackerId === attackerId) ironForceWarActiveByPairKey.delete(key);
         }
-        diplomaticallyDiscoveredOwners.add(attackerId);
+        diplomaticallyDiscoveredOwnersSet().add(attackerId);
         const playerCity = cities.find(c => isMe(c.ownerId));
         if (playerCity) { playerCity.q = attacker.q; playerCity.r = attacker.r; }
         return { attackerId };
@@ -22390,11 +22458,11 @@ async function boot(): Promise<void> {
         bronzeForceWarPendingOwners.delete(targetId);
 
         // Antycypowany zarzut własny (runda 1): OBIE strony "odkryte" przez gracza -- bez tego
-        // `diplomaticallyDiscoveredOwners.has(ownerId)` (main.ts ok. L29171) tnie cicho
+        // `diplomaticallyDiscoveredOwnersSet().has(ownerId)` (main.ts ok. L29171) tnie cicho
         // relacjeDip dla strony nieodkrytej i finalny target guard w ai.ts nigdy by nie
         // zobaczył wpisu partnerId='0' dla niej (patrz ZARZUT 2 tego samego dispatchu).
-        diplomaticallyDiscoveredOwners.add(attackerId);
-        diplomaticallyDiscoveredOwners.add(targetId);
+        diplomaticallyDiscoveredOwnersSet().add(attackerId);
+        diplomaticallyDiscoveredOwnersSet().add(targetId);
         initDiplomaticContactSnapshot();
 
         // Gracz zaczyna BEZ wojny z którąkolwiek stroną -- domino ma ją wygenerować.
@@ -27466,9 +27534,12 @@ async function boot(): Promise<void> {
       ownerEraByOwner.delete(ownerId);
       ownerStartEraByOwner.delete(ownerId);
       clusterCapitalOwnerIds.delete(ownerId);
-      diplomaticContactEstablished.delete(ownerId);
-      diplomaticallyDiscoveredOwners.delete(ownerId);
-      diplomaticDiscoveryPopupShown.delete(ownerId);
+      // R-HOTSEAT-DYPLO-KONTAKT-PER-FOTEL-Q1: ownerId skasowany (eliminacja) -- usuń go
+      // ze WSZYSTKICH foteli-ludzi naraz (iteracja po wartościach Map), nie tylko z ME(),
+      // bo cywilizacja znika z gry dla każdego obserwatora, nie tylko aktywnego fotela.
+      for (const s of diplomaticContactEstablishedByHuman.values()) s.delete(ownerId);
+      for (const s of diplomaticallyDiscoveredOwnersByHuman.values()) s.delete(ownerId);
+      for (const s of diplomaticDiscoveryPopupShownByHuman.values()) s.delete(ownerId);
       battlePowerPtsByOwner.delete(ownerId);
       // P-AI-R5-FC3-CLEANUP-OWNERID-REUSE-Q1: cywilizacja skasowana — usuń ją też
       // ze stanu AI-suwaków i przekierowania nadwyżki, żeby reuse ownerId nie
@@ -28962,9 +29033,20 @@ async function boot(): Promise<void> {
           aiAiTradeAgreementLastTurn: Array.from(aiAiTradeAgreementLastTurn.entries()),
           aiResourceTradeLastProposalTurn: Array.from(aiResourceTradeLastProposalTurn.entries()),
           aiAudienceLastRequestTurn: Array.from(aiAudienceLastRequestTurn.entries()),
-          diplomaticContactEstablished: Array.from(diplomaticContactEstablished),
-          diplomaticallyDiscoveredOwners: Array.from(diplomaticallyDiscoveredOwners),
-          diplomaticDiscoveryPopupShown: Array.from(diplomaticDiscoveryPopupShown),
+          // R-HOTSEAT-DYPLO-KONTAKT-PER-FOTEL-Q1: `Array<[humanOwnerId, ownerId[]]>` --
+          // ten sam idiom co `exploredByHumanSave` (main.ts ok. 28903) dla Map<number, Set<number>>.
+          diplomaticContactEstablished: Array.from(
+            diplomaticContactEstablishedByHuman.entries(),
+            ([oid, s]) => [oid, Array.from(s)] as [number, number[]],
+          ),
+          diplomaticallyDiscoveredOwners: Array.from(
+            diplomaticallyDiscoveredOwnersByHuman.entries(),
+            ([oid, s]) => [oid, Array.from(s)] as [number, number[]],
+          ),
+          diplomaticDiscoveryPopupShown: Array.from(
+            diplomaticDiscoveryPopupShownByHuman.entries(),
+            ([oid, s]) => [oid, Array.from(s)] as [number, number[]],
+          ),
           veteranEnemyEducationShown,
           diplomacyDeals: activeDeals.slice(),
           // C-DYP-Q1=A (2026-07-26): STÓŁ NEGOCJACYJNY — propozycja/kontroferta oczekująca
@@ -31541,7 +31623,7 @@ async function boot(): Promise<void> {
                 if (eliminatedOwners.has(csOwnerId)) continue;
                 if (!typCityCopyOwners.has(csOwnerId)) continue;
                 if (!isOwnerPlayerSameCivType(csOwnerId)) continue;
-                if (!diplomaticallyDiscoveredOwners.has(csOwnerId)) continue;
+                if (!diplomaticallyDiscoveredOwnersSet().has(csOwnerId)) continue;
                 const relToPlayer = getDiploRelation(csOwnerId, ME());
                 const hasTradeBlock = activeDeals.some(d => {
                   if (!dealInvolvesOwners(d, ME(), csOwnerId)) return false;
@@ -32147,7 +32229,7 @@ async function boot(): Promise<void> {
               const potAI = objectivePowerByOwner.get(ownerId)?.power ?? 0;
               const relacjeDip: DiplomacjaInputs['relacje'] = [];
 
-              if (diplomaticallyDiscoveredOwners.has(ownerId)) {
+              if (diplomaticallyDiscoveredOwnersSet().has(ownerId)) {
                 const militaryRatio = militaryRatioFromArmyM(
                   sumArmyMForOwner(ownerId),
                   sumArmyMForOwner(ME()),
@@ -32177,7 +32259,7 @@ async function boot(): Promise<void> {
                       && normalizeTreatyKind(d.rodzaj) === RodzajTraktatu.UmowaSzlakow,
                   ),
                   pokojTrustTier: resolvePokojTrustTier(activeDeals, ME(), ownerId, {
-                    contactEstablished: diplomaticContactEstablished.has(ownerId),
+                    contactEstablished: diplomaticContactEstablishedSet().has(ownerId),
                     atWar: relStatus === 'wojna',
                   }),
                   dobraWolaAktywna: false,
@@ -32240,7 +32322,7 @@ async function boot(): Promise<void> {
                   hasNapTreaty: hasTreaty(
                     activeDeals, ownerId, ME(), RodzajTraktatu.PaktNieagresji,
                   ),
-                  contactEstablished: diplomaticContactEstablished.has(ownerId),
+                  contactEstablished: diplomaticContactEstablishedSet().has(ownerId),
                   mapContact: contactedOwners.has(ownerId),
                   lastAudienceRequestTurn: aiAudienceLastRequestTurn.get(ownerId),
                   peaceLocked: isPeaceLockedBetween(ownerId, ME()),
@@ -32628,7 +32710,7 @@ async function boot(): Promise<void> {
                 }
                 const dipCmds: AIDiplomacyCommand[] = filterDiplomacyCommandsForEstablishedContact(
                   dipCmdsLayered.filter(c => c.type !== 'zaproponuj_audiencje'),
-                  diplomaticContactEstablished.has(ownerId),
+                  diplomaticContactEstablishedSet().has(ownerId),
                 );
                 for (const cmd of dipCmds) {
                   try {
@@ -32735,8 +32817,12 @@ async function boot(): Promise<void> {
                       // nadal nie ujawniają automatycznie napastnika (bez zmian, D3-Q2 jak
                       // dotychczas).
                       if (targetId === 0 && isForcedEpochWarDeclareCmd(cmd)) {
-                        diplomaticallyDiscoveredOwners.add(ownerId);
-                        diplomaticContactEstablished.add(ownerId);
+                        // R-HOTSEAT-DYPLO-KONTAKT-PER-FOTEL-Q1: `targetId` jest tu LITERALNYM
+                        // `0` (protokół komend AI adresuje gracza zawsze jako ownerId 0) --
+                        // klucz Map to `targetId`, nie ME(), zgodnie z regułą "kontekst daje
+                        // konkretny humanOwnerId, nie zgaduj ME()".
+                        diplomaticallyDiscoveredOwnersSet(targetId).add(ownerId);
+                        diplomaticContactEstablishedSet(targetId).add(ownerId);
                       }
                       if (targetId === 0 || ownerId === 0) {
                         pruneTributeNegotiationsBetween(ownerId, targetId);
@@ -35399,8 +35485,8 @@ async function boot(): Promise<void> {
       explored.clear();
       rebuildAllKeys();
       diplomacyRelations.clear();
-      diplomaticContactEstablished.clear();
-      diplomaticallyDiscoveredOwners.clear();
+      diplomaticContactEstablishedByHuman.clear();
+      diplomaticallyDiscoveredOwnersByHuman.clear();
       resetDiplomaticDiscoveryUiState();
       activeDeals = [];
       negotiationTable.length = 0;
@@ -35738,8 +35824,8 @@ async function boot(): Promise<void> {
       aiOwnerCivMap.clear();
       aiOwnerCivMap.set(preset.aiOwnerId, 'grecy');
       diplomacyRelations.clear();
-      diplomaticContactEstablished.clear();
-      diplomaticallyDiscoveredOwners.clear();
+      diplomaticContactEstablishedByHuman.clear();
+      diplomaticallyDiscoveredOwnersByHuman.clear();
       resetDiplomaticDiscoveryUiState();
       setDiploRelation(0, preset.aiOwnerId, { zaufanie: 0, respekt: 30, status: 'wojna' });
       // R-HOTSEAT-DRUGI-FOTEL-NIE-DOSTAJE-TURY-Q1 (Przyczyna 2, miejsce zapisu 5/6):
@@ -35986,8 +36072,8 @@ async function boot(): Promise<void> {
       units.length = 0;
       aiOwnerCivMap.clear();
       diplomacyRelations.clear();
-      diplomaticContactEstablished.clear();
-      diplomaticallyDiscoveredOwners.clear();
+      diplomaticContactEstablishedByHuman.clear();
+      diplomaticallyDiscoveredOwnersByHuman.clear();
       resetDiplomaticDiscoveryUiState();
       // R-HOTSEAT-DRUGI-FOTEL-NIE-DOSTAJE-TURY-Q1 (Przyczyna 2, miejsce zapisu 6/6):
       // scenariusz playtest miasta -- zawsze zakłada fotel 1 (HUMAN_OWNER_PRIMARY),
@@ -36212,11 +36298,14 @@ async function boot(): Promise<void> {
       aiOwnerCivMap.clear();
       aiOwnerCivMap.set(preset.aiOwnerId, 'grecy');
       diplomacyRelations.clear();
-      diplomaticContactEstablished.clear();
-      diplomaticallyDiscoveredOwners.clear();
+      diplomaticContactEstablishedByHuman.clear();
+      diplomaticallyDiscoveredOwnersByHuman.clear();
       resetDiplomaticDiscoveryUiState();
-      diplomaticContactEstablished.add(preset.aiOwnerId);
-      diplomaticallyDiscoveredOwners.add(preset.aiOwnerId);
+      // R-HOTSEAT-DYPLO-KONTAKT-PER-FOTEL-Q1: ten preset (jak playerEverOwnedCityByOwner
+      // kilka linii niżej) zawsze zakłada WYŁĄCZNIE fotel 1 -- explicit HUMAN_OWNER_PRIMARY,
+      // nie ME() (bez znaczenia dziś, bo ME()===HUMAN_OWNER_PRIMARY w tym trybie zawsze).
+      diplomaticContactEstablishedSet(HUMAN_OWNER_PRIMARY).add(preset.aiOwnerId);
+      diplomaticallyDiscoveredOwnersSet(HUMAN_OWNER_PRIMARY).add(preset.aiOwnerId);
       setDiploRelation(0, preset.aiOwnerId, { zaufanie: 0, respekt: 30, status: 'wojna' });
 
       // R-HOTSEAT-DRUGI-FOTEL-NIE-DOSTAJE-TURY-Q1: scenariusz playtest mapy -- zawsze
@@ -37032,30 +37121,66 @@ async function boot(): Promise<void> {
         loadEraChanged = syncOwnerEraFromResearch(oid) || loadEraChanged;
       }
       diplomacyRelations.clear();
-      diplomaticContactEstablished.clear();
-      diplomaticallyDiscoveredOwners.clear();
+      diplomaticContactEstablishedByHuman.clear();
+      diplomaticallyDiscoveredOwnersByHuman.clear();
       resetDiplomaticDiscoveryUiState();
-      const savedContacts = saved.meta?.diplomaticContactEstablished as number[] | undefined;
-      if (savedContacts?.length) {
+      // R-HOTSEAT-DYPLO-KONTAKT-PER-FOTEL-Q1: wsteczna kompatybilność. Nowy format --
+      // `Array<[humanOwnerId, ownerId[]]>` (jak `exploredByHuman`); STARY format sprzed
+      // tej migracji -- płaski `number[]` (jedno globalne, jednoosobowe znaczenie) --
+      // przypisujemy WYŁĄCZNIE do HUMAN_OWNER_PRIMARY, zgodnie z tym co i tak było jedynym
+      // zachowaniem przed tym tematem.
+      const savedContactsRaw = saved.meta?.diplomaticContactEstablished as
+        Array<[number, number[]]> | number[] | undefined;
+      if (Array.isArray(savedContactsRaw) && savedContactsRaw.length) {
         // C-BARB-Q1/Q2: defensywny filtr -- stare save'y (przed tą zmianą) nie
         // powinny mieć barbarzyńców tutaj, ale wykluczamy jawnie zamiast zakładać.
-        for (const oid of savedContacts) { if (!isBarbarian(oid)) diplomaticContactEstablished.add(oid); }
+        if (Array.isArray(savedContactsRaw[0])) {
+          for (const [oid, ids] of savedContactsRaw as Array<[number, number[]]>) {
+            for (const aid of ids) { if (!isBarbarian(aid)) diplomaticContactEstablishedSet(oid).add(aid); }
+          }
+        } else {
+          for (const aid of savedContactsRaw as number[]) {
+            if (!isBarbarian(aid)) diplomaticContactEstablishedSet(HUMAN_OWNER_PRIMARY).add(aid);
+          }
+        }
       }
-      const savedDiscovered = saved.meta?.diplomaticallyDiscoveredOwners as number[] | undefined;
-      if (savedDiscovered?.length) {
-        for (const oid of savedDiscovered) {
-          if (!isBarbarian(oid) && !eliminatedOwners.has(oid)) diplomaticallyDiscoveredOwners.add(oid);
+      const savedDiscoveredRaw = saved.meta?.diplomaticallyDiscoveredOwners as
+        Array<[number, number[]]> | number[] | undefined;
+      if (Array.isArray(savedDiscoveredRaw) && savedDiscoveredRaw.length) {
+        if (Array.isArray(savedDiscoveredRaw[0])) {
+          for (const [oid, ids] of savedDiscoveredRaw as Array<[number, number[]]>) {
+            for (const aid of ids) {
+              if (!isBarbarian(aid) && !eliminatedOwners.has(aid)) diplomaticallyDiscoveredOwnersSet(oid).add(aid);
+            }
+          }
+        } else {
+          for (const aid of savedDiscoveredRaw as number[]) {
+            if (!isBarbarian(aid) && !eliminatedOwners.has(aid)) {
+              diplomaticallyDiscoveredOwnersSet(HUMAN_OWNER_PRIMARY).add(aid);
+            }
+          }
         }
       } else {
-        for (const oid of diplomaticContactEstablished) diplomaticallyDiscoveredOwners.add(oid);
+        for (const [oid, s] of diplomaticContactEstablishedByHuman) {
+          for (const aid of s) diplomaticallyDiscoveredOwnersSet(oid).add(aid);
+        }
       }
-      // Auto-kontakt: odkrycie na mapie = nawiązany kontakt (Maciej 2026-07-28).
-      for (const oid of diplomaticallyDiscoveredOwners) {
-        if (!isBarbarian(oid)) diplomaticContactEstablished.add(oid);
+      // Auto-kontakt: odkrycie na mapie = nawiązany kontakt (Maciej 2026-07-28) -- per fotel.
+      for (const [oid, s] of diplomaticallyDiscoveredOwnersByHuman) {
+        for (const aid of s) { if (!isBarbarian(aid)) diplomaticContactEstablishedSet(oid).add(aid); }
       }
-      const savedDiscoveryPopups = saved.meta?.diplomaticDiscoveryPopupShown as number[] | undefined;
-      if (savedDiscoveryPopups?.length) {
-        for (const oid of savedDiscoveryPopups) diplomaticDiscoveryPopupShown.add(oid);
+      const savedDiscoveryPopupsRaw = saved.meta?.diplomaticDiscoveryPopupShown as
+        Array<[number, number[]]> | number[] | undefined;
+      if (Array.isArray(savedDiscoveryPopupsRaw) && savedDiscoveryPopupsRaw.length) {
+        if (Array.isArray(savedDiscoveryPopupsRaw[0])) {
+          for (const [oid, ids] of savedDiscoveryPopupsRaw as Array<[number, number[]]>) {
+            for (const aid of ids) diplomaticDiscoveryPopupShownSet(oid).add(aid);
+          }
+        } else {
+          for (const aid of savedDiscoveryPopupsRaw as number[]) {
+            diplomaticDiscoveryPopupShownSet(HUMAN_OWNER_PRIMARY).add(aid);
+          }
+        }
       }
       veteranEnemyEducationShown = saved.meta?.veteranEnemyEducationShown === true;
       if (veteranEnemyEducationShown) pruneVeteranEnemyEducationJournal();
@@ -37199,7 +37324,7 @@ async function boot(): Promise<void> {
       const savedPending = saved.meta?.pendingDiplomacyInbox as typeof pendingDiplomacyInbox | undefined;
       if (savedPending?.length) pendingDiplomacyInbox.push(...savedPending);
       for (let pi = pendingDiplomacyInbox.length - 1; pi >= 0; pi--) {
-        if (!diplomaticContactEstablished.has(pendingDiplomacyInbox[pi]!.ownerId)) {
+        if (!diplomaticContactEstablishedSet().has(pendingDiplomacyInbox[pi]!.ownerId)) {
           pendingDiplomacyInbox.splice(pi, 1);
         }
       }
@@ -37253,7 +37378,7 @@ async function boot(): Promise<void> {
           // stołu negocjacyjnego, ten sam typ danych negotiationTable, tylko wczytywany
           // z zapisu). Behawioralny no-op (dziś ME() === 0 zawsze).
           const otherOwnerId = isMe(entry.proposerOwnerId) ? entry.responderOwnerId : entry.proposerOwnerId;
-          if (!diplomaticContactEstablished.has(otherOwnerId)) continue;
+          if (!diplomaticContactEstablishedSet().has(otherOwnerId)) continue;
           negotiationTable.push(entry);
         }
       }
@@ -37320,7 +37445,7 @@ async function boot(): Promise<void> {
       _dipUnitSeq = 0;
       // R-HOTSEAT-ETAP6D-PODETAP-C-Q1: literały `0` -> isMe()/ME() — kontakty odkryte
       // przez aktywny fotel. Behawioralny no-op (dziś ME() === 0 zawsze).
-      for (const oid of diplomaticContactEstablished) {
+      for (const oid of diplomaticContactEstablishedSet()) {
         if (!isMe(oid)) syncRelationFromDeals(ME(), oid);
       }
       const savedSiegeTurns = saved.meta?.siegeTurnByCity as Array<[string, number]> | undefined;

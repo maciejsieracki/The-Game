@@ -114,23 +114,30 @@ const REAL_ME = makeME(PLAYER);
 const BROKEN_ME = makeME(WRONG);
 
 const ANCHOR_A = "if (startOi === 0 && _menuCityStateDifficultyVsPlayer === 'hard') {";
-const ANCHOR_B = 'if (diplomaticallyDiscoveredOwners.has(ownerId)) {';
+// R-HOTSEAT-DYPLO-KONTAKT-PER-FOTEL-Q1: kotwica zaktualizowana -- `diplomaticallyDiscoveredOwners`
+// (Set) -> `diplomaticallyDiscoveredOwnersSet()` (akcesor per-fotel main.ts, domyślny ME()).
+const ANCHOR_B = 'if (diplomaticallyDiscoveredOwnersSet().has(ownerId)) {';
 
 // Niezależna kontrola granic: substring po ZNANYCH liniach (potwierdzonych świeżym `grep -n`
-// tej rundy: Blok A = 31238-31293, Blok B = 31850-31948), porównany 1:1 z wycięciem
-// kotwica+brace-matching -- zero rozjazdu miedzy dwoma niezależnymi metodami lokalizacji.
+// PO integracji R-HOTSEAT-DYPLO-KONTAKT-PER-FOTEL-Q1 do main: Blok A = 31620-31675, Blok B =
+// 32232-32330 -- przesunięcie +32 linii względem numerów zapisanych podczas rundy Obrony tego
+// tematu (Obrona dopisała nowy hak `saveLoadLegacyDiplomaticFormat` WCZEŚNIEJ w main.ts, ok.
+// linia 22287, przesuwając wszystko poniżej o +32 linii -- orkiestrator poprawił te dwie stałe
+// przy integracji, zweryfikowane świeżym przeliczeniem extractAnchoredBlock), porównany 1:1
+// z wycięciem kotwica+brace-matching -- zero rozjazdu miedzy dwoma niezależnymi metodami
+// lokalizacji.
 {
   const lines = mainSrc.split('\n');
   // slice po liniach zachowuje wcięcie linii otwierającej (kotwica zaczyna się dopiero od
   // "if", bez wcięcia) -- porównanie od pierwszego "if (" w obu wycięciach, reszta identyczna.
-  const blockALinesRaw = lines.slice(31238 - 1, 31293).join('\n');
-  const blockBLinesRaw = lines.slice(31850 - 1, 31948).join('\n');
+  const blockALinesRaw = lines.slice(31620 - 1, 31675).join('\n');
+  const blockBLinesRaw = lines.slice(32232 - 1, 32330).join('\n');
   const blockALines = blockALinesRaw.slice(blockALinesRaw.indexOf('if ('));
   const blockBLines = blockBLinesRaw.slice(blockBLinesRaw.indexOf('if ('));
   const blockAAnchor = extractAnchoredBlock(mainSrc, ANCHOR_A);
   const blockBAnchor = extractAnchoredBlock(mainSrc, ANCHOR_B);
-  ok(blockALines === blockAAnchor, 'Blok A: substring po liniach 31238-31293 === wycięcie kotwica+brace-matching (zero rozjazdu)');
-  ok(blockBLines === blockBAnchor, 'Blok B: substring po liniach 31850-31948 === wycięcie kotwica+brace-matching (zero rozjazdu)');
+  ok(blockALines === blockAAnchor, 'Blok A: substring po liniach 31620-31675 === wycięcie kotwica+brace-matching (zero rozjazdu)');
+  ok(blockBLines === blockBAnchor, 'Blok B: substring po liniach 32232-32330 === wycięcie kotwica+brace-matching (zero rozjazdu)');
   const occA = (blockAAnchor.match(/ME\(\)/g) || []).length;
   const occB = (blockBAnchor.match(/ME\(\)/g) || []).length;
   ok(occA === 13, `Blok A: dokładnie 13 wystąpień ME() (potwierdzone rundą 2 Evaluatora/Obrony), otrzymano ${occA}`);
@@ -151,7 +158,8 @@ function runBlockA(src, ME, calls) {
     eliminatedOwners: new Set(),
     typCityCopyOwners: new Set([csA, csB]),
     isOwnerPlayerSameCivType: () => true,
-    diplomaticallyDiscoveredOwners: new Set([csA]), // csB świadomie NIE odkryty
+    // R-HOTSEAT-DYPLO-KONTAKT-PER-FOTEL-Q1: akcesor per-fotel zamiast płaskiego Seta.
+    diplomaticallyDiscoveredOwnersSet: () => new Set([csA]), // csB świadomie NIE odkryty
     getDiploRelation: (a, b) => { calls.getDiploRelation.push([a, b]); return { status: 'pokoj' }; },
     activeDeals: [],
     dealInvolvesOwners: (d, a, b) => { calls.dealInvolvesOwners.push([a, b]); return false; },
@@ -253,7 +261,8 @@ function runBlockB(src, ME, calls) {
   const freeVars = {
     ownerId: AI,
     potAI: 10, // objectivePowerByOwner.get(ownerId)?.power -- zadeklarowane TUŻ PRZED Blokiem B
-    diplomaticallyDiscoveredOwners: new Set([AI]),
+    // R-HOTSEAT-DYPLO-KONTAKT-PER-FOTEL-Q1: akcesory per-fotel zamiast płaskich Setów.
+    diplomaticallyDiscoveredOwnersSet: () => new Set([AI]),
     militaryRatioFromArmyM: (a, b) => { calls.militaryRatioFromArmyMArgs = [a, b]; return 1; },
     sumArmyMForOwner: (id) => (id === ME() ? 50 : 30),
     getDiploRelation: (a, b) => { calls.getDiploRelation.push([a, b]); return { status: 'pokoj' }; },
@@ -268,7 +277,7 @@ function runBlockB(src, ME, calls) {
     normalizeTreatyKind: (r) => r,
     RodzajTraktatu: { UmowaSzlakow: 'szlaki', PaktNieagresji: 'pakt' },
     resolvePokojTrustTier: (deals, a, b) => { calls.resolvePokojTrustTierArgs = [a, b]; return 'niski'; },
-    diplomaticContactEstablished: new Set([AI]),
+    diplomaticContactEstablishedSet: () => new Set([AI]),
     sameCultureCircle: (a, b) => { calls.sameCultureCircleArgs = [a, b]; return true; },
     civKeyForOwner: (id) => (id === ME() ? 'rzymianie' : 'grecy'),
     ownerReligionForOwnerId: (id) => { calls.ownerReligionForOwnerIdArgs.push(id); return 'politeizm'; },
