@@ -295,9 +295,15 @@ async function main() {
 
   // ---------------------------------------------------------------------
   // [6] P-KARTA-PRZEBUDOWA-UKLAD-Q1 — pozycja 4 na REALNYCH kartach budynku/jednostki:
-  //     Rys historyczny musi wylądować DOKŁADNIE między sekcją „Wymagania" (indeks 0) a
-  //     „Charakterystyka" (dziś pierwsza NIEPUSTA sekcja po Wymaganiach — sekcje
-  //     „Opis"/„Top 3" są dziś zawsze puste/pominięte w DOM, 0 encji ma jeszcze te dane).
+  //     Rys historyczny musi wylądować PO sekcji „Wymagania" i PRZED „Charakterystyka".
+  //     R-KARTY-OPIS-TOP3-Q1 (fala treści, start 2026-09-10) zaczęła wypełniać pola
+  //     „opis"/„top3" (dziś część budynków, np. Stolarnia) — te sekcje mogą teraz
+  //     realnie wyrenderować się MIĘDZY Rys historyczny a Charakterystyka, więc sprawdzamy
+  //     WZGLĘDNĄ kolejność (reqIdx < histIdx < charIdx), nie sztywne indeksy 0/1/2 — sztywne
+  //     równości zakładały (poprawnie w chwili pisania tego testu, P-KARTA-PRZEBUDOWA-UKLAD-Q1),
+  //     że Opis/Top3 są zawsze puste/pominięte; ten warunek już nie jest prawdziwy dla
+  //     wszystkich encji, ale INWARIANT pozycji (Wymagania → historia → Charakterystyka)
+  //     zostaje ten sam i nadal jest tym, co ten punkt ma pilnować.
   //     Dowód nietautologiczności: sprawdzamy TAKŻE, że budynek/jednostka realnie mają
   //     niepuste pole źródłowe historii (inaczej test przechodziłby nawet gdyby historia
   //     w ogóle się nie renderowała).
@@ -327,8 +333,8 @@ async function main() {
     const reqIdx = r.orderedKeys.indexOf('requirements');
     const histIdx = r.orderedKeys.indexOf('__historia__');
     const charIdx = r.orderedKeys.indexOf('characteristics');
-    check(`[6] ${key}: kolejność DOM Wymagania → Rys historyczny → Charakterystyka === ${JSON.stringify(r.orderedKeys)}`,
-      reqIdx === 0 && histIdx === 1 && charIdx === 2, r.orderedKeys);
+    check(`[6] ${key}: kolejność DOM Wymagania → Rys historyczny → Charakterystyka (względna, dopuszcza Opis/Top3 wstawione między) === ${JSON.stringify(r.orderedKeys)}`,
+      reqIdx !== -1 && histIdx !== -1 && charIdx !== -1 && reqIdx < histIdx && histIdx < charIdx, r.orderedKeys);
   }
 
   // ---------------------------------------------------------------------
