@@ -7765,6 +7765,24 @@ bez). Zero regresji: `entity-card-historia-section-test` 36/36, `entity-card-con
 identyczne na czystym `main` (nie regresja tego tematu), 5 bramek referencyjnych zielone.
 Karta technologii (druga część tego samego dispatchu) w toku osobno.
 
+## `P-KARTA-PRZEBUDOWA-UKLAD-TECH-Q1` — GAME — **ZINTEGROWANE 2026-09-10** (commit `a23ce049`)
+
+Ostatnia część tematu `P-KARTA-PRZEBUDOWA-UKLAD-TECH-ULEPSZENIE-Q1` — karta technologii.
+`technologyAdapter.ts`: `sections[0]=Wymagania`, `sections[1]=Charakterystyka` (nowa
+sekcja: Koszt nauki/Epoka/Poziom/opcjonalnie Surowiec-wymóg-badania), niezmieniony
+`HISTORIA_SECTION_INDEX=2` w `renderer.ts` wstawia Rys historyczny w tej samej
+strukturalnej pozycji co dla budynku/jednostki/ulepszenia. 4 osobne sekcje odblokowań
+(Budynki/Jednostki/Ulepszenia terenu/Kolejne technologie) NIESCALONE, tylko przesunięte
+niżej (ABC Q1). Operator→Evaluator (zero zarzutów)→Final Control PASS (żywy zrzut ekranu
+karty „Żegluga" osiągnięty realną nawigacją UI, wysłany właścicielowi). Nowa bramka
+`karta-technologia-uklad-real-render-test.cjs` 11/11 PASS. Zero regresji:
+`entity-card-historia-section-test` 36/36, `entity-card-contract-test` 75/75, 5 bramek
+referencyjnych zielone.
+
+**Tym samym wszystkie CZTERY typy kart encji (budynek/jednostka/ulepszenie/technologia)
+mają teraz spójny układ Wymagania→Charakterystyka→Rys historyczny→reszta.**
+`P-KARTA-PRZEBUDOWA-UKLAD-TECH-ULEPSZENIE-Q1` jako całość — ZAMKNIĘTY.
+
 ## `R-KARTY-OPIS-TOP3-Q1` — GAME — FALA TREŚCI W TOKU (start 2026-09-10)
 
 Podczas weryfikacji `P-KARTA-PRZEBUDOWA-UKLAD-Q1` (kolejność sekcji budynku/jednostki)
