@@ -7780,6 +7780,13 @@ bez). Zero regresji: `entity-card-historia-section-test` 36/36, `entity-card-con
 identyczne na czystym `main` (nie regresja tego tematu), 5 bramek referencyjnych zielone.
 Karta technologii (druga część tego samego dispatchu) w toku osobno.
 
+`R-KARTY-OPIS-TOP3-Q1`: dispatchowane partie B2 (14 budynków, ta sama lista co
+`R-KARTY-HISTORIA-B2-Q1`) i B3 (13 budynków z `R-KARTY-HISTORIA-B3-Q1` + „garnizon" —
+jedyny budynek w grze bez wypełnionej `historia`, dostaje ją też w tej partii) —
+uruchomione równolegle przez Workflow. Obie partie mają wpisaną wprost lekcję z FAIL
+Evaluatora rundy B1 (zakaz fabrykowania wzrostu „z każdym poziomem" dla budynków z
+`maksPoziom=1`, gdzie `przyrost` jest martwe).
+
 ## `P-KARTA-PRZEBUDOWA-UKLAD-TECH-Q1` — GAME — **ZINTEGROWANE 2026-09-10** (commit `a23ce049`)
 
 Ostatnia część tematu `P-KARTA-PRZEBUDOWA-UKLAD-TECH-ULEPSZENIE-Q1` — karta technologii.
