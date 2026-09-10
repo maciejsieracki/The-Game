@@ -7784,6 +7784,24 @@ dispatchowane w kolejnych falach, w miarę zwalniania się zasobów sandboxa (4 
 kilka tematów AutoBot już równolegle w toku). Nowy wymóg właściciela: każdy temat tej
 fali dostarcza obowiązkowy żywy zrzut ekranu karty po zmianach.
 
+**`R-KARTY-OPIS-TOP3-B1-Q1` — ZINTEGROWANE 2026-09-10 (commit `e2d9f765`).** Operator
+napisał `opis`+`top3` dla wszystkich 14 budynków→Evaluator FAIL (4 z 14 wpisów `top3`
+opisywały zmyślony wzrost „z każdym poziomem" dla budynków z `maksPoziom=1`, gdzie
+`przyrost` jest potwierdzone martwe — własne pole `uwagi` budynku + kod silnika
+`production.ts`/`converters.ts`)→Obrona (wszystkie 4 PRZYJĘTE i naprawione na realny,
+płaski efekt: `odlewnia_brazu`, `odlewnia_zelaza`, `wielka_odlewnia`, `port_wielki`).
+Przy integracji naprawiłem też bezpośrednio (technika bez konsekwencji dla gry,
+orkiestrator decyduje) przestarzałą asercję `[6]` w `entity-card-historia-section-test.cjs`
+— zakładała sztywne indeksy DOM sprzed istnienia danych Opis/Top3, teraz sprawdza
+względną kolejność (Wymagania<Historia<Charakterystyka), zero utraty pokrycia. Zero
+Final Control jako osobnego subagenta — weryfikację końcową (diff, treść 4 poprawionych
+wpisów względem danych/kodu silnika, pełny zestaw testów) wykonałem ja sam jako
+orkiestrator, zgodnie z rolą „finalna kontrola/integracja orkiestratora". Weryfikacja:
+`tsc --noEmit` czysty, `entity-card-historia-section-test` 36/36,
+`entity-card-contract-test` 75/75, `civpedia-budynki-historia-test` 141/141, 5 bramek
+referencyjnych zielone. Dowód wizualny (zrzut karty Stolarni) zachowany z rundy 1 —
+Stolarnia nie była wśród 4 poprawianych budynków.
+
 ## Nowe zgłoszenia w toku (2026-09-08, jeszcze nie zamknięte)
 
 - Niejasne zgłoszenie właściciela o pustym wierszu "Surowce" w górnym HUD — **WYJAŚNIONE, NIE
