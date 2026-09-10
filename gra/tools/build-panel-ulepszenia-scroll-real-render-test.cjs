@@ -383,12 +383,25 @@ async function mountScene(page, improvements, hudCss) {
       { id: 'piramidy', label: 'Piramidy', kosztPraca: 200, epokaWejscia: 1, dostep: 'R' },
       { id: 'wisz-ogrody', label: 'Wiszące ogrody', kosztPraca: 220, epokaWejscia: 2, dostep: 'R' },
     ];
+    // P-BUDMODE-DOSTEPNE-NA-GORZE-Q1: `buildModeHud.ts` teraz sortuje listę tak, że
+    // zablokowane pozycje (`techLocked || insufficientPraca`) lądują POD wszystkimi
+    // dostępnymi — to jest zamierzone zachowanie (patrz
+    // `budmode-ulepszenia-sort-locked-real-render-test.cjs`, dedykowany temu sortowi).
+    // Ten test mierzy geometrię/scroll/klikalność OSTATNIEJ pozycji listy, licząc na to,
+    // że jest nią zawsze ostatni element danych źródłowych („Fort") — z każdym `techUnlocked:
+    // false` w scenie ostatnia pozycja w DOM przestałaby być „Fort" (spadłby nad grupę
+    // zablokowaną), a scena tego testu nie sprawdza już wtedy tego, co ma sprawdzać
+    // (scroll/klik geometrii), tylko przypadkowo trafiony wiersz z grupy zablokowanej,
+    // gdzie klik z zamierzenia NIE wywołuje `onSelectType`. Stąd wszystkie pozycje w tej
+    // scenie są celowo w pełni odblokowane (`techUnlocked: true`, koszt << `pracaPool`
+    // 999) — sortowanie test-scenerii nie zmienia (wszystkie w jednej grupie, kolejność
+    // z danych), więc geometria pozostaje tym, co ten test faktycznie bada.
     const types = imps.map((t, i) => ({
       key: t.key,
       label: t.label,
       kosztPraca: 20 + (i % 4) * 10,
       epoka: t.epoka,
-      techUnlocked: i % 5 !== 3,
+      techUnlocked: true,
       techLabel: 'Obróbka kamienia',
       lockHint: 'Technologia: «Obróbka kamienia» · Koszt: 40 Pracy',
     }));

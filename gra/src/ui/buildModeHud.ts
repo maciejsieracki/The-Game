@@ -674,7 +674,13 @@ export function createBuildModeHud(config: BuildModeHudConfig): BuildModeHudApi 
       html += '<div class="lbl">Ulepszenia terenu</div>';
     }
     const pracaPool = config.getPracaPool?.() ?? Infinity;
-    for (const t of types) {
+    // P-BUDMODE-DOSTEPNE-NA-GORZE-Q1: dostępne pozycje nad zablokowanymi, wzorem
+    // `diplomacyAudience.ts:1840` (`.sort((x, y) => Number(x.isLocked) - Number(y.isLocked))`).
+    // `locked` liczone RAZ tutaj (ta sama definicja co poniżej w renderze: techLocked ||
+    // insufficientPraca) i użyte zarówno do sortu, jak i do renderu — bez duplikacji logiki.
+    // Sort stabilny: kolejność WEWNĄTRZ każdej z dwóch grup (dostępne / zablokowane)
+    // zachowana z danych źródłowych (`config.listTypes()`).
+    const typesWithLock = types.map(t => {
       const techLocked = t.techUnlocked === false;
       // Za mało Pracy: ten sam wzorzec wizualny co tech-lock (wyszarzenie + tooltip na hover +
       // klik blokowany), żeby gracz widział brak dostępności PRZED klikiem w hex, nie po nim.
@@ -682,6 +688,9 @@ export function createBuildModeHud(config: BuildModeHudConfig): BuildModeHudApi 
       // blocked click), so the player sees unavailability BEFORE clicking a hex, not after.
       const insufficientPraca = !techLocked && t.kosztPraca > pracaPool;
       const locked = techLocked || insufficientPraca;
+      return { t, techLocked, insufficientPraca, locked };
+    }).sort((x, y) => Number(x.locked) - Number(y.locked));
+    for (const { t, techLocked, insufficientPraca, locked } of typesWithLock) {
       const sel = t.key === active ? ' sel' : '';
       const ic = impIconHtml(t.key);
       const costLabel = t.kosztPraca <= 0 ? 'FREE' : t.kosztPraca + ' P';
