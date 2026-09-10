@@ -7736,6 +7736,16 @@ istnieje i ma konkretny, zlokalizowany defekt), albo pełne ABC (jeśli brak reg
 trzeba ustalić dokładne parametry mechaniki od zera lub od nowa — zgodnie z `R-PROC-ABC-BALANS`,
 zmiana balansu wojny AI ZAWSZE wymaga ABC, nawet przy pewnej diagnozie).
 
+**Recon zamknięty.** Przyczyna potwierdzona: reguła 25-turowa (`AI_MAJOR_EARLY_NO_WAR_TURNS`,
+`ai.ts:4658`) działa poprawnie, zero regresji. Mechanizm „2 miasta → wymuszony pokój + 20 tur
+cooldown" (`forced-war-{bronze,stone,iron}.ts`) też działa poprawnie, ale WYŁĄCZNIE dla wojen
+wymuszonych epoki — zwykłe wojny AI↔AI (Priorytet 4 `ai.ts::decideAIDiplomacy`, po turze 25)
+nie mają żadnego bezpiecznika i mogą eskalować do całkowitego podboju. Właściciel rozstrzygnął
+3 ABC 2026-09-10: **Q1 = rozszerz TEN SAM mechanizm (2 miasta/20 tur, te same parametry) na
+zwykłe wojny AI↔AI · Q2 = NIE dodawać ochrony przed eliminacją małych cywilizacji (poza
+zakresem) · Q3 = wyłącznie AI↔AI, wojny z udziałem gracza bez zmian**. Dispatch naprawy:
+`R-AI-WOJNY-ZWYKLE-CAP-DWA-MIASTA-Q1` (uruchomiony przez Workflow Operator→Evaluator→Obrona).
+
 ## Nowe zgłoszenia w toku (2026-09-08, jeszcze nie zamknięte)
 
 - Niejasne zgłoszenie właściciela o pustym wierszu "Surowce" w górnym HUD — **WYJAŚNIONE, NIE
