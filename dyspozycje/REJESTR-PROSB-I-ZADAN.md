@@ -7796,6 +7796,25 @@ niezależny spot-check wszystkich 5 budynków z `maksPoziom=1` przeciw treści `
 czysty, `entity-card-historia-section-test` 36/36, `entity-card-contract-test` 75/75,
 `civpedia-budynki-historia-test` 141/141, 5 bramek referencyjnych zielone.
 
+**`R-KARTY-OPIS-TOP3-B3-Q1` — ZINTEGROWANE 2026-09-10 (commit `3c19b0b9`).** 14
+budynków, OSTATNIA partia budynków: wielka_kuznia, fort, baszta,
+warsztat_oblezniczy, akademia, teatr, sad, dom_starszyzny, dwor_zarzadcy,
+pretorium, trybunal, laznia_publiczna, akademia_wojskowa, garnizon. Odstępstwo
+potwierdzone jako HARMLESS: "garnizon" miał już wypełnione `historia` (temat
+`R-BUDYNEK-GARNIZON-NOWY-Q1`, commit `918e5993`) — założenie dispatchu, że go
+brakowało, było błędne; Operator poprawnie NIE nadpisał istniejącej treści.
+Weryfikacja własna orkiestratora (content-only, jak B1/B2): porównanie
+before/after pełnego zbioru pól obu wersji pliku (Python) potwierdziło zero
+zmian poza `opis`/`top3` (i niezmienioną `historia` dla garnizon) dla
+wszystkich 14 wpisów, zero wpisów spoza listy. 13/14 budynków ma
+`maksPoziom=1` — spot-check regexem (frazy progresji poziomowej) na `opis`+
+`top3` wszystkich 13: zero trafień. `jq` valid. `tsc --noEmit` czysty,
+`entity-card-historia-section-test` 36/36, `entity-card-contract-test` 75/75,
+`civpedia-budynki-historia-test` 141/141, 5 bramek referencyjnych zielone.
+Zrzut ekranu: `dowody/opis-top3-historia-garnizon.png` (worktree Operatora),
+wysłany właścicielowi. **Zamyka całą falę budynków `R-KARTY-OPIS-TOP3-Q1`
+(B1+B2+B3, 42 budynki) — pozostają wyłącznie jednostki (U1-U6+, 75 jednostek).**
+
 ## `P-KARTA-PRZEBUDOWA-UKLAD-TECH-Q1` — GAME — **ZINTEGROWANE 2026-09-10** (commit `a23ce049`)
 
 Ostatnia część tematu `P-KARTA-PRZEBUDOWA-UKLAD-TECH-ULEPSZENIE-Q1` — karta technologii.
