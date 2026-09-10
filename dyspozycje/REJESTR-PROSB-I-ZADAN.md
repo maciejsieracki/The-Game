@@ -7746,6 +7746,25 @@ zwykłe wojny AI↔AI · Q2 = NIE dodawać ochrony przed eliminacją małych cyw
 zakresem) · Q3 = wyłącznie AI↔AI, wojny z udziałem gracza bez zmian**. Dispatch naprawy:
 `R-AI-WOJNY-ZWYKLE-CAP-DWA-MIASTA-Q1` (uruchomiony przez Workflow Operator→Evaluator→Obrona).
 
+## `P-KARTA-PRZEBUDOWA-UKLAD-ULEPSZENIE-Q1` — GAME — **ZINTEGROWANE 2026-09-10** (commit `85a846c6`)
+
+Część „ulepszenie terenu" tematu `P-KARTA-PRZEBUDOWA-UKLAD-TECH-ULEPSZENIE-Q1` (ABC:
+Q1=4 sekcje odblokowań technologii nierozdzielone tylko przesunięte, Q2=Charakterystyka
+dla obu typów, Q3=Rys historyczny ujednolicony na pozycję 4 wszędzie). `improvementAdapter.ts`:
+dawna samodzielna sekcja „Bonusy" przemianowana/rozszerzona (dodany wiersz `Typ`) na rolę
+„Charakterystyka", `sections` finalnie `[requirementsSection, characteristicsSection,
+resourceSection, unlockSection]` — niezmieniony `HISTORIA_SECTION_INDEX=2` w `renderer.ts`
+(zero zmian tam) wstawia teraz Rys historyczny w tej samej strukturalnej pozycji co dla
+budynku/jednostki. Operator→Evaluator (zero zarzutów)→Final Control PASS (żywy zrzut ekranu
+karty „Tartak" wysłany właścicielowi, pokazujący docelową kolejność sekcji). Nowa bramka
+`improvement-card-uklad-sekcji-test.cjs` 12/12 PASS (kolejność na żywym DOM, z historią i
+bez). Zero regresji: `entity-card-historia-section-test` 36/36, `entity-card-contract-test`
+75/75, 4 testy porównawcze (`improvement-adapter-resource-note-test`,
+`improvement-card-callsites-test`, `building-detail-card-entitycard-migration-test`,
+`unit-detail-card-entitycard-migration-test`) mają pre-istniejące fail-e potwierdzone
+identyczne na czystym `main` (nie regresja tego tematu), 5 bramek referencyjnych zielone.
+Karta technologii (druga część tego samego dispatchu) w toku osobno.
+
 ## `R-KARTY-OPIS-TOP3-Q1` — GAME — FALA TREŚCI W TOKU (start 2026-09-10)
 
 Podczas weryfikacji `P-KARTA-PRZEBUDOWA-UKLAD-Q1` (kolejność sekcji budynku/jednostki)
