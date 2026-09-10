@@ -1,10 +1,10 @@
 {
-  "publishedAt": "2026-09-10T22:10:00",
-  "sourceBuild": "gra/dist (commit bb21200c)",
-  "note": "FALA 372 - P-KARTA-PRZEBUDOWA-UKLAD-TECH-Q1: karta technologii dostaje sections[0]=Wymagania, sections[1]=Charakterystyka (Koszt nauki/Epoka/Poziom/Surowiec-wymog-badania), niezmieniony renderer.ts wstawia Rys historyczny w tej samej pozycji co dla budynku/jednostki/ulepszenia. 4 osobne sekcje odblokowan (Budynki/Jednostki/Ulepszenia terenu/Kolejne technologie) niescalone, tylko przesuniete nizej. Operator->Evaluator(zero zarzutow)->Final Control PASS z zywym zrzutem ekranu karty Zegluga. Nowa bramka karta-technologia-uklad-real-render-test.cjs 11/11. Zero regresji, 5 bramek referencyjnych zielone. TYM SAMYM wszystkie CZTERY typy kart encji (budynek/jednostka/ulepszenie/technologia) maja teraz spojny uklad - P-KARTA-PRZEBUDOWA-UKLAD-TECH-ULEPSZENIE-Q1 jako calosc ZAMKNIETY.",
+  "publishedAt": "2026-09-10T22:45:00",
+  "sourceBuild": "gra/dist (commit a464f752)",
+  "note": "FALA 373 - R-AI-WOJNY-ZWYKLE-CAP-DWA-MIASTA-Q1: KRYTYCZNY fix zgloszenia na zywo (jedna cywilizacja AI podbila wszystkie inne cywilizacje AI poza graczem). Zwykle wojny AI-AI (Priorytet 4, po turze 25) nie mialy zadnego automatycznego bezpiecznika konczenia wojny - dostaly teraz DOKLADNIE ten sam mechanizm co wojny wymuszone epoki: 2 miasta zdobyte/stracone -> wymuszony pokoj + cooldown 20 tur (reuzyte te same stale i funkcje, ai.ts nietkniete). Wylacznie AI-AI, wojny z udzialem gracza bez zmian, pary z aktywna wojna wymuszona pomijane. Operator->Evaluator(5 zarzutow, w tym scenariusz testu na mapie z jednym AI powodujacy przedwczesna eliminacje)->Obrona(wszystkie naprawione)->Final Control PASS (niezalezna weryfikacja pelnego diffu main.ts + 22 bramki: nowa 2x, 15 regresji wojny wymuszonej/25-turowej, 5 referencyjnych - wszystkie zielone). Nowa bramka ai-wojny-zwykle-cap-dwa-miasta-test.cjs 22/22.",
   "publisher": "Orkiestrator (Claude Code)",
   "bundle": "Gra-ROBOCZA.html",
-  "md5": "abef72cc2226e912eed3493a6623465f",
+  "md5": "d2eba4da3f7e34f16e414c4da3a3103b",
   "bundlePoleBitwy": "Gra-ROBOCZA-POLE-BITWY.html",
   "md5PoleBitwy": "6deb45d265b82b4eb27e990c345a79c1"
 }

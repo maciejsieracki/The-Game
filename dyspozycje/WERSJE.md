@@ -13,6 +13,27 @@ swoim wĹ‚asnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji d
 > Pakiet 3 z 2026-08-20 jest docs-only i nie tworzy wpisu ROBOCZA/KANON/FINALNA;
 > ten plik pozostaje wyłącznie rejestrem publikacji bundli.
 
+## ROBOCZA d2eba4da - 2026-09-10 22:45 UTC - FALA 373: KRYTYCZNY fix — dominacja jednej cywilizacji AI
+
+|- md5 (pełne): d2eba4da3f7e34f16e414c4da3a3103b · stempel: ROBOCZA · label d2eba4da · zakres
+  commitów: `8ae718ed..a464f752` (od poprzedniej fali do obecnego `main`) · pole bitwy:
+  `Gra-ROBOCZA-POLE-BITWY.html` md5 `6deb45d265b82b4eb27e990c345a79c1` (NIEZMIENIONE)
+|- **`R-AI-WOJNY-ZWYKLE-CAP-DWA-MIASTA-Q1`** (commit `10fd9eea`) — KRYTYCZNE zgłoszenie
+  właściciela na żywo: jedna cywilizacja AI podbiła wszystkie inne cywilizacje AI poza
+  graczem. Przyczyna: mechanizm „2 miasta zdobyte/stracone → wymuszony pokój + cooldown
+  20 tur" istniał wyłącznie dla wojen wymuszonych epoki — zwykłe wojny AI↔AI (po turze 25)
+  nie miały żadnego bezpiecznika. Naprawa: `maybeResolveRegularWarOnCityCapture` w
+  `main.ts` reużywa DOKŁADNIE ten sam mechanizm (te same stałe: próg 2 miasta, cooldown
+  20 tur, `finalizePeaceTreatyBetween`) — wyłącznie AI↔AI, pary z aktywną wojną wymuszoną
+  pomijane, `ai.ts` nietknięte (`isPeaceLockedBetween()` już bezwarunkowo gate'uje każde
+  wypowiedzenie wojny). Operator→Evaluator (5 zarzutów: nowa bramka sama nie przechodziła,
+  scenariusz testu na mapie z JEDNYM realnym AI powodował przedwczesną eliminację cywilizacji
+  przed drugim zdobyciem, brak fail-fast przy nieudanym fast-forward, brak sprzątania w
+  `eliminateOwner()`, osierocony proces Chromium)→Obrona (wszystkie 5 naprawione)→Final
+  Control PASS (niezależna weryfikacja całego diffu + 22 bramki: nowa bramka 2x, 15 bramek
+  regresji wojny wymuszonej/reguły 25-turowej, 5 bramek referencyjnych — wszystkie
+  zielone). Nowa bramka `ai-wojny-zwykle-cap-dwa-miasta-test.cjs` 22/22 PASS.
+
 ## ROBOCZA abef72cc - 2026-09-10 22:10 UTC - FALA 372: karta technologii — komplet 4/4 kart encji
 
 |- md5 (pełne): abef72cc2226e912eed3493a6623465f · stempel: ROBOCZA · label abef72cc · zakres
