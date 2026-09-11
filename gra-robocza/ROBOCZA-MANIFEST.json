@@ -1,10 +1,10 @@
 {
-  "publishedAt": "2026-09-10T23:14:00",
-  "sourceBuild": "gra/dist (commit b22cfc20)",
-  "note": "FALA 374 - R-KARTY-OPIS-TOP3-B3-Q1: OSTATNIA partia budynkow fali tresci Opis/Top3 (14: wielka_kuznia, fort, baszta, warsztat_oblezniczy, akademia, teatr, sad, dom_starszyzny, dwor_zarzadcy, pretorium, trybunal, laznia_publiczna, akademia_wojskowa, garnizon). Garnizon dodatkowo dostal opis+top3 mimo ze mial juz historia z wczesniejszego, niezaleznego tematu (zalozenie dispatchu ze jej brakowalo bylo bledne, ale nieszkodliwe - operator nie nadpisal istniejacej tresci). Operator->Evaluator zero zarzutow. Weryfikacja wlasna orkiestratora (content-only jak B1/B2): before/after porownanie pol wszystkich 14 wpisow (Python) - zero zmian poza opis/top3 (i niezmieniona historia dla garnizon), zero wpisow spoza listy. 13/14 budynkow ma maksPoziom=1 - spot-check regexem (frazy progresji poziomowej) na opis+top3: zero trafien. tsc czysty, entity-card-historia-section-test 36/36, entity-card-contract-test 75/75, civpedia-budynki-historia-test 141/141, 5 bramek referencyjnych zielone. Zamyka cala fale budynkow R-KARTY-OPIS-TOP3-Q1 (B1+B2+B3, 42/42) - pozostaja wylacznie jednostki (U1-U6+, 75 jednostek).",
+  "publishedAt": "2026-09-11T09:01:00",
+  "sourceBuild": "gra/dist (commit e54ee570)",
+  "note": "FALA 375 - R-HOTSEAT-FOTEL2-CYWILIZACJA-BLEDNA-Q1: KRYTYCZNY fix zgloszenia na zywo (grajac Grecja jako fotel 1, wybor Rzymu dla fotela 2 dawal 'dwie Grecje' i brak wlasnych miast-panstw Rzymu). civTypeForOwner czyta teraz per-fotel dane z _menuCivIdByOwner dla KAZDEGO ludzkiego ownerId zamiast globalnej wartosci fotela 1. Evaluator znalazl DWA dodatkowe, niezalezne duplikaty tego samego wadliwego wzorca: _cityRenderOpts() (getCiv/getCivIconId) - kontrolowal realnie renderowany model 3D miasta i ikone odznaki na mapie, najbardziej widoczna manifestacje zglaszanego objawu - oraz civDisplayNameForOwner (etykiety dyplomacji/bitwy dla nieaktywnego drugiego fotela). Obrona naprawila oba delegujac do civTypeForOwner. Defekt C: druga, niezalezna kolejka miast-panstw dla drugiego fotela ludzkiego w cluster-start.ts (no-op dla single-player). Operator->Evaluator(3 zarzuty)->Obrona(2 przyjete)->Final Control(niezalezny subagent, wszystkie 3 werdykty ODDAL)->PASS. tsc czysty, 5 bramek referencyjnych zielone, nowa bramka R-HOTSEAT-FOTEL2-CYWILIZACJA-BLEDNA-live-test.cjs PASS (w tym wariant mutacyjny PRZED/PO na czystym origin/main), hotseat-etap6e-render-noop-test 20/20 identycznych stateHash PRZED/PO (zero regresji single-player, zweryfikowane osobiscie przez orkiestratora po integracji). Dowod: dwa zrzuty ekranu, dwie rozne cywilizacje z wlasnymi miastami-panstwami.",
   "publisher": "Orkiestrator (Claude Code)",
   "bundle": "Gra-ROBOCZA.html",
-  "md5": "32ed2ec14f9b2d5f29820fd9ce1ff8c4",
+  "md5": "83633024f9ffaca7949f314411b004a3",
   "bundlePoleBitwy": "Gra-ROBOCZA-POLE-BITWY.html",
   "md5PoleBitwy": "6deb45d265b82b4eb27e990c345a79c1"
 }

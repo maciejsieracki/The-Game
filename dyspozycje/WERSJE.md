@@ -13,6 +13,36 @@ swoim wĹ‚asnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji d
 > Pakiet 3 z 2026-08-20 jest docs-only i nie tworzy wpisu ROBOCZA/KANON/FINALNA;
 > ten plik pozostaje wyłącznie rejestrem publikacji bundli.
 
+## ROBOCZA 83633024 - 2026-09-11 09:01 UTC - FALA 375: KRYTYCZNY fix — zła cywilizacja i brak miast-państw fotela 2
+
+|- md5 (pełne): 83633024f9ffaca7949f314411b004a3 · stempel: ROBOCZA · label 83633024 · zakres
+  commitów: `4845bf66..e54ee570` (od poprzedniej fali do obecnego `main`) · pole bitwy:
+  `Gra-ROBOCZA-POLE-BITWY.html` md5 `6deb45d265b82b4eb27e990c345a79c1` (NIEZMIENIONE)
+|- **`R-HOTSEAT-FOTEL2-CYWILIZACJA-BLEDNA-Q1`** (commit `e54ee570`) — KRYTYCZNE zgłoszenie
+  właściciela na żywo: grając Grecją (fotel 1), wybór Rzymu dla fotela 2 dawał „dwie
+  Grecje" i brak własnych miast-państw Rzymu wokół stolicy fotela 2. Przyczyna B:
+  `civTypeForOwner` sprawdzał czy `ownerId` to AKTUALNIE aktywny fotel (nie czy to
+  jakikolwiek człowiek), więc którykolwiek fotel akurat miał turę dostawał globalną
+  `player.civType`/`_menuCivId` fotela 1. Naprawiono: czyta teraz per-fotel dane z
+  `_menuCivIdByOwner` dla KAŻDEGO ludzkiego `ownerId`. Evaluator znalazł DWA dodatkowe,
+  niezależne duplikaty tego samego wzorca poza pierwotnym diffem: `_cityRenderOpts()`
+  (`getCiv`/`getCivIconId`) — kontrolował realnie renderowany MODEL 3D miasta i ikonę
+  odznaki na mapie, najbardziej widoczną manifestację zgłoszonego objawu (rzymska
+  stolica wyglądała jak grecka) — oraz `civDisplayNameForOwner` (etykiety dyplomacji/
+  bitwy dla nieaktywnego drugiego fotela). Obrona naprawiła oba (delegacja do
+  `civTypeForOwner`). Przyczyna C: `spawnPendingSameTypeRivals`/
+  `pendingSameTypeRivalCount` to była jednorazowa, globalna kolejka miast-państw
+  powiązana z cywilizacją fotela 1 — naprawiono drugą, niezależną kolejką dla drugiego
+  fotela ludzkiego w `cluster-start.ts` (no-op dla single-player). Operator→Evaluator
+  (3 zarzuty, 2 trafne)→Obrona(naprawione)→Final Control (niezależny subagent,
+  wszystkie 3 werdykty ODDAL)→PASS. `tsc` czysty, 5 bramek referencyjnych zielone,
+  nowa bramka `R-HOTSEAT-FOTEL2-CYWILIZACJA-BLEDNA-live-test.cjs` PASS (w tym wariant
+  mutacyjny PRZED/PO na czystym `origin/main`), `hotseat-etap6e-render-noop-test`
+  20/20 identycznych `stateHash` PRZED/PO (zero regresji trybu jednoosobowego,
+  zweryfikowane osobiście przez orkiestratora po integracji). Dowód: dwa zrzuty
+  ekranu, fotel 1 = Grecja, fotel 2 = Rzym, każdy z własną, poprawną cywilizacją i
+  własnymi miastami-państwami.
+
 ## ROBOCZA 32ed2ec1 - 2026-09-10 23:14 UTC - FALA 374: fala treści B3 — OSTATNIA partia budynków (Opis/Top3)
 
 |- md5 (pełne): 32ed2ec14f9b2d5f29820fd9ce1ff8c4 · stempel: ROBOCZA · label 32ed2ec1 · zakres
