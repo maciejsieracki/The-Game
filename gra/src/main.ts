@@ -11219,6 +11219,32 @@ async function boot(): Promise<void> {
       resTurns?: number;
     }> = [];
 
+    /**
+     * R-HOTSEAT-ETAP8-DYPLOMACJA-DANE-Q1: kolejka propozycji dyplomatycznych MIĘDZY
+     * dwoma fotelami LUDZKIMI hot-seatu — w przeciwieństwie do `pendingDiplomacyInbox`
+     * wyżej (AI→gracz, odbiorca ZAWSZE niejawnie `ME()`), tu obie strony są jawne:
+     * `fromOwnerId`/`toOwnerId`. Fotel A (aktywny) proponuje do fotela B (nieaktywnego w
+     * tej turze) — wpis czeka w kolejce, aż `switchActiveHuman()` uczyni B aktywnym i on
+     * odpowie `respondToHumanProposal()`. `cmd` to TA SAMA unia `AIDiplomacyCommand`,
+     * którą dziś nosi `pendingDiplomacyInbox`/pipeline AI (ABC-Q3: zero nowych wariantów
+     * traktatu) — akceptacja reużywa `finalizePeaceTreatyBetween`/`aiCommandToPendingProposal`/
+     * `resolvePlayerAcceptsAiPending`/`applyProposalOutcome`, DOKŁADNIE te same funkcje,
+     * których woła `resolvePendingDiplomacy()` niżej dla AI, żadna nowa logika traktatu.
+     * Save/load: serializowana WPROST jak `pendingDiplomacyInbox` (ta sama konwencja —
+     * `pendingDiplomacyInbox` już dziś przetrwa zapis/wczytanie, patrz `meta.pendingDiplomacyInbox`
+     * niżej w tym pliku, więc propozycje międzyludzkie idą tym samym wzorcem, bez
+     * dodatkowego uzasadnienia efemeryczności).
+     */
+    interface InterHumanDiplomacyProposal {
+      id: string;
+      fromOwnerId: number;
+      toOwnerId: number;
+      cmd: AIDiplomacyCommand;
+      reason: string;
+      createdTurn: number;
+    }
+    const interHumanDiplomacyInbox: InterHumanDiplomacyProposal[] = [];
+
     /** Tura ostatniej propozycji jednorazowego daru ¤ AI→gracz (cooldown per ownerId). */
     const aiOneShotGiftLastTurn = new Map<number, number>();
 
@@ -17300,6 +17326,77 @@ async function boot(): Promise<void> {
       id: string; ownerId: number; civName: string; cmdType: string; reason: string;
     }> {
       return pendingDiplomacyInbox;
+    }
+
+    /**
+     * R-HOTSEAT-ETAP8-DYPLOMACJA-DANE-Q1: fotel `fromOwnerId` (aktywny) proponuje traktat
+     * fotelowi `toOwnerId` (drugi fotel człowieka, nieaktywny w tej turze) — trafia do
+     * `interHumanDiplomacyInbox`, widoczne fotelowi `toOwnerId` dopiero gdy on stanie się
+     * aktywny (ABC-Q1: czysto turowy model, bez wspólnego ekranu). Zero UI w tym temacie —
+     * jedyne wywołanie to hak testowy `__hotSeatTestDebug.proposeToHumanForTest` niżej.
+     */
+    function proposeToHuman(
+      fromOwnerId: number,
+      toOwnerId: number,
+      cmd: AIDiplomacyCommand,
+      reason: string,
+    ): string {
+      const id = 'inter-human-diplo-' + fromOwnerId + '-' + toOwnerId + '-' + cmd.type + '-'
+        + turn + '-' + interHumanDiplomacyInbox.length;
+      interHumanDiplomacyInbox.push({ id, fromOwnerId, toOwnerId, cmd, reason, createdTurn: turn });
+      return id;
+    }
+
+    /** Propozycje `interHumanDiplomacyInbox` ZAADRESOWANE DO `ownerId` (jawny `toOwnerId`,
+     *  w przeciwieństwie do `getPendingDiplomacyDecisions()` gdzie adresat jest niejawnie
+     *  `ME()`) — API odczytu dla testów / przyszłego UI. */
+    function getInterHumanProposalsFor(ownerId: number): ReadonlyArray<InterHumanDiplomacyProposal> {
+      return interHumanDiplomacyInbox.filter(p => p.toOwnerId === ownerId);
+    }
+
+    /**
+     * Odpowiedź fotela `toOwnerId` na propozycję `id`. `accept` REUŻYWA — nie duplikuje —
+     * ten sam pipeline wykonania traktatu co `resolvePendingDiplomacy()` dla AI wyżej:
+     * pokój przez `finalizePeaceTreatyBetween(a,b)` (już generyczna, patrz recon
+     * R-HOTSEAT-ETAP8-DYPLOMACJA-RECON-Q1 §1), reszta przez
+     * `aiCommandToPendingProposal`/`resolvePlayerAcceptsAiPending`/`applyProposalOutcome`
+     * (też generyczne na dowolną parę ownerId — recon §1/§4). `counter` usuwa wpis
+     * oryginalny i wstawia NOWY z ODWRÓCONYM kierunkiem (`toOwnerId`→`fromOwnerId` staje
+     * się nowym `fromOwnerId`→`toOwnerId`) i zmienionym `cmd`/`reason` — trafia z powrotem
+     * do kolejki, widoczny stronie A gdy ona znów będzie aktywna. Zwraca `false`, gdy `id`
+     * nie istnieje albo `cmd` nie da się skonwertować na traktat (np. `counter` bez
+     * `counterCmd`) — wołający (test) odróżnia to od cichego no-opu.
+     */
+    function respondToHumanProposal(
+      id: string,
+      action: 'accept' | 'reject' | 'counter',
+      counterCmd?: AIDiplomacyCommand,
+      counterReason?: string,
+    ): boolean {
+      const idx = interHumanDiplomacyInbox.findIndex(p => p.id === id);
+      if (idx < 0) return false;
+      const p = interHumanDiplomacyInbox[idx]!;
+      interHumanDiplomacyInbox.splice(idx, 1);
+      if (action === 'reject') return true;
+      if (action === 'counter') {
+        if (!counterCmd) return false;
+        proposeToHuman(p.toOwnerId, p.fromOwnerId, counterCmd, counterReason ?? p.reason);
+        return true;
+      }
+      // action === 'accept' — DOKŁADNIE ta sama gałąź akceptacji co resolvePendingDiplomacy()
+      // dla AI, z jawną parą (p.fromOwnerId, p.toOwnerId) zamiast niejawnego (p.ownerId, ME()).
+      if (p.cmd.type === 'zaproponuj_pokoj') {
+        finalizePeaceTreatyBetween(p.fromOwnerId, p.toOwnerId);
+        return true;
+      }
+      const pending = aiCommandToPendingProposal(p.cmd, p.fromOwnerId, p.toOwnerId, turn);
+      if (!pending) return false;
+      const result = resolvePlayerAcceptsAiPending(
+        pending, turn, undefined,
+        { hasTradeTech: ownerHasTradeTech },
+      );
+      applyProposalOutcome(p.fromOwnerId, p.toOwnerId, result, pending.payload, pending.actionId);
+      return true;
     }
 
     function countPlayerSpichlerze(): number {
@@ -23597,6 +23694,38 @@ async function boot(): Promise<void> {
         ghostChipVisible: ghostChip.style.display !== 'none',
         escapeOverlayTopId: top()?.id ?? null,
       }),
+      /**
+       * R-HOTSEAT-ETAP8-DYPLOMACJA-DANE-Q1 — hak testowy WYŁĄCZNIE dla
+       * `tools/hotseat-etap8-dyplomacja-dane-test.cjs` (ZERO UI w tym temacie — jedyny
+       * punkt wejścia). Woła DOKŁADNIE `proposeToHuman()` produkcyjne, zero reimplementacji.
+       */
+      proposeToHumanForTest: (
+        fromOwnerId: number,
+        toOwnerId: number,
+        cmd: AIDiplomacyCommand,
+        reason: string,
+      ): string => proposeToHuman(fromOwnerId, toOwnerId, cmd, reason),
+      /** Odczyt WYŁĄCZNIE do odczytu (zero mutacji) — propozycje zaadresowane DO `ownerId`. */
+      getInterHumanProposalsForTest: (ownerId: number): ReadonlyArray<{
+        id: string; fromOwnerId: number; toOwnerId: number; cmd: AIDiplomacyCommand; reason: string;
+      }> => getInterHumanProposalsFor(ownerId),
+      /** Woła DOKŁADNIE `respondToHumanProposal()` produkcyjne. */
+      respondToHumanProposalForTest: (
+        id: string,
+        action: 'accept' | 'reject' | 'counter',
+        counterCmd?: AIDiplomacyCommand,
+        counterReason?: string,
+      ): boolean => respondToHumanProposal(id, action, counterCmd, counterReason),
+      /** Odczyt relacji dyplomatycznej TEJ SAMEJ funkcji (`getDiploRelation`), której używa
+       *  cała reszta silnika dla istniejących traktatów — dowód realnego wpisu, nie deklaracji. */
+      getDiploRelationForTest: (a: number, b: number): { status: string } => {
+        const r = getDiploRelation(a, b);
+        return { status: r.status };
+      },
+      /** Liczba aktywnych umów (`activeDeals`) między dokładnie tą parą ownerId — dowód
+       *  realnego wpisu traktatu w TEJ SAMEJ strukturze co istniejące traktaty AI/gracz. */
+      countActiveDealsForTest: (a: number, b: number): number =>
+        activeDeals.filter(d => (d.strony[0] === a && d.strony[1] === b) || (d.strony[0] === b && d.strony[1] === a)).length,
     };
 
     // P-AI-NIE-STAWIA-BUDYNKOW-Q1 — hak testowy WYŁĄCZNIE dla
@@ -29269,6 +29398,8 @@ async function boot(): Promise<void> {
           siegeBesiegerByCity: Array.from(siegeBesiegerByCity.entries()),
           siegeAiStateByKey: Array.from(siegeAiStateByKey.entries()),
           pendingDiplomacyInbox: pendingDiplomacyInbox.slice(),
+          // R-HOTSEAT-ETAP8-DYPLOMACJA-DANE-Q1: sama konwencja co pendingDiplomacyInbox wyżej.
+          interHumanDiplomacyInbox: interHumanDiplomacyInbox.slice(),
           aiOneShotGiftLastTurn: Array.from(aiOneShotGiftLastTurn.entries()),
           aiTradeAgreementLastProposalTurn: Array.from(aiTradeAgreementLastProposalTurn.entries()),
           aiAiTradeAgreementLastTurn: Array.from(aiAiTradeAgreementLastTurn.entries()),
@@ -35744,6 +35875,7 @@ async function boot(): Promise<void> {
       basketTransferCtx = createEmptyBasketTransferContext(data.tech);
       _dipUnitSeq = 0;
       pendingDiplomacyInbox.length = 0;
+      interHumanDiplomacyInbox.length = 0;
       negotiationTable.length = 0;
       negotiationSeq = 0;
       rejectedOfferCooldowns = [];
@@ -37585,6 +37717,11 @@ async function boot(): Promise<void> {
           pendingDiplomacyInbox.splice(pi, 1);
         }
       }
+      // R-HOTSEAT-ETAP8-DYPLOMACJA-DANE-Q1: sama konwencja co pendingDiplomacyInbox wyżej —
+      // brak filtra po kontakcie, bo OBIE strony tu są zawsze fotelami ludzkimi (nie AI).
+      interHumanDiplomacyInbox.length = 0;
+      const savedInterHuman = saved.meta?.interHumanDiplomacyInbox as typeof interHumanDiplomacyInbox | undefined;
+      if (savedInterHuman?.length) interHumanDiplomacyInbox.push(...savedInterHuman);
       aiOneShotGiftLastTurn.clear();
       const savedGiftCooldown = saved.meta?.aiOneShotGiftLastTurn as Array<[number, number]> | undefined;
       if (savedGiftCooldown?.length) {
