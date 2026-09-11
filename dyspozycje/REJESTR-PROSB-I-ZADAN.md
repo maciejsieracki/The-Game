@@ -8070,3 +8070,21 @@ dowodem. `tsc` czysty, 5 bramek referencyjnych zielone,
 `entity-card-historia-section-test` 36/36, `entity-card-contract-test` 75/75,
 `civpedia-jednostki-j1-test` 161/161, `civpedia-jednostki-j2-test` 157/157.
 64/75 jednostek zrobione, pozostaje U6 (11/75, OSTATNIA partia).
+
+**`R-KARTY-OPIS-TOP3-U6-Q1` — ZINTEGROWANE 2026-09-11 (commit `2b53a793`) —
+OSTATNIA PARTIA CAŁEJ FALI.** 11 jednostek: Piechota neobabilońska, Tyrski
+miecznik, Wojownik fenicki, Gwardia Tyreńska, Thorakites, Evocati, iButho z
+iklwa, Gwardzista z champi, Wojownik z żelaznym khopesh, Mur tarcz (Sargonid),
+Miecznik galijski. Evaluator (rygor podniesiony jako ostatnia partia) znalazł
+4 zarzuty: 3 remisy 5-drożne opisane jako 3-drożne (Atak=8), oraz błędne
+stwierdzenie że Evocati nie zastępuje żadnej wcześniejszej jednostki —
+pominięto odwrotny mechanizm „Zastąp specjalnie" (Wojownik tyrreński→Evocati).
+Obrona naprawiła wszystkie 4 z dowodami. Incydent proceduralny: restart
+kontenera przerwał pierwotny Workflow tej partii w trakcie pracy Operatora —
+worktree U6 był wtedy czysty (żadnych zmian), więc temat uruchomiony od zera
+bez utraty realnej pracy. `tsc` czysty, 5 bramek referencyjnych zielone,
+`entity-card-historia-section-test` 36/36, `entity-card-contract-test` 75/75,
+`civpedia-jednostki-j1-test` 161/161, `civpedia-jednostki-j2-test` 157/157.
+
+**CAŁA FALA TREŚCI `R-KARTY-OPIS-TOP3-Q1` ZAMKNIĘTA: budynki B1-B3 (42/42) +
+jednostki U1-U6 (75/75) = 117/117 encji z polami Opis/Top3.**
