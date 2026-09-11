@@ -7652,6 +7652,44 @@ call-site w `main.ts`: odczyty domyślnie `ME()`, zapisy wg kontekstu (jawny `hu
 gdy dostępny, np. `isHuman(a)`/`isHuman(b)` ternary, `targetId===0` w protokole komend AI).
 Wsteczna kompatybilność save/load: stary płaski format → `HUMAN_OWNER_PRIMARY`.
 
+## `R-HOTSEAT-ETAP8-DYPLOMACJA-DANE-Q1` — GAME — **ZINTEGROWANE 2026-09-11** (commit `8dfca234`)
+
+Etap 8 planu hot-seat, część i (dane/logika, ZERO nowego UI — punkt wejścia UI to
+osobny, następny temat `R-HOTSEAT-ETAP8-DYPLOMACJA-UI-Q1`). ABC z 2026-09-10:
+model wyłącznie turowy (bez wspólnego ekranu/modalu przekazania), AI nie
+uczestniczy, istniejące traktaty 1:1 (zero nowych wariantów), dedykowany punkt
+wejścia UI (poza zakresem). Nowa kolejka `interHumanDiplomacyInbox` z jawnymi
+`fromOwnerId`/`toOwnerId` (w przeciwieństwie do `pendingDiplomacyInbox`, gdzie
+odbiorca jest zawsze niejawnie graczem). `proposeToHuman`/`respondToHumanProposal`
+(`accept`/`reject`/`counter`) reużywają — nie duplikują — istniejącą logikę
+wykonania traktatu (`aiCommandToPendingProposal`, już generyczna na dowolną parę
+`ownerId`, zweryfikowana 1:1 z `resolvePendingDiplomacy()`). Save/load: ta sama
+konwencja co istniejący `pendingDiplomacyInbox`.
+
+Nietypowy przebieg procesowy: wcześniejszy zarzut o „aktywny fotel po
+kontrpropozycji" (fotel 2 zamiast fotela 1) okazał się wyścig-warunkową w SAMEJ
+bramce testowej (`wait(200)` zamiast `pollUntil` na zakończenie asynchronicznego
+przejścia świata), NIE defektem `main.ts`. Świeży Evaluator zweryfikował cały kod
+niezależnie — zero zarzutów — ale sam nie mógł zdobyć wymaganego żywego dowodu
+Chromium (chroniczny `BLOCK` na `pollUntil(world-generated)` timeout 180s).
+Orkiestrator potwierdził bezpośrednio (dwukrotnie, na czystym `origin/main`, w
+GENUINE bezczynnym środowisku), że to nie kolizja zasobów, tylko zbyt ciasny
+margines czasowy dla tego sandboksa — zarejestrowane osobno jako
+`R-PROCESS-HOTSEAT-WORLDGEN-TIMEOUT-Q1` (PROCESS/INFRA). Podniesienie timeoutu
+WYŁĄCZNIE nowej bramki tego tematu (180s→360s, plik w 100% w allowlist) dało
+natychmiastowy pełny PASS. Final Control (niezależny subagent) zweryfikował że to
+nie maskowanie realnego zawieszenia (wszystkie 3 scenariusze kończą się realnym
+sukcesem z asercjami treści stanu, nie samym brakiem timeoutu za pierwszym
+podejściem) i potwierdził 1:1 reużycie logiki traktatu w kodzie źródłowym→PASS.
+
+Proces: Operator(Sonnet5/medium)→Evaluator(Sonnet5/high, zero zarzutów do kodu)→
+orkiestrator dostarczył żywy dowód→Final Control(Sonnet5/high)→PASS. `tsc` czysty,
+5 bramek referencyjnych zielone, nowa bramka `hotseat-etap8-dyplomacja-dane-test.cjs`
+WSZYSTKIE SCENARIUSZE ZIELONE, `diplomacy-test` 148/148, `diplomacy-treaties-test`
+17/17, `hotseat-etap6f-part2-data-test` 24/24, `hotseat-etap5-no-leak-test`,
+`hotseat-etap6f-part2-ui-test`, `hotseat-dyplo-kontakt-per-fotel-test` — wszystkie
+PASS.
+
 Operator→Evaluator (3 zarzuty rundy 1: (1) brak niezależnej repliki twierdzenia że
 BLOCK na krytycznej bramce `hotseat-drugi-fotel-tura-test` to infra, nie regresja —
 własna replikacja Evaluatora dała asymetryczny wynik 0/3 vs 1/2 budzący wątpliwość;
