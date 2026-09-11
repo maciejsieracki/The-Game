@@ -28619,8 +28619,16 @@ Naprawa wymaga zmiany współdzielonej `resolveAttacker`/`eligibleCityAttackers`
 szerszy blast radius niż wąski temat wyżej. Świadomie NIE naprawione w tej samej turze (zakres
 C-025: „zero przy okazji/skoro już tu jestem").
 
-**STATUS: OTWARTE — ZAPOMNIANE, do dispatchu** (Operator Haiku 4.5, worktree). Audyt 2026-08-17
-potwierdził: zarejestrowany 2026-08-14, NIGDY nie dispatchowany, zero dalszych wzmianek/dispatchu w pliku od tego czasu.
+**STATUS: ZAMKNIĘTE — już naprawione, poza tym procesem (weryfikacja 2026-09-11).**
+`resolveAttacker()` w dzisiejszym `gra/src/map/map-attack-city.ts:57-78` MA już dokładnie
+opisany fallback: gdy `selectedUnit` (reprezentant stosu) nie jest w `adjacent`, funkcja szuka
+`sameStackAdjacent` po `stackGroupIdOf()` zamiast od razu zwracać `'none'`. `git blame` wskazuje
+commit `546f6a51` (Cursor Agent, 2026-08-17 23:15 UTC, poza tym procesem AutoBot — komunikat
+commita mylący, dotyczy w rzeczywistości tej funkcji). Bramka `gra/tools/map-attack-city-test.cjs`
+uruchomiona ponownie 2026-09-11: 13/13 PASS, w tym scenariusz `mixed stack + off-city
+representative → attack_choice uses adjacent stack member` pokrywający dokładnie ten przypadek.
+Audyt 2026-08-17 (wpis niżej) sprawdzał wyłącznie brak dispatchu w TYM pliku i nie zauważył,
+że naprawa wylądowała tego samego dnia inną ścieżką. Nic do dispatchu.
 
 ## P-HUD-KONWERTER-DOPASOWANIE-BUDYNKI-NIESPOJNE — WERDYKT EVALUATORA (Opus 5, agent `aa82c80ee4e26d8ce`, 2026-08-14)
 
