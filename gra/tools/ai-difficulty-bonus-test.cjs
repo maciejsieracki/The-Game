@@ -35,6 +35,8 @@ export {
   pickBonusCityHex,
   applyDifficultyCombatToUnitDef,
   cityStateStartUnitCount,
+  foreignCityStateStartUnitCount,
+  playerStartUnitCount,
   AI_DIFFICULTY_BONUS_UNIT_TYPE,
 } from ${JSON.stringify(SRC + '/game/ai-difficulty-bonus')};
 export { isBarbarian, BARBARIAN_OWNER_ID } from ${JSON.stringify(SRC + '/game/barbarians')};
@@ -69,6 +71,8 @@ const {
   isBarbarian,
   BARBARIAN_OWNER_ID,
   cityStateStartUnitCount,
+  foreignCityStateStartUnitCount,
+  playerStartUnitCount,
   AI_DIFFICULTY_BONUS_UNIT_TYPE,
 } = require(BUNDLE);
 
@@ -150,11 +154,10 @@ console.log('\n--- T-DB-e: BLOK miasta -> jednostki ---');
   const data = { aiParams: {} };
   const params = loadDifficultyParams(data, 3);
   const map = makeMap();
-  // Sąsiedzi stolicy = morze/góry — brak legalnego heksu (clusterStartSlot omija dystans, nie teren).
-  for (const n of [[5, 4], [3, 4], [4, 5], [4, 3], [5, 3], [3, 5]]) {
-    const k = `${n[0]},${n[1]}`;
-    if (map.hexes[k]) map.hexes[k].terenBazowy = 'morze';
-  }
+  // Cały promień poszukiwania poza stolicą = morze — brak legalnego heksu nawet
+  // po tym, jak resolver zaczął sprawdzać dalej niż bezpośredni sąsiedzi.
+  for (const key of Object.keys(map.hexes)) map.hexes[key].terenBazowy = 'morze';
+  map.hexes['4,4'].terenBazowy = 'laka';
   const cities = [{ id: 'c0', ownerId: 2, q: 4, r: 4, population: 3, name: 'Cap' }];
   const plan = planMajorAiDifficultyStartBonuses(4, 4, params, map, cities, true);
   eq(plan.extraCitiesBlocked, true, 'BLOK miasta');
@@ -246,6 +249,19 @@ console.log('\n--- T-DB-i: cityStateStartUnitCount (R-MIASTA-PANSTWA-STARTOWE-JE
   eq(cityStateStartUnitCount('normal'), 1, 'normal -> 1 jednostka');
   eq(cityStateStartUnitCount('hard'), 2, 'hard -> 2 jednostki');
   eq(AI_DIFFICULTY_BONUS_UNIT_TYPE, 'Wojownik', 'typ jednostki startowej = ten sam wzorzec co major AI (Wojownik)');
+}
+
+console.log('\n--- T-DB-j: rozdzielone tabele startowych jednostek (H-MIASTA-PANSTWA-WOJSKO-ODNOWA-Q1) ---');
+{
+  const playerExpected = { easy: 1, normal: 2, hard: 3 };
+  const foreignExpected = { easy: 2, normal: 1, hard: 0 };
+  for (const difficulty of ['easy', 'normal', 'hard']) {
+    eq(playerStartUnitCount(difficulty), playerExpected[difficulty], `gracz ${difficulty} -> ${playerExpected[difficulty]}`);
+    eq(foreignCityStateStartUnitCount(difficulty), foreignExpected[difficulty], `obce panstwo-miasto ${difficulty} -> ${foreignExpected[difficulty]}`);
+    eq(cityStateStartUnitCount('normal'), 1, `panstwo-miasto gracza: ustawienie normal niezalezne od glownej trudnosci (${difficulty})`);
+  }
+  eq(playerStartUnitCount('easy') !== playerStartUnitCount('hard'), true, 'mutacja: tabela gracza nie jest stala');
+  eq(foreignCityStateStartUnitCount('easy') !== foreignCityStateStartUnitCount('hard'), true, 'mutacja: tabela obcych panstw-miast nie jest stala');
 }
 
 console.log('\n========================================');
