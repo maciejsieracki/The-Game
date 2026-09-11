@@ -56,7 +56,22 @@
     "missileAttack": 0,
     "fieldPower": 27,
     "Utrzymanie surowiec": "Drewno",
-    "Utrzymanie surowiec (ilość)": 10
+    "Utrzymanie surowiec (ilość)": 10,
+    "Opis": "Podstawowa piechota walcząca wręcz z epoki kamienia, stanowiąca trzon najwcześniejszych armii.",
+    "Top3": [
+      {
+        "tytul": "Bonus vs Spearman 15%",
+        "tekst": "Ma wyraźną przewagę taktyczną w starciu z włócznikami dzięki bonusowi +15% do ataku przeciw temu typowi."
+      },
+      {
+        "tytul": "Zrównoważone statystyki",
+        "tekst": "Atak 6 i Obrona 6 na tym samym poziomie czynią ją wszechstronną jednostką liniową bez wyraźnych słabości."
+      },
+      {
+        "tytul": "Awans na Wojownika z mieczem i tarczą",
+        "tekst": "Po zdobyciu odpowiedniej technologii jest zastępowana lepiej uzbrojonym następcą."
+      }
+    ]
   },
   {
     "Jednostka": "Procarz",
@@ -115,7 +130,22 @@
     "missileAttack": 4,
     "fieldPower": 12,
     "Utrzymanie surowiec": "Drewno",
-    "Utrzymanie surowiec (ilość)": 10
+    "Utrzymanie surowiec (ilość)": 10,
+    "Opis": "Lekka jednostka dystansowa rażąca przeciwnika z dużej odległości, unikając starcia wręcz.",
+    "Top3": [
+      {
+        "tytul": "Zasięg ataku 4 heksy",
+        "tekst": "Największy zasięg wśród jednostek dystansowych tej partii, pozwala ostrzeliwać wroga zanim ten się zbliży."
+      },
+      {
+        "tytul": "15 pocisków",
+        "tekst": "Duży zapas amunicji pozwala na długotrwałe nękanie przeciwnika bez konieczności uzupełniania zapasów."
+      },
+      {
+        "tytul": "Słaba w zwarciu",
+        "tekst": "Niski atak (2) i pancerz (2) sprawiają, że po dotarciu wroga do zwarcia jest bardzo podatna na straty."
+      }
+    ]
   },
   {
     "Jednostka": "Oszczepnik",
@@ -174,7 +204,22 @@
     "missileAttack": 4,
     "fieldPower": 12,
     "Utrzymanie surowiec": "Drewno",
-    "Utrzymanie surowiec (ilość)": 10
+    "Utrzymanie surowiec (ilość)": 10,
+    "Opis": "Lekka jednostka dystansowa o krótszym zasięgu niż procarz, ale mocniejszym uderzeniu.",
+    "Top3": [
+      {
+        "tytul": "Atak dystansowy 4 na zasięgu 2",
+        "tekst": "Skutecznie razi przeciwnika oszczepami na krótszym dystansie niż procarz czy łucznik."
+      },
+      {
+        "tytul": "Wyższy atak podstawowy",
+        "tekst": "Atak 4 daje jej lepsze szanse niż procarzowi, jeśli wróg zdąży się zbliżyć do walki wręcz."
+      },
+      {
+        "tytul": "Ograniczony zapas pocisków",
+        "tekst": "Zaledwie 6 pocisków oznacza szybsze wyczerpanie możliwości ostrzału niż u pozostałych jednostek dystansowych."
+      }
+    ]
   },
   {
     "Jednostka": "Łucznik",
@@ -233,7 +278,22 @@
     "missileAttack": 3,
     "fieldPower": 17.5,
     "Utrzymanie surowiec": "Drewno",
-    "Utrzymanie surowiec (ilość)": 10
+    "Utrzymanie surowiec (ilość)": 10,
+    "Opis": "Dystansowa jednostka strzelecka o najwyższej sile rażenia z dystansu wśród podstawowych jednostek strzeleckich.",
+    "Top3": [
+      {
+        "tytul": "Atak dystansowy 5",
+        "tekst": "Najwyższa wartość ataku dystansowego wśród trzech jednostek strzeleckich tej partii (procarz 4, oszczepnik 4)."
+      },
+      {
+        "tytul": "Obrona 6",
+        "tekst": "Solidniejsza obrona niż u procarza i oszczepnika (4), lepiej znosi kontratak."
+      },
+      {
+        "tytul": "Zasięg 3 i 12 pocisków",
+        "tekst": "Dobry balans między zasięgiem a zapasem amunicji, umożliwiający dłuższy ostrzał z bezpiecznej odległości."
+      }
+    ]
   },
   {
     "Jednostka": "Zwiadowca",
@@ -292,7 +352,22 @@
     "missileAttack": 0,
     "fieldPower": 6,
     "Utrzymanie surowiec": null,
-    "Utrzymanie surowiec (ilość)": 0
+    "Utrzymanie surowiec (ilość)": 0,
+    "Opis": "Szybka jednostka zwiadowcza do eksploracji terenu, bez znaczących zdolności bojowych.",
+    "Top3": [
+      {
+        "tytul": "Widok pola 5",
+        "tekst": "Najszersze pole widzenia wśród jednostek tej partii, idealne do odkrywania mapy i wykrywania wroga z daleka."
+      },
+      {
+        "tytul": "Ruch 3 (5 w bitwie)",
+        "tekst": "Najszybsza jednostka tej partii, zdolna do szybkiego przemieszczania się i ucieczki przed zagrożeniem."
+      },
+      {
+        "tytul": "Brak zdolności bojowych",
+        "tekst": "Atak 0 i pancerz 0 oznaczają, że jednostka nie nadaje się do walki i powinna unikać starć."
+      }
+    ]
   },
   {
     "Jednostka": "Włócznik",
@@ -351,7 +426,22 @@
     "missileAttack": 0,
     "fieldPower": 44,
     "Utrzymanie surowiec": "Brąz",
-    "Utrzymanie surowiec (ilość)": 10
+    "Utrzymanie surowiec (ilość)": 10,
+    "Opis": "Ciężka piechota wręcz wyspecjalizowana w powstrzymywaniu szarż kawalerii.",
+    "Top3": [
+      {
+        "tytul": "Bonus vs Mount 50%",
+        "tekst": "Potężna przewaga +50% do ataku przeciw jednostkom konnym, czyni ją naturalnym kontrą dla kawalerii."
+      },
+      {
+        "tytul": "Obrona 8 i pancerz 6",
+        "tekst": "Jedna z bardziej wytrzymałych jednostek liniowych w tej partii, trudna do przełamania w zwarciu."
+      },
+      {
+        "tytul": "Awans na Spearman",
+        "tekst": "Po zdobyciu odpowiedniej technologii jest zastępowana nowocześniejszą wersją pikiniera."
+      }
+    ]
   },
   {
     "Jednostka": "Wojownik z mieczem i tarczą",
@@ -410,7 +500,22 @@
     "missileAttack": 0,
     "fieldPower": 39,
     "Utrzymanie surowiec": "Brąz",
-    "Utrzymanie surowiec (ilość)": 10
+    "Utrzymanie surowiec (ilość)": 10,
+    "Opis": "Rozwinięta piechota wręcz, następca Wojownika, lepiej uzbrojona i wytrzymalsza.",
+    "Top3": [
+      {
+        "tytul": "Uderzenie 6",
+        "tekst": "Wyraźnie mocniejszy cios niż u Wojownika (Uderzenie 4), zadaje więcej obrażeń w starciu wręcz."
+      },
+      {
+        "tytul": "Bonus vs Spearman 15%",
+        "tekst": "Zachowuje przewagę taktyczną przeciw włócznikom odziedziczoną po Wojowniku."
+      },
+      {
+        "tytul": "Health 100",
+        "tekst": "Znacznie wyższa wytrzymałość niż u Wojownika (Health 60) pozwala dłużej przetrwać w walce."
+      }
+    ]
   },
   {
     "Jednostka": "Rydwan (woły)",
@@ -469,7 +574,22 @@
     "missileAttack": 0,
     "fieldPower": 52,
     "Utrzymanie surowiec": "Brąz",
-    "Utrzymanie surowiec (ilość)": 10
+    "Utrzymanie surowiec (ilość)": 10,
+    "Opis": "Wczesna jednostka szturmowa na wołach, uderzająca z flanki w jednostki dystansowe.",
+    "Top3": [
+      {
+        "tytul": "Bonus vs Distance 50% i vs Slinger 50%",
+        "tekst": "Druzgocąca przewaga nad jednostkami dystansowymi, dosięga je zanim zdążą się wycofać."
+      },
+      {
+        "tytul": "Ruch 3 (5 w bitwie)",
+        "tekst": "Wysoka mobilność pozwala na szybkie manewry flankujące."
+      },
+      {
+        "tytul": "Niska obrona i pancerz",
+        "tekst": "Obrona 2 i pancerz 2 czynią ją podatną na kontratak mimo wysokiego ataku."
+      }
+    ]
   },
   {
     "Jednostka": "Konnica",
@@ -528,7 +648,22 @@
     "missileAttack": 0,
     "fieldPower": 49,
     "Utrzymanie surowiec": "Brąz",
-    "Utrzymanie surowiec (ilość)": 10
+    "Utrzymanie surowiec (ilość)": 10,
+    "Opis": "Kawaleria flankująca, szybsza i lepiej opancerzona niż rydwan.",
+    "Top3": [
+      {
+        "tytul": "Ruch 4 (6 w bitwie)",
+        "tekst": "Najwyższa mobilność wśród jednostek tej partii, idealna do szybkich uderzeń z flanki."
+      },
+      {
+        "tytul": "Bonus vs Distance 50% i vs Slinger 50%",
+        "tekst": "Miażdżąca przewaga nad jednostkami dystansowymi, podobnie jak u rydwanu."
+      },
+      {
+        "tytul": "Pancerz 4",
+        "tekst": "Wyższy pancerz niż u rydwanu (2) pozwala lepiej znosić kontratak po szarży."
+      }
+    ]
   },
   {
     "Jednostka": "Galera",
@@ -587,7 +722,22 @@
     "missileAttack": 0,
     "fieldPower": 25,
     "Utrzymanie surowiec": "Brąz",
-    "Utrzymanie surowiec (ilość)": 10
+    "Utrzymanie surowiec (ilość)": 10,
+    "Opis": "Podstawowa jednostka morska zdolna do walki na wodzie.",
+    "Top3": [
+      {
+        "tytul": "Rola Morska",
+        "tekst": "Jedyna jednostka w tej partii zdolna do przemieszczania się i walki na wodzie."
+      },
+      {
+        "tytul": "Bonus vs Spearman 15%",
+        "tekst": "Zachowuje przewagę taktyczną przeciw włócznikom również w starciach morskich."
+      },
+      {
+        "tytul": "Pancerz 0",
+        "tekst": "Brak opancerzenia sprawia, że jest wrażliwa na silne uderzenia przeciwnika."
+      }
+    ]
   },
   {
     "Jednostka": "Falanga",
@@ -646,7 +796,22 @@
     "missileAttack": 0,
     "fieldPower": 52.5,
     "Utrzymanie surowiec": "Żelazo",
-    "Utrzymanie surowiec (ilość)": 10
+    "Utrzymanie surowiec (ilość)": 10,
+    "Opis": "Specjalna formacja piechoty zastępująca Włócznika, wyjątkowo odporna w obronie.",
+    "Top3": [
+      {
+        "tytul": "Obrona 10",
+        "tekst": "Najwyższa wartość obrony wśród jednostek tej partii (remis z Hieros Lochos), niezwykle trudna do przełamania frontalnie."
+      },
+      {
+        "tytul": "Bonus vs Mount 50%",
+        "tekst": "Skutecznie odpiera szarże kawalerii dzięki bonusowi +50% przeciw jednostkom konnym."
+      },
+      {
+        "tytul": "Ruch 1",
+        "tekst": "Najwolniejsza jednostka tej partii, słabo nadaje się do manewrów i pościgu."
+      }
+    ]
   },
   {
     "Jednostka": "Hieros Lochos (Święty Zastęp)",
@@ -705,7 +870,22 @@
     "missileAttack": 0,
     "fieldPower": 63,
     "Utrzymanie surowiec": "Żelazo",
-    "Utrzymanie surowiec (ilość)": 15
+    "Utrzymanie surowiec (ilość)": 15,
+    "Opis": "Elitarna super-jednostka piechoty wręcz o wyjątkowej sile bojowej.",
+    "Top3": [
+      {
+        "tytul": "Atak 8 i Obrona 10",
+        "tekst": "Najwyższy Atak w tej partii i Obrona na równi z Falangą — łącznie najmocniejszy profil bojowy, przewyższa Wojownika z mieczem i tarczą (Atak 6, Obrona 6) na obu osiach."
+      },
+      {
+        "tytul": "Status Super-jednostki",
+        "tekst": "Oznaczona jako Super-jednostka — unikalna, elitarna formacja niedostępna dla zwykłych typów piechoty."
+      },
+      {
+        "tytul": "Podwójny bonus taktyczny",
+        "tekst": "Bonus vs Spearman 15% oraz vs Mount 50% czynią ją skuteczną zarówno przeciw pikinierom, jak i kawalerii."
+      }
+    ]
   },
   {
     "Jednostka": "Hastati",
@@ -764,7 +944,22 @@
     "missileAttack": 4,
     "fieldPower": 57.5,
     "Utrzymanie surowiec": "Żelazo",
-    "Utrzymanie surowiec (ilość)": 10
+    "Utrzymanie surowiec (ilość)": 10,
+    "Opis": "Rzymska piechota specjalna łącząca rzut oszczepem z walką wręcz.",
+    "Top3": [
+      {
+        "tytul": "Atak dystansowy 3",
+        "tekst": "Może razić przeciwnika 2 oszczepami na zasięgu 2 przed przejściem do walki wręcz, czego brak u zwykłego mieczownika."
+      },
+      {
+        "tytul": "Bonus vs Spearman 15%",
+        "tekst": "Zachowuje przewagę taktyczną przeciw włócznikom w starciu wręcz."
+      },
+      {
+        "tytul": "Health 120",
+        "tekst": "Wyższa wytrzymałość niż u Wojownika z mieczem i tarczą (Health 100), za którego wchodzi do służby."
+      }
+    ]
   },
   {
     "Jednostka": "Triari",
