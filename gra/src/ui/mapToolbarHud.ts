@@ -30,6 +30,17 @@ export interface MapToolbarHudConfig {
   isBuildModeActive?: () => boolean;
   isCultureRangeActive?: () => boolean;
   isReligionRangeActive?: () => boolean;
+  /**
+   * R-HOTSEAT-ETAP8-DYPLOMACJA-UI-Q1: przycisk „dyplomacja między fotelami"
+   * (propozycje MIĘDZY dwoma fotelami LUDZKIMI hot-seatu). Gdy
+   * `isInterHumanDiploVisible` zwraca `false`/jest niezdefiniowana — przycisk
+   * jest CAŁKOWICIE NIEOBECNY w DOM (nie tylko disabled), bo dziś to jedyny
+   * element HUD gatowany warunkiem hot-seatu — ROZMYŚLNY wyjątek, nie błąd.
+   */
+  onOpenInterHumanDiplo?: () => void;
+  isInterHumanDiploVisible?: () => boolean;
+  isInterHumanDiploActive?: () => boolean;
+  getInterHumanProposalsBadge?: () => number;
 }
 
 export interface MapToolbarHudApi {
@@ -75,6 +86,7 @@ function ensureStyles(): void {
 .civ-map-toolbar .badge{position:absolute;top:0;right:0;min-width:14px;height:14px;
   border-radius:7px;background:#c84040;color:#fff;font-size:9px;font-weight:700;
   display:flex;align-items:center;justify-content:center;padding:0 3px;}
+.civ-map-toolbar .tb.inter-human .badge{background:#e0c04a;color:#241c04;}
 `;
   const s = document.createElement('style');
   s.id = STYLE_ID;
@@ -85,6 +97,19 @@ function ensureStyles(): void {
 function tbIcon(id: 'tb-cities' | 'tb-diplomacy' | 'tb-army' | 'tb-build' | 'tb-science'): string {
   if (id === 'tb-science') return scienceOwlIconSized(26);
   return iconHtml(id, 40).replace(/width="40"/, 'width="26"').replace(/height="40"/, 'height="26"');
+}
+
+/**
+ * R-HOTSEAT-ETAP8-DYPLOMACJA-UI-Q1: ikona przycisku „dyplomacja między fotelami"
+ * — inline SVG (koperta), bez dopisywania nowego wariantu do `IconId` w
+ * `icons/iconRegistry.ts` (poza allowlistą tego tematu).
+ */
+const INTER_HUMAN_DIPLO_SVG =
+  '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true">'
+  + '<rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 6.5l9 6.5 9-6.5"/></svg>';
+
+function interHumanDiploIconHtml(): string {
+  return INTER_HUMAN_DIPLO_SVG.replace('<svg ', '<svg width="26" height="26" ');
 }
 
 /** Toolbar imperium — medaliony 1E (strefa B mockupu). */
@@ -102,6 +127,11 @@ export function createMapToolbarHud(config: MapToolbarHudConfig): MapToolbarHudA
     const scienceOn = config.isScienceHubActive?.() ?? false;
     const researchFrac = config.getResearchProgress?.() ?? 0;
     const scienceRing = scienceProgressRingHtml(researchFrac, 52, 2);
+    // R-HOTSEAT-ETAP8-DYPLOMACJA-UI-Q1: CAŁKOWICIE nieobecny w DOM poza hot-seatem
+    // (nie disabled) — brak `isInterHumanDiploVisible` albo `false` => nie renderuj.
+    const interHumanVisible = config.isInterHumanDiploVisible?.() === true;
+    const interHumanOn = config.isInterHumanDiploActive?.() ?? false;
+    const interHumanBadge = config.getInterHumanProposalsBadge?.() ?? 0;
 
     let html = '';
     html += `<button type="button" class="tb${cityListOn ? ' on' : ''}" data-act="cities" title="Miasto — lista i produkcja">${tbIcon('tb-cities')}</button>`;
@@ -112,6 +142,12 @@ export function createMapToolbarHud(config: MapToolbarHudConfig): MapToolbarHudA
       + (wars > 0 ? `<span class="badge">${wars}</span>` : '') + '</button>';
     html += `<button type="button" class="tb${armyListOn ? ' on' : ''}" data-act="army" title="Wojsko">${tbIcon('tb-army')}</button>`;
     html += `<button type="button" class="tb${buildOn ? ' on' : ''}" data-act="build" title="Budowa ulepszeń">${tbIcon('tb-build')}</button>`;
+    if (interHumanVisible) {
+      const interHumanExtra = (interHumanBadge > 0 ? ' at-war' : '') + (interHumanOn ? ' on' : '');
+      html += `<button type="button" class="tb inter-human${interHumanExtra}" data-act="interhuman" `
+        + `title="Dyplomacja między fotelami">${interHumanDiploIconHtml()}`
+        + (interHumanBadge > 0 ? `<span class="badge">${interHumanBadge}</span>` : '') + '</button>';
+    }
     el.innerHTML = html;
 
     const map: Record<string, (() => void) | undefined> = {
@@ -120,6 +156,7 @@ export function createMapToolbarHud(config: MapToolbarHudConfig): MapToolbarHudA
       diplo: config.onOpenDiplomacy,
       army: config.onOpenArmy,
       build: config.onOpenBuild,
+      interhuman: config.onOpenInterHumanDiplo,
     };
     el.querySelectorAll('.tb[data-act]').forEach(b => {
       b.addEventListener('click', () => {

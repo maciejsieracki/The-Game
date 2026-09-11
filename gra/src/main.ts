@@ -719,6 +719,13 @@ import {
   type TradeRouteOverlayInput,
 } from './render/tradeRoutesOverlay';
 import { hideDiplomacyPendingModal, showDiplomacyPendingModal } from './ui/diplomacyPendingHud';
+import {
+  hideInterHumanDiplomacyHud,
+  isInterHumanDiplomacyHudOpen,
+  showInterHumanDiplomacyHud,
+  type InterHumanProposalFields,
+  type InterHumanProposalKind,
+} from './ui/interHumanDiplomacyHud';
 import { getMinimapData, computeViewport } from './map/minimap';
 // R-DROGA-WZOR-6-RAMION: maska 6 bitów sąsiedztwa dróg (czysta logika, testowalna w Node).
 // / EN: 6-bit road neighbour mask (pure logic, Node-testable).
@@ -1177,7 +1184,9 @@ import {
   qualifiesForMajorAiDifficultyBonus,
 } from './game/ai-difficulty-bonus';
 import { isMajorAiOwner } from './game/owner-utils';
-import { type HumanSeats, HUMAN_OWNER_PRIMARY, isAiOwner, isHumanOwner } from './game/human-owners';
+import {
+  type HumanSeats, HUMAN_OWNER_PRIMARY, isAiOwner, isHotSeat, isHumanOwner, nextHumanSeat,
+} from './game/human-owners';
 import {
   pickAutoImprovements,
   AUTO_ULEPSZENIA_PRACA_RESERVE,
@@ -6657,6 +6666,7 @@ async function boot(): Promise<void> {
       if (isDiplomacyPanelOpen()) hideDiplomacyPanel();
       if (isCityPanelOpen()) hideCityPanelFull();
       hideHexContextPanel();
+      hideInterHumanDiplomacyHud();
     }
 
     function toggleDiploListFromToolbar(): void {
@@ -17399,6 +17409,120 @@ async function boot(): Promise<void> {
       return true;
     }
 
+    /**
+     * R-HOTSEAT-ETAP8-DYPLOMACJA-UI-Q1 (część ii — UI): WYŁĄCZNIE wywołania
+     * warstwy danych gotowej z części i (`proposeToHuman`/`respondToHumanProposal`/
+     * `getInterHumanProposalsFor`), ZERO nowej logiki traktatu. Buduje
+     * `AIDiplomacyCommand` z pól formularza — `targetId` zawsze `String(ownerId)`
+     * (wzorzec 1:1 z `hotseat-etap8-dyplomacja-dane-test.cjs`).
+     */
+    function interHumanCmdFromFields(
+      kind: InterHumanProposalKind,
+      targetOwnerId: number,
+      fields: InterHumanProposalFields,
+    ): AIDiplomacyCommand {
+      const targetId = String(targetOwnerId);
+      const powod = fields.powod || '(bez powodu)';
+      if (kind === 'zaproponuj_pokoj') return { type: 'zaproponuj_pokoj', targetId, powod };
+      if (kind === 'zaproponuj_sojusz') {
+        return { type: 'zaproponuj_sojusz', targetId, powod, allianceKind: fields.allianceKind };
+      }
+      if (kind === 'zaproponuj_pakt') {
+        return { type: 'zaproponuj_pakt', targetId, powod, turns: fields.turns };
+      }
+      return { type: 'zaproponuj_audiencje', targetId, powod, motive: fields.motive };
+    }
+
+    /** Tekst czytelny dla skrzynki odbiorczej — silnik formatuje, UI tylko wyświetla. */
+    function interHumanProposalDetail(cmd: AIDiplomacyCommand): string {
+      const powod = 'powod' in cmd ? cmd.powod : '';
+      if (cmd.type === 'zaproponuj_pokoj') return 'Propozycja zawarcia pokoju. Powód: ' + powod;
+      if (cmd.type === 'zaproponuj_sojusz') {
+        const kindLbl = cmd.allianceKind === 'pelny' ? 'pełny' : 'defensywny';
+        return `Propozycja sojuszu (${kindLbl}). Powód: ` + powod;
+      }
+      if (cmd.type === 'zaproponuj_pakt') {
+        return `Propozycja paktu nieagresji na ${cmd.turns ?? 15} tur. Powód: ` + powod;
+      }
+      if (cmd.type === 'zaproponuj_audiencje') {
+        return 'Prośba o audiencję' + (cmd.motive ? ' — ' + cmd.motive : '') + '. Powód: ' + powod;
+      }
+      return powod;
+    }
+
+    /** Pola surowe z `cmd` — do prefillu formularza kontrpropozycji (nie zgaduj z detail). */
+    function interHumanFieldsFromCmd(cmd: AIDiplomacyCommand): InterHumanProposalFields {
+      const powod = 'powod' in cmd ? cmd.powod : '';
+      const out: InterHumanProposalFields = { powod };
+      if (cmd.type === 'zaproponuj_sojusz') out.allianceKind = cmd.allianceKind;
+      if (cmd.type === 'zaproponuj_pakt') out.turns = cmd.turns;
+      if (cmd.type === 'zaproponuj_audiencje') out.motive = cmd.motive;
+      return out;
+    }
+
+    /** Liczba propozycji zaadresowanych do AKTYWNEGO fotela — wzorzec `getWarBadge`
+     *  (`getWarsWithPlayer: collectWarsWithPlayer`). Widoczny wyłącznie w hot-seat
+     *  (toolbar sam ukrywa przycisk gdy `isInterHumanDiploVisible` === false). */
+    function getInterHumanProposalsBadgeCount(): number {
+      return getInterHumanProposalsFor(ME()).length;
+    }
+
+    /** Buduje/odświeża ekran „dyplomacja między fotelami" ze świeżymi danymi —
+     *  wołane po KAŻDEJ akcji (akceptuj/odrzuć/kontrpropozycja/nowa propozycja),
+     *  dokładnie jak `showDiplomacyPendingModal` nadpisuje samo siebie. */
+    function openInterHumanDiplomacyHud(): void {
+      if (!isHotSeat(humanSeats)) return;
+      const otherOwnerId = nextHumanSeat(humanSeats);
+      if (otherOwnerId === null) return;
+      const meId = ME();
+      showInterHumanDiplomacyHud({
+        otherLabel: ownerDiploLabel(otherOwnerId),
+        proposals: getInterHumanProposalsFor(meId).map(p => ({
+          id: p.id,
+          fromLabel: ownerDiploLabel(p.fromOwnerId),
+          kind: p.cmd.type as InterHumanProposalKind,
+          detail: interHumanProposalDetail(p.cmd),
+          fields: interHumanFieldsFromCmd(p.cmd),
+        })),
+        onAccept: (id) => {
+          respondToHumanProposal(id, 'accept');
+          openInterHumanDiplomacyHud();
+          refreshD1bHud();
+        },
+        onReject: (id) => {
+          respondToHumanProposal(id, 'reject');
+          openInterHumanDiplomacyHud();
+          refreshD1bHud();
+        },
+        onCounter: (id, kind, fields) => {
+          const counterCmd = interHumanCmdFromFields(kind, otherOwnerId, fields);
+          respondToHumanProposal(id, 'counter', counterCmd, fields.powod);
+          openInterHumanDiplomacyHud();
+          refreshD1bHud();
+        },
+        onPropose: (kind, fields) => {
+          const cmd = interHumanCmdFromFields(kind, otherOwnerId, fields);
+          proposeToHuman(meId, otherOwnerId, cmd, fields.powod || '(bez powodu)');
+          openInterHumanDiplomacyHud();
+          refreshD1bHud();
+        },
+        onClose: () => refreshD1bHud(),
+      });
+    }
+
+    /** Spięcie przycisku toolbara — wzorzec `toggleDiploListFromToolbar()`. */
+    function toggleInterHumanDiplomacyHud(): void {
+      if (isInterHumanDiplomacyHudOpen()) {
+        hideInterHumanDiplomacyHud();
+        refreshD1bHud();
+        return;
+      }
+      clearPlayerUnitSelection();
+      closeAllMapToolbarModes();
+      openInterHumanDiplomacyHud();
+      refreshD1bHud();
+    }
+
     function countPlayerSpichlerze(): number {
       let n = 0;
       for (const c of cities) {
@@ -21819,6 +21943,16 @@ async function boot(): Promise<void> {
           },
           isArmyListActive: () => isArmyListHudOpen(),
           isDiploListActive: () => isDiploListHudOpen(),
+          // R-HOTSEAT-ETAP8-DYPLOMACJA-UI-Q1: przycisk WYŁĄCZNIE w hot-seat
+          // (`humanSeats.humanOwnerIds.length > 1`) — jedyny element HUD gatowany
+          // tym warunkiem, decyzja inżynieryjna z dispatchu (nie ABC).
+          onOpenInterHumanDiplo: () => {
+            clearPlayerUnitSelection();
+            toggleInterHumanDiplomacyHud();
+          },
+          isInterHumanDiploVisible: () => isHotSeat(humanSeats),
+          isInterHumanDiploActive: () => isInterHumanDiplomacyHudOpen(),
+          getInterHumanProposalsBadge: () => getInterHumanProposalsBadgeCount(),
           onOpenBuild: () => {
             clearPlayerUnitSelection();
             if (buildModeOpen) {
