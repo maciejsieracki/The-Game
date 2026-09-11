@@ -7877,7 +7877,7 @@ Stolarnia nie była wśród 4 poprawianych budynków.
   chip celowo pokazuje tylko ikonę + alert, bez liczby "X/Y", klik otwiera pełny panel
   magazynu. Zero dispatchu potrzebne.
 
-## `R-HOTSEAT-FOTEL2-CYWILIZACJA-BLEDNA-Q1` — GAME — KRYTYCZNE, ZGŁOSZONE NA ŻYWO 2026-09-10, DISPATCHOWANE (Operator→Evaluator w toku)
+## `R-HOTSEAT-FOTEL2-CYWILIZACJA-BLEDNA-Q1` — GAME — KRYTYCZNE — **ZINTEGROWANE 2026-09-11** (commit `e54ee570`)
 
 Zgłoszenie właściciela na żywo, testując właśnie wdrożoną ROBOCZĄ (FALA 373): grając
 Grecją (fotel 1), przy starcie hot-seat wybrał dla fotela 2 cywilizację **Rzym** — ale
@@ -7900,7 +7900,24 @@ Recon (Explore agent) ZAKOŃCZONY — dwa NIEZALEŻNE root-causy:
   wyłącznie stronę ZAPISU (mapy per-owner), nigdy odczyt/konsumpcję ani miasta-
   -państwa fotela 2 — dlatego oba defekty przeszły niezauważone od Etapu 5/6.
 
-Dispatch napisany i uruchomiony: `dyspozycje/autobot/runs/R-HOTSEAT-FOTEL2-CYWILIZACJA-BLEDNA-Q1/00-dispatch.md`.
-Wymaga naprawy OBU defektów naraz + nowej bramki pokrywającej realny odczyt i
-generowanie miast-państw (nie tylko zapis) + żywego dowodu 2-graczowego (Grecja
-vs Rzym) pokazującego poprawną cywilizację i własne miasta-państwa dla OBU foteli.
+Dispatch: `dyspozycje/autobot/runs/R-HOTSEAT-FOTEL2-CYWILIZACJA-BLEDNA-Q1/00-dispatch.md`.
+
+**Naprawa i integracja (commit `e54ee570`).** `civTypeForOwner` czyta teraz per-fotel
+dane z `_menuCivIdByOwner` dla KAŻDEGO ludzkiego `ownerId` (nie tylko aktywnego fotela).
+Evaluator znalazł DWA dodatkowe, niezależne duplikaty tego samego wadliwego wzorca,
+nieobjęte pierwotnym diffem Operatora: `_cityRenderOpts()` (`getCiv`/`getCivIconId`) —
+kontrolował realnie renderowany MODEL 3D miasta i ikonę odznaki na mapie, czyli
+najbardziej widoczną manifestację zgłoszonego objawu „dwie Grecje" (rzymska stolica
+wyglądała jak grecka) — oraz `civDisplayNameForOwner` (etykiety dyplomacji/bitwy dla
+nieaktywnego drugiego fotela). Obrona przyjęła oba zarzuty i naprawiła je (delegacja do
+`civTypeForOwner`), trzeci (proceduralny, dot. jednej niezweryfikowanej bajt-w-bajt
+bramki) odrzuciła z uzasadnieniem. Defekt C: druga, niezależna kolejka miast-państw
+(`pendingSameTypeRivalCountSecond`) dla drugiego fotela ludzkiego w `cluster-start.ts`,
+no-op dla single-player. Proces: Operator(Sonnet5/medium)→Evaluator(Sonnet5/high, 3
+zarzuty)→Obrona(2 przyjęte, naprawione)→Final Control(Sonnet5/high, niezależny
+subagent, wszystkie 3 werdykty ODDAL)→PASS. `tsc` czysty, 5 bramek referencyjnych
+zielone, nowa bramka `R-HOTSEAT-FOTEL2-CYWILIZACJA-BLEDNA-live-test.cjs` PASS (w tym
+wariant mutacyjny PRZED/PO na czystym `origin/main`), `hotseat-etap6e-render-noop-test`
+20/20 identycznych `stateHash` PRZED/PO (zero regresji single-player, zweryfikowane
+osobiście przez orkiestratora po integracji). Dowód: `dowody/hotseat-fotel2-cywilizacja-
+fotel{1,2}.png` — dwie różne cywilizacje z własnymi miastami-państwami.
