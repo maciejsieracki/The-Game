@@ -68,3 +68,14 @@ Branch: `hermes/H-MIASTA-PANSTWA-WOJSKO-ODNOWA-Q1`
 Baza: `origin/main` @ `46bfc81e`
 
 PUSH/DEPLOY: NIE WYKONANO
+
+## Hermes Kanban — próba kontrolowana 2/5
+
+BOARD: default
+PARENT_TASK_ID: N/D przed utworzeniem karty
+DEPENDENCY_TASK_IDS: []
+IDEMPOTENCY_KEY: H-MIASTA-PANSTWA-WOJSKO-ODNOWA-Q1:operator:r2:kanban
+WORKSPACE: dir:/home/ubuntu/projects/The-Game-worktrees/H-MIASTA-PANSTWA-WOJSKO-ODNOWA-Q1-kanban-r2
+KANBAN_STATUS: DISPATCHED
+
+Poprzedni run r1 uruchomiono poza Kanbanem i zatrzymano przed raportem terminalnym; nie jest źródłem routingu. Zachowano jego worktree bez czyszczenia. Ta próba jest kontrolowanym r2 i nie resetuje licznika.
