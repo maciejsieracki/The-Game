@@ -2510,12 +2510,12 @@ async function boot(): Promise<void> {
       const _visCache = (cityFogVisible && fogOn) ? currentVisible() : undefined;
       return {
         getEra:   (ownerId: number) => empireEpochForOwner(ownerId),
-        getCiv:   (ownerId: number) => {
-          const civId = isMeSafe(ownerId)
-            ? (player.civType as string || _menuCivId || 'grecja')
-            : (aiOwnerCivMap.get(ownerId) ?? 'grecja');
-          return ikonaIdToBronzeCiv(civId);
-        },
+        // R-HOTSEAT-FOTEL2-CYWILIZACJA-BLEDNA-Q1 runda 2 (zarzut Evaluatora #1): był tu
+        // NIEZALEŻNY duplikat starego wadliwego wzorca (`isMeSafe(ownerId) ? player.civType
+        // : aiOwnerCivMap.get`) — ignorował `_menuCivIdByOwner`, więc MODEL 3D stolicy
+        // fotela 2 renderował się jako cywilizacja fotela 1. Deleguje teraz do
+        // `civTypeForOwner`, tak jak `civColorFn` już robił.
+        getCiv:   (ownerId: number) => ikonaIdToBronzeCiv(civTypeForOwner(ownerId)),
         getLevel: (cityId: string) => {
           const c = cities.find(x => x.id === cityId);
           return c ? Math.max(1, Math.min(10, c.population ?? 1)) : 1;
@@ -2540,10 +2540,10 @@ async function boot(): Promise<void> {
         hideStatChips: isCityPanelOpen(),
         ownerColorFn: civColorFn,
         getBuiltBuildingIds: (cityId) => cityBuiltIdsForRender?.(cityId) ?? [],
-        getCivIconId: (ownerId) =>
-          isMeSafe(ownerId)
-            ? (player.civType as string || _menuCivId || 'grecy')
-            : (aiOwnerCivMap.get(ownerId) ?? 'grecy'),
+        // R-HOTSEAT-FOTEL2-CYWILIZACJA-BLEDNA-Q1 runda 2 (zarzut Evaluatora #1): ten sam
+        // duplikat jak wyżej w `getCiv` (ikona odznaki miasta zamiast modelu 3D), ta sama
+        // naprawa — deleguje do `civTypeForOwner`.
+        getCivIconId: (ownerId) => civTypeForOwner(ownerId),
         getProduction: (cityId) => cityProdForRender?.(cityId) ?? null,
         getOwnerResourceStock: (ownerId) => ownerSurowcePoolFor(ownerId),
         getProductionItemStockCost: (item) => productionItemStockCostForRender(item),
@@ -3517,6 +3517,17 @@ async function boot(): Promise<void> {
     let wondersPickerEl: HTMLDivElement | null = null;
 
     function civTypeForOwner(ownerId: number): string {
+      // R-HOTSEAT-FOTEL2-CYWILIZACJA-BLEDNA-Q1 (defekt B): `isMeSafe(ownerId)` pyta
+      // "czy to fotel AKTUALNIE aktywny", nie "czy to jakikolwiek fotel człowieka" —
+      // przy hot-seat dawało to GLOBALNĄ `player.civType`/`_menuCivId` (fotela 1)
+      // każdemu fotelowi, gdy akurat miał turę ("dwie Grecje"). `_menuCivIdByOwner`
+      // (main.ts, deklaracja PRZED tą funkcją) ma WŁASNY wpis per ludzki ownerId
+      // (fotel 1 od startu gry, fotel 2 ustawiany w `applyClusterStartPlan`) —
+      // czytamy STĄD najpierw, dla KAŻDEGO ownerId, nie tylko aktywnego. AI nigdy nie
+      // ma wpisu w tej mapie (ustawiana wyłącznie dla ludzkich foteli), więc fallback
+      // do `aiOwnerCivMap`/'grecy' dla AI zostaje bez zmian.
+      const ownCivId = _menuCivIdByOwner.get(ownerId);
+      if (ownCivId !== undefined) return ownCivId;
       if (isMeSafe(ownerId)) return String(player.civType || _menuCivId || 'grecy');
       return aiOwnerCivMap.get(ownerId) ?? 'grecy';
     }
@@ -7620,6 +7631,20 @@ async function boot(): Promise<void> {
     /** Pre-planowane hexy państw gracza (klaster z mapgen). */
     let pendingSameTypeRivalHexes: Array<{ q: number; r: number }> = [];
     let pendingSameTypeRivalOwnerIds: number[] = [];
+    /**
+     * R-HOTSEAT-FOTEL2-CYWILIZACJA-BLEDNA-Q1 (defekt C): analogiczna, NIEZALEŻNA
+     * kolejka miast-państw WŁASNEJ cywilizacji drugiego fotela ludzkiego — kolejka
+     * fotela 1 wyżej jest jednorazowa i drenowana przy pierwszym założeniu stolicy
+     * (fotel 1, `_menuCivId`); bez osobnej kolejki fotel 2 (inna cywilizacja, np.
+     * Rzym) zakładający stolicę PÓŹNIEJ dostawał 0 miast-państw swojego typu. Zero
+     * wpisów gdy `secondHumanCivId` nie było podane — no-op dla single-player.
+     */
+    let pendingSameTypeRivalCountSecond = 0;
+    let pendingSameTypeRivalOwnerIdsSecond: number[] = [];
+    /** Cywilizacja i ownerId drugiego fotela — do rozróżnienia która kolejka/civ
+     *  drenować w `spawnPendingSameTypeRivals` w zależności KTO zakłada stolicę. */
+    let secondHumanCivIdForRivals: string | undefined;
+    let secondPlayerOwnerIdForRivals: number | null = null;
     /** Obcy typy cywilizacji — spawn po stolicy gracza i rywalach tego samego typu. */
     let pendingForeignSpawnCities: Array<{ q: number; r: number; ownerId: number; name: string }> = [];
     /** Stolice klastrów obcych typów — ekspansyjna AI. */
@@ -8239,9 +8264,14 @@ async function boot(): Promise<void> {
     }
 
     function civDisplayNameForOwner(ownerId: number): string | undefined {
-      const civKey = isMeSafe(ownerId)
-        ? civTypeForOwner(meNow())
-        : aiOwnerCivMap.get(ownerId);
+      // R-HOTSEAT-FOTEL2-CYWILIZACJA-BLEDNA-Q1 runda 2 (zarzut Evaluatora #2): było
+      // `isMeSafe(ownerId) ? civTypeForOwner(meNow()) : aiOwnerCivMap.get(ownerId)` —
+      // dla NIEAKTYWNEGO fotela ludzkiego (drugi gracz, gdy nie jego tura) spadało na
+      // `aiOwnerCivMap`, które nie ma wpisu dla człowieka → undefined → etykieta pusta/
+      // błędna w scenach bitwy i etykietach miast. `civTypeForOwner(ownerId)` już
+      // poprawnie obsługuje KAŻDY ownerId (patrz `_menuCivIdByOwner` w tej funkcji) —
+      // wołamy ją teraz bezwarunkowo, bez rozgałęzienia po aktywnym fotelu.
+      const civKey = civTypeForOwner(ownerId);
       if (!civKey) return undefined;
       const row = data.civs.cywilizacje.find(
         (c: { ikonaId?: string; typCywilizacji?: string }) =>
@@ -8647,6 +8677,14 @@ async function boot(): Promise<void> {
       pendingSameTypeRivalCount = plan.pendingSameTypeRivals;
       pendingSameTypeRivalHexes = plan.pendingSameTypeRivalHexes.slice();
       pendingSameTypeRivalOwnerIds = plan.pendingSameTypeRivalOwnerIds.slice();
+      // R-HOTSEAT-FOTEL2-CYWILIZACJA-BLEDNA-Q1 (defekt C): kolejka WŁASNYCH miast-
+      // -państw drugiego fotela — zawsze zsynchronizowana z `plan` (0/[]/undefined/
+      // null gdy `secondHumanCivId` nie było podane, symetrycznie do reszty pól
+      // `secondPlayer*` wyżej — no-op dla single-player/restart bez drugiego fotela).
+      pendingSameTypeRivalCountSecond = plan.pendingSameTypeRivalsSecond;
+      pendingSameTypeRivalOwnerIdsSecond = plan.pendingSameTypeRivalOwnerIdsSecond.slice();
+      secondHumanCivIdForRivals = opts?.secondHumanCivId;
+      secondPlayerOwnerIdForRivals = plan.secondPlayerOwnerId;
       clusterPlacement = plan.placement;
       clusterStartSeed = seed;
       clusterCapitalOwnerIds.clear();
@@ -8760,15 +8798,37 @@ async function boot(): Promise<void> {
       );
     }
 
-    /** Po pierwszym mieście gracza — państwa wokół FAKTYCZNEJ stolicy (E-START-CS-Q1 C). */
-    function spawnPendingSameTypeRivals(_coreQ: number, _coreR: number): void {
-      if (pendingSameTypeRivalCount <= 0) return;
-      const targetCount = pendingSameTypeRivalCount;
-      pendingSameTypeRivalCount = 0;
-      // Pre-plan z mapgen zostaje tylko do podglądu UI — nie używamy go do spawnu.
-      pendingSameTypeRivalHexes = [];
-      const rivalOwnerIds = pendingSameTypeRivalOwnerIds.slice();
-      pendingSameTypeRivalOwnerIds = [];
+    /**
+     * Po pierwszym mieście gracza — państwa wokół FAKTYCZNEJ stolicy (E-START-CS-Q1 C).
+     * R-HOTSEAT-FOTEL2-CYWILIZACJA-BLEDNA-Q1 (defekt C): `founderOwnerId` (ownerId
+     * fotela, który WŁAŚNIE założył TĘ stolicę) rozstrzyga którą z DWÓCH niezależnych
+     * kolejek drenować — kolejkę fotela 1 (`_menuCivId`) albo osobną kolejkę fotela 2
+     * (`secondHumanCivIdForRivals`), zamiast zawsze fotela 1. Bez tego drugi fotel,
+     * zakładający stolicę PO pierwszym, nie dostawał żadnych miast-państw swojego
+     * typu — kolejka fotela 1 była już opróżniona. `founderOwnerId` pominięty (stare
+     * wywołania/testy) = zachowanie IDENTYCZNE jak przed tą poprawką (kolejka fotela 1).
+     */
+    function spawnPendingSameTypeRivals(_coreQ: number, _coreR: number, founderOwnerId?: number): void {
+      const isSecondFounder = founderOwnerId !== undefined
+        && secondPlayerOwnerIdForRivals !== null
+        && founderOwnerId === secondPlayerOwnerIdForRivals;
+      const rivalCivId = isSecondFounder ? (secondHumanCivIdForRivals ?? _menuCivId) : _menuCivId;
+      const relationFounderOwnerId = isSecondFounder ? founderOwnerId! : HUMAN_OWNER_PRIMARY;
+      const targetCount = isSecondFounder ? pendingSameTypeRivalCountSecond : pendingSameTypeRivalCount;
+      if (targetCount <= 0) return;
+      if (isSecondFounder) {
+        pendingSameTypeRivalCountSecond = 0;
+      } else {
+        pendingSameTypeRivalCount = 0;
+        // Pre-plan z mapgen zostaje tylko do podglądu UI — nie używamy go do spawnu.
+        pendingSameTypeRivalHexes = [];
+      }
+      const rivalOwnerIds = (isSecondFounder ? pendingSameTypeRivalOwnerIdsSecond : pendingSameTypeRivalOwnerIds).slice();
+      if (isSecondFounder) {
+        pendingSameTypeRivalOwnerIdsSecond = [];
+      } else {
+        pendingSameTypeRivalOwnerIds = [];
+      }
 
       const core = { q: _coreQ, r: _coreR };
       const candidates = buildSameTypeRivalCandidateHexes(
@@ -8809,18 +8869,18 @@ async function boot(): Promise<void> {
         // BUG-MP-NAZWA-CIV-MISMATCH: nie nadpisuj obcego typ/civ na współdzielonym ownerId.
         const existingCiv = aiOwnerCivMap.get(ownerId);
         if (
-          (existingCiv != null && existingCiv !== _menuCivId)
+          (existingCiv != null && existingCiv !== rivalCivId)
           || reservedForeignOwnerIds.has(ownerId)
         ) {
           ownerId = allocFreeRivalOwnerId();
         }
         const nazwa = clusterRivalCityName(
           data.civs,
-          _menuCivId,
+          rivalCivId,
           _rivalsFounded + 1,
           data.cityNamesPools,
         );
-        aiOwnerCivMap.set(ownerId, _menuCivId);
+        aiOwnerCivMap.set(ownerId, rivalCivId);
         setupAiOwnerEpoch(ownerId, _menuEpochId || 'kamien');
         ownerDisplayName.set(ownerId, nazwa);
         simplifiedDiplomacyOwners.add(ownerId);
@@ -8832,15 +8892,19 @@ async function boot(): Promise<void> {
         // cluster-start.ts / main.ts linia ~3223).
         // R-HOTSEAT-ETAP6D-PODETAP-C-Q1: literał `0` -> HUMAN_OWNER_PRIMARY (isHuman-owy
         // alias wartościowy) — wiarygodność DLA PARY nowego rywala, silnik nie HUD.
+        // R-HOTSEAT-FOTEL2-CYWILIZACJA-BLEDNA-Q1 (defekt C): `relationFounderOwnerId` —
+        // dla WŁASNYCH miast-państw drugiego fotela relacja startowa jest DLA PARY
+        // (fotel 2 ↔ jego miasto-państwo), nie zawsze fotel 1 (który tych miast nie
+        // zakładał i nie ma z nimi żadnej specjalnej relacji "tego samego typu").
         setDiploRelation(
-          HUMAN_OWNER_PRIMARY, ownerId,
+          relationFounderOwnerId, ownerId,
           applyWiarygodnoscD4ToRelation(
             applyCityStateDifficultyTrust(
               startRelationForPlayerSameCivCityState(),
               // C-025/C-026: zaufanie PM↔GRACZ na starcie — oś PM-vs-gracz, wprost z trudności gry.
               _menuCityStateDifficultyVsPlayer,
             ),
-            getWiarygodnosc(HUMAN_OWNER_PRIMARY),
+            getWiarygodnosc(relationFounderOwnerId),
             getWiarygodnosc(ownerId),
           ),
         );
@@ -12945,7 +13009,9 @@ async function boot(): Promise<void> {
       // Racji od razu (no-op dziś, bo default jest bezpieczny dla Ludność 1, ale spójne z
       // pozostałymi zdarzeniami zmiany właściciela poniżej).
       applyLiveSafeRationForCity(c.id);
-      spawnPendingSameTypeRivals(q, r);
+      // R-HOTSEAT-FOTEL2-CYWILIZACJA-BLEDNA-Q1 (defekt C): `c.ownerId` — fotel, który
+      // WŁAŚNIE założył TĘ stolicę — rozstrzyga wewnątrz którą z dwóch kolejek drenować.
+      spawnPendingSameTypeRivals(q, r, c.ownerId);
       spawnPendingForeignClusters();
       refreshFog();
       cityRenderer.sync(cities, _cityRenderOpts());
@@ -23359,6 +23425,18 @@ async function boot(): Promise<void> {
       switchActiveHuman: (ownerId: number): void => switchActiveHuman(ownerId),
       isAwaitingFirstPlayerCity: (ownerId?: number): boolean =>
         ownerId === undefined ? isAwaitingFirstPlayerCity() : isAwaitingFirstPlayerCity(ownerId),
+      /**
+       * R-HOTSEAT-FOTEL2-CYWILIZACJA-BLEDNA-Q1 (defekt B) — hak testowy WYŁĄCZNIE dla
+       * `tools/R-HOTSEAT-FOTEL2-CYWILIZACJA-BLEDNA-live-test.cjs`. Odczyt WYŁĄCZNIE do
+       * odczytu (zero mutacji), delegacja jeden-do-jeden do `civTypeForOwner` — DOKŁADNIE
+       * funkcja naprawiona tym tematem. Poza ściśle rozumianą allowlistą tego tematu (jak
+       * `snapshotHumanSeatsForTest` wyżej z Etapu 6f-part2) — jawne uzasadnienie: bez tego
+       * odczytu nie da się dowieść, że `civTypeForOwner(ownerId)` zwraca poprawną
+       * cywilizację DLA KAŻDEGO fotela z osobna (nie tylko aktualnie aktywnego), bo żaden
+       * dotychczasowy hak testowy tego nie odsłaniał (stąd luka w testach opisana w
+       * dispatchu) — samo czytanie, zero nowej logiki poza jednym wywołaniem.
+       */
+      civTypeForOwnerForTest: (ownerId: number): string => civTypeForOwner(ownerId),
       /**
        * R-HOTSEAT-DRUGI-FOTEL-NIE-DOSTAJE-TURY-Q1 — hak testowy WYŁĄCZNIE dla
        * `tools/hotseat-drugi-fotel-tura-test.cjs`. Zero reimplementacji logiki

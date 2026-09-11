@@ -61,6 +61,20 @@ export interface ClusterStartPlan {
   pendingSameTypeRivalHexes: Array<{ q: number; r: number }>;
   /** Zarezerwowane ownerId dla deferred same-type rivals (BUG-MP-NAZWA-CIV-MISMATCH). */
   pendingSameTypeRivalOwnerIds: number[];
+  /**
+   * R-HOTSEAT-FOTEL2-CYWILIZACJA-BLEDNA-Q1 (defekt C): liczba miast-państw
+   * WŁASNEJ cywilizacji drugiego fotela ludzkiego, do spawnu wokół JEGO
+   * faktycznej stolicy — niezależna od `pendingSameTypeRivals` (fotel 1),
+   * zamiast drenować tę samą, jednorazową kolejkę. `0` gdy `secondHumanCivId`
+   * nie było podane LUB generator nie zarezerwował `secondPlayerStartHex`.
+   * Rozmiar lustrzany do `pendingSameTypeRivals` (ten sam `rywaleNaKlaster`
+   * przeliczony przez `buildClusterSpawnPlan` dla gracza pierwszego) — nie
+   * duplikujemy tu logiki mapgen (poza allowlistą tego tematu).
+   */
+  pendingSameTypeRivalsSecond: number;
+  /** Zarezerwowane ownerId dla deferred same-type rivals DRUGIEGO fotela — rozłączne
+   *  od `pendingSameTypeRivalOwnerIds`, `aiStartHexes` i `secondPlayerOwnerId`. */
+  pendingSameTypeRivalOwnerIdsSecond: number[];
   /** Stolice klastrów obcych typów — ekspansyjna AI (faza 1). */
   clusterCapitalOwnerIds: number[];
 }
@@ -318,6 +332,31 @@ export function buildClusterStartPlan(input: BuildClusterStartInput): ClusterSta
     }
   }
 
+  // R-HOTSEAT-FOTEL2-CYWILIZACJA-BLEDNA-Q1 (defekt C): rezerwa ownerId DLA WŁASNEGO
+  // klastra miast-państw drugiego fotela — WYŁĄCZNIE gdy drugi heks faktycznie
+  // zarezerwowany. Rozmiar = `spawnPlan.pendingSameTypeRivals` (ten sam licznik co
+  // dla fotela 1, ten sam `rywaleNaKlaster`/mapa/epoka — symetryczny klaster).
+  // Numeracja PO wszystkich ownerId już zajętych w tym planie (AI + rywale fotela 1
+  // + `secondPlayerOwnerId` sam) — kolizje resztkowe (np. z `pendingForeignSpawnCities`
+  // dodanym poza tym planem) łapie i realokuje runtime fallback
+  // `allocFreeRivalOwnerId()` w `spawnPendingSameTypeRivals` (main.ts), dokładnie jak
+  // dziś dla fotela 1.
+  let pendingSameTypeRivalOwnerIdsSecond: number[] = [];
+  if (secondPlayerStartHex !== null && secondPlayerOwnerId !== null) {
+    const targetCountSecond = spawnPlan.pendingSameTypeRivals;
+    const reservedOwnerIdsSecond = [
+      ...aiStartHexes.map(a => a.ownerId),
+      ...spawnPlan.pendingSameTypeRivalOwnerIds,
+      secondPlayerOwnerId,
+    ];
+    let nextRivalOwnerId = Math.max(0, ...reservedOwnerIdsSecond) + 1;
+    for (let i = 0; i < targetCountSecond; i++) {
+      pendingSameTypeRivalOwnerIdsSecond.push(nextRivalOwnerId);
+      nextRivalOwnerId += 1;
+    }
+  }
+  const pendingSameTypeRivalsSecond = pendingSameTypeRivalOwnerIdsSecond.length;
+
   return {
     playerStartHex: spawnPlan.playerStartHex,
     playerStartCityName: spawnPlan.playerStartCityName,
@@ -337,5 +376,7 @@ export function buildClusterStartPlan(input: BuildClusterStartInput): ClusterSta
     pendingSameTypeRivalHexes: spawnPlan.pendingSameTypeRivalHexes,
     clusterCapitalOwnerIds,
     pendingSameTypeRivalOwnerIds: spawnPlan.pendingSameTypeRivalOwnerIds,
+    pendingSameTypeRivalsSecond,
+    pendingSameTypeRivalOwnerIdsSecond,
   };
 }
