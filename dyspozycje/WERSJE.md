@@ -13,6 +13,27 @@ swoim wĹ‚asnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji d
 > Pakiet 3 z 2026-08-20 jest docs-only i nie tworzy wpisu ROBOCZA/KANON/FINALNA;
 > ten plik pozostaje wyłącznie rejestrem publikacji bundli.
 
+## ROBOCZA f1eab90e - 2026-09-11 17:40 UTC - FALA 378: Etap 8 hot-seat — UI dyplomacji gracz↔gracz (CAŁY plan hot-seat zamknięty)
+
+|- md5 (pełne): f1eab90e3852719767608a7ee8cd1619 · stempel: ROBOCZA · label f1eab90e · zakres
+  commitów: `1f365064..ae53beab` (od poprzedniej fali do obecnego `main`, obejmuje
+  integrację R-HOTSEAT-ETAP8-DYPLOMACJA-UI-Q1 + rejestrację
+  P-HOTSEAT-ETAP6E-ZEPSUTY-GALAZ-CRASH-Q1) · pole bitwy:
+  `Gra-ROBOCZA-POLE-BITWY.html` md5 `6deb45d265b82b4eb27e990c345a79c1` (NIEZMIENIONE)
+|- **`R-HOTSEAT-ETAP8-DYPLOMACJA-UI-Q1`** — UI dla dyplomacji gracz↔gracz w
+  hot-seat (commit `bed15cb8`), dopięte do gotowej warstwy danych z części i
+  (commit `8dfca234`). Skrzynka propozycji Akceptuj/Odrzuć/Kontrpropozycja,
+  formularz nowej propozycji (zaproponuj_pokoj/sojusz/pakt/audiencje), nowy
+  przycisk/badge w HUD widoczny wyłącznie w hot-seat. Restart kontenera
+  przerwał oryginalny Workflow Operatora — artefakt na dysku przetrwał,
+  Evaluator i niezależny Final Control (3. subagent) zweryfikowali od zera:
+  PASS na wszystkich 10 punktach checklisty. Orkiestrator doszedł trzecią
+  weryfikacją: `tsc` czysty, nowa bramka `hotseat-etap8-dyplomacja-ui-test.cjs`
+  zielona, 2 bramki referencyjne bez regresu. Przy okazji zarejestrowano
+  osobno przedistniejący, niezwiązany crash
+  `P-HOTSEAT-ETAP6E-ZEPSUTY-GALAZ-CRASH-Q1` (do osobnego recon).
+  **CAŁY PLAN HOT-SEAT (Etapy 0-8) JEST TERAZ W PEŁNI ZAMKNIĘTY.**
+
 ## ROBOCZA 951c2415 - 2026-09-11 13:16 UTC - FALA 377: cała fala treści jednostek zamknięta (117/117 encji)
 
 |- md5 (pełne): 951c24153e1ed4d2ef4aa5e6d8e69f73 · stempel: ROBOCZA · label 951c2415 · zakres
