@@ -7960,7 +7960,7 @@ wariant mutacyjny PRZED/PO na czystym `origin/main`), `hotseat-etap6e-render-noo
 osobiście przez orkiestratora po integracji). Dowód: `dowody/hotseat-fotel2-cywilizacja-
 fotel{1,2}.png` — dwie różne cywilizacje z własnymi miastami-państwami.
 
-## `R-PROCESS-HOTSEAT-WORLDGEN-TIMEOUT-Q1` — PROCESS/INFRA — ZGŁOSZONE 2026-09-11, BEZ DISPATCHU
+## `R-PROCESS-HOTSEAT-WORLDGEN-TIMEOUT-Q1` — PROCESS/INFRA — **NAPRAWIONE 2026-09-11** (commit `4024bae8`)
 
 Odkryte przy weryfikacji `R-HOTSEAT-ETAP8-DYPLOMACJA-DANE-Q1`: kilka istniejących
 bramek hot-seat 2-fotelowych (`hotseat-drugi-fotel-tura-test.cjs`,
@@ -7991,3 +7991,19 @@ konsekwencji dla balansu gry — kandydat do samodzielnej naprawy przez orkiestr
 („technika bez konsekwencji dla gry") zamiast pełnej rundy AutoBot, pod warunkiem
 weryfikacji że podniesiony timeout nie maskuje realnych zawieszeń (dodać osobny,
 krótszy twardy limit na wypadek faktycznego zawieszenia silnika).
+
+**Naprawa (commit `4024bae8`).** Podniesiono timeout z 180000 na 360000 we
+WSZYSTKICH 9 plikach używających wzorca `pollUntil(..., 180000, 'world-generated')`
+(`hotseat-drugi-fotel-tura-test`, `hotseat-dyplo-kontakt-per-fotel-test`,
+`hotseat-etap4-noop-test`, `hotseat-etap5-no-leak-test`, `hotseat-etap6a-input-noop-test`,
+`hotseat-etap6b-ui-noop-test`, `hotseat-etap6d-podetap-c-live-saveload-test`,
+`hotseat-etap6e-render-noop-test`, `hotseat-etap6f-part2-ui-test`) — po 1 linii
+zmiana w każdym, zero dotknięcia `gra/src/*`. Weryfikacja: `hotseat-drugi-fotel-tura-test.cjs`
+(dotychczas chronicznie `BLOCK`, potwierdzone 2x na czystym `origin/main`) dał PO
+poprawce PEŁNY PASS na wszystkich 4 scenariuszach (w tym dwóch historycznych
+zarzutów Evaluatora z wcześniejszej rundy), z realnymi asercjami treści stanu —
+potwierdza że to była wyłącznie kwestia zbyt ciasnego marginesu czasowego dla
+tego sandboksa, nie zasłanianie realnego zawieszenia silnika. Zastosowano jako
+„technika bez konsekwencji dla gry" (orkiestrator decyduje i informuje) — bez
+pełnej rundy AutoBot, zgodnie z zasadą z `R-PROC-AUTOBOT.md` dla zmian czysto
+technicznych, zweryfikowanych bezpośrednim dowodem przed commitem.
