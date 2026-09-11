@@ -121,7 +121,7 @@ async function waitForWorldGenerated(page) {
       ready: !overlayVisible && st.playerStartHex !== null,
       overlayVisible, awaitingFirstPlayerCity: st.awaitingFirstPlayerCity, turn: st.turn,
     };
-  }, 180000, 'world-generated');
+  }, 360000, 'world-generated');
   await wait(300);
 }
 

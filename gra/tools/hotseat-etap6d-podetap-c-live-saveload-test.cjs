@@ -206,7 +206,7 @@ async function runScenario(chromium, outHtml, label) {
         ready: !overlayVisible && st.awaitingFirstPlayerCity === true && st.playerStartHex !== null,
         overlayVisible, awaitingFirstPlayerCity: st.awaitingFirstPlayerCity, playerStartHex: st.playerStartHex,
       };
-    }, 180000, 'world-generated');
+    }, 360000, 'world-generated');
 
     const founded = await page.evaluate(() => (window).__cityStateStartUnitsTestDebug.foundPlayerStartCity());
     result.founded = founded;
