@@ -8059,3 +8059,14 @@ referencyjnych zielone, `entity-card-historia-section-test` 36/36,
 `entity-card-contract-test` 75/75, `civpedia-jednostki-j1-test` 161/161,
 `civpedia-jednostki-j2-test` 157/157. 52/75 jednostek zrobione, pozostaje
 U5-U6 (23/75).
+
+**`R-KARTY-OPIS-TOP3-U5-Q1` — ZINTEGROWANE 2026-09-11 (commit `df66e68b`).** 12
+jednostek: Konnica łucznicza asyryjska, Łucznik asyryjski, Drużynnik, Jeździec
+z oszczepami, Strażnik bram Harappy, Piechota induska, Garnizon Harappy,
+Rydwan Kapadokijski, Piechota hetycka, Gwardia hetycka, Gwardia Ishtar,
+Wojownik babiloński. Evaluator znalazł 1 błąd faktograficzny (Top3 Drużynnika
+pomijał dwie jednostki z wyższą wartością Uderzenie) — Obrona naprawiła z
+dowodem. `tsc` czysty, 5 bramek referencyjnych zielone,
+`entity-card-historia-section-test` 36/36, `entity-card-contract-test` 75/75,
+`civpedia-jednostki-j1-test` 161/161, `civpedia-jednostki-j2-test` 157/157.
+64/75 jednostek zrobione, pozostaje U6 (11/75, OSTATNIA partia).
