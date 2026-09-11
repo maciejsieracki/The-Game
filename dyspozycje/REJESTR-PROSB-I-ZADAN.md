@@ -8007,3 +8007,20 @@ tego sandboksa, nie zasłanianie realnego zawieszenia silnika. Zastosowano jako
 „technika bez konsekwencji dla gry" (orkiestrator decyduje i informuje) — bez
 pełnej rundy AutoBot, zgodnie z zasadą z `R-PROC-AUTOBOT.md` dla zmian czysto
 technicznych, zweryfikowanych bezpośrednim dowodem przed commitem.
+
+## `R-KARTY-OPIS-TOP3-U1-Q1` — GAME — **ZINTEGROWANE 2026-09-11** (commit `5b970d32`)
+
+Pierwsza z 6 partii fali treści Opis+Top3 dla JEDNOSTEK (`gra/data/units.json`,
+75 razem, wszystkie mają już `Historia` z fali `R-KARTY-HISTORIA-Q1`, zero miało
+`Opis`/`Top3`) — wzorem zamkniętej fali budynków B1-B3. 13 jednostek: Wojownik,
+Procarz, Oszczepnik, Łucznik, Zwiadowca, Włócznik, Wojownik z mieczem i tarczą,
+Rydwan (woły), Konnica, Galera, Falanga, Hieros Lochos (Święty Zastęp), Hastati.
+Jednostki NIE MAJĄ mechanizmu poziomów/przyrostu jak budynki — dispatch to jawnie
+wykluczył jako temat dla `Top3`. Evaluator znalazł 2 drobne nieścisłości (Falanga
+i Hieros Lochos mają identyczną `Obrona`=10 — remis, nie jednoznaczna przewaga
+jednej nad drugą) — Obrona naprawiła oba z dowodem `jq`. Weryfikacja własna
+orkiestratora: porównanie before/after wszystkich pól potwierdziło zero zmian
+poza `Opis`/`Top3` dla dokładnie tych 13 wpisów. `tsc --noEmit` czysty, 5 bramek
+referencyjnych zielone, `entity-card-historia-section-test` 36/36,
+`entity-card-contract-test` 75/75, `civpedia-jednostki-j1-test` 161/161,
+`civpedia-jednostki-j2-test` 157/157. Pozostaje U2-U6 (62/75 jednostek).
