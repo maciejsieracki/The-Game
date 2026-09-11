@@ -13,6 +13,29 @@ swoim wĹ‚asnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji d
 > Pakiet 3 z 2026-08-20 jest docs-only i nie tworzy wpisu ROBOCZA/KANON/FINALNA;
 > ten plik pozostaje wyłącznie rejestrem publikacji bundli.
 
+## ROBOCZA 951c2415 - 2026-09-11 13:16 UTC - FALA 377: cała fala treści jednostek zamknięta (117/117 encji)
+
+|- md5 (pełne): 951c24153e1ed4d2ef4aa5e6d8e69f73 · stempel: ROBOCZA · label 951c2415 · zakres
+  commitów: `2baa17d3..1f365064` (od poprzedniej fali do obecnego `main`, obejmuje
+  partie U1-U6 + poprawkę timeoutu world-gen) · pole bitwy:
+  `Gra-ROBOCZA-POLE-BITWY.html` md5 `6deb45d265b82b4eb27e990c345a79c1` (NIEZMIENIONE)
+|- **`R-KARTY-OPIS-TOP3-Q1` (jednostki, U1-U6)** — 6 partii, 75/75 jednostek
+  dostały pola `Opis`+`Top3` (commity `5b970d32`, `79122460`, `4367a5e5`,
+  `0889a097`, `df66e68b`, `2b53a793`). Jednostki nie mają mechanizmu poziomów/
+  przyrostu jak budynki. Lekcja procesowa przeniesiona między partiami:
+  Evaluator w U1 znalazł fabrykowane superlatywy przy remisach pól liczbowych,
+  w U5/U6 (rygor podniesiony jako ostatnia partia) złapał subtelniejszy
+  wariant — pominięte wartości pośrednie w wieloosobowych remisach oraz
+  pominięty odwrotny mechanizm „Zastąp specjalnie" (Evocati). Wszystkie
+  zarzuty naprawione przez Obronę z dowodami. Każda partia: `tsc` czysty, 5
+  bramek referencyjnych zielone, `entity-card-historia-section-test` 36/36,
+  `entity-card-contract-test` 75/75, `civpedia-jednostki-j1-test` 161/161,
+  `civpedia-jednostki-j2-test` 157/157. **CAŁA FALA `R-KARTY-OPIS-TOP3-Q1`
+  (budynki B1-B3 + jednostki U1-U6) ZAMKNIĘTA: 117/117 encji.**
+|- **`R-PROCESS-HOTSEAT-WORLDGEN-TIMEOUT-Q1`** (commit `4024bae8`) — techniczna
+  naprawa PROCESS/INFRA, timeout world-gen 180s→360s w 9 plikach testowych
+  hot-seat (zero zmian `gra/src/*`), zweryfikowana bezpośrednio przed commitem.
+
 ## ROBOCZA 39087024 - 2026-09-11 10:44 UTC - FALA 376: Etap 8 hot-seat — dane dyplomacji gracz↔gracz
 
 |- md5 (pełne): 390870245137ebb2d744253a90d3feec · stempel: ROBOCZA · label 39087024 · zakres
