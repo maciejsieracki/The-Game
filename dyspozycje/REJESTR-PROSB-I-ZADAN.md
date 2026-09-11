@@ -8036,3 +8036,14 @@ unikalnych ekstremach. `tsc` czysty, 5 bramek referencyjnych zielone,
 `entity-card-historia-section-test` 36/36, `entity-card-contract-test` 75/75,
 `civpedia-jednostki-j1-test` 161/161, `civpedia-jednostki-j2-test` 157/157.
 26/75 jednostek zrobione, pozostaje U3-U6 (49/75).
+
+**`R-KARTY-OPIS-TOP3-U3-Q1` — ZINTEGROWANE 2026-09-11 (commit `4367a5e5`).** 13
+jednostek: Rydwan egipski, Wojownik z khopesh, Medżaj (Gwardia Faraona), Łucznik
+nubijski, Łucznik sumeryjski, Rydwan sumeryjski, Włócznik sumeryjski, Gwardia
+Królewska Sumeru, Wojownik mykeński, Rydwan mykeński, Wojownik Sherden,
+Halabardnik Shang, Rydwan Shang. Zero zarzutów Evaluatora — dyscyplina
+sprawdzania remisów utrzymana (Atak=10, Obrona=8 3-way, Health=190, bonusy
+rydwanów 4-way opisane wprost). `tsc` czysty, 5 bramek referencyjnych zielone,
+`entity-card-historia-section-test` 36/36, `entity-card-contract-test` 75/75,
+`civpedia-jednostki-j1-test` 161/161, `civpedia-jednostki-j2-test` 157/157.
+39/75 jednostek zrobione, pozostaje U4-U6 (36/75).
