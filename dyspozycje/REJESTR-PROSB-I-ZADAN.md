@@ -8024,3 +8024,15 @@ poza `Opis`/`Top3` dla dokładnie tych 13 wpisów. `tsc --noEmit` czysty, 5 bram
 referencyjnych zielone, `entity-card-historia-section-test` 36/36,
 `entity-card-contract-test` 75/75, `civpedia-jednostki-j1-test` 161/161,
 `civpedia-jednostki-j2-test` 157/157. Pozostaje U2-U6 (62/75 jednostek).
+
+**`R-KARTY-OPIS-TOP3-U2-Q1` — ZINTEGROWANE 2026-09-11 (commit `79122460`).** 13
+jednostek: Triari, Jeździec chiński, Hu Ben Wei (Gwardia Tygrysa), Impi,
+Oszczepnik Zulu (Izijula), uThulwana (Białe Tarcze), Wojownik z maczugą (Chaska),
+Wojownik z toporem, Procarz (Huaracoc), Oszczepnik (Estólica), Królewska
+Gwardia, Rydwan konny, Łucznik egipski. Zero zarzutów Evaluatora — lekcja z U1
+(sprawdzać remisy pól liczbowych przed superlatywem) zastosowana poprawnie za
+pierwszym razem: 6 remisów w tej partii opisane wprost, superlatywy tylko przy
+unikalnych ekstremach. `tsc` czysty, 5 bramek referencyjnych zielone,
+`entity-card-historia-section-test` 36/36, `entity-card-contract-test` 75/75,
+`civpedia-jednostki-j1-test` 161/161, `civpedia-jednostki-j2-test` 157/157.
+26/75 jednostek zrobione, pozostaje U3-U6 (49/75).
