@@ -7921,3 +7921,35 @@ wariant mutacyjny PRZED/PO na czystym `origin/main`), `hotseat-etap6e-render-noo
 20/20 identycznych `stateHash` PRZED/PO (zero regresji single-player, zweryfikowane
 osobiście przez orkiestratora po integracji). Dowód: `dowody/hotseat-fotel2-cywilizacja-
 fotel{1,2}.png` — dwie różne cywilizacje z własnymi miastami-państwami.
+
+## `R-PROCESS-HOTSEAT-WORLDGEN-TIMEOUT-Q1` — PROCESS/INFRA — ZGŁOSZONE 2026-09-11, BEZ DISPATCHU
+
+Odkryte przy weryfikacji `R-HOTSEAT-ETAP8-DYPLOMACJA-DANE-Q1`: kilka istniejących
+bramek hot-seat 2-fotelowych (`hotseat-drugi-fotel-tura-test.cjs`,
+`hotseat-dyplo-kontakt-per-fotel-test.cjs`, sporadycznie `hotseat-etap6f-part2-ui-test.cjs`)
+ma sztywny timeout `pollUntil(page, ..., 180000, 'world-generated')` — w tym konkretnym
+sandboksie (4 rdzenie, `swiftshader` software-rendering) realne generowanie świata
+2-fotelowego bywa wolniejsze niż 180s, co daje fałszywy `BLOCK` NIEZALEŻNIE od
+współbieżnego obciążenia maszyny. Potwierdzone osobiście przez orkiestratora:
+`hotseat-drugi-fotel-tura-test.cjs` (plik niezmodyfikowany, na czystym `origin/main`)
+dał `BLOCK` na `pollUntil(world-generated)` timeout nawet w GENUINE bezczynnym
+środowisku (load average 0.12-0.42, zero konkurencyjnych procesów, 3 próby ze świeżym
+`browser.launch()` za każdym razem). Dla porównania: podniesienie tego samego timeoutu
+z 180000 na 360000 w NOWEJ bramce `R-HOTSEAT-ETAP8-DYPLOMACJA-DANE-Q1` (plik w pełni
+kontrolowany, w allowlist tamtego tematu) natychmiast dało pełny PASS bez dalszych
+zmian kodu — potwierdzając że to WYŁĄCZNIE kwestia zbyt ciasnego marginesu, nie
+regresja logiki. Wcześniejsze rundy `R-AI-WOJNY-ZWYKLE-CAP-DWA-MIASTA-Q1` i
+`R-HOTSEAT-FOTEL2-CYWILIZACJA-BLEDNA-Q1` (Operator, Evaluator, Final Control we
+wszystkich trzech) niezależnie natrafiały na ten sam wzorzec i błędnie przypisywały go
+wyłącznie współbieżnym sesjom siostrzanym — to był tylko CZĘŚCIOWY wniosek: kontencja
+zasobów pogarsza sytuację, ale margines jest zbyt ciasny nawet bez niej.
+
+**Proponowana naprawa (do dispatchu w kolejnej sesji):** podnieść timeout
+`pollUntil(..., 180000, 'world-generated')` do min. 300000-360000 we wszystkich
+istniejących bramkach hot-seat 2-fotelowych korzystających z tego wzorca (grep
+`180000.*world-generated` po `gra/tools/*.cjs`), analogicznie do zmiany już
+zweryfikowanej w `R-HOTSEAT-ETAP8-DYPLOMACJA-DANE-Q1`. Czysto techniczna, bez
+konsekwencji dla balansu gry — kandydat do samodzielnej naprawy przez orkiestratora
+(„technika bez konsekwencji dla gry") zamiast pełnej rundy AutoBot, pod warunkiem
+weryfikacji że podniesiony timeout nie maskuje realnych zawieszeń (dodać osobny,
+krótszy twardy limit na wypadek faktycznego zawieszenia silnika).
