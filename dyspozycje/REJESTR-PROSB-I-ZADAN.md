@@ -8101,3 +8101,37 @@ identyczny crash. Nie blokuje żadnego aktywnego tematu (gałąź PASS tego same
 testu jest zielona), ale wymaga osobnego recon/naprawy w GAME — prawdopodobnie
 brak guardu na `undefined` w `foundPlayerStartCity` przy zmutowanym stanie `ME()`.
 Nie dispatchowano jeszcze osobnego tematu naprawczego.
+
+## `R-HOTSEAT-ETAP8-DYPLOMACJA-UI-Q1` — GAME — **ZINTEGROWANE 2026-09-11 (commit `bed15cb8`) — OSTATNI temat całego planu hot-seat**
+
+Część ii Etapu 8: UI dla dyplomacji gracz↔gracz w hot-seat, dopięte do gotowej
+warstwy danych z części i (`R-HOTSEAT-ETAP8-DYPLOMACJA-DANE-Q1`, commit
+`8dfca234`). Skrzynka propozycji z Akceptuj/Odrzuć/Kontrpropozycja, formularz
+nowej propozycji z 4 wymaganymi wariantami (zaproponuj_pokoj/sojusz/pakt/
+audiencje), nowy przycisk/badge w `mapToolbarHud` widoczny WYŁĄCZNIE w
+hot-seat (`humanSeats.humanOwnerIds.length > 1`, decyzja inżynierska bez
+precedensu w kodzie, ujęta wprost w dispatchu). Nowy plik
+`gra/src/ui/interHumanDiplomacyHud.ts` wzorowany na `diplomacyPendingHud.ts`,
+korzysta wyłącznie z `diploUiSkin.ts` — `diplomacyPanel.ts`/
+`diplomacyPendingHud.ts` oraz cała logika warstwy danych
+(`interHumanDiplomacyInbox`/`proposeToHuman`/`respondToHumanProposal`)
+kompletnie nietknięte.
+
+Incydent proceduralny: restart kontenera przerwał oryginalny Workflow
+Operatora w trakcie pracy — raport zaginął, ale artefakt na dysku (worktree)
+przetrwał. Evaluator zweryfikował ten surowy stan od zera (bez raportu
+Operatora): ZARZUTY brak, nowa bramka `hotseat-etap8-dyplomacja-ui-test.cjs`
+uruchomiona pierwszy raz, WSZYSTKIE SCENARIUSZE ZIELONE (realne kliknięcia
+DOM). Niezależny Final Control (osobny 3. subagent) powtórzył całą
+weryfikację od zera: PASS na wszystkich 10 punktach checklisty, w tym
+własny dowód nietautologiczności bramki (zmutował przycisk Akceptuj na
+no-op, bramka poprawnie zaczerwieniła się, przywrócił plik, md5 identyczne).
+Orkiestrator doszedł osobną, trzecią weryfikacją: `tsc` czysty, nowa bramka
+WSZYSTKIE SCENARIUSZE ZIELONE, 2 bramki referencyjne
+(`hotseat-drugi-fotel-tura-test` 4/4, `hotseat-dyplo-kontakt-per-fotel-test`
+3/3 w tym legacy save/load) bez regresu.
+
+Przy okazji znaleziono i osobno zarejestrowano przedistniejący, niezwiązany
+crash `P-HOTSEAT-ETAP6E-ZEPSUTY-GALAZ-CRASH-Q1` (patrz wyżej).
+
+**CAŁY PLAN HOT-SEAT (Etapy 0-8, dane + UI) JEST TERAZ W PEŁNI ZAMKNIĘTY.**
