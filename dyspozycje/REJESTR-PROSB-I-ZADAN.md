@@ -8089,18 +8089,35 @@ bez utraty realnej pracy. `tsc` czysty, 5 bramek referencyjnych zielone,
 **CAŁA FALA TREŚCI `R-KARTY-OPIS-TOP3-Q1` ZAMKNIĘTA: budynki B1-B3 (42/42) +
 jednostki U1-U6 (75/75) = 117/117 encji z polami Opis/Top3.**
 
-## `P-HOTSEAT-ETAP6E-ZEPSUTY-GALAZ-CRASH-Q1` — GAME — **ZGŁOSZONE 2026-09-11, NIEZAINTEGROWANE, do recon**
+## `P-HOTSEAT-ETAP6E-ZEPSUTY-GALAZ-CRASH-Q1` — GAME — **ZAMKNIĘTE 2026-09-11 — to NIE jest bug, weryfikacja własna orkiestratora**
 
 Evaluator tematu `R-HOTSEAT-ETAP8-DYPLOMACJA-UI-Q1` znalazł przy okazji regresu
 bramek: gałąź ZEPSUTY testu `gra/tools/hotseat-etap6e-render-noop-test.cjs`
-kończy się `TypeError: Cannot read properties of undefined (reading 'add')`
-w `foundPlayerStartCity`, gdy `ME()` jest celowo zmutowane przez ten wariant
-testu. Potwierdzone jako PRZEDISTNIEJĄCE i NIEZWIĄZANE z tematem Etap8-UI —
-izolowana reprodukcja na czystym `git show HEAD` (bez diffu Etap8-UI) daje
-identyczny crash. Nie blokuje żadnego aktywnego tematu (gałąź PASS tego samego
-testu jest zielona), ale wymaga osobnego recon/naprawy w GAME — prawdopodobnie
-brak guardu na `undefined` w `foundPlayerStartCity` przy zmutowanym stanie `ME()`.
-Nie dispatchowano jeszcze osobnego tematu naprawczego.
+kończy się `TypeError: Cannot read properties of undefined (reading 'add')`,
+gdy `ME()` jest celowo zmutowane przez ten wariant testu. Pierwotnie
+zarejestrowane jako "przedistniejący crash do recon" — **pogłębiona analiza
+kodu zamyka temat jako NIE-bug**:
+
+Dokładne źródło: `addExplored(exploredByHuman.get(ME())!, vis)` w
+`refreshFog()` (`gra/src/main.ts:10503`) → `explored.add(key)` w
+`gra/src/game/visibility.ts:192` rzuca, bo `exploredByHuman.get(ME())` zwraca
+`undefined`. Gałąź ZEPSUTY podmienia definicję `ME()` na `return -999` —
+sztucznie zwraca ownerId, który NIGDY nie został zarejestrowany w
+`exploredByHuman`. To dokładnie ten sam niezmiennik, który kod produkcyjny
+już świadomie dokumentuje i utrzymuje: `switchActiveHuman()`
+(`main.ts:10801-10809`, komentarz KROK 0, linie 10804-10807) explicite
+zakłada wpis do `exploredByHuman`/`playerStateByHuman`/`pracaPoolByHuman`
+PRZED przełączeniem `activeHumanOwnerId` właśnie DLATEGO, że bez tego
+`refreshFog()` rzuca identycznie. Każda realna ścieżka produkcyjna
+(`switchActiveHuman`, `__hotSeatTestDebug.seedSecondSeat`, restore
+save/load) zawsze najpierw zakłada wpis, więc `ME()` w praktyce nigdy nie
+zwraca ownerId bez odpowiadającego wpisu w `exploredByHuman`. Gałąź ZEPSUTY
+łamie ten niezmiennik CELOWO i lokalnie (podmieniona definicja `ME()` w
+skopiowanym drzewie, nie w `main`) właśnie po to, by udowodnić
+nietautologiczność bramki — crash jest OCZEKIWANYM, poprawnym dowodem, że
+mutacja realnie coś psuje, nie defektem silnika. Nic do naprawy; dodanie
+`?? new Set()` w tym miejscu zamaskowałoby przyszłe realne naruszenie tego
+niezmiennika zamiast go głośno sygnalizować.
 
 ## `R-HOTSEAT-ETAP8-DYPLOMACJA-UI-Q1` — GAME — **ZINTEGROWANE 2026-09-11 (commit `bed15cb8`) — OSTATNI temat całego planu hot-seat**
 
