@@ -8088,3 +8088,16 @@ bez utraty realnej pracy. `tsc` czysty, 5 bramek referencyjnych zielone,
 
 **CAŁA FALA TREŚCI `R-KARTY-OPIS-TOP3-Q1` ZAMKNIĘTA: budynki B1-B3 (42/42) +
 jednostki U1-U6 (75/75) = 117/117 encji z polami Opis/Top3.**
+
+## `P-HOTSEAT-ETAP6E-ZEPSUTY-GALAZ-CRASH-Q1` — GAME — **ZGŁOSZONE 2026-09-11, NIEZAINTEGROWANE, do recon**
+
+Evaluator tematu `R-HOTSEAT-ETAP8-DYPLOMACJA-UI-Q1` znalazł przy okazji regresu
+bramek: gałąź ZEPSUTY testu `gra/tools/hotseat-etap6e-render-noop-test.cjs`
+kończy się `TypeError: Cannot read properties of undefined (reading 'add')`
+w `foundPlayerStartCity`, gdy `ME()` jest celowo zmutowane przez ten wariant
+testu. Potwierdzone jako PRZEDISTNIEJĄCE i NIEZWIĄZANE z tematem Etap8-UI —
+izolowana reprodukcja na czystym `git show HEAD` (bez diffu Etap8-UI) daje
+identyczny crash. Nie blokuje żadnego aktywnego tematu (gałąź PASS tego samego
+testu jest zielona), ale wymaga osobnego recon/naprawy w GAME — prawdopodobnie
+brak guardu na `undefined` w `foundPlayerStartCity` przy zmutowanym stanie `ME()`.
+Nie dispatchowano jeszcze osobnego tematu naprawczego.
