@@ -8047,3 +8047,15 @@ rydwanów 4-way opisane wprost). `tsc` czysty, 5 bramek referencyjnych zielone,
 `entity-card-historia-section-test` 36/36, `entity-card-contract-test` 75/75,
 `civpedia-jednostki-j1-test` 161/161, `civpedia-jednostki-j2-test` 157/157.
 39/75 jednostek zrobione, pozostaje U4-U6 (36/75).
+
+**`R-KARTY-OPIS-TOP3-U4-Q1` — ZINTEGROWANE 2026-09-11 (commit `0889a097`).** 13
+jednostek: Łucznik akadyjski, Gaesatae, Soldurii, Rydwan celtycki, Wojownik
+germański, Berserker germański, Taran, Taran okuty, Katapulta, Wieża
+oblężnicza, Wojownik tyrreński, Wojownik szekelesz, Konnica lancowa asyryjska.
+Zero zarzutów Evaluatora. Jednostki oblężnicze opisane zgodnie z realną rolą
+(burzenie murów/bram, nie walka liniowa) dzięki dodatkowej uwadze w dispatchu.
+Wszystkie remisy pól liczbowych opisane wprost. `tsc` czysty, 5 bramek
+referencyjnych zielone, `entity-card-historia-section-test` 36/36,
+`entity-card-contract-test` 75/75, `civpedia-jednostki-j1-test` 161/161,
+`civpedia-jednostki-j2-test` 157/157. 52/75 jednostek zrobione, pozostaje
+U5-U6 (23/75).
