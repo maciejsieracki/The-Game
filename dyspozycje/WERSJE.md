@@ -13,6 +13,30 @@ swoim wĹ‚asnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji d
 > Pakiet 3 z 2026-08-20 jest docs-only i nie tworzy wpisu ROBOCZA/KANON/FINALNA;
 > ten plik pozostaje wyłącznie rejestrem publikacji bundli.
 
+## ROBOCZA 39087024 - 2026-09-11 10:44 UTC - FALA 376: Etap 8 hot-seat — dane dyplomacji gracz↔gracz
+
+|- md5 (pełne): 390870245137ebb2d744253a90d3feec · stempel: ROBOCZA · label 39087024 · zakres
+  commitów: `b547630f..c941884b` (od poprzedniej fali do obecnego `main`) · pole bitwy:
+  `Gra-ROBOCZA-POLE-BITWY.html` md5 `6deb45d265b82b4eb27e990c345a79c1` (NIEZMIENIONE)
+|- **`R-HOTSEAT-ETAP8-DYPLOMACJA-DANE-Q1`** (commit `8dfca234`) — Etap 8 planu
+  hot-seat, część i: dane/logika propozycji dyplomatycznych między dwoma fotelami
+  ludzkimi (turowo, bez wspólnego ekranu, AI nie uczestniczy, istniejące traktaty
+  1:1, ZERO nowego UI — punkt wejścia UI to osobny, następny temat). Nowa kolejka
+  `interHumanDiplomacyInbox` z jawnymi `fromOwnerId`/`toOwnerId`.
+  `proposeToHuman`/`respondToHumanProposal` (`accept`/`reject`/`counter`) reużywają
+  istniejącą logikę wykonania traktatu (`aiCommandToPendingProposal`, zweryfikowana
+  1:1 z `resolvePendingDiplomacy`), zero duplikacji. Save/load ta sama konwencja co
+  istniejący `pendingDiplomacyInbox`. Wcześniejszy zarzut o zły aktywny fotel po
+  kontrpropozycji okazał się wyścig-warunkową w bramce testowej (`wait(200)`
+  zamiast `pollUntil`), nie defektem `main.ts`. Odkryto i osobno zarejestrowano
+  chroniczny problem PROCESS/INFRA (kilka bramek hot-seat 2-fotelowych ma zbyt
+  ciasny timeout world-gen dla tego sandboksa, niezwiązany z tym tematem).
+  Operator→Evaluator(zero zarzutów do kodu)→orkiestrator dostarczył żywy dowód po
+  naprawie timeoutu nowej bramki→Final Control(niezależny subagent)→PASS. `tsc`
+  czysty, 5 bramek referencyjnych zielone, nowa bramka WSZYSTKIE SCENARIUSZE
+  ZIELONE, `diplomacy-test` 148/148, `diplomacy-treaties-test` 17/17,
+  `hotseat-etap6f-part2-data-test` 24/24, pozostałe bramki hot-seat PASS.
+
 ## ROBOCZA 83633024 - 2026-09-11 09:01 UTC - FALA 375: KRYTYCZNY fix — zła cywilizacja i brak miast-państw fotela 2
 
 |- md5 (pełne): 83633024f9ffaca7949f314411b004a3 · stempel: ROBOCZA · label 83633024 · zakres
