@@ -4755,7 +4755,22 @@
     "missileAttack": 0,
     "Utrzymanie surowiec": "Żelazo",
     "Utrzymanie surowiec (ilość)": 10,
-    "Historia": "Odrodzenie potęgi Babilonu w VII i VI wieku przed naszą erą, po upadku Asyrii, wiąże się przede wszystkim z dynastią chaldejską i jej najsłynniejszym władcą, Nabuchodonozorem II, za którego panowania miasto rozrosło się do rangi jednej z największych metropolii starożytnego świata, otoczonej potężnymi murami obronnymi. Piechota neobabilońska, w przeciwieństwie do znacznie wcześniejszej, starobabilońskiej tradycji wojennej z czasów Hammurabiego, korzystała już z broni żelaznej i wzorowała swoją organizację częściowo na doświadczeniach podbitej niedawno Asyrii, której dziedzictwo militarne Babilończycy w dużej mierze przejęli. Kroniki babilońskie odnotowują liczne kampanie tego okresu, w tym podbój Jerozolimy i podporządkowanie Lewantu, prowadzone przy udziale rozbudowanej, dobrze zaopatrzonej armii pieszej. Monumentalne budowle Nabuchodonozora II, takie jak Brama Isztar zdobiona emaliowanymi płytkami z wizerunkami zwierząt, świadczą o bogactwie państwa zdolnego utrzymać stałe, liczne siły zbrojne. Neobabilońskie imperium, choć przetrwało jedynie kilka dekad przed podbojem perskim w 539 roku przed naszą erą, pozostawiło po sobie jeden z najbardziej rozpoznawalnych obrazów starożytnej Mezopotamii."
+    "Historia": "Odrodzenie potęgi Babilonu w VII i VI wieku przed naszą erą, po upadku Asyrii, wiąże się przede wszystkim z dynastią chaldejską i jej najsłynniejszym władcą, Nabuchodonozorem II, za którego panowania miasto rozrosło się do rangi jednej z największych metropolii starożytnego świata, otoczonej potężnymi murami obronnymi. Piechota neobabilońska, w przeciwieństwie do znacznie wcześniejszej, starobabilońskiej tradycji wojennej z czasów Hammurabiego, korzystała już z broni żelaznej i wzorowała swoją organizację częściowo na doświadczeniach podbitej niedawno Asyrii, której dziedzictwo militarne Babilończycy w dużej mierze przejęli. Kroniki babilońskie odnotowują liczne kampanie tego okresu, w tym podbój Jerozolimy i podporządkowanie Lewantu, prowadzone przy udziale rozbudowanej, dobrze zaopatrzonej armii pieszej. Monumentalne budowle Nabuchodonozora II, takie jak Brama Isztar zdobiona emaliowanymi płytkami z wizerunkami zwierząt, świadczą o bogactwie państwa zdolnego utrzymać stałe, liczne siły zbrojne. Neobabilońskie imperium, choć przetrwało jedynie kilka dekad przed podbojem perskim w 539 roku przed naszą erą, pozostawiło po sobie jeden z najbardziej rozpoznawalnych obrazów starożytnej Mezopotamii.",
+    "Opis": "Zbalansowana ciężka piechota Babilonu, silna zarówno w ataku, jak i w obronie, zastępująca podstawowego Wojownika z mieczem i tarczą.",
+    "Top3": [
+      {
+        "tytul": "Wysoka Obrona, ale nie najwyższa",
+        "tekst": "Obrona 8 — czwarta wartość w partii, niżej niż Mur tarcz Sargonid (10) oraz Thorakites i Evocati (po 9)."
+      },
+      {
+        "tytul": "Atak 8, remis w partii",
+        "tekst": "Remis z Tyrskim miecznikiem, Gwardią Tyreńską, Gwardzistą z champi i Wojownikiem z żelaznym khopesh (razem 5 jednostek na wartości 8); wyżej są tylko Evocati i Miecznik galijski (po 9)."
+      },
+      {
+        "tytul": "Bonus vs Spearman 15%",
+        "tekst": "Dzieli tę przewagę taktyczną z 7 innymi jednostkami tej partii — nieunikalna, ale realnie wzmacnia starcia z włócznikami."
+      }
+    ]
   },
   {
     "Epoka": "Żelazo",
@@ -4811,7 +4826,22 @@
     "missileAttack": 0,
     "Utrzymanie surowiec": "Żelazo",
     "Utrzymanie surowiec (ilość)": 10,
-    "Historia": "Tyr, jedno z najpotężniejszych miast-państw fenickich na wybrzeżu dzisiejszego Libanu, zawdzięczał swoją potęgę nie podbojom lądowym, lecz flocie handlowej krążącej po całym Morzu Śródziemnym oraz produkcji cenionego purpurowego barwnika z muszli murex. Miecznicy tyryjscy strzegli portów, magazynów i karawan kupieckich, a w razie potrzeby wzmacniali załogi okrętów wojennych broniących szlaków handlowych przed piratami i rywalizującymi miastami. W przeciwieństwie do greckich hoplitów walczących w zwartej falandze, fenicka piechota miejska bywała lżej uzbrojona i bardziej elastyczna, co odpowiadało potrzebom obrony punktowej, a nie wielkich bitew polowych. Gdy w 332 roku p.n.e. Aleksander Wielki oblegał Tyr zbudowany na wyspie, obrońcy miasta stawiali zacięty opór przez wiele miesięcy, zanim macedońska grobla i flota przełamały ich linie. Dziedzictwo tyryjskich rzemieślników i żołnierzy przetrwało długo po upadku miasta za pośrednictwem kolonii, które Tyr zakładał na zachodnim Śródziemnomorzu, z Kartaginą na czele."
+    "Historia": "Tyr, jedno z najpotężniejszych miast-państw fenickich na wybrzeżu dzisiejszego Libanu, zawdzięczał swoją potęgę nie podbojom lądowym, lecz flocie handlowej krążącej po całym Morzu Śródziemnym oraz produkcji cenionego purpurowego barwnika z muszli murex. Miecznicy tyryjscy strzegli portów, magazynów i karawan kupieckich, a w razie potrzeby wzmacniali załogi okrętów wojennych broniących szlaków handlowych przed piratami i rywalizującymi miastami. W przeciwieństwie do greckich hoplitów walczących w zwartej falandze, fenicka piechota miejska bywała lżej uzbrojona i bardziej elastyczna, co odpowiadało potrzebom obrony punktowej, a nie wielkich bitew polowych. Gdy w 332 roku p.n.e. Aleksander Wielki oblegał Tyr zbudowany na wyspie, obrońcy miasta stawiali zacięty opór przez wiele miesięcy, zanim macedońska grobla i flota przełamały ich linie. Dziedzictwo tyryjskich rzemieślników i żołnierzy przetrwało długo po upadku miasta za pośrednictwem kolonii, które Tyr zakładał na zachodnim Śródziemnomorzu, z Kartaginą na czele.",
+    "Opis": "Miejska piechota kolonialna Tyru, mocna ofensywnie; w obronie remisuje z Wojownikiem fenickim i ustępuje tylko Gwardii Tyreńskiej wśród fenickich jednostek specjalnych tej partii.",
+    "Top3": [
+      {
+        "tytul": "Atak 8, remis w partii",
+        "tekst": "Remis z Piechotą neobabilońską, Gwardią Tyreńską, Gwardzistą z champi i Wojownikiem z żelaznym khopesh (razem 5 jednostek na wartości 8); wyżej są tylko Evocati i Miecznik galijski (po 9)."
+      },
+      {
+        "tytul": "Niska Obrona",
+        "tekst": "Obrona 6 — remis z Wojownikiem fenickim, druga najniższa wartość w partii (niżej jest tylko Miecznik galijski z Obroną 5)."
+      },
+      {
+        "tytul": "Bonus vs Spearman 15%",
+        "tekst": "Przewaga taktyczna przeciw włócznikom, wspólna z 7 innymi jednostkami tej partii."
+      }
+    ]
   },
   {
     "Epoka": "Brąz",
@@ -4867,7 +4897,22 @@
     "missileAttack": 0,
     "Utrzymanie surowiec": "Brąz",
     "Utrzymanie surowiec (ilość)": 10,
-    "Historia": "Fenicjanie, zamieszkujący wąski pas wybrzeża Lewantu, znani byli przede wszystkim jako żeglarze, kupcy i wynalazcy alfabetu, jednak utrzymanie sieci miast-państw i kolonii wymagało również sprawnej piechoty zdolnej bronić murów i portów. Typowy wojownik fenicki uzbrojony był w krótką włócznię lub miecz, okrągłą tarczę oraz lekki pancerz, co pozwalało mu skutecznie działać zarówno w obronie miejskiej, jak i jako oddział pomocniczy podczas ekspedycji kolonizacyjnych. Miasta takie jak Byblos, Sydon i Tyr rzadko prowadziły wielkie wojny zaczepne, wolały raczej opłacać najemników lub polegać na sojuszach, licząc na to, że bogactwo płynące z handlu zniechęci sąsiadów do agresji. Fenicka piechota towarzyszyła jednak licznym wyprawom osadniczym na Cypr, Sycylię i wybrzeża Afryki Północnej, gdzie chroniła nowo zakładane faktorie handlowe przed miejscową ludnością. To właśnie z tej tradycji obronnej i kolonizacyjnej wyrosła później potęga wojskowa Kartaginy, najsłynniejszej z fenickich kolonii."
+    "Historia": "Fenicjanie, zamieszkujący wąski pas wybrzeża Lewantu, znani byli przede wszystkim jako żeglarze, kupcy i wynalazcy alfabetu, jednak utrzymanie sieci miast-państw i kolonii wymagało również sprawnej piechoty zdolnej bronić murów i portów. Typowy wojownik fenicki uzbrojony był w krótką włócznię lub miecz, okrągłą tarczę oraz lekki pancerz, co pozwalało mu skutecznie działać zarówno w obronie miejskiej, jak i jako oddział pomocniczy podczas ekspedycji kolonizacyjnych. Miasta takie jak Byblos, Sydon i Tyr rzadko prowadziły wielkie wojny zaczepne, wolały raczej opłacać najemników lub polegać na sojuszach, licząc na to, że bogactwo płynące z handlu zniechęci sąsiadów do agresji. Fenicka piechota towarzyszyła jednak licznym wyprawom osadniczym na Cypr, Sycylię i wybrzeża Afryki Północnej, gdzie chroniła nowo zakładane faktorie handlowe przed miejscową ludnością. To właśnie z tej tradycji obronnej i kolonizacyjnej wyrosła później potęga wojskowa Kartaginy, najsłynniejszej z fenickich kolonii.",
+    "Opis": "Najwcześniejsza i najlżejsza fenicka piechota specjalna, dostępna już w epoce Brązu, poprzedzająca późniejsze warianty miejskie Tyru.",
+    "Top3": [
+      {
+        "tytul": "Najniższe Health w partii",
+        "tekst": "20 punktów Health — najniższa wartość spośród wszystkich 11 jednostek tej partii, bez remisu."
+      },
+      {
+        "tytul": "Najlżejszy pancerz, z remisem",
+        "tekst": "Pancerz 3 — remis z Miecznikiem galijskim, wspólne minimum tej partii."
+      },
+      {
+        "tytul": "Dostępna już w epoce Brązu",
+        "tekst": "Jedyna fenicka jednostka specjalna tej partii dostępna od epoki Brązu — pozostałe (Tyrski miecznik, Gwardia Tyreńska) wymagają Żelaza."
+      }
+    ]
   },
   {
     "Epoka": "Żelazo",
@@ -4923,7 +4968,22 @@
     "missileAttack": 0,
     "Utrzymanie surowiec": "Żelazo",
     "Utrzymanie surowiec (ilość)": 10,
-    "Historia": "Elitarne oddziały przyboczne władców Tyru rekrutowano spośród najbardziej zaufanych obywateli miasta, powierzając im ochronę pałacu królewskiego, świątyń bóstwa Melkarta oraz skarbców gromadzących zyski z handlu purpurą, drewnem cedrowym i szkłem. Gwardziści tacy odznaczali się lepszym uzbrojeniem niż przeciętny miejski pospolity ruszenia, nosząc solidniejsze zbroje i starannie wykonaną broń, będącą świadectwem zamożności miasta. Ich rola nie ograniczała się do ceremonialnej obecności przy dworze — w chwilach kryzysu, jak podczas długiego oblężenia Tyru przez Aleksandra Wielkiego, to właśnie takie doborowe jednostki stanowiły trzon obrony murów i twierdz. Fenickie miasta-państwa, pozbawione rozległego zaplecza lądowego, musiały polegać na jakości, a nie liczebności swoich wojsk lądowych, inwestując w niewielkie, lecz dobrze wyszkolone oddziały. Po upadku niepodległości Tyru tradycje takich elitarnych formacji przetrwały częściowo w wojskach kolonii fenickich, w tym w armii Kartaginy."
+    "Historia": "Elitarne oddziały przyboczne władców Tyru rekrutowano spośród najbardziej zaufanych obywateli miasta, powierzając im ochronę pałacu królewskiego, świątyń bóstwa Melkarta oraz skarbców gromadzących zyski z handlu purpurą, drewnem cedrowym i szkłem. Gwardziści tacy odznaczali się lepszym uzbrojeniem niż przeciętny miejski pospolity ruszenia, nosząc solidniejsze zbroje i starannie wykonaną broń, będącą świadectwem zamożności miasta. Ich rola nie ograniczała się do ceremonialnej obecności przy dworze — w chwilach kryzysu, jak podczas długiego oblężenia Tyru przez Aleksandra Wielkiego, to właśnie takie doborowe jednostki stanowiły trzon obrony murów i twierdz. Fenickie miasta-państwa, pozbawione rozległego zaplecza lądowego, musiały polegać na jakości, a nie liczebności swoich wojsk lądowych, inwestując w niewielkie, lecz dobrze wyszkolone oddziały. Po upadku niepodległości Tyru tradycje takich elitarnych formacji przetrwały częściowo w wojskach kolonii fenickich, w tym w armii Kartaginy.",
+    "Opis": "Elitarna gwardia przyboczna władców Tyru, łącząca wysoki atak z lepszą obroną niż pozostałe fenickie jednostki miejskie tej partii.",
+    "Top3": [
+      {
+        "tytul": "Atak 8, remis w partii",
+        "tekst": "Remis z Piechotą neobabilońską, Tyrskim miecznikiem, Gwardzistą z champi i Wojownikiem z żelaznym khopesh (razem 5 jednostek na wartości 8); wyżej są tylko Evocati i Miecznik galijski (po 9)."
+      },
+      {
+        "tytul": "Lepsza Obrona niż siostrzane jednostki fenickie",
+        "tekst": "Obrona 7 — remis z iButho z iklwa, Gwardzistą z champi i Wojownikiem z żelaznym khopesh; wyższa niż u Tyrskiego miecznika i Wojownika fenickiego (po 6)."
+      },
+      {
+        "tytul": "Bonus vs Spearman 15%",
+        "tekst": "Przewaga taktyczna przeciw włócznikom, wspólna z 7 innymi jednostkami tej partii."
+      }
+    ]
   },
   {
     "Jednostka": "Thorakites",
@@ -4979,7 +5039,22 @@
     "missileAttack": 6,
     "Utrzymanie surowiec": "Żelazo",
     "Utrzymanie surowiec (ilość)": 10,
-    "Historia": "Thorakici, których nazwa pochodzi od greckiego słowa thorax oznaczającego pancerz, byli średniozbrojną piechotą hellenistyczną uzbrojoną w kolczugę lub pancerz łuskowy, miecz oraz krótszą włócznię, co odróżniało ich od klasycznych falangitów dzierżących długą sarissę. Formacja ta rozwinęła się w armiach diadochów i ich następców jako odpowiedź na rosnące zapotrzebowanie na piechotę zdolną do walki na urozmaiconym terenie, gdzie ciężka, sztywna falanga traciła swoją skuteczność. Thorakici uzupełniali szyki falangi, osłaniając jej flanki lub wypełniając luki powstałe w trudnym terenie górzystym, gdzie długie sarissy stawały się przeszkodą. Armie hellenistyczne, w tym siły Seleukidów i Ptolemeuszy, wykorzystywały takie oddziały w bitwach przeciwko Rzymianom, których legiony operowały w bardziej elastycznym szyku manipularnym. Rozwój thorakitów bywa postrzegany przez historyków wojskowości jako świadectwo stopniowego odchodzenia świata hellenistycznego od sztywnej doktryny falangi w stronę taktyk bliższych rzymskiemu modelowi legionu."
+    "Historia": "Thorakici, których nazwa pochodzi od greckiego słowa thorax oznaczającego pancerz, byli średniozbrojną piechotą hellenistyczną uzbrojoną w kolczugę lub pancerz łuskowy, miecz oraz krótszą włócznię, co odróżniało ich od klasycznych falangitów dzierżących długą sarissę. Formacja ta rozwinęła się w armiach diadochów i ich następców jako odpowiedź na rosnące zapotrzebowanie na piechotę zdolną do walki na urozmaiconym terenie, gdzie ciężka, sztywna falanga traciła swoją skuteczność. Thorakici uzupełniali szyki falangi, osłaniając jej flanki lub wypełniając luki powstałe w trudnym terenie górzystym, gdzie długie sarissy stawały się przeszkodą. Armie hellenistyczne, w tym siły Seleukidów i Ptolemeuszy, wykorzystywały takie oddziały w bitwach przeciwko Rzymianom, których legiony operowały w bardziej elastycznym szyku manipularnym. Rozwój thorakitów bywa postrzegany przez historyków wojskowości jako świadectwo stopniowego odchodzenia świata hellenistycznego od sztywnej doktryny falangi w stronę taktyk bliższych rzymskiemu modelowi legionu.",
+    "Opis": "Grecka średniozbrojna piechota obronna z tarczą i włócznią, zastępująca Wojownika z mieczem i tarczą i stawiająca na wytrzymałość kosztem mobilności.",
+    "Top3": [
+      {
+        "tytul": "Wysoka Obrona, z remisem",
+        "tekst": "Obrona 9 — remis z Evocati, druga wartość w partii; wyżej jest tylko Mur tarcz Sargonid (10)."
+      },
+      {
+        "tytul": "Bonus vs Mount 50%",
+        "tekst": "Silna przewaga taktyczna przeciw kawalerii, remis trójstronny z iButho z iklwa i Murem tarcz Sargonid."
+      },
+      {
+        "tytul": "Wysokie Health",
+        "tekst": "42 punkty Health — trzecia wartość w partii, po Evocati (55) i Gwardziście z champi (48)."
+      }
+    ]
   },
   {
     "Jednostka": "Evocati",
@@ -5035,7 +5110,22 @@
     "missileAttack": 6,
     "Utrzymanie surowiec": "Żelazo",
     "Utrzymanie surowiec (ilość)": 15,
-    "Historia": "Evocati byli rzymskimi weteranami, którzy odbyli już pełną służbę wojskową i formalnie uzyskali prawo do zwolnienia, lecz zostali ponownie powołani pod broń na mocy specjalnego wezwania, najczęściej w obliczu poważnego zagrożenia militarnego lub wybuchu wojny domowej. Jako ludzie doświadczeni w boju, cieszyli się wyższym statusem niż zwykli rekruci, a niektórzy źródła wspominają o przywilejach zwalniających ich z części typowych obowiązków obozowych, choć wciąż podlegali dyscyplinie wojskowej. Rzymscy wodzowie, tacy jak Juliusz Cezar czy Oktawian August, chętnie sięgali po evocati w kluczowych momentach swoich kampanii, licząc na ich zaprawę bojową i lojalność wobec dowódcy, pod którym wcześniej służyli. W okresie schyłku republiki i wojen domowych I wieku p.n.e. tacy weterani stanowili często rdzeń oddziałów przybocznych ambitnych polityków-wodzów, wzmacniając ich pozycję wobec senatu i rywali. Praktyka ponownego powoływania weteranów świadczyła zarówno o wartości bojowego doświadczenia w rzymskiej sztuce wojennej, jak i o rosnącym znaczeniu osobistych więzi między żołnierzem a dowódcą w schyłkowym okresie republiki."
+    "Historia": "Evocati byli rzymskimi weteranami, którzy odbyli już pełną służbę wojskową i formalnie uzyskali prawo do zwolnienia, lecz zostali ponownie powołani pod broń na mocy specjalnego wezwania, najczęściej w obliczu poważnego zagrożenia militarnego lub wybuchu wojny domowej. Jako ludzie doświadczeni w boju, cieszyli się wyższym statusem niż zwykli rekruci, a niektórzy źródła wspominają o przywilejach zwalniających ich z części typowych obowiązków obozowych, choć wciąż podlegali dyscyplinie wojskowej. Rzymscy wodzowie, tacy jak Juliusz Cezar czy Oktawian August, chętnie sięgali po evocati w kluczowych momentach swoich kampanii, licząc na ich zaprawę bojową i lojalność wobec dowódcy, pod którym wcześniej służyli. W okresie schyłku republiki i wojen domowych I wieku p.n.e. tacy weterani stanowili często rdzeń oddziałów przybocznych ambitnych polityków-wodzów, wzmacniając ich pozycję wobec senatu i rywali. Praktyka ponownego powoływania weteranów świadczyła zarówno o wartości bojowego doświadczenia w rzymskiej sztuce wojennej, jak i o rosnącym znaczeniu osobistych więzi między żołnierzem a dowódcą w schyłkowym okresie republiki.",
+    "Opis": "Jedyna super-jednostka w tej partii — rzymscy weterani powołani ponownie do służby, przewyższający pozostałe jednostki wytrzymałością i morale.",
+    "Top3": [
+      {
+        "tytul": "Najwyższe Health w partii",
+        "tekst": "55 punktów Health — najwyższa wartość spośród wszystkich 11 jednostek tej partii, bez remisu."
+      },
+      {
+        "tytul": "Jedyna super-jednostka partii",
+        "tekst": "Klasa Super; własne pole W zamian za jest puste, ale to ona jest celem specjalnej ścieżki zamiany — Wojownik tyrreński (partia wcześniejsza) ma pole Zastąp specjalnie ustawione właśnie na Evocati."
+      },
+      {
+        "tytul": "Najwyższe Uderzenie",
+        "tekst": "Uderzenie 8 — najwyższa wartość w partii, bez remisu (drugie miejsce: 7, sześć jednostek)."
+      }
+    ]
   },
   {
     "Jednostka": "iButho z iklwa",
@@ -5091,7 +5181,22 @@
     "missileAttack": 0,
     "Utrzymanie surowiec": "Żelazo",
     "Utrzymanie surowiec (ilość)": 10,
-    "Historia": "Iklwa, krótki, szerokoostrzowy dzirot kolący, przypisywana jest reformom wojskowym Shaki kaSenzangakhony, twórcy potęgi królestwa Zulu na początku XIX wieku, który miał zastąpić nim tradycyjne, lżejsze oszczepy miotane używane wcześniej przez ludy nguni w południowej Afryce. Krótsze drzewce iklwy wymuszało walkę z bliska, twarzą w twarz z przeciwnikiem, co w połączeniu z dużą tarczą z bawolej skóry pozwalało wojownikom zulu na agresywną taktykę szturmową, znaną jako impi, wykorzystującą osaczanie wroga w kształcie rogów bawołu. Wojownicy tacy, zorganizowani w regimenty wiekowe zwane amabutho, przechodzili surowe szkolenie i podlegali ścisłej dyscyplinie, co uczyniło armię zuluską jedną z najskuteczniejszych sił zbrojnych w południowej Afryce XIX wieku. Nazwa broni miała naśladować dźwięk wydawany podczas wyciągania ostrza z ciała przeciwnika, co stało się częścią wojennej legendy Zulusów. Taktyka i uzbrojenie oparte na iklwie sprawdziły się spektakularnie w bitwie pod Isandlwaną w 1879 roku, gdzie siły zuluskie pokonały liczącą się kolumnę brytyjską, zanim przeważająca siła ognia armii kolonialnej ostatecznie złamała opór królestwa."
+    "Historia": "Iklwa, krótki, szerokoostrzowy dzirot kolący, przypisywana jest reformom wojskowym Shaki kaSenzangakhony, twórcy potęgi królestwa Zulu na początku XIX wieku, który miał zastąpić nim tradycyjne, lżejsze oszczepy miotane używane wcześniej przez ludy nguni w południowej Afryce. Krótsze drzewce iklwy wymuszało walkę z bliska, twarzą w twarz z przeciwnikiem, co w połączeniu z dużą tarczą z bawolej skóry pozwalało wojownikom zulu na agresywną taktykę szturmową, znaną jako impi, wykorzystującą osaczanie wroga w kształcie rogów bawołu. Wojownicy tacy, zorganizowani w regimenty wiekowe zwane amabutho, przechodzili surowe szkolenie i podlegali ścisłej dyscyplinie, co uczyniło armię zuluską jedną z najskuteczniejszych sił zbrojnych w południowej Afryce XIX wieku. Nazwa broni miała naśladować dźwięk wydawany podczas wyciągania ostrza z ciała przeciwnika, co stało się częścią wojennej legendy Zulusów. Taktyka i uzbrojenie oparte na iklwie sprawdziły się spektakularnie w bitwie pod Isandlwaną w 1879 roku, gdzie siły zuluskie pokonały liczącą się kolumnę brytyjską, zanim przeważająca siła ognia armii kolonialnej ostatecznie złamała opór królestwa.",
+    "Opis": "Żelazna ewolucja zuluskiego Impi, najszybsza jednostka tej partii, stawiająca na mobilność i przewagę przeciw kawalerii kosztem siły ataku.",
+    "Top3": [
+      {
+        "tytul": "Najwyższy Ruch w partii",
+        "tekst": "Ruch 4 — najwyższa wartość spośród wszystkich 11 jednostek tej partii, bez remisu (drugie miejsce: Miecznik galijski, 3)."
+      },
+      {
+        "tytul": "Najniższy Atak w partii",
+        "tekst": "Atak 5 — najniższa wartość w partii, bez remisu; okupiona wysoką mobilnością i zwinnością na polu bitwy."
+      },
+      {
+        "tytul": "Bonus vs Mount 50%",
+        "tekst": "Silna przewaga taktyczna przeciw kawalerii, remis trójstronny z Thorakites i Murem tarcz Sargonid."
+      }
+    ]
   },
   {
     "Jednostka": "Gwardzista z champi",
@@ -5147,7 +5252,22 @@
     "missileAttack": 5,
     "Utrzymanie surowiec": "Brąz",
     "Utrzymanie surowiec (ilość)": 10,
-    "Historia": "Champi, ciężka maczuga lub buława z drewna, kamienia bądź brązu, należała do podstawowego uzbrojenia elitarnych wojowników Inków, cesarstwa, które w XV i XVI wieku zdominowało rozległe tereny Andów od dzisiejszego Ekwadoru po środkową Chile. Gwardziści cesarscy, wywodzący się często z samej stolicy Cusco lub z ludów szczególnie lojalnych wobec Sapa Inki, otrzymywali starannie zdobione champi jako oznakę statusu, obok tarcz i pikowanych tunik chroniących przed ciosami. Broń tego typu sprawdzała się doskonale w górzystym terenie andyjskim, gdzie ciężkie ostrza sieczne byłyby mniej praktyczne niż uderzeniowa siła maczugi zdolnej łamać kości nawet przez warstwy pikowanej zbroi przeciwnika. Inkowie utrzymywali rozbudowaną armię stałą oraz system dróg i magazynów umożliwiający szybkie przerzucanie wojsk na krańce imperium, a elitarne oddziały przyboczne odgrywały kluczową rolę zarówno w ceremoniach, jak i w tłumieniu buntów podbitych ludów. Podbój hiszpański pod wodzą Francisco Pizarra w latach trzydziestych XVI wieku, wspomagany bronią palną, końmi i chorobami epidemicznymi, ostatecznie złamał opór wojowników uzbrojonych w tradycyjną broń białą, w tym champi."
+    "Historia": "Champi, ciężka maczuga lub buława z drewna, kamienia bądź brązu, należała do podstawowego uzbrojenia elitarnych wojowników Inków, cesarstwa, które w XV i XVI wieku zdominowało rozległe tereny Andów od dzisiejszego Ekwadoru po środkową Chile. Gwardziści cesarscy, wywodzący się często z samej stolicy Cusco lub z ludów szczególnie lojalnych wobec Sapa Inki, otrzymywali starannie zdobione champi jako oznakę statusu, obok tarcz i pikowanych tunik chroniących przed ciosami. Broń tego typu sprawdzała się doskonale w górzystym terenie andyjskim, gdzie ciężkie ostrza sieczne byłyby mniej praktyczne niż uderzeniowa siła maczugi zdolnej łamać kości nawet przez warstwy pikowanej zbroi przeciwnika. Inkowie utrzymywali rozbudowaną armię stałą oraz system dróg i magazynów umożliwiający szybkie przerzucanie wojsk na krańce imperium, a elitarne oddziały przyboczne odgrywały kluczową rolę zarówno w ceremoniach, jak i w tłumieniu buntów podbitych ludów. Podbój hiszpański pod wodzą Francisco Pizarra w latach trzydziestych XVI wieku, wspomagany bronią palną, końmi i chorobami epidemicznymi, ostatecznie złamał opór wojowników uzbrojonych w tradycyjną broń białą, w tym champi.",
+    "Opis": "Elitarna gwardia cesarska Inków uzbrojona w maczugę champi, wyspecjalizowana w łamaniu pancerza i mieczy przeciwnika.",
+    "Top3": [
+      {
+        "tytul": "Najwyższe Przebicie w partii",
+        "tekst": "Przebicie 8 — najwyższa wartość w partii, znacznie powyżej pozostałych 8 jednostek z wartością 4."
+      },
+      {
+        "tytul": "Bonus vs Swordsman 25%",
+        "tekst": "Jedyny w tej partii bonus przeciw miecznikom — realna przewaga taktyczna w starciu z jednostkami typu Swordsman."
+      },
+      {
+        "tytul": "Wysokie Health",
+        "tekst": "48 punktów Health — druga wartość w partii, po Evocati (55)."
+      }
+    ]
   },
   {
     "Jednostka": "Wojownik z żelaznym khopesh",
@@ -5203,7 +5323,22 @@
     "missileAttack": 0,
     "Utrzymanie surowiec": "Żelazo",
     "Utrzymanie surowiec (ilość)": 10,
-    "Historia": "Wraz z rozpowszechnieniem się obróbki żelaza na Bliskim Wschodzie i w dolinie Nilu na przełomie epoki brązu i żelaza, tradycyjny egipski khopesz, wcześniej wytwarzany niemal wyłącznie z brązu, zaczęto stopniowo wykuwać także z nowego, twardszego metalu. Żelazne ostrze pozwalało uzyskać trwalszą i ostrzejszą krawędź niż miękki brąz, choć wczesna metalurgia żelaza w Egipcie rozwijała się wolniej niż u sąsiadów z Lewantu i Anatolii, gdzie Hetyci od dawna posiedli tajniki jej obróbki. Egipska armia okresu Trzeciego Okresu Przejściowego i epoki saickiej, zmagająca się z najazdami ludów libijskich, nubijskich oraz później asyryjskich i perskich, musiała unowocześniać swoje uzbrojenie, by dotrzymać kroku przeciwnikom dysponującym już bronią żelazną na szerszą skalę. Khopesz, niezależnie od materiału, pozostawał bronią o dużym znaczeniu symbolicznym, kojarzoną z władzą faraona i elitarnymi oddziałami piechoty, choć w praktyce coraz częściej ustępował miejsca prostszym mieczom i sztyletom żelaznym powszechnym w regionie. Znaleziska żelaznych narzędzi i broni z późniejszych okresów historii Egiptu świadczą o stopniowym, lecz nieuchronnym przejściu od tradycyjnej metalurgii brązu ku nowej epoce żelaza."
+    "Historia": "Wraz z rozpowszechnieniem się obróbki żelaza na Bliskim Wschodzie i w dolinie Nilu na przełomie epoki brązu i żelaza, tradycyjny egipski khopesz, wcześniej wytwarzany niemal wyłącznie z brązu, zaczęto stopniowo wykuwać także z nowego, twardszego metalu. Żelazne ostrze pozwalało uzyskać trwalszą i ostrzejszą krawędź niż miękki brąz, choć wczesna metalurgia żelaza w Egipcie rozwijała się wolniej niż u sąsiadów z Lewantu i Anatolii, gdzie Hetyci od dawna posiedli tajniki jej obróbki. Egipska armia okresu Trzeciego Okresu Przejściowego i epoki saickiej, zmagająca się z najazdami ludów libijskich, nubijskich oraz później asyryjskich i perskich, musiała unowocześniać swoje uzbrojenie, by dotrzymać kroku przeciwnikom dysponującym już bronią żelazną na szerszą skalę. Khopesz, niezależnie od materiału, pozostawał bronią o dużym znaczeniu symbolicznym, kojarzoną z władzą faraona i elitarnymi oddziałami piechoty, choć w praktyce coraz częściej ustępował miejsca prostszym mieczom i sztyletom żelaznym powszechnym w regionie. Znaleziska żelaznych narzędzi i broni z późniejszych okresów historii Egiptu świadczą o stopniowym, lecz nieuchronnym przejściu od tradycyjnej metalurgii brązu ku nowej epoce żelaza.",
+    "Opis": "Żelazna wersja egipskiego wojownika z khopesh, zastępująca brązowy pierwowzór lepszym pancerzem kosztem niskiej wytrzymałości.",
+    "Top3": [
+      {
+        "tytul": "Wysoki Pancerz, z remisem",
+        "tekst": "Pancerz 6 — remis z Thorakites i Evocati, druga wartość w partii; wyżej jest tylko Mur tarcz Sargonid (7)."
+      },
+      {
+        "tytul": "Niskie Health",
+        "tekst": "23 punkty Health — druga najniższa wartość w partii, bez remisu (niżej jest tylko Wojownik fenicki z 20)."
+      },
+      {
+        "tytul": "Bonus vs Spearman 15%",
+        "tekst": "Przewaga taktyczna przeciw włócznikom, wspólna z 7 innymi jednostkami tej partii."
+      }
+    ]
   },
   {
     "Jednostka": "Mur tarcz (Sargonid)",
@@ -5259,7 +5394,22 @@
     "missileAttack": 0,
     "Utrzymanie surowiec": "Żelazo",
     "Utrzymanie surowiec (ilość)": 10,
-    "Historia": "Formacja muru tarcz, w której ciężkozbrojni włócznicy ustawiali się w zwartych szeregach osłoniętych rzędem dużych tarcz, należy do najstarszych udokumentowanych taktyk piechoty w historii Mezopotamii. Najsłynniejszym świadectwem takiej taktyki jest Stela Sępów z miasta Lagasz, datowana na około 2450 rok p.n.e., przedstawiająca sumeryjskich włóczników maszerujących ramię w ramię za ścianą prostokątnych tarcz, depczących ciała pokonanych wrogów. Tego rodzaju zwarty szyk wymagał ścisłej dyscypliny i wyszkolenia, ponieważ jego skuteczność zależała od utrzymania nieprzerwanej linii tarcz i wysuniętych do przodu grotów włóczni, zdolnej odeprzeć zarówno piechotę, jak i wczesne oddziały bojowych rydwanów. Miasta-państwa południowej Mezopotamii, rywalizujące nieustannie o kontrolę nad kanałami irygacyjnymi i żyznymi polami między Tygrysem a Eufratem, rozwijały takie zorganizowane formacje na długo przed powstaniem greckiej falangi hoplickiej. Mur tarcz pozostawał podstawą mezopotamskiej piechoty ciężkiej przez stulecia, ewoluując wraz z postępem metalurgii i zmieniającymi się zagrożeniami na równinach między rzekami."
+    "Historia": "Formacja muru tarcz, w której ciężkozbrojni włócznicy ustawiali się w zwartych szeregach osłoniętych rzędem dużych tarcz, należy do najstarszych udokumentowanych taktyk piechoty w historii Mezopotamii. Najsłynniejszym świadectwem takiej taktyki jest Stela Sępów z miasta Lagasz, datowana na około 2450 rok p.n.e., przedstawiająca sumeryjskich włóczników maszerujących ramię w ramię za ścianą prostokątnych tarcz, depczących ciała pokonanych wrogów. Tego rodzaju zwarty szyk wymagał ścisłej dyscypliny i wyszkolenia, ponieważ jego skuteczność zależała od utrzymania nieprzerwanej linii tarcz i wysuniętych do przodu grotów włóczni, zdolnej odeprzeć zarówno piechotę, jak i wczesne oddziały bojowych rydwanów. Miasta-państwa południowej Mezopotamii, rywalizujące nieustannie o kontrolę nad kanałami irygacyjnymi i żyznymi polami między Tygrysem a Eufratem, rozwijały takie zorganizowane formacje na długo przed powstaniem greckiej falangi hoplickiej. Mur tarcz pozostawał podstawą mezopotamskiej piechoty ciężkiej przez stulecia, ewoluując wraz z postępem metalurgii i zmieniającymi się zagrożeniami na równinach między rzekami.",
+    "Opis": "Sumeryjska formacja muru tarcz, najbardziej defensywna jednostka tej partii, poświęcająca atak i mobilność na rzecz niezłomnej obrony.",
+    "Top3": [
+      {
+        "tytul": "Najwyższa Obrona w partii",
+        "tekst": "Obrona 10 — najwyższa wartość spośród wszystkich 11 jednostek tej partii, bez remisu."
+      },
+      {
+        "tytul": "Najwyższy Pancerz w partii",
+        "tekst": "Pancerz 7 — najwyższa wartość w partii, bez remisu (drugie miejsce: 6, u trzech jednostek)."
+      },
+      {
+        "tytul": "Bonus vs Mount 50%",
+        "tekst": "Silna przewaga taktyczna przeciw kawalerii, remis trójstronny z Thorakites i iButho z iklwa."
+      }
+    ]
   },
   {
     "Jednostka": "Miecznik galijski",
@@ -5315,6 +5465,21 @@
     "missileAttack": 0,
     "Utrzymanie surowiec": "Żelazo",
     "Utrzymanie surowiec (ilość)": 10,
-    "Historia": "Galowie, ludy celtyckie zamieszkujące tereny dzisiejszej Francji, Belgii i części północnych Włoch, słynęli w oczach Rzymian i Greków z zamiłowania do długiego miecza żelaznego, znacznie dłuższego od śródziemnomorskich broni siecznych, przystosowanego przede wszystkim do potężnych, szerokich cięć z konia lub w zwarciu pieszym. Celtyccy kowale opanowali zaawansowane techniki obróbki żelaza, w tym wczesne formy spawania wzorzystego, tworząc ostrza cenione i naśladowane w całym starożytnym świecie śródziemnomorskim. Miecznik galijski walczył zwykle z niewielką owalną lub prostokątną tarczą, a starożytni autorzy, tacy jak Polibiusz, opisywali gwałtowność pierwszego natarcia Galów, które potrafiło rozbić niedoświadczone szyki przeciwnika, choć długotrwały bój i wyczerpanie bywały ich słabością. Najazdy galijskie sięgały daleko poza rdzenne ziemie plemienne — w 387 roku p.n.e. wojownicy celtyccy złupili samo Rzym, a inne grupy dotarły aż na Bałkany i do Azji Mniejszej, gdzie osiedlili się jako Galaci. Ostatecznie podbój Galii przez Juliusza Cezara w połowie I wieku p.n.e. włączył te wojownicze ludy oraz ich tradycje kowalskie w orbitę cywilizacji rzymskiej."
+    "Historia": "Galowie, ludy celtyckie zamieszkujące tereny dzisiejszej Francji, Belgii i części północnych Włoch, słynęli w oczach Rzymian i Greków z zamiłowania do długiego miecza żelaznego, znacznie dłuższego od śródziemnomorskich broni siecznych, przystosowanego przede wszystkim do potężnych, szerokich cięć z konia lub w zwarciu pieszym. Celtyccy kowale opanowali zaawansowane techniki obróbki żelaza, w tym wczesne formy spawania wzorzystego, tworząc ostrza cenione i naśladowane w całym starożytnym świecie śródziemnomorskim. Miecznik galijski walczył zwykle z niewielką owalną lub prostokątną tarczą, a starożytni autorzy, tacy jak Polibiusz, opisywali gwałtowność pierwszego natarcia Galów, które potrafiło rozbić niedoświadczone szyki przeciwnika, choć długotrwały bój i wyczerpanie bywały ich słabością. Najazdy galijskie sięgały daleko poza rdzenne ziemie plemienne — w 387 roku p.n.e. wojownicy celtyccy złupili samo Rzym, a inne grupy dotarły aż na Bałkany i do Azji Mniejszej, gdzie osiedlili się jako Galaci. Ostatecznie podbój Galii przez Juliusza Cezara w połowie I wieku p.n.e. włączył te wojownicze ludy oraz ich tradycje kowalskie w orbitę cywilizacji rzymskiej.",
+    "Opis": "Ofensywna galijska piechota z długim mieczem, remisująca o najwyższy atak w tej partii (z Evocati) kosztem najsłabszej obrony.",
+    "Top3": [
+      {
+        "tytul": "Najwyższy Atak, z remisem",
+        "tekst": "Atak 9 — remis z Evocati, najwyższa wartość w partii."
+      },
+      {
+        "tytul": "Najniższa Obrona w partii",
+        "tekst": "Obrona 5 — najniższa wartość spośród wszystkich 11 jednostek tej partii, bez remisu."
+      },
+      {
+        "tytul": "Wysoki Ruch",
+        "tekst": "Ruch 3 — druga wartość w partii, po iButho z iklwa (4)."
+      }
+    ]
   }
 ]
