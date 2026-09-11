@@ -2,4 +2,4 @@
 
 pub mod domain;
 
-pub use domain::{EngineError, GameState, Player, PlayerId, Turn};
+pub use domain::{EngineError, GameState, Player, PlayerId, Rng, RngError, Turn};
