@@ -238,8 +238,21 @@ faktycznie gra — błąd SILNIKA, nie tylko wyświetlania.
 **ECHO właściciela 2026-09-11: świadomie odłożone — najpierw zamknąć migrację
 cache `_last*` (`P-HOTSEAT-ETAP6C-CHROMIUM-LASTPRACA-IMPL-Q1`), migracja silnika
 jako OSOBNY temat później.** Wymaga własnego recon przed implementacją (większy,
-ryzykowniejszy zakres niż cache — dotyka realnej ekonomii, nie tylko HUD). Nie
-dispatchowano jeszcze.
+ryzykowniejszy zakres niż cache — dotyka realnej ekonomii, nie tylko HUD).
+
+**RECON `P-HOTSEAT-PLAYERPRACAPOOL-SILNIK-PER-FOTEL-Q1` ZAMKNIĘTY 2026-09-12**
+(Operator→Evaluator→Final Control PASS, dokument `dyspozycje/autobot/runs/
+P-HOTSEAT-PLAYERPRACAPOOL-SILNIK-PER-FOTEL-Q1/01-operator-recon.md`, commit
+`4c451bfd`): świeża mapa miejsc SILNIKA po migracji cache `54f297dc` — linie
+przesunięte względem starego reconu, pełna lista w dokumencie. `main.ts:32120`
+(`hOidPracaPool`) rozstrzygnięte jako JUŻ poprawny per-fotel kod, nie kolizja.
+**Nowe, poważniejsze znalezisko**: save-load (`main.ts` ok. 29723 zapis,
+38032-38033 odczyt) serializuje `playerPracaPool` jako pojedynczą liczbę —
+drugi fotel człowieka traci pulę Pracy przy zapisie/wczytaniu gry, osobny i
+poważniejszy problem niż migracja HUD/upkeep. Rekomendacja Operatora: Wariant
+C (UI-handlery + upkeep końca tury + save-load) w dwóch osobnych rundach
+implementacji. Implementacja NIE dispatchowana jeszcze — czeka na decyzję
+właściciela o zakresie/priorytecie.
 
 ### Zasada migracji i historii
 
