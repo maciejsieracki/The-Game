@@ -72,6 +72,7 @@ fn terrain_qualification_matches_the_world_map_rules() {
 
     assert!(is_passable_terrain(TerrainType::Plains));
     assert!(is_passable_terrain(TerrainType::Hills));
+    assert!(!is_passable_terrain(TerrainType::Tundra));
     assert!(!is_passable_terrain(TerrainType::ShallowWater));
     assert!(!is_passable_terrain(TerrainType::Ocean));
     assert!(!is_passable_terrain(TerrainType::Mountains));
@@ -89,7 +90,7 @@ fn terrain_movement_costs_are_explicit() {
     assert_eq!(TerrainType::Plains.movement_cost(), Some(1));
     assert_eq!(TerrainType::Hills.movement_cost(), Some(2));
     assert_eq!(TerrainType::Desert.movement_cost(), Some(1));
-    assert_eq!(TerrainType::Tundra.movement_cost(), Some(1));
+    assert_eq!(TerrainType::Tundra.movement_cost(), None);
     assert_eq!(TerrainType::Mountains.movement_cost(), None);
     assert_eq!(TerrainType::ShallowWater.movement_cost(), None);
     assert_eq!(TerrainType::Ocean.movement_cost(), None);

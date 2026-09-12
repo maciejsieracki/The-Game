@@ -66,7 +66,7 @@ impl TerrainType {
     pub const fn is_passable(self) -> bool {
         matches!(
             self,
-            Self::Grassland | Self::Plains | Self::Hills | Self::Desert | Self::Tundra
+            Self::Grassland | Self::Plains | Self::Hills | Self::Desert
         )
     }
 
@@ -83,8 +83,8 @@ impl TerrainType {
     pub const fn movement_cost(self) -> Option<u8> {
         match self {
             Self::Hills => Some(2),
-            Self::Grassland | Self::Plains | Self::Desert | Self::Tundra => Some(1),
-            Self::Mountains | Self::ShallowWater | Self::Ocean => None,
+            Self::Grassland | Self::Plains | Self::Desert => Some(1),
+            Self::Mountains | Self::ShallowWater | Self::Ocean | Self::Tundra => None,
         }
     }
 
