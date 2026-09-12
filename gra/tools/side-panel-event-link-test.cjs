@@ -102,6 +102,33 @@ ok(B.villageEventHex('village-12-3-4-5') === null, 'nadmiarowy czlon w id chatki
 ok(B.villageEventHex('border-march-violated') === null, 'obcy prefiks -> null');
 ok(B.villageEventHex('village-abc-def') === null, 'nieliczbowe czlony -> null');
 
+// --- (5) N1: ternary w main.ts getEventLink musi chronic CALY lancuch ?? -------------
+// P-WYDARZENIA-PORZADKI-DROBNE-Q1. `getEventLink` jest anonimowym property inline w
+// main.ts (nie eksportowane, poza zasiegiem importu tutaj) — powielamy tu WPROST jego
+// naprawiona formule (main.ts ok. 22479-22480) ze stubami zamiast prawdziwych
+// techDoneEventLinkFor/cityCaptureEventLinkFor, zeby zlapac regresje do starego
+// ksztaltu `(cond ? null : a()) ?? b() ?? c()`, ktory chronil WYLACZNIE pierwszy czlon.
+console.log(' (5) N1 - blokujace zdarzenie nie dostaje linku, nawet gdyby techDone/cityCapture cos zwrocily');
+function getEventLinkFixed(ev, sidePanelEventLinkFor, techDoneEventLinkFor, cityCaptureEventLinkFor) {
+  return ev.blocking === true ? null
+    : (sidePanelEventLinkFor(ev.id) ?? techDoneEventLinkFor(ev.id) ?? cityCaptureEventLinkFor(ev.id));
+}
+const stubSidePanel = () => null;
+const stubTechDone = (id) => (id.startsWith('tech-done-') ? { fake: 'tech-done-link' } : null);
+const stubCityCapture = (id) => (id.startsWith('capture-') ? { fake: 'capture-link' } : null);
+ok(
+  getEventLinkFixed({ id: 'tech-done-blokujace-synth', blocking: true }, stubSidePanel, stubTechDone, stubCityCapture) === null,
+  'blokujace zdarzenie z id pasujacym literalnie do prefiksu tech-done- (syntetyczny przypadek) -> brak linku',
+);
+ok(
+  getEventLinkFixed({ id: 'capture-blokujace-synth', blocking: true }, stubSidePanel, stubTechDone, stubCityCapture) === null,
+  'blokujace zdarzenie z id pasujacym literalnie do prefiksu capture- (syntetyczny przypadek) -> brak linku',
+);
+ok(
+  getEventLinkFixed({ id: 'tech-done-blokujace-synth', blocking: false }, stubSidePanel, stubTechDone, stubCityCapture) !== null,
+  'kontrola: to samo id bez blocking dostaje link (stub dziala, test nie jest martwy)',
+);
+
 try { fs.unlinkSync(ENTRY); fs.unlinkSync(BUNDLE); } catch (_) { /* ignore */ }
 
 console.log('\nside-panel-event-link-test: ' + pass + ' pass, ' + fail + ' fail');

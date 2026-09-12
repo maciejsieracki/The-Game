@@ -8734,6 +8734,7 @@ async function boot(): Promise<void> {
       veteranEnemyEducationShown = false;
       warEventLog.length = 0;
       borderMarchEventTargets.clear(); // N6: mapa celow kamery rowniez zerowana przy resecie
+      tradeRouteEventPlayerCityIds.clear(); // N2: ten sam reset, ta sama zasada co borderMarchEventTargets
       civElimEventDetails.clear(); // RUNDA 5: para z warEventLog.length=0 wyzej, ten sam reset
       cityCaptureEventDetails.clear(); // R-MIASTA-ZDOBYCIE-RAPORT-TROFEA-Q1: ten sam reset
       activeDeals = [];
@@ -22476,9 +22477,8 @@ async function boot(): Promise<void> {
         // `game/side-panel-event-link.ts` jest poza allowlistą tego tematu.
         // R-MIASTA-ZDOBYCIE-RAPORT-TROFEA-Q1: rodzina `capture-*` doklada sie do tego samego
         // lancucha (prefiksy rozlaczne), z ta sama zasada jednego zrodla dla afordancji i akcji.
-        getEventLink: (ev) => (ev.blocking === true ? null : sidePanelEventLinkFor(ev.id))
-          ?? techDoneEventLinkFor(ev.id)
-          ?? cityCaptureEventLinkFor(ev.id),
+        getEventLink: (ev) => ev.blocking === true ? null
+          : (sidePanelEventLinkFor(ev.id) ?? techDoneEventLinkFor(ev.id) ?? cityCaptureEventLinkFor(ev.id)),
         onEventClick: (id) => {
           // P-WYDARZENIA-AUDYT-PRZEKIEROWANIA-Q1: skróty kart NIE-blokujących idą przez jedno
           // wspólne rozstrzygnięcie (`sidePanelEventLinkFor`), to samo, które steruje widoczną
@@ -30412,6 +30412,7 @@ async function boot(): Promise<void> {
         // wpis i tak powstaje na nowo co turę, więc zerujemy ją tu samo jak log.
         borderMarchEventLog.length = 0;
         borderMarchEventTargets.clear();
+        tradeRouteEventPlayerCityIds.clear(); // N2: ten sam reset, ta sama zasada co borderMarchEventTargets
         pruneVeteranEnemyEducationJournal();
         dismissedSidePanelEventIds.clear();
 
@@ -36257,6 +36258,7 @@ async function boot(): Promise<void> {
       veteranEnemyEducationShown = false;
       warEventLog.length = 0;
       borderMarchEventTargets.clear(); // N6: mapa celow kamery rowniez zerowana przy resecie
+      tradeRouteEventPlayerCityIds.clear(); // N2: ten sam reset, ta sama zasada co borderMarchEventTargets
       civElimEventDetails.clear(); // RUNDA 5: para z warEventLog.length=0 wyzej, ten sam reset
       cityCaptureEventDetails.clear(); // R-MIASTA-ZDOBYCIE-RAPORT-TROFEA-Q1: ten sam reset
       turn = 1;

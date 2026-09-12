@@ -226,7 +226,7 @@ async function main() {
   assert('(0a) renderer rysuje skrot wylacznie z config.getEventLink (brak wlasnej listy prefiksow)',
     /const link = config\.getEventLink\?\.\(ev\) \?\? null;/.test(hudSrc) && !/border-march-/.test(hudSrc));
   assert('(0b) main.ts karmi afordancje TA SAMA funkcja co onEventClick',
-    /getEventLink: \(ev\) => \(ev\.blocking === true \? null : sidePanelEventLinkFor\(ev\.id\)\)/.test(mainSrc)
+    /getEventLink: \(ev\) => ev\.blocking === true \? null\s*:\s*\(sidePanelEventLinkFor\(ev\.id\)/.test(mainSrc)
     && /if \(openSidePanelEventLink\(id\)\) return;/.test(mainSrc));
   assert('(0c) modul linkow nie zna zdarzen czysto informacyjnych (eot-hint / edu-veteran)',
     !/\['eot-hint-'/.test(linkSrc) && !/\['edu-veteran/.test(linkSrc));
