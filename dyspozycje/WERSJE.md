@@ -13,6 +13,21 @@ swoim wĹ‚asnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji d
 > Pakiet 3 z 2026-08-20 jest docs-only i nie tworzy wpisu ROBOCZA/KANON/FINALNA;
 > ten plik pozostaje wyłącznie rejestrem publikacji bundli.
 
+## ROBOCZA 01e2774c - 2026-09-12 10:09 UTC - FALA 381: CivPedia — usunięcie limitu jednostek w karcie technologii
+
+|- md5 (pełne): 01e2774cd367bb8401041f5754873c09 · stempel: ROBOCZA · label 01e2774c · zakres
+  commitów: `fc884ccd..e5ecf4b6` (od poprzedniej fali do obecnego `main`) · pole bitwy:
+  `Gra-ROBOCZA-POLE-BITWY.html` md5 `6deb45d265b82b4eb27e990c345a79c1` (NIEZMIENIONE)
+|- **`P-CIVPEDIA-KARTA-JEDNOSTKI-POKAZ-POZOSTALE-N-Q1`** — usunięcie
+  `UNIT_PREVIEW`/`previewLimit`/`compactHeaderOnExpand` z sekcji „Jednostki” karty
+  technologii (commit `e5ecf4b6`): zawsze pokazuje wszystkie jednostki, bez
+  przycisku „Pokaż pozostałe N”, dla wszystkich 5 dotkniętych technologii
+  (Brązownictwo 20, Hutnictwo żelaza 19, Jeździectwo 8, Łucznictwo 6, Obróbka
+  żelaza 4). ECHO właściciela 2026-09-11. Final Control PASS po niezależnej
+  weryfikacji żywym Chromium. Follow-up (nie blokuje): 2 bramki testowe wymagają
+  przeprojektowania po tej legalnej zmianie — `P-TEST-TECH-UNLOCK-UNITS-TRIPWIRE-
+  PRZEPROJEKTOWAC-Q1`, `P-TEST-ENTITYCARD-DIORAMA-SEKCJA-D-NIEAKTUALNA-Q1`.
+
 ## ROBOCZA 48ec8b44 - 2026-09-12 02:29 UTC - FALA 380: naprawa filtra dev-notatek ABC w buildings.json
 
 |- md5 (pełne): 48ec8b44cb8316e153a5ce9dd83813df · stempel: ROBOCZA · label 48ec8b44 · zakres
