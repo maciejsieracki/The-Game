@@ -1,7 +1,6 @@
-#[path = "../src/domain/resource_production.rs"]
-mod resource_production;
-
-use resource_production::{resolve_resource_production, stack_resource_production, ResourceKey};
+use civ_engine::domain::resource_production::{
+    self, resolve_resource_production, stack_resource_production, ResourceKey,
+};
 
 #[test]
 fn lumber_mill_and_quarry_follow_the_200_300_450_era_vector() {
