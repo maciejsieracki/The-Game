@@ -13,6 +13,18 @@ swoim wĹ‚asnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji d
 > Pakiet 3 z 2026-08-20 jest docs-only i nie tworzy wpisu ROBOCZA/KANON/FINALNA;
 > ten plik pozostaje wyłącznie rejestrem publikacji bundli.
 
+## ROBOCZA ec276ee3 - 2026-09-12 12:29 UTC - FALA 384: eliminacja przez podbój = karta jak dyplomacja, z prawdziwą przyczyną
+
+|- md5 (pełne): ec276ee3e2a0ac5284953e79b0840de7 · stempel: ROBOCZA · label ec276ee3 · zakres
+  commitów: `e4e74078..075737dc` (od poprzedniej fali do obecnego `main`) · pole bitwy:
+  `Gra-ROBOCZA-POLE-BITWY.html` md5 `6deb45d265b82b4eb27e990c345a79c1` (NIEZMIENIONE)
+|- **`P-WYDARZENIA-ELIMINACJA-PODBOJ-KARTA-Q1`** — eliminacja cywilizacji przez
+  PODBÓJ emituje teraz trwałą kartę side-panelu identyczną mechanizmem z
+  eliminacją przez wchłonięcie dyplomatyczne (commit `075737dc`), z prawdziwą
+  przyczyną w treści (karta/modal „Podbita"/„Podbój" zamiast zawsze
+  „Wchłonięta dyplomatycznie"/„Dyplomacja"). 3 rundy, Final Control PASS w
+  każdej. ECHO właściciela: WARIANT A (2026-09-12).
+
 ## ROBOCZA 04847f90 - 2026-09-12 12:04 UTC - FALA 383: kontekst bytu dla kart końca tury (fundament)
 
 |- md5 (pełne): 04847f903d63d5bf0a929a493d6b75d5 · stempel: ROBOCZA · label 04847f90 · zakres

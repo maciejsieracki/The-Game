@@ -1,10 +1,10 @@
 {
-  "publishedAt": "2026-09-12T12:04:00",
-  "sourceBuild": "gra/dist (commit e4e74078)",
-  "note": "FALA 383 - P-WYDARZENIA-EOT-KONTEKST-DLUG-Q1 ZINTEGROWANE (commit e4e74078): DeferredEotHint/SidePanelEvent rozszerzone o opcjonalny kontekst bytu {hex?, cityId?, ownerId?}, przeprowadzony przez showHintMessage() i deferredHintsToSidePanelEvents(); dwa konkretne call site wypelnione jako dowod (kapitulacja glodowa, rajd Ludow Morza). Fundament pod przyszle tematy (np. przyciski Szczegoly dla kart konca tury), nie pelne wdrozenie nawigacji. DECISION_REQUIRED #2 z R-WYDARZENIA-AUDYT-PRZEKIEROWANIA-Q1, ECHO wlasciciela 2026-09-12. Final Control PASS, niezaleznie zweryfikowane: tsc czysty, 5 bramek referencyjnych, eot-event-defer-test 43/43. Rownolegle zamkniety (docs-only, bez zmian kodu) recon P-HOTSEAT-PLAYERPRACAPOOL-SILNIK-PER-FOTEL-Q1 - mapa miejsc silnika czytajacych playerPracaPool bezposrednio, nowe znalezisko: save-load traci pule Pracy drugiego fotela.",
+  "publishedAt": "2026-09-12T12:29:00",
+  "sourceBuild": "gra/dist (commit 075737dc)",
+  "note": "FALA 384 - P-WYDARZENIA-ELIMINACJA-PODBOJ-KARTA-Q1 ZINTEGROWANE (commit 075737dc): eliminacja cywilizacji przez PODBOJ emituje teraz dokladnie taki sam mechanizm trwalej karty side-panelu jak eliminacja przez wchloniecie dyplomatyczne (recordCivElimEvent + showCivElimNotice), zamiast biernego toastu bez przejscia. 3 rundy: R1 mechanizm, R2 fix podwojnej karty dla ofiary-gracza, R3 (ECHO wlasciciela, allowlista rozszerzona) sparametryzowana przyczyna eliminacji - karta/modal dla podboju pokazuja Podbita/Podboj zamiast zawsze Wchloniena dyplomatycznie/Dyplomacja. Sciezka dyplomatyczna i galaz gracz-zdobywca nietkniete. Final Control PASS w kazdej z 3 rund. Nowa bramka wydarzenia-eliminacja-podboj-karta-test.cjs 28/28. Zrodlo: DECISION_REQUIRED #1 z R-WYDARZENIA-AUDYT-PRZEKIEROWANIA-Q1. Follow-up zarejestrowany osobno (nie blokuje): elimination-toast-merge-test.cjs ma 4 przestarzale literal-anchory na stara sygnature recordCivElimEvent - P-TEST-ELIMINATION-TOAST-MERGE-ANCHORY-PRZESTARZALE-Q1.",
   "publisher": "Orkiestrator (Claude Code)",
   "bundle": "Gra-ROBOCZA.html",
-  "md5": "04847f903d63d5bf0a929a493d6b75d5",
+  "md5": "ec276ee3e2a0ac5284953e79b0840de7",
   "bundlePoleBitwy": "Gra-ROBOCZA-POLE-BITWY.html",
   "md5PoleBitwy": "6deb45d265b82b4eb27e990c345a79c1"
 }
