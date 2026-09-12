@@ -43,7 +43,7 @@ const BUNDLE_FILE = path.resolve(__dirname, '.trade-routes-limit-bundle.cjs');
 fs.writeFileSync(ENTRY_FILE, `
 export {
   refreshTradeRoutes, tradeRouteExistenceLimitForCity, tradeRouteLimitForCity,
-  tradeRouteId, tradeRoutePairKey, tradeRouteTotalDistanceIncome,
+  tradeRouteId, tradeRoutePairKey, tradeRouteIncomeByDistance, tradeRouteIncomeForRoute,
   DEFAULT_TRADE_ROUTE_INCOME_PARAMS, computeTradeRouteIncomeByCity,
   TRADE_BUILDING_IDS,
 } from '../src/game/trade-routes';
@@ -72,7 +72,7 @@ const NO_WAR      = () => false;
 const HAS_TREATY  = () => true;
 const NO_TREATY   = () => false;
 const incP = TR.DEFAULT_TRADE_ROUTE_INCOME_PARAMS;
-const incomeOf = (d, m) => TR.tradeRouteTotalDistanceIncome(d, m, incP);
+const incomeOf = (d, m) => TR.tradeRouteIncomeByDistance(d, m, incP);
 
 // ===========================================================================
 // KRYTERIUM 1 -- miasto z 0 budynkow ma DOKLADNIE 1 slot istnienia
@@ -483,7 +483,7 @@ console.log('\n-- Zarzut 1: brak blizniaka trasy po zmianie wlasciciela miasta -
     const inc = TR.computeTradeRouteIncomeByCity(t2);
     const touchingP1 = t2.filter(r => r.fromCityId === 'z1-p1' || r.toCityId === 'z1-p1');
     eq(touchingP1.length, 2, 'Z1: p1 ma DOKLADNIE 2 trasy po podboju (do a1 i do a2)');
-    const expected = touchingP1.reduce((sm, r) => sm + incomeOf(r.dystans, r.medium), 0);
+    const expected = touchingP1.reduce((sm, r) => sm + TR.tradeRouteIncomeForRoute(r, incP), 0);
     eq(inc.get('z1-p1'), expected, 'Z1: dochod p1 == suma jego 2 tras (nie podwojony przez blizniaka)');
   }
   // Idempotencja: kolejna tura na TYM SAMYM stanie nie zmienia juz nic.

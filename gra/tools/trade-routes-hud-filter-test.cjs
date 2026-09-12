@@ -48,7 +48,7 @@ fs.writeFileSync(ENTRY_FILE, `
 export {
   refreshTradeRoutes, diffTradeRoutes, findCityConnection,
   computeTradeRouteIncomeByCity, computeTradeRouteBuildingBonusByCity,
-  tradeRouteBuildingBonusForRoute, tradeRouteTotalDistanceIncome,
+  tradeRouteBuildingBonusForRoute, tradeRouteIncomeForRoute,
   DEFAULT_TRADE_ROUTE_PARAMS, DEFAULT_TRADE_ROUTE_INCOME_PARAMS,
 } from '../src/game/trade-routes';
 `, 'utf8');
@@ -189,14 +189,16 @@ const chipCtx = () => ({
   tradeRoutes: ROUTES,
   handelIncomeParams: incP,
   wonderTradeRouteBonusForOwner: WONDER_BONUS,
-  tradeRouteTotalDistanceIncome: TR.tradeRouteTotalDistanceIncome,
+  isMe: ownerId => ownerId === 0,
+  tradeRouteIncomeForRoute: TR.tradeRouteIncomeForRoute,
 });
 const panelCtx = () => ({
   tradeRoutes: ROUTES,
   cities: CITIES,
   incomeParams: incP,
   wonderTradeRouteBonusForOwner: WONDER_BONUS,
-  tradeRouteTotalDistanceIncome: TR.tradeRouteTotalDistanceIncome,
+  isMe: ownerId => ownerId === 0,
+  tradeRouteIncomeForRoute: TR.tradeRouteIncomeForRoute,
   tradeRouteBuildingBonusForRoute: TR.tradeRouteBuildingBonusForRoute,
   ownerDiploLabel: id => 'CYW' + id,
 });
@@ -228,10 +230,11 @@ function reportCtx() {
     showHintMessage: msg => { state.hints.push(msg); },
     refreshD1bHud: () => {},
     ownerDiploLabel: id => 'CYW' + id,
+    isMe: ownerId => ownerId === 0,
     buildAllTerritoryNodes: () => undefined,
     diffTradeRoutes: TR.diffTradeRoutes,
     findCityConnection: TR.findCityConnection,
-    tradeRouteTotalDistanceIncome: TR.tradeRouteTotalDistanceIncome,
+    tradeRouteIncomeForRoute: TR.tradeRouteIncomeForRoute,
   };
 }
 
@@ -260,7 +263,7 @@ eq(chip.handelRouteCount, PLAYER_ROUTES.length,
   eq(only.handelRouteCount, 1, 'R2-K5: trasa WEWNETRZNA gracza liczy sie w chipie DOKLADNIE RAZ (1 trasa, nie 2)');
   // ...a jej dochod zgadza sie ze skarbcem (silnik kredytuje OBA miasta gracza).
   const r = INTERNAL_PLAYER_ROUTES[0];
-  const perSide = TR.tradeRouteTotalDistanceIncome(r.dystans, r.medium, incP);
+  const perSide = TR.tradeRouteIncomeForRoute(r, incP);
   const engineInternal = TR.computeTradeRouteIncomeByCity([r], incP, WONDER_BONUS);
   let engineSum = 0;
   for (const id of PLAYER_CITY_IDS) engineSum += engineInternal.get(id) ?? 0;
@@ -408,7 +411,7 @@ console.log('\n-- R2-D: trasa z graczem po stronie `to` (odwrocony kierunek) --'
     toCityId: src.fromCityId, toOwnerId: src.ownerId,
   };
   const only = [rev];
-  const perSide = TR.tradeRouteTotalDistanceIncome(rev.dystans, rev.medium, incP);
+  const perSide = TR.tradeRouteIncomeForRoute(rev, incP);
 
   const c = chipCtx(); c.tradeRoutes = only;
   const chipRev = runSnippet(SRC_CHIP, c, 'return { handelIncome, handelRouteCount };');
@@ -439,7 +442,7 @@ console.log('\n-- ZARZUT 4: `hasActiveRoute` (activeDeals) symetryczny wzgledem 
   // wiec dla zapisu `partner -> gracz` zwracal false przy REALNIE istniejacej trasie
   // i panel doklejal fałszywy blockReason.
   const run = (routes, partnerId) =>
-    runSnippet(SRC_HASROUTE, { tradeRoutes: routes, partnerId }, 'return hasActiveRoute;');
+    runSnippet(SRC_HASROUTE, { tradeRoutes: routes, partnerId, isMe: ownerId => ownerId === 0 }, 'return hasActiveRoute;');
   const fwd = { id: 'z4-f', status: 'polaczony', fromCityId: 'p1', toCityId: 'a1', ownerId: 0, toOwnerId: 1, medium: 'lad', dystans: 5, budynekOdblokowany: false };
   const rev = { id: 'z4-r', status: 'polaczony', fromCityId: 'a1', toCityId: 'p1', ownerId: 1, toOwnerId: 0, medium: 'lad', dystans: 5, budynekOdblokowany: false };
   eq(run([fwd], 1), true,  'ZARZUT 4: trasa zapisana jako gracz->partner wykryta (zachowanie dotychczasowe, bez regresji)');
@@ -490,9 +493,9 @@ mutantFails(
   // Mutant odtwarza zachowanie SPRZED poprawki: brak filtra wlasciciela ORAZ wiersz
   // zawsze z perspektywy `fromCityId` (dawne `cityId: r.fromCityId`).
   'panel imperium',
-  SRC_PANEL.replace(" && (r.ownerId === 0 || r.toOwnerId === 0)", '')
-           .replace('if (r.ownerId === 0) {', 'if (true) {')
-           .replace('if (r.toOwnerId === 0) {', 'if (false) {'),
+  SRC_PANEL.replace(".filter(r => r.status === 'polaczony' && (isMe(r.ownerId) || isMe(r.toOwnerId)))", ".filter(r => r.status === 'polaczony')")
+           .replace('if (isMe(r.ownerId)) {', 'if (true) {')
+           .replace('if (isMe(r.toOwnerId)) {', 'if (false) {'),
   panelCtx, 'return routes;',
   rows => ({ failed: !rows.every(row => PLAYER_CITY_IDS.has(row.cityId)), detail: `wierszy=${rows.length}, w tym cudze` }),
 );

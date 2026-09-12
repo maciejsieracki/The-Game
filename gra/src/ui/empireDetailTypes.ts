@@ -441,7 +441,7 @@ export interface EmpireTradeRouteRow {
   medium: 'lad' | 'morze';
   dystans: number;
   /**
-   * Dochód DYSTANSOWY tej trasy/turę (`tradeRouteTotalDistanceIncome` × bonus cudów,
+   * Dochód DYSTANSOWY tej trasy/turę (`tradeRouteIncomeForRoute` × bonus cudów,
    * CUDA-HANDEL-01) — kredytowany OBU miastom w pełnej kwocie i wchodzący do skarbca
    * WPROST (`pieniadzZTras`, turn-economy.ts — z pominięciem Zamożności).
    * T6: to NIE jest cały dochód trasy — drugi składnik to `premiaBudynku` niżej.

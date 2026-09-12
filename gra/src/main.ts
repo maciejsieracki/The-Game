@@ -542,7 +542,7 @@ import {
   DEFAULT_TRADE_ROUTE_PARAMS,
   diffTradeRoutes,
   findCityConnection,
-  tradeRouteTotalDistanceIncome,
+  tradeRouteIncomeForRoute,
   citiesHaveTradeConnection,
   diagnoseMissingTradeRouteForPartner,
   computeTradeRouteResourceFlow,
@@ -15142,7 +15142,7 @@ async function boot(): Promise<void> {
         // (obie strony to gracz) własna nazwa cywilizacji nic nie mówi — jawny opis.
         const wewnetrzna = route.ownerId === route.toOwnerId;
         const civLabel = wewnetrzna ? 'handel wewnętrzny' : ownerDiploLabel(route.ownerId === 0 ? route.toOwnerId : route.ownerId);
-        const income = tradeRouteTotalDistanceIncome(route.dystans, route.medium, incomeParams);
+        const income = tradeRouteIncomeForRoute(route, incomeParams);
         const summary = `${fromName} ↔ ${toName} (${civLabel}) \xb7 +${income} złota/turę`;
         showHintMessage('\u{1F9ED} Nowy szlak handlowy: ' + summary, 4500);
         // P-WYDARZENIA-AUDYT-PRZEKIEROWANIA-Q1: zapamiętaj miasto gracza pod tym samym id.
@@ -16178,7 +16178,7 @@ async function boot(): Promise<void> {
           // R2-2: bonus cudów liczony dla GRACZA (0), nie dla `r.ownerId` — po
           // generalizacji `r.ownerId` bywa cywilizacją obcą (gracz jako strona `to`).
           const bonus = wonderTradeRouteBonusForOwner(0, r.medium);
-          const base = tradeRouteTotalDistanceIncome(r.dystans, r.medium, incomeParams);
+          const base = tradeRouteIncomeForRoute(r, incomeParams);
           const perSide = bonus === 0 ? base : Math.floor(base * (1 + bonus));
           // R2-2 / R2-K5: silnik (`computeTradeRouteIncomeByCity`, Q8=B „obie strony
           // zarabiają") kredytuje PEŁNĄ kwotę OBU miastom trasy. Dla trasy WEWNĘTRZNEJ
@@ -18343,7 +18343,7 @@ async function boot(): Promise<void> {
         // Bonus liczony dla WŁAŚCICIELA 0 (gracza), nie dla `r.ownerId` — po generalizacji
         // gracz bywa stroną `to`, a wtedy `r.ownerId` to cudza cywilizacja.
         const bonus = wonderTradeRouteBonusForOwner(0, r.medium);
-        const base = tradeRouteTotalDistanceIncome(r.dystans, r.medium, handelIncomeParams);
+        const base = tradeRouteIncomeForRoute(r, handelIncomeParams);
         const perSide = bonus === 0 ? base : Math.floor(base * (1 + bonus));
         handelIncome += fromPlayer && toPlayer ? perSide * 2 : perSide;
         handelRouteCount++;
