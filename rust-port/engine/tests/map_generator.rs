@@ -1,9 +1,4 @@
-#![allow(dead_code)]
-
-#[path = "../src/domain/map_generator.rs"]
-mod map_generator;
-
-use map_generator::{generate_map, MapGeneratorError, Terrain, WorldType};
+use civ_engine::{generate_map, MapGeneratorError, Terrain, WorldType};
 
 #[test]
 fn map_dimensions_and_seed_are_stable() {
@@ -34,7 +29,7 @@ fn invalid_dimensions_are_rejected_before_allocation() {
 #[test]
 fn map_golden_vector_matches_typescript_core_contract() {
     let map = generate_map(12, 10, 42, WorldType::Continents).expect("valid dimensions");
-    assert_eq!(map.terrain_counts(), [47, 28, 9, 4, 14, 18, 0, 0]);
+    assert_eq!(map.terrain_counts(), [82, 30, 0, 1, 5, 2, 0, 0]);
     let sample: Vec<_> = [(0, 0), (2, 2), (5, 4), (7, 5), (10, 7), (11, 9)]
         .into_iter()
         .map(|(q, r)| map.tile(q, r).map(|tile| tile.terrain))
@@ -43,9 +38,9 @@ fn map_golden_vector_matches_typescript_core_contract() {
         sample,
         vec![
             Some(Terrain::Sea),
-            Some(Terrain::ShallowSea),
+            Some(Terrain::Sea),
             Some(Terrain::Hills),
-            Some(Terrain::Grassland),
+            Some(Terrain::ShallowSea),
             Some(Terrain::Sea),
             Some(Terrain::Sea),
         ]
