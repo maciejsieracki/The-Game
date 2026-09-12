@@ -1,10 +1,6 @@
-#[allow(dead_code)]
-#[path = "../src/domain/building_costs.rs"]
-mod building_costs;
-
 use std::collections::{BTreeMap, BTreeSet};
 
-use building_costs::{
+use civ_engine::domain::building_costs::{
     building_cost_for, canonical_building_costs, effective_work_cost, spend_building_cost,
     validate_building_expenditure, BuildingCost, BuildingSpendError, ResourceStock,
 };

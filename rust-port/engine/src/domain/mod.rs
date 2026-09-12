@@ -1,5 +1,6 @@
 //! Domain building blocks shared by future engine systems.
 
+pub mod building_costs;
 mod error;
 mod ids;
 pub mod improvements;
