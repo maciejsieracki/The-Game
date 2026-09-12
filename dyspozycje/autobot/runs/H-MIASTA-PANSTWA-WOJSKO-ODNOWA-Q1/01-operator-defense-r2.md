@@ -24,6 +24,7 @@ TESTY/DOWODY:
 - `r-manpower-uzupelnienie-hp-niezapisuje-q1-test.cjs`: 12 OK, 0 FAIL.
 - `hotseat-human-owners-test.cjs`: 29 PASS, 0 FAIL.
 - `hotseat-etap7-saveload-test.cjs`: 59 passed, 0 failed.
+- Pięć bramek referencyjnych: `logic-test.cjs` 213/213, `tech-tree-test.cjs` 19/19, `research-test.cjs` 33/33, `unit-replace-test.cjs` 13/13, `combat-test.cjs` 6/6 — wszystkie PASS.
 - TypeScript 5.9.3 `tsc --noEmit`: PASS.
 - `node --check` obu testów: PASS.
 - `git diff --check`: PASS.
