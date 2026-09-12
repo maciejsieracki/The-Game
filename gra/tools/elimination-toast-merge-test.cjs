@@ -335,10 +335,14 @@ let wchlonieciaBlockCode = '';
     + 'jedyne miejsce emisji zostaje annexCityStateToOwner (bez tego dublowałby się dokładnie '
     + 'tak jak dawny podwójny showHintMessage z Defektu A/Rundy 4)');
 
+  // AKTUALIZACJA (P-WYDARZENIA-ELIMINACJA-PODBOJ-KARTA-Q1, zintegrowane 075737dc): doszedł
+  // drugi call site — ścieżka podboju (eliminateOwner/annexCityStateToOwner sąsiad, branch
+  // newOwner !== 0 && oldOwner !== 0) — obok ścieżki dyplomatycznej sprawdzonej wyżej.
   const totalRecordCivElimOccurrences = countOf(mainSrc, 'recordCivElimEvent(');
-  ok(totalRecordCivElimOccurrences === 2,
-    `RUNDA 5 (b): 'recordCivElimEvent(' występuje w main.ts DOKŁADNIE 2 razy w całym pliku `
-    + `(1 deklaracja funkcji + 1 wywołanie) — znaleziono ${totalRecordCivElimOccurrences}`);
+  ok(totalRecordCivElimOccurrences === 3,
+    `RUNDA 5 (b) [P-WYDARZENIA-ELIMINACJA-PODBOJ-KARTA-Q1]: 'recordCivElimEvent(' występuje w `
+    + `main.ts DOKŁADNIE 3 razy w całym pliku (1 deklaracja funkcji + wywołanie ze ścieżki `
+    + `dyplomatycznej + wywołanie ze ścieżki podboju) — znaleziono ${totalRecordCivElimOccurrences}`);
 
   // (d) polaryzacja: recordCivElimEvent musi żyć WEWNĄTRZ if (annexerId === 0) { ... },
   // nie odwrócone (!==, brak guarda, inny operator) — inwersja emitowałaby kartę ELIMINACJA
@@ -371,20 +375,38 @@ let wchlonieciaBlockCode = '';
 
   // (c) pełna treść (etykieta + szczegóły) trafia do civElimEventDetails pod evId, i modal
   // (onEventClick, prefiks elim-cs-) czyta ją stamtąd i przekazuje do showCivElimNotice.
-  ok(mainSrc.includes(
-    'function recordCivElimEvent(csOwnerId: number, civLabel: string, details: string): void {'),
-    'RUNDA 5 (c): recordCivElimEvent przyjmuje civLabel ORAZ details (pełna treść dla modalu, '
-    + 'nie tylko nazwę)');
-  ok(mainSrc.includes('civElimEventDetails.set(evId, { civLabel, details });'),
-    'RUNDA 5 (c): recordCivElimEvent zapisuje { civLabel, details } pod evId do '
-    + 'civElimEventDetails, do późniejszego odczytu przez modal');
+  // AKTUALIZACJA (P-WYDARZENIA-ELIMINACJA-PODBOJ-KARTA-Q1): sygnatura zyskała 4. parametr
+  // `cause` i stała się wieloliniowa. Zamiast dopasowywać cały literał podpisu (kruche —
+  // powtórzyłby się ten sam problem przy najbliższej legalnej zmianie formatowania), sprawdzamy
+  // ciało listy parametrów niezależnie od białych znaków/łamania linii: (1) trzon
+  // csOwnerId/civLabel/details NIETKNIĘTY, (2) nowy parametr cause z unią typów i domyślną
+  // wartością obecny — to właśnie ta część, którą mutant-test celowo usuwa.
+  const recordFnMatch = /function recordCivElimEvent\(([\s\S]*?)\): void \{/.exec(mainSrc);
+  ok(!!recordFnMatch,
+    'RUNDA 5 (c): znaleziono deklarację function recordCivElimEvent(...): void {');
+  const recordFnParams = recordFnMatch ? recordFnMatch[1] : '';
+  ok(/csOwnerId\s*:\s*number/.test(recordFnParams)
+    && /civLabel\s*:\s*string/.test(recordFnParams)
+    && /details\s*:\s*string/.test(recordFnParams),
+    'RUNDA 5 (c): recordCivElimEvent przyjmuje csOwnerId, civLabel ORAZ details (pełna treść '
+    + 'dla modalu, nie tylko nazwę)');
+  ok(/cause\s*:\s*'dyplomacja'\s*\|\s*'podboj'\s*=\s*'dyplomacja'/.test(recordFnParams),
+    "RUNDA 5 (c) [P-WYDARZENIA-ELIMINACJA-PODBOJ-KARTA-Q1]: recordCivElimEvent przyjmuje 4. "
+    + "parametr cause: 'dyplomacja' | 'podboj' = 'dyplomacja' (rozróżnienie ścieżki "
+    + 'dyplomatycznej od podboju dla karty/modalu)');
+  ok(mainSrc.includes('civElimEventDetails.set(evId, { civLabel, details, cause });'),
+    'RUNDA 5 (c) [P-WYDARZENIA-ELIMINACJA-PODBOJ-KARTA-Q1]: recordCivElimEvent zapisuje '
+    + '{ civLabel, details, cause } pod evId do civElimEventDetails, do późniejszego odczytu '
+    + 'przez modal');
   ok(mainSrc.includes("id.startsWith('elim-cs-')"),
     'RUNDA 5 (c): onEventClick rozpoznaje prefiks karty elim-cs-');
   ok(/civElimEventDetails\.get\(id\)/.test(mainSrc),
     'RUNDA 5 (c): onEventClick czyta civElimEventDetails po id karty');
-  ok(/showCivElimNotice\(\{ civLabel: info\.civLabel, details: info\.details \}\)/.test(mainSrc),
-    'RUNDA 5 (c): kliknięcie karty otwiera showCivElimNotice z pełną treścią '
-    + '(civLabel + details)');
+  ok(/showCivElimNotice\(\{ civLabel: info\.civLabel, details: info\.details, cause: info\.cause \?\? 'dyplomacja' \}\)/
+    .test(mainSrc),
+    'RUNDA 5 (c) [P-WYDARZENIA-ELIMINACJA-PODBOJ-KARTA-Q1]: kliknięcie karty otwiera '
+    + 'showCivElimNotice z pełną treścią (civLabel + details) ORAZ z cause (domyślnie '
+    + "'dyplomacja', gdy info.cause brak — wsteczna zgodność ze starymi wpisami mapy)");
 
   ok(elimNoticeSrc.includes('civLabel: string;') && elimNoticeSrc.includes('details: string;'),
     'RUNDA 5 (c): CivElimNoticeOpts (civElimNotice.ts) deklaruje civLabel oraz details');
