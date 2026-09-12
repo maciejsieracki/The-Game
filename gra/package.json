@@ -3,9 +3,8 @@
   "version": "0.1.0",
   "type": "module",
   "scripts": {
-    "data": "python3 tools/export-data.py",
-    "predev": "npm run data && node tools/bundle-wiki-for-game.cjs",
-    "prebuild": "npm run data && node tools/bundle-wiki-for-game.cjs",
+    "predev": "node tools/bundle-wiki-for-game.cjs",
+    "prebuild": "node tools/bundle-wiki-for-game.cjs",
     "dev": "vite",
     "build": "vite build",
     "typecheck": "tsc --noEmit",
@@ -16,6 +15,7 @@
   },
   "devDependencies": {
     "@types/three": "^0.169.0",
+    "esbuild": "^0.28.2",
     "jpeg-js": "^0.4.4",
     "jsdom": "^29.1.1",
     "playwright": "^1.61.0",
