@@ -1,10 +1,10 @@
 {
-  "publishedAt": "2026-09-12T12:29:00",
-  "sourceBuild": "gra/dist (commit 075737dc)",
-  "note": "FALA 384 - P-WYDARZENIA-ELIMINACJA-PODBOJ-KARTA-Q1 ZINTEGROWANE (commit 075737dc): eliminacja cywilizacji przez PODBOJ emituje teraz dokladnie taki sam mechanizm trwalej karty side-panelu jak eliminacja przez wchloniecie dyplomatyczne (recordCivElimEvent + showCivElimNotice), zamiast biernego toastu bez przejscia. 3 rundy: R1 mechanizm, R2 fix podwojnej karty dla ofiary-gracza, R3 (ECHO wlasciciela, allowlista rozszerzona) sparametryzowana przyczyna eliminacji - karta/modal dla podboju pokazuja Podbita/Podboj zamiast zawsze Wchloniena dyplomatycznie/Dyplomacja. Sciezka dyplomatyczna i galaz gracz-zdobywca nietkniete. Final Control PASS w kazdej z 3 rund. Nowa bramka wydarzenia-eliminacja-podboj-karta-test.cjs 28/28. Zrodlo: DECISION_REQUIRED #1 z R-WYDARZENIA-AUDYT-PRZEKIEROWANIA-Q1. Follow-up zarejestrowany osobno (nie blokuje): elimination-toast-merge-test.cjs ma 4 przestarzale literal-anchory na stara sygnature recordCivElimEvent - P-TEST-ELIMINATION-TOAST-MERGE-ANCHORY-PRZESTARZALE-Q1.",
+  "publishedAt": "2026-09-12T14:43:00",
+  "sourceBuild": "gra/dist (commit 9950ba24)",
+  "note": "FALA 385 - H-MIASTA-PANSTWA-WOJSKO-ODNOWA-Q1 ZINTEGROWANE (commit 9950ba24): rozdzielono trzy niezalezne tabele jednostek startowych. Gracz: easy=1/normal=2/hard=3 (nowa). Obce panstwa-miasta AI: easy=2/normal=1/hard=0 (odwrocona wzgledem R-MIASTA-PANSTWA-STARTOWE-JEDNOSTKI-Q1 - maja szybciej padac na latwym). Panstwa-miasta typu/fotela gracza: nadal wylacznie niezalezny suwak _menuCityStateDifficulty, bez zmian. Naprawiono tez guard: pelna armia startowa gracza przyznawana WYLACZNIE przy pierwszym miescie danego ownera/fotela (wczesniej kazde kolejne miasto dublowalo grant). Audyt odnowy Manpower/HP bez zmian - mechanika poprawna. Zrodlo: zlecenie wlasciciela 2026-09-11. Proces prowadzony rownolegle przez system orkiestracji Hermes (OpenAI gpt-5.6-luna), przejety i zintegrowany przez ta sesje po swiezym niezaleznym Evaluatorze i Final Control. 9 bramek tematu + 5 referencyjnych + tsc zielone, w tym 2 zywe testy Chromium (3 generacje swiata + oba fotele hot-seat) i wlasna mutacja guard-a.",
   "publisher": "Orkiestrator (Claude Code)",
   "bundle": "Gra-ROBOCZA.html",
-  "md5": "ec276ee3e2a0ac5284953e79b0840de7",
+  "md5": "e2a74cb5a71af10760effde8387f82f6",
   "bundlePoleBitwy": "Gra-ROBOCZA-POLE-BITWY.html",
   "md5PoleBitwy": "6deb45d265b82b4eb27e990c345a79c1"
 }

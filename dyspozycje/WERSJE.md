@@ -13,6 +13,22 @@ swoim wĹ‚asnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji d
 > Pakiet 3 z 2026-08-20 jest docs-only i nie tworzy wpisu ROBOCZA/KANON/FINALNA;
 > ten plik pozostaje wyłącznie rejestrem publikacji bundli.
 
+## ROBOCZA e2a74cb5 - 2026-09-12 14:43 UTC - FALA 385: rozdzielone tabele jednostek startowych + guard pierwszego miasta
+
+|- md5 (pełne): e2a74cb5a71af10760effde8387f82f6 · stempel: ROBOCZA · label e2a74cb5 · zakres
+  commitów: `676d2d97..9950ba24` (od poprzedniej fali do obecnego `main`) · pole bitwy:
+  `Gra-ROBOCZA-POLE-BITWY.html` md5 `6deb45d265b82b4eb27e990c345a79c1` (NIEZMIENIONE)
+|- **`H-MIASTA-PANSTWA-WOJSKO-ODNOWA-Q1`** — trzy niezależne tabele jednostek
+  startowych (commit `9950ba24`): gracz easy/normal/hard=1/2/3 (nowa); obce
+  państwa-miasta AI easy/normal/hard=2/1/0 (odwrócona względem
+  `R-MIASTA-PANSTWA-STARTOWE-JEDNOSTKI-Q1` — mają szybciej padać na łatwym,
+  zlecenie właściciela 2026-09-11); państwa-miasta typu gracza nadal
+  wyłącznie niezależny suwak kreatora. Naprawiono też: pełna armia startowa
+  gracza przyznawana wyłącznie przy pierwszym mieście danego ownera/fotela
+  (wcześniej kolejne miasta dublowały grant). Proces prowadzony równolegle
+  przez system orkiestracji Hermes (OpenAI gpt-5.6-luna), przejęty i
+  zintegrowany po świeżym niezależnym Evaluatorze + Final Control tej sesji.
+
 ## ROBOCZA ec276ee3 - 2026-09-12 12:29 UTC - FALA 384: eliminacja przez podbój = karta jak dyplomacja, z prawdziwą przyczyną
 
 |- md5 (pełne): ec276ee3e2a0ac5284953e79b0840de7 · stempel: ROBOCZA · label ec276ee3 · zakres
