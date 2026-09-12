@@ -13,6 +13,20 @@ swoim wĹ‚asnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji d
 > Pakiet 3 z 2026-08-20 jest docs-only i nie tworzy wpisu ROBOCZA/KANON/FINALNA;
 > ten plik pozostaje wyłącznie rejestrem publikacji bundli.
 
+## ROBOCZA 48ec8b44 - 2026-09-12 02:29 UTC - FALA 380: naprawa filtra dev-notatek ABC w buildings.json
+
+|- md5 (pełne): 48ec8b44cb8316e153a5ce9dd83813df · stempel: ROBOCZA · label 48ec8b44 · zakres
+  commitów: `b6fee601..fc884ccd` (od poprzedniej fali do obecnego `main`) · pole bitwy:
+  `Gra-ROBOCZA-POLE-BITWY.html` md5 `6deb45d265b82b4eb27e990c345a79c1` (NIEZMIENIONE)
+|- **`P-BUDYNKI-UWAGI-ABC-CZESCIOWY-WYCIEK-Q1`** — naprawa filtra
+  `stripInlineDevAnnotations` (commit `bc7ab7f6`): wielozdaniowe notatki „ABC-N:”
+  wycinane do początku ostatniego zdania (nie tylko do pierwszej kropki), adnotacje
+  parentetyczne bez dwukropka po numerze wycinane w całości. Znalezisko przy okazji:
+  pole `uwagi` budynków nie jest dziś renderowane w żadnej ścieżce UI (komentarz w
+  `buildingAdapter.ts` aspiracyjny/nieaktualny) — filtr mimo to poprawiony i
+  przetestowany (44/44, zero regresu tech.json). Nowe pytanie do właściciela:
+  `P-BUDYNKI-UWAGI-WPIAC-DO-UI-Q1` (czy wpinać renderowanie tego pola).
+
 ## ROBOCZA a717e586 - 2026-09-12 01:58 UTC - FALA 379: migracja cache HUD Praca/Kultura na per-fotel
 
 |- md5 (pełne): a717e586e3d36817b848fb92652cfa67 · stempel: ROBOCZA · label a717e586 · zakres
