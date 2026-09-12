@@ -3,9 +3,15 @@
  */
 import type { SidePanelEvent } from '../ui/sidePanelHud';
 
+/** P-WYDARZENIA-EOT-KONTEKST-DLUG-Q1: kontekst bytu (heks/miasto/właściciel), opcjonalny —
+ * dźwiga fundament pod przyszłą nawigację „Szczegóły →" (NIE budowaną w tej rundzie).
+ * Zero wpływu na istniejące wywołania bez kontekstu (pole opcjonalne, brak = jak dziś). */
 export interface DeferredEotHint {
   msg: string;
   durationMs: number;
+  hex?: { q: number; r: number };
+  cityId?: string;
+  ownerId?: number;
 }
 
 /** Czy UI ma odkładać toasty / chipy wydarzeń (faza przejścia tury). */
@@ -98,6 +104,9 @@ interface EotEventDraft {
   subtitle: string;
   kind: 'info' | 'diplo';
   origin?: 'other-civs';
+  hex?: { q: number; r: number };
+  cityId?: string;
+  ownerId?: number;
 }
 
 /** Zamień odłożone hinty na wpisy panelu Wydarzenia.
@@ -183,6 +192,9 @@ export function deferredHintsToSidePanelEvents(
       subtitle: h.msg.replace(/<[^>]+>/g, ''),
       kind: isDiplomacy ? ('diplo' as const) : ('info' as const),
       ...(isAiAiTrade ? { origin: 'other-civs' as const } : {}),
+      ...(h.hex ? { hex: h.hex } : {}),
+      ...(h.cityId !== undefined ? { cityId: h.cityId } : {}),
+      ...(h.ownerId !== undefined ? { ownerId: h.ownerId } : {}),
     };
   });
 
@@ -192,6 +204,15 @@ export function deferredHintsToSidePanelEvents(
   // `count` tej pozycji, nie tworzą nowego wpisu i nie przesuwają grupy (kolejność = pozycja
   // pierwszego wystąpienia). Wpisy `diplo` zawsze trafiają jako nowa, osobna pozycja (count
   // zawsze 1) — 1:1 jak przed tą zmianą, nawet jeśli tekstowo identyczne z innym wpisem diplo.
+  // P-WYDARZENIA-EOT-KONTEKST-DLUG-Q1: gdy dwa hinty o tym samym `subtitle` (klucz scalania)
+  // niosą RÓŻNY kontekst (hex/cityId/ownerId), scalona karta zachowuje kontekst PIERWSZEGO
+  // wystąpienia — zgodne z regułą kolejności grupy ("pozycja = pierwsze wystąpienie", patrz
+  // komentarz przy `key` niżej). Duplikat tylko inkrementuje `count`, nie dotyka kontekstu
+  // zapisanego przy pierwszym wpisie. Świadomie NIE uśredniamy/nie listujemy wielu kontekstów.
+  // EN: when two hints sharing the same `subtitle` (merge key) carry DIFFERENT context
+  // (hex/cityId/ownerId), the merged card keeps the FIRST occurrence's context — consistent
+  // with the group-ordering rule. A duplicate only increments `count`, never touches the
+  // context already stored on the first entry. Deliberately no averaging/listing of contexts.
   const merged: Array<EotEventDraft & { count: number }> = [];
   const infoGroupIndexByKey = new Map<string, number>();
   for (const d of drafts) {
@@ -232,5 +253,8 @@ export function deferredHintsToSidePanelEvents(
       : d.subtitle,
     kind: d.kind,
     ...(d.origin ? { origin: d.origin } : {}),
+    ...(d.hex ? { hex: d.hex } : {}),
+    ...(d.cityId !== undefined ? { cityId: d.cityId } : {}),
+    ...(d.ownerId !== undefined ? { ownerId: d.ownerId } : {}),
   }));
 }

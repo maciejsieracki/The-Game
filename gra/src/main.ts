@@ -13893,9 +13893,13 @@ async function boot(): Promise<void> {
     // Transient toast — krótkie komunikaty (bez stałego paska skrótów na dole).
     let hintOverrideTimer: ReturnType<typeof setTimeout> | null = null;
 
-    function showHintMessage(msg: string, durationMs: number = 3000): void {
+    function showHintMessage(
+      msg: string,
+      durationMs: number = 3000,
+      ctx?: { hex?: { q: number; r: number }; cityId?: string; ownerId?: number },
+    ): void {
       if (shouldDeferEotEvents(endTurnInProgress)) {
-        deferredEotHints.push({ msg, durationMs });
+        deferredEotHints.push({ msg, durationMs, ...ctx });
         return;
       }
       if (hintOverrideTimer !== null) {
@@ -14402,7 +14406,7 @@ async function boot(): Promise<void> {
         const capitulationMsg = captureOutcome
           ? `${captureOutcome.eliminatedCivLabel} — ELIMINACJA! ${capitulationBaseMsg} ${captureOutcome.eliminatedDetails}`
           : `${capitulationBaseMsg} ${captureReportOneLine(surrenderRows)}`;
-        showHintMessage(capitulationMsg, captureOutcome ? 6000 : 5500);
+        showHintMessage(capitulationMsg, captureOutcome ? 6000 : 5500, { cityId: city.id, ownerId: newOwner });
       } else {
         showHintMessage(city.name + ': głód — oblężenie zakończone bez przejęcia.', 4500);
       }
@@ -34699,7 +34703,7 @@ async function boot(): Promise<void> {
                     playMarchAccent(1);
                   }
                   console.log(`[Ludy Morza] Rajd: zniszczono '${destroyed}' @ (${bcmd.toQ},${bcmd.toR})`);
-                  showHintMessage(`Rajd Ludów Morza — zniszczone ulepszenie: ${destroyed}!`, 4500);
+                  showHintMessage(`Rajd Ludów Morza — zniszczone ulepszenie: ${destroyed}!`, 4500, { hex: { q: bcmd.toQ, r: bcmd.toR }, ownerId: bu.ownerId });
                 } else if (bcmd.type === 'attack') {
                   const target = units.find(u => u.id === bcmd.targetUnitId);
                   if (!target) continue;

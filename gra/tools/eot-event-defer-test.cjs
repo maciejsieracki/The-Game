@@ -181,6 +181,57 @@ ok(!evs[0].subtitle.includes('<'), 'subtitle bez HTML');
     '2d: licznik wystąpień nadal dopisany (got ' + JSON.stringify(out[0].subtitle) + ')');
 }
 
+// ---------------------------------------------------------------------------------------
+// P-WYDARZENIA-EOT-KONTEKST-DLUG-Q1 — kontekst bytu (hex/cityId/ownerId) opcjonalny na
+// wejściu, przenoszony na wyjściowy SidePanelEvent.
+// ---------------------------------------------------------------------------------------
+
+// 3a: hint z kontekstem zachowuje go na wyjściu (kapitulacja głodowa — cityId+ownerId).
+{
+  const out = B.deferredHintsToSidePanelEvents(
+    [{ msg: 'Miasto X — kapitulacja z głodu!', durationMs: 5500, cityId: 'city-7', ownerId: 2 }],
+    40,
+  );
+  ok(out.length === 1, '3a: 1 hint z kontekstem → 1 karta');
+  ok(out[0].cityId === 'city-7' && out[0].ownerId === 2,
+    '3a: cityId/ownerId zachowane na wyjściu (got ' + JSON.stringify({ cityId: out[0].cityId, ownerId: out[0].ownerId }) + ')');
+  ok(out[0].hex === undefined, '3a: brak hex, gdy nie podano');
+}
+
+// 3b: hint z kontekstem hex (rajd Ludów Morza) zachowuje go na wyjściu.
+{
+  const out = B.deferredHintsToSidePanelEvents(
+    [{ msg: 'Rajd Ludów Morza — zniszczone ulepszenie: Farma!', durationMs: 4500, hex: { q: 3, r: -2 }, ownerId: 9 }],
+    41,
+  );
+  ok(out.length === 1, '3b: 1 hint z hex → 1 karta');
+  ok(out[0].hex && out[0].hex.q === 3 && out[0].hex.r === -2,
+    '3b: hex {q,r} zachowany na wyjściu (got ' + JSON.stringify(out[0].hex) + ')');
+  ok(out[0].ownerId === 9, '3b: ownerId zachowany razem z hex');
+}
+
+// 3c: hint BEZ kontekstu nadal działa jak dziś — brak pól kontekstu na wyjściu.
+{
+  const out = B.deferredHintsToSidePanelEvents([{ msg: 'Wyrąb: +25 Drewna', durationMs: 3000 }], 42);
+  ok(out.length === 1, '3c: 1 hint bez kontekstu → 1 karta');
+  ok(out[0].hex === undefined && out[0].cityId === undefined && out[0].ownerId === undefined,
+    '3c: zero regresu — brak pól kontekstu, gdy nie podano (got ' + JSON.stringify(out[0]) + ')');
+}
+
+// 3d: scalanie duplikatów o RÓŻNYM kontekście — zwycięża kontekst PIERWSZEGO wystąpienia.
+{
+  const out = B.deferredHintsToSidePanelEvents(
+    [
+      { msg: 'Wyrąb: +25 Drewna (pozostało 0 tury)', durationMs: 3000, cityId: 'city-1' },
+      { msg: 'Wyrąb: +25 Drewna (pozostało 0 tury)', durationMs: 3000, cityId: 'city-2' },
+    ],
+    43,
+  );
+  ok(out.length === 1, '3d: 2 identyczne hinty, różny kontekst → 1 scalona karta');
+  ok(out[0].cityId === 'city-1',
+    '3d: scalona karta zachowuje kontekst PIERWSZEGO wystąpienia (got cityId=' + out[0].cityId + ')');
+}
+
 const log = [];
 B.mergeDeferredEotSideEvents(log, [{ id: 'x', icon: 'i', title: 'T', subtitle: 'S', kind: 'info' }], 4);
 ok(log.length === 1 && log[0].id === 'x', 'mergeDeferredEotSideEvents');

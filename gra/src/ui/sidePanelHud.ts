@@ -50,6 +50,13 @@ export interface SidePanelEvent {
    * SidePanelEvent są już filtrowane w silniku do par z udziałem gracza, więc nie
    * potrzebują tego pola. */
   origin?: 'other-civs';
+  /** P-WYDARZENIA-EOT-KONTEKST-DLUG-Q1: opcjonalny kontekst bytu przeniesiony z
+   * `DeferredEotHint` (`eot-event-defer.ts`) przez `deferredHintsToSidePanelEvents()` —
+   * fundament pod przyszłą nawigację „Szczegóły →" (NIE budowaną w tej rundzie, brak nowej
+   * logiki renderowania/klikania). Nieużywane dziś przez żaden inny SidePanelEvent. */
+  hex?: { q: number; r: number };
+  cityId?: string;
+  ownerId?: number;
 }
 
 export type ContextPanelKind = 'hex' | 'unit';
