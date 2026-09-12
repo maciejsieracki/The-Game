@@ -3114,7 +3114,7 @@ skopiowaną 1:1 z `empireDetailPanel.ts` (border `#4a2a2a`, tło `rgba(224,122,1
 | P-TECH-CARD-TEST-NIE-TESTUJE-AKTYWNEJ-SCIEZKI-Q1 | 2026-08-21 | Znalezisko Evaluatora przy `R-FEATURE-KARTY-ENCYKLOPEDIA-CIVPEDIA-Q1` T3: `gra/tools/technology-discovery-card-visual-test.cjs` sekcja [2] robi `fs.readFileSync`+regex na SUROWYM TEKŚCIE `techDiscoveryNotice.ts`, nie na wyrenderowanym DOM aktywnej ścieżki — ponieważ stara implementacja (`_legacyShowTechDiscoveryNotice`) zostaje w tym samym pliku jako fallback, wzorce testu (np. `UNIT_PREVIEW = 3`, `tdn-card--compact`) trafiają w martwy kod fallbacku, nie w nową ścieżkę `entityCards`. Test dałby ten sam wynik (48 PASS) nawet gdyby aktywna ścieżka była całkowicie zepsuta. Final Control napisał jednorazowy harness DOM (esbuild+jsdom, bunduje realny kod, faktycznie woła `showTechDiscoveryNotice()`) i potwierdził poprawność na żywo (23/23), ale ten harness NIE został zapisany jako trwały test w repo. | **ZAMKNIĘTE przy okazji `R-CIVPEDIA-KARTA-AKCJE-NIE-DZIALAJA-Q1` (2026-08-21)** | Dokładnie ta luka materializowała się naprawdę: FALA 307 regres (przyciski „Rozpocznij badanie"/„Otwórz drzewo" nie reagujące na klik) przeszedł niezauważony przez zielony `technology-discovery-card-visual-test.cjs`, bo test nadal sprawdza tylko tekst źródła. Naprawiono dodając DWA trwałe testy: `gra/tools/tech-discovery-card-click-test.cjs` (esbuild+jsdom, realnie woła `showTechDiscoveryNotice()`, realny `button.click()`/`dispatchEvent(MouseEvent)` na przyciskach stopki) ORAZ `gra/tools/tech-discovery-card-real-click-test.cjs` (esbuild+Playwright/Chromium żywy, `elementFromPoint()`+`page.mouse.click()` — realny hit-test, bo jsdom NIE robi layoutu i `button.click()`/`dispatchEvent` w jsdom omija hit-testing, więc nie wykryłby faktycznej przyczyny tego konkretnego regresu, patrz `R-CIVPEDIA-KARTA-AKCJE-NIE-DZIALAJA-Q1`). Oba testy zweryfikowane przez `git stash` na PRZED-naprawą kodzie: jsdom PASS (fałszywie zielony, jak przewidziano), Playwright 6/12 FAIL (łapie regres). Ważne dla T4-T7b: ten sam wzorzec (realny hit-test przez żywy Chromium, nie tylko wywołanie handlera) warto powtórzyć dla kolejnych migracji kart. |
 | P-BUDYNKI-UWAGI-ABC-CZESCIOWY-WYCIEK-Q1 — **ZINTEGROWANE 2026-09-12 (commit `bc7ab7f6`)** | 2026-08-21 | Znalezisko Evaluatora przy okazji `P-TECH-UWAGI-WYCIEK-CITYPANEL-Q1` (runda 2): ten sam filtr (`isDevOnlyPlayerText`/`stripInlineDevAnnotations`/`playerFacingNote`) miał dwie klasy niepełnego wycięcia notatek ABC w `buildings.json`: (a) partial-strip do pierwszej kropki (wielozdaniowe notatki dev zostawiały środkowe zdania), (b) brak dwukropka po numerze ABC (np. „(merge bez zmian, ABC-21 B)."). | **ZINTEGROWANE** | Naprawione: (1) wielozdaniowa notatka „ABC-N:" wycinana do początku OSTATNIEGO zdania tekstu; (2) nawias zawierający `ABC-\d+` wycinany w całości niezależnie od pozycji dwukropka. **Znalezisko przy okazji Operatora+Evaluatora**: pole `uwagi` budynków NIE jest dziś renderowane w ŻADNEJ ścieżce UI — komentarz w `buildingAdapter.ts:19` sugerujący `playerFacingNote(def.uwagi)` jest aspiracyjny/nieaktualny (`buildBuildingDetailCardViaEntityCard` dopełnia wyłącznie sekcję „Technologie"). Pierwotny „wyciek" formalnie nie występuje dziś na żywo — dowód wizualny Chromium niewykonalny w allowliście tej rundy z tego powodu (BLOCK zgłoszony przez obie role, zaakceptowany przez orkiestratora jako uzasadniony: filtr zweryfikowany jednostkowo 44/44 + ręczna symulacja wszystkich 5 realnych wpisów `ABC-` przez obie role niezależnie, zero regresu 2 bramek referencyjnych). Nowe, osobno zarejestrowane pytanie: `P-BUDYNKI-UWAGI-WPIAC-DO-UI-Q1` (czy w ogóle wpinać renderowanie, patrz niżej). Dwa drobne, nieblokujące znaleziska Evaluatora: (i) 2 z 5 wpisów mają RESZTKOWY, nie-ABC dev-tekst (np. „SPEC-KOSZTY-SUROWCOWE-BUDYNKOW 2026-07-25:", „GRUPY-BUDYNKOW :") poza zakresem tego dispatchu (wzorzec inny niż „ABC-<numer>"); (ii) nowa logika cięcia „do ostatniego zdania" obsługuje tylko PIERWSZE wystąpienie „ABC-\d+" w polu — dziś nieistotne (żaden wpis nie ma dwóch adnotacji ABC w jednym `uwagi`), ale warto pilnować przy przyszłych wpisach danych. Ślad: `dyspozycje/autobot/runs/P-BUDYNKI-UWAGI-ABC-CZESCIOWY-WYCIEK-Q1/`. |
 
-## `P-BUDYNKI-UWAGI-WPIAC-DO-UI-Q1` — GAME — **ECHO 2026-09-12 = wpiąć do karty budynku — do dispatchu**
+## `P-BUDYNKI-UWAGI-WPIAC-DO-UI-Q1` — GAME — **PORZUCONE 2026-09-12 (ECHO cofnięte)**
 
 Znalezisko Operatora+Evaluatora tematu `P-BUDYNKI-UWAGI-ABC-CZESCIOWY-WYCIEK-Q1`:
 pole `uwagi` budynków (`buildings.json`) NIE jest dziś renderowane w ŻADNEJ
@@ -3135,6 +3135,27 @@ wykonania.
 
 **ECHO właściciela 2026-09-12: wpiąć wiersz „Uwagi" do karty budynku.** Ślad
 dispatchu: `dyspozycje/autobot/runs/P-BUDYNKI-UWAGI-WPIAC-DO-UI-Q1/`.
+
+**PORZUCONE 2026-09-12 po Final Control (DECISION_REQUIRED).** Operator
+zaimplementował wariant B (osobny tile „Uwagi" w
+`buildBuildingDetailCardViaEntityCard()`, `cityPanel.ts`), Evaluator PASS
+zero zarzutów — ale Final Control, robiąc pełną niezależną weryfikację mimo
+braku zarzutów (zgodnie ze standardem tej sesji), znalazł RZECZYWISTY
+konflikt z wcześniejszą, udokumentowaną decyzją właściciela: temat
+`R-KARTY-HISTORIA-INFRA-Q1` (ECHO 2026-09-01) świadomie USUNĄŁ wiersz
+„Uwagi" z pełnych kart budynku/jednostki (ówczesny filtr dev-tekstu
+przeciekał różne style, np. „B-SUROW-BUD-03:”/„C-TARASY-Q1 Maciej data:”) i
+zostawił dedykowaną bramkę-strażnika
+`gra/tools/citypanel-uwagi-hostcard-removed-real-render-test.cjs`
+chroniącą przed reintrodukcją — ta bramka zregresowała (12/12→9/12) przez
+implementację tego tematu. Zapytany o to wprost, właściciel odpowiedział
+**„Nie wiedziałem — cofam ECHO z 09-12”** (2026-09-12). Implementacja
+(commit lokalny `5bc6fa9b`, worktree `wt-budynki-uwagi-wpiac-do-ui`) NIE
+została zintegrowana, zgałąź/worktree usunięte. Karta budynku pozostaje BEZ
+sekcji „Uwagi”, zgodnie z pierwotną decyzją `R-KARTY-HISTORIA-INFRA-Q1`.
+Ewentualny przyszły powrót do tego tematu wymaga NAJPIERW jawnego
+zaadresowania konfliktu z tamtą bramką-strażnikiem (aktualizacja/wycofanie
+jej, ze świadomością pierwotnego uzasadnienia), nie samej implementacji.
 
 Uwaga: `R-UI-PRZYCISK-ZAKONCZ-TURE-DUPLIKAT-Q1` i `R-UI-OBRAMOWKA-PASEK-OSTRZEGAWCZY-Q1` — patrz sekcje narracyjne
 z 2026-08-21 wyżej w tym pliku (zarejestrowane równolegle przez inną sesję pod tym samym ID; status pierwszego
