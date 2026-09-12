@@ -13,6 +13,17 @@ swoim wĹ‚asnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji d
 > Pakiet 3 z 2026-08-20 jest docs-only i nie tworzy wpisu ROBOCZA/KANON/FINALNA;
 > ten plik pozostaje wyłącznie rejestrem publikacji bundli.
 
+## ROBOCZA 66630047 - 2026-09-12 12:01 UTC - FALA 382: naprawa porządkowa panelu wydarzeń (blocking/resolwer + wyciek mapy)
+
+|- md5 (pełne): 66630047191d624b8bc739b6bc18ec88 · stempel: ROBOCZA · label 66630047 · zakres
+  commitów: `e5ecf4b6..4cdf6b34` (od poprzedniej fali do obecnego `main`) · pole bitwy:
+  `Gra-ROBOCZA-POLE-BITWY.html` md5 `6deb45d265b82b4eb27e990c345a79c1` (NIEZMIENIONE)
+|- **`P-WYDARZENIA-PORZADKI-DROBNE-Q1`** — naprawa N1 (rozjazd ternary/`??` w
+  `getEventLink`) i N2 (brak `.clear()` dla `tradeRouteEventPlayerCityIds`,
+  potencjalny wyciek pamięci w długich rozgrywkach), commit `4cdf6b34`.
+  Znalezisko Evaluatora z 2026-08-22. 2 rundy (druga naprawiła kotwicę testu
+  złamaną przez poprawny fix N1), Final Control PASS w obu.
+
 ## ROBOCZA 01e2774c - 2026-09-12 10:09 UTC - FALA 381: CivPedia — usunięcie limitu jednostek w karcie technologii
 
 |- md5 (pełne): 01e2774cd367bb8401041f5754873c09 · stempel: ROBOCZA · label 01e2774c · zakres

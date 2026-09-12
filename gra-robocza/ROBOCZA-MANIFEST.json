@@ -1,10 +1,10 @@
 {
-  "publishedAt": "2026-09-12T10:09:00",
-  "sourceBuild": "gra/dist (commit e5ecf4b6)",
-  "note": "FALA 381 - P-CIVPEDIA-KARTA-JEDNOSTKI-POKAZ-POZOSTALE-N-Q1 ZINTEGROWANE (commit e5ecf4b6): usunieto limit UNIT_PREVIEW/previewLimit/compactHeaderOnExpand z sekcji \"Jednostki\" karty technologii (technologyAdapter.ts) - zawsze pokazuje wszystkie jednostki, bez przycisku \"Pokaz pozostale N\", dla wszystkich 5 dotknietych technologii (Brazownictwo 20, Hutnictwo zelaza 19, Jezdziectwo 8, Lucznictwo 6, Obrobka zelaza 4). ECHO wlasciciela 2026-09-11. Operator->Evaluator (2 zarzuty, oba rozstrzygniete)->Final Control PASS, niezaleznie zweryfikowane w tym drzewie: tsc czysty, 5 bramek referencyjnych + 9 bramek entity-cards/CivPedia (w tym entity-card-contract-test 75/75) bez regresu. Zrzut dowody/civpedia-brazownictwo-wszystkie-jednostki.png. Follow-up zarejestrowany osobno (nie blokuje): 2 bramki testowe staly sie nieaktualne wskutek tej legalnej zmiany (tech-unlock-units-test.cjs tripwire, entity-card-diorama-real-render-test.cjs sekcja D) - P-TEST-TECH-UNLOCK-UNITS-TRIPWIRE-PRZEPROJEKTOWAC-Q1, P-TEST-ENTITYCARD-DIORAMA-SEKCJA-D-NIEAKTUALNA-Q1.",
+  "publishedAt": "2026-09-12T12:01:00",
+  "sourceBuild": "gra/dist (commit 4cdf6b34)",
+  "note": "FALA 382 - P-WYDARZENIA-PORZADKI-DROBNE-Q1 ZINTEGROWANE (commit 4cdf6b34): naprawa N1 (rozjazd ternary/?? w getEventLink - zdarzenie blokujace mogloby teoretycznie dostac link z techDoneEventLinkFor/cityCaptureEventLinkFor) i N2 (brak .clear() dla tradeRouteEventPlayerCityIds - potencjalny, powolny wyciek pamieci w dlugich rozgrywkach, teraz czyszczona we wszystkich 3 miejscach gdzie borderMarchEventTargets jest juz czyszczona). Znalezisko Evaluatora z 2026-08-22 przy R-WYDARZENIA-AUDYT-PRZEKIEROWANIA-Q1. 2 rundy: runda 1 naprawila oba, zlamala przy tym kotwice (0b) w istniejacym tescie spoza allowlisty (sidepanel-event-przekierowania-real-render-test.cjs) - wlasciciel rozszerzyl allowliste, runda 2 naprawila regex kotwicy z dowodem mutant-testingu. Final Control PASS w obu rundach, niezaleznie zweryfikowane w tym drzewie: tsc czysty, 5 bramek referencyjnych + side-panel-event-link-test 37/37 + sidepanel-event-przekierowania-real-render-test 51/51.",
   "publisher": "Orkiestrator (Claude Code)",
   "bundle": "Gra-ROBOCZA.html",
-  "md5": "01e2774cd367bb8401041f5754873c09",
+  "md5": "66630047191d624b8bc739b6bc18ec88",
   "bundlePoleBitwy": "Gra-ROBOCZA-POLE-BITWY.html",
   "md5PoleBitwy": "6deb45d265b82b4eb27e990c345a79c1"
 }
