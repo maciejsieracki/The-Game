@@ -13,6 +13,24 @@ swoim wĹ‚asnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji d
 > Pakiet 3 z 2026-08-20 jest docs-only i nie tworzy wpisu ROBOCZA/KANON/FINALNA;
 > ten plik pozostaje wyłącznie rejestrem publikacji bundli.
 
+## ROBOCZA a717e586 - 2026-09-12 01:58 UTC - FALA 379: migracja cache HUD Praca/Kultura na per-fotel
+
+|- md5 (pełne): a717e586e3d36817b848fb92652cfa67 · stempel: ROBOCZA · label a717e586 · zakres
+  commitów: `373f007d..836ac583` (od poprzedniej fali do obecnego `main`) · pole bitwy:
+  `Gra-ROBOCZA-POLE-BITWY.html` md5 `6deb45d265b82b4eb27e990c345a79c1` (NIEZMIENIONE)
+|- **`P-HOTSEAT-ETAP6C-CHROMIUM-LASTPRACA-IMPL-Q1`** — migracja klastra 9 zmiennych
+  cache HUD Praca/Kultura na per-fotel (commit `54f297dc`), na podstawie zamkniętego
+  recon. Silnik `playerPracaPool` świadomie nietknięty (osobny, odłożony temat).
+  2 rundy: runda 1 Evaluator 4 zarzuty (naprawione przez Obronę), Final Control mimo
+  4×ODDAL wykrył własną, nową wadę (`pracaUpkeepPreview` zaszyte na ownerId 0 zamiast
+  `ME()`) — runda 2 naprawiła, Final Control PASS-WITH-NOTES po pełnej niezależnej
+  weryfikacji (3 warianty mutant-testingu). Nowa bramka
+  `hotseat-etap6c-lastpraca-per-fotel-test.cjs`. `tsc` czysty, 5 bramek referencyjnych
+  + `hotseat-etap6c-economy-noop-test` (70/70) + `hotseat-drugi-fotel-tura-test` (4/4)
+  bez regresu. Osobno zarejestrowany follow-up (niezablokowany):
+  `P-PRACA-BRAMKI-REGEX-OSLEPIONE-PO-LASTPRACA-Q1` (2 bramki straciły zdolność
+  wykrywania regresji przez zmianę kształtu kodu, semantyka niezmieniona).
+
 ## ROBOCZA f1eab90e - 2026-09-11 17:40 UTC - FALA 378: Etap 8 hot-seat — UI dyplomacji gracz↔gracz (CAŁY plan hot-seat zamknięty)
 
 |- md5 (pełne): f1eab90e3852719767608a7ee8cd1619 · stempel: ROBOCZA · label f1eab90e · zakres
