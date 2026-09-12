@@ -10,7 +10,7 @@ ZMIANY/COMMIT:
 - `gra/src/main.ts`: guard pierwszego miasta per owner oraz behawioralny hak testowy zakładający drugie miasto tą samą ścieżką `tryFoundPlayerCityAt`.
 - `gra/tools/starting-army-first-city-live-test.cjs`: nowy live Chromium test obu foteli, pierwszego i drugiego miasta oraz negatywna kontrola.
 - `gra/tools/hotseat-drugi-fotel-tura-test.cjs`: opcjonalny `HOTSEAT_CHROME_PATH` dla istniejącej bramki runtime.
-- Commit: uzupełniony po utworzeniu.
+- Commit implementacji/testu: `d32d39c7` (`fix: limit player starting army to first city`).
 
 TESTY/DOWODY:
 - `starting-army-first-city-live-test.cjs`: 13 pass, 0 fail; realny Vite bundle + Chromium, 0 page errors.
