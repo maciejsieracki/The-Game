@@ -10787,6 +10787,108 @@ async function boot(): Promise<void> {
     };
     const pracaPoolByHuman: Map<number, { praca: number }> = new Map([[HUMAN_OWNER_PRIMARY, playerPracaCell]]);
 
+    /** P-HOTSEAT-ETAP6C-CHROMIUM-LASTPRACA-IMPL-Q1: fabryka komórki-cache per-fotel,
+     *  DOKŁADNIE ten sam wzorzec co `playerPracaCell` dwie linijki wyżej -- komórka
+     *  `HUMAN_OWNER_PRIMARY` jest aliasem (getter/setter) nad ISTNIEJĄCĄ zmienną
+     *  modułu `_last*` (deklarowaną niżej, blok "P3a"), więc KAŻDE dotychczasowe
+     *  miejsce czytające/piszące wprost tę zmienną (w tym linie objęte zakazem
+     *  dotykania silnika `playerPracaPool` z dispatchu tego tematu) zostaje BEZ
+     *  ŻADNEJ ZMIANY -- `git diff` na tamtych liniach jest pusty, bo to nadal ta
+     *  sama fizyczna zmienna. Drugi i kolejni fotele dostają WŁASNĄ, niezależną
+     *  komórkę `{ value: T }` (nie kopię aliasu) -- `get`/`set` tworzą ją leniwie
+     *  przy pierwszym użyciu (odporne na pominięcie miejsca seedowania -- lazy
+     *  init zamiast wymogu jawnego seedowania każdego nowego fotela z osobna,
+     *  żeby przyrostowe dopisywanie call-site'ów nie mogło pominąć inicjalizacji
+     *  drugiego i kolejnych foteli; to NIE jest odniesienie do konkretnego wpisu
+     *  playbooka -- Evaluator rundy 1 słusznie zauważył, że poprzednia wersja tego
+     *  komentarza cytowała „playbook C-036/„4 drenaże"", a żadne z nich nie
+     *  istnieje w tym repo w takim znaczeniu). */
+    function makeOwnerCacheSlot<T>(primaryCell: { value: T }, fallback: T): {
+      get: (ownerId: number) => T;
+      set: (ownerId: number, v: T) => void;
+    } {
+      const byOwner: Map<number, { value: T }> = new Map([[HUMAN_OWNER_PRIMARY, primaryCell]]);
+      return {
+        get: (ownerId: number): T => byOwner.get(ownerId)?.value ?? fallback,
+        set: (ownerId: number, v: T): void => {
+          if (!byOwner.has(ownerId)) byOwner.set(ownerId, { value: fallback });
+          byOwner.get(ownerId)!.value = v;
+        },
+      };
+    }
+    const _lastPracaSlot = makeOwnerCacheSlot<number>({
+      get value(): number { return _lastPraca; },
+      set value(v: number) { _lastPraca = v; },
+    }, 0);
+    const _lastPracaUpkeepSlot = makeOwnerCacheSlot<number>({
+      get value(): number { return _lastPracaUpkeep; },
+      set value(v: number) { _lastPracaUpkeep = v; },
+    }, 0);
+    const _lastPracaAutoUlepszeniaKosztSlot = makeOwnerCacheSlot<number>({
+      get value(): number { return _lastPracaAutoUlepszeniaKoszt; },
+      set value(v: number) { _lastPracaAutoUlepszeniaKoszt = v; },
+    }, 0);
+    const _lastPracaCudaKosztSlot = makeOwnerCacheSlot<number>({
+      get value(): number { return _lastPracaCudaKoszt; },
+      set value(v: number) { _lastPracaCudaKoszt = v; },
+    }, 0);
+    const _lastKulturaSlot = makeOwnerCacheSlot<number>({
+      get value(): number { return _lastKultura; },
+      set value(v: number) { _lastKultura = v; },
+    }, 0);
+    const _lastPracaRateSlot = makeOwnerCacheSlot<number>({
+      get value(): number { return _lastPracaRate; },
+      set value(v: number) { _lastPracaRate = v; },
+    }, 0);
+    const _lastKulturaRateSlot = makeOwnerCacheSlot<number>({
+      get value(): number { return _lastKulturaRate; },
+      set value(v: number) { _lastKulturaRate = v; },
+    }, 0);
+    // P-HOTSEAT-ETAP6C-CHROMIUM-LASTPRACA-IMPL-Q1 (obrona runda 2, Zarzut 2
+    // Evaluatora): `_pracaRateFreshFromEndTurn` (zmienna #8/9 z GOAL) NIE jest
+    // migrowana tą rundą -- pozostaje surowym globalnym singletonem, dokładnie jak
+    // przed rundą (deklaracja + oba miejsca konsumpcji/ustawienia niezmienione).
+    // Jawny wyjątek, na tych samych zasadach co `playerPracaPool`: to jednorazowa
+    // flaga "świeżo po końcu tury TEGO fotela" ustawiana WYŁĄCZNIE w
+    // `triggerPlayerEndTurn()` dla `humanOwnerId` i konsumowana (odczyt + `= false`)
+    // na SAMYM POCZĄTKU najbliższego `refreshLiveEmpireRatesUnsafe()` -- w
+    // pojedynczym wątku hot-seat te dwa zdarzenia nigdy się nie przeplatają z
+    // end-turn INNEGO fotela pomiędzy ustawieniem a konsumpcją, więc pozostaje
+    // poprawna nawet jako singleton w zakresie tej rundy; per-fotel wersja tej
+    // flagi (do pełnej odporności na przyszłe równoległe/async triggery) zostaje
+    // jako otwarty temat, nie jako cichy brak. Wcześniejszy szkielet
+    // `_pracaRateFreshFromEndTurnSlot` (fabryka `makeOwnerCacheSlot` bez żadnej
+    // pary akcesorów `ownerXxx`/`setOwnerXxx`) był martwym kodem -- usunięty tu,
+    // razem z tym uzasadnieniem, zamiast zostawiać nieużywany szkielet sugerujący
+    // dokończoną migrację.
+    function ownerLastPraca(ownerId: number): number { return _lastPracaSlot.get(ownerId); }
+    function setOwnerLastPraca(ownerId: number, v: number): void { _lastPracaSlot.set(ownerId, v); }
+    function ownerLastPracaUpkeep(ownerId: number): number { return _lastPracaUpkeepSlot.get(ownerId); }
+    // P-HOTSEAT-ETAP6C-CHROMIUM-LASTPRACA-IMPL-Q1 (obrona runda 2, Final Control rundy 1):
+    // wołający ISTNIEJE -- podgląd HUD w `refreshLiveEmpireRatesUnsafe()` (main.ts, blok
+    // `pracaUpkeepPreview`) pisze tu przez `setOwnerLastPracaUpkeep(ME(), ...)`, per-fotel,
+    // dla dowolnego aktywnego ownera. Upkeep SILNIKA (koniec tury, blok 31962-31979) nadal
+    // zna wyłącznie owner-0 (`econ.pracaUpkeepByOwner.get(0)`) -- to świadomie NIETKNIĘTE
+    // tym tematem (osobny temat `P-HOTSEAT-PLAYERPRACAPOOL-SILNIK-PER-FOTEL-Q1`), więc
+    // `ownerLastPracaUpkeep(B)` dla fotela innego niż HUMAN_OWNER_PRIMARY odzwierciedla
+    // TYLKO podgląd HUD, nie realny odczyt engine'u po end-turn -- ten sam, już znany
+    // podział zakresu cache/silnik co reszta klastra tego tematu.
+    function setOwnerLastPracaUpkeep(ownerId: number, v: number): void { _lastPracaUpkeepSlot.set(ownerId, v); }
+    function ownerLastPracaAutoUlepszeniaKoszt(ownerId: number): number {
+      return _lastPracaAutoUlepszeniaKosztSlot.get(ownerId);
+    }
+    function setOwnerLastPracaAutoUlepszeniaKoszt(ownerId: number, v: number): void {
+      _lastPracaAutoUlepszeniaKosztSlot.set(ownerId, v);
+    }
+    function ownerLastPracaCudaKoszt(ownerId: number): number { return _lastPracaCudaKosztSlot.get(ownerId); }
+    function setOwnerLastPracaCudaKoszt(ownerId: number, v: number): void { _lastPracaCudaKosztSlot.set(ownerId, v); }
+    function ownerLastKultura(ownerId: number): number { return _lastKulturaSlot.get(ownerId); }
+    function setOwnerLastKultura(ownerId: number, v: number): void { _lastKulturaSlot.set(ownerId, v); }
+    function ownerLastPracaRate(ownerId: number): number { return _lastPracaRateSlot.get(ownerId); }
+    function setOwnerLastPracaRate(ownerId: number, v: number): void { _lastPracaRateSlot.set(ownerId, v); }
+    function ownerLastKulturaRate(ownerId: number): number { return _lastKulturaRateSlot.get(ownerId); }
+    function setOwnerLastKulturaRate(ownerId: number, v: number): void { _lastKulturaRateSlot.set(ownerId, v); }
+
     /**
      * R-HOTSEAT-ETAP5-SWITCH-HUMAN-Q1: przełącza fotel aktywnego człowieka i zamyka/czyści
      * WSZYSTKO co dziś jest globalne (bez klucza właściciela), żeby żaden ślad fotela
@@ -10903,9 +11005,15 @@ async function boot(): Promise<void> {
       // (main.ts:17077) jest dziś zahardkodowana na `ownerId===0`/singleton `player` i
       // przeliczy DALEJ dane fotela 0, dopóki nie zostanie osobno zamigrowana na `ME()`
       // (poza zakresem tej rundy — dispatch "DECYZJE Z RECON" §6 pkt 1: Etap 6 zakresowo).
-      _lastPraca = 0; _lastPracaUpkeep = 0; _lastPracaAutoUlepszeniaKoszt = 0;
-      _lastPracaCudaKoszt = 0; _lastKultura = 0; _lastPracaRate = 0;
-      _lastKulturaRate = 0; _lastPieniadzRate = 0; _lastWealthLevel = 1;
+      // P-HOTSEAT-ETAP6C-CHROMIUM-LASTPRACA-IMPL-Q1: 7 z tych zmiennych (Praca+Kultura,
+      // patrz `_lastPracaSlot`/... przy `pracaPoolByHuman`) są TERAZ per-fotel -- zerowanie
+      // ich tutaj cofałoby dokładnie tę naprawę (kasowałoby prawidłową wartość NOWEGO
+      // aktywnego fotela zamiast tylko odchodzącego), więc zostały USUNIĘTE z tego bloku.
+      // `_pracaRateFreshFromEndTurn` zostaje (guard jednorazowy, nie wartość pokazywana
+      // graczowi -- zerowanie jest nieszkodliwe niezależnie od fotela). Reszta klastra
+      // (Skarbiec/Nauka/Ludność/Wealth/Food, poza zakresem tego tematu) zostaje zerowana
+      // jak dotychczas.
+      _lastPieniadzRate = 0; _lastWealthLevel = 1;
       _lastWealthMnoznik = 1; _lastNaukaRate = 0; _lastLudnoscRate = 0;
       _lastBogactwoRate = 0; _lastBogactwoHandel = 0;
       _lastBogactwoUtrzymanieBudynkow = 0; _lastBogactwoUtrzymanieJednostek = 0;
@@ -18004,10 +18112,23 @@ async function boot(): Promise<void> {
       // ktore playerPracaPool realnie odejmuje pod koniec tury (main.ts, blok
       // "ZADANIE 1" nizej). computePracaUpkeepByOwner to ta sama czysta funkcja
       // uzywana w advanceCityEconomy -- brak ryzyka rozjazdu z realnym tickiem.
+      // P-HOTSEAT-ETAP6C-CHROMIUM-LASTPRACA-IMPL-Q1 (obrona runda 2, Final Control
+      // rundy 1): ten podgląd liczy utrzymanie Pracy DLA `ME()` (patrz `playerCities
+      // = cities.filter(c => isMe(c.ownerId))` na początku funkcji) -- `.get(0)`
+      // było twardo zaszyte na fotel 0 niezależnie od aktywnego fotela, mieszając
+      // brutto-przychód WŁAŚCIWEGO fotela z utrzymaniem fotela 0. Naprawione na
+      // `.get(ME())`, zgodnie z resztą tej funkcji (patrz `setOwnerLastPracaRate(ME(), ...)`
+      // kilka linii niżej).
       const pracaUpkeepPreview = computePracaUpkeepByOwner(
         map, buildAllTerritoryNodes(), data, _menuDifficulty,
-      ).get(0) ?? 0;
-      _lastPracaUpkeep = pracaUpkeepPreview;
+      ).get(ME()) ?? 0;
+      // Zapis MUSI iść przez akcesor per-fotel (ten sam powód co `setOwnerLastPracaRate`
+      // niżej) -- surowe `_lastPracaUpkeep = ...` pisało zawsze w alias fotela
+      // HUMAN_OWNER_PRIMARY (fotel 0), korumpując cache innego aktywnego fotela.
+      // To DAJE `setOwnerLastPracaUpkeep` pierwszego realnego wołającego dla
+      // ownerId != 0 -- komentarz przy jej deklaracji (main.ts ~10867-10873),
+      // twierdzący że funkcja nie ma wołającego, jest od teraz nieaktualny.
+      setOwnerLastPracaUpkeep(ME(), pracaUpkeepPreview);
       // NAPRAWA HUD-PRACA-OVERFLOW (Maciej 2026-08-02): przy pustej kolejce budowy
       // cała Praca miasta (doPuli + doBudynkow) trafia do puli imperium — ten sam
       // pracaImperialPoolGain co w ticku końca tury (main.ts pętla produkcji).
@@ -18062,7 +18183,16 @@ async function boot(): Promise<void> {
       if (_pracaRateFreshFromEndTurn) {
         _pracaRateFreshFromEndTurn = false;
       } else {
-        _lastPracaRate = pracaPoolBrutto - pracaUpkeepPreview;
+        // P-HOTSEAT-ETAP6C-CHROMIUM-LASTPRACA-IMPL-Q1 (obrona runda 2, Zarzut 1
+        // Evaluatora): to miejsce liczy podgląd DLA `ME()` (patrz `playerCities =
+        // cities.filter(c => isMe(c.ownerId))` na początku funkcji), więc zapis MUSI
+        // iść przez akcesor per-fotel `setOwnerLastPracaRate(ME(), …)` -- surowe
+        // `_lastPracaRate = …` pisało zawsze w alias fotela HUMAN_OWNER_PRIMARY
+        // (patrz `_lastPracaRateSlot` przy deklaracji, main.ts ~10832-10839),
+        // niezależnie od tego, dla którego fotela liczono `pracaPoolBrutto`/
+        // `pracaUpkeepPreview` powyżej -- korumpowało cache fotela 0 przy każdym
+        // odświeżeniu HUD na INNYM aktywnym fotelu.
+        setOwnerLastPracaRate(ME(), pracaPoolBrutto - pracaUpkeepPreview);
       }
       let brutto = 0;
       for (const tk of preview.perCity) {
@@ -18078,7 +18208,13 @@ async function boot(): Promise<void> {
       }
     }
 
-    function buildHudState(): HudState {
+    // P-HOTSEAT-ETAP6C-CHROMIUM-LASTPRACA-IMPL-Q1: `ownerId` domyślnie `ME()` -- parametr
+    // dotyczy WYŁĄCZNIE odczytu klastra cache Praca/Kultura (`ownerLast*` niżej, tuż przed
+    // `return`). Reszta funkcji (pobor/power/foodReserve/resourceRows/handel/...) zostaje
+    // zahardkodowana na `isMe()`/`0` -- to jest ISTNIEJĄCY, osobny dług poza allowlistą
+    // tego tematu (analogicznie do `refreshLiveEmpireRatesUnsafe()` hardkodowanej na
+    // ownerId 0, patrz komentarz przy `switchActiveHuman()`), nie regresja wprowadzona tu.
+    function buildHudState(ownerId: number = ME()): HudState {
       let epokaPostep = 0;
       if (player.badana !== null) {
         const techDef = data.tech.find(t => t.Technologia === player.badana);
@@ -18231,15 +18367,15 @@ async function boot(): Promise<void> {
         // sumujaca sie z doBudynkow do calkowitej Pracy miasta. Math.round zostaje
         // jako zabezpieczenie przed drobnym bledem zmiennoprzecinkowym przy sumowaniu
         // wielu miast (np. 1.9999999998 nie powinno spasc do 1).
-        praca: Math.round(_lastPraca),
-        pracaRate: Math.round(_lastPracaRate),
-        pracaUpkeep: Math.round(_lastPracaUpkeep),
-        pracaAutoUlepszeniaKoszt: Math.round(_lastPracaAutoUlepszeniaKoszt),
-        pracaCudaKoszt: Math.round(_lastPracaCudaKoszt),
+        praca: Math.round(ownerLastPraca(ownerId)),
+        pracaRate: Math.round(ownerLastPracaRate(ownerId)),
+        pracaUpkeep: Math.round(ownerLastPracaUpkeep(ownerId)),
+        pracaAutoUlepszeniaKoszt: Math.round(ownerLastPracaAutoUlepszeniaKoszt(ownerId)),
+        pracaCudaKoszt: Math.round(ownerLastPracaCudaKoszt(ownerId)),
         nauka: Math.floor(player.nauka),
         naukaRate: Math.floor(_lastNaukaRate),
-        kultura: Math.floor(_lastKultura),
-        kulturaRate: Math.floor(_lastKulturaRate),
+        kultura: Math.floor(ownerLastKultura(ownerId)),
+        kulturaRate: Math.floor(ownerLastKulturaRate(ownerId)),
         bogactwo: Math.floor(player.skarbiec),
         // NAPRAWA HUD-SKARBIEC (Maciej 2026-07-26): "+N" = NETTO (wplywy - utrzymanie),
         // nie same wplywy -- patrz komentarz przy refreshLiveEmpireRates() i "Bank
@@ -23669,6 +23805,61 @@ async function boot(): Promise<void> {
        */
       civTypeForOwnerForTest: (ownerId: number): string => civTypeForOwner(ownerId),
       /**
+       * P-HOTSEAT-ETAP6C-CHROMIUM-LASTPRACA-IMPL-Q1 — hak testowy WYŁĄCZNIE dla
+       * `tools/hotseat-etap6c-lastpraca-per-fotel-test.cjs`. Zero reimplementacji: woła
+       * DOKŁADNIE `setOwnerPracaPool(ownerId, value)`, tę samą funkcję którą wołają
+       * realne transakcje handlowe Pracą (main.ts, `applyTradeExchange`/okolice) i
+       * przejęcie stolicy — symuluje "fotel B zrobił transakcję Pracą" bez konieczności
+       * przechodzenia przez cały UI handlu w teście.
+       */
+      setOwnerPracaPoolForTest: (ownerId: number, value: number): void => setOwnerPracaPool(ownerId, value),
+      /** Realna transakcja handlowa/przejęcie stolicy woła `updateHud()` po zmianie puli
+       *  (patrz call-site'y `setOwnerPracaPool` poza tym testem) -- hak headless nie ma
+       *  żadnego kliku DOM, który by to wywołał, więc odsłaniamy DOKŁADNIE tę samą
+       *  produkcyjną funkcję do ręcznego wywołania w teście. */
+      refreshHudForTest: (): void => updateHud(),
+      /**
+       * P-HOTSEAT-ETAP6C-CHROMIUM-LASTPRACA-IMPL-Q1 (obrona runda 2, ZADANIE 3) — hak
+       * testowy WYŁĄCZNIE dla `tools/hotseat-etap6c-lastpraca-per-fotel-test.cjs`. Wpisuje
+       * WPROST klucz ulepszenia na heksie mapy (`map.hexes[key].ulepszenie`) — bez
+       * przechodzenia przez cały UI budowy ulepszeń w teście — żeby wystawić hex z
+       * ulepszeniem z `RESOURCE_UPKEEP_IMPROVEMENT_KEYS` (np. `tartak`) na terytorium
+       * jednego fotela, a nie drugiego. Cel: `computePracaUpkeepByOwner()` (REALNA, czysta
+       * funkcja silnika, `game/turn-economy.ts`, wołana wprost przez `refreshLiveEmpireRatesUnsafe()`
+       * przez `refreshHudForTest()`/`updateHud()` powyżej) zwraca dla takiego heksu
+       * niezerowe utrzymanie Pracy TYLKO dla właściciela terytorium tego heksu — dowodzi
+       * że `pracaUpkeepPreview`/`pracaRate` czyta poprawnie PER FOTEL, nie tylko czyta
+       * stały klucz `0` (dokładnie wada Final Control rundy 1). Zero reimplementacji
+       * logiki upkeepu -- tylko ustawienie wejścia, resztę liczy REALNY silnik.
+       */
+      setHexImprovementForTest: (q: number, r: number, key: string): void => {
+        const hex = map.hexes[keyOf(q, r)];
+        if (hex) (hex as unknown as { ulepszenie: string }).ulepszenie = key;
+        // Wymuszony trigger -- ta sama produkcyjna funkcja invalidacji, którą wołają
+        // realne akcje budowy ulepszeń (recon §1d wzorzec), żeby najbliższy
+        // `refreshHudForTest()`/`updateHud()` NA PEWNO przeliczył `pracaUpkeepPreview`
+        // z nowym stanem mapy zamiast trafić w `if (!empireEconDirty) return;` (D10).
+        markCityStateDirty();
+      },
+      /**
+       * P-HOTSEAT-ETAP6C-CHROMIUM-LASTPRACA-IMPL-Q1 — odczyt WYŁĄCZNIE do odczytu (zero
+       * mutacji), delegacja 1:1 do `buildHudState(ownerId)` — DOKŁADNIE ten sam obiekt,
+       * który czyta renderer czipa "Praca" (`ui/hud.ts`), dla DOWOLNEGO fotela (nie tylko
+       * aktualnie aktywnego) — bez tego nie da się dowieść wartości cache'u fotela
+       * NIEAKTYWNEGO w danej chwili testu.
+       */
+      hudPracaSnapshotForTest: (ownerId: number): {
+        praca: number; pracaRate: number; pracaUpkeep: number;
+        pracaAutoUlepszeniaKoszt: number; pracaCudaKoszt: number; kultura: number; kulturaRate: number;
+      } => {
+        const h = buildHudState(ownerId);
+        return {
+          praca: h.praca ?? 0, pracaRate: h.pracaRate ?? 0, pracaUpkeep: h.pracaUpkeep ?? 0,
+          pracaAutoUlepszeniaKoszt: h.pracaAutoUlepszeniaKoszt ?? 0, pracaCudaKoszt: h.pracaCudaKoszt ?? 0,
+          kultura: h.kultura ?? 0, kulturaRate: h.kulturaRate ?? 0,
+        };
+      },
+      /**
        * R-HOTSEAT-DRUGI-FOTEL-NIE-DOSTAJE-TURY-Q1 — hak testowy WYŁĄCZNIE dla
        * `tools/hotseat-drugi-fotel-tura-test.cjs`. Zero reimplementacji logiki
        * foundowania: woła DOKŁADNIE `tryFoundPlayerCityAt(q, r)` (ta sama funkcja, którą
@@ -27600,7 +27791,14 @@ async function boot(): Promise<void> {
       const v = Math.max(0, value);
       if (isHuman(ownerId)) {
         pracaPoolByHuman.get(ownerId)!.praca = v;
-        _lastPraca = playerPracaPool;
+        // P-HOTSEAT-ETAP6C-CHROMIUM-LASTPRACA-IMPL-Q1 (recon §5): PRZED tą naprawą pisało
+        // zawsze `_lastPraca = playerPracaPool` -- singleton aliasowany WYŁĄCZNIE do
+        // HUMAN_OWNER_PRIMARY, więc KAŻDE wywołanie dla drugiego fotela nadpisywało cache
+        // HUD wartością fotela 0 zamiast `ownerId`/`v`. Teraz zapis idzie do WŁAŚCIWEGO
+        // slotu (`_lastPracaSlot`, patrz fabryka przy `pracaPoolByHuman` wyżej) -- dla
+        // `HUMAN_OWNER_PRIMARY` slot jest aliasem nad `_lastPraca`, więc zachowanie fotela
+        // 0 jest bit-identyczne jak przed naprawą.
+        setOwnerLastPraca(ownerId, v);
       } else {
         aiPracaPoolByOwner.set(ownerId, v);
       }
@@ -30629,13 +30827,28 @@ async function boot(): Promise<void> {
           // patrz pętla `humanSeats.humanOwnerIds` w bloku "Bank treasury" niżej.
           const playerEcon = sumEconomyForPlayerCities(econ, cities, humanOwnerId);
           const playerCityCount = cities.filter(c => c.ownerId === humanOwnerId).length;
-          _lastPracaRate = 0;
-          _lastPracaAutoUlepszeniaKoszt = 0;
-          _lastPracaCudaKoszt = 0;
+          // P-HOTSEAT-ETAP6C-CHROMIUM-LASTPRACA-IMPL-Q1: `_lastPracaRate`/
+          // `_lastPracaAutoUlepszeniaKoszt`/`_lastPracaCudaKoszt` są TERAZ per-fotel i
+          // akumulowane dla KAŻDEGO `humanSeats.humanOwnerIds` w pętlach niżej (Bank
+          // treasury poolGain/overflowToPool, Klaster F auto-ulepszeń) -- reset musi objąć
+          // WSZYSTKICH ludzi tutaj, nie tylko `humanOwnerId`, inaczej drugi fotel
+          // akumulowałby na starej, nie wyzerowanej bazie z poprzedniego przebiegu.
+          for (const hOidReset of humanSeats.humanOwnerIds) {
+            setOwnerLastPracaRate(hOidReset, 0);
+            setOwnerLastPracaAutoUlepszeniaKoszt(hOidReset, 0);
+            setOwnerLastPracaCudaKoszt(hOidReset, 0);
+          }
           _lastPieniadzRate = playerEcon.pieniadz;
           _lastNaukaRate = playerEcon.nauka;
-          _lastKulturaRate = playerEcon.kultura;
-          _lastKultura = playerEcon.kultura;
+          // `_lastKulturaRate`/`_lastKultura` zostają per-`humanOwnerId` WYŁĄCZNIE (nie
+          // pętla po wszystkich) -- `playerEcon` powyżej jest policzone TYLKO dla
+          // `humanOwnerId` (`sumEconomyForPlayerCities(..., humanOwnerId)`); uogólnienie na
+          // wszystkich ludzi wymagałoby wołania tej funkcji per-owner tutaj, co jest poza
+          // zakresem tego dispatchu (silnik ekonomii, nie sam cache). Fotel inny niż
+          // `humanOwnerId` trzyma swoją OSTATNIĄ znaną wartość Kultury do własnego końca
+          // tury -- nie jest to regresja (poprzednio widziałby WYŁĄCZNIE cudzą wartość).
+          setOwnerLastKulturaRate(humanOwnerId, playerEcon.kultura);
+          setOwnerLastKultura(humanOwnerId, playerEcon.kultura);
           if (cultureRangeVisible || religionRangeVisible) refreshRangeOverlays();
           if (territoryBorderVisible) refreshTerritoryBorderOverlay();
           refreshTradeRoutesOverlay();
@@ -31614,9 +31827,12 @@ async function boot(): Promise<void> {
                     // PRIMARY`. Cache `_last*` jest singularny (HUD) -- aktualizowany tylko dla
                     // fotela, którego tura właśnie się kończy (`humanOwnerId`), wzorem Etapu 6b.
                     setOwnerPracaPool(city.ownerId, ownerPracaPool(city.ownerId) + poolGain);
-                    if (city.ownerId === humanOwnerId) {
-                      _lastPracaRate += poolGain;
-                    }
+                    // P-HOTSEAT-ETAP6C-CHROMIUM-LASTPRACA-IMPL-Q1: cache `_lastPracaRate` jest
+                    // TERAZ per-fotel (`setOwnerLastPracaRate`, patrz fabryka przy
+                    // `pracaPoolByHuman`) -- zapis idzie do WŁASNEGO slotu `city.ownerId`,
+                    // niezależnie od tego, którego fotela tura się kończy (dawny warunek
+                    // `city.ownerId === humanOwnerId` zerowałby przyrost drugiego fotela).
+                    setOwnerLastPracaRate(city.ownerId, ownerLastPracaRate(city.ownerId) + poolGain);
                   } else {
                     aiPracaPoolByOwner.set(
                       city.ownerId,
@@ -31637,9 +31853,9 @@ async function boot(): Promise<void> {
                   // R-HOTSEAT-ETAP6C-ECONOMY-Q1: jak wyżej (poolGain) — akcesor Etapu 3,
                   // nie zapis wprost do `playerPracaPool`.
                   setOwnerPracaPool(city.ownerId, ownerPracaPool(city.ownerId) + overflowToPool);
-                  if (city.ownerId === humanOwnerId) {
-                    _lastPracaRate += overflowToPool;
-                  }
+                  // P-HOTSEAT-ETAP6C-CHROMIUM-LASTPRACA-IMPL-Q1: jak wyżej (poolGain) -- zapis
+                  // per-fotel, nie tylko dla `humanOwnerId`.
+                  setOwnerLastPracaRate(city.ownerId, ownerLastPracaRate(city.ownerId) + overflowToPool);
                 } else {
                   // D-IMPROVEMENTS: nadmiar Pracy kolejki AI (miasto nie ma co budować) ->
                   // pula empire-wide AI, symetryczne z graczem.
@@ -31975,15 +32191,18 @@ async function boot(): Promise<void> {
                     if (hexForImprovement.nakladka !== Nakladka.Las) continue;
                     if (hexClearingStates.has(hexKey)) continue;
                     playerPracaPool -= pick.kosztPraca;
-                    // R-HOTSEAT-ETAP6C-ECONOMY-Q1 (runda 2): cache `_last*` jest singularny
-                    // (HUD aktywnego fotela) -- aktualizowany WYŁĄCZNIE gdy `hOid` to fotel,
-                    // którego tura się właśnie kończy, wzorem bloku poolGain/overflowToPool
-                    // (linie ~30426/30452).
-                    if (hOid === humanOwnerId) {
-                      _lastPraca = playerPracaPool;
-                      _lastPracaRate -= pick.kosztPraca;
-                      _lastPracaAutoUlepszeniaKoszt += pick.kosztPraca;
-                    }
+                    // P-HOTSEAT-ETAP6C-CHROMIUM-LASTPRACA-IMPL-Q1: dawny komentarz mówił
+                    // "cache `_last*` jest singularny -- aktualizowany WYŁĄCZNIE gdy `hOid` to
+                    // fotel, którego tura się kończy" -- to była dokładnie przyczyna regresji
+                    // z reconu (`_lastPraca` fotela B nie odzwierciedlał jego własnej puli).
+                    // Cache jest TERAZ per-fotel (`setOwnerLast*`, patrz fabryka przy
+                    // `pracaPoolByHuman`) -- zapis idzie do WŁASNEGO slotu `hOid`, zawsze,
+                    // niezależnie od `humanOwnerId`.
+                    setOwnerLastPraca(hOid, playerPracaPool);
+                    setOwnerLastPracaRate(hOid, ownerLastPracaRate(hOid) - pick.kosztPraca);
+                    setOwnerLastPracaAutoUlepszeniaKoszt(
+                      hOid, ownerLastPracaAutoUlepszeniaKoszt(hOid) + pick.kosztPraca,
+                    );
                     const clrAuto = freshClearingState(pick.key, hOid);
                     if (clrAuto) hexClearingStates.set(hexKey, clrAuto);
                     spawnClearingMesh(hexKey);
@@ -32010,16 +32229,15 @@ async function boot(): Promise<void> {
                     continue; // już wycięte (wyścig — obronnie, patrz komentarz wyżej)
                   }
                   playerPracaPool -= pick.kosztPraca;
-                  // R-HOTSEAT-ETAP6C-ECONOMY-Q1 (runda 2): jak w gałęzi wycinki wyżej --
-                  // cache `_last*` aktualizowany wyłącznie dla fotela kończącego turę.
-                  if (hOid === humanOwnerId) {
-                    _lastPraca = playerPracaPool;
-                    // R-PRACA-SUWAKI-DUPLIKAT-I-CAP-MIASTO-Q1 (Wątek D): jak wyżej --
-                    // auto-ulepszenia zużywają pulę TEJ SAMEJ tury bez odjęcia od
-                    // wyświetlanej stawki.
-                    _lastPracaRate -= pick.kosztPraca;
-                    _lastPracaAutoUlepszeniaKoszt += pick.kosztPraca;
-                  }
+                  // P-HOTSEAT-ETAP6C-CHROMIUM-LASTPRACA-IMPL-Q1: jak w gałęzi wycinki wyżej --
+                  // cache per-fotel, zapis do WŁASNEGO slotu `hOid` zawsze.
+                  setOwnerLastPraca(hOid, playerPracaPool);
+                  // R-PRACA-SUWAKI-DUPLIKAT-I-CAP-MIASTO-Q1 (Wątek D): jak wyżej -- auto-ulepszenia
+                  // zużywają pulę TEJ SAMEJ tury bez odjęcia od wyświetlanej stawki.
+                  setOwnerLastPracaRate(hOid, ownerLastPracaRate(hOid) - pick.kosztPraca);
+                  setOwnerLastPracaAutoUlepszeniaKoszt(
+                    hOid, ownerLastPracaAutoUlepszeniaKoszt(hOid) + pick.kosztPraca,
+                  );
                   const nextLayers: PlacedLayers = [...prevLayers, pick.key];
                   placedImprovements.set(hexKey, nextLayers);
                   workingPlaced.set(hexKey, nextLayers);
@@ -32071,10 +32289,15 @@ async function boot(): Promise<void> {
             // `markCityStateDirty()` + `updateHud()` na końcu tej funkcji (patrz komentarz
             // przy deklaracji flagi i przy jej konsumpcji w refreshLiveEmpireRatesUnsafe).
             _pracaRateFreshFromEndTurn = true;
-            // R-HOTSEAT-ETAP6C-ECONOMY-Q1: `humanOwnerId` (nie zaszyty `0`) -- HUD aktywnego fotela.
-            _lastKultura = cities
-              .filter(c => c.ownerId === humanOwnerId)
-              .reduce((s, c) => s + ((c as { kultura?: number }).kultura ?? 0), 0);
+            // R-HOTSEAT-ETAP6C-ECONOMY-Q1: `humanOwnerId` (nie zaszyty `0`). P-HOTSEAT-ETAP6C-
+            // CHROMIUM-LASTPRACA-IMPL-Q1: zapis TERAZ przez akcesor per-fotel (WYŁĄCZNIE dla
+            // `humanOwnerId`, jak dotychczas — patrz uzasadnienie przy resecie wyżej).
+            setOwnerLastKultura(
+              humanOwnerId,
+              cities
+                .filter(c => c.ownerId === humanOwnerId)
+                .reduce((s, c) => s + ((c as { kultura?: number }).kultura ?? 0), 0),
+            );
             _lastReligionSpreadTotal = religionSpreadThisTurn;
           } catch (errMiasto) {
             console.error('[Miasto] Błąd tury MIASTO:', errMiasto);
