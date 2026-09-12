@@ -2,6 +2,7 @@
 
 pub mod building_costs;
 mod error;
+pub mod hex;
 mod ids;
 pub mod improvements;
 pub mod map_generator;
@@ -11,6 +12,7 @@ pub mod resource_production;
 mod rng;
 mod session;
 mod state;
+pub mod terrain;
 mod types;
 
 pub use error::EngineError;

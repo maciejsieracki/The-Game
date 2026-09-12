@@ -1,14 +1,8 @@
-#[path = "../src/domain/hex.rs"]
-#[allow(dead_code)]
-mod hex;
-#[path = "../src/domain/terrain.rs"]
-#[allow(dead_code)]
-mod terrain;
-
-use hex::{CubeCoord, HexCoord, HexDirection};
-use terrain::{
+use civ_engine::domain::hex::{CubeCoord, HexCoord, HexDirection};
+use civ_engine::domain::terrain::{
     can_found_city_on, is_passable_terrain, is_workable_terrain, TerrainType, TileQualification,
 };
+use civ_engine::{hex_distance, HexCoord as RootHexCoord, TerrainType as RootTerrainType};
 
 #[test]
 fn axial_coordinates_keep_the_cube_invariant() {
@@ -139,4 +133,16 @@ fn coordinates_and_terrain_are_json_round_trip_safe() {
         serde_json::from_str::<TerrainType>(&terrain_json).unwrap(),
         terrain
     );
+}
+
+#[test]
+fn root_reexports_are_the_same_production_api_types() {
+    let coordinate_from_module = HexCoord::new(2, -5);
+    let coordinate_from_root: RootHexCoord = coordinate_from_module;
+
+    assert_eq!(
+        hex_distance(coordinate_from_root, coordinate_from_module),
+        0
+    );
+    assert_eq!(RootTerrainType::Desert, TerrainType::Desert);
 }
