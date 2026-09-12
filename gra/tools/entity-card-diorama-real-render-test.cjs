@@ -23,11 +23,19 @@
  *      alternatywa co w `unit-card-3d-preview-coverage-test.cjs`), a dla `building`/`wonder`
  *      powiększony, wyśrodkowany `<svg>` (`kind:'icon'`).
  *
- *  (D) TRYB KOMPAKTOWY (`.entity-card--compact`, włączany przez kliknięcie „Pokaż pozostałe N"
- *      na karcie z `compactHeaderOnExpand` — realnie ustawianym przez `technologyAdapter.ts`
- *      dla zagnieżdżonej listy jednostek w karcie technologii) NIE DOSTAJE DIAROMY: nagłówek
- *      wraca do `display:flex`, wysokości < 80px i medalionu 24x24. To jest jawny, żywy dowód
- *      kryterium 1c dispatchu („compact PRZETRWAŁ nietknięty"), a nie założenie.
+ *  (D) KARTA TECHNOLOGII (non-compact) — PRZEPISANE w P-TEST-ENTITYCARD-DIORAMA-SEKCJA-D-
+ *      NIEAKTUALNA-Q1: mechanizm `.entity-card--compact`/„Pokaż pozostałe N" dla listy
+ *      jednostek w karcie technologii został TRWALE i legalnie usunięty tematem
+ *      P-CIVPEDIA-KARTA-JEDNOSTKI-POKAZ-POZOSTALE-N-Q1 (ECHO właściciela: zawsze pokazuj
+ *      wszystkie jednostki, bez limitu i bez przycisku; `technologyAdapter.ts` NIE ustawia już
+ *      `previewLimit` dla sekcji Jednostki, więc `compactHeaderOnExpand` nigdy nie jest `true`
+ *      i przycisk „Pokaż pozostałe N"/klasa `.entity-card--compact` nie da się już włączyć z
+ *      ŻADNEJ karty encji). Sekcja D testowała WYŁĄCZNIE tę ścieżkę — żadna jej asercja nie
+ *      sprawdzała samego renderowania diaromy dla kart technologii (ta realna luka pokrycia
+ *      istniała już PRZED tym tematem: nic w tym pliku nie mierzyło diaromy karty technologii
+ *      w trybie normalnym). Sekcja D mierzy więc teraz to samo co (A)/(C) dla budynku/cudu,
+ *      ale dla `kind:'technology'` (medalion `icon`, jak budynek/cud) — i wprost sprawdza, że
+ *      karta technologii NIE nosi już klasy `.entity-card--compact` (bo nic jej nie ustawia).
  *
  *  (E) BRAK POZIOMEGO OVERFLOW przy dwóch szerokościach viewportu (1280 i 380 — poniżej
  *      434px karty, czyli gałąź `calc(100vw - 32px)`): `scrollWidth <= clientWidth` dla
@@ -44,11 +52,15 @@
  *      flexem) nadal ląduje w prawym górnym rogu i przechodzi hit-test. Żadna inna bramka
  *      nie mierzy pozycji tego przycisku, więc bez (G) regres byłby niewidoczny.
  *
- *  (D2) ŻYWA ŚCIEŻKA `showTechDiscoveryNotice` W COMPACT (runda 2, zarzut 1 Evaluatora):
- *      ten plik dopina do `.entity-card-header` własny ✕ (`.tdn-entity-close`, position:absolute
- *      o niskiej specyficzności 0,1,0). Mierzymy pozycję ✕ PRZED i PO kliknięciu „Pokaż
- *      pozostałe N" — musi być identyczna i absolutna. Sekcja (G) tego nie łapie: dotyczy
- *      wyłącznie `unitInfoCard` i wyłącznie trybu non-compact.
+ *  (D2) ŻYWA ŚCIEŻKA `showTechDiscoveryNotice` — PRZEPISANE w P-TEST-ENTITYCARD-DIORAMA-
+ *      SEKCJA-D-NIEAKTUALNA-Q1 z tego samego powodu co (D): klik „Pokaż pozostałe N" nie da
+ *      się już wywołać (patrz wyżej), więc oryginalna asercja „pozycja ✕ identyczna przed/po
+ *      compact" nie ma już żywej ścieżki do zmierzenia. To, czego (G) faktycznie NIE łapie
+ *      (dotyczy wyłącznie `unitInfoCard.ts`) i co nadal jest realną, żywą luką: czy własny ✕
+ *      dopięty przez `techDiscoveryNotice.ts` (`.tdn-entity-close`) w POPUPIE odkrycia
+ *      technologii ląduje poprawnie na diaromie (absolutnie, w prawym górnym rogu, przechodzi
+ *      hit-test) — dokładny odpowiednik (G), ale dla `showTechDiscoveryNotice` zamiast
+ *      `showUnitInfoCardDialog`. Żadna inna sekcja tego pliku tego nie mierzy.
  *
  *  (H) FALLBACK BEZ WebGL (runda 2, zarzut 2): odtworzony 1:1 jak w `unitMiniPreview.ts:130-132`,
  *      mierzony PO wstrzyknięciu arkusza `unitInfoCard` — czyli na ścieżce, gdzie reguła
@@ -378,57 +390,52 @@ async function main() {
       u.overflowX.doc <= 0 && u.overflowX.card <= 0 && u.overflowX.header <= 0, u.overflowX);
 
     // ------------------------------------------------------------------------------------
-    // (D) TRYB COMPACT — realna ścieżka `compactHeaderOnExpand` karty technologii
+    // (D) KARTA TECHNOLOGII (non-compact) — diorama 3D, PRZEPISANE
+    //     P-TEST-ENTITYCARD-DIORAMA-SEKCJA-D-NIEAKTUALNA-Q1: mechanizm `.entity-card--compact`/
+    //     „Pokaż pozostałe N" dla listy jednostek karty technologii jest TRWALE usunięty
+    //     (P-CIVPEDIA-KARTA-JEDNOSTKI-POKAZ-POZOSTALE-N-Q1) — `technologyAdapter.ts` nie
+    //     ustawia już `previewLimit`, więc `compactHeaderOnExpand` nigdy nie jest `true` i
+    //     żadna karta encji nie może już wejść w tryb compact tą ścieżką. Zastępujemy to
+    //     realnym pokryciem, które nigdy w tym pliku nie istniało: diorama karty technologii
+    //     w trybie normalnym (analogicznie do (A)/(C) dla budynku/cudu — medalion `icon`).
     // ------------------------------------------------------------------------------------
-    console.log('\n-- (D) karta technologii w trybie compact (compactHeaderOnExpand) --');
-    const compactRes = await page.evaluate((names) => {
+    console.log('\n-- (D) karta technologii (non-compact) — diorama 3D --');
+    const mountedTech = await page.evaluate((names) => {
       const C = window.__C;
       for (const name of names) {
         const id = C.technologyIdFromName(name);
         const data = C.buildEntityCardData('technology', id, {});
-        if (!data || data.compactHeaderOnExpand !== true) continue;
+        if (!data) continue;
         const card = C.renderEntityCard(data);
         card.id = 'card-tech';
         document.body.appendChild(card);
-        const more = card.querySelector('button.entity-card-more');
-        if (!more) { card.remove(); continue; }
-        // Zdjęcie PRZED kliknięciem (nagłówek jeszcze non-compact) do porównania.
-        const beforeCompact = card.classList.contains('entity-card--compact');
-        more.click();
-        return {
-          ok: true, tech: name, beforeCompact,
-          afterCompact: card.classList.contains('entity-card--compact'),
-          moreLabel: (more.textContent || '').trim(),
-        };
+        return { ok: true, tech: name, medallionKind: data.medallion.kind };
       }
       return { ok: false };
     }, techNames);
-    check('fixture (D): znaleziona karta technologii z compactHeaderOnExpand i przyciskiem „Pokaż pozostałe N"',
-      compactRes.ok === true, compactRes);
-    check('(D) klik „Pokaż pozostałe N" faktycznie włącza klasę .entity-card--compact (realna ścieżka technologyAdapter)',
-      compactRes.beforeCompact === false && compactRes.afterCompact === true, compactRes);
+    check('fixture (D): karta technologii zbudowana z realnych danych', mountedTech.ok === true, mountedTech);
+    check('(D) technology: medallion.kind === "icon" (jak building/wonder, bez zmian)',
+      mountedTech.medallionKind === 'icon', mountedTech);
     const t = await page.evaluate(MEASURE, 'card-tech');
-    console.log('[tech-compact]', JSON.stringify(t));
-    check('(D) karta w trybie compact NIE MA diaromy — stary mały nagłówek flex, medalion 24x24',
-      t.isCompact === true && isOldSmallHeader(t) && t.medW === 24 && t.medH === 24 && !isDiorama(t), t);
-    check('(D) w trybie compact elipsa gruntu jest ukryta',
-      t.groundVisible === 'no', t.groundVisible);
-    // RUNDA 2, zarzut 4 Evaluatora: reguła skalująca zawartość medalionu ('> svg{width:100%}')
-    // działała także w compact i kurczyła ikonę z 28px (rozmiar własny z atrybutów pliku SVG,
-    // stan bazy `3d9dd86c`) do 24px. Wymiar samego medalionu (24x24) tego nie łapał.
-    check('(D) w trybie compact ikona SVG ma SWÓJ rozmiar 28px (jak na bazie), a nie skurczone 24px',
-      t.hasSvg && t.svgW === 28, { hasSvg: t.hasSvg, svgW: t.svgW });
-    await page.locator('#card-tech').screenshot({ path: path.join(SHOTS, '1c-karta-technologii-compact-bez-diaromy.png') });
+    console.log('[tech]', JSON.stringify(t));
+    check('(D) nagłówek karty technologii JEST diaromą (pełna szerokość, ~190px, wyśrodkowany podgląd >=90px, elipsa gruntu, overlay tytułu)',
+      isDiorama(t), t);
+    check('(D) ikona SVG technologii jest POWIĘKSZONA w diaromie (>=90px, wobec 34px sprzed tematu diaromy)',
+      t.hasSvg && t.svgW >= 90, { hasSvg: t.hasSvg, svgW: t.svgW });
+    check('(D) karta technologii NIE MA klasy entity-card--compact (nic już jej nie ustawia — mechanizm usunięty)',
+      t.isCompact === false, t.isCompact);
+    await page.locator('#card-tech').screenshot({ path: path.join(SHOTS, '1c-karta-technologii-diorama.png') });
 
     // ------------------------------------------------------------------------------------
-    // (D2) ŻYWA ŚCIEŻKA `showTechDiscoveryNotice` W TRYBIE COMPACT — RUNDA 2, zarzut 1.
-    //      `techDiscoveryNotice.ts:610` dopina do `.entity-card-header` własny ✕
-    //      (`.tdn-entity-close{position:absolute;top:10px;right:10px}`, specyficzność 0,1,0).
-    //      Runda 1 dodała w bloku kompaktowym regułę `... > :not(...){position:static}`
-    //      (0,4,0), która ten ✕ wypychała do potoku flex PO kliknięciu „Pokaż pozostałe N".
-    //      Sekcja (G) tego nie łapała: mierzy ✕ tylko dla `unitInfoCard` i tylko non-compact.
+    // (D2) ŻYWA ŚCIEŻKA `showTechDiscoveryNotice` — diorama + ✕ własny przycisk zamknięcia,
+    //      PRZEPISANE P-TEST-ENTITYCARD-DIORAMA-SEKCJA-D-NIEAKTUALNA-Q1 z tego samego powodu
+    //      co (D): klik „Pokaż pozostałe N" nie da się już wywołać. Zastępujemy odpowiednikiem
+    //      sekcji (G) — tam dla `showUnitInfoCardDialog`, tu dla `showTechDiscoveryNotice`:
+    //      `techDiscoveryNotice.ts` dopina własny ✕ (`.tdn-entity-close`) do
+    //      `.entity-card-header` i liczy na to, że diorama go nie przykryje ani nie wypchnie
+    //      poza siebie. Żadna inna sekcja tego pliku tej ścieżki nie mierzy.
     // ------------------------------------------------------------------------------------
-    console.log('\n-- (D2) żywa ścieżka showTechDiscoveryNotice: ✕ w trybie compact --');
+    console.log('\n-- (D2) żywa ścieżka showTechDiscoveryNotice: diorama + przycisk zamknięcia --');
     const tdn = await page.evaluate(async (techName) => {
       window.__C.showTechDiscoveryNotice({ techName, eraIndex: 0, kind: 'preview' });
       await new Promise((r) => setTimeout(r, 500));
@@ -437,51 +444,40 @@ async function main() {
       const card = host.querySelector('.entity-card');
       const btn = host.querySelector('.tdn-entity-close');
       if (!card || !btn) return { missing: 'card-or-btn' };
-      const more = card.querySelector('button.entity-card-more');
-      if (!more) return { missing: 'more-button' };
-      const read = () => {
-        const header = card.querySelector('.entity-card-header');
-        const hr = header.getBoundingClientRect();
-        const br = btn.getBoundingClientRect();
-        const svg = card.querySelector('.entity-card-medallion > svg');
-        const hit = document.elementFromPoint(br.left + br.width / 2, br.top + br.height / 2);
-        return {
-          compact: card.classList.contains('entity-card--compact'),
-          btnPosition: getComputedStyle(btn).position,
-          btnFromRight: Math.round(hr.right - br.right),
-          btnFromTop: Math.round(br.top - hr.top),
-          btnInsideHeader: br.top >= hr.top - 1 && br.bottom <= hr.bottom + 1,
-          svgW: svg ? Math.round(svg.getBoundingClientRect().width) : 0,
-          hitClass: hit ? String(hit.className) : null,
-        };
+      const header = card.querySelector('.entity-card-header');
+      const hr = header.getBoundingClientRect();
+      const br = btn.getBoundingClientRect();
+      const svg = card.querySelector('.entity-card-medallion > svg');
+      const hit = document.elementFromPoint(br.left + br.width / 2, br.top + br.height / 2);
+      return {
+        ok: true,
+        isDioramaHeader: header.classList.contains('entity-card-diorama'),
+        headerH: Math.round(hr.height),
+        btnPosition: getComputedStyle(btn).position,
+        btnFromRight: Math.round(hr.right - br.right),
+        btnFromTop: Math.round(br.top - hr.top),
+        btnInsideHeader: br.top >= hr.top - 1 && br.bottom <= hr.bottom + 1,
+        svgW: svg ? Math.round(svg.getBoundingClientRect().width) : 0,
+        hitClass: hit ? String(hit.className) : null,
       };
-      const before = read();
-      more.click();
-      await new Promise((r) => setTimeout(r, 150));
-      const after = read();
-      return { ok: true, before, after };
-    }, compactRes.tech);
+    }, mountedTech.tech);
     console.log('[tdn]', JSON.stringify(tdn));
-    check('fixture (D2): showTechDiscoveryNotice wyrenderował kartę z ✕ i przyciskiem „Pokaż pozostałe N"',
+    check('fixture (D2): showTechDiscoveryNotice wyrenderował kartę z diaromą i przyciskiem ✕',
       tdn.ok === true, tdn);
-    check('(D2) klik „Pokaż pozostałe N" włącza compact na żywej ścieżce techDiscoveryNotice',
-      tdn.ok && tdn.before.compact === false && tdn.after.compact === true, tdn);
-    check('(D2) ✕ POZOSTAJE absolutnie pozycjonowany w compact (10px od prawej/góry — jak na bazie)',
-      tdn.ok && tdn.after.btnPosition === 'absolute' && tdn.after.btnInsideHeader === true
-      && tdn.after.btnFromRight >= 6 && tdn.after.btnFromRight <= 14
-      && tdn.after.btnFromTop >= 6 && tdn.after.btnFromTop <= 14, tdn.ok ? tdn.after : tdn);
-    check('(D2) pozycja ✕ jest IDENTYCZNA przed i po przejściu w compact (zero przeskoku)',
-      tdn.ok && tdn.before.btnFromRight === tdn.after.btnFromRight
-      && tdn.before.btnFromTop === tdn.after.btnFromTop,
-      tdn.ok ? { before: tdn.before, after: tdn.after } : tdn);
-    check('(D2) elementFromPoint na środku ✕ trafia w SAM przycisk także w compact',
-      tdn.ok && typeof tdn.after.hitClass === 'string' && tdn.after.hitClass.includes('tdn-entity-close'),
-      tdn.ok ? tdn.after.hitClass : tdn);
-    check('(D2) ikona SVG w compact na ścieżce techDiscoveryNotice ma 28px (jak na bazie)',
-      tdn.ok && tdn.after.svgW === 28, tdn.ok ? tdn.after.svgW : tdn);
+    check('(D2) nagłówek karty technologii w popupie showTechDiscoveryNotice JEST diaromą',
+      tdn.ok && tdn.isDioramaHeader === true && tdn.headerH >= 160, tdn);
+    check('(D2) ✕ dopięty przez techDiscoveryNotice.ts ląduje w prawym górnym rogu diaromy',
+      tdn.ok && tdn.btnPosition === 'absolute' && tdn.btnInsideHeader === true
+      && tdn.btnFromRight >= 0 && tdn.btnFromRight <= 20
+      && tdn.btnFromTop >= 0 && tdn.btnFromTop <= 20, tdn);
+    check('(D2) elementFromPoint na środku ✕ trafia w SAM przycisk (diorama go nie przykryła)',
+      tdn.ok && typeof tdn.hitClass === 'string' && tdn.hitClass.includes('tdn-entity-close'),
+      tdn.ok ? tdn.hitClass : tdn);
+    check('(D2) ikona SVG technologii w popupie ma pełny rozmiar diaromy (>=90px)',
+      tdn.ok && tdn.svgW >= 90, tdn.ok ? tdn.svgW : tdn);
     if (tdn.ok) {
       await page.locator('#civ-tech-discovery-notice-host .entity-card').first()
-        .screenshot({ path: path.join(SHOTS, '1c-tdn-compact-przycisk-zamkniecia.png') });
+        .screenshot({ path: path.join(SHOTS, '1c-tdn-diorama-przycisk-zamkniecia.png') });
     }
     await page.evaluate(() => {
       const h = document.getElementById('civ-tech-discovery-notice-host');
