@@ -154,7 +154,49 @@ migracja silnika `playerPracaPool` OSOBNO, później.** Implementacja migracji c
 `playerPracaPool` silnika) — ślad dispatchu:
 `dyspozycje/autobot/runs/P-HOTSEAT-ETAP6C-CHROMIUM-LASTPRACA-IMPL-Q1/`.
 
-## `P-HOTSEAT-PLAYERPRACAPOOL-SILNIK-PER-FOTEL-Q1` — GAME — **ZAREJESTROWANE 2026-09-11, NIEDISPATCHOWANE (ECHO właściciela: później)**
+**ZINTEGROWANE 2026-09-12 (commit `54f297dc`).** 2 rundy: runda 1 Evaluator 4
+zarzuty (drugie nieaudytowane miejsce zapisu `_lastPracaRate` w
+`refreshLiveEmpireRatesUnsafe`, brak zgłoszenia wyjątku
+`_pracaRateFreshFromEndTurn`+martwy kod, niezweryfikowany zrzut ekranu w
+raporcie, cytat nieistniejącego wpisu playbooka) — Obrona naprawiła
+wszystkie 4, ale Final Control mimo 4×ODDAL wykrył WŁASNĄ, nową wadę:
+`pracaUpkeepPreview` twardo zaszyte na `.get(0)` zamiast `.get(ME())`
+(main.ts, wtedy ~18113-18115) — agregat FAIL. Runda 2: naprawione
+(`.get(ME())` + `setOwnerLastPracaUpkeep` dostał realnego wołającego dla
+`ownerId≠0` + nowy scenariusz testowy (h) z różnym utrzymaniem obu foteli).
+Final Control rundy 2: PASS-WITH-NOTES, pełna niezależna weryfikacja
+(3 warianty mutant-testingu potwierdzające że obie naprawy rund 1 i 2 są
+NIEZALEŻNIE konieczne, zero wzajemnego maskowania; cały `git diff` main.ts
+przeczytany linia po linii, zero przecięcia z 6 zakazanymi zakresami
+silnika `playerPracaPool`). Nowa bramka
+`hotseat-etap6c-lastpraca-per-fotel-test.cjs` (scenariusze a-h +
+`--assert-mutant`). `tsc` czysty, 5 bramek referencyjnych +
+`hotseat-etap6c-economy-noop-test` 70/70 + `hotseat-drugi-fotel-tura-test`
+4/4 bez regresu. **Follow-up niezablokowany, osobno zarejestrowany**:
+Final Control zauważył że `praca-pula-rate-parity-test.cjs` i
+`praca-auto-ulepszenia-koszt-split-test.cjs` straciły zdolność wykrywania
+regresji (regex dopasowany do starego kształtu kodu, semantyka
+niezmieniona, 0 fail w obu) — patrz
+`P-PRACA-BRAMKI-REGEX-OSLEPIONE-PO-LASTPRACA-Q1` niżej.
+
+## `P-PRACA-BRAMKI-REGEX-OSLEPIONE-PO-LASTPRACA-Q1` — PROCESS/GAME — **ZGŁOSZONE 2026-09-12, NIEDISPATCHOWANE, nie blokuje niczego**
+
+Znalezisko Final Control rundy 2 tematu `P-HOTSEAT-ETAP6C-CHROMIUM-LASTPRACA-IMPL-Q1`
+(commit `54f297dc`): dwie istniejące bramki regresyjne —
+`gra/tools/praca-pula-rate-parity-test.cjs` i
+`gra/tools/praca-auto-ulepszenia-koszt-split-test.cjs` — dopasowują wynik
+literalnym regexem do starego kształtu kodu (np. wzorzec
+`_lastPracaRate -= pick.kosztPraca;`), który po migracji cache Pracy na
+per-fotel zmienił się na semantycznie identyczny, ale inaczej zapisany
+`setOwnerLastPracaRate(hOid, ownerLastPracaRate(hOid) - pick.kosztPraca)`.
+Final Control potwierdził czytaniem kodu + własną numeryczną symulacją, że
+to NIE jest regresja funkcjonalna (0 fail w obu bramkach), ale same bramki
+straciły zdolność wykrywania przyszłej regresji w tym miejscu — utraciły
+swój cel ochronny bez zauważenia (ironiczny odpowiednik incydentu C-031 tej
+sesji, tylko dla regexów bramek zamiast audytu STATUS). Naprawa: zaktualizować
+wzorce regex w obu plikach testowych do nowego kształtu kodu, bez zmiany
+semantyki asercji. Nie wymaga ABC (czysto techniczna naprawa testu). Brak
+dispatchu jeszcze.
 
 Znalezisko recon `P-HOTSEAT-ETAP6C-CHROMIUM-LASTPRACA-RECON-Q1` §4 (dokument
 `dyspozycje/autobot/runs/P-HOTSEAT-ETAP6C-CHROMIUM-LASTPRACA-RECON-Q1/01-operator-recon.md`):
