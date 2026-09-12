@@ -710,19 +710,19 @@
       "jednostka": "heksow",
       "opis": "R-HANDEL-SZLAKI-LIMIT-DYSTANSU-USUN-Q1 (Maciej, 2026-09-03): analogicznie do lad_max_dystans wyzej -- ta wartosc NIE JEST JUZ progiem BLOKUJACYM istnienie szlaku MORSKIEGO (przez Port w OBU miastach, po wodzie: Morze unia Wybrzeze). Connectivity morska = WYLACZNIE fizyczna osiagalnosc po wodzie (BFS) + Port w obu miastach, bez gornego limitu dystansu w linii prostej. Ta liczba (20) zyje dalej jako pole TradeRouteParams.morzeMaxDist w trade-routes.ts, dzis nieuzywane do blokowania. Referencyjny dystans SZCZYTU krzywej DOCHODU (TradeRouteIncomeParams.morzeMaxDist, ta sama liczba 20) pozostaje bez zmian -- istniejace, bliskie trasy morskie (<=20 heksow) zarabiaja dokladnie tyle co przed ta zmiana."
     },
-    "dochod_podloga": {
-      "easy": 5,
-      "normal": 5,
-      "hard": 5,
+    "dochody_ladowe": {
+      "easy": [1, 1, 2, 3, 3, 4, 4, 5, 6, 6, 7, 7, 8],
+      "normal": [1, 1, 2, 3, 3, 4, 4, 5, 6, 6, 7, 7, 8],
+      "hard": [1, 1, 2, 3, 3, 4, 4, 5, 6, 6, 7, 7, 8],
       "jednostka": "pieniadz/ture",
-      "opis": "Handel E3 (trade-routes.ts) -- PRZEBUDOWA R-HANDEL-SZLAKI-PRZEBUDOWA-Q1 (ECHO 2026-08-21, T1): dochod trasy przy DYSTANSIE=0 (dolna podloga liniowego wzoru, ktory teraz ROSNIE z dystansem -- odwrocenie starej zasady). Stara wartosc floor=1 pomnozona x5 (punkt 3 zlecenia wlasciciela)."
+      "opis": "Faktyczny dochod ladowej trasy dla kolejnych dystansow 0-12. Wartosc jest juz po redukcji dochodu; nie stosowac dodatkowego dzielenia."
     },
-    "dochod_szczyt": {
-      "easy": 40,
-      "normal": 40,
-      "hard": 40,
+    "dochody_morskie": {
+      "easy": [2, 2, 3, 4, 5, 5, 6, 7, 8, 8, 9, 10, 10, 11, 12, 12, 13, 14, 14, 15, 16],
+      "normal": [2, 2, 3, 4, 5, 5, 6, 7, 8, 8, 9, 10, 10, 11, 12, 12, 13, 14, 14, 15, 16],
+      "hard": [2, 2, 3, 4, 5, 5, 6, 7, 8, 8, 9, 10, 10, 11, 12, 12, 13, 14, 14, 15, 16],
       "jednostka": "pieniadz/ture",
-      "opis": "Handel E3 (trade-routes.ts) -- PRZEBUDOWA R-HANDEL-SZLAKI-PRZEBUDOWA-Q1 (ECHO Q1+p.3, 2026-08-21, T1): dochod trasy przy DYSTANSIE=MAX WLASCIWYM DLA DANEGO MEDIUM (lad_max_dystans dla ladu, morze_max_dystans dla morza) -- ten sam szczyt dla obu mediow mimo roznych maxDist, wiec stawka wzrostu na heks jest osobno wyliczana per medium: (dochod_szczyt-dochod_podloga)/maxDist. Stara wartosc bazowy=8 (dawny dochod przy dystansie 0) pomnozona x5 (punkt 3 zlecenia wlasciciela) i przeniesiona na przeciwny koniec skali (odwrocenie kierunku)."
+      "opis": "Faktyczny dochod morskiej trasy dla kolejnych dystansow 0-20. Wartosc zawiera dotychczasowy bonus morski; nie stosowac dodatkowego dzielenia."
     }
   },
   "handel_surowce": {

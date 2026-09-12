@@ -327,3 +327,12 @@ Kolejność bezpieczna: T1 → T2 → T2b → T3 → T4 → T6. Bez osobnego T5 
 
   **Seria R-HANDEL-SZLAKI-PRZEBUDOWA-Q1 (T1+T2+T2b+T3+T4+T6) w całości ZINTEGROWANA.**
   Zbiorczy deploy ROBOCZA następuje teraz.
+
+## Korekta dochodu własnego i zagranicznego — uzgodniona przez właściciela
+
+- Surowe wartości dawnego wzoru `5–40` i późniejsze dzielenie przez `5` zostały usunięte z kodu rozliczeniowego.
+- Źródłem prawdy są bezpośrednie tablice faktycznego dochodu w `econ-params.json`: ląd `1–8` dla dystansu `0–12`, morze `2–16` dla dystansu `0–20`.
+- Trasa między miastami tego samego właściciela korzysta z wartości bazowej.
+- Trasa między różnymi cywilizacjami daje obu miastom `+100%` względem tej samej odległości.
+- Premia budynkowa `5%` jest liczona od kwoty po tym zwiększeniu.
+- Wartości poza końcem tablicy pozostają na ostatnim poziomie; nie tworzą dodatkowego wzrostu.

@@ -36,7 +36,7 @@ const BUNDLE_FILE = path.resolve(__dirname, '.cuda-handel-bundle.cjs');
 
 fs.writeFileSync(ENTRY_FILE, `
 export {
-  computeTradeRouteIncomeByCity, tradeRouteDistanceIncome, tradeRouteTotalDistanceIncome,
+  computeTradeRouteIncomeByCity, tradeRouteIncomeByDistance, tradeRouteIncomeForRoute,
   DEFAULT_TRADE_ROUTE_INCOME_PARAMS,
 } from '../src/game/trade-routes';
 export {
@@ -107,14 +107,9 @@ console.log('\n-- 1. bez cudu: dochod z tras bez zmian --');
 // baseIncome spadl do 4, floor(4*1.15)=4 -- brak widocznej roznicy).
 const incP = M.DEFAULT_TRADE_ROUTE_INCOME_PARAMS;
 const routeNoWonder = { id: 'r1', fromCityId: 'A', toCityId: 'B', ownerId: 0, toOwnerId: 1, medium: 'lad', dystans: 10, status: 'polaczony' };
-// computeTradeRouteIncomeByCity liczy dochod przez tradeRouteTotalDistanceIncome
-// (WRAPPER z obnizka 5x, min 1, zaokraglenie do calkowitych), nie przez czysta
-// krzywa tradeRouteDistanceIncome -- baseIncome musi isc przez ten sam wrapper,
-// inaczej rozjedzie sie z realnym wynikiem computeTradeRouteIncomeByCity.
-const baseIncome = M.tradeRouteTotalDistanceIncome(10, 'lad', incP);
-const rawCurve10Lad = Math.floor(incP.dochodPodloga + 10 * (incP.dochodSzczyt - incP.dochodPodloga) / incP.ladMaxDist);
-eq(baseIncome, Math.max(1, Math.round(rawCurve10Lad / 5)),
-  '(setup) dystans=10 (lad) -> wzor liniowy podloga+dystans*stawkaWzrostu, obnizony 5x (min 1, zaokraglone)');
+// dochod faktyczny jednej strony trasy; trasa zagraniczna jest tu już ×2.
+const baseIncome = M.tradeRouteIncomeForRoute(routeNoWonder, incP);
+eq(baseIncome, 14, '(setup) dystans=10 (lad), trasa zagraniczna -> faktyczny dochód 14');
 
 const incomeNoWonder = M.computeTradeRouteIncomeByCity([routeNoWonder], incP);
 eq(incomeNoWonder.get('A'), baseIncome, '1: brak cudu -> miasto A dostaje dokladnie dochod bazowy');

@@ -21,7 +21,7 @@
  *     `BFS_RADIUS_MULT` niżej). Sam próg dystansu ŻYJE DALEJ, ale WYŁĄCZNIE jako
  *     referencyjny dystans SZCZYTU krzywej dochodu (`TradeRouteIncomeParams`,
  *     rozdzielony od connectivity od tego tematu — patrz GOAL 3 dispatchu i
- *     komentarz przy `TradeRouteIncomeParams`/`tradeRouteDistanceIncome` niżej).
+ *     komentarz przy `TradeRouteIncomeParams`/`tradeRouteIncomeByDistance` niżej).
  *     NIE budujemy pathfindera po sieci dróg — to nie jest computePath/Dijkstra po
  *     koszcie ruchu jednostki, tylko czysta reachability (każdy krok kosztuje "1",
  *     bez modyfikatorów drogi/rzeki/lasu — te wpływają na ruch JEDNOSTEK, nie na to
@@ -51,7 +51,7 @@
  *     `budynekOdblokowany`. Fizyczny Port jako wymóg samej łączności morskiej
  *     (`cityHasPort`) zostaje bez zmian.
  *   - Dochód = DWA SKŁADNIKI (wpięte oddzielnie):
- *     (1) składnik dystansowy (tradeRouteDistanceIncome / computeTradeRouteIncomeByCity)
+ *     (1) składnik dystansowy (tradeRouteIncomeByDistance / computeTradeRouteIncomeByCity)
  *         — wzór liniowy z podłogą, kredytowany OBU miastom trasy w pełnej kwocie
  *         (Q8=B: obie strony zarabiają), do skarbca CZYSTO (pomija Wealth) — wpięcie
  *         w turn-economy.ts (pieniadzZTras).
@@ -124,7 +124,7 @@ export interface TradeRoute {
    * patrz `refreshTradeRoutes`. R-HANDEL-LIMIT-TRAS-PELNY-Q1 (2026-09-04, GOAL 3)
    * ZMIENIŁ tę kolejność: NIE JUŻ "najpierw istniejące po id, potem nowe wg
    * rosnącego dystansu" (opis T3 powyżej, historyczny) — od tego tematu kolejność
-   * to DOCHÓD MALEJĄCO (`tradeRouteTotalDistanceIncome`, ta sama, co gatinguje
+   * to DOCHÓD MALEJĄCO (`tradeRouteIncomeForRoute`, ta sama, co gatinguje
    * ISTNIENIE trasy przez `usedExistenceSlots`, patrz `tradeRouteExistenceLimitForCity`),
    * ze stabilnością jako tie-break przy remisie dochodu (istniejąca trasa wygrywa
    * z nową o identycznym dochodzie). Skutek: trasa dalsza (więc bardziej
@@ -862,7 +862,7 @@ export function createTradeRoute(
 
 type Difficulty = 'easy' | 'normal' | 'hard';
 
-type RawParamRow = Record<string, number | string | undefined>;
+type RawParamRow = Record<string, number | string | readonly unknown[] | undefined>;
 
 interface RawEconParamsJsonTradeRoutes {
   handel_szlaki?: Record<string, RawParamRow>;
@@ -970,7 +970,7 @@ interface TradeRouteCandidate {
 /**
  * Wybiera medium (ląd/morze) dla pary miast: LĄD MA BEZWARUNKOWE PIERWSZEŃSTWO,
  * gdy fizycznie istnieje — nawet jeśli morze dawałoby wyższy dochód (np. po
- * bonusie ×2, patrz tradeRouteTotalDistanceIncome). Morze jest sprawdzane
+ * bonusie ×2, patrz tradeRouteIncomeForRoute). Morze jest sprawdzane
  * WYŁĄCZNIE jako fallback, gdy `findCityConnection` dla lądu zwraca
  * connected=false (inny kontynent/wyspa) — nie jako alternatywa dochodowa.
  * (R-HANDEL-SZLAKI-PRZEBUDOWA-Q1, ECHO Q5 — "Korekta punktu błędnie
@@ -1206,7 +1206,7 @@ export const TRADE_TECH = 'Wymiana';
  * najdalszą, ale jeżeli już jest niedostępna, to potem dobiera drogi bliższe."
  * Od tego tematu: WSZYSTKIE kandydatury (kontynuujące ORAZ nowe) są połączone w
  * JEDNĄ listę i posortowane razem wg MALEJĄCEGO dochodu
- * (`tradeRouteTotalDistanceIncome` — dochód WPROST, nie surowy dystans, żeby
+ * (`tradeRouteIncomeForRoute` — dochód WPROST, nie surowy dystans, żeby
  * uwzględnić bonus morski ×2 w porównaniach ląd/morze), z tie-breakiem
  * stabilności (kandydatura kontynuująca wygrywa przy DOKŁADNYM remisie dochodu)
  * i wreszcie po `id` dla pełnego determinizmu. Kandydaci są następnie
@@ -1277,7 +1277,7 @@ export const TRADE_TECH = 'Wymiana';
  * @param incomeParams  R-HANDEL-LIMIT-TRAS-PELNY-Q1 (GOAL 3): parametry dochodu
  *                       (`loadTradeRouteIncomeParams`) użyte WYŁĄCZNIE do
  *                       wyliczenia klucza sortowania priorytetu kandydatów
- *                       (`tradeRouteTotalDistanceIncome`) — nie zmienia SAMEGO
+ *                       (`tradeRouteIncomeForRoute`) — nie zmienia SAMEGO
  *                       dochodu żadnej trasy (ten liczy się osobno, w
  *                       `computeTradeRouteIncomeByCity`, z własnym `incomeParams`
  *                       przekazanym przez main.ts w tamtym wywołaniu). Domyślne
@@ -1371,8 +1371,13 @@ export function refreshTradeRoutes(
     return true;
   };
 
-  const incomeOf = (distance: number, medium: TradeRouteMedium): number =>
-    tradeRouteTotalDistanceIncome(distance, medium, incomeParams);
+  const incomeOf = (candidate: Pick<TradeRouteCandidate, 'from' | 'to' | 'medium' | 'distance'>): number =>
+    tradeRouteIncomeForRoute({
+      dystans: candidate.distance,
+      medium: candidate.medium,
+      ownerId: candidate.from.ownerId,
+      toOwnerId: candidate.to.ownerId,
+    }, incomeParams);
 
   // --- Kandydaci KONTYNUUJĄCY: trasy z `existingRoutes`, które nadal spełniają
   //     warunki (geometria/wojna/traktat — GENERYCZNE, zewnętrzne LUB wewnętrzne
@@ -1472,8 +1477,8 @@ export function refreshTradeRoutes(
   //     malejąco, tie-break stabilności (kontynuujący wygrywa remis), potem id. ---
   const combined: TradeRouteCandidate[] = [...stillValidUnique, ...fresh];
   combined.sort((x, y) => {
-    const incomeX = incomeOf(x.distance, x.medium);
-    const incomeY = incomeOf(y.distance, y.medium);
+    const incomeX = incomeOf(x);
+    const incomeY = incomeOf(y);
     if (incomeY !== incomeX) return incomeY - incomeX;
     if (x.isExisting !== y.isExisting) return x.isExisting ? -1 : 1;
     return x.id.localeCompare(y.id);
@@ -1519,138 +1524,82 @@ export function refreshTradeRoutes(
 // ---------------------------------------------------------------------------
 
 /**
- * Parametry dochodu dystansowego (data/econ-params.json, blok "handel_szlaki").
- *
- * R-HANDEL-SZLAKI-LIMIT-DYSTANSU-USUN-Q1 (2026-09-03, GOAL 3 dispatchu): od tego
- * tematu `ladMaxDist`/`morzeMaxDist` TUTAJ (w odróżnieniu od tych samych nazw pól
- * w `TradeRouteParams` wyżej — patrz komentarz tam) to WYŁĄCZNIE referencyjny
- * dystans SZCZYTU krzywej dochodu (nigdy próg blokujący connectivity — ten zniknął,
- * patrz GOAL 1/`computeCityConnection`). Rozdzielenie od `TradeRouteParams` jest
- * celowe: connectivity mogła w przyszłości dostać inny sposób strojenia bez
- * przypadkowego spłaszczenia krzywej dochodu (i odwrotnie) — mimo że OBA typy dziś
- * czytają z JSON te same klucze `lad_max_dystans`/`morze_max_dystans`
- * (`loadTradeRouteParams` vs `loadTradeRouteIncomeParams`), są to dwa NIEZALEŻNE
- * pola w dwóch NIEZALEŻNYCH strukturach.
+ * Parametry faktycznych wypłat z tras (data/econ-params.json, blok
+ * `handel_szlaki`). Tablice zawierają kwoty już po redukcji dochodu; dystans
+ * poza końcem tablicy korzysta z ostatniej wartości. Warunki istnienia trasy
+ * nadal korzystają osobno z `TradeRouteParams`.
  */
 export interface TradeRouteIncomeParams {
-  /** Dochód (pieniądz) trasy przy dystansie 0 — dolna podłoga wzoru. */
-  dochodPodloga: number;
-  /** Dochód (pieniądz) trasy przy dystansie = maxDist DLA DANEGO MEDIUM — szczyt wzoru. */
-  dochodSzczyt: number;
-  /** Referencyjny dystans heksowy SZCZYTU krzywej dochodu dla szlaku lądowego (NIE próg connectivity — patrz komentarz interfejsu wyżej). */
-  ladMaxDist: number;
-  /** Referencyjny dystans heksowy SZCZYTU krzywej dochodu dla szlaku morskiego (NIE próg connectivity — patrz komentarz interfejsu wyżej). */
-  morzeMaxDist: number;
+  /** Faktyczny dochód lądowej trasy; indeks = dystans heksowy. */
+  dochodyLadowe: readonly number[];
+  /** Faktyczny dochód morskiej trasy; indeks = dystans heksowy. */
+  dochodyMorskie: readonly number[];
 }
 
 /**
- * Wartości domyślne (gdy econ-params.json niedostępny / brak kluczy).
- *
- * PRZEBUDOWA R-HANDEL-SZLAKI-PRZEBUDOWA-Q1, ECHO właściciela 2026-08-21:
- * zasada odwrócona (dochód ROŚNIE z dystansem, nie maleje) + stawki ×5.
- * Derywacja (patrz T1 w docs/decyzje/R-HANDEL-SZLAKI-PRZEBUDOWA-Q1.md):
- *   - stary floor=1 ×5 -> nowa PODŁOGA=5 (dystans=0).
- *   - stary bazowy=8 ×5 -> nowy SZCZYT=40 (dystans=maxDist DLA DANEGO MEDIUM).
- *   - Q1: zakres odwrócenia OSOBNY per medium — najdalsza trasa lądowa
- *     (ladMaxDist=12) i najdalsza trasa morska (morzeMaxDist=20) dają
- *     IDENTYCZNY szczytowy dochód (40), mimo różnych maxDist -> stawka
- *     wzrostu per heks jest inna dla lądu ((40-5)/12) i morza ((40-5)/20).
+ * Jedno źródło prawdy dla kwot rozliczanych w grze. Wartości są już faktycznym
+ * dochodem trasy — nie surową wartością wzoru i nie wymagają późniejszego /5.
+ * Tablice zachowują dokładnie obecną macierz wypłat po dotychczasowej redukcji.
  */
 export const DEFAULT_TRADE_ROUTE_INCOME_PARAMS: TradeRouteIncomeParams = {
-  dochodPodloga: 5,
-  dochodSzczyt: 40,
-  ladMaxDist: 12,
-  morzeMaxDist: 20,
+  dochodyLadowe: [1, 1, 2, 3, 3, 4, 4, 5, 6, 6, 7, 7, 8],
+  dochodyMorskie: [2, 2, 3, 4, 5, 5, 6, 7, 8, 8, 9, 10, 10, 11, 12, 12, 13, 14, 14, 15, 16],
 };
 
-/**
- * Wzór dystansowy (przebudowa ECHO Q1 + p.3, 2026-08-21): dochód ROŚNIE liniowo
- * z dystansem, od dochodPodloga (dystans=0) do dochodSzczyt (dystans=maxDist
- * WŁAŚCIWEGO DLA TEGO MEDIUM — ląd vs morze mają osobne maxDist, ale ten sam
- * szczyt).
- *
- * R-HANDEL-SZLAKI-LIMIT-DYSTANSU-USUN-Q1 (2026-09-03, GOAL 3 dispatchu): odkąd
- * connectivity (GOAL 1) już NIE ogranicza `dystans` do [0, maxDist] — trasa może
- * dziś fizycznie mieć setki heksów na dużej mapie — wejście do wzoru liniowego jest
- * JAWNIE przycięte do `Math.min(dystans, maxDist)` PRZED podstawieniem, żeby
- * istniejące, bliskie trasy (≤maxDist) zarabiały DOKŁADNIE tyle co dziś (zero
- * zmiany balansu, kryterium końca #2 dispatchu), a każda trasa DALSZA niż
- * referencyjny dystans szczytu dostawała dochód RÓWNY szczytowi — nigdy więcej,
- * nigdy ekstrapolowany powyżej (kryterium końca #3). Wynik dodatkowo przycięty do
- * [dochodPodloga, dochodSzczyt] (clamp na wyjściu) jako druga, niezależna linia
- * obrony przed zaokrągleniem (Math.floor) — z samym przycięciem wejścia te dwa
- * zabezpieczenia dają identyczny wynik dla dystansu w [0, maxDist], więc druga
- * warstwa jest tu redundantna, ale tania i nieszkodliwa.
- */
-export function tradeRouteDistanceIncome(
+/** Faktyczny dochód dystansowy jednej strony trasy, przed premią zagraniczną. */
+export function tradeRouteIncomeByDistance(
   dystans: number,
   medium: TradeRouteMedium,
   params: TradeRouteIncomeParams = DEFAULT_TRADE_ROUTE_INCOME_PARAMS,
 ): number {
-  const maxDist = medium === 'lad' ? params.ladMaxDist : params.morzeMaxDist;
-  const dystansPrzyciety = Math.min(dystans, maxDist);
-  const stawkaWzrostu = (params.dochodSzczyt - params.dochodPodloga) / maxDist;
-  const raw = params.dochodPodloga + dystansPrzyciety * stawkaWzrostu;
-  return Math.min(params.dochodSzczyt, Math.max(params.dochodPodloga, Math.floor(raw)));
+  const curve = medium === 'lad' ? params.dochodyLadowe : params.dochodyMorskie;
+  const index = Math.max(0, Math.min(curve.length - 1, Math.floor(dystans)));
+  return curve[index] ?? 0;
 }
 
-/**
- * Dochód FINALNY (dystansowy) z trasy — przebudowa ECHO Q2, 2026-08-21: trasa
- * morska dostaje bonus ×2 wobec czystej krzywej dystansowej
- * (tradeRouteDistanceIncome), trasa lądowa zostaje bez zmian. Ten bonus SUMUJE
- * SIĘ z istniejącym, osobnym mechanizmem PORT_SEA_TRADE_BONUS_PIENIADZ
- * (+1 Pieniądza/turę za trasę morską ponad pierwszą, computeSeaTradeBonusIncomeByCity)
- * — oba działają równolegle, żadne z nich nie zastępuje drugiego.
- *
- * Wszyscy wywołujący, którzy dziś liczą FINALNY dochód trasy (nie samą krzywą
- * dystansową) mają używać TEJ funkcji zamiast tradeRouteDistanceIncome —
- * m.in. computeTradeRouteIncomeByCity niżej (ścieżka realnego wpisu do
- * skarbca przez turn-economy.ts) oraz main.ts (panel Handlu, chip HUD,
- * event log nowej trasy).
- */
-export function tradeRouteTotalDistanceIncome(
-  dystans: number,
-  medium: TradeRouteMedium,
+/** Międzynarodowa trasa handlowa daje obu miastom 100% więcej niż własna. */
+export const TRADE_ROUTE_INTERNATIONAL_MULTIPLIER = 2;
+
+/** Trasa między różnymi właścicielami daje obu miastom +100% dochodu. */
+export function tradeRouteIncomeForRoute(
+  route: Pick<TradeRoute, 'dystans' | 'medium' | 'ownerId' | 'toOwnerId'>,
   params: TradeRouteIncomeParams = DEFAULT_TRADE_ROUTE_INCOME_PARAMS,
 ): number {
-  const base = tradeRouteDistanceIncome(dystans, medium, params);
-  const dawnyWynik = medium === 'morze' ? base * 2 : base;
-  return Math.max(1, Math.round(dawnyWynik / 5));
+  const base = tradeRouteIncomeByDistance(route.dystans, route.medium, params);
+  return route.ownerId === route.toOwnerId ? base : base * TRADE_ROUTE_INTERNATIONAL_MULTIPLIER;
 }
 
 interface RawEconParamsJsonTradeIncome {
   handel_szlaki?: Record<string, RawParamRow>;
 }
 
-/**
- * Wczytaj TradeRouteIncomeParams z surowego econ-params.json (grupa "handel_szlaki",
- * te same klucze na wszystkich poziomach trudności — to parametr geografii/
- * gameplayu jak lad_max_dystans/morze_max_dystans, nie skalowanie trudności).
- */
+/** Wczytaj faktyczne krzywe dochodu z econ-params.json. */
 export function loadTradeRouteIncomeParams(
   raw: RawEconParamsJsonTradeIncome,
   difficulty: Difficulty,
 ): TradeRouteIncomeParams {
   const grp = raw.handel_szlaki ?? {};
-  const read = (key: string, fallback: number): number => {
-    const row = grp[key];
-    const v = row ? row[difficulty] : undefined;
-    return typeof v === 'number' && Number.isFinite(v) ? v : fallback;
+  const readCurve = (key: string, fallback: readonly number[]): readonly number[] => {
+    const value = grp[key]?.[difficulty];
+    return Array.isArray(value)
+      && value.length > 0
+      && value.every(v => typeof v === 'number' && Number.isFinite(v))
+      ? value
+      : fallback;
   };
   return {
-    dochodPodloga: read('dochod_podloga', DEFAULT_TRADE_ROUTE_INCOME_PARAMS.dochodPodloga),
-    dochodSzczyt:  read('dochod_szczyt', DEFAULT_TRADE_ROUTE_INCOME_PARAMS.dochodSzczyt),
-    ladMaxDist:    read('lad_max_dystans', DEFAULT_TRADE_ROUTE_INCOME_PARAMS.ladMaxDist),
-    morzeMaxDist:  read('morze_max_dystans', DEFAULT_TRADE_ROUTE_INCOME_PARAMS.morzeMaxDist),
+    dochodyLadowe: readCurve('dochody_ladowe', DEFAULT_TRADE_ROUTE_INCOME_PARAMS.dochodyLadowe),
+    dochodyMorskie: readCurve('dochody_morskie', DEFAULT_TRADE_ROUTE_INCOME_PARAMS.dochodyMorskie),
   };
 }
 
 /**
  * Dochód dystansowy per-miasto: KAŻDA aktywna trasa kredytuje OBU miastom
- * (fromCityId i toCityId) pełną kwotę tradeRouteDistanceIncome(dystans) —
- * Q8=B, obie strony zarabiają, bez podziału. Miasto uczestniczące w wielu
- * trasach sumuje wkłady. Do wpięcia w turn-economy.ts jako "pieniadzZTras"
- * (dochód czysto do skarbca, pomija Wealth — patrz advanceCityEconomy).
+ * (fromCityId i toCityId) pełną kwotę `tradeRouteIncomeForRoute` —
+ * Q8=B, obie strony zarabiają, bez podziału. Trasa między różnymi właścicielami
+ * ma +100% względem trasy wewnętrznej o tym samym dystansie. Miasto uczestniczące
+ * w wielu trasach sumuje wkłady. Do wpięcia w turn-economy.ts jako
+ * "pieniadzZTras".
  *
  * CUDA-HANDEL-01 (Maciej 2026-07-26): `wonderTradeBonusForOwner` — resolver
  * wstrzyknięty przez wołającego (main.ts, sumWonderTradeRouteBonusForOwner z
@@ -1671,11 +1620,11 @@ export function computeTradeRouteIncomeByCity(
   const out = new Map<string, number>();
   for (const route of routes) {
     if (route.status !== 'polaczony') continue;
-    const baseIncome = tradeRouteTotalDistanceIncome(route.dystans, route.medium, params);
+    const routeIncome = tradeRouteIncomeForRoute(route, params);
     const fromMult = 1 + wonderTradeBonusForOwner(route.ownerId, route.medium);
     const toMult   = 1 + wonderTradeBonusForOwner(route.toOwnerId, route.medium);
-    const fromIncome = fromMult === 1 ? baseIncome : Math.floor(baseIncome * fromMult);
-    const toIncome   = toMult === 1 ? baseIncome : Math.floor(baseIncome * toMult);
+    const fromIncome = fromMult === 1 ? routeIncome : Math.floor(routeIncome * fromMult);
+    const toIncome   = toMult === 1 ? routeIncome : Math.floor(routeIncome * toMult);
     out.set(route.fromCityId, (out.get(route.fromCityId) ?? 0) + fromIncome);
     out.set(route.toCityId,   (out.get(route.toCityId)   ?? 0) + toIncome);
   }
@@ -1712,21 +1661,17 @@ export function tradeRouteBuildingBonusForRoute(
   if (route.status !== 'polaczony') return 0;
   if (!route.budynekOdblokowany) return 0;
   return TRADE_ROUTE_BUILDING_BONUS_RATE
-    * tradeRouteTotalDistanceIncome(route.dystans, route.medium, params);
+    * tradeRouteIncomeForRoute(route, params);
 }
 
 /**
  * T4 (R-HANDEL-SZLAKI-PRZEBUDOWA-Q1, ECHO Q3 Wariant C, runda 2): suma
  * per-trasowych bonusów Handlu — dla każdej trasy TEGO miasta (obie role —
- * from i to) z `budynekOdblokowany===true`, dolicz `0.05 × własny dochód
- * dystansowy tej strony trasy` (tradeRouteTotalDistanceIncome — T1+T2, ląd
- * bez mnożnika, morze ×2 — CELOWO BEZ mnożnika bonusu cudów CUDA-HANDEL-01,
- * osobny niepowiązany mechanizm; recon rundy 1, decision-abc.md). Trasa BEZ
- * budynku (budynekOdblokowany=false) nie wnosi nic — zamyka ryzyko znalezione
- * przez Final Control T3 (stary computeTradeRouteCountByCity liczył WSZYSTKIE
- * połączone trasy niezależnie od budynku). Wejście do addytywnego składnika
- * Handlu w economy.ts (CityYieldContext.premiaHandluTrasHandlowych),
- * ZASTĘPUJE stary computeTradeRouteCountByCity/mnożnik (1+0.05×n).
+ * from i to) z `budynekOdblokowany===true`, dolicz `0.05 × dochód trasy`
+ * zwrócony przez `tradeRouteIncomeForRoute`. Oznacza to, że dla trasy między
+ * różnymi właścicielami premia 5% jest liczona od kwoty już zwiększonej o 100%.
+ * Trasa BEZ budynku (budynekOdblokowany=false) nie wnosi nic — zamyka ryzyko
+ * znalezione przez Final Control T3.
  */
 export function computeTradeRouteBuildingBonusByCity(
   routes: readonly TradeRoute[],
