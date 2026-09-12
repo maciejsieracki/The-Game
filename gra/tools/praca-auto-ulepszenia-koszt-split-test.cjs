@@ -52,29 +52,41 @@ check(
   /let _lastPracaAutoUlepszeniaKoszt: number = 0;/.test(mainSource),
 );
 
+// P-PRACA-BRAMKI-REGEX-OSLEPIONE-PO-LASTPRACA-Q1: po migracji cache Pracy na
+// per-fotel (P-HOTSEAT-ETAP6C-CHROMIUM-LASTPRACA-IMPL-Q1, `54f297dc`) reset na
+// starcie end-of-turn zyskał dodatkową linię `_lastPracaUpkeep = 0;` MIĘDZY
+// `_lastPracaRate = 0;` a `_lastPracaAutoUlepszeniaKoszt = 0;` (ten sam blok
+// resetu, kolejność pól niezmieniona co do sensu -- tylko jedno pole więcej
+// obok). Regex zaktualizowany, żeby dopuszczał tę linię, zamiast wymagać
+// bezpośredniego sąsiedztwa.
 check(
-  '_lastPracaAutoUlepszeniaKoszt resetowane do 0 na starcie bloku end-of-turn (obok "_lastPracaRate = 0;")',
-  /_lastPracaRate = 0;\s*\n\s*_lastPracaAutoUlepszeniaKoszt = 0;/.test(mainSource),
+  '_lastPracaAutoUlepszeniaKoszt resetowane do 0 na starcie bloku end-of-turn (po "_lastPracaRate = 0;"/"_lastPracaUpkeep = 0;")',
+  /_lastPracaRate = 0;\s*\n\s*_lastPracaUpkeep = 0;\s*\n\s*_lastPracaAutoUlepszeniaKoszt = 0;/.test(mainSource),
 );
 
-// Oba miejsca, w których pick.kosztPraca jest odejmowane od _lastPracaRate (pętla
+// Oba miejsca, w których pick.kosztPraca jest odejmowane od stawki (pętla
 // auto-ulepszeń, wątek "wyrab"/wycinka i zwykłe ulepszenie) MUSZĄ też inkrementować nowe
 // pole -- w TEJ SAMEJ instrukcji/bloku, nie osobnym przybliżeniem gdzie indziej.
-const kosztPracaSubtractSites = [...mainSource.matchAll(/_lastPracaRate -= pick\.kosztPraca;/g)];
+// Po migracji per-fotel surowe `_lastPracaRate -= pick.kosztPraca;` stało się
+// akcesorem `setOwnerLastPracaRate(hOid, ownerLastPracaRate(hOid) -
+// pick.kosztPraca);` -- ta sama arytmetyka (odjęcie kosztu), inny zapis.
+const kosztPracaSubtractSites = [...mainSource.matchAll(
+  /setOwnerLastPracaRate\(hOid, ownerLastPracaRate\(hOid\) - pick\.kosztPraca\);/g,
+)];
 check(
-  'Dokładnie 2 miejsca odejmujące pick.kosztPraca od _lastPracaRate (wycinka + zwykłe ulepszenie), bez zmiany liczby miejsc',
+  'Dokładnie 2 miejsca odejmujące pick.kosztPraca od stawki per-fotel (wycinka + zwykłe ulepszenie), bez zmiany liczby miejsc',
   kosztPracaSubtractSites.length === 2,
 );
 
 let bothSitesPaired = kosztPracaSubtractSites.length === 2;
 for (const m of kosztPracaSubtractSites) {
-  const windowAfter = mainSource.slice(m.index, m.index + 200);
-  if (!/_lastPracaAutoUlepszeniaKoszt \+= pick\.kosztPraca;/.test(windowAfter)) {
+  const windowAfter = mainSource.slice(m.index, m.index + 250);
+  if (!/setOwnerLastPracaAutoUlepszeniaKoszt\(\s*hOid, ownerLastPracaAutoUlepszeniaKoszt\(hOid\) \+ pick\.kosztPraca,\s*\);/.test(windowAfter)) {
     bothSitesPaired = false;
   }
 }
 check(
-  'Każde odjęcie pick.kosztPraca od _lastPracaRate ma sparowane += do _lastPracaAutoUlepszeniaKoszt tuż obok (ta sama pętla, nie osobne przybliżenie)',
+  'Każde odjęcie pick.kosztPraca od stawki per-fotel ma sparowane += do _lastPracaAutoUlepszeniaKoszt (per-fotel) tuż obok (ta sama pętla, nie osobne przybliżenie)',
   bothSitesPaired,
 );
 
@@ -85,9 +97,12 @@ check(
   /pracaAutoUlepszeniaKoszt\?: number;/.test(hudSource),
 );
 
+// P-PRACA-BRAMKI-REGEX-OSLEPIONE-PO-LASTPRACA-Q1: snapshot HUD czyta TERAZ
+// przez akcesor per-fotel `ownerLastPracaAutoUlepszeniaKoszt(ownerId)` (nie
+// wprost zmienną modułu) -- ta sama wartość, per aktywnego właściciela.
 check(
-  'main.ts: snapshot HUD zwraca pracaAutoUlepszeniaKoszt: Math.round(_lastPracaAutoUlepszeniaKoszt)',
-  /pracaAutoUlepszeniaKoszt: Math\.round\(_lastPracaAutoUlepszeniaKoszt\)/.test(mainSource),
+  'main.ts: snapshot HUD zwraca pracaAutoUlepszeniaKoszt: Math.round(ownerLastPracaAutoUlepszeniaKoszt(ownerId))',
+  /pracaAutoUlepszeniaKoszt: Math\.round\(ownerLastPracaAutoUlepszeniaKoszt\(ownerId\)\)/.test(mainSource),
 );
 
 // ---- SEKCJA 3: pole widoczne w UI jako OSOBNA liczba (nie zlane z saldem netto) ----

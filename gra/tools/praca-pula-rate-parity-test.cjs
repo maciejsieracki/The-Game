@@ -113,12 +113,22 @@ check(
   );
 }
 
+// P-PRACA-BRAMKI-REGEX-OSLEPIONE-PO-LASTPRACA-Q1: po migracji cache Pracy na
+// per-fotel (P-HOTSEAT-ETAP6C-CHROMIUM-LASTPRACA-IMPL-Q1, `54f297dc`) surowe
+// `_lastPracaRate -= pick.kosztPraca;` w tym miejscu (pętla auto-ulepszeń
+// gracza, `for (const hOid of humanSeats.humanOwnerIds)`) zostało zastąpione
+// akcesorem per-fotel `setOwnerLastPracaRate(hOid, ownerLastPracaRate(hOid) -
+// pick.kosztPraca)` -- SEMANTYKA identyczna (to samo odjęcie od tej samej
+// stawki), zmieniony WYŁĄCZNIE zapis (per-fotel zamiast singularnej zmiennej
+// modułu). Regex zaktualizowany do nowego kształtu; okno 800 (zamiast 500),
+// bo między `playerPracaPool -= pick.kosztPraca;` a odjęciem stawki leży
+// dłuższy komentarz uzasadniający per-fotel zapis (gałąź wycinki lasu).
 check(
-  'Auto-ulepszenia: pick.kosztPraca odjęte od _lastPracaRate (Wątek D)',
+  'Auto-ulepszenia: pick.kosztPraca odjęte od _lastPracaRate (Wątek D, per-fotel)',
   followsWithin(
     'playerPracaPool -= pick.kosztPraca;',
-    '_lastPracaRate -= pick.kosztPraca;',
-    500,
+    'setOwnerLastPracaRate(hOid, ownerLastPracaRate(hOid) - pick.kosztPraca);',
+    800,
   ),
 );
 
@@ -133,7 +143,15 @@ const idxAutoImpCatch = firstIndexOf(
   "} catch (errAutoImp) {\n              console.error('[Ulepszenia] Błąd auto-ulepszeń gracza:', errAutoImp);\n            }",
 );
 const idxFlagSetTrue = firstIndexOf('_pracaRateFreshFromEndTurn = true;');
-const idxLastKultura = firstIndexOf('_lastKultura = cities\n              .filter(c => c.ownerId === 0)');
+// P-PRACA-BRAMKI-REGEX-OSLEPIONE-PO-LASTPRACA-Q1: `_lastKultura = cities
+// .filter(c => c.ownerId === 0)` (zaszyty owner 0) zostało po migracji
+// per-fotel zastąpione akcesorem `setOwnerLastKultura(humanOwnerId, cities
+// .filter(c => c.ownerId === humanOwnerId)...)` -- ta sama kotwica porządkowa
+// (marker leżący PO `_lastKultura`/przed zapisem), zaktualizowany do nowego
+// kształtu wywołania i parametru `humanOwnerId` (zamiast zaszytego `0`).
+const idxLastKultura = firstIndexOf(
+  'setOwnerLastKultura(\n              humanOwnerId,\n              cities\n                .filter(c => c.ownerId === humanOwnerId)',
+);
 const idxFinalMarkDirty = firstIndexOf(
   "markCityStateDirty(); // D10: koniec tury — siatka bezpieczeństwa (wzrost/tech/zdobycie/AI)",
 );
@@ -166,14 +184,33 @@ check(
   sliceBetween !== '' && updateHudCallsBetween === 0,
 );
 
-check(
-  'refreshLiveEmpireRatesUnsafe(): przypisanie `_lastPracaRate = pracaPoolBrutto - pracaUpkeepPreview` pomijane, gdy flaga `true` (i flaga konsumowana)',
-  followsWithin(
-    'const pracaPoolBrutto = previewPracaPoolBrutto(pracaTicks, {',
-    'if (_pracaRateFreshFromEndTurn) {\n        _pracaRateFreshFromEndTurn = false;\n      } else {\n        _lastPracaRate = pracaPoolBrutto - pracaUpkeepPreview;\n      }',
-    3400,
-  ),
-);
+// P-PRACA-BRAMKI-REGEX-OSLEPIONE-PO-LASTPRACA-Q1: dwie zmiany od czasu gdy ten
+// test był ostatnio zielony na tym fragmencie -- (1) migracja per-fotel
+// zastąpiła surowe `_lastPracaRate = pracaPoolBrutto - pracaUpkeepPreview;`
+// akcesorem `setOwnerLastPracaRate(ME(), pracaPoolBrutto - pracaUpkeepPreview)`
+// (main.ts ~18195, uzasadnienie: to miejsce liczy podgląd DLA `ME()`, zapis
+// musi iść przez akcesor per-fotel); (2) między `} else {` a przypisaniem
+// doszedł długi komentarz REGRES3 (main.ts ~18186-18194), więc dawny literalny
+// 4-liniowy needle (bez odstępu na komentarz) nie mógłby dopasować nawet przy
+// starym przypisaniu. Sprawdzenie zastąpione kolejnością indeksów czterech
+// kotwic (if -> false -> else -> nowe przypisanie), odporną na treść komentarzy
+// między nimi -- SEMANTYKA identyczna: guard nadal musi konsumować flagę w
+// gałęzi `if` i wykonywać przypisanie WYŁĄCZNIE w gałęzi `else`, w tej kolejności.
+{
+  const iAnchor = firstIndexOf('const pracaPoolBrutto = previewPracaPoolBrutto(pracaTicks, {');
+  const windowGuard = iAnchor !== -1 ? source.slice(iAnchor, iAnchor + 4000) : '';
+  const iIf = windowGuard.indexOf('if (_pracaRateFreshFromEndTurn) {');
+  const iFalse = iIf !== -1 ? windowGuard.indexOf('_pracaRateFreshFromEndTurn = false;', iIf) : -1;
+  const iElse = iFalse !== -1 ? windowGuard.indexOf('} else {', iFalse) : -1;
+  const iSet = iElse !== -1
+    ? windowGuard.indexOf('setOwnerLastPracaRate(ME(), pracaPoolBrutto - pracaUpkeepPreview);', iElse)
+    : -1;
+  check(
+    'refreshLiveEmpireRatesUnsafe(): setOwnerLastPracaRate(ME(), pracaPoolBrutto - pracaUpkeepPreview) pomijane, gdy flaga `true` (i flaga konsumowana)',
+    iAnchor !== -1 && iIf !== -1 && iFalse !== -1 && iElse !== -1 && iSet !== -1
+      && iIf < iFalse && iFalse < iElse && iElse < iSet,
+  );
+}
 
 console.log('\n== SEKCJA 3: dowód numeryczny (scenariusz ze zgłoszenia, Rzym) ==');
 
@@ -348,11 +385,14 @@ check(
   ),
 );
 
+// P-PRACA-BRAMKI-REGEX-OSLEPIONE-PO-LASTPRACA-Q1: wywołanie zyskało drugi
+// argument `ME()` (`refreshPlayerCityEcon(preview.perCity, ME())`, main.ts
+// ~18207) -- ta sama funkcja/pominięcie, zapis dopasowany do aktualnej sygnatury.
 check(
-  '`refreshPlayerCityEcon(preview.perCity)` pominięty, gdy flaga była `true` przy wejściu',
+  '`refreshPlayerCityEcon(preview.perCity, ME())` pominięty, gdy flaga była `true` przy wejściu',
   followsWithin(
     'const skipCityEconOverwriteFreshFromEndTurn = _pracaRateFreshFromEndTurn;',
-    'if (!skipCityEconOverwriteFreshFromEndTurn) {\n        refreshPlayerCityEcon(preview.perCity);\n      }',
+    'if (!skipCityEconOverwriteFreshFromEndTurn) {\n        refreshPlayerCityEcon(preview.perCity, ME());\n      }',
     2200,
   ),
 );
