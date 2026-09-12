@@ -7146,14 +7146,61 @@ function isDevOnlyPlayerText(text: string): boolean {
  * otaczającą interpunkcją, np. „; ABC-7: ...", aż do końca zdania/stringa) jest tu
  * WYCINANY, a reszta notatki (legalny tekst) zostaje — analogicznie do już istniejącego
  * wzorca „PYTANIE ...=.../(Maciej daty)" niżej.
+ *
+ * NAPRAWA 2 (P-BUDYNKI-UWAGI-ABC-CZESCIOWY-WYCIEK-Q1): dwie dodatkowe klasy wycieku,
+ * potwierdzone realnymi wpisami `uwagi` w `buildings.json`:
+ *
+ * 1. Partial-strip do pierwszej kropki — powyższy regex `[^.]*\.?` wycinał notatkę dev
+ *    tylko do PIERWSZEGO zdania, więc notatka wielozdaniowa (np. Port, linia ok. 442:
+ *    „ABC-20 B: ... . LANCUCH W GORE: ... . Pole 'przyrost' ... martwe. Budowla portowa
+ *    ...") zostawiała środkowe zdania dev-tekstu graczowi. Naprawa: gdy w całym tekście
+ *    są ≥2 kropki, adnotację „ABC-<numer>:" wycinamy od jej początku AŻ DO POCZĄTKU
+ *    OSTATNIEGO zdania całego tekstu (traktowanego jako potencjalnie legalna końcówka),
+ *    zamiast tylko do najbliższej kropki — patrz `boundary` niżej. Gdy marker sam
+ *    znajduje się w tym ostatnim zdaniu (albo kropek jest <2), zachowanie jest identyczne
+ *    jak dawniej (wycięcie tylko jednego zdania z markerem) — zero regresu dla
+ *    dotychczasowych, jednozdaniowych przypadków (w tym wszystkie istniejące wpisy
+ *    `tech.json`).
+ * 2. Brak dwukropka po numerze ABC — adnotacje parentetyczne w stylu „(merge bez zmian,
+ *    ABC-21 B)." (numer ABC na KOŃCU nawiasu, bez dwukropka zaraz po nim) w ogóle nie
+ *    pasowały do wzorca `ABC-\d+...\s*:`. Naprawa: osobny krok wycina W CAŁOŚCI każdy
+ *    nawias `(...)`, który zawiera gdziekolwiek w środku wzorzec „ABC-<numer>[litera]"
+ *    — niezależnie od pozycji dwukropka (a właściwie jego braku) wewnątrz nawiasu.
  */
 function stripInlineDevAnnotations(text: string): string {
-  return text
+  let out = text
     .replace(/^PYTANIE\s+\d+\s*=\s*[ABC]\s*\([^)]*\)\s*:?\s*/i, '')
     .replace(/\bPYTANIE\s+\d+\s*=\s*[ABC]\s*\([^)]*\)/gi, '')
     .replace(/\(Maciej\s+\d{4}-\d{2}-\d{2}\)/g, '')
     .replace(/\bdecyzj[aą]\s+Maciej\s+\d{4}-\d{2}-\d{2}/gi, '')
-    .replace(/[\s;,.]*\bABC-\d+(?:\s?[A-Za-z])?\s*:\s*[^.]*\.?/gi, ' ')
+    // Adnotacja ABC- w nawiasie, NIEZALEŻNIE od pozycji dwukropka (a właściwie jego
+    // braku) w środku, np. „(merge bez zmian, ABC-21 B)." — cały nawias wycinany.
+    .replace(/\s*\([^()]*\bABC-\d+(?:\s?[A-Za-z])?\b[^()]*\)/gi, '');
+
+  // Adnotacja ABC- z dwukropkiem: „ABC-<numer>[litera]: ...". Może obejmować więcej niż
+  // jedno zdanie (ciąg dev-tekstu bez własnego markera w kolejnych zdaniach — patrz opis
+  // NAPRAWA 2 pkt 1 wyżej). Wycinamy od początku markera (wraz z otaczającą interpunkcją)
+  // do początku OSTATNIEGO zdania całego tekstu — chyba że marker sam jest w tym ostatnim
+  // zdaniu (albo kropek jest <2), wtedy jak dawniej: tylko to jedno zdanie z markerem.
+  const leadRe = /[\s;,.]*\bABC-\d+(?:\s?[A-Za-z])?\s*:\s*/i;
+  const m = leadRe.exec(out);
+  if (m) {
+    const spanStart = m.index;
+    const markerStart = out.indexOf('ABC-', spanStart);
+    const dots = [];
+    for (let i = 0; i < out.length; i++) if (out[i] === '.') dots.push(i);
+    // Początek ostatniego zdania = tuż po przedostatniej kropce; przy <2 kropkach cały
+    // tekst liczy się jako „ostatnie zdanie" (boundary=0 -> zawsze stara ścieżka niżej).
+    const secondLastDot = dots.length >= 2 ? dots[dots.length - 2] : undefined;
+    const boundary = secondLastDot !== undefined ? secondLastDot + 1 : 0;
+    if (markerStart < boundary) {
+      out = out.slice(0, spanStart) + ' ' + out.slice(boundary);
+    } else {
+      out = out.replace(/[\s;,.]*\bABC-\d+(?:\s?[A-Za-z])?\s*:\s*[^.]*\.?/i, ' ');
+    }
+  }
+
+  return out
     .replace(/\s{2,}/g, ' ')
     .trim();
 }

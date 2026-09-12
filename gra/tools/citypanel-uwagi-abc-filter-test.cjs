@@ -217,5 +217,72 @@ if (appendTechDetailBlockSrc) {
     'appendTechDetailBlock() filtruje t.Uwagi przez playerFacingNote(t.Uwagi) przed wyrenderowaniem');
 }
 
+// ---------------------------------------------------------------------------
+// 4. P-BUDYNKI-UWAGI-ABC-CZESCIOWY-WYCIEK-Q1 — runda 1. Wszystkie realne wpisy
+//    `uwagi` w `buildings.json` zawierające `ABC-<numer>` (znalezione przez
+//    `grep -n '"uwagi"' gra/data/buildings.json | grep -iE 'ABC-[0-9]+'`, 2026-09-12,
+//    5 trafień). Asercje na DOKŁADNY oczekiwany gracz-facing string (lub null).
+// ---------------------------------------------------------------------------
+if (playerFacingNote) {
+  const buildingsCases = [
+    {
+      label: 'buildings.json:442 (Port) — notatka dev WIELOZDANIOWA (bug 1, GOAL przykład 1): ' +
+        'cała wycięta, legalne zdanie o koszcie budowy zostaje',
+      input: "ABC-20 B: suma bonusów Port + Port wielki w JSON. LANCUCH W GORE: maksPoziom=1 -- " +
+        "wartosc stala per tier, rosnie WYLACZNIE przez awans. Pole 'przyrost' zostaje w danych " +
+        "jako notatka na przyszlosc, obecnie martwe. Budowla portowa epoki Żelaza -> " +
+        "drewno+kamień (nie drewno+cegła), zeby miasto bez zloza gliny nie zostalo bez portu.",
+      expected: 'Budowla portowa epoki Żelaza -> drewno+kamień (nie drewno+cegła), ' +
+        'zeby miasto bez zloza gliny nie zostalo bez portu.',
+    },
+    {
+      label: "buildings.json:587 — 'ABC-6:' (jedno zdanie dev) wycięte, reszta (inny, nie-ABC " +
+        'dev-marker, poza zakresem tego dispatchu) zostaje bez zmian względem zachowania sprzed naprawy',
+      input: "ABC-6: glina+drewno→ceramika (paliwo usuniete 2026-07-23). " +
+        "SPEC-KOSZTY-SUROWCOWE-BUDYNKOW 2026-07-25: epoka Kamienia = wylacznie drewno.",
+      expected: 'SPEC-KOSZTY-SUROWCOWE-BUDYNKOW 2026-07-25: epoka Kamienia = wylacznie drewno.',
+    },
+    {
+      label: "buildings.json:634 — 'ABC-8:' (jedno zdanie dev) wycięte, reszta zostaje bez zmian",
+      input: "ABC-8: bramka Pismo wymaga Cegielni w imperium. Konwerter bierze drewno 1:1 " +
+        "(paliwo usuniete 2026-07-23).",
+      expected: 'Konwerter bierze drewno 1:1 (paliwo usuniete 2026-07-23).',
+    },
+    {
+      label: 'buildings.json:1619 (Akademia) — ABC BEZ dwukropka w nawiasie (bug 2, GOAL przykład 2): ' +
+        'nawias „(merge bez zmian, ABC-21 B)" wycięty w całości, żaden ślad ABC-21 w wyniku. ' +
+        'UWAGA (Evaluator R1 zarzut 1b): wiodące „GRUPY-BUDYNKOW :" (osierocony dwukropek, surowy ' +
+        'wewnętrzny tag) to INNY, nie-ABC dev-marker z niezmienionej w tej rundzie linii ' +
+        '`.replace(/\\(Maciej\\s+\\d{4}-\\d{2}-\\d{2}\\)/g, \'\')` — poza zakresem tego dispatchu, ' +
+        'identycznie jak przypadek buildings.json:587 niżej w tym pliku; ten test celowo NIE twierdzi ' +
+        'pełnego oczyszczenia wpisu, tylko poprawne wycięcie adnotacji ABC-21',
+      input: "GRUPY-BUDYNKOW (Maciej 2026-07-25): Akademia to NIEZALEZNY budynek obok Biblioteki " +
+        "(nie zastepuje jej, upgradeFrom usuniety) -- oba stoja w miescie osobno. Nauka/Kultura " +
+        "rozdzielone (9=3+6, 7=2+5 wzgledem Biblioteki), zeby wklad Biblioteki nie liczyl sie dwa " +
+        "razy. Teatr nadal ukryty z produkcji i wliczony w Akademie (merge bez zmian, ABC-21 B).",
+      expected: 'GRUPY-BUDYNKOW : Akademia to NIEZALEZNY budynek obok Biblioteki (nie zastepuje jej, ' +
+        'upgradeFrom usuniety) -- oba stoja w miescie osobno. Nauka/Kultura rozdzielone (9=3+6, ' +
+        '7=2+5 wzgledem Biblioteki), zeby wklad Biblioteki nie liczyl sie dwa razy. Teatr nadal ' +
+        'ukryty z produkcji i wliczony w Akademie.',
+    },
+    {
+      label: 'buildings.json:1667 — notatka CAŁKOWICIE dev-only ("ABC-21 B: wchodzi w merge ' +
+        'Akademia — nie buduj osobno") -> null (zakaz fabrykowania resztek/pustego stringa)',
+      input: 'ABC-21 B: wchodzi w merge Akademia — nie buduj osobno',
+      expected: null,
+    },
+  ];
+
+  for (const c of buildingsCases) {
+    const result = playerFacingNote(c.input);
+    ok(result === c.expected,
+      `${c.label}\n    input:    ${JSON.stringify(c.input)}\n    expected: ${JSON.stringify(c.expected)}\n    got:      ${JSON.stringify(result)}`);
+    if (c.expected !== null) {
+      ok(typeof result === 'string' && !/\bABC-\d+\b/i.test(result),
+        `${c.label} — wynik NIE zawiera już śladu "ABC-<numer>": ${JSON.stringify(result)}`);
+    }
+  }
+}
+
 console.log(`\ncitypanel-uwagi-abc-filter-test: ${pass} pass, ${fail} fail`);
 process.exit(fail === 0 ? 0 : 1);
