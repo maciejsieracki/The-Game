@@ -252,7 +252,7 @@ export function hasAnyWonderCityYield(b: Readonly<WonderYieldBonus>): boolean {
 // pory czysta martwa obietnica w wonders.json, żaden kod go nie czytał.
 //
 // ROZSTRZYGNIĘCIA (nie zgaduj przy następnej sesji — to jest kanon):
-//   1. ZASILA WYŁĄCZNIE dochód z TRAS HANDLOWYCH (tradeRouteDistanceIncome /
+//   1. ZASILA WYŁĄCZNIE dochód z TRAS HANDLOWYCH (tradeRouteIncomeByDistance /
 //      computeTradeRouteIncomeByCity w trade-routes.ts, wpięte do
 //      turn-economy.ts jako "pieniadzZTras"). NIGDY Daninę/Podatek
 //      (handelBrutto/handelNetto w economy.ts, cityYieldPerTurn) — pieniadzZTras
