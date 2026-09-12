@@ -6,15 +6,22 @@ use serde::{Deserialize, Serialize};
 /// base terrain values. `ShallowWater` is the coastal water band; it remains
 /// workable by a city but is not traversable by land units.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
-#[serde(rename_all = "snake_case")]
 pub enum TerrainType {
+    #[serde(rename = "laka")]
     Grassland,
+    #[serde(rename = "rownina")]
     Plains,
+    #[serde(rename = "wzgorza")]
     Hills,
+    #[serde(rename = "gory")]
     Mountains,
+    #[serde(rename = "plytkie_morze")]
     ShallowWater,
+    #[serde(rename = "morze")]
     Ocean,
+    #[serde(rename = "pustynia")]
     Desert,
+    #[serde(rename = "polarny")]
     Tundra,
 }
 
@@ -34,6 +41,7 @@ impl TerrainType {
     pub const Wzgorza: Self = Self::Hills;
     pub const Gory: Self = Self::Mountains;
     pub const PlytkieMorze: Self = Self::ShallowWater;
+    pub const Wybrzeze: Self = Self::ShallowWater;
     pub const Morze: Self = Self::Ocean;
     pub const Pustynia: Self = Self::Desert;
     pub const Polarny: Self = Self::Tundra;
@@ -83,7 +91,8 @@ impl TerrainType {
     pub const fn movement_cost(self) -> Option<u8> {
         match self {
             Self::Hills => Some(2),
-            Self::Grassland | Self::Plains | Self::Desert => Some(1),
+            Self::Grassland | Self::Plains => Some(1),
+            Self::Desert => Some(2),
             Self::Mountains | Self::ShallowWater | Self::Ocean | Self::Tundra => None,
         }
     }

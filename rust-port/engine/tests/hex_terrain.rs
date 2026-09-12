@@ -89,7 +89,7 @@ fn terrain_movement_costs_are_explicit() {
     assert_eq!(TerrainType::Grassland.movement_cost(), Some(1));
     assert_eq!(TerrainType::Plains.movement_cost(), Some(1));
     assert_eq!(TerrainType::Hills.movement_cost(), Some(2));
-    assert_eq!(TerrainType::Desert.movement_cost(), Some(1));
+    assert_eq!(TerrainType::Desert.movement_cost(), Some(2));
     assert_eq!(TerrainType::Tundra.movement_cost(), None);
     assert_eq!(TerrainType::Mountains.movement_cost(), None);
     assert_eq!(TerrainType::ShallowWater.movement_cost(), None);
@@ -103,6 +103,7 @@ fn terrain_aliases_describe_the_same_source_values() {
     assert_eq!(TerrainType::Wzgorza, TerrainType::Hills);
     assert_eq!(TerrainType::Gory, TerrainType::Mountains);
     assert_eq!(TerrainType::PlytkieMorze, TerrainType::ShallowWater);
+    assert_eq!(TerrainType::Wybrzeze, TerrainType::ShallowWater);
     assert_eq!(TerrainType::Morze, TerrainType::Ocean);
     assert_eq!(TerrainType::Pustynia, TerrainType::Desert);
     assert_eq!(TerrainType::Polarny, TerrainType::Tundra);
@@ -128,6 +129,8 @@ fn coordinates_and_terrain_are_json_round_trip_safe() {
 
     let coordinate_json = serde_json::to_string(&coordinate).unwrap();
     let terrain_json = serde_json::to_string(&terrain).unwrap();
+    assert_eq!(coordinate_json, r#"{"q":2,"r":-5}"#);
+    assert_eq!(terrain_json, r#""plytkie_morze""#);
     assert_eq!(
         serde_json::from_str::<HexCoord>(&coordinate_json).unwrap(),
         coordinate
