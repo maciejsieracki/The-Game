@@ -6,6 +6,7 @@ mod ids;
 pub mod improvements;
 pub mod map_generator;
 mod player;
+pub mod recruitment;
 pub mod resource_production;
 mod rng;
 mod session;

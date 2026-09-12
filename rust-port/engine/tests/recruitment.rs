@@ -1,11 +1,7 @@
-#[allow(dead_code)]
-#[path = "../src/domain/recruitment.rs"]
-mod recruitment;
-
 use std::collections::BTreeMap;
 
-use recruitment::{
-    can_afford_recruitment, canonical_recruitment_costs, recruitment_for, spend_recruitment,
+use civ_engine::domain::recruitment::{
+    self, can_afford_recruitment, canonical_recruitment_costs, recruitment_for, spend_recruitment,
     total_resource_upkeep, RecruitmentError, ResourceStock,
 };
 

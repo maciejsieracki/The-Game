@@ -8,6 +8,12 @@ pub use domain::building_costs::{
     validate_building_expenditure, BuildingCost, BuildingSpendError, BuildingSpendResult,
     ResourceStock,
 };
+pub use domain::recruitment::{
+    can_afford_recruitment, can_afford_unit_recruitment, canonical_recruitment_costs,
+    recruitment_for, spend_recruitment, total_resource_upkeep, unit_recruitment,
+    unit_resource_upkeep_for_turns, validate_recruitment, RecruitmentError, RecruitmentSpendResult,
+    UnitRecruitment,
+};
 pub use domain::{
     can_build_improvement, generate_map, improvement_production, production_for, qualifies,
     qualifies_improvement, resource_production, CanonicalState, CityDto, CityId, CityState,
