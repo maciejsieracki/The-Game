@@ -1,10 +1,10 @@
 {
-  "publishedAt": "2026-09-12T12:01:00",
-  "sourceBuild": "gra/dist (commit 4cdf6b34)",
-  "note": "FALA 382 - P-WYDARZENIA-PORZADKI-DROBNE-Q1 ZINTEGROWANE (commit 4cdf6b34): naprawa N1 (rozjazd ternary/?? w getEventLink - zdarzenie blokujace mogloby teoretycznie dostac link z techDoneEventLinkFor/cityCaptureEventLinkFor) i N2 (brak .clear() dla tradeRouteEventPlayerCityIds - potencjalny, powolny wyciek pamieci w dlugich rozgrywkach, teraz czyszczona we wszystkich 3 miejscach gdzie borderMarchEventTargets jest juz czyszczona). Znalezisko Evaluatora z 2026-08-22 przy R-WYDARZENIA-AUDYT-PRZEKIEROWANIA-Q1. 2 rundy: runda 1 naprawila oba, zlamala przy tym kotwice (0b) w istniejacym tescie spoza allowlisty (sidepanel-event-przekierowania-real-render-test.cjs) - wlasciciel rozszerzyl allowliste, runda 2 naprawila regex kotwicy z dowodem mutant-testingu. Final Control PASS w obu rundach, niezaleznie zweryfikowane w tym drzewie: tsc czysty, 5 bramek referencyjnych + side-panel-event-link-test 37/37 + sidepanel-event-przekierowania-real-render-test 51/51.",
+  "publishedAt": "2026-09-12T12:04:00",
+  "sourceBuild": "gra/dist (commit e4e74078)",
+  "note": "FALA 383 - P-WYDARZENIA-EOT-KONTEKST-DLUG-Q1 ZINTEGROWANE (commit e4e74078): DeferredEotHint/SidePanelEvent rozszerzone o opcjonalny kontekst bytu {hex?, cityId?, ownerId?}, przeprowadzony przez showHintMessage() i deferredHintsToSidePanelEvents(); dwa konkretne call site wypelnione jako dowod (kapitulacja glodowa, rajd Ludow Morza). Fundament pod przyszle tematy (np. przyciski Szczegoly dla kart konca tury), nie pelne wdrozenie nawigacji. DECISION_REQUIRED #2 z R-WYDARZENIA-AUDYT-PRZEKIEROWANIA-Q1, ECHO wlasciciela 2026-09-12. Final Control PASS, niezaleznie zweryfikowane: tsc czysty, 5 bramek referencyjnych, eot-event-defer-test 43/43. Rownolegle zamkniety (docs-only, bez zmian kodu) recon P-HOTSEAT-PLAYERPRACAPOOL-SILNIK-PER-FOTEL-Q1 - mapa miejsc silnika czytajacych playerPracaPool bezposrednio, nowe znalezisko: save-load traci pule Pracy drugiego fotela.",
   "publisher": "Orkiestrator (Claude Code)",
   "bundle": "Gra-ROBOCZA.html",
-  "md5": "66630047191d624b8bc739b6bc18ec88",
+  "md5": "04847f903d63d5bf0a929a493d6b75d5",
   "bundlePoleBitwy": "Gra-ROBOCZA-POLE-BITWY.html",
   "md5PoleBitwy": "6deb45d265b82b4eb27e990c345a79c1"
 }

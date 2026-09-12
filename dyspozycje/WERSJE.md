@@ -13,6 +13,17 @@ swoim wĹ‚asnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji d
 > Pakiet 3 z 2026-08-20 jest docs-only i nie tworzy wpisu ROBOCZA/KANON/FINALNA;
 > ten plik pozostaje wyłącznie rejestrem publikacji bundli.
 
+## ROBOCZA 04847f90 - 2026-09-12 12:04 UTC - FALA 383: kontekst bytu dla kart końca tury (fundament)
+
+|- md5 (pełne): 04847f903d63d5bf0a929a493d6b75d5 · stempel: ROBOCZA · label 04847f90 · zakres
+  commitów: `4cdf6b34..e4e74078` (od poprzedniej fali do obecnego `main`) · pole bitwy:
+  `Gra-ROBOCZA-POLE-BITWY.html` md5 `6deb45d265b82b4eb27e990c345a79c1` (NIEZMIENIONE)
+|- **`P-WYDARZENIA-EOT-KONTEKST-DLUG-Q1`** — `DeferredEotHint`/`SidePanelEvent`
+  rozszerzone o opcjonalny kontekst bytu `{hex?, cityId?, ownerId?}`
+  (commit `e4e74078`), fundament pod przyszłe skróty „Szczegóły →" dla kart
+  końca tury. DECISION_REQUIRED #2 z `R-WYDARZENIA-AUDYT-PRZEKIEROWANIA-Q1`,
+  ECHO właściciela 2026-09-12.
+
 ## ROBOCZA 66630047 - 2026-09-12 12:01 UTC - FALA 382: naprawa porządkowa panelu wydarzeń (blocking/resolwer + wyciek mapy)
 
 |- md5 (pełne): 66630047191d624b8bc739b6bc18ec88 · stempel: ROBOCZA · label 66630047 · zakres
