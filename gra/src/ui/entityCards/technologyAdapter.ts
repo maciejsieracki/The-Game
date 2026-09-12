@@ -5,8 +5,10 @@
  * (linie ~338-444 w wersji sprzed T3 — Budynki, Jednostki, Ulepszenia terenu,
  * Kolejne technologie, Zmiany ekonomiczne, „Co możesz teraz zrobić", Wymagania),
  * przeportowana na kontrakt T1b (`collapsible`/`openDefault`/`highlighted` dla
- * akordeonu, `icon`/`trailing`/`badge` per wiersz, `previewLimit` +
- * `compactHeaderOnExpand` dla paginacji jednostek, `layout: 'pills'` dla Wymagań).
+ * akordeonu, `icon`/`trailing`/`badge` per wiersz,
+ * `layout: 'pills'` dla Wymagań). Sekcja Jednostki NIE ustawia `previewLimit` —
+ * pokazuje zawsze wszystkie jednostki od razu
+ * (P-CIVPEDIA-KARTA-JEDNOSTKI-POKAZ-POZOSTALE-N-Q1).
  *
  * Adapter jest samodzielny (jak `buildingAdapter.ts`/`unitAdapter.ts`/
  * `improvementAdapter.ts`) — czyta `buildings.json`/`units.json`/
@@ -44,10 +46,11 @@ const PLACEHOLDER_ICON_SVG =
   '<polygon points="12,2 22,12 12,22 2,12" fill="currentColor" opacity=".15"/>' +
   '<text x="12" y="16" text-anchor="middle" font-size="11" fill="currentColor">T</text></svg>';
 
-/** Ile jednostek pokazać domyślnie w sekcji „Jednostki" przed „Pokaż pozostałe N"
- * — ta sama wartość co `UNIT_PREVIEW` w `techDiscoveryNotice.ts` (dziś przypięta
- * regexem `technology-discovery-card-visual-test.cjs`, `const UNIT_PREVIEW = 3`). */
-const UNIT_PREVIEW = 3;
+// P-CIVPEDIA-KARTA-JEDNOSTKI-POKAZ-POZOSTALE-N-Q1: sekcja „Jednostki" karty
+// technologii pokazuje ZAWSZE wszystkie jednostki od razu (bez paginacji
+// `previewLimit`/„Pokaż pozostałe N"). Usunięty tu lokalny `UNIT_PREVIEW` NIE
+// jest tym samym co `UNIT_PREVIEW` w `techDiscoveryNotice.ts` (popup odkrycia
+// technologii) — ten drugi zostaje NIETKNIĘTY, poza zakresem tego tematu.
 
 type BuildingRow = {
   id: string;
@@ -201,7 +204,7 @@ export const technologyAdapter: EntityCardAdapter<RawTech> = (tech) => {
     key: 'buildings', title: 'Budynki', rows: buildingsRows, collapsible: true, openDefault: true,
   };
 
-  // --- Jednostki (paginacja: previewLimit=UNIT_PREVIEW, sprzężone z compactHeaderOnExpand) ---
+  // --- Jednostki (bez paginacji — zawsze wszystkie, P-CIVPEDIA-KARTA-JEDNOSTKI-POKAZ-POZOSTALE-N-Q1) ---
   const unitsRows: EntityCardRow[] = units.map((u) => {
     const slug = unitToSlug(u.Jednostka);
     const linkTo = resolveUnitRow(slug) != null ? ({ kind: 'unit', id: slug } as const) : undefined;
@@ -216,14 +219,7 @@ export const technologyAdapter: EntityCardAdapter<RawTech> = (tech) => {
   });
   const unitsSection: EntityCardSection = {
     key: 'units', title: 'Jednostki', rows: unitsRows, collapsible: true, openDefault: true,
-    previewLimit: unitsRows.length > UNIT_PREVIEW ? UNIT_PREVIEW : undefined,
   };
-  // UWAGA (delta świadoma, T3): `renderer.ts` (poza allowlistą tego kroku) generuje
-  // przycisk jako „Pokaż pozostałe N" — bez polskiej odmiany rzeczownika po liczbie
-  // (`jednostkę/jednostki/jednostek`), którą miał oryginalny `unitsBody` w
-  // `techDiscoveryNotice.ts` (`pluralPl()`). Kontrakt T1b nie niesie miejsca na
-  // rzeczownik per sekcja — to jest treściowo równoważne (ta sama liczba, ten sam
-  // mechanizm ujawniania), ale mniej precyzyjne językowo niż dzisiejszy tekst.
 
   // --- Ulepszenia terenu -------------------------------------------------------------------
   const improvementsRows: EntityCardRow[] = improvementNames.map((name) => {
@@ -385,9 +381,6 @@ export const technologyAdapter: EntityCardAdapter<RawTech> = (tech) => {
     // P-ENTITYCARD-CIVPEDIA-KLIK-MARTWY-Q1 — uzasadnienie jak w `unitAdapter.ts`.
     // Folder = katalog `docs/encyklopedia/technologie/`.
     civpediaLink: { folder: 'technologie', slug: technologyIdFromName(tech['Technologia']) },
-    // Paginacja jednostek (previewLimit) sprzęga się z kompaktowym nagłówkiem karty —
-    // wzorem `tdn-card--compact`/`wireInteractions()` w `techDiscoveryNotice.ts` (T1b).
-    compactHeaderOnExpand: true,
     historicalNote: historicalNoteOf(tech),
   };
 };
