@@ -139,7 +139,8 @@ function bundleEncyklopedia(dir = ENCY_DIR) {
 function main() {
   const bundle = {
     version: 'rev-civpedia-2026-08-05',
-    generated: new Date().toISOString().slice(0, 10),
+    // Stabilna metadana rewizji; build nie może zależeć od zegara środowiska.
+    generated: '2026-09-05',
     poradnik: bundlePoradnik(),
     encyklopedia: bundleEncyklopedia(),
   };

@@ -1,8 +1,10 @@
 'use strict';
 const fs = require('fs');
+const path = require('path');
 const { JSDOM } = require('jsdom');
 
-const html = fs.readFileSync('/sessions/epic-jolly-heisenberg/mnt/Civ/gra/dist/index.html', 'utf-8');
+const htmlPath = process.env.THE_GAME_SMOKE_HTML || path.join(__dirname, 'dist', 'index.html');
+const html = fs.readFileSync(htmlPath, 'utf-8');
 
 // Find ALL script tags and pick the main bundle (the IIFE one)
 const scriptRegex = /<script([^>]*)>([\s\S]*?)<\/script>/g;

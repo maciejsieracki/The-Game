@@ -382,7 +382,7 @@ eq(routesJ4.length, 0, 'J4: fizyczny Port wymagany po OBU stronach dla morza -- 
 //    szczytowy dochod (40) mimo roznych maxDist. + kredytowanie OBU miast (Q8=B,
 //    bez zmian z poprzedniej przebudowy).
 // ---------------------------------------------------------------------------
-console.log('\n-- F. dochod dystansowy: wzor odwrocony x5, osobny per medium, obie strony zarabiaja --');
+console.log('-- F. dochod dystansowy: bezposrednie faktyczne kwoty, obie strony zarabiaja --');
 const incP = TR.DEFAULT_TRADE_ROUTE_INCOME_PARAMS;
 eq(incP.dochodyLadowe[0], 1, 'F: (setup) ląd dochód minimalny=1 (faktyczna wartość)');
 eq(incP.dochodyLadowe[incP.dochodyLadowe.length - 1], 8, 'F: (setup) ląd dochód maksymalny=8 (faktyczna wartość)');
@@ -431,7 +431,7 @@ eq(incomeByCity.has('D'), false, 'F: trasa ze statusem brak_polaczenia NIE liczy
 //     osobnym, niezmienionym PORT_SEA_TRADE_BONUS_PIENIADZ -- nietestowanym tu,
 //     patrz trade-routes-test.cjs sekcja l4-l6).
 // ---------------------------------------------------------------------------
-console.log('\n-- F2. tradeRouteIncomeByDistance: lad bez zmian, morze x2, oba /5 (min 1) --');
+console.log('-- F2. dochod dystansowy jest bezposredni; trasa zagraniczna dolicza ×2 --');
 // R-HANDEL-SZLAKI-DOCHOD-PODZIEL5-Q1: regula = Math.max(1, Math.round(dawny_wynik/5)),
 // dawny_wynik = tradeRouteIncomeByDistance(...) dla ladu, *2 dla morza (JUZ finalny, przed /5).
 for (const d of [0, 6, 12, 1000]) {
