@@ -35,6 +35,12 @@ export interface CivElimNoticeOpts {
   civLabel: string;
   /** Szczegóły (liczba miast wchłoniętych itd.) — dokładnie treść dawnego scalonego toastu. */
   details: string;
+  /**
+   * RUNDA 3 (P-WYDARZENIA-ELIMINACJA-PODBOJ-KARTA-Q1): przyczyna eliminacji — steruje kickerem
+   * nad tytułem. Domyślnie `'dyplomacja'` (zachowanie sprzed tej rundy, zero regresu dla
+   * wchłonięcia dyplomatycznego).
+   */
+  cause?: 'dyplomacja' | 'podboj';
   onClose?: () => void;
 }
 
@@ -81,6 +87,7 @@ export function showCivElimNotice(opts: CivElimNoticeOpts): void {
 
   const civ = (opts.civLabel ?? '').trim() || 'Cywilizacja';
   const details = (opts.details ?? '').trim();
+  const cause = opts.cause ?? 'dyplomacja';
 
   const host = document.createElement('div');
   host.id = HOST_ID;
@@ -95,7 +102,7 @@ export function showCivElimNotice(opts: CivElimNoticeOpts): void {
   const card = document.createElement('div');
   card.className = 'cen-card';
   card.innerHTML = `<div class="cen-hd">
-      <div class="cen-kick">Dyplomacja</div>
+      <div class="cen-kick">${cause === 'podboj' ? 'Podbój' : 'Dyplomacja'}</div>
       <div class="cen-ttl">ELIMINACJA!</div>
       <div class="cen-sub">${esc(civ)}</div></div>
     <div class="cen-bd">

@@ -8373,7 +8373,7 @@ async function boot(): Promise<void> {
      * SidePanelEvent.id) — the side-panel card only carries the short blurb, clicking it opens
      * civElimNotice.ts with what's stored here (see recordCivElimEvent/onEventClick).
      */
-    const civElimEventDetails = new Map<string, { civLabel: string; details: string }>();
+    const civElimEventDetails = new Map<string, { civLabel: string; details: string; cause?: 'dyplomacja' | 'podboj' }>();
 
     /**
      * R-BRAK-KOMUNIKATU-ELIMINACJA-CYWILIZACJI RUNDA 5 (Maciej, ECHO B+C): JEDYNY punkt emisji
@@ -8393,15 +8393,30 @@ async function boot(): Promise<void> {
      * label/kind instead of its own) and simply shows up once collectTurnEvents stops masking
      * warEventLog (AI phase over). Full content goes into civElimEventDetails under the same id
      * — clicking the card (onEventClick, 'elim-cs-' prefix) opens civElimNotice.ts.
+     *
+     * RUNDA 3 (P-WYDARZENIA-ELIMINACJA-PODBOJ-KARTA-Q1, ECHO właściciela po DECISION_REQUIRED
+     * Final Control rundy 2): 4. parametr opcjonalny `cause` rozróżnia PRZYCZYNĘ eliminacji —
+     * domyślnie `'dyplomacja'` (żeby istniejący call site wchłonięcia dyplomatycznego,
+     * `annexerId === 0` wyżej w tym pliku, mógł pozostać bez zmian). `kind: 'diplo'` NIŻEJ
+     * CELOWO NIE jest sparametryzowany razem z `cause` w tej rundzie — steruje filtrowaniem
+     * karty w panelu bocznym i zmiana jego semantyki to osobna decyzja, poza zakresem tego ECHO
+     * (patrz BLOKADY w raporcie rundy 3).
      */
-    function recordCivElimEvent(csOwnerId: number, civLabel: string, details: string): void {
+    function recordCivElimEvent(
+      csOwnerId: number,
+      civLabel: string,
+      details: string,
+      cause: 'dyplomacja' | 'podboj' = 'dyplomacja',
+    ): void {
       const evId = `elim-cs-${turn}-${csOwnerId}`;
-      civElimEventDetails.set(evId, { civLabel, details });
+      civElimEventDetails.set(evId, { civLabel, details, cause });
       warEventLog.unshift({
         id: evId,
         icon: '\u{1F3F4}',
         title: 'ELIMINACJA: ' + civLabel,
-        subtitle: 'Wchłonięta dyplomatycznie — kliknij po szczegóły',
+        subtitle: cause === 'podboj'
+          ? 'Podbita — kliknij po szczegóły'
+          : 'Wchłonięta dyplomatycznie — kliknij po szczegóły',
         kind: 'diplo',
         negative: true,
       });
@@ -15363,7 +15378,7 @@ async function boot(): Promise<void> {
           // zapisana pod tym samym id trafia do modalu ELIMINACJA! (civElimNotice.ts).
           const info = civElimEventDetails.get(id);
           if (!info) return false;
-          showCivElimNotice({ civLabel: info.civLabel, details: info.details });
+          showCivElimNotice({ civLabel: info.civLabel, details: info.details, cause: info.cause ?? 'dyplomacja' });
           return true;
         }
         case 'city-panel': {
@@ -28524,13 +28539,26 @@ async function boot(): Promise<void> {
         // zamiast showHintMessage() — dzielił jeden #hintToast/timer z komunikatem
         // ELIMINACJA wołanym niżej i natychmiast go nadpisywał.
         showTriumphCityStateNotice({ civLabel: triumphCivLabel, cityName: city.name });
-      } else if (newOwner !== 0) {
-        // Zdobywcą jest AI — showCityCaptureNotice (modal) wyskakuje WYŁĄCZNIE dla gracza,
-        // więc tu nie ma kolizji: toast zostaje jedynym i wystarczającym kanałem.
-        showHintMessage(
-          `${eliminatedCivLabel} — ELIMINACJA! Ostatnie miasto (${city.name}) przejęte przez ${civLabelForOwner(newOwner)}. ${eliminatedDetails}`,
-          6000,
-        );
+      } else if (newOwner !== 0 && oldOwner !== 0) {
+        // P-WYDARZENIA-ELIMINACJA-PODBOJ-KARTA-Q1: eliminacja przez PODBÓJ (zdobywcą jest
+        // AI, ofiara — INNA AI — traci OSTATNIE miasto) ma emitować DOKŁADNIE TAKI SAM
+        // mechanizm karty side-panelu co eliminacja przez wchłonięcie dyplomatyczne (patrz
+        // recordCivElimEvent + annexerId===0 wyżej w tym pliku): trwałą kartę w WYDARZENIA
+        // (przeżywa endTurnInProgress), nie ginący toast. showHintMessage ZASTĄPIONY (nie
+        // dołożony obok) — showCityCaptureNotice i tak jest gracz-only, więc nie ma tu
+        // kolizji do rozstrzygania, a dwa kanały tego samego zdarzenia (toast + karta)
+        // dublowałyby powiadomienie.
+        //
+        // OBRONA RUNDA 2, zarzut 1 (Evaluator) — `oldOwner !== 0` dodany tutaj. Gdy ofiarą
+        // podboju jest GRACZ (oldOwner===0), `recordCityCaptureEvent` powyżej (guard
+        // `args.oldOwner !== 0 && args.newOwner !== 0` NIE early-returnuje dla oldOwner===0)
+        // JUŻ zapisuje pełnoprawną, trwałą kartę eliminacji dla tego zdarzenia — druga karta
+        // z recordCivElimEvent byłaby DUPLIKATEM tego samego zdarzenia, nie „tym samym
+        // mechanizmem co dyplomacja" (tam zawsze dokładnie jedna karta). Ten branch ma
+        // teraz emitować recordCivElimEvent WYŁĄCZNIE dla ofiary-AI (oldOwner!==0), bo tylko
+        // wtedy recordCityCaptureEvent's guard early-returnuje (oba właściciele !==0) i nic
+        // innego nie tworzy karty dla tego zdarzenia.
+        recordCivElimEvent(oldOwner, eliminatedCivLabel, eliminatedDetails, 'podboj');
       }
       eliminateOwner(oldOwner);
       markCityStateDirty();
