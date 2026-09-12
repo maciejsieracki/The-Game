@@ -179,7 +179,7 @@ regresji (regex dopasowany do starego kształtu kodu, semantyka
 niezmieniona, 0 fail w obu) — patrz
 `P-PRACA-BRAMKI-REGEX-OSLEPIONE-PO-LASTPRACA-Q1` niżej.
 
-## `P-PRACA-BRAMKI-REGEX-OSLEPIONE-PO-LASTPRACA-Q1` — PROCESS/GAME — **ZGŁOSZONE 2026-09-12, NIEDISPATCHOWANE, nie blokuje niczego**
+## `P-PRACA-BRAMKI-REGEX-OSLEPIONE-PO-LASTPRACA-Q1` — PROCESS/GAME — **ZINTEGROWANE (main a0ded7d0)**
 
 Znalezisko Final Control rundy 2 tematu `P-HOTSEAT-ETAP6C-CHROMIUM-LASTPRACA-IMPL-Q1`
 (commit `54f297dc`): dwie istniejące bramki regresyjne —
@@ -198,7 +198,7 @@ wzorce regex w obu plikach testowych do nowego kształtu kodu, bez zmiany
 semantyki asercji. Nie wymaga ABC (czysto techniczna naprawa testu). Brak
 dispatchu jeszcze.
 
-## `P-TEST-TECH-UNLOCK-UNITS-TRIPWIRE-PRZEPROJEKTOWAC-Q1` — PROCESS — **ZGŁOSZONE 2026-09-12, NIEDISPATCHOWANE, nie blokuje niczego**
+## `P-TEST-TECH-UNLOCK-UNITS-TRIPWIRE-PRZEPROJEKTOWAC-Q1` — PROCESS — **ZINTEGROWANE (main 00e9ee0e)**
 
 Znalezisko Final Control tematu `P-CIVPEDIA-KARTA-JEDNOSTKI-POKAZ-POZOSTALE-N-Q1`
 (commit `e5ecf4b6`): `gra/tools/tech-unlock-units-test.cjs` zawiera mechaniczny
@@ -211,7 +211,7 @@ test na asercje semantyczne (np. „sekcja Jednostki nadal pokazuje poprawne dan
 po odblokowaniu technologii") zamiast blokować KAŻDĄ edycję pliku. Nie wymaga
 ABC (czysto techniczna naprawa testu). Brak dispatchu jeszcze.
 
-## `P-TEST-ENTITYCARD-DIORAMA-SEKCJA-D-NIEAKTUALNA-Q1` — PROCESS — **ZGŁOSZONE 2026-09-12, NIEDISPATCHOWANE, nie blokuje niczego**
+## `P-TEST-ENTITYCARD-DIORAMA-SEKCJA-D-NIEAKTUALNA-Q1` — PROCESS — **ZINTEGROWANE (main 1de5f309)**
 
 Znalezisko Final Control tematu `P-CIVPEDIA-KARTA-JEDNOSTKI-POKAZ-POZOSTALE-N-Q1`
 (commit `e5ecf4b6`): sekcja D `gra/tools/entity-card-diorama-real-render-test.cjs`
