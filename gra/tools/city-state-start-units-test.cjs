@@ -9,11 +9,10 @@
  * Sekcja A — realna egzekucja `grantCityStateStartUnits` (nie regex-nad-tekstem, wzorem
  * `forced-war-bronze-new-game-reset-test.cjs`): wyodrębnia dokładny tekst funkcji z
  * main.ts (regex/indexOf po niepowtarzalnych kotwicach) i wykonuje go przez `new Function`
- * z prawdziwym, zaimportowanym `cityStateStartUnitCount` (ai-difficulty-bonus.ts) oraz
+ * z liczbą przekazaną przez konkretny call-site oraz
  * atrapą `spawnDifficultyBonusUnit` nagrywającą wywołania. Dowodzi, że FUNKCJA W MAIN.TS
- * faktycznie spawnuje 0/1/2 jednostek dla easy/normal/hard — nie tylko że sama formuła
- * liczenia (cityStateStartUnitCount) zwraca poprawne liczby (to osobno w
- * ai-difficulty-bonus-test.cjs T-DB-i).
+ * faktycznie spawnuje dokładnie przekazaną liczbę — tabele liczenia są testowane osobno
+ * w ai-difficulty-bonus-test.cjs T-DB-j.
  *
  * Sekcja B — straznik wpiecia w main.ts (wzorem Sekcji B `ai-founding-territory-test.cjs`):
  * main.ts to jedna wielka funkcja z domknieciami, ktorej pętli foundowania miast-panstw NIE
@@ -63,7 +62,7 @@ const esbuild = (() => {
 const ENTRY = path.resolve(__dirname, '.city-state-start-units-entry.ts');
 const BUNDLE = path.resolve(__dirname, '.city-state-start-units-bundle.cjs');
 fs.writeFileSync(ENTRY, `
-export { cityStateStartUnitCount, AI_DIFFICULTY_BONUS_UNIT_TYPE } from ${JSON.stringify(
+export { AI_DIFFICULTY_BONUS_UNIT_TYPE } from ${JSON.stringify(
   path.join(GRA_ROOT, 'src', 'game', 'ai-difficulty-bonus'),
 )};
 `, 'utf8');
@@ -82,10 +81,10 @@ try {
   console.error('[city-state-start-units-test] bundle failed:', e.message || e);
   process.exit(1);
 }
-const { cityStateStartUnitCount, AI_DIFFICULTY_BONUS_UNIT_TYPE } = require(BUNDLE);
+const { AI_DIFFICULTY_BONUS_UNIT_TYPE } = require(BUNDLE);
 
-const FN_START_ANCHOR = 'function grantCityStateStartUnits(ownerId: number, q: number, r: number): void {\n';
-const FN_END_ANCHOR = '\n    }\n\n    function grantDifficultyStartBonusesForMajorCapital(';
+const FN_START_ANCHOR = 'function grantCityStateStartUnits(ownerId: number, q: number, r: number, count: number): void {\n';
+const FN_END_ANCHOR = '\n    }\n\n    /** Startowa armia gracza; hot-seat wywołuje tę samą ścieżkę dla aktywnego fotela. */';
 
 function extractFnBody(source) {
   const startIdx = source.indexOf(FN_START_ANCHOR);
@@ -100,30 +99,30 @@ const originalFnBody = extractFnBody(mainSrc);
 
 console.log('R-MIASTA-PANSTWA-STARTOWE-JEDNOSTKI-Q1 — Sekcja A: realna egzekucja grantCityStateStartUnits\n');
 
-function runGrant(fnBody, difficulty, ownerId, q, r) {
+function runGrant(fnBody, count, ownerId, q, r) {
   const spawned = [];
   const spawnDifficultyBonusUnit = (oid, typeId, qq, rr) => {
     spawned.push({ ownerId: oid, typeId, q: qq, r: rr });
   };
   const fn = new Function(
     'ownerId', 'q', 'r',
-    '_menuCityStateDifficulty', 'cityStateStartUnitCount', 'AI_DIFFICULTY_BONUS_UNIT_TYPE', 'spawnDifficultyBonusUnit',
+    'AI_DIFFICULTY_BONUS_UNIT_TYPE', 'spawnDifficultyBonusUnit', 'count',
     fnBody,
   );
-  fn(ownerId, q, r, difficulty, cityStateStartUnitCount, AI_DIFFICULTY_BONUS_UNIT_TYPE, spawnDifficultyBonusUnit);
+  fn(ownerId, q, r, AI_DIFFICULTY_BONUS_UNIT_TYPE, spawnDifficultyBonusUnit, count);
   return spawned;
 }
 
-for (const [difficulty, expectedCount] of [['easy', 0], ['normal', 1], ['hard', 2]]) {
-  const spawned = runGrant(originalFnBody, difficulty, 7, 4, 5);
+for (const expectedCount of [0, 1, 2]) {
+  const spawned = runGrant(originalFnBody, expectedCount, 7, 4, 5);
   assert(
-    `${difficulty}: grantCityStateStartUnits spawnuje dokladnie ${expectedCount} jednostek`,
+    `grantCityStateStartUnits spawnuje dokladnie ${expectedCount} jednostek`,
     spawned.length === expectedCount,
     spawned.length,
   );
   for (const u of spawned) {
-    assert(`${difficulty}: jednostka na hexie miasta-panstwa (4,5), owner=7`, u.q === 4 && u.r === 5 && u.ownerId === 7, u);
-    assert(`${difficulty}: typ jednostki = AI_DIFFICULTY_BONUS_UNIT_TYPE (${AI_DIFFICULTY_BONUS_UNIT_TYPE})`, u.typeId === AI_DIFFICULTY_BONUS_UNIT_TYPE, u.typeId);
+    assert(`jednostka na hexie miasta-panstwa (4,5), owner=7`, u.q === 4 && u.r === 5 && u.ownerId === 7, u);
+    assert(`typ jednostki = AI_DIFFICULTY_BONUS_UNIT_TYPE (${AI_DIFFICULTY_BONUS_UNIT_TYPE})`, u.typeId === AI_DIFFICULTY_BONUS_UNIT_TYPE, u.typeId);
   }
 }
 
@@ -135,7 +134,7 @@ if (!originalFnBody.includes(MUTATION_TARGET)) {
   throw new Error('cel mutacji (petla spawnu) nieobecny w wyodrebnionym ciele funkcji');
 }
 const mutatedFnBody = originalFnBody.replace(MUTATION_TARGET, 'for (let i = 0; i < 0; i++) {');
-const mutatedSpawned = runGrant(mutatedFnBody, 'hard', 7, 4, 5);
+const mutatedSpawned = runGrant(mutatedFnBody, 2, 7, 4, 5);
 assert(
   'MUTACJA: usuniecie petli spawnu (count->0 na sztywno) -- hard spawnuje 0 zamiast 2 (test wykrywa regres)',
   mutatedSpawned.length === 0,
@@ -151,22 +150,22 @@ console.log('\nSekcja B — straznik wpiecia grantCityStateStartUnits w main.ts\
 const CALL_RE = /grantCityStateStartUnits\(/g;
 const callCount = (mainSrc.match(CALL_RE) || []).length;
 assert(
-  'grantCityStateStartUnits wystepuje dokladnie 3x w main.ts (1 definicja + 2 wywolania)',
+  'grantCityStateStartUnits wystepuje dokladnie 3x w main.ts (1 definicja + 2 call-site)',
   callCount === 3,
   callCount,
 );
 
 // Miejsce 1 — petla rywali tego samego typu (deferred, po pierwszym miescie gracza).
-const SITE1_ANCHOR = 'aiStartHexes.push({ q: pos.q, r: pos.r, ownerId });\n          grantCityStateStartUnits(ownerId, pos.q, pos.r);';
+const SITE1_ANCHOR = 'aiStartHexes.push({ q: pos.q, r: pos.r, ownerId });\n          grantCityStateStartUnits(\n            ownerId,\n            pos.q,\n            pos.r,\n            cityStateStartUnitCount(_menuCityStateDifficulty),\n          );';
 assert(
-  'Miejsce 1 (petla rywali tego samego typu): grantCityStateStartUnits(ownerId, pos.q, pos.r) tuz po aiStartHexes.push',
+  'Miejsce 1 (petla rywali tego samego typu) korzysta z ustawienia panstw-miast',
   mainSrc.includes(SITE1_ANCHOR),
 );
 
 // Miejsce 2 — spawnPendingForeignClusters, wylacznie w galezi isCS.
-const SITE2_ANCHOR = 'c.startCityState = true;\n            grantCityStateStartUnits(sc.ownerId, sc.q, sc.r);\n          }';
+const SITE2_ANCHOR = 'c.startCityState = true;\n            grantCityStateStartUnits(\n              sc.ownerId,\n              sc.q,\n              sc.r,\n              foreignCityStateStartUnitCount(_menuDifficulty),\n            );\n          }';
 assert(
-  'Miejsce 2 (spawnPendingForeignClusters, galaz isCS): grantCityStateStartUnits(sc.ownerId, sc.q, sc.r) tuz po c.startCityState = true wewnatrz if (isCS)',
+  'Miejsce 2 (spawnPendingForeignClusters, galaz isCS) korzysta z glownej trudnosci',
   mainSrc.includes(SITE2_ANCHOR),
 );
 
@@ -183,13 +182,11 @@ if (majorCapFnStart !== -1 && majorCapFnEnd !== -1) {
   );
 }
 
-// Mutacja: usuniecie JEDNEGO z dwoch wywolan (Miejsce 1) z tekstu MUSI zaczerwienic straznik.
-const mutatedMainSrc = mainSrc.replace(SITE1_ANCHOR, 'aiStartHexes.push({ q: pos.q, r: pos.r, ownerId });');
-const mutatedCallCount = (mutatedMainSrc.match(CALL_RE) || []).length;
+// Mutacja: usuniecie resolvera z Miejsca 1 MUSI zaczerwienic rozroznienie tabel.
+const mutatedMainSrc = mainSrc.replace(SITE1_ANCHOR, '/* usunieto resolver miejsca 1 */');
 assert(
-  'MUTACJA: usuniecie wywolania z Miejsca 1 obniza licznik do 2 (straznik wykrywa regres wpiecia)',
-  mutatedCallCount === 2,
-  mutatedCallCount,
+  'MUTACJA: usuniecie resolvera Miejsca 1 usuwa niezaleznosc ustawienia PM od glownej trudnosci',
+  !mutatedMainSrc.includes('cityStateStartUnitCount(_menuCityStateDifficulty)'),
 );
 
 console.log(`\nWYNIK: ${pass} PASS, ${fail} FAIL`);

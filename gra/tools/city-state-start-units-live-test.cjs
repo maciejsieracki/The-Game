@@ -53,7 +53,7 @@ const { execSync } = require('child_process');
 const GRA_DIR = path.resolve(__dirname, '..');
 const OUT_DIR = path.join(GRA_DIR, 'dist-city-state-start-units-live-test');
 const OUT_HTML = 'file://' + path.join(OUT_DIR, 'index.html');
-const FALLBACK_CHROME = '/opt/pw-browsers/chromium-1194/chrome-linux/chrome';
+const FALLBACK_CHROME = process.env.CS_CHROME_PATH || '/home/ubuntu/.cache/ms-playwright/chromium-1234/chrome-linux64/chrome';
 
 let pass = 0;
 let fail = 0;
@@ -130,10 +130,10 @@ async function pollUntil(page, label, checkFn, timeoutMs) {
  * którą wywołuje klik gracza w podświetlony startowy heks), dopiero PO NIEJ miasta-państwa
  * faktycznie istnieją na mapie.
  */
-async function startNewGameAndWait(page, csDifficulty, cityStatesCount) {
-  await page.evaluate(({ diff, n }) => {
-    (window).__cityStateStartUnitsTestDebug.startNewGame(diff, n);
-  }, { diff: csDifficulty, n: cityStatesCount });
+async function startNewGameAndWait(page, csDifficulty, cityStatesCount, gameDifficulty) {
+  await page.evaluate(({ diff, n, gameDiff }) => {
+    (window).__cityStateStartUnitsTestDebug.startNewGame(diff, n, gameDiff);
+  }, { diff: csDifficulty, n: cityStatesCount, gameDiff: gameDifficulty });
 
   // Krok 1: koniec generacji świata — overlay znika, silnik czeka na założenie stolicy gracza.
   await pollUntil(page, 'world-generated', () => {
@@ -194,19 +194,23 @@ async function main() {
   });
   page.on('pageerror', (e) => { consoleErrors.push(String(e)); console.error('[pageerror]', e); });
 
-  const EXPECTED = { easy: 0, normal: 1, hard: 2 };
+  const EXPECTED_PLAYER = { easy: 1, normal: 2, hard: 3 };
+  const EXPECTED_FOREIGN = { easy: 2, normal: 1, hard: 0 };
+  const EXPECTED_RELATED = { easy: 0, normal: 1, hard: 2 };
   const CITY_STATES_COUNT = 4;
 
   try {
     await gotoMainMenu(page);
 
     for (const diff of ['hard', 'normal', 'easy']) {
-      console.log(`[city-state-start-units-live-test] === cityStateDifficulty=${diff} ===`);
-      await startNewGameAndWait(page, diff, CITY_STATES_COUNT);
+      console.log(`[city-state-start-units-live-test] === gameDifficulty=${diff}, cityStateDifficulty=normal ===`);
+      await startNewGameAndWait(page, 'normal', CITY_STATES_COUNT, diff);
       const state = await page.evaluate(() => (window).__cityStateStartUnitsTestDebug.dumpState());
 
-      assert(`(${diff}) hak potwierdza _menuCityStateDifficulty faktycznie zastosowaną`,
-        state.cityStateDifficulty === diff, state.cityStateDifficulty);
+      assert(`(${diff}) hak potwierdza niezależne ustawienie PM=normal`,
+        state.cityStateDifficulty === 'normal', state.cityStateDifficulty);
+      assert(`(${diff}) hak potwierdza główną trudność=${diff}`,
+        state.gameDifficulty === diff, state.gameDifficulty);
 
       const cityStates = state.cities.filter((c) => c.startCityState === true);
       assert(`(${diff}) co najmniej jedno miasto-państwo wygenerowane na mapie (nietautologiczne — bez tego test nic nie sprawdza)`,
@@ -214,16 +218,6 @@ async function main() {
 
       if (cityStates.length === 0) continue;
 
-      const expected = EXPECTED[diff];
-      let allMatch = true;
-      const perCityCounts = [];
-      for (const c of cityStates) {
-        const unitsAtCity = state.units.filter((u) => u.ownerId === c.ownerId && u.q === c.q && u.r === c.r);
-        perCityCounts.push({ cityId: c.id, ownerId: c.ownerId, count: unitsAtCity.length });
-        if (unitsAtCity.length !== expected) allMatch = false;
-      }
-      assert(`(${diff}) KAŻDE miasto-państwo ma DOKŁADNIE ${expected} jednostek NA MAPIE (na jego hexie, żywy stan po realnej generacji)`,
-        allMatch, perCityCounts);
 
       // Obrona runda 1 (Evaluator zarzut 1, część anty-duplikacyjna): `grantCityStateStartUnits`
       // jest wywoływana z DWÓCH rozłącznych punktów foundowania (spawnPendingSameTypeRivals —
@@ -241,7 +235,10 @@ async function main() {
       assert(`(${diff}) co najmniej jedno miasto-państwo z KAŻDEGO punktu foundowania (rywal tego samego typu I kopia obcego klastra) — inaczej anty-duplikacja niesprawdzona na obu`,
         sameTypeRivalCS.length > 0 && foreignClusterCS.length > 0,
         { sameTypeRivalCS: sameTypeRivalCS.length, foreignClusterCS: foreignClusterCS.length });
-      for (const [label, group] of [['rywale tego samego typu', sameTypeRivalCS], ['kopie klastrów obcego typu', foreignClusterCS]]) {
+      for (const [label, group, expected] of [
+        ['rywale tego samego typu', sameTypeRivalCS, EXPECTED_RELATED[state.cityStateDifficulty]],
+        ['kopie klastrów obcego typu', foreignClusterCS, EXPECTED_FOREIGN[state.gameDifficulty]],
+      ]) {
         let groupMatch = true;
         const groupCounts = [];
         for (const c of group) {
@@ -253,18 +250,14 @@ async function main() {
           groupMatch, groupCounts);
       }
 
-      // Bonus — brak interferencji z foundowaniem gracza w TYM SAMYM żywym przebiegu.
+      // Żywy dowód tabeli gracza na tej samej mapie i po tej samej ścieżce foundowania.
       const playerCity = state.cities.find((c) => c.ownerId === 0);
       if (playerCity) {
         const unitsAtPlayerCapital = state.units.filter(
           (u) => u.ownerId === 0 && u.q === playerCity.q && u.r === playerCity.r,
         );
-        // Gracz normalnie ma własne jednostki startowe (osadnik/wojownik) — ten hak NIE
-        // sprawdza ich liczby (poza zakresem tej bramki, pokryte gdzie indziej), tylko że
-        // żadna z nich nie pochodzi od tego mechanizmu: sam fakt policzalności bez wyjątku
-        // i brak dowolnego wpływu diff na tę liczbę między przebiegami jest sprawdzany niżej.
-        assert(`(${diff}) stolica gracza policzalna bez wyjątku (regresja negatywna, informacyjnie)`,
-          Array.isArray(unitsAtPlayerCapital), unitsAtPlayerCapital.length);
+        assert(`(${diff}) stolica gracza ma DOKŁADNIE ${EXPECTED_PLAYER[state.gameDifficulty]} jednostek wojskowych`,
+          unitsAtPlayerCapital.length === EXPECTED_PLAYER[state.gameDifficulty], unitsAtPlayerCapital.length);
       }
     }
 

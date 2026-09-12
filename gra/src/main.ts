@@ -1177,10 +1177,12 @@ import {
   AI_DIFFICULTY_BONUS_UNIT_TYPE,
   applyDifficultyCombatToUnitDef,
   cityStateStartUnitCount,
+  foreignCityStateStartUnitCount,
   difficultyCombatMultiplier,
   difficultyProductionMultiplier,
   difficultyScienceBonusPerTurn,
   planMajorAiDifficultyStartBonuses,
+  playerStartUnitCount,
   qualifiesForMajorAiDifficultyBonus,
 } from './game/ai-difficulty-bonus';
 import { isMajorAiOwner } from './game/owner-utils';
@@ -8942,7 +8944,12 @@ async function boot(): Promise<void> {
           finalizeCityFounding(c, pos.q, pos.r);
           seedCityOwnerDefaults(c);
           aiStartHexes.push({ q: pos.q, r: pos.r, ownerId });
-          grantCityStateStartUnits(ownerId, pos.q, pos.r);
+          grantCityStateStartUnits(
+            ownerId,
+            pos.q,
+            pos.r,
+            cityStateStartUnitCount(_menuCityStateDifficulty),
+          );
           _rivalsFounded++;
         } else {
           _rivalsRejected++;
@@ -8982,22 +8989,16 @@ async function boot(): Promise<void> {
       });
     }
 
-    /**
-     * R-MIASTA-PANSTWA-STARTOWE-JEDNOSTKI-Q1: jednostki startowe MIASTA-PAŃSTWA (nie
-     * major AI, patrz grantDifficultyStartBonusesForMajorCapital niżej — funkcja
-     * osobna, zero współdzielonego stanu poza spawnDifficultyBonusUnit, generycznym
-     * spawnerem jednostek bez logiki AI w środku). Liczba wg `_menuCityStateDifficulty`
-     * (easy=0/normal=1/hard=2, cityStateStartUnitCount w ai-difficulty-bonus.ts) —
-     * ta sama oś, która już steruje zaufaniem/posiłkami/RESUP_TIERS miast-państw
-     * (aiDiffLevelForOwner wyżej), NIE `_menuDifficulty` (gracz/AI, nietknięte) ani
-     * `_menuCityStateDifficultyVsPlayer` (oś PM-vs-gracz, inna sprawa: agresja/wojna).
-     * Wywoływana z DWÓCH punktów foundowania miasta-państwa: pętla rywali tego samego
-     * typu (deferred, po pierwszym mieście gracza) i spawnPendingForeignClusters
-     * (miasta-państwa obcych klastrów) — oba miejsca faktycznie zakładają
-     * `c.startCityState = true`, potwierdzone reconem tej rundy.
-     */
-    function grantCityStateStartUnits(ownerId: number, q: number, r: number): void {
-      const count = cityStateStartUnitCount(_menuCityStateDifficulty);
+    /** Wspólny spawner dla obu strukturalnych punktów foundowania miasta-państwa. */
+    function grantCityStateStartUnits(ownerId: number, q: number, r: number, count: number): void {
+      for (let i = 0; i < count; i++) {
+        spawnDifficultyBonusUnit(ownerId, AI_DIFFICULTY_BONUS_UNIT_TYPE, q, r);
+      }
+    }
+
+    /** Startowa armia gracza; hot-seat wywołuje tę samą ścieżkę dla aktywnego fotela. */
+    function grantPlayerStartUnits(ownerId: number, q: number, r: number): void {
+      const count = playerStartUnitCount(_menuDifficulty);
       for (let i = 0; i < count; i++) {
         spawnDifficultyBonusUnit(ownerId, AI_DIFFICULTY_BONUS_UNIT_TYPE, q, r);
       }
@@ -9078,7 +9079,12 @@ async function boot(): Promise<void> {
         if (c) {
           if (isCS) {
             c.startCityState = true;
-            grantCityStateStartUnits(sc.ownerId, sc.q, sc.r);
+            grantCityStateStartUnits(
+              sc.ownerId,
+              sc.q,
+              sc.r,
+              foreignCityStateStartUnitCount(_menuDifficulty),
+            );
           }
           cities.push(c);
           finalizeCityFounding(c, sc.q, sc.r);
@@ -13157,6 +13163,7 @@ async function boot(): Promise<void> {
         showHintMessage('Nie udało się założyć miasta (hex zablokowany)', 3000);
         return false;
       }
+      const isFirstCityForOwner = isAwaitingFirstPlayerCity(c.ownerId);
       ensureCitySaveDefaults(c);
       cities.push(c);
       // P-HEKS-SPOR-SASIAD runda 2 nota D: nowe miasto moze zmienic wynik sporu o
@@ -13169,6 +13176,10 @@ async function boot(): Promise<void> {
       // Racji od razu (no-op dziś, bo default jest bezpieczny dla Ludność 1, ale spójne z
       // pozostałymi zdarzeniami zmiany właściciela poniżej).
       applyLiveSafeRationForCity(c.id);
+      // H-MIASTA-PANSTWA-WOJSKO-ODNOWA-Q1: pełną armię startową dostaje tylko
+      // pierwsze miasto tego ownera. Guard jest per owner/fotel, więc drugi fotel
+      // hot-seat dostaje własną jednorazową armię, a kolejne miasta już nie.
+      if (isFirstCityForOwner) grantPlayerStartUnits(c.ownerId, c.q, c.r);
       // R-HOTSEAT-FOTEL2-CYWILIZACJA-BLEDNA-Q1 (defekt C): `c.ownerId` — fotel, który
       // WŁAŚNIE założył TĘ stolicę — rozstrzyga wewnątrz którą z dwóch kolejek drenować.
       spawnPendingSameTypeRivals(q, r, c.ownerId);
@@ -23588,7 +23599,11 @@ async function boot(): Promise<void> {
     // `dumpState()` to surowy odczyt `cities`/`units` — zero logiki liczenia w środku
     // (porównanie z oczekiwaną liczbą per trudność robi test w `tools/`, nie ten hak).
     (window as any).__cityStateStartUnitsTestDebug = {
-      startNewGame: (csDifficulty: 'easy' | 'normal' | 'hard', cityStatesCount: number): void => {
+      startNewGame: (
+        csDifficulty: 'easy' | 'normal' | 'hard',
+        cityStatesCount: number,
+        gameDifficulty: 'easy' | 'normal' | 'hard' = 'normal',
+      ): void => {
         const mqTier = mapQualityTierFromQuery('high');
         const mqBundle = bundledMapQualityPreset(mqTier);
         const advanced: NewGameAdvancedOptions = {
@@ -23609,7 +23624,7 @@ async function boot(): Promise<void> {
           civName: 'Rzymianie',
           epoch: 'Epoka Brązu',
           epochId: 'braz',
-          difficulty: 'Normalny',
+          difficulty: gameDifficulty === 'easy' ? 'Łatwy' : gameDifficulty === 'hard' ? 'Trudny' : 'Normalny',
           mapSize: 'Maly',
           rivals: String(cityStatesCount),
           speed: 'Normalna',
@@ -23636,6 +23651,7 @@ async function boot(): Promise<void> {
       dumpState: () => ({
         turn,
         cityStateDifficulty: _menuCityStateDifficulty,
+        gameDifficulty: _menuDifficulty,
         awaitingFirstPlayerCity: isAwaitingFirstPlayerCity(),
         playerStartHex: playerStartHex ? { q: playerStartHex.q, r: playerStartHex.r } : null,
         // R-MIASTA-PANSTWA-STARTOWE-JEDNOSTKI-Q1 obrona runda 1 (Evaluator zarzut 1, część
@@ -23892,6 +23908,29 @@ async function boot(): Promise<void> {
         const meStartHex = playerStartHexFor(ME());
         if (!meStartHex) return false;
         return tryFoundPlayerCityAt(meStartHex.q, meStartHex.r);
+      },
+      /**
+       * Hak testowy dla regresji armii startowej: wyszukuje legalny heks drugiego
+       * miasta i woła tę samą ścieżkę `tryFoundPlayerCityAt`, co realny klik.
+       */
+      foundAdditionalPlayerCityForActiveSeat: (prepareResources = false): boolean => {
+        const ownerId = ME();
+        const before = cities.filter(city => city.ownerId === ownerId).length;
+        if (before === 0) return false;
+        if (prepareResources) {
+          const source = cities.find(city => city.ownerId === ownerId);
+          if (source) source.population = Math.max(source.population, 2);
+          playerPracaPool = Math.max(playerPracaPool, 20);
+        }
+        for (const key of allHexKeys(map)) {
+          const hex = map.hexes[key];
+          if (!hex || isWaterTerrain(hex.terenBazowy)) continue;
+          const [qs, rs] = key.split(',');
+          if (tryFoundPlayerCityAt(Number(qs), Number(rs))) {
+            return cities.filter(city => city.ownerId === ownerId).length > before;
+          }
+        }
+        return false;
       },
       /**
        * R-HOTSEAT-DRUGI-FOTEL-NIE-DOSTAJE-TURY-Q1 (runda 2, Evaluator zarzut #1) — hak
