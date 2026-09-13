@@ -21,7 +21,7 @@ GOAL: W obowiązujących zasadach The-Game ma istnieć i być spójnie egzekwowa
 - Commit integracji treści: `dbaf3b3cc30c417af9da521e2f92f90cd915c0dd` (`process: integrate C-063 Kanban plan contract`).
 - Zakres commitowany jawnie po ścieżkach; bez `git add -A`/`git add .`.
 - Zakres plików: `.claude/skills/civ-autobot/SKILL.md`, `.cursor/rules/autobot-evaluator-operator.mdc`, `README.md`, `docs/decyzje/R-PROC-AUTOBOT.md`, `dyspozycje/autobot/JAK-BEZPIECZNIE-EDYTOWAC-AUTOBOT.md`, `dyspozycje/autobot/playbook.json`, `playbook.md`, oraz run artifacts `00-dispatch.md`, `01-operator.md`, `transition-receipt.json`.
-- Statystyka commit integracji: 10 plików, 619 linii dodanych, 7 usuniętych. Pełny delta względem `origin/main` po commicie: 10 plików, 666 dodanych, 6 usuniętych.
+- Statystyka commitu treści: 10 plików, 619 linii dodanych, 7 usuniętych. Końcowy delta lokalnego stanu względem `origin/main` po dodaniu tego raportu: 11 plików, 727 dodanych, 6 usuniętych; finalny HEAD jest zapisany w terminalnym readbacku Kanbana.
 - `gra/**`, `gra-robocza/**`, `dyspozycje/WERSJE.md` i `dyspozycje/_handoff/KANAL-PRACA.md`: brak zmian.
 
 ## Dowody wykonania
