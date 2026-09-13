@@ -13,6 +13,13 @@ swoim wĹ‚asnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji d
 > Pakiet 3 z 2026-08-20 jest docs-only i nie tworzy wpisu ROBOCZA/KANON/FINALNA;
 > ten plik pozostaje wyłącznie rejestrem publikacji bundli.
 
+## ROBOCZA e8724602 - 2026-09-13 19:56 UTC - R-STARTOWE-JEDNOSTKI-WSZYSTKIE-OSIE-Q1: startowe jednostki na czterech osiach
+
+|- md5 (pełne): e8724602db7617aa9279217f1f6a979c · stempel label `85eaf9d3` (stamp match WARN jest oczekiwany na Linux; manifest md5 jest źródłem prawdy) · source/integration commit: `c7691e2a14bf84b6950c73266c12a9f93b5e0ce0`
+|- **R-STARTOWE-JEDNOSTKI-WSZYSTKIE-OSIE-Q1** — gracz `2/1/0`, główne AI `0/1/2` z hard fallbackiem miasta/jednostki, obce państwa-miasta `2/1/0`, państwa-miasta typu gracza `0/1/2` z niezależnego suwaka; guard pierwszego miasta pozostaje per owner/fotel.
+|- Final Control/Orchestrator: `PASS-WITH-NOTES`; bramki tematu `90/0`, `16/0`, `18/0`, `31/0`, Chromium `25/0` i `13/0`, typecheck/syntax oraz map spacing `0` z odczytu handoffu. Deploy build: direct Vite, `888` modułów, exit `0`; `node gra/tools/verify-robocza-bundle.cjs` → `VERIFY OK`; `START.html`, manifest i 8 kopii playtestowych wygenerowane.
+|- **AKTUALNA**
+
 ## ROBOCZA 8b7e2e03 - 2026-09-13 12:50 UTC - R-ARMIA-ROZDZIEL-RUCH-IKONY-Q1: split movement/path cost and directional army icons
 
 |- md5 (pelne): 8b7e2e0382abf24905e6aaea086d84c7 · stempel label `9d643e95` (stamp match WARN is expected by the Linux runbook; manifest md5 is authoritative) · source/deploy commit: `9f32e241`

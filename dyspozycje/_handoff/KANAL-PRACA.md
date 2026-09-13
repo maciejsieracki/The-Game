@@ -7581,4 +7581,14 @@ GOAL: opublikować `origin/main` @ `6ce48d7d` do `gra-robocza/` i wypchnąć wsz
    push/integracji (kto pushuje, kto tylko przygotowuje wsady) jeszcze NIE ustalona ostatecznie
    — patrz czat z właścicielem, decyzja w toku.
 
+## [2026-09-13 19:56 UTC] DEPLOY ROBOCZA — R-STARTOWE-JEDNOSTKI-WSZYSTKIE-OSIE-Q1
+
+Hasło właściciela otrzymane wprost: `deploy do roboczej`.
+GOAL: opublikować zintegrowany, zweryfikowany kandydat startowych jednostek do `gra-robocza/` i wypchnąć gałąź deployu.
+|- Source/integration commit: `c7691e2a14bf84b6950c73266c12a9f93b5e0ce0`; remote przed deployem: `82928524d4459845a5416c174ad228a435282ef3`.
+|- Direct Vite build: `888` modułów, exit `0`; `tsc --noEmit` exit `0`; manifest match `OK`; `verify-robocza-bundle.cjs` → `VERIFY OK`.
+|- Bundle `gra-robocza/Gra-ROBOCZA.html`: md5 `e8724602db7617aa9279217f1f6a979c`, SHA-256 `62bff45c8be9fd9d9b3f24881b383815210afe33d308c15f29b8f83e3bf49945`.
+|- `START.html`, manifest i 8 kopii playtestowych wygenerowane. Wersja ROBOCZA zawiera zmianę startowych jednostek; promocji do KANON/FINALNA nie wykonano.
+CZEKAM-NA: właściciel — Ctrl+F5 + Nowa gra na `e8724602` i test czterech osi startowych.
+
 ---
