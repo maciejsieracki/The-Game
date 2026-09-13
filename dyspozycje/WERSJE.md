@@ -13,6 +13,14 @@ swoim wĹ‚asnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji d
 > Pakiet 3 z 2026-08-20 jest docs-only i nie tworzy wpisu ROBOCZA/KANON/FINALNA;
 > ten plik pozostaje wyłącznie rejestrem publikacji bundli.
 
+## ROBOCZA 8b7e2e03 - 2026-09-13 12:50 UTC - R-ARMIA-ROZDZIEL-RUCH-IKONY-Q1: split movement/path cost and directional army icons
+
+|- md5 (pelne): 8b7e2e0382abf24905e6aaea086d84c7 · stempel label `9d643e95` (stamp match WARN is expected by the Linux runbook; manifest md5 is authoritative) · source/deploy commit: `9f32e241`
+|- **R-ARMIA-ROZDZIEL-RUCH-IKONY-Q1** — `Rozdziel` uses outward arrows, `Polacz` inward arrows, and splitting deducts only the selected destination path cost from the shared movement pool (same-hex cost 0). Candidate source: `9c899e12`; stale cluster oracle reconciliation included.
+|- Bramka: direct `node ./node_modules/vite/bin/vite.js build --outDir /tmp/civ-armia-split-deploy-t81bea2be --emptyOutDir` (888 modules, exit 0) · `tsc --noEmit` exit 0 · focused 4/0 + 7/0 · cluster 96/0 · selected regressions green.
+|- Publish on Linux used the tracked Node stamp port because `pwsh` is unavailable; 8 playtest copies and `START.html` regenerated. `node gra/tools/verify-robocza-bundle.cjs Rozdziel` -> `VERIFY OK`, manifest match OK. Published to `gra-robocza/Gra-ROBOCZA.html`.
+|- **AKTUALNA**
+
 ## ROBOCZA e2a74cb5 - 2026-09-12 14:43 UTC - FALA 385: rozdzielone tabele jednostek startowych + guard pierwszego miasta
 
 |- md5 (pełne): e2a74cb5a71af10760effde8387f82f6 · stempel: ROBOCZA · label e2a74cb5 · zakres

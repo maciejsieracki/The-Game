@@ -1,28 +1,82 @@
 {
-  "publishedAt": "2026-09-12T14:43:00",
-  "sourceBuild": "gra/dist (commit 9950ba24)",
-  "note": "FALA 385 - H-MIASTA-PANSTWA-WOJSKO-ODNOWA-Q1 ZINTEGROWANE (commit 9950ba24): rozdzielono trzy niezalezne tabele jednostek startowych. Gracz: easy=1/normal=2/hard=3 (nowa). Obce panstwa-miasta AI: easy=2/normal=1/hard=0 (odwrocona wzgledem R-MIASTA-PANSTWA-STARTOWE-JEDNOSTKI-Q1 - maja szybciej padac na latwym). Panstwa-miasta typu/fotela gracza: nadal wylacznie niezalezny suwak _menuCityStateDifficulty, bez zmian. Naprawiono tez guard: pelna armia startowa gracza przyznawana WYLACZNIE przy pierwszym miescie danego ownera/fotela (wczesniej kazde kolejne miasto dublowalo grant). Audyt odnowy Manpower/HP bez zmian - mechanika poprawna. Zrodlo: zlecenie wlasciciela 2026-09-11. Proces prowadzony rownolegle przez system orkiestracji Hermes (OpenAI gpt-5.6-luna), przejety i zintegrowany przez ta sesje po swiezym niezaleznym Evaluatorze i Final Control. 9 bramek tematu + 5 referencyjnych + tsc zielone, w tym 2 zywe testy Chromium (3 generacje swiata + oba fotele hot-seat) i wlasna mutacja guard-a.",
-  "publisher": "Orkiestrator (Claude Code)",
-  "bundle": "Gra-ROBOCZA.html",
-  "md5": "c695dde3fbe4e02a8dc8f0fddd438a4e",
-  "bundlePoleBitwy": "Gra-ROBOCZA-POLE-BITWY.html",
-  "md5PoleBitwy": "6deb45d265b82b4eb27e990c345a79c1",
-  "hubGeneratedAt": "2026-09-12T20:18:49",
+  "hubGeneratedAt": "2026-09-13T12:48:22",
+  "md5": "8b7e2e0382abf24905e6aaea086d84c7",
   "bundles": [
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html?skipMenuRedirect=1",
       "label": "Pełna gra ROBOCZA",
-      "md5": "c695dde3fbe4e02a8dc8f0fddd438a4e",
-      "sizeBytes": 69855066
+      "md5": "8b7e2e0382abf24905e6aaea086d84c7",
+      "sizeBytes": 69855681
     },
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html",
       "label": "Pełna gra (z menu)",
-      "md5": "c695dde3fbe4e02a8dc8f0fddd438a4e",
-      "sizeBytes": 69855066
+      "md5": "8b7e2e0382abf24905e6aaea086d84c7",
+      "sizeBytes": 69855681
+    },
+    {
+      "file": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
+      "href": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
+      "label": "Playtest: DUŻA bitwa (pole) — NOWE",
+      "md5": "8b7e2e0382abf24905e6aaea086d84c7",
+      "sizeBytes": 69855681
+    },
+    {
+      "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
+      "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
+      "label": "Playtest: DUŻE oblężenie (mur) — NOWE",
+      "md5": "8b7e2e0382abf24905e6aaea086d84c7",
+      "sizeBytes": 69855681
+    },
+    {
+      "file": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
+      "href": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
+      "label": "Playtest: mapa świat",
+      "md5": "8b7e2e0382abf24905e6aaea086d84c7",
+      "sizeBytes": 69855681
+    },
+    {
+      "file": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
+      "href": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
+      "label": "Playtest: miasto / ekonomia",
+      "md5": "8b7e2e0382abf24905e6aaea086d84c7",
+      "sizeBytes": 69855681
+    },
+    {
+      "file": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
+      "href": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
+      "label": "Playtest: walka na mapie",
+      "md5": "8b7e2e0382abf24905e6aaea086d84c7",
+      "sizeBytes": 69855681
+    },
+    {
+      "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
+      "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
+      "label": "Playtest: odskok 3v3",
+      "md5": "8b7e2e0382abf24905e6aaea086d84c7",
+      "sizeBytes": 69855681
+    },
+    {
+      "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
+      "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
+      "label": "Playtest: odskok + oblężenie",
+      "md5": "8b7e2e0382abf24905e6aaea086d84c7",
+      "sizeBytes": 69855681
+    },
+    {
+      "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
+      "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
+      "label": "Playtest: oblężenie 3v3",
+      "md5": "8b7e2e0382abf24905e6aaea086d84c7",
+      "sizeBytes": 69855681
     }
   ],
-  "startHub": "START.html"
+  "startHub": "START.html",
+  "publishedAt": "2026-09-13T12:49:59",
+  "publisher": "Integrator (Hermes)",
+  "sourceBuild": "gra/ (deploy commit 9f32e241; direct vite.js single-file build)",
+  "bundle": "Gra-ROBOCZA.html",
+  "note": "R-ARMIA-ROZDZIEL-RUCH-IKONY-Q1: Rozdziel/Połącz directional icons and split movement path-cost contract; focused gates and regressions verified."
 }
