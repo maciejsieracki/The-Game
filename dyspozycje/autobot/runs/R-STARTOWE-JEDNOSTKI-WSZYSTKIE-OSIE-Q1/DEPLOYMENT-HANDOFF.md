@@ -11,7 +11,7 @@
 ## Branch i ref
 
 - REMOTE: `origin/hermes/R-GRACZ-STARTOWE-JEDNOSTKI-TRUDNOSC-Q1`
-- VERIFIED HEAD: `4fc53e9ed0a2ffb5333a5fa6963965aefc283fe5`
+- VERIFIED HEAD: `22e51495ef171b95b9fbc8e9e94ccbfdea0e4c16`
 - PRODUCT IMPLEMENTATION HEAD: `ffefe905910437c5b7c8364bd6adcb3c3a0ee16e`
 - BASE RECORDED BY FINAL CONTROL: `ff9ce26a663c53c9f711e50536eb10f59dc4b70b`
 - WORKTREE USED: `/home/ubuntu/projects/The-Game-worktrees/R-GRACZ-STARTOWE-JEDNOSTKI-TRUDNOSC-Q1`
@@ -48,7 +48,7 @@ Szeroki `ai-test.cjs` pozostaje `291 passed, 4 failed`; te same cztery błędy w
 
 ## Instrukcja przejęcia
 
-1. Odczytać branch i porównać `origin/main...4fc53e9ed0a2ffb5333a5fa6963965aefc283fe5`.
+1. Odczytać branch i porównać `origin/main...22e51495ef171b95b9fbc8e9e94ccbfdea0e4c16`.
 2. Sprawdzić listę plików względem powyższej allowlisty.
 3. Odczytać `03-final-control.md` i `03-final-control-evidence.md` z katalogu runu.
 4. Wykonać integrację wyłącznie po własnym readbacku diffu i testów.
