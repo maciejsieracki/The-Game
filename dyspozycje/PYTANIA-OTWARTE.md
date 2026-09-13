@@ -19081,7 +19081,7 @@ centralnym), zdiffować krok po kroku który dodatkowy składnik (jeśli w ogól
 33 vs 29, potwierdzić lub obalić hipotezę właściciela, wrócić z konkretnym wyjaśnieniem (plik:linia,
 wzór) przed jakąkolwiek naprawą.**
 
-## P-UMOWA-SUROWCOW-TECH-CHIP-NADAL-WYBIERALNY-PO-DODANIU (2026-08-13, zgłoszenie Macieja, screenshot) · STATUS: OTWARTE — rozpoznanie dispatchowane
+## P-UMOWA-SUROWCOW-TECH-CHIP-NADAL-WYBIERALNY-PO-DODANIU (2026-08-13, zgłoszenie Macieja, screenshot) · STATUS: **ZAMKNIĘTE** — korekta audytu 2026-09-13 (nagłówek był STALE): Evaluator runda 2 PASS-WITH-NOTES, temat zamknięty po 2 rundach (patrz wpis ok. linii 19591, commit `684d646c`)
 
 **Zgłoszenie (dosłowne):** „nie wiem, jak to zrobiliście, ale miało znikać po wybraniu na
 przykład technologii. Te, które już przekazujemy, nie miały być możliwości wyboru ich ponownego.
@@ -19179,7 +19179,7 @@ wycofania deployu (brak crashu/regresji, tylko brak efektu).
 **STATUS: dispatch Operator runda 2 — przepięcie mechanizmu na ścieżkę klastrową wg kierunku
 Evaluatora, plus N1/N2 przy okazji.**
 
-## P-MILET-ATENY-PRACOWNICY-NA-CUDZYM-HEKSIE (2026-08-13, zgłoszenie Macieja, screenshot, FRUSTRACJA — "przecież to zgłaszałem") · STATUS: OTWARTE — rozpoznanie dispatchowane PILNIE
+## P-MILET-ATENY-PRACOWNICY-NA-CUDZYM-HEKSIE (2026-08-13, zgłoszenie Macieja, screenshot, FRUSTRACJA — "przecież to zgłaszałem") · STATUS: **ZAMKNIĘTE** — korekta audytu 2026-09-13 (nagłówek był STALE): rozpoznanie zakończone, BRAK regresji, kod bezwarunkowy i przetestowany (patrz wpis ok. linii 19291)
 
 **Zgłoszenie (dosłowne):** „nadal nie został naprawiony problem, że miasto trzyma swoich
 pracowników w innym mieście, na terenie HEXa innego miasta. Czyli miasto Millet trzyma swoich
@@ -20910,7 +20910,7 @@ działa przy liczbie Mocy w HUD). Wysoka pewność co do trafności (silne dowod
 surowym glifem zamiast SVG), ale bez dosłownego potwierdzenia Macieja — informuję go równolegle,
 może skorygować jeśli to nie to.**
 
-## P-MENU-ESCAPE-NIEPELNOEKRANOWE (znalezisko audytu 2026-08-14, zgłoszenie Macieja z 2026-07-26 — nigdy niezarejestrowane) · STATUS: OTWARTE
+## P-MENU-ESCAPE-NIEPELNOEKRANOWE (znalezisko audytu 2026-08-14, zgłoszenie Macieja z 2026-07-26 — nigdy niezarejestrowane) · STATUS: **ZAMKNIĘTE** — korekta audytu 2026-09-13 (nagłówek był STALE): runda 2 (`c3a5652c`) Evaluator PASS-WITH-NOTES, wszystkie 4 blokujące znaleziska z rundy 1 naprawione (patrz wpis ok. linii 22205)
 
 Maciej (2026-07-26, dosłownie): „Zapisz, że do rozwiązania pozostaje temat ESCAPE, wyjście z
 menu, żeby nie wychodziło z pełnego ekranu tylko z danej zakładki najpierw." — ESCAPE w grze ma
@@ -21227,7 +21227,7 @@ od razu po rozstrzygnięciu bitwy, nie dopiero po kolejnym ruchu. Nie zgadywać,
 wywołanie bitwy jest właściwym miejscem — zbadać wszystkie ścieżki gdzie jednostki znikają z
 `units[]` w wyniku walki i sprawdzić każdą pod kątem czy dotyczy jednostek oblegających.**
 
-## P-KONIEC-TURY-ZDARZENIA-NACHODZA-NA-SIEBIE (2026-08-14, zgłoszenie Macieja ze zrzutem) · STATUS: OTWARTE — dispatch recon
+## P-KONIEC-TURY-ZDARZENIA-NACHODZA-NA-SIEBIE (2026-08-14, zgłoszenie Macieja ze zrzutem) · STATUS: **ZAMKNIĘTE** — korekta audytu 2026-09-13 (nagłówek był STALE): po 4 rundach Operator/Evaluator, ostatni werdykt PASS-WITH-NOTES dla commitu `993adab4` (patrz wpis ok. linii 24145 i `5a786441`)
 
 Maciej (dosłownie, ze zrzutem): „nie powinny nachodzić na siebie kolejne zdarzenia podczas
 zakończenia tury. Z jednej strony wysłało mnie audiencję dyplomatyczną, a z drugiej strony zaraz
@@ -32218,7 +32218,7 @@ zarejestrowaniem odkrycia (append-only, `STATUS: ZAMKNIĘTE`), nie autoryzacją 
 
 ---
 
-## P-IZOLACJA-DWOCH-PISARZY-JEDEN-WORKTREE (2026-09-05, incydent własny orkiestratora) · STATUS: **OTWARTE — zarejestrowane, reguła już zastosowana w rundzie 3, brak dispatchu**
+## P-IZOLACJA-DWOCH-PISARZY-JEDEN-WORKTREE (2026-09-05, incydent własny orkiestratora) · STATUS: **ZAMKNIĘTE** — korekta audytu 2026-09-13 (nagłówek był STALE): reguła „jeden pisarz na worktree, bez wyjątku" zastosowana i udokumentowana w `R-PROC-AUTOBOT.md` §2b oraz `.claude/skills/civ-autobot-workflow/SKILL.md` (patrz `REJESTR-PROSB-I-ZADAN.md` ok. linii 6191), nic do dispatchu
 
 **Co się stało.** W temacie `R-SZCZESCIE-PRZEBUDOWA-SKALI-Q1` między 21:18 a 21:27 UTC dwa
 procesy pisały **równolegle** do tego samego worktree `/home/user/wt-szczescie-skala` i tej samej
@@ -32289,7 +32289,7 @@ Naprawa musi dołożyć asercję innej klasy.
 
 ---
 
-## P-BUDYNKI-TRZY-NIESPOJNOSCI-IKON-I-BUNDLA (2026-09-05, recon Operatora Garnizonu) · STATUS: **OTWARTE — zarejestrowane, nie naprawiane (poza zakresem tematu, w ktorym je znaleziono)**
+## P-BUDYNKI-TRZY-NIESPOJNOSCI-IKON-I-BUNDLA (2026-09-05, recon Operatora Garnizonu) · STATUS: **ZAMKNIĘTE** — korekta audytu 2026-09-13 (nagłówek był STALE): dostał własny temat i został ZINTEGROWANY 2026-09-09, commit `7ac340c1` (patrz `REJESTR-PROSB-I-ZADAN.md` linia 7666)
 
 Trzy zastane drobiazgi znalezione przy dodawaniu Garnizonu, żadnego nie ruszaliśmy:
 
@@ -32309,7 +32309,7 @@ zmieniać śledzonych plików; powinna generować do katalogu tymczasowego i por
 
 ---
 
-## P-ENTITYCARD-CIVPEDIA-KLIK-MARTWY-Q1 (2026-09-06, znalezisko Final Control Garnizonu) · STATUS: **OTWARTE — dispatch napisany, czeka na wolne miejsce w kolejce**
+## P-ENTITYCARD-CIVPEDIA-KLIK-MARTWY-Q1 (2026-09-06, znalezisko Final Control Garnizonu) · STATUS: **ZAMKNIĘTE** — korekta audytu 2026-09-13 (nagłówek był STALE): Final Control PASS w rundzie 1, ZINTEGROWANE 2026-09-07, commit `7d507ed6` — nowy szew `civpediaOpenGate.ts`, przycisk działa (patrz `REJESTR-PROSB-I-ZADAN.md` linia 6888)
 
 **Przycisk „Więcej informacji (Civpedia)" na kartach encji nie robi NIC — dla żadnej encji
 w grze.** Nie chodzi o brakujące hasła, tylko o to, że klik nigdzie nie trafia.
