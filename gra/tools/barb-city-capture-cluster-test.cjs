@@ -60,7 +60,7 @@ const ENTRY_TS = `
 export {
   BARBARIAN_OWNER_ID, isBarbarian, FALLBACK_BARB_PARAMS, decideBarbarianMoves,
   shouldAllowBarbCityCapture, tickBarbarianCityGarrisons,
-  canBarbarianWalkIntoEmptyCity, splitCampMoveCost,
+  canBarbarianWalkIntoEmptyCity, splitCampMoveCost, splitMoveCost,
 } from ${JSON.stringify(path.join(GRA_ROOT, 'src/game/barbarians'))};
 export {
   canCaptureCityWithoutBattle, hasCityDefenders,
@@ -100,7 +100,7 @@ const B = require(BUNDLE_FILE);
 const {
   BARBARIAN_OWNER_ID, isBarbarian, FALLBACK_BARB_PARAMS, decideBarbarianMoves,
   shouldAllowBarbCityCapture, tickBarbarianCityGarrisons,
-  canBarbarianWalkIntoEmptyCity, splitCampMoveCost,
+  canBarbarianWalkIntoEmptyCity, splitCampMoveCost, splitMoveCost,
   canCaptureCityWithoutBattle, hasCityDefenders,
   computePath, pathCost, terrainMoveCost, configureTerrainMovement,
   deductStackRuchLeft, stackRuchLeft,
@@ -650,29 +650,35 @@ const citiesTs = fs.readFileSync(citiesTsPath, 'utf8');
       '4b: po odjęciu REALNEGO kosztu pustyni (3) z ruch=5 zostaje ruchLeft=2');
   }
 
-  // 4c. STATIC: onSplit w main.ts woła splitCampMoveCost (barbarians.ts) PRZED
-  // przesunięciem (q,r) -- ordering-sensitive (destQ/destR muszą trafić do
-  // splitCampMoveCost Z ORYGINALNEJ pozycji jednostki, nie z już-przesuniętej -- inaczej
-  // origin w computePath wewnątrz splitCampMoveCost byłby już (destQ,destR)).
-  const marker4 = 'P-BARBARZYNCY-ONSPLIT-KOSZT-RUCHU-Q1';
+  // 4c. STATIC: onSplit w main.ts wylicza uogólniony splitMoveCost dla odłączanego
+  // pod-stosu PRZED przesunięciem (q,r), korzystając z tego samego move-cost callbacku
+  // i zbioru zajętości co zwykły ruch. Następnie wspólny wynik odejmuje przez
+  // deductStackRuchLeft -- kontrakt obejmuje zwykły heks, obóz oraz ten sam heks.
+  const marker4 = 'P-ARMIA-ROZDZIEL-RUCH-Q1';
   const idx4 = mainTs.indexOf(marker4);
-  assert(idx4 !== -1, '4c: main.ts zawiera marker P-BARBARZYNCY-ONSPLIT-KOSZT-RUCHU-Q1');
+  assert(idx4 !== -1, '4c: main.ts zawiera marker P-ARMIA-ROZDZIEL-RUCH-Q1');
   const window4 = mainTs.slice(idx4, idx4 + 3200);
-  assert(window4.includes('const destHasLivingCamp = barbCamps.some('),
-    '4c: onSplit sprawdza destHasLivingCamp (czy cel to heks żywego obozu)');
-  const idxSplitCampMoveCostCall = window4.indexOf(
-    'splitMoveCostValue = splitCampMoveCost(splitMover, map, destQ, destR, splitOcc, splitMoveCostFn)');
+  assert(
+    window4.includes('const splitMoveCostFn = moveCostFnForUnit(splitMover);')
+      && window4.includes('const splitOcc = occupiedForMove(splitMover.ownerId, ...splitArrivals.map(s => s.id));'),
+    '4c: onSplit buduje move-cost callback i wspólny zbiór zajętości dla splitMoveCost '
+      + '(ten sam kontekst ruchu co zwykły ruch)',
+  );
+  const splitMoveCostCallRe =
+    /splitMoveCostValue\s*=\s*splitMoveCost\(\s*splitMover\s*,\s*map\s*,\s*destQ\s*,\s*destR\s*,\s*splitOcc\s*,\s*splitMoveCostFn\s*,\s*\);/;
+  const splitMoveCostMatch = splitMoveCostCallRe.exec(window4);
+  assert(splitMoveCostMatch !== null,
+    '4c: onSplit woła uogólniony splitMoveCost(splitMover, map, destQ, destR, splitOcc, '
+      + 'splitMoveCostFn), a nie camp-only helper ani computePath/pathCost inline');
   const idxMutateQR = window4.indexOf('u.q = destQ;\n            u.r = destR;');
-  assert(idxSplitCampMoveCostCall !== -1,
-    '4c: onSplit woła splitCampMoveCost(splitMover, map, destQ, destR, splitOcc, splitMoveCostFn) '
-    + '-- funkcja z 4a/4b, nie computePath/pathCost inline');
   assert(idxMutateQR !== -1, '4c: onSplit wciąż przesuwa jednostki na (destQ,destR)');
-  assert(idxSplitCampMoveCostCall !== -1 && idxMutateQR !== -1 && idxSplitCampMoveCostCall < idxMutateQR,
-    '4c (ordering-sensitive): splitCampMoveCost woła się PRZED przesunięciem (q,r) -- inaczej '
-    + 'origin wewnątrz niej byłby już (destQ,destR), dając ścieżkę pustą/błędny koszt');
+  assert(splitMoveCostMatch !== null && idxMutateQR !== -1
+      && splitMoveCostMatch.index < idxMutateQR,
+    '4c (ordering-sensitive): splitMoveCost wywołuje się PRZED przesunięciem (q,r) -- '
+      + 'origin w computePath nadal jest pozycją źródłową');
   assert(window4.includes('deductStackRuchLeft(splitArrivals, splitMoveCostValue)'),
-    '4c: onSplit odejmuje REALNY koszt (wynik splitCampMoveCost) przez deductStackRuchLeft, '
-    + 'nie ustawia ruchLeft=0 wprost');
+    '4c: onSplit odejmuje jeden wyliczony koszt od wspólnego pulu przez deductStackRuchLeft, '
+      + 'nie ustawia ruchLeft=0 wprost');
 
   // 4d. STATIC: parytet z beginMoveSelectedUnitTo -- normalny ruch gracza używa DOKŁADNIE
   // tych samych trzech prymitywów (computePath/pathCost/deductStackRuchLeft poprzez
@@ -686,12 +692,35 @@ const citiesTs = fs.readFileSync(citiesTsPath, 'utf8');
   assert(windowBeginMove.includes('cost = pathCost(path, map, moveCostFn)'),
     '4d: beginMoveSelectedUnitTo woła pathCost -- ta sama funkcja co onSplit');
 
-  // 4e. Regresja: split na heks BEZ żywego obozu zachowuje dotychczasowe ruchLeft=0
-  // bezwarunkowo (poza zakresem tego zlecenia -- właściciel prosił WYŁĄCZNIE o zniszczenie
-  // obozu, nie o ogólną mechanikę splitu).
-  assert(window4.includes('for (const u of splitArrivals) u.ruchLeft = 0;'),
-    '4e (regresja-guard): split na heks BEZ obozu nadal zeruje ruchLeft bezwarunkowo -- '
-    + 'zachowanie POZA zakresem tego zlecenia zostało nietknięte');
+  // 4e. Regresja: split na heks BEZ żywego obozu zachowuje resztę wspólnej puli po
+  // odjęciu kosztu ścieżki; split na tym samym heksie ma koszt 0 i zachowuje całą pulę.
+  // To zastępuje dawny, sprzeczny z kontraktem guard ruchLeft=0 dla każdego celu.
+  {
+    const sameHexMover = {
+      id: 'u4e-same', ownerId: 0, typeId: 'Wojownik', category: 'miecznik',
+      q: 2, r: 2, ruch: 5, ruchLeft: 5,
+    };
+    const sameHexCost = splitMoveCost(sameHexMover, map, 2, 2, new Set(), undefined);
+    deductStackRuchLeft([sameHexMover], sameHexCost);
+
+    const offHexMover = {
+      id: 'u4e-off', ownerId: 0, typeId: 'Wojownik', category: 'miecznik',
+      q: 2, r: 2, ruch: 5, ruchLeft: 5,
+    };
+    const offHexCost = splitMoveCost(offHexMover, map, 3, 2, new Set(), undefined);
+    deductStackRuchLeft([offHexMover], offHexCost);
+
+    assert(
+      sameHexCost === 0
+        && sameHexMover.ruchLeft === 5
+        && offHexCost === 2
+        && offHexMover.ruchLeft === 3
+        && !/for\s*\(\s*const\s+u\s+of\s+splitArrivals\s*\)\s*\{?\s*u\.ruchLeft\s*=\s*0\s*;/.test(window4),
+      '4e: ten sam heks ma koszt 0 i zachowuje pełny ruchLeft, a split poza heks '
+        + 'odejmuje wyłącznie koszt ścieżki (2), pozostawiając ruchLeft=3; brak '
+        + 'bezwarunkowego zerowania dla celu bez obozu',
+    );
+  }
 }
 
 console.log(`\nbarb-city-capture-cluster-test: ${passed} passed, ${failed} failed`);

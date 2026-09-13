@@ -1164,7 +1164,7 @@ import {
   destroyCampAt,
   shouldAllowBarbCityCapture, isCityCaptureBlockedByDefenders,
   tickBarbarianCityGarrisons,
-  canBarbarianWalkIntoEmptyCity, splitCampMoveCost,
+  canBarbarianWalkIntoEmptyCity, splitCampMoveCost, splitMoveCost,
 } from './game/barbarians';
 import type { BarbCamp, BarbUnit } from './game/barbarians';
 // TEMAT #15 — embarkacja jednostek lądowych (gracz + AI + Ludy Morza).
@@ -11918,44 +11918,30 @@ async function boot(): Promise<void> {
           // jawnego id oba pod-stosy współdzieliłyby TEN SAM heks+garnizon i wpadłyby
           // z powrotem w ten sam fallback-klucz, czyli dokładnie problem BB2.
           assignSharedStackGroupId(splitArrivals);
-          // P-BARBARZYNCY-ONSPLIT-KOSZT-RUCHU-Q1=B: koszt policzony PRZED przesunięciem
-          // (q,r) -- identycznie jak normalny ruch/atak na ten sam heks
-          // (beginMoveSelectedUnitTo, main.ts ok. 18956-18970: computePath + pathCost
-          // przez moveCostFnForUnit, potem deductStackRuchLeft z REALNYM kosztem, NIE
-          // bezwarunkowe ruchLeft=0). Dotyczy WYŁĄCZNIE splitu na heks ŻYWEGO obozu --
-          // zwykły split (bez obozu) zachowuje dotychczasowe ruchLeft=0 bez zmian (poza
-          // zakresem tego zlecenia, właściciel mówił wyłącznie o zniszczeniu obozu).
-          // RUNDA 3 (Evaluator C, M10.3): liczenie computePath+pathCost wyciągnięte do
-          // splitCampMoveCost (barbarians.ts) -- main.ts tylko woła (moveCostFn/occupied
-          // nadal liczone tu, bo zależą od stanu gry: cities/Żegluga, nie da się ich
-          // uczynić czystymi bez przeniesienia main.ts).
-          // / EN: cost computed BEFORE moving (q,r) -- identical to a normal move/attack
-          // onto the same hex (beginMoveSelectedUnitTo, main.ts ~18956-18970: computePath
-          // + pathCost via moveCostFnForUnit, then deductStackRuchLeft with the REAL
-          // cost, NOT an unconditional ruchLeft=0). Applies ONLY to a split landing on a
-          // LIVING camp's hex -- an ordinary split (no camp) keeps the existing
-          // ruchLeft=0 unchanged (out of scope for this task, the owner only asked about
-          // camp destruction).
-          // ROUND 3 (Evaluator C, M10.3): the computePath+pathCost computation pulled out
-          // into splitCampMoveCost (barbarians.ts) -- main.ts only calls it (moveCostFn/
-          // occupied still computed here, since they depend on game state: cities/
-          // Seafaring, cannot be made pure without moving main.ts).
-          const destHasLivingCamp = barbCamps.some(c => c.q === destQ && c.r === destR);
+          // P-ARMIA-ROZDZIEL-RUCH-Q1: rozdzielony pod-stos ponosi tylko koszt
+          // dojścia na wybrane pole. Ten sam helper obsługuje zwykłe pole,
+          // obóz barbarzyńców oraz „W mieście (ten heks)" (koszt 0); nigdy nie
+          // zerujemy ruchu bez względu na rodzaj celu.
           let splitMoveCostValue = 0;
-          if (destHasLivingCamp && splitArrivals.length > 0) {
-            const splitMover = splitArrivals[0]!;
+          if (splitArrivals.length > 0) {
+            const splitMover = unitWithStackRuch(splitArrivals[0]!, splitArrivals);
             const splitMoveCostFn = moveCostFnForUnit(splitMover);
             const splitOcc = occupiedForMove(splitMover.ownerId, ...splitArrivals.map(s => s.id));
-            splitMoveCostValue = splitCampMoveCost(splitMover, map, destQ, destR, splitOcc, splitMoveCostFn);
+            splitMoveCostValue = splitMoveCost(
+              splitMover,
+              map,
+              destQ,
+              destR,
+              splitOcc,
+              splitMoveCostFn,
+            );
           }
           for (const u of splitArrivals) {
             u.q = destQ;
             u.r = destR;
           }
-          if (destHasLivingCamp) {
+          if (splitArrivals.length > 0) {
             deductStackRuchLeft(splitArrivals, splitMoveCostValue);
-          } else {
-            for (const u of splitArrivals) u.ruchLeft = 0;
           }
           // P-BARBARZYNCY-SPLIT-Q1: rozdzielenie armii na heks żywego obozu
           // barbarzyńskiego niszczy go tak samo jak zwykły ruch (parytet z

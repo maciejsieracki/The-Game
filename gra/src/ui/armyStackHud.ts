@@ -172,6 +172,18 @@ const ASH_ACTION_ICONS: Partial<Record<string, string>> = {
     + '<path d="M4 21V10l3-2.5V6h2v1.5L12 5l3 2.5V6h2v1.5l3 2.5v11z"/>'
     + '<path d="M4 21h16M9.5 21v-5h5v5"/>'
     + '</svg>',
+  // Rozdziel — dwa groty skierowane na zewnątrz.
+  split:
+    '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">'
+    + '<path d="M12 12H4"/><path d="M8 8 4 12l4 4"/>'
+    + '<path d="M12 12H20"/><path d="M16 8 20 12l-4 4"/>'
+    + '</svg>',
+  // Połącz — dwa groty skierowane do środka.
+  merge:
+    '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">'
+    + '<path d="M4 12H12"/><path d="M8 8 12 12l-4 4"/>'
+    + '<path d="M20 12H12"/><path d="M16 8 12 12l4 4"/>'
+    + '</svg>',
   // Zastąp -- strzałki góra/dół (swap).
   replace:
     '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">'
@@ -198,11 +210,14 @@ const ASH_ACTION_ICONS: Partial<Record<string, string>> = {
     + '</svg>',
 };
 
-function outlineBtn(label: string, dataAttr: string, extraClass = '', disabled = false, title = ''): string {
+function outlineBtn(label: string, dataAttr: string, extraClass = '', disabled = false, title = '', icon = ''): string {
+  const body = icon
+    ? `<span class="mu-ic">${icon}</span><span>${esc(label)}</span>`
+    : esc(label);
   return `<button type="button" class="mu-outline-btn ${extraClass}" ${dataAttr}`
     + (disabled ? ' disabled' : '')
     + (title ? ` title="${esc(title)}"` : '')
-    + `>${esc(label)}</button>`;
+    + `>${body}</button>`;
 }
 
 /** Dolny pasek stosu armii (karty + staty + akcje). */
@@ -245,6 +260,7 @@ export function createArmyStackHud(config: ArmyStackHudConfig): ArmyStackHudApi 
       'accent-violet',
       !splitOk,
       splitOk ? 'Rozdziel stos na sąsiedni heks' : 'Potrzeba co najmniej 2 jednostek',
+      ASH_ACTION_ICONS.split,
     );
     html += outlineBtn(
       'Połącz',
@@ -252,6 +268,7 @@ export function createArmyStackHud(config: ArmyStackHudConfig): ArmyStackHudApi 
       'accent-blue',
       !mergeOk,
       mergeOk ? 'Połącz stosy armii' : 'Brak drugiego stosu do połączenia',
+      ASH_ACTION_ICONS.merge,
     );
     html += mapUnitCloseBtnHtml('Odznacz');
     html += '</div></div>';

@@ -427,6 +427,29 @@ export function canBarbarianWalkIntoEmptyCity(
  * main.ts), this function ONLY computes `computePath`+`pathCost` on the ready-made
  * results, to stay pure and directly testable (without bundling main.ts).
  */
+/**
+ * Koszt ruchu odłączanego pod-stosu przy rozdzieleniu armii.
+ *
+ * Rozdzielenie na ten sam heks (np. odłączenie jednostki w mieście) nie zużywa
+ * ruchu. Dla celu poza bieżącym heksem używamy dokładnie tego samego
+ * computePath/pathCost co zwykły ruch. Brak ścieżki nie powinien wystąpić po
+ * findSplitDestHexes, ale bezpieczny koszt 1 zachowuje wcześniejszą ochronę
+ * przed darmowym ruchem przy niespójnym wywołaniu.
+ */
+export function splitMoveCost(
+  mover: RuntimeUnit,
+  map: GameMap,
+  destQ: number,
+  destR: number,
+  occupied: Set<string>,
+  moveCostFn: ((hex: Hex) => number) | undefined,
+): number {
+  if (mover.q === destQ && mover.r === destR) return 0;
+  const path = computePath(mover, map, destQ, destR, occupied, moveCostFn);
+  return path.length > 0 ? pathCost(path, map, moveCostFn) : 1;
+}
+
+/** Kompatybilna nazwa helpera używana przez wcześniejszy temat obozów. */
 export function splitCampMoveCost(
   mover: RuntimeUnit,
   map: GameMap,
@@ -435,8 +458,7 @@ export function splitCampMoveCost(
   occupied: Set<string>,
   moveCostFn: ((hex: Hex) => number) | undefined,
 ): number {
-  const path = computePath(mover, map, destQ, destR, occupied, moveCostFn);
-  return path.length > 0 ? pathCost(path, map, moveCostFn) : 1;
+  return splitMoveCost(mover, map, destQ, destR, occupied, moveCostFn);
 }
 
 /**
