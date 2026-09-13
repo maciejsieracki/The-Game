@@ -17,7 +17,7 @@ W obowiązujących zasadach The-Game ma istnieć i być spójnie egzekwowany kon
 1. PRAWDA: zasada „karta przed pracą + pełny graf faz i zależności” jest zapisana w kanonicznych zasadach The-Game i w skróconych warstwach, które czyta agent.
 2. PRAWDA: playbook i jego JSON są semantycznie zgodne, a JSON jest wygenerowany narzędziem.
 3. PRAWDA: zasada rozróżnia native_status od process_phase i zabrania zgadywania następnego kroku z tytułu lub raportu.
-4. PRAWDA: terminalny `kanban_complete`/`kanban_block` + event + technical/context readback są warunkiem następnej fazy; notify+wake jest wymagane po utworzeniu aktywnej karty.
+4. PRAWDA: każde terminalne przejście Kanbana (np. `kanban_complete`, `kanban_block`, `review_requested` lub `changes_requested`, gdy kończy bieżącą fazę) + obserwowalny event + technical/context readback są warunkiem następnej fazy; notify+wake jest wymagane po utworzeniu aktywnej karty.
 5. PRAWDA: OWNER_HOLD/DECISION_REQUIRED blokują tylko następców, bieżący worker może dokończyć rozpoczętą fazę, a pusta Obrona jest zakazana.
 6. PRAWDA: Evaluator i Final Control potwierdzą zakres, spójność wszystkich nośników, brak regresji procesu i brak zmian produktu.
 
