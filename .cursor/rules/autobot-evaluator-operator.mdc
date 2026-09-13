@@ -17,6 +17,52 @@ Operator GPT-5.6 Luna High
 → osobna bramka deploy/push
 ```
 
+## C-063 — Kanban przed pracą, graf i legalny następca
+
+Każde nowe lub odnowione zadanie The-Game najpierw dostaje kartę na boardzie
+`the-game-real24`. Przed pierwszym workerem karta ma pełny graf, nie płaską listę:
+pełne ID/`topic_id`, `GOAL`, binarne kryteria, minimalną allowlistę, zależności,
+worktree, limit rund, wszystkie fazy i przyszłe bramki `blocked`, w tym
+`OWNER_HOLD`/`DECISION_REQUIRED`.
+
+Wszystkie nowe i odnowione karty używają jednego profilu `game`. Rola nie jest profilem:
+zapisuj ją jako `process_phase`, a przejście jako `transition receipt`; nie twórz
+profili per rola. `native_status` jest wyłącznie stanem dostawcy i nie wybiera roli
+ani następcy.
+
+```text
+[karta] → [Operator] → [Evaluator]
+                         ├─ zarzuty > 0 → [Obrona] → [Final Control]
+                         └─ zarzuty = 0 ───────────→ [Final Control]
+                                                    ├─ PASS + terminal event/readback → [integracja]
+                                                    │                                  → [READY_FOR_DEPLOY]
+                                                    │                                  → [osobna zgoda push/deploy]
+                                                    └─ FAIL | NAPRAW ─┐
+[terminalna P1/P2/P3/P4] -- BLOCK | TIMEOUT | INFRA | ZWIS ──────────┴─> [retry guard R]
+[R] -- round < 5 ─> [Operator: ten sam ID, następna runda]
+[R] -- round = 5 ─> [LIMIT-5-EXCEEDED: blocked]
+[LIMIT-5] -- jawna decyzja ─> [manual resume: ten sam ID/licznik] ─> [Operator]
+[any started phase] -- OWNER_HOLD | DECISION_REQUIRED ─> [blocked successor H]
+[H] -- decyzja/zależność przywrócona ─> [qualified next node]
+[terminal event] → [technical + context readback] → [legal successor]
+[legal successor] → [deterministic idempotency key] → [create once] → [notify] → [wake/dispatch profile game]
+```
+
+Po każdym terminalnym przejściu Kanbana (np. `kanban_complete`, `kanban_block`,
+`review_requested` lub `changes_requested`, gdy kończy bieżącą fazę) z obserwowalnym eventem
+orkiestrator robi technical readback oraz context readback karty, eventu, grafu, dispatchu,
+kontraktu i artefaktów.
+Następnie z grafu wybiera i idempotentnie tworzy/dispatchuje wyłącznie legalnego
+sukcesora: `FAIL`/`NAPRAW`/`BLOCK`/`TIMEOUT`/`INFRA`/`ZWIS` idą przez R, guard wybiera
+retry albo `LIMIT-5-EXCEEDED`, a jawna decyzja wznawia ten sam ID bez resetu licznika.
+Receipt zapisuje `event_id`, `idempotency_key`, oba readbacki oraz wyniki `notify` i
+`wake`. Aktywna karta nie może powstać bez notify+wake; przyszła karta bez spełnionej
+zależności pozostaje jawnie `blocked`. Obrona powstaje tylko przy niepustej liście
+konkretnych zarzutów — pusta Obrona jest zakazana. `OWNER_HOLD`/`DECISION_REQUIRED`
+blokuje tylko przyszłych następców, a rozpoczęty worker może dokończyć fazę. Nie pisz
+„nic nie może ruszyć", jeśli readback wskazuje kwalifikowany następny etap. Pełny
+kanon: `R-PROC-AUTOBOT.md` §2c.
+
 ## Kontrakt modelu dla dispatchu Codex
 
 Przy użyciu `multi_agent_v1` każdy dispatch Operatora i Evaluatora musi jawnie

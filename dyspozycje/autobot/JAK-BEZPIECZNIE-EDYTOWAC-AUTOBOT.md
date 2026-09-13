@@ -102,11 +102,53 @@ gry — reguły *jak pracujemy*):
 | `.claude/skills/civ-autobot/SKILL.md` | Skrót, który agent czyta na starcie sesji | Musi być skrótem WIERNYM kanonowi, nie własną redakcją |
 | `.cursor/rules/autobot-evaluator-operator.mdc` | **`alwaysApply: true`, globs `**/*`** | **Ładuje się PRZED kanonem.** Jeśli go pominiesz, przyszły agent uruchomi STARĄ regułę, nawet gdy kanon mówi co innego — to najważniejszy plik do sprawdzenia, nie ostatni |
 | `playbook.md` → `playbook.json` | Pamięć z licznikami | Dwa pliki, jedno źródło prawdy — patrz §2 |
+| `README.md` | Automatyczny skrót najnowszych reguł C-0XX | Po dodaniu reguły trzeba utrzymać listę 12 najnowszych ID |
 
 **Dowód:** `R-PROFIL-TURNIEJ-PUNKTACJA-Q1` przeszło 4 rundy Evaluatora, zanim wszystkie 5
 plików (dodając wygenerowany `.json`) miały identyczny, kompletny zestaw reguł i
 wyjątków. Pierwsza wersja pominęła 3 z 5 plików całkowicie — w tym `.mdc`, czyli plik,
 który przyszły agent czyta jako pierwszy.
+
+### 1a. Karta Kanban i graf planu przed pierwszym workerem
+
+Każde nowe lub odnowione zadanie The-Game najpierw rejestruj jako kartę na
+`the-game-real24`; dopiero potem wolno uruchomić workera. Karta jest kompletna tylko,
+gdy ma graf, a nie płaską listę: pełne ID/`topic_id`, `GOAL`, binarne kryteria,
+allowlistę, zależności, wszystkie fazy, przyszłe `blocked` gates oraz
+`OWNER_HOLD`/`DECISION_REQUIRED`. Każda karta używa profilu `game`; role zapisuje się
+we `process_phase` i transition receipt, nie przez profile per rola. `native_status`
+nie wyznacza roli ani następcy.
+
+Minimalne krawędzie grafu są jawne i obejmują ścieżkę sukcesu oraz retry:
+
+```text
+[karta] → [Operator] → [Evaluator]
+                         ├─ objections > 0 → [Obrona] → [Final Control]
+                         └─ objections = 0 ───────────→ [Final Control]
+                                                        ├─ PASS + terminal event/readback → [integracja]
+                                                        │                                  → [READY_FOR_DEPLOY]
+                                                        │                                  → [osobna zgoda push/deploy]
+                                                        └─ FAIL | NAPRAW ─┐
+[terminalna faza] -- BLOCK | TIMEOUT | INFRA | ZWIS ───────────────────┴─> [retry guard R]
+[R] -- round < 5 ─> [Operator: ten sam ID, następna runda]
+[R] -- round = 5 ─> [LIMIT-5-EXCEEDED: blocked]
+[LIMIT-5] -- jawna decyzja ─> [manual resume: ten sam ID/licznik] ─> [Operator]
+[started phase] -- OWNER_HOLD | DECISION_REQUIRED ─> [blocked successor H]
+[H] -- decyzja/zależność przywrócona ─> [qualified next node]
+[terminal event] → [technical + context readback] → [legal successor]
+[legal successor] → [deterministic idempotency key] → [create once] → [notify] → [wake/dispatch profile game]
+```
+
+Obrona powstaje wyłącznie przy niepustych, konkretnych zarzutach. Po każdym terminalnym
+przejściu Kanbana (np. `kanban_complete`, `kanban_block`, `review_requested` lub
+`changes_requested`, gdy kończy bieżącą fazę) oraz obserwowalnym evencie trzeba wykonać
+technical/context readback karty, grafu, dispatchu, eventu i artefaktów; dopiero potem wolno idempotentnie utworzyć
+i wybudzić legalnego sukcesora. Receipt zapisuje `event_id`, `idempotency_key`, oba
+readbacki oraz wyniki `notify` i `wake`. `OWNER_HOLD`/`DECISION_REQUIRED` blokuje tylko
+przyszłych następców, rozpoczęty worker może dokończyć fazę, a komunikat „nic nie może
+ruszyć" jest niedopuszczalny, gdy readback wskazuje kwalifikowany etap. `FAIL`, `NAPRAW`,
+`BLOCK`, `TIMEOUT`, `INFRA` i `ZWIS` idą przez guard retry/LIMIT-5; wznowienie zachowuje
+ID i licznik. Pusta Obrona jest zakazana.
 
 ## 2. `playbook.json` nigdy nie edytuj ręcznie
 
@@ -193,6 +235,12 @@ pamięci poprzedniej rozmowy.
 5. Czy wpis w rejestrze mówi wyłącznie to, co faktycznie sprawdziłeś w plikach — zero „powinno działać"?
 6. Czy osobny Evaluator (nie ty) zweryfikował zmianę, zanim ją uznałeś za zamkniętą?
 7. Czy nowa reguła ma ID w `REJESTR-PROSB-I-ZADAN.md`?
+8. Czy karta Kanban istniała przed workerem i zawiera graf: GOAL, kryteria, allowlistę,
+   zależności, wszystkie fazy oraz przyszłe blokady?
+9. Czy przejście ma technical/context readback, terminalny event i transition receipt
+   z legalnym sukcesorem oraz idempotency key?
+10. Czy aktywny sukcesor dostał oba dowody `notify`+`wake`, a pusta Obrona nie została
+    utworzona?
 
 **Jeśli którykolwiek punkt to „nie wiem" — sprawdź, zanim skomitujesz.** To dokładnie ta
 kolejność pytań, która w tej sesji za każdym razem znajdowała realny, jeszcze niezamknięty

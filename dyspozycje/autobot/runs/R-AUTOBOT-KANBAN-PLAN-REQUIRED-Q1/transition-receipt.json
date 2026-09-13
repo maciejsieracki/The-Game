@@ -1,0 +1,175 @@
+{
+  "receipt_type": "transition",
+  "receipt_version": 2,
+  "topic_id": "R-AUTOBOT-KANBAN-PLAN-REQUIRED-Q1",
+  "kanban_card_id": "t_89f369e1",
+  "board": "the-game-real24",
+  "source_transition": {
+    "terminal_event": "changes_requested",
+    "event_id": "kanban:changes_requested:run-144:created_at-1789251508",
+    "event_id_source": "Deterministic reference composed only from the actual kind, run_id and created_at returned by kanban_show; kanban_show exposes no separate opaque event id.",
+    "kind": "changes_requested",
+    "run_id": 144,
+    "created_at_epoch": 1789251508,
+    "round": "2/5",
+    "attempt": 2,
+    "preceding_terminal_transition": {
+      "kind": "review_requested",
+      "event_id": "kanban:review_requested:run-143:created_at-1789251075",
+      "run_id": 143,
+      "created_at_epoch": 1789251075,
+      "round": "2/5",
+      "attempt": 2
+    }
+  },
+  "source": {
+    "profile": "game",
+    "process_phase": "Evaluator",
+    "native_status_at_readback": "ready",
+    "run_id": 144,
+    "round": "2/5",
+    "attempt": 2,
+    "native_phase_state": "review"
+  },
+  "successor": {
+    "selection": "same Kanban card, corrective Operator run",
+    "kanban_card_id": "t_89f369e1",
+    "run_id": 145,
+    "profile": "game",
+    "process_phase": "Operator",
+    "native_status_at_readback": "running",
+    "pid": 1718035,
+    "claimed_at_epoch": 1789251557,
+    "created_by_transition": "changes_requested/run-144",
+    "round": "3/5",
+    "attempt": 3
+  },
+  "round": {
+    "current": 3,
+    "limit": 5,
+    "label": "3/5",
+    "basis": "C-050 counts the initial Operator+Evaluator dispatch as round 1 and each correction as a new round; runs 141+142 are round 1, runs 143+144 are round 2, and corrective Operator run 145 is round 3.",
+    "dispatch_declared": "00-dispatch.md:4 declares RUNDA: 1/5 for the initial dispatch; it is not retroactively rewritten."
+  },
+  "attempt": {
+    "current": 3,
+    "limit": 5,
+    "source_run_id": 144,
+    "successor_run_id": 145,
+    "source_attempt_ref": "kanban run 144 (changes_requested, round 2)",
+    "successor_attempt_ref": "kanban run 145 (corrective Operator, round 3)",
+    "counter_source": "C-050 and the observed Kanban run sequence; kanban_show exposes run_id but no separate opaque attempt counter."
+  },
+  "idempotency_key": "t_89f369e1:changes_requested:run-144:1789251508",
+  "idempotency_key_formula": "<kanban_card_id>:<terminal_event_kind>:<source_run_id>:<source_event_created_at_epoch>",
+  "technical_readback": {
+    "readback_tool": "kanban_show",
+    "read_at_utc": "2026-09-12T22:23:51Z",
+    "card": {
+      "id": "t_89f369e1",
+      "status": "running",
+      "current_run_id": 145,
+      "assignee": "game",
+      "tenant": "the-game",
+      "workspace_kind": "dir",
+      "workspace_path": "/home/ubuntu/projects/The-Game-autobot-kanban-rule-20260912",
+      "parents": [],
+      "children": [],
+      "model": "gpt-5.6-luna",
+      "provider": "openai-codex",
+      "completion_contract": "local-only",
+      "round": "3/5",
+      "attempt": 3
+    },
+    "observed_routing_events": [
+      {
+        "kind": "changes_requested",
+        "run_id": 144,
+        "created_at_epoch": 1789251508,
+        "reviewer": "game",
+        "round": "2/5",
+        "attempt": 2
+      },
+      {
+        "kind": "claimed",
+        "run_id": 145,
+        "created_at_epoch": 1789251557,
+        "source_status": "ready",
+        "round": "3/5",
+        "attempt": 3
+      },
+      {
+        "kind": "spawned",
+        "run_id": 145,
+        "created_at_epoch": 1789251557,
+        "pid": 1718035,
+        "round": "3/5",
+        "attempt": 3
+      },
+      {
+        "kind": "heartbeat",
+        "run_id": 145,
+        "created_at_epoch": 1789251749
+      }
+    ],
+    "dispatch": "dyspozycje/autobot/runs/R-AUTOBOT-KANBAN-PLAN-REQUIRED-Q1/00-dispatch.md",
+    "artifact_readback": [
+      "dyspozycje/autobot/runs/R-AUTOBOT-KANBAN-PLAN-REQUIRED-Q1/00-dispatch.md",
+      "dyspozycje/autobot/runs/R-AUTOBOT-KANBAN-PLAN-REQUIRED-Q1/01-operator.md",
+      "dyspozycje/autobot/runs/R-AUTOBOT-KANBAN-PLAN-REQUIRED-Q1/transition-receipt.json"
+    ],
+    "git_readback": {
+      "branch": "hermes/R-AUTOBOT-KANBAN-PLAN-REQUIRED-Q1",
+      "worktree": "/home/ubuntu/projects/The-Game-autobot-kanban-rule-20260912",
+      "scope": "docs/process allowlist only; product code and gra/** excluded"
+    }
+  },
+  "context_readback": {
+    "readback_tool": "kanban_show plus workspace reads",
+    "goal": "W obowiązujących zasadach The-Game ma istnieć i być spójnie egzekwowany kontrakt: każde nowe zadanie jest najpierw kartą Kanban, pełny plan i zależności są zapisane przed pracą, przyszłe fazy są jawne lecz zablokowane bez workerów, a terminalny event z readbackiem idempotentnie uruchamia wyłącznie legalnego następcę.",
+    "required_sources": [
+      "README.md",
+      "docs/procesy/INDEX-PROCESU.md",
+      "docs/decyzje/R-PROC-AUTOBOT.md §2c",
+      "playbook.md",
+      "dyspozycje/autobot/JAK-BEZPIECZNIE-EDYTOWAC-AUTOBOT.md §1a",
+      ".cursor/rules/autobot-evaluator-operator.mdc §C-063",
+      ".claude/skills/civ-autobot/SKILL.md §C-063"
+    ],
+    "allowlist": [
+      "README.md",
+      "playbook.md",
+      "dyspozycje/autobot/playbook.json (generator only)",
+      "docs/decyzje/R-PROC-AUTOBOT.md",
+      ".cursor/rules/autobot-evaluator-operator.mdc",
+      ".claude/skills/civ-autobot/SKILL.md",
+      "dyspozycje/autobot/JAK-BEZPIECZNIE-EDYTOWAC-AUTOBOT.md",
+      "dyspozycje/autobot/runs/R-AUTOBOT-KANBAN-PLAN-REQUIRED-Q1/"
+    ],
+    "graph_readback": "ROOT → Operator → Evaluator → conditional Defense or Final Control → integration → READY_FOR_DEPLOY; terminal failure states → retry guard/LIMIT-5; owner hold → blocked future successor; terminal event → technical/context readback → legal successor → idempotent create → notify → wake.",
+    "decision_readback": "single execution profile game; role is process_phase and transition receipt; native_status does not choose role or successor; no push/merge/deploy."
+  },
+  "notify": {
+    "result": "observed",
+    "channel": "Kanban card thread",
+    "evidence": [
+      "changes_requested event run=144 created_at=1789251508",
+      "watchdog readback 2026-09-12T22:20Z reports tui=20260823_223345_671036 and last_event_id=1922 for t_89f369e1"
+    ]
+  },
+  "wake": {
+    "result": "observed",
+    "mechanism": "Kanban dispatcher claim/spawn",
+    "evidence": [
+      "claimed event run=145 created_at=1789251557 source_status=ready",
+      "spawned event run=145 created_at=1789251557 pid=1718035",
+      "heartbeat run=145 created_at=1789251749"
+    ]
+  },
+  "readback_status": "PASS_WITH_NOTES",
+  "notes": [
+    "The Kanban card exposes profile, native status, run IDs, parent/child lists, model/provider and workspace; it does not expose separate card fields named idempotency_key, process_phase, session_id or attempt. This receipt records observed run references and distinguishes process_phase from native_phase_state without inventing missing card fields.",
+    "The receipt documents the actual changes_requested run 144 → corrective Operator run 145 transition. Round 3/5 is the effective current dispatch counter under C-050; the original dispatch header remains RUNDA: 1/5 as the initial round record.",
+    "The current corrective run remains active at readback time; this receipt does not claim final completion."
+  ]
+}

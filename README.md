@@ -15,6 +15,7 @@ numerze ID, nie po dacie incydentu w treści — reguły odzyskane z archiwum po
 niższym numerem (np. C-046…C-049, wstawione 2026-08-20) tu się nie pojawią,
 mimo że tego dnia też trafiły do playbooka.
 
+- **C-063** (2026-09-12) — każde nowe/odnowione zadanie najpierw trafia do karty Kanban z pełnym grafem planu (GOAL, kryteria, allowlista, zależności, wszystkie fazy i przyszłe blokady); wszystkie karty używają profilu `game`, a role są `process_phase`/transition receipts z `idempotency_key`. Każde terminalne przejście Kanbana (np. `kanban_complete`, `kanban_block`, `review_requested` lub `changes_requested`, gdy kończy bieżącą fazę) wymaga technical/context readbacku, po którym graf wybiera wyłącznie legalnego sukcesora: `FAIL`/`NAPRAW`/`BLOCK`/`TIMEOUT`/`INFRA`/`ZWIS` przechodzą przez retry guard i `LIMIT-5-EXCEEDED`, jawna decyzja wznawia ten sam ID bez resetu licznika, a aktywna karta wymaga `notify`+`wake`; `OWNER_HOLD`/`DECISION_REQUIRED` blokuje tylko przyszłych następców, a Obrona istnieje wyłącznie przy konkretnych zarzutach.
 - **C-062** (2026-08-21) — przywrócono zapis: Final Control (Claude Code) = Sonnet 5 effort High, zawsze osobny subagent, nigdy główny orkiestrator — zaginął z §5a przy nadpisaniu pliku przez równoległą sesję, przywrócony po audycie właściciela.
 - **C-061** (2026-08-21) — dwie ścieżki dispatchu Operator/Evaluator: różnicowanie `effort` per rola tylko przez narzędzie Workflow (gdy dostępne i autoryzowane), inaczej wyłącznie przez treść promptu.
 - **C-060** (2026-08-20) — watchdog dispatchu liczy się jako zajęty slot, jeśli dzieli limit wątków z Operatorami/Evaluatorami — efektywna pojemność na tematy to 5, nie 6.
@@ -26,7 +27,6 @@ mimo że tego dnia też trafiły do playbooka.
 - **C-054** (2026-08-20) — `DECISION_REQUIRED` to nie `BLOCK` i nie zastępuje turnieju ABC (C-018); konflikt z wpływem na gameplay/UX wymaga pełnego turnieju, nie skróconej ścieżki.
 - **C-053** (2026-08-20) — po `LIMIT-5-EXCEEDED` ręczny nowy cykl tego samego ID wymaga jawnej decyzji właściciela i raportu porównawczego, nie jest automatyczną rundą 6.
 - **C-052** (2026-08-20) — w dispatchach Codex `multi_agent_v1` Operator i Evaluator muszą dostać jawnie `model=gpt-5.6-luna` i `reasoning_effort=high`, bez dziedziczenia po orkiestratorze.
-- **C-051** (2026-08-20) — ledger + watchdog dispatchu: jeden rekord na dispatch (9 pól), watchdog sprawdza co minutę, brak raportu zawsze dostaje klasyfikację (nigdy pusty przebieg).
 
 ## Zanim cokolwiek zrobisz
 

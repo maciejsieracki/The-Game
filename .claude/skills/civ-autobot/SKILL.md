@@ -29,6 +29,46 @@ Bez obu warunków (co jest normą — Cursor/GPT nie mają koncepcji Workflow z
 `effort` per agent) zostań w tym pliku: role różnicujesz wyłącznie treścią
 promptu, bez parametru effort. Pełne uzasadnienie: playbook C-061.
 
+## Plan Kanban przed pracą (C-063)
+
+Każdy nowy lub odnowiony temat The-Game najpierw dostaje kartę na `the-game-real24`.
+Przed pierwszym workerem karta musi zawierać pełny **graf** (nie listę): `topic_id`,
+`GOAL`, binarne kryteria, allowlistę, zależności, worktree, limit rund, wszystkie fazy
+oraz przyszłe `blocked` gates, w tym `OWNER_HOLD`/`DECISION_REQUIRED`. Wszystkie takie
+karty używają jednego profilu `game`; rola jest `process_phase`, a przejście jest
+`transition receipt`, nigdy osobnym profilem per rola. `native_status` nie wyznacza
+następcy.
+
+```text
+[karta] → [Operator] → [Evaluator]
+                         ├─ zarzuty > 0 → [Obrona] → [Final Control]
+                         └─ zarzuty = 0 ───────────→ [Final Control]
+                                                    ├─ PASS + terminal event/readback → [integracja]
+                                                    │                                  → [READY_FOR_DEPLOY]
+                                                    │                                  → [osobna zgoda push/deploy]
+                                                    └─ FAIL | NAPRAW ─┐
+[terminalna P1/P2/P3/P4] -- BLOCK | TIMEOUT | INFRA | ZWIS ──────────┴─> [retry guard R]
+[R] -- round < 5 ─> [Operator: ten sam ID, następna runda]
+[R] -- round = 5 ─> [LIMIT-5-EXCEEDED: blocked]
+[LIMIT-5] -- jawna decyzja ─> [manual resume: ten sam ID/licznik] ─> [Operator]
+[any started phase] -- OWNER_HOLD | DECISION_REQUIRED ─> [blocked successor H]
+[H] -- decyzja/zależność przywrócona ─> [qualified next node]
+[terminal event] → [technical + context readback] → [legal successor]
+[legal successor] → [deterministic idempotency key] → [create once] → [notify] → [wake/dispatch profile game]
+```
+
+Po każdym terminalnym przejściu Kanbana (np. `kanban_complete`, `kanban_block`,
+`review_requested` lub `changes_requested`, gdy kończy bieżącą fazę) z obserwowalnym eventem
+wykonaj technical/context readback karty, eventu, grafu, dispatchu i artefaktów. Z grafu idempotentnie utwórz i
+wybudź wyłącznie legalnego sukcesora: `FAIL`/`NAPRAW`/`BLOCK`/`TIMEOUT`/`INFRA`/`ZWIS`
+idą przez R, guard wybiera retry albo `LIMIT-5-EXCEEDED`, a jawna decyzja wznawia ten
+sam ID bez resetu licznika. Receipt zapisuje `event_id`, `idempotency_key`, oba
+readbacki oraz wyniki `notify` i `wake`; brak legalnego następcy nie może być zgadywany
+z tytułu, raportu ani statusu. Obrona powstaje tylko przy niepustych, konkretnych
+zarzutach. `OWNER_HOLD`/`DECISION_REQUIRED` blokuje tylko przyszłych następców, a
+rozpoczęty worker może dokończyć fazę. Jeśli kwalifikowany następca istnieje, nie wolno
+raportować, że nic nie może ruszyć. Pełny opis: `R-PROC-AUTOBOT.md` §2c.
+
 ## Kolejność czytania na starcie sesji
 
 Przed analizą kodu, dispatchiem lub edycją przeczytaj w tej kolejności:

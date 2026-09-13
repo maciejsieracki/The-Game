@@ -1,6 +1,6 @@
 {
-  "version": 39,
-  "updatedAtIso": "2026-08-19T21:40:14.157Z",
+  "version": 44,
+  "updatedAtIso": "2026-09-12T22:24:59.250Z",
   "min_confidence_threshold": 0.6,
   "thresholds": {
     "promoteMinWinRate": 0.6,
@@ -502,7 +502,7 @@
     },
     {
       "id": "rule_150",
-      "rule_text": "Narzędzie Workflow (Ultracode, Claude Agent SDK) automatyzuje aktualny obieg AutoBot, ale go nie zastępuje: phase('Operator') działa na GPT-5.6 Luna High, phase('Evaluator') na GPT-5.6 Luna High, a finalna kontrola/integracja należy do orkiestratora na GPT-5.6 Luna Medium. Fazy są sekwencyjne dla każdego ID, Evaluator startuje po raporcie Operatora bez ponownego sygnału właściciela, a FAIL/techniczny BLOCK/TIMEOUT/INFRA/ZWIS wraca do tej samej pętli. Workflow nie wystawia READY_FOR_DEPLOY, nie integruje poza zatwierdzonym zakresem, nie commituje, nie pushuje i nie deployuje samodzielnie; READY_FOR_DEPLOY może wystawić tylko orkiestrator po finalnej kontroli i integracji. isolation:'worktree' wymaga sprawdzenia bazy przed pracą, a zmiany wysokiego ryzyka podlegają zasadom niezależnej ewaluacji z kanonu. [C-042]",
+      "rule_text": "Narzędzie Workflow (Ultracode, Claude Agent SDK) automatyzuje aktualny obieg AutoBot, ale go nie zastępuje: phase('Operator') działa na GPT-5.6 Luna High, phase('Evaluator') na GPT-5.6 Luna High, a finalna kontrola/integracja należy do orkiestratora na GPT-5.6 Luna Medium. Fazy są sekwencyjne dla każdego ID, Evaluator startuje po raporcie Operatora bez ponownego sygnału właściciela, a FAIL/techniczny BLOCK/TIMEOUT/INFRA/ZWIS wraca do tej samej pętli po guardzie licznika i tylko dla rund 1–5. Workflow nie wystawia READY_FOR_DEPLOY, nie integruje poza zatwierdzonym zakresem, nie commituje, nie pushuje i nie deployuje samodzielnie; READY_FOR_DEPLOY może wystawić tylko orkiestrator po finalnej kontroli i integracji. isolation:'worktree' wymaga sprawdzenia bazy przed pracą, a zmiany wysokiego ryzyka podlegają zasadom niezależnej ewaluacji z kanonu. [C-042]",
       "status": "ACTIVE",
       "protected": false,
       "win_count": 0,
@@ -522,7 +522,7 @@
     },
     {
       "id": "rule_152",
-      "rule_text": "**KANON ROUTINGU AUTOBOT:** każdy temat ma jeden pełny ID i przechodzi bez zatrzymania Operator (GPT-5.6 Luna High) → Evaluator (GPT-5.6 Luna High) → finalna kontrola/integracja (orkiestrator GPT-5.6 Luna Medium) → READY_FOR_DEPLOY. Raport terminalny każdego subagenta musi zawierać STATUS (PASS, PASS-WITH-NOTES, FAIL, BLOCK, TIMEOUT, INFRA), ID, zmiany/commity, testy, blokady, następny krok i DEPLOY/PUSH. READY_FOR_DEPLOY może wystawić wyłącznie orkiestrator po pozytywnej finalnej kontroli i integracji; deploy/push jest osobną bramką na wyraźne polecenie właściciela. FAIL, techniczny BLOCK, TIMEOUT, INFRA i ZWIS wracają natychmiast do Operatora, a następnie Evaluatora z tym samym ID; BLOCK wymagający decyzji uruchamia ABC i pauzuje tylko ten temat. PASS-WITH-NOTES nie kończy procesu bez akceptacji finalnej kontroli. Limit wynosi 6 otwartych subagentów: po terminalnym raporcie zamknij zakończonego i natychmiast obsadź slot następnym wymaganym etapem albo innym niezablokowanym tematem; przy dostępnej pracy wszystkie 6 slotów mają być wykorzystane. Komenda sprawdź oznacza audyt całej bieżącej puli i historycznych not_found, lekturę raportów, klasyfikację statusów, zamknięcie zakończonych i uruchomienie następnych etapów; not_found bez raportu nie jest dowodem zakończenia. [C-044]",
+      "rule_text": "**KANON ROUTINGU AUTOBOT:** każdy temat ma jeden pełny ID i przechodzi Operator → Evaluator → finalna kontrola/integracja → READY_FOR_DEPLOY. Raport terminalny każdego subagenta musi zawierać STATUS (PASS, PASS-WITH-NOTES, FAIL, BLOCK, TIMEOUT, INFRA, LIMIT-5-EXCEEDED), ID, zmiany/commity, testy, blokady, następny krok i DEPLOY/PUSH. FAIL, BLOCK, TIMEOUT, INFRA i ZWIS wracają do Operatora tylko po wspólnym guardzie authorizeDispatch przed automatycznym dispatch/retry, wyłącznie dla rund 1–5; próba 6 zatrzymuje się statusem LIMIT-5-EXCEEDED z liczbą rund, lastVerdict, blokadą i decyzją właściciela/orkiestratora. Manual resume wymaga jawnej decyzji i zachowuje ID, licznik oraz lastVerdict. Pozostałe bramki C-044 pozostają bez zmian. [C-044]",
       "status": "ACTIVE",
       "protected": true,
       "win_count": 0,
@@ -539,6 +539,186 @@
       "fail_count": 0,
       "win_rate": 0,
       "lastUpdatedIso": "2026-08-19T21:26:27.521Z"
+    },
+    {
+      "id": "rule_154",
+      "rule_text": "**LIMIT 5 RUND (Maciej, 2026-08-20):** dla jednego pełnego ID runda to jeden faktyczny dispatch Operatora wraz z jego Evaluatorem; runda początkowa i każda korekta liczą się osobno, a licznik rośnie przed dispatchiem. Próby 1–5 są dozwolone. Techniczny BLOCK, TIMEOUT, INFRA lub ZWIS po rozpoczęciu próby zużywa rundę; ABC-OCZEKUJE przed dispatchiem nie. Po piątej nieudanej/niezamkniętej rundzie nie dispatchuj automatycznie szóstej: zgłoś LIMIT-5-EXCEEDED z liczbą rund, ostatnim faktycznym werdyktem, blokadą i decyzją wymaganą od orkiestratora/właściciela. Limit jest dodatkową bramką, nie zamiennikiem statusu BLOCK/TIMEOUT/INFRA/ZWIS. Wznowienie lub nowy cykl wymaga jawnej decyzji, zachowuje to samo ID i nie resetuje licznika bez wyraźnej zgody. [C-050]",
+      "status": "ACTIVE",
+      "protected": true,
+      "win_count": 0,
+      "fail_count": 0,
+      "win_rate": 0,
+      "lastUpdatedIso": "2026-09-12T21:52:56.262Z"
+    },
+    {
+      "id": "rule_155",
+      "rule_text": "**LEDGER + WATCHDOG DISPATCHU (Maciej, 2026-08-20):** każdy dispatch ma dokładnie jeden rekord z polami agent_id, temat, rola, runda, start, oczekiwany_artefakt, ostatni_status, timestamp_zakonczenia, routing_nastepnego_kroku. Watchdog sprawdza każdy aktywny rekord co minutę. Dozwolone rozstrzygnięcia to completed, interrupted, timeout, not_found, BLOCK i CLOSED; brak raportu/notyfikacji zawsze dostaje klasyfikację TIMEOUT, ZWIS albo BLOCK, nigdy pusty przebieg. FAIL/BLOCK wraca do tego samego ID i Operatora po guardzie rundy. Nieznany status blokuje duplikat i kolejny dispatch do czasu rozstrzygnięcia. Monitoring kończy się po READY_FOR_DEPLOY, jawnym BLOCK albo ABC-OCZEKUJE; Operator nie deployuje ani nie pushuje. [C-051]",
+      "status": "ACTIVE",
+      "protected": true,
+      "win_count": 0,
+      "fail_count": 0,
+      "win_rate": 0,
+      "lastUpdatedIso": "2026-09-12T21:52:56.262Z"
+    },
+    {
+      "id": "rule_156",
+      "rule_text": "**JAWNY MODEL RÓL JAKOŚCIOWYCH (Maciej, 2026-08-20):** w dispatchach Codex multi_agent_v1 Operator i Evaluator MUSZĄ otrzymać jawnie model=gpt-5.6-luna oraz reasoning_effort=high; zakazane jest dziedziczenie modelu po orkiestratorze. Final Control pozostaje Luna High, integracja orkiestratora Luna Medium. 00-dispatch.md i raport etapu zapisują model oraz effort, a brak tych pól klasyfikuje dispatch jako niekompletny do czasu uzupełnienia. [C-052]",
+      "status": "ACTIVE",
+      "protected": false,
+      "win_count": 0,
+      "fail_count": 0,
+      "win_rate": 0,
+      "lastUpdatedIso": "2026-09-12T21:52:56.262Z"
+    },
+    {
+      "id": "rule_157",
+      "rule_text": "**MANUAL RESUME PO LIMIT-5 (Maciej, 2026-08-20):** po faktycznych pięciu negatywnych rundach i kanonicznym LIMIT-5-EXCEEDED właściciel zezwala na ręczny nowy cykl tego samego pełnego ID. Nowy cykl nie jest automatyczną rundą 6 i nie zeruje historii; Operator oraz kolejne role używają model=gpt-5.6-luna, reasoning_effort=high. Wymagany jest raport porównawczy błędów/blokad. Nie stosować do zwykłego BLOCK/INFRA/izolacji przed osiągnięciem pięciu rund. [C-053]",
+      "status": "ACTIVE",
+      "protected": false,
+      "win_count": 0,
+      "fail_count": 0,
+      "win_rate": 0,
+      "lastUpdatedIso": "2026-09-12T21:52:56.262Z"
+    },
+    {
+      "id": "rule_158",
+      "rule_text": "**DECISION_REQUIRED ≠ BLOCK, i NIE zastępuje turnieju C-018.** Gdy Operator wykryje, że dispatch/kod/testy wymagają SPRZECZNEGO zachowania dla tego samego ID — STOP, nie koduje dalej, nie liczy to jako rundy (dopełnia C-050: ABC-OCZEKUJE przed dispatchiem nie zużywa rundy). Zapisuje zgłoszenie konfliktu w dyspozycje/autobot/runs/<ID>/decision-abc.md (opis konfliktu — po jednym zdaniu co mówi dispatch/kod/testy, bez proponowania rozwiązania) i ustawia RAZEM, na dwóch warstwach: ledger DECISION_REQUIRED (C-051) oraz status tematu ABC-OCZEKUJE w rejestrze — to ta sama rzecz, nigdy rozjechane. Dalej dwie ścieżki: (a) konflikt czysto inżynierski bez wpływu na gameplay/UX/dane gracza → lekka ścieżka, jedna propozycja do PYTANIA-OTWARTE.md (wyjątek już zdefiniowany w C-018); (b) konflikt z wpływem na gameplay/balans/UX → OBOWIĄZKOWY pełny turniej C-018 (dwóch niezależnych projektów A/B/C), decision-abc.md jest tylko wyzwalaczem, nigdy substytutem. Incydent źródłowy (2026-08-20, R-PRACA-PULA-NIEAKUMULUJE-Q1): konflikt kontraktu globalne 0/100 vs hard floor 50% budynków — decyzja balansu, wymaga (b), nie skróconej ścieżki. FAIL dla Evaluatora: brak decision-abc.md mimo widocznego konfliktu w raporcie Operatora. [C-054]",
+      "status": "ACTIVE",
+      "protected": false,
+      "win_count": 0,
+      "fail_count": 0,
+      "win_rate": 0,
+      "lastUpdatedIso": "2026-09-12T21:52:56.262Z"
+    },
+    {
+      "id": "rule_159",
+      "rule_text": "**DOMENA w każdym raporcie: GAME / PROCESS / INFRA / INFORMATIONAL.** Przed zgłoszeniem tematu jako zablokowanego rozstrzygnij czy blokada jest FUNKCJONALNA (gra działa źle) czy PROCESOWA (brudny worktree, obcy hunk, rozjazd ledgeru, limit wątków) — błąd provenance/worktree/ledgeru NIE jest automatycznie błędem gry. Kontrakt raportu (C-044, R-PROC-AUTOBOT.md §4, INDEX-PROCESU.md, oba SKILL.md) dostaje pole DOMAIN: zaraz po STATUS:. Przykłady: rekrutacja bez upkeep → GAME (z ewentualną blokadą integracji osobno); rozjazd ledger vs limit wątków (C-060) → INFRA; limit rund → PROCESS; pytanie o istniejącą mechanikę bez dispatchu kodu → INFORMATIONAL (np. R-HANDEL-MIEDZYCYWILIZACYJNY-PRZYCHOD-BUDYNEK-Q1, 2026-08-20 — było pytaniem, nie zadaniem zmiany). FAIL dla Evaluatora: raport bez pola DOMAIN:. [C-055]",
+      "status": "ACTIVE",
+      "protected": false,
+      "win_count": 0,
+      "fail_count": 0,
+      "win_rate": 0,
+      "lastUpdatedIso": "2026-09-12T21:52:56.262Z"
+    },
+    {
+      "id": "rule_160",
+      "rule_text": "**Weryfikacja „czy to już wdrożone\" przez git merge-base --is-ancestor <commit_funkcji> <commit_release>, nigdy przez pamięć „co jest w najnowszej Fali\".** Jeśli commit funkcji jest przodkiem aktualnego HEAD/release — temat jest zintegrowany, nie wymaga ponownego wdrożenia; nie wymagać, żeby zmiana wystąpiła ponownie w każdej kolejnej Fali. Incydent (2026-08-20/21, R-TRZY-KARTY-WDROZENIE-Q1): fałszywy alarm „temat zniknął w kolejnej Fali\", bo porównanie zrobiono z pamięci zamiast komendą. FAIL dla Evaluatora: twierdzenie „już wdrożone\"/„zniknęło\" bez wklejonego wyniku komendy. [C-056]",
+      "status": "ACTIVE",
+      "protected": false,
+      "win_count": 0,
+      "fail_count": 0,
+      "win_rate": 0,
+      "lastUpdatedIso": "2026-09-12T21:52:56.263Z"
+    },
+    {
+      "id": "rule_161",
+      "rule_text": "**Rejestr duplikatów: tag [duplicate_of: <ID>] / [related_to: <ID>] / [supersedes: <ID>] w REJESTR-PROSB-I-ZADAN.md.** Przed otwarciem nowego tematu sprawdź rejestr (grep po nazwie funkcji, nie tylko po ID) pod kątem duplikatu tej samej funkcji pod inną nazwą. Jeśli istnieje — dopisz tag do wiersza/wpisu istniejącego tematu, zamknij nowy jako duplikat i NIE prowadź niezależnego retry pod nowym ID. Incydent (2026-08-20): R-PRACA-MIASTO-LIMIT-50-Q1 i R-PRACA-MIASTO-SPLIT-BUDZET-AUTOMAT-Q1 — ta sama funkcja, dwa ID; naprawione korektą 2026-08-21 w rejestrze. [C-057]",
+      "status": "ACTIVE",
+      "protected": false,
+      "win_count": 0,
+      "fail_count": 0,
+      "win_rate": 0,
+      "lastUpdatedIso": "2026-09-12T21:52:56.263Z"
+    },
+    {
+      "id": "rule_162",
+      "rule_text": "**Nie odtwarzaj sztucznie brakujących historycznych liczników/wyników.** Gdy w rejestrze/logu jest luka (np. brakująca runda, nieznaleziony wynik bramki z przeszłości) — zanotuj brak jako notę z datą, nie zgaduj ani nie wypełniaj wartością „prawdopodobną\". Decyzję opieraj na aktualnym, reprodukowalnym teście, nie na domysłach o przeszłości. [C-058]",
+      "status": "ACTIVE",
+      "protected": false,
+      "win_count": 0,
+      "fail_count": 0,
+      "win_rate": 0,
+      "lastUpdatedIso": "2026-09-12T21:52:56.263Z"
+    },
+    {
+      "id": "rule_163",
+      "rule_text": "**Integracja = allowlist-only, per plik i per hunk — rozszerza C-008/C-034 o jawny status pośredni.** Zakaz git add -A/git add ./czyszczenia worktree przy integracji tematu z brudnego drzewa współdzielonego z inną pracą. Jeśli nie da się wiarygodnie rozdzielić współdzielonego pliku — status INTEGRATION_PENDING (nie BLOCK); właściciel odblokowania to orkiestrator, który adresuje temat przy najbliższym wolnym slocie (ręczne rozdzielenie hunków albo decyzja o wspólnym dispatchu z kolidującym tematem), temat nie czeka biernie. PASS-WITH-NOTES z kompletną macierzą testów i allowlist-only = gotowość do integracji, NIE automatyczna porażka. Incydent (2026-08-20/21): R-REKRUTACJA-SUROWIEC-BEZ-UPKEEP-Q1/R-PRACA-MIASTO-SPLIT-BUDZET-AUTOMAT-Q1 utknęły, bo integracja z brudnego worktree próbowała objąć cały drzewo zamiast wybranych hunków. FAIL dla Evaluatora: staging integracji zawierający pliki spoza zatwierdzonej allowlisty tematu, niezależnie od wyniku testów. [C-059]",
+      "status": "ACTIVE",
+      "protected": false,
+      "win_count": 0,
+      "fail_count": 0,
+      "win_rate": 0,
+      "lastUpdatedIso": "2026-09-12T21:52:56.263Z"
+    },
+    {
+      "id": "rule_164",
+      "rule_text": "**Watchdog liczy się jako zajęty slot, jeśli dzieli limit wątków/procesów z Operatorami/Evaluatorami (dopełnia C-051, C-044 limit 6).** Jeśli dzieli — efektywna pojemność na tematy to 5, nie 6; orkiestrator obsadza maksymalnie 5 slotów tematami, szósty rezerwuje dla Watchdoga. Jeśli działa poza tą pulą — zapisz to jawnie, nie zakładaj domyślnie. Rozjazd ledger_free_slot vs runtime_thread_limit jest osobnym, jawnym sygnałem (nie notatką w raporcie) i WSTRZYMUJE nowe dispatch'e do wyjaśnienia. Incydent (2026-08-20, R-AUTOBOT-CAPACITY-LEDGER-VS-THREAD-LIMIT-Q1): ledger wskazywał wolny slot, silnik zwracał limit wątków osiągnięty. [C-060]",
+      "status": "ACTIVE",
+      "protected": false,
+      "win_count": 0,
+      "fail_count": 0,
+      "win_rate": 0,
+      "lastUpdatedIso": "2026-09-12T21:52:56.263Z"
+    },
+    {
+      "id": "rule_165",
+      "rule_text": "**DWIE ŚCIEŻKI DISPATCHU OPERATOR/EVALUATOR: Workflow gdy dostępny+autoryzowany, inaczej wyłącznie różnicowanie przez prompt (Maciej, 2026-08-21).** Narzędzie Agent (podstawowy dispatch subagentów Claude Code) ma parametr model, ale NIE MA parametru effort/reasoning_effort w swoim schemacie — sprawdzone bezpośrednio. Różnicowanie Operator/Evaluator przez effort (R-PROC-AUTOBOT.md §5a) jest więc fizycznie możliwe WYŁĄCZNIE przez narzędzie orkiestracji wieloagentowej (Workflow, ma opts.effort per agent) — i TYLKO gdy ono jest (a) dostępne w danej sesji ORAZ (b) właściciel dał jawną, opt-in zgodę na multi-agent orchestration w TEJ sesji (Workflow nie działa bez tego, zgoda nie jest automatyczna ani domyślna). **Ścieżka A** (Workflow dostępny + autoryzowany): dispatch Operator/Evaluator/Final Control przez gotowy, wcześniej przygotowany skrypt Workflow — .claude/skills/civ-autobot-workflow/SKILL.md — z jawnym model/effort per rolę zgodnie z kanonem (dla Claude Code: Operator Sonnet 5 Medium, Evaluator Sonnet 5 High). **Ścieżka B** (wszystko inne — brak Workflow, brak zgody na niego, albo inne narzędzie typu Cursor/GPT bez koncepcji effort per agent): różnicowanie ról WYŁĄCZNIE przez treść promptu (jawna instrukcja „jesteś Evaluatorem, szukaj adwersaryjnie powodów do FAIL\"), bez parametru effort — to już dziś robią .claude/skills/civ-autobot/SKILL.md i .claude/skills/autobots/SKILL.md. Nie mieszać ścieżek w jednym dispatchu i nie udawać różnicowania effort tam, gdzie narzędzie go nie ma. Incydent źródłowy (2026-08-21): orkiestrator dispatchował dwa kolejne tematy przez pojedynczy Agent z model:\"opus\" zamiast uzgodnionego Sonnet 5, i bez żadnego różnicowania effort Operator/Evaluator, bo Agent nie ma tego parametru w ogóle — złapane przez właściciela, NIE przez samoocenę orkiestratora (naruszenie tej samej klasy co C-013/C-017: brak samodzielnej weryfikacji własnego dispatchu). FAIL dla Evaluatora/orkiestratora: dispatch przez pojedynczy Agent z modelem innym niż uzgodniony kanon bez jawnej decyzji właściciela, oraz raport bez jawnego stwierdzenia którą ścieżką (A/B) dispatch przebiegł i dlaczego. [C-061]",
+      "status": "ACTIVE",
+      "protected": false,
+      "win_count": 0,
+      "fail_count": 0,
+      "win_rate": 0,
+      "lastUpdatedIso": "2026-09-12T21:52:56.263Z"
+    },
+    {
+      "id": "rule_166",
+      "rule_text": "**PRZYWRÓCONY ZAPIS: FINAL CONTROL (CLAUDE CODE) = SONNET 5 EFFORT HIGH, ZAWSZE OSOBNY SUBAGENT (Maciej, audyt właściciela, 2026-08-21).** docs/decyzje/R-PROC-AUTOBOT.md §5a jawnie stwierdza: dla sesji Claude Code Final Control używa tego samego modelu/effort co Evaluator (Sonnet 5, effort High) i jest wykonywany przez OSOBNEGO subagenta, nigdy bezpośrednio przez głównego orkiestratora — analogicznie do zapisu w §1 dla GPT-5.6 Luna. Zdanie to zniknęło z §5a na origin/main najprawdopodobniej przez nadpisanie całego pliku przez inną, równoległą sesję pracującą ze starszego checkoutu, nie przez świadomą decyzję właściciela; wykryte audytem porównania stanu procesu i przywrócone tematem R-AUTOBOT-FINALCONTROL-SUBAGENT-RESTORE-Q1. [C-062]",
+      "status": "ACTIVE",
+      "protected": false,
+      "win_count": 0,
+      "fail_count": 0,
+      "win_rate": 0,
+      "lastUpdatedIso": "2026-09-12T21:52:56.263Z"
+    },
+    {
+      "id": "rule_167",
+      "rule_text": "**PLAN-FIRST KANBAN, GRAF I LEGALNY SUKCESOR (decyzja właściciela, 2026-09-12):** każde nowe lub odnowione zadanie The-Game najpierw trafia do karty Kanban, a przed pierwszym workerem karta zawiera pełny graf, nie płaską listę: GOAL, binarne kryteria, minimalną allowlistę, zależności, wszystkie wymagane fazy, przyszłe bramki blocked oraz OWNER_HOLD/DECISION_REQUIRED. Wszystkie nowe i odnowione karty używają jednego profilu wykonawczego game; process_phase i transition receipt opisują rolę oraz przejście, nie tworzy się profili game-operator/game-evaluator. native_status jest stanem dostawcy i nie wyznacza roli ani następcy. Graf ma krawędzie Operator → Evaluator → Obrona tylko przy niepustych, konkretnych zarzutach → Final Control → integracja orkiestratora → READY_FOR_DEPLOY → osobna zgoda push/deploy oraz wspólną krawędź terminalnych FAIL/NAPRAW/BLOCK/TIMEOUT/INFRA/ZWIS do retry guarda: runda <5 wraca do tego samego ID, runda 5 prowadzi do LIMIT-5-EXCEEDED, a jawna decyzja wznawia ten sam ID bez resetu licznika. OWNER_HOLD/DECISION_REQUIRED prowadzi do jawnie zablokowanego przyszłego sukcesora, a decyzja lub przywrócenie zależności odblokowuje kwalifikowany węzeł. Po każdym terminalnym przejściu Kanbana (np. kanban_complete, kanban_block, review_requested lub changes_requested, gdy kończy bieżącą fazę) z obserwowalnym eventem orkiestrator robi technical/context readback karty, eventu, grafu, kontraktu i artefaktów, a potem idempotentnie tworzy i dispatchuje wyłącznie legalnego sukcesora z receipt, event_id, idempotency_key oraz wynikami notify i wake dla aktywnej karty. Nie wolno twierdzić, że nic nie może ruszyć, gdy readback wskazuje kwalifikowany następny etap. [C-063]",
+      "status": "ACTIVE",
+      "protected": true,
+      "win_count": 0,
+      "fail_count": 0,
+      "win_rate": 0,
+      "lastUpdatedIso": "2026-09-12T21:52:56.263Z"
+    },
+    {
+      "id": "rule_168",
+      "rule_text": "**Wzorzec domykania tautologii testowej: extract-to-pure-function.** Powtarzający się wzorzec ucieczki mutacyjnej (wg archiwum: 2026-08-12, ≥4 niezależne przypadki: shouldAllowBarbCityCapture, canBarbarianWalkIntoEmptyCity, splitCampMoveCost, appendBreakdownLines) — logika żyje INLINE w dużej, niewyeksportowanej funkcji (typowo main.ts), a test odtwarza tę samą formułę jako WŁASNĄ KOPIĘ zamiast importować prawdziwy kod. Mutacja psująca produkcyjną logikę przechodzi bramkę, bo test i tak sprawdza tylko swoją kopię. Naprawa: wyciągnąć sporny fragment do eksportowanej, czystej funkcji w module domenowym, zaimportować JĄ SAMĄ i w miejscu użycia, i w teście — zero duplikacji formuły. Evaluator sprawdzający naprawę tego typu potwierdza, że test faktycznie importuje tę samą jednostkę modułu co produkcja, nie odtwarza formuły. [C-046]",
+      "status": "ACTIVE",
+      "protected": false,
+      "win_count": 0,
+      "fail_count": 0,
+      "win_rate": 0,
+      "lastUpdatedIso": "2026-09-12T21:52:56.263Z"
+    },
+    {
+      "id": "rule_169",
+      "rule_text": "**git add+git commit dla DWÓCH niepowiązanych zmian jako dwa równoległe wywołania narzędzia w tej samej turze = race condition.** Wg archiwum (2026-08-12): dwa niezależne scalenia wysłane jako dwa równoległe tool-calle w jednej wiadomości — oba zestawy plików wylądowały w JEDNYM commicie (ten, którego git commit wykonał się jako drugi, po tym jak oba git add już się zakończyły), z komunikatem opisującym tylko jedną z dwóch zmian. Zasada: git add+git commit dla niepowiązanych zmian ZAWSZE sekwencyjnie, nigdy jako równoległe wywołania w jednej turze — nawet gdy oba zestawy plików są rozłączne. [C-047]",
+      "status": "ACTIVE",
+      "protected": false,
+      "win_count": 0,
+      "fail_count": 0,
+      "win_rate": 0,
+      "lastUpdatedIso": "2026-09-12T21:52:56.264Z"
+    },
+    {
+      "id": "rule_170",
+      "rule_text": "**Audyt „nigdy-nie-ewaluowanych\" commitów jako cykliczna higiena, nie jednorazowa akcja.** Wg archiwum: systematyczny przegląd historii gałęzi (git log --oneline <punkt-odniesienia>..HEAD, odfiltrowane wpisy czysto dokumentacyjne, dla każdego pozostałego commita grep w rejestrze czy pada słowo „Evaluator\" gdziekolwiek w jego kontekście) wielokrotnie znajdował realne błędy w kodzie już zmergowanym (2026-08-12: 12/12 nigdy-nie-ewaluowanych commitów dostało recenzję, większość miała ≥1 realne znalezisko). „SCALONE\" bez wzmianki o Evaluatorze w rejestrze nie jest dowodem jakości — jest dowodem, że nikt jeszcze nie sprawdził. [C-048]",
+      "status": "ACTIVE",
+      "protected": false,
+      "win_count": 0,
+      "fail_count": 0,
+      "win_rate": 0,
+      "lastUpdatedIso": "2026-09-12T21:52:56.264Z"
+    },
+    {
+      "id": "rule_171",
+      "rule_text": "**Kontrola spójności MIĘDZY tematami tej samej sesji, nie tylko poprawności wewnętrznej.** Wg archiwum (2026-08-12): naprawa etykiety w jednym panelu nie została propagowana do analogicznej kolumny w innym panelu tej samej gry, pokazującej tę samą wielkość pod starą nazwą — złapane dopiero, bo Evaluator kolejnego tematu świadomie sprawdził zgodność z wcześniejszą decyzją. Rozszerza C-039 (ta sama wartość w wielu miejscach UI) na przypadek MIĘDZY tematami, nie tylko wewnątrz jednego. [C-049]",
+      "status": "ACTIVE",
+      "protected": false,
+      "win_count": 0,
+      "fail_count": 0,
+      "win_rate": 0,
+      "lastUpdatedIso": "2026-09-12T21:52:56.264Z"
     }
   ],
   "quarantine_rules": []
