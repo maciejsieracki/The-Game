@@ -1,0 +1,584 @@
+{
+  "task": "R-MIASTA-CYWILIZACJE-PANSTWA-WSPOLNA-LISTA-Q1",
+  "task_id": "t_e8b56afe",
+  "run_id": 28,
+  "head": "172d2ed9a67817ed8e67b580c85f6b1bb2f1ab5b",
+  "changed_files": [
+    "gra/data/city-names-pools.json",
+    "gra/data/civs.json",
+    "gra/src/game/city-names-pool.ts",
+    "gra/src/game/civ-names.ts",
+    "gra/src/main.ts",
+    "gra/tools/city-names-pool-test.cjs",
+    "gra/tools/cluster-start-test.cjs",
+    "gra/tools/city-names-pools-test.cjs",
+    "gra/tools/civ-names-test.cjs",
+    "gra/tools/mapa-etykieta-stolicy-test.cjs",
+    "gra/tools/nazwy-miast-rozlaczne-pule-test.cjs",
+    "gra/tools/start-preview-test.cjs"
+  ],
+  "routing": {
+    "requested": {
+      "model": "gpt-5.6-luna",
+      "provider": "openai-codex",
+      "reasoning_effort": "high",
+      "service_tier": "priority"
+    },
+    "actual_card_readback": {
+      "model": "gpt-5.6-luna",
+      "provider": "openai-codex",
+      "reasoning_effort": "high",
+      "service_tier": "priority"
+    }
+  },
+  "data_contract": {
+    "civilizations": 15,
+    "prefix_len": 100,
+    "suffix_len": 10,
+    "common_len": 110,
+    "all_mirrors_ok": true,
+    "all_original_names_preserved": false,
+    "original_name_normalizations": [
+      {
+        "id": "asyria",
+        "from": "Assur",
+        "to": "Aszur",
+        "reason": "Świadoma normalizacja transliteracji tego samego miasta; wymóg Aszur na indeksie 0 i zgodność z city-names-pools.json.",
+        "source": "dyspozycje/autobot/runs/R-NAZWY-MIAST-AUDYT-STOLICE-I-PANSTWA-Q1/00-dispatch.md:49-54,62-67,178-184"
+      }
+    ],
+    "all_duplicate_counts_zero": true,
+    "all_capital_state_collisions_empty": true
+  },
+  "rows": [
+    {
+      "id": "grecy",
+      "before_civilization_names": 100,
+      "before_state_city_names": 10,
+      "before_common_list": "none (two fields)",
+      "after_civilization_prefix": 100,
+      "after_state_suffix": 10,
+      "after_common_list": 110,
+      "capital_index": 0,
+      "capital_name": "Ateny",
+      "appended_state_city_names": [
+        "Sykion",
+        "Fliunt",
+        "Trojzena",
+        "Hermione",
+        "Tespie",
+        "Egina",
+        "Olint",
+        "Potidaja",
+        "Amfipolis",
+        "Maroneja"
+      ],
+      "empty_entries": 0,
+      "duplicates": 0,
+      "capital_state_collisions": [],
+      "mirror_ok": true,
+      "preserved_all_original_names": true
+    },
+    {
+      "id": "rzymianie",
+      "before_civilization_names": 100,
+      "before_state_city_names": 10,
+      "before_common_list": "none (two fields)",
+      "after_civilization_prefix": 100,
+      "after_state_suffix": 10,
+      "after_common_list": 110,
+      "capital_index": 0,
+      "capital_name": "Rzym",
+      "appended_state_city_names": [
+        "Nola",
+        "Ardea",
+        "Lanuvium",
+        "Aricia",
+        "Norba",
+        "Signia",
+        "Sutrium",
+        "Falerii",
+        "Cosa",
+        "Venusia"
+      ],
+      "empty_entries": 0,
+      "duplicates": 0,
+      "capital_state_collisions": [],
+      "mirror_ok": true,
+      "preserved_all_original_names": true
+    },
+    {
+      "id": "chinczycy",
+      "before_civilization_names": 100,
+      "before_state_city_names": 10,
+      "before_common_list": "none (two fields)",
+      "after_civilization_prefix": 100,
+      "after_state_suffix": 10,
+      "after_common_list": 110,
+      "capital_index": 0,
+      "capital_name": "Xi'an",
+      "appended_state_city_names": [
+        "Qin",
+        "Qi",
+        "Chu",
+        "Jin",
+        "Yan",
+        "Zhao",
+        "Wei",
+        "Han",
+        "Lu",
+        "Song"
+      ],
+      "empty_entries": 0,
+      "duplicates": 0,
+      "capital_state_collisions": [],
+      "mirror_ok": true,
+      "preserved_all_original_names": true
+    },
+    {
+      "id": "inkowie",
+      "before_civilization_names": 100,
+      "before_state_city_names": 10,
+      "before_common_list": "none (two fields)",
+      "after_civilization_prefix": 100,
+      "after_state_suffix": 10,
+      "after_common_list": 110,
+      "capital_index": 0,
+      "capital_name": "Cusco",
+      "appended_state_city_names": [
+        "Maras",
+        "Yucay",
+        "Calca",
+        "Q'enqo",
+        "Pumpu",
+        "Caranqui",
+        "Limatambo",
+        "Tambomachay",
+        "Puka Pukara",
+        "Huchuy Qosqo"
+      ],
+      "empty_entries": 0,
+      "duplicates": 0,
+      "capital_state_collisions": [],
+      "mirror_ok": true,
+      "preserved_all_original_names": true
+    },
+    {
+      "id": "zulusi",
+      "before_civilization_names": 100,
+      "before_state_city_names": 10,
+      "before_common_list": "none (two fields)",
+      "after_civilization_prefix": 100,
+      "after_state_suffix": 10,
+      "after_common_list": 110,
+      "capital_index": 0,
+      "capital_name": "uMgungundlovu",
+      "appended_state_city_names": [
+        "esiPhezi",
+        "kwaGqikazi",
+        "kwaKhangela",
+        "eBaqulusini",
+        "kwaHlomendlini",
+        "emThonjaneni",
+        "esiKhwebezi",
+        "kwaNdwandwe",
+        "kwaMthethwa",
+        "eMlambongwenya"
+      ],
+      "empty_entries": 0,
+      "duplicates": 0,
+      "capital_state_collisions": [],
+      "mirror_ok": true,
+      "preserved_all_original_names": true
+    },
+    {
+      "id": "egipt",
+      "before_civilization_names": 100,
+      "before_state_city_names": 10,
+      "before_common_list": "none (two fields)",
+      "after_civilization_prefix": 100,
+      "after_state_suffix": 10,
+      "after_common_list": 110,
+      "capital_index": 0,
+      "capital_name": "Memfis",
+      "appended_state_city_names": [
+        "Tinis",
+        "Nagada",
+        "Akoris",
+        "Hebenu",
+        "Tebtynis",
+        "Tjebu",
+        "Terenuthis",
+        "Pitom",
+        "Sile",
+        "Aphroditopolis"
+      ],
+      "empty_entries": 0,
+      "duplicates": 0,
+      "capital_state_collisions": [],
+      "mirror_ok": true,
+      "preserved_all_original_names": true
+    },
+    {
+      "id": "sumer",
+      "before_civilization_names": 100,
+      "before_state_city_names": 10,
+      "before_common_list": "none (two fields)",
+      "after_civilization_prefix": 100,
+      "after_state_suffix": 10,
+      "after_common_list": 110,
+      "capital_index": 0,
+      "capital_name": "Uruk",
+      "appended_state_city_names": [
+        "Hamazi",
+        "Simurrum",
+        "Karahar",
+        "Szaszrum",
+        "Urua",
+        "Kimasz",
+        "Diniktum",
+        "Kisiga",
+        "Zimudar",
+        "Hursagkalama"
+      ],
+      "empty_entries": 0,
+      "duplicates": 0,
+      "capital_state_collisions": [],
+      "mirror_ok": true,
+      "preserved_all_original_names": true
+    },
+    {
+      "id": "celtowie",
+      "before_civilization_names": 100,
+      "before_state_city_names": 10,
+      "before_common_list": "none (two fields)",
+      "after_civilization_prefix": 100,
+      "after_state_suffix": 10,
+      "after_common_list": 110,
+      "capital_index": 0,
+      "capital_name": "Bibracte",
+      "appended_state_city_names": [
+        "Titelberg",
+        "Donnersberg",
+        "Dünsberg",
+        "Glauberg",
+        "Kelheim",
+        "Segeda",
+        "Uxama",
+        "Třísov",
+        "Hrazany",
+        "Staré Hradisko"
+      ],
+      "empty_entries": 0,
+      "duplicates": 0,
+      "capital_state_collisions": [],
+      "mirror_ok": true,
+      "preserved_all_original_names": true
+    },
+    {
+      "id": "germanie",
+      "before_civilization_names": 100,
+      "before_state_city_names": 10,
+      "before_common_list": "none (two fields)",
+      "after_civilization_prefix": 100,
+      "after_state_suffix": 10,
+      "after_common_list": 110,
+      "capital_index": 0,
+      "capital_name": "Mattium",
+      "appended_state_city_names": [
+        "Eketorp",
+        "Ismantorp",
+        "Paviken",
+        "Zeijen",
+        "Hjemsted",
+        "Drengsted",
+        "Sejlflod",
+        "Vallhagar",
+        "Avaldsnes",
+        "Nørre Snede"
+      ],
+      "empty_entries": 0,
+      "duplicates": 0,
+      "capital_state_collisions": [],
+      "mirror_ok": true,
+      "preserved_all_original_names": true
+    },
+    {
+      "id": "harappa",
+      "before_civilization_names": 100,
+      "before_state_city_names": 10,
+      "before_common_list": "none (two fields)",
+      "after_civilization_prefix": 100,
+      "after_state_suffix": 10,
+      "after_common_list": 110,
+      "capital_index": 0,
+      "capital_name": "Harappa",
+      "appended_state_city_names": [
+        "Shortugai",
+        "Khirsara",
+        "Kanmer",
+        "Shikarpur",
+        "Siswal",
+        "Loteshwar",
+        "Malvan",
+        "Bhagatrav",
+        "Juni Kuran",
+        "Kotada Bhadli"
+      ],
+      "empty_entries": 0,
+      "duplicates": 0,
+      "capital_state_collisions": [],
+      "mirror_ok": true,
+      "preserved_all_original_names": true
+    },
+    {
+      "id": "hetyci",
+      "before_civilization_names": 100,
+      "before_state_city_names": 10,
+      "before_common_list": "none (two fields)",
+      "after_civilization_prefix": 100,
+      "after_state_suffix": 10,
+      "after_common_list": 110,
+      "capital_index": 0,
+      "capital_name": "Hattusa",
+      "appended_state_city_names": [
+        "Kussara",
+        "Arinna",
+        "Samuha",
+        "Hakmis",
+        "Katapa",
+        "Ankuwa",
+        "Durmitta",
+        "Amurru",
+        "Nuhasse",
+        "Astata"
+      ],
+      "empty_entries": 0,
+      "duplicates": 0,
+      "capital_state_collisions": [],
+      "mirror_ok": true,
+      "preserved_all_original_names": true
+    },
+    {
+      "id": "slowianie",
+      "before_civilization_names": 100,
+      "before_state_city_names": 10,
+      "before_common_list": "none (two fields)",
+      "after_civilization_prefix": 100,
+      "after_state_suffix": 10,
+      "after_common_list": 110,
+      "capital_index": 0,
+      "capital_name": "Kijów",
+      "appended_state_city_names": [
+        "Radogoszcz",
+        "Brenna",
+        "Uznam",
+        "Dymin",
+        "Wołogoszcz",
+        "Budziszyn",
+        "Niemcza",
+        "Kruszwica",
+        "Czermno",
+        "Bełz"
+      ],
+      "empty_entries": 0,
+      "duplicates": 0,
+      "capital_state_collisions": [],
+      "mirror_ok": true,
+      "preserved_all_original_names": true
+    },
+    {
+      "id": "babilonia",
+      "before_civilization_names": 100,
+      "before_state_city_names": 10,
+      "before_common_list": "none (two fields)",
+      "after_civilization_prefix": 100,
+      "after_state_suffix": 10,
+      "after_common_list": 110,
+      "capital_index": 0,
+      "capital_name": "Babilon",
+      "appended_state_city_names": [
+        "Bit-Jakin",
+        "Bit-Dakkuri",
+        "Bit-Amukani",
+        "Bit-Szilani",
+        "Bit-Sa'alli",
+        "Gambulu",
+        "Puqudu",
+        "Kisik",
+        "Zabban",
+        "Nemed-Laguda"
+      ],
+      "empty_entries": 0,
+      "duplicates": 0,
+      "capital_state_collisions": [],
+      "mirror_ok": true,
+      "preserved_all_original_names": true
+    },
+    {
+      "id": "asyria",
+      "before_civilization_names": 100,
+      "before_state_city_names": 10,
+      "before_common_list": "none (two fields)",
+      "after_civilization_prefix": 100,
+      "after_state_suffix": 10,
+      "after_common_list": 110,
+      "capital_index": 0,
+      "capital_name": "Aszur",
+      "appended_state_city_names": [
+        "Ekallatum",
+        "Apku",
+        "Kurbail",
+        "Talmusu",
+        "Isana",
+        "Kahat",
+        "Nasibina",
+        "Amedi",
+        "Rasappa",
+        "Sinabu"
+      ],
+      "empty_entries": 0,
+      "duplicates": 0,
+      "capital_state_collisions": [],
+      "mirror_ok": true,
+      "preserved_all_original_names": false,
+      "normalizations": [
+        {
+          "from": "Assur",
+          "to": "Aszur",
+          "reason": "Świadoma normalizacja transliteracji tego samego miasta; Aszur jest wymagany na indeksie 0 i już występował jako indeks 0 w bazowej city-names-pools.json.",
+          "source": "dyspozycje/autobot/runs/R-NAZWY-MIAST-AUDYT-STOLICE-I-PANSTWA-Q1/00-dispatch.md:49-54,62-67,178-184"
+        }
+      ]
+    },
+    {
+      "id": "fenicjanie",
+      "before_civilization_names": 100,
+      "before_state_city_names": 10,
+      "before_common_list": "none (two fields)",
+      "after_civilization_prefix": 100,
+      "after_state_suffix": 10,
+      "after_common_list": 110,
+      "capital_index": 0,
+      "capital_name": "Byblos",
+      "appended_state_city_names": [
+        "Iol",
+        "Siga",
+        "Cornus",
+        "Othoca",
+        "Tipasa",
+        "Meninx",
+        "Gigthis",
+        "Toscanos",
+        "Monte Sirai",
+        "Umm el-Amed"
+      ],
+      "empty_entries": 0,
+      "duplicates": 0,
+      "capital_state_collisions": [],
+      "mirror_ok": true,
+      "preserved_all_original_names": true
+    }
+  ],
+  "checks": [
+    {
+      "command": "npm run typecheck",
+      "status": "PASS"
+    },
+    {
+      "command": "node tools/city-names-pool-test.cjs",
+      "status": "PASS",
+      "summary": "125 passed, 0 failed"
+    },
+    {
+      "command": "node tools/city-names-pools-test.cjs",
+      "status": "PASS",
+      "summary": "9 passed, 0 failed"
+    },
+    {
+      "command": "node tools/civ-names-test.cjs",
+      "status": "PASS",
+      "summary": "7 passed, 0 failed"
+    },
+    {
+      "command": "node tools/mapa-etykieta-stolicy-test.cjs",
+      "status": "PASS",
+      "summary": "47 passed, 0 failed"
+    },
+    {
+      "command": "node tools/nazwy-miast-rozlaczne-pule-test.cjs",
+      "status": "PASS",
+      "summary": "9 passed, 0 failed"
+    },
+    {
+      "command": "node tools/start-preview-test.cjs",
+      "status": "BASELINE-FAIL",
+      "summary": "3 passed, 3 failed; only map-size/type-count assertions fail; updated name assertion passes"
+    },
+    {
+      "command": "node tools/cluster-start-test.cjs",
+      "status": "BASELINE-FAIL/TIMEOUT",
+      "summary": "name assertions are now source-based and pass in a focused 2/2 smoke test; full command timed out at 420s before completion; remaining map-placement/hub-chain baseline failures stay separate; no map files changed"
+    },
+    {
+      "command": "node tools/zelazo-falanga-real-render-test.cjs",
+      "status": "INFRA",
+      "summary": "Chromium executable unavailable; unrelated visual test"
+    },
+    {
+      "command": "git diff --check",
+      "status": "PASS"
+    }
+  ],
+  "defense_addendum": {
+    "task_id": "t_21560714",
+    "overflow_regression": {
+      "rival_index": 11,
+      "capital_name": "Ateny",
+      "result": "Sparta",
+      "result_is_capital": false,
+      "status": "PASS"
+    },
+    "cluster_start_name_contract_smoke": {
+      "capital_name": "Xi'an",
+      "owner_label": "Xi'an",
+      "source": "city-names-pools.json.chinczycy.miasta_cywilizacji[0]",
+      "summary": "2 passed, 0 failed",
+      "status": "PASS"
+    },
+    "mutation_probes": [
+      {
+        "mutation": "CITY_NAMES_POOL_REGULAR_LEN + index -> index",
+        "return_code": 1,
+        "summary": "121 passed, 2 failed",
+        "temporary_copy": true,
+        "test_variant": "evaluator baseline gate before the two new overflow assertions",
+        "cleanup": "complete"
+      },
+      {
+        "mutation": "regular.slice(1) -> regular",
+        "return_code": 1,
+        "summary": "122 passed, 1 failed",
+        "temporary_copy": true,
+        "test_variant": "evaluator baseline gate before the two new overflow assertions",
+        "cleanup": "complete"
+      }
+    ],
+    "asyria_normalization": {
+      "from": "Assur",
+      "to": "Aszur",
+      "preserved_all_original_names": false,
+      "reason": "Aszur is the ratified index-0 spelling and mirrors the base common-pool source; the one intentional transliteration change is not presented as literal preservation.",
+      "source": "dyspozycje/autobot/runs/R-NAZWY-MIAST-AUDYT-STOLICE-I-PANSTWA-Q1/00-dispatch.md:49-54,62-67,178-184"
+    }
+  },
+  "sha256": {
+    "gra/data/city-names-pools.json": "876ed2c964303580804d970378bca2c6c6712c6bcc493a54657771f6926645f2",
+    "gra/data/civs.json": "6215661f0eb00e7a4df837d8284f285ec472b61a3bf6647d9dc7aecb998464f5",
+    "gra/src/game/city-names-pool.ts": "83a014ccda00ac5298f2d958dfdb1081c6b93450a5d03759f161860cebbb42ff",
+    "gra/src/game/civ-names.ts": "b9680efb7eae9d25d0e5f649ab768a1bdf55da0b2d6691c8f7610be0044126b0",
+    "gra/tools/city-names-pool-test.cjs": "87ef21d3b9f471f14a6307c4090e433819f585a8085030f76885ebefdfc9d25c",
+    "gra/tools/cluster-start-test.cjs": "4164237d0f461f1b4039e7065fcd66b187d51e5341dac7429c9e60d43f43e65c"
+  },
+  "push_pr_merge_deploy": "NOT EXECUTED"
+}

@@ -8,18 +8,6 @@
       "Bonusy/minusy (do dopracowania)": "wolniejszy ruch",
       "Uwagi": "epoka Brązu",
       "Religia": "Politeizm olimpijski",
-      "nazwyKlastra": [
-        "Sykion",
-        "Fliunt",
-        "Trojzena",
-        "Hermione",
-        "Tespie",
-        "Egina",
-        "Olint",
-        "Potidaja",
-        "Amfipolis",
-        "Maroneja"
-      ],
       "mnoznikHandelPieniadz": 2.3,
       "ikonaId": "grecy",
       "wodzowiePula": ["Perykles", "Temistokles", "Miltiades", "Kimon", "Solon", "Kleistenes", "Lizander", "Epaminondas", "Pelopidas", "Alkibiades"],
@@ -171,7 +159,17 @@
         "Agrygent",
         "Gela",
         "Katania",
-        "Messyna"
+        "Messyna",
+        "Sykion",
+        "Fliunt",
+        "Trojzena",
+        "Hermione",
+        "Tespie",
+        "Egina",
+        "Olint",
+        "Potidaja",
+        "Amfipolis",
+        "Maroneja"
       ]
     },
     {
@@ -182,18 +180,6 @@
       "Bonusy/minusy (do dopracowania)": "wyższe utrzymanie armii",
       "Uwagi": null,
       "Religia": "Religia rzymska / kult państwa",
-      "nazwyKlastra": [
-        "Nola",
-        "Ardea",
-        "Lanuvium",
-        "Aricia",
-        "Norba",
-        "Signia",
-        "Sutrium",
-        "Falerii",
-        "Cosa",
-        "Venusia"
-      ],
       "mnoznikHandelPieniadz": 2.0,
       "ikonaId": "rzymianie",
       "wodzowiePula": ["Kamillus", "Cyncynat", "Fabiusz Maksymus", "Katon Starszy", "Emiliusz Paulus", "Klaudiusz", "Waleriusz", "Korneliusz", "Serwiliusz", "Fulwiusz"],
@@ -350,7 +336,17 @@
         "Tesaloniki",
         "Filippi",
         "Dyrrachium",
-        "Salona"
+        "Salona",
+        "Nola",
+        "Ardea",
+        "Lanuvium",
+        "Aricia",
+        "Norba",
+        "Signia",
+        "Sutrium",
+        "Falerii",
+        "Cosa",
+        "Venusia"
       ]
     },
     {
@@ -361,18 +357,6 @@
       "Bonusy/minusy (do dopracowania)": "słabsza piechota szturmowa wręcz (nacisk na dystans i konnicę)",
       "Uwagi": "wczesna przewaga w wojnie dystansowej",
       "Religia": "Konfucjanizm / Taoizm",
-      "nazwyKlastra": [
-        "Qin",
-        "Qi",
-        "Chu",
-        "Jin",
-        "Yan",
-        "Zhao",
-        "Wei",
-        "Han",
-        "Lu",
-        "Song"
-      ],
       "mnoznikHandelPieniadz": 2.4,
       "ikonaId": "chinczycy",
       "wodzowiePula": ["Cheng Tang", "Wu Ding", "Wen Wang", "Zhou Gong", "Goujian", "Fuchai", "Helü", "Ksiaze Mu", "Ksiaze Huan", "Zhuang"],
@@ -516,7 +500,17 @@
         "Jimo",
         "Bohai",
         "Laizhou",
-        "Dengzhou"
+        "Dengzhou",
+        "Qin",
+        "Qi",
+        "Chu",
+        "Jin",
+        "Yan",
+        "Zhao",
+        "Wei",
+        "Han",
+        "Lu",
+        "Song"
       ]
     },
     {
@@ -527,18 +521,6 @@
       "Bonusy/minusy (do dopracowania)": "brak konnicy i rydwanów (brak koni/wołów; §8c) — siła w piechocie i dystansie",
       "Uwagi": null,
       "Religia": "Kult Słońca Inti",
-      "nazwyKlastra": [
-        "Maras",
-        "Yucay",
-        "Calca",
-        "Q'enqo",
-        "Pumpu",
-        "Caranqui",
-        "Limatambo",
-        "Tambomachay",
-        "Puka Pukara",
-        "Huchuy Qosqo"
-      ],
       "mnoznikHandelPieniadz": 1.9,
       "ikonaId": "inkowie",
       "wodzowiePula": ["Sinchi Roca", "Lloque Yupanqui", "Mayta Capac", "Capac Yupanqui", "Inca Roca", "Yahuar Huacac", "Tupac Yupanqui", "Huayna Capac", "Atahualpa", "Huascar"],
@@ -684,7 +666,17 @@
         "Andahuaylas",
         "Abancay",
         "Curahuasi",
-        "Vilcashuaman Nowy"
+        "Vilcashuaman Nowy",
+        "Maras",
+        "Yucay",
+        "Calca",
+        "Q'enqo",
+        "Pumpu",
+        "Caranqui",
+        "Limatambo",
+        "Tambomachay",
+        "Puka Pukara",
+        "Huchuy Qosqo"
       ]
     },
     {
@@ -695,18 +687,6 @@
       "Bonusy/minusy (do dopracowania)": "słaby dystans",
       "Uwagi": null,
       "Religia": "Kult przodków / animizm",
-      "nazwyKlastra": [
-        "esiPhezi",
-        "kwaGqikazi",
-        "kwaKhangela",
-        "eBaqulusini",
-        "kwaHlomendlini",
-        "emThonjaneni",
-        "esiKhwebezi",
-        "kwaNdwandwe",
-        "kwaMthethwa",
-        "eMlambongwenya"
-      ],
       "mnoznikHandelPieniadz": 1.8,
       "ikonaId": "zulusi",
       "wodzowiePula": ["Dingane", "Mpande", "Ndaba", "Jama", "Punga", "Mageba", "Zwide", "Sobhuza", "Dingiswayo", "Langalibalele"],
@@ -850,7 +830,17 @@
         "Wasbank",
         "Helpmekaar",
         "Landman's Drift",
-        "Nongqayi"
+        "Nongqayi",
+        "esiPhezi",
+        "kwaGqikazi",
+        "kwaKhangela",
+        "eBaqulusini",
+        "kwaHlomendlini",
+        "emThonjaneni",
+        "esiKhwebezi",
+        "kwaNdwandwe",
+        "kwaMthethwa",
+        "eMlambongwenya"
       ]
     },
     {
@@ -861,18 +851,6 @@
       "Bonusy/minusy (do dopracowania)": "słabsza ciężka piechota frontalna",
       "Uwagi": "Stary Świat — pełny dostęp do koni/wołów/rydwanów",
       "Religia": "Religia egipska — faraon-bóg",
-      "nazwyKlastra": [
-        "Tinis",
-        "Nagada",
-        "Akoris",
-        "Hebenu",
-        "Tebtynis",
-        "Tjebu",
-        "Terenuthis",
-        "Pitom",
-        "Sile",
-        "Aphroditopolis"
-      ],
       "mnoznikHandelPieniadz": 2.1,
       "ikonaId": "egipt",
       "wodzowiePula": ["Dzeser", "Snofru", "Chefren", "Mykerinos", "Pepi II", "Mentuhotep II", "Amenemhat I", "Totmes III", "Amenhotep III", "Echnaton"],
@@ -1018,7 +996,17 @@
         "Qau el-Kebir",
         "Rifa",
         "Matmar",
-        "Badari"
+        "Badari",
+        "Tinis",
+        "Nagada",
+        "Akoris",
+        "Hebenu",
+        "Tebtynis",
+        "Tjebu",
+        "Terenuthis",
+        "Pitom",
+        "Sile",
+        "Aphroditopolis"
       ]
     },
     {
@@ -1029,18 +1017,6 @@
       "Bonusy/minusy (do dopracowania)": "wolniejsza lekka kawaleria",
       "Uwagi": "Stary Świat — pełny dostęp do koni/wołów/rydwanów",
       "Religia": "Religia sumeryjska (mezopotamska) — Enlil/Anu",
-      "nazwyKlastra": [
-        "Hamazi",
-        "Simurrum",
-        "Karahar",
-        "Szaszrum",
-        "Urua",
-        "Kimasz",
-        "Diniktum",
-        "Kisiga",
-        "Zimudar",
-        "Hursagkalama"
-      ],
       "mnoznikHandelPieniadz": 2.2,
       "ikonaId": "sumer",
       "wodzowiePula": ["Etana", "Enmerkar", "Lugalbanda", "Dumuzi", "Eannatum", "Lugalzagesi", "Meskalamdug", "Mesannepada", "Enannatum", "Entemena"],
@@ -1186,7 +1162,17 @@
         "Tal-i Malyan",
         "Konar Sandal",
         "Liyan",
-        "Bushehr"
+        "Bushehr",
+        "Hamazi",
+        "Simurrum",
+        "Karahar",
+        "Szaszrum",
+        "Urua",
+        "Kimasz",
+        "Diniktum",
+        "Kisiga",
+        "Zimudar",
+        "Hursagkalama"
       ]
     },
     {
@@ -1197,18 +1183,6 @@
       "Bonusy/minusy (do dopracowania)": "słabsza dyscyplina/obrona w przeciągłej walce; brak ciężkiej formacji",
       "Uwagi": "typ główny §9d; jedn. spec. Soldurii (Maciej 2026-07-04); Gaesatae = elita najemna w units.json",
       "Religia": "Religia celtycka (druidyzm)",
-      "nazwyKlastra": [
-        "Titelberg",
-        "Donnersberg",
-        "Dünsberg",
-        "Glauberg",
-        "Kelheim",
-        "Segeda",
-        "Uxama",
-        "Třísov",
-        "Hrazany",
-        "Staré Hradisko"
-      ],
       "mnoznikHandelPieniadz": 1.9,
       "ikonaId": "celtowie",
       "wodzowiePula": ["Dumnoryks", "Divitiakus", "Cassivellaunus", "Kunobelinos", "Orgetoryks", "Kastyk", "Ambioryks", "Indutiomaros", "Tasgetios", "Litawikus"],
@@ -1352,7 +1326,17 @@
         "Navan Fort",
         "Downpatrick",
         "Dinorben",
-        "Tre'r Ceiri"
+        "Tre'r Ceiri",
+        "Titelberg",
+        "Donnersberg",
+        "Dünsberg",
+        "Glauberg",
+        "Kelheim",
+        "Segeda",
+        "Uxama",
+        "Třísov",
+        "Hrazany",
+        "Staré Hradisko"
       ]
     },
     {
@@ -1363,18 +1347,6 @@
       "Bonusy/minusy (do dopracowania)": "wolniejsza technologia/organizacja; słabsze oblężnictwo",
       "Uwagi": "typ główny (przyszła kultura §9d, pokrewna Galom)",
       "Religia": "Religia germańska (Wotan / Odyn)",
-      "nazwyKlastra": [
-        "Eketorp",
-        "Ismantorp",
-        "Paviken",
-        "Zeijen",
-        "Hjemsted",
-        "Drengsted",
-        "Sejlflod",
-        "Vallhagar",
-        "Avaldsnes",
-        "Nørre Snede"
-      ],
       "mnoznikHandelPieniadz": 1.7,
       "ikonaId": "germanie",
       "wodzowiePula": ["Marbod", "Segestes", "Segimer", "Inguiomer", "Chariovalda", "Katualda", "Nasua", "Cimberius", "Boioryks", "Teutobod"],
@@ -1516,7 +1488,17 @@
         "Boeslunde",
         "Borgeby",
         "Valsgärde",
-        "Vendel"
+        "Vendel",
+        "Eketorp",
+        "Ismantorp",
+        "Paviken",
+        "Zeijen",
+        "Hjemsted",
+        "Drengsted",
+        "Sejlflod",
+        "Vallhagar",
+        "Avaldsnes",
+        "Nørre Snede"
       ]
     },
     {
@@ -1527,18 +1509,6 @@
       "Bonusy/minusy (do dopracowania)": "Słabsza kawaleria wczesna",
       "Uwagi": "roster-6 tier 1",
       "Religia": "Kultura indusko-dolinna",
-      "nazwyKlastra": [
-        "Shortugai",
-        "Khirsara",
-        "Kanmer",
-        "Shikarpur",
-        "Siswal",
-        "Loteshwar",
-        "Malvan",
-        "Bhagatrav",
-        "Juni Kuran",
-        "Kotada Bhadli"
-      ],
       "mnoznikHandelPieniadz": 2.4,
       "ikonaId": "harappa",
       "wodzowiePula": ["Vasu", "Bharata", "Divodasa", "Sudas", "Trasadasyu", "Mandhatri", "Purukutsa", "Kuvalashva", "Anaranya", "Trishanku"],
@@ -1682,7 +1652,17 @@
         "Taxila",
         "Hastinapur",
         "Bhagwanpura",
-        "Daimabad"
+        "Daimabad",
+        "Shortugai",
+        "Khirsara",
+        "Kanmer",
+        "Shikarpur",
+        "Siswal",
+        "Loteshwar",
+        "Malvan",
+        "Bhagatrav",
+        "Juni Kuran",
+        "Kotada Bhadli"
       ]
     },
     {
@@ -1693,18 +1673,6 @@
       "Bonusy/minusy (do dopracowania)": "Słabszy handel morski",
       "Uwagi": "roster-6 tier 1",
       "Religia": "Politeizm hetycki",
-      "nazwyKlastra": [
-        "Kussara",
-        "Arinna",
-        "Samuha",
-        "Hakmis",
-        "Katapa",
-        "Ankuwa",
-        "Durmitta",
-        "Amurru",
-        "Nuhasse",
-        "Astata"
-      ],
       "mnoznikHandelPieniadz": 2.0,
       "ikonaId": "hetyci",
       "wodzowiePula": ["Tudhalija I", "Arnuwanda I", "Mursili I", "Muwatalli II", "Hantili I", "Zidanta I", "Ammuna", "Telipinu", "Tahurwaili", "Alluwamna"],
@@ -1848,7 +1816,17 @@
         "Kelenderis",
         "Nagidos",
         "Anemurium",
-        "Iotape"
+        "Iotape",
+        "Kussara",
+        "Arinna",
+        "Samuha",
+        "Hakmis",
+        "Katapa",
+        "Ankuwa",
+        "Durmitta",
+        "Amurru",
+        "Nuhasse",
+        "Astata"
       ]
     },
     {
@@ -1859,18 +1837,6 @@
       "Bonusy/minusy (do dopracowania)": "Wolniejsza nauka wczesna",
       "Uwagi": "roster-6 tier 1",
       "Religia": "Pogaństwo słowiańskie",
-      "nazwyKlastra": [
-        "Radogoszcz",
-        "Brenna",
-        "Uznam",
-        "Dymin",
-        "Wołogoszcz",
-        "Budziszyn",
-        "Niemcza",
-        "Kruszwica",
-        "Czermno",
-        "Bełz"
-      ],
       "mnoznikHandelPieniadz": 1.8,
       "ikonaId": "slowianie",
       "wodzowiePula": ["Piast", "Siemowit", "Lestek", "Siemomysl", "Popiel", "Przemysl", "Ziemowit", "Choscisko", "Wiszymir", "Leszek"],
@@ -2013,7 +1979,17 @@
         "Sozopol",
         "Nesebyr",
         "Ruse",
-        "Sylistra"
+        "Sylistra",
+        "Radogoszcz",
+        "Brenna",
+        "Uznam",
+        "Dymin",
+        "Wołogoszcz",
+        "Budziszyn",
+        "Niemcza",
+        "Kruszwica",
+        "Czermno",
+        "Bełz"
       ]
     },
     {
@@ -2024,18 +2000,6 @@
       "Bonusy/minusy (do dopracowania)": "Wrażliwość na utratę stolicy",
       "Uwagi": "roster-6 tier 2",
       "Religia": "Religia babilońska (Marduk)",
-      "nazwyKlastra": [
-        "Bit-Jakin",
-        "Bit-Dakkuri",
-        "Bit-Amukani",
-        "Bit-Szilani",
-        "Bit-Sa'alli",
-        "Gambulu",
-        "Puqudu",
-        "Kisik",
-        "Zabban",
-        "Nemed-Laguda"
-      ],
       "mnoznikHandelPieniadz": 2.3,
       "ikonaId": "babilonia",
       "wodzowiePula": ["Sumu-la-El", "Sabium", "Apil-Sin", "Sin-muballit", "Samsu-iluna", "Abi-eszuh", "Ammi-ditana", "Ammi-saduqa", "Samsu-ditana", "Kurigalzu I"],
@@ -2179,7 +2143,17 @@
         "Kilizi",
         "Sibaniba",
         "Dur-Katlimmu",
-        "Sabi Abyad"
+        "Sabi Abyad",
+        "Bit-Jakin",
+        "Bit-Dakkuri",
+        "Bit-Amukani",
+        "Bit-Szilani",
+        "Bit-Sa'alli",
+        "Gambulu",
+        "Puqudu",
+        "Kisik",
+        "Zabban",
+        "Nemed-Laguda"
       ]
     },
     {
@@ -2190,18 +2164,6 @@
       "Bonusy/minusy (do dopracowania)": "Niskie zaufanie sąsiadów",
       "Uwagi": "roster-6 tier 2",
       "Religia": "Religia asyryjska (Aszur)",
-      "nazwyKlastra": [
-        "Ekallatum",
-        "Apku",
-        "Kurbail",
-        "Talmusu",
-        "Isana",
-        "Kahat",
-        "Nasibina",
-        "Amedi",
-        "Rasappa",
-        "Sinabu"
-      ],
       "mnoznikHandelPieniadz": 1.7,
       "ikonaId": "asyria",
       "wodzowiePula": ["Szamszi-Adad I", "Adad-nirari I", "Salmanasar I", "Tukulti-Ninurta I", "Aszur-uballit I", "Sargon II", "Asarhaddon", "Aszurnasirpal II", "Salmanasar III", "Sennacheryb"],
@@ -2246,8 +2208,8 @@
         "braz"
       ],
       "nazwyMiast": [
+        "Aszur",
         "Ninive",
-        "Assur",
         "Kalhu",
         "Dur-Szarrukin",
         "Harran",
@@ -2345,7 +2307,17 @@
         "Soloi Cypryjskie",
         "Lapithos",
         "Chytroi",
-        "Golgoi"
+        "Golgoi",
+        "Ekallatum",
+        "Apku",
+        "Kurbail",
+        "Talmusu",
+        "Isana",
+        "Kahat",
+        "Nasibina",
+        "Amedi",
+        "Rasappa",
+        "Sinabu"
       ]
     },
     {
@@ -2356,18 +2328,6 @@
       "Bonusy/minusy (do dopracowania)": "Słaba piechota elit lądowa",
       "Uwagi": "roster-6 tier 2",
       "Religia": "Religia fenicka (Ba'al)",
-      "nazwyKlastra": [
-        "Iol",
-        "Siga",
-        "Cornus",
-        "Othoca",
-        "Tipasa",
-        "Meninx",
-        "Gigthis",
-        "Toscanos",
-        "Monte Sirai",
-        "Umm el-Amed"
-      ],
       "mnoznikHandelPieniadz": 2.6,
       "ikonaId": "fenicjanie",
       "wodzowiePula": ["Ahiram", "Ittobaal I", "Baal-Eser I", "Matten I", "Pygmalion", "Abibaal", "Elibaal", "Szipitbaal", "Mago I", "Hazdrubal"],
@@ -2412,9 +2372,9 @@
         "braz"
       ],
       "nazwyMiast": [
-        "Tyr",
-        "Sydon",
         "Byblos",
+        "Sydon",
+        "Tyr",
         "Kartagina",
         "Utica",
         "Gadir",
@@ -2511,7 +2471,17 @@
         "Balsa",
         "Myrtilis",
         "Olisipo",
-        "Cetobriga"
+        "Cetobriga",
+        "Iol",
+        "Siga",
+        "Cornus",
+        "Othoca",
+        "Tipasa",
+        "Meninx",
+        "Gigthis",
+        "Toscanos",
+        "Monte Sirai",
+        "Umm el-Amed"
       ]
     }
   ],

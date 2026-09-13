@@ -1,5 +1,5 @@
 'use strict';
-/** node tools/start-preview-test.cjs */
+/** node tools/start-preview-test.cjs — wspólna sekwencja nazw */
 
 const esbuild = require('esbuild');
 const path = require('path');
@@ -43,7 +43,7 @@ const p = M.buildStartPreview({
 
 assert(p.playerCapitalName === 'Ateny', 'stolica Grecy');
 assert(p.sameTypeRivalCount === 12, '12 rywali standard (balans ×2, 2026-07-20)');
-assert(p.sameTypeRivalNames[0] === 'Sparta', 'rywal [1] Sparta');
+assert(p.sameTypeRivalNames[0] === civs.cywilizacje.find(c => c.ikonaId === 'grecy').nazwyMiast[100], 'rywal [1] z końcowego suffixu nazwyMiast');
 assert(p.activeTypesOnMap === 12, '12 typow standard (balans ×2, 2026-07-20)');
 assert(p.foreignTypesCount === 11, '11 obcych typow');
 assert(M.startPreviewSummaryRows(p).length === 4, '4 wiersze UI');

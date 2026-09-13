@@ -7636,7 +7636,7 @@ async function boot(): Promise<void> {
         typCityCopyOwners,
       );
     }
-    /** N-1A: nazwa pierwszego miasta gracza z miasta_panstwa[0]. */
+    /** N-1A: nazwa pierwszego miasta gracza z miasta_cywilizacji[0]. */
     let clusterPlayerStartCityName = playerStartCityName(data.civs, _menuCivId, data.cityNamesPools);
     /** Miasta-państwa tego samego typu — spawn po założeniu pierwszego miasta gracza. */
     let pendingSameTypeRivalCount = 0;

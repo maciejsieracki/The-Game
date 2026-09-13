@@ -1,5 +1,5 @@
 'use strict';
-/** node tools/city-names-pool-test.cjs — B-city-names-pools 2026-07-07 */
+/** node tools/city-names-pool-test.cjs — wspólna sekwencja nazw miast */
 
 const esbuild = require('esbuild');
 const path = require('path');
@@ -12,7 +12,9 @@ const bundle = path.join(__dirname, '.city-names-pool-bundle.cjs');
 fs.writeFileSync(entry, `
 export {
   playerStartCityName,
+  foreignCapitalCityName,
   clusterRivalCityName,
+  stateCityName,
   pickNextRegularCityName,
   suggestPlayerFoundCityName,
   pickAiFoundedCityName,
@@ -20,6 +22,8 @@ export {
   validateNazwyKlastra,
   NAZWY_KLASTRA_LEN,
   MIASTA_CYWILIZACJI_LEN,
+  CITY_NAMES_POOL_COMMON_LEN,
+  CITY_NAMES_POOL_REGULAR_LEN,
 } from '../src/game/civ-names';
 `, 'utf8');
 
@@ -46,45 +50,65 @@ function assert(c, msg) {
   else { failed++; console.error('FAIL:', msg); }
 }
 
-console.log('city-names-pool-test (B-city-names-pools)\n');
+console.log('city-names-pool-test (wspólna sekwencja nazw)\n');
 
 const civCount = civs.cywilizacje.length;
 assert(civCount === 15, `15 cywilizacji w civs.json (jest ${civCount})`);
-assert(M.validateNazwyKlastra(civs).length === 0, 'civs.json: 15×10 nazwyKlastra');
-assert(M.validateCityNamesPools(pools, civs).length === 0, 'pule: 15×(100+10), bez duplikatów, sync z nazwyKlastra');
+assert(M.MIASTA_CYWILIZACJI_LEN === 100, 'prefix regularny ma 100 nazw');
+assert(M.NAZWY_KLASTRA_LEN === 10, 'suffix państw-miast ma 10 nazw');
+assert(M.CITY_NAMES_POOL_COMMON_LEN === 110, 'wspólna sekwencja ma 110 nazw');
+assert(M.validateNazwyKlastra(civs).length === 0, 'civs.json: 15 wspólnych sekwencji');
+assert(M.validateCityNamesPools(pools, civs).length === 0, 'pule + civs.json: wspólny kontrakt i synchronizacja');
 
-assert(M.playerStartCityName(civs, 'grecy', pools) === 'Ateny', 'stolica gracza Grecy → Ateny');
-// R-NAZWY-MIAST-AUDYT-STOLICE-I-PANSTWA-Q1: `miasta_panstwa` Greków to już nie powtórki
-// stolic (Ateny…Delfy), tylko mniejsze poleis (Sykion…Maroneja) — stąd nowe wartości [1] i [9].
-assert(M.clusterRivalCityName(civs, 'grecy', 1, pools) === 'Fliunt', 'państwo-miasto [1] → Fliunt');
-assert(M.clusterRivalCityName(civs, 'grecy', 9, pools) === 'Maroneja', 'państwo-miasto [9] → Maroneja');
-// Overflow (indeks > MAX_MIAST_PANSTWA=9, więc w grze NIEOSIĄGALNY) bierze pierwszą nazwę
-// z puli regularnej spoza `miasta_panstwa`. Do rozdzielenia list była to „Olimpia", bo pierwsze
-// dziesięć nazw regularnych pokrywało się z pulą państw; przy pulach rozłącznych jest to już
-// „Ateny". Wartość zaszyta świadomie, żeby zmiana tej ścieżki nie przeszła po cichu.
-assert(M.clusterRivalCityName(civs, 'grecy', 10, pools) === 'Ateny', 'overflow [10] → Ateny (pula regularna, poza spawnem, indeks nieosiągalny w grze)');
-assert(M.clusterRivalCityName(civs, 'chinczycy', 1, pools) === 'Qi', 'Chińczycy państwo [1] → Qi (królestwo)');
+for (const civ of civs.cywilizacje) {
+  const id = civ.ikonaId;
+  const common = pools[id].miasta_cywilizacji;
+  const civCommon = civ.nazwyMiast;
+  const state = common.slice(M.CITY_NAMES_POOL_REGULAR_LEN);
+  assert(common.length === M.CITY_NAMES_POOL_COMMON_LEN, `${id}: 100 + 10 w jednej sekwencji`);
+  assert(!Object.prototype.hasOwnProperty.call(pools[id], 'miasta_panstwa'), `${id}: brak drugiej puli w źródle`);
+  assert(!Object.prototype.hasOwnProperty.call(civ, 'nazwyKlastra'), `${id}: brak drugiej puli w civs.json`);
+  assert(common[0] === civCommon[0], `${id}: stolica jest na indeksie 0`);
+  assert(state.length === M.NAZWY_KLASTRA_LEN, `${id}: państwa-miasta są na końcu`);
+  assert(new Set(common).size === common.length, `${id}: brak duplikatów w sekwencji`);
+  assert(JSON.stringify(common) === JSON.stringify(civCommon), `${id}: civs.json.nazwyMiast = pula`);
+}
 
-const used = new Set(['Ateny', 'Sparta', 'Korynt']);
-const next = M.pickNextRegularCityName(pools, 'grecy', used);
-assert(next === 'Teby', `następna wolna Grecy → Teby (dostał: ${next})`);
+const grecy = pools.grecy.miasta_cywilizacji;
+const grecyStates = grecy.slice(M.CITY_NAMES_POOL_REGULAR_LEN);
+assert(M.playerStartCityName(civs, 'grecy', pools) === grecy[0], 'stolica gracza → wspólna lista[0]');
+assert(M.foreignCapitalCityName(civs, 'grecy', pools) === grecy[0], 'stolica AI → wspólna lista[0]');
+assert(M.clusterRivalCityName(civs, 'grecy', 1, pools) === grecyStates[0], 'państwo-miasto [1] → pierwszy element suffixu');
+assert(M.clusterRivalCityName(civs, 'grecy', 9, pools) === grecyStates[8], 'państwo-miasto [9] → dziewiąty element suffixu');
+const overflowRival11 = M.clusterRivalCityName(civs, 'grecy', 11, pools);
+assert(overflowRival11 === grecy[1], `overflow państwa-miasta [11] → pierwszy niezastrzeżony regularny (${overflowRival11})`);
+assert(overflowRival11 !== grecy[0], `overflow państwa-miasta [11] nie zwraca stolicy (${overflowRival11})`);
+assert(M.stateCityName(civs, 'grecy', 0, 'fallback', pools) === grecyStates[0], 'odczyt państwa-miasta [0] → suffix, nie indeks 0 stolicy');
+assert(M.stateCityName(civs, 'grecy', 0, 'fallback', pools) !== grecy[0], 'guard mutacyjny: państwo-miasto nie dostaje indeksu 0');
+assert(M.clusterRivalCityName(civs, 'chinczycy', 1, pools) === pools.chinczycy.miasta_cywilizacji[M.CITY_NAMES_POOL_REGULAR_LEN], 'brak cross-talku między cywilizacjami');
+
+const next = M.pickNextRegularCityName(pools, 'grecy', new Set());
+assert(next === grecy[1], `zwykłe miasto pomija zastrzeżoną stolicę (${next})`);
+const used = new Set([grecy[0], grecy[1], grecy[2]]);
+const nextAfterUsed = M.pickNextRegularCityName(pools, 'grecy', used);
+assert(nextAfterUsed === grecy[3], `następna wolna nazwa zachowuje kolejność (${nextAfterUsed})`);
 
 const cities = [
-  { ownerId: 0, name: 'Ateny' },
-  { ownerId: 0, name: 'Teby' },
+  { ownerId: 0, name: grecy[0] },
+  { ownerId: 0, name: grecy[1] },
 ];
 const civTypeForOwner = (oid) => (oid === 0 ? 'grecy' : 'rzymianie');
 const suggested = M.suggestPlayerFoundCityName(pools, 'grecy', cities, civTypeForOwner, 0);
-assert(suggested === 'Sparta' || suggested === 'Korynt', `auto-suggest gracza: ${suggested}`);
+assert(suggested === grecy[2], `auto-suggest gracza: ${suggested}`);
 
 const aiUsed = new Set(['Rzym', 'Ostia']);
 const aiNext = M.pickAiFoundedCityName(pools, 'rzymianie', aiUsed, 2);
-assert(aiNext === 'Kapua', `AI Rzymianie founding → Kapua (dostał: ${aiNext})`);
+assert(aiNext === pools.rzymianie.miasta_cywilizacji[2], `AI founding korzysta z prefixu (${aiNext})`);
 
-// Wyczerpanie puli → sufiks
-const allGrecy = new Set(pools.grecy.miasta_cywilizacji);
-const exhausted = M.pickNextRegularCityName(pools, 'grecy', allGrecy);
-assert(exhausted.includes('II'), `po wyczerpaniu puli → sufiks (${exhausted})`);
+// Wyczerpanie prefixu regularnego nie otwiera suffixu państw-miast.
+const allRegularGrecy = new Set(grecy.slice(0, M.CITY_NAMES_POOL_REGULAR_LEN));
+const exhausted = M.pickNextRegularCityName(pools, 'grecy', allRegularGrecy);
+assert(exhausted.includes('II'), `po wyczerpaniu prefixu → sufiks (${exhausted})`);
 
 console.log('\n' + passed + ' passed, ' + failed + ' failed');
 process.exit(failed > 0 ? 1 : 0);

@@ -1,5 +1,5 @@
 'use strict';
-/** node tools/civ-names-test.cjs — D-START nazwy klastra */
+/** node tools/civ-names-test.cjs — wspólna sekwencja nazw */
 
 const esbuild = require('esbuild');
 const path = require('path');
@@ -15,6 +15,7 @@ export {
   clusterRivalCityName,
   validateNazwyKlastra,
   NAZWY_KLASTRA_LEN,
+  CITY_NAMES_POOL_COMMON_LEN,
 } from '../src/game/civ-names';
 `, 'utf8');
 
@@ -40,21 +41,17 @@ function assert(c, msg) {
   else { failed++; console.error('FAIL:', msg); }
 }
 
-console.log('civ-names-test (D-START N-1A/N-3A/N-5B)\n');
+console.log('civ-names-test (wspólna sekwencja nazw)\n');
 
 assert(M.NAZWY_KLASTRA_LEN === 10, '10 nazw per typ');
-assert(M.validateNazwyKlastra(civs).length === 0, 'civs.json: 15×10 nazwyKlastra');
-// R-NAZWY-MIAST-AUDYT-STOLICE-I-PANSTWA-Q1: ŚCIEŻKA LEGACY (wywołania BEZ puli) czyta
-// `civs.json:nazwyKlastra`, a ta lista jest lustrem `miasta_panstwa`. Po rozdzieleniu list
-// państw-miast od list miast (kryterium K2 tematu) `nazwyKlastra` nie zawiera już nazw
-// z `miasta_cywilizacji`, więc zaszyte tu wartości greckie zmieniły się z „Ateny/Sparta/Korynt"
-// na „Sykion/Fliunt/Trojzena" — to nie regresja, tylko ta sama pozycja listy po jej wymianie.
-// Ścieżka Z PULĄ (gra faktycznie jej używa) dalej daje stolicę „Ateny" — pilnuje tego
-// `mapa-etykieta-stolicy-test.cjs` (E5/E7) oraz `city-names-pool-test.cjs`.
-assert(M.playerStartCityName(civs, 'grecy') === 'Sykion', 'N-1A legacy (bez puli) Grecy → Sykion');
-assert(M.clusterRivalCityName(civs, 'grecy', 1) === 'Fliunt', 'N-3A rywal [1] → Fliunt');
-assert(M.clusterRivalCityName(civs, 'grecy', 2) === 'Trojzena', 'N-3A rywal [2] → Trojzena');
-assert(M.clusterRivalCityName(civs, 'grecy', 10) === 'Fliunt', 'legacy wrap: rywal [10] → Fliunt (zawijanie nazwyKlastra)');
+assert(M.CITY_NAMES_POOL_COMMON_LEN === 110, 'wspólna lista ma 110 nazw');
+assert(M.validateNazwyKlastra(civs).length === 0, 'civs.json: 15 wspólnych list');
+// Ścieżka bez puli musi korzystać z tego samego pola `nazwyMiast`, a państwa-miasta
+// są wycinane z jego końcowego suffixu. Nie ma już niezależnego `nazwyKlastra`.
+assert(M.playerStartCityName(civs, 'grecy') === civs.cywilizacje.find(c => c.ikonaId === 'grecy').nazwyMiast[0], 'bez puli: stolica = nazwyMiast[0]');
+assert(M.clusterRivalCityName(civs, 'grecy', 1) === civs.cywilizacje.find(c => c.ikonaId === 'grecy').nazwyMiast[100], 'bez puli: państwo-miasto = suffix[0]');
+assert(M.clusterRivalCityName(civs, 'grecy', 2) === civs.cywilizacje.find(c => c.ikonaId === 'grecy').nazwyMiast[101], 'bez puli: kolejność suffixu zachowana');
+assert(M.clusterRivalCityName(civs, 'grecy', 10) === civs.cywilizacje.find(c => c.ikonaId === 'grecy').nazwyMiast[109], 'bez puli: dziesiąty suffix bez indeksu 0');
 
 console.log('\n' + passed + ' passed, ' + failed + ' failed');
 process.exit(failed > 0 ? 1 : 0);
