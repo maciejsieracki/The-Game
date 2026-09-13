@@ -1,0 +1,49 @@
+{
+  "topic_id": "R-STARTOWE-JEDNOSTKI-WSZYSTKIE-OSIE-Q1",
+  "kanban_card_id": "t_af4dfeb8",
+  "process_phase": "operator",
+  "round": "1/5",
+  "attempt": 1,
+  "status": "PASS-WITH-NOTES",
+  "domain": "GAME",
+  "head": "8e5e81255449bc98c9674c6a6e5505d408b343fc",
+  "base_head": "ff9ce26a663c53c9f711e50536eb10f59dc4b70b",
+  "branch": "hermes/R-GRACZ-STARTOWE-JEDNOSTKI-TRUDNOSC-Q1",
+  "worktree": "/home/ubuntu/projects/The-Game-worktrees/R-GRACZ-STARTOWE-JEDNOSTKI-TRUDNOSC-Q1",
+  "authoritative_input_sha256": "e04a427c5f761b19471b11855a236f280949b9b3be04682c09fcec2f03739cce",
+  "changed_files": [
+    "gra/data/ai-params.json",
+    "gra/src/game/ai-difficulty-bonus.ts",
+    "gra/src/game/ai.ts",
+    "gra/tools/ai-difficulty-bonus-test.cjs",
+    "gra/tools/city-state-start-units-live-test.cjs",
+    "gra/tools/starting-army-first-city-live-test.cjs"
+  ],
+  "acceptance": {
+    "player_easy_normal_hard": "2/1/0",
+    "major_ai_extra_units_easy_normal_hard": "0/1/2",
+    "major_ai_hard_extra_city": 1,
+    "foreign_city_state_easy_normal_hard": "2/1/0",
+    "player_type_city_state_easy_normal_hard": "0/1/2",
+    "first_city_per_owner_guard": "PASS",
+    "live_first_city": "13 pass, 0 fail",
+    "live_city_state": "25 pass, 0 fail",
+    "mutation_old_1_2_3_killed": true
+  },
+  "tests": {
+    "syntax": "PASS",
+    "typecheck": "PASS",
+    "ai_difficulty_bonus": "90 passed, 0 failed",
+    "city_state_start_units": "16 PASS, 0 FAIL",
+    "ai_balance_step5": "18 passed, 0 failed",
+    "city_state_cluster_diff": "31 passed, 0 failed",
+    "city_spacing": "20 maps; 23281 plan pairs + 25463 runtime-order pairs; 0 violations",
+    "broader_ai_baseline": "291 passed, 4 failed on current and clean HEAD archive identically"
+  },
+  "notes": [
+    "The four broader ai-test failures are existing diplomacy-trade baseline failures (T2S-b, T2S-b2, T10b), not caused by the start-unit diff.",
+    "No main.ts change was required because all four runtime call sites and the per-owner first-city guard were already correct.",
+    "No commit, push, PR, merge, deploy or READY_FOR_DEPLOY was performed."
+  ],
+  "next": "Evaluator"
+}

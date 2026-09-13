@@ -142,11 +142,11 @@ export function cityStateStartUnitCount(difficulty: 'easy' | 'normal' | 'hard'):
   return 0;
 }
 
-/** Jednostki wojskowe nadawane graczowi po założeniu pierwszego miasta. */
+/** Jednostki wojskowe gracza po założeniu pierwszego miasta: easy=2, normal=1, hard=0. */
 export function playerStartUnitCount(difficulty: 'easy' | 'normal' | 'hard'): number {
-  if (difficulty === 'hard') return 3;
-  if (difficulty === 'normal') return 2;
-  return 1;
+  if (difficulty === 'easy') return 2;
+  if (difficulty === 'normal') return 1;
+  return 0;
 }
 
 /** Jednostki obcych państw-miast AI; ta tabela jest niezależna od suwaka PM gracza. */

@@ -132,7 +132,7 @@ console.log('\n--- T-DB-d: plan startoweJednostki + startoweMiasta ---');
 {
   const data = {
     aiParams: {
-      trudnosc_poziom3_startowe_jednostki: { wartosc: 0, sekcja: 't', opis: '' },
+      trudnosc_poziom3_startowe_jednostki: { wartosc: 2, sekcja: 't', opis: '' },
       trudnosc_poziom3_startowe_miasta: { wartosc: 1, sekcja: 't', opis: '' },
       trudnosc_poziom3_bonus_walka: { wartosc: 0.05, sekcja: 't', opis: '' },
       trudnosc_poziom3_bonus_nauka: { wartosc: 0, sekcja: 't', opis: '' },
@@ -143,7 +143,7 @@ console.log('\n--- T-DB-d: plan startoweJednostki + startoweMiasta ---');
   const map = makeMap();
   const cities = [{ id: 'c0', ownerId: 2, q: 4, r: 4, population: 3, name: 'Cap' }];
   const plan = planMajorAiDifficultyStartBonuses(4, 4, params, map, cities, true);
-  eq(plan.units.length, 0, 'poziom3 startoweJednostki=0');
+  eq(plan.units.length, 2, 'poziom3 startoweJednostki=2');
   eq(plan.cities.length, 1, 'poziom3 startoweMiasta=1 -> 1 hex');
   const hex = pickBonusCityHex(map, cities, 4, 4);
   assert(hex !== null, 'sasiad stolicy nadaje sie na miasto');
@@ -161,19 +161,28 @@ console.log('\n--- T-DB-e: BLOK miasta -> jednostki ---');
   const cities = [{ id: 'c0', ownerId: 2, q: 4, r: 4, population: 3, name: 'Cap' }];
   const plan = planMajorAiDifficultyStartBonuses(4, 4, params, map, cities, true);
   eq(plan.extraCitiesBlocked, true, 'BLOK miasta');
-  eq(plan.units.length, 1, '1 jednostka zamiast miasta');
+  eq(plan.units.length, 3, '2 jednostki bazowe + 1 jednostka zamiast miasta');
   eq(plan.cities.length, 0, 'brak miast bonusowych');
 }
 
-console.log('\n--- T-DB-f: loadDifficultyParams L3 bonusNauka=2 (P0-3) ---');
+console.log('\n--- T-DB-f: loadDifficultyParams startowe jednostki/miasta z JSON i fallbacku ---');
 {
   const dataPath = path.resolve(GRA_ROOT, 'data', 'ai-params.json');
   const raw = JSON.parse(fs.readFileSync(dataPath, 'utf8'));
   const data = { aiParams: raw };
+  for (const [level, expectedUnits, expectedCities] of [[1, 0, 0], [2, 1, 0], [3, 2, 1]]) {
+    const params = loadDifficultyParams(data, level);
+    eq(params.startoweJednostki, expectedUnits, `poziom${level} startoweJednostki z ai-params.json = ${expectedUnits}`);
+    eq(params.startoweMiasta, expectedCities, `poziom${level} startoweMiasta z ai-params.json = ${expectedCities}`);
+  }
   const p3 = loadDifficultyParams(data, 3);
   eq(p3.bonusNauka, 2, 'poziom3 bonusNauka z ai-params.json = 2');
-  const empty = loadDifficultyParams({ aiParams: {} }, 3);
-  eq(empty.bonusNauka, 2, 'poziom3 bonusNauka fallback = 2');
+  const emptyData = { aiParams: {} };
+  for (const [level, expectedUnits, expectedCities] of [[1, 0, 0], [2, 1, 0], [3, 2, 1]]) {
+    const params = loadDifficultyParams(emptyData, level);
+    eq(params.startoweJednostki, expectedUnits, `poziom${level} startoweJednostki fallback = ${expectedUnits}`);
+    eq(params.startoweMiasta, expectedCities, `poziom${level} startoweMiasta fallback = ${expectedCities}`);
+  }
 }
 
 const SPRYT_FALLBACKS = {
@@ -253,12 +262,13 @@ console.log('\n--- T-DB-i: cityStateStartUnitCount (R-MIASTA-PANSTWA-STARTOWE-JE
 
 console.log('\n--- T-DB-j: rozdzielone tabele startowych jednostek (H-MIASTA-PANSTWA-WOJSKO-ODNOWA-Q1) ---');
 {
-  const playerExpected = { easy: 1, normal: 2, hard: 3 };
+  const playerExpected = { easy: 2, normal: 1, hard: 0 };
   const foreignExpected = { easy: 2, normal: 1, hard: 0 };
+  const playerTypeCityStateExpected = { easy: 0, normal: 1, hard: 2 };
   for (const difficulty of ['easy', 'normal', 'hard']) {
     eq(playerStartUnitCount(difficulty), playerExpected[difficulty], `gracz ${difficulty} -> ${playerExpected[difficulty]}`);
     eq(foreignCityStateStartUnitCount(difficulty), foreignExpected[difficulty], `obce panstwo-miasto ${difficulty} -> ${foreignExpected[difficulty]}`);
-    eq(cityStateStartUnitCount('normal'), 1, `panstwo-miasto gracza: ustawienie normal niezalezne od glownej trudnosci (${difficulty})`);
+    eq(cityStateStartUnitCount(difficulty), playerTypeCityStateExpected[difficulty], `panstwo-miasto typu gracza ${difficulty} -> ${playerTypeCityStateExpected[difficulty]}`);
   }
   eq(playerStartUnitCount('easy') !== playerStartUnitCount('hard'), true, 'mutacja: tabela gracza nie jest stala');
   eq(foreignCityStateStartUnitCount('easy') !== foreignCityStateStartUnitCount('hard'), true, 'mutacja: tabela obcych panstw-miast nie jest stala');

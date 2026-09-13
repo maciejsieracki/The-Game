@@ -105,7 +105,7 @@ async function main() {
     const seat1CitiesAfterFirst = state.cities.filter(city => city.ownerId === seat1);
     const seat1UnitsAfterFirst = state.units.filter(unit => unit.ownerId === seat1);
     check('fotel 1 ma jedno miasto po pierwszym founding', seat1CitiesAfterFirst.length === 1);
-    check('fotel 1 dostaje dokładnie 2 jednostki startowe', seat1UnitsAfterFirst.length === 2,
+    check('fotel 1 dostaje dokładnie 1 jednostkę startową', seat1UnitsAfterFirst.length === 1,
       seat1UnitsAfterFirst);
 
     // The helper only prepares population/Praca so the second founding is legal;
@@ -118,7 +118,7 @@ async function main() {
     check('fotel 1 ma dwa miasta po drugim founding',
       state.cities.filter(city => city.ownerId === seat1).length === 2);
     check('drugie miasto fotela 1 nie przyznaje ponownie armii startowej',
-      state.units.filter(unit => unit.ownerId === seat1).length === 2,
+      state.units.filter(unit => unit.ownerId === seat1).length === 1,
       state.units.filter(unit => unit.ownerId === seat1));
 
     await page.evaluate(ownerId => window.__hotSeatTestDebug.switchActiveHuman(ownerId), seat2);
@@ -131,7 +131,7 @@ async function main() {
     state = await page.evaluate(() => window.__cityStateStartUnitsTestDebug.dumpState());
     check('fotel 2 ma własne miasto', state.cities.filter(city => city.ownerId === seat2).length === 1);
     check('fotel 2 dostaje własną, jednorazową armię startową',
-      state.units.filter(unit => unit.ownerId === seat2).length === 2,
+      state.units.filter(unit => unit.ownerId === seat2).length === 1,
       state.units.filter(unit => unit.ownerId === seat2));
 
     check('zero błędów JS w Chromium', pageErrors.length === 0, pageErrors);
