@@ -1,0 +1,46 @@
+{
+  "task_id": "t_619d212a",
+  "topic": "R-KREATOR-DOLNA-NAWIGACJA-Q1",
+  "run": 5,
+  "phase": "evaluator",
+  "round": 1,
+  "attempt": 1,
+  "status": "PASS-WITH-NOTES",
+  "updated": "2026-09-13T12:13:19+00:00",
+  "base_head": "6af03c01939834b0876507a4e001275453528a06",
+  "head": "da5b901d2de2dec6c5900343f65ff097ea91210b",
+  "operator_source_head": "6af03c01939834b0876507a4e001275453528a06",
+  "worktree_dirty": true,
+  "changed_product_files": [],
+  "committed_delta_from_evaluator_base": [
+    "dyspozycje/autobot/runs/R-KREATOR-DOLNA-NAWIGACJA-Q1/02-dispatch.md"
+  ],
+  "expected_untracked_operator_files": [
+    "gra/tools/newgame-bottom-navigation-test.cjs",
+    "dyspozycje/autobot/runs/R-KREATOR-DOLNA-NAWIGACJA-Q1/01-operator.md",
+    "dyspozycje/autobot/runs/R-KREATOR-DOLNA-NAWIGACJA-Q1/01-operator-evidence.md",
+    "dyspozycje/autobot/runs/R-KREATOR-DOLNA-NAWIGACJA-Q1/progress.json",
+    "dyspozycje/autobot/runs/R-KREATOR-DOLNA-NAWIGACJA-Q1/journal.md",
+    "dyspozycje/autobot/runs/R-KREATOR-DOLNA-NAWIGACJA-Q1/transition-receipt.json"
+  ],
+  "checks": {
+    "dom_css_runtime_2k_4k": "PASS — Chromium 151.0.7922.34; deviceScaleFactor=1; 2048x1080 and 3840x2160; 70 pass, 0 fail; 5/5 AI; zero console/page errors",
+    "focused_regression_syntax": "PASS — node --check canonical test",
+    "mutation_negative_control": "PASS — temporary hidden-nav mutant node --check exit 0; runtime exit 1 with visibility/hit-test failures",
+    "typecheck": "PASS — tsc --noEmit exit 0",
+    "build": "PASS — Vite build exit 0; 888 modules; 28.49s; output in /tmp and removed",
+    "reference_tech_tree": "PASS — 19/0",
+    "reference_research": "PASS — 33/0",
+    "baseline_start_preview": "PRE-EXISTING NOTE — 1/5",
+    "baseline_ruch_swiata": "PRE-EXISTING NOTE — 33/2",
+    "baseline_sett_grid": "PRE-EXISTING NOTE — 66/4 stale spacing oracle; temporary browser-path override only",
+    "diff_whitespace": "PASS — git diff --check clean; canonical test has no trailing whitespace",
+    "allowlist": "PASS — no gra/src changes; only expected dispatch, test and run artifacts",
+    "operator_hashes": "PASS — report/evidence hashes match transition receipt",
+    "run_consistency": "PASS — parent run 2 review_requested followed by run 3 completed; receipt correctly names source run 2",
+    "security_scan": "PASS — no suspicious secret/eval/shell patterns in added canonical test"
+  },
+  "objections": [],
+  "next": "Final Control independently checks the complete trace; no product correction or integration was performed",
+  "push_merge_deploy": "NOT_PERFORMED"
+}

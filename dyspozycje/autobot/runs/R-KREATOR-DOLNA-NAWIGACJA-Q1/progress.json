@@ -1,0 +1,76 @@
+{
+  "topic_id": "R-KREATOR-DOLNA-NAWIGACJA-Q1",
+  "task_id": "t_05185782",
+  "phase": "operator",
+  "round": 1,
+  "attempt": 1,
+  "status": "PASS-WITH-NOTES",
+  "head": "6af03c01939834b0876507a4e001275453528a06",
+  "base_head": "ff9ce26a663c53c9f711e50536eb10f59dc4b70b",
+  "branch": "hermes/R-KREATOR-DOLNA-NAWIGACJA-Q1",
+  "workspace": "/home/ubuntu/projects/The-Game-worktrees/R-KREATOR-DOLNA-NAWIGACJA-Q1-bugs",
+  "production_code_changed": false,
+  "push_merge_deploy": "NOT_PERFORMED",
+  "criteria": {
+    "dom_css_owner_identified": "PASS",
+    "reproduced_or_negatively_verified_2k_4k": "PASS",
+    "minimal_patch_or_unchanged_source_with_proof": "PASS",
+    "navigation_regression_test": "PASS",
+    "typecheck_build_and_focused_runtime": "PASS",
+    "allowlist_clean": "PASS"
+  },
+  "runtime": {
+    "browser": "Chromium 151.0.7922.34",
+    "device_scale_factor": 1,
+    "viewports": [
+      {
+        "label": "2K DCI",
+        "width": 2048,
+        "height": 1080,
+        "selected_ai_civs": 5,
+        "nav_top": 857.328125,
+        "nav_bottom": 910.328125,
+        "start_top": 754.953125,
+        "start_bottom": 800.953125,
+        "root_scroll_top": 0,
+        "root_scroll_height": 1080,
+        "root_client_height": 1080,
+        "result": "PASS"
+      },
+      {
+        "label": "4K UHD",
+        "width": 3840,
+        "height": 2160,
+        "selected_ai_civs": 5,
+        "nav_top": 857.328125,
+        "nav_bottom": 910.328125,
+        "start_top": 754.953125,
+        "start_bottom": 800.953125,
+        "root_scroll_top": 0,
+        "root_scroll_height": 2160,
+        "root_client_height": 2160,
+        "result": "PASS"
+      }
+    ],
+    "focused_test": "70 pass, 0 fail"
+  },
+  "commands": [
+    {"command": "node --check tools/newgame-bottom-navigation-test.cjs", "result": "PASS"},
+    {"command": "PLAYWRIGHT_BROWSERS_PATH=/home/ubuntu/.cache/ms-playwright node tools/newgame-bottom-navigation-test.cjs", "result": "PASS — 70 pass, 0 fail"},
+    {"command": "node ./node_modules/typescript/bin/tsc --noEmit", "result": "PASS — 0 errors"},
+    {"command": "node ./node_modules/vite/bin/vite.js build --outDir dist-r-kreator-dolna-nawigacja-build --emptyOutDir", "result": "PASS — 888 modules, 27.83s"},
+    {"command": "node tools/tech-tree-test.cjs", "result": "PASS — 19/0"},
+    {"command": "node tools/research-test.cjs", "result": "PASS — 33/0"},
+    {"command": "node tools/start-preview-test.cjs", "result": "BASELINE NOTE — 1/5"},
+    {"command": "node tools/ruch-swiata-tempo-test.cjs", "result": "BASELINE NOTE — 33/2"}
+  ],
+  "artifacts": {
+    "source_sha256": "7ba486932b017a8f271d339f289ebb957c6c0498d18b20747962d2b3c6464113",
+    "test_sha256": "8620ece3115a71bfe117496b6ce3204ea53b551420f3a8a4a3214cd338a844c7",
+    "runtime_log": "dyspozycje/autobot/runs/R-KREATOR-DOLNA-NAWIGACJA-Q1/runtime.log",
+    "runtime_log_sha256": "d7b7156d825b6ec02133b90f975de43d11944ff2549b03faf2ad3e9a3bb16fd8",
+    "build_log": "dyspozycje/autobot/runs/R-KREATOR-DOLNA-NAWIGACJA-Q1/build.log",
+    "build_log_sha256": "6cdd7cf3e34a1cc1fa0b7d7e5f7a7db6fba7582c708c355a5f1a235156e6a438"
+  },
+  "next_step": "Evaluator: independently verify report, allowlist, runtime measurements and no production diff; then Final Control."
+}
