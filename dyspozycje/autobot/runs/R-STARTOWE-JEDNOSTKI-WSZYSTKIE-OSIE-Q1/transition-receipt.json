@@ -1,0 +1,69 @@
+{
+  "receipt_type": "operator_transition",
+  "receipt_version": 1,
+  "topic_id": "R-STARTOWE-JEDNOSTKI-WSZYSTKIE-OSIE-Q1",
+  "kanban_card_id": "t_af4dfeb8",
+  "board": "the-game-bugs",
+  "source": {
+    "profile": "the-game-bugs",
+    "process_phase": "operator",
+    "native_status_at_write": "running",
+    "round": "1/5",
+    "attempt": 1,
+    "head": "8e5e81255449bc98c9674c6a6e5505d408b343fc",
+    "branch": "hermes/R-GRACZ-STARTOWE-JEDNOSTKI-TRUDNOSC-Q1",
+    "worktree": "/home/ubuntu/projects/The-Game-worktrees/R-GRACZ-STARTOWE-JEDNOSTKI-TRUDNOSC-Q1"
+  },
+  "terminal_event": {
+    "kind": "review_requested",
+    "status": "PASS-WITH-NOTES",
+    "event_id": "kanban:review_requested:run-8:created_at-1789304964",
+    "event_id_source": "Deterministic reference composed from the actual Kanban event kind, run_id and created_at returned by kanban_show; kanban_show exposes no separate opaque event id.",
+    "run_id": 8,
+    "created_at_epoch": 1789304964,
+    "created_at": "2026-09-13T15:09:24+02:00"
+  },
+  "successor": {
+    "selection": "Evaluator review through the same Kanban card",
+    "kanban_card_id": "t_af4dfeb8",
+    "process_phase": "evaluator",
+    "legal_successor": true
+  },
+  "parent_ids": [],
+  "idempotency_key": "R-STARTOWE-JEDNOSTKI-WSZYSTKIE-OSIE-Q1:operator:20260913",
+  "technical_readback": {
+    "dispatch": "dyspozycje/autobot/runs/R-STARTOWE-JEDNOSTKI-WSZYSTKIE-OSIE-Q1/00-dispatch.md",
+    "operator_report": "dyspozycje/autobot/runs/R-STARTOWE-JEDNOSTKI-WSZYSTKIE-OSIE-Q1/01-operator.md",
+    "evidence": "dyspozycje/autobot/runs/R-STARTOWE-JEDNOSTKI-WSZYSTKIE-OSIE-Q1/01-operator-evidence.md",
+    "progress": "dyspozycje/autobot/runs/R-STARTOWE-JEDNOSTKI-WSZYSTKIE-OSIE-Q1/progress.json",
+    "journal": "dyspozycje/autobot/runs/R-STARTOWE-JEDNOSTKI-WSZYSTKIE-OSIE-Q1/journal.md",
+    "git_diff_check": "PASS",
+    "changed_files": 6,
+    "focused_tests": "PASS",
+    "runtime_tests": "PASS",
+    "mutation_test": "PASS — old 1/2/3 mutant killed",
+    "broader_ai_test": "PASS-WITH-NOTES — identical 291/4 current-vs-clean-HEAD baseline"
+  },
+  "context_readback": {
+    "goal": "All four start-unit axes match the authoritative workbook without cross-talk.",
+    "authoritative_input_sha256": "e04a427c5f761b19471b11855a236f280949b9b3be04682c09fcec2f03739cce",
+    "allowlist": "00-dispatch.md allowlist only; no main.ts change was needed.",
+    "deployment": "not performed"
+  },
+  "notify": {
+    "result": "observed",
+    "mechanism": "kanban_request_review",
+    "evidence": "kanban_show: review_requested/run-8/created_at-1789304964"
+  },
+  "wake": {
+    "result": "pending",
+    "mechanism": "Kanban dispatcher successor selection",
+    "evidence": "kanban_show readback: card status=review, current_run_id=null, children=[]"
+  },
+  "readback_status": "PASS-WITH-NOTES",
+  "notes": [
+    "Native review_requested event_id/run_id/time are recorded from the post-transition kanban_show readback. No separate evaluator child card was present; the same card is waiting in review.",
+    "The four unrelated ai-test diplomacy/trade failures reproduce on a clean HEAD archive and are outside this allowlist.",
+    "No commit, push, PR, merge, deploy or READY_FOR_DEPLOY was performed."
+  ]
+}

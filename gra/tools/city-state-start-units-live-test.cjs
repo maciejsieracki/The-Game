@@ -48,10 +48,12 @@
 
 const path = require('path');
 const fs = require('fs');
+const os = require('os');
 const { execSync } = require('child_process');
 
 const GRA_DIR = path.resolve(__dirname, '..');
-const OUT_DIR = path.join(GRA_DIR, 'dist-city-state-start-units-live-test');
+const RUN_ID = `${process.pid}-${Math.random().toString(36).slice(2, 8)}`;
+const OUT_DIR = path.join(os.tmpdir(), `civ-city-state-start-units-live-${RUN_ID}`);
 const OUT_HTML = 'file://' + path.join(OUT_DIR, 'index.html');
 const FALLBACK_CHROME = process.env.CS_CHROME_PATH || '/home/ubuntu/.cache/ms-playwright/chromium-1234/chrome-linux64/chrome';
 
@@ -194,7 +196,7 @@ async function main() {
   });
   page.on('pageerror', (e) => { consoleErrors.push(String(e)); console.error('[pageerror]', e); });
 
-  const EXPECTED_PLAYER = { easy: 1, normal: 2, hard: 3 };
+  const EXPECTED_PLAYER = { easy: 2, normal: 1, hard: 0 };
   const EXPECTED_FOREIGN = { easy: 2, normal: 1, hard: 0 };
   const EXPECTED_RELATED = { easy: 0, normal: 1, hard: 2 };
   const CITY_STATES_COUNT = 4;
@@ -252,6 +254,7 @@ async function main() {
 
       // Żywy dowód tabeli gracza na tej samej mapie i po tej samej ścieżce foundowania.
       const playerCity = state.cities.find((c) => c.ownerId === 0);
+      assert(`(${diff}) stolica gracza istnieje po realnym founding`, !!playerCity, state.cities);
       if (playerCity) {
         const unitsAtPlayerCapital = state.units.filter(
           (u) => u.ownerId === 0 && u.q === playerCity.q && u.r === playerCity.r,
@@ -265,10 +268,15 @@ async function main() {
       consoleErrors.length === 0, consoleErrors);
   } finally {
     await browser.close();
+    fs.rmSync(OUT_DIR, { recursive: true, force: true });
   }
 
   console.log('\ncity-state-start-units-live-test: ' + pass + ' pass, ' + fail + ' fail');
   process.exit(fail ? 1 : 0);
 }
 
-main().catch((e) => { console.error(e); process.exit(1); });
+main().catch((e) => {
+  console.error(e);
+  fs.rmSync(OUT_DIR, { recursive: true, force: true });
+  process.exit(1);
+});

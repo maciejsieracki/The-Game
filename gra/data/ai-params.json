@@ -90,7 +90,7 @@
     "opis": "Bonus punktów Nauki/turę AI na poziomie Trudnym (+2/turę; nie gorszy od Normalnego)."
   },
   "trudnosc_poziom3_startowe_jednostki": {
-    "wartosc": 0,
+    "wartosc": 2,
     "sekcja": "§7 Trudność Lv3",
     "opis": "Dodatkowe jednostki startowe AI na poziomie Trudnym."
   },

@@ -556,7 +556,7 @@ export function loadDifficultyParams(data: GameData, poziom: 1 | 2 | 3 = 2): Dif
   return {
     bonusProdukcja:    getAiParam(data, `trudnosc_poziom${n}_bonus_produkcja`,    n === 1 ? 0 : n === 2 ? 0.1 : 0.25),
     bonusNauka:        getAiParam(data, `trudnosc_poziom${n}_bonus_nauka`,         n === 1 ? 0 : n === 2 ? 1   : 2),
-    startoweJednostki: getAiParam(data, `trudnosc_poziom${n}_startowe_jednostki`, n === 1 ? 0 : n === 2 ? 1   : 0),
+    startoweJednostki: getAiParam(data, `trudnosc_poziom${n}_startowe_jednostki`, n === 1 ? 0 : n === 2 ? 1   : 2),
     startoweMiasta:    getAiParam(data, `trudnosc_poziom${n}_startowe_miasta`,    n === 1 ? 0 : n === 2 ? 0   : 1),
     bonusWalka:        getAiParam(data, `trudnosc_poziom${n}_bonus_walka`,         n === 1 ? 0 : n === 2 ? 0   : 0.05),
     // Spryt AI (T4=B): zachowanie zmienia sie z poziomem, nie tylko liczby
