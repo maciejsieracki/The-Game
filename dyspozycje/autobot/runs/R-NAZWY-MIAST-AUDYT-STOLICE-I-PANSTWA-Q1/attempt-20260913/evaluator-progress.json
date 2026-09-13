@@ -1,0 +1,35 @@
+{
+  "task_id": "t_5934752f",
+  "topic": "R-NAZWY-MIAST-AUDYT-STOLICE-I-PANSTWA-Q1",
+  "run": "attempt-20260913",
+  "phase": "evaluator",
+  "status": "PASS",
+  "updated": "2026-09-13T11:58:37+00:00",
+  "base_head": "0b95694b73c429d01d8b65942235f2863947f986",
+  "head": "2b94ca8242b614b599bf3bf6624bafedca6190a2",
+  "operator_source_head": "0b95694b73c429d01d8b65942235f2863947f986",
+  "worktree_dirty": true,
+  "changed_product_files": [
+    "gra/data/civs.json",
+    "gra/src/game/civ-names.ts",
+    "gra/tools/civ-names-test.cjs"
+  ],
+  "checks": {
+    "independent_pool_audit": "15/15 rows; MC 100/0/0; MP 10/0/0; nazwyMiast mirrors true; local intersections 0",
+    "global_aggregates": "MC 1500/1381/94/119; MP 150/150/0/0; cross-family 3",
+    "greece_flow": "Cywilizacja=Grecy; MC0=Ateny; MP0=Sykion; no-pool capitals=Ateny; rivals=MP",
+    "pre_fix_no_pool_reproduction": "old ff9ce26 source returned player=Sykion and foreign=Sykion",
+    "nazwy_miasta_rozlaczne": "9 passed, 0 failed",
+    "city_names_pool": "12 passed, 0 failed",
+    "city_names_pools": "6 passed, 0 failed",
+    "civ_names": "66 passed, 0 failed",
+    "display_names": "27 passed, 0 failed",
+    "map_capital_labels": "47 passed, 0 failed",
+    "typecheck": "TypeScript 5.9.3; tsc --noEmit exit 0",
+    "diff_check": "PASS",
+    "operator_artifact_hashes": "PASS, including report placeholder convention",
+    "allowlist": "PASS; three product paths only; no other audit-path diff"
+  },
+  "objections": [],
+  "next": "Final Control independently checks the complete trace; no integration, push, PR, merge or deploy"
+}

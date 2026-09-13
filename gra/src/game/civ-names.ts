@@ -46,11 +46,18 @@ export function getNazwyKlastra(civs: CivsData, ikonaId: string): readonly strin
   return def?.nazwyKlastra ?? [];
 }
 
+/** Lista nazw miast cywilizacji dla typu; pusta tablica gdy brak eksportu. */
+function getNazwyMiast(civs: CivsData, ikonaId: string): readonly string[] {
+  const def = findCivByIkonaId(civs, ikonaId);
+  return def?.nazwyMiast ?? [];
+}
+
 /**
  * N-1A: stolica gracza = `miasta_cywilizacji[0]` z puli
  * (R-MAPA-ETYKIETA-STOLICY-NAZWA-MIASTA-Q1 R3-2; wcześniej czytane z puli miast-państw
  * `miasta_panstwa[0]` — gracz-Chińczyk startował w `Qin` zamiast `Xi'an`, gracz-Słowianin
- * w `Kiev` zamiast `Kijów`). Bez puli — legacy `nazwyKlastra[0]` z `civs.json`.
+ * w `Kiev` zamiast `Kijów`). Bez puli — eksport `nazwyMiast[0]` z `civs.json`; gdy eksport
+ * nie istnieje, zachowany jest fallback do `nazwyKlastra[0]`.
  */
 export function playerStartCityName(
   civs: CivsData,
@@ -60,6 +67,8 @@ export function playerStartCityName(
   if (pools?.[playerCivId]) {
     return playerCapitalFromPool(pools, playerCivId);
   }
+  const cityNames = getNazwyMiast(civs, playerCivId);
+  if (cityNames[0]) return cityNames[0];
   const names = getNazwyKlastra(civs, playerCivId);
   return nazwaKlastraAt(names, 0, 'Stolica');
 }
@@ -86,7 +95,8 @@ export function clusterRivalCityName(
  * Stolica obcego typu (państwa AI) = `miasta_cywilizacji[0]` z puli
  * (R-MAPA-ETYKIETA-STOLICY-NAZWA-MIASTA-Q1 R2-2; wcześniej czytane z puli miast-państw
  * `miasta_panstwa[0]` — `Qin` zamiast `Xi'an`, `Kiev` zamiast `Kijów`).
- * Bez puli — legacy `nazwyKlastra[0]` z `civs.json`, jedyna dostępna wtedy lista.
+ * Bez puli — eksport `nazwyMiast[0]` z `civs.json`; gdy eksport nie istnieje, zachowany jest
+ * fallback do `nazwyKlastra[0]`.
  */
 export function foreignCapitalCityName(
   civs: CivsData,
@@ -96,6 +106,8 @@ export function foreignCapitalCityName(
   if (pools?.[typIkonaId]) {
     return foreignCapitalFromPool(pools, typIkonaId);
   }
+  const cityNames = getNazwyMiast(civs, typIkonaId);
+  if (cityNames[0]) return cityNames[0];
   const names = getNazwyKlastra(civs, typIkonaId);
   return nazwaKlastraAt(names, 0, typIkonaId);
 }

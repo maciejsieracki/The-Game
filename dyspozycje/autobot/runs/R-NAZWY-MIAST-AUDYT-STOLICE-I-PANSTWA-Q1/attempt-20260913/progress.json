@@ -1,0 +1,27 @@
+{
+  "task_id": "t_ba1a3b03",
+  "topic": "R-NAZWY-MIAST-AUDYT-STOLICE-I-PANSTWA-Q1",
+  "run": "attempt-20260913",
+  "phase": "operator",
+  "status": "PASS",
+  "updated": "2026-09-13T11:41:18+00:00",
+  "base_head": "ff9ce26a663c53c9f711e50536eb10f59dc4b70b",
+  "head": "0b95694b73c429d01d8b65942235f2863947f986",
+  "worktree_dirty": true,
+  "changed_files": [
+    "gra/data/civs.json",
+    "gra/src/game/civ-names.ts",
+    "gra/tools/civ-names-test.cjs"
+  ],
+  "checks": {
+    "focused_civ_names_regression": "66 passed, 0 failed",
+    "city_names_pool": "12 passed, 0 failed",
+    "city_names_pools": "6 passed, 0 failed",
+    "disjoint_pools": "9 passed, 0 failed",
+    "display_names": "27 passed, 0 failed",
+    "map_capital_labels": "47 passed, 0 failed",
+    "typecheck": "exit 0",
+    "diff_check": "PASS"
+  },
+  "next": "Evaluator independently reads this worktree and verifies the audit, fix, and gates"
+}
