@@ -1,82 +1,82 @@
 {
-  "hubGeneratedAt": "2026-09-14T16:52:44",
-  "md5": "7007c7b23c6fcb3cd2d36498d0e96c68",
+  "hubGeneratedAt": "2026-09-14T20:53:00",
+  "md5": "272203761f72f765be8f0580241e999d",
   "bundles": [
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html?skipMenuRedirect=1",
       "label": "Pełna gra ROBOCZA",
-      "md5": "7007c7b23c6fcb3cd2d36498d0e96c68",
-      "sizeBytes": 69858230
+      "md5": "272203761f72f765be8f0580241e999d",
+      "sizeBytes": 69857897
     },
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html",
       "label": "Pełna gra (z menu)",
-      "md5": "7007c7b23c6fcb3cd2d36498d0e96c68",
-      "sizeBytes": 69858230
+      "md5": "272203761f72f765be8f0580241e999d",
+      "sizeBytes": 69857897
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "label": "Playtest: DUŻA bitwa (pole) — NOWE",
-      "md5": "7007c7b23c6fcb3cd2d36498d0e96c68",
-      "sizeBytes": 69858230
+      "md5": "272203761f72f765be8f0580241e999d",
+      "sizeBytes": 69857897
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "label": "Playtest: DUŻE oblężenie (mur) — NOWE",
-      "md5": "7007c7b23c6fcb3cd2d36498d0e96c68",
-      "sizeBytes": 69858230
+      "md5": "272203761f72f765be8f0580241e999d",
+      "sizeBytes": 69857897
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "label": "Playtest: mapa świat",
-      "md5": "7007c7b23c6fcb3cd2d36498d0e96c68",
-      "sizeBytes": 69858230
+      "md5": "272203761f72f765be8f0580241e999d",
+      "sizeBytes": 69857897
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "label": "Playtest: miasto / ekonomia",
-      "md5": "7007c7b23c6fcb3cd2d36498d0e96c68",
-      "sizeBytes": 69858230
+      "md5": "272203761f72f765be8f0580241e999d",
+      "sizeBytes": 69857897
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "label": "Playtest: walka na mapie",
-      "md5": "7007c7b23c6fcb3cd2d36498d0e96c68",
-      "sizeBytes": 69858230
+      "md5": "272203761f72f765be8f0580241e999d",
+      "sizeBytes": 69857897
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "label": "Playtest: odskok 3v3",
-      "md5": "7007c7b23c6fcb3cd2d36498d0e96c68",
-      "sizeBytes": 69858230
+      "md5": "272203761f72f765be8f0580241e999d",
+      "sizeBytes": 69857897
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "label": "Playtest: odskok + oblężenie",
-      "md5": "7007c7b23c6fcb3cd2d36498d0e96c68",
-      "sizeBytes": 69858230
+      "md5": "272203761f72f765be8f0580241e999d",
+      "sizeBytes": 69857897
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "label": "Playtest: oblężenie 3v3",
-      "md5": "7007c7b23c6fcb3cd2d36498d0e96c68",
-      "sizeBytes": 69858230
+      "md5": "272203761f72f765be8f0580241e999d",
+      "sizeBytes": 69857897
     }
   ],
   "startHub": "START.html",
   "publishedAt": "2026-09-13T12:49:59",
   "publisher": "Integrator (Hermes)",
-  "sourceBuild": "gra/ (deploy commit 9f32e241; direct vite.js single-file build)",
+  "sourceBuild": "gra/ (integration commit 27bb402b26ce1facd9fdc8fd91937ddfab64090a; direct vite.js single-file build)",
   "bundle": "Gra-ROBOCZA.html",
-  "note": "R-ARMIA-ROZDZIEL-RUCH-IKONY-Q1: Rozdziel/Połącz directional icons and split movement path-cost contract; focused gates and regressions verified."
+  "note": "R-MIASTA-CYWILIZACJE-PANSTWA-WSPOLNA-LISTA-Q1 + R-KREATOR-DOLNA-NAWIGACJA-Q1: wspólna lista nazw 110 i realna regresja dolnej nawigacji; R-STARTOWE product code już w origin/main; R-NAZWY zawarte w późniejszym kontrakcie wspólnej listy."
 }

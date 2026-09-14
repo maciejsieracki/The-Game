@@ -13,6 +13,17 @@ swoim wĹ‚asnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji d
 > Pakiet 3 z 2026-08-20 jest docs-only i nie tworzy wpisu ROBOCZA/KANON/FINALNA;
 > ten plik pozostaje wyłącznie rejestrem publikacji bundli.
 
+## ROBOCZA 27220376 - 2026-09-14 20:53 UTC - R-MIASTA-CYWILIZACJE-PANSTWA-WSPOLNA-LISTA-Q1 + R-KREATOR-DOLNA-NAWIGACJA-Q1
+
+|- md5 (pełne): `272203761f72f765be8f0580241e999d` · SHA-256: `4e52328b752f1ca2a000fdbb1fdb2b568d8758a2a977e9e396b3bc570fadaf41` · rozmiar: `69857897` bajtów
+|- source/integration commit: `27bb402b26ce1facd9fdc8fd91937ddfab64090a`; build: direct Vite, `888` modułów, exit `0`; `tsc --noEmit` exit `0`.
+|- R-MIASTA: wspólna lista `miasta_cywilizacji[0..109]`, stolice z indeksu `0`, suffix państw-miast z `100..109`, guard overflowu i lustro `civs.json.nazwyMiast` dla `15/15` cywilizacji.
+|- R-KREATOR: test Chromium dolnej nawigacji `newgame-bottom-navigation-test.cjs` przeszedł `70/0` na viewportach `2048x1080` i `3840x2160`, z kontrolą mutacyjną ukrycia `.nav`.
+|- Testy dodatkowe: `civ-names` `109/0`, `city-names-pool` `125/0`, `city-names-pools` `9/0`, `mapa-etykieta-stolicy` `47/0`, `nazwy-miast-rozlaczne-pule` `9/0`, AI difficulty `90/0`, startowe jednostki live `16/0` i `18/0`.
+|- Znane noty bazowe: `start-preview-test.cjs` `3/6` (count baseline), pełny `cluster-start-test.cjs` timeout `900s`; nie są przypisywane temu wdrożeniu jako produktowy FAIL.
+|- `START.html`, manifest i `10` kopii playtestowych wygenerowane; `node gra/tools/verify-robocza-bundle.cjs` → `VERIFY OK`; promocji do KANON/FINALNA nie wykonano.
+|- **AKTUALNA**
+
 ## ROBOCZA 7007c7b2 - 2026-09-14 16:52 UTC - R-BUDYNKI-KARTY-GRAFIKA-TEKST-OVERLAP-Q1 + R-REKRUTACJA-KARTY-BRAK-REKRUTOW-Q1
 
 |- md5 (pełne): `7007c7b23c6fcb3cd2d36498d0e96c68` · stempel label `d024cbd2` (stamp match WARN jest oczekiwany na Linux; manifest md5 jest źródłem prawdy) · SHA-256: `cc02f96317a834115ec9e07f79ee15aea34d6fd60956f396c0ceb61a1299c5eb`

@@ -1,3 +1,14 @@
+## [20:53 PL, 2026-09-14] SESJA LOKALNA — DEPLOY ROBOCZA `27220376`
+
+ROBOCZA md5 `272203761f72f765be8f0580241e999d` · SHA-256 `4e52328b752f1ca2a000fdbb1fdb2b568d8758a2a977e9e396b3bc570fadaf41` · **VERIFY OK**.
+- Zintegrowano allowlistę `R-MIASTA-CYWILIZACJE-PANSTWA-WSPOLNA-LISTA-Q1` oraz test `R-KREATOR-DOLNA-NAWIGACJA-Q1`; kodowy commit `27bb402b26ce1facd9fdc8fd91937ddfab64090a`.
+- `R-STARTOWE-JEDNOSTKI-WSZYSTKIE-OSIE-Q1`: product files były już bajtowo obecne w `origin/main`; brak ponownego merge.
+- `R-NAZWY-MIAST-AUDYT-STOLICE-I-PANSTWA-Q1`: dane audytu są zawarte w późniejszym kontrakcie wspólnej listy 110; nie przywrócono równoległego `nazwyKlastra`.
+- Bramki: typecheck PASS; Vite `888` modułów / `27.19s`; nazwy `109/0`, `125/0`, `9/0`, `47/0`, `9/0`; startowe live `16/0`, `18/0`; Kreator Chromium `70/0`; negative control ukrycia `.nav` zadziałał.
+- Noty bazowe: `start-preview-test.cjs` `3/6`; `cluster-start-test.cjs` timeout `900s` — nie raportowane jako PASS.
+- `START.html`, manifest i 10 playtest copies regenerated. Nie wykonano promocji do KANON/FINALNA.
+CZEKAM-NA: właściciel — test `gra-robocza/START.html` po `Ctrl+F5`.
+
 ## [17:20 PL, 2026-08-20] SESJA LOKALNA — DEPLOY ROBOCZA FALA 300 md5 `47149d70`
 
 ROBOCZA md5 `47149d70bf2af52ae26e410899d6f133` · stempel `47149d70` · **VERIFY OK**. Pełny wpis: `dyspozycje/WERSJE.md` (FALA 300, na górze).
