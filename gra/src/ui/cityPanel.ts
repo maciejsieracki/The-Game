@@ -8031,13 +8031,21 @@ function recruitManpowerCost(city: City, typeId: string): number {
   return unitManpowerCostForType(typeId, ep, maxMult);
 }
 
-/** Czy imperium ma wystarczającą pulę rekrutów na werb (fallback: pula miasta). */
-function empireRekruciAffordable(city: City, mpCost: number): boolean {
-  if (mpCost <= 0) return true;
+/** Bieżąca pula rekrutów używana przez bramkę zakupu (fallback: pula miasta). */
+function empireRekruciTotal(city: City): number | undefined {
   const empireTotal = cfg.getEmpireRekruciTotal?.(city.ownerId);
-  if (empireTotal != null) return empireTotal >= mpCost;
-  const mpSnap = cfg.getManpowerSnapshot?.(city.id);
-  return !mpSnap || mpSnap.manpowerBiezacy >= mpCost;
+  if (empireTotal != null) return empireTotal;
+  return cfg.getManpowerSnapshot?.(city.id)?.manpowerBiezacy;
+}
+
+/** Czy imperium ma wystarczającą pulę rekrutów na werb (fallback: pula miasta). */
+function empireRekruciAffordable(
+  city: City,
+  mpCost: number,
+  available = empireRekruciTotal(city),
+): boolean {
+  if (mpCost <= 0) return true;
+  return available == null || available >= mpCost;
 }
 
 /**
@@ -8074,7 +8082,8 @@ function unitResourceUpkeepChipsHtml(u: UnitDef): string {
     .join('');
 }
 
-function appendUnitRecruitCompactRow(
+/** Render one recruitment card; exported for the real DOM regression gate. */
+export function appendUnitRecruitCompactRow(
   scroll: HTMLElement,
   city: City,
   item: ProductionItem,
@@ -8084,7 +8093,9 @@ function appendUnitRecruitCompactRow(
   const udef = findUnitDef(data, item.id);
   if (!udef) return;
   const mpCost = recruitManpowerCost(city, item.id);
-  const canMp = empireRekruciAffordable(city, mpCost);
+  const mpAvailable = empireRekruciTotal(city);
+  const canMp = empireRekruciAffordable(city, mpCost, mpAvailable);
+  const mpMissing = mpAvailable == null ? undefined : Math.max(0, mpCost - mpAvailable);
   // JEDNOSTKI-SUROWIEC-01 + R-REKRUTACJA-SUROWIEC-BEZ-UPKEEP-Q1: bramka na puli
   // państwa liczy WYŁĄCZNIE jednorazowy koszt zakupu; utrzymanie idzie w następnej turze.
   const stockCost = unitStockCost(udef);
@@ -8099,12 +8110,17 @@ function appendUnitRecruitCompactRow(
     treasuryIconHtml: cityPanelChipIconWrap('res-treasury', 14),
     mpCost,
     mpCostLabel: formatManpower(mpCost),
+    manpowerAvailable: mpAvailable,
+    manpowerRequired: mpCost,
     stockChipsHtml: unitStockCostChipsHtml(udef, city),
     resourceUpkeepChipsHtml: unitResourceUpkeepChipsHtml(udef),
     stockMissingLabel: !recruitOk
       ? 'Brakuje w magazynie: ' + Object.entries(stockMissing)
         .map(([k, v]) => `${v} ${stockResourceLabel(k)}`)
         .join(', ')
+      : undefined,
+    manpowerMissingLabel: mpMissing != null && mpMissing > 0
+      ? `Brakuje rekrutów: ${formatManpower(mpMissing)}`
       : undefined,
     onRecruit: () => recruitUnit(city, item),
   });

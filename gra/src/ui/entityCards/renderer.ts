@@ -1196,4 +1196,17 @@ button.entity-card-civpedia-link:focus-visible{outline:2px solid var(--tg-focus-
 /* KOTWICA KOŃCOWA bloku R-KARTA-JEDNOSTKI-3D-EKSPOZYCJA-UX-Q1 — mutacja w
    tools/entity-card-diorama-real-render-test.cjs wycina dokładnie ten zakres. Nowe reguły
    dopisuj PO tej linii. */
+/* R-BUDYNKI-KARTY-GRAFIKA-TEKST-OVERLAP-Q1 — BUILDING FLOW START */
+/* Budynki mają tytuł, pigułki Epoka/Poziom i podtytuł w normalnym przepływie POD sceną.
+   Wspólny diorama layout nadal pozostaje overlayem dla jednostek i cudów, ale przy karcie
+   budynku (szczególnie w docku 400px) tytuł po lewej nachodził na wyśrodkowany medalion.
+   Wysokość sceny jest stała, wysokość nagłówka wynika z treści — długie nazwy zawijają się
+   bez wchodzenia w grafikę, a krótkie zachowują ten sam odstęp. */
+.entity-card-building .entity-card-diorama{height:auto;min-height:0;overflow:hidden;}
+.entity-card-building .entity-card-diorama-stage{position:relative;inset:auto;width:100%;height:132px;
+  flex:none;padding:0;}
+.entity-card-building .entity-card-diorama .entity-card-title-wrap{position:relative;left:auto;right:auto;
+  bottom:auto;z-index:3;min-width:0;padding:0 14px 12px;text-shadow:0 2px 6px rgba(0,0,0,.9),0 0 2px rgba(0,0,0,.8);}
+.entity-card-building .entity-card-title-row h2{min-width:0;overflow-wrap:anywhere;}
+/* R-BUDYNKI-KARTY-GRAFIKA-TEKST-OVERLAP-Q1 — BUILDING FLOW END */
 `;

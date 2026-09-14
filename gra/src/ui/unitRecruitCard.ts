@@ -5,6 +5,7 @@
 
 import type { GameData, UnitDef } from '../data/loader';
 import type { ProductionItem } from '../game/production';
+import { formatManpower } from '../game/manpower';
 import { categoryOf } from '../units/setup';
 import { unitIconSvg } from './icons/brandAssets';
 import {
@@ -14,12 +15,16 @@ import {
 
 /** CSS wstrzykiwany w cityPanel (scope .civ-cs). */
 export const UNIT_RECRUIT_CARD_CSS = `
-.civ-cs .unit-recruit-compact-row{align-items:center;flex-wrap:nowrap;gap:0.35em;min-height:calc(2.5em - 0.35em);}
+.civ-cs .unit-recruit-compact-row{align-items:flex-start;flex-wrap:nowrap;gap:0.35em;min-height:calc(2.5em - 0.35em);}
 .civ-cs .unit-recruit-compact-row.is-disabled{opacity:.72;}
 .civ-cs .unit-recruit-compact-row .unit-compact-text{flex:1 1 auto;min-width:4.4em;display:flex;flex-direction:column;gap:0.04em;line-height:1.15;}
 .civ-cs .unit-recruit-compact-row .unit-compact-meta{font-size:0.64em;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
-.civ-cs .unit-recruit-compact-row .unit-compact-cost{flex:0 1 auto;min-width:0;font-size:0.64em;color:var(--muted);white-space:nowrap;display:inline-flex;align-items:center;gap:0.22em;flex-wrap:wrap;overflow:hidden;}
+.civ-cs .unit-recruit-compact-row .unit-compact-cost{flex:1 1 10em;min-width:7em;font-size:0.64em;color:var(--muted);white-space:normal;display:inline-flex;align-items:center;gap:0.22em;flex-wrap:wrap;overflow:visible;line-height:1.2;}
 .civ-cs .unit-recruit-compact-row .unit-compact-cost .bld-infocard-chip{font-size:0.95em;padding:0.05em 0.28em;}
+.civ-cs .unit-recruit-manpower{display:inline-flex;flex:1 1 100%;flex-wrap:wrap;gap:0.12em 0.35em;color:#d8cca8;line-height:1.25;}
+.civ-cs .unit-recruit-manpower.is-missing{color:#f0c0a8;font-weight:600;}
+.civ-cs .unit-recruit-manpower-missing{flex-basis:100%;color:#e88a7a;font-weight:700;}
+.civ-cs .unit-recruit-compact-row .bld-compact-actions{align-self:center;}
 `;
 
 function el<K extends keyof HTMLElementTagNameMap>(tag: K, cls?: string): HTMLElementTagNameMap[K] {
@@ -65,6 +70,10 @@ export interface UnitRecruitCardOpts {
   /** Koszt Manpower (0 = Zwiadowca). */
   mpCost?: number;
   mpCostLabel?: string;
+  /** Aktualna pula rekrutów imperium używana przez bramkę zakupu. */
+  manpowerAvailable?: number;
+  /** Wymagany koszt rekrutów tej jednostki; domyślnie `mpCost`. */
+  manpowerRequired?: number;
   /**
    * JEDNOSTKI-SUROWIEC-01: chip(y) kosztu surowcowego jednostki
    * (units.json Surowiec/Surowiec (ilość)), już wyrenderowany HTML.
@@ -80,17 +89,51 @@ export interface UnitRecruitCardOpts {
    * "Rekrutuj" jest zablokowany niezależnie od canPurchase/skarb/Manpower.
    */
   stockMissingLabel?: string;
+  /** Tekst przyczyny blokady, gdy puli rekrutów brakuje. */
+  manpowerMissingLabel?: string;
   onRecruit: () => void;
+}
+
+function normalizedManpower(value: number): number {
+  return Math.max(0, Math.floor(Number.isFinite(value) ? value : 0));
+}
+
+function buildManpowerStatus(opts: {
+  available: number | undefined;
+  required: number;
+}): HTMLSpanElement | null {
+  const { available: availableInput, required: requiredInput } = opts;
+  if (availableInput == null || !Number.isFinite(availableInput)) return null;
+  const available = normalizedManpower(availableInput);
+  const required = normalizedManpower(requiredInput);
+  const missing = Math.max(0, required - available);
+  const status = el('span', `unit-recruit-manpower${missing > 0 ? ' is-missing' : ''}`);
+  status.dataset.available = String(available);
+  status.dataset.required = String(required);
+  status.dataset.missing = String(missing);
+  status.title = 'Pula rekrutów imperium — dostępne / potrzebne';
+  const summary = el('span', 'unit-recruit-manpower-summary');
+  summary.textContent = `Rekruci: dostępne ${formatManpower(available)} / potrzebne ${formatManpower(required)}`;
+  status.appendChild(summary);
+  if (missing > 0) {
+    const shortfall = el('span', 'unit-recruit-manpower-missing');
+    shortfall.textContent = `Brakuje: ${formatManpower(missing)}`;
+    status.appendChild(shortfall);
+  }
+  return status;
 }
 
 /** Kompaktowy wiersz jednostki — ikona, nazwa, meta, koszt, Rekrutuj. */
 export function buildUnitRecruitCard(opts: UnitRecruitCardOpts): HTMLDivElement {
   const {
-    udef, item, skarb, canPurchase, treasuryIconHtml, mpCostLabel,
-    stockChipsHtml, resourceUpkeepChipsHtml, stockMissingLabel, onRecruit,
+    udef, item, skarb, canPurchase, treasuryIconHtml, mpCost, mpCostLabel,
+    manpowerAvailable, manpowerRequired: manpowerRequiredInput,
+    stockChipsHtml, resourceUpkeepChipsHtml, stockMissingLabel, manpowerMissingLabel,
+    onRecruit,
   } = opts;
   const cat = unitCategory(udef);
   const canBuy = opts.canPurchase && (skarb === undefined || skarb >= item.koszt);
+  const manpowerRequired = manpowerRequiredInput ?? mpCost ?? 0;
 
   const row = el('div', 'bld-compact-row unit-recruit-compact-row');
   if (!canBuy) row.classList.add('is-disabled');
@@ -111,6 +154,11 @@ export function buildUnitRecruitCard(opts: UnitRecruitCardOpts): HTMLDivElement 
   const cost = el('div', 'unit-compact-cost');
   const mpPart = mpCostLabel != null && mpCostLabel !== '0' ? ` · ${mpCostLabel} 👤` : '';
   cost.innerHTML = `${item.koszt} ${treasuryIconHtml}${mpPart}`;
+  const manpowerStatus = buildManpowerStatus({
+    available: manpowerAvailable,
+    required: manpowerRequired,
+  });
+  if (manpowerStatus) cost.appendChild(manpowerStatus);
   if (stockChipsHtml) {
     const stock = el('span', 'bld-infocard-chips');
     stock.innerHTML = stockChipsHtml;
@@ -127,7 +175,10 @@ export function buildUnitRecruitCard(opts: UnitRecruitCardOpts): HTMLDivElement 
   const btn = el('button', 'btn btn-sm btn-g') as HTMLButtonElement;
   btn.textContent = 'Rekrutuj';
   btn.disabled = !canBuy;
-  if (!canPurchase && stockMissingLabel) btn.title = stockMissingLabel;
+  const blockedReasons = [manpowerMissingLabel, stockMissingLabel].filter(
+    (reason): reason is string => !!reason,
+  );
+  if (!canPurchase && blockedReasons.length > 0) btn.title = blockedReasons.join('; ');
   else if (!canPurchase) btn.title = 'Wymaga wpiecia onPurchaseUnit przez silnik';
   else if (!canBuy && skarb !== undefined) btn.title = `Za mało złota (${skarb}/${item.koszt})`;
   else btn.title = `Rekrutuj za ${item.koszt} ze skarbca`;
