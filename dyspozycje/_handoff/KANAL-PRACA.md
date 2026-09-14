@@ -4,7 +4,7 @@ ROBOCZA md5 `272203761f72f765be8f0580241e999d` · SHA-256 `4e52328b752f1ca2a000f
 - Zintegrowano allowlistę `R-MIASTA-CYWILIZACJE-PANSTWA-WSPOLNA-LISTA-Q1` oraz test `R-KREATOR-DOLNA-NAWIGACJA-Q1`; kodowy commit `27bb402b26ce1facd9fdc8fd91937ddfab64090a`.
 - `R-STARTOWE-JEDNOSTKI-WSZYSTKIE-OSIE-Q1`: product files były już bajtowo obecne w `origin/main`; brak ponownego merge.
 - `R-NAZWY-MIAST-AUDYT-STOLICE-I-PANSTWA-Q1`: dane audytu są zawarte w późniejszym kontrakcie wspólnej listy 110; nie przywrócono równoległego `nazwyKlastra`.
-- Bramki: typecheck PASS; Vite `888` modułów / `27.19s`; nazwy `109/0`, `125/0`, `9/0`, `47/0`, `9/0`; startowe live `16/0`, `18/0`; Kreator Chromium `70/0`; negative control ukrycia `.nav` zadziałał.
+- Bramki: typecheck PASS; Vite `888` modułów / `27.19s`; nazwy `109/0`, `125/0`, `9/0`, `47/0`, `9/0`; startowe live `25/0` i `13/0`; Kreator Chromium `70/0`; negative control ukrycia `.nav` zadziałał.
 - Noty bazowe: `start-preview-test.cjs` `3/6`; `cluster-start-test.cjs` timeout `900s` — nie raportowane jako PASS.
 - `START.html`, manifest i 10 playtest copies regenerated. Nie wykonano promocji do KANON/FINALNA.
 CZEKAM-NA: właściciel — test `gra-robocza/START.html` po `Ctrl+F5`.

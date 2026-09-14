@@ -19,7 +19,7 @@ swoim wĹ‚asnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji d
 |- source/integration commit: `27bb402b26ce1facd9fdc8fd91937ddfab64090a`; build: direct Vite, `888` modułów, exit `0`; `tsc --noEmit` exit `0`.
 |- R-MIASTA: wspólna lista `miasta_cywilizacji[0..109]`, stolice z indeksu `0`, suffix państw-miast z `100..109`, guard overflowu i lustro `civs.json.nazwyMiast` dla `15/15` cywilizacji.
 |- R-KREATOR: test Chromium dolnej nawigacji `newgame-bottom-navigation-test.cjs` przeszedł `70/0` na viewportach `2048x1080` i `3840x2160`, z kontrolą mutacyjną ukrycia `.nav`.
-|- Testy dodatkowe: `civ-names` `109/0`, `city-names-pool` `125/0`, `city-names-pools` `9/0`, `mapa-etykieta-stolicy` `47/0`, `nazwy-miast-rozlaczne-pule` `9/0`, AI difficulty `90/0`, startowe jednostki live `16/0` i `18/0`.
+|- Testy dodatkowe: `civ-names` `109/0`, `city-names-pool` `125/0`, `city-names-pools` `9/0`, `mapa-etykieta-stolicy` `47/0`, `nazwy-miast-rozlaczne-pule` `9/0`, AI difficulty `90/0`, startowe jednostki live `25/0` i `13/0`.
 |- Znane noty bazowe: `start-preview-test.cjs` `3/6` (count baseline), pełny `cluster-start-test.cjs` timeout `900s`; nie są przypisywane temu wdrożeniu jako produktowy FAIL.
 |- `START.html`, manifest i `10` kopii playtestowych wygenerowane; `node gra/tools/verify-robocza-bundle.cjs` → `VERIFY OK`; promocji do KANON/FINALNA nie wykonano.
 |- **AKTUALNA**
