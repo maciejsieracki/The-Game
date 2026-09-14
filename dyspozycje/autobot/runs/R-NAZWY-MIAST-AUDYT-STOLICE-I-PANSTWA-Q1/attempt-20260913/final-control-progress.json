@@ -1,0 +1,46 @@
+{
+  "task_id": "t_7d20d830",
+  "topic": "R-NAZWY-MIAST-AUDYT-STOLICE-I-PANSTWA-Q1",
+  "run": "attempt-20260913",
+  "phase": "final-control",
+  "round": 2,
+  "attempt": 1,
+  "status": "PASS",
+  "updated": "2026-09-13T12:15:49+00:00",
+  "base_head": "2b94ca8242b614b599bf3bf6624bafedca6190a2",
+  "head": "b6971e1a3de1980ce92d7477962dd1e9be278c75",
+  "operator_source_head": "0b95694b73c429d01d8b65942235f2863947f986",
+  "evaluator_source_head": "2b94ca8242b614b599bf3bf6624bafedca6190a2",
+  "worktree_dirty": true,
+  "changed_product_files": [
+    "gra/data/civs.json",
+    "gra/src/game/civ-names.ts",
+    "gra/tools/civ-names-test.cjs"
+  ],
+  "checks": {
+    "terminal_parent_events": "PASS: Operator t_ba1a3b03 and Evaluator t_5934752f both have status done and completed events",
+    "phase_artifact_hashes": "PASS: report placeholder, evidence, progress and journal hashes match both upstream receipts",
+    "pool_audit": "PASS: 15/15 keys and rows; every MC 100/0/0, MP 10/0/0; mirrors true; local intersections 0",
+    "global_aggregates": "PASS: MC 1500/1381/94/119; MP 150/150/0/0; cross-family names 3",
+    "greece_flow": "PASS: MC0 Ateny, MP0 Sykion, current no-pool capitals Ateny, rival1 Fliunt",
+    "old_bug_reproduction": "PASS: ff9ce26 no-pool player/foreign Sykion; current player/foreign Ateny",
+    "focused_gates": {
+      "nazwy-miast-rozlaczne-pule-test.cjs": "9 passed, 0 failed",
+      "city-names-pool-test.cjs": "12 passed, 0 failed",
+      "city-names-pools-test.cjs": "6 passed, 0 failed",
+      "civ-names-test.cjs": "66 passed, 0 failed",
+      "display-names-test.cjs": "27 passed, 0 failed",
+      "mapa-etykieta-stolicy-test.cjs": "47 passed, 0 failed"
+    },
+    "typecheck": "TypeScript 5.9.3; tsc --noEmit exit 0 with temporary dependency symlink removed afterward",
+    "diff_check": "PASS",
+    "scope": "PASS: three allowlisted product paths, attempt artifacts only, no deleted paths",
+    "secret_scan": "PASS: 0 credential-pattern hits in changed product files",
+    "process_boundary": "PASS: product_approval=false; no integration, push, PR, merge or deploy"
+  },
+  "objections": [],
+  "product_approval": false,
+  "integration_status": "INTEGRATION_REQUIRED",
+  "push_merge_deploy": "NOT_PERFORMED",
+  "next": "Orchestrator integration gate; Final Control does not integrate or publish"
+}

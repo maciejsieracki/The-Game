@@ -12,6 +12,7 @@ const bundle = path.join(__dirname, '.civ-names-bundle.cjs');
 fs.writeFileSync(entry, `
 export {
   playerStartCityName,
+  foreignCapitalCityName,
   clusterRivalCityName,
   validateNazwyKlastra,
   NAZWY_KLASTRA_LEN,
@@ -32,6 +33,7 @@ esbuild.buildSync({
 
 const M = require(bundle);
 const civs = require('../data/civs.json');
+const pools = require('../data/city-names-pools.json');
 
 let passed = 0;
 let failed = 0;
@@ -44,14 +46,23 @@ console.log('civ-names-test (D-START N-1A/N-3A/N-5B)\n');
 
 assert(M.NAZWY_KLASTRA_LEN === 10, '10 nazw per typ');
 assert(M.validateNazwyKlastra(civs).length === 0, 'civs.json: 15×10 nazwyKlastra');
-// R-NAZWY-MIAST-AUDYT-STOLICE-I-PANSTWA-Q1: ŚCIEŻKA LEGACY (wywołania BEZ puli) czyta
-// `civs.json:nazwyKlastra`, a ta lista jest lustrem `miasta_panstwa`. Po rozdzieleniu list
-// państw-miast od list miast (kryterium K2 tematu) `nazwyKlastra` nie zawiera już nazw
-// z `miasta_cywilizacji`, więc zaszyte tu wartości greckie zmieniły się z „Ateny/Sparta/Korynt"
-// na „Sykion/Fliunt/Trojzena" — to nie regresja, tylko ta sama pozycja listy po jej wymianie.
-// Ścieżka Z PULĄ (gra faktycznie jej używa) dalej daje stolicę „Ateny" — pilnuje tego
-// `mapa-etykieta-stolicy-test.cjs` (E5/E7) oraz `city-names-pool-test.cjs`.
-assert(M.playerStartCityName(civs, 'grecy') === 'Sykion', 'N-1A legacy (bez puli) Grecy → Sykion');
+// N-1A/N-2A: ścieżka bez puli również musi rozdzielać stolicę (nazwyMiast)
+// od państw-miast (nazwyKlastra). Sprawdzenie obejmuje wszystkie cywilizacje,
+// bo poprzedni błąd był maskowany tam, gdzie obie pule miały ten sam [0].
+for (const civ of civs.cywilizacje) {
+  const id = civ.ikonaId;
+  const expected = pools[id]?.miasta_cywilizacji?.[0];
+  assert(
+    JSON.stringify(civ.nazwyMiast ?? []) === JSON.stringify(pools[id]?.miasta_cywilizacji ?? []),
+    `nazwyMiast/pula regularna pełna lista ${id}`,
+  );
+  assert(civ.nazwyMiast?.[0] === expected, `nazwyMiast/pula regularna [0] ${id} → ${expected}`);
+  assert(M.playerStartCityName(civs, id) === expected, `N-1A legacy (bez puli) ${id} → ${expected}`);
+  assert(M.foreignCapitalCityName(civs, id) === expected, `N-2A legacy (bez puli) ${id} → ${expected}`);
+}
+
+const legacyOnlyCivs = { cywilizacje: [{ ikonaId: 'grecy', nazwyKlastra: ['Sykion'] }] };
+assert(M.playerStartCityName(legacyOnlyCivs, 'grecy') === 'Sykion', 'fallback bez nazwy miasta → nazwyKlastra[0]');
 assert(M.clusterRivalCityName(civs, 'grecy', 1) === 'Fliunt', 'N-3A rywal [1] → Fliunt');
 assert(M.clusterRivalCityName(civs, 'grecy', 2) === 'Trojzena', 'N-3A rywal [2] → Trojzena');
 assert(M.clusterRivalCityName(civs, 'grecy', 10) === 'Fliunt', 'legacy wrap: rywal [10] → Fliunt (zawijanie nazwyKlastra)');
