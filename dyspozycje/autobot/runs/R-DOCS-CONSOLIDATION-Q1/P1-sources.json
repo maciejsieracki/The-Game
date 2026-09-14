@@ -1,0 +1,554 @@
+{
+  "schema": "R-DOCS-P1-SOURCES-Q1/v1",
+  "topic": "R-DOCS-P1-SCOPE-Q1",
+  "phase": "P1",
+  "generated_at": "2026-09-14T15:57:54+02:00",
+  "snapshot_semantics": "working_tree_status_entries are read-only counts captured at generated_at; later concurrent source changes are outside this snapshot.",
+  "purpose": "Bezpieczny manifest zakresu audytu Markdownów The-Game; bez treści dokumentów i bez analizy duplikatów.",
+  "content_policy": {
+    "read_mode": "metadata_and_paths_only",
+    "source_mutation": false,
+    "raw_document_content_saved": false,
+    "secrets_saved": false,
+    "document_extensions_for_p2": [".md", ".markdown", ".mdx", ".mdc"],
+    "ignored_files": "excluded_unless_explicitly_authorized",
+    "duplicate_and_stale_analysis": "deferred_to_p4"
+  },
+  "audit_host": {
+    "hostname": "nAgents-ovh",
+    "provider": "OVH (task/environment label)",
+    "provider_independent_proof": "N/D",
+    "local_scope": "The-Game project paths and registered worktrees under /home/ubuntu/projects on this host",
+    "read_status": "READ_ONLY"
+  },
+  "source_roots": [
+    {
+      "id": "the-game-primary",
+      "path": "/home/ubuntu/projects/The-Game",
+      "repository": "The-Game",
+      "source_kind": "primary_git_checkout",
+      "audit_input": true,
+      "owner": "The-Game project / maciejsieracki",
+      "owner_basis": "public origin URL; human ownership beyond repository account is N/D",
+      "read_status": "READ_ONLY_METADATA_AND_PATH_SCOPE",
+      "branch": "main",
+      "head_sha": "a99f7de59ce643441b641d3b7b11404b6cbdcd82",
+      "working_tree_status_entries": 49,
+      "markdown_metadata_sample": {
+        ".md_tracked": 2696,
+        ".md_untracked": 52,
+        ".md_ignored_excluded": 1
+      },
+      "remote": "https://github.com/maciejsieracki/The-Game.git",
+      "remote_tracking_ref_used": "refs/remotes/origin/main",
+      "remote_tracking_sha_used": "1a355346ef12c7cdbb27dd6fb9d7da2b56c3682b",
+      "local_vs_origin_main_left_right_commits": [101, 6],
+      "notes": "Brudny checkout jest wyłącznie źródłem odczytu; lokalny HEAD nie jest traktowany jako opublikowany."
+    },
+    {
+      "id": "the-game-current-worktrees",
+      "path": "/home/ubuntu/projects/The-Game-real24-current-worktrees",
+      "repository": "The-Game",
+      "source_kind": "registered_git_worktree_collection",
+      "audit_input": true,
+      "owner": "The-Game / AutoBot topic workspaces",
+      "owner_basis": "branch/topic naming; individual human owner is N/D",
+      "read_status": "READ_ONLY_METADATA_AND_PATH_SCOPE",
+      "filesystem_child_count": 25,
+      "registered_child_count": 25,
+      "markdown_inventory": "DEFERRED_TO_P2",
+      "notes": "Każdy z 25 katalogów poniżej jest osobnym zarejestrowanym worktree; żaden nie jest źródłem prawdy bez decyzji P3."
+    },
+    {
+      "id": "the-game-integration-staging",
+      "path": "/home/ubuntu/projects/The-Game-real24-integration-staging",
+      "repository": "The-Game",
+      "source_kind": "integration_staging_checkout",
+      "audit_input": true,
+      "owner": "The-Game integration / maciejsieracki",
+      "owner_basis": "public origin URL; human ownership beyond repository account is N/D",
+      "read_status": "READ_ONLY_METADATA_AND_PATH_SCOPE",
+      "branch": "autobot/real24-staging",
+      "head_sha": "968891c6ecc70ecc916cb9ab09199e20d684fa82",
+      "working_tree_status_entries": 3,
+      "markdown_metadata_sample": {
+        ".md_tracked": 2727,
+        ".md_untracked": 1,
+        ".md_ignored_excluded": 165
+      },
+      "remote_tracking_ref_used": "refs/remotes/origin/autobot/real24-staging",
+      "remote_tracking_sha_used": "d387754f530af202ef285f7a27727ea1b1009cd9",
+      "local_vs_origin_staging_left_right_commits": [0, 11],
+      "notes": "Lokalny staging wyprzedza jego remote-tracking ref o 11 commitów; nie wolno utożsamiać go z publikacją."
+    },
+    {
+      "id": "autoboot-monitor-companion",
+      "path": "/home/ubuntu/projects/Autoboot-Monitor",
+      "repository": "Autoboot-Monitor",
+      "source_kind": "companion_project_checkout",
+      "audit_input": true,
+      "owner": "Autoboot-Monitor project / maciejsieracki",
+      "owner_basis": "public origin URL; human ownership beyond repository account is N/D",
+      "read_status": "READ_ONLY_METADATA_AND_PATH_SCOPE",
+      "branch": "main",
+      "head_sha": "c44c381c2deaabccec15686494eb4c63bf54394d",
+      "working_tree_status_entries": 216,
+      "markdown_metadata_sample": {
+        ".md_tracked": 115,
+        ".md_untracked": 83,
+        ".md_ignored_excluded": 38
+      },
+      "remote": "https://github.com/maciejsieracki/Autoboot-Monitor.git",
+      "notes": "Companion project jest relewantny dla dokumentacji AutoBot i raportów procesu, ale nie jest źródłem kodu gry."
+    }
+  ],
+  "reference_checkouts": [
+    {
+      "id": "the-game-documentation-index-checkout",
+      "path": "/home/ubuntu/projects/The-Game-docs-index",
+      "repository": "The-Game",
+      "source_kind": "github_ref_reference_checkout",
+      "audit_input": true,
+      "owner": "The-Game documentation / maciejsieracki",
+      "owner_basis": "public origin URL; human ownership beyond repository account is N/D",
+      "read_status": "READ_ONLY_METADATA_AND_PATH_SCOPE",
+      "branch": "docs/agent-documentation-index-20260914",
+      "head_sha": "da493eeebfaa90d47140ba7892ea2578b7f50ea7",
+      "working_tree_status_entries": 0,
+      "remote_tracking_ref_used": "refs/remotes/origin/docs/agent-documentation-index-20260914",
+      "remote_tracking_sha_used": "da493eeebfaa90d47140ba7892ea2578b7f50ea7"
+    }
+  ],
+  "current_worktrees": [
+    {
+      "path": "/home/ubuntu/projects/The-Game-real24-current-worktrees/R-RUSTREAL-01-SCAFFOLD-Q1",
+      "branch": "autobot/R-RUSTREAL-01-SCAFFOLD-Q1-current",
+      "head_sha": "031bd1d87aee906f49af8c3dba31979c0fe0d419",
+      "working_tree_status_entries": 2,
+      "owner": "The-Game / AutoBot topic workspace; human owner N/D",
+      "read_status": "READ_ONLY_REGISTERED_WORKTREE"
+    },
+    {
+      "path": "/home/ubuntu/projects/The-Game-real24-current-worktrees/R-RUSTREAL-02-STATE-DTO-Q1",
+      "branch": "autobot/R-RUSTREAL-02-STATE-DTO-Q1-current",
+      "head_sha": "837082b257cfcc8a637cda0d5bfa005dda4009be",
+      "working_tree_status_entries": 3,
+      "owner": "The-Game / AutoBot topic workspace; human owner N/D",
+      "read_status": "READ_ONLY_REGISTERED_WORKTREE"
+    },
+    {
+      "path": "/home/ubuntu/projects/The-Game-real24-current-worktrees/R-RUSTREAL-03-RNG-Q1",
+      "branch": "autobot/R-RUSTREAL-03-RNG-Q1-current",
+      "head_sha": "8e3b25e0c00b2ed5e06aaf452f5cd5b1d7468c78",
+      "working_tree_status_entries": 3,
+      "owner": "The-Game / AutoBot topic workspace; human owner N/D",
+      "read_status": "READ_ONLY_REGISTERED_WORKTREE"
+    },
+    {
+      "path": "/home/ubuntu/projects/The-Game-real24-current-worktrees/R-RUSTREAL-04-HEX-TERRAIN-Q1-kanban",
+      "branch": "autobot/kanban/R-RUSTREAL-04-HEX-TERRAIN-Q1",
+      "head_sha": "2cccd74c01428a598af41ff3e9ce8173a16e5d98",
+      "working_tree_status_entries": 2,
+      "owner": "The-Game / AutoBot topic workspace; human owner N/D",
+      "read_status": "READ_ONLY_REGISTERED_WORKTREE"
+    },
+    {
+      "path": "/home/ubuntu/projects/The-Game-real24-current-worktrees/R-RUSTREAL-05-MAP-GENERATOR-Q1-kanban",
+      "branch": "autobot/kanban/R-RUSTREAL-05-MAP-GENERATOR-Q1",
+      "head_sha": "719b28c447afd66bf24909119571e72761f2192e",
+      "working_tree_status_entries": 3,
+      "owner": "The-Game / AutoBot topic workspace; human owner N/D",
+      "read_status": "READ_ONLY_REGISTERED_WORKTREE"
+    },
+    {
+      "path": "/home/ubuntu/projects/The-Game-real24-current-worktrees/R-RUSTREAL-06-IMPROVEMENTS-Q1-kanban",
+      "branch": "autobot/kanban/R-RUSTREAL-06-IMPROVEMENTS-Q1",
+      "head_sha": "bd3320568c5c90a1564c11055397b5c14fad3750",
+      "working_tree_status_entries": 2,
+      "owner": "The-Game / AutoBot topic workspace; human owner N/D",
+      "read_status": "READ_ONLY_REGISTERED_WORKTREE"
+    },
+    {
+      "path": "/home/ubuntu/projects/The-Game-real24-current-worktrees/R-RUSTREAL-07-RESOURCE-PRODUCTION-Q1-kanban",
+      "branch": "autobot/kanban/R-RUSTREAL-07-RESOURCE-PRODUCTION-Q1",
+      "head_sha": "8c997a7273009393db15fb7c2e13ff2675129a9e",
+      "working_tree_status_entries": 2,
+      "owner": "The-Game / AutoBot topic workspace; human owner N/D",
+      "read_status": "READ_ONLY_REGISTERED_WORKTREE"
+    },
+    {
+      "path": "/home/ubuntu/projects/The-Game-real24-current-worktrees/R-RUSTREAL-08-BUILDING-COSTS-Q1-kanban",
+      "branch": "autobot/kanban/R-RUSTREAL-08-BUILDING-COSTS-Q1",
+      "head_sha": "1ea8b3c17736cf2df742ba6166ba44cbe7183e72",
+      "working_tree_status_entries": 2,
+      "owner": "The-Game / AutoBot topic workspace; human owner N/D",
+      "read_status": "READ_ONLY_REGISTERED_WORKTREE"
+    },
+    {
+      "path": "/home/ubuntu/projects/The-Game-real24-current-worktrees/R-RUSTREAL-09-TURN-ECONOMY-Q1-kanban",
+      "branch": "autobot/kanban/R-RUSTREAL-09-TURN-ECONOMY-Q1",
+      "head_sha": "d0d37cffa285e09d8e67d53a304aa65d175c9238",
+      "working_tree_status_entries": 5,
+      "owner": "The-Game / AutoBot topic workspace; human owner N/D",
+      "read_status": "READ_ONLY_REGISTERED_WORKTREE"
+    },
+    {
+      "path": "/home/ubuntu/projects/The-Game-real24-current-worktrees/R-RUSTREAL-10-CITY-GROWTH-Q1-kanban",
+      "branch": "autobot/kanban/R-RUSTREAL-10-CITY-GROWTH-Q1",
+      "head_sha": "8bef10a89e02b3a9d231a2eb5a1b534697063960",
+      "working_tree_status_entries": 2,
+      "owner": "The-Game / AutoBot topic workspace; human owner N/D",
+      "read_status": "READ_ONLY_REGISTERED_WORKTREE"
+    },
+    {
+      "path": "/home/ubuntu/projects/The-Game-real24-current-worktrees/R-RUSTREAL-11-UNIT-EPOCH-Q1-kanban",
+      "branch": "autobot/kanban/R-RUSTREAL-11-UNIT-EPOCH-Q1",
+      "head_sha": "0edd6f0e3e80cee5142e7457c69c32065b41b1eb",
+      "working_tree_status_entries": 2,
+      "owner": "The-Game / AutoBot topic workspace; human owner N/D",
+      "read_status": "READ_ONLY_REGISTERED_WORKTREE"
+    },
+    {
+      "path": "/home/ubuntu/projects/The-Game-real24-current-worktrees/R-RUSTREAL-12-RECRUIT-UPKEEP-Q1-kanban",
+      "branch": "autobot/kanban/R-RUSTREAL-12-RECRUIT-UPKEEP-Q1",
+      "head_sha": "68274784f5662ab8adb514ec2fcce06ab8dfbd09",
+      "working_tree_status_entries": 2,
+      "owner": "The-Game / AutoBot topic workspace; human owner N/D",
+      "read_status": "READ_ONLY_REGISTERED_WORKTREE"
+    },
+    {
+      "path": "/home/ubuntu/projects/The-Game-real24-current-worktrees/R-RUSTREAL-13-PATHFINDING-Q1-kanban",
+      "branch": "autobot/kanban/R-RUSTREAL-13-PATHFINDING-Q1",
+      "head_sha": "acf1baeb2121e26c449cc64df720a7c8f495d3ca",
+      "working_tree_status_entries": 5,
+      "owner": "The-Game / AutoBot topic workspace; human owner N/D",
+      "read_status": "READ_ONLY_REGISTERED_WORKTREE"
+    },
+    {
+      "path": "/home/ubuntu/projects/The-Game-real24-current-worktrees/R-RUSTREAL-14-COMBAT-Q1-kanban",
+      "branch": "autobot/kanban/R-RUSTREAL-14-COMBAT-Q1",
+      "head_sha": "75b95397056504562711dcdd40010376db14c177",
+      "working_tree_status_entries": 2,
+      "owner": "The-Game / AutoBot topic workspace; human owner N/D",
+      "read_status": "READ_ONLY_REGISTERED_WORKTREE"
+    },
+    {
+      "path": "/home/ubuntu/projects/The-Game-real24-current-worktrees/R-RUSTREAL-15-DIPLOMACY-Q1-kanban",
+      "branch": "autobot/kanban/R-RUSTREAL-15-DIPLOMACY-Q1",
+      "head_sha": "88b8c7fa0e56e86c2992fbf75e138ee8d8e09a4c",
+      "working_tree_status_entries": 6,
+      "owner": "The-Game / AutoBot topic workspace; human owner N/D",
+      "read_status": "READ_ONLY_REGISTERED_WORKTREE"
+    },
+    {
+      "path": "/home/ubuntu/projects/The-Game-real24-current-worktrees/R-RUSTREAL-16-TRADE-Q1-kanban",
+      "branch": "autobot/kanban/R-RUSTREAL-16-TRADE-Q1",
+      "head_sha": "2b791e6d2a9e6dd17122f82e64410a75c3a7d393",
+      "working_tree_status_entries": 6,
+      "owner": "The-Game / AutoBot topic workspace; human owner N/D",
+      "read_status": "READ_ONLY_REGISTERED_WORKTREE"
+    },
+    {
+      "path": "/home/ubuntu/projects/The-Game-real24-current-worktrees/R-RUSTREAL-17-BARBARIANS-Q1-kanban",
+      "branch": "autobot/kanban/R-RUSTREAL-17-BARBARIANS-Q1",
+      "head_sha": "d790a4380c9fd2126b48ff27c25997852103f88b",
+      "working_tree_status_entries": 2,
+      "owner": "The-Game / AutoBot topic workspace; human owner N/D",
+      "read_status": "READ_ONLY_REGISTERED_WORKTREE"
+    },
+    {
+      "path": "/home/ubuntu/projects/The-Game-real24-current-worktrees/R-RUSTREAL-18-AI-TURN-Q1-kanban",
+      "branch": "autobot/kanban/R-RUSTREAL-18-AI-TURN-Q1",
+      "head_sha": "d3b671a600ccada2a1b01df6ed837e99115c5513",
+      "working_tree_status_entries": 3,
+      "owner": "The-Game / AutoBot topic workspace; human owner N/D",
+      "read_status": "READ_ONLY_REGISTERED_WORKTREE"
+    },
+    {
+      "path": "/home/ubuntu/projects/The-Game-real24-current-worktrees/R-RUSTREAL-19-EVENT-QUEUE-Q1-kanban",
+      "branch": "autobot/kanban/R-RUSTREAL-19-EVENT-QUEUE-Q1",
+      "head_sha": "865ad9e3a551be0b3eb82ba42804eb2ae04b22ee",
+      "working_tree_status_entries": 2,
+      "owner": "The-Game / AutoBot topic workspace; human owner N/D",
+      "read_status": "READ_ONLY_REGISTERED_WORKTREE"
+    },
+    {
+      "path": "/home/ubuntu/projects/The-Game-real24-current-worktrees/R-RUSTREAL-20-SAVE-LOAD-Q1-kanban",
+      "branch": "autobot/kanban/R-RUSTREAL-20-SAVE-LOAD-Q1",
+      "head_sha": "5ecb5ae2ebbc1dc4c3cb814baf3ae709394d5af9",
+      "working_tree_status_entries": 3,
+      "owner": "The-Game / AutoBot topic workspace; human owner N/D",
+      "read_status": "READ_ONLY_REGISTERED_WORKTREE"
+    },
+    {
+      "path": "/home/ubuntu/projects/The-Game-real24-current-worktrees/R-RUSTREAL-21-REPLAY-Q1-kanban",
+      "branch": "autobot/kanban/R-RUSTREAL-21-REPLAY-Q1",
+      "head_sha": "88b8c7fa0e56e86c2992fbf75e138ee8d8e09a4c",
+      "working_tree_status_entries": 0,
+      "owner": "The-Game / AutoBot topic workspace; human owner N/D",
+      "read_status": "READ_ONLY_REGISTERED_WORKTREE"
+    },
+    {
+      "path": "/home/ubuntu/projects/The-Game-real24-current-worktrees/R-RUSTREAL-21-REPLAY-Q1-r2",
+      "branch": "hermes/R-RUSTREAL-21-REPLAY-Q1-r2",
+      "head_sha": "968891c6ecc70ecc916cb9ab09199e20d684fa82",
+      "working_tree_status_entries": 4,
+      "owner": "The-Game / AutoBot topic workspace; human owner N/D",
+      "read_status": "READ_ONLY_REGISTERED_WORKTREE"
+    },
+    {
+      "path": "/home/ubuntu/projects/The-Game-real24-current-worktrees/R-RUSTREAL-22-TAURI-BRIDGE-Q1-kanban",
+      "branch": "autobot/kanban/R-RUSTREAL-22-TAURI-BRIDGE-Q1",
+      "head_sha": "88b8c7fa0e56e86c2992fbf75e138ee8d8e09a4c",
+      "working_tree_status_entries": 0,
+      "owner": "The-Game / AutoBot topic workspace; human owner N/D",
+      "read_status": "READ_ONLY_REGISTERED_WORKTREE"
+    },
+    {
+      "path": "/home/ubuntu/projects/The-Game-real24-current-worktrees/R-RUSTREAL-23-STEAM-ADAPTER-Q1-kanban",
+      "branch": "autobot/kanban/R-RUSTREAL-23-STEAM-ADAPTER-Q1",
+      "head_sha": "88b8c7fa0e56e86c2992fbf75e138ee8d8e09a4c",
+      "working_tree_status_entries": 0,
+      "owner": "The-Game / AutoBot topic workspace; human owner N/D",
+      "read_status": "READ_ONLY_REGISTERED_WORKTREE"
+    },
+    {
+      "path": "/home/ubuntu/projects/The-Game-real24-current-worktrees/R-RUSTREAL-24-PARITY-BENCH-CI-Q1-kanban",
+      "branch": "autobot/kanban/R-RUSTREAL-24-PARITY-BENCH-CI-Q1",
+      "head_sha": "88b8c7fa0e56e86c2992fbf75e138ee8d8e09a4c",
+      "working_tree_status_entries": 0,
+      "owner": "The-Game / AutoBot topic workspace; human owner N/D",
+      "read_status": "READ_ONLY_REGISTERED_WORKTREE"
+    }
+  ],
+  "github_refs": [
+    {
+      "repository": "The-Game",
+      "remote": "origin",
+      "remote_url": "https://github.com/maciejsieracki/The-Game.git",
+      "ref": "refs/remotes/origin/main",
+      "logical_ref": "refs/heads/main",
+      "sha_used": "1a355346ef12c7cdbb27dd6fb9d7da2b56c3682b",
+      "relevance": "baseline required by dispatch",
+      "read_status": "READ_ONLY_LOCAL_REMOTE_TRACKING_SNAPSHOT",
+      "server_current_sha": "N/D_NO_FETCH",
+      "freshness": "N/D"
+    },
+    {
+      "repository": "The-Game",
+      "remote": "origin",
+      "remote_url": "https://github.com/maciejsieracki/The-Game.git",
+      "ref": "refs/remotes/origin/docs/agent-documentation-index-20260914",
+      "logical_ref": "refs/heads/docs/agent-documentation-index-20260914",
+      "sha_used": "da493eeebfaa90d47140ba7892ea2578b7f50ea7",
+      "relevance": "documentation-index reference named by dispatch",
+      "read_status": "READ_ONLY_LOCAL_REMOTE_TRACKING_SNAPSHOT",
+      "server_current_sha": "N/D_NO_FETCH",
+      "freshness": "N/D"
+    },
+    {
+      "repository": "The-Game",
+      "remote": "origin",
+      "remote_url": "https://github.com/maciejsieracki/The-Game.git",
+      "ref": "refs/remotes/origin/autobot/real24-staging",
+      "logical_ref": "refs/heads/autobot/real24-staging",
+      "sha_used": "d387754f530af202ef285f7a27727ea1b1009cd9",
+      "relevance": "additional ref justified by the named integration staging checkout",
+      "read_status": "READ_ONLY_LOCAL_REMOTE_TRACKING_SNAPSHOT",
+      "server_current_sha": "N/D_NO_FETCH",
+      "freshness": "N/D"
+    }
+  ],
+  "excluded_local_worktree_groups": [
+    {
+      "path_glob": "/home/ubuntu/projects/The-Game-loadtest-worktrees/**",
+      "observed_child_count": 24,
+      "reason": "detached load/performance worktrees outside the active real24 documentation source collection",
+      "read_status": "NOT_READ_AS_DOCUMENT_SOURCE"
+    },
+    {
+      "path_glob": "/home/ubuntu/projects/The-Game-real24-worktrees/**",
+      "observed_child_count": 1,
+      "reason": "older detached real24 worktree superseded by the explicitly named current-worktrees collection",
+      "read_status": "NOT_READ_AS_DOCUMENT_SOURCE"
+    },
+    {
+      "path_glob": "/home/ubuntu/projects/The-Game-worktrees/**",
+      "observed_child_count": 13,
+      "reason": "other topic worktrees not named in the P1 source allowlist; prevents mixing unrelated task snapshots",
+      "read_status": "NOT_READ_AS_DOCUMENT_SOURCE"
+    },
+    {
+      "path_glob": "/home/ubuntu/projects/The-Game/.worktrees/**",
+      "observed_child_count": 1,
+      "reason": "nested Kanban task worktree inside the primary checkout",
+      "read_status": "EXCLUDED_CONTROLLED_SCOPE"
+    },
+    {
+      "path_glob": "/home/ubuntu/projects/Autoboot-Monitor/.worktrees/**",
+      "observed_child_count": 25,
+      "reason": "nested companion-project task worktrees; companion root is included, nested task copies are not",
+      "read_status": "EXCLUDED_CONTROLLED_SCOPE"
+    }
+  ],
+  "excluded_one_off_worktrees": [
+    "/home/ubuntu/projects/The-Game-autobot-kanban-rule-20260912",
+    "/home/ubuntu/projects/The-Game-kanban-cleanup-20260912",
+    "/home/ubuntu/projects/The-Game-latest-origin-main",
+    "/home/ubuntu/projects/The-Game-process-merge-20260913",
+    "/home/ubuntu/projects/The-Game-robocza-deploy-20260912",
+    "/home/ubuntu/projects/The-Game-integration-main-20260912"
+  ],
+  "excluded_one_off_worktree_details": [
+    {
+      "path": "/home/ubuntu/projects/The-Game-autobot-kanban-rule-20260912",
+      "reason": "one-off process checkout outside the active documentation source collection",
+      "owner": "The-Game / process checkout; human owner N/D",
+      "read_status": "NOT_READ_AS_DOCUMENT_SOURCE"
+    },
+    {
+      "path": "/home/ubuntu/projects/The-Game-kanban-cleanup-20260912",
+      "reason": "one-off process checkout outside the active documentation source collection",
+      "owner": "The-Game / process checkout; human owner N/D",
+      "read_status": "NOT_READ_AS_DOCUMENT_SOURCE"
+    },
+    {
+      "path": "/home/ubuntu/projects/The-Game-latest-origin-main",
+      "reason": "one-off detached reference snapshot outside the active documentation source collection",
+      "owner": "The-Game / reference snapshot; human owner N/D",
+      "read_status": "NOT_READ_AS_DOCUMENT_SOURCE"
+    },
+    {
+      "path": "/home/ubuntu/projects/The-Game-process-merge-20260913",
+      "reason": "one-off detached process/integration snapshot outside the active documentation source collection",
+      "owner": "The-Game / process checkout; human owner N/D",
+      "read_status": "NOT_READ_AS_DOCUMENT_SOURCE"
+    },
+    {
+      "path": "/home/ubuntu/projects/The-Game-robocza-deploy-20260912",
+      "reason": "one-off deployment checkout outside the active documentation source collection",
+      "owner": "The-Game / deployment checkout; human owner N/D",
+      "read_status": "NOT_READ_AS_DOCUMENT_SOURCE"
+    },
+    {
+      "path": "/home/ubuntu/projects/The-Game-integration-main-20260912",
+      "branch": "integration/real24-final-20260912",
+      "head_sha": "d387754f530af202ef285f7a27727ea1b1009cd9",
+      "working_tree_status_entries": 0,
+      "reason": "historical integration checkout superseded by the explicitly named real24 integration staging source",
+      "owner": "The-Game / integration; human owner N/D",
+      "read_status": "NOT_READ_AS_DOCUMENT_SOURCE"
+    }
+  ],
+  "audit_workspace": {
+    "path": "/home/ubuntu/projects/The-Game-docs-audit-worktrees/R-DOCS-CONSOLIDATION-Q1",
+    "branch": "hermes/R-DOCS-CONSOLIDATION-Q1",
+    "head_before_p1_artifacts": "54bdd96d0606bfd52782c98d15f0c2e5dd02ac81",
+    "input_source": false,
+    "owner": "the-game AutoBot profile",
+    "read_status": "WRITE_ONLY_ALLOWLISTED_REPORTS",
+    "allowed_outputs": [
+      "dyspozycje/autobot/runs/R-DOCS-CONSOLIDATION-Q1/P1-scope.md",
+      "dyspozycje/autobot/runs/R-DOCS-CONSOLIDATION-Q1/P1-sources.json",
+      "dyspozycje/autobot/runs/R-DOCS-CONSOLIDATION-Q1/01-operator.md"
+    ]
+  },
+  "exclusion_policy": [
+    {
+      "pattern": "**/.git/** and Git worktree control files",
+      "class": "git_control",
+      "action": "exclude"
+    },
+    {
+      "pattern": "**/.worktrees/**",
+      "class": "nested_worktree_control",
+      "action": "exclude; enumerate only as separate registered source when explicitly allowlisted"
+    },
+    {
+      "pattern": "**/node_modules/**",
+      "class": "dependency",
+      "action": "exclude"
+    },
+    {
+      "pattern": "**/target/**, **/dist/**, **/dist-*/**, **/build/**, **/.next/**, **/.cache/**, **/.turbo/**, **/coverage/**",
+      "class": "build_or_cache",
+      "action": "exclude"
+    },
+    {
+      "pattern": "The-Game/gra-robocza/** and generated playtest bundles",
+      "class": "generated_runtime_playtest",
+      "action": "exclude"
+    },
+    {
+      "pattern": "**/tmp/**, **/_sandbox/**, **/*.log, **/*.tmp, **/*.bak-*, **/__pycache__/**",
+      "class": "temporary_or_runtime_state",
+      "action": "exclude"
+    },
+    {
+      "pattern": "Autoboot-Monitor/.venv/**, **/.pytest_cache/**, **/.ruff_cache/**, **/*.egg-info/**",
+      "class": "dependency_or_test_cache",
+      "action": "exclude"
+    },
+    {
+      "pattern": "Autoboot-Monitor/logs/**, Autoboot-Monitor/evidence/**, Autoboot-Monitor/runs/**/*-tmp/**",
+      "class": "generated_evidence_or_runtime_state",
+      "action": "exclude; non-temporary versioned run reports remain evidence candidates"
+    },
+    {
+      "pattern": "dyspozycje/autobot/logs/** and generated gra/tools hidden bundles/stubs",
+      "class": "generated_gate_artifact",
+      "action": "exclude"
+    },
+    {
+      "pattern": "**/.env, **/.env.*, **/*credential*, **/*token*, private-key material",
+      "class": "secret_or_credential",
+      "action": "exclude_without_reading_content"
+    },
+    {
+      "pattern": "any path component beginning with '.'",
+      "class": "hidden_control_or_local_state",
+      "action": "exclude by default; exception only for documentation-bearing .claude/** and .cursor/**"
+    }
+  ],
+  "include_overrides": [
+    {
+      "pattern": "**/.claude/** and **/.cursor/**",
+      "reason": "agent/process documentation; hidden location does not make these files non-documentation",
+      "selector": "Markdown-like extensions only"
+    },
+    {
+      "pattern": "docs/archiwum-procesu/**, dyspozycje/autobot/runs/**, Autoboot-Monitor/runs/**",
+      "reason": "history/evidence needed for later classification; never assume canonical status",
+      "selector": "versioned or non-temporary Markdown-like files only"
+    }
+  ],
+  "hidden_directory_check": {
+    "checked": [
+      "/home/ubuntu/projects/The-Game/.[!.]*",
+      "/home/ubuntu/projects/The-Game-real24-current-worktrees/*/.[!.]*",
+      "/home/ubuntu/projects/The-Game-real24-integration-staging/.[!.]*",
+      "/home/ubuntu/projects/Autoboot-Monitor/.[!.]*",
+      "/home/ubuntu/projects/Autoboot-Monitor/.worktrees/*/.[!.]*",
+      "/home/ubuntu/projects/The-Game/.worktrees/*/.[!.]*"
+    ],
+    "observed_and_classified": [
+      ".git: Git control, excluded",
+      ".claude: documentation-bearing, included for Markdown-like files",
+      ".cursor: documentation-bearing, included for Markdown-like files",
+      ".worktrees: nested worktree control, excluded or separately allowlisted",
+      ".pytest_cache/.ruff_cache/.venv: dependency/test runtime state, excluded",
+      "gra/tools hidden bundles/stubs and hidden mockup directories: generated/tool artifacts, excluded",
+      "dyspozycje/_handoff/.shadow-state.json: runtime state, excluded"
+    ],
+    "current_worktree_collection_root_hidden_entries": "none_observed",
+    "unclassified_hidden_directories_at_checked_roots": [],
+    "deep_arbitrary_untracked_hidden_paths": "N/D; generic dot-component exclusion prevents them entering P2 without explicit review"
+  },
+  "limitations": [
+    "OVH provider identity is not independently verified; hostname and task routing label are the available evidence (N/D for external proof).",
+    "GitHub values are local remote-tracking snapshots; no fetch was performed, so server-current SHA and freshness are N/D.",
+    "Human ownership is inferred from public repository URLs and topic naming; a separate owner register was not available (N/D).",
+    "P1 records scope and metadata only. It does not decide source-of-truth, duplicates, staleness, deletion, or consolidation.",
+    "Ignored/generated files are deliberately not enumerated as documentation candidates; P2 must preserve the exclusion policy and record counts without copying contents."
+  ]
+}
