@@ -36,6 +36,7 @@ esbuild.buildSync({
 
 const M = require(bundle);
 const civs = require('../data/civs.json');
+const cityNamesPools = require('../data/city-names-pools.json');
 
 let passed = 0;
 let failed = 0;
@@ -99,6 +100,7 @@ const plan = M.buildClusterStartPlan({
   playerCivId: 'grecy',
   rywaleNaKlaster: 4,
   aktywneTypy: 5,
+  cityNamesPools,
 });
 
 assert(plan.playerStartCityName === 'Ateny', 'stolica gracza = Ateny');
@@ -185,9 +187,10 @@ if (chinczycy) {
   } else {
     assert(chinskie.length >= 2, 'Chińczycy: ≥2 chińskie miasta AI');
   }
-  assert(chinskie[0].name === 'Qin', 'chińska stolica = Qin (nazwyKlastra[0])');
-  const qinOwner = chinskie[0].ownerId;
-  assert(plan.ownerDisplayName.get(qinOwner) === 'Qin', 'etykieta dyplomacji obcego typu = Qin (nie „Chińczycy”)');
+  const capitalName = cityNamesPools.chinczycy.miasta_cywilizacji[0];
+  assert(chinskie[0].name === capitalName, 'chińska stolica = wspólna lista[0]');
+  const capitalOwner = chinskie[0].ownerId;
+  assert(plan.ownerDisplayName.get(capitalOwner) === capitalName, 'etykieta dyplomacji obcego typu = wspólna lista[0]');
 }
 
 const inkSlot = plan.spawnCities.find(c =>
@@ -206,6 +209,7 @@ const spawnOnly = M.buildClusterSpawnPlan({
   playerTyp: 'grecy',
   rywaleNaKlaster: 4,
   aktywneTypy: 5,
+  cityNamesPools,
 });
 assert(spawnOnly.foreignTypeClusters.length === foreignCount, 'buildClusterSpawnPlan: foreignTypeClusters');
 assert(
@@ -221,6 +225,7 @@ const plan2 = M.buildClusterStartPlan({
   playerCivId: 'grecy',
   rywaleNaKlaster: 4,
   aktywneTypy: 5,
+  cityNamesPools,
 });
 assert(
   JSON.stringify(plan.spawnCities) === JSON.stringify(plan2.spawnCities),

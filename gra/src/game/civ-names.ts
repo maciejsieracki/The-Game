@@ -1,5 +1,5 @@
 /**
- * civ-names.ts — nazwy klastra (civs.json) + pule founding (city-names-pools.json).
+ * civ-names.ts — wspólna sekwencja nazw (civs.json + city-names-pools.json).
  * D-START N-1A…N-5B · B-city-names-pools 2026-07-07.
  * Lane CYWILIZACJE · pure functions · bez DOM.
  */
@@ -13,14 +13,20 @@ import {
   pickNextRegularCityName,
   playerCapitalFromPool,
   resolveStateCityName,
-  rivalPoolIndex,
   suggestPlayerFoundCityName,
   validateCityNamesPools as validatePoolsCore,
   NAZWY_KLASTRA_LEN,
+  CITY_NAMES_POOL_COMMON_LEN,
+  CITY_NAMES_POOL_REGULAR_LEN,
   nazwaKlastraAt,
 } from './city-names-pool';
 
-export { NAZWY_KLASTRA_LEN, nazwaKlastraAt };
+export {
+  NAZWY_KLASTRA_LEN,
+  CITY_NAMES_POOL_COMMON_LEN,
+  CITY_NAMES_POOL_REGULAR_LEN,
+  nazwaKlastraAt,
+};
 export const MIASTA_CYWILIZACJI_LEN = 100;
 
 /** Alias kompatybilności wstecznej (loader, testy). */
@@ -40,17 +46,26 @@ export function findCivByIkonaId(civs: CivsData, ikonaId: string): CivDef | unde
   return civs.cywilizacje.find(c => c.ikonaId === ikonaId);
 }
 
-/** Lista nazwyKlastra dla typu; pusta tablica gdy brak wpisu. */
+/** Końcowy suffix nazw państw-miast dla typu; pusta tablica gdy brak wpisu. */
 export function getNazwyKlastra(civs: CivsData, ikonaId: string): readonly string[] {
   const def = findCivByIkonaId(civs, ikonaId);
-  return def?.nazwyKlastra ?? [];
+  return def?.nazwyMiast
+    ? def.nazwyMiast.slice(CITY_NAMES_POOL_REGULAR_LEN, CITY_NAMES_POOL_COMMON_LEN)
+    : def?.nazwyKlastra ?? [];
+}
+
+/** Lista nazw miast cywilizacji dla typu; pusta tablica gdy brak eksportu. */
+function getNazwyMiast(civs: CivsData, ikonaId: string): readonly string[] {
+  const def = findCivByIkonaId(civs, ikonaId);
+  return def?.nazwyMiast ?? [];
 }
 
 /**
  * N-1A: stolica gracza = `miasta_cywilizacji[0]` z puli
- * (R-MAPA-ETYKIETA-STOLICY-NAZWA-MIASTA-Q1 R3-2; wcześniej czytane z puli miast-państw
+ * (R-MAPA-ETYKIETA-STOLICY-NAZWA-MIASTA-Q1 R3-2; wcześniej czytane z osobnej puli miast-państw
  * `miasta_panstwa[0]` — gracz-Chińczyk startował w `Qin` zamiast `Xi'an`, gracz-Słowianin
- * w `Kiev` zamiast `Kijów`). Bez puli — legacy `nazwyKlastra[0]` z `civs.json`.
+ * w `Kiev` zamiast `Kijów`). Bez puli — wspólna `nazwyMiast[0]` z `civs.json`; gdy eksport
+ * nie istnieje, zachowany jest fallback do `nazwyKlastra[0]`.
  */
 export function playerStartCityName(
   civs: CivsData,
@@ -60,11 +75,13 @@ export function playerStartCityName(
   if (pools?.[playerCivId]) {
     return playerCapitalFromPool(pools, playerCivId);
   }
+  const cityNames = getNazwyMiast(civs, playerCivId);
+  if (cityNames[0]) return cityNames[0];
   const names = getNazwyKlastra(civs, playerCivId);
   return nazwaKlastraAt(names, 0, 'Stolica');
 }
 
-/** N-2A / N-3A: i-ty rywal klastra (1-based) = miasta_panstwa[i] lub nazwyKlastra[i]. */
+/** N-2A / N-3A: i-ty rywal klastra (1-based) = końcowy suffix wspólnej listy. */
 export function clusterRivalCityName(
   civs: CivsData,
   playerCivId: string,
@@ -76,17 +93,16 @@ export function clusterRivalCityName(
   }
   const names = getNazwyKlastra(civs, playerCivId);
   if (!names.length) return `Rywal ${rivalIndex1Based}`;
-  const idx = rivalIndex1Based >= 1
-    ? rivalPoolIndex(rivalIndex1Based, names.length)
-    : rivalIndex1Based;
+  const idx = rivalIndex1Based >= 1 ? rivalIndex1Based - 1 : rivalIndex1Based;
   return nazwaKlastraAt(names, idx, `Rywal ${rivalIndex1Based}`);
 }
 
 /**
  * Stolica obcego typu (państwa AI) = `miasta_cywilizacji[0]` z puli
- * (R-MAPA-ETYKIETA-STOLICY-NAZWA-MIASTA-Q1 R2-2; wcześniej czytane z puli miast-państw
+ * (R-MAPA-ETYKIETA-STOLICY-NAZWA-MIASTA-Q1 R2-2; wcześniej czytane z osobnej puli miast-państw
  * `miasta_panstwa[0]` — `Qin` zamiast `Xi'an`, `Kiev` zamiast `Kijów`).
- * Bez puli — legacy `nazwyKlastra[0]` z `civs.json`, jedyna dostępna wtedy lista.
+ * Bez puli — wspólna `nazwyMiast[0]` z `civs.json`; gdy eksport nie istnieje, zachowany jest
+ * fallback do `nazwyKlastra[0]`.
  */
 export function foreignCapitalCityName(
   civs: CivsData,
@@ -96,6 +112,8 @@ export function foreignCapitalCityName(
   if (pools?.[typIkonaId]) {
     return foreignCapitalFromPool(pools, typIkonaId);
   }
+  const cityNames = getNazwyMiast(civs, typIkonaId);
+  if (cityNames[0]) return cityNames[0];
   const names = getNazwyKlastra(civs, typIkonaId);
   return nazwaKlastraAt(names, 0, typIkonaId);
 }
@@ -117,33 +135,36 @@ export function civDisplayName(civs: CivsData, ikonaId: string): string {
   return def?.Cywilizacja ?? ikonaId;
 }
 
-/** Walidacja danych (dev/test): każdy typ ma 10 nazw w civs.json. */
+/** Walidacja danych (dev/test): każdy typ ma wspólną listę 100+10 nazw. */
 export function validateNazwyKlastra(civs: CivsData): string[] {
   const errs: string[] = [];
   for (const c of civs.cywilizacje) {
     const id = c.ikonaId ?? c.Cywilizacja;
-    const n = c.nazwyKlastra?.length ?? 0;
-    if (n !== NAZWY_KLASTRA_LEN) {
-      errs.push(`${id}: oczekiwano ${NAZWY_KLASTRA_LEN} nazw, jest ${n}`);
+    const names = c.nazwyMiast ?? [];
+    if (names.length !== CITY_NAMES_POOL_COMMON_LEN) {
+      errs.push(`${id}: oczekiwano ${CITY_NAMES_POOL_COMMON_LEN} nazw, jest ${names.length}`);
+    }
+    if (new Set(names).size !== names.length) {
+      errs.push(`${id}: duplikaty we wspólnej liście nazwMiast`);
     }
   }
   return errs;
 }
 
-/** 100 nazw founding AI/gracza (kolejne miasta imperium). */
+/** Prefix 100 nazw founding AI/gracza (kolejne miasta imperium). */
 export function getMiastaCywilizacji(
   pools: CityNamesPools,
   ikonaId: string,
 ): readonly string[] {
-  return pools[ikonaId]?.miasta_cywilizacji ?? [];
+  return pools[ikonaId]?.miasta_cywilizacji?.slice(0, MIASTA_CYWILIZACJI_LEN) ?? [];
 }
 
-/** 10 nazw miast-państw (klastr). */
+/** Suffix 10 nazw miast-państw (klastr). */
 export function getMiastaPanstwa(
   pools: CityNamesPools,
   ikonaId: string,
 ): readonly string[] {
-  return pools[ikonaId]?.miasta_panstwa ?? [];
+  return pools[ikonaId]?.miasta_cywilizacji?.slice(MIASTA_CYWILIZACJI_LEN, CITY_NAMES_POOL_COMMON_LEN) ?? [];
 }
 
 /**
@@ -159,21 +180,11 @@ export function pickAiFoundedCityName(
   return pickNextRegularCityName(pools, ikonaId, usedNames);
 }
 
-/** Walidacja pul + synchronizacja nazwyKlastra ↔ miasta_panstwa. */
+/** Walidacja wspólnej puli + lustra `civs.json.nazwyMiast`. */
 export function validateCityNamesPools(
   pools: CityNamesPools,
   civs: CivsData,
 ): string[] {
-  const errs = validatePoolsCore(pools, civs);
-  for (const c of civs.cywilizacje) {
-    const id = c.ikonaId;
-    if (!id || !pools[id]) continue;
-    const pan = pools[id].miasta_panstwa ?? [];
-    const klastra = c.nazwyKlastra ?? [];
-    if (JSON.stringify(klastra) !== JSON.stringify(pan)) {
-      errs.push(`${id}: nazwyKlastra ≠ miasta_panstwa`);
-    }
-  }
-  return errs;
+  return validatePoolsCore(pools, civs);
 }
 
