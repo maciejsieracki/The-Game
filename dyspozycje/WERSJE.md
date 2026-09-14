@@ -13,12 +13,22 @@ swoim wĹ‚asnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji d
 > Pakiet 3 z 2026-08-20 jest docs-only i nie tworzy wpisu ROBOCZA/KANON/FINALNA;
 > ten plik pozostaje wyłącznie rejestrem publikacji bundli.
 
+## ROBOCZA 7007c7b2 - 2026-09-14 16:52 UTC - R-BUDYNKI-KARTY-GRAFIKA-TEKST-OVERLAP-Q1 + R-REKRUTACJA-KARTY-BRAK-REKRUTOW-Q1
+
+|- md5 (pełne): `7007c7b23c6fcb3cd2d36498d0e96c68` · stempel label `d024cbd2` (stamp match WARN jest oczekiwany na Linux; manifest md5 jest źródłem prawdy) · SHA-256: `cc02f96317a834115ec9e07f79ee15aea34d6fd60956f396c0ceb61a1299c5eb`
+|- source/integration commit: `dacae17981ede9875758447bdf5d272250f8b4a8`; build: direct Vite, `888` modułów, exit `0`; `tsc --noEmit` exit `0`.
+|- Budynki: real Chromium `building-card-overlap-real-render-test.cjs` `21/0`; kontrola mutacyjna odtworzyła overlap `755.99853515625 px²` / `2921.25 px²`, po przywróceniu `0/0`.
+|- Rekrutacja: real Chromium `recruit-card-manpower-real-render-test.cjs` `17/0`; kontrola mutacyjna `9 PASS / 8 FAIL`, exit `1` — oczekiwany negative control.
+|- Regresja wspólnego renderera: `entity-card-diorama-real-render-test.cjs` `45/0`; brak błędów pageerror/console.error w przebiegach tematycznych.
+|- `START.html`, manifest i `10` kopii playtestowych wygenerowane; `node gra/tools/verify-robocza-bundle.cjs` → `VERIFY OK`; promocji do KANON/FINALNA nie wykonano.
+|- **AKTUALNA**
+
 ## ROBOCZA e8724602 - 2026-09-13 19:56 UTC - R-STARTOWE-JEDNOSTKI-WSZYSTKIE-OSIE-Q1: startowe jednostki na czterech osiach
 
 |- md5 (pełne): e8724602db7617aa9279217f1f6a979c · stempel label `85eaf9d3` (stamp match WARN jest oczekiwany na Linux; manifest md5 jest źródłem prawdy) · source/integration commit: `c7691e2a14bf84b6950c73266c12a9f93b5e0ce0`
 |- **R-STARTOWE-JEDNOSTKI-WSZYSTKIE-OSIE-Q1** — gracz `2/1/0`, główne AI `0/1/2` z hard fallbackiem miasta/jednostki, obce państwa-miasta `2/1/0`, państwa-miasta typu gracza `0/1/2` z niezależnego suwaka; guard pierwszego miasta pozostaje per owner/fotel.
 |- Final Control/Orchestrator: `PASS-WITH-NOTES`; bramki tematu `90/0`, `16/0`, `18/0`, `31/0`, Chromium `25/0` i `13/0`, typecheck/syntax oraz map spacing `0` z odczytu handoffu. Deploy build: direct Vite, `888` modułów, exit `0`; `node gra/tools/verify-robocza-bundle.cjs` → `VERIFY OK`; `START.html`, manifest i 8 kopii playtestowych wygenerowane.
-|- **AKTUALNA**
+|- **ZASTĄPIONA przez ROBOCZA 7007c7b2**
 
 ## ROBOCZA 8b7e2e03 - 2026-09-13 12:50 UTC - R-ARMIA-ROZDZIEL-RUCH-IKONY-Q1: split movement/path cost and directional army icons
 

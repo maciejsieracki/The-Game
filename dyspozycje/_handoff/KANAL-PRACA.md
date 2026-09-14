@@ -7592,3 +7592,15 @@ GOAL: opublikować zintegrowany, zweryfikowany kandydat startowych jednostek do 
 CZEKAM-NA: właściciel — Ctrl+F5 + Nowa gra na `e8724602` i test czterech osi startowych.
 
 ---
+
+## [2026-09-14 16:52 UTC] DEPLOY ROBOCZA — R-BUDYNKI-KARTY-GRAFIKA-TEKST-OVERLAP-Q1 + R-REKRUTACJA-KARTY-BRAK-REKRUTOW-Q1
+
+Hasło właściciela otrzymane wprost: `deploy do roboczej`.
+GOAL: z czystego `origin/main` zintegrować wyłącznie zatwierdzone hunki dwóch tematów, zbudować i opublikować `gra-robocza/`, a następnie wypchnąć wynik na `origin/main`.
+|- Źródło: clean integration branch `integration/robocza-20260914`, code commit `dacae17981ede9875758447bdf5d272250f8b4a8`; nie scalono brudnych worktree `t_13d1b59e` ani `R-REKRUTACJA-KARTY-BRAK-REKRUTOW-Q1`.
+|- Allowlista produktu: `gra/src/ui/entityCards/renderer.ts`, `gra/tools/entity-card-diorama-real-render-test.cjs`, `gra/tools/building-card-overlap-real-render-test.cjs`, `gra/src/ui/cityPanel.ts`, `gra/src/ui/unitRecruitCard.ts`, `gra/tools/recruit-card-manpower-real-render-test.cjs`.
+|- Real Chromium: budynki `21/0`; rekrutacja `17/0`; wspólny renderer/diorama `45/0`; kontrola mutacyjna rekrutacji `9 PASS / 8 FAIL`, exit `1` — oczekiwany negative control.
+|- Direct Vite build: `888` modułów, exit `0`; `tsc --noEmit` exit `0`; `START.html`, manifest i `10` kopii playtestowych wygenerowane.
+|- Bundle `gra-robocza/Gra-ROBOCZA.html`: md5 `7007c7b23c6fcb3cd2d36498d0e96c68`, SHA-256 `cc02f96317a834115ec9e07f79ee15aea34d6fd60956f396c0ceb61a1299c5eb`; `verify-robocza-bundle.cjs` → `VERIFY OK`; manifest match `OK`.
+|- Poprzednia ROBOCZA `e8724602` oznaczona w `WERSJE.md` jako zastąpiona; promocji do KANON/FINALNA nie wykonano.
+CZEKAM-NA: właściciel — Ctrl+F5 + Nowa gra na `7007c7b2`; następnie test karty budynku i karty rekrutacji.
