@@ -52,4 +52,4 @@ Names code was not integrated. Current one-civilization-per-type map rule remain
 
 ## Delivery boundary
 
-This receipt records local integration preparation and verification only. No commit, push, merge, remote mutation or deploy was performed while generating the receipt. The next Orchestrator gate is explicit commit/readback, followed by the separately authorized delivery procedure.
+Initial receipt was generated before the local commit. The Orchestrator then created local integration commit `f5a1ce518818680e280b8cbd7312b7d59e5c8133` and closed the three process gates: AI `t_f099943e`/run `325`, costs `t_dc64d2f3`/run `326`, and Manpower `t_20aa866e`/run `327`. No remote push, merge or deploy has been performed yet. The next gate is the separately authorized delivery procedure; names remains a future specification and is not part of the product diff.

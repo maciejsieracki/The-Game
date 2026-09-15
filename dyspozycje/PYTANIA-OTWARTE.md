@@ -79,7 +79,7 @@ Wartości `38` i `8` dla Tarana są zaokrągleniem połowy odpowiednio `75` i `1
 
 Plan register: `t_d3f54794` — `blocked/unassigned`.
 
-Aktywne karty: AI recovery `t_9ee02a82`/run `310` → Evaluator `t_345425b1`/run `316` PASS-WITH-NOTES → Final Control `t_009a0ff3`/run `321` PASS-WITH-NOTES → `INTEGRATION_REQUIRED` `t_f099943e` blocked/capability, koszty Operator `t_81bcf260`/run `312` → Evaluator `t_0ca86eb7`/run `315` FAIL → Defense `t_cee97646`/run `320` PASS → Final Control `t_78a7578b`/run `322` PASS → `INTEGRATION_REQUIRED` `t_dc64d2f3` blocked/capability, Manpower pełny łańcuch do Final Control PASS → `INTEGRATION_REQUIRED` `t_20aa866e` blocked/capability, names recovery `t_c375f3d9`/run `317` → OWNER DECISION B REFINED / CURRENT RULE PRESERVED / FUTURE SPEC. Workery mają jawny `default`, routing w eventach `created`, `notify+wake`; bramki procesowe i przyszłe decyzje właścicielskie pozostają bez workerów.
+Aktywne karty: AI recovery `t_9ee02a82`/run `310` → Evaluator `t_345425b1`/run `316` PASS-WITH-NOTES → Final Control `t_009a0ff3`/run `321` PASS-WITH-NOTES → INTEGRATED LOCAL `f5a1ce51`, gate `t_f099943e` done/run325; koszty Operator `t_81bcf260`/run `312` → Evaluator `t_0ca86eb7`/run `315` FAIL → Defense `t_cee97646`/run `320` PASS → Final Control `t_78a7578b`/run `322` PASS → INTEGRATED LOCAL `f5a1ce51`, gate `t_dc64d2f3` done/run326; Manpower pełny łańcuch → INTEGRATED NO_PRODUCT_DIFF, gate `t_20aa866e` done/run327; names current one-type rule preserved / future spec only. Push/deploy pozostają osobnymi bramkami.
 
 ### Korekta ECHO — `R-AI-DYPLO-ONLY-MIASTA-PANSTWA-Q1`, 2026-09-15
 
