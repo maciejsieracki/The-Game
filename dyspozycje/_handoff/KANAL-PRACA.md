@@ -6,7 +6,7 @@ ROBOCZA md5 `ae2d27a88af1f073df15ab8b10c15965` · SHA-256 `03ad35ee938554bd715c6
 - Bramki: AI `35/0`, `33/0`, `22/0`, difficulty `8/0`; koszty `190/0`, tempo `9/0`, upkeep `73/0`; typecheck PASS; Vite `888` modułów / `27.63s`; `verify-robocza-bundle.cjs` VERIFY OK.
 - Pre-existing notes: unit-resource-upkeep/unit-stock-cost 17 starych oczekiwań mount/horse/resource, potwierdzone na bazie `origin/main`; nie zmieniano tych testów. Names code nie zmieniono; Manpower bez gameplay diff.
 - `START.html`, manifest i 6 kopii playtestowych wygenerowane. Promocji do KANON/FINALNA nie wykonano.
-- **PUSH/REMOTE READBACK: PASS** — branch and `origin/main` both read back `5946df83c50bb86d95ea07848ba278ac155f3fb3`; `gra-robocza` manifest/bundle verify passed.
+- **PUSH/REMOTE READBACK: PASS** — deploy commit `5946df83` został wypchnięty; późniejszy docs-only close również trafił do branchu i `origin/main`; `gra-robocza` manifest/bundle verify passed.
 
 
 ROBOCZA md5 `272203761f72f765be8f0580241e999d` · SHA-256 `4e52328b752f1ca2a000fdbb1fdb2b568d8758a2a977e9e396b3bc570fadaf41` · **VERIFY OK**.
