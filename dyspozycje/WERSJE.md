@@ -13,6 +13,14 @@ swoim wĹ‚asnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji d
 > Pakiet 3 z 2026-08-20 jest docs-only i nie tworzy wpisu ROBOCZA/KANON/FINALNA;
 > ten plik pozostaje wyłącznie rejestrem publikacji bundli.
 
+## ROBOCZA 9d22166c - 2026-09-15 14:42 UTC - R-CITY-NAMES-SHARED-QUEUE-110-Q1: wspólna kolejka 110 nazw A+C
+
+||- md5 (pełne): 9d22166c7de999a12971a857d8cd3c65 · sha256: 858e6763b77ebb93f7e29e4e5ff71a62d28d6ebc684971f59513f30eee1b116b · stempel label `9d22166c` (manifest authoritative; stamp match WARN expected) · source/deploy commit: `f4967698` · artifact commit: `88ee420b`
+||- **R-CITY-NAMES-SHARED-QUEUE-110-Q1** — stolica, państwo-miasto, founding gracza/AI i obce klastry pobierają pierwszą wolną nazwę ze wspólnej kolejki cywilizacji; slot odrzucony przez kolizję nie zużywa nazwy. Overflow A+C: `II/III`.
+||- Integracja: Final Control `t_521cda84`/run `347` PASS-WITH-NOTES, zero zarzutów; kod `baa7c3ef`; receipt `0e639c7c`/`f4967698`. Focused `6/6`, pool `9/9`, civ `109/109`, preview `6/6`, shared queue `10/10`, tsc PASS, build `888` modułów.
+||- `node gra/tools/verify-robocza-bundle.cjs` → `VERIFY OK`, manifest match OK. Pełny map-gen harness timeout `INFRA-043` (kontrakt map-gen PASS; brak zmiany geometrii).
+||- **AKTUALNA**
+
 ## ROBOCZA ae2d27a8 - 2026-09-15 03:06 UTC - owner corrections: AI absorption + Stone Age recruitment costs
 
 |- md5 (pełne): `ae2d27a88af1f073df15ab8b10c15965` · SHA-256: `03ad35ee938554bd715c6186db60fa2b07e785515fd652b3a402086b986093c9` · rozmiar: `69857965` bajtów

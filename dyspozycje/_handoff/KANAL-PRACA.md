@@ -1,3 +1,15 @@
+## [14:42 UTC, 2026-09-15] ORKIESTRATOR → KANBAN / WŁAŚCICIEL — `R-CITY-NAMES-SHARED-QUEUE-110-Q1`
+
+STATUS: `DEPLOY-ROBOCZA` — wspólna kolejka 110 nazw A+C zintegrowana i wdrożona do lokalnego `gra-robocza`.
+
+- Final Control: `t_521cda84` / run `347`, `PASS-WITH-NOTES`, zero ponumerowanych zarzutów.
+- Kod: `baa7c3ef`; integracja/receipt: `0e639c7c`; release artefaktów: `88ee420b`; remote main/readback: `f4967698`.
+- Bundle: MD5 `9d22166c7de999a12971a857d8cd3c65`; SHA-256 `858e6763b77ebb93f7e29e4e5ff71a62d28d6ebc684971f59513f30eee1b116b`; verifier `VERIFY OK`.
+- Gates: focused `6/6`, pool `9/9`, civ `109/109`, preview `6/6`, shared queue `10/10`, tsc PASS, build `888` modułów.
+- Pełny map-gen harness timeout `INFRA-043`; szybki kontrakt map-gen PASS, brak zmiany geometrii.
+
+CZEKAM-NA: świeży audyt Kanbana po terminalnym deployu i kolejna legalna karta z bieżącej fali; nie odblokowywać historycznych/owner-held gates.
+
 ## [03:06 PL, 2026-09-15] SESJA LOKALNA — DEPLOY ROBOCZA `ae2d27a8`
 
 ROBOCZA md5 `ae2d27a88af1f073df15ab8b10c15965` · SHA-256 `03ad35ee938554bd715c6186db60fa2b07e785515fd652b3a402086b986093c9` · **VERIFY OK**.

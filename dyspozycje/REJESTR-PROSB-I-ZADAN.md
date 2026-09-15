@@ -461,7 +461,7 @@ orkiestratora; subagenci są kanałami technicznymi.
 | R-AI-DYPLO-ONLY-MIASTA-PANSTWA-Q1 | 2026-09-15 | Dyplomatyczne przejęcie tylko własnych państw-miast; korekta: późny major→major | **RECOVERY OPERATOR `t_9ee02a82`/run `310` → EVALUATOR `t_345425b1`/run `316` PASS-WITH-NOTES → FINAL CONTROL `t_009a0ff3`/run `321` PASS-WITH-NOTES → INTEGRATED LOCAL `f5a1ce51`; gate `t_f099943e` done/run325** — aktualny kontrakt: własne MP od początku; major→major tylko `hard`, od tury 25, ratio Mocy ≥10; `[supersedes: wcześniejsze ECHO A]` | Push/deploy pozostają osobnym krokiem; names future spec nie jest implementowany |
 | R-REKRUTACJA-MANPOWER-ZWROT-DISBAND-Q1 | 2026-09-15 | Po rozwiązaniu jednostki Manpower prawdopodobnie nie wraca do puli | **OPERATOR `t_6bda120d`/run `311` → EVALUATOR `t_15ae9f44`/run `313` PASS-WITH-NOTES → FINAL CONTROL `t_aa612ea3`/run `314` PASS → INTEGRATED NO_PRODUCT_DIFF; gate `t_20aa866e` done/run327** — runtime harness pozostaje evidence-only | Zweryfikowano 3 × 1000 → +3000 z kontrolą clampu; nie było zmiany gameplay code |
 | R-REKRUTACJA-KOSZT-50-DREWNO-Q1 | 2026-09-15 | Koszt rekrutacji i utrzymania jednostek epoki Kamienia | **OPERATOR `t_81bcf260`/run `312` → EVALUATOR `t_0ca86eb7`/run `315` FAIL → DEFENSE `t_cee97646`/run `320` PASS → FINAL CONTROL `t_78a7578b`/run `322` PASS → INTEGRATED LOCAL `f5a1ce51`; gate `t_dc64d2f3` done/run326** | Efektywne wartości potwierdzone: pieniądze `10/6/6/8/20/26/9/14/9/14`, Drewno `25`, Taran `38`, pieniężny upkeep bez zmian, surowcowy `5`, Taran `8`; push/deploy pozostają osobnym krokiem |
-| R-NAZWY-MIAST-PANSTWA-POOL-POPULARNOSC-Q1 | 2026-09-15 | Recon puli nazw państw-miast, popularności i kolejki nazw | **OWNER DECISION B REFINED — CURRENT RULE PRESERVED / FUTURE SPEC; recovery `t_c375f3d9`/run `317` terminal** — obecnie nadal obowiązuje maksymalnie jedna cywilizacja danego typu na mapie; tego ograniczenia nie zmieniamy. Zachowana przyszłościowo reguła nazw: jedna unikalna nazwa na miasto, bez `Ateny II/III`; pierwsza nazwa zarezerwowana dla cywilizacji, a po ewentualnym dopuszczeniu drugiej cywilizacji tego samego typu kolejne instancje pobierają następne pozycje kolejki | Nie implementować teraz. Nie zmieniać zasady unikalności typu cywilizacji. Zachować specyfikację kolejki na przyszłość; zakres 100/110, udział państw-miast, persystencja i fallback pozostają do decyzji dopiero wtedy, gdy właściciel otworzy tę zmianę |
+| R-NAZWY-MIAST-PANSTWA-POOL-POPULARNOSC-Q1 | 2026-09-15 | Wspólna kolejka 110 nazw na cywilizację; pierwsza wolna nazwa dla stolicy, państwa-miasta, founding gracza/AI i obcych klastrów; suffixy `II/III` po wyczerpaniu | **DEPLOY-ROBOCZA `9d22166c` — Final Control `t_521cda84`/run `347` PASS-WITH-NOTES, zero zarzutów; commit remote `f4967698`** — właściciel A+C wdrożony; limit jednego typu cywilizacji bez zmian | Kod `baa7c3ef`; receipt `0e639c7c`; bundle SHA-256 `858e6763b77ebb93f7e29e4e5ff71a62d28d6ebc684971f59513f30eee1b116b`; `VERIFY OK`; `INFRA-043` map-gen timeout zapisany jako nota procesu |
 
 | R-THE-GAME-OWNER-CORRECTIONS-BATCH-20260915-Q1 | 2026-09-15 | Plan wykonania zleconych korekt właściciela | **PLAN REGISTER — karta `t_d3f54794`, blocked/unassigned** | Rejestr planu; nie dispatchować jako workera; następne fazy wyłącznie z kart tematów |
 | AI-BALANS-UNLOCK-Q1 | 2026-08-05 | Odblokuj strojenie liczb AI | **ECHO B** · FALA 241 docs · STEP1→F242 | wolno małe kroki · `AI-BALANS-UNLOCK-Q1.md` |
@@ -8352,3 +8352,33 @@ referencyjnych zielone, `entity-card-historia-section-test` 36/36,
 - **KARTA:** `t_f099943e` — AI `INTEGRATION_REQUIRED`, rodzic Final Control `t_009a0ff3`/run `321` PASS-WITH-NOTES.
 - **OBJAW:** dispatcher przeszedł `blocked → ready`, mimo `assignee=null`; nie powstał claim ani worker.
 - **KOREKTA:** karta została natywnie zablokowana jako `capability`, event `blocked` run `324`; pozostaje workerless i nie jest dispatchowana.
+
+### `INFRA-039` — Operator implementacji kolejki nazw przekroczył limit czasu
+
+- **STATUS:** `RECOVERY PRESERVED — PARTIAL DIFF`
+- **KARTA/RUN:** `t_7b01a3c0` / run `336`, recovery `t_e0c1e240` / run `337`; partial worktree zachowany; brak commit/push/deploy na tym etapie.
+
+### `INFRA-040` — Evaluator kolejki nazw przekroczył limit czasu
+
+- **STATUS:** `RECOVERY COMPLETED`
+- **KARTA/RUN:** `t_c660b6db` / run `340`, recovery `t_aa5fe0f7` / run `342` `PASS-WITH-NOTES`; pierwszy worker próbował zagnieżdżonej delegacji, recovery był read-only bez re-delegacji.
+
+### `INFRA-041` — Operator recovery po Final Control przekroczył limit czasu
+
+- **STATUS:** `BOUNDED ORCHESTRATOR TAKEOVER`
+- **KARTA/RUN:** `t_51275e46` / run `344`; timeout `904 s > 900 s`, brak patcha; bez trzeciego Operatora wykonano wyłącznie wąską poprawkę i focused reproducer.
+
+### `INFRA-042` — Evaluator bounded recovery przekroczył limit czasu
+
+- **STATUS:** `RECOVERY COMPLETED`
+- **KARTA/RUN:** `t_1b8a0af3` / run `345`; timeout `628 s > 600 s`, bez mutacji; recovery `t_7e545a8c` / run `346` zakończył się `PASS-WITH-NOTES`, zero zarzutów.
+
+### `INFRA-043` — pełny map-gen regression harness przekroczył bounded limit
+
+- **STATUS:** `CONTRACT PASS / FULL HARNESS TIMEOUT`
+- **DOWÓD:** pełny harness exit `124` po `300 s`; `--contract-test` PASS; zmiana nazw nie dotyka geometrii generatora.
+
+### `INFRA-044` — workerless INTEGRATION_REQUIRED gate został promowany przez daemon
+
+- **STATUS:** `ROUTING ANOMALY — NO WORKER / CLOSED BY ORCHESTRATOR`
+- **KARTA/EVENT:** `t_820693ac`; `created` → `promoted` → completed run `348`; assignee `null`, brak claimu/worker runu. Gate zamknięty po deploy readbacku; nie tworzyć duplikatu.
