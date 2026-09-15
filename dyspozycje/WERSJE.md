@@ -13,7 +13,16 @@ swoim wĹ‚asnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji d
 > Pakiet 3 z 2026-08-20 jest docs-only i nie tworzy wpisu ROBOCZA/KANON/FINALNA;
 > ten plik pozostaje wyłącznie rejestrem publikacji bundli.
 
-## ROBOCZA 27220376 - 2026-09-14 20:53 UTC - R-MIASTA-CYWILIZACJE-PANSTWA-WSPOLNA-LISTA-Q1 + R-KREATOR-DOLNA-NAWIGACJA-Q1
+## ROBOCZA ae2d27a8 - 2026-09-15 03:06 UTC - owner corrections: AI absorption + Stone Age recruitment costs
+
+|- md5 (pełne): `ae2d27a88af1f073df15ab8b10c15965` · SHA-256: `03ad35ee938554bd715c6186db60fa2b07e785515fd652b3a402086b986093c9` · rozmiar: `69857965` bajtów
+|- source/integration commit: `e91211a169f440afc58312f7cf421cd720a03a71`; product commit: `f5a1ce518818680e280b8cbd7312b7d59e5c8133`; build: Vite, `888` modułów, exit `0`, `27.63s`.
+|- AI: major→major tylko `hard`, tura `>=25`, ratio `>=10`; własne państwa-miasta i limit dwóch miast zachowane. Koszty: efektywne pieniądze `10/6/6/8/20/26/9/14/9/14`, Drewno `25`, Taran `38`, pieniężny upkeep bez zmian, surowcowy `5`, Taran `8`.
+|- Bramki: AI `35/0`, `33/0`, `22/0`, difficulty `8/0`; koszty `190/0`, tempo `9/0`, upkeep `73/0`, typecheck `0`, build `888` modułów. Pre-existing: `unit-resource-upkeep`/`unit-stock-cost` — 17 starych oczekiwań mount/horse/resource, potwierdzonych także na bazie `origin/main`.
+|- Names code nie zmieniono; obecna zasada jednej cywilizacji danego typu pozostaje. Manpower nie ma zmiany gameplay code.
+|- `START.html`, manifest i 6 kopii playtestowych wygenerowane; `node gra/tools/verify-robocza-bundle.cjs` → `VERIFY OK`; promocji do KANON/FINALNA nie wykonano.
+|- **AKTUALNA**
+
 
 |- md5 (pełne): `272203761f72f765be8f0580241e999d` · SHA-256: `4e52328b752f1ca2a000fdbb1fdb2b568d8758a2a977e9e396b3bc570fadaf41` · rozmiar: `69857897` bajtów
 |- source/integration commit: `27bb402b26ce1facd9fdc8fd91937ddfab64090a`; build: direct Vite, `888` modułów, exit `0`; `tsc --noEmit` exit `0`.
@@ -32,7 +41,7 @@ swoim wĹ‚asnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji d
 |- Rekrutacja: real Chromium `recruit-card-manpower-real-render-test.cjs` `17/0`; kontrola mutacyjna `9 PASS / 8 FAIL`, exit `1` — oczekiwany negative control.
 |- Regresja wspólnego renderera: `entity-card-diorama-real-render-test.cjs` `45/0`; brak błędów pageerror/console.error w przebiegach tematycznych.
 |- `START.html`, manifest i `10` kopii playtestowych wygenerowane; `node gra/tools/verify-robocza-bundle.cjs` → `VERIFY OK`; promocji do KANON/FINALNA nie wykonano.
-|- **AKTUALNA**
+|- **ZASTĄPIONA przez ROBOCZA ae2d27a8**
 
 ## ROBOCZA e8724602 - 2026-09-13 19:56 UTC - R-STARTOWE-JEDNOSTKI-WSZYSTKIE-OSIE-Q1: startowe jednostki na czterech osiach
 

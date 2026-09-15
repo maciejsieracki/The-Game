@@ -1,4 +1,13 @@
-## [20:53 PL, 2026-09-14] SESJA LOKALNA — DEPLOY ROBOCZA `27220376`
+## [03:06 PL, 2026-09-15] SESJA LOKALNA — DEPLOY ROBOCZA `ae2d27a8`
+
+ROBOCZA md5 `ae2d27a88af1f073df15ab8b10c15965` · SHA-256 `03ad35ee938554bd715c6186db60fa2b07e785515fd652b3a402086b986093c9` · **VERIFY OK**.
+- Zintegrowano commit `f5a1ce518818680e280b8cbd7312b7d59e5c8133` oraz docs close commit `e91211a169f440afc58312f7cf421cd720a03a71`; final branch receipt: `e91211a1`.
+- AI: major→major `hard`, od tury 25, ratio `>=10`; koszty epoki Kamienia: efektywne pieniądze `10/6/6/8/20/26/9/14/9/14`, Drewno `25`, Taran `38`, upkeep pieniędzy bez zmian, surowcowy `5`, Taran `8`.
+- Bramki: AI `35/0`, `33/0`, `22/0`, difficulty `8/0`; koszty `190/0`, tempo `9/0`, upkeep `73/0`; typecheck PASS; Vite `888` modułów / `27.63s`; `verify-robocza-bundle.cjs` VERIFY OK.
+- Pre-existing notes: unit-resource-upkeep/unit-stock-cost 17 starych oczekiwań mount/horse/resource, potwierdzone na bazie `origin/main`; nie zmieniano tych testów. Names code nie zmieniono; Manpower bez gameplay diff.
+- `START.html`, manifest i 6 kopii playtestowych wygenerowane. Promocji do KANON/FINALNA nie wykonano.
+- **PUSH/REMOTE READBACK: PENDING**
+
 
 ROBOCZA md5 `272203761f72f765be8f0580241e999d` · SHA-256 `4e52328b752f1ca2a000fdbb1fdb2b568d8758a2a977e9e396b3bc570fadaf41` · **VERIFY OK**.
 - Zintegrowano allowlistę `R-MIASTA-CYWILIZACJE-PANSTWA-WSPOLNA-LISTA-Q1` oraz test `R-KREATOR-DOLNA-NAWIGACJA-Q1`; kodowy commit `27bb402b26ce1facd9fdc8fd91937ddfab64090a`.

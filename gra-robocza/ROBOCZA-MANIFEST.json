@@ -1,82 +1,80 @@
 {
-  "hubGeneratedAt": "2026-09-14T20:53:00",
-  "md5": "272203761f72f765be8f0580241e999d",
+  "publishedAt": "2026-09-15T03:06:13.607164+00:00",
+  "publisher": "Integrator Orchestrator",
+  "md5": "ae2d27a88af1f073df15ab8b10c15965",
+  "sha256": "03ad35ee938554bd715c6186db60fa2b07e785515fd652b3a402086b986093c9",
+  "bytes": 69857965,
+  "bundle": "Gra-ROBOCZA.html",
+  "sourceCommit": "e91211a169f440afc58312f7cf421cd720a03a71",
+  "base": "94014b7b9f7ee9d5a61681680f88d42e2258851e",
+  "scope": [
+    "AI absorption revised ECHO",
+    "Stone Age recruitment/upkeep costs",
+    "documentation"
+  ],
+  "excluded": [
+    "names future spec code",
+    "Manpower gameplay code",
+    "audit-only source-reading AI test"
+  ],
+  "hubGeneratedAt": "2026-09-15T03:06:31",
   "bundles": [
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html?skipMenuRedirect=1",
       "label": "Pełna gra ROBOCZA",
-      "md5": "272203761f72f765be8f0580241e999d",
-      "sizeBytes": 69857897
+      "md5": "ae2d27a88af1f073df15ab8b10c15965",
+      "sizeBytes": 69857965
     },
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html",
       "label": "Pełna gra (z menu)",
-      "md5": "272203761f72f765be8f0580241e999d",
-      "sizeBytes": 69857897
-    },
-    {
-      "file": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
-      "href": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
-      "label": "Playtest: DUŻA bitwa (pole) — NOWE",
-      "md5": "272203761f72f765be8f0580241e999d",
-      "sizeBytes": 69857897
-    },
-    {
-      "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
-      "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
-      "label": "Playtest: DUŻE oblężenie (mur) — NOWE",
-      "md5": "272203761f72f765be8f0580241e999d",
-      "sizeBytes": 69857897
+      "md5": "ae2d27a88af1f073df15ab8b10c15965",
+      "sizeBytes": 69857965
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "label": "Playtest: mapa świat",
-      "md5": "272203761f72f765be8f0580241e999d",
-      "sizeBytes": 69857897
+      "md5": "ae2d27a88af1f073df15ab8b10c15965",
+      "sizeBytes": 69857965
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "label": "Playtest: miasto / ekonomia",
-      "md5": "272203761f72f765be8f0580241e999d",
-      "sizeBytes": 69857897
+      "md5": "ae2d27a88af1f073df15ab8b10c15965",
+      "sizeBytes": 69857965
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "label": "Playtest: walka na mapie",
-      "md5": "272203761f72f765be8f0580241e999d",
-      "sizeBytes": 69857897
+      "md5": "ae2d27a88af1f073df15ab8b10c15965",
+      "sizeBytes": 69857965
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "label": "Playtest: odskok 3v3",
-      "md5": "272203761f72f765be8f0580241e999d",
-      "sizeBytes": 69857897
+      "md5": "ae2d27a88af1f073df15ab8b10c15965",
+      "sizeBytes": 69857965
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "label": "Playtest: odskok + oblężenie",
-      "md5": "272203761f72f765be8f0580241e999d",
-      "sizeBytes": 69857897
+      "md5": "ae2d27a88af1f073df15ab8b10c15965",
+      "sizeBytes": 69857965
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "label": "Playtest: oblężenie 3v3",
-      "md5": "272203761f72f765be8f0580241e999d",
-      "sizeBytes": 69857897
+      "md5": "ae2d27a88af1f073df15ab8b10c15965",
+      "sizeBytes": 69857965
     }
   ],
-  "startHub": "START.html",
-  "publishedAt": "2026-09-13T12:49:59",
-  "publisher": "Integrator (Hermes)",
-  "sourceBuild": "gra/ (integration commit 27bb402b26ce1facd9fdc8fd91937ddfab64090a; direct vite.js single-file build)",
-  "bundle": "Gra-ROBOCZA.html",
-  "note": "R-MIASTA-CYWILIZACJE-PANSTWA-WSPOLNA-LISTA-Q1 + R-KREATOR-DOLNA-NAWIGACJA-Q1: wspólna lista nazw 110 i realna regresja dolnej nawigacji; R-STARTOWE product code już w origin/main; R-NAZWY zawarte w późniejszym kontrakcie wspólnej listy."
+  "startHub": "START.html"
 }
