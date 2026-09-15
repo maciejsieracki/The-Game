@@ -518,7 +518,10 @@ export function buildingWorkCost(
   return applyDifficultyCostMultiplier(afterGlobal, ownerId, difficulty);
 }
 
-/** Koszt rekrutacji jednostki (Pieniadz): ulga cywilizacji + tempo + trudnosc. */
+/** Koszt rekrutacji jednostki (Pieniadz): ulga cywilizacji + tempo + trudnosc.
+ * Pole Pieniądz (koszt) jest bezpośrednią stawką dla tempa Niski; dodatkowa
+ * FALA2 dotyczy innych kategorii kosztów, nie zakupu jednostki.
+ */
 export function unitMoneyCost(
   baseCost: number,
   civBonusy?: readonly CivBonusLite[],
@@ -532,9 +535,7 @@ export function unitMoneyCost(
     koszt = Math.max(1, Math.floor(koszt * (1 - recDisc)));
   }
   const afterPace = pace ? applyUnitCostPace(koszt, pace) : koszt;
-  // R-NADMIAR-POOLS FALA2: rekrutacja jednostek (Pieniądz) ×2 vs JSON
-  const afterFala2 = Math.max(1, Math.round(afterPace * R_STAWKI_FALA2_MULT));
-  return applyDifficultyCostMultiplier(afterFala2, ownerId, difficulty);
+  return applyDifficultyCostMultiplier(afterPace, ownerId, difficulty);
 }
 
 /** Minimalny ksztalt bonusy[] — bez importu economy (unikamy cyklu z production). */

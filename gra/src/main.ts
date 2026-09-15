@@ -313,6 +313,7 @@ import {
   isSisterOwnerThreatenedByWar,
 } from './game/ai-cs-absorption';
 import {
+  AI_MAJOR_ABSORB_MIN_TURN,
   decideAiMajorAbsorb,
 } from './game/ai-major-absorb';
 import {
@@ -33318,13 +33319,17 @@ async function boot(): Promise<void> {
                     }
                   }
                 }
-                // P-AI-MAJOR-ABSORB Faza 2: hard + any-civ major→major instant annex
+                // P-AI-MAJOR-ABSORB: hard, od 25. tury włącznie, tylko przy
+                // aggressorPower / victimPower >= 10. Własne państwa-miasta
+                // pozostają na osobnej ścieżce absorpcji klastra powyżej.
                 if (
                   _menuDifficulty === 'hard'
+                  && turn >= AI_MAJOR_ABSORB_MIN_TURN
                   && ownerId > 0
                   && !typCityCopyOwners.has(ownerId)
                   && !isBarbarian(ownerId)
                   && !eliminatedOwners.has(ownerId)
+                  && !isOwnerClusterCityState(ownerId, ownerCityStateOpts())
                 ) {
                   const myCivKey = aiOwnerCivMap.get(ownerId);
                   const aggressorPower = objectivePowerByOwner.get(ownerId)?.power ?? 0;
@@ -33334,7 +33339,8 @@ async function boot(): Promise<void> {
                       && oid > 0
                       && !typCityCopyOwners.has(oid)
                       && !isBarbarian(oid)
-                      && !eliminatedOwners.has(oid),
+                      && !eliminatedOwners.has(oid)
+                      && !isOwnerClusterCityState(oid, ownerCityStateOpts()),
                     )
                     .sort((a, b) => a - b);
                   for (const victimId of majorTargets) {
@@ -33349,13 +33355,16 @@ async function boot(): Promise<void> {
                       powerRatio,
                       aggressorIsMajor: true,
                       victimIsMajor: true,
+                      aggressorIsBarbarian: false,
+                      victimIsBarbarian: false,
+                      victimIsCityState: false,
                       victimEliminated: eliminatedOwners.has(victimId),
-                      sameOwner: false,
+                      sameOwner: ownerId === victimId,
                     });
                     if (decision.action === 'instant_annex') {
                       annexCityStateToOwner(victimId, ownerId);
                       console.log(
-                        `[Dyplomacja] AI${ownerId} wchłania major AI${victimId} (any-civ hard)`,
+                        `[Dyplomacja] AI${ownerId} wchłania major AI${victimId} (hard, tura>=25, ratio>=10)`,
                       );
                       break;
                     }

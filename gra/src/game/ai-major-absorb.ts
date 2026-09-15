@@ -1,15 +1,16 @@
 /**
- * P-AI-MAJOR-ABSORB Faza 2 — czysta logika wchłaniania major AI → major AI (any-civ, hard).
- * Faza 1 (same-civ): `requireSameCiv: true` w teście / harness.
+ * P-AI-MAJOR-ABSORB — czysta logika wchłaniania major AI → major AI.
+ * Właścicielska reguła: tylko hard, od 25. tury i przy mocy agresora >= 10x
+ * mocy ofiary. Własne państwa-miasta mają osobną ścieżkę w main.ts.
  */
 
 import type { DifficultyLevel } from './city-state-difficulty';
 
-/** Minimalny stosunek Mocy agresor/ofiara (jak instantAnnexIfRatio hard MP). */
-export const AI_MAJOR_ABSORB_POWER_RATIO_MIN = 1.25;
+/** Minimalny stosunek Mocy agresor/ofiara dla major→major na hard. */
+export const AI_MAJOR_ABSORB_POWER_RATIO_MIN = 10;
 
-/** Minimalna tura gry zanim major może wchłonąć innego majora (jak MP hard). */
-export const AI_MAJOR_ABSORB_MIN_TURN = 10;
+/** Minimalna tura gry zanim major może wchłonąć innego majora. */
+export const AI_MAJOR_ABSORB_MIN_TURN = 25;
 
 export type AiMajorAbsorbAction = 'instant_annex';
 
@@ -19,12 +20,17 @@ export interface DecideAiMajorAbsorbInput {
   aggressorId: number;
   victimId: number;
   sameCiv: boolean;
-  /** Gdy true — wymaga same-civ (Faza 1); domyślnie false = Faza 2 any-civ. */
+  /** Compatibility guard for the former same-civ proposal. */
   requireSameCiv?: boolean;
   /** Moc agresora / moc ofiary (≥ 1 gdy agresor silniejszy lub równy). */
   powerRatio: number;
   aggressorIsMajor: boolean;
   victimIsMajor: boolean;
+  /** Barbarians are never diplomatic major-absorb targets. */
+  aggressorIsBarbarian?: boolean;
+  victimIsBarbarian?: boolean;
+  /** City-states belong to the separate own-cluster absorption path. */
+  victimIsCityState?: boolean;
   victimEliminated: boolean;
   sameOwner: boolean;
 }
@@ -42,6 +48,12 @@ export function decideAiMajorAbsorb(
   }
   if (input.aggressorId === 0 || input.victimId === 0) {
     return { action: null, reason: 'player_involved' };
+  }
+  if (input.aggressorIsBarbarian || input.victimIsBarbarian) {
+    return { action: null, reason: 'barbarian_involved' };
+  }
+  if (input.victimIsCityState) {
+    return { action: null, reason: 'city_state_target' };
   }
   if (input.sameOwner) {
     return { action: null, reason: 'same_owner' };
