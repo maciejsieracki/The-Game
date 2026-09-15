@@ -1,9 +1,9 @@
 # R-NAZWY-MIAST-PANSTWA-POOL-POPULARNOSC-Q1 — wspólna kolejka nazw
 
 **Data zapisu:** 2026-09-15
-**Status:** `OWNER DECISION A+C — IMPLEMENTACJA LOKALNA / NOT INTEGRATED`
+**Status:** `OWNER DECISION A+C — IMPLEMENTACJA ZINTEGROWANA LOKALNIE / READY_FOR_DEPLOY`
 **Domena:** `GAME`
-**Implementacja tej specyfikacji:** `WYKONANO LOKALNIE; BRAK COMMITU, PUSHU I DEPLOYU`
+**Implementacja tej specyfikacji:** `ZINTEGROWANO LOKALNIE; commit baa7c3ef; BRAK PUSHU I DEPLOYU`
 **Projekt/board:** `p_9ae9ac64` / `the-game-real24` / profil `default`
 
 ## Obowiązująca zasada rosteru
@@ -61,10 +61,14 @@ wyłącznie bounded gates:
 
 ## Granice i następna bramka
 
-Nie uruchamiano `cluster-start-test.cjs`, pełnego builda, dev-serwera ani
-cluster-start smoke testu, zgodnie z zakresem recovery. Pozostaje niezależna
-weryfikacja Evaluatora oraz późniejsza integracja; ten lokalny diff nie jest
-jeszcze zmianą w `origin/main` ani deployem.
+Final Control `t_521cda84` / run `347` potwierdził `PASS-WITH-NOTES` bez
+ponumerowanych zarzutów. Integracja Orkiestratora została wykonana w czystym
+worktree od `origin/main` `30409fdb` jako commit `baa7c3ef`. Po integracji
+przeszły focused cluster-plan `6/6`, city pool `9/9`, civ names `109/109`,
+start preview `6/6`, shared queue `10/10`, `tsc --noEmit` oraz build Vite.
+Pełny map-gen harness przekroczył bounded limit (`INFRA-043`), ale jego szybki
+contract test przeszedł; zmiana nie dotyka generatora geometrii. Push i deploy
+pozostają osobną bramką.
 
 ## Kanban / proweniencja
 
