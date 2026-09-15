@@ -3,6 +3,7 @@
 pub mod barbarians;
 pub mod building_costs;
 mod error;
+pub mod events;
 pub mod hex;
 mod ids;
 pub mod improvements;
@@ -11,6 +12,7 @@ mod player;
 pub mod recruitment;
 pub mod resource_production;
 mod rng;
+pub mod save_load;
 mod session;
 mod state;
 pub mod terrain;

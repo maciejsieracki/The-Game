@@ -2,6 +2,17 @@
 
 pub mod domain;
 
+extern crate self as civ_engine;
+
+pub use domain::events::{
+    canonical_phase_order, phase_order, Event, EventId, EventKind, EventQueue, EventQueueError,
+    GameEvent, QueueError, QueuedEvent, TurnEvent, TurnPhase, CANONICAL_PHASE_ORDER, PHASE_COUNT,
+    TURN_PHASE_ORDER,
+};
+pub use domain::save_load::{
+    migrate_v1, SaveSnapshot, SnapshotError, CURRENT_SNAPSHOT_VERSION, LEGACY_SNAPSHOT_VERSION,
+};
+
 pub use domain::building_costs::{
     building_cost, building_cost_for, building_work_cost, canonical_building_costs,
     effective_work_cost, spend_building_cost, try_spend_building_cost,
