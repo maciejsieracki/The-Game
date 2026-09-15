@@ -1,0 +1,281 @@
+{
+  "schema": "R-DOCS-P5-INDEX-CONSOLIDATION/1",
+  "status": "PASS-WITH-NOTES",
+  "domain": "INFORMATIONAL",
+  "topic": "R-DOCS-P5-INDEX-CONSOLIDATION-Q1",
+  "task_id": "t_518149f7",
+  "run_id": 328,
+  "role": "Operator",
+  "round": "1/5",
+  "generated_at_utc": "2026-09-15T09:16:46Z",
+  "final_verified_at_utc": "2026-09-15T09:25:42Z",
+  "workspace": {
+    "path": "/home/ubuntu/projects/The-Game-docs-audit-worktrees/R-DOCS-CONSOLIDATION-Q1",
+    "branch": "hermes/R-DOCS-CONSOLIDATION-Q1",
+    "head": "d3689535ce7a7bf210f187c43448a49716774bfa",
+    "completion_contract": "local-only"
+  },
+  "routing": {
+    "profile": "default",
+    "project": "the-game",
+    "project_name": "The Game Box",
+    "project_id": "p_9ae9ac64",
+    "board": "the-game-real24",
+    "tenant": "the-game"
+  },
+  "parent": {
+    "task_id": "t_b9af8ac8",
+    "run_id": 304,
+    "status": "PASS-WITH-NOTES",
+    "next_gate_before_owner_authorization": "owner/orchestrator decision before a new authorized P2 snapshot"
+  },
+  "owner_authorization": "The current task authorizes index/entrypoint consolidation over the existing frozen P2/P3/P4 evidence; it does not authorize a new P2 snapshot, source mutation, P6, integration, push, merge, or deploy.",
+  "goal": "Convert the verified P2/P3/P4 documentation audit into a canonical, navigable index/entrypoint package without deleting, merging, renaming, or silently changing source/history documents.",
+  "allowlist": {
+    "modified_existing": [
+      "AGENT-START-HERE.md",
+      "docs/procesy/INDEX-PROCESU.md"
+    ],
+    "new_artifacts": [
+      "dyspozycje/autobot/runs/R-DOCS-CONSOLIDATION-Q1/23-dispatch-p5-index-consolidation.md",
+      "dyspozycje/autobot/runs/R-DOCS-CONSOLIDATION-Q1/P5-index-consolidation.md",
+      "dyspozycje/autobot/runs/R-DOCS-CONSOLIDATION-Q1/P5-evidence.json",
+      "dyspozycje/autobot/runs/R-DOCS-CONSOLIDATION-Q1/P5-transition-receipt.json"
+    ],
+    "unexpected_paths": [],
+    "source_documents_mutated": false,
+    "product_code_mutated": false,
+    "gra_mutated": false,
+    "rust_port_mutated": false,
+    "kanban_or_project_db_mutated": false,
+    "remote_refs_mutated": false
+  },
+  "artifact_hashes": {
+    "AGENT-START-HERE.md": {
+      "kind": "allowlisted modified pre-existing local-only file",
+      "bytes": 5607,
+      "sha256": "622b02d6a6476d270a13e83893af0c22a114114126bdd553e1c15c53d91155ca"
+    },
+    "docs/procesy/INDEX-PROCESU.md": {
+      "kind": "allowlisted modified tracked file",
+      "bytes": 13569,
+      "sha256": "a65eb9e196f9fabed213e48c63002f1272af2ec688bea30ed5e378dabcf4dcc4"
+    },
+    "dyspozycje/autobot/runs/R-DOCS-CONSOLIDATION-Q1/23-dispatch-p5-index-consolidation.md": {
+      "kind": "new allowlisted artifact",
+      "bytes": 4020,
+      "sha256": "b7d2b054d41cc35668a0a7f0c0267cfd2dc75c295fcbbb99917a8cacc54bf084"
+    },
+    "dyspozycje/autobot/runs/R-DOCS-CONSOLIDATION-Q1/P5-index-consolidation.md": {
+      "kind": "new allowlisted artifact",
+      "bytes": 10957,
+      "sha256": "776765596dd610fe219189d74683136593c95e4b2177a577171d90a1a65db452"
+    },
+    "dyspozycje/autobot/runs/R-DOCS-CONSOLIDATION-Q1/P5-evidence.json": {
+      "kind": "new artifact; self-hash intentionally omitted",
+      "sha256": "NOT_SELF_REFERENTIAL"
+    },
+    "dyspozycje/autobot/runs/R-DOCS-CONSOLIDATION-Q1/P5-transition-receipt.json": {
+      "kind": "new artifact; final hash recorded only in the receipt to avoid a mutual hash dependency",
+      "sha256": "SEE_P5_TRANSITION_RECEIPT"
+    }
+  },
+  "preexisting_worktree_status_entries": 64,
+  "expected_postwrite_worktree_status_entries": 68,
+  "observed_postwrite_worktree_status_entries": 68,
+  "p2_snapshot": {
+    "boundary_utc": "2026-09-14T17:37:55Z",
+    "inventory_records": 84308,
+    "local_records": 76084,
+    "remote_records": 8224,
+    "source_roots": 32,
+    "p2_classifications": {
+      "CANONICAL": 13740,
+      "EVIDENCE": 33217,
+      "HISTORY": 2759,
+      "SEPARATE_PROJECT": 181,
+      "UNKNOWN": 34411
+    },
+    "inventory_sha256": "c3af5d96b715a79df910f1d3b5006b2d9e020506ef1c220e648ed13255310055",
+    "manifest_sha256": "0b9b3b38582d272f25fb349d42e779378901ca6bcc7dfd0a4ea512f6934bd107",
+    "remote_snapshot_refs": {
+      "HEAD": "32bbc72741e21a3bcda2f05e580b55512ca5dd33",
+      "refs/heads/main": "32bbc72741e21a3bcda2f05e580b55512ca5dd33",
+      "refs/heads/docs/agent-documentation-index-20260914": "da493eeebfaa90d47140ba7892ea2578b7f50ea7",
+      "refs/heads/autobot/real24-staging": "d387754f530af202ef285f7a27727ea1b1009cd9"
+    }
+  },
+  "p3_readback": {
+    "status": "PASS-WITH-NOTES",
+    "map_records": 12,
+    "conflict_items": 10,
+    "owner_decision_open_conflicts": [1, 4, 5, 6, 7],
+    "owner_precedence_selected": false,
+    "source_map_sha256": "51289857efbcd91dd99f23a15243d2c415d0b2bc4a2a9e3966cd6a18d97cd3fb",
+    "source_map_markdown_sha256": "580bc158df87207adf2eebe7ddfa78673731b8f22ed63dccf773c1ca8cebcdf3",
+    "conflicts_sha256": "31c46694deb1f338cb9c25666b6eaa86b076ca111a1cdd734cec97a2d1d0fc81",
+    "missing_pointer_not_used_as_canon": "docs/decyzje/R-PROC-AUTOBOT-HERMES-KANBAN.md"
+  },
+  "p4_readback": {
+    "status": "PASS-WITH-NOTES",
+    "matrix_records": 84308,
+    "matrix_bytes": 153698667,
+    "matrix_sha256": "d398e05512c3628984f0104b42df1b5bfbcbcebdf8a60c302496ffe68b4abd4f",
+    "status_counts": {
+      "ACTIVE_CANONICAL": 34896,
+      "DUPLICATE_CANDIDATE": 124,
+      "HISTORY": 18693,
+      "OWNER_DECISION": 13181,
+      "SEPARATE_PROJECT": 181,
+      "STALE_CANDIDATE": 651,
+      "UNKNOWN_NEEDS_REVIEW": 16582
+    },
+    "stale_paths": 21,
+    "stale_records": 651,
+    "same_root_exact_duplicate_groups": 124,
+    "cross_root_replica_groups": 2764,
+    "cross_root_replica_records": 84036,
+    "owner_decision_unique_paths": 433,
+    "owner_pattern_records": 13305,
+    "primary_records_present": 2757,
+    "primary_records_expected": 2757,
+    "primary_drift_paths": [
+      "dyspozycje/PYTANIA-OTWARTE.md",
+      "dyspozycje/REJESTR-PROSB-I-ZADAN.md"
+    ],
+    "drift_origin_author_commit": "UNVERIFIED",
+    "candidate_deletion_or_merge": false,
+    "final_control_evidence_sha256": "a9304fded22685fdd03c1a2e56a22948207199f077ce44ddfb0e91eda1be3e79"
+  },
+  "current_live_readback": {
+    "project_show": {
+      "profile": "default",
+      "project": "the-game",
+      "project_id": "p_9ae9ac64",
+      "board": "the-game-real24"
+    },
+    "primary": {
+      "path": "/home/ubuntu/projects/The-Game",
+      "branch": "main",
+      "head": "a99f7de59ce643441b641d3b7b11404b6cbdcd82",
+      "dirty": true
+    },
+    "remote_ls_remote": {
+      "HEAD": "30409fdb2938fea93287af9df66a18adc048af26",
+      "refs/heads/main": "30409fdb2938fea93287af9df66a18adc048af26",
+      "refs/heads/docs/agent-documentation-index-20260914": "da493eeebfaa90d47140ba7892ea2578b7f50ea7",
+      "refs/heads/autobot/real24-staging": "d387754f530af202ef285f7a27727ea1b1009cd9"
+    },
+    "fetch_pull_push": false
+  },
+  "source_pointer_readback": {
+    "existing_exact_paths": [
+      "README.md",
+      "docs/procesy/INDEX-PROCESU.md",
+      "docs/decyzje/R-PROC-AUTOBOT.md",
+      "docs/decyzje/R-PROC-AUTOBOT-EVAL-STRICT.md",
+      "docs/decyzje/R-PROC-AUTOBOT-EVAL-STRICT-EDGE.md",
+      "docs/decyzje/R-PROC-AUTOBOT-EVAL-STRICT-PARITY.md",
+      "docs/decyzje/R-PROC-AUTOBOT-EVAL-STRICT-SAVE.md",
+      "docs/decyzje/R-PROC-AUTOBOT-EVAL-SCOPE.md",
+      "docs/decyzje/R-PROC-AUTOBOT-ABC-TURNIEJ.md",
+      "playbook.md",
+      "dyspozycje/autobot/README.md",
+      "dyspozycje/autobot/runs/README.md",
+      "dyspozycje/autobot/JAK-BEZPIECZNIE-EDYTOWAC-AUTOBOT.md",
+      "dyspozycje/_handoff/HANDOFF-AKTUALNY.md",
+      "dyspozycje/_handoff/KANAL-PRACA.md",
+      "dyspozycje/REJESTR-PROSB-I-ZADAN.md",
+      "dyspozycje/PYTANIA-OTWARTE.md",
+      "ANALIZA-ARCHITEKTURY-Civ.md",
+      "docs/analiza/README.md",
+      "docs/archiwum-procesu/",
+      "gra/src/",
+      "gra/data/",
+      "rust-port/engine/",
+      "/home/ubuntu/projects/Autoboot-Monitor/AUTOBOT-KANBAN.md"
+    ],
+    "missing_pointer": {
+      "path": "docs/decyzje/R-PROC-AUTOBOT-HERMES-KANBAN.md",
+      "exists": false,
+      "used_by_p5_entrypoints": false,
+      "source_p3_artifact_preserved": true
+    }
+  },
+  "entrypoint_validation": {
+    "AGENT-START-HERE.md": {
+      "markdown_links": 23,
+      "resolved_links": 23,
+      "pending_links_to_new_p5_artifacts": 0,
+      "fence_markers": 2,
+      "fences_balanced": true
+    },
+    "docs/procesy/INDEX-PROCESU.md": {
+      "markdown_links": 9,
+      "resolved_links": 9,
+      "pending_links_to_new_p5_artifacts": 0,
+      "fence_markers": 4,
+      "fences_balanced": true
+    },
+    "final_link_check": "PASS",
+    "declared_links_total": 32,
+    "declared_links_resolved": 32,
+    "declared_links_missing": []
+  },
+  "preserved_input_hashes": {
+    "all_16_unchanged": true,
+    "files": {
+      "dyspozycje/autobot/runs/R-DOCS-CONSOLIDATION-Q1/P2-exclusions.md": {"bytes": 7150, "sha256": "eb3101e246074b613578b4bca57981ce4bbbaec0f04983cb9a7a8818bf3d32ae"},
+      "dyspozycje/autobot/runs/R-DOCS-CONSOLIDATION-Q1/P2-final-control-evidence.json": {"bytes": 10557, "sha256": "74512059580e4da055eff21c0e8c5e97e564f9511aec1b061178a499f98f4312"},
+      "dyspozycje/autobot/runs/R-DOCS-CONSOLIDATION-Q1/P2-markdown-inventory.jsonl": {"bytes": 50033206, "sha256": "c3af5d96b715a79df910f1d3b5006b2d9e020506ef1c220e648ed13255310055"},
+      "dyspozycje/autobot/runs/R-DOCS-CONSOLIDATION-Q1/P2-source-manifest.json": {"bytes": 122532, "sha256": "0b9b3b38582d272f25fb349d42e779378901ca6bcc7dfd0a4ea512f6934bd107"},
+      "dyspozycje/autobot/runs/R-DOCS-CONSOLIDATION-Q1/P3-conflicts.md": {"bytes": 8939, "sha256": "31c46694deb1f338cb9c25666b6eaa86b076ca111a1cdd734cec97a2d1d0fc81"},
+      "dyspozycje/autobot/runs/R-DOCS-CONSOLIDATION-Q1/P3-defense-routing-repair-evidence.json": {"bytes": 8394, "sha256": "7a26b91ca1524cd273682c266a8f057411e565b8f82f4a8171ed91cd029daf15"},
+      "dyspozycje/autobot/runs/R-DOCS-CONSOLIDATION-Q1/P3-evaluator-report.md": {"bytes": 3928, "sha256": "b6c08ad77494b80a6b93a526946b9729524741598bb8f20d7581ae6edb00235a"},
+      "dyspozycje/autobot/runs/R-DOCS-CONSOLIDATION-Q1/P3-final-control-evidence.json": {"bytes": 12703, "sha256": "4723285a3c1793caa01ba06f10835cbb321b7a945d4aec22e477aeed775563c7"},
+      "dyspozycje/autobot/runs/R-DOCS-CONSOLIDATION-Q1/P3-final-control.md": {"bytes": 8280, "sha256": "8cf1841a2989c7f69c2f1c2c26b84e88aae07e15a562286a82bd3133eee5fbbd"},
+      "dyspozycje/autobot/runs/R-DOCS-CONSOLIDATION-Q1/P3-source-of-truth-map.jsonl": {"bytes": 41215, "sha256": "51289857efbcd91dd99f23a15243d2c415d0b2bc4a2a9e3966cd6a18d97cd3fb"},
+      "dyspozycje/autobot/runs/R-DOCS-CONSOLIDATION-Q1/P3-source-of-truth-map.md": {"bytes": 10801, "sha256": "580bc158df87207adf2eebe7ddfa78673731b8f22ed63dccf773c1ca8cebcdf3"},
+      "dyspozycje/autobot/runs/R-DOCS-CONSOLIDATION-Q1/P3-summary.md": {"bytes": 5348, "sha256": "3eaae297bd01e2d41f5d788da676ba0e73eb809c8a962ee3a80bfe5fa0a046bc"},
+      "dyspozycje/autobot/runs/R-DOCS-CONSOLIDATION-Q1/P4-stale-duplicate-matrix.jsonl": {"bytes": 153698667, "sha256": "d398e05512c3628984f0104b42df1b5bfbcbcebdf8a60c302496ffe68b4abd4f"},
+      "dyspozycje/autobot/runs/R-DOCS-CONSOLIDATION-Q1/P4-final-control-evidence.json": {"bytes": 599911, "sha256": "a9304fded22685fdd03c1a2e56a22948207199f077ce44ddfb0e91eda1be3e79"},
+      "dyspozycje/autobot/runs/R-DOCS-CONSOLIDATION-Q1/P4-final-control.md": {"bytes": 4544, "sha256": "9b497057d16b52d99ea74fce7a0368fd170ade9368bbba87e2b5681931624f52"},
+      "dyspozycje/autobot/runs/R-DOCS-CONSOLIDATION-Q1/P4-summary.md": {"bytes": 8643, "sha256": "6aa26f6ed38caad360ab062ef19c30fcf5a3b40807ec2ab935a108acbeb97b24"}
+    }
+  },
+  "hygiene": {
+    "git_diff_check": "PASS",
+    "trailing_whitespace_lines": 0,
+    "nul_bytes_in_allowlist": 0,
+    "sensitivity_scan": {
+      "private_key_markers": 0,
+      "bearer_values": 0,
+      "credential_assignments": 0,
+      "ipv4_addresses": 0,
+      "email_addresses": 0,
+      "raw_values_retained": false
+    },
+    "process_docs_audit": "PASS after all P5 artifacts were written"
+  },
+  "mutation_boundary": {
+    "source_documents": false,
+    "source_history_artifacts": false,
+    "p2_p3_inputs": false,
+    "p4_matrix": false,
+    "gra": false,
+    "rust_port": false,
+    "kanban_db": false,
+    "project_db": false,
+    "remote_refs": false,
+    "fetch_pull_push_merge_deploy": false,
+    "p6_created": false,
+    "code_rewrite_started": false
+  },
+  "next_gate": {
+    "immediate": "Independent Evaluator P5 after terminal native readback of task t_518149f7/run 328.",
+    "legal_p6": "After terminal Evaluator P5 and Final Control P5, orchestrator may create a non-destructive P6 plan; unresolved P3 conflicts still require owner decision.",
+    "p6_created": false
+  },
+  "push_deploy": "NIE WYKONANO",
+  "self_hash": "not included because evidence hash would be self-referential"
+}
