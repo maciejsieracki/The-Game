@@ -157,6 +157,7 @@ async function main() {
     const unitsJson = JSON.parse(fs.readFileSync(path.join(GRA, 'data', 'units.json'), 'utf8'));
     const wojownik = unitsJson.find(u => u && u.Jednostka === 'Wojownik');
     if (!wojownik) throw new Error('units.json: brak Wojownika');
+    const expectedWoodCost = wojownik['Surowiec (ilość)'];
 
     const run = (available, stock) => page.evaluate(({ udef, available, stock }) => {
       const A = window.__api;
@@ -227,8 +228,9 @@ async function main() {
         && none.statusMissing === String(required),
       none);
     check('B5: czerwony koszt Drewna pozostaje widoczny przy braku Drewna',
-      /stock-missing/.test(none.woodChipClass || '') && /50 Drewno/.test(none.text),
-      { className: none.woodChipClass, text: none.text });
+      /stock-missing/.test(none.woodChipClass || '')
+        && none.text.includes(`${expectedWoodCost} Drewno`),
+      { className: none.woodChipClass, expectedWoodCost, text: none.text });
     check('B6: brak rekrutów i brak Drewna są osobno w tooltipie',
       /Brakuje rekrutów/.test(none.buttonTitle || '') && /Brakuje w magazynie/.test(none.buttonTitle || ''),
       none.buttonTitle);
