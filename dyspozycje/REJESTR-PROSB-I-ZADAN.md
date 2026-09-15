@@ -7,7 +7,7 @@ Poniższe wpisy są podsumowaniem wykonanych tematów produktowych z boardu `Gam
 | Temat | Wykonane zadanie / rozwiązany problem | Dowód | Stan następny |
 |---|---|---|---|
 | `R-NAZWY-MIAST-AUDYT-STOLICE-I-PANSTWA-Q1` | Uporządkowano pierwsze stolice oraz rozdzielono pule nazw miast cywilizacji i państw-miast; Asyria używa `Aszur`, Fenicja `Byblos`, a wszystkie 15 cywilizacji ma kompletne pule. | Final Control `PASS`; 15 pul po `100 + 10`, brak kolizji w obrębie cywilizacji, testy nazw i typecheck zielone. Gate `t_fdcc6503`. | `INTEGRATION_REQUIRED`; bez merge/push/deploy. |
-| `R-STARTOWE-JEDNOSTKI-WSZYSTKIE-OSIE-Q1` | Naprawiono cztery osie jednostek startowych: gracz, główne AI, obce państwo-miasto oraz kopia państwa-miasta z osobnym suwakiem trudności; dodano ochronę pierwszego miasta i właściwe fallbacki. | Final Control `PASS-WITH-NOTES`; testy `90/0`, `16/0`, Chromium `25/0`, pierwszy founding `13/0`, typecheck `0`. Gate `t_12cdc828`. | `INTEGRATION_REQUIRED`; użytkownik uznał temat za wykonany, integracja nadal niepotwierdzona. |
+| `R-STARTOWE-JEDNOSTKI-WSZYSTKIE-OSIE-Q1` | `DEPLOY-ROBOCZA — NO-OP INTEGRATED` | Final Control `t_1bf336de`/run `355` potwierdził, że cztery osie są już obecne w aktualnym `origin/main` `5bd35e88`; wszystkie 6 allowlisted blobs identyczne z remote, static/live evidence PASS (`90/0`, `16/0`, `18/0`, `31/0`, `25/0`, `13/0`), brak zmiany produktu. Bundle ROBOCZA zawiera ten sam kod; nie wykonano fake commit/push. | `INFRA-045/046` timeouty Evaluatorów zachowane jako historia; `t_9009f348` no-op gate zamknięty |
 | `R-MIASTA-CYWILIZACJE-PANSTWA-WSPOLNA-LISTA-Q1` | Ujednolicono źródło nazw: stolica jest pod indeksem `0`, zwykłe miasta korzystają z prefiksu, a państwa-miasta z sufiksu; usunięto rozjazd między pulami i call-site’ami. | Final Control `PASS-WITH-NOTES`; 15 pul po 110, lustro `civs.json` `15/15`, brak pustych wpisów/duplikatów/kolizji, testy `125/0`, `9/0`, `7/0`, typecheck. Gate `t_41ed54cf`. | `INTEGRATION_REQUIRED`; gate pozostaje `blocked/unassigned` i wymaga Orkiestratora. |
 | `R-KREATOR-DOLNA-NAWIGACJA-Q1` | Sprawdzono zgłoszenie o zasłanianiu dolnej nawigacji Kreatora. W aktualnym kodzie problem nie występuje; nie zmieniano `newGameFlow.ts`, dodano czuły test regresji. | Final Control `PASS-WITH-NOTES`; prawdziwy Chromium `70/0` w 2K i 4K, mutant zakończony wymaganym `FAIL`, typecheck/build zielone. Gate `t_6e141657`. | `INTEGRATION_REQUIRED` dla allowlistowanego testu; bez zmiany logiki gry. |
 | `R-BUDYNKI-KARTY-GRAFIKA-TEKST-OVERLAP-Q1` / `INFRA-004` | Naprawiono nachodzenie tytułu karty budynku na ilustrację; układ działa dla krótkich i długich nazw, a granica grafika–tekst jest czytelna. | Final Control `PASS-WITH-NOTES`; real Chromium `21/0`, negative control odtworzył overlap, regresje i typecheck zielone. Gate `t_086633d9`. | Lokalny, allowlistowany wsad do integracji; nie ma go w `main`. |
@@ -8382,3 +8382,18 @@ referencyjnych zielone, `entity-card-historia-section-test` 36/36,
 
 - **STATUS:** `ROUTING ANOMALY — NO WORKER / CLOSED BY ORCHESTRATOR`
 - **KARTA/EVENT:** `t_820693ac`; `created` → `promoted` → completed run `348`; assignee `null`, brak claimu/worker runu. Gate zamknięty po deploy readbacku; nie tworzyć duplikatu.
+
+### `INFRA-045` — Evaluator startowych jednostek przekroczył limit czasu
+
+- **STATUS:** `RECOVERY HISTORY`
+- **KARTA/RUN:** `t_2420cdda` / run `353`; timeout `602 s > 600 s`; bez mutacji produktu.
+
+### `INFRA-046` — recovery Evaluator startowych jednostek przekroczył limit czasu
+
+- **STATUS:** `RECOVERY HISTORY`
+- **KARTA/RUN:** `t_dd951cd1` / run `354`; timeout `301 s > 300 s`; bez mutacji produktu; Final Control otrzymał bounded evidence.
+
+### `INFRA-047` — workerless start-unit no-op gate został promowany przez daemon
+
+- **STATUS:** `ROUTING ANOMALY — NO WORKER / CLOSED`
+- **KARTA/EVENT:** `t_9009f348`; process-only no-op gate `created → promoted → completed run 356`; assignee `null`, brak claimu/worker runu. Produkt był już obecny w `origin/main`/ROBOCZA; nie wykonano fake commit/push.
