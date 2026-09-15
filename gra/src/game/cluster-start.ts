@@ -20,6 +20,7 @@ import { startRelationForPair } from './diplomacy-layers';
 import type { Relation } from './diplomacy';
 import { hexDistance } from '../units/setup';
 import { MIN_CITY_DISTANCE, MIN_CITY_DISTANCE_START_CITY_STATE } from './cities';
+import { pickNextCityName } from './civ-names';
 
 export type { ClusterSpawnSlot, ClusterSpawnPlan, ForeignTypeClusterGroup, HumanDistanceMode };
 export { buildSameTypeRivalSlots, buildSameTypeRivalCandidateHexes } from '../map/cluster-spawn';
@@ -184,6 +185,8 @@ export function buildClusterStartPlan(input: BuildClusterStartInput): ClusterSta
     { q: spawnPlan.playerStartHex.q, r: spawnPlan.playerStartHex.r, isCityState: false },
   ];
 
+  const acceptedNamesByCiv = new Map<string, Set<string>>();
+
   for (const slot of spawnPlan.slots) {
     // P-MIASTA-ZBYT-BLISKO-SIEBIE-Q1 runda 2 (Zarzut 1 Evaluatora, POTWIERDZONY
     // własną symulacją Evaluatora: 3/20 map, w tym seed=42 owner 37 — DOKŁADNIE
@@ -209,22 +212,32 @@ export function buildClusterStartPlan(input: BuildClusterStartInput): ClusterSta
     });
     if (collides) continue;
 
-    aiOwnerCivMap.set(slot.ownerId, slot.typ);
-    ownerDisplayName.set(slot.ownerId, displayLabelForSlot(input.civs, slot));
-    if (slot.isSameTypeRival) simplifiedDiplomacyOwners.add(slot.ownerId);
-    else foreignTypeOwners.add(slot.ownerId);
-    if (!slot.isClusterCapital) typCityCopyOwners.add(slot.ownerId);
-    startRelations.set(slot.ownerId, startRelationForPair(slot.isSameTypeRival));
+    const usedNames = acceptedNamesByCiv.get(slot.typ) ?? new Set<string>();
+    acceptedNamesByCiv.set(slot.typ, usedNames);
+    const acceptedName = input.cityNamesPools
+      ? pickNextCityName(input.cityNamesPools, slot.typ, usedNames, slot.nazwaMiasta || 'Miasto')
+      : slot.nazwaMiasta;
+    usedNames.add(acceptedName);
+    const acceptedSlot = acceptedName === slot.nazwaMiasta
+      ? slot
+      : { ...slot, nazwaMiasta: acceptedName };
+
+    aiOwnerCivMap.set(acceptedSlot.ownerId, acceptedSlot.typ);
+    ownerDisplayName.set(acceptedSlot.ownerId, displayLabelForSlot(input.civs, acceptedSlot));
+    if (acceptedSlot.isSameTypeRival) simplifiedDiplomacyOwners.add(acceptedSlot.ownerId);
+    else foreignTypeOwners.add(acceptedSlot.ownerId);
+    if (!acceptedSlot.isClusterCapital) typCityCopyOwners.add(acceptedSlot.ownerId);
+    startRelations.set(acceptedSlot.ownerId, startRelationForPair(acceptedSlot.isSameTypeRival));
 
     spawnCities.push({
-      q: slot.q,
-      r: slot.r,
-      ownerId: slot.ownerId,
-      name: slot.nazwaMiasta,
+      q: acceptedSlot.q,
+      r: acceptedSlot.r,
+      ownerId: acceptedSlot.ownerId,
+      name: acceptedSlot.nazwaMiasta,
     });
-    aiStartHexes.push({ q: slot.q, r: slot.r, ownerId: slot.ownerId });
-    acceptedForDistance.push({ q: slot.q, r: slot.r, isCityState: slotIsCityState });
-    acceptedOwnerIds.add(slot.ownerId);
+    aiStartHexes.push({ q: acceptedSlot.q, r: acceptedSlot.r, ownerId: acceptedSlot.ownerId });
+    acceptedForDistance.push({ q: acceptedSlot.q, r: acceptedSlot.r, isCityState: slotIsCityState });
+    acceptedOwnerIds.add(acceptedSlot.ownerId);
   }
 
   // P-MIASTA-ZBYT-BLISKO-SIEBIE-Q1 runda 2: `foreignTypeClusters` i

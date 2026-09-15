@@ -108,13 +108,23 @@ export function buildSameTypeRivalSlots(
     mapCenterFromGameMap(map),
   );
   const slots: ClusterSpawnSlot[] = [];
+  const usedNames = new Set<string>();
+  usedNames.add(playerStartCityName(civs, playerTyp, pools, usedNames));
   let ownerId = firstOwnerId;
   positions.forEach((pos, idx) => {
+    const nazwaMiasta = clusterRivalCityName(
+      civs,
+      playerTyp,
+      idx + 1,
+      pools,
+      usedNames,
+    );
+    usedNames.add(nazwaMiasta);
     slots.push({
       ownerId: ownerId++,
       q: pos.q,
       r: pos.r,
-      nazwaMiasta: clusterRivalCityName(civs, playerTyp, idx + 1, pools),
+      nazwaMiasta,
       typ: playerTyp,
       isSameTypeRival: true,
       isPlayerCapital: false,
@@ -320,7 +330,6 @@ export function buildClusterSpawnPlan(input: BuildClusterSpawnInput): ClusterSpa
     return passesLocalLandGate(map, q, r);
   }
   const slots: ClusterSpawnSlot[] = [];
-  const clusterCapitalOwnerIds: number[] = [];
   let nextOwnerId = 1;
   const placedCapitals: Array<{ q: number; r: number }> = [{ q: capPos.q, r: capPos.r }];
 
@@ -346,22 +355,13 @@ export function buildClusterSpawnPlan(input: BuildClusterSpawnInput): ClusterSpa
       }
       continue;
     }
-    let rivalIdx = 0;
     for (const m of klaster.miasta) {
       const ownerId = nextOwnerId++;
-      let nazwa: string;
-      if (m.isCapital) {
-        nazwa = foreignCapitalCityName(civs, klaster.typ, cityNamesPools);
-        clusterCapitalOwnerIds.push(ownerId);
-      } else {
-        rivalIdx += 1;
-        nazwa = clusterRivalCityName(civs, klaster.typ, rivalIdx, cityNamesPools);
-      }
       slots.push({
         ownerId,
         q: m.q,
         r: m.r,
-        nazwaMiasta: nazwa,
+        nazwaMiasta: '',
         typ: klaster.typ,
         isSameTypeRival: false,
         isPlayerCapital: false,
@@ -404,12 +404,31 @@ export function buildClusterSpawnPlan(input: BuildClusterSpawnInput): ClusterSpa
   const hardClusterCapitalOwnerIds = hardAcceptedSlots
     .filter(s => s.isClusterCapital)
     .map(s => s.ownerId);
+  const usedNamesByCiv = new Map<string, Set<string>>();
+  const rivalIndexByCiv = new Map<string, number>();
+  const namedAcceptedSlots = hardAcceptedSlots.map((slot) => {
+    let used = usedNamesByCiv.get(slot.typ);
+    if (!used) {
+      used = new Set<string>();
+      usedNamesByCiv.set(slot.typ, used);
+    }
+    let name: string;
+    if (slot.isClusterCapital) {
+      name = foreignCapitalCityName(civs, slot.typ, cityNamesPools, used);
+    } else {
+      const rivalIndex = (rivalIndexByCiv.get(slot.typ) ?? 0) + 1;
+      rivalIndexByCiv.set(slot.typ, rivalIndex);
+      name = clusterRivalCityName(civs, slot.typ, rivalIndex, cityNamesPools, used);
+    }
+    used.add(name);
+    return { ...slot, nazwaMiasta: name };
+  });
 
   return {
     playerStartHex: capPos,
     playerStartCityName: playerStartCityName(civs, playerTyp, cityNamesPools),
-    slots: hardAcceptedSlots,
-    foreignTypeClusters: groupForeignTypeClusters(hardAcceptedSlots),
+    slots: namedAcceptedSlots,
+    foreignTypeClusters: groupForeignTypeClusters(namedAcceptedSlots),
     placement,
     pendingSameTypeRivals,
     pendingSameTypeRivalHexes,

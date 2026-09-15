@@ -179,6 +179,17 @@ for (const fc of plan.foreignTypeClusters) {
   }
 }
 
+for (const fc of plan.foreignTypeClusters) {
+  const names = plan.spawnCities
+    .filter(c => fc.ownerIds.includes(c.ownerId))
+    .map(c => c.name);
+  const expected = cityNamesPools[fc.typ]?.miasta_cywilizacji?.slice(0, names.length) ?? [];
+  assert(
+    JSON.stringify(names) === JSON.stringify(expected),
+    `wspólna kolejka ${fc.typ}: capital + klastry = common[0..${Math.max(0, names.length - 1)}]`,
+  );
+}
+
 const chinczycy = plan.foreignTypeClusters.find(fc => fc.typ === 'chinczycy');
 if (chinczycy) {
   const chinskie = plan.spawnCities.filter(c => chinczycy.ownerIds.includes(c.ownerId));

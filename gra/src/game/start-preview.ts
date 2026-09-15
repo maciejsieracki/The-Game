@@ -20,9 +20,9 @@ import {
 /** Kontrakt przekazywany w NewGameParams.startPreview → weryfikacja w SILNIK. */
 export interface StartPreview {
   playerCivId: string;
-  /** N-1A: nazwyKlastra[0] */
+  /** N-1A: pierwsza wolna nazwa wspólnej kolejki cywilizacji. */
   playerCapitalName: string;
-  /** N-3A: nazwyKlastra[1..N] */
+  /** N-3A: kolejne pierwsze wolne nazwy wspólnej kolejki. */
   sameTypeRivalNames: readonly string[];
   /** D-START-1B: liczba rywali tego samego typu w klastrze gracza */
   sameTypeRivalCount: number;
@@ -38,7 +38,7 @@ export interface StartPreview {
 
 export interface BuildStartPreviewInput {
   civs: CivsData;
-  /** Pule nazw — bez tego podgląd używa legacy nazwyKlastra (max 9 unikalnych rywali). */
+  /** Pule nazw — bez tego podgląd korzysta z `civs.json.nazwyMiast`. */
   cityNamesPools?: CityNamesPoolsData;
   playerCivId: string;
   /** Etykieta menu np. Standardowy — opcjonalna przed krokiem Ustawienia */
@@ -66,10 +66,14 @@ export function buildStartPreview(input: BuildStartPreviewInput): StartPreview {
   const activeTypes = activeTypesCount ?? defaultCivTypesFromMapLabel(mapLabel);
   const foreignTypes = Math.max(0, activeTypes - 1);
 
-  const playerCapitalName = playerStartCityName(civs, playerCivId, cityNamesPools);
+  const usedNames = new Set<string>();
+  const playerCapitalName = playerStartCityName(civs, playerCivId, cityNamesPools, usedNames);
+  usedNames.add(playerCapitalName);
   const sameTypeRivalNames: string[] = [];
   for (let i = 1; i <= rivalN; i++) {
-    sameTypeRivalNames.push(clusterRivalCityName(civs, playerCivId, i, cityNamesPools));
+    const name = clusterRivalCityName(civs, playerCivId, i, cityNamesPools, usedNames);
+    sameTypeRivalNames.push(name);
+    usedNames.add(name);
   }
 
   const civLabel = civDisplayName(civs, playerCivId);

@@ -1,51 +1,78 @@
-# R-NAZWY-MIAST-PANSTWA-POOL-POPULARNOSC-Q1 — obecna zasada i future spec
+# R-NAZWY-MIAST-PANSTWA-POOL-POPULARNOSC-Q1 — wspólna kolejka nazw
 
 **Data zapisu:** 2026-09-15
-**Status:** `OWNER DECISION B REFINED — CURRENT RULE PRESERVED / FUTURE SPEC`
+**Status:** `OWNER DECISION A+C — IMPLEMENTACJA LOKALNA / NOT INTEGRATED`
 **Domena:** `GAME`
-**Implementacja tej specyfikacji:** `NIE WYKONANO`
+**Implementacja tej specyfikacji:** `WYKONANO LOKALNIE; BRAK COMMITU, PUSHU I DEPLOYU`
 **Projekt/board:** `p_9ae9ac64` / `the-game-real24` / profil `default`
 
-## Obowiązująca zasada gry
+## Obowiązująca zasada rosteru
 
-Na mapie nie można wybrać dwóch cywilizacji tego samego typu. Właściciel wyraźnie pozostawił tę zasadę bez zmian. Nie zmieniamy obecnego wyboru cywilizacji ani aktualnego spawnu.
+Na mapie nadal nie można wybrać dwóch cywilizacji tego samego typu. Właściciel
+pozostawił ten limit bez zmian. Ta implementacja nie zmienia wyboru cywilizacji,
+liczby typów ani spawnu rosteru.
 
-## Zachowana przyszłościowa reguła nazw
+## Obowiązująca zasada nazw
 
-Jeżeli w przyszłości zostanie dopuszczona druga cywilizacja tego samego typu, obowiązuje następująca intencja nazewnicza:
+1. `miasta_cywilizacji[0..109]` jest jedną uporządkowaną kolejką 110 nazw dla
+   jednego `ikonaId`. Dane źródłowe nie zostały przestawione ani zmienione;
+   `civs.json.nazwyMiast` pozostaje lustrem tej kolejki.
+2. Stolica, miasto-państwo, stolica obcego klastra, founding gracza, founding AI
+   oraz podgląd startu pobierają pierwszy wolny wpis tej samej kolejki.
+3. Zajęte nazwy są odtwarzane z żywych `City.name`, po typie cywilizacji
+   (`civTypeForOwner`). Nie ma osobnego kursora do utrwalania w save/load;
+   wczytanie stanu rekonstruuje kolejkę z zapisanych nazw miast.
+4. Caller dodaje nazwę do zbioru dopiero po udanym utworzeniu miasta. Nieudana
+   próba nie zużywa pozycji kolejki.
+5. Po wyczerpaniu wszystkich 110 pozycji wybierana jest pierwsza baza z
+   kolizyjnie bezpiecznym suffixem: `Ateny II`, następnie `Ateny III` itd.;
+   zajęte suffixy i nazwy obecne w kolejce są pomijane.
+6. Jedno miasto ma jedną nazwę w obrębie kolejki swojej cywilizacji. Dawny
+   podział `100` nazw founding + `10` nazw państw-miast pozostaje tylko
+   kompatybilnym widokiem danych, nie osobnym alokatorem.
 
-1. Jedno miasto ma jedną unikalną nazwę.
-2. Nie tworzymy nazw typu `Ateny II`, `Ateny III` ani podobnych suffixów.
-3. Pierwsza nazwa jest zarezerwowana dla cywilizacji.
-4. Kolejna cywilizacja tego samego typu pobiera następną pozycję kolejki tej cywilizacji; następne instancje pobierają kolejne pozycje.
-5. Ta reguła jest zachowana jako specyfikacja na przyszłość i nie zmienia obecnego limitu jednego typu cywilizacji na mapie.
+## Zakres implementacji
 
-## Stan potwierdzony przez recovery
+- `gra/src/game/city-names-pool.ts` — kanoniczny first-free, zbiór żywych
+  nazw, wspólna pula i bezpieczny overflow suffixów.
+- `gra/src/game/civ-names.ts` — wspólna semantyka dla stolicy, państwa-miasta,
+  founding i fallbacków bez eksportu puli.
+- `gra/src/map/cluster-spawn.ts` — nazwanie stolic i miast obcych klastrów
+  jedną kolejką per cywilizacja.
+- `gra/src/game/start-preview.ts` — podgląd konsumuje tę samą kolejność co
+  runtime.
+- `gra/src/main.ts` — player founding, AI founding, deferred city-state/foreign
+  spawn oraz etykiety korzystają z żywych `City.name`.
+- Testy allowlisty: `city-names-pool-test.cjs`, `civ-names-test.cjs`,
+  `start-preview-test.cjs`, `shared-city-name-queue-test.cjs` oraz bounded
+  assertion w `cluster-start-test.cjs`.
 
-Karta `t_c375f3d9`, run `317`, potwierdziła:
+## Weryfikacja recovery Operatora
 
-- obecny kontrakt danych `100` nazw founding + `10` nazw państw-miast;
-- istniejące fallbacki;
-- brak literalnego `no name` w skanowanych źródłach;
-- poprawkę recovery dotyczącą indeksowania suffixu, która nie jest wdrażana, ponieważ właściciel odrzucił model suffixów `II/III`.
+Karta `t_e0c1e240`, run `337`, zachowała istniejący partial diff i wykonała
+wyłącznie bounded gates:
 
-## Odłożone do przyszłej decyzji
+- `node tools/city-names-pool-test.cjs` — `123 passed, 0 failed`;
+- `node tools/civ-names-test.cjs` — `109 passed, 0 failed`;
+- `node tools/start-preview-test.cjs` — `6 passed, 0 failed`;
+- `node tools/shared-city-name-queue-test.cjs` — `10 passed, 0 failed`;
+- `npx tsc --noEmit` — exit `0`;
+- `git diff --check` — exit `0`.
 
-Jeżeli właściciel otworzy kiedyś zmianę limitu cywilizacji tego samego typu, trzeba wtedy doprecyzować:
+## Granice i następna bramka
 
-- czy kolejka obejmuje 100 nazw regularnych, czy wszystkie 110 nazw;
-- czy 10 nazw państw-miast uczestniczy w tej samej kolejce;
-- jak utrwalać i odtwarzać kursor kolejki w save/load;
-- jaki fallback stosować po wyczerpaniu puli;
-- jak chronić stolicę i rozróżniać nazwy państw-miast.
-
-Do czasu takiej decyzji nie tworzyć Operatora, Evaluatora ani patcha produktu dla tej future spec. Nie wykonywać deployu names.
+Nie uruchamiano `cluster-start-test.cjs`, pełnego builda, dev-serwera ani
+cluster-start smoke testu, zgodnie z zakresem recovery. Pozostaje niezależna
+weryfikacja Evaluatora oraz późniejsza integracja; ten lokalny diff nie jest
+jeszcze zmianą w `origin/main` ani deployem.
 
 ## Kanban / proweniencja
 
 ```text
 Pierwotny Operator: t_7a01b0bf / run 308 — TIMEOUT
 Recovery Operator:  t_c375f3d9 / run 317 — DECISION_REQUIRED
+Operator recovery:  t_e0c1e240 / run 337 — PASS-WITH-NOTES
 ```
 
-Raport recovery: `dyspozycje/autobot/runs/R-NAZWY-MIAST-PANSTWA-POOL-POPULARNOSC-Q1/recovery-r1/recovery-report.md`.
+Historyczny raport recovery pozostaje bez zmian:
+`dyspozycje/autobot/runs/R-NAZWY-MIAST-PANSTWA-POOL-POPULARNOSC-Q1/recovery-r1/recovery-report.md`.

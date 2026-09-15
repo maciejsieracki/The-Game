@@ -48,12 +48,11 @@ console.log('civ-names-test (wspólna sekwencja nazw)\n');
 assert(M.NAZWY_KLASTRA_LEN === 10, '10 nazw per typ');
 assert(M.CITY_NAMES_POOL_COMMON_LEN === 110, 'wspólna lista ma 110 nazw');
 assert(M.validateNazwyKlastra(civs).length === 0, 'civs.json: 15 wspólnych list');
-// Stolica bez jawnej puli korzysta z pierwszej nazwy regularnej, a państwa-miasta
-// z końcowego suffixu tej samej wspólnej listy.
+// Każda rola bez jawnej puli korzysta z tej samej wspólnej listy nazwMiast.
 for (const civ of civs.cywilizacje) {
   const id = civ.ikonaId;
-  const expected = pools[id]?.miasta_cywilizacji?.[0];
-  const suffix = pools[id]?.miasta_cywilizacji?.slice(100, 110) ?? [];
+  const common = pools[id]?.miasta_cywilizacji ?? [];
+  const expected = common[0];
   assert(
     JSON.stringify(civ.nazwyMiast ?? []) === JSON.stringify(pools[id]?.miasta_cywilizacji ?? []),
     `nazwyMiast/pula regularna pełna lista ${id}`,
@@ -61,9 +60,9 @@ for (const civ of civs.cywilizacje) {
   assert(civ.nazwyMiast?.[0] === expected, `nazwyMiast/pula regularna [0] ${id} → ${expected}`);
   assert(M.playerStartCityName(civs, id) === expected, `N-1A bez puli ${id} → ${expected}`);
   assert(M.foreignCapitalCityName(civs, id) === expected, `N-2A bez puli ${id} → ${expected}`);
-  assert(M.clusterRivalCityName(civs, id, 1) === suffix[0], `N-3A suffix [1] ${id}`);
-  assert(M.clusterRivalCityName(civs, id, 2) === suffix[1], `N-3A suffix [2] ${id}`);
-  assert(M.clusterRivalCityName(civs, id, 10) === suffix[9], `N-3A suffix [10] ${id}`);
+  assert(M.clusterRivalCityName(civs, id, 1) === common[1], `N-3A wspólna kolejka [1] ${id}`);
+  assert(M.clusterRivalCityName(civs, id, 2) === common[2], `N-3A wspólna kolejka [2] ${id}`);
+  assert(M.clusterRivalCityName(civs, id, 10) === common[10], `N-3A wspólna kolejka [10] ${id}`);
 }
 
 const legacyOnlyCivs = { cywilizacje: [{ ikonaId: 'grecy', nazwyKlastra: ['Sykion'] }] };

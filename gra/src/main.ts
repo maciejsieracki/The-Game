@@ -320,7 +320,13 @@ import {
   effectiveGameDifficultyForOwnerPure,
 } from './game/effective-difficulty-for-owner';
 import { clusterCityStateRadius, clusterHubChainReachHex, MIN_DIST_START_CITY_STATE, type ClusterPlacement } from './map/clusters';
-import { playerStartCityName, clusterRivalCityName, pickAiFoundedCityName, suggestPlayerFoundCityName } from './game/civ-names';
+import {
+  playerStartCityName,
+  pickAiFoundCityName,
+  pickNextCityName,
+  collectUsedCityNamesFromCities,
+  suggestPlayerFoundCityName,
+} from './game/civ-names';
 import {
   clearCityStateFlagOnCapture,
   formatOwnerDiploLabel,
@@ -8293,32 +8299,34 @@ async function boot(): Promise<void> {
       return row?.Cywilizacja != null ? String(row.Cywilizacja) : undefined;
     }
 
-  /** Indeks rywala klastra (1-based) wśród ownerów tego samego typu — do puli nazw miast-państw. */
-    function clusterRivalIndexForOwner(ownerId: number, civKey: string): number {
-      const peerSet = new Set<number>([...simplifiedDiplomacyOwners, ...typCityCopyOwners]);
-      const peers = [...peerSet]
-        .filter(oid => aiOwnerCivMap.get(oid) === civKey)
-        .sort((a, b) => a - b);
-      const pos = peers.indexOf(ownerId);
-      if (pos >= 0) return pos + 1;
-      const foreignPeers = [...foreignTypeOwners]
-        .filter(oid => aiOwnerCivMap.get(oid) === civKey && !clusterCapitalOwnerIds.has(oid))
-        .sort((a, b) => a - b);
-      const fpos = foreignPeers.indexOf(ownerId);
-      return fpos >= 0 ? fpos + 1 : 1;
-    }
-
-    /** Nazwa z puli klastra gdy brak miasta / cache (nigdy AI N / Rywal N w UI). */
+    /** Nazwa z jednej kolejki cywilizacji gdy brak miasta / cache (nigdy AI N / Rywal N w UI). */
     function poolCityStateNameForOwner(ownerId: number): string | undefined {
       const civKey = aiOwnerCivMap.get(ownerId);
       if (!civKey) return undefined;
-      const rivalIdx = clusterRivalIndexForOwner(ownerId, civKey);
-      const fromPool = clusterRivalCityName(
-        data.civs,
-        civKey,
-        rivalIdx,
-        data.cityNamesPools,
-      );
+      const liveCityName = cities.find(c => c.ownerId === ownerId)?.name;
+      if (liveCityName && !isTechnicalOwnerLabel(liveCityName)) return liveCityName;
+
+      const used = collectUsedCityNamesFromCities(cities, civTypeForOwner, civKey);
+      const ownerIds = new Set<number>([
+        ownerId,
+        ...aiOwnerCivMap.keys(),
+        ...humanSeats.humanOwnerIds,
+      ]);
+      const sameCivOwnerIds = [...ownerIds]
+        .filter(oid => civTypeForOwner(oid) === civKey)
+        .sort((a, b) => a - b);
+      for (const oid of sameCivOwnerIds) {
+        const cityName = cities.find(c => c.ownerId === oid)?.name;
+        if (cityName) {
+          used.add(cityName);
+          if (oid === ownerId && !isTechnicalOwnerLabel(cityName)) return cityName;
+          continue;
+        }
+        const allocated = pickNextCityName(data.cityNamesPools, civKey, used);
+        if (oid === ownerId) return isTechnicalOwnerLabel(allocated) ? undefined : allocated;
+        used.add(allocated);
+      }
+      const fromPool = pickNextCityName(data.cityNamesPools, civKey, used);
       return isTechnicalOwnerLabel(fromPool) ? undefined : fromPool;
     }
 
@@ -8903,11 +8911,16 @@ async function boot(): Promise<void> {
         ) {
           ownerId = allocFreeRivalOwnerId();
         }
-        const nazwa = clusterRivalCityName(
-          data.civs,
+        const usedNames = collectUsedCityNamesFromCities(
+          cities,
+          civTypeForOwner,
           rivalCivId,
-          _rivalsFounded + 1,
+        );
+        const nazwa = pickNextCityName(
           data.cityNamesPools,
+          rivalCivId,
+          usedNames,
+          `Rywal ${_rivalsFounded + 1}`,
         );
         aiOwnerCivMap.set(ownerId, rivalCivId);
         setupAiOwnerEpoch(ownerId, _menuEpochId || 'kamien');
@@ -9076,8 +9089,16 @@ async function boot(): Promise<void> {
       let _scFounded = 0, _scRejected = 0;
       for (const sc of toSpawn) {
         const isCS = simplifiedDiplomacyOwners.has(sc.ownerId) || typCityCopyOwners.has(sc.ownerId);
-        const c = foundCityAt(sc.q, sc.r, sc.ownerId, cities, map, sc.name, isCS);
+        const civId = aiOwnerCivMap.get(sc.ownerId) ?? '';
+        const usedNames = civId
+          ? collectUsedCityNamesFromCities(cities, civTypeForOwner, civId)
+          : new Set<string>();
+        const cityName = civId
+          ? pickNextCityName(data.cityNamesPools, civId, usedNames, sc.name || 'Miasto')
+          : sc.name;
+        const c = foundCityAt(sc.q, sc.r, sc.ownerId, cities, map, cityName, isCS);
         if (c) {
+          ownerDisplayName.set(sc.ownerId, c.name);
           if (isCS) {
             c.startCityState = true;
             grantCityStateStartUnits(
@@ -9110,7 +9131,7 @@ async function boot(): Promise<void> {
           }
           seedCityOwnerDefaults(c);
           if (clusterCapitalOwnerIds.has(sc.ownerId)) {
-            grantDifficultyStartBonusesForMajorCapital(sc.ownerId, c, sc.name);
+            grantDifficultyStartBonusesForMajorCapital(sc.ownerId, c, c.name);
           }
           _scFounded++;
         } else {
@@ -34070,14 +34091,13 @@ async function boot(): Promise<void> {
                     const src = cities.find(c => c.id === aff.sourceCityId);
                     if (src) src.population = Math.max(1, src.population - aff.kosztLudnosc);
                   }
-                  const ownerCities = cities.filter(c => c.ownerId === ownerId);
-                  const usedNames = new Set(ownerCities.map(c => c.name));
                   const civId = aiOwnerCivMap.get(ownerId) ?? '';
-                  const aiName = pickAiFoundedCityName(
+                  const aiName = pickAiFoundCityName(
                     data.cityNamesPools,
                     civId,
-                    usedNames,
-                    ownerCities.length,
+                    cities,
+                    civTypeForOwner,
+                    ownerId,
                   );
                   const c = foundCityAt(cmd.q, cmd.r, ownerId, cities, map, aiName);
                   if (c) {

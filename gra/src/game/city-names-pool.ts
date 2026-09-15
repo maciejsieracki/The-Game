@@ -2,8 +2,8 @@
  * city-names-pool.ts — pule nazw miast per cywilizacja (B-city-names-pools).
  *
  * Źródło: gra/data/city-names-pools.json
- *   miasta_cywilizacji[0..99]   — miasta imperium (founding gracza/AI)
- *   miasta_cywilizacji[100..109] — istniejące miasta-państwa
+ *   miasta_cywilizacji[0..109] — jedna kolejka dla wszystkich miast tej cywilizacji
+ *   (stolica, miasto-państwo, founding gracza/AI oraz klastry obce)
  *
  * Eksport Excel (przyszłość): panele-sterowania/Nazwy-miast-cywilizacji.xlsx
  *   → generate-city-names-xlsx.py → Maciej edytuje → export-city-names.py → JSON
@@ -24,7 +24,7 @@ export const CITY_NAMES_POOL_COMMON_LEN = CITY_NAMES_POOL_REGULAR_LEN + CITY_NAM
 /** Długość końcowego suffixu miast-państw — leaf, bez importu z civ-names. */
 export const NAZWY_KLASTRA_LEN = CITY_NAMES_POOL_STATE_LEN;
 
-/** Bezpieczny odczyt indeksu (N-3A: stała kolejność z JSON). */
+/** Bezpieczny odczyt indeksu dla kompatybilnych, niealokacyjnych callerów. */
 export function nazwaKlastraAt(
   names: readonly string[],
   index: number,
@@ -48,6 +48,11 @@ function poolEntry(pools: CityNamesPoolsData, ikonaId: string): CityNamesPoolEnt
   return pools[ikonaId];
 }
 
+function commonNames(pools: CityNamesPoolsData, ikonaId: string): readonly string[] {
+  return poolEntry(pools, ikonaId)?.miasta_cywilizacji
+    ?.slice(0, CITY_NAMES_POOL_COMMON_LEN) ?? [];
+}
+
 /** Indeks pozycji rywala przy wejściu 1-based (zachowana pomocnicza semantyka legacy). */
 export function rivalPoolIndex(rivalIndex1Based: number, poolLen: number): number {
   if (poolLen <= 1) return 0;
@@ -55,111 +60,55 @@ export function rivalPoolIndex(rivalIndex1Based: number, poolLen: number): numbe
   return ((Math.max(1, rivalIndex1Based) - 1) % rivalSlots) + 1;
 }
 
-/** Nazwa państwa-miasta z końcowego suffixu wspólnej listy (indeks 0-based). */
+/** Kompatybilny adapter nazwy z kolejki (indeks 0-based, bez osobnej puli roli). */
 export function stateCityNameAt(
   pools: CityNamesPoolsData,
   ikonaId: string,
   index: number,
   fallback: string,
+  usedNames?: ReadonlySet<string>,
 ): string {
-  const common = poolEntry(pools, ikonaId)?.miasta_cywilizacji;
-  const idx = CITY_NAMES_POOL_REGULAR_LEN + index;
-  if (common?.length && index >= 0 && idx < common.length && common[idx]) {
-    return common[idx] as string;
-  }
-  return fallback;
+  const common = commonNames(pools, ikonaId);
+  if (!common?.length || index < 0) return fallback;
+  // Gdy caller nie ma jeszcze migawki żywych miast, `index` zachowuje dawną
+  // semantykę numeru przydziału: pierwsze `index` pozycji są już zajęte.
+  const implicitUsed = usedNames ?? new Set(common.slice(0, index));
+  return pickNextCityNameFromNames(common, implicitUsed, fallback);
 }
 
-/**
- * N-1A: stolica GRACZA = `miasta_cywilizacji[0]`.
- *
- * R-MAPA-ETYKIETA-STOLICY-NAZWA-MIASTA-Q1, runda 3 (R3-2) — NAPRAWA BŁĘDU, symetryczna do
- * naprawionego w rundzie 2 `foreignCapitalFromPool`: do tej pory pierwsze miasto gracza szło
- * przez stary odczyt pozycji 0 z puli państw-miast. Dla 13 z 15 cywilizacji obie pule miały
- * na pozycji 0 to samo, więc różnicy nie było widać; dwa
- * wyjątki to dokładnie ta sama klasa pomyłki, którą właściciel zgłosił dla AI, tylko po jego
- * własnej stronie: gracz-Chińczyk startował w mieście `Qin` (nazwa państwa i dynastii, NIE
- * miasta) zamiast `Xi'an`, gracz-Słowianin w `Kiev` zamiast `Kijów`.
- * Stolica IMPERIUM należy do prefixu listy; końcowy suffix opisuje miasta-państwa
- * klastra i zostaje źródłem dla `clusterRivalFromPool`.
- *
- * BEZ DUPLIKATU NAZW: obce klastry pomijają typ gracza (`cluster-spawn.ts:332`), a rywale
- * tego samego typu biorą nazwy z końcowego suffixu (`clusterRivalCityName`), więc żadne
- * inne miasto w partii nie sięga po `miasta_cywilizacji[0]` cywilizacji gracza.
- *
- * Fallback zachowany bez zmian: brak listy miast cywilizacji → stara ścieżka
- * (dalej `'Stolica'`), żeby niekompletna pula nie dawała pustej nazwy.
- */
-export function playerCapitalFromPool(pools: CityNamesPoolsData, ikonaId: string): string {
-  const first = poolEntry(pools, ikonaId)?.miasta_cywilizacji?.[0];
-  if (first) return first;
-  return stateCityNameAt(pools, ikonaId, 0, 'Stolica');
+/** Stolica lub kolejne miasto: pierwszy wolny wpis wspólnej kolejki cywilizacji. */
+export function playerCapitalFromPool(
+  pools: CityNamesPoolsData,
+  ikonaId: string,
+  usedNames: ReadonlySet<string> = new Set(),
+): string {
+  return pickNextCityName(pools, ikonaId, usedNames, 'Stolica');
 }
 
-/**
- * N-2A / N-3A: rywal klastra (1-based).
- * Indeksy 1..10 mapują kolejno na końcowy suffix wspólnej listy; powyżej —
- * kolejne unikalne nazwy z prefixu regularnego, z pominięciem zastrzeżonego
- * indeksu 0 (stolicy).
- */
+/** Adapter rywala klastra do wspólnej kolejki (1-based tylko dla legacy fallbacku). */
 export function clusterRivalFromPool(
   pools: CityNamesPoolsData,
   ikonaId: string,
   rivalIndex1Based: number,
+  usedNames?: ReadonlySet<string>,
 ): string {
-  const entry = poolEntry(pools, ikonaId);
-  const common = entry?.miasta_cywilizacji ?? [];
-  const pan = common.slice(CITY_NAMES_POOL_REGULAR_LEN, CITY_NAMES_POOL_COMMON_LEN);
+  const common = commonNames(pools, ikonaId);
   const fallback = `Rywal ${rivalIndex1Based}`;
-
-  if (!pan.length || rivalIndex1Based < 1) {
-    return fallback;
-  }
-
-  if (rivalIndex1Based <= pan.length) {
-    const name = pan[rivalIndex1Based - 1];
-    if (name) return name;
-  }
-
-  // Indeks 0 jest zastrzeżony dla stolicy także w ścieżce overflow. Nie
-  // pozwalaj, aby liczba rywali poza zwykłym limitem przywróciła tę nazwę.
-  const regular = common.slice(1, CITY_NAMES_POOL_REGULAR_LEN);
-  const usedInCluster = new Set(pan.filter(Boolean));
-  const overflowIndex = rivalIndex1Based - pan.length - 1;
-
-  let skipped = 0;
-  for (const name of regular) {
-    if (!name || usedInCluster.has(name)) continue;
-    if (skipped === overflowIndex) return name;
-    skipped++;
-  }
-
-  const base = regular.find(n => n && !usedInCluster.has(n));
-  if (base) {
-    return cityNameWithSuffix(base, overflowIndex + 2);
-  }
-
-  return fallback;
+  if (rivalIndex1Based < 1) return fallback;
+  // Kompatybilność dla callerów legacy: stolica zajmuje common[0], a numer
+  // rywala opisuje kolejną pozycję kolejki. Runtime przekazuje prawdziwy zbiór
+  // `usedNames`, więc ta gałąź nie jest osobnym kursorem ani pulą.
+  const implicitUsed = usedNames ?? new Set(common.slice(0, rivalIndex1Based));
+  return pickNextCityNameFromNames(common, implicitUsed, fallback);
 }
 
-/**
- * Stolica obcego klastra (państwo AI) = `miasta_cywilizacji[0]`.
- *
- * R-MAPA-ETYKIETA-STOLICY-NAZWA-MIASTA-Q1, runda 2 (R2-2) — NAPRAWA BŁĘDU: do tej pory szło
- * przez stary odczyt pozycji 0 z puli państw-miast. Dla 13 z 15 cywilizacji obie pule miały
- * na pozycji 0 to samo, więc różnicy nie było widać;
- * dwa wyjątki widać w grze: Chińczycy dostawali `Qin` (nazwa państwa i dynastii, NIE miasta —
- * to dosłownie napis ze zrzutu właściciela) zamiast `Xi'an`, Słowianie `Kiev` zamiast `Kijów`.
- * Stolica IMPERIUM należy do prefixu listy; końcowy suffix opisuje miasta-państwa
- * klastra i zostaje źródłem dla `clusterRivalFromPool`.
- *
- * Fallback zachowany bez zmian: brak listy miast cywilizacji → stara ścieżka
- * (dalej `ikonaId`), żeby niekompletna pula nie dawała pustej nazwy.
- */
-export function foreignCapitalFromPool(pools: CityNamesPoolsData, ikonaId: string): string {
-  const first = poolEntry(pools, ikonaId)?.miasta_cywilizacji?.[0];
-  if (first) return first;
-  return stateCityNameAt(pools, ikonaId, 0, ikonaId);
+/** Stolica obcego klastra: pierwszy wolny wpis tej samej kolejki cywilizacji. */
+export function foreignCapitalFromPool(
+  pools: CityNamesPoolsData,
+  ikonaId: string,
+  usedNames: ReadonlySet<string> = new Set(),
+): string {
+  return pickNextCityName(pools, ikonaId, usedNames, ikonaId);
 }
 
 /**
@@ -192,7 +141,7 @@ export function collectUsedCityNamesFromCities(
   const used = new Set<string>();
   for (const c of cities) {
     if (civTypeForOwner(c.ownerId) === targetCivId) {
-      used.add(c.name);
+      if (c.name) used.add(c.name);
     }
   }
   return used;
@@ -201,32 +150,62 @@ export function collectUsedCityNamesFromCities(
 /** Sufiks gdy pula wyczerpana: „Ateny II", „Ateny III"… */
 export function cityNameWithSuffix(base: string, ordinal: number): string {
   if (ordinal <= 1) return base;
-  const roman = ['', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X'];
+  const roman = ['', '', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X'];
   const suffix = ordinal <= 10 ? roman[ordinal] : String(ordinal);
   return `${base} ${suffix}`;
 }
 
 /**
- * Następna wolna nazwa z puli regularnej (miasta_cywilizacji).
- * Pomija nazwy już użyte; po wyczerpaniu — sufiks od pierwszej wolnej bazy.
+ * Kanoniczny first-free z jednej kolejki nazw.
+ *
+ * `usedNames` jest migawką nazw żywych miast tej samej cywilizacji. Funkcja
+ * niczego nie zapisuje i nie mutuje zbioru — caller dodaje wynik dopiero po
+ * udanym założeniu miasta. Po wykorzystaniu wszystkich pozycji kolejki
+ * niesufiksowana baza nie jest już zwracana; wybieramy pierwszy wolny suffix.
+ */
+export function pickNextCityNameFromNames(
+  names: readonly string[],
+  usedNames: ReadonlySet<string>,
+  fallback = 'Miasto',
+): string {
+  for (const name of names) {
+    if (name && !usedNames.has(name)) return name;
+  }
+
+  const base = names.find(Boolean) ?? fallback;
+  if (!names.some(Boolean) && !usedNames.has(base)) return base;
+
+  let ordinal = 2;
+  while (
+    usedNames.has(cityNameWithSuffix(base, ordinal))
+    || names.includes(cityNameWithSuffix(base, ordinal))
+  ) {
+    ordinal++;
+  }
+  return cityNameWithSuffix(base, ordinal);
+}
+
+/** Następna wolna nazwa z pełnej wspólnej puli 110 pozycji. */
+export function pickNextCityName(
+  pools: CityNamesPoolsData,
+  ikonaId: string,
+  usedNames: ReadonlySet<string>,
+  fallback = 'Miasto',
+): string {
+  const common = commonNames(pools, ikonaId);
+  return pickNextCityNameFromNames(common, usedNames, fallback);
+}
+
+/**
+ * Alias nazwy historycznej — zachowany dla narzędzi i integratorów.
+ * Nie ma już osobnej puli regularnej ani rezerwacji indeksu 0.
  */
 export function pickNextRegularCityName(
   pools: CityNamesPoolsData,
   ikonaId: string,
   usedNames: ReadonlySet<string>,
 ): string {
-  const regular = poolEntry(pools, ikonaId)?.miasta_cywilizacji
-    ?.slice(0, CITY_NAMES_POOL_REGULAR_LEN) ?? [];
-  // Indeks 0 jest zawsze zarezerwowany dla stolicy, także gdy caller nie
-  // przekazał jej jeszcze do zbioru zajętych nazw.
-  for (const name of regular.slice(1)) {
-    if (!usedNames.has(name)) return name;
-  }
-  // Pula wyczerpana — sufiks na bazie pierwszej nazwy puli lub generyczny fallback
-  const base = regular[0] ?? 'Miasto';
-  let ord = 2;
-  while (usedNames.has(cityNameWithSuffix(base, ord))) ord++;
-  return cityNameWithSuffix(base, ord);
+  return pickNextCityName(pools, ikonaId, usedNames);
 }
 
 /**
@@ -240,12 +219,12 @@ export function suggestPlayerFoundCityName(
   civTypeForOwner: (ownerId: number) => string,
   playerOwnerId = 0,
 ): string {
-  const playerCityCount = cities.filter(c => c.ownerId === playerOwnerId).length;
-  if (playerCityCount === 0) {
-    return playerCapitalFromPool(pools, ikonaId);
-  }
   const used = collectUsedCityNamesFromCities(cities, civTypeForOwner, ikonaId);
-  return pickNextRegularCityName(pools, ikonaId, used);
+  // `playerOwnerId` pozostaje w sygnaturze dla kompatybilności call-site'ów;
+  // kolejka jest cywilizacyjna, więc obejmuje także miasta innych ownerów tego
+  // samego typu. Nie używamy już owner-local cursora.
+  void playerOwnerId;
+  return pickNextCityName(pools, ikonaId, used, 'Stolica');
 }
 
 /** Nazwa dla AI founding (osadnik / ekspansja). */
@@ -258,7 +237,7 @@ export function pickAiFoundCityName(
 ): string {
   const civId = civTypeForOwner(ownerId);
   const used = collectUsedCityNamesFromCities(cities, civTypeForOwner, civId);
-  return pickNextRegularCityName(pools, civId, used);
+  return pickNextCityName(pools, civId, used);
 }
 
 /** Walidacja wspólnego JSON (dev/test/CI). */
@@ -302,11 +281,15 @@ export function resolveStateCityName(
   ikonaId: string,
   index: number,
   fallback: string,
+  usedNames?: ReadonlySet<string>,
 ): string {
   if (pools?.[ikonaId]) {
-    return stateCityNameAt(pools, ikonaId, index, fallback);
+    return stateCityNameAt(pools, ikonaId, index, fallback, usedNames);
   }
   const names = civs.cywilizacje.find(c => c.ikonaId === ikonaId)?.nazwyMiast ?? [];
-  const idx = CITY_NAMES_POOL_REGULAR_LEN + index;
-  return index >= 0 ? nazwaKlastraAt(names, idx, fallback) : fallback;
+  if (names.length > 0 && index >= 0) {
+    const implicitUsed = usedNames ?? new Set(names.slice(0, index));
+    return pickNextCityNameFromNames(names, implicitUsed, fallback);
+  }
+  return index >= 0 ? nazwaKlastraAt(names, index, fallback) : fallback;
 }
