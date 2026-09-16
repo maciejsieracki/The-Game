@@ -54,8 +54,8 @@ Archiwizacja zachowuje karty, eventy, zależności, raporty i worktree. Nie arch
 - **STATUS:** `RECORDED — NOT A PRODUCT PASS`
 - **ZAKRES:** release review fali `R-DEPLOY-GAME-BUGS-20260916`.
 - **OBJAW:** trzy próby niezależnej kontroli diffu zakończyły się `interrupted`/oczekiwaniem na odpowiedź modelu; żadna nie dostarczyła terminalnego JSON-werdyktu.
-- **SKUTEK:** nie ma dowodu `reviewer PASS`; nie wolno tego incydentu przedstawiać jako pozytywnej bramki jakościowej.
-- **KOREKTA:** zachowano wyniki jako historię; jedna częściowa kontrola wskazała nieużywany import, który usunięto w `0180d172`. Produkt przeszedł niezależne bounded evidence, typecheck, Vite, focused gates, manifest i remote hash readback; deployment receipt jawnie nie zawiera reviewer PASS.
+- **SKUTEK:** wcześniejsze trzy próby nie dostarczyły terminalnego JSON-werdyktu i nie są liczone jako PASS. Późniejszy bounded release reviewer `deleg_273eca53` zakończył się jednak `PASS` bez security concerns, logic errors i unrelated changes.
+- **KOREKTA:** zachowano przerwane próby jako historię; częściowa kontrola wskazała nieużywany import, który usunięto w `0180d172`. Końcowy bounded review, typecheck, Vite, focused gates, manifest, remote hash readback i post-publish smoke są zapisane w receipcie.
 - **PREWENCJA:** ograniczać review handoff do jawnego zakresu i czasu; timeout/przerwanie klasyfikować jako `INFRA`, nigdy jako `PASS`.
 
 ### `INFRA-002` — błędny rerun starego Final Control
