@@ -297,6 +297,7 @@ import {
 import { gameEpochHudLabel, type CivEntryEpochRow } from './game/civ-entry-epoch';
 import type { ProductionItem } from './game/production';
 import { resolveArchetypeAggression, resolveArchetypeTrade, civAiProfileForTyp } from './game/civ-ai-data';
+import { civAiAllocationFor, type CivAllocationDifficulty } from './game/civ-ai-allocation';
 import { buildClusterStartPlan, buildSameTypeRivalCandidateHexes } from './game/cluster-start';
 import {
   cityStateDifficultyFromGameDifficulty,
@@ -5285,6 +5286,10 @@ async function boot(): Promise<void> {
       // Racji NOWEGO właściciela, nie zostaje przy wartości poprzedniego.
       c.poziomRacjiOverride = false;
       c.poziomRacji = ownerDefaultPoziomRacji.get(c.ownerId)!;
+      // Alokacja pilota jest nakładana po rozpoznaniu ownerId/cywilizacji. Dla
+      // miasta-państwa i gracza helper jest no-opem, więc ich polityka pozostaje
+      // nietknięta.
+      applyAiAllocationProfile(c.ownerId);
       // P-MILET-ATENY-OKOLICA-RECZNE-PRZY-PRZEJECIU (2026-08-14): zmiana właściciela (LUB
       // nowe miasto -- przesuwa territoryNodes tak samo jak founding, patrz call site
       // ~linia 10922) może uczynić ISTNIEJĄCE ręczne wpisy okolicaReczne INNYCH miast
@@ -7584,6 +7589,48 @@ async function boot(): Promise<void> {
     const typCityCopyOwners = new Set<number>();
 
     /**
+     * Pilot alokacji AI (Excel: Alokacje_Grecja). Profile są nakładane tylko na
+     * główne AI. Miasta-państwa/kopie obronne pozostają na swojej dotychczasowej
+     * polityce, podobnie jak gracz (ownerId===0).
+     */
+    function aiAllocationProfileForOwner(ownerId: number) {
+      if (ownerId === 0 || typCityCopyOwners.has(ownerId)) return undefined;
+      const civType = aiOwnerCivMap.get(ownerId);
+      const difficulty: CivAllocationDifficulty = _menuDifficulty;
+      return civAiAllocationFor(civType, difficulty);
+    }
+
+    function applyAiAllocationProfile(ownerId: number): void {
+      const profile = aiAllocationProfileForOwner(ownerId);
+      if (!profile) return;
+
+      const workSplit = { procentBudynki: profile.workBuildingsPercent };
+      const tradeSplit = normalizePodzialHandlu({
+        procentNauka: profile.sciencePercent,
+        procentPieniadz: profile.moneyPercent,
+        procentLuksus: profile.wealthPercent,
+      });
+      ownerDefaultPodzialPracy.set(ownerId, workSplit);
+      ownerDefaultPodzialHandlu.set(ownerId, tradeSplit);
+
+      const policy = { ...ulepszeniaEmpireForOwner(ownerId) };
+      policy.pracaAutoPercent = clampUlepszeniaPracaPercent(profile.improvementAutomationPercent);
+      ulepszeniaEmpireByOwner.set(ownerId, policy);
+
+      // City fields are a synchronized cache for cities without a local override.
+      // Keep an explicit owner default as the source of truth for the economy.
+      for (const city of cities) {
+        if (city.ownerId !== ownerId) continue;
+        if (!city.podzialPracyOverride) city.podzialPracy = { ...workSplit };
+        if (!city.podzialHandluOverride) delete city.podzialHandlu;
+      }
+    }
+
+    function applyAiAllocationProfiles(): void {
+      for (const ownerId of aiOwnerCivMap.keys()) applyAiAllocationProfile(ownerId);
+    }
+
+    /**
      * R-TRUDNOSC-1 (Maciej 2026-07-24, rozszerzenie): poziom trudności AI (1/2/3) DLA
      * KONKRETNEGO OWNERA -- miasta-państwa (typCityCopyOwners, kopie obronne) dostają
      * poziom z NOWEGO suwaka (_menuCityStateDifficulty), zwykłe AI nadal z głównej
@@ -8808,6 +8855,7 @@ async function boot(): Promise<void> {
       initOwnerDefaultPodzialHandlu();
       initOwnerDefaultCityFields();
       initUlepszeniaEmpireByOwner();
+      applyAiAllocationProfiles();
       migrateHandelSplitOnLoad(cities, ownerDefaultPodzialHandlu, undefined);
       migratePodzialPracyOnLoad(cities, ownerDefaultPodzialPracy, undefined);
       migrateOkolicaFocusOnLoad(cities, ownerDefaultOkolicaFocus, undefined);
@@ -32172,6 +32220,9 @@ async function boot(): Promise<void> {
             // picker liczy pulap sam, natywnie: `pracaAutoPercent% x pula na wejsciu`.
             // Niewykorzystana reszta ZOSTAJE w puli i narasta, wiec prog znika.
             const playerUlepszeniaPolicy = ulepszeniaEmpireForOwner(0);
+            // Profile cywilizacji są owner-aware i muszą zostać zastosowane przed
+            // obliczeniem koperty automatu, także dla ownera dodanego w tej turze.
+            applyAiAllocationProfiles();
             aiImprovementBudgetByOwner.clear();
             for (const ownerId of new Set(cities.map(city => city.ownerId).filter(id => id > 0))) {
               // Parytet gracz/AI: AI nie przechodzi przez picker bezposrednio (robi to
@@ -32715,6 +32766,7 @@ async function boot(): Promise<void> {
                   procentNauka:   DEFAULT_PODZIAL_HANDLU.procentNauka,
                   lastChangeTurn: null,
                 };
+                const allocationProfile = aiAllocationProfileForOwner(ownerId);
                 const ownerCitiesSlider = cities.filter(c => c.ownerId === ownerId);
                 let builtSumSlider = 0;
                 for (const oc of ownerCitiesSlider) {
@@ -32769,19 +32821,30 @@ async function boot(): Promise<void> {
                   },
                   aiSliderParams,
                 );
-                if (sliderDecision.changed) {
-                  const naukaDelta = sliderDecision.procentNauka - sliderSt.procentNauka;
-                  const baseSplit = ownerDefaultPodzialHandlu.get(ownerId) ?? DEFAULT_PODZIAL_HANDLU;
-                  const pieniadz = Math.max(0, Math.min(100, baseSplit.procentPieniadz - naukaDelta));
+                const profileChanged = allocationProfile !== undefined
+                  && (
+                    sliderSt.procentBudynki !== allocationProfile.workBuildingsPercent
+                    || sliderSt.procentNauka !== allocationProfile.sciencePercent
+                  );
+                if (sliderDecision.changed || profileChanged) {
+                  const nextNauka = allocationProfile?.sciencePercent ?? sliderDecision.procentNauka;
+                  const nextPieniadz = allocationProfile?.moneyPercent
+                    ?? Math.max(0, Math.min(100, (ownerDefaultPodzialHandlu.get(ownerId)
+                      ?? DEFAULT_PODZIAL_HANDLU).procentPieniadz
+                      - (nextNauka - sliderSt.procentNauka)));
+                  const nextLuksus = allocationProfile?.wealthPercent
+                    ?? Math.max(0, 100 - nextNauka - nextPieniadz);
                   ownerDefaultPodzialHandlu.set(ownerId, normalizePodzialHandlu({
-                    procentNauka:    sliderDecision.procentNauka,
-                    procentPieniadz: pieniadz,
-                    procentLuksus:   Math.max(0, 100 - sliderDecision.procentNauka - pieniadz),
+                    procentNauka:    nextNauka,
+                    procentPieniadz: nextPieniadz,
+                    procentLuksus:   nextLuksus,
                   }));
                   // R-MIASTO-USTAWIENIA-GLOBALNE-VS-LOKALNE=A: AI zmienia suwak Pracy
                   // dla CAŁEGO imperium (paritet z Daniną powyżej) — global default,
                   // nie tylko per-city broadcast.
-                  const aiProcentBudynki = clampPodzialPracyBudynkiPercent(sliderDecision.procentBudynki);
+                  const aiProcentBudynki = clampPodzialPracyBudynkiPercent(
+                    allocationProfile?.workBuildingsPercent ?? sliderDecision.procentBudynki,
+                  );
                   ownerDefaultPodzialPracy.set(ownerId, { procentBudynki: aiProcentBudynki });
                   for (const c of cities) {
                     if (c.ownerId !== ownerId) continue;
@@ -32795,7 +32858,7 @@ async function boot(): Promise<void> {
                   aiSliderStateByOwner.set(ownerId, {
                     procentRozwoj:  sliderDecision.procentRozwoj,
                     procentBudynki: aiProcentBudynki,
-                    procentNauka:   sliderDecision.procentNauka,
+                    procentNauka:   nextNauka,
                     lastChangeTurn: turn,
                   });
                 } else {
@@ -38123,6 +38186,12 @@ async function boot(): Promise<void> {
       } else {
         initUlepszeniaEmpireByOwner();
       }
+      // R-CYWILIZACJE-GRECJA-ALOKACJE-Q1, Defense save/load objection #1:
+      // saved/legacy owner policies are restored above, so reapply the current
+      // owner-aware major-AI profile only after all three allocation maps exist.
+      // This prevents stale Greece values from surviving a load while leaving
+      // player, hot-seat, city-state, and local city overrides untouched.
+      applyAiAllocationProfiles();
       restoreMennicaZlotoGrace(
         mennicaZlotoGraceState,
         saved.meta?.mennicaZlotoGrace as MennicaZlotoGraceSave | undefined,
