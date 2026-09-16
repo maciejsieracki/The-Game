@@ -1,6 +1,6 @@
 # R-DEPLOY-GAME-BUGS-20260916 — ROBOCZA receipt
 
-Status: `READY_FOR_PUSH — focused gates and bounded review evidence recorded`
+Status: `DEPLOYED — remote readback PASS; commit 2aeb52743476bd1175789049b350a34f1888dda3`
 
 ## Boundary
 
@@ -35,4 +35,4 @@ Test-only evidence correction included in source branch: barbarian camp call-sit
 
 ## External state
 
-- No push, merge, or remote readback has been performed at receipt update time; publication commit is ready for the authorized push/readback step.
+- Remote push/readback: branch `hermes/R-GAME-BUGS-INTEGRATION-20260916` and `origin/main` both point to `2aeb52743476bd1175789049b350a34f1888dda3`. Remote bundle bytes/hash exactly match the manifest: `69862548`, MD5 `7040d499548170e3805f231b5cac2e46`, SHA-256 `afd817232f8c6769024e160bdb3abfc3ac3c8b4e1760858f2ef4aec0a9657f22`.

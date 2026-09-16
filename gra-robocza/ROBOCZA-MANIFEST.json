@@ -77,5 +77,5 @@
   ],
   "startHub": "START.html",
   "integrationCommit": "0180d17231b62d2a5012c9c23d8a42d91c09f1e1",
-  "note": "DEPLOY-ROBOCZA candidate; verify-robocza-bundle.cjs required; no promotion to KANON/FINALNA"
+  "note": "DEPLOY-ROBOCZA VERIFY OK; remote commit 2aeb52743476bd1175789049b350a34f1888dda3; no promotion to KANON/FINALNA"
 }
