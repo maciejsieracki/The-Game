@@ -20,9 +20,9 @@
     "opis": "Dodatkowe miasta startowe AI na poziomie Prostym."
   },
   "trudnosc_poziom1_bonus_walka": {
-    "wartosc": 0,
+    "wartosc": -0.05,
     "sekcja": "§7 Trudność Lv1",
-    "opis": "Bonus % do statystyk walki jednostek AI na poziomie Prostym."
+    "opis": "Kara -5% do statystyk walki jednostek AI na poziomie Prostym (Easy < Normal)."
   },
   "trudnosc_poziom1_agresja_mnoznik": {
     "wartosc": 0.85,

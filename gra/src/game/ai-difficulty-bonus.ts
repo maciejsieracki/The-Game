@@ -21,9 +21,9 @@ export function qualifiesForMajorAiDifficultyBonus(
   return ownerId > 0 && !isBarbarian(ownerId) && !isCityState;
 }
 
-/** Mnożnik statystyk walki (atak/obrona) z bonusWalka (0.05 → ×1.05). */
+/** Mnożnik statystyk walki (atak/obrona) z bonusWalka (-0.05 → ×0.95). */
 export function difficultyCombatMultiplier(bonusWalka: number): number {
-  return 1 + Math.max(0, bonusWalka);
+  return 1 + (Number.isFinite(bonusWalka) ? bonusWalka : 0);
 }
 
 /** Płaski dodatek punktów nauki AI na turę. */

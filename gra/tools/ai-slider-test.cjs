@@ -156,28 +156,28 @@ console.log('\n-- A. Suwak zywnosci: deficyt / nadwyzka / strefa neutralna --');
 
 console.log('\n-- B. Suwaki Praca/Nauka: wojna vs pokoj --');
 
-// 8. Wojna -> procentBudynki w gore, procentNauka w dol
+// 8. Wojna -> stałe 50% Pracy AI, procentNauka w dol
 {
   const r = decideAIEconomySliders(inp({ atWar: true, zapasyPanstwa: 25 }), PARAMS);
   eq(r.changed, true, 'wojna -> changed=true');
-  eq(r.procentBudynki, 80, 'wojna -> procentBudynki +10');
+  eq(r.procentBudynki, 50, 'wojna -> procentBudynki stałe 50%');
   eq(r.procentNauka, 10, 'wojna -> procentNauka -10');
 }
 
-// 9. Pokoj -> procentBudynki w dol, procentNauka w gore
+// 9. Pokoj -> stałe 50% Pracy AI, procentNauka w gore
 {
   const r = decideAIEconomySliders(inp({ atWar: false, zapasyPanstwa: 25 }), PARAMS);
   eq(r.changed, true, 'pokoj -> changed=true');
-  eq(r.procentBudynki, 60, 'pokoj -> procentBudynki -10');
+  eq(r.procentBudynki, 50, 'pokoj -> procentBudynki stałe 50%');
   eq(r.procentNauka, 30, 'pokoj -> procentNauka +10');
 }
 
-// 10. Kombinacja: deficyt + wojna -> wszystkie trzy suwaki ruszaja sie naraz
+// 10. Kombinacja: deficyt + wojna -> żywność i nauka reagują, Praca zostaje 50%
 {
   const r = decideAIEconomySliders(inp({ atWar: true, zapasyPanstwa: -5 }), PARAMS);
   eq(r.changed, true, 'deficyt+wojna -> changed=true');
   eq(r.procentRozwoj, 90, 'deficyt+wojna -> procentRozwoj -10');
-  eq(r.procentBudynki, 80, 'deficyt+wojna -> procentBudynki +10');
+  eq(r.procentBudynki, 50, 'deficyt+wojna -> procentBudynki stałe 50%');
   eq(r.procentNauka, 10, 'deficyt+wojna -> procentNauka -10');
 }
 
@@ -193,17 +193,17 @@ console.log('\n-- B. Suwaki Praca/Nauka: wojna vs pokoj --');
 
 console.log('\n-- C. Zabezpieczenie przed oscylacja (minOdstepTur) --');
 
-// 12. Cooldown aktywny (ostatnia zmiana 1 ture temu, prog=3) -> zero zmian mimo wyzwalaczy
+// 12. Stały suwak Pracy konwerguje natychmiast; cooldown chroni tylko suwaków reaktywnych
 {
   const r = decideAIEconomySliders(
     inp({ zapasyPanstwa: -1, atWar: true, turn: 11, lastSliderChangeTurn: 10 }),
     PARAMS,
   );
-  eq(r.changed, false, 'cooldown aktywny (1/3 tur) -> changed=false');
+  eq(r.changed, true, 'stały suwak Pracy koryguje się mimo cooldownu');
   deepEq(
     { procentRozwoj: r.procentRozwoj, procentBudynki: r.procentBudynki, procentNauka: r.procentNauka },
-    CURRENT,
-    'cooldown aktywny -> wartosci bez zmian',
+    { procentRozwoj: 100, procentBudynki: 50, procentNauka: 20 },
+    'cooldown aktywny -> stały suwak Pracy skorygowany, reszta bez zmian',
   );
 }
 

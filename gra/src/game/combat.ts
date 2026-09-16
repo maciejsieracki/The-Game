@@ -384,7 +384,7 @@ export interface ResolveCombatOpts {
 
   /**
    * P-AI-MOC-BONUS=A: bonus trudności AI (bonusWalka) — tylko major AI, nie gracz.
-   * Mnożnik ataku/obrony/ranged (1.05 = +5%). Domyślnie 1 (brak bonusu).
+   * Mnożnik ataku/obrony/ranged (0.95 = -5%, 1.05 = +5%). Domyślnie 1 (brak bonusu).
    */
   attackerDifficultyCombatMult?: number;
 
@@ -1017,11 +1017,11 @@ export function resolveCombat(
         opts.defenderBuildingBonus,
       );
 
-      const roundAtkMelee = applyMultiplier(attacker.meleeAttack, atkRoundMods.atk) * terrRiverMult;
+      const roundAtkMelee = applyMultiplier(attacker.meleeAttack, atkRoundMods.atk) * atkDiffMult * terrRiverMult;
       const roundAtkCharge = applyMultiplier(attacker.chargeBonus, atkRoundMods.uderzenie);
-      const roundDefMelee = applyMultiplier(defender.meleeAttack, defRoundMods.atk);
-      const roundDefObrona = applyMultiplier(defender.meleeDefence, defRoundMods.obrona);
-      const roundAtkObrona = applyMultiplier(attacker.meleeDefence, atkRoundMods.obrona);
+      const roundDefMelee = applyMultiplier(defender.meleeAttack, defRoundMods.atk) * defDiffMult;
+      const roundDefObrona = applyMultiplier(defender.meleeDefence, defRoundMods.obrona) * defDiffMult;
+      const roundAtkObrona = applyMultiplier(attacker.meleeDefence, atkRoundMods.obrona) * atkDiffMult;
       const roundAtkPanc = applyMultiplier(attacker.armor, atkRoundMods.pancerz);
       const roundDefPanc = applyMultiplier(defender.armor, defRoundMods.pancerz);
 
