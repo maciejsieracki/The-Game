@@ -1,3 +1,15 @@
+## [2026-09-16 UTC] ORKIESTRATOR → KANBAN / WŁAŚCICIEL — DEPLOYMENT RECONCILIATION
+
+STATUS: `NO-OP WEB DEPLOY + R20 RUST BRANCH PUSH`.
+
+- Fresh clean readback of `origin/main=329db81f`: `tsc --noEmit` PASS, direct Vite build PASS (`888` modules), existing `gra-robocza` verifier `VERIFY OK`.
+- Since deployed source `f4967698`, product paths `gra/src/**` and `gra/data/**` have no new gameplay diff; only two regression harnesses changed under `gra/tools/**`. No second web bundle was produced.
+- Existing ROBOCZA remains authoritative: MD5 `9d22166c7de999a12971a857d8cd3c65`, SHA-256 `858e6763b77ebb93f7e29e4e5ff71a62d28d6ebc684971f59513f30eee1b116b`, `69858494` bytes, `VERIFY OK`.
+- `gra-robocza/ROBOCZA-MANIFEST.json` had stale SHA/size/source/scope fields; corrected in the documentation reconciliation commit. `WERSJE.md` intentionally receives no fictitious new release row.
+- R20 Rust fresh fmt/tests/Clippy/diff-check PASS; commit `5dc5fddc5352ab2467efde76136f22403efe2f84` pushed and read back on `hermes/R-RUSTREAL-20-SAVE-LOAD-Q1-RECOVERY-R2-20260915`. Rust is not a `gra-robocza` web deployment.
+
+CZEKAM-NA: owner/Orchestrator integration for blocked process-only gates; no worker dispatch and no promotion to KANON/FINALNA.
+
 ## [14:42 UTC, 2026-09-15] ORKIESTRATOR → KANBAN / WŁAŚCICIEL — `R-CITY-NAMES-SHARED-QUEUE-110-Q1`
 
 STATUS: `DEPLOY-ROBOCZA` — wspólna kolejka 110 nazw A+C zintegrowana i wdrożona do lokalnego `gra-robocza`.

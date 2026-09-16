@@ -1,5 +1,23 @@
 # REJESTR PRÓŚB I ZADAŃ — kanoniczny indeks + historia
 
+## CURRENT RECONCILIATION — READBACK 2026-09-16
+
+> Ta sekcja supersedesuje starsze statusy poniżej. Źródła live: board `the-game-real24`, project `p_9ae9ac64`, profile `default`, `origin/main=329db81ff1622360699fdbb7fc56f2c721121c86`.
+
+### Deployment readback
+
+- Ostatni rzeczywisty deploy webowy pozostaje `R-CITY-NAMES-SHARED-QUEUE-110-Q1`: ROBOCZA `9d22166c`, source/deploy `f4967698`, artifact `88ee420b`, MD5 `9d22166c7de999a12971a857d8cd3c65`, SHA-256 `858e6763b77ebb93f7e29e4e5ff71a62d28d6ebc684971f59513f30eee1b116b`, verifier `VERIFY OK`.
+- Clean `origin/main` typecheck i direct Vite build `888` modułów przechodzą; verifier istniejącego bundla przechodzi. Od `f4967698` zmieniły się w `gra/src`/`gra/data` wyłącznie test harnessy w `gra/tools`; nie ma nowego gameplayowego diffu wymagającego kolejnego bundla.
+- `ROBOCZA-MANIFEST.json` skorygowano do rzeczywistego SHA-256 i rozmiaru bundla; `WERSJE.md` nie otrzymuje fikcyjnego nowego wpisu.
+- R20 Rust: świeży `cargo fmt`, `cargo test --all-targets`, Clippy i diff-check PASS; commit `5dc5fddc5352ab2467efde76136f22403efe2f84` wypchnięty na branch `hermes/R-RUSTREAL-20-SAVE-LOAD-Q1-RECOVERY-R2-20260915`. Rust pozostaje osobnym lane’em i nie jest wdrożeniem do `gra-robocza`.
+
+### Aktualna klasyfikacja tematów
+
+- **Już wdrożone/obecne w ROBOCZA:** `R-AI-DYPLO-ONLY-MIASTA-PANSTWA-Q1`, `R-REKRUTACJA-KOSZT-50-DREWNO-Q1` — deploy `ae2d27a8`; `R-STARTOWE-JEDNOSTKI-WSZYSTKIE-OSIE-Q1`, `R-BUDYNKI-KARTY-GRAFIKA-TEKST-OVERLAP-Q1`, `R-REKRUTACJA-KARTY-BRAK-REKRUTOW-Q1` — no-op/test-only z readbackiem.
+- **Kontrola jakościowa zakończona, lecz bez nowego deployu:** `R-AI-PRODUKCJA-WOJSKO-RALLY-ATTACK-Q1` (audit-only, brak diffu), `R-AI-BUDZET-SKARB-NAUKA-ZAMOZNOSC-Q1`, `R-AI-PRACA-BUDYNKI-ULEPSZENIA-Q1`, `R-REKRUTACJA-KOSZTY-POLOWA-ALL-Q1`, `R-AI-TRUDNOSC-ODWROTNE-PARAMETRY-Q1` (audit-only), `R-CYWILIZACJE-GRECJA-AKTYWNE-PARAMETRY-Q1`, `R-MIASTA-KOLONIA-REGRES-Q1` (40/0, brak diffu), `R-MIASTA-KOLONIA-NAZWA-POOL-Q1`, `R-CYWILIZACJE-GRECJA-MACIERZ-113-Q1`, `R-CYWILIZACJE-GRECJA-MACIERZ-UNWIRED-CONSUMERS-Q1`, `R-CYWILIZACJE-GRECJA-MACIERZ-TRUDNOSC-SKALOWANIE-Q1`, `R-CYWILIZACJE-GRECJA-ALOKACJE-Q1`, `R-CYWILIZACJE-GRECJA-ALOKACJE-PANSTWA-MIASTA-Q1`, `R-REKRUTACJA-MANPOWER-ZWROT-DISBAND-Q1` (brak defektu/diffu).
+- **Dokumentacja zakończona fazowo, lecz bez publikacji/owner integration:** `R-DOCS-P1-SCOPE-Q1`, `R-DOCS-P2-INVENTORY-Q1`, `R-DOCS-P3-SOURCES-OF-TRUTH-Q1`, `R-DOCS-P3-PRECEDENCE-DECISIONS-Q1`, `R-DOCS-P4-PRIMARY-DRIFT-Q1`, `R-DOCS-P5-INDEX-CONSOLIDATION-Q1`, `R-DOCS-P6-NONDESTRUCTIVE-CONSOLIDATION-Q1`, `R-DOCS-UNKNOWN-NEEDS-REVIEW-Q1`, `R-DOCS-DESTRUCTIVE-CONSOLIDATION-Q1`. Bramy process-only pozostają `blocked/unassigned`; legacy validator destrukcyjnej konsolidacji `FAIL` pozostaje jawny.
+- **Nieukończone:** `R-BARBARIANCY-OBRONA-GRANICA-ATAK-MIAST-Q1` (Operator blocked), `R-NAZWY-MIAST-PANSTWA-POOL-POPULARNOSC-Q1` (DECISION_REQUIRED), `R-RUSTREAL-15-DIPLOMACY-Q1` (Defense blocked/staging scheduled), `R-RUSTREAL-21-REPLAY-Q1` (Final Control todo), `R-RUSTREAL-22-TAURI-BRIDGE-Q1` (Operator/Evaluator scheduled), `R-RUSTREAL-23-STEAM-ADAPTER-Q1` (Operator/Evaluator scheduled), `R-RUSTREAL-24-PARITY-BENCH-CI-Q1` (todo).
+
 ## WYKONANE TEMATY GAME BUGS — READBACK 2026-09-14
 
 Poniższe wpisy są podsumowaniem wykonanych tematów produktowych z boardu `Game Bugs`. `PASS`/`PASS-WITH-NOTES` oznacza lokalnie zweryfikowany temat; nie oznacza integracji z `main`, publikacji ani deployu.

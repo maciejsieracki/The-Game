@@ -2,20 +2,20 @@
   "publishedAt": "2026-09-15T14:39:21+00:00",
   "publisher": "Hermes Orchestrator",
   "md5": "9d22166c7de999a12971a857d8cd3c65",
-  "sha256": "03ad35ee938554bd715c6186db60fa2b07e785515fd652b3a402086b986093c9",
-  "bytes": 69857965,
+  "sha256": "858e6763b77ebb93f7e29e4e5ff71a62d28d6ebc684971f59513f30eee1b116b",
+  "bytes": 69858494,
   "bundle": "Gra-ROBOCZA.html",
-  "sourceCommit": "0e639c7cd48f2b174fc46341622b8111162a65a1",
+  "sourceCommit": "f49676987db865b90c7f61872f9ba32e95aa3537",
   "base": "94014b7b9f7ee9d5a61681680f88d42e2258851e",
   "scope": [
-    "AI absorption revised ECHO",
-    "Stone Age recruitment/upkeep costs",
-    "documentation"
+    "R-CITY-NAMES-SHARED-QUEUE-110-Q1",
+    "shared 110-name queue A+C",
+    "documentation and verification receipts"
   ],
   "excluded": [
-    "names future spec code",
+    "future names policy code",
     "Manpower gameplay code",
-    "audit-only source-reading AI test"
+    "promotion to KANON/FINALNA"
   ],
   "hubGeneratedAt": "2026-09-15T14:39:20",
   "bundles": [
@@ -78,5 +78,5 @@
   ],
   "startHub": "START.html",
   "integrationCommit": "0e639c7cd48f2b174fc46341622b8111162a65a1",
-  "note": "The Game Rust — shared 110-name queue A+C; READY_FOR_DEPLOY pending remote publish readback"
+  "note": "DEPLOY-ROBOCZA VERIFY OK; current WERSJE entry 9d22166c; no promotion to KANON/FINALNA"
 }
