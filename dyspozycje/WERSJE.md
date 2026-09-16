@@ -13,6 +13,14 @@ swoim wĹ‚asnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji d
 > Pakiet 3 z 2026-08-20 jest docs-only i nie tworzy wpisu ROBOCZA/KANON/FINALNA;
 > ten plik pozostaje wyłącznie rejestrem publikacji bundli.
 
+## ROBOCZA 7040d499 - 2026-09-16 - gameplay bug wave (PREPARED)
+
+|- md5 (pełne): `7040d499548170e3805f231b5cac2e46` · sha256: `afd817232f8c6769024e160bdb3abfc3ac3c8b4e1760858f2ef4aec0a9657f22` · rozmiar: `69862548` bajtów · source/integration: `0180d17231b62d2a5012c9c23d8a42d91c09f1e1` · base: `3ff3264b`
+|- Zakres: recruitment half-costs; colony name pool; Greece allocation/save-load and matrix consumers; AI Work owner envelope; AI combat `0.95/1.00/1.05`.
+|- Gates: Vite `889` modules, TypeScript PASS, Greece `390/0`, difficulty `16/0`, allocation `11/0`, save/load `5/0`, AI Work `27/0`, owner policy `33/0`, overflow `213/0`, AI difficulty `97/0`, slider `46/0`, economy audit `33/0`, recruitment/name gates PASS.
+|- Bundle verifier: `VERIFY OK`; manifest match `OK`; Linux stamp match `WARN` is expected for the Node stamp port. No promotion to KANON/FINALNA.
+|- Status: **READY_FOR_PUSH — focused gates and bounded review evidence recorded**.
+
 ## ROBOCZA 9d22166c - 2026-09-15 14:42 UTC - R-CITY-NAMES-SHARED-QUEUE-110-Q1: wspólna kolejka 110 nazw A+C
 
 ||- md5 (pełne): 9d22166c7de999a12971a857d8cd3c65 · sha256: 858e6763b77ebb93f7e29e4e5ff71a62d28d6ebc684971f59513f30eee1b116b · stempel label `9d22166c` (manifest authoritative; stamp match WARN expected) · source/deploy commit: `f4967698` · artifact commit: `88ee420b`

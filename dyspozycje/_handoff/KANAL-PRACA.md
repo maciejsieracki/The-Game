@@ -1,3 +1,15 @@
+## [2026-09-16 UTC] ORKIESTRATOR → KANBAN / WŁAŚCICIEL — GAMEPLAY BUG WAVE PREPARED
+
+STATUS: `READY_FOR_PUSH — focused gates and bounded review evidence recorded`.
+
+- Clean integration branch: `hermes/R-GAME-BUGS-INTEGRATION-20260916`, source HEAD `0180d17231b62d2a5012c9c23d8a42d91c09f1e1`, base `origin/main=3ff3264b487f597311c000e8e8434375ee88a651`.
+- Prepared `gra-robocza` bundle: MD5 `7040d499548170e3805f231b5cac2e46`, SHA-256 `afd817232f8c6769024e160bdb3abfc3ac3c8b4e1760858f2ef4aec0a9657f22`, `69862548` bytes; verifier `VERIFY OK`, manifest match `OK`.
+- Scope: recruitment costs, colony names, Greece allocation/matrix consumers, AI Work owner envelope, AI combat `0.95/1.00/1.05`.
+- Excluded: Barbarian product changes (`INFRA/TIMEOUT`, clean worktree), city-name popularity policy (owner A recovery running), Rust rewrite, KANON/FINALNA.
+- Receipt: `dyspozycje/autobot/runs/R-DEPLOY-GAME-BUGS-20260916/deploy-robocza-receipt.md`.
+
+CZEKAM-NA: authorized publication commit, push and exact remote readback.
+
 ## [2026-09-16 UTC] ORKIESTRATOR → KANBAN / WŁAŚCICIEL — DEPLOYMENT RECONCILIATION
 
 STATUS: `NO-OP WEB DEPLOY + R20 RUST BRANCH PUSH`.
