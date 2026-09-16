@@ -9021,7 +9021,6 @@ async function boot(): Promise<void> {
     function grantDifficultyStartBonusesForMajorCapital(
       ownerId: number,
       capitalCity: City,
-      capitalName: string,
     ): void {
       if (difficultyBonusGrantedOwners.has(ownerId)) return;
       if (!clusterCapitalOwnerIds.has(ownerId)) return;
@@ -9042,7 +9041,18 @@ async function boot(): Promise<void> {
       }
 
       for (const extra of plan.cities) {
-        const extraName = capitalName + ' — kolonia' + extra.nameSuffix;
+        // R-MIASTA-KOLONIA-NAZWA-POOL-Q1: bonusowe miasto jest zwykłym
+        // foundowaniem AI — pobierz pierwszą wolną nazwę z puli cywilizacji
+        // na podstawie aktualnych miast, zamiast budować etykietę od stolicy.
+        // `cities` aktualizuje się po każdym udanym spawnie, więc ewentualne
+        // kolejne sloty przechodzą do kolejnych nazw bez zużywania odrzuconych.
+        const extraName = pickAiFoundCityName(
+          data.cityNamesPools,
+          civTypeForOwner(ownerId),
+          cities,
+          civTypeForOwner,
+          ownerId,
+        );
         const extraCity = foundCityAt(extra.q, extra.r, ownerId, cities, map, extraName, false, true);
         if (extraCity) {
           cities.push(extraCity);
@@ -9131,7 +9141,7 @@ async function boot(): Promise<void> {
           }
           seedCityOwnerDefaults(c);
           if (clusterCapitalOwnerIds.has(sc.ownerId)) {
-            grantDifficultyStartBonusesForMajorCapital(sc.ownerId, c, c.name);
+            grantDifficultyStartBonusesForMajorCapital(sc.ownerId, c);
           }
           _scFounded++;
         } else {
