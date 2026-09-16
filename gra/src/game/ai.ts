@@ -5203,6 +5203,7 @@ export function decideAIDiplomacy(
       militaryRatio,
       currentTurn:  0,       // nie wpływa na logikę v0.1
       turnsAtWar:   rel.stanWojny ? 5 : 0,  // heurystyka – wystarczy do oceny peaceW
+      civMatrixDifficulty: difficulty,
     };
 
     // Stub gracza AI — aiDiplomacyStance wymaga Player z prawdziwym typem cywilizacji.

@@ -299,7 +299,12 @@ import {
 } from './game/wonders-data';
 import { gameEpochHudLabel, type CivEntryEpochRow } from './game/civ-entry-epoch';
 import type { ProductionItem } from './game/production';
-import { resolveArchetypeAggression, resolveArchetypeTrade, civAiProfileForTyp } from './game/civ-ai-data';
+import {
+  resolveArchetypeAggression,
+  resolveArchetypeTrade,
+  civAiProfileForTyp,
+  civAiProfilMapy,
+} from './game/civ-ai-data';
 import {
   civAiAllocationFor,
   civAiImprovementAutomationPercentForOwner,
@@ -9031,7 +9036,9 @@ async function boot(): Promise<void> {
         setupAiOwnerEpoch(ownerId, _menuEpochId || 'kamien');
         ownerDisplayName.set(ownerId, nazwa);
         simplifiedDiplomacyOwners.add(ownerId);
-        typCityCopyOwners.add(ownerId);
+        if (civAiProfilMapy(data, rivalCivId) === 'kopia_typu_obronna') {
+          typCityCopyOwners.add(ownerId);
+        }
         // D-MP-DYPL Q1 (część 1, WARIANT B) + REL-MP-SAME-Q1: korekta startowego zaufania
         // miast-panstw wg trudnosci (easy +10 / normal +5 / hard 0) — WYLACZNIE tu,
         // NIE dotyka głównych cywilizacji obcego typu (te startuja przez
@@ -19360,7 +19367,11 @@ async function boot(): Promise<void> {
       const offer = pickResourceTradeRelOffer(
         ownerId,
         0,
-        resolveArchetypeTrade(aiTypKey, ARCHETYPE_TRADE[aiTypKey] ?? 0.5),
+        resolveArchetypeTrade(
+          aiTypKey,
+          ARCHETYPE_TRADE[aiTypKey] ?? 0.5,
+          effectiveGameDifficultyForOwner(ownerId),
+        ),
       );
       if (offer) {
         enqueueDiplomacyPendingFromCmd(ownerId, buildHandelSurowiecCmdFromOffer(ownerId, offer));
@@ -19585,8 +19596,14 @@ async function boot(): Promise<void> {
     function peacefulArchetypeForOwner(ownerId: number): boolean {
       if (isMe(ownerId)) return false;
       const aiTyp = (aiOwnerCivMap.get(ownerId) ?? 'grecy') as TypCywilizacji;
-      const prof = civAiProfileForTyp(data, aiTyp);
-      const agresja = resolveArchetypeAggression(aiTyp, ARCHETYPE_AGGRESSION[aiTyp] ?? 0.5, data);
+      const difficulty = effectiveGameDifficultyForOwner(ownerId);
+      const prof = civAiProfileForTyp(data, aiTyp, difficulty);
+      const agresja = resolveArchetypeAggression(
+        aiTyp,
+        ARCHETYPE_AGGRESSION[aiTyp] ?? 0.5,
+        data,
+        difficulty,
+      );
       return resolveDiplomacyCivBias(
         agresja,
         prof?.sklonnoscDoPodboju ?? 2,
@@ -32945,7 +32962,8 @@ async function boot(): Promise<void> {
             const contactedOwners = getDiplomaticContacts();
             const aiCivIdForOpts = aiOwnerCivMap.get(ownerId) ?? 'grecy';
             const aiTypForOpts = (aiCivIdForOpts as TypCywilizacji);
-            const civAiProf = civAiProfileForTyp(data, aiTypForOpts);
+            const civAiDifficulty = effectiveGameDifficultyForOwner(ownerId);
+            const civAiProf = civAiProfileForTyp(data, aiTypForOpts, civAiDifficulty);
             const powerRankInfo = computeAbsolutePowerRank(
               ownerId,
               aiOwnerList,
@@ -33236,7 +33254,11 @@ async function boot(): Promise<void> {
                   DEFAULT_TRADE_ROUTE_PARAMS,
                   buildAllTerritoryNodes(),
                 );
-                const aiHandlowosc = resolveArchetypeTrade(aiTyp, ARCHETYPE_TRADE[aiTyp] ?? 0.5);
+                const aiHandlowosc = resolveArchetypeTrade(
+                  aiTyp,
+                  ARCHETYPE_TRADE[aiTyp] ?? 0.5,
+                  civAiDifficulty,
+                );
                 const resourceTradeOfferRaw = relStatus !== 'wojna'
                   && !hasActiveResourceTradeDealForPair(ME(), ownerId)
                   && canAiProposeResourceTrade(turn, aiResourceTradeLastProposalTurn.get(ownerId))
@@ -33289,7 +33311,11 @@ async function boot(): Promise<void> {
                   ? pickResourceTradeRelOffer(
                     ownerId,
                     otherId,
-                    resolveArchetypeTrade(aiTyp, ARCHETYPE_TRADE[aiTyp] ?? 0.5),
+                    resolveArchetypeTrade(
+                      aiTyp,
+                      ARCHETYPE_TRADE[aiTyp] ?? 0.5,
+                      civAiDifficulty,
+                    ),
                   )
                   : null;
                 relacjeDip.push({
@@ -33583,8 +33609,17 @@ async function boot(): Promise<void> {
                 const diploInp: DiplomacjaInputs = {
                   myPlayerId: String(ownerId),
                   relacje: relacjeDip,
-                  agresja: resolveArchetypeAggression(aiTyp, ARCHETYPE_AGGRESSION[aiTyp] ?? 0.5, data),
-                  handlowosc: resolveArchetypeTrade(aiTyp, ARCHETYPE_TRADE[aiTyp] ?? 0.5),
+                  agresja: resolveArchetypeAggression(
+                    aiTyp,
+                    ARCHETYPE_AGGRESSION[aiTyp] ?? 0.5,
+                    data,
+                    civAiDifficulty,
+                  ),
+                  handlowosc: resolveArchetypeTrade(
+                    aiTyp,
+                    ARCHETYPE_TRADE[aiTyp] ?? 0.5,
+                    civAiDifficulty,
+                  ),
                   epoka: player.era,
                   skarbiecGold: aiSkarbiecByOwner.get(ownerId) ?? 0,
                   currentTurn: turn,

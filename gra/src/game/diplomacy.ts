@@ -22,6 +22,7 @@ import { TypCywilizacji }            from '../types/player';
 import type { Player }               from '../types/player';
 import diplomacyData from '../../data/diplomacy.json';
 import type { GameDifficulty } from './difficulty-cost';
+import type { CivMatrixDifficulty } from './civ-matrix';
 import {
   nastawienieBazoweZaufanieDelta,
   resolveArchetypeAggression,
@@ -1099,6 +1100,8 @@ export interface AIDiplomacyContext {
    * 0 when at peace.
    */
   turnsAtWar: number;
+  /** Poziom używany do odczytu wartości skali z macierzy cywilizacji. */
+  civMatrixDifficulty?: CivMatrixDifficulty;
 }
 
 // ---------------------------------------------------------------------------
@@ -1258,10 +1261,13 @@ export function aiDiplomacyStance(
   const archAggression = resolveArchetypeAggression(
     aiPlayer.typCywilizacji,
     ARCHETYPE_AGGRESSION[aiPlayer.typCywilizacji] ?? 0.40,
+    undefined,
+    context.civMatrixDifficulty,
   );
   const archTrade = resolveArchetypeTrade(
     aiPlayer.typCywilizacji,
     ARCHETYPE_TRADE[aiPlayer.typCywilizacji] ?? 0.50,
+    context.civMatrixDifficulty,
   );
 
   // -- War willingness --
