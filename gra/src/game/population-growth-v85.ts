@@ -19,6 +19,7 @@ import type { GameMap } from '../types/map';
 import type { TerritoryNode } from '../map/territory';
 import { refreshManpowerAfterPopChange, civManpowerMults } from './manpower';
 import { R_STAWKI_KOSZT_MULT } from './r-stawki-strojenie';
+import type { GameDifficulty } from './difficulty-cost';
 
 /** Poziom suwaka Wyżywienie: 0 … 6 co 0,5 (koszt żywności na mieszkańca = ta wartość). */
 export type PoziomRacji = number;
@@ -77,8 +78,28 @@ export interface RationParams {
   racjeWzrostProc3: number;
 }
 
-type Difficulty = 'easy' | 'normal' | 'hard';
+type Difficulty = GameDifficulty;
 interface RawParamRow { easy?: number; normal?: number; hard?: number; }
+
+/**
+ * Skala jedynego realnego konsumenta macierzy cywilizacyjnej.
+ *
+ * `lud_wzrost_proc` jest tożsamością cywilizacji zapisaną jako ułamek (np. 0.05
+ * = +5 p.p. wzrostu), więc trudność skaluje wyłącznie ten wkład, a nie bazową
+ * tabelę Racji ani inne składniki wzrostu. Normal pozostaje dokładnie neutralny;
+ * zakres ±50% jest jawny i wspólny dla tego konsumenta.
+ */
+export const CIV_MATRIX_GROWTH_DIFFICULTY_MULT: Readonly<Record<GameDifficulty, number>> = {
+  easy: 0.5,
+  normal: 1,
+  hard: 1.5,
+};
+
+export function civMatrixGrowthDifficultyMultiplier(
+  difficulty: GameDifficulty = 'normal',
+): number {
+  return CIV_MATRIX_GROWTH_DIFFICULTY_MULT[difficulty];
+}
 
 function pick(row: RawParamRow | undefined, d: Difficulty, fallback: number): number {
   if (!row) return fallback;
@@ -182,6 +203,8 @@ export interface GrowthPercentInput {
   wealthPoziom: number;
   spichlerzState: SpichlerzCityBonusState;
   civKey?: string | null;
+  /** Trudność skaluje tylko realny wkład `lud_wzrost_proc` z macierzy. */
+  difficulty?: GameDifficulty;
   rationParams: RationParams;
   /**
    * R-ZUZYCIE-SUROWCOW-OBYWATELE (Maciej 2026-08-10): suma kary Rozwoju (%) za surowce
@@ -205,7 +228,8 @@ export function computeGrowthPercentV85(input: GrowthPercentInput): GrowthPercen
   // (wealthZadowolenie). wealthPoziom stays in GrowthPercentInput for API/save compatibility only.
   const szczescie = Math.floor(Math.max(0, input.szczescieNetto) / 10);
   const civRaw = input.civKey ? civMatrixParam(input.civKey, 'lud_wzrost_proc') : 0;
-  const cywilizacja = Math.round(civRaw * 100);
+  const civDifficultyMult = civMatrixGrowthDifficultyMultiplier(input.difficulty);
+  const cywilizacja = Math.round(civRaw * civDifficultyMult * 100);
   const zaopatrzenie = input.citizenResourceGrowthPct ?? 0;
   const total = racje + maleMiasto + spichlerz + zdrowie + szczescie + cywilizacja + zaopatrzenie;
   return { total, racje, maleMiasto, spichlerz, zdrowie, szczescie, cywilizacja, zaopatrzenie };
@@ -346,6 +370,8 @@ export interface PostCentralGrowthOpts {
   happinessByCityId?: ReadonlyMap<string, number>;
   builtByCity?: ReadonlyMap<string, readonly string[]>;
   ownerEraByOwner?: ReadonlyMap<number, number>;
+  /** Trudność bieżącej rozgrywki dla skali wkładu macierzy cywilizacyjnej. */
+  difficulty?: GameDifficulty;
   civBonusyByOwner?: ReadonlyMap<number, readonly CivEconomyBonus[]>;
   /**
    * R-ZUZYCIE-SUROWCOW-OBYWATELE (Maciej 2026-08-10): kara Rozwoju (%) per miasto za surowce
@@ -391,7 +417,7 @@ export function applyPostCentralPopulationGrowth(opts: PostCentralGrowthOpts): v
   const {
     cities, econ, efResult, map, territoryNodes, econParams, rationParams,
     ownerCivByOwnerId, spichlerzByCity, happinessByCityId, builtByCity,
-    ownerEraByOwner, civBonusyByOwner, citizenGrowthPctByCityId,
+    ownerEraByOwner, difficulty = 'normal', civBonusyByOwner, citizenGrowthPctByCityId,
     onCityPopulationChanged, excludeHexKeysByCity,
   } = opts;
 
@@ -427,6 +453,7 @@ export function applyPostCentralPopulationGrowth(opts: PostCentralGrowthOpts): v
         wealthPoziom: city.wealthState?.poziom ?? 1,
         spichlerzState: spichlerz,
         civKey: ownerCivByOwnerId?.get(city.ownerId) ?? null,
+        difficulty,
         rationParams,
         citizenResourceGrowthPct: citizenGrowthPct,
       });

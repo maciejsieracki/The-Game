@@ -1264,6 +1264,7 @@ function computeView(city: City, map: GameMap, data: GameData): CityView | null 
       wealthPoziom: ws.poziom ?? 0,
       spichlerzState,
       civKey: cfg.getCivKey?.(city.ownerId) ?? null,
+      difficulty: cfg.getDifficulty?.() ?? 'normal',
       rationParams,
       citizenResourceGrowthPct: citizenUpkeep.growthPctDelta,
     });

@@ -2162,6 +2162,7 @@ export function previewCityEconomy(
       wealthPoziom: wt.poziom,
       spichlerzState,
       civKey: ownerCivByOwnerId.get(city.ownerId) ?? null,
+      difficulty,
       rationParams,
     });
 
@@ -2788,6 +2789,7 @@ export function advanceCityEconomy(
       wealthPoziom: wt.poziom,
       spichlerzState,
       civKey: ownerCivKey ?? null,
+      difficulty,
       rationParams,
     });
 

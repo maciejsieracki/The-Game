@@ -32172,6 +32172,7 @@ async function boot(): Promise<void> {
                 excludeHexKeysByCity: excludeHexKeysByCityForGrowth,
                 econParams: buildEconParams(data, _menuDifficulty),
                 rationParams: efParamsGrowth.rationParams,
+                difficulty: _menuDifficulty,
                 ownerCivByOwnerId: ownerCivMap,
                 spichlerzByCity,
                 happinessByCityId,
