@@ -6,8 +6,17 @@ const os = require('node:os');
 const path = require('node:path');
 const esbuild = require(path.resolve(__dirname, '..', 'node_modules', 'esbuild'));
 
-const entry = path.resolve(__dirname, '..', 'src', 'game', 'civ-ai-allocation.ts');
 const out = path.join(os.tmpdir(), `the-game-civ-ai-allocation-${process.pid}.cjs`);
+const entry = path.join(os.tmpdir(), `the-game-civ-ai-entry-${process.pid}.ts`);
+fs.writeFileSync(entry, `
+export {
+  civAiAllocationFor,
+  civAiImprovementAutomationPercentForOwner,
+  improvementBudgetFromCumulativePool,
+  isValidCivAiAllocationProfile,
+} from ${JSON.stringify(path.resolve(__dirname, '..', 'src', 'game', 'civ-ai-allocation.ts'))};
+export { pickAutoImprovements } from ${JSON.stringify(path.resolve(__dirname, '..', 'src', 'game', 'auto-improvements.ts'))};
+`, 'utf8');
 esbuild.buildSync({
   entryPoints: [entry],
   outfile: out,
@@ -52,37 +61,81 @@ check('non-pilot civilization keeps its existing policy', () => {
   assert.equal(api.civAiAllocationFor('rzymianie', 'normal'), undefined);
   assert.equal(api.civAiAllocationFor(undefined, 'normal'), undefined);
 });
-check('profile is wired into the runtime owner path', () => {
-  const main = fs.readFileSync(path.resolve(__dirname, '..', 'src', 'main.ts'), 'utf8');
-  assert.match(main, /civAiAllocationFor/);
-  assert.match(main, /applyAiAllocationProfile\(c\.ownerId\)/);
-  assert.match(main, /applyAiAllocationProfiles\(\)/);
+for (const difficulty of ['easy', 'normal', 'hard']) {
+  check(`AI owner roles use the full cumulative improvement pool on ${difficulty}`, () => {
+    for (const ownerKind of ['major-ai', 'city-state', 'defensive-copy']) {
+      assert.equal(
+        api.civAiImprovementAutomationPercentForOwner(ownerKind, 'grecy', difficulty),
+        100,
+      );
+    }
+  });
+}
+
+check('player and hotseat owners keep the 33% automation policy', () => {
+  assert.equal(api.civAiImprovementAutomationPercentForOwner('player', 'grecy', 'normal'), 33);
+  assert.equal(api.civAiImprovementAutomationPercentForOwner('hotseat', 'grecy', 'normal'), 33);
+  assert.equal(api.civAiImprovementAutomationPercentForOwner('major-ai', 'rzymianie', 'normal'), 100);
 });
 
-check('legacy/stale save reapplies profile after all saved allocation maps', () => {
-  const main = fs.readFileSync(path.resolve(__dirname, '..', 'src', 'main.ts'), 'utf8');
-  const loadStart = main.indexOf('restoreAiRosterFromSave(saved);');
-  const savedHandel = main.indexOf('const savedHandel =', loadStart);
-  const savedPraca = main.indexOf('const savedPodzialPracy =', loadStart);
-  const savedUlepszenia = main.indexOf('const savedUlepszenia =', loadStart);
-  const savedMapsEnd = main.indexOf('      restoreMennicaZlotoGrace(', savedUlepszenia);
-  const reapplied = main.indexOf('      applyAiAllocationProfiles();', savedUlepszenia);
+check('automation budget is calculated from the cumulative pool', () => {
+  assert.equal(api.improvementBudgetFromCumulativePool(1000, 100), 1000);
+  assert.equal(api.improvementBudgetFromCumulativePool(1000, 33), 330);
+  assert.equal(api.improvementBudgetFromCumulativePool(999, 33), 329);
+});
 
-  assert.ok(loadStart >= 0, 'load path marker');
-  assert.ok(savedHandel > loadStart, 'saved trade map is restored in load path');
-  assert.ok(savedPraca > savedHandel, 'saved work map is restored after trade map');
-  assert.ok(savedUlepszenia > savedPraca, 'saved improvement map is restored after work map');
-  assert.ok(reapplied > savedUlepszenia, 'profile reapplication follows saved maps');
-  assert.ok(reapplied < savedMapsEnd, 'profile reapplication follows the legacy fallback branch');
+function makeFlatMap(width, height) {
+  const hexes = {};
+  for (let q = 0; q < width; q += 1) {
+    for (let r = 0; r < height; r += 1) {
+      hexes[`${q},${r}`] = {
+        coords: { q, r },
+        terenBazowy: 'rownina',
+        nakladka: 'brak',
+        ulepszenie: 'brak',
+        wlasciciel: null,
+        wioska: { istnieje: false, ludnosc: 0 },
+        widocznosc: {},
+        rzeka: { obecna: false, krawedzie: [] },
+      };
+    }
+  }
+  return { szerokoscQ: width, wysokoscR: height, hexes, seed: 42, riverPaths: [] };
+}
 
-  const withoutReapply = main.slice(0, reapplied)
-    + main.slice(reapplied + '      applyAiAllocationProfiles();'.length);
-  const loadTail = withoutReapply.slice(savedUlepszenia, savedMapsEnd);
-  assert.equal(loadTail.includes('      applyAiAllocationProfiles();'), false,
-    'ordering regression turns red when the load-time call is removed');
+check('picker consumes the owner envelope from the cumulative pool', () => {
+  const map = makeFlatMap(20, 20);
+  const city = { id: 'owner-city', ownerId: 7, q: 10, r: 10, population: 1 };
+  const base = {
+    cities: [city],
+    ownerId: city.ownerId,
+    map,
+    territoryNodes: [{ q: city.q, r: city.r, pop: city.population, level: 1, ownerId: city.ownerId }],
+    placedImprovements: new Map(),
+    pracaAvailable: 200,
+    unlockedTechs: new Set(['Rolnictwo', 'Kamieniarstwo']),
+    pracaSurplusThreshold: 0,
+    skipWyrab: true,
+    civArchetype: 'grecy',
+    maxItemsPerCity: 10,
+  };
+  const full = api.pickAutoImprovements({
+    ...base,
+    improvementBudgetCap: api.improvementBudgetFromCumulativePool(200, 100),
+  });
+  const playerEnvelope = api.pickAutoImprovements({
+    ...base,
+    improvementBudgetCap: api.improvementBudgetFromCumulativePool(200, 33),
+  });
+  const fullSpent = full.reduce((sum, pick) => sum + pick.kosztPraca, 0);
+  const playerSpent = playerEnvelope.reduce((sum, pick) => sum + pick.kosztPraca, 0);
+  assert(fullSpent > playerSpent, `100% owner envelope spends more than 33% (${fullSpent} > ${playerSpent})`);
+  assert(fullSpent <= 200, `100% owner envelope stays within cumulative pool (${fullSpent} <= 200)`);
+  assert(playerSpent <= 66, `33% player envelope stays within cumulative pool (${playerSpent} <= 66)`);
 });
 
 try { fs.unlinkSync(out); } catch (_) { /* best effort */ }
+try { fs.unlinkSync(entry); } catch (_) { /* best effort */ }
 if (fail > 0) {
   console.error(`FAILED: ${pass} passed, ${fail} failed`);
   process.exit(1);

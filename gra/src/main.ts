@@ -297,7 +297,13 @@ import {
 import { gameEpochHudLabel, type CivEntryEpochRow } from './game/civ-entry-epoch';
 import type { ProductionItem } from './game/production';
 import { resolveArchetypeAggression, resolveArchetypeTrade, civAiProfileForTyp } from './game/civ-ai-data';
-import { civAiAllocationFor, type CivAllocationDifficulty } from './game/civ-ai-allocation';
+import {
+  civAiAllocationFor,
+  civAiImprovementAutomationPercentForOwner,
+  improvementBudgetFromCumulativePool,
+  type CivAiOwnerKind,
+  type CivAllocationDifficulty,
+} from './game/civ-ai-allocation';
 import { buildClusterStartPlan, buildSameTypeRivalCandidateHexes } from './game/cluster-start';
 import {
   cityStateDifficultyFromGameDifficulty,
@@ -5286,9 +5292,9 @@ async function boot(): Promise<void> {
       // Racji NOWEGO właściciela, nie zostaje przy wartości poprzedniego.
       c.poziomRacjiOverride = false;
       c.poziomRacji = ownerDefaultPoziomRacji.get(c.ownerId)!;
-      // Alokacja pilota jest nakładana po rozpoznaniu ownerId/cywilizacji. Dla
-      // miasta-państwa i gracza helper jest no-opem, więc ich polityka pozostaje
-      // nietknięta.
+      // Greece pilot profile and the owner-role AI envelope are applied after
+      // owner/civilization recognition. Player/city-state policy stays explicit;
+      // AI owner automation uses the shared envelope and legacy save/load reapply.
       applyAiAllocationProfile(c.ownerId);
       // P-MILET-ATENY-OKOLICA-RECZNE-PRZY-PRZEJECIU (2026-08-14): zmiana właściciela (LUB
       // nowe miasto -- przesuwa territoryNodes tak samo jak founding, patrz call site
@@ -7588,40 +7594,64 @@ async function boot(): Promise<void> {
     /** Wszystkie miasta AI z klastra — profil kopia_typu_obronna (P0-05). */
     const typCityCopyOwners = new Set<number>();
 
+    /** Resolve the AI owner role used by the automation envelope. */
+    function aiOwnerKindFor(ownerId: number): CivAiOwnerKind | null {
+      if (!isAiOwner(humanSeats, ownerId)) return null;
+      if (typCityCopyOwners.has(ownerId)) return 'defensive-copy';
+      if (simplifiedDiplomacyOwners.has(ownerId)) return 'city-state';
+      return 'major-ai';
+    }
+
     /**
-     * Pilot alokacji AI (Excel: Alokacje_Grecja). Profile są nakładane tylko na
-     * główne AI. Miasta-państwa/kopie obronne pozostają na swojej dotychczasowej
-     * polityce, podobnie jak gracz (ownerId===0).
+     * Pilot alokacji AI (Excel: Alokacje_Grecja). Profile rows są nakładane tylko
+     * na główne AI; wszystkie role AI dostają osobno pełną kopertę ulepszeń.
      */
     function aiAllocationProfileForOwner(ownerId: number) {
-      if (ownerId === 0 || typCityCopyOwners.has(ownerId)) return undefined;
+      if (aiOwnerKindFor(ownerId) !== 'major-ai') return undefined;
       const civType = aiOwnerCivMap.get(ownerId);
       const difficulty: CivAllocationDifficulty = _menuDifficulty;
       return civAiAllocationFor(civType, difficulty);
     }
 
     function applyAiAllocationProfile(ownerId: number): void {
+      const ownerKind = aiOwnerKindFor(ownerId);
+      if (!ownerKind) return;
+      const automationPercent = civAiImprovementAutomationPercentForOwner(
+        ownerKind,
+        aiOwnerCivMap.get(ownerId),
+        _menuDifficulty,
+      );
+      const policy = { ...ulepszeniaEmpireForOwner(ownerId) };
+      policy.pracaAutoPercent = clampUlepszeniaPracaPercent(automationPercent);
+      ulepszeniaEmpireByOwner.set(ownerId, policy);
+
+      // Every AI role keeps the fixed 50/50 Work split. The pilot profile
+      // agrees with this value; city-state/defensive-copy owners do not inherit
+      // a player/legacy 70% seed when they are newly created or captured.
+      const workSplit = { procentBudynki: AI_FIXED_PROCENT_BUDYNKI };
+      ownerDefaultPodzialPracy.set(ownerId, workSplit);
+      for (const city of cities) {
+        if (city.ownerId !== ownerId || city.podzialPracyOverride) continue;
+        city.podzialPracy = { ...workSplit };
+      }
+
       const profile = aiAllocationProfileForOwner(ownerId);
       if (!profile) return;
 
-      const workSplit = { procentBudynki: profile.workBuildingsPercent };
+      const profileWorkSplit = { procentBudynki: profile.workBuildingsPercent };
       const tradeSplit = normalizePodzialHandlu({
         procentNauka: profile.sciencePercent,
         procentPieniadz: profile.moneyPercent,
         procentLuksus: profile.wealthPercent,
       });
-      ownerDefaultPodzialPracy.set(ownerId, workSplit);
+      ownerDefaultPodzialPracy.set(ownerId, profileWorkSplit);
       ownerDefaultPodzialHandlu.set(ownerId, tradeSplit);
-
-      const policy = { ...ulepszeniaEmpireForOwner(ownerId) };
-      policy.pracaAutoPercent = clampUlepszeniaPracaPercent(profile.improvementAutomationPercent);
-      ulepszeniaEmpireByOwner.set(ownerId, policy);
 
       // City fields are a synchronized cache for cities without a local override.
       // Keep an explicit owner default as the source of truth for the economy.
       for (const city of cities) {
         if (city.ownerId !== ownerId) continue;
-        if (!city.podzialPracyOverride) city.podzialPracy = { ...workSplit };
+        if (!city.podzialPracyOverride) city.podzialPracy = { ...profileWorkSplit };
         if (!city.podzialHandluOverride) delete city.podzialHandlu;
       }
     }
@@ -32224,14 +32254,25 @@ async function boot(): Promise<void> {
             // obliczeniem koperty automatu, także dla ownera dodanego w tej turze.
             applyAiAllocationProfiles();
             aiImprovementBudgetByOwner.clear();
-            for (const ownerId of new Set(cities.map(city => city.ownerId).filter(id => id > 0))) {
+            for (const ownerId of new Set(
+              cities.map(city => city.ownerId).filter(id => isAiOwner(humanSeats, id)),
+            )) {
               // Parytet gracz/AI: AI nie przechodzi przez picker bezposrednio (robi to
               // `planCityImprovements` w ai.ts, ktore dostaje absolutna koperte), wiec ten
               // sam pulap liczymy tu jawnie — `pracaAutoPercent% x SKUMULOWANA pula AI`,
               // dokladnie ta sama formula, ktora picker stosuje graczowi wewnetrznie.
-              const aiPct = Math.max(0, Math.min(100, ulepszeniaEmpireForOwner(ownerId).pracaAutoPercent));
+              const ownerKind = aiOwnerKindFor(ownerId);
+              if (!ownerKind) continue;
+              const aiPct = civAiImprovementAutomationPercentForOwner(
+                ownerKind,
+                aiOwnerCivMap.get(ownerId),
+                _menuDifficulty,
+              );
               const aiPool = aiPracaPoolByOwner.get(ownerId) ?? 0;
-              aiImprovementBudgetByOwner.set(ownerId, Math.floor(aiPool * aiPct / 100));
+              aiImprovementBudgetByOwner.set(
+                ownerId,
+                improvementBudgetFromCumulativePool(aiPool, aiPct),
+              );
             }
             // R-AUTO-ULEPSZENIA-Q1=C: auto-ulepszenia terenu gracza — po ekonomii, przed AI.
             // Q4=A: commit od razu na EOT (bez pendingImprovementsTurn / cofnięcia).
@@ -38020,6 +38061,9 @@ async function boot(): Promise<void> {
       }
       repairAiRosterFromMap(loadStartEra);
       syncOwnerDisplayNamesFromCities();
+      // Re-apply the role envelope after roster repair so old/partial saves and
+      // newly discovered city-state owners cannot fall back to the player 33% cap.
+      applyAiAllocationProfiles();
       for (const oid of allAiOwnerIdsOnMap()) {
         if (!ownerStartEraByOwner.has(oid)) ownerStartEraByOwner.set(oid, loadStartEra);
       }
@@ -38186,11 +38230,9 @@ async function boot(): Promise<void> {
       } else {
         initUlepszeniaEmpireByOwner();
       }
-      // R-CYWILIZACJE-GRECJA-ALOKACJE-Q1, Defense save/load objection #1:
-      // saved/legacy owner policies are restored above, so reapply the current
-      // owner-aware major-AI profile only after all three allocation maps exist.
-      // This prevents stale Greece values from surviving a load while leaving
-      // player, hot-seat, city-state, and local city overrides untouched.
+      // Save/load restores all policy maps first. Re-apply both the Greece pilot
+      // profile and the owner-aware AI envelope only after those maps exist, so
+      // legacy saves cannot restore stale player/AI/city-state percentages.
       applyAiAllocationProfiles();
       restoreMennicaZlotoGrace(
         mennicaZlotoGraceState,

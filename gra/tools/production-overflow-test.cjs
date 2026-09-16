@@ -21,6 +21,7 @@ const BUNDLE_FILE = path.resolve(__dirname, '.production-overflow-bundle.cjs');
 
 const ENTRY_TS = `
 export { advanceProduction, splitPraca, cityPracaInteger, pracaImperialPoolGain, previewPracaPoolBrutto } from '../src/game/production';
+export { civAiImprovementAutomationPercentForOwner, improvementBudgetFromCumulativePool } from '../src/game/civ-ai-allocation';
 `;
 
 fs.writeFileSync(ENTRY_FILE, ENTRY_TS, 'utf8');
@@ -217,7 +218,9 @@ console.log('\n12. Budżet automatu ulepszeń = % SKUMULOWANEJ puli, nie przyros
   const hasWiring = code =>
     /pracaBudgetPercent:\s*playerUlepszeniaPolicy\.pracaAutoPercent/.test(code)
       && /pracaAvailable:\s*playerPracaPool/.test(code)
-      && /aiImprovementBudgetByOwner\.set\(ownerId, Math\.floor\(aiPool \* aiPct \/ 100\)\)/.test(code)
+      && /civAiImprovementAutomationPercentForOwner\(/.test(code)
+      && /improvementBudgetFromCumulativePool\(aiPool, aiPct\)/.test(code)
+      && /improvementBudgetCap:\s*aiImprovementBudgetByOwner\.get\(ownerId\)/.test(code)
       && !/pracaPoolInflowByOwner/.test(code);
   ok(hasWiring(mainCode), 'gracz i AI liczą budżet ulepszeń z % SKUMULOWANEJ puli (Q1=B)');
   // Dowod nietautologicznosci — JEDNA mutacja na asercje.
@@ -225,13 +228,42 @@ console.log('\n12. Budżet automatu ulepszeń = % SKUMULOWANEJ puli, nie przyros
   ok(!hasWiring(mutA), 'mutant wyłączający procentowy pułap pickera zostaje wykryty');
   const mutB = mainCode.replace('pracaAvailable: playerPracaPool', 'pracaAvailable: pracaPoolInflowThisTurn');
   ok(!hasWiring(mutB), 'mutant podmieniający bazę procentu na przyrost tury zostaje wykryty');
-  const mutC = mainCode.replace('aiImprovementBudgetByOwner.set(ownerId, Math.floor(aiPool * aiPct / 100))', 'aiImprovementBudgetByOwner.set(ownerId, aiInflow)');
+  const mutC = mainCode.replace('improvementBudgetFromCumulativePool(aiPool, aiPct)', 'aiInflow');
   ok(!hasWiring(mutC), 'mutant zrywający parytet koperty AI zostaje wykryty');
   // Wywolanie pickera gracza NIE MOZE podawac absolutnego capu — powrot capu = powrot progu.
   const i = mainCode.indexOf('const picks = pickAutoImprovements({');
   const blok = i > -1 ? mainCode.slice(i, mainCode.indexOf('\n                });', i)) : '';
   ok(i > -1 && !/improvementBudgetCap/.test(blok),
     'wywołanie pickera gracza nie podaje absolutnego capu (pułap liczy picker od salda)');
+
+  const roleEnvelope = [
+    ['major-ai', 100],
+    ['city-state', 100],
+    ['defensive-copy', 100],
+    ['player', 33],
+    ['hotseat', 33],
+  ];
+  for (const [ownerKind, expectedPercent] of roleEnvelope) {
+    const percent = M.civAiImprovementAutomationPercentForOwner(ownerKind, 'grecy', 'normal');
+    eq(percent, expectedPercent, `${ownerKind}: owner-aware helper zwraca ${expectedPercent}%`);
+    eq(
+      M.improvementBudgetFromCumulativePool(100, percent),
+      expectedPercent,
+      `${ownerKind}: absolutna koperta pochodzi ze skumulowanej puli 100`,
+    );
+  }
+  const aiCanonicalCap = M.improvementBudgetFromCumulativePool(
+    100,
+    M.civAiImprovementAutomationPercentForOwner('major-ai', 'grecy', 'normal'),
+  );
+  const aiMutatedCap = M.improvementBudgetFromCumulativePool(100, 33);
+  ok(aiCanonicalCap > aiMutatedCap, 'mutacja koperty AI 100%→33% zmienia absolutny cap');
+  const playerCanonicalCap = M.improvementBudgetFromCumulativePool(
+    100,
+    M.civAiImprovementAutomationPercentForOwner('player', 'grecy', 'normal'),
+  );
+  const playerMutatedCap = M.improvementBudgetFromCumulativePool(100, 100);
+  ok(playerMutatedCap > playerCanonicalCap, 'mutacja kontroli player 33%→100% zmienia absolutny cap');
 }
 
 console.log('\n--- production-overflow-test: ' + passed + ' OK, ' + failed + ' FAIL ---');

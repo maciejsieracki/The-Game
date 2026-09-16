@@ -2,8 +2,8 @@
  * Per-civilization AI allocation profiles.
  *
  * The first profile is deliberately narrow: Greece is the pilot civilization.
- * Player and city-state policies are not resolved here; the runtime applies
- * this profile only to major AI owners.
+ * The runtime applies the profile rows only to major AI owners; the owner-role
+ * resolver separately supplies the shared automation envelope for AI roles.
  */
 
 export type CivAllocationDifficulty = 'easy' | 'normal' | 'hard';
@@ -22,6 +22,14 @@ export interface CivAiAllocationProfile {
   /** Share of the assigned empire-pool Work available to auto-improvements. */
   improvementAutomationPercent: number;
 }
+
+export type CivAiOwnerKind = 'major-ai' | 'city-state' | 'defensive-copy' | 'player' | 'hotseat';
+
+/** Human owners retain the existing player-controlled automation envelope. */
+export const HUMAN_IMPROVEMENT_AUTOMATION_PERCENT = 33;
+
+/** AI owners may spend their complete cumulative improvement pool. */
+export const AI_IMPROVEMENT_AUTOMATION_PERCENT = 100;
 
 const GREECE_ALLOCATION: CivAiAllocationProfile = Object.freeze({
   workBuildingsPercent: 50,
@@ -57,6 +65,38 @@ export function civAiAllocationFor(
 ): CivAiAllocationProfile | undefined {
   if (!civType) return undefined;
   return CIV_AI_ALLOCATION_PROFILES[normalizeCivKey(civType)]?.[difficulty];
+}
+
+/**
+ * Resolve the automation envelope by owner role, without changing unrelated
+ * allocation rows. The pilot profile can override major-AI trade/work rows;
+ * city-state and defensive-copy owners only receive the AI-wide 100% envelope.
+ */
+export function civAiImprovementAutomationPercentForOwner(
+  ownerKind: CivAiOwnerKind,
+  civType: string | undefined,
+  difficulty: CivAllocationDifficulty = 'normal',
+): number {
+  if (ownerKind === 'player' || ownerKind === 'hotseat') {
+    return HUMAN_IMPROVEMENT_AUTOMATION_PERCENT;
+  }
+  if (ownerKind === 'city-state' || ownerKind === 'defensive-copy') {
+    return AI_IMPROVEMENT_AUTOMATION_PERCENT;
+  }
+  return civAiAllocationFor(civType, difficulty)?.improvementAutomationPercent
+    ?? AI_IMPROVEMENT_AUTOMATION_PERCENT;
+}
+
+/** Compute an automation cap from the cumulative owner pool, with safe clamps. */
+export function improvementBudgetFromCumulativePool(
+  cumulativePool: number,
+  automationPercent: number,
+): number {
+  const pool = Number.isFinite(cumulativePool) ? Math.max(0, cumulativePool) : 0;
+  const percent = Number.isFinite(automationPercent)
+    ? Math.max(0, Math.min(100, automationPercent))
+    : 0;
+  return Math.floor(pool * percent / 100);
 }
 
 /** Validate the profile's percentage invariants for tests and diagnostics. */
