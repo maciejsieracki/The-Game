@@ -36,3 +36,4 @@ Test-only evidence correction included in source branch: barbarian camp call-sit
 ## External state
 
 - Remote push/readback: branch `hermes/R-GAME-BUGS-INTEGRATION-20260916` and `origin/main` both point to `2aeb52743476bd1175789049b350a34f1888dda3`. Remote bundle bytes/hash exactly match the manifest: `69862548`, MD5 `7040d499548170e3805f231b5cac2e46`, SHA-256 `afd817232f8c6769024e160bdb3abfc3ac3c8b4e1760858f2ef4aec0a9657f22`.
+- Post-publish Chromium smoke on the actual `gra-robocza/Gra-ROBOCZA.html`: HTTP `200`, title `The Game — 4X`, canvas present, `37` buttons, `pageErrors=[]`; only non-product resource warning was expected missing `/favicon.ico` (`404`).
