@@ -38,13 +38,13 @@ function makeCtx(overrides = {}) {
   };
 }
 
-eq(D.diplomacyPnJednostka('Wojownik'), 10, 'PN cost Wojownik');
+eq(D.diplomacyPnJednostka('Wojownik'), 5, 'PN cost Wojownik — PN z aktualnego kosztu rekrutacji');
 
 // spawn at capital
 const ctx1 = makeCtx();
 const r1 = D.spawnTransferredUnit('Wojownik', 1, null, ctx1);
 ok(r1.ok, 'spawn ok');
-eq(r1.pnCost, 10, 'pnCost');
+eq(r1.pnCost, 5, 'pnCost');
 eq(r1.unit.ownerId, 1, 'owner');
 eq(r1.unit.typeId, 'Wojownik', 'typeId');
 eq(r1.unit.q, 5, 'capital q');

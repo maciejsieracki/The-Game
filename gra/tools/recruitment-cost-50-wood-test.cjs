@@ -61,16 +61,16 @@ const units = require('../data/units.json');
 const productData = { buildings: [], units };
 
 const EXPECTED = {
-  Wojownik: { money: 10, wood: 25, goldUpkeep: 1, woodUpkeep: 5 },
-  Oszczepnik: { money: 6, wood: 25, goldUpkeep: 1, woodUpkeep: 5 },
-  Łucznik: { money: 6, wood: 25, goldUpkeep: 1, woodUpkeep: 5 },
-  Zwiadowca: { money: 8, wood: 0, goldUpkeep: 0, woodUpkeep: 0 },
-  'Oszczepnik Zulu (Izijula)': { money: 20, wood: 25, goldUpkeep: 1, woodUpkeep: 5 },
-  'Wojownik z maczugą (Chaska)': { money: 26, wood: 25, goldUpkeep: 2, woodUpkeep: 5 },
-  'Oszczepnik (Estólica)': { money: 9, wood: 25, goldUpkeep: 1, woodUpkeep: 5 },
-  'Łucznik egipski': { money: 14, wood: 25, goldUpkeep: 1, woodUpkeep: 5 },
-  'Łucznik sumeryjski': { money: 9, wood: 25, goldUpkeep: 1, woodUpkeep: 5 },
-  Taran: { money: 14, wood: 38, goldUpkeep: 1, woodUpkeep: 8 },
+  Wojownik: { money: 5, wood: 13, goldUpkeep: 1, woodUpkeep: 3 },
+  Oszczepnik: { money: 3, wood: 13, goldUpkeep: 1, woodUpkeep: 3 },
+  Łucznik: { money: 3, wood: 13, goldUpkeep: 1, woodUpkeep: 3 },
+  Zwiadowca: { money: 4, wood: 0, goldUpkeep: 0, woodUpkeep: 0 },
+  'Oszczepnik Zulu (Izijula)': { money: 10, wood: 13, goldUpkeep: 1, woodUpkeep: 3 },
+  'Wojownik z maczugą (Chaska)': { money: 13, wood: 13, goldUpkeep: 2, woodUpkeep: 3 },
+  'Oszczepnik (Estólica)': { money: 5, wood: 13, goldUpkeep: 1, woodUpkeep: 3 },
+  'Łucznik egipski': { money: 7, wood: 13, goldUpkeep: 1, woodUpkeep: 3 },
+  'Łucznik sumeryjski': { money: 5, wood: 13, goldUpkeep: 1, woodUpkeep: 3 },
+  Taran: { money: 7, wood: 19, goldUpkeep: 1, woodUpkeep: 4 },
 };
 
 let passed = 0;

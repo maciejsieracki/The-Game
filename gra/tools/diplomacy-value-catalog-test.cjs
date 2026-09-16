@@ -56,7 +56,7 @@ eq(D.diplomacyPnPraca(50), 50, 'praca 50');
 eq(D.diplomacyPnZloze('zelazo'), 150, 'zloze zelazo');
 eq(D.diplomacyPnUlepszenie('farma'), 20, 'ref koszt farma (surowiec_boolean only)');
 eq(D.diplomacyPnUlepszenie('tartak'), 25, 'ref koszt tartak (surowiec_boolean only)');
-eq(D.diplomacyPnJednostka('Wojownik'), 10, 'jednostka Wojownik');
+eq(D.diplomacyPnJednostka('Wojownik'), 5, 'jednostka Wojownik — PN z aktualnego kosztu rekrutacji');
 eq(D.diplomacyPnBudynek('stolarnia', 1), 20, 'ref budynek L1 (nie handel)');
 eq(D.diplomacyPnBudynek('stolarnia', 2), 22, 'ref budynek L2 (nie handel)');
 eq(D.diplomacyPnSurowiecBoolean('drewno'), 25, 'surowiec drewno=tartak');
