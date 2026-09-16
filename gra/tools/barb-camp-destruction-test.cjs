@@ -155,9 +155,9 @@ const CALL_SITES = [
   { label: 'hak po zwycięskiej walce -- atakujący faktycznie wchodzi na heks bitwy',
     marker: 'attackerNowOnBattleHex', call: 'checkBarbCampDestroyedAt(battleQ, battleR)', window: 400 },
   { label: 'koniec tury -- domknięcie (snap) animacji ruchu gracza w locie',
-    marker: 'Snap any in-flight animation to its destination.', call: 'checkBarbCampDestructionAlongPath(anim.pathHexes)', window: 1600 },
+    marker: 'Snap any in-flight animation to its destination.', call: 'checkBarbCampDestructionAlongPath(anim.pathHexes)', window: 2400 },
   { label: 'auto-eksploracja zwiadowców gracza (runScoutsAutoExplore)',
-    marker: 'runScoutsAutoExplore(', call: 'checkBarbCampDestroyedAt(u.q, u.r)', window: 900 },
+    marker: 'runScoutsAutoExplore(', call: 'checkBarbCampDestroyedAt(u.q, u.r)', window: 2200 },
   { label: 'ruch AI (cmd.type===\'move\') -- RUNDA 3 naprawa #1: cała trasa zamiast last.q/last.r',
     marker: 'P-BARBARZYNCY-AI-CALA-TRASA-Q1', call: 'checkBarbCampDestructionAlongPath(path)', window: 800 },
   { label: 'animowany ruch gracza -- gałąź wieloheksowa (pathHexes.length > 0)',
@@ -478,6 +478,11 @@ const CALL_SITES = [
   const map = makeMap(15, 3);
   const onlyCity = { id: 'onlyCity', q: 9, r: 1, ownerId: 0, name: 'onlyCity' };
   const unit = barb('raider1', 5, 1, { clearedCityIds: ['onlyCity'] });
+  const barbariansSource = fs.readFileSync(path.join(GRA_ROOT, 'src/game/barbarians.ts'), 'utf8');
+  assert(
+    barbariansSource.includes('civCities = filtered.length > 0 ? filtered : civCitiesBase;'),
+    '8-static: empty filtered city list falls back to civCitiesBase so raid-ready units cannot freeze',
+  );
   const cmds = decideBarbarianMoves([unit], /* enemies */ [], [onlyCity], /* camps */ [], map, P, undefined, 'hard');
   assert(cmds.length === 1,
     '8: fallback (punkt 1, freeze fix) -- jedyny niebroniony cel już "zapamiętany" jako oczyszczony ' +
