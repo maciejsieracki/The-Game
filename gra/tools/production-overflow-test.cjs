@@ -218,8 +218,7 @@ console.log('\n12. Budżet automatu ulepszeń = % SKUMULOWANEJ puli, nie przyros
   const hasWiring = code =>
     /pracaBudgetPercent:\s*playerUlepszeniaPolicy\.pracaAutoPercent/.test(code)
       && /pracaAvailable:\s*playerPracaPool/.test(code)
-      && /civAiImprovementAutomationPercentForOwner\(/.test(code)
-      && /improvementBudgetFromCumulativePool\(aiPool, aiPct\)/.test(code)
+      && /computeAiImprovementBudgetCapForOwner\(ownerId, aiPool, isAiImprovementOwner\)/.test(code)
       && /improvementBudgetCap:\s*aiImprovementBudgetByOwner\.get\(ownerId\)/.test(code)
       && !/pracaPoolInflowByOwner/.test(code);
   ok(hasWiring(mainCode), 'gracz i AI liczą budżet ulepszeń z % SKUMULOWANEJ puli (Q1=B)');
@@ -228,7 +227,10 @@ console.log('\n12. Budżet automatu ulepszeń = % SKUMULOWANEJ puli, nie przyros
   ok(!hasWiring(mutA), 'mutant wyłączający procentowy pułap pickera zostaje wykryty');
   const mutB = mainCode.replace('pracaAvailable: playerPracaPool', 'pracaAvailable: pracaPoolInflowThisTurn');
   ok(!hasWiring(mutB), 'mutant podmieniający bazę procentu na przyrost tury zostaje wykryty');
-  const mutC = mainCode.replace('improvementBudgetFromCumulativePool(aiPool, aiPct)', 'aiInflow');
+  const mutC = mainCode.replace(
+    'computeAiImprovementBudgetCapForOwner(ownerId, aiPool, isAiImprovementOwner)',
+    'aiInflow',
+  );
   ok(!hasWiring(mutC), 'mutant zrywający parytet koperty AI zostaje wykryty');
   // Wywolanie pickera gracza NIE MOZE podawac absolutnego capu — powrot capu = powrot progu.
   const i = mainCode.indexOf('const picks = pickAutoImprovements({');

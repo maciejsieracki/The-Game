@@ -188,6 +188,7 @@ import {
   DEFAULT_ULEPSZENIA_FOCUS,
   DEFAULT_ULEPSZENIA_ONLY_WORKED,
   DEFAULT_ULEPSZENIA_WOLNO_WYCINAC_LAS,
+  AI_MAJOR_ULEPSZENIA_PRACA_PERCENT,
   MAX_PODZIAL_PRACY_BUDYNKI_PERCENT,
   AI_FIXED_PROCENT_BUDYNKI,
   AI_FIXED_PROCENT_NAUKA,
@@ -198,6 +199,8 @@ import {
   MIN_PROCENT_PULI_IMPERIUM_ZASADA3_NADWYZKA,
   resolveUlepszeniaPracaPercentFromRaw,
   freshUlepszeniaEmpirePolicy,
+  freshUlepszeniaEmpirePolicyForOwner,
+  computeAiImprovementBudgetCapForOwner,
   resolveEffectiveUlepszenia,
   normalizePodzialHandlu,
   isAutoBudowaTryb,
@@ -5202,6 +5205,14 @@ async function boot(): Promise<void> {
      * (B2, Evaluator RUNDA 1: FAIL). Wywołuj tę funkcję PO każdej zmianie city.ownerId.
      */
     function seedCityOwnerDefaults(c: City): void {
+      // R-AI-PRACA-BUDYNKI-ULEPSZENIA-Q1: nowy owner (założenie/przejęcie) musi
+      // dostać politykę właściwą dla klasy ownera, a nie wspólny fallback gracza 33%.
+      if (!ulepszeniaEmpireByOwner.has(c.ownerId)) {
+        ulepszeniaEmpireByOwner.set(
+          c.ownerId,
+          freshUlepszeniaEmpirePolicyForOwner(c.ownerId, isAiImprovementOwner),
+        );
+      }
       if (!ownerDefaultOkolicaFocus.has(c.ownerId)) {
         ownerDefaultOkolicaFocus.set(c.ownerId, freshOwnerDefaultOkolicaFocus());
       }
@@ -5335,18 +5346,25 @@ async function boot(): Promise<void> {
       reconcileAllWorkedTiles(cities, buildAllTerritoryNodes(), computeLostToNearerSiblingByCity(cities, map));
     }
 
-    function initUlepszeniaEmpireByOwner(): void {
+    function initUlepszeniaEmpireByOwner(
+      aiImprovementOwner?: (ownerId: number) => boolean,
+    ): void {
+      const freshPolicyForOwner = (ownerId: number): UlepszeniaEmpirePolicy =>
+        aiImprovementOwner
+          ? freshUlepszeniaEmpirePolicyForOwner(ownerId, aiImprovementOwner)
+          : freshUlepszeniaEmpirePolicy();
       ulepszeniaEmpireByOwner.clear();
       ulepszeniaEmpireByOwner.set(0, freshUlepszeniaEmpirePolicy());
       for (const ai of aiStartHexes) {
         if (!ulepszeniaEmpireByOwner.has(ai.ownerId)) {
-          ulepszeniaEmpireByOwner.set(ai.ownerId, freshUlepszeniaEmpirePolicy());
+          ulepszeniaEmpireByOwner.set(ai.ownerId, freshPolicyForOwner(ai.ownerId));
         }
       }
     }
 
     function ulepszeniaEmpireForOwner(ownerId: number): UlepszeniaEmpirePolicy {
-      return ulepszeniaEmpireByOwner.get(ownerId) ?? freshUlepszeniaEmpirePolicy();
+      return ulepszeniaEmpireByOwner.get(ownerId)
+        ?? freshUlepszeniaEmpirePolicyForOwner(ownerId, isAiImprovementOwner);
     }
 
     function effectiveUlepszeniaForCity(city: City): EffectiveUlepszeniaSettings {
@@ -6527,6 +6545,11 @@ async function boot(): Promise<void> {
       return simplifiedDiplomacyOwners.has(ownerId) || typCityCopyOwners.has(ownerId);
     }
 
+    /** R-AI-PRACA-BUDYNKI-ULEPSZENIA-Q1: każdy owner AI dostaje 100% własnej puli. */
+    function isAiImprovementOwner(ownerId: number): boolean {
+      return ownerId > 0 && isAiOwner(humanSeats, ownerId);
+    }
+
     function buildPlayerDiploRelations(): DiploRelation[] {
       const rels: DiploRelation[] = [];
       const contacted = getDiplomaticContacts();
@@ -7559,6 +7582,9 @@ async function boot(): Promise<void> {
     initEmpireFoodStates();
     initOwnerDefaultPodzialHandlu();
     initOwnerDefaultCityFields();
+    // The owner-classification sets and humanSeats are initialized later in boot;
+    // this preliminary seed must not invoke a predicate that closes over them.
+    // The real new-game/load paths re-seed with the owner-aware predicate below.
     initUlepszeniaEmpireByOwner();
 
     // -----------------------------------------------------------------------
@@ -8884,7 +8910,8 @@ async function boot(): Promise<void> {
       initEmpireFoodStates();
       initOwnerDefaultPodzialHandlu();
       initOwnerDefaultCityFields();
-      initUlepszeniaEmpireByOwner();
+      initUlepszeniaEmpireByOwner(isAiImprovementOwner);
+      // Re-apply civilization/owner allocation after all saved policy maps exist.
       applyAiAllocationProfiles();
       migrateHandelSplitOnLoad(cities, ownerDefaultPodzialHandlu, undefined);
       migratePodzialPracyOnLoad(cities, ownerDefaultPodzialPracy, undefined);
@@ -32258,20 +32285,12 @@ async function boot(): Promise<void> {
               cities.map(city => city.ownerId).filter(id => isAiOwner(humanSeats, id)),
             )) {
               // Parytet gracz/AI: AI nie przechodzi przez picker bezposrednio (robi to
-              // `planCityImprovements` w ai.ts, ktore dostaje absolutna koperte), wiec ten
-              // sam pulap liczymy tu jawnie — `pracaAutoPercent% x SKUMULOWANA pula AI`,
-              // dokladnie ta sama formula, ktora picker stosuje graczowi wewnetrznie.
-              const ownerKind = aiOwnerKindFor(ownerId);
-              if (!ownerKind) continue;
-              const aiPct = civAiImprovementAutomationPercentForOwner(
-                ownerKind,
-                aiOwnerCivMap.get(ownerId),
-                _menuDifficulty,
-              );
+              // `planCityImprovements` w ai.ts dostaje absolutną kopertę; produkcyjny
+              // helper stosuje tę samą politykę ownera i cap co picker.
               const aiPool = aiPracaPoolByOwner.get(ownerId) ?? 0;
               aiImprovementBudgetByOwner.set(
                 ownerId,
-                improvementBudgetFromCumulativePool(aiPool, aiPct),
+                computeAiImprovementBudgetCapForOwner(ownerId, aiPool, isAiImprovementOwner),
               );
             }
             // R-AUTO-ULEPSZENIA-Q1=C: auto-ulepszenia terenu gracza — po ekonomii, przed AI.
@@ -38211,7 +38230,7 @@ async function boot(): Promise<void> {
         Array<[number, Record<string, unknown>]> | undefined;
       if (savedUlepszenia?.length) {
         for (const [oid, pol] of savedUlepszenia) {
-          ulepszeniaEmpireByOwner.set(oid, {
+          const loadedPolicy: UlepszeniaEmpirePolicy = {
             focus: (pol.focus as UlepszeniaFocus) ?? DEFAULT_ULEPSZENIA_FOCUS,
             tryb: (pol.tryb as UlepszeniaTryb) ?? DEFAULT_ULEPSZENIA_TRYB,
             // R-AI-WYRAB-PRZY-RZECE-FARMY-Q1 (runda 4, Zasada 2): brak pola w zapisie =
@@ -38225,10 +38244,17 @@ async function boot(): Promise<void> {
             pracaAutoPercent: clampUlepszeniaPracaPercent(
               resolveUlepszeniaPracaPercentFromRaw(pol.pracaAutoPercent, pol.perTurn),
             ),
-          });
+          };
+          // R-AI-PRACA-BUDYNKI-ULEPSZENIA-Q1: stare zapisy niosą 33% jako
+          // wspólny default. Po rozpoznaniu ownera AI re-seedujemy jego pole
+          // automatu; gracz i hot-seat zachowują zapis.
+          if (isAiImprovementOwner(oid)) {
+            loadedPolicy.pracaAutoPercent = AI_MAJOR_ULEPSZENIA_PRACA_PERCENT;
+          }
+          ulepszeniaEmpireByOwner.set(oid, loadedPolicy);
         }
       } else {
-        initUlepszeniaEmpireByOwner();
+        initUlepszeniaEmpireByOwner(isAiImprovementOwner);
       }
       // Save/load restores all policy maps first. Re-apply both the Greece pilot
       // profile and the owner-aware AI envelope only after those maps exist, so

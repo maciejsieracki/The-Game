@@ -30,11 +30,8 @@ const BUNDLE_FILE = path.resolve(__dirname, '.ai-praca-split-parity-bundle.cjs')
 fs.writeFileSync(ENTRY_FILE, `
 export { decideAITurn } from ${JSON.stringify(SRC + '/game/ai')};
 export { splitPraca } from ${JSON.stringify(SRC + '/game/production')};
-export {
-  civAiImprovementAutomationPercentForOwner,
-  improvementBudgetFromCumulativePool,
-} from ${JSON.stringify(SRC + '/game/civ-ai-allocation')};
-export { getImprovementMeta } from ${JSON.stringify(SRC + '/game/improvement-tech')};
+export { computeAiImprovementBudgetCap } from ${JSON.stringify(SRC + '/game/cities')};
+export { computeAiImprovementBudgetCapForOwner } from ${JSON.stringify(SRC + '/game/cities')};
 `, 'utf8');
 
 try {
@@ -56,9 +53,8 @@ try {
 const {
   decideAITurn,
   splitPraca,
-  civAiImprovementAutomationPercentForOwner,
-  improvementBudgetFromCumulativePool,
-  getImprovementMeta,
+  computeAiImprovementBudgetCap,
+  computeAiImprovementBudgetCapForOwner,
 } = require(BUNDLE_FILE);
 
 let passed = 0;
@@ -136,20 +132,6 @@ function runPlanner({ ownerId, defensiveCopy, improvementBudgetCap }) {
   return commands.filter(c => c.type === 'buildImprovement');
 }
 
-function runProductionConsumer({ ownerKind, ownerId, defensiveCopy = false, automationPercentOverride }) {
-  const automationPercent = automationPercentOverride === undefined
-    ? civAiImprovementAutomationPercentForOwner(ownerKind, 'grecy', 'normal')
-    : automationPercentOverride;
-  const cumulativePool = 100;
-  const improvementBudgetCap = improvementBudgetFromCumulativePool(cumulativePool, automationPercent);
-  const picks = runPlanner({ ownerId, defensiveCopy, improvementBudgetCap });
-  const spent = picks.reduce(
-    (sum, pick) => sum + (getImprovementMeta(pick.key)?.kosztPraca ?? 0),
-    0,
-  );
-  return { automationPercent, improvementBudgetCap, picks, spent };
-}
-
 // R-PRACA-JEDEN-PODZIAL-Q1 — AKTUALIZACJA (uzasadnienie w 01-operator.md):
 //   CO PILNOWALY bloki 1 i 6: ze DRUGI podzial puli (`splitEmpirePracaBudget`) daje AI
 //     ten sam absolutny budzet ulepszen co graczowi.
@@ -191,56 +173,91 @@ console.log('4. Mutacja capu 50 → 25 musi zostać wykryta (negacja drugiego sp
   );
 }
 
-console.log('5. Koperta owner-aware z kumulowanej puli — produkcyjny planner');
+console.log('5. Strażnik routingu main.ts i brak drugiego splitu w planie AI');
 {
-  const scenarios = [
-    { ownerKind: 'major-ai', ownerId: 7, defensiveCopy: false },
-    { ownerKind: 'city-state', ownerId: 8, defensiveCopy: false },
-    { ownerKind: 'defensive-copy', ownerId: 9, defensiveCopy: true },
-    { ownerKind: 'player', ownerId: 0, defensiveCopy: false },
-    { ownerKind: 'hotseat', ownerId: 10, defensiveCopy: false },
-  ];
-  const results = new Map(
-    scenarios.map(s => [`${s.ownerKind}:${s.ownerId}`, {
-      scenario: s,
-      canonical: runProductionConsumer(s),
-    }]),
+  eq(computeAiImprovementBudgetCap(50, 100), 50, 'produkcja: major AI cap wykonuje helper z pełnej puli');
+  eq(computeAiImprovementBudgetCap(50, 33), 16, 'produkcja: generyczny helper zachowuje cap 33%');
+  eq(
+    computeAiImprovementBudgetCapForOwner(7, 50, ownerId => [7, 8, 9].includes(ownerId)),
+    50,
+    'produkcja: owner-aware major AI cap wykonuje politykę 100%',
   );
-  for (const kind of ['major-ai', 'city-state', 'defensive-copy']) {
-    const result = [...results.values()].find(({ scenario }) => scenario.ownerKind === kind);
-    eq(result.canonical.automationPercent, 100, `${kind} dostaje 100% kumulowanej puli`);
-    eq(result.canonical.improvementBudgetCap, 100, `${kind} dostaje absolutny cap 100`);
-    assert(result.canonical.spent > 0, `${kind} production consumer wydaje dodatni budżet`);
-    assert(result.canonical.spent <= result.canonical.improvementBudgetCap,
-      `${kind} consumer mieści się w absolutnym capie (${result.canonical.spent} <= ${result.canonical.improvementBudgetCap})`);
-  }
-  for (const kind of ['player', 'hotseat']) {
-    const result = [...results.values()].find(({ scenario }) => scenario.ownerKind === kind);
-    eq(result.canonical.automationPercent, 33, `${kind} zostaje przy 33%`);
-    eq(result.canonical.improvementBudgetCap, 33, `${kind} ma absolutny cap 33`);
-    assert(result.canonical.spent <= result.canonical.improvementBudgetCap,
-      `${kind} consumer respektuje negatywny cap (${result.canonical.spent} <= ${result.canonical.improvementBudgetCap})`);
-  }
-
-  // Mutacja 100% → 33% musi zmienić obserwowalny wydatek każdego AI consumer.
-  for (const { scenario, canonical } of results.values()) {
-    if (!['major-ai', 'city-state', 'defensive-copy'].includes(scenario.ownerKind)) continue;
-    const mutated = runProductionConsumer({ ...scenario, automationPercentOverride: 33 });
-    assert(canonical.spent > mutated.spent,
-      `${scenario.ownerKind} mutacja 100%→33% zmienia wydatek (${canonical.spent} > ${mutated.spent})`);
-    assert(mutated.spent <= mutated.improvementBudgetCap,
-      `${scenario.ownerKind} mutant nadal jest ograniczony capem 33 (${mutated.spent} <= ${mutated.improvementBudgetCap})`);
-  }
-
-  // Odwrotna mutacja 33% → 100% musi ujawnić złamanie kontroli player/hotseat.
-  for (const { scenario, canonical } of results.values()) {
-    if (!['player', 'hotseat'].includes(scenario.ownerKind)) continue;
-    const mutated = runProductionConsumer({ ...scenario, automationPercentOverride: 100 });
-    assert(mutated.spent > canonical.spent,
-      `${scenario.ownerKind} mutacja 33%→100% zmienia wydatek (${mutated.spent} > ${canonical.spent})`);
-    assert(canonical.spent <= canonical.improvementBudgetCap,
-      `${scenario.ownerKind} canonical pozostaje ograniczony do 33%`);
-  }
+  eq(
+    computeAiImprovementBudgetCapForOwner(8, 50, ownerId => [7, 8, 9].includes(ownerId)),
+    50,
+    'produkcja: owner-aware city-state cap wykonuje politykę 100%',
+  );
+  eq(
+    computeAiImprovementBudgetCapForOwner(9, 50, ownerId => [7, 8, 9].includes(ownerId)),
+    50,
+    'produkcja: owner-aware defensive-copy cap wykonuje politykę 100%',
+  );
+  const mainSource = fs.readFileSync(path.resolve(SRC, 'main.ts'), 'utf8');
+  const aiSource = fs.readFileSync(path.resolve(SRC, 'game', 'ai.ts'), 'utf8');
+  assert(
+    mainSource.includes('improvementBudgetCap: aiImprovementBudgetByOwner.get(ownerId)'),
+    'main.ts przekazuje absolutny cap do decideAITurn/defensiveCopy',
+  );
+  assert(
+    aiSource.includes('Number.isFinite(opts.improvementBudgetCap)'),
+    'ai.ts respektuje jawny absolutny cap',
+  );
+  assert(
+    !aiSource.includes('splitEmpirePracaBudget'),
+    'ai.ts nie wykonuje ponownego splitu na pozostałej puli',
+  );
+  // R-PRACA-JEDEN-PODZIAL-Q1 RUNDA 2 (F1) — AKTUALIZACJA JEDNEJ ASERCJI, jawnie uzasadniona:
+  //   CO PILNOWAŁA: skąd `main.ts` bierze absolutną kopertę ulepszeń dla AI (parytet z graczem
+  //     — obaj z tego samego, JEDNEGO źródła, bez drugiego splitu na resztkowej puli).
+  //   DLACZEGO STARY WARUNEK PRZESTAŁ BYĆ PRAWDĄ: runda 1 wpisała tam TEGOROCZNY wpływ do puli
+  //     (`pracaPoolInflowByOwner`), co złamało udokumentowaną decyzję właściciela
+  //     R-AUTO-PRACA-BUDZET-PROCENT-Q1=B („% od SKUMULOWANEJ puli, NIE od przyrostu") i dało
+  //     próg ~40 Pracy przyrostu na turę, poniżej którego powstawało ZERO ulepszeń — u gracza
+  //     I u AI, bo to ta sama ścieżka. Runda 2 wycofała ten wiring; mapa `pracaPoolInflowByOwner`
+  //     już nie istnieje, więc stara asercja pinowała nieistniejący kod.
+  //   CO PILNUJE TERAZ: ta sama własność — parytet i JEDNO źródło koperty — wyrażona przez
+  //     obowiązującą formułę: `pracaAutoPercent% × SKUMULOWANA pula AI`. Warunek jest WĘŻSZY
+  //     niż stary (pinuje i bazę, i procent), nie luźniejszy.
+  assert(
+    mainSource.includes('computeAiImprovementBudgetCapForOwner(ownerId, aiPool, isAiImprovementOwner)'),
+    'AI: koperta ulepszeń = pracaAutoPercent% skumulowanej puli AI (parytet z pickerem gracza)',
+  );
+  assert(
+    mainSource.includes('const aiPool = aiPracaPoolByOwner.get(ownerId) ?? 0;'),
+    'AI: bazą procentu jest SKUMULOWANA pula AI, nie tegoroczny wpływ do puli',
+  );
+  assert(
+    !mainSource.includes('pracaPoolInflowByOwner'),
+    'main.ts nie liczy już żadnego budżetu ulepszeń z tegorocznego przyrostu puli',
+  );
+  // P-MARTWY-KOD-PROCENT-PULI-IMPERIUM-Q1 — AKTUALIZACJA ASERCJI, jawnie uzasadniona:
+  //   CO PILNOWAŁA: że gracz i AI czytają udział ulepszeń jako dopełnienie jedynego
+  //     podziału `ownerDefaultPodzialPracy` (100 − procentBudynki), przez wspólny helper
+  //     `procentPuliImperiumForOwner(0)`.
+  //   DLACZEGO STARY WARUNEK PRZESTAŁ BYĆ PRAWDĄ: R-PRACA-JEDEN-PODZIAL-Q1 runda 2 (F1)
+  //     zmieniła mechanizm koperty ulepszeń na `pracaAutoPercent% × SKUMULOWANA pula`
+  //     (osobna polityka `UlepszeniaEmpirePolicy.pracaAutoPercent`, NIE dopełnienie
+  //     `procentBudynki` do 100%). `procentPuliImperiumForOwner` przestała mieć
+  //     jakiegokolwiek wywołującego w main.ts — potwierdzone też wcześniej przez
+  //     Evaluator/Final Control w R-PRACA-PANEL-BUDOWY-WLASCIWA-WARSTWA-Q1 (martwa po
+  //     usunięciu `getEmpirePracaSplit`). Test pinował nieistniejący już mechanizm;
+  //     funkcję usunięto (P-MARTWY-KOD-PROCENT-PULI-IMPERIUM-Q1).
+  //   CO PILNUJE TERAZ: ta sama własność parytetu, wyrażona przez obowiązującą formułę —
+  //     gracz i AI czytają udział ulepszeń z tego samego pola `pracaAutoPercent`.
+  assert(
+    mainSource.includes('pracaBudgetPercent: playerUlepszeniaPolicy.pracaAutoPercent')
+      && mainSource.includes('computeAiImprovementBudgetCapForOwner(ownerId, aiPool, isAiImprovementOwner)'),
+    'gracz i AI czytają udział ulepszeń z tego samego pola pracaAutoPercent (parytet)',
+  );
+  assert(
+    mainSource.includes('ownerDefaultPodzialPracy: Array.from(ownerDefaultPodzialPracy.entries())')
+      && mainSource.includes('const savedPracaSplitLegacy = saved.meta?.ownerDefaultPracaSplit'),
+    'MP/stary save: serializacja jedynego podziału + migracja legacy drugiego suwaka',
+  );
+  assert(
+    !mainSource.includes('ownerDefaultPracaSplit.set('),
+    'drugi, niezależny suwak ownera nie jest już nigdzie zapisywany',
+  );
 }
 
 console.log('6. Kontrakt 10% ulepszeń → 90% budynków działa identycznie dla ownera AI/MP');

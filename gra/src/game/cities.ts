@@ -228,6 +228,9 @@ export const DEFAULT_ULEPSZENIA_WOLNO_WYCINAC_LAS = false;
  *  po migracji 1→33% (patrz migrateUlepszeniaPerTurnToPercent). */
 export const DEFAULT_ULEPSZENIA_PRACA_PERCENT: UlepszeniaPracaPercent = 33;
 
+/** Decyzja właściciela R-AI-PRACA-BUDYNKI-ULEPSZENIA-Q1: pełna pula major AI. */
+export const AI_MAJOR_ULEPSZENIA_PRACA_PERCENT: UlepszeniaPracaPercent = 100;
+
 /**
  * Maksymalny udział budżetu Pracy (JUŻ przydzielonej polu ulepszeń) rozdysponowywany
  * automatycznie przez `pracaAutoPercent`/`ulepszeniaPracaPercent` — pole (b), niezależne
@@ -314,6 +317,41 @@ export function freshUlepszeniaEmpirePolicy(): UlepszeniaEmpirePolicy {
     pracaAutoPercent: DEFAULT_ULEPSZENIA_PRACA_PERCENT,
     wolnoWycinacLas: DEFAULT_ULEPSZENIA_WOLNO_WYCINAC_LAS,
   };
+}
+
+/**
+ * Domyślna polityka auto-ulepszeń konkretnego właściciela.
+ * `freshUlepszeniaEmpirePolicy` pozostaje wspólnym defaultem gracza (33%);
+ * każdy właściciel sterowany przez AI (major AI, państwo-miasto i kopia obronna)
+ * dostaje pełną własną pulę. Predykat jest wstrzykiwany, aby nie mieszać tej
+ * warstwy z klasyfikacją ownerów w main.ts.
+ */
+export function freshUlepszeniaEmpirePolicyForOwner(
+  ownerId: number,
+  isAiImprovementOwner: (ownerId: number) => boolean,
+): UlepszeniaEmpirePolicy {
+  const policy = freshUlepszeniaEmpirePolicy();
+  if (isAiImprovementOwner(ownerId)) policy.pracaAutoPercent = AI_MAJOR_ULEPSZENIA_PRACA_PERCENT;
+  return policy;
+}
+
+/** Oblicza absolutny cap automatu AI z jego skumulowanej puli Pracy. */
+export function computeAiImprovementBudgetCap(
+  cumulativePracaPool: number,
+  pracaAutoPercent: number,
+): number {
+  const boundedPercent = Math.max(0, Math.min(100, pracaAutoPercent));
+  return Math.floor(cumulativePracaPool * boundedPercent / 100);
+}
+
+/** Oblicza cap AI z produkcyjnej polityki konkretnego ownera i jego puli. */
+export function computeAiImprovementBudgetCapForOwner(
+  ownerId: number,
+  cumulativePracaPool: number,
+  isAiImprovementOwner: (ownerId: number) => boolean,
+): number {
+  const policy = freshUlepszeniaEmpirePolicyForOwner(ownerId, isAiImprovementOwner);
+  return computeAiImprovementBudgetCap(cumulativePracaPool, policy.pracaAutoPercent);
 }
 
 /** Efektywne ustawienia auto-ulepszeń miasta (empire lub override lokalny). */
