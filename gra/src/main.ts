@@ -308,7 +308,6 @@ import {
 import {
   civAiAllocationFor,
   civAiImprovementAutomationPercentForOwner,
-  improvementBudgetFromCumulativePool,
   type CivAiOwnerKind,
   type CivAllocationDifficulty,
 } from './game/civ-ai-allocation';
