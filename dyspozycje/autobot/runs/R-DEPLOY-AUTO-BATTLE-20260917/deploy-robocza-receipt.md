@@ -9,7 +9,8 @@ STATUS: DEPLOYED / remote readback PASS / byte-identical no-op republish
 - integration branch: `integration/robocza-auto-battle-20260917`
 - base: `e0e280c43909bdc8fe1d4d1ce926e15874c535c8`
 - integration/artifact commit: `4f68875d07991b3fc365ec21da04329d426654d7`
-- remote branch/main: `104fce6d5002ff3e0d64083268dd4434dbb0452e`
+- product release commit: `104fce6d5002ff3e0d64083268dd4434dbb0452e`
+- docs-only closure remote readback: `PASS`
 - republish time: `2026-09-17T16:26:31Z`
 - Final Control: `t_59f1a3f7` / run `647` PASS
 

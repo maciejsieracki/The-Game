@@ -2,7 +2,7 @@
 
 STATUS: `DEPLOYED — remote branch/main readback PASS; byte-identical no-op republish`.
 
-- Clean integration branch: `integration/robocza-auto-battle-20260917`, source/integration commit `4f68875d07991b3fc365ec21da04329d426654d7`, base `origin/main=e0e280c43909bdc8fe1d4d1ce926e15874c535c8`, remote `main=104fce6d5002ff3e0d64083268dd4434dbb0452e`.
+- Clean integration branch: `integration/robocza-auto-battle-20260917`, source/integration commit `4f68875d07991b3fc365ec21da04329d426654d7`, base `origin/main=e0e280c43909bdc8fe1d4d1ce926e15874c535c8`, product release commit `104fce6d5002ff3e0d64083268dd4434dbb0452e`; docs-only closure remote readback `PASS`.
 - Bundle: MD5 `7340f635259dfd06a9467025e9c22c61`, SHA-256 `137b513839d670468ef81241c6bb72de016dbf2bade65d37c8abf8b2018e8c2f`, `69875188` bytes; verifier `VERIFY OK`; smoke `PASS`.
 - Scope: `R-AUTO-BATTLE-LOSS-Q1`; allowlist exact: `ai-difficulty-bonus.ts`, `post-battle-map.ts`, `auto-battle-loss-audit-test.cjs`, fixture-only `post-battle-map-test.cjs`.
 - Gates: post-battle `32/0`, focused audit `52/0`, AUTO `14/0` + `43/0` + `150/0`, TypeScript PASS, Vite `889` modules. No promotion to KANON/FINALNA.
