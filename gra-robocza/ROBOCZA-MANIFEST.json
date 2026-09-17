@@ -1,81 +1,114 @@
 {
-  "publishedAt": "2026-09-16T17:55:35+00:00",
+  "publishedAt": "2026-09-17T13:44:32Z",
   "publisher": "Hermes Orchestrator",
-  "md5": "7040d499548170e3805f231b5cac2e46",
-  "sha256": "afd817232f8c6769024e160bdb3abfc3ac3c8b4e1760858f2ef4aec0a9657f22",
-  "bytes": 69862548,
+  "md5": "4e72d43560d91aec6724f52401ada95a",
+  "sha256": "a3baaab0e8b4fa700a95765d93cc4b235dd34c5201facb2caf91b1d45f7a7a5e",
+  "bytes": 69875101,
   "bundle": "Gra-ROBOCZA.html",
-  "sourceCommit": "0180d17231b62d2a5012c9c23d8a42d91c09f1e1",
-  "base": "3ff3264b487f597311c000e8e8434375ee88a651",
+  "sourceCommit": "622a9995b6bf39f1bce90d10df095ec4a47e081a",
+  "base": "578051aea1a0bf1ae174efb446bd99f6997ef9ab",
+  "integrationCommit": "622a9995b6bf39f1bce90d10df095ec4a47e081a",
   "scope": [
-    "R-REKRUTACJA-KOSZTY-POLOWA-ALL-Q1",
+    "R-GARNIZON-PANEL-DOCELNY-Q1",
+    "R-ARMIA-AI-SCALANIE-REKRUTACJA-Q1",
+    "R-ARMIA-MERGE-PANEL-SCROLL-Q1",
+    "R-HANDEL-DOCHOD-HALF-CEIL-Q1",
+    "R-REKRUTACJA-PANEL-WYSOKOSC-5-KART-Q1",
+    "R-KOSZTY-EPOKOWE-ULEPSZENIA-Q1",
+    "R-REKRUTACJA-MASOWA-TABELA-MIASTA-Q1",
+    "R-MIASTA-KOLONIA-NAZWA-POOL-Q1 (already in base; verified no-op)",
+    "R-REKRUTACJA-KOSZTY-POLOWA-ALL-Q1 (already in base; verified no-op)",
+    "R-AI-BUDZET-SKARB-NAUKA-ZAMOZNOSC-Q1 (audit/test-only; no product diff)",
+    "R-CYWILIZACJE-GRECJA-ALOKACJE-Q1 (already in base; verified no-op)",
+    "R-AI-PRACA-BUDYNKI-ULEPSZENIA-Q1 (already in base; verified no-op)",
+    "R-CYWILIZACJE-GRECJA-AKTYWNE-PARAMETRY-Q1 (already in base; verified no-op)"
+  ],
+  "noOpVerified": [
     "R-MIASTA-KOLONIA-NAZWA-POOL-Q1",
+    "R-REKRUTACJA-KOSZTY-POLOWA-ALL-Q1",
+    "R-AI-BUDZET-SKARB-NAUKA-ZAMOZNOSC-Q1",
     "R-CYWILIZACJE-GRECJA-ALOKACJE-Q1",
-    "R-CYWILIZACJE-GRECJA-ALOKACJE-PANSTWA-MIASTA-Q1",
     "R-AI-PRACA-BUDYNKI-ULEPSZENIA-Q1",
-    "R-CYWILIZACJE-GRECJA-AKTYWNE-PARAMETRY-Q1",
-    "R-CYWILIZACJE-GRECJA-MACIERZ-113-Q1",
-    "R-AI-BUDZET-SKARB-NAUKA-ZAMOZNOSC-Q1 combat correction"
+    "R-CYWILIZACJE-GRECJA-AKTYWNE-PARAMETRY-Q1"
   ],
   "excluded": [
-    "R-BARBARIANCY*: INFRA/TIMEOUT, no product diff",
-    "R-NAZWY-MIAST-PANSTWA-POOL-POPULARNOSC-Q1: owner A recovery running",
+    "R-AI-BUDZET-SKARB-NAUKA-ZAMOZNOSC-Q1: no production change; test/audit evidence only",
     "Rust R20-R24",
     "promotion to KANON/FINALNA"
   ],
-  "hubGeneratedAt": "2026-09-16T17:55:35",
   "bundles": [
     {
       "file": "Gra-ROBOCZA.html",
+      "href": "Gra-ROBOCZA.html?skipMenuRedirect=1",
+      "label": "Pełna gra ROBOCZA",
+      "md5": "4e72d43560d91aec6724f52401ada95a",
+      "sizeBytes": 69875101
+    },
+    {
+      "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html",
-      "label": "Gra-ROBOCZA.html",
-      "md5": "7040d499548170e3805f231b5cac2e46",
-      "sizeBytes": 69862548
+      "label": "Pełna gra (z menu)",
+      "md5": "4e72d43560d91aec6724f52401ada95a",
+      "sizeBytes": 69875101
     },
     {
-      "file": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
-      "href": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
-      "label": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
-      "md5": "7040d499548170e3805f231b5cac2e46",
-      "sizeBytes": 69862548
+      "file": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
+      "href": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
+      "label": "Playtest: DUŻA bitwa (pole) — NOWE",
+      "md5": "4e72d43560d91aec6724f52401ada95a",
+      "sizeBytes": 69875101
     },
     {
-      "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
-      "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
-      "label": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
-      "md5": "7040d499548170e3805f231b5cac2e46",
-      "sizeBytes": 69862548
-    },
-    {
-      "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
-      "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
-      "label": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
-      "md5": "7040d499548170e3805f231b5cac2e46",
-      "sizeBytes": 69862548
-    },
-    {
-      "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
-      "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
-      "label": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
-      "md5": "7040d499548170e3805f231b5cac2e46",
-      "sizeBytes": 69862548
+      "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
+      "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
+      "label": "Playtest: DUŻE oblężenie (mur) — NOWE",
+      "md5": "4e72d43560d91aec6724f52401ada95a",
+      "sizeBytes": 69875101
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
-      "label": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
-      "md5": "7040d499548170e3805f231b5cac2e46",
-      "sizeBytes": 69862548
+      "label": "Playtest: mapa świat",
+      "md5": "4e72d43560d91aec6724f52401ada95a",
+      "sizeBytes": 69875101
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
-      "label": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
-      "md5": "7040d499548170e3805f231b5cac2e46",
-      "sizeBytes": 69862548
+      "label": "Playtest: miasto / ekonomia",
+      "md5": "4e72d43560d91aec6724f52401ada95a",
+      "sizeBytes": 69875101
+    },
+    {
+      "file": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
+      "href": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
+      "label": "Playtest: walka na mapie",
+      "md5": "4e72d43560d91aec6724f52401ada95a",
+      "sizeBytes": 69875101
+    },
+    {
+      "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
+      "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
+      "label": "Playtest: odskok 3v3",
+      "md5": "4e72d43560d91aec6724f52401ada95a",
+      "sizeBytes": 69875101
+    },
+    {
+      "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
+      "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
+      "label": "Playtest: odskok + oblężenie",
+      "md5": "4e72d43560d91aec6724f52401ada95a",
+      "sizeBytes": 69875101
+    },
+    {
+      "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
+      "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
+      "label": "Playtest: oblężenie 3v3",
+      "md5": "4e72d43560d91aec6724f52401ada95a",
+      "sizeBytes": 69875101
     }
   ],
   "startHub": "START.html",
-  "integrationCommit": "0180d17231b62d2a5012c9c23d8a42d91c09f1e1",
-  "note": "DEPLOY-ROBOCZA VERIFY OK; remote commit 2aeb52743476bd1175789049b350a34f1888dda3; no promotion to KANON/FINALNA"
+  "hubGeneratedAt": "2026-09-17T13:45:26",
+  "note": "LOCAL DEPLOY CANDIDATE; VERIFY OK; push/readback pending; no promotion to KANON/FINALNA"
 }
