@@ -8,6 +8,7 @@
 
 import type { RuntimeUnit } from '../units/setup';
 import { hexDistance, isCivilianUnit } from '../units/setup';
+import { assignSharedStackGroupId } from './armyMerge';
 
 export const ARMY_CONCENTRATION_MIN_UNITS = 3;
 export const ARMY_CONCENTRATION_RADIUS = 4;
@@ -108,6 +109,56 @@ export function isEligibleForArmyConcentration(
 
 function compareUnits(a: ConcentrationUnit, b: ConcentrationUnit): number {
   return a.q - b.q || a.r - b.r || a.id.localeCompare(b.id);
+}
+
+/**
+ * Find the active field roster that a newly completed AI unit may join on its
+ * birth hex.  This is deliberately narrower than a general merge prompt:
+ * owner `0` (the human player) is never accepted, every member must pass the
+ * same land-combat eligibility gate as army concentration, and the roster is
+ * limited to the physical birth hex.  The function only selects references;
+ * it does not change positions, power/cost data, ownership, or stack identity.
+ */
+export function findAiRecruitmentMergeStack(
+  ownerId: number,
+  recruitedUnitId: string,
+  units: readonly RuntimeUnit[],
+): RuntimeUnit[] {
+  if (ownerId <= 0) return [];
+  const recruited = units.find(u => u.id === recruitedUnitId);
+  if (
+    recruited === undefined
+    || recruited.ownerId !== ownerId
+    || !isEligibleForArmyConcentration(recruited, ownerId)
+  ) {
+    return [];
+  }
+  return units
+    .filter(u =>
+      u.q === recruited.q
+      && u.r === recruited.r
+      && isEligibleForArmyConcentration(u, ownerId),
+    )
+    .sort(compareUnits);
+}
+
+/**
+ * Complete the narrow AI recruitment-to-army handoff at the production
+ * completion boundary.  The caller supplies the canonical owner classifier so
+ * every human hot-seat owner remains a no-op; this function only changes the
+ * existing stack identity after the completed unit is in `units`.
+ */
+export function mergeCompletedAiRecruitment(
+  ownerId: number,
+  recruitedUnitId: string,
+  units: readonly RuntimeUnit[],
+  isAiOwner: (ownerId: number) => boolean,
+): boolean {
+  if (ownerId <= 0 || !isAiOwner(ownerId)) return false;
+  const stack = findAiRecruitmentMergeStack(ownerId, recruitedUnitId, units);
+  if (stack.length < 2) return false;
+  assignSharedStackGroupId(stack);
+  return true;
 }
 
 /**

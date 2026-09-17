@@ -37,6 +37,8 @@ import {
   setHoverDetailDocks,
   disposeHoverDetailDock,
   showHoverDetailNow,
+  showPinnedDetail,
+  clearPinnedDetail,
 } from './hoverDetailDock';
 import { naukaCostSuffix } from './naukaLabel';
 import { scienceOwlIconHtml } from './icons/scienceOwlIcon';
@@ -2181,6 +2183,14 @@ ${resourceColorClassCss('.civ-cs')}
 .civ-cs .civ-w4-tab-card.civ-w4-tab-card--scroll{display:flex;flex-direction:column;max-height:min(72vh,calc(100vh - 220px));min-height:0;}
 .civ-cs .civ-w4-tab-card--scroll .civ-w4-tab-body--scroll{flex:1 1 auto;min-height:0;overflow-y:auto;overflow-x:hidden;
   padding-bottom:0.65em;scrollbar-width:thin;}
+.civ-v-left-main.civ-v-left-main-split > .civ-w4-tab-card.civ-w4-tab-card--scroll{
+  flex:1 1 auto;min-height:0;max-height:none;
+}
+.civ-cs .civ-w4-tab-card--scroll .civ-w4-tab-body--scroll.civ-v-recruit-body{
+  display:flex;flex-direction:column;overflow:hidden;
+}
+.civ-cs .civ-v-recruit-body .list-scroll-fill{flex:1 1 auto;min-height:0;max-height:none;
+  overflow-y:auto;overflow-x:hidden;scrollbar-width:thin;}
 .civ-cs .civ-w4-tab-card--scroll .civ-w4-tab-body--scroll::-webkit-scrollbar{width:5px;}
 .civ-cs .civ-w4-tab-card--scroll .civ-w4-tab-body--scroll::-webkit-scrollbar-thumb{background:rgba(212,175,90,0.22);border-radius:3px;}
 .civ-cs .civ-w4-tab-body{padding:0 0.85em 0.55em;}
@@ -2519,13 +2529,22 @@ ${resourceColorClassCss('.civ-cs')}
 .civ-v-garrison-inline{display:flex;align-items:center;justify-content:center;gap:0.42rem;min-width:0;overflow-x:auto;scrollbar-width:none;
   padding:0.1rem 0;-ms-overflow-style:none;width:auto;max-width:100%;text-align:center;align-self:center;}
 .civ-v-garrison-inline::-webkit-scrollbar{display:none;}
-.civ-v-garrison-label{display:inline-flex;align-items:center;gap:0.28em;font-size:0.82em;font-weight:700;color:var(--text);
-  letter-spacing:0.03em;flex-shrink:0;white-space:nowrap;cursor:pointer;border-radius:6px;padding:0.18em 0.42em;
-  border:1px solid transparent;transition:color .15s,border-color .15s,background .15s;}
+.civ-v-garrison-label{display:inline-flex;align-items:center;gap:0.32em;font-size:0.94em;font-weight:700;color:#f0e6d0;
+  letter-spacing:0.03em;flex-shrink:0;white-space:nowrap;cursor:pointer;border-radius:7px;padding:0.26em 0.52em;
+  background:rgba(20,25,34,0.72);border:1px solid rgba(212,175,90,0.34);
+  transition:color .15s,border-color .15s,background .15s,box-shadow .15s;}
 .civ-v-garrison-label:hover,.civ-v-garrison-label:focus-visible{color:#f0e8b8;border-color:rgba(212,175,90,0.28);
   background:rgba(212,175,90,0.08);outline:none;}
-.civ-v-garrison-icon{font-size:1.45em;line-height:1;display:flex;align-items:center;flex-shrink:0;opacity:0.95;}
-.civ-v-garrison-count{font-size:0.92em;font-weight:700;color:#d4af5a;}
+.civ-v-garrison-label.is-pinned{color:#fff8df;border-color:#e0b24a;background:rgba(94,64,22,0.38);
+  box-shadow:0 0 0 1px rgba(224,178,74,0.16),0 2px 8px rgba(0,0,0,0.35);}
+.civ-v-garrison-icon{font-size:1.62em;line-height:1;display:flex;align-items:center;flex-shrink:0;opacity:1;}
+.civ-v-garrison-count{font-size:0.96em;font-weight:800;color:#f0c968;min-width:1.35em;padding:0.08em 0.28em;
+  border-radius:999px;background:rgba(212,175,90,0.16);text-align:center;}
+.civ-v-garrison-detail-close{margin-left:auto;flex:0 0 auto;pointer-events:auto;cursor:pointer;width:1.5em;height:1.5em;
+  padding:0;border:1px solid rgba(212,175,90,0.35);border-radius:3px;background:rgba(212,175,90,0.08);
+  color:#e8d88a;font:inherit;font-size:0.9em;line-height:1;}
+.civ-v-garrison-detail-close:hover,.civ-v-garrison-detail-close:focus-visible{background:rgba(212,175,90,0.24);
+  color:#fff8df;outline:2px solid rgba(232,216,138,0.55);outline-offset:1px;}
 .civ-v-garrison-chip{display:inline-flex;align-items:center;gap:0.3em;padding:0.22em 0.52em;border-radius:3px;
   background:rgba(20,28,40,0.88);border:1px solid rgba(212,175,90,0.28);font-size:0.72em;line-height:1.15;flex-shrink:0;}
 .civ-v-garrison-detail-list{display:flex;flex-direction:column;gap:0.35em;max-height:min(50vh,320px);overflow-y:auto;
@@ -8829,7 +8848,7 @@ function renderPurchasableUnits(
   mount: HTMLElement,
   city: City,
   data: GameData | null,
-  opts?: { visibleRows?: number; w4?: boolean },
+  opts?: { visibleRows?: number; w4?: boolean; scrollFill?: boolean },
 ): void {
   mount.innerHTML = '';
   const w4 = opts?.w4 === true;
@@ -8895,9 +8914,11 @@ function renderPurchasableUnits(
 
   const scroll = createScrollList(
     'list-scroll',
-    opts?.visibleRows != null
-      ? { visible: opts.visibleRows, rowEm: LIST_ROW_HEIGHT_COMPACT }
-      : { visible: LIST_SCROLL_VISIBLE_CATALOG, rowEm: LIST_ROW_HEIGHT_COMPACT },
+    opts?.scrollFill
+      ? { fill: true }
+      : opts?.visibleRows != null
+        ? { visible: opts.visibleRows, rowEm: LIST_ROW_HEIGHT_COMPACT }
+        : { visible: LIST_SCROLL_VISIBLE_CATALOG, rowEm: LIST_ROW_HEIGHT_COMPACT },
   );
   for (const it of units) {
     appendUnitRecruitCompactRow(scroll, city, it, data, skarb);
@@ -9323,9 +9344,14 @@ function renderTopBarGarrison(mount: HTMLElement, city: City): void {
   const units = cfg.getUnitsAt?.(city.q, city.r);
   const count = units?.length ?? 0;
   const showDetail = () => buildGarnizonDetailCard(units ?? null, count, city.q, city.r);
+  const isPinned = pinnedGarrisonCityId === city.id;
 
   const label = el('button', 'civ-v-garrison-label');
   label.type = 'button';
+  label.setAttribute('aria-label', count === 0
+    ? 'Garnizon pusty — kliknij, aby zobaczyć szczegóły'
+    : `Garnizon — ${count} jedn. w mieście — kliknij, aby zobaczyć listę`);
+  setGarrisonLabelPinned(label, isPinned);
   label.title = count === 0
     ? 'Garnizon pusty — kliknij, aby zobaczyć szczegóły'
     : `Garnizon — ${count} jedn. w mieście · kliknij, aby zobaczyć listę`;
@@ -9339,7 +9365,14 @@ function renderTopBarGarrison(mount: HTMLElement, city: City): void {
   cnt.textContent = units !== undefined ? String(count) : '—';
   label.appendChild(cnt);
   mount.appendChild(label);
-  attachInteractiveDetail(label, showDetail, { delayMs: 220, sideHint: 'left' });
+  attachInteractiveDetail(label, showDetail, {
+    delayMs: 220,
+    sideHint: 'left',
+    pinOnActivate: () => {
+      pinGarrisonPanel(city.id, label);
+    },
+  });
+  if (isPinned) showPinnedDetail(label, showDetail, 'left');
 }
 
 function buildGarnizonDetailCard(
@@ -9349,7 +9382,22 @@ function buildGarnizonDetailCard(
   cityR?: number,
 ): HTMLDivElement {
   const card = el('div', 'detail-card');
-  card.appendChild(el('div', 'dc-h', '<span>Garnizon — szczegóły</span>'));
+  const header = el('div', 'dc-h');
+  const headerTitle = el('span');
+  headerTitle.textContent = 'Garnizon — szczegóły';
+  header.appendChild(headerTitle);
+  const close = document.createElement('button');
+  close.type = 'button';
+  close.className = 'civ-v-garrison-detail-close';
+  close.textContent = '×';
+  close.setAttribute('aria-label', 'Zamknij szczegóły garnizonu');
+  close.title = 'Zamknij szczegóły garnizonu';
+  close.addEventListener('click', (ev) => {
+    ev.stopPropagation();
+    clearGarrisonPanel();
+  });
+  header.appendChild(close);
+  card.appendChild(header);
   const intro = el('div', 'dc-note');
   intro.style.fontStyle = 'normal';
   intro.textContent =
@@ -10061,6 +10109,26 @@ let rootEl: HTMLDivElement | null = null;
 let activeCity: City | null = null;
 let activeMap: GameMap | null = null;
 let activeOnClose: () => void = () => {};
+/** City id whose garrison detail is explicitly selected by click/keyboard. */
+let pinnedGarrisonCityId: string | null = null;
+
+function setGarrisonLabelPinned(label: HTMLElement, pinned: boolean): void {
+  label.classList.toggle('is-pinned', pinned);
+  label.setAttribute('aria-pressed', pinned ? 'true' : 'false');
+}
+
+function pinGarrisonPanel(cityId: string, label: HTMLElement): void {
+  pinnedGarrisonCityId = cityId;
+  setGarrisonLabelPinned(label, true);
+}
+
+function clearGarrisonPanel(): void {
+  pinnedGarrisonCityId = null;
+  clearPinnedDetail();
+  document.querySelectorAll<HTMLElement>('.civ-v-garrison-label').forEach(label => {
+    setGarrisonLabelPinned(label, false);
+  });
+}
 
 /** Cities of the active city's owner (for prev/next navigation). */
 function ownerCities(city: City): City[] {
@@ -10096,6 +10164,7 @@ function switchCity(dir: -1 | 1): void {
   if (idx < 0) return;
   const next = list[(idx + dir + list.length) % list.length];
   if (!next || next.id === activeCity.id) return;
+  clearGarrisonPanel();
   activeCity = next;
   cfg.onSwitchCity?.(next.id);
   rerender();
@@ -10246,6 +10315,7 @@ export interface CityPanelUxMounts {
 let uxSectionRefresh: (() => void) | null = null;
 
 export function clearCityPanelUxMode(): void {
+  clearGarrisonPanel();
   uxSectionRefresh = null;
   activeCityPanelTab = 'budowa';
   activeCity = null;
@@ -11518,6 +11588,7 @@ function renderCityIconRail(
     btn.appendChild(glyph);
     btn.addEventListener('click', () => {
       if (activeCityPanelTab !== item.id) {
+        clearGarrisonPanel();
         activeCityPanelTab = item.id;
         rerender();
       }
@@ -11552,7 +11623,7 @@ function renderLeftPanelTab(
   view: CityView | null,
   data: GameData | null,
 ): void {
-  mount.classList.toggle('civ-v-left-main-split', tab === 'budowa');
+  mount.classList.toggle('civ-v-left-main-split', tab === 'budowa' || tab === 'rekrutacja');
   mount.innerHTML = '';
   switch (tab) {
     case 'budowa':
@@ -11560,11 +11631,14 @@ function renderLeftPanelTab(
       break;
     case 'rekrutacja':
       withW4TabCard(mount, 'cs-units', city, body => {
+        body.classList.add('civ-v-recruit-body');
         renderPurchasableUnits(body, city, data, {
-          visibleRows: LIST_SCROLL_VISIBLE_CATALOG,
           w4: true,
+          // Ten sam flex-fill co lista budynków; nagłówek i pasek zasobów zostają stałe,
+          // a lista jest jedynym przewijanym obszarem.
+          scrollFill: true,
         });
-      });
+      }, { scrollable: true });
       break;
     default:
       mount.appendChild(el('div', 'muted', '—'));
@@ -11636,6 +11710,9 @@ export function paintCityPanelSections(
   refresh: () => void,
   onClose?: () => void,
 ): void {
+  if (pinnedGarrisonCityId !== null && pinnedGarrisonCityId !== city.id) {
+    clearGarrisonPanel();
+  }
   uxSectionRefresh = refresh;
   activeCity = city;
   activeMap = map;
@@ -11843,6 +11920,7 @@ export function hideCityPanel(): void {
 /** Zamknij panel jeśli otwarty (Esc / skrót z mapy) — wywołuje ten sam onClose co przycisk „Wróć na mapę”. */
 export function closeCityPanelIfOpen(): boolean {
   if (!isCityPanelOpen()) return false;
+  clearGarrisonPanel();
   activeOnClose();
   return true;
 }

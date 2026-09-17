@@ -520,6 +520,7 @@ import {
   stackGroupIdOf,
   stackRenderKey,
 } from './game/armyMerge';
+import { mergeCompletedAiRecruitment } from './game/army-concentration';
 import {
   resolveMapUnitCursor,
   CURSOR_MAP_DEFAULT,
@@ -32121,6 +32122,16 @@ async function boot(): Promise<void> {
                   pancerzBonusProc: recBirthProgress.pancerzBonusProc,
                   parametryBonusProc: recBirthProgress.parametryBonusProc,
                 });
+                // R-ARMIA-AI-SCALANIE-REKRUTACJA-Q1: only an AI-owned completed
+                // unit may join compatible active field units on its birth hex.
+                // `isAiOwner` includes every human hot-seat owner, while the
+                // positive boundary excludes non-civilization sentinels.
+                mergeCompletedAiRecruitment(
+                  city.ownerId,
+                  newUnitId,
+                  units,
+                  ownerId => ownerId > 0 && isAiOwner(humanSeats, ownerId),
+                );
                 maybeHintArmyFoodOnFirstPlayerUnit(city.ownerId);
                 if (city.ownerId === 0) {
                   if (endTurnInProgress) {

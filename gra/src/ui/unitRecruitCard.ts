@@ -15,16 +15,20 @@ import {
 
 /** CSS wstrzykiwany w cityPanel (scope .civ-cs). */
 export const UNIT_RECRUIT_CARD_CSS = `
-.civ-cs .unit-recruit-compact-row{align-items:flex-start;flex-wrap:nowrap;gap:0.35em;min-height:calc(2.5em - 0.35em);}
+.civ-cs .unit-recruit-compact-row{display:grid;grid-template-columns:1.65em minmax(0,1fr) auto;
+  grid-template-areas:"icon text actions" "icon cost actions";align-items:center;
+  column-gap:0.35em;row-gap:0.08em;min-height:calc(2.5em - 0.35em);}
 .civ-cs .unit-recruit-compact-row.is-disabled{opacity:.72;}
-.civ-cs .unit-recruit-compact-row .unit-compact-text{flex:1 1 auto;min-width:4.4em;display:flex;flex-direction:column;gap:0.04em;line-height:1.15;}
+.civ-cs .unit-recruit-compact-row .bld-compact-ic{grid-area:icon;}
+.civ-cs .unit-recruit-compact-row .unit-compact-text{grid-area:text;min-width:0;display:flex;flex-direction:column;gap:0.04em;line-height:1.15;}
 .civ-cs .unit-recruit-compact-row .unit-compact-meta{font-size:0.64em;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
-.civ-cs .unit-recruit-compact-row .unit-compact-cost{flex:1 1 10em;min-width:7em;font-size:0.64em;color:var(--muted);white-space:normal;display:inline-flex;align-items:center;gap:0.22em;flex-wrap:wrap;overflow:visible;line-height:1.2;}
+.civ-cs .unit-recruit-compact-row .unit-compact-cost{grid-area:cost;min-width:0;font-size:0.64em;color:var(--muted);white-space:normal;
+  display:inline-flex;align-items:center;gap:0.22em;flex-wrap:wrap;overflow:visible;line-height:1.2;}
 .civ-cs .unit-recruit-compact-row .unit-compact-cost .bld-infocard-chip{font-size:0.95em;padding:0.05em 0.28em;}
 .civ-cs .unit-recruit-manpower{display:inline-flex;flex:1 1 100%;flex-wrap:wrap;gap:0.12em 0.35em;color:#d8cca8;line-height:1.25;}
 .civ-cs .unit-recruit-manpower.is-missing{color:#f0c0a8;font-weight:600;}
 .civ-cs .unit-recruit-manpower-missing{flex-basis:100%;color:#e88a7a;font-weight:700;}
-.civ-cs .unit-recruit-compact-row .bld-compact-actions{align-self:center;}
+.civ-cs .unit-recruit-compact-row .bld-compact-actions{grid-area:actions;align-self:center;margin-left:0;}
 `;
 
 function el<K extends keyof HTMLElementTagNameMap>(tag: K, cls?: string): HTMLElementTagNameMap[K] {

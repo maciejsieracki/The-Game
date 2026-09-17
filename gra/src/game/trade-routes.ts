@@ -1524,29 +1524,26 @@ export function refreshTradeRoutes(
 // ---------------------------------------------------------------------------
 
 /**
- * Parametry faktycznych wypłat z tras (data/econ-params.json, blok
- * `handel_szlaki`). Tablice zawierają kwoty już po redukcji dochodu; dystans
- * poza końcem tablicy korzysta z ostatniej wartości. Warunki istnienia trasy
- * nadal korzystają osobno z `TradeRouteParams`.
+ * Parametry bazowych wypłat z tras (data/econ-params.json, blok
+ * `handel_szlaki`). Tablice opisują kwotę dystansową trasy wewnętrznej przed
+ * premią zagraniczną i końcową redukcją `ceil(staryDochód / 2)`; dystans poza
+ * końcem tablicy korzysta z ostatniej wartości. Warunki istnienia trasy nadal
+ * korzystają osobno z `TradeRouteParams`.
  */
 export interface TradeRouteIncomeParams {
-  /** Faktyczny dochód lądowej trasy; indeks = dystans heksowy. */
+  /** Bazowy dochód lądowej trasy; indeks = dystans heksowy. */
   dochodyLadowe: readonly number[];
-  /** Faktyczny dochód morskiej trasy; indeks = dystans heksowy. */
+  /** Bazowy dochód morskiej trasy; indeks = dystans heksowy. */
   dochodyMorskie: readonly number[];
 }
 
-/**
- * Jedno źródło prawdy dla kwot rozliczanych w grze. Wartości są już faktycznym
- * dochodem trasy — nie surową wartością wzoru i nie wymagają późniejszego /5.
- * Tablice zachowują dokładnie obecną macierz wypłat po dotychczasowej redukcji.
- */
+/** Jedno źródło prawdy dla bazowych kwot dystansowych przed bonusami trasy. */
 export const DEFAULT_TRADE_ROUTE_INCOME_PARAMS: TradeRouteIncomeParams = {
   dochodyLadowe: [1, 1, 2, 3, 3, 4, 4, 5, 6, 6, 7, 7, 8],
   dochodyMorskie: [2, 2, 3, 4, 5, 5, 6, 7, 8, 8, 9, 10, 10, 11, 12, 12, 13, 14, 14, 15, 16],
 };
 
-/** Faktyczny dochód dystansowy jednej strony trasy, przed premią zagraniczną. */
+/** Bazowy dochód dystansowy jednej strony trasy, przed bonusami trasy. */
 export function tradeRouteIncomeByDistance(
   dystans: number,
   medium: TradeRouteMedium,
@@ -1557,16 +1554,26 @@ export function tradeRouteIncomeByDistance(
   return curve[index] ?? 0;
 }
 
-/** Międzynarodowa trasa handlowa daje obu miastom 100% więcej niż własna. */
+/** Międzynarodowa trasa daje obu miastom +100% przed końcową redukcją. */
 export const TRADE_ROUTE_INTERNATIONAL_MULTIPLIER = 2;
 
-/** Trasa między różnymi właścicielami daje obu miastom +100% dochodu. */
+/**
+ * R-HANDEL-DOCHOD-HALF-CEIL-Q1: końcowa redukcja dochodu każdej trasy.
+ * Dzielimy dopiero po naliczeniu bonusu zagranicznego, żeby zachować kontrakt
+ * `ceil(stary dochód trasy / 2)` także dla tras obcych miast.
+ */
+export const TRADE_ROUTE_INCOME_HALF_DIVISOR = 2;
+
+/** Zwraca końcowy dochód trasy po bonusie zagranicznym i redukcji half-ceil. */
 export function tradeRouteIncomeForRoute(
   route: Pick<TradeRoute, 'dystans' | 'medium' | 'ownerId' | 'toOwnerId'>,
   params: TradeRouteIncomeParams = DEFAULT_TRADE_ROUTE_INCOME_PARAMS,
 ): number {
   const base = tradeRouteIncomeByDistance(route.dystans, route.medium, params);
-  return route.ownerId === route.toOwnerId ? base : base * TRADE_ROUTE_INTERNATIONAL_MULTIPLIER;
+  const beforeHalf = route.ownerId === route.toOwnerId
+    ? base
+    : base * TRADE_ROUTE_INTERNATIONAL_MULTIPLIER;
+  return Math.ceil(beforeHalf / TRADE_ROUTE_INCOME_HALF_DIVISOR);
 }
 
 interface RawEconParamsJsonTradeIncome {

@@ -101,15 +101,15 @@ console.log('\n-- 1. bez cudu: dochod z tras bez zmian --');
 // dystansowy teraz rosnie z dystansem (podloga=5 @ d=0, szczyt=40 @ d=maxDist).
 // dystans=10 (nie 0) -- daje niebanalny dochod bazowy, zeby +15%/+30% bonusu cudu
 // bylo widoczne we floor() (przy podlodze=5 floor(5*1.15)=5, brak roznicy).
-// R-HANDEL-SZLAKI-DOCHOD-PODZIEL5-Q1 (2026-08-29): dochod obnizony 5x (min 1,
-// zaokraglenie do calkowitych) -- dystans podniesiony z 6 na 10, zeby po obnizce
-// dochod bazowy nadal byl dosc duzy, by +15%/+30% przezylo floor() (przy d=6
-// baseIncome spadl do 4, floor(4*1.15)=4 -- brak widocznej roznicy).
+// R-HANDEL-DOCHOD-HALF-CEIL-Q1: po dotychczasowej redukcji /5 dochod kazdej
+// trasy jest teraz dodatkowo zmniejszany przez ceil(stary/2), po bonusie x2
+// trasy zagranicznej. Dystans 10 pozostaje, zeby +15%/+30% przezylo floor().
 const incP = M.DEFAULT_TRADE_ROUTE_INCOME_PARAMS;
 const routeNoWonder = { id: 'r1', fromCityId: 'A', toCityId: 'B', ownerId: 0, toOwnerId: 1, medium: 'lad', dystans: 10, status: 'polaczony' };
-// dochod faktyczny jednej strony trasy; trasa zagraniczna jest tu już ×2.
+// Dochod faktyczny jednej strony trasy; bonus zagraniczny x2 jest naliczany
+// przed koncowym ceil(stary/2).
 const baseIncome = M.tradeRouteIncomeForRoute(routeNoWonder, incP);
-eq(baseIncome, 14, '(setup) dystans=10 (lad), trasa zagraniczna -> faktyczny dochód 14');
+eq(baseIncome, 7, '(setup) dystans=10 (lad), trasa zagraniczna -> ceil((7*2)/2) = 7');
 
 const incomeNoWonder = M.computeTradeRouteIncomeByCity([routeNoWonder], incP);
 eq(incomeNoWonder.get('A'), baseIncome, '1: brak cudu -> miasto A dostaje dokladnie dochod bazowy');
