@@ -1046,6 +1046,14 @@ import {
   type MarchFogContext,
   type PlannedMarchDest,
 } from './game/planned-march';
+import {
+  clearRallyPoint,
+  rallyLaunchLeaderIds,
+  rallyPointsFromSave,
+  rallyPointsToSave,
+  setRallyPoint,
+  type RallyPoint,
+} from './game/rally-point';
 import { TypCywilizacji, type Player } from './types/player';
 import {
   saveToLocal, loadFromLocal, listSaves,
@@ -6123,6 +6131,7 @@ async function boot(): Promise<void> {
      * Granice państw (territoryBorderVisible) NIE są tu gaszone — trwały wybór użytkownika aż do toggle OFF. */
     function dismissMapOverlayModes(): void {
       dismissToolbarSidePanels();
+      rallyPointMode = false;
       if (buildModeOpen) exitBuildMode();
       if (cultureRangeVisible || religionRangeVisible) {
         cultureRangeVisible = false;
@@ -21510,6 +21519,23 @@ async function boot(): Promise<void> {
         };
       }
       const actions: ArmyStackHudState['actions'] = [];
+      const rallyPoint = rallyPoints.get(ME());
+      actions.push({
+        id: 'rally-set',
+        label: rallyPointMode
+          ? 'Kliknij heks punktu zbiórki'
+          : rallyPoint ? `Zmień punkt (${rallyPoint.q},${rallyPoint.r})` : 'Ustaw punkt zbiórki',
+        disabled: false,
+        active: rallyPointMode,
+      });
+      if (rallyPoint) {
+        actions.push({
+          id: 'rally-launch',
+          label: `Wyślij na punkt (${rallyPoint.q},${rallyPoint.r})`,
+          disabled: isAnimating,
+        });
+        actions.push({ id: 'rally-clear', label: 'Usuń punkt zbiórki', disabled: false });
+      }
       const hasPlan = plannedMarches.has(active.id);
       if (siegeCity) {
         actions.push({ id: 'siege-hold', label: 'Oblega', disabled: true });
@@ -21649,7 +21675,23 @@ async function boot(): Promise<void> {
       const u = selectedId !== null ? units.find(x => x.id === selectedId) : null;
       if (!u) return;
       const stack = playerStackAt(u);
-      if (actionId === 'march-continue') {
+      if (actionId === 'rally-set') {
+        rallyPointMode = !rallyPointMode;
+        showHintMessage(
+          rallyPointMode
+            ? 'Kliknij przejezdny heks, aby ustawić punkt zbiórki.'
+            : 'Ustawianie punktu zbiórki anulowane.',
+          2800,
+        );
+        refreshD1bHud();
+      } else if (actionId === 'rally-launch') {
+        launchRallyPointForOwner(ME());
+      } else if (actionId === 'rally-clear') {
+        clearRallyPoint(rallyPoints, ME());
+        rallyPointMode = false;
+        showHintMessage('Usunięto punkt zbiórki.', 2200);
+        refreshD1bHud();
+      } else if (actionId === 'march-continue') {
         continuePlannedMarchForSelected();
       } else if (actionId === 'march-stop') {
         stopPlannedMarchForSelected();
@@ -24791,6 +24833,9 @@ async function boot(): Promise<void> {
 
     /** A3: zaplanowane marsze — cel bez natychmiastowego ruchu. */
     const plannedMarches = new Map<string, PlannedMarchDest>();
+    /** One saved rally point per empire; setting it does not issue a move order. */
+    const rallyPoints = new Map<number, RallyPoint>();
+    let rallyPointMode = false;
     /**
      * Jednostki gracza, które w bieżącej turze dostały nowy rozkaz ruchu / zmianę celu.
      * Czyścimy przy odnowieniu MP — EOT kontynuuje marsz tylko gdy jednostki tu NIE ma.
@@ -25064,6 +25109,73 @@ async function boot(): Promise<void> {
         executeMarchSegmentForUnit(u.id);
       }
       return true;
+    }
+
+    /** Assign a normal planned march to one currently existing stack. */
+    function planRallyMarchForUnit(u: RuntimeUnit, point: RallyPoint): boolean {
+      if (u.ownerId !== ME() || u.inGarnizon === true || u.oblegaCityId) return false;
+      if (!canOccupyHexForUnit(u, point.q, point.r)) return false;
+      const stack = playerStackAt(u);
+      const occ = occupiedForMove(u.ownerId, ...stack.map(s => s.id));
+      const mover = unitWithPlanningStackRuch(u, stack);
+      const dest: PlannedMarchDest = { destQ: point.q, destR: point.r };
+      const plan = marchPathPlan(
+        mover,
+        point.q,
+        point.r,
+        occ,
+        perTurnMoveForUnit(u),
+        undefined,
+        buildMarchFogContext(dest),
+        moveCostFnForUnit(u),
+      );
+      if (!plan.reachable || plan.fullPath.length === 0) return false;
+      clearScoutAutoExplore(u);
+      markPlayerMovedUnit(u.id);
+      plannedMarches.set(u.id, dest);
+      syncMarchAttackTarget(u.id, dest);
+      return true;
+    }
+
+    /** Explicit rally launch: only stacks existing at click time are included. */
+    function launchRallyPointForOwner(ownerId: number): void {
+      if (isAnimating) return;
+      const point = rallyPoints.get(ownerId);
+      if (!point) {
+        showHintMessage('Najpierw ustaw punkt zbiórki.', 2600);
+        return;
+      }
+      const assigned: string[] = [];
+      for (const unitId of rallyLaunchLeaderIds(units, ownerId)) {
+        const unit = units.find(u => u.id === unitId);
+        if (unit && planRallyMarchForUnit(unit, point)) assigned.push(unitId);
+      }
+      rallyPointMode = false;
+      if (assigned.length === 0) {
+        showHintMessage('Brak dostępnej trasy do punktu zbiórki.', 3200);
+      } else {
+        enqueueMarchSegments(assigned);
+        showHintMessage(`Wysłano ${assigned.length} stosów na punkt (${point.q},${point.r}).`, 3000);
+      }
+      refreshPlannedMarchPreview(selectedId ?? undefined);
+      refreshD1bHud();
+    }
+
+    /** Handle a map click while the rally point picker is active. */
+    function setRallyPointFromMap(q: number, r: number): void {
+      const hex = map.hexes[keyOf(q, r)];
+      if (!hex || terrainMoveCost(hex) === Infinity) {
+        showHintMessage('Punkt zbiórki musi leżeć na przejezdnym lądzie.', 3000);
+        return;
+      }
+      if (!canUnitOccupyCityHex(ME(), q, r, cities)) {
+        showHintMessage('Nie można ustawić punktu na obcym mieście.', 3000);
+        return;
+      }
+      setRallyPoint(rallyPoints, ME(), { q, r });
+      rallyPointMode = false;
+      showHintMessage(`Punkt zbiórki ustawiony: (${q},${r}).`, 2800);
+      refreshD1bHud();
     }
 
     function startAnimatedMove(
@@ -25971,6 +26083,10 @@ async function boot(): Promise<void> {
       // Treat as a click at (e.clientX, e.clientY)
       const hit = pickMapTarget(e.clientX, e.clientY);
       if (!hit) {
+        if (rallyPointMode) {
+          showHintMessage('Kliknij przejezdny heks, aby ustawić punkt zbiórki.', 3000);
+          return;
+        }
         if (foundCityMode) {
           showHintMessage('Kliknij w heks lądu (podświetlony obszar startu)', 2500);
           return;
@@ -25980,6 +26096,12 @@ async function boot(): Promise<void> {
           clearPlayerUnitSelection();
           refreshD1bHud();
         }
+        return;
+      }
+
+      // Rally-point selection must not fall through to city, attack, or move handling.
+      if (rallyPointMode) {
+        setRallyPointFromMap(hit.q, hit.r);
         return;
       }
 
@@ -30037,6 +30159,7 @@ async function boot(): Promise<void> {
         activeHumanOwnerId: humanSeats.activeHumanOwnerId,
         autoMarch: marchSave.autoMarch,
         plannedMarches: marchSave.plannedMarches,
+        rallyPoints: rallyPointsToSave(rallyPoints),
         cityProd:       cityProdSave,
         cityBuilt:      cityBuiltSave,
         aiResearchDone: aiResSave,
@@ -36646,6 +36769,8 @@ async function boot(): Promise<void> {
       aiAudienceLastRequestTurn.clear();
       units.length = 0;
       plannedMarches.clear();
+      rallyPoints.clear();
+      rallyPointMode = false;
       // P-BITWA-MARSZ-POTEM-ATAK-NIE-KOLEJKUJE: czyść razem z plannedMarches — inaczej wpis-widmo
       // (attackUnitId po jednostce z poprzedniej gry) mógłby przetrwać reset (force=false chroni
       // wpisy z attackUnitId). / EN: clear together with plannedMarches — otherwise a ghost entry
@@ -37803,6 +37928,11 @@ async function boot(): Promise<void> {
       unitResourceUpkeepByOwner.clear();
       units.length = 0;
       for (const u of saved.units) units.push(u);
+      rallyPoints.clear();
+      for (const [ownerId, point] of rallyPointsFromSave(saved.rallyPoints)) {
+        rallyPoints.set(ownerId, point);
+      }
+      rallyPointMode = false;
       plannedMarches.clear();
       // P-BITWA-MARSZ-POTEM-ATAK-NIE-KOLEJKUJE: czyść razem z plannedMarches — pętla niżej
       // odbudowuje oba TYLKO dla jednostek z wczytanego save'a (reszta zostałaby wisząca).
