@@ -1,3 +1,15 @@
+## [2026-09-17 UTC] ORKIESTRATOR → KANBAN / WŁAŚCICIEL — DEPLOY ROBOCZA CURRENT GAMEPLAY CANDIDATE
+
+STATUS: `DEPLOY-ROBOCZA — push/readback w tej sekwencji`.
+
+- Clean integration branch: `integration/robocza-20260917`, source/integration commit `622a9995b6bf39f1bce90d10df095ec4a47e081a`, artifact commit `da301683fb70dbbd73fb031d74afc6e959dfdc7b`, base `origin/main=578051aea1a0bf1ae174efb446bd99f6997ef9ab`.
+- Bundle: MD5 `4e72d43560d91aec6724f52401ada95a`, SHA-256 `a3baaab0e8b4fa700a95765d93cc4b235dd34c5201facb2caf91b1d45f7a7a5e`, `69875101` bytes; verifier `VERIFY OK`; smoke `PASS`.
+- Nowa fala: Garnizon panel, AI merge po rekrutacji, panel merge armii, handel, panel rekrutacji, koszty epokowe ulepszeń, masowa rekrutacja miast.
+- Revalidated base/no-op: pula nazw kolonii, połowa kosztów rekrutacji/surowców, alokacje Grecji, AI Work/ulepszenia, aktywne parametry Grecji. Budżet AI pozostaje audit/test-only — brak produkcyjnego diffu.
+- Gates: focused mass recruitment `23/0`, related regressions `104/0`, all six requested topic suites PASS, TypeScript PASS, Vite `889` modules. No promotion to KANON/FINALNA.
+
+CZEKAM-NA: remote push/readback oraz test właściciela w `gra-robocza`.
+
 ## [2026-09-16 UTC] ORKIESTRATOR → KANBAN / WŁAŚCICIEL — GAMEPLAY BUG WAVE DEPLOYED
 
 STATUS: `DEPLOYED — remote readback PASS; commit 2aeb52743476bd1175789049b350a34f1888dda3`.

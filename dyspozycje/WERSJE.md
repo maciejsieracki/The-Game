@@ -13,6 +13,13 @@ swoim wĹ‚asnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji d
 > Pakiet 3 z 2026-08-20 jest docs-only i nie tworzy wpisu ROBOCZA/KANON/FINALNA;
 > ten plik pozostaje wyłącznie rejestrem publikacji bundli.
 
+## ROBOCZA 4e72d435 - 2026-09-17 13:44 UTC - current gameplay candidate (DEPLOY-ROBOCZA)
+
+|- md5 (pełne): `4e72d43560d91aec6724f52401ada95a` · sha256: `a3baaab0e8b4fa700a95765d93cc4b235dd34c5201facb2caf91b1d45f7a7a5e` · rozmiar: `69875101` bajtów · source/integration commit: `622a9995b6bf39f1bce90d10df095ec4a47e081a` · artifact commit: `da301683fb70dbbd73fb031d74afc6e959dfdc7b`
+|- Nowa fala produkcyjna: Garnizon panel, AI merge po rekrutacji, panel merge armii, handel, panel rekrutacji, koszty epokowe ulepszeń, masowa rekrutacja miast. Bramka testów: real Chromium `23/0` dla masowej rekrutacji, regresje `104/0`, typecheck PASS, Vite `889` modułów, smoke PASS.
+|- Ponownie zweryfikowane względem `origin/main=578051aea1a0bf1ae174efb446bd99f6997ef9ab`, bez nowego diffu produkcyjnego w tej fali: pula nazw kolonii, połowa kosztów rekrutacji/surowców, alokacje Grecji, AI Work/ulepszenia, aktywne parametry Grecji. Budżet AI: audit/test-only, brak zmiany `gra/src`/`gra/data`.
+|- `node gra/tools/verify-robocza-bundle.cjs` → `VERIFY OK`; manifest match `OK`; Linux stamp match `WARN` jest znanym zachowaniem portu Node. Brak promocji do KANON/FINALNA; push/readback wykonywane w tej samej sekwencji publikacji.
+
 ## ROBOCZA 7040d499 - 2026-09-16 - gameplay bug wave (DEPLOYED 2aeb5274)
 
 |- md5 (pełne): `7040d499548170e3805f231b5cac2e46` · sha256: `afd817232f8c6769024e160bdb3abfc3ac3c8b4e1760858f2ef4aec0a9657f22` · rozmiar: `69862548` bajtów · source/integration: `0180d17231b62d2a5012c9c23d8a42d91c09f1e1` · base: `3ff3264b`
