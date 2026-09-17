@@ -13,7 +13,7 @@ import { applyPostCaptureLawOnCapture } from './post-capture-law';
 import type { RuntimeUnit } from '../units/setup';
 import { hexNeighborCoords, isCivilianUnit } from '../units/setup';
 import { syncStackRuchLeft } from './armyMerge';
-import { applyLossPctToRoster } from './auto-battle-power';
+import { applyLossPctToRoster, isFieldBattleUnit } from './auto-battle-power';
 import type { UnitPowerInput } from './unit-power';
 import { registerBattleWon } from './veteran';
 
@@ -66,13 +66,24 @@ function liveUnit(units: RuntimeUnit[], id: string | number): RuntimeUnit | unde
 
 function applyAutoLosses(input: PostBattleMapInput): Set<string> {
   const dead = new Set<string>();
-  const toRows = (roster: RuntimeUnit[]) =>
-    roster.map(u => ({
-      id: String(u.id),
-      typeId: u.typeId,
-      def: input.getDef(u),
-      hp: u.hp,
-    }));
+  // A battle roster may contain units that participate in the encounter but
+  // are outside field AUTO combat (siege/civilian or zero-power rows). They
+  // must not receive the field loss percentage; use the same target predicate
+  // as M-power calculation before entering the HP-loss helper.
+  const toRows = (roster: RuntimeUnit[]) => {
+    const rows: Array<{
+      id: string;
+      typeId: string;
+      def: UnitPowerInput;
+      hp?: number;
+    }> = [];
+    for (const u of roster) {
+      const def = input.getDef(u);
+      if (!isFieldBattleUnit(u.typeId, def)) continue;
+      rows.push({ id: String(u.id), typeId: u.typeId, def, hp: u.hp });
+    }
+    return rows;
+  };
 
   if (input.lossAtkPct != null && input.lossAtkPct > 0) {
     for (const row of applyLossPctToRoster(toRows(input.atkRoster), input.lossAtkPct, input.maxHpOf)) {

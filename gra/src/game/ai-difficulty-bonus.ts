@@ -44,7 +44,7 @@ export function applyDifficultyCombatToUnitDef<T extends Record<string, unknown>
   if (mult === 1) return def;
   const scaleNum = (v: unknown): unknown => (typeof v === 'number' ? v * mult : v);
   const missile = def.missileAttack ?? def['Missile Attack'];
-  return {
+  const scaled = {
     ...def,
     meleeAttack: scaleNum(def.meleeAttack ?? def['Melee Attack'] ?? def['Atak']),
     meleeDefence: scaleNum(def.meleeDefence ?? def['Obrona'] ?? def['meleeDefence']),
@@ -52,6 +52,10 @@ export function applyDifficultyCombatToUnitDef<T extends Record<string, unknown>
       ? { missileAttack: scaleNum(missile) }
       : {}),
   };
+  // `fieldPower` is an export-time cache. It must not survive a combat-stat
+  // multiplier or armyFieldPower() would ignore the scaled raw fields.
+  delete (scaled as Record<string, unknown>).fieldPower;
+  return scaled;
 }
 
 export interface DifficultyBonusUnitSpawn {
