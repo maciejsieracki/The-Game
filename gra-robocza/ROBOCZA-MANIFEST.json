@@ -1,5 +1,7 @@
 {
-  "publishedAt": "2026-09-17T15:11:13Z",
+  "publishedAt": "2026-09-17T16:26:31Z",
+  "republishedAt": "2026-09-17T16:26:31Z",
+  "remoteMain": "104fce6d5002ff3e0d64083268dd4434dbb0452e",
   "publisher": "Hermes Orchestrator",
   "md5": "7340f635259dfd06a9467025e9c22c61",
   "sha256": "137b513839d670468ef81241c6bb72de016dbf2bade65d37c8abf8b2018e8c2f",
@@ -112,5 +114,5 @@
   ],
   "startHub": "START.html",
   "hubGeneratedAt": "2026-09-17T15:12:02",
-  "note": "ROBOCZA auto-battle release candidate; source gates PASS; remote push/readback pending; no promotion to KANON/FINALNA"
+  "note": "ROBOCZA auto-battle release; source gates PASS; byte-identical no-op republish with remote branch/main readback verified; no promotion to KANON/FINALNA"
 }

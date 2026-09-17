@@ -13,12 +13,12 @@ swoim wĹ‚asnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji d
 > Pakiet 3 z 2026-08-20 jest docs-only i nie tworzy wpisu ROBOCZA/KANON/FINALNA;
 > ten plik pozostaje wyłącznie rejestrem publikacji bundli.
 
-## ROBOCZA 7340f635 - 2026-09-17 15:11 UTC - auto-battle loss correction (DEPLOY-ROBOCZA)
+## ROBOCZA 7340f635 - 2026-09-17 16:26 UTC - auto-battle loss correction (DEPLOY-ROBOCZA / BYTE-IDENTICAL REPUBLISH)
 
 |- md5 (pełne): `7340f635259dfd06a9467025e9c22c61` · sha256: `137b513839d670468ef81241c6bb72de016dbf2bade65d37c8abf8b2018e8c2f` · rozmiar: `69875188` bajtów · source/integration commit: `4f68875d07991b3fc365ec21da04329d426654d7` · base: `e0e280c43909bdc8fe1d4d1ce926e15874c535c8`
 |- Scope: R-AUTO-BATTLE-LOSS-Q1 — auto-losses pomijają siege/civilian/non-field rows przed alokacją HP; difficulty scaling unieważnia cache `fieldPower`; fixture `post-battle-map-test.cjs` uzupełniony o realne `health`.
 |- Gates: post-battle `32/0`, focused audit `52/0`, AUTO `14/0` + `43/0` + `150/0`, TypeScript PASS, syntax PASS, smoke PASS, Vite `889` modułów.
-|- `node gra/tools/verify-robocza-bundle.cjs` → `VERIFY OK`; manifest match `OK`; Linux stamp match `WARN` jest znanym zachowaniem portu Node. Brak promocji do KANON/FINALNA; push/readback pending.
+|- `node gra/tools/verify-robocza-bundle.cjs` → `VERIFY OK`; manifest match `OK`; Linux stamp match `WARN` jest znanym zachowaniem portu Node. Remote branch i `origin/main=104fce6d5002ff3e0d64083268dd4434dbb0452e` readback `PASS`; byte-identical no-op republish. Brak promocji do KANON/FINALNA.
 
 ## ROBOCZA 4e72d435 - 2026-09-17 13:44 UTC - current gameplay candidate (DEPLOY-ROBOCZA)
 

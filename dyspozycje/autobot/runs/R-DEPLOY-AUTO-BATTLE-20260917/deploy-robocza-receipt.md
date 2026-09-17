@@ -1,6 +1,6 @@
 # Deploy ROBOCZA receipt — auto-battle loss correction — 2026-09-17
 
-STATUS: DEPLOY-ROBOCZA / remote push and readback pending
+STATUS: DEPLOYED / remote readback PASS / byte-identical no-op republish
 
 ## Source and integration
 
@@ -9,6 +9,8 @@ STATUS: DEPLOY-ROBOCZA / remote push and readback pending
 - integration branch: `integration/robocza-auto-battle-20260917`
 - base: `e0e280c43909bdc8fe1d4d1ce926e15874c535c8`
 - integration/artifact commit: `4f68875d07991b3fc365ec21da04329d426654d7`
+- remote branch/main: `104fce6d5002ff3e0d64083268dd4434dbb0452e`
+- republish time: `2026-09-17T16:26:31Z`
 - Final Control: `t_59f1a3f7` / run `647` PASS
 
 ## Artifact
@@ -43,4 +45,4 @@ STATUS: DEPLOY-ROBOCZA / remote push and readback pending
 
 No building-cost implementation is included. No promotion to KANON/FINALNA.
 
-PUSH/REMOTE READBACK: pending.
+PUSH/REMOTE READBACK: PASS — remote branch and `origin/main` point to `104fce6d5002ff3e0d64083268dd4434dbb0452e`; bundle is byte-identical to manifest and local serving target. No promotion to KANON/FINALNA.
