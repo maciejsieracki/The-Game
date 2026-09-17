@@ -5,9 +5,9 @@
   "sha256": "137b513839d670468ef81241c6bb72de016dbf2bade65d37c8abf8b2018e8c2f",
   "bytes": 69875188,
   "bundle": "Gra-ROBOCZA.html",
-  "sourceCommit": "e0e280c43909bdc8fe1d4d1ce926e15874c535c8",
+  "sourceCommit": "4f68875d07991b3fc365ec21da04329d426654d7",
   "base": "e0e280c43909bdc8fe1d4d1ce926e15874c535c8",
-  "integrationCommit": "PENDING_ARTIFACT_COMMIT",
+  "integrationCommit": "4f68875d07991b3fc365ec21da04329d426654d7",
   "scope": [
     "R-AUTO-BATTLE-LOSS-Q1",
     "R-GARNIZON-PANEL-DOCELNY-Q1",
@@ -112,5 +112,5 @@
   ],
   "startHub": "START.html",
   "hubGeneratedAt": "2026-09-17T15:12:02",
-  "note": "LOCAL DEPLOY CANDIDATE; source gates PASS; artifact commit pending; no promotion to KANON/FINALNA"
+  "note": "ROBOCZA auto-battle release candidate; source gates PASS; remote push/readback pending; no promotion to KANON/FINALNA"
 }

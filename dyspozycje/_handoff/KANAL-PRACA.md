@@ -1,3 +1,15 @@
+## [2026-09-17 UTC] ORKIESTRATOR → KANBAN / WŁAŚCICIEL — DEPLOY ROBOCZA AUTO-BATTLE CANDIDATE
+
+STATUS: `DEPLOY-ROBOCZA — push/readback w tej sekwencji`.
+
+- Clean integration branch: `integration/robocza-auto-battle-20260917`, source/integration commit `4f68875d07991b3fc365ec21da04329d426654d7`, base `origin/main=e0e280c43909bdc8fe1d4d1ce926e15874c535c8`.
+- Bundle: MD5 `7340f635259dfd06a9467025e9c22c61`, SHA-256 `137b513839d670468ef81241c6bb72de016dbf2bade65d37c8abf8b2018e8c2f`, `69875188` bytes; verifier `VERIFY OK`; smoke `PASS`.
+- Scope: `R-AUTO-BATTLE-LOSS-Q1`; allowlist exact: `ai-difficulty-bonus.ts`, `post-battle-map.ts`, `auto-battle-loss-audit-test.cjs`, fixture-only `post-battle-map-test.cjs`.
+- Gates: post-battle `32/0`, focused audit `52/0`, AUTO `14/0` + `43/0` + `150/0`, TypeScript PASS, Vite `889` modules. No promotion to KANON/FINALNA.
+- Building-cost implementation remains separate and is not included in this release.
+
+CZEKAM-NA: remote push/readback oraz test właściciela w `gra-robocza`.
+
 ## [2026-09-17 UTC] ORKIESTRATOR → KANBAN / WŁAŚCICIEL — DEPLOY ROBOCZA CURRENT GAMEPLAY CANDIDATE
 
 STATUS: `DEPLOY-ROBOCZA — push/readback w tej sekwencji`.
