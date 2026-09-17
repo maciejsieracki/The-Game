@@ -1,16 +1,15 @@
 ## [2026-09-18 UTC] ORKIESTRATOR → KANBAN / WŁAŚCICIEL — OPEN BACKLOG RECONCILIATION
 
-STATUS: `RECONCILED — publish commit ready; branch push/main merge pending`.
+STATUS: `DEPLOYED — remote main/readback/smoke PASS`.
 
 - Owner-authorized set: 15 gameplay process gates from the Open/Autobot loop.
-- Current target: `origin/main=53b95b7c0c3a2846bd7464ef2d3b67a282ae01b0`.
-- Correct target SHA: `53b95b7c0c3a2846bd7464ef2d3b67a282ae01b0`; prior release `e0e280c43909bdc8fe1d4d1ce926e15874c535c8` is an ancestor.
-- Classification: already in target, base-verified no-op, or audit-only; no new product diff and no new wave number.
+- Current target before publication: `origin/main=53b95b7c0c3a2846bd7464ef2d3b67a282ae01b0`.
+- Prior release `e0e280c43909bdc8fe1d4d1ce926e15874c535c8` is an ancestor; no new product diff and no new wave number.
 - All 15 cards received an Orchestrator readback and were archived after confirming `assignee=null`, `current_run_id=null`, no active children, and preserved evidence.
-- Publish commit: `5b9f38143e5f61d5e78c0392905fc08ac0d298f3`; bundle MD5 `7702a035d112ef280fa3e84cb95477f7`, SHA-256 `7aa54fdeb37fb27be7c7616d6555b104dbab478bf4ac999dc81a30195c7f5ba4`, `69877926` bytes.
-- Final gate remains: branch push → fast-forward `main` → remote ROBOCZA readback/smoke.
+- Publish commit: `5b9f38143e5f61d5e78c0392905fc08ac0d298f3`; final `main`: `4cc68a6ffce47a23e65d472b3cab050cf4d1e275`.
+- Bundle MD5 `7702a035d112ef280fa3e84cb95477f7`, SHA-256 `7aa54fdeb37fb27be7c7616d6555b104dbab478bf4ac999dc81a30195c7f5ba4`, `69877926` bytes; verifier `VERIFY OK`; remote readback and HTTP smoke `PASS`.
 
-CZEKAM-NA: branch push and final main/readback sequence; no KANON/FINALNA promotion.
+CZEKAM-NA: test właściciela w `gra-robocza`; brak KANON/FINALNA promotion.
 
 ## [2026-09-17 UTC] ORKIESTRATOR → KANBAN / WŁAŚCICIEL — DEPLOY ROBOCZA FALA 386 / RALLY POINT
 

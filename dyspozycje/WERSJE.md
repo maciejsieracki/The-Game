@@ -18,8 +18,8 @@ swoim wĹ‚asnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji d
 |- Bundle: md5 `7702a035d112ef280fa3e84cb95477f7`, sha256 `7aa54fdeb37fb27be7c7616d6555b104dbab478bf4ac999dc81a30195c7f5ba4`, rozmiar `69877926` bajtów.
 |- `origin/main` przed publikacją: `53b95b7c0c3a2846bd7464ef2d3b67a282ae01b0`; poprzedni release `e0e280c43909bdc8fe1d4d1ce926e15874c535c8` jest przodkiem.
 |- Rozliczono 15 bramek gameplayowych jako `ALREADY_IN_TARGET`, `NO-OP/BASE-VERIFIED` albo `NO-OP/AUDIT-ONLY`; wszystkie receipt’y odczytane, karty workerless zarchiwizowane. Brak nowego diffu produktu i brak nowej numerowanej FALI.
-|- Publish commit: `5b9f38143e5f61d5e78c0392905fc08ac0d298f3`; source/product release remains `8eba87007a866edc80c4776df77697af65e17f2d`.
-|- `node gra/tools/verify-robocza-bundle.cjs` → `VERIFY OK`; brak promocji do KANON/FINALNA.
+|- Publish commit: `5b9f38143e5f61d5e78c0392905fc08ac0d298f3`; source/product release remains `8eba87007a866edc80c4776df77697af65e17f2d`; final `main`: `4cc68a6ffce47a23e65d472b3cab050cf4d1e275`.
+|- `node gra/tools/verify-robocza-bundle.cjs` → `VERIFY OK`; remote readback and HTTP smoke `PASS`; brak promocji do KANON/FINALNA.
 
 ## ROBOCZA 946df5aa - 2026-09-17 22:37 UTC - FALA 386 - R-RALLY-POINT-AUTOMARCH-Q1
 
