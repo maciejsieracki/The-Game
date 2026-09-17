@@ -306,6 +306,30 @@ export interface EmpireCityDefenseRow {
   garnizonCount: number;
 }
 
+/** Jednostka dostępna w tabeli masowej rekrutacji jednego miasta. */
+export interface EmpireCityRecruitmentOption {
+  id: string;
+  name: string;
+  /** Jednorazowy koszt zakupu ze skarbca za jedną sztukę. */
+  goldCost: number;
+  /** Jednorazowy koszt Manpower za jedną sztukę. */
+  manpowerCost: number;
+  /** Jednorazowy koszt surowców z puli państwa za jedną sztukę. */
+  stockCost: Record<string, number>;
+  /** Jednostka morska — wymaga wody w mieście rekrutującym. */
+  requiresWater: boolean;
+}
+
+/** Stan tabeli masowej rekrutacji jednego miasta. */
+export interface EmpireCityMassRecruitmentSnap {
+  /** Tylko jednostki przechodzące istniejące bramki produkcji/rekrutacji tego miasta. */
+  options: EmpireCityRecruitmentOption[];
+  /** Liczba opłaconych jednostek oczekujących w kolejce tego miasta. */
+  queueCount: number;
+  /** Dostęp do morza lub rzeki dla bramki jednostek morskich. */
+  waterAccess: boolean;
+}
+
 /** Ludność i pula rekrutów per miasto. */
 export interface EmpireCityPoborRow {
   /**
@@ -359,6 +383,8 @@ export interface EmpireCityPoborRow {
   poziomRacji: number;
   /** Wpływ bieżącego poziomu Racji na wzrost ludności, %/turę (`rationGrowthPercent()`). */
   racjaGrowthPct: number;
+  /** Masowa rekrutacja z tego miasta; akcja jest dostępna wyłącznie w panelu gracza. */
+  massRecruitment: EmpireCityMassRecruitmentSnap;
 }
 
 /**
@@ -627,6 +653,22 @@ export interface EmpireReligionSnap {
 }
 
 /**
+ * Globalny stan kontrolki masowej rekrutacji. Owner jest jawny: obecny panel wystawia
+ * akcję tylko dla gracza (`ownerId === 0`), a ścieżka AI pozostaje przy istniejącym
+ * `purchaseRecruitmentUnit` dla pojedynczego zakupu.
+ */
+export interface EmpireMassRecruitmentSnap {
+  ownerId: number;
+  treasury: number;
+  manpower: number;
+  stock: Record<string, number>;
+  /** Suma opłaconych jednostek w kolejkach wszystkich miast ownera. */
+  queuedCount: number;
+  /** Ukończone jednostki ownera na mapie (ta sama liczba co `power.unitsOnMap`). */
+  completedCount: number;
+}
+
+/**
  * P-ARMIA-PANEL-BRAK-INFO-PRODUKCJA-JEDNOSTEK (Maciej 2026-08-16): jedno miasto gracza, na
  * czele kolejki produkcji (`City.productionQueue`/`kolejka[0]`, `game/production.ts`
  * `frontItem()`) którego stoi JEDNOSTKA (`ProductionItem.kind === 'jednostka'`) — miasta z
@@ -670,6 +712,7 @@ export interface EmpireDetailSnap {
   power: EmpirePowerSnap;
   cityEcon: EmpireCityEconRow[];
   cityPobor: EmpireCityPoborRow[];
+  massRecruitment: EmpireMassRecruitmentSnap;
   resources: EmpireResourceRow[];
   trade: EmpireTradeSnap;
   /** PYTANIE-85 — Spichlerz centralny (magazyn żywności imperium). */

@@ -715,6 +715,7 @@ import {
   refreshEmpireDetailPanel,
   isEmpireDetailPanelOpen,
   configureEmpireHandelSplit,
+  configureEmpireMassRecruitment,
   configureEmpireGlobalDefaults,
 } from './ui/empireDetailPanel';
 import type { EmpireDetailSnap, EmpireFoodSnap, EmpireResourceRow } from './ui/empireDetailTypes';
@@ -915,7 +916,8 @@ import {
   tryDeductUnitSpawnCostsEmpire, empirePoborTotals, rekrutUnitEquivalents, formatManpower,
   cityManpowerSnapshot, civManpowerRegenMult, civManpowerMaxMult, civManpowerMults,
   cityManpowerMax, unitManpowerCost, unitManpowerCostForType,
-  canAffordUnitManpowerEmpire, refundManpowerToEmpire, syncLiveUnitHp,
+  canAffordUnitManpowerEmpire, empireManpowerCurrent, deductManpowerFromEmpire,
+  refundManpowerToEmpire, syncLiveUnitHp,
 } from './game/manpower';
 import { computeObjectivePower, battlePowerPointsFromDefeatedEnemy, type ObjectivePowerResult } from './game/power-objective';
 import { filterOwnersForPowerRanking, computeAbsolutePowerRank } from './game/power-ranking';
@@ -3992,6 +3994,104 @@ async function boot(): Promise<void> {
       }
       console.log(
         `[Rekrutacja] ${city.name}: ${itemId} oplacone ${koszt} — kolejka (−${d.kosztManpower} MP)`,
+      );
+      return true;
+    }
+
+    /**
+     * Masowy zakup rekrutacji z panelu imperium.
+     *
+     * 1A: wszystkie koszty N sztuk są sprawdzane przed jakąkolwiek mutacją. Dopiero po
+     * pozytywnym preflight pobieramy łączny Manpower, skarbiec i surowce, a następnie
+     * dopisujemy całą paczkę do kolejki. `purchaseRecruitmentUnit` powyżej pozostaje
+     * ścieżką pojedynczego zakupu i jest używana także przez AI; ta akcja jest podpięta
+     * wyłącznie do panelu gracza (`ownerId === ME()`, obecnie 0).
+     */
+    function purchaseRecruitmentUnits(
+      cityId: string,
+      itemId: string,
+      count: number,
+      ownerId = 0,
+    ): boolean {
+      if (!Number.isSafeInteger(count) || count <= 0) return false;
+      const city = cities.find(ct => ct.id === cityId);
+      if (!city || city.ownerId !== ownerId) return false;
+
+      // Ta sama lista dostępności co pojedynczy panel miasta: epoka/tech/nacja/koszary,
+      // dostęp do zasobu i woda dla jednostek morskich są bramkami przed zakupem.
+      const ctx = productionAvailabilityCtxForCity(city);
+      const item = purchasableUnits(
+        city,
+        data,
+        unlockedTechsForOwner(ownerId),
+        ctx,
+      ).find(it => it.id === itemId);
+      if (!item || item.kind !== 'jednostka') return false;
+
+      const unitDef = data.units.find(u => u.Jednostka === itemId);
+      if (!unitDef) return false;
+      if ((unitDef.Typ ?? '').toString().trim() === 'Naval' && !cityHasCoastOrRiverAccess(city)) {
+        if (ownerId === 0) {
+          showHintMessage('Jednostka morska wymaga dostępu do wody (morze lub rzeka)', 2800);
+        }
+        return false;
+      }
+
+      const totalGold = item.koszt * count;
+      if (!Number.isFinite(totalGold) || totalGold < 0 || !Number.isSafeInteger(totalGold)) return false;
+      if (ownerTreasury(ownerId) < totalGold) {
+        if (ownerId === 0) showHintMessage(`Za mało złota na ${count} jedn. rekrutacji`, 2800);
+        return false;
+      }
+
+      const stockCost = unitStockCost(unitDef);
+      const totalStockCost: Record<string, number> = {};
+      for (const [key, amount] of Object.entries(stockCost)) {
+        const total = amount * count;
+        if (!Number.isFinite(total) || total < 0) return false;
+        totalStockCost[key] = total;
+      }
+      const ownerPool = ownerResourceStockAll(cities, ownerId);
+      if (!canAffordBuildingStock(ownerPool, totalStockCost)) {
+        if (ownerId === 0) {
+          const missing = missingStockFor(ownerPool, totalStockCost);
+          const detail = Object.entries(missing)
+            .map(([key, amount]) => `${amount} ${stockResourceLabel(key)}`)
+            .join(', ');
+          showHintMessage(`Brakuje surowców dla ${count} jedn.${detail ? `: ${detail}` : ''}`, 2800);
+        }
+        return false;
+      }
+
+      const ep = empireEpochForOwner(ownerId);
+      const mpMaxMult = civManpowerMaxMult(civBonusyForOwnerId(ownerId));
+      const manpowerCost = unitManpowerCostForType(itemId, ep, mpMaxMult);
+      const totalManpower = manpowerCost * count;
+      if (!Number.isFinite(totalManpower) || totalManpower < 0 || !Number.isSafeInteger(totalManpower)) return false;
+      if (empireManpowerCurrent(cities, ownerId, ep, mpMaxMult) < totalManpower) {
+        if (ownerId === 0) showHintMessage(`Za mało rekrutów (Manpower) na ${count} jedn.`, 2800);
+        return false;
+      }
+
+      // Atomic commit: every guard above passed, and the helpers below cannot reject this
+      // already-validated aggregate. No state is touched before this point.
+      if (!deductManpowerFromEmpire(cities, ownerId, ep, totalManpower, mpMaxMult)) return false;
+      setOwnerTreasury(ownerId, ownerTreasury(ownerId) - totalGold);
+      if (Object.keys(totalStockCost).length > 0) {
+        deductBuildingStockCostAcrossCities(cities, ownerId, totalStockCost);
+      }
+      let prod = cityProd.get(cityId) ?? { kolejka: [], postep: 0 };
+      for (let i = 0; i < count; i++) {
+        prod = enqueueRecruitment(prod, { ...item });
+      }
+      cityProd.set(cityId, prod);
+      markCityStateDirty();
+      if (ownerId === 0) {
+        updateHud();
+        refreshCityPanelIfOpen();
+      }
+      console.log(
+        `[Rekrutacja] ${city.name}: ${count} × ${itemId} opłacone ${totalGold} — kolejka (−${totalManpower} MP)`,
       );
       return true;
     }
@@ -16002,6 +16102,26 @@ async function boot(): Promise<void> {
           .find(g => g.grupa === 'Prawo i administracja')?.ids.length ?? 0;
         const ord = cityOrderState.get(c.id);
         const poziomRacji = getCityRationLevel(c);
+        const waterAccess = cityHasCoastOrRiverAccess(c);
+        const availableRecruitment = purchasableUnits(
+          c,
+          data,
+          unlockedTechsForOwner(c.ownerId),
+          productionAvailabilityCtxForCity(c),
+        );
+        const recruitmentOptions = availableRecruitment.flatMap(item => {
+          const unitDef = data.units.find(u => u.Jednostka === item.id);
+          if (!unitDef) return [];
+          return [{
+            id: item.id,
+            name: item.nazwa,
+            goldCost: item.koszt,
+            manpowerCost: unitManpowerCostForType(item.id, epoka, maxMult),
+            stockCost: unitStockCost(unitDef),
+            requiresWater: (unitDef.Typ ?? '').toString().trim() === 'Naval',
+          }];
+        });
+        const recruitmentQueueCount = cityProd.get(c.id)?.rekrutacja?.length ?? 0;
         return {
           // P-EMPIRE-MIASTA-JOIN-INDEX (naprawa F2): patrz JSDoc EmpireCityPoborRow.cityId
           // (empireDetailTypes.ts) -- nazwy miast nie sa unikalne w obrebie cywilizacji.
@@ -16020,6 +16140,11 @@ async function boot(): Promise<void> {
           prawoPct: ord?.prawPct ?? null,
           poziomRacji,
           racjaGrowthPct: rationGrowthPercent(poziomRacji),
+          massRecruitment: {
+            options: recruitmentOptions,
+            queueCount: recruitmentQueueCount,
+            waterAccess,
+          },
         };
       });
       // P-PANEL-MIASTO-OBYWATELE-TRESC-NIEPELNA dociągnięcie (Maciej 2026-08-16, ECHO A) +
@@ -16041,6 +16166,14 @@ async function boot(): Promise<void> {
       let rekruciMax = 0;
       for (const c of pc) rekruciMax += cityManpowerMax(c.population, epoka, maxMult);
       const unitsOnMap = units.filter(u => isMe(u.ownerId) && u.category !== 'osadnik').length;
+      const massRecruitment: EmpireDetailSnap['massRecruitment'] = {
+        ownerId: ME(),
+        treasury: ownerTreasury(ME()),
+        manpower: pobor.rekruci,
+        stock: ownerResourceStockAll(cities, ME()),
+        queuedCount: cityPobor.reduce((sum, row) => sum + row.massRecruitment.queueCount, 0),
+        completedCount: unitsOnMap,
+      };
 
       // R-DESIGN-11-ZAKLADEK faza 2 (Maciej 2026-08-1x) — Klatka 3: box „BADANE TERAZ" w Nauce.
       // TA SAMA czysta funkcja `getResearchState()` już wołana dla sciencePicker/scienceHubHud
@@ -16198,6 +16331,7 @@ async function boot(): Promise<void> {
         },
         cityEcon,
         cityPobor,
+        massRecruitment,
         resources: buildEmpireResourceRows(ME()),
         trade: buildEmpireTradeSnap(),
         food: buildEmpireFoodSnap(),
@@ -22695,6 +22829,9 @@ async function boot(): Promise<void> {
       });
       ensurePerfReportChip();
       mountEmpireDetailPanel(() => buildEmpireDetailSnap());
+      configureEmpireMassRecruitment({
+        onPurchase: (cityId, itemId, count) => purchaseRecruitmentUnits(cityId, itemId, count, ME()),
+      });
       configureEmpireHandelSplit({
         getOwnerDefault: (ownerId) => ownerDefaultPodzialHandlu.get(ownerId) ?? null,
         onOwnerDefaultChange: (ownerId, split) => {

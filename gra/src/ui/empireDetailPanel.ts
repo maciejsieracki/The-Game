@@ -60,11 +60,22 @@ export interface EmpireHandelSplitUiConfig {
   getDaninaLabel?: () => string;
 }
 
+/** Akcja zakupu z tabeli masowej rekrutacji w zakładce Armia. */
+export interface EmpireMassRecruitmentUiConfig {
+  /** Zwraca `true` wyłącznie gdy backend przyjął całą paczkę atomowo. */
+  onPurchase?: (cityId: string, itemId: string, count: number) => boolean;
+}
+
 let handelSplitUi: EmpireHandelSplitUiConfig = {};
+let massRecruitmentUi: EmpireMassRecruitmentUiConfig = {};
 
 /** DYSPOZYCJA-85-SUWAK: globalny domyślny podział podatku w panelu imperium. */
 export function configureEmpireHandelSplit(cfg: EmpireHandelSplitUiConfig): void {
   handelSplitUi = { ...handelSplitUi, ...cfg };
+}
+
+export function configureEmpireMassRecruitment(cfg: EmpireMassRecruitmentUiConfig): void {
+  massRecruitmentUi = { ...massRecruitmentUi, ...cfg };
 }
 
 function renderDefaultHandelSplitSection(): string {
@@ -392,6 +403,34 @@ function ensureStyles(): void {
 .civ-emp-kult-line.muted{font-size:12px;color:#9aa4b2;}
 .civ-emp-kult-line.gold{font-size:12px;color:#d9a441;}
 .civ-emp-empty{font-size:12px;color:#8a93a4;padding:8px 0;}
+.civ-emp-mass{margin-top:12px;padding:11px 10px 9px;border:1px solid #2b3543;border-radius:8px;
+  background:#171e2a;}
+.civ-emp-mass-hd{display:flex;align-items:baseline;justify-content:space-between;gap:8px;}
+.civ-emp-mass-title{font-size:13px;font-weight:700;color:#d9a441;}
+.civ-emp-mass-sub{font-size:10.5px;color:#7d8798;text-align:right;}
+.civ-emp-mass-counters{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-top:8px;}
+.civ-emp-mass-counter{padding:7px 8px;border:1px solid #2b3543;border-radius:6px;background:#141a24;}
+.civ-emp-mass-counter .k{font-size:9px;letter-spacing:.55px;color:#7d8798;}
+.civ-emp-mass-counter .v{font-size:14px;font-weight:800;color:#e8ebf0;margin-top:2px;}
+.civ-emp-mass-pool{font-size:10.5px;color:#9aa4b2;margin:8px 0 2px;line-height:1.45;}
+.civ-emp-mass-city{padding:9px 0 8px;border-top:1px solid #242c3a;}
+.civ-emp-mass-city:first-of-type{margin-top:7px;}
+.civ-emp-mass-city-hd{display:flex;align-items:baseline;justify-content:space-between;gap:8px;margin-bottom:6px;}
+.civ-emp-mass-city-name{font-size:12px;font-weight:700;color:#e2e6ec;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.civ-emp-mass-queue{font-size:10px;color:#9aa4b2;white-space:nowrap;}
+.civ-emp-mass-form{display:grid;grid-template-columns:minmax(0,1fr) 56px 72px;gap:6px;align-items:center;}
+.civ-emp-mass-form select,.civ-emp-mass-form input{width:100%;min-width:0;height:30px;border:1px solid #3a4657;border-radius:5px;
+  background:#141a24;color:#e8ebf0;font:inherit;font-size:11px;padding:4px 6px;}
+.civ-emp-mass-form input{text-align:right;}
+.civ-emp-mass-form button{height:30px;border:1px solid #4e9a3f;border-radius:5px;background:rgba(78,154,63,.18);
+  color:#78c95a;font:inherit;font-size:11px;font-weight:700;cursor:pointer;padding:4px 7px;}
+.civ-emp-mass-form button:hover:not(:disabled){background:rgba(78,154,63,.3);}
+.civ-emp-mass-form button:disabled{border-color:#3a4657;background:#1a2230;color:#6f7889;cursor:not-allowed;}
+.civ-emp-mass-cost{font-size:10px;color:#b8c4d8;line-height:1.35;margin-top:5px;}
+.civ-emp-mass-status{font-size:10px;line-height:1.35;margin-top:3px;color:#e07a7a;min-height:14px;}
+.civ-emp-mass-status.ok{color:#78c95a;}
+.civ-emp-mass-status.neutral{color:#9aa4b2;}
+.civ-emp-mass-empty{font-size:11px;color:#8a93a4;padding:6px 0 2px;}
 .civ-emp-backdrop{position:fixed;inset:0;z-index:449;background:rgba(0,0,0,0.35);
   opacity:0;pointer-events:none;transition:opacity .2s;}
 .civ-emp-backdrop.open{opacity:1;pointer-events:auto;}
@@ -740,6 +779,10 @@ function ensureStyles(): void {
 
 function esc(s: string): string {
   return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+}
+
+function escAttr(s: string): string {
+  return esc(s).replace(/"/g, '&quot;');
 }
 
 /** Delta „+N / −N / —" ze stylem koloru (pos/neg/zero). */
@@ -2629,6 +2672,190 @@ export function renderArmiaProdukcjaMini(rows: EmpireDetailSnap['armiaProdukcja'
   return h;
 }
 
+function massRecruitmentCostText(
+  option: EmpireDetailSnap['cityPobor'][number]['massRecruitment']['options'][number],
+  count: number,
+): string {
+  const pieces = [
+    `${formatRawCount(option.goldCost * count)} złota`,
+    `${formatRawCount(option.manpowerCost * count)} rekr.`,
+  ];
+  for (const [key, amount] of Object.entries(option.stockCost)) {
+    if (amount <= 0) continue;
+    pieces.push(`${formatRawCount(amount * count)} ${stockResourceLabel(key)}`);
+  }
+  return pieces.join(' · ');
+}
+
+/**
+ * Tabela masowej rekrutacji: jeden wiersz kontrolny na każde miasto gracza.
+ *
+ * Render jest celowo czysty — koszt i blokady są odświeżane przez
+ * `wireMassRecruitmentControls()` po podmianie DOM. Dzięki temu ten sam HTML można
+ * zmierzyć w realnym Chromium bez uruchamiania całego silnika gry.
+ */
+export function renderMassRecruitmentSection(
+  rows: EmpireDetailSnap['cityPobor'],
+  state: EmpireDetailSnap['massRecruitment'],
+): string {
+  const stock = Object.entries(state.stock)
+    .filter(([, amount]) => amount > 0)
+    .map(([key, amount]) => `${formatRawCount(amount)} ${stockResourceLabel(key)}`)
+    .join(' · ');
+  let h = `<div class="civ-emp-mass" data-mass-recruitment>`
+    + `<div class="civ-emp-mass-hd"><span class="civ-emp-mass-title">Masowa rekrutacja</span>`
+    + `<span class="civ-emp-mass-sub">koszty z puli imperium</span></div>`
+    + `<div class="civ-emp-mass-counters">`
+    + `<div class="civ-emp-mass-counter"><div class="k">W KOLEJCE</div>`
+    + `<div class="v" data-mass-recruitment-queued>${state.queuedCount}</div></div>`
+    + `<div class="civ-emp-mass-counter"><div class="k">UKOŃCZONE</div>`
+    + `<div class="v" data-mass-recruitment-completed>${state.completedCount}</div></div></div>`
+    + `<div class="civ-emp-mass-pool">Skarbiec: <b>${formatRawCount(state.treasury)} złota</b>`
+    + ` · Manpower: <b>${formatRawCount(state.manpower)}</b>`
+    + `${stock ? ` · Magazyn: <b>${esc(stock)}</b>` : ''}</div>`;
+
+  if (rows.length === 0) {
+    return h + '<div class="civ-emp-mass-empty">Brak miast gracza do rekrutacji.</div></div>';
+  }
+
+  for (const row of rows) {
+    const options = row.massRecruitment.options;
+    h += `<div class="civ-emp-mass-city" data-mass-recruitment-city="${escAttr(row.cityId)}">`
+      + `<div class="civ-emp-mass-city-hd"><span class="civ-emp-mass-city-name">${esc(row.name)}</span>`
+      + `<span class="civ-emp-mass-queue">kolejka: <b>${row.massRecruitment.queueCount}</b></span></div>`;
+    if (options.length === 0) {
+      const waterNote = row.massRecruitment.waterAccess
+        ? ''
+        : ' Brak dostępu do wody dla jednostek morskich.';
+      h += `<div class="civ-emp-mass-empty">Brak dostępnych jednostek.${waterNote}</div></div>`;
+      continue;
+    }
+    h += `<div class="civ-emp-mass-form">`
+      + `<select data-mass-recruitment-unit aria-label="Jednostka — ${escAttr(row.name)}">`;
+    for (const option of options) {
+      const waterBlocked = option.requiresWater && !row.massRecruitment.waterAccess;
+      h += `<option value="${escAttr(option.id)}">`
+        + `${esc(option.name)}${waterBlocked ? ' (brak wody)' : ''}</option>`;
+    }
+    h += `</select>`
+      + `<input type="number" min="1" step="1" value="1" data-mass-recruitment-count `
+      + `aria-label="Liczba — ${escAttr(row.name)}" />`
+      + `<button type="button" data-mass-recruitment-submit>Rekrutuj</button></div>`
+      + `<div class="civ-emp-mass-cost" data-mass-recruitment-cost></div>`
+      + `<div class="civ-emp-mass-status neutral" data-mass-recruitment-status aria-live="polite"></div>`;
+    h += `</div>`;
+  }
+  return h + `<div class="civ-emp-foot">Jedna akcja pobiera cały koszt paczki albo nie pobiera niczego. Jednostki morskie wymagają morza lub rzeki.</div></div>`;
+}
+
+function wireMassRecruitmentControlsInto(
+  host: ParentNode,
+  snap: EmpireDetailSnap,
+  onPurchase?: EmpireMassRecruitmentUiConfig['onPurchase'],
+  onAccepted?: () => void,
+): void {
+  const state = snap.massRecruitment;
+  for (const cityEl of Array.from(host.querySelectorAll<HTMLElement>('[data-mass-recruitment-city]'))) {
+    const cityId = cityEl.dataset.massRecruitmentCity;
+    if (!cityId) continue;
+    const city = snap.cityPobor.find(row => row.cityId === cityId);
+    const select = cityEl.querySelector<HTMLSelectElement>('[data-mass-recruitment-unit]');
+    const countInput = cityEl.querySelector<HTMLInputElement>('[data-mass-recruitment-count]');
+    const button = cityEl.querySelector<HTMLButtonElement>('[data-mass-recruitment-submit]');
+    const costEl = cityEl.querySelector<HTMLElement>('[data-mass-recruitment-cost]');
+    const statusEl = cityEl.querySelector<HTMLElement>('[data-mass-recruitment-status]');
+    if (!city || !select || !countInput || !button || !costEl || !statusEl) continue;
+
+    const update = (): void => {
+      const option = city.massRecruitment.options.find(item => item.id === select.value);
+      const count = Number(countInput.value);
+      const reasons: string[] = [];
+      let ready = !!onPurchase && state.ownerId === 0;
+      if (!onPurchase) reasons.push('Akcja rekrutacji jest niedostępna');
+      if (state.ownerId !== 0) reasons.push('Tylko imperium gracza może rekrutować');
+      if (!option) {
+        ready = false;
+        reasons.push('Brak wybranej jednostki');
+      } else {
+        costEl.textContent = `Koszt: ${massRecruitmentCostText(option, Number.isSafeInteger(count) && count > 0 ? count : 1)}`;
+        if (option.requiresWater && !city.massRecruitment.waterAccess) {
+          ready = false;
+          reasons.push('Jednostka morska wymaga dostępu do wody');
+        }
+        if (!Number.isSafeInteger(count) || count <= 0) {
+          ready = false;
+          reasons.push('Podaj liczbę całkowitą większą od zera');
+        } else {
+          const totalGold = option.goldCost * count;
+          const totalManpower = option.manpowerCost * count;
+          if (!Number.isSafeInteger(totalGold) || totalGold < 0) {
+            ready = false;
+            reasons.push('Nieprawidłowy koszt złota');
+          } else if (state.treasury < totalGold) {
+            ready = false;
+            reasons.push(`Za mało złota (potrzeba ${formatRawCount(totalGold)})`);
+          }
+          if (!Number.isSafeInteger(totalManpower) || totalManpower < 0) {
+            ready = false;
+            reasons.push('Nieprawidłowy koszt Manpower');
+          } else if (state.manpower < totalManpower) {
+            ready = false;
+            reasons.push(`Za mało Manpower (potrzeba ${formatRawCount(totalManpower)})`);
+          }
+          for (const [key, amount] of Object.entries(option.stockCost)) {
+            const total = amount * count;
+            const available = state.stock[key] ?? 0;
+            if (!Number.isSafeInteger(total) || total < 0) {
+              ready = false;
+              reasons.push(`Nieprawidłowy koszt ${stockResourceLabel(key)}`);
+            } else if (available < total) {
+              ready = false;
+              reasons.push(`Za mało ${stockResourceLabel(key)} (potrzeba ${formatRawCount(total)})`);
+            }
+          }
+        }
+      }
+      button.disabled = !ready;
+      button.setAttribute('aria-disabled', String(!ready));
+      statusEl.classList.toggle('ok', ready);
+      statusEl.classList.toggle('neutral', !ready && reasons.length === 0);
+      statusEl.textContent = ready ? 'Gotowe — kliknij Rekrutuj.' : reasons.join(' · ');
+    };
+
+    select.addEventListener('change', update);
+    countInput.addEventListener('input', update);
+    button.addEventListener('click', () => {
+      if (button.disabled || !onPurchase) return;
+      const option = city.massRecruitment.options.find(item => item.id === select.value);
+      const count = Number(countInput.value);
+      if (!option || !Number.isSafeInteger(count) || count <= 0) return;
+      if (onPurchase(cityId, option.id, count)) {
+        onAccepted?.();
+      }
+    });
+    update();
+  }
+}
+
+/** Montuje kontrolki tabeli na gotowym HTML — używane przez panel i test realnego DOM. */
+export function mountMassRecruitmentControls(
+  host: ParentNode,
+  snap: EmpireDetailSnap,
+  onPurchase: EmpireMassRecruitmentUiConfig['onPurchase'],
+): void {
+  wireMassRecruitmentControlsInto(host, snap, onPurchase);
+}
+
+function wireMassRecruitmentControls(): void {
+  if (!bodyEl || !getSnap) return;
+  wireMassRecruitmentControlsInto(
+    bodyEl,
+    getSnap(),
+    massRecruitmentUi.onPurchase,
+    () => queueMicrotask(() => { if (open) render(); }),
+  );
+}
+
 function signedTxt(n: number): string {
   if (!Number.isFinite(n) || n === 0) return '—';
   return signedPl(n);
@@ -3827,6 +4054,7 @@ function render(): void {
       + `${cityPoborMiniRekruci(cp, p, { skipHero: true })}</div>`;
   }
   armia += renderArmiaProdukcjaMini(snap.armiaProdukcja);
+  armia += renderMassRecruitmentSection(cp, snap.massRecruitment);
   // Naprawa N9 (Evaluator, runda 2): plakietka drukowała `<span class="d neg">−0 / turę</span>`
   // nawet przy ZEROWYM koszcie — czerwony kolor + minus czytają się jak ostrzeżenie/koszt, mimo
   // że koszt zero oznacza „nic nie kosztuje". Konwencja już istnieje w tym pliku: box
@@ -4001,6 +4229,7 @@ function render(): void {
   // to the very top.
   const prevScrollTop = bodyEl.scrollTop;
   bodyEl.innerHTML = body;
+  wireMassRecruitmentControls();
   wireMocViewButtons();
   // N1 (Evaluator, notatka na 89c16ec1): JEDNO wywołanie na render() (przeniesione z wnętrza
   // cityMiastaMiniDetail — patrz komentarz tam) — filtr kolumn tabeli Miasta istnieje w DOM
