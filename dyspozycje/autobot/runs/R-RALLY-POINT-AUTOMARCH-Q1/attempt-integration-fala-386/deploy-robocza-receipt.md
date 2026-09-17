@@ -1,6 +1,6 @@
 # Deploy receipt — R-RALLY-POINT-AUTOMARCH-Q1 / FALA 386
 
-STATUS: LOCAL PUBLISH PREPARED — push/readback pending
+STATUS: DEPLOYED — remote main/readback/smoke PASS
 DOMAIN: GAME
 TEMAT: R-RALLY-POINT-AUTOMARCH-Q1
 WAVE: FALA 386
@@ -36,8 +36,7 @@ WAVE: FALA 386
 
 ## Publication boundary
 
-- no promotion to KANON/FINALNA;
-- legacy PLAYTEST aliases are absent after repository cleanup and are recorded in
-  `ROBOCZA-MANIFEST.json` as `legacyAliasesNotPresent`;
-- next gate: push branch, remote branch readback, push/merge `main`, remote bundle
-  readback, and smoke against the actual target.
+- remote `origin/main`: `cfb960135b0daafdeba8190e8dbd2d0fc325b841`;
+- remote bundle/manifest readback: primary MD5/SHA-256/bytes match;
+- HTTP smoke of exact remote primary: `200`, HTML and build stamp present;
+- no promotion to KANON/FINALNA.
