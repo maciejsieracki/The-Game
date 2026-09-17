@@ -38,7 +38,7 @@ import {
   getImprovementLockHint,
   type ImprovementActionTyp,
 } from '../game/improvement-tech';
-import { scaleImprovementWorkCost } from '../game/r-stawki-strojenie';
+import { scaleTerrainImprovementWorkCost } from '../game/terrain-improvements';
 
 // ---------------------------------------------------------------------------
 // Typy kontraktu
@@ -899,7 +899,7 @@ type JsonImprovement = { koszt_praca?: number; nazwa?: string; epoka?: number };
 
 function readWorkCost(key: ImprovementKey): number {
   const entry = (terrainImprovements as unknown as Record<string, JsonImprovement>)[key];
-  return scaleImprovementWorkCost(entry?.koszt_praca ?? 20);
+  return scaleTerrainImprovementWorkCost(entry?.koszt_praca ?? 20, entry?.epoka);
 }
 
 const NAKLADKI_ZWIERZECZE = new Set<Nakladka>([

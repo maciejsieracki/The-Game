@@ -68,6 +68,8 @@ import {
   improvementKeysForHex,
   territoryResourceYieldForImprovement,
   RESOURCE_UPKEEP_IMPROVEMENT_KEYS,
+  terrainImprovementEraForKey,
+  terrainImprovementEraMultiplier,
   type TerritoryResourceKey,
 } from './terrain-improvements';
 import { cityManpowerMax, refreshManpowerAfterPopChange, tickManpowerRegen, civManpowerMults, loadManpowerRegenParams, tickManpowerUnitReplenishment, type ManpowerHealUnit } from './manpower';
@@ -913,12 +915,12 @@ export function computeWorkedDrewnoByCity(
 }
 
 // ---------------------------------------------------------------------------
-// ZADANIE 1 (Maciej 2026-07-23): upkeep Pracy civ-wide za ulepszenia surowcowe.
-// Wariant B: −1 Praca/turę PER OWNER (nie per-city -- płynie z globalnej puli
-// produkcji cywilizacji, patrz playerPracaPool/aiPracaPoolByOwner w main.ts) za
-// KAŻDE zbudowane ulepszenie z RESOURCE_UPKEEP_IMPROVEMENT_KEYS w terytorium
-// właściciela. Ciągły koszt niezależny od obsadzenia pola ludnością (jak
-// computeTerritoryResourceYieldByCity powyżej) — "ktoś musi obsłużyć nawet bez ludka".
+// ZADANIE 1 (Maciej 2026-07-23): upkeep Pracy civ-wide za ulepszenia terenu.
+// Wariant B: bazowy koszt Pracy/turę PER OWNER (nie per-city -- płynie z
+// globalnej puli produkcji cywilizacji) za KAŻDĄ trwałą warstwę z
+// RESOURCE_UPKEEP_IMPROVEMENT_KEYS w terytorium właściciela. Koszt warstwy jest
+// dodatkowo ważony epoką jej ulepszenia: Kamień ×1, Brąz ×2, Żelazo ×4.
+// Ciągły koszt jest niezależny od obsadzenia pola ludnością.
 // ---------------------------------------------------------------------------
 
 /** Liczba ulepszeń płacących upkeep Pracy, per ownerId (civ-wide, nie per-city). */
@@ -950,13 +952,13 @@ export function loadResourceImprovementUpkeepCost(
   data: GameData,
   difficulty: Difficulty,
 ): number {
-  const raw = data.econParams as unknown as RawConverterParamsJson;
+  const raw = (data.econParams ?? {}) as unknown as RawConverterParamsJson;
   return loadThroughput(raw, 'ulepszenie_surowcowe_upkeep_praca', difficulty, 1);
 }
 
 /**
  * Praca/turę do odjęcia z globalnej puli produkcji cywilizacji (civ-wide), per
- * ownerId, za utrzymanie ulepszeń surowcowych tej tury. Brak wpisu / 0 = brak
+ * ownerId, za utrzymanie trwałych ulepszeń terenu tej tury. Brak wpisu / 0 = brak
  * ulepszeń płatnych u tego ownera. Odejmowanie i clamp do 0 -- odpowiedzialność
  * wołającego (main.ts: playerPracaPool / aiPracaPoolByOwner), nie tego modułu.
  */
@@ -966,10 +968,26 @@ export function computePracaUpkeepByOwner(
   data: GameData,
   difficulty: Difficulty,
 ): ReadonlyMap<number, number> {
-  const counts = countResourceUpkeepImprovementsByOwner(map, territoryNodes);
-  const cost = loadResourceImprovementUpkeepCost(data, difficulty);
+  const cost = Math.max(0, loadResourceImprovementUpkeepCost(data, difficulty));
   const out = new Map<number, number>();
-  for (const [owner, n] of counts) out.set(owner, n * cost);
+  for (const hexKey of Object.keys(map.hexes)) {
+    const hex = map.hexes[hexKey];
+    if (!hex) continue;
+    const impKeys = improvementKeysForHex(hex);
+    if (!impKeys.length) continue;
+    const { q, r } = hex.coords;
+    const owner = territoryOwnerAt(q, r, territoryNodes);
+    if (owner == null) continue;
+    let upkeep = 0;
+    for (const key of impKeys) {
+      if (!RESOURCE_UPKEEP_IMPROVEMENT_KEYS.has(key)) continue;
+      upkeep += Math.max(
+        0,
+        Math.round(cost * terrainImprovementEraMultiplier(terrainImprovementEraForKey(key))),
+      );
+    }
+    if (upkeep > 0) out.set(owner, (out.get(owner) ?? 0) + upkeep);
+  }
   return out;
 }
 
@@ -2338,7 +2356,7 @@ export function advanceCityEconomy(
     resolveOwnerEra ?? ((ownerId: number) => ownerId === 0 ? playerEra : 1),
   );
 
-  // ZADANIE 1 (Maciej 2026-07-23): upkeep Pracy civ-wide za ulepszenia surowcowe
+  // R-KOSZTY-EPOKOWE-ULEPSZENIA-Q1: upkeep Pracy civ-wide za trwałe ulepszenia terenu
   // -- liczone RAZ dla calej tury (per owner, nie per-city, patrz komentarz przy
   // computePracaUpkeepByOwner powyzej).
   const pracaUpkeepByOwner = computePracaUpkeepByOwner(map, territoryNodes, data, difficulty);

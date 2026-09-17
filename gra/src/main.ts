@@ -18269,7 +18269,7 @@ async function boot(): Promise<void> {
       _lastBogactwoRate = playerEcon.pieniadz - bogactwoUpkeepPreview.utrzymanieRazem;
       // NAPRAWA HUD-PRACA (ten sam wzorzec, ta sama zgloszenie): "+N" przy Pracy
       // liczylo tylko doPuli (wplyw brutto do puli imperium), pomijajac utrzymanie
-      // Pracy za ulepszenia surowcowe (computePracaUpkeepByOwner, civ-wide/ture),
+      // Pracy za trwałe ulepszenia terenu (computePracaUpkeepByOwner, civ-wide/ture),
       // ktore playerPracaPool realnie odejmuje pod koniec tury (main.ts, blok
       // "ZADANIE 1" nizej). computePracaUpkeepByOwner to ta sama czysta funkcja
       // uzywana w advanceCityEconomy -- brak ryzyka rozjazdu z realnym tickiem.
@@ -18308,7 +18308,7 @@ async function boot(): Promise<void> {
         paused: pracaPaused,
       });
       // P-PRACA-IMPERIUM-PULA-NIE-AKUMULUJE-REGRES2-Q1: `pracaPoolBrutto -
-      // pracaUpkeepPreview` zna TYLKO upkeep -- nie wonder-map-builds/building-budget/
+      // pracaUpkeepPreview` zna TYLKO upkeep ulepszeń terenu -- nie wonder-map-builds/building-budget/
       // auto-ulepszenia. Zaraz po końcu tury `_lastPracaRate` jest już policzone
       // POPRAWNIE (wszystkie 4 drenaże, patrz komentarz przy deklaracji flagi wyżej) --
       // ten guard chroni tamtą wartość przed nadpisaniem martwym zapisem z niepełnej
@@ -32220,7 +32220,7 @@ async function boot(): Promise<void> {
                 applyLiveSafeRationForCity(grownCityId);
               }
             }
-            // ZADANIE 1 (Maciej 2026-07-23): upkeep Pracy civ-wide za ulepszenia surowcowe --
+            // R-KOSZTY-EPOKOWE-ULEPSZENIA-Q1: upkeep Pracy civ-wide za trwałe ulepszenia terenu --
             // odjęcie RAZ na turę (nie per-miasto) z globalnej puli produkcji, PO tym jak
             // pętla per-miasto powyżej dodała tegoroczne doPuli/overflow (playerPracaPool /
             // aiPracaPoolByOwner). Praca nie schodzi < 0 (Math.max poniżej).
@@ -32244,7 +32244,7 @@ async function boot(): Promise<void> {
                 aiPracaPoolByOwner.set(oid, Math.max(0, cur - up));
               }
             } catch (errUpkeepPraca) {
-              console.error('[Ekonomia] Błąd upkeep Pracy (ulepszenia surowcowe):', errUpkeepPraca);
+              console.error('[Ekonomia] Błąd upkeep Pracy (ulepszenia terenu):', errUpkeepPraca);
             }
             // CUDA-MAPA: postęp budowy cudów na heksach z puli Pracy imperium (nie kolejka miasta).
             try {

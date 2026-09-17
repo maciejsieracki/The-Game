@@ -364,11 +364,13 @@ console.log('11. combined AI + defensive copy: city improvements + posterunek <=
     [city],
     [unit],
     combinedMap,
-    { ...combinedOpts, pracaAvailable: 160 },
+    // Posterunek is Iron-era (120 Work after the new x4 rule); 300 gives a
+    // 150-Work envelope, enough for its cost plus the 30-Work reserve.
+    { ...combinedOpts, pracaAvailable: 300 },
   );
   assert(directOutpost && directOutpost.type === 'buildImprovement' && directOutpost.key === 'posterunek',
     'combined setup: planExpansionFortBuilding wybiera legalny posterunek');
-  const beforeCapOpts = { ...combinedOpts, pracaAvailable: 160 };
+  const beforeCapOpts = { ...combinedOpts, pracaAvailable: 300 };
   const cityCommandsBeforeCap = decideAITurn(
     PLAYER_ID, [unit], [city], combinedMap, data, beforeCapOpts,
   ).filter(cmd => cmd.type === 'buildImprovement');

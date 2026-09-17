@@ -6,6 +6,7 @@
 import improvementsJson from '../../data/terrain-improvements.json';
 import { Nakladka, TerenBazowy } from '../types/hex';
 import type { TileYield } from './economy';
+import { scaleImprovementWorkCost } from './r-stawki-strojenie';
 
 export type ImprovementBonusKey =
   | 'zywnosc' | 'praca' | 'handel' | 'pieniadz' | 'drewno' | 'kamien' | 'glina';
@@ -15,6 +16,9 @@ export type ImprovementBonus = Partial<Record<ImprovementBonusKey, number>>;
 type ImprovementRow = {
   bonus?: ImprovementBonus;
   nazwa?: string;
+  epoka?: number;
+  koszt_praca?: number;
+  typ?: 'wycinka' | 'ulepszenie';
   surowiec_ilosc_tura?: number;
   surowiecOdblokowany?: string | null;
   /** Ograniczenie do wybranych cywilizacji (typCywilizacji z civs.json) — pole ogólny,
@@ -22,7 +26,7 @@ type ImprovementRow = {
   cywilizacje?: readonly string[];
 };
 
-const IMPROVEMENTS = improvementsJson as Record<string, ImprovementRow>;
+const IMPROVEMENTS = improvementsJson as unknown as Record<string, ImprovementRow>;
 
 /** Legacy klucze przed kanonem żywność+hodowla (save / stary enum). */
 const LEGACY_KEY_ALIASES: Readonly<Record<string, string>> = {
@@ -61,6 +65,46 @@ export function migrateImprovementLayers(
 /** Klucze z JSON (bez _meta). */
 export const IMPROVEMENT_KEYS: readonly string[] = Object.keys(IMPROVEMENTS)
   .filter(k => !k.startsWith('_'));
+
+/**
+ * Wspólna skala kosztów ulepszeń terenu względem bieżącej bazy Kamienia.
+ * Epoka 4+ kontynuuje jawnie przyjęte podwajanie (1, 2, 4, 8, ...), a brak,
+ * zero lub niepoprawna epoka bezpiecznie oznacza Kamień. Nie zmieniamy danych
+ * źródłowych: `scaleImprovementWorkCost` zachowuje istniejącą korektę FALI2,
+ * a ten mnożnik jest nakładany dokładnie raz na wynik bazowy.
+ */
+export const TERRAIN_IMPROVEMENT_ERA_MULTIPLIERS: Readonly<Record<number, number>> = {
+  1: 1,
+  2: 2,
+  3: 4,
+};
+
+export function terrainImprovementEraMultiplier(era: number | undefined): number {
+  const normalized = typeof era === 'number' && Number.isFinite(era)
+    ? Math.floor(era)
+    : 1;
+  if (normalized <= 1) return TERRAIN_IMPROVEMENT_ERA_MULTIPLIERS[1] ?? 1;
+  const mapped = TERRAIN_IMPROVEMENT_ERA_MULTIPLIERS[normalized];
+  if (mapped !== undefined) return mapped;
+  return (TERRAIN_IMPROVEMENT_ERA_MULTIPLIERS[3] ?? 4) * Math.pow(2, normalized - 3);
+}
+
+/** Epoka technologiczna ulepszenia z terrain-improvements.json. */
+export function terrainImprovementEraForKey(key: string): number {
+  const normalized = normalizeImprovementKey(key);
+  const era = normalized ? IMPROVEMENTS[normalized]?.epoka : undefined;
+  return typeof era === 'number' && Number.isFinite(era) ? era : 1;
+}
+
+/** Koszt postawienia ulepszenia: bieżąca baza Kamienia × mnożnik epoki. */
+export function scaleTerrainImprovementWorkCost(
+  base: number,
+  era: number | undefined = 1,
+): number {
+  const stoneBase = scaleImprovementWorkCost(base);
+  if (stoneBase <= 0) return 0;
+  return stoneBase * terrainImprovementEraMultiplier(era);
+}
 
 export function normalizeImprovementKey(raw: string | undefined | null): string | undefined {
   if (!raw || raw === 'brak') return undefined;
@@ -391,10 +435,9 @@ export function isImprovementAllowedForCiv(
 }
 
 // ---------------------------------------------------------------------------
-// ZADANIE 1 (Maciej 2026-07-23): upkeep Pracy civ-wide za ulepszenia surowcowe.
-// Wariant B (decyzja właściciela) -- płacą TAKŻE ulepszenia czysto dostępowe
-// (warzelnia_soli, stadnina), nie tylko te produkujące surowiec logistyczny
-// (TERRITORY_YIELD_IMPROVEMENTS powyżej). Zwolnione: żywnościowe + infrastruktura.
+// R-KOSZTY-EPOKOWE-ULEPSZENIA-Q1: upkeep Pracy civ-wide za wszystkie trwałe
+// ulepszenia terenu. Koszt bazowy pochodzi z econ-params.json, a epoka wpisu
+// skaluje go ×1/×2/×4; jednorazowa wycinka nie jest trwałą warstwą.
 // Patrz turn-economy.ts computePracaUpkeepByOwner / countResourceUpkeepImprovementsByOwner.
 // ---------------------------------------------------------------------------
 
@@ -429,10 +472,13 @@ export function foodPotentialForHex(
   return 0;
 }
 
-/** Ulepszenia płacące −1 Praca/turę (civ-wide) z econ-params.json `ulepszenie_surowcowe_upkeep_praca`. */
-export const RESOURCE_UPKEEP_IMPROVEMENT_KEYS: ReadonlySet<string> = new Set([
-  'tartak', 'kamieniolom', 'glinianka', 'kopalnia_miedzi', 'kopalnia_zelaza',
-  'warzelnia_soli', 'stadnina',
-  // PYTANIE-84-B4: Kopalnia złota produkuje zloto/t do magazynu państwa (TERRITORY_YIELD powyżej).
-  'kopalnia_zlota',
-]);
+/**
+ * Wszystkie trwałe warstwy ulepszeń płacące bazowy koszt Pracy/turę z
+ * econ-params.json `ulepszenie_surowcowe_upkeep_praca`. Lista wynika ze źródła
+ * danych, żeby nowe ulepszenie nie zostało przypadkiem bez upkeepu. `wyrab`
+ * jest jednorazową akcją wycinki, nie trwałą warstwą `placedImprovements`, więc
+ * nie może być policzony jako utrzymanie po zakończeniu akcji.
+ */
+export const RESOURCE_UPKEEP_IMPROVEMENT_KEYS: ReadonlySet<string> = new Set(
+  IMPROVEMENT_KEYS.filter(key => IMPROVEMENTS[key]?.typ !== 'wycinka'),
+);
