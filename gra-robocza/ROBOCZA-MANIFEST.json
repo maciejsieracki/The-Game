@@ -1,15 +1,15 @@
 {
-  "publishedAt": "2026-09-17T16:26:31Z",
-  "republishedAt": "2026-09-17T16:26:31Z",
-  "productReleaseCommit": "104fce6d5002ff3e0d64083268dd4434dbb0452e",
+  "publishedAt": "2026-09-17T22:37:17Z",
+  "republishedAt": "2026-09-17T22:37:17Z",
+  "productReleaseCommit": "8eba87007a866edc80c4776df77697af65e17f2d",
   "publisher": "Hermes Orchestrator",
-  "md5": "7340f635259dfd06a9467025e9c22c61",
-  "sha256": "137b513839d670468ef81241c6bb72de016dbf2bade65d37c8abf8b2018e8c2f",
-  "bytes": 69875188,
+  "md5": "946df5aa5f8b3ca072719ef0c5acdeca",
+  "sha256": "8330638ac6797258712014aff845fc0f9beaccf5d164d67b38ed42cbb04d5e2e",
+  "bytes": 69877926,
   "bundle": "Gra-ROBOCZA.html",
-  "sourceCommit": "4f68875d07991b3fc365ec21da04329d426654d7",
-  "base": "e0e280c43909bdc8fe1d4d1ce926e15874c535c8",
-  "integrationCommit": "4f68875d07991b3fc365ec21da04329d426654d7",
+  "sourceCommit": "8eba87007a866edc80c4776df77697af65e17f2d",
+  "base": "25133ccb9367b1e0cc11e561065dfef08bed3f40",
+  "integrationCommit": "8eba87007a866edc80c4776df77697af65e17f2d",
   "scope": [
     "R-AUTO-BATTLE-LOSS-Q1",
     "R-GARNIZON-PANEL-DOCELNY-Q1",
@@ -24,7 +24,8 @@
     "R-AI-BUDZET-SKARB-NAUKA-ZAMOZNOSC-Q1 (audit/test-only; no product diff)",
     "R-CYWILIZACJE-GRECJA-ALOKACJE-Q1 (already in base; verified no-op)",
     "R-AI-PRACA-BUDYNKI-ULEPSZENIA-Q1 (already in base; verified no-op)",
-    "R-CYWILIZACJE-GRECJA-AKTYWNE-PARAMETRY-Q1 (already in base; verified no-op)"
+    "R-CYWILIZACJE-GRECJA-AKTYWNE-PARAMETRY-Q1 (already in base; verified no-op)",
+    "R-RALLY-POINT-AUTOMARCH-Q1"
   ],
   "noOpVerified": [
     "R-MIASTA-KOLONIA-NAZWA-POOL-Q1",
@@ -45,15 +46,15 @@
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html?skipMenuRedirect=1",
       "label": "Pełna gra ROBOCZA",
-      "md5": "7340f635259dfd06a9467025e9c22c61",
-      "sizeBytes": 69875188
+      "md5": "946df5aa5f8b3ca072719ef0c5acdeca",
+      "sizeBytes": 69877926
     },
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html",
       "label": "Pełna gra (z menu)",
-      "md5": "7340f635259dfd06a9467025e9c22c61",
-      "sizeBytes": 69875188
+      "md5": "946df5aa5f8b3ca072719ef0c5acdeca",
+      "sizeBytes": 69877926
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
@@ -114,5 +115,15 @@
   ],
   "startHub": "START.html",
   "hubGeneratedAt": "2026-09-17T15:12:02",
-  "note": "ROBOCZA auto-battle release; source gates PASS; byte-identical no-op republish with remote branch/main readback verified; no promotion to KANON/FINALNA"
+  "note": "ROBOCZA FALA 386 — R-RALLY-POINT-AUTOMARCH-Q1; primary bundle authoritative. Legacy PLAYTEST aliases remain absent after repository cleanup and are preserved only as manifest provenance; no promotion to KANON/FINALNA.",
+  "legacyAliasesNotPresent": [
+    "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
+    "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
+    "Gra-ROBOCZA-PLAYTEST-MAPA.html",
+    "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
+    "Gra-ROBOCZA-PLAYTEST-WALKA.html",
+    "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
+    "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
+    "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html"
+  ]
 }

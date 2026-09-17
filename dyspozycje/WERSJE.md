@@ -13,6 +13,13 @@ swoim wĹ‚asnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji d
 > Pakiet 3 z 2026-08-20 jest docs-only i nie tworzy wpisu ROBOCZA/KANON/FINALNA;
 > ten plik pozostaje wyłącznie rejestrem publikacji bundli.
 
+## ROBOCZA 946df5aa - 2026-09-17 22:37 UTC - FALA 386 - R-RALLY-POINT-AUTOMARCH-Q1
+
+|- md5 (pełne): `946df5aa5f8b3ca072719ef0c5acdeca` · sha256: `8330638ac6797258712014aff845fc0f9beaccf5d164d67b38ed42cbb04d5e2e` · rozmiar: `69877926` bajtów · source/integration commit: `8eba87007a866edc80c4776df77697af65e17f2d` · base: `25133ccb9367b1e0cc11e561065dfef08bed3f40`
+|- Scope: `R-RALLY-POINT-AUTOMARCH-Q1` — punkt zbiórki, jawne uruchomienie automarszu 5B, planned march, save/load i zachowanie istniejącego ruchu ręcznego.
+|- Gates: rally `22/0`, planned march `18/0`, logic `213/213`, TypeScript PASS, syntax PASS, `git diff --check` PASS, Vite `890` modułów. Build artifact `69 877 467` bajtów przed stampem; final bundle po stampie `69 877 926` bajtów.
+|- `node gra/tools/verify-robocza-bundle.cjs` → `VERIFY OK`; manifest match `OK`; Linux stamp match `WARN` jest znanym zachowaniem portu Node. Brak promocji do KANON/FINALNA. Legacy PLAYTEST aliases pozostają nieobecne po wcześniejszym cleanupie i są zapisane w manifeście jako provenance, nie jako bieżące pliki.
+
 ## ROBOCZA 7340f635 - 2026-09-17 16:26 UTC - auto-battle loss correction (DEPLOY-ROBOCZA / BYTE-IDENTICAL REPUBLISH)
 
 |- md5 (pełne): `7340f635259dfd06a9467025e9c22c61` · sha256: `137b513839d670468ef81241c6bb72de016dbf2bade65d37c8abf8b2018e8c2f` · rozmiar: `69875188` bajtów · source/integration commit: `4f68875d07991b3fc365ec21da04329d426654d7` · base: `e0e280c43909bdc8fe1d4d1ce926e15874c535c8`

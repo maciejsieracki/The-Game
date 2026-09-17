@@ -1,3 +1,15 @@
+## [2026-09-17 UTC] ORKIESTRATOR → KANBAN / WŁAŚCICIEL — DEPLOY ROBOCZA FALA 386 / RALLY POINT
+
+STATUS: `LOCAL PUBLISH PREPARED — push/readback pending`.
+
+- Clean integration branch: `hermes/integration/fala-386-rally-20260918`; base `origin/main=25133ccb9367b1e0cc11e561065dfef08bed3f40`; integration commit `8eba87007a866edc80c4776df77697af65e17f2d`.
+- Scope: `R-RALLY-POINT-AUTOMARCH-Q1`; allowlist: `rally-point.ts`, `save.ts`, `main.ts`, `rally-point-automarch-test.cjs`.
+- Gates: rally `22/0`, planned march `18/0`, logic `213/213`, TypeScript PASS, syntax PASS, Vite `890` modules, `git diff --check` PASS.
+- Bundle: MD5 `946df5aa5f8b3ca072719ef0c5acdeca`, SHA-256 `8330638ac6797258712014aff845fc0f9beaccf5d164d67b38ed42cbb04d5e2e`, `69877926` bytes; verifier `VERIFY OK`; manifest match `OK`; Linux stamp `WARN` known for Node port.
+- FALA: **FALA 386**. No promotion to KANON/FINALNA. Legacy PLAYTEST aliases are absent after repository cleanup and remain recorded as provenance only.
+
+CZEKAM-NA: push branch → readback → push/merge `main` → remote bundle/readback/smoke.
+
 ## [2026-09-17 UTC] ORKIESTRATOR → KANBAN / WŁAŚCICIEL — DEPLOY ROBOCZA AUTO-BATTLE CANDIDATE
 
 STATUS: `DEPLOYED — remote branch/main readback PASS; byte-identical no-op republish`.
