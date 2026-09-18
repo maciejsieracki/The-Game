@@ -1,0 +1,6 @@
+M	gra/src/game/building-stock-cost.ts
+M	gra/src/game/economy-upkeep.ts
+M	gra/src/game/production.ts
+M	gra/src/game/unit-power.ts
+M	gra/src/main.ts
+M	gra/src/ui/cityPanel.ts

@@ -1,0 +1,7 @@
+ gra/src/game/building-stock-cost.ts | 29 ++++++++++++++++++++++++++---
+ gra/src/game/economy-upkeep.ts      |  8 ++++++--
+ gra/src/game/production.ts          | 15 +++++++++++----
+ gra/src/game/unit-power.ts          | 30 ++++++++++++++++++++++++++++++
+ gra/src/main.ts                     | 27 ++++++++++++++++++++-------
+ gra/src/ui/cityPanel.ts             | 13 ++++++++++---
+ 6 files changed, 103 insertions(+), 19 deletions(-)

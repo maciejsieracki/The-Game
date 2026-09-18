@@ -1,15 +1,15 @@
 {
-  "publishedAt": "2026-09-17T23:26:49Z",
-  "republishedAt": "2026-09-17T23:26:49Z",
-  "productReleaseCommit": "8eba87007a866edc80c4776df77697af65e17f2d",
+  "publishedAt": "2026-09-18T00:03:26Z",
+  "republishedAt": "2026-09-18T00:03:26Z",
+  "productReleaseCommit": "00b1b391b37be16477d924e62449e20f027e2eed",
   "publisher": "Hermes Orchestrator",
-  "md5": "7702a035d112ef280fa3e84cb95477f7",
-  "sha256": "7aa54fdeb37fb27be7c7616d6555b104dbab478bf4ac999dc81a30195c7f5ba4",
-  "bytes": 69877926,
+  "md5": "4c1788bb880dbd66761410af0d277245",
+  "sha256": "dba338ff46488b22d5c18e56b9a6fc7c376be0c0af60a78ec9bbdbb19fef6375",
+  "bytes": 69878627,
   "bundle": "Gra-ROBOCZA.html",
-  "sourceCommit": "8eba87007a866edc80c4776df77697af65e17f2d",
-  "base": "25133ccb9367b1e0cc11e561065dfef08bed3f40",
-  "integrationCommit": "8eba87007a866edc80c4776df77697af65e17f2d",
+  "sourceCommit": "00b1b391b37be16477d924e62449e20f027e2eed",
+  "base": "c08b3db14292221cad0a4e7a70608e9d09ee9afd",
+  "integrationCommit": "00b1b391b37be16477d924e62449e20f027e2eed",
   "scope": [
     "R-AUTO-BATTLE-LOSS-Q1",
     "R-GARNIZON-PANEL-DOCELNY-Q1",
@@ -25,7 +25,9 @@
     "R-CYWILIZACJE-GRECJA-ALOKACJE-Q1 (already in base; verified no-op)",
     "R-AI-PRACA-BUDYNKI-ULEPSZENIA-Q1 (already in base; verified no-op)",
     "R-CYWILIZACJE-GRECJA-AKTYWNE-PARAMETRY-Q1 (already in base; verified no-op)",
-    "R-RALLY-POINT-AUTOMARCH-Q1"
+    "R-RALLY-POINT-AUTOMARCH-Q1",
+    "R-BUILDING-COSTS-Q1",
+    "R-UNIT-SORT-Q1"
   ],
   "noOpVerified": [
     "R-MIASTA-KOLONIA-NAZWA-POOL-Q1",
@@ -46,15 +48,15 @@
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html?skipMenuRedirect=1",
       "label": "Pełna gra ROBOCZA",
-      "md5": "7702a035d112ef280fa3e84cb95477f7",
-      "sizeBytes": 69877926
+      "md5": "4c1788bb880dbd66761410af0d277245",
+      "sizeBytes": 69878627
     },
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html",
       "label": "Pełna gra (z menu)",
-      "md5": "7702a035d112ef280fa3e84cb95477f7",
-      "sizeBytes": 69877926
+      "md5": "4c1788bb880dbd66761410af0d277245",
+      "sizeBytes": 69878627
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
@@ -115,7 +117,7 @@
   ],
   "startHub": "START.html",
   "hubGeneratedAt": "2026-09-17T15:12:02",
-  "note": "ROBOCZA FALA 386 — R-RALLY-POINT-AUTOMARCH-Q1; primary bundle authoritative. Legacy PLAYTEST aliases remain absent after repository cleanup and are preserved only as manifest provenance; no promotion to KANON/FINALNA.",
+  "note": "ROBOCZA FALA 387 — R-BUILDING-COSTS-Q1 + R-UNIT-SORT-Q1; current-base integration; no promotion to KANON/FINALNA",
   "legacyAliasesNotPresent": [
     "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
     "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
@@ -154,5 +156,14 @@
       "R-CYWILIZACJE-GRECJA-MACIERZ-TRUDNOSC-SKALOWANIE-Q1",
       "R-CYWILIZACJE-GRECJA-MACIERZ-UNWIRED-CONSUMERS-Q1"
     ]
+  },
+  "af4CurrentBase": {
+    "status": "FINAL_CONTROL_PASS_WITH_NOTES",
+    "finalControl": "t_2ef08e4e/run703",
+    "productAcceptance": true,
+    "objections": [],
+    "integrationCommit": "00b1b391b37be16477d924e62449e20f027e2eed",
+    "base": "c08b3db14292221cad0a4e7a70608e9d09ee9afd",
+    "newProductDiff": true
   }
 }

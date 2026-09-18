@@ -1,3 +1,15 @@
+## [2026-09-18 UTC] ORKIESTRATOR → KANBAN / WŁAŚCICIEL — DEPLOY ROBOCZA FALA 387 / AF4
+
+STATUS: `PUBLISH_PENDING`.
+
+- Clean integration branch: `hermes/integration/af4-fresh-20260918`; base `origin/main=c08b3db14292221cad0a4e7a70608e9d09ee9afd`; integration commit `00b1b391b37be16477d924e62449e20f027e2eed`.
+- Scope: `R-BUILDING-COSTS-Q1` + `R-UNIT-SORT-Q1`; Final Control `t_2ef08e4e/run703`, `PASS-WITH-NOTES`, `product_acceptance=true`, objections `[]`.
+- Bundle: MD5 `4c1788bb880dbd66761410af0d277245`, SHA-256 `dba338ff46488b22d5c18e56b9a6fc7c376be0c0af60a78ec9bbdbb19fef6375`, `69878627` bytes; verifier `VERIFY OK`.
+- Gates: building `20/0`, unit sort `13/0`, logic `213/213`, upkeep `73/0`, tempo `6/0`, queue/refund `5/0`, unit replace `13/13`, TypeScript/syntax PASS, Vite `890` modules.
+- Known baseline notes: unchanged `koszty-surowcowe` `126/3` and `unit-power` `4/2`; not AF4 objections. No KANON/FINALNA promotion.
+
+CZEKAM-NA: branch push → fast-forward main → remote bundle/readback/smoke.
+
 ## [2026-09-18 UTC] ORKIESTRATOR → KANBAN / WŁAŚCICIEL — OPEN BACKLOG RECONCILIATION
 
 STATUS: `DEPLOYED — remote main/readback/smoke PASS`.
