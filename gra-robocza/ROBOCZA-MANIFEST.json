@@ -158,12 +158,18 @@
     ]
   },
   "af4CurrentBase": {
-    "status": "FINAL_CONTROL_PASS_WITH_NOTES",
+    "status": "DEPLOYED",
     "finalControl": "t_2ef08e4e/run703",
     "productAcceptance": true,
     "objections": [],
     "integrationCommit": "00b1b391b37be16477d924e62449e20f027e2eed",
+    "publishCommit": "cff98d93d889664fe3664045be81927c7d793712",
     "base": "c08b3db14292221cad0a4e7a70608e9d09ee9afd",
+    "remoteMain": "cff98d93d889664fe3664045be81927c7d793712",
+    "bundleMd5": "4c1788bb880dbd66761410af0d277245",
+    "bundleSha256": "dba338ff46488b22d5c18e56b9a6fc7c376be0c0af60a78ec9bbdbb19fef6375",
+    "bundleBytes": 69878627,
+    "remoteSmoke": true,
     "newProductDiff": true
   }
 }

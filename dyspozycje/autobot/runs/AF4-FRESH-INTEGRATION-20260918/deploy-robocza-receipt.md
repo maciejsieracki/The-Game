@@ -1,6 +1,6 @@
 # Deploy receipt — FALA 387 / AF4 current-base integration
 
-STATUS: PUBLISH_PENDING
+STATUS: DEPLOYED — remote main/readback/smoke PASS
 DOMAIN: GAME
 TEMAT: R-BUILDING-COSTS-Q1 + R-UNIT-SORT-Q1
 

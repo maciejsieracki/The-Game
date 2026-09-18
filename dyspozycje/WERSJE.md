@@ -19,7 +19,7 @@ swoim wĹ‚asnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji d
 |- source/integration commit: `00b1b391b37be16477d924e62449e20f027e2eed`; base: `c08b3db14292221cad0a4e7a70608e9d09ee9afd`.
 |- Scope: `R-BUILDING-COSTS-Q1` + `R-UNIT-SORT-Q1`; Final Control `t_2ef08e4e/run703` PASS-WITH-NOTES, `product_acceptance=true`, objections `[]`.
 |- Gates: building `20/0`, unit sort `13/0`, logic `213/213`, upkeep `73/0`, tempo `6/0`, queue/refund `5/0`, unit replace `13/13`, TypeScript PASS, syntax PASS, Vite `890` modules, verifier `VERIFY OK`.
-|- Known baseline notes remain unchanged: `koszty-surowcowe` `126/3` and `unit-power` `4/2` reproduce on clean base and are outside AF4 acceptance. No promotion to KANON/FINALNA.
+|- Publish commit: `cff98d93d889664fe3664045be81927c7d793712`; remote readback and HTTP smoke `PASS`; no promotion to KANON/FINALNA.
 
 ## ROBOCZA 7702a035 - 2026-09-17 23:26 UTC - OPEN BACKLOG RECONCILIATION (NO NEW FALA)
 
