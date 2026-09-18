@@ -19,6 +19,27 @@ Jeśli temat jest zmianą samego AutoBota, dodatkowo przeczytaj mapę warstw
 Nie zaczynaj od starego handoffu, płaskiego logu ani samego czatu. Nie czytaj i nie
 zmieniaj `gra/` dla paczki dokumentacyjnej.
 
+## 1a. Tożsamość bieżącego snapshotu
+
+P5 dotyczy wyłącznie poniższej, jawnie wybranej granicy. Nie jest ona globalnym
+fallbackiem dla innych strumieni The-Game ani projektów companion:
+
+| Pole | Wartość |
+|---|---|
+| Profil wykonawczy | `default` |
+| Projekt | `the-game` / `The Game Box` |
+| `project_id` | `p_9ae9ac64` |
+| Board | `the-game-real24` |
+| Tenant | `the-game` |
+| Worktree audytu | `/home/ubuntu/projects/The-Game-docs-audit-worktrees/R-DOCS-CONSOLIDATION-Q1` |
+| Temat/faza | `t_518149f7` / `R-DOCS-P5-INDEX-CONSOLIDATION-Q1` / P5 Operator |
+| Run odczytany przed przekazaniem | `328`, `running` |
+
+Świeży native readback `hermes -p default project show the-game` wskazuje
+`board=the-game-real24`. Wzmianka `the-game-bugs` w historycznej mapie P1B jest
+faktem tamtego snapshotu, nie bieżącym bindingiem; nie należy jej przepisywać do
+nowego routingu. Historyczny `project_id=p_09e13254` pozostaje orphanem legacy.
+
 ## 2. Hierarchia źródeł prawdy
 
 | Zakres | Źródło aktywne | Zapis / dowód |
@@ -65,6 +86,70 @@ raportu nie zapisuj wyłącznie w logu ani w czacie; run jest kanonicznym ślade
 Po zmianach dokumentacyjnych uruchom `node dyspozycje/autobot/tools/process-docs-audit.cjs`.
 Audyt nie zastępuje Evaluatora ani Final Control; jest powtarzalną bramką techniczną
 spójności dokumentacji.
+
+## 3a. Zamrożone wyniki P2/P3/P4
+
+P2 zamroziło 84 308 rekordów Markdown-like na granicy
+`2026-09-14T17:37:55Z`: 76 084 rekordy lokalne i 8 224 rekordy z trzech
+odczytów GitHub, łącznie 32 source roots. Poniższe liczby są dowodem snapshotu,
+nie deklaracją bieżącej zawartości wszystkich checkoutów.
+
+| P2 klasyfikacja | Rekordy |
+|---|---:|
+| `CANONICAL` | 13 740 |
+| `EVIDENCE` | 33 217 |
+| `HISTORY` | 2 759 |
+| `SEPARATE_PROJECT` | 181 |
+| `UNKNOWN` | 34 411 |
+| **Razem** | **84 308** |
+
+P3 dostarczyło mapę 12 kategorii oraz rejestr 10 konfliktów. Otwarte dla decyzji
+właściciela pozostają konflikty `1, 4, 5, 6, 7`; precedencja nie została wybrana.
+P4 zachowało każdą linię macierzy i nadało dokładnie jeden status:
+
+| P4 status | Rekordy |
+|---|---:|
+| `ACTIVE_CANONICAL` | 34 896 |
+| `HISTORY` | 18 693 |
+| `STALE_CANDIDATE` | 651 |
+| `DUPLICATE_CANDIDATE` | 124 |
+| `OWNER_DECISION` | 13 181 |
+| `SEPARATE_PROJECT` | 181 |
+| `UNKNOWN_NEEDS_REVIEW` | 16 582 |
+| **Razem** | **84 308** |
+
+P4 zachowało 21 ścieżek/651 rekordów z jawnym markerem stale jako kandydatów,
+124 grupy dokładnych duplikatów w tym samym root, 2 764 grupy replik między
+rootami oraz 433 unikalne ścieżki objęte decyzją właściciela. Żaden kandydat nie
+został usunięty, scalony, przemianowany ani zarchiwizowany.
+
+P4 odczytało primary jako 2 757/2 757 obecnych rekordów; dwa bieżące drifty
+(`dyspozycje/PYTANIA-OTWARTE.md` i `dyspozycje/REJESTR-PROSB-I-ZADAN.md`)
+pozostają wyłącznie rozjazdem względem zamrożonego snapshotu. Ich dokładne
+pochodzenie nie jest ustalone i P5 nie rozstrzyga ich treści.
+
+## 3b. Lokalne i zdalne granice odczytu
+
+P2 użyło 29 lokalnych rootów oraz trzech referencji GitHub. Zamrożone referencje
+P2 były: `HEAD/main=32bbc72741e21a3bcda2f05e580b55512ca5dd33`,
+`docs/agent-documentation-index-20260914=da493eeebfaa90d47140ba7892ea2578b7f50ea7`
+i `autobot/real24-staging=d387754f530af202ef285f7a27727ea1b1009cd9`.
+
+P5 wykonało osobny, read-only `git ls-remote` readback: `HEAD/main` wskazał
+`30409fdb2938fea93287af9df66a18adc048af26`, a dwie pozostałe referencje
+pozostały odpowiednio `da493eeebfaa90d47140ba7892ea2578b7f50ea7` i
+`d387754f530af202ef285f7a27727ea1b1009cd9`. To późniejszy fakt live, nie
+retroaktywna zmiana P2. Nie wykonano fetch ani pull.
+
+Primary lokalny pozostaje checkoutem `main` z HEAD
+`a99f7de59ce643441b641d3b7b11404b6cbdcd82` i dirty worktree; ten worktree
+audytu ma branch `hermes/R-DOCS-CONSOLIDATION-Q1` z HEAD
+`d3689535ce7a7bf210f187c43448a49716774bfa`. Żaden z tych odczytów nie dowodzi
+integracji ani deployu.
+
+P2 oznaczyło zdalne `ignored/not_ignored` jako `N/D_REMOTE`, bo GitHub tree nie
+ma lokalnej projekcji ignore. Companion `/home/ubuntu/projects/Autoboot-Monitor`
+pozostaje osobnym projektem; jego 181 rekordów nie jest kanonem The-Game.
 
 ## 4. Obowiązujący obieg i ten sam ID
 
@@ -123,7 +208,30 @@ Przed integracją orkiestrator sprawdza wszystkie trzy raporty, GOAL, allowlist�
 faktyczny diff, commit, testy, blokady, run i brak zmian w `gra/` dla docs-only. Po
 integracji zapisuje wynik w `04-integration.md`; `WERSJE.md` dopiero po publikacji.
 
-## 7. Historia i zakres indeksu
+## 7. P5, decyzje i granica niedestrukcyjna
+
+P5 skorygowało dwa wejściowe artefakty tylko w zakresie potwierdzonym przez
+P2/P3/P4: wskazało aktualną tożsamość routingu, zastąpiło nieaktualny opis
+bramki P1B bieżącą fazą P5 i dodało linki do zachowanych dowodów. Nie wybrało
+precedencji w konfliktach P3. P3-owy pointer do
+`docs/decyzje/R-PROC-AUTOBOT-HERMES-KANBAN.md` nie istnieje w tym worktree;
+P5 nie tworzy aliasu ani nie linkuje do nieistniejącego pliku. Obowiązujący
+opis procesu jest w `R-PROC-AUTOBOT.md`, a wykonawczy odsyłacz w
+`dyspozycje/autobot/README.md`.
+
+Artefakty tej fazy są addytywne i pozostają w katalogu runu:
+
+- [dispatch P5](../../dyspozycje/autobot/runs/R-DOCS-CONSOLIDATION-Q1/23-dispatch-p5-index-consolidation.md)
+- [raport P5](../../dyspozycje/autobot/runs/R-DOCS-CONSOLIDATION-Q1/P5-index-consolidation.md)
+- [evidence P5](../../dyspozycje/autobot/runs/R-DOCS-CONSOLIDATION-Q1/P5-evidence.json)
+- [transition receipt P5](../../dyspozycje/autobot/runs/R-DOCS-CONSOLIDATION-Q1/P5-transition-receipt.json)
+
+`OWNER_DECISION`, `UNKNOWN_NEEDS_REVIEW`, `STALE_CANDIDATE` i
+`DUPLICATE_CANDIDATE` są klasyfikacjami audytu. P6 może przygotować wyłącznie
+niedestrukcyjny plan po terminalnym P5 i niezależnym Evaluatorze/Final Control;
+nie może usuwać ani scalać źródeł bez osobnej decyzji, allowlisty i readbacku.
+
+## 8. Historia i zakres indeksu
 
 Pakiet 2 zachował snapshoty aktywnych dokumentów i reguł w
 [`docs/archiwum-procesu/`](../archiwum-procesu/). Starsze procedury, handoffy i płaskie

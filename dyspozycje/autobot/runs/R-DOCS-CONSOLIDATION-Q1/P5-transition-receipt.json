@@ -1,0 +1,76 @@
+{
+  "receipt_type": "p5_terminal_handoff",
+  "schema": "R-DOCS-P5-INDEX-CONSOLIDATION/1",
+  "status": "PASS-WITH-NOTES",
+  "domain": "INFORMATIONAL",
+  "topic": "R-DOCS-P5-INDEX-CONSOLIDATION-Q1",
+  "task_id": "t_518149f7",
+  "run_id": 328,
+  "round": "1/5",
+  "receipt_created_at_utc": "2026-09-15T09:20:36Z",
+  "native_state_at_receipt": {
+    "status": "running",
+    "completion_pending": true,
+    "terminal_event": "pending native kanban_complete readback"
+  },
+  "routing": {
+    "profile": "default",
+    "project": "the-game",
+    "project_id": "p_9ae9ac64",
+    "board": "the-game-real24",
+    "tenant": "the-game",
+    "workspace": "/home/ubuntu/projects/The-Game-docs-audit-worktrees/R-DOCS-CONSOLIDATION-Q1",
+    "branch": "hermes/R-DOCS-CONSOLIDATION-Q1"
+  },
+  "parent": {
+    "task_id": "t_b9af8ac8",
+    "run_id": 304,
+    "status": "PASS-WITH-NOTES"
+  },
+  "transition": {
+    "source_phase": "P5 Operator",
+    "source_status": "PASS-WITH-NOTES",
+    "next_phase": "Independent Evaluator P5",
+    "idempotency_key": "R-DOCS-P5-INDEX-CONSOLIDATION-Q1:r1:operator-terminal",
+    "technical_readback": "task/run/artifacts/Git/source pointers verified before handoff",
+    "context_readback": "GOAL/allowlist/P2-P4 counts/owner holds/next legal P6 gate verified"
+  },
+  "artifacts": [
+    {
+      "path": "AGENT-START-HERE.md",
+      "sha256": "622b02d6a6476d270a13e83893af0c22a114114126bdd553e1c15c53d91155ca"
+    },
+    {
+      "path": "docs/procesy/INDEX-PROCESU.md",
+      "sha256": "a65eb9e196f9fabed213e48c63002f1272af2ec688bea30ed5e378dabcf4dcc4"
+    },
+    {
+      "path": "dyspozycje/autobot/runs/R-DOCS-CONSOLIDATION-Q1/23-dispatch-p5-index-consolidation.md",
+      "sha256": "b7d2b054d41cc35668a0a7f0c0267cfd2dc75c295fcbbb99917a8cacc54bf084"
+    },
+    {
+      "path": "dyspozycje/autobot/runs/R-DOCS-CONSOLIDATION-Q1/P5-index-consolidation.md",
+      "sha256": "776765596dd610fe219189d74683136593c95e4b2177a577171d90a1a65db452"
+    },
+    {
+      "path": "dyspozycje/autobot/runs/R-DOCS-CONSOLIDATION-Q1/P5-evidence.json",
+      "sha256": "e2a1f0e5bd6c30e6339880783b1353a3760baa2afc16e60c55ba2ec0bde452b5"
+    }
+  ],
+  "self_hash": "not included because receipt hash would be self-referential",
+  "external_actions": {
+    "source_mutation": false,
+    "p2_p3_p4_input_mutation": false,
+    "p6_created": false,
+    "kanban_db_mutation": false,
+    "project_db_mutation": false,
+    "fetch_pull_push_merge_deploy": false
+  },
+  "owner_decisions": {
+    "unresolved_p3_conflicts": [1, 4, 5, 6, 7],
+    "precedence_selected": false,
+    "p4_primary_drift_origin_author_commit": "UNVERIFIED"
+  },
+  "next_gate": "Independent Evaluator P5 after terminal native readback; then Final Control P5. P6 may be created only after both terminal gates and remains non-destructive.",
+  "push_deploy": "NIE WYKONANO"
+}
