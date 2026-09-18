@@ -88,6 +88,7 @@ import {
   type BuildingCatalogEntry,
   purchasableUnits,
   frontItem,
+  rushCost,
   enqueue,
   dequeue,
   promoteToFront,
@@ -8461,7 +8462,7 @@ function renderProd(mount: HTMLElement, city: City, view: CityView | null): void
     actions.style.cssText = 'margin-top:0.35em;display:flex;gap:0.3em;flex-wrap:wrap;';
     // Wykup (rush-buy) -- only when the engine exposes treasury + a spend hook.
     if (cfg.getTreasury && cfg.onRushBuy) {
-      const koszt = Math.ceil(Math.max(0, front.koszt - prod.postep) * UI_PARAMS.panel_miasta.rush_cost_mnoznik);
+      const koszt = rushCost(prod);
       const skarb = cfg.getTreasury(city.ownerId);
       const stac = skarb >= koszt;
       const wykup = el('button', 'btn btn-g');
