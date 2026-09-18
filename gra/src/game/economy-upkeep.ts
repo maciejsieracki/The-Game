@@ -48,6 +48,7 @@ import {
   canAffordBuildingStock,
   missingStockFor,
   unitStockCost,
+  buildingEraCostMultiplier,
   type UnitStockCostSource,
 } from './building-stock-cost';
 import { buildingEffectAtLevel } from './production';
@@ -624,6 +625,7 @@ export interface BuildingInstanceLike {
  *   building.utrzymanie is a finite number (INCLUDING 0, e.g. Stela/Pomnik --
  *   decyzja 45=B, "pomnik nie wymaga obslugi")
  *     -> floor(utrzymanie + przyrostUtrzymania * (level-1))  [per-building, liniowy]
+ *        × existing FALA2 × buildingEraCostMultiplier(epokaWejscia)
  *   building.utrzymanie missing / not finite (no entry in buildings.json)
  *     -> flatOverride if given, else 0  [DEFAULT ONLY, never an override of real data]
  *
@@ -646,8 +648,10 @@ export function buildingUpkeep(
     const wzrost = Number.isFinite(building.przyrostUtrzymania) ? building.przyrostUtrzymania : 0;
     raw = Math.floor(buildingEffectAtLevel(base, wzrost, lvl));
   }
-  // R-NADMIAR-POOLS FALA2: utrzymanie budynków ×2 vs JSON (włącznie flatOverride).
-  return Math.floor(raw * R_STAWKI_FALA2_MULT);
+  // Zachowujemy dotychczasowe FALA2 zaokrąglenie, następnie stosujemy wspólny
+  // mnożnik ery dokładnie raz (włącznie dla flatOverride).
+  const fala2Upkeep = Math.floor(raw * R_STAWKI_FALA2_MULT);
+  return Math.floor(fala2Upkeep * buildingEraCostMultiplier(building.epokaWejscia));
 }
 
 /** Total gold building upkeep for a set of building instances (Spec s.6.1). */

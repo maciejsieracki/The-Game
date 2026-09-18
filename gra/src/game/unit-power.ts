@@ -108,6 +108,36 @@ export function fieldPower(
   };
 }
 
+/**
+ * Sort a presentation roster by descending field power without mutating it.
+ *
+ * The explicit source index preserves stable order for equal powers, including
+ * zero-power entries. Missing definitions are placed after defined units.
+ * This is presentation ordering: siege units still use their field power here
+ * rather than `armyFieldPower`, where they intentionally contribute zero to the
+ * empire army total.
+ */
+export function sortByUnitPowerDescending<T>(
+  items: readonly T[],
+  getUnit: (item: T) => UnitPowerInput | null | undefined,
+  coeff: UnitPowerCoeffs = loadUnitPowerCoeffs(),
+): T[] {
+  return items
+    .map((item, index) => {
+      const unit = getUnit(item);
+      return {
+        item,
+        index,
+        power: unit ? fieldPower(unit, coeff).total : Number.NEGATIVE_INFINITY,
+      };
+    })
+    .sort((a, b) => {
+      if (a.power === b.power) return a.index - b.index;
+      return b.power - a.power;
+    })
+    .map(entry => entry.item);
+}
+
 /** Moc przy oblężeniu umocnień — nie używać na polu (armia vs armia). */
 export function siegePower(
   u: UnitPowerInput,

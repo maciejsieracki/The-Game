@@ -14,7 +14,8 @@
  * unit-testable (see tools/logic-test.cjs).
  *
  * Design (PROJEKT-GRY-master.md sec.8, sec.8e):
- *   - Building cost          : kosztBudowy + przyrostKosztu * (level-1)  (liniowy, decyzja Naster 2026-07-25)
+ *   - Building cost          : round(kosztBudowy + przyrostKosztu * (level-1))
+ *                               × era multiplier (Stone ×1, Bronze ×2, Iron+ ×4)
  *   - Building availability   : kategoria belongs to current epoch (epokaWejscia
  *                               <= city epoch), its techUnlock is researched (or
  *                               empty). Max 1 szt. na typ w miescie — znika gdy
@@ -68,7 +69,11 @@ import {
   WATER_ACCESS_BUILDING_IDS,
   buildingResourceGateMet,
 } from './building-resource-gate';
-import { buildingStockCost, canAffordBuildingStock } from './building-stock-cost';
+import {
+  buildingStockCost,
+  canAffordBuildingStock,
+  buildingEraCostMultiplier,
+} from './building-stock-cost';
 import {
   isBuildingSuppressedFromProduction,
   upgradeProductionDisplayName,
@@ -301,7 +306,8 @@ function findUnit(data: ProductionData, id: string): UnitDef | undefined {
 /**
  * Total Praca cost of one item.
  *
- *   building : kosztBudowy + przyrostKosztu * (level - 1)  (liniowy, decyzja Naster 2026-07-25)
+ *   building : round(kosztBudowy + przyrostKosztu * (level - 1))
+ *              × buildingEraCostMultiplier(epokaWejscia)
  *              `cityLevelOrEpoch` is interpreted as the level the building would
  *              be built at (1-based).  Level <= 1 yields the flat kosztBudowy.
  *   unit     : its "Pieniadz (koszt)" (or a per-role default).  `cityLevelOrEpoch`
@@ -321,7 +327,8 @@ export function itemCost(
     if (!b) return 0;
     const level = Number.isFinite(cityLevelOrEpoch) ? Math.max(1, Math.floor(cityLevelOrEpoch)) : 1;
     const przyrostKosztu = Number.isFinite(b.przyrostKosztu) ? b.przyrostKosztu : 0;
-    return Math.round(b.kosztBudowy + przyrostKosztu * (level - 1));
+    const baseCost = Math.round(b.kosztBudowy + przyrostKosztu * (level - 1));
+    return Math.round(baseCost * buildingEraCostMultiplier(b.epokaWejscia));
   }
   const u = findUnit(data, id);
   if (!u) return 0;

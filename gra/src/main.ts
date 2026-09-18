@@ -923,7 +923,13 @@ import { computeObjectivePower, battlePowerPointsFromDefeatedEnemy, type Objecti
 import { filterOwnersForPowerRanking, computeAbsolutePowerRank } from './game/power-ranking';
 import { buildAiMocDiagRows } from './game/ai-moc-diag';
 import { loadPowerOpcje } from './game/power-options';
-import { armyFieldPower, isSiegeUnit, siegePower } from './game/unit-power';
+import {
+  armyFieldPower,
+  isSiegeUnit,
+  siegePower,
+  sortByUnitPowerDescending,
+  type UnitPowerInput,
+} from './game/unit-power';
 import { loadOrderParams, orderEffectsToYieldMults, pickRevoltMigrationTarget, type OrderYieldMults } from './game/order';
 import { loadCultureParams, accumulateCulture, cultureHappiness, cityBorderRadius, cultureThresholds,
          loadReligionParams, civReligion, civReligionForKey, religionHappiness, dominantReligion,
@@ -6481,10 +6487,14 @@ async function boot(): Promise<void> {
         return;
       }
       const oldCost = replaceUnitMoneyCost(u.typeId);
+      const orderedReplacements = sortByUnitPowerDescending(
+        replacements,
+        item => lookupUnitDef(item.id),
+      );
       showUnitReplacePicker({
         unitName: u.typeId,
         skarb: player.skarbiec,
-        options: replacements.map(it => {
+        options: orderedReplacements.map(it => {
           const udef = lookupUnitDef(it.id);
           return {
             id: it.id,
@@ -16112,11 +16122,14 @@ async function boot(): Promise<void> {
         const ord = cityOrderState.get(c.id);
         const poziomRacji = getCityRationLevel(c);
         const waterAccess = cityHasCoastOrRiverAccess(c);
-        const availableRecruitment = purchasableUnits(
-          c,
-          data,
-          unlockedTechsForOwner(c.ownerId),
-          productionAvailabilityCtxForCity(c),
+        const availableRecruitment = sortByUnitPowerDescending(
+          purchasableUnits(
+            c,
+            data,
+            unlockedTechsForOwner(c.ownerId),
+            productionAvailabilityCtxForCity(c),
+          ),
+          item => data.units.find(u => u.Jednostka === item.id) as unknown as UnitPowerInput,
         );
         const recruitmentOptions = availableRecruitment.flatMap(item => {
           const unitDef = data.units.find(u => u.Jednostka === item.id);

@@ -78,7 +78,8 @@ import { resolveCityPodzialHandlu } from '../game/empire-handel-split';
 import { civWideSixStatsFromEmpireSnap, buildChipDeltaStockHtml } from '../game/empire-hud-totals';
 import type { GameMap } from '../types/map';
 import { TerenBazowy, Nakladka } from '../types/hex';
-import { loadGameData, getTechDef, type GameData, type BuildingDef, type UnitDef } from '../data/loader';
+import { loadGameData, getTechDef, getUnitDef, type GameData, type BuildingDef, type UnitDef } from '../data/loader';
+import { sortByUnitPowerDescending, type UnitPowerInput } from '../game/unit-power';
 import { parsePrerequisites } from '../game/research';
 import {
   buildableProduction,
@@ -8863,7 +8864,10 @@ function renderPurchasableUnits(
           return c;
         }
         const techs = cfg.getUnlockedTechs?.(city.ownerId) ?? [];
-        const units = purchasableUnits(city, data, techs, productionCtxForCity(city));
+        const units = sortByUnitPowerDescending(
+          purchasableUnits(city, data, techs, productionCtxForCity(city)),
+          unit => getUnitDef(data, unit.id) as unknown as UnitPowerInput,
+        );
         return buildRecruitTabDetailCard(city, units.length, cfg.getTreasury?.(city.ownerId));
       },
     );
@@ -8879,7 +8883,10 @@ function renderPurchasableUnits(
   // w koszcie/utrzymaniu jednostek dostępnych do rekrutacji w tym mieście/epoce
   // (dynamicznie, patrz appendRecruitMilitaryResourceStrip).
   const techs = cfg.getUnlockedTechs?.(city.ownerId) ?? [];
-  const units = purchasableUnits(city, data, techs, productionCtxForCity(city));
+  const units = sortByUnitPowerDescending(
+    purchasableUnits(city, data, techs, productionCtxForCity(city)),
+    unit => getUnitDef(data, unit.id) as unknown as UnitPowerInput,
+  );
   appendRecruitMilitaryResourceStrip(mount, city, data, units);
   const skarb = cfg.getTreasury?.(city.ownerId);
   const rqLen = getProd(city.id).rekrutacja?.length ?? 0;

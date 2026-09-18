@@ -20,12 +20,35 @@ import { scaleStockCostRecord } from './r-stawki-strojenie';
 /** Kształt pola `koszt_surowce` w buildings.json — klucze ASCII zgodne z City.surowce. */
 export type BuildingStockCost = Partial<Record<string, number>>;
 
+/**
+ * Owner-approved building cost multiplier by entry era: Stone x1, Bronze x2,
+ * Iron and every later era x4.  Keeping this helper here gives Work, stock
+ * costs, and gold upkeep one auditable source without widening the allowlist.
+ */
+export function buildingEraCostMultiplier(epokaWejscia?: number | null): number {
+  const era = typeof epokaWejscia === 'number' && Number.isFinite(epokaWejscia)
+    ? Math.floor(epokaWejscia)
+    : 1;
+  if (era >= 3) return 4;
+  if (era >= 2) return 2;
+  return 1;
+}
+
 /** Znormalizowany koszt: tylko klucze z liczbą skończoną > 0 (odporne na dane śmieciowe). */
 export function buildingStockCost(
-  building: { koszt_surowce?: BuildingStockCost | null } | null | undefined,
+  building: { epokaWejscia?: number | null; koszt_surowce?: BuildingStockCost | null } | null | undefined,
 ): Record<string, number> {
-  // R-NADMIAR-POOLS FALA2: koszt_surowce ×2 — UI/AI afford/deduct widzą skalowany koszt
-  return scaleStockCostRecord(building?.koszt_surowce);
+  // Najpierw zachowujemy istniejące FALA2 ×2 i jego zaokrąglenie, a dopiero
+  // potem stosujemy dokładnie jeden mnożnik ery do już przeskalowanego kosztu.
+  const fala2Cost = scaleStockCostRecord(building?.koszt_surowce);
+  const eraMultiplier = buildingEraCostMultiplier(building?.epokaWejscia);
+  if (eraMultiplier === 1) return fala2Cost;
+
+  const out: Record<string, number> = {};
+  for (const [key, amount] of Object.entries(fala2Cost)) {
+    out[key] = Math.max(1, Math.round(amount * eraMultiplier));
+  }
+  return out;
 }
 
 /** Ile brakuje w puli państwa dla każdego surowca kosztu (0 lub brak wpisu = wystarcza). */
