@@ -443,20 +443,31 @@ import {
 } from './game/mapSiegeDetect';
 import { resolveEnemyCityClick, type MapEnemyCityClickAction } from './map/map-attack-city';
 import { launchFieldBattleFromMap } from './battle/mapFieldBattle';
-import { collectAtkRosterNearCity, collectBattleRoster as collectBattleRosterPure, collectDefRosterNearCity } from './units/battleRoster';
+import {
+  buildBattleEventLog,
+  collectAtkRosterNearCity,
+  collectBattleRoster as collectBattleRosterPure,
+  collectDefRosterNearCity,
+  type BattleEventLog,
+} from './units/battleRoster';
 import {
   collectBarbarianCooperationUnits,
   mergeBattleRosterWithBarbarianCooperation,
   BARBARIAN_COOPERATION_TURNS,
 } from './game/diplomacy-barbarian-cooperation';
-import { canCaptureCityWithoutBattle, hasCityDefenders, survivorsLiveSet } from './game/siegeDefenders';
+import {
+  canCaptureCityWithoutBattle,
+  collectCityDefRoster,
+  hasCityDefenders,
+  survivorsLiveSet,
+} from './game/siegeDefenders';
 import { getCityFood } from './game/turn-economy';
 import { SiegeMarkerRenderer } from './render/siegeMarker';
 import {
   showSiegeMapPanel, hideSiegeMapPanel, updateSiegeMapPanelTurn, isSiegeMapPanelOpen,
   getActiveSiegeCityId, setSiegePanelBesiegerCount,
 } from './ui/siegeMapPanel';
-import { makeMilitia, FORTIFY_OBRONA_PROC_FIELD, type SiegeCity, type SiegeUnit } from './game/siege';
+import { FORTIFY_OBRONA_PROC_FIELD, type SiegeCity, type SiegeUnit } from './game/siege';
 import {
   decideAISiegeStance,
   EMPTY_SIEGE_AI_STATE,
@@ -7897,6 +7908,8 @@ async function boot(): Promise<void> {
     const clusterCapitalOwnerIds = new Set<number>();
     /** P-AI-MOC-BONUS=A: jednorazowy grant startowych bonusów per owner major AI. */
     const difficultyBonusGrantedOwners = new Set<number>();
+    /** R-STARTOWE-ZWIADOWCA-PO-JEDNYM: typ jednostki gwarantowanej każdej pełnej cywilizacji. */
+    const STARTING_SCOUT_UNIT_TYPE = 'Zwiadowca';
     /** Rozmieszczenie klastrów — kontekst AI (faza 1 konsolidacji). */
     let clusterPlacement: ClusterPlacement | null = null;
     let clusterStartSeed = 42;
@@ -9243,10 +9256,26 @@ async function boot(): Promise<void> {
 
     /** Startowa armia gracza; hot-seat wywołuje tę samą ścieżkę dla aktywnego fotela. */
     function grantPlayerStartUnits(ownerId: number, q: number, r: number): void {
+      grantStartingScout(ownerId, q, r);
       const count = playerStartUnitCount(_menuDifficulty);
       for (let i = 0; i < count; i++) {
         spawnDifficultyBonusUnit(ownerId, AI_DIFFICULTY_BONUS_UNIT_TYPE, q, r);
       }
+    }
+
+    /**
+     * R-STARTOWE-ZWIADOWCA-PO-JEDNYM: wspólny, idempotentny grant zwiadowcy.
+     * Wywołują go tylko dwa istniejące punkty startowego foundowania: stolica
+     * fotela ludzkiego i stolica klastra major AI. Państwa-miasta, kopie
+     * obcych klastrów i barbarzyńcy nie przechodzą guardu major AI.
+     */
+    function grantStartingScout(ownerId: number, q: number, r: number): void {
+      const isHumanOwner = isHuman(ownerId);
+      const isMajorAiOwner = clusterCapitalOwnerIds.has(ownerId)
+        && qualifiesForMajorAiDifficultyBonus(ownerId, isCityStateOwner(ownerId));
+      if (!isHumanOwner && !isMajorAiOwner) return;
+      if (units.some(unit => unit.ownerId === ownerId && unit.typeId === STARTING_SCOUT_UNIT_TYPE)) return;
+      spawnDifficultyBonusUnit(ownerId, STARTING_SCOUT_UNIT_TYPE, q, r);
     }
 
     function grantDifficultyStartBonusesForMajorCapital(
@@ -9256,6 +9285,7 @@ async function boot(): Promise<void> {
       if (difficultyBonusGrantedOwners.has(ownerId)) return;
       if (!clusterCapitalOwnerIds.has(ownerId)) return;
       difficultyBonusGrantedOwners.add(ownerId);
+      grantStartingScout(ownerId, capitalCity.q, capitalCity.r);
 
       const params = loadDifficultyParams(data, aiDiffLevelForOwner(ownerId));
       const plan = planMajorAiDifficultyStartBonuses(
@@ -14957,10 +14987,6 @@ async function boot(): Promise<void> {
         u => u.ownerId === city.ownerId && hexDistance(u.q, u.r, city.q, city.r) <= 1,
       );
       const garrison: SiegeUnit[] = garrisonUnits.map(runtimeUnitToSiegeUnit);
-      if (garrison.length === 0) {
-        const mil = makeMilitia(city.population ?? 0);
-        if (mil) garrison.push(mil);
-      }
       return {
         id: city.id,
         ownerId: city.ownerId,
@@ -14970,6 +14996,7 @@ async function boot(): Promise<void> {
         garrison,
         terrain,
         population: city.population,
+        completedBuildingIds: completedBuildingIdsForCity(city.id),
       };
     }
 
@@ -26306,6 +26333,7 @@ async function boot(): Promise<void> {
             selectedUnit: playerSel,
             units,
             playerOwnerId: ME(),
+            getCompletedBuildingIds: completedBuildingIdsForCity,
             isCityVisible: city =>
               !fogOn || currentVisible().has(keyOf(city.q, city.r)),
           });
@@ -26362,6 +26390,7 @@ async function boot(): Promise<void> {
           selectedUnit: sel ?? null,
           units,
           playerOwnerId: ME(),
+          getCompletedBuildingIds: completedBuildingIdsForCity,
           isCityVisible: city =>
             !fogOn || currentVisible().has(keyOf(city.q, city.r)),
         });
@@ -27605,6 +27634,7 @@ async function boot(): Promise<void> {
       applyMapBattleOutcome(atkRoster, defRoster, winner, undefined, {
         lossAtkPct: powerRes.lossAtkPct,
         lossDefPct: powerRes.lossDefPct,
+        battleEventLog: buildBattleEventLog(atkRoster, defRoster),
         battleQ,
         battleR,
         atkStart: start,
@@ -27819,6 +27849,7 @@ async function boot(): Promise<void> {
             {
               lossAtkPct: powerRes.lossAtkPct,
               lossDefPct: powerRes.lossDefPct,
+              battleEventLog: buildBattleEventLog(atkRosterRef, defRosterRef),
               battleQ: battleHex.q,
               battleR: battleHex.r,
               atkStart: atkStartSnap,
@@ -27885,6 +27916,7 @@ async function boot(): Promise<void> {
                 battleQ: battleHex.q,
                 battleR: battleHex.r,
                 atkStart: atkStartSnap,
+                battleEventLog: res.eventLog,
                 allowCityCapture,
               },
               mapBattleSummaryMeta('manual'),
@@ -27972,6 +28004,8 @@ async function boot(): Promise<void> {
       opts?: {
         lossAtkPct?: number;
         lossDefPct?: number;
+        /** Event-log identity for the radius-1 rosters resolved this round. */
+        battleEventLog?: BattleEventLog;
         battleQ?: number;
         battleR?: number;
         atkStart?: Map<string | number, { q: number; r: number }>;
@@ -28020,6 +28054,7 @@ async function boot(): Promise<void> {
         winner: mapWinner,
         lossAtkPct: opts?.lossAtkPct,
         lossDefPct: opts?.lossDefPct,
+        battleEventLog: opts?.battleEventLog ?? buildBattleEventLog(atkRoster, defRoster),
         manualSurvivors: survivors !== undefined
           ? survivors.map(s => ({ id: String(s.id), hp: s.hp }))
           : undefined,
@@ -28189,52 +28224,25 @@ async function boot(): Promise<void> {
       return collectAtkRosterNearCity(city, anchor, units);
     }
 
-    function militiaDefRecord(m: ReturnType<typeof makeMilitia>): Record<string, unknown> {
-      return {
-        'Jednostka': 'Milicja',
-        meleeAttack: m!.Atak,
-        meleeDefence: m!.Obrona,
-        chargeBonus: m!.Uderzenie,
-        armor: m!.Pancerz,
-        piercing: m!.Przebicie,
-        health: m!.Health,
-        weaponDamage: Math.max(1, m!.weaponDamage ?? m!.Atak),
-        missileAttack: 0,
-        'Rola (linia)': m!.rola,
-        'Prog dezercji (% health)': null,
-        'Zasieg ataku (hex)': null,
-        'Ilosc pociskow': null,
-        'Ruch w bitwie (heksy)': 0,
-        'Kara obrony z flanki (%)': 50,
-        'Kara obrony z tylu (%)': 80,
-      };
+    function completedBuildingIdsForCity(cityId: string): readonly string[] {
+      return cityBuilt.get(cityId) ?? [];
     }
 
-    /** C3-ST-1: kanon w siegeDefenders.ts — obrońcy = jednostki dist≤1 lub garnizon>0. */
+    function cityDefenderOptions(city: City) {
+      return { completedBuildingIds: completedBuildingIdsForCity(city.id) };
+    }
+
+    /** C3-ST-1: kanon w siegeDefenders.ts — realne jednostki, licznik garnizonu lub militia. */
     function cityHasDefenders(city: City): boolean {
-      return hasCityDefenders(city, units);
+      return hasCityDefenders(city, units, cityDefenderOptions(city));
     }
 
     function collectSiegeDefRoster(city: City): RuntimeUnit[] {
-      const roster = collectDefRosterNearCity(city, units).filter(u => u.ownerId === city.ownerId);
-      if (roster.length > 0) return roster;
-      if ((city.garnizon ?? 0) <= 0) return [];
-
-      const pop = city.population ?? 0;
-      const militia = makeMilitia(Math.max(pop, 5));
-      if (!militia) return [];
-      const id = 'militia-' + city.id;
-      militiaDefOverrides.set(id, militiaDefRecord(militia));
-      return [{
-        id,
-        ownerId: city.ownerId,
-        typeId: 'Milicja',
-        category: 'domyslny',
-        q: city.q,
-        r: city.r,
-        ruch: 0,
-        ruchLeft: 0,
-      }];
+      const { roster, militiaDefs } = collectCityDefRoster(city, units, cityDefenderOptions(city));
+      for (const [id, def] of militiaDefs) {
+        militiaDefOverrides.set(id, def);
+      }
+      return roster;
     }
 
     // -----------------------------------------------------------------------
@@ -29513,7 +29521,7 @@ async function boot(): Promise<void> {
         return false;
       }
 
-      if (!canCaptureCityWithoutBattle(city, units)) return false;
+      if (!canCaptureCityWithoutBattle(city, units, cityDefenderOptions(city))) return false;
 
       const atkRoster = collectAtkRosterNearCity(city, anchor, units);
       captureCityWithoutBattle(city, anchor, atkRoster);
@@ -29558,6 +29566,7 @@ async function boot(): Promise<void> {
         return h ? String(h.terenBazowy) : 'Rownina';
       },
       getStructBonus: structureDefenseBonusFor,
+      getCompletedBuildingIds: completedBuildingIdsForCity,
       unitDefFor,
       unitHealth,
       unitAtak,
@@ -29613,7 +29622,12 @@ async function boot(): Promise<void> {
       // survivors opcjonalne: auto-szturm (executeSilentSiegeStorm/doSiegeAutoResolve) nie ma
       // realnej listy ocalałych — undefined pozwala applyMapBattleOutcome przejść na gałąź
       // applyAutoLosses (lossAtkPct/lossDefPct), zamiast pustego [] kasującego obie armie (#2).
-      res: { winner: BattleResult['winner']; survivors?: BattleUnit[]; log: string[] },
+      res: {
+        winner: BattleResult['winner'];
+        survivors?: BattleUnit[];
+        log: string[];
+        eventLog?: BattleEventLog;
+      },
       opts?: {
         atkStart?: Map<string | number, { q: number; r: number }>;
         lossAtkPct?: number;
@@ -29686,6 +29700,7 @@ async function boot(): Promise<void> {
         atkStart,
         lossAtkPct: opts?.lossAtkPct,
         lossDefPct: opts?.lossDefPct,
+        battleEventLog: res.eventLog ?? buildBattleEventLog(atkRoster, defRoster),
         siegeContext: true as const,
         onCityCaptured: (info: CityCaptureCallbackInfo) => {
           siegeCaptureInfo = info;
@@ -34457,7 +34472,7 @@ async function boot(): Promise<void> {
                       ? cityBuilt.get(destinationCity.id) ?? []
                       : [],
                     hasCityDefenders: destinationCity !== undefined
-                      && hasCityDefenders(destinationCity, units),
+                      && hasCityDefenders(destinationCity, units, cityDefenderOptions(destinationCity)),
                     // Parytet z graczem: cywil nie przejmuje miasta (kotwica
                     // `!isCivilianUnit` w tryAutoCaptureEmptyCityAt), więc nie
                     // może też wejść na heks obcego miasta.

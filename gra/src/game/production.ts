@@ -21,8 +21,9 @@
  *                               empty). Max 1 szt. na typ w miescie — znika gdy
  *                               zbudowany LUB w kolejce produkcji.
  *   - Unit cost              : the unit's "Pieniadz (koszt)" field (skarb/pieniadz
- *                               in ALL epochs, incl. Kamien), falling back to a
- *                               per-role default when the field is missing.
+ *                               in ALL epochs, incl. Kamien), scaled by its Epoka
+ *                               before the existing recruitment layers, falling
+ *                               back to a per-role default when the field is missing.
  *   - Epoch numbering        : Kamien = 1, Braz = 2, Zelazo = 3 (buildings use a
  *                               numeric epokaWejscia; units use a string Epoka --
  *                               we normalise both through EPOCH_BY_NAME).
@@ -73,6 +74,7 @@ import {
   buildingStockCost,
   canAffordBuildingStock,
   buildingEraCostMultiplier,
+  scaleCostByEpoch,
 } from './building-stock-cost';
 import {
   isBuildingSuppressedFromProduction,
@@ -310,8 +312,9 @@ function findUnit(data: ProductionData, id: string): UnitDef | undefined {
  *              × buildingEraCostMultiplier(epokaWejscia)
  *              `cityLevelOrEpoch` is interpreted as the level the building would
  *              be built at (1-based).  Level <= 1 yields the flat kosztBudowy.
- *   unit     : its "Pieniadz (koszt)" (or a per-role default).  `cityLevelOrEpoch`
- *              is ignored for units -- their cost does not scale with city level.
+ *   unit     : its "Pieniadz (koszt)" (or a per-role default), scaled by Epoka.
+ *              `cityLevelOrEpoch` is ignored for units -- their cost does not
+ *              scale with city level.
  *
  * Returns 0 when the id is unknown (a defensive default the caller can treat as
  * "not buildable" rather than crashing the turn).
@@ -332,7 +335,7 @@ export function itemCost(
   }
   const u = findUnit(data, id);
   if (!u) return 0;
-  return unitCostFromDef(u);
+  return scaleCostByEpoch(unitCostFromDef(u), u.Epoka);
 }
 
 // ---------------------------------------------------------------------------
@@ -536,6 +539,7 @@ export function unitMoneyCost(
   ownerId = 0,
   difficulty: GameDifficulty = 'normal',
 ): number {
+  if (!Number.isFinite(baseCost) || baseCost <= 0) return 0;
   let koszt = baseCost;
   const recDisc = civRecruitmentDiscount(civBonusy);
   if (recDisc > 0) {
@@ -2127,7 +2131,13 @@ export function unitPurchaseCost(
   ownerId = 0,
   difficulty: GameDifficulty = 'normal',
 ): number {
-  return unitMoneyCost(unitCostFromDef(def), civBonusy, kosztJednostekPace, ownerId, difficulty);
+  return unitMoneyCost(
+    scaleCostByEpoch(unitCostFromDef(def), def.Epoka),
+    civBonusy,
+    kosztJednostekPace,
+    ownerId,
+    difficulty,
+  );
 }
 
 /** Co miasto moze WYBUDOWAC w kolejce za Prace: TYLKO budynki.

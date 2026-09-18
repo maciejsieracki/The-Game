@@ -137,6 +137,8 @@ export interface MapFieldBattleLaunchDeps {
   /** P-AI-MOC-BONUS=A: mnożnik walki major AI z bonusWalka (manual battlefield). */
   difficultyBattleOpts?: (atkOwnerId: number, defOwnerId: number) => Pick<BattleOpts, 'attackerDifficultyCombatMult' | 'defenderDifficultyCombatMult'>;
   registerMilitiaDef?: (id: string, def: Record<string, unknown>) => void;
+  /** Completed building ids for a city; queued production is not included. */
+  getCompletedBuildingIds?: (cityId: string) => readonly string[];
   /** MIGRACJA IDB: Promise -- doQuickSave (main.ts) zapisuje teraz do IndexedDB. */
   onQuickSave?: () => Promise<boolean>;
 }
@@ -311,12 +313,16 @@ export function planOpenCityFieldBattle(
     | 'eraForOwnerId'
     | 'civIdForOwner'
     | 'isCityStateForOwner'
+    | 'getCompletedBuildingIds'
   >,
 ): OpenCityFieldBattlePlan | null {
   if (city.maMur) return null;
-  if (!hasCityDefenders(city, units)) return null;
+  const defenderOptions = {
+    completedBuildingIds: deps.getCompletedBuildingIds?.(city.id),
+  };
+  if (!hasCityDefenders(city, units, defenderOptions)) return null;
 
-  const { roster: defRoster, militiaDefs } = collectCityDefRoster(city, units);
+  const { roster: defRoster, militiaDefs } = collectCityDefRoster(city, units, defenderOptions);
   if (defRoster.length === 0) return null;
 
   if (deps.registerMilitiaDef) {

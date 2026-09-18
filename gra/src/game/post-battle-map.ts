@@ -11,6 +11,7 @@ import { isBarbarian } from './barbarians';
 import { onCityCapturedCulture } from './conquest-stability';
 import { applyPostCaptureLawOnCapture } from './post-capture-law';
 import type { RuntimeUnit } from '../units/setup';
+import type { BattleEventLog } from '../units/battleRoster';
 import { hexNeighborCoords, isCivilianUnit } from '../units/setup';
 import { syncStackRuchLeft } from './armyMerge';
 import { applyLossPctToRoster, isFieldBattleUnit } from './auto-battle-power';
@@ -42,6 +43,8 @@ export interface PostBattleMapInput {
   winner: MapBattleWinner;
   lossAtkPct?: number;
   lossDefPct?: number;
+  /** Unit identity emitted by the battle/event log for this resolution. */
+  battleEventLog?: BattleEventLog;
   manualSurvivors?: ManualSurvivor[];
   getDef: (u: RuntimeUnit) => UnitPowerInput & Record<string, unknown>;
   maxHpOf: (def: UnitPowerInput) => number;
@@ -64,13 +67,35 @@ function liveUnit(units: RuntimeUnit[], id: string | number): RuntimeUnit | unde
   return units.find(u => u.id === id);
 }
 
+function loggedIdsForSide(
+  input: PostBattleMapInput,
+  side: 'attacker' | 'defender',
+): Set<string> | null {
+  // Keep the legacy direct-helper contract for callers that predate the event
+  // seam. All production battle paths pass a log; once present, an omitted ID
+  // is deliberately not inferred from roster order or position.
+  if (!input.battleEventLog) return null;
+  const ids = side === 'attacker'
+    ? input.battleEventLog.attackerUnitIds
+    : input.battleEventLog.defenderUnitIds;
+  return new Set((ids ?? []).map(String));
+}
+
+function loggedIdsForBattle(input: PostBattleMapInput): Set<string> | null {
+  if (!input.battleEventLog) return null;
+  return new Set([
+    ...(input.battleEventLog.attackerUnitIds ?? []),
+    ...(input.battleEventLog.defenderUnitIds ?? []),
+  ].map(String));
+}
+
 function applyAutoLosses(input: PostBattleMapInput): Set<string> {
   const dead = new Set<string>();
   // A battle roster may contain units that participate in the encounter but
   // are outside field AUTO combat (siege/civilian or zero-power rows). They
   // must not receive the field loss percentage; use the same target predicate
   // as M-power calculation before entering the HP-loss helper.
-  const toRows = (roster: RuntimeUnit[]) => {
+  const toRows = (roster: RuntimeUnit[], loggedIds: Set<string> | null) => {
     const rows: Array<{
       id: string;
       typeId: string;
@@ -78,6 +103,7 @@ function applyAutoLosses(input: PostBattleMapInput): Set<string> {
       hp?: number;
     }> = [];
     for (const u of roster) {
+      if (loggedIds && !loggedIds.has(String(u.id))) continue;
       const def = input.getDef(u);
       if (!isFieldBattleUnit(u.typeId, def)) continue;
       rows.push({ id: String(u.id), typeId: u.typeId, def, hp: u.hp });
@@ -86,7 +112,11 @@ function applyAutoLosses(input: PostBattleMapInput): Set<string> {
   };
 
   if (input.lossAtkPct != null && input.lossAtkPct > 0) {
-    for (const row of applyLossPctToRoster(toRows(input.atkRoster), input.lossAtkPct, input.maxHpOf)) {
+    for (const row of applyLossPctToRoster(
+      toRows(input.atkRoster, loggedIdsForSide(input, 'attacker')),
+      input.lossAtkPct,
+      input.maxHpOf,
+    )) {
       const u = liveUnit(input.units, row.id);
       if (!u) continue;
       if (row.dead) dead.add(row.id);
@@ -95,7 +125,11 @@ function applyAutoLosses(input: PostBattleMapInput): Set<string> {
   }
 
   if (input.lossDefPct != null && input.lossDefPct > 0) {
-    for (const row of applyLossPctToRoster(toRows(input.defRoster), input.lossDefPct, input.maxHpOf)) {
+    for (const row of applyLossPctToRoster(
+      toRows(input.defRoster, loggedIdsForSide(input, 'defender')),
+      input.lossDefPct,
+      input.maxHpOf,
+    )) {
       const u = liveUnit(input.units, row.id);
       if (!u) continue;
       if (row.dead) dead.add(row.id);
@@ -109,10 +143,14 @@ function applyAutoLosses(input: PostBattleMapInput): Set<string> {
 
 function applyManualSurvivors(input: PostBattleMapInput): void {
   const live = new Set((input.manualSurvivors ?? []).map(s => String(s.id)));
+  const loggedIds = loggedIdsForBattle(input);
   const hpMap = new Map(
     (input.manualSurvivors ?? []).map(s => [String(s.id), s.hp] as const),
   );
   for (const u of [...input.atkRoster, ...input.defRoster]) {
+    // A partial event log is a partial result, not proof that an unlogged unit
+    // died. Complete manual BattleScene results log every radius-1 roster unit.
+    if (loggedIds && !loggedIds.has(String(u.id))) continue;
     if (!live.has(String(u.id))) {
       removeUnitById(input.units, u.id);
       continue;

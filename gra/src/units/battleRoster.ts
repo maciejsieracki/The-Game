@@ -10,6 +10,34 @@ import { hexDistance, isCivilianUnit } from './setup';
 
 export type BattleRosterSide = 'attacker' | 'defender';
 
+/**
+ * Identity carried by the battle/event log for one resolved round.
+ *
+ * The arrays are intentionally side-specific and may be partial: post-battle
+ * loss application treats a unit absent from an explicitly supplied log as
+ * not logged, never as an implicit roster member. A complete log is produced
+ * from the radius-1 rosters by `buildBattleEventLog`.
+ */
+export interface BattleEventLog {
+  attackerUnitIds?: readonly string[];
+  defenderUnitIds?: readonly string[];
+}
+
+function uniqueUnitIds(units: ReadonlyArray<{ id: string | number }>): string[] {
+  return [...new Set(units.map(u => String(u.id)))];
+}
+
+/** Build the complete event identity for the already-selected battle rosters. */
+export function buildBattleEventLog(
+  attacker: ReadonlyArray<{ id: string | number }>,
+  defender: ReadonlyArray<{ id: string | number }>,
+): BattleEventLog {
+  return {
+    attackerUnitIds: uniqueUnitIds(attacker),
+    defenderUnitIds: uniqueUnitIds(defender),
+  };
+}
+
 export interface BattleRosterIncludeCtx {
   side: BattleRosterSide;
   anchor: RuntimeUnit;

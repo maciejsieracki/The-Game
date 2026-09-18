@@ -1967,6 +1967,69 @@ export function packCityStatesHubChain(
 }
 
 /**
+ * Uzupełnia hub-chain najbliższym legalnym lądem, gdy docelowy pierścień jest
+ * niedostępny (np. przy brzegu masy lądu). Półpłaszczyzna jest tu preferencją,
+ * nie twardą bramką: po wyczerpaniu legalnego lądu po stronie klastra wolno
+ * użyć najbliższego miejsca po drugiej stronie, ale nigdy bliżej niż `minSep`.
+ */
+function packNearestLegalLand(
+  landHexes: Array<{ q: number; r: number }>,
+  core: { q: number; r: number },
+  count: number,
+  minSep: number,
+  initial: Array<{ q: number; r: number }>,
+  opts: {
+    excludeHex: { q: number; r: number };
+    anchor?: { q: number; r: number; minDist: number };
+    halfPlaneAxis?: SameTypeRivalHalfPlaneAxis;
+    foreignBuffers?: ReadonlyArray<ForeignClusterBuffer>;
+  },
+): Array<{ q: number; r: number }> {
+  const placed = initial.slice(0, count);
+  const exclude = opts.excludeHex;
+  const foreignBuffers = opts.foreignBuffers ?? [];
+
+  while (placed.length < count) {
+    const candidates = landHexes
+      .filter((h) => {
+        if (h.q === exclude.q && h.r === exclude.r) return false;
+        if (opts.anchor && hexDistanceAxial(h.q, h.r, opts.anchor.q, opts.anchor.r) < opts.anchor.minDist) {
+          return false;
+        }
+        if (!passesForeignClusterBufferGate(h, foreignBuffers)) return false;
+        if (hexDistanceAxial(h.q, h.r, core.q, core.r) < minSep) return false;
+        return placed.every(p => hexDistanceAxial(h.q, h.r, p.q, p.r) >= minSep);
+      })
+      .map((h) => {
+        const hubDistance = Math.min(
+          hexDistanceAxial(h.q, h.r, core.q, core.r),
+          ...placed.map(p => hexDistanceAxial(h.q, h.r, p.q, p.r)),
+        );
+        return {
+          h,
+          preferred: opts.halfPlaneAxis
+            ? isInSameTypeRivalHalfPlane(h, core, opts.halfPlaneAxis)
+            : false,
+          hubDistance,
+          coreDistance: hexDistanceAxial(h.q, h.r, core.q, core.r),
+        };
+      })
+      .sort((a, b) =>
+        Number(b.preferred) - Number(a.preferred)
+        || a.hubDistance - b.hubDistance
+        || a.coreDistance - b.coreDistance
+        || a.h.q - b.h.q
+        || a.h.r - b.h.r,
+      );
+    const next = candidates[0]?.h;
+    if (!next) break;
+    placed.push(next);
+  }
+
+  return placed;
+}
+
+/**
  * Pakuje MP wokół stolicy — rozszerzona pula lądu + retry seedów (symetria z graczem).
  * Region Voronoi bywa wąski; pełny ląd mapy ratuje hub-chain na krawędzi klastra.
  */
@@ -2015,13 +2078,10 @@ export function packCityStatesAroundCapital(
     (seed + 0xc2b2ae35) >>> 0,
   ];
 
-  const minDistLevels = halfPlaneAxis
-    ? [...new Set([
-      minDist,
-      Math.max(3, minDist - 1),
-      Math.max(3, minDist - 2),
-    ].filter(d => d >= 3))]
-    : [minDist];
+  // The requested minimum is a hard placement contract.  The half-plane
+  // preference may reduce the available pool, but it must never turn a
+  // rejected city-state slot into a closer-than-legal placement.
+  const minDistLevels = [minDist];
 
   const ringDistances = opts?.ringDistances?.length
     ? [...opts.ringDistances]
@@ -2030,7 +2090,9 @@ export function packCityStatesAroundCapital(
   let best: Array<{ q: number; r: number }> = [];
   for (const ringDist of ringDistances) {
     for (const tryMinDist of minDistLevels) {
-      const sep = Math.min(tryMinDist, ringDist);
+      // A shorter rescue ring may fail to provide a slot, but it must not
+      // weaken the requested separation from the capital.
+      const sep = tryMinDist;
       for (const pool of pools) {
         for (const s of seeds) {
           const packed = packCityStatesHubChain(
@@ -2050,6 +2112,24 @@ export function packCityStatesAroundCapital(
       if (best.length >= stateCityCount) break;
     }
     if (best.length >= stateCityCount) break;
+  }
+
+  // Exact rings are preferred, but a blocked ring must not silently erase
+  // requested city-state slots. Extend the accepted ring prefix with the
+  // nearest legal land while keeping the hard minimum and accepted order.
+  if (best.length < totalPack) {
+    for (const pool of [...pools, allLand]) {
+      const nearest = packNearestLegalLand(
+        pool,
+        capital,
+        totalPack,
+        minDist,
+        best,
+        packOpts,
+      );
+      if (nearest.length > best.length) best = nearest;
+      if (best.length >= totalPack) break;
+    }
   }
 
   return {

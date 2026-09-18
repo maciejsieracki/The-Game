@@ -21,6 +21,52 @@ import { scaleStockCostRecord } from './r-stawki-strojenie';
 export type BuildingStockCost = Partial<Record<string, number>>;
 
 /**
+ * Shared unit-cost epoch multiplier: Stone x1, Bronze x2, Iron and later x4.
+ * Unknown or malformed epochs intentionally default to Stone for zero-regression
+ * compatibility with older/missing units.json rows.
+ */
+export function epochCostMultiplier(epoch?: number | string | null): number {
+  if (typeof epoch === 'number' && Number.isFinite(epoch)) {
+    const ordinal = Math.floor(epoch);
+    if (ordinal >= 3) return 4;
+    if (ordinal >= 2) return 2;
+    return 1;
+  }
+  if (typeof epoch !== 'string') return 1;
+
+  const normalized = epoch
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .trim()
+    .toLowerCase();
+  if (/^\d+(?:\.\d+)?$/.test(normalized)) {
+    return epochCostMultiplier(Number(normalized));
+  }
+  if (normalized === 'kamien' || normalized === 'stone' || normalized === '1') return 1;
+  if (normalized === 'braz' || normalized === 'bronze' || normalized === '2') return 2;
+  if (
+    normalized === 'zelazo' ||
+    normalized === 'zelazo+' ||
+    normalized === 'iron' ||
+    normalized === 'iron+' ||
+    normalized === 'iron plus' ||
+    normalized === 'steel' ||
+    normalized === 'stal'
+  ) return 4;
+  return 1;
+}
+
+/** Scale one economic cost by the unit's epoch, preserving zero and bad inputs. */
+export function scaleCostByEpoch(
+  cost: number,
+  epoch?: number | string | null,
+): number {
+  if (!Number.isFinite(cost) || cost < 0) return 0;
+  if (cost === 0) return 0;
+  return Math.max(1, Math.round(cost * epochCostMultiplier(epoch)));
+}
+
+/**
  * Owner-approved building cost multiplier by entry era: Stone x1, Bronze x2,
  * Iron and every later era x4.  Keeping this helper here gives Work, stock
  * costs, and gold upkeep one auditable source without widening the allowlist.
@@ -328,6 +374,7 @@ export const MOUNT_HORSE_EXEMPT_UNIT = 'Rydwan (woły)';
 export interface UnitStockCostSource {
   Jednostka?: string | null;
   Typ?: string | null;
+  Epoka?: number | string | null;
   Surowiec?: string | null;
   'Surowiec (ilość)'?: number | null;
 }
@@ -362,12 +409,12 @@ export function unitStockCost(
     const ilosc = unit['Surowiec (ilość)'];
     if (typeof ilosc === 'number' && Number.isFinite(ilosc) && ilosc > 0) {
       const key = stripDiacriticsLower(rawName);
-      if (key) out[key] = ilosc;
+      if (key) out[key] = scaleCostByEpoch(ilosc, unit.Epoka);
     }
   }
   if (unitRequiresMountHorseStock(unit)) {
     out[MOUNT_UNIT_HORSE_STOCK_KEY] =
-      (out[MOUNT_UNIT_HORSE_STOCK_KEY] ?? 0) + MOUNT_UNIT_HORSE_STOCK_COST;
+      (out[MOUNT_UNIT_HORSE_STOCK_KEY] ?? 0) + scaleCostByEpoch(MOUNT_UNIT_HORSE_STOCK_COST, unit.Epoka);
   }
   return out;
 }

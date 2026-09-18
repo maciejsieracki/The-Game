@@ -49,6 +49,7 @@ import {
   missingStockFor,
   unitStockCost,
   buildingEraCostMultiplier,
+  scaleCostByEpoch,
   type UnitStockCostSource,
 } from './building-stock-cost';
 import { buildingEffectAtLevel } from './production';
@@ -764,6 +765,7 @@ function stripDiacriticsLower(s: string): string {
 
 /** Minimalny kształt jednostki dla utrzymania surowcowego (units.json). */
 export interface UnitResourceUpkeepSource {
+  Epoka?: number | string | null;
   'Utrzymanie surowiec'?: string | null;
   'Utrzymanie surowiec (ilość)'?: number | null;
 }
@@ -789,7 +791,7 @@ export function unitResourceUpkeep(
   const ilosc = unitDef['Utrzymanie surowiec (ilość)'];
   if (typeof ilosc === 'number' && Number.isFinite(ilosc) && ilosc > 0) {
     const key = stripDiacriticsLower(rawName);
-    if (key) out[key] = ilosc;
+    if (key) out[key] = scaleCostByEpoch(ilosc, unitDef.Epoka);
   }
   return out;
 }
@@ -1013,7 +1015,9 @@ export function buildUnitUpkeepTable(
         }
       }
     }
-    if (upkeep !== undefined) out[name] = upkeep;
+    const rawEpoch = row['Epoka'];
+    const epoch = typeof rawEpoch === 'number' || typeof rawEpoch === 'string' ? rawEpoch : undefined;
+    if (upkeep !== undefined) out[name] = scaleCostByEpoch(upkeep, epoch);
   }
   return out;
 }
@@ -1079,7 +1083,9 @@ export function buildUnitFoodTable(
     if (typeof name !== 'string' || name.length === 0) continue;
     const direct = row['żywność/turę'] ?? row['zywnosc/ture'];
     if (typeof direct === 'number' && Number.isFinite(direct)) {
-      out[name] = Math.max(0, direct);
+      const rawEpoch = row['Epoka'];
+      const epoch = typeof rawEpoch === 'number' || typeof rawEpoch === 'string' ? rawEpoch : undefined;
+      out[name] = scaleCostByEpoch(direct, epoch);
     }
   }
   return out;

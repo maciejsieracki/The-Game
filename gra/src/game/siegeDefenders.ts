@@ -8,6 +8,36 @@ import type { RuntimeUnit } from '../units/setup';
 import { collectDefRosterNearCity } from '../units/battleRoster';
 import { makeMilitia, type SiegeUnit } from './siege';
 
+export const GARRISON_BUILDING_ID = 'garnizon';
+
+export type BuildingIdCollection = readonly string[] | ReadonlySet<string>;
+
+export interface CityDefRosterOptions {
+  /** Completed building ids; queued production is deliberately not sufficient. */
+  completedBuildingIds?: BuildingIdCollection;
+  /** Optional queued ids for callers/tests; never consulted as completed state. */
+  queuedBuildingIds?: BuildingIdCollection;
+  /** Alias for callers whose state adapter names the completed set `builtIds`. */
+  builtBuildingIds?: BuildingIdCollection;
+}
+
+function includesBuilding(
+  ids: BuildingIdCollection | undefined,
+  buildingId: string,
+): boolean {
+  if (!ids) return false;
+  if ('has' in ids) return ids.has(buildingId);
+  return ids.includes(buildingId);
+}
+
+/** True only when the completed-building state contains Garnizon. */
+export function isGarrisonBuildingCompleted(options?: CityDefRosterOptions): boolean {
+  return includesBuilding(
+    options?.completedBuildingIds ?? options?.builtBuildingIds,
+    GARRISON_BUILDING_ID,
+  );
+}
+
 /** Jednostki właściciela miasta w promieniu 1 heksa (przy murze / w mieście). */
 export function defenderUnitsNearCity(
   city: City,
@@ -18,23 +48,27 @@ export function defenderUnitsNearCity(
 
 /**
  * C3-ST-1: Czy miasto ma kogo bronić przy szturmie?
- * Obrońcy = jednostka wroga dist≤1 LUB garnizon>0.
- * Ludność / populacja BEZ garnizonu ≠ obrońcy.
+ * Obrońcy = jednostka właściciela dist≤1 LUB garnizon>0; completed Garnizon
+ * additionally contributes virtual militia when eligible population exists.
+ * Ludność / populacja bez completed Garnizon ≠ obrońcy.
  */
 export function hasCityDefenders(
   city: City,
   units: readonly RuntimeUnit[],
+  options?: CityDefRosterOptions,
 ): boolean {
   if ((city.garnizon ?? 0) > 0) return true;
-  return defenderUnitsNearCity(city, units).length > 0;
+  if (defenderUnitsNearCity(city, units).length > 0) return true;
+  return isGarrisonBuildingCompleted(options) && makeMilitia(city.population ?? 0) !== null;
 }
 
 /** C3-ST-2: Szturm może pominąć preBattle / bitwę 3D. */
 export function canCaptureCityWithoutBattle(
   city: City,
   units: readonly RuntimeUnit[],
+  options?: CityDefRosterOptions,
 ): boolean {
-  return !hasCityDefenders(city, units);
+  return !hasCityDefenders(city, units, options);
 }
 
 /** Puste [] ≠ lista ocalałych — wtedy gałąź winner (nie kasuj wszystkich). */
@@ -62,12 +96,19 @@ export function militiaDefRecord(m: SiegeUnit): Record<string, unknown> {
     'Ruch w bitwie (heksy)': 0,
     'Kara obrony z flanki (%)': 50,
     'Kara obrony z tylu (%)': 80,
+    isMilitia: true,
+    militiaCount: m.militiaCount ?? 0,
   };
+}
+
+export interface VirtualMilitiaUnit extends RuntimeUnit {
+  isMilitia: true;
+  militiaCount: number;
 }
 
 export interface CityDefRosterResult {
   roster: RuntimeUnit[];
-  /** id → def dla syntetycznej Milicji (gdy brak jednostek, jest garnizon). */
+  /** id → def for a virtual Milicja supplied by completed Garnizon. */
   militiaDefs: Map<string, Record<string, unknown>>;
 }
 
@@ -78,30 +119,31 @@ export interface CityDefRosterResult {
 export function collectCityDefRoster(
   city: City,
   units: readonly RuntimeUnit[],
+  options?: CityDefRosterOptions,
 ): CityDefRosterResult {
   const roster = defenderUnitsNearCity(city, units);
   const militiaDefs = new Map<string, Record<string, unknown>>();
-  if (roster.length > 0) return { roster, militiaDefs };
+  if (!isGarrisonBuildingCompleted(options)) return { roster, militiaDefs };
 
-  if ((city.garnizon ?? 0) <= 0) return { roster: [], militiaDefs };
-
-  const pop = city.population ?? 0;
-  const militia = makeMilitia(Math.max(pop, 5));
-  if (!militia) return { roster: [], militiaDefs };
+  const militia = makeMilitia(Math.max(0, city.population ?? 0));
+  if (!militia) return { roster, militiaDefs };
 
   const id = 'militia-' + city.id;
   militiaDefs.set(id, militiaDefRecord(militia));
+  const virtualMilitia: VirtualMilitiaUnit = {
+    id,
+    ownerId: city.ownerId,
+    typeId: 'Milicja',
+    category: 'domyslny',
+    q: city.q,
+    r: city.r,
+    ruch: 0,
+    ruchLeft: 0,
+    isMilitia: true,
+    militiaCount: militia.militiaCount ?? 0,
+  };
   return {
-    roster: [{
-      id,
-      ownerId: city.ownerId,
-      typeId: 'Milicja',
-      category: 'domyslny',
-      q: city.q,
-      r: city.r,
-      ruch: 0,
-      ruchLeft: 0,
-    }],
+    roster: [...roster, virtualMilitia],
     militiaDefs,
   };
 }
@@ -111,7 +153,10 @@ export function defenderSideTitle(city: City, defRoster: readonly RuntimeUnit[])
   if (defRoster.length === 0) return 'Brak';
   const lead = defRoster[0]!;
   if (lead.typeId === 'Milicja') {
-    return 'Milicja (~' + Math.floor((city.population ?? 0) * 0.2) + ')';
+    const militiaCount = 'militiaCount' in lead && typeof lead.militiaCount === 'number'
+      ? lead.militiaCount
+      : Math.floor((city.population ?? 0) * 0.2);
+    return 'Milicja (~' + militiaCount + ')';
   }
   return defRoster.length > 1 ? 'Garnizon (' + defRoster.length + ')' : lead.typeId;
 }

@@ -64,6 +64,8 @@ import {
 } from '../game/combat';
 import type { CombatUnit, CombatResult } from '../game/combat';
 import { combatUnitFromDef, unitRowStat } from '../game/combat';
+import { buildBattleEventLog } from '../units/battleRoster';
+import type { BattleEventLog } from '../units/battleRoster';
 // R-WALKA-PRZEWAGA-LICZEBNA-Q1-W2 -- GOAL 1 (jeden kontratak na ture obroncy)
 // i GOAL 2 (startowa kara morale od stosunku MOCY wazonej biezacym HP).
 import {
@@ -531,6 +533,8 @@ export interface BattleResult {
   winner: 'atakujacy' | 'obronca' | 'remis';
   survivors: BattleUnit[];
   log: string[];
+  /** Every unit present in the radius-1 roster at battle resolution time. */
+  eventLog: BattleEventLog;
 }
 
 // ---------------------------------------------------------------------------
@@ -9417,7 +9421,15 @@ export class BattleScene {
       onReplay: () => { this._replayBattle(); },
       onFinish: () => {
         if (this.onFinishCb) {
-          this.onFinishCb({ winner: this._endWinner ?? winner, survivors: this._endSurvivors, log: this.log });
+          this.onFinishCb({
+            winner: this._endWinner ?? winner,
+            survivors: this._endSurvivors,
+            log: this.log,
+            eventLog: buildBattleEventLog(
+              this.atk.map(u => u.bu),
+              this.def.map(u => u.bu),
+            ),
+          });
         }
         this.dispose();
         if (this.onCancelCb) this.onCancelCb();

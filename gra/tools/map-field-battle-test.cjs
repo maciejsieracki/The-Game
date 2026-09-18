@@ -267,9 +267,16 @@ assert(hasCityDefenders(openCity, [garrison]), 'garrison unit = defenders');
 const emptyDef = collectCityDefRoster({ ...openCity, garnizon: 0 }, []);
 assert(emptyDef.roster.length === 0, 'collectCityDefRoster: no garrison no units');
 
-const milDef = collectCityDefRoster({ ...openCity, garnizon: 3 }, []);
+const milDef = collectCityDefRoster({ ...openCity, garnizon: 0 }, [], {
+  completedBuildingIds: ['garnizon'],
+});
 assert(milDef.roster.length === 1 && milDef.roster[0].typeId === 'Milicja', 'collectCityDefRoster: militia synth');
 assert(milDef.militiaDefs.has('militia-c-open'), 'collectCityDefRoster: militia def map');
+const queuedMilDef = collectCityDefRoster({ ...openCity, garnizon: 0 }, [], {
+  completedBuildingIds: [],
+  queuedBuildingIds: ['garnizon'],
+});
+assert(queuedMilDef.roster.length === 0, 'collectCityDefRoster: queued Garnizon is not complete');
 
 const milTitle = defenderSideTitle(openCity, milDef.roster);
 assert(milTitle.startsWith('Milicja'), 'defenderSideTitle: militia label');
@@ -296,12 +303,39 @@ const plan = planOpenCityFieldBattle(
     unitAtak: d => d.meleeAttack,
     civLabelForOwner: id => (id === 0 ? 'Gracz' : 'AI ' + id),
     terrainCombatData: [],
+    getCompletedBuildingIds: () => [],
   },
 );
 assert(plan !== null && plan.preBattle.miejsce === 'Sparta', 'planOpenCityFieldBattle: miejsce = city name');
 assert(plan.preBattle.canRetreat === true, 'planOpenCityFieldBattle: canRetreat');
 assert(!plan.preBattle.miejsce.includes('mur'), 'planOpenCityFieldBattle: no mur suffix');
 assert(plan.defRoster.length === 1, 'planOpenCityFieldBattle: def roster');
+
+const militiaPlan = planOpenCityFieldBattle(
+  { attacker: hastati, ctx: { tryb: 'bitwa_polowa', city: openCity, atakujacy: hastati, garnizonUnit: undefined, oblegajacyOwnerId: 0 } },
+  openCity,
+  hastati,
+  [hastati],
+  {
+    turn: 3,
+    getTerrainAt: () => 'Rownina',
+    getStructBonus: () => 0,
+    unitDefFor: stubDef,
+    fortifyScaledDefFor: stubDef,
+    unitHealth: d => d.health,
+    unitAtak: d => d.meleeAttack,
+    civLabelForOwner: id => (id === 0 ? 'Gracz' : 'AI ' + id),
+    terrainCombatData: [],
+    getCompletedBuildingIds: () => ['garnizon'],
+  },
+);
+assert(
+  militiaPlan !== null
+    && militiaPlan.defRoster.length === 1
+    && militiaPlan.defRoster[0].isMilitia === true
+    && militiaPlan.militiaDefs.has('militia-c-open'),
+  'planOpenCityFieldBattle: completed Garnizon reaches preBattle as virtual militia',
+);
 
 const router = resolveEnemyCityClick({
   city: openCity,

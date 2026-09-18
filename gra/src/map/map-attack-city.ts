@@ -36,6 +36,8 @@ export interface ResolveEnemyCityClickInput {
   playerOwnerId?: number;
   /** Bramka mgły dla kliknięcia gracza; brak predykatu zachowuje dotychczasowe API. */
   isCityVisible?: (city: City) => boolean;
+  /** Completed building ids; queued production is deliberately not included. */
+  getCompletedBuildingIds?: (cityId: string) => readonly string[];
 }
 
 function adjacentPlayerAttackers(
@@ -87,6 +89,7 @@ export function resolveEnemyCityClick(
     units,
     playerOwnerId = 0,
     isCityVisible = () => true,
+    getCompletedBuildingIds,
   } = input;
 
   if (city.ownerId === playerOwnerId) {
@@ -141,7 +144,10 @@ export function resolveEnemyCityClick(
     return { kind: 'attack_choice', attacker, ctx };
   }
 
-  if (!hasCityDefenders(city, units)) {
+  const defenderOptions = {
+    completedBuildingIds: getCompletedBuildingIds?.(city.id),
+  };
+  if (!hasCityDefenders(city, units, defenderOptions)) {
     return { kind: 'capture_empty', attacker, ctx };
   }
 
