@@ -1,5 +1,13 @@
 # REJESTR PRÓŚB I ZADAŃ — kanoniczny indeks + historia
 
+## FALA 388 — LOCAL RELEASE CANDIDATE / REMOTE READBACK PENDING
+
+- Board `the-game-real24`, profile `default`, project `p_9ae9ac64`; base `origin/main@7d02dfc5b73e992e389dd01992a52159e943a621`; local integration commit `95fd93050585c19584700e34205da74576f2150f`.
+- Scope: `R-AUTO-BITWY-STRATY-ROZKLAD-MOC-PARAMETRY-Q1`, `R-FULL-EPOCH-COSTS-Q1`, `R-START-CIVILIZATION-CITYSTATES-Q1`, `R-STARTOWE-ZWIADOWCA-PO-JEDNYM-Q1`, `R-MILITIA-GARRISON-Q1`, `R-CITIES-BUILDINGS-PRODUCTION-Q1`.
+- Final Control: `t_449872b9/run726`, `t_0b7ea103/run738`, `t_9f092ab3/run741`, `t_633d081e/run729`, `t_4fce5bc7/run745`, `t_d7c5ad3a/run750`; terminal product acceptance for all six, with notes preserved in their reports.
+- Local ROBOCZA artifact: MD5 `0816f385ef6b38e368ca11c0edf11ae5`, SHA-256 `4962b053c46d121f779ac9dca46cb1860b2281c223c413c3eb981cb34651ede4`, `69881460` bytes, verifier `VERIFY OK`.
+- Status: `READY_FOR_REMOTE_READBACK`; this entry is the reconciliation of the Final Control `REGISTRY_GAP`. It is not called deployed until the pushed `origin/main` and served artifact are read back byte-for-byte.
+
 ## DEPLOY WAVE — GAMEPLAY BUGS — DEPLOYED 2026-09-16
 
 - Target: `gra-robocza`; source branch and `origin/main` both read back as `2aeb52743476bd1175789049b350a34f1888dda3`; source integration commit `0180d17231b62d2a5012c9c23d8a42d91c09f1e1`.

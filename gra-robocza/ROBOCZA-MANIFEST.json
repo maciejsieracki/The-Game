@@ -1,33 +1,30 @@
 {
-  "publishedAt": "2026-09-18T00:03:26Z",
-  "republishedAt": "2026-09-18T00:03:26Z",
-  "productReleaseCommit": "00b1b391b37be16477d924e62449e20f027e2eed",
+  "publishedAt": "2026-09-18T16:35:34Z",
+  "republishedAt": "2026-09-18T16:35:34Z",
+  "productReleaseCommit": "95fd93050585c19584700e34205da74576f2150f",
   "publisher": "Hermes Orchestrator",
-  "md5": "4c1788bb880dbd66761410af0d277245",
-  "sha256": "dba338ff46488b22d5c18e56b9a6fc7c376be0c0af60a78ec9bbdbb19fef6375",
-  "bytes": 69878627,
+  "md5": "0816f385ef6b38e368ca11c0edf11ae5",
+  "sha256": "4962b053c46d121f779ac9dca46cb1860b2281c223c413c3eb981cb34651ede4",
+  "bytes": 69881460,
   "bundle": "Gra-ROBOCZA.html",
-  "sourceCommit": "00b1b391b37be16477d924e62449e20f027e2eed",
-  "base": "c08b3db14292221cad0a4e7a70608e9d09ee9afd",
-  "integrationCommit": "00b1b391b37be16477d924e62449e20f027e2eed",
+  "sourceCommit": "95fd93050585c19584700e34205da74576f2150f",
+  "base": "7d02dfc5b73e992e389dd01992a52159e943a621",
+  "integrationCommit": "95fd93050585c19584700e34205da74576f2150f",
+  "finalControl": [
+    "t_449872b9/run726 PASS",
+    "t_0b7ea103/run738 PASS",
+    "t_9f092ab3/run741 PASS-WITH-NOTES",
+    "t_633d081e/run729 PASS",
+    "t_4fce5bc7/run745 PASS-WITH-NOTES",
+    "t_d7c5ad3a/run750 PASS-WITH-NOTES"
+  ],
   "scope": [
-    "R-AUTO-BATTLE-LOSS-Q1",
-    "R-GARNIZON-PANEL-DOCELNY-Q1",
-    "R-ARMIA-AI-SCALANIE-REKRUTACJA-Q1",
-    "R-ARMIA-MERGE-PANEL-SCROLL-Q1",
-    "R-HANDEL-DOCHOD-HALF-CEIL-Q1",
-    "R-REKRUTACJA-PANEL-WYSOKOSC-5-KART-Q1",
-    "R-KOSZTY-EPOKOWE-ULEPSZENIA-Q1",
-    "R-REKRUTACJA-MASOWA-TABELA-MIASTA-Q1",
-    "R-MIASTA-KOLONIA-NAZWA-POOL-Q1 (already in base; verified no-op)",
-    "R-REKRUTACJA-KOSZTY-POLOWA-ALL-Q1 (already in base; verified no-op)",
-    "R-AI-BUDZET-SKARB-NAUKA-ZAMOZNOSC-Q1 (audit/test-only; no product diff)",
-    "R-CYWILIZACJE-GRECJA-ALOKACJE-Q1 (already in base; verified no-op)",
-    "R-AI-PRACA-BUDYNKI-ULEPSZENIA-Q1 (already in base; verified no-op)",
-    "R-CYWILIZACJE-GRECJA-AKTYWNE-PARAMETRY-Q1 (already in base; verified no-op)",
-    "R-RALLY-POINT-AUTOMARCH-Q1",
-    "R-BUILDING-COSTS-Q1",
-    "R-UNIT-SORT-Q1"
+    "R-AUTO-BITWY-STRATY-ROZKLAD-MOC-PARAMETRY-Q1",
+    "R-FULL-EPOCH-COSTS-Q1",
+    "R-START-CIVILIZATION-CITYSTATES-Q1",
+    "R-STARTOWE-ZWIADOWCA-PO-JEDNYM-Q1",
+    "R-MILITIA-GARRISON-Q1",
+    "R-CITIES-BUILDINGS-PRODUCTION-Q1"
   ],
   "noOpVerified": [
     "R-MIASTA-KOLONIA-NAZWA-POOL-Q1",
@@ -48,86 +45,76 @@
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html?skipMenuRedirect=1",
       "label": "Pełna gra ROBOCZA",
-      "md5": "4c1788bb880dbd66761410af0d277245",
-      "sizeBytes": 69878627
+      "md5": "0816f385ef6b38e368ca11c0edf11ae5",
+      "sizeBytes": 69881460
     },
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html",
       "label": "Pełna gra (z menu)",
-      "md5": "4c1788bb880dbd66761410af0d277245",
-      "sizeBytes": 69878627
+      "md5": "0816f385ef6b38e368ca11c0edf11ae5",
+      "sizeBytes": 69881460
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "label": "Playtest: DUŻA bitwa (pole) — NOWE",
-      "md5": "7340f635259dfd06a9467025e9c22c61",
-      "sizeBytes": 69875188
+      "md5": "0816f385ef6b38e368ca11c0edf11ae5",
+      "sizeBytes": 69881460
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "label": "Playtest: DUŻE oblężenie (mur) — NOWE",
-      "md5": "7340f635259dfd06a9467025e9c22c61",
-      "sizeBytes": 69875188
+      "md5": "0816f385ef6b38e368ca11c0edf11ae5",
+      "sizeBytes": 69881460
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "label": "Playtest: mapa świat",
-      "md5": "7340f635259dfd06a9467025e9c22c61",
-      "sizeBytes": 69875188
+      "md5": "0816f385ef6b38e368ca11c0edf11ae5",
+      "sizeBytes": 69881460
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "label": "Playtest: miasto / ekonomia",
-      "md5": "7340f635259dfd06a9467025e9c22c61",
-      "sizeBytes": 69875188
+      "md5": "0816f385ef6b38e368ca11c0edf11ae5",
+      "sizeBytes": 69881460
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "label": "Playtest: walka na mapie",
-      "md5": "7340f635259dfd06a9467025e9c22c61",
-      "sizeBytes": 69875188
+      "md5": "0816f385ef6b38e368ca11c0edf11ae5",
+      "sizeBytes": 69881460
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "label": "Playtest: odskok 3v3",
-      "md5": "7340f635259dfd06a9467025e9c22c61",
-      "sizeBytes": 69875188
+      "md5": "0816f385ef6b38e368ca11c0edf11ae5",
+      "sizeBytes": 69881460
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "label": "Playtest: odskok + oblężenie",
-      "md5": "7340f635259dfd06a9467025e9c22c61",
-      "sizeBytes": 69875188
+      "md5": "0816f385ef6b38e368ca11c0edf11ae5",
+      "sizeBytes": 69881460
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "label": "Playtest: oblężenie 3v3",
-      "md5": "7340f635259dfd06a9467025e9c22c61",
-      "sizeBytes": 69875188
+      "md5": "0816f385ef6b38e368ca11c0edf11ae5",
+      "sizeBytes": 69881460
     }
   ],
   "startHub": "START.html",
-  "hubGeneratedAt": "2026-09-17T15:12:02",
-  "note": "ROBOCZA FALA 387 — R-BUILDING-COSTS-Q1 + R-UNIT-SORT-Q1; current-base integration; no promotion to KANON/FINALNA",
-  "legacyAliasesNotPresent": [
-    "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
-    "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
-    "Gra-ROBOCZA-PLAYTEST-MAPA.html",
-    "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
-    "Gra-ROBOCZA-PLAYTEST-WALKA.html",
-    "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
-    "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
-    "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html"
-  ],
+  "hubGeneratedAt": "2026-09-18T16:34:06",
+  "note": "ROBOCZA FALA 388 — sześć zatwierdzonych tematów; current-base integration; no promotion to KANON/FINALNA",
   "backlogReconciliation": {
     "status": "ALREADY_IN_TARGET_OR_NO_OP",
     "recordedAt": "2026-09-17T23:26:49Z",

@@ -5743,7 +5743,7 @@ CZEKAM-NA: nic
 
 ## [18:54 PL, 2026-08-01] LOKAL/Grok ? ALL ? FALA 138 DEPLOY ALL
 - md5 `cbc79e63` / `cbc79e6399f5c67a41350229ff6a4711` | stempel ROBOCZA ? 2026-08-01 18:54
-- Zakres: MAP-SPAWN-Q2 (06a615) + tani fill rzek (c4faac) ? bez wysp, 7 typ?w, g?sto?? rzek bez proximity
+- Zakres: MAP-SPAWN-Q2 (06a615) + tani fill rzek (c4faac) ? bez wysp, 7 typ?w, g?sto?? rzek bez proximity
 - tsc 0 | VERIFY OK
 - Graj: `gra-robocza/START.html` (Ctrl+F5 + Nowa gra) ? sprawd?: 7 civ na du?ych kontynentach + rzeki
 CZEKAM-NA: nic
@@ -7723,3 +7723,18 @@ GOAL: z czystego `origin/main` zintegrować wyłącznie zatwierdzone hunki dwóc
 |- Bundle `gra-robocza/Gra-ROBOCZA.html`: md5 `7007c7b23c6fcb3cd2d36498d0e96c68`, SHA-256 `cc02f96317a834115ec9e07f79ee15aea34d6fd60956f396c0ceb61a1299c5eb`; `verify-robocza-bundle.cjs` → `VERIFY OK`; manifest match `OK`.
 |- Poprzednia ROBOCZA `e8724602` oznaczona w `WERSJE.md` jako zastąpiona; promocji do KANON/FINALNA nie wykonano.
 CZEKAM-NA: właściciel — Ctrl+F5 + Nowa gra na `7007c7b2`; następnie test karty budynku i karty rekrutacji.
+
+## [2026-09-18 16:35 UTC] ORCHESTRATOR — PRZYGOTOWANIE DEPLOY ROBOCZA FALA 388
+
+Local clean integration candidate: `95fd93050585c19584700e34205da74576f2150f`,
+base `7d02dfc5b73e992e389dd01992a52159e943a621`. Zakres: sześć tematów z
+Final Control, wyłącznie allowlistowane pliki produkcyjne/testowe. Build direct
+Vite `890` modułów; bundle MD5 `0816f385ef6b38e368ca11c0edf11ae5`, SHA-256
+`4962b053c46d121f779ac9dca46cb1860b2281c223c413c3eb981cb34651ede4`,
+`69881460` bajtów; `verify-robocza-bundle.cjs` → `VERIFY OK`.
+
+Status: `READY_FOR_REMOTE_READBACK`; nie nazywam tego jeszcze wdrożeniem.
+Następny krok: push branch + fast-forward `origin/main`, readback manifestu/
+bundla i HTTP smoke. KANON/FINALNA oraz Rust pozostają wyłączone.
+
+CZEKAM-NA: Orchestrator — remote SHA, byte-identical bundle readback i smoke.

@@ -13,6 +13,15 @@ swoim wĹ‚asnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji d
 > Pakiet 3 z 2026-08-20 jest docs-only i nie tworzy wpisu ROBOCZA/KANON/FINALNA;
 > ten plik pozostaje wyłącznie rejestrem publikacji bundli.
 
+## ROBOCZA 0816f385 - 2026-09-18 16:35 UTC - FALA 388 - sześć zatwierdzonych tematów
+
+|- md5 `0816f385ef6b38e368ca11c0edf11ae5` · sha256 `4962b053c46d121f779ac9dca46cb1860b2281c223c413c3eb981cb34651ede4` · rozmiar `69881460` bajtów.
+|- source/integration commit: `95fd93050585c19584700e34205da74576f2150f`; base: `7d02dfc5b73e992e389dd01992a52159e943a621`.
+|- Scope: `R-AUTO-BITWY-STRATY-ROZKLAD-MOC-PARAMETRY-Q1`, `R-FULL-EPOCH-COSTS-Q1`, `R-START-CIVILIZATION-CITYSTATES-Q1`, `R-STARTOWE-ZWIADOWCA-PO-JEDNYM-Q1`, `R-MILITIA-GARRISON-Q1`, `R-CITIES-BUILDINGS-PRODUCTION-Q1`.
+|- Final Control: `t_449872b9/run726` PASS, `t_0b7ea103/run738` PASS, `t_9f092ab3/run741` PASS-WITH-NOTES, `t_633d081e/run729` PASS, `t_4fce5bc7/run745` PASS-WITH-NOTES, `t_d7c5ad3a/run750` PASS-WITH-NOTES; all `product_acceptance=true`, no numbered objections.
+|- Gates: focused candidates green; shared `logic-test` `213/213`; TypeScript PASS; Vite `890` modules; verifier `VERIFY OK`. Known notes: legacy `promote-to-front` `121/4`, bounded `ai-buduje-budynki` INFRA/EDQUOT; no Rust/KANON/FINALNA.
+|- Boundary: local bundle and publication records prepared; exact publication commit, remote `origin/main` readback and HTTP smoke are recorded only after push/merge verification.
+
 ## ROBOCZA 4c1788bb - 2026-09-18 00:03 UTC - FALA 387 - AF4 BUILDING COSTS + UNIT SORT
 
 |- md5 `4c1788bb880dbd66761410af0d277245` · sha256 `dba338ff46488b22d5c18e56b9a6fc7c376be0c0af60a78ec9bbdbb19fef6375` · rozmiar `69878627` bajtów.
