@@ -10,6 +10,9 @@
   "sourceCommit": "95fd93050585c19584700e34205da74576f2150f",
   "base": "7d02dfc5b73e992e389dd01992a52159e943a621",
   "integrationCommit": "95fd93050585c19584700e34205da74576f2150f",
+  "publishCommit": "1a181406d88a554d1f0e8586160cc04cca0b99e0",
+  "remoteMainAtPublish": "1a181406d88a554d1f0e8586160cc04cca0b99e0",
+  "remoteSmoke": true,
   "finalControl": [
     "t_449872b9/run726 PASS",
     "t_0b7ea103/run738 PASS",

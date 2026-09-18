@@ -20,7 +20,7 @@ swoim wĹ‚asnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji d
 |- Scope: `R-AUTO-BITWY-STRATY-ROZKLAD-MOC-PARAMETRY-Q1`, `R-FULL-EPOCH-COSTS-Q1`, `R-START-CIVILIZATION-CITYSTATES-Q1`, `R-STARTOWE-ZWIADOWCA-PO-JEDNYM-Q1`, `R-MILITIA-GARRISON-Q1`, `R-CITIES-BUILDINGS-PRODUCTION-Q1`.
 |- Final Control: `t_449872b9/run726` PASS, `t_0b7ea103/run738` PASS, `t_9f092ab3/run741` PASS-WITH-NOTES, `t_633d081e/run729` PASS, `t_4fce5bc7/run745` PASS-WITH-NOTES, `t_d7c5ad3a/run750` PASS-WITH-NOTES; all `product_acceptance=true`, no numbered objections.
 |- Gates: focused candidates green; shared `logic-test` `213/213`; TypeScript PASS; Vite `890` modules; verifier `VERIFY OK`. Known notes: legacy `promote-to-front` `121/4`, bounded `ai-buduje-budynki` INFRA/EDQUOT; no Rust/KANON/FINALNA.
-|- Boundary: local bundle and publication records prepared; exact publication commit, remote `origin/main` readback and HTTP smoke are recorded only after push/merge verification.
+|- Publish commit: `1a181406d88a554d1f0e8586160cc04cca0b99e0`; `origin/main` readback is byte-identical, manifest/hash readback `PASS`, HTTP smoke `200`; no promotion to KANON/FINALNA.
 
 ## ROBOCZA 4c1788bb - 2026-09-18 00:03 UTC - FALA 387 - AF4 BUILDING COSTS + UNIT SORT
 

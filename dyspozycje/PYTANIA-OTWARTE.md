@@ -5,9 +5,9 @@ Zasada: każde pytanie w pełnej formie ABC (opis + min. 2 za + min. 2 przeciw +
 ## RECONCILIACJA REGISTRY_GAP — FALA 388
 
 `R-CITIES-BUILDINGS-PRODUCTION-Q1` oraz pięć tematów po Final Control są
-ujęte w bieżącym lokalnym release candidate fali 388. Nie ma tu nowego ABC ani
-otwartej decyzji produktowej; wpis służy wyłącznie uzgodnieniu proweniencji
-`t_d7c5ad3a/run750` przed remote readbackiem. Final Control pozostał
+ujęte w wdrożonej fali 388. Nie ma tu nowego ABC ani otwartej decyzji
+produktowej; wpis służy uzgodnieniu proweniencji `t_d7c5ad3a/run750`.
+Final Control pozostał
 `PASS-WITH-NOTES`, a noty `legacy 121/4` i `INFRA/EDQUOT` nie są pytaniami
 produktowymi.
 

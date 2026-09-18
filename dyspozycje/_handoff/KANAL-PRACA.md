@@ -7724,7 +7724,7 @@ GOAL: z czystego `origin/main` zintegrować wyłącznie zatwierdzone hunki dwóc
 |- Poprzednia ROBOCZA `e8724602` oznaczona w `WERSJE.md` jako zastąpiona; promocji do KANON/FINALNA nie wykonano.
 CZEKAM-NA: właściciel — Ctrl+F5 + Nowa gra na `7007c7b2`; następnie test karty budynku i karty rekrutacji.
 
-## [2026-09-18 16:35 UTC] ORCHESTRATOR — PRZYGOTOWANIE DEPLOY ROBOCZA FALA 388
+## [2026-09-18 16:40 UTC] ORCHESTRATOR — DEPLOY ROBOCZA FALA 388 — REMOTE READBACK PASS
 
 Local clean integration candidate: `95fd93050585c19584700e34205da74576f2150f`,
 base `7d02dfc5b73e992e389dd01992a52159e943a621`. Zakres: sześć tematów z
@@ -7733,8 +7733,9 @@ Vite `890` modułów; bundle MD5 `0816f385ef6b38e368ca11c0edf11ae5`, SHA-256
 `4962b053c46d121f779ac9dca46cb1860b2281c223c413c3eb981cb34651ede4`,
 `69881460` bajtów; `verify-robocza-bundle.cjs` → `VERIFY OK`.
 
-Status: `READY_FOR_REMOTE_READBACK`; nie nazywam tego jeszcze wdrożeniem.
-Następny krok: push branch + fast-forward `origin/main`, readback manifestu/
-bundla i HTTP smoke. KANON/FINALNA oraz Rust pozostają wyłączone.
+Status: `DEPLOYED — ROBOCZA`. Publish commit i remote `origin/main`:
+`1a181406d88a554d1f0e8586160cc04cca0b99e0`; bundle/manifest readback
+byte-identical, HTTP smoke `200`, `VERIFY OK`. KANON/FINALNA oraz Rust
+pozostają wyłączone.
 
-CZEKAM-NA: Orchestrator — remote SHA, byte-identical bundle readback i smoke.
+CZEKAM-NA: właściciel — Ctrl+F5 + test fali 388 w `gra-robocza`.

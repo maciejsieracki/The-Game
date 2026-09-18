@@ -1,6 +1,6 @@
 # Deploy receipt — FALA 388 — local release candidate
 
-STATUS: READY_FOR_REMOTE_READBACK
+STATUS: DEPLOYED — remote main/readback/smoke PASS
 DOMAIN: GAME
 BOARD: `the-game-real24`
 PROFILE: `default`
@@ -10,6 +10,7 @@ PROJECT: `p_9ae9ac64`
 
 - base: `7d02dfc5b73e992e389dd01992a52159e943a621`;
 - code/integration commit before publication docs: `95fd93050585c19584700e34205da74576f2150f`;
+- publish commit and remote `origin/main`: `1a181406d88a554d1f0e8586160cc04cca0b99e0`;
 - clean worktree: `/home/ubuntu/projects/The-Game-integration-wave388-20260918`;
 - scope: six approved topics — AUTO losses, epoch costs, civilization/city-state placement, one starting scout, completed-Garnizon militia gate, and city/building production lifecycle;
 - no dirty worker worktree was merged wholesale.
@@ -44,7 +45,7 @@ PROJECT: `p_9ae9ac64`
 
 ## Boundary
 
-No remote push, merge, or live HTTP readback has been claimed yet. The next
-receipt correction must record the exact publication commit, remote `origin/main`
-SHA, byte-identical manifest/bundle readback, and HTTP smoke. No promotion to
-KANON/FINALNA; Rust R20–R24 remain excluded.
+Remote branch and `origin/main` both read back as `1a181406d88a554d1f0e8586160cc04cca0b99e0`.
+The bundle and manifest are byte-identical to the local verified artifact,
+`VERIFY OK`, and HTTP smoke returned `200`. No promotion to KANON/FINALNA;
+Rust R20–R24 remain excluded.
