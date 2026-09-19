@@ -70,6 +70,14 @@ const bridge = fs.readFileSync(
   path.join(repository, 'rust-port', 'engine', 'src', 'bridge.rs'),
   'utf8',
 );
+const frontend = fs.readFileSync(
+  path.join(repository, 'src-tauri', 'frontend', 'index.html'),
+  'utf8',
+);
+const frontendScript = fs.readFileSync(
+  path.join(repository, 'src-tauri', 'frontend', 'main.js'),
+  'utf8',
+);
 assert.match(bridge, /pub const TAURI_COMMAND: &str = "engine_command"/);
 assert.match(bridge, /pub const EVENT_STATE_CHANGED: &str = "engine_state_changed"/);
 assert.match(shell, /#\[tauri::command\]/);
@@ -77,6 +85,21 @@ assert.match(shell, /fn engine_command/);
 assert.doesNotMatch(shell, /pub fn engine_command/);
 assert.match(shell, /generate_handler!\[engine_command\]/);
 assert.match(shell, /app\.emit\(event\.channel\(\), event\)/);
+for (const id of ['start-new-game', 'more-button', 'continue-game', 'load-game', 'about-game', 'settings-button', 'exit-game']) {
+  assert.match(frontend, new RegExp(`id=["']${id}["']`), `menu control ${id} is missing`);
+}
+assert.match(frontend, /id=["']continue-game["'][^>]*disabled/);
+assert.match(frontend, /id=["']load-game["'][^>]*disabled/);
+assert.match(frontend, /Więcej/);
+assert.match(frontend, /Wczytaj grę/);
+assert.match(frontend, /O grze/);
+assert.match(frontend, /Wyjdź/);
+assert.match(frontendScript, /buildStartGameParams/);
+assert.match(frontendScript, /typSwiata/);
+assert.match(frontendScript, /worldDensity/);
+assert.match(frontendScript, /selectedAiCivIds/);
+assert.match(frontendScript, /unsupportedFeatures/);
+assert.match(frontendScript, /getWizardParams/);
 
 const TAURI_INTEGRATION_TEST = String.raw`
 
@@ -127,7 +150,10 @@ mod bridge_shell_integration {
             .deserialize::<serde_json::Value>()
             .expect("response JSON");
         assert_eq!(response["requestId"], "req-1");
-        assert_eq!(response["result"]["state"]["players"][0]["name"], "Ada");
+        let players = response["result"]["state"]["players"]
+            .as_array()
+            .expect("players array");
+        assert!(players.iter().any(|player| player["name"] == "Ada"));
 
         let event = event_payload
             .lock()
@@ -143,7 +169,7 @@ mod bridge_shell_integration {
 `;
 
 function createTauriProbe(source) {
-  const root = fs.mkdtempSync(path.join(repository, '.bridge-contract-tauri-'));
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), 'the-game-bridge-contract-tauri-'));
   cleanupPaths.add(root);
   const srcTauri = path.join(root, 'src-tauri');
   const src = path.join(srcTauri, 'src');
@@ -212,7 +238,7 @@ function runTauriProbe(probe) {
     '--target-dir',
     probe.target,
     '-j',
-    '2',
+    '1',
   ];
   run('cargo', cargoArgs, { env: { CARGO_INCREMENTAL: '0' } });
 
@@ -257,14 +283,15 @@ function runTauriProbe(probe) {
   fs.writeFileSync(probe.source, original);
 }
 
-// Build dependencies in an isolated target directory, then compile and run the
-// allowlisted Rust contract test directly because the repository has no root
-// Cargo workspace and the test is intentionally outside the engine manifest.
+// Build the allowlisted playable integration target in an isolated directory,
+// then compile and run the bridge contract directly because the repository has
+// no root Cargo workspace and the test is intentionally outside the manifest.
 run('cargo', [
   'test',
   '--manifest-path',
   manifest,
-  '--all-targets',
+  '--test',
+  'playable_slice',
   '--offline',
   '--no-run',
   '--target-dir',
@@ -290,6 +317,7 @@ run('rustc', [
   testBinary,
 ]);
 run(testBinary, []);
+run(process.execPath, [path.join(repository, 'tests', 'frontend_contract.cjs')]);
 const tauriProbe = createTauriProbe(shell);
 try {
   runTauriProbe(tauriProbe);

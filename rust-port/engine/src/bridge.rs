@@ -1,17 +1,17 @@
-//! Stable boundary between the Tauri shell and the Rust game engine.
+//! Stable boundary between the Tauri shell and the first playable Rust slice.
 //!
-//! The bridge deliberately exposes one Tauri command and a small, versioned JSON
-//! envelope.  Keeping the command envelope here means the desktop shell does not
-//! need to know how the engine stores its state internally.  `EnginePort` is the
-//! seam used by the real engine adapter and by deterministic tests/mocks.
+//! The bridge owns the versioned request/response/event envelope.  The engine
+//! owns the map, entities, movement rules, and turn phase queue; the frontend
+//! never maintains a second game state machine.
 
-use civ_engine::{GameState, Player, PlayerId};
+pub use civ_engine::StartGameParams;
+use civ_engine::{PlayableGame, PlayablePlayer, PlayableState, PositionDto};
 use serde::{Deserialize, Serialize};
 use std::fmt;
 
 /// Version of the request/response/event payloads shared with the frontend.
 pub const CONTRACT_VERSION: u16 = 1;
-/// The single Tauri command exposed by the shell.
+/// The Tauri command exposed by the shell.
 pub const TAURI_COMMAND: &str = "engine_command";
 /// Event emitted after a mutating command has produced a new snapshot.
 pub const EVENT_STATE_CHANGED: &str = "engine_state_changed";
@@ -20,11 +20,21 @@ pub const EVENT_STATE_CHANGED: &str = "engine_state_changed";
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(tag = "kind", rename_all = "snake_case")]
 pub enum EngineCommand {
-    /// Start a fresh session and return its initial state.
-    CreateSession,
-    /// Add a player to the current session.
+    /// Start a fresh deterministic session from the wizard DTO.
+    CreateSession {
+        #[serde(default)]
+        params: StartGameParams,
+    },
+    /// Compatibility command for bridge probes that add a non-human player.
     AddPlayer { id: u64, name: String },
-    /// Advance the one-based engine turn counter.
+    /// Select the human unit that the next map click should move.
+    SelectUnit { unit_id: u64 },
+    /// Move a selected human unit to one legal adjacent destination.
+    MoveUnit {
+        unit_id: u64,
+        destination: PositionDto,
+    },
+    /// Resolve the current turn through the canonical phase queue.
     AdvanceTurn,
     /// Read the current state without emitting a state-change event.
     GetState,
@@ -61,18 +71,9 @@ impl BridgeRequest {
     }
 }
 
-/// A frontend-safe projection of the engine state.
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
-pub struct EngineState {
-    pub turn: u32,
-    pub players: Vec<EnginePlayer>,
-}
-
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
-pub struct EnginePlayer {
-    pub id: u64,
-    pub name: String,
-}
+/// Frontend-safe projection of the complete playable state.
+pub type EngineState = PlayableState;
+pub type EnginePlayer = PlayablePlayer;
 
 /// Successful command result.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
@@ -176,16 +177,12 @@ impl fmt::Display for BridgeError {
 
 impl std::error::Error for BridgeError {}
 
-/// The adapter seam used by the bridge.
-///
-/// The bridge only deals in commands, snapshots, and bridge errors.  A real
-/// engine and a mock can therefore implement this contract without exposing
-/// their internal state representation to the Tauri layer.
+/// Adapter seam used by the versioned dispatcher.
 pub trait EnginePort {
     fn execute(&mut self, command: EngineCommand) -> Result<EngineState, BridgeError>;
 }
 
-/// Result of dispatching one request, including events the Tauri shell must emit.
+/// Result of dispatching one request, including events the Tauri shell emits.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct BridgeDispatch {
     pub response: BridgeResponse,
@@ -239,74 +236,73 @@ where
     }
 }
 
-/// Adapter over the foundational Rust engine currently present in this repo.
-#[derive(Debug, Clone, Default)]
+/// Adapter over the deterministic first-slice engine.
+#[derive(Debug, Clone)]
 pub struct CivEngineAdapter {
-    state: GameState,
+    game: PlayableGame,
+}
+
+impl Default for CivEngineAdapter {
+    fn default() -> Self {
+        Self {
+            game: PlayableGame::new(StartGameParams::default())
+                .expect("default playable scenario must be valid"),
+        }
+    }
 }
 
 impl CivEngineAdapter {
-    pub fn state(&self) -> &GameState {
-        &self.state
+    pub fn state(&self) -> &PlayableState {
+        self.game.state()
     }
 }
 
 impl EnginePort for CivEngineAdapter {
     fn execute(&mut self, command: EngineCommand) -> Result<EngineState, BridgeError> {
         match command {
-            EngineCommand::CreateSession => {
-                self.state = GameState::new();
-            }
-            EngineCommand::AddPlayer { id, name } => {
-                let player = Player::new(PlayerId::new(id), name)
-                    .map_err(|error| BridgeError::engine_rejected(error.to_string()))?;
-                self.state
-                    .add_player(player)
+            EngineCommand::CreateSession { params } => {
+                self.game = PlayableGame::new(params)
                     .map_err(|error| BridgeError::engine_rejected(error.to_string()))?;
             }
+            EngineCommand::AddPlayer { id, name } => self
+                .game
+                .add_player(id, name)
+                .map_err(|error| BridgeError::engine_rejected(error.to_string()))?,
+            EngineCommand::SelectUnit { unit_id } => self
+                .game
+                .select_unit(unit_id)
+                .map_err(|error| BridgeError::engine_rejected(error.to_string()))?,
+            EngineCommand::MoveUnit {
+                unit_id,
+                destination,
+            } => self
+                .game
+                .move_unit(unit_id, destination)
+                .map_err(|error| BridgeError::engine_rejected(error.to_string()))?,
             EngineCommand::AdvanceTurn => self
-                .state
+                .game
                 .advance_turn()
                 .map_err(|error| BridgeError::engine_rejected(error.to_string()))?,
             EngineCommand::GetState => {}
         }
 
-        Ok(snapshot(&self.state))
+        Ok(self.game.state().clone())
     }
 }
 
-fn snapshot(state: &GameState) -> EngineState {
-    EngineState {
-        turn: state.turn().number(),
-        players: state
-            .players()
-            .iter()
-            .map(|player| EnginePlayer {
-                id: player.id().get(),
-                name: player.name().to_owned(),
-            })
-            .collect(),
-    }
-}
-
-/// Deterministic adapter used by bridge contract tests and shell integration work.
-///
-/// It intentionally has the same externally visible rules as `CivEngineAdapter`
-/// while recording every command, which makes it useful for testing that the
-/// Tauri layer invokes the engine rather than maintaining a second state machine.
+/// Deterministic adapter used by bridge contract tests and shell integration.
 #[derive(Debug, Clone)]
 pub struct MockEngineAdapter {
     state: EngineState,
+    game: Option<PlayableGame>,
     calls: Vec<EngineCommand>,
 }
 
 impl Default for MockEngineAdapter {
     fn default() -> Self {
         Self {
-            state: EngineState {
-                turn: 1,
-                players: Vec::new(),
-            },
+            state: EngineState::empty(),
+            game: None,
             calls: Vec::new(),
         }
     }
@@ -326,8 +322,11 @@ impl EnginePort for MockEngineAdapter {
     fn execute(&mut self, command: EngineCommand) -> Result<EngineState, BridgeError> {
         self.calls.push(command.clone());
         match command {
-            EngineCommand::CreateSession => {
-                self.state = Self::default().state;
+            EngineCommand::CreateSession { params } => {
+                let game = PlayableGame::new(params)
+                    .map_err(|error| BridgeError::engine_rejected(error.to_string()))?;
+                self.state = game.state().clone();
+                self.game = Some(game);
             }
             EngineCommand::AddPlayer { id, name } => {
                 if name.trim().is_empty() {
@@ -338,14 +337,50 @@ impl EnginePort for MockEngineAdapter {
                         "player {id} already exists"
                     )));
                 }
-                self.state.players.push(EnginePlayer { id, name });
+                self.state.players.push(PlayablePlayer {
+                    id,
+                    name,
+                    civilization: format!("player-{id}"),
+                    is_human: false,
+                });
+                if let Some(game) = &mut self.game {
+                    game.add_player(id, self.state.players.last().unwrap().name.clone())
+                        .map_err(|error| BridgeError::engine_rejected(error.to_string()))?;
+                    self.state = game.state().clone();
+                }
+            }
+            EngineCommand::SelectUnit { unit_id } => {
+                let game = self.game.as_mut().ok_or_else(|| {
+                    BridgeError::engine_rejected("create session before selecting a unit")
+                })?;
+                game.select_unit(unit_id)
+                    .map_err(|error| BridgeError::engine_rejected(error.to_string()))?;
+                self.state = game.state().clone();
+            }
+            EngineCommand::MoveUnit {
+                unit_id,
+                destination,
+            } => {
+                let game = self.game.as_mut().ok_or_else(|| {
+                    BridgeError::engine_rejected("create session before moving a unit")
+                })?;
+                game.move_unit(unit_id, destination)
+                    .map_err(|error| BridgeError::engine_rejected(error.to_string()))?;
+                self.state = game.state().clone();
             }
             EngineCommand::AdvanceTurn => {
-                self.state.turn = self.state.turn.checked_add(1).ok_or_else(|| {
-                    BridgeError::engine_rejected("turn number cannot be advanced further")
+                let game = self.game.as_mut().ok_or_else(|| {
+                    BridgeError::engine_rejected("create session before advancing the turn")
                 })?;
+                game.advance_turn()
+                    .map_err(|error| BridgeError::engine_rejected(error.to_string()))?;
+                self.state = game.state().clone();
             }
-            EngineCommand::GetState => {}
+            EngineCommand::GetState => {
+                if let Some(game) = &self.game {
+                    self.state = game.state().clone();
+                }
+            }
         }
 
         Ok(self.state.clone())

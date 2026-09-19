@@ -24,6 +24,11 @@ pub use domain::hex::{
     hex_distance, neighbors, AxialCoord, CubeCoord, Direction, Hex, HexCoord, HexCoordParseError,
     HexDirection,
 };
+pub use domain::playable::{
+    PlayableAdvancedParams, PlayableCity, PlayableError, PlayableGame, PlayableMap, PlayablePlayer,
+    PlayableState, PlayableTerrain, PlayableTile, PlayableUnit, PlayableUnitKind,
+    PlayableWorldDensity, StartGameParams, PLAYABLE_STATE_VERSION,
+};
 pub use domain::recruitment::{
     can_afford_recruitment, can_afford_unit_recruitment, canonical_recruitment_costs,
     recruitment_for, spend_recruitment, total_resource_upkeep, unit_recruitment,
@@ -44,6 +49,6 @@ pub use domain::{
     CivilizationDto, CivilizationState, ClimateBand, Deposit, EngineError, GameState, GameStateDto,
     GeneratedMap, HexTile, Improvement, ImprovementKey, MapDto, MapGenerator, MapGeneratorError,
     MapState, Mulberry32, Player, PlayerId, PositionDto, Production, Rng, RngError, Terrain,
-    TerrainDto, Tile, TileDto, Turn, TurnDto, TurnState, UnitDto, UnitId, UnitKindDto, UnitState,
-    ValidationError, WorldType,
+    TerrainDto, Tile, TileDto, Turn, TurnDto, TurnEvent, TurnPhase, TurnState, UnitDto, UnitId,
+    UnitKindDto, UnitState, ValidationError, WorldType, PHASE_COUNT,
 };
