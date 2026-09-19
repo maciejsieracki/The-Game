@@ -2,11 +2,14 @@
 
 pub mod barbarians;
 pub mod building_costs;
+pub mod city_growth;
+pub mod diplomacy;
 mod error;
 pub mod hex;
 mod ids;
 pub mod improvements;
 pub mod map_generator;
+pub mod pathfinding;
 mod player;
 pub mod recruitment;
 pub mod resource_production;
@@ -14,6 +17,9 @@ mod rng;
 mod session;
 mod state;
 pub mod terrain;
+
+pub mod trade;
+pub mod turn_economy;
 mod types;
 
 pub use error::EngineError;
