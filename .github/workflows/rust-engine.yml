@@ -1,0 +1,110 @@
+name: Rust engine (Linux + Windows parity)
+
+"on":
+  pull_request:
+    paths:
+      - "rust-port/engine/**"
+      - ".github/workflows/rust-engine.yml"
+  push:
+    paths:
+      - "rust-port/engine/**"
+      - ".github/workflows/rust-engine.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: rust-engine-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+# Windows parity is intentionally a separate, owner-authorized job.  The Linux
+# job keeps its bounded contract; the Windows job is the native parity gate.
+jobs:
+  linux:
+    name: Public parity, tests, clippy and benchmarks
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    defaults:
+      run:
+        working-directory: rust-port/engine
+    env:
+      CARGO_TERM_COLOR: always
+      CARGO_INCREMENTAL: 0
+      CARGO_BUILD_JOBS: 2
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install stable Rust with quality tools
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt, clippy
+
+      - name: Format check
+        run: cargo fmt --all -- --check
+
+      - name: Public parity and golden vectors
+        run: cargo test --test parity_suite
+
+      - name: All engine targets
+        run: cargo test --all-targets
+
+      - name: Clippy
+        run: cargo clippy --all-targets -- -D warnings
+
+      - name: Benchmark profile compile
+        run: cargo bench --bench engine_modules --no-run
+
+      # The stable libtest bench mode ignores #[test] functions.  The same
+      # target is therefore executed in the optimized release test profile so
+      # every deterministic microbenchmark emits its checksum and timing.
+      - name: Deterministic module benchmark smoke
+        run: cargo test --release --bench engine_modules -- --nocapture
+
+  windows:
+    name: Native Windows parity, tests, clippy and benchmarks
+    runs-on: windows-latest
+    timeout-minutes: 20
+    defaults:
+      run:
+        working-directory: rust-port/engine
+    env:
+      CARGO_TERM_COLOR: always
+      CARGO_INCREMENTAL: 0
+      CARGO_BUILD_JOBS: 2
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install stable Rust with quality tools
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt, clippy
+
+      - name: Windows runner and toolchain readback
+        shell: pwsh
+        run: |
+          Write-Host "OS: $([System.Environment]::OSVersion.VersionString)"
+          Write-Host "Architecture: $env:PROCESSOR_ARCHITECTURE"
+          rustc --version --verbose
+          cargo --version
+          rustup show active-toolchain
+
+      - name: Format check
+        run: cargo fmt --all -- --check
+
+      - name: Public parity and golden vectors
+        run: cargo test --test parity_suite
+
+      - name: All engine targets
+        run: cargo test --all-targets
+
+      - name: Clippy
+        run: cargo clippy --all-targets -- -D warnings
+
+      - name: Benchmark profile compile
+        run: cargo bench --bench engine_modules --no-run
+
+      - name: Deterministic module benchmark smoke
+        run: cargo test --release --bench engine_modules -- --nocapture
