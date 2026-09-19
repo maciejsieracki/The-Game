@@ -1,0 +1,55 @@
+{
+  "status": "INTEGRATED_LOCAL",
+  "domain": "GAME/RUST/TAURI",
+  "topic": "R-RUSTREAL-PLAYABLE-SLICE-Q1",
+  "final_control": {"task_id":"t_ea768507","run_id":827,"product_acceptance":true,"ready_for_integration":true},
+  "integration": {
+    "worktree":"/home/ubuntu/projects/The-Game-rust-playable-slice-integration-20260919",
+    "branch":"hermes/integration/R-RUSTREAL-PLAYABLE-SLICE-Q1-20260919",
+    "base":"dca61418522bd309a9b089f6c0d4bf2ef34a6970",
+    "commit":"bfec6c68a8259ca82cf805f57c74106e1dfe4a10",
+    "remote_push":false,
+    "merge":false,
+    "deploy":false,
+    "install":false
+  },
+  "allowlist": [
+    "rust-port/engine/src/bridge.rs",
+    "rust-port/engine/src/domain/mod.rs",
+    "rust-port/engine/src/domain/playable.rs",
+    "rust-port/engine/src/lib.rs",
+    "rust-port/engine/tests/playable_slice.rs",
+    "src-tauri/frontend/index.html",
+    "src-tauri/frontend/main.js",
+    "tests/bridge_contract.cjs",
+    "tests/bridge_contract.rs",
+    "tests/frontend_contract.cjs"
+  ],
+  "gates": {
+    "fmt":"PASS",
+    "cargo_test_all_targets":"PASS",
+    "playable_slice":"7/7",
+    "bench_harness":"4/4",
+    "clippy":"PASS",
+    "frontend_contract":"PASS",
+    "runtime_probe":"PASS",
+    "tauri_linux_no_bundle":"PASS",
+    "bounded_startup":"PROCESS_ALIVE_12S_EXPECTED_TIMEOUT_124",
+    "prewarmed_bridge":"PASS_RUST_6_6_MOCK_SHELL_1_1_MUTATION_PASS",
+    "git_diff_check":"PASS"
+  },
+  "file_sha256": {
+    "rust-port/engine/src/bridge.rs":"4353be84f91cce631e4625989a059464e2d524c8a4c814206c9269ed8d39c084",
+    "rust-port/engine/src/domain/mod.rs":"97be3a0d1c134375968676efd2344bd7b71d97e2f83060e695096c64d69a7f83",
+    "rust-port/engine/src/domain/playable.rs":"30c6a2ab66d03fc95f78a49bc99893e384510b0130a3f83d0a3c94f160956a3d",
+    "rust-port/engine/src/lib.rs":"98e56b0f08a63cf0597fd3d7502b2fefa84be3ca3441815c89492982447d27ee",
+    "rust-port/engine/tests/playable_slice.rs":"d6e000558c16e3059669f33cca47c06a216a6de073648f0ef67f06bab1e3bf0b",
+    "src-tauri/frontend/index.html":"5831ccf5a4cb5368e5d0575daecab7c4bc651f054e8d8548e060d128fef1d42c",
+    "src-tauri/frontend/main.js":"ee87a4711a72f44f15ed2af85d5c0e5c0ef3ea33f502124d9bdf3a385f121dcb",
+    "tests/bridge_contract.cjs":"5c7d93d366b9b37d308bc4879260e099f5739ee416c3f6752278f2ff1cbd6026",
+    "tests/bridge_contract.rs":"b98de637ccb371c46cd1c790a4254b419f07ee7ca7b0495032e06499010ee772",
+    "tests/frontend_contract.cjs":"6e96ff1bd06e91d07d143ddae2ed0a3b4d82e33e08caac08cbc171ee4567ddc6"
+  },
+  "gates_log_sha256":"13bc31903e1a48e55a6bbc3d69cb5668fd25ffd33c3783ffe0b08b82209bc1d0",
+  "external_effects": {"commit":true,"push":false,"merge":false,"deploy":false,"install":false}
+}
