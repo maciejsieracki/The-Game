@@ -1,0 +1,157 @@
+{
+  "status": "PASS-WITH-NOTES",
+  "domain": "HANDOFF",
+  "topic": "R-RUSTREAL-WEB-1TO1-PORT-Q1",
+  "role": "Final Control",
+  "kanban_task": "t_5dcf8610",
+  "run": 834,
+  "round": "1/5 recovery 1",
+  "verdict": "PASS-WITH-NOTES",
+  "ready_for_handoff_push": true,
+  "objections": [],
+  "defense_created": false,
+  "chain": [
+    {
+      "task": "t_7465f4b4",
+      "run": 831,
+      "role": "Operator",
+      "outcome": "TIMEOUT/GAVE_UP",
+      "preserved": true
+    },
+    {
+      "task": "t_b5deca1e",
+      "run": 832,
+      "role": "Operator recovery",
+      "outcome": "PASS-WITH-NOTES",
+      "topic": "R-RUSTREAL-WEB-1TO1-PORT-Q1",
+      "base_head": "78d494c7a4c6cdbd4dd4db0a663fca0b5d4e3b1e"
+    },
+    {
+      "task": "t_21c15f87",
+      "run": 833,
+      "role": "independent Evaluator",
+      "outcome": "PASS-WITH-NOTES",
+      "objections": []
+    },
+    {
+      "task": "t_5dcf8610",
+      "run": 834,
+      "role": "Final Control",
+      "outcome": "PASS-WITH-NOTES"
+    }
+  ],
+  "operator_outputs": {
+    "requested": 11,
+    "present": 11,
+    "paths": [
+      "handoff/R-RUSTREAL-WEB-1TO1-PORT-Q1/00-PLAN-DZIALANIA.md",
+      "handoff/R-RUSTREAL-WEB-1TO1-PORT-Q1/01-HANDOFF-DLA-AGENTA.md",
+      "handoff/R-RUSTREAL-WEB-1TO1-PORT-Q1/02-MANIFEST-PLIKOW.json",
+      "handoff/R-RUSTREAL-WEB-1TO1-PORT-Q1/03-KRYTERIA-AKCEPTACJI.md",
+      "handoff/R-RUSTREAL-WEB-1TO1-PORT-Q1/04-INSTRUKCJA-POBRANIA.md",
+      "handoff/R-RUSTREAL-WEB-1TO1-PORT-Q1/05-STAN-BLEDNYCH-ARTEFAKTOW.md",
+      "handoff/R-RUSTREAL-WEB-1TO1-PORT-Q1/06-REJESTR-DECYZJI-I-RYZYK.json",
+      "handoff/R-RUSTREAL-WEB-1TO1-PORT-Q1/07-CHECKSUMS-SHA256.txt",
+      "dyspozycje/autobot/runs/R-RUSTREAL-WEB-1TO1-PORT-HANDOFF-Q1/01-operator.md",
+      "dyspozycje/autobot/runs/R-RUSTREAL-WEB-1TO1-PORT-HANDOFF-Q1/01-evidence.json",
+      "dyspozycje/autobot/runs/R-RUSTREAL-WEB-1TO1-PORT-HANDOFF-Q1/01-transition-receipt.md"
+    ]
+  },
+  "phase_evidence_paths": [
+    "dyspozycje/autobot/runs/R-RUSTREAL-WEB-1TO1-PORT-HANDOFF-Q1/00-dispatch.md",
+    "dyspozycje/autobot/runs/R-RUSTREAL-WEB-1TO1-PORT-HANDOFF-Q1/01-operator.md",
+    "dyspozycje/autobot/runs/R-RUSTREAL-WEB-1TO1-PORT-HANDOFF-Q1/01-evidence.json",
+    "dyspozycje/autobot/runs/R-RUSTREAL-WEB-1TO1-PORT-HANDOFF-Q1/01-transition-receipt.md",
+    "dyspozycje/autobot/runs/R-RUSTREAL-WEB-1TO1-PORT-HANDOFF-Q1/02-dispatch.md",
+    "dyspozycje/autobot/runs/R-RUSTREAL-WEB-1TO1-PORT-HANDOFF-Q1/02-evaluator.md",
+    "dyspozycje/autobot/runs/R-RUSTREAL-WEB-1TO1-PORT-HANDOFF-Q1/02-evidence.json",
+    "dyspozycje/autobot/runs/R-RUSTREAL-WEB-1TO1-PORT-HANDOFF-Q1/02-transition-receipt.md",
+    "dyspozycje/autobot/runs/R-RUSTREAL-WEB-1TO1-PORT-HANDOFF-Q1/03-dispatch.md"
+  ],
+  "manifest": {
+    "total": 2045,
+    "tracked": 2034,
+    "hashes_verified": 2034,
+    "category_counts": {
+      "reference_read_only": 443,
+      "current_rust_tauri": 69,
+      "data_assets": 356,
+      "tests_and_gates": 1160,
+      "build_and_packaging": 6,
+      "handoff_docs": 11
+    },
+    "category_overlap": 0,
+    "all_paths_regular_and_present": true
+  },
+  "checksums": {
+    "file": "handoff/R-RUSTREAL-WEB-1TO1-PORT-Q1/07-CHECKSUMS-SHA256.txt",
+    "entries_expected": 2044,
+    "entries_verified": 2044,
+    "self_excluded": true,
+    "malformed_lines": 0,
+    "digest_mismatches": 0
+  },
+  "json_validation": {
+    "validated": [
+      "handoff/R-RUSTREAL-WEB-1TO1-PORT-Q1/02-MANIFEST-PLIKOW.json",
+      "handoff/R-RUSTREAL-WEB-1TO1-PORT-Q1/06-REJESTR-DECYZJI-I-RYZYK.json",
+      "dyspozycje/autobot/runs/R-RUSTREAL-WEB-1TO1-PORT-HANDOFF-Q1/01-evidence.json",
+      "dyspozycje/autobot/runs/R-RUSTREAL-WEB-1TO1-PORT-HANDOFF-Q1/02-evidence.json"
+    ],
+    "result": "PASS"
+  },
+  "content_scope": {
+    "reference_read_only": true,
+    "tauri_replace_or_rewire": true,
+    "nine_initial_civilizations_required": true,
+    "flat_html_grid_rejected": true,
+    "three_hard_coded_civ_rejected": true,
+    "unicode_placeholder_rejected": true,
+    "prior_playable_slice_not_1to1_proof": true,
+    "packaging_waits_for_parity": true,
+    "product_parity_accepted": false,
+    "playable_game_accepted": false,
+    "deployment_accepted": false
+  },
+  "source_readback": {
+    "tauri_inline_civilizations": 3,
+    "web_civilization_records": 15,
+    "tauri_map_renderer": "HTML button/grid with coordinate and Unicode markers",
+    "web_renderer": "Three.js/WebGLRenderer contract in gra/src/render/scene.ts"
+  },
+  "git": {
+    "worktree": "/home/ubuntu/projects/The-Game-web-1to1-port-handoff-20260920",
+    "branch": "hermes/handoff/R-RUSTREAL-WEB-1TO1-PORT-Q1-20260920",
+    "head": "78d494c7a4c6cdbd4dd4db0a663fca0b5d4e3b1e",
+    "base": "78d494c7a4c6cdbd4dd4db0a663fca0b5d4e3b1e",
+    "origin_main": "f4c89d0081c622c16b207d338b49c8bacafc4553",
+    "origin_staging": "78d494c7a4c6cdbd4dd4db0a663fca0b5d4e3b1e",
+    "remote_refs_read_back_with_ls_remote": true,
+    "tracked_diff_paths": [],
+    "staged_paths": [],
+    "git_diff_check": "PASS",
+    "product_change": false,
+    "unexpected_untracked_paths": [],
+    "generated_rust_engine_cargo_lock": false,
+    "untracked_target_or_dist": false,
+    "untracked_logs": false
+  },
+  "commands_not_run": [
+    "cargo",
+    "npm",
+    "Vite",
+    "Tauri",
+    "browser",
+    "package-manager"
+  ],
+  "effects": {
+    "product_change": false,
+    "commit": false,
+    "push": false,
+    "merge": false,
+    "deploy": false,
+    "main_push": false,
+    "next_effect_owner": "Orchestrator",
+    "push_target": "dedicated handoff branch only"
+  }
+}

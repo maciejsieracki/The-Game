@@ -1,0 +1,227 @@
+{
+  "status": "PASS-WITH-NOTES",
+  "domain": "HANDOFF",
+  "topic": "R-RUSTREAL-WEB-1TO1-PORT-Q1",
+  "role": "independent Evaluator",
+  "round": "1/5 recovery 1",
+  "workspace": "/home/ubuntu/projects/The-Game-web-1to1-port-handoff-20260920",
+  "parent": {
+    "task": "t_b5deca1e",
+    "run": "run832",
+    "verdict": "PASS-WITH-NOTES",
+    "topic": "R-RUSTREAL-WEB-1TO1-PORT-Q1"
+  },
+  "original_timeout": {
+    "task": "t_7465f4b4",
+    "run": "run831",
+    "status": "TIMEOUT/GAVE_UP",
+    "elapsed_seconds": 1219,
+    "limit_seconds": 1200,
+    "preserved": true
+  },
+  "recovery_provenance": {
+    "same_topic": true,
+    "branch": "hermes/handoff/R-RUSTREAL-WEB-1TO1-PORT-Q1-20260920",
+    "base": "78d494c7a4c6cdbd4dd4db0a663fca0b5d4e3b1e",
+    "head_at_readback": "78d494c7a4c6cdbd4dd4db0a663fca0b5d4e3b1e",
+    "remote_base": "origin/autobot/real24-staging",
+    "remote_base_sha": "78d494c7a4c6cdbd4dd4db0a663fca0b5d4e3b1e",
+    "silent_replacement": false
+  },
+  "output_scope": {
+    "requested_operator_output_count": 11,
+    "requested_operator_outputs_present": 11,
+    "requested_operator_outputs": [
+      "handoff/R-RUSTREAL-WEB-1TO1-PORT-Q1/00-PLAN-DZIALANIA.md",
+      "handoff/R-RUSTREAL-WEB-1TO1-PORT-Q1/01-HANDOFF-DLA-AGENTA.md",
+      "handoff/R-RUSTREAL-WEB-1TO1-PORT-Q1/02-MANIFEST-PLIKOW.json",
+      "handoff/R-RUSTREAL-WEB-1TO1-PORT-Q1/03-KRYTERIA-AKCEPTACJI.md",
+      "handoff/R-RUSTREAL-WEB-1TO1-PORT-Q1/04-INSTRUKCJA-POBRANIA.md",
+      "handoff/R-RUSTREAL-WEB-1TO1-PORT-Q1/05-STAN-BLEDNYCH-ARTEFAKTOW.md",
+      "handoff/R-RUSTREAL-WEB-1TO1-PORT-Q1/06-REJESTR-DECYZJI-I-RYZYK.json",
+      "handoff/R-RUSTREAL-WEB-1TO1-PORT-Q1/07-CHECKSUMS-SHA256.txt",
+      "dyspozycje/autobot/runs/R-RUSTREAL-WEB-1TO1-PORT-HANDOFF-Q1/01-operator.md",
+      "dyspozycje/autobot/runs/R-RUSTREAL-WEB-1TO1-PORT-HANDOFF-Q1/01-evidence.json",
+      "dyspozycje/autobot/runs/R-RUSTREAL-WEB-1TO1-PORT-HANDOFF-Q1/01-transition-receipt.md"
+    ],
+    "phase_dispatch_exceptions": [
+      "dyspozycje/autobot/runs/R-RUSTREAL-WEB-1TO1-PORT-HANDOFF-Q1/00-dispatch.md",
+      "dyspozycje/autobot/runs/R-RUSTREAL-WEB-1TO1-PORT-HANDOFF-Q1/02-dispatch.md"
+    ],
+    "unexpected_operator_output_paths": [],
+    "status_paths_before_evaluator_outputs": [
+      "dyspozycje/autobot/runs/R-RUSTREAL-WEB-1TO1-PORT-HANDOFF-Q1/00-dispatch.md",
+      "dyspozycje/autobot/runs/R-RUSTREAL-WEB-1TO1-PORT-HANDOFF-Q1/01-evidence.json",
+      "dyspozycje/autobot/runs/R-RUSTREAL-WEB-1TO1-PORT-HANDOFF-Q1/01-operator.md",
+      "dyspozycje/autobot/runs/R-RUSTREAL-WEB-1TO1-PORT-HANDOFF-Q1/01-transition-receipt.md",
+      "dyspozycje/autobot/runs/R-RUSTREAL-WEB-1TO1-PORT-HANDOFF-Q1/02-dispatch.md",
+      "handoff/R-RUSTREAL-WEB-1TO1-PORT-Q1/00-PLAN-DZIALANIA.md",
+      "handoff/R-RUSTREAL-WEB-1TO1-PORT-Q1/01-HANDOFF-DLA-AGENTA.md",
+      "handoff/R-RUSTREAL-WEB-1TO1-PORT-Q1/02-MANIFEST-PLIKOW.json",
+      "handoff/R-RUSTREAL-WEB-1TO1-PORT-Q1/03-KRYTERIA-AKCEPTACJI.md",
+      "handoff/R-RUSTREAL-WEB-1TO1-PORT-Q1/04-INSTRUKCJA-POBRANIA.md",
+      "handoff/R-RUSTREAL-WEB-1TO1-PORT-Q1/05-STAN-BLEDNYCH-ARTEFAKTOW.md",
+      "handoff/R-RUSTREAL-WEB-1TO1-PORT-Q1/06-REJESTR-DECYZJI-I-RYZYK.json",
+      "handoff/R-RUSTREAL-WEB-1TO1-PORT-Q1/07-CHECKSUMS-SHA256.txt"
+    ]
+  },
+  "manifest": {
+    "path": "handoff/R-RUSTREAL-WEB-1TO1-PORT-Q1/02-MANIFEST-PLIKOW.json",
+    "json_valid": true,
+    "category_counts": {
+      "reference_read_only": 443,
+      "current_rust_tauri": 69,
+      "data_assets": 356,
+      "tests_and_gates": 1160,
+      "build_and_packaging": 6,
+      "handoff_docs": 11
+    },
+    "declared_count_checks": "PASS",
+    "manifested_total": 2045,
+    "unique_paths": 2045,
+    "category_overlap": 0,
+    "tracked_inventory_total": 6131,
+    "manifested_tracked_total": 2034,
+    "manifested_untracked_total": 11,
+    "tracked_policy": {
+      "tracked_entries_marked_tracked": 2034,
+      "generated_entries_marked_untracked": 11,
+      "tracked_policy_errors": []
+    },
+    "repository_values": {
+      "worktree": "/home/ubuntu/projects/The-Game-web-1to1-port-handoff-20260920",
+      "branch": "hermes/handoff/R-RUSTREAL-WEB-1TO1-PORT-Q1-20260920",
+      "base": "78d494c7a4c6cdbd4dd4db0a663fca0b5d4e3b1e",
+      "head": "78d494c7a4c6cdbd4dd4db0a663fca0b5d4e3b1e",
+      "origin_autobot_real24_staging": "78d494c7a4c6cdbd4dd4db0a663fca0b5d4e3b1e",
+      "origin_main": "f4c89d0081c622c16b207d338b49c8bacafc4553",
+      "product_change_declared": false
+    },
+    "lane_policy": {
+      "reference_read_only": true,
+      "current_tauri_replace_or_rewire": true,
+      "initial_civilization_requirement_nine": true,
+      "web_and_rust_lanes_separate": true
+    },
+    "digest_verification": {
+      "algorithm": "SHA-256",
+      "manifest_entries_with_sha256": 2034,
+      "verified": 2034,
+      "missing_paths": [],
+      "non_files": [],
+      "symlinks": [],
+      "mismatches": []
+    }
+  },
+  "checksum_file": {
+    "path": "handoff/R-RUSTREAL-WEB-1TO1-PORT-Q1/07-CHECKSUMS-SHA256.txt",
+    "total_lines": 2057,
+    "digest_entries": 2044,
+    "tracked_entries_verified": 2034,
+    "generated_entries_verified": 10,
+    "self_excluded": true,
+    "malformed_noncomment_lines": [],
+    "missing_paths": [],
+    "digest_mismatches": [],
+    "paths_with_spaces": 0,
+    "generated_paths_hashed": [
+      "handoff/R-RUSTREAL-WEB-1TO1-PORT-Q1/00-PLAN-DZIALANIA.md",
+      "handoff/R-RUSTREAL-WEB-1TO1-PORT-Q1/01-HANDOFF-DLA-AGENTA.md",
+      "handoff/R-RUSTREAL-WEB-1TO1-PORT-Q1/02-MANIFEST-PLIKOW.json",
+      "handoff/R-RUSTREAL-WEB-1TO1-PORT-Q1/03-KRYTERIA-AKCEPTACJI.md",
+      "handoff/R-RUSTREAL-WEB-1TO1-PORT-Q1/04-INSTRUKCJA-POBRANIA.md",
+      "handoff/R-RUSTREAL-WEB-1TO1-PORT-Q1/05-STAN-BLEDNYCH-ARTEFAKTOW.md",
+      "handoff/R-RUSTREAL-WEB-1TO1-PORT-Q1/06-REJESTR-DECYZJI-I-RYZYK.json",
+      "dyspozycje/autobot/runs/R-RUSTREAL-WEB-1TO1-PORT-HANDOFF-Q1/01-operator.md",
+      "dyspozycje/autobot/runs/R-RUSTREAL-WEB-1TO1-PORT-HANDOFF-Q1/01-evidence.json",
+      "dyspozycje/autobot/runs/R-RUSTREAL-WEB-1TO1-PORT-HANDOFF-Q1/01-transition-receipt.md"
+    ]
+  },
+  "document_validation": {
+    "json_files": [
+      "handoff/R-RUSTREAL-WEB-1TO1-PORT-Q1/02-MANIFEST-PLIKOW.json",
+      "handoff/R-RUSTREAL-WEB-1TO1-PORT-Q1/06-REJESTR-DECYZJI-I-RYZYK.json",
+      "dyspozycje/autobot/runs/R-RUSTREAL-WEB-1TO1-PORT-HANDOFF-Q1/01-evidence.json"
+    ],
+    "json_parse_errors": [],
+    "handoff_documents_read": [
+      "00-PLAN-DZIALANIA.md",
+      "01-HANDOFF-DLA-AGENTA.md",
+      "02-MANIFEST-PLIKOW.json",
+      "03-KRYTERIA-AKCEPTACJI.md",
+      "04-INSTRUKCJA-POBRANIA.md",
+      "05-STAN-BLEDNYCH-ARTEFAKTOW.md",
+      "06-REJESTR-DECYZJI-I-RYZYK.json",
+      "07-CHECKSUMS-SHA256.txt"
+    ],
+    "required_content": {
+      "plan_phases_0_to_11": true,
+      "web_reference_read_only": true,
+      "tauri_replace_or_rewire": true,
+      "nine_initial_civilization_requirement": true,
+      "flat_html_map_rejected": true,
+      "hard_coded_three_civ_rejected": true,
+      "unicode_placeholder_rejected": true,
+      "fake_dom_not_sufficient": true,
+      "playable_slice_not_1to1_proof": true,
+      "prior_packaging_not_1to1_proof": true
+    }
+  },
+  "source_readback": {
+    "tauri_main": {
+      "path": "src-tauri/frontend/main.js",
+      "civilization_ids": ["rzymianie", "grecy", "egipcjanie"],
+      "civilization_block_lines": "65-84",
+      "render_map_lines": "665-692",
+      "html_button_grid": true,
+      "unicode_markers": ["★", "⌂", "⚔"]
+    },
+    "tauri_index": {
+      "path": "src-tauri/frontend/index.html",
+      "compact_equivalent_line": 38,
+      "css_grid_lines": "150-159",
+      "compact_web_parity_equivalent": true
+    },
+    "reference_web": {
+      "wizard_path": "gra/src/ui/newGameFlow.ts",
+      "loader_import_line": 20,
+      "data_mapping_lines": "493-568",
+      "brand_svg_lines": "634-646",
+      "scene_path": "gra/src/render/scene.ts",
+      "three_import_lines": "31-32",
+      "webgl_contract_lines": "335-338",
+      "civs_json_records": 15,
+      "civs_json_ids": ["grecy", "rzymianie", "chinczycy", "inkowie", "zulusi", "egipt", "sumer", "celtowie", "germanie", "harappa", "hetyci", "slowianie", "babilonia", "asyria", "fenicjanie"]
+    }
+  },
+  "git_readback": {
+    "branch": "hermes/handoff/R-RUSTREAL-WEB-1TO1-PORT-Q1-20260920",
+    "head": "78d494c7a4c6cdbd4dd4db0a663fca0b5d4e3b1e",
+    "origin_autobot_real24_staging": "78d494c7a4c6cdbd4dd4db0a663fca0b5d4e3b1e",
+    "origin_main": "f4c89d0081c622c16b207d338b49c8bacafc4553",
+    "staged_paths": [],
+    "tracked_diff_paths": [],
+    "diff_check": "PASS",
+    "product_paths_changed": [],
+    "forbidden_commands_not_run": ["cargo", "npm", "Vite", "Tauri", "browser", "package-manager"],
+    "primary_checkout": {
+      "path": "/home/ubuntu/projects/The-Game",
+      "branch": "main",
+      "head": "a99f7de59ce643441b641d3b7b11404b6cbdcd82",
+      "relative_to_origin_main": "ahead 6, behind 162",
+      "dirty": true,
+      "touched_by_evaluator": false
+    }
+  },
+  "objections": [],
+  "notes": [
+    "PASS-WITH-NOTES is a handoff-package verdict only; it is not product parity, integration, push or deploy acceptance.",
+    "The current Tauri three-civ/HTML-grid/Unicode implementation remains intentionally known-bad and is correctly marked REPLACE_OR_REWIRE.",
+    "The local primary checkout is separate and protected; its dirty state was observed only and not changed."
+  ],
+  "product_change": false,
+  "commit": false,
+  "push": false,
+  "deploy": false,
+  "next": "independent Final Control"
+}

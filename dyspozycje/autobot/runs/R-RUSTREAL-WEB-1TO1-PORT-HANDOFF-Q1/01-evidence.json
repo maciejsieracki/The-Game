@@ -1,0 +1,118 @@
+{
+  "commands_explicitly_not_run": [
+    "cargo",
+    "npm",
+    "Vite",
+    "Tauri",
+    "browser",
+    "package manager"
+  ],
+  "commands_permitted_and_run": [
+    "git ls-files -z",
+    "git rev-parse / branch / remote-ref readback",
+    "Python static import inventory",
+    "Python SHA-256 hashing",
+    "Python JSON and output allowlist validation",
+    "git diff --check"
+  ],
+  "domain": "HANDOFF",
+  "git": {
+    "base": "78d494c7a4c6cdbd4dd4db0a663fca0b5d4e3b1e",
+    "branch": "hermes/handoff/R-RUSTREAL-WEB-1TO1-PORT-Q1-20260920",
+    "cached_diff_before": [],
+    "head": "78d494c7a4c6cdbd4dd4db0a663fca0b5d4e3b1e",
+    "remote_main": "f4c89d0081c622c16b207d338b49c8bacafc4553",
+    "remote_staging": "78d494c7a4c6cdbd4dd4db0a663fca0b5d4e3b1e",
+    "tracked_diff_before": [],
+    "worktree": "/home/ubuntu/projects/The-Game-web-1to1-port-handoff-20260920"
+  },
+  "goal": "Write exactly the eleven bounded handoff files without product changes.",
+  "inventory": {
+    "category_counts": {
+      "build_and_packaging": 6,
+      "current_rust_tauri": 69,
+      "data_assets": 356,
+      "handoff_docs": 11,
+      "reference_read_only": 443,
+      "tests_and_gates": 1160
+    },
+    "manifested_total_including_outputs": 2045,
+    "manifested_tracked_total": 2034,
+    "static_reachable_game_total": 177,
+    "static_reachable_total": 797,
+    "tracked_total": 6131,
+    "unclassified_tracked_total": 4097,
+    "unreachable_game_files": [
+      "gra/src/game/diplomacy-currency-trade.ts",
+      "gra/src/game/inca-llama-seed.ts",
+      "gra/src/game/map-rebels.ts",
+      "gra/src/game/wiarygodnosc-types.ts"
+    ],
+    "unresolved_relative_imports": [
+      {
+        "from": "gra/src/data/loader.ts",
+        "specifier": "./data/loader"
+      },
+      {
+        "from": "gra/src/map/earth-land-mask.ts",
+        "specifier": "./earth-land-mask.generated"
+      },
+      {
+        "from": "gra/src/map/territory.ts",
+        "specifier": "./map/territory"
+      },
+      {
+        "from": "gra/src/ui/armyListHud.ts",
+        "specifier": "./sideListHud.css"
+      },
+      {
+        "from": "gra/src/ui/cityListHud.ts",
+        "specifier": "./sideListHud.css"
+      }
+    ]
+  },
+  "next": "independent Evaluator",
+  "outputs_allowlist": [
+    "handoff/R-RUSTREAL-WEB-1TO1-PORT-Q1/00-PLAN-DZIALANIA.md",
+    "handoff/R-RUSTREAL-WEB-1TO1-PORT-Q1/01-HANDOFF-DLA-AGENTA.md",
+    "handoff/R-RUSTREAL-WEB-1TO1-PORT-Q1/02-MANIFEST-PLIKOW.json",
+    "handoff/R-RUSTREAL-WEB-1TO1-PORT-Q1/03-KRYTERIA-AKCEPTACJI.md",
+    "handoff/R-RUSTREAL-WEB-1TO1-PORT-Q1/04-INSTRUKCJA-POBRANIA.md",
+    "handoff/R-RUSTREAL-WEB-1TO1-PORT-Q1/05-STAN-BLEDNYCH-ARTEFAKTOW.md",
+    "handoff/R-RUSTREAL-WEB-1TO1-PORT-Q1/06-REJESTR-DECYZJI-I-RYZYK.json",
+    "handoff/R-RUSTREAL-WEB-1TO1-PORT-Q1/07-CHECKSUMS-SHA256.txt",
+    "dyspozycje/autobot/runs/R-RUSTREAL-WEB-1TO1-PORT-HANDOFF-Q1/01-operator.md",
+    "dyspozycje/autobot/runs/R-RUSTREAL-WEB-1TO1-PORT-HANDOFF-Q1/01-evidence.json",
+    "dyspozycje/autobot/runs/R-RUSTREAL-WEB-1TO1-PORT-HANDOFF-Q1/01-transition-receipt.md"
+  ],
+  "preexisting_untracked": [
+    "dyspozycje/autobot/runs/R-RUSTREAL-WEB-1TO1-PORT-HANDOFF-Q1/00-dispatch.md"
+  ],
+  "role": "Operator recovery",
+  "round": "1/5 recovery 1",
+  "run": "R-RUSTREAL-WEB-1TO1-PORT-HANDOFF-Q1",
+  "scope_readback": {
+    "bridge_or_tests_changed": false,
+    "commit_created": false,
+    "deploy_performed": false,
+    "forbidden_product_paths_changed": [],
+    "github_changed": false,
+    "gra_changed": false,
+    "gra_robocza_changed": false,
+    "product_change": false,
+    "push_performed": false,
+    "workflow_changed": false
+  },
+  "status": "PASS-WITH-NOTES",
+  "topic": "R-RUSTREAL-WEB-1TO1-PORT-Q1",
+  "validation_contract": {
+    "checksum_file_excludes_itself": true,
+    "exact_output_allowlist_excludes_preexisting_dispatch": true,
+    "json_files": [
+      "handoff/R-RUSTREAL-WEB-1TO1-PORT-Q1/02-MANIFEST-PLIKOW.json",
+      "handoff/R-RUSTREAL-WEB-1TO1-PORT-Q1/06-REJESTR-DECYZJI-I-RYZYK.json",
+      "dyspozycje/autobot/runs/R-RUSTREAL-WEB-1TO1-PORT-HANDOFF-Q1/01-evidence.json"
+    ],
+    "sha256_source": "Python hashlib.sha256; complete per-file records are in manifest.categories.*.files"
+  }
+}

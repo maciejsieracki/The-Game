@@ -1,0 +1,110 @@
+{
+  "decisions": [
+    {
+      "decision": "Oryginalny frontend webowy jest źródłem prawdy.",
+      "effect": "gra/** = reference_read_only.",
+      "id": "D1",
+      "status": "confirmed_by_dispatch"
+    },
+    {
+      "decision": "Rust/Tauri jest przyszłym lane produkcyjnym, ale obecny slice jest tylko harness em.",
+      "effect": "current frontend/map = REPLACE_OR_REWIRE.",
+      "id": "D2",
+      "status": "confirmed_by_dispatch"
+    },
+    {
+      "decision": "Nie tworzyć drugiego uproszczonego UI podobnego do weba.",
+      "effect": "prefer same web HTML/CSS/JS plus backend adapter.",
+      "id": "D3",
+      "status": "confirmed_by_dispatch"
+    },
+    {
+      "decision": "Mapa ma być prawdziwą mapą świata z oryginalnym rendererem i assetami.",
+      "effect": "HTML test grid is immediate FAIL.",
+      "id": "D4",
+      "status": "confirmed_by_dispatch"
+    },
+    {
+      "decision": "Start picker korzysta z pełnej puli weba i ma dziewięć opcji w scenariuszu początkowym.",
+      "effect": "three hard-coded civ is immediate FAIL.",
+      "id": "D5",
+      "status": "confirmed_by_dispatch"
+    },
+    {
+      "decision": "Kolejne prace przechodzą pełny obieg Kanban.",
+      "effect": "Operator → independent Evaluator → conditional Defense → Final Control → integration.",
+      "id": "D6",
+      "status": "confirmed_by_process"
+    },
+    {
+      "decision": "Packaging/install dopiero po parytecie.",
+      "effect": "existing MSI/NSIS remains non-parity evidence.",
+      "id": "D7",
+      "status": "confirmed_by_dispatch"
+    },
+    {
+      "decision": "Worker nie commit/pushuje; push jest osobną bramką Orkiestratora.",
+      "effect": "PUSH: NIE WYKONANO.",
+      "id": "D8",
+      "status": "confirmed_by_dispatch"
+    }
+  ],
+  "risks": [
+    {
+      "id": "R1",
+      "mitigation": "pełny manifest globby + statyczny graf + runtime asset map; dynamiczne URL-e wymagają osobnego dowodu.",
+      "risk": "Niepełny lub błędnie odtworzony graf importów/assetów.",
+      "severity": "high"
+    },
+    {
+      "id": "R2",
+      "mitigation": "REPLACE_OR_REWIRE, kryteria negatywne, zakaz placeholder patches.",
+      "risk": "Ponowne potraktowanie Tauri harnessu jako parytetu.",
+      "severity": "critical"
+    },
+    {
+      "id": "R3",
+      "mitigation": "runtime enumeration z ID/viewportem i test pełnej puli.",
+      "risk": "Lista civ nie odpowiada danym weba lub nie pokazuje dziewięciu startowych opcji.",
+      "severity": "high"
+    },
+    {
+      "id": "R4",
+      "mitigation": "screen-by-screen real-browser acceptance z pickingiem, terenem, rzekami, granicami, miastami i jednostkami.",
+      "risk": "Mapa pozostaje testową siatką zamiast world rendererem.",
+      "severity": "critical"
+    },
+    {
+      "id": "R5",
+      "mitigation": "jawny state contract, gracz/AI coverage i save/load gate.",
+      "risk": "Uproszczony bridge gubi stan lub save/load.",
+      "severity": "high"
+    },
+    {
+      "id": "R6",
+      "mitigation": "żywy Chromium/runtime + page/console errors + kontrolowana mutacja.",
+      "risk": "Fake DOM lub mock shell daje fałszywie zielony wynik.",
+      "severity": "high"
+    },
+    {
+      "id": "R7",
+      "mitigation": "po pushu exact SHA, git ls-tree i sha256sum -c; ten run nie pushuje.",
+      "risk": "Niezweryfikowane zdalne pobranie handoffu.",
+      "severity": "medium"
+    },
+    {
+      "id": "R8",
+      "mitigation": "hash tylko git-tracked inputs; outputs są poza manifestem lub jawnie oznaczone.",
+      "risk": "Wygenerowane lock/target/dist zaciemnią źródło.",
+      "severity": "medium"
+    }
+  ],
+  "status": "documented_handoff; product_parity_not_implemented",
+  "topic": "R-RUSTREAL-WEB-1TO1-PORT-Q1",
+  "unresolved": [
+    "dokładny wybór wariantu frontend strategy po reference capture",
+    "pełna mapa adaptera Rust state → web contract",
+    "ustalone viewporty i fixture scenariuszy QA",
+    "platform/package/signing decision po parytecie"
+  ]
+}
