@@ -13,6 +13,16 @@ swoim wĹ‚asnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji d
 > Pakiet 3 z 2026-08-20 jest docs-only i nie tworzy wpisu ROBOCZA/KANON/FINALNA;
 > ten plik pozostaje wyłącznie rejestrem publikacji bundli.
 
+## ROBOCZA 9ca971c4 - 2026-09-21 19:26 UTC - FALA 389 - bounded civilization matrix
+
+|- md5 `9ca971c4a2f10130bdba954e45cb2114` · sha256 `8ba6a8cfd5ec1835883d4a3266a7de85dd8ff868200e7407a8cd0f57c5a865f8` · rozmiar `69901148` bajtów.
+|- source/integration commit: `cd7df6b655e1a061af1f6e3c88c7158993ad5578`; base: `f4c89d0081c622c16b207d338b49c8bacafc4553`.
+|- Scope: `R-CYWILIZACJE-MACIERZ-SEMANTYKA-LABELS-IMPLEMENTACJA-Q1` (Normal semantic classifier + 113-row UI) oraz `R-CYWILIZACJE-MACIERZ-14-POZOSTALE-Q1` (14×113 specification/audit package).
+|- Final Control: `t_72362f60/run894` PASS-WITH-NOTES; `t_a1766119/run871` PASS-WITH-NOTES. Independent pre-commit review PASS; no security or logic objections.
+|- Gates: semantic `41/0`, Greece `390/0`, difficulty `16/0`, 14-matrix `1582/1582`, TypeScript PASS, Vite `891` modules, real Chromium UI flow PASS, `verify-robocza-bundle.cjs` `VERIFY OK`.
+|- Remote readback: publish commit `5a4e87b72003930d698c9d7411f57273ccb9b0bd`; GitHub raw bundle and manifest HTTP `200`; remote hashes/bytes match the manifest. Linux stamp `WARN` is the known Node-port behavior.
+|- 97 semantic rows remain `D_REQUIRED/UNWIRED`; 14-matrix `DEAD_UNWIRED/UNWIRED` fields remain specification-only. No promotion to KANON/FINALNA.
+
 ## ROBOCZA 0816f385 - 2026-09-18 16:35 UTC - FALA 388 - sześć zatwierdzonych tematów
 
 |- md5 `0816f385ef6b38e368ca11c0edf11ae5` · sha256 `4962b053c46d121f779ac9dca46cb1860b2281c223c413c3eb981cb34651ede4` · rozmiar `69881460` bajtów.

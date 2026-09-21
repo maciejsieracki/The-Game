@@ -1,6 +1,6 @@
 {
-  "publishedAt": "2026-09-21T19:23:20Z",
-  "republishedAt": "2026-09-21T19:23:20Z",
+  "publishedAt": "2026-09-21T19:26:44Z",
+  "republishedAt": "2026-09-21T19:26:44Z",
   "productReleaseCommit": "cd7df6b655e1a061af1f6e3c88c7158993ad5578",
   "publisher": "Hermes Orchestrator",
   "md5": "9ca971c4a2f10130bdba954e45cb2114",
@@ -10,9 +10,9 @@
   "sourceCommit": "cd7df6b655e1a061af1f6e3c88c7158993ad5578",
   "base": "f4c89d0081c622c16b207d338b49c8bacafc4553",
   "integrationCommit": "cd7df6b655e1a061af1f6e3c88c7158993ad5578",
-  "publishCommit": "PENDING_REMOTE_READBACK",
-  "remoteMainAtPublish": "PENDING_REMOTE_READBACK",
-  "remoteSmoke": false,
+  "publishCommit": "5a4e87b72003930d698c9d7411f57273ccb9b0bd",
+  "remoteMainAtPublish": "5a4e87b72003930d698c9d7411f57273ccb9b0bd",
+  "remoteSmoke": true,
   "finalControl": [
     "t_449872b9/run726 PASS",
     "t_0b7ea103/run738 PASS",

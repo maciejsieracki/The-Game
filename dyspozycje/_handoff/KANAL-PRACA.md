@@ -1,3 +1,17 @@
+## [2026-09-21 UTC] ORKIESTRATOR → KANBAN / WŁAŚCICIEL — DEPLOY ROBOCZA FALA 389 / CIVILIZATION MATRIX BOUNDED SCOPE
+
+STATUS: `DEPLOYED — remote main/readback/smoke PASS`.
+
+- Clean integration branch: `hermes/integration/R-CYWILIZACJE-MACIERZ-BOUNDED-Q1-20260921`; base `origin/main=f4c89d0081c622c16b207d338b49c8bacafc4553`.
+- Product commit: `1f242606399132aeb9a61b436f76cce6d5a49741`; receipt commit: `cd7df6b655e1a061af1f6e3c88c7158993ad5578`.
+- Scope: `R-CYWILIZACJE-MACIERZ-SEMANTYKA-LABELS-IMPLEMENTACJA-Q1` — Normal classifier + 113-row profile UI; `R-CYWILIZACJE-MACIERZ-14-POZOSTALE-Q1` — 14×113 evidence/spec package.
+- Gates: semantic `41/0`, Greece `390/0`, difficulty `16/0`, 14-matrix `1582/1582`, TypeScript PASS, Vite `891` modules, real Chromium flow PASS, verifier `VERIFY OK`.
+- Bundle: MD5 `9ca971c4a2f10130bdba954e45cb2114`, SHA-256 `8ba6a8cfd5ec1835883d4a3266a7de85dd8ff868200e7407a8cd0f57c5a865f8`, `69901148` bytes.
+- Publish commit: `5a4e87b72003930d698c9d7411f57273ccb9b0bd`; remote `main` and GitHub raw bundle/manifest readback match; HTTP `200`.
+- Boundary: 97 semantic `D_REQUIRED/UNWIRED` rows and 14-matrix `DEAD_UNWIRED/UNWIRED` fields remain explicit and are not claimed as runtime-consumed. No KANON/FINALNA promotion.
+
+CZEKAM-NA: test właściciela w `gra-robocza/START.html` po `Ctrl+F5`; otwarte matrix decisions remain separate.
+
 ## [2026-09-18 UTC] ORKIESTRATOR → KANBAN / WŁAŚCICIEL — DEPLOY ROBOCZA FALA 387 / AF4
 
 STATUS: `DEPLOYED — remote main/readback/smoke PASS`.

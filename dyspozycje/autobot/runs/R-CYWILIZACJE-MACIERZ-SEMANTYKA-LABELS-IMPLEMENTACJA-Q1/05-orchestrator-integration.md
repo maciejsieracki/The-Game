@@ -1,6 +1,6 @@
 # 05-orchestrator-integration — bounded civilization matrix release
 
-STATUS: ORCHESTRATOR INTEGRATION CANDIDATE — PRODUCT COMMIT CREATED
+STATUS: DEPLOYED TO ROBOCZA — REMOTE READBACK PASS
 DATE: 2026-09-21
 OWNER AUTHORIZATION: owner explicitly ordered both civilization-matrix topics to be finished urgently and everything possible to be introduced into ROBOCZA.
 BOARD: the-game-real24
@@ -10,6 +10,7 @@ BASE: origin/main=f4c89d0081c622c16b207d338b49c8bacafc4553
 WORKTREE: /home/ubuntu/projects/The-Game-civ-matrix-bounded-integration-20260921
 BRANCH: hermes/integration/R-CYWILIZACJE-MACIERZ-BOUNDED-Q1-20260921
 PRODUCT COMMIT: 1f242606 ([verified] integrate bounded civilization matrix UI)
+PUBLISH COMMIT: 5a4e87b72003930d698c9d7411f57273ccb9b0bd
 
 ## Integrated scope
 
@@ -69,12 +70,17 @@ PRODUCT COMMIT: 1f242606 ([verified] integrate bounded civilization matrix UI)
 
 ## Delivery boundary
 
-Product commit `1f242606` exists locally and is one commit ahead of
-`origin/main`. No push, merge to `main`, remote publication or ROBOCZA overwrite
-has occurred at the time of this receipt. Process evidence and the integration
-receipt are intentionally held for a separate explicit receipt commit.
+Product commit `1f242606`, receipt commit `cd7df6b655e1a061af1f6e3c88c7158993ad5578`
+and publish commit `5a4e87b72003930d698c9d7411f57273ccb9b0bd` are complete. The
+publish was a fast-forward to remote `main`; remote SHA readback matches the
+publish commit. Remote GitHub raw reads returned HTTP `200` for both the bundle
+and manifest. Remote bundle hashes/bytes match the manifest exactly:
 
-The next legal Orchestrator action is to commit the named process/evidence
-paths separately, run the final release build from this exact HEAD, publish the
-bounded scope to ROBOCZA, and read back remote `main`, the manifest, hashes,
-verifier and HTTP/runtime result. No promotion to KANON or FINALNA is included.
+- MD5 `9ca971c4a2f10130bdba954e45cb2114`;
+- SHA-256 `8ba6a8cfd5ec1835883d4a3266a7de85dd8ff868200e7407a8cd0f57c5a865f8`;
+- `69901148` bytes;
+- verifier `VERIFY OK` (Linux stamp mismatch is the known Node-port warning).
+
+The bounded scope is now in ROBOCZA. No promotion to KANON or FINALNA is
+included. The 97 semantic unresolved rows and the 14-matrix
+`DEAD_UNWIRED/UNWIRED` classifications remain explicit.

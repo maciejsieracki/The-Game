@@ -1,11 +1,13 @@
 # 03-orchestrator-integration — 14-civilization matrix evidence package
 
-STATUS: INCLUDED IN BOUNDED RELEASE CANDIDATE — PRODUCT COMMIT 1f242606
+STATUS: PUBLISHED TO ROBOCZA — REMOTE READBACK PASS (5a4e87b7)
 DATE: 2026-09-21
 BOARD: the-game-real24
 PROFILE: default
 PROJECT: p_9ae9ac64
 BASE: origin/main=f4c89d0081c622c16b207d338b49c8bacafc4553
+PRODUCT COMMIT: 1f242606
+PUBLISH COMMIT: 5a4e87b72003930d698c9d7411f57273ccb9b0bd
 
 The owner authorized urgent completion of both civilization-matrix topics and
 inclusion of everything that is actually proven. The clean integration candidate
@@ -35,3 +37,8 @@ decisions remain `HIST-14-RESERVE`, `DIFF-TRADE`, `DIFF-TRUST`, `WIRE-113`,
 
 The complete integration receipt is recorded in the companion semantic run:
 `dyspozycje/autobot/runs/R-CYWILIZACJE-MACIERZ-SEMANTYKA-LABELS-IMPLEMENTACJA-Q1/05-orchestrator-integration.md`.
+
+Remote readback matched the publish SHA and manifest: bundle MD5
+`9ca971c4a2f10130bdba954e45cb2114`, SHA-256
+`8ba6a8cfd5ec1835883d4a3266a7de85dd8ff868200e7407a8cd0f57c5a865f8`,
+`69901148` bytes, HTTP `200`. No KANON/FINALNA promotion was performed.
