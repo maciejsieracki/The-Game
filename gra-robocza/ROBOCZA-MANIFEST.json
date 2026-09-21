@@ -1,25 +1,27 @@
 {
-  "publishedAt": "2026-09-18T16:35:34Z",
-  "republishedAt": "2026-09-18T16:35:34Z",
-  "productReleaseCommit": "95fd93050585c19584700e34205da74576f2150f",
+  "publishedAt": "2026-09-21T19:23:20Z",
+  "republishedAt": "2026-09-21T19:23:20Z",
+  "productReleaseCommit": "cd7df6b655e1a061af1f6e3c88c7158993ad5578",
   "publisher": "Hermes Orchestrator",
-  "md5": "0816f385ef6b38e368ca11c0edf11ae5",
-  "sha256": "4962b053c46d121f779ac9dca46cb1860b2281c223c413c3eb981cb34651ede4",
-  "bytes": 69881460,
+  "md5": "9ca971c4a2f10130bdba954e45cb2114",
+  "sha256": "8ba6a8cfd5ec1835883d4a3266a7de85dd8ff868200e7407a8cd0f57c5a865f8",
+  "bytes": 69901148,
   "bundle": "Gra-ROBOCZA.html",
-  "sourceCommit": "95fd93050585c19584700e34205da74576f2150f",
-  "base": "7d02dfc5b73e992e389dd01992a52159e943a621",
-  "integrationCommit": "95fd93050585c19584700e34205da74576f2150f",
-  "publishCommit": "1a181406d88a554d1f0e8586160cc04cca0b99e0",
-  "remoteMainAtPublish": "1a181406d88a554d1f0e8586160cc04cca0b99e0",
-  "remoteSmoke": true,
+  "sourceCommit": "cd7df6b655e1a061af1f6e3c88c7158993ad5578",
+  "base": "f4c89d0081c622c16b207d338b49c8bacafc4553",
+  "integrationCommit": "cd7df6b655e1a061af1f6e3c88c7158993ad5578",
+  "publishCommit": "PENDING_REMOTE_READBACK",
+  "remoteMainAtPublish": "PENDING_REMOTE_READBACK",
+  "remoteSmoke": false,
   "finalControl": [
     "t_449872b9/run726 PASS",
     "t_0b7ea103/run738 PASS",
     "t_9f092ab3/run741 PASS-WITH-NOTES",
     "t_633d081e/run729 PASS",
     "t_4fce5bc7/run745 PASS-WITH-NOTES",
-    "t_d7c5ad3a/run750 PASS-WITH-NOTES"
+    "t_d7c5ad3a/run750 PASS-WITH-NOTES",
+    "t_72362f60/run894 PASS-WITH-NOTES",
+    "t_a1766119/run871 PASS-WITH-NOTES"
   ],
   "scope": [
     "R-AUTO-BITWY-STRATY-ROZKLAD-MOC-PARAMETRY-Q1",
@@ -27,7 +29,9 @@
     "R-START-CIVILIZATION-CITYSTATES-Q1",
     "R-STARTOWE-ZWIADOWCA-PO-JEDNYM-Q1",
     "R-MILITIA-GARRISON-Q1",
-    "R-CITIES-BUILDINGS-PRODUCTION-Q1"
+    "R-CITIES-BUILDINGS-PRODUCTION-Q1",
+    "R-CYWILIZACJE-MACIERZ-SEMANTYKA-LABELS-IMPLEMENTACJA-Q1",
+    "R-CYWILIZACJE-MACIERZ-14-POZOSTALE-Q1"
   ],
   "noOpVerified": [
     "R-MIASTA-KOLONIA-NAZWA-POOL-Q1",
@@ -41,6 +45,8 @@
     "R-AI-BUDZET-SKARB-NAUKA-ZAMOZNOSC-Q1: no production change; test/audit evidence only",
     "R-BUILDING-COSTS-Q1: separate implementation/evaluation still in progress",
     "Rust R20-R24",
+    "R-CYWILIZACJE-MACIERZ-SEMANTYKA-LABELS-IMPLEMENTACJA-Q1: 97 D_REQUIRED/UNWIRED rows remain outside runtime integration",
+    "R-CYWILIZACJE-MACIERZ-14-POZOSTALE-Q1: DEAD_UNWIRED/UNWIRED fields remain specification-only",
     "promotion to KANON/FINALNA"
   ],
   "bundles": [
@@ -48,76 +54,76 @@
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html?skipMenuRedirect=1",
       "label": "Pełna gra ROBOCZA",
-      "md5": "0816f385ef6b38e368ca11c0edf11ae5",
-      "sizeBytes": 69881460
+      "md5": "9ca971c4a2f10130bdba954e45cb2114",
+      "sizeBytes": 69901148
     },
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html",
       "label": "Pełna gra (z menu)",
-      "md5": "0816f385ef6b38e368ca11c0edf11ae5",
-      "sizeBytes": 69881460
+      "md5": "9ca971c4a2f10130bdba954e45cb2114",
+      "sizeBytes": 69901148
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "label": "Playtest: DUŻA bitwa (pole) — NOWE",
-      "md5": "0816f385ef6b38e368ca11c0edf11ae5",
-      "sizeBytes": 69881460
+      "md5": "9ca971c4a2f10130bdba954e45cb2114",
+      "sizeBytes": 69901148
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "label": "Playtest: DUŻE oblężenie (mur) — NOWE",
-      "md5": "0816f385ef6b38e368ca11c0edf11ae5",
-      "sizeBytes": 69881460
+      "md5": "9ca971c4a2f10130bdba954e45cb2114",
+      "sizeBytes": 69901148
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "label": "Playtest: mapa świat",
-      "md5": "0816f385ef6b38e368ca11c0edf11ae5",
-      "sizeBytes": 69881460
+      "md5": "9ca971c4a2f10130bdba954e45cb2114",
+      "sizeBytes": 69901148
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "label": "Playtest: miasto / ekonomia",
-      "md5": "0816f385ef6b38e368ca11c0edf11ae5",
-      "sizeBytes": 69881460
+      "md5": "9ca971c4a2f10130bdba954e45cb2114",
+      "sizeBytes": 69901148
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "label": "Playtest: walka na mapie",
-      "md5": "0816f385ef6b38e368ca11c0edf11ae5",
-      "sizeBytes": 69881460
+      "md5": "9ca971c4a2f10130bdba954e45cb2114",
+      "sizeBytes": 69901148
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "label": "Playtest: odskok 3v3",
-      "md5": "0816f385ef6b38e368ca11c0edf11ae5",
-      "sizeBytes": 69881460
+      "md5": "9ca971c4a2f10130bdba954e45cb2114",
+      "sizeBytes": 69901148
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "label": "Playtest: odskok + oblężenie",
-      "md5": "0816f385ef6b38e368ca11c0edf11ae5",
-      "sizeBytes": 69881460
+      "md5": "9ca971c4a2f10130bdba954e45cb2114",
+      "sizeBytes": 69901148
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "label": "Playtest: oblężenie 3v3",
-      "md5": "0816f385ef6b38e368ca11c0edf11ae5",
-      "sizeBytes": 69881460
+      "md5": "9ca971c4a2f10130bdba954e45cb2114",
+      "sizeBytes": 69901148
     }
   ],
   "startHub": "START.html",
-  "hubGeneratedAt": "2026-09-18T16:34:06",
-  "note": "ROBOCZA FALA 388 — sześć zatwierdzonych tematów; current-base integration; no promotion to KANON/FINALNA",
+  "hubGeneratedAt": "2026-09-21T19:22:45",
+  "note": "ROBOCZA FALA 389 — bounded civilization matrix semantic/UI integration plus 14x113 evidence package; unresolved consumers remain explicit; no promotion to KANON/FINALNA",
   "backlogReconciliation": {
     "status": "ALREADY_IN_TARGET_OR_NO_OP",
     "recordedAt": "2026-09-17T23:26:49Z",
