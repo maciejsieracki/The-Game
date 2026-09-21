@@ -250,6 +250,20 @@ import {
 } from './siegeHud1E';
 
 export type { BattleMinimapData, BattleMinimapUnit, BattleMinimapViewport } from './battleMinimap';
+import { resolveAutoBatchPhase } from './autoBatchPhase';
+import type {
+  AutoBatchIntent,
+  AutoBatchPhase,
+  AutoBatchResolution,
+  AutoBatchUnitSnapshot,
+} from './autoBatchPhase';
+export { resolveAutoBatchPhase } from './autoBatchPhase';
+export type {
+  AutoBatchIntent,
+  AutoBatchPhase,
+  AutoBatchResolution,
+  AutoBatchUnitSnapshot,
+} from './autoBatchPhase';
 
 // ---------------------------------------------------------------------------
 // SQUARE-GRID FACING (4 directions: N / E / S / W)
@@ -2198,6 +2212,13 @@ export class BattleScene {
    * i _executeUnitsImmediate odrzuca rozkazy gracza.
    */
   private _autoBattleSuspended = false;
+  /** AUTO resolves one side as a frozen wave before opening the next side. */
+  private _autoBatchPhase: AutoBatchPhase | null = null;
+  private _autoBatchResolutions: AutoBatchResolution[] = [];
+  private _autoBatchPending = 0;
+  private _autoBatchToken = 0;
+  /** Non-mutating planner context used while taking a phase snapshot. */
+  private _autoBatchPlanning: { intent: AutoBatchIntent } | null = null;
   /** Jednostki z rozkazem odlozonym (Ctrl/Shift) — wykonaj na SPACJI. */
   private _queuedOrderUnitIds = new Set<string>();
   /** Zaznaczone jednostki gracza (id). */
@@ -3458,6 +3479,8 @@ export class BattleScene {
       'Tura ' + (this.roundNo + 1) + ' — klik: ruch/atak od razu · Ctrl/Shift: dyspozycja · SPACJA: wykonaj odlozone.';
     if (this.roundNo === 0) {
       this._beginTurn();
+    } else if (!this._manualMode && this.siegeWallCol < 0) {
+      this._beginAutoBatchTurnFromCurrentState();
     } else {
       this._activateNext();
     }
@@ -5321,7 +5344,300 @@ export class BattleScene {
       'Tura ' + this.roundNo + ' — klik: ruch/atak od razu. Ctrl/Shift: dyspozycja · SPACJA: wykonaj odlozone.';
 
     this._updateBattlePhaseBanner();
+    // AUTO field battles use two barriers per round: all attacker intents are
+    // planned from one phase-start snapshot and launched as a wave, then the
+    // defender wave starts only after that animation/damage wave settles.
+    // Siege keeps its dedicated wall/gate choreography until those actions are
+    // represented by the same phase contract.
+    if (!this._manualMode && this.siegeWallCol < 0) {
+      this._beginAutoBatchPhase('atk', a);
+      return;
+    }
     this._activateNext();
+  }
+
+  /**
+   * Start AUTO on the unacted part of an already-open turn. This is used when
+   * the player switches from RECZNY to AUTO while the planning screen is open;
+   * it must not increment the round or reset movement a second time.
+   */
+  private _beginAutoBatchTurnFromCurrentState(): void {
+    if (this.finished || this._manualMode || this.siegeWallCol >= 0) return;
+    const liveUnacted = (ru: RuntimeBattleUnit): boolean =>
+      !ru.dead && !ru.fadingOut && !ru.removed && !ru.acted;
+    const atk = this.atk.filter(liveUnacted);
+    const def = this.def.filter(liveUnacted);
+    if (atk.length > 0) this._beginAutoBatchPhase('atk', atk);
+    else this._beginAutoBatchPhase('def', def);
+  }
+
+  /** Take a phase-start snapshot and resolve all actions as one AUTO wave. */
+  private _beginAutoBatchPhase(side: AutoBatchPhase, units: RuntimeBattleUnit[]): void {
+    if (this.finished || this._manualMode || this._autoBattleSuspended) return;
+
+    const snapshots = [...this.atk, ...this.def].map((ru): AutoBatchUnitSnapshot => ({
+      id: ru.bu.id,
+      side: ru.side,
+      q: ru.q,
+      r: ru.r,
+      dead: ru.dead || ru.fadingOut,
+      fadingOut: ru.fadingOut,
+      routed: ru.routed,
+      removed: ru.removed,
+      acted: ru.acted,
+      hp: ru.bu.hp,
+      occupies: this.occByKey.get(cellKey(ru.q, ru.r)) === ru,
+    }));
+    // The phase is frozen before any live action is launched. Planning clones
+    // are rebuilt per unit below, so each decision sees exactly this snapshot,
+    // never a previous same-side move.
+    const intents = this._snapshotAutoBatchIntents(side, units);
+    this._autoBatchPhase = side;
+    this._autoBatchResolutions = resolveAutoBatchPhase(side, snapshots, intents);
+    this._autoBatchPending = this._autoBatchResolutions.length;
+    const token = ++this._autoBatchToken;
+    const first = this._autoBatchResolutions[0];
+    this._updateBattlePhaseBanner(first ? this._findUnitById(first.unitId) : undefined);
+
+    if (this._autoBatchPending === 0) {
+      this._finishAutoBatchPhase(token);
+      return;
+    }
+    // Do not schedule an ACT_GAP between members. Every movement/attack starts
+    // from the same virtual timestamp; the defender phase cannot start until
+    // every callback in this wave has completed.
+    for (const resolution of this._autoBatchResolutions) {
+      this._launchAutoBatchResolution(resolution, token);
+    }
+  }
+
+  /**
+   * Ask the existing AUTO decision tree for every unit without touching live
+   * state. A fresh clone board is installed for each decision, which is the
+   * important distinction from sequential AUTO: earlier intents cannot move a
+   * later unit's target or occupancy while the phase is being planned.
+   */
+  private _snapshotAutoBatchIntents(side: AutoBatchPhase, units: RuntimeBattleUnit[]): AutoBatchIntent[] {
+    const originalAtk = this.atk;
+    const originalDef = this.def;
+    const originalOcc = this.occByKey;
+    const originalTimers = this.vTimers;
+    const originalLogLength = this.log.length;
+    const originalRoutedLength = this.routedUnits.length;
+    const intents: AutoBatchIntent[] = [];
+
+    try {
+      for (const source of units) {
+        const cloneById = new Map<string, RuntimeBattleUnit>();
+        const cloneRoster = (roster: RuntimeBattleUnit[]): RuntimeBattleUnit[] => roster.map(ru => {
+          const clone = this._cloneForAutoBatchPlanning(ru);
+          cloneById.set(ru.bu.id, clone);
+          return clone;
+        });
+        const cloneAtk = cloneRoster(originalAtk);
+        const cloneDef = cloneRoster(originalDef);
+        const cloneOcc = new Map<string, RuntimeBattleUnit>();
+        for (const [key, liveUnit] of originalOcc) {
+          const clone = cloneById.get(liveUnit.bu.id);
+          if (clone && !clone.dead && !clone.fadingOut && !clone.removed) {
+            cloneOcc.set(key, clone);
+          }
+        }
+        const clone = cloneById.get(source.bu.id);
+        if (!clone) continue;
+
+        const intent: AutoBatchIntent = {
+          unitId: source.bu.id,
+          side,
+          kind: 'hold',
+          steps: [],
+        };
+        this.atk = cloneAtk;
+        this.def = cloneDef;
+        this.occByKey = cloneOcc;
+        this._autoBatchPlanning = { intent };
+        const startCol = clone.q;
+        const startRow = clone.r;
+        try {
+          this._activateUnit(clone, () => {});
+        } finally {
+          this._autoBatchPlanning = null;
+          this._disposeAutoBatchPlanningRoster(cloneAtk);
+          this._disposeAutoBatchPlanningRoster(cloneDef);
+        }
+        // Special movement branches may update q/r without passing _doMove.
+        if (intent.steps.length === 0 && (clone.q !== startCol || clone.r !== startRow)) {
+          intent.kind = intent.kind === 'attack' ? 'attack' : 'move';
+          intent.steps.push({ col: clone.q, row: clone.r });
+        }
+        intents.push(intent);
+      }
+    } finally {
+      this._autoBatchPlanning = null;
+      this.atk = originalAtk;
+      this.def = originalDef;
+      this.occByKey = originalOcc;
+      this.vTimers = originalTimers;
+      // Planning clones may rout or write a combat log entry. Neither is a live
+      // battle result; keep those side effects private to the planning clone.
+      this.log.length = originalLogLength;
+      this.routedUnits.length = originalRoutedLength;
+    }
+    return intents;
+  }
+
+  /** Clone only state read by AUTO planning; never share live render resources. */
+  private _cloneForAutoBatchPlanning(source: RuntimeBattleUnit): RuntimeBattleUnit {
+    const barMesh = (): THREE.Mesh => new THREE.Mesh(
+      new THREE.BoxGeometry(1, 1, 1),
+      new THREE.MeshBasicMaterial(),
+    );
+    return {
+      ...source,
+      bu: { ...source.bu, stats: { ...source.bu.stats } },
+      group: new THREE.Group(),
+      hpBarFg: barMesh(),
+      hpBarBg: barMesh(),
+      hpBarGroup: new THREE.Group(),
+      moraleBarFg: barMesh(),
+      moraleBarBg: barMesh(),
+      ammoBarFg: barMesh(),
+      ammoBarBg: barMesh(),
+      playerOrder: { ...source.playerOrder },
+      formationOffset: source.formationOffset ? { ...source.formationOffset } : null,
+      unitTargetPriorities: source.unitTargetPriorities ? { ...source.unitTargetPriorities } : undefined,
+      mats: [],
+      perTokenGeos: [],
+    };
+  }
+
+  /** Dispose detached bar resources created solely for one planning clone. */
+  private _disposeAutoBatchPlanningRoster(roster: RuntimeBattleUnit[]): void {
+    for (const ru of roster) {
+      for (const mesh of [
+        ru.hpBarFg,
+        ru.hpBarBg,
+        ru.moraleBarFg,
+        ru.moraleBarBg,
+        ru.ammoBarFg,
+        ru.ammoBarBg,
+      ]) {
+        mesh.geometry.dispose();
+        const materials = Array.isArray(mesh.material) ? mesh.material : [mesh.material];
+        for (const material of materials) material.dispose();
+      }
+    }
+  }
+
+  /** Launch one already-resolved action; completion is counted exactly once. */
+  private _launchAutoBatchResolution(resolution: AutoBatchResolution, token: number): void {
+    let completed = false;
+    const complete = (): void => {
+      if (completed || token !== this._autoBatchToken) return;
+      completed = true;
+      const ru = this._findUnitById(resolution.unitId);
+      if (ru && !ru.dead && !ru.fadingOut && !ru.removed) ru.acted = true;
+      this._autoBatchPending = Math.max(0, this._autoBatchPending - 1);
+      if (this._autoBatchPending === 0) {
+        this._schedule(ACT_GAP_MS, () => this._finishAutoBatchPhase(token));
+      }
+    };
+
+    const ru = this._findUnitById(resolution.unitId);
+    if (!ru || ru.dead || ru.fadingOut || ru.removed) {
+      complete();
+      return;
+    }
+    if (ru.routed) {
+      if (resolution.steps.length > 0) {
+        this._resolveAutoBatchMovement(ru, resolution, 0, complete);
+      } else {
+        this._fleeStep(ru, complete);
+      }
+      return;
+    }
+    if ((resolution.kind === 'move' || resolution.kind === 'attack') && resolution.steps.length > 0) {
+      this._resolveAutoBatchMovement(ru, resolution, 0, complete);
+      return;
+    }
+    if (resolution.kind === 'move' || resolution.kind === 'hold') {
+      complete();
+      return;
+    }
+    if (!resolution.targetId) {
+      complete();
+      return;
+    }
+    this._resolveAutoBatchAttack(ru, resolution.targetId, complete);
+  }
+
+  /** Attack the frozen target when the unit's frozen movement path completes. */
+  private _resolveAutoBatchAttack(
+    attacker: RuntimeBattleUnit,
+    targetId: string,
+    done: () => void,
+  ): void {
+    const target = this._findUnitById(targetId);
+    if (!target || target.dead || target.fadingOut || target.removed || target.routed
+      || !this._enemiesOf(attacker).includes(target)
+      || !this._canStrikeTargetFrom(attacker, attacker.q, attacker.r, target)) {
+      done();
+      return;
+    }
+    this._applyTerrainRange(attacker);
+    this._doAttack(attacker, target, done);
+  }
+
+  /** Resolve one frozen path; different units remain animated concurrently. */
+  private _resolveAutoBatchMovement(
+    ru: RuntimeBattleUnit,
+    resolution: AutoBatchResolution,
+    stepIdx: number,
+    done: () => void,
+  ): void {
+    if (this.finished || this._autoBattleSuspended || this._manualMode) return;
+    if (stepIdx >= resolution.steps.length) {
+      if (ru.routed) {
+        const homeCol = ru.side === 'atk' ? 0 : (BF_COLS - 1);
+        const reached = ru.side === 'atk' ? ru.q <= homeCol : ru.q >= homeCol;
+        if (reached) {
+          this._removeUnitFromScene(ru);
+          this._shakeAlliesOnLoss(ru);
+        }
+        done();
+        return;
+      }
+      if (resolution.kind === 'attack' && resolution.targetId) {
+        this._resolveAutoBatchAttack(ru, resolution.targetId, done);
+        return;
+      }
+      done();
+      return;
+    }
+    const step = resolution.steps[stepIdx]!;
+    const occupant = this.occByKey.get(cellKey(step.col, step.row));
+    if ((occupant && occupant !== ru) || !this._passableForUnit(ru, step.col, step.row)) {
+      done();
+      return;
+    }
+    this._doMove(ru, step.col, step.row, () => {
+      this._resolveAutoBatchMovement(ru, resolution, stepIdx + 1, done);
+    });
+  }
+
+  /** End attacker phase only after its entire animation wave has settled. */
+  private _finishAutoBatchPhase(token: number): void {
+    if (token !== this._autoBatchToken || this.finished || this._autoBattleSuspended || this._manualMode) return;
+    if (this._checkEnd()) return;
+    if (this._autoBatchPhase === 'atk') {
+      const defenders = this.def.filter(u => !u.dead && !u.fadingOut && !u.removed && !u.acted);
+      this._beginAutoBatchPhase('def', defenders);
+      return;
+    }
+    this._autoBatchPhase = null;
+    this._autoBatchResolutions = [];
+    this._autoBatchPending = 0;
+    this._schedule(TURN_GAP_MS, () => this._beginTurn());
   }
 
   /**
@@ -7629,6 +7945,27 @@ export class BattleScene {
   // -------------------------------------------------------------------------
 
   private _doMove(ru: RuntimeBattleUnit, col: number, row: number, done: () => void): void {
+    if (this._autoBatchPlanning) {
+      const intent = this._autoBatchPlanning.intent;
+      const oldKey = cellKey(ru.q, ru.r);
+      const newKey = cellKey(col, row);
+      this.occByKey.delete(oldKey);
+      this.occByKey.set(newKey, ru);
+      const oldCol = ru.q;
+      const oldRow = ru.r;
+      ru.q = col;
+      ru.r = row;
+      const enterCost = Math.max(1, Math.min(this._moveCostForUnit(ru, col, row), 99));
+      const wadingFord = isFordTile(this.terrainMap, oldCol, oldRow)
+        || isFordTile(this.terrainMap, col, row);
+      const stepCost = wadingFord ? enterCost / BROD_RUCH_MULT : enterCost;
+      ru.moveLeft = Math.max(0, ru.moveLeft - stepCost);
+      this._updateFacing(ru);
+      if (intent.kind !== 'attack') intent.kind = 'move';
+      intent.steps.push({ col, row });
+      done();
+      return;
+    }
     this.busy = true;
     const oldKey = cellKey(ru.q, ru.r);
     const newKey = cellKey(col, row);
@@ -7702,6 +8039,13 @@ export class BattleScene {
   // -------------------------------------------------------------------------
 
   private _doAttack(attacker: RuntimeBattleUnit, defender: RuntimeBattleUnit, done: () => void): void {
+    if (this._autoBatchPlanning) {
+      const intent = this._autoBatchPlanning.intent;
+      intent.kind = 'attack';
+      intent.targetId = defender.bu.id;
+      done();
+      return;
+    }
     if (canShoot(attacker)) this._doRangedAttack(attacker, defender, done);
     else                    this._doMeleeAttack(attacker, defender, done);
   }
@@ -8357,6 +8701,14 @@ export class BattleScene {
    * gaps catches up fully within a frame, so tempo scales linearly to 16x.
    */
   private _schedule(ms: number, cb: () => void): void {
+    // AUTO planning runs on detached clones. Execute its continuation
+    // synchronously so the intent is complete before the next unit is planned;
+    // never enqueue clone callbacks into the live battle timer queue.
+    if (this._autoBatchPlanning) {
+      void ms;
+      cb();
+      return;
+    }
     if (this.finished) return;
     this.vTimers.push({ due: this._now() + Math.max(0, ms), cb, id: this.vTimerSeq++ });
   }
@@ -8554,7 +8906,7 @@ export class BattleScene {
 
   private _startRout(ru: RuntimeBattleUnit): void {
     if (ru.routed || ru.dead || ru.fadingOut) return;
-    this._sfxRout(); // AUDIO: a brief falling horn as the unit breaks
+    if (!this._autoBatchPlanning) this._sfxRout(); // clone planning is silent
     ru.routed = true;
     ru.acted  = true; // never takes another offensive action
     if (!ru.primaryRanged) this._checkMeleeScreenLost(ru.side);
@@ -15992,6 +16344,13 @@ export class BattleScene {
   private _haltAutoBattleTurn(suspendInFlight = true): void {
     this.vTimers.length = 0;
     this.busy = false;
+    // Invalidate every completion callback from the old AUTO wave. The visual
+    // rAF callbacks cannot be cancelled here, but their token check prevents a
+    // stale member from reopening an AUTO phase after RECZNY takes over.
+    this._autoBatchToken++;
+    this._autoBatchPhase = null;
+    this._autoBatchResolutions = [];
+    this._autoBatchPending = 0;
     this._battleAwaitingOrders = true;
     if (suspendInFlight) this._autoBattleSuspended = true;
   }
@@ -16018,7 +16377,9 @@ export class BattleScene {
         this._kickoffBattleTurn();
       } else if (this.started && !this.finished) {
         this._battleAwaitingOrders = false;
-        this._activateNext();
+        this._autoBattleSuspended = false;
+        if (this.siegeWallCol >= 0) this._activateNext();
+        else this._beginAutoBatchTurnFromCurrentState();
       }
     } else {
       this._haltAutoBattleTurn();
