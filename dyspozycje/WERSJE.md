@@ -13,6 +13,16 @@ swoim wĹ‚asnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji d
 > Pakiet 3 z 2026-08-20 jest docs-only i nie tworzy wpisu ROBOCZA/KANON/FINALNA;
 > ten plik pozostaje wyłącznie rejestrem publikacji bundli.
 
+## ROBOCZA d8d7071e - 2026-09-21 22:39 UTC - trzy zatwierdzone tematy
+
+|- md5 `d8d7071ee96ad85e249b9d92b7b8e432` · sha256 `a21b9b8143bd414eec5ee23f65150f33ba6266e595c028d50a7692695ce13fe4` · rozmiar `69913695` bajtów.
+|- source/product commit: `8c505dae8b06d1e523911c70c9e5cdf472910a1f`; integration receipt: `a21af6b96076bcce6d0cda60fe75e19e07b0853e`; base: `7cfead757737d1c1a7ddfc187a3241dad5bb0e57`.
+|- Scope: `R-MANPOWER-HP-MAX-EFFECTIVE-Q1`, `R-AUTO-BITWA-JEDNOCZESNA-Q1`, `R-REKRUTACJA-WIELE-JEDNOSTEK-UI-Q1`.
+|- Final Control: `t_c24ebf5d` PASS-WITH-NOTES; `t_08ea70f2` PASS-WITH-NOTES / READY_FOR_INTEGRATION; `t_1bbfe729` PASS-WITH-NOTES / READY_FOR_INTEGRATION. Workerless gates pozostają niedispatchowane.
+|- Gates: effective maxHP `15/0`, replenishment `17/0`, Manpower `63/0`, unit card `29/0`, veterans `79/0`, combat `6/6`, AUTO `29/0`, recruitment backend `17/0`, real Chromium recruitment `25/0`, logic `213/213`, tech-tree `19/0`, research `33/0`, unit replace `13/13`, TypeScript PASS, Vite `892` modules, fresh bundle smoke PASS, `verify-robocza-bundle.cjs` `VERIFY OK`.
+|- Publish commit: `77b762b3f622b92f50b187ac881732a6268aae7e`; remote `main` and branch readback match; manifest/hash/bytes readback PASS. Linux stamp `WARN` is the known Node-port behavior.
+|- No promotion to KANON/FINALNA. Matrix remainder and parameters without active runtime consumers remain outside this release.
+
 ## ROBOCZA 9ca971c4 - 2026-09-21 19:26 UTC - FALA 389 - bounded civilization matrix
 
 |- md5 `9ca971c4a2f10130bdba954e45cb2114` · sha256 `8ba6a8cfd5ec1835883d4a3266a7de85dd8ff868200e7407a8cd0f57c5a865f8` · rozmiar `69901148` bajtów.

@@ -1,6 +1,6 @@
 # 04-integration — R-AUTO-BITWA-JEDNOCZESNA-Q1
 
-STATUS: READY_FOR_DEPLOY
+STATUS: DEPLOY-ROBOCZA
 DOMAIN: GAME
 TEMAT: R-AUTO-BITWA-JEDNOCZESNA-Q1
 GOAL: AUTO prowadzi jednoczesne, deterministyczne fazy atakujących i obrońców z zamrożonym zamiarem fazy.
@@ -34,11 +34,15 @@ Nie pobrano broad harnessu oznaczonego wcześniej jako INFRA/TIMEOUT i nie zmien
 
 ## Stan publikacji
 
-`READY_FOR_DEPLOY`: TAK — integracja i bramki na aktualnej bazie są zielone.
+- `READY_FOR_DEPLOY`: TAK — integracja i bramki na aktualnej bazie były zielone przed publikacją.
+- Artifact/publish commit: `77b762b3f622b92f50b187ac881732a6268aae7e`.
+- Remote `main` readback: `77b762b3f622b92f50b187ac881732a6268aae7e`.
+- Bundle: MD5 `d8d7071ee96ad85e249b9d92b7b8e432`, SHA-256 `a21b9b8143bd414eec5ee23f65150f33ba6266e595c028d50a7692695ce13fe4`, `69913695` bytes.
+- `verify-robocza-bundle.cjs`: `VERIFY OK`; manifest/hash/bytes readback: `PASS`.
 
-Push/deploy ROBOCZA: NIE WYKONANO w chwili utworzenia tego receipt; wymaga osobnej bramki publikacji właściciela.
+Push/deploy ROBOCZA: WYKONANO po osobnej zgodzie właściciela; branch i `main` mają ten sam publish commit.
 
-BLOKADY: brak techniczny; pozostaje wyłącznie osobna bramka publikacji.
+BLOKADY: brak techniczny. Broad harness INFRA/TIMEOUT pozostał poza zakresem i nie został relabelowany.
 RUNDY: bounded remedy + Final Control; integracja bez nowego dispatchu workerless gate.
-NASTĘPNY KROK: build artefaktu, stempel, manifest, verify, wpis WERSJE/KANAL, commit i push z readbackiem.
-DEPLOY/PUSH: NIE WYKONANO
+NASTĘPNY KROK: test właściciela w `gra-robocza/START.html` po `Ctrl+F5`.
+DEPLOY/PUSH: WYKONANO

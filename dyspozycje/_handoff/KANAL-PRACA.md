@@ -1,3 +1,16 @@
+## [2026-09-21 22:41 UTC] ORKIESTRATOR → KANBAN / WŁAŚCICIEL — DEPLOY ROBOCZA: THREE APPROVED TOPICS
+
+STATUS: `DEPLOYED — remote main/readback/smoke PASS`.
+
+- Clean integration branch: `hermes/integration/ROBOCZA-WAVE-20260921`; base `origin/main=7cfead757737d1c1a7ddfc187a3241dad5bb0e57`.
+- Product integration commit: `8c505dae8b06d1e523911c70c9e5cdf472910a1f`; receipt commit: `a21af6b96076bcce6d0cda60fe75e19e07b0853e`.
+- Scope: `R-MANPOWER-HP-MAX-EFFECTIVE-Q1`, `R-AUTO-BITWA-JEDNOCZESNA-Q1`, `R-REKRUTACJA-WIELE-JEDNOSTEK-UI-Q1`.
+- Gates: effective maxHP `15/0`, replenishment `17/0`, Manpower `63/0`, unit card `29/0`, veterans `79/0`, combat `6/6`, AUTO `29/0`, recruitment backend `17/0`, real Chromium `25/0`, logic `213/213`, tech-tree `19/0`, research `33/0`, unit replace `13/13`, TypeScript PASS, Vite `892` modules, fresh bundle smoke PASS.
+- Bundle: MD5 `d8d7071ee96ad85e249b9d92b7b8e432`, SHA-256 `a21b9b8143bd414eec5ee23f65150f33ba6266e595c028d50a7692695ce13fe4`, `69913695` bytes; verifier `VERIFY OK`.
+- Publish commit: `77b762b3f622b92f50b187ac881732a6268aae7e`; remote `main` and integration branch readback match; manifest/hash/bytes readback PASS. No KANON/FINALNA promotion.
+
+CZEKAM-NA: test właściciela w `gra-robocza/START.html` po `Ctrl+F5`; workerless gates remain blocked/unassigned by contract.
+
 ## [2026-09-21 UTC] ORKIESTRATOR → KANBAN / WŁAŚCICIEL — DEPLOY ROBOCZA FALA 389 / CIVILIZATION MATRIX BOUNDED SCOPE
 
 STATUS: `DEPLOYED — remote main/readback/smoke PASS`.
