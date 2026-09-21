@@ -60,6 +60,14 @@ import type { RuchSwiataPace } from '../game/ruch-swiata-tempo';
 import { civIconSvg, epochIconSvg, newGameIntroEmblemSvg, settingIconSvg } from './icons/brandAssets';
 import heroIntroUrl from './assets/hero/hero-intro.png?url';
 import { installHudTitleTooltips } from './hudTitleTooltip';
+import {
+  buildCivMatrixSemanticProfile,
+  civMatrixFormattedValue,
+  civMatrixIntensityLabel,
+  civMatrixParameterLabelPl,
+  statusAllowsDefaultVisibility,
+  type CivMatrixSemanticCell,
+} from '../game/civ-matrix-semantic';
 
 // ---------------------------------------------------------------------------
 // Typy publiczne
@@ -933,6 +941,34 @@ function ensureStyles(): void {
 .civ-newgame .dn{font-size:20px;letter-spacing:.1em;color:var(--gold-light);margin:0;}
 .civ-newgame .dlbl{font-size:10px;letter-spacing:.32em;text-transform:uppercase;color:var(--tx2);font-family:Arial,sans-serif;margin-bottom:4px;}
 .civ-newgame .civ-ds{display:flex;flex-direction:column;gap:6px;}
+.civ-newgame .civ-matrix-profile{margin-top:1rem;padding-top:1rem;border-top:1px solid var(--bd-sub);}
+.civ-newgame .civ-matrix-profile-head{display:flex;flex-direction:column;gap:6px;margin-bottom:.7rem;}
+.civ-newgame .civ-matrix-profile-title{font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:var(--gold-dim);font-family:Arial,sans-serif;}
+.civ-newgame .civ-matrix-profile-note{font-size:11px;line-height:1.45;color:var(--tx-muted);font-family:Arial,sans-serif;}
+.civ-newgame .civ-matrix-profile-controls{display:flex;gap:6px;align-items:center;margin-bottom:.65rem;}
+.civ-newgame .civ-matrix-profile-search{flex:1;min-width:0;background:rgba(255,255,255,.04);border:1px solid var(--bd-mid);color:var(--tx);border-radius:var(--radius);padding:7px 9px;font:11px Arial,sans-serif;}
+.civ-newgame .civ-matrix-profile-search:focus{outline:1px solid var(--gold);border-color:var(--gold);}
+.civ-newgame .civ-matrix-profile-filter{background:#12121A;border:1px solid var(--bd-mid);color:var(--tx2);border-radius:var(--radius);padding:7px 6px;font:10px Arial,sans-serif;max-width:115px;}
+.civ-newgame .civ-matrix-profile-list{display:flex;flex-direction:column;gap:5px;}
+.civ-newgame .civ-matrix-profile-more{margin-top:7px;border:1px solid var(--bd-sub);border-radius:var(--radius);background:rgba(255,255,255,.025);padding:6px 8px;}
+.civ-newgame .civ-matrix-profile-more summary{cursor:pointer;color:var(--tx2);font:10px Arial,sans-serif;letter-spacing:.08em;}
+.civ-newgame .civ-matrix-profile-more[open] summary{color:var(--gold-light);margin-bottom:7px;}
+.civ-newgame .civ-matrix-cell{border:1px solid var(--bd-sub);border-left:3px solid var(--bd-mid);border-radius:var(--radius);padding:7px 8px;background:rgba(255,255,255,.025);}
+.civ-newgame .civ-matrix-cell[data-status="REAL_GAMEPLAY"]{border-left-color:#4A9A68;}
+.civ-newgame .civ-matrix-cell[data-status="UI_ONLY"]{border-left-color:var(--gold-dim);}
+.civ-newgame .civ-matrix-cell[data-status="UNWIRED"],.civ-newgame .civ-matrix-cell[data-status="BLOCKED"]{border-left-color:#9A5040;}
+.civ-newgame .civ-matrix-cell-head{display:flex;align-items:flex-start;gap:6px;}
+.civ-newgame .civ-matrix-cell-name{flex:1;color:var(--tx2);font:11px Arial,sans-serif;line-height:1.3;}
+.civ-newgame .civ-matrix-cell-badge{font:10px Arial,sans-serif;white-space:nowrap;font-weight:700;}
+.civ-newgame .civ-matrix-cell-badge[data-label="POZYTYWNY"]{color:#6FC58D;}
+.civ-newgame .civ-matrix-cell-badge[data-label="NEGATYWNY"]{color:#D77C66;}
+.civ-newgame .civ-matrix-cell-badge[data-label="NEUTRALNY"]{color:var(--gold-light);}
+.civ-newgame .civ-matrix-cell-meta{display:flex;flex-wrap:wrap;gap:5px 10px;margin-top:4px;color:var(--tx-muted);font:10px Arial,sans-serif;line-height:1.35;}
+.civ-newgame .civ-matrix-cell-status{display:inline-block;margin-top:5px;color:var(--tx2);font:9px Arial,sans-serif;letter-spacing:.08em;text-transform:uppercase;}
+.civ-newgame .civ-matrix-cell-status[data-status="UNWIRED"],.civ-newgame .civ-matrix-cell-status[data-status="BLOCKED"]{color:#D77C66;}
+.civ-newgame .civ-matrix-cell-explanation{margin-top:4px;color:var(--tx-muted);font:10px Arial,sans-serif;line-height:1.4;}
+.civ-newgame .civ-matrix-profile-legend{margin-top:7px;color:var(--tx-muted);font:10px Arial,sans-serif;line-height:1.4;}
+.civ-newgame .civ-matrix-profile-error{padding:10px;border:1px solid #9A5040;border-radius:var(--radius);color:#D77C66;font:11px Arial,sans-serif;line-height:1.4;}
 .civ-newgame .bonus{display:flex;align-items:flex-start;gap:8px;font-size:13px;color:var(--tx2);line-height:1.5;}
 .civ-newgame .bdot{width:6px;height:6px;border-radius:50%;flex-shrink:0;margin-top:6px;}
 .civ-newgame .bonus.bp .bdot{background:#4A9A68;}
@@ -1135,6 +1171,188 @@ function appendKlasterBlock(parent: HTMLElement, preview: StartPreview): void {
   parent.appendChild(block);
 }
 
+function polarityLabelPl(polarity: CivMatrixSemanticCell['polarity']): string {
+  if (polarity === 'beneficial') return 'wyższa wartość = korzystniej';
+  if (polarity === 'harmful') return 'niższa wartość = korzystniej';
+  return 'profil/opis — bez badge przewagi';
+}
+
+function statusFilterMatches(cell: CivMatrixSemanticCell, filter: string): boolean {
+  if (filter === 'all') return true;
+  if (filter === 'positive') return cell.label === 'POZYTYWNY';
+  if (filter === 'negative') return cell.label === 'NEGATYWNY';
+  if (filter === 'neutral') return cell.label === 'NEUTRALNY';
+  if (filter === 'active') return cell.consumerStatus === 'REAL_GAMEPLAY';
+  if (filter === 'display') return cell.consumerStatus === 'UI_ONLY';
+  if (filter === 'inactive') return !statusAllowsDefaultVisibility(cell.consumerStatus);
+  return true;
+}
+
+function civMatrixCellSearchText(cell: CivMatrixSemanticCell): string {
+  return [
+    cell.parameterId,
+    civMatrixParameterLabelPl(cell.parameterId),
+    cell.domain,
+    cell.consumerStatus,
+    cell.statusLabelPl,
+    cell.label,
+    cell.explanationPl,
+  ].join(' ').toLocaleLowerCase('pl-PL');
+}
+
+function appendCivMatrixCell(parent: HTMLElement, cell: CivMatrixSemanticCell): HTMLElement {
+  const row = el('article', 'civ-matrix-cell');
+  row.dataset.civMatrixRow = 'true';
+  row.dataset.status = cell.consumerStatus;
+  row.dataset.label = cell.label;
+  row.dataset.parameterId = cell.parameterId;
+  row.dataset.search = civMatrixCellSearchText(cell);
+  row.setAttribute(
+    'aria-label',
+    `${civMatrixParameterLabelPl(cell.parameterId)}: ${cell.label}, ${cell.statusLabelPl}, siła ${civMatrixIntensityLabel(cell.signedIntensity)}`,
+  );
+
+  const head = el('div', 'civ-matrix-cell-head');
+  head.appendChild(el('div', 'civ-matrix-cell-name', civMatrixParameterLabelPl(cell.parameterId)));
+  const badge = el('span', 'civ-matrix-cell-badge', cell.label);
+  badge.dataset.label = cell.label;
+  badge.setAttribute('aria-label', `Etykieta: ${cell.label}`);
+  head.appendChild(badge);
+  row.appendChild(head);
+
+  const meta = el('div', 'civ-matrix-cell-meta');
+  meta.appendChild(el('span', '', `Wartość: ${civMatrixFormattedValue(cell.rawValue, cell.unit)}`));
+  meta.appendChild(el('span', '', `Mediana Normal: ${civMatrixFormattedValue(cell.baselineValue, cell.unit)}`));
+  meta.appendChild(el('span', '', `Siła: ${civMatrixIntensityLabel(cell.signedIntensity)} / 10`));
+  meta.appendChild(el('span', '', polarityLabelPl(cell.polarity)));
+  row.appendChild(meta);
+
+  const status = el('div', 'civ-matrix-cell-status', cell.statusLabelPl);
+  status.dataset.status = cell.consumerStatus;
+  status.setAttribute('aria-label', `Status konsumenta: ${cell.statusLabelPl}`);
+  row.appendChild(status);
+
+  const explanation = el('div', 'civ-matrix-cell-explanation');
+  explanation.textContent = `${cell.statusReasonPl} W panelu pokazano wyłącznie tożsamość Normal.`;
+  row.appendChild(explanation);
+  parent.appendChild(row);
+  return row;
+}
+
+/**
+ * Pełny profil 113 pól w kroku wyboru cywilizacji.
+ *
+ * Tylko REAL_GAMEPLAY jest rozwinięte domyślnie. UI_ONLY, UNWIRED i BLOCKED
+ * pozostają w jednym natywnym `<details>`, ale wyszukiwarka może go otworzyć;
+ * żadna komórka nie jest usuwana ani zapisywana do stanu gry.
+ */
+function appendCivMatrixProfile(parent: HTMLElement, civKey: string): void {
+  const profile = buildCivMatrixSemanticProfile(civKey);
+  const box = el('section', 'civ-matrix-profile');
+  box.dataset.civMatrixProfile = profile.civilizationId;
+  box.setAttribute('aria-label', `Pełny profil macierzy Normal: ${profile.civilizationName}`);
+
+  const head = el('div', 'civ-matrix-profile-head');
+  head.appendChild(el('div', 'civ-matrix-profile-title', 'Profil macierzy — Normal'));
+  head.appendChild(el(
+    'div',
+    'civ-matrix-profile-note',
+    `113 wskaźników · mediana wszystkich 15 cywilizacji · aktywne domyślnie: ${profile.activeCount}`,
+  ));
+  box.appendChild(head);
+
+  if (profile.blockedReasonPl) {
+    const error = el('div', 'civ-matrix-profile-error');
+    error.textContent = profile.blockedReasonPl;
+    box.appendChild(error);
+    parent.appendChild(box);
+    return;
+  }
+
+  const controls = el('div', 'civ-matrix-profile-controls');
+  const search = document.createElement('input');
+  search.type = 'search';
+  search.dataset.civMatrixSearch = 'true';
+  search.className = 'civ-matrix-profile-search';
+  search.placeholder = 'Szukaj parametru, domeny lub statusu…';
+  search.setAttribute('aria-label', 'Szukaj w pełnym profilu macierzy');
+  const filter = document.createElement('select');
+  filter.dataset.civMatrixFilter = 'true';
+  filter.className = 'civ-matrix-profile-filter';
+  filter.setAttribute('aria-label', 'Filtruj profil macierzy');
+  const filterOptions: Array<[string, string]> = [
+    ['all', 'Wszystkie'],
+    ['active', 'Aktywne'],
+    ['display', 'Tylko UI'],
+    ['inactive', 'Nieaktywne'],
+    ['positive', 'Pozytywne'],
+    ['negative', 'Negatywne'],
+    ['neutral', 'Neutralne'],
+  ];
+  for (const [value, label] of filterOptions) {
+    const option = document.createElement('option');
+    option.value = value;
+    option.textContent = label;
+    filter.appendChild(option);
+  }
+  controls.appendChild(search);
+  controls.appendChild(filter);
+  box.appendChild(controls);
+
+  const activeList = el('div', 'civ-matrix-profile-list');
+  activeList.dataset.list = 'active';
+  const more = document.createElement('details');
+  more.dataset.civMatrixInactive = 'true';
+  more.className = 'civ-matrix-profile-more';
+  const summary = document.createElement('summary');
+  summary.textContent = `Pozostałe informacje (${profile.inactiveCount})`;
+  more.appendChild(summary);
+  const inactiveList = el('div', 'civ-matrix-profile-list');
+  inactiveList.dataset.list = 'inactive';
+  more.appendChild(inactiveList);
+
+  const rows = profile.cells.map(cell => ({
+    cell,
+    element: appendCivMatrixCell(
+      statusAllowsDefaultVisibility(cell.consumerStatus) ? activeList : inactiveList,
+      cell,
+    ),
+  }));
+  box.appendChild(activeList);
+  box.appendChild(more);
+
+  const legend = el(
+    'div',
+    'civ-matrix-profile-legend',
+    'Badge opisuje kierunek względem mediany Normal. Status informuje, czy istnieje konsument; etykieta nie zapisuje się w sejwie i nie tworzy premii.',
+  );
+  box.appendChild(legend);
+
+  const refresh = () => {
+    const query = search.value.trim().toLocaleLowerCase('pl-PL');
+    const selectedFilter = filter.value;
+    let visible = 0;
+    let visibleInactive = 0;
+    for (const entry of rows) {
+      const matchesQuery = query.length === 0 || entry.element.dataset.search?.includes(query) === true;
+      const matchesFilter = statusFilterMatches(entry.cell, selectedFilter);
+      const show = matchesQuery && matchesFilter;
+      entry.element.style.display = show ? '' : 'none';
+      if (show) {
+        visible++;
+        if (!statusAllowsDefaultVisibility(entry.cell.consumerStatus)) visibleInactive++;
+      }
+    }
+    more.open = (query.length > 0 || selectedFilter !== 'all') && visibleInactive > 0;
+    legend.textContent = query.length > 0 || selectedFilter !== 'all'
+      ? `Widoczne: ${visible} / ${profile.parameterCount}. Badge opisuje kierunek względem mediany Normal; status oddziela opis od aktywnego efektu.`
+      : 'Badge opisuje kierunek względem mediany Normal. Status informuje, czy istnieje konsument; etykieta nie zapisuje się w sejwie i nie tworzy premii.';
+  };
+  search.addEventListener('input', refresh);
+  filter.addEventListener('change', refresh);
+  parent.appendChild(box);
+}
+
 function renderCivStep(host: HTMLElement): void {
   ensureSelCivForEpoch();
   const available = civsForEpoch(selEpoch);
@@ -1183,6 +1401,7 @@ function renderCivStep(host: HTMLElement): void {
     }
     const preview = currentStartPreview();
     if (preview) appendKlasterBlock(detail, preview);
+    appendCivMatrixProfile(detail, c.id);
   }
   const gridPanel = el('div', 'civ-grid-panel');
   gridPanel.appendChild(grid);

@@ -1,0 +1,2626 @@
+{
+  "task_id": "t_89eb5708",
+  "generated_at": "2026-09-20T21:38:05+00:00",
+  "status": "PASS-WITH-NOTES",
+  "domain": "GAME",
+  "goal": "Additive historical/runtime matrix evidence for the 14 non-Greece civilizations.",
+  "base": {
+    "repository_root": "/home/ubuntu/projects/The-Game/.worktrees/civ-matrix-14-currentbase-20260920",
+    "current_matrix_source": "gra/data/civ-matrix.json",
+    "matrix_meta": {
+      "version": "1.0",
+      "source": "Cyw-macierz (11 arkuszy Cyw-01..11)",
+      "formula_mul_proc": "wynik = baza * (1 + wartosc)",
+      "formula_mul_abs": "wynik = baza * wartosc",
+      "formula_add": "wynik = baza + wartosc",
+      "formula_flag": "wartosc 1 = aktywny warunek",
+      "kolumny": 113,
+      "cywilizacje": 15
+    },
+    "greece_excluded_id": "grecy",
+    "target_ids": [
+      "rzymianie",
+      "chinczycy",
+      "inkowie",
+      "zulusi",
+      "egipt",
+      "sumer",
+      "celtowie",
+      "germanie",
+      "harappa",
+      "hetyci",
+      "slowianie",
+      "babilonia",
+      "asyria",
+      "fenicjanie"
+    ]
+  },
+  "counts": {
+    "target_civilizations": 14,
+    "parameter_definitions": 113,
+    "coverage_cells": 1582,
+    "non_default_cells": 459,
+    "consumer_cell_counts": {
+      "DEAD_UNWIRED": 686,
+      "UNWIRED": 672,
+      "REAL_GAMEPLAY": 154,
+      "UI_ONLY": 70
+    },
+    "active_bonus_rows": 58,
+    "active_bonus_status_counts": {
+      "RUNTIME_CONSUMER": 43,
+      "UI_ONLY": 15
+    }
+  },
+  "checks": {
+    "target_civilization_count": true,
+    "parameter_definition_count": true,
+    "coverage_cell_count": true,
+    "all_target_rows_have_full_schema": true,
+    "no_greece_target_row": true,
+    "direct_row_provenance_for_all_cells": true,
+    "xlsx_is_additive_new_name": true,
+    "reserve_history_not_claimed_accepted": true
+  },
+  "source_manifest": [
+    {
+      "path": "gra/data/civ-matrix.json",
+      "exists": true,
+      "bytes": 83010,
+      "sha256": "ad67e771608c2ebad8fed5e84e3d8ecd6e2a2b496fbfe42025ddb39ef27a2ea7"
+    },
+    {
+      "path": "gra/data/civs.json",
+      "exists": true,
+      "bytes": 62900,
+      "sha256": "6215661f0eb00e7a4df837d8284f285ec472b61a3bf6647d9dc7aecb998464f5"
+    },
+    {
+      "path": "gra/data/civ-ai.json",
+      "exists": true,
+      "bytes": 5009,
+      "sha256": "1aab3304cb4c57dd3f83153596301fc955182cedaf449c7a7d2cb042262a42ed"
+    },
+    {
+      "path": "gra/data/civ-params.json",
+      "exists": true,
+      "bytes": 3547,
+      "sha256": "99199f3e3611f4c579588766c3c2a4c649a0eb0b383d8ec4d7e493b94ed80209"
+    },
+    {
+      "path": "gra/data/diplomacy.json",
+      "exists": true,
+      "bytes": 35194,
+      "sha256": "b60af5d3176b99f1ce42e78b32f595c2587aa14d6f0a148f33759f2ec1c5dadc"
+    },
+    {
+      "path": "gra/data/units.json",
+      "exists": true,
+      "bytes": 258166,
+      "sha256": "0cd580f8578e41f4578ae83c0f605002385069904471a39b4f179528be4aa06f"
+    },
+    {
+      "path": "panele-sterowania/cyw_macierz_schema.py",
+      "exists": true,
+      "bytes": 8749,
+      "sha256": "34abaee1ded1bc77c05d7f363c14aab1a98a9bc02ce7396fca59d259cca7e34f"
+    },
+    {
+      "path": "panele-sterowania/export-cyw-macierz.py",
+      "exists": true,
+      "bytes": 5876,
+      "sha256": "ee90762af7818cc7e1de11b59c2877a1ad897f064c23134fa0bdfdcd6b8be353"
+    },
+    {
+      "path": "gra/src/game/civ-matrix.ts",
+      "exists": true,
+      "bytes": 4237,
+      "sha256": "3bc9f443c9c8850175bb8b62adbc69547494eeed7b66159af65b48e5ab596ede"
+    },
+    {
+      "path": "gra/src/game/civ-ai-data.ts",
+      "exists": true,
+      "bytes": 7746,
+      "sha256": "8cdf765fbb6184e4f7e1a223132e0c8aaf3fed1e386d0db30be67b20fa4f0eeb"
+    },
+    {
+      "path": "gra/src/game/civ-ai-allocation.ts",
+      "exists": true,
+      "bytes": 4330,
+      "sha256": "cd04bbb79f053f902d6bcff100a0da9116a972231a81159d9e6370efe6698a20"
+    },
+    {
+      "path": "gra/src/game/civ-bonuses.ts",
+      "exists": true,
+      "bytes": 8178,
+      "sha256": "3259074eda1ee94535114af2cac8021f9f98f68848711ab8d5e966d3dda27c50"
+    },
+    {
+      "path": "gra/src/game/economy.ts",
+      "exists": true,
+      "bytes": 57275,
+      "sha256": "bbc6d9e90ba8c5a889968bb8201f58c917b19b830d516effe5e55fc40f1e8dbe"
+    },
+    {
+      "path": "gra/src/game/manpower.ts",
+      "exists": true,
+      "bytes": 28299,
+      "sha256": "be579f429edf9d18ed3b18b3cb66640d95b54946e5170094ec4fb6603215aadd"
+    },
+    {
+      "path": "gra/src/game/population-growth-v85.ts",
+      "exists": true,
+      "bytes": 21633,
+      "sha256": "68383594cd81b3f66d8a1874635300f05a610bf058843d1b6ace551d4a4428e8"
+    },
+    {
+      "path": "gra/src/game/diplomacy.ts",
+      "exists": true,
+      "bytes": 77099,
+      "sha256": "f71a7e8c6e24710b3872dca7aac43f051caee21b4979301998a4441a8173e212"
+    },
+    {
+      "path": "gra/src/game/diplomacy-display.ts",
+      "exists": true,
+      "bytes": 25086,
+      "sha256": "4c907285d3e35e47b5cf82d4a6aabc94358a093f283651311407417b0aedadc5"
+    },
+    {
+      "path": "gra/src/game/ai.ts",
+      "exists": true,
+      "bytes": 280469,
+      "sha256": "f40efdd44298a3f0cbd1b72842a486bacd94f94196fb563e5ca499b44a758cd1"
+    },
+    {
+      "path": "gra/src/game/ai-production-priorities.ts",
+      "exists": true,
+      "bytes": 906,
+      "sha256": "172bc96695d5ae824f6a846af45fd149ec0d8efc90a3ec20a2333af42f6ecf48"
+    },
+    {
+      "path": "gra/src/main.ts",
+      "exists": true,
+      "bytes": 2007646,
+      "sha256": "83e311d08a03267d2bb6756adda68dcd25bc08ae59dc9cd11bd2b1ffe4012bdb"
+    },
+    {
+      "path": "docs/decyzje/D-cyw-roster-6-REZERWA.md",
+      "exists": true,
+      "bytes": 15746,
+      "sha256": "63ed53f0d4261328f209341de4083c48a989db223b93a63abaebf995e2fef131"
+    },
+    {
+      "path": "Civ-CYWILIZACJE/draft/roster-6-REZERWA.json",
+      "exists": true,
+      "bytes": 9387,
+      "sha256": "9c3f684c355a9551b2f5c92adb58eaa69a47d83505958e542d1c1a951c51ddbd"
+    },
+    {
+      "path": "Civ-CYWILIZACJE/DOKUMENTACJA-DEV-CYWILIZACJE.md",
+      "exists": true,
+      "bytes": 39689,
+      "sha256": "d5914480a5af1c28542e61fa5dc2b18e1157da2c87520f2e140134083c27b687"
+    },
+    {
+      "path": "docs/PORADNIK-GRACZA/13-cywilizacje.md",
+      "exists": true,
+      "bytes": 17835,
+      "sha256": "0d9fc229ffdbe499d21f39c8cc276e71e810c7136a8ab4714c143e936d3f1c50"
+    },
+    {
+      "path": "docs/encyklopedia/cywilizacje/rzymianie.md",
+      "exists": true,
+      "bytes": 1985,
+      "sha256": "8bf718011c42847e11862fbc8c344ef610fa449e2dca6ed39c718dc9cc3a64c9"
+    },
+    {
+      "path": "docs/encyklopedia/cywilizacje/chinczycy.md",
+      "exists": true,
+      "bytes": 2486,
+      "sha256": "32c88609e5fcfccd186841929b4b6232837523aa254b97cd2317199c30e32ab2"
+    },
+    {
+      "path": "docs/encyklopedia/cywilizacje/inkowie.md",
+      "exists": true,
+      "bytes": 2021,
+      "sha256": "ab3642905f0fb1b450b9c5190ce5aba43ee56e9f4e5f627c0cc08147cb563dfb"
+    },
+    {
+      "path": "docs/encyklopedia/cywilizacje/zulusi.md",
+      "exists": true,
+      "bytes": 1821,
+      "sha256": "a535e048d117511e92933da266fa40b954879e60ae6a3dc3d891c16f8efef6f2"
+    },
+    {
+      "path": "docs/encyklopedia/cywilizacje/egipt.md",
+      "exists": true,
+      "bytes": 1944,
+      "sha256": "377338cab626e9ee7931b1fd29b1585d986479a249ddd0caa6d3c012c20576f6"
+    },
+    {
+      "path": "docs/encyklopedia/cywilizacje/sumer.md",
+      "exists": true,
+      "bytes": 2007,
+      "sha256": "5e27e2eb323e7c0163ff03a463bbe6e65ea1f012242dd5b8c34bcf1a9385afda"
+    },
+    {
+      "path": "docs/encyklopedia/cywilizacje/celtowie.md",
+      "exists": true,
+      "bytes": 2027,
+      "sha256": "80e557c7eba4fa7b8c2da347d5cf5dec1ffefe4e1fa819f3da7f939a3a8f9c5d"
+    },
+    {
+      "path": "docs/encyklopedia/cywilizacje/germanie.md",
+      "exists": true,
+      "bytes": 2011,
+      "sha256": "14795d39d24418754b07c77728a87287e3ab82611cbbe8eaa1f5d969767079ec"
+    }
+  ],
+  "historical_sources": {
+    "rzymianie": {
+      "status": "LEGACY_DOC_PRESENT",
+      "citation": "docs/encyklopedia/cywilizacje/rzymianie.md",
+      "confidence": "current-data-high/historical-text-present",
+      "note": "Encyclopedia entry; matrix value remains current JSON."
+    },
+    "chinczycy": {
+      "status": "LEGACY_DOC_PRESENT",
+      "citation": "docs/encyklopedia/cywilizacje/chinczycy.md",
+      "confidence": "current-data-high/historical-text-present",
+      "note": "Encyclopedia entry; matrix value remains current JSON."
+    },
+    "inkowie": {
+      "status": "LEGACY_DOC_PRESENT",
+      "citation": "docs/encyklopedia/cywilizacje/inkowie.md",
+      "confidence": "current-data-high/historical-text-present",
+      "note": "Encyclopedia entry; matrix value remains current JSON."
+    },
+    "zulusi": {
+      "status": "LEGACY_DOC_PRESENT",
+      "citation": "docs/encyklopedia/cywilizacje/zulusi.md",
+      "confidence": "current-data-high/historical-text-present",
+      "note": "Encyclopedia entry; matrix value remains current JSON."
+    },
+    "egipt": {
+      "status": "LEGACY_DOC_PRESENT",
+      "citation": "docs/encyklopedia/cywilizacje/egipt.md",
+      "confidence": "current-data-high/historical-text-present",
+      "note": "Encyclopedia entry; matrix value remains current JSON."
+    },
+    "sumer": {
+      "status": "LEGACY_DOC_PRESENT",
+      "citation": "docs/encyklopedia/cywilizacje/sumer.md",
+      "confidence": "current-data-high/historical-text-present",
+      "note": "Encyclopedia entry; matrix value remains current JSON."
+    },
+    "celtowie": {
+      "status": "LEGACY_DOC_PRESENT",
+      "citation": "docs/encyklopedia/cywilizacje/celtowie.md",
+      "confidence": "current-data-high/historical-text-present",
+      "note": "Encyclopedia entry; matrix value remains current JSON."
+    },
+    "germanie": {
+      "status": "LEGACY_DOC_PRESENT",
+      "citation": "docs/encyklopedia/cywilizacje/germanie.md",
+      "confidence": "current-data-high/historical-text-present",
+      "note": "Encyclopedia entry; matrix value remains current JSON."
+    },
+    "harappa": {
+      "status": "RESERVE_DRAFT_UNRESOLVED",
+      "citation": "docs/decyzje/D-cyw-roster-6-REZERWA.md; Civ-CYWILIZACJE/draft/roster-6-REZERWA.json",
+      "confidence": "current-data-high/historical-acceptance-open",
+      "note": "Reserve evidence exists; accepted promotion is not claimed."
+    },
+    "hetyci": {
+      "status": "RESERVE_DRAFT_UNRESOLVED",
+      "citation": "docs/decyzje/D-cyw-roster-6-REZERWA.md; Civ-CYWILIZACJE/draft/roster-6-REZERWA.json",
+      "confidence": "current-data-high/historical-acceptance-open",
+      "note": "Reserve evidence exists; accepted promotion is not claimed."
+    },
+    "slowianie": {
+      "status": "RESERVE_DRAFT_UNRESOLVED",
+      "citation": "docs/decyzje/D-cyw-roster-6-REZERWA.md; Civ-CYWILIZACJE/draft/roster-6-REZERWA.json",
+      "confidence": "current-data-high/historical-acceptance-open",
+      "note": "Reserve evidence exists; accepted promotion is not claimed."
+    },
+    "babilonia": {
+      "status": "RESERVE_DRAFT_UNRESOLVED",
+      "citation": "docs/decyzje/D-cyw-roster-6-REZERWA.md; Civ-CYWILIZACJE/draft/roster-6-REZERWA.json",
+      "confidence": "current-data-high/historical-acceptance-open",
+      "note": "Reserve evidence exists; accepted promotion is not claimed."
+    },
+    "asyria": {
+      "status": "RESERVE_DRAFT_UNRESOLVED",
+      "citation": "docs/decyzje/D-cyw-roster-6-REZERWA.md; Civ-CYWILIZACJE/draft/roster-6-REZERWA.json",
+      "confidence": "current-data-high/historical-acceptance-open",
+      "note": "Reserve evidence exists; accepted promotion is not claimed."
+    },
+    "fenicjanie": {
+      "status": "RESERVE_DRAFT_UNRESOLVED",
+      "citation": "docs/decyzje/D-cyw-roster-6-REZERWA.md; Civ-CYWILIZACJE/draft/roster-6-REZERWA.json",
+      "confidence": "current-data-high/historical-acceptance-open",
+      "note": "Reserve evidence exists; accepted promotion is not claimed."
+    }
+  },
+  "consumer_parameter_summary": [
+    {
+      "param_id": "meta_epoka_kamien",
+      "definition": {
+        "domena": "meta",
+        "jednostka": "flag_0_1",
+        "modul": "start-preview.ts",
+        "formula": "flag"
+      },
+      "consumer": {
+        "status": "DEAD_UNWIRED",
+        "policy": "NOT_ACTIVE",
+        "calls": "gra/src/game/civ-matrix.ts:41-60,71-101 (loader/accessor only); no gameplay call-site found",
+        "direction": "not applicable until a consumer is wired and reviewed",
+        "formula": "not computed by current consumer; retain raw Normal data",
+        "note": "paramDefs.modul is not proof of a live consumer."
+      },
+      "exact_source_hits": [],
+      "target_non_default_count": 7
+    },
+    {
+      "param_id": "meta_epoka_braz",
+      "definition": {
+        "domena": "meta",
+        "jednostka": "flag_0_1",
+        "modul": "start-preview.ts",
+        "formula": "flag"
+      },
+      "consumer": {
+        "status": "DEAD_UNWIRED",
+        "policy": "NOT_ACTIVE",
+        "calls": "gra/src/game/civ-matrix.ts:41-60,71-101 (loader/accessor only); no gameplay call-site found",
+        "direction": "not applicable until a consumer is wired and reviewed",
+        "formula": "not computed by current consumer; retain raw Normal data",
+        "note": "paramDefs.modul is not proof of a live consumer."
+      },
+      "exact_source_hits": [],
+      "target_non_default_count": 11
+    },
+    {
+      "param_id": "meta_epoka_zelazo",
+      "definition": {
+        "domena": "meta",
+        "jednostka": "flag_0_1",
+        "modul": "start-preview.ts",
+        "formula": "flag"
+      },
+      "consumer": {
+        "status": "DEAD_UNWIRED",
+        "policy": "NOT_ACTIVE",
+        "calls": "gra/src/game/civ-matrix.ts:41-60,71-101 (loader/accessor only); no gameplay call-site found",
+        "direction": "not applicable until a consumer is wired and reviewed",
+        "formula": "not computed by current consumer; retain raw Normal data",
+        "note": "paramDefs.modul is not proof of a live consumer."
+      },
+      "exact_source_hits": [],
+      "target_non_default_count": 10
+    },
+    {
+      "param_id": "meta_mnoznik_waluta",
+      "definition": {
+        "domena": "meta",
+        "jednostka": "absolut",
+        "modul": "economy.ts",
+        "formula": "mul_abs"
+      },
+      "consumer": {
+        "status": "DEAD_UNWIRED",
+        "policy": "NOT_ACTIVE",
+        "calls": "gra/src/game/civ-matrix.ts:41-60,71-101 (loader/accessor only); no gameplay call-site found",
+        "direction": "not applicable until a consumer is wired and reviewed",
+        "formula": "not computed by current consumer; retain raw Normal data",
+        "note": "paramDefs.modul is not proof of a live consumer."
+      },
+      "exact_source_hits": [],
+      "target_non_default_count": 12
+    },
+    {
+      "param_id": "meta_tier_roster",
+      "definition": {
+        "domena": "meta",
+        "jednostka": "absolut",
+        "modul": "civ-roster.ts",
+        "formula": "mul_abs"
+      },
+      "consumer": {
+        "status": "DEAD_UNWIRED",
+        "policy": "NOT_ACTIVE",
+        "calls": "gra/src/game/civ-matrix.ts:41-60,71-101 (loader/accessor only); no gameplay call-site found",
+        "direction": "not applicable until a consumer is wired and reviewed",
+        "formula": "not computed by current consumer; retain raw Normal data",
+        "note": "paramDefs.modul is not proof of a live consumer."
+      },
+      "exact_source_hits": [],
+      "target_non_default_count": 3
+    },
+    {
+      "param_id": "walka_atak_piechota",
+      "definition": {
+        "domena": "walka",
+        "jednostka": "ulamek",
+        "modul": "civ-bonuses.ts",
+        "formula": "mul_proc"
+      },
+      "consumer": {
+        "status": "DEAD_UNWIRED",
+        "policy": "NOT_ACTIVE",
+        "calls": "gra/src/game/civ-matrix.ts:41-60,71-101 (loader/accessor only); no gameplay call-site found",
+        "direction": "not applicable until a consumer is wired and reviewed",
+        "formula": "not computed by current consumer; retain raw Normal data",
+        "note": "paramDefs.modul is not proof of a live consumer."
+      },
+      "exact_source_hits": [],
+      "target_non_default_count": 1
+    },
+    {
+      "param_id": "walka_atak_lukownicy",
+      "definition": {
+        "domena": "walka",
+        "jednostka": "ulamek",
+        "modul": "civ-bonuses.ts",
+        "formula": "mul_proc"
+      },
+      "consumer": {
+        "status": "UNWIRED",
+        "policy": "NOT_ACTIVE",
+        "calls": "gra/src/game/civ-matrix.ts:41-60,71-101 (loader/accessor only); no gameplay call-site found",
+        "direction": "not applicable until a consumer is wired and reviewed",
+        "formula": "not computed by current consumer; retain raw Normal data",
+        "note": "paramDefs.modul is not proof of a live consumer."
+      },
+      "exact_source_hits": [],
+      "target_non_default_count": 0
+    },
+    {
+      "param_id": "walka_atak_kawaleria",
+      "definition": {
+        "domena": "walka",
+        "jednostka": "ulamek",
+        "modul": "civ-bonuses.ts",
+        "formula": "mul_proc"
+      },
+      "consumer": {
+        "status": "DEAD_UNWIRED",
+        "policy": "NOT_ACTIVE",
+        "calls": "gra/src/game/civ-matrix.ts:41-60,71-101 (loader/accessor only); no gameplay call-site found",
+        "direction": "not applicable until a consumer is wired and reviewed",
+        "formula": "not computed by current consumer; retain raw Normal data",
+        "note": "paramDefs.modul is not proof of a live consumer."
+      },
+      "exact_source_hits": [],
+      "target_non_default_count": 2
+    },
+    {
+      "param_id": "walka_atak_rydwany",
+      "definition": {
+        "domena": "walka",
+        "jednostka": "ulamek",
+        "modul": "civ-bonuses.ts",
+        "formula": "mul_proc"
+      },
+      "consumer": {
+        "status": "DEAD_UNWIRED",
+        "policy": "NOT_ACTIVE",
+        "calls": "gra/src/game/civ-matrix.ts:41-60,71-101 (loader/accessor only); no gameplay call-site found",
+        "direction": "not applicable until a consumer is wired and reviewed",
+        "formula": "not computed by current consumer; retain raw Normal data",
+        "note": "paramDefs.modul is not proof of a live consumer."
+      },
+      "exact_source_hits": [],
+      "target_non_default_count": 2
+    },
+    {
+      "param_id": "walka_atak_obleczenie",
+      "definition": {
+        "domena": "walka",
+        "jednostka": "ulamek",
+        "modul": "civ-bonuses.ts",
+        "formula": "mul_proc"
+      },
+      "consumer": {
+        "status": "DEAD_UNWIRED",
+        "policy": "NOT_ACTIVE",
+        "calls": "gra/src/game/civ-matrix.ts:41-60,71-101 (loader/accessor only); no gameplay call-site found",
+        "direction": "not applicable until a consumer is wired and reviewed",
+        "formula": "not computed by current consumer; retain raw Normal data",
+        "note": "paramDefs.modul is not proof of a live consumer."
+      },
+      "exact_source_hits": [],
+      "target_non_default_count": 1
+    },
+    {
+      "param_id": "walka_atak_morska",
+      "definition": {
+        "domena": "walka",
+        "jednostka": "ulamek",
+        "modul": "civ-bonuses.ts",
+        "formula": "mul_proc"
+      },
+      "consumer": {
+        "status": "UNWIRED",
+        "policy": "NOT_ACTIVE",
+        "calls": "gra/src/game/civ-matrix.ts:41-60,71-101 (loader/accessor only); no gameplay call-site found",
+        "direction": "not applicable until a consumer is wired and reviewed",
+        "formula": "not computed by current consumer; retain raw Normal data",
+        "note": "paramDefs.modul is not proof of a live consumer."
+      },
+      "exact_source_hits": [],
+      "target_non_default_count": 0
+    },
+    {
+      "param_id": "walka_atak_wszystkie",
+      "definition": {
+        "domena": "walka",
+        "jednostka": "ulamek",
+        "modul": "civ-bonuses.ts",
+        "formula": "mul_proc"
+      },
+      "consumer": {
+        "status": "UNWIRED",
+        "policy": "NOT_ACTIVE",
+        "calls": "gra/src/game/civ-matrix.ts:41-60,71-101 (loader/accessor only); no gameplay call-site found",
+        "direction": "not applicable until a consumer is wired and reviewed",
+        "formula": "not computed by current consumer; retain raw Normal data",
+        "note": "paramDefs.modul is not proof of a live consumer."
+      },
+      "exact_source_hits": [],
+      "target_non_default_count": 0
+    },
+    {
+      "param_id": "walka_obrona_piechota",
+      "definition": {
+        "domena": "walka",
+        "jednostka": "ulamek",
+        "modul": "civ-bonuses.ts",
+        "formula": "mul_proc"
+      },
+      "consumer": {
+        "status": "DEAD_UNWIRED",
+        "policy": "NOT_ACTIVE",
+        "calls": "gra/src/game/civ-matrix.ts:41-60,71-101 (loader/accessor only); no gameplay call-site found",
+        "direction": "not applicable until a consumer is wired and reviewed",
+        "formula": "not computed by current consumer; retain raw Normal data",
+        "note": "paramDefs.modul is not proof of a live consumer."
+      },
+      "exact_source_hits": [
+        "gra/src/game/civ-matrix.ts:5"
+      ],
+      "target_non_default_count": 3
+    },
+    {
+      "param_id": "walka_obrona_lukownicy",
+      "definition": {
+        "domena": "walka",
+        "jednostka": "ulamek",
+        "modul": "civ-bonuses.ts",
+        "formula": "mul_proc"
+      },
+      "consumer": {
+        "status": "UNWIRED",
+        "policy": "NOT_ACTIVE",
+        "calls": "gra/src/game/civ-matrix.ts:41-60,71-101 (loader/accessor only); no gameplay call-site found",
+        "direction": "not applicable until a consumer is wired and reviewed",
+        "formula": "not computed by current consumer; retain raw Normal data",
+        "note": "paramDefs.modul is not proof of a live consumer."
+      },
+      "exact_source_hits": [],
+      "target_non_default_count": 0
+    },
+    {
+      "param_id": "walka_obrona_kawaleria",
+      "definition": {
+        "domena": "walka",
+        "jednostka": "ulamek",
+        "modul": "civ-bonuses.ts",
+        "formula": "mul_proc"
+      },
+      "consumer": {
+        "status": "UNWIRED",
+        "policy": "NOT_ACTIVE",
+        "calls": "gra/src/game/civ-matrix.ts:41-60,71-101 (loader/accessor only); no gameplay call-site found",
+        "direction": "not applicable until a consumer is wired and reviewed",
+        "formula": "not computed by current consumer; retain raw Normal data",
+        "note": "paramDefs.modul is not proof of a live consumer."
+      },
+      "exact_source_hits": [],
+      "target_non_default_count": 0
+    },
+    {
+      "param_id": "walka_obrona_rydwany",
+      "definition": {
+        "domena": "walka",
+        "jednostka": "ulamek",
+        "modul": "civ-bonuses.ts",
+        "formula": "mul_proc"
+      },
+      "consumer": {
+        "status": "UNWIRED",
+        "policy": "NOT_ACTIVE",
+        "calls": "gra/src/game/civ-matrix.ts:41-60,71-101 (loader/accessor only); no gameplay call-site found",
+        "direction": "not applicable until a consumer is wired and reviewed",
+        "formula": "not computed by current consumer; retain raw Normal data",
+        "note": "paramDefs.modul is not proof of a live consumer."
+      },
+      "exact_source_hits": [],
+      "target_non_default_count": 0
+    },
+    {
+      "param_id": "walka_obrona_obleczenie",
+      "definition": {
+        "domena": "walka",
+        "jednostka": "ulamek",
+        "modul": "civ-bonuses.ts",
+        "formula": "mul_proc"
+      },
+      "consumer": {
+        "status": "UNWIRED",
+        "policy": "NOT_ACTIVE",
+        "calls": "gra/src/game/civ-matrix.ts:41-60,71-101 (loader/accessor only); no gameplay call-site found",
+        "direction": "not applicable until a consumer is wired and reviewed",
+        "formula": "not computed by current consumer; retain raw Normal data",
+        "note": "paramDefs.modul is not proof of a live consumer."
+      },
+      "exact_source_hits": [],
+      "target_non_default_count": 0
+    },
+    {
+      "param_id": "walka_obrona_morska",
+      "definition": {
+        "domena": "walka",
+        "jednostka": "ulamek",
+        "modul": "civ-bonuses.ts",
+        "formula": "mul_proc"
+      },
+      "consumer": {
+        "status": "UNWIRED",
+        "policy": "NOT_ACTIVE",
+        "calls": "gra/src/game/civ-matrix.ts:41-60,71-101 (loader/accessor only); no gameplay call-site found",
+        "direction": "not applicable until a consumer is wired and reviewed",
+        "formula": "not computed by current consumer; retain raw Normal data",
+        "note": "paramDefs.modul is not proof of a live consumer."
+      },
+      "exact_source_hits": [],
+      "target_non_default_count": 0
+    },
+    {
+      "param_id": "walka_pancerz_piechota",
+      "definition": {
+        "domena": "walka",
+        "jednostka": "ulamek",
+        "modul": "civ-bonuses.ts",
+        "formula": "mul_proc"
+      },
+      "consumer": {
+        "status": "DEAD_UNWIRED",
+        "policy": "NOT_ACTIVE",
+        "calls": "gra/src/game/civ-matrix.ts:41-60,71-101 (loader/accessor only); no gameplay call-site found",
+        "direction": "not applicable until a consumer is wired and reviewed",
+        "formula": "not computed by current consumer; retain raw Normal data",
+        "note": "paramDefs.modul is not proof of a live consumer."
+      },
+      "exact_source_hits": [],
+      "target_non_default_count": 1
+    },
+    {
+      "param_id": "walka_pancerz_lukownicy",
+      "definition": {
+        "domena": "walka",
+        "jednostka": "ulamek",
+        "modul": "civ-bonuses.ts",
+        "formula": "mul_proc"
+      },
+      "consumer": {
+        "status": "UNWIRED",
+        "policy": "NOT_ACTIVE",
+        "calls": "gra/src/game/civ-matrix.ts:41-60,71-101 (loader/accessor only); no gameplay call-site found",
+        "direction": "not applicable until a consumer is wired and reviewed",
+        "formula": "not computed by current consumer; retain raw Normal data",
+        "note": "paramDefs.modul is not proof of a live consumer."
+      },
+      "exact_source_hits": [],
+      "target_non_default_count": 0
+    },
+    {
+      "param_id": "walka_pancerz_kawaleria",
+      "definition": {
+        "domena": "walka",
+        "jednostka": "ulamek",
+        "modul": "civ-bonuses.ts",
+        "formula": "mul_proc"
+      },
+      "consumer": {
+        "status": "UNWIRED",
+        "policy": "NOT_ACTIVE",
+        "calls": "gra/src/game/civ-matrix.ts:41-60,71-101 (loader/accessor only); no gameplay call-site found",
+        "direction": "not applicable until a consumer is wired and reviewed",
+        "formula": "not computed by current consumer; retain raw Normal data",
+        "note": "paramDefs.modul is not proof of a live consumer."
+      },
+      "exact_source_hits": [],
+      "target_non_default_count": 0
+    },
+    {
+      "param_id": "walka_pancerz_rydwany",
+      "definition": {
+        "domena": "walka",
+        "jednostka": "ulamek",
+        "modul": "civ-bonuses.ts",
+        "formula": "mul_proc"
+      },
+      "consumer": {
+        "status": "UNWIRED",
+        "policy": "NOT_ACTIVE",
+        "calls": "gra/src/game/civ-matrix.ts:41-60,71-101 (loader/accessor only); no gameplay call-site found",
+        "direction": "not applicable until a consumer is wired and reviewed",
+        "formula": "not computed by current consumer; retain raw Normal data",
+        "note": "paramDefs.modul is not proof of a live consumer."
+      },
+      "exact_source_hits": [],
+      "target_non_default_count": 0
+    },
+    {
+      "param_id": "walka_uderzenie_piechota",
+      "definition": {
+        "domena": "walka",
+        "jednostka": "ulamek",
+        "modul": "civ-bonuses.ts",
+        "formula": "mul_proc"
+      },
+      "consumer": {
+        "status": "DEAD_UNWIRED",
+        "policy": "NOT_ACTIVE",
+        "calls": "gra/src/game/civ-matrix.ts:41-60,71-101 (loader/accessor only); no gameplay call-site found",
+        "direction": "not applicable until a consumer is wired and reviewed",
+        "formula": "not computed by current consumer; retain raw Normal data",
+        "note": "paramDefs.modul is not proof of a live consumer."
+      },
+      "exact_source_hits": [],
+      "target_non_default_count": 1
+    },
+    {
+      "param_id": "walka_uderzenie_kawaleria",
+      "definition": {
+        "domena": "walka",
+        "jednostka": "ulamek",
+        "modul": "civ-bonuses.ts",
+        "formula": "mul_proc"
+      },
+      "consumer": {
+        "status": "DEAD_UNWIRED",
+        "policy": "NOT_ACTIVE",
+        "calls": "gra/src/game/civ-matrix.ts:41-60,71-101 (loader/accessor only); no gameplay call-site found",
+        "direction": "not applicable until a consumer is wired and reviewed",
+        "formula": "not computed by current consumer; retain raw Normal data",
+        "note": "paramDefs.modul is not proof of a live consumer."
+      },
+      "exact_source_hits": [],
+      "target_non_default_count": 1
+    },
+    {
+      "param_id": "walka_uderzenie_rydwany",
+      "definition": {
+        "domena": "walka",
+        "jednostka": "ulamek",
+        "modul": "civ-bonuses.ts",
+        "formula": "mul_proc"
+      },
+      "consumer": {
+        "status": "UNWIRED",
+        "policy": "NOT_ACTIVE",
+        "calls": "gra/src/game/civ-matrix.ts:41-60,71-101 (loader/accessor only); no gameplay call-site found",
+        "direction": "not applicable until a consumer is wired and reviewed",
+        "formula": "not computed by current consumer; retain raw Normal data",
+        "note": "paramDefs.modul is not proof of a live consumer."
+      },
+      "exact_source_hits": [],
+      "target_non_default_count": 0
+    },
+    {
+      "param_id": "walka_dystans_lukownicy",
+      "definition": {
+        "domena": "walka",
+        "jednostka": "ulamek",
+        "modul": "civ-bonuses.ts",
+        "formula": "mul_proc"
+      },
+      "consumer": {
+        "status": "DEAD_UNWIRED",
+        "policy": "NOT_ACTIVE",
+        "calls": "gra/src/game/civ-matrix.ts:41-60,71-101 (loader/accessor only); no gameplay call-site found",
+        "direction": "not applicable until a consumer is wired and reviewed",
+        "formula": "not computed by current consumer; retain raw Normal data",
+        "note": "paramDefs.modul is not proof of a live consumer."
+      },
+      "exact_source_hits": [],
+      "target_non_default_count": 4
+    },
+    {
+      "param_id": "walka_dystans_rydwany",
+      "definition": {
+        "domena": "walka",
+        "jednostka": "ulamek",
+        "modul": "civ-bonuses.ts",
+        "formula": "mul_proc"
+      },
+      "consumer": {
+        "status": "UNWIRED",
+        "policy": "NOT_ACTIVE",
+        "calls": "gra/src/game/civ-matrix.ts:41-60,71-101 (loader/accessor only); no gameplay call-site found",
+        "direction": "not applicable until a consumer is wired and reviewed",
+        "formula": "not computed by current consumer; retain raw Normal data",
+        "note": "paramDefs.modul is not proof of a live consumer."
+      },
+      "exact_source_hits": [],
+      "target_non_default_count": 0
+    },
+    {
+      "param_id": "walka_hp_piechota",
+      "definition": {
+        "domena": "walka",
+        "jednostka": "ulamek",
+        "modul": "civ-bonuses.ts",
+        "formula": "mul_proc"
+      },
+      "consumer": {
+        "status": "DEAD_UNWIRED",
+        "policy": "NOT_ACTIVE",
+        "calls": "gra/src/game/civ-matrix.ts:41-60,71-101 (loader/accessor only); no gameplay call-site found",
+        "direction": "not applicable until a consumer is wired and reviewed",
+        "formula": "not computed by current consumer; retain raw Normal data",
+        "note": "paramDefs.modul is not proof of a live consumer."
+      },
+      "exact_source_hits": [],
+      "target_non_default_count": 1
+    },
+    {
+      "param_id": "walka_hp_kawaleria",
+      "definition": {
+        "domena": "walka",
+        "jednostka": "ulamek",
+        "modul": "civ-bonuses.ts",
+        "formula": "mul_proc"
+      },
+      "consumer": {
+        "status": "UNWIRED",
+        "policy": "NOT_ACTIVE",
+        "calls": "gra/src/game/civ-matrix.ts:41-60,71-101 (loader/accessor only); no gameplay call-site found",
+        "direction": "not applicable until a consumer is wired and reviewed",
+        "formula": "not computed by current consumer; retain raw Normal data",
+        "note": "paramDefs.modul is not proof of a live consumer."
+      },
+      "exact_source_hits": [],
+      "target_non_default_count": 0
+    },
+    {
+      "param_id": "walka_hp_rydwany",
+      "definition": {
+        "domena": "walka",
+        "jednostka": "ulamek",
+        "modul": "civ-bonuses.ts",
+        "formula": "mul_proc"
+      },
+      "consumer": {
+        "status": "DEAD_UNWIRED",
+        "policy": "NOT_ACTIVE",
+        "calls": "gra/src/game/civ-matrix.ts:41-60,71-101 (loader/accessor only); no gameplay call-site found",
+        "direction": "not applicable until a consumer is wired and reviewed",
+        "formula": "not computed by current consumer; retain raw Normal data",
+        "note": "paramDefs.modul is not proof of a live consumer."
+      },
+      "exact_source_hits": [],
+      "target_non_default_count": 1
+    },
+    {
+      "param_id": "walka_ruch_bitwa_proc",
+      "definition": {
+        "domena": "walka",
+        "jednostka": "ulamek",
+        "modul": "civ-bonuses.ts",
+        "formula": "mul_proc"
+      },
+      "consumer": {
+        "status": "DEAD_UNWIRED",
+        "policy": "NOT_ACTIVE",
+        "calls": "gra/src/game/civ-matrix.ts:41-60,71-101 (loader/accessor only); no gameplay call-site found",
+        "direction": "not applicable until a consumer is wired and reviewed",
+        "formula": "not computed by current consumer; retain raw Normal data",
+        "note": "paramDefs.modul is not proof of a live consumer."
+      },
+      "exact_source_hits": [],
+      "target_non_default_count": 2
+    },
+    {
+      "param_id": "walka_zasieg_proc",
+      "definition": {
+        "domena": "walka",
+        "jednostka": "ulamek",
+        "modul": "civ-bonuses.ts",
+        "formula": "mul_proc"
+      },
+      "consumer": {
+        "status": "UNWIRED",
+        "policy": "NOT_ACTIVE",
+        "calls": "gra/src/game/civ-matrix.ts:41-60,71-101 (loader/accessor only); no gameplay call-site found",
+        "direction": "not applicable until a consumer is wired and reviewed",
+        "formula": "not computed by current consumer; retain raw Normal data",
+        "note": "paramDefs.modul is not proof of a live consumer."
+      },
+      "exact_source_hits": [],
+      "target_non_default_count": 0
+    },
+    {
+      "param_id": "walka_oblezenie_proc",
+      "definition": {
+        "domena": "walka",
+        "jednostka": "ulamek",
+        "modul": "civ-bonuses.ts",
+        "formula": "mul_proc"
+      },
+      "consumer": {
+        "status": "UNWIRED",
+        "policy": "NOT_ACTIVE",
+        "calls": "gra/src/game/civ-matrix.ts:41-60,71-101 (loader/accessor only); no gameplay call-site found",
+        "direction": "not applicable until a consumer is wired and reviewed",
+        "formula": "not computed by current consumer; retain raw Normal data",
+        "note": "paramDefs.modul is not proof of a live consumer."
+      },
+      "exact_source_hits": [],
+      "target_non_default_count": 0
+    },
+    {
+      "param_id": "walka_koszt_rekrutacji_proc",
+      "definition": {
+        "domena": "walka",
+        "jednostka": "ulamek",
+        "modul": "production.ts",
+        "formula": "mul_proc"
+      },
+      "consumer": {
+        "status": "DEAD_UNWIRED",
+        "policy": "NOT_ACTIVE",
+        "calls": "gra/src/game/civ-matrix.ts:41-60,71-101 (loader/accessor only); no gameplay call-site found",
+        "direction": "not applicable until a consumer is wired and reviewed",
+        "formula": "not computed by current consumer; retain raw Normal data",
+        "note": "paramDefs.modul is not proof of a live consumer."
+      },
+      "exact_source_hits": [],
+      "target_non_default_count": 1
+    },
+    {
+      "param_id": "walka_atak_piechota_teren_las",
+      "definition": {
+        "domena": "walka",
+        "jednostka": "ulamek",
+        "modul": "civ-bonuses.ts",
+        "formula": "mul_proc"
+      },
+      "consumer": {
+        "status": "DEAD_UNWIRED",
+        "policy": "NOT_ACTIVE",
+        "calls": "gra/src/game/civ-matrix.ts:41-60,71-101 (loader/accessor only); no gameplay call-site found",
+        "direction": "not applicable until a consumer is wired and reviewed",
+        "formula": "not computed by current consumer; retain raw Normal data",
+        "note": "paramDefs.modul is not proof of a live consumer."
+      },
+      "exact_source_hits": [],
+      "target_non_default_count": 3
+    },
+    {
+      "param_id": "walka_obrona_piechota_teren_las",
+      "definition": {
+        "domena": "walka",
+        "jednostka": "ulamek",
+        "modul": "civ-bonuses.ts",
+        "formula": "mul_proc"
+      },
+      "consumer": {
+        "status": "UNWIRED",
+        "policy": "NOT_ACTIVE",
+        "calls": "gra/src/game/civ-matrix.ts:41-60,71-101 (loader/accessor only); no gameplay call-site found",
+        "direction": "not applicable until a consumer is wired and reviewed",
+        "formula": "not computed by current consumer; retain raw Normal data",
+        "note": "paramDefs.modul is not proof of a live consumer."
+      },
+      "exact_source_hits": [],
+      "target_non_default_count": 0
+    },
+    {
+      "param_id": "walka_atak_piechota_terytorium_wlasne",
+      "definition": {
+        "domena": "walka",
+        "jednostka": "ulamek",
+        "modul": "civ-bonuses.ts",
+        "formula": "mul_proc"
+      },
+      "consumer": {
+        "status": "UNWIRED",
+        "policy": "NOT_ACTIVE",
+        "calls": "gra/src/game/civ-matrix.ts:41-60,71-101 (loader/accessor only); no gameplay call-site found",
+        "direction": "not applicable until a consumer is wired and reviewed",
+        "formula": "not computed by current consumer; retain raw Normal data",
+        "note": "paramDefs.modul is not proof of a live consumer."
+      },
+      "exact_source_hits": [],
+      "target_non_default_count": 0
+    },
+    {
+      "param_id": "walka_obrona_piechota_terytorium_wlasne",
+      "definition": {
+        "domena": "walka",
+        "jednostka": "ulamek",
+        "modul": "civ-bonuses.ts",
+        "formula": "mul_proc"
+      },
+      "consumer": {
+        "status": "DEAD_UNWIRED",
+        "policy": "NOT_ACTIVE",
+        "calls": "gra/src/game/civ-matrix.ts:41-60,71-101 (loader/accessor only); no gameplay call-site found",
+        "direction": "not applicable until a consumer is wired and reviewed",
+        "formula": "not computed by current consumer; retain raw Normal data",
+        "note": "paramDefs.modul is not proof of a live consumer."
+      },
+      "exact_source_hits": [],
+      "target_non_default_count": 1
+    },
+    {
+      "param_id": "walka_atak_piechota_w_murze",
+      "definition": {
+        "domena": "walka",
+        "jednostka": "ulamek",
+        "modul": "civ-bonuses.ts",
+        "formula": "mul_proc"
+      },
+      "consumer": {
+        "status": "UNWIRED",
+        "policy": "NOT_ACTIVE",
+        "calls": "gra/src/game/civ-matrix.ts:41-60,71-101 (loader/accessor only); no gameplay call-site found",
+        "direction": "not applicable until a consumer is wired and reviewed",
+        "formula": "not computed by current consumer; retain raw Normal data",
+        "note": "paramDefs.modul is not proof of a live consumer."
+      },
+      "exact_source_hits": [],
+      "target_non_default_count": 0
+    },
+    {
+      "param_id": "walka_obrona_piechota_w_murze",
+      "definition": {
+        "domena": "walka",
+        "jednostka": "ulamek",
+        "modul": "civ-bonuses.ts",
+        "formula": "mul_proc"
+      },
+      "consumer": {
+        "status": "DEAD_UNWIRED",
+        "policy": "NOT_ACTIVE",
+        "calls": "gra/src/game/civ-matrix.ts:41-60,71-101 (loader/accessor only); no gameplay call-site found",
+        "direction": "not applicable until a consumer is wired and reviewed",
+        "formula": "not computed by current consumer; retain raw Normal data",
+        "note": "paramDefs.modul is not proof of a live consumer."
+      },
+      "exact_source_hits": [],
+      "target_non_default_count": 1
+    },
+    {
+      "param_id": "walka_atak_piechota_runda_szarzy",
+      "definition": {
+        "domena": "walka",
+        "jednostka": "ulamek",
+        "modul": "civ-bonuses.ts",
+        "formula": "mul_proc"
+      },
+      "consumer": {
+        "status": "DEAD_UNWIRED",
+        "policy": "NOT_ACTIVE",
+        "calls": "gra/src/game/civ-matrix.ts:41-60,71-101 (loader/accessor only); no gameplay call-site found",
+        "direction": "not applicable until a consumer is wired and reviewed",
+        "formula": "not computed by current consumer; retain raw Normal data",
+        "note": "paramDefs.modul is not proof of a live consumer."
+      },
+      "exact_source_hits": [],
+      "target_non_default_count": 1
+    },
+    {
+      "param_id": "walka_obrona_piechota_runda_szarzy",
+      "definition": {
+        "domena": "walka",
+        "jednostka": "ulamek",
+        "modul": "civ-bonuses.ts",
+        "formula": "mul_proc"
+      },
+      "consumer": {
+        "status": "UNWIRED",
+        "policy": "NOT_ACTIVE",
+        "calls": "gra/src/game/civ-matrix.ts:41-60,71-101 (loader/accessor only); no gameplay call-site found",
+        "direction": "not applicable until a consumer is wired and reviewed",
+        "formula": "not computed by current consumer; retain raw Normal data",
+        "note": "paramDefs.modul is not proof of a live consumer."
+      },
+      "exact_source_hits": [],
+      "target_non_default_count": 0
+    },
+    {
+      "param_id": "walka_atak_piechota_teren_plytkie_morze",
+      "definition": {
+        "domena": "walka",
+        "jednostka": "ulamek",
+        "modul": "civ-bonuses.ts",
+        "formula": "mul_proc"
+      },
+      "consumer": {
+        "status": "UNWIRED",
+        "policy": "NOT_ACTIVE",
+        "calls": "gra/src/game/civ-matrix.ts:41-60,71-101 (loader/accessor only); no gameplay call-site found",
+        "direction": "not applicable until a consumer is wired and reviewed",
+        "formula": "not computed by current consumer; retain raw Normal data",
+        "note": "paramDefs.modul is not proof of a live consumer."
+      },
+      "exact_source_hits": [],
+      "target_non_default_count": 0
+    },
+    {
+      "param_id": "walka_obrona_piechota_teren_plytkie_morze",
+      "definition": {
+        "domena": "walka",
+        "jednostka": "ulamek",
+        "modul": "civ-bonuses.ts",
+        "formula": "mul_proc"
+      },
+      "consumer": {
+        "status": "UNWIRED",
+        "policy": "NOT_ACTIVE",
+        "calls": "gra/src/game/civ-matrix.ts:41-60,71-101 (loader/accessor only); no gameplay call-site found",
+        "direction": "not applicable until a consumer is wired and reviewed",
+        "formula": "not computed by current consumer; retain raw Normal data",
+        "note": "paramDefs.modul is not proof of a live consumer."
+      },
+      "exact_source_hits": [],
+      "target_non_default_count": 0
+    },
+    {
+      "param_id": "spec_Atak",
+      "definition": {
+        "domena": "jednostka_spec",
+        "jednostka": "absolut",
+        "modul": "units.json+combat.ts",
+        "formula": "stat_abs"
+      },
+      "consumer": {
+        "status": "DEAD_UNWIRED",
+        "policy": "NOT_ACTIVE",
+        "calls": "gra/src/game/civ-matrix.ts:41-60,71-101 (loader/accessor only); no gameplay call-site found",
+        "direction": "not applicable until a consumer is wired and reviewed",
+        "formula": "not computed by current consumer; retain raw Normal data",
+        "note": "paramDefs.modul is not proof of a live consumer."
+      },
+      "exact_source_hits": [],
+      "target_non_default_count": 12
+    },
+    {
+      "param_id": "spec_Obrazenia",
+      "definition": {
+        "domena": "jednostka_spec",
+        "jednostka": "absolut",
+        "modul": "units.json+combat.ts",
+        "formula": "stat_abs"
+      },
+      "consumer": {
+        "status": "DEAD_UNWIRED",
+        "policy": "NOT_ACTIVE",
+        "calls": "gra/src/game/civ-matrix.ts:41-60,71-101 (loader/accessor only); no gameplay call-site found",
+        "direction": "not applicable until a consumer is wired and reviewed",
+        "formula": "not computed by current consumer; retain raw Normal data",
+        "note": "paramDefs.modul is not proof of a live consumer."
+      },
+      "exact_source_hits": [],
+      "target_non_default_count": 6
+    },
+    {
+      "param_id": "spec_Obrona",
+      "definition": {
+        "domena": "jednostka_spec",
+        "jednostka": "absolut",
+        "modul": "units.json+combat.ts",
+        "formula": "stat_abs"
+      },
+      "consumer": {
+        "status": "DEAD_UNWIRED",
+        "policy": "NOT_ACTIVE",
+        "calls": "gra/src/game/civ-matrix.ts:41-60,71-101 (loader/accessor only); no gameplay call-site found",
+        "direction": "not applicable until a consumer is wired and reviewed",
+        "formula": "not computed by current consumer; retain raw Normal data",
+        "note": "paramDefs.modul is not proof of a live consumer."
+      },
+      "exact_source_hits": [],
+      "target_non_default_count": 12
+    },
+    {
+      "param_id": "spec_Uderzenie",
+      "definition": {
+        "domena": "jednostka_spec",
+        "jednostka": "absolut",
+        "modul": "units.json+combat.ts",
+        "formula": "stat_abs"
+      },
+      "consumer": {
+        "status": "DEAD_UNWIRED",
+        "policy": "NOT_ACTIVE",
+        "calls": "gra/src/game/civ-matrix.ts:41-60,71-101 (loader/accessor only); no gameplay call-site found",
+        "direction": "not applicable until a consumer is wired and reviewed",
+        "formula": "not computed by current consumer; retain raw Normal data",
+        "note": "paramDefs.modul is not proof of a live consumer."
+      },
+      "exact_source_hits": [],
+      "target_non_default_count": 12
+    },
+    {
+      "param_id": "spec_Pancerz",
+      "definition": {
+        "domena": "jednostka_spec",
+        "jednostka": "absolut",
+        "modul": "units.json+combat.ts",
+        "formula": "stat_abs"
+      },
+      "consumer": {
+        "status": "DEAD_UNWIRED",
+        "policy": "NOT_ACTIVE",
+        "calls": "gra/src/game/civ-matrix.ts:41-60,71-101 (loader/accessor only); no gameplay call-site found",
+        "direction": "not applicable until a consumer is wired and reviewed",
+        "formula": "not computed by current consumer; retain raw Normal data",
+        "note": "paramDefs.modul is not proof of a live consumer."
+      },
+      "exact_source_hits": [],
+      "target_non_default_count": 12
+    },
+    {
+      "param_id": "spec_Przebicie",
+      "definition": {
+        "domena": "jednostka_spec",
+        "jednostka": "absolut",
+        "modul": "units.json+combat.ts",
+        "formula": "stat_abs"
+      },
+      "consumer": {
+        "status": "DEAD_UNWIRED",
+        "policy": "NOT_ACTIVE",
+        "calls": "gra/src/game/civ-matrix.ts:41-60,71-101 (loader/accessor only); no gameplay call-site found",
+        "direction": "not applicable until a consumer is wired and reviewed",
+        "formula": "not computed by current consumer; retain raw Normal data",
+        "note": "paramDefs.modul is not proof of a live consumer."
+      },
+      "exact_source_hits": [],
+      "target_non_default_count": 12
+    },
+    {
+      "param_id": "spec_Health",
+      "definition": {
+        "domena": "jednostka_spec",
+        "jednostka": "absolut",
+        "modul": "units.json+combat.ts",
+        "formula": "stat_abs"
+      },
+      "consumer": {
+        "status": "DEAD_UNWIRED",
+        "policy": "NOT_ACTIVE",
+        "calls": "gra/src/game/civ-matrix.ts:41-60,71-101 (loader/accessor only); no gameplay call-site found",
+        "direction": "not applicable until a consumer is wired and reviewed",
+        "formula": "not computed by current consumer; retain raw Normal data",
+        "note": "paramDefs.modul is not proof of a live consumer."
+      },
+      "exact_source_hits": [],
+      "target_non_default_count": 12
+    },
+    {
+      "param_id": "spec_Atak_dystansowy",
+      "definition": {
+        "domena": "jednostka_spec",
+        "jednostka": "absolut",
+        "modul": "units.json+combat.ts",
+        "formula": "stat_abs"
+      },
+      "consumer": {
+        "status": "DEAD_UNWIRED",
+        "policy": "NOT_ACTIVE",
+        "calls": "gra/src/game/civ-matrix.ts:41-60,71-101 (loader/accessor only); no gameplay call-site found",
+        "direction": "not applicable until a consumer is wired and reviewed",
+        "formula": "not computed by current consumer; retain raw Normal data",
+        "note": "paramDefs.modul is not proof of a live consumer."
+      },
+      "exact_source_hits": [],
+      "target_non_default_count": 3
+    },
+    {
+      "param_id": "spec_Zasieg_hex",
+      "definition": {
+        "domena": "jednostka_spec",
+        "jednostka": "absolut",
+        "modul": "units.json+combat.ts",
+        "formula": "stat_abs"
+      },
+      "consumer": {
+        "status": "DEAD_UNWIRED",
+        "policy": "NOT_ACTIVE",
+        "calls": "gra/src/game/civ-matrix.ts:41-60,71-101 (loader/accessor only); no gameplay call-site found",
+        "direction": "not applicable until a consumer is wired and reviewed",
+        "formula": "not computed by current consumer; retain raw Normal data",
+        "note": "paramDefs.modul is not proof of a live consumer."
+      },
+      "exact_source_hits": [],
+      "target_non_default_count": 3
+    },
+    {
+      "param_id": "spec_Pociski",
+      "definition": {
+        "domena": "jednostka_spec",
+        "jednostka": "absolut",
+        "modul": "units.json+combat.ts",
+        "formula": "stat_abs"
+      },
+      "consumer": {
+        "status": "DEAD_UNWIRED",
+        "policy": "NOT_ACTIVE",
+        "calls": "gra/src/game/civ-matrix.ts:41-60,71-101 (loader/accessor only); no gameplay call-site found",
+        "direction": "not applicable until a consumer is wired and reviewed",
+        "formula": "not computed by current consumer; retain raw Normal data",
+        "note": "paramDefs.modul is not proof of a live consumer."
+      },
+      "exact_source_hits": [],
+      "target_non_default_count": 3
+    },
+    {
+      "param_id": "spec_Ruch_bitwa",
+      "definition": {
+        "domena": "jednostka_spec",
+        "jednostka": "absolut",
+        "modul": "units.json+combat.ts",
+        "formula": "stat_abs"
+      },
+      "consumer": {
+        "status": "DEAD_UNWIRED",
+        "policy": "NOT_ACTIVE",
+        "calls": "gra/src/game/civ-matrix.ts:41-60,71-101 (loader/accessor only); no gameplay call-site found",
+        "direction": "not applicable until a consumer is wired and reviewed",
+        "formula": "not computed by current consumer; retain raw Normal data",
+        "note": "paramDefs.modul is not proof of a live consumer."
+      },
+      "exact_source_hits": [],
+      "target_non_default_count": 12
+    },
+    {
+      "param_id": "spec_Ruch_mapa",
+      "definition": {
+        "domena": "jednostka_spec",
+        "jednostka": "absolut",
+        "modul": "units.json+combat.ts",
+        "formula": "stat_abs"
+      },
+      "consumer": {
+        "status": "DEAD_UNWIRED",
+        "policy": "NOT_ACTIVE",
+        "calls": "gra/src/game/civ-matrix.ts:41-60,71-101 (loader/accessor only); no gameplay call-site found",
+        "direction": "not applicable until a consumer is wired and reviewed",
+        "formula": "not computed by current consumer; retain raw Normal data",
+        "note": "paramDefs.modul is not proof of a live consumer."
+      },
+      "exact_source_hits": [],
+      "target_non_default_count": 12
+    },
+    {
+      "param_id": "spec_Widok",
+      "definition": {
+        "domena": "jednostka_spec",
+        "jednostka": "absolut",
+        "modul": "units.json+combat.ts",
+        "formula": "stat_abs"
+      },
+      "consumer": {
+        "status": "DEAD_UNWIRED",
+        "policy": "NOT_ACTIVE",
+        "calls": "gra/src/game/civ-matrix.ts:41-60,71-101 (loader/accessor only); no gameplay call-site found",
+        "direction": "not applicable until a consumer is wired and reviewed",
+        "formula": "not computed by current consumer; retain raw Normal data",
+        "note": "paramDefs.modul is not proof of a live consumer."
+      },
+      "exact_source_hits": [],
+      "target_non_default_count": 12
+    },
+    {
+      "param_id": "spec_Dezercja_proc",
+      "definition": {
+        "domena": "jednostka_spec",
+        "jednostka": "absolut",
+        "modul": "units.json+combat.ts",
+        "formula": "stat_abs"
+      },
+      "consumer": {
+        "status": "DEAD_UNWIRED",
+        "policy": "NOT_ACTIVE",
+        "calls": "gra/src/game/civ-matrix.ts:41-60,71-101 (loader/accessor only); no gameplay call-site found",
+        "direction": "not applicable until a consumer is wired and reviewed",
+        "formula": "not computed by current consumer; retain raw Normal data",
+        "note": "paramDefs.modul is not proof of a live consumer."
+      },
+      "exact_source_hits": [],
+      "target_non_default_count": 12
+    },
+    {
+      "param_id": "spec_Morale",
+      "definition": {
+        "domena": "jednostka_spec",
+        "jednostka": "absolut",
+        "modul": "units.json+combat.ts",
+        "formula": "stat_abs"
+      },
+      "consumer": {
+        "status": "DEAD_UNWIRED",
+        "policy": "NOT_ACTIVE",
+        "calls": "gra/src/game/civ-matrix.ts:41-60,71-101 (loader/accessor only); no gameplay call-site found",
+        "direction": "not applicable until a consumer is wired and reviewed",
+        "formula": "not computed by current consumer; retain raw Normal data",
+        "note": "paramDefs.modul is not proof of a live consumer."
+      },
+      "exact_source_hits": [],
+      "target_non_default_count": 12
+    },
+    {
+      "param_id": "spec_Koszt_pieniadz",
+      "definition": {
+        "domena": "jednostka_spec",
+        "jednostka": "absolut",
+        "modul": "units.json+combat.ts",
+        "formula": "stat_abs"
+      },
+      "consumer": {
+        "status": "DEAD_UNWIRED",
+        "policy": "NOT_ACTIVE",
+        "calls": "gra/src/game/civ-matrix.ts:41-60,71-101 (loader/accessor only); no gameplay call-site found",
+        "direction": "not applicable until a consumer is wired and reviewed",
+        "formula": "not computed by current consumer; retain raw Normal data",
+        "note": "paramDefs.modul is not proof of a live consumer."
+      },
+      "exact_source_hits": [],
+      "target_non_default_count": 10
+    },
+    {
+      "param_id": "spec_Utrzymanie",
+      "definition": {
+        "domena": "jednostka_spec",
+        "jednostka": "absolut",
+        "modul": "units.json+combat.ts",
+        "formula": "stat_abs"
+      },
+      "consumer": {
+        "status": "DEAD_UNWIRED",
+        "policy": "NOT_ACTIVE",
+        "calls": "gra/src/game/civ-matrix.ts:41-60,71-101 (loader/accessor only); no gameplay call-site found",
+        "direction": "not applicable until a consumer is wired and reviewed",
+        "formula": "not computed by current consumer; retain raw Normal data",
+        "note": "paramDefs.modul is not proof of a live consumer."
+      },
+      "exact_source_hits": [],
+      "target_non_default_count": 10
+    },
+    {
+      "param_id": "spec_Zywnosc_ture",
+      "definition": {
+        "domena": "jednostka_spec",
+        "jednostka": "absolut",
+        "modul": "units.json+combat.ts",
+        "formula": "stat_abs"
+      },
+      "consumer": {
+        "status": "DEAD_UNWIRED",
+        "policy": "NOT_ACTIVE",
+        "calls": "gra/src/game/civ-matrix.ts:41-60,71-101 (loader/accessor only); no gameplay call-site found",
+        "direction": "not applicable until a consumer is wired and reviewed",
+        "formula": "not computed by current consumer; retain raw Normal data",
+        "note": "paramDefs.modul is not proof of a live consumer."
+      },
+      "exact_source_hits": [],
+      "target_non_default_count": 12
+    },
+    {
+      "param_id": "eko_praca_proc",
+      "definition": {
+        "domena": "ekonomia",
+        "jednostka": "ulamek",
+        "modul": "economy.ts",
+        "formula": "mul_proc"
+      },
+      "consumer": {
+        "status": "DEAD_UNWIRED",
+        "policy": "NOT_ACTIVE",
+        "calls": "gra/src/game/civ-matrix.ts:41-60,71-101 (loader/accessor only); no gameplay call-site found",
+        "direction": "not applicable until a consumer is wired and reviewed",
+        "formula": "not computed by current consumer; retain raw Normal data",
+        "note": "paramDefs.modul is not proof of a live consumer."
+      },
+      "exact_source_hits": [],
+      "target_non_default_count": 10
+    },
+    {
+      "param_id": "eko_pieniadz_proc",
+      "definition": {
+        "domena": "ekonomia",
+        "jednostka": "ulamek",
+        "modul": "economy.ts",
+        "formula": "mul_proc"
+      },
+      "consumer": {
+        "status": "DEAD_UNWIRED",
+        "policy": "NOT_ACTIVE",
+        "calls": "gra/src/game/civ-matrix.ts:41-60,71-101 (loader/accessor only); no gameplay call-site found",
+        "direction": "not applicable until a consumer is wired and reviewed",
+        "formula": "not computed by current consumer; retain raw Normal data",
+        "note": "paramDefs.modul is not proof of a live consumer."
+      },
+      "exact_source_hits": [],
+      "target_non_default_count": 3
+    },
+    {
+      "param_id": "eko_pieniadz_port_proc",
+      "definition": {
+        "domena": "ekonomia",
+        "jednostka": "ulamek",
+        "modul": "economy.ts",
+        "formula": "mul_proc"
+      },
+      "consumer": {
+        "status": "DEAD_UNWIRED",
+        "policy": "NOT_ACTIVE",
+        "calls": "gra/src/game/civ-matrix.ts:41-60,71-101 (loader/accessor only); no gameplay call-site found",
+        "direction": "not applicable until a consumer is wired and reviewed",
+        "formula": "not computed by current consumer; retain raw Normal data",
+        "note": "paramDefs.modul is not proof of a live consumer."
+      },
+      "exact_source_hits": [],
+      "target_non_default_count": 2
+    },
+    {
+      "param_id": "eko_zywnosc_proc",
+      "definition": {
+        "domena": "ekonomia",
+        "jednostka": "ulamek",
+        "modul": "economy.ts",
+        "formula": "mul_proc"
+      },
+      "consumer": {
+        "status": "UNWIRED",
+        "policy": "NOT_ACTIVE",
+        "calls": "gra/src/game/civ-matrix.ts:41-60,71-101 (loader/accessor only); no gameplay call-site found",
+        "direction": "not applicable until a consumer is wired and reviewed",
+        "formula": "not computed by current consumer; retain raw Normal data",
+        "note": "paramDefs.modul is not proof of a live consumer."
+      },
+      "exact_source_hits": [],
+      "target_non_default_count": 0
+    },
+    {
+      "param_id": "eko_nauka_proc",
+      "definition": {
+        "domena": "ekonomia",
+        "jednostka": "ulamek",
+        "modul": "economy.ts",
+        "formula": "mul_proc"
+      },
+      "consumer": {
+        "status": "DEAD_UNWIRED",
+        "policy": "NOT_ACTIVE",
+        "calls": "gra/src/game/civ-matrix.ts:41-60,71-101 (loader/accessor only); no gameplay call-site found",
+        "direction": "not applicable until a consumer is wired and reviewed",
+        "formula": "not computed by current consumer; retain raw Normal data",
+        "note": "paramDefs.modul is not proof of a live consumer."
+      },
+      "exact_source_hits": [],
+      "target_non_default_count": 3
+    },
+    {
+      "param_id": "eko_kultura_proc",
+      "definition": {
+        "domena": "ekonomia",
+        "jednostka": "ulamek",
+        "modul": "economy.ts",
+        "formula": "mul_proc"
+      },
+      "consumer": {
+        "status": "UNWIRED",
+        "policy": "NOT_ACTIVE",
+        "calls": "gra/src/game/civ-matrix.ts:41-60,71-101 (loader/accessor only); no gameplay call-site found",
+        "direction": "not applicable until a consumer is wired and reviewed",
+        "formula": "not computed by current consumer; retain raw Normal data",
+        "note": "paramDefs.modul is not proof of a live consumer."
+      },
+      "exact_source_hits": [],
+      "target_non_default_count": 0
+    },
+    {
+      "param_id": "eko_luksus_proc",
+      "definition": {
+        "domena": "ekonomia",
+        "jednostka": "ulamek",
+        "modul": "economy.ts",
+        "formula": "mul_proc"
+      },
+      "consumer": {
+        "status": "UNWIRED",
+        "policy": "NOT_ACTIVE",
+        "calls": "gra/src/game/civ-matrix.ts:41-60,71-101 (loader/accessor only); no gameplay call-site found",
+        "direction": "not applicable until a consumer is wired and reviewed",
+        "formula": "not computed by current consumer; retain raw Normal data",
+        "note": "paramDefs.modul is not proof of a live consumer."
+      },
+      "exact_source_hits": [],
+      "target_non_default_count": 0
+    },
+    {
+      "param_id": "eko_zadowolenie_proc",
+      "definition": {
+        "domena": "ekonomia",
+        "jednostka": "ulamek",
+        "modul": "economy.ts",
+        "formula": "mul_proc"
+      },
+      "consumer": {
+        "status": "UNWIRED",
+        "policy": "NOT_ACTIVE",
+        "calls": "gra/src/game/civ-matrix.ts:41-60,71-101 (loader/accessor only); no gameplay call-site found",
+        "direction": "not applicable until a consumer is wired and reviewed",
+        "formula": "not computed by current consumer; retain raw Normal data",
+        "note": "paramDefs.modul is not proof of a live consumer."
+      },
+      "exact_source_hits": [],
+      "target_non_default_count": 0
+    },
+    {
+      "param_id": "eko_handel_brutto_proc",
+      "definition": {
+        "domena": "ekonomia",
+        "jednostka": "ulamek",
+        "modul": "economy.ts",
+        "formula": "mul_proc"
+      },
+      "consumer": {
+        "status": "DEAD_UNWIRED",
+        "policy": "NOT_ACTIVE",
+        "calls": "gra/src/game/civ-matrix.ts:41-60,71-101 (loader/accessor only); no gameplay call-site found",
+        "direction": "not applicable until a consumer is wired and reviewed",
+        "formula": "not computed by current consumer; retain raw Normal data",
+        "note": "paramDefs.modul is not proof of a live consumer."
+      },
+      "exact_source_hits": [],
+      "target_non_default_count": 3
+    },
+    {
+      "param_id": "eko_korupcja_proc",
+      "definition": {
+        "domena": "ekonomia",
+        "jednostka": "ulamek",
+        "modul": "economy.ts",
+        "formula": "mul_proc"
+      },
+      "consumer": {
+        "status": "UNWIRED",
+        "policy": "NOT_ACTIVE",
+        "calls": "gra/src/game/civ-matrix.ts:41-60,71-101 (loader/accessor only); no gameplay call-site found",
+        "direction": "not applicable until a consumer is wired and reviewed",
+        "formula": "not computed by current consumer; retain raw Normal data",
+        "note": "paramDefs.modul is not proof of a live consumer."
+      },
+      "exact_source_hits": [],
+      "target_non_default_count": 0
+    },
+    {
+      "param_id": "prod_koszt_budynku_proc",
+      "definition": {
+        "domena": "produkcja",
+        "jednostka": "ulamek",
+        "modul": "civ-bonuses.ts",
+        "formula": "mul_proc"
+      },
+      "consumer": {
+        "status": "DEAD_UNWIRED",
+        "policy": "NOT_ACTIVE",
+        "calls": "gra/src/game/civ-matrix.ts:41-60,71-101 (loader/accessor only); no gameplay call-site found",
+        "direction": "not applicable until a consumer is wired and reviewed",
+        "formula": "not computed by current consumer; retain raw Normal data",
+        "note": "paramDefs.modul is not proof of a live consumer."
+      },
+      "exact_source_hits": [],
+      "target_non_default_count": 1
+    },
+    {
+      "param_id": "prod_koszt_jednostki_proc",
+      "definition": {
+        "domena": "produkcja",
+        "jednostka": "ulamek",
+        "modul": "production.ts",
+        "formula": "mul_proc"
+      },
+      "consumer": {
+        "status": "DEAD_UNWIRED",
+        "policy": "NOT_ACTIVE",
+        "calls": "gra/src/game/civ-matrix.ts:41-60,71-101 (loader/accessor only); no gameplay call-site found",
+        "direction": "not applicable until a consumer is wired and reviewed",
+        "formula": "not computed by current consumer; retain raw Normal data",
+        "note": "paramDefs.modul is not proof of a live consumer."
+      },
+      "exact_source_hits": [],
+      "target_non_default_count": 1
+    },
+    {
+      "param_id": "prod_szybkosc_budynku_proc",
+      "definition": {
+        "domena": "produkcja",
+        "jednostka": "ulamek",
+        "modul": "production.ts",
+        "formula": "mul_proc"
+      },
+      "consumer": {
+        "status": "UNWIRED",
+        "policy": "NOT_ACTIVE",
+        "calls": "gra/src/game/civ-matrix.ts:41-60,71-101 (loader/accessor only); no gameplay call-site found",
+        "direction": "not applicable until a consumer is wired and reviewed",
+        "formula": "not computed by current consumer; retain raw Normal data",
+        "note": "paramDefs.modul is not proof of a live consumer."
+      },
+      "exact_source_hits": [],
+      "target_non_default_count": 0
+    },
+    {
+      "param_id": "prod_szybkosc_jednostki_proc",
+      "definition": {
+        "domena": "produkcja",
+        "jednostka": "ulamek",
+        "modul": "production.ts",
+        "formula": "mul_proc"
+      },
+      "consumer": {
+        "status": "UNWIRED",
+        "policy": "NOT_ACTIVE",
+        "calls": "gra/src/game/civ-matrix.ts:41-60,71-101 (loader/accessor only); no gameplay call-site found",
+        "direction": "not applicable until a consumer is wired and reviewed",
+        "formula": "not computed by current consumer; retain raw Normal data",
+        "note": "paramDefs.modul is not proof of a live consumer."
+      },
+      "exact_source_hits": [],
+      "target_non_default_count": 0
+    },
+    {
+      "param_id": "prod_rush_koszt_proc",
+      "definition": {
+        "domena": "produkcja",
+        "jednostka": "ulamek",
+        "modul": "production.ts",
+        "formula": "mul_proc"
+      },
+      "consumer": {
+        "status": "UNWIRED",
+        "policy": "NOT_ACTIVE",
+        "calls": "gra/src/game/civ-matrix.ts:41-60,71-101 (loader/accessor only); no gameplay call-site found",
+        "direction": "not applicable until a consumer is wired and reviewed",
+        "formula": "not computed by current consumer; retain raw Normal data",
+        "note": "paramDefs.modul is not proof of a live consumer."
+      },
+      "exact_source_hits": [],
+      "target_non_default_count": 0
+    },
+    {
+      "param_id": "lud_wzrost_proc",
+      "definition": {
+        "domena": "ludnosc",
+        "jednostka": "ulamek",
+        "modul": "economy.ts",
+        "formula": "mul_proc"
+      },
+      "consumer": {
+        "status": "REAL_GAMEPLAY",
+        "policy": "GROWTH_DIFFICULTY_MULT",
+        "calls": "gra/src/game/population-growth-v85.ts:84-90,230-232",
+        "direction": "wyżej = szybszy wzrost i silniejszy AI; Hard ×1.5, Easy ×0.5",
+        "formula": "easy=raw*0.5; normal=raw; hard=raw*1.5; contribution rounded to percent",
+        "note": "Only matrix field explicitly difficulty-scaled by growth consumer."
+      },
+      "exact_source_hits": [
+        "gra/src/game/population-growth-v85.ts:87",
+        "gra/src/game/population-growth-v85.ts:206",
+        "gra/src/game/population-growth-v85.ts:230"
+      ],
+      "target_non_default_count": 5
+    },
+    {
+      "param_id": "lud_spadek_proc",
+      "definition": {
+        "domena": "ludnosc",
+        "jednostka": "ulamek",
+        "modul": "economy.ts",
+        "formula": "mul_proc"
+      },
+      "consumer": {
+        "status": "UNWIRED",
+        "policy": "NOT_ACTIVE",
+        "calls": "gra/src/game/civ-matrix.ts:41-60,71-101 (loader/accessor only); no gameplay call-site found",
+        "direction": "not applicable until a consumer is wired and reviewed",
+        "formula": "not computed by current consumer; retain raw Normal data",
+        "note": "paramDefs.modul is not proof of a live consumer."
+      },
+      "exact_source_hits": [],
+      "target_non_default_count": 0
+    },
+    {
+      "param_id": "lud_zdrowie_proc",
+      "definition": {
+        "domena": "ludnosc",
+        "jednostka": "ulamek",
+        "modul": "turn-economy.ts",
+        "formula": "mul_proc"
+      },
+      "consumer": {
+        "status": "UNWIRED",
+        "policy": "NOT_ACTIVE",
+        "calls": "gra/src/game/civ-matrix.ts:41-60,71-101 (loader/accessor only); no gameplay call-site found",
+        "direction": "not applicable until a consumer is wired and reviewed",
+        "formula": "not computed by current consumer; retain raw Normal data",
+        "note": "paramDefs.modul is not proof of a live consumer."
+      },
+      "exact_source_hits": [],
+      "target_non_default_count": 0
+    },
+    {
+      "param_id": "lud_zadowolenie_bazowe",
+      "definition": {
+        "domena": "ludnosc",
+        "jednostka": "absolut",
+        "modul": "culture-religion.ts",
+        "formula": "add"
+      },
+      "consumer": {
+        "status": "UNWIRED",
+        "policy": "NOT_ACTIVE",
+        "calls": "gra/src/game/civ-matrix.ts:41-60,71-101 (loader/accessor only); no gameplay call-site found",
+        "direction": "not applicable until a consumer is wired and reviewed",
+        "formula": "not computed by current consumer; retain raw Normal data",
+        "note": "paramDefs.modul is not proof of a live consumer."
+      },
+      "exact_source_hits": [],
+      "target_non_default_count": 0
+    },
+    {
+      "param_id": "lud_limit_populacji",
+      "definition": {
+        "domena": "ludnosc",
+        "jednostka": "absolut",
+        "modul": "cities.ts",
+        "formula": "add"
+      },
+      "consumer": {
+        "status": "UNWIRED",
+        "policy": "NOT_ACTIVE",
+        "calls": "gra/src/game/civ-matrix.ts:41-60,71-101 (loader/accessor only); no gameplay call-site found",
+        "direction": "not applicable until a consumer is wired and reviewed",
+        "formula": "not computed by current consumer; retain raw Normal data",
+        "note": "paramDefs.modul is not proof of a live consumer."
+      },
+      "exact_source_hits": [],
+      "target_non_default_count": 0
+    },
+    {
+      "param_id": "mp_regen_proc",
+      "definition": {
+        "domena": "manpower",
+        "jednostka": "ulamek",
+        "modul": "manpower.ts",
+        "formula": "mul_proc"
+      },
+      "consumer": {
+        "status": "DEAD_UNWIRED",
+        "policy": "NOT_ACTIVE",
+        "calls": "gra/src/game/civ-matrix.ts:41-60,71-101 (loader/accessor only); no gameplay call-site found",
+        "direction": "not applicable until a consumer is wired and reviewed",
+        "formula": "not computed by current consumer; retain raw Normal data",
+        "note": "paramDefs.modul is not proof of a live consumer."
+      },
+      "exact_source_hits": [],
+      "target_non_default_count": 2
+    },
+    {
+      "param_id": "mp_max_proc",
+      "definition": {
+        "domena": "manpower",
+        "jednostka": "ulamek",
+        "modul": "manpower.ts",
+        "formula": "mul_proc"
+      },
+      "consumer": {
+        "status": "UNWIRED",
+        "policy": "NOT_ACTIVE",
+        "calls": "gra/src/game/civ-matrix.ts:41-60,71-101 (loader/accessor only); no gameplay call-site found",
+        "direction": "not applicable until a consumer is wired and reviewed",
+        "formula": "not computed by current consumer; retain raw Normal data",
+        "note": "paramDefs.modul is not proof of a live consumer."
+      },
+      "exact_source_hits": [],
+      "target_non_default_count": 0
+    },
+    {
+      "param_id": "mp_koszt_jednostki_proc",
+      "definition": {
+        "domena": "manpower",
+        "jednostka": "ulamek",
+        "modul": "manpower.ts",
+        "formula": "mul_proc"
+      },
+      "consumer": {
+        "status": "UNWIRED",
+        "policy": "NOT_ACTIVE",
+        "calls": "gra/src/game/civ-matrix.ts:41-60,71-101 (loader/accessor only); no gameplay call-site found",
+        "direction": "not applicable until a consumer is wired and reviewed",
+        "formula": "not computed by current consumer; retain raw Normal data",
+        "note": "paramDefs.modul is not proof of a live consumer."
+      },
+      "exact_source_hits": [],
+      "target_non_default_count": 0
+    },
+    {
+      "param_id": "wealth_cap_proc",
+      "definition": {
+        "domena": "spoleczenstwo",
+        "jednostka": "ulamek",
+        "modul": "wealth.ts",
+        "formula": "mul_proc"
+      },
+      "consumer": {
+        "status": "UNWIRED",
+        "policy": "NOT_ACTIVE",
+        "calls": "gra/src/game/civ-matrix.ts:41-60,71-101 (loader/accessor only); no gameplay call-site found",
+        "direction": "not applicable until a consumer is wired and reviewed",
+        "formula": "not computed by current consumer; retain raw Normal data",
+        "note": "paramDefs.modul is not proof of a live consumer."
+      },
+      "exact_source_hits": [],
+      "target_non_default_count": 0
+    },
+    {
+      "param_id": "wealth_mnoznik_proc",
+      "definition": {
+        "domena": "spoleczenstwo",
+        "jednostka": "ulamek",
+        "modul": "wealth.ts",
+        "formula": "mul_proc"
+      },
+      "consumer": {
+        "status": "UNWIRED",
+        "policy": "NOT_ACTIVE",
+        "calls": "gra/src/game/civ-matrix.ts:41-60,71-101 (loader/accessor only); no gameplay call-site found",
+        "direction": "not applicable until a consumer is wired and reviewed",
+        "formula": "not computed by current consumer; retain raw Normal data",
+        "note": "paramDefs.modul is not proof of a live consumer."
+      },
+      "exact_source_hits": [],
+      "target_non_default_count": 0
+    },
+    {
+      "param_id": "kultura_naplyw_proc",
+      "definition": {
+        "domena": "spoleczenstwo",
+        "jednostka": "ulamek",
+        "modul": "culture-religion.ts",
+        "formula": "mul_proc"
+      },
+      "consumer": {
+        "status": "UNWIRED",
+        "policy": "NOT_ACTIVE",
+        "calls": "gra/src/game/civ-matrix.ts:41-60,71-101 (loader/accessor only); no gameplay call-site found",
+        "direction": "not applicable until a consumer is wired and reviewed",
+        "formula": "not computed by current consumer; retain raw Normal data",
+        "note": "paramDefs.modul is not proof of a live consumer."
+      },
+      "exact_source_hits": [],
+      "target_non_default_count": 0
+    },
+    {
+      "param_id": "religia_spread_proc",
+      "definition": {
+        "domena": "spoleczenstwo",
+        "jednostka": "ulamek",
+        "modul": "culture-religion.ts",
+        "formula": "mul_proc"
+      },
+      "consumer": {
+        "status": "UNWIRED",
+        "policy": "NOT_ACTIVE",
+        "calls": "gra/src/game/civ-matrix.ts:41-60,71-101 (loader/accessor only); no gameplay call-site found",
+        "direction": "not applicable until a consumer is wired and reviewed",
+        "formula": "not computed by current consumer; retain raw Normal data",
+        "note": "paramDefs.modul is not proof of a live consumer."
+      },
+      "exact_source_hits": [],
+      "target_non_default_count": 0
+    },
+    {
+      "param_id": "porzadek_produkcja_proc",
+      "definition": {
+        "domena": "spoleczenstwo",
+        "jednostka": "ulamek",
+        "modul": "order.ts",
+        "formula": "mul_proc"
+      },
+      "consumer": {
+        "status": "UNWIRED",
+        "policy": "NOT_ACTIVE",
+        "calls": "gra/src/game/civ-matrix.ts:41-60,71-101 (loader/accessor only); no gameplay call-site found",
+        "direction": "not applicable until a consumer is wired and reviewed",
+        "formula": "not computed by current consumer; retain raw Normal data",
+        "note": "paramDefs.modul is not proof of a live consumer."
+      },
+      "exact_source_hits": [],
+      "target_non_default_count": 0
+    },
+    {
+      "param_id": "porzadek_pieniadz_proc",
+      "definition": {
+        "domena": "spoleczenstwo",
+        "jednostka": "ulamek",
+        "modul": "order.ts",
+        "formula": "mul_proc"
+      },
+      "consumer": {
+        "status": "UNWIRED",
+        "policy": "NOT_ACTIVE",
+        "calls": "gra/src/game/civ-matrix.ts:41-60,71-101 (loader/accessor only); no gameplay call-site found",
+        "direction": "not applicable until a consumer is wired and reviewed",
+        "formula": "not computed by current consumer; retain raw Normal data",
+        "note": "paramDefs.modul is not proof of a live consumer."
+      },
+      "exact_source_hits": [],
+      "target_non_default_count": 0
+    },
+    {
+      "param_id": "porzadek_nauka_proc",
+      "definition": {
+        "domena": "spoleczenstwo",
+        "jednostka": "ulamek",
+        "modul": "order.ts",
+        "formula": "mul_proc"
+      },
+      "consumer": {
+        "status": "UNWIRED",
+        "policy": "NOT_ACTIVE",
+        "calls": "gra/src/game/civ-matrix.ts:41-60,71-101 (loader/accessor only); no gameplay call-site found",
+        "direction": "not applicable until a consumer is wired and reviewed",
+        "formula": "not computed by current consumer; retain raw Normal data",
+        "note": "paramDefs.modul is not proof of a live consumer."
+      },
+      "exact_source_hits": [],
+      "target_non_default_count": 0
+    },
+    {
+      "param_id": "porzadek_kultura_proc",
+      "definition": {
+        "domena": "spoleczenstwo",
+        "jednostka": "ulamek",
+        "modul": "order.ts",
+        "formula": "mul_proc"
+      },
+      "consumer": {
+        "status": "UNWIRED",
+        "policy": "NOT_ACTIVE",
+        "calls": "gra/src/game/civ-matrix.ts:41-60,71-101 (loader/accessor only); no gameplay call-site found",
+        "direction": "not applicable until a consumer is wired and reviewed",
+        "formula": "not computed by current consumer; retain raw Normal data",
+        "note": "paramDefs.modul is not proof of a live consumer."
+      },
+      "exact_source_hits": [],
+      "target_non_default_count": 0
+    },
+    {
+      "param_id": "porzadek_wzrost_proc",
+      "definition": {
+        "domena": "spoleczenstwo",
+        "jednostka": "ulamek",
+        "modul": "order.ts",
+        "formula": "mul_proc"
+      },
+      "consumer": {
+        "status": "UNWIRED",
+        "policy": "NOT_ACTIVE",
+        "calls": "gra/src/game/civ-matrix.ts:41-60,71-101 (loader/accessor only); no gameplay call-site found",
+        "direction": "not applicable until a consumer is wired and reviewed",
+        "formula": "not computed by current consumer; retain raw Normal data",
+        "note": "paramDefs.modul is not proof of a live consumer."
+      },
+      "exact_source_hits": [],
+      "target_non_default_count": 0
+    },
+    {
+      "param_id": "obl_obrona_miasta_proc",
+      "definition": {
+        "domena": "obleczenie",
+        "jednostka": "ulamek",
+        "modul": "siege.ts",
+        "formula": "mul_proc"
+      },
+      "consumer": {
+        "status": "UNWIRED",
+        "policy": "NOT_ACTIVE",
+        "calls": "gra/src/game/civ-matrix.ts:41-60,71-101 (loader/accessor only); no gameplay call-site found",
+        "direction": "not applicable until a consumer is wired and reviewed",
+        "formula": "not computed by current consumer; retain raw Normal data",
+        "note": "paramDefs.modul is not proof of a live consumer."
+      },
+      "exact_source_hits": [],
+      "target_non_default_count": 0
+    },
+    {
+      "param_id": "obl_mur_proc",
+      "definition": {
+        "domena": "obleczenie",
+        "jednostka": "ulamek",
+        "modul": "siege.ts",
+        "formula": "mul_proc"
+      },
+      "consumer": {
+        "status": "UNWIRED",
+        "policy": "NOT_ACTIVE",
+        "calls": "gra/src/game/civ-matrix.ts:41-60,71-101 (loader/accessor only); no gameplay call-site found",
+        "direction": "not applicable until a consumer is wired and reviewed",
+        "formula": "not computed by current consumer; retain raw Normal data",
+        "note": "paramDefs.modul is not proof of a live consumer."
+      },
+      "exact_source_hits": [],
+      "target_non_default_count": 0
+    },
+    {
+      "param_id": "obl_machines_proc",
+      "definition": {
+        "domena": "obleczenie",
+        "jednostka": "ulamek",
+        "modul": "siegeMachines.ts",
+        "formula": "mul_proc"
+      },
+      "consumer": {
+        "status": "UNWIRED",
+        "policy": "NOT_ACTIVE",
+        "calls": "gra/src/game/civ-matrix.ts:41-60,71-101 (loader/accessor only); no gameplay call-site found",
+        "direction": "not applicable until a consumer is wired and reviewed",
+        "formula": "not computed by current consumer; retain raw Normal data",
+        "note": "paramDefs.modul is not proof of a live consumer."
+      },
+      "exact_source_hits": [],
+      "target_non_default_count": 0
+    },
+    {
+      "param_id": "dip_sklonnosc_sojusze",
+      "definition": {
+        "domena": "dyplomacja",
+        "jednostka": "skala_1_10",
+        "modul": "diplomacy.ts",
+        "formula": "skala"
+      },
+      "consumer": {
+        "status": "UI_ONLY",
+        "policy": "DISPLAY_RAW",
+        "calls": "gra/src/game/diplomacy-display.ts:54-59,116-122",
+        "direction": "etykieta UI; brak wpływu na wynik gry",
+        "formula": "display reads raw value; no gameplay Easy/Normal/Hard effect",
+        "note": "Display-only character tag."
+      },
+      "exact_source_hits": [
+        "gra/src/game/diplomacy-display.ts:55"
+      ],
+      "target_non_default_count": 12
+    },
+    {
+      "param_id": "dip_lojalnosc",
+      "definition": {
+        "domena": "dyplomacja",
+        "jednostka": "skala_1_10",
+        "modul": "diplomacy.ts",
+        "formula": "skala"
+      },
+      "consumer": {
+        "status": "UI_ONLY",
+        "policy": "DISPLAY_RAW",
+        "calls": "gra/src/game/diplomacy-display.ts:64-69,116-122",
+        "direction": "etykieta UI; brak wpływu na wynik gry",
+        "formula": "display reads raw value; no gameplay Easy/Normal/Hard effect",
+        "note": "Display-only character tag."
+      },
+      "exact_source_hits": [
+        "gra/src/game/diplomacy-display.ts:64"
+      ],
+      "target_non_default_count": 11
+    },
+    {
+      "param_id": "dip_prog_wojny",
+      "definition": {
+        "domena": "dyplomacja",
+        "jednostka": "skala_1_10",
+        "modul": "diplomacy.ts",
+        "formula": "skala"
+      },
+      "consumer": {
+        "status": "UI_ONLY",
+        "policy": "DISPLAY_RAW",
+        "calls": "gra/src/game/diplomacy-display.ts:73-78,116-122",
+        "direction": "etykieta UI; brak wpływu na wynik gry",
+        "formula": "display reads raw value; no gameplay Easy/Normal/Hard effect",
+        "note": "Display-only character tag."
+      },
+      "exact_source_hits": [
+        "gra/src/game/diplomacy-display.ts:73"
+      ],
+      "target_non_default_count": 13
+    },
+    {
+      "param_id": "dip_pamietliwosc",
+      "definition": {
+        "domena": "dyplomacja",
+        "jednostka": "skala_1_10",
+        "modul": "diplomacy.ts",
+        "formula": "skala"
+      },
+      "consumer": {
+        "status": "UI_ONLY",
+        "policy": "DISPLAY_RAW",
+        "calls": "gra/src/game/diplomacy-display.ts:82-87,116-122",
+        "direction": "etykieta UI; brak wpływu na wynik gry",
+        "formula": "display reads raw value; no gameplay Easy/Normal/Hard effect",
+        "note": "Display-only character tag."
+      },
+      "exact_source_hits": [
+        "gra/src/game/diplomacy-display.ts:82"
+      ],
+      "target_non_default_count": 5
+    },
+    {
+      "param_id": "dip_otwartosc_handel",
+      "definition": {
+        "domena": "dyplomacja",
+        "jednostka": "skala_1_10",
+        "modul": "diplomacy.ts",
+        "formula": "skala"
+      },
+      "consumer": {
+        "status": "UI_ONLY",
+        "policy": "DISPLAY_RAW",
+        "calls": "gra/src/game/diplomacy-display.ts:44-49,116-122",
+        "direction": "etykieta UI; brak wpływu na wynik gry",
+        "formula": "display reads raw value; no gameplay Easy/Normal/Hard effect",
+        "note": "Display-only character tag."
+      },
+      "exact_source_hits": [
+        "gra/src/game/diplomacy-display.ts:46"
+      ],
+      "target_non_default_count": 12
+    },
+    {
+      "param_id": "dip_nastawienie_bazowe",
+      "definition": {
+        "domena": "dyplomacja",
+        "jednostka": "absolut",
+        "modul": "diplomacy.ts",
+        "formula": "add"
+      },
+      "consumer": {
+        "status": "REAL_GAMEPLAY",
+        "policy": "CURRENT_NEUTRAL_CALLER_OMITS_DIFFICULTY",
+        "calls": "gra/src/game/civ-ai-data.ts:205-217; gra/src/game/diplomacy.ts:1376-1380",
+        "direction": "direction requires decision; no arbitrary Easy/Hard",
+        "formula": "current easy=raw; normal=raw; hard=raw; caller uses default normal",
+        "note": "Function accepts difficulty but caller omits it."
+      },
+      "exact_source_hits": [
+        "gra/src/game/civ-ai-data.ts:213"
+      ],
+      "target_non_default_count": 14
+    },
+    {
+      "param_id": "dip_agresja_archetyp",
+      "definition": {
+        "domena": "dyplomacja",
+        "jednostka": "ulamek_0_1",
+        "modul": "diplomacy.ts",
+        "formula": "mul_abs"
+      },
+      "consumer": {
+        "status": "DEAD_UNWIRED",
+        "policy": "NOT_ACTIVE",
+        "calls": "gra/src/game/civ-matrix.ts:41-60,71-101 (loader/accessor only); no gameplay call-site found",
+        "direction": "not applicable until a consumer is wired and reviewed",
+        "formula": "not computed by current consumer; retain raw Normal data",
+        "note": "paramDefs.modul is not proof of a live consumer."
+      },
+      "exact_source_hits": [],
+      "target_non_default_count": 14
+    },
+    {
+      "param_id": "dip_handlowosc_archetyp",
+      "definition": {
+        "domena": "dyplomacja",
+        "jednostka": "ulamek_0_1",
+        "modul": "diplomacy.ts",
+        "formula": "mul_abs"
+      },
+      "consumer": {
+        "status": "REAL_GAMEPLAY",
+        "policy": "CURRENT_NEUTRAL_MUL_ABS",
+        "calls": "gra/src/game/civ-ai-data.ts:184-198; gra/src/game/diplomacy.ts:1267-1270; gra/src/main.ts:19553-19556,33555-33559,33916-33919",
+        "direction": "direction requires decision; no arbitrary Easy/Hard",
+        "formula": "current easy=raw; normal=raw; hard=raw because formula=mul_abs",
+        "note": "Real consumer; helper scales only formula=skala."
+      },
+      "exact_source_hits": [
+        "gra/src/game/civ-ai-data.ts:192"
+      ],
+      "target_non_default_count": 12
+    },
+    {
+      "param_id": "ai_agresywnosc",
+      "definition": {
+        "domena": "ai",
+        "jednostka": "skala_1_10",
+        "modul": "civ-ai-data.ts",
+        "formula": "skala"
+      },
+      "consumer": {
+        "status": "REAL_GAMEPLAY",
+        "policy": "SKALA_1_10",
+        "calls": "gra/src/game/civ-ai-data.ts:38-53,156-178; gra/src/game/diplomacy.ts:1261-1266; gra/src/main.ts:19784-19790,33910-33915; gra/src/game/ai.ts:4974-5036,5184-5187",
+        "direction": "wyżej = bardziej agresywny AI; Hard +1, Easy -1",
+        "formula": "easy=max(1,normal-1); normal=normal; hard=min(10,normal+1); /10",
+        "note": "Matrix row shadows civ-ai.json."
+      },
+      "exact_source_hits": [
+        "gra/src/game/civ-ai-data.ts:49",
+        "gra/src/game/civ-ai-data.ts:91",
+        "gra/src/game/civ-ai-data.ts:169"
+      ],
+      "target_non_default_count": 13
+    },
+    {
+      "param_id": "ai_ekspansywnosc",
+      "definition": {
+        "domena": "ai",
+        "jednostka": "skala_1_10",
+        "modul": "civ-ai-data.ts",
+        "formula": "skala"
+      },
+      "consumer": {
+        "status": "REAL_GAMEPLAY",
+        "policy": "SKALA_1_10",
+        "calls": "gra/src/game/civ-ai-data.ts:74-102; gra/src/main.ts:33264-33296; gra/src/game/ai.ts:506-513,1097-1117,2857-2868,4257-4264",
+        "direction": "wyżej = większa ekspansja; Hard +1, Easy -1",
+        "formula": "easy=max(1,normal-1); normal=normal; hard=min(10,normal+1)",
+        "note": "Used by city founding and cluster consolidation."
+      },
+      "exact_source_hits": [
+        "gra/src/game/civ-ai-data.ts:92"
+      ],
+      "target_non_default_count": 12
+    },
+    {
+      "param_id": "ai_priorytet_militarny",
+      "definition": {
+        "domena": "ai",
+        "jednostka": "skala_1_10",
+        "modul": "civ-ai-data.ts",
+        "formula": "skala"
+      },
+      "consumer": {
+        "status": "REAL_GAMEPLAY",
+        "policy": "SKALA_1_10",
+        "calls": "gra/src/game/civ-ai-data.ts:74-102; gra/src/main.ts:33264-33296; gra/src/game/ai-production-priorities.ts:6-27; gra/src/game/ai.ts:1672-1676",
+        "direction": "wyżej = większy score wojskowy; Hard +1, Easy -1",
+        "formula": "easy=max(1,normal-1); normal=normal; hard=min(10,normal+1); delta=(value-5)*15",
+        "note": "AI production score."
+      },
+      "exact_source_hits": [
+        "gra/src/game/civ-ai-data.ts:93"
+      ],
+      "target_non_default_count": 11
+    },
+    {
+      "param_id": "ai_priorytet_ekonomia",
+      "definition": {
+        "domena": "ai",
+        "jednostka": "skala_1_10",
+        "modul": "civ-ai-data.ts",
+        "formula": "skala"
+      },
+      "consumer": {
+        "status": "REAL_GAMEPLAY",
+        "policy": "SKALA_1_10",
+        "calls": "gra/src/game/civ-ai-data.ts:74-102; gra/src/main.ts:33264-33296; gra/src/game/ai-production-priorities.ts:6-27; gra/src/game/ai.ts:1672-1676",
+        "direction": "wyżej = większy score ekonomiczny; Hard +1, Easy -1",
+        "formula": "easy=max(1,normal-1); normal=normal; hard=min(10,normal+1); delta=(value-5)*15",
+        "note": "AI production score."
+      },
+      "exact_source_hits": [
+        "gra/src/game/civ-ai-data.ts:94"
+      ],
+      "target_non_default_count": 7
+    },
+    {
+      "param_id": "ai_priorytet_nauka",
+      "definition": {
+        "domena": "ai",
+        "jednostka": "skala_1_10",
+        "modul": "civ-ai-data.ts",
+        "formula": "skala"
+      },
+      "consumer": {
+        "status": "REAL_GAMEPLAY",
+        "policy": "SKALA_1_10",
+        "calls": "gra/src/game/civ-ai-data.ts:74-102; gra/src/main.ts:33264-33296; gra/src/game/ai-production-priorities.ts:6-27; gra/src/game/ai.ts:1672-1676",
+        "direction": "wyżej = większy score nauki; Hard +1, Easy -1",
+        "formula": "easy=max(1,normal-1); normal=normal; hard=min(10,normal+1); delta=(value-5)*15",
+        "note": "AI production score."
+      },
+      "exact_source_hits": [
+        "gra/src/game/civ-ai-data.ts:95"
+      ],
+      "target_non_default_count": 7
+    },
+    {
+      "param_id": "ai_tolerancja_ryzyka",
+      "definition": {
+        "domena": "ai",
+        "jednostka": "skala_1_10",
+        "modul": "civ-ai-data.ts",
+        "formula": "skala"
+      },
+      "consumer": {
+        "status": "REAL_GAMEPLAY",
+        "policy": "SKALA_1_10",
+        "calls": "gra/src/game/civ-ai-data.ts:74-102; gra/src/main.ts:33924-33927; gra/src/game/ai.ts:4974-5036,5184-5187",
+        "direction": "wyżej = większa tolerancja ryzyka wojny; Hard +1, Easy -1",
+        "formula": "easy=max(1,normal-1); normal=normal; hard=min(10,normal+1)",
+        "note": "Diplomacy bias."
+      },
+      "exact_source_hits": [
+        "gra/src/game/civ-ai-data.ts:96"
+      ],
+      "target_non_default_count": 14
+    },
+    {
+      "param_id": "ai_sklonnosc_podboju",
+      "definition": {
+        "domena": "ai",
+        "jednostka": "skala_1_10",
+        "modul": "civ-ai-data.ts",
+        "formula": "skala"
+      },
+      "consumer": {
+        "status": "REAL_GAMEPLAY",
+        "policy": "SKALA_1_10",
+        "calls": "gra/src/game/civ-ai-data.ts:74-102; gra/src/main.ts:33264-33296,33924-33927; gra/src/game/ai.ts:4974-5036,5184-5187",
+        "direction": "wyżej = większa skłonność do podboju; Hard +1, Easy -1",
+        "formula": "easy=max(1,normal-1); normal=normal; hard=min(10,normal+1)",
+        "note": "Founding/conquest and diplomacy bias."
+      },
+      "exact_source_hits": [
+        "gra/src/game/civ-ai-data.ts:97"
+      ],
+      "target_non_default_count": 12
+    },
+    {
+      "param_id": "ai_profil_obronna",
+      "definition": {
+        "domena": "ai",
+        "jednostka": "flag_0_1",
+        "modul": "civ-ai-data.ts",
+        "formula": "flag"
+      },
+      "consumer": {
+        "status": "REAL_GAMEPLAY",
+        "policy": "FLAG_IDENTITY",
+        "calls": "gra/src/game/civ-ai-data.ts:56-71,119-123; gra/src/main.ts:9169-9173",
+        "direction": "1 = defensive-copy map profile; no difficulty delta",
+        "formula": "flag raw 0/1 at Easy/Normal/Hard",
+        "note": "Owner-role identity flag."
+      },
+      "exact_source_hits": [
+        "gra/src/game/civ-ai-data.ts:66",
+        "gra/src/game/civ-ai-data.ts:98",
+        "gra/src/game/civ-ai-data.ts:100"
+      ],
+      "target_non_default_count": 11
+    }
+  ],
+  "open_decisions": [
+    {
+      "id": "HIST-14-RESERVE",
+      "area": "Six reserve civilizations",
+      "status": "BLOCKED",
+      "evidence": "Six reserve IDs have draft evidence, but this artifact does not promote them to accepted historical spec.",
+      "next_action": "Owner/Final Control confirms accepted status or keeps source-gap.",
+      "source": "docs/decyzje/D-cyw-roster-6-REZERWA.md; Civ-CYWILIZACJE/draft/roster-6-REZERWA.json"
+    },
+    {
+      "id": "WIRE-113",
+      "area": "Unwired matrix fields",
+      "status": "DEAD_UNWIRED",
+      "evidence": "All 113 rows load, but only traced consumer fields are live; declarative modul is not enough.",
+      "next_action": "Break into implementation topics; do not wire in this evidence task.",
+      "source": "gra/src/game/civ-matrix.ts:41-101; Konsumenci_i_braki"
+    },
+    {
+      "id": "DIFF-TRADE",
+      "area": "dip_handlowosc_archetyp difficulty",
+      "status": "DECISION_REQUIRED",
+      "evidence": "Real consumer is current-neutral because mul_abs is not scaled by helper.",
+      "next_action": "Choose neutral-by-design or approve Easy/Normal/Hard scaling before code.",
+      "source": "gra/src/game/civ-ai-data.ts:184-198; gra/src/game/civ-matrix.ts:63-79"
+    },
+    {
+      "id": "DIFF-TRUST",
+      "area": "dip_nastawienie_bazowe difficulty",
+      "status": "DECISION_REQUIRED",
+      "evidence": "Caller omits difficulty and therefore uses Normal.",
+      "next_action": "Choose neutral-by-design or approve scaling and pass difficulty before code.",
+      "source": "gra/src/game/civ-ai-data.ts:205-217; gra/src/game/diplomacy.ts:1376-1380"
+    },
+    {
+      "id": "ALLOC-14",
+      "area": "Per-civilization allocation",
+      "status": "PROPOSAL",
+      "evidence": "Only Grecy have a civilization-specific allocation profile; other 14 use fallback.",
+      "next_action": "Do not copy Greece; create separate approved allocation topic if needed.",
+      "source": "gra/src/game/civ-ai-allocation.ts:34-87"
+    },
+    {
+      "id": "SOURCE-XLSX",
+      "area": "Canonical historical workbook",
+      "status": "UNRESOLVED",
+      "evidence": "Base has JSON export/schema/exporter but no tracked original 11-sheet XLSX.",
+      "next_action": "Attach authoritative workbook or immutable citation if archive provenance is required.",
+      "source": "gra/data/civ-matrix.json._meta.source"
+    }
+  ],
+  "artifacts": [
+    {
+      "path": "panele-sterowania/cyw-macierz/Civ-macierz-14-pozostale.xlsx",
+      "bytes": 260582,
+      "sha256": "433dc4f3decd72416238206e7d43fbede7d5a6077106a17f05e4596b071a1c6c"
+    },
+    {
+      "path": "panele-sterowania/cyw-macierz/civ-matrix-14-coverage.tsv",
+      "bytes": 882655,
+      "sha256": "1aee1db92d8156b94bb10278bf8cfd1f8277064c0a499a4d0b997ab2fd0ec269"
+    },
+    {
+      "path": "docs/decyzje/D-cyw-macierz-14-pozostale.md",
+      "bytes": 3894,
+      "sha256": "e43ecf02c5c736548e0200144b97fa38774145ade87c59d32702dca50dfa1969"
+    },
+    {
+      "path": "dyspozycje/autobot/runs/t_89eb5708/00-dispatch.md",
+      "bytes": 527,
+      "sha256": "7afa2912397f23f180084e2691581e4bdcde5180a5a081b20f780854fba7c817"
+    },
+    {
+      "path": "dyspozycje/autobot/runs/t_89eb5708/01-operator.md",
+      "bytes": 942,
+      "sha256": "b4ad80446182ae2794e99b4295b680f32d5452af450a487a5a70ba858576566a"
+    },
+    {
+      "path": "dyspozycje/autobot/runs/t_89eb5708/build_artifacts.py",
+      "bytes": 32785,
+      "sha256": "e7b88c7c4d5cf5fb54f68a3c7e6b486df866689c781bd6edf964cb537e30c000"
+    }
+  ],
+  "verification": {
+    "generation_self_checks": "PASS",
+    "external_checks": {
+      "artifact_readback": "PASS: coverage=1582 rows; 14 civ IDs; 113 params; all copied_from_greece=false; workbook has 10 expected sheets and Pozostale_14=1582 rows",
+      "git_diff_check": "PASS: git diff --check",
+      "typecheck": "PASS: npm run typecheck --prefix gra (after npm ci --ignore-scripts; no tracked dependency changes)",
+      "dependency_install_note": "npm ci reported 5 existing audit advisories (1 moderate, 4 high); no npm audit fix was run",
+      "product_code_changes": "NONE"
+    }
+  }
+}
