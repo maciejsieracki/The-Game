@@ -102,7 +102,12 @@ export interface ManpowerHealUnit {
   typeId: string;
   category: string;
   hp?: number;
+  /** Canonical effective max HP cache; old saves may omit or contain a stale raw value. */
   hpMax?: number;
+  /** Persistent building-path health bonus source (fraction is derived by the caller). */
+  parametryBonusProc?: number;
+  /** Persistent veteran health bonus source. */
+  battlesSurvived?: number;
   q?: number;
   r?: number;
   inGarnizon?: boolean;
@@ -272,7 +277,12 @@ export function tickManpowerUnitReplenishment(
   difficulty: ManpowerDifficulty,
   resolveOwnerEra: (ownerId: number) => number,
   resolveOwnerBonusy: (ownerId: number) => readonly CivBonusPoborLite[] | undefined,
-  getMaxHp: (typeId: string) => number,
+  /**
+   * Resolve the current effective max HP. The second argument is optional so
+   * existing callers that only know a type id remain compatible, while the
+   * live RuntimeUnit path can include persistent unit-specific bonuses.
+   */
+  getMaxHp: (typeId: string, unit?: ManpowerHealUnit) => number,
   rawMiastoParams?: typeof miastoParams,
   onUnitHpChanged?: (unitId: string, hp: number, hpMax: number) => void,
 ): ManpowerReplenishResult {
@@ -302,11 +312,22 @@ export function tickManpowerUnitReplenishment(
     for (const u of ownerUnits) {
       if (isUnitInBesiegedLocation(u, cities)) continue;
 
-      const maxHp = u.hpMax ?? getMaxHp(u.typeId);
+      const resolvedMaxHp = getMaxHp(u.typeId, u);
+      const maxHp = Number.isFinite(resolvedMaxHp) && resolvedMaxHp > 0
+        ? resolvedMaxHp
+        : (typeof u.hpMax === 'number' && Number.isFinite(u.hpMax) ? u.hpMax : 0);
       if (maxHp <= 0) continue;
-      if (u.hpMax == null) u.hpMax = maxHp;
-      const curHp = u.hp == null ? maxHp : u.hp;
-      if (u.hp == null) u.hp = curHp;
+      // Backfill old saves and overwrite stale raw/base caches before applying
+      // the cap. This is what prevents a persistent +HP bonus from producing
+      // the visible raw-max plateau.
+      u.hpMax = maxHp;
+      const curHp = u.hp == null
+        ? maxHp
+        : (Number.isFinite(u.hp) ? Math.max(0, Math.min(maxHp, u.hp)) : maxHp);
+      // Normalize the live HP as well: old saves may contain a raw/stale value
+      // above the canonical effective maximum, which must not suppress the
+      // clamp or leak an impossible value into the next save.
+      u.hp = curHp;
       if (curHp <= 0 || curHp >= maxHp) continue;
 
       const unitCost = unitManpowerCostForType(u.typeId, epoka, maxMult);

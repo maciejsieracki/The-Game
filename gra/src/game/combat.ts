@@ -3,6 +3,7 @@ import { applyMultiplier, civCombatStatMultipliers } from './civ-bonuses';
 import type { BuildingCombatBonus } from './unit-building-bonuses';
 import { mergeBuildingBonusIntoStatMultipliers } from './unit-building-bonuses';
 import { applyVeteranFracToCombatUnit } from './veteran';
+import { effectiveMaxHp } from './unit-card-stats';
 import { applyArmyHungerStatMultToCombatUnit } from './army-starvation';
 import { applyGoldDeficitStatMultToCombatUnit } from './gold-deficit';
 import combatParamsRaw from '../../data/combat-params.json';
@@ -105,6 +106,16 @@ export interface CombatUnit {
   /** Zdrowie — max HP. */
   health: number;
 
+  /**
+   * Canonical runtime HP bridge. When present, `health` is the current HP and
+   * these two fields keep the effective max/current values from being rebuilt
+   * from an already-bonused combat snapshot.
+   */
+  canonicalEffectiveMaxHp?: number;
+  canonicalCurrentHp?: number;
+  /** Veteran health fraction already applied by a caller to `health`. */
+  veteranHealthBonusFrac?: number;
+
   /** "Prog dezercji (% health)" - rout threshold as a fraction [0..1], e.g. 0.25. */
   'Prog dezercji (% health)': number | null;
 
@@ -189,6 +200,8 @@ export function combatUnitFromDef(
     ? null
     : combatNormField(progRaw, 0.25);
   const maxHp = combatNormField(def['health'] ?? def['Health'], 30);
+  const canonicalEffectiveMaxHp = combatNormField(def['__canonicalEffectiveMaxHp'], NaN);
+  const canonicalCurrentHp = combatNormField(def['__canonicalCurrentHp'], NaN);
   return {
     typNazwa: opts.typNazwa ?? String(def['Jednostka'] ?? ''),
     counterTyp: String(def['Typ'] ?? opts.typNazwa ?? def['Jednostka'] ?? ''),
@@ -204,6 +217,8 @@ export function combatUnitFromDef(
     piercing: unitRowStat(def, 'piercing', 'Przebicie', 0),
     chargeBonus: unitRowStat(def, 'chargeBonus', 'Uderzenie', 0),
     health: opts.hp ?? maxHp,
+    canonicalEffectiveMaxHp: Number.isFinite(canonicalEffectiveMaxHp) ? canonicalEffectiveMaxHp : undefined,
+    canonicalCurrentHp: Number.isFinite(canonicalCurrentHp) ? canonicalCurrentHp : undefined,
     'Prog dezercji (% health)': prog,
     missileAttack: combatNormField(def['missileAttack'], 0),
     'Zasieg ataku (hex)': (combatStatField(def, 'Zasięg ataku (hex)', 'Zasieg ataku (hex)') ?? null) as number | string | null,
@@ -797,14 +812,31 @@ export function resolveCombat(
   defender: CombatUnit,
   opts: ResolveCombatOpts = {},
 ): CombatResult {
+  // The canonical runtime bridge carries effective max/current HP explicitly.
+  // Legacy pure callers still provide only `health`, so they use the additive
+  // resolver below as a backwards-compatible fallback.
+  const attackerVeteranAlreadyApplied = opts.attackerVeteranBonusFrac === undefined
+    && attacker.veteranHealthBonusFrac !== undefined;
+  const defenderVeteranAlreadyApplied = opts.defenderVeteranBonusFrac === undefined
+    && defender.veteranHealthBonusFrac !== undefined;
+  const attackerVeteranBonusFrac = opts.attackerVeteranBonusFrac
+    ?? attacker.veteranHealthBonusFrac
+    ?? 0;
+  const defenderVeteranBonusFrac = opts.defenderVeteranBonusFrac
+    ?? defender.veteranHealthBonusFrac
+    ?? 0;
   // TRZECI SYSTEM (weterani, game/veteran.ts) -- patrz komentarz przy
   // ResolveCombatOpts.attackerVeteranBonusFrac powyzej dla uzasadnienia,
   // dlaczego wpiecie na samym poczatku (przeslonieciem parametrow) jest
   // rownowazne wpiecu po civ+building mods. Gdy frac=0 (domyslnie) funkcja
   // zwraca WEJSCIOWY obiekt bez zadnej modyfikacji (zero ryzyka szumu
   // zmiennoprzecinkowego dla wszystkich istniejacych wywolan).
-  attacker = applyVeteranFracToCombatUnit(attacker, opts.attackerVeteranBonusFrac ?? 0);
-  defender = applyVeteranFracToCombatUnit(defender, opts.defenderVeteranBonusFrac ?? 0);
+  if (!attackerVeteranAlreadyApplied) {
+    attacker = applyVeteranFracToCombatUnit(attacker, attackerVeteranBonusFrac);
+  }
+  if (!defenderVeteranAlreadyApplied) {
+    defender = applyVeteranFracToCombatUnit(defender, defenderVeteranBonusFrac);
+  }
 
   const hungerMult = opts.armyHungerStatMult ?? 0.75;
   if (opts.attackerArmyHungry) {
@@ -833,20 +865,24 @@ export function resolveCombat(
   const log: string[] = [];
   const routed: ('attacker' | 'defender')[] = [];
 
+  const atkCivMods = civCombatStatMultipliers(opts.attackerCivBonusy, attacker, {
+    side: 'attacker',
+    terrain: defenderTerrain,
+    isChargeRound: false,
+  });
+  const atkCivHealth = atkCivMods.health;
   const atkBaseMods = mergeBuildingBonusIntoStatMultipliers(
-    civCombatStatMultipliers(opts.attackerCivBonusy, attacker, {
-      side: 'attacker',
-      terrain: defenderTerrain,
-      isChargeRound: false,
-    }),
+    atkCivMods,
     opts.attackerBuildingBonus,
   );
+  const defCivMods = civCombatStatMultipliers(opts.defenderCivBonusy, defender, {
+    side: 'defender',
+    terrain: defenderTerrain,
+    isChargeRound: false,
+  });
+  const defCivHealth = defCivMods.health;
   const defBaseMods = mergeBuildingBonusIntoStatMultipliers(
-    civCombatStatMultipliers(opts.defenderCivBonusy, defender, {
-      side: 'defender',
-      terrain: defenderTerrain,
-      isChargeRound: false,
-    }),
+    defCivMods,
     opts.defenderBuildingBonus,
   );
 
@@ -863,8 +899,34 @@ export function resolveCombat(
   const defPanc0 = applyMultiplier(defender.armor, defBaseMods.pancerz);
   const defMissile0 = applyMultiplier(defender.missileAttack ?? 0, defBaseMods.rangedAtk) * defDiffMult;
 
-  let hpAtk = Math.round(applyMultiplier(attacker.health, atkBaseMods.health));
-  let hpDef = Math.round(applyMultiplier(defender.health, defBaseMods.health));
+  const canonicalAtkMax = attacker.canonicalEffectiveMaxHp;
+  const canonicalDefMax = defender.canonicalEffectiveMaxHp;
+  let hpAtk: number;
+  let hpDef: number;
+  if (Number.isFinite(canonicalAtkMax)) {
+    const current = attacker.canonicalCurrentHp ?? attacker.health;
+    hpAtk = Math.round(Math.max(0, Math.min(canonicalAtkMax!, current)));
+  } else {
+    const attackerHealthAfterTransient = attacker.health / (1 + attackerVeteranBonusFrac);
+    const attackerHealthAfterCiv = applyMultiplier(attackerHealthAfterTransient, atkCivHealth);
+    hpAtk = Math.round(effectiveMaxHp(
+      attackerHealthAfterCiv,
+      opts.attackerBuildingBonus?.other ?? 0,
+      attackerVeteranBonusFrac,
+    ));
+  }
+  if (Number.isFinite(canonicalDefMax)) {
+    const current = defender.canonicalCurrentHp ?? defender.health;
+    hpDef = Math.round(Math.max(0, Math.min(canonicalDefMax!, current)));
+  } else {
+    const defenderHealthAfterTransient = defender.health / (1 + defenderVeteranBonusFrac);
+    const defenderHealthAfterCiv = applyMultiplier(defenderHealthAfterTransient, defCivHealth);
+    hpDef = Math.round(effectiveMaxHp(
+      defenderHealthAfterCiv,
+      opts.defenderBuildingBonus?.other ?? 0,
+      defenderVeteranBonusFrac,
+    ));
+  }
   const hpAtkStart = hpAtk;
   const hpDefStart = hpDef;
 

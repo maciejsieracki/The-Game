@@ -895,7 +895,7 @@ import {
   unitPancerzBonusFrac, unitParametryBonusFrac, unitBuildingBonusLabel,
   unitPancerzBonusProc, unitParametryBonusProc,
 } from './game/unit-building-bonuses';
-import { unitCardCombatDisplay } from './game/unit-card-stats';
+import { effectiveMaxHp, unitCardCombatDisplay } from './game/unit-card-stats';
 import {
   cityWallDefenseBonusPercent,
   cityGatedTerrainMultiplier,
@@ -928,7 +928,7 @@ import {
   cityManpowerSnapshot, civManpowerRegenMult, civManpowerMaxMult, civManpowerMults,
   cityManpowerMax, unitManpowerCost, unitManpowerCostForType,
   canAffordUnitManpowerEmpire, empireManpowerCurrent, deductManpowerFromEmpire,
-  refundManpowerToEmpire, syncLiveUnitHp,
+  refundManpowerToEmpire, syncLiveUnitHp, type ManpowerHealUnit,
 } from './game/manpower';
 import { computeObjectivePower, battlePowerPointsFromDefeatedEnemy, type ObjectivePowerResult } from './game/power-objective';
 import { filterOwnersForPowerRanking, computeAbsolutePowerRank } from './game/power-ranking';
@@ -6514,7 +6514,11 @@ async function boot(): Promise<void> {
             surcharge: Math.max(0, it.koszt - oldCost),
             atk: unitAtak(udef),
             def: unitObrona(udef),
-            hpMax: unitHealth(udef),
+            hpMax: effectiveMaxHp(
+              unitHealth(udef),
+              unitParametryBonusFrac(u),
+              veteranCombatBonusFrac(u),
+            ),
           };
         }),
         onPick: (newTypeId) => performUnitReplace(u.id, newTypeId),
@@ -6537,8 +6541,12 @@ async function boot(): Promise<void> {
       }
 
       const oldDef = lookupUnitDef(u.typeId);
-      const oldMaxHp = unitHealth(oldDef);
-      const newMaxHp = unitHealth(newDef);
+      const oldMaxHp = effectiveRuntimeUnitMaxHp(u, oldDef);
+      const newMaxHp = effectiveMaxHp(
+        unitHealth(newDef),
+        unitParametryBonusFrac(u),
+        veteranCombatBonusFrac(u),
+      );
       const oldHp = u.hp ?? oldMaxHp;
       const newHp = Math.max(1, Math.round(newMaxHp * (oldMaxHp > 0 ? oldHp / oldMaxHp : 1)));
 
@@ -6634,8 +6642,8 @@ async function boot(): Promise<void> {
         let hpMax = 0;
         for (const u of group) {
           const udef = unitDefFor(u);
-          const unitMaxHp = unitHealth(udef);
-          hp += u.hp ?? unitMaxHp;
+          const unitMaxHp = effectiveRuntimeUnitMaxHp(u, udef);
+          hp += u.hp == null ? unitMaxHp : Math.max(0, Math.min(unitMaxHp, u.hp));
           hpMax += unitMaxHp;
         }
         // Liczby ruchu pokazuje teraz pasek „Ruch X/Y” (armyListHud.ts, al-bar-lbl) —
@@ -7657,12 +7665,12 @@ async function boot(): Promise<void> {
           return unitsOnCityHexForLaw(units, q, r, city.ownerId)
             .map(u => {
               const def = lookupUnitDef(u.typeId);
-              const hpMax = unitHealth(def);
+              const hpMax = effectiveRuntimeUnitMaxHp(u, def);
               return {
                 id: u.id,
                 nazwa: u.typeId,
                 category: u.category,
-                health: hpMax,
+                health: u.hp ?? hpMax,
                 maxHealth: hpMax,
                 inGarnizon: u.inGarnizon === true,
               };
@@ -10650,8 +10658,8 @@ async function boot(): Promise<void> {
       const ownerId = u.ownerId;
       const def = unitDefFor(u);
       const defName = String(def?.nazwa ?? def?.Nazwa ?? u.typeId);
-      const hpMax = unitHealth(def);
-      const hpCur = u.hp ?? hpMax;
+      const hpMax = effectiveRuntimeUnitMaxHp(u, def);
+      const hpCur = u.hp == null ? hpMax : Math.max(0, Math.min(hpMax, u.hp));
       hideUnitForeignPick();
       hideCityForeignPick();
       showUnitForeignPick({
@@ -11709,6 +11717,10 @@ async function boot(): Promise<void> {
 
     /** Sync tokenów: 1 reprezentant/heks (najmocniejszy) + badge ×N. */
     function syncUnitsRender(list?: RuntimeUnit[]): void {
+      // Keep the persisted cache canonical before any map/panel consumer reads
+      // it. This also migrates old saves that omitted hpMax or stored raw base
+      // HP from before persistent unit bonuses were added.
+      syncAllRuntimeUnitHpState();
       // FoW: bez jawnej listy filtruj wroga — syncUnitsRender() sam z siebie nie może
       // pokazać obcych poza bieżącym zasięgiem (regresja: czerwone pierścienie w czerni).
       const rawSrc = list ?? (fogOn ? visibleUnitsList(currentVisible()) : units);
@@ -14974,8 +14986,9 @@ async function boot(): Promise<void> {
         Pancerz: normFieldVal(def['armor'] ?? def['Pancerz'], 0),
         Przebicie: normFieldVal(def['piercing'] ?? def['Przebicie'], 0),
         weaponDamage: normFieldVal(def['weaponDamage'], unitAtak(def)),
-        // Health = biezace HP (u.hp), nie max z definicji — siegeAi.ts skaluje sile po fraction biezacego HP.
-        Health: u.hp ?? unitHealth(def),
+        // Health = bieżące HP (u.hp), nie max z definicji — siegeAi.ts skaluje
+        // siłę po fraction bieżącego HP. Missing HP starts at canonical max.
+        Health: u.hp ?? effectiveRuntimeUnitMaxHp(u, def),
         progDezercji: prog === null || prog === undefined ? null : normFieldVal(prog, 0.25),
       };
     }
@@ -26361,10 +26374,13 @@ async function boot(): Promise<void> {
           if (stackOnCity.length > 0) {
             const rep = unitAtRepresentative(hit.q, hit.r, units, unitAttackScore) ?? stackOnCity[0]!;
             const stackHpSum = stackOnCity.reduce(
-              (sum, u) => sum + (u.hp ?? unitHealth(unitDefFor(u))), 0,
+              (sum, u) => {
+                const maxHp = effectiveRuntimeUnitMaxHp(u);
+                return sum + (u.hp == null ? maxHp : Math.max(0, Math.min(maxHp, u.hp)));
+              }, 0,
             );
             const stackMaxHpSum = stackOnCity.reduce(
-              (sum, u) => sum + unitHealth(unitDefFor(u)), 0,
+              (sum, u) => sum + effectiveRuntimeUnitMaxHp(u), 0,
             );
             const stackRuchLeft = Math.min(...stackOnCity.map(u => u.ruchLeft));
             const stackRuchMax = Math.max(...stackOnCity.map(u => u.ruch));
@@ -26838,6 +26854,33 @@ async function boot(): Promise<void> {
       return normFieldVal(def['health'] ?? def['Health'], 30);
     }
 
+    /**
+     * Effective max HP shared by cards, map/runtime state, Manpower and combat
+     * bridges. `hpMax` is only a persisted cache; the resolver is authoritative.
+     */
+    function effectiveRuntimeUnitMaxHp(u: RuntimeUnit, def: any = unitDefFor(u)): number {
+      return effectiveMaxHp(
+        unitHealth(def),
+        unitParametryBonusFrac(u),
+        veteranCombatBonusFrac(u),
+      );
+    }
+
+    /** Backfill old saves and clamp current HP after a bonus or type migration. */
+    function syncRuntimeUnitHpState(u: RuntimeUnit): number {
+      const maxHp = effectiveRuntimeUnitMaxHp(u);
+      u.hpMax = maxHp;
+      if (u.hp === undefined) return maxHp;
+      u.hp = Number.isFinite(u.hp)
+        ? Math.max(0, Math.min(maxHp, u.hp))
+        : maxHp;
+      return maxHp;
+    }
+
+    function syncAllRuntimeUnitHpState(): void {
+      for (const u of units) syncRuntimeUnitHpState(u);
+    }
+
     /** Return meleeAttack from a unit def. */
     function unitAtak(def: any): number {
       return normFieldVal(def['meleeAttack'], 0);
@@ -26872,14 +26915,21 @@ async function boot(): Promise<void> {
      */
     function runtimeToBattleUnit(u: RuntimeUnit, _def: any, ownerColor: number): BattleUnit {
       const def = unitDefFor(u);
-      const maxHp = unitHealth(def);
+      const maxHp = syncRuntimeUnitHpState(u);
       const hp = u.hp != null ? Math.min(maxHp, Math.max(0, u.hp)) : maxHp;
       return {
         id: u.id,
         nazwa: u.typeId,
         kategoria: u.category,
         ownerColor,
-        stats: def,
+        // battleScene/manualBattle receive only BattleUnit.stats when they
+        // construct CombatUnit. Carry the canonical runtime values through
+        // that boundary so combat does not rebuild an already-bonused max HP.
+        stats: {
+          ...def,
+          __canonicalEffectiveMaxHp: maxHp,
+          __canonicalCurrentHp: hp,
+        },
         hp,
         maxHp,
         // Sciezki ulepszen jednostek (2026-07-25, unit-building-bonuses.ts):
@@ -26968,7 +27018,7 @@ async function boot(): Promise<void> {
 
     function preBattleUnitFromRuntime(u: RuntimeUnit): PreBattleUnit {
       const def = unitDefFor(u);
-      const maxHp = unitHealth(def);
+      const maxHp = effectiveRuntimeUnitMaxHp(u, def);
       const hp = u.hp != null ? Math.min(maxHp, Math.max(0, u.hp)) : maxHp;
       return {
         nazwa: u.typeId,
@@ -27290,8 +27340,8 @@ async function boot(): Promise<void> {
     function snapshotRosterForSummary(roster: RuntimeUnit[]): BattleUnitBeforeSnap[] {
       return roster.map(u => {
         const def = unitDefFor(u);
-        const maxHp = unitHealth(def);
-        const hp = u.hp ?? maxHp;
+        const maxHp = effectiveRuntimeUnitMaxHp(u, def);
+        const hp = u.hp == null ? maxHp : Math.max(0, Math.min(maxHp, u.hp));
         return {
           id: String(u.id),
           typeId: u.typeId,
@@ -27307,7 +27357,8 @@ async function boot(): Promise<void> {
         const u = units.find(x => String(x.id) === id);
         if (!u) return null;
         const def = unitDefFor(u);
-        return u.hp ?? unitHealth(def);
+        const maxHp = effectiveRuntimeUnitMaxHp(u, def);
+        return u.hp == null ? maxHp : Math.max(0, Math.min(maxHp, u.hp));
       };
     }
 
@@ -28058,7 +28109,10 @@ async function boot(): Promise<void> {
         manualSurvivors: survivors !== undefined
           ? survivors.map(s => ({ id: String(s.id), hp: s.hp }))
           : undefined,
-        getDef: u => unitDefFor(u),
+        getDef: u => ({
+          ...unitDefFor(u),
+          health: effectiveRuntimeUnitMaxHp(u),
+        }),
         maxHpOf: def => unitHealth(def),
         isPassableHex: mapHexPassableForUnit,
         isUnitAt: isOccupiedHex,
@@ -30117,6 +30171,9 @@ async function boot(): Promise<void> {
      * Snapshot stanu gry do SaveGame (bez zapisu na dysk).
      */
     function buildSaveGameSnapshot(label?: string): SaveGame {
+      // Persist the canonical effective cache, not a stale/raw value from an
+      // old save or from before a unit gained a persistent bonus.
+      syncAllRuntimeUnitHpState();
       const cityProdSave: Record<string, any> = {};
       for (const [cid, prod] of cityProd.entries()) cityProdSave[cid] = prod;
       const cityBuiltSave: Record<string, string[]> = {};
@@ -31068,7 +31125,14 @@ async function boot(): Promise<void> {
               // but buildSaveGameSnapshot() serializes `units`, so the heal
               // would disappear before the next save.
               units,
-              getMaxHp: (typeId: string) => unitHealth(data.units.find(ud => ud.Jednostka === typeId) ?? {}),
+              getMaxHp: (typeId: string, liveUnit?: ManpowerHealUnit) => {
+                const def = data.units.find(ud => ud.Jednostka === typeId) ?? {};
+                return effectiveMaxHp(
+                  unitHealth(def),
+                  unitParametryBonusFrac(liveUnit),
+                  veteranCombatBonusFrac(liveUnit),
+                );
+              },
               onUnitHpChanged: (unitId: string, hp: number, hpMax: number) =>
                 syncLiveUnitHp(units, unitId, hp, hpMax),
             },
@@ -31242,6 +31306,7 @@ async function boot(): Promise<void> {
             const allDestroyedIds: string[] = [];
             let playerDamagedCount = 0;
             let playerDestroyedCount = 0;
+            syncAllRuntimeUnitHpState();
 
             for (const tick of efTickResult.perOwner) {
               if (!tick.glodWojskaAtrycjaAktywna) continue;
@@ -37956,6 +38021,10 @@ async function boot(): Promise<void> {
       unitResourceUpkeepByOwner.clear();
       units.length = 0;
       for (const u of saved.units) units.push(u);
+      // Old saves may omit hpMax, while intermediate saves may contain the raw
+      // base max. Recompute from the current unit bonuses and clamp current HP
+      // before any panel, battle or starvation consumer sees the loaded state.
+      syncAllRuntimeUnitHpState();
       rallyPoints.clear();
       for (const [ownerId, point] of rallyPointsFromSave(saved.rallyPoints)) {
         rallyPoints.set(ownerId, point);
