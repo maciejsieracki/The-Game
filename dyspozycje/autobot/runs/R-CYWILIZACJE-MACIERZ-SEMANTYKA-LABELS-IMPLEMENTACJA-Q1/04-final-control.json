@@ -1,0 +1,191 @@
+{
+  "schemaVersion": "1.0",
+  "status": "PASS-WITH-NOTES",
+  "domain": "GAME",
+  "topic": "R-CYWILIZACJE-MACIERZ-SEMANTYKA-LABELS-IMPLEMENTACJA-Q1",
+  "role": "final-control",
+  "taskId": "t_72362f60",
+  "runId": 894,
+  "baseSha": "f4c89d0081c622c16b207d338b49c8bacafc4553",
+  "headSha": "f4c89d0081c622c16b207d338b49c8bacafc4553",
+  "originMainSha": "f4c89d0081c622c16b207d338b49c8bacafc4553",
+  "board": "the-game-real24",
+  "profile": "default",
+  "projectId": "p_9ae9ac64",
+  "worktree": "/home/ubuntu/projects/The-Game/.worktrees/civ-matrix-semantic-labels-implementation-20260921",
+  "branch": "hermes/R-CYWILIZACJE-MACIERZ-SEMANTYKA-LABELS-IMPLEMENTACJA-Q1-20260921",
+  "verdict": {
+    "partialSemanticUiScope": "PASS-WITH-NOTES",
+    "full113FieldConsumerRequirement": "DECISION_REQUIRED",
+    "productAcceptance": "partial-local-candidate-only",
+    "integrationAuthorized": false,
+    "deploymentAuthorized": false,
+    "defenseCreated": false,
+    "objections": []
+  },
+  "coverage": {
+    "parameters": 113,
+    "civilizations": 15,
+    "expectedCells": 1695,
+    "actualCells": 1695,
+    "uniqueCells": 1695,
+    "parameterStatusCounts": {
+      "REAL_GAMEPLAY": 11,
+      "UI_ONLY": 5,
+      "UNWIRED": 97
+    },
+    "cellStatusCounts": {
+      "REAL_GAMEPLAY": 165,
+      "UI_ONLY": 75,
+      "UNWIRED": 1455
+    },
+    "decisionRequiredIds": "D_REQUIRED-001..D_REQUIRED-097",
+    "decisionRequiredRowsComplete": true,
+    "unwiredRowsAreNotConsumers": true
+  },
+  "semanticContract": {
+    "difficulty": "Normal only",
+    "baseline": "median of all 15 civilization values per parameter",
+    "polarity": "parameter-specific beneficial/harmful/neutral-not-applicable",
+    "directionalDelta": "beneficial raw-minus-median; harmful median-minus-raw",
+    "exactMedian": {
+      "label": "POZYTYWNY",
+      "signedIntensity": 1
+    },
+    "signedIntensity": {
+      "formula": "round2(clamp(correctedDelta / max(abs(max-median), abs(min-median)) * 10, -10, +10))",
+      "bounds": [-10, 10],
+      "normalization": "most distant value from median"
+    },
+    "aiAndRelations": "NEUTRALNY / 0 intensity with separate explanation",
+    "unknownOrMissing": "BLOCKED with explicit reason; no Greece fallback",
+    "persistence": "presentation-derived; no semantic labels in game state or save"
+  },
+  "uiContract": {
+    "rowsTotal": 113,
+    "activeRowsDefault": 11,
+    "inactiveRowsInOneDetails": 102,
+    "detailsClosedDefault": true,
+    "searchQuery": "meta_epoka",
+    "searchVisibleRows": 3,
+    "negativeFilterVisibleRows": 11,
+    "negativeFilterAllNegative": true,
+    "normalOnly": true,
+    "pageAndConsoleErrors": 0
+  },
+  "checks": {
+    "finalControlRerun": [
+      {
+        "command": "node tools/civ-matrix-semantic-labels-test.cjs",
+        "result": "PASS 41; FAIL 0"
+      },
+      {
+        "command": "node tools/civ-matrix-greece-test.cjs",
+        "result": "PASS 390; FAIL 0"
+      },
+      {
+        "command": "node tools/civ-matrix-difficulty-test.cjs",
+        "result": "16 passed, 0 failed"
+      },
+      {
+        "command": "node ./node_modules/typescript/bin/tsc --noEmit",
+        "result": "PASS; exit 0"
+      },
+      {
+        "command": "node ./node_modules/vite/bin/vite.js build --outDir /tmp/civ-matrix-final-control-894-dist --emptyOutDir",
+        "result": "PASS; 891 modules; index.html 69,806.34 kB"
+      },
+      {
+        "command": "node --check /tmp/t_02f263c1-browser-smoke.cjs",
+        "result": "PASS; exit 0"
+      },
+      {
+        "command": "node /tmp/t_02f263c1-browser-smoke.cjs against fresh /tmp/civ-matrix-final-control-894-dist on port 4174",
+        "result": "PASS; 1 profile, 113 rows, 11 active, 102 inactive, expansion 102, search 3, negative filter 11, all negative, 0 page/console errors"
+      },
+      {
+        "command": "git diff --check",
+        "result": "PASS; exit 0"
+      }
+    ],
+    "independentReconciliation": {
+      "matrix": "PASS; 113 parameters, 15 civilizations, 1695 actual and unique cells",
+      "statuses": "PASS; 11 REAL_GAMEPLAY, 5 UI_ONLY, 97 UNWIRED",
+      "dRequired": "PASS; exact D_REQUIRED-001..D_REQUIRED-097 with unresolved actor/condition/precedence/test fields",
+      "sourceHashes": "PASS; 9/9 contract/routing hashes match current worktree"
+    },
+    "priorEvaluator": {
+      "taskId": "t_02f263c1",
+      "runId": 892,
+      "status": "PASS-WITH-NOTES",
+      "objections": 0,
+      "reportedGates": [
+        "semantic 41/0",
+        "Greece 390/0",
+        "difficulty 16/0",
+        "TypeScript",
+        "direct Vite build, 891 modules",
+        "Chromium artifact readback",
+        "git diff --check"
+      ],
+      "routingIncident": "INFRA/ROUTING_ERROR: native project_id=null; historical provenance preserved"
+    },
+    "routingRecovery": {
+      "taskId": "t_b62c133a",
+      "runId": 893,
+      "status": "done/completed",
+      "createdEventId": 15331,
+      "projectId": "p_9ae9ac64",
+      "phase": "evaluator",
+      "route": {
+        "model": "gpt-5.6-luna",
+        "provider": "openai-codex",
+        "reasoningEffort": "max",
+        "serviceTier": "priority"
+      },
+      "reExecuted": [
+        "semantic 41/0",
+        "TypeScript",
+        "git diff --check",
+        "structural/status/hash reconciliation"
+      ],
+      "NotReExecuted": [
+        "production build",
+        "Chromium smoke",
+        "Greece regression",
+        "difficulty regression"
+      ],
+      "productFilesModifiedByRecovery": [],
+      "objections": []
+    }
+  },
+  "routing": {
+    "currentTask": "t_72362f60",
+    "phase": "final-control",
+    "model": "gpt-5.6-luna",
+    "provider": "openai-codex",
+    "reasoningEffort": "ultra",
+    "serviceTier": "priority",
+    "parent": "t_b62c133a"
+  },
+  "allowlist": {
+    "writeAllowed": [
+      "dyspozycje/autobot/runs/R-CYWILIZACJE-MACIERZ-SEMANTYKA-LABELS-IMPLEMENTACJA-Q1/04-final-control.md",
+      "dyspozycje/autobot/runs/R-CYWILIZACJE-MACIERZ-SEMANTYKA-LABELS-IMPLEMENTACJA-Q1/04-final-control.json",
+      "dyspozycje/autobot/runs/R-CYWILIZACJE-MACIERZ-SEMANTYKA-LABELS-IMPLEMENTACJA-Q1/04-transition-receipt.md"
+    ],
+    "productFilesModifiedByFinalControl": [],
+    "commit": false,
+    "push": false,
+    "merge": false,
+    "deploy": false,
+    "tauriRust": false,
+    "naturalWarRuntime": false
+  },
+  "unresolved": {
+    "ownerHold": "97 D_REQUIRED/UNWIRED rows lack proven Greece runtime/UI/AI/profile consumer precedent; no consumer was invented",
+    "integration": "not authorized; candidate is local-only and dirty",
+    "publication": "not performed"
+  },
+  "nextGate": "Owner decision for the 97 unresolved consumers; only then a separate serialized consumer-wiring chain"
+}

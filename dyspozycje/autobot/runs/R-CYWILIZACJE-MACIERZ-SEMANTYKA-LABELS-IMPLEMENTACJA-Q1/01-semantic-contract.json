@@ -1,0 +1,443 @@
+{
+  "schemaVersion": "1.0",
+  "topic": "R-CYWILIZACJE-MACIERZ-SEMANTYKA-LABELS-IMPLEMENTACJA-Q1",
+  "implementation": "gra/src/game/civ-matrix-semantic.ts",
+  "semanticVersion": "normal-median-signed-v1",
+  "source": "gra/data/civ-matrix.json",
+  "sourceHashes": {
+    "gra/data/civ-matrix.json": "ad67e771608c2ebad8fed5e84e3d8ecd6e2a2b496fbfe42025ddb39ef27a2ea7",
+    "gra/src/game/civ-matrix.ts": "3bc9f443c9c8850175bb8b62adbc69547494eeed7b66159af65b48e5ab596ede",
+    "gra/src/game/civ-matrix-semantic.ts": "0dc69e4e4ab192f1d11b3addfb9403132ff3a78f9985fc8458eaf3abbad30997",
+    "gra/src/ui/newGameFlow.ts": "2ab94a3e9e88533a734535d4cccbd001e9a735206b5698d5d7f57d6475073e74",
+    "gra/tools/civ-matrix-semantic-labels-test.cjs": "db4dbf3bfb7061c5a39ec0b41832c48ed69df8ac12a54da2519ab21053b6daa7",
+    "gra/src/game/civ-ai-data.ts": "8cdf765fbb6184e4f7e1a223132e0c8aaf3fed1e386d0db30be67b20fa4f0eeb",
+    "gra/src/game/diplomacy.ts": "f71a7e8c6e24710b3872dca7aac43f051caee21b4979301998a4441a8173e212",
+    "gra/src/game/diplomacy-display.ts": "4c907285d3e35e47b5cf82d4a6aabc94358a093f283651311407417b0aedadc5",
+    "gra/src/game/population-growth-v85.ts": "68383594cd81b3f66d8a1874635300f05a610bf058843d1b6ace551d4a4428e8"
+  },
+  "computation": {
+    "rawValue": "Normal value from selected civilization row; missing values are BLOCKED",
+    "baselineValue": "median of all 15 civilization values for the same parameter",
+    "polarity": "beneficial / harmful / neutral-not-applicable, parameter-specific",
+    "directionalDelta": "beneficial: raw - median; harmful: median - raw",
+    "exactMedian": {
+      "label": "POZYTYWNY",
+      "signedIntensity": 1
+    },
+    "signedIntensity": "round2(clamp(delta / max(abs(max-median), abs(min-median)) * 10, -10, +10))",
+    "neutralProfileFields": "NEUTRALNY / 0 intensity with separate AI or relations explanation"
+  },
+  "statusPolicy": {
+    "REAL_GAMEPLAY": "active consumer; compare directionally and disclose active status",
+    "UI_ONLY": "neutral badge; relations/profile explanation only",
+    "UNWIRED": "relative display is explicitly marked inactive; no gameplay effect; numbered DECISION_REQUIRED row",
+    "BLOCKED": "neutral badge and explicit missing/unknown reason; no fallback"
+  },
+  "ui": {
+    "location": "newGameFlow.ts civilization selection detail",
+    "default": "REAL_GAMEPLAY rows visible",
+    "expandable": "one details control contains every non-active row",
+    "controls": [
+      "search",
+      "status/label filter",
+      "native details expand"
+    ],
+    "accessibility": "literal badge/status text and aria-labels; not color-only",
+    "difficulty": "Normal identity only; no Easy/Hard labels in this panel"
+  },
+  "coverage": {
+    "parameters": 113,
+    "civilizations": 15,
+    "cells": 1695
+  },
+  "decisionRequired": [
+    {
+      "id": "D_REQUIRED-001",
+      "parameterId": "meta_epoka_kamien"
+    },
+    {
+      "id": "D_REQUIRED-002",
+      "parameterId": "meta_epoka_braz"
+    },
+    {
+      "id": "D_REQUIRED-003",
+      "parameterId": "meta_epoka_zelazo"
+    },
+    {
+      "id": "D_REQUIRED-004",
+      "parameterId": "meta_mnoznik_waluta"
+    },
+    {
+      "id": "D_REQUIRED-005",
+      "parameterId": "meta_tier_roster"
+    },
+    {
+      "id": "D_REQUIRED-006",
+      "parameterId": "walka_atak_piechota"
+    },
+    {
+      "id": "D_REQUIRED-007",
+      "parameterId": "walka_atak_lukownicy"
+    },
+    {
+      "id": "D_REQUIRED-008",
+      "parameterId": "walka_atak_kawaleria"
+    },
+    {
+      "id": "D_REQUIRED-009",
+      "parameterId": "walka_atak_rydwany"
+    },
+    {
+      "id": "D_REQUIRED-010",
+      "parameterId": "walka_atak_obleczenie"
+    },
+    {
+      "id": "D_REQUIRED-011",
+      "parameterId": "walka_atak_morska"
+    },
+    {
+      "id": "D_REQUIRED-012",
+      "parameterId": "walka_atak_wszystkie"
+    },
+    {
+      "id": "D_REQUIRED-013",
+      "parameterId": "walka_obrona_piechota"
+    },
+    {
+      "id": "D_REQUIRED-014",
+      "parameterId": "walka_obrona_lukownicy"
+    },
+    {
+      "id": "D_REQUIRED-015",
+      "parameterId": "walka_obrona_kawaleria"
+    },
+    {
+      "id": "D_REQUIRED-016",
+      "parameterId": "walka_obrona_rydwany"
+    },
+    {
+      "id": "D_REQUIRED-017",
+      "parameterId": "walka_obrona_obleczenie"
+    },
+    {
+      "id": "D_REQUIRED-018",
+      "parameterId": "walka_obrona_morska"
+    },
+    {
+      "id": "D_REQUIRED-019",
+      "parameterId": "walka_pancerz_piechota"
+    },
+    {
+      "id": "D_REQUIRED-020",
+      "parameterId": "walka_pancerz_lukownicy"
+    },
+    {
+      "id": "D_REQUIRED-021",
+      "parameterId": "walka_pancerz_kawaleria"
+    },
+    {
+      "id": "D_REQUIRED-022",
+      "parameterId": "walka_pancerz_rydwany"
+    },
+    {
+      "id": "D_REQUIRED-023",
+      "parameterId": "walka_uderzenie_piechota"
+    },
+    {
+      "id": "D_REQUIRED-024",
+      "parameterId": "walka_uderzenie_kawaleria"
+    },
+    {
+      "id": "D_REQUIRED-025",
+      "parameterId": "walka_uderzenie_rydwany"
+    },
+    {
+      "id": "D_REQUIRED-026",
+      "parameterId": "walka_dystans_lukownicy"
+    },
+    {
+      "id": "D_REQUIRED-027",
+      "parameterId": "walka_dystans_rydwany"
+    },
+    {
+      "id": "D_REQUIRED-028",
+      "parameterId": "walka_hp_piechota"
+    },
+    {
+      "id": "D_REQUIRED-029",
+      "parameterId": "walka_hp_kawaleria"
+    },
+    {
+      "id": "D_REQUIRED-030",
+      "parameterId": "walka_hp_rydwany"
+    },
+    {
+      "id": "D_REQUIRED-031",
+      "parameterId": "walka_ruch_bitwa_proc"
+    },
+    {
+      "id": "D_REQUIRED-032",
+      "parameterId": "walka_zasieg_proc"
+    },
+    {
+      "id": "D_REQUIRED-033",
+      "parameterId": "walka_oblezenie_proc"
+    },
+    {
+      "id": "D_REQUIRED-034",
+      "parameterId": "walka_koszt_rekrutacji_proc"
+    },
+    {
+      "id": "D_REQUIRED-035",
+      "parameterId": "walka_atak_piechota_teren_las"
+    },
+    {
+      "id": "D_REQUIRED-036",
+      "parameterId": "walka_obrona_piechota_teren_las"
+    },
+    {
+      "id": "D_REQUIRED-037",
+      "parameterId": "walka_atak_piechota_terytorium_wlasne"
+    },
+    {
+      "id": "D_REQUIRED-038",
+      "parameterId": "walka_obrona_piechota_terytorium_wlasne"
+    },
+    {
+      "id": "D_REQUIRED-039",
+      "parameterId": "walka_atak_piechota_w_murze"
+    },
+    {
+      "id": "D_REQUIRED-040",
+      "parameterId": "walka_obrona_piechota_w_murze"
+    },
+    {
+      "id": "D_REQUIRED-041",
+      "parameterId": "walka_atak_piechota_runda_szarzy"
+    },
+    {
+      "id": "D_REQUIRED-042",
+      "parameterId": "walka_obrona_piechota_runda_szarzy"
+    },
+    {
+      "id": "D_REQUIRED-043",
+      "parameterId": "walka_atak_piechota_teren_plytkie_morze"
+    },
+    {
+      "id": "D_REQUIRED-044",
+      "parameterId": "walka_obrona_piechota_teren_plytkie_morze"
+    },
+    {
+      "id": "D_REQUIRED-045",
+      "parameterId": "spec_Atak"
+    },
+    {
+      "id": "D_REQUIRED-046",
+      "parameterId": "spec_Obrazenia"
+    },
+    {
+      "id": "D_REQUIRED-047",
+      "parameterId": "spec_Obrona"
+    },
+    {
+      "id": "D_REQUIRED-048",
+      "parameterId": "spec_Uderzenie"
+    },
+    {
+      "id": "D_REQUIRED-049",
+      "parameterId": "spec_Pancerz"
+    },
+    {
+      "id": "D_REQUIRED-050",
+      "parameterId": "spec_Przebicie"
+    },
+    {
+      "id": "D_REQUIRED-051",
+      "parameterId": "spec_Health"
+    },
+    {
+      "id": "D_REQUIRED-052",
+      "parameterId": "spec_Atak_dystansowy"
+    },
+    {
+      "id": "D_REQUIRED-053",
+      "parameterId": "spec_Zasieg_hex"
+    },
+    {
+      "id": "D_REQUIRED-054",
+      "parameterId": "spec_Pociski"
+    },
+    {
+      "id": "D_REQUIRED-055",
+      "parameterId": "spec_Ruch_bitwa"
+    },
+    {
+      "id": "D_REQUIRED-056",
+      "parameterId": "spec_Ruch_mapa"
+    },
+    {
+      "id": "D_REQUIRED-057",
+      "parameterId": "spec_Widok"
+    },
+    {
+      "id": "D_REQUIRED-058",
+      "parameterId": "spec_Dezercja_proc"
+    },
+    {
+      "id": "D_REQUIRED-059",
+      "parameterId": "spec_Morale"
+    },
+    {
+      "id": "D_REQUIRED-060",
+      "parameterId": "spec_Koszt_pieniadz"
+    },
+    {
+      "id": "D_REQUIRED-061",
+      "parameterId": "spec_Utrzymanie"
+    },
+    {
+      "id": "D_REQUIRED-062",
+      "parameterId": "spec_Zywnosc_ture"
+    },
+    {
+      "id": "D_REQUIRED-063",
+      "parameterId": "eko_praca_proc"
+    },
+    {
+      "id": "D_REQUIRED-064",
+      "parameterId": "eko_pieniadz_proc"
+    },
+    {
+      "id": "D_REQUIRED-065",
+      "parameterId": "eko_pieniadz_port_proc"
+    },
+    {
+      "id": "D_REQUIRED-066",
+      "parameterId": "eko_zywnosc_proc"
+    },
+    {
+      "id": "D_REQUIRED-067",
+      "parameterId": "eko_nauka_proc"
+    },
+    {
+      "id": "D_REQUIRED-068",
+      "parameterId": "eko_kultura_proc"
+    },
+    {
+      "id": "D_REQUIRED-069",
+      "parameterId": "eko_luksus_proc"
+    },
+    {
+      "id": "D_REQUIRED-070",
+      "parameterId": "eko_zadowolenie_proc"
+    },
+    {
+      "id": "D_REQUIRED-071",
+      "parameterId": "eko_handel_brutto_proc"
+    },
+    {
+      "id": "D_REQUIRED-072",
+      "parameterId": "eko_korupcja_proc"
+    },
+    {
+      "id": "D_REQUIRED-073",
+      "parameterId": "prod_koszt_budynku_proc"
+    },
+    {
+      "id": "D_REQUIRED-074",
+      "parameterId": "prod_koszt_jednostki_proc"
+    },
+    {
+      "id": "D_REQUIRED-075",
+      "parameterId": "prod_szybkosc_budynku_proc"
+    },
+    {
+      "id": "D_REQUIRED-076",
+      "parameterId": "prod_szybkosc_jednostki_proc"
+    },
+    {
+      "id": "D_REQUIRED-077",
+      "parameterId": "prod_rush_koszt_proc"
+    },
+    {
+      "id": "D_REQUIRED-078",
+      "parameterId": "lud_spadek_proc"
+    },
+    {
+      "id": "D_REQUIRED-079",
+      "parameterId": "lud_zdrowie_proc"
+    },
+    {
+      "id": "D_REQUIRED-080",
+      "parameterId": "lud_zadowolenie_bazowe"
+    },
+    {
+      "id": "D_REQUIRED-081",
+      "parameterId": "lud_limit_populacji"
+    },
+    {
+      "id": "D_REQUIRED-082",
+      "parameterId": "mp_regen_proc"
+    },
+    {
+      "id": "D_REQUIRED-083",
+      "parameterId": "mp_max_proc"
+    },
+    {
+      "id": "D_REQUIRED-084",
+      "parameterId": "mp_koszt_jednostki_proc"
+    },
+    {
+      "id": "D_REQUIRED-085",
+      "parameterId": "wealth_cap_proc"
+    },
+    {
+      "id": "D_REQUIRED-086",
+      "parameterId": "wealth_mnoznik_proc"
+    },
+    {
+      "id": "D_REQUIRED-087",
+      "parameterId": "kultura_naplyw_proc"
+    },
+    {
+      "id": "D_REQUIRED-088",
+      "parameterId": "religia_spread_proc"
+    },
+    {
+      "id": "D_REQUIRED-089",
+      "parameterId": "porzadek_produkcja_proc"
+    },
+    {
+      "id": "D_REQUIRED-090",
+      "parameterId": "porzadek_pieniadz_proc"
+    },
+    {
+      "id": "D_REQUIRED-091",
+      "parameterId": "porzadek_nauka_proc"
+    },
+    {
+      "id": "D_REQUIRED-092",
+      "parameterId": "porzadek_kultura_proc"
+    },
+    {
+      "id": "D_REQUIRED-093",
+      "parameterId": "porzadek_wzrost_proc"
+    },
+    {
+      "id": "D_REQUIRED-094",
+      "parameterId": "obl_obrona_miasta_proc"
+    },
+    {
+      "id": "D_REQUIRED-095",
+      "parameterId": "obl_mur_proc"
+    },
+    {
+      "id": "D_REQUIRED-096",
+      "parameterId": "obl_machines_proc"
+    },
+    {
+      "id": "D_REQUIRED-097",
+      "parameterId": "dip_agresja_archetyp"
+    }
+  ]
+}

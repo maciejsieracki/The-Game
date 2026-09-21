@@ -1,0 +1,156 @@
+{
+  "schemaVersion": "1.0",
+  "status": "PASS-WITH-NOTES",
+  "domain": "GAME",
+  "topic": "R-CYWILIZACJE-MACIERZ-SEMANTYKA-LABELS-IMPLEMENTACJA-Q1",
+  "role": "independent-evaluator",
+  "baseSha": "f4c89d0081c622c16b207d338b49c8bacafc4553",
+  "headSha": "f4c89d0081c622c16b207d338b49c8bacafc4553",
+  "worktree": "/home/ubuntu/projects/The-Game/.worktrees/civ-matrix-semantic-labels-implementation-20260921",
+  "branch": "hermes/R-CYWILIZACJE-MACIERZ-SEMANTYKA-LABELS-IMPLEMENTACJA-Q1-20260921",
+  "allowlistReadback": {
+    "unexpectedTrackedChanges": [],
+    "expectedTrackedChanges": [
+      "gra/src/ui/newGameFlow.ts"
+    ],
+    "expectedUntrackedChanges": [
+      "gra/src/game/civ-matrix-semantic.ts",
+      "gra/tools/civ-matrix-semantic-labels-test.cjs",
+      "dyspozycje/autobot/runs/R-CYWILIZACJE-MACIERZ-SEMANTYKA-LABELS-IMPLEMENTACJA-Q1/01-allocation.json",
+      "dyspozycje/autobot/runs/R-CYWILIZACJE-MACIERZ-SEMANTYKA-LABELS-IMPLEMENTACJA-Q1/01-consumer-provenance.md",
+      "dyspozycje/autobot/runs/R-CYWILIZACJE-MACIERZ-SEMANTYKA-LABELS-IMPLEMENTACJA-Q1/01-evidence.json",
+      "dyspozycje/autobot/runs/R-CYWILIZACJE-MACIERZ-SEMANTYKA-LABELS-IMPLEMENTACJA-Q1/01-operator.md",
+      "dyspozycje/autobot/runs/R-CYWILIZACJE-MACIERZ-SEMANTYKA-LABELS-IMPLEMENTACJA-Q1/01-semantic-contract.json",
+      "dyspozycje/autobot/runs/R-CYWILIZACJE-MACIERZ-SEMANTYKA-LABELS-IMPLEMENTACJA-Q1/01-transition-receipt.md"
+    ],
+    "diffCheck": "PASS"
+  },
+  "coverage": {
+    "parameters": 113,
+    "civilizations": 15,
+    "expectedCells": 1695,
+    "actualCells": 1695,
+    "uniqueCells": 1695,
+    "parameterStatusCounts": {
+      "REAL_GAMEPLAY": 11,
+      "UI_ONLY": 5,
+      "UNWIRED": 97
+    },
+    "cellStatusCounts": {
+      "REAL_GAMEPLAY": 165,
+      "UI_ONLY": 75,
+      "UNWIRED": 1455
+    },
+    "decisionRequiredRows": 97,
+    "decisionRequiredIdRange": "D_REQUIRED-001..D_REQUIRED-097",
+    "decisionRequiredRowsComplete": true
+  },
+  "consumerScan": {
+    "scope": "gra/src/**/*.ts excluding gra/src/game/civ-matrix.ts and gra/src/game/civ-matrix-semantic.ts",
+    "parametersWithExactRuntimeOrUiHits": 16,
+    "parametersWithoutHits": 97,
+    "statusCountReconciled": true,
+    "loaderOrModuleFieldNotCountedAsConsumer": true,
+    "greeceProvenance": {
+      "lud_wzrost_proc": [
+        "gra/src/game/population-growth-v85.ts:230-232"
+      ],
+      "dip_nastawienie_bazowe": [
+        "gra/src/game/civ-ai-data.ts:205-217",
+        "gra/src/game/diplomacy.ts:1376-1380"
+      ],
+      "dip_handlowosc_archetyp": [
+        "gra/src/game/civ-ai-data.ts:184-198",
+        "gra/src/game/diplomacy.ts:1267-1308"
+      ],
+      "ui_only_diplomacy_tags": [
+        "gra/src/game/diplomacy-display.ts:46-87"
+      ]
+    },
+    "unwiredRowsHaveExplicitUnresolvedContract": true,
+    "noZeroAdaptersOrInventedEffects": true
+  },
+  "semanticContract": {
+    "difficulty": "Normal only",
+    "baseline": "median of all 15 civilization values per parameter",
+    "exactMedian": {
+      "label": "POZYTYWNY",
+      "signedIntensity": 1
+    },
+    "polarity": "parameter-specific; harmful reverse direction verified for cost/corruption/decline/attrition",
+    "signedIntensity": {
+      "bounds": [-10, 10],
+      "boundary": "most extreme absolute distance from median",
+      "deterministic": true
+    },
+    "aiRelations": "neutral badge with separate explanation",
+    "unknownOrMissing": "BLOCKED with explicit reason; no Greece fallback",
+    "persistence": "presentation-derived; no semantic labels in save/game state"
+  },
+  "commands": [
+    {
+      "command": "node ./node_modules/typescript/bin/tsc --noEmit",
+      "exitCode": 0,
+      "result": "PASS; TypeScript 5.9.3"
+    },
+    {
+      "command": "node tools/civ-matrix-semantic-labels-test.cjs",
+      "exitCode": 0,
+      "result": "PASS 41; FAIL 0"
+    },
+    {
+      "command": "node tools/civ-matrix-greece-test.cjs",
+      "exitCode": 0,
+      "result": "PASS 390; FAIL 0"
+    },
+    {
+      "command": "node tools/civ-matrix-difficulty-test.cjs",
+      "exitCode": 0,
+      "result": "16 passed; 0 failed"
+    },
+    {
+      "command": "node --check /tmp/t_02f263c1-browser-smoke.cjs",
+      "exitCode": 0,
+      "result": "PASS"
+    },
+    {
+      "command": "node ./node_modules/vite/bin/vite.js build --outDir /tmp/civ-matrix-evaluator-dist --emptyOutDir",
+      "exitCode": 0,
+      "result": "PASS; 891 modules transformed; index.html 69,806.34 kB"
+    },
+    {
+      "command": "node /tmp/t_02f263c1-browser-smoke.cjs against /tmp/civ-matrix-evaluator-dist on port 4174",
+      "exitCode": 0,
+      "result": "PASS; profile 1; rows 113; active 11; inactive 102; details closed; search visible 3; negative visible 11; all visible negative; page/console errors 0"
+    },
+    {
+      "command": "git diff --check",
+      "exitCode": 0,
+      "result": "PASS"
+    }
+  ],
+  "browser": {
+    "artifact": "/tmp/civ-matrix-evaluator-dist/index.html",
+    "engine": "Chromium via Playwright",
+    "viewport": "1440x1100",
+    "flow": "main menu -> new game -> configuration -> stone age -> civilization",
+    "profileCount": 1,
+    "rowCount": 113,
+    "activeRowsDefault": 11,
+    "inactiveRowsInOneDetails": 102,
+    "detailsClosedDefault": true,
+    "searchQuery": "meta_epoka",
+    "searchVisibleRows": 3,
+    "negativeFilterVisibleRows": 11,
+    "negativeFilterAllNegative": true,
+    "normalOnly": true,
+    "errors": []
+  },
+  "unresolved": {
+    "decisionRequired": "97 parameters lack proven Greece runtime/UI/AI/profile consumer precedent and remain D_REQUIRED; this is not claimed as implementation.",
+    "routingIncident": "INFRA/ROUTING_ERROR: evaluator task t_02f263c1/run892 native creation/readback has project_id=null instead of required p_9ae9ac64; active run preserved, no mutation or duplicate created.",
+    "deployment": "not performed"
+  },
+  "objections": [],
+  "nextGate": "Final Control after Orchestrator routing repair/readback; no integration or deploy from this report"
+}

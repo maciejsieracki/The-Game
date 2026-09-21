@@ -1,0 +1,85 @@
+{
+  "schemaVersion": "1.0",
+  "status": "DECISION_REQUIRED",
+  "domain": "GAME",
+  "topic": "R-CYWILIZACJE-MACIERZ-SEMANTYKA-LABELS-IMPLEMENTACJA-Q1",
+  "baseSha": "f4c89d0081c622c16b207d338b49c8bacafc4553",
+  "originMainSha": "f4c89d0081c622c16b207d338b49c8bacafc4553",
+  "commands": [
+    {
+      "command": "node ./node_modules/typescript/bin/tsc --noEmit",
+      "exitCode": 0,
+      "result": "pass"
+    },
+    {
+      "command": "node tools/civ-matrix-semantic-labels-test.cjs",
+      "exitCode": 0,
+      "result": "PASS 41; FAIL 0"
+    },
+    {
+      "command": "node tools/civ-matrix-greece-test.cjs",
+      "exitCode": 0,
+      "result": "PASS 390; FAIL 0"
+    },
+    {
+      "command": "node tools/civ-matrix-difficulty-test.cjs",
+      "exitCode": 0,
+      "result": "16 passed, 0 failed"
+    },
+    {
+      "command": "CIV_MATRIX_ARTIFACT_DIR=dyspozycje/autobot/runs/R-CYWILIZACJE-MACIERZ-SEMANTYKA-LABELS-IMPLEMENTACJA-Q1 node tools/civ-matrix-semantic-labels-test.cjs",
+      "exitCode": 0,
+      "result": "PASS 41; FAIL 0; generated 01-allocation.json, 01-semantic-contract.json, 01-consumer-provenance.md, 01-operator.md"
+    },
+    {
+      "command": "./node_modules/.bin/vite build",
+      "exitCode": 0,
+      "result": "891 modules transformed; dist/index.html 69,806.34 kB; built in 27.48s"
+    },
+    {
+      "command": "node /tmp/civ-matrix-browser-smoke.cjs",
+      "exitCode": 0,
+      "result": "Chromium readback: 1 profile, 113 rows, 11 active default, 102 inactive in one closed details panel; search opened details with 3 matches; negative filter opened details with 11 visible negative rows; no page or console errors"
+    },
+    {
+      "command": "git diff --check",
+      "exitCode": 0,
+      "result": "clean"
+    }
+  ],
+  "coverage": {
+    "parameters": 113,
+    "civilizations": 15,
+    "cells": 1695,
+    "uniqueCells": 1695,
+    "parameterStatusCounts": {
+      "REAL_GAMEPLAY": 11,
+      "UI_ONLY": 5,
+      "UNWIRED": 97
+    },
+    "cellStatusCounts": {
+      "REAL_GAMEPLAY": 165,
+      "UI_ONLY": 75,
+      "UNWIRED": 1455
+    },
+    "decisionRequiredRows": 97,
+    "decisionRequiredIds": "D_REQUIRED-001 through D_REQUIRED-097"
+  },
+  "browser": {
+    "engine": "Chromium via Playwright",
+    "flow": "main menu -> new game -> configuration -> stone age -> civilization",
+    "selectedProfile": "Rzymianie",
+    "normalIdentityOnly": true,
+    "labelsPersisted": false,
+    "errors": []
+  },
+  "sourceHashes": {
+    "gra/data/civ-matrix.json": "ad67e771608c2ebad8fed5e84e3d8ecd6e2a2b496fbfe42025ddb39ef27a2ea7",
+    "gra/src/game/civ-matrix.ts": "3bc9f443c9c8850175bb8b62adbc69547494eeed7b66159af65b48e5ab596ede",
+    "gra/src/game/civ-matrix-semantic.ts": "0dc69e4e4ab192f1d11b3addfb9403132ff3a78f9985fc8458eaf3abbad30997",
+    "gra/src/ui/newGameFlow.ts": "2ab94a3e9e88533a734535d4cccbd001e9a735206b5698d5d7f57d6475073e74",
+    "gra/tools/civ-matrix-semantic-labels-test.cjs": "db4dbf3bfb7061c5a39ec0b41832c48ed69df8ac12a54da2519ab21053b6daa7"
+  },
+  "unresolved": "D_REQUIRED rows are intentionally not wired: no Greece runtime consumer precedent was proven. Each row carries actor, condition, formula, precedence, and two-civilization test placeholders in 01-allocation.json; no zero adapter or invented gameplay effect was added.",
+  "deployment": "not performed"
+}
