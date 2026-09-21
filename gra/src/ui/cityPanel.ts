@@ -541,8 +541,8 @@ export interface CityPanelConfig {
   getPodzialPracyOverride?: (cityId: string) => boolean;
   /** Przełącznik pin/odpin Podziału Pracy (global ⇄ lokalny override). */
   onPodzialPracyOverrideToggle?: (cityId: string) => void;
-  /** Kup jednostke za Pieniadz ze skarbca (purchasableUnits). */
-  onPurchaseUnit?: (cityId: string, itemId: string, koszt: number) => void;
+  /** Kup jedną lub atomową partię jednostek za Pieniądz ze skarbca. */
+  onPurchaseUnit?: (cityId: string, itemId: string, koszt: number, quantity?: number) => boolean | void;
   /** B11-A: anulowanie opłaconej pozycji w kolejce rekrutacji — pełny zwrot kosztu. */
   onCancelRecruitment?: (cityId: string, itemId: string, koszt: number) => void;
   /** Kup budynek za Pieniadz (koszt 1:1 z kosztem Pracy — natychmiastowa budowa). */
@@ -8071,6 +8071,35 @@ function empireRekruciAffordable(
 }
 
 /**
+ * Sufit licznika na karcie z bieżącego snapshotu zasobów.
+ * To tylko informacyjny max dla draftu UI — nie rezerwuje i nie zmienia kolejki.
+ * Brak wiarygodnego snapshotu oznacza brak bezpiecznego maxa.
+ */
+function maxAffordableRecruitQuantity(
+  city: City,
+  item: ProductionItem,
+  mpCost: number,
+  skarb: number | undefined,
+  stockCost: Readonly<Record<string, number>>,
+): number | undefined {
+  let max = Number.POSITIVE_INFINITY;
+  let constrained = false;
+  const applyLimit = (available: number | undefined, cost: number): void => {
+    if (available == null || !Number.isFinite(available) || cost <= 0) return;
+    constrained = true;
+    max = Math.min(max, Math.max(0, Math.floor(available / cost)));
+  };
+
+  applyLimit(skarb, item.koszt);
+  applyLimit(empireRekruciTotal(city), mpCost);
+  const pool = ownerSurowcePoolFor(city);
+  for (const [key, cost] of Object.entries(stockCost)) {
+    applyLimit(pool[key] ?? 0, cost);
+  }
+  return constrained ? Math.max(1, max) : undefined;
+}
+
+/**
  * JEDNOSTKI-SUROWIEC-01 (Maciej 2026-07-24): chip(y) kosztu surowcowego jednostki
  * (units.json Surowiec/Surowiec (ilość)) na karcie rekrutacji — czerwony gdy pula
  * PAŃSTWA ownera (suma City.surowce po wszystkich miastach) nie starcza na SAM
@@ -8132,6 +8161,7 @@ export function appendUnitRecruitCompactRow(
     treasuryIconHtml: cityPanelChipIconWrap('res-treasury', 14),
     mpCost,
     mpCostLabel: formatManpower(mpCost),
+    maxQuantity: maxAffordableRecruitQuantity(city, item, mpCost, skarb, stockCost),
     manpowerAvailable: mpAvailable,
     manpowerRequired: mpCost,
     stockChipsHtml: unitStockCostChipsHtml(udef, city),
@@ -8144,25 +8174,37 @@ export function appendUnitRecruitCompactRow(
     manpowerMissingLabel: mpMissing != null && mpMissing > 0
       ? `Brakuje rekrutów: ${formatManpower(mpMissing)}`
       : undefined,
-    onRecruit: () => recruitUnit(city, item),
+    onRecruit: (quantity) => recruitUnit(city, item, quantity),
   });
   attachHoverDetail(row, () => buildUnitDetailCard(udef, data), 220, 'left');
   scroll.appendChild(row);
 }
 
-function recruitUnit(city: City, item: ProductionItem): void {
+function recruitUnit(city: City, item: ProductionItem, quantity = 1): boolean {
+  const requestedQuantity = Number.isFinite(quantity)
+    ? Math.max(1, Math.floor(quantity))
+    : 1;
   const skarb = cfg.getTreasury?.(city.ownerId);
-  if (skarb !== undefined && skarb < item.koszt) return;
+  if (skarb !== undefined && skarb < item.koszt * requestedQuantity) return false;
   const mpCost = recruitManpowerCost(city, item.id);
-  if (!empireRekruciAffordable(city, mpCost)) return;
+  if (!empireRekruciAffordable(city, mpCost * requestedQuantity)) return false;
   const data = gameData();
   const udef = data ? findUnitDef(data, item.id) : undefined;
   const pool = ownerSurowcePoolFor(city);
-  if (!canAffordUnitRecruitStock(pool, udef)) return;
+  if (requestedQuantity === 1) {
+    if (!canAffordUnitRecruitStock(pool, udef)) return false;
+  } else {
+    const batchStockCost = Object.fromEntries(
+      Object.entries(unitStockCost(udef)).map(([key, cost]) => [key, cost * requestedQuantity]),
+    );
+    if (Object.keys(missingStockFor(pool, batchStockCost)).length > 0) return false;
+  }
   if (cfg.onPurchaseUnit) {
-    cfg.onPurchaseUnit(city.id, item.id, item.koszt);
+    const accepted = cfg.onPurchaseUnit(city.id, item.id, item.koszt, requestedQuantity);
+    if (accepted === false) return false;
   }
   rerender();
+  return true;
 }
 
 function appendRecruitmentQueue(mount: HTMLElement, city: City, player: boolean, opts?: { w4?: boolean }): void {

@@ -29,6 +29,13 @@ export const UNIT_RECRUIT_CARD_CSS = `
 .civ-cs .unit-recruit-manpower.is-missing{color:#f0c0a8;font-weight:600;}
 .civ-cs .unit-recruit-manpower-missing{flex-basis:100%;color:#e88a7a;font-weight:700;}
 .civ-cs .unit-recruit-compact-row .bld-compact-actions{grid-area:actions;align-self:center;margin-left:0;}
+.civ-cs .unit-recruit-quantity{display:inline-flex;align-items:center;gap:0.16em;flex:none;order:-1;}
+.civ-cs .unit-recruit-quantity-label{font-size:0.64em;color:var(--muted);}
+.civ-cs .unit-recruit-quantity-control{display:inline-flex;align-items:center;gap:0.1em;}
+.civ-cs .unit-recruit-quantity-button{width:1.55em;min-width:1.55em;padding:0.08em 0;line-height:1.15;font-size:0.78em;}
+.civ-cs .unit-recruit-quantity-input{width:2.55em;min-width:2.55em;padding:0.1em 0.16em;text-align:center;font-size:0.72em;line-height:1.15;}
+.civ-cs .unit-recruit-quantity-input:disabled,.civ-cs .unit-recruit-quantity-button:disabled{cursor:not-allowed;}
+.civ-cs .unit-recruit-submit{min-width:3.2em;}
 `;
 
 function el<K extends keyof HTMLElementTagNameMap>(tag: K, cls?: string): HTMLElementTagNameMap[K] {
@@ -95,7 +102,18 @@ export interface UnitRecruitCardOpts {
   stockMissingLabel?: string;
   /** Tekst przyczyny blokady, gdy puli rekrutów brakuje. */
   manpowerMissingLabel?: string;
-  onRecruit: () => void;
+  /**
+   * Największa liczba jednostek możliwa według aktualnego snapshotu zasobów.
+   * To wyłącznie sufit kontrolek UI — nie rezerwuje kosztu.
+   */
+  maxQuantity?: number;
+  /** Zatwierdza draft liczby; `false` oznacza odrzucenie przez backend. */
+  onRecruit: (quantity: number) => boolean | void;
+}
+
+function normalizeMaxQuantity(value: number | undefined): number {
+  if (value == null || !Number.isFinite(value)) return 1;
+  return Math.max(1, Math.floor(value));
 }
 
 function normalizedManpower(value: number): number {
@@ -138,8 +156,11 @@ export function buildUnitRecruitCard(opts: UnitRecruitCardOpts): HTMLDivElement 
   const cat = unitCategory(udef);
   const canBuy = opts.canPurchase && (skarb === undefined || skarb >= item.koszt);
   const manpowerRequired = manpowerRequiredInput ?? mpCost ?? 0;
+  const maxQuantity = normalizeMaxQuantity(opts.maxQuantity);
 
   const row = el('div', 'bld-compact-row unit-recruit-compact-row');
+  row.dataset.recruitQuantity = '1';
+  row.dataset.recruitQuantityMax = String(maxQuantity);
   if (!canBuy) row.classList.add('is-disabled');
 
   const ic = el('div', 'bld-compact-ic');
@@ -176,21 +197,89 @@ export function buildUnitRecruitCard(opts: UnitRecruitCardOpts): HTMLDivElement 
   row.appendChild(cost);
 
   const actions = el('div', 'bld-compact-actions');
-  const btn = el('button', 'btn btn-sm btn-g') as HTMLButtonElement;
+  const quantityWrap = el('div', 'unit-recruit-quantity');
+  quantityWrap.title = 'Wybór liczby nie rezerwuje zasobów przed potwierdzeniem';
+  const quantityLabel = el('span', 'unit-recruit-quantity-label');
+  quantityLabel.textContent = 'Ilość';
+  quantityWrap.appendChild(quantityLabel);
+  const quantityControl = el('div', 'unit-recruit-quantity-control');
+  const minus = el('button', 'btn btn-sm unit-recruit-quantity-button') as HTMLButtonElement;
+  minus.type = 'button';
+  minus.dataset.recruitQuantityAction = 'decrease';
+  minus.textContent = '−';
+  minus.setAttribute('aria-label', 'Zmniejsz liczbę rekrutowanych jednostek');
+  minus.title = 'Zmniejsz liczbę jednostek';
+  quantityControl.appendChild(minus);
+  const quantityInput = el('input', 'unit-recruit-quantity-input') as HTMLInputElement;
+  quantityInput.type = 'number';
+  quantityInput.min = '1';
+  quantityInput.max = String(maxQuantity);
+  quantityInput.step = '1';
+  quantityInput.value = '1';
+  quantityInput.inputMode = 'numeric';
+  quantityInput.setAttribute('aria-label', 'Liczba rekrutowanych jednostek');
+  quantityControl.appendChild(quantityInput);
+  const plus = el('button', 'btn btn-sm unit-recruit-quantity-button') as HTMLButtonElement;
+  plus.type = 'button';
+  plus.dataset.recruitQuantityAction = 'increase';
+  plus.textContent = '+';
+  plus.setAttribute('aria-label', 'Zwiększ liczbę rekrutowanych jednostek');
+  plus.title = 'Zwiększ liczbę jednostek';
+  quantityControl.appendChild(plus);
+  quantityWrap.appendChild(quantityControl);
+
+  const btn = el('button', 'btn btn-sm btn-g unit-recruit-submit') as HTMLButtonElement;
+  btn.type = 'button';
   btn.textContent = 'Rekrutuj';
-  btn.disabled = !canBuy;
-  const blockedReasons = [manpowerMissingLabel, stockMissingLabel].filter(
-    (reason): reason is string => !!reason,
-  );
-  if (!canPurchase && blockedReasons.length > 0) btn.title = blockedReasons.join('; ');
-  else if (!canPurchase) btn.title = 'Wymaga wpiecia onPurchaseUnit przez silnik';
-  else if (!canBuy && skarb !== undefined) btn.title = `Za mało złota (${skarb}/${item.koszt})`;
-  else btn.title = `Rekrutuj za ${item.koszt} ze skarbca`;
+  actions.appendChild(btn);
+  // Submit pozostaje pierwszym przyciskiem w akcji; licznik jest jego sąsiednią kontrolką.
+  actions.appendChild(quantityWrap);
+
+  let quantity = 1;
+  const syncQuantityControls = (): void => {
+    row.dataset.recruitQuantity = String(quantity);
+    minus.disabled = !canBuy || quantity <= 1;
+    quantityInput.disabled = !canBuy;
+    plus.disabled = !canBuy || quantity >= maxQuantity;
+    btn.disabled = !canBuy;
+    const blockedReasons = [manpowerMissingLabel, stockMissingLabel].filter(
+      (reason): reason is string => !!reason,
+    );
+    if (!canPurchase && blockedReasons.length > 0) btn.title = blockedReasons.join('; ');
+    else if (!canPurchase) btn.title = 'Wymaga podpięcia onPurchaseUnit przez silnik';
+    else if (!canBuy && skarb !== undefined) btn.title = `Za mało złota (${skarb}/${item.koszt})`;
+    else if (quantity > 1) btn.title = `Rekrutuj ${quantity} jednostki za ${quantity * item.koszt} ze skarbca`;
+    else btn.title = `Rekrutuj za ${item.koszt} ze skarbca`;
+  };
+  const setQuantity = (next: number): void => {
+    quantity = Number.isFinite(next)
+      ? Math.min(maxQuantity, Math.max(1, Math.round(next)))
+      : 1;
+    quantityInput.value = String(quantity);
+    syncQuantityControls();
+  };
+  minus.addEventListener('click', (ev) => {
+    ev.stopPropagation();
+    setQuantity(quantity - 1);
+  });
+  plus.addEventListener('click', (ev) => {
+    ev.stopPropagation();
+    setQuantity(quantity + 1);
+  });
+  const syncInputQuantity = (): void => {
+    setQuantity(quantityInput.valueAsNumber);
+  };
+  quantityInput.addEventListener('input', syncInputQuantity);
+  quantityInput.addEventListener('change', syncInputQuantity);
+  quantityInput.addEventListener('click', (ev) => ev.stopPropagation());
   btn.addEventListener('click', (ev) => {
     ev.stopPropagation();
-    if (canBuy) onRecruit();
+    if (canBuy) {
+      const accepted = onRecruit(quantity);
+      if (accepted !== false) setQuantity(1);
+    }
   });
-  actions.appendChild(btn);
+  syncQuantityControls();
   row.appendChild(actions);
 
   return row;

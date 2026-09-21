@@ -3948,8 +3948,18 @@ async function boot(): Promise<void> {
      *  (ownerId=0, domyślny) i AI (ownerId>0, wywołanie z runAiPhase) dzielą DOKŁADNIE
      *  tę samą ścieżkę; jedyna różnica to UI (showHintMessage/updateHud/refreshCityPanelIfOpen
      *  wyłącznie dla gracza — AI nie ma panelu). */
-    function purchaseRecruitmentUnit(cityId: string, itemId: string, koszt: number, ownerId = 0): boolean {
-      if (ownerTreasury(ownerId) < koszt) return false;
+    function purchaseRecruitmentUnit(
+      cityId: string,
+      itemId: string,
+      koszt: number,
+      ownerId = 0,
+      quantity = 1,
+    ): boolean {
+      const requestedQuantity = Math.floor(quantity);
+      if (!Number.isSafeInteger(requestedQuantity) || requestedQuantity < 1) return false;
+      const totalGoldCost = koszt * requestedQuantity;
+      if (!Number.isFinite(totalGoldCost) || totalGoldCost < 0 || !Number.isSafeInteger(totalGoldCost)) return false;
+      if (ownerTreasury(ownerId) < totalGoldCost) return false;
       const city = cities.find(ct => ct.id === cityId);
       if (!city || city.ownerId !== ownerId) return false;
       // R-BUDYNEK-PORTOWY-MIASTA-NADBRZEZNE (Maciej 2026-08-09): siatka bezpieczeństwa —
@@ -3990,35 +4000,72 @@ async function boot(): Promise<void> {
       // pobraniem Manpower/złota, żeby nie zdarzyło się częściowe pobranie przy odmowie.
       const unitDef = data.units.find(u => u.Jednostka === itemId);
       const stockCost = unitStockCost(unitDef);
-      const ownerPool = ownerResourceStockAll(cities, ownerId);
-      const recruitHint = pickUnitRecruitHint(ownerPool, unitDef);
-      if (recruitHint) {
-        if (ownerId === 0) showHintMessage(recruitHint, 2800);
-        return false;
-      }
-      const d = tryDeductUnitSpawnCostsEmpire(
-        cities, cityId, ownerId, ep, UNIT_POPULATION_COST, mpMults.maxMult, itemId,
+      const batchStockCost = Object.fromEntries(
+        Object.entries(stockCost).map(([key, cost]) => [key, cost * requestedQuantity]),
       );
-      if (!d.ok) {
-        if (ownerId === 0) {
-          showHintMessage('Za mało rekrutów (Manpower) w imperium', 2800);
+      const ownerPool = ownerResourceStockAll(cities, ownerId);
+      if (requestedQuantity === 1) {
+        const recruitHint = pickUnitRecruitHint(ownerPool, unitDef);
+        if (recruitHint) {
+          if (ownerId === 0) showHintMessage(recruitHint, 2800);
+          return false;
         }
-        return false;
+      } else {
+        const stockMissing = missingStockFor(ownerPool, batchStockCost);
+        if (Object.keys(stockMissing).length > 0) {
+          if (ownerId === 0) {
+            const detail = Object.entries(stockMissing)
+              .map(([key, amount]) => `${amount} ${stockResourceLabel(key)}`)
+              .join(', ');
+            showHintMessage(`Brakuje w magazynie: ${detail}`, 2800);
+          }
+          return false;
+        }
       }
-      city.manpower = d.manpower;
-      setOwnerTreasury(ownerId, ownerTreasury(ownerId) - koszt);
-      if (Object.keys(stockCost).length > 0) {
-        deductBuildingStockCostAcrossCities(cities, ownerId, stockCost);
+      const kosztManpower = unitManpowerCostForType(itemId, ep, mpMults.maxMult);
+      if (requestedQuantity === 1) {
+        const d = tryDeductUnitSpawnCostsEmpire(
+          cities, cityId, ownerId, ep, UNIT_POPULATION_COST, mpMults.maxMult, itemId,
+        );
+        if (!d.ok) {
+          if (ownerId === 0) {
+            showHintMessage('Za mało rekrutów (Manpower) w imperium', 2800);
+          }
+          return false;
+        }
+        city.manpower = d.manpower;
+      } else {
+        const totalManpowerCost = kosztManpower * requestedQuantity;
+        if (totalManpowerCost > 0 && empireManpowerCurrent(cities, ownerId, ep, mpMults.maxMult) < totalManpowerCost) {
+          if (ownerId === 0) {
+            showHintMessage('Za mało rekrutów (Manpower) w imperium', 2800);
+          }
+          return false;
+        }
+        if (!deductManpowerFromEmpire(cities, ownerId, ep, totalManpowerCost, mpMults.maxMult)) {
+          if (ownerId === 0) {
+            showHintMessage('Za mało rekrutów (Manpower) w imperium', 2800);
+          }
+          return false;
+        }
+      }
+      setOwnerTreasury(ownerId, ownerTreasury(ownerId) - totalGoldCost);
+      if (Object.keys(batchStockCost).length > 0) {
+        deductBuildingStockCostAcrossCities(cities, ownerId, batchStockCost);
       }
       markCityStateDirty();
-      const prod0 = cityProd.get(cityId) ?? { kolejka: [], postep: 0 };
-      cityProd.set(cityId, enqueueRecruitment(prod0, { ...item, koszt }));
+      let nextProd = cityProd.get(cityId) ?? { kolejka: [], postep: 0 };
+      for (let i = 0; i < requestedQuantity; i++) {
+        nextProd = enqueueRecruitment(nextProd, { ...item, koszt });
+      }
+      cityProd.set(cityId, nextProd);
       if (ownerId === 0) {
         updateHud();
         refreshCityPanelIfOpen();
       }
       console.log(
-        `[Rekrutacja] ${city.name}: ${itemId} oplacone ${koszt} — kolejka (−${d.kosztManpower} MP)`,
+        `[Rekrutacja] ${city.name}: ${itemId} oplacone ${totalGoldCost}`
+          + ` — kolejka x${requestedQuantity} (−${kosztManpower * requestedQuantity} MP)`,
       );
       return true;
     }
@@ -24825,8 +24872,8 @@ async function boot(): Promise<void> {
       onPodzialPracyOverrideToggle: (cityId: string) => {
         toggleCityPodzialPracyOverride(cityId);
       },
-      onPurchaseUnit: (cityId: string, itemId: string, koszt: number) => {
-        purchaseRecruitmentUnit(cityId, itemId, koszt);
+      onPurchaseUnit: (cityId: string, itemId: string, koszt: number, quantity = 1) => {
+        return purchaseRecruitmentUnit(cityId, itemId, koszt, 0, quantity);
       },
       onCancelRecruitment: (cityId: string, itemId: string, koszt: number) => {
         cancelRecruitmentPurchase(cityId, itemId, koszt);
@@ -36486,8 +36533,8 @@ async function boot(): Promise<void> {
         onPodzialPracyOverrideToggle: (cityId: string) => {
           toggleCityPodzialPracyOverride(cityId);
         },
-        onPurchaseUnit: (cityId: string, itemId: string, koszt: number) => {
-          purchaseRecruitmentUnit(cityId, itemId, koszt);
+        onPurchaseUnit: (cityId: string, itemId: string, koszt: number, quantity = 1) => {
+          return purchaseRecruitmentUnit(cityId, itemId, koszt, 0, quantity);
         },
         getCivBonusy: (ownerId: number) => civBonusyForOwnerId(ownerId),
         getCivKey: (ownerId: number) => civKeyForOwnerId(ownerId),
