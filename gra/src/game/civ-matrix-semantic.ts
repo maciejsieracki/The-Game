@@ -88,7 +88,6 @@ const CIVILIZATION_ROWS = DATA.cywilizacje;
 
 const PROVEN_CONSUMERS: Readonly<Record<string, string>> = {
   lud_wzrost_proc: 'population-growth-v85.ts:230–232 — wkład wzrostu ludności; trudność ×0.50/×1.00/×1.50',
-  dip_nastawienie_bazowe: 'civ-ai-data.ts:205–217 + diplomacy.ts:1376–1380 — korekta zaufania startowego pary cywilizacji',
   dip_handlowosc_archetyp: 'civ-ai-data.ts:184–198 + diplomacy.ts:1267–1308 — skłonność AI do handlu',
   ai_agresywnosc: 'civ-ai-data.ts:39–53/156–178 + diplomacy.ts:1261–1285 — gotowość AI do wojny',
   ai_ekspansywnosc: 'civ-ai-data.ts:88–101 + ai-expansion.ts — scoring ekspansji i zakładania miast',
@@ -107,7 +106,6 @@ const PROVEN_CONSUMERS: Readonly<Record<string, string>> = {
 
 const REAL_GAMEPLAY = new Set([
   'lud_wzrost_proc',
-  'dip_nastawienie_bazowe',
   'dip_handlowosc_archetyp',
   'ai_agresywnosc',
   'ai_ekspansywnosc',
@@ -241,7 +239,10 @@ function statusReason(
         ? 'Wartość ma potwierdzone użycie w profilu AI/relacji; badge pozostaje neutralny, a opis profilu jest osobny.'
         : 'Wartość ma potwierdzony konsument produkcyjny; badge opisuje kierunek względem mediany, nie dodatkowy efekt.';
     case 'UI_ONLY': return 'Wartość służy tylko do opisu relacji/profilu w UI; nie jest premią gameplayową.';
-    case 'UNWIRED': return `Brak potwierdzonego konsumenta dla ${parameterId}; wymagane osobne rozstrzygnięcie aktora, warunku, formuły, precedencji i testu.`;
+    case 'UNWIRED':
+      return parameterId === 'dip_nastawienie_bazowe'
+        ? 'Brak potwierdzonego live konsumenta dla dip_nastawienie_bazowe; inicjalizator klastra nie używa tego pola, a kontrakt właściciela dla aktora i warunku pozostaje nierozstrzygnięty.'
+        : `Brak potwierdzonego konsumenta dla ${parameterId}; wymagane osobne rozstrzygnięcie aktora, warunku, formuły, precedencji i testu.`;
     case 'DEAD_UNWIRED': return 'Pole zachowane jako proweniencja, bez aktywnego wpływu.';
     case 'PROPOSAL': return 'Wartość/specyfikacja jest propozycją; nie wpływa na runtime.';
     case 'REFERENCE_NEEDS_REVIEW': return 'Znaleziono ślad referencyjny, ale brak dowodu efektu w runtime.';

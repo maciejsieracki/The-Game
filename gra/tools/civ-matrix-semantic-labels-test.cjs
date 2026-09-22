@@ -25,6 +25,7 @@ fs.writeFileSync(entry, `
     civMatrixSemanticParameterIds,
     civMatrixSemanticCivilizations,
     civMatrixConsumerEvidence,
+    statusAllowsDefaultVisibility,
     civMatrixFormattedValue,
     civMatrixIntensityLabel,
     civMatrixParameterLabelPl,
@@ -116,17 +117,24 @@ equal(M.civMatrixSemanticPolarity('walka_atak_piechota'), 'beneficial', 'attack 
 equal(M.civMatrixSemanticPolarity('ai_agresywnosc'), 'neutral/not-applicable', 'AI profile remains neutral badge');
 equal(M.civMatrixSemanticPolarity('dip_handlowosc_archetyp'), 'neutral/not-applicable', 'relation profile remains neutral badge');
 equal(M.civMatrixConsumerStatus('lud_wzrost_proc'), 'REAL_GAMEPLAY', 'growth has a proven gameplay consumer');
+equal(M.civMatrixConsumerStatus('dip_nastawienie_bazowe'), 'UNWIRED', 'base attitude stays unwired without a live cluster-start consumer');
+equal(M.civMatrixConsumerEvidence('dip_nastawienie_bazowe').length, 0, 'base attitude has no proven consumer evidence');
 equal(M.civMatrixConsumerStatus('dip_otwartosc_handl'), 'UNWIRED', 'unknown parameter stays unwired');
 equal(M.civMatrixConsumerStatus('dip_otwartosc_handel'), 'UI_ONLY', 'relation tag is explicitly UI-only');
+const baseAttitudeCell = greek.cells.find(c => c.parameterId === 'dip_nastawienie_bazowe');
+equal(baseAttitudeCell.consumerStatus, 'UNWIRED', 'base attitude profile cell is unwired');
+equal(baseAttitudeCell.provenance.consumerEvidence.length, 0, 'base attitude profile cell carries no consumer evidence');
+equal(M.statusAllowsDefaultVisibility(baseAttitudeCell.consumerStatus), false, 'unwired base attitude is not visible in the active default set');
+assert(baseAttitudeCell.statusReasonPl.includes('live konsumenta') && baseAttitudeCell.statusReasonPl.includes('kontrakt właściciela'), 'base attitude explains the missing live consumer and owner contract');
 
 console.log('--- status counts and no persistence ---');
 const statusCounts = snapshot.cells.reduce((out, cell) => {
   out[cell.consumerStatus] = (out[cell.consumerStatus] || 0) + 1;
   return out;
 }, {});
-equal(statusCounts.REAL_GAMEPLAY, 165, '11 proven gameplay parameters cover 15 profiles');
+equal(statusCounts.REAL_GAMEPLAY, 150, '10 proven gameplay parameters cover 15 profiles');
 equal(statusCounts.UI_ONLY, 75, '5 UI-only parameters cover 15 profiles');
-equal(statusCounts.UNWIRED, 1455, '97 unresolved parameters are visibly unwired');
+equal(statusCounts.UNWIRED, 1470, '98 unresolved parameters are visibly unwired');
 assert(!fs.readFileSync(path.resolve(sourceRoot, 'game/civ-matrix-semantic.ts'), 'utf8').includes('localStorage'), 'semantic classifier does not persist labels');
 
 console.log('--- configurator source contract ---');

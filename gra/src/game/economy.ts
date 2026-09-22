@@ -42,6 +42,7 @@ import terrainYieldsData from '../../data/terrain-yields.json';
 import type { TerrainModifierDef, TerrainTypeDef } from '../data/loader';
 import { buildingEffectAtLevel, cityPracaInteger, splitPraca, buildingLevelForEpoch } from './production';
 import { applyImprovementBonuses, oreYieldFromImprovements } from './terrain-improvements';
+import { civMatrixParam, loadCivMatrix } from './civ-matrix';
 
 // ---------------------------------------------------------------------------
 // Building record shape (mirrors buildings.json)
@@ -778,12 +779,31 @@ function mnoznikHandelPieniadzRawForCiv(
 }
 
 /**
- * Difficulty delta applied on top of the civs.json mnoznikHandelPieniadz value
- * (decyzja Maciej 2026-07-25, pytanie 69 -- "mnoznik cywilizacyjny skalowany
- * poziomem trudnosci"): "Zostawmy go jako obowiazujacy dla poziomu normal.
- * Wersja easy bedzie miala pol punktu wiecej [...] wersja hard pol punktu
- * mniej." The civs.json number IS the normal-difficulty value; we NEVER edit
- * civs.json itself -- the +0.5 / -0.5 scaling lives only here.
+ * Canonical matrix source for the five meta fields. The legacy civs.json field
+ * remains a compatibility fallback for synthetic/older callers, but every
+ * current roster id is resolved from civ-matrix.json first. This keeps the
+ * gameplay consumer tied to the matrix without inventing a Greece fallback.
+ */
+function civMatrixMnoznikHandelPieniadzRaw(civKey: string | null | undefined): number | undefined {
+  if (!civKey) return undefined;
+  const key = civKey.toLowerCase();
+  const known = loadCivMatrix().cywilizacje.some((row) => [
+    row.ikonaId,
+    row.typCywilizacji,
+    row.Cywilizacja,
+  ].some((id) => id.toLowerCase() === key));
+  if (!known) return undefined;
+  const value = civMatrixParam(civKey, 'meta_mnoznik_waluta');
+  return Number.isFinite(value) && value > 0 ? value : undefined;
+}
+
+/**
+ * Difficulty delta applied on top of the canonical civ-matrix.json
+ * meta_mnoznik_waluta value (decyzja Maciej 2026-07-25, pytanie 69 --
+ * "mnoznik cywilizacyjny skalowany poziomem trudnosci"): "Zostawmy go jako
+ * obowiazujacy dla poziomu normal. Wersja easy bedzie miala pol punktu wiecej
+ * [...] wersja hard pol punktu mniej." The matrix number IS the normal-difficulty
+ * value; we never edit source data here -- the +0.5 / -0.5 scaling lives only here.
  */
 const MNOZNIK_HANDEL_TRUDNOSC_DELTA: Record<Difficulty, number> = {
   easy:   0.5,
@@ -812,7 +832,8 @@ export function mnoznikHandelPieniadzForCivByDifficulty(
   difficulty: Difficulty,
   fallbackScaled: number,
 ): number {
-  const raw = mnoznikHandelPieniadzRawForCiv(civKey, civs);
+  const raw = civMatrixMnoznikHandelPieniadzRaw(civKey)
+    ?? mnoznikHandelPieniadzRawForCiv(civKey, civs);
   if (raw === undefined) return fallbackScaled;
   return raw + (MNOZNIK_HANDEL_TRUDNOSC_DELTA[difficulty] ?? 0);
 }
