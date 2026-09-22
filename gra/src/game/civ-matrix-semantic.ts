@@ -17,11 +17,11 @@ export type CivMatrixConsumerStatus =
   | 'REAL_GAMEPLAY'
   | 'UI_ONLY'
   | 'REFERENCE_NEEDS_REVIEW'
-  | 'REFERENCE_ONLY'
   | 'UNWIRED'
   | 'DEAD_UNWIRED'
   | 'PROPOSAL'
-  | 'BLOCKED';
+  | 'BLOCKED'
+  | 'DECISION_REQUIRED';
 export type CivMatrixSemanticLabel = 'POZYTYWNY' | 'NEGATYWNY' | 'NEUTRALNY';
 
 export interface CivMatrixNeutralBand {
@@ -126,16 +126,26 @@ const UI_ONLY = new Set([
   'dip_otwartosc_handel',
 ]);
 
-// Owner decision 2026-09-22 (Wariant C, R-CYWILIZACJE-MACIERZ-META-EPOCH-TIER-REFERENCE-Q1):
-// these four fields are retired to reference-only. The epoch flags never become a
-// gameplay consumer — `civs.json.epokaWejscia` (docs/decyzje/D-CYW-EPOKA-WEJSCIA-KASKADA.md)
-// remains the sole source of truth for availability by epoch. `meta_tier_roster` has no
-// legal gameplay actor and none may be invented. Do not move these into REAL_GAMEPLAY.
-const REFERENCE_ONLY = new Set([
-  'meta_epoka_kamien',
-  'meta_epoka_braz',
-  'meta_epoka_zelazo',
-  'meta_tier_roster',
+/**
+ * R-CYWILIZACJE-MACIERZ-WIRING-AI-RECON-ORIGIN-20260922 runda 2: oba pola
+ * ponownie zweryfikowane w kodzie runtime (nie tylko w metadanych macierzy)
+ * i żadne nie ma legalnego, jednoznacznego kontraktu gameplay bez decyzji
+ * właściciela — patrz `civMatrixConsumerEvidence`/`statusReason` i pakiet
+ * A/B/C w `dyspozycje/autobot/runs/.../02-decision-packet.md`.
+ * `dip_nastawienie_bazowe`: pomocnik `nastawienieBazoweZaufanieDelta` jest
+ * czytany wyłącznie przez czysty `initialRelation`, który nie ma żadnego
+ * wywołania runtime — żywy start klastra korzysta z `startRelationForPair`,
+ * które tego pola nie dotyka (granica potwierdzona przez Defense Z1 rundy 1,
+ * ponownie zweryfikowana w rundzie 2).
+ * `dip_agresja_archetyp`: brak jakiegokolwiek wywołania runtime w `gra/src`
+ * poza klasyfikatorem/danymi macierzy; istniejący konsument agresji
+ * (`resolveArchetypeAggression`) czyta wyłącznie `ai_agresywnosc` — mapowanie
+ * dip_agresja_archetyp na ten sam konsument groziłoby podwójnym liczeniem i
+ * nie zostało wykonane.
+ */
+const DECISION_REQUIRED = new Set([
+  'dip_nastawienie_bazowe',
+  'dip_agresja_archetyp',
 ]);
 
 const HARMFUL = new Set([
@@ -178,7 +188,7 @@ export function civMatrixSemanticCivilizations(): readonly CivMatrixRow[] {
 export function civMatrixConsumerStatus(parameterId: string): CivMatrixConsumerStatus {
   if (REAL_GAMEPLAY.has(parameterId)) return 'REAL_GAMEPLAY';
   if (UI_ONLY.has(parameterId)) return 'UI_ONLY';
-  if (REFERENCE_ONLY.has(parameterId)) return 'REFERENCE_ONLY';
+  if (DECISION_REQUIRED.has(parameterId)) return 'DECISION_REQUIRED';
   return 'UNWIRED';
 }
 
@@ -235,11 +245,11 @@ function statusLabel(status: CivMatrixConsumerStatus): string {
     case 'REAL_GAMEPLAY': return 'AKTYWNE';
     case 'UI_ONLY': return 'TYLKO INFORMACJA';
     case 'REFERENCE_NEEDS_REVIEW': return 'DO WERYFIKACJI';
-    case 'REFERENCE_ONLY': return 'TYLKO REFERENCJA — BEZ GAMEPLAY';
     case 'UNWIRED': return 'NIEAKTYWNE — BRAK KONSUMENTA';
     case 'DEAD_UNWIRED': return 'ZAMKNIĘTE — NIEAKTYWNE';
     case 'PROPOSAL': return 'PROPOZYCJA';
     case 'BLOCKED': return 'ZABLOKOWANE';
+    case 'DECISION_REQUIRED': return 'WYMAGA DECYZJI WŁAŚCICIELA';
   }
 }
 
@@ -254,10 +264,6 @@ function statusReason(
         ? 'Wartość ma potwierdzone użycie w profilu AI/relacji; badge pozostaje neutralny, a opis profilu jest osobny.'
         : 'Wartość ma potwierdzony konsument produkcyjny; badge opisuje kierunek względem mediany, nie dodatkowy efekt.';
     case 'UI_ONLY': return 'Wartość służy tylko do opisu relacji/profilu w UI; nie jest premią gameplayową.';
-    case 'REFERENCE_ONLY':
-      return parameterId === 'meta_tier_roster'
-        ? 'Decyzja właściciela 2026-09-22 (Wariant C): meta_tier_roster jest referencyjny — brak legalnego aktora gameplay (rozmiar puli, selekcja, filtr kandydatów AI) i żaden nie może zostać wymyślony.'
-        : 'Decyzja właściciela 2026-09-22 (Wariant C): pole epoki jest referencyjne i nie jest konsumentem gameplay; jedynym źródłem prawdy dostępności cywilizacji wg epoki jest kaskada civs.json.epokaWejscia (docs/decyzje/D-CYW-EPOKA-WEJSCIA-KASKADA.md).';
     case 'UNWIRED':
       return parameterId === 'dip_nastawienie_bazowe'
         ? 'Brak potwierdzonego live konsumenta dla dip_nastawienie_bazowe; inicjalizator klastra nie używa tego pola, a kontrakt właściciela dla aktora i warunku pozostaje nierozstrzygnięty.'
@@ -266,18 +272,25 @@ function statusReason(
     case 'PROPOSAL': return 'Wartość/specyfikacja jest propozycją; nie wpływa na runtime.';
     case 'REFERENCE_NEEDS_REVIEW': return 'Znaleziono ślad referencyjny, ale brak dowodu efektu w runtime.';
     case 'BLOCKED': return 'Pole zablokowane do decyzji; nie ma efektywnego wpływu.';
+    case 'DECISION_REQUIRED':
+      return parameterId === 'dip_nastawienie_bazowe'
+        ? 'Runda 2: potwierdzono ponownie brak żywego konsumenta — pomocnik nastawienieBazoweZaufanieDelta jest wołany wyłącznie z czystego initialRelation, a initialRelation nie ma żadnego wywołania runtime w main.ts/cluster-start.ts (żywy start klastra używa startRelationForPair, który tego pola nie czyta). Decyzja właściciela (aktor, warunek, precedencja) wymagana przed jakimkolwiek wiringiem — patrz pakiet A/B/C.'
+        : 'Runda 2: potwierdzono ponownie brak jakiegokolwiek wywołania runtime dla dip_agresja_archetyp w gra/src poza samym klasyfikatorem/danymi macierzy; istniejący konsument agresji (resolveArchetypeAggression) czyta wyłącznie ai_agresywnosc. Decyzja właściciela (aktor, warunek, relacja wobec ai_agresywnosc) wymagana przed jakimkolwiek wiringiem — patrz pakiet A/B/C.';
   }
 }
 
 function difficultyBehavior(parameterId: string, status: CivMatrixConsumerStatus): string {
-  if (status === 'UI_ONLY' || status === 'UNWIRED' || status === 'PROPOSAL' || status === 'BLOCKED' || status === 'REFERENCE_ONLY') {
+  if (
+    status === 'UI_ONLY'
+    || status === 'UNWIRED'
+    || status === 'PROPOSAL'
+    || status === 'BLOCKED'
+    || status === 'DECISION_REQUIRED'
+  ) {
     return 'Panel etykiet używa wyłącznie tożsamości Normal; brak deklarowanego efektu Easy/Hard.';
   }
   if (parameterId === 'lud_wzrost_proc') {
     return 'Normal ×1.00; aktywny konsument wzrostu stosuje Easy ×0.50 i Hard ×1.50 do wkładu cywilizacji.';
-  }
-  if (parameterId === 'dip_nastawienie_bazowe') {
-    return 'Helper przyjmuje trudność, lecz bieżący inicjalizator relacji nie przekazuje jej jawnie; nie deklaruj osobnego Easy/Hard w panelu.';
   }
   if (parameterId.startsWith('ai_')) {
     return 'Tożsamość Normal w panelu; istniejący konsument skali AI ma jawny krok Normal−1 / Normal / Normal+1, ograniczony do 1…10.';

@@ -117,31 +117,22 @@ equal(M.civMatrixSemanticPolarity('walka_atak_piechota'), 'beneficial', 'attack 
 equal(M.civMatrixSemanticPolarity('ai_agresywnosc'), 'neutral/not-applicable', 'AI profile remains neutral badge');
 equal(M.civMatrixSemanticPolarity('dip_handlowosc_archetyp'), 'neutral/not-applicable', 'relation profile remains neutral badge');
 equal(M.civMatrixConsumerStatus('lud_wzrost_proc'), 'REAL_GAMEPLAY', 'growth has a proven gameplay consumer');
-equal(M.civMatrixConsumerStatus('dip_nastawienie_bazowe'), 'UNWIRED', 'base attitude stays unwired without a live cluster-start consumer');
+equal(M.civMatrixConsumerStatus('dip_nastawienie_bazowe'), 'DECISION_REQUIRED', 'base attitude requires an owner decision after round 2 recheck (no live consumer)');
 equal(M.civMatrixConsumerEvidence('dip_nastawienie_bazowe').length, 0, 'base attitude has no proven consumer evidence');
+equal(M.civMatrixConsumerStatus('dip_agresja_archetyp'), 'DECISION_REQUIRED', 'archetype aggression requires an owner decision after round 2 recheck (no live consumer, must not double-count with ai_agresywnosc)');
+equal(M.civMatrixConsumerEvidence('dip_agresja_archetyp').length, 0, 'archetype aggression has no proven consumer evidence');
 equal(M.civMatrixConsumerStatus('dip_otwartosc_handl'), 'UNWIRED', 'unknown parameter stays unwired');
 equal(M.civMatrixConsumerStatus('dip_otwartosc_handel'), 'UI_ONLY', 'relation tag is explicitly UI-only');
 const baseAttitudeCell = greek.cells.find(c => c.parameterId === 'dip_nastawienie_bazowe');
-equal(baseAttitudeCell.consumerStatus, 'UNWIRED', 'base attitude profile cell is unwired');
+equal(baseAttitudeCell.consumerStatus, 'DECISION_REQUIRED', 'base attitude profile cell requires an owner decision');
 equal(baseAttitudeCell.provenance.consumerEvidence.length, 0, 'base attitude profile cell carries no consumer evidence');
-equal(M.statusAllowsDefaultVisibility(baseAttitudeCell.consumerStatus), false, 'unwired base attitude is not visible in the active default set');
-assert(baseAttitudeCell.statusReasonPl.includes('live konsumenta') && baseAttitudeCell.statusReasonPl.includes('kontrakt właściciela'), 'base attitude explains the missing live consumer and owner contract');
-
-console.log('--- meta epoch/tier reference-only classification (owner Wariant C, 2026-09-22) ---');
-const REFERENCE_ONLY_META_IDS = ['meta_epoka_kamien', 'meta_epoka_braz', 'meta_epoka_zelazo', 'meta_tier_roster'];
-for (const id of REFERENCE_ONLY_META_IDS) {
-  equal(M.civMatrixConsumerStatus(id), 'REFERENCE_ONLY', `${id} is classified reference-only, not a gameplay consumer`);
-  assert(M.civMatrixConsumerStatus(id) !== 'REAL_GAMEPLAY', `${id} is never claimed as REAL_GAMEPLAY`);
-  equal(M.civMatrixConsumerEvidence(id).length, 0, `${id} carries no proven consumer evidence`);
-  const cell = greek.cells.find(c => c.parameterId === id);
-  equal(cell.consumerStatus, 'REFERENCE_ONLY', `${id} profile cell is reference-only`);
-  equal(M.statusAllowsDefaultVisibility(cell.consumerStatus), false, `${id} is not visible in the active default set`);
-  assert(cell.statusReasonPl.length > 0, `${id} carries a non-empty reason string, never a silent UNWIRED`);
-}
-equal(M.civMatrixConsumerStatus('meta_mnoznik_waluta'), 'UNWIRED',
-  'meta_mnoznik_waluta itself stays classified UNWIRED in this semantic layer; its proven wiring lives in economy.ts/civ-matrix-meta-roster-wiring-test.cjs, untouched by this attempt');
-const epochDecisionDoc = fs.readFileSync(path.resolve(__dirname, '..', '..', 'docs', 'decyzje', 'D-CYW-EPOKA-WEJSCIA-KASKADA.md'), 'utf8');
-assert(epochDecisionDoc.includes('epokaWejscia'), 'the accepted epokaWejscia cascade document is present and unaltered by this classification-only change');
+equal(M.statusAllowsDefaultVisibility(baseAttitudeCell.consumerStatus), false, 'decision-required base attitude is not visible in the active default set');
+assert(baseAttitudeCell.statusReasonPl.includes('initialRelation') && baseAttitudeCell.statusReasonPl.includes('Decyzja właściciela'), 'base attitude explains the missing live consumer and the pending owner decision');
+const archetypeAggressionCell = greek.cells.find(c => c.parameterId === 'dip_agresja_archetyp');
+equal(archetypeAggressionCell.consumerStatus, 'DECISION_REQUIRED', 'archetype aggression profile cell requires an owner decision');
+equal(archetypeAggressionCell.provenance.consumerEvidence.length, 0, 'archetype aggression profile cell carries no consumer evidence');
+equal(M.statusAllowsDefaultVisibility(archetypeAggressionCell.consumerStatus), false, 'decision-required archetype aggression is not visible in the active default set');
+assert(archetypeAggressionCell.statusReasonPl.includes('ai_agresywnosc') && archetypeAggressionCell.statusReasonPl.includes('Decyzja właściciela'), 'archetype aggression explains the ai_agresywnosc double-counting risk and the pending owner decision');
 
 console.log('--- status counts and no persistence ---');
 const statusCounts = snapshot.cells.reduce((out, cell) => {
@@ -150,8 +141,8 @@ const statusCounts = snapshot.cells.reduce((out, cell) => {
 }, {});
 equal(statusCounts.REAL_GAMEPLAY, 150, '10 proven gameplay parameters cover 15 profiles');
 equal(statusCounts.UI_ONLY, 75, '5 UI-only parameters cover 15 profiles');
-equal(statusCounts.REFERENCE_ONLY, 60, '4 reference-only meta/roster parameters cover 15 profiles (owner Wariant C, 2026-09-22)');
-equal(statusCounts.UNWIRED, 1410, '94 unresolved parameters are visibly unwired');
+equal(statusCounts.DECISION_REQUIRED, 30, '2 unresolved AI/diplomacy parameters cover 15 profiles each and require an owner decision');
+equal(statusCounts.UNWIRED, 1440, '96 unresolved parameters are visibly unwired');
 assert(!fs.readFileSync(path.resolve(sourceRoot, 'game/civ-matrix-semantic.ts'), 'utf8').includes('localStorage'), 'semantic classifier does not persist labels');
 
 console.log('--- configurator source contract ---');
