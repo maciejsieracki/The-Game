@@ -1,40 +1,41 @@
 {
-  "publishedAt": "2026-09-21T22:39:15Z",
-  "republishedAt": "2026-09-21T22:41:56Z",
-  "productReleaseCommit": "8c505dae8b06d1e523911c70c9e5cdf472910a1f",
+  "publishedAt": "2026-09-22T11:32:27Z",
+  "republishedAt": "2026-09-22T11:32:27Z",
+  "productReleaseCommit": "ad16a1b8",
   "publisher": "Hermes Orchestrator",
-  "md5": "ad231111fc2841de6d83cdf1fa1ad796",
-  "sha256": "a21b9b8143bd414eec5ee23f65150f33ba6266e595c028d50a7692695ce13fe4",
-  "bytes": 69913695,
+  "md5": "240a82c3eb3ad1cd344f254eecc11887",
+  "sha256": "f39b672fc59fe44f8c61a67458efe3336fa4b25b0f730c7d28cb5b1eeca1f497",
+  "bytes": 69914006,
   "bundle": "Gra-ROBOCZA.html",
-  "sourceCommit": "8c505dae8b06d1e523911c70c9e5cdf472910a1f",
-  "base": "7cfead757737d1c1a7ddfc187a3241dad5bb0e57",
-  "integrationCommit": "a21af6b96076bcce6d0cda60fe75e19e07b0853e",
-  "publishCommit": "77b762b3f622b92f50b187ac881732a6268aae7e",
-  "remoteMainAtPublish": "77b762b3f622b92f50b187ac881732a6268aae7e",
+  "sourceCommit": "ad16a1b8",
+  "base": "a0cc8933c2341f63c0c084395e668bd509731392",
+  "integrationCommit": "ad16a1b8",
+  "publishCommit": "f9d242de7d0f988b3395386fd34a6eb577802a05",
+  "remoteMainAtPublish": "f9d242de7d0f988b3395386fd34a6eb577802a05",
   "remoteSmoke": true,
   "finalControl": [
-    "t_c24ebf5d PASS-WITH-NOTES",
-    "t_08ea70f2 PASS-WITH-NOTES / READY_FOR_INTEGRATION",
-    "t_1bbfe729 PASS-WITH-NOTES / READY_FOR_INTEGRATION"
+    "t_37c17961 PASS-WITH-NOTES",
+    "t_eb282c93 PASS-WITH-NOTES",
+    "t_f475a224 PASS-WITH-NOTES",
+    "t_c3a89662 PASS-WITH-NOTES"
   ],
   "scope": [
-    "R-MANPOWER-HP-MAX-EFFECTIVE-Q1",
-    "R-AUTO-BITWA-JEDNOCZESNA-Q1",
-    "R-REKRUTACJA-WIELE-JEDNOSTEK-UI-Q1"
+    "R-CYWILIZACJE-MACIERZ-WIRING-META-ROSTER-ORIGIN-20260921",
+    "R-CYWILIZACJE-MACIERZ-WIRING-AI-RECON-ORIGIN-20260922",
+    "R-CYWILIZACJE-MACIERZ-WIRING-ECONOMY-RECON-ORIGIN-20260922",
+    "R-CYWILIZACJE-MACIERZ-WIRING-COMBAT-RECON-ORIGIN-20260922"
   ],
   "noOpVerified": [
-    "R-MIASTA-KOLONIA-NAZWA-POOL-Q1",
-    "R-REKRUTACJA-KOSZTY-POLOWA-ALL-Q1",
-    "R-AI-BUDZET-SKARB-NAUKA-ZAMOZNOSC-Q1",
-    "R-CYWILIZACJE-GRECJA-ALOKACJE-Q1",
-    "R-AI-PRACA-BUDYNKI-ULEPSZENIA-Q1",
-    "R-CYWILIZACJE-GRECJA-AKTYWNE-PARAMETRY-Q1"
+    "combat: 0 WIRED_REAL_GAMEPLAY; no consumer contract was added",
+    "economy: lud_wzrost_proc remains the only wired row; 31 rows remain blocked",
+    "AI/diplomacy: 9 REAL_GAMEPLAY, 5 UI_ONLY, 2 UNWIRED",
+    "meta/roster: meta_mnoznik_waluta only; 4 parameters remain blocked"
   ],
   "excluded": [
-    "pozostałe 98 parametrów macierzy bez aktywnego runtime consumera",
-    "zmiana dróg i ograniczenie AI do najkrótszych tras miasto–miasto",
-    "Rust/Rust/Tauri oraz server-side Web",
+    "113×15 full matrix completion; unresolved cells remain DECISION_REQUIRED/UNWIRED or DEAD_UNWIRED",
+    "meta_tier_roster and five epoch-source conflicts without owner contract",
+    "dip_agresja_archetyp and dip_nastawienie_bazowe gameplay wiring",
+    "new combat/economy consumers without an approved contract",
     "promocja do KANON/FINALNA"
   ],
   "bundles": [
@@ -42,76 +43,76 @@
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html?skipMenuRedirect=1",
       "label": "Pełna gra ROBOCZA",
-      "md5": "ad231111fc2841de6d83cdf1fa1ad796",
+      "md5": "240a82c3eb3ad1cd344f254eecc11887",
       "sizeBytes": 69914006
     },
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html",
       "label": "Pełna gra (z menu)",
-      "md5": "ad231111fc2841de6d83cdf1fa1ad796",
+      "md5": "240a82c3eb3ad1cd344f254eecc11887",
       "sizeBytes": 69914006
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "label": "Playtest: DUŻA bitwa (pole) — NOWE",
-      "md5": "ad231111fc2841de6d83cdf1fa1ad796",
+      "md5": "240a82c3eb3ad1cd344f254eecc11887",
       "sizeBytes": 69914006
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "label": "Playtest: DUŻE oblężenie (mur) — NOWE",
-      "md5": "ad231111fc2841de6d83cdf1fa1ad796",
+      "md5": "240a82c3eb3ad1cd344f254eecc11887",
       "sizeBytes": 69914006
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "label": "Playtest: mapa świat",
-      "md5": "ad231111fc2841de6d83cdf1fa1ad796",
+      "md5": "240a82c3eb3ad1cd344f254eecc11887",
       "sizeBytes": 69914006
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "label": "Playtest: miasto / ekonomia",
-      "md5": "ad231111fc2841de6d83cdf1fa1ad796",
+      "md5": "240a82c3eb3ad1cd344f254eecc11887",
       "sizeBytes": 69914006
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "label": "Playtest: walka na mapie",
-      "md5": "ad231111fc2841de6d83cdf1fa1ad796",
+      "md5": "240a82c3eb3ad1cd344f254eecc11887",
       "sizeBytes": 69914006
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "label": "Playtest: odskok 3v3",
-      "md5": "ad231111fc2841de6d83cdf1fa1ad796",
+      "md5": "240a82c3eb3ad1cd344f254eecc11887",
       "sizeBytes": 69914006
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "label": "Playtest: odskok + oblężenie",
-      "md5": "ad231111fc2841de6d83cdf1fa1ad796",
+      "md5": "240a82c3eb3ad1cd344f254eecc11887",
       "sizeBytes": 69914006
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "label": "Playtest: oblężenie 3v3",
-      "md5": "ad231111fc2841de6d83cdf1fa1ad796",
+      "md5": "240a82c3eb3ad1cd344f254eecc11887",
       "sizeBytes": 69914006
     }
   ],
   "startHub": "START.html",
-  "hubGeneratedAt": "2026-09-22T11:24:30",
-  "note": "ROBOCZA — trzy zatwierdzone tematy: effective maxHP, jednoczesna AUTO bitwa i rekrutacja wielu jednostek; macierz cywilizacji oraz pozostałe parametry bez consumerów pozostają poza zakresem",
+  "hubGeneratedAt": "2026-09-22T11:35:28",
+  "note": "ROBOCZA — bounded civilization-matrix integration: meta_mnoznik_waluta plus semantic status correction; unresolved matrix contracts remain outside scope and are not claimed as runtime-wired",
   "backlogReconciliation": {
     "status": "ALREADY_IN_TARGET_OR_NO_OP",
     "recordedAt": "2026-09-17T23:26:49Z",
