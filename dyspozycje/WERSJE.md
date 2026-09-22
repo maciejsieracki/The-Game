@@ -13,6 +13,16 @@ swoim wĹ‚asnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji d
 > Pakiet 3 z 2026-08-20 jest docs-only i nie tworzy wpisu ROBOCZA/KANON/FINALNA;
 > ten plik pozostaje wyłącznie rejestrem publikacji bundli.
 
+## ROBOCZA 240a82c3 - 2026-09-22 11:40 UTC - bounded civilization matrix integration
+
+|- md5 `240a82c3eb3ad1cd344f254eecc11887` · sha256 `f39b672fc59fe44f8c61a67458efe3336fa4b25b0f730c7d28cb5b1eeca1f497` · rozmiar `69914006` bajtów.
+|- source/product commit: `ad16a1b8`; bundle commit: `22fcd1a271509a9215e88e2ea92ae942b6ed74e5`; base: `a0cc8933c2341f63c0c084395e668bd509731392`.
+|- Scope: `meta_mnoznik_waluta` runtime consumer plus the approved semantic correction for `dip_nastawienie_bazowe`; exact product allowlist is recorded in the integration receipt.
+|- Final Control: `t_37c17961`, `t_eb282c93`, `t_f475a224`, `t_c3a89662` — all `PASS-WITH-NOTES`; workerless gates remain blocked/unassigned.
+|- Gates: semantic `47/0`, meta/roster `74/0`, AI boundary `42/0`, TypeScript PASS, Vite `892` modules, local Chromium smoke PASS, remote HTTP `200`, manifest/hash/bytes readback PASS, `verify-robocza-bundle.cjs` `VERIFY OK`.
+|- Publish/readback: remote branch and `main` read back to `4c9ae80b7230eda7f5d9c148acf0ef242b3efbe7`; raw remote bundle and manifest hashes match exactly. Linux stamp comparison is the known Node-port `WARN`.
+|- The full `113 × 15 = 1695` matrix is not claimed complete; unresolved contracts remain outside this bounded release. No promotion to KANON/FINALNA.
+
 ## ROBOCZA d8d7071e - 2026-09-21 22:39 UTC - trzy zatwierdzone tematy
 
 |- md5 `d8d7071ee96ad85e249b9d92b7b8e432` · sha256 `a21b9b8143bd414eec5ee23f65150f33ba6266e595c028d50a7692695ce13fe4` · rozmiar `69913695` bajtów.

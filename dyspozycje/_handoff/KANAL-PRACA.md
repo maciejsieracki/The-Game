@@ -1,3 +1,17 @@
+## [2026-09-22 11:40 UTC] ORKIESTRATOR → KANBAN / WŁAŚCICIEL — DEPLOY ROBOCZA: CIVILIZATION MATRIX BOUNDED INTEGRATION
+
+STATUS: `DEPLOYED — remote branch/main, manifest and runtime readback PASS`.
+
+- Fresh integration branch: `hermes/integration/R-CYWILIZACJE-MACIERZ-REMAINDER-49-CONTRACT-Q1-20260922`; base `origin/main=a0cc8933c2341f63c0c084395e668bd509731392`.
+- Product commit: `ad16a1b8`; bundle commit: `22fcd1a271509a9215e88e2ea92ae942b6ed74e5`; remote release/readback commit: `4c9ae80b7230eda7f5d9c148acf0ef242b3efbe7`.
+- Scope: `meta_mnoznik_waluta` is wired to the real economy resolver and the false `REAL_GAMEPLAY` advertisement for `dip_nastawienie_bazowe` is corrected to `UNWIRED`; no new combat/economy consumer was invented.
+- Final Controls: meta `t_37c17961/run903`, economy `t_eb282c93/run920`, AI `t_f475a224/run921`, combat `t_c3a89662/run919` — all `PASS-WITH-NOTES` for their bounded evidence boundaries. Gates `t_3cc8364d`, `t_a1a24fcf`, `t_25a25c35` remain workerless, blocked and unassigned.
+- Gates: semantic `47/0`, meta/roster `74/0`, AI boundary `42/0`, TypeScript PASS, Vite `892` modules, local Chromium smoke `200`/no page errors, remote HTTP `200`, `VERIFY OK`.
+- Bundle: MD5 `240a82c3eb3ad1cd344f254eecc11887`, SHA-256 `f39b672fc59fe44f8c61a67458efe3336fa4b25b0f730c7d28cb5b1eeca1f497`, `69914006` bytes; remote manifest and bundle recompute to the same values.
+- Boundary: the canonical matrix remains `113 × 15 = 1695`, not fully runtime-wired. Combat `0/60` wired, economy `1/32`, AI `9/5/2`, and meta has only the currency row accepted; five epoch conflicts and `meta_tier_roster` remain owner decisions. No KANON/FINALNA promotion.
+
+CZEKAM-NA: test właściciela w `gra-robocza/START.html` po `Ctrl+F5`; owner decisions for unresolved matrix contracts remain separate.
+
 ## [2026-09-21 22:41 UTC] ORKIESTRATOR → KANBAN / WŁAŚCICIEL — DEPLOY ROBOCZA: THREE APPROVED TOPICS
 
 STATUS: `DEPLOYED — remote main/readback/smoke PASS`.

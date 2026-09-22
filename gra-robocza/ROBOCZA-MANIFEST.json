@@ -1,6 +1,6 @@
 {
   "publishedAt": "2026-09-22T11:32:27Z",
-  "republishedAt": "2026-09-22T11:32:27Z",
+  "republishedAt": "2026-09-22T11:40:12Z",
   "productReleaseCommit": "ad16a1b8",
   "publisher": "Hermes Orchestrator",
   "md5": "240a82c3eb3ad1cd344f254eecc11887",
@@ -11,7 +11,7 @@
   "base": "a0cc8933c2341f63c0c084395e668bd509731392",
   "integrationCommit": "ad16a1b8",
   "publishCommit": "22fcd1a271509a9215e88e2ea92ae942b6ed74e5",
-  "remoteMainAtPublish": "22fcd1a271509a9215e88e2ea92ae942b6ed74e5",
+  "remoteMainAtPublish": "4c9ae80b7230eda7f5d9c148acf0ef242b3efbe7",
   "remoteSmoke": true,
   "finalControl": [
     "t_37c17961 PASS-WITH-NOTES",
