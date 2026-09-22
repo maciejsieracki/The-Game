@@ -17,6 +17,7 @@ export type CivMatrixConsumerStatus =
   | 'REAL_GAMEPLAY'
   | 'UI_ONLY'
   | 'REFERENCE_NEEDS_REVIEW'
+  | 'REFERENCE_ONLY'
   | 'UNWIRED'
   | 'DEAD_UNWIRED'
   | 'PROPOSAL'
@@ -125,6 +126,18 @@ const UI_ONLY = new Set([
   'dip_otwartosc_handel',
 ]);
 
+// Owner decision 2026-09-22 (Wariant C, R-CYWILIZACJE-MACIERZ-META-EPOCH-TIER-REFERENCE-Q1):
+// these four fields are retired to reference-only. The epoch flags never become a
+// gameplay consumer — `civs.json.epokaWejscia` (docs/decyzje/D-CYW-EPOKA-WEJSCIA-KASKADA.md)
+// remains the sole source of truth for availability by epoch. `meta_tier_roster` has no
+// legal gameplay actor and none may be invented. Do not move these into REAL_GAMEPLAY.
+const REFERENCE_ONLY = new Set([
+  'meta_epoka_kamien',
+  'meta_epoka_braz',
+  'meta_epoka_zelazo',
+  'meta_tier_roster',
+]);
+
 const HARMFUL = new Set([
   'walka_koszt_rekrutacji_proc',
   'spec_Dezercja_proc',
@@ -165,6 +178,7 @@ export function civMatrixSemanticCivilizations(): readonly CivMatrixRow[] {
 export function civMatrixConsumerStatus(parameterId: string): CivMatrixConsumerStatus {
   if (REAL_GAMEPLAY.has(parameterId)) return 'REAL_GAMEPLAY';
   if (UI_ONLY.has(parameterId)) return 'UI_ONLY';
+  if (REFERENCE_ONLY.has(parameterId)) return 'REFERENCE_ONLY';
   return 'UNWIRED';
 }
 
@@ -221,6 +235,7 @@ function statusLabel(status: CivMatrixConsumerStatus): string {
     case 'REAL_GAMEPLAY': return 'AKTYWNE';
     case 'UI_ONLY': return 'TYLKO INFORMACJA';
     case 'REFERENCE_NEEDS_REVIEW': return 'DO WERYFIKACJI';
+    case 'REFERENCE_ONLY': return 'TYLKO REFERENCJA — BEZ GAMEPLAY';
     case 'UNWIRED': return 'NIEAKTYWNE — BRAK KONSUMENTA';
     case 'DEAD_UNWIRED': return 'ZAMKNIĘTE — NIEAKTYWNE';
     case 'PROPOSAL': return 'PROPOZYCJA';
@@ -239,6 +254,10 @@ function statusReason(
         ? 'Wartość ma potwierdzone użycie w profilu AI/relacji; badge pozostaje neutralny, a opis profilu jest osobny.'
         : 'Wartość ma potwierdzony konsument produkcyjny; badge opisuje kierunek względem mediany, nie dodatkowy efekt.';
     case 'UI_ONLY': return 'Wartość służy tylko do opisu relacji/profilu w UI; nie jest premią gameplayową.';
+    case 'REFERENCE_ONLY':
+      return parameterId === 'meta_tier_roster'
+        ? 'Decyzja właściciela 2026-09-22 (Wariant C): meta_tier_roster jest referencyjny — brak legalnego aktora gameplay (rozmiar puli, selekcja, filtr kandydatów AI) i żaden nie może zostać wymyślony.'
+        : 'Decyzja właściciela 2026-09-22 (Wariant C): pole epoki jest referencyjne i nie jest konsumentem gameplay; jedynym źródłem prawdy dostępności cywilizacji wg epoki jest kaskada civs.json.epokaWejscia (docs/decyzje/D-CYW-EPOKA-WEJSCIA-KASKADA.md).';
     case 'UNWIRED':
       return parameterId === 'dip_nastawienie_bazowe'
         ? 'Brak potwierdzonego live konsumenta dla dip_nastawienie_bazowe; inicjalizator klastra nie używa tego pola, a kontrakt właściciela dla aktora i warunku pozostaje nierozstrzygnięty.'
@@ -251,7 +270,7 @@ function statusReason(
 }
 
 function difficultyBehavior(parameterId: string, status: CivMatrixConsumerStatus): string {
-  if (status === 'UI_ONLY' || status === 'UNWIRED' || status === 'PROPOSAL' || status === 'BLOCKED') {
+  if (status === 'UI_ONLY' || status === 'UNWIRED' || status === 'PROPOSAL' || status === 'BLOCKED' || status === 'REFERENCE_ONLY') {
     return 'Panel etykiet używa wyłącznie tożsamości Normal; brak deklarowanego efektu Easy/Hard.';
   }
   if (parameterId === 'lud_wzrost_proc') {

@@ -127,6 +127,22 @@ equal(baseAttitudeCell.provenance.consumerEvidence.length, 0, 'base attitude pro
 equal(M.statusAllowsDefaultVisibility(baseAttitudeCell.consumerStatus), false, 'unwired base attitude is not visible in the active default set');
 assert(baseAttitudeCell.statusReasonPl.includes('live konsumenta') && baseAttitudeCell.statusReasonPl.includes('kontrakt właściciela'), 'base attitude explains the missing live consumer and owner contract');
 
+console.log('--- meta epoch/tier reference-only classification (owner Wariant C, 2026-09-22) ---');
+const REFERENCE_ONLY_META_IDS = ['meta_epoka_kamien', 'meta_epoka_braz', 'meta_epoka_zelazo', 'meta_tier_roster'];
+for (const id of REFERENCE_ONLY_META_IDS) {
+  equal(M.civMatrixConsumerStatus(id), 'REFERENCE_ONLY', `${id} is classified reference-only, not a gameplay consumer`);
+  assert(M.civMatrixConsumerStatus(id) !== 'REAL_GAMEPLAY', `${id} is never claimed as REAL_GAMEPLAY`);
+  equal(M.civMatrixConsumerEvidence(id).length, 0, `${id} carries no proven consumer evidence`);
+  const cell = greek.cells.find(c => c.parameterId === id);
+  equal(cell.consumerStatus, 'REFERENCE_ONLY', `${id} profile cell is reference-only`);
+  equal(M.statusAllowsDefaultVisibility(cell.consumerStatus), false, `${id} is not visible in the active default set`);
+  assert(cell.statusReasonPl.length > 0, `${id} carries a non-empty reason string, never a silent UNWIRED`);
+}
+equal(M.civMatrixConsumerStatus('meta_mnoznik_waluta'), 'UNWIRED',
+  'meta_mnoznik_waluta itself stays classified UNWIRED in this semantic layer; its proven wiring lives in economy.ts/civ-matrix-meta-roster-wiring-test.cjs, untouched by this attempt');
+const epochDecisionDoc = fs.readFileSync(path.resolve(__dirname, '..', '..', 'docs', 'decyzje', 'D-CYW-EPOKA-WEJSCIA-KASKADA.md'), 'utf8');
+assert(epochDecisionDoc.includes('epokaWejscia'), 'the accepted epokaWejscia cascade document is present and unaltered by this classification-only change');
+
 console.log('--- status counts and no persistence ---');
 const statusCounts = snapshot.cells.reduce((out, cell) => {
   out[cell.consumerStatus] = (out[cell.consumerStatus] || 0) + 1;
@@ -134,7 +150,8 @@ const statusCounts = snapshot.cells.reduce((out, cell) => {
 }, {});
 equal(statusCounts.REAL_GAMEPLAY, 150, '10 proven gameplay parameters cover 15 profiles');
 equal(statusCounts.UI_ONLY, 75, '5 UI-only parameters cover 15 profiles');
-equal(statusCounts.UNWIRED, 1470, '98 unresolved parameters are visibly unwired');
+equal(statusCounts.REFERENCE_ONLY, 60, '4 reference-only meta/roster parameters cover 15 profiles (owner Wariant C, 2026-09-22)');
+equal(statusCounts.UNWIRED, 1410, '94 unresolved parameters are visibly unwired');
 assert(!fs.readFileSync(path.resolve(sourceRoot, 'game/civ-matrix-semantic.ts'), 'utf8').includes('localStorage'), 'semantic classifier does not persist labels');
 
 console.log('--- configurator source contract ---');

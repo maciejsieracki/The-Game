@@ -19,6 +19,7 @@ export {
   mnoznikHandelPieniadzForCivByDifficulty,
 } from '../src/game/economy';
 export { civMatrixParam, loadCivMatrix } from '../src/game/civ-matrix';
+export { civMatrixConsumerStatus, civMatrixConsumerEvidence } from '../src/game/civ-matrix-semantic';
 `, 'utf8');
 
 let passed = 0;
@@ -117,6 +118,17 @@ try {
   // selection, so this focused gate verifies coverage only; no zero adapter.
   assert(rows.filter((row) => row.params.meta_tier_roster === 2).length === 3,
     'tier coverage: exactly 3 reserve profiles carry tier 2');
+
+  // Owner decision 2026-09-22 (Wariant C, R-CYWILIZACJE-MACIERZ-META-EPOCH-TIER-REFERENCE-Q1):
+  // the epoch flags and meta_tier_roster are explicitly REFERENCE_ONLY in the semantic
+  // classifier — never REAL_GAMEPLAY, never a silent/ambiguous UNWIRED. meta_mnoznik_waluta
+  // stays the sole approved meta/roster gameplay consumer.
+  for (const id of ['meta_epoka_kamien', 'meta_epoka_braz', 'meta_epoka_zelazo', 'meta_tier_roster']) {
+    eq(M.civMatrixConsumerStatus(id), 'REFERENCE_ONLY', `${id} is classified REFERENCE_ONLY`);
+    eq(M.civMatrixConsumerEvidence(id).length, 0, `${id} carries no proven gameplay consumer evidence`);
+  }
+  assert(M.civMatrixConsumerStatus('meta_mnoznik_waluta') !== 'REFERENCE_ONLY',
+    'meta_mnoznik_waluta is not reclassified as reference-only; its real economy.ts wiring is unchanged');
 
   console.log(`\nciv-matrix-meta-roster-wiring-test: ${passed} passed, ${failed} failed`);
   if (failed) process.exitCode = 1;
