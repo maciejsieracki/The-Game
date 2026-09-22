@@ -10,8 +10,8 @@
   "sourceCommit": "ad16a1b8",
   "base": "a0cc8933c2341f63c0c084395e668bd509731392",
   "integrationCommit": "ad16a1b8",
-  "publishCommit": "f9d242de7d0f988b3395386fd34a6eb577802a05",
-  "remoteMainAtPublish": "f9d242de7d0f988b3395386fd34a6eb577802a05",
+  "publishCommit": "22fcd1a271509a9215e88e2ea92ae942b6ed74e5",
+  "remoteMainAtPublish": "22fcd1a271509a9215e88e2ea92ae942b6ed74e5",
   "remoteSmoke": true,
   "finalControl": [
     "t_37c17961 PASS-WITH-NOTES",
