@@ -142,8 +142,53 @@ const statusCounts = snapshot.cells.reduce((out, cell) => {
 equal(statusCounts.REAL_GAMEPLAY, 150, '10 proven gameplay parameters cover 15 profiles');
 equal(statusCounts.UI_ONLY, 75, '5 UI-only parameters cover 15 profiles');
 equal(statusCounts.DECISION_REQUIRED, 30, '2 unresolved AI/diplomacy parameters cover 15 profiles each and require an owner decision');
-equal(statusCounts.UNWIRED, 1440, '96 unresolved parameters are visibly unwired');
+equal(statusCounts.BLOCKED, 525, '35 combat/special-unit DECISION_REQUIRED parameters cover 15 profiles (round 2, R-CYWILIZACJE-MACIERZ-WIRING-COMBAT-RECON-ORIGIN-20260922)');
+equal(statusCounts.DEAD_UNWIRED, 375, '25 combat/siege/fortification parameters with all-default cells are closed dead (round 2)');
+equal(statusCounts.UNWIRED, 480, '32 unresolved parameters are visibly unwired after AI DECISION_REQUIRED (2 params), combat BLOCKED/DEAD_UNWIRED (60 params), and meta REFERENCE_ONLY (4 params) reclassification');
 assert(!fs.readFileSync(path.resolve(sourceRoot, 'game/civ-matrix-semantic.ts'), 'utf8').includes('localStorage'), 'semantic classifier does not persist labels');
+
+console.log('--- combat/special-unit BLOCKED decision_required (round 2, R-CYWILIZACJE-MACIERZ-WIRING-COMBAT-RECON-ORIGIN-20260922) ---');
+const BLOCKED_COMBAT_IDS = [
+  'walka_atak_piechota', 'walka_atak_kawaleria', 'walka_atak_rydwany', 'walka_atak_obleczenie',
+  'walka_obrona_piechota', 'walka_pancerz_piechota', 'walka_uderzenie_piechota', 'walka_uderzenie_kawaleria',
+  'walka_dystans_lukownicy', 'walka_hp_piechota', 'walka_hp_rydwany', 'walka_ruch_bitwa_proc',
+  'walka_koszt_rekrutacji_proc', 'walka_atak_piechota_teren_las', 'walka_obrona_piechota_terytorium_wlasne',
+  'walka_obrona_piechota_w_murze', 'walka_atak_piechota_runda_szarzy',
+];
+const BLOCKED_SPECIAL_UNIT_IDS = [
+  'spec_Atak', 'spec_Obrazenia', 'spec_Obrona', 'spec_Uderzenie', 'spec_Pancerz', 'spec_Przebicie',
+  'spec_Health', 'spec_Atak_dystansowy', 'spec_Zasieg_hex', 'spec_Pociski', 'spec_Ruch_bitwa',
+  'spec_Ruch_mapa', 'spec_Widok', 'spec_Dezercja_proc', 'spec_Morale', 'spec_Koszt_pieniadz',
+  'spec_Utrzymanie', 'spec_Zywnosc_ture',
+];
+equal(BLOCKED_COMBAT_IDS.length, 17, 'fixture lists all 17 blocked combat multiplier IDs');
+equal(BLOCKED_SPECIAL_UNIT_IDS.length, 18, 'fixture lists all 18 blocked special-unit stat IDs');
+for (const id of [...BLOCKED_COMBAT_IDS, ...BLOCKED_SPECIAL_UNIT_IDS]) {
+  equal(M.civMatrixConsumerStatus(id), 'BLOCKED', `${id} is classified BLOCKED, not silently UNWIRED`);
+  const cell = greek.cells.find(c => c.parameterId === id);
+  equal(cell.consumerStatus, 'BLOCKED', `${id} profile cell is BLOCKED`);
+  equal(M.statusAllowsDefaultVisibility(cell.consumerStatus), false, `${id} is not visible in the active default set`);
+  assert(cell.statusReasonPl.length > 0, `${id} carries a non-empty reason string, never a silent UNWIRED`);
+  assert(cell.statusReasonPl.includes('R-CYWILIZACJE-MACIERZ-WIRING-COMBAT-RECON-ORIGIN-20260922'), `${id} reason cites the owning topic`);
+}
+
+console.log('--- combat/siege/fortification DEAD_UNWIRED (round 2) ---');
+const DEAD_UNWIRED_COMBAT_IDS = [
+  'walka_atak_lukownicy', 'walka_atak_morska', 'walka_atak_wszystkie', 'walka_obrona_lukownicy',
+  'walka_obrona_kawaleria', 'walka_obrona_rydwany', 'walka_obrona_obleczenie', 'walka_obrona_morska',
+  'walka_pancerz_lukownicy', 'walka_pancerz_kawaleria', 'walka_pancerz_rydwany', 'walka_uderzenie_rydwany',
+  'walka_dystans_rydwany', 'walka_hp_kawaleria', 'walka_zasieg_proc', 'walka_oblezenie_proc',
+  'walka_obrona_piechota_teren_las', 'walka_atak_piechota_terytorium_wlasne', 'walka_atak_piechota_w_murze',
+  'walka_obrona_piechota_runda_szarzy', 'walka_atak_piechota_teren_plytkie_morze',
+  'walka_obrona_piechota_teren_plytkie_morze', 'obl_obrona_miasta_proc', 'obl_mur_proc', 'obl_machines_proc',
+];
+equal(DEAD_UNWIRED_COMBAT_IDS.length, 25, 'fixture lists all 25 dead-unwired combat/siege/fortification IDs');
+for (const id of DEAD_UNWIRED_COMBAT_IDS) {
+  equal(M.civMatrixConsumerStatus(id), 'DEAD_UNWIRED', `${id} is classified DEAD_UNWIRED`);
+  const cell = greek.cells.find(c => c.parameterId === id);
+  equal(cell.consumerStatus, 'DEAD_UNWIRED', `${id} profile cell is DEAD_UNWIRED`);
+  assert(cell.statusReasonPl.length > 0, `${id} carries a non-empty reason string, never a silent UNWIRED`);
+}
 
 console.log('--- configurator source contract ---');
 const newGameSource = fs.readFileSync(path.resolve(sourceRoot, 'ui/newGameFlow.ts'), 'utf8');
