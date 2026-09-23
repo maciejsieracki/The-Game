@@ -6,38 +6,14 @@
     "formula_mul_abs": "wynik = baza * wartosc",
     "formula_add": "wynik = baza + wartosc",
     "formula_flag": "wartosc 1 = aktywny warunek",
-    "kolumny": 113,
+    "kolumny": 109,
     "cywilizacje": 15
   },
   "paramDefs": {
-    "meta_epoka_kamien": {
-      "domena": "meta",
-      "jednostka": "flag_0_1",
-      "modul": "start-preview.ts",
-      "formula": "flag"
-    },
-    "meta_epoka_braz": {
-      "domena": "meta",
-      "jednostka": "flag_0_1",
-      "modul": "start-preview.ts",
-      "formula": "flag"
-    },
-    "meta_epoka_zelazo": {
-      "domena": "meta",
-      "jednostka": "flag_0_1",
-      "modul": "start-preview.ts",
-      "formula": "flag"
-    },
     "meta_mnoznik_waluta": {
       "domena": "meta",
       "jednostka": "absolut",
       "modul": "economy.ts",
-      "formula": "mul_abs"
-    },
-    "meta_tier_roster": {
-      "domena": "meta",
-      "jednostka": "absolut",
-      "modul": "civ-roster.ts",
       "formula": "mul_abs"
     },
     "walka_atak_piechota": {
@@ -690,11 +666,7 @@
     }
   },
   "defaults": {
-    "meta_epoka_kamien": 0,
-    "meta_epoka_braz": 0,
-    "meta_epoka_zelazo": 0,
     "meta_mnoznik_waluta": 2,
-    "meta_tier_roster": 1,
     "walka_atak_piechota": 0,
     "walka_atak_lukownicy": 0,
     "walka_atak_kawaleria": 0,
@@ -811,11 +783,7 @@
       "ikonaId": "grecy",
       "tier": 1,
       "params": {
-        "meta_epoka_kamien": 1,
-        "meta_epoka_braz": 1,
-        "meta_epoka_zelazo": 1,
         "meta_mnoznik_waluta": 2.3,
-        "meta_tier_roster": 1,
         "walka_atak_piechota": 0,
         "walka_atak_lukownicy": 0,
         "walka_atak_kawaleria": 0,
@@ -932,11 +900,7 @@
       "ikonaId": "rzymianie",
       "tier": 1,
       "params": {
-        "meta_epoka_kamien": 1,
-        "meta_epoka_braz": 1,
-        "meta_epoka_zelazo": 1,
         "meta_mnoznik_waluta": 2,
-        "meta_tier_roster": 1,
         "walka_atak_piechota": 0.15,
         "walka_atak_lukownicy": 0,
         "walka_atak_kawaleria": 0,
@@ -1053,11 +1017,7 @@
       "ikonaId": "chinczycy",
       "tier": 1,
       "params": {
-        "meta_epoka_kamien": 1,
-        "meta_epoka_braz": 1,
-        "meta_epoka_zelazo": 1,
         "meta_mnoznik_waluta": 2.4,
-        "meta_tier_roster": 1,
         "walka_atak_piechota": 0,
         "walka_atak_lukownicy": 0,
         "walka_atak_kawaleria": 0,
@@ -1174,11 +1134,7 @@
       "ikonaId": "inkowie",
       "tier": 1,
       "params": {
-        "meta_epoka_kamien": 1,
-        "meta_epoka_braz": 1,
-        "meta_epoka_zelazo": 1,
         "meta_mnoznik_waluta": 1.9,
-        "meta_tier_roster": 1,
         "walka_atak_piechota": 0,
         "walka_atak_lukownicy": 0,
         "walka_atak_kawaleria": -0.15,
@@ -1295,11 +1251,7 @@
       "ikonaId": "zulusi",
       "tier": 1,
       "params": {
-        "meta_epoka_kamien": 1,
-        "meta_epoka_braz": 1,
-        "meta_epoka_zelazo": 1,
         "meta_mnoznik_waluta": 1.8,
-        "meta_tier_roster": 1,
         "walka_atak_piechota": 0,
         "walka_atak_lukownicy": 0,
         "walka_atak_kawaleria": 0,
@@ -1416,11 +1368,7 @@
       "ikonaId": "egipt",
       "tier": 1,
       "params": {
-        "meta_epoka_kamien": 1,
-        "meta_epoka_braz": 1,
-        "meta_epoka_zelazo": 1,
         "meta_mnoznik_waluta": 2.1,
-        "meta_tier_roster": 1,
         "walka_atak_piechota": 0,
         "walka_atak_lukownicy": 0,
         "walka_atak_kawaleria": 0,
@@ -1537,11 +1485,7 @@
       "ikonaId": "sumer",
       "tier": 1,
       "params": {
-        "meta_epoka_kamien": 1,
-        "meta_epoka_braz": 1,
-        "meta_epoka_zelazo": 1,
         "meta_mnoznik_waluta": 2.2,
-        "meta_tier_roster": 1,
         "walka_atak_piechota": 0,
         "walka_atak_lukownicy": 0,
         "walka_atak_kawaleria": 0,
@@ -1658,11 +1602,7 @@
       "ikonaId": "celtowie",
       "tier": 1,
       "params": {
-        "meta_epoka_kamien": 0,
-        "meta_epoka_braz": 1,
-        "meta_epoka_zelazo": 1,
         "meta_mnoznik_waluta": 1.9,
-        "meta_tier_roster": 1,
         "walka_atak_piechota": 0,
         "walka_atak_lukownicy": 0,
         "walka_atak_kawaleria": 0,
@@ -1779,11 +1719,7 @@
       "ikonaId": "germanie",
       "tier": 1,
       "params": {
-        "meta_epoka_kamien": 0,
-        "meta_epoka_braz": 1,
-        "meta_epoka_zelazo": 1,
         "meta_mnoznik_waluta": 1.7,
-        "meta_tier_roster": 1,
         "walka_atak_piechota": 0,
         "walka_atak_lukownicy": 0,
         "walka_atak_kawaleria": 0,
@@ -1900,11 +1836,7 @@
       "ikonaId": "harappa",
       "tier": 1,
       "params": {
-        "meta_epoka_kamien": 1,
-        "meta_epoka_braz": 0,
-        "meta_epoka_zelazo": 0,
         "meta_mnoznik_waluta": 2.4,
-        "meta_tier_roster": 1,
         "walka_atak_piechota": 0,
         "walka_atak_lukownicy": 0,
         "walka_atak_kawaleria": -0.08,
@@ -2021,11 +1953,7 @@
       "ikonaId": "hetyci",
       "tier": 1,
       "params": {
-        "meta_epoka_kamien": 0,
-        "meta_epoka_braz": 1,
-        "meta_epoka_zelazo": 0,
         "meta_mnoznik_waluta": 2,
-        "meta_tier_roster": 1,
         "walka_atak_piechota": 0,
         "walka_atak_lukownicy": 0,
         "walka_atak_kawaleria": 0,
@@ -2142,11 +2070,7 @@
       "ikonaId": "slowianie",
       "tier": 1,
       "params": {
-        "meta_epoka_kamien": 0,
-        "meta_epoka_braz": 0,
-        "meta_epoka_zelazo": 1,
         "meta_mnoznik_waluta": 1.8,
-        "meta_tier_roster": 1,
         "walka_atak_piechota": 0,
         "walka_atak_lukownicy": 0,
         "walka_atak_kawaleria": 0,
@@ -2263,11 +2187,7 @@
       "ikonaId": "babilonia",
       "tier": 2,
       "params": {
-        "meta_epoka_kamien": 0,
-        "meta_epoka_braz": 1,
-        "meta_epoka_zelazo": 0,
         "meta_mnoznik_waluta": 2.3,
-        "meta_tier_roster": 2,
         "walka_atak_piechota": 0,
         "walka_atak_lukownicy": 0,
         "walka_atak_kawaleria": 0,
@@ -2384,11 +2304,7 @@
       "ikonaId": "asyria",
       "tier": 2,
       "params": {
-        "meta_epoka_kamien": 0,
-        "meta_epoka_braz": 1,
-        "meta_epoka_zelazo": 0,
         "meta_mnoznik_waluta": 1.7,
-        "meta_tier_roster": 2,
         "walka_atak_piechota": 0,
         "walka_atak_lukownicy": 0,
         "walka_atak_kawaleria": 0,
@@ -2505,11 +2421,7 @@
       "ikonaId": "fenicjanie",
       "tier": 2,
       "params": {
-        "meta_epoka_kamien": 0,
-        "meta_epoka_braz": 0,
-        "meta_epoka_zelazo": 1,
         "meta_mnoznik_waluta": 2.6,
-        "meta_tier_roster": 2,
         "walka_atak_piechota": 0,
         "walka_atak_lukownicy": 0,
         "walka_atak_kawaleria": 0,

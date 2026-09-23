@@ -17,7 +17,6 @@ export type CivMatrixConsumerStatus =
   | 'REAL_GAMEPLAY'
   | 'UI_ONLY'
   | 'REFERENCE_NEEDS_REVIEW'
-  | 'REFERENCE_ONLY'
   | 'UNWIRED'
   | 'DEAD_UNWIRED'
   | 'PROPOSAL'
@@ -127,17 +126,14 @@ const UI_ONLY = new Set([
   'dip_otwartosc_handel',
 ]);
 
-// Owner decision 2026-09-22 (Wariant C, R-CYWILIZACJE-MACIERZ-META-EPOCH-TIER-REFERENCE-Q1):
-// these four fields are retired to reference-only. The epoch flags never become a
-// gameplay consumer — `civs.json.epokaWejscia` (docs/decyzje/D-CYW-EPOKA-WEJSCIA-KASKADA.md)
-// remains the sole source of truth for availability by epoch. `meta_tier_roster` has no
-// legal gameplay actor and none may be invented. Do not move these into REAL_GAMEPLAY.
-const REFERENCE_ONLY = new Set([
-  'meta_epoka_kamien',
-  'meta_epoka_braz',
-  'meta_epoka_zelazo',
-  'meta_tier_roster',
-]);
+// superseded by R-CYWILIZACJE-MACIERZ-META-REMOVE-Q1-20260922, owner decided full
+// removal instead of reference-only retention: the four meta-epoch/roster-tier
+// fields formerly classified REFERENCE_ONLY here were the Wariant C outcome of
+// R-CYWILIZACJE-MACIERZ-META-EPOCH-TIER-REFERENCE-Q1 (2026-09-22); the owner then
+// uchylił that decision and ordered the parameters removed entirely from
+// civ-matrix.json rather than kept as inert reference data. See
+// dyspozycje/autobot/runs/R-CYWILIZACJE-MACIERZ-META-REMOVE-Q1-20260922/
+// OWNER-DECISION-20260922.md for the full rationale and the exact parameter names.
 
 /**
  * R-CYWILIZACJE-MACIERZ-WIRING-AI-RECON-ORIGIN-20260922 runda 2: oba pola
@@ -299,7 +295,6 @@ export function civMatrixSemanticCivilizations(): readonly CivMatrixRow[] {
 export function civMatrixConsumerStatus(parameterId: string): CivMatrixConsumerStatus {
   if (REAL_GAMEPLAY.has(parameterId)) return 'REAL_GAMEPLAY';
   if (UI_ONLY.has(parameterId)) return 'UI_ONLY';
-  if (REFERENCE_ONLY.has(parameterId)) return 'REFERENCE_ONLY';
   if (DECISION_REQUIRED.has(parameterId)) return 'DECISION_REQUIRED';
   if (DEAD_UNWIRED_COMBAT.has(parameterId)) return 'DEAD_UNWIRED';
   if (BLOCKED_COMBAT_MULTIPLIER.has(parameterId) || BLOCKED_SPECIAL_UNIT_STAT.has(parameterId)) return 'BLOCKED';
@@ -359,7 +354,6 @@ function statusLabel(status: CivMatrixConsumerStatus): string {
     case 'REAL_GAMEPLAY': return 'AKTYWNE';
     case 'UI_ONLY': return 'TYLKO INFORMACJA';
     case 'REFERENCE_NEEDS_REVIEW': return 'DO WERYFIKACJI';
-    case 'REFERENCE_ONLY': return 'TYLKO REFERENCJA — BEZ GAMEPLAY';
     case 'UNWIRED': return 'NIEAKTYWNE — BRAK KONSUMENTA';
     case 'DEAD_UNWIRED': return 'ZAMKNIĘTE — NIEAKTYWNE';
     case 'PROPOSAL': return 'PROPOZYCJA';
@@ -379,10 +373,6 @@ function statusReason(
         ? 'Wartość ma potwierdzone użycie w profilu AI/relacji; badge pozostaje neutralny, a opis profilu jest osobny.'
         : 'Wartość ma potwierdzony konsument produkcyjny; badge opisuje kierunek względem mediany, nie dodatkowy efekt.';
     case 'UI_ONLY': return 'Wartość służy tylko do opisu relacji/profilu w UI; nie jest premią gameplayową.';
-    case 'REFERENCE_ONLY':
-      return parameterId === 'meta_tier_roster'
-        ? 'Decyzja właściciela 2026-09-22 (Wariant C): meta_tier_roster jest referencyjny — brak legalnego aktora gameplay (rozmiar puli, selekcja, filtr kandydatów AI) i żaden nie może zostać wymyślony.'
-        : 'Decyzja właściciela 2026-09-22 (Wariant C): pole epoki jest referencyjne i nie jest konsumentem gameplay; jedynym źródłem prawdy dostępności cywilizacji wg epoki jest kaskada civs.json.epokaWejscia (docs/decyzje/D-CYW-EPOKA-WEJSCIA-KASKADA.md).';
     case 'UNWIRED':
       return parameterId === 'dip_nastawienie_bazowe'
         ? 'Brak potwierdzonego live konsumenta dla dip_nastawienie_bazowe; inicjalizator klastra nie używa tego pola, a kontrakt właściciela dla aktora i warunku pozostaje nierozstrzygnięty.'
@@ -412,7 +402,6 @@ function difficultyBehavior(parameterId: string, status: CivMatrixConsumerStatus
     || status === 'PROPOSAL'
     || status === 'BLOCKED'
     || status === 'DECISION_REQUIRED'
-    || status === 'REFERENCE_ONLY'
   ) {
     return 'Panel etykiet używa wyłącznie tożsamości Normal; brak deklarowanego efektu Easy/Hard.';
   }

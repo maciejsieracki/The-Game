@@ -1,6 +1,6 @@
 'use strict';
 /**
- * Focused gate for the five meta fields in civ-matrix.json.
+ * Focused gate for the meta fields in civ-matrix.json.
  * Run from gra/: node tools/civ-matrix-meta-roster-wiring-test.cjs
  */
 
@@ -49,11 +49,7 @@ try {
   const matrix = require('../data/civ-matrix.json');
   const rows = matrix.cywilizacje;
   const ids = [
-    'meta_epoka_kamien',
-    'meta_epoka_braz',
-    'meta_epoka_zelazo',
     'meta_mnoznik_waluta',
-    'meta_tier_roster',
   ];
 
   eq(rows.length, 15, 'macierz ma 15 profili');
@@ -102,33 +98,6 @@ try {
   const zulusiYield = M.cityYieldPerTurn(city, Array(10).fill(tile), [], params, zulusiCtx);
   assert(greekYield.nauka > zulusiYield.nauka,
     `real economy result differs by matrix currency multiplier (${greekYield.nauka} > ${zulusiYield.nauka})`);
-
-  // Epoch flags are not silently wired: they conflict with the accepted
-  // epokaWejscia cascade for Hetyci/Babilonia/Asyria, so the gate remains
-  // explicit DECISION_REQUIRED rather than inventing a second epoch contract.
-  const civById = new Map(civs.cywilizacje.map((row) => [row.ikonaId, row]));
-  for (const id of ['hetyci', 'babilonia', 'asyria']) {
-    const source = civById.get(id);
-    assert(source && source.epokaWejscia === 'braz', `canonical epoch source remains braz for ${id}`);
-    assert(rows.find((row) => row.ikonaId === id).params.meta_epoka_zelazo === 0,
-      `matrix epoch conflict recorded for ${id}`);
-  }
-
-  // The roster tier has no accepted actor/condition/formula for legal roster
-  // selection, so this focused gate verifies coverage only; no zero adapter.
-  assert(rows.filter((row) => row.params.meta_tier_roster === 2).length === 3,
-    'tier coverage: exactly 3 reserve profiles carry tier 2');
-
-  // Owner decision 2026-09-22 (Wariant C, R-CYWILIZACJE-MACIERZ-META-EPOCH-TIER-REFERENCE-Q1):
-  // the epoch flags and meta_tier_roster are explicitly REFERENCE_ONLY in the semantic
-  // classifier — never REAL_GAMEPLAY, never a silent/ambiguous UNWIRED. meta_mnoznik_waluta
-  // stays the sole approved meta/roster gameplay consumer.
-  for (const id of ['meta_epoka_kamien', 'meta_epoka_braz', 'meta_epoka_zelazo', 'meta_tier_roster']) {
-    eq(M.civMatrixConsumerStatus(id), 'REFERENCE_ONLY', `${id} is classified REFERENCE_ONLY`);
-    eq(M.civMatrixConsumerEvidence(id).length, 0, `${id} carries no proven gameplay consumer evidence`);
-  }
-  assert(M.civMatrixConsumerStatus('meta_mnoznik_waluta') !== 'REFERENCE_ONLY',
-    'meta_mnoznik_waluta is not reclassified as reference-only; its real economy.ts wiring is unchanged');
 
   console.log(`\nciv-matrix-meta-roster-wiring-test: ${passed} passed, ${failed} failed`);
   if (failed) process.exitCode = 1;
