@@ -1,35 +1,28 @@
 {
-  "publishedAt": "2026-09-22T11:32:27Z",
-  "republishedAt": "2026-09-22T11:40:12Z",
-  "productReleaseCommit": "ad16a1b8",
+  "publishedAt": "2026-09-23T17:19:43Z",
+  "republishedAt": "2026-09-23T17:19:43Z",
+  "productReleaseCommit": "c4b426e4",
   "publisher": "Hermes Orchestrator",
-  "md5": "240a82c3eb3ad1cd344f254eecc11887",
-  "sha256": "f39b672fc59fe44f8c61a67458efe3336fa4b25b0f730c7d28cb5b1eeca1f497",
-  "bytes": 69914006,
+  "md5": "2331986977a6fb9e6fdf7b0e3c41f081",
+  "sha256": "842eb21a1d2340249daa4dd4fc08705faded341699e27df514686c02c63b4726",
+  "bytes": 69920420,
   "bundle": "Gra-ROBOCZA.html",
-  "sourceCommit": "ad16a1b8",
-  "base": "a0cc8933c2341f63c0c084395e668bd509731392",
-  "integrationCommit": "ad16a1b8",
-  "publishCommit": "22fcd1a271509a9215e88e2ea92ae942b6ed74e5",
-  "remoteMainAtPublish": "4c9ae80b7230eda7f5d9c148acf0ef242b3efbe7",
-  "remoteSmoke": true,
+  "sourceCommit": "c4b426e4",
+  "base": "0caa4dfa31d37337cd74fdbab95ee77da4806d98",
+  "integrationCommit": "c4b426e4",
+  "publishCommit": "c4b426e4",
+  "remoteMainAtPublish": "c4b426e4",
+  "remoteSmoke": false,
   "finalControl": [
-    "t_37c17961 PASS-WITH-NOTES",
-    "t_eb282c93 PASS-WITH-NOTES",
-    "t_f475a224 PASS-WITH-NOTES",
-    "t_c3a89662 PASS-WITH-NOTES"
+    "t_c4f7880f/run1138 PASS-WITH-NOTES"
   ],
   "scope": [
-    "R-CYWILIZACJE-MACIERZ-WIRING-META-ROSTER-ORIGIN-20260921",
-    "R-CYWILIZACJE-MACIERZ-WIRING-AI-RECON-ORIGIN-20260922",
-    "R-CYWILIZACJE-MACIERZ-WIRING-ECONOMY-RECON-ORIGIN-20260922",
-    "R-CYWILIZACJE-MACIERZ-WIRING-COMBAT-RECON-ORIGIN-20260922"
+    "R-CYWILIZACJE-MACIERZ-WIRING-LUDNOSC-Q1-20260923:lud_limit_populacji"
   ],
   "noOpVerified": [
-    "combat: 0 WIRED_REAL_GAMEPLAY; no consumer contract was added",
-    "economy: lud_wzrost_proc remains the only wired row; 31 rows remain blocked",
-    "AI/diplomacy: 9 REAL_GAMEPLAY, 5 UI_ONLY, 2 UNWIRED",
-    "meta/roster: meta_mnoznik_waluta only; 4 parameters remain blocked"
+    "15/15 owner-approved civKeys; deltas are -1/0/+1/+2 with no placeholder 10",
+    "resolved cap is the shared building ladder 5/8/12 plus Matrix delta, bounded to 4..14",
+    "legacy and central population paths preserve owner civKey parity for player, AI and city-state"
   ],
   "excluded": [
     "113×15 full matrix completion; unresolved cells remain DECISION_REQUIRED/UNWIRED or DEAD_UNWIRED",
@@ -43,76 +36,76 @@
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html?skipMenuRedirect=1",
       "label": "Pełna gra ROBOCZA",
-      "md5": "240a82c3eb3ad1cd344f254eecc11887",
-      "sizeBytes": 69914006
+      "md5": "2331986977a6fb9e6fdf7b0e3c41f081",
+      "sizeBytes": 69920420
     },
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html",
       "label": "Pełna gra (z menu)",
-      "md5": "240a82c3eb3ad1cd344f254eecc11887",
-      "sizeBytes": 69914006
+      "md5": "2331986977a6fb9e6fdf7b0e3c41f081",
+      "sizeBytes": 69920420
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "label": "Playtest: DUŻA bitwa (pole) — NOWE",
-      "md5": "240a82c3eb3ad1cd344f254eecc11887",
-      "sizeBytes": 69914006
+      "md5": "2331986977a6fb9e6fdf7b0e3c41f081",
+      "sizeBytes": 69920420
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "label": "Playtest: DUŻE oblężenie (mur) — NOWE",
-      "md5": "240a82c3eb3ad1cd344f254eecc11887",
-      "sizeBytes": 69914006
+      "md5": "2331986977a6fb9e6fdf7b0e3c41f081",
+      "sizeBytes": 69920420
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "label": "Playtest: mapa świat",
-      "md5": "240a82c3eb3ad1cd344f254eecc11887",
-      "sizeBytes": 69914006
+      "md5": "2331986977a6fb9e6fdf7b0e3c41f081",
+      "sizeBytes": 69920420
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "label": "Playtest: miasto / ekonomia",
-      "md5": "240a82c3eb3ad1cd344f254eecc11887",
-      "sizeBytes": 69914006
+      "md5": "2331986977a6fb9e6fdf7b0e3c41f081",
+      "sizeBytes": 69920420
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "label": "Playtest: walka na mapie",
-      "md5": "240a82c3eb3ad1cd344f254eecc11887",
-      "sizeBytes": 69914006
+      "md5": "2331986977a6fb9e6fdf7b0e3c41f081",
+      "sizeBytes": 69920420
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "label": "Playtest: odskok 3v3",
-      "md5": "240a82c3eb3ad1cd344f254eecc11887",
-      "sizeBytes": 69914006
+      "md5": "2331986977a6fb9e6fdf7b0e3c41f081",
+      "sizeBytes": 69920420
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "label": "Playtest: odskok + oblężenie",
-      "md5": "240a82c3eb3ad1cd344f254eecc11887",
-      "sizeBytes": 69914006
+      "md5": "2331986977a6fb9e6fdf7b0e3c41f081",
+      "sizeBytes": 69920420
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "label": "Playtest: oblężenie 3v3",
-      "md5": "240a82c3eb3ad1cd344f254eecc11887",
-      "sizeBytes": 69914006
+      "md5": "2331986977a6fb9e6fdf7b0e3c41f081",
+      "sizeBytes": 69920420
     }
   ],
   "startHub": "START.html",
-  "hubGeneratedAt": "2026-09-22T11:35:28",
-  "note": "ROBOCZA — bounded civilization-matrix integration: meta_mnoznik_waluta plus semantic status correction; unresolved matrix contracts remain outside scope and are not claimed as runtime-wired",
+  "hubGeneratedAt": "2026-09-23T17:18:42",
+  "note": "ROBOCZA - owner-approved lud_limit_populacji integration: building cap 5/8/12 plus Matrix delta; unresolved matrix contracts remain outside scope and are not claimed as runtime-wired",
   "backlogReconciliation": {
     "status": "ALREADY_IN_TARGET_OR_NO_OP",
     "recordedAt": "2026-09-17T23:26:49Z",
