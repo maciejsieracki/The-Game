@@ -90,6 +90,10 @@ const CIVILIZATION_ROWS = DATA.cywilizacje;
 
 const PROVEN_CONSUMERS: Readonly<Record<string, string>> = {
   lud_wzrost_proc: 'population-growth-v85.ts:230–232 — wkład wzrostu ludności; trudność ×0.50/×1.00/×1.50',
+  lud_spadek_proc: 'population-growth-v85.ts:339–365, 490–528 — centralny głód skaluje istniejący ubytek liniowo przez bufor ułamkowy; minimum populacji zachowane',
+  lud_zdrowie_proc: 'population-growth-v85.ts:248–255, 496–503 — centralny growthPct skaluje raz istniejący wkład floor(max(0, zdrowie)/10); raw health i legacy healthModifier bez zmian',
+  lud_zadowolenie_bazowe: 'main.ts:32134–32149 + population-growth-v85.ts:248–255, 496–503 — jeden resolved bonus ownerCivMap trafia do Order/rewolty i bounded happiness-to-growth',
+  lud_limit_populacji: 'economy.ts:1143–1160 + population-growth-v85.ts:293–297, 537–538 — buildingCap 5/8/12 plus approved Matrix delta -1/0/+1/+2, shared by legacy and central growth paths',
   dip_handlowosc_archetyp: 'civ-ai-data.ts:184–198 + diplomacy.ts:1267–1308 — skłonność AI do handlu',
   ai_agresywnosc: 'civ-ai-data.ts:39–53/156–178 + diplomacy.ts:1261–1285 — gotowość AI do wojny',
   ai_ekspansywnosc: 'civ-ai-data.ts:88–101 + ai-expansion.ts — scoring ekspansji i zakładania miast',
@@ -108,6 +112,10 @@ const PROVEN_CONSUMERS: Readonly<Record<string, string>> = {
 
 const REAL_GAMEPLAY = new Set([
   'lud_wzrost_proc',
+  'lud_spadek_proc',
+  'lud_zdrowie_proc',
+  'lud_zadowolenie_bazowe',
+  'lud_limit_populacji',
   'dip_handlowosc_archetyp',
   'ai_agresywnosc',
   'ai_ekspansywnosc',
@@ -399,9 +407,13 @@ function statusReason(
       }
       return 'Pole zablokowane do decyzji; nie ma efektywnego wpływu.';
     case 'DECISION_REQUIRED':
-      return parameterId === 'dip_nastawienie_bazowe'
-        ? 'Runda 2: potwierdzono ponownie brak żywego konsumenta — pomocnik nastawienieBazoweZaufanieDelta jest wołany wyłącznie z czystego initialRelation, a initialRelation nie ma żadnego wywołania runtime w main.ts/cluster-start.ts (żywy start klastra używa startRelationForPair, który tego pola nie czyta). Decyzja właściciela (aktor, warunek, precedencja) wymagana przed jakimkolwiek wiringiem — patrz pakiet A/B/C.'
-        : 'Runda 2: potwierdzono ponownie brak jakiegokolwiek wywołania runtime dla dip_agresja_archetyp w gra/src poza samym klasyfikatorem/danymi macierzy; istniejący konsument agresji (resolveArchetypeAggression) czyta wyłącznie ai_agresywnosc. Decyzja właściciela (aktor, warunek, relacja wobec ai_agresywnosc) wymagana przed jakimkolwiek wiringiem — patrz pakiet A/B/C.';
+      if (parameterId === 'dip_nastawienie_bazowe') {
+        return 'Runda 2: potwierdzono ponownie brak żywego konsumenta — pomocnik nastawienieBazoweZaufanieDelta jest wołany wyłącznie z czystego initialRelation, a initialRelation nie ma żadnego wywołania runtime w main.ts/cluster-start.ts (żywy start klastra używa startRelationForPair, który tego pola nie czyta). Decyzja właściciela (aktor, warunek, precedencja) wymagana przed jakimkolwiek wiringiem — patrz pakiet A/B/C.';
+      }
+      if (parameterId === 'dip_agresja_archetyp') {
+        return 'Runda 2: potwierdzono ponownie brak jakiegokolwiek wywołania runtime dla dip_agresja_archetyp w gra/src poza samym klasyfikatorem/danymi macierzy; istniejący konsument agresji (resolveArchetypeAggression) czyta wyłącznie ai_agresywnosc. Decyzja właściciela (aktor, warunek, relacja wobec ai_agresywnosc) wymagana przed jakimkolwiek wiringiem — patrz pakiet A/B/C.';
+      }
+      return 'Pole wymaga decyzji właściciela przed wiringiem; brak jednoznacznego kontraktu aktora, warunku, formuły i precedencji.';
   }
 }
 
@@ -418,6 +430,13 @@ function difficultyBehavior(parameterId: string, status: CivMatrixConsumerStatus
   }
   if (parameterId === 'lud_wzrost_proc') {
     return 'Normal ×1.00; aktywny konsument wzrostu stosuje Easy ×0.50 i Hard ×1.50 do wkładu cywilizacji.';
+  }
+  if (
+    parameterId === 'lud_spadek_proc'
+    || parameterId === 'lud_zdrowie_proc'
+    || parameterId === 'lud_zadowolenie_bazowe'
+  ) {
+    return 'Normal ×1.00; Easy i Hard nie wzmacniają ani nie osłabiają wartości macierzy — istniejąca logika trudności pozostaje bez zmian.';
   }
   if (parameterId.startsWith('ai_')) {
     return 'Tożsamość Normal w panelu; istniejący konsument skali AI ma jawny krok Normal−1 / Normal / Normal+1, ograniczony do 1…10.';

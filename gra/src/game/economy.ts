@@ -292,6 +292,8 @@ export interface WorkedTile {
 export interface EconomyCity {
   id:              string;
   ludnosc:         number;
+  /** Civilization key used to resolve Matrix population-cap deltas. */
+  civKey?:         string | null;
   zdrowie:         number;
   czyStolica:      boolean;
   maSpichlerz:     boolean;
@@ -1144,10 +1146,23 @@ export function cityPopulationCap(
   maAkwedukt: boolean,
   maSpichlerz: boolean,
   params: Pick<EconParams, 'akweduktProgLudnosci' | 'spichlerzProgLudnosci' | 'akweduktMaxLudnosci'>,
+  matrixDelta: number = 0,
 ): number {
-  if (maAkwedukt) return params.akweduktMaxLudnosci;
-  if (maSpichlerz) return params.spichlerzProgLudnosci;
-  return params.akweduktProgLudnosci;
+  const buildingCap = maAkwedukt
+    ? params.akweduktMaxLudnosci
+    : maSpichlerz
+      ? params.spichlerzProgLudnosci
+      : params.akweduktProgLudnosci;
+  const safeDelta = matrixDelta === -1 || matrixDelta === 0 || matrixDelta === 1 || matrixDelta === 2
+    ? matrixDelta
+    : 0;
+  return Math.min(14, buildingCap + safeDelta);
+}
+
+/** Resolve the owner civilization's approved additive population-cap delta. */
+export function resolvePopulationCapMatrixDelta(civKey: string | null | undefined): number {
+  const value = civKey ? civMatrixParam(civKey, 'lud_limit_populacji') : 0;
+  return value === -1 || value === 0 || value === 1 || value === 2 ? value : 0;
 }
 
 /**
@@ -1176,7 +1191,12 @@ export function populationGrowth(
     ? zywnoscNetto * healthModifier
     : zywnoscNetto;
 
-  const popCap = cityPopulationCap(maAkwedukt, maSpichlerz || !!maSpichlerzII, params);
+  const popCap = cityPopulationCap(
+    maAkwedukt,
+    maSpichlerz || !!maSpichlerzII,
+    params,
+    resolvePopulationCapMatrixDelta(city.civKey),
+  );
 
   let nowaLudnosc  = ludnosc;
   let nowyMagazynZywnosci  = magazynZywnosci;

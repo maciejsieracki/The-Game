@@ -3,7 +3,7 @@
  * Decyzja Macieja 2026-07-30: koszt żywności = poziom Wyżywienia; wzrost z tabeli.
  */
 import type { City } from './cities';
-import { cityPopulationCap } from './economy';
+import { cityPopulationCap, resolvePopulationCapMatrixDelta } from './economy';
 import type { EconParams, CivEconomyBonus } from './economy';
 import {
   cityHasSpichlerzBuilding,
@@ -99,6 +99,36 @@ export function civMatrixGrowthDifficultyMultiplier(
   difficulty: GameDifficulty = 'normal',
 ): number {
   return CIV_MATRIX_GROWTH_DIFFICULTY_MULT[difficulty];
+}
+
+/** Resolved central population values; difficulty does not scale these fields. */
+export interface PopulationMatrixResolved {
+  hungerLossMultiplier: number;
+  healthGrowthMultiplier: number;
+  happinessBase: number;
+  populationCapDelta: number;
+}
+
+export function resolvePopulationMatrixForCiv(
+  civKey: string | null | undefined,
+): PopulationMatrixResolved {
+  if (!civKey) {
+    return {
+      hungerLossMultiplier: 1,
+      healthGrowthMultiplier: 1,
+      happinessBase: 0,
+      populationCapDelta: 0,
+    };
+  }
+  const hungerProc = civMatrixParam(civKey, 'lud_spadek_proc');
+  const healthProc = civMatrixParam(civKey, 'lud_zdrowie_proc');
+  const happiness = civMatrixParam(civKey, 'lud_zadowolenie_bazowe');
+  return {
+    hungerLossMultiplier: Math.max(0, 1 + (Number.isFinite(hungerProc) ? hungerProc : 0)),
+    healthGrowthMultiplier: Math.max(0, 1 + (Number.isFinite(healthProc) ? healthProc : 0)),
+    happinessBase: Number.isFinite(happiness) ? happiness : 0,
+    populationCapDelta: resolvePopulationCapMatrixDelta(civKey),
+  };
 }
 
 function pick(row: RawParamRow | undefined, d: Difficulty, fallback: number): number {
@@ -216,6 +246,8 @@ export interface GrowthPercentInput {
    * (`citizen-resource-upkeep.ts`). Brak (undefined) = 0, bez zmiany zachowania.
    */
   citizenResourceGrowthPct?: number;
+  /** Testable override for one already-resolved owner value. */
+  populationMatrix?: PopulationMatrixResolved;
 }
 
 /** WZROST% — suma składników (PYTANIE-85, brak capa Q8). */
@@ -223,7 +255,9 @@ export function computeGrowthPercentV85(input: GrowthPercentInput): GrowthPercen
   const racje = rationGrowthPercent(input.poziomRacji, input.rationParams);
   const maleMiasto = Math.max(0, 6 - input.population);
   const spichlerz = spichlerzGrowthBonusPercent(input.spichlerzState);
-  const zdrowie = Math.floor(Math.max(0, input.zdrowie) / 10);
+  const populationMatrix = input.populationMatrix ?? resolvePopulationMatrixForCiv(input.civKey);
+  const zdrowieBazowe = Math.floor(Math.max(0, input.zdrowie) / 10);
+  const zdrowie = zdrowieBazowe * populationMatrix.healthGrowthMultiplier;
   // szczescieNetto (ordPct.sz.netto / happinessByCityId) already includes Wealth via haWealth
   // (wealthZadowolenie). wealthPoziom stays in GrowthPercentInput for API/save compatibility only.
   const szczescie = Math.floor(Math.max(0, input.szczescieNetto) / 10);
@@ -256,6 +290,7 @@ export function applyFractionalGrowthV85(
   maAkwedukt: boolean,
   econParams: Pick<EconParams, 'akweduktProgLudnosci' | 'spichlerzProgLudnosci' | 'akweduktMaxLudnosci'>,
   maSpichlerz: boolean = false,
+  populationCapDelta: number = 0,
 ): FractionalGrowthResult {
   let pop = city.population;
   let frac = city.wzrostUlamkowy ?? 0;
@@ -263,7 +298,7 @@ export function applyFractionalGrowthV85(
   let ubytek = false;
 
   if (fed && growthPct !== 0 && pop > 0) {
-    const popCap = cityPopulationCap(maAkwedukt, maSpichlerz, econParams);
+    const popCap = cityPopulationCap(maAkwedukt, maSpichlerz, econParams, populationCapDelta);
     if (growthPct > 0 && pop < popCap) {
       frac += pop * growthPct / 100;
       while (frac >= 1 && pop < popCap) {
@@ -312,15 +347,28 @@ export function applyHungerPenaltyV85(
   population: number,
   fed: boolean,
   turyBezDoplaty: number,
-): { nowaLudnosc: number; turyBezDoplaty: number; ubytek: boolean } {
+  hungerLossMultiplier: number = 1,
+  hungerLossUlamkowy: number = 0,
+): { nowaLudnosc: number; turyBezDoplaty: number; ubytek: boolean; hungerLossUlamkowy: number } {
   if (fed) {
-    return { nowaLudnosc: population, turyBezDoplaty: 0, ubytek: false };
+    return { nowaLudnosc: population, turyBezDoplaty: 0, ubytek: false, hungerLossUlamkowy: 0 };
   }
   const nextTury = (turyBezDoplaty ?? 0) + 1;
-  if (nextTury >= 1 && population > 1) {
-    return { nowaLudnosc: population - 1, turyBezDoplaty: 0, ubytek: true };
+  let pop = population;
+  let debt = Number.isFinite(hungerLossUlamkowy) ? Math.max(0, hungerLossUlamkowy) : 0;
+  debt += Number.isFinite(hungerLossMultiplier) ? Math.max(0, hungerLossMultiplier) : 1;
+  let ubytek = false;
+  while (debt >= 1 && pop > 1) {
+    pop -= 1;
+    debt -= 1;
+    ubytek = true;
   }
-  return { nowaLudnosc: population, turyBezDoplaty: nextTury, ubytek: false };
+  return {
+    nowaLudnosc: pop,
+    turyBezDoplaty: ubytek ? 0 : nextTury,
+    ubytek,
+    hungerLossUlamkowy: debt,
+  };
 }
 
 export function ensureCityRationDefaults(city: City): void {
@@ -342,6 +390,8 @@ export function ensureCityRationDefaults(city: City): void {
   }
   if (city.wzrostUlamkowy === undefined) city.wzrostUlamkowy = 0;
   if (city.turyBezDoplaty === undefined) city.turyBezDoplaty = 0;
+  const cityWithHungerBuffer = city as City & { hungerLossUlamkowy?: number };
+  if (cityWithHungerBuffer.hungerLossUlamkowy === undefined) cityWithHungerBuffer.hungerLossUlamkowy = 0;
 }
 
 export interface CentralFoodFedSnapshot {
@@ -372,6 +422,8 @@ export interface PostCentralGrowthOpts {
   ownerEraByOwner?: ReadonlyMap<number, number>;
   /** Trudność bieżącej rozgrywki dla skali wkładu macierzy cywilizacyjnej. */
   difficulty?: GameDifficulty;
+  /** Test fixture hook; production resolves values from ownerCivByOwnerId. */
+  populationMatrixByOwnerId?: ReadonlyMap<number, PopulationMatrixResolved>;
   civBonusyByOwner?: ReadonlyMap<number, readonly CivEconomyBonus[]>;
   /**
    * R-ZUZYCIE-SUROWCOW-OBYWATELE (Maciej 2026-08-10): kara Rozwoju (%) per miasto za surowce
@@ -417,7 +469,8 @@ export function applyPostCentralPopulationGrowth(opts: PostCentralGrowthOpts): v
   const {
     cities, econ, efResult, map, territoryNodes, econParams, rationParams,
     ownerCivByOwnerId, spichlerzByCity, happinessByCityId, builtByCity,
-    ownerEraByOwner, difficulty = 'normal', civBonusyByOwner, citizenGrowthPctByCityId,
+    ownerEraByOwner, difficulty = 'normal', populationMatrixByOwnerId,
+    civBonusyByOwner, citizenGrowthPctByCityId,
     onCityPopulationChanged, excludeHexKeysByCity,
   } = opts;
 
@@ -445,6 +498,8 @@ export function applyPostCentralPopulationGrowth(opts: PostCentralGrowthOpts): v
       const maSpichlerzBuilding = cityHasSpichlerzBuilding(builtIds);
       const happiness = happinessByCityId?.get(row.cityId) ?? 0;
       const citizenGrowthPct = citizenGrowthPctByCityId?.get(row.cityId) ?? 0;
+      const populationMatrix = populationMatrixByOwnerId?.get(city.ownerId)
+        ?? resolvePopulationMatrixForCiv(ownerCivByOwnerId?.get(city.ownerId));
       const breakdown = computeGrowthPercentV85({
         population: city.population,
         poziomRacji: getCityRationLevel(city),
@@ -456,14 +511,23 @@ export function applyPostCentralPopulationGrowth(opts: PostCentralGrowthOpts): v
         difficulty,
         rationParams,
         citizenResourceGrowthPct: citizenGrowthPct,
+        populationMatrix,
       });
       row.wzrostProcent = breakdown.total;
       row.breakdown = breakdown;
       row.nakarmione = fed;
 
       const before = city.population;
-      const hunger = applyHungerPenaltyV85(city.population, fed, city.turyBezDoplaty ?? 0);
+      const cityWithHungerBuffer = city as City & { hungerLossUlamkowy?: number };
+      const hunger = applyHungerPenaltyV85(
+        city.population,
+        fed,
+        city.turyBezDoplaty ?? 0,
+        populationMatrix.hungerLossMultiplier,
+        cityWithHungerBuffer.hungerLossUlamkowy ?? 0,
+      );
       city.turyBezDoplaty = hunger.turyBezDoplaty;
+      cityWithHungerBuffer.hungerLossUlamkowy = hunger.hungerLossUlamkowy;
       city.population = hunger.nowaLudnosc;
 
       const growth = applyFractionalGrowthV85(
@@ -473,6 +537,7 @@ export function applyPostCentralPopulationGrowth(opts: PostCentralGrowthOpts): v
         maAkwedukt,
         econParams,
         maSpichlerzBuilding,
+        populationMatrix.populationCapDelta,
       );
       city.population = growth.nowaLudnosc;
       city.wzrostUlamkowy = growth.wzrostUlamkowy;

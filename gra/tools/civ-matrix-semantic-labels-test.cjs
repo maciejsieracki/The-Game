@@ -121,6 +121,23 @@ equal(M.civMatrixConsumerStatus('dip_nastawienie_bazowe'), 'DECISION_REQUIRED', 
 equal(M.civMatrixConsumerEvidence('dip_nastawienie_bazowe').length, 0, 'base attitude has no proven consumer evidence');
 equal(M.civMatrixConsumerStatus('dip_agresja_archetyp'), 'DECISION_REQUIRED', 'archetype aggression requires an owner decision after round 2 recheck (no live consumer, must not double-count with ai_agresywnosc)');
 equal(M.civMatrixConsumerEvidence('dip_agresja_archetyp').length, 0, 'archetype aggression has no proven consumer evidence');
+const POPULATION_GAMEPLAY_IDS = [
+  'lud_limit_populacji',
+];
+for (const id of POPULATION_GAMEPLAY_IDS) {
+  equal(M.civMatrixConsumerStatus(id), 'REAL_GAMEPLAY', `${id} has an owner-approved live population-cap consumer`);
+  const cell = greek.cells.find(c => c.parameterId === id);
+  equal(cell.consumerStatus, 'REAL_GAMEPLAY', `${id} profile cell is gameplay-active`);
+  equal(M.statusAllowsDefaultVisibility(cell.consumerStatus), true, `${id} is visible in the active default set`);
+  assert(cell.provenance.consumerEvidence.length > 0, `${id} carries exact gameplay consumer evidence`);
+}
+for (const id of ['lud_spadek_proc', 'lud_zdrowie_proc', 'lud_zadowolenie_bazowe']) {
+  equal(M.civMatrixConsumerStatus(id), 'REAL_GAMEPLAY', `${id} has a resolved gameplay consumer`);
+  const cell = greek.cells.find(c => c.parameterId === id);
+  equal(cell.consumerStatus, 'REAL_GAMEPLAY', `${id} profile cell is gameplay-active`);
+  equal(M.statusAllowsDefaultVisibility(cell.consumerStatus), true, `${id} is visible in the active default set`);
+  assert(cell.provenance.consumerEvidence.length > 0, `${id} carries exact gameplay consumer evidence`);
+}
 equal(M.civMatrixConsumerStatus('dip_otwartosc_handl'), 'UNWIRED', 'unknown parameter stays unwired');
 equal(M.civMatrixConsumerStatus('dip_otwartosc_handel'), 'UI_ONLY', 'relation tag is explicitly UI-only');
 const baseAttitudeCell = greek.cells.find(c => c.parameterId === 'dip_nastawienie_bazowe');
@@ -139,12 +156,12 @@ const statusCounts = snapshot.cells.reduce((out, cell) => {
   out[cell.consumerStatus] = (out[cell.consumerStatus] || 0) + 1;
   return out;
 }, {});
-equal(statusCounts.REAL_GAMEPLAY, 150, '10 proven gameplay parameters cover 15 profiles');
+equal(statusCounts.REAL_GAMEPLAY, 210, '14 proven gameplay parameters cover 15 profiles');
 equal(statusCounts.UI_ONLY, 75, '5 UI-only parameters cover 15 profiles');
 equal(statusCounts.DECISION_REQUIRED, 30, '2 unresolved AI/diplomacy parameters cover 15 profiles each and require an owner decision');
 equal(statusCounts.BLOCKED, 525, '35 combat/special-unit DECISION_REQUIRED parameters cover 15 profiles (round 2, R-CYWILIZACJE-MACIERZ-WIRING-COMBAT-RECON-ORIGIN-20260922)');
 equal(statusCounts.DEAD_UNWIRED, 375, '25 combat/siege/fortification parameters with all-default cells are closed dead (round 2)');
-equal(statusCounts.UNWIRED, 480, '32 unresolved parameters are visibly unwired after AI DECISION_REQUIRED (2 params), combat BLOCKED/DEAD_UNWIRED (60 params), and meta REFERENCE_ONLY (4 params) reclassification');
+equal(statusCounts.UNWIRED, 420, '28 unresolved parameters remain visibly unwired after resolved population fields, combat BLOCKED/DEAD_UNWIRED, and meta REFERENCE_ONLY reclassification');
 assert(!fs.readFileSync(path.resolve(sourceRoot, 'game/civ-matrix-semantic.ts'), 'utf8').includes('localStorage'), 'semantic classifier does not persist labels');
 
 console.log('--- combat/special-unit BLOCKED decision_required (round 2, R-CYWILIZACJE-MACIERZ-WIRING-COMBAT-RECON-ORIGIN-20260922) ---');

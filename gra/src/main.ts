@@ -957,6 +957,7 @@ import {
   clampPoziomRacji,
   getCityRationLevel,
   rationGrowthPercent,
+  resolvePopulationMatrixForCiv,
   WYZYWIENIE_MAX,
   type PoziomRacji,
 } from './game/population-growth-v85';
@@ -31072,8 +31073,15 @@ async function boot(): Promise<void> {
             garrisonCityId: u.inGarnizon ? cityAtUnit(u)?.id : undefined,
           }));
           const ownerCivMap = new Map<number, string>();
-          ownerCivMap.set(0, (player.civType as string) || 'grecy');
+          for (const [oid, civ] of _menuCivIdByOwner) ownerCivMap.set(oid, civ);
+          if (!ownerCivMap.has(HUMAN_OWNER_PRIMARY)) {
+            ownerCivMap.set(HUMAN_OWNER_PRIMARY, (player.civType as string) || 'grecy');
+          }
           for (const [oid, civ] of aiOwnerCivMap) ownerCivMap.set(oid, civ);
+          const populationMatrixByOwnerId = new Map<number, ReturnType<typeof resolvePopulationMatrixForCiv>>();
+          for (const [oid, civ] of ownerCivMap) {
+            populationMatrixByOwnerId.set(oid, resolvePopulationMatrixForCiv(civ));
+          }
           // R-HOTSEAT-ETAP6C-ECONOMY-Q1: `humanOwnerId` (nie zaszyty `0`) -- musi zgadzać się z
           // filtrem "po" tego samego cache w `_lastLudnoscRate` niżej (już podłączonym na
           // `humanOwnerId` przez Etap 6b), inaczej różnica populacji byłaby liczona między
@@ -32123,7 +32131,9 @@ async function boot(): Promise<void> {
                 (city as { religionPressurePct?: Record<number, number> }).religionPressurePct = pres.religionPressurePct;
               }
 
-              // SZCZĘŚCIE (+1 per budynek + baza.zadowolenie — economy.ts)
+              // SZCZĘŚCIE (+1 per budynek + resolved Matrix base bonus)
+              const populationMatrix = populationMatrixByOwnerId.get(city.ownerId)
+                ?? resolvePopulationMatrixForCiv(ownerCivMap.get(city.ownerId));
               const haBuildings = sumBuildingHappinessFromBuiltIds(
                 builtIds,
                 data.buildings,
@@ -32134,7 +32144,7 @@ async function boot(): Promise<void> {
                   bdef.poziomTechGate ?? null,
                   unlockedTechSetForOwner(city.ownerId),
                 ),
-              );
+              ) + populationMatrix.happinessBase;
               const haWealth  = econTick ? econTick.wealthZadowolenie : 0;
               // CUDA-EKON-01: bonusy.miasto.zadowolenie cudów ownera (× każde jego miasto) —
               // jedyny sensowny wpiecie punkt dla zadowolenia (CityYieldResult.zadowolenie
@@ -32601,6 +32611,7 @@ async function boot(): Promise<void> {
                 rationParams: efParamsGrowth.rationParams,
                 difficulty: _menuDifficulty,
                 ownerCivByOwnerId: ownerCivMap,
+                populationMatrixByOwnerId,
                 spichlerzByCity,
                 happinessByCityId,
                 citizenGrowthPctByCityId,

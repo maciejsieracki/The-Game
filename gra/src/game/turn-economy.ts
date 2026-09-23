@@ -1009,6 +1009,7 @@ export function toEconomyCity(
   buildings: { maSpichlerz?: boolean; maSpichlerzII?: boolean; maAkwedukt?: boolean } = {},
   ownerDefaultPodzial?: CityPodzialHandlu,
   ownerDefaultPodzialPracy?: CityPodzialPracy,
+  ownerCivKey?: string | null,
 ): EconomyCity {
   const paramsFallback: CityPodzialHandlu = {
     procentNauka:    params.suwaakHandelNaukaDefault,
@@ -1021,6 +1022,7 @@ export function toEconomyCity(
   return {
     id:              city.id,
     ludnosc:         city.population,
+    civKey:          ownerCivKey ?? null,
     zdrowie,
     czyStolica:      isCapital,
   maSpichlerz:     buildings.maSpichlerz ?? false,
@@ -1993,11 +1995,13 @@ export function previewCityEconomy(
     const poziomRacji = getCityRationLevel(city);
     const ownerDefaultPodzial = ownerDefaultPodzialHandluByOwner.get(city.ownerId);
     const ownerDefaultPodzialPracy = ownerDefaultPodzialPracyByOwner.get(city.ownerId);
+    const ownerCivKey = ownerCivByOwnerId.get(city.ownerId);
     const econCity = toEconomyCity(
       city, params, isCapital, zdrowie,
       { maSpichlerz, maSpichlerzII, maAkwedukt },
       ownerDefaultPodzial,
       ownerDefaultPodzialPracy,
+      ownerCivKey,
     );
 
     const ownerEra = resolveOwnerEra
@@ -2007,7 +2011,6 @@ export function previewCityEconomy(
       ? resolveOwnerTech(city.ownerId)
       : playerZbadane;
     const walutaOdkryta = ownerTech.has('Waluta') || ownerTech.has('waluta');
-    const ownerCivKey = ownerCivByOwnerId.get(city.ownerId);
     const cityReligion = cityReligionByCityId.get(city.id);
     const maMennicaBuiltEmpireWide = mennicaOwners.has(city.ownerId);
     // PYTANIE 83=B (Maciej 2026-07-25): "Mennica przestaje działać po utracie dostępu
@@ -2568,11 +2571,13 @@ export function advanceCityEconomy(
     const poziomRacji = getCityRationLevel(city);
     const ownerDefaultPodzial = ownerDefaultPodzialHandluByOwner.get(city.ownerId);
     const ownerDefaultPodzialPracy = ownerDefaultPodzialPracyByOwner.get(city.ownerId);
+    const ownerCivKey = ownerCivByOwnerId.get(city.ownerId);
     const econCity = toEconomyCity(
       city, params, isCapital, zdrowie,
       { maSpichlerz, maSpichlerzII, maAkwedukt },
       ownerDefaultPodzial,
       ownerDefaultPodzialPracy,
+      ownerCivKey,
     );
 
     const ownerEra = resolveOwnerEra
@@ -2582,7 +2587,6 @@ export function advanceCityEconomy(
       ? resolveOwnerTech(city.ownerId)
       : playerZbadane;
     const walutaOdkryta = ownerTech.has('Waluta') || ownerTech.has('waluta');
-    const ownerCivKey = ownerCivByOwnerId.get(city.ownerId);
     const cityReligion = cityReligionByCityId.get(city.id);
     const maMennicaBuiltEmpireWide = mennicaOwners.has(city.ownerId);
     // PYTANIE 83=B (Maciej 2026-07-25): "Mennica przestaje działać po utracie dostępu
