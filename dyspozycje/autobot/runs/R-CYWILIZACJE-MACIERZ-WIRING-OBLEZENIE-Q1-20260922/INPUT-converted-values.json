@@ -1,0 +1,17 @@
+{
+ "topic": "R-CYWILIZACJE-MACIERZ-WIRING-OBLEZENIE-Q1-20260922",
+ "source": "civ-matrix-review-HISTORIA-20260922.xlsx sheet Oblezenie (owner-corrected)",
+ "calibration": {
+   "obl_obrona_miasta_proc": {"group": "2-standing-non-compounding", "scale": 0.20},
+   "obl_mur_proc": {"group": "2-standing-non-compounding", "scale": 0.20},
+   "obl_machines_proc": {"group": "2-standing-non-compounding", "scale": 0.20}
+ },
+ "formula": "native = (raw/20) * 0.20; raw in {-20,0,20}",
+ "values": {
+  "obl_machines_proc": {"Grecy":0.2,"Rzymianie":0.2,"Chińczycy":0.2,"Inkowie":0.0,"Zulusi":-0.2,"Egipt":0.0,"Sumerowie":0.0,"Celtowie":0.0,"Germanie":0.0,"Harappa":0.0,"Hetyci":0.0,"Słowianie":0.0,"Babilonia":0.0,"Asyria":0.2,"Fenicjanie":0.0},
+  "obl_mur_proc": {"Grecy":0.2,"Rzymianie":0.2,"Chińczycy":0.2,"Inkowie":0.2,"Zulusi":-0.2,"Egipt":0.0,"Sumerowie":0.2,"Celtowie":0.2,"Germanie":0.0,"Harappa":0.0,"Hetyci":0.2,"Słowianie":0.0,"Babilonia":0.2,"Asyria":0.2,"Fenicjanie":0.2},
+  "obl_obrona_miasta_proc": {"Grecy":0.2,"Rzymianie":0.0,"Chińczycy":0.2,"Inkowie":0.2,"Zulusi":0.0,"Egipt":0.0,"Sumerowie":0.0,"Celtowie":0.0,"Germanie":0.0,"Harappa":0.0,"Hetyci":0.0,"Słowianie":0.0,"Babilonia":0.0,"Asyria":0.0,"Fenicjanie":0.2}
+ },
+ "warning_current_json_state": "gra/data/civ-matrix.json ma dzis lipcowe placeholdery z 6.07.2026 dla tego dzialu (sprawdz sam przed zapisem) - NADPISAC, nie dopisac obok.",
+ "structural_note": "Prawdziwy mechanizm obrony miasta to city-defense.ts:cityWallDefenseBonusPercent, wspoldzielony miedzy main.ts (structureDefenseBonusFor, bitwa blyskawiczna na mapie) i battle/battleScene.ts (onWallWalkway, interaktywna bitwa/oblezenie) - PARYTET miedzy trybami jest jawnie udokumentowanym wymogiem w komentarzu tego pliku. Podlaczenie samego main.ts bez battleScene.ts da efekt TYLKO w jednym z dwoch trybow bitwy - niepelne wiring, do unikniecia. obl_machines_proc dotyczy statystyk jednostek 'obleznicza' (Taran/Wieza) w starciu - sprawdz battleScene.ts linie ok. 6975-7165 (wallAttack z units.json)."
+}
