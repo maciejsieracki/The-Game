@@ -1,3 +1,17 @@
+## [2026-09-23 17:23 UTC] ORKIESTRATOR → KANBAN / WŁAŚCICIEL — DEPLOY ROBOCZA: LUD_LIMIT_POPULACJI
+
+STATUS: `DEPLOYED — remote branch/main, manifest and runtime readback PASS`.
+
+- Fresh integration branch: `hermes/integration/R-CYWILIZACJE-MACIERZ-WIRING-LUDNOSC-LIMIT-CAP-20260923`; base `origin/main=0caa4dfa31d37337cd74fdbab95ee77da4806d98`.
+- Product commit: `c4b426e4`; bundle/publish commit: `7595b61733e2ecd467a5b64648bcd50f5e087d92`; remote branch and `main` read back to the bundle commit before this docs close.
+- Scope: owner-approved `lud_limit_populacji`, 15 civKeys, `5/8/12 + delta`, resolved range `4..14`; no placeholder `10`; `ai_*` untouched.
+- Final Control: `t_c4f7880f/run1138 PASS-WITH-NOTES`; integration gate `t_aed63575` remains blocked, unassigned and workerless by contract.
+- Gates: population wiring `122/0`, semantic `325/0`, auto-wyzywienie `42/0`, TypeScript PASS, JSON PASS, `git diff --check` PASS, Vite `892` modules, real Chromium smoke PASS, remote raw HTTP `200`, manifest/hash/bytes readback PASS.
+- Bundle: md5 `2331986977a6fb9e6fdf7b0e3c41f081`, sha256 `842eb21a1d2340249daa4dd4fc08705faded341699e27df514686c02c63b4726`, `69920420` bytes; no KANON/FINALNA promotion.
+- Known pre-existing broader reds reproduced unchanged: population-growth-v85 `48/2`, bonus `18/2`, tempo `12/2`.
+
+CZEKAM-NA: owner playtest in `gra-robocza/START.html` after `Ctrl+F5`; unresolved matrix contracts remain separate.
+
 ## [2026-09-22 11:40 UTC] ORKIESTRATOR → KANBAN / WŁAŚCICIEL — DEPLOY ROBOCZA: CIVILIZATION MATRIX BOUNDED INTEGRATION
 
 STATUS: `DEPLOYED — remote branch/main, manifest and runtime readback PASS`.

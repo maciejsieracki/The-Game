@@ -13,6 +13,16 @@ swoim wĹ‚asnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji d
 > Pakiet 3 z 2026-08-20 jest docs-only i nie tworzy wpisu ROBOCZA/KANON/FINALNA;
 > ten plik pozostaje wyłącznie rejestrem publikacji bundli.
 
+## ROBOCZA 23319869 - 2026-09-23 17:23 UTC - lud_limit_populacji bounded integration
+
+|- md5 `2331986977a6fb9e6fdf7b0e3c41f081` · sha256 `842eb21a1d2340249daa4dd4fc08705faded341699e27df514686c02c63b4726` · rozmiar `69920420` bajtow.
+|- source/product commit: `c4b426e4`; bundle/publish commit: `7595b61733e2ecd467a5b64648bcd50f5e087d92`; base: `0caa4dfa31d37337cd74fdbab95ee77da4806d98`.
+|- Scope: owner-approved `lud_limit_populacji` for 15 civKeys; resolved cap = building ladder `5/8/12` + Matrix delta, bounded to `4..14`; no placeholder `10`.
+|- Final Control: `t_c4f7880f/run1138 PASS-WITH-NOTES`; integration gate `t_aed63575` remains workerless, blocked and unassigned.
+|- Gates: population wiring `122/0`, semantic `325/0`, auto-wyzywienie `42/0`, TypeScript PASS, JSON PASS, `git diff --check` PASS, Vite `892` modules, real Chromium smoke PASS, remote raw HTTP `200`, manifest/hash/bytes readback PASS.
+|- Known pre-existing broader reds reproduced unchanged: population-growth-v85 `48/2`, bonus `18/2`, tempo `12/2`; no new product failure attributed to this scope.
+|- No promotion to KANON/FINALNA.
+
 ## ROBOCZA 240a82c3 - 2026-09-22 11:40 UTC - bounded civilization matrix integration
 
 |- md5 `240a82c3eb3ad1cd344f254eecc11887` · sha256 `f39b672fc59fe44f8c61a67458efe3336fa4b25b0f730c7d28cb5b1eeca1f497` · rozmiar `69914006` bajtów.
