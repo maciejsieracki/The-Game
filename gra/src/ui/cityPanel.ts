@@ -261,6 +261,7 @@ import {
   cityPopulationCap,
   sumBuildingHappinessFromBuiltIds,
   cityBuildingEntriesFromBuiltIds,
+  mergeCityYieldContextForOwner,
   mnoznikHandelPieniadzForCivByDifficulty,
   civEconomyYieldMultipliers,
   type CityYieldContext,
@@ -1156,10 +1157,13 @@ function computeView(city: City, map: GameMap, data: GameData): CityView | null 
     );
     const zdrowie = healthBd.total;
     const ownerDefaultPodzial = readOwnerDefaultPodzialHandlu(city, data);
+    const civKey = cfg.getCivKey?.(city.ownerId);
     const econCity = toEconomyCity(
       city, params, isCapital(city), zdrowie,
       { maSpichlerz, maAkwedukt },
       ownerDefaultPodzial,
+      undefined,
+      civKey,
     );
     // #17 fix: base ctx miał flagi budynków/Waluty/bonusów cyw. na sztywno false/1/undefined,
     // więc Bilans plonów pomijał Młyn/Cegielnię/Targowisko/Bibliotekę/Mennicę, Walutę i bonusy
@@ -1176,7 +1180,6 @@ function computeView(city: City, map: GameMap, data: GameData): CityView | null 
     // resolveOwnerZlotoAccess). ctx.maMennica poniżej idzie właśnie do
     // cityYieldPerTurn tak samo jak silnik, więc musi być tym samym warunkiem.
     const maMennica = ownerHasMennica(city.ownerId) && (cfg.getOwnerHasZlotoAccess?.(city.ownerId) ?? true);
-    const civKey = cfg.getCivKey?.(city.ownerId);
     // Efekt 1 SCALONY (2026-07-25) + pytanie 69 (2026-07-25): mnoznik cywilizacyjny
     // (civs.json mnoznikHandelPieniadz) SKALOWANY TRUDNOSCIA (+0,5 easy / -0,5 hard).
     // ZASTĘPUJE dawna plaska regule "2/1.5/1 dla wszystkich" -- ta zostaje TYLKO
@@ -1192,10 +1195,12 @@ function computeView(city: City, map: GameMap, data: GameData): CityView | null 
     const { handel: civHandelMult, nauka: civNaukaMult } =
       civEconomyYieldMultipliers(cfg.getCivBonusy?.(city.ownerId) ?? []);
     const base: CityYieldContext = {
+      civKey,
       wojskoZuzycieZywnosci: 0, strataFraction: 0,
       maMlyn: built.includes('mlyn'),
       maCegielnia: built.includes('cegielnia'),
       maTargowisko: built.includes('targowisko'),
+      maPort: built.includes('port') || built.includes('port_wielki'),
       maBiblioteka: built.includes('biblioteka'),
       maAkademia: built.includes('akademia'),
       // Efekt 1 SCALONY: maMennica jest jednym z dwoch warunkow bramki w
@@ -1209,7 +1214,7 @@ function computeView(city: City, map: GameMap, data: GameData): CityView | null 
       // Zadanie 2 (2026-07-23): Garncarnia +Zywnosc% LOKALNIE -- liczba sztuk w TYM miescie.
       liczbaGarncarni: built.filter(id => id === 'garncarnia').length,
     };
-    const ctx: CityYieldContext = { ...base, ...(cfg.getCityBuildingFlags?.(city.id) ?? {}) };
+    const ctx = mergeCityYieldContextForOwner(base, civKey, cfg.getCityBuildingFlags?.(city.id));
     // Naprawa 2026-07-25: plony budynkow (Praca/Pieniadz/Zywnosc/Nauka/Kultura) -- ta sama
     // funkcja co silnik (turn-economy.ts), zeby "Bilans plonow" nie pokazywal 0 z budynkow.
     const era = cfg.getEpoch?.(city.ownerId) ?? 1;
