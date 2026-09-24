@@ -82,6 +82,12 @@ import {
 } from './building-upgrades';
 import miastoParams from '../../data/miasto-params.json';
 import { R_STAWKI_KOSZT_MULT, R_STAWKI_FALA2_MULT } from './r-stawki-strojenie';
+import {
+  applyCivMatrixCostReduction,
+  applyCivMatrixParam,
+  civMatrixParam,
+  type CivMatrixParamResolver,
+} from './civ-matrix';
 
 export {
   buildingRuntimeGateMet,
@@ -158,6 +164,34 @@ export interface CityProduction {
    * Przyszlosc (Grupa D): limit zalezny od wielkosci/typu cywilizacji.
    */
   rekrutacja?: ProductionItem[];
+  /** Fractional recruitment throughput carried between turns. */
+  rekrutacjaPostep?: number;
+}
+
+export interface ProductionMatrixOptions {
+  civKey: string;
+  resolveParam?: CivMatrixParamResolver;
+}
+
+function matrixResolver(options?: ProductionMatrixOptions): CivMatrixParamResolver {
+  return options?.resolveParam ?? civMatrixParam;
+}
+
+function matrixCostBase(
+  baseCost: number,
+  options: ProductionMatrixOptions | undefined,
+  paramId: string,
+): number {
+  if (!options) return baseCost;
+  return applyCivMatrixCostReduction(baseCost, options.civKey, paramId, matrixResolver(options));
+}
+
+function matrixSpeedMultiplier(
+  options: ProductionMatrixOptions | undefined,
+  paramId: string,
+): number {
+  if (!options) return 1;
+  return applyCivMatrixParam(1, options.civKey, paramId, matrixResolver(options));
 }
 
 /** v0.1: ile jednostek moze zakonczyc rekrutacje w jednej turze (na miasto). */
@@ -354,6 +388,7 @@ export function buildingProductionItem(
   buildingCostPace?: BuildingCostPace,
   ownerId = 0,
   difficulty: GameDifficulty = 'normal',
+  matrixOptions?: ProductionMatrixOptions,
 ): ProductionItem | null {
   const b = findBuilding(data, id);
   if (!b) return null;
@@ -367,6 +402,7 @@ export function buildingProductionItem(
       buildingCostPace,
       ownerId,
       difficulty,
+      matrixOptions,
     ),
   };
 }
@@ -382,6 +418,7 @@ export function unitProductionItem(
   kosztJednostekPace?: KosztJednostekPace,
   ownerId = 0,
   difficulty: GameDifficulty = 'normal',
+  matrixOptions?: ProductionMatrixOptions,
 ): ProductionItem | null {
   const u = findUnit(data, id);
   if (!u) return null;
@@ -395,6 +432,7 @@ export function unitProductionItem(
       kosztJednostekPace,
       ownerId,
       difficulty,
+      matrixOptions,
     ),
   };
 }
@@ -448,6 +486,10 @@ export interface AvailabilityContext {
   ownerId?: number;
   /** Poziom trudnosci rozgrywki — latwa/normalna/trudna. */
   difficulty?: GameDifficulty;
+  /** Klucz cywilizacji dla parametrów produkcji z civ-matrix.json. */
+  civKey?: string;
+  /** Test/runtime override for the civ-matrix lookup. */
+  civMatrixResolver?: CivMatrixParamResolver;
   /**
    * Aktywny dostep surowcow miasta (etykiety z getResourceAccessForCity) —
    * bramka budynkow wymagajacych zloza + ulepszenia w zasiegu.
@@ -491,6 +533,10 @@ export interface AvailabilityContext {
   isCapital?: boolean;
 }
 
+function matrixOptionsForContext(ctx: AvailabilityContext): ProductionMatrixOptions | undefined {
+  return ctx.civKey ? { civKey: ctx.civKey, resolveParam: ctx.civMatrixResolver } : undefined;
+}
+
 /** Czy budynek wolno postawić w tym mieście wg `BuildingDef.lokalizacja` (ADMIN-STOLICA). */
 function buildingLocationAllowed(
   lokalizacja: 'stolica' | 'region' | undefined,
@@ -510,6 +556,16 @@ function buildingLocationAllowed(
  */
 export const GLOBAL_BUILDING_PROD_MULT = 0.25;
 
+function legacyBuildingBonusesWithoutMatrix(
+  bonusy: readonly CivBonusLite[] | undefined,
+  matrixOptions?: ProductionMatrixOptions,
+): readonly CivBonusLite[] | undefined {
+  if (!matrixOptions || !bonusy?.length) return bonusy;
+  return bonusy.filter(b => !(
+    b.realizuje === 'miasto' && b.typ === 'koszt_redukcja' && b.cel === 'budynki'
+  ));
+}
+
 /** Koszt Pracy budynku: ulga cywilizacji + tempo kreatora + globalny balans + asymetria trudnosci. */
 export function buildingWorkCost(
   baseCost: number,
@@ -517,8 +573,13 @@ export function buildingWorkCost(
   pace?: BuildingCostPace,
   ownerId = 0,
   difficulty: GameDifficulty = 'normal',
+  matrixOptions?: ProductionMatrixOptions,
 ): number {
-  const afterCiv = buildingCostAfterCivDiscount(baseCost, civBonusy);
+  const matrixBase = matrixCostBase(baseCost, matrixOptions, 'prod_koszt_budynku_proc');
+  const afterCiv = buildingCostAfterCivDiscount(
+    matrixBase,
+    legacyBuildingBonusesWithoutMatrix(civBonusy, matrixOptions),
+  );
   const afterPace = pace ? applyBuildingCostPace(afterCiv, pace) : afterCiv;
   // GLOBAL×0.5 × FALA1×2 × FALA2×2 → efekt 2.0 vs JSON koszt Pracy budynku
   const afterGlobal = Math.max(
@@ -538,10 +599,11 @@ export function unitMoneyCost(
   pace?: KosztJednostekPace,
   ownerId = 0,
   difficulty: GameDifficulty = 'normal',
+  matrixOptions?: ProductionMatrixOptions,
 ): number {
   if (!Number.isFinite(baseCost) || baseCost <= 0) return 0;
-  let koszt = baseCost;
-  const recDisc = civRecruitmentDiscount(civBonusy);
+  let koszt = matrixCostBase(baseCost, matrixOptions, 'prod_koszt_jednostki_proc');
+  const recDisc = matrixOptions ? 0 : civRecruitmentDiscount(civBonusy);
   if (recDisc > 0) {
     koszt = Math.max(1, Math.floor(koszt * (1 - recDisc)));
   }
@@ -868,6 +930,7 @@ export function availableProduction(
         ctx.buildingCostPace,
         ownerId,
         difficulty,
+        matrixOptionsForContext(ctx),
       ),
     });
   }
@@ -955,6 +1018,7 @@ export function availableProduction(
       ctx.kosztJednostekPace,
       ownerId,
       difficulty,
+      matrixOptionsForContext(ctx),
     );
     items.push({
       kind: 'jednostka',
@@ -1058,6 +1122,7 @@ export function availableReplacementsFor(
       ctx.kosztJednostekPace,
       ownerId,
       difficulty,
+      matrixOptionsForContext(ctx),
     );
   }
 
@@ -1746,6 +1811,7 @@ export interface AdvanceProductionResult {
 export function advanceProduction(
   prod: CityProduction,
   pracaPerTurn: number,
+  matrixOptions?: ProductionMatrixOptions,
 ): AdvanceProductionResult {
   const front = frontItem(prod);
 
@@ -1764,18 +1830,25 @@ export function advanceProduction(
         postep: 0,
         wstrzymana: prod.wstrzymana,
         rekrutacja: prod.rekrutacja ? [...prod.rekrutacja] : undefined,
+        rekrutacjaPostep: prod.rekrutacjaPostep,
       },
       completed: null,
       overflowToPool: praca > 0 ? praca : undefined,
     };
   }
-  const accumulated = prod.postep + praca;
+  const speedParam = front.kind === 'budynek'
+    ? 'prod_szybkosc_budynku_proc'
+    : 'prod_szybkosc_jednostki_proc';
+  const accumulated = prod.postep + praca * matrixSpeedMultiplier(matrixOptions, speedParam);
   const rqCopy = prod.rekrutacja ? [...prod.rekrutacja] : undefined;
 
   // Front item not finished yet -> just bank the progress.
   if (accumulated < front.koszt) {
     return {
-      prod: { kolejka: [...prod.kolejka], postep: accumulated, wstrzymana: prod.wstrzymana, rekrutacja: rqCopy },
+      prod: {
+        kolejka: [...prod.kolejka], postep: accumulated, wstrzymana: prod.wstrzymana,
+        rekrutacja: rqCopy, rekrutacjaPostep: prod.rekrutacjaPostep,
+      },
       completed: null,
     };
   }
@@ -1796,13 +1869,19 @@ export function advanceProduction(
   const rest = dropped.kolejka;
   if (rest.length > 0) {
     return {
-      prod: { kolejka: rest, postep: dropped.postep, wstrzymana: prod.wstrzymana, rekrutacja: rqCopy },
+      prod: {
+        kolejka: rest, postep: dropped.postep, wstrzymana: prod.wstrzymana,
+        rekrutacja: rqCopy, rekrutacjaPostep: prod.rekrutacjaPostep,
+      },
       completed: front,
     };
   }
 
   return {
-    prod: { kolejka: [], postep: 0, wstrzymana: prod.wstrzymana, rekrutacja: rqCopy },
+    prod: {
+      kolejka: [], postep: 0, wstrzymana: prod.wstrzymana,
+      rekrutacja: rqCopy, rekrutacjaPostep: prod.rekrutacjaPostep,
+    },
     completed: front,
     overflowToPool: remainder > 0 ? remainder : undefined,
   };
@@ -1852,6 +1931,7 @@ export function enqueueRecruitment(prod: CityProduction, item: ProductionItem): 
     postep: prod.postep,
     wstrzymana: prod.wstrzymana,
     rekrutacja: rq,
+    rekrutacjaPostep: prod.rekrutacjaPostep,
   };
 }
 
@@ -1864,6 +1944,7 @@ export function dequeueRecruitment(prod: CityProduction, index: number): CityPro
       postep: prod.postep,
       wstrzymana: prod.wstrzymana,
       rekrutacja: rq.length ? [...rq] : undefined,
+      rekrutacjaPostep: prod.rekrutacjaPostep,
     };
   }
   const next = rq.filter((_, i) => i !== index);
@@ -1872,6 +1953,7 @@ export function dequeueRecruitment(prod: CityProduction, index: number): CityPro
     postep: prod.postep,
     wstrzymana: prod.wstrzymana,
     rekrutacja: next.length ? next : undefined,
+    rekrutacjaPostep: prod.rekrutacjaPostep,
   };
 }
 
@@ -1896,13 +1978,18 @@ export function advanceRecruitmentGated(
   maxPerTurn = RECRUIT_UNITS_PER_TURN,
   /** true gdy koszt Manpower pobrano przy opłaceniu złotem (kolejka rekrutacji). */
   costAlreadyPaid = false,
+  matrixOptions?: ProductionMatrixOptions,
 ): AdvanceRecruitmentGatedResult {
   let pop = city.population;
   let mp = cityManpowerCurrent(city, epoka);
   const rq = [...(prod.rekrutacja ?? [])];
   const completed: ProductionItem[] = [];
+  const throughput = Math.max(0, maxPerTurn)
+    * matrixSpeedMultiplier(matrixOptions, 'prod_szybkosc_jednostki_proc')
+    + Math.max(0, prod.rekrutacjaPostep ?? 0);
+  const completionLimit = Math.floor(throughput);
   let n = 0;
-  while (n < maxPerTurn && rq.length > 0) {
+  while (n < completionLimit && rq.length > 0) {
     if (costAlreadyPaid) {
       completed.push(rq.shift()!);
       n++;
@@ -1928,6 +2015,7 @@ export function advanceRecruitmentGated(
       postep: prod.postep,
       wstrzymana: prod.wstrzymana,
       rekrutacja: rq.length ? rq : undefined,
+      rekrutacjaPostep: rq.length ? throughput - n : 0,
     },
     completed,
     population: pop,
@@ -1942,6 +2030,7 @@ export function advanceRecruitmentGated(
 export function advanceRecruitment(
   prod: CityProduction,
   maxPerTurn = RECRUIT_UNITS_PER_TURN,
+  matrixOptions?: ProductionMatrixOptions,
 ): AdvanceRecruitmentResult {
   const rq = prod.rekrutacja ?? [];
   if (rq.length === 0 || maxPerTurn <= 0) {
@@ -1951,11 +2040,15 @@ export function advanceRecruitment(
         postep: prod.postep,
         wstrzymana: prod.wstrzymana,
         rekrutacja: rq.length ? [...rq] : undefined,
+        rekrutacjaPostep: prod.rekrutacjaPostep,
       },
       completed: [],
     };
   }
-  const n = Math.min(maxPerTurn, rq.length);
+  const throughput = Math.max(0, maxPerTurn)
+    * matrixSpeedMultiplier(matrixOptions, 'prod_szybkosc_jednostki_proc')
+    + Math.max(0, prod.rekrutacjaPostep ?? 0);
+  const n = Math.min(Math.floor(throughput), rq.length);
   const completed = rq.slice(0, n);
   const rest = rq.slice(n);
   return {
@@ -1964,6 +2057,7 @@ export function advanceRecruitment(
       postep: prod.postep,
       wstrzymana: prod.wstrzymana,
       rekrutacja: rest.length ? rest : undefined,
+      rekrutacjaPostep: rest.length ? throughput - n : 0,
     },
     completed,
   };
@@ -1974,10 +2068,15 @@ export function advanceRecruitment(
  * 1 Praca = 1 Pieniadz rate (Schemat sec.3.2): ceil(koszt - postep), never < 0.
  * Returns 0 when the queue is empty.
  */
-export function rushCost(prod: CityProduction): number {
+export function rushCost(
+  prod: CityProduction,
+  matrixOptions?: ProductionMatrixOptions,
+): number {
   const front = frontItem(prod);
   if (front === null) return 0;
-  return Math.max(0, Math.ceil(front.koszt - prod.postep));
+  const remaining = Math.max(0, front.koszt - prod.postep);
+  const adjusted = matrixCostBase(remaining, matrixOptions, 'prod_rush_koszt_proc');
+  return Math.max(0, Math.ceil(adjusted - Number.EPSILON * Math.max(1, Math.abs(adjusted))));
 }
 
 /**
@@ -2130,6 +2229,7 @@ export function unitPurchaseCost(
   kosztJednostekPace?: KosztJednostekPace,
   ownerId = 0,
   difficulty: GameDifficulty = 'normal',
+  matrixOptions?: ProductionMatrixOptions,
 ): number {
   return unitMoneyCost(
     scaleCostByEpoch(unitCostFromDef(def), def.Epoka),
@@ -2137,6 +2237,7 @@ export function unitPurchaseCost(
     kosztJednostekPace,
     ownerId,
     difficulty,
+    matrixOptions,
   );
 }
 
