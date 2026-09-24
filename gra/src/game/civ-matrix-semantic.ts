@@ -167,10 +167,6 @@ const DECISION_REQUIRED = new Set([
 
 const HARMFUL = new Set([
   'walka_koszt_rekrutacji_proc',
-  'spec_Dezercja_proc',
-  'spec_Koszt_pieniadz',
-  'spec_Utrzymanie',
-  'spec_Zywnosc_ture',
   'eko_korupcja_proc',
   'prod_koszt_budynku_proc',
   'prod_koszt_jednostki_proc',
@@ -210,39 +206,6 @@ const BLOCKED_COMBAT_MULTIPLIER = new Set([
   'walka_obrona_piechota_terytorium_wlasne',
   'walka_obrona_piechota_w_murze',
   'walka_atak_piechota_runda_szarzy',
-]);
-
-// Same round: 18 `spec_*` special-unit stat parameters with non-default values.
-// Read evidence (`gra/data/units.json`, the 9 `Super-jednostka: "TAK"` rows) shows
-// no unambiguous 1:1 mapping onto an existing unit field: where a same-named field
-// exists (Atak, Obrona, Uderzenie, Pancerz, Przebicie, Health, Ruch, Widok pola,
-// Morale bazowe), the matrix value equals the units.json field only for 2 of 7
-// civilizations with a special unit (egipt, sumer); for the other 5 the matrix
-// value is a different, non-derivable number (e.g. grecy spec_Atak=48 vs.
-// units.json Hieros Lochos Atak=8; grecy spec_Health=100 vs. units.json Health=170).
-// Several IDs (spec_Obrazenia, spec_Zasieg_hex, spec_Pociski, spec_Dezercja_proc,
-// spec_Koszt_pieniadz, spec_Utrzymanie) have no matching units.json field at all.
-// No sibling matrix parameter already wires a per-unit stat override this way.
-// See 02-decision-packet-special-unit.md.
-const BLOCKED_SPECIAL_UNIT_STAT = new Set([
-  'spec_Atak',
-  'spec_Obrazenia',
-  'spec_Obrona',
-  'spec_Uderzenie',
-  'spec_Pancerz',
-  'spec_Przebicie',
-  'spec_Health',
-  'spec_Atak_dystansowy',
-  'spec_Zasieg_hex',
-  'spec_Pociski',
-  'spec_Ruch_bitwa',
-  'spec_Ruch_mapa',
-  'spec_Widok',
-  'spec_Dezercja_proc',
-  'spec_Morale',
-  'spec_Koszt_pieniadz',
-  'spec_Utrzymanie',
-  'spec_Zywnosc_ture',
 ]);
 
 // Same round: 25 combat/siege/fortification parameters where all 15 civilization
@@ -305,7 +268,7 @@ export function civMatrixConsumerStatus(parameterId: string): CivMatrixConsumerS
   if (UI_ONLY.has(parameterId)) return 'UI_ONLY';
   if (DECISION_REQUIRED.has(parameterId)) return 'DECISION_REQUIRED';
   if (DEAD_UNWIRED_COMBAT.has(parameterId)) return 'DEAD_UNWIRED';
-  if (BLOCKED_COMBAT_MULTIPLIER.has(parameterId) || BLOCKED_SPECIAL_UNIT_STAT.has(parameterId)) return 'BLOCKED';
+  if (BLOCKED_COMBAT_MULTIPLIER.has(parameterId)) return 'BLOCKED';
   return 'UNWIRED';
 }
 
@@ -391,9 +354,6 @@ function statusReason(
     case 'BLOCKED':
       if (BLOCKED_COMBAT_MULTIPLIER.has(parameterId)) {
         return `Zablokowane do decyzji właściciela (runda 2, R-CYWILIZACJE-MACIERZ-WIRING-COMBAT-RECON-ORIGIN-20260922): ${parameterId} opisuje ten sam efekt walki, który już dziś dostarcza niezależny kanał civs.json→bonusy[]→civ-bonuses.ts; bez decyzji o precedencji (zastąp / sumuj / ignoruj macierz) podłączenie civ-matrix.json ryzykuje ciche podwojenie lub konflikt bonusu. Patrz 02-decision-packet-combat.md.`;
-      }
-      if (BLOCKED_SPECIAL_UNIT_STAT.has(parameterId)) {
-        return `Zablokowane do decyzji właściciela (runda 2, R-CYWILIZACJE-MACIERZ-WIRING-COMBAT-RECON-ORIGIN-20260922): ${parameterId} nie ma jednoznacznego odwzorowania 1:1 na pole jednostki specjalnej w units.json (wartości matrix i units.json zgadzają się tylko dla 2 z 7 cywilizacji z jednostką specjalną; kilka ID nie ma odpowiadającego pola wcale). Wymaga jawnego kontraktu aktora/pola docelowego. Patrz 02-decision-packet-special-unit.md.`;
       }
       return 'Pole zablokowane do decyzji; nie ma efektywnego wpływu.';
     case 'DECISION_REQUIRED':
