@@ -74,12 +74,12 @@ const greek = M.buildCivMatrixSemanticProfile('grecy');
 const unknown = M.buildCivMatrixSemanticProfile('not-a-civilization');
 
 console.log('--- exact matrix and semantic coverage ---');
-equal(Object.keys(matrix.paramDefs).length, 113, 'matrix declares 113 parameter definitions');
+equal(Object.keys(matrix.paramDefs).length, 109, 'matrix declares 109 parameter definitions');
 equal(matrix.cywilizacje.length, 15, 'matrix declares 15 civilizations');
-equal(snapshot.expectedCellCount, 1695, 'semantic contract expects 1695 cells');
-equal(snapshot.cells.length, 1695, 'semantic snapshot contains 1695 cells');
-equal(greek.cells.length, 113, 'selected Greece profile contains every parameter');
-equal(new Set(snapshot.cells.map(c => `${c.civilizationId}/${c.parameterId}`)).size, 1695, 'all semantic cells are unique');
+equal(snapshot.expectedCellCount, 1635, 'semantic contract expects 1635 cells');
+equal(snapshot.cells.length, 1635, 'semantic snapshot contains 1635 cells');
+equal(greek.cells.length, 109, 'selected Greece profile contains every parameter');
+equal(new Set(snapshot.cells.map(c => `${c.civilizationId}/${c.parameterId}`)).size, 1635, 'all semantic cells are unique');
 equal(greek.blockedReasonPl, undefined, 'known civilization is not blocked');
 assert(unknown.cells.length === 0 && /fallbacku/.test(unknown.blockedReasonPl), 'unknown civilization is explicitly blocked without Greece fallback');
 
@@ -161,7 +161,7 @@ equal(statusCounts.UI_ONLY, 75, '5 UI-only parameters cover 15 profiles');
 equal(statusCounts.DECISION_REQUIRED, 30, '2 unresolved AI/diplomacy parameters cover 15 profiles each and require an owner decision');
 equal(statusCounts.BLOCKED, 525, '35 combat/special-unit DECISION_REQUIRED parameters cover 15 profiles (round 2, R-CYWILIZACJE-MACIERZ-WIRING-COMBAT-RECON-ORIGIN-20260922)');
 equal(statusCounts.DEAD_UNWIRED, 375, '25 combat/siege/fortification parameters with all-default cells are closed dead (round 2)');
-equal(statusCounts.UNWIRED, 420, '28 unresolved parameters remain visibly unwired after resolved population fields, combat BLOCKED/DEAD_UNWIRED, and meta REFERENCE_ONLY reclassification');
+equal(statusCounts.UNWIRED, 420, '28 unresolved parameters remain visibly unwired after resolved population fields and combat BLOCKED/DEAD_UNWIRED reclassification; the 4 former meta REFERENCE_ONLY parameters were removed from the matrix entirely (R-CYWILIZACJE-MACIERZ-META-REMOVE-Q1-20260922) and are absent from every status count, not reclassified as UNWIRED');
 assert(!fs.readFileSync(path.resolve(sourceRoot, 'game/civ-matrix-semantic.ts'), 'utf8').includes('localStorage'), 'semantic classifier does not persist labels');
 
 console.log('--- combat/special-unit BLOCKED decision_required (round 2, R-CYWILIZACJE-MACIERZ-WIRING-COMBAT-RECON-ORIGIN-20260922) ---');
@@ -381,7 +381,7 @@ function generateArtifacts(dir) {
       expectedCells: snapshot.expectedCellCount,
       actualCells: snapshot.cells.length,
       uniqueCells: new Set(snapshot.cells.map(cell => `${cell.civilizationId}/${cell.parameterId}`)).size,
-      allParameterIdsPresent: parameters.length === 113,
+      allParameterIdsPresent: parameters.length === 109,
       allCivilizationsPresent: matrix.cywilizacje.length === 15,
     },
   };
@@ -417,7 +417,7 @@ function generateArtifacts(dir) {
       accessibility: 'literal badge/status text and aria-labels; not color-only',
       difficulty: 'Normal identity only; no Easy/Hard labels in this panel',
     },
-    coverage: { parameters: 113, civilizations: 15, cells: 1695 },
+    coverage: { parameters: 109, civilizations: 15, cells: 1635 },
     decisionRequired: allocation.scope.decisionRequiredRows,
   };
   jsonWrite(path.join(dir, '01-semantic-contract.json'), semanticContract);
@@ -455,7 +455,7 @@ function generateArtifacts(dir) {
     '',
     '## Wykonano',
     '- Dodano czysty, niemutujący classifier Normal median + signed intensity.',
-    '- Dodano pełny profil 113 wierszy w wyborze cywilizacji: aktywne domyślnie, reszta w jednym rozwijanym panelu, wyszukiwanie i filtr.',
+    '- Dodano pełny profil 109 wierszy w wyborze cywilizacji: aktywne domyślnie, reszta w jednym rozwijanym panelu, wyszukiwanie i filtr.',
     '- Brak fallbacku do Grecji dla nieznanej cywilizacji lub brakującej wartości.',
     '- AI/relacje pozostają neutralnym badge z osobnym statusem/opisem.',
     '- Etykiety nie są zapisywane w stanie gry ani w sejwie.',
@@ -471,7 +471,7 @@ function generateArtifacts(dir) {
     '|---:|---|---|---|---|',
   ];
   parameters.forEach((parameter, index) => operatorLines.push(`| ${index + 1} | \`${parameter.parameterId}\` | ${parameter.consumerStatus}${parameter.decisionRequired ? ` / ${parameter.decisionRequiredId}` : ''} | ${parameter.polarity} | ${parameter.exactRuntimeCallSites.join('<br>') || 'brak'} |`));
-  operatorLines.push('', '## Dowód', '- `01-allocation.json` zawiera 113 parametrów, 1695 unikalnych komórek oraz statusy.', '- `01-semantic-contract.json` zawiera wzór mediany, polaryzacji, intensywności i UI.', '- `01-consumer-provenance.md` zawiera skan call-site’ów i następny krok dla każdego pola.', '', 'DEPLOY/PUSH: NIE WYKONANO');
+  operatorLines.push('', '## Dowód', '- `01-allocation.json` zawiera 109 parametrów, 1635 unikalnych komórek oraz statusy.', '- `01-semantic-contract.json` zawiera wzór mediany, polaryzacji, intensywności i UI.', '- `01-consumer-provenance.md` zawiera skan call-site’ów i następny krok dla każdego pola.', '', 'DEPLOY/PUSH: NIE WYKONANO');
   fs.writeFileSync(path.join(dir, '01-operator.md'), `${operatorLines.join('\n')}\n`, 'utf8');
 }
 
