@@ -1,0 +1,97 @@
+{
+  "topic": "R-CYWILIZACJE-MACIERZ-WIRING-OBLEZENIE-Q1-20260922",
+  "role": "Final Control corrected whole topic",
+  "status": "PASS-WITH-NOTES",
+  "domain": "GAME",
+  "product_acceptance": true,
+  "blocking_objections": [],
+  "nonblocking_notes": [
+    "AI heuristic applies structureMult to Obrona and Pancerz for defender-strength estimation; real battle applies the city structural percentage to the defensive component only. This is a deliberate model-boundary note, not duplicate application.",
+    "The pre-existing map helper civKeyForOwnerId retains its historical 'grecy' fallback for an owner absent from the normal runtime maps; the corrected AI builder required by the prior blocking objection is nullable and does not use that fallback. Known runtime owners resolve their actual defender civKey."
+  ],
+  "scope": {
+    "read_only": true,
+    "product_files_modified_by_this_run": false,
+    "allowed_artifacts_written": [
+      "dyspozycje/autobot/runs/R-CYWILIZACJE-MACIERZ-WIRING-OBLEZENIE-Q1-20260922/03-final-control-corrected-20260923.md",
+      "dyspozycje/autobot/runs/R-CYWILIZACJE-MACIERZ-WIRING-OBLEZENIE-Q1-20260922/03-evidence-corrected-20260923.json",
+      "dyspozycje/autobot/runs/R-CYWILIZACJE-MACIERZ-WIRING-OBLEZENIE-Q1-20260922/03-transition-receipt-corrected-20260923.md"
+    ],
+    "commit_push_merge_deploy": "NIE WYKONANO"
+  },
+  "git": {
+    "dispatch_head": "f52f3b76b4761136a43dc0ab32dde50552a176fe",
+    "readback_head": "389d6b19048f1dd581409d80845b05e5d8b972aa",
+    "base": "0caa4dfa31d37337cd74fdbab95ee77da4806d98",
+    "readback_head_change": "docs-only integration gate commit by orchestrator; product worktree diff unchanged",
+    "product_paths_present": [
+      "gra/data/civ-matrix.json",
+      "gra/src/battle/battleScene.ts",
+      "gra/src/game/city-defense.ts",
+      "gra/src/game/siege.ts",
+      "gra/src/game/siegeAi.ts",
+      "gra/src/game/siegeMachines.ts",
+      "gra/src/main.ts",
+      "gra/tools/civ-matrix-oblezenie-wiring-test.cjs"
+    ],
+    "product_paths_outside_allowlist": [],
+    "diff_check_exit": 0
+  },
+  "production_trace": {
+    "ai_initial": "main.ts:14930-14962 -> buildSiegeCityFromRuntime:15044-15065 -> decideAISiegeStance",
+    "ai_ongoing": "main.ts:14966-14987 -> buildSiegeCityFromRuntime:15044-15065 -> decideAISiegeStance",
+    "defender_civ_key": "_menuCivIdByOwner.get(city.ownerId) ?? (city.ownerId === 0 ? player.civType || null : null) ?? (aiOwnerCivMap.get(city.ownerId) ?? null)",
+    "unknown_civ_behavior": "null or unknown civMatrixParam result is neutral; no Greece fallback in the corrected AI builder",
+    "shared_city_defense": [
+      "main.ts:26768-26797 uses city ownerId",
+      "battleScene.ts:2617-2646 uses _defenderCivIconId",
+      "siege.ts:445-456 uses SiegeCity.civKey"
+    ],
+    "siege_machine_side": "battleScene.ts:5886 gates wall/gate attacks on isSiegeUnit(ru.bu) && ru.side === 'atk'; damage reads _attackerCivIconId at 7174-7175",
+    "defender_sortie_path": "none for wall/gate destruction; defender hold branch is battleScene.ts:5938-5952",
+    "no_double_application": "applyCityBonus(..., true) only in siegeAi.ts:111; resolveSiegeAttack at siege.ts:723 uses default false and has no production caller in gra/src"
+  },
+  "consumer_audit": {
+    "cityDefenseBonus": "definition plus siegeAi.ts and resolveSiegeAttack; no third production consumer",
+    "estimateDefenderStrength": "siegeAi.ts:103-124 and decideAISiegeStance:215-218 only",
+    "resolveSiegeAttack": "definition only in gra/src; production main/battleScene use their own battle resolution paths",
+    "cityWallDefenseBonusPercent": "main.ts two production call sites, battleScene constructor, siege.ts shared AI bonus; auxiliary city-defense predicate remains neutral/default and does not apply structure twice",
+    "attack_gate": "one invocation from attacker siege branch and one definition",
+    "attack_wall_tile": "one invocation from attacker siege branch and one definition",
+    "matrix_parameter_ids": ["obl_obrona_miasta_proc", "obl_mur_proc", "obl_machines_proc"]
+  },
+  "matrix_and_merge": {
+    "cells_checked": 45,
+    "mismatches_vs_INPUT": 0,
+    "non_oblezenie_field_changes": 0,
+    "oblezenie_changed_paths_vs_origin_main": 20,
+    "manpower_changed_paths": 19,
+    "changed_path_intersection": 0,
+    "paramDefs": 113,
+    "defaults": 113,
+    "structurally_mergeable": true,
+    "merge_performed": false
+  },
+  "tests": {
+    "tsc_no_emit": {"exit": 0},
+    "civ_matrix_oblezenie_wiring": {"exit": 0, "pass": 83, "fail": 0, "cells_checked": 45},
+    "siege_ai": {"exit": 0, "pass": 17, "fail": 0},
+    "logic": {"exit": 0, "pass": 213, "fail": 0},
+    "city_defense_terrain": {"exit": 0, "pass": 34, "fail": 0},
+    "defense_breakdown": {"exit": 0, "pass": 44, "fail": 0},
+    "fortify_pole": {"exit": 0, "pass": 41, "fail": 0},
+    "mur_paradoks": {"exit": 0, "pass": 29, "fail": 0},
+    "militia_garrison_router_siege": {"exit": 0, "pass": 8, "fail": 0},
+    "git_diff_check": {"exit": 0},
+    "known_baseline_empire": {"exit": 1, "pass": 115, "fail": 1, "classification": "pre-existing and unchanged"},
+    "known_baseline_costs": {"exit": 1, "pass": 126, "fail": 3, "classification": "pre-existing and unchanged"}
+  },
+  "integration_gate": {
+    "path": "dyspozycje/autobot/runs/R-CYWILIZACJE-MACIERZ-WIRING-OBLEZENIE-Q1-20260922/05-integration-gate.md",
+    "status": "INTEGRATION_PENDING",
+    "workerless": true,
+    "blocked": true,
+    "reused": true,
+    "merge_push_deploy": "NIE WYKONANO"
+  }
+}

@@ -903,6 +903,7 @@ import {
   unitGetsFortifyDefenseBonus,
   type CityDefenseBonusParams,
 } from './game/city-defense';
+import { civMatrixParam } from './game/civ-matrix';
 import {
   buildDefenseRosterUnits,
   cityDefenseBreakdownLines,
@@ -15050,9 +15051,13 @@ async function boot(): Promise<void> {
       return {
         id: city.id,
         ownerId: city.ownerId,
+        civKey: _menuCivIdByOwner.get(city.ownerId)
+          ?? (city.ownerId === 0 ? (player.civType || null) : null)
+          ?? (aiOwnerCivMap.get(city.ownerId) ?? null),
         q: city.q,
         r: city.r,
         wallLevel: city.maMur ? 1 : 0,
+        builtBuildingIds: cityBuilt.get(city.id) ?? (city.maMur ? ['mury'] : []),
         garrison,
         terrain,
         population: city.population,
@@ -26754,14 +26759,29 @@ async function boot(): Promise<void> {
      * kazdego innego heksu (w tym fort/posterunek terenowe -- te NIE sa
      * "obrona miasta", zostaja bez zmian per decyzja wlasciciela).
      */
+    /**
+     * R-CYWILIZACJE-MACIERZ-WIRING-OBLEZENIE-Q1-20260922: civ-matrix.json->
+     * obl_mur_proc/obl_obrona_miasta_proc dla wlasciciela miasta (Grecy +0.2,
+     * Zulusi -0.2, itd.) -- czytane per ownerId, zeby broniace sie miasto
+     * ZAWSZE uzywalo bonusu WLASCICIELA miasta (nie atakujacego).
+     */
+    function civMurObronaProcFor(ownerId: number): { mur: number; obrona: number } {
+      const civKey = civKeyForOwnerId(ownerId);
+      return {
+        mur: civMatrixParam(civKey, 'obl_mur_proc'),
+        obrona: civMatrixParam(civKey, 'obl_obrona_miasta_proc'),
+      };
+    }
+
     function cityWallStatusAtHex(q: number, r: number): { isCity: boolean; hasMur: boolean } {
       const cityOnHex = cities.find(c => c.q === q && c.r === r);
       if (!cityOnHex) return { isCity: false, hasMur: false };
       const builtIds = cityBuilt.get(cityOnHex.id) ?? [];
+      const civProc = civMurObronaProcFor(cityOnHex.ownerId);
       const wallBonus = cityWallDefenseBonusPercent(builtIds, {
         mur: MUR_BONUS_PROC, cytadela: CYTADELA_BONUS_PROC, baszta: BASZTA_BONUS_PROC,
         palisada: PALISADA_BONUS_PROC,
-      });
+      }, civProc.mur, civProc.obrona);
       return { isCity: true, hasMur: wallBonus > 0 };
     }
 
@@ -26770,10 +26790,11 @@ async function boot(): Promise<void> {
       const cityOnHex = cities.find(c => c.q === q && c.r === r);
       if (cityOnHex) {
         const builtIds = cityBuilt.get(cityOnHex.id) ?? [];
+        const civProc = civMurObronaProcFor(cityOnHex.ownerId);
         const wallBonus = cityWallDefenseBonusPercent(builtIds, {
           mur: MUR_BONUS_PROC, cytadela: CYTADELA_BONUS_PROC, baszta: BASZTA_BONUS_PROC,
           palisada: PALISADA_BONUS_PROC,
-        });
+        }, civProc.mur, civProc.obrona);
         if (wallBonus > 0) return wallBonus;
       }
 
