@@ -72,7 +72,7 @@ import {
   terrainImprovementEraMultiplier,
   type TerritoryResourceKey,
 } from './terrain-improvements';
-import { cityManpowerMax, refreshManpowerAfterPopChange, tickManpowerRegen, civManpowerMults, loadManpowerRegenParams, tickManpowerUnitReplenishment, type ManpowerHealUnit } from './manpower';
+import { cityManpowerMax, refreshManpowerAfterPopChange, tickManpowerRegen, civManpowerMults, civManpowerMatrixMults, loadManpowerRegenParams, tickManpowerUnitReplenishment, type ManpowerHealUnit } from './manpower';
 import {
   loadStorageParams,
   foodStorageCapacity,
@@ -2816,7 +2816,11 @@ export function advanceCityEconomy(
     });
 
     const ownerEpoka = ownerEra;
-    const mpMults = civManpowerMults(ownerBonusy);
+    const mpMults = civManpowerMatrixMults(
+      ownerCivKey,
+      undefined,
+      civManpowerMults(ownerBonusy),
+    );
     if (city.manpower === undefined) {
       city.manpower = cityManpowerMax(city.population, ownerEpoka, mpMults.maxMult);
     }
@@ -2960,6 +2964,16 @@ export function advanceCityEconomy(
       manpowerHeal.getMaxHp,
       undefined,
       manpowerHeal.onUnitHpChanged,
+      (oid: number) => {
+        const key = ownerCivByOwnerId.get(oid);
+        if (!key) return undefined;
+        const mults = civManpowerMatrixMults(key);
+        return {
+          mp_regen_proc: mults.regenMult - 1,
+          mp_max_proc: mults.maxMult - 1,
+          mp_koszt_jednostki_proc: mults.costMult - 1,
+        };
+      },
     );
   }
 

@@ -1825,8 +1825,8 @@ export function populationCostOf(item: ProductionItem): number {
 }
 
 /** Manpower cost of completing a unit at empire epoch (Zwiadowca = 0). */
-export function manpowerCostOf(item: ProductionItem, epoka: number, maxMult = 1): number {
-  return item.kind === 'jednostka' ? unitManpowerCostForType(item.id, epoka, maxMult) : 0;
+export function manpowerCostOf(item: ProductionItem, epoka: number, maxMult = 1, costMult = maxMult): number {
+  return item.kind === 'jednostka' ? unitManpowerCostForType(item.id, epoka, maxMult, costMult) : 0;
 }
 
 /** Set/clear the Wstrzymaj (pause) flag. Returns a fresh CityProduction. */
@@ -1896,9 +1896,11 @@ export function advanceRecruitmentGated(
   maxPerTurn = RECRUIT_UNITS_PER_TURN,
   /** true gdy koszt Manpower pobrano przy opłaceniu złotem (kolejka rekrutacji). */
   costAlreadyPaid = false,
+  maxMult = 1,
+  costMult = maxMult,
 ): AdvanceRecruitmentGatedResult {
   let pop = city.population;
-  let mp = cityManpowerCurrent(city, epoka);
+  let mp = cityManpowerCurrent(city, epoka, maxMult);
   const rq = [...(prod.rekrutacja ?? [])];
   const completed: ProductionItem[] = [];
   let n = 0;
@@ -1913,8 +1915,9 @@ export function advanceRecruitmentGated(
       { population: pop, manpower: mp },
       epoka,
       UNIT_POPULATION_COST,
-      1,
+      maxMult,
       front.id,
+      costMult,
     );
     if (!d.ok) break;
     completed.push(rq.shift()!);
