@@ -207,6 +207,12 @@ export interface AutoManageDecision {
   pracaSplit: { doBudynkow: number; doPuli: number } | null;
 }
 
+function productionMatrixOptionsForContext(ctx: AvailabilityContext) {
+  return ctx.civKey
+    ? { civKey: ctx.civKey, resolveParam: ctx.civMatrixResolver }
+    : undefined;
+}
+
 // ---------------------------------------------------------------------------
 // pickAutoBuildItem — auto-kolejka budynkow wg profilu miasta
 // ---------------------------------------------------------------------------
@@ -303,7 +309,16 @@ function buildUpgradeCandidates(
     if (buildingTypeQueued(id, prod.kolejka)) continue;
     const targetLevel = buildingLevelForEpoch(def.epokaWejscia, epoch, def.maksPoziom, def.poziomTechGate, unlockedTechs);
     if (targetLevel <= 1) continue;
-    const item = buildingProductionItem(id, data, targetLevel, ctx.civBonusy, ctx.buildingCostPace, ctx.ownerId, ctx.difficulty);
+    const item = buildingProductionItem(
+      id,
+      data,
+      targetLevel,
+      ctx.civBonusy,
+      ctx.buildingCostPace,
+      ctx.ownerId,
+      ctx.difficulty,
+      productionMatrixOptionsForContext(ctx),
+    );
     if (!item) continue;
     const cost = buildingStockCost(def);
     if (Object.keys(cost).length > 0 && !canAffordBuildingStock(surowcePool, cost)) continue;

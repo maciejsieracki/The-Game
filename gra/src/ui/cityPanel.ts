@@ -8519,7 +8519,7 @@ function renderProd(mount: HTMLElement, city: City, view: CityView | null): void
     actions.style.cssText = 'margin-top:0.35em;display:flex;gap:0.3em;flex-wrap:wrap;';
     // Wykup (rush-buy) -- only when the engine exposes treasury + a spend hook.
     if (cfg.getTreasury && cfg.onRushBuy) {
-      const koszt = rushCost(prod);
+      const koszt = rushCost(prod, { civKey: cfg.getCivKey?.(city.ownerId) ?? 'grecy' });
       const skarb = cfg.getTreasury(city.ownerId);
       const stac = skarb >= koszt;
       const wykup = el('button', 'btn btn-g');
@@ -8644,6 +8644,7 @@ function productionCtxForCity(city: City): AvailabilityContext {
     kosztJednostekPace: cfg.getKosztJednostekPace?.() ?? 'niski',
     ownerId: city.ownerId,
     difficulty: cfg.getDifficulty?.() ?? 'normal',
+    civKey: cfg.getCivKey?.(city.ownerId),
     activeResourceLabels,
     empireActiveResourceLabels,
     empireBuiltIds,
@@ -8812,6 +8813,7 @@ function renderBuildList(
         cfg.getBuildingCostPace?.() ?? 'niski',
         city.ownerId,
         cfg.getDifficulty?.() ?? 'normal',
+        { civKey: cfg.getCivKey?.(city.ownerId) ?? 'grecy' },
       );
       if (!item) continue;
       const nazwaPoziom: string = (def.nazwyPoziomow[targetLevel - 1] ?? '');
