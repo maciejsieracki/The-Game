@@ -13,6 +13,16 @@ swoim wĹ‚asnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji d
 > Pakiet 3 z 2026-08-20 jest docs-only i nie tworzy wpisu ROBOCZA/KANON/FINALNA;
 > ten plik pozostaje wyłącznie rejestrem publikacji bundli.
 
+## ROBOCZA 706bf94a - 2026-09-25 19:00 UTC - civ-matrix consolidated integration (PR #140)
+
+||- md5 (pelne): 706bf94a379763473ed4add9d508f622 · sha256: 86cd67aca862ab6fbad13aba48b6117d57bb175166ed555e1e66478a80ac85d0 · stempel label `706bf94a` · source/deploy commit: `b15bdb36` (origin/main, PR #140 merged) · base: `a8c9cf6c`
+||- **civ-matrix consolidated integration** -- lacz sekwencje trzech wlascicielskich decyzji do jednego PR na wyrazne polecenie (2026-09-25): `R-CYWILIZACJE-MACIERZ-META-REMOVE-Q1-20260922` (4 pola meta usuniete, 113->109), `R-CYWILIZACJE-MACIERZ-JEDNOSTKA-SPEC-REMOVE-Q1-20260924` (18 pol spec_* usuniete, 109->91), `R-CYWILIZACJE-MACIERZ-WALKA-10GRUP-Q1-20260925` (32 pola walki podlaczone G2-G11 + 2 nowe pola + 5 uzupelnien historycznych: Zulusi melee, Egipt ruch rydwanow, Slowianie obrona lesna, Asyria kawaleria, Babilonia potwierdzona jako zamierzone zero bojowe). Netto paramDefs: 113 -> 93.
+||- Integracja: PR #140 (github.com/maciejsieracki/The-Game/pull/140), czysty fast-forward z origin/main, zero konfliktow. Walka: Operator (`t_5be3645a`) -> niezalezny Evaluator (zarzut G8: brakujace wartosci walki morskiej Grecja/Fenicja) -> Defense (`t_f63e4337`, naprawione) -> Final Control PASS.
+||- Bramki: `tsc --noEmit` PASS, `git diff --check` PASS, `vite build` 892 modulow PASS. 17/19 zestawow testow regresyjnych 100% PASS na zintegrowanym drzewie (civ-bonusy-test 36/36, combat-test 6/6, structure-defense-bonus-test 8/8, civ-matrix-greece-test 329/329, civ-matrix-semantic-labels-test 233/233, walka-jeden-kontratak-test 24/24, walka-morale-przewaga-mocy-test 123/123, civ-matrix-meta-roster-wiring-test 63/63, civ-matrix-ai-diplomacy-wiring-test 51/51, civ-matrix-difficulty-test 16/16, population-civ-matrix-wiring-test 122/122, ai-difficulty-bonus-test 97/97, unit-building-bonuses-test 82/82). 2 przedistniejace awarie (`budynek-civ-bonus-u17-test`, `population-growth-v85-bonus-test`) potwierdzone identyczne na czystym origin/main przed ta integracja -- nie sa regresja tego deploya.
+||- `node gra/tools/verify-robocza-bundle.cjs` -> `VERIFY OK`, manifest match OK (stamp match WARN oczekiwany na Linuksie). Smoke test headless Chromium: tytul poprawny, canvas obecny, pelny HUD renderuje sie, zero bledow konsoli/strony.
+||- **Poza tym deployem**: `ai_profil_obronna` (2 komponenty, zaimplementowane i zacommitowane lokalnie `b4c9582f` w izolowanym worktree, jeszcze niezmergowane do main) i pakiet Dyplomacja (8 pol, decyzja gotowa, implementacja w toku w izolowanym worktree w chwili tej publikacji) -- oba czekaja na wlasny cykl Operator->Evaluator->Final Control->merge.
+||- **AKTUALNA**
+
 ## ROBOCZA 23319869 - 2026-09-23 17:23 UTC - lud_limit_populacji bounded integration
 
 |- md5 `2331986977a6fb9e6fdf7b0e3c41f081` · sha256 `842eb21a1d2340249daa4dd4fc08705faded341699e27df514686c02c63b4726` · rozmiar `69920420` bajtow.
