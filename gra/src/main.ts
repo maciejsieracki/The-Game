@@ -861,7 +861,7 @@ import {
   oldestCityOfOwner,
   type OwnerResourceAccess,
 } from './game/capital-capture';
-import { civBonusyForCivKey, cityPopulationCap, loadEconParams, sumBuildingHappinessFromBuiltIds } from './game/economy';
+import { civBonusyForCivKey, cityPopulationCap, loadEconParams, resolvePopulationCapMatrixDelta, sumBuildingHappinessFromBuiltIds } from './game/economy';
 import { civMatrixBonusyForCivKey } from './game/civ-bonuses';
 import { advanceProduction, rushProduction, rushCost, populationCostOf, UNIT_POPULATION_COST,
   enqueueRecruitment, advanceRecruitment, advanceRecruitmentGated, unitProductionItem,
@@ -976,6 +976,11 @@ import {
   type EmpireFoodTickResult,
   type AutoRationAdjustResult,
 } from './game/empire-food';
+// R-EKONOMIA-ZYWNOSC-NADWYZKA-PO-LIMICIE (2026-09-25): cityHasSpichlerzBuilding -- SAME
+// helper population-growth-v85.ts/cityPopulationCap already require for the STRUCTURAL cap
+// flag (Spichlerz w DOWOLNYM tierze), nie miękki `maSpichlerzPop`/`maSpichlerzIIPop` zależny
+// od drainu tej tury -- patrz komentarz przy cityHasSpichlerzBuilding w building-resource-gate.ts.
+import { cityHasSpichlerzBuilding } from './game/building-resource-gate';
 import { buildAutoRationSidePanelEvent } from './game/spich-auto-ration-notify';
 import {
   deferredHintsToSidePanelEvents,
@@ -18119,6 +18124,21 @@ async function boot(): Promise<void> {
           maSpichlerzIIPop: tk.maSpichlerzII ?? false,
         });
       }
+      // R-EKONOMIA-ZYWNOSC-NADWYZKA-PO-LIMICIE: patrz komentarz przy budowie `popCapByCityId`
+      // w triggerPlayerEndTurn (SPICH-AUTO-Q1) -- ten sam strukturalny limit, ten sam wzór, tu
+      // policzony TYLKO dla `playerCities` (gracz, ownerId 0), bo to jedyny właściciel, którego
+      // ta funkcja HUD-owa obsługuje (early return `ownerId !== 0` na górze funkcji).
+      const econParamsForPopCapHud = buildEconParams(data, _menuDifficulty);
+      const popCapByCityIdHud = new Map<string, number>();
+      for (const pc of playerCities) {
+        const builtIds = cityBuilt.get(pc.id) ?? [];
+        popCapByCityIdHud.set(pc.id, cityPopulationCap(
+          builtIds.includes('akwedukt'),
+          cityHasSpichlerzBuilding(builtIds),
+          econParamsForPopCapHud,
+          resolvePopulationCapMatrixDelta(ownerCivMap.get(0) ?? null),
+        ));
+      }
       // R-AUTO-WYZYWIENIE-KRYTERIUM-Q1=A (2026-08-13): "bezpieczny poziom" = przyrost zapasów
       // (Nadwyżka miast − kosztArmii) ≥0, nie sama Nadwyżka miast (dawne zachowanie). Ten sam
       // wzorzec liczenia kosztu armii co `projectPlayerFoodProjection` niżej w tym pliku, ale
@@ -18191,6 +18211,7 @@ async function boot(): Promise<void> {
           rationParams: efParams.rationParams,
           spichlerzByCity,
           kosztArmii: kosztArmiiForMaxSafe,
+          popCapByCityId: popCapByCityIdHud,
         });
         _maxSafeRationCache.set(pc.id, maxSafeForCity);
         if (pc.id === cityId) { maxSafe = maxSafeForCity; foundInPlayerCities = true; }
@@ -18220,6 +18241,7 @@ async function boot(): Promise<void> {
           rationParams: efParams.rationParams,
           spichlerzByCity,
           kosztArmii: kosztArmiiForMaxSafe,
+          popCapByCityId: popCapByCityIdHud,
         });
       }
       return maxSafe;
@@ -31230,6 +31252,35 @@ async function boot(): Promise<void> {
                 maSpichlerzIIPop: tick?.maSpichlerzII ?? false,
               });
             }
+            // R-EKONOMIA-ZYWNOSC-NADWYZKA-PO-LIMICIE (2026-09-25, Wariant 2 właściciela):
+            // limit ludności PER MIASTO (ten sam `cityPopulationCap` co silnik wzrostu w
+            // population-growth-v85.ts/applyPostCentralPopulationGrowth, NIE osobna formuła) —
+            // podłączony do `resolveEqualGrowthRationPlan`/`maxSafePoziomRacjiForCity`
+            // (własność (B), istniejąca od R-AUTOWYZYWIENIE-ROWNY-WZROST-Q1-A, ale main.ts
+            // dotąd NIGDY nie budował ani nie przekazywał `popCapByCityId` do żadnego z trzech
+            // wywołań niżej) -- miasto, które osiągnęło swój limit, dostaje poziom Wyżywienia
+            // "potrzeby" (WYZYWIENIE_POZIOM_NA_LIMICIE, 0% wzrostu) zamiast dalej konsumować
+            // pełną rację, a zaoszczędzona porcja wraca do puli i podnosi wspólny poziom
+            // miastom, które jeszcze mogą rosnąć. Bez tego mapowania miasto na limicie było
+            // traktowane jak każde inne rosnące miasto (`atPopCap` w resolveEqualGrowthRationPlan
+            // zawsze pusta), więc autoRaiseRationsForGrowth podnosiła mu Wyżywienie do maksimum
+            // razem z resztą imperium mimo braku miejsca na wzrost -- dokładnie zgłoszenie
+            // właściciela ("+12% mimo limitu"). Cap NIE zależy od poziomu Racji (jest strukturalny:
+            // Akwedukt/Spichlerz/civ-matrix delta), więc bezpieczny do policzenia RAZ, przed pętlą
+            // auto-korekty. `cityPopulationCap`/`resolvePopulationCapMatrixDelta` — te same funkcje,
+            // którym GOAL zabrania dotykać (DYSPOZYCJA-ZYWNOSC-NADWYZKA.md, "Nie zmieniać").
+            const econParamsForPopCap = buildEconParams(data, _menuDifficulty);
+            const popCapByCityId = new Map<string, number>();
+            for (const city of cities) {
+              const builtIds = cityBuilt.get(city.id) ?? [];
+              const maAkwedukt = builtIds.includes('akwedukt');
+              const maSpichlerzBuilding = cityHasSpichlerzBuilding(builtIds);
+              const civKey = ownerCivMap.get(city.ownerId) ?? null;
+              popCapByCityId.set(city.id, cityPopulationCap(
+                maAkwedukt, maSpichlerzBuilding, econParamsForPopCap,
+                resolvePopulationCapMatrixDelta(civKey),
+              ));
+            }
             const ownerIdsForAutoRation = new Set<number>();
             for (const city of cities) {
               if (city.ownerId >= 0) ownerIdsForAutoRation.add(city.ownerId);
@@ -31272,6 +31323,7 @@ async function boot(): Promise<void> {
                 // stock-based reserve coverage — AI keeps prior behavior.
                 requireFlowBalance: isHuman(ownerId),
                 kosztArmii: kosztArmiiForOwner,
+                popCapByCityId,
               });
               if (autoRationResult.adjusted) {
                 autoRationAnyAdjusted = true;
@@ -31291,6 +31343,7 @@ async function boot(): Promise<void> {
                   requireProductionSurplus: isHuman(ownerId),
                   onlyAutoManaged: isHuman(ownerId),
                   kosztArmii: kosztArmiiForOwner,
+                  popCapByCityId,
                 });
                 if (raiseResult.adjusted) {
                   autoRationAnyAdjusted = true;
@@ -31320,6 +31373,7 @@ async function boot(): Promise<void> {
                     zapasyPrzed: foodSt0.zapasyPanstwa,
                     rationParams: efParams.rationParams,
                     spichlerzByCity: spichlerzByCityForAuto,
+                    popCapByCityId,
                   });
                   const cur = getCityRationLevel(city);
                   if (cur > maxSafe) {

@@ -1,0 +1,48 @@
+{
+  "temat": "R-EKONOMIA-ZYWNOSC-NADWYZKA-PO-LIMICIE-Q1",
+  "root_cause": "popCapByCityId (mechanizm wlasnosci B, R-AUTOWYZYWIENIE-ROWNY-WZROST-Q1-A) zaimplementowany i przetestowany w empire-food.ts, ale main.ts nigdy go nie budowal ani nie przekazywal do 5 wywolan silnika (autoBalanceRationsToSolvency, autoRaiseRationsForGrowth, maxSafePoziomRacjiForCity x3).",
+  "grep_evidence": {
+    "popCapByCityId_w_gra_src_ogolem": 109,
+    "popCapByCityId_w_main_ts_przed_naprawa": 0
+  },
+  "zywa_symulacja_diag_live_SCRATCH": {
+    "bez_popCapByCityId": {
+      "spichlerz_przed": 200,
+      "spichlerz_po": 204,
+      "delta": 4,
+      "miasto_A_na_limicie": { "poziomRacji": 6, "population": "5->5", "cap": 5, "bilansLokalny": 0, "wzrostProcent": 8 },
+      "miasto_B_rosnace": { "poziomRacji": 6, "population": "3->3", "cap": 5, "bilansLokalny": 4, "wzrostProcent": 10 }
+    },
+    "z_popCapByCityId": {
+      "spichlerz_przed": 200,
+      "spichlerz_po": 249,
+      "delta": 49,
+      "miasto_A_na_limicie": { "poziomRacji": 1.5, "population": "5->5", "cap": 5, "bilansLokalny": 45, "wzrostProcent": 1 },
+      "miasto_B_rosnace": { "poziomRacji": 6, "population": "3->3", "cap": 5, "bilansLokalny": 4, "wzrostProcent": 10 }
+    },
+    "roznica_zywnosci_traconej_na_ture_w_scenariuszu": 45
+  },
+  "wariant_wybrany": "Wariant 2 (klamrowanie do zera wzrostu na limicie), uzasadnienie: mechanizm juz istniejacy i przetestowany, zero nowego bufora do zaprojektowania",
+  "pliki_zmienione": ["gra/src/main.ts", "gra/tools/auto-wyzywienie-live-recalc-test.cjs"],
+  "pliki_scratch_usuniete": ["gra/diag-live-SCRATCH.cjs"],
+  "testy": {
+    "akwedukt-popcap-test": { "przed": "6 pass, 1 fail", "po": "6 pass, 1 fail", "regresja": false },
+    "auto-wyzywienie-bilans-clamp-test": { "po": "22 pass, 0 fail" },
+    "auto-wyzywienie-flow-balance-test": { "po": "17 pass, 0 fail" },
+    "auto-wyzywienie-kosztarmii-kryterium-test": { "po": "18 pass, 0 fail" },
+    "auto-wyzywienie-live-recalc-test": { "po": "60 pass, 0 fail", "uwaga": "harness zaktualizowany o nowe zaleznosci" },
+    "auto-wyzywienie-population-growth-live-recalc-test": { "po": "42 pass, 0 fail" },
+    "autowyzywienie-rowny-wzrost-test": { "po": "60/60" },
+    "autowyzywienie-stan-przycisku-test": { "po": "90 pass, 0 fail" },
+    "spichlerz-cap-citypanel-wiring-test": { "po": "12 pass, 0 fail" },
+    "spichlerz-deficyt-scalenie-test": { "przed": "54 pass, 4 fail", "po": "54 pass, 4 fail", "regresja": false },
+    "spichlerz-panel-food-parity-test": { "po": "11 pass, 0 fail" },
+    "spichlerz-widocznosc-test": { "przed": "37 pass, 8 fail", "po": "37 pass, 8 fail", "regresja": false },
+    "spichlerz-wzrost-test": { "przed": "2 pass, 7 fail", "po": "2 pass, 7 fail", "regresja": false },
+    "ai-granary-prog-populacji-spojnosc-test": { "po": "12 pass, 0 fail" },
+    "population-civ-matrix-wiring-test": { "po": "122 pass, 0 fail" }
+  },
+  "tsc_noEmit": "PASS (exit 0)",
+  "git_diff_check": "PASS (exit 0)",
+  "deploy_push": "NIE WYKONANO"
+}
