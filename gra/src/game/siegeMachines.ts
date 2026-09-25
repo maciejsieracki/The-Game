@@ -2,6 +2,7 @@
  * siegeMachines.ts — kolejka machin oblężniczych (C3-Q8=C, OBL-S5).
  * Pure helpers; stan trzymany na City.siegeMachines (SILNIK).
  */
+import { civMatrixParam } from './civ-matrix';
 
 export type SiegeMachineKind = 'taran' | 'wieza';
 
@@ -80,4 +81,18 @@ export function formatMachinesLabel(m?: SiegeMachinesState): string {
   const q = m.queue.map(k => (k === 'taran' ? 'Taran' : 'Wieża')).join(', ') || '—';
   const r = m.ready.map(k => (k === 'taran' ? 'Taran' : 'Wieża')).join(', ') || '—';
   return 'kolejka: ' + q + ' · gotowe: ' + r;
+}
+
+/**
+ * R-CYWILIZACJE-MACIERZ-WIRING-OBLEZENIE-Q1-20260922: mnoznik obrazen machin
+ * oblezniczych (Taran/Katapulta) wobec muru/bramy z civ-matrix.json->
+ * obl_machines_proc, per cywilizacja WLASCICIELA maszyny. Domyslnie 1.0
+ * (neutralny) gdy `civKey` nie podany lub nieznany (civMatrixParam zwraca
+ * wtedy default 0 -> mnoznik 1). Uzywane przez battle/battleScene.ts
+ * (_siegeStructureDamage / _attackWallTile — atak Taranu na brame / Katapulty
+ * na kafel muru).
+ */
+export function civSiegeMachinesMult(civKey?: string | null): number {
+  if (!civKey) return 1;
+  return 1 + civMatrixParam(civKey, 'obl_machines_proc');
 }

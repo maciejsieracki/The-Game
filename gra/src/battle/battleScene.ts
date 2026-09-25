@@ -113,6 +113,8 @@ import {
 } from './battle-terrain';
 import combatParamsData from '../../data/combat-params.json';
 import miastoParamsData from '../../data/miasto-params.json';
+import { civMatrixParam } from '../game/civ-matrix';
+import { civSiegeMachinesMult } from '../game/siegeMachines';
 import { buildSiegeWall, attachRowBreachPanels } from './siegeWall';
 import type { BronzeCiv } from '../render/bronzeCity';
 import {
@@ -2636,28 +2638,38 @@ export class BattleScene {
     this._attackerSideLabel = opts.attackerSideLabel?.trim() || '';
     // C-COMBAT-Q2 (Maciej 2026-07-26): patrz doc na polu isCityDefenseBattle.
     this.isCityDefenseBattle = opts.cityDefense === true || opts.siege != null;
-    // Wall/Cytadela/Baszta defence multiplier (Maciej 2026-07-25, rozszerzone
-    // 41B) -- data-driven from miasto-params.json, not hardcoded. +200% (mur),
-    // +300% (mur+Cytadela) or +400% (mur+Cytadela+Baszta). Scalone w
-    // cityWallDefenseBonusPercent (game/city-defense.ts) -- ta sama funkcja co
-    // main.ts structureDefenseBonusFor (mapa swiata), zeby oba tryby liczyly to samo.
-    {
-      const murProc = (miastoParamsData as any)?.bonus_obrona_mur_proc?.wartosc ?? 200;
-      const cytadelaProc = (miastoParamsData as any)?.bonus_obrona_cytadela_proc?.wartosc ?? 100;
-      const basztaProc = (miastoParamsData as any)?.bonus_obrona_baszta_proc?.wartosc ?? 100;
-      const palisadaProc = (miastoParamsData as any)?.bonus_obrona_palisada_proc?.wartosc ?? 100;
-      const totalProc = cityWallDefenseBonusPercent(opts.siege?.builtBuildingIds, {
-        mur: murProc, cytadela: cytadelaProc, baszta: basztaProc, palisada: palisadaProc,
-      });
-      this.wallDefenseMult = 1 + totalProc / 100;
-      this.wallDefenseTotalProc = totalProc;
-    }
     this._defenderSideLabel = opts.defenderSideLabel?.trim() || '';
     const civRows: readonly { Cywilizacja?: string; ikonaId?: string }[] = d.cywilizacje ?? [];
     this._attackerCivIconId = opts.attackerCivIconId
       ?? civIconIdFromLabel(civRows, this._attackerCivLabel);
     this._defenderCivIconId = opts.defenderCivIconId
       ?? civIconIdFromLabel(civRows, this._defenderCivLabel);
+    // Wall/Cytadela/Baszta defence multiplier (Maciej 2026-07-25, rozszerzone
+    // 41B) -- data-driven from miasto-params.json, not hardcoded. +200% (mur),
+    // +300% (mur+Cytadela) or +400% (mur+Cytadela+Baszta). Scalone w
+    // cityWallDefenseBonusPercent (game/city-defense.ts) -- ta sama funkcja co
+    // main.ts structureDefenseBonusFor (mapa swiata), zeby oba tryby liczyly to samo.
+    // R-CYWILIZACJE-MACIERZ-WIRING-OBLEZENIE-Q1-20260922: civ-matrix.json->
+    // obl_mur_proc/obl_obrona_miasta_proc dla CYWILIZACJI BRONIACEJ SIE
+    // (_defenderCivIconId, ustawiony TUZ WYZEJ -- stad blok policzony PO
+    // przypisaniu _defenderCivIconId, nie przed) -- SKLADA SIE (mnozy) z
+    // istniejacym bonusem strukturalnym mur/cytadela/baszta/palisada wewnatrz
+    // cityWallDefenseBonusPercent, zeby ta sama sciezka parytetu main.ts <->
+    // battleScene.ts automatycznie objela i civ-matrix (bez duplikowania
+    // logiki mnozenia w dwoch miejscach).
+    {
+      const murProc = (miastoParamsData as any)?.bonus_obrona_mur_proc?.wartosc ?? 200;
+      const cytadelaProc = (miastoParamsData as any)?.bonus_obrona_cytadela_proc?.wartosc ?? 100;
+      const basztaProc = (miastoParamsData as any)?.bonus_obrona_baszta_proc?.wartosc ?? 100;
+      const palisadaProc = (miastoParamsData as any)?.bonus_obrona_palisada_proc?.wartosc ?? 100;
+      const civMurProc = civMatrixParam(this._defenderCivIconId, 'obl_mur_proc');
+      const civObronaProc = civMatrixParam(this._defenderCivIconId, 'obl_obrona_miasta_proc');
+      const totalProc = cityWallDefenseBonusPercent(opts.siege?.builtBuildingIds, {
+        mur: murProc, cytadela: cytadelaProc, baszta: basztaProc, palisada: palisadaProc,
+      }, civMurProc, civObronaProc);
+      this.wallDefenseMult = 1 + totalProc / 100;
+      this.wallDefenseTotalProc = totalProc;
+    }
     this._attackerLeaderName = opts.attackerLeaderName ?? null;
     this._defenderLeaderName = opts.defenderLeaderName ?? null;
     this._attackerEra = clampEra(opts.attackerEra);
@@ -7169,7 +7181,8 @@ export class BattleScene {
   private _siegeStructureDamage(ru: RuntimeBattleUnit): number {
     const s = ru.bu.stats as Record<string, unknown>;
     const wall = unitRowStat(s, 'wallAttack', undefined, 0);
-    if (wall > 0) return Math.max(1, Math.round(wall));
+    const machinesMult = this._civMachinesMult();
+    if (wall > 0) return Math.max(1, Math.round(wall * machinesMult));
     const rng = unitRowStat(s, 'missileAttack', 'Atak dystansowy', 0);
     if (rng > 0) return Math.max(1, Math.round(rng * 2));
     const imp = unitRowStat(s, 'chargeBonus', 'Uderzenie', unitRowStat(s, 'weaponDamage', 'Atak', 8));
@@ -7190,6 +7203,20 @@ export class BattleScene {
     return base > 0 ? Math.max(1, Math.round(base * civAttackRangeMultiplier(bonuses, civUnitShapeForBattleUnit(bu)))) : 0;
   }
 
+  /**
+   * R-CYWILIZACJE-MACIERZ-WIRING-OBLEZENIE-Q1-20260922: civ-matrix.json->
+   * obl_machines_proc dla WLASCICIELA MASZYNY OBLEZNICZEJ (civSiegeMachinesMult,
+   * game/siegeMachines.ts -- pure, jednostkowo testowalna). Taran/Katapulta w
+   * tej scenie ataku muru/bramy naleza ZAWSZE do atakujacego (`ru.side ===
+   * 'atk'`, patrz warunek `isSiegeUnit(ru.bu) && ru.side === 'atk'` przy
+   * wywolaniach _attackGate/_attackWallTile) -- wiec _attackerCivIconId to
+   * poprawny civKey wlasciciela machiny, bez potrzeby przenoszenia civKey per
+   * jednostke przez RuntimeBattleUnit/BattleUnit (ktore go dzis nie niosa).
+   */
+  private _civMachinesMult(): number {
+    return civSiegeMachinesMult(this._attackerCivIconId);
+  }
+
   /** Zasięg machiny oblężniczej vs mur (hex) — z `Zasięg ataku (hex)` / TW. */
   private _siegeMachineRange(ru: RuntimeBattleUnit): number {
     const r = this._attackRangeFor(ru.bu);
@@ -7205,7 +7232,7 @@ export class BattleScene {
     if (this.siegeWallCol < 0) { done(); return; }
     const rng = unitRowStat(ru.bu.stats as Record<string, unknown>, 'missileAttack', 'Atak dystansowy', 0);
     const wall = unitRowStat(ru.bu.stats as Record<string, unknown>, 'wallAttack', undefined, 0);
-    const base = wall > 0 ? wall : (rng > 0 ? rng * 2 : unitRowStat(ru.bu.stats as Record<string, unknown>, 'weaponDamage', 'Atak', 8));
+    const base = wall > 0 ? wall * this._civMachinesMult() : (rng > 0 ? rng * 2 : unitRowStat(ru.bu.stats as Record<string, unknown>, 'weaponDamage', 'Atak', 8));
     const dmg = Math.max(1, Math.round(base));
 
     // FIX 3: Animacja pocisku-kamienia katapulty (parabola) + SFX przy uderzeniu

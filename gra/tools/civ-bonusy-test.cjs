@@ -272,10 +272,15 @@ console.log('\nG. isCombatModifierBonus (preBattle filter)');
 {
   const rzymBonusy = civBonusyForCivKey('rzymianie', civs);
   const walka = rzymBonusy.filter(b => M.isCombatModifierBonus(b));
-  eq(walka.length, 1, 'Rzymianie preBattle: 1 bonus (Legion)');
+  // R-CYWILIZACJE-MACIERZ-WALKA-15-ZERO-POLA-Q1-20260925: Rzymianie otrzymali
+  // 4 nowe Matrix modyfikatory (walka_atak_wszystkie, walka_obrona_obleczenie,
+  // walka_zasieg_proc, walka_atak_piechota_w_murze) obok istniejącego Legionu -> 5.
+  eq(walka.length, 5, 'Rzymianie preBattle: 5 bonuses (Legion + atak_wszystkie + obrona_obleczenie + zasieg + atak_w_murze)');
   eq(walka[0].typ, 'bonus_walka', 'Rzymianie: bonus_walka');
   const grecyWalka = grecyBonusy.filter(b => M.isCombatModifierBonus(b));
-  eq(grecyWalka.length, 6, 'Grecy preBattle: 6 combat modifiers (Falanga + shallow-sea movement/attack/defense + marine attack/defense)');
+  // Grecy otrzymali 1 nowy Matrix modyfikator (walka_obrona_piechota_runda_szarzy,
+  // falanga jako charge-specific kontrpunkt) obok istniejących 6 -> 7.
+  eq(grecyWalka.length, 7, 'Grecy preBattle: 7 combat modifiers (Falanga + shallow-sea movement/attack/defense + marine attack/defense + obrona_runda_szarzy)');
 }
 
 // --- summary ---------------------------------------------------------------

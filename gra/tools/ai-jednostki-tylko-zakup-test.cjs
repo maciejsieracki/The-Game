@@ -395,13 +395,27 @@ if (guardSrcTs) {
     'D13c: zebrane 2 Pracy wracaja do puli wlasciciela (refunded: 0 -> 2)');
 }
 
-// --- D10-D12: wpiecie guardu w tick — relacja, nie tekst hunku --------------
+// D10-D12: wpiecie guardu w tick — relacja, nie tekst hunku --------------
 const idxCall = mainTsSrc.indexOf('stripLegacyUnitsFromPracaQueue(city.ownerId, prod0');
-const idxAdvance = mainTsSrc.indexOf('advanceProduction(prod0, pracaBudynki)');
+// R-CYWILIZACJE-MACIERZ-WIRING-PRODUKCJA-Q1-20260923 integration (orkiestrator, test-only
+// fix): advanceProduction(prod0, pracaBudynki) gained a 3rd matrixOptions argument and is
+// now formatted multi-line in the real per-city tick, so the old single-line literal no
+// longer matches. Search on the stable multi-line-safe prefix instead.
+const idxAdvance = mainTsSrc.indexOf('advanceProduction(\n                prod0,\n                pracaBudynki,');
 assert(idxCall > 0 && idxAdvance > 0 && idxCall < idxAdvance,
   'D10: guard jest wolany PRZED `advanceProduction` w ticku per-miasto');
-assert((mainTsSrc.match(/advanceProduction\(/g) || []).length === 1,
-  'D11: main.ts ma DOKLADNIE JEDEN punkt zuzycia Pracy — nowy, niebroniony by tu uciekl');
+// D11 zaktualizowane przy integracji R-CYWILIZACJE-MACIERZ-WIRING-PRODUKCJA-Q1-20260923
+// (orkiestrator, integration merge; zmiana WYLACZNIE w tescie, zero zmian w kodzie gry):
+// dwa NOWE wystapienia advanceProduction( naleza do window.__productionMatrixTestDebug
+// (dedykowany, izolowany hook testowy dla Matrix-owych pol prod_*, main.ts ~23150-23230),
+// caly kod dziala na lokalnych fixture'ach (buildingProd/recruitmentProd), nie na
+// prawdziwych city/prod z realnego ticku gry. Prawdziwy tick per-miasto (linia z
+// `const { prod: prodPo, completed, overflowToPool } = advanceProduction(`) pozostaje
+// JEDYNYM punktem zuzycia Pracy w rozgrywce -- ten fakt weryfikuje D11b ponizej.
+assert((mainTsSrc.match(/advanceProduction\(/g) || []).length === 3,
+  'D11: main.ts ma advanceProduction( w DOKLADNIE 3 miejscach -- 1 realny tick per-miasto + 2 izolowane window.__productionMatrixTestDebug probe hooks');
+assert(mainTsSrc.includes('const { prod: prodPo, completed, overflowToPool } = advanceProduction('),
+  'D11b: jedyny REALNY tick per-miasto (poza __productionMatrixTestDebug) pozostaje nienaruszony');
 // D12 — ZAKTUALIZOWANE przy integracji R-PRACA-JEDEN-PODZIAL-Q1 (orkiestrator,
 // integration micro-fix; zmiana WYLACZNIE w tescie, zero zmian w kodzie gry).
 //

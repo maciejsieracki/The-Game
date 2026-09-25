@@ -189,6 +189,7 @@ import {
 import {
   freshWealthState,
   loadWealthParams,
+  resolveWealthParamsForCiv,
   wealthCap,
   wealthMnoznik,
   wealthProg,
@@ -261,6 +262,7 @@ import {
   cityPopulationCap,
   sumBuildingHappinessFromBuiltIds,
   cityBuildingEntriesFromBuiltIds,
+  mergeCityYieldContextForOwner,
   mnoznikHandelPieniadzForCivByDifficulty,
   civEconomyYieldMultipliers,
   type CityYieldContext,
@@ -549,6 +551,8 @@ export interface CityPanelConfig {
   onPurchaseBuilding?: (cityId: string, item: ProductionItem, kosztGold: number) => void;
   /** Bonusy cywilizacji per owner (civs.json) — koszty budynkow/jednostek. */
   getCivBonusy?: (ownerId: number) => readonly CivBonusLite[];
+  /** Matrix-aware Manpower multipliers for live recruitment previews. */
+  getManpowerMultipliers?: (ownerId: number) => { maxMult: number; costMult: number };
   /** typCywilizacji / ikonaId gracza lub AI — filtr jednostek per Nacja. */
   getCivKey?: (ownerId: number) => string | undefined;
   /** Stan porządku/szczęścia per miasto (silnik po turze). Brak → szacunek z budynków. */
@@ -1156,10 +1160,13 @@ function computeView(city: City, map: GameMap, data: GameData): CityView | null 
     );
     const zdrowie = healthBd.total;
     const ownerDefaultPodzial = readOwnerDefaultPodzialHandlu(city, data);
+    const civKey = cfg.getCivKey?.(city.ownerId);
     const econCity = toEconomyCity(
       city, params, isCapital(city), zdrowie,
       { maSpichlerz, maAkwedukt },
       ownerDefaultPodzial,
+      undefined,
+      civKey,
     );
     // #17 fix: base ctx miał flagi budynków/Waluty/bonusów cyw. na sztywno false/1/undefined,
     // więc Bilans plonów pomijał Młyn/Cegielnię/Targowisko/Bibliotekę/Mennicę, Walutę i bonusy
@@ -1176,7 +1183,6 @@ function computeView(city: City, map: GameMap, data: GameData): CityView | null 
     // resolveOwnerZlotoAccess). ctx.maMennica poniżej idzie właśnie do
     // cityYieldPerTurn tak samo jak silnik, więc musi być tym samym warunkiem.
     const maMennica = ownerHasMennica(city.ownerId) && (cfg.getOwnerHasZlotoAccess?.(city.ownerId) ?? true);
-    const civKey = cfg.getCivKey?.(city.ownerId);
     // Efekt 1 SCALONY (2026-07-25) + pytanie 69 (2026-07-25): mnoznik cywilizacyjny
     // (civs.json mnoznikHandelPieniadz) SKALOWANY TRUDNOSCIA (+0,5 easy / -0,5 hard).
     // ZASTĘPUJE dawna plaska regule "2/1.5/1 dla wszystkich" -- ta zostaje TYLKO
@@ -1192,10 +1198,12 @@ function computeView(city: City, map: GameMap, data: GameData): CityView | null 
     const { handel: civHandelMult, nauka: civNaukaMult } =
       civEconomyYieldMultipliers(cfg.getCivBonusy?.(city.ownerId) ?? []);
     const base: CityYieldContext = {
+      civKey,
       wojskoZuzycieZywnosci: 0, strataFraction: 0,
       maMlyn: built.includes('mlyn'),
       maCegielnia: built.includes('cegielnia'),
       maTargowisko: built.includes('targowisko'),
+      maPort: built.includes('port') || built.includes('port_wielki'),
       maBiblioteka: built.includes('biblioteka'),
       maAkademia: built.includes('akademia'),
       // Efekt 1 SCALONY: maMennica jest jednym z dwoch warunkow bramki w
@@ -1209,7 +1217,7 @@ function computeView(city: City, map: GameMap, data: GameData): CityView | null 
       // Zadanie 2 (2026-07-23): Garncarnia +Zywnosc% LOKALNIE -- liczba sztuk w TYM miescie.
       liczbaGarncarni: built.filter(id => id === 'garncarnia').length,
     };
-    const ctx: CityYieldContext = { ...base, ...(cfg.getCityBuildingFlags?.(city.id) ?? {}) };
+    const ctx = mergeCityYieldContextForOwner(base, civKey, cfg.getCityBuildingFlags?.(city.id));
     // Naprawa 2026-07-25: plony budynkow (Praca/Pieniadz/Zywnosc/Nauka/Kultura) -- ta sama
     // funkcja co silnik (turn-economy.ts), zeby "Bilans plonow" nie pokazywal 0 z budynkow.
     const era = cfg.getEpoch?.(city.ownerId) ?? 1;
@@ -3126,7 +3134,10 @@ function computeOrderStateLocal(city: City, data: GameData): { state: OrderState
 
   const ws = city.wealthState ?? freshWealthState();
   const wealthParams = data.econParams
-    ? loadWealthParams(data.econParams as unknown as RawWealthParamsJson, difficulty)
+    ? resolveWealthParamsForCiv(
+      loadWealthParams(data.econParams as unknown as RawWealthParamsJson, difficulty),
+      cfg.getCivKey?.(city.ownerId),
+    )
     : null;
   // G6: wkład Wealth zależy od CAPU epoki (max +10 w każdej epoce) — ta sama epoka,
   // którą panel podaje do rozpiski Szczęścia, więc panel i silnik liczą to identycznie.
@@ -4777,7 +4788,10 @@ function renderWealth(mount: HTMLElement, city: City, data: GameData | null, vie
   const ws = city.wealthState ?? freshWealthState();
   const epoch = cfg.getEpoch?.(city.ownerId) ?? 1;
   const wealthParams = data
-    ? loadWealthParams(data.econParams as unknown as RawWealthParamsJson, cfg.difficulty ?? 'normal')
+    ? resolveWealthParamsForCiv(
+      loadWealthParams(data.econParams as unknown as RawWealthParamsJson, cfg.difficulty ?? 'normal'),
+      cfg.getCivKey?.(city.ownerId),
+    )
     : null;
 
   appendSectionTitleWithDetails(mount, '<span>Zamożność</span>', () => {
@@ -8049,8 +8063,9 @@ function appendBuildableItemRow(
 
 function recruitManpowerCost(city: City, typeId: string): number {
   const ep = cfg.getEpoch?.(city.ownerId) ?? 1;
-  const maxMult = civManpowerMaxMult(cfg.getCivBonusy?.(city.ownerId));
-  return unitManpowerCostForType(typeId, ep, maxMult);
+  const multipliers = cfg.getManpowerMultipliers?.(city.ownerId);
+  const maxMult = multipliers?.maxMult ?? civManpowerMaxMult(cfg.getCivBonusy?.(city.ownerId));
+  return unitManpowerCostForType(typeId, ep, maxMult, multipliers?.costMult ?? maxMult);
 }
 
 /** Bieżąca pula rekrutów używana przez bramkę zakupu (fallback: pula miasta). */
@@ -8504,7 +8519,7 @@ function renderProd(mount: HTMLElement, city: City, view: CityView | null): void
     actions.style.cssText = 'margin-top:0.35em;display:flex;gap:0.3em;flex-wrap:wrap;';
     // Wykup (rush-buy) -- only when the engine exposes treasury + a spend hook.
     if (cfg.getTreasury && cfg.onRushBuy) {
-      const koszt = rushCost(prod);
+      const koszt = rushCost(prod, { civKey: cfg.getCivKey?.(city.ownerId) ?? 'grecy' });
       const skarb = cfg.getTreasury(city.ownerId);
       const stac = skarb >= koszt;
       const wykup = el('button', 'btn btn-g');
@@ -8629,6 +8644,7 @@ function productionCtxForCity(city: City): AvailabilityContext {
     kosztJednostekPace: cfg.getKosztJednostekPace?.() ?? 'niski',
     ownerId: city.ownerId,
     difficulty: cfg.getDifficulty?.() ?? 'normal',
+    civKey: cfg.getCivKey?.(city.ownerId),
     activeResourceLabels,
     empireActiveResourceLabels,
     empireBuiltIds,
@@ -8797,6 +8813,7 @@ function renderBuildList(
         cfg.getBuildingCostPace?.() ?? 'niski',
         city.ownerId,
         cfg.getDifficulty?.() ?? 'normal',
+        { civKey: cfg.getCivKey?.(city.ownerId) ?? 'grecy' },
       );
       if (!item) continue;
       const nazwaPoziom: string = (def.nazwyPoziomow[targetLevel - 1] ?? '');
@@ -8861,8 +8878,9 @@ function renderBuildList(
 function buildRecruitTabDetailCard(city: City, unitCount: number, skarb: number | undefined): HTMLDivElement {
   const epoch = cfg.getEpoch?.(city.ownerId) ?? 1;
   const mpSnap = cfg.getManpowerSnapshot?.(city.id);
-  const maxMult = civManpowerMaxMult(cfg.getCivBonusy?.(city.ownerId));
-  const mpCostStd = unitManpowerCost(epoch, maxMult);
+  const multipliers = cfg.getManpowerMultipliers?.(city.ownerId);
+  const maxMult = multipliers?.maxMult ?? civManpowerMaxMult(cfg.getCivBonusy?.(city.ownerId));
+  const mpCostStd = unitManpowerCost(epoch, multipliers?.costMult ?? maxMult);
 
   const card = el('div', 'detail-card');
   card.appendChild(el('div', 'dc-h', '<span>Rekrutacja — szczegóły</span>'));

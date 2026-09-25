@@ -93,6 +93,9 @@ const PROVEN_CONSUMERS: Readonly<Record<string, string>> = {
   lud_zdrowie_proc: 'population-growth-v85.ts:248–255, 496–503 — centralny growthPct skaluje raz istniejący wkład floor(max(0, zdrowie)/10); raw health i legacy healthModifier bez zmian',
   lud_zadowolenie_bazowe: 'main.ts:32134–32149 + population-growth-v85.ts:248–255, 496–503 — jeden resolved bonus ownerCivMap trafia do Order/rewolty i bounded happiness-to-growth',
   lud_limit_populacji: 'economy.ts:1143–1160 + population-growth-v85.ts:293–297, 537–538 — buildingCap 5/8/12 plus approved Matrix delta -1/0/+1/+2, shared by legacy and central growth paths',
+  mp_regen_proc: 'manpower.ts + turn-economy.ts — exact civ-matrix multiplier is applied to live city regeneration for player and AI owners',
+  mp_max_proc: 'manpower.ts + turn-economy.ts + population-growth-v85.ts — exact civ-matrix multiplier is applied to city max/current caps and population-change refresh',
+  mp_koszt_jednostki_proc: 'manpower.ts + production.ts + main.ts + cityPanel.ts — exact civ-matrix multiplier is applied to recruitment, queued completion/refund, replenishment and UI cost previews',
   dip_handlowosc_archetyp: 'civ-ai-data.ts:184–198 + diplomacy.ts:1267–1308 — skłonność AI do handlu',
   ai_agresywnosc: 'civ-ai-data.ts:39–53/156–178 + diplomacy.ts:1261–1285 — gotowość AI do wojny',
   ai_ekspansywnosc: 'civ-ai-data.ts:88–101 + ai-expansion.ts — scoring ekspansji i zakładania miast',
@@ -107,6 +110,35 @@ const PROVEN_CONSUMERS: Readonly<Record<string, string>> = {
   dip_prog_wojny: 'diplomacy-display.ts:73 + TAG_RULES — tag relacyjny tylko w UI',
   dip_pamietliwosc: 'diplomacy-display.ts:82 + TAG_RULES — tag relacyjny tylko w UI',
   dip_otwartosc_handel: 'diplomacy-display.ts:46 + TAG_RULES — tag relacyjny tylko w UI',
+  // R-CYWILIZACJE-MACIERZ-WIRING-EKONOMIA-Q1-20260923 + WEALTH-R2 + MANPOWER-R2 +
+  // SPOLECZENSTWO-R2 + PRODUKCJA-R2/R3 (Final Control PASS, integrated 2026-09-25):
+  // 25 fields with a live consumer that were still classified UNWIRED because
+  // civ-matrix-semantic.ts was not updated alongside the topic merges.
+  eko_praca_proc: 'economy.ts:1034 — civEconomyParam(ctx, ...) skaluje wkład Pracy do dochodu miasta',
+  eko_pieniadz_proc: 'economy.ts:1183 — civEconomyParam(ctx, ...) skaluje pieniądz brutto po Handlu',
+  eko_pieniadz_port_proc: 'economy.ts:1158 — civEconomyParam(ctx, ...) skaluje premię portową do pieniądza',
+  eko_zywnosc_proc: 'economy.ts:1176 — civEconomyParam(ctx, ...) skaluje wkład Żywności',
+  eko_nauka_proc: 'economy.ts:1140 — civEconomyParam(ctx, ...) skaluje lokalną Naukę miasta',
+  eko_kultura_proc: 'economy.ts:1187 — civEconomyParam(ctx, ...) skaluje Kulturę z budynków',
+  eko_luksus_proc: 'economy.ts:1123 — civEconomyParam(ctx, ...) skaluje Luksus z Handlu netto',
+  eko_zadowolenie_proc: 'economy.ts:1188 — civEconomyParam(ctx, ...) skaluje Zadowolenie z budynków',
+  eko_handel_brutto_proc: 'economy.ts:1090,1154 — civEconomyParam(ctx, ...) skaluje Handel brutto (2 call-site, spójne)',
+  eko_korupcja_proc: 'economy.ts:1095 — civEconomyParam(ctx, ...) skaluje stratę korupcyjną (HARMFUL polarity: dodatnia wartość = więcej korupcji)',
+  prod_koszt_budynku_proc: 'production.ts:578 — matrixCostBase(...) redukuje/podnosi koszt budynku (HARMFUL polarity: dodatnia wartość = tańsza rekrutacja, ale pole samo liczone jako koszt)',
+  prod_koszt_jednostki_proc: 'production.ts:605 — matrixCostBase(...) redukuje/podnosi koszt jednostki',
+  prod_szybkosc_budynku_proc: 'production.ts:1842 + matrixSpeedMultiplier — skaluje tempo budowy budynków',
+  prod_szybkosc_jednostki_proc: 'production.ts:1843,1992,2054 — matrixSpeedMultiplier skaluje tempo rekrutacji (3 call-site: advanceProduction + advanceRecruitmentGated x2)',
+  prod_rush_koszt_proc: 'production.ts:2083 — matrixCostBase(...) skaluje koszt przyspieszenia (rush) w złocie',
+  wealth_cap_proc: 'wealth.ts:111 — civMatrixParam(civKey, ...) skaluje pułap poziomu Wealth per miasto',
+  wealth_mnoznik_proc: 'wealth.ts:112 — civMatrixParam(civKey, ...) skaluje mnożnik przyrostu Wealth',
+  kultura_naplyw_proc: 'culture-religion.ts:357 — applyCivMatrixParam(...) skaluje napływ Kultury',
+  religia_spread_proc: 'culture-religion.ts:1053 — applyCivMatrixParam(...) skaluje presję rozprzestrzeniania Religii',
+  porzadek_produkcja_proc: 'society-breakdown.ts:1086 — matrixEffect(...) skaluje mnożnik Produkcji z Porządku',
+  porzadek_pieniadz_proc: 'society-breakdown.ts:1087 — matrixEffect(...) skaluje mnożnik Pieniądza z Porządku',
+  porzadek_nauka_proc: 'society-breakdown.ts:1088 — matrixEffect(...) skaluje mnożnik Nauki z Porządku',
+  porzadek_kultura_proc: 'society-breakdown.ts:1089 — matrixEffect(...) skaluje mnożnik Kultury z Porządku',
+  porzadek_wzrost_proc: 'society-breakdown.ts:1090 — matrixEffect(...) skaluje mnożnik wzrostu populacji z Porządku',
+  meta_mnoznik_waluta: 'economy.ts:835 — civMatrixParam(civKey, ...) mnoży wartość waluty (jedyny konsument domeny meta, sprzed tej sesji)',
 };
 
 const REAL_GAMEPLAY = new Set([
@@ -115,6 +147,9 @@ const REAL_GAMEPLAY = new Set([
   'lud_zdrowie_proc',
   'lud_zadowolenie_bazowe',
   'lud_limit_populacji',
+  'mp_regen_proc',
+  'mp_max_proc',
+  'mp_koszt_jednostki_proc',
   'dip_handlowosc_archetyp',
   'ai_agresywnosc',
   'ai_ekspansywnosc',
@@ -124,6 +159,47 @@ const REAL_GAMEPLAY = new Set([
   'ai_tolerancja_ryzyka',
   'ai_sklonnosc_podboju',
   'ai_profil_obronna',
+  // R-CYWILIZACJE-MACIERZ-WALKA-10GRUP-Q1-20260925: 34 z 39 pól walka_* + 3 pola
+  // obl_* mają dziś żywy konsument w civ-bonuses.ts/combat.ts/battleScene.ts/
+  // siege.ts/city-defense.ts/siegeMachines.ts (32 pola z 10-grupowej dyspozycji +
+  // 2 nowe pola G7 [walka_ruch_piechota_teren_plytkie_morze] wprowadzone przy tej
+  // samej okazji). 7 pól G1 (walka_atak_piechota, walka_atak_lukownicy,
+  // walka_dystans_lukownicy, walka_hp_piechota, walka_hp_rydwany,
+  // walka_obrona_piechota, walka_pancerz_piechota) POZOSTAJĄ BLOCKED —
+  // świadomie wykluczone z zakresu na życzenie właściciela (patrz
+  // civMatrixBonusyForCivKey() excludedG1 set, civ-bonuses.ts).
+  'walka_atak_kawaleria', 'walka_atak_rydwany', 'walka_atak_obleczenie',
+  'walka_atak_morska', 'walka_atak_wszystkie',
+  'walka_obrona_lukownicy', 'walka_obrona_kawaleria', 'walka_obrona_rydwany',
+  'walka_obrona_obleczenie', 'walka_obrona_morska',
+  'walka_pancerz_lukownicy', 'walka_pancerz_kawaleria', 'walka_pancerz_rydwany',
+  'walka_uderzenie_piechota', 'walka_uderzenie_kawaleria', 'walka_uderzenie_rydwany',
+  'walka_dystans_rydwany',
+  'walka_hp_kawaleria',
+  'walka_atak_piechota_teren_las', 'walka_obrona_piechota_teren_las',
+  'walka_atak_piechota_terytorium_wlasne', 'walka_obrona_piechota_terytorium_wlasne',
+  'walka_atak_piechota_w_murze', 'walka_obrona_piechota_w_murze',
+  'walka_atak_piechota_runda_szarzy', 'walka_obrona_piechota_runda_szarzy',
+  'walka_atak_piechota_teren_plytkie_morze', 'walka_obrona_piechota_teren_plytkie_morze',
+  'walka_ruch_piechota_teren_plytkie_morze',
+  'walka_ruch_bitwa_proc', 'walka_ruch_rydwany', 'walka_zasieg_proc',
+  'walka_oblezenie_proc',
+  'walka_koszt_rekrutacji_proc',
+  'obl_mur_proc', 'obl_obrona_miasta_proc', 'obl_machines_proc',
+  // R-CYWILIZACJE-MACIERZ-WIRING-EKONOMIA-Q1-20260923 + WEALTH-R2 + MANPOWER-R2 +
+  // SPOLECZENSTWO-R2 + PRODUKCJA-R2/R3, integrated 2026-09-25 (see PROVEN_CONSUMERS
+  // above for exact call-sites): 25 fields with live consumers in
+  // economy.ts/production.ts/wealth.ts/culture-religion.ts/society-breakdown.ts.
+  'eko_praca_proc', 'eko_pieniadz_proc', 'eko_pieniadz_port_proc', 'eko_zywnosc_proc',
+  'eko_nauka_proc', 'eko_kultura_proc', 'eko_luksus_proc', 'eko_zadowolenie_proc',
+  'eko_handel_brutto_proc', 'eko_korupcja_proc',
+  'prod_koszt_budynku_proc', 'prod_koszt_jednostki_proc', 'prod_szybkosc_budynku_proc',
+  'prod_szybkosc_jednostki_proc', 'prod_rush_koszt_proc',
+  'wealth_cap_proc', 'wealth_mnoznik_proc',
+  'kultura_naplyw_proc', 'religia_spread_proc',
+  'porzadek_produkcja_proc', 'porzadek_pieniadz_proc', 'porzadek_nauka_proc',
+  'porzadek_kultura_proc', 'porzadek_wzrost_proc',
+  'meta_mnoznik_waluta',
 ]);
 
 const UI_ONLY = new Set([
@@ -176,68 +252,33 @@ const HARMFUL = new Set([
 ]);
 
 // R-CYWILIZACJE-MACIERZ-WIRING-COMBAT-RECON-ORIGIN-20260922 round 2 (2026-09-22):
-// 17 combat multiplier parameters with non-default per-civilization values. Read
-// evidence (civ-bonuses.ts, combat.ts, production.ts) shows the SAME gameplay
-// effect these IDs describe is already delivered today through the independent
-// `civs.json` → `bonusy[]` → `civ-bonuses.ts civCombatStatMultipliers()` /
-// `production.ts civRecruitmentDiscount()` pipeline (verified per-row: e.g.
-// `walka_atak_piechota`/rzymianie=0.15 duplicates the live Legion `bonus_walka`
-// opis "+15% ataku i pancerza piechoty" applied via civ-bonuses.ts today).
-// Wiring `civ-matrix.json` on top, without an owner-stated precedence rule
-// (replace vs. stack vs. ignore), would silently double or conflict with an
-// already-active bonus for the matching civilizations and silently no-op (or
-// invent a rule) for the non-matching ones — anti-self-deception forbids
-// guessing that rule. See 02-decision-packet-combat.md.
+// originally 17 combat multiplier parameters were BLOCKED pending an owner
+// precedence decision (replace vs. stack vs. ignore vs. civs.json). That
+// decision landed via R-CYWILIZACJE-MACIERZ-WALKA-10GRUP-Q1-20260925 (Matrix
+// replaces civs.json, legacy faded from civ-bonuses.ts) for all fields EXCEPT
+// the 7 G1 base-stat fields, which the owner explicitly excluded from this
+// wiring round and which therefore remain genuinely BLOCKED/unwired (no
+// consumer reads civ-matrix.json for these — see civMatrixBonusyForCivKey()
+// excludedG1 Set in civ-bonuses.ts).
 const BLOCKED_COMBAT_MULTIPLIER = new Set([
   'walka_atak_piechota',
-  'walka_atak_kawaleria',
-  'walka_atak_rydwany',
-  'walka_atak_obleczenie',
   'walka_obrona_piechota',
   'walka_pancerz_piechota',
-  'walka_uderzenie_piechota',
-  'walka_uderzenie_kawaleria',
   'walka_dystans_lukownicy',
   'walka_hp_piechota',
   'walka_hp_rydwany',
-  'walka_ruch_bitwa_proc',
-  'walka_koszt_rekrutacji_proc',
-  'walka_atak_piechota_teren_las',
-  'walka_obrona_piechota_terytorium_wlasne',
-  'walka_obrona_piechota_w_murze',
-  'walka_atak_piechota_runda_szarzy',
 ]);
 
-// Same round: 25 combat/siege/fortification parameters where all 15 civilization
-// cells equal the declared default (no differentiated signal in the matrix data
-// itself). Closed dead for this scope — matches the DEAD_UNWIRED convention
-// already established for non-combat domains; do not add a zero adapter.
+// Same round, corrected 2026-09-25: only walka_atak_lukownicy remains
+// genuinely dead — it is one of the 7 G1 fields excluded from the Walka
+// wiring round (civ-bonuses.ts excludedG1 Set), so it has zero live consumer
+// despite appearing in MATRIX_COMBAT_SPECS. The other 24 fields formerly
+// listed here now have a live consumer AND a non-zero differentiating value
+// per R-CYWILIZACJE-MACIERZ-WALKA-15-ZERO-POLA-Q1-20260925 (owner: a wired
+// parameter with all-15-civs-zero is pointless; every wired field must
+// differentiate, per historical rationale) — reclassified to REAL_GAMEPLAY.
 const DEAD_UNWIRED_COMBAT = new Set([
   'walka_atak_lukownicy',
-  'walka_atak_morska',
-  'walka_atak_wszystkie',
-  'walka_obrona_lukownicy',
-  'walka_obrona_kawaleria',
-  'walka_obrona_rydwany',
-  'walka_obrona_obleczenie',
-  'walka_obrona_morska',
-  'walka_pancerz_lukownicy',
-  'walka_pancerz_kawaleria',
-  'walka_pancerz_rydwany',
-  'walka_uderzenie_rydwany',
-  'walka_dystans_rydwany',
-  'walka_hp_kawaleria',
-  'walka_zasieg_proc',
-  'walka_oblezenie_proc',
-  'walka_obrona_piechota_teren_las',
-  'walka_atak_piechota_terytorium_wlasne',
-  'walka_atak_piechota_w_murze',
-  'walka_obrona_piechota_runda_szarzy',
-  'walka_atak_piechota_teren_plytkie_morze',
-  'walka_obrona_piechota_teren_plytkie_morze',
-  'obl_obrona_miasta_proc',
-  'obl_mur_proc',
-  'obl_machines_proc',
 ]);
 
 const NEUTRAL_DOMAINS = new Set(['ai', 'dyplomacja']);
@@ -353,7 +394,7 @@ function statusReason(
     case 'REFERENCE_NEEDS_REVIEW': return 'Znaleziono ślad referencyjny, ale brak dowodu efektu w runtime.';
     case 'BLOCKED':
       if (BLOCKED_COMBAT_MULTIPLIER.has(parameterId)) {
-        return `Zablokowane do decyzji właściciela (runda 2, R-CYWILIZACJE-MACIERZ-WIRING-COMBAT-RECON-ORIGIN-20260922): ${parameterId} opisuje ten sam efekt walki, który już dziś dostarcza niezależny kanał civs.json→bonusy[]→civ-bonuses.ts; bez decyzji o precedencji (zastąp / sumuj / ignoruj macierz) podłączenie civ-matrix.json ryzykuje ciche podwojenie lub konflikt bonusu. Patrz 02-decision-packet-combat.md.`;
+        return `Świadomie wykluczone z zakresu przez właściciela (G1, R-CYWILIZACJE-MACIERZ-WALKA-10GRUP-Q1-20260925): ${parameterId} jest jednym z 7 pól bazowych statystyk piechoty/łuczników, które właściciel zdecydował pozostawić poza tą rundą wiringu — civMatrixBonusyForCivKey() jawnie pomija te pola (excludedG1), civs.json→bonusy[]→civ-bonuses.ts pozostaje jedynym aktywnym kanałem dla tego efektu. Nie jest to brak decyzji — decyzja to świadome wykluczenie.`;
       }
       return 'Pole zablokowane do decyzji; nie ma efektywnego wpływu.';
     case 'DECISION_REQUIRED':

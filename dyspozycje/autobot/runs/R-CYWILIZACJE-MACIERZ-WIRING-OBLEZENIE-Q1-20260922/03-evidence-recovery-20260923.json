@@ -1,0 +1,142 @@
+{
+  "topic": "R-CYWILIZACJE-MACIERZ-WIRING-OBLEZENIE-Q1-20260922",
+  "role": "Final Control",
+  "recovery": "round2/provider-fallback/20260923",
+  "status": "FAIL",
+  "domain": "GAME",
+  "product_acceptance": false,
+  "scope": {
+    "read_only": true,
+    "product_files_modified": false,
+    "allowed_artifacts_written": [
+      "dyspozycje/autobot/runs/R-CYWILIZACJE-MACIERZ-WIRING-OBLEZENIE-Q1-20260922/03-final-control-recovery-20260923.md",
+      "dyspozycje/autobot/runs/R-CYWILIZACJE-MACIERZ-WIRING-OBLEZENIE-Q1-20260922/03-evidence-recovery-20260923.json",
+      "dyspozycje/autobot/runs/R-CYWILIZACJE-MACIERZ-WIRING-OBLEZENIE-Q1-20260922/03-transition-receipt-recovery-20260923.md"
+    ],
+    "commit_push_merge_deploy": "NIE WYKONANO"
+  },
+  "calibration_check": {
+    "verdict": "MATERIALLY_MEANINGFUL",
+    "source_paths": [
+      "gra/src/main.ts:27558-27613",
+      "gra/tools/mur-paradoks-test.cjs:254-257",
+      "gra/data/civ-matrix.json:908-910"
+    ],
+    "example": {
+      "fixture": "Konnica production split used by mur-paradoks test",
+      "attack_component": 26,
+      "defense_component": 23,
+      "neutral_structural_pct": 200,
+      "neutral_defender_m": 95.0,
+      "grecy_mur_proc": 0.2,
+      "grecy_obrona_miasta_proc": 0.2,
+      "grecy_structural_pct": 288.0,
+      "grecy_defender_m": 115.2,
+      "zulusi_mur_proc": -0.2,
+      "zulusi_obrona_miasta_proc": 0.0,
+      "zulusi_structural_pct": 160.0,
+      "zulusi_defender_m": 85.8,
+      "grecy_vs_neutral_percent": 21.26,
+      "grecy_vs_zulusi_percent": 34.27,
+      "manpower_precedent": {
+        "example_pool_values": [12000, 8000],
+        "relative_spread_percent": 50.0
+      }
+    },
+    "conclusion": "The standing ±0.20 effect is in the same order of magnitude as accepted Manpower ±0.20 and is not cosmetic."
+  },
+  "consumer_audit": {
+    "shared_city_defense_path": {
+      "confirmed": true,
+      "shared_function": "cityWallDefenseBonusPercent",
+      "definition": "gra/src/game/city-defense.ts:81-103",
+      "map_auto_battle": "gra/src/main.ts:26784-26794; owner civKey from civKeyForOwnerId(cityOnHex.ownerId)",
+      "interactive_battle": "gra/src/battle/battleScene.ts:2639-2645; defender civKey from _defenderCivIconId"
+    },
+    "siege_machine_path": {
+      "confirmed": true,
+      "side_gate": "gra/src/battle/battleScene.ts:5886-5915; isSiegeUnit(ru.bu) && ru.side === 'atk'",
+      "damage_multiplier": [
+        "gra/src/battle/battleScene.ts:7149-7175",
+        "gra/src/battle/battleScene.ts:7191-7194"
+      ],
+      "civ_key": "_attackerCivIconId"
+    },
+    "siege_ai_third_path": {
+      "live": true,
+      "call_sites": [
+        "gra/src/main.ts:14929-14962",
+        "gra/src/main.ts:14966-14987"
+      ],
+      "chain": [
+        "main.ts -> decideAISiegeStance",
+        "siegeAi.ts:103-124,209-218 -> estimateDefenderStrength",
+        "siege.ts:399-439 -> cityDefenseBonus"
+      ],
+      "consumes_obl_mur_proc": false,
+      "consumes_obl_obrona_miasta_proc": false,
+      "reason": "cityDefenseBonus has no civKey/civ-matrix inputs and its wall flat values are zero in the real data; it does not use the shared cityWallDefenseBonusPercent path."
+    }
+  },
+  "blocking_objections": [
+    {
+      "id": 1,
+      "files_lines": [
+        "gra/src/main.ts:14929-14962",
+        "gra/src/main.ts:14966-14987",
+        "gra/src/game/siegeAi.ts:103-124",
+        "gra/src/game/siegeAi.ts:209-218",
+        "gra/src/game/siege.ts:399-439"
+      ],
+      "consequence": "Production AI siege defenderStrength, tier and assault/siege decision ignore obl_mur_proc and obl_obrona_miasta_proc even though actual battle calculations apply them.",
+      "classification": "blocking omitted live production consumer"
+    }
+  ],
+  "side_selection": {
+    "wall_defense": "defender owner/civKey confirmed",
+    "siege_machine_damage": "attacker owner/civKey confirmed",
+    "defensive_sortie_or_counterattack": {
+      "exists": false,
+      "evidence": "gra/src/battle/battleScene.ts:5938-5952 defender-hold branch; defender units never call _attackGate/_attackWallTile"
+    }
+  },
+  "manpower_merge_check": {
+    "base": "origin/main=0caa4dfa31d37337cd74fdbab95ee77da4806d98",
+    "manpower_commit": "87ce2daf3504ef12b52c0175c5d56b67da902966",
+    "manpower_changed_cells": 19,
+    "manpower_fields": [
+      "mp_koszt_jednostki_proc",
+      "mp_max_proc",
+      "mp_regen_proc"
+    ],
+    "oblezenie_changed_cells_vs_origin": 20,
+    "oblezenie_fields": [
+      "obl_machines_proc",
+      "obl_mur_proc",
+      "obl_obrona_miasta_proc"
+    ],
+    "changed_path_intersection": 0,
+    "paramDefs": 113,
+    "defaults": 113,
+    "structurally_mergeable": true,
+    "merge_performed": false
+  },
+  "tests": {
+    "new_wiring": {"command": "cd gra && node tools/civ-matrix-oblezenie-wiring-test.cjs", "exit": 0, "pass": 75, "fail": 0},
+    "city_defense_terrain": {"command": "cd gra && node tools/city-defense-terrain-gate-test.cjs", "exit": 0, "pass": 34, "fail": 0},
+    "defense_breakdown": {"command": "cd gra && node tools/defense-breakdown-test.cjs", "exit": 0, "pass": 44, "fail": 0},
+    "fortify_pole": {"command": "cd gra && node tools/fortify-pole-test.cjs", "exit": 0, "pass": 41, "fail": 0},
+    "mur_paradoks": {"command": "cd gra && node tools/mur-paradoks-test.cjs", "exit": 0, "pass": 29, "fail": 0},
+    "tsc": {"command": "cd gra && ./node_modules/.bin/tsc --noEmit", "exit": 0},
+    "civ_matrix_input_compare": {"exit": 0, "cells_checked": 45, "mismatches": 0, "other_obl_fields_changed": 0},
+    "git_diff_check": {"command": "git diff --check", "exit": 0},
+    "preexisting_empire_test": {"command": "cd gra && node tools/empire-panel-miasto-obywatele-content-test.cjs", "exit": 1, "pass": 115, "fail": 1, "classification": "pre-existing; matches upstream clean-baseline verification"},
+    "preexisting_cost_test": {"command": "cd gra && node tools/koszty-surowcowe-test.cjs", "exit": 1, "pass": 126, "fail": 3, "classification": "pre-existing; matches upstream clean-baseline verification"}
+  },
+  "harness_notes": [
+    "Root-level npx tsc --noEmit exited 1 because no root-local compiler was available; project-local gra invocation exited 0.",
+    "Root-level attempts to run the two known failing tests exited 1 with MODULE_NOT_FOUND; correct gra invocations produced the expected 115/1 and 126/3 results."
+  ],
+  "next_phase": "Return to existing Operator topic for one narrow correction of the live siegeAi/siege.ts AI-strength path; no additional Final Control after this bounded recovery failure.",
+  "push_deploy": "NIE WYKONANO"
+}
