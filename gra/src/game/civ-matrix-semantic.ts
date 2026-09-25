@@ -124,6 +124,33 @@ const REAL_GAMEPLAY = new Set([
   'ai_tolerancja_ryzyka',
   'ai_sklonnosc_podboju',
   'ai_profil_obronna',
+  // R-CYWILIZACJE-MACIERZ-WALKA-10GRUP-Q1-20260925: 34 z 39 pól walka_* + 3 pola
+  // obl_* mają dziś żywy konsument w civ-bonuses.ts/combat.ts/battleScene.ts/
+  // siege.ts/city-defense.ts/siegeMachines.ts (32 pola z 10-grupowej dyspozycji +
+  // 2 nowe pola G7 [walka_ruch_piechota_teren_plytkie_morze] wprowadzone przy tej
+  // samej okazji). 7 pól G1 (walka_atak_piechota, walka_atak_lukownicy,
+  // walka_dystans_lukownicy, walka_hp_piechota, walka_hp_rydwany,
+  // walka_obrona_piechota, walka_pancerz_piechota) POZOSTAJĄ BLOCKED —
+  // świadomie wykluczone z zakresu na życzenie właściciela (patrz
+  // civMatrixBonusyForCivKey() excludedG1 set, civ-bonuses.ts).
+  'walka_atak_kawaleria', 'walka_atak_rydwany', 'walka_atak_obleczenie',
+  'walka_atak_morska', 'walka_atak_wszystkie',
+  'walka_obrona_lukownicy', 'walka_obrona_kawaleria', 'walka_obrona_rydwany',
+  'walka_obrona_obleczenie', 'walka_obrona_morska',
+  'walka_pancerz_lukownicy', 'walka_pancerz_kawaleria', 'walka_pancerz_rydwany',
+  'walka_uderzenie_piechota', 'walka_uderzenie_kawaleria', 'walka_uderzenie_rydwany',
+  'walka_dystans_rydwany',
+  'walka_hp_kawaleria',
+  'walka_atak_piechota_teren_las', 'walka_obrona_piechota_teren_las',
+  'walka_atak_piechota_terytorium_wlasne', 'walka_obrona_piechota_terytorium_wlasne',
+  'walka_atak_piechota_w_murze', 'walka_obrona_piechota_w_murze',
+  'walka_atak_piechota_runda_szarzy', 'walka_obrona_piechota_runda_szarzy',
+  'walka_atak_piechota_teren_plytkie_morze', 'walka_obrona_piechota_teren_plytkie_morze',
+  'walka_ruch_piechota_teren_plytkie_morze',
+  'walka_ruch_bitwa_proc', 'walka_ruch_rydwany', 'walka_zasieg_proc',
+  'walka_oblezenie_proc',
+  'walka_koszt_rekrutacji_proc',
+  'obl_mur_proc', 'obl_obrona_miasta_proc', 'obl_machines_proc',
 ]);
 
 const UI_ONLY = new Set([
@@ -176,68 +203,33 @@ const HARMFUL = new Set([
 ]);
 
 // R-CYWILIZACJE-MACIERZ-WIRING-COMBAT-RECON-ORIGIN-20260922 round 2 (2026-09-22):
-// 17 combat multiplier parameters with non-default per-civilization values. Read
-// evidence (civ-bonuses.ts, combat.ts, production.ts) shows the SAME gameplay
-// effect these IDs describe is already delivered today through the independent
-// `civs.json` → `bonusy[]` → `civ-bonuses.ts civCombatStatMultipliers()` /
-// `production.ts civRecruitmentDiscount()` pipeline (verified per-row: e.g.
-// `walka_atak_piechota`/rzymianie=0.15 duplicates the live Legion `bonus_walka`
-// opis "+15% ataku i pancerza piechoty" applied via civ-bonuses.ts today).
-// Wiring `civ-matrix.json` on top, without an owner-stated precedence rule
-// (replace vs. stack vs. ignore), would silently double or conflict with an
-// already-active bonus for the matching civilizations and silently no-op (or
-// invent a rule) for the non-matching ones — anti-self-deception forbids
-// guessing that rule. See 02-decision-packet-combat.md.
+// originally 17 combat multiplier parameters were BLOCKED pending an owner
+// precedence decision (replace vs. stack vs. ignore vs. civs.json). That
+// decision landed via R-CYWILIZACJE-MACIERZ-WALKA-10GRUP-Q1-20260925 (Matrix
+// replaces civs.json, legacy faded from civ-bonuses.ts) for all fields EXCEPT
+// the 7 G1 base-stat fields, which the owner explicitly excluded from this
+// wiring round and which therefore remain genuinely BLOCKED/unwired (no
+// consumer reads civ-matrix.json for these — see civMatrixBonusyForCivKey()
+// excludedG1 Set in civ-bonuses.ts).
 const BLOCKED_COMBAT_MULTIPLIER = new Set([
   'walka_atak_piechota',
-  'walka_atak_kawaleria',
-  'walka_atak_rydwany',
-  'walka_atak_obleczenie',
   'walka_obrona_piechota',
   'walka_pancerz_piechota',
-  'walka_uderzenie_piechota',
-  'walka_uderzenie_kawaleria',
   'walka_dystans_lukownicy',
   'walka_hp_piechota',
   'walka_hp_rydwany',
-  'walka_ruch_bitwa_proc',
-  'walka_koszt_rekrutacji_proc',
-  'walka_atak_piechota_teren_las',
-  'walka_obrona_piechota_terytorium_wlasne',
-  'walka_obrona_piechota_w_murze',
-  'walka_atak_piechota_runda_szarzy',
 ]);
 
-// Same round: 25 combat/siege/fortification parameters where all 15 civilization
-// cells equal the declared default (no differentiated signal in the matrix data
-// itself). Closed dead for this scope — matches the DEAD_UNWIRED convention
-// already established for non-combat domains; do not add a zero adapter.
+// Same round, corrected 2026-09-25: only walka_atak_lukownicy remains
+// genuinely dead — it is one of the 7 G1 fields excluded from the Walka
+// wiring round (civ-bonuses.ts excludedG1 Set), so it has zero live consumer
+// despite appearing in MATRIX_COMBAT_SPECS. The other 24 fields formerly
+// listed here now have a live consumer AND a non-zero differentiating value
+// per R-CYWILIZACJE-MACIERZ-WALKA-15-ZERO-POLA-Q1-20260925 (owner: a wired
+// parameter with all-15-civs-zero is pointless; every wired field must
+// differentiate, per historical rationale) — reclassified to REAL_GAMEPLAY.
 const DEAD_UNWIRED_COMBAT = new Set([
   'walka_atak_lukownicy',
-  'walka_atak_morska',
-  'walka_atak_wszystkie',
-  'walka_obrona_lukownicy',
-  'walka_obrona_kawaleria',
-  'walka_obrona_rydwany',
-  'walka_obrona_obleczenie',
-  'walka_obrona_morska',
-  'walka_pancerz_lukownicy',
-  'walka_pancerz_kawaleria',
-  'walka_pancerz_rydwany',
-  'walka_uderzenie_rydwany',
-  'walka_dystans_rydwany',
-  'walka_hp_kawaleria',
-  'walka_zasieg_proc',
-  'walka_oblezenie_proc',
-  'walka_obrona_piechota_teren_las',
-  'walka_atak_piechota_terytorium_wlasne',
-  'walka_atak_piechota_w_murze',
-  'walka_obrona_piechota_runda_szarzy',
-  'walka_atak_piechota_teren_plytkie_morze',
-  'walka_obrona_piechota_teren_plytkie_morze',
-  'obl_obrona_miasta_proc',
-  'obl_mur_proc',
-  'obl_machines_proc',
 ]);
 
 const NEUTRAL_DOMAINS = new Set(['ai', 'dyplomacja']);
@@ -353,7 +345,7 @@ function statusReason(
     case 'REFERENCE_NEEDS_REVIEW': return 'Znaleziono ślad referencyjny, ale brak dowodu efektu w runtime.';
     case 'BLOCKED':
       if (BLOCKED_COMBAT_MULTIPLIER.has(parameterId)) {
-        return `Zablokowane do decyzji właściciela (runda 2, R-CYWILIZACJE-MACIERZ-WIRING-COMBAT-RECON-ORIGIN-20260922): ${parameterId} opisuje ten sam efekt walki, który już dziś dostarcza niezależny kanał civs.json→bonusy[]→civ-bonuses.ts; bez decyzji o precedencji (zastąp / sumuj / ignoruj macierz) podłączenie civ-matrix.json ryzykuje ciche podwojenie lub konflikt bonusu. Patrz 02-decision-packet-combat.md.`;
+        return `Świadomie wykluczone z zakresu przez właściciela (G1, R-CYWILIZACJE-MACIERZ-WALKA-10GRUP-Q1-20260925): ${parameterId} jest jednym z 7 pól bazowych statystyk piechoty/łuczników, które właściciel zdecydował pozostawić poza tą rundą wiringu — civMatrixBonusyForCivKey() jawnie pomija te pola (excludedG1), civs.json→bonusy[]→civ-bonuses.ts pozostaje jedynym aktywnym kanałem dla tego efektu. Nie jest to brak decyzji — decyzja to świadome wykluczenie.`;
       }
       return 'Pole zablokowane do decyzji; nie ma efektywnego wpływu.';
     case 'DECISION_REQUIRED':
