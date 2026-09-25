@@ -1,3 +1,17 @@
+﻿## [2026-09-25 19:00 UTC] ORKIESTRATOR -> KANBAN / WLASCICIEL -- DEPLOY ROBOCZA: CIV-MATRIX CONSOLIDATED INTEGRATION (PR #140)
+
+STATUS: `DEPLOYED -- local commit, manifest and smoke readback PASS; push nie wykonano`.
+
+- Clean integration worktree: `/home/ubuntu/projects/The-Game-deploy-robocza-20260925`; base `origin/main=b15bdb365ae251fdf190299a885af699314d810d` (PR #140 merged, containing META-REMOVE+spec-remove+Walka).
+- Product/bundle commit: `218bf8b1`; registry commit: `08790694`; remote `main` already contains `b15bdb36` (verified via `git merge-base --is-ancestor`); this deploy publishes that merged state to gra-robocza.
+- Scope: paramDefs `113 -> 93` net (4 meta fields removed, 18 spec_* fields removed, 32 combat fields wired G2-G11 + 2 new fields + 5 historical-balance additions). Full grouping and per-field rationale on `t_63dd77eb`.
+- Independent verification: PR #140 tree tested with 17/19 regression suites 100% PASS, 2 pre-existing failures confirmed byte-identical on clean origin/main (not regressions). Walka package: Operator (`t_5be3645a`) -> Evaluator (G8 objection: missing naval combat values) -> Defense (`t_f63e4337`, fixed) -> Final Control PASS.
+- Gates: TypeScript `tsc --noEmit` PASS, `git diff --check` PASS, Vite build `892` modules PASS, `verify-robocza-bundle.cjs` -> `VERIFY OK`, headless Chromium smoke (title/canvas/HUD render, zero console/page errors) PASS.
+- Bundle: md5 `706bf94a379763473ed4add9d508f622`, sha256 `86cd67aca862ab6fbad13aba48b6117d57bb175166ed555e1e66478a80ac85d0`, `69918639` bytes; no KANON/FINALNA promotion.
+- Poza zakresem tego deploya: `ai_profil_obronna` (2 komponenty, lokalny commit `b4c9582f`, niezmergowany) i pakiet Dyplomacja 8 pol (implementacja w toku) -- oba w osobnych, izolowanych worktree, czekaja na wlasny cykl integracji.
+
+CZEKAM-NA: test wlasciciela w `gra-robocza/START.html` po `Ctrl+F5`; decyzja o pushu tego commitu do zdalnego repo; AI i Dyplomacja pozostaja osobnymi tematami do dokonczenia.
+
 ## [2026-09-23 17:23 UTC] ORKIESTRATOR → KANBAN / WŁAŚCICIEL — DEPLOY ROBOCZA: LUD_LIMIT_POPULACJI
 
 STATUS: `DEPLOYED — remote branch/main, manifest and runtime readback PASS`.
