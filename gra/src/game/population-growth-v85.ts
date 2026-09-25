@@ -425,6 +425,8 @@ export interface PostCentralGrowthOpts {
   /** Test fixture hook; production resolves values from ownerCivByOwnerId. */
   populationMatrixByOwnerId?: ReadonlyMap<number, PopulationMatrixResolved>;
   civBonusyByOwner?: ReadonlyMap<number, readonly CivEconomyBonus[]>;
+  /** Resolved manpower max multiplier; matrix-aware and fixture-overridable. */
+  manpowerMaxMultByOwnerId?: ReadonlyMap<number, number>;
   /**
    * R-ZUZYCIE-SUROWCOW-OBYWATELE (Maciej 2026-08-10): kara Rozwoju (%) per miasto za surowce
    * budowlane obywateli brakujące w magazynie centralnym imperium — `citizen-resource-upkeep.ts`
@@ -470,7 +472,7 @@ export function applyPostCentralPopulationGrowth(opts: PostCentralGrowthOpts): v
     cities, econ, efResult, map, territoryNodes, econParams, rationParams,
     ownerCivByOwnerId, spichlerzByCity, happinessByCityId, builtByCity,
     ownerEraByOwner, difficulty = 'normal', populationMatrixByOwnerId,
-    civBonusyByOwner, citizenGrowthPctByCityId,
+    civBonusyByOwner, manpowerMaxMultByOwnerId, citizenGrowthPctByCityId,
     onCityPopulationChanged, excludeHexKeysByCity,
   } = opts;
 
@@ -555,8 +557,9 @@ export function applyPostCentralPopulationGrowth(opts: PostCentralGrowthOpts): v
           excludeHexKeysByCity?.get(city.id),
         );
         const ownerEra = ownerEraByOwner?.get(city.ownerId) ?? 1;
-        const mpMults = civManpowerMults(civBonusyByOwner?.get(city.ownerId));
-        city.manpower = refreshManpowerAfterPopChange(city, ownerEra, before, mpMults.maxMult);
+        const legacyMpMults = civManpowerMults(civBonusyByOwner?.get(city.ownerId));
+        const maxMult = manpowerMaxMultByOwnerId?.get(city.ownerId) ?? legacyMpMults.maxMult;
+        city.manpower = refreshManpowerAfterPopChange(city, ownerEra, before, maxMult);
         // P-AUTO-WYZYWIENIE-BUG2: populacja TEGO miasta faktycznie się zmieniła w tej
         // turze -- przelicz bezpieczny poziom Racji NA ŻYWO, PO przyroście (patrz komentarz
         // przy `onCityPopulationChanged` w PostCentralGrowthOpts wyżej).
