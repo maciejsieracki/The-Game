@@ -43,6 +43,8 @@
  * string values that must match the JSON data exactly.
  */
 
+import { applyCivMatrixParam } from './civ-matrix';
+
 // ===========================================================================
 // Shared difficulty + raw society-param row shapes (mirror society-params.json)
 // ===========================================================================
@@ -345,9 +347,17 @@ export function accumulateCulture(
   city: CultureCity,
   perTurn: number,
   params: CultureParams = FALLBACK_CULTURE_PARAMS,
+  civKey?: string | null,
 ): CultureAccrualResult {
   const before = Math.max(0, finiteOr(city.kulturaSkumulowana, 0));
-  const gain = Math.max(0, finiteOr(perTurn, 0));
+  const baseGain = Math.max(0, finiteOr(perTurn, 0));
+  const gain = Math.max(
+    0,
+    finiteOr(
+      civKey ? applyCivMatrixParam(baseGain, civKey, 'kultura_naplyw_proc') : baseGain,
+      baseGain,
+    ),
+  );
   const after = before + gain;
   const poprzedniZasieg = cityBorderRadius(before, params);
   const nowyZasieg = cityBorderRadius(after, params);
@@ -1022,7 +1032,12 @@ export function spreadReligion(
   source: ReligionState,
   neighbors: ReligionNeighbor[],
   params: ReligionParams = FALLBACK_RELIGION_PARAMS,
-  opts: { hasSwiatynia?: boolean; pressure?: number; seed?: number } = {},
+  opts: {
+    hasSwiatynia?: boolean;
+    pressure?: number;
+    seed?: number;
+    civKey?: string | null;
+  } = {},
 ): ReligionSpreadResult {
   const dom = dominantReligion(source, params);
   if (dom.status !== 'dominant' || dom.religion === null) {
@@ -1030,7 +1045,16 @@ export function spreadReligion(
   }
   const religion = dom.religion;
   const maxDist = params.szerzenieMaxDystans;
-  const pressure = Math.max(0, finiteOr(opts.pressure ?? 1, 1));
+  const basePressure = Math.max(0, finiteOr(opts.pressure ?? 1, 1));
+  const pressure = Math.max(
+    0,
+    finiteOr(
+      opts.civKey
+        ? applyCivMatrixParam(basePressure, opts.civKey, 'religia_spread_proc')
+        : basePressure,
+      basePressure,
+    ),
+  );
 
   // Eligible neighbours within range.
   const eligible = neighbors.filter(

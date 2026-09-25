@@ -126,8 +126,15 @@ export function applyCivMatrixParam(
       return val;
     case 'mul_proc':
     default:
-      return base * (1 + val);
+      return applyCivMatrixMulProc(base, val);
   }
+}
+
+/** Apply a fractional multiplier; 0.10 means +10%, -0.10 means -10%. */
+export function applyCivMatrixMulProc(base: number, delta: number): number {
+  const safeBase = Number.isFinite(base) ? base : 0;
+  const safeDelta = Number.isFinite(delta) ? delta : 0;
+  return safeBase * (1 + safeDelta);
 }
 
 /** Sumuje kilka parametrow tej samej formuly mul_proc (walka: wiecej kolumn). */

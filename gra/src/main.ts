@@ -32058,7 +32058,8 @@ async function boot(): Promise<void> {
 
               // KULTURA (kumulacja po konwersji share)
               const ccIn: CultureCity = { kulturaSkumulowana: (city as any).kultura ?? 0, ownCultureShare };
-              const acc = accumulateCulture(ccIn, kulturaTick, cp);
+              const ownerCivKey = civKeyForOwnerId(city.ownerId);
+              const acc = accumulateCulture(ccIn, kulturaTick, cp, ownerCivKey);
               (city as any).kultura = acc.kulturaSkumulowana;
               const ccOut: CultureCity = { kulturaSkumulowana: acc.kulturaSkumulowana, ownCultureShare };
               const haKult = cultureHappiness(ccOut, cp);
@@ -32086,6 +32087,7 @@ async function boot(): Promise<void> {
                     hasSwiatynia,
                     pressure: 1,
                     seed: (turn * 997 + city.q * 31 + city.r) >>> 0,
+                    civKey: ownerCivKey,
                   });
                   for (const ev of spreadRes.events) {
                     cityRelig.set(ev.id, ev.state);
@@ -32244,6 +32246,7 @@ async function boot(): Promise<void> {
                 },
                 data.societyParams,
                 difficulty,
+                ownerCivKey,
               );
 
               // R-MIASTA-REBELIA-OCHRONA-20-TUR-Q1 (GOAL 2): bezwarunkowo, NIE tylko gdy
