@@ -1,34 +1,38 @@
 {
-  "publishedAt": "2026-09-23T17:19:43Z",
-  "republishedAt": "2026-09-23T17:23:50Z",
-  "productReleaseCommit": "c4b426e4",
+  "publishedAt": "2026-09-25T19:00:00Z",
+  "productReleaseCommit": "b15bdb36",
   "publisher": "Hermes Orchestrator",
-  "md5": "2331986977a6fb9e6fdf7b0e3c41f081",
-  "sha256": "842eb21a1d2340249daa4dd4fc08705faded341699e27df514686c02c63b4726",
-  "bytes": 69920420,
+  "md5": "706bf94a379763473ed4add9d508f622",
+  "sha256": "86cd67aca862ab6fbad13aba48b6117d57bb175166ed555e1e66478a80ac85d0",
+  "bytes": 69918639,
   "bundle": "Gra-ROBOCZA.html",
-  "sourceCommit": "c4b426e4",
-  "base": "0caa4dfa31d37337cd74fdbab95ee77da4806d98",
-  "integrationCommit": "c4b426e4",
-  "publishCommit": "7595b61733e2ecd467a5b64648bcd50f5e087d92",
-  "remoteMainAtPublish": "7595b61733e2ecd467a5b64648bcd50f5e087d92",
-  "remoteSmoke": true,
+  "sourceCommit": "b15bdb36",
+  "base": "a8c9cf6c181f688201dd45e6a5871da1b0eb1301",
+  "integrationCommit": "b15bdb36",
+  "publishCommit": "b15bdb36",
+  "remoteMainAtPublish": "b15bdb365ae251fdf190299a885af699314d810d",
+  "remoteSmoke": false,
   "finalControl": [
-    "t_c4f7880f/run1138 PASS-WITH-NOTES"
+    "PR #140 merged (github.com/maciejsieracki/The-Game/pull/140), independently verified: 17/19 test suites 100% PASS on merged tree, 2 pre-existing failures confirmed identical on clean origin/main (not regressions)",
+    "R-CYWILIZACJE-MACIERZ-META-REMOVE-Q1-20260922: owner-approved 113->109 paramDefs",
+    "R-CYWILIZACJE-MACIERZ-JEDNOSTKA-SPEC-REMOVE-Q1-20260924 (t_084c765c): 109->91 paramDefs, 18 spec_* fields removed",
+    "R-CYWILIZACJE-MACIERZ-WALKA-10GRUP-Q1-20260925 (t_5be3645a + t_f63e4337 defense round): 91->93 paramDefs, Operator->Evaluator(G8 objection)->Defense fix->Final Control PASS"
   ],
   "scope": [
-    "R-CYWILIZACJE-MACIERZ-WIRING-LUDNOSC-Q1-20260923:lud_limit_populacji"
+    "civ-matrix.json paramDefs 113 -> 93 net across three owner-approved stages",
+    "R-CYWILIZACJE-MACIERZ-META-REMOVE-Q1-20260922: 4 meta fields removed",
+    "R-CYWILIZACJE-MACIERZ-JEDNOSTKA-SPEC-REMOVE-Q1-20260924: 18 spec_* special-unit fields removed",
+    "R-CYWILIZACJE-MACIERZ-WALKA-10GRUP-Q1-20260925: 32 combat fields wired (G2-G11, G1 excluded per owner) + 2 new fields + 5 historical-balance additions (Zulu melee, Egypt chariot movement, Slavic forest defense, Assyrian cavalry, Babylon confirmed combat-neutral)"
   ],
   "noOpVerified": [
-    "15/15 owner-approved civKeys; deltas are -1/0/+1/+2 with no placeholder 10",
-    "resolved cap is the shared building ladder 5/8/12 plus Matrix delta, bounded to 4..14",
-    "legacy and central population paths preserve owner civKey parity for player, AI and city-state"
+    "17/19 regression suites 100% PASS on the merged tree (civ-bonusy-test 36/36, combat-test 6/6, structure-defense-bonus-test 8/8, civ-matrix-greece-test 329/329, civ-matrix-semantic-labels-test 233/233, walka-jeden-kontratak-test 24/24, walka-morale-przewaga-mocy-test 123/123, civ-matrix-meta-roster-wiring-test 63/63, civ-matrix-ai-diplomacy-wiring-test 51/51, civ-matrix-difficulty-test 16/16, population-civ-matrix-wiring-test 122/122, ai-difficulty-bonus-test 97/97, unit-building-bonuses-test 82/82)",
+    "2 pre-existing failures (budynek-civ-bonus-u17-test, population-growth-v85-bonus-test) confirmed byte-identical failure output on clean origin/main before this integration -- not regressions from this deploy",
+    "tsc --noEmit clean, git diff --check clean, production vite build clean (892 modules)"
   ],
   "excluded": [
-    "113×15 full matrix completion; unresolved cells remain DECISION_REQUIRED/UNWIRED or DEAD_UNWIRED",
-    "meta_tier_roster and five epoch-source conflicts without owner contract",
-    "dip_agresja_archetyp and dip_nastawienie_bazowe gameplay wiring",
-    "new combat/economy consumers without an approved contract",
+    "93×15 full matrix completion; unresolved cells remain DECISION_REQUIRED/UNWIRED or DEAD_UNWIRED",
+    "ai_profil_obronna (2 components) -- implemented and locally committed (b4c9582f) in isolated worktree, NOT yet merged to main, NOT in this deploy",
+    "8-field Dyplomacja package -- decision finalized, implementation in progress in isolated worktree as of this deploy, NOT in this deploy",
     "promocja do KANON/FINALNA"
   ],
   "bundles": [
@@ -36,76 +40,76 @@
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html?skipMenuRedirect=1",
       "label": "Pełna gra ROBOCZA",
-      "md5": "2331986977a6fb9e6fdf7b0e3c41f081",
-      "sizeBytes": 69920420
+      "md5": "706bf94a379763473ed4add9d508f622",
+      "sizeBytes": 69918639
     },
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html",
       "label": "Pełna gra (z menu)",
-      "md5": "2331986977a6fb9e6fdf7b0e3c41f081",
-      "sizeBytes": 69920420
+      "md5": "706bf94a379763473ed4add9d508f622",
+      "sizeBytes": 69918639
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
       "label": "Playtest: DUŻA bitwa (pole) — NOWE",
-      "md5": "2331986977a6fb9e6fdf7b0e3c41f081",
-      "sizeBytes": 69920420
+      "md5": "706bf94a379763473ed4add9d508f622",
+      "sizeBytes": 69918639
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
       "label": "Playtest: DUŻE oblężenie (mur) — NOWE",
-      "md5": "2331986977a6fb9e6fdf7b0e3c41f081",
-      "sizeBytes": 69920420
+      "md5": "706bf94a379763473ed4add9d508f622",
+      "sizeBytes": 69918639
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "label": "Playtest: mapa świat",
-      "md5": "2331986977a6fb9e6fdf7b0e3c41f081",
-      "sizeBytes": 69920420
+      "md5": "706bf94a379763473ed4add9d508f622",
+      "sizeBytes": 69918639
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "label": "Playtest: miasto / ekonomia",
-      "md5": "2331986977a6fb9e6fdf7b0e3c41f081",
-      "sizeBytes": 69920420
+      "md5": "706bf94a379763473ed4add9d508f622",
+      "sizeBytes": 69918639
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "label": "Playtest: walka na mapie",
-      "md5": "2331986977a6fb9e6fdf7b0e3c41f081",
-      "sizeBytes": 69920420
+      "md5": "706bf94a379763473ed4add9d508f622",
+      "sizeBytes": 69918639
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "label": "Playtest: odskok 3v3",
-      "md5": "2331986977a6fb9e6fdf7b0e3c41f081",
-      "sizeBytes": 69920420
+      "md5": "706bf94a379763473ed4add9d508f622",
+      "sizeBytes": 69918639
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "label": "Playtest: odskok + oblężenie",
-      "md5": "2331986977a6fb9e6fdf7b0e3c41f081",
-      "sizeBytes": 69920420
+      "md5": "706bf94a379763473ed4add9d508f622",
+      "sizeBytes": 69918639
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "label": "Playtest: oblężenie 3v3",
-      "md5": "2331986977a6fb9e6fdf7b0e3c41f081",
-      "sizeBytes": 69920420
+      "md5": "706bf94a379763473ed4add9d508f622",
+      "sizeBytes": 69918639
     }
   ],
   "startHub": "START.html",
-  "hubGeneratedAt": "2026-09-23T17:18:42",
-  "note": "ROBOCZA - owner-approved lud_limit_populacji integration: building cap 5/8/12 plus Matrix delta; unresolved matrix contracts remain outside scope and are not claimed as runtime-wired",
+  "hubGeneratedAt": "2026-09-25T19:00:00",
+  "note": "ROBOCZA - civ-matrix consolidated integration (PR #140): META-REMOVE + spec-remove + Walka wiring, 113->93 paramDefs. AI (ai_profil_obronna) and Dyplomacja (8 fields) are decided but NOT yet in main/this deploy -- separate isolated worktrees, ai_profil_obronna locally committed (b4c9582f) pending its own merge, Dyplomacja implementation in progress as of this publish.",
   "backlogReconciliation": {
     "status": "ALREADY_IN_TARGET_OR_NO_OP",
     "recordedAt": "2026-09-17T23:26:49Z",
