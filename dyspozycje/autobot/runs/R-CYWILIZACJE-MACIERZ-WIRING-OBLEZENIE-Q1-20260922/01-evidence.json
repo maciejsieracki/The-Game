@@ -1,0 +1,74 @@
+{
+  "topic": "R-CYWILIZACJE-MACIERZ-WIRING-OBLEZENIE-Q1-20260922",
+  "role": "Operator",
+  "status": "PASS",
+  "domain": "GAME",
+  "allowlist_diff": [
+    "gra/data/civ-matrix.json",
+    "gra/src/game/city-defense.ts",
+    "gra/src/game/siegeMachines.ts",
+    "gra/src/main.ts",
+    "gra/src/battle/battleScene.ts",
+    "gra/tools/civ-matrix-oblezenie-wiring-test.cjs",
+    "dyspozycje/autobot/runs/R-CYWILIZACJE-MACIERZ-WIRING-OBLEZENIE-Q1-20260922/**"
+  ],
+  "civ_matrix_cells": {
+    "total_checked": 45,
+    "mismatches": 0,
+    "params": ["obl_obrona_miasta_proc", "obl_mur_proc", "obl_machines_proc"],
+    "civs_count": 15,
+    "old_values_before_overwrite": "all zero (July 6 2026 placeholders, verified before write)",
+    "source": "dyspozycje/autobot/runs/R-CYWILIZACJE-MACIERZ-WIRING-OBLEZENIE-Q1-20260922/INPUT-converted-values.json"
+  },
+  "consumers_wired": {
+    "obl_mur_proc": {
+      "modul": "game/city-defense.ts cityWallDefenseBonusPercent (nowy opcjonalny arg murCivProc)",
+      "call_sites": [
+        "main.ts structureDefenseBonusFor / cityWallStatusAtHex (civ wlasciciela miasta)",
+        "battle/battleScene.ts BattleScene constructor wallDefenseMult/wallDefenseTotalProc (civ _defenderCivIconId)"
+      ],
+      "composition": "multiplikatywny z istniejacym bonusem addytywnym mur/cytadela/baszta/palisada",
+      "parity_confirmed": true
+    },
+    "obl_obrona_miasta_proc": {
+      "modul": "game/city-defense.ts cityWallDefenseBonusPercent (nowy opcjonalny arg obronaMiastaCivProc)",
+      "call_sites": [
+        "main.ts structureDefenseBonusFor / cityWallStatusAtHex (civ wlasciciela miasta)",
+        "battle/battleScene.ts BattleScene constructor wallDefenseMult/wallDefenseTotalProc (civ _defenderCivIconId)"
+      ],
+      "composition": "dodatkowy niezalezny mnoznik na tym samym wyniku co obl_mur_proc (brak osobnego rozroznienia w kodzie -- uzasadnione w 01-operator.md)",
+      "parity_confirmed": true
+    },
+    "obl_machines_proc": {
+      "modul": "game/siegeMachines.ts civSiegeMachinesMult (nowa pure funkcja)",
+      "call_sites": [
+        "battle/battleScene.ts BattleScene._civMachinesMult -> _siegeStructureDamage (atak Taranu na brame)",
+        "battle/battleScene.ts BattleScene._civMachinesMult -> _attackWallTile (atak Katapulty na kafel muru)"
+      ],
+      "composition": "mnoznik na efektywnym wallAttack, civ atakujacego (wlasciciela machiny)",
+      "decision_required": false,
+      "note": "main.ts nie ma odrebnej sciezki auto-rozstrzygania walki machin vs mur (auto-bitwa liczy tylko power-based winner, nie symuluje pojedynczych uderzen machin) -- parytet zachowany, bo main.ts w ogole nie liczy tej konkretnej mechaniki osobno od battleScene.ts; jedyne miejsce z realna arytmetyka wallAttack machin to battleScene.ts, ktore zostalo podlaczone."
+    }
+  },
+  "tests": {
+    "new_test": {
+      "file": "gra/tools/civ-matrix-oblezenie-wiring-test.cjs",
+      "pass": 75,
+      "fail": 0
+    },
+    "existing_tests_rerun": {
+      "city-defense-terrain-gate-test.cjs": { "pass": 34, "fail": 0, "regression": false },
+      "defense-breakdown-test.cjs": { "pass": 44, "fail": 0, "regression": false },
+      "fortify-pole-test.cjs": { "pass": 41, "fail": 0, "regression": false },
+      "mur-paradoks-test.cjs": { "pass": 29, "fail": 0, "regression": false },
+      "empire-panel-miasto-obywatele-content-test.cjs": { "pass": 115, "fail": 1, "regression": false, "note": "pre-existing failure confirmed via git stash + rerun on clean branch, identical before this topic's changes" },
+      "koszty-surowcowe-test.cjs": { "pass": 126, "fail": 3, "regression": false, "note": "pre-existing failures confirmed via git stash + rerun on clean branch, identical before this topic's changes" }
+    },
+    "tsc_noemit": "PASS"
+  },
+  "git": {
+    "diff_check_clean": true,
+    "commit_push_merge_deploy": "NIE WYKONANO",
+    "branch": "hermes/R-CYWILIZACJE-MACIERZ-WIRING-OBLEZENIE-Q1-20260922"
+  }
+}

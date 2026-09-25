@@ -52,7 +52,14 @@ try {
   assert((panelSource.match(/cfg\.getCivKey\?\.\(city\.ownerId\)/g) || []).length >= 2,
     'cityPanel.ts: oba runtime call-sites używają civKey właściciela');
   assert(mainSource.includes('ownerCivMap, orderMultMap'), 'main.ts: live player/AI ownerCivMap trafia do ekonomii');
-  assert(mainSource.includes('getCivKey: (ownerId: number) => civKeyForOwnerId(ownerId)'),
+  // R-CYWILIZACJE-MACIERZ-WIRING-PRODUKCJA-Q1-20260923 integration (orkiestrator, test-only
+  // fix): getCivKey w cityPanel runtime context zyskal debug-tracing body
+  // (cityPanelCivKeyTrace) z integracji Produkcji -- ciagle woła civKeyForOwnerId(ownerId)
+  // i zwraca jego wynik, tylko już nie jako one-liner. Sprawdzamy zachowanie (wywołanie +
+  // return), nie dokładny literał tekstu.
+  assert(mainSource.includes('getCivKey: (ownerId: number) => {')
+    && mainSource.includes('const civKey = civKeyForOwnerId(ownerId);')
+    && mainSource.includes('return civKey;'),
     'main.ts: cityPanel runtime context udostępnia civKey');
   console.log('PASS wealth-civ-matrix-wiring-test: 15 civs, unknown/neutral, +/-10%, live/preview/UI parity');
 } finally {

@@ -156,43 +156,34 @@ const statusCounts = snapshot.cells.reduce((out, cell) => {
   out[cell.consumerStatus] = (out[cell.consumerStatus] || 0) + 1;
   return out;
 }, {});
-equal(statusCounts.REAL_GAMEPLAY, 210, '14 proven gameplay parameters cover 15 profiles');
+equal(statusCounts.REAL_GAMEPLAY, 810, '54 proven gameplay parameters cover 15 profiles (population/AI/dip_handlowosc_archetyp base 14 + 3 Manpower R-CYWILIZACJE-MACIERZ-WIRING-MANPOWER-Q1-20260922 + 37 Walka/Oblezenie fields wired R-CYWILIZACJE-MACIERZ-WALKA-10GRUP-Q1-20260925 + R-CYWILIZACJE-MACIERZ-WALKA-15-ZERO-POLA-Q1-20260925)');
 equal(statusCounts.UI_ONLY, 75, '5 UI-only parameters cover 15 profiles');
 equal(statusCounts.DECISION_REQUIRED, 30, '2 unresolved AI/diplomacy parameters cover 15 profiles each and require an owner decision');
-equal(statusCounts.BLOCKED, 255, '17 combat multiplier parameters cover 15 profiles (round 2, R-CYWILIZACJE-MACIERZ-WIRING-COMBAT-RECON-ORIGIN-20260922)');
-equal(statusCounts.DEAD_UNWIRED, 375, '25 combat/siege/fortification parameters with all-default cells are closed dead (round 2)');
-equal(statusCounts.UNWIRED, 450, '30 unresolved parameters remain visibly unwired after resolved population fields and combat BLOCKED/DEAD_UNWIRED reclassification; the 4 former meta REFERENCE_ONLY parameters were removed from the matrix entirely (R-CYWILIZACJE-MACIERZ-META-REMOVE-Q1-20260922) and are absent from every status count, not reclassified as UNWIRED');
+equal(statusCounts.BLOCKED, 90, '6 G1 base-stat combat parameters cover 15 profiles (owner-excluded from Walka wiring round, R-CYWILIZACJE-MACIERZ-WALKA-10GRUP-Q1-20260925)');
+equal(statusCounts.DEAD_UNWIRED, 15, '1 combat parameter (walka_atak_lukownicy, the 7th G1 field) is closed dead — same owner exclusion, zero live consumer');
+equal(statusCounts.UNWIRED, 375, '25 unresolved parameters remain visibly unwired after population/Manpower/Walka/Oblezenie reclassification (Ekonomia/Wealth/Spoleczenstwo/Produkcja topics are committed but do not add new civ-matrix-semantic.ts REAL_GAMEPLAY entries in this branch); the 4 former meta REFERENCE_ONLY parameters were removed from the matrix entirely (R-CYWILIZACJE-MACIERZ-META-REMOVE-Q1-20260922) and are absent from every status count, not reclassified as UNWIRED');
 assert(!fs.readFileSync(path.resolve(sourceRoot, 'game/civ-matrix-semantic.ts'), 'utf8').includes('localStorage'), 'semantic classifier does not persist labels');
 
-console.log('--- combat/special-unit BLOCKED decision_required (round 2, R-CYWILIZACJE-MACIERZ-WIRING-COMBAT-RECON-ORIGIN-20260922) ---');
+console.log('--- combat/special-unit BLOCKED (G1, owner-excluded, R-CYWILIZACJE-MACIERZ-WALKA-10GRUP-Q1-20260925) ---');
 const BLOCKED_COMBAT_IDS = [
-  'walka_atak_piechota', 'walka_atak_kawaleria', 'walka_atak_rydwany', 'walka_atak_obleczenie',
-  'walka_obrona_piechota', 'walka_pancerz_piechota', 'walka_uderzenie_piechota', 'walka_uderzenie_kawaleria',
-  'walka_dystans_lukownicy', 'walka_hp_piechota', 'walka_hp_rydwany', 'walka_ruch_bitwa_proc',
-  'walka_koszt_rekrutacji_proc', 'walka_atak_piechota_teren_las', 'walka_obrona_piechota_terytorium_wlasne',
-  'walka_obrona_piechota_w_murze', 'walka_atak_piechota_runda_szarzy',
+  'walka_atak_piechota', 'walka_obrona_piechota', 'walka_pancerz_piechota',
+  'walka_dystans_lukownicy', 'walka_hp_piechota', 'walka_hp_rydwany',
 ];
-equal(BLOCKED_COMBAT_IDS.length, 17, 'fixture lists all 17 blocked combat multiplier IDs');
+equal(BLOCKED_COMBAT_IDS.length, 6, 'fixture lists all 6 owner-excluded G1 base-stat IDs');
 for (const id of BLOCKED_COMBAT_IDS) {
   equal(M.civMatrixConsumerStatus(id), 'BLOCKED', `${id} is classified BLOCKED, not silently UNWIRED`);
   const cell = greek.cells.find(c => c.parameterId === id);
   equal(cell.consumerStatus, 'BLOCKED', `${id} profile cell is BLOCKED`);
   equal(M.statusAllowsDefaultVisibility(cell.consumerStatus), false, `${id} is not visible in the active default set`);
   assert(cell.statusReasonPl.length > 0, `${id} carries a non-empty reason string, never a silent UNWIRED`);
-  assert(cell.statusReasonPl.includes('R-CYWILIZACJE-MACIERZ-WIRING-COMBAT-RECON-ORIGIN-20260922'), `${id} reason cites the owning topic`);
+  assert(cell.statusReasonPl.includes('R-CYWILIZACJE-MACIERZ-WALKA-10GRUP-Q1-20260925'), `${id} reason cites the owning topic`);
 }
 
-console.log('--- combat/siege/fortification DEAD_UNWIRED (round 2) ---');
+console.log('--- combat DEAD_UNWIRED (G1 7th field, zero live consumer) ---');
 const DEAD_UNWIRED_COMBAT_IDS = [
-  'walka_atak_lukownicy', 'walka_atak_morska', 'walka_atak_wszystkie', 'walka_obrona_lukownicy',
-  'walka_obrona_kawaleria', 'walka_obrona_rydwany', 'walka_obrona_obleczenie', 'walka_obrona_morska',
-  'walka_pancerz_lukownicy', 'walka_pancerz_kawaleria', 'walka_pancerz_rydwany', 'walka_uderzenie_rydwany',
-  'walka_dystans_rydwany', 'walka_hp_kawaleria', 'walka_zasieg_proc', 'walka_oblezenie_proc',
-  'walka_obrona_piechota_teren_las', 'walka_atak_piechota_terytorium_wlasne', 'walka_atak_piechota_w_murze',
-  'walka_obrona_piechota_runda_szarzy', 'walka_atak_piechota_teren_plytkie_morze',
-  'walka_obrona_piechota_teren_plytkie_morze', 'obl_obrona_miasta_proc', 'obl_mur_proc', 'obl_machines_proc',
+  'walka_atak_lukownicy',
 ];
-equal(DEAD_UNWIRED_COMBAT_IDS.length, 25, 'fixture lists all 25 dead-unwired combat/siege/fortification IDs');
+equal(DEAD_UNWIRED_COMBAT_IDS.length, 1, 'fixture lists the sole remaining dead-unwired G1 field');
 for (const id of DEAD_UNWIRED_COMBAT_IDS) {
   equal(M.civMatrixConsumerStatus(id), 'DEAD_UNWIRED', `${id} is classified DEAD_UNWIRED`);
   const cell = greek.cells.find(c => c.parameterId === id);
