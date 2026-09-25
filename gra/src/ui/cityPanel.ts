@@ -189,6 +189,7 @@ import {
 import {
   freshWealthState,
   loadWealthParams,
+  resolveWealthParamsForCiv,
   wealthCap,
   wealthMnoznik,
   wealthProg,
@@ -3131,7 +3132,10 @@ function computeOrderStateLocal(city: City, data: GameData): { state: OrderState
 
   const ws = city.wealthState ?? freshWealthState();
   const wealthParams = data.econParams
-    ? loadWealthParams(data.econParams as unknown as RawWealthParamsJson, difficulty)
+    ? resolveWealthParamsForCiv(
+      loadWealthParams(data.econParams as unknown as RawWealthParamsJson, difficulty),
+      cfg.getCivKey?.(city.ownerId),
+    )
     : null;
   // G6: wkład Wealth zależy od CAPU epoki (max +10 w każdej epoce) — ta sama epoka,
   // którą panel podaje do rozpiski Szczęścia, więc panel i silnik liczą to identycznie.
@@ -4782,7 +4786,10 @@ function renderWealth(mount: HTMLElement, city: City, data: GameData | null, vie
   const ws = city.wealthState ?? freshWealthState();
   const epoch = cfg.getEpoch?.(city.ownerId) ?? 1;
   const wealthParams = data
-    ? loadWealthParams(data.econParams as unknown as RawWealthParamsJson, cfg.difficulty ?? 'normal')
+    ? resolveWealthParamsForCiv(
+      loadWealthParams(data.econParams as unknown as RawWealthParamsJson, cfg.difficulty ?? 'normal'),
+      cfg.getCivKey?.(city.ownerId),
+    )
     : null;
 
   appendSectionTitleWithDetails(mount, '<span>Zamożność</span>', () => {

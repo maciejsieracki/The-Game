@@ -136,6 +136,7 @@ import {
 import {
   advanceWealth,
   loadWealthParams,
+  resolveWealthParamsForCiv,
   freshWealthState,
   type WealthState,
   type WealthTickResult,
@@ -2091,13 +2092,14 @@ export function previewCityEconomy(
     applyWonderCityYields(yld, wonderCityYieldsByOwner.get(city.ownerId));
 
     const prevWealth: WealthState = city.wealthState ?? freshWealthState();
+    const civWealthParams = resolveWealthParamsForCiv(wealthParams, ownerCivKey);
     const wealthImmunity = (city.wealthImmunityRemaining ?? 0) > 0;
     const wt: WealthTickResult = advanceWealth(
       prevWealth,
       yld.luksus,
       yld.pieniadz,
       ownerEra,
-      wealthParams,
+      civWealthParams,
       wealthImmunity ? { minPoziom: 1 } : undefined,
     );
     // yld.pieniadz JUZ zawiera dochod z tras (ctx.dochodTrasHandlowych powyzej) -- patrz
@@ -2667,13 +2669,14 @@ export function advanceCityEconomy(
     // WIRE 3: Luksus -> Wealth tick
     // wealthState per miasto -- persystowane na city jako pole dynamiczne
     const prevWealth: WealthState = city.wealthState ?? freshWealthState();
+    const civWealthParams = resolveWealthParamsForCiv(wealthParams, ownerCivKey);
     const wealthImmunity = (city.wealthImmunityRemaining ?? 0) > 0;
     const wt: WealthTickResult = advanceWealth(
       prevWealth,
       yld.luksus,      // spoleczMoney = strumien Luksus
       yld.pieniadz,    // miastoMoney  = pieniadz brutto tej tury
       ownerEra,
-      wealthParams,
+      civWealthParams,
       wealthImmunity ? { minPoziom: 1 } : undefined,
     );
     if (wealthImmunity && city.wealthImmunityRemaining != null) {
