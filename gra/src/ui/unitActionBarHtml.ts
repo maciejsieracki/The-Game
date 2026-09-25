@@ -131,6 +131,58 @@ export function buildUnitActionBarHtml(actions: readonly UnitPanelAction[]): str
       + `>${esc(marchStop.label)}</button>`;
   }
 
+  // P-ARMIA-RALLY-POINT-BRAK-PRZYCISKU-UI-Q1 (2026-09-25): 'rally-set'/'rally-launch'/
+  // 'rally-clear' (punkt zbiorczy armii, etykiety dynamiczne ustalane w main.ts:
+  // "Ustaw punkt zbiórki" / "Kliknij heks punktu zbiórki" / "Zmień punkt (q,r)" /
+  // "Wyślij na punkt (q,r)" / "Usuń punkt zbiórki") mają w pełni działający handler w
+  // main.ts (handleSelectedUnitHudAction, rally-point.ts) i były poprawnie wypychane do
+  // `actions[]`, ale żadne z tych trzech id nie było ani w COMPACT_ACTION_ORDER, ani w
+  // ACTION_ICONS, ani w dedykowanym bloku — dokładnie ta sama klasa błędu co wcześniej
+  // 'march-stop'/'siege-hold'. Właściciel potwierdził brak przycisku w realnej rozgrywce
+  // (nie tylko test), wykryte niezależnie także przez unit-action-bar-completeness-test.cjs
+  // (KNOWN_GAPS pusty, więc ten test już był czerwony przed tą poprawką). 'rally-set' ma
+  // stan `active` (tryb ustawiania włączony/wyłączony) — renderowany z tym samym
+  // uc-act-btn--on/aria-pressed co ikony w głównej pętli, ale jako tekst (etykieta
+  // dynamiczna). 'rally-launch'/'rally-clear' są statyczne tekstowe przyciski, jak
+  // 'march-stop'. / EN: 'rally-set'/'rally-launch'/'rally-clear' (army rally point,
+  // dynamic labels set in main.ts) had a fully working handler in main.ts
+  // (handleSelectedUnitHudAction, rally-point.ts) and were correctly pushed into
+  // `actions[]`, but none of the three ids were in COMPACT_ACTION_ORDER, ACTION_ICONS, or
+  // a dedicated block — the same bug class as 'march-stop'/'siege-hold' before them. Owner
+  // confirmed the missing button in actual gameplay (not just a test), independently
+  // caught by unit-action-bar-completeness-test.cjs (KNOWN_GAPS empty, so this test was
+  // already red before this fix). 'rally-set' carries `active` state (setting-mode
+  // on/off) — rendered with the same uc-act-btn--on/aria-pressed the main icon loop uses,
+  // but as text (dynamic label). 'rally-launch'/'rally-clear' are static text buttons,
+  // like 'march-stop'.
+  const rallySet = byId.get('rally-set');
+  if (rallySet) {
+    const onCls = rallySet.active ? ' uc-act-btn--on' : '';
+    const ariaPressed = typeof rallySet.active === 'boolean'
+      ? ` aria-pressed="${rallySet.active ? 'true' : 'false'}"`
+      : '';
+    html += `<button type="button" class="uc-act-btn uc-act-text${onCls}" data-act="rally-set"`
+      + ` title="${esc(rallySet.label)}" aria-label="${esc(rallySet.label)}"${ariaPressed}`
+      + (rallySet.disabled ? ' disabled' : '')
+      + `>${esc(rallySet.label)}</button>`;
+  }
+
+  const rallyLaunch = byId.get('rally-launch');
+  if (rallyLaunch) {
+    html += `<button type="button" class="uc-act-btn uc-act-text" data-act="rally-launch"`
+      + ` title="${esc(rallyLaunch.label)}" aria-label="${esc(rallyLaunch.label)}"`
+      + (rallyLaunch.disabled ? ' disabled' : '')
+      + `>${esc(rallyLaunch.label)}</button>`;
+  }
+
+  const rallyClear = byId.get('rally-clear');
+  if (rallyClear) {
+    html += `<button type="button" class="uc-act-btn uc-act-text" data-act="rally-clear"`
+      + ` title="${esc(rallyClear.label)}" aria-label="${esc(rallyClear.label)}"`
+      + (rallyClear.disabled ? ' disabled' : '')
+      + `>${esc(rallyClear.label)}</button>`;
+  }
+
   const disband = byId.get('disband');
   if (disband) {
     html += `<button type="button" class="uc-act-btn uc-act-disband" data-act="disband"`
