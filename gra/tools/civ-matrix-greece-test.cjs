@@ -1,6 +1,6 @@
 'use strict';
 /**
- * Greece 91-column matrix contract and runtime adapter tests.
+ * Greece 93-column matrix contract and runtime adapter tests.
  * Run from gra/: node tools/civ-matrix-greece-test.cjs
  */
 
@@ -85,13 +85,13 @@ const greece = matrix.cywilizacje.find(row => row.ikonaId === 'grecy');
 const difficulties = ['easy', 'normal', 'hard'];
 const mainSource = fs.readFileSync(path.resolve(sourceRoot, 'main.ts'), 'utf8');
 
-console.log('--- matrix shape and complete 91-column snapshots ---');
-equal(matrix._meta.kolumny, 91, 'matrix declares 91 columns');
-equal(matrix.paramDefs && Object.keys(matrix.paramDefs).length, 91, '91 parameter definitions');
-equal(greece && Object.keys(greece.params).length, 91, 'Greece has 91 flat values');
+console.log('--- matrix shape and complete 93-column snapshots ---');
+equal(matrix._meta.kolumny, 93, 'matrix declares 93 columns');
+equal(matrix.paramDefs && Object.keys(matrix.paramDefs).length, 93, '93 parameter definitions');
+equal(greece && Object.keys(greece.params).length, 93, 'Greece has 93 flat values');
 for (const difficulty of difficulties) {
   const snapshot = civMatrixParamsAtDifficulty('grecy', difficulty);
-  equal(Object.keys(snapshot).length, 91, `Greece ${difficulty} snapshot has all parameters`);
+  equal(Object.keys(snapshot).length, 93, `Greece ${difficulty} snapshot has all parameters`);
   for (const id of Object.keys(matrix.paramDefs)) {
     assert(Object.prototype.hasOwnProperty.call(snapshot, id), `${difficulty} snapshot includes ${id}`);
   }
@@ -298,7 +298,7 @@ if (process.env.CIV_MATRIX_REPORT) {
     ['dip_pamietliwosc', 'diplomacy-display.ts:82'],
   ]);
   const lines = [
-    '# Greece 91 matrix coverage (generated from civ-matrix.json)',
+    '# Greece 93 matrix coverage (generated from civ-matrix.json)',
     `definitions=${Object.keys(matrix.paramDefs).length}`,
     'status\tparameter\tconsumer\tnext action',
   ];

@@ -862,6 +862,7 @@ import {
   type OwnerResourceAccess,
 } from './game/capital-capture';
 import { civBonusyForCivKey, cityPopulationCap, loadEconParams, sumBuildingHappinessFromBuiltIds } from './game/economy';
+import { civMatrixBonusyForCivKey } from './game/civ-bonuses';
 import { advanceProduction, rushProduction, rushCost, populationCostOf, UNIT_POPULATION_COST,
   enqueueRecruitment, advanceRecruitment, advanceRecruitmentGated, unitProductionItem,
   enqueue, buildingProductionItem, splitPraca, cityPracaInteger, pracaImperialPoolGain, previewPracaPoolBrutto, availableProduction, availableReplacementsFor,
@@ -8172,8 +8173,11 @@ async function boot(): Promise<void> {
 
     /** Bonusy cyw z civs.json per ownerId (gracz: player.civBonusy; AI: lookup po aiOwnerCivMap). */
     function civBonusyForOwnerId(ownerId: number) {
-      if (ownerId === 0 && player.civBonusy.length > 0) return player.civBonusy;
-      return civBonusyForCivKey(civKeyForOwnerId(ownerId), data.civs);
+      const civKey = civKeyForOwnerId(ownerId);
+      const legacy = ownerId === 0 && player.civBonusy.length > 0
+        ? player.civBonusy
+        : civBonusyForCivKey(civKey, data.civs);
+      return [...legacy, ...civMatrixBonusyForCivKey(civKey)];
     }
 
     function civManpowerMultsForOwner(ownerId: number) {
@@ -11927,7 +11931,7 @@ async function boot(): Promise<void> {
 
     /** Funkcja kosztu ruchu jednostki: woda przejezdna, gdy może się zaokrętować. */
     function moveCostFnForUnit(u: RuntimeUnit): ((hex: Hex) => number) | undefined {
-      return moveCostFnFor(u, ownerHasSeafaring(u.ownerId));
+      return moveCostFnFor(u, ownerHasSeafaring(u.ownerId), civBonusyForOwnerId(u.ownerId));
     }
 
     /** Wypchnij obce jednostki z heksów miasta (naprawa stanu / AI / barbarzyńcy). */
@@ -27337,6 +27341,8 @@ async function boot(): Promise<void> {
             deployPlayerSide: 'atk',
             attackerCivBonusy: civBonusyForOwnerId(atkLead.ownerId),
             defenderCivBonusy: civBonusyForOwnerId(defLead.ownerId),
+            defenderOwnTerritory: territoryOwnerAtLive(defUnit.q, defUnit.r) === defLead.ownerId,
+            shallowSea: dHex4!.terenBazowy === TerenBazowy.PlytkieMorze,
             attackerCivLabel: pbInfo4.atakujacy.cywilizacja,
             defenderCivLabel: pbInfo4.obronca.cywilizacja,
             // BŁĄD D-weryfikacja (2026-07-25): civId liczony poprawnie w

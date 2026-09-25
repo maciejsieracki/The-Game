@@ -380,7 +380,7 @@
           "cel": "kawaleria",
           "wartosc": 0.15,
           "opis": "Konnica stepowa: +15% uderzenia kawalerii przy szarży",
-          "realizuje": "walka"
+          "realizuje": "walka_wygaszone"
         },
         {
           "typ": "jednostka_specjalna",
@@ -544,7 +544,7 @@
           "cel": "piechota",
           "wartosc": 0.2,
           "opis": "Teren górski: +20% walki w lesie i dżungli (znajomość terenu)",
-          "realizuje": "walka"
+          "realizuje": "walka_wygaszone"
         },
         {
           "typ": "jednostka_specjalna",
@@ -703,14 +703,14 @@
           "cel": "piechota",
           "wartosc": 0.2,
           "opis": "Ruch i morale: +20% prędkości piechoty i +morale przy ataku w grupie (formacja buffalo)",
-          "realizuje": "walka"
+          "realizuje": "walka_wygaszone"
         },
         {
           "typ": "bonus_walka",
           "cel": "piechota",
           "wartosc": 0.1,
           "opis": "Tania rekrutacja: koszt rekrutacji Impi -10% (liczebność > jakość)",
-          "realizuje": "ekonomia"
+          "realizuje": "walka_wygaszone"
         },
         {
           "typ": "jednostka_specjalna",
@@ -874,7 +874,7 @@
           "cel": "rydwany",
           "wartosc": 0.15,
           "opis": "Szybkie rydwany: +15% prędkości i zasięgu ataku rydwanów bojowych",
-          "realizuje": "walka"
+          "realizuje": "walka_wygaszone"
         },
         {
           "typ": "jednostka_specjalna",
@@ -1199,14 +1199,14 @@
           "cel": "piechota",
           "wartosc": 0.25,
           "opis": "Brawura szarży: +25% ataku piechoty przy pierwszym uderzeniu (furia celtycka)",
-          "realizuje": "walka"
+          "realizuje": "walka_wygaszone"
         },
         {
           "typ": "bonus_walka",
           "cel": "piechota",
           "wartosc": 0.15,
           "opis": "Gaesatae: +15% Uderzenia (miecz sieczny, siła cięcia)",
-          "realizuje": "walka"
+          "realizuje": "walka_wygaszone"
         },
         {
           "typ": "jednostka_specjalna",
@@ -1363,14 +1363,14 @@
           "cel": "piechota",
           "wartosc": 0.25,
           "opis": "Zasadzka leśna: +25% ataku przy walce w lesie lub przy pierwszym ciosie z zasadzki",
-          "realizuje": "walka"
+          "realizuje": "walka_wygaszone"
         },
         {
           "typ": "bonus_walka",
           "cel": "piechota",
           "wartosc": 0.15,
           "opis": "Furia bojowa: +15% ataku na starciu (bonus morale przy bezpośrednim kontakcie)",
-          "realizuje": "walka"
+          "realizuje": "walka_wygaszone"
         },
         {
           "typ": "jednostka_specjalna",
@@ -1532,7 +1532,7 @@
           "cel": "piechota",
           "wartosc": 0.15,
           "opis": "Obrona murów: +15% obrony piechoty w terytorium własnym",
-          "realizuje": "walka"
+          "realizuje": "walka_wygaszone"
         },
         {
           "typ": "jednostka_specjalna",
@@ -1689,14 +1689,14 @@
           "cel": "rydwany",
           "wartosc": 0.2,
           "opis": "Rydwan hetycki: +20% ataku rydwanów",
-          "realizuje": "walka"
+          "realizuje": "walka_wygaszone"
         },
         {
           "typ": "bonus_obrona",
           "cel": "piechota",
           "wartosc": 0.15,
           "opis": "Forteca Anatolii: +15% obrony w murach/górach",
-          "realizuje": "walka"
+          "realizuje": "walka_wygaszone"
         },
         {
           "typ": "jednostka_specjalna",
@@ -1853,7 +1853,7 @@
           "cel": "piechota",
           "wartosc": 0.15,
           "opis": "Horda leśna: +15% ataku piechoty w lesie",
-          "realizuje": "walka"
+          "realizuje": "walka_wygaszone"
         },
         {
           "typ": "bonus_pobor_regen",
@@ -2187,7 +2187,7 @@
           "cel": "obleczenie",
           "wartosc": 0.15,
           "opis": "Machiny oblężnicze: +15% oblężenia",
-          "realizuje": "walka"
+          "realizuje": "walka_wygaszone"
         },
         {
           "typ": "jednostka_specjalna",

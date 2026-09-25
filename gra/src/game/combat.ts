@@ -1,5 +1,5 @@
 import type { CivBonusEntry } from './civ-bonuses';
-import { applyMultiplier, civCombatStatMultipliers } from './civ-bonuses';
+import { applyMultiplier, civCombatStatMultipliers, civWallDefenseMultiplier } from './civ-bonuses';
 import type { BuildingCombatBonus } from './unit-building-bonuses';
 import { mergeBuildingBonusIntoStatMultipliers } from './unit-building-bonuses';
 import { applyVeteranFracToCombatUnit } from './veteran';
@@ -336,6 +336,12 @@ export interface ResolveCombatOpts {
 
   /** RDY-01: bonusy cyw broniacego. */
   defenderCivBonusy?: readonly CivBonusEntry[];
+
+  /** Context gates for Matrix terrain/territory/wall bonuses. */
+  attackerOwnTerritory?: boolean;
+  defenderOwnTerritory?: boolean;
+  defenderOnWallWalkway?: boolean;
+  shallowSea?: boolean;
 
   /**
    * Sciezki ulepszen jednostek (2026-07-25, unit-building-bonuses.ts): bonus
@@ -869,6 +875,9 @@ export function resolveCombat(
     side: 'attacker',
     terrain: defenderTerrain,
     isChargeRound: false,
+    ownTerritory: opts.attackerOwnTerritory,
+    onWallWalkway: false,
+    shallowSea: opts.shallowSea,
   });
   const atkCivHealth = atkCivMods.health;
   const atkBaseMods = mergeBuildingBonusIntoStatMultipliers(
@@ -879,6 +888,9 @@ export function resolveCombat(
     side: 'defender',
     terrain: defenderTerrain,
     isChargeRound: false,
+    ownTerritory: opts.defenderOwnTerritory,
+    onWallWalkway: opts.defenderOnWallWalkway,
+    shallowSea: opts.shallowSea,
   });
   const defCivHealth = defCivMods.health;
   const defBaseMods = mergeBuildingBonusIntoStatMultipliers(
@@ -961,10 +973,13 @@ export function resolveCombat(
   // structureDefBonusPct=200 means defender.Obrona is tripled (1 + 200/100 = 3x).
   const structBonusPct = opts.structureDefBonusPct ?? 0;
   const structMult = 1 + Math.max(0, structBonusPct) / 100;
+  const wallCivMult = opts.defenderOnWallWalkway
+    ? civWallDefenseMultiplier(opts.defenderCivBonusy, defender)
+    : 1;
 
   // Final effective stats (base civ mods; charge-round extras applied in melee)
   const atkEffMelee = atkMelee0 * terrRiverMult;
-  const defFinalObrona = defEffObrona * terrDefMult * structMult;
+  const defFinalObrona = defEffObrona * terrDefMult * structMult * wallCivMult;
 
   const atkIsRanged = isRangedUnit(attacker);
   const defIsRanged = isRangedUnit(defender);
@@ -1067,6 +1082,9 @@ export function resolveCombat(
           side: 'attacker',
           terrain: defenderTerrain,
           isChargeRound: isCharge,
+          ownTerritory: opts.attackerOwnTerritory,
+          onWallWalkway: false,
+          shallowSea: opts.shallowSea,
         }),
         opts.attackerBuildingBonus,
       );
@@ -1075,6 +1093,9 @@ export function resolveCombat(
           side: 'defender',
           terrain: defenderTerrain,
           isChargeRound: isCharge,
+          ownTerritory: opts.defenderOwnTerritory,
+          onWallWalkway: opts.defenderOnWallWalkway,
+          shallowSea: opts.shallowSea,
         }),
         opts.defenderBuildingBonus,
       );
