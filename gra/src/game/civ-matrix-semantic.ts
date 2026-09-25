@@ -110,6 +110,35 @@ const PROVEN_CONSUMERS: Readonly<Record<string, string>> = {
   dip_prog_wojny: 'diplomacy-display.ts:73 + TAG_RULES — tag relacyjny tylko w UI',
   dip_pamietliwosc: 'diplomacy-display.ts:82 + TAG_RULES — tag relacyjny tylko w UI',
   dip_otwartosc_handel: 'diplomacy-display.ts:46 + TAG_RULES — tag relacyjny tylko w UI',
+  // R-CYWILIZACJE-MACIERZ-WIRING-EKONOMIA-Q1-20260923 + WEALTH-R2 + MANPOWER-R2 +
+  // SPOLECZENSTWO-R2 + PRODUKCJA-R2/R3 (Final Control PASS, integrated 2026-09-25):
+  // 25 fields with a live consumer that were still classified UNWIRED because
+  // civ-matrix-semantic.ts was not updated alongside the topic merges.
+  eko_praca_proc: 'economy.ts:1034 — civEconomyParam(ctx, ...) skaluje wkład Pracy do dochodu miasta',
+  eko_pieniadz_proc: 'economy.ts:1183 — civEconomyParam(ctx, ...) skaluje pieniądz brutto po Handlu',
+  eko_pieniadz_port_proc: 'economy.ts:1158 — civEconomyParam(ctx, ...) skaluje premię portową do pieniądza',
+  eko_zywnosc_proc: 'economy.ts:1176 — civEconomyParam(ctx, ...) skaluje wkład Żywności',
+  eko_nauka_proc: 'economy.ts:1140 — civEconomyParam(ctx, ...) skaluje lokalną Naukę miasta',
+  eko_kultura_proc: 'economy.ts:1187 — civEconomyParam(ctx, ...) skaluje Kulturę z budynków',
+  eko_luksus_proc: 'economy.ts:1123 — civEconomyParam(ctx, ...) skaluje Luksus z Handlu netto',
+  eko_zadowolenie_proc: 'economy.ts:1188 — civEconomyParam(ctx, ...) skaluje Zadowolenie z budynków',
+  eko_handel_brutto_proc: 'economy.ts:1090,1154 — civEconomyParam(ctx, ...) skaluje Handel brutto (2 call-site, spójne)',
+  eko_korupcja_proc: 'economy.ts:1095 — civEconomyParam(ctx, ...) skaluje stratę korupcyjną (HARMFUL polarity: dodatnia wartość = więcej korupcji)',
+  prod_koszt_budynku_proc: 'production.ts:578 — matrixCostBase(...) redukuje/podnosi koszt budynku (HARMFUL polarity: dodatnia wartość = tańsza rekrutacja, ale pole samo liczone jako koszt)',
+  prod_koszt_jednostki_proc: 'production.ts:605 — matrixCostBase(...) redukuje/podnosi koszt jednostki',
+  prod_szybkosc_budynku_proc: 'production.ts:1842 + matrixSpeedMultiplier — skaluje tempo budowy budynków',
+  prod_szybkosc_jednostki_proc: 'production.ts:1843,1992,2054 — matrixSpeedMultiplier skaluje tempo rekrutacji (3 call-site: advanceProduction + advanceRecruitmentGated x2)',
+  prod_rush_koszt_proc: 'production.ts:2083 — matrixCostBase(...) skaluje koszt przyspieszenia (rush) w złocie',
+  wealth_cap_proc: 'wealth.ts:111 — civMatrixParam(civKey, ...) skaluje pułap poziomu Wealth per miasto',
+  wealth_mnoznik_proc: 'wealth.ts:112 — civMatrixParam(civKey, ...) skaluje mnożnik przyrostu Wealth',
+  kultura_naplyw_proc: 'culture-religion.ts:357 — applyCivMatrixParam(...) skaluje napływ Kultury',
+  religia_spread_proc: 'culture-religion.ts:1053 — applyCivMatrixParam(...) skaluje presję rozprzestrzeniania Religii',
+  porzadek_produkcja_proc: 'society-breakdown.ts:1086 — matrixEffect(...) skaluje mnożnik Produkcji z Porządku',
+  porzadek_pieniadz_proc: 'society-breakdown.ts:1087 — matrixEffect(...) skaluje mnożnik Pieniądza z Porządku',
+  porzadek_nauka_proc: 'society-breakdown.ts:1088 — matrixEffect(...) skaluje mnożnik Nauki z Porządku',
+  porzadek_kultura_proc: 'society-breakdown.ts:1089 — matrixEffect(...) skaluje mnożnik Kultury z Porządku',
+  porzadek_wzrost_proc: 'society-breakdown.ts:1090 — matrixEffect(...) skaluje mnożnik wzrostu populacji z Porządku',
+  meta_mnoznik_waluta: 'economy.ts:835 — civMatrixParam(civKey, ...) mnoży wartość waluty (jedyny konsument domeny meta, sprzed tej sesji)',
 };
 
 const REAL_GAMEPLAY = new Set([
@@ -157,6 +186,20 @@ const REAL_GAMEPLAY = new Set([
   'walka_oblezenie_proc',
   'walka_koszt_rekrutacji_proc',
   'obl_mur_proc', 'obl_obrona_miasta_proc', 'obl_machines_proc',
+  // R-CYWILIZACJE-MACIERZ-WIRING-EKONOMIA-Q1-20260923 + WEALTH-R2 + MANPOWER-R2 +
+  // SPOLECZENSTWO-R2 + PRODUKCJA-R2/R3, integrated 2026-09-25 (see PROVEN_CONSUMERS
+  // above for exact call-sites): 25 fields with live consumers in
+  // economy.ts/production.ts/wealth.ts/culture-religion.ts/society-breakdown.ts.
+  'eko_praca_proc', 'eko_pieniadz_proc', 'eko_pieniadz_port_proc', 'eko_zywnosc_proc',
+  'eko_nauka_proc', 'eko_kultura_proc', 'eko_luksus_proc', 'eko_zadowolenie_proc',
+  'eko_handel_brutto_proc', 'eko_korupcja_proc',
+  'prod_koszt_budynku_proc', 'prod_koszt_jednostki_proc', 'prod_szybkosc_budynku_proc',
+  'prod_szybkosc_jednostki_proc', 'prod_rush_koszt_proc',
+  'wealth_cap_proc', 'wealth_mnoznik_proc',
+  'kultura_naplyw_proc', 'religia_spread_proc',
+  'porzadek_produkcja_proc', 'porzadek_pieniadz_proc', 'porzadek_nauka_proc',
+  'porzadek_kultura_proc', 'porzadek_wzrost_proc',
+  'meta_mnoznik_waluta',
 ]);
 
 const UI_ONLY = new Set([

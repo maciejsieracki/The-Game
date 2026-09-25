@@ -156,12 +156,12 @@ const statusCounts = snapshot.cells.reduce((out, cell) => {
   out[cell.consumerStatus] = (out[cell.consumerStatus] || 0) + 1;
   return out;
 }, {});
-equal(statusCounts.REAL_GAMEPLAY, 810, '54 proven gameplay parameters cover 15 profiles (population/AI/dip_handlowosc_archetyp base 14 + 3 Manpower R-CYWILIZACJE-MACIERZ-WIRING-MANPOWER-Q1-20260922 + 37 Walka/Oblezenie fields wired R-CYWILIZACJE-MACIERZ-WALKA-10GRUP-Q1-20260925 + R-CYWILIZACJE-MACIERZ-WALKA-15-ZERO-POLA-Q1-20260925)');
+equal(statusCounts.REAL_GAMEPLAY, 1185, '79 proven gameplay parameters cover 15 profiles (population/AI/dip_handlowosc_archetyp base 14 + 3 Manpower + 37 Walka/Oblezenie + 25 Ekonomia/Wealth/Spoleczenstwo/Produkcja/meta, all integrated 2026-09-25 -- see civ-matrix-semantic.ts REAL_GAMEPLAY comment blocks for the exact topic per group)');
 equal(statusCounts.UI_ONLY, 75, '5 UI-only parameters cover 15 profiles');
 equal(statusCounts.DECISION_REQUIRED, 30, '2 unresolved AI/diplomacy parameters cover 15 profiles each and require an owner decision');
 equal(statusCounts.BLOCKED, 90, '6 G1 base-stat combat parameters cover 15 profiles (owner-excluded from Walka wiring round, R-CYWILIZACJE-MACIERZ-WALKA-10GRUP-Q1-20260925)');
 equal(statusCounts.DEAD_UNWIRED, 15, '1 combat parameter (walka_atak_lukownicy, the 7th G1 field) is closed dead — same owner exclusion, zero live consumer');
-equal(statusCounts.UNWIRED, 375, '25 unresolved parameters remain visibly unwired after population/Manpower/Walka/Oblezenie reclassification (Ekonomia/Wealth/Spoleczenstwo/Produkcja topics are committed but do not add new civ-matrix-semantic.ts REAL_GAMEPLAY entries in this branch); the 4 former meta REFERENCE_ONLY parameters were removed from the matrix entirely (R-CYWILIZACJE-MACIERZ-META-REMOVE-Q1-20260922) and are absent from every status count, not reclassified as UNWIRED');
+equal(statusCounts.UNWIRED || 0, 0, 'ALL 93 civ-matrix.json parameters now resolve to a non-UNWIRED status as of 2026-09-25 -- every field either has a live gameplay consumer (REAL_GAMEPLAY), is a deliberate UI-only tag, is explicitly BLOCKED/DEAD_UNWIRED by an owner decision (G1), or is explicitly DECISION_REQUIRED pending an owner call; the 4 former meta REFERENCE_ONLY parameters were removed from the matrix entirely (R-CYWILIZACJE-MACIERZ-META-REMOVE-Q1-20260922) and are absent from every status count');
 assert(!fs.readFileSync(path.resolve(sourceRoot, 'game/civ-matrix-semantic.ts'), 'utf8').includes('localStorage'), 'semantic classifier does not persist labels');
 
 console.log('--- combat/special-unit BLOCKED (G1, owner-excluded, R-CYWILIZACJE-MACIERZ-WALKA-10GRUP-Q1-20260925) ---');
