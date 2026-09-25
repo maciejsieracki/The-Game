@@ -17,6 +17,9 @@ import type { GameMap } from '../types/map';
 import type { Hex } from '../types/hex';
 import type { RuntimeUnit } from '../units/setup';
 import { keyOf, isWaterTerrain, embarkMoveCost, terrainMoveCost } from '../units/setup';
+import { TerenBazowy } from '../types/hex';
+import type { CivBonusEntry } from './civ-bonuses';
+import { civMovementMultiplier } from './civ-bonuses';
 
 /** Slug technologii wymaganej do embarkacji (tech.json „Technologia"). */
 export const EMBARK_TECH = 'Żegluga';
@@ -45,10 +48,18 @@ export function canUnitEmbark(
  * (wywołujący używa domyślnego terrainMoveCost — woda nieprzejezdna).
  */
 export function moveCostFnFor(
-  unit: Pick<RuntimeUnit, 'category' | 'embarked'>,
+  unit: Pick<RuntimeUnit, 'category' | 'embarked' | 'typeId'>,
   ownerHasSeafaring: boolean,
+  civBonusy: readonly CivBonusEntry[] = [],
 ): ((hex: Hex) => number) | undefined {
-  return canUnitEmbark(unit, ownerHasSeafaring) ? embarkMoveCost : undefined;
+  if (!canUnitEmbark(unit, ownerHasSeafaring)) return undefined;
+  return (hex: Hex) => {
+    const base = embarkMoveCost(hex);
+    if (hex.terenBazowy !== TerenBazowy.PlytkieMorze) return base;
+    const unitShape = { typNazwa: String(unit.typeId ?? unit.category), rola: String(unit.category) };
+    const mult = civMovementMultiplier(civBonusy, unitShape, '', true);
+    return base / Math.max(1, mult);
+  };
 }
 
 /** Czy heks (q,r) na mapie jest wodą (Morze/Wybrzeże). Brak heksa = false. */

@@ -43,6 +43,7 @@ export {
   unitCombatCategory,
   applyMultiplier,
   isCombatModifierBonus,
+  civMatrixBonusyForCivKey,
 } from '../src/game/civ-bonuses';
 export { resolveCombat } from '../src/game/combat';
 export { TerenBazowy, Nakladka } from '../src/types/hex';
@@ -68,6 +69,10 @@ try {
 }
 
 const M = require(BUNDLE_FILE);
+const civBonusyForCivKey = (key, civs) => [
+  ...M.civBonusyForCivKey(key, civs),
+  ...M.civMatrixBonusyForCivKey(key),
+];
 const civs = require('../data/civs.json');
 
 let passed = 0;
@@ -86,9 +91,9 @@ function near(a, b, eps, msg) {
 // ---------------------------------------------------------------------------
 // Fixtures from civs.json
 // ---------------------------------------------------------------------------
-const grecyBonusy   = M.civBonusyForCivKey('grecy', civs);
-const inkowieBonusy = M.civBonusyForCivKey('inkowie', civs);
-const zulusiBonusy  = M.civBonusyForCivKey('zulusi', civs);
+const grecyBonusy   = civBonusyForCivKey('grecy', civs);
+const inkowieBonusy = civBonusyForCivKey('inkowie', civs);
+const zulusiBonusy  = civBonusyForCivKey('zulusi', civs);
 
 assert(grecyBonusy.length >= 1,   'civBonusyForCivKey: Grecy ma bonusy');
 assert(inkowieBonusy.length >= 1, 'civBonusyForCivKey: Inkowie ma bonusy');
@@ -204,7 +209,7 @@ console.log('\nD. Zulusi -10% rekrutacja');
 // ---------------------------------------------------------------------------
 console.log('\nE. Rzymianie -20% budynki');
 {
-  const rzymBonusy = M.civBonusyForCivKey('rzymianie', civs);
+  const rzymBonusy = civBonusyForCivKey('rzymianie', civs);
   near(M.civBuildingCostDiscount(rzymBonusy), 0.2, 1e-9, 'Rzymianie building discount = 0.2');
   eq(M.buildingCostAfterCivDiscount(100, rzymBonusy), 80, 'floor(100*0.8) = 80');
   eq(M.buildingCostAfterCivDiscount(100, grecyBonusy), 100, 'Grecy: brak ulgi budynkow');
@@ -227,16 +232,16 @@ console.log('\nF. Bonusy walki (civCombatStatMultipliers)');
   near(gAtk.obrona, 0, 1e-9, 'Grecy bonus_obrona nie na ataku');
 }
 {
-  const celtyBonusy = M.civBonusyForCivKey('celtowie', civs);
+  const celtyBonusy = civBonusyForCivKey('celtowie', civs);
   const miecznik = { typNazwa: 'Wojownik', rola: 'Wrecz', 'Atak dystansowy': 0 };
   const charge = M.civCombatStatMultipliers(celtyBonusy, miecznik, {
     side: 'attacker', terrain: 'Rownina', isChargeRound: true,
   });
   near(charge.atk, 0.25, 1e-9, 'Celtowie szarza R1: +25% atk');
-  near(charge.uderzenie, 0.15, 1e-9, 'Celtowie szarza: +15% uderzenie');
+  near(charge.uderzenie, 0.4, 1e-9, 'Celtowie szarza: +40% uderzenie');
 }
 {
-  const inkBonusy = M.civBonusyForCivKey('inkowie', civs);
+  const inkBonusy = civBonusyForCivKey('inkowie', civs);
   const piech = { typNazwa: 'Wojownik', rola: 'Wrecz', 'Atak dystansowy': 0 };
   const las = M.civCombatStatMultipliers(inkBonusy, piech, {
     side: 'attacker', terrain: 'Las', isChargeRound: false,
@@ -247,18 +252,30 @@ console.log('\nF. Bonusy walki (civCombatStatMultipliers)');
   });
   near(rown.atk, 0, 1e-9, 'Inkowie na rowninie: brak bonusu terenowego');
 }
+{
+  const galera = { typNazwa: 'Galera', rola: 'Morska', counterTyp: 'Naval', 'Atak dystansowy': 0 };
+  eq(M.unitCombatCategory(galera), 'morska', 'Galera = morska');
+  const galeraAtk = M.civCombatStatMultipliers(grecyBonusy, galera, {
+    side: 'attacker', terrain: 'GlebokaWoda', isChargeRound: false,
+  });
+  near(galeraAtk.atk, 0.5, 1e-9, 'Grecy Galera: +50% atak morski');
+  const galeraDef = M.civCombatStatMultipliers(grecyBonusy, galera, {
+    side: 'defender', terrain: 'GlebokaWoda', isChargeRound: false,
+  });
+  near(galeraDef.obrona, 0.5, 1e-9, 'Grecy Galera: +50% obrona morska');
+}
 
 // ---------------------------------------------------------------------------
 // G. PreBattle — tylko modyfikatory bojowe (bez flavor / ekonomii)
 // ---------------------------------------------------------------------------
 console.log('\nG. isCombatModifierBonus (preBattle filter)');
 {
-  const rzymBonusy = M.civBonusyForCivKey('rzymianie', civs);
+  const rzymBonusy = civBonusyForCivKey('rzymianie', civs);
   const walka = rzymBonusy.filter(b => M.isCombatModifierBonus(b));
   eq(walka.length, 1, 'Rzymianie preBattle: 1 bonus (Legion)');
   eq(walka[0].typ, 'bonus_walka', 'Rzymianie: bonus_walka');
   const grecyWalka = grecyBonusy.filter(b => M.isCombatModifierBonus(b));
-  eq(grecyWalka.length, 1, 'Grecy preBattle: 1 bonus (Falanga)');
+  eq(grecyWalka.length, 6, 'Grecy preBattle: 6 combat modifiers (Falanga + shallow-sea movement/attack/defense + marine attack/defense)');
 }
 
 // --- summary ---------------------------------------------------------------

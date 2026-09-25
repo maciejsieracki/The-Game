@@ -1,0 +1,130 @@
+{
+  "topic": "R-CYWILIZACJE-MACIERZ-META-REMOVE-Q1-20260922",
+  "role": "Evaluator",
+  "round": 1,
+  "timestamp_utc": "2026-09-23T02:16:55Z",
+  "verdict": "PASS",
+  "checks": {
+    "1_paramdefs_defaults_kolumny_count": {
+      "paramDefs_before": 113,
+      "paramDefs_after": 109,
+      "defaults_before": 113,
+      "defaults_after": 109,
+      "meta_kolumny_before": 113,
+      "meta_kolumny_after": 109,
+      "removed_ids": [
+        "meta_epoka_kamien",
+        "meta_epoka_braz",
+        "meta_epoka_zelazo",
+        "meta_tier_roster"
+      ],
+      "removed_ids_occurrences_in_paramDefs_after": 0,
+      "removed_ids_occurrences_in_defaults_after": 0,
+      "removed_cells_across_15_rows_before": 60,
+      "removed_cells_across_15_rows_after": 0,
+      "orphaned_keys_found_in_after_rows": 0,
+      "row_count_before": 15,
+      "row_count_after": 15,
+      "defaults_keys_equal_paramDefs_keys_after": true,
+      "method": "python3 json load of git show HEAD:gra/data/civ-matrix.json vs working tree, independent recount",
+      "result": "PASS"
+    },
+    "2_manual_diff_review_civ_matrix_json": {
+      "insertions": 1,
+      "deletions": 89,
+      "added_lines": ["\"kolumny\": 109,"],
+      "removed_lines_summary": "only paramDefs entries for the 4 removed ids, their defaults entries, their 60 per-row cells, and the old kolumny:113 line",
+      "any_other_value_modified": false,
+      "result": "PASS"
+    },
+    "3_tsc_noemit": {
+      "command": "cd gra && npx tsc --noEmit",
+      "exit_code": 0,
+      "errors": 0,
+      "result": "PASS"
+    },
+    "4_test_files": {
+      "civ_matrix_semantic_labels_test": {
+        "command": "node tools/civ-matrix-semantic-labels-test.cjs (run from gra/)",
+        "declared": "309/309",
+        "actual": "PASS 309; FAIL 0",
+        "match": true
+      },
+      "civ_matrix_meta_roster_wiring_test": {
+        "command": "node tools/civ-matrix-meta-roster-wiring-test.cjs (run from gra/)",
+        "declared": "63/63",
+        "actual": "63 passed, 0 failed",
+        "match": true
+      },
+      "result": "PASS"
+    },
+    "5_git_diff_check": {
+      "command": "git diff --check",
+      "exit_code": 0,
+      "output": "",
+      "result": "PASS"
+    },
+    "6_allowlist_scope": {
+      "modified_tracked_files": [
+        "gra/data/civ-matrix.json",
+        "gra/src/game/civ-matrix-semantic.ts",
+        "gra/tools/civ-matrix-meta-roster-wiring-test.cjs",
+        "gra/tools/civ-matrix-semantic-labels-test.cjs"
+      ],
+      "untracked_files": [
+        "dyspozycje/autobot/runs/R-CYWILIZACJE-MACIERZ-META-REMOVE-Q1-20260922/01-evidence.json",
+        "dyspozycje/autobot/runs/R-CYWILIZACJE-MACIERZ-META-REMOVE-Q1-20260922/01-operator.md",
+        "dyspozycje/autobot/runs/R-CYWILIZACJE-MACIERZ-META-REMOVE-Q1-20260922/01-transition-receipt.md",
+        "dyspozycje/autobot/runs/R-CYWILIZACJE-MACIERZ-META-REMOVE-Q1-20260922/02-dispatch-evaluator.md"
+      ],
+      "exactly_4_allowlisted_files_modified": true,
+      "no_other_tracked_or_untracked_changes_outside_runs_dir": true,
+      "result": "PASS"
+    },
+    "7_out_of_scope_files_independent_grep": {
+      "method": "grep -rl -E 'meta_epoka_kamien|meta_epoka_braz|meta_epoka_zelazo|meta_tier_roster' . (excluding node_modules,.git,dyspozycje)",
+      "found_files": [
+        "Gra-FINALNA.html",
+        "gra-robocza/Gra-ROBOCZA.html",
+        "gra-robocza/ROBOCZA-MANIFEST.json",
+        "gra-robocza/data \u2014 kopia/civ-matrix.json",
+        "gra/tools/.dip-audit-bundle.cjs",
+        "gra/tools/.scc-bundle.cjs",
+        "panele-sterowania/cyw-macierz/civ-matrix-14-audit.json",
+        "panele-sterowania/cyw-macierz/civ-matrix-14-coverage.tsv",
+        "panele-sterowania/cyw_macierz_schema.py",
+        "panele-sterowania/gen-cyw-macierz.py"
+      ],
+      "notes_on_grep_delta_vs_operator_list": "Operator reported the same 8 project files plus dyspozycje/_handoff/KANAL-PRACA.md (a prose doc, not a grep hit on the removed ids -- it references civ-matrix.json context, not the param ids, so it correctly does not appear in this id-grep). Evaluator's id-grep additionally surfaced gra/tools/.dip-audit-bundle.cjs and .scc-bundle.cjs, two pre-existing tracked esbuild-generated snapshot bundles unchanged since commit 93bf7137 (predates this topic entirely, identical to HEAD), not written or touched by this diff.",
+      "confirmed_not_imported_by_gra_src_or_gra_tools": {
+        "cyw_macierz_schema.py": "no reference found",
+        "gen-cyw-macierz.py": "no reference found",
+        "civ-matrix-14-audit.json": "no reference found",
+        "civ-matrix-14-coverage.tsv": "no reference found",
+        "gra-robocza/data \u2014 kopia/civ-matrix.json": "basename civ-matrix.json referenced by many gra/src and gra/tools files, but those all resolve to gra/data/civ-matrix.json via path.resolve(__dirname,'..','data','civ-matrix.json'); the kopia copy under gra-robocza/data \u2014 kopia/ is read only by gra/tools/compare-excel-vs-json.cjs for units.json, not civ-matrix.json -- confirmed via targeted grep of 'civ-matrix' in that file (no match)",
+        "Gra-FINALNA.html": "referenced only as a filename string in main.ts detection regex and a .ps1 publish script; not imported as a module/data source consumed by tsc or the two gate tests",
+        "gra-robocza/Gra-ROBOCZA.html": "referenced only as a filename/path string in several .cjs/.ps1 tooling scripts (bundle verification, smoke test helpers) unrelated to civ-matrix.json param ids; not imported by src or by the two gate test files",
+        "gra-robocza/ROBOCZA-MANIFEST.json": "referenced only by publish/verify tooling scripts, not by gra/src or the two gate tests",
+        "gra/tools/.dip-audit-bundle.cjs": "pre-existing generated esbuild bundle artifact tracked in git since commit 93bf7137, unchanged, not a source input to tsc or the gate tests",
+        "gra/tools/.scc-bundle.cjs": "same as above"
+      },
+      "result": "PASS",
+      "note": "Operator's claim confirmed independently: none of the out-of-allowlist files affects gra/src or gra/tools runtime/test outcomes for this topic."
+    },
+    "8_git_log_no_new_commit": {
+      "command": "git log --oneline -5; git status",
+      "head": "b00cfaef",
+      "new_commits_beyond_b00cfaef": 0,
+      "push_merge_deploy_performed": false,
+      "result": "PASS"
+    }
+  },
+  "additional_manual_review": {
+    "civ_matrix_semantic_ts_diff": "Clean removal of 'REFERENCE_ONLY' from the CivMatrixConsumerStatus union type, the REFERENCE_ONLY Set (with its owner-decision comment replaced by a supersession note pointing at OWNER-DECISION-20260922.md), and all 3 downstream branches (civMatrixConsumerStatus, statusLabel, statusReason, difficultyBehavior). No unrelated logic touched.",
+    "test_diffs_reviewed": "Both .cjs test files: only assertions/comments referencing the 4 removed ids were deleted or renumbered (113->109, 1695->1635 cells); the meta_mnoznik_waluta assertions (the 5th meta param, explicitly out of scope) are unchanged and still pass.",
+    "economy_ts_untouched": "gra/src/game/economy.ts not in the modified file list; meta_mnoznik_waluta wiring confirmed unchanged by test 4 passing."
+  },
+  "final_verdict": "PASS",
+  "blocking_objections": [],
+  "notes": []
+}

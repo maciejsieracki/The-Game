@@ -17,7 +17,6 @@ export type CivMatrixConsumerStatus =
   | 'REAL_GAMEPLAY'
   | 'UI_ONLY'
   | 'REFERENCE_NEEDS_REVIEW'
-  | 'REFERENCE_ONLY'
   | 'UNWIRED'
   | 'DEAD_UNWIRED'
   | 'PROPOSAL'
@@ -135,17 +134,14 @@ const UI_ONLY = new Set([
   'dip_otwartosc_handel',
 ]);
 
-// Owner decision 2026-09-22 (Wariant C, R-CYWILIZACJE-MACIERZ-META-EPOCH-TIER-REFERENCE-Q1):
-// these four fields are retired to reference-only. The epoch flags never become a
-// gameplay consumer — `civs.json.epokaWejscia` (docs/decyzje/D-CYW-EPOKA-WEJSCIA-KASKADA.md)
-// remains the sole source of truth for availability by epoch. `meta_tier_roster` has no
-// legal gameplay actor and none may be invented. Do not move these into REAL_GAMEPLAY.
-const REFERENCE_ONLY = new Set([
-  'meta_epoka_kamien',
-  'meta_epoka_braz',
-  'meta_epoka_zelazo',
-  'meta_tier_roster',
-]);
+// superseded by R-CYWILIZACJE-MACIERZ-META-REMOVE-Q1-20260922, owner decided full
+// removal instead of reference-only retention: the four meta-epoch/roster-tier
+// fields formerly classified REFERENCE_ONLY here were the Wariant C outcome of
+// R-CYWILIZACJE-MACIERZ-META-EPOCH-TIER-REFERENCE-Q1 (2026-09-22); the owner then
+// uchylił that decision and ordered the parameters removed entirely from
+// civ-matrix.json rather than kept as inert reference data. See
+// dyspozycje/autobot/runs/R-CYWILIZACJE-MACIERZ-META-REMOVE-Q1-20260922/
+// OWNER-DECISION-20260922.md for the full rationale and the exact parameter names.
 
 /**
  * R-CYWILIZACJE-MACIERZ-WIRING-AI-RECON-ORIGIN-20260922 runda 2: oba pola
@@ -171,10 +167,6 @@ const DECISION_REQUIRED = new Set([
 
 const HARMFUL = new Set([
   'walka_koszt_rekrutacji_proc',
-  'spec_Dezercja_proc',
-  'spec_Koszt_pieniadz',
-  'spec_Utrzymanie',
-  'spec_Zywnosc_ture',
   'eko_korupcja_proc',
   'prod_koszt_budynku_proc',
   'prod_koszt_jednostki_proc',
@@ -214,39 +206,6 @@ const BLOCKED_COMBAT_MULTIPLIER = new Set([
   'walka_obrona_piechota_terytorium_wlasne',
   'walka_obrona_piechota_w_murze',
   'walka_atak_piechota_runda_szarzy',
-]);
-
-// Same round: 18 `spec_*` special-unit stat parameters with non-default values.
-// Read evidence (`gra/data/units.json`, the 9 `Super-jednostka: "TAK"` rows) shows
-// no unambiguous 1:1 mapping onto an existing unit field: where a same-named field
-// exists (Atak, Obrona, Uderzenie, Pancerz, Przebicie, Health, Ruch, Widok pola,
-// Morale bazowe), the matrix value equals the units.json field only for 2 of 7
-// civilizations with a special unit (egipt, sumer); for the other 5 the matrix
-// value is a different, non-derivable number (e.g. grecy spec_Atak=48 vs.
-// units.json Hieros Lochos Atak=8; grecy spec_Health=100 vs. units.json Health=170).
-// Several IDs (spec_Obrazenia, spec_Zasieg_hex, spec_Pociski, spec_Dezercja_proc,
-// spec_Koszt_pieniadz, spec_Utrzymanie) have no matching units.json field at all.
-// No sibling matrix parameter already wires a per-unit stat override this way.
-// See 02-decision-packet-special-unit.md.
-const BLOCKED_SPECIAL_UNIT_STAT = new Set([
-  'spec_Atak',
-  'spec_Obrazenia',
-  'spec_Obrona',
-  'spec_Uderzenie',
-  'spec_Pancerz',
-  'spec_Przebicie',
-  'spec_Health',
-  'spec_Atak_dystansowy',
-  'spec_Zasieg_hex',
-  'spec_Pociski',
-  'spec_Ruch_bitwa',
-  'spec_Ruch_mapa',
-  'spec_Widok',
-  'spec_Dezercja_proc',
-  'spec_Morale',
-  'spec_Koszt_pieniadz',
-  'spec_Utrzymanie',
-  'spec_Zywnosc_ture',
 ]);
 
 // Same round: 25 combat/siege/fortification parameters where all 15 civilization
@@ -307,10 +266,9 @@ export function civMatrixSemanticCivilizations(): readonly CivMatrixRow[] {
 export function civMatrixConsumerStatus(parameterId: string): CivMatrixConsumerStatus {
   if (REAL_GAMEPLAY.has(parameterId)) return 'REAL_GAMEPLAY';
   if (UI_ONLY.has(parameterId)) return 'UI_ONLY';
-  if (REFERENCE_ONLY.has(parameterId)) return 'REFERENCE_ONLY';
   if (DECISION_REQUIRED.has(parameterId)) return 'DECISION_REQUIRED';
   if (DEAD_UNWIRED_COMBAT.has(parameterId)) return 'DEAD_UNWIRED';
-  if (BLOCKED_COMBAT_MULTIPLIER.has(parameterId) || BLOCKED_SPECIAL_UNIT_STAT.has(parameterId)) return 'BLOCKED';
+  if (BLOCKED_COMBAT_MULTIPLIER.has(parameterId)) return 'BLOCKED';
   return 'UNWIRED';
 }
 
@@ -367,7 +325,6 @@ function statusLabel(status: CivMatrixConsumerStatus): string {
     case 'REAL_GAMEPLAY': return 'AKTYWNE';
     case 'UI_ONLY': return 'TYLKO INFORMACJA';
     case 'REFERENCE_NEEDS_REVIEW': return 'DO WERYFIKACJI';
-    case 'REFERENCE_ONLY': return 'TYLKO REFERENCJA — BEZ GAMEPLAY';
     case 'UNWIRED': return 'NIEAKTYWNE — BRAK KONSUMENTA';
     case 'DEAD_UNWIRED': return 'ZAMKNIĘTE — NIEAKTYWNE';
     case 'PROPOSAL': return 'PROPOZYCJA';
@@ -387,10 +344,6 @@ function statusReason(
         ? 'Wartość ma potwierdzone użycie w profilu AI/relacji; badge pozostaje neutralny, a opis profilu jest osobny.'
         : 'Wartość ma potwierdzony konsument produkcyjny; badge opisuje kierunek względem mediany, nie dodatkowy efekt.';
     case 'UI_ONLY': return 'Wartość służy tylko do opisu relacji/profilu w UI; nie jest premią gameplayową.';
-    case 'REFERENCE_ONLY':
-      return parameterId === 'meta_tier_roster'
-        ? 'Decyzja właściciela 2026-09-22 (Wariant C): meta_tier_roster jest referencyjny — brak legalnego aktora gameplay (rozmiar puli, selekcja, filtr kandydatów AI) i żaden nie może zostać wymyślony.'
-        : 'Decyzja właściciela 2026-09-22 (Wariant C): pole epoki jest referencyjne i nie jest konsumentem gameplay; jedynym źródłem prawdy dostępności cywilizacji wg epoki jest kaskada civs.json.epokaWejscia (docs/decyzje/D-CYW-EPOKA-WEJSCIA-KASKADA.md).';
     case 'UNWIRED':
       return parameterId === 'dip_nastawienie_bazowe'
         ? 'Brak potwierdzonego live konsumenta dla dip_nastawienie_bazowe; inicjalizator klastra nie używa tego pola, a kontrakt właściciela dla aktora i warunku pozostaje nierozstrzygnięty.'
@@ -401,9 +354,6 @@ function statusReason(
     case 'BLOCKED':
       if (BLOCKED_COMBAT_MULTIPLIER.has(parameterId)) {
         return `Zablokowane do decyzji właściciela (runda 2, R-CYWILIZACJE-MACIERZ-WIRING-COMBAT-RECON-ORIGIN-20260922): ${parameterId} opisuje ten sam efekt walki, który już dziś dostarcza niezależny kanał civs.json→bonusy[]→civ-bonuses.ts; bez decyzji o precedencji (zastąp / sumuj / ignoruj macierz) podłączenie civ-matrix.json ryzykuje ciche podwojenie lub konflikt bonusu. Patrz 02-decision-packet-combat.md.`;
-      }
-      if (BLOCKED_SPECIAL_UNIT_STAT.has(parameterId)) {
-        return `Zablokowane do decyzji właściciela (runda 2, R-CYWILIZACJE-MACIERZ-WIRING-COMBAT-RECON-ORIGIN-20260922): ${parameterId} nie ma jednoznacznego odwzorowania 1:1 na pole jednostki specjalnej w units.json (wartości matrix i units.json zgadzają się tylko dla 2 z 7 cywilizacji z jednostką specjalną; kilka ID nie ma odpowiadającego pola wcale). Wymaga jawnego kontraktu aktora/pola docelowego. Patrz 02-decision-packet-special-unit.md.`;
       }
       return 'Pole zablokowane do decyzji; nie ma efektywnego wpływu.';
     case 'DECISION_REQUIRED':
@@ -424,7 +374,6 @@ function difficultyBehavior(parameterId: string, status: CivMatrixConsumerStatus
     || status === 'PROPOSAL'
     || status === 'BLOCKED'
     || status === 'DECISION_REQUIRED'
-    || status === 'REFERENCE_ONLY'
   ) {
     return 'Panel etykiet używa wyłącznie tożsamości Normal; brak deklarowanego efektu Easy/Hard.';
   }

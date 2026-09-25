@@ -558,6 +558,7 @@ export interface CivBonusLite {
   wartosc: number | string | string[];
   opis?: string;
   realizuje?: string;
+  matrixParamId?: string;
 }
 
 /** Ulga na koszt rekrutacji z bonusow realizuje=ekonomia (Zulusi Impi -10%). */
@@ -568,7 +569,8 @@ export function civRecruitmentDiscount(
   for (const b of bonusy) {
     if (b.realizuje !== 'ekonomia') continue;
     const opis = (b.opis ?? '').toLowerCase();
-    if (opis.includes('rekrutacji') && typeof b.wartosc === 'number' && b.wartosc > 0) {
+    if ((opis.includes('rekrutacji') || b.matrixParamId === 'walka_koszt_rekrutacji_proc')
+      && typeof b.wartosc === 'number' && b.wartosc > 0) {
       return b.wartosc;
     }
   }

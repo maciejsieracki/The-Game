@@ -81,7 +81,13 @@ import {
   terrainTerenTooltipColor,
 } from './battleTerrainTooltip';
 import type { CivBonusEntry } from '../game/civ-bonuses';
-import { applyMultiplier, civCombatStatMultipliers } from '../game/civ-bonuses';
+import {
+  applyMultiplier,
+  civCombatStatMultipliers,
+  civMovementMultiplier,
+  civAttackRangeMultiplier,
+  civWallDefenseMultiplier,
+} from '../game/civ-bonuses';
 import { mergeBuildingBonusIntoStatMultipliers } from '../game/unit-building-bonuses';
 import {
   applyVeteranFracToCombatUnit,
@@ -487,6 +493,9 @@ export interface BattleOpts {
   attackerCivBonusy?: readonly CivBonusEntry[];
   /** RDY-01 / D4-Q3: bonusy cyw armii broniacej. */
   defenderCivBonusy?: readonly CivBonusEntry[];
+  attackerOwnTerritory?: boolean;
+  defenderOwnTerritory?: boolean;
+  shallowSea?: boolean;
   /** Etykieta cywilizacji atakujacego (pasek mocy HUD). */
   attackerCivLabel?: string;
   /** Etykieta cywilizacji broniacego (pasek mocy HUD). */
@@ -1299,6 +1308,16 @@ function movementPoints(bu: BattleUnit): number {
   const s: Record<string, unknown> = (bu.stats as Record<string, unknown>) ?? {};
   const mv = norm(s['Ruch w bitwie (heksy)'], DEFAULT_BATTLE_MOVE);
   return Math.max(1, Math.round(mv));
+}
+
+function civUnitShapeForBattleUnit(bu: BattleUnit): { typNazwa: string; rola: string; missileAttack?: number; counterTyp?: string } {
+  const s = (bu.stats as Record<string, unknown>) ?? {};
+  return {
+    typNazwa: String(s['Jednostka'] ?? bu.nazwa ?? bu.kategoria),
+    rola: String(s['Rola (linia)'] ?? bu.kategoria ?? 'Wrecz'),
+    missileAttack: norm(s['missileAttack'] ?? s['Atak dystansowy'], 0),
+    counterTyp: String(s['Typ'] ?? ''),
+  };
 }
 
 /**
@@ -2555,6 +2574,9 @@ export class BattleScene {
   private counters:    any[];
   private attackerCivBonusy: readonly CivBonusEntry[] = [];
   private defenderCivBonusy: readonly CivBonusEntry[] = [];
+  private attackerOwnTerritory = false;
+  private defenderOwnTerritory = false;
+  private shallowSea = false;
   private armyHungerStatMult = 0.75;
   private goldDeficitStatMult = 0.75;
   private attackerDifficultyCombatMult = 1;
@@ -2600,6 +2622,9 @@ export class BattleScene {
     this.counters    = normCounters(d.counters ?? []);
     this.attackerCivBonusy = opts.attackerCivBonusy ?? [];
     this.defenderCivBonusy = opts.defenderCivBonusy ?? [];
+    this.attackerOwnTerritory = opts.attackerOwnTerritory === true;
+    this.defenderOwnTerritory = opts.defenderOwnTerritory === true;
+    this.shallowSea = opts.shallowSea === true;
     this.armyHungerStatMult = opts.armyHungerStatMult ?? 0.75;
     this.goldDeficitStatMult = opts.goldDeficitStatMult ?? 0.75;
     this.attackerDifficultyCombatMult = opts.attackerDifficultyCombatMult ?? 1;
@@ -3551,6 +3576,9 @@ export class BattleScene {
       this.attackerDifficultyCombatMult,
       this.defenderDifficultyCombatMult,
       this.goldDeficitStatMult,
+      this.attackerOwnTerritory,
+      this.defenderOwnTerritory,
+      this.shallowSea,
     );
     for (const line of result.log) this.log.push(line);
     this._endWinner = result.winner;
@@ -4212,11 +4240,11 @@ export class BattleScene {
         fadingOut: false,
         fadeStart: 0,
         acted:     false,
-        moveLeft:  movementPoints(bu),
-        range:      attackRange(bu),
-        rangeBase:  attackRange(bu),
-        ranged:     isRanged(bu),
-        rangedBase: isRanged(bu),
+        moveLeft:  this._movementPointsFor(bu),
+        range:      this._attackRangeFor(bu),
+        rangeBase:  this._attackRangeFor(bu),
+        ranged:     this._attackRangeFor(bu) >= 2,
+        rangedBase: this._attackRangeFor(bu) >= 2,
         primaryRanged: isPrimaryRanged(bu),
         ammoLeft:   ammo0,
         ammoMax:    ammo0,
@@ -4368,12 +4396,12 @@ export class BattleScene {
         ammoBarFg: bars.ammoBarFg, ammoBarBg: bars.ammoBarBg, ammoBarShown: ammoShown,
         q: wallCol, r: wr, side: 'def',
         dead: false, fadingOut: false, fadeStart: 0, acted: false,
-        moveLeft: movementPoints(bu),
+        moveLeft: this._movementPointsFor(bu),
         // Defender catapult on wall walkway (kontrbateria) gets range 6 (cataRange 5 + 1 elevation).
-        range: (this._isCatapult(bu) ? Math.max(attackRange(bu), 6) : attackRange(bu)),
-        rangeBase: (this._isCatapult(bu) ? Math.max(attackRange(bu), 6) : attackRange(bu)),
-        ranged: (this._isCatapult(bu) ? true : isRanged(bu)),
-        rangedBase: (this._isCatapult(bu) ? true : isRanged(bu)),
+        range: (this._isCatapult(bu) ? Math.max(this._attackRangeFor(bu), 6) : this._attackRangeFor(bu)),
+        rangeBase: (this._isCatapult(bu) ? Math.max(this._attackRangeFor(bu), 6) : this._attackRangeFor(bu)),
+        ranged: (this._isCatapult(bu) ? true : this._attackRangeFor(bu) >= 2),
+        rangedBase: (this._isCatapult(bu) ? true : this._attackRangeFor(bu) >= 2),
         primaryRanged: isPrimaryRanged(bu),
         ammoLeft: ammo0, ammoMax: ammo0,
         dryCol: -1, heldAfterFallback: false,
@@ -5334,7 +5362,7 @@ export class BattleScene {
     // Every unit acts this turn and gets fresh movement points.
     for (const ru of order) {
       ru.acted    = false;
-      ru.moveLeft = movementPoints(ru.bu);
+      ru.moveLeft = this._movementPointsFor(ru.bu);
     }
 
     this.turnOrder = order;
@@ -7148,9 +7176,23 @@ export class BattleScene {
     return Math.max(12, Math.round(imp * 2));
   }
 
+  private _movementPointsFor(bu: BattleUnit): number {
+    const base = movementPoints(bu);
+    const bonuses = bu.ownerColor === 0xc84040
+      ? this.defenderCivBonusy : this.attackerCivBonusy;
+    return Math.max(1, Math.round(base * civMovementMultiplier(bonuses, civUnitShapeForBattleUnit(bu), this.terrain, this.shallowSea)));
+  }
+
+  private _attackRangeFor(bu: BattleUnit): number {
+    const base = attackRange(bu);
+    const bonuses = bu.ownerColor === 0xc84040
+      ? this.defenderCivBonusy : this.attackerCivBonusy;
+    return base > 0 ? Math.max(1, Math.round(base * civAttackRangeMultiplier(bonuses, civUnitShapeForBattleUnit(bu)))) : 0;
+  }
+
   /** Zasięg machiny oblężniczej vs mur (hex) — z `Zasięg ataku (hex)` / TW. */
   private _siegeMachineRange(ru: RuntimeBattleUnit): number {
-    const r = attackRange(ru.bu);
+    const r = this._attackRangeFor(ru.bu);
     if (r >= 1) return r;
     return this._isCatapult(ru.bu) ? 6 : 1;
   }
@@ -8153,6 +8195,9 @@ export class BattleScene {
         side: 'attacker',
         terrain: defTerrain,
         isChargeRound: isCharge,
+        ownTerritory: attacker.side === 'atk' ? this.attackerOwnTerritory : this.defenderOwnTerritory,
+        onWallWalkway: false,
+        shallowSea: this.shallowSea,
       }),
       { pancerz: attacker.bu.pancerzBonusFrac ?? 0, other: attacker.bu.parametryBonusFrac ?? 0 },
     );
@@ -8161,6 +8206,9 @@ export class BattleScene {
         side: 'defender',
         terrain: defTerrain,
         isChargeRound: isCharge,
+        ownTerritory: defender.side === 'def' ? this.defenderOwnTerritory : this.attackerOwnTerritory,
+        onWallWalkway: defender.onWallWalkway === true,
+        shallowSea: this.shallowSea,
       }),
       { pancerz: defender.bu.pancerzBonusFrac ?? 0, other: defender.bu.parametryBonusFrac ?? 0 },
     );
@@ -8180,7 +8228,10 @@ export class BattleScene {
       : this.attackerDifficultyCombatMult;
 
     const defEffObrona   = Math.max(0, defMeleeDef * (1 - defPenaltyFrac) * defOwnerDiffMult);
-    const defFinalObrona = defEffObrona * terrDefMult * defFordMlt * shoreBonusMlt;
+    const wallCivMult = defender.onWallWalkway
+      ? civWallDefenseMultiplier(defBonusy, cuD)
+      : 1;
+    const defFinalObrona = defEffObrona * terrDefMult * defFordMlt * shoreBonusMlt * wallCivMult;
     const atkMelee       = applyMultiplier(cuA.meleeAttack, atkMods.atk) * terrRiverMlt * atkOwnerDiffMult;
     const atkMissile     = applyMultiplier(cuA.missileAttack ?? 0, atkMods.rangedAtk) * atkOwnerDiffMult;
     const defArmor       = applyMultiplier(cuD.armor, defMods.pancerz);
@@ -16253,11 +16304,11 @@ export class BattleScene {
         fadingOut:   false,
         fadeStart:   0,
         acted:       false,
-        moveLeft:    movementPoints(bu),
-        range:       attackRange(bu),
-        rangeBase:   attackRange(bu),
-        ranged:      isRanged(bu),
-        rangedBase:  isRanged(bu),
+        moveLeft:    this._movementPointsFor(bu),
+        range:       this._attackRangeFor(bu),
+        rangeBase:   this._attackRangeFor(bu),
+        ranged:      this._attackRangeFor(bu) >= 2,
+        rangedBase:  this._attackRangeFor(bu) >= 2,
         primaryRanged: isPrimaryRanged(bu),
         ammoLeft:    ammo0,
         ammoMax:     ammo0,
@@ -19092,6 +19143,9 @@ function computeInstantResult(
   attackerDifficultyCombatMult: number = 1,
   defenderDifficultyCombatMult: number = 1,
   goldDeficitStatMult: number = 0.75,
+  attackerOwnTerritory: boolean = false,
+  defenderOwnTerritory: boolean = false,
+  shallowSea: boolean = false,
 ): { winner: 'atakujacy' | 'obronca'; survivors: BattleUnit[]; log: string[] } {
   const log: string[] = [];
 
@@ -19210,6 +19264,10 @@ function computeInstantResult(
         // C-COMBAT-Q1 (Maciej, 2026-07-26): bonus muru/Cytadeli/Baszty, dopiety
         // do "Pomiń" -- patrz defOnWall/structBonusPctForPair powyżej.
         structureDefBonusPct: structBonusPctForPair,
+        attackerOwnTerritory,
+        defenderOwnTerritory,
+        defenderOnWallWalkway: defOnWall,
+        shallowSea,
         // C-COMBAT-Q2 (Maciej, 2026-07-26): w obronie miasta neutralizuje
         // wewnetrzny terrDefMult resolveCombat (elewacja juz policzona wyzej,
         // dodana ADDYTYWNIE do structBonusPctForPair) -- undefined dla bitwy w
