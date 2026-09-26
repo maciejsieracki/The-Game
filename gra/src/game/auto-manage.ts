@@ -361,9 +361,17 @@ export function pickAutoBuildItem(
 
   const upgradePick = pickForTryb(tryb, upgrades, city, data);
   if (upgradePick) return upgradePick;
-  if (tryb === 'lista') {
-    // Lista gracza nie wymienia zadnego z dostepnych id ulepszen -- zamiast bezczynnosci,
-    // wybierz najlepsze dostepne ulepszenie wg tego samego profilu co tryb 'zrownowazone'.
+  if (tryb === 'lista' || tryb === 'priorytet') {
+    // R-AUTOMANAGE-ULEPSZENIA-NIE-BUDOWANE-Q1 (2026-09-25): 'priorytet' ma dokladnie
+    // ta sama luke co 'lista' mialo PRZED oryginalna naprawa fallbacku -- gdy ZADNA
+    // z kategorii wybranych przez gracza w budowaPriorytetTypow (np. tylko 'wojsko')
+    // nie pasuje do kategorii ZADNEGO dostepnego ulepszenia (np. jedyny zbudowany
+    // budynek z maksPoziom>1 to Stolarnia, kategoria 'Produkcja'), pickForTryb zwraca
+    // null mimo istniejacych, oplacalnych ulepszen -- auto-budowa staje bezczynnie,
+    // dokladnie zgloszenie wlasciciela. 'zrownowazone' nie ma tej luki (buildingMatchesFocus
+    // dopasowuje KAZDA kategorie dla tego profilu), wiec nie potrzebuje tego catch-all.
+    // Ten sam fallback co juz mial 'lista': najlepsze dostepne ulepszenie wg profilu
+    // 'zrownowazone', zamiast bezczynnosci mimo dostepnych "Ulepsz" w panelu manualnym.
     return bestCandidateForFocus(upgrades, data, 'zrownowazone');
   }
   return null;
