@@ -1,38 +1,39 @@
 {
-  "publishedAt": "2026-09-25T19:00:00Z",
-  "productReleaseCommit": "b15bdb36",
+  "publishedAt": "2026-09-26T16:14:48Z",
+  "productReleaseCommit": "27fe22fc92770490ea119ce22bda45ad1643a453",
   "publisher": "Hermes Orchestrator",
-  "md5": "706bf94a379763473ed4add9d508f622",
-  "sha256": "86cd67aca862ab6fbad13aba48b6117d57bb175166ed555e1e66478a80ac85d0",
-  "bytes": 69918639,
+  "md5": "bc76a12ed28947153b7ec32ceeb6b9d3",
+  "sha256": "a80e6a62b998aa23a18dc9524e47dda2dfae392b1c0dc366b486c42cb83198b8",
+  "bytes": 69919094,
   "bundle": "Gra-ROBOCZA.html",
-  "sourceCommit": "b15bdb36",
-  "base": "a8c9cf6c181f688201dd45e6a5871da1b0eb1301",
-  "integrationCommit": "b15bdb36",
-  "publishCommit": "b15bdb36",
-  "remoteMainAtPublish": "b15bdb365ae251fdf190299a885af699314d810d",
+  "sourceCommit": "27fe22fc92770490ea119ce22bda45ad1643a453",
+  "base": "f057729a722b4071b19d762ec0cd52db7eea0e01",
+  "integrationCommit": "27fe22fc92770490ea119ce22bda45ad1643a453",
+  "publishCommit": "27fe22fc92770490ea119ce22bda45ad1643a453",
+  "remoteMainAtPublish": "f057729a722b4071b19d762ec0cd52db7eea0e01",
   "remoteSmoke": false,
   "finalControl": [
-    "PR #140 merged (github.com/maciejsieracki/The-Game/pull/140), independently verified: 17/19 test suites 100% PASS on merged tree, 2 pre-existing failures confirmed identical on clean origin/main (not regressions)",
-    "R-CYWILIZACJE-MACIERZ-META-REMOVE-Q1-20260922: owner-approved 113->109 paramDefs",
-    "R-CYWILIZACJE-MACIERZ-JEDNOSTKA-SPEC-REMOVE-Q1-20260924 (t_084c765c): 109->91 paramDefs, 18 spec_* fields removed",
-    "R-CYWILIZACJE-MACIERZ-WALKA-10GRUP-Q1-20260925 (t_5be3645a + t_f63e4337 defense round): 91->93 paramDefs, Operator->Evaluator(G8 objection)->Defense fix->Final Control PASS"
+    "R-EKONOMIA-ZYWNOSC-NADWYZKA-PO-LIMICIE-Q1-20260925 (fa20567c): Operator t_7ecff73e PASS, Evaluator t_8aacea6f PASS, Final Control t_c1982f4f PASS",
+    "R-AUTOMANAGE-ULEPSZENIA-NIE-BUDOWANE-Q1-20260925 (0361c8b9): Operator t_e7c2cc9d PASS (recovered po infra crash/timeout), Evaluator t_b37fda77 PASS, Final Control t_e5b4b28f PASS (recovered po infra timeout w trakcie run2 baseline)",
+    "R-AI-ZAKLADANIE-MIAST-TELEPORTACJA-Q1-20260925 (bcc11fe5): Operator t_8c9c7f4f PASS, Evaluator t_08801b64 PASS (3 independent deterministic repro), Final Control t_b0a1fd2d PASS (3rd independent repro, own geometry)"
   ],
   "scope": [
-    "civ-matrix.json paramDefs 113 -> 93 net across three owner-approved stages",
-    "R-CYWILIZACJE-MACIERZ-META-REMOVE-Q1-20260922: 4 meta fields removed",
-    "R-CYWILIZACJE-MACIERZ-JEDNOSTKA-SPEC-REMOVE-Q1-20260924: 18 spec_* special-unit fields removed",
-    "R-CYWILIZACJE-MACIERZ-WALKA-10GRUP-Q1-20260925: 32 combat fields wired (G2-G11, G1 excluded per owner) + 2 new fields + 5 historical-balance additions (Zulu melee, Egypt chariot movement, Slavic forest defense, Assyrian cavalry, Babylon confirmed combat-neutral)"
+    "gra/src/main.ts: popCapByCityId nadwyzka zywnosci po osiagnieciu limitu populacji (+55/-1 linii, main.ts diff bit-identyczny poza tym tematem)",
+    "gra/src/game/auto-manage.ts: pickAutoBuildItem fallback do ulepszen dla tryb='priorytet' (tozsamy z istniejacym dla tryb='lista')",
+    "gra/src/game/ai-difficulty-bonus.ts: pickBonusCityHex respektuje faktyczny promien terytorium stolicy (major AI Trudny nie zaklada juz miast poza wlasnym terytorium)",
+    "gra/tools/ai-founding-territory-test.cjs: naprawa kruchosci tekstowej testu B1e-a/B1e-isMe (main.ts:10382 bit-identyczny z origin/main, zero zmiany produkcyjnej)"
   ],
   "noOpVerified": [
-    "17/19 regression suites 100% PASS on the merged tree (civ-bonusy-test 36/36, combat-test 6/6, structure-defense-bonus-test 8/8, civ-matrix-greece-test 329/329, civ-matrix-semantic-labels-test 233/233, walka-jeden-kontratak-test 24/24, walka-morale-przewaga-mocy-test 123/123, civ-matrix-meta-roster-wiring-test 63/63, civ-matrix-ai-diplomacy-wiring-test 51/51, civ-matrix-difficulty-test 16/16, population-civ-matrix-wiring-test 122/122, ai-difficulty-bonus-test 97/97, unit-building-bonuses-test 82/82)",
-    "2 pre-existing failures (budynek-civ-bonus-u17-test, population-growth-v85-bonus-test) confirmed byte-identical failure output on clean origin/main before this integration -- not regressions from this deploy",
-    "tsc --noEmit clean, git diff --check clean, production vite build clean (892 modules)"
+    "tsc --noEmit clean na scalonym drzewie (3 merge --no-ff z origin/main f057729a, zero konfliktow)",
+    "auto-wyzywienie-live-recalc-test 60/60, auto-manage-ulepszenia-fallback-test 11/11, auto-manage-test 45/45, ai-founding-territory-test 29/29, cities-buildings-production-owner-contract-test 53/53 -- wszystkie zielone na scalonym drzewie",
+    "4 legacy zywnosc testy (spichlerz-widocznosc 37/8, akwedukt-popcap 6/1, spichlerz-deficyt-scalenie 54/4, spichlerz-wzrost 2/7) potwierdzone IDENTYCZNE liczbowo na scalonym drzewie i na osobnym czystym origin/main worktree -- zero regresji wprowadzonej przez integracje",
+    "git diff --check clean, production vite build clean (892 modules, +2 wzgledem poprzedniej fali 890 -- 2 nowe pliki diag-*.cjs w tools/, poza bundlem produkcyjnym; bundle rosnie przez sam diff main.ts/auto-manage.ts/ai-difficulty-bonus.ts)"
   ],
   "excluded": [
-    "93×15 full matrix completion; unresolved cells remain DECISION_REQUIRED/UNWIRED or DEAD_UNWIRED",
-    "ai_profil_obronna (2 components) -- implemented and locally committed (b4c9582f) in isolated worktree, NOT yet merged to main, NOT in this deploy",
-    "8-field Dyplomacja package -- decision finalized, implementation in progress in isolated worktree as of this deploy, NOT in this deploy",
+    "93x15 full matrix completion; unresolved cells remain DECISION_REQUIRED/UNWIRED or DEAD_UNWIRED (niezmienione przez ten deploy)",
+    "ai_profil_obronna (2 components) -- nadal lokalnie w izolowanym worktree (b4c9582f), NIE w tym deployu",
+    "8-field Dyplomacja package -- nadal w toku w izolowanym worktree, NIE w tym deployu",
+    "PR #142 (rally-point UI, commit 2cca1748) -- OPEN/MERGEABLE, niezalezny od tej integracji, NIE w tym deployu bez osobnej zgody",
     "promocja do KANON/FINALNA"
   ],
   "bundles": [
@@ -40,76 +41,20 @@
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html?skipMenuRedirect=1",
       "label": "Pełna gra ROBOCZA",
-      "md5": "706bf94a379763473ed4add9d508f622",
-      "sizeBytes": 69918639
+      "md5": "bc76a12ed28947153b7ec32ceeb6b9d3",
+      "sizeBytes": 69919094
     },
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html",
       "label": "Pełna gra (z menu)",
-      "md5": "706bf94a379763473ed4add9d508f622",
-      "sizeBytes": 69918639
-    },
-    {
-      "file": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
-      "href": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
-      "label": "Playtest: DUŻA bitwa (pole) — NOWE",
-      "md5": "706bf94a379763473ed4add9d508f622",
-      "sizeBytes": 69918639
-    },
-    {
-      "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
-      "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
-      "label": "Playtest: DUŻE oblężenie (mur) — NOWE",
-      "md5": "706bf94a379763473ed4add9d508f622",
-      "sizeBytes": 69918639
-    },
-    {
-      "file": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
-      "href": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
-      "label": "Playtest: mapa świat",
-      "md5": "706bf94a379763473ed4add9d508f622",
-      "sizeBytes": 69918639
-    },
-    {
-      "file": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
-      "href": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
-      "label": "Playtest: miasto / ekonomia",
-      "md5": "706bf94a379763473ed4add9d508f622",
-      "sizeBytes": 69918639
-    },
-    {
-      "file": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
-      "href": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
-      "label": "Playtest: walka na mapie",
-      "md5": "706bf94a379763473ed4add9d508f622",
-      "sizeBytes": 69918639
-    },
-    {
-      "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
-      "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
-      "label": "Playtest: odskok 3v3",
-      "md5": "706bf94a379763473ed4add9d508f622",
-      "sizeBytes": 69918639
-    },
-    {
-      "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
-      "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
-      "label": "Playtest: odskok + oblężenie",
-      "md5": "706bf94a379763473ed4add9d508f622",
-      "sizeBytes": 69918639
-    },
-    {
-      "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
-      "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
-      "label": "Playtest: oblężenie 3v3",
-      "md5": "706bf94a379763473ed4add9d508f622",
-      "sizeBytes": 69918639
+      "md5": "bc76a12ed28947153b7ec32ceeb6b9d3",
+      "sizeBytes": 69919094
     }
   ],
   "startHub": "START.html",
-  "hubGeneratedAt": "2026-09-25T19:00:00",
-  "note": "ROBOCZA - civ-matrix consolidated integration (PR #140): META-REMOVE + spec-remove + Walka wiring, 113->93 paramDefs. AI (ai_profil_obronna) and Dyplomacja (8 fields) are decided but NOT yet in main/this deploy -- separate isolated worktrees, ai_profil_obronna locally committed (b4c9582f) pending its own merge, Dyplomacja implementation in progress as of this publish.",
+  "hubGeneratedAt": "2026-09-26T16:14:13",
+  "note": "ROBOCZA - trzy rownolegle tematy scalone z czystego origin/main (f057729a): (1) zywnosc - nadwyzka po limicie populacji, (2) autonomiczna kolejka ulepszen budynku dla tryb='priorytet', (3) AI nie zaklada juz miast poza wlasnym terytorium. Kazdy przeszedl pelny lancuch Operator->niezalezny Evaluator->Final Control. Zero konfliktu plikowego miedzy tematami (rozne pliki), zero regresji (4 legacy zywnosc-testy daja identyczne liczby PASS/FAIL na scalonym drzewie i na czystym origin/main). PR #142 (rally-point UI) pozostaje niezalezny, nie wchodzi w ten deploy.",
   "backlogReconciliation": {
     "status": "ALREADY_IN_TARGET_OR_NO_OP",
     "recordedAt": "2026-09-17T23:26:49Z",
