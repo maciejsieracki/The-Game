@@ -9,6 +9,7 @@ import { canFoundCity, MIN_CITY_DISTANCE } from './cities';
 import { isBarbarian } from './barbarians';
 import type { DifficultyParams } from './ai';
 import { hexDistance } from '../units/setup';
+import { cityTerritoryRadius } from '../map/territory';
 
 /** Domyślny typ jednostki bonusowej startowej (epoka kamień). */
 export const AI_DIFFICULTY_BONUS_UNIT_TYPE = 'Wojownik';
@@ -178,11 +179,16 @@ export function pickBonusCityHex(
   capitalQ: number,
   capitalR: number,
 ): { q: number; r: number } | null {
-  // Promień wyszukiwania: wielokrotność MIN_CITY_DISTANCE (istniejąca stała) —
-  // nie balansowa liczba, tylko bezpieczna górna granica przeszukiwania; poza
-  // nią kolonia jest po prostu zablokowana (istniejąca ścieżka `extraCitiesBlocked`
-  // w `planMajorAiDifficultyStartBonuses`, bez zmiany semantyki).
-  const maxRadius = MIN_CITY_DISTANCE * 3;
+  // P-AI-ZAKLADANIE-MIAST-TELEPORTACJA-Q1 (t_8c9c7f4f): promień poszukiwania ograniczony
+  // do WŁASNEGO terytorium stolicy (cityTerritoryRadius, ta sama reguła co withinTerritory
+  // dla zwykłej kolonizacji AI w findCityFoundingHex/ai.ts) — wcześniej `maxRadius` był stałą
+  // wielokrotnością MIN_CITY_DISTANCE, niezależną od realnego zasięgu terytorium (pop=1 ->
+  // promień 5), i przy gęstym klastrze (dużo zablokowanych bliższych heksów) potrafił znaleźć
+  // wolny heks 6-9 pól od stolicy — POZA jej terytorium ("teleportacja" zgłoszona przez
+  // właściciela). Realny dowód: tools/diag-bonus-city-territory.cjs, 3 naruszenia / 8 seedów
+  // (Standardowy odpowiednik), dist do 9 przy promieniu terytorium 5.
+  const capitalNode = { q: capitalQ, r: capitalR, pop: 1, level: 1 };
+  const maxRadius = Math.min(MIN_CITY_DISTANCE * 3, cityTerritoryRadius(capitalNode));
   const candidates: Array<{ q: number; r: number; d: number }> = [];
   for (let dq = -maxRadius; dq <= maxRadius; dq++) {
     for (let dr = -maxRadius; dr <= maxRadius; dr++) {
