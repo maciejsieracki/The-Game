@@ -1,4 +1,24 @@
-﻿## [2026-09-25 19:00 UTC] ORKIESTRATOR -> KANBAN / WLASCICIEL -- DEPLOY ROBOCZA: CIV-MATRIX CONSOLIDATED INTEGRATION (PR #140)
+﻿## [2026-09-26 16:17 UTC] ORKIESTRATOR -> KANBAN / WLASCICIEL -- DEPLOY ROBOCZA: ZYWNOSC + AUTOMANAGE + AI-MIASTA (3 TEMATY)
+
+STATUS: `DEPLOYED -- local commit + push do origin/main WYKONANY; remote readback PASS`.
+
+Haslo wlasciciela otrzymane wprost: "Wykonaj kolejne kroki. A na samym koncu zrob deploy do roboczej."
+
+- Czysty integration worktree: `/home/ubuntu/projects/The-Game-integration-20260926`; base `origin/main=f057729a722b4071b19d762ec0cd52db7eea0e01`.
+- Trzy tematy scalone `git merge --no-ff` (zero konfliktow, rozne pliki produkcyjne):
+  - `R-EKONOMIA-ZYWNOSC-NADWYZKA-PO-LIMICIE-Q1-20260925` (`fa20567c`) -- Operator `t_7ecff73e` PASS, Evaluator `t_8aacea6f` PASS, Final Control `t_c1982f4f` PASS.
+  - `R-AUTOMANAGE-ULEPSZENIA-NIE-BUDOWANE-Q1-20260925` (`0361c8b9`) -- Operator `t_e7c2cc9d` PASS (odzyskany po infrastrukturalnym crashu dispatchera), Evaluator `t_b37fda77` PASS, Final Control `t_e5b4b28f` PASS (odzyskany po infrastrukturalnym timeout w trakcie drugiego przebiegu testu bazowego -- worker byl aktywnie w trakcie pracy, nie utkniety).
+  - `R-AI-ZAKLADANIE-MIAST-TELEPORTACJA-Q1-20260925` (`bcc11fe5`) -- Operator `t_8c9c7f4f` PASS, Evaluator `t_08801b64` PASS (3 niezalezne deterministyczne repro), Final Control `t_b0a1fd2d` PASS (3. niezalezne repro, wlasna geometria).
+- Integration/publish commit: `27fe22fc92770490ea119ce22bda45ad1643a453`; bundle commit: `c1adee26211d78195e0a1f81865076ee768d6421`.
+- Bramki: `tsc --noEmit` PASS. Testy celowane: `auto-wyzywienie-live-recalc-test` 60/60, `auto-manage-ulepszenia-fallback-test` 11/11, `auto-manage-test` 45/45, `ai-founding-territory-test` 29/29, `cities-buildings-production-owner-contract-test` 53/53. 4 legacy zywnosc-testy (`spichlerz-widocznosc-test` 37/8, `akwedukt-popcap-test` 6/1, `spichlerz-deficyt-scalenie-test` 54/4, `spichlerz-wzrost-test` 2/7) potwierdzone identyczne liczbowo na scalonym drzewie i na osobnym czystym `origin/main` worktree -- **zero regresji wprowadzonej przez te trzy tematy, wczesniej otwarty punkt jest teraz rozstrzygniety**. `git diff --check` PASS. Vite build `892` modulow PASS.
+- `verify-robocza-bundle.cjs` -> `VERIFY OK`, manifest match OK. Headless Chromium smoke: tytul `The Game — 4X`, canvas obecny, pelny HUD renderuje sie, zero bledow strony/konsoli.
+- Bundle: md5 `bc76a12ed28947153b7ec32ceeb6b9d3`, sha256 `a80e6a62b998aa23a18dc9524e47dda2dfae392b1c0dc366b486c42cb83198b8`, `69919094` bajtow.
+- Push: `git push origin HEAD:main` z worktree integracyjnego -- patrz readback ponizej.
+- Poza zakresem tego deploya: `ai_profil_obronna` (`b4c9582f`, niezmergowany), pakiet Dyplomacja 8 pol (w toku), PR #142 rally-point UI (`2cca1748`, OPEN/MERGEABLE) -- wszystkie niezalezne, czekaja na wlasny cykl/zgode.
+
+CZEKAM-NA: test wlasciciela w `gra-robocza/START.html` po `Ctrl+F5` -- nadwyzka zywnosci po limicie populacji, autonomiczne ulepszenia w trybie priorytet, AI nie zaklada juz miast poza wlasnym terytorium.
+
+## [2026-09-25 19:00 UTC] ORKIESTRATOR -> KANBAN / WLASCICIEL -- DEPLOY ROBOCZA: CIV-MATRIX CONSOLIDATED INTEGRATION (PR #140)
 
 STATUS: `DEPLOYED -- local commit, manifest and smoke readback PASS; push nie wykonano`.
 
