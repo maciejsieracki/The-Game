@@ -1,0 +1,52 @@
+{
+  "temat": "R-AUTOMANAGE-ULEPSZENIA-NIE-BUDOWANE-Q1-20260925",
+  "root_cause": {
+    "function": "pickAutoBuildItem",
+    "file": "gra/src/game/auto-manage.ts",
+    "lines": "340-370",
+    "description": "Fallback catch-all do bestCandidateForFocus(upgrades, data, 'zrownowazone') istnial tylko dla tryb === 'lista', nie dla tryb === 'priorytet', mimo ze 'priorytet' ma dokladnie ta sama strukturalna luke: gdy budowaPriorytetTypow gracza nie pokrywa kategorii ZADNEGO dostepnego ulepszenia, pickForTryb zwraca null mimo istniejacych, oplacalnych ulepszen."
+  },
+  "isolated_unit_repro": {
+    "method": "esbuild bundle bezposrednio z pickAutoBuildItem (bez mockow silnika), city.budowaTryb='priorytet', budowaPriorytetTypow=['wojsko'], jedyny zbudowany budynek z maksPoziom>1 to Stolarnia (kategoria Produkcja), surowce niemal nieskonczone",
+    "before_fix_pick": null,
+    "after_fix_pick": "{\"kind\":\"budynek\",\"id\":\"garncarnia\",\"nazwa\":\"Garncarnia\",\"koszt\":26}",
+    "control_tryb_lista_same_scenario": "{\"kind\":\"budynek\",\"id\":\"garncarnia\",\"nazwa\":\"Garncarnia\",\"koszt\":26} (zawsze poprawne, fallback juz istnial)"
+  },
+  "live_simulation_evidence": {
+    "probe": "gra/tools/.probe-diag3.cjs (60 tur headless Chromium, diag hook w main.ts, usuniety po zbadaniu)",
+    "example_city": "city2",
+    "example_turns_stuck": "26-35",
+    "example_state_turn_35": {
+      "upgradeableIds": ["stolarnia"],
+      "ownerSurowcePool": {"glina": 1567, "kamien": 29, "drewno": 0},
+      "allCandidatesCount": 10,
+      "affordableCount_new_buildings": 0,
+      "pick": null
+    },
+    "note": "Ten konkretny przyklad (city2) mial budowaTryb='zrownowazone' w probe, ktory NIE ma tej luki - potwierdza ze mechanizm 'zrownowazone' dziala poprawnie i luka jest specyficzna dla trybu 'priorytet', zweryfikowanego osobno testem izolowanym powyzej."
+  },
+  "fix": {
+    "file": "gra/src/game/auto-manage.ts",
+    "change": "if (tryb === 'lista') { ... } -> if (tryb === 'lista' || tryb === 'priorytet') { ... }",
+    "lines_changed": 11,
+    "scope": "waska, jedna linia warunku + 8 linii komentarza uzasadniajacego"
+  },
+  "tests": {
+    "auto-manage-test.cjs": "45/45 PASS",
+    "auto-manage-ulepszenia-fallback-test.cjs": "11/11 PASS",
+    "ai-mp-rekrutacja-build-gate-test.cjs": "21/21 PASS",
+    "cities-buildings-production-owner-contract-test.cjs": "53/53 PASS ALL GREEN",
+    "ai-buduje-budynki-test.cjs": {
+      "with_fix": "40-41/42 PASS (run to run)",
+      "without_fix_baseline_stash": "40/42 PASS (identical H1 console-error FAIL from unrelated wojna-wymuszona system, plus one non-deterministic M6 flake)",
+      "conclusion": "preexisting non-determinism/flake in this specific gate, NOT a regression introduced by this fix -- verified by running both with and without the patch via git stash"
+    },
+    "tsc_noEmit": "clean, 0 errors",
+    "git_diff_check": "clean"
+  },
+  "diag_hook_added_and_removed": {
+    "location": "gra/src/main.ts, __aiBuildingsTestDebug.diagAutoBuild",
+    "status": "fully removed before finalizing; final diff touches ONLY gra/src/game/auto-manage.ts"
+  },
+  "deploy_push": "NONE"
+}
