@@ -25387,7 +25387,11 @@ async function boot(): Promise<void> {
       if (isAwaitingFirstPlayerCity()) return false;
       const u = units.find(x => x.id === unitId);
       const dest = plannedMarches.get(unitId);
-      if (!u || !dest || u.ownerId !== 0) return false;
+      // R-HOTSEAT-RECZNY-RUCH-GRACZ2-Q1: execution must use the active human seat,
+      // not the player-1-only ownerId===0 guard. planMarchTo() already marks the unit
+      // as moved before this function is called; the old guard therefore dropped every
+      // seat-2 planned march both immediately and from executePlannedMarchesEndTurn().
+      if (!u || !dest || !isMe(u.ownerId)) return false;
 
       const stack = playerStackAt(u);
       const stackRuch = planningStackRuchLeft(stack);
