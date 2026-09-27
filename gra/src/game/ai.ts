@@ -3044,6 +3044,17 @@ function isRanged(unit: RuntimeUnit): boolean {
   return c === 'lucznik' || c === 'procarz' || c === 'oszczepnik';
 }
 
+/**
+ * True for mobile flank units.  The role in units.json is the canonical
+ * gameplay declaration; the category fallback keeps runtime units created by
+ * older saves covered as well.
+ */
+function isFlankingUnit(unit: RuntimeUnit, data: GameData): boolean {
+  if (unit.category === 'rydwan' || unit.category === 'konnica') return true;
+  const def = data.units.find(u => u.Jednostka === unit.typeId);
+  return String(def?.['Rola (linia)'] ?? '').toLowerCase().includes('flanka');
+}
+
 /** Max health from data.units (TW health, fallback Health), default 30. */
 function _unitMaxHealth(unit: RuntimeUnit, data: GameData): number {
   const def = data.units.find(u => u.Jednostka === unit.typeId);
@@ -3319,9 +3330,25 @@ export function decideAITurn(
   // TERAZ woła własną, niezależną kopię planArmyConcentration/planArmyFrontMerge (ai.ts ok.
   // 3151+, przed jej pętlą per-jednostka) -- ale NIE przez TEN blok, który zostaje
   // nieosiągalny dla PM tak jak wcześniej.
+  // A visible enemy gives flank units a higher-priority job than waiting for a
+  // local army stack.  Without this exclusion a chariot selected as the rally
+  // anchor is placed in `deferredUnitIds`, skipped below, and never reaches the
+  // attack/chase logic even when an enemy is adjacent or one step away.
+  const activeFlankingUnitIds = new Set(
+    myUnits
+      .filter(u =>
+        isFlankingUnit(u, data)
+        && (engageableEnemyUnits.length > 0 || engageableEnemyCities.length > 0),
+      )
+      .map(u => u.id),
+  );
+  const concentrationExcludedUnitIds = new Set<string>([
+    ...homeDefenderAssignments.keys(),
+    ...activeFlankingUnitIds,
+  ]);
   const concentration = canConcentrateArmy(opts)
     ? planArmyConcentration(playerId, myUnits, {
-      excludedUnitIds: new Set(homeDefenderAssignments.keys()),
+      excludedUnitIds: concentrationExcludedUnitIds,
     })
     : null;
   const concentrationDeferred = new Set(concentration?.deferredUnitIds ?? []);
@@ -3360,7 +3387,7 @@ export function decideAITurn(
         .map(u => u.id),
     );
     const frontMergeExcluded = new Set<string>([
-      ...homeDefenderAssignments.keys(),
+      ...concentrationExcludedUnitIds,
       ...(concentration?.unitIds ?? []),
       ...combatEngagedUnitIds,
     ]);
@@ -3507,6 +3534,25 @@ export function decideAITurn(
     const assignedThreat = homeDefenderAssignments.get(unit.id);
     if (assignedThreat !== undefined && !handledThreatIds.has(assignedThreat.id)) {
       const step = firstStep(unit, map, assignedThreat.q, assignedThreat.r, units);
+      if (step !== null) {
+        commands.push({ type: 'move', unitId: unit.id, toQ: step.q, toR: step.r });
+        unitActed.add(unit.id);
+        continue;
+      }
+    }
+
+    // Flankers actively close on the nearest visible enemy unit instead of
+    // falling through to city/patrol/idle behavior.  Adjacent targets were
+    // handled above, so this is the approach/orbit leg of the same attack
+    // pattern and also covers maps with no enemy city in the data.
+    const flankingTarget = isFlankingUnit(unit, data)
+      ? nearest(unit.q, unit.r, engageableEnemyUnits, u => u.q, u => u.r)
+      : undefined;
+    if (
+      flankingTarget !== undefined
+      && hexDistance(unit.q, unit.r, flankingTarget.q, flankingTarget.r) <= unit.ruchLeft
+    ) {
+      const step = firstStep(unit, map, flankingTarget.q, flankingTarget.r, units);
       if (step !== null) {
         commands.push({ type: 'move', unitId: unit.id, toQ: step.q, toR: step.r });
         unitActed.add(unit.id);
