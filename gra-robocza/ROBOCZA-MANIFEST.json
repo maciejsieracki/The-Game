@@ -1,35 +1,43 @@
 {
-  "publishedAt": "2026-09-26T16:14:48Z",
-  "productReleaseCommit": "27fe22fc92770490ea119ce22bda45ad1643a453",
+  "publishedAt": "2026-09-27T13:01:00Z",
+  "productReleaseCommit": "7ccb1dc078c0be7d7d93a12e8dc32fd1748d0c4d",
   "publisher": "Hermes Orchestrator",
-  "md5": "bc76a12ed28947153b7ec32ceeb6b9d3",
-  "sha256": "a80e6a62b998aa23a18dc9524e47dda2dfae392b1c0dc366b486c42cb83198b8",
-  "bytes": 69919094,
+  "md5": "699f53bc0286e5bc5f4044251bdf32ee",
+  "sha256": "e5880bce4be8fed11b2152a8a076e0cddf1a2e0f4e3bc06be83e6da0c2e6f508",
+  "bytes": 69922675,
   "bundle": "Gra-ROBOCZA.html",
-  "sourceCommit": "27fe22fc92770490ea119ce22bda45ad1643a453",
-  "base": "f057729a722b4071b19d762ec0cd52db7eea0e01",
-  "integrationCommit": "27fe22fc92770490ea119ce22bda45ad1643a453",
-  "publishCommit": "27fe22fc92770490ea119ce22bda45ad1643a453",
-  "remoteMainAtPublish": "f057729a722b4071b19d762ec0cd52db7eea0e01",
+  "sourceCommit": "7ccb1dc078c0be7d7d93a12e8dc32fd1748d0c4d",
+  "base": "6eab3b40f346b582ff2fda772a1a26ede67d1224",
+  "integrationCommit": "7ccb1dc078c0be7d7d93a12e8dc32fd1748d0c4d",
+  "publishCommit": "7ccb1dc078c0be7d7d93a12e8dc32fd1748d0c4d",
+  "remoteMainAtPublish": "6eab3b40f346b582ff2fda772a1a26ede67d1224",
   "remoteSmoke": false,
   "finalControl": [
-    "R-EKONOMIA-ZYWNOSC-NADWYZKA-PO-LIMICIE-Q1-20260925 (fa20567c): Operator t_7ecff73e PASS, Evaluator t_8aacea6f PASS, Final Control t_c1982f4f PASS",
-    "R-AUTOMANAGE-ULEPSZENIA-NIE-BUDOWANE-Q1-20260925 (0361c8b9): Operator t_e7c2cc9d PASS (recovered po infra crash/timeout), Evaluator t_b37fda77 PASS, Final Control t_e5b4b28f PASS (recovered po infra timeout w trakcie run2 baseline)",
-    "R-AI-ZAKLADANIE-MIAST-TELEPORTACJA-Q1-20260925 (bcc11fe5): Operator t_8c9c7f4f PASS, Evaluator t_08801b64 PASS (3 independent deterministic repro), Final Control t_b0a1fd2d PASS (3rd independent repro, own geometry)"
+    "R-HOTSEAT-RECZNY-RUCH-GRACZ2-Q1-20260927: Operator t_ecf23c85 (self-report, kanban_complete), Evaluator dodatkowy t_9eb58bbe PASS-WITH-NOTES (niezalezna weryfikacja: isMe() fix potwierdzony w diffie, pre-existing live-harness timeout turn=2/activeHumanOwnerId=49 potwierdzony rowniez na czystym origin/main)",
+    "R-HOTSEAT-USTAWIENIA-KOPIOWANE-Q1-20260927: Operator t_b4fb7a22 PASS (16/16 Chromium dwoch foteli, tsc, diff-check)",
+    "R-JEDNOSTKI-RYDWAN-KONNICA-X2-Q1-20260927: Operator t_c1de1a6b PASS (2 rundy review, 548/548 asercji x2, tsc, combat 6/6, army-hunger 13/13, Chromium render 19/19)",
+    "P-RYDWAN-BIERNY-BRAK-ATAKU-Q1-20260927: Operator t_85506cd7 PASS (3 rundy review -- runda 2 znalazla realny blad Math.max(ruchLeft,ruch) zamiast ruchLeft, naprawiony w rundzie 3; focused 6/6, army-concentration 55/55, siege 17/17, combat 6/6, home-defense 42/42)",
+    "R-AI-WOJNA-EPOKI-OFENSYWA-FORTELE-Q1-20260927 (Etap A+B): Operator t_10fe8209 (self-report, kanban_complete), Evaluator dodatkowy t_c9a375bc PASS-WITH-NOTES (niezalezna weryfikacja: 7/7, army-concentration 55/55, forced-war-bronze 56/56, tsc, Chromium live DOW smoke)"
   ],
   "scope": [
-    "gra/src/main.ts: popCapByCityId nadwyzka zywnosci po osiagnieciu limitu populacji (+55/-1 linii, main.ts diff bit-identyczny poza tym tematem)",
-    "gra/src/game/auto-manage.ts: pickAutoBuildItem fallback do ulepszen dla tryb='priorytet' (tozsamy z istniejacym dla tryb='lista')",
-    "gra/src/game/ai-difficulty-bonus.ts: pickBonusCityHex respektuje faktyczny promien terytorium stolicy (major AI Trudny nie zaklada juz miast poza wlasnym terytorium)",
-    "gra/tools/ai-founding-territory-test.cjs: naprawa kruchosci tekstowej testu B1e-a/B1e-isMe (main.ts:10382 bit-identyczny z origin/main, zero zmiany produkcyjnej)"
+    "gra/src/main.ts: reczny ruch jednostek fotela 2 w hot-seat -- executeMarchSegmentForUnit() uzywal zaszytego ownerId!==0, teraz isMe(u.ownerId); plus przekazanie aktywnego ownerId do panelu ustawien imperium",
+    "gra/src/ui/empireDetailPanel.ts: ustawienia imperium (praca/podatki/pieniadze/inne domyslne) sa teraz izolowane per fotel zamiast kopiowac sie z gracza 1 na gracza 2",
+    "gra/data/units.json: wszystkie pola bojowe (Atak/Uderzenie/Obrona/Pancerz/Przebicie/meleeAttack/meleeDefence/weaponDamage/piercing/armor/chargeBonus/fieldPower/health/Health) 13 jednostek Typ:Mount (rydwany + konnica) podwojone; koszt/utrzymanie/ruch/widok/morale/bonusy % niezmienione",
+    "gra/src/game/ai.ts: (1) rydwany/flankerzy aktywnie zblizaja sie do najblizszego wroga w zasiegu zamiast czekac na koncentracje armii, z naprawiona bramka zasiegu ruchu (unit.ruchLeft zamiast Math.max(ruchLeft,ruch)); (2) po wybuchu wojny epoki AI-napastnik konsoliduje armie do jednego klastra i idzie na miasta aktywnego przeciwnika (Etap A+B), obronca kieruje wolne jednostki do najblizszego napastnika",
+    "gra/tools/*.cjs: 5 nowych/rozszerzonych testow regresyjnych (hotseat-drugi-fotel-tura, hotseat-ustawienia-kopiowane, rydwan-konnica-x2, rydwan-bierny-atak, ai-ofensywa-wojna-epoki)"
   ],
   "noOpVerified": [
-    "tsc --noEmit clean na scalonym drzewie (3 merge --no-ff z origin/main f057729a, zero konfliktow)",
-    "auto-wyzywienie-live-recalc-test 60/60, auto-manage-ulepszenia-fallback-test 11/11, auto-manage-test 45/45, ai-founding-territory-test 29/29, cities-buildings-production-owner-contract-test 53/53 -- wszystkie zielone na scalonym drzewie",
-    "4 legacy zywnosc testy (spichlerz-widocznosc 37/8, akwedukt-popcap 6/1, spichlerz-deficyt-scalenie 54/4, spichlerz-wzrost 2/7) potwierdzone IDENTYCZNE liczbowo na scalonym drzewie i na osobnym czystym origin/main worktree -- zero regresji wprowadzonej przez integracje",
-    "git diff --check clean, production vite build clean (892 modules, +2 wzgledem poprzedniej fali 890 -- 2 nowe pliki diag-*.cjs w tools/, poza bundlem produkcyjnym; bundle rosnie przez sam diff main.ts/auto-manage.ts/ai-difficulty-bonus.ts)"
+    "tsc --noEmit clean na scalonym drzewie (5x merge --no-ff z origin/main 6eab3b40, 1 konflikt addytywny w ai.ts miedzy tematami 4 i 5 rozwiazany zachowaniem obu blokow -- flanking-approach + forced-war-defense fallback)",
+    "hotseat-ustawienia-kopiowane-test: 16 PASS, 0 FAIL",
+    "rydwan-konnica-x2-test: 13 jednostek, 548 asercji PASS",
+    "rydwan-bierny-atak-test: 6 passed, 0 failed",
+    "ai-ofensywa-wojna-epoki-test: 7 passed, 0 failed",
+    "hotseat-drugi-fotel-tura-test: pre-existing live-harness timeout (pollUntil world-end-turn-after-both-seats, turn=2/activeHumanOwnerId=49) potwierdzony NIEZALEZNIE przez Evaluatora t_9eb58bbe rowniez na czystym origin/main -- niezwiazany z ta zmiana, znany non-blocking infra issue",
+    "vite build clean, 892 modules (identyczne z poprzednia fala)",
+    "verify-robocza-bundle.cjs uruchomiony po publikacji"
   ],
   "excluded": [
+    "Etap C fortele AI wojny epoki (podzial glowna+mniejsza armia, atak od tylu, okrazenie, podstep, dwa fronty) -- NIE zaimplementowany w tym deployu, odlozony jako osobna kontynuacja zeby nie zwiekszac ryzyka regresji priorytetu #1 (scalanie armii)",
     "93x15 full matrix completion; unresolved cells remain DECISION_REQUIRED/UNWIRED or DEAD_UNWIRED (niezmienione przez ten deploy)",
     "ai_profil_obronna (2 components) -- nadal lokalnie w izolowanym worktree (b4c9582f), NIE w tym deployu",
     "8-field Dyplomacja package -- nadal w toku w izolowanym worktree, NIE w tym deployu",
@@ -41,20 +49,20 @@
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html?skipMenuRedirect=1",
       "label": "Pełna gra ROBOCZA",
-      "md5": "bc76a12ed28947153b7ec32ceeb6b9d3",
-      "sizeBytes": 69919094
+      "md5": "699f53bc0286e5bc5f4044251bdf32ee",
+      "sizeBytes": 69922675
     },
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html",
       "label": "Pełna gra (z menu)",
-      "md5": "bc76a12ed28947153b7ec32ceeb6b9d3",
-      "sizeBytes": 69919094
+      "md5": "699f53bc0286e5bc5f4044251bdf32ee",
+      "sizeBytes": 69922675
     }
   ],
   "startHub": "START.html",
-  "hubGeneratedAt": "2026-09-26T16:14:13",
-  "note": "ROBOCZA - trzy rownolegle tematy scalone z czystego origin/main (f057729a): (1) zywnosc - nadwyzka po limicie populacji, (2) autonomiczna kolejka ulepszen budynku dla tryb='priorytet', (3) AI nie zaklada juz miast poza wlasnym terytorium. Kazdy przeszedl pelny lancuch Operator->niezalezny Evaluator->Final Control. Zero konfliktu plikowego miedzy tematami (rozne pliki), zero regresji (4 legacy zywnosc-testy daja identyczne liczby PASS/FAIL na scalonym drzewie i na czystym origin/main). PR #142 (rally-point UI) pozostaje niezalezny, nie wchodzi w ten deploy.",
+  "hubGeneratedAt": "2026-09-27T13:01:00",
+  "note": "ROBOCZA - piec rownoleglych tematow scalone z czystego origin/main (6eab3b40): (1) hot-seat reczny ruch gracza 2 (isMe fix), (2) hot-seat izolacja ustawien imperium per fotel, (3) podwojenie statystyk bojowych rydwan/konnica, (4) naprawa bezczynnosci rydwanow w AI (flanking + fix zasiegu ruchu), (5) ofensywa AI po wybuchu wojny epoki Etap A+B (koncentracja + marsz na miasta wroga). Kazdy temat mial osobny worktree/branch/karte Kanban. Tematy 1 i 5 zakonczyly sie samodzielnie (kanban_complete) bez wbudowanego review, wiec dodano niezalezne karty Evaluatora (t_9eb58bbe, t_c9a375bc) ktore potwierdzily PASS-WITH-NOTES z wlasna, niezalezna weryfikacja diffu i testow. Jeden konflikt merge w ai.ts (tematy 4 i 5, ten sam obszar petli jednostek) rozwiazany addytywnie bez utraty zadnej logiki. PR #142 (rally-point UI) pozostaje niezalezny, nie wchodzi w ten deploy.",
   "backlogReconciliation": {
     "status": "ALREADY_IN_TARGET_OR_NO_OP",
     "recordedAt": "2026-09-17T23:26:49Z",

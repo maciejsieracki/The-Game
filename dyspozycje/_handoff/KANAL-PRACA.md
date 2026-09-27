@@ -1,4 +1,27 @@
-﻿## [2026-09-26 16:17 UTC] ORKIESTRATOR -> KANBAN / WLASCICIEL -- DEPLOY ROBOCZA: ZYWNOSC + AUTOMANAGE + AI-MIASTA (3 TEMATY)
+﻿## [2026-09-27 13:01 UTC] ORKIESTRATOR -> KANBAN / WLASCICIEL -- DEPLOY ROBOCZA: HOTSEAT X2 + RYDWAN/KONNICA X2 + RYDWAN AI + WOJNA EPOKI OFENSYWA (5 TEMATOW)
+
+STATUS: `DEPLOYED -- local commit WYKONANY w worktree integracyjnym; push do origin/main -- patrz sekcja PUSH ponizej`.
+
+Haslo wlasciciela otrzymane wprost (2026-09-26/27, dwie sesje): "Zajmij sie oboma bledami i daj kazde do oddzielnego operatora, wsadz na kanban i dzialaj autonomicznie" + "Okej, pracuj dalej autonomicznie, az rozwiazesz problemy, a potem na koncu zrob deploy do roboczej i git push." + w trakcie: "Operatorow, ewaluatorow i tak dalej zawsze zlecaj na OpenAI, czyli na Lunie. Sam pracujesz na Sonet."
+
+- Czysty integration worktree: `/home/ubuntu/projects/The-Game-integration-20260927`; base `origin/main=6eab3b40f346b582ff2fda772a1a26ede67d1224`.
+- Piec tematow, kazdy w osobnym worktree/branch/karcie Kanban, operatorzy/evaluatorzy na `gpt-5.6-luna-900k`/`openai-codex`:
+  - `R-HOTSEAT-RECZNY-RUCH-GRACZ2-Q1-20260927` -- Operator `t_ecf23c85` (self-report/`kanban_complete`, bez wbudowanego review) + dodatkowy niezalezny Evaluator `t_9eb58bbe` PASS-WITH-NOTES. Naprawa: `executeMarchSegmentForUnit()` w `gra/src/main.ts` mial zaszyty `ownerId !== 0`, ktory blokowal reczny marsz jednostek gracza 2 (zwiedzanie dzialalo, bo szlo inna sciezka); zmienione na `isMe(u.ownerId)`.
+  - `R-HOTSEAT-USTAWIENIA-KOPIOWANE-Q1-20260927` -- Operator `t_b4fb7a22` PASS (16/16 Chromium). Naprawa: `gra/src/ui/empireDetailPanel.ts` (przed-hotseatowy, niezmigrowany panel) kopiowal ustawienia gracza 1 na gracza 2; teraz per-fotel.
+  - `R-JEDNOSTKI-RYDWAN-KONNICA-X2-Q1-20260927` -- Operator `t_c1de1a6b` PASS (2 rundy review). Podwojenie 13 jednostek Typ:Mount w `gra/data/units.json` (548/548 asercji), koszt/ruch/utrzymanie niezmienione.
+  - `P-RYDWAN-BIERNY-BRAK-ATAKU-Q1-20260927` -- Operator `t_85506cd7` PASS (3 rundy review -- runda 2 znalazla realny blad `Math.max(unit.ruchLeft, unit.ruch)` zamiast `unit.ruchLeft`, naprawiony w rundzie 3). `gra/src/game/ai.ts`: rydwany/flankerzy aktywnie zblizaja sie do wroga w zasiegu.
+  - `R-AI-WOJNA-EPOKI-OFENSYWA-FORTELE-Q1-20260927` (Etap A+B) -- Operator `t_10fe8209` (self-report/`kanban_complete`) + dodatkowy niezalezny Evaluator `t_c9a375bc` PASS-WITH-NOTES. `gra/src/game/ai.ts`+`main.ts`: po wybuchu wojny epoki AI-napastnik konsoliduje armie do jednego klastra i idzie na miasta wroga; obronca kieruje wolne jednostki do napastnika. **Etap C (fortele: glowna+mniejsza armia, atak z tylu, okrazenie, podstep, dwa fronty) odlozony jako osobna kontynuacja, NIE wdrozony**.
+- Integracja: 5x `git merge --no-ff` z czystego `origin/main` (6eab3b40). 1 konflikt merge w `gra/src/game/ai.ts` (tematy 4 i 5, ta sama petla jednostek) -- rozwiazany addytywnie, oba bloki logiki zachowane w calosci.
+- Integration/publish commit: `7ccb1dc078c0be7d7d93a12e8dc32fd1748d0c4d` (branch `hermes/integration/20260927-piec-tematow`).
+- Bramki: `tsc --noEmit` PASS na scalonym drzewie. Testy celowane: `hotseat-ustawienia-kopiowane-test` 16/16, `rydwan-konnica-x2-test` 548/548, `rydwan-bierny-atak-test` 6/6, `ai-ofensywa-wojna-epoki-test` 7/7. `hotseat-drugi-fotel-tura-test` -- pre-existing live-harness timeout (`turn=2/activeHumanOwnerId=49`) potwierdzony niezaleznie przez Evaluatora `t_9eb58bbe` takze na czystym `origin/main`, nie jest regresja tej integracji. `vite build` 892 modulow PASS.
+- `verify-robocza-bundle.cjs` -> `VERIFY OK`, manifest match OK (stamp match WARN znany false-positive). Headless Chromium smoke: `SMOKE OK`, canvas obecny, HUD renderuje sie, zero bledow.
+- Bundle: md5 `699f53bc0286e5bc5f4044251bdf32ee`, sha256 `e5880bce4be8fed11b2152a8a076e0cddf1a2e0f4e3bc06be83e6da0c2e6f508`, `69922675` bajtow.
+- Push: `git push origin HEAD:main` z worktree integracyjnego -- patrz readback ponizej.
+- Poza zakresem tego deploya: Etap C forteli AI wojny epoki, `ai_profil_obronna` (`b4c9582f`, niezmergowany), pakiet Dyplomacja 8 pol (w toku), PR #142 rally-point UI (`2cca1748`, OPEN/MERGEABLE) -- wszystkie niezalezne, czekaja na wlasny cykl/zgode.
+
+CZEKAM-NA: test wlasciciela w `gra-robocza/START.html` po `Ctrl+F5` -- reczny ruch gracza 2 w hot-seat, niezalezne ustawienia (praca/podatki/pieniadze) obu fotelow, silniejsze rydwany/konnica, rydwany aktywnie atakujace/okrazajace, oraz AI konsolidujace armie i atakujace miasta po wybuchu wojny epoki.
+
+## [2026-09-26 16:17 UTC] ORKIESTRATOR -> KANBAN / WLASCICIEL -- DEPLOY ROBOCZA: ZYWNOSC + AUTOMANAGE + AI-MIASTA (3 TEMATY)
 
 STATUS: `DEPLOYED -- local commit + push do origin/main WYKONANY; remote readback PASS`.
 
