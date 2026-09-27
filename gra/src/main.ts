@@ -1204,6 +1204,13 @@ import {
   type ForcedWarPairingSubject,
   type ForcedWarPairingExistingPair,
 } from './game/forced-war-common';
+import {
+  pruneForcedWarWaves,
+  restoreForcedWarWaves,
+  serializeForcedWarWaves,
+  type ForcedWarWave,
+  type ForcedWarWaveState,
+} from './game/forced-war-waves';
 import { checkVictory, techIdsInGameScope, allTechInScopeResearched, OSTATNIA_EPOKA_GRY_V1, powerShare } from './game/victory';
 import type { VictoryPlayer, VictoryInput } from './game/victory';
 import {
@@ -1997,6 +2004,13 @@ async function boot(): Promise<void> {
     const bronzeForceWarRestUntilByOwner = new Map<number, number>();
     /** Aktywne wojny wymuszone Brązu, klucz = diploPairKey(attackerId, targetId) — liczniki miast do auto-pokoju. / EN: active Bronze forced wars, keyed by diploPairKey — city counters driving auto-peace. */
     const bronzeForceWarActiveByPairKey = new Map<string, BronzeForcedWarPairState>();
+    /**
+     * R-AI-WOJNA-EPOKI-FALA-KOLEJNA-KIERUNEK: trwałe przypisanie jednostek do
+     * nierozwiązanych fal, wspólne dla rozdzielnych rejestrów epok. Para może
+     * mieć tylko jedną aktywną wojnę wymuszoną naraz, więc klucz pary pozostaje
+     * jednoznaczny, a stan jest zapisywany osobno od liczników zdobytych miast.
+     */
+    const forcedWarWavesByPairKey = new Map<string, ForcedWarWaveState>();
     /**
      * R-AI-WOJNY-ZWYKLE-CAP-DWA-MIASTA-Q1: liczniki zdobytych miast dla ZWYKŁYCH (nie
      * wymuszonych epoki) wojen AI↔AI, klucz = diploPairKey(a, b). Osobny od
@@ -9554,6 +9568,7 @@ async function boot(): Promise<void> {
       const stoneSt = stoneForceWarActiveByPairKey.get(stonePairKey);
       if (!stoneSt) return;
       stoneForceWarActiveByPairKey.delete(stonePairKey);
+      forcedWarWavesByPairKey.delete(stonePairKey);
       stoneForceWarRestUntilByOwner.set(
         stoneSt.attackerId,
         turn + WOJNA_KAMIEN_WYMUSZONA_ODPOCZYNEK_TUR,
@@ -9572,6 +9587,7 @@ async function boot(): Promise<void> {
       const ironSt = ironForceWarActiveByPairKey.get(ironPairKey);
       if (!ironSt) return;
       ironForceWarActiveByPairKey.delete(ironPairKey);
+      forcedWarWavesByPairKey.delete(ironPairKey);
       ironForceWarRestUntilByOwner.set(
         ironSt.attackerId,
         turn + WOJNA_ZELAZO_WYMUSZONA_ODPOCZYNEK_TUR,
@@ -9634,6 +9650,7 @@ async function boot(): Promise<void> {
       const bronzeSt = bronzeForceWarActiveByPairKey.get(bronzePairKey);
       if (bronzeSt) {
         bronzeForceWarActiveByPairKey.delete(bronzePairKey);
+        forcedWarWavesByPairKey.delete(bronzePairKey);
         bronzeForceWarRestUntilByOwner.set(bronzeSt.attackerId, turn + WOJNA_WYMUSZONA_ODPOCZYNEK_TUR);
       }
     }
@@ -23202,7 +23219,10 @@ async function boot(): Promise<void> {
         bronzeForceWarPendingOwners.add(attackerId);
         bronzeForceWarCycleOwners.delete(attackerId);
         for (const [key, st] of [...bronzeForceWarActiveByPairKey.entries()]) {
-          if (st.attackerId === attackerId) bronzeForceWarActiveByPairKey.delete(key);
+          if (st.attackerId === attackerId) {
+            bronzeForceWarActiveByPairKey.delete(key);
+            forcedWarWavesByPairKey.delete(key);
+          }
         }
         // Ta sama trwała mapa co `getDiplomaticContacts()` — realny "kontakt na mapie"
         // z perspektywy gracza; bez tego relacjeDip (main.ts) nie zbudowałaby wpisu
@@ -23248,7 +23268,10 @@ async function boot(): Promise<void> {
         bronzeForceWarPendingOwners.add(attackerId);
         bronzeForceWarCycleOwners.delete(attackerId);
         for (const [key, st] of [...bronzeForceWarActiveByPairKey.entries()]) {
-          if (st.attackerId === attackerId) bronzeForceWarActiveByPairKey.delete(key);
+          if (st.attackerId === attackerId) {
+            bronzeForceWarActiveByPairKey.delete(key);
+            forcedWarWavesByPairKey.delete(key);
+          }
         }
         // Wyklucz WSZYSTKIE inne AI z puli "warless-bronze" tej tury -- attackerId musi
         // zostać jedynym podmiotem `bronzeTriggeredSubjects` żeby gracz (jedyny pozostały
@@ -23327,7 +23350,10 @@ async function boot(): Promise<void> {
         ironForceWarPendingOwners.add(attackerId);
         ironForceWarCycleOwners.delete(attackerId);
         for (const [key, st] of [...ironForceWarActiveByPairKey.entries()]) {
-          if (st.attackerId === attackerId) ironForceWarActiveByPairKey.delete(key);
+          if (st.attackerId === attackerId) {
+            ironForceWarActiveByPairKey.delete(key);
+            forcedWarWavesByPairKey.delete(key);
+          }
         }
         diplomaticallyDiscoveredOwnersSet().add(attackerId);
         const playerCity = cities.find(c => isMe(c.ownerId));
@@ -23439,7 +23465,10 @@ async function boot(): Promise<void> {
           if (
             st.attackerId === attackerId || st.targetId === attackerId
             || st.attackerId === targetId || st.targetId === targetId
-          ) bronzeForceWarActiveByPairKey.delete(key);
+          ) {
+            bronzeForceWarActiveByPairKey.delete(key);
+            forcedWarWavesByPairKey.delete(key);
+          }
         }
 
         // REALNA, aktywna para AI-vs-AI Brązu: attacker już wojuje z target -- to jest
@@ -24043,7 +24072,9 @@ async function boot(): Promise<void> {
         });
       },
       clearBronzeForcedWarActiveForTest: (attackerId: number, targetId: number): void => {
-        bronzeForceWarActiveByPairKey.delete(diploPairKey(attackerId, targetId));
+        const pairKey = diploPairKey(attackerId, targetId);
+        bronzeForceWarActiveByPairKey.delete(pairKey);
+        forcedWarWavesByPairKey.delete(pairKey);
       },
       // R-AI-WOJNY-ZWYKLE-CAP-DWA-MIASTA-Q1 (naprawa runda 2, zarzut Evaluatora #2):
       // `?playtest=mapa` ma z definicji DOKŁADNIE JEDNO miasto per realny AI owner —
@@ -28945,6 +28976,7 @@ async function boot(): Promise<void> {
       for (const [key, st] of Array.from(bronzeForceWarActiveByPairKey.entries())) {
         if (st.attackerId === ownerId || st.targetId === ownerId) {
           bronzeForceWarActiveByPairKey.delete(key);
+          forcedWarWavesByPairKey.delete(key);
         }
       }
       stoneForceWarPendingOwners.delete(ownerId);
@@ -28953,6 +28985,7 @@ async function boot(): Promise<void> {
       for (const [key, st] of Array.from(stoneForceWarActiveByPairKey.entries())) {
         if (st.attackerId === ownerId || st.targetId === ownerId) {
           stoneForceWarActiveByPairKey.delete(key);
+          forcedWarWavesByPairKey.delete(key);
         }
       }
       // R-EPOKA-ZELAZO-WYMUSZONA-WOJNA-Q1: ten sam sprzątacz dla rejestrów Żelaza.
@@ -28965,6 +28998,7 @@ async function boot(): Promise<void> {
       for (const [key, st] of Array.from(ironForceWarActiveByPairKey.entries())) {
         if (st.attackerId === ownerId || st.targetId === ownerId) {
           ironForceWarActiveByPairKey.delete(key);
+          forcedWarWavesByPairKey.delete(key);
         }
       }
       // R-AI-WOJNY-ZWYKLE-CAP-DWA-MIASTA-Q1 (naprawa runda 2, zarzut Evaluatora #4):
@@ -29310,8 +29344,9 @@ async function boot(): Promise<void> {
       if (!shouldEndBronzeForcedWarByCityCount(st.capturedByAttacker, st.capturedByDefender)) return;
       if (getDiploRelation(st.attackerId, st.targetId).status !== 'wojna') {
         // Relacja już nie 'wojna' (np. rozstrzygnięta inaczej wcześniej w tej samej turze)
-        // — finalizePeaceTreatyBetween nie ma czego kończyć, sprzątamy stan bezpośrednio.
+        // finalizePeaceTreatyBetween nie ma czego kończyć, sprzątamy stan bezpośrednio.
         bronzeForceWarActiveByPairKey.delete(pairKey);
+        forcedWarWavesByPairKey.delete(pairKey);
         bronzeForceWarRestUntilByOwner.set(st.attackerId, turn + WOJNA_WYMUSZONA_ODPOCZYNEK_TUR);
         return;
       }
@@ -29342,6 +29377,7 @@ async function boot(): Promise<void> {
       if (!shouldEndStoneForcedWarByCityCount(st.capturedByAttacker, st.capturedByDefender)) return;
       if (getDiploRelation(st.attackerId, st.targetId).status !== 'wojna') {
         stoneForceWarActiveByPairKey.delete(pairKey);
+        forcedWarWavesByPairKey.delete(pairKey);
         stoneForceWarRestUntilByOwner.set(
           st.attackerId,
           turn + WOJNA_KAMIEN_WYMUSZONA_ODPOCZYNEK_TUR,
@@ -29381,6 +29417,7 @@ async function boot(): Promise<void> {
           // finalizePeaceTreatyBetween nie ma czego kończyć, sprzątamy stan bezpośrednio
           // (ten sam wzorzec co maybeResolveStoneForcedWarOnCityCapture wyżej).
           stoneForceWarActiveByPairKey.delete(pairKey);
+          forcedWarWavesByPairKey.delete(pairKey);
           stoneForceWarRestUntilByOwner.set(st.attackerId, turn + WOJNA_KAMIEN_WYMUSZONA_ODPOCZYNEK_TUR);
           continue;
         }
@@ -29397,6 +29434,7 @@ async function boot(): Promise<void> {
         const pairKey = diploPairKey(st.attackerId, st.targetId);
         if (getDiploRelation(st.attackerId, st.targetId).status !== 'wojna') {
           bronzeForceWarActiveByPairKey.delete(pairKey);
+          forcedWarWavesByPairKey.delete(pairKey);
           bronzeForceWarRestUntilByOwner.set(st.attackerId, turn + WOJNA_WYMUSZONA_ODPOCZYNEK_TUR);
           continue;
         }
@@ -29430,6 +29468,7 @@ async function boot(): Promise<void> {
       if (!shouldEndIronForcedWarByCityCount(st.capturedByAttacker, st.capturedByDefender)) return;
       if (getDiploRelation(st.attackerId, st.targetId).status !== 'wojna') {
         ironForceWarActiveByPairKey.delete(pairKey);
+        forcedWarWavesByPairKey.delete(pairKey);
         ironForceWarRestUntilByOwner.set(
           st.attackerId,
           turn + WOJNA_ZELAZO_WYMUSZONA_ODPOCZYNEK_TUR,
@@ -30590,6 +30629,9 @@ async function boot(): Promise<void> {
           ironForceWarCycleOwners: ironForceWarSave.cycleOwners,
           ironForceWarRestUntilByOwner: ironForceWarSave.restUntilByOwner,
           ironForceWarActiveByPairKey: ironForceWarSave.activeByPairKey,
+          // R-AI-WOJNA-EPOKI-FALA-KOLEJNA-KIERUNEK: przypisania jednostek do
+          // nierozwiązanych fal muszą przetrwać zapis tak samo jak aktywna para.
+          forcedWarWavesByPairKey: serializeForcedWarWaves(forcedWarWavesByPairKey),
           lootedVillageHexKeys: Array.from(lootedVillageHexKeys),
           eliminatedOwners: Array.from(eliminatedOwners),
           ownerEraByOwner: Array.from(ownerEraByOwner.entries()),
@@ -33582,7 +33624,7 @@ async function boot(): Promise<void> {
             // aktywna pare wymuszonej wojny. Rejestry epok sa rozdzielne, ale
             // dyrektywa ma jeden wspolny kontrakt: napastnik konsoliduje armie
             // i maszeruje na miasta celu, obronca skupia reakcje na napastniku.
-            const forcedWarDirective = (() => {
+            const forcedWarDirective: (NonNullable<AITurnOpts['forcedWar']> & { pairKey: string }) | undefined = (() => {
               const active = [
                 ...Array.from(bronzeForceWarActiveByPairKey.values()).map(st => ({ st, era: 'bronze' as const })),
                 ...Array.from(stoneForceWarActiveByPairKey.values()).map(st => ({ st, era: 'stone' as const })),
@@ -33590,12 +33632,24 @@ async function boot(): Promise<void> {
               ].find(({ st }) => st.attackerId === ownerId || st.targetId === ownerId);
               if (active === undefined) return undefined;
               const { st, era } = active;
+              const pairKey = diploPairKey(st.attackerId, st.targetId);
+              let waveState = forcedWarWavesByPairKey.get(pairKey);
+              if (st.attackerId === ownerId) {
+                const pruned = pruneForcedWarWaves(waveState, st.attackerId, st.targetId, units, cities);
+                if (pruned === undefined) forcedWarWavesByPairKey.delete(pairKey);
+                else forcedWarWavesByPairKey.set(pairKey, pruned);
+                waveState = pruned;
+              }
               return {
                 targetOwnerId: st.attackerId === ownerId ? st.targetId : st.attackerId,
                 role: st.attackerId === ownerId ? 'attacker' as const : 'defender' as const,
                 era,
                 capturedByAttacker: st.capturedByAttacker,
                 capturedByDefender: st.capturedByDefender,
+                pairKey,
+                activeWaves: waveState?.waves ?? [],
+                waveHistory: waveState?.history ?? [],
+                wavePlan: undefined,
               };
             })();
             const opts: AITurnOpts = {
@@ -34499,6 +34553,17 @@ async function boot(): Promise<void> {
 
             try {
               commands = decideAITurn(ownerId, units, cities, map, data, opts);
+              const formedWave = forcedWarDirective?.wavePlan;
+              if (forcedWarDirective?.role === 'attacker' && formedWave !== undefined) {
+                const pairKey = forcedWarDirective.pairKey;
+                const state = forcedWarWavesByPairKey.get(pairKey) ?? { nextWaveId: 1, waves: [], history: [] };
+                state.waves.push({
+                  id: `${forcedWarDirective.era}-${state.nextWaveId}`,
+                  ...formedWave,
+                });
+                state.nextWaveId += 1;
+                forcedWarWavesByPairKey.set(pairKey, state);
+              }
             } catch (eAI) {
               console.error(`[AI] decideAITurn owner=${ownerId} error:`, eAI);
               continue;
@@ -37216,6 +37281,7 @@ async function boot(): Promise<void> {
       bronzeForceWarCycleOwners.clear();
       bronzeForceWarRestUntilByOwner.clear();
       bronzeForceWarActiveByPairKey.clear();
+      forcedWarWavesByPairKey.clear();
       barbCamps = [];
       // R-AI-WOJNY-ZWYKLE-CAP-DWA-MIASTA-Q1: nowa gra bez przeładowania strony nie może
       // dziedziczyć liczników zwykłych wojen AI↔AI z poprzedniej rozgrywki (ownerId reużywane).
@@ -38674,6 +38740,9 @@ async function boot(): Promise<void> {
       for (const [key, st] of ironForceWarRestored.activeByPairKey) {
         ironForceWarActiveByPairKey.set(key, st);
       }
+      forcedWarWavesByPairKey.clear();
+      const restoredForcedWarWaves = restoreForcedWarWaves(saved.meta?.forcedWarWavesByPairKey);
+      for (const [key, state] of restoredForcedWarWaves) forcedWarWavesByPairKey.set(key, state);
       // R-WOJNA-WYMUSZONA-ZELAZO-PROG-TURY-Q1: odtworzenie tury wejścia w Żelazo per-owner —
       // brak wpisu dla danego ownera (stary zapis) = `undefined`, `isEligibleForIronForcedWar`
       // wtedy pomija próg czasu (patrz komentarz przy `ironEraEnterTurnByOwner` wyżej).

@@ -70,6 +70,12 @@ import {
   planArmyConcentration, planArmyFrontMerge, clusterUnitsByProximity,
   ARMY_CONCENTRATION_RADIUS,
 } from './army-concentration';
+import {
+  planForcedWarWave,
+  type ForcedWarWave,
+  type ForcedWarWaveHistory,
+  type ForcedWarWavePlan,
+} from './forced-war-waves';
 
 // ---------------------------------------------------------------------------
 // AICommand discriminated union
@@ -471,6 +477,12 @@ export interface AITurnOpts {
     era: 'bronze' | 'stone' | 'iron';
     capturedByAttacker: number;
     capturedByDefender: number;
+    /** Waves still marching toward unresolved forced-war objectives. */
+    activeWaves?: readonly ForcedWarWave[];
+    /** Resolved-wave route history retained until this forced war ends. */
+    waveHistory?: readonly ForcedWarWaveHistory[];
+    /** Mutable per-turn handoff: main.ts records a newly formed wave after AI planning. */
+    wavePlan?: ForcedWarWavePlan;
   };
   /**
    * C-AI-PAKIET (2026-07-26): profil z civ-ai.json per typ cywilizacji —
@@ -3302,6 +3314,17 @@ export function decideAITurn(
   const forcedWarTargetCities = forcedWarAttack && opts.forcedWar !== undefined
     ? cities.filter(c => c.ownerId === opts.forcedWar!.targetOwnerId)
     : [];
+  const forcedWarActiveWaves: readonly ForcedWarWave[] = forcedWarAttack
+    ? (opts.forcedWar?.activeWaves ?? [])
+    : [];
+  const forcedWarWaveHistory: readonly ForcedWarWaveHistory[] = forcedWarAttack
+    ? (opts.forcedWar?.waveHistory ?? [])
+    : [];
+  const activeWaveByUnitId = new Map<string, ForcedWarWave>();
+  for (const wave of forcedWarActiveWaves) {
+    for (const unitId of wave.unitIds) activeWaveByUnitId.set(unitId, wave);
+  }
+  const activeWaveUnitIds = new Set(activeWaveByUnitId.keys());
   const forcedWarDefenseTarget = opts.forcedWar?.role === 'defender'
     ? engageableEnemyUnits
       .filter(u => u.ownerId === opts.forcedWar!.targetOwnerId)
@@ -3376,13 +3399,29 @@ export function decideAITurn(
   const concentrationExcludedUnitIds = new Set<string>([
     ...homeDefenderAssignments.keys(),
     ...activeFlankingUnitIds,
+    ...activeWaveUnitIds,
   ]);
-  const concentration = canConcentrateArmy(opts)
+  const standardConcentration = canConcentrateArmy(opts)
     ? planArmyConcentration(playerId, myUnits, {
       excludedUnitIds: concentrationExcludedUnitIds,
     })
     : null;
+  const forcedWarNextWavePlan = forcedWarAttack
+    && (forcedWarActiveWaves.length > 0 || forcedWarWaveHistory.length > 0)
+    && canConcentrateArmy(opts)
+    ? planForcedWarWave(
+      myUnits,
+      forcedWarTargetCities,
+      forcedWarActiveWaves,
+      concentrationExcludedUnitIds,
+      (a, b) => hexDistance(a.q, a.r, b.q, b.r),
+      opts.currentTurn ?? 0,
+      forcedWarWaveHistory,
+    )
+    : null;
+  const concentration = forcedWarNextWavePlan ?? standardConcentration;
   const concentrationDeferred = new Set(concentration?.deferredUnitIds ?? []);
+  let firstWaveMergeUnitIds: readonly string[] = [];
   if (concentration !== null) {
     for (const unitId of concentration.moveUnitIds) {
       const unit = myUnits.find(u => u.id === unitId);
@@ -3411,7 +3450,7 @@ export function decideAITurn(
   // bezpośrednią walkę/obronę domu". Jednostki już przydzielone do
   // `concentration` (jeśli powstał) są wyłączone również — to ich lokalny
   // klaster już jest zbierany, front-merge decyduje wyłącznie o RESZCIE.
-  if (canConcentrateArmy(opts)) {
+  if (canConcentrateArmy(opts) && !(forcedWarAttack && (forcedWarActiveWaves.length > 0 || forcedWarWaveHistory.length > 0))) {
     const combatEngagedUnitIds = new Set(
       myUnits
         .filter(u => engageableEnemyUnits.some(eu => isWithinAttackRange(u, eu.q, eu.r, data)))
@@ -3478,6 +3517,7 @@ export function decideAITurn(
         : [],
     });
     if (frontMerge !== null) {
+      firstWaveMergeUnitIds = frontMerge.deferredUnitIds;
       for (const order of frontMerge.moveOrders) {
         const unit = myUnits.find(u => u.id === order.unitId);
         if (unit === undefined) continue;
@@ -3494,6 +3534,49 @@ export function decideAITurn(
   // ma jeszcze celu w zasięgu, kieruje wolne jednostki do najbliższego
   // wykrytego napastnika zamiast pozostawiać je na zwykłym patrolu.
   const forcedWarDefenseTargetById = forcedWarDefenseTarget?.id;
+
+  const campaignAnchor = concentration?.rallyPoint ?? myUnits[0];
+  const forcedWarTargetCity = forcedWarAttack && forcedWarTargetCities.length > 0 && campaignAnchor !== undefined
+    ? [...forcedWarTargetCities].sort((a, b) => {
+      const da = hexDistance(campaignAnchor.q, campaignAnchor.r, a.q, a.r);
+      const db = hexDistance(campaignAnchor.q, campaignAnchor.r, b.q, b.r);
+      return da - db || a.q - b.q || a.r - b.r || a.id.localeCompare(b.id);
+    })[0]
+    : undefined;
+
+  if (forcedWarAttack && opts.forcedWar !== undefined) {
+    const firstWaveUnitIds = standardConcentration !== null && forcedWarTargetCity !== undefined
+      ? [...new Set([...standardConcentration.unitIds, ...firstWaveMergeUnitIds])]
+      : [];
+    const firstWavePlan = standardConcentration !== null && forcedWarTargetCity !== undefined
+      ? {
+        targetCityId: forcedWarTargetCity.id,
+        unitIds: firstWaveUnitIds,
+        moveUnitIds: standardConcentration.moveUnitIds,
+        deferredUnitIds: standardConcentration.deferredUnitIds,
+        originHex: { ...standardConcentration.rallyPoint },
+        rallyPoint: { ...standardConcentration.rallyPoint },
+        approachSector: ((Math.round(
+          (Math.atan2(
+            standardConcentration.rallyPoint.r - forcedWarTargetCity.r,
+            standardConcentration.rallyPoint.q - forcedWarTargetCity.q,
+          ) / (Math.PI * 2) * 6
+        ) % 6) + 6) % 6),
+        createdTurn: opts.currentTurn ?? 0,
+      }
+      : undefined;
+    opts.forcedWar.wavePlan = forcedWarActiveWaves.length > 0 || forcedWarWaveHistory.length > 0
+      ? (forcedWarNextWavePlan ?? undefined)
+      : firstWavePlan;
+  }
+
+  const forcedWarWaveTargetByUnitId = new Map<string, string>();
+  for (const wave of forcedWarActiveWaves) {
+    for (const unitId of wave.unitIds) forcedWarWaveTargetByUnitId.set(unitId, wave.targetCityId);
+  }
+  for (const unitId of opts.forcedWar?.wavePlan?.unitIds ?? []) {
+    forcedWarWaveTargetByUnitId.set(unitId, opts.forcedWar!.wavePlan!.targetCityId);
+  }
 
   for (const unit of sortedUnits) {
     const cmdsBefore = commands.length;
@@ -3513,6 +3596,8 @@ export function decideAITurn(
 
     // Military
 
+    const forcedWaveTargetId = forcedWarWaveTargetByUnitId.get(unit.id);
+
     // 4b: adjacent enemy unit -> attack (tylko engageable — np. gracz tylko w wojnie)
     const adjacentEnemy = engageableEnemyUnits.find(
       eu => isWithinAttackRange(unit, eu.q, eu.r, data)
@@ -3531,8 +3616,11 @@ export function decideAITurn(
     // `!isCivilianUnit` w `tryAutoCaptureEmptyCityAt`), więc rozkaz wjazdu na heks
     // obcego miasta byłby dla niego turą straconą bez efektu. Zwiadowca ma własną
     // gałąź wyżej. Silnik trzyma tę samą granicę niezależnie (canAiEnterEmptyEnemyCity).
+    const forcedWarCitiesForUnit = forcedWaveTargetId === undefined
+      ? forcedWarTargetCities
+      : forcedWarTargetCities.filter(c => c.id === forcedWaveTargetId);
     const adjacentEnemyCity = isCivilianUnit(unit) ? undefined
-      : (forcedWarAttack ? forcedWarTargetCities
+      : (forcedWarAttack ? forcedWarCitiesForUnit
         : (clusterConsolidationPhase ? clusterEnemyCities : engageableEnemyCities)).find(
         ec => isWithinCityAttackRange(unit, ec, data),
       ) ?? engageableEnemyCities.find(
@@ -3614,23 +3702,24 @@ export function decideAITurn(
     }
 
     // 4c: march toward enemy city — faza 1: najpierw państwa w klastrze, potem sąsiedzi (8 hex)
+    const freeUnitDuringActiveForcedWar = forcedWarAttack
+      && forcedWarActiveWaves.length > 0
+      && forcedWaveTargetId === undefined;
     const citiesForMarch = (() => {
-      if (forcedWarAttack && forcedWarTargetCities.length > 0) return forcedWarTargetCities;
+      if (forcedWarAttack && !freeUnitDuringActiveForcedWar && forcedWarTargetCities.length > 0) {
+        return forcedWarTargetCities;
+      }
       if (clusterConsolidationPhase && clusterEnemyCities.length > 0) return clusterEnemyCities;
       if (expansionEnemyCities.length > 0) return expansionEnemyCities;
       return engageableEnemyCities;
     })();
     const powerOf = opts.powerOfOwner;
-    const campaignAnchor = concentration?.rallyPoint ?? myUnits[0];
-    const forcedWarTargetCity = forcedWarAttack && forcedWarTargetCities.length > 0 && campaignAnchor !== undefined
-      ? [...forcedWarTargetCities].sort((a, b) => {
-        const da = hexDistance(campaignAnchor.q, campaignAnchor.r, a.q, a.r);
-        const db = hexDistance(campaignAnchor.q, campaignAnchor.r, b.q, b.r);
-        return da - db || a.q - b.q || a.r - b.r || a.id.localeCompare(b.id);
-      })[0]
-      : undefined;
     const targetCity = (() => {
-      if (forcedWarTargetCity !== undefined) return forcedWarTargetCity;
+      const forcedWaveTarget = forcedWaveTargetId === undefined
+        ? undefined
+        : forcedWarTargetCities.find(c => c.id === forcedWaveTargetId);
+      if (forcedWaveTarget !== undefined) return forcedWaveTarget;
+      if (!freeUnitDuringActiveForcedWar && forcedWarTargetCity !== undefined) return forcedWarTargetCity;
       if (citiesForMarch.length === 0) return undefined;
       let bestScore = -Infinity;
       let bestCity: typeof citiesForMarch[0] | undefined;
