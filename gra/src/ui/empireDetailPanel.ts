@@ -58,6 +58,12 @@ export interface EmpireHandelSplitUiConfig {
   getOwnerDefault?: (ownerId: number) => CityPodzialHandlu | null;
   onOwnerDefaultChange?: (ownerId: number, split: CityPodzialHandlu) => void;
   getDaninaLabel?: () => string;
+  // R-HOTSEAT-USTAWIENIA-KOPIOWANE-Q1: bez tego hooka WSZYSTKIE odczyty/zapisy tego
+  // panelu w tym module były zaszyte na literał `0` (HUMAN_OWNER_PRIMARY) — fotel 2
+  // (aktywny fotel ludzki != 0) widział/nadpisywał wyłącznie default fotela 0, nigdy
+  // własny wpis w `ownerDefaultPodzialHandlu`. Silnik (main.ts) woła to z `ME()` —
+  // domyślne `?? 0` zachowuje bit-identyczne zachowanie single-player (fotel 0 zawsze).
+  getActiveOwnerId?: () => number;
 }
 
 /** Akcja zakupu z tabeli masowej rekrutacji w zakładce Armia. */
@@ -82,7 +88,10 @@ function renderDefaultHandelSplitSection(): string {
   const getDef = handelSplitUi.getOwnerDefault;
   const onChange = handelSplitUi.onOwnerDefaultChange;
   if (!getDef || !onChange) return '';
-  const split = normalizePodzialHandlu(getDef(0) ?? { procentPieniadz: 60, procentNauka: 20, procentLuksus: 20 });
+  // R-HOTSEAT-USTAWIENIA-KOPIOWANE-Q1: `ownerId` aktywnego fotela — dawniej zaszyty `0`
+  // literał czytał/pisał WYŁĄCZNIE default fotela 0 niezależnie od tego, kto jest aktywny.
+  const ownerId = handelSplitUi.getActiveOwnerId?.() ?? 0;
+  const split = normalizePodzialHandlu(getDef(ownerId) ?? { procentPieniadz: 60, procentNauka: 20, procentLuksus: 20 });
   const daninaLbl = handelSplitUi.getDaninaLabel?.() ?? 'Podatek';
   const id = 'emp-handel-split';
   let h = `<div class="civ-emp-sect" data-section="ekonomia-handel-split" id="${id}">`
@@ -102,12 +111,13 @@ function renderDefaultHandelSplitSection(): string {
       + `data-handel-key="${row.key}" style="width:100%;margin:0 0 6px" />`;
   }
   h += `</div><div class="civ-emp-foot">Suma = 100% · kroki ${HANDEL_PCT_STEP}% · dotyczy wszystkich miast bez własnego override.</div></div>`;
-  queueMicrotask(() => wireDefaultHandelSplitInputs(split, onChange));
+  queueMicrotask(() => wireDefaultHandelSplitInputs(split, ownerId, onChange));
   return h;
 }
 
 function wireDefaultHandelSplitInputs(
   initial: CityPodzialHandlu,
+  ownerId: number,
   onChange: (ownerId: number, split: CityPodzialHandlu) => void,
 ): void {
   const host = document.getElementById('emp-handel-split');
@@ -117,7 +127,7 @@ function wireDefaultHandelSplitInputs(
     inp.addEventListener('input', () => {
       const key = inp.dataset.handelKey as keyof CityPodzialHandlu;
       current = adjustHandelSplit(current, key, Number(inp.value));
-      onChange(0, { ...current });
+      onChange(ownerId, { ...current });
       for (const other of Array.from(host.querySelectorAll<HTMLInputElement>('input[data-handel-key]'))) {
         const k = other.dataset.handelKey as keyof CityPodzialHandlu;
         other.value = String(current[k]);
@@ -147,6 +157,12 @@ export interface EmpireGlobalDefaultsUiConfig {
   // WSZYSTKICH miast ownera BEZ poziomRacjiOverride ustawia city.autoWyzywienie = true.
   // Nie jest stanem trwałym/toggle (spójne z broadcastPoziomRacjiToOwnerCities).
   onOwnerSetAutoWyzywienieForAll?: (ownerId: number) => void;
+  // R-HOTSEAT-USTAWIENIA-KOPIOWANE-Q1: patrz komentarz przy tym samym polu w
+  // EmpireHandelSplitUiConfig wyżej — identyczna wada, identyczna naprawa. Bez tego
+  // hooka renderDefaultPoziomRacjiSection/renderEmpirePracaBudgetSplitSection czytały i
+  // zapisywały WYŁĄCZNIE `ownerDefaultPoziomRacji.get(0)`/`ownerDefaultPodzialPracy.get(0)`
+  // niezależnie od tego, który fotel ludzki jest aktywny.
+  getActiveOwnerId?: () => number;
 }
 
 let empireGlobalDefaultsUi: EmpireGlobalDefaultsUiConfig = {};
@@ -159,7 +175,9 @@ function renderDefaultPoziomRacjiSection(): string {
   const getDef = empireGlobalDefaultsUi.getOwnerDefaultPoziomRacji;
   const onChange = empireGlobalDefaultsUi.onOwnerDefaultPoziomRacjiChange;
   if (!getDef || !onChange) return '';
-  const poziom = getDef(0) ?? 4;
+  // R-HOTSEAT-USTAWIENIA-KOPIOWANE-Q1: patrz komentarz w renderDefaultHandelSplitSection.
+  const ownerId = empireGlobalDefaultsUi.getActiveOwnerId?.() ?? 0;
+  const poziom = getDef(ownerId) ?? 4;
   const id = 'emp-zywnosc-racje';
   const steps = poziom / WYZYWIENIE_STEP;
   const minSteps = WYZYWIENIE_MIN / WYZYWIENIE_STEP;
@@ -197,11 +215,12 @@ function renderDefaultPoziomRacjiSection(): string {
       + `Włącz Auto-Żywienie</button>`;
   }
   h += `</div>`;
-  queueMicrotask(() => wireDefaultPoziomRacjiInputs(onChange, onSetAutoWyzywienieForAll));
+  queueMicrotask(() => wireDefaultPoziomRacjiInputs(ownerId, onChange, onSetAutoWyzywienieForAll));
   return h;
 }
 
 function wireDefaultPoziomRacjiInputs(
+  ownerId: number,
   onChange: (ownerId: number, poziom: PoziomRacji) => void,
   onSetAutoWyzywienieForAll?: (ownerId: number) => void,
 ): void {
@@ -209,7 +228,7 @@ function wireDefaultPoziomRacjiInputs(
   if (!host) return;
   const autofeedBtn = host.querySelector<HTMLButtonElement>('button[data-autofeed-all-btn]');
   if (autofeedBtn && onSetAutoWyzywienieForAll) {
-    autofeedBtn.addEventListener('click', () => onSetAutoWyzywienieForAll(0));
+    autofeedBtn.addEventListener('click', () => onSetAutoWyzywienieForAll(ownerId));
   }
   const inp = host.querySelector<HTMLInputElement>('input[data-racje-key="poziom"]');
   if (!inp) return;
@@ -218,7 +237,7 @@ function wireDefaultPoziomRacjiInputs(
   inp.addEventListener('input', () => {
     const stepsNow = Number(inp.value);
     const poziom = stepsNow * WYZYWIENIE_STEP;
-    onChange(0, poziom);
+    onChange(ownerId, poziom);
     const lbl = host.querySelector('[data-racje-lbl] b');
     if (lbl) lbl.textContent = esc(formatWyzwienieLabel(poziom));
     // Wypełnienie toru musi nadążać za wartością (jak w suwakach Skarbca) — bez tego zielony
@@ -1147,7 +1166,9 @@ function renderSkarbiecTaxSplitSection(baseAmount: number): string {
   const getDef = handelSplitUi.getOwnerDefault;
   const onChange = handelSplitUi.onOwnerDefaultChange;
   if (!getDef || !onChange) return '';
-  const split = normalizePodzialHandlu(getDef(0) ?? { procentPieniadz: 60, procentNauka: 20, procentLuksus: 20 });
+  // R-HOTSEAT-USTAWIENIA-KOPIOWANE-Q1: patrz komentarz w renderDefaultHandelSplitSection.
+  const ownerId = handelSplitUi.getActiveOwnerId?.() ?? 0;
+  const split = normalizePodzialHandlu(getDef(ownerId) ?? { procentPieniadz: 60, procentNauka: 20, procentLuksus: 20 });
   const daninaLbl = handelSplitUi.getDaninaLabel?.() ?? 'Podatek';
   const id = 'emp-skarbiec-tax-split';
   const rows: { key: keyof CityPodzialHandlu; label: string; cls: string; from: string; to: string }[] = [
@@ -1177,13 +1198,14 @@ function renderSkarbiecTaxSplitSection(baseAmount: number): string {
     + `${HANDEL_PCT_STEP}%</span><span data-sum-ok style="font-size:9.5px;font-weight:700;letter-spacing:.04em;`
     + 'color:#78c95a;background:rgba(120,201,90,.14);border-radius:999px;padding:2px 8px">SUMA OK</span></div>';
   h += `</div><div class="civ-emp-foot">Suma = 100% · kroki ${HANDEL_PCT_STEP}% · dotyczy wszystkich miast bez własnego override.</div></div>`;
-  queueMicrotask(() => wireSkarbiecTaxSplitInputs(split, baseAmount, onChange));
+  queueMicrotask(() => wireSkarbiecTaxSplitInputs(split, baseAmount, ownerId, onChange));
   return h;
 }
 
 function wireSkarbiecTaxSplitInputs(
   initial: CityPodzialHandlu,
   baseAmount: number,
+  ownerId: number,
   onChange: (ownerId: number, split: CityPodzialHandlu) => void,
 ): void {
   const host = document.getElementById('emp-skarbiec-tax-split');
@@ -1193,7 +1215,7 @@ function wireSkarbiecTaxSplitInputs(
     inp.addEventListener('input', () => {
       const key = inp.dataset.handelKey as keyof CityPodzialHandlu;
       current = adjustHandelSplit(current, key, Number(inp.value));
-      onChange(0, { ...current });
+      onChange(ownerId, { ...current });
       for (const other of Array.from(host.querySelectorAll<HTMLInputElement>('input[data-handel-key]'))) {
         const k = other.dataset.handelKey as keyof CityPodzialHandlu;
         const pct = current[k];
@@ -1426,7 +1448,9 @@ function renderEmpirePracaBudgetSplitSection(): string {
   const getDef = empireGlobalDefaultsUi.getOwnerDefaultPodzialPracy;
   const onChange = empireGlobalDefaultsUi.onOwnerDefaultPodzialPracyChange;
   if (!getDef || !onChange) return '';
-  const pctU = procentPuliImperiumZBudynkow(getDef(0)?.procentBudynki);
+  // R-HOTSEAT-USTAWIENIA-KOPIOWANE-Q1: patrz komentarz w renderDefaultHandelSplitSection.
+  const ownerId = empireGlobalDefaultsUi.getActiveOwnerId?.() ?? 0;
+  const pctU = procentPuliImperiumZBudynkow(getDef(ownerId)?.procentBudynki);
   const pctB = 100 - pctU;
   const id = 'emp-praca-empire-budget-split';
   // R-PRACA-JEDEN-PODZIAL-Q1 (pkt 6, runda 2/F2): tooltip mowil „Nadrzedny podzial CALEJ
@@ -1469,7 +1493,7 @@ function renderEmpirePracaBudgetSplitSection(): string {
     const btnMax = host?.querySelector<HTMLButtonElement>('[data-praca-empire-split-max]');
     input.addEventListener('input', () => {
       const pctU = Math.max(0, Math.min(MAX_PROCENT_PULI_IMPERIUM, Math.round(Number(input.value))));
-      onChange(0, podzialPracyZProcentuPuli(pctU));
+      onChange(ownerId, podzialPracyZProcentuPuli(pctU));
       input.style.background = laborSliderFillStyle(pctU * 2);
       const hero = host?.querySelector('[data-praca-empire-split-hero]');
       if (hero) hero.textContent = `${PODZIAL_PRACY_PULA_LBL} ${pctU}%`;
@@ -1510,7 +1534,9 @@ function renderNaukaSection(
   const rate = Math.round(economy.naukaRate ?? 0);
   const bank = Math.floor(economy.nauka ?? 0);
   const getDef = handelSplitUi.getOwnerDefault;
-  const split = getDef ? normalizePodzialHandlu(getDef(0) ?? { procentPieniadz: 60, procentNauka: 20, procentLuksus: 20 }) : null;
+  // R-HOTSEAT-USTAWIENIA-KOPIOWANE-Q1: patrz komentarz w renderDefaultHandelSplitSection.
+  const ownerId = handelSplitUi.getActiveOwnerId?.() ?? 0;
+  const split = getDef ? normalizePodzialHandlu(getDef(ownerId) ?? { procentPieniadz: 60, procentNauka: 20, procentLuksus: 20 }) : null;
   const procentNauka = split ? split.procentNauka : 20;
   const heroCls = rate < 0 ? 'neg' : 'pos';
 

@@ -5296,9 +5296,13 @@ async function boot(): Promise<void> {
       }
     }
 
-    function initOwnerDefaultPodzialHandlu(): void {
+    function initOwnerDefaultPodzialHandlu(
+      humanOwnerIds: readonly number[] = [HUMAN_OWNER_PRIMARY],
+    ): void {
       ownerDefaultPodzialHandlu.clear();
-      ownerDefaultPodzialHandlu.set(0, freshOwnerDefaultPodzialHandlu());
+      for (const ownerId of humanOwnerIds) {
+        ownerDefaultPodzialHandlu.set(ownerId, freshOwnerDefaultPodzialHandlu());
+      }
       for (const ai of aiStartHexes) {
         if (!ownerDefaultPodzialHandlu.has(ai.ownerId)) {
           // P-AI-BADANIA-ZACOFANIE-Q1 (Runda 2, luka tury 1 -- Obrona Rundy 1, Zarzut 1,
@@ -5324,20 +5328,30 @@ async function boot(): Promise<void> {
      * R-MIASTO-USTAWIENIA-GLOBALNE-VS-LOKALNE=A + R-USTAWIENIA-GLOBALNE-LOKALNE
      * (Żywność, Maciej 2026-08-10): init dla czterech pól, wzorem wyżej.
      */
-    function initOwnerDefaultCityFields(): void {
+    function initOwnerDefaultCityFields(
+      humanOwnerIds: readonly number[] = [HUMAN_OWNER_PRIMARY],
+    ): void {
       ownerDefaultPodzialPracy.clear();
-      ownerDefaultPodzialPracy.set(0, freshOwnerDefaultPodzialPracy());
+      for (const ownerId of humanOwnerIds) {
+        ownerDefaultPodzialPracy.set(ownerId, freshOwnerDefaultPodzialPracy());
+      }
       ownerDefaultOkolicaFocus.clear();
-      ownerDefaultOkolicaFocus.set(0, freshOwnerDefaultOkolicaFocus());
+      for (const ownerId of humanOwnerIds) {
+        ownerDefaultOkolicaFocus.set(ownerId, freshOwnerDefaultOkolicaFocus());
+      }
       ownerDefaultBudowaProfil.clear();
       // P-AI-NIE-STAWIA-BUDYNKOW-Q1, OBRONA R1 zarzut 1 (ECHO właściciela, wiążące ponad
       // zapisem dispatchu „gracz: bez zmian"): profil domyślny budowy jest AUTOMATYCZNY
       // dla WSZYSTKICH właścicieli, łącznie z graczem (0). Ręczna kolejka zostaje graczowi
       // per miasto -- `onBudowaEnterManual` ustawia `budowaFocusOverride = true`, a miasta
       // z override są pomijane przez broadcast i przez migrację wczytania.
-      ownerDefaultBudowaProfil.set(0, freshOwnerDefaultBudowaProfilForOwner(0, isBarbarian));
+      for (const ownerId of humanOwnerIds) {
+        ownerDefaultBudowaProfil.set(ownerId, freshOwnerDefaultBudowaProfilForOwner(0, isBarbarian));
+      }
       ownerDefaultPoziomRacji.clear();
-      ownerDefaultPoziomRacji.set(0, freshOwnerDefaultPoziomRacji());
+      for (const ownerId of humanOwnerIds) {
+        ownerDefaultPoziomRacji.set(ownerId, freshOwnerDefaultPoziomRacji());
+      }
       for (const ai of aiStartHexes) {
         if (!ownerDefaultPodzialPracy.has(ai.ownerId)) {
           // R-AI-PRACA-PODZIAL-STALY-50-50-Q1 (Runda 1, Zarzut 1 Evaluatora — PRZYJĘTE):
@@ -5428,7 +5442,7 @@ async function boot(): Promise<void> {
         // decideAIEconomySliders zdąży ją nadpisać na 50 dla tego ownera.
         ownerDefaultPodzialPracy.set(
           c.ownerId,
-          c.ownerId === 0 ? freshOwnerDefaultPodzialPracy() : { procentBudynki: AI_FIXED_PROCENT_BUDYNKI },
+          isHuman(c.ownerId) ? freshOwnerDefaultPodzialPracy() : { procentBudynki: AI_FIXED_PROCENT_BUDYNKI },
         );
       }
       if (!ownerDefaultPodzialHandlu.has(c.ownerId)) {
@@ -5443,7 +5457,7 @@ async function boot(): Promise<void> {
         // tego ownera AI, dokładnie ta sama klasa błędu co ownerDefaultPodzialPracy wyżej.
         ownerDefaultPodzialHandlu.set(
           c.ownerId,
-          c.ownerId === 0
+          isHuman(c.ownerId)
             ? freshOwnerDefaultPodzialHandlu()
             : { ...DEFAULT_PODZIAL_HANDLU, procentNauka: AI_FIXED_PROCENT_NAUKA },
         );
@@ -9110,8 +9124,8 @@ async function boot(): Promise<void> {
       }
 
       initEmpireFoodStates();
-      initOwnerDefaultPodzialHandlu();
-      initOwnerDefaultCityFields();
+      initOwnerDefaultPodzialHandlu(humanSeats.humanOwnerIds);
+      initOwnerDefaultCityFields(humanSeats.humanOwnerIds);
       initUlepszeniaEmpireByOwner(isAiImprovementOwner);
       // Re-apply civilization/owner allocation after all saved policy maps exist.
       applyAiAllocationProfiles();
@@ -18646,18 +18660,30 @@ async function boot(): Promise<void> {
     // tego tematu (analogicznie do `refreshLiveEmpireRatesUnsafe()` hardkodowanej na
     // ownerId 0, patrz komentarz przy `switchActiveHuman()`), nie regresja wprowadzona tu.
     function buildHudState(ownerId: number = ME()): HudState {
+      // R-HOTSEAT-USTAWIENIA-KOPIOWANE-Q1: `buildHudState(ownerId)` przyjmuje `ownerId`
+      // jako PARAMETR (już istniejący hak testowy `hudPracaSnapshotForTest` woła go dla
+      // DOWOLNEGO fotela, nie tylko aktywnego) -- ale WSZYSTKIE odczyty skarbca/nauki/
+      // badanej technologii/ery/cywilizacji w tej funkcji szły WPROST przez singleton
+      // `player` (alias WYŁĄCZNIE fotela 0, patrz `playerStateByHuman.set(HUMAN_OWNER_PRIMARY,
+      // player)`), ignorując `ownerId`. Efekt: HUD/panel imperium fotela 2 pokazywał
+      // skarbiec/naukę/erę/badaną technologię FOTELA 1 -- dokładnie zgłoszony objaw
+      // ("ustawienia pierwszego gracza... pieniądze... zostają przeniesione na drugiego").
+      // `ps` poniżej jest jedynym miejscem zmiany -- dla `ownerId === HUMAN_OWNER_PRIMARY`
+      // (single-player, zawsze) `playerStateByHuman.get(0) === player` (ten sam obiekt,
+      // patrz inicjalizacja mapy), więc odczyt jest bit-identyczny jak przed naprawą.
+      const ps = playerStateByHuman.get(ownerId) ?? player;
       let epokaPostep = 0;
-      if (player.badana !== null) {
-        const techDef = data.tech.find(t => t.Technologia === player.badana);
+      if (ps.badana !== null) {
+        const techDef = data.tech.find(t => t.Technologia === ps.badana);
         const koszt = techDef && typeof techDef['Koszt nauki'] === 'number'
           ? scaledResearchCost(
             techDef['Koszt nauki'],
-            player.tempoGry ?? 'standardowa',
+            ps.tempoGry ?? 'standardowa',
             0,
             _menuDifficulty,
             techDef.Epoka,
           ) : 0;
-        epokaPostep = koszt > 0 ? Math.min(1, player.nauka / koszt) : 0;
+        epokaPostep = koszt > 0 ? Math.min(1, ps.nauka / koszt) : 0;
       }
       const pc = cities.filter(c => isMe(c.ownerId));
       const pop = pc.reduce((s, c) => s + c.population, 0);
@@ -18791,7 +18817,7 @@ async function boot(): Promise<void> {
         glodWojska: isArmyHungry(0),
         zywnoscMiastNiedokarmionych,
         zywnoscKarencjaZaTur: foodStarvationCountdown ?? undefined,
-        zloto: Math.floor(player.skarbiec),
+        zloto: Math.floor(ps.skarbiec),
         zlotoRate: Math.floor(_lastBogactwoRate),
         // BUGFIX 2026-07-10: Math.floor tutaj obcinal np. 1.8 -> 1 (zamiast 2), mimo
         // ze silnik (splitPraca, production.ts) juz liczy doPuli jako cala liczbe
@@ -18803,11 +18829,11 @@ async function boot(): Promise<void> {
         pracaUpkeep: Math.round(ownerLastPracaUpkeep(ownerId)),
         pracaAutoUlepszeniaKoszt: Math.round(ownerLastPracaAutoUlepszeniaKoszt(ownerId)),
         pracaCudaKoszt: Math.round(ownerLastPracaCudaKoszt(ownerId)),
-        nauka: Math.floor(player.nauka),
+        nauka: Math.floor(ps.nauka),
         naukaRate: Math.floor(_lastNaukaRate),
         kultura: Math.floor(ownerLastKultura(ownerId)),
         kulturaRate: Math.floor(ownerLastKulturaRate(ownerId)),
-        bogactwo: Math.floor(player.skarbiec),
+        bogactwo: Math.floor(ps.skarbiec),
         // NAPRAWA HUD-SKARBIEC (Maciej 2026-07-26): "+N" = NETTO (wplywy - utrzymanie),
         // nie same wplywy -- patrz komentarz przy refreshLiveEmpireRates() i "Bank
         // treasury" w bloku ticku tury. Rozbicie do podpowiedzi w polach ponizej.
@@ -18832,26 +18858,26 @@ async function boot(): Promise<void> {
         // not raw recruits — same source (unitManpowerCost/rekrutUnitEquivalents,
         // manpower.ts) as the "Rekruci (pula werbu)" panel (buildEmpireDetailSnap below:
         // power.rekrutEkw/kosztJednostki).
-        rekrutEkw: rekrutUnitEquivalents(pobor.rekruci, player.era, mpMults.maxMult),
-        kosztJednostki: unitManpowerCost(player.era, mpMults.maxMult),
+        rekrutEkw: rekrutUnitEquivalents(pobor.rekruci, ps.era, mpMults.maxMult),
+        kosztJednostki: unitManpowerCost(ps.era, mpMults.maxMult),
         ludnoscAbsLabel: formatManpower(pobor.ludnoscAbsolutna),
         power,
         osiedla: pc.length,
         osiedlaMax: 99,
         tura: turn,
-        epoka: gameEpochHudLabel(player.era),
+        epoka: gameEpochHudLabel(ps.era),
         epokaPostep,
         // R-EPOKA-CUD-ZAKRES-Q1=B: tooltip HUD "co brakuje do awansu" — `null`/undefined
         // gdy nic nie blokuje (max epoka LUB oba warunki spełnione), patrz era-gate-ui.ts.
         eraGateSummary: formatEraGateSummary(buildPlayerEraGateInfo()) ?? undefined,
         researchProgress: epokaPostep,
-        badana: player.badana,
+        badana: ps.badana,
         sojusze: chips.sojusze,
         pakty: chips.pakty,
         wojny: chips.wojny,
-        civIconId: String(player.civType || _menuCivId || 'grecy'),
+        civIconId: String(playerCivTypeByHuman.get(ownerId) ?? player.civType ?? _menuCivId ?? 'grecy'),
         civKolorHex: civKolorHexFn(0),
-        playerEra: player.era,
+        playerEra: ps.era,
         playerWodz: leaderNameForOwnerId(0) ?? undefined,
         nacja: civDisplayNameForOwner(0) ?? undefined,
         surowceSummary: surowceTotal > 0 ? `${surowceOk}/${surowceTotal}` : '—',
@@ -18991,11 +19017,25 @@ async function boot(): Promise<void> {
 
     function buildDiploTreasury() {
       return {
-        getPieniadze: (ownerId: number) =>
-          isMe(ownerId) ? player.skarbiec : (aiSkarbiecByOwner.get(ownerId) ?? 0),
+        // R-HOTSEAT-USTAWIENIA-KOPIOWANE-Q1: dawniej `isMe(ownerId) ? player.skarbiec : ...`
+        // -- `player` jest aliasem WYŁĄCZNIE fotela 0 (patrz komentarz przy
+        // `playerStateByHuman.set(HUMAN_OWNER_PRIMARY, player)`, main.ts ok. L38344), więc
+        // transakcje dyplomatyczne (dary/handel złotem) fotela 2 czytały/pisały skarbiec
+        // fotela 1. `ownerTreasury`/`setOwnerTreasury` (per-owner, zdefiniowane niżej w tym
+        // samym zamknięciu -- function-hoisting) są tym samym resolverem co panel miasta i
+        // przejęcie stolicy; dla `HUMAN_OWNER_PRIMARY` zwraca dokładnie `player.skarbiec`.
+        getPieniadze: (ownerId: number) => ownerTreasury(ownerId),
         add: (ownerId: number, delta: number) => {
-          if (isMe(ownerId)) player.skarbiec += delta;
-          else aiSkarbiecByOwner.set(ownerId, Math.max(0, (aiSkarbiecByOwner.get(ownerId) ?? 0) + delta));
+          // `setOwnerTreasury()` floors to 0 (Etap 3, symetria z łupem/przejęciem stolicy) —
+          // oryginalny kod PRZED tą naprawą floorował WYŁĄCZNIE gałąź AI
+          // (`aiSkarbiecByOwner.set(ownerId, Math.max(0, ...))`), gałąź gracza nie floorowała
+          // (`player.skarbiec += delta` wprost). Zachowujemy ten sam brak floora dla ludzi,
+          // żeby naprawa dotyczyła WYŁĄCZNIE resolucji ownerId, nie semantyki floorowania.
+          if (isHuman(ownerId)) {
+            playerStateByHuman.get(ownerId)!.skarbiec += delta;
+          } else {
+            aiSkarbiecByOwner.set(ownerId, Math.max(0, (aiSkarbiecByOwner.get(ownerId) ?? 0) + delta));
+          }
         },
       };
     }
@@ -23009,6 +23049,14 @@ async function boot(): Promise<void> {
           markCityStateDirty();
           updateHud();
         },
+        // R-HOTSEAT-USTAWIENIA-KOPIOWANE-Q1: bez tego hooka panel (empireDetailPanel.ts)
+        // czytał/pisał WYŁĄCZNIE `ownerDefaultPodzialHandlu.get(0)` (literał `0`
+        // zaszyty w domyślnym parametrze wołania z panelu) niezależnie od aktywnego
+        // fotela -- fotel 2 (ME() != 0) widział default fotela 0 PRZY ODCZYCIE, a jego
+        // PRÓBA ZAPISU (onChange(0, ...) wołane z panelu) była odrzucana przez
+        // `isMe(0)` (false dla fotela != 0), więc suwak fotela 2 był martwy. `ME()` tu
+        // jest bit-identyczne z zachowaniem single-player (ME() zawsze 0 bez 2. fotela).
+        getActiveOwnerId: () => ME(),
         getDaninaLabel: () => {
           const capId = capitalCityIdForOwner(ME());
           return resolveDaninaLabel(
@@ -23053,6 +23101,13 @@ async function boot(): Promise<void> {
           updateHud();
           refreshCityPanelIfOpen();
         },
+        // R-HOTSEAT-USTAWIENIA-KOPIOWANE-Q1: bez tego hooka wszystkie trzy odczyty/zapisy
+        // wołane z panelu (empireDetailPanel.ts) były zaszyte na literał `0` -- fotel 2
+        // (ME() != 0) widział default Pracy/Racji fotela 0 na odczycie, a jego zapis był
+        // odrzucany przez `isMe(0)` (false dla ownerId != aktywny fotel), więc suwaki
+        // Pracy/Żywności i przycisk Auto-Żywienie fotela 2 były martwe. `ME()` tu jest
+        // bit-identyczne z single-player (ME() zawsze 0 bez drugiego fotela).
+        getActiveOwnerId: () => ME(),
       });
     }
 
@@ -24173,6 +24228,54 @@ async function boot(): Promise<void> {
         }
       },
       /**
+       * R-HOTSEAT-USTAWIENIA-KOPIOWANE-Q1 — hak testowy WYŁĄCZNIE dla regresji
+       * per-fotel ekonomii. Przygotowuje niestandardowe ustawienia fotela A przez
+       * te same mapy ownerDefault* oraz playerStateByHuman, które zapisują produkcyjne
+       * callbacki panelu; snapshot poniżej czyta te same resolvery co UI.
+       */
+      setOwnerSettingsForTest: (ownerId: number, values: {
+        procentBudynki?: number;
+        procentPieniadz?: number;
+        procentNauka?: number;
+        procentLuksus?: number;
+        poziomRacji?: number;
+        skarbiec?: number;
+        nauka?: number;
+      }): void => {
+        if (!isHuman(ownerId)) throw new Error(`ownerId ${ownerId} is not a human seat`);
+        if (values.procentBudynki !== undefined) {
+          ownerDefaultPodzialPracy.set(ownerId, {
+            procentBudynki: clampPodzialPracyBudynkiPercent(values.procentBudynki),
+          });
+        }
+        if (
+          values.procentPieniadz !== undefined
+          || values.procentNauka !== undefined
+          || values.procentLuksus !== undefined
+        ) {
+          const current = ownerDefaultPodzialHandlu.get(ownerId) ?? freshOwnerDefaultPodzialHandlu();
+          ownerDefaultPodzialHandlu.set(ownerId, normalizePodzialHandlu({
+            procentPieniadz: values.procentPieniadz ?? current.procentPieniadz,
+            procentNauka: values.procentNauka ?? current.procentNauka,
+            procentLuksus: values.procentLuksus ?? current.procentLuksus,
+          }));
+        }
+        if (values.poziomRacji !== undefined) {
+          ownerDefaultPoziomRacji.set(ownerId, clampPoziomRacji(values.poziomRacji));
+        }
+        const state = playerStateByHuman.get(ownerId);
+        if (!state) throw new Error(`missing PlayerState for human owner ${ownerId}`);
+        if (values.skarbiec !== undefined) setOwnerTreasury(ownerId, values.skarbiec);
+        if (values.nauka !== undefined) state.nauka = values.nauka;
+      },
+      snapshotOwnerSettingsForTest: (ownerId: number) => ({
+        work: ownerDefaultPodzialPracy.get(ownerId) ?? null,
+        trade: ownerDefaultPodzialHandlu.get(ownerId) ?? null,
+        ration: ownerDefaultPoziomRacji.get(ownerId) ?? null,
+        treasury: ownerTreasury(ownerId),
+        hud: buildHudState(ownerId),
+      }),
+      /**
        * R-HOTSEAT-ETAP6F-PART2-DATA-Q1 — hak testowy WYŁĄCZNIE dla
        * `tools/hotseat-etap6f-part2-data-test.cjs` (headless, bez DOM — woła REALNĄ
        * `applyClusterStartPlan`/`buildClusterStartPlan`/`buildClusterSpawnPlan` na
@@ -24794,7 +24897,13 @@ async function boot(): Promise<void> {
         return empirePoborTotals(cities, ownerId, ep, mpMults.maxMult).rekruci;
       },
       getOwnerColor: civColorFn,
-      getUnlockedTechs: (_ownerId: number) => Array.from(player.zbadane),
+      // R-HOTSEAT-USTAWIENIA-KOPIOWANE-Q1: dawniej `(_ownerId) => Array.from(player.zbadane)`
+      // -- parametr `ownerId` był ignorowany (`_` prefix), więc panel miasta fotela 2 zawsze
+      // widział listę zbadanych technologii fotela 1 przy sprawdzaniu bramek budynków
+      // (`isImprovementGateMet`/`getUnlockedTechs` w cityPanel.ts). `isHuman`/`playerStateByHuman`
+      // to ten sam per-owner resolver już używany dla skarbca/nauki (ownerTreasury/ownerNaukaPool).
+      getUnlockedTechs: (ownerId: number) =>
+        Array.from(isHuman(ownerId) ? (playerStateByHuman.get(ownerId)?.zbadane ?? player.zbadane) : (aiResearchDone.get(ownerId) ?? new Set<string>())),
       getBuiltBuildingIds: (cityId: string) => cityBuilt.get(cityId) ?? [],
       // PYTANIE 83=B: panel miasta musi patrzeć na dokładnie ten sam dostęp do
       // złota co silnik (turn-economy.ts resolveOwnerZlotoAccess) -- jedna funkcja.
@@ -24809,10 +24918,19 @@ async function boot(): Promise<void> {
       setProduction: (cityId: string, p: CityProduction) => {
         setCityProduction(cityId, p);
       },
-      getTreasury: (_ownerId: number) => player.skarbiec,
+      // R-HOTSEAT-USTAWIENIA-KOPIOWANE-Q1: dawniej ZAWSZE `player.skarbiec` (singleton
+      // fotela 0) niezależnie od `ownerId` przekazanego przez panel (cityPanel.ts woła
+      // `cfg.getTreasury(city.ownerId)`) -- panel miasta fotela 2 pokazywał/wydawał
+      // skarbiec fotela 1. `ownerTreasury()` (main.ts, per-owner: playerStateByHuman dla
+      // ludzi, aiSkarbiecByOwner dla AI) jest poprawnym resolverem, już używanym w
+      // capitalCaptureResourceAccess -- dla `ownerId===HUMAN_OWNER_PRIMARY` (single-player)
+      // zwraca dokładnie `player.skarbiec`, bit-identyczne zachowanie.
+      getTreasury: (ownerId: number) => ownerTreasury(ownerId),
       onRushBuy: (cityId: string, _item: any, koszt: number) => {
-        if (player.skarbiec >= koszt) {
-          player.skarbiec -= koszt;
+        const rbCity = cities.find(ct => ct.id === cityId);
+        const rbOwnerId = rbCity ? rbCity.ownerId : 0;
+        if (ownerTreasury(rbOwnerId) >= koszt) {
+          setOwnerTreasury(rbOwnerId, ownerTreasury(rbOwnerId) - koszt);
           const rBase = cityProd.get(cityId) ?? { kolejka: [], postep: 0 };
           const r = rushProduction(rBase);
           cityProd.set(cityId, r.prod);
@@ -24821,7 +24939,7 @@ async function boot(): Promise<void> {
             if (rc) {
               const applied = applyProductionCompleted(rc, cityId, r.completed, r.prod);
               if (applied.requeueManpower) {
-                player.skarbiec += koszt;
+                setOwnerTreasury(rbOwnerId, ownerTreasury(rbOwnerId) + koszt);
                 console.warn('[Rush] Brak Manpower — zwrot zlota, jednostka w kolejce');
               }
               cityProd.set(cityId, applied.prod);
@@ -25509,6 +25627,11 @@ async function boot(): Promise<void> {
         for (const su of stack) {
           addExplored(explored, computeVisibleAlongPath(result.movePath, map, unitSight(su)));
         }
+        // R-HOTSEAT-USTAWIENIA-KOPIOWANE-Q1: zakres tego tematu to ownerDefault*/skarbiec-
+        // DEFAULTS (podzial pracy/podatkow/handlu/racji + odczyt skarbca w panelach), NIE
+        // przepływ chatek/ruchu wzdłuż ścieżki -- to jest "ręczny ruch gracza 2", osobny,
+        // równoległy temat (zakaz w dyspozycji tej karty). Zostawiamy to wywołanie
+        // NIETKNIĘTE (`ownerId` domyślne 0), żeby nie kolidować z tamtym worktree.
         if (u.ownerId === humanOwnerId) hutCollected = checkVillageRewardsAlongPath(result.movePath);
         // P-BARBARZYNCY-USUWANIE-SEMANTYKA-Q1: `u` jest zawsze fotelem `humanOwnerId`
         // (guard wyżej) -- nigdy barbarzyńcą, więc bez isBarbarian.
@@ -36514,7 +36637,10 @@ async function boot(): Promise<void> {
         return empirePoborTotals(cities, ownerId, ep, mpMults.maxMult).rekruci;
       },
       getOwnerColor: civColorFn,
-        getUnlockedTechs: (_ownerId: number) => Array.from(player.zbadane),
+        // R-HOTSEAT-USTAWIENIA-KOPIOWANE-Q1: patrz komentarz przy tym samym call-site w
+        // pierwszej configureCityPanel({...}) wyżej -- identyczna naprawa.
+        getUnlockedTechs: (ownerId: number) =>
+          Array.from(isHuman(ownerId) ? (playerStateByHuman.get(ownerId)?.zbadane ?? player.zbadane) : (aiResearchDone.get(ownerId) ?? new Set<string>())),
         getBuiltBuildingIds: (cityId: string) => cityBuilt.get(cityId) ?? [],
         // PYTANIE 83=B: jedna funkcja co silnik (turn-economy.ts resolveOwnerZlotoAccess).
         getOwnerHasZlotoAccess: (ownerId: number) => ownerZlotoAccessForMennicaEffective(ownerId),
@@ -36528,10 +36654,15 @@ async function boot(): Promise<void> {
         setProduction: (cityId: string, p: CityProduction) => {
           setCityProduction(cityId, p);
         },
-        getTreasury: (_ownerId: number) => player.skarbiec,
+        // R-HOTSEAT-USTAWIENIA-KOPIOWANE-Q1: patrz komentarz przy tym samym call-site w
+        // pierwszej configureCityPanel({...}) wyżej -- identyczna wada (`player.skarbiec`
+        // singleton fotela 0 zamiast `ownerId` per-owner), identyczna naprawa.
+        getTreasury: (ownerId: number) => ownerTreasury(ownerId),
         onRushBuy: (cityId: string, _item: any, koszt: number) => {
-          if (player.skarbiec >= koszt) {
-            player.skarbiec -= koszt;
+          const rbCity = cities.find(ct => ct.id === cityId);
+          const rbOwnerId = rbCity ? rbCity.ownerId : 0;
+          if (ownerTreasury(rbOwnerId) >= koszt) {
+            setOwnerTreasury(rbOwnerId, ownerTreasury(rbOwnerId) - koszt);
             const rBase = cityProd.get(cityId) ?? { kolejka: [], postep: 0 };
             const r = rushProduction(rBase);
             cityProd.set(cityId, r.prod);
@@ -36540,7 +36671,7 @@ async function boot(): Promise<void> {
               if (rc) {
                 const applied = applyProductionCompleted(rc, cityId, r.completed, r.prod);
                 if (applied.requeueManpower) {
-                  player.skarbiec += koszt;
+                  setOwnerTreasury(rbOwnerId, ownerTreasury(rbOwnerId) + koszt);
                   console.warn('[Rush] Brak Manpower — zwrot zlota, jednostka w kolejce');
                 }
                 cityProd.set(cityId, applied.prod);
