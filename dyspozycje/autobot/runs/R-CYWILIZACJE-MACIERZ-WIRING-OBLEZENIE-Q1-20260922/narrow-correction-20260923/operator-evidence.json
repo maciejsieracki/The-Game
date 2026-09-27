@@ -1,0 +1,69 @@
+{
+  "status": "PASS",
+  "domain": "GAME",
+  "topic": "R-CYWILIZACJE-MACIERZ-WIRING-OBLEZENIE-Q1-20260922",
+  "role": "Operator narrow AI siege consumer correction",
+  "date": "2026-09-23",
+  "implementation": {
+    "main": {
+      "path": "gra/src/main.ts",
+      "change": "buildSiegeCityFromRuntime now passes the defending owner's real civ key from _menuCivIdByOwner/player.civType/aiOwnerCivMap, with null for missing data, and passes cityBuilt defensive building ids. Both initial and ongoing AI calls use this same builder."
+    },
+    "siege": {
+      "path": "gra/src/game/siege.ts",
+      "change": "SiegeCity carries optional civKey and builtBuildingIds. cityDefenseBonus reuses cityWallDefenseBonusPercent plus civMatrixParam for obl_mur_proc and obl_obrona_miasta_proc. It exposes one structure multiplier. applyCityBonus accepts an explicit includeStructure flag; default false preserves the later resolveSiegeAttack path."
+    },
+    "siege_ai": {
+      "path": "gra/src/game/siegeAi.ts",
+      "change": "AI estimateDefenderStrength explicitly applies the structure multiplier once before calculating defender strength, so tier/stance inputs consume the defending city's civ matrix."
+    },
+    "test": {
+      "path": "gra/tools/civ-matrix-oblezenie-wiring-test.cjs",
+      "change": "Extended the existing wiring harness with production siegeAi bundling and assertions for Grecy/neutral/Zulusi strength ordering, shared 200/288/160 structural percentages, unknown-civ neutral equivalence, one-application formula, and changed AI ratio input."
+    }
+  },
+  "production_trace": {
+    "initial": "main.ts scanAutoSiegesAfterAiTurn -> buildSiegeCityFromRuntime -> decideAISiegeStance -> estimateDefenderStrength",
+    "ongoing": "main.ts maybeAiAssaultAfterMachines -> buildSiegeCityFromRuntime -> decideAISiegeStance -> estimateDefenderStrength",
+    "defender_owner_source": "city.ownerId; civ key resolved without Greece fallback from _menuCivIdByOwner, player.civType for owner 0, or aiOwnerCivMap",
+    "shared_formula_source": "cityWallDefenseBonusPercent in gra/src/game/city-defense.ts",
+    "no_double_boundary": "applyCityBonus(includeStructure=false) remains the default for resolveSiegeAttack; only siegeAi passes true."
+  },
+  "behavior_assertions": {
+    "grecy_direction": "grecy > neutral > zulusi",
+    "unknown_fallback": "unknown/missing civ equals neutral matrix result",
+    "structure_percent": {"neutral": 200, "grecy": 288, "zulusi": 160},
+    "result": "83 pass, 0 fail"
+  },
+  "tests": {
+    "cd gra && ./node_modules/.bin/tsc --noEmit": {"exit": 0},
+    "cd gra && node tools/civ-matrix-oblezenie-wiring-test.cjs": {"exit": 0, "pass": 83, "fail": 0},
+    "cd gra && node tools/siege-ai-test.cjs": {"exit": 0, "pass": 17, "fail": 0},
+    "cd gra && node tools/logic-test.cjs": {"exit": 0, "pass": 213, "fail": 0},
+    "cd gra && node tools/city-defense-terrain-gate-test.cjs": {"exit": 0, "pass": 34, "fail": 0},
+    "cd gra && node tools/mur-paradoks-test.cjs": {"exit": 0, "pass": 29, "fail": 0},
+    "git diff --check": {"exit": 0}
+  },
+  "git": {
+    "branch": "hermes/R-CYWILIZACJE-MACIERZ-WIRING-OBLEZENIE-Q1-20260922",
+    "head": "f52f3b76b4761136a43dc0ab32dde50552a176fe",
+    "base": "0caa4dfa31d37337cd74fdbab95ee77da4806d98",
+    "changed_product_paths": [
+      "gra/data/civ-matrix.json",
+      "gra/src/battle/battleScene.ts",
+      "gra/src/game/city-defense.ts",
+      "gra/src/game/siege.ts",
+      "gra/src/game/siegeAi.ts",
+      "gra/src/game/siegeMachines.ts",
+      "gra/src/main.ts",
+      "gra/tools/civ-matrix-oblezenie-wiring-test.cjs"
+    ],
+    "preexisting_topic_paths_preserved": [
+      "gra/data/civ-matrix.json",
+      "gra/src/battle/battleScene.ts",
+      "gra/src/game/city-defense.ts",
+      "gra/src/game/siegeMachines.ts"
+    ],
+    "commit_push_merge_deploy": "NOT PERFORMED"
+  }
+}

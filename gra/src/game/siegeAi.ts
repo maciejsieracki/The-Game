@@ -108,7 +108,7 @@ export function estimateDefenderStrength(
   const garrison = effectiveGarrison(city);
   let total = 0;
   for (const raw of garrison) {
-    const boosted = applyCityBonus(raw, bonus);
+    const boosted = applyCityBonus(raw, bonus, true);
     total += estimateUnitCombatStrength(boosted);
   }
   return total;

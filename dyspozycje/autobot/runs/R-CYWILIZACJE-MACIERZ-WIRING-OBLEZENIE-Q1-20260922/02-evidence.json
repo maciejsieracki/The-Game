@@ -1,0 +1,84 @@
+{
+  "topic": "R-CYWILIZACJE-MACIERZ-WIRING-OBLEZENIE-Q1-20260922",
+  "role": "Evaluator",
+  "status": "PASS",
+  "domain": "GAME",
+  "verification_method": "independent from-scratch: programmatic Python diffs, full manual reading of all diffs, own test runs, own git stash rerun, own tsc, own git status/diff --check, own git show origin/main proof",
+  "civ_matrix_cells": {
+    "total_checked": 45,
+    "mismatches_vs_input": 0,
+    "old_values_all_zero_confirmed": true,
+    "other_fields_changed": 0,
+    "method": "loaded current gra/data/civ-matrix.json, origin/main version, and INPUT-converted-values.json as JSON, compared programmatically cell-by-cell and field-by-field"
+  },
+  "parity_check": {
+    "verdict": "CONFIRMED_NO_DRIFT",
+    "city_defense_ts": "cityWallDefenseBonusPercent gains two new optional trailing args (murCivProc, obronaMiastaCivProc, default 0); total *= (1+murCivProc)*(1+obronaMiastaCivProc) appended AFTER existing additive sum -- multiplies, does not replace",
+    "main_ts": "civMurObronaProcFor(ownerId) reads civKeyForOwnerId(cityOnHex.ownerId) -- city owner/defender; wired into both call sites of cityWallDefenseBonusPercent in this file",
+    "battle_scene_ts": "constructor block calls the SAME shared cityWallDefenseBonusPercent with civMatrixParam(this._defenderCivIconId, ...) -- same function, same civKey semantics as main.ts",
+    "conclusion": "both modes route through one shared function with identical multiplier semantics for the same civKey -- structural parity, no possibility of divergent results for the same situation"
+  },
+  "defender_civ_icon_id_check": {
+    "verdict": "CORRECT_SIDE_DEFENDER",
+    "evidence": "constructor assigns this._defenderCivIconId = opts.defenderCivIconId ?? civIconIdFromLabel(...); external call sites in main.ts pass defenderCivIconId: pbInfo.obronca.civId ('obronca' = Polish for defender)"
+  },
+  "attacker_civ_icon_id_check": {
+    "verdict": "CORRECT_SIDE_ATTACKER",
+    "evidence": "grep confirms the ONLY call sites of _attackGate/_attackWallTile are gated by 'isSiegeUnit(ru.bu) && ru.side === \"atk\"' (line 5886) -- siege units in this attack-on-wall/gate code path are structurally always on the attacking side; this._attackerCivIconId (siege machine owner) is therefore the correct civKey"
+  },
+  "new_test": {
+    "file": "gra/tools/civ-matrix-oblezenie-wiring-test.cjs",
+    "own_run_pass": 75,
+    "own_run_fail": 0,
+    "manual_recompute": {
+      "grecy_mur_200_to_240": true,
+      "zulusi_mur_200_to_160": true,
+      "taran_wallAttack_14_to_17_grecy": true,
+      "taran_wallAttack_14_to_11_zulusi": true
+    }
+  },
+  "existing_tests_rerun": {
+    "city-defense-terrain-gate-test.cjs": { "pass": 34, "fail": 0, "matches_operator": true },
+    "defense-breakdown-test.cjs": { "pass": 44, "fail": 0, "matches_operator": true },
+    "fortify-pole-test.cjs": { "pass": 41, "fail": 0, "matches_operator": true },
+    "mur-paradoks-test.cjs": { "pass": 29, "fail": 0, "matches_operator": true },
+    "empire-panel-miasto-obywatele-content-test.cjs": {
+      "pass": 115, "fail": 1, "matches_operator": true,
+      "stash_rerun_verified": true,
+      "stash_rerun_result": "identical fail on origin/main-clean stash, confirmed pre-existing"
+    },
+    "koszty-surowcowe-test.cjs": {
+      "pass": 126, "fail": 3, "matches_operator": true,
+      "stash_rerun_verified": true,
+      "stash_rerun_result": "identical 3 fails on origin/main-clean stash, confirmed pre-existing"
+    }
+  },
+  "tsc_noemit": "PASS",
+  "git": {
+    "diff_check_clean": true,
+    "status_short_matches_allowlist": true,
+    "files_changed": [
+      "gra/data/civ-matrix.json",
+      "gra/src/battle/battleScene.ts",
+      "gra/src/game/city-defense.ts",
+      "gra/src/game/siegeMachines.ts",
+      "gra/src/main.ts"
+    ],
+    "files_untracked": [
+      "dyspozycje/autobot/runs/R-CYWILIZACJE-MACIERZ-WIRING-OBLEZENIE-Q1-20260922/01-evidence.json",
+      "dyspozycje/autobot/runs/R-CYWILIZACJE-MACIERZ-WIRING-OBLEZENIE-Q1-20260922/01-operator.md",
+      "dyspozycje/autobot/runs/R-CYWILIZACJE-MACIERZ-WIRING-OBLEZENIE-Q1-20260922/01-transition-receipt.md",
+      "dyspozycje/autobot/runs/R-CYWILIZACJE-MACIERZ-WIRING-OBLEZENIE-Q1-20260922/02-dispatch-evaluator.md",
+      "gra/tools/civ-matrix-oblezenie-wiring-test.cjs"
+    ],
+    "no_files_outside_allowlist": true,
+    "commit_push_merge_deploy": "NIE WYKONANO"
+  },
+  "pre_existence_check": {
+    "attackWallTile_and_siegeStructureDamage_existed_before_diff": true,
+    "evidence": "git show origin/main:gra/src/battle/battleScene.ts | grep found 4 matches (declarations + call sites) before this diff"
+  },
+  "blocking_findings": [],
+  "verdict": "PASS",
+  "next_phase": "skip Obrona -> Final Control"
+}

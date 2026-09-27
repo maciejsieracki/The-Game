@@ -1,0 +1,33 @@
+{
+  "topic_id": "R-CYWILIZACJE-MACIERZ-ALL-113-PRODUKCJA-R2-20260923",
+  "source_task": "t_ca542f20",
+  "source_run": 1202,
+  "source_terminal": "completed",
+  "successor_task": "t_a48da8d3",
+  "successor_phase": "Evaluator",
+  "successor_round": "3/5",
+  "idempotency_key": "R-CYWILIZACJE-MACIERZ-ALL-113-PRODUKCJA-R2-EVALUATOR-R3-20260924",
+  "board": "the-game-real24",
+  "project_id": "p_9ae9ac64",
+  "profile": "default",
+  "model": "gpt-5.6-luna",
+  "provider": "openai-codex",
+  "workspace": "/home/ubuntu/projects/The-Game/.worktrees/civ-matrix-all-produkcja-r2-20260923",
+  "base": "a8c9cf6c181f688201dd45e6a5871da1b0eb1301",
+  "dispatch": {
+    "created": true,
+    "unblocked": true,
+    "spawned": true,
+    "run_id": 1203,
+    "worker_pid": 3175028,
+    "started_at": 1790257572,
+    "spawned_at": 1790257573
+  },
+  "notification": {
+    "platform": "desktop",
+    "chat_id": "20260823_223345_671036",
+    "mode": "notify+wake",
+    "result": "subscribed"
+  },
+  "owner_hold": "No merge, push, or deploy authorization; Evaluator is review-only."
+}

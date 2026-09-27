@@ -298,7 +298,7 @@ import {
   type WonderTradeRouteMedium,
 } from './game/wonders-data';
 import { gameEpochHudLabel, type CivEntryEpochRow } from './game/civ-entry-epoch';
-import type { ProductionItem } from './game/production';
+import type { ProductionItem, ProductionMatrixOptions } from './game/production';
 import {
   resolveArchetypeAggression,
   resolveArchetypeTrade,
@@ -926,7 +926,7 @@ import {
 import { detectOwnerResourceNeeds } from './game/ai-resource-needs';
 import {
   tryDeductUnitSpawnCostsEmpire, empirePoborTotals, rekrutUnitEquivalents, formatManpower,
-  cityManpowerSnapshot, civManpowerRegenMult, civManpowerMaxMult, civManpowerMults,
+  cityManpowerSnapshot, civManpowerMults, civManpowerMatrixMults,
   cityManpowerMax, unitManpowerCost, unitManpowerCostForType,
   canAffordUnitManpowerEmpire, empireManpowerCurrent, deductManpowerFromEmpire,
   refundManpowerToEmpire, syncLiveUnitHp, type ManpowerHealUnit,
@@ -1101,6 +1101,7 @@ import {
   toggleDiagPanel, copyDiagReport,
 } from './game/diag-log';
 import { configureCityPanel } from './ui/cityPanel';
+import { civMatrixParam, loadCivMatrix } from './game/civ-matrix';
 import type { OrderState } from './ui/orderPanel';
 import {
   configureSciencePicker,
@@ -1938,6 +1939,12 @@ async function boot(): Promise<void> {
     // -----------------------------------------------------------------------
 
     const cities: City[] = [];
+    // R-CYWILIZACJE-MACIERZ-ALL-113-PRODUKCJA-R2: live runtime evidence only.
+    // The trace is bounded and read exclusively by the Playwright regression gate;
+    // it does not participate in gameplay decisions.
+    const productionMatrixOwnerTrace: Array<{ ownerId: number; civKey: string }> = [];
+    const productionMatrixParamTrace: Array<{ ownerId: number; civKey: string; paramId: string; value: number }> = [];
+    const cityPanelCivKeyTrace: Array<{ ownerId: number; civKey: string }> = [];
     let cityRenderer = new CityRenderer(scene, map);
     let siegeMarkerRenderer = new SiegeMarkerRenderer(scene, map);
     let wonderRenderer = new WonderRenderer(scene, map);
@@ -2395,7 +2402,7 @@ async function boot(): Promise<void> {
         bitwyPktSum: battlePowerPtsByOwner.get(ownerId) ?? 0,
         wygraneBitwy: 0,
         sumaLudkow: pobor.sumaLudkow,
-        rekrutEkw: rekrutUnitEquivalents(pobor.rekruci, epoka, mpMults.maxMult),
+        rekrutEkw: rekrutUnitEquivalents(pobor.rekruci, epoka, mpMults.costMult),
         miasta: ownerCities.length,
         heksyTerytorium: countTerritoryHexes(cityNodesForOwner(ownerId)),
         budynki: countBuildingsForOwner(ownerId),
@@ -2450,7 +2457,7 @@ async function boot(): Promise<void> {
         bitwyPktSum: battlePowerPtsByOwner.get(ownerId) ?? 0,
         wygraneBitwy: 0,
         sumaLudkow: pobor.sumaLudkow,
-        rekrutEkw: rekrutUnitEquivalents(pobor.rekruci, epoka, mpMults.maxMult),
+        rekrutEkw: rekrutUnitEquivalents(pobor.rekruci, epoka, mpMults.costMult),
         miasta: ownerCities.length,
         heksyTerytorium: countTerritoryHexes(cityNodesForOwner(ownerId)),
         budynki: countBuildingsForOwner(ownerId),
@@ -3886,7 +3893,7 @@ async function boot(): Promise<void> {
       const ep = empireEpochForOwner(city.ownerId);
       const mpMults = civManpowerMultsForOwner(city.ownerId);
       const d = tryDeductUnitSpawnCostsEmpire(
-        cities, cityId, city.ownerId, ep, populationCostOf(completed), mpMults.maxMult, completed.id,
+        cities, cityId, city.ownerId, ep, populationCostOf(completed), mpMults.maxMult, completed.id, mpMults.costMult,
       );
       if (!d.ok) {
         console.log(`[Produkcja] Tura ${turn} ${city.name}: brak Manpower — odlozono ${completed.id}`);
@@ -3986,7 +3993,7 @@ async function boot(): Promise<void> {
       }
       const ep = empireEpochForOwner(ownerId);
       const mpMults = civManpowerMultsForOwner(ownerId);
-      if (!canAffordUnitManpowerEmpire(cities, ownerId, city, ep, UNIT_POPULATION_COST, mpMults.maxMult, itemId)) {
+      if (!canAffordUnitManpowerEmpire(cities, ownerId, city, ep, UNIT_POPULATION_COST, mpMults.maxMult, itemId, mpMults.costMult)) {
         if (ownerId === 0) {
           showHintMessage('Za mało rekrutów (Manpower) w imperium', 2800);
         }
@@ -3999,6 +4006,7 @@ async function boot(): Promise<void> {
         player.kosztJednostekPace ?? 'niski',
         ownerId,
         _menuDifficulty,
+        productionMatrixOptionsForOwner(ownerId),
       );
       if (!item) return false;
       // JEDNOSTKI-SUROWIEC-01 (Maciej 2026-07-24): jednostka konsumuje Surowiec/Surowiec (ilość)
@@ -4029,10 +4037,10 @@ async function boot(): Promise<void> {
           return false;
         }
       }
-      const kosztManpower = unitManpowerCostForType(itemId, ep, mpMults.maxMult);
+      const kosztManpower = unitManpowerCostForType(itemId, ep, mpMults.maxMult, mpMults.costMult);
       if (requestedQuantity === 1) {
         const d = tryDeductUnitSpawnCostsEmpire(
-          cities, cityId, ownerId, ep, UNIT_POPULATION_COST, mpMults.maxMult, itemId,
+          cities, cityId, ownerId, ep, UNIT_POPULATION_COST, mpMults.maxMult, itemId, mpMults.costMult,
         );
         if (!d.ok) {
           if (ownerId === 0) {
@@ -4143,18 +4151,18 @@ async function boot(): Promise<void> {
       }
 
       const ep = empireEpochForOwner(ownerId);
-      const mpMaxMult = civManpowerMaxMult(civBonusyForOwnerId(ownerId));
-      const manpowerCost = unitManpowerCostForType(itemId, ep, mpMaxMult);
+      const mpMults = civManpowerMultsForOwner(ownerId);
+      const manpowerCost = unitManpowerCostForType(itemId, ep, mpMults.maxMult, mpMults.costMult);
       const totalManpower = manpowerCost * count;
       if (!Number.isFinite(totalManpower) || totalManpower < 0 || !Number.isSafeInteger(totalManpower)) return false;
-      if (empireManpowerCurrent(cities, ownerId, ep, mpMaxMult) < totalManpower) {
+      if (empireManpowerCurrent(cities, ownerId, ep, mpMults.maxMult) < totalManpower) {
         if (ownerId === 0) showHintMessage(`Za mało rekrutów (Manpower) na ${count} jedn.`, 2800);
         return false;
       }
 
       // Atomic commit: every guard above passed, and the helpers below cannot reject this
       // already-validated aggregate. No state is touched before this point.
-      if (!deductManpowerFromEmpire(cities, ownerId, ep, totalManpower, mpMaxMult)) return false;
+      if (!deductManpowerFromEmpire(cities, ownerId, ep, totalManpower, mpMults.maxMult)) return false;
       setOwnerTreasury(ownerId, ownerTreasury(ownerId) - totalGold);
       if (Object.keys(totalStockCost).length > 0) {
         deductBuildingStockCostAcrossCities(cities, ownerId, totalStockCost);
@@ -4181,7 +4189,7 @@ async function boot(): Promise<void> {
       if (!city || city.ownerId !== ownerId) return;
       const ep = empireEpochForOwner(ownerId);
       const mpMults = civManpowerMultsForOwner(ownerId);
-      const mpRefund = unitManpowerCostForType(itemId, ep, mpMults.maxMult);
+      const mpRefund = unitManpowerCostForType(itemId, ep, mpMults.maxMult, mpMults.costMult);
       refundManpowerToEmpire(cities, ownerId, ep, mpRefund, mpMults.maxMult);
       setOwnerTreasury(ownerId, ownerTreasury(ownerId) + koszt);
       // JEDNOSTKI-SUROWIEC-01: zwrot surowca do puli PAŃSTWA (civ-wide) — symetrycznie
@@ -6373,7 +6381,7 @@ async function boot(): Promise<void> {
 
       const ep = empireEpochForOwner(0);
       const mpMults = civManpowerMultsForOwner(0);
-      const mpRefund = unitManpowerCostForType(u.typeId, ep, mpMults.maxMult);
+      const mpRefund = unitManpowerCostForType(u.typeId, ep, mpMults.maxMult, mpMults.costMult);
       refundManpowerToEmpire(cities, 0, ep, mpRefund, mpMults.maxMult);
 
       const siegeCityId = u.oblegaCityId;
@@ -6475,6 +6483,7 @@ async function boot(): Promise<void> {
         kosztJednostekPace: player.kosztJednostekPace ?? 'niski',
         ownerId: city.ownerId,
         difficulty: _menuDifficulty,
+        civKey: civKeyForOwnerId(city.ownerId),
         // R-BUDYNEK-PORTOWY-MIASTA-NADBRZEZNE (Maciej 2026-08-09): bramka Naval dla
         // "Zastąp" w garnizonie — per TO miasto (tak jak koszary/braz-access wyżej).
         cityHasCoastOrRiver: cityHasCoastOrRiverAccess(city),
@@ -6509,6 +6518,7 @@ async function boot(): Promise<void> {
         kosztJednostekPace: player.kosztJednostekPace ?? 'niski',
         ownerId: 0,
         difficulty: _menuDifficulty,
+        civKey: civKeyForOwnerId(0),
         // R-BUDYNEK-PORTOWY-MIASTA-NADBRZEZNE (Maciej 2026-08-09): bramka Naval "OR po
         // wszystkich miastach gracza" — jednostka w polu (bez konkretnego garnizonu) może
         // zastąpić się jednostką morską, gdy KTÓREKOLWIEK miasto gracza ma dostęp do wody
@@ -6531,6 +6541,7 @@ async function boot(): Promise<void> {
     function replaceUnitMoneyCost(typeId: string): number {
       const item = unitProductionItem(
         typeId, data, civBonusyForOwnerId(0), player.kosztJednostekPace ?? 'niski', 0, _menuDifficulty,
+        productionMatrixOptionsForOwner(0),
       );
       return item?.koszt ?? 0;
     }
@@ -8176,6 +8187,23 @@ async function boot(): Promise<void> {
         : (aiOwnerCivMap.get(ownerId) ?? 'grecy');
     }
 
+    function productionMatrixOptionsForOwner(ownerId: number): ProductionMatrixOptions {
+      const civKey = civKeyForOwnerId(ownerId);
+      if (productionMatrixOwnerTrace.length < 4096) {
+        productionMatrixOwnerTrace.push({ ownerId, civKey });
+      }
+      return {
+        civKey,
+        resolveParam: (requestedCivKey, paramId) => {
+          const value = civMatrixParam(requestedCivKey, paramId);
+          if (productionMatrixParamTrace.length < 16384) {
+            productionMatrixParamTrace.push({ ownerId, civKey: requestedCivKey, paramId, value });
+          }
+          return value;
+        },
+      };
+    }
+
     /** Bonusy cyw z civs.json per ownerId (gracz: player.civBonusy; AI: lookup po aiOwnerCivMap). */
     function civBonusyForOwnerId(ownerId: number) {
       const civKey = civKeyForOwnerId(ownerId);
@@ -8186,7 +8214,11 @@ async function boot(): Promise<void> {
     }
 
     function civManpowerMultsForOwner(ownerId: number) {
-      return civManpowerMults(civBonusyForOwnerId(ownerId));
+      return civManpowerMatrixMults(
+        civKeyForOwnerId(ownerId),
+        undefined,
+        civManpowerMults(civBonusyForOwnerId(ownerId)),
+      );
     }
 
     function unlockedTechsForOwner(ownerId: number): string[] {
@@ -8225,6 +8257,7 @@ async function boot(): Promise<void> {
       const prod0 = cityProd.get(cityId) ?? { kolejka: [], postep: 0 };
       if (frontItem(prod0) !== null) return null;
       const ownImprovements = placedImprovementsForOwner(city.ownerId);
+      const productionMatrix = productionMatrixOptionsForOwner(city.ownerId);
       const item = pickAutoBuildItem(city, prod0, data, {
         unlockedTechs: unlockedTechsForOwner(city.ownerId),
         ownerSurowcePool: ownerSurowcePoolFor(city.ownerId),
@@ -8232,6 +8265,8 @@ async function boot(): Promise<void> {
           builtBuildingIds: cityBuilt.get(cityId) ?? [],
           productionQueue: prod0.kolejka,
           epoch: empireEpochForOwner(city.ownerId),
+          civKey: productionMatrix.civKey,
+          civMatrixResolver: productionMatrix.resolveParam,
           civBonusy: civBonusyForOwnerId(city.ownerId),
           civUnitNacja: unitNacjaForCivKey(civKeyForOwnerId(city.ownerId)),
           placedImprovements: placedImprovementsWithTradeGrants(city.ownerId, ownImprovements),
@@ -15060,9 +15095,13 @@ async function boot(): Promise<void> {
       return {
         id: city.id,
         ownerId: city.ownerId,
+        civKey: _menuCivIdByOwner.get(city.ownerId)
+          ?? (city.ownerId === 0 ? (player.civType || null) : null)
+          ?? (aiOwnerCivMap.get(city.ownerId) ?? null),
         q: city.q,
         r: city.r,
         wallLevel: city.maMur ? 1 : 0,
+        builtBuildingIds: cityBuilt.get(city.id) ?? (city.maMur ? ['mury'] : []),
         garrison,
         terrain,
         population: city.population,
@@ -15212,6 +15251,7 @@ async function boot(): Promise<void> {
         kosztJednostekPace: player.kosztJednostekPace ?? 'niski',
         ownerId: city.ownerId,
         difficulty: _menuDifficulty,
+        civKey: civKeyForOwnerId(city.ownerId),
         activeResourceLabels,
         empireActiveResourceLabels: empireActiveResourceLabelsForOwner(city.ownerId),
         empireBuiltIds: [...empireBuiltIdsForOwner(city.ownerId)],
@@ -15247,6 +15287,7 @@ async function boot(): Promise<void> {
           ctx.buildingCostPace ?? 'niski',
           city.ownerId,
           ctx.difficulty ?? 'normal',
+          productionMatrixOptionsForOwner(city.ownerId),
         );
         if (!item) continue;
         if (!canAffordBuildingStock(pool, buildingStockCost(def))) continue;
@@ -15273,14 +15314,14 @@ async function boot(): Promise<void> {
       const treasury = player.skarbiec;
       const pool = ownerSurowcePoolFor(city.ownerId);
       const ep = empireEpochForOwner(city.ownerId);
-      const mpMaxMult = civManpowerMaxMult(civBonusyForOwnerId(city.ownerId));
+      const mpMults = civManpowerMultsForOwner(city.ownerId);
       for (const item of purchasableUnits(city, data, techs, ctx)) {
         if (treasury < item.koszt) continue;
         const unitDef = data.units.find(u => String(u.Jednostka) === item.id);
         if (!unitDef) continue;
         if (!canAffordUnitRecruitFull(pool, unitDef)) continue;
         if (!canAffordUnitManpowerEmpire(
-          cities, city.ownerId, city, ep, UNIT_POPULATION_COST, mpMaxMult, item.id,
+          cities, city.ownerId, city, ep, UNIT_POPULATION_COST, mpMults.maxMult, item.id, mpMults.costMult,
         )) continue;
         return true;
       }
@@ -15325,6 +15366,7 @@ async function boot(): Promise<void> {
           ctx.buildingCostPace ?? 'niski',
           city.ownerId,
           ctx.difficulty ?? 'normal',
+          productionMatrixOptionsForOwner(city.ownerId),
         );
         if (item) return true;
       }
@@ -15346,14 +15388,14 @@ async function boot(): Promise<void> {
       if (city.ownerId === 0) {
         const treasury = player.skarbiec;
         const ep = empireEpochForOwner(city.ownerId);
-        const mpMaxMult = civManpowerMaxMult(civBonusyForOwnerId(city.ownerId));
+        const mpMults = civManpowerMultsForOwner(city.ownerId);
         for (const item of purchasableUnits(city, data, techs, ctx)) {
           if (treasury < item.koszt) continue;
           const unitDef = data.units.find(u => String(u.Jednostka) === item.id);
           if (!unitDef) continue;
           if (!canAffordUnitRecruitFull(pool, unitDef)) continue;
           if (!canAffordUnitManpowerEmpire(
-            cities, city.ownerId, city, ep, UNIT_POPULATION_COST, mpMaxMult, item.id,
+            cities, city.ownerId, city, ep, UNIT_POPULATION_COST, mpMults.maxMult, item.id, mpMults.costMult,
           )) continue;
           unitIds.push(item.id);
         }
@@ -16148,7 +16190,7 @@ async function boot(): Promise<void> {
         }))
         .filter(b => b.opis.length > 0);
       const pc = cities.filter(c => isMe(c.ownerId));
-      const { regenMult, maxMult } = mpMults;
+      const { regenMult, maxMult, costMult } = mpMults;
       const cityEcon = pc.map(c => {
         const tk = _lastPlayerCityEcon.find(t => t.cityId === c.id);
         // P-PANEL-MIASTO-OBYWATELE-TRESC-NIEPELNA dociągnięcie (Maciej 2026-08-16, ECHO A):
@@ -16202,7 +16244,15 @@ async function boot(): Promise<void> {
         };
       });
       const cityPobor = pc.map(c => {
-        const mp = cityManpowerSnapshot(c, epoka, regenMult, maxMult);
+        const ownerEpoka = empireEpochForOwner(c.ownerId);
+        const ownerMpMults = civManpowerMultsForOwner(c.ownerId);
+        const mp = cityManpowerSnapshot(
+          c,
+          ownerEpoka,
+          ownerMpMults.regenMult,
+          ownerMpMults.maxMult,
+          ownerMpMults.costMult,
+        );
         // P-PANEL-MIASTO-OBYWATELE-TRESC-NIEPELNA dociągnięcie (Maciej 2026-08-16, ECHO A):
         // Zdrowie / Prawo i administracja — liczba budynków tych dwóch grup w tym mieście
         // (ta sama funkcja jak w cityEcon.buildingGroups wyżej, osobne wołanie bo to osobny
@@ -16235,7 +16285,12 @@ async function boot(): Promise<void> {
             id: item.id,
             name: item.nazwa,
             goldCost: item.koszt,
-            manpowerCost: unitManpowerCostForType(item.id, epoka, maxMult),
+            manpowerCost: unitManpowerCostForType(
+              item.id,
+              ownerEpoka,
+              ownerMpMults.maxMult,
+              ownerMpMults.costMult,
+            ),
             stockCost: unitStockCost(unitDef),
             requiresWater: (unitDef.Typ ?? '').toString().trim() === 'Naval',
           }];
@@ -16442,11 +16497,11 @@ async function boot(): Promise<void> {
           ludnoscAbsLabel: economy.ludnoscAbsLabel ?? formatManpower(pobor.ludnoscAbsolutna),
           rekruci: pobor.rekruci,
           rekruciLabel: economy.rekruciLabel ?? formatManpower(pobor.rekruci),
-          rekrutEkw: rekrutUnitEquivalents(pobor.rekruci, epoka, maxMult),
+          rekrutEkw: rekrutUnitEquivalents(pobor.rekruci, epoka, costMult),
           rekruciMax,
           rekruciMaxLabel: formatManpower(rekruciMax),
           unitsOnMap,
-          kosztJednostki: unitManpowerCost(epoka, maxMult),
+          kosztJednostki: unitManpowerCost(epoka, costMult),
         },
         cityEcon,
         cityPobor,
@@ -18751,7 +18806,7 @@ async function boot(): Promise<void> {
       const mpMults = civManpowerMultsForOwner(0);
       let rekruciRegenPerTurn = 0;
       for (const c of pc) {
-        rekruciRegenPerTurn += cityManpowerSnapshot(c, player.era, mpMults.regenMult, mpMults.maxMult).regenPerTurn;
+        rekruciRegenPerTurn += cityManpowerSnapshot(c, empireEpochForOwner(c.ownerId), mpMults.regenMult, mpMults.maxMult, mpMults.costMult).regenPerTurn;
       }
       const armyUnitsOnMap = units.filter(u => isMe(u.ownerId) && u.category !== 'osadnik').length;
       // P-SPICHLERZ-ZERO-MYLACE (ECHO C Maciej 2026-08-10): ta sama liczba miast niedokarmionych,
@@ -18832,8 +18887,8 @@ async function boot(): Promise<void> {
         // not raw recruits — same source (unitManpowerCost/rekrutUnitEquivalents,
         // manpower.ts) as the "Rekruci (pula werbu)" panel (buildEmpireDetailSnap below:
         // power.rekrutEkw/kosztJednostki).
-        rekrutEkw: rekrutUnitEquivalents(pobor.rekruci, player.era, mpMults.maxMult),
-        kosztJednostki: unitManpowerCost(player.era, mpMults.maxMult),
+        rekrutEkw: rekrutUnitEquivalents(pobor.rekruci, player.era, mpMults.costMult),
+        kosztJednostki: unitManpowerCost(player.era, mpMults.costMult),
         ludnoscAbsLabel: formatManpower(pobor.ludnoscAbsolutna),
         power,
         osiedla: pc.length,
@@ -23065,6 +23120,264 @@ async function boot(): Promise<void> {
       }
     }
 
+    // R-CYWILIZACJE-MACIERZ-ALL-113-PRODUKCJA-R2 — runtime-only regression readback.
+    // This hook exposes observations from the already-running engine; it does not
+    // provide an alternate production path or mutate gameplay state.
+    (window as any).__productionMatrixTestDebug = {
+      getWorldState: () => ({ citiesLen: cities.length, unitsLen: units.length, turn }),
+      getMatrixRows: () => loadCivMatrix().cywilizacje.map(row => ({
+        civKey: row.ikonaId,
+        params: {
+          prod_koszt_budynku_proc: civMatrixParam(row.ikonaId, 'prod_koszt_budynku_proc'),
+          prod_koszt_jednostki_proc: civMatrixParam(row.ikonaId, 'prod_koszt_jednostki_proc'),
+          prod_szybkosc_budynku_proc: civMatrixParam(row.ikonaId, 'prod_szybkosc_budynku_proc'),
+          prod_szybkosc_jednostki_proc: civMatrixParam(row.ikonaId, 'prod_szybkosc_jednostki_proc'),
+          prod_rush_koszt_proc: civMatrixParam(row.ikonaId, 'prod_rush_koszt_proc'),
+        },
+      })),
+      getOwners: () => [...new Set(cities.map(city => city.ownerId))].sort((a, b) => a - b).map(ownerId => ({
+        ownerId,
+        civKey: civKeyForOwnerId(ownerId),
+        cityCount: cities.filter(city => city.ownerId === ownerId).length,
+        isCityState: isOwnerClusterCityState(ownerId, ownerCityStateOpts()),
+      })),
+      markOwnerAsCityStateForTest: (ownerId: number): boolean => {
+        const city = cities.find(candidate => candidate.ownerId === ownerId);
+        if (!city || ownerId <= 0) return false;
+        city.startCityState = true;
+        return true;
+      },
+      getProductionTrace: () => productionMatrixOwnerTrace.slice(),
+      getParameterTrace: () => productionMatrixParamTrace.slice(),
+      getCityPanelTrace: () => cityPanelCivKeyTrace.slice(),
+      probeOwner: (ownerId: number) => {
+        const buildingDef = data.buildings.find(def => def.kosztBudowy > 0);
+        const unitDef = data.units.find(def => typeof def.Jednostka === 'string');
+        if (!buildingDef || !unitDef) throw new Error('production matrix probe: missing building/unit fixture');
+        const options = productionMatrixOptionsForOwner(ownerId);
+        const buildingItem = buildingProductionItem(
+          buildingDef.id,
+          data,
+          1,
+          civBonusyForOwnerId(ownerId),
+          player.buildingCostPace ?? 'niski',
+          ownerId,
+          effectiveGameDifficultyForOwner(ownerId),
+          options,
+        );
+        const unitItem = unitProductionItem(
+          unitDef.Jednostka,
+          data,
+          civBonusyForOwnerId(ownerId),
+          player.kosztJednostekPace ?? 'niski',
+          ownerId,
+          effectiveGameDifficultyForOwner(ownerId),
+          options,
+        );
+        if (!buildingItem || !unitItem) throw new Error('production matrix probe: fixture item unresolved');
+        const buildingProd = { kolejka: [buildingItem], postep: 0 };
+        const recruitmentProd = {
+          kolejka: [], postep: 0, rekrutacja: [unitItem], rekrutacjaPostep: 0,
+        };
+        const advanceBuilding = advanceProduction(buildingProd, 1, options);
+        const advanceRecruitmentResult = advanceRecruitmentGated(
+          recruitmentProd,
+          { population: 10, manpower: 10 },
+          1,
+          1,
+          true,
+          1,
+          1,
+          options,
+        );
+        return {
+          ownerId,
+          civKey: options.civKey,
+          buildingCost: buildingItem.koszt,
+          unitCost: unitItem.koszt,
+          buildingProgress: advanceBuilding.prod.postep,
+          recruitmentProgress: advanceRecruitmentResult.prod.rekrutacjaPostep ?? 0,
+          rushCost: rushCost(buildingProd, options),
+        };
+      },
+      probeCiv: (civKey: string) => {
+        const buildingDef = data.buildings.find(def => def.kosztBudowy > 0);
+        const unitDef = data.units.find(def => typeof def.Jednostka === 'string');
+        if (!buildingDef || !unitDef) throw new Error('production matrix probe: missing building/unit fixture');
+        const options: ProductionMatrixOptions = {
+          civKey,
+          resolveParam: (requestedCivKey, paramId) => {
+            const value = civMatrixParam(requestedCivKey, paramId);
+            if (productionMatrixParamTrace.length < 16384) {
+              productionMatrixParamTrace.push({ ownerId: -1, civKey: requestedCivKey, paramId, value });
+            }
+            return value;
+          },
+        };
+        const civBonusy = civBonusyForCivKey(civKey, data.civs);
+        const buildingItem = buildingProductionItem(
+          buildingDef.id,
+          data,
+          1,
+          civBonusy,
+          player.buildingCostPace ?? 'niski',
+          0,
+          'normal',
+          options,
+        );
+        const unitItem = unitProductionItem(
+          unitDef.Jednostka,
+          data,
+          civBonusy,
+          player.kosztJednostekPace ?? 'niski',
+          0,
+          'normal',
+          options,
+        );
+        if (!buildingItem || !unitItem) throw new Error('production matrix probe: fixture item unresolved');
+        const buildingProd = { kolejka: [buildingItem], postep: 0 };
+        const recruitmentProd = {
+          kolejka: [], postep: 0, rekrutacja: [unitItem], rekrutacjaPostep: 0,
+        };
+        const advanceBuilding = advanceProduction(buildingProd, 1, options);
+        const advanceRecruitmentResult = advanceRecruitmentGated(
+          recruitmentProd,
+          { population: 10, manpower: 10 },
+          1,
+          1,
+          true,
+          1,
+          1,
+          options,
+        );
+        return {
+          ownerId: -1,
+          civKey,
+          buildingCost: buildingItem.koszt,
+          unitCost: unitItem.koszt,
+          buildingProgress: advanceBuilding.prod.postep,
+          recruitmentProgress: advanceRecruitmentResult.prod.rekrutacjaPostep ?? 0,
+          rushCost: rushCost(buildingProd, options),
+        };
+      },
+      probeAutoBuildForOwner: (ownerId: number, forcedCivKey = 'rzymianie') => {
+        const city = cities.find(candidate => candidate.ownerId === ownerId);
+        if (!city) return { ownerId, civKey: civKeyForOwnerId(ownerId), item: null };
+        const previousMode = city.budowaTryb;
+        const previousProd = cityProd.get(city.id);
+        const previousBuilt = cityBuilt.get(city.id);
+        const hadBuiltEntry = cityBuilt.has(city.id);
+        const previousCiv = ownerId === 0 ? player.civType : aiOwnerCivMap.get(ownerId);
+        const ownerCities = cities.filter(candidate => candidate.ownerId === ownerId);
+        const previousStocks = ownerCities.map(candidate => ({
+          city: candidate,
+          surowce: candidate.surowce ? { ...candidate.surowce } : undefined,
+        }));
+        const fixtureStock: Record<string, number> = {};
+        for (const building of data.buildings) {
+          for (const key of Object.keys(buildingStockCost(building))) fixtureStock[key] = 999999;
+        }
+        const previousResearch = ownerId === 0
+          ? new Set(player.zbadane)
+          : new Set(aiResearchDone.get(ownerId) ?? []);
+        const hadResearchEntry = aiResearchDone.has(ownerId);
+        const previousEra = ownerEraByOwner.get(ownerId);
+        const hadEraEntry = ownerEraByOwner.has(ownerId);
+        try {
+          if (ownerId === 0) player.civType = forcedCivKey;
+          else aiOwnerCivMap.set(ownerId, forcedCivKey);
+          if (ownerId === 0) {
+            player.zbadane.clear();
+            for (const tech of data.tech) player.zbadane.add(tech.Technologia);
+          } else {
+            aiResearchDone.set(ownerId, new Set(data.tech.map(tech => tech.Technologia)));
+            ownerEraByOwner.set(ownerId, 4);
+          }
+          for (const candidate of ownerCities) candidate.surowce = { ...fixtureStock };
+          city.budowaTryb = 'zrownowazone';
+          cityBuilt.set(city.id, []);
+          cityProd.set(city.id, { kolejka: [], postep: 0 });
+          const item = tryAutoEnqueueBuild(city.id);
+          const baselineItem = item?.kind === 'budynek'
+            ? buildingProductionItem(
+              item.id,
+              data,
+              1,
+              [],
+              player.buildingCostPace ?? 'niski',
+              ownerId,
+              effectiveGameDifficultyForOwner(ownerId),
+            )
+            : null;
+          return {
+            ownerId,
+            civKey: civKeyForOwnerId(ownerId),
+            item: item ? { id: item.id, kind: item.kind, koszt: item.koszt } : null,
+            baselineCost: baselineItem?.koszt ?? null,
+            matrixCostParam: civMatrixParam(civKeyForOwnerId(ownerId), 'prod_koszt_budynku_proc'),
+          };
+        } finally {
+          city.budowaTryb = previousMode;
+          if (previousProd) cityProd.set(city.id, previousProd);
+          else cityProd.delete(city.id);
+          if (hadBuiltEntry) cityBuilt.set(city.id, previousBuilt ?? []);
+          else cityBuilt.delete(city.id);
+          if (ownerId === 0) {
+            player.civType = previousCiv ?? player.civType;
+            player.zbadane.clear();
+            for (const tech of previousResearch) player.zbadane.add(tech);
+          } else if (previousCiv === undefined) {
+            aiOwnerCivMap.delete(ownerId);
+          } else {
+            aiOwnerCivMap.set(ownerId, previousCiv);
+          }
+          if (ownerId !== 0) {
+            if (hadResearchEntry) aiResearchDone.set(ownerId, previousResearch);
+            else aiResearchDone.delete(ownerId);
+            if (hadEraEntry) ownerEraByOwner.set(ownerId, previousEra!);
+            else ownerEraByOwner.delete(ownerId);
+          }
+          for (const previous of previousStocks) {
+            previous.city.surowce = previous.surowce ? { ...previous.surowce } : undefined;
+          }
+        }
+      },
+      seedProductionFixture: (ownerId: number): boolean => {
+        const city = cities.find(candidate => candidate.ownerId === ownerId);
+        const buildingDef = data.buildings.find(def => def.kosztBudowy > 0);
+        if (!city || !buildingDef) return false;
+        const item = buildingProductionItem(
+          buildingDef.id,
+          data,
+          1,
+          civBonusyForOwnerId(ownerId),
+          player.buildingCostPace ?? 'niski',
+          ownerId,
+          effectiveGameDifficultyForOwner(ownerId),
+          productionMatrixOptionsForOwner(ownerId),
+        );
+        if (!item) return false;
+        cityProd.set(city.id, { kolejka: [item], postep: 0 });
+        return true;
+      },
+      clearTrace: () => {
+        productionMatrixOwnerTrace.length = 0;
+        productionMatrixParamTrace.length = 0;
+        cityPanelCivKeyTrace.length = 0;
+      },
+      openCityPanelForOwner: (ownerId: number): boolean => {
+        const city = cities.find(candidate => candidate.ownerId === ownerId);
+        if (!city) return false;
+        openCityPanelForPlayer(city);
+        return true;
+      },
+      closeCityPanel: () => {
+        if (isCityPanelOpen()) hideCityPanelFull();
+      },
+      endTurn: () => advanceSeat(),
+      runWorldEndTurn: (humanOwnerId = 0) => runWorldEndTurn(humanOwnerId),
+    };
+
     // Hak testowy (analogiczny wzorzec do __civEmbarkDebug niżej) — wołany WYŁĄCZNIE z
     // Playwright w `tools/era-change-toast-live-test.cjs` (P-EPOKA-BRAK-INFO-REGRESJA-BRAZ).
     // Steruje stanem gracza, żeby zainscenizować REALNE, pojedyncze przejście epoki
@@ -24786,7 +25099,7 @@ async function boot(): Promise<void> {
         if (!c) return null;
         const ep = empireEpochForOwner(c.ownerId);
         const mpMults = civManpowerMultsForOwner(c.ownerId);
-        return cityManpowerSnapshot(c, ep, mpMults.regenMult, mpMults.maxMult);
+        return cityManpowerSnapshot(c, ep, mpMults.regenMult, mpMults.maxMult, mpMults.costMult);
       },
       getEmpireRekruciTotal: (ownerId: number) => {
         const ep = empireEpochForOwner(ownerId);
@@ -24811,17 +25124,20 @@ async function boot(): Promise<void> {
       },
       getTreasury: (_ownerId: number) => player.skarbiec,
       onRushBuy: (cityId: string, _item: any, koszt: number) => {
-        if (player.skarbiec >= koszt) {
-          player.skarbiec -= koszt;
-          const rBase = cityProd.get(cityId) ?? { kolejka: [], postep: 0 };
+        const rc = cities.find(ct => ct.id === cityId);
+        const rBase = cityProd.get(cityId) ?? { kolejka: [], postep: 0 };
+        const rushCharge = rc
+          ? rushCost(rBase, productionMatrixOptionsForOwner(rc.ownerId))
+          : koszt;
+        if (player.skarbiec >= rushCharge) {
+          player.skarbiec -= rushCharge;
           const r = rushProduction(rBase);
           cityProd.set(cityId, r.prod);
           if (r.completed) {
-            const rc = cities.find(ct => ct.id === cityId);
             if (rc) {
               const applied = applyProductionCompleted(rc, cityId, r.completed, r.prod);
               if (applied.requeueManpower) {
-                player.skarbiec += koszt;
+                player.skarbiec += rushCharge;
                 console.warn('[Rush] Brak Manpower — zwrot zlota, jednostka w kolejce');
               }
               cityProd.set(cityId, applied.prod);
@@ -24906,7 +25222,15 @@ async function boot(): Promise<void> {
         cancelRecruitmentPurchase(cityId, itemId, koszt);
       },
       getCivBonusy: (ownerId: number) => civBonusyForOwnerId(ownerId),
-      getCivKey: (ownerId: number) => civKeyForOwnerId(ownerId),
+      getManpowerMultipliers: (ownerId: number) => {
+        const { maxMult, costMult } = civManpowerMultsForOwner(ownerId);
+        return { maxMult, costMult };
+      },
+      getCivKey: (ownerId: number) => {
+        const civKey = civKeyForOwnerId(ownerId);
+        if (cityPanelCivKeyTrace.length < 4096) cityPanelCivKeyTrace.push({ ownerId, civKey });
+        return civKey;
+      },
       getOrderState: (cityId: string) => cityOrderState.get(cityId) ?? null,
       getTurn: () => turn,
       getCityHealth: (cityId: string) => {
@@ -26781,14 +27105,29 @@ async function boot(): Promise<void> {
      * kazdego innego heksu (w tym fort/posterunek terenowe -- te NIE sa
      * "obrona miasta", zostaja bez zmian per decyzja wlasciciela).
      */
+    /**
+     * R-CYWILIZACJE-MACIERZ-WIRING-OBLEZENIE-Q1-20260922: civ-matrix.json->
+     * obl_mur_proc/obl_obrona_miasta_proc dla wlasciciela miasta (Grecy +0.2,
+     * Zulusi -0.2, itd.) -- czytane per ownerId, zeby broniace sie miasto
+     * ZAWSZE uzywalo bonusu WLASCICIELA miasta (nie atakujacego).
+     */
+    function civMurObronaProcFor(ownerId: number): { mur: number; obrona: number } {
+      const civKey = civKeyForOwnerId(ownerId);
+      return {
+        mur: civMatrixParam(civKey, 'obl_mur_proc'),
+        obrona: civMatrixParam(civKey, 'obl_obrona_miasta_proc'),
+      };
+    }
+
     function cityWallStatusAtHex(q: number, r: number): { isCity: boolean; hasMur: boolean } {
       const cityOnHex = cities.find(c => c.q === q && c.r === r);
       if (!cityOnHex) return { isCity: false, hasMur: false };
       const builtIds = cityBuilt.get(cityOnHex.id) ?? [];
+      const civProc = civMurObronaProcFor(cityOnHex.ownerId);
       const wallBonus = cityWallDefenseBonusPercent(builtIds, {
         mur: MUR_BONUS_PROC, cytadela: CYTADELA_BONUS_PROC, baszta: BASZTA_BONUS_PROC,
         palisada: PALISADA_BONUS_PROC,
-      });
+      }, civProc.mur, civProc.obrona);
       return { isCity: true, hasMur: wallBonus > 0 };
     }
 
@@ -26797,10 +27136,11 @@ async function boot(): Promise<void> {
       const cityOnHex = cities.find(c => c.q === q && c.r === r);
       if (cityOnHex) {
         const builtIds = cityBuilt.get(cityOnHex.id) ?? [];
+        const civProc = civMurObronaProcFor(cityOnHex.ownerId);
         const wallBonus = cityWallDefenseBonusPercent(builtIds, {
           mur: MUR_BONUS_PROC, cytadela: CYTADELA_BONUS_PROC, baszta: BASZTA_BONUS_PROC,
           palisada: PALISADA_BONUS_PROC,
-        });
+        }, civProc.mur, civProc.obrona);
         if (wallBonus > 0) return wallBonus;
       }
 
@@ -32091,7 +32431,8 @@ async function boot(): Promise<void> {
 
               // KULTURA (kumulacja po konwersji share)
               const ccIn: CultureCity = { kulturaSkumulowana: (city as any).kultura ?? 0, ownCultureShare };
-              const acc = accumulateCulture(ccIn, kulturaTick, cp);
+              const ownerCivKey = civKeyForOwnerId(city.ownerId);
+              const acc = accumulateCulture(ccIn, kulturaTick, cp, ownerCivKey);
               (city as any).kultura = acc.kulturaSkumulowana;
               const ccOut: CultureCity = { kulturaSkumulowana: acc.kulturaSkumulowana, ownCultureShare };
               const haKult = cultureHappiness(ccOut, cp);
@@ -32119,6 +32460,7 @@ async function boot(): Promise<void> {
                     hasSwiatynia,
                     pressure: 1,
                     seed: (turn * 997 + city.q * 31 + city.r) >>> 0,
+                    civKey: ownerCivKey,
                   });
                   for (const ev of spreadRes.events) {
                     cityRelig.set(ev.id, ev.state);
@@ -32277,6 +32619,7 @@ async function boot(): Promise<void> {
                 },
                 data.societyParams,
                 difficulty,
+                ownerCivKey,
               );
 
               // R-MIASTA-REBELIA-OCHRONA-20-TUR-Q1 (GOAL 2): bezwarunkowo, NIE tylko gdy
@@ -32421,6 +32764,7 @@ async function boot(): Promise<void> {
                   const unlockedTechs = Array.from(ownerResearchedTechs(city.ownerId));
                   const builtForCity = cityBuilt.get(cid) ?? [];
                   const ownImprovements = placedImprovementsForOwner(city.ownerId);
+                  const productionMatrix = productionMatrixOptionsForOwner(city.ownerId);
                   const amDecision = autoManageCity(
                     city,
                     map,
@@ -32449,6 +32793,8 @@ async function boot(): Promise<void> {
                         builtBuildingIds: builtForCity,
                         productionQueue: prod0.kolejka,
                         epoch: empireEpochForOwner(city.ownerId),
+                        civKey: productionMatrix.civKey,
+                        civMatrixResolver: productionMatrix.resolveParam,
                         civBonusy: civBonusyForOwnerId(city.ownerId),
                         civUnitNacja: unitNacjaForCivKey(civKeyForOwnerId(city.ownerId)),
                         placedImprovements: placedImprovementsWithTradeGrants(city.ownerId, ownImprovements),
@@ -32526,7 +32872,11 @@ async function boot(): Promise<void> {
               const pracaBudynki = (econTick && !queueEmpty && !prodPaused)
                 ? econTick.doBudynkow * prodMult
                 : 0;
-              const { prod: prodPo, completed, overflowToPool } = advanceProduction(prod0, pracaBudynki);
+              const { prod: prodPo, completed, overflowToPool } = advanceProduction(
+                prod0,
+                pracaBudynki,
+                productionMatrixOptionsForOwner(city.ownerId),
+              );
               let prodFinal = prodPo;
               cityProd.set(cid, prodPo);
               // Nadwyżka po ukończeniu budynku (reszta doBudynkow) — nie dotyczy pustej kolejki.
@@ -32558,8 +32908,16 @@ async function boot(): Promise<void> {
                 }
               }
 
+              const recMpMults = civManpowerMultsForOwner(city.ownerId);
               const recResult = advanceRecruitmentGated(
-                prodFinal, city, empireEpochForOwner(city.ownerId), 1, true,
+                prodFinal,
+                city,
+                empireEpochForOwner(city.ownerId),
+                1,
+                true,
+                recMpMults.maxMult,
+                recMpMults.costMult,
+                productionMatrixOptionsForOwner(city.ownerId),
               );
               prodFinal = recResult.prod;
               city.population = recResult.population;
@@ -32672,6 +33030,9 @@ async function boot(): Promise<void> {
                 difficulty: _menuDifficulty,
                 ownerCivByOwnerId: ownerCivMap,
                 populationMatrixByOwnerId,
+                manpowerMaxMultByOwnerId: new Map(
+                  [...new Set(cities.map(c => c.ownerId))].map(oid => [oid, civManpowerMultsForOwner(oid).maxMult]),
+                ),
                 spichlerzByCity,
                 happinessByCityId,
                 citizenGrowthPctByCityId,
@@ -33571,6 +33932,7 @@ async function boot(): Promise<void> {
                 const prod0 = cityProd.get(cityId) ?? { kolejka: [], postep: 0 };
                 const builtIds = cityBuilt.get(c.id) ?? [];
                 const ownImprovements = placedImprovementsForOwner(ownerId);
+                const productionMatrix = productionMatrixOptionsForOwner(ownerId);
                 const allowed = availableProduction(
                   c,
                   data,
@@ -33579,6 +33941,8 @@ async function boot(): Promise<void> {
                     epoch: empireEpochForOwner(ownerId),
                     builtBuildingIds: builtIds,
                     productionQueue: prod0.kolejka,
+                    civKey: productionMatrix.civKey,
+                    civMatrixResolver: productionMatrix.resolveParam,
                     civBonusy: civBonusyForOwnerId(ownerId),
                     civUnitNacja: unitNacjaForCivKey(civKeyForOwnerId(ownerId)),
                     placedImprovements: placedImprovementsWithTradeGrants(ownerId, ownImprovements),
@@ -34858,6 +35222,7 @@ async function boot(): Promise<void> {
                   const candidateIds = buildCandidateIds(cmd);
                   const builtIds = cityBuilt.get(city.id) ?? [];
                   const ownImprovements = placedImprovementsForOwner(ownerId);
+                  const productionMatrix = productionMatrixOptionsForOwner(ownerId);
 
                   const checks: ExecutableCandidateChecks<ProductionItem> = {
                     isAlreadyQueued: (id) => prod0.kolejka.some(it => it.id === id),
@@ -34881,6 +35246,8 @@ async function boot(): Promise<void> {
                           buildingCostPace: player.buildingCostPace ?? 'niski',
                           ownerId,
                           difficulty: effectiveGameDifficultyForOwner(ownerId),
+                          civKey: productionMatrix.civKey,
+                          civMatrixResolver: productionMatrix.resolveParam,
                           // TEMAT 8 Q2 (2026-07-24, PARYTET AI): bez tych 4 pól bramki surowcowe/
                           // terenowe (Glina/Ceramika/Sól/Drewno/Kamień/Ruda/Port — w tym stolarnia,
                           // którą AI faktycznie proponuje w ai.ts) byłyby tu zawsze niespełnione,
@@ -34915,6 +35282,7 @@ async function boot(): Promise<void> {
                           player.buildingCostPace ?? 'niski',
                           ownerId,
                           effectiveGameDifficultyForOwner(ownerId),
+                          productionMatrixOptionsForOwner(ownerId),
                         )
                         : unitProductionItem(
                           id,
@@ -34923,6 +35291,7 @@ async function boot(): Promise<void> {
                           player.kosztJednostekPace ?? 'niski',
                           ownerId,
                           effectiveGameDifficultyForOwner(ownerId),
+                          productionMatrixOptionsForOwner(ownerId),
                         );
                       if (item === null) {
                         console.warn(`[AI ${ownerId}] Build no-op: nieznany ${id}`);
@@ -34996,12 +35365,16 @@ async function boot(): Promise<void> {
                     // P-REKRUTACJA-JEDNOSTEK-TYLKO-SKARBIEC-Q1=B: jednostka
                     // nigdy nie wraca do kolejki Pracy. Zakup przechodzi przez
                     // tę samą bramkę skarbca/Manpower co zakup gracza.
+                    const mpMults = civManpowerMultsForOwner(ownerId);
                     const wantsPurchase = shouldAIPurchaseUnit({
                       treasury: ownerTreasury(ownerId),
                       goldCost: item.koszt,
+                      // The matrix cost multiplier is independent from the
+                      // manpower-cap multiplier; omitting it makes the
+                      // affordability gate overcharge AI recruitment.
                       hasManpower: canAffordUnitManpowerEmpire(
                         cities, ownerId, city, empireEpochForOwner(ownerId),
-                        UNIT_POPULATION_COST, civManpowerMultsForOwner(ownerId).maxMult, candId,
+                        UNIT_POPULATION_COST, mpMults.maxMult, candId, mpMults.costMult,
                       ),
                     });
                     if (wantsPurchase && purchaseRecruitmentUnit(cmd.cityId, candId, item.koszt, ownerId)) {
@@ -36502,7 +36875,7 @@ async function boot(): Promise<void> {
         if (!c) return null;
         const ep = empireEpochForOwner(c.ownerId);
         const mpMults = civManpowerMultsForOwner(c.ownerId);
-        return cityManpowerSnapshot(c, ep, mpMults.regenMult, mpMults.maxMult);
+        return cityManpowerSnapshot(c, ep, mpMults.regenMult, mpMults.maxMult, mpMults.costMult);
       },
       getEmpireRekruciTotal: (ownerId: number) => {
         const ep = empireEpochForOwner(ownerId);
@@ -36526,17 +36899,20 @@ async function boot(): Promise<void> {
         },
         getTreasury: (_ownerId: number) => player.skarbiec,
         onRushBuy: (cityId: string, _item: any, koszt: number) => {
-          if (player.skarbiec >= koszt) {
-            player.skarbiec -= koszt;
-            const rBase = cityProd.get(cityId) ?? { kolejka: [], postep: 0 };
+          const rc = cities.find(ct => ct.id === cityId);
+          const rBase = cityProd.get(cityId) ?? { kolejka: [], postep: 0 };
+          const rushCharge = rc
+            ? rushCost(rBase, productionMatrixOptionsForOwner(rc.ownerId))
+            : koszt;
+          if (player.skarbiec >= rushCharge) {
+            player.skarbiec -= rushCharge;
             const r = rushProduction(rBase);
             cityProd.set(cityId, r.prod);
             if (r.completed) {
-              const rc = cities.find(ct => ct.id === cityId);
               if (rc) {
                 const applied = applyProductionCompleted(rc, cityId, r.completed, r.prod);
                 if (applied.requeueManpower) {
-                  player.skarbiec += koszt;
+                  player.skarbiec += rushCharge;
                   console.warn('[Rush] Brak Manpower — zwrot zlota, jednostka w kolejce');
                 }
                 cityProd.set(cityId, applied.prod);
@@ -36608,7 +36984,11 @@ async function boot(): Promise<void> {
           return purchaseRecruitmentUnit(cityId, itemId, koszt, 0, quantity);
         },
         getCivBonusy: (ownerId: number) => civBonusyForOwnerId(ownerId),
-        getCivKey: (ownerId: number) => civKeyForOwnerId(ownerId),
+        getCivKey: (ownerId: number) => {
+          const civKey = civKeyForOwnerId(ownerId);
+          if (cityPanelCivKeyTrace.length < 4096) cityPanelCivKeyTrace.push({ ownerId, civKey });
+          return civKey;
+        },
         getOrderState: (cityId: string) => cityOrderState.get(cityId) ?? null,
       getTurn: () => turn,
         getCityHealth: (cityId: string) => {

@@ -67,6 +67,7 @@ import {
   civManpowerMaxMult,
 
   civManpowerMults,
+  civManpowerMatrixMults,
 
   empirePoborTotals,
 
@@ -89,6 +90,12 @@ import {
   replenishmentUnitSortKey,
 
 } from '../src/game/manpower';
+
+import {
+
+  advanceRecruitmentGated,
+
+} from '../src/game/production';
 
 
 
@@ -131,6 +138,7 @@ module.exports = {
   civManpowerMaxMult,
 
   civManpowerMults,
+  civManpowerMatrixMults,
 
   empirePoborTotals,
 
@@ -151,6 +159,8 @@ module.exports = {
   isUnitInBesiegedLocation,
 
   replenishmentUnitSortKey,
+
+  advanceRecruitmentGated,
 
 };
 
@@ -313,6 +323,75 @@ ok(greekRegen === 200, 'grecy regen 200/ture');
 const romanSnap = mp.cityManpowerSnapshot(city10, 1, romanMults.regenMult, romanMults.maxMult);
 
 ok(romanSnap.manpowerMax === 20_000 && romanSnap.kosztJednostki === 2000 && romanSnap.regenPerTurn === 800, 'roman snapshot ep1 10 ludkow');
+
+// Exact civ-matrix manpower fields use fixture overrides, never production data mutation.
+const matrixFixture = mp.civManpowerMatrixMults(undefined, {
+  mp_regen_proc: 0.25,
+  mp_max_proc: 0.5,
+  mp_koszt_jednostki_proc: -0.25,
+});
+ok(matrixFixture.regenMult === 1.25, 'matrix mp_regen_proc exact multiplier');
+ok(matrixFixture.maxMult === 1.5, 'matrix mp_max_proc exact multiplier');
+ok(matrixFixture.costMult === 0.75, 'matrix mp_koszt_jednostki_proc exact multiplier');
+ok(mp.cityManpowerMax(10, 1, matrixFixture.maxMult) === 15_000, 'matrix max reaches live city state');
+ok(mp.manpowerRegenGain(10, 1, { regenProcMaxPerTurn: 2, blockWhenBesieged: true }, matrixFixture.regenMult, matrixFixture.maxMult) === 375, 'matrix regen reaches live city tick');
+ok(mp.unitManpowerCostForType('Wojownik', 1, matrixFixture.maxMult, matrixFixture.costMult) === 750, 'matrix cost is independent from max');
+const matrixDeduct = mp.tryDeductUnitSpawnCosts(
+  { population: 10, manpower: 15_000 },
+  1,
+  0,
+  matrixFixture.maxMult,
+  'Wojownik',
+  matrixFixture.costMult,
+);
+ok(matrixDeduct.ok && matrixDeduct.manpower === 14_250, 'matrix cost gates live recruitment deduction');
+const zeroBoundary = mp.civManpowerMatrixMults(undefined, {
+  mp_regen_proc: -1,
+  mp_max_proc: -1,
+  mp_koszt_jednostki_proc: -1,
+});
+ok(zeroBoundary.regenMult === 0 && zeroBoundary.maxMult === 0 && zeroBoundary.costMult === 0, 'matrix -100% is a real zero boundary');
+ok(mp.cityManpowerMax(10, 1, zeroBoundary.maxMult) === 0, 'zero max boundary has no placeholder floor');
+
+// Live queued recruitment must receive the owner matrix max/cost multipliers.
+const queuedUnit = { kind: 'jednostka', id: 'Wojownik', nazwa: 'Wojownik', koszt: 1 };
+const queuedProd = { kolejka: [], postep: 0, rekrutacja: [queuedUnit] };
+const queuedPaid = mp.advanceRecruitmentGated(
+  queuedProd,
+  { population: 10, manpower: 15_000 },
+  1,
+  1,
+  true,
+  matrixFixture.maxMult,
+  matrixFixture.costMult,
+);
+ok(queuedPaid.completed.length === 1 && queuedPaid.manpower === 15_000, 'queued paid completion preserves matrix-scaled manpower cap');
+const queuedGated = mp.advanceRecruitmentGated(
+  queuedProd,
+  { population: 10, manpower: 15_000 },
+  1,
+  1,
+  false,
+  matrixFixture.maxMult,
+  matrixFixture.costMult,
+);
+ok(queuedGated.completed.length === 1 && queuedGated.manpower === 14_250, 'queued gated completion uses independent matrix manpower cost');
+
+// Live AI affordability must pass max and cost independently; otherwise the
+// helper defaults costMult to maxMult and can reject an affordable purchase.
+const aiAffordCities = [{ ownerId: 0, population: 10, manpower: 1000 }];
+ok(
+  !mp.canAffordUnitManpowerEmpire(
+    aiAffordCities, 0, aiAffordCities[0], 1, 1, matrixFixture.maxMult, 'Wojownik',
+  ),
+  'AI afford gate rejects the overcharged omitted-cost fixture',
+);
+ok(
+  mp.canAffordUnitManpowerEmpire(
+    aiAffordCities, 0, aiAffordCities[0], 1, 1, matrixFixture.maxMult, 'Wojownik', matrixFixture.costMult,
+  ),
+  'AI afford gate accepts independent matrix max/cost fixture',
+);
 
 
 

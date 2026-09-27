@@ -1,0 +1,81 @@
+{
+  "status": "PASS",
+  "domain": "GAME",
+  "topic": "R-CYWILIZACJE-MACIERZ-ALL-113-PRODUKCJA-R2-20260923",
+  "round": "3/5",
+  "task_id": "t_43218480",
+  "board": "the-game-real24",
+  "profile": "default",
+  "project_id": "p_9ae9ac64",
+  "base": "a8c9cf6c181f688201dd45e6a5871da1b0eb1301",
+  "head": "a8c9cf6c181f688201dd45e6a5871da1b0eb1301",
+  "branch": "hermes/R-CYWILIZACJE-MACIERZ-ALL-113-PRODUKCJA-R2-20260923",
+  "worktree": "/home/ubuntu/projects/The-Game/.worktrees/civ-matrix-all-produkcja-r2-20260923",
+  "chain": {
+    "operator": {"task_id": "t_ca542f20", "run_id": 1202, "status": "PASS"},
+    "evaluator": {"task_id": "t_a48da8d3", "run_id": 1203, "status": "FAIL", "objections": 1},
+    "defense": {"task_id": "t_c6df85cf", "run_id": 1210, "status": "TIMEOUT"},
+    "defense_recovery": {"task_id": "t_a3f64b99", "run_id": 1211, "status": "TIMEOUT"},
+    "defense_reconciliation": {"task_id": "t_01cd78ec", "run_id": 1212, "status": "PASS", "validation": "116 passed, 0 failed"},
+    "final_control": {"task_id": "t_43218480", "run_id": 1213, "status": "PASS"}
+  },
+  "objection_resolution": {
+    "decision": "NAPRAW",
+    "objection": "Existing live gate did not prove actual main.ts -> runAiPhase -> availableProduction callback execution.",
+    "resolution": "Focused reconciliation corrected the combined cost+speed assertion and proved the real endTurn -> runAiPhase -> availableProduction path with owner civKey and finite matrix result.",
+    "observed_trace": {"ownerId": 1, "civKey": "grecy", "paramId": "prod_szybkosc_jednostki_proc", "value": 0},
+    "timeouts_preserved": true
+  },
+  "changed_paths": {
+    "tracked": [
+      "gra/src/game/auto-manage.ts",
+      "gra/src/game/civ-matrix.ts",
+      "gra/src/game/production.ts",
+      "gra/src/main.ts",
+      "gra/src/ui/cityPanel.ts"
+    ],
+    "untracked_allowlisted_artifacts": true,
+    "allowlist_pass": true,
+    "forbidden_paths_changed": false,
+    "diff_check": {"status": "PASS", "exit_code": 0},
+    "product_source_changed_by_reconciliation": false
+  },
+  "production_acceptance": true,
+  "ready_for_integration": true,
+  "coverage": {
+    "civilizations": 15,
+    "parameters": [
+      "prod_koszt_budynku_proc",
+      "prod_koszt_jednostki_proc",
+      "prod_szybkosc_budynku_proc",
+      "prod_szybkosc_jednostki_proc",
+      "prod_rush_koszt_proc"
+    ],
+    "owners": ["player", "AI", "city-state"],
+    "paths": ["availableProduction", "advanceProduction", "auto-build", "auto-manager", "city-panel/rush", "world-end-turn", "runAiPhase"],
+    "boundaries": ["neutral", "+10%", "-10%", "+20% building cost"],
+    "console_errors": 0,
+    "page_errors": 0
+  },
+  "tests": [
+    {"command": "node --check tools/civ-matrix-production-consumer-test.cjs", "status": "PASS", "exit_code": 0},
+    {"command": "node --check tools/civ-matrix-production-runtime-live-test.cjs", "status": "PASS", "exit_code": 0},
+    {"command": "node tools/civ-matrix-production-consumer-test.cjs", "status": "PASS", "result": "19 passed, 0 failed", "exit_code": 0},
+    {"command": "/usr/bin/timeout --signal=TERM --kill-after=10s 360s node tools/civ-matrix-production-runtime-live-test.cjs", "status": "PASS", "result": "116 passed, 0 failed", "exit_code": 0},
+    {"command": "node tools/logic-test.cjs", "status": "PASS", "result": "LOGIC OK (213/213)", "exit_code": 0},
+    {"command": "./node_modules/typescript/bin/tsc --noEmit", "status": "PASS", "exit_code": 0},
+    {"command": "JSON.parse(data/civ-matrix.json) plus 15x113 validation", "status": "PASS", "exit_code": 0},
+    {"command": "git diff --check", "status": "PASS", "exit_code": 0}
+  ],
+  "external_effects": {"commit": false, "push": false, "merge": false, "deploy": false, "integration": false},
+  "artifacts": [
+    "dyspozycje/autobot/runs/R-CYWILIZACJE-MACIERZ-ALL-113-PRODUKCJA-R2-20260923/03-final-control.md",
+    "dyspozycje/autobot/runs/R-CYWILIZACJE-MACIERZ-ALL-113-PRODUKCJA-R2-20260923/03-final-control-evidence.json",
+    "dyspozycje/autobot/runs/R-CYWILIZACJE-MACIERZ-ALL-113-PRODUKCJA-R2-20260923/03-transition-receipt-final-control.md"
+  ],
+  "limitations": [
+    "No integration or publication was performed by Final Control.",
+    "Defense TIMEOUT runs 1210 and 1211 remain historical process evidence, not product PASS."
+  ],
+  "next_legal_step": "Create exactly one workerless INTEGRATION_REQUIRED gate, keep it blocked and unassigned, then perform Orchestrator integration readback."
+}

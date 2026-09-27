@@ -1,0 +1,93 @@
+{
+  "status": "PASS",
+  "domain": "GAME",
+  "topic": "R-CYWILIZACJE-MACIERZ-WIRING-OBLEZENIE-Q1-20260922",
+  "role": "independent Evaluator narrow AI siege consumer correction",
+  "timestamp": "2026-09-23T07:41:23+00:00",
+  "product_acceptance": true,
+  "blocking_objections": [],
+  "scope": {
+    "read_only": true,
+    "product_files_modified": false,
+    "allowed_artifacts_written": [
+      "dyspozycje/autobot/runs/R-CYWILIZACJE-MACIERZ-WIRING-OBLEZENIE-Q1-20260922/narrow-correction-20260923/evaluator-report.md",
+      "dyspozycje/autobot/runs/R-CYWILIZACJE-MACIERZ-WIRING-OBLEZENIE-Q1-20260922/narrow-correction-20260923/evaluator-evidence.json",
+      "dyspozycje/autobot/runs/R-CYWILIZACJE-MACIERZ-WIRING-OBLEZENIE-Q1-20260922/narrow-correction-20260923/evaluator-transition-receipt.md"
+    ],
+    "commit_push_merge_deploy": "NIE WYKONANO"
+  },
+  "git": {
+    "branch": "hermes/R-CYWILIZACJE-MACIERZ-WIRING-OBLEZENIE-Q1-20260922",
+    "head": "f52f3b76b4761136a43dc0ab32dde50552a176fe",
+    "base": "0caa4dfa31d37337cd74fdbab95ee77da4806d98",
+    "ahead_commits": [
+      "f52f3b76 process: dispatch round2 narrow fix for Final Control blocking objection (AI siege path)",
+      "7a1dfa4c process: dispatch R-CYWILIZACJE-MACIERZ-WIRING-OBLEZENIE-Q1-20260922 Operator"
+    ],
+    "product_paths_union": [
+      "gra/data/civ-matrix.json",
+      "gra/src/battle/battleScene.ts",
+      "gra/src/game/city-defense.ts",
+      "gra/src/game/siege.ts",
+      "gra/src/game/siegeAi.ts",
+      "gra/src/game/siegeMachines.ts",
+      "gra/src/main.ts",
+      "gra/tools/civ-matrix-oblezenie-wiring-test.cjs"
+    ],
+    "diff_check_exit": 0
+  },
+  "production_trace": {
+    "initial_call": "main.ts:14930-14942 scanAutoSiegesAfterAiTurn -> buildSiegeCityFromRuntime -> decideAISiegeStance",
+    "ongoing_call": "main.ts:14966-14982 maybeAiAssaultAfterMachines -> buildSiegeCityFromRuntime -> decideAISiegeStance",
+    "builder": "main.ts:15044-15065",
+    "defender_owner": "city.ownerId",
+    "civ_key_resolution": [
+      "_menuCivIdByOwner.get(city.ownerId)",
+      "player.civType for ownerId === 0",
+      "aiOwnerCivMap.get(city.ownerId)",
+      "null when all sources are absent"
+    ],
+    "unknown_civ_behavior": "civMatrixParam defaults both siege fields to 0; neutral, no Greece fallback in the siege builder"
+  },
+  "shared_formula": {
+    "city_defense_bonus": "gra/src/game/siege.ts:418-476",
+    "shared_structure_function": "cityWallDefenseBonusPercent",
+    "matrix_fields": ["obl_mur_proc", "obl_obrona_miasta_proc"],
+    "ai_application": "gra/src/game/siegeAi.ts:103-114 applyCityBonus(..., true) once",
+    "later_resolver_boundary": "gra/src/game/siege.ts:684-723 resolveSiegeAttack calls applyCityBonus(..., false default)",
+    "resolve_siege_production_usage": "no call sites found in gra/src beyond the definition; real battle uses main.ts effectiveDefenderM and battleScene paths"
+  },
+  "hand_recomputed_assertions": {
+    "structure_percent": {
+      "neutral": 200,
+      "grecy": 288,
+      "zulusi": 160,
+      "formula": "200 * (1 + mur) * (1 + obrona_miasta)"
+    },
+    "ai_strength_fixture": {
+      "inputs": {"Atak": 4, "Obrona": 4, "Pancerz": 2, "weaponDamage": 4, "Uderzenie": 2, "Health": 30},
+      "grecy": 25.9,
+      "neutral": 21.5,
+      "zulusi": 19.5,
+      "unknown_or_missing_civ": 21.5,
+      "without_structure": 11.5,
+      "ordering": "grecy > neutral > zulusi"
+    },
+    "no_double_application": "estimateDefenderStrength equals the single true application; resolveSiegeAttack keeps false/default and is not called by production main/battleScene"
+  },
+  "tests": {
+    "tsc_no_emit": {"command": "cd gra && ./node_modules/.bin/tsc --noEmit", "exit": 0},
+    "civ_matrix_oblezenie_wiring": {"command": "cd gra && node tools/civ-matrix-oblezenie-wiring-test.cjs", "exit": 0, "pass": 83, "fail": 0, "cells_checked": 45},
+    "siege_ai": {"command": "cd gra && node tools/siege-ai-test.cjs", "exit": 0, "pass": 17, "fail": 0},
+    "logic": {"command": "cd gra && node tools/logic-test.cjs", "exit": 0, "pass": 213, "fail": 0},
+    "city_defense_terrain": {"command": "cd gra && node tools/city-defense-terrain-gate-test.cjs", "exit": 0, "pass": 34, "fail": 0},
+    "mur_paradoks": {"command": "cd gra && node tools/mur-paradoks-test.cjs", "exit": 0, "pass": 29, "fail": 0},
+    "defense_breakdown": {"command": "cd gra && node tools/defense-breakdown-test.cjs", "exit": 0, "pass": 44, "fail": 0},
+    "fortify_pole": {"command": "cd gra && node tools/fortify-pole-test.cjs", "exit": 0, "pass": 41, "fail": 0},
+    "diff_check": {"command": "git diff --check", "exit": 0},
+    "known_unrelated_empire": {"command": "cd gra && node tools/empire-panel-miasto-obywatele-content-test.cjs", "exit": 1, "pass": 115, "fail": 1, "classification": "pre-existing baseline; independently confirmed in prior clean-origin rerun"},
+    "known_unrelated_cost": {"command": "cd gra && node tools/koszty-surowcowe-test.cjs", "exit": 1, "pass": 126, "fail": 3, "classification": "pre-existing baseline; independently confirmed in prior clean-origin rerun"}
+  },
+  "next_phase": "new independent Final Control for corrected topic",
+  "push_deploy": "NIE WYKONANO"
+}

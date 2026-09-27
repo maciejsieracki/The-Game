@@ -615,6 +615,10 @@ export function cityBuildingEntriesFromBuiltIds(
 }
 
 export interface CityYieldContext {
+  /** Owner civilization key for the civ-matrix economy parameters. */
+  civKey?: string | null;
+  /** Focused-test/preview override; production reads civ-matrix.json. */
+  civEconomyOverrides?: Partial<Record<CivEconomyParamId, number>>;
   /**
    * Effective military food consumption this turn for units at this city
    * (normal units = 1 each, camping units = 0.5 each -- caller sums).
@@ -633,6 +637,8 @@ export interface CityYieldContext {
   maMlyn:         boolean;
   maCegielnia:    boolean;
   maTargowisko:   boolean;
+  /** Port or Great Port in this city; gates the port-only money parameter. */
+  maPort?:        boolean;
   /** Biblioteka present -> +Nauka%. Optional so existing ctx literals stay valid. */
   maBiblioteka?:  boolean;
   /**
@@ -711,6 +717,37 @@ export interface CityYieldContext {
    * Garncarni) tak, zeby istniejace literaly ctx zostaly wazne.
    */
   liczbaGarncarni?: number;
+}
+
+/**
+ * Merge per-city yield flags while keeping the resolved owner civilization key
+ * authoritative. UI hooks may provide legacy/derived flags, but must not make
+ * the shared economy calculation silently fall back to the neutral matrix row.
+ */
+export function mergeCityYieldContextForOwner(
+  base: CityYieldContext,
+  civKey: string | null | undefined,
+  overrides?: Partial<CityYieldContext>,
+): CityYieldContext {
+  return { ...base, ...(overrides ?? {}), civKey };
+}
+
+export type CivEconomyParamId =
+  | 'eko_praca_proc'
+  | 'eko_pieniadz_proc'
+  | 'eko_pieniadz_port_proc'
+  | 'eko_zywnosc_proc'
+  | 'eko_nauka_proc'
+  | 'eko_kultura_proc'
+  | 'eko_luksus_proc'
+  | 'eko_zadowolenie_proc'
+  | 'eko_handel_brutto_proc'
+  | 'eko_korupcja_proc';
+
+function civEconomyParam(ctx: CityYieldContext, id: CivEconomyParamId): number {
+  const override = ctx.civEconomyOverrides?.[id];
+  if (typeof override === 'number' && Number.isFinite(override)) return override;
+  return ctx.civKey ? civMatrixParam(ctx.civKey, id) : 0;
 }
 
 /** Minimalny ksztalt wpisu bonusy[] z civs.json (unikamy importu loader). */
@@ -930,6 +967,7 @@ export function cityYieldPerTurn(
   let zywnoscTerenu = 0;
   let pracaTerenu   = 0;
   let handelTerenu  = 0;
+  let handelPortowyTerenu = 0;
   let drewnoTerenu  = 0;
   let kamienTerenu  = 0;
   let glinaTerenu   = 0;
@@ -941,6 +979,11 @@ export function cityYieldPerTurn(
     zywnoscTerenu += y.zywnosc;
     pracaTerenu   += y.praca;
     handelTerenu  += y.handel;
+    if (tile.terenBazowy === TerenBazowy.PlytkieMorze
+      || tile.terenBazowy === TerenBazowy.Morze
+      || tile.maRzeke) {
+      handelPortowyTerenu += y.handel;
+    }
     drewnoTerenu  += y.drewno;
     kamienTerenu  += y.kamien;
     glinaTerenu   += y.glina;
@@ -971,6 +1014,7 @@ export function cityYieldPerTurn(
   let naukaBudynkow    = 0;
   let kulturaBudynkow  = 0;
   let zadBudynkow      = 0;
+  let pieniadzPortowBudynkow = 0;
 
   for (const { record, level } of cityBuildings) {
     pracaBudynkow    += buildingValue(record, level, 'praca');
@@ -979,11 +1023,15 @@ export function cityYieldPerTurn(
     naukaBudynkow    += buildingValue(record, level, 'nauka');
     kulturaBudynkow  += buildingValue(record, level, 'kultura');
     zadBudynkow      += buildingHappinessAtLevel(record, level);
+    if (record.id === 'port' || record.id === 'port_wielki') {
+      pieniadzPortowBudynkow += buildingValue(record, level, 'pieniadz');
+    }
   }
 
   // Dawne "mnoznik% -> Praca" USUNIETE 2026-07-25 — patrz komentarz funkcji powyzej.
   // Praca miasta to czysta suma teren+budynki, bez mnoznika.
-  const pracaBruttoLacznie = pracaBruttoTerenu + pracaBudynkow;
+  const pracaBruttoLacznie = (pracaBruttoTerenu + pracaBudynkow)
+    * (1 + civEconomyParam(ctx, 'eko_praca_proc'));
   // D1 (Maciej 2026-07-25): "Korupcja ma dotykać tylko i wyłącznie daniny, a potem
   // podatku, nie pracy." -- Praca NIGDY nie jest mnozona przez strate korupcji
   // (patrz Step 5 nizej, ktory strata dotyka tylko Handel/Danine).
@@ -1018,7 +1066,9 @@ export function cityYieldPerTurn(
   } else {
     handelBrutto = handelBazowy;
   }
-  const civHandelMult = ctx.civHandelMult ?? 1;
+  // A present owner key makes the civ matrix authoritative. Legacy civs.json
+  // multipliers remain available only to callers without an owner key.
+  const civHandelMult = ctx.civKey ? 1 : (ctx.civHandelMult ?? 1);
   if (civHandelMult !== 1) {
     handelBrutto *= civHandelMult;
   }
@@ -1037,10 +1087,14 @@ export function cityYieldPerTurn(
   if (dochodTrasHandlowych > 0) {
     handelBrutto += dochodTrasHandlowych;
   }
+  handelBrutto *= 1 + civEconomyParam(ctx, 'eko_handel_brutto_proc');
 
   // --- Step 5 (renumbered from 6): Apply corruption/waste -- dotyczy WYLACZNIE
   // handelBrutto (ktory juz zawiera pieniadzZPracy, D5 powyzej), NIGDY Pracy (D1). ---
-  const strata = Math.min(ctx.strataFraction, params.korupcjaCap);
+  const strata = Math.min(
+    Math.max(0, ctx.strataFraction * (1 + civEconomyParam(ctx, 'eko_korupcja_proc'))),
+    params.korupcjaCap,
+  );
   const handelNettoRaw    = handelBrutto       * (1 - strata);
   // Efekt 1 SCALONY (Waluta + Mennica, decyzja Maciej 2026-07-25): caly handelNetto
   // jest mnozony x mennicaMnoznikPoWalucie (easy x2,0 / normal x1,5 / hard x1,0) TYLKO
@@ -1065,7 +1119,9 @@ export function cityYieldPerTurn(
   const naukaZHandlu    = Math.floor(handelNetto * pctNauka);
   const pieniadzZHandlu = Math.floor(handelNetto * pctPieniadz);
   // Luksus stream (Spec ss.2.1/2.2): feeds Zadowolenie downstream (society lane).
-  const luksusZHandlu   = Math.floor(handelNetto * pctLuksus);
+  const luksusZHandlu   = Math.floor(
+    handelNetto * pctLuksus * (1 + civEconomyParam(ctx, 'eko_luksus_proc')),
+  );
 
   // Biblioteka: +Nauka% applied to the city's local science (master par.2a).
   // Akademia (ZADANIE 2, 2026-07-25, decyzja 4): +Nauka% osobny, stackuje ADDYTYWNIE
@@ -1076,10 +1132,13 @@ export function cityYieldPerTurn(
     + (ctx.maBiblioteka ? params.budynekBibliotekaBonusNauki : 0)
     + (ctx.maAkademia   ? params.budynekAkademiaBonusNauki   : 0);
   const naukaLokalnaRaw  = Math.floor((naukaZHandlu + naukaBudynkow) * naukaBonusFactor);
-  const civNaukaMult     = ctx.civNaukaMult ?? 1;
-  const naukaLokalna     = civNaukaMult !== 1
+  const civNaukaMult     = ctx.civKey ? 1 : (ctx.civNaukaMult ?? 1);
+  const naukaLokalnaBase  = civNaukaMult !== 1
     ? Math.floor(naukaLokalnaRaw * civNaukaMult)
     : naukaLokalnaRaw;
+  const naukaLokalna = Math.floor(
+    naukaLokalnaBase * (1 + civEconomyParam(ctx, 'eko_nauka_proc')),
+  );
 
   // --- Step 8: Total Pieniadz = from trade (handelNetto juz zawiera pieniadzZPracy
   // ORAZ pieniadzBudynkow, wtopione w Step 3, D5/67B powyzej -- przeszly przez
@@ -1087,7 +1146,18 @@ export function cityYieldPerTurn(
   // Mennica -- i podzial suwakiem) + specialist Poborca. Decyzja 67B: pieniadzBudynkow
   // NIE jest juz doliczany tu osobno -- inaczej liczylby sie PODWOJNIE (raz w
   // pieniadzZHandlu przez handelBazowy, drugi raz tutaj).
-  let pieniadzTotal = pieniadzZHandlu;
+  const portBase = (ctx.maPort === true)
+    ? handelPortowyTerenu + pieniadzPortowBudynkow
+    : 0;
+  const portTradeFactor = (ctx.maTargowisko ? 1 + params.budynekTargowiskoBonusHandlu : 1)
+    * civHandelMult
+    * (1 + civEconomyParam(ctx, 'eko_handel_brutto_proc'))
+    * (1 - strata)
+    * walutaMnoznikAktywny;
+  const portMoneyBonus = Math.floor(
+    portBase * portTradeFactor * pctPieniadz * civEconomyParam(ctx, 'eko_pieniadz_port_proc'),
+  );
+  let pieniadzTotal = pieniadzZHandlu + portMoneyBonus;
   for (const spec of city.specjalisci) {
     if (spec === 'poborca') {
       pieniadzTotal += 2;
@@ -1102,19 +1172,20 @@ export function cityYieldPerTurn(
   const zywnoscBruttoBaza = zywnoscTerenu + zywnoscBudynkow;
   const liczbaGarncarni = ctx.liczbaGarncarni ?? 0;
   const garncarniaMnoznikZywnosci = 1 + params.budynekGarncarniaBonusZywnosci * liczbaGarncarni;
-  const zywnoscBrutto = zywnoscBruttoBaza * garncarniaMnoznikZywnosci;
+  const zywnoscBrutto = zywnoscBruttoBaza * garncarniaMnoznikZywnosci
+    * (1 + civEconomyParam(ctx, 'eko_zywnosc_proc'));
   const zywnoscZuzyta = city.ludnosc * params.zywnoscZuzytkaPopulacja
                        + ctx.wojskoZuzycieZywnosci;
   const zywnoscNetto  = zywnoscBrutto - zywnoscZuzyta;
 
   return {
     praca:          pracaInt,
-    pieniadz:       Math.floor(pieniadzTotal),
+    pieniadz:       Math.floor(pieniadzTotal * (1 + civEconomyParam(ctx, 'eko_pieniadz_proc'))),
     zywnosc:        Math.floor(zywnoscNetto),
     nauka:          naukaLokalna,
     luksus:         luksusZHandlu,
-    kultura:        Math.floor(kulturaBudynkow),
-    zadowolenie:    Math.floor(zadBudynkow),
+    kultura:        Math.floor(kulturaBudynkow * (1 + civEconomyParam(ctx, 'eko_kultura_proc'))),
+    zadowolenie:    Math.floor(zadBudynkow * (1 + civEconomyParam(ctx, 'eko_zadowolenie_proc'))),
     zywnoscBrutto:  Math.floor(zywnoscBrutto),
     handelBrutto:   Math.floor(handelBrutto),
     pracaTerenu:    Math.floor(pracaBruttoTerenu),

@@ -52,7 +52,6 @@ import { resolveCityPodzialPracy } from './empire-city-defaults';
 import {
   cityYieldPerTurn,
   civBonusyForCivKey,
-  civEconomyYieldMultipliers,
   mnoznikHandelPieniadzForCivByDifficulty,
   tileYield,
   type EconParams,
@@ -72,7 +71,7 @@ import {
   terrainImprovementEraMultiplier,
   type TerritoryResourceKey,
 } from './terrain-improvements';
-import { cityManpowerMax, refreshManpowerAfterPopChange, tickManpowerRegen, civManpowerMults, loadManpowerRegenParams, tickManpowerUnitReplenishment, type ManpowerHealUnit } from './manpower';
+import { cityManpowerMax, refreshManpowerAfterPopChange, tickManpowerRegen, civManpowerMults, civManpowerMatrixMults, loadManpowerRegenParams, tickManpowerUnitReplenishment, type ManpowerHealUnit } from './manpower';
 import {
   loadStorageParams,
   foodStorageCapacity,
@@ -137,6 +136,7 @@ import {
 import {
   advanceWealth,
   loadWealthParams,
+  resolveWealthParamsForCiv,
   freshWealthState,
   type WealthState,
   type WealthTickResult,
@@ -2030,10 +2030,6 @@ export function previewCityEconomy(
       difficulty,
       params.mennicaMnoznikPoWalucie,
     );
-    const ownerBonusy = ownerCivKey
-      ? civBonusyForCivKey(ownerCivKey, data.civs)
-      : [];
-    const { handel: civHandelMult, nauka: civNaukaMult } = civEconomyYieldMultipliers(ownerBonusy);
     const premiaTrasHandlowych = tradeRouteBuildingBonusByCity.get(city.id) ?? 0;
     // D2 (Maciej 2026-07-25): korupcja wpięta -- dystansOdStolicy=0 dla stolicy (i gdy
     // brak zarejestrowanej stolicy tego ownera, co w praktyce nie wystepuje bo kazdy
@@ -2049,11 +2045,13 @@ export function previewCityEconomy(
     const redukcjaBudynkowKorupcji = corruptionBuildingReduction(builtIds);
     const strataFraction = strataBazowa * (1 - redukcjaBudynkowKorupcji);
     const ctx: CityYieldContext = {
+      civKey: ownerCivKey ?? null,
       wojskoZuzycieZywnosci: 0,
       strataFraction,
       maMlyn: runtimeBuiltIds.includes('mlyn'),
       maCegielnia: runtimeBuiltIds.includes('cegielnia'),
       maTargowisko: runtimeBuiltIds.includes('targowisko'),
+      maPort: runtimeBuiltIds.includes('port') || runtimeBuiltIds.includes('port_wielki'),
       maBiblioteka: runtimeBuiltIds.includes('biblioteka'),
       maAkademia: runtimeBuiltIds.includes('akademia'),
       // Efekt 1 SCALONY (decyzja Maciej 2026-07-25): Mennica jest jednym z dwoch
@@ -2068,8 +2066,6 @@ export function previewCityEconomy(
       maMennica: maMennicaEmpireWide,
       walutaOdkryta,
       walutaMnoznikOverride,
-      civHandelMult,
-      civNaukaMult,
       premiaHandluTrasHandlowych: premiaTrasHandlowych,
       // R-HANDEL-DOCHOD-PRZEZ-PODZIAL-MIASTA-Q1: HUD preview musi zgadzac sie z realnym
       // tickiem (advanceCityEconomy) -- ten sam punkt wpiecia dochodu z tras (patrz tam).
@@ -2096,13 +2092,14 @@ export function previewCityEconomy(
     applyWonderCityYields(yld, wonderCityYieldsByOwner.get(city.ownerId));
 
     const prevWealth: WealthState = city.wealthState ?? freshWealthState();
+    const civWealthParams = resolveWealthParamsForCiv(wealthParams, ownerCivKey);
     const wealthImmunity = (city.wealthImmunityRemaining ?? 0) > 0;
     const wt: WealthTickResult = advanceWealth(
       prevWealth,
       yld.luksus,
       yld.pieniadz,
       ownerEra,
-      wealthParams,
+      civWealthParams,
       wealthImmunity ? { minPoziom: 1 } : undefined,
     );
     // yld.pieniadz JUZ zawiera dochod z tras (ctx.dochodTrasHandlowych powyzej) -- patrz
@@ -2606,10 +2603,6 @@ export function advanceCityEconomy(
       difficulty,
       params.mennicaMnoznikPoWalucie,
     );
-    const ownerBonusy = ownerCivKey
-      ? civBonusyForCivKey(ownerCivKey, data.civs)
-      : [];
-    const { handel: civHandelMult, nauka: civNaukaMult } = civEconomyYieldMultipliers(ownerBonusy);
     const premiaTrasHandlowych = tradeRouteBuildingBonusByCity.get(city.id) ?? 0;
     // D2 (Maciej 2026-07-25): korupcja wpięta -- dystansOdStolicy=0 dla stolicy (i gdy
     // brak zarejestrowanej stolicy tego ownera, co w praktyce nie wystepuje bo kazdy
@@ -2625,11 +2618,13 @@ export function advanceCityEconomy(
     const redukcjaBudynkowKorupcji = corruptionBuildingReduction(builtIds);
     const strataFraction = strataBazowa * (1 - redukcjaBudynkowKorupcji);
     const ctx: CityYieldContext = {
+      civKey: ownerCivKey ?? null,
       wojskoZuzycieZywnosci: 0,   // B5: wojsko → zapasy państwa (advanceEmpireFood)
       strataFraction,
       maMlyn:                runtimeBuiltIds.includes('mlyn'),
       maCegielnia:           runtimeBuiltIds.includes('cegielnia'),
       maTargowisko:          runtimeBuiltIds.includes('targowisko'),
+      maPort:                runtimeBuiltIds.includes('port') || runtimeBuiltIds.includes('port_wielki'),
       maBiblioteka:          runtimeBuiltIds.includes('biblioteka'),
       maAkademia:            runtimeBuiltIds.includes('akademia'),
       // Efekt 1 SCALONY (decyzja Maciej 2026-07-25): Mennica jest jednym z dwoch
@@ -2644,8 +2639,6 @@ export function advanceCityEconomy(
       maMennica:             maMennicaEmpireWide,
       walutaOdkryta,         // P1b: bramka Efektu 1 (razem z maMennica) w cityYieldPerTurn
       walutaMnoznikOverride, // per-cyw skalowany trudnoscia (lub override religii)
-      civHandelMult,         // RDY-01: bonus_zloto handel (Grecy +15%)
-      civNaukaMult,          // RDY-01: bonus_nauka (Inkowie +15%)
       premiaHandluTrasHandlowych: premiaTrasHandlowych, // T4: suma 0.05*dochod per trasa Z BUDYNKIEM
       // R-HANDEL-DOCHOD-PRZEZ-PODZIAL-MIASTA-Q1 (ECHO wlasciciela): dochod dystansowy z tras
       // handlowych -- TERAZ wpiety do puli handelBrutto (economy.ts) zamiast dodawany osobno
@@ -2676,13 +2669,14 @@ export function advanceCityEconomy(
     // WIRE 3: Luksus -> Wealth tick
     // wealthState per miasto -- persystowane na city jako pole dynamiczne
     const prevWealth: WealthState = city.wealthState ?? freshWealthState();
+    const civWealthParams = resolveWealthParamsForCiv(wealthParams, ownerCivKey);
     const wealthImmunity = (city.wealthImmunityRemaining ?? 0) > 0;
     const wt: WealthTickResult = advanceWealth(
       prevWealth,
       yld.luksus,      // spoleczMoney = strumien Luksus
       yld.pieniadz,    // miastoMoney  = pieniadz brutto tej tury
       ownerEra,
-      wealthParams,
+      civWealthParams,
       wealthImmunity ? { minPoziom: 1 } : undefined,
     );
     if (wealthImmunity && city.wealthImmunityRemaining != null) {
@@ -2816,7 +2810,14 @@ export function advanceCityEconomy(
     });
 
     const ownerEpoka = ownerEra;
-    const mpMults = civManpowerMults(ownerBonusy);
+    const ownerBonusy = ownerCivKey
+      ? civBonusyForCivKey(ownerCivKey, data.civs)
+      : [];
+    const mpMults = civManpowerMatrixMults(
+      ownerCivKey,
+      undefined,
+      civManpowerMults(ownerBonusy),
+    );
     if (city.manpower === undefined) {
       city.manpower = cityManpowerMax(city.population, ownerEpoka, mpMults.maxMult);
     }
@@ -2960,6 +2961,16 @@ export function advanceCityEconomy(
       manpowerHeal.getMaxHp,
       undefined,
       manpowerHeal.onUnitHpChanged,
+      (oid: number) => {
+        const key = ownerCivByOwnerId.get(oid);
+        if (!key) return undefined;
+        const mults = civManpowerMatrixMults(key);
+        return {
+          mp_regen_proc: mults.regenMult - 1,
+          mp_max_proc: mults.maxMult - 1,
+          mp_koszt_jednostki_proc: mults.costMult - 1,
+        };
+      },
     );
   }
 

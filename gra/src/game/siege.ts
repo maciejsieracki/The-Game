@@ -81,9 +81,19 @@
 // ---------------------------------------------------------------------------
 import { buildingEffectAtLevel } from './production';
 import combatParamsRaw from '../../data/combat-params.json';
+import cityParamsRaw from '../../data/miasto-params.json';
 import { hitChanceTw, damageTw } from './combat';
+import { cityWallDefenseBonusPercent } from './city-defense';
+import { civMatrixParam } from './civ-matrix';
 
 const OBL = combatParamsRaw['oblężenie'];
+
+const CITY_DEFENSE_PARAMS = {
+  mur: cityParamsRaw.bonus_obrona_mur_proc.wartosc,
+  cytadela: cityParamsRaw.bonus_obrona_cytadela_proc.wartosc,
+  baszta: cityParamsRaw.bonus_obrona_baszta_proc.wartosc,
+  palisada: cityParamsRaw.bonus_obrona_palisada_proc.wartosc,
+};
 
 export const WALL_BASE_OBRONA = OBL.wall_base_obrona;
 
@@ -224,6 +234,9 @@ export interface SiegeCity {
   /** Current owner id (number, matching runtime City.ownerId). */
   ownerId: number;
 
+  /** Optional civ-matrix key of the defending owner; absent means matrix-neutral. */
+  civKey?: string | null;
+
   /** Axial hex position of the city centre. */
   q: number;
   r: number;
@@ -236,6 +249,9 @@ export interface SiegeCity {
 
   /** Optional explicit "has walls" flag; if omitted, derived from wallLevel > 0. */
   hasWalls?: boolean;
+
+  /** Physical defensive buildings in the city, shared with city-defense.ts. */
+  builtBuildingIds?: readonly string[];
 
   /**
    * Garrison units defending the city, ordered by defending priority
@@ -364,8 +380,8 @@ export interface CityDefenseBonus {
   pancerzBonus: number;
   /** Multiplier applied to the (Obrona + obronaBonus) total from terrain. */
   terrainMult: number;
-  /** Convenience: terrainMult expressed as the effective Obrona multiplier. */
-  // (kept separate from obronaBonus so callers can inspect each contribution)
+  /** Structural city-defense multiplier, including both civ-matrix siege modifiers. */
+  structureMult: number;
   /** Breakdown for UI/debug/tests. */
   breakdown: {
     wallObrona: number;
@@ -375,6 +391,9 @@ export interface CityDefenseBonus {
     terrainMult: number;
     hasWalls: boolean;
     wallLevel: number;
+    structurePct: number;
+    murCivProc: number;
+    obronaMiastaCivProc: number;
   };
 }
 
@@ -423,10 +442,25 @@ export function cityDefenseBonus(
   // Terrain multiplier (defender side), same family as combat.ts.
   const terrainMult = terrainDefenseMult(city.terrain ?? '', hillMult, mtnMult);
 
+  const civKey = city.civKey?.trim() || null;
+  const murCivProc = civKey ? civMatrixParam(civKey, 'obl_mur_proc') : 0;
+  const obronaMiastaCivProc = civKey
+    ? civMatrixParam(civKey, 'obl_obrona_miasta_proc')
+    : 0;
+  const builtBuildingIds = city.builtBuildingIds ?? (hasWalls ? ['mury'] : []);
+  const structurePct = cityWallDefenseBonusPercent(
+    builtBuildingIds,
+    CITY_DEFENSE_PARAMS,
+    murCivProc,
+    obronaMiastaCivProc,
+  );
+  const structureMult = 1 + structurePct / 100;
+
   return {
     obronaBonus: wallObrona + fortify,
     pancerzBonus: wallPancerz,
     terrainMult,
+    structureMult,
     breakdown: {
       wallObrona,
       wallPancerz,
@@ -435,6 +469,9 @@ export function cityDefenseBonus(
       terrainMult,
       hasWalls,
       wallLevel: level,
+      structurePct,
+      murCivProc,
+      obronaMiastaCivProc,
     },
   };
 }
@@ -466,13 +503,23 @@ export function terrainDefenseMult(
  *
  * effObrona  = (Obrona + obronaBonus) * terrainMult
  * effPancerz =  Pancerz + pancerzBonus
+ *
+ * The optional `includeStructure` flag is used only by the AI strength
+ * estimator. The later real siege resolver keeps its historical flat/terrain
+ * behavior so the wall percentage is not applied twice in the battle path.
  */
-export function applyCityBonus(defender: SiegeUnit, bonus: CityDefenseBonus): SiegeUnit {
-  const effObrona = (defender.Obrona + bonus.obronaBonus) * bonus.terrainMult;
+export function applyCityBonus(
+  defender: SiegeUnit,
+  bonus: CityDefenseBonus,
+  includeStructure = false,
+): SiegeUnit {
+  const structureMult = includeStructure ? bonus.structureMult : 1;
+  const effObrona =
+    (defender.Obrona + bonus.obronaBonus) * structureMult * bonus.terrainMult;
   return {
     ...defender,
     Obrona: effObrona,
-    Pancerz: defender.Pancerz + bonus.pancerzBonus,
+    Pancerz: (defender.Pancerz + bonus.pancerzBonus) * structureMult,
   };
 }
 

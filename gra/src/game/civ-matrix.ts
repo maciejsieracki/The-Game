@@ -29,6 +29,9 @@ export interface CivMatrixRow {
   params: Record<string, number>;
 }
 
+/** Injectable lookup used by pure consumers and focused tests. */
+export type CivMatrixParamResolver = (civKey: string, paramId: string) => number;
+
 export interface CivMatrixData {
   _meta: Record<string, unknown>;
   paramDefs: Record<string, CivMatrixParamDef>;
@@ -111,8 +114,9 @@ export function applyCivMatrixParam(
   base: number,
   civKey: string,
   paramId: string,
+  resolve: CivMatrixParamResolver = civMatrixParam,
 ): number {
-  const val = civMatrixParam(civKey, paramId);
+  const val = resolve(civKey, paramId);
   const def = civMatrixParamDef(paramId);
   const formula = def?.formula ?? 'mul_proc';
   switch (formula) {
@@ -126,8 +130,29 @@ export function applyCivMatrixParam(
       return val;
     case 'mul_proc':
     default:
-      return base * (1 + val);
+      return applyCivMatrixMulProc(base, val);
   }
+}
+
+/** Apply a fractional multiplier; 0.10 means +10%, -0.10 means -10%. */
+export function applyCivMatrixMulProc(base: number, delta: number): number {
+  const safeBase = Number.isFinite(base) ? base : 0;
+  const safeDelta = Number.isFinite(delta) ? delta : 0;
+  return safeBase * (1 + safeDelta);
+}
+
+/**
+ * Cost fields use the same `mul_proc` value as the rest of the matrix, but a
+ * positive value is a discount: 0.1 means base × (1 − 0.1).
+ */
+export function applyCivMatrixCostReduction(
+  base: number,
+  civKey: string,
+  paramId: string,
+  resolve: CivMatrixParamResolver = civMatrixParam,
+): number {
+  const value = resolve(civKey, paramId);
+  return Math.max(0, base * (1 - value));
 }
 
 /** Sumuje kilka parametrow tej samej formuly mul_proc (walka: wiecej kolumn). */

@@ -51,10 +51,38 @@ export interface CityDefenseBonusParams {
  * (City.cityBuilt, PO podmianach upgrade'owych) -- id, nie nazwy. Zwraca %
  * (np. 400 = +400%), nie ulamek. Puste/brakujace dane => 0 (bez wyjatku --
  * bezpieczne dla starych zapisow gry sprzed Baszty/Cytadeli/Palisady).
+ *
+ * R-CYWILIZACJE-MACIERZ-WIRING-OBLEZENIE-Q1-20260922: dwa nowe, OPCJONALNE
+ * parametry na koncu sygnatury (zgodnie z wzorcem WIRING-MANPOWER --
+ * wsteczna zgodnosc dla istniejacych wywolan pozycyjnych bez civKey, w tym
+ * wszystkich istniejacych testow w tools/*.test.cjs, ktore woalja te funkcje
+ * dokladnie 2 argumentami):
+ *   `murCivProc`    -- civ-matrix.json->obl_mur_proc (SKLADA SIE, mnozy sie,
+ *                       z istniejacym bonusem addytywnym mur/cytadela/baszta/
+ *                       palisada -- NIE zastepuje). Zgodnie ze SCOPE zadania:
+ *                       "finalny % = structural_pct * (1 + obl_mur_proc)".
+ *   `obronaMiastaCivProc` -- civ-matrix.json->obl_obrona_miasta_proc, osobny
+ *                       mnoznik ogolnej obrony miasta. Kod NIE rozroznia dzis
+ *                       "bonusu samych murow" od "ogolnej obrony miasta" jako
+ *                       osobnych liczb (jedna funkcja, jeden wynik procentowy
+ *                       uzywany identycznie w obu miejscach wywolania) -- wiec
+ *                       potraktowany jako DODATKOWY, niezalezny czynnik
+ *                       mnozony przez ten sam wynik (structural_pct * (1 +
+ *                       obl_mur_proc) * (1 + obl_obrona_miasta_proc)), zgodnie
+ *                       z jawna instrukcja wlasciciela: "statystyki nie
+ *                       zmieniaja aktualnych parametrow, a jedynie dodaja sie,
+ *                       mnoza, dziela lub odejmuja" -- oba dzialaja WYLACZNIE
+ *                       gdy struktura obronna (mur/fort/baszta/palisada) juz
+ *                       daje bonus > 0 (miasto calkiem bez budynkow obronnych
+ *                       zostaje na 0% niezaleznie od civ-matrix, tak jak dzis).
+ *   Domyslnie 0 (neutralne, mnoznik 1.0x) -- brak wplywu dla wolajacych, ktorzy
+ *   tych argumentow nie podaja.
  */
 export function cityWallDefenseBonusPercent(
   builtBuildingIds: readonly string[] | null | undefined,
   params: CityDefenseBonusParams,
+  murCivProc = 0,
+  obronaMiastaCivProc = 0,
 ): number {
   const built = builtBuildingIds ?? [];
   const hasMury = built.includes('mury');
@@ -71,6 +99,7 @@ export function cityWallDefenseBonusPercent(
     total += palisadaProc;
   }
   if (hasBaszta) total += params.baszta;
+  total *= (1 + murCivProc) * (1 + obronaMiastaCivProc);
   return total;
 }
 

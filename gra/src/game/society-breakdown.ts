@@ -15,6 +15,7 @@ import {
   loadOrderParams,
   orderEffects,
 } from './order';
+import { applyCivMatrixParam } from './civ-matrix';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -1065,12 +1066,30 @@ export function evaluateOrderFromBreakdown(
   lawInput: LawBreakdownInput,
   society: SocietyParamsLike | null | undefined,
   difficulty: Difficulty = 'normal',
+  civKey?: string | null,
 ): OrderPctBreakdown {
   const params = loadOrderParams(society, difficulty);
   const revolt = loadRevoltParams(society, difficulty);
   const sz = computeHappinessBreakdown(happinessInput, society);
   const prawo = computeLawBreakdown(lawInput, society);
-  return computeOrderPctBreakdown(sz, prawo, params, revolt);
+  const resolved = computeOrderPctBreakdown(sz, prawo, params, revolt);
+  if (!civKey) return resolved;
+
+  const matrixEffect = (base: number, paramId: string): number => Math.max(
+    0,
+    applyCivMatrixParam(base, civKey, paramId),
+  );
+  return {
+    ...resolved,
+    effects: {
+      ...resolved.effects,
+      productionMult: matrixEffect(resolved.effects.productionMult, 'porzadek_produkcja_proc'),
+      pieniadzMult: matrixEffect(resolved.effects.pieniadzMult, 'porzadek_pieniadz_proc'),
+      naukaMult: matrixEffect(resolved.effects.naukaMult, 'porzadek_nauka_proc'),
+      kulturaMult: matrixEffect(resolved.effects.kulturaMult, 'porzadek_kultura_proc'),
+      growthMult: matrixEffect(resolved.effects.growthMult, 'porzadek_wzrost_proc'),
+    },
+  };
 }
 
 // ---------------------------------------------------------------------------

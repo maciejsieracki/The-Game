@@ -1,6 +1,7 @@
 /**
  * wealth.ts
- * System WEALTH (zamoznosc spoleczenstwa) -- czysty modul, bez DOM/THREE, ZERO importow.
+ * System WEALTH (zamoznosc spoleczenstwa) -- czysty modul, bez DOM/THREE.
+ * Importuje tylko czysty odczyt macierzy cywilizacji; nie ma zaleznosci runtime/UI.
  *
  * Idea (ustalenia Maciej, 2026-06-24): strumien "Spoleczenstwo" (dawny Luksus, czyli czesc
  * pieniadza miasta zostawiona obywatelom) znika do PULI Wealth. Pula -> poziomy Wealth (jak
@@ -23,6 +24,8 @@
  * Parametry strojone per poziom trudnosci -> econ-params.json grupa "wealth".
  * Kod ASCII; bezpieczne fallbacki (jeden zly wiersz nie wywali tury).
  */
+
+import { civMatrixParam } from './civ-matrix';
 
 // ---------------------------------------------------------------------------
 // Poziom trudnosci + parametry
@@ -98,6 +101,27 @@ export function loadWealthParams(
     karaZero:            read('wealth_kara_zero',             FALLBACK_WEALTH_PARAMS.karaZero),
     immunitetTur:        read('wealth_immunitet_tur',        FALLBACK_WEALTH_PARAMS.immunitetTur),
   };
+}
+
+/** Apply civilization `mul_proc` overrides to difficulty-resolved parameters. */
+export function resolveWealthParamsForCiv(
+  base: WealthParams,
+  civKey: string | null | undefined,
+): WealthParams {
+  const capProc = civKey ? civMatrixParam(civKey, 'wealth_cap_proc') : 0;
+  const mnoznikProc = civKey ? civMatrixParam(civKey, 'wealth_mnoznik_proc') : 0;
+  return {
+    ...base,
+    capNaEpoke: applyWealthMatrixProc(base.capNaEpoke, capProc),
+    mnoznikNaPoziom: applyWealthMatrixProc(base.mnoznikNaPoziom, mnoznikProc),
+  };
+}
+
+/** Pure `mul_proc` helper for focused +/-10% regression tests. */
+export function applyWealthMatrixProc(base: number, proc: number): number {
+  const safeBase = Number.isFinite(base) ? base : 0;
+  const safeProc = Number.isFinite(proc) ? proc : 0;
+  return Math.max(0, safeBase * (1 + safeProc));
 }
 
 // ---------------------------------------------------------------------------
