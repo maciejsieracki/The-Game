@@ -460,6 +460,19 @@ export interface AITurnOpts {
    */
   canEngageOwner?: (targetOwnerId: number) => boolean;
   /**
+   * Aktywna wojna wymuszona epoki. Napastnik dostaje twardy priorytet
+   * konsolidacji dostępnej armii i marszu na miasta jednego przeciwnika;
+   * obrońca używa tej samej informacji do skupienia reakcji na napastniku.
+   * Brak pola zachowuje dotychczasową politykę AI.
+   */
+  forcedWar?: {
+    targetOwnerId: number;
+    role: 'attacker' | 'defender';
+    era: 'bronze' | 'stone' | 'iron';
+    capturedByAttacker: number;
+    capturedByDefender: number;
+  };
+  /**
    * C-AI-PAKIET (2026-07-26): profil z civ-ai.json per typ cywilizacji —
    * ekspansywnosc i sklonnoscDoPodboju sterują ekspansją i agresją wojskową.
    */
@@ -3281,6 +3294,24 @@ export function decideAITurn(
     ec => isEnemyNearOwnTerritory(ec.q, ec.r, myCities, map, 8),
   );
 
+  // Wojna epoki nie jest zwykłą ekspansją: napastnik ma dążyć do miast
+  // konkretnej strony, również gdy są poza bieżącym promieniem ekspansji.
+  // Pozycje wszystkich miast są już znane silnikowi; mgła nadal blokuje samą
+  // próbę przejęcia w executorze, ale nie blokuje marszu do zapamiętanego celu.
+  const forcedWarAttack = opts.forcedWar?.role === 'attacker';
+  const forcedWarTargetCities = forcedWarAttack && opts.forcedWar !== undefined
+    ? cities.filter(c => c.ownerId === opts.forcedWar!.targetOwnerId)
+    : [];
+  const forcedWarDefenseTarget = opts.forcedWar?.role === 'defender'
+    ? engageableEnemyUnits
+      .filter(u => u.ownerId === opts.forcedWar!.targetOwnerId)
+      .sort((a, b) => {
+        const aDist = Math.min(...myUnits.map(m => hexDistance(m.q, m.r, a.q, a.r)));
+        const bDist = Math.min(...myUnits.map(m => hexDistance(m.q, m.r, b.q, b.r)));
+        return aDist - bDist || a.q - b.q || a.r - b.r || a.id.localeCompare(b.id);
+      })[0]
+    : undefined;
+
   // P-AI-NIE-BRONI-WLASNYCH-MIAST-PRZED-BARBARZYNCAMI (ECHO A, Maciej 2026-08-09): zagrożenia
   // wymagające obrony domu — warunek DOKŁADNY liczony OSOBNO dla każdego miasta (patrz
   // isHomeDefenseThreatForCity). Przydział obrońców (najbliższy-dostępny) liczony RAZ, przed
@@ -3441,7 +3472,7 @@ export function decideAITurn(
     );
     const frontMerge = planArmyFrontMerge(playerId, myUnits, {
       excludedUnitIds: frontMergeExcluded,
-      targetClusterCount: threatFrontCount <= 1 ? 1 : threatFrontCount,
+      targetClusterCount: forcedWarAttack ? 1 : (threatFrontCount <= 1 ? 1 : threatFrontCount),
       preferredAnchors: concentration !== null
         ? [{ q: concentration.rallyPoint.q, r: concentration.rallyPoint.r, weight: concentration.unitIds.length }]
         : [],
@@ -3458,6 +3489,11 @@ export function decideAITurn(
       for (const unitId of frontMerge.deferredUnitIds) concentrationDeferred.add(unitId);
     }
   }
+
+  // Wymuszona wojna obronna nie zmienia priorytetu walki wręcz, ale gdy nie
+  // ma jeszcze celu w zasięgu, kieruje wolne jednostki do najbliższego
+  // wykrytego napastnika zamiast pozostawiać je na zwykłym patrolu.
+  const forcedWarDefenseTargetById = forcedWarDefenseTarget?.id;
 
   for (const unit of sortedUnits) {
     const cmdsBefore = commands.length;
@@ -3479,7 +3515,8 @@ export function decideAITurn(
 
     // 4b: adjacent enemy unit -> attack (tylko engageable — np. gracz tylko w wojnie)
     const adjacentEnemy = engageableEnemyUnits.find(
-      eu => isWithinAttackRange(unit, eu.q, eu.r, data),
+      eu => isWithinAttackRange(unit, eu.q, eu.r, data)
+        && (!forcedWarAttack || eu.ownerId === opts.forcedWar!.targetOwnerId),
     );
     if (adjacentEnemy !== undefined) {
       commands.push({ type: 'attack', unitId: unit.id, targetUnitId: adjacentEnemy.id });
@@ -3495,7 +3532,8 @@ export function decideAITurn(
     // obcego miasta byłby dla niego turą straconą bez efektu. Zwiadowca ma własną
     // gałąź wyżej. Silnik trzyma tę samą granicę niezależnie (canAiEnterEmptyEnemyCity).
     const adjacentEnemyCity = isCivilianUnit(unit) ? undefined
-      : (clusterConsolidationPhase ? clusterEnemyCities : engageableEnemyCities).find(
+      : (forcedWarAttack ? forcedWarTargetCities
+        : (clusterConsolidationPhase ? clusterEnemyCities : engageableEnemyCities)).find(
         ec => isWithinCityAttackRange(unit, ec, data),
       ) ?? engageableEnemyCities.find(
         ec => isWithinCityAttackRange(unit, ec, data),
@@ -3560,14 +3598,39 @@ export function decideAITurn(
       }
     }
 
+    if (forcedWarDefenseTarget !== undefined && forcedWarDefenseTargetById !== undefined) {
+      const step = firstStep(
+        unit,
+        map,
+        forcedWarDefenseTarget.q,
+        forcedWarDefenseTarget.r,
+        units,
+      );
+      if (step !== null) {
+        commands.push({ type: 'move', unitId: unit.id, toQ: step.q, toR: step.r });
+        unitActed.add(unit.id);
+        continue;
+      }
+    }
+
     // 4c: march toward enemy city — faza 1: najpierw państwa w klastrze, potem sąsiedzi (8 hex)
     const citiesForMarch = (() => {
+      if (forcedWarAttack && forcedWarTargetCities.length > 0) return forcedWarTargetCities;
       if (clusterConsolidationPhase && clusterEnemyCities.length > 0) return clusterEnemyCities;
       if (expansionEnemyCities.length > 0) return expansionEnemyCities;
       return engageableEnemyCities;
     })();
     const powerOf = opts.powerOfOwner;
+    const campaignAnchor = concentration?.rallyPoint ?? myUnits[0];
+    const forcedWarTargetCity = forcedWarAttack && forcedWarTargetCities.length > 0 && campaignAnchor !== undefined
+      ? [...forcedWarTargetCities].sort((a, b) => {
+        const da = hexDistance(campaignAnchor.q, campaignAnchor.r, a.q, a.r);
+        const db = hexDistance(campaignAnchor.q, campaignAnchor.r, b.q, b.r);
+        return da - db || a.q - b.q || a.r - b.r || a.id.localeCompare(b.id);
+      })[0]
+      : undefined;
     const targetCity = (() => {
+      if (forcedWarTargetCity !== undefined) return forcedWarTargetCity;
       if (citiesForMarch.length === 0) return undefined;
       let bestScore = -Infinity;
       let bestCity: typeof citiesForMarch[0] | undefined;

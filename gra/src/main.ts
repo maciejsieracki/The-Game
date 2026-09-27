@@ -33578,6 +33578,26 @@ async function boot(): Promise<void> {
               (oid) => objectivePowerByOwner.get(oid)?.power ?? 0,
               { cityStateOpts: ownerCityStateOpts() },
             );
+            // R-AI-WOJNA-EPOKI-OFENSYWA-FORTELE-Q1: przekazuj planiscie AI
+            // aktywna pare wymuszonej wojny. Rejestry epok sa rozdzielne, ale
+            // dyrektywa ma jeden wspolny kontrakt: napastnik konsoliduje armie
+            // i maszeruje na miasta celu, obronca skupia reakcje na napastniku.
+            const forcedWarDirective = (() => {
+              const active = [
+                ...Array.from(bronzeForceWarActiveByPairKey.values()).map(st => ({ st, era: 'bronze' as const })),
+                ...Array.from(stoneForceWarActiveByPairKey.values()).map(st => ({ st, era: 'stone' as const })),
+                ...Array.from(ironForceWarActiveByPairKey.values()).map(st => ({ st, era: 'iron' as const })),
+              ].find(({ st }) => st.attackerId === ownerId || st.targetId === ownerId);
+              if (active === undefined) return undefined;
+              const { st, era } = active;
+              return {
+                targetOwnerId: st.attackerId === ownerId ? st.targetId : st.attackerId,
+                role: st.attackerId === ownerId ? 'attacker' as const : 'defender' as const,
+                era,
+                capturedByAttacker: st.capturedByAttacker,
+                capturedByDefender: st.capturedByDefender,
+              };
+            })();
             const opts: AITurnOpts = {
               // P-AI-BRAK-POJECIA-MGLY-Q1: AI widzi wyłącznie własny snapshot.
               visibleHexes: aiVisibleHexes,
@@ -33606,6 +33626,7 @@ async function boot(): Promise<void> {
                   }
                 : undefined,
               currentTurn: turn,
+              forcedWar: forcedWarDirective,
               powerRank: powerRankInfo.rank,
               powerOfOwner: (oid: number) => objectivePowerByOwner.get(oid)?.power ?? 0,
               cityBuildings: Object.fromEntries(
