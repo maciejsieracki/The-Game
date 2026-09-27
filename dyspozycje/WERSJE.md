@@ -13,6 +13,19 @@ swoim wĹ‚asnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji d
 > Pakiet 3 z 2026-08-20 jest docs-only i nie tworzy wpisu ROBOCZA/KANON/FINALNA;
 > ten plik pozostaje wyłącznie rejestrem publikacji bundli.
 
+## ROBOCZA b889074c - 2026-09-27 18:20 UTC - Etap C wojny epoki: fale z roznych kierunkow (kontynuacja 5 tematow)
+
+- md5 (pelne): b889074c6dac56eab875da24eeeae492 · sha256: acf837f294b1d354cacb912ba4be7e31d616fb3854a6c02827116bac7ff89ea1
+- bajty: 69928949 · stempel menu: ROBOCZA b889074c
+- publishCommit: e4caea5fb29d2d161388a976214ac974675542fa (branch `hermes/R-AI-WOJNA-EPOKI-FALA-KOLEJNA-KIERUNEK-Q1-20260927`, fast-forward z `origin/main=93f5ed43`)
+- Co weszlo (1 temat, kontynuacja "AI ofensywa wojny epoki" z poprzedniej fali):
+  - `R-AI-WOJNA-EPOKI-FALA-KOLEJNA-KIERUNEK-Q1-20260927` (Etap C, zadanie wlasciciela: "druga armia powinna byc zbierana ponownie... i atakowac z innego miejsca... nie z tego samego, z ktorego atakuje glowna armia"). Nowy modul `gra/src/game/forced-war-waves.ts`: sledzenie aktywnych fal wojny wymuszonej, jednostki fali w drodze sa wykluczane z nowej koncentracji, kolejna fala (po zebraniu min. 3 wolnych jednostek) wybiera cel/sektor mierzalnie inny niz fale aktywne ORAZ juz rozwiazane (historyczne). Stan `forcedWarWavesByPairKey` w `main.ts`, zapisywany/wczytywany w save, czyszczony na wszystkich 17 sciezkach konca wojny wymuszonej.
+  - Operator `t_38409843` PASS-WITH-NOTES (4 rundy self-review) -> Evaluator `t_d7ad067b` **FAIL** (realny blad: `targetDifferent` liczyl tylko aktywne fale, nie historyczne -- fala 2 mogla ponownie zaatakowac miasto juz zdobyte/stracone przez rozwiazana falke 1) -> poprawka Operator `t_6e057d4b` PASS-WITH-NOTES (naprawiono `excludedTargetIds` = aktywne+historyczne cele, nowy test regresyjny) -> Evaluator dodatkowy `t_498a5063` PASS-WITH-NOTES (niezalezny probe potwierdzil nawrote behawioralnie, nie tylko istniejacym testem).
+- Integracja: fast-forward merge (branch oparty na aktualnym `origin/main`, zero konfliktow).
+- Bramki po integracji (wszystkie uruchomione od zera przez orkiestratora): `tsc --noEmit` PASS; `forced-war-waves-test.cjs` 17/17; `ai-ofensywa-wojna-epoki-test.cjs` 7/7 (regresja Etapu A+B potwierdzona); `army-concentration-test.cjs` 55/55; `forced-war-bronze-test.cjs` 56/56; `git diff --check` PASS; `vite build` 893 modules (892+1 nowy modul); `smoke.cjs` (Chromium headless) SMOKE OK; `verify-robocza-bundle.cjs` VERIFY OK (manifest match OK, stamp match WARN = znany non-blocking false-positive).
+- STATUS: DEPLOYED do ROBOCZA. Push do `origin/main` w tej samej sesji, patrz commit powyzej i log push.
+- Wciaz POZA zakresem (niezmienione): `ai_profil_obronna`, Dyplomacja (macierz cywilizacji), PR #142 (rally-point UI, niezalezny).
+
 ## ROBOCZA 699f53bc - 2026-09-27 13:01 UTC - hotseat x2 + rydwan/konnica x2 + rydwan AI + wojna epoki ofensywa (5 tematow)
 
 ||- md5 (pelne): 699f53bc0286e5bc5f4044251bdf32ee · sha256: e5880bce4be8fed11b2152a8a076e0cddf1a2e0f4e3bc06be83e6da0c2e6f508 · stempel label `699f53bc` · integration/publish commit: `7ccb1dc078c0be7d7d93a12e8dc32fd1748d0c4d` (repo: `The-Game-integration-20260927`, branch `hermes/integration/20260927-piec-tematow`) · base: `6eab3b40` (origin/main)

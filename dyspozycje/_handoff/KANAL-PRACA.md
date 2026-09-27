@@ -21,6 +21,24 @@ Haslo wlasciciela otrzymane wprost (2026-09-26/27, dwie sesje): "Zajmij sie obom
 
 CZEKAM-NA: test wlasciciela w `gra-robocza/START.html` po `Ctrl+F5` -- reczny ruch gracza 2 w hot-seat, niezalezne ustawienia (praca/podatki/pieniadze) obu fotelow, silniejsze rydwany/konnica, rydwany aktywnie atakujace/okrazajace, oraz AI konsolidujace armie i atakujace miasta po wybuchu wojny epoki.
 
+## [2026-09-27 18:20 UTC] ORKIESTRATOR -> KANBAN / WLASCICIEL -- DEPLOY ROBOCZA: ETAP C WOJNY EPOKI -- FALE Z ROZNYCH KIERUNKOW (KONTYNUACJA 5 TEMATOW)
+
+STATUS: `DEPLOYED -- local commit WYKONANY w worktree integracyjnym; push do origin/main -- patrz sekcja PUSH ponizej`.
+
+Haslo wlasciciela otrzymane wprost (2026-09-27): opis fortelu -- "W momencie wybuchu wojny cywilizacja AI zbiera wszystkie dostepne jednostki... a nastepnie wyrusza, by zdobyc dwa kolejne miasta przeciwnika... Druga armia powinna byc zbierana ponownie... i atakowac z innego miejsca... nie z tego samego, z ktorego atakuje glowna armia... az do osiagniecia celu, czyli zdobycia dwoch miast. Albo do zakonczenia wojny epoki po odpowiedniej ilosci tur." + potwierdzenie kontynuacji deployu po Evaluatorze: "b" (integruj i deployuj teraz).
+
+- Czysty integration worktree: `/home/ubuntu/projects/The-Game-integration-20260927`; base `origin/main=93f5ed43b0ff51208d207589539482a14a8ad2ad` (poprzedni deploy 5 tematow).
+- Jeden temat, osobny worktree/branch/karta Kanban, operatorzy/evaluatorzy na `gpt-5.6-luna-900k`/`openai-codex`:
+  - `R-AI-WOJNA-EPOKI-FALA-KOLEJNA-KIERUNEK-Q1-20260927` -- Operator `t_38409843` PASS-WITH-NOTES (4 rundy self-review) -> Evaluator `t_d7ad067b` **FAIL**: `targetForAnchor()` w nowym `gra/src/game/forced-war-waves.ts` liczyl `targetDifferent` tylko z aktywnych fal, nie z historii rozwiazanych fal -- kolejna fala mogla wiec ponownie zaatakowac miasto juz zdobyte/stracone przez wczesniejsza, zakonczona falke. Naprawa: poprawka Operator `t_6e057d4b` PASS-WITH-NOTES (`excludedTargetIds` teraz laczy cele fal aktywnych ORAZ historycznych; nowy test regresyjny odtwarzajacy dokladnie ten scenariusz). Potwierdzenie: Evaluator dodatkowy `t_498a5063` PASS-WITH-NOTES z WLASNYM, niezaleznym probe (nie tylko odczyt istniejacego testu).
+  - Mechanizm: jednostki fali w drodze/zaangazowanej sa wykluczone z puli koncentracji nowej fali (`activeWaveUnitIds`); nowa fala (min. 3 wolne jednostki w promieniu koncentracji) wybiera cel i szesciokatny sektor podejscia mierzalnie rozny od aktywnych i historycznych fal (fallback na jedyne dostepne miasto zachowany dla wojen z jednym celem); stan `forcedWarWavesByPairKey` per para wojny, serializowany w save, czyszczony na wszystkich 17 bezposrednich sciezkach konca wojny wymuszonej w `main.ts` (pokoj, eliminacja, limit tur/miast, reset testowy).
+- Integracja: fast-forward merge z `origin/main=93f5ed43` (branch operatora byl juz oparty na aktualnym origin, zero konfliktow).
+- Integration/publish commit: `e4caea5fb29d2d161388a976214ac974675542fa` (branch `hermes/R-AI-WOJNA-EPOKI-FALA-KOLEJNA-KIERUNEK-Q1-20260927`).
+- Bramki po integracji (orkiestrator, od zera): `tsc --noEmit` PASS; `forced-war-waves-test.cjs` 17/17; `ai-ofensywa-wojna-epoki-test.cjs` 7/7 (zero regresji Etapu A+B); `army-concentration-test.cjs` 55/55; `forced-war-bronze-test.cjs` 56/56; `git diff --check` PASS; `vite build` 893 modules; `smoke.cjs` (Chromium headless) SMOKE OK (canvas=1, rAF=1); `verify-robocza-bundle.cjs` VERIFY OK.
+- Bundle: `gra-robocza/Gra-ROBOCZA.html`, md5 `b889074c6dac56eab875da24eeeae492`, 69928949 bajtow. Manifest `gra-robocza/ROBOCZA-MANIFEST.json` zaktualizowany.
+- Wciaz POZA zakresem (niezmienione): `ai_profil_obronna`, Dyplomacja (macierz cywilizacji), PR #142 (rally-point UI, niezalezny, OPEN/MERGEABLE).
+
+---
+
 ## [2026-09-26 16:17 UTC] ORKIESTRATOR -> KANBAN / WLASCICIEL -- DEPLOY ROBOCZA: ZYWNOSC + AUTOMANAGE + AI-MIASTA (3 TEMATY)
 
 STATUS: `DEPLOYED -- local commit + push do origin/main WYKONANY; remote readback PASS`.
