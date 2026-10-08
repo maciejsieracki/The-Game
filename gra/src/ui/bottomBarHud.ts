@@ -183,8 +183,18 @@ export function createBottomBarHud(config: BottomBarHudConfig): BottomBarHudApi 
   ensureStyles();
   const el = document.createElement('div');
   el.className = 'civ-bottom-bar';
+  const activeEndTurnPointers = new Set<number>();
+  let renderPending = false;
+  let pendingRenderTimer: number | null = null;
 
   function render(): void {
+    if (activeEndTurnPointers.size > 0) {
+      renderPending = true;
+      return;
+    }
+    renderPending = false;
+    const previousEndButton = el.querySelector<HTMLButtonElement>('[data-end]');
+    const preserveEndButtonFocus = previousEndButton !== null && document.activeElement === previousEndButton;
     const blocking = config.getBlockingCount?.() ?? 0;
     const hideEnd = config.hideEndTurn?.() ?? false;
     const canEnd = !hideEnd && (config.canEndTurn?.() ?? true);
@@ -244,16 +254,36 @@ export function createBottomBarHud(config: BottomBarHudConfig): BottomBarHudApi 
       ))
       + '<div class="et-turn-lbl">Tura ' + turn + (year ? ' · ' + year : '') + '</div>';
 
+    const nextEndButton = el.querySelector<HTMLButtonElement>('[data-end]');
+    const preserveEndButton = previousEndButton !== null && nextEndButton !== null;
+    if (preserveEndButton) {
+      for (const attribute of Array.from(previousEndButton.attributes)) {
+        if (!nextEndButton.hasAttribute(attribute.name)) previousEndButton.removeAttribute(attribute.name);
+      }
+      for (const attribute of Array.from(nextEndButton.attributes)) {
+        if (previousEndButton.getAttribute(attribute.name) !== attribute.value) {
+          previousEndButton.setAttribute(attribute.name, attribute.value);
+        }
+      }
+      if (previousEndButton.innerHTML !== nextEndButton.innerHTML) {
+        previousEndButton.innerHTML = nextEndButton.innerHTML;
+      }
+      nextEndButton.replaceWith(previousEndButton);
+    }
+    if (preserveEndButtonFocus) el.querySelector<HTMLButtonElement>('[data-end]')?.focus({ preventScroll: true });
+
     el.querySelector('[data-wykonaj]')?.addEventListener('click', () => {
       if (wykOn) config.onExecutePending?.();
     });
     // R-TRZY-KARTY-WDROZENIE-Q1 TWARDY ZAKAZ tej rundy: klik na „Zakończ turę" NIE sprawdza
     // blocking/showBlockSignal/getBlockingCount() — dokładnie ten sam warunek co przed tą
     // rundą (tylko hideEndTurn). Zakończenie tury pozostaje zawsze dostępne (Maciej 2026-07-06).
-    el.querySelector('[data-end]')?.addEventListener('click', () => {
-      if (config.hideEndTurn?.()) return;
-      config.onEndTurn?.();
-    });
+    if (!preserveEndButton) {
+      el.querySelector('[data-end]')?.addEventListener('click', () => {
+        if (config.hideEndTurn?.()) return;
+        config.onEndTurn?.();
+      });
+    }
     // „Pokaż →" (pasek) i tooltip: idą do pierwszej blokującej karty — reużywają DOKŁADNIE
     // ten sam mechanizm co „Wykonaj" (config.onExecutePending, main.ts: executeFirstBlockingEvent).
     el.querySelector('[data-et-show]')?.addEventListener('click', (e: Event) => {
@@ -265,7 +295,41 @@ export function createBottomBarHud(config: BottomBarHudConfig): BottomBarHudApi 
     });
   }
 
+  function schedulePendingRender(): void {
+    if (pendingRenderTimer !== null) window.clearTimeout(pendingRenderTimer);
+    pendingRenderTimer = window.setTimeout(() => {
+      pendingRenderTimer = null;
+      if (activeEndTurnPointers.size === 0 && renderPending) render();
+    }, 0);
+  }
+
+  function onEndTurnPointerDown(event: PointerEvent): void {
+    if (!event.isPrimary || event.button !== 0) return;
+    const target = event.target;
+    if (!(target instanceof Element)) return;
+    const button = target.closest('[data-end]');
+    if (button && el.contains(button)) activeEndTurnPointers.add(event.pointerId);
+  }
+
+  function onEndTurnPointerRelease(event: PointerEvent): void {
+    if (activeEndTurnPointers.delete(event.pointerId)) schedulePendingRender();
+  }
+
+  function destroy(): void {
+    document.removeEventListener('pointerdown', onEndTurnPointerDown, true);
+    document.removeEventListener('pointerup', onEndTurnPointerRelease, true);
+    document.removeEventListener('pointercancel', onEndTurnPointerRelease, true);
+    if (pendingRenderTimer !== null) window.clearTimeout(pendingRenderTimer);
+    pendingRenderTimer = null;
+    activeEndTurnPointers.clear();
+    renderPending = false;
+    el.remove();
+  }
+
   document.body.appendChild(el);
   render();
-  return { el, update: render, destroy: () => el.remove() };
+  document.addEventListener('pointerdown', onEndTurnPointerDown, true);
+  document.addEventListener('pointerup', onEndTurnPointerRelease, true);
+  document.addEventListener('pointercancel', onEndTurnPointerRelease, true);
+  return { el, update: render, destroy };
 }
