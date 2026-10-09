@@ -1,0 +1,127 @@
+{
+  "status": "LOCAL_ROBOCZA_PUBLISHED_REMOTE_PENDING",
+  "domain": "GAME",
+  "topic_id": "R-GAME-END-TURN-INPUT-REPAIR-Q1",
+  "owner_decision": "A: deploy end-turn separately; prior explicit main/push consent retained",
+  "base_sha": "69ccb145a8682f9c2754834afbb16a8d1eaaf825",
+  "product_commit": "c63a7bc89757cf165e7752e3dc0d124abdb06506",
+  "bundle_commit": "b407a5421b4aa5f537c600a21d5bea54ba7a2737",
+  "branch": "hermes/integration/end-turn-only-20261009",
+  "worktree": "/home/ubuntu/work/game-end-turn-only-release-20261009",
+  "source_manifest": {
+    "head": "c63a7bc89757cf165e7752e3dc0d124abdb06506",
+    "files": [
+      {
+        "path": "gra/src/ui/bottomBarHud.ts",
+        "bytes": 18978,
+        "sha256": "b3a1195d06473f8ff61bb9c2d4e1178cd2aee6e094b6cb40adfadf092b166b88"
+      },
+      {
+        "path": "gra/tools/end-turn-gameplay-runtime-test.cjs",
+        "bytes": 19836,
+        "sha256": "fc02e8108b2c5134f3c09f156b87c1200a18b84755a10f0cfe5614176c59017c"
+      },
+      {
+        "path": "gra/tools/end-turn-input-stability-test.cjs",
+        "bytes": 16544,
+        "sha256": "f34430a6f1c0df06189970bf46b0c52ddcc68414633748c82afd03703d1eb128"
+      }
+    ]
+  },
+  "phase_gates": {
+    "operator": {
+      "task": "t_4e7f423a",
+      "run": 43
+    },
+    "evaluator": {
+      "task": "t_3a306fbd",
+      "run": 44,
+      "verdict": "PASS-WITH-NOTES"
+    },
+    "final_control": {
+      "task": "t_9aac456c",
+      "run": 45,
+      "verdict": "PASS-WITH-NOTES",
+      "numbered_objections": []
+    }
+  },
+  "tests": {
+    "locked_fresh_install": "npm ci --ignore-scripts PASS",
+    "typecheck": "PASS",
+    "input_stability_groups": 10,
+    "hud_regression": "33/33",
+    "saveload_regression": "59/59",
+    "ai_restore_regression": "5/5",
+    "build_modules": 893,
+    "diff_check": "PASS",
+    "canonical_browser_runtime": "PASS",
+    "request_matches": true,
+    "turns": [
+      {
+        "before": 1,
+        "after": 2,
+        "trustedClicks": 1
+      },
+      {
+        "before": 2,
+        "after": 3,
+        "trustedClicks": 1
+      }
+    ],
+    "runtime_errors": [],
+    "runtime_warning_count": 25,
+    "elapsed_ms": 300651,
+    "stamped_http_smoke": {
+      "status": "PASS",
+      "httpStatus": 200,
+      "sha256": "0629fed042dd01cc7c824b8cf439a559c2bb94e91d653ce6c8cf3a372d0d4ee2",
+      "bytes": 69930169,
+      "canvasCount": 2,
+      "menuVisible": true,
+      "newGameConfigurationVisible": true,
+      "pageConsoleErrors": [],
+      "resourceErrors": [],
+      "warnings": [
+        "[.WebGL-0x87c0015c200]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels",
+        "[EndTurn] blocked: awaitingFirstPlayerCity",
+        "[EndTurn] blocked: awaitingFirstPlayerCity",
+        "[EndTurn] blocked: awaitingFirstPlayerCity",
+        "[.WebGL-0x87c0015c200]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels"
+      ],
+      "servingBoundary": "isolated HTTP serving of exact published bytes; no separate external website assumed"
+    }
+  },
+  "bundle": {
+    "md5": "f228f4908d72dabbaef8866994c6452a",
+    "sha256": "0629fed042dd01cc7c824b8cf439a559c2bb94e91d653ce6c8cf3a372d0d4ee2",
+    "bytes": 69930169,
+    "publishedAt": "2026-10-09T12:27:33.405657+00:00"
+  },
+  "warnings": [
+    "stamp self-reference mismatch: manifest matches exact bytes and verifier VERIFY OK",
+    "npm audit: 1 moderate, 8 high; no out-of-scope dependency upgrades",
+    "runtime scoped to human owner 0; no second-human click or browser save/load claim",
+    "full game and original worldgen acceptance remain NOT_PROVEN"
+  ],
+  "interruption_history": {
+    "first_supplementary_release_runtime": "INFRA/INTERRUPTED: terminated SIGTERM during prior response; no result, not PASS",
+    "log": "/home/ubuntu/handoffs/hermes-route-repair-20261001/end-turn-only-release-20261009/runtime.log",
+    "bounded_resume_runtime": "PASS on unchanged source/build; no additional Rally/worldgen attempt"
+  },
+  "remote_main_push": false,
+  "remote_branch_push": false,
+  "separate_external_website": "NOT_CONFIGURED_OR_CONFIRMED; published repository artifact and isolated HTTP smoke only",
+  "original_accepted_obligations": "0/9",
+  "rally": "TRIAGE after run48 BLOCK 5/5; no retry, no integration",
+  "excluded": [
+    "Rally Point UI",
+    "worldgen",
+    "PR141/matrix",
+    "Rust/Tauri",
+    "Hermes Desktop Windows",
+    "KANON",
+    "FINALNA"
+  ],
+  "evidence_directory_on_server": "/home/ubuntu/handoffs/hermes-route-repair-20261001/end-turn-only-release-20261009",
+  "createdAt": "2026-10-09T12:29:51.621838+00:00"
+}

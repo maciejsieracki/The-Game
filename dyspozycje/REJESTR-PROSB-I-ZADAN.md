@@ -1,5 +1,17 @@
 # REJESTR PRÓŚB I ZADAŃ — kanoniczny indeks + historia
 
+## `R-GAME-END-TURN-INPUT-REPAIR-Q1` — DEPLOY-ROBOCZA lokalnie, remote pending (2026-10-09)
+
+- STATUS: LOCAL-PUBLISHED; REMOTE-PUSH-PENDING. Tylko bounded naprawa „Zakończ turę”, nie odbiór całego produktu.
+- Owner A: wydzielić i wdrożyć end-turn osobno; wcześniejsza zgoda main/push zachowana.
+- Source `c63a7bc89757cf165e7752e3dc0d124abdb06506`, bundle `b407a5421b4aa5f537c600a21d5bea54ba7a2737`, base `69ccb145a8682f9c2754834afbb16a8d1eaaf825`; branch `hermes/integration/end-turn-only-20261009`.
+- Operator `t_4e7f423a/run43`, niezależny Evaluator `t_3a306fbd/run44`, Final Control `t_9aac456c/run45`: bounded PASS-WITH-NOTES, zero zarzutów. Źródła zgodne z zaakceptowanymi hashami.
+- Świeże typecheck/build/regresje PASS; minifikowany bundle i zwykłe onboarding/dialog Back/trusted clicks potwierdziły 1→2→3, zero page/console errors. Ostemplowany bundle HTTP smoke 200 i UI/canvas PASS.
+- Wersja: [WERSJE.md](WERSJE.md); receipt: `autobot/runs/R-GAME-END-TURN-INPUT-REPAIR-Q1/release-20261009/receipt.json`.
+- `t_9c7bf537` i kolejne process gates pozostają workerless; komentarze dokumentują integrację/publikację, nie wolno ich dispatchować.
+- Rally Point `t_b5997c1d/run48` pozostaje TRIAGE/BLOCK 5/5, jego Evaluator/Final Control zablokowane; brak retry i brak zmian Rally w tej publikacji. Worldgen, PR141, matrix i Desktop otwarte. Pełny gameplay/worldgen NOT_PROVEN; oryginalny ledger 0/9 bez zmiany.
+
+
 ## FALA 388 — DEPLOYED / REMOTE READBACK PASS
 
 - Board `the-game-real24`, profile `default`, project `p_9ae9ac64`; base `origin/main@7d02dfc5b73e992e389dd01992a52159e943a621`; local integration commit `95fd93050585c19584700e34205da74576f2150f`.

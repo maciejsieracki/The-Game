@@ -1,4 +1,18 @@
-﻿## [2026-09-27 13:01 UTC] ORKIESTRATOR -> KANBAN / WLASCICIEL -- DEPLOY ROBOCZA: HOTSEAT X2 + RYDWAN/KONNICA X2 + RYDWAN AI + WOJNA EPOKI OFENSYWA (5 TEMATOW)
+﻿## [2026-10-09] ORKIESTRATOR → WŁAŚCICIEL / KANBAN — osobny deploy „Zakończ turę”
+
+STATUS: LOCAL-PUBLISHED; REMOTE-PUSH-PENDING (przed zdalnym odczytem).
+
+- Decyzja A: end-turn wdrożyć osobno; nie czekać na Rally i nie dołączać jego zmian.
+- Source `c63a7bc89757cf165e7752e3dc0d124abdb06506`, bundle commit `b407a5421b4aa5f537c600a21d5bea54ba7a2737`, base `69ccb145a8682f9c2754834afbb16a8d1eaaf825`.
+- Branch `hermes/integration/end-turn-only-20261009`; czysty izolowany worktree na serwerze `/home/ubuntu/work/game-end-turn-only-release-20261009`. Chroniony checkout produktu bez zmian.
+- Istniejące Operator43/Evaluator44/FinalControl45 z pustymi zarzutami; identyczne source/harness hashes. Świeże regresje i direct Vite PASS; świeży Chromium potwierdził 1→2→3 i po jednym trusted click na turę, zero błędów. HTTP smoke ostemplowanego bundla 200/UI/canvas PASS.
+- Wersja/hash: [WERSJE.md](../WERSJE.md). Receipt: `dyspozycje/autobot/runs/R-GAME-END-TURN-INPUT-REPAIR-Q1/release-20261009/receipt.json`.
+- Zapisano przerwany dodatkowy test SIGTERM jako INFRA; wznowienie na niezmienionym bundlu PASS. Audit zależności: 1 moderate/8 high, bez upgrade. Znany stamp WARN nie zmienia zgodności manifestu.
+- Rally pozostaje TRIAGE po run48 BLOCK 5/5, bez kolejnej próby, bez Evaluatora/Final Control i bez publikacji. Worldgen/PR141/matrix/Desktop nie zmieniane; ledger 0/9 zachowany. Brak promocji KANON/FINALNA.
+
+CZEKAM-NA: dokładny remote branch/main SHA + bundle/manifest/hash readback po pushu; następnie test właściciela nowej ROBOCZA. Nie potwierdzono osobnego zewnętrznego serwisu gry — izolowany HTTP smoke dotyczy dokładnego artefaktu repozytorium.
+
+## [2026-09-27 13:01 UTC] ORKIESTRATOR -> KANBAN / WLASCICIEL -- DEPLOY ROBOCZA: HOTSEAT X2 + RYDWAN/KONNICA X2 + RYDWAN AI + WOJNA EPOKI OFENSYWA (5 TEMATOW)
 
 STATUS: `DEPLOYED -- local commit WYKONANY w worktree integracyjnym; push do origin/main -- patrz sekcja PUSH ponizej`.
 

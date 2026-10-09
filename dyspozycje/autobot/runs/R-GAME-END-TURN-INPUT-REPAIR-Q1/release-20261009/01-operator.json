@@ -1,0 +1,202 @@
+{
+  "status": "PASS",
+  "domain": "GAME",
+  "role": "Operator",
+  "topic_id": "R-GAME-END-TURN-INPUT-REPAIR-Q1",
+  "incident": "ERR-GAME-2026-10-07-01",
+  "native_task_id": "t_4e7f423a",
+  "native_run_id": 43,
+  "round": "1/5",
+  "attempt": "attempt-20261007",
+  "actual_route": {
+    "provider": "openai-codex",
+    "model": "gpt-6-luna",
+    "effort": "max",
+    "service_tier": "normal"
+  },
+  "base_sha": "69ccb145a8682f9c2754834afbb16a8d1eaaf825",
+  "head_sha": "69ccb145a8682f9c2754834afbb16a8d1eaaf825",
+  "branch": "hermes/R-GAME-END-TURN-INPUT-REPAIR-Q1-20261007",
+  "changed_paths": [
+    "gra/src/ui/bottomBarHud.ts",
+    "gra/tools/end-turn-input-stability-test.cjs",
+    "gra/tools/end-turn-gameplay-runtime-test.cjs",
+    "dyspozycje/REJESTR-PROSB-I-ZADAN.md",
+    "dyspozycje/autobot/runs/R-GAME-END-TURN-INPUT-REPAIR-Q1/attempt-20261007/**"
+  ],
+  "product_acceptance": false,
+  "no_release": true,
+  "gate_results": {
+    "G1_product_red": "PASS",
+    "G2_fixed_input": "PASS",
+    "G3_bounded_real_gameplay_two_turns": "PASS",
+    "G4_regression_scope_save_load_ai": "PASS_WITH_EXPLICIT_SCOPE_NOTES",
+    "G5_independent_evaluator_and_final_control": "PENDING",
+    "G6_no_release": "PASS"
+  },
+  "focused_test": {
+    "command": "node tools/end-turn-input-stability-test.cjs",
+    "exit_code": 0,
+    "behavior_groups": 10,
+    "negative_control": "unchanged-base outside-dismiss replaces the target node; trusted click absent and focus lost",
+    "base_source_sha256": "d42297ed5035ece4215bd5ad7d267496f36f0e7645add72d6f9c9cdc0dcc13d5",
+    "candidate_source_sha256": "b3a1195d06473f8ff61bb9c2d4e1178cd2aee6e094b6cb40adfadf092b166b88",
+    "final_log": "green-focused-final.log"
+  },
+  "runtime": {
+    "command": "WORLD_GEN_DIST=<candidate-dist> WORLD_GEN_REQUEST_FILE=<exact-browser-request.json> WORLD_GEN_EVIDENCE_DIR=<browser-candidate-v2> WORLD_GEN_TIMEOUT_MS=180000 node tools/end-turn-gameplay-runtime-test.cjs",
+    "exit_code": 0,
+    "status": "PASS",
+    "seed": 589020,
+    "map_size": "168x120",
+    "owner0_city_founded": true,
+    "audience_dialogs_dismissed_by_normal_back": 3,
+    "exact_request_matches_replay": true,
+    "exact_request_sha256": "63039ccf71247cd54c205aff82af8823825604a2f8b20b09dba07fe1bb885530",
+    "exact_map_sha256": "2393d7222f8f00c3085d10b7759dd1bd9c719d2f81870f4c447adf4414525eeb",
+    "turn_transitions": [
+      {
+        "before": 1,
+        "after": 2,
+        "trusted_end_turn_clicks": 1,
+        "transition_overlay_absent_after": true,
+        "end_turn_ready_after": true,
+        "hud_matches_engine_after": true,
+        "diplo_list_open_before": true
+      },
+      {
+        "before": 2,
+        "after": 3,
+        "trusted_end_turn_clicks": 1,
+        "transition_overlay_absent_after": true,
+        "end_turn_ready_after": true,
+        "hud_matches_engine_after": true,
+        "diplo_list_open_before": false
+      }
+    ],
+    "page_console_errors": 0,
+    "warnings": 23,
+    "warning_notes": [
+      "end-turn readiness/active-transition guard messages",
+      "WebGL ReadPixels performance warnings",
+      "economy reports 3 missing wood",
+      "two >8s transition-recovery warnings from unchanged main.ts code path"
+    ],
+    "elapsed_ms": 324762,
+    "bounded_gameplay_acceptance": "PASS",
+    "full_gameplay_acceptance": "NOT_PROVEN",
+    "product_acceptance": false,
+    "evidence": "gameplay-runtime-candidate-v2-result.json"
+  },
+  "build": {
+    "command": "node ./node_modules/vite/bin/vite.js build --outDir <scratch>/candidate-dist --emptyOutDir --minify=false --sourcemap=hidden",
+    "exit_code": 0,
+    "file_count": 3,
+    "bytes": 158852116,
+    "index_html_sha256": "ad119802175c94e032d11d0e1bbb61f820bef27b9a36b75914eb9bdc10d0fae7",
+    "aggregate_sha256": "6b4355b8b079b5dbfaadaf5aaf95312bc6a77c185837efe1f93bc419980550e0"
+  },
+  "tests": [
+    {
+      "command": "node --check gra/tools/end-turn-input-stability-test.cjs && node --check gra/tools/end-turn-gameplay-runtime-test.cjs",
+      "exit_code": 0
+    },
+    {
+      "command": "cd gra && node ./node_modules/typescript/bin/tsc --noEmit",
+      "exit_code": 0
+    },
+    {
+      "command": "node tools/bottom-bar-hud-wykonaj-overlap-test.cjs",
+      "exit_code": 0,
+      "passed": 33,
+      "failed": 0
+    },
+    {
+      "command": "node tools/hotseat-etap7-saveload-test.cjs",
+      "exit_code": 0,
+      "passed": 59,
+      "failed": 0,
+      "assessment": "save schema roundtrip/restore, multi-human owners and compatibility; no in-browser save/load claimed"
+    },
+    {
+      "command": "node tools/civ-ai-allocation-saveload-order-test.cjs",
+      "exit_code": 0,
+      "passed": 5,
+      "failed": 0,
+      "assessment": "AI allocation restore order and negative control"
+    },
+    {
+      "command": "git diff --check",
+      "exit_code": 0
+    }
+  ],
+  "untouched_surface_hashes": {
+    "gra/data": {
+      "tracked_files": 30,
+      "unchanged": true,
+      "sha256": "f67bd9ffb3d841e58307008051f0d387c39a5027b90bacd4d900f744e55702a7"
+    },
+    "gra/src/map": {
+      "tracked_files": 25,
+      "unchanged": true,
+      "sha256": "4163d8bf57f0baccee7eb50b76f6656ff34bdb163df6f2518b7a40719b83210e"
+    },
+    "gra/src/game": {
+      "tracked_files": 183,
+      "unchanged": true,
+      "sha256": "862c73c24e0a6b16a76f10c3c4c5b2897dfdb816a3ebc68f47073c2cc242795c"
+    },
+    "gra/src/main.ts": {
+      "unchanged": true,
+      "sha256": "9973602b20f49d3952a440ce2daee37cbc9f39a4d4c2ed87053c8816ccced4fd"
+    },
+    "gra/src/ui/hud.ts": {
+      "unchanged": true,
+      "sha256": "be89c71e5013e6b148b5fbab1e3b6e15bdbca735fd5b2268ae9c2b441bec1e91"
+    },
+    "gra/src/render/scene.ts": {
+      "unchanged": true,
+      "sha256": "646dddb610fde77b3901c337eea4c14392cdda6d9f5d12b5d21c3d2923e6057c"
+    },
+    "gra/package.json": {
+      "unchanged": true,
+      "sha256": "cc1bc865c80ccaa842fa749ee55f8fc3824160c697d07a991acdfcc0c8b6f36b"
+    },
+    "gra/package-lock.json": {
+      "unchanged": true,
+      "sha256": "40c8eab2d1b39e8080b6516dd2bfc215e4ca1f12a1d80728712f157e802ae459"
+    }
+  },
+  "save_load_assessment": {
+    "save_load_schema_changed": false,
+    "save_load_runtime_flow_changed": false,
+    "roundtrip_tests_passed": true,
+    "current_real_browser_save_load_exercised": false
+  },
+  "player_ai_assessment": {
+    "active_human_owner": 0,
+    "AI_transition_processing_observed_between_clicks": true,
+    "hotseat_second_human_end_turn_exercised_in_this_runtime": false
+  },
+  "screenshots": [
+    "gameplay-runtime-candidate-v2-after.png",
+    "gameplay-runtime-candidate-v2-before-audience-dismissal.png",
+    "gameplay-runtime-candidate-v2-first-city-audience.png",
+    "gameplay-runtime-unchanged-base-before.png",
+    "gameplay-runtime-candidate-v1-oracle-precondition.png"
+  ],
+  "other_evidence": [
+    "progress.json",
+    "red-unchanged-base.log",
+    "red-unchanged-base-v2.log",
+    "green-focused-final.log",
+    "overlap-final.log",
+    "save-load-hotseat-final.log",
+    "save-load-ai-order-final.log",
+    "gameplay-runtime-candidate-v2.log",
+    "gameplay-runtime-candidate-v2.exit",
+    "typescript-final.log"
+  ],
+  "next_gate": "Orchestrator artifact/readback receipt; existing independent Evaluator t_3a306fbd; then separate Final Control",
+  "deploy_push": "NOT_EXECUTED"
+}

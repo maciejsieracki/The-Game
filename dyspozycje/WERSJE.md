@@ -13,6 +13,17 @@ swoim wĹ‚asnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji d
 > Pakiet 3 z 2026-08-20 jest docs-only i nie tworzy wpisu ROBOCZA/KANON/FINALNA;
 > ten plik pozostaje wyłącznie rejestrem publikacji bundli.
 
+## ROBOCZA f228f490 — 2026-10-09 — osobno „Zakończ turę”
+
+- STATUS: LOCAL-PUBLISHED; REMOTE-PUSH-PENDING (stan sprzed zdalnego readbacku).
+- md5: `f228f4908d72dabbaef8866994c6452a`; sha256: `0629fed042dd01cc7c824b8cf439a559c2bb94e91d653ce6c8cf3a372d0d4ee2`; bajty: `69930169`.
+- Source/integration: `c63a7bc89757cf165e7752e3dc0d124abdb06506`; bundle commit: `b407a5421b4aa5f537c600a21d5bea54ba7a2737`; base: `69ccb145a8682f9c2754834afbb16a8d1eaaf825`.
+- Co weszło: tylko `R-GAME-END-TURN-INPUT-REPAIR-Q1` — zachowanie tożsamości przycisku i trusted click podczas odświeżania HUD. Bez zmian reguł gry, mapy ani danych.
+- Bramki: Operator43 → niezależny Evaluator44 → Final Control45 PASS-WITH-NOTES; identyczne hashe źródeł. Świeże npm ci/typecheck/build PASS; input 10 grup, HUD 33/33, save/load 59/59, AI restore 5/5; prawdziwy Chromium na świeżym minifikowanym bundlu: 1→2→3, dwa trusted clicks, zero page/console errors. HTTP smoke ostemplowanego bundla: 200, canvas/UI, zero błędów.
+- Znane ograniczenia: ostrzeżenie samoodwołującego stempla (manifest zgodny, VERIFY OK); npm audit 1 moderate + 8 high bez upgrade; tylko owner 0, bez browser save/load. Pierwszy dodatkowy runtime przerwany SIGTERM — zachowany jako INFRA, późniejsze bounded wznowienie PASS.
+- Decyzja właściciela A: wdrożyć end-turn osobno. Rally Point nie weszło i pozostaje TRIAGE/BLOCK po run48 5/5; worldgen/PR141/matrix/Desktop poza zakresem; pierwotne acceptance 0/9 bez zmiany. Bez promocji KANON/FINALNA.
+- Receipt: `autobot/runs/R-GAME-END-TURN-INPUT-REPAIR-Q1/release-20261009/receipt.json`.
+
 ## ROBOCZA b889074c - 2026-09-27 18:20 UTC - Etap C wojny epoki: fale z roznych kierunkow (kontynuacja 5 tematow)
 
 - md5 (pelne): b889074c6dac56eab875da24eeeae492 · sha256: acf837f294b1d354cacb912ba4be7e31d616fb3854a6c02827116bac7ff89ea1
