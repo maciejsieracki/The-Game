@@ -1,115 +1,70 @@
 {
-  "publishedAt": "2026-09-27T18:20:00Z",
-  "productReleaseCommit": "e4caea5fb29d2d161388a976214ac974675542fa",
+  "publishedAt": "2026-10-09T12:27:33.405657+00:00",
+  "productReleaseCommit": "c63a7bc89757cf165e7752e3dc0d124abdb06506",
   "publisher": "Hermes Orchestrator",
-  "md5": "b889074c6dac56eab875da24eeeae492",
-  "sha256": "acf837f294b1d354cacb912ba4be7e31d616fb3854a6c02827116bac7ff89ea1",
-  "bytes": 69928949,
+  "md5": "f228f4908d72dabbaef8866994c6452a",
+  "sha256": "0629fed042dd01cc7c824b8cf439a559c2bb94e91d653ce6c8cf3a372d0d4ee2",
+  "bytes": 69930169,
   "bundle": "Gra-ROBOCZA.html",
-  "sourceCommit": "e4caea5fb29d2d161388a976214ac974675542fa",
-  "base": "93f5ed43b0ff51208d207589539482a14a8ad2ad",
-  "integrationCommit": "e4caea5fb29d2d161388a976214ac974675542fa",
-  "publishCommit": "e4caea5fb29d2d161388a976214ac974675542fa",
-  "remoteMainAtPublish": "93f5ed43b0ff51208d207589539482a14a8ad2ad",
+  "sourceCommit": "c63a7bc89757cf165e7752e3dc0d124abdb06506",
+  "base": "69ccb145a8682f9c2754834afbb16a8d1eaaf825",
+  "integrationCommit": "c63a7bc89757cf165e7752e3dc0d124abdb06506",
+  "publishCommit": "c63a7bc89757cf165e7752e3dc0d124abdb06506",
+  "remoteMainAtPublish": "69ccb145a8682f9c2754834afbb16a8d1eaaf825",
   "remoteSmoke": false,
-  "finalControl": [
-    "R-HOTSEAT-RECZNY-RUCH-GRACZ2-Q1-20260927: Operator t_ecf23c85 (self-report, kanban_complete), Evaluator dodatkowy t_9eb58bbe PASS-WITH-NOTES (niezalezna weryfikacja: isMe() fix potwierdzony w diffie, pre-existing live-harness timeout turn=2/activeHumanOwnerId=49 potwierdzony rowniez na czystym origin/main)",
-    "R-HOTSEAT-USTAWIENIA-KOPIOWANE-Q1-20260927: Operator t_b4fb7a22 PASS (16/16 Chromium dwoch foteli, tsc, diff-check)",
-    "R-JEDNOSTKI-RYDWAN-KONNICA-X2-Q1-20260927: Operator t_c1de1a6b PASS (2 rundy review, 548/548 asercji x2, tsc, combat 6/6, army-hunger 13/13, Chromium render 19/19)",
-    "P-RYDWAN-BIERNY-BRAK-ATAKU-Q1-20260927: Operator t_85506cd7 PASS (3 rundy review -- runda 2 znalazla realny blad Math.max(ruchLeft,ruch) zamiast ruchLeft, naprawiony w rundzie 3; focused 6/6, army-concentration 55/55, siege 17/17, combat 6/6, home-defense 42/42)",
-    "R-AI-WOJNA-EPOKI-OFENSYWA-FORTELE-Q1-20260927 (Etap A+B): Operator t_10fe8209 (self-report, kanban_complete), Evaluator dodatkowy t_c9a375bc PASS-WITH-NOTES (niezalezna weryfikacja: 7/7, army-concentration 55/55, forced-war-bronze 56/56, tsc, Chromium live DOW smoke)",
-    "R-AI-WOJNA-EPOKI-FALA-KOLEJNA-KIERUNEK-Q1-20260927 (Etap C): Operator t_38409843 PASS-WITH-NOTES (self-review 4 rund), Evaluator t_d7ad067b FAIL (blad: targetDifferent nie uwzgledniat celow historycznych fal, tylko aktywne -- fala 2 mogla powtorzyc cel rozwiazanej fali 1), poprawka Operator t_6e057d4b PASS-WITH-NOTES (excludedTargetIds obejmuje teraz fale aktywne+historyczne, nowy test regresyjny 17/17), Evaluator dodatkowy t_498a5063 PASS-WITH-NOTES (niezalezny probe potwierdzil naprawe behawioralnie, nie tylko przez istniejacy test; 17/17, 7/7, 55/55, 56/56, tsc, diff-check)"
-  ],
   "scope": [
-    "gra/src/main.ts: reczny ruch jednostek fotela 2 w hot-seat -- executeMarchSegmentForUnit() uzywal zaszytego ownerId!==0, teraz isMe(u.ownerId); plus przekazanie aktywnego ownerId do panelu ustawien imperium; nowosc: forcedWarWavesByPairKey per para wojny (stan fal), save/restore, czyszczenie na 17 sciezkach konca wojny",
-    "gra/src/ui/empireDetailPanel.ts: ustawienia imperium (praca/podatki/pieniadze/inne domyslne) sa teraz izolowane per fotel zamiast kopiowac sie z gracza 1 na gracza 2",
-    "gra/data/units.json: wszystkie pola bojowe (Atak/Uderzenie/Obrona/Pancerz/Przebicie/meleeAttack/meleeDefence/weaponDamage/piercing/armor/chargeBonus/fieldPower/health/Health) 13 jednostek Typ:Mount (rydwany + konnica) podwojone; koszt/utrzymanie/ruch/widok/morale/bonusy % niezmienione",
-    "gra/src/game/ai.ts: (1) rydwany/flankerzy aktywnie zblizaja sie do najblizszego wroga w zasiegu zamiast czekac na koncentracje armii, z naprawiona bramka zasiegu ruchu (unit.ruchLeft zamiast Math.max(ruchLeft,ruch)); (2) po wybuchu wojny epoki AI-napastnik konsoliduje armie do jednego klastra i idzie na miasta aktywnego przeciwnika (Etap A+B), obronca kieruje wolne jednostki do najblizszego napastnika; (3) Etap C: jednostki aktywnej fali wykluczone z nowej koncentracji, kolejna fala wybiera mierzalnie inny cel/sektor niz fale aktywne I historyczne (rozwiazane)",
-    "gra/src/game/forced-war-waves.ts (NOWY): kontrakt sledzenia fal wojny wymuszonej -- grupowanie wolnych jednostek, wybor celu/sektora preferujacy rozni od aktywnych+historycznych fal, pruning po zdobyciu/utracie/pelnym zaangazowaniu, serializacja/restore z tolerancja starego zapisu",
-    "gra/tools/*.cjs: 5 nowych/rozszerzonych testow regresyjnych (hotseat-drugi-fotel-tura, hotseat-ustawienia-kopiowane, rydwan-konnica-x2, rydwan-bierny-atak, ai-ofensywa-wojna-epoki) + forced-war-waves-test (17/17, Etap C)"
+    "R-GAME-END-TURN-INPUT-REPAIR-Q1: preserve end-turn button identity and trusted click; no game-rule or data changes"
+  ],
+  "finalControl": [
+    "Operator t_4e7f423a/run43; independent Evaluator t_3a306fbd/run44 PASS-WITH-NOTES; Final Control t_9aac456c/run45 PASS-WITH-NOTES, no numbered objections"
   ],
   "noOpVerified": [
-    "tsc --noEmit clean na scalonym drzewie (6x merge z origin/main, 1 konflikt addytywny w ai.ts miedzy tematami 4 i 5 rozwiazany zachowaniem obu blokow -- flanking-approach + forced-war-defense fallback; Etap C byl fast-forward bez konfliktu)",
-    "hotseat-ustawienia-kopiowane-test: 16 PASS, 0 FAIL",
-    "rydwan-konnica-x2-test: 13 jednostek, 548 asercji PASS",
-    "rydwan-bierny-atak-test: 6 passed, 0 failed",
-    "ai-ofensywa-wojna-epoki-test: 7 passed, 0 failed (regresja Etapu A+B po dodaniu Etapu C potwierdzona)",
-    "forced-war-waves-test: 17 passed, 0 failed (Etap C, w tym regresja bledu znalezionego przez Evaluatora 1: fala po rozwiazanej historycznej nie powtarza jej celu)",
-    "army-concentration-test: 55 passed, 0 failed",
-    "forced-war-bronze-test: 56 passed, 0 failed",
-    "hotseat-drugi-fotel-tura-test: pre-existing live-harness timeout (pollUntil world-end-turn-after-both-seats, turn=2/activeHumanOwnerId=49) potwierdzony NIEZALEZNIE przez Evaluatora t_9eb58bbe rowniez na czystym origin/main -- niezwiazany z ta zmiana, znany non-blocking infra issue",
-    "vite build clean, 893 modules (892 + nowy forced-war-waves.ts)",
-    "smoke.cjs (Chromium headless): SMOKE OK, canvas count 1, rAF calls 1",
-    "verify-robocza-bundle.cjs uruchomiony po publikacji"
+    "npm ci --ignore-scripts PASS; manifests/lock unchanged",
+    "typecheck PASS",
+    "input stability 10 groups PASS including unchanged-base negative control",
+    "HUD 33/33 PASS",
+    "save/load regression 59/59 PASS; no browser save/load claim",
+    "AI restore order 5/5 PASS",
+    "direct local Vite production build PASS, 893 modules",
+    "fresh minified bundle Chromium runtime: exact request, normal first-city founding, ordinary dialog Back, trusted turn transitions 1->2->3, zero page/console errors"
   ],
   "excluded": [
-    "93x15 full matrix completion; unresolved cells remain DECISION_REQUIRED/UNWIRED or DEAD_UNWIRED (niezmienione przez ten deploy)",
-    "ai_profil_obronna (2 components) -- nadal lokalnie w izolowanym worktree (b4c9582f), NIE w tym deployu",
-    "8-field Dyplomacja package -- nadal w toku w izolowanym worktree, NIE w tym deployu",
-    "PR #142 (rally-point UI, commit 2cca1748) -- OPEN/MERGEABLE, niezalezny od tej integracji, NIE w tym deployu bez osobnej zgody",
-    "promocja do KANON/FINALNA"
+    "Rally Point UI/run48 held; no retry or integration",
+    "worldgen invariants/run46",
+    "PR141/matrix values; 93 definitions and 15 civilizations unchanged",
+    "Hermes Desktop/Windows; KANON; FINALNA"
   ],
+  "note": "Owner chose A: deploy end-turn alone; previous bundled release is superseded only for this release. Existing worldgen and matrix acceptance not promoted.",
+  "previousRelease": {
+    "publishedAt": "2026-09-27T18:20:00Z",
+    "productReleaseCommit": "e4caea5fb29d2d161388a976214ac974675542fa",
+    "md5": "b889074c6dac56eab875da24eeeae492",
+    "sha256": "acf837f294b1d354cacb912ba4be7e31d616fb3854a6c02827116bac7ff89ea1",
+    "bytes": 69928949
+  },
+  "dependencyAudit": {
+    "moderate": 1,
+    "high": 8,
+    "upgradesApplied": false
+  },
+  "originalAcceptedObligations": "0/9",
+  "fullGameplayAcceptance": "NOT_PROVEN",
+  "hubGeneratedAt": "2026-10-09T12:27:34",
   "bundles": [
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html?skipMenuRedirect=1",
       "label": "Pełna gra ROBOCZA",
-      "md5": "b889074c6dac56eab875da24eeeae492",
-      "sizeBytes": 69928949
+      "md5": "f228f4908d72dabbaef8866994c6452a",
+      "sizeBytes": 69930169
     },
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html",
       "label": "Pełna gra (z menu)",
-      "md5": "b889074c6dac56eab875da24eeeae492",
-      "sizeBytes": 69928949
+      "md5": "f228f4908d72dabbaef8866994c6452a",
+      "sizeBytes": 69930169
     }
   ],
-  "startHub": "START.html",
-  "hubGeneratedAt": "2026-09-27T18:20:00",
-  "note": "ROBOCZA - szesc tematow scalonych z czystego origin/main: (1) hot-seat reczny ruch gracza 2 (isMe fix), (2) hot-seat izolacja ustawien imperium per fotel, (3) podwojenie statystyk bojowych rydwan/konnica, (4) naprawa bezczynnosci rydwanow w AI (flanking + fix zasiegu ruchu), (5) ofensywa AI po wybuchu wojny epoki Etap A+B (koncentracja + marsz na miasta wroga), (6) Etap C -- fale wojny wymuszonej atakuja z roznych kierunkow (kolejna fala unika celu aktywnych I juz rozwiazanych fal). Kazdy temat mial osobny worktree/branch/karte Kanban. Temat 6 przeszedl 2 rundy Evaluatora (pierwszy wydal FAIL, znaleziony realny blad w wyborze celu po historycznej fali zostal naprawiony i potwierdzony przez drugiego niezaleznego Evaluatora). PR #142 (rally-point UI) pozostaje niezalezny, nie wchodzi w ten deploy.",
-  "backlogReconciliation": {
-    "status": "ALREADY_IN_TARGET_OR_NO_OP",
-    "recordedAt": "2026-09-17T23:26:49Z",
-    "originMain": "53b95b7c0c3a2846bd7464ef2d3b67a282ae01b0",
-    "publishCommit": "5b9f38143e5f61d5e78c0392905fc08ac0d298f3",
-    "productMainCommit": "4331f04b8464275824b38f1e50c9d34d564cb908",
-    "docsCloseCommit": "79790811c89a9bd0fc2666042b26539587138ff0",
-    "priorReleaseAncestor": "e0e280c43909bdc8fe1d4d1ce926e15874c535c8",
-    "processGatesArchived": 15,
-    "newProductDiff": false,
-    "newWave": false,
-    "topics": [
-      "R-HANDEL-DOCHOD-HALF-CEIL-Q1",
-      "R-GARNIZON-PANEL-DOCELNY-Q1",
-      "R-REKRUTACJA-PANEL-WYSOKOSC-5-KART-Q1",
-      "R-REKRUTACJA-MASOWA-TABELA-MIASTA-Q1",
-      "R-ARMIA-AI-SCALANIE-REKRUTACJA-Q1",
-      "R-ARMIA-MERGE-PANEL-SCROLL-Q1",
-      "R-MIASTA-KOLONIA-REGRES-Q1",
-      "R-MIASTA-KOLONIA-NAZWA-POOL-Q1",
-      "R-REKRUTACJA-KOSZTY-POLOWA-ALL-Q1",
-      "R-AI-PRODUKCJA-WOJSKO-RALLY-ATTACK-Q1",
-      "R-CYWILIZACJE-GRECJA-AKTYWNE-PARAMETRY-Q1",
-      "R-CYWILIZACJE-GRECJA-ALOKACJE-PANSTWA-MIASTA-Q1",
-      "R-CYWILIZACJE-GRECJA-MACIERZ-113-Q1",
-      "R-CYWILIZACJE-GRECJA-MACIERZ-TRUDNOSC-SKALOWANIE-Q1",
-      "R-CYWILIZACJE-GRECJA-MACIERZ-UNWIRED-CONSUMERS-Q1"
-    ]
-  },
-  "af4CurrentBase": {
-    "status": "DEPLOYED",
-    "finalControl": "t_2ef08e4e/run703",
-    "productAcceptance": true,
-    "objections": [],
-    "integrationCommit": "00b1b391b37be16477d924e62449e20f027e2eed",
-    "publishCommit": "cff98d93d889664fe3664045be81927c7d793712",
-    "base": "c08b3db14292221cad0a4e7a70608e9d09ee9afd",
-    "remoteMain": "cff98d93d889664fe3664045be81927c7d793712",
-    "bundleMd5": "4c1788bb880dbd66761410af0d277245",
-    "bundleSha256": "dba338ff46488b22d5c18e56b9a6fc7c376be0c0af60a78ec9bbdbb19fef6375",
-    "bundleBytes": 69878627,
-    "remoteSmoke": true,
-    "newProductDiff": true
-  }
+  "startHub": "START.html"
 }
