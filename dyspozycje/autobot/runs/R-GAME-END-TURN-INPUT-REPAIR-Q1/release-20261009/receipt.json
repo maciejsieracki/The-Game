@@ -1,5 +1,5 @@
 {
-  "status": "LOCAL_ROBOCZA_PUBLISHED_REMOTE_PENDING",
+  "status": "DEPLOY_ROBOCZA_REMOTE_VERIFIED",
   "domain": "GAME",
   "topic_id": "R-GAME-END-TURN-INPUT-REPAIR-Q1",
   "owner_decision": "A: deploy end-turn separately; prior explicit main/push consent retained",
@@ -108,8 +108,8 @@
     "log": "/home/ubuntu/handoffs/hermes-route-repair-20261001/end-turn-only-release-20261009/runtime.log",
     "bounded_resume_runtime": "PASS on unchanged source/build; no additional Rally/worldgen attempt"
   },
-  "remote_main_push": false,
-  "remote_branch_push": false,
+  "remote_main_push": true,
+  "remote_branch_push": true,
   "separate_external_website": "NOT_CONFIGURED_OR_CONFIRMED; published repository artifact and isolated HTTP smoke only",
   "original_accepted_obligations": "0/9",
   "rally": "TRIAGE after run48 BLOCK 5/5; no retry, no integration",
@@ -123,5 +123,27 @@
     "FINALNA"
   ],
   "evidence_directory_on_server": "/home/ubuntu/handoffs/hermes-route-repair-20261001/end-turn-only-release-20261009",
-  "createdAt": "2026-10-09T12:29:51.621838+00:00"
+  "createdAt": "2026-10-09T12:29:51.621838+00:00",
+  "remote_verified_sha": "fd629959191dc4e46b59cf19bdb5941e27c2ef79",
+  "remote_bundle_hashes_match": true,
+  "remote_http_smoke": {
+    "status": "PASS",
+    "httpStatus": 200,
+    "sha256": "0629fed042dd01cc7c824b8cf439a559c2bb94e91d653ce6c8cf3a372d0d4ee2",
+    "bytes": 69930169,
+    "canvasCount": 2,
+    "menuVisible": true,
+    "newGameConfigurationVisible": true,
+    "pageConsoleErrors": [],
+    "resourceErrors": [],
+    "warnings": [
+      "[.WebGL-0x3a1400161400]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels",
+      "[EndTurn] blocked: awaitingFirstPlayerCity",
+      "[EndTurn] blocked: awaitingFirstPlayerCity",
+      "[EndTurn] blocked: awaitingFirstPlayerCity",
+      "[.WebGL-0x3a1400161400]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels"
+    ],
+    "servingBoundary": "isolated HTTP serving of exact published bytes; no separate external website assumed"
+  },
+  "verifiedAt": "2026-10-09T12:33:43.269956+00:00"
 }

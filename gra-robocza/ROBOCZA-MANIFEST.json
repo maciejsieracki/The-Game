@@ -11,7 +11,7 @@
   "integrationCommit": "c63a7bc89757cf165e7752e3dc0d124abdb06506",
   "publishCommit": "c63a7bc89757cf165e7752e3dc0d124abdb06506",
   "remoteMainAtPublish": "69ccb145a8682f9c2754834afbb16a8d1eaaf825",
-  "remoteSmoke": false,
+  "remoteSmoke": true,
   "scope": [
     "R-GAME-END-TURN-INPUT-REPAIR-Q1: preserve end-turn button identity and trusted click; no game-rule or data changes"
   ],
@@ -66,5 +66,7 @@
       "sizeBytes": 69930169
     }
   ],
-  "startHub": "START.html"
+  "startHub": "START.html",
+  "remoteReadbackCommit": "fd629959191dc4e46b59cf19bdb5941e27c2ef79",
+  "remoteSmokeBoundary": "exact GitHub artifact downloaded at pinned commit and served over isolated local HTTP; separate external website not claimed"
 }

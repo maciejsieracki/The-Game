@@ -1,0 +1,31 @@
+{
+  "verified_remote_sha": "fd629959191dc4e46b59cf19bdb5941e27c2ef79",
+  "branch": "hermes/integration/end-turn-only-20261009",
+  "main_and_branch_match": true,
+  "bundle_sha256": "0629fed042dd01cc7c824b8cf439a559c2bb94e91d653ce6c8cf3a372d0d4ee2",
+  "bundle_md5": "f228f4908d72dabbaef8866994c6452a",
+  "bytes": 69930169,
+  "all_manifest_files_remote_verified": true,
+  "manifest_entries": 2,
+  "unique_bundle_files": 1,
+  "remote_http_smoke": {
+    "status": "PASS",
+    "httpStatus": 200,
+    "sha256": "0629fed042dd01cc7c824b8cf439a559c2bb94e91d653ce6c8cf3a372d0d4ee2",
+    "bytes": 69930169,
+    "canvasCount": 2,
+    "menuVisible": true,
+    "newGameConfigurationVisible": true,
+    "pageConsoleErrors": [],
+    "resourceErrors": [],
+    "warnings": [
+      "[.WebGL-0x3a1400161400]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels",
+      "[EndTurn] blocked: awaitingFirstPlayerCity",
+      "[EndTurn] blocked: awaitingFirstPlayerCity",
+      "[EndTurn] blocked: awaitingFirstPlayerCity",
+      "[.WebGL-0x3a1400161400]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels"
+    ],
+    "servingBoundary": "isolated HTTP serving of exact published bytes; no separate external website assumed"
+  },
+  "bundle_download_dir": "/home/ubuntu/handoffs/hermes-route-repair-20261001/end-turn-only-release-20261009/remote-main-fd629959"
+}

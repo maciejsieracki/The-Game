@@ -1,8 +1,8 @@
 # REJESTR PRÓŚB I ZADAŃ — kanoniczny indeks + historia
 
-## `R-GAME-END-TURN-INPUT-REPAIR-Q1` — DEPLOY-ROBOCZA lokalnie, remote pending (2026-10-09)
+## `R-GAME-END-TURN-INPUT-REPAIR-Q1` — DEPLOY-ROBOCZA, remote readback PASS (2026-10-09)
 
-- STATUS: LOCAL-PUBLISHED; REMOTE-PUSH-PENDING. Tylko bounded naprawa „Zakończ turę”, nie odbiór całego produktu.
+- STATUS: DEPLOY-ROBOCZA / REMOTE-READBACK-PASS. Tylko bounded naprawa „Zakończ turę”, nie odbiór całego produktu. Branch/main `fd629959191dc4e46b59cf19bdb5941e27c2ef79`; zdalny bundle/manifest zgodny bajtowo/hashami, Chromium HTTP smoke pobranego bundla PASS.
 - Owner A: wydzielić i wdrożyć end-turn osobno; wcześniejsza zgoda main/push zachowana.
 - Source `c63a7bc89757cf165e7752e3dc0d124abdb06506`, bundle `b407a5421b4aa5f537c600a21d5bea54ba7a2737`, base `69ccb145a8682f9c2754834afbb16a8d1eaaf825`; branch `hermes/integration/end-turn-only-20261009`.
 - Operator `t_4e7f423a/run43`, niezależny Evaluator `t_3a306fbd/run44`, Final Control `t_9aac456c/run45`: bounded PASS-WITH-NOTES, zero zarzutów. Źródła zgodne z zaakceptowanymi hashami.

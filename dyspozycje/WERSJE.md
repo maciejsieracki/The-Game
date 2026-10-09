@@ -15,7 +15,7 @@ swoim wĹ‚asnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji d
 
 ## ROBOCZA f228f490 — 2026-10-09 — osobno „Zakończ turę”
 
-- STATUS: LOCAL-PUBLISHED; REMOTE-PUSH-PENDING (stan sprzed zdalnego readbacku).
+- STATUS: DEPLOY-ROBOCZA / REMOTE-READBACK-PASS. Branch i main odczytane jako `fd629959191dc4e46b59cf19bdb5941e27c2ef79`; dokładny zdalny bundle/manifest zgodny bajtowo i hashami, HTTP smoke pobranego bundla PASS (200, canvas/UI, zero błędów). Końcowy commit aktualizacji tego readbacku jest potomkiem tego SHA.
 - md5: `f228f4908d72dabbaef8866994c6452a`; sha256: `0629fed042dd01cc7c824b8cf439a559c2bb94e91d653ce6c8cf3a372d0d4ee2`; bajty: `69930169`.
 - Source/integration: `c63a7bc89757cf165e7752e3dc0d124abdb06506`; bundle commit: `b407a5421b4aa5f537c600a21d5bea54ba7a2737`; base: `69ccb145a8682f9c2754834afbb16a8d1eaaf825`.
 - Co weszło: tylko `R-GAME-END-TURN-INPUT-REPAIR-Q1` — zachowanie tożsamości przycisku i trusted click podczas odświeżania HUD. Bez zmian reguł gry, mapy ani danych.

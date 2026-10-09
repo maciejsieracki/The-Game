@@ -1,6 +1,6 @@
 ﻿## [2026-10-09] ORKIESTRATOR → WŁAŚCICIEL / KANBAN — osobny deploy „Zakończ turę”
 
-STATUS: LOCAL-PUBLISHED; REMOTE-PUSH-PENDING (przed zdalnym odczytem).
+STATUS: DEPLOY-ROBOCZA / REMOTE-READBACK-PASS — branch/main `fd629959191dc4e46b59cf19bdb5941e27c2ef79`, zdalny bundle/manifest zgodny bajtowo i hashami; HTTP smoke pobranych dokładnych bajtów PASS (200, canvas/UI, zero błędów).
 
 - Decyzja A: end-turn wdrożyć osobno; nie czekać na Rally i nie dołączać jego zmian.
 - Source `c63a7bc89757cf165e7752e3dc0d124abdb06506`, bundle commit `b407a5421b4aa5f537c600a21d5bea54ba7a2737`, base `69ccb145a8682f9c2754834afbb16a8d1eaaf825`.
@@ -10,7 +10,7 @@ STATUS: LOCAL-PUBLISHED; REMOTE-PUSH-PENDING (przed zdalnym odczytem).
 - Zapisano przerwany dodatkowy test SIGTERM jako INFRA; wznowienie na niezmienionym bundlu PASS. Audit zależności: 1 moderate/8 high, bez upgrade. Znany stamp WARN nie zmienia zgodności manifestu.
 - Rally pozostaje TRIAGE po run48 BLOCK 5/5, bez kolejnej próby, bez Evaluatora/Final Control i bez publikacji. Worldgen/PR141/matrix/Desktop nie zmieniane; ledger 0/9 zachowany. Brak promocji KANON/FINALNA.
 
-CZEKAM-NA: dokładny remote branch/main SHA + bundle/manifest/hash readback po pushu; następnie test właściciela nowej ROBOCZA. Nie potwierdzono osobnego zewnętrznego serwisu gry — izolowany HTTP smoke dotyczy dokładnego artefaktu repozytorium.
+CZEKAM-NA: test właściciela nowej ROBOCZA `gra-robocza/START.html` po pobraniu aktualizacji i Ctrl+F5; bounded poprawka end-turn opublikowana i zdalnie zweryfikowana. Rally pozostaje osobnym hold. Nie potwierdzono osobnego zewnętrznego serwisu gry — izolowany HTTP smoke dotyczy dokładnego artefaktu repozytorium.
 
 ## [2026-09-27 13:01 UTC] ORKIESTRATOR -> KANBAN / WLASCICIEL -- DEPLOY ROBOCZA: HOTSEAT X2 + RYDWAN/KONNICA X2 + RYDWAN AI + WOJNA EPOKI OFENSYWA (5 TEMATOW)
 
