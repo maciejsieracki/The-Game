@@ -138,6 +138,83 @@ for (const id of ['lud_spadek_proc', 'lud_zdrowie_proc', 'lud_zadowolenie_bazowe
   equal(M.statusAllowsDefaultVisibility(cell.consumerStatus), true, `${id} is visible in the active default set`);
   assert(cell.provenance.consumerEvidence.length > 0, `${id} carries exact gameplay consumer evidence`);
 }
+console.log('--- meta currency multiplier semantic consumer ---');
+const currencyMultiplierId = 'meta_mnoznik_waluta';
+equal(M.civMatrixConsumerStatus(currencyMultiplierId), 'REAL_GAMEPLAY', 'currency multiplier has its confirmed live gameplay consumer');
+const currencyMultiplierEvidence = M.civMatrixConsumerEvidence(currencyMultiplierId);
+equal(currencyMultiplierEvidence.length, 1, 'currency multiplier has one source-grounded consumer receipt');
+assert(currencyMultiplierEvidence[0]?.includes('economy.ts:826')
+  && currencyMultiplierEvidence[0]?.includes('civ-matrix-meta-roster-wiring-test.cjs:60–100'),
+'currency multiplier evidence cites the economy resolver and focused 63/63 meta-roster test');
+const currencyMultiplierCell = greek.cells.find(c => c.parameterId === currencyMultiplierId);
+equal(currencyMultiplierCell.consumerStatus, 'REAL_GAMEPLAY', 'currency multiplier profile cell is gameplay-active');
+equal(currencyMultiplierCell.statusLabelPl, 'AKTYWNE', 'currency multiplier renders the active semantic status');
+equal(M.statusAllowsDefaultVisibility(currencyMultiplierCell.consumerStatus), true, 'active currency multiplier is visible by default');
+assert(currencyMultiplierCell.provenance.consumerEvidence.includes(currencyMultiplierEvidence[0]), 'active currency multiplier cell carries the confirmed consumer evidence');
+equal(currencyMultiplierCell.difficultyBehaviorPl, 'Tożsamość Normal w panelu; nie przepisuje surowej wartości na Easy/Hard.', 'semantic panel does not reinterpret the existing difficulty policy');
+console.log('--- six combat fields with live consumers ---');
+const COMBAT_REAL_GAMEPLAY_IDS = [
+  ['walka_atak_morska', 'civCombatStatMultipliers', 'morska'],
+  ['walka_obrona_morska', 'civCombatStatMultipliers', 'morska'],
+  ['walka_atak_piechota_teren_plytkie_morze', 'civCombatStatMultipliers', 'shallowSea'],
+  ['walka_obrona_piechota_teren_plytkie_morze', 'civCombatStatMultipliers', 'shallowSea'],
+  ['walka_dystans_rydwany', 'civAttackRangeMultiplier', 'rydwany'],
+  ['walka_obrona_piechota_teren_las', 'civCombatStatMultipliers', 'forest'],
+];
+equal(COMBAT_REAL_GAMEPLAY_IDS.length, 6, 'fixture lists exactly the six approved F-02 combat IDs');
+for (const [id, consumer, condition] of COMBAT_REAL_GAMEPLAY_IDS) {
+  equal(M.civMatrixConsumerStatus(id), 'REAL_GAMEPLAY', `${id} has an existing live combat consumer`);
+  const evidence = M.civMatrixConsumerEvidence(id);
+  equal(evidence.length, 1, `${id} has exactly one source-grounded consumer receipt`);
+  assert(evidence[0]?.includes('civ-bonuses.ts') && evidence[0]?.includes(consumer), `${id} evidence names its production combat helper`);
+  assert(evidence[0]?.includes(condition), `${id} evidence records its unit/context condition`);
+  assert(evidence[0]?.includes('combat.ts') && evidence[0]?.includes('main.ts'), `${id} evidence connects combat resolution to owner bonus wiring`);
+  const cell = greek.cells.find(c => c.parameterId === id);
+  equal(cell.consumerStatus, 'REAL_GAMEPLAY', `${id} profile cell is gameplay-active`);
+  equal(cell.statusLabelPl, 'AKTYWNE', `${id} uses the active semantic label`);
+  equal(M.statusAllowsDefaultVisibility(cell.consumerStatus), true, `${id} is visible by default`);
+  assert(cell.provenance.consumerEvidence.includes(evidence[0]), `${id} profile carries its production-consumer evidence`);
+}
+for (const [id] of COMBAT_REAL_GAMEPLAY_IDS) {
+  const cells = snapshot.cells.filter(cell => cell.parameterId === id);
+  equal(cells.length, 15, `${id} covers all 15 civilization cells`);
+  assert(cells.every(cell => cell.consumerStatus === 'REAL_GAMEPLAY'
+    && cell.statusLabelPl === 'AKTYWNE'
+    && M.statusAllowsDefaultVisibility(cell.consumerStatus)), `${id} is active and visible in every civilization profile`);
+}
+console.log('--- nine F-03 combat fields with source-grounded consumers ---');
+const F03_REAL_GAMEPLAY_IDS = [
+  ['walka_atak_kawaleria', 'kawaleria'],
+  ['walka_atak_rydwany', 'rydwany'],
+  ['walka_atak_obleczenie', 'obleczenie'],
+  ['walka_uderzenie_piechota', 'uderzenie'],
+  ['walka_uderzenie_kawaleria', 'uderzenie'],
+  ['walka_atak_piechota_teren_las', 'terrainIsForestOrJungle'],
+  ['walka_obrona_piechota_terytorium_wlasne', 'ownTerritory'],
+  ['walka_obrona_piechota_w_murze', 'civWallDefenseMultiplier'],
+  ['walka_atak_piechota_runda_szarzy', 'isChargeRound'],
+];
+equal(F03_REAL_GAMEPLAY_IDS.length, 9, 'F-03 round 2 scope has exactly nine accepted IDs');
+for (const [id, condition] of F03_REAL_GAMEPLAY_IDS) {
+  equal(M.civMatrixConsumerStatus(id), 'REAL_GAMEPLAY', `${id} has the approved existing gameplay consumer`);
+  const evidence = M.civMatrixConsumerEvidence(id);
+  equal(evidence.length, 1, `${id} has exactly one source-grounded consumer receipt`);
+  assert(evidence[0]?.includes('MATRIX_COMBAT_SPECS') && evidence[0]?.includes('civ-bonuses.ts'), `${id} evidence names its matrix combat adapter`);
+  assert(evidence[0]?.includes(condition), `${id} evidence records its unit/context condition`);
+  assert(evidence[0]?.includes('combat.ts') && evidence[0]?.includes('main.ts:8213–8219'), `${id} evidence traces the combat result and per-owner matrix wiring`);
+  const cell = greek.cells.find(c => c.parameterId === id);
+  equal(cell.consumerStatus, 'REAL_GAMEPLAY', `${id} Greece profile cell is gameplay-active`);
+  equal(cell.statusLabelPl, 'AKTYWNE', `${id} renders the active semantic status`);
+  equal(M.statusAllowsDefaultVisibility(cell.consumerStatus), true, `${id} is visible in the active default set`);
+  assert(cell.provenance.consumerEvidence.includes(evidence[0]), `${id} profile carries its production-consumer evidence`);
+}
+for (const [id] of F03_REAL_GAMEPLAY_IDS) {
+  const cells = snapshot.cells.filter(cell => cell.parameterId === id);
+  equal(cells.length, 15, `${id} covers all 15 civilization cells`);
+  assert(cells.every(cell => cell.consumerStatus === 'REAL_GAMEPLAY'
+    && cell.statusLabelPl === 'AKTYWNE'
+    && M.statusAllowsDefaultVisibility(cell.consumerStatus)), `${id} is active and visible in every civilization profile`);
+}
 equal(M.civMatrixConsumerStatus('dip_otwartosc_handl'), 'UNWIRED', 'unknown parameter stays unwired');
 equal(M.civMatrixConsumerStatus('dip_otwartosc_handel'), 'UI_ONLY', 'relation tag is explicitly UI-only');
 const baseAttitudeCell = greek.cells.find(c => c.parameterId === 'dip_nastawienie_bazowe');
@@ -156,23 +233,21 @@ const statusCounts = snapshot.cells.reduce((out, cell) => {
   out[cell.consumerStatus] = (out[cell.consumerStatus] || 0) + 1;
   return out;
 }, {});
-equal(statusCounts.REAL_GAMEPLAY, 210, '14 proven gameplay parameters cover 15 profiles');
+equal(statusCounts.REAL_GAMEPLAY, 495, '33 proven gameplay parameters cover 15 profiles, including six F-02 and nine F-03 combat consumers');
 equal(statusCounts.UI_ONLY, 75, '5 UI-only parameters cover 15 profiles');
 equal(statusCounts.DECISION_REQUIRED, 30, '2 unresolved AI/diplomacy parameters cover 15 profiles each and require an owner decision');
-equal(statusCounts.BLOCKED, 255, '17 combat multiplier parameters cover 15 profiles (round 2, R-CYWILIZACJE-MACIERZ-WIRING-COMBAT-RECON-ORIGIN-20260922)');
-equal(statusCounts.DEAD_UNWIRED, 375, '25 combat/siege/fortification parameters with all-default cells are closed dead (round 2)');
-equal(statusCounts.UNWIRED, 450, '30 unresolved parameters remain visibly unwired after resolved population fields and combat BLOCKED/DEAD_UNWIRED reclassification; the 4 former meta REFERENCE_ONLY parameters were removed from the matrix entirely (R-CYWILIZACJE-MACIERZ-META-REMOVE-Q1-20260922) and are absent from every status count, not reclassified as UNWIRED');
+equal(statusCounts.BLOCKED, 120, '8 combat multiplier parameters remain blocked across 15 profiles, including G11 and seven G1/Egypt holds');
+equal(statusCounts.DEAD_UNWIRED, 285, '19 remaining combat/siege/fortification parameters with all-default cells are closed dead (round 2)');
+equal(statusCounts.UNWIRED, 390, '26 unresolved parameters remain visibly unwired after resolved population/manpower/meta fields and combat BLOCKED/DEAD_UNWIRED reclassification; the 4 former meta REFERENCE_ONLY parameters were removed from the matrix entirely (R-CYWILIZACJE-MACIERZ-META-REMOVE-Q1-20260922) and are absent from every status count, not reclassified as UNWIRED');
 assert(!fs.readFileSync(path.resolve(sourceRoot, 'game/civ-matrix-semantic.ts'), 'utf8').includes('localStorage'), 'semantic classifier does not persist labels');
 
 console.log('--- combat/special-unit BLOCKED decision_required (round 2, R-CYWILIZACJE-MACIERZ-WIRING-COMBAT-RECON-ORIGIN-20260922) ---');
 const BLOCKED_COMBAT_IDS = [
-  'walka_atak_piechota', 'walka_atak_kawaleria', 'walka_atak_rydwany', 'walka_atak_obleczenie',
-  'walka_obrona_piechota', 'walka_pancerz_piechota', 'walka_uderzenie_piechota', 'walka_uderzenie_kawaleria',
-  'walka_dystans_lukownicy', 'walka_hp_piechota', 'walka_hp_rydwany', 'walka_ruch_bitwa_proc',
-  'walka_koszt_rekrutacji_proc', 'walka_atak_piechota_teren_las', 'walka_obrona_piechota_terytorium_wlasne',
-  'walka_obrona_piechota_w_murze', 'walka_atak_piechota_runda_szarzy',
+  'walka_atak_piechota', 'walka_obrona_piechota', 'walka_pancerz_piechota',
+  'walka_dystans_lukownicy', 'walka_hp_piechota', 'walka_hp_rydwany',
+  'walka_ruch_bitwa_proc', 'walka_koszt_rekrutacji_proc',
 ];
-equal(BLOCKED_COMBAT_IDS.length, 17, 'fixture lists all 17 blocked combat multiplier IDs');
+equal(BLOCKED_COMBAT_IDS.length, 8, 'fixture lists G11 plus all seven preserved G1/Egypt blocked IDs');
 for (const id of BLOCKED_COMBAT_IDS) {
   equal(M.civMatrixConsumerStatus(id), 'BLOCKED', `${id} is classified BLOCKED, not silently UNWIRED`);
   const cell = greek.cells.find(c => c.parameterId === id);
@@ -181,18 +256,22 @@ for (const id of BLOCKED_COMBAT_IDS) {
   assert(cell.statusReasonPl.length > 0, `${id} carries a non-empty reason string, never a silent UNWIRED`);
   assert(cell.statusReasonPl.includes('R-CYWILIZACJE-MACIERZ-WIRING-COMBAT-RECON-ORIGIN-20260922'), `${id} reason cites the owning topic`);
 }
+const recruitmentHold = greek.cells.find(cell => cell.parameterId === 'walka_koszt_rekrutacji_proc');
+equal(M.civMatrixConsumerStatus('walka_koszt_rekrutacji_proc'), 'BLOCKED', 'G11 recruitment cost remains blocked pending its consumer repair');
+equal(M.civMatrixConsumerEvidence('walka_koszt_rekrutacji_proc').length, 0, 'G11 does not claim a proven exact-ID consumer');
+assert(snapshot.cells.filter(cell => cell.parameterId === 'walka_koszt_rekrutacji_proc')
+  .every(cell => cell.consumerStatus === 'BLOCKED' && !M.statusAllowsDefaultVisibility(cell.consumerStatus)), 'G11 remains blocked in all 15 civilization profiles');
 
 console.log('--- combat/siege/fortification DEAD_UNWIRED (round 2) ---');
 const DEAD_UNWIRED_COMBAT_IDS = [
-  'walka_atak_lukownicy', 'walka_atak_morska', 'walka_atak_wszystkie', 'walka_obrona_lukownicy',
-  'walka_obrona_kawaleria', 'walka_obrona_rydwany', 'walka_obrona_obleczenie', 'walka_obrona_morska',
+  'walka_atak_lukownicy', 'walka_atak_wszystkie', 'walka_obrona_lukownicy',
+  'walka_obrona_kawaleria', 'walka_obrona_rydwany', 'walka_obrona_obleczenie',
   'walka_pancerz_lukownicy', 'walka_pancerz_kawaleria', 'walka_pancerz_rydwany', 'walka_uderzenie_rydwany',
-  'walka_dystans_rydwany', 'walka_hp_kawaleria', 'walka_zasieg_proc', 'walka_oblezenie_proc',
-  'walka_obrona_piechota_teren_las', 'walka_atak_piechota_terytorium_wlasne', 'walka_atak_piechota_w_murze',
-  'walka_obrona_piechota_runda_szarzy', 'walka_atak_piechota_teren_plytkie_morze',
-  'walka_obrona_piechota_teren_plytkie_morze', 'obl_obrona_miasta_proc', 'obl_mur_proc', 'obl_machines_proc',
+  'walka_hp_kawaleria', 'walka_zasieg_proc', 'walka_oblezenie_proc',
+  'walka_atak_piechota_terytorium_wlasne', 'walka_atak_piechota_w_murze',
+  'walka_obrona_piechota_runda_szarzy', 'obl_obrona_miasta_proc', 'obl_mur_proc', 'obl_machines_proc',
 ];
-equal(DEAD_UNWIRED_COMBAT_IDS.length, 25, 'fixture lists all 25 dead-unwired combat/siege/fortification IDs');
+equal(DEAD_UNWIRED_COMBAT_IDS.length, 19, 'fixture lists all 19 remaining dead-unwired combat/siege/fortification IDs');
 for (const id of DEAD_UNWIRED_COMBAT_IDS) {
   equal(M.civMatrixConsumerStatus(id), 'DEAD_UNWIRED', `${id} is classified DEAD_UNWIRED`);
   const cell = greek.cells.find(c => c.parameterId === id);

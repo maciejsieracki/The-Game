@@ -93,6 +93,25 @@ const PROVEN_CONSUMERS: Readonly<Record<string, string>> = {
   lud_zdrowie_proc: 'population-growth-v85.ts:248–255, 496–503 — centralny growthPct skaluje raz istniejący wkład floor(max(0, zdrowie)/10); raw health i legacy healthModifier bez zmian',
   lud_zadowolenie_bazowe: 'main.ts:32134–32149 + population-growth-v85.ts:248–255, 496–503 — jeden resolved bonus ownerCivMap trafia do Order/rewolty i bounded happiness-to-growth',
   lud_limit_populacji: 'economy.ts:1143–1160 + population-growth-v85.ts:293–297, 537–538 — buildingCap 5/8/12 plus approved Matrix delta -1/0/+1/+2, shared by legacy and central growth paths',
+  meta_mnoznik_waluta: 'economy.ts:826–877 + turn-economy.ts:297 + cityPanel.ts:1196,10897; civ-matrix-meta-roster-wiring-test.cjs:60–100 — matrix-backed currency multiplier, owner-approved Q69 difficulty delta and 63/63 roster/yield receipt',
+  walka_atak_morska: 'civ-bonuses.ts:264–295 MATRIX_COMBAT_SPECS→bonus_walka/morska; civCombatStatMultipliers()/bonusApplies() require unit category morska; combat.ts:874–881,904–907 applies attacker stats; main.ts owner bonus resolution→BattleScene attackerCivBonusy. Existing effect only; no new difficulty rule.',
+  walka_atak_kawaleria: 'civ-bonuses.ts:264–295 MATRIX_COMBAT_SPECS→bonus_walka/kawaleria; bonusApplies() unit category gate; civCombatStatMultipliers()/applyWalkBonus() produce atk; combat.ts:874–881,904–907 applies attacker stats; main.ts:8213–8219 supplies matrix bonuses for each owner. Existing effect only; no new difficulty rule.',
+  walka_atak_rydwany: 'civ-bonuses.ts:264–295 MATRIX_COMBAT_SPECS→bonus_walka/rydwany; bonusApplies() unit category gate; civCombatStatMultipliers()/applyWalkBonus() produce atk; combat.ts:874–881,904–907 applies attacker stats; main.ts:8213–8219 supplies matrix bonuses for each owner. Existing effect only; no new difficulty rule.',
+  walka_atak_obleczenie: 'civ-bonuses.ts:264–295 MATRIX_COMBAT_SPECS→bonus_walka/obleczenie; bonusApplies() siege-category gate; civCombatStatMultipliers()/applyWalkBonus() produce atk; combat.ts:874–881,904–907 applies attacker stats; main.ts:8213–8219 supplies matrix bonuses for each owner. Existing effect only; no new difficulty rule.',
+  walka_obrona_morska: 'civ-bonuses.ts:264–295 MATRIX_COMBAT_SPECS→bonus_obrona/morska; civCombatStatMultipliers()/bonusApplies() require unit category morska and defender side; combat.ts:887–894,909–912 applies defender stats; main.ts owner bonus resolution→BattleScene defenderCivBonusy. Existing effect only; no new difficulty rule.',
+  walka_atak_piechota_teren_plytkie_morze: 'civ-bonuses.ts:264–295 MATRIX_COMBAT_SPECS→bonus_walka/piechota; civCombatStatMultipliers()/bonusApplies() require infantry and ctx.shallowSea=true; combat.ts:874–881 passes the shallow-sea context and applies attacker stats; main.ts owner bonus resolution→BattleScene attackerCivBonusy. Existing conditional effect only.',
+  walka_obrona_piechota_teren_plytkie_morze: 'civ-bonuses.ts:264–295 MATRIX_COMBAT_SPECS→bonus_obrona/piechota; civCombatStatMultipliers()/bonusApplies() require infantry, defender side and ctx.shallowSea=true; combat.ts:887–894 passes context and applies defender stats; main.ts owner bonus resolution→BattleScene defenderCivBonusy. Existing conditional effect only.',
+  walka_dystans_rydwany: 'civ-bonuses.ts:264–295 MATRIX_COMBAT_SPECS→bonus_walka/rydwany; civCombatStatMultipliers() maps the entry to rangedAtk (combat.ts:874–912) and civAttackRangeMultiplier() applies the chariot range factor (battleScene.ts:7186–7190); main.ts owner bonus resolution supplies BattleScene attacker/defender entries. Existing effect only.',
+  walka_obrona_piechota_teren_las: 'civ-bonuses.ts:264–295 MATRIX_COMBAT_SPECS→bonus_obrona/piechota; civCombatStatMultipliers()/bonusApplies() require infantry, defender side and terrainIsForestOrJungle (forest/jungle/mountain); combat.ts:887–894 passes defender terrain; main.ts owner bonus resolution→BattleScene defenderCivBonusy. Existing conditional effect only.',
+  walka_uderzenie_piechota: 'civ-bonuses.ts:264–295 MATRIX_COMBAT_SPECS→bonus_walka/piechota; bonusApplies() category gate and applyWalkBonus() maps walka_uderzenie_* to uderzenie (194); combat.ts:1080–1105,1115–1126 applies it to charge hit/damage; main.ts:8213–8219 supplies matrix bonuses for each owner. Existing effect only; no new difficulty rule.',
+  walka_uderzenie_kawaleria: 'civ-bonuses.ts:264–295 MATRIX_COMBAT_SPECS→bonus_walka/kawaleria; bonusApplies() category gate and applyWalkBonus() maps walka_uderzenie_* to uderzenie (194); combat.ts:1080–1105,1115–1126 applies it to charge hit/damage; main.ts:8213–8219 supplies matrix bonuses for each owner. Existing effect only; no new difficulty rule.',
+  walka_atak_piechota_teren_las: 'civ-bonuses.ts:264–295 MATRIX_COMBAT_SPECS→bonus_walka/piechota; bonusApplies() gates _teren_las by terrainIsForestOrJungle (117–120,159); combat.ts:874–881 passes defender terrain and 904–907 applies attacker stats; main.ts:8213–8219 supplies matrix bonuses for each owner. Existing conditional effect only.',
+  walka_obrona_piechota_terytorium_wlasne: 'civ-bonuses.ts:264–295 MATRIX_COMBAT_SPECS→bonus_obrona/piechota; bonusApplies() requires ownTerritory (154–157) and defender side; combat.ts:887–894 passes defender ownership and 909–912 applies defense; main.ts:8213–8219 supplies matrix bonuses for each owner. Existing conditional effect only.',
+  walka_obrona_piechota_w_murze: 'civ-bonuses.ts:264–295 MATRIX_COMBAT_SPECS→bonus_obrona/piechota; civWallDefenseMultiplier() matches this ID (340–342); combat.ts:976–982 and battleScene.ts:8231–8234 apply it only on the wall walkway; main.ts:8213–8219 supplies matrix bonuses for each owner. Existing conditional effect only.',
+  walka_atak_piechota_runda_szarzy: 'civ-bonuses.ts:264–295 MATRIX_COMBAT_SPECS→bonus_walka/piechota; bonusApplies() requires isChargeRound for _runda_szarzy (161); combat.ts:1080–1105,1115–1126 passes the round condition and applies attacker stats; main.ts:8213–8219 supplies matrix bonuses for each owner. Existing conditional effect only.',
+  mp_regen_proc: 'manpower.ts + turn-economy.ts — exact civ-matrix multiplier is applied to live city regeneration for player and AI owners',
+  mp_max_proc: 'manpower.ts + turn-economy.ts + population-growth-v85.ts — exact civ-matrix multiplier is applied to city max/current caps and population-change refresh',
+  mp_koszt_jednostki_proc: 'manpower.ts + production.ts + main.ts + cityPanel.ts — exact civ-matrix multiplier is applied to recruitment, queued completion/refund, replenishment and UI cost previews',
   dip_handlowosc_archetyp: 'civ-ai-data.ts:184–198 + diplomacy.ts:1267–1308 — skłonność AI do handlu',
   ai_agresywnosc: 'civ-ai-data.ts:39–53/156–178 + diplomacy.ts:1261–1285 — gotowość AI do wojny',
   ai_ekspansywnosc: 'civ-ai-data.ts:88–101 + ai-expansion.ts — scoring ekspansji i zakładania miast',
@@ -115,6 +134,25 @@ const REAL_GAMEPLAY = new Set([
   'lud_zdrowie_proc',
   'lud_zadowolenie_bazowe',
   'lud_limit_populacji',
+  'meta_mnoznik_waluta',
+  'walka_atak_morska',
+  'walka_atak_kawaleria',
+  'walka_atak_rydwany',
+  'walka_atak_obleczenie',
+  'walka_obrona_morska',
+  'walka_atak_piechota_teren_plytkie_morze',
+  'walka_obrona_piechota_teren_plytkie_morze',
+  'walka_dystans_rydwany',
+  'walka_obrona_piechota_teren_las',
+  'walka_uderzenie_piechota',
+  'walka_uderzenie_kawaleria',
+  'walka_atak_piechota_teren_las',
+  'walka_obrona_piechota_terytorium_wlasne',
+  'walka_obrona_piechota_w_murze',
+  'walka_atak_piechota_runda_szarzy',
+  'mp_regen_proc',
+  'mp_max_proc',
+  'mp_koszt_jednostki_proc',
   'dip_handlowosc_archetyp',
   'ai_agresywnosc',
   'ai_ekspansywnosc',
@@ -176,65 +214,42 @@ const HARMFUL = new Set([
 ]);
 
 // R-CYWILIZACJE-MACIERZ-WIRING-COMBAT-RECON-ORIGIN-20260922 round 2 (2026-09-22):
-// 17 combat multiplier parameters with non-default per-civilization values. Read
-// evidence (civ-bonuses.ts, combat.ts, production.ts) shows the SAME gameplay
-// effect these IDs describe is already delivered today through the independent
-// `civs.json` → `bonusy[]` → `civ-bonuses.ts civCombatStatMultipliers()` /
-// `production.ts civRecruitmentDiscount()` pipeline (verified per-row: e.g.
-// `walka_atak_piechota`/rzymianie=0.15 duplicates the live Legion `bonus_walka`
-// opis "+15% ataku i pancerza piechoty" applied via civ-bonuses.ts today).
-// Wiring `civ-matrix.json` on top, without an owner-stated precedence rule
-// (replace vs. stack vs. ignore), would silently double or conflict with an
-// already-active bonus for the matching civilizations and silently no-op (or
-// invent a rule) for the non-matching ones — anti-self-deception forbids
-// guessing that rule. See 02-decision-packet-combat.md.
+// Eight combat fields remain BLOCKED: seven G1/Egypt holds plus G11 recruitment
+// cost, whose effective matrix-options production path does not consume its ID.
+// Nine separately authorized G2–G11 fields with source/helper evidence are
+// classified REAL_GAMEPLAY above; this metadata repair changes no runtime path.
 const BLOCKED_COMBAT_MULTIPLIER = new Set([
   'walka_atak_piechota',
-  'walka_atak_kawaleria',
-  'walka_atak_rydwany',
-  'walka_atak_obleczenie',
   'walka_obrona_piechota',
   'walka_pancerz_piechota',
-  'walka_uderzenie_piechota',
-  'walka_uderzenie_kawaleria',
   'walka_dystans_lukownicy',
   'walka_hp_piechota',
   'walka_hp_rydwany',
   'walka_ruch_bitwa_proc',
   'walka_koszt_rekrutacji_proc',
-  'walka_atak_piechota_teren_las',
-  'walka_obrona_piechota_terytorium_wlasne',
-  'walka_obrona_piechota_w_murze',
-  'walka_atak_piechota_runda_szarzy',
 ]);
 
-// Same round: 25 combat/siege/fortification parameters where all 15 civilization
+// Same round: 19 combat/siege/fortification parameters where all 15 civilization
 // cells equal the declared default (no differentiated signal in the matrix data
 // itself). Closed dead for this scope — matches the DEAD_UNWIRED convention
 // already established for non-combat domains; do not add a zero adapter.
 const DEAD_UNWIRED_COMBAT = new Set([
   'walka_atak_lukownicy',
-  'walka_atak_morska',
   'walka_atak_wszystkie',
   'walka_obrona_lukownicy',
   'walka_obrona_kawaleria',
   'walka_obrona_rydwany',
   'walka_obrona_obleczenie',
-  'walka_obrona_morska',
   'walka_pancerz_lukownicy',
   'walka_pancerz_kawaleria',
   'walka_pancerz_rydwany',
   'walka_uderzenie_rydwany',
-  'walka_dystans_rydwany',
   'walka_hp_kawaleria',
   'walka_zasieg_proc',
   'walka_oblezenie_proc',
-  'walka_obrona_piechota_teren_las',
   'walka_atak_piechota_terytorium_wlasne',
   'walka_atak_piechota_w_murze',
   'walka_obrona_piechota_runda_szarzy',
-  'walka_atak_piechota_teren_plytkie_morze',
-  'walka_obrona_piechota_teren_plytkie_morze',
   'obl_obrona_miasta_proc',
   'obl_mur_proc',
   'obl_machines_proc',
