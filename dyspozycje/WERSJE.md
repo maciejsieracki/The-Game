@@ -15,14 +15,14 @@ swoim wĹ‚asnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji d
 
 ## ROBOCZA 0e3ad637 — 2026-10-17 — PR141 bounded F-01/F-02/F-03 semantic status
 
-- STATUS: READY_FOR_DEPLOY — bounded selective release candidate; remote readback pending.
+- STATUS: DEPLOY-ROBOCZA / REMOTE-READBACK-PASS. Publish commit `47981902f4aa98c254e8c1e7d04bab8b13776f4a`; `origin/main` and integration branch read back to the same SHA. Pinned GitHub bundle and manifest returned HTTP 200 and match hashes/bytes; remote-bundle Chromium smoke showed title/canvas/HUD with zero page/console errors. External website not claimed.
 - Bundle: MD5 `0e3ad637add786c556fd2fa148a99d82`; SHA-256 `6a8ce858da0c30b4db833f33a454ad0ae807171f2fbc490c97f4197c26ca39dc`; `69,936,305` bytes; verifier `VERIFY OK` (manifest match OK; Linux stamp warning is known).
 - Base: `dca87077eb16b6b8f6f747944906466c89deda28`; bounded product commit: `3c11d0b8b651745b7a5e61b6db69ed45690aa380`; branch: `hermes/integration/accepted-f01-f02-f03-20261017`.
 - Scope: only accepted semantic classifications F-01 (1 field), F-02 (6 fields), F-03 r2 (9 fields), plus their exact semantic-label assertions. No raw matrix values, runtime consumer, gameplay formula, difficulty or denominator change.
 - Gates on the integrated tree: semantic labels `348/0`; meta-roster `63/0`; combat `6/6`; army-hunger combat `13/13`; TypeScript PASS; direct Vite build `893` modules; Chromium local-HTTP smoke `200`, title/canvas/HUD present, zero page/console errors.
 - Excluded: F-04 360-cell provenance, F-05/G11, seven other combat holds, whole PR141/gameplay acceptance, Rally/worldgen, Rust/Desktop, KANON/FINALNA. Original accepted-obligation ledger remains `0/9`.
 - Receipt: `dyspozycje/autobot/runs/R-CYWILIZACJE-MACIERZ-EKO-WEALTH-MANPOWER-SPOL-PROD-REBASE-Q1-20260925/release-20261017/receipt.json`.
-- Remote main/bundle readback and final publication commit will be appended after push.
+- Remote readback: main + branch `47981902f4aa98c254e8c1e7d04bab8b13776f4a`; GitHub raw bundle SHA-256 `6a8ce858da0c30b4db833f33a454ad0ae807171f2fbc490c97f4197c26ca39dc`, MD5 `0e3ad637add786c556fd2fa148a99d82`, `69,936,305` bytes; manifest matches, both raw resources HTTP 200; Chromium smoke on the fetched bundle PASS (canvas/HUD, zero page/console errors). Public production website not independently tested.
 
 ## ROBOCZA f228f490 — 2026-10-09 — osobno „Zakończ turę”
 

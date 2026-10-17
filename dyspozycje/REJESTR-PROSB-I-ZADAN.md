@@ -1,15 +1,15 @@
 # REJESTR PRÓŚB I ZADAŃ — kanoniczny indeks + historia
 
-## `R-CYWILIZACJE-MACIERZ-EKO-WEALTH-MANPOWER-SPOL-PROD-REBASE-Q1-20260925` — bounded F-01/F-02/F-03 ROBOCZA release candidate (2026-10-17)
+## `R-CYWILIZACJE-MACIERZ-EKO-WEALTH-MANPOWER-SPOL-PROD-REBASE-Q1-20260925` — bounded F-01/F-02/F-03 ROBOCZA DEPLOY (2026-10-17)
 
-- STATUS: READY_FOR_DEPLOY — only the selectively accepted F-01, F-02 and F-03 r2 semantic-classification artifacts are included. This is not acceptance of all PR141 or the 93×15 matrix.
+- STATUS: DEPLOY-ROBOCZA / REMOTE-READBACK-PASS — tylko selektywnie zaakceptowane F-01, F-02 i F-03 r2 semantic-classification artifacts. Nie jest to akceptacja całego PR141 ani macierzy 93×15.
 - Owner instruction (2026-10-17): deploy as much completed work as can be safely published. Orchestrator recorded the scope on existing workerless gate `t_ceb77ee5`; that gate remains blocked, unassigned and runless.
 - Base `dca87077eb16b6b8f6f747944906466c89deda28`; product candidate `3c11d0b8b651745b7a5e61b6db69ed45690aa380`; branch `hermes/integration/accepted-f01-f02-f03-20261017`.
 - Allowlist: `gra/src/game/civ-matrix-semantic.ts`, `gra/tools/civ-matrix-semantic-labels-test.cjs`; bundle `gra-robocza/Gra-ROBOCZA.html`, manifest and hub are publication artifacts only.
 - F-01 `t_8a2396ee/run60`, F-02 `t_cf652715/run63`, F-03 r2 `t_de434c66/run68`: each independently accepted for selective Orchestrator integration only. Tests on the clean current-base integration: semantic `348/0`, meta-roster `63/0`, combat `6/6`, army-hunger combat `13/13`, TypeScript PASS, Vite `893` modules, local HTTP/Chromium smoke `200` with canvas/HUD and zero page/console errors, bundle verifier `VERIFY OK`.
 - Bundle candidate: MD5 `0e3ad637add786c556fd2fa148a99d82`, SHA-256 `6a8ce858da0c30b4db833f33a454ad0ae807171f2fbc490c97f4197c26ca39dc`, `69,936,305` bytes.
 - Excluded and still held: F-04 (360 unapproved values), F-05/G11, seven other combat holds, runtime/full gameplay acceptance, Rally Point PR142, worldgen and all unrelated dirty worktrees. Raw matrix values and original `0/9` accepted-obligation ledger unchanged.
-- Merge/deploy/push and remote readback are pending at this entry's preparation point; receipt: `dyspozycje/autobot/runs/R-CYWILIZACJE-MACIERZ-EKO-WEALTH-MANPOWER-SPOL-PROD-REBASE-Q1-20260925/release-20261017/receipt.json`.
+- Merge/publish: fast-forward push to `origin/main`, publish SHA `47981902f4aa98c254e8c1e7d04bab8b13776f4a`; remote main/branch readback and pinned artifact hashes/bytes verified, bundle + manifest HTTP 200, Chromium smoke PASS. Receipt: `dyspozycje/autobot/runs/R-CYWILIZACJE-MACIERZ-EKO-WEALTH-MANPOWER-SPOL-PROD-REBASE-Q1-20260925/release-20261017/receipt.json`.
 
 ## `R-GAME-END-TURN-INPUT-REPAIR-Q1` — DEPLOY-ROBOCZA, remote readback PASS (2026-10-09)
 

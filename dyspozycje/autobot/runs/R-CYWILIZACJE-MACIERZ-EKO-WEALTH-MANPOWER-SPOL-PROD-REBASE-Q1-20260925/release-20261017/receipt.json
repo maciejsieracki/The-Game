@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "status": "READY_FOR_DEPLOY",
+  "status": "DEPLOYED / REMOTE-READBACK-PASS",
   "topicId": "R-CYWILIZACJE-MACIERZ-EKO-WEALTH-MANPOWER-SPOL-PROD-REBASE-Q1-20260925",
   "scopeId": "PR141-F01-F02-F03-SELECTIVE-ROBOCZA-20261017",
   "domain": "GAME",
@@ -79,7 +79,18 @@
     "worldgen": "excluded",
     "kanonFinalna": "not promoted"
   },
-  "remoteReadback": null,
-  "remoteReadbackPending": true,
-  "finalPublicationCommit": null
+  "remoteReadback": {
+    "verifiedAt": "2026-10-17T14:13:28+00:00",
+    "mainSha": "47981902f4aa98c254e8c1e7d04bab8b13776f4a",
+    "integrationBranchSha": "47981902f4aa98c254e8c1e7d04bab8b13776f4a",
+    "bundleHttpStatus": 200,
+    "manifestHttpStatus": 200,
+    "bundleSha256": "6a8ce858da0c30b4db833f33a454ad0ae807171f2fbc490c97f4197c26ca39dc",
+    "bundleMd5": "0e3ad637add786c556fd2fa148a99d82",
+    "bundleBytes": 69936305,
+    "manifestSha256": "3d8591bc7d148335c62263e2df0292c4e42fe3d6b1d80ea3c8f49b30a7d26f45",
+    "chromiumSmoke": "PASS: exact bundle downloaded from pinned GitHub SHA then served locally; HTTP 200, title The Game — 4X, two canvases, HUD/menu visible, zero page/console errors"
+  },
+  "remoteReadbackPending": false,
+  "finalPublicationCommit": "47981902f4aa98c254e8c1e7d04bab8b13776f4a"
 }

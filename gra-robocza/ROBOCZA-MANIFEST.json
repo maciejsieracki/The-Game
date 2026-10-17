@@ -1,5 +1,5 @@
 {
-  "publishedAt": "2026-10-17T14:07:51+00:00",
+  "publishedAt": "2026-10-17T14:13:28+00:00",
   "productReleaseCommit": "3c11d0b8b651745b7a5e61b6db69ed45690aa380",
   "publisher": "Hermes Orchestrator",
   "md5": "0e3ad637add786c556fd2fa148a99d82",
@@ -11,7 +11,7 @@
   "integrationCommit": "3c11d0b8b651745b7a5e61b6db69ed45690aa380",
   "publishCommit": "3c11d0b8b651745b7a5e61b6db69ed45690aa380",
   "remoteMainAtPublish": "dca87077eb16b6b8f6f747944906466c89deda28",
-  "remoteSmoke": false,
+  "remoteSmoke": true,
   "scope": [
     "PR141 bounded F-01: semantic classifier for meta_mnoznik_waluta only",
     "PR141 bounded F-02: six accepted combat semantic classifications only",
@@ -40,7 +40,7 @@
     "PR #142 Rally Point UI excluded: full production gameplay acceptance remains NOT_PROVEN and the topic registry gap remains unresolved",
     "World-generation changes, Rust/Tauri, Windows/Desktop, KANON, and FINALNA"
   ],
-  "note": "Owner authorized bounded publication on 2026-10-17. This release contains only the independently accepted F-01/F-02/F-03 semantic-status subset; it is not full PR141, full matrix, or gameplay acceptance. Remote main readback and remote artifact smoke are pending the authorized push.",
+  "note": "Owner authorized bounded publication on 2026-10-17. This release contains only the independently accepted F-01/F-02/F-03 semantic-status subset; it is not full PR141, full matrix, or gameplay acceptance. Pinned GitHub raw bundle and manifest readback plus local Chromium smoke of the fetched remote bundle passed; no external production website is claimed.",
   "previousRelease": {
     "publishedAt": "2026-10-09T12:27:33.405657+00:00",
     "productReleaseCommit": "c63a7bc89757cf165e7752e3dc0d124abdb06506",
@@ -54,7 +54,7 @@
   },
   "originalAcceptedObligations": "0/9 unchanged",
   "fullGameplayAcceptance": "NOT_PROVEN",
-  "hubGeneratedAt": "2026-10-17T14:03:08",
+  "hubGeneratedAt": "2026-10-17T14:14:55",
   "bundles": [
     {
       "file": "Gra-ROBOCZA.html",
@@ -72,7 +72,19 @@
     }
   ],
   "startHub": "START.html",
-  "remoteReadbackCommit": null,
-  "remoteReadbackPending": true,
-  "remoteSmokeBoundary": "Local HTTP/Chromium smoke passed; remote GitHub readback has not yet been run"
+  "remoteReadbackCommit": "47981902f4aa98c254e8c1e7d04bab8b13776f4a",
+  "remoteReadbackPending": false,
+  "remoteReadbackVerifiedAt": "2026-10-17T14:13:28+00:00",
+  "remoteReadback": {
+    "mainSha": "47981902f4aa98c254e8c1e7d04bab8b13776f4a",
+    "integrationBranchSha": "47981902f4aa98c254e8c1e7d04bab8b13776f4a",
+    "bundleHttpStatus": 200,
+    "manifestHttpStatus": 200,
+    "bundleSha256": "6a8ce858da0c30b4db833f33a454ad0ae807171f2fbc490c97f4197c26ca39dc",
+    "bundleMd5": "0e3ad637add786c556fd2fa148a99d82",
+    "bundleBytes": 69936305,
+    "manifestSha256": "3d8591bc7d148335c62263e2df0292c4e42fe3d6b1d80ea3c8f49b30a7d26f45",
+    "chromiumSmoke": "PASS: HTTP 200, title The Game — 4X, two canvases, HUD/menu visible, zero page/console errors"
+  },
+  "remoteSmokeBoundary": "Pinned GitHub raw bundle/manifest fetched at the verified main SHA; fetched bundle was served locally for Chromium smoke. External production website not tested."
 }

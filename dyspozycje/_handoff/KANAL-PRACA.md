@@ -7884,13 +7884,13 @@ pozostają wyłączone.
 
 CZEKAM-NA: właściciel — Ctrl+F5 + test fali 388 w `gra-robocza`.
 
-## [2026-10-17 14:03 UTC] ORKESTRATOR → MAIN/ROBOCZA — PR141 F-01/F-02/F-03 bounded release
+## [2026-10-17 14:13 UTC] ORKESTRATOR → MAIN/ROBOCZA — PR141 F-01/F-02/F-03 bounded release
 
-STATUS: READY_FOR_DEPLOY — selektywna publikacja trzech niezależnie zaakceptowanych poprawek semantycznej klasyfikacji.
+STATUS: DEPLOY-ROBOCZA / REMOTE-READBACK-PASS — selektywna publikacja trzech niezależnie zaakceptowanych poprawek semantycznej klasyfikacji.
 |- Base `dca87077eb16b6b8f6f747944906466c89deda28`; produkt `3c11d0b8b651745b7a5e61b6db69ed45690aa380`; branch `hermes/integration/accepted-f01-f02-f03-20261017`.
 |- Tylko `civ-matrix-semantic.ts` i `civ-matrix-semantic-labels-test.cjs`; bez zmian raw values, runtime, denominatora. F-01: 1 parametr; F-02: 6; F-03 r2: 9.
 |- Testy: semantic 348/0, meta-roster 63/0, combat 6/6, army-hunger 13/13, typecheck PASS, Vite 893 modułów. Bundle MD5 `0e3ad637add786c556fd2fa148a99d82`, SHA-256 `6a8ce858da0c30b4db833f33a454ad0ae807171f2fbc490c97f4197c26ca39dc`, 69,936,305 B; `VERIFY OK` (znany Linux stamp WARN). Chromium local HTTP smoke: 200, HUD/canvas, zero błędów.
 |- Cały PR141/93×15 gameplay nie jest zaakceptowany; F-04/F-05/G11 i pozostałe holdy wyłączone. Ledger 0/9 bez zmian. Rally Point PR142, worldgen, KANON/FINALNA wyłączone.
 |- Odbiór zmian: Final Control F-01 `t_8a2396ee/run60`, F-02 `t_cf652715/run63`, F-03 `t_de434c66/run68` — zakresy ograniczone do integracji selektywnej. Istniejący gate `t_ceb77ee5` pozostaje blocked/unassigned/workerless.
-|- Release receipt: `dyspozycje/autobot/runs/R-CYWILIZACJE-MACIERZ-EKO-WEALTH-MANPOWER-SPOL-PROD-REBASE-Q1-20260925/release-20261017/receipt.json`. GitHub/main push i remote readback: PENDING.
-CZEKAM-NA: integrator — wypchnąć zatwierdzony branch fast-forward do `main`, odczytać SHA/bundle/manifest i dopisać końcowy readback; właściciel — playtest ROBOCZA po publikacji.
+|- Odczyt zdalny: main i branch `47981902f4aa98c254e8c1e7d04bab8b13776f4a`; bundle+manifest z GitHub HTTP 200, MD5/SHA-256/bytes zgodne, Chromium smoke pobranego bundla PASS (canvas/HUD, zero page/console errors). Zewnętrzny serving website nie był osobno sprawdzany.
+CZEKAM-NA: właściciel — Ctrl+F5 + bounded playtest ROBOCZA `0e3ad637`; nowy agent ma czytać release receipt i zachować F-04/F-05/G11 holds.
