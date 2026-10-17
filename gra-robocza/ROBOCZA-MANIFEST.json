@@ -1,72 +1,78 @@
 {
-  "publishedAt": "2026-10-09T12:27:33.405657+00:00",
-  "productReleaseCommit": "c63a7bc89757cf165e7752e3dc0d124abdb06506",
+  "publishedAt": "2026-10-17T14:07:51+00:00",
+  "productReleaseCommit": "3c11d0b8b651745b7a5e61b6db69ed45690aa380",
   "publisher": "Hermes Orchestrator",
-  "md5": "f228f4908d72dabbaef8866994c6452a",
-  "sha256": "0629fed042dd01cc7c824b8cf439a559c2bb94e91d653ce6c8cf3a372d0d4ee2",
-  "bytes": 69930169,
+  "md5": "0e3ad637add786c556fd2fa148a99d82",
+  "sha256": "6a8ce858da0c30b4db833f33a454ad0ae807171f2fbc490c97f4197c26ca39dc",
+  "bytes": 69936305,
   "bundle": "Gra-ROBOCZA.html",
-  "sourceCommit": "c63a7bc89757cf165e7752e3dc0d124abdb06506",
-  "base": "69ccb145a8682f9c2754834afbb16a8d1eaaf825",
-  "integrationCommit": "c63a7bc89757cf165e7752e3dc0d124abdb06506",
-  "publishCommit": "c63a7bc89757cf165e7752e3dc0d124abdb06506",
-  "remoteMainAtPublish": "69ccb145a8682f9c2754834afbb16a8d1eaaf825",
-  "remoteSmoke": true,
+  "sourceCommit": "3c11d0b8b651745b7a5e61b6db69ed45690aa380",
+  "base": "dca87077eb16b6b8f6f747944906466c89deda28",
+  "integrationCommit": "3c11d0b8b651745b7a5e61b6db69ed45690aa380",
+  "publishCommit": "3c11d0b8b651745b7a5e61b6db69ed45690aa380",
+  "remoteMainAtPublish": "dca87077eb16b6b8f6f747944906466c89deda28",
+  "remoteSmoke": false,
   "scope": [
-    "R-GAME-END-TURN-INPUT-REPAIR-Q1: preserve end-turn button identity and trusted click; no game-rule or data changes"
+    "PR141 bounded F-01: semantic classifier for meta_mnoznik_waluta only",
+    "PR141 bounded F-02: six accepted combat semantic classifications only",
+    "PR141 bounded F-03 r2: nine accepted combat semantic classifications only",
+    "No raw matrix values, gameplay formulas, difficulty, runtime consumers, or denominator changes"
   ],
   "finalControl": [
-    "Operator t_4e7f423a/run43; independent Evaluator t_3a306fbd/run44 PASS-WITH-NOTES; Final Control t_9aac456c/run45 PASS-WITH-NOTES, no numbered objections"
+    "F-01 t_8a2396ee/run60 ACCEPT_F01_FOR_ORCHESTRATOR_INTEGRATION; two-file exact hash readback",
+    "F-02 t_cf652715/run63 ACCEPT_F02_FOR_ORCHESTRATOR_INTEGRATION; two-file exact hash readback",
+    "F-03 r2 t_de434c66/run68 ACCEPT_F03_R2_FOR_ORCHESTRATOR_INTEGRATION; route_match=true; two-file exact hash readback"
   ],
   "noOpVerified": [
-    "npm ci --ignore-scripts PASS; manifests/lock unchanged",
-    "typecheck PASS",
-    "input stability 10 groups PASS including unchanged-base negative control",
-    "HUD 33/33 PASS",
-    "save/load regression 59/59 PASS; no browser save/load claim",
-    "AI restore order 5/5 PASS",
-    "direct local Vite production build PASS, 893 modules",
-    "fresh minified bundle Chromium runtime: exact request, normal first-city founding, ordinary dialog Back, trusted turn transitions 1->2->3, zero page/console errors"
+    "npm ci --ignore-scripts --no-audit --no-fund PASS; no manifest or lockfile change",
+    "Semantic label test PASS 348; FAIL 0",
+    "Meta-roster test PASS 63; FAIL 0",
+    "Combat test PASS 6/6; army-hunger combat PASS 13/13",
+    "TypeScript noEmit PASS; git diff --check PASS; exact product allowlist contains only two files",
+    "Direct Vite production build PASS, 893 modules; 69,841.24 kB uncompressed build artifact",
+    "Canonical smoke.cjs: SMOKE OK, canvas=1, rAF=1 (bounded harness, not full gameplay)",
+    "Headless Chromium over local HTTP against the published-path bundle: HTTP 200, title The Game — 4X, canvas=2, visible HUD/menu text, zero page/console errors",
+    "ROBOCZA verifier: VERIFY OK; manifest md5 match OK; Linux stamp-md5 WARN is the known Node stamp-port behavior"
   ],
   "excluded": [
-    "Rally Point UI/run48 held; no retry or integration",
-    "worldgen invariants/run46",
-    "PR141/matrix values; 93 definitions and 15 civilizations unchanged",
-    "Hermes Desktop/Windows; KANON; FINALNA"
+    "F-04: all 360 values remain unapproved; no matrix data values changed",
+    "F-05, G11, seven other combat holds, runtime consumers, and whole PR141 acceptance remain blocked",
+    "PR #142 Rally Point UI excluded: full production gameplay acceptance remains NOT_PROVEN and the topic registry gap remains unresolved",
+    "World-generation changes, Rust/Tauri, Windows/Desktop, KANON, and FINALNA"
   ],
-  "note": "Owner chose A: deploy end-turn alone; previous bundled release is superseded only for this release. Existing worldgen and matrix acceptance not promoted.",
+  "note": "Owner authorized bounded publication on 2026-10-17. This release contains only the independently accepted F-01/F-02/F-03 semantic-status subset; it is not full PR141, full matrix, or gameplay acceptance. Remote main readback and remote artifact smoke are pending the authorized push.",
   "previousRelease": {
-    "publishedAt": "2026-09-27T18:20:00Z",
-    "productReleaseCommit": "e4caea5fb29d2d161388a976214ac974675542fa",
-    "md5": "b889074c6dac56eab875da24eeeae492",
-    "sha256": "acf837f294b1d354cacb912ba4be7e31d616fb3854a6c02827116bac7ff89ea1",
-    "bytes": 69928949
+    "publishedAt": "2026-10-09T12:27:33.405657+00:00",
+    "productReleaseCommit": "c63a7bc89757cf165e7752e3dc0d124abdb06506",
+    "md5": "f228f4908d72dabbaef8866994c6452a",
+    "sha256": "0629fed042dd01cc7c824b8cf439a559c2bb94e91d653ce6c8cf3a372d0d4ee2",
+    "bytes": 69930169
   },
   "dependencyAudit": {
-    "moderate": 1,
-    "high": 8,
-    "upgradesApplied": false
+    "performed": false,
+    "note": "npm audit was not run; npm ci used --no-audit; no dependency upgrades were made"
   },
-  "originalAcceptedObligations": "0/9",
+  "originalAcceptedObligations": "0/9 unchanged",
   "fullGameplayAcceptance": "NOT_PROVEN",
-  "hubGeneratedAt": "2026-10-09T12:27:34",
+  "hubGeneratedAt": "2026-10-17T14:03:08",
   "bundles": [
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html?skipMenuRedirect=1",
       "label": "Pełna gra ROBOCZA",
-      "md5": "f228f4908d72dabbaef8866994c6452a",
-      "sizeBytes": 69930169
+      "md5": "0e3ad637add786c556fd2fa148a99d82",
+      "sizeBytes": 69936305
     },
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html",
       "label": "Pełna gra (z menu)",
-      "md5": "f228f4908d72dabbaef8866994c6452a",
-      "sizeBytes": 69930169
+      "md5": "0e3ad637add786c556fd2fa148a99d82",
+      "sizeBytes": 69936305
     }
   ],
   "startHub": "START.html",
-  "remoteReadbackCommit": "fd629959191dc4e46b59cf19bdb5941e27c2ef79",
-  "remoteSmokeBoundary": "exact GitHub artifact downloaded at pinned commit and served over isolated local HTTP; separate external website not claimed"
+  "remoteReadbackCommit": null,
+  "remoteReadbackPending": true,
+  "remoteSmokeBoundary": "Local HTTP/Chromium smoke passed; remote GitHub readback has not yet been run"
 }

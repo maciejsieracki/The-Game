@@ -1,0 +1,85 @@
+{
+  "schemaVersion": 1,
+  "status": "READY_FOR_DEPLOY",
+  "topicId": "R-CYWILIZACJE-MACIERZ-EKO-WEALTH-MANPOWER-SPOL-PROD-REBASE-Q1-20260925",
+  "scopeId": "PR141-F01-F02-F03-SELECTIVE-ROBOCZA-20261017",
+  "domain": "GAME",
+  "baseSha": "dca87077eb16b6b8f6f747944906466c89deda28",
+  "productCommit": "3c11d0b8b651745b7a5e61b6db69ed45690aa380",
+  "integrationBranch": "hermes/integration/accepted-f01-f02-f03-20261017",
+  "workspace": "/home/ubuntu/work/the-game-release-f01-f02-f03-20261017",
+  "ownerAuthorization": {
+    "date": "2026-10-17",
+    "source": "current owner instruction in main chat",
+    "scope": "Publish as much completed work as possible; Orchestrator limited this to independently accepted F-01/F-02/F-03 semantic artifacts."
+  },
+  "independentFinalControl": [
+    {
+      "task": "t_8a2396ee",
+      "run": 60,
+      "verdict": "ACCEPT_F01_FOR_ORCHESTRATOR_INTEGRATION",
+      "scope": "meta_mnoznik_waluta semantic classification only"
+    },
+    {
+      "task": "t_cf652715",
+      "run": 63,
+      "verdict": "ACCEPT_F02_FOR_ORCHESTRATOR_INTEGRATION",
+      "scope": "six accepted combat semantic classifications only"
+    },
+    {
+      "task": "t_de434c66",
+      "run": 68,
+      "verdict": "ACCEPT_F03_R2_FOR_ORCHESTRATOR_INTEGRATION",
+      "scope": "nine accepted combat semantic classifications only; native route_match=true"
+    }
+  ],
+  "allowlist": [
+    "gra/src/game/civ-matrix-semantic.ts",
+    "gra/tools/civ-matrix-semantic-labels-test.cjs",
+    "gra-robocza/Gra-ROBOCZA.html",
+    "gra-robocza/ROBOCZA-MANIFEST.json",
+    "gra-robocza/START.html",
+    "dyspozycje/WERSJE.md",
+    "dyspozycje/REJESTR-PROSB-I-ZADAN.md",
+    "dyspozycje/_handoff/KANAL-PRACA.md",
+    "dyspozycje/autobot/runs/R-CYWILIZACJE-MACIERZ-EKO-WEALTH-MANPOWER-SPOL-PROD-REBASE-Q1-20260925/release-20261017/receipt.json"
+  ],
+  "sourceHashes": {
+    "gra/src/game/civ-matrix-semantic.ts": "32cf1cae7702818e74458bdc48d4945c4b25bbdb43f1b4d229437fa425c37e8d",
+    "gra/tools/civ-matrix-semantic-labels-test.cjs": "a07ebc355b72e91bb7fcba70ed68d4bfb4570547949ec30021a96fe04178f7cd"
+  },
+  "bundle": {
+    "path": "gra-robocza/Gra-ROBOCZA.html",
+    "md5": "0e3ad637add786c556fd2fa148a99d82",
+    "sha256": "6a8ce858da0c30b4db833f33a454ad0ae807171f2fbc490c97f4197c26ca39dc",
+    "bytes": 69936305,
+    "modules": 893,
+    "verifier": "VERIFY OK; manifest md5 matches; known Linux stamp warning"
+  },
+  "tests": {
+    "semanticLabels": "PASS 348 / FAIL 0",
+    "metaRoster": "PASS 63 / FAIL 0",
+    "combat": "PASS 6/6",
+    "armyHungerCombat": "PASS 13/13",
+    "typescriptNoEmit": "PASS",
+    "gitDiffCheck": "PASS",
+    "canonicalSmoke": "SMOKE OK; jsdom harness; canvas 1; rAF 1",
+    "headlessChromiumLocalHttp": "HTTP 200; title The Game — 4X; canvas 2; HUD/menu present; zero page/console errors"
+  },
+  "limits": {
+    "productAcceptance": "bounded semantic-status scope only",
+    "wholePr141Accepted": false,
+    "fullGameplayAcceptance": "NOT_PROVEN",
+    "rawMatrixValuesChanged": false,
+    "matrixDenominatorChanged": false,
+    "originalAcceptedObligations": "0/9 unchanged",
+    "f04": "excluded; 360 values remain unapproved",
+    "f05G11": "excluded; remains blocked",
+    "rallyPointPr142": "excluded; integration gate remains blocked",
+    "worldgen": "excluded",
+    "kanonFinalna": "not promoted"
+  },
+  "remoteReadback": null,
+  "remoteReadbackPending": true,
+  "finalPublicationCommit": null
+}

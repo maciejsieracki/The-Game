@@ -13,6 +13,17 @@ swoim wĹ‚asnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji d
 > Pakiet 3 z 2026-08-20 jest docs-only i nie tworzy wpisu ROBOCZA/KANON/FINALNA;
 > ten plik pozostaje wyłącznie rejestrem publikacji bundli.
 
+## ROBOCZA 0e3ad637 — 2026-10-17 — PR141 bounded F-01/F-02/F-03 semantic status
+
+- STATUS: READY_FOR_DEPLOY — bounded selective release candidate; remote readback pending.
+- Bundle: MD5 `0e3ad637add786c556fd2fa148a99d82`; SHA-256 `6a8ce858da0c30b4db833f33a454ad0ae807171f2fbc490c97f4197c26ca39dc`; `69,936,305` bytes; verifier `VERIFY OK` (manifest match OK; Linux stamp warning is known).
+- Base: `dca87077eb16b6b8f6f747944906466c89deda28`; bounded product commit: `3c11d0b8b651745b7a5e61b6db69ed45690aa380`; branch: `hermes/integration/accepted-f01-f02-f03-20261017`.
+- Scope: only accepted semantic classifications F-01 (1 field), F-02 (6 fields), F-03 r2 (9 fields), plus their exact semantic-label assertions. No raw matrix values, runtime consumer, gameplay formula, difficulty or denominator change.
+- Gates on the integrated tree: semantic labels `348/0`; meta-roster `63/0`; combat `6/6`; army-hunger combat `13/13`; TypeScript PASS; direct Vite build `893` modules; Chromium local-HTTP smoke `200`, title/canvas/HUD present, zero page/console errors.
+- Excluded: F-04 360-cell provenance, F-05/G11, seven other combat holds, whole PR141/gameplay acceptance, Rally/worldgen, Rust/Desktop, KANON/FINALNA. Original accepted-obligation ledger remains `0/9`.
+- Receipt: `dyspozycje/autobot/runs/R-CYWILIZACJE-MACIERZ-EKO-WEALTH-MANPOWER-SPOL-PROD-REBASE-Q1-20260925/release-20261017/receipt.json`.
+- Remote main/bundle readback and final publication commit will be appended after push.
+
 ## ROBOCZA f228f490 — 2026-10-09 — osobno „Zakończ turę”
 
 - STATUS: DEPLOY-ROBOCZA / REMOTE-READBACK-PASS. Branch i main odczytane jako `fd629959191dc4e46b59cf19bdb5941e27c2ef79`; dokładny zdalny bundle/manifest zgodny bajtowo i hashami, HTTP smoke pobranego bundla PASS (200, canvas/UI, zero błędów). Końcowy commit aktualizacji tego readbacku jest potomkiem tego SHA.
