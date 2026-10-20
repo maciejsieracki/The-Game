@@ -55,6 +55,26 @@ export interface WealthParams {
   immunitetTur:         number;
 }
 
+/** Apply a civilization's approved `mul_proc` modifier to the existing Wealth cap coefficient. */
+export function wealthParamsWithCapModifier(
+  params: WealthParams,
+  modifier: number,
+): WealthParams {
+  const factor = Number.isFinite(modifier) ? Math.max(0, 1 + modifier) : 1;
+  if (factor === 1) return params;
+  return { ...params, capNaEpoke: params.capNaEpoke * factor };
+}
+
+/** Apply the canonical `mul_proc` modifier to Wealth's per-level tax-multiplier slope. */
+export function wealthParamsWithMultiplierModifier(
+  params: WealthParams,
+  modifier: number,
+): WealthParams {
+  const factor = Number.isFinite(modifier) ? 1 + modifier : 1;
+  if (factor === 1) return params;
+  return { ...params, mnoznikNaPoziom: params.mnoznikNaPoziom * factor };
+}
+
 /** Domyslne wartosci (poziom 'normal'); uzywane jako fallback. */
 export const FALLBACK_WEALTH_PARAMS: WealthParams = {
   capNaEpoke:          10,

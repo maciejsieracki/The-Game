@@ -1,12 +1,9 @@
 'use strict';
 /**
- * Focused contract test for the two unresolved AI/diplomacy matrix fields.
+ * Focused contract test for the two activated AI/diplomacy matrix fields.
  * Run from gra/: node tools/civ-matrix-ai-diplomacy-wiring-test.cjs
  *
- * This test deliberately proves the boundary instead of inventing a consumer:
- * dip_nastawienie_bazowe reaches only the pure initialRelation helper, while
- * live cluster start uses startRelationForPair; dip_agresja_archetyp remains
- * separate from the accepted ai_agresywnosc aggression source.
+ * This test exercises the live consumers and guards the intended boundaries.
  */
 const fs = require('fs');
 const os = require('os');
@@ -32,6 +29,7 @@ fs.writeFileSync(entry, `
     civMatrixParamAtDifficulty,
   } from ${JSON.stringify(path.join(sourceRoot, 'game/civ-matrix'))};
   export { aiDiplomacyStance, initialRelation } from ${JSON.stringify(path.join(sourceRoot, 'game/diplomacy'))};
+  export { startRelationForMajorPair } from ${JSON.stringify(path.join(sourceRoot, 'game/diplomacy-layers'))};
   export {
     civMatrixConsumerStatus,
     civMatrixConsumerEvidence,
@@ -130,37 +128,36 @@ near(M.nastawienieBazoweZaufanieDelta('rzymianie'), -3,
 console.log('--- accepted aggression consumer and unresolved aggression guard ---');
 near(M.resolveArchetypeAggression('grecy', 0.99, undefined, 'normal'), 0.4,
   'accepted gameplay aggression resolver uses ai_agresywnosc for Greece');
-near(M.resolveArchetypeAggression('rzymianie', 0.01, undefined, 'normal'), 0.8,
-  'accepted gameplay aggression resolver uses ai_agresywnosc for Rome');
-assert(M.civMatrixParam('rzymianie', 'dip_agresja_archetyp') !==
-  M.resolveArchetypeAggression('rzymianie', 0.01, undefined, 'normal'),
-  'dip_agresja_archetyp remains distinct from the accepted aggression source');
+near(M.resolveArchetypeAggression('rzymianie', 0.01, undefined, 'normal'), 0.75,
+  'major aggression resolver uses dip_agresja_archetyp for Rome');
+near(M.resolveArchetypeAggression('grecy', 0.99, undefined, 'easy'), 0.3,
+  'easy retains the normalized -0.1 legacy difficulty offset');
+near(M.resolveArchetypeAggression('grecy', 0.99, undefined, 'hard'), 0.5,
+  'hard retains the normalized +0.1 legacy difficulty offset');
 const relation = { zaufanie: 10, respekt: 80, status: 'neutralni' };
 const context = { militaryRatio: 1.2, currentTurn: 10, turnsAtWar: 0, civMatrixDifficulty: 'normal' };
 const stanceGreek = M.aiDiplomacyStance({ typCywilizacji: 'grecy' }, { typCywilizacji: 'rzymianie' }, relation, context);
 const stanceInca = M.aiDiplomacyStance({ typCywilizacji: 'inkowie' }, { typCywilizacji: 'rzymianie' }, relation, context);
 const stanceRoman = M.aiDiplomacyStance({ typCywilizacji: 'rzymianie' }, { typCywilizacji: 'grecy' }, relation, context);
 const stanceAssyria = M.aiDiplomacyStance({ typCywilizacji: 'asyria' }, { typCywilizacji: 'grecy' }, relation, context);
-equal(stanceGreek.willingnessWar, stanceInca.willingnessWar,
-  'same ai_agresywnosc (Greece/Inca) keeps war willingness equal despite different dip_agresja_archetyp');
-equal(stanceRoman.willingnessWar, stanceAssyria.willingnessWar,
-  'same ai_agresywnosc (Rome/Assyria) keeps war willingness equal despite different dip_agresja_archetyp');
-assert(stanceGreek.willingnessWar !== stanceRoman.willingnessWar,
-  'war willingness follows the distinct ai_agresywnosc values');
+assert(stanceGreek.willingnessWar !== stanceInca.willingnessWar,
+  'war willingness follows the distinct matrix archetype aggression values');
+assert(stanceRoman.willingnessWar !== stanceAssyria.willingnessWar,
+  'war willingness follows distinct matrix values for Rome and Assyria');
 
 console.log('--- pure helper versus live start path ---');
 const greekRome = M.initialRelation({ typCywilizacji: 'grecy' }, { typCywilizacji: 'rzymianie' });
 const greekChina = M.initialRelation({ typCywilizacji: 'grecy' }, { typCywilizacji: 'chinczycy' });
 assert(greekRome.zaufanie !== greekChina.zaufanie,
   'pure initialRelation helper differs by matrix profile');
-assert(clusterStartSource.includes("import { startRelationForPair } from './diplomacy-layers';"),
+assert(clusterStartSource.includes("import { startRelationForMajorPair, startRelationForPair } from './diplomacy-layers';"),
   'cluster start imports the live startRelationForPair initializer');
 assert(clusterStartSource.includes('startRelations.set(acceptedSlot.ownerId, startRelationForPair(acceptedSlot.isSameTypeRival));'),
   'cluster start stores startRelationForPair results, not initialRelation results');
 assert(diplomacyLayersSource.includes('export function startRelationForPair(sameType: boolean): Relation'),
   'live start relation function is defined in diplomacy-layers');
-assert(!diplomacyLayersSource.includes('nastawienieBazoweZaufanieDelta'),
-  'live start relation layer does not read dip_nastawienie_bazowe');
+assert(diplomacyLayersSource.includes('nastawienieBazoweZaufanieDelta'),
+  'live major-pair start relation reads per-civilization base attitude');
 assert(!clusterStartSource.includes('initialRelation('),
   'cluster start has no live initialRelation caller');
 assert(!mainSource.includes('initialRelation('),
@@ -189,32 +186,21 @@ near(tradeInca.willingnessTrade, 0.35,
 assert(tradeGreek.willingnessTrade !== tradeInca.willingnessTrade,
   'existing matrix trade profiles remain behaviorally distinct');
 
-console.log('--- static precedence guards ---');
+console.log('--- live consumer guards ---');
 const runtimeConsumerSources = [civAiDataSource, diplomacySource, aiSource, clusterStartSource, diplomacyLayersSource, mainSource];
-assert(!runtimeConsumerSources.some(source => source.includes('dip_agresja_archetyp')),
-  'runtime consumers do not silently map dip_agresja_archetyp');
-assert(civAiDataSource.includes("'ai_agresywnosc'"),
-  'civ-ai-data retains the separate ai_agresywnosc consumer');
+assert(runtimeConsumerSources.some(source => source.includes('dip_agresja_archetyp')),
+  'runtime aggression path consumes dip_agresja_archetyp');
 assert(diplomacySource.includes('resolveArchetypeAggression('),
   'diplomacy stance calls the accepted aggression resolver');
 assert(mainSource.includes('civAiProfileForTyp(data, aiTyp, difficulty)'),
   'main AI path reads the matrix profile per owner and difficulty');
 
-console.log('--- round 2: explicit DECISION_REQUIRED classification, not silent UNWIRED ---');
-for (const id of unresolvedIds) {
-  equal(M.civMatrixConsumerStatus(id), 'DECISION_REQUIRED',
-    `${id} is explicitly classified DECISION_REQUIRED, not ambiguously UNWIRED`);
-  equal(M.civMatrixConsumerEvidence(id).length, 0,
-    `${id} carries no fabricated consumer evidence`);
-  equal(M.statusAllowsDefaultVisibility('DECISION_REQUIRED'), false,
-    'DECISION_REQUIRED status is not part of the active default-visible set');
-}
-assert(!clusterStartSource.includes('nastawienieBazoweZaufanieDelta') && !clusterStartSource.includes('initialRelation('),
-  'round 2 recheck: live cluster start still has no dip_nastawienie_bazowe consumer path');
-assert(!diplomacyLayersSource.includes('nastawienieBazoweZaufanieDelta'),
-  'round 2 recheck: live simplified-diplomacy start layer still does not read dip_nastawienie_bazowe');
-assert(!runtimeConsumerSources.some(source => source.includes('dip_agresja_archetyp')),
-  'round 2 recheck: no runtime consumer silently adopted dip_agresja_archetyp');
+const greekRomanStart = M.startRelationForMajorPair('grecy', 'rzymianie');
+const romanGreekStart = M.startRelationForMajorPair('rzymianie', 'grecy');
+equal(greekRomanStart.zaufanie, romanGreekStart.zaufanie,
+  'major-pair start trust is symmetric');
+equal(greekRomanStart.zaufanie, 20 + (59 - 50) / 2 + (44 - 50) / 2 - 5,
+  'major-pair trust applies both matrix deltas and the existing different-type modifier');
 
 console.log(`RESULT: ${passed} passed, ${failed} failed`);
 fs.rmSync(tempRoot, { recursive: true, force: true });

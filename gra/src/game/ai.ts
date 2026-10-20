@@ -161,58 +161,19 @@ export type AICommand =
   | AICmdBuildImprovement
   | AICmdEndTurn;
 
-// ---------------------------------------------------------------------------
-// Archetype modifier keys (from ai-params.json)
-// ---------------------------------------------------------------------------
-
-type ArchKey =
-  | 'grecy' | 'rzym' | 'chiny' | 'zulusi' | 'inkowie' | 'egipt' | 'sumer' | 'celtowie' | 'germanie'
-  | 'harappa' | 'hetyci' | 'slowianie' | 'babilonia' | 'asyria' | 'fenicjanie';
-
-/** Maps TypCywilizacji string to archetype key used in ai-params.json. */
-const CIV_TO_ARCH: Record<string, ArchKey> = {
-  grecy:             'grecy',
-  rzymianie:         'rzym',
-  chinczycy:         'chiny',
-  zulusi:            'zulusi',
-  inkowie:           'inkowie',
-  egipt:             'egipt',
-  babilon:           'sumer',
-  sumer:             'sumer',
-  sumerowie:         'sumer',
-  celtowie:          'celtowie',
-  germanie:          'germanie',
-  harappa:           'harappa',
-  hetyci:            'hetyci',
-  slowianie:         'slowianie',
-  babilonia:         'babilonia',
-  asyria:            'asyria',
-  fenicjanie:        'fenicjanie',
-};
-
-/** Per-archetype production priority deltas loaded from ai-params.json. */
-interface ArchetypeMods {
+/**
+ * Deprecated compatibility shape for callers that still supply removed ai-params
+ * archetype priorities. Live AI scoring deliberately ignores these values.
+ */
+interface LegacyArchetypeMods {
   wojsko:   number;
   nauka:    number;
   ekonomia: number;
   obrona:   number;
 }
-
-function readArchMods(data: GameData, archKey: ArchKey): ArchetypeMods {
-  const p = data.aiParams;
-
-  function val(key: string): number {
-    const entry = p[key];
-    return (entry !== undefined && (entry['wartość'] ?? entry['wartosc']) !== null && (entry['wartość'] ?? entry['wartosc']) !== undefined) ? ((entry['wartość'] ?? entry['wartosc']) as number) : 0;
-  }
-
-  return {
-    wojsko:   val(`archetype_${archKey}_wojsko_priorytet`),
-    nauka:    val(`archetype_${archKey}_nauka_priorytet`),
-    ekonomia: val(`archetype_${archKey}_ekonomia_priorytet`),
-    obrona:   val(`archetype_${archKey}_obrona_priorytet`),
-  };
-}
+const IGNORED_LEGACY_ARCHETYPE_MODS: LegacyArchetypeMods = {
+  wojsko: 0, nauka: 0, ekonomia: 0, obrona: 0,
+};
 
 function getAiParam(data: GameData, key: string, fallback: number): number {
   const entry = data.aiParams[key];
@@ -616,11 +577,8 @@ export interface AITechDef {
  * All fields are optional to keep the call site clean.
  */
 export interface AIResearchOpts {
-  /**
-   * Archetype mods (nauka delta). When omitted, nauka delta = 0.
-   * Pass readArchMods result if available.
-   */
-  mods?: ArchetypeMods;
+  /** Deprecated legacy compatibility input; intentionally ignored. */
+  mods?: LegacyArchetypeMods;
   /**
    * Number of cities the AI currently owns (for phase detection).
    * earlyPhase = myCitiesCount < 3 (default 1 = early).
@@ -658,7 +616,6 @@ function parsePrereqs(wyrazenie: string | null | undefined): string[] {
  *
  * Heuristic (Spec-AI §5):
  *   - Base score by strategic need (buildings the tech unlocks + phase/threat)
- *   - nauka archetype delta shifts the total score by +/-20 per point
  *   - Lower cost = slight tie-breaker bonus (prefer cheaper / faster techs)
  *
  * Returns a numeric score; higher = higher priority.
@@ -683,7 +640,6 @@ function scoreTech(
   }
   if (opts.researchGate && !researchGatesMet(tech, opts.researchGate)) return -Infinity;
 
-  const mods          = opts.mods ?? { wojsko: 0, nauka: 0, ekonomia: 0, obrona: 0 };
   const earlyPhase    = (opts.myCitiesCount ?? 1) < 3;
   const underThreat   = opts.underThreat ?? false;
   const allBuilt      = new Set(opts.allBuiltBuildings ?? []);
@@ -757,10 +713,6 @@ function scoreTech(
   // Base: any researchable tech gets a small floor so nothing is ignored
   score += 10;
 
-  // --- §5.2 / §8 archetype nauka delta ------------------------------------
-  // nauka delta +/-1..+2 shifts total by +/-20 per point
-  score += mods.nauka * 20;
-
   // --- Tie-breaker: prefer cheaper (faster) techs -------------------------
   score += Math.max(0, 30 - koszt);
 
@@ -775,7 +727,7 @@ function scoreTech(
  *
  * @param techData    All tech definitions (data.tech from GameData / tech.json)
  * @param ukonczone   Set of tech names already fully researched by this AI player
- * @param opts        Optional tuning (archetype mods, city count, threat flag, built buildings)
+ * @param opts        Optional tuning (city count, threat flag, built buildings)
  * @returns           Tech name (Technologia) to start researching, or null when nothing available
  *
  * Engine usage (§9 step 3):
@@ -1269,8 +1221,6 @@ export const AI_MAJOR_EARLY_MAX_AVG_POP = 5;
 export const AI_MAJOR_EARLY_MAX_BUILDINGS_AVG = 4;
 /** AI-BALANS-STEP2 / R-AI-TRUDNOSC C.3 Ś2: L3 pokój — kara score Wojownika w produkcji major AI. */
 export const AI_L3_PEACE_WARRIOR_SCORE_PENALTY = 40;
-/** Bias 60/40: ±5% udziału wojska na punkt różnicy priorytetów archetypu (ai-params). */
-export const AI_ARCHETYPE_BIAS_PER_POINT = 0.05;
 /** Early major: ~60% Pracy do puli państwa (ulepszenia), ~40% kolejka budowy. */
 export const AI_MAJOR_EARLY_PROCENT_BUDYNKI = 40;
 /** Mid major: ~50/50 budynki ↔ ulepszenia. */
@@ -1326,11 +1276,6 @@ export function computeMajorAiEarlyGame(
   return false;
 }
 
-/**
- * Udział wojska w alokacji major AI (0.4–0.6) z ai-params archetypów.
- * Wojowniczy (zulusi: wojsko +2, ekonomia -1) ≈60% wojsko;
- * gospodarczy (chiny: wojsko -1, ekonomia +1) ≈40% wojsko (reszta rozwój).
- */
 /** C.3 Ś2: obniż score Wojownika major AI na L3 gdy brak zagrożenia (nie MP). */
 export function applyL3PeaceWarriorPenalty(
   candidates: { id: string; score: number }[],
@@ -1341,31 +1286,6 @@ export function applyL3PeaceWarriorPenalty(
   for (const c of candidates) {
     if (c.id === 'Wojownik') {
       c.score -= AI_L3_PEACE_WARRIOR_SCORE_PENALTY;
-    }
-  }
-}
-
-export function computeMajorArchetypeMilitaryFraction(
-  mods: ArchetypeMods,
-): number {
-  const delta = (mods.wojsko - mods.ekonomia) * AI_ARCHETYPE_BIAS_PER_POINT;
-  return Math.min(0.6, Math.max(0.4, 0.5 + delta));
-}
-
-function applyMajorArchetypeProductionBias(
-  candidates: { id: string; score: number }[],
-  data: GameData,
-  militaryFraction: number,
-): void {
-  const unitNames = new Set(data.units.map(u => u.Jednostka));
-  const buildingIds = new Set(data.buildings.map(b => b.id));
-  const milBoost = Math.round((militaryFraction - 0.5) * 160);
-  const infraIds = new Set(['spichlerz', 'mury', 'koszary', 'studnia', 'garncarnia']);
-  for (const c of candidates) {
-    if (unitNames.has(c.id)) {
-      c.score += milBoost;
-    } else if (buildingIds.has(c.id) && !infraIds.has(c.id)) {
-      c.score -= milBoost;
     }
   }
 }
@@ -1663,7 +1583,7 @@ export function chooseCityProduction(
   allUnits: RuntimeUnit[],
   playerId: number,
   data: GameData,
-  mods: ArchetypeMods,
+  _legacyMods: LegacyArchetypeMods,
   opts: AITurnOpts,
   map: GameMap,
   difficultyParams: DifficultyParams,
@@ -1682,9 +1602,9 @@ export function chooseCityProduction(
     return s + n;
   }, 0) / Math.max(1, myCities.length);
   const majorEarly = computeMajorAiEarlyGame(opts, myCities, avgBuiltPerCity);
-  const majorMilFrac = isMajorAiOwner(opts)
-    ? computeMajorArchetypeMilitaryFraction(mods)
-    : 0.5;
+  // Civilization-specific production category priorities come from the approved
+  // matrix profile only; the old derived military/economy fraction is removed.
+  const majorMilFrac = 0.5;
 
   // Threat check: any enemy within threat range of this city
   const threatRange  = getAiParam(data, 'ekspansja_zagroz_zasieg', AI_THREAT_RANGE_DEFAULT);
@@ -1694,7 +1614,6 @@ export function chooseCityProduction(
   );
 
   // Base scores for each category (higher = higher priority)
-  // Archetype delta: +/- 20 per unit of mod
   // Difficulty bonus: bonusProdukcja scales economy score (higher difficulty = more efficient AI)
   const diffProdBonus = Math.round(difficultyParams.bonusProdukcja * 200); // e.g. +10% -> +20 pts, +25% -> +50 pts
   const panelBoost = aiProductionScoreBoosts(opts.civAiProfile);
@@ -1702,10 +1621,10 @@ export function chooseCityProduction(
     && opts.currentTurn % 3 === 0
     && (opts.powerRank ?? 1) > 1
     && !majorEarly;
-  const economyScore  = 100 + mods.ekonomia * 20 + diffProdBonus + panelBoost.economy + (powerGoalBoost ? 40 : 0);
-  const militaryScore = 100 + mods.wojsko   * 20 + panelBoost.military;
-  const defenseScore  = 100 + mods.obrona   * 20;
-  const scienceScore  = 100 + mods.nauka    * 20 + panelBoost.science;
+  const economyScore  = 100 + diffProdBonus + panelBoost.economy + (powerGoalBoost ? 40 : 0);
+  const militaryScore = 100 + panelBoost.military;
+  const defenseScore  = 100;
+  const scienceScore  = 100 + panelBoost.science;
 
   let candidates: { id: string; score: number }[] = [];
 
@@ -2019,7 +1938,6 @@ export function chooseCityProduction(
   }
 
   if (isMajorAiOwner(opts)) {
-    applyMajorArchetypeProductionBias(candidates, data, majorMilFrac);
     if (majorEarly) {
       // Kryterium 1: dawna lista 7 zaszytych id (stolarnia/cegielnia/odlewnia_brazu/
       // magazyn/targowisko/biblioteka/akademia) zastąpiona sprawdzeniem PRZYNALEŻNOŚCI
@@ -3143,7 +3061,7 @@ function applyIdleFallback(
  * @param cities        All cities on the map (all players)
  * @param map           The game map
  * @param data          Static game data (units, buildings, ai-params, terrain)
- * @param opts          Optional: civType for archetype mods, cityBuildings already built
+ * @param opts          Optional: civilization profile, cityBuildings already built
  * @returns             Ordered list of AI commands for this turn (engine executes them)
  */
 export function decideAITurn(
@@ -3154,12 +3072,8 @@ export function decideAITurn(
   data: GameData,
   opts: AITurnOpts = {},
 ): AICommand[] {
-  // Archetyp + trudność — wspólne dla ścieżki normalnej i defensywnej (kopie).
-  const archKeyRaw: string = opts.civType !== undefined
-    ? (CIV_TO_ARCH[opts.civType] ?? 'grecy')
-    : 'grecy';
-  const archKey = archKeyRaw as ArchKey;
-  const mods = readArchMods(data, archKey);
+  // Difficulty remains a generic AI setting. Civilization production priorities
+  // are supplied only through the approved matrix-backed profile in opts.
   const difficultyLevel: 1 | 2 | 3 = opts.poziomTrudnosci ?? 2;
   const difficultyParams = loadDifficultyParams(data, difficultyLevel);
   if (opts.startoweMiasta === undefined) {
@@ -3167,7 +3081,7 @@ export function decideAITurn(
   }
 
   if (opts.defensiveCopy) {
-    return decideDefensiveCopyTurn(playerId, units, cities, map, data, mods, opts, difficultyParams);
+    return decideDefensiveCopyTurn(playerId, units, cities, map, data, opts, difficultyParams);
   }
 
   opts.recruitStockDeficitScratch = new Set();
@@ -3227,7 +3141,7 @@ export function decideAITurn(
   // -------------------------------------------------------------------------
   for (const city of myCities) {
     const buildId = chooseCityProduction(
-      city.id, myCities, units, playerId, data, mods, opts, map, difficultyParams,
+      city.id, myCities, units, playerId, data, IGNORED_LEGACY_ARCHETYPE_MODS, opts, map, difficultyParams,
     );
     if (buildId !== null) {
       // P-AI-MOC-GAP: dołącz fallbacki (odczyt NATYCHMIAST — kolejne miasto w tej
@@ -4049,7 +3963,6 @@ function decideDefensiveCopyTurn(
   cities: AICity[],
   map: GameMap,
   data: GameData,
-  mods: ArchetypeMods,
   opts: AITurnOpts,
   difficultyParams: DifficultyParams,
 ): AICommand[] {
@@ -4066,7 +3979,7 @@ function decideDefensiveCopyTurn(
   // nie emitujemy foundCity). Zero bonusu: identyczna funkcja co dla zwykłego AI.
   for (const city of myCities) {
     const buildId = chooseCityProduction(
-      city.id, myCities, units, playerId, data, mods, opts, map, difficultyParams,
+      city.id, myCities, units, playerId, data, IGNORED_LEGACY_ARCHETYPE_MODS, opts, map, difficultyParams,
     );
     if (buildId !== null) {
       // P-AI-MOC-GAP: dołącz fallbacki (odczyt NATYCHMIAST — kolejne miasto w tej
@@ -5386,6 +5299,9 @@ export function decideAIDiplomacy(
   );
 
   const komendy: AIDiplomacyCommand[] = [];
+  const knownCivTypes = new Set<string>(Object.values(TypCywilizacji));
+  const normalizeCivType = (value?: string): TypCywilizacji | undefined =>
+    value !== undefined && knownCivTypes.has(value) ? value as TypCywilizacji : undefined;
 
   for (const rel of inp.relacje) {
     // Budujemy context dla aiDiplomacyStance.
@@ -5404,9 +5320,10 @@ export function decideAIDiplomacy(
       civMatrixDifficulty: difficulty,
     };
 
-    // Stub gracza AI — aiDiplomacyStance wymaga Player z prawdziwym typem cywilizacji.
-    const aiTyp = (inp.myTypCywilizacji ?? 'grecy') as TypCywilizacji;
-    const partnerTyp = (rel.partnerTypCywilizacji ?? 'rzymianie') as TypCywilizacji;
+    // Missing/unknown owner type must not borrow a civilization's matrix row.
+    // Passing undefined through to aiDiplomacyStance selects its generic neutral path.
+    const aiTyp = normalizeCivType(inp.myTypCywilizacji);
+    const partnerTyp = normalizeCivType(rel.partnerTypCywilizacji);
     const stubAIPlayer  = { typCywilizacji: aiTyp } as Parameters<typeof aiDiplomacyStance>[0];
     const stubOtherPlayer = { typCywilizacji: partnerTyp } as Parameters<typeof aiDiplomacyStance>[1];
 

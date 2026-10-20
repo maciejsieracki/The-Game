@@ -62,7 +62,7 @@ import {
   applyDifficultyCostMultiplier,
   type GameDifficulty,
 } from './difficulty-cost';
-import { buildingCostAfterCivDiscount } from './civ-bonuses';
+import { civMatrixParam, loadCivMatrix } from './civ-matrix';
 import { unitManpowerCostForType, tryDeductUnitSpawnCosts, cityManpowerCurrent } from './manpower';
 import {
   CITY_BUILDING_PREREQ,
@@ -395,6 +395,7 @@ export function unitProductionItem(
       kosztJednostekPace,
       ownerId,
       difficulty,
+      u.Jednostka,
     ),
   };
 }
@@ -422,6 +423,8 @@ export interface AvailabilityContext {
   buildingLevel?: number;
   /** RDY-01: bonusy cyw z civs.json (np. Zulusi -10% rekrutacji Impi). */
   civBonusy?: readonly CivBonusLite[];
+  /** Canonical civilization identity for matrix-only roster and cost resolution. */
+  civKey?: string;
   /** Etykieta Nacja z units.json (np. Celtowie, Grecja) — filtr jednostek per cyw. */
   civUnitNacja?: string;
   /** Ulepszenia terenu imperium — bramka Popalnia brązu (ABC-13). */
@@ -518,7 +521,8 @@ export function buildingWorkCost(
   ownerId = 0,
   difficulty: GameDifficulty = 'normal',
 ): number {
-  const afterCiv = buildingCostAfterCivDiscount(baseCost, civBonusy);
+  const matrixDiscount = civMatrixCostDiscount(civBonusy, 'prod_koszt_budynku_proc') ?? 0;
+  const afterCiv = applyCostDiscount(baseCost, matrixDiscount);
   const afterPace = pace ? applyBuildingCostPace(afterCiv, pace) : afterCiv;
   // GLOBAL×0.5 × FALA1×2 × FALA2×2 → efekt 2.0 vs JSON koszt Pracy budynku
   const afterGlobal = Math.max(
@@ -538,10 +542,12 @@ export function unitMoneyCost(
   pace?: KosztJednostekPace,
   ownerId = 0,
   difficulty: GameDifficulty = 'normal',
+  unitTypeName?: string,
 ): number {
   if (!Number.isFinite(baseCost) || baseCost <= 0) return 0;
   let koszt = baseCost;
-  const recDisc = civRecruitmentDiscount(civBonusy);
+  const matrixDiscount = civMatrixCostDiscount(civBonusy, 'prod_koszt_jednostki_proc');
+  const recDisc = civRecruitmentDiscount(civBonusy, unitTypeName) + (matrixDiscount ?? 0);
   if (recDisc > 0) {
     koszt = Math.max(1, Math.floor(koszt * (1 - recDisc)));
   }
@@ -561,20 +567,55 @@ export interface CivBonusLite {
   matrixParamId?: string;
 }
 
-/** Ulga na koszt rekrutacji z bonusow realizuje=ekonomia (Zulusi Impi -10%). */
+/** F-04 cost markers for a resolved owner civ; explicit zero values carry replacement precedence. */
+export function civProductionCostBonusyForCivKey(civKey: string): CivBonusLite[] {
+  const rows = loadCivMatrix().cywilizacje;
+  const key = civKey.toLowerCase();
+  if (!rows.some(row => [row.ikonaId, row.typCywilizacji, row.Cywilizacja].some(value => value.toLowerCase() === key))) return [];
+  return (['prod_koszt_budynku_proc', 'prod_koszt_jednostki_proc'] as const).map(matrixParamId => ({
+    typ: 'koszt_redukcja',
+    cel: matrixParamId === 'prod_koszt_budynku_proc' ? 'budynki' : 'jednostki',
+    wartosc: civMatrixParam(civKey, matrixParamId),
+    opis: `Matrix:${matrixParamId}`,
+    realizuje: matrixParamId === 'prod_koszt_budynku_proc' ? 'miasto' : 'ekonomia',
+    matrixParamId,
+  }));
+}
+
+/** Only the approved, distinct G11 matrix field contributes here; legacy descriptions are inert.
+ * F-04 general unit reduction is applied separately and can stack with this Impi-only field.
+ */
 export function civRecruitmentDiscount(
   bonusy: readonly CivBonusLite[] | undefined,
+  unitTypeName?: string,
 ): number {
-  if (!bonusy?.length) return 0;
-  for (const b of bonusy) {
+  let discount = 0;
+  for (const b of bonusy ?? []) {
     if (b.realizuje !== 'ekonomia') continue;
-    const opis = (b.opis ?? '').toLowerCase();
-    if ((opis.includes('rekrutacji') || b.matrixParamId === 'walka_koszt_rekrutacji_proc')
-      && typeof b.wartosc === 'number' && b.wartosc > 0) {
-      return b.wartosc;
+    if (b.matrixParamId !== 'walka_koszt_rekrutacji_proc') continue;
+    const impiOnly = (b.cel ?? '').toLowerCase() === 'impi';
+    if (impiOnly && unitTypeName?.trim().toLowerCase() !== 'impi') continue;
+    if (typeof b.wartosc === 'number' && Number.isFinite(b.wartosc) && b.wartosc > 0) {
+      discount += b.wartosc;
     }
   }
-  return 0;
+  return discount;
+}
+
+/** Returns null when this owner has no matrix marker; absent data is neutral, never legacy fallback. */
+function civMatrixCostDiscount(
+  bonusy: readonly CivBonusLite[] | undefined,
+  parameterId: 'prod_koszt_budynku_proc' | 'prod_koszt_jednostki_proc',
+): number | null {
+  const marker = bonusy?.find(b => b.matrixParamId === parameterId);
+  return marker && typeof marker.wartosc === 'number' && Number.isFinite(marker.wartosc)
+    ? marker.wartosc
+    : null;
+}
+
+function applyCostDiscount(baseCost: number, discount: number): number {
+  if (!Number.isFinite(baseCost) || baseCost <= 0 || discount <= 0) return baseCost;
+  return Math.max(1, Math.floor(baseCost * (1 - discount)));
 }
 
 /** DOSTEP-SUROWCE-Q1: czy imperium ma >0 szt. surowca w magazynie państwa. */
@@ -629,6 +670,33 @@ function unitAllowedForCivNation(unitNacja: string, civUnitNacja: string | undef
   const c = (civUnitNacja ?? '').trim();
   if (!c) return false;
   return stripDiacritics(n) === stripDiacritics(c);
+}
+
+/** Resolve roster nation from the canonical civ key when present; older callers
+ * may supply the already-resolved nation. Legacy bonus descriptions are never
+ * consulted for roster eligibility. */
+function availabilityCivNation(ctx: AvailabilityContext): string | undefined {
+  return ctx.civKey !== undefined ? unitNacjaForCivKey(ctx.civKey) : ctx.civUnitNacja;
+}
+
+function isCivSpecialReplacement(unit: UnitDef, civNation: string | undefined): boolean {
+  if (!civNation) return false;
+  const replacement = (unit['W zamian za'] ?? '').toString().trim();
+  const unitNation = (unit.Nacja ?? '').toString().trim();
+  return !isBlankReplacement(replacement)
+    && unitNation.length > 0
+    && stripDiacritics(unitNation) === stripDiacritics(civNation);
+}
+
+function civHasReplacementFor(
+  data: ProductionData,
+  baseUnitName: string,
+  civNation: string | undefined,
+): boolean {
+  if (!civNation) return false;
+  return data.units.some(unit =>
+    isCivSpecialReplacement(unit, civNation)
+      && (unit['W zamian za'] ?? '').toString().trim() === baseUnitName);
 }
 
 /** Mnoznik: kupno budynku za Pieniadz = koszt Pracy × ten wspolczynnik. */
@@ -805,7 +873,7 @@ export function availableProduction(
   const builtList = ctx.builtBuildingIds ?? [];
   const queue = ctx.productionQueue ?? [];
   const techs = new Set(unlockedTechs);
-  const specTokens = civSpecialUnitNameTokens(ctx.civBonusy);
+  const civNation = availabilityCivNation(ctx);
   const ownerId = ctx.ownerId ?? 0;
   const difficulty = ctx.difficulty ?? 'normal';
 
@@ -894,20 +962,15 @@ export function availableProduction(
     const isZwiadowcaException = (u.Typ ?? '').toString().trim() === 'Civilian';
     if (!isZwiadowcaException && (unitEpoch > epoch || unitEpoch < epoch - 1)) continue;
     const nacja = (u.Nacja ?? '').toString().trim();
-    if (!unitAllowedForCivNation(nacja, ctx.civUnitNacja)) continue;
+    if (!unitAllowedForCivNation(nacja, civNation)) continue;
     const zamiast = (u['W zamian za'] ?? '').toString().trim();
     const isReplacement = !isBlankReplacement(zamiast);
     if (isReplacement) {
-      // Jednostka specjalna (zastepuje bazowa) — tylko gdy cyw ma wpis w bonusy[].
-      if (!unitMatchesSpecialName(u.Jednostka, specTokens)) continue;
-    } else if (specTokens.length > 0) {
-      // Ukryj jednostke bazowa, gdy cyw ma specjalna wymiane tej samej roli.
-      const replacedBySpec = data.units.some(su => {
-        const sz = (su['W zamian za'] ?? '').toString().trim();
-        if (isBlankReplacement(sz) || sz !== u.Jednostka) return false;
-        return unitMatchesSpecialName(su.Jednostka, specTokens);
-      });
-      if (replacedBySpec) continue;
+      // National replacements derive from canonical owner nation and the unit
+      // data's replacement relation, never from legacy bonus prose.
+      if (!isCivSpecialReplacement(u, civNation)) continue;
+    } else if (civHasReplacementFor(data, u.Jednostka, civNation)) {
+      continue;
     }
     const tech = (u.Tech ?? '').toString().trim();
     // BUGFIX: blank-tech marker w units.json bywa zapisany jako '-' LUB '—'
@@ -957,6 +1020,7 @@ export function availableProduction(
       ctx.kosztJednostekPace,
       ownerId,
       difficulty,
+      u.Jednostka,
     );
     items.push({
       kind: 'jednostka',
@@ -1017,7 +1081,7 @@ export function availableReplacementsFor(
   const builtList = ctx.builtBuildingIds ?? [];
   const built = new Set(builtList);
   const techs = new Set(unlockedTechs);
-  const specTokens = civSpecialUnitNameTokens(ctx.civBonusy);
+  const civNation = availabilityCivNation(ctx);
   const ownerId = ctx.ownerId ?? 0;
   const difficulty = ctx.difficulty ?? 'normal';
 
@@ -1027,7 +1091,7 @@ export function availableReplacementsFor(
   function passesAvailabilityGates(u: UnitDef): boolean {
     if (epochNumber(u.Epoka) > epoch) return false;
     const nacja = (u.Nacja ?? '').toString().trim();
-    if (!unitAllowedForCivNation(nacja, ctx.civUnitNacja)) return false;
+    if (!unitAllowedForCivNation(nacja, civNation)) return false;
     const tech = (u.Tech ?? '').toString().trim();
     // Blank-tech marker bywa '-' LUB '—' (em dash) -- patrz uwaga w availableProduction.
     if (tech.length > 0 && tech !== '-' && tech !== '—' && !techs.has(tech)) return false;
@@ -1060,6 +1124,7 @@ export function availableReplacementsFor(
       ctx.kosztJednostekPace,
       ownerId,
       difficulty,
+      u.Jednostka,
     );
   }
 
@@ -1077,7 +1142,7 @@ export function availableReplacementsFor(
     // Krok "chowaj jednostke bazowa gdy istnieje lepszy zamiennik cyw." jest CELOWO
     // POMINIĘTY (Zastąp ma pokazać też warianty słabsze -- inaczej niż w rekrutacji).
     const zamiast = (u['W zamian za'] ?? '').toString().trim();
-    if (!isBlankReplacement(zamiast) && !unitMatchesSpecialName(u.Jednostka, specTokens)) continue;
+    if (!isBlankReplacement(zamiast) && !isCivSpecialReplacement(u, civNation)) continue;
 
     items.push({ kind: 'jednostka', id: u.Jednostka, nazwa: u.Jednostka, koszt: costOf(u) });
     seen.add(u.Jednostka);
@@ -1133,6 +1198,22 @@ export function frontItem(prod: CityProduction): ProductionItem | null {
 export function etaTurns(koszt: number, postep: number, praca: number): number | null {
   if (!(praca > 0)) return null;
   return Math.max(1, Math.ceil(Math.max(0, koszt - postep) / praca));
+}
+
+/** Apply the approved fractional owner speed modifier to an active building Work budget. */
+export function buildingWorkPerTurn(pracaPerTurn: number, speedBonus = 0): number {
+  const base = Number.isFinite(pracaPerTurn) && pracaPerTurn > 0 ? pracaPerTurn : 0;
+  const bonus = Number.isFinite(speedBonus) ? speedBonus : 0;
+  const scaled = base * (1 + bonus);
+  return Number.isFinite(scaled) && scaled > 0 ? scaled : 0;
+}
+
+/** Integer per-turn capacity for paid recruitment, with the approved no-carry contract. */
+export function unitRecruitmentCapacityPerTurn(baseCapacity: number, speedBonus = 0): number {
+  const base = Number.isFinite(baseCapacity) && baseCapacity > 0 ? baseCapacity : 0;
+  if (base <= 0) return 0;
+  const bonus = Number.isFinite(speedBonus) ? speedBonus : 0;
+  return Math.max(1, Math.floor(base * (1 + bonus)));
 }
 
 /**
@@ -1748,6 +1829,7 @@ export interface AdvanceProductionResult {
 export function advanceProduction(
   prod: CityProduction,
   pracaPerTurn: number,
+  buildingSpeedBonus = 0,
 ): AdvanceProductionResult {
   const front = frontItem(prod);
 
@@ -1756,7 +1838,7 @@ export function advanceProduction(
     return { prod: { ...prod, kolejka: [...prod.kolejka] }, completed: null };
   }
 
-  const praca = Number.isFinite(pracaPerTurn) && pracaPerTurn > 0 ? pracaPerTurn : 0;
+  const basePraca = Number.isFinite(pracaPerTurn) && pracaPerTurn > 0 ? pracaPerTurn : 0;
 
   // Pusta kolejka: doBudynkow nie ma na co iść → całość na pulę ulepszeń (Maciej 2026-07-22).
   if (front === null) {
@@ -1768,9 +1850,12 @@ export function advanceProduction(
         rekrutacja: prod.rekrutacja ? [...prod.rekrutacja] : undefined,
       },
       completed: null,
-      overflowToPool: praca > 0 ? praca : undefined,
+      overflowToPool: basePraca > 0 ? basePraca : undefined,
     };
   }
+  const praca = front.kind === 'budynek'
+    ? buildingWorkPerTurn(basePraca, buildingSpeedBonus)
+    : basePraca;
   const accumulated = prod.postep + praca;
   const rqCopy = prod.rekrutacja ? [...prod.rekrutacja] : undefined;
 
@@ -1827,8 +1912,8 @@ export function populationCostOf(item: ProductionItem): number {
 }
 
 /** Manpower cost of completing a unit at empire epoch (Zwiadowca = 0). */
-export function manpowerCostOf(item: ProductionItem, epoka: number, maxMult = 1): number {
-  return item.kind === 'jednostka' ? unitManpowerCostForType(item.id, epoka, maxMult) : 0;
+export function manpowerCostOf(item: ProductionItem, epoka: number, maxMult = 1, costMult = maxMult): number {
+  return item.kind === 'jednostka' ? unitManpowerCostForType(item.id, epoka, maxMult, costMult) : 0;
 }
 
 /** Set/clear the Wstrzymaj (pause) flag. Returns a fresh CityProduction. */
@@ -1898,9 +1983,11 @@ export function advanceRecruitmentGated(
   maxPerTurn = RECRUIT_UNITS_PER_TURN,
   /** true gdy koszt Manpower pobrano przy opłaceniu złotem (kolejka rekrutacji). */
   costAlreadyPaid = false,
+  maxMult = 1,
+  costMult = maxMult,
 ): AdvanceRecruitmentGatedResult {
   let pop = city.population;
-  let mp = cityManpowerCurrent(city, epoka);
+  let mp = cityManpowerCurrent(city, epoka, maxMult);
   const rq = [...(prod.rekrutacja ?? [])];
   const completed: ProductionItem[] = [];
   let n = 0;
@@ -1915,8 +2002,9 @@ export function advanceRecruitmentGated(
       { population: pop, manpower: mp },
       epoka,
       UNIT_POPULATION_COST,
-      1,
+      maxMult,
       front.id,
+      costMult,
     );
     if (!d.ok) break;
     completed.push(rq.shift()!);
@@ -1976,10 +2064,12 @@ export function advanceRecruitment(
  * 1 Praca = 1 Pieniadz rate (Schemat sec.3.2): ceil(koszt - postep), never < 0.
  * Returns 0 when the queue is empty.
  */
-export function rushCost(prod: CityProduction): number {
+export function rushCost(prod: CityProduction, modifier = 0): number {
   const front = frontItem(prod);
   if (front === null) return 0;
-  return Math.max(0, Math.ceil(front.koszt - prod.postep));
+  const rawModifier = Number.isFinite(modifier) ? modifier : 0;
+  const roundedRemainingBase = Math.max(0, Math.ceil(front.koszt - prod.postep));
+  return Math.max(0, Math.ceil(roundedRemainingBase * (1 + rawModifier)));
 }
 
 /**
@@ -2139,6 +2229,7 @@ export function unitPurchaseCost(
     kosztJednostekPace,
     ownerId,
     difficulty,
+    def.Jednostka,
   );
 }
 

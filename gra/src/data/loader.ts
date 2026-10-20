@@ -212,8 +212,10 @@ export interface CivDef {
   Cywilizacja: string;
   'Styl / charakter': string | null;
   'Jednostka specjalna': string | null;
-  'Bonus startowy': string | null;
-  'Bonusy/minusy (do dopracowania)': string | null;
+  /** Deprecated civ bonus prose; optional for old external fixture compatibility. */
+  'Bonus startowy'?: string | null;
+  /** Deprecated civ bonus prose; optional for old external fixture compatibility. */
+  'Bonusy/minusy (do dopracowania)'?: string | null;
   Uwagi: string | null;
   /** Klucz identyfikujący cywilizację (np. 'grecy', 'rzymianie') — odpowiada TypCywilizacji enum. */
   ikonaId?: string;

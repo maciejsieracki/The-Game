@@ -1,90 +1,115 @@
 {
-  "publishedAt": "2026-10-17T14:13:28+00:00",
-  "productReleaseCommit": "3c11d0b8b651745b7a5e61b6db69ed45690aa380",
-  "publisher": "Hermes Orchestrator",
-  "md5": "0e3ad637add786c556fd2fa148a99d82",
-  "sha256": "6a8ce858da0c30b4db833f33a454ad0ae807171f2fbc490c97f4197c26ca39dc",
-  "bytes": 69936305,
+  "releaseState": "approved for bounded publication; commit/push/deploy pending",
   "bundle": "Gra-ROBOCZA.html",
-  "sourceCommit": "3c11d0b8b651745b7a5e61b6db69ed45690aa380",
-  "base": "dca87077eb16b6b8f6f747944906466c89deda28",
-  "integrationCommit": "3c11d0b8b651745b7a5e61b6db69ed45690aa380",
-  "publishCommit": "3c11d0b8b651745b7a5e61b6db69ed45690aa380",
-  "remoteMainAtPublish": "dca87077eb16b6b8f6f747944906466c89deda28",
-  "remoteSmoke": true,
+  "bundleMd5": "3b6610b74fd6586c5507908fe7665369",
+  "bundleSha256": "234dff75036b22e423b33f9d6134428c559b612922b866399346f0e94ebfca4a",
+  "bundleBytes": 69943587,
+  "sourceSnapshot": {
+    "baseCommit": "c799325c77bc11c24684c1b35077ae80913d6f8d",
+    "candidateChangeManifestSha256": "683a5f903cd2b8c5f3bbb19bc733f83dc18cf6ea72b1916cfc186b9965178371",
+    "candidatePathContentSha256": "8d1224714d326b395f0086e4c7eec40729aace78124000c4db46405f45f21d2c",
+    "note": "Deterministic path/content digest across the frozen source candidate; not a Git tree object ID."
+  },
   "scope": [
-    "PR141 bounded F-01: semantic classifier for meta_mnoznik_waluta only",
-    "PR141 bounded F-02: six accepted combat semantic classifications only",
-    "PR141 bounded F-03 r2: nine accepted combat semantic classifications only",
-    "No raw matrix values, gameplay formulas, difficulty, runtime consumers, or denominator changes"
+    "Bounded PR141 source and test changes assembled from locally accepted scopes and reviewed owner decisions.",
+    "Previously pushed recruitment regeneration UI, first-city diplomacy overlay, and standard-world river performance changes are included in base commit c799325c77bc11c24684c1b35077ae80913d6f8d."
   ],
-  "finalControl": [
-    "F-01 t_8a2396ee/run60 ACCEPT_F01_FOR_ORCHESTRATOR_INTEGRATION; two-file exact hash readback",
-    "F-02 t_cf652715/run63 ACCEPT_F02_FOR_ORCHESTRATOR_INTEGRATION; two-file exact hash readback",
-    "F-03 r2 t_de434c66/run68 ACCEPT_F03_R2_FOR_ORCHESTRATOR_INTEGRATION; route_match=true; two-file exact hash readback"
+  "verification": [
+    "Direct TypeScript noEmit PASS on candidate source.",
+    "Direct Vite production build PASS: 893 modules; output SHA-256 eea0f3ba79e6ec24f9b483b9136c1a8f7ec5fb0d28fae6e28171e3cfea8fe056.",
+    "Focused source suites PASS: semantic consumer 52/52, corrected population behavior 24/24, rush 72/72, plus matrix, manpower, and bounded save/MP checks documented in the validation report.",
+    "Canonical bundle verifier passes and manifest hash/bytes match; Linux stamp self-MD5 warning is retained as a known port limitation.",
+    "Predeploy browser attempts 01 and 02 both FAILED the complete flow. Both first-city founding actions passed; post-founding diplomacy audience dismissal did not complete. Attempt 02 screenshot shows visible audience and enabled Wróć; JSON zeros count completed actions, not visibility. No complete browser-smoke PASS is claimed."
   ],
-  "noOpVerified": [
-    "npm ci --ignore-scripts --no-audit --no-fund PASS; no manifest or lockfile change",
-    "Semantic label test PASS 348; FAIL 0",
-    "Meta-roster test PASS 63; FAIL 0",
-    "Combat test PASS 6/6; army-hunger combat PASS 13/13",
-    "TypeScript noEmit PASS; git diff --check PASS; exact product allowlist contains only two files",
-    "Direct Vite production build PASS, 893 modules; 69,841.24 kB uncompressed build artifact",
-    "Canonical smoke.cjs: SMOKE OK, canvas=1, rAF=1 (bounded harness, not full gameplay)",
-    "Headless Chromium over local HTTP against the published-path bundle: HTTP 200, title The Game — 4X, canvas=2, visible HUD/menu text, zero page/console errors",
-    "ROBOCZA verifier: VERIFY OK; manifest md5 match OK; Linux stamp-md5 WARN is the known Node stamp-port behavior"
+  "validationReport": {
+    "path": "dyspozycje/autobot/runs/R-PR141-CODEX-FULL-RELEASE-20261020/evidence/release-verification-report.md",
+    "sha256": "da63d74241e4d9877c96985c233d83b82c0df36f1bd5a7b442e3fef038cbe053"
+  },
+  "limits": [
+    "No full 93×15 gameplay acceptance is claimed.",
+    "No full runtime, save/load parity, or complete gameplay acceptance is claimed.",
+    "F-05 legal battle observation and terrain/runtime evidence gaps remain open.",
+    "No external production website is identified or claimed."
   ],
-  "excluded": [
-    "F-04: all 360 values remain unapproved; no matrix data values changed",
-    "F-05, G11, seven other combat holds, runtime consumers, and whole PR141 acceptance remain blocked",
-    "PR #142 Rally Point UI excluded: full production gameplay acceptance remains NOT_PROVEN and the topic registry gap remains unresolved",
-    "World-generation changes, Rust/Tauri, Windows/Desktop, KANON, and FINALNA"
-  ],
-  "note": "Owner authorized bounded publication on 2026-10-17. This release contains only the independently accepted F-01/F-02/F-03 semantic-status subset; it is not full PR141, full matrix, or gameplay acceptance. Pinned GitHub raw bundle and manifest readback plus local Chromium smoke of the fetched remote bundle passed; no external production website is claimed.",
   "previousRelease": {
-    "publishedAt": "2026-10-09T12:27:33.405657+00:00",
-    "productReleaseCommit": "c63a7bc89757cf165e7752e3dc0d124abdb06506",
-    "md5": "f228f4908d72dabbaef8866994c6452a",
-    "sha256": "0629fed042dd01cc7c824b8cf439a559c2bb94e91d653ce6c8cf3a372d0d4ee2",
-    "bytes": 69930169
+    "publishedAt": "2026-10-17T14:13:28+00:00",
+    "productReleaseCommit": "3c11d0b8b651745b7a5e61b6db69ed45690aa380",
+    "bundleSha256": "6a8ce858da0c30b4db833f33a454ad0ae807171f2fbc490c97f4197c26ca39dc",
+    "bundleMd5": "0e3ad637add786c556fd2fa148a99d82",
+    "bundleBytes": 69936305
   },
-  "dependencyAudit": {
-    "performed": false,
-    "note": "npm audit was not run; npm ci used --no-audit; no dependency upgrades were made"
-  },
-  "originalAcceptedObligations": "0/9 unchanged",
-  "fullGameplayAcceptance": "NOT_PROVEN",
-  "hubGeneratedAt": "2026-10-17T14:14:55",
+  "startHub": "START.html",
+  "hubGeneratedAt": "2026-10-20T19:30:31",
+  "md5": "3b6610b74fd6586c5507908fe7665369",
   "bundles": [
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html?skipMenuRedirect=1",
       "label": "Pełna gra ROBOCZA",
-      "md5": "0e3ad637add786c556fd2fa148a99d82",
-      "sizeBytes": 69936305
+      "md5": "3b6610b74fd6586c5507908fe7665369",
+      "sizeBytes": 69943587
     },
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html",
       "label": "Pełna gra (z menu)",
-      "md5": "0e3ad637add786c556fd2fa148a99d82",
-      "sizeBytes": 69936305
+      "md5": "3b6610b74fd6586c5507908fe7665369",
+      "sizeBytes": 69943587
     }
   ],
-  "startHub": "START.html",
-  "remoteReadbackCommit": "47981902f4aa98c254e8c1e7d04bab8b13776f4a",
-  "remoteReadbackPending": false,
-  "remoteReadbackVerifiedAt": "2026-10-17T14:13:28+00:00",
-  "remoteReadback": {
-    "mainSha": "47981902f4aa98c254e8c1e7d04bab8b13776f4a",
-    "integrationBranchSha": "47981902f4aa98c254e8c1e7d04bab8b13776f4a",
-    "bundleHttpStatus": 200,
-    "manifestHttpStatus": 200,
-    "bundleSha256": "6a8ce858da0c30b4db833f33a454ad0ae807171f2fbc490c97f4197c26ca39dc",
-    "bundleMd5": "0e3ad637add786c556fd2fa148a99d82",
-    "bundleBytes": 69936305,
-    "manifestSha256": "3d8591bc7d148335c62263e2df0292c4e42fe3d6b1d80ea3c8f49b30a7d26f45",
-    "chromiumSmoke": "PASS: HTTP 200, title The Game — 4X, two canvases, HUD/menu visible, zero page/console errors"
+  "browserAttempt": {
+    "status": "FAIL",
+    "reportPath": "dyspozycje/autobot/runs/R-PR141-CODEX-FULL-RELEASE-20261020/evidence/browser-predeploy-01/report.json",
+    "reportSha256": "e2fa82504e1f470045a1ae14bdfd8c76c7887d1b63f19d3297a1ffb1fc91c977",
+    "failureScreenshot": "dyspozycje/autobot/runs/R-PR141-CODEX-FULL-RELEASE-20261020/evidence/browser-predeploy-01/04-failure-first-city.png",
+    "note": "First-city action passed; audience dismissal timed out at 15s after three dismissals; two favicon 404s; no retry or full gameplay claim.",
+    "nextAttempt": {
+      "status": "COMPLETE_FAIL",
+      "reportPath": "dyspozycje/autobot/runs/R-PR141-CODEX-FULL-RELEASE-20261020/evidence/browser-predeploy-02/report.json",
+      "reportSha256": "b1be5b5bbb67ac1b95992494cbb066586879bc311f6ba317c8cda95646eaa41a",
+      "failureScreenshot": "dyspozycje/autobot/runs/R-PR141-CODEX-FULL-RELEASE-20261020/evidence/browser-predeploy-02/04-failure-first-city.png",
+      "note": "Attempt 02: first-city action passed after map lifecycle; failure screenshot shows diplomacy audience with enabled Wróć. Zero counts are completed dismissals/list closures, not visibility. TIMEOUT:dismiss-audience after 4,444 ms; no turn/save/battle. Standard/Continents seed-141 map lifecycle was about 195,987 ms; observed main-river 93,676 ms and fill 95,555 ms."
+    }
   },
-  "remoteSmokeBoundary": "Pinned GitHub raw bundle/manifest fetched at the verified main SHA; fetched bundle was served locally for Chromium smoke. External production website not tested."
+  "releaseEvidence": [
+    {
+      "path": "dyspozycje/autobot/runs/R-PR141-CODEX-FULL-RELEASE-20261020/03-independent-evaluator-release.md",
+      "sha256": "f59ee99b54c6984e72eaf5f3d2877a35fc4debd8a9f1e9bef8a88f70f00854c9"
+    },
+    {
+      "path": "dyspozycje/autobot/runs/R-PR141-CODEX-FULL-RELEASE-20261020/evidence/source-candidate-manifest.json",
+      "sha256": "683a5f903cd2b8c5f3bbb19bc733f83dc18cf6ea72b1916cfc186b9965178371"
+    },
+    {
+      "path": "dyspozycje/autobot/runs/R-PR141-CODEX-FULL-RELEASE-20261020/evidence/source-provenance-reference-manifest.json",
+      "sha256": "771a2af4598fe77525c9c1e588d2a2c237fb198f734e6672cd5472dd86317b8f"
+    },
+    {
+      "path": "dyspozycje/autobot/runs/R-PR141-CODEX-FULL-RELEASE-20261020/evidence/browser-predeploy-01/report.json",
+      "sha256": "e2fa82504e1f470045a1ae14bdfd8c76c7887d1b63f19d3297a1ffb1fc91c977"
+    },
+    {
+      "path": "dyspozycje/autobot/runs/R-PR141-CODEX-FULL-RELEASE-20261020/04-browser-attempt-02.md",
+      "sha256": "ab0f56113259d2047b7d776923ee925379f2df7007589aa292b96596d6de26f0"
+    }
+  ],
+  "finalControl": {
+    "status": "PASS-WITH-NOTES",
+    "reportPath": "dyspozycje/autobot/runs/R-PR141-CODEX-FULL-RELEASE-20261020/05-final-control.md",
+    "reportSha256": "fd2c759332e11135f89a6fb83218910b7be14984534d14aaeb9a993bce4895e3",
+    "scope": "bounded source/artifact publication only; complete browser flow remains FAIL"
+  },
+  "rootIntegration": {
+    "status": "APPROVED_FOR_BOUNDED_PUBLICATION",
+    "reportPath": "dyspozycje/autobot/runs/R-PR141-CODEX-FULL-RELEASE-20261020/06-integration.md",
+    "reportSha256": "34770ff8f0d20a51cf724b69dc0652e0ca37e48e89747d64268ccea61ca9e7c4",
+    "commitPushDeployment": "pending"
+  },
+  "publication": {
+    "baseCommit": "c799325c77bc11c24684c1b35077ae80913d6f8d",
+    "proposedBranch": "codex/pr141-full-release-20261020",
+    "commit": null,
+    "remoteReadback": "PENDING",
+    "externalHost": "not identified; not claimed"
+  }
 }

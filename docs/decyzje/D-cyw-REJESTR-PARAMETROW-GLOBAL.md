@@ -243,11 +243,15 @@ START/META ──► jednostka spec., epoka startu, klastry, mnożnik waluty
 | `dip_prog_wojny` | progWojny | próg wypowiedzenia wojny | ⚠️ seed |
 | `dip_pamietliwosc` | pamietliwosc | długość urazów | ⚠️ seed |
 | `dip_otwartosc_handel` | otwartoscHandel | `ARCHETYPE_TRADE` | ✅ |
-| `dip_nastawienie_bazowe` | nastawienieBazowe | start Zaufanie | ✅ |
-| `dip_agresja_archetyp` | (enum + civ-ai) | `ARCHETYPE_AGGRESSION` | ✅ |
+| `dip_nastawienie_bazowe` | nastawienieBazowe | zamierzony efekt: start Zaufanie | historycznie: ✅; bieżąco: `UNWIRED` / `DECISION_REQUIRED` |
+| `dip_agresja_archetyp` | (enum + civ-ai) | historyczny opis: `ARCHETYPE_AGGRESSION` (niepotwierdzony jako bieżący konsument tego parametru) | historycznie: ✅; bieżąco: `UNWIRED` / `DECISION_REQUIRED` |
 | `dip_handlowosc_archetyp` | (enum) | `ARCHETYPE_TRADE` fallback | ✅ |
 
 **Relacja / Respekt / Zaufanie** — liczone dynamicznie (`diplomacy.ts`); cyw. nie ustawia co turę, tylko **współczynniki i start**.
+
+**Korekta statusu `dip_agresja_archetyp` (2026-10-18):** historyczne `✅` / `ARCHETYPE_AGGRESSION` nie potwierdza bieżącego konsumenta tego pola macierzy. Aktualny classifier oznacza je `DECISION_REQUIRED`, bez consumer evidence; aktywny `resolveArchetypeAggression` czyta osobne `ai_agresywnosc`, a `ARCHETYPE_AGGRESSION` przekazuje jako fallback. Nie mapować tego pola na `ai_agresywnosc` bez decyzji właściciela o aktorze, warunku i relacji między polami — istnieje ryzyko podwójnego liczenia. Nie zmieniono wartości ani zachowania gry. Źródła: `gra/src/game/civ-matrix-semantic.ts`, `gra/tools/civ-matrix-semantic-labels-test.cjs`, `gra/src/game/civ-ai-data.ts`, `gra/src/game/diplomacy.ts`.
+
+**Korekta klasyfikacji (2026-09-22):** wcześniejszy status `✅` dla `dip_nastawienie_bazowe` w tym rejestrze opisywał zakładany efekt, nie potwierdzony live consumer. Release receipt z 2026-09-22 skorygował klasyfikację do `UNWIRED`; bieżący consumer status to `DECISION_REQUIRED`. Helper jest wywoływany tylko przez czyste `initialRelation`, bez runtime call-site; żywy start relacji nie czyta tego pola. Nie zmieniono wartości ani nie zatwierdzono nowego hookup. Źródła: `dyspozycje/_handoff/KANAL-PRACA.md` receipt 2026-09-22 (product `ad16a1b8`, remote readback `4c9ae80b`), `gra/src/game/civ-matrix-semantic.ts`, `gra/tools/civ-matrix-semantic-labels-test.cjs`.
 
 ---
 

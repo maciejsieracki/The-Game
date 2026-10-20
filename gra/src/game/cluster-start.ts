@@ -16,8 +16,9 @@ import {
   type ForeignTypeClusterGroup,
   type HumanDistanceMode,
 } from '../map/cluster-spawn';
-import { startRelationForPair } from './diplomacy-layers';
+import { startRelationForMajorPair, startRelationForPair } from './diplomacy-layers';
 import type { Relation } from './diplomacy';
+import { HUMAN_OWNER_PRIMARY } from './human-owners';
 import { hexDistance } from '../units/setup';
 import { MIN_CITY_DISTANCE, MIN_CITY_DISTANCE_START_CITY_STATE } from './cities';
 import { pickNextCityName } from './civ-names';
@@ -55,6 +56,12 @@ export interface ClusterStartPlan {
   /** Wszystkie miasta AI z klastra — profil kopia_typu_obronna. */
   typCityCopyOwners: Set<number>;
   startRelations: Map<number, Relation>;
+  /** Relacje initialne wszystkich par major-major; city-state są wykluczone. */
+  majorPairStartRelations: Array<{
+    ownerA: number;
+    ownerB: number;
+    relation: Relation;
+  }>;
   placement: ClusterSpawnPlan['placement'];
   /** Liczba miast-państw do spawnu wokół pierwszego miasta gracza. */
   pendingSameTypeRivals: number;
@@ -370,6 +377,32 @@ export function buildClusterStartPlan(input: BuildClusterStartInput): ClusterSta
   }
   const pendingSameTypeRivalsSecond = pendingSameTypeRivalOwnerIdsSecond.length;
 
+  // Q2: relacja początkowa jest per para wszystkich aktywnych major ownerów,
+  // wliczając oba fotele ludzkie i AI↔AI. City-state są poza listą: tylko
+  // zaakceptowane stolice obcych klastrów kwalifikują się po stronie AI.
+  const majorOwners: Array<{ ownerId: number; civId: string }> = [
+    { ownerId: HUMAN_OWNER_PRIMARY, civId: input.playerCivId },
+  ];
+  if (secondPlayerStartHex && secondPlayerOwnerId !== null && input.secondHumanCivId) {
+    majorOwners.push({ ownerId: secondPlayerOwnerId, civId: input.secondHumanCivId });
+  }
+  for (const ownerId of clusterCapitalOwnerIds) {
+    const civId = aiOwnerCivMap.get(ownerId);
+    if (civId) majorOwners.push({ ownerId, civId });
+  }
+  const majorPairStartRelations: ClusterStartPlan['majorPairStartRelations'] = [];
+  for (let i = 0; i < majorOwners.length; i++) {
+    for (let j = i + 1; j < majorOwners.length; j++) {
+      const a = majorOwners[i]!;
+      const b = majorOwners[j]!;
+      majorPairStartRelations.push({
+        ownerA: a.ownerId,
+        ownerB: b.ownerId,
+        relation: startRelationForMajorPair(a.civId, b.civId),
+      });
+    }
+  }
+
   return {
     playerStartHex: spawnPlan.playerStartHex,
     playerStartCityName: spawnPlan.playerStartCityName,
@@ -384,6 +417,7 @@ export function buildClusterStartPlan(input: BuildClusterStartInput): ClusterSta
     foreignTypeOwners,
     typCityCopyOwners,
     startRelations,
+    majorPairStartRelations,
     placement: spawnPlan.placement,
     pendingSameTypeRivals: spawnPlan.pendingSameTypeRivals,
     pendingSameTypeRivalHexes: spawnPlan.pendingSameTypeRivalHexes,

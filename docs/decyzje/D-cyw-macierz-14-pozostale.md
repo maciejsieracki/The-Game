@@ -19,12 +19,14 @@ Każda komórka jest pobrana bezpośrednio z wiersza celu w `gra/data/civ-matrix
 
 ## Konsumenci
 
-- `REAL_GAMEPLAY`: 11 parametrów — 8 pól AI, `lud_wzrost_proc`, `dip_handlowosc_archetyp`, `dip_nastawienie_bazowe`.
+- Historyczny zakres tego audytu 14 cywilizacji (snapshot 2026-09-20, z późniejszą korektą etykiety 2026-09-22; nie jest to pełny ani bieżący globalny count classifiera): `REAL_GAMEPLAY` 10 parametrów — 8 pól AI, `lud_wzrost_proc`, `dip_handlowosc_archetyp`. Oryginalny raport zaliczał tu również `dip_nastawienie_bazowe`; opublikowana korekta do `UNWIRED` wyłącza to pole z tego historycznego zestawienia.
 - `UI_ONLY`: 5 pól dyplomatycznych używanych przez tagi w `diplomacy-display.ts`.
-- Reszta jest `DEAD_UNWIRED` (nie-defaultowe dane bez gameplay call-site) albo `UNWIRED` (brak nie-defaultowych danych i call-site). `paramDefs.modul` nie jest dowodem użycia.
+- Reszta jest `DEAD_UNWIRED` (nie-defaultowe dane bez gameplay call-site) albo `UNWIRED` (brak live call-site; dane mogą istnieć, ale nie dowodzą konsumpcji). Klasyfikator może oznaczyć taki przypadek jako effective `DECISION_REQUIRED`; patrz korekta `dip_nastawienie_bazowe` poniżej. `paramDefs.modul` nie jest dowodem użycia.
 - Bonusy i mnożniki z `civs.json` są w osobnym arkuszu; nie są udawane jako aktywne parametry macierzy.
 
-Komórki wg statusu: DEAD_UNWIRED=686, REAL_GAMEPLAY=154, UI_ONLY=70, UNWIRED=672. Komórki różne od defaultu: 459.
+Powyższe liczniki komórek są historycznym snapshotem raportu z 2026-09-20, sprzed późniejszej korekty klasyfikatora. Nie należy ich odczytywać jako bieżącego podsumowania statusów.
+
+Komórki wg statusu w snapshotcie z 2026-09-20: DEAD_UNWIRED=686, REAL_GAMEPLAY=154, UI_ONLY=70, UNWIRED=672. Komórki różne od defaultu: 459.
 
 ## Polityka poziomów
 
@@ -32,7 +34,7 @@ Komórki wg statusu: DEAD_UNWIRED=686, REAL_GAMEPLAY=154, UI_ONLY=70, UNWIRED=67
 - `lud_wzrost_proc`: Easy ×0.5 / Normal ×1 / Hard ×1.5, zaokrąglenie wkładu do punktów procentowych.
 - `ai_profil_obronna`: flaga ownera, identyczna na poziomach.
 - `dip_handlowosc_archetyp`: realny konsument, ale obecnie neutralny, bo `mul_abs` nie jest skalowane przez helper.
-- `dip_nastawienie_bazowe`: realny konsument, lecz bieżący caller pomija difficulty i korzysta z Normal. Oba przypadki pozostają jawnymi decyzjami.
+- `dip_nastawienie_bazowe` — **korekta klasyfikacji po raporcie z 2026-09-20:** 2026-09-22 release receipt skorygował wcześniejszą etykietę `REAL_GAMEPLAY` do `UNWIRED`; bieżący consumer status to `DECISION_REQUIRED`. Późniejszy recon potwierdził, że helper `nastawienieBazoweZaufanieDelta` jest wywoływany wyłącznie z czystego `initialRelation`, bez live call-site, a `startRelationForPair` nie czyta tego pola. Nie ma zgody na nowy consumer; decyzja o jego ewentualnym przyszłym kontrakcie pozostaje otwarta. Źródła: `dyspozycje/_handoff/KANAL-PRACA.md` receipt 2026-09-22 (product `ad16a1b8`, remote readback `4c9ae80b`), `gra/src/game/civ-matrix-semantic.ts`, `gra/tools/civ-matrix-semantic-labels-test.cjs`.
 
 ## Otwarte decyzje
 

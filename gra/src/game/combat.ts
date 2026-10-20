@@ -917,7 +917,8 @@ export function resolveCombat(
   let hpDef: number;
   if (Number.isFinite(canonicalAtkMax)) {
     const current = attacker.canonicalCurrentHp ?? attacker.health;
-    hpAtk = Math.round(Math.max(0, Math.min(canonicalAtkMax!, current)));
+    const effectiveMax = applyMultiplier(canonicalAtkMax!, atkCivHealth);
+    hpAtk = Math.round(Math.max(0, Math.min(effectiveMax, current)));
   } else {
     const attackerHealthAfterTransient = attacker.health / (1 + attackerVeteranBonusFrac);
     const attackerHealthAfterCiv = applyMultiplier(attackerHealthAfterTransient, atkCivHealth);
@@ -929,7 +930,8 @@ export function resolveCombat(
   }
   if (Number.isFinite(canonicalDefMax)) {
     const current = defender.canonicalCurrentHp ?? defender.health;
-    hpDef = Math.round(Math.max(0, Math.min(canonicalDefMax!, current)));
+    const effectiveMax = applyMultiplier(canonicalDefMax!, defCivHealth);
+    hpDef = Math.round(Math.max(0, Math.min(effectiveMax, current)));
   } else {
     const defenderHealthAfterTransient = defender.health / (1 + defenderVeteranBonusFrac);
     const defenderHealthAfterCiv = applyMultiplier(defenderHealthAfterTransient, defCivHealth);

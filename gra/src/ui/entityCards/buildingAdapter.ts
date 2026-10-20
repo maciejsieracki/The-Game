@@ -65,9 +65,9 @@ export interface BuildingCardCityState {
   buildCostPace: BuildingCostPace;
   /** `cfg.getDifficulty?.() ?? 'normal'` policzone przez hosta. */
   difficulty: GameDifficulty;
-  /** Zawsze `0` w dzisiejszym `buildBuildingDetailCard` (świadomy, niezmieniony hardcode
-   * — `const ownerId = 0;`), zachowane 1:1. */
+  /** Owner of the city used to resolve price effects. */
   ownerId: number;
+  civBonusy?: readonly import('../../game/production').CivBonusLite[];
 }
 
 const EPOCH_LABEL: Record<number, string> = { 1: 'Kamień', 2: 'Brąz', 3: 'Żelazo' };
@@ -276,7 +276,7 @@ export const buildingAdapter: EntityCardAdapter<BuildingDef> = (building, ctx) =
   // --- 8. KOSZTY — DWIE osobne pod-sekcje: „Koszt budowy" i „Koszt utrzymania" (dotąd jedna
   // sekcja „Koszty budowy i utrzymania" mieszała jednorazowy wydatek z co-turowym) -----------
   const baseWork = itemCost('budynek', building.id, { buildings: ALL_BUILDINGS, units: [] }, 1);
-  const workCost = buildingWorkCost(baseWork, undefined, cityState.buildCostPace, cityState.ownerId, cityState.difficulty);
+  const workCost = buildingWorkCost(baseWork, cityState.civBonusy, cityState.buildCostPace, cityState.ownerId, cityState.difficulty);
   const stockCostDetail = buildingStockCost(building);
   const buildCostRows: EntityCardRow[] = [
     { label: 'Praca (jednorazowo)', value: `${workCost} pkt Pracy` },

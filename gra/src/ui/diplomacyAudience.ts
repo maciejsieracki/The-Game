@@ -2,7 +2,6 @@
  * diplomacyAudience.ts — ekran audiencji dyplomatycznej (D3-Q1…Q4).
  * DECOUPLED: zero importów game/*; callbacki z SILNIK.
  */
-import type { CivBonusLite } from '../game/production';
 import { startDiplomacyMusic, stopDiplomacyMusic } from '../audio/muzyka-antyczna';
 import {
   effectiveNastawienieScores,
@@ -303,8 +302,6 @@ export interface DiplomacyAudienceConfig {
    * dyspozycja). Brak = zakładka ukryta (np. wywołanie audiencji bez kontekstu listy).
    */
   onOpenKnownFactions?: () => void;
-  /** Bonusy cywilizacji (civs.json) — SILNIK: civBonusyForOwnerId. */
-  getCivBonusy?: (ownerId: number) => readonly CivBonusLite[];
   /** Kontekst modali negocjacji (wrogowie, tech, opłaty granic). */
   getNegotiationContext?: (actionId: string) => NegotiationModalContext | null;
   /**
@@ -1268,12 +1265,6 @@ function cultureLineHtml(st: DiplomacyAudienceState): string {
   return html;
 }
 
-function bonusListHtml(bonusy: readonly CivBonusLite[]): string {
-  const lines = bonusy.map(b => (b.opis ?? '').trim()).filter(Boolean).slice(0, 2);
-  if (lines.length === 0) return '';
-  return '<ul class="da-bonus">' + lines.map(l => '<li>' + esc(l) + '</li>').join('') + '</ul>';
-}
-
 /** Pasek atrybutu (Moc militarna / Potencjał sojuszniczy) — bez wartości bezwzględnej 0..100. */
 function attrBarHtml(label: string, valueLabel: string, pct: number, tone: 'you' | 'them' | 'gold'): string {
   const p = Math.max(0, Math.min(100, Math.round(pct)));
@@ -1348,7 +1339,7 @@ function otherLeaderHtml(st: DiplomacyAudienceState): string {
 }
 
 /** FAZA 2 pkt 1 — LEWA karta (gracz): medalion, atrybuty, reputacja, skarbiec, dobra handlowe. */
-function playerCardHtml(st: DiplomacyAudienceState, playerBon: readonly CivBonusLite[]): string {
+function playerCardHtml(st: DiplomacyAudienceState): string {
   const maxPower = Math.max(st.playerPower ?? 0, st.otherPower ?? 0, 1);
   const powerPct = ((st.playerPower ?? 0) / maxPower) * 100;
   const potencjal = st.sojuszPotencjal;
@@ -1390,7 +1381,6 @@ function playerCardHtml(st: DiplomacyAudienceState, playerBon: readonly CivBonus
         '<div class="da-sec-title">Dobra handlowe</div>' +
         goodsCategoriesHtml(st.playerGoodsCats, 'player') +
       '</div>' +
-      bonusListHtml(playerBon) +
     '</div>'
   );
 }
@@ -1402,7 +1392,7 @@ function playerCardHtml(st: DiplomacyAudienceState, playerBon: readonly CivBonus
  * `st.otherRelations` i renderuje sekcję „Relacje z innymi", nie tylko że silnik (main.ts)
  * poprawnie oblicza dane w oderwaniu (pokrywa osobny test na diplomacy-pair-summary.ts).
  */
-export function otherCardHtml(st: DiplomacyAudienceState, otherBon: readonly CivBonusLite[]): string {
+export function otherCardHtml(st: DiplomacyAudienceState): string {
   const maxPower = Math.max(st.playerPower ?? 0, st.otherPower ?? 0, 1);
   const powerPct = ((st.otherPower ?? 0) / maxPower) * 100;
   const potencjal = st.sojuszPotencjal;
@@ -1441,7 +1431,6 @@ export function otherCardHtml(st: DiplomacyAudienceState, otherBon: readonly Civ
       otherRelationsSectionHtml(st.otherRelations) +
       cultureLineHtml(st) +
       personalityTagsHtml(st.personalityTags) +
-      bonusListHtml(otherBon) +
     '</div>'
   );
 }
@@ -2181,8 +2170,6 @@ function render(): void {
     return;
   }
 
-  const playerBon = cfg.getCivBonusy?.(0) ?? [];
-  const otherBon = cfg.getCivBonusy?.(cfg.ownerId) ?? [];
   const headIc = dipBrandIconHtml('tb-diplomacy', 24, 'dip-ic') ?? '';
   const knownFactionsTab = cfg.onOpenKnownFactions
     ? '<button type="button" class="da-tab da-tab-known">' +
@@ -2205,7 +2192,7 @@ function render(): void {
       '</div>' +
       formalBannerHtml(st) +
       '<div class="da-mainrow">' +
-        playerCardHtml(st, playerBon) +
+        playerCardHtml(st) +
         '<div class="da-center">' +
           '<div class="da-tabs">' + knownFactionsTab +
             '<span class="da-tab on">' + dipBrandIconHtml('tb-diplomacy', 12) + 'Stół negocjacji</span>' +
@@ -2217,7 +2204,7 @@ function render(): void {
           '</div>' +
           relBreakdownHtml(st) +
         '</div>' +
-        otherCardHtml(st, otherBon) +
+        otherCardHtml(st) +
       '</div>' +
       actionBarHtml(st) +
     '</div>';

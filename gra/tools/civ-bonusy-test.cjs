@@ -4,8 +4,7 @@
  * Run from gra/:  node tools/civ-bonusy-test.cjs
  *
  * Asercje:
- *   Grecy   +15% handel  (bonus_zloto, realizuje=ekonomia)
- *   Inkowie +15% nauka   (bonus_nauka, realizuje=ekonomia)
+ *   Legacy civs.json yield bonuses are neutral; explicit city yield multipliers remain supported.
  *   Zulusi  -10% rekrutacja (civRecruitmentDiscount + unitPurchaseCost)
  */
 
@@ -36,16 +35,21 @@ export {
   civRecruitmentDiscount,
   unitPurchaseCost,
 } from '../src/game/production';
+export { civProductionCostBonusyForCivKey } from '../src/game/production';
 export {
   civBuildingCostDiscount,
   buildingCostAfterCivDiscount,
   civCombatStatMultipliers,
+  civCombatUnitShapeFromCategory,
+  civCombatBonusProjection,
+  effectiveCombatBonusChipTexts,
   unitCombatCategory,
   applyMultiplier,
   isCombatModifierBonus,
   civMatrixBonusyForCivKey,
 } from '../src/game/civ-bonuses';
 export { resolveCombat } from '../src/game/combat';
+export { categoryOf } from '../src/units/setup';
 export { TerenBazowy, Nakladka } from '../src/types/hex';
 `;
 
@@ -100,18 +104,18 @@ assert(inkowieBonusy.length >= 1, 'civBonusyForCivKey: Inkowie ma bonusy');
 assert(zulusiBonusy.length >= 1,  'civBonusyForCivKey: Zulusi ma bonusy');
 
 // ---------------------------------------------------------------------------
-// A. civEconomyYieldMultipliers
+// A. civEconomyYieldMultipliers (legacy civs.json source is matrix-only neutral)
 // ---------------------------------------------------------------------------
 console.log('\nA. civEconomyYieldMultipliers');
 {
   const g = M.civEconomyYieldMultipliers(grecyBonusy);
-  near(g.handel, 1.15, 1e-9, 'Grecy handel mult = 1.15 (+15%)');
+  near(g.handel, 1.0,  1e-9, 'Grecy legacy handel mult = 1.0 (matrix-only)');
   near(g.nauka,  1.0,  1e-9, 'Grecy nauka mult = 1.0 (brak bonusu nauki)');
 }
 {
   const i = M.civEconomyYieldMultipliers(inkowieBonusy);
   near(i.handel, 1.0,  1e-9, 'Inkowie handel mult = 1.0');
-  near(i.nauka,  1.15, 1e-9, 'Inkowie nauka mult = 1.15 (+15%)');
+  near(i.nauka,  1.0,  1e-9, 'Inkowie legacy nauka mult = 1.0 (matrix-only)');
 }
 {
   const z = M.civEconomyYieldMultipliers(zulusiBonusy);
@@ -125,9 +129,9 @@ console.log('\nA. civEconomyYieldMultipliers');
 }
 
 // ---------------------------------------------------------------------------
-// B. Grecy +15% handel w cityYieldPerTurn (ctx.civHandelMult)
+// B. Explicit cityYieldPerTurn context multiplier remains supported by the generic yield helper.
 // ---------------------------------------------------------------------------
-console.log('\nB. Grecy +15% handel (cityYieldPerTurn)');
+console.log('\nB. explicit trade multiplier in cityYieldPerTurn');
 const params = M.loadEconParams({ ekonomia_miasta: {}, budynki: {} }, 'normal');
 const city = {
   id: 'c1', ludnosc: 3,
@@ -148,14 +152,14 @@ const baseCtx = {
 };
 const yldBase  = M.cityYieldPerTurn(city, workedHandel, [], params, baseCtx);
 const yldGrecy = M.cityYieldPerTurn(city, workedHandel, [], params, { ...baseCtx, civHandelMult: 1.15 });
-eq(yldGrecy.handelBrutto, Math.floor(10 * 1.15), 'Grecy: handelBrutto = floor(10*1.15) = 11');
+eq(yldGrecy.handelBrutto, Math.floor(10 * 1.15), 'explicit context: handelBrutto = floor(10*1.15) = 11');
 assert(yldGrecy.pieniadz > yldBase.pieniadz,
-  'Grecy: pieniadz z handlu wyzszy niz bez bonusu (+15% handelBrutto)');
+  'explicit context: pieniadz z handlu wyzszy niz bez mnoznika');
 
 // ---------------------------------------------------------------------------
-// C. Inkowie +15% nauka w cityYieldPerTurn (ctx.civNaukaMult)
+// C. Explicit cityYieldPerTurn science multiplier remains supported by the generic yield helper.
 // ---------------------------------------------------------------------------
-console.log('\nC. Inkowie +15% nauka (cityYieldPerTurn)');
+console.log('\nC. explicit science multiplier in cityYieldPerTurn');
 const workedMixed = Array.from({ length: 10 }, () => ({
   terenBazowy: M.TerenBazowy.Rownina,
   nakladka: M.Nakladka.Brak,
@@ -176,14 +180,14 @@ const yldInkBase  = M.cityYieldPerTurn(city, workedMixed, mockBiblioteka, params
 const yldInkBonus = M.cityYieldPerTurn(city, workedMixed, mockBiblioteka, params, ctxInkBonus);
 // nauka = floor((naukaZHandlu + 10) * civNaukaMult); handel 10 * 20% = 2 + 10 budynek = 12 raw -> *1.15 = 13
 eq(yldInkBonus.nauka, Math.floor(yldInkBase.nauka * 1.15),
-  'Inkowie: nauka = floor(baza * 1.15)');
+  'explicit context: nauka = floor(baza * 1.15)');
 
 // ---------------------------------------------------------------------------
 // D. Zulusi -10% rekrutacja (production.ts)
 // ---------------------------------------------------------------------------
 console.log('\nD. Zulusi -10% rekrutacja');
 {
-  const disc = M.civRecruitmentDiscount(zulusiBonusy);
+  const disc = M.civRecruitmentDiscount(zulusiBonusy, 'Impi');
   near(disc, 0.1, 1e-9, 'Zulusi civRecruitmentDiscount = 0.1 (10%)');
 }
 {
@@ -191,17 +195,24 @@ console.log('\nD. Zulusi -10% rekrutacja');
   near(discNone, 0, 1e-9, 'Grecy civRecruitmentDiscount = 0');
 }
 {
-  const def10 = { 'Pieniądz (koszt)': 10 };
-  eq(M.unitPurchaseCost(def10), 10, 'Wojownik koszt 10 bez bonusu');
+  const def10 = { Jednostka: 'Impi', 'Pieniądz (koszt)': 10 };
+  eq(M.unitPurchaseCost(def10), 10, 'Impi koszt 10 bez bonusu');
   eq(M.unitPurchaseCost(def10, zulusiBonusy), 9, 'Zulusi: floor(10*0.9) = 9');
 }
 {
-  const def25 = { 'Pieniądz (koszt)': 25 };
+  const def25 = { Jednostka: 'Impi', 'Pieniądz (koszt)': 25 };
   eq(M.unitPurchaseCost(def25, zulusiBonusy), 22, 'Zulusi: floor(25*0.9) = 22');
 }
 {
-  const def1 = { 'Pieniądz (koszt)': 1 };
+  const def1 = { Jednostka: 'Impi', 'Pieniądz (koszt)': 1 };
   eq(M.unitPurchaseCost(def1, zulusiBonusy), 1, 'Zulusi: min koszt = 1 (floor(0.9)=0 -> max(1,...))');
+}
+
+{
+  eq(M.civRecruitmentDiscount(zulusiBonusy), 0, 'Scoped Impi discount requires unit identity');
+  eq(M.civRecruitmentDiscount(zulusiBonusy, 'Wojownik'), 0, 'Zulu discount excludes non-Impi');
+  eq(M.unitPurchaseCost({ Jednostka: 'Wojownik', 'Pieniądz (koszt)': 25 }, zulusiBonusy),
+    25, 'Zulu non-Impi cost stays unchanged');
 }
 
 // ---------------------------------------------------------------------------
@@ -209,9 +220,12 @@ console.log('\nD. Zulusi -10% rekrutacja');
 // ---------------------------------------------------------------------------
 console.log('\nE. Rzymianie -20% budynki');
 {
-  const rzymBonusy = civBonusyForCivKey('rzymianie', civs);
-  near(M.civBuildingCostDiscount(rzymBonusy), 0.2, 1e-9, 'Rzymianie building discount = 0.2');
-  eq(M.buildingCostAfterCivDiscount(100, rzymBonusy), 80, 'floor(100*0.8) = 80');
+  const rzymLegacyBonusy = M.civBonusyForCivKey('rzymianie', civs);
+  eq(M.civBuildingCostDiscount(rzymLegacyBonusy), 0, 'retired Roman legacy building discount is neutral');
+  eq(M.buildingCostAfterCivDiscount(100, rzymLegacyBonusy), 100, 'legacy-only Rome building cost stays 100');
+  const rzymMatrixBonusy = M.civProductionCostBonusyForCivKey('rzymianie');
+  near(M.civBuildingCostDiscount(rzymMatrixBonusy), 0.2, 1e-9, 'canonical Roman matrix building discount = 0.2');
+  eq(M.buildingCostAfterCivDiscount(100, rzymMatrixBonusy), 80, 'matrix Rome: floor(100*0.8) = 80');
   eq(M.buildingCostAfterCivDiscount(100, grecyBonusy), 100, 'Grecy: brak ulgi budynkow');
 }
 
@@ -272,10 +286,66 @@ console.log('\nG. isCombatModifierBonus (preBattle filter)');
 {
   const rzymBonusy = civBonusyForCivKey('rzymianie', civs);
   const walka = rzymBonusy.filter(b => M.isCombatModifierBonus(b));
-  eq(walka.length, 1, 'Rzymianie preBattle: 1 bonus (Legion)');
-  eq(walka[0].typ, 'bonus_walka', 'Rzymianie: bonus_walka');
+  assert(!walka.some(b => (b.opis ?? '').startsWith('Legion:')),
+    'combat modifier filter rejects the legacy Roman entry');
+  const romanChips = M.effectiveCombatBonusChipTexts(rzymBonusy,
+    [{ typNazwa: 'Legionista', rola: 'Wrecz' }], { side: 'attacker' });
+  assert(!romanChips.some(text => text.startsWith('Legion:')),
+    'PreBattle omits Roman legacy attack/armor text');
+  assert(romanChips.includes('Matrix:walka_atak_piechota') && romanChips.includes('Matrix:walka_pancerz_piechota'),
+    'PreBattle shows both effective Roman matrix effects');
+
   const grecyWalka = grecyBonusy.filter(b => M.isCombatModifierBonus(b));
-  eq(grecyWalka.length, 6, 'Grecy preBattle: 6 combat modifiers (Falanga + shallow-sea movement/attack/defense + marine attack/defense)');
+  assert(!grecyWalka.some(b => (b.opis ?? '').startsWith('Falanga:')),
+    'combat modifier filter rejects the legacy Greek entry');
+  const greekChips = M.effectiveCombatBonusChipTexts(grecyBonusy,
+    [{ typNazwa: 'Falanga', rola: 'Wrecz' }], { side: 'defender' });
+  assert(!greekChips.some(text => text.startsWith('Falanga:')),
+    'PreBattle omits Greek legacy defense text');
+  assert(greekChips.includes('Matrix:walka_obrona_piechota'), 'PreBattle shows effective Greek matrix defense');
+
+  const sumerBonusy = civBonusyForCivKey('sumer', civs);
+  const sumerInfantryChips = M.effectiveCombatBonusChipTexts(sumerBonusy,
+    [{ typNazwa: 'Włócznik sumeryjski', rola: 'Wrecz' }], { side: 'defender' });
+  assert(!sumerInfantryChips.some(text => text.startsWith('Ciężka piechota:')),
+    'PreBattle omits Sumer infantry legacy defense/HP/armor entry');
+  assert(sumerInfantryChips.includes('Matrix:walka_obrona_piechota')
+    && sumerInfantryChips.includes('Matrix:walka_hp_piechota'),
+  'PreBattle shows effective Sumer defense and HP matrix effects');
+
+  const sumerChariotChips = M.effectiveCombatBonusChipTexts(sumerBonusy,
+    [{ typNazwa: 'Rydwan sumeryjski', rola: 'Wrecz' }], { side: 'defender' });
+  assert(!sumerChariotChips.some(text => text.includes('Ciężkie rydwany bojowe:')),
+    'PreBattle omits Sumer legacy chariot defense as well as legacy HP');
+  assert(sumerChariotChips.includes('Matrix:walka_hp_rydwany')
+    && !sumerChariotChips.some(text => text.includes('Ciężkie rydwany bojowe:')),
+    'PreBattle shows chariot matrix HP without legacy chariot claims');
+
+  const galeraShape = { typNazwa: 'Galera', rola: 'galera' };
+  eq(M.categoryOf('Galera', 'Morska', false), 'galera', 'runtime class constructor input for Galera is `galera`');
+  eq(M.unitCombatCategory(galeraShape), 'morska', 'PreBattle runtime category galera maps to naval combat category');
+  const preBattleGaleraShape = M.civCombatUnitShapeFromCategory('Galera', 'galera');
+  eq(preBattleGaleraShape.rola, 'Morska', 'PreBattle categoryOf galera translates to canonical naval role');
+  eq(M.unitCombatCategory(preBattleGaleraShape), 'morska', 'translated PreBattle Galera remains naval');
+  const galeraChips = M.effectiveCombatBonusChipTexts(grecyBonusy, [preBattleGaleraShape], { side: 'defender' });
+  assert(!galeraChips.includes('Matrix:walka_obrona_piechota'),
+    'Greek infantry defense matrix does not leak onto a Galera roster');
+  assert(galeraChips.includes('Matrix:walka_atak_morska'),
+    'applicable Greek naval matrix bonus remains visible on a Galera');
+  const otherShip = M.civCombatUnitShapeFromCategory('Okręt patrolowy', 'galera');
+  const shipOnlyBonuses = [
+    { typ: 'bonus_walka', cel: 'morska', wartosc: 0.1, opis: 'Legacy naval attack', realizuje: 'walka' },
+    { typ: 'bonus_walka', cel: 'piechota', wartosc: 0.15, opis: 'Matrix:walka_atak_piechota', realizuje: 'walka', matrixParamId: 'walka_atak_piechota' },
+    { typ: 'bonus_obrona', cel: 'piechota', wartosc: 0.15, opis: 'Matrix:walka_obrona_piechota', realizuje: 'walka', matrixParamId: 'walka_obrona_piechota' },
+    { typ: 'bonus_walka', cel: 'lukownicy', wartosc: 0.15, opis: 'Matrix:walka_dystans_lukownicy', realizuje: 'walka', matrixParamId: 'walka_dystans_lukownicy' },
+    { typ: 'bonus_obrona', cel: 'rydwany', wartosc: 0.15, opis: 'Matrix:walka_hp_rydwany', realizuje: 'walka', matrixParamId: 'walka_hp_rydwany' },
+    { typ: 'bonus_walka', cel: 'morska', wartosc: 0.2, opis: 'Matrix:walka_atak_morska', realizuje: 'walka', matrixParamId: 'walka_atak_morska' },
+  ];
+  const otherShipChips = M.effectiveCombatBonusChipTexts(shipOnlyBonuses, [otherShip], { side: 'defender' });
+  assert(!otherShipChips.includes('Legacy naval attack') && otherShipChips.includes('Matrix:walka_atak_morska'),
+    'other naval role rejects legacy attack and retains applicable sea matrix bonus');
+  assert(!otherShipChips.some(text => /walka_(atak_piechota|obrona_piechota|dystans_lukownicy|hp_rydwany)/.test(text)),
+    'Galera blocks infantry, archer and chariot G1 bonus leakage');
 }
 
 // --- summary ---------------------------------------------------------------

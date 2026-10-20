@@ -385,6 +385,7 @@ import {
 } from './game/era-change-notify';
 import { cityPalacTier, groupBuiltBuildingIds } from './game/building-upgrades';
 import {
+  applyCivMatrixHappinessModifier,
   evaluateOrderFromBreakdown,
   updateRevoltGrace,
   loadRevoltParams,
@@ -562,7 +563,7 @@ import {
 import {
   refreshTradeRoutes,
   TRADE_TECH,
-  computeTradeRouteIncomeByCity,
+  computeTradeRouteIncomeByCityBreakdown,
   computeTradeRouteBuildingBonusByCity,
   // T6: per-trasowa wersja tej samej premii 5% — do rozkładu dochodu w panelu imperium.
   tradeRouteBuildingBonusForRoute,
@@ -861,14 +862,16 @@ import {
   oldestCityOfOwner,
   type OwnerResourceAccess,
 } from './game/capital-capture';
-import { civBonusyForCivKey, cityPopulationCap, loadEconParams, resolvePopulationCapMatrixDelta, sumBuildingHappinessFromBuiltIds } from './game/economy';
+import { cityPopulationCap, loadEconParams, resolvePopulationCapMatrixDelta, sumBuildingHappinessFromBuiltIds } from './game/economy';
 import { civMatrixBonusyForCivKey } from './game/civ-bonuses';
 import { advanceProduction, rushProduction, rushCost, populationCostOf, UNIT_POPULATION_COST,
   enqueueRecruitment, advanceRecruitment, advanceRecruitmentGated, unitProductionItem,
   enqueue, buildingProductionItem, splitPraca, cityPracaInteger, pracaImperialPoolGain, previewPracaPoolBrutto, availableProduction, availableReplacementsFor,
+  civProductionCostBonusyForCivKey,
   buildableProduction, purchasableUnits,
   buildingLevelForEpoch, buildingEffectAtLevel, frontItem, etaTurns, unitNacjaForCivKey, applyCompletedBuildingIds,
   buildingUnlockFlagFor, buildingTypeQueued, insertAtFront, filterQueue, sanitizeBuildQueue,
+  unitRecruitmentCapacityPerTurn,
   type CityProduction, type AvailabilityContext } from './game/production';
 import { buildReplaceAvailabilityCtx } from './game/unit-replace-context';
 import { daninaLabel as resolveDaninaLabel, mennicaWStolicy } from './game/danina-nazwa';
@@ -926,7 +929,7 @@ import {
 import { detectOwnerResourceNeeds } from './game/ai-resource-needs';
 import {
   tryDeductUnitSpawnCostsEmpire, empirePoborTotals, rekrutUnitEquivalents, formatManpower,
-  cityManpowerSnapshot, civManpowerRegenMult, civManpowerMaxMult, civManpowerMults,
+  cityManpowerSnapshot, civManpowerRegenMult, civManpowerMatrixMults,
   cityManpowerMax, unitManpowerCost, unitManpowerCostForType,
   canAffordUnitManpowerEmpire, empireManpowerCurrent, deductManpowerFromEmpire,
   refundManpowerToEmpire, syncLiveUnitHp, type ManpowerHealUnit,
@@ -942,12 +945,13 @@ import {
   sortByUnitPowerDescending,
   type UnitPowerInput,
 } from './game/unit-power';
-import { loadOrderParams, orderEffectsToYieldMults, pickRevoltMigrationTarget, type OrderYieldMults } from './game/order';
+import { loadOrderParams, orderEffectsToYieldMults, orderEffectsWithCivMatrix, pickRevoltMigrationTarget, type OrderYieldMults } from './game/order';
 import { loadCultureParams, accumulateCulture, cultureHappiness, cityBorderRadius, cultureThresholds,
          loadReligionParams, civReligion, civReligionForKey, religionHappiness, dominantReligion,
          empireCultureTotal, countCitiesWithDominantStateReligion,
-         makeRng, type CultureCity, type ReligionState,
+         makeRng, type CultureCity, type ReligionState, religionParamsWithSpreadModifier,
          spreadReligion, type ReligionNeighbor,
+         cultureAccrualWithModifier,
          aggregateReligionEmpire, resolveCityReligionState, defaultCityReligionState,
          religionCompositionBreakdown, onCityCapturedReligion,
          isEmptyReligionState, type CivsDataLike } from './game/culture-religion';
@@ -962,6 +966,7 @@ import {
   WYZYWIENIE_MAX,
   type PoziomRacji,
 } from './game/population-growth-v85';
+import { civMatrixParam, loadCivMatrix } from './game/civ-matrix';
 import {
   advanceEmpireFood, bindEmpireFoodRuntime, freshEmpireFoodState,
   buildEmpireFoodParams, getLastEmpireFoodTick, getEmpireFoodReserve, getEmpireFoodMaxCap,
@@ -2409,7 +2414,7 @@ async function boot(): Promise<void> {
         bitwyPktSum: battlePowerPtsByOwner.get(ownerId) ?? 0,
         wygraneBitwy: 0,
         sumaLudkow: pobor.sumaLudkow,
-        rekrutEkw: rekrutUnitEquivalents(pobor.rekruci, epoka, mpMults.maxMult),
+        rekrutEkw: rekrutUnitEquivalents(pobor.rekruci, epoka, mpMults.costMult),
         miasta: ownerCities.length,
         heksyTerytorium: countTerritoryHexes(cityNodesForOwner(ownerId)),
         budynki: countBuildingsForOwner(ownerId),
@@ -2464,7 +2469,7 @@ async function boot(): Promise<void> {
         bitwyPktSum: battlePowerPtsByOwner.get(ownerId) ?? 0,
         wygraneBitwy: 0,
         sumaLudkow: pobor.sumaLudkow,
-        rekrutEkw: rekrutUnitEquivalents(pobor.rekruci, epoka, mpMults.maxMult),
+        rekrutEkw: rekrutUnitEquivalents(pobor.rekruci, epoka, mpMults.costMult),
         miasta: ownerCities.length,
         heksyTerytorium: countTerritoryHexes(cityNodesForOwner(ownerId)),
         budynki: countBuildingsForOwner(ownerId),
@@ -3598,6 +3603,8 @@ async function boot(): Promise<void> {
     let wondersPickerEl: HTMLDivElement | null = null;
 
     function civTypeForOwner(ownerId: number): string {
+      // Presentation/identity fallback only. Gameplay effects use
+      // `civKeyForOwnerId`, which returns an empty key for an unmapped owner.
       // R-HOTSEAT-FOTEL2-CYWILIZACJA-BLEDNA-Q1 (defekt B): `isMeSafe(ownerId)` pyta
       // "czy to fotel AKTUALNIE aktywny", nie "czy to jakikolwiek fotel człowieka" —
       // przy hot-seat dawało to GLOBALNĄ `player.civType`/`_menuCivId` (fotela 1)
@@ -3900,7 +3907,7 @@ async function boot(): Promise<void> {
       const ep = empireEpochForOwner(city.ownerId);
       const mpMults = civManpowerMultsForOwner(city.ownerId);
       const d = tryDeductUnitSpawnCostsEmpire(
-        cities, cityId, city.ownerId, ep, populationCostOf(completed), mpMults.maxMult, completed.id,
+        cities, cityId, city.ownerId, ep, populationCostOf(completed), mpMults.maxMult, completed.id, mpMults.costMult,
       );
       if (!d.ok) {
         console.log(`[Produkcja] Tura ${turn} ${city.name}: brak Manpower — odlozono ${completed.id}`);
@@ -4000,7 +4007,7 @@ async function boot(): Promise<void> {
       }
       const ep = empireEpochForOwner(ownerId);
       const mpMults = civManpowerMultsForOwner(ownerId);
-      if (!canAffordUnitManpowerEmpire(cities, ownerId, city, ep, UNIT_POPULATION_COST, mpMults.maxMult, itemId)) {
+      if (!canAffordUnitManpowerEmpire(cities, ownerId, city, ep, UNIT_POPULATION_COST, mpMults.maxMult, itemId, mpMults.costMult)) {
         if (ownerId === 0) {
           showHintMessage('Za mało rekrutów (Manpower) w imperium', 2800);
         }
@@ -4043,10 +4050,10 @@ async function boot(): Promise<void> {
           return false;
         }
       }
-      const kosztManpower = unitManpowerCostForType(itemId, ep, mpMults.maxMult);
+      const kosztManpower = unitManpowerCostForType(itemId, ep, mpMults.maxMult, mpMults.costMult);
       if (requestedQuantity === 1) {
         const d = tryDeductUnitSpawnCostsEmpire(
-          cities, cityId, ownerId, ep, UNIT_POPULATION_COST, mpMults.maxMult, itemId,
+          cities, cityId, ownerId, ep, UNIT_POPULATION_COST, mpMults.maxMult, itemId, mpMults.costMult,
         );
         if (!d.ok) {
           if (ownerId === 0) {
@@ -4157,18 +4164,18 @@ async function boot(): Promise<void> {
       }
 
       const ep = empireEpochForOwner(ownerId);
-      const mpMaxMult = civManpowerMaxMult(civBonusyForOwnerId(ownerId));
-      const manpowerCost = unitManpowerCostForType(itemId, ep, mpMaxMult);
+      const mpMults = civManpowerMultsForOwner(ownerId);
+      const manpowerCost = unitManpowerCostForType(itemId, ep, mpMults.maxMult, mpMults.costMult);
       const totalManpower = manpowerCost * count;
       if (!Number.isFinite(totalManpower) || totalManpower < 0 || !Number.isSafeInteger(totalManpower)) return false;
-      if (empireManpowerCurrent(cities, ownerId, ep, mpMaxMult) < totalManpower) {
+      if (empireManpowerCurrent(cities, ownerId, ep, mpMults.maxMult) < totalManpower) {
         if (ownerId === 0) showHintMessage(`Za mało rekrutów (Manpower) na ${count} jedn.`, 2800);
         return false;
       }
 
       // Atomic commit: every guard above passed, and the helpers below cannot reject this
       // already-validated aggregate. No state is touched before this point.
-      if (!deductManpowerFromEmpire(cities, ownerId, ep, totalManpower, mpMaxMult)) return false;
+      if (!deductManpowerFromEmpire(cities, ownerId, ep, totalManpower, mpMults.maxMult)) return false;
       setOwnerTreasury(ownerId, ownerTreasury(ownerId) - totalGold);
       if (Object.keys(totalStockCost).length > 0) {
         deductBuildingStockCostAcrossCities(cities, ownerId, totalStockCost);
@@ -4195,7 +4202,7 @@ async function boot(): Promise<void> {
       if (!city || city.ownerId !== ownerId) return;
       const ep = empireEpochForOwner(ownerId);
       const mpMults = civManpowerMultsForOwner(ownerId);
-      const mpRefund = unitManpowerCostForType(itemId, ep, mpMults.maxMult);
+      const mpRefund = unitManpowerCostForType(itemId, ep, mpMults.maxMult, mpMults.costMult);
       refundManpowerToEmpire(cities, ownerId, ep, mpRefund, mpMults.maxMult);
       setOwnerTreasury(ownerId, ownerTreasury(ownerId) + koszt);
       // JEDNOSTKI-SUROWIEC-01: zwrot surowca do puli PAŃSTWA (civ-wide) — symetrycznie
@@ -6401,7 +6408,7 @@ async function boot(): Promise<void> {
 
       const ep = empireEpochForOwner(0);
       const mpMults = civManpowerMultsForOwner(0);
-      const mpRefund = unitManpowerCostForType(u.typeId, ep, mpMults.maxMult);
+      const mpRefund = unitManpowerCostForType(u.typeId, ep, mpMults.maxMult, mpMults.costMult);
       refundManpowerToEmpire(cities, 0, ep, mpRefund, mpMults.maxMult);
 
       const siegeCityId = u.oblegaCityId;
@@ -6490,6 +6497,7 @@ async function boot(): Promise<void> {
         epoch: empireEpochForOwner(city.ownerId),
         builtBuildingIds: cityBuilt.get(city.id) ?? [],
         civBonusy: civBonusyForOwnerId(city.ownerId),
+        civKey: civKeyForOwnerId(city.ownerId),
         civUnitNacja: unitNacjaForCivKey(civKeyForOwnerId(city.ownerId)),
         // Temat #4: grant "z trasy" dolicza się AND-owo (braz syntetycznie,
         // zelazo OR-em) — patrz placedImprovementsWithBrazTradeGrant/
@@ -6526,6 +6534,7 @@ async function boot(): Promise<void> {
         epoch: empireEpochForOwner(0),
         builtBuildingIds: Array.from(builtUnion),
         civBonusy: civBonusyForOwnerId(0),
+        civKey: civKeyForOwnerId(0),
         civUnitNacja: unitNacjaForCivKey(civKeyForOwnerId(0)),
         placedImprovements: placedImprovementsWithTradeGrants(0, ownImprovements),
         hasKopalniaNaZlozuZelaza: hasKopalniaNaZlozuZelazaOrTradeGrant(0, ownImprovements),
@@ -8199,22 +8208,54 @@ async function boot(): Promise<void> {
       return false;
     }
     function civKeyForOwnerId(ownerId: number): string {
-      return ownerId === 0
-        ? (player.civType || 'grecy')
-        : (aiOwnerCivMap.get(ownerId) ?? 'grecy');
+      // Gameplay effects require a real owner-to-civ mapping. Keep civTypeForOwner's
+      // display fallback separate so an unknown owner never inherits Greece's matrix.
+      const candidate = _menuCivIdByOwner.get(ownerId)
+        ?? playerCivTypeByHuman.get(ownerId)
+        ?? (ownerId === HUMAN_OWNER_PRIMARY
+          ? (typeof player.civType === 'string' ? player.civType : undefined)
+          : aiOwnerCivMap.get(ownerId));
+      if (!candidate?.trim()) return '';
+      const key = candidate.trim().toLowerCase();
+      const row = data.civs.cywilizacje.find(c =>
+        [c.ikonaId, c.Cywilizacja]
+          .some(value => typeof value === 'string' && value.trim().toLowerCase() === key),
+      );
+      if (!row) return '';
+      const civId = row.ikonaId ?? candidate.trim();
+      const matrixRow = loadCivMatrix().cywilizacje.find(c =>
+        [c.ikonaId, c.typCywilizacji, c.Cywilizacja]
+          .some(value => value.trim().toLowerCase() === civId.toLowerCase()),
+      );
+      return matrixRow?.ikonaId ?? '';
     }
 
-    /** Bonusy cyw z civs.json per ownerId (gracz: player.civBonusy; AI: lookup po aiOwnerCivMap). */
+    function civMatrixParamForOwner(ownerId: number, parameterId: string): number {
+      const civKey = civKeyForOwnerId(ownerId);
+      return civKey ? civMatrixParam(civKey, parameterId) : 0;
+    }
+
+    /** Matrix-only effect bundle for a known owner civilization; unknown owners are neutral. */
     function civBonusyForOwnerId(ownerId: number) {
       const civKey = civKeyForOwnerId(ownerId);
-      const legacy = ownerId === 0 && player.civBonusy.length > 0
-        ? player.civBonusy
-        : civBonusyForCivKey(civKey, data.civs);
-      return [...legacy, ...civMatrixBonusyForCivKey(civKey)];
+      if (!civKey) return [];
+      return [...civMatrixBonusyForCivKey(civKey), ...civProductionCostBonusyForCivKey(civKey)];
     }
 
     function civManpowerMultsForOwner(ownerId: number) {
-      return civManpowerMults(civBonusyForOwnerId(ownerId));
+      // MP must resolve every human seat independently of the active player.
+      const civKey = civKeyForOwnerId(ownerId);
+      return civManpowerMatrixMults(civKey || undefined);
+    }
+
+    function civAiMatrixProfileForOwner(ownerId: number, difficulty: GameDifficulty) {
+      const civKey = civKeyForOwnerId(ownerId);
+      if (!civKey) return undefined;
+      const hasMatrixRow = loadCivMatrix().cywilizacje.some(row =>
+        row.ikonaId === civKey || row.typCywilizacji === civKey || row.Cywilizacja === civKey,
+      );
+      if (!hasMatrixRow) return undefined;
+      return civAiProfileForTyp(data, civKey as TypCywilizacji, difficulty);
     }
 
     function unlockedTechsForOwner(ownerId: number): string[] {
@@ -9027,14 +9068,7 @@ async function boot(): Promise<void> {
         }
         if (opts?.secondHumanCivId) {
           _menuCivIdByOwner.set(secondOwnerId, opts.secondHumanCivId);
-          const chosenCiv2 = (data.civs.cywilizacje as any[]).find(
-            (c: any) => (c.ikonaId ?? '') === opts.secondHumanCivId,
-          );
           playerCivTypeByHuman.set(secondOwnerId, opts.secondHumanCivId);
-          playerCivBonusyByHuman.set(
-            secondOwnerId,
-            chosenCiv2 && Array.isArray(chosenCiv2.bonusy) ? chosenCiv2.bonusy : [],
-          );
         }
         if (!exploredByHuman.has(secondOwnerId)) exploredByHuman.set(secondOwnerId, new Set());
         if (!playerStateByHuman.has(secondOwnerId)) playerStateByHuman.set(secondOwnerId, createPlayerState());
@@ -9123,6 +9157,21 @@ async function boot(): Promise<void> {
           HUMAN_OWNER_PRIMARY,
           oid,
           applyWiarygodnoscD4ToRelation(rel, getWiarygodnosc(HUMAN_OWNER_PRIMARY), getWiarygodnosc(oid)),
+        );
+      }
+      // R-PR141-CODEX-DIP-ACTIVATION-Q2: overwrite/extend the legacy
+      // player↔AI seed with every active major-major pair (including AI↔AI
+      // and hot-seat human owners). `plan.majorPairStartRelations` contains
+      // only major actors; city-state constructors above remain untouched.
+      for (const pair of plan.majorPairStartRelations) {
+        setDiploRelation(
+          pair.ownerA,
+          pair.ownerB,
+          applyWiarygodnoscD4ToRelation(
+            pair.relation,
+            getWiarygodnosc(pair.ownerA),
+            getWiarygodnosc(pair.ownerB),
+          ),
         );
       }
 
@@ -11176,19 +11225,8 @@ async function boot(): Promise<void> {
      *  się nad `playerPracaPool`, żeby zachować "zero kopii" mimo że to
      *  primitywa, nie obiekt). */
     const playerStateByHuman: Map<number, PlayerState> = new Map([[HUMAN_OWNER_PRIMARY, player]]);
-    /**
-     * R-HOTSEAT-ETAP6F-PART2-DATA-Q1: `player.civType`/`player.civBonusy` (jeden
-     * globalny obiekt `player`, oś odrębna od `playerStateByHuman` — recon §2
-     * pkt 4) rozszerzone na per-owner. Dziś (single-player) zawsze dokładnie
-     * jeden wpis, zsynchronizowany z `player.civType`/`player.civBonusy` —
-     * konsumenci `player.civType`/`_menuCivId` w main.ts NIE są tym tematem
-     * ruszane. Drugi wpis istnieje WYŁĄCZNIE gdy `applyClusterStartPlan` dostał
-     * `secondHumanCivId`.
-     */
+    /** Civilization identity per human seat; effects are always reconstructed from matrix data. */
     const playerCivTypeByHuman: Map<number, string> = new Map([[HUMAN_OWNER_PRIMARY, player.civType as string]]);
-    const playerCivBonusyByHuman: Map<number, unknown[]> = new Map([
-      [HUMAN_OWNER_PRIMARY, Array.isArray(player.civBonusy) ? player.civBonusy : []],
-    ]);
     /** Komórka-alias (getter/setter) nad `playerPracaPool` — czytanie/pisanie
      *  przez `.praca` faktycznie czyta/pisze TĘ SAMĄ zmienną `playerPracaPool`,
      *  nie kopię. Jedyny sposób na "zero kopii" scaffold nad primitywem w JS. */
@@ -15233,6 +15271,7 @@ async function boot(): Promise<void> {
         productionQueue: prod0.kolejka,
         buildingLevel: 1,
         civBonusy: civBonusyForOwnerId(city.ownerId),
+        civKey: civKeyForOwnerId(city.ownerId),
         civUnitNacja: unitNacjaForCivKey(civKeyForOwnerId(city.ownerId)),
         placedImprovements: placedImprovementsWithTradeGrants(city.ownerId, ownImprovements),
         hasKopalniaNaZlozuZelaza: hasKopalniaNaZlozuZelazaOrTradeGrant(city.ownerId, ownImprovements),
@@ -15304,14 +15343,14 @@ async function boot(): Promise<void> {
       const treasury = player.skarbiec;
       const pool = ownerSurowcePoolFor(city.ownerId);
       const ep = empireEpochForOwner(city.ownerId);
-      const mpMaxMult = civManpowerMaxMult(civBonusyForOwnerId(city.ownerId));
+      const mpMults = civManpowerMultsForOwner(city.ownerId);
       for (const item of purchasableUnits(city, data, techs, ctx)) {
         if (treasury < item.koszt) continue;
         const unitDef = data.units.find(u => String(u.Jednostka) === item.id);
         if (!unitDef) continue;
         if (!canAffordUnitRecruitFull(pool, unitDef)) continue;
         if (!canAffordUnitManpowerEmpire(
-          cities, city.ownerId, city, ep, UNIT_POPULATION_COST, mpMaxMult, item.id,
+          cities, city.ownerId, city, ep, UNIT_POPULATION_COST, mpMults.maxMult, item.id, mpMults.costMult,
         )) continue;
         return true;
       }
@@ -15377,14 +15416,14 @@ async function boot(): Promise<void> {
       if (city.ownerId === 0) {
         const treasury = player.skarbiec;
         const ep = empireEpochForOwner(city.ownerId);
-        const mpMaxMult = civManpowerMaxMult(civBonusyForOwnerId(city.ownerId));
+        const mpMults = civManpowerMultsForOwner(city.ownerId);
         for (const item of purchasableUnits(city, data, techs, ctx)) {
           if (treasury < item.koszt) continue;
           const unitDef = data.units.find(u => String(u.Jednostka) === item.id);
           if (!unitDef) continue;
           if (!canAffordUnitRecruitFull(pool, unitDef)) continue;
           if (!canAffordUnitManpowerEmpire(
-            cities, city.ownerId, city, ep, UNIT_POPULATION_COST, mpMaxMult, item.id,
+            cities, city.ownerId, city, ep, UNIT_POPULATION_COST, mpMults.maxMult, item.id, mpMults.costMult,
           )) continue;
           unitIds.push(item.id);
         }
@@ -15893,6 +15932,10 @@ async function boot(): Promise<void> {
     }
 
     function civKeyForOwner(ownerId: number): string {
+      const knownCivKey = civKeyForOwnerId(ownerId);
+      if (knownCivKey) return knownCivKey;
+      // Legacy placeholders are retained only for existing presentation paths.
+      // Gameplay effects must use civKeyForOwnerId so an unknown owner stays neutral.
       if (ownerId === 0) return String(player.civType || _menuCivId || 'gracz');
       return aiOwnerCivMap.get(ownerId) ?? `oid-${ownerId}`;
     }
@@ -16172,12 +16215,6 @@ async function boot(): Promise<void> {
       const civName = civRow?.Cywilizacja != null
         ? String(civRow.Cywilizacja)
         : ownerDiploLabel(ME());
-      const bonusy = (player.civBonusy.length > 0 ? player.civBonusy : civRow?.bonusy ?? [])
-        .map((b: { opis?: string; realizuje?: string }) => ({
-          opis: String(b.opis ?? ''),
-          realizuje: String(b.realizuje ?? ''),
-        }))
-        .filter(b => b.opis.length > 0);
       const pc = cities.filter(c => isMe(c.ownerId));
       const { regenMult, maxMult } = mpMults;
       const cityEcon = pc.map(c => {
@@ -16233,7 +16270,7 @@ async function boot(): Promise<void> {
         };
       });
       const cityPobor = pc.map(c => {
-        const mp = cityManpowerSnapshot(c, epoka, regenMult, maxMult);
+        const mp = cityManpowerSnapshot(c, epoka, regenMult, maxMult, mpMults.costMult);
         // P-PANEL-MIASTO-OBYWATELE-TRESC-NIEPELNA dociągnięcie (Maciej 2026-08-16, ECHO A):
         // Zdrowie / Prawo i administracja — liczba budynków tych dwóch grup w tym mieście
         // (ta sama funkcja jak w cityEcon.buildingGroups wyżej, osobne wołanie bo to osobny
@@ -16266,7 +16303,7 @@ async function boot(): Promise<void> {
             id: item.id,
             name: item.nazwa,
             goldCost: item.koszt,
-            manpowerCost: unitManpowerCostForType(item.id, epoka, maxMult),
+            manpowerCost: unitManpowerCostForType(item.id, epoka, maxMult, mpMults.costMult),
             stockCost: unitStockCost(unitDef),
             requiresWater: (unitDef.Typ ?? '').toString().trim() === 'Naval',
           }];
@@ -16448,9 +16485,9 @@ async function boot(): Promise<void> {
           civPortraitUrl,
           styl: String(civRow?.['Styl / charakter'] ?? '—'),
           jednostkaSpec: String(civRow?.['Jednostka specjalna'] ?? '—'),
-          bonusStartowy: String(civRow?.['Bonus startowy'] ?? '—'),
+          bonusStartowy: '',
           religiaPanstwowa: ownerReligionForOwnerId(ME()) ?? String(civRow?.Religia ?? '—'),
-          bonusy,
+          bonusy: [],
         },
         economy,
         kultura: {
@@ -16473,11 +16510,11 @@ async function boot(): Promise<void> {
           ludnoscAbsLabel: economy.ludnoscAbsLabel ?? formatManpower(pobor.ludnoscAbsolutna),
           rekruci: pobor.rekruci,
           rekruciLabel: economy.rekruciLabel ?? formatManpower(pobor.rekruci),
-          rekrutEkw: rekrutUnitEquivalents(pobor.rekruci, epoka, maxMult),
+          rekrutEkw: rekrutUnitEquivalents(pobor.rekruci, epoka, mpMults.costMult),
           rekruciMax,
           rekruciMaxLabel: formatManpower(rekruciMax),
           unitsOnMap,
-          kosztJednostki: unitManpowerCost(epoka, maxMult),
+          kosztJednostki: unitManpowerCost(epoka, mpMults.costMult),
         },
         cityEcon,
         cityPobor,
@@ -18496,6 +18533,27 @@ async function boot(): Promise<void> {
       // D7: licz ekonomię TYLKO miast gracza (HUD używa wyłącznie isMe(ownerId)).
       // Wcześniej szło `cities` (gracz + całe AI) → O(wszystkie miasta) na każdym updateHud
       // = główny koszt wejścia do miasta na Super Huge (14 s w pomiarze).
+      const tradeIncomeParamsPreview = loadTradeRouteIncomeParams(
+        data.econParams as unknown as Parameters<typeof loadTradeRouteIncomeParams>[0],
+        _menuDifficulty,
+      );
+      const routeIncomePreview = computeTradeRouteIncomeByCityBreakdown(
+        tradeRoutes, tradeIncomeParamsPreview, wonderTradeRouteBonusForOwner,
+      );
+      const maritimeTradeIncomeByCityPreview = routeIncomePreview.maritimeByCity;
+      const seaTradeBonusIncomeByCityPreview = computeSeaTradeBonusIncomeByCity(
+        computeSeaTradeRouteCountByCity(tradeRoutes),
+      );
+      for (const [cityIdSeaPreview, bonusSeaPreview] of seaTradeBonusIncomeByCityPreview) {
+        routeIncomePreview.totalByCity.set(
+          cityIdSeaPreview,
+          (routeIncomePreview.totalByCity.get(cityIdSeaPreview) ?? 0) + bonusSeaPreview,
+        );
+        maritimeTradeIncomeByCityPreview.set(
+          cityIdSeaPreview,
+          (maritimeTradeIncomeByCityPreview.get(cityIdSeaPreview) ?? 0) + bonusSeaPreview,
+        );
+      }
       const preview = previewCityEconomy(
         playerCities,
         map,
@@ -18509,28 +18567,7 @@ async function boot(): Promise<void> {
         empireEpochForOwner,
         unlockedTechSetForOwner,
         tradeRouteBuildingBonusByCity,
-        (() => {
-          // R-SKARBIEC-HANDEL-PODGLAD-ZERO-Q1: podglad HUD musi liczyc dochod z tras
-          // TYM SAMYM wzorcem co koniec tury (main.ts ~26238-26257) - czyste liczenie
-          // z aktualnego stanu tradeRoutes, bez mutacji stanu gry.
-          const tradeIncomeParamsPreview = loadTradeRouteIncomeParams(
-            data.econParams as unknown as Parameters<typeof loadTradeRouteIncomeParams>[0],
-            _menuDifficulty,
-          );
-          const tradeIncomeByCityPreview = computeTradeRouteIncomeByCity(
-            tradeRoutes, tradeIncomeParamsPreview, wonderTradeRouteBonusForOwner,
-          );
-          const seaTradeBonusIncomeByCityPreview = computeSeaTradeBonusIncomeByCity(
-            computeSeaTradeRouteCountByCity(tradeRoutes),
-          );
-          for (const [cityIdSeaPreview, bonusSeaPreview] of seaTradeBonusIncomeByCityPreview) {
-            tradeIncomeByCityPreview.set(
-              cityIdSeaPreview,
-              (tradeIncomeByCityPreview.get(cityIdSeaPreview) ?? 0) + bonusSeaPreview,
-            );
-          }
-          return tradeIncomeByCityPreview;
-        })(),
+        routeIncomePreview.totalByCity,
         buildAllTerritoryNodes(),
         undefined,
         buildWonderCityYieldsByOwnerMap([0]),
@@ -18541,6 +18578,7 @@ async function boot(): Promise<void> {
         makeOwnerEmpireStockResolver(),
         ownerDefaultPodzialHandlu,
         ownerDefaultPodzialPracy,
+        maritimeTradeIncomeByCityPreview,
       );
       const playerEcon = sumEconomyForPlayerCities(preview, cities);
       _lastPieniadzRate = playerEcon.pieniadz;
@@ -18875,8 +18913,8 @@ async function boot(): Promise<void> {
         // not raw recruits — same source (unitManpowerCost/rekrutUnitEquivalents,
         // manpower.ts) as the "Rekruci (pula werbu)" panel (buildEmpireDetailSnap below:
         // power.rekrutEkw/kosztJednostki).
-        rekrutEkw: rekrutUnitEquivalents(pobor.rekruci, ps.era, mpMults.maxMult),
-        kosztJednostki: unitManpowerCost(ps.era, mpMults.maxMult),
+        rekrutEkw: rekrutUnitEquivalents(pobor.rekruci, ps.era, mpMults.costMult),
+        kosztJednostki: unitManpowerCost(ps.era, mpMults.costMult),
         ludnoscAbsLabel: formatManpower(pobor.ludnoscAbsolutna),
         power,
         osiedla: pc.length,
@@ -19247,7 +19285,9 @@ async function boot(): Promise<void> {
       const rel = getDiploRelation(a, b);
       const relStatus = (rel as Relation).status;
       const atWar = relStatus === 'wojna';
-      const sameCulture = sameCultureCircle(civKeyForOwner(a), civKeyForOwner(b));
+      const civKeyA = civKeyForOwnerId(a);
+      const civKeyB = civKeyForOwnerId(b);
+      const sameCulture = sameCultureCircle(civKeyA, civKeyB);
       const religionA = ownerReligionForOwnerId(a);
       const religionB = ownerReligionForOwnerId(b);
       const playerInPair = isHuman(a) || isHuman(b);
@@ -19282,12 +19322,13 @@ async function boot(): Promise<void> {
       const dip = _diplomacyParams();
       const log = diplomacyFactorLog.get(diploPairKey(a, b)) ?? [];
       const atWar = rel.status === 'wojna';
-      const civA = isHuman(a) ? (player.civType ?? 'rzymianie') : (aiOwnerCivMap.get(a) ?? 'grecy');
-      const civB = isHuman(b) ? (player.civType ?? 'rzymianie') : (aiOwnerCivMap.get(b) ?? 'grecy');
-      const sameCulture = sameCultureCircle(civKeyForOwner(a), civKeyForOwner(b));
+      const civA = civKeyForOwnerId(a);
+      const civB = civKeyForOwnerId(b);
+      const sameCulture = sameCultureCircle(civA, civB);
+      const bothCivsKnown = !!civA && !!civB;
       const religionA = ownerReligionForOwnerId(a);
       const religionB = ownerReligionForOwnerId(b);
-      const sameTypCiv = civA === civB;
+      const sameTypCiv = bothCivsKnown && civA === civB;
       const playerMpOtherId = isHuman(a) ? b : (isHuman(b) ? a : -1);
       const isPlayerSameCivCityState =
         playerMpOtherId >= 0 && typCityCopyOwners.has(playerMpOtherId) && sameTypCiv;
@@ -19305,7 +19346,7 @@ async function boot(): Promise<void> {
           && ownersShareLandBorderLive(a, b),
         rywalizacjaTenSamTyp: sameTypCiv && !isPlayerSameCivCityState,
         miastoPanstwoSameCiv: isPlayerSameCivCityState,
-        roznicaKulturowa: sameCulture === false,
+        roznicaKulturowa: bothCivsKnown && sameCulture === false,
         wiarygodnoscSelf: buildDiplomacyTickCtxForPair(a, b).wiarygodnoscSelf,
         atWar,
       };
@@ -19696,7 +19737,7 @@ async function boot(): Promise<void> {
         5500,
       );
       console.log(`[Dyplomacja] AI${ownerId} zaproponuj_audiencje: ${cmd.powod}`);
-      const aiTypKey = civKeyForOwner(ownerId) as TypCywilizacji;
+      const aiTypKey = civKeyForOwnerId(ownerId) as TypCywilizacji;
       const offer = pickResourceTradeRelOffer(
         ownerId,
         0,
@@ -19928,15 +19969,13 @@ async function boot(): Promise<void> {
 
     function peacefulArchetypeForOwner(ownerId: number): boolean {
       if (isMe(ownerId)) return false;
-      const aiTyp = (aiOwnerCivMap.get(ownerId) ?? 'grecy') as TypCywilizacji;
+      const civKey = civKeyForOwnerId(ownerId);
+      const aiTyp = civKey as TypCywilizacji;
       const difficulty = effectiveGameDifficultyForOwner(ownerId);
-      const prof = civAiProfileForTyp(data, aiTyp, difficulty);
-      const agresja = resolveArchetypeAggression(
-        aiTyp,
-        ARCHETYPE_AGGRESSION[aiTyp] ?? 0.5,
-        data,
-        difficulty,
-      );
+      const prof = civAiMatrixProfileForOwner(ownerId, difficulty);
+      const agresja = prof
+        ? resolveArchetypeAggression(aiTyp, ARCHETYPE_AGGRESSION[aiTyp] ?? 0.5, data, difficulty)
+        : 0.5;
       return resolveDiplomacyCivBias(
         agresja,
         prof?.sklonnoscDoPodboju ?? 2,
@@ -21536,7 +21575,6 @@ async function boot(): Promise<void> {
           refreshD1bHud();
         },
         onFocusCapital: handleDiploFocusCapital,
-        getCivBonusy: civBonusyForOwnerId,
         getNegotiationContext: (actionId: string) => {
           const rel = getDiploRelation(ME(), ownerId);
           const dip = _diplomacyParams();
@@ -24237,6 +24275,25 @@ async function boot(): Promise<void> {
     // `snapshotVisibleState()` rozszerza `__sidePanelLinkTestDebug.openViews()` (3/17 paneli) na
     // WSZYSTKICH 17 + fog/kamera/logi/toast/build-mode/ghost-chip/escapeOverlayStack — kompletna
     // asercja "no leak" (recon §4.2, 3 rundy Evaluatora).
+    type Pr141RuntimeObservabilitySnapshot = {
+      activeHumanOwnerId: number;
+      humanOwnerIds: number[];
+      viewport: { width: number; height: number; devicePixelRatio: number };
+      canvas: { left: number; top: number; right: number; bottom: number; width: number; height: number };
+      startHexes: Array<{
+        ownerId: number;
+        hex: { q: number; r: number } | null;
+        /** Absolute browser viewport coordinates in CSS pixels for page.mouse.click. */
+        absoluteViewportCssPx: { x: number; y: number } | null;
+      }>;
+      cities: Array<{
+        cityId: string;
+        ownerId: number;
+        manpower: ReturnType<typeof cityManpowerSnapshot>;
+        recruitmentOptions: Array<{ id: string; goldCost: number; manpowerCost: number }>;
+      }>;
+    };
+
     (window as any).__hotSeatTestDebug = {
       seedSecondSeat: (ownerId: number, opts: {
         exploredKeys?: string[]; skarbiec?: number;
@@ -24410,6 +24467,97 @@ async function boot(): Promise<void> {
           humanSeats.humanOwnerIds.map(oid => [oid, playerStartHexFor(oid)]),
         ),
       }),
+      /** Read-only ordinary-flow test identity projection. Copies only the
+       * configured human roster and actual major-AI starts; city-state copies
+       * are excluded by the existing typed-owner set. */
+      snapshotRuntimeOwnerIdentitiesForTest: (): {
+        humanOwners: Array<{ ownerId: number; civKey: string | null }>;
+        majorAiOwners: Array<{ ownerId: number; civKey: string | null }>;
+      } => ({
+        humanOwners: humanSeats.humanOwnerIds.map(ownerId => ({
+          ownerId,
+          civKey: _menuCivIdByOwner.get(ownerId) ?? null,
+        })),
+        majorAiOwners: aiStartHexes
+          .filter(start => !humanSeats.humanOwnerIds.includes(start.ownerId)
+            && !typCityCopyOwners.has(start.ownerId))
+          .map(start => ({
+            ownerId: start.ownerId,
+            civKey: aiOwnerCivMap.get(start.ownerId) ?? null,
+          })),
+      }),
+      /** Read-only PR141 observations. Values are copied into serializable records;
+       * the projection, manpower snapshot and available-production consumers below
+       * only read the live owner/city/map state and never invoke purchase/founding. */
+      snapshotRuntimeObservabilityForTest: (): Pr141RuntimeObservabilitySnapshot => {
+        const rect = canvas.getBoundingClientRect();
+        const humanOwnerIds = [...humanSeats.humanOwnerIds];
+        const citySnapshots = cities.map(city => {
+          const ownerId = city.ownerId;
+          const epoch = empireEpochForOwner(ownerId);
+          const mpMults = civManpowerMultsForOwner(ownerId);
+          const manpower = cityManpowerSnapshot(
+            city, epoch, mpMults.regenMult, mpMults.maxMult, mpMults.costMult,
+          );
+          const availableUnits = purchasableUnits(
+            city,
+            data,
+            unlockedTechsForOwner(ownerId),
+            productionAvailabilityCtxForCity(city),
+          );
+          const recruitmentOptions = availableUnits.map(item => ({
+            id: item.id,
+            goldCost: item.koszt,
+            manpowerCost: unitManpowerCostForType(
+              item.id, epoch, mpMults.maxMult, mpMults.costMult,
+            ),
+          }));
+          return {
+            cityId: city.id,
+            ownerId,
+            manpower: { ...manpower },
+            recruitmentOptions,
+          };
+        });
+        return {
+          activeHumanOwnerId: ME(),
+          humanOwnerIds,
+          viewport: {
+            width: window.innerWidth,
+            height: window.innerHeight,
+            devicePixelRatio: window.devicePixelRatio,
+          },
+          canvas: {
+            left: rect.left,
+            top: rect.top,
+            right: rect.right,
+            bottom: rect.bottom,
+            width: rect.width,
+            height: rect.height,
+          },
+          startHexes: humanOwnerIds.map(ownerId => {
+            const hex = playerStartHexFor(ownerId);
+            const point = hex ? hexCenterClientPx(hex.q, hex.r) : null;
+            const visiblePoint = point
+              && rect.width > 0
+              && rect.height > 0
+              && point.x >= Math.max(0, rect.left)
+              && point.x <= Math.min(window.innerWidth, rect.right)
+              && point.y >= Math.max(0, rect.top)
+              && point.y <= Math.min(window.innerHeight, rect.bottom)
+              ? point
+              : null;
+            return {
+              ownerId,
+              hex: hex ? { q: hex.q, r: hex.r } : null,
+              absoluteViewportCssPx: visiblePoint
+                ? { x: visiblePoint.x, y: visiblePoint.y }
+                : null,
+            };
+          }),
+          cities: citySnapshots,
+        };
+      },
       switchActiveHuman: (ownerId: number): void => switchActiveHuman(ownerId),
       isAwaitingFirstPlayerCity: (ownerId?: number): boolean =>
         ownerId === undefined ? isAwaitingFirstPlayerCity() : isAwaitingFirstPlayerCity(ownerId),
@@ -24913,6 +25061,24 @@ async function boot(): Promise<void> {
       difficulty: _menuDifficulty,
       getCities: () => cities,
       getTradeRoutes: () => tradeRoutes,
+      getTradeIncomeByCity: (cityId: string) => {
+        const params = loadTradeRouteIncomeParams(
+          data.econParams as unknown as Parameters<typeof loadTradeRouteIncomeParams>[0],
+          _menuDifficulty,
+        );
+        const routeIncome = computeTradeRouteIncomeByCityBreakdown(
+          tradeRoutes, params, wonderTradeRouteBonusForOwner,
+        );
+        const seaBonus = computeSeaTradeBonusIncomeByCity(computeSeaTradeRouteCountByCity(tradeRoutes));
+        for (const [id, amount] of seaBonus) {
+          routeIncome.totalByCity.set(id, (routeIncome.totalByCity.get(id) ?? 0) + amount);
+          routeIncome.maritimeByCity.set(id, (routeIncome.maritimeByCity.get(id) ?? 0) + amount);
+        }
+        return {
+          total: routeIncome.totalByCity.get(cityId) ?? 0,
+          maritime: routeIncome.maritimeByCity.get(cityId) ?? 0,
+        };
+      },
       getOwnerLabel: (ownerId: number) => ownerDiploLabel(ownerId),
       getTradeTreatyMissingPartners: (cityId: string) => foreignCivsMissingTradeTreatyForCity(cityId),
       getCapitalCityId: (ownerId: number) => capitalCityIdForOwner(ownerId),
@@ -24926,7 +25092,11 @@ async function boot(): Promise<void> {
         if (!c) return null;
         const ep = empireEpochForOwner(c.ownerId);
         const mpMults = civManpowerMultsForOwner(c.ownerId);
-        return cityManpowerSnapshot(c, ep, mpMults.regenMult, mpMults.maxMult);
+        return cityManpowerSnapshot(c, ep, mpMults.regenMult, mpMults.maxMult, mpMults.costMult);
+      },
+      getManpowerMultipliers: (ownerId: number) => {
+        const mpMults = civManpowerMultsForOwner(ownerId);
+        return { maxMult: mpMults.maxMult, costMult: mpMults.costMult };
       },
       getEmpireRekruciTotal: (ownerId: number) => {
         const ep = empireEpochForOwner(ownerId);
@@ -24965,26 +25135,32 @@ async function boot(): Promise<void> {
       getTreasury: (ownerId: number) => ownerTreasury(ownerId),
       onRushBuy: (cityId: string, _item: any, koszt: number) => {
         const rbCity = cities.find(ct => ct.id === cityId);
-        const rbOwnerId = rbCity ? rbCity.ownerId : 0;
-        if (ownerTreasury(rbOwnerId) >= koszt) {
-          setOwnerTreasury(rbOwnerId, ownerTreasury(rbOwnerId) - koszt);
-          const rBase = cityProd.get(cityId) ?? { kolejka: [], postep: 0 };
+        if (!rbCity) return;
+        const rbOwnerId = rbCity.ownerId;
+        const rBase = cityProd.get(cityId) ?? { kolejka: [], postep: 0 };
+        const expectedCost = rushCost(
+          rBase,
+          civMatrixParamForOwner(rbOwnerId, 'prod_rush_koszt_proc'),
+        );
+        if (koszt !== expectedCost) {
+          console.warn('[Rush] Odrzucono nieaktualną wycenę; odświeżono koszt według właściciela miasta.');
+          return;
+        }
+        if (ownerTreasury(rbOwnerId) >= expectedCost) {
+          setOwnerTreasury(rbOwnerId, ownerTreasury(rbOwnerId) - expectedCost);
           const r = rushProduction(rBase);
           cityProd.set(cityId, r.prod);
           if (r.completed) {
-            const rc = cities.find(ct => ct.id === cityId);
-            if (rc) {
-              const applied = applyProductionCompleted(rc, cityId, r.completed, r.prod);
-              if (applied.requeueManpower) {
-                setOwnerTreasury(rbOwnerId, ownerTreasury(rbOwnerId) + koszt);
-                console.warn('[Rush] Brak Manpower — zwrot zlota, jednostka w kolejce');
-              }
-              cityProd.set(cityId, applied.prod);
-              // P-AUTO-WYZYWIENIE-BUG1: rush-buy kończy budynek NATYCHMIAST (mid-turn,
-              // nie czeka na koniec tury) -- jeśli to budynek wpływający na produkcję
-              // żywności tego miasta, przelicz poziom racji od razu.
-              applyLiveSafeRationForCity(cityId);
+            const applied = applyProductionCompleted(rbCity, cityId, r.completed, r.prod);
+            if (applied.requeueManpower) {
+              setOwnerTreasury(rbOwnerId, ownerTreasury(rbOwnerId) + expectedCost);
+              console.warn('[Rush] Brak Manpower — zwrot zlota, jednostka w kolejce');
             }
+            cityProd.set(cityId, applied.prod);
+            // P-AUTO-WYZYWIENIE-BUG1: rush-buy kończy budynek NATYCHMIAST (mid-turn,
+            // nie czeka na koniec tury) -- jeśli to budynek wpływający na produkcję
+            // żywności tego miasta, przelicz poziom racji od razu.
+            applyLiveSafeRationForCity(cityId);
           }
           updateHud();
         }
@@ -25055,10 +25231,14 @@ async function boot(): Promise<void> {
         toggleCityPodzialPracyOverride(cityId);
       },
       onPurchaseUnit: (cityId: string, itemId: string, koszt: number, quantity = 1) => {
-        return purchaseRecruitmentUnit(cityId, itemId, koszt, 0, quantity);
+        const city = cities.find(c => c.id === cityId);
+        if (!city) return false;
+        return purchaseRecruitmentUnit(cityId, itemId, koszt, city.ownerId, quantity);
       },
       onCancelRecruitment: (cityId: string, itemId: string, koszt: number) => {
-        cancelRecruitmentPurchase(cityId, itemId, koszt);
+        const city = cities.find(c => c.id === cityId);
+        if (!city) return;
+        cancelRecruitmentPurchase(cityId, itemId, koszt, city.ownerId);
       },
       getCivBonusy: (ownerId: number) => civBonusyForOwnerId(ownerId),
       getCivKey: (ownerId: number) => civKeyForOwnerId(ownerId),
@@ -28643,7 +28823,6 @@ async function boot(): Promise<void> {
         wzrostLudnosciPace: player.wzrostLudnosciPace,
         ruchSwiataPace: player.ruchSwiataPace,
         civType: aiOwnerCivMap.get(ownerId) ?? 'grecy',
-        civBonusy: [],
         rakietaWystrzelona: false,
       };
       const step = researchStep(aiState, data.tech, gate, _menuDifficulty);
@@ -31340,9 +31519,11 @@ async function boot(): Promise<void> {
           );
           // CUDA-HANDEL-01: 3. argument = bonus % "handel_procent" cudów, per owner/medium
           // trasy (0 gdy brak cudu) — ownerId-agnostyczny, patrz wonderTradeRouteBonusForOwner.
-          const tradeIncomeByCity = computeTradeRouteIncomeByCity(
+          const routeIncome = computeTradeRouteIncomeByCityBreakdown(
             tradeRoutes, tradeIncomeParams, wonderTradeRouteBonusForOwner,
           );
+          const tradeIncomeByCity = routeIncome.totalByCity;
+          const maritimeTradeIncomeByCity = routeIncome.maritimeByCity;
           // R-BUDYNEK-PORTOWY-MIASTA-NADBRZEZNE (Maciej 2026-08-09, część A): dopisz bonus
           // Pieniądza za KAŻDY aktywny szlak morski miasta ponad pierwszy (patrz komentarz
           // przy PORT_SEA_TRADE_BONUS_PIENIADZ, trade-routes.ts) do TEGO SAMEGO wiadra co
@@ -31353,6 +31534,10 @@ async function boot(): Promise<void> {
           );
           for (const [cityIdSea, bonusSea] of seaTradeBonusIncomeByCity) {
             tradeIncomeByCity.set(cityIdSea, (tradeIncomeByCity.get(cityIdSea) ?? 0) + bonusSea);
+            maritimeTradeIncomeByCity.set(
+              cityIdSea,
+              (maritimeTradeIncomeByCity.get(cityIdSea) ?? 0) + bonusSea,
+            );
           }
 
           const mapOwnerIds = ownerIdsOnMap();
@@ -31395,6 +31580,7 @@ async function boot(): Promise<void> {
                 syncLiveUnitHp(units, unitId, hp, hpMax),
             },
             ownerDefaultPodzialPracy,
+            maritimeTradeIncomeByCity,
           );
           powerSnapshotsForTurn = buildPowerSnapshotsForTurn(econ);
           refreshObjectivePowerCache();
@@ -32266,7 +32452,12 @@ async function boot(): Promise<void> {
 
               // KULTURA (kumulacja po konwersji share)
               const ccIn: CultureCity = { kulturaSkumulowana: (city as any).kultura ?? 0, ownCultureShare };
-              const acc = accumulateCulture(ccIn, kulturaTick, cp);
+              const cultureCivKey = ownerCivMap.get(city.ownerId);
+              const cultureModifier = cultureCivKey
+                ? civMatrixParam(cultureCivKey, 'kultura_naplyw_proc')
+                : 0;
+              const cultureGain = cultureAccrualWithModifier(kulturaTick, cultureModifier);
+              const acc = accumulateCulture(ccIn, cultureGain, cp);
               (city as any).kultura = acc.kulturaSkumulowana;
               const ccOut: CultureCity = { kulturaSkumulowana: acc.kulturaSkumulowana, ownCultureShare };
               const haKult = cultureHappiness(ccOut, cp);
@@ -32290,7 +32481,14 @@ async function boot(): Promise<void> {
                 }
                 if (relNeighbors.length > 0) {
                   const hasSwiatynia = (cityBuilt.get(cid) ?? []).includes('swiatynia');
-                  const spreadRes = spreadReligion(curRel, relNeighbors, rp, {
+                  const religionCivKey = ownerCivMap.get(city.ownerId);
+                  const sourceReligionParams = religionCivKey
+                    ? religionParamsWithSpreadModifier(
+                        rp,
+                        civMatrixParam(religionCivKey, 'religia_spread_proc'),
+                      )
+                    : rp;
+                  const spreadRes = spreadReligion(curRel, relNeighbors, sourceReligionParams, {
                     hasSwiatynia,
                     pressure: 1,
                     seed: (turn * 997 + city.q * 31 + city.r) >>> 0,
@@ -32412,7 +32610,7 @@ async function boot(): Promise<void> {
               // citizenUpkeepDrainForOwner cache'uje i mutuje magazyn RAZ per owner per turę.
               const citizenUpkeep = citizenUpkeepDrainForOwner(city.ownerId);
 
-              const ordPctRaw = evaluateOrderFromBreakdown(
+              const ordPctEvaluated = evaluateOrderFromBreakdown(
                 {
                   difficulty,
                   era: ownerEraForUpkeep,
@@ -32453,6 +32651,15 @@ async function boot(): Promise<void> {
                 data.societyParams,
                 difficulty,
               );
+              const happinessCivKey = ownerCivMap.get(city.ownerId);
+              const ordPctRaw = happinessCivKey
+                ? applyCivMatrixHappinessModifier(
+                  ordPctEvaluated,
+                  civMatrixParam(happinessCivKey, 'eko_zadowolenie_proc'),
+                  data.societyParams,
+                  difficulty,
+                )
+                : ordPctEvaluated;
 
               // R-MIASTA-REBELIA-OCHRONA-20-TUR-Q1 (GOAL 2): bezwarunkowo, NIE tylko gdy
               // postCaptureLawActive — licznik ochrony jest niezależny od bonusu Prawa po
@@ -32470,7 +32677,14 @@ async function boot(): Promise<void> {
                 ? applyPostCaptureLawOverride(ordPctRaw, city, data.societyParams, difficulty)
                 : ordPctRaw;
 
-              const orderEff = ordPct.effects;
+              const orderCivKey = ownerCivMap.get(city.ownerId);
+              const orderEff = orderEffectsWithCivMatrix(ordPct.effects, orderCivKey ? {
+                porzadek_produkcja_proc: civMatrixParam(orderCivKey, 'porzadek_produkcja_proc'),
+                porzadek_pieniadz_proc: civMatrixParam(orderCivKey, 'porzadek_pieniadz_proc'),
+                porzadek_nauka_proc: civMatrixParam(orderCivKey, 'porzadek_nauka_proc'),
+                porzadek_kultura_proc: civMatrixParam(orderCivKey, 'porzadek_kultura_proc'),
+                porzadek_wzrost_proc: civMatrixParam(orderCivKey, 'porzadek_wzrost_proc'),
+              } : {});
               const tier = ordPct.tier;
               const conquestRevoltMult = conquestRevoltRiskMultiplier(
                 ownCultureShare, foreignReligionDominant, gCountLaw,
@@ -32701,7 +32915,11 @@ async function boot(): Promise<void> {
               const pracaBudynki = (econTick && !queueEmpty && !prodPaused)
                 ? econTick.doBudynkow * prodMult
                 : 0;
-              const { prod: prodPo, completed, overflowToPool } = advanceProduction(prod0, pracaBudynki);
+              const { prod: prodPo, completed, overflowToPool } = advanceProduction(
+                prod0,
+                pracaBudynki,
+                civMatrixParamForOwner(city.ownerId, 'prod_szybkosc_budynku_proc'),
+              );
               let prodFinal = prodPo;
               cityProd.set(cid, prodPo);
               // Nadwyżka po ukończeniu budynku (reszta doBudynkow) — nie dotyczy pustej kolejki.
@@ -32733,8 +32951,14 @@ async function boot(): Promise<void> {
                 }
               }
 
+              const recMpMults = civManpowerMultsForOwner(city.ownerId);
+              const recMaxPerTurn = unitRecruitmentCapacityPerTurn(
+                1,
+                civMatrixParamForOwner(city.ownerId, 'prod_szybkosc_jednostki_proc'),
+              );
               const recResult = advanceRecruitmentGated(
-                prodFinal, city, empireEpochForOwner(city.ownerId), 1, true,
+                prodFinal, city, empireEpochForOwner(city.ownerId), recMaxPerTurn, true,
+                recMpMults.maxMult, recMpMults.costMult,
               );
               prodFinal = recResult.prod;
               city.population = recResult.population;
@@ -32835,6 +33059,10 @@ async function boot(): Promise<void> {
               // P-HEKS-SPOR-SASIAD runda 2 nota B: ten sam zbior co silnik tury/panel --
               // liczone RAZ tu, przekazane per-cityId do rebalansu po wzroście populacji.
               const excludeHexKeysByCityForGrowth = computeLostToNearerSiblingByCity(cities, map);
+              const manpowerMaxMultByOwnerId = new Map<number, number>();
+              for (const ownerId of ownerCivMap.keys()) {
+                manpowerMaxMultByOwnerId.set(ownerId, civManpowerMultsForOwner(ownerId).maxMult);
+              }
               applyPostCentralPopulationGrowth({
                 cities,
                 econ,
@@ -32846,6 +33074,8 @@ async function boot(): Promise<void> {
                 rationParams: efParamsGrowth.rationParams,
                 difficulty: _menuDifficulty,
                 ownerCivByOwnerId: ownerCivMap,
+                orderGrowthMultByCity: growthMultMap,
+                manpowerMaxMultByOwnerId,
                 populationMatrixByOwnerId,
                 spichlerzByCity,
                 happinessByCityId,
@@ -33616,10 +33846,10 @@ async function boot(): Promise<void> {
               );
             }
             const contactedOwners = getDiplomaticContacts();
-            const aiCivIdForOpts = aiOwnerCivMap.get(ownerId) ?? 'grecy';
-            const aiTypForOpts = (aiCivIdForOpts as TypCywilizacji);
+            const aiCivIdForOpts = civKeyForOwnerId(ownerId);
+            const aiTypForOpts = aiCivIdForOpts as TypCywilizacji;
             const civAiDifficulty = effectiveGameDifficultyForOwner(ownerId);
-            const civAiProf = civAiProfileForTyp(data, aiTypForOpts, civAiDifficulty);
+            const civAiProf = civAiMatrixProfileForOwner(ownerId, civAiDifficulty);
             const powerRankInfo = computeAbsolutePowerRank(
               ownerId,
               aiOwnerList,
@@ -33788,6 +34018,7 @@ async function boot(): Promise<void> {
                     builtBuildingIds: builtIds,
                     productionQueue: prod0.kolejka,
                     civBonusy: civBonusyForOwnerId(ownerId),
+                    civKey: civKeyForOwnerId(ownerId),
                     civUnitNacja: unitNacjaForCivKey(civKeyForOwnerId(ownerId)),
                     placedImprovements: placedImprovementsWithTradeGrants(ownerId, ownImprovements),
                     hasKopalniaNaZlozuZelaza: hasKopalniaNaZlozuZelazaOrTradeGrant(ownerId, ownImprovements),
@@ -33919,7 +34150,7 @@ async function boot(): Promise<void> {
                   dobraWolaAktywna: false,
                   wspolnyWrog: false,
                   wspolnaReligia: (() => {
-                    const sameCulture = sameCultureCircle(civKeyForOwner(ME()), civKeyForOwner(ownerId));
+                    const sameCulture = sameCultureCircle(civKeyForOwnerId(ME()), civKeyForOwnerId(ownerId));
                     const pr = ownerReligionForOwnerId(ME());
                     const ar = ownerReligionForOwnerId(ownerId);
                     return sameCulture && !!pr && !!ar && pr === ar;
@@ -33976,7 +34207,7 @@ async function boot(): Promise<void> {
                     : undefined,
                   hasActiveResourceTradeDeal: hasActiveResourceTradeDealForPair(ME(), ownerId),
                   lastResourceTradeProposalTurn: aiResourceTradeLastProposalTurn.get(ownerId),
-                  partnerTypCywilizacji: civKeyForOwner(ME()),
+                  partnerTypCywilizacji: civKeyForOwnerId(ME()),
                   hasNapTreaty: hasTreaty(
                     activeDeals, ownerId, ME(), RodzajTraktatu.PaktNieagresji,
                   ),
@@ -34012,7 +34243,7 @@ async function boot(): Promise<void> {
                   relation: relAi,
                   respektWzgledny: respektWzgAi,
                   stanWojny: relAi.status === 'wojna',
-                  partnerTypCywilizacji: civKeyForOwner(otherId),
+                  partnerTypCywilizacji: civKeyForOwnerId(otherId),
                   hasNapTreaty: hasTreaty(
                     activeDeals, ownerId, otherId, RodzajTraktatu.PaktNieagresji,
                   ),
@@ -35090,6 +35321,7 @@ async function boot(): Promise<void> {
                           builtBuildingIds: builtIds,
                           productionQueue: prod0.kolejka,
                           civBonusy: civBonusyForOwnerId(ownerId),
+                          civKey: civKeyForOwnerId(ownerId),
                           civUnitNacja: unitNacjaForCivKey(civKeyForOwnerId(ownerId)),
                           placedImprovements: placedImprovementsWithTradeGrants(ownerId, ownImprovements),
                           hasKopalniaNaZlozuZelaza: hasKopalniaNaZlozuZelazaOrTradeGrant(ownerId, ownImprovements),
@@ -35221,6 +35453,7 @@ async function boot(): Promise<void> {
                       hasManpower: canAffordUnitManpowerEmpire(
                         cities, ownerId, city, empireEpochForOwner(ownerId),
                         UNIT_POPULATION_COST, civManpowerMultsForOwner(ownerId).maxMult, candId,
+                        civManpowerMultsForOwner(ownerId).costMult,
                       ),
                     });
                     if (wantsPurchase && purchaseRecruitmentUnit(cmd.cityId, candId, item.koszt, ownerId)) {
@@ -36631,27 +36864,22 @@ async function boot(): Promise<void> {
       const ERA_MAP: Record<string, number> = { kamien: 1, braz: 2, zelazo: 3 };
       player.era = ERA_MAP[params.epochId] ?? 1;
 
-      // Wepnij dane nacji gracza (civType + bonusy) z civs.json
+      // Wepnij tożsamość nacji gracza; efekty są rozwiązywane z macierzy per owner.
       {
         const chosenCiv = (data.civs.cywilizacje as any[]).find(
           (c: any) => (c.ikonaId ?? '') === _menuCivId,
         );
         if (chosenCiv) {
           player.civType = _menuCivId;
-          player.civBonusy = Array.isArray(chosenCiv.bonusy) ? chosenCiv.bonusy : [];
           console.log(
             `[NewGame] Nacja gracza: ${chosenCiv.Cywilizacja} (${ _menuCivId})`,
-            `bonusy: ${player.civBonusy.length}`,
           );
         } else {
           player.civType = _menuCivId;
-          player.civBonusy = [];
-          console.warn(`[NewGame] Nacja '${_menuCivId}' nie znaleziona w civs.json — brak bonusów`);
+          console.warn(`[NewGame] Nacja '${_menuCivId}' nie znaleziona w civs.json — efekty cywilizacji neutralne`);
         }
-        // R-HOTSEAT-ETAP6F-PART2-DATA-Q1: synchronizacja per-owner, zero zmiany
-        // odczytu `player.civType`/`player.civBonusy` gdziekolwiek indziej.
+        // Synchronizacja tożsamości cywilizacji per owner; brak cache bonusów.
         playerCivTypeByHuman.set(HUMAN_OWNER_PRIMARY, player.civType as string);
-        playerCivBonusyByHuman.set(HUMAN_OWNER_PRIMARY, Array.isArray(player.civBonusy) ? player.civBonusy : []);
         // Runda 2 R-KONFIGURATOR-...: ten wypełniacz jest nieszkodliwym stanem
         // przejściowym — na ścieżce nowej gry `doStartGame` woła POTEM zawsze
         // `applyClusterStartPlan()`, który robi `aiOwnerCivMap.clear()` i
@@ -36721,7 +36949,11 @@ async function boot(): Promise<void> {
         if (!c) return null;
         const ep = empireEpochForOwner(c.ownerId);
         const mpMults = civManpowerMultsForOwner(c.ownerId);
-        return cityManpowerSnapshot(c, ep, mpMults.regenMult, mpMults.maxMult);
+        return cityManpowerSnapshot(c, ep, mpMults.regenMult, mpMults.maxMult, mpMults.costMult);
+      },
+      getManpowerMultipliers: (ownerId: number) => {
+        const mpMults = civManpowerMultsForOwner(ownerId);
+        return { maxMult: mpMults.maxMult, costMult: mpMults.costMult };
       },
       getEmpireRekruciTotal: (ownerId: number) => {
         const ep = empireEpochForOwner(ownerId);
@@ -36752,25 +36984,31 @@ async function boot(): Promise<void> {
         getTreasury: (ownerId: number) => ownerTreasury(ownerId),
         onRushBuy: (cityId: string, _item: any, koszt: number) => {
           const rbCity = cities.find(ct => ct.id === cityId);
-          const rbOwnerId = rbCity ? rbCity.ownerId : 0;
-          if (ownerTreasury(rbOwnerId) >= koszt) {
-            setOwnerTreasury(rbOwnerId, ownerTreasury(rbOwnerId) - koszt);
-            const rBase = cityProd.get(cityId) ?? { kolejka: [], postep: 0 };
+          if (!rbCity) return;
+          const rbOwnerId = rbCity.ownerId;
+          const rBase = cityProd.get(cityId) ?? { kolejka: [], postep: 0 };
+          const expectedCost = rushCost(
+            rBase,
+            civMatrixParamForOwner(rbOwnerId, 'prod_rush_koszt_proc'),
+          );
+          if (koszt !== expectedCost) {
+            console.warn('[Rush] Odrzucono nieaktualną wycenę; odświeżono koszt według właściciela miasta.');
+            return;
+          }
+          if (ownerTreasury(rbOwnerId) >= expectedCost) {
+            setOwnerTreasury(rbOwnerId, ownerTreasury(rbOwnerId) - expectedCost);
             const r = rushProduction(rBase);
             cityProd.set(cityId, r.prod);
             if (r.completed) {
-              const rc = cities.find(ct => ct.id === cityId);
-              if (rc) {
-                const applied = applyProductionCompleted(rc, cityId, r.completed, r.prod);
-                if (applied.requeueManpower) {
-                  setOwnerTreasury(rbOwnerId, ownerTreasury(rbOwnerId) + koszt);
-                  console.warn('[Rush] Brak Manpower — zwrot zlota, jednostka w kolejce');
-                }
-                cityProd.set(cityId, applied.prod);
-                // P-AUTO-WYZYWIENIE-BUG1: rush-buy kończy budynek natychmiast (mid-turn) --
-                // jeśli wpływa na produkcję żywności tego miasta, przelicz poziom racji od razu.
-                applyLiveSafeRationForCity(cityId);
+              const applied = applyProductionCompleted(rbCity, cityId, r.completed, r.prod);
+              if (applied.requeueManpower) {
+                setOwnerTreasury(rbOwnerId, ownerTreasury(rbOwnerId) + expectedCost);
+                console.warn('[Rush] Brak Manpower — zwrot zlota, jednostka w kolejce');
               }
+              cityProd.set(cityId, applied.prod);
+              // P-AUTO-WYZYWIENIE-BUG1: rush-buy kończy budynek natychmiast (mid-turn) --
+              // jeśli wpływa na produkcję żywności tego miasta, przelicz poziom racji od razu.
+              applyLiveSafeRationForCity(cityId);
             }
             updateHud();
           }
@@ -36832,7 +37070,9 @@ async function boot(): Promise<void> {
           toggleCityPodzialPracyOverride(cityId);
         },
         onPurchaseUnit: (cityId: string, itemId: string, koszt: number, quantity = 1) => {
-          return purchaseRecruitmentUnit(cityId, itemId, koszt, 0, quantity);
+          const city = cities.find(c => c.id === cityId);
+          if (!city) return false;
+          return purchaseRecruitmentUnit(cityId, itemId, koszt, city.ownerId, quantity);
         },
         getCivBonusy: (ownerId: number) => civBonusyForOwnerId(ownerId),
         getCivKey: (ownerId: number) => civKeyForOwnerId(ownerId),
@@ -38336,6 +38576,32 @@ async function boot(): Promise<void> {
       void openLoadGameDialog(fromInGamePause);
     }
 
+    /**
+     * Odtwórz cywilizacje foteli ludzkich z parametrów kreatora zapamiętanych
+     * w zapisie. `civId2` należy do drugiego fotela, którego ownerId jest
+     * przydzielany przez plan startowy i dlatego nie może być zakodowany na
+     * stałe. Starszy zapis bez `civId2` zachowuje bezpieczny fallback do civ 1.
+     */
+    function restoreHumanCivOwnerMaps(saved: SaveGame, humanOwnerIds: readonly number[]): void {
+      const savedParams = saved.meta?.newGameParams as NewGameParams | undefined;
+      const primaryCivId = _menuCivId || player.civType || 'grecy';
+      const secondaryCivId = typeof savedParams?.civId2 === 'string' && savedParams.civId2.length > 0
+        ? savedParams.civId2
+        : primaryCivId;
+
+      _menuCivIdByOwner = new Map([[HUMAN_OWNER_PRIMARY, primaryCivId]]);
+      playerCivTypeByHuman.clear();
+      playerCivTypeByHuman.set(HUMAN_OWNER_PRIMARY, primaryCivId);
+
+      // Hot-seat currently has two seats. The second seat's ownerId is runtime
+      // generated; restore from the seat list rather than assuming a numeric ID.
+      const secondaryOwnerId = humanOwnerIds.find(ownerId => ownerId !== HUMAN_OWNER_PRIMARY);
+      if (secondaryOwnerId !== undefined) {
+        _menuCivIdByOwner.set(secondaryOwnerId, secondaryCivId);
+        playerCivTypeByHuman.set(secondaryOwnerId, secondaryCivId);
+      }
+    }
+
     /** Wspólna ścieżka wczytywania zapisu — Ctrl+L i doLoadGame (Grupa F: migracja podziału). */
     function restoreGameFromSave(saved: SaveGame): void {
       applyRenderOptionsFromSave(saved);
@@ -38482,6 +38748,7 @@ async function boot(): Promise<void> {
         humanOwnerIds: saved.humanOwnerIds.slice(),
         activeHumanOwnerId: saved.activeHumanOwnerId,
       };
+      restoreHumanCivOwnerMaps(saved, humanSeats.humanOwnerIds);
       // UWAGA (alias): `exploredByHuman.get(HUMAN_OWNER_PRIMARY)` jest DZIŚ dosłownie
       // `explored` (main.ts ok. 10409, ten sam obiekt Set, nie kopia) -- zliczne inne
       // miejsca w tym pliku (33+, patrz ABC-4/recon §2) czytają `explored` WPROST, nie

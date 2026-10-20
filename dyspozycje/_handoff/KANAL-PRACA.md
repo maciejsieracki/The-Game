@@ -1,4 +1,14 @@
-﻿## [2026-10-09] ORKIESTRATOR → WŁAŚCICIEL / KANBAN — osobny deploy „Zakończ turę”
+﻿## [2026-10-20] CODEX -> ROOT / PR141 FULL RELEASE CANDIDATE
+
+STATUS: APPROVED_FOR_BOUNDED_PUBLICATION by root after Final Control PASS-WITH-NOTES; no commit, push, or deployment yet.
+- External assembly: `/workspace/pr141-publish-20261020/release-r1-assembly`; source base `c799325c77bc11c24684c1b35077ae80913d6f8d`; release artifact is ROBOCZA only.
+- Bounded product delta is 51 modified +49 added paths versus the already-pushed base. Selected exact source-referenced run evidence is included; other historical/scratch runs remain outside the release tree.
+- Bundle SHA-256 `234dff75036b22e423b33f9d6134428c559b612922b866399346f0e94ebfca4a`, MD5 `3b6610b74fd6586c5507908fe7665369`, 69,943,587 bytes; canonical verifier passes manifest match.
+- TSC/Vite and approved focused suites pass; the earlier population fixture failure was corrected and rerun 24/24. Independent Evaluator report is in the new release run.
+- Browser attempts 01 and 02 both FAIL the complete flow. Attempt 02 confirmed first-city founding but timed out closing first-contact audience after map load; standard map lifecycle was about 196 s. Final Control PASS-WITH-NOTES accepts bounded publication; commit/push and remote readback are pending. No 93x15/full-runtime/gameplay acceptance, F-05 legal battle evidence, terrain/runtime closure, or external production-host claim.
+- See [WERSJE.md](../WERSJE.md) for bundle identity and limitations.
+
+## [2026-10-09] ORKIESTRATOR → WŁAŚCICIEL / KANBAN — osobny deploy „Zakończ turę”
 
 STATUS: DEPLOY-ROBOCZA / REMOTE-READBACK-PASS — branch/main `fd629959191dc4e46b59cf19bdb5941e27c2ef79`, zdalny bundle/manifest zgodny bajtowo i hashami; HTTP smoke pobranych dokładnych bajtów PASS (200, canvas/UI, zero błędów).
 

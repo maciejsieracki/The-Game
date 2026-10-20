@@ -1,0 +1,19 @@
+--- actual movement adapter and battle movement method ---
+--- actual strategic embarkation gates ---
+--- actual discounts, floor, polarity, and pending rush field ---
+AssertionError [ERR_ASSERTION]: rush-cost field remains unwired
++ actual - expected
+
++ 'REAL_GAMEPLAY'
+- 'UNWIRED'
+
+    at eq (/workspace/pr141-publish-20261020/release-r1-candidate/gra/tools/pr141-semantic-consumer-consistency-test.cjs:52:52)
+    at /workspace/pr141-publish-20261020/release-r1-candidate/gra/tools/pr141-semantic-consumer-consistency-test.cjs:119:3
+    at process.processTicksAndRejections (node:internal/process/task_queues:104:5) {
+  generatedMessage: false,
+  code: 'ERR_ASSERTION',
+  actual: 'REAL_GAMEPLAY',
+  expected: 'UNWIRED',
+  operator: 'strictEqual',
+  diff: 'simple'
+}

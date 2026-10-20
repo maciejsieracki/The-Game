@@ -1,0 +1,11 @@
+--- exact matrix and semantic coverage ---
+--- Normal median, exact median, signed intensity ---
+--- reverse polarity and profile-only rows ---
+--- meta currency multiplier semantic consumer ---
+--- six combat fields with live consumers ---
+--- nine F-03 combat fields with source-grounded consumers ---
+--- status counts and no persistence ---
+--- movement/G11 and separate rush status promotion scope ---
+--- combat/siege/fortification DEAD_UNWIRED (round 2) ---
+--- configurator source contract ---
+PASS 490; FAIL 0

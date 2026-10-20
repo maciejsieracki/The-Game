@@ -159,7 +159,7 @@ async function main() {
     if (!wojownik) throw new Error('units.json: brak Wojownika');
     const expectedWoodCost = wojownik['Surowiec (ilość)'];
 
-    const run = (available, stock) => page.evaluate(({ udef, available, stock }) => {
+    const run = (available, stock, multipliers) => page.evaluate(({ udef, available, stock, multipliers }) => {
       const A = window.__api;
       const root = document.getElementById('root');
       root.innerHTML = '';
@@ -173,6 +173,7 @@ async function main() {
         getCities: () => [city],
         getEpoch: () => 1,
         getCivBonusy: () => [],
+        getManpowerMultipliers: multipliers ? () => multipliers : undefined,
         getEmpireRekruciTotal: () => available,
         getTreasury: () => 100,
         onPurchaseUnit: () => { purchases++; },
@@ -206,7 +207,7 @@ async function main() {
         beforeClick,
         purchases,
       };
-    }, { udef: wojownik, available, stock });
+    }, { udef: wojownik, available, stock, multipliers });
 
     const requiredProbe = await run(0, { drewno: 50 });
     const required = requiredProbe.required;
@@ -268,6 +269,15 @@ async function main() {
       full.buttonDisabled === false && !/Brakuje/.test(full.buttonTitle || ''), full);
     check('B15: karta czyta pulę imperium, nie lokalny City.manpower',
       full.cityManpower === 0 && full.buttonDisabled === false, full);
+    const matrixCost = await run(750, { drewno: 50 }, { maxMult: 1.5, costMult: 0.75 });
+    check('matrix: karta pokazuje koszt 750 zamiast limitowego 1500',
+      matrixCost.statusRequired === '750', matrixCost);
+    check('matrix: pula 750 odblokowuje zakup i callback',
+      matrixCost.buttonDisabled === false && matrixCost.purchases === 1, matrixCost);
+    const matrixShortfall = await run(749, { drewno: 50 }, { maxMult: 1.5, costMult: 0.75 });
+    check('matrix: pula 749 blokuje zakup i pokazuje brak 1',
+      matrixShortfall.buttonDisabled === true && matrixShortfall.statusMissing === '1'
+        && matrixShortfall.purchases === 0, matrixShortfall);
     check('B16: istniejąca rekrutacja nadal wywołuje callback',
       full.purchases === full.beforeClick + 1, full);
 

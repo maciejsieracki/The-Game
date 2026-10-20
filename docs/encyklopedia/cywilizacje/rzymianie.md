@@ -15,7 +15,7 @@
 
 ## Wiki‑S
 
-**Rzymianie** — ofensywna piechota + inżynieria. Jednostka unikalna: **Legion (Legionista)**. Religia: Religia rzymska / kult państwa.
+**Rzymianie** — ofensywna piechota + inżynieria. Jednostki specjalne według rosteru: **Hastati, Triari**. Religia: Religia rzymska / kult państwa.
 
 ---
 
@@ -24,20 +24,12 @@
 **Rzymianie** to typ cywilizacji dostępny w wersji 1.0. Charakter: *ofensywna piechota + inżynieria*.
 
 **Epoki startowe w kreatorze:** Kamień, Brąz, Żelazo.
-**Jednostka specjalna:** Legion (Legionista).
+**Zamienniki według rosteru:** Hastati, Triari
 **Religia państwa:** Religia rzymska / kult państwa.
 **Przykładowe miasta w klastrze:** Rzym, Ostia, Kapua, Pompeje, Tarent….
 **Władcy (imiona per epoka):** Kamień — Romulus · Brąz — Numa Pompiliusz · Żelazo — Scypion Afrykański · Antyk — Juliusz Cezar.
 
-**Bonus startowy:** silny atak + pancerz; szybsza budowa dróg/budynków; +Morale (dyscyplina).
-
-**Trzy linie bonusów (macierz):**
-- Legion: +15% ataku i pancerza piechoty szturmowej; dyscyplina bojowa +morale
-- Inżynieria rzymska: -20% kosztu Produkcji budowli; szybsza budowa dróg
-- Legionista = ciężka piechota z pilum; silny atak + pancerz + morale
-- Dyscyplina legionów: szybsza odnowa poboru (+35% regen/turę vs standard 10%)
-
-**Słabsza strona (balans):** wyższe utrzymanie armii.
+**Bonusy cywilizacji:** Obowiązujące bonusy i modyfikatory cywilizacji wynikają z macierzy parametrów. Dawne bonusy opisowe nie są doliczane.
 
 **Profil AI (skala 0–9):** agresja 8/9 — wysoka.
 

@@ -32554,3 +32554,117 @@ Wpisać do `R-PROC-AUTOBOT.md` §9 jako granicę: **mechanizmy balansu i wylicze
 identycznie gracza i AI; każde odstępstwo wymaga jawnej, zapisanej decyzji właściciela
 i asercji w bramce, która pilnuje, że odstępstwo jest zamierzone.** Dziś takich odstępstw
 jest co najmniej pięć i żadne nie było zamówione.
+
+## ECHO 2026-10-18 — `R-PR141-CODEX-F04-SOURCE-APPROVAL-20261018-Q1`
+
+**Pytanie właścicielskie:**
+> F-04: czy po zapoznaniu się z pakietem 07-approval-options.md zatwierdzasz Cyw-macierz-REVIEW.xlsx (SHA-256 c285c410012d0fca67acf40200f03ace4cf98bd538fde40c3ea3799c79a62f32) jako NOWE źródło dokładnie 360 wartości F-04, bez zatwierdzania pozostałych parametrów i produktu?
+
+**Literalna odpowiedź właściciela, 2026-10-18:**
+> Tak — zatwierdzam wariant B w pełnym zakresie opisanym w pakiecie.
+
+**Skutek:** wariant B ustanawia `panele-sterowania/Cyw-macierz-REVIEW.xlsx` (SHA-256 `c285c410012d0fca67acf40200f03ace4cf98bd538fde40c3ea3799c79a62f32`, 27 300 bajtów) nowym źródłem **od 2026-10-18** dla dokładnie 360 wartości surowych: przecięcia 24 ID z `/workspace/handoff-pr141/matrix/f04-24-parameter-ids.txt` i 15 `civKey` wymienionych literalnie w [`docs/decyzje/R-PR141-CODEX-F04-SOURCE-APPROVAL-20261018.md`](../docs/decyzje/R-PR141-CODEX-F04-SOURCE-APPROVAL-20261018.md). Jest to nowe zatwierdzenie, bez potwierdzenia historycznej autentyczności workbooka. Nie obejmuje pozostałych parametrów, konsumentów, statusów produktu ani acceptance PR141.
+
+## ECHO 2026-10-18 — `R-PR141-CODEX-SEMANTICS-DECISIONS-20261018` (trzy literalne decyzje)
+
+Źródło: literalne pytania i odpowiedzi właściciela z głównego czatu, przekazane Operatorowi przez root/orkiestratora. Szczegółowy zapis wraz z literalnymi cytatami i skutkami: [`docs/decyzje/R-PR141-CODEX-SEMANTICS-DECISIONS-20261018.md`](../docs/decyzje/R-PR141-CODEX-SEMANTICS-DECISIONS-20261018.md).
+
+### `R-PR141-CODEX-SEMANTICS-DECISIONS-20261018-Q1` — precedencja sześciu pól G1
+
+**Pytanie właścicielskie:** „G1 — sześć pól walki: który kontrakt pierwszeństwa wybierasz? Pełne warianty i skutki są w 04-activation-contract-proposal.md w runie UNBLOCK-SEMANTICS. Aktywacja wymaga wyboru, bo macierz i stare bonusy pokrywają te same efekty.”
+
+**ECHO — literalna odpowiedź właściciela:** „A — macierz zastępuje wyłącznie pokrywający efekt starego bonusu, także gdy komórka ma zero; pozostałe efekty zachowujemy.”
+
+**Skutek:** matrix zastępuje tylko pokrywający efekt dla G1; zero też zastępuje pokrywający efekt legacy, inne efekty są zachowane. Szczegóły implementacji nie mogą dopisywać warunków nieistniejących w starym kodzie.
+
+### `R-PR141-CODEX-SEMANTICS-DECISIONS-20261018-Q2` — `dip_nastawienie_bazowe`
+
+**Pytanie właścicielskie:** „Dyplomacja — dip_nastawienie_bazowe: czy zatwierdzasz proponowany hookup dla wszystkich par głównych cywilizacji, symetrycznie: startZaufanie + (wartośćA−50)/2 + (wartośćB−50)/2, potem obecne modyfikatory i clamp 0–100, difficulty=normal; city-state pozostają poza zmianą? Szczegóły i alternatywy: pakiet aktywacji UNBLOCK-SEMANTICS.”
+
+**ECHO — literalna odpowiedź właściciela:** „Tak — zatwierdzam ten konkretny kontrakt.”
+
+**Skutek:** dokładnie symetryczny hookup dla wszystkich par głównych cywilizacji, z podaną formułą, obecnymi modyfikatorami, clampem `[0,100]`, difficulty `normal`; city-state poza zakresem.
+
+### `R-PR141-CODEX-SEMANTICS-DECISIONS-20261018-Q3` — `dip_agresja_archetyp`
+
+**Pytanie właścicielskie:** „Dyplomacja — dip_agresja_archetyp: czy zatwierdzasz zastąpienie źródła ai_agresywnosc/10 wartością tego pola 0–1 w istniejącym resolverze agresji głównych AI, bez sumowania; obecne downstream użycia, difficulty/clamp i fallback dla pozostałych przypadków zachowujemy? To zmieni bazową agresję tam, gdzie źródła się różnią.”
+
+**ECHO — literalna odpowiedź właściciela:** „Tak — zatwierdzam zastąpienie źródła w tym zakresie.”
+
+**Skutek:** dla głównych AI resolver użyje `dip_agresja_archetyp` zamiast `ai_agresywnosc/10`, bez sumowania; zachować istniejące downstream użycia, efektywną trudność, clamp i fallback dla pozostałych przypadków. Dotychczasowa skala daje po normalizacji offset Easy `−0.1`, Normal `0`, Hard `+0.1`; przenieść ten operator na nowe źródło i zastosować istniejący clamp `[0,1]`.
+
+**Granica:** te trzy ECHO nie zatwierdzają pozostałych parametrów, danych F-04, acceptance 93×15, publikacji ani runtime. Istniejący F-04 hold pozostaje bez zmian.
+
+## ECHO 2026-10-18 — `R-PR141-CODEX-F04-PRECEDENCE-DECISION-20261018-Q1`
+
+**Pytanie właścicielskie:**
+> F-04 — jak traktować pokrywające się stare bonusy przy podłączaniu zatwierdzonych wartości do istniejących mechanizmów? Dotyczy m.in. rzymskich −20% kosztu budynków; odrębne, zatwierdzone rabaty G11 pozostają oddzielnymi efektami i sumują się tylko zgodnie z decyzjami 3B/5A.
+
+**Literalna odpowiedź właściciela, 2026-10-18:**
+> A — jak w G1: macierz zastępuje tylko pokrywający efekt, także przy zerze; pozostałe efekty zachowujemy.
+
+**Skutek:** przy osobno autoryzowanym podłączeniu F-04 zatwierdzona wartość macierzy zastępuje wyłącznie pokrywający się stary efekt, także gdy komórka ma zero; inne efekty pozostają. Odrębne zatwierdzone rabaty G11 podlegają wyłącznie decyzjom 3B/5A. Ta reguła precedence nie rozszerza source approval poza 360 wartości i nie zatwierdza automatycznie innych mechanik (w tym religii/wealth), adapterów ani zachowania gry. Szczegółowy zapis: [`docs/decyzje/R-PR141-CODEX-F04-PRECEDENCE-DECISION-20261018.md`](../docs/decyzje/R-PR141-CODEX-F04-PRECEDENCE-DECISION-20261018.md).
+
+### Doprecyzowanie bieżącego statusu ECHO SEMANTICS-DECISIONS (2026-10-18)
+
+Historyczne zdanie „Istniejący F-04 hold pozostaje bez zmian” w powyższym ECHO nie opisuje już bieżącego statusu źródła. **Consumer/acceptance holds pozostają; source-approval hold usunięto 2026-10-18.** Literalne Q/A i historyczny zapis powyżej pozostają zachowane.
+
+## ECHO 2026-10-18 — `R-PR141-CODEX-ECONOMY-SCOPE-DECISIONS-20261018-Q1` — zakres `eko_pieniadz_port_proc`
+
+**Pytanie właścicielskie:**
+> F-04 / pieniądz z portu: do czego ma stosować się eko_pieniadz_port_proc? W istniejącym kodzie przychód budynku portu da się wydzielić, natomiast przychody morskich szlaków nie mają osobnej proweniencji.
+
+**Literalna odpowiedź właściciela, 2026-10-18:**
+> B — także do przychodów morskich szlaków; trzeba najpierw dodać ich rozróżnianie.
+
+**Skutek:** pole obejmuje przychód budynku portu i przychody morskich szlaków. Rozróżnienie/proweniencja szlaków jest wymaganym wcześniejszym krokiem; ten wpis nie twierdzi, że już istnieje ani nie zatwierdza implementacji.
+
+## ECHO 2026-10-18 — `R-PR141-CODEX-ECONOMY-SCOPE-DECISIONS-20261018-Q2` — zakres `eko_zadowolenie_proc`
+
+**Pytanie właścicielskie:**
+> F-04 / zadowolenie: do czego ma stosować się eko_zadowolenie_proc? Wartości źródłowe obecnie wynoszą zero.
+
+**Literalna odpowiedź właściciela, 2026-10-18:**
+> B — do końcowego zadowolenia miasta, łącznie z Porządkiem i pozostałymi składnikami.
+
+**Skutek:** pole dotyczy końcowego zadowolenia miasta, w tym Porządku i pozostałych składników; nie jest ograniczone do wkładu budynków. Podane zerowe wartości źródłowe nie ulegają zmianie. Szczegółowy zapis obu decyzji: [`docs/decyzje/R-PR141-CODEX-ECONOMY-SCOPE-DECISIONS-20261018.md`](../docs/decyzje/R-PR141-CODEX-ECONOMY-SCOPE-DECISIONS-20261018.md).
+
+## ECHO 2026-10-18 — `R-PR141-CODEX-F04-WEALTH-RELIGION-DECISIONS-20261018-Q1` — `wealth_mnoznik_proc`
+
+**Pytanie właścicielskie:**
+> wealth_mnoznik_proc — co skalujemy? Przy Wealth 5 i premii +20% wariant A daje mnożnik 1,72 zamiast 1,60, a B daje 1,92. Zachowujemy istniejące minimum ×1.
+
+**Literalna odpowiedź właściciela, 2026-10-18:**
+> A — przyrost mnożnika na poziom Wealth; poziom 1 pozostaje ×1.
+
+**Skutek:** wybrany jest przyrost mnożnika na poziom Wealth, z poziomem 1 bazowo ×1 i zachowanym istniejącym minimum ×1. Nie ustanawia to innych parametrów, capu ani dodatkowej formuły.
+
+## ECHO 2026-10-18 — `R-PR141-CODEX-F04-WEALTH-RELIGION-DECISIONS-20261018-Q2` — `religia_spread_proc`
+
+**Pytanie właścicielskie:**
+> religia_spread_proc — który istniejący mechanizm obejmuje? Mnożnik działa na bazowe tempo, a oddzielne dodatki świątyni/kamiennego kręgu pozostają osobne; siła nacisku na pojedynczy cel pozostaje bez zmian.
+
+**Literalna odpowiedź właściciela, 2026-10-18:**
+> A — tylko bazową liczbę sąsiednich miast obejmowanych szerzeniem na turę (z obecnym zaokrągleniem do slotów).
+
+**Skutek:** skaluje wyłącznie bazową liczbę sąsiednich miast obejmowanych szerzeniem na turę, z obecnym zaokrągleniem do slotów; dodatki świątyni/kamiennego kręgu oraz siła nacisku na pojedynczy cel pozostają osobne. Szczegółowy zapis: [`docs/decyzje/R-PR141-CODEX-F04-WEALTH-RELIGION-DECISIONS-20261018.md`](../docs/decyzje/R-PR141-CODEX-F04-WEALTH-RELIGION-DECISIONS-20261018.md).
+
+## ECHO 2026-10-18 — `R-PR141-CODEX-F04-PRODUCTION-REMAINING-DECISIONS-20261018-Q1` — `prod_szybkosc_jednostki_proc`
+
+**Pytanie właścicielskie:**
+> prod_szybkosc_jednostki_proc: jak realizować ułamkowe tempo? Przy +20%, bazie 1 jednostki/turę i stale opłaconej kolejce: A daje 5 jednostek przez 5 tur, B daje 6. W B przenosimy tylko ułamek poniżej 1; pusta kolejka zeruje go, a zablokowany spawn nie bankuje całych jednostek.
+
+**Literalna odpowiedź właściciela, 2026-10-18:**
+> A — zaokrąglamy limit każdej tury w dół, bez przenoszenia.
+
+**Skutek:** wybór A oznacza zaokrąglenie w dół limitu każdej tury i brak przenoszenia ułamka. To zapis semantyki, nie implementacja. Szczegółowy zapis: [`docs/decyzje/R-PR141-CODEX-F04-PRODUCTION-REMAINING-DECISIONS-20261018.md`](../docs/decyzje/R-PR141-CODEX-F04-PRODUCTION-REMAINING-DECISIONS-20261018.md).
+
+## ECHO 2026-10-18 — `R-PR141-CODEX-F04-PRODUCTION-REMAINING-DECISIONS-20261018-Q2` — `prod_rush_koszt_proc`
+
+**Pytanie właścicielskie:**
+> prod_rush_koszt_proc: czy dodatnia wartość podnosi cenę przyspieszenia, czy daje rabat? Stosujemy ją do obecnej zaokrąglonej wyceny. Przy koszcie 101 i postępie 40,2 baza wynosi 61; +20% oznacza odpowiednio cenę 74 albo 49.
+
+**Literalna odpowiedź właściciela, 2026-10-18:**
+> musisz mi wyjasnic kontekst i lepiej opisac problem
+
+**Skutek:** odpowiedź prosi o dodatkowe wyjaśnienie i nie wybiera polaryzacji. `prod_rush_koszt_proc` pozostaje pending; nie uznaje się ceny 74 ani 49 za zatwierdzoną. Potrzebne jest wyjaśnienie obecnej ścieżki, znaczenia dodatniej wartości w formule/klasyfikacji, przykładu bazowej wyceny 61 i skutków obu wariantów dla gracza/AI przed ponownym pytaniem. Szczegółowy zapis: [`docs/decyzje/R-PR141-CODEX-F04-PRODUCTION-REMAINING-DECISIONS-20261018.md`](../docs/decyzje/R-PR141-CODEX-F04-PRODUCTION-REMAINING-DECISIONS-20261018.md).

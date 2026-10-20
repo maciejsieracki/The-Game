@@ -19,7 +19,7 @@ import type { RuntimeUnit } from '../units/setup';
 import { keyOf, isWaterTerrain, embarkMoveCost, terrainMoveCost } from '../units/setup';
 import { TerenBazowy } from '../types/hex';
 import type { CivBonusEntry } from './civ-bonuses';
-import { civMovementMultiplier } from './civ-bonuses';
+import { civEmbarkationMovementMultiplier } from './civ-bonuses';
 
 /** Slug technologii wymaganej do embarkacji (tech.json „Technologia"). */
 export const EMBARK_TECH = 'Żegluga';
@@ -57,7 +57,7 @@ export function moveCostFnFor(
     const base = embarkMoveCost(hex);
     if (hex.terenBazowy !== TerenBazowy.PlytkieMorze) return base;
     const unitShape = { typNazwa: String(unit.typeId ?? unit.category), rola: String(unit.category) };
-    const mult = civMovementMultiplier(civBonusy, unitShape, '', true);
+    const mult = civEmbarkationMovementMultiplier(civBonusy, unitShape);
     return base / Math.max(1, mult);
   };
 }

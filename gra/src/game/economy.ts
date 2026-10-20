@@ -42,7 +42,7 @@ import terrainYieldsData from '../../data/terrain-yields.json';
 import type { TerrainModifierDef, TerrainTypeDef } from '../data/loader';
 import { buildingEffectAtLevel, cityPracaInteger, splitPraca, buildingLevelForEpoch } from './production';
 import { applyImprovementBonuses, oreYieldFromImprovements } from './terrain-improvements';
-import { civMatrixParam, loadCivMatrix } from './civ-matrix';
+import { applyCivMatrixParam, civMatrixParam, loadCivMatrix } from './civ-matrix';
 
 // ---------------------------------------------------------------------------
 // Building record shape (mirrors buildings.json)
@@ -704,6 +704,8 @@ export interface CityYieldContext {
    * posiadania trasy z budynkiem, nie dochod dystansowy).
    */
   dochodTrasHandlowych?: number;
+  /** Connected sea-route share of `dochodTrasHandlowych`, including the existing sea-route bonus. */
+  dochodTrasMorskich?: number;
   /**
    * Zadanie 2 (2026-07-23): liczba Garncarni ZBUDOWANYCH W TYM MIESCIE (nie civ-wide).
    * Kazda dodaje +budynekGarncarniaBonusZywnosci (domyslnie 10%) do lokalnej Zywnosci
@@ -731,60 +733,19 @@ export interface CivMnoznikRow {
   mnoznikHandelPieniadz?: number;
 }
 
-/**
- * Per-nacja mnoznik Handel->Pieniadz (decyzja 5A: baza 2, widelki 1.7-2.4).
- * Matches civ by ikonaId, typCywilizacji, or display name (case-insensitive).
- */
+/** Compatibility API: matrix value, or the supplied generic system fallback. */
 export function mnoznikHandelPieniadzForCiv(
   civKey: string | null | undefined,
-  civs: { cywilizacje?: CivMnoznikRow[] } | null | undefined,
-  fallback = 2,
+  _civs: { cywilizacje?: CivMnoznikRow[] } | null | undefined,
+  fallback = 1,
 ): number {
-  if (!civKey || !civs?.cywilizacje?.length) return fallback;
-  const key = civKey.toLowerCase();
-  for (const row of civs.cywilizacje) {
-    if (!row) continue;
-    const ids = [row.ikonaId, row.typCywilizacji, row.Cywilizacja]
-      .filter((s): s is string => typeof s === 'string' && s.length > 0)
-      .map(s => s.toLowerCase());
-    if (!ids.includes(key)) continue;
-    const v = row.mnoznikHandelPieniadz;
-    if (typeof v === 'number' && Number.isFinite(v) && v > 0) return v;
-    return fallback;
-  }
-  return fallback;
+  const matrixValue = civMatrixMnoznikHandelPieniadzRaw(civKey);
+  return matrixValue === undefined ? fallback : matrixValue;
 }
 
 /**
- * Raw civs.json mnoznikHandelPieniadz lookup that DISTINGUISHES "civ not found /
- * field missing" (returns undefined) from "civ found with a valid value" -- used
- * by mnoznikHandelPieniadzForCivByDifficulty() below to decide whether the
- * difficulty delta should apply (only to a REAL per-civ value, never to the
- * already-difficulty-scaled fallback).
- */
-function mnoznikHandelPieniadzRawForCiv(
-  civKey: string | null | undefined,
-  civs: { cywilizacje?: CivMnoznikRow[] } | null | undefined,
-): number | undefined {
-  if (!civKey || !civs?.cywilizacje?.length) return undefined;
-  const key = civKey.toLowerCase();
-  for (const row of civs.cywilizacje) {
-    if (!row) continue;
-    const ids = [row.ikonaId, row.typCywilizacji, row.Cywilizacja]
-      .filter((s): s is string => typeof s === 'string' && s.length > 0)
-      .map(s => s.toLowerCase());
-    if (!ids.includes(key)) continue;
-    const v = row.mnoznikHandelPieniadz;
-    return (typeof v === 'number' && Number.isFinite(v) && v > 0) ? v : undefined;
-  }
-  return undefined;
-}
-
-/**
- * Canonical matrix source for the five meta fields. The legacy civs.json field
- * remains a compatibility fallback for synthetic/older callers, but every
- * current roster id is resolved from civ-matrix.json first. This keeps the
- * gameplay consumer tied to the matrix without inventing a Greece fallback.
+ * Canonical matrix source for a known civilization. Raw zero is a matrix value
+ * and must not reactivate the retired civs.json multiplier.
  */
 function civMatrixMnoznikHandelPieniadzRaw(civKey: string | null | undefined): number | undefined {
   if (!civKey) return undefined;
@@ -796,7 +757,7 @@ function civMatrixMnoznikHandelPieniadzRaw(civKey: string | null | undefined): n
   ].some((id) => id.toLowerCase() === key));
   if (!known) return undefined;
   const value = civMatrixParam(civKey, 'meta_mnoznik_waluta');
-  return Number.isFinite(value) && value > 0 ? value : undefined;
+  return Number.isFinite(value) ? value : undefined;
 }
 
 /**
@@ -814,28 +775,21 @@ const MNOZNIK_HANDEL_TRUDNOSC_DELTA: Record<Difficulty, number> = {
 };
 
 /**
- * Per-nacja mnoznik Handel->Pieniadz SKALOWANY TRUDNOSCIA (Maciej 2026-07-25,
- * pytanie 69). civs.json niesie wartosc dla poziomu normal (1.7-2.6); tutaj
- * doliczamy +0.5 (easy) / -0.5 (hard). Zastepuje dawna regule "2/1.5/1 dla
- * wszystkich cywilizacji" -- ta zostaje TYLKO jako `fallbackScaled` (przekaz
- * przez wolajacego z params.mennicaMnoznikPoWalucie, ktory JUZ niesie
- * poprawna skale per trudnosc w econ-params.json), dla cywilizacji BEZ wpisu
- * w civs.json ("cywilizacja bez wpisu dostaje wartosc zapasowa, tez
- * skalowana trudnoscia" -- spelnione, bo fallbackScaled juz jest per-trudnosc).
+ * Matrix multiplier with the established difficulty delta. The civs.json
+ * numerical field is never read. `fallbackScaled` is the generic difficulty
+ * baseline for owners without a resolving matrix key.
  *
- * WAZNE: `fallbackScaled` NIE dostaje drugiej warstwy delty tutaj -- gdyby
- * dolozyc +0.5/-0.5 na juz-przeskalowanej wartosci (np. easy=2.0), wyszloby
- * podwojne skalowanie (2.5 zamiast 2.0). Delta dziala WYLACZNIE na surowej
- * wartosci civs.json (poziom normal).
+ * `fallbackScaled` already includes generic difficulty behavior and is not
+ * adjusted a second time. Known matrix raw zero remains authoritative and
+ * receives the existing difficulty delta like any other matrix value.
  */
 export function mnoznikHandelPieniadzForCivByDifficulty(
   civKey: string | null | undefined,
-  civs: { cywilizacje?: CivMnoznikRow[] } | null | undefined,
+  _civs: { cywilizacje?: CivMnoznikRow[] } | null | undefined,
   difficulty: Difficulty,
   fallbackScaled: number,
 ): number {
-  const raw = civMatrixMnoznikHandelPieniadzRaw(civKey)
-    ?? mnoznikHandelPieniadzRawForCiv(civKey, civs);
+  const raw = civMatrixMnoznikHandelPieniadzRaw(civKey);
   if (raw === undefined) return fallbackScaled;
   return raw + (MNOZNIK_HANDEL_TRUDNOSC_DELTA[difficulty] ?? 0);
 }
@@ -857,25 +811,11 @@ export function civBonusyForCivKey(
   return [];
 }
 
-/**
- * Mnozniki yield z bonusow realizuje=ekonomia (RDY-01: Grecy handel, Inkowie nauka).
- */
+/** Legacy civs.json yield bonuses are no longer numerical consumer inputs. */
 export function civEconomyYieldMultipliers(
-  bonusy: readonly CivEconomyBonus[] | undefined,
+  _bonusy: readonly CivEconomyBonus[] | undefined,
 ): { handel: number; nauka: number } {
-  let handel = 1;
-  let nauka = 1;
-  if (!bonusy?.length) return { handel, nauka };
-  for (const b of bonusy) {
-    if (b.realizuje !== 'ekonomia') continue;
-    if (b.typ === 'bonus_zloto' && b.cel === 'handel' && typeof b.wartosc === 'number') {
-      handel += b.wartosc;
-    }
-    if (b.typ === 'bonus_nauka' && typeof b.wartosc === 'number') {
-      nauka += b.wartosc;
-    }
-  }
-  return { handel, nauka };
+  return { handel: 1, nauka: 1 };
 }
 
 /**
@@ -971,14 +911,25 @@ export function cityYieldPerTurn(
   let naukaBudynkow    = 0;
   let kulturaBudynkow  = 0;
   let zadBudynkow      = 0;
+  let pieniadzPortu    = 0;
 
   for (const { record, level } of cityBuildings) {
     pracaBudynkow    += buildingValue(record, level, 'praca');
-    pieniadzBudynkow += buildingValue(record, level, 'pieniadz');
+    const buildingMoney = buildingValue(record, level, 'pieniadz');
+    pieniadzBudynkow += buildingMoney;
+    if (record.id === 'port') pieniadzPortu += buildingMoney;
     zywnoscBudynkow  += buildingValue(record, level, 'zywnosc');
     naukaBudynkow    += buildingValue(record, level, 'nauka');
     kulturaBudynkow  += buildingValue(record, level, 'kultura');
     zadBudynkow      += buildingHappinessAtLevel(record, level);
+  }
+
+  // Port income is a separately named source: its own building cash and connected
+  // maritime routes receive this coefficient once, before the general gross-trade
+  // and cash-share stages. Land-route income remains untouched here.
+  const portRaw = city.civKey ? civMatrixParam(city.civKey, 'eko_pieniadz_port_proc') : 0;
+  if (city.civKey && portRaw !== 0) {
+    pieniadzBudynkow += pieniadzPortu * portRaw;
   }
 
   // Dawne "mnoznik% -> Praca" USUNIETE 2026-07-25 — patrz komentarz funkcji powyzej.
@@ -987,7 +938,12 @@ export function cityYieldPerTurn(
   // D1 (Maciej 2026-07-25): "Korupcja ma dotykać tylko i wyłącznie daniny, a potem
   // podatku, nie pracy." -- Praca NIGDY nie jest mnozona przez strate korupcji
   // (patrz Step 5 nizej, ktory strata dotyka tylko Handel/Danine).
-  const pracaNetto = pracaBruttoLacznie;
+  // F-04 approved owner work coefficient (mul_proc). A source zero is neutral;
+  // the matrix owns this effect, while unrelated building/terrain/Order effects
+  // remain in their existing stages. Missing owner identity stays neutral.
+  const pracaNetto = city.civKey
+    ? applyCivMatrixParam(pracaBruttoLacznie, city.civKey, 'eko_praca_proc')
+    : pracaBruttoLacznie;
 
   // D5 (Maciej 2026-07-25, PYTANIE 76=B, POPRAWKA tego samego dnia -- cytat wlasciciela:
   // "Pieniądz z konwersji pracy wchodzi do daniny, później do podatku i jest potem
@@ -1018,7 +974,10 @@ export function cityYieldPerTurn(
   } else {
     handelBrutto = handelBazowy;
   }
-  const civHandelMult = ctx.civHandelMult ?? 1;
+  // For a known matrix owner, the matrix is authoritative (including raw zero)
+  // for this legacy-overlapping gross-trade effect. Unknown/missing owner keys
+  // retain the existing legacy multiplier behavior.
+  const civHandelMult = city.civKey ? 1 : (ctx.civHandelMult ?? 1);
   if (civHandelMult !== 1) {
     handelBrutto *= civHandelMult;
   }
@@ -1035,12 +994,23 @@ export function cityYieldPerTurn(
   // Waluta+Mennica (Step 5) i podzial suwakami Handlu (Step 6+7) razem z reszta Daniny.
   const dochodTrasHandlowych = ctx.dochodTrasHandlowych ?? 0;
   if (dochodTrasHandlowych > 0) {
-    handelBrutto += dochodTrasHandlowych;
+    const seaIncome = Math.min(dochodTrasHandlowych, Math.max(0, ctx.dochodTrasMorskich ?? 0));
+    const landAndOtherIncome = dochodTrasHandlowych - seaIncome;
+    handelBrutto += landAndOtherIncome + (city.civKey
+      ? applyCivMatrixParam(seaIncome, city.civKey, 'eko_pieniadz_port_proc')
+      : seaIncome);
   }
+
+  // F-04: replace the same-effect legacy multiplier above and apply the approved
+  // general gross-trade coefficient once to the complete named gross stage.
+  if (city.civKey) handelBrutto = applyCivMatrixParam(handelBrutto, city.civKey, 'eko_handel_brutto_proc');
 
   // --- Step 5 (renumbered from 6): Apply corruption/waste -- dotyczy WYLACZNIE
   // handelBrutto (ktory juz zawiera pieniadzZPracy, D5 powyzej), NIGDY Pracy (D1). ---
-  const strata = Math.min(ctx.strataFraction, params.korupcjaCap);
+  const strataRaw = city.civKey
+    ? applyCivMatrixParam(ctx.strataFraction, city.civKey, 'eko_korupcja_proc')
+    : ctx.strataFraction;
+  const strata = Math.min(strataRaw, params.korupcjaCap);
   const handelNettoRaw    = handelBrutto       * (1 - strata);
   // Efekt 1 SCALONY (Waluta + Mennica, decyzja Maciej 2026-07-25): caly handelNetto
   // jest mnozony x mennicaMnoznikPoWalucie (easy x2,0 / normal x1,5 / hard x1,0) TYLKO
@@ -1065,7 +1035,10 @@ export function cityYieldPerTurn(
   const naukaZHandlu    = Math.floor(handelNetto * pctNauka);
   const pieniadzZHandlu = Math.floor(handelNetto * pctPieniadz);
   // Luksus stream (Spec ss.2.1/2.2): feeds Zadowolenie downstream (society lane).
-  const luksusZHandlu   = Math.floor(handelNetto * pctLuksus);
+  const luksusZHandluRaw = Math.floor(handelNetto * pctLuksus);
+  const luksusZHandlu = city.civKey
+    ? Math.floor(applyCivMatrixParam(luksusZHandluRaw, city.civKey, 'eko_luksus_proc'))
+    : luksusZHandluRaw;
 
   // Biblioteka: +Nauka% applied to the city's local science (master par.2a).
   // Akademia (ZADANIE 2, 2026-07-25, decyzja 4): +Nauka% osobny, stackuje ADDYTYWNIE
@@ -1076,10 +1049,11 @@ export function cityYieldPerTurn(
     + (ctx.maBiblioteka ? params.budynekBibliotekaBonusNauki : 0)
     + (ctx.maAkademia   ? params.budynekAkademiaBonusNauki   : 0);
   const naukaLokalnaRaw  = Math.floor((naukaZHandlu + naukaBudynkow) * naukaBonusFactor);
-  const civNaukaMult     = ctx.civNaukaMult ?? 1;
-  const naukaLokalna     = civNaukaMult !== 1
-    ? Math.floor(naukaLokalnaRaw * civNaukaMult)
-    : naukaLokalnaRaw;
+  const naukaLokalna = city.civKey
+    ? Math.floor(applyCivMatrixParam(naukaLokalnaRaw, city.civKey, 'eko_nauka_proc'))
+    : (ctx.civNaukaMult !== undefined && ctx.civNaukaMult !== 1
+      ? Math.floor(naukaLokalnaRaw * ctx.civNaukaMult)
+      : naukaLokalnaRaw);
 
   // --- Step 8: Total Pieniadz = from trade (handelNetto juz zawiera pieniadzZPracy
   // ORAZ pieniadzBudynkow, wtopione w Step 3, D5/67B powyzej -- przeszly przez
@@ -1087,7 +1061,9 @@ export function cityYieldPerTurn(
   // Mennica -- i podzial suwakiem) + specialist Poborca. Decyzja 67B: pieniadzBudynkow
   // NIE jest juz doliczany tu osobno -- inaczej liczylby sie PODWOJNIE (raz w
   // pieniadzZHandlu przez handelBazowy, drugi raz tutaj).
-  let pieniadzTotal = pieniadzZHandlu;
+  let pieniadzTotal = city.civKey
+    ? applyCivMatrixParam(pieniadzZHandlu, city.civKey, 'eko_pieniadz_proc')
+    : pieniadzZHandlu;
   for (const spec of city.specjalisci) {
     if (spec === 'poborca') {
       pieniadzTotal += 2;
@@ -1102,7 +1078,10 @@ export function cityYieldPerTurn(
   const zywnoscBruttoBaza = zywnoscTerenu + zywnoscBudynkow;
   const liczbaGarncarni = ctx.liczbaGarncarni ?? 0;
   const garncarniaMnoznikZywnosci = 1 + params.budynekGarncarniaBonusZywnosci * liczbaGarncarni;
-  const zywnoscBrutto = zywnoscBruttoBaza * garncarniaMnoznikZywnosci;
+  const zywnoscBruttoRaw = zywnoscBruttoBaza * garncarniaMnoznikZywnosci;
+  const zywnoscBrutto = city.civKey
+    ? applyCivMatrixParam(zywnoscBruttoRaw, city.civKey, 'eko_zywnosc_proc')
+    : zywnoscBruttoRaw;
   const zywnoscZuzyta = city.ludnosc * params.zywnoscZuzytkaPopulacja
                        + ctx.wojskoZuzycieZywnosci;
   const zywnoscNetto  = zywnoscBrutto - zywnoscZuzyta;
@@ -1113,7 +1092,9 @@ export function cityYieldPerTurn(
     zywnosc:        Math.floor(zywnoscNetto),
     nauka:          naukaLokalna,
     luksus:         luksusZHandlu,
-    kultura:        Math.floor(kulturaBudynkow),
+    kultura:        Math.floor(city.civKey
+      ? applyCivMatrixParam(kulturaBudynkow, city.civKey, 'eko_kultura_proc')
+      : kulturaBudynkow),
     zadowolenie:    Math.floor(zadBudynkow),
     zywnoscBrutto:  Math.floor(zywnoscBrutto),
     handelBrutto:   Math.floor(handelBrutto),

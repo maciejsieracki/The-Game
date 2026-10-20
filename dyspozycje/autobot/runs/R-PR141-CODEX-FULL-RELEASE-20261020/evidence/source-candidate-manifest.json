@@ -1,0 +1,734 @@
+{
+  "run": "R-PR141-CODEX-FULL-RELEASE-20261020",
+  "round": "1/5",
+  "baseCommit": "c799325c77bc11c24684c1b35077ae80913d6f8d",
+  "candidateScope": "all 52 tracked modifications + 41 new gra/tools scripts + 8 new owner decisions, over base containing previously pushed three-file UI/diplomacy/rivers topic",
+  "fileCount": 101,
+  "files": [
+    {
+      "path": "docs/decyzje/D-cyw-REJESTR-PARAMETROW-GLOBAL.md",
+      "sha256": "178266e90441435a7b644c4f4991e645f00b0e5604de3255b171933f50274c1a",
+      "bytes": 17408,
+      "origin": "modified tracked working file"
+    },
+    {
+      "path": "docs/decyzje/D-cyw-macierz-14-pozostale.md",
+      "sha256": "3bae802959b32c5f50c1c8ac102349e88904a3c4479b1a1aac9be3182d8172ec",
+      "bytes": 5154,
+      "origin": "modified tracked working file"
+    },
+    {
+      "path": "docs/decyzje/R-PR141-CODEX-ECONOMY-SCOPE-DECISIONS-20261018.md",
+      "sha256": "2bd647824f3a6f578fcfbfea68a7069522586def8c781673ee5da5d955d79ca8",
+      "bytes": 2250,
+      "origin": "new owner decision/test tool"
+    },
+    {
+      "path": "docs/decyzje/R-PR141-CODEX-F04-PRECEDENCE-DECISION-20261018.md",
+      "sha256": "632c4ed9ef63ad5461a71547e3b89cdd539571546db6a899a6534d7ad7300aed",
+      "bytes": 2558,
+      "origin": "new owner decision/test tool"
+    },
+    {
+      "path": "docs/decyzje/R-PR141-CODEX-F04-PRODUCTION-REMAINING-DECISIONS-20261018.md",
+      "sha256": "b9d840af98fb07993e54edcb08753b32c284e441a050019720561ca048eac969",
+      "bytes": 2227,
+      "origin": "new owner decision/test tool"
+    },
+    {
+      "path": "docs/decyzje/R-PR141-CODEX-F04-RUSH-DECISION-20261018.md",
+      "sha256": "d5ac8bb2150ce8be1e99ac157e7ce0969792f69ab4c788ced0e0d6736c2ac231",
+      "bytes": 1706,
+      "origin": "new owner decision/test tool"
+    },
+    {
+      "path": "docs/decyzje/R-PR141-CODEX-F04-SOURCE-APPROVAL-20261018.md",
+      "sha256": "1392699e7cef7c5e2741d41bff91d03f54057f0a3d783f216bca77cfd72041e0",
+      "bytes": 4277,
+      "origin": "new owner decision/test tool"
+    },
+    {
+      "path": "docs/decyzje/R-PR141-CODEX-F04-WEALTH-RELIGION-DECISIONS-20261018.md",
+      "sha256": "7dfc3f6f4a1bb624dfb18fe108c787c8822ef5aa3c442d01729d036bc616a4a6",
+      "bytes": 2147,
+      "origin": "new owner decision/test tool"
+    },
+    {
+      "path": "docs/decyzje/R-PR141-CODEX-MATRIX-ONLY-BONUSES-20261018.md",
+      "sha256": "2a2c8183c15a9ab72a11171f322a766b273116919ae0df0d23266ece50d347ec",
+      "bytes": 3901,
+      "origin": "new owner decision/test tool"
+    },
+    {
+      "path": "docs/decyzje/R-PR141-CODEX-SEMANTICS-DECISIONS-20261018.md",
+      "sha256": "989a8a7c02bbbf54ef81115e2140037a574e6f79fd8ecf5578280038dcd460cf",
+      "bytes": 6334,
+      "origin": "new owner decision/test tool"
+    },
+    {
+      "path": "docs/encyklopedia/cywilizacje/celtowie.md",
+      "sha256": "0adebf78d5f2b03be48865a3bc190a1093271cab0b24b3f21e91449f253fa819",
+      "bytes": 1748,
+      "origin": "modified tracked working file"
+    },
+    {
+      "path": "docs/encyklopedia/cywilizacje/chinczycy.md",
+      "sha256": "bfa52a01bfe84edcce4e4d24f3cc2c536a10717fb1fb4e08db96a46631dc5763",
+      "bytes": 1663,
+      "origin": "modified tracked working file"
+    },
+    {
+      "path": "docs/encyklopedia/cywilizacje/egipt.md",
+      "sha256": "f1832d7f42b8019fda836feca45bc53d07c4a18dc06793a3e212a3fe8a742381",
+      "bytes": 1789,
+      "origin": "modified tracked working file"
+    },
+    {
+      "path": "docs/encyklopedia/cywilizacje/germanie.md",
+      "sha256": "92c2c37f675877439681005eece7aa2d0323193b59f5a6490b7f73835e7ce628",
+      "bytes": 1680,
+      "origin": "modified tracked working file"
+    },
+    {
+      "path": "docs/encyklopedia/cywilizacje/grecy.md",
+      "sha256": "91e0ddbb1ad0ec156b174dd15a58fcabcb4b5459f4c28031d450ada4208472b1",
+      "bytes": 1657,
+      "origin": "modified tracked working file"
+    },
+    {
+      "path": "docs/encyklopedia/cywilizacje/inkowie.md",
+      "sha256": "1d790962d6113e8610b5885e483246de3dd42ec0ba4271638e87f1cf9c303c9f",
+      "bytes": 1833,
+      "origin": "modified tracked working file"
+    },
+    {
+      "path": "docs/encyklopedia/cywilizacje/rzymianie.md",
+      "sha256": "107365c9a753f30f98f3f0a7773073e94f738595f0670270e9de49b7855ae898",
+      "bytes": 1651,
+      "origin": "modified tracked working file"
+    },
+    {
+      "path": "docs/encyklopedia/cywilizacje/sumer.md",
+      "sha256": "394f294bd979e9036cb595758d038aea444b26c2bbf2dfbfdfc2582d737ce658",
+      "bytes": 1869,
+      "origin": "modified tracked working file"
+    },
+    {
+      "path": "docs/encyklopedia/cywilizacje/zulusi.md",
+      "sha256": "5103011d98befe20f0ad4e59ae2faacbdf286d68ce2d1d1277f1c601fef2369b",
+      "bytes": 1680,
+      "origin": "modified tracked working file"
+    },
+    {
+      "path": "dyspozycje/PYTANIA-OTWARTE.md",
+      "sha256": "2b5dbda96d57a99707e606c04deb786c4dc2f8aed5e88c1c306e7edca7b1b482",
+      "bytes": 2525618,
+      "origin": "modified tracked working file"
+    },
+    {
+      "path": "gra/data/civs.json",
+      "sha256": "eea384b7d62301e7c3b2b54ce76198a321df9517cb0560b050d14b0ea23f30e3",
+      "bytes": 48208,
+      "origin": "modified tracked working file"
+    },
+    {
+      "path": "gra/src/data/loader.ts",
+      "sha256": "54f6ef6df4458b4de3804342d074e3cba2d0174e51147f2deab6b828759632e0",
+      "bytes": 17758,
+      "origin": "modified tracked working file"
+    },
+    {
+      "path": "gra/src/data/wikiBundle.json",
+      "sha256": "3ed2ca1ffb4eec7402fd9dd6477aa62370e5b365818a281467fce74debe47964",
+      "bytes": 1202120,
+      "origin": "modified tracked working file"
+    },
+    {
+      "path": "gra/src/game/ai.ts",
+      "sha256": "90cbcfe8377c97aba44002181e8082ddd46c7e36feae65eb1f8e60b4e88431a9",
+      "bytes": 286425,
+      "origin": "modified tracked working file"
+    },
+    {
+      "path": "gra/src/game/civ-ai-data.ts",
+      "sha256": "5a6cb6ec8ac24cc5b419b03e7daac420aa50c5fb47707a6389fd7d272101e9c1",
+      "bytes": 7623,
+      "origin": "modified tracked working file"
+    },
+    {
+      "path": "gra/src/game/civ-bonuses.ts",
+      "sha256": "b48b0b45f3094561b76e0a2061912a666cfd600371f594b9ebb7a17f3fe7aa44",
+      "bytes": 16429,
+      "origin": "modified tracked working file"
+    },
+    {
+      "path": "gra/src/game/civ-matrix-semantic.ts",
+      "sha256": "a1a5bacb3b4427d20e027ac2f7bd7e6e28c2bd1639e337e5b462804136ba19c1",
+      "bytes": 47712,
+      "origin": "modified tracked working file"
+    },
+    {
+      "path": "gra/src/game/cluster-start.ts",
+      "sha256": "0fe28a1f81000e53cabb5c806ae8cd74e98105cf7a473aa95d749409d53180ce",
+      "bytes": 21440,
+      "origin": "modified tracked working file"
+    },
+    {
+      "path": "gra/src/game/combat.ts",
+      "sha256": "7b8be3cb40ee7b2386d342fb4225b150a568323e5b11d712bb74c695c86bde09",
+      "bytes": 55562,
+      "origin": "modified tracked working file"
+    },
+    {
+      "path": "gra/src/game/culture-religion.ts",
+      "sha256": "06032e5ca0d67623b01a6f77c64f326aa97d3aa09f5a413b510fee1a4b39b909",
+      "bytes": 61446,
+      "origin": "modified tracked working file"
+    },
+    {
+      "path": "gra/src/game/diplomacy-layers.ts",
+      "sha256": "b32e4f9381c51a32e06ac21ecb0f9c5e84be5a2057534d7972d1df283d472afe",
+      "bytes": 15747,
+      "origin": "modified tracked working file"
+    },
+    {
+      "path": "gra/src/game/economy.ts",
+      "sha256": "61c4d080fb2fed64012c9615de6e19643d93de2bbffd9cb9ad24b7bf3c27d3cf",
+      "bytes": 58835,
+      "origin": "modified tracked working file"
+    },
+    {
+      "path": "gra/src/game/embarkation.ts",
+      "sha256": "f323b889a075fc88d40ece8fefc43f6af8f7d372206309b4fa662af6b07c61d0",
+      "bytes": 5280,
+      "origin": "modified tracked working file"
+    },
+    {
+      "path": "gra/src/game/manpower.ts",
+      "sha256": "bbcafbe0400e756223e79d9d5651dc6db15b05bd93a45225d212fab69fd1e38c",
+      "bytes": 30738,
+      "origin": "modified tracked working file"
+    },
+    {
+      "path": "gra/src/game/order.ts",
+      "sha256": "7a0c8cc48e54e1155298708cff43b17347a91ba9cad9cdbb5bfd5f9ec39a793f",
+      "bytes": 25096,
+      "origin": "modified tracked working file"
+    },
+    {
+      "path": "gra/src/game/playerState.ts",
+      "sha256": "e7cb8b3f5b5a087ab47a0f1f83d70ded055c215455bc1f1feecdc3779245c8b6",
+      "bytes": 27067,
+      "origin": "modified tracked working file"
+    },
+    {
+      "path": "gra/src/game/population-growth-v85.ts",
+      "sha256": "bbf2e23d315ac7e34a3285b798a6576473c126218d6cf44f55b5012f19ad9174",
+      "bytes": 25556,
+      "origin": "modified tracked working file"
+    },
+    {
+      "path": "gra/src/game/production.ts",
+      "sha256": "335c13b8caff5aa3805644a44e1e06fc4f601e18d878a5fe5320d5fe789dec07",
+      "bytes": 111747,
+      "origin": "modified tracked working file"
+    },
+    {
+      "path": "gra/src/game/society-breakdown.ts",
+      "sha256": "472c8e3235a2939b5631c447565fcee4d9287934b0875bfa3373b08d3f263b78",
+      "bytes": 49304,
+      "origin": "modified tracked working file"
+    },
+    {
+      "path": "gra/src/game/trade-routes.ts",
+      "sha256": "9c7b31746e1391e29b1a357effd318c97663dfccde219b64e2d9fbeff43eb352",
+      "bytes": 108576,
+      "origin": "modified tracked working file"
+    },
+    {
+      "path": "gra/src/game/turn-economy.ts",
+      "sha256": "9bbd11d9e2947c024fda32451a2a2eff54bd9d448ac9d56837d0bad90c00b5f4",
+      "bytes": 131423,
+      "origin": "modified tracked working file"
+    },
+    {
+      "path": "gra/src/game/wealth.ts",
+      "sha256": "ebdd973466fd8762117a389a02611b4bd17e84e8ee7d33a9f194669dfa9b8b9f",
+      "bytes": 11344,
+      "origin": "modified tracked working file"
+    },
+    {
+      "path": "gra/src/main.ts",
+      "sha256": "835fed2551d70de7021f6e3713e00ec9b425588d28179cfd0d8c96c94fb99022",
+      "bytes": 2044841,
+      "origin": "modified tracked working file"
+    },
+    {
+      "path": "gra/src/map/gen-helpers.ts",
+      "sha256": "72b5187163b44d9b6de0995caf904ba0862ef483f5691b48fd79e20c45b33080",
+      "bytes": 461428,
+      "origin": "modified tracked working file"
+    },
+    {
+      "path": "gra/src/ui/cityPanel.ts",
+      "sha256": "cb1898a902203d4ec84389c5aac3f9828ca512f39186f43f2e126b5f8423ded6",
+      "bytes": 591604,
+      "origin": "modified tracked working file"
+    },
+    {
+      "path": "gra/src/ui/diplomacyAudience.ts",
+      "sha256": "52eac2b814facfce8b756bd6a36c9a882d52db8bd0d40470ca1c1acf909616c6",
+      "bytes": 127495,
+      "origin": "modified tracked working file"
+    },
+    {
+      "path": "gra/src/ui/empireDetailPanel.ts",
+      "sha256": "36026755356955f9bd724a26368e71533b9b95a44812f5171412f7a07f1e9200",
+      "bytes": 271023,
+      "origin": "modified tracked working file"
+    },
+    {
+      "path": "gra/src/ui/entityCards/buildingAdapter.ts",
+      "sha256": "d6051da7288efbdd579d55794303ead094eb4642e296feff1ffa60e8f21ee964",
+      "bytes": 17532,
+      "origin": "modified tracked working file"
+    },
+    {
+      "path": "gra/src/ui/newGameFlow.ts",
+      "sha256": "8ac862fd422efef5ff109264669761098e7de3454ffe17cd01e446bddce1025a",
+      "bytes": 118727,
+      "origin": "modified tracked working file"
+    },
+    {
+      "path": "gra/src/ui/preBattle.ts",
+      "sha256": "06bdfea61084eea4de9f544c0a160f8b0c855db053ffcf21f7655db17d4149e3",
+      "bytes": 48813,
+      "origin": "modified tracked working file"
+    },
+    {
+      "path": "gra/tools/ai-jednostki-tylko-zakup-test.cjs",
+      "sha256": "9aeddf2f326edeea5336fbe4376d025f48917a40f59fbf0f7eacbf12714ce3ba",
+      "bytes": 24680,
+      "origin": "modified tracked working file"
+    },
+    {
+      "path": "gra/tools/bundle-wiki-for-game.cjs",
+      "sha256": "6e286b82f4165a4c71d521e3461868f1627e1c27f433c2ef7f20501d4c71f6f7",
+      "bytes": 6135,
+      "origin": "modified tracked working file"
+    },
+    {
+      "path": "gra/tools/civ-bonusy-test.cjs",
+      "sha256": "6924c938f6e072dfe8f058b3ec7636e507d306b2970e94712e6619a5275f7aeb",
+      "bytes": 17197,
+      "origin": "modified tracked working file"
+    },
+    {
+      "path": "gra/tools/civ-matrix-ai-diplomacy-wiring-test.cjs",
+      "sha256": "703d4e9c171ea6a6bac67473e1c88bef4c3d9b6c70428caf37ef9b28afcb4189",
+      "bytes": 11160,
+      "origin": "modified tracked working file"
+    },
+    {
+      "path": "gra/tools/civ-matrix-semantic-labels-test.cjs",
+      "sha256": "eecefa1ff0a93d284cd44b2efacc824a793998dcd6ab32ba2defa12ff547447d",
+      "bytes": 38706,
+      "origin": "modified tracked working file"
+    },
+    {
+      "path": "gra/tools/civpedia-gra-id-mostek-test.cjs",
+      "sha256": "0ab8196fa71da76c3aaf980882245a8c20c6f181a2a51117522b8a975ddf0255",
+      "bytes": 12101,
+      "origin": "modified tracked working file"
+    },
+    {
+      "path": "gra/tools/egypt-movement-precedence-test.cjs",
+      "sha256": "7aba5286e463876a5483fd0558f1feec9586a62da016a68680836e2af6f962ca",
+      "bytes": 3647,
+      "origin": "new owner decision/test tool"
+    },
+    {
+      "path": "gra/tools/impi-recruitment-discount-test.cjs",
+      "sha256": "3eb772ef6de1ea1b8f451756b3a66d51c6a5ccdde8de25700530721d2f8f9d86",
+      "bytes": 7308,
+      "origin": "new owner decision/test tool"
+    },
+    {
+      "path": "gra/tools/manpower-matrix-sensitivity-test.cjs",
+      "sha256": "5e606da4e6d180c6318fc7eec9d1e83d73ba656cbea0cd839b5b86472c68cc5f",
+      "bytes": 9097,
+      "origin": "new owner decision/test tool"
+    },
+    {
+      "path": "gra/tools/manpower-test.cjs",
+      "sha256": "9887de237b25110a7c802aadbbd7f80ea80b1f75080f17777535e8177bdd77f3",
+      "bytes": 17975,
+      "origin": "modified tracked working file"
+    },
+    {
+      "path": "gra/tools/mp-spawn-ration-test.cjs",
+      "sha256": "f405c37ef37650c3eb5f97fbf15a5536c56a1e7a1ede1c956bc0ff3fcbfaed39",
+      "bytes": 4701,
+      "origin": "modified tracked working file"
+    },
+    {
+      "path": "gra/tools/population-growth-v85-test.cjs",
+      "sha256": "6dd391ffea574ca89905e42b587419acecc08495f2d4c23c24bf036e64932f35",
+      "bytes": 10784,
+      "origin": "modified tracked working file"
+    },
+    {
+      "path": "gra/tools/pr141-ai-production-behavior-test.cjs",
+      "sha256": "c509b116d685fd88a956123ab8bdc2535f06b05c54c90ec7ad8d83794bc39e39",
+      "bytes": 9955,
+      "origin": "new owner decision/test tool"
+    },
+    {
+      "path": "gra/tools/pr141-ai-strategy-behavior-test.cjs",
+      "sha256": "c4f356f56525711638c699064321af079ae2a91c42cb3e6ce53378d2c4af7328",
+      "bytes": 11119,
+      "origin": "new owner decision/test tool"
+    },
+    {
+      "path": "gra/tools/pr141-combat-defense-behavior-test.cjs",
+      "sha256": "a72acd2765ff779676fb5dd643bed3c849a5456bf8c0adac5a78988da2a03954",
+      "bytes": 5574,
+      "origin": "new owner decision/test tool"
+    },
+    {
+      "path": "gra/tools/pr141-combat-defense-owner-route-test.cjs",
+      "sha256": "4e1bfc99eb71f176afc0ea8d62cbb83677c25593a1e6f8891cce7b7cc760a07e",
+      "bytes": 8391,
+      "origin": "new owner decision/test tool"
+    },
+    {
+      "path": "gra/tools/pr141-combat-offense-behavior-test.cjs",
+      "sha256": "276316780ff7e7787cd9a611b8c234ab6aeca02d7e5edba440c76efaf933eb91",
+      "bytes": 8808,
+      "origin": "new owner decision/test tool"
+    },
+    {
+      "path": "gra/tools/pr141-current-evidence-ledger-generate.cjs",
+      "sha256": "30fe9f0ce1b2c431081887d99cd25f5b936cca1f32ea5b163642ae72f37c1724",
+      "bytes": 16121,
+      "origin": "new owner decision/test tool"
+    },
+    {
+      "path": "gra/tools/pr141-current-evidence-ledger-test.cjs",
+      "sha256": "925d9610264d2b78a62fc3bd0940a45deb23302872d9baaac187a788c0aada8e",
+      "bytes": 10047,
+      "origin": "new owner decision/test tool"
+    },
+    {
+      "path": "gra/tools/pr141-current-evidence-ledger-v3-generate.cjs",
+      "sha256": "a13bb64148c08bea2343ac6da5d90716bff595b46ab6eed6b1ee46ee84eb54ca",
+      "bytes": 15129,
+      "origin": "new owner decision/test tool"
+    },
+    {
+      "path": "gra/tools/pr141-current-evidence-ledger-v3-test.cjs",
+      "sha256": "5c0e77290d329657ad7b01b7e880add2023f53525aa1f70880701c2ce79b2271",
+      "bytes": 17552,
+      "origin": "new owner decision/test tool"
+    },
+    {
+      "path": "gra/tools/pr141-current-evidence-ledger-v4-generate.cjs",
+      "sha256": "8785b760b2683233b8365799a99f87a5fb9aca602c338cfb4240ba3e5c2b54ee",
+      "bytes": 15116,
+      "origin": "new owner decision/test tool"
+    },
+    {
+      "path": "gra/tools/pr141-current-evidence-ledger-v4-test.cjs",
+      "sha256": "7efca0d291c3dc9063b7ca9e119b4861dbde478f2613bba609aa468b2b5ae4f3",
+      "bytes": 20538,
+      "origin": "new owner decision/test tool"
+    },
+    {
+      "path": "gra/tools/pr141-dip-activation-test.cjs",
+      "sha256": "11b8841b8b13c0f07f78a5d4b98aec73852f23d83bb30e1373037d71a0e8864d",
+      "bytes": 11383,
+      "origin": "new owner decision/test tool"
+    },
+    {
+      "path": "gra/tools/pr141-evidence-ledger-behavior-test.cjs",
+      "sha256": "d79c87d1bdc2f94b99d1145c77fe95e73339decf47dc654bacbd449b02071763",
+      "bytes": 25535,
+      "origin": "new owner decision/test tool"
+    },
+    {
+      "path": "gra/tools/pr141-f04-building-speed-activation-test.cjs",
+      "sha256": "ce527f97f4f3c6d79ce566b77f5de91e72b5aba295f005996a9df81a716706ba",
+      "bytes": 15378,
+      "origin": "new owner decision/test tool"
+    },
+    {
+      "path": "gra/tools/pr141-f04-cost-activation-defense-test.cjs",
+      "sha256": "57fa239e8bfb326f5fd8f32b4b1c3d9546fe87a6fa557579535fbfd8b18ee99e",
+      "bytes": 7668,
+      "origin": "new owner decision/test tool"
+    },
+    {
+      "path": "gra/tools/pr141-f04-cost-activation-test.cjs",
+      "sha256": "1c1874d8edb832ab8c0089961de5fe9366edfd6f85130d3fb47d04804b4c87f8",
+      "bytes": 5396,
+      "origin": "new owner decision/test tool"
+    },
+    {
+      "path": "gra/tools/pr141-f04-rush-activation-test.cjs",
+      "sha256": "257ffb97b744071abb2d8e222ccf116969c13fb8cfb0fa0102795e66a8d29bc0",
+      "bytes": 9197,
+      "origin": "new owner decision/test tool"
+    },
+    {
+      "path": "gra/tools/pr141-f04-society-activation-test.cjs",
+      "sha256": "0c0b06c3ff7dbe1bd3a64ba81f001e481228e0e16d0dede6bdca3406abc6dfdc",
+      "bytes": 11534,
+      "origin": "new owner decision/test tool"
+    },
+    {
+      "path": "gra/tools/pr141-f04-society-remaining-activation-test.cjs",
+      "sha256": "960dcd7e2b68a7f23d33142fa6fbf3da690fdf82e685673b01a398ae4f539b5b",
+      "bytes": 21264,
+      "origin": "new owner decision/test tool"
+    },
+    {
+      "path": "gra/tools/pr141-f04-unit-speed-activation-test.cjs",
+      "sha256": "1d909f7e1dc8205d6648dd12dc5f0cf4c1f9b16faae9f65d9d939a72de064b68",
+      "bytes": 9684,
+      "origin": "new owner decision/test tool"
+    },
+    {
+      "path": "gra/tools/pr141-f04-work-activation-test.cjs",
+      "sha256": "f2438c1db8ccea897db61e8a539f36c84b37c808991600b0e40142bc65557e22",
+      "bytes": 12384,
+      "origin": "new owner decision/test tool"
+    },
+    {
+      "path": "gra/tools/pr141-f04-yields-activation-test.cjs",
+      "sha256": "94b4262a71c459333d59e80785c7ceb963ba71c1842d37a2878ab0ddfabf1529",
+      "bytes": 16559,
+      "origin": "new owner decision/test tool"
+    },
+    {
+      "path": "gra/tools/pr141-g1-combat-activation-test.cjs",
+      "sha256": "95a1a21803e10b4de6cdaa7d557db35557d8951f4f8e1b58c00cb54a159909ef",
+      "bytes": 8273,
+      "origin": "new owner decision/test tool"
+    },
+    {
+      "path": "gra/tools/pr141-hotseat-diplomacy-owner-test.cjs",
+      "sha256": "e432e5cefad2a8d91db30ec29a326efc9ba62ffb76d684796e0544184ff463ca",
+      "bytes": 8969,
+      "origin": "new owner decision/test tool"
+    },
+    {
+      "path": "gra/tools/pr141-hotseat-production-owner-routing-test.cjs",
+      "sha256": "e01b4d198f21400ed38a0f9ed25d822ed726ca089e72a4962bccd68e1b67be7e",
+      "bytes": 13437,
+      "origin": "new owner decision/test tool"
+    },
+    {
+      "path": "gra/tools/pr141-matrix-only-ai-test.cjs",
+      "sha256": "5067325897f9cf3da30c1a67bdb4acd14f8533b35e20a806cdda474c1fe91de0",
+      "bytes": 13310,
+      "origin": "new owner decision/test tool"
+    },
+    {
+      "path": "gra/tools/pr141-matrix-only-combat-test.cjs",
+      "sha256": "a5fd05e1c53a664387673cf37993f30f7598fba8fb53698c3903514113dae63d",
+      "bytes": 7911,
+      "origin": "new owner decision/test tool"
+    },
+    {
+      "path": "gra/tools/pr141-matrix-only-data-wiki-test.cjs",
+      "sha256": "dc16a912b05fc09f600d7abf8f34c71ae58113dc79979e2bf8b9363570a03e89",
+      "bytes": 5357,
+      "origin": "new owner decision/test tool"
+    },
+    {
+      "path": "gra/tools/pr141-matrix-only-economy-test.cjs",
+      "sha256": "4f141f4d6f194a5f409f1a6da5f71da29fbc4823a6bf6a0086761299f27de8b5",
+      "bytes": 10225,
+      "origin": "new owner decision/test tool"
+    },
+    {
+      "path": "gra/tools/pr141-matrix-only-owner-ui-test.cjs",
+      "sha256": "4e3bcb6c460c8f9e0bacf779a419802f87e3fa530fecf2bcb8fccc73884d2407",
+      "bytes": 3715,
+      "origin": "new owner decision/test tool"
+    },
+    {
+      "path": "gra/tools/pr141-matrix-only-production-test.cjs",
+      "sha256": "47527a141750ce9658c77ab60e0997b172bffa3f3ad3e9769803130384ee8b5f",
+      "bytes": 11605,
+      "origin": "new owner decision/test tool"
+    },
+    {
+      "path": "gra/tools/pr141-population-behavior-test.cjs",
+      "sha256": "6436894f937ad72a97728edf7ec69b079c3713bb7f1f6e9c804fc51f633e912f",
+      "bytes": 11286,
+      "origin": "new gra/tools test with bounded fixture shim repair after root-directed defense"
+    },
+    {
+      "path": "gra/tools/pr141-population-main-happiness-hookup-test.cjs",
+      "sha256": "9eed9e40dec14bcb6f44c0c3a2ff3596f6d95eef548ddc126caa8837c4586a88",
+      "bytes": 15078,
+      "origin": "new owner decision/test tool"
+    },
+    {
+      "path": "gra/tools/pr141-runtime-ordinary-flow-harness.cjs",
+      "sha256": "7c4ed417cf664a8589627c8f9addd3483030686d394aba4a2673f1c2c33e6dea",
+      "bytes": 138448,
+      "origin": "new owner decision/test tool"
+    },
+    {
+      "path": "gra/tools/pr141-runtime-ordinary-scope-test.cjs",
+      "sha256": "0e7ce4b1bc64d2c6c15da23a7b49891f7d1576091b61cefaf3718c7693e0c8d3",
+      "bytes": 27595,
+      "origin": "new owner decision/test tool"
+    },
+    {
+      "path": "gra/tools/pr141-runtime-save-load-harness.cjs",
+      "sha256": "f65c1fad2b42565da406a94632d8c736bb48a4fa5d7d5e3e8821c1fde67bc88e",
+      "bytes": 45688,
+      "origin": "new owner decision/test tool"
+    },
+    {
+      "path": "gra/tools/pr141-saveload-mp-f05-g11-behavior-test.cjs",
+      "sha256": "37a708111240463c20bda4edfb5b15f5816768434b25a575c5846d69adb733fb",
+      "bytes": 19380,
+      "origin": "new owner decision/test tool"
+    },
+    {
+      "path": "gra/tools/pr141-semantic-consumer-consistency-test.cjs",
+      "sha256": "a45d278367fafed9435aa9e1bf5903e7c661755ed219c7a258fb8e621105162a",
+      "bytes": 12481,
+      "origin": "untracked test tool with stale rush expectation corrected after root-directed defense"
+    },
+    {
+      "path": "gra/tools/recruit-card-manpower-real-render-test.cjs",
+      "sha256": "b5269c254467fd8d6abe8340624545044ccb8a9eb7f3f75688ff9019dec0d102",
+      "bytes": 14793,
+      "origin": "modified tracked working file"
+    }
+  ],
+  "acceptanceLimits": [
+    "bounded local source/test scopes only",
+    "no full 93x15 gameplay acceptance",
+    "no browser/gameplay acceptance unless separate evidence is later added",
+    "F-05 legal battle observation and terrain/runtime gaps remain open",
+    "run-history artifacts are excluded from candidate product tree and preserved in original checkout"
+  ],
+  "actualGitDeltaComparedWithBase": {
+    "modifiedCount": 51,
+    "addedCount": 49,
+    "unchangedOverlayCount": 1,
+    "modifiedPaths": [
+      "docs/decyzje/D-cyw-REJESTR-PARAMETROW-GLOBAL.md",
+      "docs/decyzje/D-cyw-macierz-14-pozostale.md",
+      "docs/encyklopedia/cywilizacje/celtowie.md",
+      "docs/encyklopedia/cywilizacje/chinczycy.md",
+      "docs/encyklopedia/cywilizacje/egipt.md",
+      "docs/encyklopedia/cywilizacje/germanie.md",
+      "docs/encyklopedia/cywilizacje/grecy.md",
+      "docs/encyklopedia/cywilizacje/inkowie.md",
+      "docs/encyklopedia/cywilizacje/rzymianie.md",
+      "docs/encyklopedia/cywilizacje/sumer.md",
+      "docs/encyklopedia/cywilizacje/zulusi.md",
+      "dyspozycje/PYTANIA-OTWARTE.md",
+      "gra/data/civs.json",
+      "gra/src/data/loader.ts",
+      "gra/src/data/wikiBundle.json",
+      "gra/src/game/ai.ts",
+      "gra/src/game/civ-ai-data.ts",
+      "gra/src/game/civ-bonuses.ts",
+      "gra/src/game/civ-matrix-semantic.ts",
+      "gra/src/game/cluster-start.ts",
+      "gra/src/game/combat.ts",
+      "gra/src/game/culture-religion.ts",
+      "gra/src/game/diplomacy-layers.ts",
+      "gra/src/game/economy.ts",
+      "gra/src/game/embarkation.ts",
+      "gra/src/game/manpower.ts",
+      "gra/src/game/order.ts",
+      "gra/src/game/playerState.ts",
+      "gra/src/game/population-growth-v85.ts",
+      "gra/src/game/production.ts",
+      "gra/src/game/society-breakdown.ts",
+      "gra/src/game/trade-routes.ts",
+      "gra/src/game/turn-economy.ts",
+      "gra/src/game/wealth.ts",
+      "gra/src/main.ts",
+      "gra/src/ui/cityPanel.ts",
+      "gra/src/ui/diplomacyAudience.ts",
+      "gra/src/ui/empireDetailPanel.ts",
+      "gra/src/ui/entityCards/buildingAdapter.ts",
+      "gra/src/ui/newGameFlow.ts",
+      "gra/src/ui/preBattle.ts",
+      "gra/tools/ai-jednostki-tylko-zakup-test.cjs",
+      "gra/tools/bundle-wiki-for-game.cjs",
+      "gra/tools/civ-bonusy-test.cjs",
+      "gra/tools/civ-matrix-ai-diplomacy-wiring-test.cjs",
+      "gra/tools/civ-matrix-semantic-labels-test.cjs",
+      "gra/tools/civpedia-gra-id-mostek-test.cjs",
+      "gra/tools/manpower-test.cjs",
+      "gra/tools/mp-spawn-ration-test.cjs",
+      "gra/tools/population-growth-v85-test.cjs",
+      "gra/tools/recruit-card-manpower-real-render-test.cjs"
+    ],
+    "addedPaths": [
+      "docs/decyzje/R-PR141-CODEX-ECONOMY-SCOPE-DECISIONS-20261018.md",
+      "docs/decyzje/R-PR141-CODEX-F04-PRECEDENCE-DECISION-20261018.md",
+      "docs/decyzje/R-PR141-CODEX-F04-PRODUCTION-REMAINING-DECISIONS-20261018.md",
+      "docs/decyzje/R-PR141-CODEX-F04-RUSH-DECISION-20261018.md",
+      "docs/decyzje/R-PR141-CODEX-F04-SOURCE-APPROVAL-20261018.md",
+      "docs/decyzje/R-PR141-CODEX-F04-WEALTH-RELIGION-DECISIONS-20261018.md",
+      "docs/decyzje/R-PR141-CODEX-MATRIX-ONLY-BONUSES-20261018.md",
+      "docs/decyzje/R-PR141-CODEX-SEMANTICS-DECISIONS-20261018.md",
+      "gra/tools/egypt-movement-precedence-test.cjs",
+      "gra/tools/impi-recruitment-discount-test.cjs",
+      "gra/tools/manpower-matrix-sensitivity-test.cjs",
+      "gra/tools/pr141-ai-production-behavior-test.cjs",
+      "gra/tools/pr141-ai-strategy-behavior-test.cjs",
+      "gra/tools/pr141-combat-defense-behavior-test.cjs",
+      "gra/tools/pr141-combat-defense-owner-route-test.cjs",
+      "gra/tools/pr141-combat-offense-behavior-test.cjs",
+      "gra/tools/pr141-current-evidence-ledger-generate.cjs",
+      "gra/tools/pr141-current-evidence-ledger-test.cjs",
+      "gra/tools/pr141-current-evidence-ledger-v3-generate.cjs",
+      "gra/tools/pr141-current-evidence-ledger-v3-test.cjs",
+      "gra/tools/pr141-current-evidence-ledger-v4-generate.cjs",
+      "gra/tools/pr141-current-evidence-ledger-v4-test.cjs",
+      "gra/tools/pr141-dip-activation-test.cjs",
+      "gra/tools/pr141-evidence-ledger-behavior-test.cjs",
+      "gra/tools/pr141-f04-building-speed-activation-test.cjs",
+      "gra/tools/pr141-f04-cost-activation-defense-test.cjs",
+      "gra/tools/pr141-f04-cost-activation-test.cjs",
+      "gra/tools/pr141-f04-rush-activation-test.cjs",
+      "gra/tools/pr141-f04-society-activation-test.cjs",
+      "gra/tools/pr141-f04-society-remaining-activation-test.cjs",
+      "gra/tools/pr141-f04-unit-speed-activation-test.cjs",
+      "gra/tools/pr141-f04-work-activation-test.cjs",
+      "gra/tools/pr141-f04-yields-activation-test.cjs",
+      "gra/tools/pr141-g1-combat-activation-test.cjs",
+      "gra/tools/pr141-hotseat-diplomacy-owner-test.cjs",
+      "gra/tools/pr141-hotseat-production-owner-routing-test.cjs",
+      "gra/tools/pr141-matrix-only-ai-test.cjs",
+      "gra/tools/pr141-matrix-only-combat-test.cjs",
+      "gra/tools/pr141-matrix-only-data-wiki-test.cjs",
+      "gra/tools/pr141-matrix-only-economy-test.cjs",
+      "gra/tools/pr141-matrix-only-owner-ui-test.cjs",
+      "gra/tools/pr141-matrix-only-production-test.cjs",
+      "gra/tools/pr141-population-behavior-test.cjs",
+      "gra/tools/pr141-population-main-happiness-hookup-test.cjs",
+      "gra/tools/pr141-runtime-ordinary-flow-harness.cjs",
+      "gra/tools/pr141-runtime-ordinary-scope-test.cjs",
+      "gra/tools/pr141-runtime-save-load-harness.cjs",
+      "gra/tools/pr141-saveload-mp-f05-g11-behavior-test.cjs",
+      "gra/tools/pr141-semantic-consumer-consistency-test.cjs"
+    ],
+    "unchangedOverlayPaths": [
+      "gra/src/map/gen-helpers.ts"
+    ]
+  }
+}

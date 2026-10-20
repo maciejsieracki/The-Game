@@ -15,7 +15,7 @@
 
 ## Wiki‑S
 
-**Sumerowie** — ciężka piechota + łucznicy + mocne rydwany. Jednostka unikalna: **Gwardia Królewska Sumeru**. Religia: Religia sumeryjska (mezopotamska) — Enlil/Anu.
+**Sumerowie** — ciężka piechota + łucznicy + mocne rydwany. Jednostki specjalne według rosteru: **Łucznik sumeryjski, Rydwan sumeryjski, Włócznik sumeryjski, Łucznik akadyjski, Mur tarcz (Sargonid)**. Religia: Religia sumeryjska (mezopotamska) — Enlil/Anu.
 
 ---
 
@@ -24,19 +24,12 @@
 **Sumerowie** to typ cywilizacji dostępny w wersji 1.0. Charakter: *ciężka piechota + łucznicy + mocne rydwany*.
 
 **Epoki startowe w kreatorze:** Kamień, Brąz, Żelazo.
-**Jednostka specjalna:** Gwardia Królewska Sumeru.
+**Zamienniki według rosteru:** Łucznik sumeryjski, Rydwan sumeryjski, Włócznik sumeryjski, Łucznik akadyjski, Mur tarcz (Sargonid)
 **Religia państwa:** Religia sumeryjska (mezopotamska) — Enlil/Anu.
 **Przykładowe miasta w klastrze:** Uruk, Ur, Lagasz, Kisz, Nippur….
 **Władcy (imiona per epoka):** Kamień — Alulim · Brąz — Gilgamesz · Żelazo — Ur-Nammu · Antyk — Szulgi.
 
-**Bonus startowy:** +Obrona i Health ciężkiej piechoty; silni łucznicy pieszni; ciężkie, mocne rydwany bojowe.
-
-**Trzy linie bonusów (macierz):**
-- Ciężka piechota: +20% obrony i HP ciężkiej piechoty (pancerz brązowy + tarcza)
-- Ciężkie rydwany bojowe: +15% HP i obrony rydwanów (masywna konstrukcja)
-- Gwardia Królewska = szczyt ciężkiej piechoty Sumeru; pancerz i lanca; +obrona miasta
-
-**Słabsza strona (balans):** wolniejsza lekka kawaleria.
+**Bonusy cywilizacji:** Obowiązujące bonusy i modyfikatory cywilizacji wynikają z macierzy parametrów. Dawne bonusy opisowe nie są doliczane.
 
 **Profil AI (skala 0–9):** agresja 3/9 — niska.
 

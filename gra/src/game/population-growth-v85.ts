@@ -17,7 +17,7 @@ import type { EconomyTickResult } from './turn-economy';
 import { rebalanceWorkersAfterPopulationChange } from './okolica';
 import type { GameMap } from '../types/map';
 import type { TerritoryNode } from '../map/territory';
-import { refreshManpowerAfterPopChange, civManpowerMults } from './manpower';
+import { refreshManpowerAfterPopChange, civManpowerMults, civManpowerMatrixMults } from './manpower';
 import { R_STAWKI_KOSZT_MULT } from './r-stawki-strojenie';
 import type { GameDifficulty } from './difficulty-cost';
 
@@ -276,6 +276,15 @@ export interface FractionalGrowthResult {
   ubytek: boolean;
 }
 
+/** Apply the existing Order growth-speed multiplier to the computed percent (not food/feed state). */
+export function growthPercentWithOrderMultiplier(
+  growthPercent: number,
+  orderGrowthMult: number,
+): number {
+  const factor = Number.isFinite(orderGrowthMult) ? Math.max(0, orderGrowthMult) : 1;
+  return growthPercent * factor;
+}
+
 /**
  * Ułamkowy wzrost/spadek: ludność × WZROST% / 100 kumuluje się na wzrostUlamkowy.
  * Tylko gdy miasto nakarmione w tej turze (fed=true).
@@ -425,6 +434,10 @@ export interface PostCentralGrowthOpts {
   /** Test fixture hook; production resolves values from ownerCivByOwnerId. */
   populationMatrixByOwnerId?: ReadonlyMap<number, PopulationMatrixResolved>;
   civBonusyByOwner?: ReadonlyMap<number, readonly CivEconomyBonus[]>;
+  /** Resolved manpower max multiplier; matrix-aware and fixture-overridable. */
+  manpowerMaxMultByOwnerId?: ReadonlyMap<number, number>;
+  /** Existing Order growth-speed multiplier per city, already composed with F04 when present. */
+  orderGrowthMultByCity?: ReadonlyMap<string, number>;
   /**
    * R-ZUZYCIE-SUROWCOW-OBYWATELE (Maciej 2026-08-10): kara Rozwoju (%) per miasto za surowce
    * budowlane obywateli brakujące w magazynie centralnym imperium — `citizen-resource-upkeep.ts`
@@ -470,7 +483,7 @@ export function applyPostCentralPopulationGrowth(opts: PostCentralGrowthOpts): v
     cities, econ, efResult, map, territoryNodes, econParams, rationParams,
     ownerCivByOwnerId, spichlerzByCity, happinessByCityId, builtByCity,
     ownerEraByOwner, difficulty = 'normal', populationMatrixByOwnerId,
-    civBonusyByOwner, citizenGrowthPctByCityId,
+    civBonusyByOwner, manpowerMaxMultByOwnerId, orderGrowthMultByCity, citizenGrowthPctByCityId,
     onCityPopulationChanged, excludeHexKeysByCity,
   } = opts;
 
@@ -500,7 +513,7 @@ export function applyPostCentralPopulationGrowth(opts: PostCentralGrowthOpts): v
       const citizenGrowthPct = citizenGrowthPctByCityId?.get(row.cityId) ?? 0;
       const populationMatrix = populationMatrixByOwnerId?.get(city.ownerId)
         ?? resolvePopulationMatrixForCiv(ownerCivByOwnerId?.get(city.ownerId));
-      const breakdown = computeGrowthPercentV85({
+      const baseBreakdown = computeGrowthPercentV85({
         population: city.population,
         poziomRacji: getCityRationLevel(city),
         zdrowie: tick.zdrowie,
@@ -513,6 +526,14 @@ export function applyPostCentralPopulationGrowth(opts: PostCentralGrowthOpts): v
         citizenResourceGrowthPct: citizenGrowthPct,
         populationMatrix,
       });
+      const rawOrderGrowthMult = orderGrowthMultByCity?.get(city.id) ?? 1;
+      const adjustedGrowthPercent = growthPercentWithOrderMultiplier(
+        baseBreakdown.total,
+        rawOrderGrowthMult,
+      );
+      const breakdown = adjustedGrowthPercent === baseBreakdown.total
+        ? baseBreakdown
+        : { ...baseBreakdown, total: adjustedGrowthPercent };
       row.wzrostProcent = breakdown.total;
       row.breakdown = breakdown;
       row.nakarmione = fed;
@@ -555,8 +576,10 @@ export function applyPostCentralPopulationGrowth(opts: PostCentralGrowthOpts): v
           excludeHexKeysByCity?.get(city.id),
         );
         const ownerEra = ownerEraByOwner?.get(city.ownerId) ?? 1;
-        const mpMults = civManpowerMults(civBonusyByOwner?.get(city.ownerId));
-        city.manpower = refreshManpowerAfterPopChange(city, ownerEra, before, mpMults.maxMult);
+        const legacyMpMults = civManpowerMults(civBonusyByOwner?.get(city.ownerId));
+        const maxMult = manpowerMaxMultByOwnerId?.get(city.ownerId)
+          ?? civManpowerMatrixMults(ownerCivByOwnerId?.get(city.ownerId), undefined, legacyMpMults).maxMult;
+        city.manpower = refreshManpowerAfterPopChange(city, ownerEra, before, maxMult);
         // P-AUTO-WYZYWIENIE-BUG2: populacja TEGO miasta faktycznie się zmieniła w tej
         // turze -- przelicz bezpieczny poziom Racji NA ŻYWO, PO przyroście (patrz komentarz
         // przy `onCityPopulationChanged` w PostCentralGrowthOpts wyżej).

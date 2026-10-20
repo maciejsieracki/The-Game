@@ -1,0 +1,28 @@
+{
+  "schema_version": 1,
+  "topic_id": "R-PR141-CODEX-CURRENT-EVIDENCE-LEDGER-20261018",
+  "recorded_date": "2026-10-18",
+  "purpose": "Repository-local exact-byte copies of historical evidence inputs for reproducible v3 source closure.",
+  "source_history_only": true,
+  "new_owner_decision": false,
+  "entries": [
+    {
+      "original_path": "/workspace/handoff-pr141/owner-decisions/26-owner-decisions-20261015.md",
+      "original_sha256": "d6e8205e4f3ab76192d67135ff55e590bf77094d4d91a2072ee379115b273328",
+      "copy_path": "dyspozycje/autobot/runs/R-PR141-CODEX-CURRENT-EVIDENCE-LEDGER-20261018/evidence/source-history/26-owner-decisions-20261015.md",
+      "copy_sha256": "d6e8205e4f3ab76192d67135ff55e590bf77094d4d91a2072ee379115b273328"
+    },
+    {
+      "original_path": "/workspace/pr141-review/review-f05.md",
+      "original_sha256": "0c3d595927c157d92cbcdef03820ea048a4e688c3b3351f0ca25c180bb4c6b04",
+      "copy_path": "dyspozycje/autobot/runs/R-PR141-CODEX-CURRENT-EVIDENCE-LEDGER-20261018/evidence/source-history/review-f05.md",
+      "copy_sha256": "0c3d595927c157d92cbcdef03820ea048a4e688c3b3351f0ca25c180bb4c6b04"
+    },
+    {
+      "original_path": "/workspace/pr141-review/review-g11.md",
+      "original_sha256": "ed4295a5d6b6cd93ca51d6bb530b5896d899aa7dbe7cb1ff88343d4b3b25e906",
+      "copy_path": "dyspozycje/autobot/runs/R-PR141-CODEX-CURRENT-EVIDENCE-LEDGER-20261018/evidence/source-history/review-g11.md",
+      "copy_sha256": "ed4295a5d6b6cd93ca51d6bb530b5896d899aa7dbe7cb1ff88343d4b3b25e906"
+    }
+  ]
+}

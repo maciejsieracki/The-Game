@@ -112,15 +112,14 @@ equal(declineNegative.label, 'POZYTYWNY', 'lower decline is positive');
 equal(declineNegative.signedIntensity, 10, 'lower decline maps to +10');
 equal(M.civMatrixSemanticPolarity('eko_korupcja_proc'), 'harmful', 'corruption has harmful polarity');
 
-equal(M.civMatrixSemanticPolarity('prod_koszt_budynku_proc'), 'harmful', 'building cost has harmful polarity');
+equal(M.civMatrixSemanticPolarity('prod_koszt_budynku_proc'), 'beneficial', 'positive building discount has beneficial polarity');
+equal(M.civMatrixSemanticPolarity('prod_koszt_jednostki_proc'), 'beneficial', 'positive unit discount has beneficial polarity');
+equal(M.civMatrixSemanticPolarity('walka_koszt_rekrutacji_proc'), 'beneficial', 'positive G11 recruitment discount has beneficial polarity');
+equal(M.civMatrixSemanticPolarity('prod_rush_koszt_proc'), 'harmful', 'positive rush-cost increase remains harmful after consumer activation');
 equal(M.civMatrixSemanticPolarity('walka_atak_piechota'), 'beneficial', 'attack has beneficial polarity');
 equal(M.civMatrixSemanticPolarity('ai_agresywnosc'), 'neutral/not-applicable', 'AI profile remains neutral badge');
 equal(M.civMatrixSemanticPolarity('dip_handlowosc_archetyp'), 'neutral/not-applicable', 'relation profile remains neutral badge');
 equal(M.civMatrixConsumerStatus('lud_wzrost_proc'), 'REAL_GAMEPLAY', 'growth has a proven gameplay consumer');
-equal(M.civMatrixConsumerStatus('dip_nastawienie_bazowe'), 'DECISION_REQUIRED', 'base attitude requires an owner decision after round 2 recheck (no live consumer)');
-equal(M.civMatrixConsumerEvidence('dip_nastawienie_bazowe').length, 0, 'base attitude has no proven consumer evidence');
-equal(M.civMatrixConsumerStatus('dip_agresja_archetyp'), 'DECISION_REQUIRED', 'archetype aggression requires an owner decision after round 2 recheck (no live consumer, must not double-count with ai_agresywnosc)');
-equal(M.civMatrixConsumerEvidence('dip_agresja_archetyp').length, 0, 'archetype aggression has no proven consumer evidence');
 const POPULATION_GAMEPLAY_IDS = [
   'lud_limit_populacji',
 ];
@@ -217,50 +216,91 @@ for (const [id] of F03_REAL_GAMEPLAY_IDS) {
 }
 equal(M.civMatrixConsumerStatus('dip_otwartosc_handl'), 'UNWIRED', 'unknown parameter stays unwired');
 equal(M.civMatrixConsumerStatus('dip_otwartosc_handel'), 'UI_ONLY', 'relation tag is explicitly UI-only');
-const baseAttitudeCell = greek.cells.find(c => c.parameterId === 'dip_nastawienie_bazowe');
-equal(baseAttitudeCell.consumerStatus, 'DECISION_REQUIRED', 'base attitude profile cell requires an owner decision');
-equal(baseAttitudeCell.provenance.consumerEvidence.length, 0, 'base attitude profile cell carries no consumer evidence');
-equal(M.statusAllowsDefaultVisibility(baseAttitudeCell.consumerStatus), false, 'decision-required base attitude is not visible in the active default set');
-assert(baseAttitudeCell.statusReasonPl.includes('initialRelation') && baseAttitudeCell.statusReasonPl.includes('Decyzja właściciela'), 'base attitude explains the missing live consumer and the pending owner decision');
-const archetypeAggressionCell = greek.cells.find(c => c.parameterId === 'dip_agresja_archetyp');
-equal(archetypeAggressionCell.consumerStatus, 'DECISION_REQUIRED', 'archetype aggression profile cell requires an owner decision');
-equal(archetypeAggressionCell.provenance.consumerEvidence.length, 0, 'archetype aggression profile cell carries no consumer evidence');
-equal(M.statusAllowsDefaultVisibility(archetypeAggressionCell.consumerStatus), false, 'decision-required archetype aggression is not visible in the active default set');
-assert(archetypeAggressionCell.statusReasonPl.includes('ai_agresywnosc') && archetypeAggressionCell.statusReasonPl.includes('Decyzja właściciela'), 'archetype aggression explains the ai_agresywnosc double-counting risk and the pending owner decision');
-
 console.log('--- status counts and no persistence ---');
 const statusCounts = snapshot.cells.reduce((out, cell) => {
   out[cell.consumerStatus] = (out[cell.consumerStatus] || 0) + 1;
   return out;
 }, {});
-equal(statusCounts.REAL_GAMEPLAY, 495, '33 proven gameplay parameters cover 15 profiles, including six F-02 and nine F-03 combat consumers');
-equal(statusCounts.UI_ONLY, 75, '5 UI-only parameters cover 15 profiles');
-equal(statusCounts.DECISION_REQUIRED, 30, '2 unresolved AI/diplomacy parameters cover 15 profiles each and require an owner decision');
-equal(statusCounts.BLOCKED, 120, '8 combat multiplier parameters remain blocked across 15 profiles, including G11 and seven G1/Egypt holds');
-equal(statusCounts.DEAD_UNWIRED, 285, '19 remaining combat/siege/fortification parameters with all-default cells are closed dead (round 2)');
-equal(statusCounts.UNWIRED, 390, '26 unresolved parameters remain visibly unwired after resolved population/manpower/meta fields and combat BLOCKED/DEAD_UNWIRED reclassification; the 4 former meta REFERENCE_ONLY parameters were removed from the matrix entirely (R-CYWILIZACJE-MACIERZ-META-REMOVE-Q1-20260922) and are absent from every status count, not reclassified as UNWIRED');
-assert(!fs.readFileSync(path.resolve(sourceRoot, 'game/civ-matrix-semantic.ts'), 'utf8').includes('localStorage'), 'semantic classifier does not persist labels');
-
-console.log('--- combat/special-unit BLOCKED decision_required (round 2, R-CYWILIZACJE-MACIERZ-WIRING-COMBAT-RECON-ORIGIN-20260922) ---');
-const BLOCKED_COMBAT_IDS = [
+const NEW_ACCEPTED_IDS = [
   'walka_atak_piechota', 'walka_obrona_piechota', 'walka_pancerz_piechota',
   'walka_dystans_lukownicy', 'walka_hp_piechota', 'walka_hp_rydwany',
-  'walka_ruch_bitwa_proc', 'walka_koszt_rekrutacji_proc',
+  'dip_nastawienie_bazowe', 'dip_agresja_archetyp', 'eko_praca_proc',
+  'prod_koszt_budynku_proc', 'prod_koszt_jednostki_proc', 'wealth_cap_proc',
+  'kultura_naplyw_proc', 'porzadek_produkcja_proc', 'porzadek_nauka_proc',
+  'porzadek_kultura_proc', 'porzadek_wzrost_proc', 'wealth_mnoznik_proc',
+  'religia_spread_proc', 'porzadek_pieniadz_proc', 'eko_handel_brutto_proc',
+  'eko_pieniadz_proc', 'eko_pieniadz_port_proc', 'eko_zywnosc_proc',
+  'eko_nauka_proc', 'eko_kultura_proc', 'eko_luksus_proc', 'eko_zadowolenie_proc',
+  'eko_korupcja_proc', 'prod_szybkosc_budynku_proc', 'prod_szybkosc_jednostki_proc',
+  'prod_rush_koszt_proc',
 ];
-equal(BLOCKED_COMBAT_IDS.length, 8, 'fixture lists G11 plus all seven preserved G1/Egypt blocked IDs');
-for (const id of BLOCKED_COMBAT_IDS) {
-  equal(M.civMatrixConsumerStatus(id), 'BLOCKED', `${id} is classified BLOCKED, not silently UNWIRED`);
-  const cell = greek.cells.find(c => c.parameterId === id);
-  equal(cell.consumerStatus, 'BLOCKED', `${id} profile cell is BLOCKED`);
-  equal(M.statusAllowsDefaultVisibility(cell.consumerStatus), false, `${id} is not visible in the active default set`);
-  assert(cell.statusReasonPl.length > 0, `${id} carries a non-empty reason string, never a silent UNWIRED`);
-  assert(cell.statusReasonPl.includes('R-CYWILIZACJE-MACIERZ-WIRING-COMBAT-RECON-ORIGIN-20260922'), `${id} reason cites the owning topic`);
+const BASELINE_REAL_GAMEPLAY_IDS = [
+  'lud_wzrost_proc','lud_spadek_proc','lud_zdrowie_proc','lud_zadowolenie_bazowe','lud_limit_populacji','meta_mnoznik_waluta',
+  'walka_atak_morska','walka_atak_kawaleria','walka_atak_rydwany','walka_atak_obleczenie','walka_obrona_morska',
+  'walka_atak_piechota_teren_plytkie_morze','walka_obrona_piechota_teren_plytkie_morze','walka_dystans_rydwany','walka_obrona_piechota_teren_las',
+  'walka_uderzenie_piechota','walka_uderzenie_kawaleria','walka_atak_piechota_teren_las','walka_obrona_piechota_terytorium_wlasne',
+  'walka_obrona_piechota_w_murze','walka_atak_piechota_runda_szarzy','mp_regen_proc','mp_max_proc','mp_koszt_jednostki_proc',
+  'dip_handlowosc_archetyp','ai_agresywnosc','ai_ekspansywnosc','ai_priorytet_militarny','ai_priorytet_ekonomia','ai_priorytet_nauka',
+  'ai_tolerancja_ryzyka','ai_sklonnosc_podboju','ai_profil_obronna',
+];
+const expectedGameplayIds = [...BASELINE_REAL_GAMEPLAY_IDS, ...NEW_ACCEPTED_IDS];
+const NEW_COMBAT_CONSUMER_IDS = [
+  'walka_ruch_bitwa_proc', 'walka_ruch_rydwany',
+  'walka_ruch_piechota_teren_plytkie_morze', 'walka_koszt_rekrutacji_proc',
+];
+expectedGameplayIds.push(...NEW_COMBAT_CONSUMER_IDS);
+equal(new Set(expectedGameplayIds).size, expectedGameplayIds.length, 'accepted additions are unique and additive to the preserved baseline');
+for (const id of expectedGameplayIds) equal(M.civMatrixConsumerStatus(id), 'REAL_GAMEPLAY', `${id} remains or becomes REAL_GAMEPLAY`);
+for (const id of NEW_ACCEPTED_IDS) {
+  const evidence = M.civMatrixConsumerEvidence(id);
+  equal(evidence.length, 1, `${id} has one bounded integration reference`);
+  const cells = snapshot.cells.filter(cell => cell.parameterId === id);
+  equal(cells.length, matrix.cywilizacje.length, `${id} has a cell for each source civilization`);
+  assert(cells.every(cell => cell.consumerStatus === 'REAL_GAMEPLAY' && cell.statusLabelPl === 'AKTYWNE'
+    && M.statusAllowsDefaultVisibility(cell.consumerStatus) && cell.provenance.consumerEvidence.length === 1), `${id} is active, visible, and evidenced in each semantic cell`);
 }
-const recruitmentHold = greek.cells.find(cell => cell.parameterId === 'walka_koszt_rekrutacji_proc');
-equal(M.civMatrixConsumerStatus('walka_koszt_rekrutacji_proc'), 'BLOCKED', 'G11 recruitment cost remains blocked pending its consumer repair');
-equal(M.civMatrixConsumerEvidence('walka_koszt_rekrutacji_proc').length, 0, 'G11 does not claim a proven exact-ID consumer');
-assert(snapshot.cells.filter(cell => cell.parameterId === 'walka_koszt_rekrutacji_proc')
-  .every(cell => cell.consumerStatus === 'BLOCKED' && !M.statusAllowsDefaultVisibility(cell.consumerStatus)), 'G11 remains blocked in all 15 civilization profiles');
+const unitSpeedEvidence = M.civMatrixConsumerEvidence('prod_szybkosc_jednostki_proc');
+equal(unitSpeedEvidence.length, 1, 'unit-speed has one accepted bounded consumer receipt');
+assert(unitSpeedEvidence[0].includes('12-unit-speed-integration.md')
+  && unitSpeedEvidence[0].includes('pr141-f04-unit-speed-activation-test.cjs'), 'unit-speed evidence points to accepted integration and focused actual-source test');
+equal(M.civMatrixConsumerStatus('prod_szybkosc_jednostki_proc'), 'REAL_GAMEPLAY', 'accepted unit-speed consumer is promoted after root integration');
+equal(M.civMatrixConsumerStatus('prod_rush_koszt_proc'), 'REAL_GAMEPLAY', 'rush-cost has its bounded quote and owner-payment consumer');
+const rushEvidence = M.civMatrixConsumerEvidence('prod_rush_koszt_proc');
+equal(rushEvidence.length, 1, 'rush-cost has one bounded accepted evidence record');
+assert(rushEvidence[0].includes('R-PR141-CODEX-F04-RUSH-DECISION-20261018.md')
+  && rushEvidence[0].includes('01-rush-operator-addendum.md')
+  && rushEvidence[0].includes('pr141-f04-rush-activation-test.cjs'), 'rush evidence ties owner decision, actual-source quote/payment test and bounded receipt');
+assert(matrix.cywilizacje.every(row => row.params.prod_rush_koszt_proc === 0), 'rush promotion does not alter any of the 15 approved zero source cells');
+equal(statusCounts.REAL_GAMEPLAY, expectedGameplayIds.length * matrix.cywilizacje.length - 1, 'gameplay cell count derives from accepted IDs less Egypt general-movement exclusion');
+equal(statusCounts.UI_ONLY, 5 * matrix.cywilizacje.length, 'five UI-only parameter classifications are preserved');
+equal(statusCounts.DECISION_REQUIRED || 0, 0, 'both accepted DIP parameters leave decision-required status');
+equal(statusCounts.BLOCKED || 0, 1, 'only Egypt general battle movement is blocked by approved 1B precedence');
+equal(statusCounts.DEAD_UNWIRED, 19 * matrix.cywilizacje.length, 'all 19 dead-unwired combat/siege/fortification IDs remain unchanged');
+equal(statusCounts.UNWIRED || 0, snapshot.expectedCellCount - statusCounts.REAL_GAMEPLAY - statusCounts.UI_ONLY - (statusCounts.DECISION_REQUIRED || 0) - (statusCounts.BLOCKED || 0) - statusCounts.DEAD_UNWIRED, 'unwired count is derived from the live inventory and other verified status sets');
+for (const id of NEW_COMBAT_CONSUMER_IDS) {
+  equal(M.civMatrixConsumerStatus(id), 'REAL_GAMEPLAY', `${id} has a bounded real consumer`);
+  equal(M.civMatrixConsumerEvidence(id).length, 1, `${id} carries one bounded evidence reference`);
+  const cells = snapshot.cells.filter(cell => cell.parameterId === id);
+  assert(cells.every(cell => cell.consumerStatus === (id === 'walka_ruch_bitwa_proc' && cell.civilizationId === 'egipt' ? 'BLOCKED' : 'REAL_GAMEPLAY')
+    && cell.provenance.consumerEvidence.length === 1), `${id} is evidenced with only the approved Egypt precedence exception`);
+}
+const egyptGeneralMovementCell = snapshot.cells.find(cell => cell.parameterId === 'walka_ruch_bitwa_proc' && cell.civilizationId === 'egipt');
+const zuluGeneralMovementCell = snapshot.cells.find(cell => cell.parameterId === 'walka_ruch_bitwa_proc' && cell.civilizationId === 'zulusi');
+equal(egyptGeneralMovementCell.consumerStatus, 'BLOCKED', 'Egypt general movement cell is excluded by 1B');
+equal(M.statusAllowsDefaultVisibility(egyptGeneralMovementCell.consumerStatus), false, 'Egypt general movement cell is not shown as active');
+assert(egyptGeneralMovementCell.statusReasonPl.includes('decyzją właściciela 1B') && egyptGeneralMovementCell.statusReasonPl.includes('zastąpione'), 'Egypt cell explains resolved chariot precedence rather than an unresolved hold');
+equal(zuluGeneralMovementCell.consumerStatus, 'REAL_GAMEPLAY', 'Zulu general movement cell remains active');
+equal(M.statusAllowsDefaultVisibility(zuluGeneralMovementCell.consumerStatus), true, 'Zulu general movement cell remains visible as active');
+assert(!fs.readFileSync(path.resolve(sourceRoot, 'game/civ-matrix-semantic.ts'), 'utf8').includes('localStorage'), 'semantic classifier does not persist labels');
+
+console.log('--- movement/G11 and separate rush status promotion scope ---');
+assert(NEW_COMBAT_CONSUMER_IDS.every(id => M.civMatrixConsumerStatus(id) === 'REAL_GAMEPLAY'), 'exact four combat movement/recruitment rows are promoted');
+equal(M.civMatrixConsumerStatus('prod_rush_koszt_proc'), 'REAL_GAMEPLAY', 'only the approved rush ID is additionally promoted');
+equal(M.civMatrixSemanticPolarity('prod_rush_koszt_proc'), 'harmful', 'rush positive values still classify as harmful price increases');
+const romeBuildingDiscount = M.buildCivMatrixSemanticProfile('rzymianie').cells.find(c => c.parameterId === 'prod_koszt_budynku_proc');
+const zuluUnitDiscount = M.buildCivMatrixSemanticProfile('zulusi').cells.find(c => c.parameterId === 'prod_koszt_jednostki_proc');
+assert(romeBuildingDiscount.rawValue > 0 && romeBuildingDiscount.polarity === 'beneficial' && romeBuildingDiscount.label === 'POZYTYWNY', 'positive Roman building-cost discount is shown as beneficial');
+assert(zuluUnitDiscount.rawValue > 0 && zuluUnitDiscount.polarity === 'beneficial' && zuluUnitDiscount.label === 'POZYTYWNY', 'positive Zulu unit-cost discount is shown as beneficial');
 
 console.log('--- combat/siege/fortification DEAD_UNWIRED (round 2) ---');
 const DEAD_UNWIRED_COMBAT_IDS = [

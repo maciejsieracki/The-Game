@@ -72,7 +72,8 @@ import {
   terrainImprovementEraMultiplier,
   type TerritoryResourceKey,
 } from './terrain-improvements';
-import { cityManpowerMax, refreshManpowerAfterPopChange, tickManpowerRegen, civManpowerMults, loadManpowerRegenParams, tickManpowerUnitReplenishment, type ManpowerHealUnit } from './manpower';
+import { civMatrixParam } from './civ-matrix';
+import { cityManpowerMax, refreshManpowerAfterPopChange, tickManpowerRegen, civManpowerMults, civManpowerMatrixMults, loadManpowerRegenParams, tickManpowerUnitReplenishment, type ManpowerHealUnit } from './manpower';
 import {
   loadStorageParams,
   foodStorageCapacity,
@@ -137,7 +138,10 @@ import {
 import {
   advanceWealth,
   loadWealthParams,
+  wealthParamsWithCapModifier,
+  wealthParamsWithMultiplierModifier,
   freshWealthState,
+  type WealthParams,
   type WealthState,
   type WealthTickResult,
 } from './wealth';
@@ -173,7 +177,7 @@ import { hexDistance } from '../units/setup';
 import { type WonderYieldBonus } from './wonders-data';
 
 /** Stosuje mnożniki Porządku na plony (B2-Q6) — przed Wealth i splitPraca. */
-function applyOrderYieldMults(
+export function applyOrderYieldMults(
   yld: { praca: number; pieniadz: number; nauka: number; kultura: number },
   mults: OrderYieldMults,
 ): void {
@@ -181,6 +185,22 @@ function applyOrderYieldMults(
   if (mults.pieniadzMult !== 1) yld.pieniadz *= mults.pieniadzMult;
   if (mults.naukaMult !== 1) yld.nauka *= mults.naukaMult;
   if (mults.kulturaMult !== 1) yld.kultura *= mults.kulturaMult;
+}
+
+/** Resolve all approved owner-specific Wealth parameters through the shared owner map. */
+export function wealthParamsForOwner(
+  baseParams: WealthParams,
+  wealthCivKey: string | undefined,
+): WealthParams {
+  if (!wealthCivKey) return baseParams;
+  const withCap = wealthParamsWithCapModifier(
+    baseParams,
+    civMatrixParam(wealthCivKey, 'wealth_cap_proc'),
+  );
+  return wealthParamsWithMultiplierModifier(
+    withCap,
+    civMatrixParam(wealthCivKey, 'wealth_mnoznik_proc'),
+  );
 }
 
 // ---------------------------------------------------------------------------
@@ -1900,6 +1920,8 @@ export function previewCityEconomy(
   ownerDefaultPodzialHandluByOwner: ReadonlyMap<number, CityPodzialHandlu> = new Map(),
   /** R-MIASTO-USTAWIENIA-GLOBALNE-VS-LOKALNE=A: domyślny podział Pracy per owner. */
   ownerDefaultPodzialPracyByOwner: ReadonlyMap<number, CityPodzialPracy> = new Map(),
+  /** F-04: connected sea-route income subset, including existing sea-route cash bonus. */
+  maritimeTradeIncomeByCity: ReadonlyMap<string, number> = new Map(),
 ): Pick<EconomyTickResult, 'perCity'> {
   const params = buildEconParams(data, difficulty);
   const buildingCatalog = data.buildings as unknown as BuildingRecord[];
@@ -2074,6 +2096,7 @@ export function previewCityEconomy(
       // R-HANDEL-DOCHOD-PRZEZ-PODZIAL-MIASTA-Q1: HUD preview musi zgadzac sie z realnym
       // tickiem (advanceCityEconomy) -- ten sam punkt wpiecia dochodu z tras (patrz tam).
       dochodTrasHandlowych: tradeIncomeByCity.get(city.id) ?? 0,
+      dochodTrasMorskich: maritimeTradeIncomeByCity.get(city.id) ?? 0,
       // Zadanie 2 (2026-07-23): Garncarnia +Zywnosc% LOKALNIE -- liczba sztuk w TYM miescie.
       liczbaGarncarni: runtimeBuiltIds.filter(id => id === 'garncarnia').length,
     };
@@ -2095,6 +2118,8 @@ export function previewCityEconomy(
     // +wonder yields (CUDA-EKON-01) — patrz applyWonderCityYields, krok osobny od reszty.
     applyWonderCityYields(yld, wonderCityYieldsByOwner.get(city.ownerId));
 
+    const wealthCivKey = ownerCivByOwnerId.get(city.ownerId);
+    const cityWealthParams = wealthParamsForOwner(wealthParams, wealthCivKey);
     const prevWealth: WealthState = city.wealthState ?? freshWealthState();
     const wealthImmunity = (city.wealthImmunityRemaining ?? 0) > 0;
     const wt: WealthTickResult = advanceWealth(
@@ -2102,7 +2127,7 @@ export function previewCityEconomy(
       yld.luksus,
       yld.pieniadz,
       ownerEra,
-      wealthParams,
+      cityWealthParams,
       wealthImmunity ? { minPoziom: 1 } : undefined,
     );
     // yld.pieniadz JUZ zawiera dochod z tras (ctx.dochodTrasHandlowych powyzej) -- patrz
@@ -2333,6 +2358,8 @@ export function advanceCityEconomy(
   },
   /** R-MIASTO-USTAWIENIA-GLOBALNE-VS-LOKALNE=A: domyślny podział Pracy per owner. */
   ownerDefaultPodzialPracyByOwner: ReadonlyMap<number, CityPodzialPracy> = new Map(),
+  /** F-04: connected sea-route income subset, including existing sea-route cash bonus. */
+  maritimeTradeIncomeByCity: ReadonlyMap<string, number> = new Map(),
 ): EconomyTickResult {
   const gameDifficulty = difficulty as GameDifficulty;
   const params = buildEconParams(data, difficulty);
@@ -2651,6 +2678,7 @@ export function advanceCityEconomy(
       // handlowych -- TERAZ wpiety do puli handelBrutto (economy.ts) zamiast dodawany osobno
       // po mnozniku Wealth (patrz pieniadzZTras nizej -- juz TYLKO wartosc do raportu/UI).
       dochodTrasHandlowych:  tradeIncomeByCity.get(city.id) ?? 0,
+      dochodTrasMorskich:   maritimeTradeIncomeByCity.get(city.id) ?? 0,
       // Zadanie 2 (2026-07-23): Garncarnia +Zywnosc% LOKALNIE -- liczba sztuk w TYM miescie.
       liczbaGarncarni:       runtimeBuiltIds.filter(id => id === 'garncarnia').length,
     };
@@ -2675,6 +2703,8 @@ export function advanceCityEconomy(
 
     // WIRE 3: Luksus -> Wealth tick
     // wealthState per miasto -- persystowane na city jako pole dynamiczne
+    const wealthCivKey = ownerCivByOwnerId.get(city.ownerId);
+    const cityWealthParams = wealthParamsForOwner(wealthParams, wealthCivKey);
     const prevWealth: WealthState = city.wealthState ?? freshWealthState();
     const wealthImmunity = (city.wealthImmunityRemaining ?? 0) > 0;
     const wt: WealthTickResult = advanceWealth(
@@ -2682,7 +2712,7 @@ export function advanceCityEconomy(
       yld.luksus,      // spoleczMoney = strumien Luksus
       yld.pieniadz,    // miastoMoney  = pieniadz brutto tej tury
       ownerEra,
-      wealthParams,
+      cityWealthParams,
       wealthImmunity ? { minPoziom: 1 } : undefined,
     );
     if (wealthImmunity && city.wealthImmunityRemaining != null) {
@@ -2816,7 +2846,7 @@ export function advanceCityEconomy(
     });
 
     const ownerEpoka = ownerEra;
-    const mpMults = civManpowerMults(ownerBonusy);
+    const mpMults = civManpowerMatrixMults(ownerCivKey, undefined, civManpowerMults(ownerBonusy));
     if (city.manpower === undefined) {
       city.manpower = cityManpowerMax(city.population, ownerEpoka, mpMults.maxMult);
     }
@@ -2960,6 +2990,15 @@ export function advanceCityEconomy(
       manpowerHeal.getMaxHp,
       undefined,
       manpowerHeal.onUnitHpChanged,
+      (oid: number) => {
+        const key = ownerCivByOwnerId.get(oid);
+        if (!key) return undefined;
+        return {
+          mp_regen_proc: civMatrixParam(key, 'mp_regen_proc'),
+          mp_max_proc: civMatrixParam(key, 'mp_max_proc'),
+          mp_koszt_jednostki_proc: civMatrixParam(key, 'mp_koszt_jednostki_proc'),
+        };
+      },
     );
   }
 

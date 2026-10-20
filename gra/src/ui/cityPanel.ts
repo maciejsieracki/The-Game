@@ -105,6 +105,8 @@ import {
   dequeueRecruitment,
   unitNacjaForCivKey,
   etaTurns,
+  buildingWorkPerTurn,
+  unitRecruitmentCapacityPerTurn,
   type CityProduction,
   type ProductionItem,
   type CivBonusLite,
@@ -228,6 +230,7 @@ import { openEntityCard } from './entityCards/renderer';
 import { resolveTechnologyRow, technologyIdFromName } from './entityCards/registry';
 import { loadOrderParams, type OrderYieldMults } from '../game/order';
 import {
+  applyCivMatrixHappinessModifier,
   evaluateOrderFromBreakdown,
   porPctBand,
   POR_BAND_LABELS,
@@ -238,6 +241,7 @@ import {
   ownShareFromSignal,
   type SocietyLine,
 } from '../game/society-breakdown';
+import { civMatrixParam } from '../game/civ-matrix';
 import {
   computeCitizenResourceDrain,
   citizenUpkeepDisplayLines,
@@ -549,6 +553,8 @@ export interface CityPanelConfig {
   onPurchaseBuilding?: (cityId: string, item: ProductionItem, kosztGold: number) => void;
   /** Bonusy cywilizacji per owner (civs.json) — koszty budynkow/jednostek. */
   getCivBonusy?: (ownerId: number) => readonly CivBonusLite[];
+  /** Matrix-aware Manpower multipliers for live recruitment previews. */
+  getManpowerMultipliers?: (ownerId: number) => { maxMult: number; costMult: number };
   /** typCywilizacji / ikonaId gracza lub AI — filtr jednostek per Nacja. */
   getCivKey?: (ownerId: number) => string | undefined;
   /** Stan porządku/szczęścia per miasto (silnik po turze). Brak → szacunek z budynków. */
@@ -577,6 +583,8 @@ export interface CityPanelConfig {
   getDifficulty?: () => import('../game/difficulty-cost').GameDifficulty;
   /** E7 — trasy handlowe aktywne w tej chwili (odswiezane co ture przez refreshTradeRoutes). */
   getTradeRoutes?: () => readonly TradeRoute[];
+  /** Current owner/medium-resolved route income for this city's yield preview. */
+  getTradeIncomeByCity?: (cityId: string) => { total: number; maritime: number };
   /** E7 — etykieta cywilizacji wlasciciela (jak w panelu dyplomacji) — do „czyje to miasto". */
   getOwnerLabel?: (ownerId: number) => string;
   /**
@@ -607,6 +615,30 @@ export interface CityPanelConfig {
 }
 
 let cfg: CityPanelConfig = {};
+
+/** Effective Work rate for a building queue, resolved from this city's owner. */
+function buildingWorkPerTurnForCity(city: City, baseWorkPerTurn: number): number {
+  const civKey = cfg.getCivKey?.(city.ownerId);
+  const speedBonus = civKey
+    ? civMatrixParam(civKey, 'prod_szybkosc_budynku_proc')
+    : 0;
+  return buildingWorkPerTurn(baseWorkPerTurn, speedBonus);
+}
+
+/** Effective paid-recruitment completions per turn for this city's owner. */
+function unitRecruitmentCapacityForCity(city: City, baseCapacity: number): number {
+  const civKey = cfg.getCivKey?.(city.ownerId);
+  const speedBonus = civKey
+    ? civMatrixParam(civKey, 'prod_szybkosc_jednostki_proc')
+    : 0;
+  return unitRecruitmentCapacityPerTurn(baseCapacity, speedBonus);
+}
+
+/** Rush quote uses the same raw matrix modifier as the engine payment callback. */
+function rushCostModifierForCity(city: City): number {
+  const civKey = cfg.getCivKey?.(city.ownerId);
+  return civKey ? civMatrixParam(civKey, 'prod_rush_koszt_proc') : 0;
+}
 
 /** Inject engine hooks.  Merges into any previous config; call once at startup. */
 export function configureCityPanel(config: CityPanelConfig): void {
@@ -882,30 +914,38 @@ function formatBuildEtaLabel(turns: number | null, prefix = '~'): string {
 }
 
 /**
- * Kumulatywny ETA pozycji kolejki (indeks ≥ 1): kiedy budynek będzie gotowy,
- * licząc od bieżącej tury przy stałym dopływie Pracy do budynków.
+ * Kumulatywny ETA pozycji kolejki (indeks ≥ 1): kiedy pozycja będzie gotowa,
+ * licząc od bieżącej tury przy stałym dopływie Pracy. Building speed applies only
+ * to building entries; legacy unit entries retain the base rate.
  * Gdy produkcja wstrzymana — null (nie da się oszacować kolejki).
  */
 function queueItemCumulativeEta(
   prod: CityProduction,
   queueIndex: number,
   pracaPerTurn: number,
+  buildingPracaPerTurn = pracaPerTurn,
 ): number | null {
   if (!(pracaPerTurn > 0) || queueIndex < 1) return null;
   if (prod.wstrzymana === true) return null;
   const front = frontItem(prod);
   let sum = 0;
   if (front) {
-    const rem = etaTurns(front.koszt, prod.postep, pracaPerTurn);
+    const frontPraca = front.kind === 'budynek' ? buildingPracaPerTurn : pracaPerTurn;
+    if (!(frontPraca > 0)) return null;
+    const rem = etaTurns(front.koszt, prod.postep, frontPraca);
     if (rem === null) return null;
     sum += rem;
   }
   for (let i = 1; i < queueIndex; i++) {
     const it = prod.kolejka[i] as ProductionItem;
-    sum += Math.max(1, Math.ceil(it.koszt / pracaPerTurn));
+    const itemPraca = it.kind === 'budynek' ? buildingPracaPerTurn : pracaPerTurn;
+    if (!(itemPraca > 0)) return null;
+    sum += Math.max(1, Math.ceil(it.koszt / itemPraca));
   }
   const cur = prod.kolejka[queueIndex] as ProductionItem;
-  sum += Math.max(1, Math.ceil(cur.koszt / pracaPerTurn));
+  const curPraca = cur.kind === 'budynek' ? buildingPracaPerTurn : pracaPerTurn;
+  if (!(curPraca > 0)) return null;
+  sum += Math.max(1, Math.ceil(cur.koszt / curPraca));
   return sum;
 }
 
@@ -1160,6 +1200,8 @@ function computeView(city: City, map: GameMap, data: GameData): CityView | null 
       city, params, isCapital(city), zdrowie,
       { maSpichlerz, maAkwedukt },
       ownerDefaultPodzial,
+      undefined,
+      cfg.getCivKey?.(city.ownerId),
     );
     // #17 fix: base ctx miał flagi budynków/Waluty/bonusów cyw. na sztywno false/1/undefined,
     // więc Bilans plonów pomijał Młyn/Cegielnię/Targowisko/Bibliotekę/Mennicę, Walutę i bonusy
@@ -1191,6 +1233,7 @@ function computeView(city: City, map: GameMap, data: GameData): CityView | null 
       : undefined;
     const { handel: civHandelMult, nauka: civNaukaMult } =
       civEconomyYieldMultipliers(cfg.getCivBonusy?.(city.ownerId) ?? []);
+    const tradeIncome = cfg.getTradeIncomeByCity?.(city.id);
     const base: CityYieldContext = {
       wojskoZuzycieZywnosci: 0, strataFraction: 0,
       maMlyn: built.includes('mlyn'),
@@ -1206,6 +1249,8 @@ function computeView(city: City, map: GameMap, data: GameData): CityView | null 
       walutaMnoznikOverride,
       civHandelMult,
       civNaukaMult,
+      dochodTrasHandlowych: tradeIncome?.total ?? 0,
+      dochodTrasMorskich: tradeIncome?.maritime ?? 0,
       // Zadanie 2 (2026-07-23): Garncarnia +Zywnosc% LOKALNIE -- liczba sztuk w TYM miescie.
       liczbaGarncarni: built.filter(id => id === 'garncarnia').length,
     };
@@ -3183,7 +3228,7 @@ function computeOrderStateLocal(city: City, data: GameData): { state: OrderState
   const haCuda = engineSzLines?.find(l => l.id === 'cuda')?.value ?? 0;
   const atWar = engineSzLines ? engineSzLines.some(l => l.id === 'wojna') : false;
 
-  const ordPctRaw = evaluateOrderFromBreakdown(
+  const ordPctEvaluated = evaluateOrderFromBreakdown(
     {
       difficulty,
       era,
@@ -3220,6 +3265,16 @@ function computeOrderStateLocal(city: City, data: GameData): { state: OrderState
     data.societyParams,
     difficulty,
   );
+
+  const happinessCivKey = cfg.getCivKey?.(city.ownerId);
+  const ordPctRaw = happinessCivKey
+    ? applyCivMatrixHappinessModifier(
+      ordPctEvaluated,
+      civMatrixParam(happinessCivKey, 'eko_zadowolenie_proc'),
+      data.societyParams,
+      difficulty,
+    )
+    : ordPctEvaluated;
 
   const ordPct = isPostCaptureLawActive(city)
     ? applyPostCaptureLawOverride(ordPctRaw, city, data.societyParams, difficulty)
@@ -5060,7 +5115,13 @@ function appendPodzialPracyInfo(
   let budSub = '';
   if (front && praca) {
     const paused = prod.wstrzymana === true;
-    const eta = paused ? null : etaTurns(front.koszt, prod.postep, praca.doBudynkow);
+    const eta = paused ? null : etaTurns(
+      front.koszt,
+      prod.postep,
+      front.kind === 'budynek'
+        ? buildingWorkPerTurnForCity(city, praca.doBudynkow)
+        : praca.doBudynkow,
+    );
     budSub =
       `${front.nazwa}: ${prod.postep}/${front.koszt}${cityPanelChipIconWrap('res-work', 14)}` +
       (paused ? ' · wstrzymana' : eta != null ? ` · ~${eta} ${tury(eta)}` : praca.doBudynkow > 0 ? '' : ' · brak pracy');
@@ -5675,7 +5736,7 @@ function buildTopBarRekruciDetailCard(
 
   appendDetailAlgo(card, 'Skąd bierze się pula', [
     'Max ≈ 10% ludności absolutnej miasta (tabela epok).',
-    'Regen = % max (parametr balansu, patrz "Odnowa" wyżej) × bonus cywilizacji (np. Rzym ×2).',
+    'Regen = % max (parametr balansu, patrz "Odnowa" wyżej) × modyfikator regeneracji z macierzy cywilizacji.',
     'Oblężenie blokuje odnowę do czasu zdjęcia oblężenia.',
   ]);
   return card;
@@ -7110,7 +7171,7 @@ function buildBuildingInfocard(
 
   if (opts?.item && opts.city) {
     const act = el('div', 'bld-infocard-actions');
-    const e = etaTurns(opts.item.koszt, 0, opts.praca ?? 0);
+    const e = etaTurns(opts.item.koszt, 0, buildingWorkPerTurnForCity(opts.city, opts.praca ?? 0));
     const workIc = cityPanelChipIconWrap('res-work', 12);
     const cost = el('div', 'bld-infocard-cost');
     cost.innerHTML = `${opts.item.koszt}${workIc}${e !== null ? ' · ~' + e + ' ' + tury(e) : ''}`;
@@ -7537,12 +7598,14 @@ function ensureEntityCardBuildingStyles(): void {
 function buildBuildingDetailCardViaEntityCard(def: BuildingDef, data: GameData, city?: City): HTMLDivElement {
   ensureEntityCardBuildingStyles();
   const displayLevel = buildingUiDisplayLevel(def, city);
+  const ownerId = city?.ownerId ?? 0;
   const cityState: BuildingCardCityState = {
     hasCity: city !== undefined,
     displayLevel,
     buildCostPace: cfg.getBuildingCostPace?.() ?? 'niski',
     difficulty: cfg.getDifficulty?.() ?? 'normal',
-    ownerId: 0, // 1:1 ze świadomym hardcode'em dawnego `buildBuildingDetailCard`
+    ownerId,
+    civBonusy: cfg.getCivBonusy?.(ownerId),
   };
   const built = buildingAdapter(def, { city: cityState });
   const card = renderEntityCard(built) as HTMLDivElement;
@@ -7641,9 +7704,9 @@ function _legacyBuildBuildingDetailCard(def: BuildingDef, data: GameData, city?:
   const gCost = appendDetailGridIn(costBody);
   const pace = cfg.getBuildingCostPace?.() ?? 'niski';
   const difficulty = cfg.getDifficulty?.() ?? 'normal';
-  const ownerId = 0;
+  const ownerId = city?.ownerId ?? 0;
   const baseWork = itemCost('budynek', def.id, { buildings: data.buildings, units: data.units }, 1);
-  const workCost = buildingWorkCost(baseWork, undefined, pace, ownerId, difficulty);
+  const workCost = buildingWorkCost(baseWork, cfg.getCivBonusy?.(ownerId), pace, ownerId, difficulty);
   gridDetailRow(gCost, 'Koszt budowy (jednorazowy)', `${workCost} pkt Pracy ${cityPanelChipIconWrap('res-work', 14)}`);
   if (def.przyrostKosztu) {
     gridDetailRow(
@@ -7781,7 +7844,7 @@ function buildBuildingBuildTabDetailCard(
 
   if (opts?.item && city && !opts.locked) {
     const act = el('div', 'bld-detail-actions');
-    const e = etaTurns(opts.item.koszt, 0, opts.praca ?? 0);
+    const e = etaTurns(opts.item.koszt, 0, buildingWorkPerTurnForCity(city, opts.praca ?? 0));
     const workIc = cityPanelChipIconWrap('res-work', 12);
     const cost = el('div', 'bld-infocard-cost');
     cost.style.cssText = 'flex:1 1 100%;margin-bottom:0.2em;';
@@ -7792,7 +7855,9 @@ function buildBuildingBuildTabDetailCard(
     act.appendChild(btnWrap);
     card.appendChild(act);
   } else if (!opts?.locked && opts?.item) {
-    const e = etaTurns(opts.item.koszt, 0, opts.praca ?? 0);
+    const e = city
+      ? etaTurns(opts.item.koszt, 0, buildingWorkPerTurnForCity(city, opts.praca ?? 0))
+      : etaTurns(opts.item.koszt, 0, opts.praca ?? 0);
     const workIc = cityPanelChipIconWrap('res-work', 12);
     const note = el('div', 'dc-note');
     note.style.fontStyle = 'normal';
@@ -8049,8 +8114,9 @@ function appendBuildableItemRow(
 
 function recruitManpowerCost(city: City, typeId: string): number {
   const ep = cfg.getEpoch?.(city.ownerId) ?? 1;
-  const maxMult = civManpowerMaxMult(cfg.getCivBonusy?.(city.ownerId));
-  return unitManpowerCostForType(typeId, ep, maxMult);
+  const multipliers = cfg.getManpowerMultipliers?.(city.ownerId);
+  const maxMult = multipliers?.maxMult ?? civManpowerMaxMult(cfg.getCivBonusy?.(city.ownerId));
+  return unitManpowerCostForType(typeId, ep, maxMult, multipliers?.costMult ?? maxMult);
 }
 
 /** Bieżąca pula rekrutów używana przez bramkę zakupu (fallback: pula miasta). */
@@ -8256,10 +8322,15 @@ function appendRecruitmentQueue(mount: HTMLElement, city: City, player: boolean,
       costEl.innerHTML = `${it.koszt} ${cityPanelChipIconWrap('res-treasury', 14)}`;
       costEl.title = `Opłacone ze skarbca: ${it.koszt}`;
       qi.appendChild(costEl);
-      const etaTurns = i + 1;
+      const unitsPerTurn = unitRecruitmentCapacityForCity(city, 1);
+      const recruitmentEtaTurns = unitsPerTurn > 0 ? Math.ceil((i + 1) / unitsPerTurn) : null;
       const etaEl = el('span', 'qitem-eta');
-      etaEl.textContent = etaTurns === 1 ? 'nast. tura' : `~${etaTurns} ${tury(etaTurns)}`;
-      etaEl.title = `Szacunek: ${etaTurns} ${tury(etaTurns)} (1 jednostka na turę)`;
+      etaEl.textContent = recruitmentEtaTurns === null
+        ? 'brak tempa'
+        : recruitmentEtaTurns === 1 ? 'nast. tura' : `~${recruitmentEtaTurns} ${tury(recruitmentEtaTurns)}`;
+      etaEl.title = recruitmentEtaTurns === null
+        ? 'Brak dostępnego limitu rekrutacji na turę'
+        : `Szacunek: ${recruitmentEtaTurns} ${tury(recruitmentEtaTurns)} (limit rekrutacji na turę: ${unitsPerTurn})`;
       qi.appendChild(etaEl);
       if (player) {
         const up = el('button', 'btn btn-sm', '↑');
@@ -8351,8 +8422,12 @@ function appendBuildQueueSection(
       qLabel.style.cssText = 'flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;';
       qLabel.textContent = it.nazwa;
       qi.appendChild(qLabel);
-      const cumEta = queueItemCumulativeEta(prod, i, pracaBudynki);
-      const ownEta = queueItemOwnEta(it.koszt, pracaBudynki);
+      const buildingPracaBudynki = buildingWorkPerTurnForCity(city, pracaBudynki);
+      const cumEta = queueItemCumulativeEta(prod, i, pracaBudynki, buildingPracaBudynki);
+      const ownEta = queueItemOwnEta(
+        it.koszt,
+        it.kind === 'budynek' ? buildingWorkPerTurnForCity(city, pracaBudynki) : pracaBudynki,
+      );
       const etaEl = el('span', 'qitem-eta');
       if (cumEta !== null) {
         etaEl.textContent = `gotowy za ~${cumEta} ${tury(cumEta)}`;
@@ -8433,6 +8508,9 @@ function renderProd(mount: HTMLElement, city: City, view: CityView | null): void
   const data = gameData();
   const pracaSplit = view ? cityPracaSplit(city, view, data) : null;
   const pracaBud = pracaSplit?.doBudynkow ?? 0;
+  const pracaBudForEta = front?.kind === 'budynek'
+    ? buildingWorkPerTurnForCity(city, pracaBud)
+    : pracaBud;
   const player = isMeCity(city.ownerId); // AI cities -> read-only (no build/queue controls)
   const hasBuildQueue = prod.kolejka.length > 1;
   const hasRecruitQueue = (prod.rekrutacja ?? []).length > 0;
@@ -8461,7 +8539,7 @@ function renderProd(mount: HTMLElement, city: City, view: CityView | null): void
 
   if (front) {
     const paused = getProd(city.id).wstrzymana === true;
-    const e = paused ? null : etaTurns(front.koszt, prod.postep, pracaBud);
+    const e = paused ? null : etaTurns(front.koszt, prod.postep, pracaBudForEta);
     const pct = front.koszt > 0 ? Math.round(Math.min(1, prod.postep / front.koszt) * 100) : 100;
     const workIc = cityPanelChipIconWrap('res-work', 12);
     const pauseBadge = paused
@@ -8504,7 +8582,7 @@ function renderProd(mount: HTMLElement, city: City, view: CityView | null): void
     actions.style.cssText = 'margin-top:0.35em;display:flex;gap:0.3em;flex-wrap:wrap;';
     // Wykup (rush-buy) -- only when the engine exposes treasury + a spend hook.
     if (cfg.getTreasury && cfg.onRushBuy) {
-      const koszt = rushCost(prod);
+      const koszt = rushCost(prod, rushCostModifierForCity(city));
       const skarb = cfg.getTreasury(city.ownerId);
       const stac = skarb >= koszt;
       const wykup = el('button', 'btn btn-g');
@@ -8861,8 +8939,9 @@ function renderBuildList(
 function buildRecruitTabDetailCard(city: City, unitCount: number, skarb: number | undefined): HTMLDivElement {
   const epoch = cfg.getEpoch?.(city.ownerId) ?? 1;
   const mpSnap = cfg.getManpowerSnapshot?.(city.id);
-  const maxMult = civManpowerMaxMult(cfg.getCivBonusy?.(city.ownerId));
-  const mpCostStd = unitManpowerCost(epoch, maxMult);
+  const multipliers = cfg.getManpowerMultipliers?.(city.ownerId);
+  const maxMult = multipliers?.maxMult ?? civManpowerMaxMult(cfg.getCivBonusy?.(city.ownerId));
+  const mpCostStd = unitManpowerCost(epoch, multipliers?.costMult ?? maxMult);
 
   const card = el('div', 'detail-card');
   card.appendChild(el('div', 'dc-h', '<span>Rekrutacja — szczegóły</span>'));

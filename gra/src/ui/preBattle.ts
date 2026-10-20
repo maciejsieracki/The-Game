@@ -11,7 +11,7 @@
  */
 
 import type { CivBonusLite } from '../game/production';
-import { bonusChipTexts } from '../game/defenseBreakdown';
+import { civCombatUnitShapeFromCategory, effectiveCombatBonusChipTexts } from '../game/civ-bonuses';
 import { terrainIconSvg, civIconSvg, brandIconSvg } from './icons/brandAssets';
 import { PB_SVG } from '../battle/battleHudTheme';
 import { leaderPortraitUrl, leaderName } from './leaderPortraits';
@@ -703,6 +703,7 @@ function commanderHtml(
   isYou: boolean,
   explicit: readonly CivBonusLite[] | undefined,
   getBonusy?: (ownerId: number) => readonly CivBonusLite[],
+  terrain = '',
 ): string {
   const total = unitCount(side.units);
   const civ = esc(side.cywilizacja ?? side.nazwa);
@@ -710,7 +711,10 @@ function commanderHtml(
   const sideCls = isYou ? 'pb-you' : 'pb-foe';
   const posCls = isYou ? 'pb-l' : 'pb-r';
   const bonusy = resolveSideBonusy(side, explicit, getBonusy);
-  const chipTexts = bonusChipTexts(bonusy);
+  const combatRoster = side.units.map(unit => civCombatUnitShapeFromCategory(unit.nazwa, unit.kategoria));
+  const chipTexts = effectiveCombatBonusChipTexts(bonusy, combatRoster, {
+    side: role === 'atk' ? 'attacker' : 'defender', terrain, isChargeRound: false,
+  });
   const chipsHtml = chipTexts.length
     ? '<div class="pb-bonuses">' +
       chipTexts.map(t => '<span class="pb-bchip">' + PB_ICON_DOT + esc(t) + '</span>').join('') +
@@ -894,8 +898,8 @@ function buildOverlay(info: PreBattleInfo, cb: PreBattleCallbacks, opts?: PreBat
   // roster wroga renderowany w pelni z dostepnych danych (tak jak dotychczas).
 
   overlay.innerHTML =
-    commanderHtml(info.atakujacy, 'atk', isYouAtk, info.bonusyAtakujacy, getBonusy) +
-    commanderHtml(info.obronca, 'def', isYouDef, info.bonusyObronca, getBonusy) +
+    commanderHtml(info.atakujacy, 'atk', isYouAtk, info.bonusyAtakujacy, getBonusy, info.teren) +
+    commanderHtml(info.obronca, 'def', isYouDef, info.bonusyObronca, getBonusy, info.teren) +
     rosterHtml(info.atakujacy, 'atk', isYouAtk) +
     rosterHtml(info.obronca, 'def', isYouDef);
 

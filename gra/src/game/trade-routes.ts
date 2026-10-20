@@ -1619,12 +1619,19 @@ export function loadTradeRouteIncomeParams(
  * route.toOwnerId), bo obaj właściciele mogą mieć różne cuda. Domyślnie 0 (brak
  * bonusu) — zachowuje dokładnie dawne zachowanie dla wywołań bez 3. argumentu.
  */
-export function computeTradeRouteIncomeByCity(
+export interface TradeRouteIncomeByCityBreakdown {
+  totalByCity: Map<string, number>;
+  maritimeByCity: Map<string, number>;
+}
+
+/** Same per-route amounts as the total aggregator, with the typed sea subset retained. */
+export function computeTradeRouteIncomeByCityBreakdown(
   routes: readonly TradeRoute[],
   params: TradeRouteIncomeParams = DEFAULT_TRADE_ROUTE_INCOME_PARAMS,
   wonderTradeBonusForOwner: (ownerId: number, medium: TradeRouteMedium) => number = () => 0,
-): Map<string, number> {
-  const out = new Map<string, number>();
+): TradeRouteIncomeByCityBreakdown {
+  const totalByCity = new Map<string, number>();
+  const maritimeByCity = new Map<string, number>();
   for (const route of routes) {
     if (route.status !== 'polaczony') continue;
     const routeIncome = tradeRouteIncomeForRoute(route, params);
@@ -1632,10 +1639,22 @@ export function computeTradeRouteIncomeByCity(
     const toMult   = 1 + wonderTradeBonusForOwner(route.toOwnerId, route.medium);
     const fromIncome = fromMult === 1 ? routeIncome : Math.floor(routeIncome * fromMult);
     const toIncome   = toMult === 1 ? routeIncome : Math.floor(routeIncome * toMult);
-    out.set(route.fromCityId, (out.get(route.fromCityId) ?? 0) + fromIncome);
-    out.set(route.toCityId,   (out.get(route.toCityId)   ?? 0) + toIncome);
+    totalByCity.set(route.fromCityId, (totalByCity.get(route.fromCityId) ?? 0) + fromIncome);
+    totalByCity.set(route.toCityId,   (totalByCity.get(route.toCityId)   ?? 0) + toIncome);
+    if (route.medium === 'morze') {
+      maritimeByCity.set(route.fromCityId, (maritimeByCity.get(route.fromCityId) ?? 0) + fromIncome);
+      maritimeByCity.set(route.toCityId,   (maritimeByCity.get(route.toCityId)   ?? 0) + toIncome);
+    }
   }
-  return out;
+  return { totalByCity, maritimeByCity };
+}
+
+export function computeTradeRouteIncomeByCity(
+  routes: readonly TradeRoute[],
+  params: TradeRouteIncomeParams = DEFAULT_TRADE_ROUTE_INCOME_PARAMS,
+  wonderTradeBonusForOwner: (ownerId: number, medium: TradeRouteMedium) => number = () => 0,
+): Map<string, number> {
+  return computeTradeRouteIncomeByCityBreakdown(routes, params, wonderTradeBonusForOwner).totalByCity;
 }
 
 /**

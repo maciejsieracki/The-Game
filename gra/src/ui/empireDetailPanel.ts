@@ -3858,9 +3858,6 @@ function render(): void {
   const uchwalyHtml = renderUchwalyHtml(uchwaly);
 
   // — PARAMETRY GLOBALNE (zachowane, reskin) —
-  const bonusHtml = g.bonusy.map(b =>
-    `<div class="civ-emp-bonus">${esc(b.opis)}<span class="tag">${esc(b.realizuje)}</span></div>`,
-  ).join('');
   const params = `<div class="civ-emp-sect" data-section="parametry">`
     + `<div class="civ-emp-eyebrow">PARAMETRY GLOBALNE</div><div class="civ-emp-meta">`
     + `<div class="civ-emp-chip"><div class="k">Epoka</div><div class="v gold">${esc(e.epoka)}</div></div>`
@@ -3869,8 +3866,7 @@ function render(): void {
     + `<div class="civ-emp-chip"><div class="k">Osiedla</div><div class="v">${e.osiedla}/${e.osiedlaMax}</div></div>`
     + `<div class="civ-emp-chip wide"><div class="k">Religia państwowa</div><div class="v">${esc(g.religiaPanstwowa)}</div></div>`
     + `<div class="civ-emp-chip wide"><div class="k">Badania</div><div class="v">${esc(e.badana ?? '—')}</div></div>`
-    + `<div class="civ-emp-chip wide"><div class="k">Bonus startowy</div><div class="v">${esc(g.bonusStartowy)}</div></div>`
-    + `</div>${bonusHtml}${uchwalyHtml}</div>`;
+    + `</div>${uchwalyHtml}</div>`;
 
   // — MOC IMPERIUM —
   let moc = `<div class="civ-emp-sect sep" data-section="moc">`

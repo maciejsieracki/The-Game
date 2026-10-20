@@ -14,7 +14,7 @@ const ENTRY = path.resolve(__dirname, '.mp-spawn-ration-entry.ts');
 const BUNDLE = path.resolve(__dirname, '.mp-spawn-ration-bundle.cjs');
 
 fs.writeFileSync(ENTRY, `
-export { foundCityAt, DEFAULT_PROCENT_ROZWOJ } from '../src/game/cities';
+export { foundCityAt, canFoundCity, DEFAULT_PROCENT_ROZWOJ } from '../src/game/cities';
 export {
   DEFAULT_POZIOM_RACJI,
   getCityRationLevel,
@@ -42,25 +42,32 @@ function eq(a, b, label) {
 const map = M.generateMap(24, 24, 424242);
 const cities = [];
 
-function findLandHex() {
+function findLegalLandHex(foundingCityState = false) {
   for (const [key, hex] of Object.entries(map.hexes)) {
     const t = hex.terenBazowy;
     if (t !== 'morze' && t !== 'plytkie_morze' && t !== 'gory') {
       const [q, r] = key.split(',').map(Number);
+      if (M.canFoundCity(q, r, cities, map, { foundingCityState }).ok) {
+        return { q, r };
+      }
+    }
+  }
+  throw new Error('no legal land hex for city founding');
+}
+
+function findWaterHex() {
+  for (const [key, hex] of Object.entries(map.hexes)) {
+    if (hex.terenBazowy === 'plytkie_morze' || hex.terenBazowy === 'morze') {
+      const [q, r] = key.split(',').map(Number);
       return { q, r };
     }
   }
-  throw new Error('no land hex');
-}
-
-function nextHex(offset) {
-  const { q, r } = findLandHex();
-  return { q: q + offset * 8, r: r + offset * 8 };
+  throw new Error('no water hex for negative control');
 }
 
 console.log('--- T1: foundCityAt MP (foundingCityState=true) → Wyżywienie 4 ---');
 {
-  const pos = nextHex(0);
+  const pos = findLegalLandHex(true);
   const city = M.foundCityAt(pos.q, pos.r, 3, cities, map, 'Sparta', true);
   ok(city !== null, 'T1a: foundCityAt zwraca miasto');
   if (city) {
@@ -73,7 +80,7 @@ console.log('--- T1: foundCityAt MP (foundingCityState=true) → Wyżywienie 4 -
 
 console.log('\n--- T2: foundCityAt major AI (bez CS) → Wyżywienie 4 ---');
 {
-  const pos = nextHex(1);
+  const pos = findLegalLandHex(false);
   const city = M.foundCityAt(pos.q, pos.r, 1, cities, map, 'Ateny', false);
   ok(city !== null, 'T2a: foundCityAt major zwraca miasto');
   if (city) {
@@ -85,13 +92,22 @@ console.log('\n--- T2: foundCityAt major AI (bez CS) → Wyżywienie 4 ---');
 
 console.log('\n--- T3: foundCityAt gracz → Wyżywienie 4 ---');
 {
-  const pos = nextHex(2);
+  const pos = findLegalLandHex(false);
   const city = M.foundCityAt(pos.q, pos.r, 0, cities, map, 'Memfis');
   ok(city !== null, 'T3a: foundCityAt gracz zwraca miasto');
   if (city) {
     eq(city.poziomRacji, 4, 'T3b: poziomRacji=4');
     eq(M.getCityRationLevel(city), 4, 'T3c: getCityRationLevel=4');
   }
+}
+
+console.log('\n--- T6: foundCityAt odrzuca rzeczywisty heks wody ---');
+{
+  const pos = findWaterHex();
+  const result = M.canFoundCity(pos.q, pos.r, cities, map);
+  ok(result.ok === false && result.reason === 'morze', 'T6a: canFoundCity odrzuca wodę jako morze');
+  const city = M.foundCityAt(pos.q, pos.r, 2, cities, map, 'MiastoNaWodzie');
+  ok(city === null, 'T6b: foundCityAt na wodzie zwraca null');
 }
 
 console.log('\n--- T4: legacy migrate procentRozwoj:100 bez poziomRacji → 6 (stare save) ---');

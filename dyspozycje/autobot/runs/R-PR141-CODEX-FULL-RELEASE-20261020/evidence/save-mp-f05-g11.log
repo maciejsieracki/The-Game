@@ -1,0 +1,30 @@
+SOURCE_SHA256 main.ts 835fed2551d70de7021f6e3713e00ec9b425588d28179cfd0d8c96c94fb99022
+SOURCE_SHA256 save.ts 5fb81b5732b124050f586201a59f9717157369b01ffeccd85937054d845357a2
+SOURCE_SHA256 manpower.ts bbcafbe0400e756223e79d9d5651dc6db15b05bd93a45225d212fab69fd1e38c
+SOURCE_SHA256 civ-bonuses.ts b48b0b45f3094561b76e0a2061912a666cfd600371f594b9ebb7a17f3fe7aa44
+SOURCE_SHA256 production.ts 335c13b8caff5aa3805644a44e1e06fc4f601e18d878a5fe5320d5fe789dec07
+SOURCE_SHA256 economy.ts 61c4d080fb2fed64012c9615de6e19643d93de2bbffd9cb9ad24b7bf3c27d3cf
+SOURCE_SHA256 civ-matrix.ts 3bc9f443c9c8850175bb8b62adbc69547494eeed7b66159af65b48e5ab596ede
+SOURCE_SHA256 main-in-memory 835fed2551d70de7021f6e3713e00ec9b425588d28179cfd0d8c96c94fb99022
+PASS real SAVE_VERSION is v3
+PASS actual serialize→deserialize preserves hotseat and local state
+PASS current save metadata provides same-map load params with civId2
+PASS real pause-load predicate selects no-map-rebuild branch
+PASS applyMenuParams exact statement resets map to primary only
+PASS restoreGameFromSave invokes human civ restoration after rebuilding seats
+PASS exact restore statement restores both hotseat IDs and active owner
+PASS restore helper assigns saved secondary civ without hardcoded owner ID
+PASS restore helper maps an arbitrary runtime secondary owner ID
+PASS actual restore unit statements replace stale runtime unit state
+PASS actual restore cityProd statements preserve paid recruitment queue
+PASS actual per-owner resolver returns saved secondary civ after restore
+PASS secondary owner civ remains stable when secondary seat is active
+PASS legacy save without civId2 falls back to primary and preserves AI roster
+PASS actual secondary-owner MP consumer resolves saved Egyptian multipliers
+PASS actual secondary-owner chariot movement consumer resolves Egyptian movement
+CONSUMER_TRACE secondaryOwner=7 savedCiv=egipt resolvedCiv=egipt
+CONSUMER_TRACE mpResolved={"regenMult":1,"maxMult":1,"costMult":1} mpExpectedEgypt={"regenMult":1,"maxMult":1,"costMult":1}
+CONSUMER_TRACE egyptChariotMoveResolved=1.15 expected=1.15
+PASS real G11 pricing consumer retains Impi-only targeting after roundtrip
+CONSUMER_TRACE primary=zulu impiCost=90 nonImpiCost=100
+RESULT BOUNDED_SOURCE_EXECUTION_PASS; this does not prove full-game save/load.

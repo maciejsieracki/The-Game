@@ -1073,6 +1073,39 @@ export function evaluateOrderFromBreakdown(
   return computeOrderPctBreakdown(sz, prawo, params, revolt);
 }
 
+/** Apply the owner matrix to the fully computed happiness result, then recompute Order once. */
+export function applyCivMatrixHappinessModifier(
+  order: OrderPctBreakdown,
+  raw: number,
+  society: SocietyParamsLike | null | undefined,
+  difficulty: Difficulty = 'normal',
+): OrderPctBreakdown {
+  if (!Number.isFinite(raw) || raw === 0) return order;
+  const scale = loadSocietyScaleParams(society, difficulty);
+  const max = order.sz.szMax > 0 ? order.sz.szMax : 1;
+  const netto = order.sz.netto * (1 + raw);
+  const delta = netto - order.sz.netto;
+  const lines = delta === 0
+    ? order.sz.lines
+    : [...order.sz.lines, {
+      id: 'matryca_eko_zadowolenie',
+      label: 'Modyfikator cywilizacji (macierz ekonomii)',
+      value: delta,
+    }];
+  const sz: HappinessPctBreakdown = {
+    ...order.sz,
+    lines,
+    netto,
+    szPct: pctFromNetto(netto, max, scale.szPctCap),
+  };
+  return computeOrderPctBreakdown(
+    sz,
+    order.prawo,
+    loadOrderParams(society, difficulty),
+    loadRevoltParams(society, difficulty),
+  );
+}
+
 // ---------------------------------------------------------------------------
 // Revolt grace (B2-Q12=C)
 // ---------------------------------------------------------------------------

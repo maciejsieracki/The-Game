@@ -126,6 +126,42 @@ const PROVEN_CONSUMERS: Readonly<Record<string, string>> = {
   dip_prog_wojny: 'diplomacy-display.ts:73 + TAG_RULES — tag relacyjny tylko w UI',
   dip_pamietliwosc: 'diplomacy-display.ts:82 + TAG_RULES — tag relacyjny tylko w UI',
   dip_otwartosc_handel: 'diplomacy-display.ts:46 + TAG_RULES — tag relacyjny tylko w UI',
+  'walka_atak_piechota': 'bounded accepted integration evidence: dyspozycje/autobot/runs/R-PR141-CODEX-G1-ACTIVATION-20261018/11-integration.md; dyspozycje/autobot/runs/R-PR141-CODEX-G1-ACTIVATION-20261018/10-final-control-runda3.md; gra/tools/pr141-g1-combat-activation-test.cjs',
+  'walka_obrona_piechota': 'bounded accepted integration evidence: dyspozycje/autobot/runs/R-PR141-CODEX-G1-ACTIVATION-20261018/11-integration.md; dyspozycje/autobot/runs/R-PR141-CODEX-G1-ACTIVATION-20261018/10-final-control-runda3.md; gra/tools/pr141-g1-combat-activation-test.cjs',
+  'walka_pancerz_piechota': 'bounded accepted integration evidence: dyspozycje/autobot/runs/R-PR141-CODEX-G1-ACTIVATION-20261018/11-integration.md; dyspozycje/autobot/runs/R-PR141-CODEX-G1-ACTIVATION-20261018/10-final-control-runda3.md; gra/tools/pr141-g1-combat-activation-test.cjs',
+  'walka_dystans_lukownicy': 'bounded accepted integration evidence: dyspozycje/autobot/runs/R-PR141-CODEX-G1-ACTIVATION-20261018/11-integration.md; dyspozycje/autobot/runs/R-PR141-CODEX-G1-ACTIVATION-20261018/10-final-control-runda3.md; gra/tools/pr141-g1-combat-activation-test.cjs',
+  'walka_hp_piechota': 'bounded accepted integration evidence: dyspozycje/autobot/runs/R-PR141-CODEX-G1-ACTIVATION-20261018/11-integration.md; dyspozycje/autobot/runs/R-PR141-CODEX-G1-ACTIVATION-20261018/10-final-control-runda3.md; gra/tools/pr141-g1-combat-activation-test.cjs',
+  'walka_hp_rydwany': 'bounded accepted integration evidence: dyspozycje/autobot/runs/R-PR141-CODEX-G1-ACTIVATION-20261018/11-integration.md; dyspozycje/autobot/runs/R-PR141-CODEX-G1-ACTIVATION-20261018/10-final-control-runda3.md; gra/tools/pr141-g1-combat-activation-test.cjs',
+  'dip_nastawienie_bazowe': 'bounded pair initialization; direct generateMap boundary skipped; no full-world runtime claim: dyspozycje/autobot/runs/R-PR141-CODEX-DIP-ACTIVATION-20261018/08-integration.md; dyspozycje/autobot/runs/R-PR141-CODEX-DIP-ACTIVATION-20261018/07-final-control.md; gra/tools/pr141-dip-activation-test.cjs',
+  'dip_agresja_archetyp': 'bounded pair initialization; direct generateMap boundary skipped; no full-world runtime claim: dyspozycje/autobot/runs/R-PR141-CODEX-DIP-ACTIVATION-20261018/08-integration.md; dyspozycje/autobot/runs/R-PR141-CODEX-DIP-ACTIVATION-20261018/07-final-control.md; gra/tools/pr141-dip-activation-test.cjs',
+  'eko_praca_proc': 'bounded accepted integration evidence: dyspozycje/autobot/runs/R-PR141-CODEX-F04-WORK-ACTIVATION-20261018/06-integration.md; dyspozycje/autobot/runs/R-PR141-CODEX-F04-WORK-ACTIVATION-20261018/05-final-control.md; gra/tools/pr141-f04-work-activation-test.cjs',
+  'prod_koszt_budynku_proc': 'bounded accepted integration evidence: dyspozycje/autobot/runs/R-PR141-CODEX-F04-COST-ACTIVATION-20261018/06-integration.md; dyspozycje/autobot/runs/R-PR141-CODEX-F04-COST-ACTIVATION-20261018/05-final-control.md; gra/tools/pr141-f04-cost-activation-test.cjs',
+  'prod_koszt_jednostki_proc': 'bounded accepted integration evidence: dyspozycje/autobot/runs/R-PR141-CODEX-F04-COST-ACTIVATION-20261018/06-integration.md; dyspozycje/autobot/runs/R-PR141-CODEX-F04-COST-ACTIVATION-20261018/05-final-control.md; gra/tools/pr141-f04-cost-activation-test.cjs',
+  'walka_ruch_bitwa_proc': 'bounded accepted F05 evidence: dyspozycje/autobot/runs/R-CYWILIZACJE-MACIERZ-EKO-WEALTH-MANPOWER-SPOL-PROD-REBASE-Q1-20260925/attempt-codex-f05-20261017/01-operator.md; gra/src/game/civ-bonuses.ts::civMatrixBonusyForCivKey/civMovementMultiplier; gra/src/battle/battleScene.ts::_movementPointsFor; gra/tools/egypt-movement-precedence-test.cjs; dyspozycje/autobot/runs/R-PR141-CODEX-SEMANTIC-CONSUMER-CONSISTENCY-20261018/01-operator.md. Owner decision 1B suppresses Egypt overlapping general field in favor of its specific chariot field, while the Zulu general field remains active; this per-ID evidence does not claim every civilization cell has a nonzero runtime effect. Bounded evidence only; no full-world/map-generation claim.',
+  'walka_ruch_rydwany': 'bounded accepted Egypt movement-precedence evidence (owner decision 1B): dyspozycje/autobot/runs/R-CYWILIZACJE-MACIERZ-EKO-WEALTH-MANPOWER-SPOL-PROD-REBASE-Q1-20260925/attempt-codex-f05-20261017/01-operator.md; gra/src/game/civ-bonuses.ts::civMatrixBonusyForCivKey/civMovementMultiplier; gra/src/battle/battleScene.ts::_movementPointsFor; gra/tools/egypt-movement-precedence-test.cjs; dyspozycje/autobot/runs/R-PR141-CODEX-SEMANTIC-CONSUMER-CONSISTENCY-20261018/01-operator.md. Bounded evidence only.',
+  'walka_ruch_piechota_teren_plytkie_morze': 'bounded accepted shallow-sea context evidence (owner decision 4B): dyspozycje/autobot/runs/R-CYWILIZACJE-MACIERZ-EKO-WEALTH-MANPOWER-SPOL-PROD-REBASE-Q1-20260925/attempt-codex-f05-20261017/01-operator.md; civ-bonuses.ts::civMovementMultiplier/civEmbarkationMovementMultiplier; embarkation.ts::moveCostFnFor; gra/tools/egypt-movement-precedence-test.cjs; dyspozycje/autobot/runs/R-PR141-CODEX-SEMANTIC-CONSUMER-CONSISTENCY-20261018/01-operator.md. Bounded evidence only; no map-generation claim.',
+  'walka_koszt_rekrutacji_proc': 'bounded accepted G11 evidence (owner decision 2A): dyspozycje/autobot/runs/R-CYWILIZACJE-MACIERZ-EKO-WEALTH-MANPOWER-SPOL-PROD-REBASE-Q1-20260925/attempt-codex-g11-20261017/01-operator.md; gra/src/game/civ-bonuses.ts::civMatrixBonusyForCivKey; gra/src/game/production.ts::civRecruitmentDiscount/unitMoneyCost; gra/tools/impi-recruitment-discount-test.cjs; gra/tools/pr141-f04-cost-activation-test.cjs; dyspozycje/autobot/runs/R-PR141-CODEX-SEMANTIC-CONSUMER-CONSISTENCY-20261018/01-operator.md. Zulu discount is Impi-only and additively floored once; bounded evidence only.',
+  'wealth_cap_proc': 'bounded accepted integration evidence: dyspozycje/autobot/runs/R-PR141-CODEX-F04-SOCIETY-ACTIVATION-20261018/06-integration.md; dyspozycje/autobot/runs/R-PR141-CODEX-F04-SOCIETY-ACTIVATION-20261018/05-final-control.md; gra/tools/pr141-f04-society-activation-test.cjs',
+  'kultura_naplyw_proc': 'bounded accepted integration evidence: dyspozycje/autobot/runs/R-PR141-CODEX-F04-SOCIETY-ACTIVATION-20261018/06-integration.md; dyspozycje/autobot/runs/R-PR141-CODEX-F04-SOCIETY-ACTIVATION-20261018/05-final-control.md; gra/tools/pr141-f04-society-activation-test.cjs',
+  'porzadek_produkcja_proc': 'bounded accepted integration evidence: dyspozycje/autobot/runs/R-PR141-CODEX-F04-SOCIETY-ACTIVATION-20261018/06-integration.md; dyspozycje/autobot/runs/R-PR141-CODEX-F04-SOCIETY-ACTIVATION-20261018/05-final-control.md; gra/tools/pr141-f04-society-activation-test.cjs',
+  'porzadek_nauka_proc': 'bounded accepted integration evidence: dyspozycje/autobot/runs/R-PR141-CODEX-F04-SOCIETY-ACTIVATION-20261018/06-integration.md; dyspozycje/autobot/runs/R-PR141-CODEX-F04-SOCIETY-ACTIVATION-20261018/05-final-control.md; gra/tools/pr141-f04-society-activation-test.cjs',
+  'porzadek_kultura_proc': 'bounded accepted integration evidence: dyspozycje/autobot/runs/R-PR141-CODEX-F04-SOCIETY-ACTIVATION-20261018/06-integration.md; dyspozycje/autobot/runs/R-PR141-CODEX-F04-SOCIETY-ACTIVATION-20261018/05-final-control.md; gra/tools/pr141-f04-society-activation-test.cjs',
+  'porzadek_wzrost_proc': 'bounded accepted integration evidence: dyspozycje/autobot/runs/R-PR141-CODEX-F04-SOCIETY-ACTIVATION-20261018/06-integration.md; dyspozycje/autobot/runs/R-PR141-CODEX-F04-SOCIETY-ACTIVATION-20261018/05-final-control.md; gra/tools/pr141-f04-society-activation-test.cjs',
+  'wealth_mnoznik_proc': 'bounded Wealth caller AST evidence; no full-world runtime claim: dyspozycje/autobot/runs/R-PR141-CODEX-F04-SOCIETY-REMAINING-20261018/14-integration.md; dyspozycje/autobot/runs/R-PR141-CODEX-F04-SOCIETY-REMAINING-20261018/13-final-control.md; gra/tools/pr141-f04-society-remaining-activation-test.cjs',
+  'religia_spread_proc': 'source-inspected main owner route plus bounded helper/component evidence; no main-loop numeric execution: dyspozycje/autobot/runs/R-PR141-CODEX-F04-SOCIETY-REMAINING-20261018/14-integration.md; dyspozycje/autobot/runs/R-PR141-CODEX-F04-SOCIETY-REMAINING-20261018/13-final-control.md; gra/tools/pr141-f04-society-remaining-activation-test.cjs',
+  'porzadek_pieniadz_proc': 'source-inspected main owner route plus bounded helper/component evidence; no main-loop numeric execution: dyspozycje/autobot/runs/R-PR141-CODEX-F04-SOCIETY-REMAINING-20261018/14-integration.md; dyspozycje/autobot/runs/R-PR141-CODEX-F04-SOCIETY-REMAINING-20261018/13-final-control.md; gra/tools/pr141-f04-society-remaining-activation-test.cjs',
+  'eko_handel_brutto_proc': 'bounded accepted integration evidence: dyspozycje/autobot/runs/R-PR141-CODEX-F04-YIELDS-ACTIVATION-20261018/08-integration.md; dyspozycje/autobot/runs/R-PR141-CODEX-F04-YIELDS-ACTIVATION-20261018/07-final-control.md; gra/tools/pr141-f04-yields-activation-test.cjs',
+  'eko_pieniadz_proc': 'bounded accepted integration evidence: dyspozycje/autobot/runs/R-PR141-CODEX-F04-YIELDS-ACTIVATION-20261018/08-integration.md; dyspozycje/autobot/runs/R-PR141-CODEX-F04-YIELDS-ACTIVATION-20261018/07-final-control.md; gra/tools/pr141-f04-yields-activation-test.cjs',
+  'eko_pieniadz_port_proc': 'bounded accepted integration evidence: dyspozycje/autobot/runs/R-PR141-CODEX-F04-YIELDS-ACTIVATION-20261018/08-integration.md; dyspozycje/autobot/runs/R-PR141-CODEX-F04-YIELDS-ACTIVATION-20261018/07-final-control.md; gra/tools/pr141-f04-yields-activation-test.cjs',
+  'eko_zywnosc_proc': 'bounded accepted integration evidence: dyspozycje/autobot/runs/R-PR141-CODEX-F04-YIELDS-ACTIVATION-20261018/08-integration.md; dyspozycje/autobot/runs/R-PR141-CODEX-F04-YIELDS-ACTIVATION-20261018/07-final-control.md; gra/tools/pr141-f04-yields-activation-test.cjs',
+  'eko_nauka_proc': 'bounded accepted integration evidence: dyspozycje/autobot/runs/R-PR141-CODEX-F04-YIELDS-ACTIVATION-20261018/08-integration.md; dyspozycje/autobot/runs/R-PR141-CODEX-F04-YIELDS-ACTIVATION-20261018/07-final-control.md; gra/tools/pr141-f04-yields-activation-test.cjs',
+  'eko_kultura_proc': 'bounded accepted integration evidence: dyspozycje/autobot/runs/R-PR141-CODEX-F04-YIELDS-ACTIVATION-20261018/08-integration.md; dyspozycje/autobot/runs/R-PR141-CODEX-F04-YIELDS-ACTIVATION-20261018/07-final-control.md; gra/tools/pr141-f04-yields-activation-test.cjs',
+  'eko_luksus_proc': 'bounded accepted integration evidence: dyspozycje/autobot/runs/R-PR141-CODEX-F04-YIELDS-ACTIVATION-20261018/08-integration.md; dyspozycje/autobot/runs/R-PR141-CODEX-F04-YIELDS-ACTIVATION-20261018/07-final-control.md; gra/tools/pr141-f04-yields-activation-test.cjs',
+  'eko_zadowolenie_proc': 'bounded accepted integration evidence: dyspozycje/autobot/runs/R-PR141-CODEX-F04-YIELDS-ACTIVATION-20261018/08-integration.md; dyspozycje/autobot/runs/R-PR141-CODEX-F04-YIELDS-ACTIVATION-20261018/07-final-control.md; gra/tools/pr141-f04-yields-activation-test.cjs',
+  'eko_korupcja_proc': 'bounded accepted integration evidence: dyspozycje/autobot/runs/R-PR141-CODEX-F04-YIELDS-ACTIVATION-20261018/08-integration.md; dyspozycje/autobot/runs/R-PR141-CODEX-F04-YIELDS-ACTIVATION-20261018/07-final-control.md; gra/tools/pr141-f04-yields-activation-test.cjs',
+  'prod_szybkosc_budynku_proc': 'bounded accepted integration evidence: dyspozycje/autobot/runs/R-PR141-CODEX-F04-PRODUCTION-ACTIVATION-20261018/07-integration-building-speed.md; dyspozycje/autobot/runs/R-PR141-CODEX-F04-PRODUCTION-ACTIVATION-20261018/06-final-control-building-speed.md; gra/tools/pr141-f04-building-speed-activation-test.cjs',
+  'prod_szybkosc_jednostki_proc': 'bounded accepted unit-speed evidence: dyspozycje/autobot/runs/R-PR141-CODEX-F04-PRODUCTION-ACTIVATION-20261018/08-unit-speed-operator.md; dyspozycje/autobot/runs/R-PR141-CODEX-F04-PRODUCTION-ACTIVATION-20261018/09-unit-speed-fixture-addendum.md; dyspozycje/autobot/runs/R-PR141-CODEX-F04-PRODUCTION-ACTIVATION-20261018/10-unit-speed-evaluator.md; dyspozycje/autobot/runs/R-PR141-CODEX-F04-PRODUCTION-ACTIVATION-20261018/11-unit-speed-final-control.md; dyspozycje/autobot/runs/R-PR141-CODEX-F04-PRODUCTION-ACTIVATION-20261018/12-unit-speed-integration.md; gra/tools/pr141-f04-unit-speed-activation-test.cjs; gra/tools/ai-jednostki-tylko-zakup-test.cjs. Bounded actual-source owner-routing and integer-capacity evidence only; no per-cell behavior PASS or full-runtime claim.',
+  'prod_rush_koszt_proc': 'owner-approved signed price convention: docs/decyzje/R-PR141-CODEX-F04-RUSH-DECISION-20261018.md; bounded actual-source helper/UI quote/main owner-payment evidence: dyspozycje/autobot/runs/R-PR141-CODEX-MATRIX-ONLY-BONUSES-20261018/01-rush-operator-addendum.md; gra/src/game/production.ts::rushCost; gra/src/ui/cityPanel.ts::rushCostModifierForCity/renderProd; gra/src/main.ts::onRushBuy; gra/tools/pr141-f04-rush-activation-test.cjs. Positive raw increases the integer rush price and is harmful; all 15 current raw source cells are zero. Bounded owner-route evidence only; no browser or full-runtime claim.',
 };
 
 const REAL_GAMEPLAY = new Set([
@@ -162,6 +198,42 @@ const REAL_GAMEPLAY = new Set([
   'ai_tolerancja_ryzyka',
   'ai_sklonnosc_podboju',
   'ai_profil_obronna',
+  'walka_ruch_bitwa_proc',
+  'walka_ruch_rydwany',
+  'walka_ruch_piechota_teren_plytkie_morze',
+  'walka_koszt_rekrutacji_proc',
+  'walka_atak_piechota',
+  'walka_obrona_piechota',
+  'walka_pancerz_piechota',
+  'walka_dystans_lukownicy',
+  'walka_hp_piechota',
+  'walka_hp_rydwany',
+  'dip_nastawienie_bazowe',
+  'dip_agresja_archetyp',
+  'eko_praca_proc',
+  'prod_koszt_budynku_proc',
+  'prod_koszt_jednostki_proc',
+  'wealth_cap_proc',
+  'kultura_naplyw_proc',
+  'porzadek_produkcja_proc',
+  'porzadek_nauka_proc',
+  'porzadek_kultura_proc',
+  'porzadek_wzrost_proc',
+  'wealth_mnoznik_proc',
+  'religia_spread_proc',
+  'porzadek_pieniadz_proc',
+  'eko_handel_brutto_proc',
+  'eko_pieniadz_proc',
+  'eko_pieniadz_port_proc',
+  'eko_zywnosc_proc',
+  'eko_nauka_proc',
+  'eko_kultura_proc',
+  'eko_luksus_proc',
+  'eko_zadowolenie_proc',
+  'eko_korupcja_proc',
+  'prod_szybkosc_budynku_proc',
+  'prod_szybkosc_jednostki_proc',
+  'prod_rush_koszt_proc',
 ]);
 
 const UI_ONLY = new Set([
@@ -181,53 +253,19 @@ const UI_ONLY = new Set([
 // dyspozycje/autobot/runs/R-CYWILIZACJE-MACIERZ-META-REMOVE-Q1-20260922/
 // OWNER-DECISION-20260922.md for the full rationale and the exact parameter names.
 
-/**
- * R-CYWILIZACJE-MACIERZ-WIRING-AI-RECON-ORIGIN-20260922 runda 2: oba pola
- * ponownie zweryfikowane w kodzie runtime (nie tylko w metadanych macierzy)
- * i żadne nie ma legalnego, jednoznacznego kontraktu gameplay bez decyzji
- * właściciela — patrz `civMatrixConsumerEvidence`/`statusReason` i pakiet
- * A/B/C w `dyspozycje/autobot/runs/.../02-decision-packet.md`.
- * `dip_nastawienie_bazowe`: pomocnik `nastawienieBazoweZaufanieDelta` jest
- * czytany wyłącznie przez czysty `initialRelation`, który nie ma żadnego
- * wywołania runtime — żywy start klastra korzysta z `startRelationForPair`,
- * które tego pola nie dotyka (granica potwierdzona przez Defense Z1 rundy 1,
- * ponownie zweryfikowana w rundzie 2).
- * `dip_agresja_archetyp`: brak jakiegokolwiek wywołania runtime w `gra/src`
- * poza klasyfikatorem/danymi macierzy; istniejący konsument agresji
- * (`resolveArchetypeAggression`) czyta wyłącznie `ai_agresywnosc` — mapowanie
- * dip_agresja_archetyp na ten sam konsument groziłoby podwójnym liczeniem i
- * nie zostało wykonane.
- */
-const DECISION_REQUIRED = new Set([
-  'dip_nastawienie_bazowe',
-  'dip_agresja_archetyp',
-]);
+// Prior DIP holds are resolved by bounded activation records; no other ID is promoted.
+const DECISION_REQUIRED = new Set<string>();
 
 const HARMFUL = new Set([
-  'walka_koszt_rekrutacji_proc',
   'eko_korupcja_proc',
-  'prod_koszt_budynku_proc',
-  'prod_koszt_jednostki_proc',
   'prod_rush_koszt_proc',
   'lud_spadek_proc',
   'mp_koszt_jednostki_proc',
 ]);
 
-// R-CYWILIZACJE-MACIERZ-WIRING-COMBAT-RECON-ORIGIN-20260922 round 2 (2026-09-22):
-// Eight combat fields remain BLOCKED: seven G1/Egypt holds plus G11 recruitment
-// cost, whose effective matrix-options production path does not consume its ID.
-// Nine separately authorized G2–G11 fields with source/helper evidence are
-// classified REAL_GAMEPLAY above; this metadata repair changes no runtime path.
-const BLOCKED_COMBAT_MULTIPLIER = new Set([
-  'walka_atak_piechota',
-  'walka_obrona_piechota',
-  'walka_pancerz_piechota',
-  'walka_dystans_lukownicy',
-  'walka_hp_piechota',
-  'walka_hp_rydwany',
-  'walka_ruch_bitwa_proc',
-  'walka_koszt_rekrutacji_proc',
-]);
+// All previously blocked movement/G11 fields now have bounded accepted consumer
+// evidence; this metadata change does not alter runtime paths or balance values.
+const BLOCKED_COMBAT_MULTIPLIER = new Set<string>();
 
 // Same round: 19 combat/siege/fortification parameters where all 15 civilization
 // cells equal the declared default (no differentiated signal in the matrix data
@@ -352,6 +390,7 @@ function statusReason(
   status: CivMatrixConsumerStatus,
   parameterId: string,
   polarity: CivMatrixSemanticPolarity = civMatrixSemanticPolarity(parameterId),
+  civilizationId?: string,
 ): string {
   switch (status) {
     case 'REAL_GAMEPLAY':
@@ -367,6 +406,9 @@ function statusReason(
     case 'PROPOSAL': return 'Wartość/specyfikacja jest propozycją; nie wpływa na runtime.';
     case 'REFERENCE_NEEDS_REVIEW': return 'Znaleziono ślad referencyjny, ale brak dowodu efektu w runtime.';
     case 'BLOCKED':
+      if (parameterId === 'walka_ruch_bitwa_proc' && civilizationId === 'egipt') {
+        return 'Wyłączone dla Egiptu zgodnie z decyzją właściciela 1B: pole ogólnego ruchu w bitwie jest zastąpione przez specyficzne pole ruchu rydwanów. Konsument ID pozostaje aktywny dla innych nacji; wartość komórki Egiptu nie jest stosowana.';
+      }
       if (BLOCKED_COMBAT_MULTIPLIER.has(parameterId)) {
         return `Zablokowane do decyzji właściciela (runda 2, R-CYWILIZACJE-MACIERZ-WIRING-COMBAT-RECON-ORIGIN-20260922): ${parameterId} opisuje ten sam efekt walki, który już dziś dostarcza niezależny kanał civs.json→bonusy[]→civ-bonuses.ts; bez decyzji o precedencji (zastąp / sumuj / ignoruj macierz) podłączenie civ-matrix.json ryzykuje ciche podwojenie lub konflikt bonusu. Patrz 02-decision-packet-combat.md.`;
       }
@@ -472,12 +514,16 @@ export function classifyCivMatrixCell(input: CivMatrixSemanticCellInput): CivMat
   const direction = !blocked && rawValue !== null && baselineValue !== null && minValue !== null && maxValue !== null
     ? classifyDirection(rawValue, baselineValue, minValue, maxValue, polarity)
     : { label: 'NEUTRALNY' as const, signedIntensity: 0, correctedDelta: null, maxDistance: null };
-  const effectiveStatus = blocked ? 'BLOCKED' : status;
+  const egyptGeneralMovementExcluded = input.parameterId === 'walka_ruch_bitwa_proc'
+    && input.civilizationId === 'egipt' && !blocked;
+  // Decision 1B is a cell-level policy invariant: a caller-supplied REAL_GAMEPLAY
+  // status cannot make Egypt's superseded general field appear active.
+  const effectiveStatus = blocked || egyptGeneralMovementExcluded ? 'BLOCKED' : status;
   const blockedReason = !def
     ? `Nieznany parametr ${input.parameterId}; brak cichego fallbacku.`
     : !validNumbers
       ? `Brak wartości dla ${input.civilizationId}/${input.parameterId}; brak cichego fallbacku do Grecji.`
-      : statusReason(effectiveStatus, input.parameterId);
+      : statusReason(effectiveStatus, input.parameterId, polarity, input.civilizationId);
   return {
     parameterId: input.parameterId,
     civilizationId: input.civilizationId,
@@ -498,8 +544,10 @@ export function classifyCivMatrixCell(input: CivMatrixSemanticCellInput): CivMat
     signedIntensity: direction.signedIntensity,
     consumerStatus: effectiveStatus,
     statusLabelPl: statusLabel(effectiveStatus),
-    statusReasonPl: blocked ? blockedReason : statusReason(effectiveStatus, input.parameterId),
-    explanationPl: blocked ? blockedReason : consumerExplanation(input.parameterId, effectiveStatus),
+    statusReasonPl: blocked ? blockedReason : statusReason(effectiveStatus, input.parameterId, polarity, input.civilizationId),
+    explanationPl: blocked || egyptGeneralMovementExcluded
+      ? blockedReason
+      : consumerExplanation(input.parameterId, effectiveStatus),
     difficultyBehaviorPl: difficultyBehavior(input.parameterId, effectiveStatus),
     source: input.source ?? (blocked ? 'missing' : 'gra/data/civ-matrix.json'),
     provenance: {

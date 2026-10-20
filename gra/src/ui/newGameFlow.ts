@@ -78,7 +78,6 @@ export interface CivOption {
   name: string;
   styl?: string;
   superJednostka?: string;
-  bonusy?: string[];
   religia?: string;
   typGlowny?: string;
   /** epokaWejscia — kanon kaskady (D-CYW-EPOKA-WEJSCIA). */
@@ -546,13 +545,6 @@ function civsFromData(data: GameData): CivOption[] {
       const ikonaId = typeof raw['ikonaId'] === 'string' ? raw['ikonaId'] : c.Cywilizacja;
       const religia = typeof raw['Religia'] === 'string' ? raw['Religia'] : undefined;
       const typGlowny = typeof raw['Typ główny'] === 'string' ? raw['Typ główny'] : undefined;
-      const bonusyFromJson = Array.isArray(raw['bonusy'])
-        ? (raw['bonusy'] as Array<{ opis?: string }>)
-            .map(b => (typeof b.opis === 'string' ? b.opis.trim() : ''))
-            .filter(s => s.length > 0)
-        : [];
-      const legacyBonusy = [c['Bonus startowy'], c['Bonusy/minusy (do dopracowania)']]
-        .filter((x): x is string => typeof x === 'string' && x.trim().length > 0);
       const epokiStartowe = parseEpokiStartowe(raw);
       const kolorHex = typeof raw['kolorHex'] === 'string' ? raw['kolorHex'] : undefined;
       return {
@@ -560,7 +552,6 @@ function civsFromData(data: GameData): CivOption[] {
         name: c.Cywilizacja,
         styl: c['Styl / charakter'] ?? undefined,
         superJednostka: c['Jednostka specjalna'] ?? undefined,
-        bonusy: bonusyFromJson.length > 0 ? bonusyFromJson : legacyBonusy,
         religia,
         typGlowny,
         epokaWejscia: parseEpokaWejscia(raw, epokiStartowe),
@@ -680,19 +671,6 @@ function settingIcon(key: string): string {
   if (svg) return svg;
   const g = SETTING_GLYPHS[key] ?? 'Op';
   return '<span class="ng-glyph ng-glyph-sm">' + g + '</span>';
-}
-
-function bonusRowClass(text: string): 'bp' | 'bm' {
-  const t = text.toLowerCase();
-  if (/^[-−]|słab|slab|brak |trudn|wolniej|wysokie koszty|gorsz/.test(t)) return 'bm';
-  return 'bp';
-}
-
-function appendBonusRow(parent: HTMLElement, text: string): void {
-  const row = el('div', 'bonus ' + bonusRowClass(text));
-  row.innerHTML = '<div class="bdot"></div><span></span>';
-  (row.querySelector('span') as HTMLElement).textContent = text;
-  parent.appendChild(row);
 }
 
 interface Setting { key: string; lbl: string; opts: string[]; descs: string[]; idx: number; }
@@ -828,6 +806,8 @@ let hotSeatEnabled = false;
 let humanDistanceMode: HumanDistanceMode = 'losowo';
 /** Czy krok 4 pokazuje ekran fotela 2 (podekran, NIE osobna pozycja `curStep`/`STEP_LABELS`). */
 let showSeat2Screen = false;
+/** Opcjonalny seed wpisany w kroku ustawień. Puste pole zachowuje losowy seed. */
+let seedInputValue = '';
 let selEpoch = 'kamien';
 /**
  * R-KONFIGURATOR-WYBOR-CYWILIZACJI-PRZECIWNIKA: typy AI wybrane w kreatorze (krok
@@ -983,6 +963,14 @@ function ensureStyles(): void {
 .civ-newgame .klaster .km{font-size:12px;color:var(--tx2);line-height:1.55;font-style:italic;}
 .civ-newgame .start-preview{background:rgba(201,168,76,.05);border:1px solid var(--bd-mid);border-radius:var(--radius-lg);padding:14px 16px;max-width:700px;margin:1rem auto 0;text-align:left;}
 .civ-newgame .start-preview .kh{font-size:10px;letter-spacing:.3em;text-transform:uppercase;color:var(--gold-dim);font-family:Arial,sans-serif;margin-bottom:.5rem;}
+.civ-newgame .seed-override{max-width:420px;}
+.civ-newgame .seed-override label{display:block;color:var(--tx2);font:11px Arial,sans-serif;margin-bottom:7px;}
+.civ-newgame .seed-override input{width:100%;padding:9px 11px;border:1px solid var(--bd-mid);border-radius:6px;background:rgba(8,9,14,.8);color:var(--tx);font:14px Arial,sans-serif;}
+.civ-newgame .seed-override input:focus{outline:2px solid var(--gold-dim);outline-offset:1px;}
+.civ-newgame .seed-override input[aria-invalid="true"]{border-color:#e08a8a;}
+.civ-newgame .seed-help,.civ-newgame .seed-error{font:11px Arial,sans-serif;line-height:1.4;margin-top:6px;}
+.civ-newgame .seed-help{color:var(--tx-muted);}
+.civ-newgame .seed-error{color:#ffaaaa;}
 .civ-newgame .epoch-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;max-width:760px;margin:0 auto;align-items:stretch;}
 .civ-newgame .epoch-foot{max-width:760px;margin:.85rem auto 0;display:flex;flex-direction:column;gap:10px;}
 .civ-newgame .epoch-info{background:rgba(201,168,76,.06);border:1px solid var(--bd-mid);border-radius:var(--radius-lg);padding:12px 16px;font-size:13px;line-height:1.55;color:var(--tx2);}
@@ -1375,16 +1363,19 @@ function renderCivStep(host: HTMLElement): void {
   const c = selectedCiv();
   if (!c) {
     const empty = el('div', 'empty');
-    empty.innerHTML = '<div class="arr">&#8592;</div><div>Wybierz cywilizację z siatki,<br>aby zobaczyć bonusy i jednostkę specjalną.</div>';
+    empty.innerHTML = '<div class="arr">&#8592;</div><div>Wybierz cywilizację z siatki,<br>aby zobaczyć jej profil macierzy i jednostkę specjalną.</div>';
     detail.appendChild(empty);
   } else {
     const head = el('div', 'civ-dh');
     head.innerHTML = civMedallionHtml(c.id, true, 'detail', c.kolorHex) + '<div><div class="dn">' + c.name + '</div><div class="civ-dmeta">Cywilizacja</div></div>';
     detail.appendChild(head);
     const ds = el('div', 'civ-ds');
-    ds.appendChild(el('div', 'dlbl', 'Cechy &amp; bonusy'));
-    if (c.styl) appendBonusRow(ds, c.styl);
-    for (const b of (c.bonusy ?? [])) appendBonusRow(ds, b);
+    ds.appendChild(el('div', 'dlbl', 'Profil cywilizacji'));
+    if (c.styl) {
+      const styl = el('div', 'meta-row');
+      styl.textContent = 'Styl: ' + c.styl;
+      ds.appendChild(styl);
+    }
     if (c.religia) {
       const rel = el('div', 'meta-row');
       rel.textContent = 'Religia: ' + c.religia;
@@ -1481,10 +1472,17 @@ function renderSeat2Step(host: HTMLElement): void {
     head.innerHTML = civMedallionHtml(c2.id, true, 'detail', c2.kolorHex) + '<div><div class="dn">' + c2.name + '</div><div class="civ-dmeta">Cywilizacja fotela 2</div></div>';
     detail.appendChild(head);
     const ds = el('div', 'civ-ds');
-    ds.appendChild(el('div', 'dlbl', 'Cechy &amp; bonusy'));
-    if (c2.styl) appendBonusRow(ds, c2.styl);
-    for (const b of (c2.bonusy ?? [])) appendBonusRow(ds, b);
+    ds.appendChild(el('div', 'dlbl', 'Profil cywilizacji'));
+    if (c2.styl) {
+      const styl = el('div', 'meta-row');
+      styl.textContent = 'Styl: ' + c2.styl;
+      ds.appendChild(styl);
+    }
     detail.appendChild(ds);
+    if (c2.superJednostka) {
+      detail.appendChild(el('div', 'su', '<div class="l">\u2694 Jednostka specjalna</div><div class="v">' + c2.superJednostka + '</div>'));
+    }
+    appendCivMatrixProfile(detail, c2.id);
   }
   const gridPanel = el('div', 'civ-grid-panel');
   gridPanel.appendChild(grid);
@@ -1506,6 +1504,7 @@ function renderSeat2Step(host: HTMLElement): void {
   });
   distBox.appendChild(distRow);
   host.appendChild(distBox);
+  renderSeedControl(host);
 
   const actions = el('div', 'sett-actions');
   const back = el('button', 'btn-adv', '&#8592; Wstecz (ustawienia)');
@@ -1513,9 +1512,15 @@ function renderSeat2Step(host: HTMLElement): void {
   actions.appendChild(back);
   const start = el('button', 'start', '&#9670; ROZPOCZNIJ GRE &#9670;') as HTMLButtonElement;
   const canStart = !!selCiv2 && selCiv2 !== selCiv && civsForEpoch(selEpoch).some(c => c.id === selCiv2);
-  start.disabled = !canStart;
+  start.classList.add('seed-gated-start');
+  start.dataset.seatReady = String(canStart);
+  start.disabled = !canStart || !seedInputIsValid();
   start.addEventListener('click', () => {
     if (!canStart) return;
+    if (!seedInputIsValid()) {
+      updateSeedInputFeedback();
+      return;
+    }
     curStep = 5;
     render();
   });
@@ -1920,6 +1925,7 @@ function renderSettStep(host: HTMLElement): void {
   ]);
   renderAiCivPicker(layout);
   host.appendChild(layout);
+  renderSeedControl(host);
 
   const preview = currentStartPreview();
   if (preview) {
@@ -1957,8 +1963,15 @@ function renderSettStep(host: HTMLElement): void {
   const advBtn = el('button', 'btn-adv', '&#9881;&nbsp; Zaawansowane opcje');
   advBtn.addEventListener('click', showAdvancedModal);
   actions.appendChild(advBtn);
-  const start = el('button', 'start', '&#9670; ROZPOCZNIJ GRE &#9670;');
+  const start = el('button', 'start', '&#9670; ROZPOCZNIJ GRE &#9670;') as HTMLButtonElement;
+  start.classList.add('seed-gated-start');
+  start.dataset.seatReady = 'true';
+  start.disabled = !seedInputIsValid();
   start.addEventListener('click', () => {
+    if (!seedInputIsValid()) {
+      updateSeedInputFeedback();
+      return;
+    }
     if (hotSeatEnabled) { showSeat2Screen = true; render(); }
     else { curStep = 5; render(); }
   });
@@ -1974,6 +1987,66 @@ function renderSettStep(host: HTMLElement): void {
 function settingValue(key: string): string {
   const s = SETT.find(x => x.key === key);
   return s ? (s.opts[s.idx] ?? '') : '';
+}
+
+function seedValidationMessage(value = seedInputValue): string | null {
+  const trimmed = value.trim();
+  if (!trimmed) return null;
+  if (!/^\d+$/.test(trimmed)) return 'Wpisz liczbę całkowitą od 1 do 999999.';
+  const seed = Number(trimmed);
+  if (!Number.isSafeInteger(seed) || seed < 1 || seed > 999999) {
+    return 'Liczba musi mieścić się w zakresie 1–999999.';
+  }
+  return null;
+}
+
+function seedInputIsValid(): boolean {
+  return seedValidationMessage() === null;
+}
+
+function updateSeedInputFeedback(): void {
+  const message = seedValidationMessage();
+  rootEl?.querySelectorAll<HTMLInputElement>('input[name="seed"]').forEach(input => {
+    input.setAttribute('aria-invalid', message ? 'true' : 'false');
+  });
+  rootEl?.querySelectorAll<HTMLElement>('.seed-error').forEach(error => {
+    error.textContent = message ?? '';
+    error.hidden = message === null;
+  });
+  rootEl?.querySelectorAll<HTMLButtonElement>('.seed-gated-start').forEach(button => {
+    button.disabled = message !== null || button.dataset.seatReady === 'false';
+  });
+}
+
+function renderSeedControl(host: HTMLElement): void {
+  const box = el('div', 'start-preview seed-override');
+  box.appendChild(el('div', 'kh', 'Ziarno mapy (opcjonalne)'));
+  const label = document.createElement('label');
+  label.htmlFor = 'ng-seed';
+  label.textContent = 'Wartość (1–999999)';
+  const input = document.createElement('input');
+  input.type = 'text';
+  input.name = 'seed';
+  input.id = 'ng-seed';
+  input.dataset.runtimeSeed = 'true';
+  input.inputMode = 'numeric';
+  input.autocomplete = 'off';
+  input.placeholder = 'Puste = losowy seed';
+  input.value = seedInputValue;
+  input.setAttribute('aria-label', 'Ziarno mapy, liczba całkowita od 1 do 999999');
+  const help = el('div', 'seed-help', 'Wpisz tę samą liczbę 1–999999, aby uzyskać ten sam układ mapy. Puste pole wybiera ziarno losowo.');
+  const error = el('div', 'seed-error');
+  error.setAttribute('role', 'alert');
+  box.appendChild(label);
+  box.appendChild(input);
+  box.appendChild(help);
+  box.appendChild(error);
+  input.addEventListener('input', () => {
+    seedInputValue = input.value;
+    updateSeedInputFeedback();
+  });
+  host.appendChild(box);
+  updateSeedInputFeedback();
 }
 
 function buildParams(): NewGameParams {
@@ -2015,7 +2088,8 @@ function buildParams(): NewGameParams {
         activeTypesCount: Number.isFinite(civTypesCount) ? civTypesCount : undefined,
       })
     : undefined;
-  const seed = Math.floor(Math.random() * 1_000_000);
+  const seedText = seedInputValue.trim();
+  const seed = seedText ? Number(seedText) : Math.floor(Math.random() * 1_000_000);
   // R-HOTSEAT-ETAP6F-PART2-DATA-Q1: `selCiv2` nie jest dziś zapisywany przez
   // żaden ekran kreatora (zero UI w tym pod-temacie) — w praktyce zawsze
   // `null`, więc `civId2`/`civName2` są zawsze `undefined` na dzisiejszej
@@ -2285,10 +2359,19 @@ function render(): void {
       const canNext = curStep === 2
         ? epochHasCivs(selEpoch)
         : !!selCiv && civsForEpoch(selEpoch).some(c => c.id === selCiv);
+    if (curStep === 4) {
+      next.classList.add('seed-gated-start');
+      next.dataset.seatReady = 'true';
+    }
       next.disabled = !canNext;
+    if (curStep === 4 && !seedInputIsValid()) next.disabled = true;
       next.addEventListener('click', () => {
         if (curStep === 2 && !epochHasCivs(selEpoch)) return;
         if (curStep === 3 && (!selCiv || !civsForEpoch(selEpoch).some(c => c.id === selCiv))) return;
+      if (curStep === 4 && !seedInputIsValid()) {
+        updateSeedInputFeedback();
+        return;
+      }
         if (curStep === 2) ensureSelCivForEpoch();
         curStep += 1;
         render();
@@ -2340,6 +2423,7 @@ export function showNewGameFlow(config: NewGameFlowConfig): void {
   hotSeatEnabled = false;
   humanDistanceMode = 'losowo';
   showSeat2Screen = false;
+  seedInputValue = '';
   selEpoch = DEFAULT_START_EPOCH_ID;
   selAiCivIds = [];
   ensureSelCivForEpoch();
