@@ -80,13 +80,14 @@ Najwięcej udokumentowanych błędów w `BLEDY-*`/`BLAD-*` dotyczy **generatora 
 ## 6. Uzupełnienie R-RUSTPORT-P1-16B-AUDIT-CROSSCHECK-Q1 (runda 1/5, Operator Haiku 5.5 medium)
 
 **Pin:** `edb8fb56` (`main`, potwierdzony `git cat-file`). Dowody: wyłącznie `git grep`/`git show edb8fb56:…` wykonane w tej rundzie. Numery linii pochodzą z tych poleceń, nie z treści audytów (audyty mają nieaktualne linie, np. `AUDYT-PARYTET-AI` podaje `main.ts:14863-14893` dla ścieżki AI wyrębu lasu, a pod tą linią na pinie jest kod oblężenia — referencje w audytach są przestarzałe).
-**Zakres:** wszystkie 9 plików `dyspozycje/AUDYT-*.md` z `git ls-tree edb8fb56` (żaden nie był ujęty w pierwotnym P1.16, którego §2 cytuje wyłącznie `BLEDY-*`/`BLAD-B0.*`). Dodatkowo dwa pokrewne dokumenty spoza wzorca: `KULTURA-RELIGIA-AUDYT-2026-07-22.md` i `AUDYT-KODU` (pozycje z listy 73).
+**Zakres:** 9 plików `dyspozycje/AUDYT-*.md` z `git ls-tree edb8fb56` (żaden nie był ujęty w pierwotnym P1.16, którego §2 cytuje wyłącznie `BLEDY-*`/`BLAD-B0.*`): 8 w tabeli 6.1 + `AUDYT-OBIEG-DOKUMENTOW-2026-07-05.md` wykluczony jako proces. Dodatkowo jeden dokument spoza wzorca: `KULTURA-RELIGIA-AUDYT-2026-07-22.md`. `AUDYT-KODU-2026-07-21.md` pasuje do wzorca i jest liczony w tabeli 6.1.
+**Kryterium binarne z dispatchu (każde znalezisko ze statusem NADAL ISTNIEJE / NAPRAWIONY / NIEROZSTRZYGNIĘTY z dowodem z tej rundy): NIE SPEŁNIONE.** Pozostają nieprzeliczone: 69 znalezisk AUDYT-KODU (po odjęciu #1, #2, #19, #22), PARYTET #1–#6 i #8, oraz pozycje z `AUDYT-OPISY-*` i `AUDYT-STOLICE-*` wymagające weryfikacji treści (§6.3). Ta runda nie może być oceniona jako PASS.
 
 ### 6.1 Pliki i status
 
 | Plik (pin) | Czego dotyczy | Systemy P1.14 | Status błędów gameplayu |
 |---|---|---|---|
-| `AUDYT-KODU-2026-07-21.md` | Audyt kodu 73 znalezisk (2 KRYTYCZNE) | różne | #2 NAPRAWIONY; #1 NAPRAWIONY częściowo; pozostałe 71 NIEROZSTRZYGNIĘTE (poza zakresem tej rundy) |
+| `AUDYT-KODU-2026-07-21.md` | Audyt kodu 73 znalezisk (2 KRYTYCZNE) | różne | #1, #2, #19, #22 rozstrzygnięte w 6.2; pozostałe 69 NIEROZSTRZYGNIĘTE (poza zakresem tej rundy) |
 | `AUDYT-NAPRAWY-LOG.md` | Log wykonania 20 POTWIERDZONE | — | log, nie błąd; commit `6adfb79` jest przodkiem pinu |
 | `AUDYT-MARTWE-PARAMETRY-BUDYNKOW.md` | Martwe pola `przyrost*`/`utrzymanie`/`odblokowuje` w `buildings.json` | ekonomia miast, budynki | patrz 6.2 |
 | `AUDYT-CIVPEDIA-MARTWE-OBIETNICE.md` | Fałszywe opisy budynków w Civpedii/Poradniku/`uwagi` | budynki, UI | patrz 6.2 |
@@ -103,25 +104,33 @@ Wykluczony z zakresu jako proces: `AUDYT-OBIEG-DOKUMENTOW-2026-07-05.md` (obieg 
 | ID | Opis w audycie | Stan na pinie | Dowód (pin) |
 |---|---|---|---|
 | KOD #2 [KRYTYCZNA] | Auto-szturm zeruje armię obu stron (`survivors: []`) | **NAPRAWIONY** | `git grep 'survivors: \[\]'` = 0 trafień; `main.ts:30068` i `:30229` komentarze „survivors: undefined (nie []!)"; `main.ts:28343` `manualSurvivors: survivors !== undefined` |
-| KOD #1 [KRYTYCZNA] | Koszyk PN: oddanie „jednostki" nic nie kosztuje dawcy | **NAPRAWIONY częściowo** (defensywnie) | `main.ts:10222–10228`: `case 'jednostka': … break;` (odrzucenie w silniku); TODO `A1 — audyt #1` nadal w kodzie, transfer dawcy nie zaimplementowany |
-| KOD #22 | Rozjazd kierunku Respektu | **NAPRAWIONY** | `b1a7a61` (wg `ZLECENIA-AUDYT-53`) — przodek pinu |
+| KOD #1 [KRYTYCZNA] | Koszyk PN: oddanie „jednostki" nic nie kosztuje dawcy | **NAPRAWIONY** (ścieżka zamknięta defensywnie; TODO A1 zostaje, transfer dawcy nie zaimplementowany) | `main.ts:10221–10228`: etykieta `case 'jednostka': {` w linii 10221, TODO `A1 — audyt #1` w 10222–10225, `break;` w 10227 (odrzucenie w silniku) |
+| KOD #22 | Rozjazd kierunku Respektu | **NAPRAWIONY** (ścieżka oceny propozycji) | `main.ts:20515` `const proposerRespekt = computeRespekt(potProposer, potResponder);` i `:20519` `respekt: proposerRespekt` (kontekst oceny gracza, zweryfikowane w tej rundzie na pinie). `b1a7a61` jest przodkiem pinu (`git merge-base --is-ancestor`). Strona pętli AI (`main.ts:12163–12166`) nie była przeliczona w tej rundzie |
+| KOD #19 [WYSOKA] | Odwrócona bramka wasalizacji (sprawdza respekt respondenta) | **NAPRAWIONY** (bramka) | `diplomacy-proposals.ts:1684–1689` `case 'wasal'`: `if (ctx.proposerRespekt < wasalRespektThreshold)` (próg = `progWasalizacjaRespekt` minus słodzik); kierunek płatności `payerOwnerId: responderOwnerId` (l. 1699) nie zmieniony. Wariant AI (`:2084`) nie ma tej bramki |
 | MARTWE: `przyrost*` | Pola `przyrost` martwe, UI pokazuje „+X/poziom" | **NAPRAWIONY** (ożywione) | `production.ts:244–249` `buildingEffectAtLevel = baza + przyrost·(n−1)`; konsumenci `economy.ts:504`, `economy-upkeep.ts:650`, `cityPanel.ts:6485` |
 | MARTWE: `utrzymanie` | Per-budynek utrzymanie nadpisane płaskim `budynekUtrzymanieFlat` | **NADAL ISTNIEJE** | `economy-upkeep.ts:585` (`budynekUtrzymanieFlat: 1`), `:606` odczyt z `econ-params`, `:1144` `totalBuildingUpkeep(buildings, p.budynekUtrzymanieFlat)` |
 | MARTWE: `odblokowuje` | Pole martwe, nieczytane przez silnik | **NADAL ISTNIEJE** (dane) | `gra/data/buildings.json:992, 1040, 1474, 1523, 1572` (5 wystąpień) |
 | MARTWE: Targowisko | `baza.mnoznik = 0`, `przyrost.mnoznik = 0` → zero efektu | **NADAL ISTNIEJE** | `buildings.json` blok `targowisko` (id linia 303): `"mnoznik": 0` (×2); `uwagi` odnotowuje decyzję „PYTANIE 20=A" |
 | MARTWE: `koszt_surowce` w jednostkach | Jednostki nie konsumują surowca z puli (decyzja A niewdrożona) | **NADAL ISTNIEJE** | `git show edb8fb56:gra/data/units.json \| grep -c koszt_surowce` = 0 |
 | PARYTET #9 | Jednostki nie konsumują surowca (ta sama luka) | **NADAL ISTNIEJE** | jak wyżej; `buildingStockCost` wołane tylko dla budynków (audyt, nie przeliczone linia po linii) |
-| MARTWE: Kuźnia/Koszary (mnożnik wojskowy) | Mnożnik kategorii Wojsko pomijany w Pracy | **Mechanizm zgodny z opisem w kodzie, opis w Civpedii nadal obiecuje efekt** | `economy.ts:21–22` komentarz „Combat/military mnoznik values … we skip those here" — opis do poprawy w treściach |
-| MARTWE: Lazaret | Audyt twierdzi „CZYSTO, zero wystąpień" | **NIEZGODNE z pinem — NADAL ISTNIEJE w tekście** | `gra/src/data/wikiBundle.json`: „Odblokowuje budynki: Łaźnia publiczna, Lazaret"; `gra/data/tech.json:430`: „Lazaret = NOWY budynek"; w `buildings.json` brak wpisu (martwa obietnica) |
-| MARTWE: Karawanseraj | Decyzja 15B: usunąć | **NAPRAWIONY w danych/silniku** | `buildings.json` 0 trafień `"karawanseraj"`; `trade-routes.ts` 0 trafień. Opisy w `tech.json`/`wikiBundle.json` nie sprawdzone |
+| MARTWE: Kuźnia/Koszary (mnożnik wojskowy) | Mnożnik kategorii Wojsko pomijany w Pracy | **NADAL ISTNIEJE** (opis Civpedii obiecuje efekt, którego kod nie daje) | `economy.ts:21–22` komentarz „Combat/military mnoznik values … we skip those here" (wywołanie nie przeliczone w tej rundzie) |
+| MARTWE: Mury / Fort (Civpedia „+5/+15 obrony") | Opis obrony miasta; dane zerowe | **NADAL ISTNIEJE** (zero efektu w danych); tekst Civpedia nieprzeliczony | `buildings.json:998` (`mury`) i `:1439` (`fort`): `baza` i `przyrost` z `"obrona": 0`, `"mnoznik": 0`; `siege.ts:306` notatka o zerowaniu `mury.obrona` |
+| MARTWE: Pretorium („+2 obrony"; „% do podatków") | Opis nieprawdziwy; mnożnik zerowy | **NADAL ISTNIEJE** (obietnica bez efektu) | `buildings.json:1829–1862`: `baza` i `przyrost` `"mnoznik": 0`, `"obrona": 0`. Twierdzenie audytu „działa → dolicza do Pracy" nie znajduje podstawy w danych (brak niezerowego mnożnika); routing w kodzie nieprzeliczony |
+| Akademia (mnożnik → Praca zamiast nauki) | Audyt MARTWE-PARAMETRY | **NIEROZSTRZYGNIĘTY** | `buildings.json:1586`: kategoria `Nauka`, `baza.mnoznik` 10, `przyrost.mnoznik` 3. Konsument (Praca vs nauka) nie przeliczony w tej rundzie |
+| Warsztat oblężniczy / Kuźnia żelaza (kategoria Wojsko/Produkcja+Wojsko) | Audyt MARTWE-PARAMETRY | **NIEROZSTRZYGNIĘTY** | `buildings.json:1537` (`warsztat_oblezniczy`, Wojsko, mnoznik 10), `:1339` (`kuznia_zelaza`, „Produkcja+Wojsko", mnoznik 15). Wykluczenie z sumy nie przeliczone wywołaniem |
+| Wielka Kuźnia — martwy konwerter stali | `converters.ts:62` wg audytu | **NIEROZSTRZYGNIĘTY** | linia 62 w pinie to komentarz nagłówka receptur („Wielka Kuźnia bez produkcji stali"); martwość konwertera nie przeliczona |
+| „NOWE ZNALEZISKA" nr 4 w `AUDYT-MARTWE-PARAMETRY` | wikiBundle.json | **NIEROZSTRZYGNIĘTY** | nie sprawdzone w tej rundzie |
+| MARTWE: Lazaret | Audyt twierdzi „CZYSTO, zero wystąpień" | **NADAL ISTNIEJE** (w tekście; audyt „czysto" nieprawdziwy) | `gra/src/data/wikiBundle.json`: „Odblokowuje budynki: Łaźnia publiczna, Lazaret"; `gra/data/tech.json:430`: „Lazaret = NOWY budynek"; w `buildings.json` brak wpisu (martwa obietnica) |
+| MARTWE: Karawanseraj | Decyzja 15B: usunąć | **NAPRAWIONY w danych/silniku** | `buildings.json` 0 trafień `"karawanseraj"`; `trade-routes.ts`: 0 trafień małych liter, ale 1 trafienie bez rozróżniania wielkości liter w linii 904 (komentarz „Karawanseraj usunięty z gry (decyzja właściciela 2026-07-25, „15b")" — nie kod). Opisy w `tech.json`/`wikiBundle.json` nie sprawdzone |
 | MARTWE: Wielka Kuźnia | `epokaWejscia: 4` przy 3 epokach | **NADAL ISTNIEJE** (nieosiągalna) | `buildings.json:1394` (`epokaWejscia: 4`), `:1389–1391` (`id`, `nazwa`); liczba epok nie przeliczona w tej rundzie |
 | PARYTET #7 (AI, `aliveUnitTypeNames`) i #AI-zakup | Brak zakupu jednostki za złoto dla AI | **NIEROZSTRZYGNIĘTY** | `ai.ts:95–101` nie sprawdzone wprost w tej rundzie |
 | PARYTET (wyrąb lasu AI vs gracz) | AI commituje wyrąb natychmiast | **NIEROZSTRZYGNIĘTY** | `hexClearingStates` istnieje w `main.ts:13124` (kontekst pętli tury); linie z audytu (`14863–14893`) to kod oblężenia — referencja nieaktualna |
-| KULTURA-RELIGIA: „nie wpływa na nic" | Teza audytu | **NIEAKTUALNA w części** | `culture-religion.ts` (1479 linii) ma konsumentów: `turn-economy.ts:177–204` (`kulturaMult`, `bonus.kultura`), `okolica.ts`, `society-breakdown.ts`, `conquest-stability.ts`; siła wpływu nie zbadana |
+| KULTURA-RELIGIA: „nie wpływa na nic" | Teza audytu | **NIEROZSTRZYGNIĘTY** (teza częściowo nieaktualna: konsumenci istnieją) | `culture-religion.ts` (1479 linii) ma konsumentów: `turn-economy.ts:177–204` (`kulturaMult`, `bonus.kultura`), `okolica.ts`, `society-breakdown.ts`, `conquest-stability.ts`; siła wpływu nie zbadana |
 | KULTURA/DYP: cap akumulacyjny religii | TODO +15/−10 | **NADAL ISTNIEJE** | `diplomacy.ts:1676, 1677, 1688` (zgodnie z tabelą §1 wyżej) |
 
 ### 6.3 Ograniczenia tej rundy
-- Nie przeliczono 71 pozostałych znalezisk `AUDYT-KODU` (w tym #3–#21, #23–#73) — są w planach `ZLECENIA-AUDYT-53` / `PLAN-NAPRAWCZY-AUDYT-53-POZOSTALE`; wymagają osobnego tematu.
+- Nie przeliczono 69 pozostałych znalezisk `AUDYT-KODU` (#3–#18, #20–#21, #23–#73 bez #19 i #22) — są w planach `ZLECENIA-AUDYT-53` / `PLAN-NAPRAWCZY-AUDYT-53-POZOSTALE`; wymagają osobnego tematu. Bez nich kryterium binarne nie jest spełnione.
+- Nie przeliczono treści Civpedia/Poradnik (`wikiBundle.json`, `docs/PORADNIK-GRACZA/*`) dla pozycji MARTWE-OBIETNICE (np. `07-miasto-budowa-rekrutacja.md:193`, 25 haseł „+1 ¤/poziom") — tylko dane `buildings.json` i kod. Brak tej weryfikacji nie pozwala na status „NAPRAWIONY" dla opisów.
 - Pozycje PARYTET #1–#6, #8 oznaczono w audycie jako ✅; nie przeliczono ich linia po linii (zakres rundy).
 - Nie uruchomiono testów ani gry (zakaz benchmarków/testów w tym temacie).
 - Dane `buildings.json` przeliczano przez `git show` + `grep`; obiekty JSON nie były parsowane.
