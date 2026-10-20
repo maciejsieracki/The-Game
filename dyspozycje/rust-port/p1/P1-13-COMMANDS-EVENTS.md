@@ -398,3 +398,66 @@ Wniosek z E2b: `namow_wojne` nie należy do żadnego zbioru; `tech`, `ultimatum`
 - Kontrakt komend frontend→Rust musi obsługiwać `wchloniecie` w ścieżce `resolvePlayerAcceptsAiPending` (K2, `:1994`) **i** rozstrzygnąć brak wpisu danych traktatu (K8) — decyzja projektowa wymagana.
 - Pozostałe 14 wariantów: OBSŁUŻONE w K1, K2, K3, K6, K8 (oraz K9 generycznie); K4 wymaga osobnego prześledzenia dla 9 wariantów bez jawnej gałęzi (E3.5 pkt 3) przed zamknięciem tematu.
 - Matryca K5 (E2b) jest danymi wejściowymi dla P2.5 jako reguły filtrów.
+
+## F. Runda 2/5 — R-RUSTPORT-P1-13B-PROPOSAL-COVERAGE-Q1 (Operator, poprawki po zarzutach 1–2 Evaluatora)
+
+**Pin i metoda:** `edb8fb56`; wszystkie linie z `git show edb8fb56:<ścieżka>` / `git grep … edb8fb56` wykonane w tej rundzie. Sekcje A–E nie zmieniono (tylko dopisanie).
+
+**Sprostowania do E2a / E4 (runda 1):**
+- K4 `main.ts:20614` dotyczy WYŁĄCZNIE odmowy (`if (!result.accepted)`, :20613) dla `trybut_zadanie`/`trybut_oferta`. Nie jest jawną obsługą przyjęcia; wpis „K4: :20614” w E2a czytać jako „odmowa”.
+- `pokoj` ma jawną gałąź przyjęcia `main.ts:20772` (`finalizePeaceTreatyBetween`, w bloku `oneShotTrade`). W E2a był błędnie oznaczony „K4: ogólnie”.
+
+### F1. K4 — prześledzenie per wariant (`applyProposalOutcome`, `main.ts:20605`)
+
+Struktura gałęzi (pin): `if (!result.accepted)` :20613 → `if (cywAction === 'wchloniecie')` :20620 → `if (result.deal)` :20659 [`applyAcceptedProposal` :20660; gałąź `UmowaWymiany/UmowaHandlowa` :20683 z `transferBasketItems` :20689–:20690 i `if (cywAction === 'handel')` :20701; `else if (UmowaSzlakow)` :20718 z `umowa_*` :20719; `else if (giveItems/receiveItems)` :20725 z transferem :20732–:20733] → `if (result.oneShotTrade)` :20736 [`executePnDealTransfer` :20737; `handel` :20748; `trybut_oferta` :20769; `pokoj` :20772] `else if (cywAction === 'trybut_zadanie')` :20776.
+
+Zakres statusu K4: wskazuje, która gałąź `applyProposalOutcome` wykonuje się dla wariantu i jaki efekt jest tam jawny. Ciała wywoływanych helperów NIE są częścią tego statusu (oznaczone NIEPRZEŚLEDZONE w F4).
+
+| Wariant | Zwrot `evaluateProposal` (pin) | Gałąź K4 (dowód) | Status K4 |
+|---|---|---|---|
+| `nap` | `deal` :1084 | `deal` :20659–:20660; reveal :20678–:20681 (PaktNieagresji); basket :20725 | ŚCIEŻKA OGÓLNA (bez jawnego `cywAction`); NIEPRZEŚLEDZONE poza granicą helperów |
+| `sojusz_defensywny` | `deal` :1141 | jw.; reveal :20678–:20681 (SojuszDefensywny) | ŚCIEŻKA OGÓLNA; jw. |
+| `sojusz_pelny` | `deal` :1141 | jw.; reveal :20678–:20681 (SojuszPelny) | ŚCIEŻKA OGÓLNA; jw. |
+| `granice` | `deal` :1669 | `deal` :20659–:20660; basket :20725; reveal tylko gdy rodzaj należy do listy :20671–:20677 — rodzaj deala NIEROZSTRZYGNIĘTY | ŚCIEŻKA OGÓLNA; NIEPRZEŚLEDZONE: rodzaj deala |
+| `wasal` | `deal` :1704 | jw. (bez reveal) | ŚCIEŻKA OGÓLNA; jw. |
+| `tech` | `oneShotTrade` :1608, :1618 | :20736–:20737 (`executePnDealTransfer`), brak jawnej gałęzi `tech` | ŚCIEŻKA OGÓLNA; NIEPRZEŚLEDZONE: czy `executePnDealTransfer` przenosi koszyk tech (`transferBasketItems` `case 'tech'` :10190 — nie prześledzono wywołań) |
+| `ultimatum` | `oneShotTrade` :1679 | :20736–:20737 (`executePnDealTransfer`), brak jawnej gałęzi | ŚCIEŻKA OGÓLNA; NIEPRZEŚLEDZONE jak `tech`. Efekt wojny w tej ścieżce nie występuje (wojna z payloadu tylko przez `warThreat`: :17151–:17155, :17294–:17296) |
+| `namow_wojne` | zgoda bez `deal` i bez `oneShotTrade` :1576 | brak gałęzi; po :20613–:20618 nic nie zmienia stanu | **LUKA W K4 (kandydat)**: `applyProposalOutcome` nie ma efektu zgody na wojnę. Wywołania `ownerDeclareWarOn` (:10646 definicja, :17154, :17295) idą przez `payload.warThreat`, nie przez `actionId`. Czy efekt istnieje gdzie indziej — NIEPRZEŚLEDZONE |
+| `trybut_oferta` | `oneShotTrade` :1360 (jednorazowy); `deal` :1377 (cykliczny) | wariant oneShot: jawnie :20769 (`trybut_oferta_przyjeta`). Wariant deal: `else if` :20776 nie działa (tylko w gałęzi `else` do `oneShotTrade`) — brak efektu przyjęcia | JAWNIE dla oneShot; **LUKA W K4 (kandydat) dla wariantu deal :1377** — NIEPRZEŚLEDZONE, czy efekt jest poza `applyProposalOutcome` |
+| `trybut_zadanie` | `deal` :1186 | :20776–:20778 (`trybut_zaakceptowany`) | JAWNIE (przyjęcie); odmowa :20614 |
+| `handel` | `oneShotTrade` :1396, :1457, :1469; `deal` :1448 | `deal`: :20701 (`handel`, w gałęzi wymiany); oneShot: :20748 | JAWNIE (obie ścieżki) |
+| `umowa_handlowa` | `deal` :1558 | rodzaj UmowaSzlakow: :20719 (jawnie); rodzaj UmowaWymiany/Handlowa: ogólnie :20683–:20690 — rodzaj deala NIEROZSTRZYGNIĘTY | JAWNIE dla UmowaSzlakow; ŚCIEŻKA OGÓLNA dla innego rodzaju |
+| `umowa_szlakow` | `deal` :1558 | jw. | jw. |
+| `pokoj` | `oneShotTrade` :1345 | :20772 (`finalizePeaceTreatyBetween`) | JAWNIE |
+| `wchloniecie` | zgoda bez `deal`/`oneShotTrade` :1743 | :20620–:20638 (jawnie) | JAWNIE dla K4; **LUKA** K2 (sekcja E) i K8 (sekcja E) |
+
+**Podsumowanie F1:** jawna gałąź K4 — `handel`, `umowa_handlowa`/`umowa_szlakow` (częściowo), `trybut_zadanie`, `trybut_oferta` (tylko oneShot), `pokoj`, `wchloniecie`. Ścieżka ogólna — `nap`, `sojusz_defensywny`, `sojusz_pelny`, `granice`, `wasal`, `tech`, `ultimatum`. Kandydaci na luki K4 — `namow_wojne` (silna przesłanka), `trybut_oferta` wariant deal (do potwierdzenia).
+
+### F2. Konsumenci K11 (dopisani w tej rundzie)
+
+| # | Konsument | Ścieżka:linia (pin) | Wynik per wariant |
+|---|---|---|---|
+| K11a | `allowsMultipleOwnOutgoingNegotiations` | definicja `game/diplomacy-proposals.ts:2322` (`=== 'handel'`); import `main.ts:1310`; użycie `main.ts:21123` (guard `findOwnOutgoingNegotiation` :21124) | **JAWNIE 15/15**: `handel` → `true` (zwolniony z guarda); 14 pozostałych → `false` (guard obowiązuje). Brak luki |
+| K11b | `usesIncomingPlayerNetPwGate` + `INCOMING_NET_PW_ACTIONS` | `game/diplomacy-acceptance-points.ts:623`–`:631`; użycie `:683` (`if (!usesIncomingPlayerNetPwGate(actionId)) return null;`) | **JAWNIE 15/15**: `handel`, `umowa_handlowa`, `umowa_szlakow` → bramka netto PW; 12 pozostałych → `null` (bramki brak; decyzja polityki, nie luka). Pośrednio też kolumna K5 |
+| K11c | `buildProposalFromPayload` | `main.ts:21010`; typ zwrotu `:21017`; rzutowanie `cywAction as ProposalActionId` `:21069`; wywołania `:21086`, `:21109` | **OGÓLNIE 15/15**: brak `case`, `actionId` przenoszony bez filtra. RYZYKO (nie luka wariantu): rzutowanie nie sprawdza przynależności do 15 wartości w runtime |
+| K11d | `findIncomingNegotiationForAction` | `main.ts:21096`; parametr `:21098`; porównanie `n.actionId === actionId` `:21104` | **OGÓLNIE 15/15**: równość bez gałęzi per wariant |
+
+### F3. Status per wariant po rundzie 2
+
+Kolumny K1, K2, K3, K6, K8, K9 — bez zmian względem sekcji E2a (zweryfikowane w tej rundzie na `edb8fb56`). K5 — E2b. K4 — F1. K11 — F2.
+
+Stan zbiorczy: każdy z 15 wariantów ma jawny status z dowodem w każdym wymienionym miejscu konsumpcji (K1–K11). Statusy ze słowem „ŚCIEŻKA OGÓLNA”, „KANDYDAT” lub „NIEPRZEŚLEDZONE” są oznaczone jako niepełne; nie są rozstrzygnięte jako „OBSŁUŻONY”.
+
+### F4. Ustalenia NIEPRZEŚLEDZONE (jawna lista)
+
+1. Ciała helperów wywoływanych z `applyProposalOutcome`: `applyAcceptedProposal`, `syncRelationFromDeals`, `executePnDealTransfer`, `transferBasketItems` (w tym `case 'tech'` :10190).
+2. `namow_wojne`: czy zgoda na wojnę ma efekt poza `applyProposalOutcome`.
+3. `trybut_oferta` wariant `deal` (:1377): czy efekt `trybut_oferta_przyjeta` występuje poza `applyProposalOutcome`.
+4. Rodzaj deala dla `granice` i dla `umowa_handlowa` (warunek reveal :20671–:20677 i gałąź :20718 vs :20683).
+5. `previewNegotiationEntry` (przed `main.ts:17267`) — poza zakresem z sekcji E3.5 runda 1, bez zmian.
+
+### F5. Wniosek dla P2.5 (uzupełnienie E4)
+
+- Kontrakt komend frontend→Rust musi obsłużyć wszystkie 15 wariantów w K1–K11, w tym jawne gałęzie K4 z F1.
+- Decyzje do rozstrzygnięcia przed P2.5 (nie są błędem wykonania w tym dowodzie): (a) `wchloniecie` w K2 i K8 (sekcja E); (b) kandydat luki `namow_wojne` w K4; (c) kandydat luki `trybut_oferta` wariant deal w K4.
+- Pokrycie K11: bez luk wariantowych; ryzyko rzutowania w K11c do uwzględnienia w walidacji typu po stronie Rust (enum zamknięty).

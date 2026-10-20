@@ -188,7 +188,7 @@ Wykluczony z zakresu jako proces: `AUDYT-OBIEG-DOKUMENTOW-2026-07-05.md` (obieg 
 | 41 | NADAL ISTNIEJE | Wielka Kuźnia `buildings.json:1394` `epokaWejscia: 4` (gra ma 3 epoki). Lazaret → patrz 7.2. |
 | 42 | NAPRAWIONY | Zapis `main.ts:30659-30661` („Audyt #42"); odczyt `:38772-38773`. |
 | 43 | NAPRAWIONY | Zapis `main.ts:30666-30669`; reset `:37290-37293`; odczyt `:38802-38808`. |
-| 44 | NADAL ISTNIEJE | `aiSkarbiecByOwner` zapisywane (`main.ts:30581`), odczyt przy load nie znaleziony (grep 38500-38900). Do potwierdzenia. |
+| 44 | NAPRAWIONY (r3) | `aiSkarbiecByOwner` zapisywane do snapshotu `main.ts:30579-30581`; odtwarzane przy wczytaniu `main.ts:39097-39104`. Szczegóły §8.1. |
 | 45 | NIEROZSTRZYGNIĘTY | `diplomacyTradeBasket.ts:63` etykieta; kod silnika/`cityOptions` nieprzeliczony. |
 | 46 | NIEROZSTRZYGNIĘTY | `diplomacy-proposals.ts:557-558` etykieta; bramka przemarszu nieprzeczytana. |
 | 47 | NAPRAWIONY | `main.ts:10150-10155` (Praca dawcy odejmowana, odbiorca → pula Pracy). |
@@ -208,7 +208,7 @@ Wykluczony z zakresu jako proces: `AUDYT-OBIEG-DOKUMENTOW-2026-07-05.md` (obieg 
 | 61 | NAPRAWIONY | `playerState.ts:72` `BRAK_PREREQ` = `'', '-', '—', '–', 'brak', 'none'`. |
 | 62 | NIEROZSTRZYGNIĘTY | `generator.ts:286` gałęzie pangea nieprzeczytane do jezior. |
 | 63 | NIEROZSTRZYGNIĘTY | `startScoring.ts:80-84` pętla dist 0..4 odczytana; warunek punktowania gór nieprzeczytany. |
-| 64 | NAPRAWIONY | `map-gen-params.json`: 0 trafień `owce`/`bydlo`/`lama`/`luksus`. |
+| 64 | NAPRAWIONY (r3) | Dokładne klucze: `map-gen-params.json` 0 trafień dla `owce`, `bydlo`, `lama`, `luksus`; `gen-helpers.ts` `BASE_DEPOSIT_RULES` 0 trafień; l. 11942–11943 dokumentują owce/bydło jako ulepszenie. Szczegóły §8.0 pkt 7. |
 | 65 | NIEROZSTRZYGNIĘTY | `filePlayer.ts:260-272` `onError` nieprzeczytany pod kątem crossfade. |
 | 66 | NIEROZSTRZYGNIĘTY | `main.ts` (kamień milowy z handlu) nieprzeliczony. |
 | 67 | NAPRAWIONY | `units.json` „Procarz (Huaracoc)": Typ = `Slinger` (python na pinie). |
@@ -216,7 +216,7 @@ Wykluczony z zakresu jako proces: `AUDYT-OBIEG-DOKUMENTOW-2026-07-05.md` (obieg 
 | 69 | NIEROZSTRZYGNIĘTY | `gamePauseMenu.ts:104-112` widoczny tylko CSS; logika „Wczytaj" nieprzeczytana. |
 | 70 | NIEROZSTRZYGNIĘTY | `main.ts:2661` nieprzeliczone. |
 | 71 | NIEROZSTRZYGNIĘTY | `civ-roster.ts:98-104` (`fillIn`) odczytane częściowo. |
-| 72 | NIEROZSTRZYGNIĘTY | Śmierć z głodu: `main.ts:6411` `units.splice`; ścieżka audytu (~10897) nieprzeliczona. |
+| 72 | NAPRAWIONY (r3) | Kotwica poprawiona: ścieżka głodu `main.ts:31612-31631` (sprzątanie oblężenia/garnizonu) i `main.ts:31819-31834` (atrycja garnizonu oblężonego miasta). `disbandPlayerUnit` (`main.ts:6411`) to tylko porównanie. Szczegóły §8.0 pkt 5. |
 | 73 | NIEROZSTRZYGNIĘTY | Linia 585 w `render/cities.ts` to komentarz `setZoomLod`; `dispose` cache (`cities.ts:756`) nieprzeliczony. |
 
 ### 7.2 Pozostałe pozycje z rundy 2 (wskazane przez Evaluatora)
@@ -233,3 +233,146 @@ Wykluczony z zakresu jako proces: `AUDYT-OBIEG-DOKUMENTOW-2026-07-05.md` (obieg 
 - 33 pozycje NIEROZSTRZYGNIĘTY (tabela 7.1) wymagają kolejnej rundy; kryterium binarne nie jest spełnione.
 - Statusy NAPRAWIONY na podstawie komentarza `Audyt #NN` oraz widocznej bramki (np. #27, #36, #42, #43) nie były dynamicznie testowane.
 - Nie uruchomiono `cargo`/`npm`/gry. Zakres zapisu: tylko ten plik. `gra/**` nietknięte.
+
+---
+
+## 8. Runda 3/5 — R-RUSTPORT-P1-16B-AUDIT-CROSSCHECK-Q1 (Operator Haiku 5.5 medium, pin `edb8fb56`)
+
+**Dowody:** wyłącznie `git show edb8fb56:…`, `git grep edb8fb56`, `sed`/`awk`/`grep` na pinie, wykonane w tej rundzie. Ta sekcja **nadpisuje statusy z §6.2 i §7.1** dla wszystkich pozycji wymienionych niżej. Sekcje 1–5 nietknięte. W §7.1 zmieniono wyłącznie wiersze 44, 64 i 72 (wskazane przez Evaluatora).
+
+### 8.0 Odpowiedzi na zarzuty rundy 2
+
+1. **Status z dowodem dla każdej pozycji.** AUDYT-KODU: §8.1 (73/73). PARYTET #1–#8: §8.2 (8/8). Pozostałe pliki: §8.3. Pozycje `NIEROZSTRZYGNIĘTY` mają zapisane, co sprawdzono i czego nie.
+2. **Wiersze per plik.** §8.3 ma jeden wiersz na każdy plik z zakresu, także dla plików wskazanych jako „patrz 6.2" i „poza zakresem".
+3. **Pliki `_handoff/`.** Dwa pliki (`AUDYT-DOKUMENTACJI-FALA291-294-2026-08-18.md`, `AUDYT-SYNC-MIASTO-BITWA-2026-07-03.md`) oceniono w §8.3. Propozycja: wykluczyć z powodu poza globem `dyspozycje/AUDYT-*.md`, daty poza oknem 2026-07-21…2026-08-13 i treści procesowo-designowej. Decyzja należy do Evaluatora/Final Control.
+4. **Wiersz 44 (§7.1)** zmieniony na NAPRAWIONY. Zapis `main.ts:30579-30581`, odczyt `main.ts:39097-39104`.
+5. **Kotwica #72 (§7.1)** poprawiona. `disbandPlayerUnit` (`main.ts:6411`) to tylko punkt porównania. Właściwa ścieżka głodu: `main.ts:31612-31631` (`allDestroyedIds`, komentarz `#72` w l. 31613, sprzątanie oblężenia/garnizonu, `units.splice` w l. 31628-31630) oraz `main.ts:31819-31834` (atrycja realnego garnizonu oblężonego miasta, `units.splice` w l. 31831, `syncGarnizonForCity` w l. 31834). `allDestroyedIds` (l. 31590, 31607) sprawdzone. Status: **NAPRAWIONY**.
+6. **Poradnik i mnożniki.** Właściwe linie `docs/PORADNIK-GRACZA/07-miasto-budowa-rekrutacja.md`: **194** (Kuźnie +15% Pancerza), **195** (Koszary / Akademia wojskowa / Warsztat +20/+20/+10%, max +50%), **197** (Mury +200%, Cytadela, Baszta). Porównanie identyfikatorów (nie samych nazw):
+   - Ścieżka A (`ARMOR_BUILDING_IDS`, `unit-building-bonuses.ts:67`): `kuznia` 15, `kuznia_zelaza` 15, `wielka_kuznia` 15 (`buildings.json`, `baza.mnoznik`). Suma 45 = `ARMOR_PATH_MAX_PP = 45` (l. 295).
+   - Ścieżka B (`SOFT_STAT_BUILDING_IDS`, `:70`): `koszary` 20, `akademia_wojskowa` 20, `warsztat_oblezniczy` 10. Suma 50 = `SOFT_PATH_MAX_PP = 50` (l. 297). Limit „max +50%" potwierdzony w dokumentacji `:178`.
+   - Status obietnicy Poradnika (194–195): **NAPRAWIONY**. Pozostałe 25 haseł: NIEROZSTRZYGNIĘTY.
+   - Mury (`buildings.json:998`): `baza.mnoznik` 0, `obrona` 0 (przyrost też 0). Obietnica „+200%" bez efektu w danych: **NADAL ISTNIEJE**.
+7. **#64 na dokładnych kluczach.** `git show edb8fb56:gra/data/map-gen-params.json | grep -n -E 'owce|bydlo|lama|luksus'` daje **0 trafień**. Trafienia `surowce` (`surowce_mult` l. 14; `_opis` przy miedz/glina/cyna) to podciąg i nie są regułami. `gra/src/map/gen-helpers.ts` (`BASE_DEPOSIT_RULES` od l. 11971): **0 trafień** klucza `owce`/`bydlo`/`lama`/`luksus`. L. 11942–11943 dokumentują owce i bydło jako ulepszenie, nie złoże. Status: **NAPRAWIONY**.
+
+### 8.1 AUDYT-KODU-2026-07-21.md — status per znalezisko (r3)
+
+Liczniki: **NAPRAWIONY 57 · NADAL ISTNIEJE 7 · NIEROZSTRZYGNIĘTY 9** (razem 73).
+
+| # | Status | Dowód (pin `edb8fb56`) |
+|---|---|---|
+| 1 | NAPRAWIONY | `main.ts:10221–10228` (etykieta `case 'jednostka'`, odrzucenie w silniku; TODO A1 zostaje) |
+| 2 | NAPRAWIONY | `main.ts:30068`, `:30229` (komentarze „nie []"), `:28343` |
+| 3 | NAPRAWIONY | `manpower.ts:787–795` (`brak_ludnosci` przy `pop<=popCost`) |
+| 4 | NIEROZSTRZYGNIĘTY | `turn-economy.ts:1689`, `:2199` (`zywnoscNetto = foodBal.bilansLokalny`). Mnożenie ujemnej żywności przez `pctRozwoj` nie zlokalizowane (`zywnoscDoRozwoju` nieobecne) |
+| 5 | NAPRAWIONY | brak `if (!eraAdvance)`; pętla badań AI `main.ts:28608–28646` (r2) |
+| 6 | NADAL ISTNIEJE | `victory.ts:150–156` (`isNaukaVictory`), `e-start-params.json:127` `nauka_wymaga_rakiety: true`; `rakietaWystrzelona` ustawiane tylko na `false` (r2) |
+| 7 | NAPRAWIONY | `gen-helpers.ts:2041` odrzuca `isWaterTerrainLocal` (r2) |
+| 8 | NAPRAWIONY | `filePlayer.ts:285–288`, `:422–425` (`.catch` → `playing=false`) |
+| 9 | NAPRAWIONY | `muzyka-antyczna.ts:1678–1685` (r2) |
+| 10 | NAPRAWIONY | `combat.ts:216–218` (fallback `'Pancerz'`) |
+| 11 | NAPRAWIONY | `production.ts:950–953` (limit 1 żywej), `:277–281` (r2) |
+| 12 | NAPRAWIONY | `advanceSeat` `main.ts:36047–36061`, `:36223–36230` (r2) |
+| 13 | NAPRAWIONY | `main.ts:30635`, `:38757–38761` (r2) |
+| 14 | NAPRAWIONY | `main.ts:37067`, `:37262` (r2) |
+| 15, 26 | NAPRAWIONY | zapis `main.ts:30654–30658`, odczyt `:38570–38602` (r2) |
+| 16 | NAPRAWIONY | `main.ts:20704–20711` (r2) |
+| 17 | NAPRAWIONY | `cityPanel.ts:1196–1212` (r2) |
+| 18 | NAPRAWIONY | `main.ts:21672` (r2) |
+| 19 | NAPRAWIONY | `diplomacy-proposals.ts:1688` `ctx.proposerRespekt` (§6.2) |
+| 20 | NIEROZSTRZYGNIĘTY | `diplomacy-value-catalog.ts:~301` (kurs Rel/100 istnieje); guard ¤↔¤ i limit transakcji nie sprawdzone |
+| 21 | NADAL ISTNIEJE | `diplomacy-proposals.ts:1144–1152` `case 'trybut_zadanie'` bez górnego limitu; `pairHasKind` nie wołane w case (r2) |
+| 22 | NAPRAWIONY | `main.ts:20515`, `:20519` (§6.2) |
+| 23 | NAPRAWIONY | atrycja realnego garnizonu zdejmuje HP i usuwa jednostki: `main.ts:31819–31834`, log `:31837`. Licznik synchronizowany po usunięciu |
+| 24 | NAPRAWIONY | `ai.ts:3192` i `:4061` (`engageableEnemyUnits = enemyUnits.filter(aiCanEngageOwner)`), riposta `:3602` z tej listy; `nonSisterEnemyUnits` `:4129`. Treść `aiCanEngageOwner` nieprzeczytana |
+| 25 | NAPRAWIONY | `main.ts:29119` `if (oldOwner === REBEL_FACTION_OWNER_ID)` w `runCapitalCapturePlunder` (l. 29111) |
+| 27 | NAPRAWIONY | cache `main.ts:2556`, `:2587–2588` (r2) |
+| 28 | NAPRAWIONY | `units/setup.ts:903` `maxSearchRadius = hexDistance·2 + PATH_SEARCH_RADIUS_BUFFER` (limit promienia istnieje) |
+| 29 | NADAL ISTNIEJE | Funkcja przemianowana na `findCityFoundingHex` (`ai.ts:4437`), nadal `for (const key of Object.keys(map.hexes))` (`ai.ts:4469`). Pełny skan per wywołanie |
+| 30 | NAPRAWIONY | `main.ts:26303` `if (k === hoverKey) return;` przed `currentVisible()` (`:26310`). `currentVisible()` nadal przy zmianie heksa |
+| 31 | NIEROZSTRZYGNIĘTY | Komentarz `main.ts:35042` deklaruje klasyfikację po id; mapowanie nazwa→id w `ai.ts` nie zweryfikowane |
+| 32 | NAPRAWIONY | `production.ts:921–925` (r2) |
+| 33 | NAPRAWIONY | `braz-access.ts:25` (`empireHasKopalniaMiedzi(ownImprovements)`) wołane z `main.ts:4887` z listą per właściciel; `main.ts:3146` `placedImprovementsForOwner` |
+| 34 | NAPRAWIONY | `empire-food.ts:118` `em = raw.ekonomia_miasta ?? raw`; klucze `glod_wojska_*` czytane z `em` (`:129–131`) |
+| 35 | NADAL ISTNIEJE | `economy.ts:1189–1191` `healthModifier = max(0, 1 + zdrowie·…)` mnoży `zywnoscNetto` (0 przy zdrowie ≤ −20) |
+| 36 | NAPRAWIONY | `turn-economy.ts:2918–2926` (r2) |
+| 37 | NAPRAWIONY | `ai.ts:681–684` `epochGateMet`, `epochTierGateMet`, `researchGatesMet` w `scoreTech` |
+| 38 | NAPRAWIONY | `wonder-placement.ts:34` (r2) |
+| 39 | NAPRAWIONY | `muzyka-antyczna.ts:2037–2044` (r2) |
+| 40 | NAPRAWIONY | `main.ts:22154–22159` (r2) |
+| 41 | NADAL ISTNIEJE | `buildings.json` `wielka_kuznia` `epokaWejscia` 4 (wyciąg z pinu, r3); gra ma 3 epoki (r2) |
+| 42 | NAPRAWIONY | `main.ts:30659–30661`, `:38772–38773` (r2) |
+| 43 | NAPRAWIONY | `main.ts:30666–30669`, `:37290–37293`, `:38802–38808` (r2) |
+| 44 | NAPRAWIONY | zapis `main.ts:30579–30581`; odczyt `main.ts:39097–39104` |
+| 45 | NAPRAWIONY | `main.ts:21562` `cityOptions: cities.filter(isMe…)` (komentarz `#45`) |
+| 46 | NAPRAWIONY | `diplomacy-proposals.ts:1641–1642` `ctx.proposerRespekt < progGraniceWojskoweRespekt` |
+| 47 | NAPRAWIONY | `main.ts:10150–10155` (r2) |
+| 48 | NIEROZSTRZYGNIĘTY | `computeObjectivePower` i zdobycze przy eliminacji nieprzeczytane |
+| 49 | NIEROZSTRZYGNIĘTY | `main.ts:~11178` nieprzeliczone (grep `buildingLevelForEpoch` nie wykonany w r3) |
+| 50 | NAPRAWIONY | `main.ts:15125–15127` `consume ? consumeReadyMachines : peekReadyMachines`; komentarz: zużycie dopiero po potwierdzonym szturmie |
+| 51 | NADAL ISTNIEJE | `auto-battle-power.ts:39–40` `isFieldBattleUnit` zwraca `false` dla `isSiegeUnit`; `unit-power.ts:86` `'Oblężnicza'`. Machiny dają 0 do mAtk auto-szturmu |
+| 52 | NAPRAWIONY | `main.ts:15079` `Health: u.hp ?? effectiveRuntimeUnitMaxHp(...)` |
+| 53 | NIEROZSTRZYGNIĘTY | `mapFieldBattle.ts` `unitDefFor(u)` nadal w ścieżce szans; kolejność `registerMilitiaDef` względem preBattle nie domknięta |
+| 54 | NADAL ISTNIEJE | `combat.ts:539–542` dopasowanie po podciągu (r2, nieponowione w r3) |
+| 55 | NAPRAWIONY | `post-battle-map.ts:554` (r2) |
+| 56 | NAPRAWIONY | `ai.ts:4529–4544` `findNearestVillage` iteruje `for (const v of villages)`, bez `Object.keys(map.hexes)` |
+| 57 | NAPRAWIONY | `main.ts:2964–2992` cache `villageHexKeysCached()` |
+| 58 | NAPRAWIONY | brak odczytu pola `Super` (r2) |
+| 59 | NIEROZSTRZYGNIĘTY | `economy.ts:664–697` nieprzeliczone |
+| 60 | NIEROZSTRZYGNIĘTY | `main.ts:8098–8106` nieprzeliczone |
+| 61 | NAPRAWIONY | `playerState.ts:72` (r2) |
+| 62 | NIEROZSTRZYGNIĘTY | Martwy if/else z l. 283–287 usunięty. Purge `purgeInlandWaterForMultiLandTyp` wołany warunkowo (`generator.ts:335`, `:347`, `:353` gated `typ !== 'pangea'`), ale bezwarunkowo w `:369`. Czy pangea traci jeziora przez `:369`, nie domknięte |
+| 63 | NAPRAWIONY | `startScoring.ts:80–87` pętla `dq,dr ∈ [-4,4]`, `dist ≤ 4` osiągalne; gałąź `dist 2..4` działa |
+| 64 | NAPRAWIONY | patrz §8.0 pkt 7 |
+| 65 | NAPRAWIONY | `filePlayer.ts:310–311` `isIncomingCrossfade` obsługiwany w `onError` |
+| 66 | NAPRAWIONY | `main.ts:10053–10062` case `tech` dla `toOwnerId===0` wywołuje `reconcilePlayerEraFromResearch` (komentarz `#66`) |
+| 67 | NAPRAWIONY | `units.json` Typ = `Slinger` (r2) |
+| 68 | NAPRAWIONY | `main.ts:37030–37031`, `:37144–37145` (r2) |
+| 69 | NAPRAWIONY | `gamePauseMenu.ts:268–271` ponowne sprawdzenie `hasSave` przy kliknięciu; `:294` odświeżanie |
+| 70 | NAPRAWIONY | `main.ts:7351` `religionHappiness(…, builtIds.includes('swiatynia'))` |
+| 71 | NAPRAWIONY | `civ-roster.ts:174` round-robin `shuffledAi[idx % len]` (komentarz `Audyt #71`); fallback l. 171 tylko gdy pula pusta |
+| 72 | NAPRAWIONY | patrz §8.0 pkt 5 |
+| 73 | NAPRAWIONY | `cities.ts:750–759` `_removeStatChip` nie dispose'uje współdzielonej tekstury (komentarz l. 754–756) |
+
+### 8.2 AUDYT-PARYTET-AI-2026-07-24.md — PARYTET #1–#8 (r3)
+
+Audyt oznacza punkty ✅. Tu sprawdzono, czy cytowane symbole istnieją na pinie. Zachowanie nie przeliczone linia po linii.
+
+| # | Status | Dowód (pin) |
+|---|---|---|
+| 1 | NIEROZSTRZYGNIĘTY | `ownerResourceStockAll` / `deductBuildingStockCostAcrossCities` obecne (27 / 28 trafień), `game/building-stock-cost.ts` istnieje. Cap 100+100/Magazyn nieprzeliczony |
+| 2 | NIEROZSTRZYGNIĘTY | `tryAutoEnqueueBuild` obecne (11 trafień). `cityPanel.ts:4291–4308` nieprzeliczone |
+| 3 | NIEROZSTRZYGNIĘTY | `computePracaUpkeepByOwner` obecne (9 trafień). Wartości nieprzeliczone |
+| 4 | NIEROZSTRZYGNIĘTY | `HandelSurowiecCyklicznyItem` obecne (9 trafień). `diplomacy-treaties.ts` istnieje |
+| 5 | NIEROZSTRZYGNIĘTY | `applyWonderCityYields` obecne (5 trafień) |
+| 6 | NIEROZSTRZYGNIĘTY | `stolarniaCountByOwner` obecne (8 trafień) |
+| 7 | NADAL ISTNIEJE (luka AI-zakup) | `AICmdPurchase*` = 0 trafień w `gra/src`. AI nie ma komendy zakupu za złoto; gracz ma `purchaseRecruitmentUnit` (`main.ts:3972`). Część „max 1 żywa" nieprzeliczona |
+| 8 | NIEROZSTRZYGNIĘTY | `aiDiffLevelForOwner` obecne (10 trafień); linia z audytu (`main.ts:4007`) nieaktualna |
+| L2 | NIEROZSTRZYGNIĘTY | „Wyrąb lasu AI" cytuje `main.ts:14863–14893`, a to kod oblężenia (§6.2). Odniesienie nieaktualne, mechanika nieprzeliczona |
+
+### 8.3 Pliki AUDYT — wiersz per plik (r3)
+
+| Plik | Wynik r3 | Dowód / uwaga |
+|---|---|---|
+| `dyspozycje/AUDYT-KODU-2026-07-21.md` | NAPRAWIONY 57 · NADAL 7 · NIEROZSTRZYGNIĘTY 9 | §8.1 |
+| `dyspozycje/AUDYT-NAPRAWY-LOG.md` | Log, nie błąd gameplayu | `git merge-base --is-ancestor 6adfb79 edb8fb56`: tak |
+| `dyspozycje/AUDYT-MARTWE-PARAMETRY-BUDYNKOW.md` | Mieszany: patrz rozbicie | `przyrost*` NAPRAWIONY (`production.ts:244–249`, r2). `utrzymanie` NADAL (`economy-upkeep.ts:585`, r2). `odblokowuje` NADAL (`buildings.json:992,1040,1474,1523,1572`, r2, nieponowione). Targowisko NADAL (`buildings.json` `targowisko` baza 0 / przyrost 0, r3). Pretorium NADAL (`buildings.json:1829`, r3). Mury/Fort NADAL (`:998`, `:1439`, r3). Wielka Kuźnia NADAL (`:1394`, r3). Akademia `:1586` NIEROZSTRZYGNIĘTY (mnożnik Pracy/nauka nieprzeliczony). Kuźnie/Koszary: obietnica Poradnika NAPRAWIONY (`unit-building-bonuses.ts:67,70`); mnożnik Pracy `economy.ts:21–22` NIEROZSTRZYGNIĘTY (korekta §6.2). Warsztat `:1537` i Kuźnia żelaza `:1339` NIEROZSTRZYGNIĘTY (wykluczenie z Pracy). `converters.ts` NIEROZSTRZYGNIĘTY (l. 61 to komentarz). „NOWE nr 4" `wikiBundle.json` NIEROZSTRZYGNIĘTY |
+| `dyspozycje/AUDYT-CIVPEDIA-MARTWE-OBIETNICE.md` | Mieszany | Mury/Fort/Pretorium NADAL (dane zerowe, §8.0 pkt 6). Lazaret NADAL (`tech.json:430` opis bez wpisu w `buildings.json`, r2). Kuźnie/Koszary/Akademia wojskowa/Warsztat NAPRAWIONY (Poradnik 194–195). Pozostałe 25 haseł NIEROZSTRZYGNIĘTY |
+| `dyspozycje/AUDYT-PARYTET-AI-2026-07-24.md` | §8.2 | PARYTET #1–#6, #8 NIEROZSTRZYGNIĘTY; #7 (zakup AI) NADAL ISTNIEJE; wyrąb L2 NIEROZSTRZYGNIĘTY |
+| `dyspozycje/AUDYT-STOLICE-VS-MIASTA-PANSTWA-2026-08-02.md` | Werdykt design | NIEROZSTRZYGNIĘTY. Stała sep 14 nie sprawdzona w r3 |
+| `dyspozycje/AUDYT-OPISY-CIVPEDIA-PORADNIK-SCIAGI-2026-08-13.md` | Treść opisowa | NIEROZSTRZYGNIĘTY. Sprawdzono tylko Poradnik 194–197 |
+| `dyspozycje/AUDYT-WERYFIKACJA-53-WERDYKTY.md` | Werdykty sceptyków | #22 NAPRAWIONY (`b1a7a61` przodek pinu, r2). Pozostałe zgodne z §8.1 |
+| `dyspozycje/KULTURA-RELIGIA-AUDYT-2026-07-22.md` | Nazwa poza wzorcem `AUDYT-*`; liczony | Teza częściowo nieaktualna: konsumenci istnieją (`culture-religion.ts` obecny; `turn-economy.ts:177–204`). Siła wpływu NIEROZSTRZYGNIĘTY |
+| `dyspozycje/AUDYT-OBIEG-DOKUMENTOW-2026-07-05.md` | WYKLUCZONY (proces) | Obieg dokumentów, nie gameplay |
+| `dyspozycje/_handoff/AUDYT-DOKUMENTACJI-FALA291-294-2026-08-18.md` | Propozycja: WYKLUCZYĆ | Poza globem `dyspozycje/AUDYT-*.md` (podkatalog `_handoff/`); data 2026-08-18 poza oknem 07-21…08-13; treść: zgodność dokumentów z `WERSJE.md` i zamknięciem fal (proces). Dowód: `git show edb8fb56:dyspozycje/_handoff/AUDYT-DOKUMENTACJI-FALA291-294-2026-08-18.md`, l. 1–25 |
+| `dyspozycje/_handoff/AUDYT-SYNC-MIASTO-BITWA-2026-07-03.md` | Propozycja: WYKLUCZYĆ | Poza globem; data 2026-07-03 przed oknem; treść: synchronizacja mockupów Design z kodem miasta (MD5, playtest), bez twierdzeń o błędach gameplayu w sekcji 1. Dowód: `git show edb8fb56:dyspozycje/_handoff/AUDYT-SYNC-MIASTO-BITWA-2026-07-03.md`, l. 1–25 |
+
+### 8.4 Korekty do §6 i §7
+
+- §6.2 wiersz „Kuźnia/Koszary" i §7.2 wiersz „Civpedia 193" są zastąpione przez §8.0 pkt 6 i §8.3.
+- Liczniki „34 NAPRAWIONY / 6 NADAL / 33 NIEROZSTRZYGNIĘTY" z §7.1 są zastąpione przez §8.1 (57 / 7 / 9).
+
+### 8.5 Ograniczenia rundy 3
+
+- **NIEROZSTRZYGNIĘTY (formalnie dopuszczalne, merytorycznie otwarte):** AUDYT-KODU #4, 20, 31, 48, 49, 53, 59, 60, 62; PARYTET #1–#6, #8 i L2; `AUDYT-STOLICE`; treść `AUDYT-OPISY` (25 haseł); siła wpływu `KULTURA-RELIGIA`.
+- Pozycje **NADAL ISTNIEJE** z r2 i nieponowione w r3: #54, `odblokowuje` (`buildings.json`), `utrzymanie`.
+- Nie uruchomiono testów, `cargo` ani gry (zakaz w temacie). Brak commita. `gra/**` nietknięte.
