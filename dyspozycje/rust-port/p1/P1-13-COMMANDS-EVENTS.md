@@ -298,12 +298,12 @@ Wiele fotelów (hot-seat): przejście fotela = `advanceSeat()` (`main.ts:36047`)
 
 ## D. Luki zakresu (świadomie niedokończone w rundzie 1)
 
-1. **Pełne zestawy literałów w `ui/*`** nie zostały wyliczone: `EntityCardAction` (`ui/entityCards/types.ts:117`), `UnitPanelAction` (`ui/unitPanelHud.ts:21`), `SiegeMapPanelActions` (`ui/siegeMapPanel.ts:13`), `CityAttackChoiceActions` (`ui/cityAttackChoice.ts:21`), `DiploPlayerAction` (obsługa), `AudienceAction` (`ui/diplomacyAudience.ts:60`). Ich id są konstruowane inline w UI.
-2. **Ścieżka id audiencji `'3'`, `'2'`, `'13'`, `'12'`, `'15'`** nie została prześledzona (brak gałęzi w `applyAudienceAction`, `main.ts:21260`–`21520`).
-3. **Konsumenci `ProposalActionId`** (`diplomacy-proposals.ts:1038`, `:1994`) — nie sprawdzono, czy pokrywają wszystkie 15 członków; w pliku wymienione są tylko widoczne `case`.
+1. **Literały `ui/*`:** zamknięte w rundzie 2 w sekcji A11 dla `EntityCardAction`, `UnitPanelAction`, `SiegeMapPanelActions`, `CityAttackChoiceActions`, `AudienceAction`. **Otwarte:** obsługa `DiploPlayerAction` (typ w `ui/diplomacyPanel.ts:28`, wyliczony w B5; handler nie prześledzony).
+2. **Ścieżka `'3'`, `'2'`, `'13'`, `'12'`, `'15'`:** zamknięta w rundzie 2 (sekcja A7: koszyk → `handleNegotiatedProposal`). Fallback bez kontekstu negocjacji to atrapa „wkrótce” (`main.ts:21301`–`21302`). **Otwarte:** downstream id `'4'`, `'6'`, `'7'`, `'8'`, `'9'` z kafelka „Możliwe umowy”.
+3. **Konsumenci `ProposalActionId`:** zamknięte w rundzie 2 (sekcja A4). `evaluateProposal` (`game/diplomacy-proposals.ts:1038`) pokrywa 15/15. `resolvePlayerAcceptsAiPending` (`:1994`) pokrywa 14/15, brakuje `'wchloniecie'` (ścieżka statycznie ustalona, nie uruchomiona — do uwzględnienia w P2.5).
 4. **`game/*.ts` poza wymienionymi** (np. `diplomacy-ai-balance.ts`, `diplomacy-audience-actions.ts`, `ai-*.ts` poza `ai.ts`, `forced-war-*.ts`, `alliance-war-obligation.ts`) — zawierają logikę decyzji AI i bloki `switch` na `item.typ`; nie zostały skatalogowane jako osobne typy zdarzeń.
 5. **Komunikaty wewnętrzne `console.log`/`showHintMessage`** nie są katalogiem zdarzeń i nie zostały wyliczone.
 6. **Typ `FsaUnavailableReason`** (`game/fsa-autosave.ts:46`) — członkowie nie zostali policzeni w sumie.
-7. **Kolejne 112 `switch` w `gra/src`** — powyżej wymienione są tylko te dotyczące komend/akcji/zdarzeń; reszta to switche renderowe lub stylistyczne (np. `render/*.ts`, `battle/battleScene.ts`) i została świadomie pominięta.
+7. **Pozostałe `switch` w `gra/src`:** `git grep -nE '\bswitch\s*\(' edb8fb56 -- gra/src | wc -l` = **115** trafień; z tego 111 to `switch` na początku linii (`git grep -nE '^\s*switch\s*\(' …`). Katalog wymienia tylko switche dotyczące komend/akcji/zdarzeń. Pozostałe (np. `render/*.ts`, `battle/battleScene.ts`) nie zostały zaklasyfikowane.
 
 Te luki są zamknięte jako **DO DOPISANIA** w kolejnej rundzie (Evaluator wskaże, które są krytyczne dla P2.5/P2.6).
