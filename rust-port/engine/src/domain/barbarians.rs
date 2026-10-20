@@ -70,8 +70,9 @@ impl Terrain {
         matches!(self, Self::ShallowWater | Self::Ocean)
     }
 
+    /// Tundra ("Polarny", impassable on the web) is not passable land.
     pub const fn is_passable_land(self) -> bool {
-        !self.is_water() && !matches!(self, Self::Mountains)
+        !self.is_water() && !matches!(self, Self::Mountains | Self::Tundra)
     }
 }
 

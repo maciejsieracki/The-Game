@@ -138,9 +138,10 @@ impl TerrainType {
         matches!(self, Self::ShallowWater | Self::Ocean)
     }
 
-    /// Land routes may cross every land terrain except mountains.
+    /// Land routes may cross every land terrain except mountains and tundra
+    /// ("Polarny", impassable on the web).
     pub const fn is_land_passable(self) -> bool {
-        !self.is_water() && !matches!(self, Self::Mountains)
+        !self.is_water() && !matches!(self, Self::Mountains | Self::Tundra)
     }
 
     pub const fn is_water_passable(self) -> bool {

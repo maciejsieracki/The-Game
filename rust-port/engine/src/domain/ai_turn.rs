@@ -98,8 +98,8 @@ impl Terrain {
     /// Cost to enter this terrain, matching the player pathfinder.
     pub const fn movement_cost(self) -> Option<u32> {
         match self {
-            Self::Grassland | Self::Plains | Self::Desert => Some(1),
-            Self::Hills => Some(2),
+            Self::Grassland | Self::Plains => Some(1),
+            Self::Hills | Self::Desert => Some(2),
             Self::Mountains | Self::ShallowWater | Self::Ocean | Self::Tundra => None,
         }
     }
