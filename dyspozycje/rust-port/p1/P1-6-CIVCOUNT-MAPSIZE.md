@@ -9,7 +9,7 @@
 - Chromium `/opt/pw-browsers/chromium-1194/chrome-linux/chrome`, viewport 1600×900, Playwright z `gra/node_modules`.
 - Ścieżka: menu → „Rozpocznij grę" → „Rozpocznij konfigurację →" (krok 2 Epoka) → wybór epoki → „Dalej →" (krok 3, auto-wybór cywilizacji) → „Dalej →" (krok 4 Ustawienia).
 - Każdy zakres wartości wyznaczono klikaniem strzałek ‹ › w tej rundzie (kierunek w obie strony, aż do zapętlenia lub zablokowania), nie z kodu.
-- Dane surowe: `dyspozycje/autobot/runs/R-RUSTPORT-P1-6-CIVCOUNT-MAPSIZE-Q1/` (skrypty i JSON-y sondy w scratchpadzie, kopie `probe-civ-e0/e1/e2.json`).
+- Dane surowe: `dyspozycje/autobot/runs/R-RUSTPORT-P1-6-CIVCOUNT-MAPSIZE-Q1/` — `probe-civ-e0/e1/e2.json` (sekwencje ‹/› dla każdego rozmiaru) oraz `enum-e0.json` (cykl › dla Epoki Kamienia). Skrypt Playwright użyty do klikania **nie został zachowany**: nie ma go w repo, w runie ani w scratchpadzie sesji. Powtórzenie pomiaru wymaga ponownej sondy według kroków z tej sekcji.
 - Zrzuty (ten sam przebieg):
   - `dyspozycje/rust-port/p1/screenshots/P1-6-civcount-mapsize.png` — Epoka Kamienia, domyślnie „Standardowy", „Liczba cywilizacji" = 7 (1600×900, widoczne oba wiersze).
   - `dyspozycje/rust-port/p1/screenshots/P1-6-civcount-mapsize-superhuge-kamien.png` — Epoka Kamienia, „Super Huge", „Liczba cywilizacji" = 7.
@@ -33,7 +33,7 @@ Wartości zgodne z `gra/data/ui-params.json` (`nowa_gra.ustawienia`, klucz `map_
 
 ## 3. Liczba cywilizacji — zakres zależny od rozmiaru mapy i epoki
 
-Menu ma **3 opcje** na każdy rozmiar (min / domyślna / max), a nie ciągły suwak. Zakresy zmierzone klikaniem:
+Menu ma **3 wartości** na każdą kombinację rozmiaru i epoki (17 z 18 komórek), a nie ciągły suwak. Wyjątek: Super Huge w Epoce Kamienia ma 2 wartości (§5). Zakresy zmierzone klikaniem; kolumny posortowane rosnąco, kolejność cyklu przy › bywa inna (np. Malenki/Kamień: 5 → 2 → 3, Mały/Kamień: 4 → 6 → 3):
 
 | Rozmiar mapy | Epoka Kamienia (8 dostępnych) | Epoka Brązu (14) | Epoka Żelaza (15) |
 |---|---|---|---|
@@ -44,9 +44,9 @@ Menu ma **3 opcje** na każdy rozmiar (min / domyślna / max), a nie ciągły su
 | Ogromny | 6, 7, 8 | 10, 11, 13 | 11, 12, 14 |
 | Super Huge | 7, 8 (patrz §5) | 12, 13, 14 | 13, 14, 15 |
 
-Pogrubiona wartość: potwierdzona w UI jako domyślna dla Epoki Kamienia / Standardowy (zrzut `P1-6-civcount-mapsize.png`). Górna granica każdego zakresu w Epoce Kamienia jest ograniczona liczbą cywilizacji dostępnych w tej epoce (8).
+Pogrubiona wartość: potwierdzona w UI jako domyślna dla Epoki Kamienia / Standardowy (zrzut `P1-6-civcount-mapsize.png`) — domyślna jest tu **maksimum** zakresu, nie wartością środkową. Domyślnych wartości dla pozostałych komórek nie zmierzono i nie są podawane. Maksima w Epoce Kamienia: Malenki 5, Mały 6, Standardowy 7, Duży 8, Ogromny 8, Super Huge 8. Sufit 8 (liczba cywilizacji w epoce) ogranicza maksima; nie jest maksimum każdego rozmiaru.
 
-Opis pola w UI: „Liczba frakcji na mapie"; podsumowanie kroku 4 (np. Standardowy / 7) pokazuje „7 na mapie" i „6 obcych cywilizacji" — zgodnie z tym, że gracz zajmuje jedno miejsce.
+Opis pola w UI (zrzut `P1-6-civcount-mapsize.png`): etykieta „LICZBA CYWILIZACJI”, a pod kartami kroku 4 tekst „Liczba cywilizacji = ile frakcji / obcych klastrów na mapie”. Ikona info przy polu (probe): „Więcej frakcji na mapie”. Podgląd startu na zrzucie `P1-6-civcount-mapsize-superhuge-kamien.png` (Super Huge, wartość 7): „6 obcych cywilizacji na mapie” (6 obcych + gracz = 7).
 
 Liczba cywilizacji w UI przy epoce Kamienia nie przekracza 8, mimo że `gra/data/civs.json` ma 15 cywilizacji — to ograniczenie epoki (`epokaWejscia`), nie rozmiaru mapy.
 
@@ -56,7 +56,7 @@ Odczyt po przejściu każdego rozmiaru (Epoka Kamienia, domyślne wartości): Ma
 
 ## 5. Anomalia — strzałka „›" nie zawija na Super Huge (Epoka Kamienia)
 
-W Epoce Kamienia przy „Super Huge" zakres obserwowany klikaniem to tylko **7 i 8**. Strzałka › z wartości 8 nie przechodzi do 7 (9 kliknięć: zawsze 8), a ‹ przeskakuje naprzemiennie 8 ↔ 7. Dla pozostałych rozmiarów zawijanie działa. Przyczyna nie jest potwierdzona w DOM; prawdopodobna (z kodu, nie zweryfikowana w UI): `civTypesMenuForMapLabel` (`gra/src/map/newGameMapDefaults.ts`, l. ~715–730, `menuBundleFromTriple` l. 674) przycina górną granicę triady do maksimum epoki (8), więc w menu mogą być dwie pozycje „8" i `syncCivTypesOptions` (`gra/src/ui/newGameFlow.ts` l. 750–769) przywraca wartość przez `indexOf`. Do P1.16 (przypadki brzegowe).
+W Epoce Kamienia przy „Super Huge" zakres obserwowany klikaniem to tylko **7 i 8**. Strzałka › z wartości 8 pozostaje na 8 (9 kliknięć: zawsze 8; `enum-e0.json`), a ‹ przełącza naprzemiennie 8 ↔ 7 (`probe-civ-e0.json`, `leftFrom_start`). Dla pozostałych rozmiarów i epok › zawija (cykl 3 wartości). Przyczyna nieznana; nie stawiam hipotezy bez dowodu. Hipoteza „dwie pozycje 8 w menu" została odrzucona przez dane: przy liście [7, 8, 8] › z 8 wracałoby do 7 (nie zaobserwowano), a ‹ z 8 dawałoby 8 (zaobserwowano 7). Do P1.16 (przypadki brzegowe).
 
 ## 6. Odniesienia do źródła
 
@@ -67,7 +67,7 @@ W Epoce Kamienia przy „Super Huge" zakres obserwowany klikaniem to tylko **7 i
 
 ## 7. Nieobserwowane w tej rundzie
 
-- Epoka Żelaza i Brązu: zakresy zmierzone, zrzutów nie wykonano (zrzuty tylko dla Kamienia).
+- Epoka Żelaza i Brązu: zakresy zmierzone (`probe-civ-e1.json`, `probe-civ-e2.json`); wszystkie 12 komórek zgodne z tabelą §3 (sprawdzone przez cykle ‹/›). Zrzutów nie wykonano (zrzuty tylko dla Kamienia).
 - Miasta-państwa: wartości zmierzone tylko dla domyślnych ustawień każdego rozmiaru, bez pełnego przeglądu zakresu.
 
 ## 8. Anomalie konsoli

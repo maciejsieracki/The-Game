@@ -27,7 +27,7 @@ dotykające tych samych plików — zawsze sekwencyjnie, nigdy w tej samej fali.
 | # | Temat | Faza | Runda | runId Workflow | Status | Ostatnia aktualizacja |
 |---|---|---|---|---|---|---|
 | 1 | `R-RUSTPORT-P1-16B-AUDIT-CROSSCHECK-Q1` | P1.16b | 1/5 | `wf_8634e0dd-bf2` | DISPATCHED (w toku) | 2026-10-20 |
-| 2 | `R-RUSTPORT-P1-6-CIVCOUNT-MAPSIZE-Q1` | P1.6 | 1/5 | `wf_cffceb53-140` | DISPATCHED (w toku, przeglądarkowy) | 2026-10-20 |
+| 2 | `R-RUSTPORT-P1-GATE-SYNTHESIS-Q1` | synteza P1 | 1/5 | `wf_9c8797c5-f5c` | DISPATCHED (w toku) | 2026-10-20 |
 | 3 | `R-RUSTPORT-P1-13B-PROPOSAL-COVERAGE-Q1` | P1.13b | 1/5 | `wf_05c470f2-661` | DISPATCHED (w toku) | 2026-10-20 |
 | 4 | `R-RUSTPORT-P1-8-WORLD-GENERATION-Q1` | P1.8 | 1/5 | `wf_276e98f3-8ff` | DISPATCHED (w toku, przeglądarkowy) | 2026-10-20 |
 | 5 | `R-RUSTPORT-P1-9-MAP-HUD-PANELS-Q1` | P1.9 | 1/5 | `wf_d4454326-b9e` | DISPATCHED (w toku, przeglądarkowy) | 2026-10-20 |

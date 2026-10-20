@@ -310,51 +310,91 @@ Stan po rundzie 2: pozycje 1, 2, 3 i 7 mają rozstrzygnięcie opisane powyżej. 
 
 ---
 
-## E. Pokrycie `ProposalActionId` we wszystkich konsumentach (R-RUSTPORT-P1-13B-PROPOSAL-COVERAGE-Q1, runda 1/5)
+## E. Pokrycie `ProposalActionId` we wszystkich konsumentach (R-RUSTPORT-P1-13B-PROPOSAL-COVERAGE-Q1, runda 1/5, obrona Operatora)
 
-**Pin:** `edb8fb56` (wszystkie cytaty z `git show edb8fb56:<ścieżka>` / `git grep … edb8fb56`, wykonane w tej rundzie). Stare numery `main.ts:1038` i `main.ts:1994` z sekcji A4 **nie są** switchami na `ProposalActionId`: na pinie są to linie importu i komentarza w `gra/src/main.ts`. Właściwe switche to `gra/src/game/diplomacy-proposals.ts:1038` (`evaluateProposal`) i `:1994` (`resolvePlayerAcceptsAiPending`).
+**Uwaga do ledgera (zarzut Evaluatora 4):** nagłówek dokumentu „Runda: 2/5” dotyczy tematu **R-RUSTPORT-P1-13** (sekcje A–D). Niniejsza sekcja E jest dopisana w temacie **R-RUSTPORT-P1-13B-PROPOSAL-COVERAGE-Q1, runda 1/5**. Nagłówka dokumentu nie zmieniano (allowlista: tylko dopisanie).
+
+**Pin:** `edb8fb56`. Wszystkie cytaty z `git show edb8fb56:<ścieżka>` / `git grep … edb8fb56` wykonane w tej rundzie. Stare numery `main.ts:1038` i `main.ts:1994` z sekcji A4 **nie są** switchami na `ProposalActionId` (na pinie: linie importu/komentarza). Właściwe switche: `gra/src/game/diplomacy-proposals.ts:1038` (`evaluateProposal`) i `:1994` (`resolvePlayerAcceptsAiPending`).
 
 **Definicja:** `gra/src/game/diplomacy-proposals.ts:68` — 15 członków: `nap`:69, `sojusz_defensywny`:70, `sojusz_pelny`:71, `handel`:72, `umowa_handlowa`:77 (alias AI), `umowa_szlakow`:79, `trybut_zadanie`:80, `trybut_oferta`:81, `granice`:82, `tech`:83, `namow_wojne`:84, `ultimatum`:85, `wasal`:86, `wchloniecie`:88, `pokoj`:90.
 
-### E1. Konsumenci typowani przez `ProposalActionId` (pełna lista na pinie)
+### E1. Inwentarz konsumentów (po obronie)
 
 | # | Konsument | Ścieżka:linia | Rodzaj | Wynik dla 15 wariantów |
 |---|---|---|---|---|
-| K1 | `evaluateProposal` | `game/diplomacy-proposals.ts:1038` | `switch` (+ `default` :1746 → `accepted:false`) | **15/15 jawnie** (`case` :1039–:1707; `umowa_handlowa` :1472 wpada w `umowa_szlakow` :1473) |
-| K2 | `resolvePlayerAcceptsAiPending` | `game/diplomacy-proposals.ts:1994` | `switch` (+ `default` :2194 → `accepted:false`, „Nieznana akcja dyplomatyczna”) | **14/15** — **BRAK `wchloniecie`** (case-y :1995–:2175; brak w liście) |
-| K3 | etykiety stołu `entry.actionId` | `gra/src/main.ts:17507` (`default` :17538) | `switch` na etykiety UI | **15/15 jawnie** (`nap`:17508 … `wchloniecie`:17537) |
-| K4 | `applyProposalOutcome` | `gra/src/main.ts:20605` (parametr `cywAction: string`) | warunki na wybrane id, nie `switch` | nie jest konsumentem pełnym: jawne gałęzie tylko dla `trybut_*` :20614, `wchloniecie` :20620, `handel` :20701, `umowa_handlowa`/`umowa_szlakow` :20719; reszta obsługiwana ogólnie |
-| K5 | zbiory-filtry (`Set`) | `diplomacy-proposals.ts:1956` (`NEGOTIATION_PEACE_REQUIRED`: nap, sojusz×2, handel, umowa_handlowa, umowa_szlakow, granice, tech, wasal, wchloniecie, trybut_zadanie), `:1973` (`PEACE_ACTIONS_DURING_WAR`: pokoj, trybut_oferta, ultimatum), `:2239` (`NEGOTIATION_NO_ENGINE_COUNTER`: pusty), `:2417` (`TRIBUTE_PROPOSAL_ACTIONS`: 2 trybuty), `:2477` (`SWEETENER_COUNTER_ELIGIBLE`: nap, sojusz×2, granice, wasal, pokoj); `game/diplomacy-acceptance-points.ts:623` (`INCOMING_NET_PW_ACTIONS`: handel, umowa_handlowa, umowa_szlakow) | filtry członkostwa — brak wpisu nie jest błędem sam w sobie; `wchloniecie` nie występuje w `SWEETENER_COUNTER_ELIGIBLE` ani w `INCOMING_NET_PW_ACTIONS` (decyzja projektowa do P2.5, nie dowód luki) |
-| K6 | mapowanie UI → id | `ui/diplomacyNegotiationModal.ts:549`–`562` (`proposalActionIdFromPayload`); `ui/diplomacyTradeBasket.ts:1395`–`1413` | producent id, nie konsument | 14 z 15 (wszystko poza `umowa_handlowa`, który powstaje tylko jako alias AI w `diplomacy-proposals.ts:77`) |
+| K1 | `evaluateProposal` | `game/diplomacy-proposals.ts:1038` | `switch` (`default` :1746 → `accepted:false`) | **15/15 jawnie** (`case` :1039 … :1707 `wchloniecie`, 15 etykiet — zob. E2a; `umowa_handlowa` :1472 wpada w `umowa_szlakow` :1473) |
+| K2 | `resolvePlayerAcceptsAiPending` | `game/diplomacy-proposals.ts:1994` | `switch` (`default` :2194 → `accepted:false`, „Nieznana akcja dyplomatyczna” :2195) | **14/15 — BRAK `wchloniecie`** (`case` :1995–:2175; zweryfikowane: 14 etykiet `case`, brak `'wchloniecie'` w zakresie :1994–:2197) |
+| K3 | `negotiationSummary` (etykiety stołu, `entry.actionId`) | `gra/src/main.ts:17507` (`default` :17538) | `switch` | **15/15 jawnie** (`case` :17508, :17512, :17513, :17514, :17517, :17519, :17520, :17522, :17531, :17532, :17533, :17534, :17535, :17536, :17537) |
+| K4 | `applyProposalOutcome` | `gra/src/main.ts:20605` | warunki `if (cywAction === …)` + ogólna ścieżka `else if` :20725 | **6 wariantów z jawną gałęzią** (`trybut_zadanie`/`trybut_oferta` :20614; `wchloniecie` :20620; `handel` :20701; `umowa_handlowa`/`umowa_szlakow` :20719); **9 bez jawnej gałęzi** — obsługiwane ścieżką ogólną; downstream per wariant NIE prześledzony (patrz E3.5) |
+| K5 | zbiory-filtry (`ReadonlySet`) | `diplomacy-proposals.ts:1956`, `:1973`, `:2417`, `:2477`; `diplomacy-acceptance-points.ts:623` | członkostwo | patrz matryca E2b; brak członkostwa = decyzja polityki, nie błąd sam w sobie |
+| K6 | mapa etykiet CYW → id UI | `gra/src/main.ts:17490`–`17493` (`Record<string,string>`, 15 kluczy) + konsument `main.ts:17616` (`?? '5'`) | `Record` | **15/15 kluczy obecnych** (`nap`/`sojusz_*`/`granice`/`pokoj` :17491; `handel`/`umowa_*`/`tech`/`namow_wojne` :17492; `trybut_*`/`ultimatum`/`wasal`/`wchloniecie` :17493). Fallback `?? '5'` nie jest uruchamiany dla żadnego z 15 kluczy |
+| K7 | mapowanie UI → id (producent, nie konsument) | `ui/diplomacyNegotiationModal.ts:549`–`562` (`proposalActionIdFromPayload`); `ui/diplomacyTradeBasket.ts:1395`–`1413` (`proposalActionIdFromUi`) | producent | modal: `map` pokrywa `nap`, `granice`, `umowa_szlakow`, `handel`, `tech`, `namow_wojne`, `ultimatum`, `wasal`, `wchloniecie`, `pokoj` + gałęzie dla `sojusz_*`, `trybut_*`; **`umowa_handlowa` nie jest produkowany przez UI** (alias AI, `diplomacy-proposals.ts:77`). Fallbacki: modal `?? payload.actionId` (zwraca surowe id UI); basket `return 'handel'` (domyślnie) |
+| K8 | dane traktatów `gra/data/diplomacy-acceptance-points.json` → `traktaty` | czytane przez `loadTreatyAcceptanceDef` `game/diplomacy-acceptance-points.ts:66`; użycie: `computePlayerAcceptanceSides` :356, `treatyBaseAcceptancePn` :77, `computeIncomingPlayerAcceptNetPw` :677, `previewIncomingPlayerAccept` :695 | dane (lookup `t[actionId]`, `undefined` gdy brak) | **14/15** — brak wpisu dla **`wchloniecie`** (klucze `traktaty` na pinie: `dar`, `granice`, `handel`, `namow_wojne`, `nap`, `pokoj`, `sojusz_defensywny`, `sojusz_pelny`, `tech`, `trybut_oferta`, `trybut_zadanie`, `ultimatum`, `umowa_handlowa`, `umowa_szlakow`, `wasal`). Dla `wchloniecie`: `punkty` = 0, brak `prog_relacja` |
+| K9 | helpery generyczne bez `case` per wariant | `game/diplomacy-rejection-cooldown.ts:25`–`85` (`makeRejectedOfferCooldown` :25, `isOfferRejectedOnCooldown` :48 z `c.actionId === actionId`, `recordRejectedOffer` :63, `pruneExpiredRejectedOffers` :78); `game/diplomacy-proposals.ts:2271` (`makeNegotiationId`), `:2283` (`hasPendingNegotiationForPair`), `:2297` (`findOwnOutgoingNegotiation`) | generyczne (`ProposalActionId` jako klucz/parametr) | **15/15 OBSŁUŻONE OGÓLNIE** — brak gałęzi per wariant, brak wyjątku dla któregokolwiek wariantu |
+| K10 | gałąź dla jednego wariantu w UI stołu | `gra/src/main.ts:17174` (`skipGenericToast = entry.actionId === 'wchloniecie' && outcome.kind === 'accepted'`) | warunek | tylko `wchloniecie` (świadoma wyjątkowa gałąź toastu, nie pokrycie 15 wariantów). `main.ts:28876`–`28882` to **komentarze**, bez kodu |
 
-### E2. Status per wariant (K1 / K2 / K3)
+**Poza zakresem `ProposalActionId`** (switche na id przycisków UI, typ `actionId: string`, nie `ProposalActionId`): `game/diplomacy-locks.ts:195` (`case` `'2'`, `'3'`, `'4'`, `'5'`, `'14'`, `'6'`, `'7'`), `ui/diplomacyNegotiationModal.ts:368` (`'2'`–`'7'`, `'8'`, `'9'`, `'12'`, `'13'`, `'14'`), `ui/diplomacyTradeBasket.ts:618` / `:952` / `:1144` (etykiety `'2'`–`'9'`, `'12'`, `'15'`), `main.ts:21288` (`'10'`, `'5'`, `'14'`). Wszystkie etykiety są w zbiorze `'2'`–`'15'` (formularze UI), zatem nie wchodzą do pokrycia 15 wariantów.
 
-| Wariant | K1 evaluateProposal | K2 resolvePlayerAcceptsAiPending | K3 etykieta | Status |
-|---|---|---|---|---|
-| `nap` | OBSŁUŻONY (:1039) | OBSŁUŻONY (:1995) | OBSŁUŻONY (17508) | OBSŁUŻONY WSZĘDZIE |
-| `sojusz_defensywny` | OBSŁUŻONY (:1087) | OBSŁUŻONY (:2020) | OBSŁUŻONY (17512) | OBSŁUŻONY WSZĘDZIE |
-| `sojusz_pelny` | OBSŁUŻONY (:1088) | OBSŁUŻONY (:2021) | OBSŁUŻONY (17513) | OBSŁUŻONY WSZĘDZIE |
-| `handel` | OBSŁUŻONY (:1380) | OBSŁUŻONY (:2101) | OBSŁUŻONY (17517) | OBSŁUŻONY WSZĘDZIE |
-| `umowa_handlowa` | OBSŁUŻONY (:1472) | OBSŁUŻONY (:2138) | OBSŁUŻONY (17519) | OBSŁUŻONY WSZĘDZIE |
-| `umowa_szlakow` | OBSŁUŻONY (:1473) | OBSŁUŻONY (:2139) | OBSŁUŻONY (17520) | OBSŁUŻONY WSZĘDZIE |
-| `trybut_zadanie` | OBSŁUŻONY (:1144) | OBSŁUŻONY (:2159) | OBSŁUŻONY (17532) | OBSŁUŻONY WSZĘDZIE |
-| `trybut_oferta` | OBSŁUŻONY (:1348) | OBSŁUŻONY (:2175) | OBSŁUŻONY (17533) | OBSŁUŻONY WSZĘDZIE |
-| `granice` | OBSŁUŻONY (:1622) | OBSŁUŻONY (:2034) | OBSŁUŻONY (17514) | OBSŁUŻONY WSZĘDZIE |
-| `tech` | OBSŁUŻONY (:1579) | OBSŁUŻONY (:2063) | OBSŁUŻONY (17522) | OBSŁUŻONY WSZĘDZIE |
-| `namow_wojne` | OBSŁUŻONY (:1563) | OBSŁUŻONY (:2078) | OBSŁUŻONY (17531) | OBSŁUŻONY WSZĘDZIE |
-| `ultimatum` | OBSŁUŻONY (:1673) | OBSŁUŻONY (:2081) | OBSŁUŻONY (17535) | OBSŁUŻONY WSZĘDZIE |
-| `wasal` | OBSŁUŻONY (:1684) | OBSŁUŻONY (:2084) | OBSŁUŻONY (17536) | OBSŁUŻONY WSZĘDZIE |
-| `wchloniecie` | OBSŁUŻONY (:1707) | **LUKA w `resolvePlayerAcceptsAiPending` (:1994)** — trafia do `default` :2194 → `accepted:false` | OBSŁUŻONY (17537) | **LUKA W K2** |
-| `pokoj` | OBSŁUŻONY (:1189) | OBSŁUŻONY (:2032) | OBSŁUŻONY (17534) | OBSŁUŻONY WSZĘDZIE |
+### E2. Status per wariant
 
-### E3. Ustalenia i korekty
+**E2a. Konsumenci `switch`/mapa/dane (K1, K2, K3, K6, K8) i ogólny (K9):**
 
-1. **Luka K2 potwierdzona statycznie:** brak `case 'wchloniecie'` w `diplomacy-proposals.ts:1994`–`2197` (grep `case 'wchloniecie'` na pinie = tylko :1707, czyli K1). Wywołania K2 w `main.ts`: :17267, :17837, :17957, :19631 (AI↔AI). Ścieżka runtime nie była uruchamiana. Zgodne z sekcją A4 P1.13.
-2. **Korekta A4 / sekcja D:** K3 (`main.ts:17507`) ma jawne `case` dla **wszystkich 15** wariantów, nie „etykiety z default” — stara formuła w A4 jest zawężona.
-3. **Korekta numeracji:** `main.ts:1038` / `main.ts:1994` to nie switche na `ProposalActionId` (patrz wyżej). Właściwe: `game/diplomacy-proposals.ts:1038` / `:1994`.
-4. **Switche na `actionId` typu string (poza `ProposalActionId`):** `game/diplomacy-locks.ts:195`, `ui/diplomacyNegotiationModal.ts:368`, `ui/diplomacyTradeBasket.ts:618/:952/:1144`, `main.ts:21288` — switchują na **id przycisków audiencji `'2'`–`'15'`**, nie na `ProposalActionId`; nie są częścią pokrycia 15 wariantów (ich pokrycie id `'2'`–`'15'` zostało opisane w sekcji A7).
-5. **Zakres nieobjęty tą rundą:** nie zweryfikowano bramek `previewNegotiationEntry` przed :17267 ani pełnego downstreamu K5 dla `wchloniecie`; `game/diplomacy-rejection-cooldown.ts` i `diplomacy-acceptance-points.ts` (funkcje z parametrem `actionId`, :357, :678, :696) tylko wymienione, bez przejścia wariantów.
+| Wariant | K1 evaluateProposal | K2 resolvePlayerAcceptsAiPending | K3 etykieta | K6 mapa CYW | K8 dane traktatu | K9 generyczny | Status |
+|---|---|---|---|---|---|---|---|
+| `nap` | :1039 | :1995 | :17508 | :17491 | tak | OK | OBSŁUŻONY (K4: ogólnie) |
+| `sojusz_defensywny` | :1087 | :2020 | :17512 | :17491 | tak | OK | OBSŁUŻONY (K4: ogólnie) |
+| `sojusz_pelny` | :1088 | :2021 | :17513 | :17491 | tak | OK | OBSŁUŻONY (K4: ogólnie) |
+| `handel` | :1380 | :2101 | :17517 | :17492 | tak | OK | OBSŁUŻONY (K4: :20701) |
+| `umowa_handlowa` | :1472 | :2138 | :17519 | :17492 | tak | OK | OBSŁUŻONY (K4: :20719) |
+| `umowa_szlakow` | :1473 | :2139 | :17520 | :17492 | tak | OK | OBSŁUŻONY (K4: :20719) |
+| `trybut_zadanie` | :1144 | :2159 | :17532 | :17493 | tak | OK | OBSŁUŻONY (K4: :20614) |
+| `trybut_oferta` | :1348 | :2175 | :17533 | :17493 | tak | OK | OBSŁUŻONY (K4: :20614) |
+| `granice` | :1622 | :2034 | :17514 | :17491 | tak | OK | OBSŁUŻONY (K4: ogólnie) |
+| `tech` | :1579 | :2063 | :17522 | :17492 | tak | OK | OBSŁUŻONY (K4: ogólnie) |
+| `namow_wojne` | :1563 | :2078 | :17531 | :17492 | tak | OK | OBSŁUŻONY (K4: ogólnie) |
+| `ultimatum` | :1673 | :2081 | :17535 | :17493 | tak | OK | OBSŁUŻONY (K4: ogólnie) |
+| `wasal` | :1684 | :2084 | :17536 | :17493 | tak | OK | OBSŁUŻONY (K4: ogólnie) |
+| `wchloniecie` | :1707 | **LUKA** — brak `case`, trafia do `default` :2194 → `accepted:false` | :17537 | :17493 | **LUKA** — brak wpisu w `traktaty` | OK | **LUKA W K2 (:1994) i K8 (dane)**; K4 jawnie :20620; K10 :17174 |
+| `pokoj` | :1189 | :2032 | :17534 | :17491 | tak | OK | OBSŁUŻONY (K4: ogólnie) |
+
+**E2b. Matryca członkostwa K5** (✓ = wariant w zbiorze; `NEGOTIATION_NO_ENGINE_COUNTER` (`:2239`) jest pusty — pominięty):
+
+| Wariant | PEACE_REQUIRED :1956 | PEACE_DURING_WAR :1973 | TRIBUTE :2417 | SWEETENER :2477 | INCOMING_NET_PW acc:623 |
+|---|---|---|---|---|---|
+| `nap` | ✓ | – | – | ✓ | – |
+| `sojusz_defensywny` | ✓ | – | – | ✓ | – |
+| `sojusz_pelny` | ✓ | – | – | ✓ | – |
+| `handel` | ✓ | – | – | – | ✓ |
+| `umowa_handlowa` | ✓ | – | – | – | ✓ |
+| `umowa_szlakow` | ✓ | – | – | – | ✓ |
+| `trybut_zadanie` | ✓ | – | ✓ | – | – |
+| `trybut_oferta` | – | ✓ | ✓ | – | – |
+| `granice` | ✓ | – | – | ✓ | – |
+| `tech` | ✓ | – | – | – | – |
+| `namow_wojne` | – | – | – | – | – |
+| `ultimatum` | – | ✓ | – | – | – |
+| `wasal` | ✓ | – | – | ✓ | – |
+| `wchloniecie` | ✓ | – | – | – | – |
+| `pokoj` | – | ✓ | – | ✓ | – |
+
+Wniosek z E2b: `namow_wojne` nie należy do żadnego zbioru; `tech`, `ultimatum`, `wchloniecie` należą tylko do jednego. To są decyzje polityki (filtry), nie luki wykonania — ale P2.5 musi je odtworzyć jako dane, nie jako przypadki kodu.
+
+### E3. Odpowiedzi na zarzuty Evaluatora (runda 1/5, obrona)
+
+1. **Zarzut 1 (status tylko K1–K3): PRZYJMUJE.** Dodano K4 (per wariant, z podziałem na jawną i ogólną ścieżkę), K5 (matryca E2b), K6 (15/15 kluczy), K8 (dane) i K9 (ogólne). Status „OBSŁUŻONY” dla 13 wariantów jest teraz z zastrzeżeniem „K4: ogólnie” dla 9 wariantów (patrz E3.5).
+2. **Zarzut 2 (niepełny inwentarz): PRZYJMUJE.** Dodano K6 (`main.ts:17490`–`17493`, `Record` z 15 kluczami, konsument `:17616`), K7 (producenci, z fallbackami), K8 (`diplomacy-acceptance-points.ts:356`, `:677`, `:695` przez `loadTreatyAcceptanceDef`), K9 (`diplomacy-rejection-cooldown.ts:25`–`85`, `diplomacy-proposals.ts:2271`–`2297`), K10 (`main.ts:17158`–`17174`; `:28876` to komentarze). **Nowe ustalenie:** brak wpisu `wchloniecie` w `gra/data/diplomacy-acceptance-points.json` (K8) — druga luka dla tego wariantu, poza K2.
+3. **Zarzut 3 (E3.4 bez dowodu per case): PRZYJMUJE.** Dowód dodano w sekcji „Poza zakresem” E1 (etykiety `case` z `git show edb8fb56`). Potwierdzono, że scrutinee w `diplomacy-locks.ts` (`actionId: string`, :44) i w funkcjach `diplomacyNegotiationModal.ts`/`diplomacyTradeBasket.ts` (parametr `actionId: string`) to id UI, nie `ProposalActionId`. Typu `actionId` w `main.ts:21288` nie prześledzono dalej niż wywołanie `actionNeedsNegotiation(actionId)` (:21276) — zaznaczone jako blokada.
+4. **Zarzut 4 (nagłówek „Runda 2/5” vs „runda 1/5”): PRZYJMUJE jako wyjaśnienie w sekcji E** (akapit „Uwaga do ledgera” wyżej). Zmiany nagłówka istniejącej treści nie wykonano — allowlista wymaga samego dopisania.
+
+### E3.5. Ustalenia i ograniczenia (stan po obronie)
+
+1. **Luka K2 × `wchloniecie` potwierdzona statycznie** (`diplomacy-proposals.ts:1994`–`2197`, brak `case`). Ścieżka runtime nie była uruchamiana.
+2. **Luka K8 × `wchloniecie` (nowa):** brak wpisu w `traktaty` JSON; `loadTreatyAcceptanceDef` zwraca `undefined`, `treatyBaseAcceptancePn` daje 0. Czy to celowe (wchłonięcie to jednorazowa aneksja, nie traktat), czy luka — **decyzja projektowa do P2.5**, nie rozstrzygnięta w tej rundzie.
+3. **K4 dla 9 wariantów bez jawnej gałęzi** (`nap`, `sojusz_defensywny`, `sojusz_pelny`, `granice`, `tech`, `namow_wojne`, `ultimatum`, `wasal`, `pokoj`): obsługa przez ogólną ścieżkę `else if (giveItems/receiveItems)` :20725 i wspólny kod `result.deal`. **Nie prześledzono downstream per wariant** — status „OBSŁUŻONY” dla K4 jest tu niepełnym dowodem.
+4. **Wnioski, których NIE wyciągam:** nie twierdzę, że pozostałe 14 wariantów działa w runtime; dowód jest statyczny (switch/mapa/dane).
 
 ### E4. Wniosek dla P2.5
 
-Kontrakt komend frontend→Rust musi obejmować `wchloniecie` w ścieżce `resolvePlayerAcceptsAiPending` (K2), a nie tylko w `evaluateProposal` (K1). Jedyna twarda luka istniejąca statycznie to **K2 × `wchloniecie`**. Pozostałe 14 wariantów × K1/K2/K3 = OBSŁUŻONE WSZĘDZIE (dowód: cytaty w E2).
+- Kontrakt komend frontend→Rust musi obsługiwać `wchloniecie` w ścieżce `resolvePlayerAcceptsAiPending` (K2, `:1994`) **i** rozstrzygnąć brak wpisu danych traktatu (K8) — decyzja projektowa wymagana.
+- Pozostałe 14 wariantów: OBSŁUŻONE w K1, K2, K3, K6, K8 (oraz K9 generycznie); K4 wymaga osobnego prześledzenia dla 9 wariantów bez jawnej gałęzi (E3.5 pkt 3) przed zamknięciem tematu.
+- Matryca K5 (E2b) jest danymi wejściowymi dla P2.5 jako reguły filtrów.
