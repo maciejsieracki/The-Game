@@ -27,7 +27,7 @@ dotykające tych samych plików — zawsze sekwencyjnie, nigdy w tej samej fali.
 | # | Temat | Faza | Runda | runId Workflow | Status | Ostatnia aktualizacja |
 |---|---|---|---|---|---|---|
 | 1 | `R-RUSTPORT-P0-KALIBRACJA-Q1` | P0 | 1/5 | `wf_6ce4ed38-4e2` | **PASS** (zamknięty) | 2026-10-20 |
-| 2 | `R-RUSTPORT-P1-TERRAIN-DESERT-TUNDRA-FIX-Q1` | P1 (pierwszy kod) | 1/5 | `wf_094b5b5c-78e` | DISPATCHED (w toku) | 2026-10-20 |
+| 2 | `R-RUSTPORT-P1-TERRAIN-DESERT-TUNDRA-FIX-Q1` | P1 (pierwszy kod) | 1/5 | `wf_094b5b5c-78e` | **PASS** (zintegrowane: `rust-port/parity-v2`@`9e33fc77`) | 2026-10-20 |
 | 3 | — wolny slot — | | | | | |
 | 4 | — wolny slot — | | | | | |
 | 5 | — wolny slot — | | | | | |
@@ -53,8 +53,8 @@ dotykające tych samych plików — zawsze sekwencyjnie, nigdy w tej samej fali.
   gotowego, testowanego kodu domenowego (28 plików vs 18).
 - **Gałąź (P0.5):** `rust-port/parity-v2`, forkowana z `autobot/real24-staging`.
 
-Następny krok: dispatch tematu poprawki terenu (`R-RUSTPORT-P1-TERRAIN-DESERT-TUNDRA-FIX-Q1`) przez
-Workflow na gałęzi `rust-port/parity-v2`. Dopiero po nim — właściwe otwarcie P1.
+Poprawka terenu zintegrowana (PASS, `rust-port/parity-v2`@`9e33fc77`, 224 testy zielone). Następny krok:
+właściwe otwarcie P1 (audyt aktualnego weba, reference pack — P1.1 katalog plików jako pilot).
 
 ## Automatyzacja (mechanizm autonomicznej kontynuacji)
 
