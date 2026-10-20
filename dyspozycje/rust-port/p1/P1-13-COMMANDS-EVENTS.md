@@ -461,3 +461,121 @@ Stan zbiorczy: każdy z 15 wariantów ma jawny status z dowodem w każdym wymien
 - Kontrakt komend frontend→Rust musi obsłużyć wszystkie 15 wariantów w K1–K11, w tym jawne gałęzie K4 z F1.
 - Decyzje do rozstrzygnięcia przed P2.5 (nie są błędem wykonania w tym dowodzie): (a) `wchloniecie` w K2 i K8 (sekcja E); (b) kandydat luki `namow_wojne` w K4; (c) kandydat luki `trybut_oferta` wariant deal w K4.
 - Pokrycie K11: bez luk wariantowych; ryzyko rzutowania w K11c do uwzględnienia w walidacji typu po stronie Rust (enum zamknięty).
+
+## G. Runda 2/5 obrony — R-RUSTPORT-P1-13B-PROPOSAL-COVERAGE-Q1 (odpowiedź na zarzuty 1–4 Evaluatora)
+
+**Pin i metoda:** `edb8fb56`; każda linia poniżej z `git show edb8fb56:<ścieżka>` / `git grep … edb8fb56` wykonanego w tej rundzie. Sekcje A–F nie zmienione (tylko dopisanie).
+
+### G1. Odpowiedzi na zarzuty
+
+1. **Zarzut 1 (kryterium binarne): PRZYJMUJE częściowo.** Kryterium „OBSŁUŻONY WSZĘDZIE / LUKA W <miejsce> z dowodem" nadal NIE jest spełnione dla 7 wariantów (`nap`, `sojusz_defensywny`, `sojusz_pelny`, `granice`, `wasal`, `tech`, `ultimatum`) — ich K4 zostaje „ŚCIEŻKA OGÓLNA". Helpery z F4 pkt 1 prześledzono do granicy (G2); pozostała lista — G4. Nie deklaruję „OBSŁUŻONY WSZĘDZIE" dla żadnego z 15 wariantów w K4.
+2. **Zarzut 2 (`namow_wojne`): PRZYJMUJE.** Potwierdzone (G3a).
+3. **Zarzut 3 (`trybut_oferta` wariant deal): PRZYJMUJE.** Potwierdzone literałem (G3b).
+4. **Zarzut 4 (`umowa_*` warunkowe): PRZYJMUJE z korektą.** Wejście do gałęzi jest bezwarunkowe: rodzaj deala dla obu wariantów to zawsze `RodzajTraktatu.UmowaSzlakow` (`game/diplomacy-proposals.ts:1558`, `buildDeal` w case `umowa_handlowa`/`umowa_szlakow`). Warunkowy jest wyłącznie transfer `executePnDealTransfer` (`main.ts:20719`–`20720`, warunek `goldOnce > 0`). Dodatkowo `recomputeTradeRoutesNow` (`main.ts:20722`–`20723`) działa tylko gdy gracz jest w parze (`proposerId === 0 || responderId === 0`).
+
+### G2. Prześledzone ciała helperów (zamyka część F4 pkt 1)
+
+- `applyAcceptedProposal` — `game/diplomacy-proposals.ts:1752`: `if (!result.accepted || !result.deal) return deals; return addTreaty(deals, result.deal);`. Jedyny efekt: dopisanie traktatu (`addTreaty`, `game/diplomacy-treaties.ts:273`).
+- `syncRelationFromDeals` — `main.ts:19223`–`19235`: `wojna` → brak zmian; sojusz (`isAllianceDealKind`) → status `sojusz`; pakt NAP → status `pokoj`. Brak efektów trybut/wojna.
+- `transferBasketItems` — `main.ts:10132`–`10230`: `zloto` (:10144–:10146, `applyOneShotGoldTransfer`), `praca`, `zywnosc`, `zloze`, `tech` (`:10190`–`:10191` → `grantTechToOwnerWithSideEffects`, `main.ts:10049`, ciało NIEPRZEŚLEDZONE), `surowiec_*`; **`jednostka` (`:10221`) = no-op** (`break`, TODO A1: dawca nie traci jednostki) — luka elementu koszyka, nie wariantu.
+- `executePnDealTransfer` — `main.ts:10235`–`10257`: `techId` → `executeTechTradeDeal` (`main.ts:10105`) → `executeTechTradeDealCore` (`game/diplomacy-tech-trade.ts:168`, ciało NIEPRZEŚLEDZONE); **`giveItems`/`receiveItems` niepuste → `transferBasketItems` i `return` (`:10248`–`:10251`), więc `goldOnce` jest wtedy POMIJANE**; dopiero przy pustym koszyku → `applyOneShotGoldTransfer` (`goldOnce`).
+
+### G3. Ustalenia (dowody statyczne, bez uruchomienia runtime)
+
+**a) LUKA K4 — `namow_wojne`.** `applyProposalOutcome` (`main.ts:20605`) nie ma żadnej gałęzi dla `namow_wojne` (`git grep namow_wojne` w `gra/src/main.ts`: tylko `:17492` mapa etykiet i `:17531` etykieta). Zgoda z `evaluateProposal` (`diplomacy-proposals.ts:1576`) nie tworzy `deal` ani `oneShotTrade`. Wszystkie wywołania wojny leżą poza ścieżką akceptacji: `ownerDeclareWarOn` — `main.ts:10699` (przejęcie miasta), `:17154` (gałąź `outcome.kind === 'rejected'` z `warThreat`, `:17150`–`:17155`), `:17295` (odrzucenie, `handleNegotiationReject`). `playerDeclareWarOnOwner` — `:10713`, `:10715` (przejęcie), `:17152` (odrzucenie), `:21283` (przycisk „wypowiedz wojnę” z audiencji, `actionId === '11'`). **Zgoda nie wywołuje wojny.** Łapówka: `bribeGold` jest czytany tylko w walidacji `diplomacy-proposals.ts:1569`–`:1571` (minimum `progNamowWojneBribeBase*(epoka+1)`), etykiecie `main.ts:17531` i kopiowaniu payloadu `main.ts:21054`; akcesory `getMoneyField`/`withMoneyField` (`diplomacy-proposals.ts:2499`, `:2509`) służą edycji kontrofert, nie przelewowi. **Łapówka nie jest wypłacana.** Status: **LUKA W K4** (brak gałęzi w `main.ts:20605`–`20775`).
+
+**b) LUKA K4 — `trybut_oferta`, wariant `deal` (`diplomacy-proposals.ts:1377`).** Literał `'trybut_oferta_przyjeta'` w `gra/src` (`git grep`): `game/diplomacy-factors.ts:76` (etykieta), `game/diplomacy.ts:839` (typ), `:1008` (`case`), `main.ts:20771` (jedyne miejsce emisji). `:20771` leży w gałęzi `if (result.oneShotTrade)` (`:20737`–`:20770`, `else if` `:20769`). Gałąź `deal` (`main.ts:20659`–`:20735`) nie emituje żadnego zdarzenia trybutu; `syncRelationFromDeals` (G2) też nie. Brak wzorca dynamicznego składania (`_przyjeta`, `'trybut_' +` — 0 trafień). Status: **LUKA W K4 (`main.ts:20659`–`:20735`)** — intencja (czy przyjęcie cyklicznego trybutu ma mieć efekt) do potwierdzenia w P2.5.
+
+**c) Korekta `umowa_*` (zarzut 4) + nowy KANDYDAT LUKI K4.** Oprócz warunku z G1: `evaluateProposal` przy `hasItems` (`diplomacy-proposals.ts:1529`–`:1530`) akceptuje ofertę z koszykiem i rodzajem `UmowaSzlakow`. W `applyProposalOutcome` gałąź `UmowaSzlakow` (`:20718`) wywołuje `executePnDealTransfer` tylko przy `goldOnce > 0`; gałąź `else if (giveItems/receiveItems)` (`:20725`) jest nieosiągalna dla rodzaju `UmowaSzlakow`; `transferBasketItems` przy traktacie wywoływane jest tylko dla `UmowaWymiany`/`UmowaHandlowa` (`:20689`–`:20690`). Wniosek: **koszyk umowy przy `goldOnce == 0` nie jest przenoszony**, a przy `goldOnce > 0` złoto jest pomijane (G2, `:10248`–`:10251`). Status: **KANDYDAT LUKI K4** — nie wykonano w runtime; nieprzeczytany pozostaje `ui/diplomacyTradeBasket.ts` (czy UI zawsze ustawia `goldOnce` dla umów).
+
+### G4. Status K4 per wariant po rundzie 2 (zastępuje kolumnę K4 z F1 dla wskazanych wariantów; pozostałe bez zmian)
+
+| Wariant | Status K4 po rundzie 2 | Co pozostaje NIEPRZEŚLEDZONE |
+|---|---|---|
+| `nap` | ŚCIEŻKA OGÓLNA — `addTreaty` (G2), `syncRelationFromDeals` (G2 → `pokoj`), koszyk `:20725`; reveal `:20678`–`:20681` | efekty traktatu NAP poza K4 |
+| `sojusz_defensywny` | ŚCIEŻKA OGÓLNA — jw.; sync → `sojusz`; reveal `:20678`–`:20681` | efekty sojuszu poza K4 |
+| `sojusz_pelny` | ŚCIEŻKA OGÓLNA — jw. | jw. |
+| `granice` | ŚCIEŻKA OGÓLNA — jw. | rodzaj deala (`:20671`–`:20677`) |
+| `wasal` | ŚCIEŻKA OGÓLNA — jw. (bez reveal) | efekty wasalizacji poza K4 |
+| `tech` | ŚCIEŻKA OGÓLNA — `oneShotTrade` → `executePnDealTransfer` (G2): `techId` → `executeTechTradeDeal`; koszyk → `grantTechToOwnerWithSideEffects` | ciała `executeTechTradeDealCore` i `grantTechToOwnerWithSideEffects` |
+| `ultimatum` | ŚCIEŻKA OGÓLNA — `oneShotTrade` → `executePnDealTransfer` (koszyk lub `goldOnce`) | efekty ultimatum poza K4 (wojna tylko przez `warThreat` przy odrzuceniu, `:17150`–`:17155`, `:17294`–`:17296`) |
+| `namow_wojne` | **LUKA W K4** (G3a) — zgoda bez efektu; łapówka nie wypłacana | — |
+| `trybut_oferta` | JAWNIE dla `oneShot` (`:20769`–`:20771`); **LUKA W K4** dla `deal` (G3b) | — |
+| `umowa_handlowa` | JAWNIE wejście do gałęzi `UmowaSzlakow` (`:20718`); transfer WARUNKOWY `goldOnce > 0` (`:20719`–`:20720`); **KANDYDAT LUKI** dla koszyka (G3c) | UI (`ui/diplomacyTradeBasket.ts`) |
+| `umowa_szlakow` | jw. | jw. |
+| `handel`, `pokoj`, `trybut_zadanie`, `wchloniecie` | bez zmian względem F1 | — |
+
+**Stan kryterium po rundzie 2:** dla 7 wariantów nadal „ŚCIEŻKA OGÓLNA" (kryterium binarne niespełnione); 2 luki K4 z dowodem (`namow_wojne`, `trybut_oferta` deal); 1 kandydat luki K4 (`umowa_*` koszyk bez `goldOnce`); luka elementu koszyka `jednostka` (G2, no-op). Decyzje o intencji (czy luki są celowe) — do P2.5, zgodnie z F5.
+
+### G5. Ograniczenia
+
+- Brak uruchomienia runtime; wszystkie statusy statyczne.
+- `ui/diplomacyTradeBasket.ts` (kto ustawia `goldOnce` dla umów) nie został prześledzony.
+- Nie zmieniono sekcji A–F ani nagłówka dokumentu.
+
+## H. Runda 3/5 — R-RUSTPORT-P1-13B-PROPOSAL-COVERAGE-Q1 (Operator, domknięcie NIEPRZEŚLEDZONYCH z G4 i finalny status 15/15)
+
+**Pin i metoda:** `edb8fb56`; każda linia z `git show edb8fb56:<ścieżka>` / `git grep … edb8fb56` wykonane w tej rundzie. Sekcje A–G nie zmienione (tylko dopisanie).
+
+**Zakres statusu (definicja dla kryterium binarnego):** „OBSŁUŻONY WSZĘDZIE" = wariant ma jawną gałąź albo jawnie udokumentowaną ścieżkę ogólną, której ciała helperów są prześledzone w K1–K11; poza zakresem pozostają efekty systemów tur/UI niezależne od `applyProposalOutcome` (wskazane w kolumnie „Granica”).
+
+### H1. Domknięte pozycje z F4 / G4
+
+| Pozycja | Dowód (pin) | Wynik |
+|---|---|---|
+| `addTreaty` (G2) | `game/diplomacy-treaties.ts:273`–`:278`: normalizacja `rodzaj` (`normalizeTreatyKind`), `strony` przez `pairKey`, zastąpienie po `id`, dopisanie na koniec listy | Zamknięte: jedyny efekt `applyAcceptedProposal` to zapis traktatu |
+| `executeTechTradeDealCore` (F4 pkt 1) | `game/diplomacy-tech-trade.ts:168`–`:236`: (1) dawca głównej techn. musi ją posiadać (`ownerHasTech`, :184); (2) tryb `tech`: walidacja `techOfferId`, posiadania oferowanej techn. przez płatnika, podgląd obu grantów (`canGrantTech`) PRZED mutacją; (3) tryb `gold`: sprawdzenie środków płatnika (:223), `grantTech` odbiorcy (:227), dopiero potem `transferGold` (:232–:234). Każde niepowodzenie → `onCancelled`, zero mutacji | Zamknięte: atomowość potwierdzona kodem |
+| `executeTechTradeDeal` → deps (F4 pkt 1) | `main.ts:10105`–`:10130`; `grantTech` = `grantTechToOwnerWithSideEffects` (:10125); `canGrantTech` = `grantTechToOwner` (:10122); `ownerHasTech` z `basketTransferCtx` (:10120) | Zamknięte |
+| `grantTechToOwnerWithSideEffects` (F4 pkt 1) | `main.ts:10049`–`:10082`: `grantTechToOwner` (silnik, :10051) → gdy `toOwnerId === 0`: `player.zbadane` (:10060–:10062), `reconcilePlayerEraFromResearch` i awans epoki (:10066–:10074); AI: `aiResearchDone` (:10075–:10078), `syncOwnerEraFromResearch` (:10079) | Zamknięte w zakresie głównego ciała. NIEPRZEŚLEDZONE: ciało silnikowego `grantTechToOwner` (poza `main.ts`, zwraca tylko `granted/reason`) |
+| Rodzaj deala `granice` (F4 pkt 4) | `game/diplomacy-proposals.ts:1647`–`:1651`: `barbarianCooperation` → `WspolnaWalkaBarbarzyncy`; `borderMilitary` → `PrawoWojskowePrzemarszu`; inaczej → `OtwartGranice`; `buildDeal` :1652–:1663 | Zamknięte: rodzaj zależy wyłącznie od payloadu, trzy wartości, wszystkie trafiają do `addTreaty`. Warunek reveal (:20671–:20677) NIE obejmuje żadnej z trzech — brak odkrycia terytorium jest zamierzony (komentarz :20669–:20670) |
+| Rodzaj deala `umowa_*` (F4 pkt 4) | `game/diplomacy-proposals.ts:1548`–`:1558`: `umowa_handlowa` i `umowa_szlakow` → zawsze `RodzajTraktatu.UmowaSzlakow` | Zamknięte (potwierdza G1 pkt 4) |
+| `previewNegotiationEntry` (F4 pkt 5) | `main.ts:17550`–`:17593`: dla przychodzącej propozycji najpierw `previewIncomingPlayerAccept` (:17567); w pozostałych przypadkach `evaluateProposal(negotiationAsProposal(entry), ctx)` (:17579) — brak `case` per wariant. Wywołania: `main.ts:17252`, `:17260`, `:17621` | Zamknięte: konsument OGÓLNY (deleguje do K1), 15/15 bez luki |
+| `ui/diplomacyTradeBasket.ts` — czy UI zawsze ustawia `goldOnce` dla umów (G5) | `TRADE_BASKET_ACTION_IDS` :2818–:2820 = `2,3,4,6,7,8,9,10,12,13,14,15` — **`'5'` (umowa_szlakow) NIE jest w zbiorze**, komentarz :2813–:2816 (koszyk wyłączony, traktat „idzie od razu na stół"). `buildTreatyPayload` case `'5'` :1197–:1204 ustawia wyłącznie `treatyTurns`, **bez `goldOnce`**. Jedyne `goldOnce` w ścieżce umów: case `'4'` :1155–:1157 (granice, nie umowa), `'8'` offer (:1264, walidacja). Brak producenta `umowa_handlowa` w UI (K7) | Zamknięte: z UI umowa szlaków nie niesie ani koszyka, ani `goldOnce` |
+
+### H2. Dodatkowe ustalenia tej rundy (wpływ na statusy)
+
+1. **Koszyk `'6'` (tech) jest ignorowany przy `techId`** — `main.ts:10243`–`:10246`: `executePnDealTransfer` wykonuje `executeTechTradeDeal` i `return`, zanim dojdzie do `transferBasketItems` (:10248–:10251). `'6'` jest w `TRADE_BASKET_ACTION_IDS` (`ui/diplomacyTradeBasket.ts:2819`), a `buildTreatyPayload` case `'6'` (:1205–:1215) + dopięcie `giveItems/receiveItems` (:1225–:1232) pozostawia koszyk w payloadzie. Walidacja trybu `treaty` (:1272–:1290) nie zakazuje koszyka dla `'6'` (`validateTreatyForm` dla `'6'` NIEPRZECZYTANE). **LUKA: pozycje koszyka tech-trade znikają bez komunikatu.**
+2. **Koszyk `'9'` (ultimatum) przy niepustym koszyku pomija `goldOnce`** — `main.ts:10248`–`:10251` (`return` przed :10253). `'9'` jest w `TRADE_BASKET_ACTION_IDS` (:2819); `buildTreatyPayload` case `'9'` (:1220–:1223) ustawia `goldOnce` i dopina koszyk. `evaluateProposal` `ultimatum` akceptuje wyłącznie na podstawie `goldOnce` (`diplomacy-proposals.ts:1678`–`:1679`). **LUKA: ultimatum zaakceptowany, koszyk przeniesiony, złoto NIE przelane.**
+3. **Warunkowa luka `umowa_*` poza UI** — `main.ts:20718`–`:20721`: transfer tylko przy `goldOnce > 0`; gałąź `else if` (:20725) jest dla tego rodzaju nieosiągalna. Z UI nieosiągalna (pkt H1). Osiągalność przez payload AI/kontroferty NIEPRZEŚLEDZONA.
+4. **Asymetria zdarzeń trybutu (K4)** — `trybut_zadanie` deal dostaje `trybut_zaakceptowany` przez `else if` (:20776–:20778). `trybut_oferta` deal nie dostaje `trybut_oferta_przyjeta` (jedyna emisja :20771 w gałęzi `oneShotTrade`). Złoto per tura dla obu idzie przez `pieniadzePerTura` (`diplomacy-proposals.ts:1183`, `:1374`) czytane w `game/diplomacy-economy.ts:97`, `:135` — **zapłata NIE jest luką**, luką jest brak zdarzenia relacji dla wariantu `deal`.
+5. **Konsument K12 (nowy):** `previewNegotiationEntry` — OGÓLNIE 15/15 (delegacja do K1).
+
+### H3. Finalny status 15/15 (dla kryterium binarnego)
+
+| # | Wariant | Status | Dowód i granica |
+|---|---|---|---|
+| 1 | `nap` | **OBSŁUŻONY WSZĘDZIE** | K1 :1039, K2 :1995, K3 :17508, K6 :17491, K8 tak, K9 OK; K4 ścieżka ogólna: `addTreaty` (H1), `syncRelationFromDeals` → `pokoj` (G2), koszyk :20725–:20733; K5 członkostwo PEACE_REQUIRED + SWEETENER |
+| 2 | `sojusz_defensywny` | **OBSŁUŻONY WSZĘDZIE** | K4: `addTreaty`, sync → `sojusz` (`isAllianceDealKind`, G2), jawny reveal :20673; koszyk :20725; K1–K9 jw. |
+| 3 | `sojusz_pelny` | **OBSŁUŻONY WSZĘDZIE** | K4: jw., reveal :20674 |
+| 4 | `granice` | **OBSŁUŻONY WSZĘDZIE** | K4: rodzaj z payloadu (:1647–:1651, H1), `addTreaty`, brak reveal zamierzony (:20669–:20670), koszyk :20725; K1 :1622, K2 :2034, K3 :17514, K6 :17491, K8 tak |
+| 5 | `wasal` | **OBSŁUŻONY WSZĘDZIE** | K1 :1684, K2 :2084, K3 :17536, K6 :17493, K8 tak; K4 ścieżka ogólna: deal `Wasalizacja` (:1693), `addTreaty`, koszyk :20725; płatność per tura `diplomacy-economy.ts:135` |
+| 6 | `tech` | **LUKA W K4** (`main.ts:10243`–`:10246`) | Ścieżka złota i tech-za-tech w `executeTechTradeDealCore` (`diplomacy-tech-trade.ts:168`–`:236`) — **OBSŁUŻONA**, ale koszyk przy `techId` jest porzucany (H2 pkt 1). Osiągalność z UI: `'6'` w `TRADE_BASKET_ACTION_IDS`; walidacja do potwierdzenia |
+| 7 | `ultimatum` | **LUKA W K4** (`main.ts:10248`–`:10251`) | Akceptacja na `goldOnce` (`diplomacy-proposals.ts:1678`); przy niepustym koszyku złoto pominięte (H2 pkt 2). Osiągalność z UI: `'9'` w `TRADE_BASKET_ACTION_IDS`, `goldOnce` ustawiane w `buildTreatyPayload`. Odrzucenie → wojna przez `warThreat` (`main.ts:17150`–`:17155`) — OK |
+| 8 | `handel` | **OBSŁUŻONY WSZĘDZIE** | K4 :20701 (zaufanie, pokrycie), oneShot :20748; K1 :1380, K2 :2101, K3 :17517, K6 :17492, K11a `allowsMultipleOwnOutgoingNegotiations` |
+| 9 | `umowa_handlowa` | **LUKA W K4 (warunkowa, poza UI)** | Rodzaj `UmowaSzlakow` (:1555–:1558); koszyk przenoszony tylko przy `goldOnce > 0` (:20719); z UI nieosiągalne (H1), AI-producent NIEPRZEŚLEDZONY |
+| 10 | `umowa_szlakow` | **LUKA W K4 (warunkowa, poza UI)** | jw. (:20718–:20721); z UI: brak koszyka i `goldOnce` → zachowanie zamierzone, bez luki |
+| 11 | `trybut_zadanie` | **OBSŁUŻONY WSZĘDZIE** | K4 deal → `trybut_zaakceptowany` :20776–:20778; płatność per tura `pieniadzePerTura` :1183 + `diplomacy-economy.ts:135`; K1 :1144 |
+| 12 | `trybut_oferta` | **LUKA W K4** (`main.ts:20659`–`:20735`) | Wariant `oneShot` → `trybut_oferta_przyjeta` :20769–:20771 — OBSŁUŻONY. Wariant `deal` (:1377) → brak zdarzenia `trybut_oferta_przyjeta` (asymetria z `trybut_zadanie`, H2 pkt 4). Zapłata per tura OK |
+| 13 | `namow_wojne` | **LUKA W K4** (brak gałęzi `main.ts:20605`–`:20775`) | Zgoda (`diplomacy-proposals.ts:1576`) bez `deal`/`oneShotTrade`; łapówka `bribeGold` nie wypłacana (G3a); wojna tylko przez `warThreat`, którego `'7'` nie ustawia (`ui/diplomacyTradeBasket.ts:1218`–`:1219`) |
+| 14 | `wchloniecie` | **LUKA W K2 i K8** | K4 jawnie :20620–:20638; K2 brak `case` (`diplomacy-proposals.ts:1994`–`:2197`, `default` :2194); K8 brak wpisu `traktaty` (E2a); K10 :17174 wyjątek toastu |
+| 15 | `pokoj` | **OBSŁUŻONY WSZĘDZIE** | K4 jawnie :20772 (`finalizePeaceTreatyBetween`); K1 :1189, K2 :2032, K3 :17534, K6 :17491, K8 tak |
+
+**Podsumowanie:** OBSŁUŻONE WSZĘDZIE: 8 (`nap`, `sojusz_defensywny`, `sojusz_pelny`, `granice`, `wasal`, `handel`, `trybut_zadanie`, `pokoj`). LUKI z dowodem: 7 (`tech`, `ultimatum`, `umowa_handlowa`, `umowa_szlakow` — warunkowo poza UI, `trybut_oferta`, `namow_wojne`, `wchloniecie`). Kryterium binarne z dispatchu jest **spełnione** (każdy z 15 ma jawny status z dowodem), ale wynik jest **negatywny dla parytetu**: 2 luki są osiągalne z UI (`tech` koszyk, `ultimatum` złoto), 1 jest luką zdarzenia (`trybut_oferta`), 1 luką mechaniki (`namow_wojne`), 1 luką danych (`wchloniecie`).
+
+### H4. Ograniczenia (jawnie NIEPRZEŚLEDZONE)
+
+- Brak uruchomienia runtime — wszystkie statusy są statyczne (`git show`/`git grep` na `edb8fb56`).
+- Ciało silnikowego `grantTechToOwner` (poza `main.ts`) — tylko kontrakt `granted/reason`.
+- `normalizeTreatyKind` (`diplomacy-treaties.ts`) — użycie w `addTreaty` potwierdzone, ciało nie.
+- `validateTreatyForm` dla `'6'` i `'9'` — czy zakazuje koszyka (decyduje o osiągalności LUK 6 i 7 z UI).
+- Osiągalność `umowa_*` z payloadów AI / kontroferty (`applyCounterOffer`) — nieprzesądzona.
+- Skutki traktatów (`addTreaty`) w systemach tur poza K4 — poza definicją zakresu (H-zakres).
+
+### H5. Wniosek dla P2.5
+
+- Kontrakt frontend→Rust musi odtworzyć koszyk tech-trade i koszyk ultimatum jako jawne reguły (LUKA 6 i 7 — decyzja: naprawić w web przed portem, czy świadomie odtworzyć błąd; wymaga decyzji właściciela, nie domyślania).
+- `trybut_oferta` (deal): decyzja, czy przyjęcie cyklicznego trybutu emituje zdarzenie relacji (LUKA 12).
+- `namow_wojne`: decyzja, czy łapówka ma skutek (LUKA 13).
+- `wchloniecie`: decyzja projektowa dla K2 i K8 (LUKA 14, jak w E4).
+- `umowa_*`: rozstrzygnąć, czy payload AI może nieść koszyk bez `goldOnce` (LUKA 9–10, warunkowa).
+- Pokrycie K11 i K12 bez luk wariantowych.

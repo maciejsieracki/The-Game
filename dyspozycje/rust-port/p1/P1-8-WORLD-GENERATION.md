@@ -25,6 +25,8 @@ Rozmiary z `gra/data/ui-params.json` (klucz `map_size`): Malenki (~1000 hex, 38�
 
 Dwa różne liczniki postępu — nie należy ich porównywać: „7/10 · Rzeki — uzupełnianie” i „6/10” to fazy generatora mapy (`MAP_GEN_PHASE_TOTAL = 10`, `src/map/mapGenProgress.ts`). „8/9 · Po scenie — mgła startowa” to osobny licznik loadera po wygenerowaniu mapy: `postSceneProgress` w `src/main.ts` (l. 111), którego total (9) podaje wywołujący jako `POST_SCENE_STEPS`, a nie `MAP_GEN_PHASE_TOTAL`.
 
+Pochodzenie liczb: czasy całkowite (19–20 s, 90,5 s, 211,9 s) są w `01-operator.md` (runda 1). Wartości pośrednie (18,2 s; ok. 13 s, 74 s, 88 s — momenty zmian faz) pochodzą z odczytu overlayu próbkowanego co 1 s podczas rundy 1 i występują tylko w tym pliku. Log konsoli ani zapis overlayu nie zostały zachowane w repozytorium, więc wartości pośrednie nie są odtwarzalne z plików.
+
 Obserwacje:
 - Standardowy: w tej rundzie jeden przebieg przerwano po 90,5 s, a drugi (limit 240 s) ukończono w 211,9 s. Fazy postępu zmieniały się (6 → 7), licznik „Upłynęło" rósł bez przerw. Nie zmierzono postępu w obrębie fazy 7, więc z tego raportu nie wynika, czy był to stall, czy długa praca bez raportowania postępu.
 - Dane to tylko 2 próby dla Standardowy (1 timeout, 1 ukończenie) i brak serii powtórzeń. Nie ma podstaw do wniosku „wolne, ponad 90 s” jako cechy stabilnej; opis zawiera wyłącznie sformułowanie „tylko 2 próby, brak serii”. Osobny temat wydajnościowy nie jest przesądzony — decyzja dopiero po serii pomiarów.
@@ -39,6 +41,7 @@ Obserwacje:
   - seed 42, próba B: hash `3b46d84`, długość 856 930 znaków → **identyczne**;
   - seed 43: hash `f0a69060` → różny od seeda 42 (wynik zależy od seeda).
 - **Ścieżka wykonania hashowanych wywołań — nieustalona.** `generujSwiatAsync` najpierw próbuje Workera i przy błędzie przechodzi na wątek główny (`src/map/mapGenAsync.ts` l. 29, ostrzeżenie `[mapGenAsync] Worker niedostępny — fallback main thread`). Zapis tej rundy nie mówi, czy wywołania poszły przez Worker, czy przez fallback, ani czy to ostrzeżenie pojawiło się w konsoli podczas testu. Nie sprawdzono tego; hashe są wynikiem, którego źródło ścieżki pozostaje nieznane.
+- **Zakres wniosku o determinizmie:** potwierdzony wyłącznie dla bezpośredniego wywołania `generujSwiatAsync` w przeglądarce, przy nieustalonej ścieżce (Worker lub fallback). Dla ścieżki UI (losowy seed bez pola w kreatorze) determinizm nie został sprawdzony i nie jest w tym raporcie twierdzeniem.
 - Pole `mapGenTimings` zawiera czasy wykonania i jest celowo wykluczone z porównania (różniłoby się zawsze).
 
 ## 4. Anomalie
@@ -50,3 +53,4 @@ Obserwacje:
 
 - Czasy z dev servera Vite (bez minifikacji), jednorazowe próby (Standardowy: 2 przebiegi o różnym limicie). Brak serii powtórzeń, więc rozrzut czasów nie jest znany.
 - Nie przetestowano Mały, Duży, Ogromny, Super Huge (zakres tematu: co najmniej 2 rozmiary, spełnione).
+- Historia gita: plik `P1-8-WORLD-GENERATION.md` ma jeden commit w historii (`cea1c383`, wspólny z innym tematem, zawierający już poprawki rundy 2). Nie istnieje wersja z rundy 1 do porównania diffem, więc twierdzenie „liczby z rundy 1 nietknięte” opiera się na deklaracji Operatora; zgodność czasów całkowitych sprawdzono z `01-operator.md`.
