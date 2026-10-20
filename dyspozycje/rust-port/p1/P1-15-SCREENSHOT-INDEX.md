@@ -3,9 +3,9 @@
 **Temat:** R-RUSTPORT-P1-15-SCREENSHOT-INDEX-Q1 · **Data:** 2026-10-20 · **Pin web:** `main` = `edb8fb56` (zgodnie z tematami źródłowymi)
 **Charakter:** CZĘŚCIOWY. P1.6 jest w toku, P1.8 i P1.9 nie mają materiału (brak pliku `.md` i brak zrzutów). Indeks nie zakłada zamknięcia żadnego z tematów.
 
-**Metoda:** `ls -la` i `file -b` na każdym PNG w `dyspozycje/rust-port/p1/screenshots/` (22 pliki, wszystkie 1600×900 RGB, 8-bit, non-interlaced). Opisy wyłącznie z odpowiednich plików `P1-<N>-*.md`. Sumy MD5 sprawdzone pod kątem duplikatów bajtowych. Żadnych zrzutów nie wykonano w tej rundzie. Zapis tylko do tego pliku i do `dyspozycje/autobot/runs/R-RUSTPORT-P1-15-SCREENSHOT-INDEX-Q1/`.
+**Metoda:** `ls -la` i `file -b` na każdym PNG w `dyspozycje/rust-port/p1/screenshots/` (19 plików, 16 unikalnych obrazów wg MD5, wszystkie 1600×900 RGB, 8-bit, non-interlaced). Opisy wyłącznie z odpowiednich plików `P1-<N>-*.md`. Sumy MD5 sprawdzone pod kątem duplikatów bajtowych. Żadnych zrzutów nie wykonano w tej rundzie. Zapis tylko do tego pliku i do `dyspozycje/autobot/runs/R-RUSTPORT-P1-15-SCREENSHOT-INDEX-Q1/`.
 
-## 1. Tabela zrzutów (22 z 22 plików PNG w `screenshots/`)
+## 1. Tabela zrzutów (19 wierszy = 19 z 19 plików PNG w `screenshots/`; 16 unikalnych obrazów)
 
 | # | Plik (`screenshots/`) | Rozmiar [B] | Wymiary | Temat | Ekran / stan | Co pokazuje (wg `.md` tematu) |
 |---|---|---:|---|---|---|---|
@@ -30,7 +30,7 @@
 | 19 | `P1-7-settings-validation-10-hotseat-fotel2-wybrany.png` | 1 021 567 | 1600×900 | P1.7 | Fotel 2, cywilizacja wybrana | Fotel 2 z wybraną cywilizacją. Źródło: P1-7 §4. |
 
 Uwagi do tabeli:
-- Pliki #1/#9, #2/#13 i #3/#14 są parami bajtowo identyczne. Unikalnych obrazów jest 19, a nie 22.
+- Pliki #1/#9, #2/#13 i #3/#14 są parami bajtowo identyczne. Plików PNG jest 19, unikalnych obrazów 16 (19 minus 3 duplikaty).
 - Pliki w `dyspozycje/autobot/runs/R-RUSTPORT-P1-4-EPOCH-SELECTION-Q1/` (np. `probe-epoch-step2-braz-selected.png`, `probe-epoch-to-civ-step3.png`) leżą poza `screenshots/` i nie są indeksowane. Są wymienione w `P1-4-EPOCH-SELECTION.md` §"Zrzuty tej rundy".
 
 ## 2. Braki względem P1.3–P1.9 (stan na tę rundę)

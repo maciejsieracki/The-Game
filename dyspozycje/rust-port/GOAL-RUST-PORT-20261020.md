@@ -31,7 +31,7 @@ dotykające tych samych plików — zawsze sekwencyjnie, nigdy w tej samej fali.
 | 3 | `R-RUSTPORT-P1-13B-PROPOSAL-COVERAGE-Q1` | P1.13b | 1/5 | `wf_05c470f2-661` | DISPATCHED (w toku) | 2026-10-20 |
 | 4 | `R-RUSTPORT-P1-8-WORLD-GENERATION-Q1` | P1.8 | 1/5 | `wf_276e98f3-8ff` | DISPATCHED (w toku, przeglądarkowy) | 2026-10-20 |
 | 5 | `R-RUSTPORT-P1-9-MAP-HUD-PANELS-Q1` | P1.9 | 1/5 | `wf_d4454326-b9e` | DISPATCHED (w toku, przeglądarkowy) | 2026-10-20 |
-| 6 | `R-RUSTPORT-P1-15-SCREENSHOT-INDEX-Q1` | P1.15 | 1/5 | `wf_51f38baa-720` | DISPATCHED (w toku) | 2026-10-20 |
+| 6 | `R-RUSTPORT-P1-14B-MISSING-SYSTEMS-RECHECK-Q1` | P1.14b | 1/5 | `wf_b27dbf4a-e25` | DISPATCHED (w toku) | 2026-10-20 |
 
 **Zasada stałej:** gdy temat się zamyka (PASS/FAIL ostateczny/DECISION_REQUIRED/LIMIT-5-EXCEEDED),
 natychmiast otwieram kolejny w zwolnionym slocie — pula 6 ma być stale w pełni wykorzystana, bez
