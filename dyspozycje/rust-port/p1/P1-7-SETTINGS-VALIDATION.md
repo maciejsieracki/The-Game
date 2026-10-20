@@ -10,6 +10,9 @@
 - Chromium `/opt/pw-browsers/chromium-1194/chrome-linux/chrome`, Playwright z `gra/node_modules`, viewport 1600×900.
 - Trzy przebiegi sond (skrypty w scratchpadzie, nie w repo). Odczyt DOM z `.srow`, `.card`, `button.nb.next`, `button.start`.
 - Zrzuty: `dyspozycje/rust-port/p1/screenshots/P1-7-settings-validation-00` … `-10` (11 plików, PNG 1600×900 RGB, realne ekrany, nie puste).
+- Numery linii w §2–§4 są weryfikowane względem `git show edb8fb56:gra/src/ui/newGameFlow.ts` i `mainMenu.ts` (np. `s.idx` formuła: newGameFlow l. 1583, mainMenu l. 369; `canStart` l. 1515; `disabled` karty l. 1460; `renderSettStep` l. 1903; `SETT` l. 699; `epochHasCivs` l. 588). Working tree `gra/` na gałęzi roboczej (HEAD 26a542ba) ma inną zawartość pliku i inne numery linii; nie są one podstawą tego raportu.
+- Konwencja nazw zrzutów: nazwa pliku opisuje ZAMIERZONY stan testu, nie stan widoczny na obrazie. Zrzuty `-05-nowa-gra-krok3-brak-wyboru` i `-09-hotseat-fotel2-brak-wyboru` pokazują na obrazie auto-wybraną cywilizację (Rzymianie), a nie brak wyboru (odczyt wizualny obu plików w Obronie, runda 1).
+- Zrzuty `-00-menu`, `-04-nowa-gra-krok2-epoka`, `-05-nowa-gra-krok3-brak-wyboru` są BAJTOWO IDENTYCZNE z plikami wcześniejszych tematów (md5 `e0593a5e…` = `P1-3-intro-start.png`; `3449170b…` = `P1-4-epoch-selection.png`; `18d433e0…` = `P1-5-civ-selection-01-kamien.png`). Zapisane w tej rundzie (mtime 20:22), ale tożsamość bajtowa oznacza ten sam render tego samego stanu (ten sam pin, viewport, DOM). Świeżego, niezależnego porównania renderu nie wykonano w tej rundzie; to otwarte do potwierdzenia przez Final Control.
 
 ## 2. Ekran Ustawienia (menu główne → „Ustawienia”)
 
@@ -66,7 +69,7 @@ Zaobserwowane w przeglądarce (DOM):
 - Po wyborze karty („Dalej”) przechodzi do kroku 4.
 - Hot-seat włączony: ekran fotela 2 ma przyciski „Blisko / Daleko / Losowo” (rozmieszczenie fotela 2, nie zbadane szczegółowo) i „ROZPOCZNIJ GRĘ”. Karta cywilizacji fotela 1 (Grecy w tym przebiegu) ma klasę `disabled`. Cywilizacja fotela 2 (Rzymianie) jest auto-zaznaczona. Przycisk start był aktywny także przed wyborem (`SEAT2_START_DISABLED_INITIAL false`). Stan zablokowany nie jest osiągalny z normalnego UI.
 
-Zrzuty: `-06-nowa-gra-krok3-wybrana.png`, `-09-hotseat-fotel2-brak-wyboru.png`, `-10-hotseat-fotel2-wybrany.png`.
+Zrzuty: `-06-nowa-gra-krok3-wybrana.png`, `-09-hotseat-fotel2-brak-wyboru.png` (UWAGA: nazwa oznacza zamierzony stan testu; obraz pokazuje fotel 2 z auto-wybranymi Rzymianami, Grecy wyłączeni, „ROZPOCZNIJ GRĘ” aktywny; stanu braku wyboru ten zrzut NIE pokazuje), `-10-hotseat-fotel2-wybrany.png`.
 
 Reguły liczby graczy (min/max): w UI nie znaleziono walidacji min/max dla liczby graczy. Liczba cywilizacji i miast-państw jest zawijana cyklicznie (patrz wyżej). Limit wyboru przeciwników AI (`cap`) występuje w panelu „Cywilizacje przeciwnika (opcjonalnie)” (`newGameFlow.ts` l. 1861–1866). Komunikat: „Wybrano N z cap możliwych przy obecnym ustawieniu „Liczba cywilizacji”". Jego stan nie był wywoływany w tej rundzie.
 

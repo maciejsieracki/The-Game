@@ -134,3 +134,102 @@ Wykluczony z zakresu jako proces: `AUDYT-OBIEG-DOKUMENTOW-2026-07-05.md` (obieg 
 - Pozycje PARYTET #1–#6, #8 oznaczono w audycie jako ✅; nie przeliczono ich linia po linii (zakres rundy).
 - Nie uruchomiono testów ani gry (zakaz benchmarków/testów w tym temacie).
 - Dane `buildings.json` przeliczano przez `git show` + `grep`; obiekty JSON nie były parsowane.
+
+---
+
+## 7. Runda 2/5 — R-RUSTPORT-P1-16B-AUDIT-CROSSCHECK-Q1 (Operator Haiku 5.5 medium, pin `edb8fb56`)
+
+**Dowody:** wyłącznie `git grep` / `git show edb8fb56:<ścieżka>` / `awk` na pinie, wykonane w tej rundzie. Numery linii z tych poleceń. Linie z audytów (`AUDYT-KODU`) traktowane jako nieaktualne i przeliczane po symbolach. Zapis tylko przez dopisanie tej sekcji na końcu pliku.
+
+**Korekty do §6 (runda 1):** `converters.ts:62` jest błędnym odniesieniem: na pinie `gra/src/game/converters.ts:62` to ` */`, a tekst „Wielka Kuźnia bez produkcji stali" jest w linii **61**. Receptury `wielka_kuznia` w `converters.ts` nie ma (0 trafień), więc „martwy konwerter stali" to nieaktualny komentarz, nie kod (NADAL ISTNIEJE jako komentarz). Akademia wojskowa ma id `akademia_wojskowa` w `gra/data/buildings.json:2023`; wpis `akademia` w linii 1586 to budynek kategorii „Nauka" (nie wojskowy).
+
+**Wynik:** kryterium binarne NIE jest spełnione. Z 73 znalezisk `AUDYT-KODU`: **34 NAPRAWIONY**, **6 NADAL ISTNIEJE**, **33 NIEROZSTRZYGNIĘTY** (nieprzeliczone w tej rundzie, bez dowodu rozstrzygającego). Runda 1 (§6.2) obejmuje #1, #2, #19, #22.
+
+### 7.1 AUDYT-KODU — status per znalezisko
+
+| # | Status | Dowód (pin `edb8fb56`) |
+|---|---|---|
+| 1, 2, 19, 22 | (wg §6.2) | patrz §6.2 |
+| 3 | NAPRAWIONY | `manpower.ts:787-795` `tryDeductUnitSpawnCosts`: `popCost>0 && pop<=popCost` → `ok:false, brak_ludnosci`; brak clampu `max(1,…)`. `refundUnitSpawnToCity` (`manpower.ts:808`) nie ma wywołań poza definicją; `disbandPlayerUnit` (`main.ts:6396-6412`) nie zwraca ludności. |
+| 4 | NIEROZSTRZYGNIĘTY | Wzór `zywnoscDoRozwoju` nieobecny. Przepływ idzie przez `computeCityFoodBalanceV85` (`turn-economy.ts:1680-1689`); mnożenie ujemnej żywności przez suwak nieprzeliczone. |
+| 5 | NAPRAWIONY | `if (!eraAdvance)` 0 trafień. Pętla badań AI: `main.ts:28608-28646` (`aiBadanaByOwner`, ponowny wybór gdy badana nieważna, `researchStep`). Dynamika nie testowana. |
+| 6 | NADAL ISTNIEJE | `victory.ts:150-156` `isNaukaVictory`: `if (!NAUKA_WYMAGA_RAKIETY) return true; return rakietaWystrzelona;`; `e-start-params.json:127` `nauka_wymaga_rakiety: true`; `rakietaWystrzelona` tylko `false` (`main.ts:28641`), odczyt `main.ts:35753`. **Korekta:** stała NIE jest martwa (`victory.ts:155`). |
+| 7 | NAPRAWIONY | `gen-helpers.ts:2041` `pickReliefForceHex` odrzuca `isWaterTerrainLocal` (`:152-154`: Morze/PlytkieMorze); Wybrzeże = `PlytkieMorze` (`units/setup.ts:426`). |
+| 8 | NAPRAWIONY | `filePlayer.ts:285-288` i `:422-425`: `.catch` ustawia `playing = false`. |
+| 9 | NAPRAWIONY | `muzyka-antyczna.ts:1678-1685`: przejście plik→synteza tworzy `ctx` gdy `null`, przed `spawnEngine` (`:1687`). |
+| 10 | NAPRAWIONY | `combat.ts:216-218` `unitRowStat(def,'armor','Pancerz',0)` (fallback PL, komentarz `:212-215`). |
+| 11 | NAPRAWIONY | `production.ts:950-953`: limit 1 żywej sztuki dla `Super-jednostka=TAK`; `production.ts:277-281`: koszt 0 zostaje 0. **Korekta:** takich jednostek jest 9 (nie 7). |
+| 12 | NAPRAWIONY | `advanceSeat` (`main.ts:36047-36061`): strażnik obejmuje `aiTurnAwaitingBattle/aiCmdResume`; klawisz N wywołuje `advanceSeat` (`:36223-36230`). |
+| 13 | NAPRAWIONY | `lootedVillageHexKeys` zapisywane (`main.ts:30635`) i odtwarzane (`:38757-38761`). |
+| 14 | NAPRAWIONY | `battlePowerPtsByOwner.clear()` w `doStartGame` (start `:37067`, clear `:37262`). |
+| 15, 26 | NAPRAWIONY | Zapis: `main.ts:30654-30658` (simplified, foreignType, typCityCopy, clusterCapital, clusterPlacement). Odczyt: `:38570-38602`. |
+| 16 | NAPRAWIONY | `main.ts:20704-20711`: `applyPnTrustForPair` tylko gdy `dealCovered` (`basketItemsAffordable` obu stron). |
+| 17 | NAPRAWIONY | `cityPanel.ts:1196-1205` ctx z flagami budynków i walutą; `:1212` scala `getCityBuildingFlags` bez utraty bazy. |
+| 18 | NAPRAWIONY | `main.ts:21672` `hp: u.hp ?? hpMax` w kartach stosu. |
+| 20 | NIEROZSTRZYGNIĘTY | Kurs Rel/100 istnieje (`diplomacy-acceptance-points.ts:304` → `diplomacyFairGivePn`); guard ¤↔¤ nie sprawdzony. |
+| 21 | NADAL ISTNIEJE | `diplomacy-proposals.ts:1144-1152` `case 'trybut_zadanie'`: brak górnego limitu kwoty; `pairHasKind` nie jest wołane w tym case (wołane w `:1073`, `:1136`). |
+| 23 | NIEROZSTRZYGNIĘTY | Atrycja garnizonu `main.ts:31802-31837` nieprzeliczona. |
+| 24 | NIEROZSTRZYGNIĘTY | Posiłki `ai.ts:4676-4713` nieprzeliczone pod kątem filtra sojuszu. |
+| 25 | NIEROZSTRZYGNIĘTY | `main.ts:29115` komentarz „#25: frakcja rebeliancka (-99)…" sugeruje naprawę; ścieżka nieprzeczytana. |
+| 27 | NAPRAWIONY | Cache `cityFogVisible` (`main.ts:2556`, `:2587-2588`). Koszt nieprzeliczony. |
+| 28 | NIEROZSTRZYGNIĘTY | `units/setup.ts:884` sygnatura `computePath` odczytana; limit promienia w ciele nieprzeczytany. |
+| 29 | NIEROZSTRZYGNIĘTY | Funkcja przemianowana (`ai.ts:4435`: „Dawniej findSettlerTarget"); nowa wersja nieprzeliczona. |
+| 30 | NIEROZSTRZYGNIĘTY | `main.ts:26230-26236` handler mousemove odczytany do gałęzi weterana; gałąź `currentVisible` nieprzeczytana. |
+| 31 | NIEROZSTRZYGNIĘTY | `case 'build'` 0 trafień; ścieżka komend nieprzeliczona. |
+| 32 | NAPRAWIONY | `production.ts:921-925` (komentarz „fix #32"; bramka `isBuildingSupersededByUpgrade`). |
+| 33 | NIEROZSTRZYGNIĘTY | `main.ts:2293` nieprzeliczone. |
+| 34 | NIEROZSTRZYGNIĘTY | `empire-food.ts:106-118` `em = raw.ekonomia_miasta ?? raw` (fallback na top-level obecny); zawartość JSON nie sprawdzona. |
+| 35 | NADAL ISTNIEJE | `economy.ts:1189` `healthModifier = Math.max(0, 1 + zdrowie*…)` (0 przy zdrowie ≤ -20); wpływ na ujemną żywność nieprzeliczony. |
+| 36 | NAPRAWIONY | `turn-economy.ts:2918-2926` lista budynków wypełniana przed `upkeepBalance` (`:2931`). |
+| 37 | NIEROZSTRZYGNIĘTY | `ai.ts:667` `scoreTech` nieprzeczytany pod kątem Zasad. |
+| 38 | NAPRAWIONY | `wonder-placement.ts:34` `!isWaterTerrain(t) && t !== Gory`; `units/setup.ts:678` = Morze/PlytkieMorze. |
+| 39 | NAPRAWIONY | `muzyka-antyczna.ts:2037-2044` `stopAmbience` zatrzymuje `ambActiveSources`. |
+| 40 | NAPRAWIONY | `main.ts:22154-22159` (`stopAmbience`, `setMood('mapa')`). |
+| 41 | NADAL ISTNIEJE | Wielka Kuźnia `buildings.json:1394` `epokaWejscia: 4` (gra ma 3 epoki). Lazaret → patrz 7.2. |
+| 42 | NAPRAWIONY | Zapis `main.ts:30659-30661` („Audyt #42"); odczyt `:38772-38773`. |
+| 43 | NAPRAWIONY | Zapis `main.ts:30666-30669`; reset `:37290-37293`; odczyt `:38802-38808`. |
+| 44 | NADAL ISTNIEJE | `aiSkarbiecByOwner` zapisywane (`main.ts:30581`), odczyt przy load nie znaleziony (grep 38500-38900). Do potwierdzenia. |
+| 45 | NIEROZSTRZYGNIĘTY | `diplomacyTradeBasket.ts:63` etykieta; kod silnika/`cityOptions` nieprzeliczony. |
+| 46 | NIEROZSTRZYGNIĘTY | `diplomacy-proposals.ts:557-558` etykieta; bramka przemarszu nieprzeczytana. |
+| 47 | NAPRAWIONY | `main.ts:10150-10155` (Praca dawcy odejmowana, odbiorca → pula Pracy). |
+| 48 | NIEROZSTRZYGNIĘTY | `computeObjectivePower` nieprzeczytany. |
+| 49 | NIEROZSTRZYGNIĘTY | `main.ts:11178` nieprzeliczone. |
+| 50 | NIEROZSTRZYGNIĘTY | `main.ts:10084-10094` wrapper tech-trade; kolejność machin nieprzeliczona. |
+| 51 | NIEROZSTRZYGNIĘTY | `siegePower` wołane (`main.ts:27723`) — nie jest martwe; wkład machin do M nieprzeliczony. |
+| 52 | NIEROZSTRZYGNIĘTY | `runtimeUnitToSiegeUnit` (`main.ts:15062`) nieprzeczytany. |
+| 53 | NIEROZSTRZYGNIĘTY | `mapFieldBattle.ts:215-224` nieprzeczytany pod kątem fallbacku Milicji. |
+| 54 | NADAL ISTNIEJE | `combat.ts:539-542`: `aLow.includes(cAtk) \|\| cAtk.includes(aLow)` (dopasowanie po podciągu). |
+| 55 | NAPRAWIONY | `post-battle-map.ts:554` `if (city.rebelState) city.rebelState = false;`. |
+| 56 | NIEROZSTRZYGNIĘTY | `ai.ts:4529` `findNearestVillage`: alokacja `Object.keys` nieprzeliczona. |
+| 57 | NIEROZSTRZYGNIĘTY | `main.ts:2985` `syncVillageMeshes`: ciało nieprzeczytane. |
+| 58 | NAPRAWIONY | Brak odczytu pola `Super` (0 trafień; `unitInfographic.ts:93` to tylko etykieta). |
+| 59 | NIEROZSTRZYGNIĘTY | `economy.ts:664-697` nieprzeliczone. |
+| 60 | NIEROZSTRZYGNIĘTY | `main.ts:8098-8106` sprzątanie przy wyjściu; ścieżka nagrody wioski nieprzeliczona. |
+| 61 | NAPRAWIONY | `playerState.ts:72` `BRAK_PREREQ` = `'', '-', '—', '–', 'brak', 'none'`. |
+| 62 | NIEROZSTRZYGNIĘTY | `generator.ts:286` gałęzie pangea nieprzeczytane do jezior. |
+| 63 | NIEROZSTRZYGNIĘTY | `startScoring.ts:80-84` pętla dist 0..4 odczytana; warunek punktowania gór nieprzeczytany. |
+| 64 | NAPRAWIONY | `map-gen-params.json`: 0 trafień `owce`/`bydlo`/`lama`/`luksus`. |
+| 65 | NIEROZSTRZYGNIĘTY | `filePlayer.ts:260-272` `onError` nieprzeczytany pod kątem crossfade. |
+| 66 | NIEROZSTRZYGNIĘTY | `main.ts` (kamień milowy z handlu) nieprzeliczony. |
+| 67 | NAPRAWIONY | `units.json` „Procarz (Huaracoc)": Typ = `Slinger` (python na pinie). |
+| 68 | NAPRAWIONY | `main.ts:37030-37031`, `:37144-37145`: `camCtrl.dispose()` przed nowym `new CameraController`. |
+| 69 | NIEROZSTRZYGNIĘTY | `gamePauseMenu.ts:104-112` widoczny tylko CSS; logika „Wczytaj" nieprzeczytana. |
+| 70 | NIEROZSTRZYGNIĘTY | `main.ts:2661` nieprzeliczone. |
+| 71 | NIEROZSTRZYGNIĘTY | `civ-roster.ts:98-104` (`fillIn`) odczytane częściowo. |
+| 72 | NIEROZSTRZYGNIĘTY | Śmierć z głodu: `main.ts:6411` `units.splice`; ścieżka audytu (~10897) nieprzeliczona. |
+| 73 | NIEROZSTRZYGNIĘTY | Linia 585 w `render/cities.ts` to komentarz `setZoomLod`; `dispose` cache (`cities.ts:756`) nieprzeliczony. |
+
+### 7.2 Pozostałe pozycje z rundy 2 (wskazane przez Evaluatora)
+
+- **Civpedia / Poradnik `07-miasto-budowa-rekrutacja.md:193`** (`docs/PORADNIK-GRACZA/`): obietnica „Kuźnie +15% Pancerza; Koszary/Akademia wojskowa/Warsztat +20/+20/+10% parametrów miękkich" jest **zgodna z kodem**: `unit-building-bonuses.ts:67` (`ARMOR_BUILDING_IDS`) i `:70` (`SOFT_STAT_BUILDING_IDS` = koszary, akademia_wojskowa, warsztat_oblezniczy). Status NAPRAWIONY dla tej obietnicy. Pozostałe 25 haseł i treść `cityPanel.ts:5013` NIEROZSTRZYGNIĘTE.
+- **Mury / Fort / Pretorium** (`buildings.json:998, 1439, 1829`): dane zerowe (`"mnoznik": 0`, `"obrona": 0`), status z §6.2 — NADAL ISTNIEJE.
+- **Akademia (nauka, id `akademia`, `buildings.json:1586`)**: mnożnik 10 i konsument „Praca zamiast nauki" nieprzeliczony — NIEROZSTRZYGNIĘTY.
+- **Akademia wojskowa (`akademia_wojskowa`, `buildings.json:2023`)**: obecna w `SOFT_STAT_BUILDING_IDS` — NAPRAWIONY dla obietnicy Civpedia; mnożnik wojskowy nieprzeliczony.
+- **Warsztat oblężniczy (`buildings.json:1537`)** i **Kuźnia żelaza (`:1339`, kategoria „Produkcja+Wojsko")**: obie w listach ścieżek wojskowych; wykluczenie z sumy Pracy nieprzeliczone — NIEROZSTRZYGNIĘTY.
+- **Lazaret** (`wikiBundle.json`, `tech.json:430`): obietnica „Odblokowuje budynki: … Lazaret" występuje w danych opisowych, brak wpisu w `buildings.json` — NADAL ISTNIEJE (opis). Część NOWE nr 4 (`wikiBundle.json`) potwierdzona w tym zakresie.
+
+### 7.3 Ograniczenia tej rundy
+
+- 33 pozycje NIEROZSTRZYGNIĘTY (tabela 7.1) wymagają kolejnej rundy; kryterium binarne nie jest spełnione.
+- Statusy NAPRAWIONY na podstawie komentarza `Audyt #NN` oraz widocznej bramki (np. #27, #36, #42, #43) nie były dynamicznie testowane.
+- Nie uruchomiono `cargo`/`npm`/gry. Zakres zapisu: tylko ten plik. `gra/**` nietknięte.
