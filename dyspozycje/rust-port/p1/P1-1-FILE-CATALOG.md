@@ -19,6 +19,12 @@
 
 Uwaga do `ui`: na pinie `edb8fb56` plików `.ts` jest 117 (stary audyt: 105); łącznie 438 plików, z czego 307 to SVG. Liczby linii w kolumnie obejmują też SVG/JSON/CSS, więc są większe niż suma kodu.
 
+**Metoda i zastrzeżenia (uzupełnienie po zarzutach Evaluatora, runda 1):**
+- Źródło liczb: blob z `git show edb8fb56:<ścieżka>` (nie checkout roboczy). Checkout roboczy (`claude/sprawdzenie-funkcjonalnosci-ek4ra0`) różni się od pinu w 138 plikach `gra/` (`git diff --stat edb8fb56 HEAD -- gra`), więc `find gra/src/...` na nim NIE odtworzy tych liczb (dałoby np. 179 zamiast 183 w `game`). Weryfikacja: `git ls-tree -r edb8fb56 -- gra/src/<katalog>` + `git show edb8fb56:<ścieżka> | wc -l`.
+- Kolumna „Linie” = liczba znaków nowej linii (`wc -l`), nie liczba linii tekstu. Dla plików bez końcowego `\n` ostatnia linia nie jest liczona.
+- PNG (`ui/assets/hero/hero-intro.png` = 7342, `hero-menu.png` = 7733; razem 2039500 + 2175174 B) są binarne: liczba `\n` w nich nie ma znaczenia tekstowego. Suma `ui` bez PNG = 73963 − 15075 = **58888**; wartość 73963 zostaje jako suma kolumny, z zastrzeżeniem.
+- SVG: 292 z 307 plików na pinie ma 0 znaków `\n` (jednowierszowe bez końcowego newline). Rozmiar w bajtach jest miarodajny: wszystkie SVG na pinie = 108231 B; z tego 292 pliki z 0 `\n` = 102723 B. Kolumna „Linie” dla SVG nie oddaje ich rozmiaru.
+
 ## Inne katalogi `gra/src` (poza zakresem 6 katalogów — informacyjnie, liczba plików)
 
 | Katalog | Pliki | Z tego `.ts` |
@@ -78,7 +84,7 @@ Pozostałe katalogi `gra/src` (poza zakresem 6 katalogów) — patrz sekcja „I
 | `gra/src/game/braz-access.ts` | 53 | ts | braz-access.ts — łańcuch brązu (ABC-12/13; Maciej 2026-07-09: brąz to STOP miedzi, NIE surowiec). [importów: 1, eksportów: 5] |
 | `gra/src/game/building-cost-tempo.ts` | 39 | ts | building-cost-tempo.ts [importów: 0, eksportów: 3] |
 | `gra/src/game/building-resource-gate.ts` | 619 | ts | building-resource-gate.ts — bramka budynków: realne wymogi terenowe / budynkowe per budynek. [importów: 3, eksportów: 32] |
-| `gra/src/game/building-stock-cost.ts` | 420 | ts | eksporty: BuildingStockCost, epochCostMultiplier, scaleCostByEpoch, buildingEraCostMultiplier … [importów: 1, eksportów: 24] |
+| `gra/src/game/building-stock-cost.ts` | 420 | ts | Konsument magazynu surowców przetworzonych (TEMAT #6): opcjonalny koszt `koszt_surowce` budynku pobierany z magazynu państwa przy starcie budowy. [importów: 1, eksportów: 24] |
 | `gra/src/game/building-upgrades.ts` | 248 | ts | Upgrade budynków — kanon Maciej 2026-07-05 (UPG-LOC/PROD/BONUS, ABC-20…24). [importów: 2, eksportów: 19] |
 | `gra/src/game/capital-capture.ts` | 326 | ts | capital-capture.ts — RDZEŃ „przejęcie stolicy" (plunder + eliminacja). [importów: 1, eksportów: 12] |
 | `gra/src/game/cities.ts` | 1393 | ts | City founding logic: validation, creation, and name generation. [importów: 9, eksportów: 80] |
@@ -99,7 +105,7 @@ Pozostałe katalogi `gra/src` (poza zakresem 6 katalogów) — patrz sekcja „I
 | `gra/src/game/civ-roster.ts` | 177 | ts | civ-roster.ts — przypisanie typów cywilizacji AI przy starcie gry (E1-D-Q1=A). [importów: 0, eksportów: 7] |
 | `gra/src/game/civ-visual.ts` | 113 | ts | civ-visual.ts — kolory wizualne cywilizacji (kolorHex z civs.json). [importów: 1, eksportów: 11] |
 | `gra/src/game/cluster-start.ts` | 395 | ts | cluster-start.ts — orchestracja startu klastra (SILNIK / handoff). [importów: 9, eksportów: 5] |
-| `gra/src/game/combat.ts` | 1426 | ts | eksporty: CounterEntry, TerrainEntry, CombatUnit, combatNormField … [importów: 12, eksportów: 35] |
+| `gra/src/game/combat.ts` | 1426 | ts | PURE, deterministyczny resolver walki (kanoniczny model SS5l): mnożniki statystyk, bonusy cywilizacji, budynków i weteranów oraz moc armii; bez globalnego stanu. [importów: 12, eksportów: 35] |
 | `gra/src/game/conquest-stability.ts` | 191 | ts | conquest-stability.ts [importów: 4, eksportów: 11] |
 | `gra/src/game/converters.ts` | 360 | ts | converters.ts [importów: 0, eksportów: 20] |
 | `gra/src/game/culture-religion.ts` | 1479 | ts | culture-religion.ts [importów: 1, eksportów: 58] |
@@ -152,11 +158,11 @@ Pozostałe katalogi `gra/src` (poza zakresem 6 katalogów) — patrz sekcja „I
 | `gra/src/game/era-change-notify.ts` | 49 | ts | era-change-notify.ts — komunikat graczowi przy awansie epoki (ownerId 0). [importów: 0, eksportów: 8] |
 | `gra/src/game/era-gate-ui.ts` | 147 | ts | era-gate-ui.ts — R-EPOKA-CUD-ZAKRES-Q1=B: informacja UI "co brakuje do awansu epoki". [importów: 4, eksportów: 7] |
 | `gra/src/game/first-player-city.ts` | 49 | ts | R-PIERWSZE-MIASTO (decyzja B): gracz z 0 miast może wyłącznie założyć pierwsze [importów: 0, eksportów: 5] |
-| `gra/src/game/forced-war-bronze.ts` | 277 | ts | eksporty: WOJNA_WYMUSZONA_MAX_MIASTA_ZDOBYTE_LUB_STRACONE, WOJNA_WYMUSZONA_ODPOCZYNEK_TUR, WOJNA_WYMUSZONA_COOLDOWN_TA_SAMA_CYWILIZACJA_TUR, WOJNA_WYMUSZONA_STA [importów: 1, eksportów: 17] |
+| `gra/src/game/forced-war-bronze.ts` | 277 | ts | Wymuszona wojna epoki Brąz: główna cywilizacja AI bez aktywnej wojny wypowiada wojnę sąsiadowi; koniec po zdobyciu/utracie N miast, potem odpoczynek i cooldown. [importów: 1, eksportów: 17] |
 | `gra/src/game/forced-war-common.ts` | 413 | ts | Wspólny, czysty mechanizm wojen wymuszonych. [importów: 0, eksportów: 17] |
-| `gra/src/game/forced-war-iron.ts` | 292 | ts | eksporty: EPOKA_ZELAZO_NUMER, WOJNA_ZELAZO_WYMUSZONA_MAX_MIASTA_ZDOBYTE_LUB_STRACONE, WOJNA_ZELAZO_WYMUSZONA_ODPOCZYNEK_TUR, WOJNA_ZELAZO_WYMUSZONA_COOLDOWN_TA_ [importów: 1, eksportów: 17] |
-| `gra/src/game/forced-war-stone.ts` | 163 | ts | eksporty: WOJNA_KAMIEN_WYMUSZONA_START_TURY, WOJNA_KAMIEN_WYMUSZONA_MAX_MIASTA_ZDOBYTE_LUB_STRACONE, WOJNA_KAMIEN_WYMUSZONA_ODPOCZYNEK_TUR, WOJNA_KAMIEN_WYMUSZO [importów: 1, eksportów: 17] |
-| `gra/src/game/forced-war-waves.ts` | 293 | ts | eksporty: ForcedWarWave, ForcedWarWaveHistory, ForcedWarWaveState, ForcedWarWavePlan … [importów: 3, eksportów: 12] |
+| `gra/src/game/forced-war-iron.ts` | 292 | ts | Wymuszona wojna epoki Żelazo (trzecia i ostatnia epoka): mechanizm naśladuje Brąz, wyzwalany awansem epoki (R-EPOKA-ZELAZO-WYMUSZONA-WOJNA-Q1). [importów: 1, eksportów: 17] |
+| `gra/src/game/forced-war-stone.ts` | 163 | ts | Wymuszona wojna epoki Kamień: stałe (start od tury 25, limity miast, odpoczynku, cooldownu, czasu trwania pary wojny) i logika oparta o forced-war-common. [importów: 1, eksportów: 17] |
+| `gra/src/game/forced-war-waves.ts` | 293 | ts | Fale wymuszonej wojny: wybór świeżej fali z wolnych jednostek (kierunek sektorowy od miasta celu) oraz typy stanu i historii fal. [importów: 3, eksportów: 12] |
 | `gra/src/game/fort-territory.ts` | 214 | ts | game/fort-territory.ts [importów: 3, eksportów: 9] |
 | `gra/src/game/fsa-autosave.ts` | 530 | ts | fsa-autosave.ts [importów: 1, eksportów: 24] |
 | `gra/src/game/gold-deficit.ts` | 250 | ts | gold-deficit.ts — kara za deficyt Złota (R-DEFICYT-ZLOTA-KARA-Q1=A), próg [importów: 2, eksportów: 17] |
@@ -202,7 +208,7 @@ Pozostałe katalogi `gra/src` (poza zakresem 6 katalogów) — patrz sekcja „I
 | `gra/src/game/save.ts` | 1114 | ts | SAVE / LOAD (task F1) -- serialize the live game state to a JSON string and [importów: 10, eksportów: 29] |
 | `gra/src/game/scout-auto-explore.ts` | 280 | ts | scout-auto-explore.ts — automatyczne zwiedzanie mapy przez zwiadowców. [importów: 3, eksportów: 7] |
 | `gra/src/game/side-panel-event-link.ts` | 114 | ts | side-panel-event-link.ts — P-WYDARZENIA-AUDYT-PRZEKIEROWANIA-Q1. [importów: 0, eksportów: 5] |
-| `gra/src/game/side-panel-event-priority.ts` | 9 | ts | eksporty: isBlockingSidePanelEvent [importów: 1, eksportów: 1] |
+| `gra/src/game/side-panel-event-priority.ts` | 9 | ts | Reguła blokującego zdarzenia panelu bocznego: tylko karty wymagające decyzji gracza (`blocking === true`) blokują koniec tury. [importów: 1, eksportów: 1] |
 | `gra/src/game/siege.ts` | 866 | ts | PURE, deterministic, DOM-free city-siege logic for The Game (4X Civ-style). [importów: 3, eksportów: 32] |
 | `gra/src/game/siegeAi.ts` | 292 | ts | Pure, deterministic AI siege stance logic (C3-Q2=custom). [importów: 2, eksportów: 18] |
 | `gra/src/game/siegeDefenders.ts` | 162 | ts | siegeDefenders.ts — kto broni miasto przy szturmie / zdobyciu (C3-ST-1…3). [importów: 4, eksportów: 13] |
@@ -245,7 +251,7 @@ Pozostałe katalogi `gra/src` (poza zakresem 6 katalogów) — patrz sekcja „I
 | `gra/src/ui/armyMergePickPanel.ts` | 183 | ts | armyMergePickPanel.ts — wybór jednostek i sąsiedniego stosu do połączenia (v1.0). [importów: 3, eksportów: 5] |
 | `gra/src/ui/armySplitPanel.ts` | 185 | ts | armySplitPanel.ts — rozdzielenie stosu armii na dwa heksy (v1.0). [importów: 3, eksportów: 5] |
 | `gra/src/ui/armyStackHud.ts` | 380 | ts | armyStackHud.ts — dolny pasek armii (A-06 · 1E). [importów: 6, eksportów: 5] |
-| `gra/src/ui/armyStackPrompt.ts` | 211 | ts | eksporty: ArmyStackPromptOpts, showArmyStackPrompt, hideArmyStackPrompt, isArmyStackPromptOpen [importów: 1, eksportów: 4] |
+| `gra/src/ui/armyStackPrompt.ts` | 211 | ts | Okno „Zajęty heks”: pyta gracza o scalenie armii (Połącz / Nie łącz) przy wejściu jednostki na zajęty heks; DOM-only, bez importów z game/ i types/. [importów: 1, eksportów: 4] |
 | `gra/src/ui/assets/hero/hero-intro.png` | 7342 | png | obraz (PNG) |
 | `gra/src/ui/assets/hero/hero-menu.png` | 7733 | png | obraz (PNG) |
 | `gra/src/ui/bottomBarHud.ts` | 335 | ts | bottomBarHud.ts — dolny pasek [I]/[I2]: WYKONAJ + Koniec tury (A1-Q9=A, A1-Q10). [importów: 3, eksportów: 3] |

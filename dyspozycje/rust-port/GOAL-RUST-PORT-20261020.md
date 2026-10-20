@@ -26,14 +26,16 @@ dotykające tych samych plików — zawsze sekwencyjnie, nigdy w tej samej fali.
 
 | # | Temat | Faza | Runda | runId Workflow | Status | Ostatnia aktualizacja |
 |---|---|---|---|---|---|---|
-| 1 | `R-RUSTPORT-P1-1-FILE-CATALOG-Q1` | P1.1 | 1/5 | `wf_e734e60d-6e2` | DISPATCHED (w toku) | 2026-10-20 |
-| 2 | `R-RUSTPORT-P1-2-TOOLCHAIN-Q1` | P1.2 | 1/5 | `wf_a2ee7482-f34` | DISPATCHED (w toku) | 2026-10-20 |
-| 3 | `R-RUSTPORT-P1-10-VIEWPORTS-Q1` | P1.10 | 1/5 | `wf_54cfd68f-fdd` | DISPATCHED (w toku) | 2026-10-20 |
-| 4 | `R-RUSTPORT-P1-11-ASSET-CATALOG-Q1` | P1.11 | 1/5 | `wf_b37ec715-332` | DISPATCHED (w toku) | 2026-10-20 |
-| 5 | `R-RUSTPORT-P1-12-DATA-CATALOG-Q1` | P1.12 | 1/5 | `wf_efec9681-023` | DISPATCHED (w toku) | 2026-10-20 |
+| 1 | `R-RUSTPORT-P1-17-RUST-CLASSIFICATION-Q1` | P1.17 | 1/5 | `wf_afd72738-2f0` | DISPATCHED (w toku) | 2026-10-20 |
+| 2 | `R-RUSTPORT-P1-14-GAMEPLAY-CATALOG-Q1` | P1.14 | 1/5 | `wf_682a6444-dd8` | DISPATCHED (w toku) | 2026-10-20 |
+| 3 | `R-RUSTPORT-P1-18-HOTSEAT-MATRIX-Q1` | P1.18 | 1/5 | `wf_5d005df4-86c` | DISPATCHED (w toku) | 2026-10-20 |
+| 4 | `R-RUSTPORT-P1-16-EDGE-CASES-Q1` | P1.16 | 1/5 | `wf_d59d9819-e88` | DISPATCHED (w toku) | 2026-10-20 |
+| 5 | — wolny slot — | | | | | |
 | 6 | `R-RUSTPORT-P1-13-COMMANDS-EVENTS-Q1` | P1.13 | 1/5 | `wf_8a3d523b-385` | DISPATCHED (w toku) | 2026-10-20 |
 
-Historia zamkniętych tematów (P0, poprawka terenu) — patrz `LEDGER.md`.
+Historia zamkniętych tematów (P0, poprawka terenu, P1.1/1.2/1.10/1.11/1.12 — wszystkie PASS) — patrz
+`LEDGER.md`. Następny wolny slot (#5) do obsadzenia po przeglądzie kolejnego kawałka P1 (P1.15 katalog
+zrzutów, albo planowanie P1.3-9 wymagające żywej przeglądarki).
 
 **Decyzje właściciela po P0 (2026-10-20):**
 - Pin webowy: zostajemy przy świeżym `main` = `edb8fb56` (nie wracamy do `69ccb145`) — delta zostanie w pełni skwalifikowana w P1.
