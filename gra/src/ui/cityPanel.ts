@@ -8879,6 +8879,7 @@ function buildRecruitTabDetailCard(city: City, unitCount: number, skarb: number 
   gridDetailRow(g, 'Skarb imperium', skarb != null ? `${skarb} 💰` : '—');
   if (mpSnap) {
     gridDetailRow(g, 'Rekruci (pula miasta)', `${formatManpower(mpSnap.manpowerBiezacy)} / ${formatManpower(mpSnap.manpowerMax)}`);
+    gridDetailRow(g, 'Odnowa rekrutów (miasto / turę)', `+${formatManpower(mpSnap.regenPerTurn)}`);
     gridDetailRow(g, 'Koszt Manpower (typowy)', `${formatManpower(mpSnap.kosztJednostki)} · epoka ${mpSnap.epoka}`);
   } else {
     gridDetailRow(g, 'Koszt Manpower (typowy)', `${formatManpower(mpCostStd)} · epoka ${epoch}`);

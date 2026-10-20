@@ -8398,7 +8398,7 @@ async function boot(): Promise<void> {
     }
     let lastDiplomaticContactsSnapshot = new Set<number>();
     /** Pierwsze odkrycie w mgle — kolejka kart informacyjnych (bez pełnej audiencji). */
-    const pendingFirstContactCards: number[] = [];
+    const pendingFirstContactCards: Array<{ humanOwnerId: number; ownerId: number }> = [];
     let diplomaticContactTrackingReady = false;
     /** v1.1: aktywne traktaty dyplomatyczne (save/load meta.diplomacyDeals). */
     let activeDeals: ActiveDeal[] = [];
@@ -18991,6 +18991,10 @@ async function boot(): Promise<void> {
     function canAutoOpenDiploAudience(): boolean {
       if (galleryOn || isPreBattleOpen() || isCityPanelOpen()) return false;
       if (isDiplomacyAudienceOpen()) return false;
+      // R-PR141-CODEX-DIPLO-FIRST-CITY-20261020: do not put a first-contact
+      // audience over the active human's required first-city founding flow. The
+      // founding path retries queued cards after it records this owner's city.
+      if (isAwaitingFirstPlayerCity(ME())) return false;
       // P-KONIEC-TURY-ZDARZENIA-NACHODZA-NA-SIEBIE (Maciej 2026-08-14): brakowało tego
       // kierunku -- guard sprawdzał tylko preBattle, nie panel scalenia armii, więc
       // audiencja mogła wyskoczyć na wierzch otwartego army-merge. / EN: this direction was
@@ -19003,9 +19007,11 @@ async function boot(): Promise<void> {
     function tryOpenNextFirstContactCard(): void {
       if (!canAutoOpenDiploAudience()) return;
       while (pendingFirstContactCards.length > 0) {
-        const oid = pendingFirstContactCards.shift()!;
-        if (!getDiplomaticContacts().has(oid)) continue;
-        openDiplomacyAudience(oid);
+        const cardIndex = pendingFirstContactCards.findIndex(card => card.humanOwnerId === ME());
+        if (cardIndex < 0) return;
+        const [card] = pendingFirstContactCards.splice(cardIndex, 1);
+        if (!card || !getDiplomaticContacts(card.humanOwnerId).has(card.ownerId)) continue;
+        openDiplomacyAudience(card.ownerId);
         return;
       }
     }
@@ -19026,7 +19032,7 @@ async function boot(): Promise<void> {
         establishDiplomaticContact(oid);
         if (diplomaticDiscoveryPopupShownSet().has(oid)) continue;
         diplomaticDiscoveryPopupShownSet().add(oid);
-        pendingFirstContactCards.push(oid);
+        pendingFirstContactCards.push({ humanOwnerId: ME(), ownerId: oid });
       }
       requestAnimationFrame(() => tryOpenNextFirstContactCard());
     }
