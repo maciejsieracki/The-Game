@@ -64,6 +64,11 @@ tempie.
   szóstego tematu zacznie się wyraźnie opóźniać albo kolejkować, to jest sygnał do zejścia z 6 na
   mniej, nie błąd do zignorowania.
 
+**Zasada ciągłości (dodane 2026-10-20, na żądanie właściciela):** gdy temat w puli się zamyka
+(PASS / FAIL ostateczny / DECISION_REQUIRED / LIMIT-5-EXCEEDED), natychmiast otwieram kolejny,
+bezkolizyjny temat w zwolnionym slocie — pula 6 ma być stale w pełni wykorzystana, bez przestojów
+między falami, dopóki jest jeszcze gotowa, bezkolizyjna praca do zrobienia w aktywnej fazie.
+
 **Zasady przy wielu tematach naraz:**
 1. Każdy temat ma własny pełny dispatch (`dyspozycje/autobot/runs/<ID>/00-dispatch.md`), własny wpis
    w `dyspozycje/rust-port/LEDGER.md`, własną allowlistę.

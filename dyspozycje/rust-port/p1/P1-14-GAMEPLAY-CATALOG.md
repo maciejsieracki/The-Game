@@ -1,0 +1,795 @@
+# P1.14 — Katalog mechanizmów gameplayu (podsystemy)
+
+**Temat:** `R-RUSTPORT-P1-14-GAMEPLAY-CATALOG-Q1` · **Runda:** 1/5 · **Rola:** Operator (Haiku 5.5 medium)
+**Pin web:** `main` = `edb8fb56` · **Wejście:** `dyspozycje/rust-port/p1/P1-1-FILE-CATALOG.md` (751 plików, 6 katalogów `gra/src/{game,ui,map,units,battle,render}`).
+**Metoda:** każdy z 751 wierszy P1.1 ma dokładnie jeden podsystem (sekcja 2). Przypisanie oparte na opisie z nagłówka pliku (kolumna „Przeznaczenie” w P1.1, sporządzona z pierwszej linii komentarza) oraz liczbie importów/eksportów; dla 34 plików na granicy dwóch podsystemów uzasadnienie wskazuje obie strony i wybrany podsystem (kolumna „Uwaga”). Streszczenia (sekcja 1) cytują plik + nagłówek/eksport jako dowód; funkcje z eksportów odczytane poleceniem `grep '^export'` na blobie `edb8fb56`. Nie czytano linia po linii 751 plików — klastry (np. `ui/icons/**`, `render/**`) przypisane po katalogu.
+**Legenda kodów:** EKO = ekonomia tury · MIA = miasta · JED = jednostki · WAL = walka · AI = AI · DYP = dyplomacja (w tym handel) · KUL = kultura/religia · CUD = cuda/technologie · PM = państwa-miasta · BAR = barbarzyńcy · HOT = hot-seat · SAV = save/load · INNE = mechanika poza 12 · INF-* = infrastruktura.
+**Linie:** kolumna z P1.1 (`wc -l`); dla `ui` zawiera też SVG/JSON/PNG (zawyżenie, zob. P1.1).
+
+## 1. Podsystemy — liczba plików, linie, streszczenie z dowodem
+
+| Kod | Podsystem | Pliki | Linie | Streszczenie (dowód: plik + nagłówek/eksport) |
+|---|---|---:|---:|---|
+| EKO | Ekonomia tury | 28 | 16242 | `turn-economy.ts` (tick ekonomii tury, eksporty `computeCityHealthBreakdown`, `computeTerritoryResourceYieldByCity`, `applyStolarniaDrewnoMapInflow`); `economy.ts` (nagłówek: „City economy logic… pure module”); `playerState.ts` (nagłówek 13B: bankowanie strumieni do skarbca i puli nauki). Obejmuje też utrzymanie (`economy-upkeep.ts`, 67 eksportów) i manpower (`manpower.ts`, „EKONOMIA”). |
+| MIA | Miasta | 28 | 24175 | `cities.ts` (nagłówek: „City founding logic: validation, creation, and name generation”; eksporty `CityPodzialHandlu`, `OkolicaFocus`, `BudowaTryb`); `production.ts` (nagłówek: „City PRODUCTION QUEUE”, eksporty `buildingProductionItem`, `unitProductionItem`); `okolica.ts` (wybór obrabianych pól, 27 eksportów); `population-growth-v85.ts` (racje żywności Wyżywienie 0–6); `society-breakdown.ts` (Szczęście+Prawo → Porządek). |
+| JED | Jednostki | 39 | 12755 | `armyMerge.ts` (nagłówek: „stosy armii na mapie: widoczność, merge, split”, 48 eksportów); `veteran.ts` (nagłówek: „TRZECI, NIEZALEŻNY system trwałych ulepszeń jednostek”); `embarkation.ts` (embarkacja jednostek lądowych); `planned-march.ts` (nagłówek: „A3 zaplanowany marsz”); `auto-manage.ts` (auto-zarządzanie). |
+| WAL | Walka | 39 | 35097 | `combat.ts` (nagłówek: „PURE, deterministyczny resolver walki (kanoniczny model SS5l)”, eksporty `CombatResult`, `hitChanceTw`, `damageTw`); `siege.ts` (nagłówek: „PURE, deterministic, DOM-free city-siege logic”, 32 eksporty); `auto-battle-power.ts` (werdykt i straty auto-walki); `post-battle-map.ts` (wspólne skutki walki auto + ręczna); `battle/manualBattle.ts` (ręczna bitwa taktyczna) i `battle/battleScene.ts` (auto-bitwa 3D). |
+| AI | AI | 19 | 8964 | `ai.ts` (nagłówek: „AI decision module… pure functions”, punkt wejścia `decideAITurn()`, eksporty `AICmdMove`, `AICmdAttack`, `AICommand`, `chooseAIResearch`); `forced-war-waves.ts` (nagłówek: „Fale wymuszonej wojny: wybór świeżej fali”); `forced-war-common.ts` (nagłówek: „Wspólny, czysty mechanizm wojen wymuszonych”); `civ-ai-data.ts` (odczyt per-nacja z civ-ai.json). |
+| DYP | Dyplomacja (w tym handel) | 46 | 23802 | `diplomacy.ts` (nagłówek: „Pure diplomacy model”, Relacja = Zaufanie + Respekt, eksport `getEffectiveDiplomacyParams`); `diplomacy-proposals.ts` (nagłówek: „ocena propozycji dyplomatycznych v1.1”, 2734 linie, 61 eksportów); `diplomacy-treaties.ts` (aktywne traktaty v1.1); `trade-routes.ts` (nagłówek: „Handel E2/E3: wykrywanie połączeń miast + dochód z tras”); `diplomacy-credibility.ts` (Wiarygodność, 37 eksportów). |
+| KUL | Kultura/religia | 10 | 3444 | `culture-religion.ts` (nagłówek: „City Kultura + Religia logic… PURE”, eksporty `accumulateCulture`, `cultureHappiness`, `cultureThresholds`); `civ-bonuses.ts` (bonusy cywilizacji, 17 eksportów); `civ-matrix.ts` (mnożniki cywilizacji z civ-matrix.json). |
+| CUD | Cuda/technologie | 22 | 7092 | `research.ts` (nagłówek: „Technology research logic… pure module”, eksporty `researchGatesMet`, `epochGateMet`, `AdvanceResult`); `tech-tree.ts` (drzewko liniowe, B1-Q3); `wonders-data.ts` (odczyt cudów z wonders.json, 27 eksportów); `wonder-availability.ts` (bramka dostępności budowy cudu). |
+| PM | Państwa-miasta | 6 | 1172 | `city-state-difficulty.ts` (eksporty `cityStateMilitaryProductionCap`, `resolveClusterCityStateWarOnPlayer`); `ai-cs-absorption.ts` (nagłówek: „AI major → miasto-państwo (trybut/wasal/wojna/wchłonięcie)”); `triumph-city-state.ts` (triumf po zjednoczeniu miast-państw). |
+| BAR | Barbarzyńcy | 2 | 2729 | `barbarians.ts` (nagłówek: „Neutral hostile faction… camp spawning, a per-camp unit cap”; eksporty `BARBARIAN_OWNER_ID`, `loadBarbParams`); `map-rebels.ts` (buntownicy mapowi od epoki Średniowiecze). |
+| HOT | Hot-seat | 3 | 469 | `human-owners.ts` (nagłówek: „Hot-seat fundament, Etap 0”; eksporty `isHumanOwner`, `isAiOwner`, `nextHumanSeat`, `isHotSeat`; nagłówek stwierdza brak konsumenta w main.ts); `ui/hotSeatHandoff.ts` (ekran przekazania); `ui/interHumanDiplomacyHud.ts`. |
+| SAV | Save/load | 7 | 2914 | `save.ts` (nagłówek: „SAVE / LOAD (task F1)”, eksporty `serializeGame`, `SaveGame`, `buildSaveSlotMeta`, `IncompatibleSaveFormatError`; migracja zapisów do IndexedDB, 10 slotów autozapisu); `fsa-autosave.ts` (24 eksporty); `idb-storage.ts` (cienki wrapper IndexedDB). |
+| INNE | INNE (mechanika poza 12: potęga, zwycięstwo, start, tempo, nagrody z wiosek) | 17 | 6029 | `power-objective.ts` / `power-ranking.ts` / `power.ts` (Potęga imperium); `victory.ts` (warunki zwycięstwa, 19 eksportów); `start-preview.ts` i `cluster-start.ts` (orkiestracja startu klastra); `ruch-swiata-tempo.ts` (tempo); `villageRewards.ts` (nagrody z wiosek). Kandydaci na osobny podsystem, do decyzji w P2.1. |
+| INF-MAPA | INNE/INFRA-MAPA-ŚWIAT (generator, teren, granice, widoczność; kandydat na 13. podsystem) | 18 | 20500 | `map/generator.ts`, `map/mapGenAsync.ts`, `map/territory.ts`, `map/road-network.ts` (generator i model terenu/granic/dróg; katalog `map/` 25 plików); `game/visibility.ts` (mgła wojny). Granica z GOAL: teren/świat nie ma osobnego podsystemu w 12. |
+| INF-UI | INFRA-UI (HUD, panele, menu, tooltipy, CSS) | 43 | 12073 | `ui/hud.ts` (górny pasek zasobów + minimapa + panel boczny), `ui/sidePanelHud.ts`, `ui/entityCards/renderer.ts` (jeden DOM-builder kart encji). Prezentacja, bez logiki domenowej. |
+| INF-RENDER | INFRA-RENDER (scena 3D, modele, LOD) | 88 | 59319 | `render/scene.ts`, `render/units.ts`, `render/cities.ts` i modele 3D (katalog `render/`, 88 plików). Warstwa renderu Three.js. |
+| INF-DANE | INFRA-DANE (ikony, obrazy, owner-utils) | 327 | 16203 | ikony SVG (`ui/icons/**`, 324 pliki), obrazy hero (`ui/assets/hero/*.png`), `game/owner-utils.ts`. |
+| INF-NARZ | INFRA-NARZĘDZIA (playtest, perf, diagnostyka) | 9 | 2715 | `game/playtest*.ts` (4 pliki, narzędzia playtestu), `game/ai-moc-diag.ts` (metryki diagnostyczne), `game/diag-log.ts` (pierścień zdarzeń diagnostycznych), `ui/perfReport.ts` / `ui/perfTestPanel.ts` / `ui/sceneTimingReport.ts`. |
+
+**Suma plików:** 751 (= 751). **Suma linii:** 255694.
+
+Dla 12 podsystemów z GOAL (bez INNE i INFRA): EKO 28, MIA 28, JED 39, WAL 39, AI 19, DYP 46, KUL 10, CUD 22, PM 6, BAR 2, HOT 3, SAV 7 — razem 249 plików.
+
+## 2. Tabela plik → podsystem (751 wierszy)
+
+| # | Ścieżka | Linie | Podsystem | Uzasadnienie (nagłówek/nazwa/import-eksport) | Uwaga (granica) |
+|---:|---|---:|---|---|---|
+| 1 | `gra/src/game/braz-access.ts` | 53 | EKO | ts |  |
+| 2 | `gra/src/game/citizen-resource-upkeep.ts` | 353 | EKO | ts |  |
+| 3 | `gra/src/game/converters.ts` | 360 | EKO | ts |  |
+| 4 | `gra/src/game/cyna-access.ts` | 89 | EKO | ts |  |
+| 5 | `gra/src/game/economy-upkeep.ts` | 1174 | EKO | ts |  |
+| 6 | `gra/src/game/economy.ts` | 1340 | EKO | ts |  |
+| 7 | `gra/src/game/empire-diplo-resource-flow.ts` | 37 | EKO | ts |  |
+| 8 | `gra/src/game/empire-food.ts` | 1074 | EKO | ts |  |
+| 9 | `gra/src/game/empire-handel-split.ts` | 84 | EKO | ts |  |
+| 10 | `gra/src/game/empire-hud-totals.ts` | 99 | EKO | ts |  |
+| 11 | `gra/src/game/gold-deficit.ts` | 250 | EKO | ts |  |
+| 12 | `gra/src/game/inca-llama-seed.ts` | 66 | EKO | ts | posiew zasobu przy starcie cywilizacji (granica EKO/AI); przypisano EKO |
+| 13 | `gra/src/game/manpower.ts` | 877 | EKO | ts |  |
+| 14 | `gra/src/game/mennica-zloto-grace.ts` | 108 | EKO | ts |  |
+| 15 | `gra/src/game/playerState.ts` | 675 | EKO | ts | EKO (skarbiec/nauka) + CUD (auto-badania); przypisano EKO |
+| 16 | `gra/src/game/r-stawki-strojenie.ts` | 64 | EKO | ts |  |
+| 17 | `gra/src/game/resource-access.ts` | 362 | EKO | ts |  |
+| 18 | `gra/src/game/resource-usage-breakdown.ts` | 137 | EKO | ts |  |
+| 19 | `gra/src/game/turn-economy.ts` | 2967 | EKO | ts |  |
+| 20 | `gra/src/game/wealth.ts` | 251 | EKO | ts |  |
+| 21 | `gra/src/game/zelazo-access.ts` | 89 | EKO | ts |  |
+| 22 | `gra/src/game/zloto-access.ts` | 145 | EKO | ts |  |
+| 23 | `gra/src/ui/empireBalance.ts` | 115 | EKO | ts |  |
+| 24 | `gra/src/ui/empireDetailPanel.ts` | 4433 | EKO | ts | panel imperium (19 importów; EKO/KUL/MIA); przypisano EKO |
+| 25 | `gra/src/ui/empireDetailTypes.ts` | 732 | EKO | ts |  |
+| 26 | `gra/src/ui/empireMiastaTable.ts` | 144 | EKO | ts |  |
+| 27 | `gra/src/ui/empirePanelSectionMap.ts` | 151 | EKO | ts |  |
+| 28 | `gra/src/ui/treasuryBalanceFormat.ts` | 13 | EKO | ts |  |
+| 29 | `gra/src/game/building-cost-tempo.ts` | 39 | MIA | ts |  |
+| 30 | `gra/src/game/building-resource-gate.ts` | 619 | MIA | ts |  |
+| 31 | `gra/src/game/building-stock-cost.ts` | 420 | MIA | ts |  |
+| 32 | `gra/src/game/building-upgrades.ts` | 248 | MIA | ts |  |
+| 33 | `gra/src/game/cities.ts` | 1393 | MIA | ts |  |
+| 34 | `gra/src/game/city-founding.ts` | 163 | MIA | ts |  |
+| 35 | `gra/src/game/city-hex-clear.ts` | 74 | MIA | ts |  |
+| 36 | `gra/src/game/city-hex-movement.ts` | 85 | MIA | ts |  |
+| 37 | `gra/src/game/city-names-pool.ts` | 295 | MIA | ts |  |
+| 38 | `gra/src/game/empire-city-defaults.ts` | 554 | MIA | ts |  |
+| 39 | `gra/src/game/first-player-city.ts` | 49 | MIA | ts |  |
+| 40 | `gra/src/game/fort-territory.ts` | 214 | MIA | ts | zasięg zakładania miast przez forty (granica MIA/MAPA); przypisano MIA |
+| 41 | `gra/src/game/growth-happiness.ts` | 30 | MIA | ts |  |
+| 42 | `gra/src/game/okolica.ts` | 815 | MIA | ts |  |
+| 43 | `gra/src/game/order.ts` | 567 | MIA | ts |  |
+| 44 | `gra/src/game/population-growth-tempo.ts` | 41 | MIA | ts |  |
+| 45 | `gra/src/game/population-growth-v85.ts` | 580 | MIA | ts |  |
+| 46 | `gra/src/game/production.ts` | 2380 | MIA | ts |  |
+| 47 | `gra/src/game/society-breakdown.ts` | 1139 | MIA | ts | Szczęście+Prawo→Porządek (granica MIA/KUL); przypisano MIA |
+| 48 | `gra/src/game/society-inputs.ts` | 122 | MIA | ts | wejścia do ocen porządku, używa religii (granica MIA/KUL); przypisano MIA |
+| 49 | `gra/src/game/spich-auto-ration-notify.ts` | 31 | MIA | ts |  |
+| 50 | `gra/src/ui/buildModeHud.ts` | 963 | MIA | ts |  |
+| 51 | `gra/src/ui/cityForeignPick.ts` | 244 | MIA | ts |  |
+| 52 | `gra/src/ui/cityListHud.ts` | 332 | MIA | ts |  |
+| 53 | `gra/src/ui/cityPanel.ts` | 11986 | MIA | ts | panel miasta (66 importów; granica MIA/EKO/JED); przypisano MIA |
+| 54 | `gra/src/ui/cityUnitPick.ts` | 265 | MIA | ts | wybór panel miasta vs jednostka (ten sam heks); przypisano MIA |
+| 55 | `gra/src/ui/cityUxFrame.ts` | 296 | MIA | ts |  |
+| 56 | `gra/src/ui/orderPanel.ts` | 231 | MIA | ts |  |
+| 57 | `gra/src/game/army-concentration.ts` | 332 | JED | ts |  |
+| 58 | `gra/src/game/army-cycle.ts` | 128 | JED | ts |  |
+| 59 | `gra/src/game/army-starvation.ts` | 87 | JED | ts |  |
+| 60 | `gra/src/game/armyMerge.ts` | 1015 | JED | ts |  |
+| 61 | `gra/src/game/auto-improvements.ts` | 1049 | JED | ts |  |
+| 62 | `gra/src/game/auto-manage.ts` | 438 | JED | ts |  |
+| 63 | `gra/src/game/embarkation.ts` | 133 | JED | ts |  |
+| 64 | `gra/src/game/improvement-tech.ts` | 181 | JED | ts | tech gate ulepszeń terenu (granica CUD/JED); przypisano JED |
+| 65 | `gra/src/game/pending-improvements.ts` | 74 | JED | ts |  |
+| 66 | `gra/src/game/planned-march.ts` | 479 | JED | ts |  |
+| 67 | `gra/src/game/rally-point.ts` | 85 | JED | ts |  |
+| 68 | `gra/src/game/relief-preserving-improvements.ts` | 44 | JED | ts |  |
+| 69 | `gra/src/game/scout-auto-explore.ts` | 280 | JED | ts |  |
+| 70 | `gra/src/game/terrain-improvements.ts` | 484 | JED | ts |  |
+| 71 | `gra/src/game/unit-building-bonuses.ts` | 526 | JED | ts |  |
+| 72 | `gra/src/game/unit-card-stats.ts` | 121 | JED | ts |  |
+| 73 | `gra/src/game/unit-cost-tempo.ts` | 39 | JED | ts |  |
+| 74 | `gra/src/game/unit-replace-context.ts` | 63 | JED | ts |  |
+| 75 | `gra/src/game/veteran.ts` | 424 | JED | ts |  |
+| 76 | `gra/src/map/improvement-build.ts` | 1569 | JED | ts | budowa ulepszeń na mapie; przypisano JED |
+| 77 | `gra/src/map/road-movement.ts` | 84 | JED | ts |  |
+| 78 | `gra/src/map/road-network.ts` | 182 | JED | ts |  |
+| 79 | `gra/src/ui/armyListHud.ts` | 368 | JED | ts |  |
+| 80 | `gra/src/ui/armyMergePanel.ts` | 221 | JED | ts |  |
+| 81 | `gra/src/ui/armyMergePickPanel.ts` | 183 | JED | ts |  |
+| 82 | `gra/src/ui/armySplitPanel.ts` | 185 | JED | ts |  |
+| 83 | `gra/src/ui/armyStackHud.ts` | 380 | JED | ts |  |
+| 84 | `gra/src/ui/armyStackPrompt.ts` | 211 | JED | ts |  |
+| 85 | `gra/src/ui/improvementBuildConfirm.ts` | 93 | JED | ts |  |
+| 86 | `gra/src/ui/unitActionBarHtml.ts` | 169 | JED | ts |  |
+| 87 | `gra/src/ui/unitCardStatus.ts` | 394 | JED | ts |  |
+| 88 | `gra/src/ui/unitForeignPick.ts` | 245 | JED | ts |  |
+| 89 | `gra/src/ui/unitInfoCard.ts` | 419 | JED | ts |  |
+| 90 | `gra/src/ui/unitInfographic.ts` | 171 | JED | ts |  |
+| 91 | `gra/src/ui/unitMiniPreview.ts` | 155 | JED | ts |  |
+| 92 | `gra/src/ui/unitPanelHud.ts` | 183 | JED | ts |  |
+| 93 | `gra/src/ui/unitRecruitCard.ts` | 286 | JED | ts |  |
+| 94 | `gra/src/ui/unitReplacePicker.ts` | 207 | JED | ts |  |
+| 95 | `gra/src/units/setup.ts` | 1068 | JED | ts |  |
+| 96 | `gra/src/battle/README-manualBattle.md` | 121 | WAL | md |  |
+| 97 | `gra/src/battle/autoBatchPhase.ts` | 190 | WAL | ts |  |
+| 98 | `gra/src/battle/battle-terrain.ts` | 818 | WAL | ts |  |
+| 99 | `gra/src/battle/battleHudTheme.ts` | 1758 | WAL | ts |  |
+| 100 | `gra/src/battle/battleMinimap.ts` | 110 | WAL | ts |  |
+| 101 | `gra/src/battle/battleScene.ts` | 19493 | WAL | ts |  |
+| 102 | `gra/src/battle/battleSceneOpen.ts` | 35 | WAL | ts |  |
+| 103 | `gra/src/battle/battleTerrainTooltip.ts` | 96 | WAL | ts |  |
+| 104 | `gra/src/battle/endDetails1E.ts` | 337 | WAL | ts |  |
+| 105 | `gra/src/battle/endScreen1E.ts` | 221 | WAL | ts |  |
+| 106 | `gra/src/battle/manualBattle.ts` | 1433 | WAL | ts |  |
+| 107 | `gra/src/battle/mapFieldBattle.ts` | 581 | WAL | ts |  |
+| 108 | `gra/src/battle/siegeHud1E.ts` | 178 | WAL | ts |  |
+| 109 | `gra/src/battle/siegeWall.ts` | 1047 | WAL | ts |  |
+| 110 | `gra/src/battle/testBattle.ts` | 449 | WAL | ts |  |
+| 111 | `gra/src/game/auto-battle-params.ts` | 42 | WAL | ts |  |
+| 112 | `gra/src/game/auto-battle-power.ts` | 243 | WAL | ts |  |
+| 113 | `gra/src/game/battle-loot.ts` | 93 | WAL | ts |  |
+| 114 | `gra/src/game/battle-summary.ts` | 173 | WAL | ts |  |
+| 115 | `gra/src/game/capital-capture.ts` | 326 | WAL | ts | przejęcie stolicy: plunder + eliminacja (granica WAL/PM); przypisano WAL |
+| 116 | `gra/src/game/city-defense.ts` | 178 | WAL | ts |  |
+| 117 | `gra/src/game/combat.ts` | 1426 | WAL | ts |  |
+| 118 | `gra/src/game/conquest-stability.ts` | 191 | WAL | ts | stabilność po podboju (granica WAL/PM); przypisano WAL |
+| 119 | `gra/src/game/defenseBreakdown.ts` | 322 | WAL | ts |  |
+| 120 | `gra/src/game/mapSiegeDetect.ts` | 95 | WAL | ts |  |
+| 121 | `gra/src/game/post-battle-map.ts` | 561 | WAL | ts |  |
+| 122 | `gra/src/game/post-capture-law.ts` | 170 | WAL | ts |  |
+| 123 | `gra/src/game/siege.ts` | 866 | WAL | ts |  |
+| 124 | `gra/src/game/siegeAi.ts` | 292 | WAL | ts | AI stance wobec oblężenia (granica AI/WAL); przypisano WAL |
+| 125 | `gra/src/game/siegeDefenders.ts` | 162 | WAL | ts |  |
+| 126 | `gra/src/game/siegeMachines.ts` | 83 | WAL | ts |  |
+| 127 | `gra/src/game/unit-power.ts` | 207 | WAL | ts |  |
+| 128 | `gra/src/map/map-attack-city.ts` | 155 | WAL | ts | atak na miasto z mapy; przypisano WAL |
+| 129 | `gra/src/ui/cityAttackChoice.ts` | 239 | WAL | ts |  |
+| 130 | `gra/src/ui/cityCaptureNotice.ts` | 356 | WAL | ts | tabliczka po zdobyciu miasta (granica WAL/PM); przypisano WAL |
+| 131 | `gra/src/ui/postBattleSummary.ts` | 603 | WAL | ts |  |
+| 132 | `gra/src/ui/preBattle.ts` | 918 | WAL | ts |  |
+| 133 | `gra/src/ui/siegeMapPanel.ts` | 371 | WAL | ts |  |
+| 134 | `gra/src/units/battleRoster.ts` | 158 | WAL | ts |  |
+| 135 | `gra/src/game/ai-city-capture-executor.ts` | 122 | AI | ts | egzekutor AI przejęcia miasta (granica AI/PM); przypisano AI |
+| 136 | `gra/src/game/ai-difficulty-bonus.ts` | 209 | AI | ts |  |
+| 137 | `gra/src/game/ai-expansion.ts` | 37 | AI | ts |  |
+| 138 | `gra/src/game/ai-fog.ts` | 135 | AI | ts | pamięć celów AI (granica AI/MAPA); przypisano AI |
+| 139 | `gra/src/game/ai-major-absorb.ts` | 80 | AI | ts | AI wchłania major AI (granica DYP/AI); przypisano AI |
+| 140 | `gra/src/game/ai-production-priorities.ts` | 28 | AI | ts |  |
+| 141 | `gra/src/game/ai-resource-needs.ts` | 152 | AI | ts |  |
+| 142 | `gra/src/game/ai-threat-mode.ts` | 50 | AI | ts |  |
+| 143 | `gra/src/game/ai.ts` | 6054 | AI | ts |  |
+| 144 | `gra/src/game/civ-ai-allocation.ts` | 113 | AI | ts |  |
+| 145 | `gra/src/game/civ-ai-data.ts` | 218 | AI | ts |  |
+| 146 | `gra/src/game/civ-roster.ts` | 177 | AI | ts |  |
+| 147 | `gra/src/game/difficulty-cost.ts` | 136 | AI | ts |  |
+| 148 | `gra/src/game/effective-difficulty-for-owner.ts` | 15 | AI | ts |  |
+| 149 | `gra/src/game/forced-war-bronze.ts` | 277 | AI | ts |  |
+| 150 | `gra/src/game/forced-war-common.ts` | 413 | AI | ts |  |
+| 151 | `gra/src/game/forced-war-iron.ts` | 292 | AI | ts |  |
+| 152 | `gra/src/game/forced-war-stone.ts` | 163 | AI | ts |  |
+| 153 | `gra/src/game/forced-war-waves.ts` | 293 | AI | ts |  |
+| 154 | `gra/src/game/alliance-war-obligation.ts` | 57 | DYP | ts |  |
+| 155 | `gra/src/game/border-march-scan.ts` | 61 | DYP | ts | wykrywanie przemarszu na terytorium (granica DYP/WAL); przypisano DYP |
+| 156 | `gra/src/game/danina-nazwa.ts` | 64 | DYP | ts |  |
+| 157 | `gra/src/game/diplomacy-acceptance-points.ts` | 715 | DYP | ts |  |
+| 158 | `gra/src/game/diplomacy-ai-balance.ts` | 639 | DYP | ts |  |
+| 159 | `gra/src/game/diplomacy-ai-offer-balance.ts` | 686 | DYP | ts |  |
+| 160 | `gra/src/game/diplomacy-audience-actions.ts` | 134 | DYP | ts |  |
+| 161 | `gra/src/game/diplomacy-barbarian-cooperation.ts` | 82 | DYP | ts | dyplomacja z barbarzyńcami (przemarsz/współwalka); przypisano DYP |
+| 162 | `gra/src/game/diplomacy-basket-transfer.ts` | 289 | DYP | ts |  |
+| 163 | `gra/src/game/diplomacy-border-march.ts` | 296 | DYP | ts |  |
+| 164 | `gra/src/game/diplomacy-credibility.ts` | 684 | DYP | ts |  |
+| 165 | `gra/src/game/diplomacy-currency-trade.ts` | 39 | DYP | ts |  |
+| 166 | `gra/src/game/diplomacy-deposit-trade.ts` | 67 | DYP | ts |  |
+| 167 | `gra/src/game/diplomacy-display.ts` | 731 | DYP | ts |  |
+| 168 | `gra/src/game/diplomacy-economy.ts` | 325 | DYP | ts |  |
+| 169 | `gra/src/game/diplomacy-factors.ts` | 204 | DYP | ts |  |
+| 170 | `gra/src/game/diplomacy-goods.ts` | 138 | DYP | ts |  |
+| 171 | `gra/src/game/diplomacy-layers.ts` | 374 | DYP | ts |  |
+| 172 | `gra/src/game/diplomacy-locks.ts` | 341 | DYP | ts |  |
+| 173 | `gra/src/game/diplomacy-pair-summary.ts` | 113 | DYP | ts |  |
+| 174 | `gra/src/game/diplomacy-peace-lock.ts` | 57 | DYP | ts |  |
+| 175 | `gra/src/game/diplomacy-penalty-preview.ts` | 172 | DYP | ts |  |
+| 176 | `gra/src/game/diplomacy-pn-engine.ts` | 476 | DYP | ts |  |
+| 177 | `gra/src/game/diplomacy-proposals.ts` | 2734 | DYP | ts |  |
+| 178 | `gra/src/game/diplomacy-rejection-cooldown.ts` | 83 | DYP | ts |  |
+| 179 | `gra/src/game/diplomacy-resource-trade-pick.ts` | 234 | DYP | ts |  |
+| 180 | `gra/src/game/diplomacy-tech-trade.ts` | 236 | DYP | ts |  |
+| 181 | `gra/src/game/diplomacy-trade-validation.ts` | 36 | DYP | ts |  |
+| 182 | `gra/src/game/diplomacy-treaties.ts` | 448 | DYP | ts |  |
+| 183 | `gra/src/game/diplomacy-unit-transfer.ts` | 74 | DYP | ts |  |
+| 184 | `gra/src/game/diplomacy-value-catalog.ts` | 731 | DYP | ts |  |
+| 185 | `gra/src/game/diplomacy-war-gates.ts` | 54 | DYP | ts |  |
+| 186 | `gra/src/game/diplomacy.ts` | 1766 | DYP | ts |  |
+| 187 | `gra/src/game/trade-routes.ts` | 2091 | DYP | ts | handel wewnętrzny (szlaki); GOAL wiąże handel z dyplomacją, P6.15 traktuje osobno; przypisano DYP |
+| 188 | `gra/src/game/wiarygodnosc-types.ts` | 58 | DYP | ts |  |
+| 189 | `gra/src/ui/diploListHud.ts` | 502 | DYP | ts |  |
+| 190 | `gra/src/ui/diploUiSkin.ts` | 231 | DYP | ts |  |
+| 191 | `gra/src/ui/diplomacyAcceptanceBalance.ts` | 911 | DYP | ts |  |
+| 192 | `gra/src/ui/diplomacyAudience.ts` | 2443 | DYP | ts |  |
+| 193 | `gra/src/ui/diplomacyDealDisplay.ts` | 312 | DYP | ts |  |
+| 194 | `gra/src/ui/diplomacyNegotiationModal.ts` | 562 | DYP | ts |  |
+| 195 | `gra/src/ui/diplomacyPanel.ts` | 533 | DYP | ts |  |
+| 196 | `gra/src/ui/diplomacyPendingHud.ts` | 87 | DYP | ts |  |
+| 197 | `gra/src/ui/diplomacyProposalBanner.ts` | 55 | DYP | ts |  |
+| 198 | `gra/src/ui/diplomacyTradeBasket.ts` | 2851 | DYP | ts |  |
+| 199 | `gra/src/ui/unitCtxDockDiploGate.ts` | 26 | DYP | ts | bramka dyplomatyczna kontekstu jednostki; przypisano DYP |
+| 200 | `gra/src/game/civ-bonuses.ts` | 380 | KUL | ts |  |
+| 201 | `gra/src/game/civ-matrix-semantic.ts` | 636 | KUL | ts |  |
+| 202 | `gra/src/game/civ-matrix.ts` | 142 | KUL | ts |  |
+| 203 | `gra/src/game/civ-names.ts` | 195 | KUL | ts |  |
+| 204 | `gra/src/game/civ-visual.ts` | 113 | KUL | ts |  |
+| 205 | `gra/src/game/culture-religion.ts` | 1479 | KUL | ts |  |
+| 206 | `gra/src/ui/civBrandDisplay.ts` | 68 | KUL | ts |  |
+| 207 | `gra/src/ui/empireOverlayHud.ts` | 138 | KUL | ts |  |
+| 208 | `gra/src/ui/leaderBannersHud.ts` | 68 | KUL | ts |  |
+| 209 | `gra/src/ui/leaderPortraits.ts` | 225 | KUL | ts |  |
+| 210 | `gra/src/game/civ-entry-epoch.ts` | 88 | CUD | ts |  |
+| 211 | `gra/src/game/era-change-notify.ts` | 49 | CUD | ts |  |
+| 212 | `gra/src/game/era-gate-ui.ts` | 147 | CUD | ts |  |
+| 213 | `gra/src/game/livestock-unlock.ts` | 175 | CUD | ts | odblokowanie hodowli przez model technologii (granica CUD/JED); przypisano CUD |
+| 214 | `gra/src/game/owner-epoch.ts` | 128 | CUD | ts |  |
+| 215 | `gra/src/game/research.ts` | 627 | CUD | ts |  |
+| 216 | `gra/src/game/tech-tempo.ts` | 40 | CUD | ts |  |
+| 217 | `gra/src/game/tech-tree.ts` | 161 | CUD | ts |  |
+| 218 | `gra/src/game/wonder-availability.ts` | 120 | CUD | ts |  |
+| 219 | `gra/src/game/wonder-civ-tech.ts` | 110 | CUD | ts |  |
+| 220 | `gra/src/game/wonder-map-build.ts` | 69 | CUD | ts |  |
+| 221 | `gra/src/game/wonders-data.ts` | 312 | CUD | ts |  |
+| 222 | `gra/src/map/wonder-placement.ts` | 119 | CUD | ts |  |
+| 223 | `gra/src/ui/naukaLabel.ts` | 18 | CUD | ts |  |
+| 224 | `gra/src/ui/scienceHubHud.ts` | 792 | CUD | ts |  |
+| 225 | `gra/src/ui/scienceHubSnapshotLogic.ts` | 142 | CUD | ts |  |
+| 226 | `gra/src/ui/sciencePicker.ts` | 1666 | CUD | ts |  |
+| 227 | `gra/src/ui/techDiscoveryNotice.ts` | 946 | CUD | ts |  |
+| 228 | `gra/src/ui/techIcons.ts` | 77 | CUD | ts |  |
+| 229 | `gra/src/ui/techTreeView.ts` | 1130 | CUD | ts |  |
+| 230 | `gra/src/ui/techUnlockParse.ts` | 52 | CUD | ts |  |
+| 231 | `gra/src/ui/wonderCompletedNotice.ts` | 124 | CUD | ts |  |
+| 232 | `gra/src/game/ai-cs-absorption.ts` | 289 | PM | ts |  |
+| 233 | `gra/src/game/city-state-difficulty.ts` | 237 | PM | ts |  |
+| 234 | `gra/src/game/display-names.ts` | 311 | PM | ts |  |
+| 235 | `gra/src/game/triumph-city-state.ts` | 80 | PM | ts |  |
+| 236 | `gra/src/ui/civElimNotice.ts` | 124 | PM | ts | modal eliminacji miasta-państwa/absorpcji; przypisano PM |
+| 237 | `gra/src/ui/triumphCityStateNotice.ts` | 131 | PM | ts |  |
+| 238 | `gra/src/game/barbarians.ts` | 2638 | BAR | ts |  |
+| 239 | `gra/src/game/map-rebels.ts` | 91 | BAR | ts |  |
+| 240 | `gra/src/game/human-owners.ts` | 71 | HOT | ts |  |
+| 241 | `gra/src/ui/hotSeatHandoff.ts` | 135 | HOT | ts |  |
+| 242 | `gra/src/ui/interHumanDiplomacyHud.ts` | 263 | HOT | ts | dyplomacja między ludźmi (hot-seat); przypisano HOT |
+| 243 | `gra/src/game/fsa-autosave.ts` | 530 | SAV | ts |  |
+| 244 | `gra/src/game/idb-storage.ts` | 205 | SAV | ts |  |
+| 245 | `gra/src/game/load-map-source.ts` | 57 | SAV | ts |  |
+| 246 | `gra/src/game/save-label.ts` | 68 | SAV | ts |  |
+| 247 | `gra/src/game/save.ts` | 1114 | SAV | ts |  |
+| 248 | `gra/src/ui/gamePauseMenu.ts` | 317 | SAV | ts | menu zapis/wczytaj/nowa/menu główne; przypisano SAV |
+| 249 | `gra/src/ui/saveLoadDialog.ts` | 623 | SAV | ts |  |
+| 250 | `gra/src/game/cluster-start.ts` | 395 | INNE | ts |  |
+| 251 | `gra/src/game/power-objective.ts` | 279 | INNE | ts |  |
+| 252 | `gra/src/game/power-options.ts` | 68 | INNE | ts |  |
+| 253 | `gra/src/game/power-ranking.ts` | 72 | INNE | ts |  |
+| 254 | `gra/src/game/power.ts` | 114 | INNE | ts |  |
+| 255 | `gra/src/game/ruch-swiata-tempo.ts` | 43 | INNE | ts |  |
+| 256 | `gra/src/game/start-preview.ts` | 129 | INNE | ts |  |
+| 257 | `gra/src/game/victory.ts` | 239 | INNE | ts |  |
+| 258 | `gra/src/game/villageRewards.ts` | 220 | INNE | ts | nagrody z wiosek neutralnych (granica INNE/JED/MAPA); przypisano INNE |
+| 259 | `gra/src/map/cluster-spawn.ts` | 516 | INNE | ts |  |
+| 260 | `gra/src/map/newGameMapDefaults.ts` | 743 | INNE | ts |  |
+| 261 | `gra/src/map/startScoring.ts` | 142 | INNE | ts |  |
+| 262 | `gra/src/ui/aiCivPicker.ts` | 76 | INNE | ts | wybór cywilizacji przeciwnika w kreatorze; przypisano INNE |
+| 263 | `gra/src/ui/newGameFlow.ts` | 2373 | INNE | ts |  |
+| 264 | `gra/src/ui/power-labels.ts` | 36 | INNE | ts | etykiety Mocy; przypisano INNE |
+| 265 | `gra/src/ui/powerOverlayHud.ts` | 238 | INNE | ts | overlay Mocy; przypisano INNE |
+| 266 | `gra/src/ui/victoryScreen.ts` | 346 | INNE | ts |  |
+| 267 | `gra/src/game/visibility.ts` | 328 | INF-MAPA | ts | widoczność/mgła wojny (granica MAPA/JED); przypisano INF-MAPA |
+| 268 | `gra/src/map/clusters.ts` | 4250 | INF-MAPA | ts |  |
+| 269 | `gra/src/map/deposit-era.ts` | 46 | INF-MAPA | ts | epoka złóż (mapa); przypisano INF-MAPA |
+| 270 | `gra/src/map/earth-land-mask.generated.ts` | 417 | INF-MAPA | ts |  |
+| 271 | `gra/src/map/earth-land-mask.ts` | 170 | INF-MAPA | ts |  |
+| 272 | `gra/src/map/gen-helpers.ts` | 12561 | INF-MAPA | ts |  |
+| 273 | `gra/src/map/genWorker.ts` | 45 | INF-MAPA | ts |  |
+| 274 | `gra/src/map/generator.ts` | 848 | INF-MAPA | ts |  |
+| 275 | `gra/src/map/mapGenAsync.ts` | 98 | INF-MAPA | ts |  |
+| 276 | `gra/src/map/mapGenProgress.ts` | 101 | INF-MAPA | ts |  |
+| 277 | `gra/src/map/mapSnapshot.ts` | 404 | INF-MAPA | ts |  |
+| 278 | `gra/src/map/minimap.ts` | 271 | INF-MAPA | ts |  |
+| 279 | `gra/src/map/range-hexes.ts` | 115 | INF-MAPA | ts |  |
+| 280 | `gra/src/map/riverGenSwitch.ts` | 83 | INF-MAPA | ts |  |
+| 281 | `gra/src/map/territory-border.ts` | 238 | INF-MAPA | ts |  |
+| 282 | `gra/src/map/territory-work.ts` | 166 | INF-MAPA | ts |  |
+| 283 | `gra/src/map/territory.ts` | 145 | INF-MAPA | ts |  |
+| 284 | `gra/src/map/villages.ts` | 214 | INF-MAPA | ts |  |
+| 285 | `gra/src/game/eot-event-defer.ts` | 260 | INF-UI | ts | odroczenie skutków końca tury w overlay (granica EKO/INF-UI); przypisano INF-UI |
+| 286 | `gra/src/game/side-panel-event-link.ts` | 114 | INF-UI | ts |  |
+| 287 | `gra/src/game/side-panel-event-priority.ts` | 9 | INF-UI | ts |  |
+| 288 | `gra/src/ui/bottomBarHud.ts` | 335 | INF-UI | ts |  |
+| 289 | `gra/src/ui/brandTokenVars.ts` | 118 | INF-UI | ts |  |
+| 290 | `gra/src/ui/buildStampToggle.ts` | 100 | INF-UI | ts |  |
+| 291 | `gra/src/ui/buildingHoverTooltip.ts` | 7 | INF-UI | ts |  |
+| 292 | `gra/src/ui/contextPanelHud.ts` | 63 | INF-UI | ts |  |
+| 293 | `gra/src/ui/entityCards/buildingAdapter.ts` | 340 | INF-UI | ts |  |
+| 294 | `gra/src/ui/entityCards/civpediaOpenGate.ts` | 60 | INF-UI | ts |  |
+| 295 | `gra/src/ui/entityCards/improvementAdapter.ts` | 249 | INF-UI | ts |  |
+| 296 | `gra/src/ui/entityCards/registry.ts` | 194 | INF-UI | ts |  |
+| 297 | `gra/src/ui/entityCards/renderer.ts` | 1212 | INF-UI | ts |  |
+| 298 | `gra/src/ui/entityCards/slug.ts` | 49 | INF-UI | ts |  |
+| 299 | `gra/src/ui/entityCards/technologyAdapter.ts` | 386 | INF-UI | ts |  |
+| 300 | `gra/src/ui/entityCards/types.ts` | 209 | INF-UI | ts |  |
+| 301 | `gra/src/ui/entityCards/unitAdapter.ts` | 291 | INF-UI | ts |  |
+| 302 | `gra/src/ui/entityCards/wonderAdapter.ts` | 156 | INF-UI | ts |  |
+| 303 | `gra/src/ui/escapeOverlayStack.ts` | 140 | INF-UI | ts |  |
+| 304 | `gra/src/ui/formatPl.ts` | 64 | INF-UI | ts |  |
+| 305 | `gra/src/ui/hexContextTooltip.ts` | 992 | INF-UI | ts | kontekst heksu/jednostki (19 importów); przypisano INF-UI |
+| 306 | `gra/src/ui/hoverDetailDock.ts` | 412 | INF-UI | ts |  |
+| 307 | `gra/src/ui/hud.ts` | 1861 | INF-UI | ts |  |
+| 308 | `gra/src/ui/hudChip6c.ts` | 76 | INF-UI | ts |  |
+| 309 | `gra/src/ui/hudLayout.ts` | 84 | INF-UI | ts |  |
+| 310 | `gra/src/ui/hudPanelDismiss.ts` | 29 | INF-UI | ts |  |
+| 311 | `gra/src/ui/hudTitleTooltip.ts` | 278 | INF-UI | ts |  |
+| 312 | `gra/src/ui/mainMenu.ts` | 514 | INF-UI | ts |  |
+| 313 | `gra/src/ui/mapLoadingOverlay.ts` | 260 | INF-UI | ts |  |
+| 314 | `gra/src/ui/mapToolbarHud.ts` | 172 | INF-UI | ts |  |
+| 315 | `gra/src/ui/mapUnitCursor.ts` | 116 | INF-UI | ts |  |
+| 316 | `gra/src/ui/mapUnitHudSkin.ts` | 78 | INF-UI | ts |  |
+| 317 | `gra/src/ui/markdownLite.ts` | 92 | INF-UI | ts |  |
+| 318 | `gra/src/ui/minimapHud.ts` | 448 | INF-UI | ts |  |
+| 319 | `gra/src/ui/minimapLayout.ts` | 130 | INF-UI | ts |  |
+| 320 | `gra/src/ui/resourceColors.ts` | 128 | INF-UI | ts |  |
+| 321 | `gra/src/ui/sideListHud.css.ts` | 146 | INF-UI | ts |  |
+| 322 | `gra/src/ui/sidePanelEventFilter.ts` | 25 | INF-UI | ts |  |
+| 323 | `gra/src/ui/sidePanelHud.ts` | 969 | INF-UI | ts |  |
+| 324 | `gra/src/ui/sidePanelLayout.ts` | 33 | INF-UI | ts |  |
+| 325 | `gra/src/ui/turnTransitionOverlay.ts` | 132 | INF-UI | ts |  |
+| 326 | `gra/src/ui/uiParams.ts` | 98 | INF-UI | ts |  |
+| 327 | `gra/src/ui/wikiHubHud.ts` | 644 | INF-UI | ts |  |
+| 328 | `gra/src/render/braz-konnica-opus5.ts` | 934 | INF-RENDER | ts |  |
+| 329 | `gra/src/render/braz-lucznik-nubijski-opus5.ts` | 775 | INF-RENDER | ts |  |
+| 330 | `gra/src/render/braz-miecznik-opus5.ts` | 765 | INF-RENDER | ts |  |
+| 331 | `gra/src/render/braz-procarz-opus5.ts` | 766 | INF-RENDER | ts |  |
+| 332 | `gra/src/render/braz-rydwan-kapadokijski-opus5.ts` | 781 | INF-RENDER | ts |  |
+| 333 | `gra/src/render/braz-rydwan-konny-opus5.ts` | 784 | INF-RENDER | ts |  |
+| 334 | `gra/src/render/braz-rydwan-woly-opus5.ts` | 620 | INF-RENDER | ts |  |
+| 335 | `gra/src/render/braz-taran-opus5.ts` | 492 | INF-RENDER | ts |  |
+| 336 | `gra/src/render/braz-wlocznik-opus5.ts` | 711 | INF-RENDER | ts |  |
+| 337 | `gra/src/render/bronzeCity.ts` | 464 | INF-RENDER | ts |  |
+| 338 | `gra/src/render/bronzeCityRoblox.ts` | 437 | INF-RENDER | ts |  |
+| 339 | `gra/src/render/camera.ts` | 309 | INF-RENDER | ts |  |
+| 340 | `gra/src/render/cities.ts` | 946 | INF-RENDER | ts |  |
+| 341 | `gra/src/render/cityMapOutline.ts` | 85 | INF-RENDER | ts |  |
+| 342 | `gra/src/render/cityMapStatChip.ts` | 1133 | INF-RENDER | ts |  |
+| 343 | `gra/src/render/cityOkolicaOverlay.ts` | 347 | INF-RENDER | ts |  |
+| 344 | `gra/src/render/countSceneOverlayCandidates.ts` | 124 | INF-RENDER | ts |  |
+| 345 | `gra/src/render/dekor-laki-rowniny.ts` | 463 | INF-RENDER | ts |  |
+| 346 | `gra/src/render/djungla-modele.ts` | 218 | INF-RENDER | ts |  |
+| 347 | `gra/src/render/droga-6-ramion.ts` | 190 | INF-RENDER | ts |  |
+| 348 | `gra/src/render/fogDim.ts` | 44 | INF-RENDER | ts |  |
+| 349 | `gra/src/render/galera-model.ts` | 273 | INF-RENDER | ts |  |
+| 350 | `gra/src/render/hastati-falangita.ts` | 694 | INF-RENDER | ts |  |
+| 351 | `gra/src/render/hastati-opus5.ts` | 993 | INF-RENDER | ts |  |
+| 352 | `gra/src/render/hexShape.ts` | 32 | INF-RENDER | ts |  |
+| 353 | `gra/src/render/hexutil.ts` | 71 | INF-RENDER | ts |  |
+| 354 | `gra/src/render/improvements.ts` | 602 | INF-RENDER | ts |  |
+| 355 | `gra/src/render/jednostki-p1-rdzen.ts` | 833 | INF-RENDER | ts |  |
+| 356 | `gra/src/render/jednostki-p2-inka.ts` | 685 | INF-RENDER | ts |  |
+| 357 | `gra/src/render/jednostki-p3-dystans.ts` | 879 | INF-RENDER | ts |  |
+| 358 | `gra/src/render/jednostki-p4-melee.ts` | 866 | INF-RENDER | ts |  |
+| 359 | `gra/src/render/jednostki-p57-wlocznie-machiny.ts` | 840 | INF-RENDER | ts |  |
+| 360 | `gra/src/render/jednostki-p6-super.ts` | 911 | INF-RENDER | ts |  |
+| 361 | `gra/src/render/jednostki-p8a-bliskiwschod.ts` | 704 | INF-RENDER | ts |  |
+| 362 | `gra/src/render/jednostki-p8b-rozni.ts` | 794 | INF-RENDER | ts |  |
+| 363 | `gra/src/render/jednostki-z1-mezopotamia.ts` | 1329 | INF-RENDER | ts |  |
+| 364 | `gra/src/render/jednostki-z2-srodziemne.ts` | 1604 | INF-RENDER | ts |  |
+| 365 | `gra/src/render/jednostki-z3-plemiona.ts` | 1994 | INF-RENDER | ts |  |
+| 366 | `gra/src/render/kamien-bazowe-opus5.ts` | 1190 | INF-RENDER | ts |  |
+| 367 | `gra/src/render/kamien-inka-opus5.ts` | 928 | INF-RENDER | ts |  |
+| 368 | `gra/src/render/kamien-lucznicy-opus5.ts` | 986 | INF-RENDER | ts |  |
+| 369 | `gra/src/render/kamien-zulu-taran-opus5.ts` | 1130 | INF-RENDER | ts |  |
+| 370 | `gra/src/render/kon-nowy-model.ts` | 342 | INF-RENDER | ts |  |
+| 371 | `gra/src/render/kopalnia-cyny-opus5.ts` | 352 | INF-RENDER | ts |  |
+| 372 | `gra/src/render/kopalnia-zlota-opus5.ts` | 350 | INF-RENDER | ts |  |
+| 373 | `gra/src/render/lasy-modele.ts` | 440 | INF-RENDER | ts |  |
+| 374 | `gra/src/render/mapRenderStyle.ts` | 1996 | INF-RENDER | ts |  |
+| 375 | `gra/src/render/mergeDecor.ts` | 175 | INF-RENDER | ts |  |
+| 376 | `gra/src/render/miasto-braz.ts` | 905 | INF-RENDER | ts |  |
+| 377 | `gra/src/render/miasto-kamien.ts` | 667 | INF-RENDER | ts |  |
+| 378 | `gra/src/render/minecraftScene.ts` | 11 | INF-RENDER | ts |  |
+| 379 | `gra/src/render/oaza-pustynia.ts` | 578 | INF-RENDER | ts |  |
+| 380 | `gra/src/render/pastwisko-modele.ts` | 261 | INF-RENDER | ts |  |
+| 381 | `gra/src/render/perfDebugOverlay.ts` | 76 | INF-RENDER | ts |  |
+| 382 | `gra/src/render/rangeOverlay.ts` | 909 | INF-RENDER | ts |  |
+| 383 | `gra/src/render/resources.ts` | 171 | INF-RENDER | ts |  |
+| 384 | `gra/src/render/riverLod.ts` | 413 | INF-RENDER | ts |  |
+| 385 | `gra/src/render/robloxCity.ts` | 294 | INF-RENDER | ts |  |
+| 386 | `gra/src/render/robloxImprovements.ts` | 484 | INF-RENDER | ts |  |
+| 387 | `gra/src/render/robloxScene.ts` | 12 | INF-RENDER | ts |  |
+| 388 | `gra/src/render/scene.ts` | 3760 | INF-RENDER | ts |  |
+| 389 | `gra/src/render/settlementModel.ts` | 27 | INF-RENDER | ts |  |
+| 390 | `gra/src/render/siegeCampModels.ts` | 160 | INF-RENDER | ts |  |
+| 391 | `gra/src/render/siegeCampSync.ts` | 47 | INF-RENDER | ts |  |
+| 392 | `gra/src/render/siegeMarker.ts` | 262 | INF-RENDER | ts |  |
+| 393 | `gra/src/render/stoneCity.ts` | 387 | INF-RENDER | ts |  |
+| 394 | `gra/src/render/stoneCityRoblox.ts` | 471 | INF-RENDER | ts |  |
+| 395 | `gra/src/render/styleResources.ts` | 499 | INF-RENDER | ts |  |
+| 396 | `gra/src/render/swinia-trzoda.ts` | 187 | INF-RENDER | ts |  |
+| 397 | `gra/src/render/tarasy-model.ts` | 403 | INF-RENDER | ts |  |
+| 398 | `gra/src/render/teren-gory-wzgorza.ts` | 509 | INF-RENDER | ts |  |
+| 399 | `gra/src/render/tradeRoutesOverlay.ts` | 101 | INF-RENDER | ts |  |
+| 400 | `gra/src/render/ulepszenia-modele-p2.ts` | 345 | INF-RENDER | ts |  |
+| 401 | `gra/src/render/ulepszenia-modele-p3a.ts` | 510 | INF-RENDER | ts |  |
+| 402 | `gra/src/render/ulepszenia-modele-p3b.ts` | 571 | INF-RENDER | ts |  |
+| 403 | `gra/src/render/unitOwnerEmblem.ts` | 516 | INF-RENDER | ts |  |
+| 404 | `gra/src/render/unitStatPlate.ts` | 936 | INF-RENDER | ts |  |
+| 405 | `gra/src/render/unitUpgradeBadges.ts` | 459 | INF-RENDER | ts |  |
+| 406 | `gra/src/render/unitVeteranBadges.ts` | 294 | INF-RENDER | ts |  |
+| 407 | `gra/src/render/unitVitalsPalette.ts` | 89 | INF-RENDER | ts |  |
+| 408 | `gra/src/render/units.ts` | 6779 | INF-RENDER | ts |  |
+| 409 | `gra/src/render/wioska-oboz.ts` | 342 | INF-RENDER | ts |  |
+| 410 | `gra/src/render/wonderModels.ts` | 493 | INF-RENDER | ts |  |
+| 411 | `gra/src/render/wonderRenderer.ts` | 143 | INF-RENDER | ts |  |
+| 412 | `gra/src/render/workerFieldOverlay.ts` | 211 | INF-RENDER | ts |  |
+| 413 | `gra/src/render/zelazo-jezdziec-oszczepami-opus5.ts` | 1256 | INF-RENDER | ts |  |
+| 414 | `gra/src/render/zelazo-konnica-asyryjska-opus5.ts` | 1180 | INF-RENDER | ts |  |
+| 415 | `gra/src/render/zoomLod.ts` | 220 | INF-RENDER | ts |  |
+| 416 | `gra/src/game/owner-utils.ts` | 17 | INF-DANE | ts |  |
+| 417 | `gra/src/ui/assets/hero/hero-intro.png` | 7342 | INF-DANE | png |  |
+| 418 | `gra/src/ui/assets/hero/hero-menu.png` | 7733 | INF-DANE | png |  |
+| 419 | `gra/src/ui/icons/brand/aquila-emblem.svg` | 1 | INF-DANE | svg |  |
+| 420 | `gra/src/ui/icons/brand/building-icon-map.json` | 46 | INF-DANE | json |  |
+| 421 | `gra/src/ui/icons/brand/buildings/bld-admin.svg` | 0 | INF-DANE | svg |  |
+| 422 | `gra/src/ui/icons/brand/buildings/bld-akademia.svg` | 0 | INF-DANE | svg |  |
+| 423 | `gra/src/ui/icons/brand/buildings/bld-akademia_wojskowa.svg` | 0 | INF-DANE | svg |  |
+| 424 | `gra/src/ui/icons/brand/buildings/bld-akwedukt.svg` | 0 | INF-DANE | svg |  |
+| 425 | `gra/src/ui/icons/brand/buildings/bld-biblioteka.svg` | 0 | INF-DANE | svg |  |
+| 426 | `gra/src/ui/icons/brand/buildings/bld-cegielnia.svg` | 0 | INF-DANE | svg |  |
+| 427 | `gra/src/ui/icons/brand/buildings/bld-culture.svg` | 0 | INF-DANE | svg |  |
+| 428 | `gra/src/ui/icons/brand/buildings/bld-default.svg` | 0 | INF-DANE | svg |  |
+| 429 | `gra/src/ui/icons/brand/buildings/bld-defense.svg` | 0 | INF-DANE | svg |  |
+| 430 | `gra/src/ui/icons/brand/buildings/bld-food.svg` | 0 | INF-DANE | svg |  |
+| 431 | `gra/src/ui/icons/brand/buildings/bld-fort.svg` | 0 | INF-DANE | svg |  |
+| 432 | `gra/src/ui/icons/brand/buildings/bld-garncarnia.svg` | 0 | INF-DANE | svg |  |
+| 433 | `gra/src/ui/icons/brand/buildings/bld-garnizon.svg` | 0 | INF-DANE | svg |  |
+| 434 | `gra/src/ui/icons/brand/buildings/bld-health.svg` | 0 | INF-DANE | svg |  |
+| 435 | `gra/src/ui/icons/brand/buildings/bld-kamieniarski.svg` | 0 | INF-DANE | svg |  |
+| 436 | `gra/src/ui/icons/brand/buildings/bld-kamienne_kregi.svg` | 0 | INF-DANE | svg |  |
+| 437 | `gra/src/ui/icons/brand/buildings/bld-karawanseraj.svg` | 0 | INF-DANE | svg |  |
+| 438 | `gra/src/ui/icons/brand/buildings/bld-koszary.svg` | 0 | INF-DANE | svg |  |
+| 439 | `gra/src/ui/icons/brand/buildings/bld-kuznia.svg` | 0 | INF-DANE | svg |  |
+| 440 | `gra/src/ui/icons/brand/buildings/bld-kuznia_zelaza.svg` | 0 | INF-DANE | svg |  |
+| 441 | `gra/src/ui/icons/brand/buildings/bld-lazaret.svg` | 0 | INF-DANE | svg |  |
+| 442 | `gra/src/ui/icons/brand/buildings/bld-laznia_publiczna.svg` | 0 | INF-DANE | svg |  |
+| 443 | `gra/src/ui/icons/brand/buildings/bld-magazyn.svg` | 0 | INF-DANE | svg |  |
+| 444 | `gra/src/ui/icons/brand/buildings/bld-mennica.svg` | 0 | INF-DANE | svg |  |
+| 445 | `gra/src/ui/icons/brand/buildings/bld-mielerz.svg` | 0 | INF-DANE | svg |  |
+| 446 | `gra/src/ui/icons/brand/buildings/bld-military.svg` | 0 | INF-DANE | svg |  |
+| 447 | `gra/src/ui/icons/brand/buildings/bld-monument.svg` | 0 | INF-DANE | svg |  |
+| 448 | `gra/src/ui/icons/brand/buildings/bld-mury.svg` | 0 | INF-DANE | svg |  |
+| 449 | `gra/src/ui/icons/brand/buildings/bld-odlewnia_brazu.svg` | 0 | INF-DANE | svg |  |
+| 450 | `gra/src/ui/icons/brand/buildings/bld-odlewnia_zelaza.svg` | 0 | INF-DANE | svg |  |
+| 451 | `gra/src/ui/icons/brand/buildings/bld-palac.svg` | 0 | INF-DANE | svg |  |
+| 452 | `gra/src/ui/icons/brand/buildings/bld-palisada.svg` | 1 | INF-DANE | svg |  |
+| 453 | `gra/src/ui/icons/brand/buildings/bld-port.svg` | 0 | INF-DANE | svg |  |
+| 454 | `gra/src/ui/icons/brand/buildings/bld-port_wielki.svg` | 0 | INF-DANE | svg |  |
+| 455 | `gra/src/ui/icons/brand/buildings/bld-pretorium.svg` | 0 | INF-DANE | svg |  |
+| 456 | `gra/src/ui/icons/brand/buildings/bld-production.svg` | 0 | INF-DANE | svg |  |
+| 457 | `gra/src/ui/icons/brand/buildings/bld-religion.svg` | 0 | INF-DANE | svg |  |
+| 458 | `gra/src/ui/icons/brand/buildings/bld-sad.svg` | 0 | INF-DANE | svg |  |
+| 459 | `gra/src/ui/icons/brand/buildings/bld-science.svg` | 0 | INF-DANE | svg |  |
+| 460 | `gra/src/ui/icons/brand/buildings/bld-spichlerz.svg` | 0 | INF-DANE | svg |  |
+| 461 | `gra/src/ui/icons/brand/buildings/bld-stela.svg` | 0 | INF-DANE | svg |  |
+| 462 | `gra/src/ui/icons/brand/buildings/bld-stolarnia.svg` | 0 | INF-DANE | svg |  |
+| 463 | `gra/src/ui/icons/brand/buildings/bld-storage.svg` | 0 | INF-DANE | svg |  |
+| 464 | `gra/src/ui/icons/brand/buildings/bld-studnia.svg` | 0 | INF-DANE | svg |  |
+| 465 | `gra/src/ui/icons/brand/buildings/bld-swiatynia.svg` | 0 | INF-DANE | svg |  |
+| 466 | `gra/src/ui/icons/brand/buildings/bld-targowisko.svg` | 0 | INF-DANE | svg |  |
+| 467 | `gra/src/ui/icons/brand/buildings/bld-teatr.svg` | 0 | INF-DANE | svg |  |
+| 468 | `gra/src/ui/icons/brand/buildings/bld-trade.svg` | 0 | INF-DANE | svg |  |
+| 469 | `gra/src/ui/icons/brand/buildings/bld-warsztat_oblezniczy.svg` | 0 | INF-DANE | svg |  |
+| 470 | `gra/src/ui/icons/brand/buildings/bld-wielka_kuznia.svg` | 0 | INF-DANE | svg |  |
+| 471 | `gra/src/ui/icons/brand/chip-crate.svg` | 0 | INF-DANE | svg |  |
+| 472 | `gra/src/ui/icons/brand/chip-death.svg` | 0 | INF-DANE | svg |  |
+| 473 | `gra/src/ui/icons/brand/chip-garrison.svg` | 0 | INF-DANE | svg |  |
+| 474 | `gra/src/ui/icons/brand/chip-heart.svg` | 0 | INF-DANE | svg |  |
+| 475 | `gra/src/ui/icons/brand/chip-manpower.svg` | 0 | INF-DANE | svg |  |
+| 476 | `gra/src/ui/icons/brand/chip-map.svg` | 0 | INF-DANE | svg |  |
+| 477 | `gra/src/ui/icons/brand/chip-star.svg` | 0 | INF-DANE | svg |  |
+| 478 | `gra/src/ui/icons/brand/chip-trend-up.svg` | 0 | INF-DANE | svg |  |
+| 479 | `gra/src/ui/icons/brand/chip-warning.svg` | 0 | INF-DANE | svg |  |
+| 480 | `gra/src/ui/icons/brand/civ-icon-map.json` | 20 | INF-DANE | json |  |
+| 481 | `gra/src/ui/icons/brand/civilizations/civ-asyria.svg` | 0 | INF-DANE | svg |  |
+| 482 | `gra/src/ui/icons/brand/civilizations/civ-babilonia.svg` | 0 | INF-DANE | svg |  |
+| 483 | `gra/src/ui/icons/brand/civilizations/civ-celtowie.svg` | 0 | INF-DANE | svg |  |
+| 484 | `gra/src/ui/icons/brand/civilizations/civ-chinczycy.svg` | 0 | INF-DANE | svg |  |
+| 485 | `gra/src/ui/icons/brand/civilizations/civ-default.svg` | 0 | INF-DANE | svg |  |
+| 486 | `gra/src/ui/icons/brand/civilizations/civ-egipt.svg` | 0 | INF-DANE | svg |  |
+| 487 | `gra/src/ui/icons/brand/civilizations/civ-fenicjanie.svg` | 0 | INF-DANE | svg |  |
+| 488 | `gra/src/ui/icons/brand/civilizations/civ-germanie.svg` | 0 | INF-DANE | svg |  |
+| 489 | `gra/src/ui/icons/brand/civilizations/civ-grecy.svg` | 0 | INF-DANE | svg |  |
+| 490 | `gra/src/ui/icons/brand/civilizations/civ-harappa.svg` | 0 | INF-DANE | svg |  |
+| 491 | `gra/src/ui/icons/brand/civilizations/civ-hetyci.svg` | 0 | INF-DANE | svg |  |
+| 492 | `gra/src/ui/icons/brand/civilizations/civ-inkowie.svg` | 0 | INF-DANE | svg |  |
+| 493 | `gra/src/ui/icons/brand/civilizations/civ-rzymianie.svg` | 0 | INF-DANE | svg |  |
+| 494 | `gra/src/ui/icons/brand/civilizations/civ-slowianie.svg` | 0 | INF-DANE | svg |  |
+| 495 | `gra/src/ui/icons/brand/civilizations/civ-sumer.svg` | 0 | INF-DANE | svg |  |
+| 496 | `gra/src/ui/icons/brand/civilizations/civ-zulusi.svg` | 0 | INF-DANE | svg |  |
+| 497 | `gra/src/ui/icons/brand/cp-health.svg` | 0 | INF-DANE | svg |  |
+| 498 | `gra/src/ui/icons/brand/cp-order.svg` | 0 | INF-DANE | svg |  |
+| 499 | `gra/src/ui/icons/brand/dip-gift.svg` | 1 | INF-DANE | svg |  |
+| 500 | `gra/src/ui/icons/brand/dip-peace.svg` | 0 | INF-DANE | svg |  |
+| 501 | `gra/src/ui/icons/brand/dip-vassal.svg` | 1 | INF-DANE | svg |  |
+| 502 | `gra/src/ui/icons/brand/dip-war.svg` | 0 | INF-DANE | svg |  |
+| 503 | `gra/src/ui/icons/brand/earth-emblem.svg` | 1 | INF-DANE | svg |  |
+| 504 | `gra/src/ui/icons/brand/epoch-icon-map.json` | 9 | INF-DANE | json |  |
+| 505 | `gra/src/ui/icons/brand/epochs/epoch-braz.svg` | 0 | INF-DANE | svg |  |
+| 506 | `gra/src/ui/icons/brand/epochs/epoch-kamien.svg` | 0 | INF-DANE | svg |  |
+| 507 | `gra/src/ui/icons/brand/epochs/epoch-zelazo.svg` | 0 | INF-DANE | svg |  |
+| 508 | `gra/src/ui/icons/brand/icons-manifest.json` | 380 | INF-DANE | json |  |
+| 509 | `gra/src/ui/icons/brand/improvement-icon-map.json` | 30 | INF-DANE | json |  |
+| 510 | `gra/src/ui/icons/brand/improvements/imp-farm.svg` | 0 | INF-DANE | svg |  |
+| 511 | `gra/src/ui/icons/brand/improvements/imp-fishing.svg` | 0 | INF-DANE | svg |  |
+| 512 | `gra/src/ui/icons/brand/improvements/imp-fort.svg` | 0 | INF-DANE | svg |  |
+| 513 | `gra/src/ui/icons/brand/improvements/imp-irrigation.svg` | 0 | INF-DANE | svg |  |
+| 514 | `gra/src/ui/icons/brand/improvements/imp-lumber.svg` | 0 | INF-DANE | svg |  |
+| 515 | `gra/src/ui/icons/brand/improvements/imp-mine.svg` | 0 | INF-DANE | svg |  |
+| 516 | `gra/src/ui/icons/brand/improvements/imp-outpost.svg` | 0 | INF-DANE | svg |  |
+| 517 | `gra/src/ui/icons/brand/improvements/imp-pasture.svg` | 0 | INF-DANE | svg |  |
+| 518 | `gra/src/ui/icons/brand/improvements/imp-quarry.svg` | 0 | INF-DANE | svg |  |
+| 519 | `gra/src/ui/icons/brand/improvements/imp-road.svg` | 0 | INF-DANE | svg |  |
+| 520 | `gra/src/ui/icons/brand/menu-background.css` | 19 | INF-DANE | css |  |
+| 521 | `gra/src/ui/icons/brand/menu-components.css` | 26 | INF-DANE | css |  |
+| 522 | `gra/src/ui/icons/brand/menu-emblem.svg` | 0 | INF-DANE | svg |  |
+| 523 | `gra/src/ui/icons/brand/menu/menu-achievements-24.svg` | 0 | INF-DANE | svg |  |
+| 524 | `gra/src/ui/icons/brand/menu/menu-achievements-40.svg` | 0 | INF-DANE | svg |  |
+| 525 | `gra/src/ui/icons/brand/menu/menu-audio-24.svg` | 0 | INF-DANE | svg |  |
+| 526 | `gra/src/ui/icons/brand/menu/menu-audio-40.svg` | 0 | INF-DANE | svg |  |
+| 527 | `gra/src/ui/icons/brand/menu/menu-campaign-24.svg` | 0 | INF-DANE | svg |  |
+| 528 | `gra/src/ui/icons/brand/menu/menu-campaign-40.svg` | 0 | INF-DANE | svg |  |
+| 529 | `gra/src/ui/icons/brand/menu/menu-controls-24.svg` | 0 | INF-DANE | svg |  |
+| 530 | `gra/src/ui/icons/brand/menu/menu-controls-40.svg` | 0 | INF-DANE | svg |  |
+| 531 | `gra/src/ui/icons/brand/menu/menu-credits-24.svg` | 0 | INF-DANE | svg |  |
+| 532 | `gra/src/ui/icons/brand/menu/menu-credits-40.svg` | 0 | INF-DANE | svg |  |
+| 533 | `gra/src/ui/icons/brand/menu/menu-emblem-mini-24.svg` | 0 | INF-DANE | svg |  |
+| 534 | `gra/src/ui/icons/brand/menu/menu-emblem-mini-40.svg` | 0 | INF-DANE | svg |  |
+| 535 | `gra/src/ui/icons/brand/menu/menu-exit-24.svg` | 0 | INF-DANE | svg |  |
+| 536 | `gra/src/ui/icons/brand/menu/menu-exit-40.svg` | 0 | INF-DANE | svg |  |
+| 537 | `gra/src/ui/icons/brand/menu/menu-info-24.svg` | 0 | INF-DANE | svg |  |
+| 538 | `gra/src/ui/icons/brand/menu/menu-info-40.svg` | 0 | INF-DANE | svg |  |
+| 539 | `gra/src/ui/icons/brand/menu/menu-language-24.svg` | 0 | INF-DANE | svg |  |
+| 540 | `gra/src/ui/icons/brand/menu/menu-language-40.svg` | 0 | INF-DANE | svg |  |
+| 541 | `gra/src/ui/icons/brand/menu/menu-load-24.svg` | 0 | INF-DANE | svg |  |
+| 542 | `gra/src/ui/icons/brand/menu/menu-load-40.svg` | 0 | INF-DANE | svg |  |
+| 543 | `gra/src/ui/icons/brand/menu/menu-more-24.svg` | 0 | INF-DANE | svg |  |
+| 544 | `gra/src/ui/icons/brand/menu/menu-more-40.svg` | 0 | INF-DANE | svg |  |
+| 545 | `gra/src/ui/icons/brand/menu/menu-multiplayer-24.svg` | 0 | INF-DANE | svg |  |
+| 546 | `gra/src/ui/icons/brand/menu/menu-multiplayer-40.svg` | 0 | INF-DANE | svg |  |
+| 547 | `gra/src/ui/icons/brand/menu/menu-play-24.svg` | 0 | INF-DANE | svg |  |
+| 548 | `gra/src/ui/icons/brand/menu/menu-play-40.svg` | 0 | INF-DANE | svg |  |
+| 549 | `gra/src/ui/icons/brand/menu/menu-save-24.svg` | 0 | INF-DANE | svg |  |
+| 550 | `gra/src/ui/icons/brand/menu/menu-save-40.svg` | 0 | INF-DANE | svg |  |
+| 551 | `gra/src/ui/icons/brand/menu/menu-settings-24.svg` | 0 | INF-DANE | svg |  |
+| 552 | `gra/src/ui/icons/brand/menu/menu-settings-40.svg` | 0 | INF-DANE | svg |  |
+| 553 | `gra/src/ui/icons/brand/motion.css` | 8 | INF-DANE | css |  |
+| 554 | `gra/src/ui/icons/brand/res-cattle.svg` | 1 | INF-DANE | svg |  |
+| 555 | `gra/src/ui/icons/brand/res-clay.svg` | 1 | INF-DANE | svg |  |
+| 556 | `gra/src/ui/icons/brand/res-culture.svg` | 0 | INF-DANE | svg |  |
+| 557 | `gra/src/ui/icons/brand/res-food.svg` | 0 | INF-DANE | svg |  |
+| 558 | `gra/src/ui/icons/brand/res-horses.svg` | 1 | INF-DANE | svg |  |
+| 559 | `gra/src/ui/icons/brand/res-influence.svg` | 0 | INF-DANE | svg |  |
+| 560 | `gra/src/ui/icons/brand/res-population.svg` | 0 | INF-DANE | svg |  |
+| 561 | `gra/src/ui/icons/brand/res-religion.svg` | 0 | INF-DANE | svg |  |
+| 562 | `gra/src/ui/icons/brand/res-salt.svg` | 1 | INF-DANE | svg |  |
+| 563 | `gra/src/ui/icons/brand/res-science.svg` | 0 | INF-DANE | svg |  |
+| 564 | `gra/src/ui/icons/brand/res-settlements.svg` | 0 | INF-DANE | svg |  |
+| 565 | `gra/src/ui/icons/brand/res-treasury.svg` | 0 | INF-DANE | svg |  |
+| 566 | `gra/src/ui/icons/brand/res-work.svg` | 0 | INF-DANE | svg |  |
+| 567 | `gra/src/ui/icons/brand/resources-map-icon-map.json` | 44 | INF-DANE | json |  |
+| 568 | `gra/src/ui/icons/brand/resources-map/res-brick.svg` | 0 | INF-DANE | svg |  |
+| 569 | `gra/src/ui/icons/brand/resources-map/res-bronze.svg` | 0 | INF-DANE | svg |  |
+| 570 | `gra/src/ui/icons/brand/resources-map/res-cattle.svg` | 1 | INF-DANE | svg |  |
+| 571 | `gra/src/ui/icons/brand/resources-map/res-ceramics.svg` | 0 | INF-DANE | svg |  |
+| 572 | `gra/src/ui/icons/brand/resources-map/res-clay.svg` | 0 | INF-DANE | svg |  |
+| 573 | `gra/src/ui/icons/brand/resources-map/res-copper-ore.svg` | 0 | INF-DANE | svg |  |
+| 574 | `gra/src/ui/icons/brand/resources-map/res-gold.svg` | 0 | INF-DANE | svg |  |
+| 575 | `gra/src/ui/icons/brand/resources-map/res-horse.svg` | 0 | INF-DANE | svg |  |
+| 576 | `gra/src/ui/icons/brand/resources-map/res-horses.svg` | 0 | INF-DANE | svg |  |
+| 577 | `gra/src/ui/icons/brand/resources-map/res-iron-ore.svg` | 0 | INF-DANE | svg |  |
+| 578 | `gra/src/ui/icons/brand/resources-map/res-iron.svg` | 0 | INF-DANE | svg |  |
+| 579 | `gra/src/ui/icons/brand/resources-map/res-salt.svg` | 0 | INF-DANE | svg |  |
+| 580 | `gra/src/ui/icons/brand/resources-map/res-steel.svg` | 0 | INF-DANE | svg |  |
+| 581 | `gra/src/ui/icons/brand/resources-map/res-stone.svg` | 0 | INF-DANE | svg |  |
+| 582 | `gra/src/ui/icons/brand/resources-map/res-tin-ore.svg` | 1 | INF-DANE | svg |  |
+| 583 | `gra/src/ui/icons/brand/resources-map/res-wood.svg` | 0 | INF-DANE | svg |  |
+| 584 | `gra/src/ui/icons/brand/setting-icon-map.json` | 17 | INF-DANE | json |  |
+| 585 | `gra/src/ui/icons/brand/settings/sett-city-states.svg` | 0 | INF-DANE | svg |  |
+| 586 | `gra/src/ui/icons/brand/settings/sett-civ-types.svg` | 0 | INF-DANE | svg |  |
+| 587 | `gra/src/ui/icons/brand/settings/sett-difficulty.svg` | 0 | INF-DANE | svg |  |
+| 588 | `gra/src/ui/icons/brand/settings/sett-game-speed.svg` | 0 | INF-DANE | svg |  |
+| 589 | `gra/src/ui/icons/brand/settings/sett-map-size.svg` | 0 | INF-DANE | svg |  |
+| 590 | `gra/src/ui/icons/brand/settings/sett-world-type.svg` | 0 | INF-DANE | svg |  |
+| 591 | `gra/src/ui/icons/brand/tb-army.svg` | 0 | INF-DANE | svg |  |
+| 592 | `gra/src/ui/icons/brand/tb-cities.svg` | 0 | INF-DANE | svg |  |
+| 593 | `gra/src/ui/icons/brand/tb-diplomacy.svg` | 0 | INF-DANE | svg |  |
+| 594 | `gra/src/ui/icons/brand/tier1/res-culture-24.svg` | 0 | INF-DANE | svg |  |
+| 595 | `gra/src/ui/icons/brand/tier1/res-culture-40.svg` | 0 | INF-DANE | svg |  |
+| 596 | `gra/src/ui/icons/brand/tier1/res-food-24.svg` | 0 | INF-DANE | svg |  |
+| 597 | `gra/src/ui/icons/brand/tier1/res-food-40.svg` | 0 | INF-DANE | svg |  |
+| 598 | `gra/src/ui/icons/brand/tier1/res-influence-24.svg` | 0 | INF-DANE | svg |  |
+| 599 | `gra/src/ui/icons/brand/tier1/res-influence-40.svg` | 0 | INF-DANE | svg |  |
+| 600 | `gra/src/ui/icons/brand/tier1/res-population-24.svg` | 0 | INF-DANE | svg |  |
+| 601 | `gra/src/ui/icons/brand/tier1/res-population-40.svg` | 0 | INF-DANE | svg |  |
+| 602 | `gra/src/ui/icons/brand/tier1/res-religion-24.svg` | 0 | INF-DANE | svg |  |
+| 603 | `gra/src/ui/icons/brand/tier1/res-religion-40.svg` | 0 | INF-DANE | svg |  |
+| 604 | `gra/src/ui/icons/brand/tier1/res-science-24.svg` | 0 | INF-DANE | svg |  |
+| 605 | `gra/src/ui/icons/brand/tier1/res-science-40.svg` | 0 | INF-DANE | svg |  |
+| 606 | `gra/src/ui/icons/brand/tier1/res-settlements-24.svg` | 0 | INF-DANE | svg |  |
+| 607 | `gra/src/ui/icons/brand/tier1/res-settlements-40.svg` | 0 | INF-DANE | svg |  |
+| 608 | `gra/src/ui/icons/brand/tier1/res-treasury-24.svg` | 0 | INF-DANE | svg |  |
+| 609 | `gra/src/ui/icons/brand/tier1/res-treasury-40.svg` | 0 | INF-DANE | svg |  |
+| 610 | `gra/src/ui/icons/brand/tier1/res-work-24.svg` | 0 | INF-DANE | svg |  |
+| 611 | `gra/src/ui/icons/brand/tier1/res-work-40.svg` | 0 | INF-DANE | svg |  |
+| 612 | `gra/src/ui/icons/brand/tier2/tb-army-24.svg` | 0 | INF-DANE | svg |  |
+| 613 | `gra/src/ui/icons/brand/tier2/tb-army-40.svg` | 0 | INF-DANE | svg |  |
+| 614 | `gra/src/ui/icons/brand/tier2/tb-build-24.svg` | 0 | INF-DANE | svg |  |
+| 615 | `gra/src/ui/icons/brand/tier2/tb-build-40.svg` | 0 | INF-DANE | svg |  |
+| 616 | `gra/src/ui/icons/brand/tier2/tb-cities-24.svg` | 0 | INF-DANE | svg |  |
+| 617 | `gra/src/ui/icons/brand/tier2/tb-cities-40.svg` | 0 | INF-DANE | svg |  |
+| 618 | `gra/src/ui/icons/brand/tier2/tb-diplomacy-24.svg` | 0 | INF-DANE | svg |  |
+| 619 | `gra/src/ui/icons/brand/tier2/tb-diplomacy-40.svg` | 0 | INF-DANE | svg |  |
+| 620 | `gra/src/ui/icons/brand/tier2/tb-science-24.svg` | 0 | INF-DANE | svg |  |
+| 621 | `gra/src/ui/icons/brand/tier2/tb-science-40.svg` | 0 | INF-DANE | svg |  |
+| 622 | `gra/src/ui/icons/brand/tier3/cp-buildings-24.svg` | 0 | INF-DANE | svg |  |
+| 623 | `gra/src/ui/icons/brand/tier3/cp-buildings-40.svg` | 0 | INF-DANE | svg |  |
+| 624 | `gra/src/ui/icons/brand/tier3/cp-culture-24.svg` | 0 | INF-DANE | svg |  |
+| 625 | `gra/src/ui/icons/brand/tier3/cp-culture-40.svg` | 0 | INF-DANE | svg |  |
+| 626 | `gra/src/ui/icons/brand/tier3/cp-granary-24.svg` | 0 | INF-DANE | svg |  |
+| 627 | `gra/src/ui/icons/brand/tier3/cp-granary-40.svg` | 0 | INF-DANE | svg |  |
+| 628 | `gra/src/ui/icons/brand/tier3/cp-health-24.svg` | 0 | INF-DANE | svg |  |
+| 629 | `gra/src/ui/icons/brand/tier3/cp-health-40.svg` | 0 | INF-DANE | svg |  |
+| 630 | `gra/src/ui/icons/brand/tier3/cp-labor-24.svg` | 0 | INF-DANE | svg |  |
+| 631 | `gra/src/ui/icons/brand/tier3/cp-labor-40.svg` | 0 | INF-DANE | svg |  |
+| 632 | `gra/src/ui/icons/brand/tier3/cp-order-24.svg` | 0 | INF-DANE | svg |  |
+| 633 | `gra/src/ui/icons/brand/tier3/cp-order-40.svg` | 0 | INF-DANE | svg |  |
+| 634 | `gra/src/ui/icons/brand/tier3/cp-recruit-24.svg` | 0 | INF-DANE | svg |  |
+| 635 | `gra/src/ui/icons/brand/tier3/cp-recruit-40.svg` | 0 | INF-DANE | svg |  |
+| 636 | `gra/src/ui/icons/brand/tier3/cp-religion-24.svg` | 0 | INF-DANE | svg |  |
+| 637 | `gra/src/ui/icons/brand/tier3/cp-religion-40.svg` | 0 | INF-DANE | svg |  |
+| 638 | `gra/src/ui/icons/brand/tier3/cp-trade-24.svg` | 0 | INF-DANE | svg |  |
+| 639 | `gra/src/ui/icons/brand/tier3/cp-trade-40.svg` | 0 | INF-DANE | svg |  |
+| 640 | `gra/src/ui/icons/brand/tier4/chip-crate-24.svg` | 0 | INF-DANE | svg |  |
+| 641 | `gra/src/ui/icons/brand/tier4/chip-crate-40.svg` | 0 | INF-DANE | svg |  |
+| 642 | `gra/src/ui/icons/brand/tier4/chip-death-24.svg` | 0 | INF-DANE | svg |  |
+| 643 | `gra/src/ui/icons/brand/tier4/chip-death-40.svg` | 0 | INF-DANE | svg |  |
+| 644 | `gra/src/ui/icons/brand/tier4/chip-garrison-24.svg` | 0 | INF-DANE | svg |  |
+| 645 | `gra/src/ui/icons/brand/tier4/chip-garrison-40.svg` | 0 | INF-DANE | svg |  |
+| 646 | `gra/src/ui/icons/brand/tier4/chip-grain-24.svg` | 0 | INF-DANE | svg |  |
+| 647 | `gra/src/ui/icons/brand/tier4/chip-grain-40.svg` | 0 | INF-DANE | svg |  |
+| 648 | `gra/src/ui/icons/brand/tier4/chip-happiness-24.svg` | 0 | INF-DANE | svg |  |
+| 649 | `gra/src/ui/icons/brand/tier4/chip-happiness-40.svg` | 0 | INF-DANE | svg |  |
+| 650 | `gra/src/ui/icons/brand/tier4/chip-heart-24.svg` | 0 | INF-DANE | svg |  |
+| 651 | `gra/src/ui/icons/brand/tier4/chip-heart-40.svg` | 0 | INF-DANE | svg |  |
+| 652 | `gra/src/ui/icons/brand/tier4/chip-manpower-24.svg` | 0 | INF-DANE | svg |  |
+| 653 | `gra/src/ui/icons/brand/tier4/chip-manpower-40.svg` | 0 | INF-DANE | svg |  |
+| 654 | `gra/src/ui/icons/brand/tier4/chip-map-24.svg` | 0 | INF-DANE | svg |  |
+| 655 | `gra/src/ui/icons/brand/tier4/chip-map-40.svg` | 0 | INF-DANE | svg |  |
+| 656 | `gra/src/ui/icons/brand/tier4/chip-order-24.svg` | 0 | INF-DANE | svg |  |
+| 657 | `gra/src/ui/icons/brand/tier4/chip-order-40.svg` | 0 | INF-DANE | svg |  |
+| 658 | `gra/src/ui/icons/brand/tier4/chip-rebellion-24.svg` | 0 | INF-DANE | svg |  |
+| 659 | `gra/src/ui/icons/brand/tier4/chip-rebellion-40.svg` | 0 | INF-DANE | svg |  |
+| 660 | `gra/src/ui/icons/brand/tier4/chip-star-24.svg` | 0 | INF-DANE | svg |  |
+| 661 | `gra/src/ui/icons/brand/tier4/chip-star-40.svg` | 0 | INF-DANE | svg |  |
+| 662 | `gra/src/ui/icons/brand/tier4/chip-trend-up-24.svg` | 0 | INF-DANE | svg |  |
+| 663 | `gra/src/ui/icons/brand/tier4/chip-trend-up-40.svg` | 0 | INF-DANE | svg |  |
+| 664 | `gra/src/ui/icons/brand/tier4/chip-warning-24.svg` | 0 | INF-DANE | svg |  |
+| 665 | `gra/src/ui/icons/brand/tier4/chip-warning-40.svg` | 0 | INF-DANE | svg |  |
+| 666 | `gra/src/ui/icons/brand/tier5/dip-alliance-24.svg` | 0 | INF-DANE | svg |  |
+| 667 | `gra/src/ui/icons/brand/tier5/dip-alliance-40.svg` | 0 | INF-DANE | svg |  |
+| 668 | `gra/src/ui/icons/brand/tier5/dip-pact-24.svg` | 0 | INF-DANE | svg |  |
+| 669 | `gra/src/ui/icons/brand/tier5/dip-pact-40.svg` | 0 | INF-DANE | svg |  |
+| 670 | `gra/src/ui/icons/brand/tier5/dip-peace-24.svg` | 0 | INF-DANE | svg |  |
+| 671 | `gra/src/ui/icons/brand/tier5/dip-peace-40.svg` | 0 | INF-DANE | svg |  |
+| 672 | `gra/src/ui/icons/brand/tier5/dip-war-24.svg` | 0 | INF-DANE | svg |  |
+| 673 | `gra/src/ui/icons/brand/tier5/dip-war-40.svg` | 0 | INF-DANE | svg |  |
+| 674 | `gra/src/ui/icons/brand/tier5/dip-war-strip-24.svg` | 0 | INF-DANE | svg |  |
+| 675 | `gra/src/ui/icons/brand/tier5/dip-war-strip-40.svg` | 0 | INF-DANE | svg |  |
+| 676 | `gra/src/ui/icons/brand/tier5/ui-accepted-24.svg` | 0 | INF-DANE | svg |  |
+| 677 | `gra/src/ui/icons/brand/tier5/ui-accepted-40.svg` | 0 | INF-DANE | svg |  |
+| 678 | `gra/src/ui/icons/brand/tier5/ui-check-24.svg` | 0 | INF-DANE | svg |  |
+| 679 | `gra/src/ui/icons/brand/tier5/ui-check-40.svg` | 0 | INF-DANE | svg |  |
+| 680 | `gra/src/ui/icons/brand/tier5/ui-close-24.svg` | 0 | INF-DANE | svg |  |
+| 681 | `gra/src/ui/icons/brand/tier5/ui-close-40.svg` | 0 | INF-DANE | svg |  |
+| 682 | `gra/src/ui/icons/brand/tier5/ui-denied-24.svg` | 0 | INF-DANE | svg |  |
+| 683 | `gra/src/ui/icons/brand/tier5/ui-denied-40.svg` | 0 | INF-DANE | svg |  |
+| 684 | `gra/src/ui/icons/brand/tier5/ui-end-turn-24.svg` | 0 | INF-DANE | svg |  |
+| 685 | `gra/src/ui/icons/brand/tier5/ui-end-turn-40.svg` | 0 | INF-DANE | svg |  |
+| 686 | `gra/src/ui/icons/brand/tier5/ui-lock-24.svg` | 0 | INF-DANE | svg |  |
+| 687 | `gra/src/ui/icons/brand/tier5/ui-lock-40.svg` | 0 | INF-DANE | svg |  |
+| 688 | `gra/src/ui/icons/brand/tier5/ui-menu-24.svg` | 0 | INF-DANE | svg |  |
+| 689 | `gra/src/ui/icons/brand/tier5/ui-menu-40.svg` | 0 | INF-DANE | svg |  |
+| 690 | `gra/src/ui/icons/brand/tier5/ui-pause-24.svg` | 0 | INF-DANE | svg |  |
+| 691 | `gra/src/ui/icons/brand/tier5/ui-pause-40.svg` | 0 | INF-DANE | svg |  |
+| 692 | `gra/src/ui/icons/brand/tier5/ui-play-24.svg` | 0 | INF-DANE | svg |  |
+| 693 | `gra/src/ui/icons/brand/tier5/ui-play-40.svg` | 0 | INF-DANE | svg |  |
+| 694 | `gra/src/ui/icons/brand/tier5/ui-wiki-24.svg` | 1 | INF-DANE | svg |  |
+| 695 | `gra/src/ui/icons/brand/tier5/ui-wiki-40.svg` | 1 | INF-DANE | svg |  |
+| 696 | `gra/src/ui/icons/brand/tier6/field-balanced-24.svg` | 1 | INF-DANE | svg |  |
+| 697 | `gra/src/ui/icons/brand/tier6/field-balanced-40.svg` | 1 | INF-DANE | svg |  |
+| 698 | `gra/src/ui/icons/brand/tier6/field-food-24.svg` | 0 | INF-DANE | svg |  |
+| 699 | `gra/src/ui/icons/brand/tier6/field-food-40.svg` | 0 | INF-DANE | svg |  |
+| 700 | `gra/src/ui/icons/brand/tier6/field-production-24.svg` | 0 | INF-DANE | svg |  |
+| 701 | `gra/src/ui/icons/brand/tier6/field-production-40.svg` | 0 | INF-DANE | svg |  |
+| 702 | `gra/src/ui/icons/brand/tier6/field-tax-24.svg` | 0 | INF-DANE | svg |  |
+| 703 | `gra/src/ui/icons/brand/tier6/field-tax-40.svg` | 0 | INF-DANE | svg |  |
+| 704 | `gra/src/ui/icons/brand/tier7/terrain-desert-24.svg` | 0 | INF-DANE | svg |  |
+| 705 | `gra/src/ui/icons/brand/tier7/terrain-desert-40.svg` | 0 | INF-DANE | svg |  |
+| 706 | `gra/src/ui/icons/brand/tier7/terrain-hills-24.svg` | 0 | INF-DANE | svg |  |
+| 707 | `gra/src/ui/icons/brand/tier7/terrain-hills-40.svg` | 0 | INF-DANE | svg |  |
+| 708 | `gra/src/ui/icons/brand/tier7/terrain-mountains-24.svg` | 0 | INF-DANE | svg |  |
+| 709 | `gra/src/ui/icons/brand/tier7/terrain-mountains-40.svg` | 0 | INF-DANE | svg |  |
+| 710 | `gra/src/ui/icons/brand/tier7/terrain-plains-24.svg` | 0 | INF-DANE | svg |  |
+| 711 | `gra/src/ui/icons/brand/tier7/terrain-plains-40.svg` | 0 | INF-DANE | svg |  |
+| 712 | `gra/src/ui/icons/brand/tier7/terrain-water-24.svg` | 0 | INF-DANE | svg |  |
+| 713 | `gra/src/ui/icons/brand/tier7/terrain-water-40.svg` | 0 | INF-DANE | svg |  |
+| 714 | `gra/src/ui/icons/brand/tokens.css` | 74 | INF-DANE | css |  |
+| 715 | `gra/src/ui/icons/brand/ui-accepted.svg` | 0 | INF-DANE | svg |  |
+| 716 | `gra/src/ui/icons/brand/ui-check.svg` | 0 | INF-DANE | svg |  |
+| 717 | `gra/src/ui/icons/brand/ui-close.svg` | 0 | INF-DANE | svg |  |
+| 718 | `gra/src/ui/icons/brand/ui-denied.svg` | 0 | INF-DANE | svg |  |
+| 719 | `gra/src/ui/icons/brand/ui-end-turn.svg` | 0 | INF-DANE | svg |  |
+| 720 | `gra/src/ui/icons/brand/ui-lock.svg` | 0 | INF-DANE | svg |  |
+| 721 | `gra/src/ui/icons/brand/ui-menu.svg` | 0 | INF-DANE | svg |  |
+| 722 | `gra/src/ui/icons/brand/ui-pause.svg` | 0 | INF-DANE | svg |  |
+| 723 | `gra/src/ui/icons/brand/ui-play.svg` | 0 | INF-DANE | svg |  |
+| 724 | `gra/src/ui/icons/brand/ui/globe-continents.svg` | 0 | INF-DANE | svg |  |
+| 725 | `gra/src/ui/icons/brand/unit-icon-map.json` | 23 | INF-DANE | json |  |
+| 726 | `gra/src/ui/icons/brand/units/unit-archer.svg` | 0 | INF-DANE | svg |  |
+| 727 | `gra/src/ui/icons/brand/units/unit-cavalry.svg` | 0 | INF-DANE | svg |  |
+| 728 | `gra/src/ui/icons/brand/units/unit-chariot.svg` | 0 | INF-DANE | svg |  |
+| 729 | `gra/src/ui/icons/brand/units/unit-default.svg` | 0 | INF-DANE | svg |  |
+| 730 | `gra/src/ui/icons/brand/units/unit-elite.svg` | 0 | INF-DANE | svg |  |
+| 731 | `gra/src/ui/icons/brand/units/unit-melee.svg` | 0 | INF-DANE | svg |  |
+| 732 | `gra/src/ui/icons/brand/units/unit-naval.svg` | 0 | INF-DANE | svg |  |
+| 733 | `gra/src/ui/icons/brand/units/unit-scout.svg` | 0 | INF-DANE | svg |  |
+| 734 | `gra/src/ui/icons/brand/units/unit-siege.svg` | 0 | INF-DANE | svg |  |
+| 735 | `gra/src/ui/icons/brand/units/unit-sling.svg` | 0 | INF-DANE | svg |  |
+| 736 | `gra/src/ui/icons/brand/units/unit-spear.svg` | 0 | INF-DANE | svg |  |
+| 737 | `gra/src/ui/icons/brand/units/unit-worker.svg` | 0 | INF-DANE | svg |  |
+| 738 | `gra/src/ui/icons/brandAssets.ts` | 267 | INF-DANE | ts |  |
+| 739 | `gra/src/ui/icons/iconRegistry.ts` | 49 | INF-DANE | ts |  |
+| 740 | `gra/src/ui/icons/scienceOwlIcon.ts` | 38 | INF-DANE | ts |  |
+| 741 | `gra/src/ui/icons/scienceProgressRing.ts` | 27 | INF-DANE | ts |  |
+| 742 | `gra/src/ui/icons/wikiBookIcon.ts` | 19 | INF-DANE | ts |  |
+| 743 | `gra/src/game/ai-moc-diag.ts` | 90 | INF-NARZ | ts |  |
+| 744 | `gra/src/game/diag-log.ts` | 172 | INF-NARZ | ts |  |
+| 745 | `gra/src/game/playtestMapaSwiata.ts` | 259 | INF-NARZ | ts |  |
+| 746 | `gra/src/game/playtestMiastoEkonomia.ts` | 184 | INF-NARZ | ts |  |
+| 747 | `gra/src/game/playtestOdskok3v3.ts` | 307 | INF-NARZ | ts |  |
+| 748 | `gra/src/game/playtestWalkaMapy.ts` | 499 | INF-NARZ | ts |  |
+| 749 | `gra/src/ui/perfReport.ts` | 315 | INF-NARZ | ts |  |
+| 750 | `gra/src/ui/perfTestPanel.ts` | 677 | INF-NARZ | ts |  |
+| 751 | `gra/src/ui/sceneTimingReport.ts` | 212 | INF-NARZ | ts |  |
+
+## 3. Kontrola kompletności
+
+- Wierszy w tabeli: 751; unikalnych ścieżek: 751; plików bez przypisania: 0; plików z >1 podsystemem: 0 (granice opisane w kolumnie Uwaga).
+- Podsystemy z GOAL (12) mają streszczenie z dowodem w sekcji 1: tak.

@@ -30,12 +30,13 @@ dotykające tych samych plików — zawsze sekwencyjnie, nigdy w tej samej fali.
 | 2 | `R-RUSTPORT-P1-14-GAMEPLAY-CATALOG-Q1` | P1.14 | 1/5 | `wf_682a6444-dd8` | DISPATCHED (w toku) | 2026-10-20 |
 | 3 | `R-RUSTPORT-P1-18-HOTSEAT-MATRIX-Q1` | P1.18 | 1/5 | `wf_5d005df4-86c` | DISPATCHED (w toku) | 2026-10-20 |
 | 4 | `R-RUSTPORT-P1-16-EDGE-CASES-Q1` | P1.16 | 1/5 | `wf_d59d9819-e88` | DISPATCHED (w toku) | 2026-10-20 |
-| 5 | — wolny slot — | | | | | |
+| 5 | `R-RUSTPORT-P1-3-INTRO-START-Q1` | P1.3 | 1/5 | `wf_5308d8c9-1ff` | DISPATCHED (w toku, pilot przeglądarkowy) | 2026-10-20 |
 | 6 | `R-RUSTPORT-P1-13-COMMANDS-EVENTS-Q1` | P1.13 | 1/5 | `wf_8a3d523b-385` | DISPATCHED (w toku) | 2026-10-20 |
 
-Historia zamkniętych tematów (P0, poprawka terenu, P1.1/1.2/1.10/1.11/1.12 — wszystkie PASS) — patrz
-`LEDGER.md`. Następny wolny slot (#5) do obsadzenia po przeglądzie kolejnego kawałka P1 (P1.15 katalog
-zrzutów, albo planowanie P1.3-9 wymagające żywej przeglądarki).
+**Zasada stałej:** gdy temat się zamyka (PASS/FAIL ostateczny/DECISION_REQUIRED/LIMIT-5-EXCEEDED),
+natychmiast otwieram kolejny w zwolnionym slocie — pula 6 ma być stale w pełni wykorzystana, bez
+przestojów między falami. Historia zamkniętych tematów (P0, poprawka terenu, P1.1/1.2/1.10/1.11/1.12 —
+wszystkie PASS) — patrz `LEDGER.md`.
 
 **Decyzje właściciela po P0 (2026-10-20):**
 - Pin webowy: zostajemy przy świeżym `main` = `edb8fb56` (nie wracamy do `69ccb145`) — delta zostanie w pełni skwalifikowana w P1.

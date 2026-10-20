@@ -64,7 +64,15 @@ Deklaracja: `gra/src/game/diplomacy-proposals.ts:68` — `export type ProposalAc
 
 Członkowie (linia = `diplomacy-proposals.ts:<n>`): `'nap'`:69, `'sojusz_defensywny'`:70, `'sojusz_pelny'`:71, `'handel'`:72, `'umowa_handlowa'`:77 (alias AI), `'umowa_szlakow'`:79, `'trybut_zadanie'`:80, `'trybut_oferta'`:81, `'granice'`:82, `'tech'`:83, `'namow_wojne'`:84, `'ultimatum'`:85, `'wasal'`:86, `'wchloniecie'`:88, `'pokoj'`:90. Liczba członków: **15**.
 
-Konsumenci (nie są to pełne pokrycia — patrz sekcja D): `diplomacy-proposals.ts:1038` (`switch (actionId)`, `case 'nap'`:1039, `case 'sojusz_defensywny'`:1087), `:1994` (`case 'nap'`:1995, `case 'pokoj'`:2032, `case 'granice'`:2034), `main.ts:17505` (`switch (entry.actionId)`, etykiety), `main.ts:17507`+.
+Konsumenci i pokrycie (zweryfikowane w rundzie 2 na `edb8fb56`):
+
+| Konsument | Ścieżka:linia | Pokrycie członków |
+|---|---|---|
+| `evaluateProposal` — `switch (actionId)` | `game/diplomacy-proposals.ts:1038` (`case 'nap'`:1039, `case 'sojusz_defensywny'`:1087, `case 'trybut_zadanie'`:1144, `case 'pokoj'`:1189, `case 'trybut_oferta'`:1348, `case 'handel'`:1380, `case 'umowa_handlowa'`:1472, `case 'umowa_szlakow'`:1473, `case 'namow_wojne'`:1563, `case 'tech'`:1579, `case 'granice'`:1622, `case 'ultimatum'`:1673, `case 'wasal'`:1684, `case 'wchloniecie'`:1707, `default`:1746) | **15/15** — pełne pokrycie |
+| `resolvePlayerAcceptsAiPending` — `switch (actionId)` | `game/diplomacy-proposals.ts:1994` (`case 'nap'`:1995, `case 'sojusz_defensywny'`:2020, `case 'pokoj'`:2032, `case 'granice'`:2034, `case 'tech'`:2063, `case 'namow_wojne'`:2078, `case 'ultimatum'`:2081, `case 'wasal'`:2084, `case 'handel'`:2101, `case 'umowa_handlowa'`:2138, `case 'umowa_szlakow'`:2139, `case 'trybut_zadanie'`:2159, `case 'trybut_oferta'`:2175, `default`:2194 → `'Nieznana akcja dyplomatyczna'`) | **14/15 — BRAK `'wchloniecie'`** (patrz niżej) |
+| etykiety stołu — `switch (entry.actionId)` | `main.ts:17507` (`case 'nap'`:17508 … `default`:17538) | etykiety z `default` (nie wymaga pełnego pokrycia) |
+
+**Luka `wchloniecie` w `resolvePlayerAcceptsAiPending` (statycznie ustalona, NIE uruchomiona):** wywołania `main.ts:17267` (gracz akceptuje wpis przychodzący z `isMe(awaitingOwnerId)`), `main.ts:17837` i `main.ts:17957` przekazują wpis do tego switcha. Wpis `'wchloniecie'` powstaje z UI (`ui/diplomacyTradeBasket.ts:1411` `if (actionId === '15') return 'wchloniecie'`, przycisk `'15'`). `NEGOTIATION_NO_ENGINE_COUNTER` jest pusty (`game/diplomacy-proposals.ts:2239`–`2241`), a `canCounterNegotiation` (`:2365`) nie wyklucza `'wchloniecie'`, więc auto-kontroferta zachowuje `actionId` (`generateCounterOffer`, `:2536`–`2537`). Ścieżka „kontroferta na wchłonięcie → akceptacja gracza” daje `accepted:false` przez `default` (`:2194`). Ścieżka nie została wykonana w runtime — P2.5 musi ją uwzględnić.
 
 ### A5. Akcje na mapie: kliknięcie wrogiego miasta — `MapEnemyCityClickAction`
 
@@ -75,12 +83,20 @@ Dispatcher: `main.ts:26513` `switch (action.kind)` — **pokrywa wszystkie 9** (
 
 Funkcja: `main.ts:21857` `function handleSelectedUnitHudAction(actionId: string): void {`. Łańcuch `if/else if` po `actionId` (nie typowany, id to literały):
 `'rally-set'`:21862, `'rally-launch'`:21871, `'rally-clear'`:21873, `'march-continue'`:21878, `'march-stop'`:21880, `'skip'`:21882, `'unfortify-all'`:21893, `'fortify'`:21910, `'disband'`:21977, `'split'`:21979, `'merge'`:21981, `'replace'`:21983, `'sentry'`:21985, `'scout-explore'`:22002. Liczba: **14**.
-Typ `UnitPanelAction` (`ui/unitPanelHud.ts:21`, `id: string`) — zestaw id budowany w UI; **nie wyliczony** (sekcja D).
+Typ `UnitPanelAction` (`ui/unitPanelHud.ts:21`, `id: string`): ids są literałami w `main.ts` (miejsca `actions.push`/`id:` w `main.ts:21708`–`21840`, zestawienie w A11). Id `'split'`/`'merge'` pochodzą z typowanego `game/armyMerge.ts:687`. Id `'march-continue'` ma tylko gałąź w handlerze (`main.ts:21878`); literalnego miejsca dodania nie znaleziono (grep `'march-continue'` = 1 trafienie w `main.ts`).
 
 ### A7. Akcje na przycisku dyplomacji (siatka akcji) — id akcji `data/diplomacy.json`
 
 Mapowanie przycisków: `ui/diplomacyAudience.ts:1651`–`1659` (`ACTION_BAR_SPECS`): `'11'`:1651 (Wypowiedz wojnę), `'10'`:1652 (Zaproponuj pokój), `'3'`:1653 (Sojusz), `'2'`:1654 (Pakt o nieagresji), `'5'`:1655 (traktat handlowy), `'14'`:1656 (Umowa wymiany), `'13'`:1657 (Przekaż dar), `'12'`:1658 (Wasalizacja), `'15'`:1659 (Wchłonięcie). Liczba: **9**.
-Obsługa: `main.ts:21260` `function applyAudienceAction(ownerId, actionId, payload?)`; jawnie: `main.ts:21278` `if (actionId === '11')`, `main.ts:21289` `case '10':`, `main.ts:21293` `case '5':`, `main.ts:21297` `case '14':` (wszystkie cztery to komunikaty „użyj koszyka/przycisku na stole”). Id `'3'`, `'2'`, `'13'`, `'12'`, `'15'` **nie mają gałęzi w `applyAudienceAction`** — ich ścieżka nie została prześledzona (sekcja D).
+Obsługa: `main.ts:21260` `function applyAudienceAction(ownerId, actionId, payload?)`; jawnie: `main.ts:21278` `if (actionId === '11')`, `main.ts:21289` `case '10':`, `main.ts:21293` `case '5':`, `main.ts:21297` `case '14':` (wszystkie cztery to komunikaty „użyj koszyka/przycisku na stole”).
+
+**Ścieżka przycisków `'3'`, `'2'`, `'13'`, `'12'`, `'15'` (prześledzona w rundzie 2; NIE mają gałęzi `case` w `applyAudienceAction`, obsługują je inne ścieżki):**
+1. Klik: listener `ui/diplomacyAudience.ts:2265`–`2315` (`button[data-aid]`). Dla `aid` z `getNegotiationContext` i `actionUsesTradeBasket(aid)` otwiera koszyk: `showTradeBasketModal` (`:2280`–`2285`, `onAction(ownerId, aid, payload)`). Zbiór `TRADE_BASKET_ACTION_IDS` = `'2','3','4','6','7','8','9','10','12','13','14','15'` (`ui/diplomacyTradeBasket.ts:2818`–`2820`) zawiera wszystkie pięć id.
+2. Payload → `applyAudienceAction` gałąź `if (payload)` (`main.ts:21269`–`21275`) → `handleNegotiatedProposal` (`main.ts:21108`) → `buildProposalFromPayload` (`main.ts:21010`) → `proposalActionIdFromPayload` (`ui/diplomacyNegotiationModal.ts:549`–`562`): `'13'`→`'handel'`, `'3'`→`'sojusz_defensywny'`/`'sojusz_pelny'`, `'2'`→`'nap'`, `'12'`→`'wasal'`, `'15'`→`'wchloniecie'`.
+3. Fallback bez kontekstu negocjacji (`getNegotiationContext` zwraca `null` lub akcja nieaktywna): `cfg.onAction(ownerId, aid)` bez payloadu (`ui/diplomacyAudience.ts:2315`) → `applyAudienceAction` → `default` (`main.ts:21301`–`21302`): `showHintMessage('Akcja dyplomatyczna (wkrótce): ' + civName, 3000)` — **atrapa**, nie wykonuje akcji.
+4. `actionNeedsNegotiation` (`ui/diplomacyNegotiationModal.ts:148`–`150`, zbiór `'6','7','9','10'` z `:146`) dla tych pięciu id zwraca `false`, więc modal stołu negocjacyjnego nie jest używany.
+
+Pozostałe id emitowane przez builder audiencji, których **nie ma** na pasku (`'4'`, `'6'`, `'7'`, `'8'`, `'9'`), są dostępne z kafelka „Możliwe umowy” (`ui/diplomacyAudience.ts:1824`, `data-aid`); ich downstream **nie został prześledzony** w rundzie 2 (sekcja D).
 
 ### A8. Komendy stołu negocjacyjnego (gracz)
 
@@ -131,6 +147,21 @@ Listenery: `main.ts:26121` (`window keydown`, F9/F10/Ctrl+Shift+D), `main.ts:361
 | M | `main.ts:36167` | dev-only `toggleDevRevealAllLand` |
 | G | `main.ts:36141` | dev-only (`GALLERY_DEV_SHORTCUT`) |
 | N | `main.ts:36223` `if (e.code === 'KeyN' \|\| ...)` → `advanceSeat()` (`main.ts:36230`) | **zakończ turę** (skrót) |
+
+---
+
+### A11. Literały i callbacki UI (rozstrzygnięcie luk rundy 1, runda 2)
+
+- **`EntityCardAction`** (`ui/entityCards/types.ts:117`, `id: string`, `onClick`): jedyne literały producenta to `ui/techDiscoveryNotice.ts:599` `id: 'research'` (Rozpocznij badanie) i `:605` `id: 'tree'` (Otwórz drzewo). Adaptery `ui/entityCards/*Adapter.ts` nie budują elementów tego typu. Renderer: `ui/entityCards/renderer.ts:538`. Nowe: **2**.
+- **`UnitPanelAction`** (`ui/unitPanelHud.ts:21`): ids z `main.ts` są już w A6, poza jednym: `main.ts:21725` `actions.push({ id: 'siege-hold', label: 'Oblega', disabled: true })` — brak gałęzi w `handleSelectedUnitHudAction`, przycisk `disabled` (`ui/unitPanelHud.ts:167`), więc kliknięcie nie wywołuje `onAction`. Nowe: **1** (`siege-hold`, martwy).
+- **`SiegeMapPanelActions`** (`ui/siegeMapPanel.ts:13`) — wpięte w `main.ts:14893` (`const siegePanelActions = {`):
+  - `onBesiege` `main.ts:14894` → `commitBesiege(cityId)` (`main.ts:14851`);
+  - `onStorm` `main.ts:14896` → `launchSiegeStormFromMap(ctx)` (`main.ts:30086`);
+  - `onRetreat` `main.ts:14897`–`14907` → `endMapSiege(cityId)` (`main.ts:14831`) + przywrócenie podświetlenia zasięgu i hint „Odwrót — oblężenie zakończone.”;
+  - `onQueueMachine` `main.ts:14908` → `queueSiegeMachine(city, kind)` (taran/wieża, limit 4);
+  - `isMe` `main.ts:14895` — hook odczytu, nie komenda.
+- **`CityAttackChoiceActions`** (`ui/cityAttackChoice.ts:21`) — wpięte w `main.ts:15035`–`15039` (`showCityAttackChoice(ctx, {`): `onSiege` `main.ts:15036` → `startMapSiege(ctx)` (`main.ts:14920`); `onStorm` `main.ts:15037` → `launchSiegeStormFromMap(ctx)`; `onCancel` `main.ts:15038` → `() => {}` (bez efektu). Drugi punkt wpięcia: `main.ts:26525`–`26526` (dispatcher A5).
+- **`AudienceAction`** (`ui/diplomacyAudience.ts:60`, `id: string`): ids nie są unią literałów. Źródło: `data/diplomacy.json` → `akcje_dyplomatyczne` (`gra/data/diplomacy.json:220`), id = cyfry z prefiksu etykiety (`game/diplomacy-audience-actions.ts:22`–`25`, `diplomacyActionIdFromLabel`). Builder pomija `'1'` (`game/diplomacy-audience-actions.ts:58`, „kontakt osobno”) i emituje **14** id: `2,3,4,5,6,7,8,9,10,11,12,13,14,15`. Z tego 9 jest na pasku (A7), a `4`, `6`, `7`, `8`, `9` tylko z kafelka „Możliwe umowy” (`ui/diplomacyAudience.ts:1824`); ich downstream nie był śledzony w rundzie 2 (sekcja D).
 
 ---
 
@@ -219,7 +250,7 @@ Routing przeglądarka→autozapis: `game/fsa-autosave.ts:94` `switch (reason)` �
 4. `main.ts:31169` `async function runWorldEndTurn(humanOwnerId)`:
    - czyszczenie buntów, `evictForeignUnitsFromCityHexes()`, reset `ruchLeft` / `replaceUsedThisTurn` / `retreatedThisTurn` (`main.ts:31170`–`31188`);
    - **`turn++;` — `main.ts:31189`** (jedyne przejście licznika tury w grze, poza resetami w startach);
-   - pętla AI: `main.ts:34364`–`34529` (dyplomacja), `34831`–`35227` (jednostki/miasta), barbarzyńcy `35604`–`35652`;
+   - pętla AI — właściciele: `ownerLoop: for (let oi = startOi; …)` w `main.ts:33469` (start pętli); w jej ciele blok dyplomacji AI: `const dipCmds: AIDiplomacyCommand[] = filterDiplomacyCommandsForEstablishedContact(…)` (`main.ts:34384`) i pętla komend `for (const cmd of dipCmds) {` (`main.ts:34388`) zamknięta na `main.ts:34535` (`main.ts:34364` to wcześniejszy fragment filtra `isForcedEpochWarDeclareCmd`, nie początek pętli); jednostki/miasta `main.ts:34831`–`35227`, barbarzyńcy `35604`–`35652`;
    - `checkVictory(vInput)` — `main.ts:35756`.
 5. `game/victory.ts:204` `export function checkVictory(input: VictoryInput): VictoryResult | null`. Tryby: `game/victory.ts:52` `VictoryMode` = `'moc' | 'dominacja' | 'moc_i_dominacja'` (**3**); wynik `game/victory.ts:95` `VictoryResult.rodzaj` = `'dominacja' | 'nauka' | 'przegrana'` (**3**). Duplikat typu trybu: `ui/newGameFlow.ts:194` `export type VictoryMode`.
 
@@ -249,7 +280,8 @@ Wiele fotelów (hot-seat): przejście fotela = `advanceSeat()` (`main.ts:36047`)
 | Propozycje dyplomatyczne (`ProposalActionId`) | 15 | A4 |
 | Akcje kliknięcia wrogiego miasta (`MapEnemyCityClickAction`) | 9 | A5 |
 | Akcje HUD jednostki (`handleSelectedUnitHudAction`) | 14 | A6 |
-| Przyciski akcji dyplomacji (id `ACTION_BAR_SPECS`) | 9 | A7 |
+| Id akcji audiencji dyplomacji (builder: 14; w tym 9 na pasku `ACTION_BAR_SPECS`) | 14 | A7 |
+| Literały i callbacki UI bez wcześniejszego wpisu (`EntityCardAction` 2, `siege-hold` 1, callbacki `SiegeMapPanelActions`/`CityAttackChoiceActions`: `onBesiege`, `onStorm`, `onRetreat`, `onQueueMachine`, `onSiege`, `onCancel` = 6) | 9 | A11 |
 | Skróty klawiaturowe gry | 9 (w tym 3 dev-only: F, M, G — bramki `FOG_DEV_SHORTCUTS` / `GALLERY_DEV_SHORTCUT`) | A10 |
 | Zdarzenia dyplomatyczne (`DiplomaticEvent`) | 23 | B1 |
 | Zdarzenia wiarygodności (`CredibilityEvent`) | 15 | B2 |
@@ -257,10 +289,10 @@ Wiele fotelów (hot-seat): przejście fotela = `advanceSeat()` (`main.ts:36047`)
 | Zdarzenia sojuszu (`AllianceEvent`) | 2 | B4 |
 | Rodzaje wpisów panelu/linków (`SidePanelEventKind` 7 + `SidePanelEventLinkKind` 6 + `InterHumanProposalKind` 4 + `DiploPlayerAction` 3 + `EotEventDraft.kind` 2) | 22 | B5 |
 | Małe unie zdarzeń (`AiCsClusterAction` 5, `AiMajorAbsorbAction` 1, `CapitalCaptureEventKind` 2, `VillageRewardKind` 3, `AutoBatchIntentKind` 3, `ProductionKind` 2, `SaveLabelKind` 3, `VictoryMode` 3, `VictoryResult.rodzaj` 3) | 25 | B6, B7 |
-| **Razem — typy komend/akcji** (A1–A7: 6+10+3+15+9+14+9, bez skrótów klawiszowych i bez duplikatów) | **66** | |
+| **Razem — typy komend/akcji** (A1–A7: 6+10+3+15+9+14+14 = 71; plus A11: 9; bez skrótów klawiszowych i bez duplikatów) | **80** | |
 | **Razem — typy zdarzeń/przejść stanu** (B1–B6 + tryby/wyniki wygranej z B7: 23+15+4+2+22+25; bez duplikatu `WiarygodnoscEventTyp`, bez interfejsów) | **91** | |
 
-> Liczby „Razem” są sumą pozycji z tabel tego pliku, nie wynikiem pełnego grepu każdego pliku `game/*.ts` — patrz sekcja D. Łączna liczba typów komend i eventów w katalogu: **66 + 91 = 157** (plus 9 skrótów klawiszowych).
+> Liczby „Razem” są sumą pozycji z tabel tego pliku, nie wynikiem pełnego grepu każdego pliku `game/*.ts` — patrz sekcja D. Łączna liczba typów komend i eventów w katalogu: **80 + 91 = 171** (plus 9 skrótów klawiszowych). Liczba 171 dotyczy pozycji wyliczonych z tabel; nie jest wynikiem pełnego grepu wszystkich `game/*.ts` (sekcja D).
 
 ---
 
