@@ -26,12 +26,14 @@ dotykające tych samych plików — zawsze sekwencyjnie, nigdy w tej samej fali.
 
 | # | Temat | Faza | Runda | runId Workflow | Status | Ostatnia aktualizacja |
 |---|---|---|---|---|---|---|
-| 1 | `R-RUSTPORT-P0-KALIBRACJA-Q1` | P0 | 1/5 | `wf_6ce4ed38-4e2` | **PASS** (zamknięty) | 2026-10-20 |
-| 2 | `R-RUSTPORT-P1-TERRAIN-DESERT-TUNDRA-FIX-Q1` | P1 (pierwszy kod) | 1/5 | `wf_094b5b5c-78e` | **PASS** (zintegrowane: `rust-port/parity-v2`@`9e33fc77`) | 2026-10-20 |
-| 3 | — wolny slot — | | | | | |
-| 4 | — wolny slot — | | | | | |
-| 5 | — wolny slot — | | | | | |
-| 6 | — wolny slot — | | | | | |
+| 1 | `R-RUSTPORT-P1-1-FILE-CATALOG-Q1` | P1.1 | 1/5 | `wf_e734e60d-6e2` | DISPATCHED (w toku) | 2026-10-20 |
+| 2 | `R-RUSTPORT-P1-2-TOOLCHAIN-Q1` | P1.2 | 1/5 | `wf_a2ee7482-f34` | DISPATCHED (w toku) | 2026-10-20 |
+| 3 | `R-RUSTPORT-P1-10-VIEWPORTS-Q1` | P1.10 | 1/5 | `wf_54cfd68f-fdd` | DISPATCHED (w toku) | 2026-10-20 |
+| 4 | `R-RUSTPORT-P1-11-ASSET-CATALOG-Q1` | P1.11 | 1/5 | `wf_b37ec715-332` | DISPATCHED (w toku) | 2026-10-20 |
+| 5 | `R-RUSTPORT-P1-12-DATA-CATALOG-Q1` | P1.12 | 1/5 | `wf_efec9681-023` | DISPATCHED (w toku) | 2026-10-20 |
+| 6 | `R-RUSTPORT-P1-13-COMMANDS-EVENTS-Q1` | P1.13 | 1/5 | `wf_8a3d523b-385` | DISPATCHED (w toku) | 2026-10-20 |
+
+Historia zamkniętych tematów (P0, poprawka terenu) — patrz `LEDGER.md`.
 
 **Decyzje właściciela po P0 (2026-10-20):**
 - Pin webowy: zostajemy przy świeżym `main` = `edb8fb56` (nie wracamy do `69ccb145`) — delta zostanie w pełni skwalifikowana w P1.
@@ -53,8 +55,11 @@ dotykające tych samych plików — zawsze sekwencyjnie, nigdy w tej samej fali.
   gotowego, testowanego kodu domenowego (28 plików vs 18).
 - **Gałąź (P0.5):** `rust-port/parity-v2`, forkowana z `autobot/real24-staging`.
 
-Poprawka terenu zintegrowana (PASS, `rust-port/parity-v2`@`9e33fc77`, 224 testy zielone). Następny krok:
-właściwe otwarcie P1 (audyt aktualnego weba, reference pack — P1.1 katalog plików jako pilot).
+P1 otwarte: fala 1 (6 równoległych tematów katalogowych: P1.1, P1.2, P1.10, P1.11, P1.12, P1.13) w
+toku. Po ich zamknięciu — fala 2: P1.14 (katalog mechanizmów gameplayu, największy punkt), P1.17
+(klasyfikacja REUSE/ADAPT/REPLACE istniejącego Rust, zależy od P1.1), P1.18 (hot-seat behavior matrix
+na obecnym pinie — archiwum go nie pokrywa rzetelnie), i ewentualnie P1.3–P1.9/P1.15 (manualne przejścia
+w żywym Chromium — wymagają innego trybu pracy niż czysty katalog odczytowy, do zaplanowania osobno).
 
 ## Automatyzacja (mechanizm autonomicznej kontynuacji)
 
