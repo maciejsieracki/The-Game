@@ -26,12 +26,12 @@ dotykające tych samych plików — zawsze sekwencyjnie, nigdy w tej samej fali.
 
 | # | Temat | Faza | Runda | runId Workflow | Status | Ostatnia aktualizacja |
 |---|---|---|---|---|---|---|
-| 1 | `R-RUSTPORT-P1-17-RUST-CLASSIFICATION-Q1` | P1.17 | 1/5 | `wf_afd72738-2f0` | DISPATCHED (w toku) | 2026-10-20 |
+| 1 | `R-RUSTPORT-P1-16B-AUDIT-CROSSCHECK-Q1` | P1.16b | 1/5 | `wf_8634e0dd-bf2` | DISPATCHED (w toku) | 2026-10-20 |
 | 2 | `R-RUSTPORT-P1-14-GAMEPLAY-CATALOG-Q1` | P1.14 | 1/5 | `wf_682a6444-dd8` | DISPATCHED (w toku) | 2026-10-20 |
-| 3 | `R-RUSTPORT-P1-18-HOTSEAT-MATRIX-Q1` | P1.18 | 1/5 | `wf_5d005df4-86c` | DISPATCHED (w toku) | 2026-10-20 |
-| 4 | `R-RUSTPORT-P1-16-EDGE-CASES-Q1` | P1.16 | 1/5 | `wf_d59d9819-e88` | DISPATCHED (w toku) | 2026-10-20 |
-| 5 | `R-RUSTPORT-P1-3-INTRO-START-Q1` | P1.3 | 1/5 | `wf_5308d8c9-1ff` | DISPATCHED (w toku, pilot przeglądarkowy) | 2026-10-20 |
-| 6 | `R-RUSTPORT-P1-13-COMMANDS-EVENTS-Q1` | P1.13 | 1/5 | `wf_8a3d523b-385` | DISPATCHED (w toku) | 2026-10-20 |
+| 3 | `R-RUSTPORT-P1-1B-REMAINING-DIRS-Q1` | P1.1b | 1/5 | `wf_63a49349-573` | DISPATCHED (w toku) | 2026-10-20 |
+| 4 | `R-RUSTPORT-P1-17B-UI-CLASSIFICATION-Q1` | P1.17b | 1/5 | `wf_967aff2b-a05` | DISPATCHED (w toku) | 2026-10-20 |
+| 5 | `R-RUSTPORT-P1-4-EPOCH-SELECTION-Q1` | P1.4 | 1/5 | `wf_ce142234-50a` | DISPATCHED (w toku, przeglądarkowy) | 2026-10-20 |
+| 6 | `R-RUSTPORT-P1-5-CIV-SELECTION-Q1` | P1.5 | 1/5 | `wf_384dd42c-162` | DISPATCHED (w toku, przeglądarkowy) | 2026-10-20 |
 
 **Zasada stałej:** gdy temat się zamyka (PASS/FAIL ostateczny/DECISION_REQUIRED/LIMIT-5-EXCEEDED),
 natychmiast otwieram kolejny w zwolnionym slocie — pula 6 ma być stale w pełni wykorzystana, bez

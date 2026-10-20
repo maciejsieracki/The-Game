@@ -1,8 +1,8 @@
 # P1.13 — Katalog komend, eventów i przejść stanu (web, referencja read-only)
 
-**Temat:** R-RUSTPORT-P1-13-COMMANDS-EVENTS-Q1 · **Runda:** 1/5 · **Rola:** Operator (Haiku 5.5 medium)
+**Temat:** R-RUSTPORT-P1-13-COMMANDS-EVENTS-Q1 · **Runda:** 2/5 · **Rola:** Operator, obrona (Haiku 5.5 medium)
 **Pin webowy:** `main` = `edb8fb56` (wszystkie ścieżki i linie odnoszą się do tego commita)
-**Metoda:** `git archive edb8fb56 gra/src` do katalogu roboczego poza repo (scratchpad); worktree repo (`e5c959c2`, inna gałąź) NIE był używany jako źródło. Zero zapisu w `gra/**`.
+**Metoda:** `git archive edb8fb56 gra/src` do katalogu roboczego poza repo (scratchpad); worktree repo (inna gałąź, bez `edb8fb56` jako HEAD) NIE był używany jako źródło odczytu. Zapis katalogu następuje w allowliście w worktree (patrz sekcja „Izolacja” w odpowiedzi rundy 2). Zero zapisu w `gra/**`.
 **Zakres:** `gra/src/main.ts` (39 350 linii w pinie) oraz `gra/src/game/*.ts` (183 pliki), plus typy `ui/*` i `map/*`/`battle/*` tam, gdzie są typami komend/akcji/eventów gracza.
 **Konwencja:** `ścieżka:linia` — cytat z kodu w backtickach. Wpisy bez cytatu nie wchodzą do katalogu.
 
@@ -296,7 +296,7 @@ Wiele fotelów (hot-seat): przejście fotela = `advanceSeat()` (`main.ts:36047`)
 
 ---
 
-## D. Luki zakresu (świadomie niedokończone w rundzie 1)
+## D. Luki zakresu (stan po rundzie 2)
 
 1. **Literały `ui/*`:** zamknięte w rundzie 2 w sekcji A11 dla `EntityCardAction`, `UnitPanelAction`, `SiegeMapPanelActions`, `CityAttackChoiceActions`, `AudienceAction`. **Otwarte:** obsługa `DiploPlayerAction` (typ w `ui/diplomacyPanel.ts:28`, wyliczony w B5; handler nie prześledzony).
 2. **Ścieżka `'3'`, `'2'`, `'13'`, `'12'`, `'15'`:** zamknięta w rundzie 2 (sekcja A7: koszyk → `handleNegotiatedProposal`). Fallback bez kontekstu negocjacji to atrapa „wkrótce” (`main.ts:21301`–`21302`). **Otwarte:** downstream id `'4'`, `'6'`, `'7'`, `'8'`, `'9'` z kafelka „Możliwe umowy”.
@@ -306,4 +306,4 @@ Wiele fotelów (hot-seat): przejście fotela = `advanceSeat()` (`main.ts:36047`)
 6. **Typ `FsaUnavailableReason`** (`game/fsa-autosave.ts:46`) — członkowie nie zostali policzeni w sumie.
 7. **Pozostałe `switch` w `gra/src`:** `git grep -nE '\bswitch\s*\(' edb8fb56 -- gra/src | wc -l` = **115** trafień; z tego 111 to `switch` na początku linii (`git grep -nE '^\s*switch\s*\(' …`). Katalog wymienia tylko switche dotyczące komend/akcji/zdarzeń. Pozostałe (np. `render/*.ts`, `battle/battleScene.ts`) nie zostały zaklasyfikowane.
 
-Te luki są zamknięte jako **DO DOPISANIA** w kolejnej rundzie (Evaluator wskaże, które są krytyczne dla P2.5/P2.6).
+Stan po rundzie 2: pozycje 1, 2, 3 i 7 mają rozstrzygnięcie opisane powyżej. Pozycje 4, 5, 6 oraz „Otwarte” z pozycji 1 i 2 pozostają **DO DOPISANIA** i wymagają decyzji Evaluatora, które są krytyczne dla P2.5/P2.6.
