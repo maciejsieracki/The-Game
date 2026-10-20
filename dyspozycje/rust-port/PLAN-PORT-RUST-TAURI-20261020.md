@@ -19,7 +19,7 @@
 
 ## 1. Zasady nadrzędne
 
-1. Źródłem prawdy jest **aktualny `main` repo webowego** (`maciejsieracki/The-Game`), re-pinowany na starcie P0 i przy każdej rundzie P8 (parity pass) — nie stary snapshot z 2026-09.
+1. Źródłem prawdy jest **aktualny `main` repo webowego** (`maciejsieracki/The-Game`), re-pinowany na starcie P0 i przy każdej rundzie P8 (parity pass) — nie stary snapshot z 2026-09. **Ta zasada obowiązuje też przy KAŻDYM reużyciu starego materiału Rust lub audytu webowego** (archiwum OpenClaw, worktree-overlays, stare gałęzie Rust): stary kod/audyt mógł powstać na starszym pinie webowym (np. `69ccb145`, zatwierdzony w poprzednim procesie, 59 commitów za obecnym `edb8fb56`). Zanim cokolwiek z takiego materiału trafi do klasyfikacji REUSE/ADAPT albo do P1/P2, Operator musi jawnie sprawdzić i zapisać: na jakim pinie webowym ten materiał powstał, i czy delta do `edb8fb56` unieważnia go częściowo/całkowicie. Brak takiej weryfikacji = materiał traktowany jako `UNKNOWN`, nigdy jako `REUSE`.
 2. Cel to **zachowanie zachowania 1:1** (UI, dane, reguły gameplayu, komunikaty) — architektura wewnętrzna Rust/Tauri nie musi kopiować struktury plików TS.
 3. Web pozostaje **wyłącznie referencją read-only** — zero zmian w `gra/**` w ramach tego projektu.
 4. Zakaz budowania "drugiej uproszczonej gry": fake DOM zamiast renderera, hard-coded podzbiór cywilizacji, placeholder zamiast realnego systemu — każdy taki skrót dyskwalifikuje temat na Final Control.
