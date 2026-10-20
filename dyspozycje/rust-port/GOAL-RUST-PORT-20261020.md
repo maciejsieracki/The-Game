@@ -26,16 +26,23 @@ dotykające tych samych plików — zawsze sekwencyjnie, nigdy w tej samej fali.
 
 | # | Temat | Faza | Runda | runId Workflow | Status | Ostatnia aktualizacja |
 |---|---|---|---|---|---|---|
-| 1 | `R-RUSTPORT-P0-KALIBRACJA-Q1` | P0 | 1/5 | `wf_6ce4ed38-4e2` | DISPATCHED (w toku) | 2026-10-20 |
+| 1 | `R-RUSTPORT-P0-KALIBRACJA-Q1` | P0 | 1/5 | `wf_6ce4ed38-4e2` | **PASS** (zamknięty) | 2026-10-20 |
 | 2 | — wolny slot — | | | | | |
 | 3 | — wolny slot — | | | | | |
 | 4 | — wolny slot — | | | | | |
 | 5 | — wolny slot — | | | | | |
 | 6 | — wolny slot — | | | | | |
 
-Następny krok: po PASS tematu #1 — zamknąć fazę P0, otworzyć pilot P1.1–P1.2 jako temat #1 kolejnej
-fazy; dodatkowe sloty (#2–#6) otwierać dopiero gdy jest więcej niż jeden niezależny, bezkolizyjny wątek
-pracy gotowy do dispatchu (np. po P1 rozbitym na niezależne moduły bez współdzielonych plików).
+**Decyzje właściciela po P0 (2026-10-20):**
+- Pin webowy: zostajemy przy świeżym `main` = `edb8fb56` (nie wracamy do `69ccb145`) — delta zostanie w pełni skwalifikowana w P1.
+- Przed otwarciem P1: najpierw pełna analiza archiwum OpenClaw (ledger/evidence/reports/dispatch/orchestration/process/memory/worktree-overlays/dossier) przez osobny Workflow — temat w przygotowaniu, patrz LEDGER.md.
+
+**Znalezisko P0 istotne dla P0.4/P1:** `autobot/real24-staging` i `hermes/handoff` mają 215 testów
+`cargo test` w `rust-port/engine`, main tylko 95 — potwierdza rekomendację poprzedniego agenta, że
+`real24-staging` jest lepszym rusztowaniem startowym niż samo `rust-port/engine` z main.
+
+Następny krok: dispatch tematu analizy archiwum OpenClaw (slot #2) przez Workflow. Dopiero po nim —
+otwarcie P1 (w tym P0.4/P0.5: decyzja bazy startowej z uwzględnieniem znaleziska 215 vs 95 testów).
 
 ## Automatyzacja (mechanizm autonomicznej kontynuacji)
 
