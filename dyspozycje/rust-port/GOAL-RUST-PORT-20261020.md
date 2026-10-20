@@ -27,7 +27,7 @@ dotykające tych samych plików — zawsze sekwencyjnie, nigdy w tej samej fali.
 | # | Temat | Faza | Runda | runId Workflow | Status | Ostatnia aktualizacja |
 |---|---|---|---|---|---|---|
 | 1 | `R-RUSTPORT-P0-KALIBRACJA-Q1` | P0 | 1/5 | `wf_6ce4ed38-4e2` | **PASS** (zamknięty) | 2026-10-20 |
-| 2 | `R-RUSTPORT-P0-ARCHIWUM-OPENCLAW-AUDYT-Q1` | P0 (pre-P1) | 3/5 | `wf_b1d13754-137` | **DECISION_REQUIRED** (zamknięty, czeka na właściciela) | 2026-10-20 |
+| 2 | `R-RUSTPORT-P1-TERRAIN-DESERT-TUNDRA-FIX-Q1` | P1 (pierwszy kod) | 1/5 | `wf_094b5b5c-78e` | DISPATCHED (w toku) | 2026-10-20 |
 | 3 | — wolny slot — | | | | | |
 | 4 | — wolny slot — | | | | | |
 | 5 | — wolny slot — | | | | | |
@@ -35,17 +35,26 @@ dotykające tych samych plików — zawsze sekwencyjnie, nigdy w tej samej fali.
 
 **Decyzje właściciela po P0 (2026-10-20):**
 - Pin webowy: zostajemy przy świeżym `main` = `edb8fb56` (nie wracamy do `69ccb145`) — delta zostanie w pełni skwalifikowana w P1.
-- Przed otwarciem P1: najpierw pełna analiza archiwum OpenClaw (ledger/evidence/reports/dispatch/orchestration/process/memory/worktree-overlays/dossier) przez osobny Workflow — temat w przygotowaniu, patrz LEDGER.md.
+- Archiwum OpenClaw przeanalizowane w pełni (temat zamknięty DECISION_REQUIRED, patrz AUDYT-ARCHIWUM-OPENCLAW-20261020.md).
+- **P0.4/P0.5 zamknięte:** baza = `autobot/real24-staging`, gałąź = `rust-port/parity-v2` (założona).
+- 4 patche archiwum = tylko inspiracja/UNKNOWN, nigdy kopiowane 1:1.
 
 **Znalezisko P0 istotne dla P0.4/P1:** `autobot/real24-staging` i `hermes/handoff` mają 215 testów
 `cargo test` w `rust-port/engine`, main tylko 95 — potwierdza rekomendację poprzedniego agenta, że
 `real24-staging` jest lepszym rusztowaniem startowym niż samo `rust-port/engine` z main.
 
-Następny krok: **czekam na decyzję właściciela** (patrz `AUDYT-ARCHIWUM-OPENCLAW-20261020.md` i pytanie
-w czacie) w sprawie: (a) czy adoptować poprawkę terenu Desert/Tundra z archiwum, (b) co zrobić z 4
-wzajemnie sprzecznymi patchami worktree-overlays (BRIDGE/hot-seat/population-matrix/P1-01). Dopiero po
-tym otwieram P1 (w tym P0.4/P0.5: baza startowa — potwierdzone, że `real24-staging`/`hermes/handoff`
-mają znacznie więcej kodu domenowego niż main, ale ze znanym, niepoprawionym bugiem terenu).
+**Decyzje właściciela (2026-10-20), zamykają P0.4/P0.5:**
+- 4 patche z `worktree-overlays/` (bridge save/load+replay+assets, hot-seat, population-matrix,
+  entrypoint-script) = **tylko inspiracja, UNKNOWN/REFERENCE** — żaden kod nie jest przenoszony 1:1.
+  Dotyczy to też wszystkich przyszłych klasyfikacji w P1.17/P2.
+- Poprawka żywego buga terenu (Desert/Tundra) w `real24-staging` = **pierwszy mały temat Workflow teraz**,
+  przed otwarciem P1.
+- **Baza startowa (P0.4):** `autobot/real24-staging` (78d494c7), nie main-owy `rust-port/engine` — więcej
+  gotowego, testowanego kodu domenowego (28 plików vs 18).
+- **Gałąź (P0.5):** `rust-port/parity-v2`, forkowana z `autobot/real24-staging`.
+
+Następny krok: dispatch tematu poprawki terenu (`R-RUSTPORT-P1-TERRAIN-DESERT-TUNDRA-FIX-Q1`) przez
+Workflow na gałęzi `rust-port/parity-v2`. Dopiero po nim — właściwe otwarcie P1.
 
 ## Automatyzacja (mechanizm autonomicznej kontynuacji)
 
