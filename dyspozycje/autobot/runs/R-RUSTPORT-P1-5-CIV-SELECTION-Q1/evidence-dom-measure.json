@@ -1,0 +1,197 @@
+{
+  "runs": {
+    "kamien": {
+      "epochBadges": [
+        {
+          "name": "Epoka Kamienia",
+          "badge": "8 cyw."
+        },
+        {
+          "name": "Epoka Brazu",
+          "badge": "14 cyw."
+        },
+        {
+          "name": "Epoka Zelaza",
+          "badge": "15 cyw."
+        }
+      ],
+      "measure": {
+        "cardCount": 8,
+        "cardNames": [
+          "Grecy",
+          "Rzymianie",
+          "Chińczycy",
+          "Inkowie",
+          "Zulusi",
+          "Egipt",
+          "Sumerowie",
+          "Harappa"
+        ],
+        "lockedCards": 0,
+        "navhint": "Epoka Kamienia — dostępnych cywilizacji: 8",
+        "selectedDetailName": "Rzymianie",
+        "viewport": {
+          "w": 1600,
+          "h": 900
+        },
+        "docScrollHeight": 900,
+        "bodyScrollHeight": 900,
+        "isDocScrollable": false,
+        "gridPanel": {
+          "top": 253,
+          "bottom": 5638,
+          "height": 5386
+        },
+        "detail": {
+          "top": 253,
+          "bottom": 5638,
+          "height": 5386
+        },
+        "civLayout": {
+          "top": 253,
+          "bottom": 5638,
+          "height": 5386
+        },
+        "lastCardBottom": 486
+      },
+      "http": [],
+      "console": [
+        "Failed to load resource: the server responded with a status of 404 (Not Found)"
+      ]
+    },
+    "braz": {
+      "epochBadges": [
+        {
+          "name": "Epoka Kamienia",
+          "badge": "8 cyw."
+        },
+        {
+          "name": "Epoka Brazu",
+          "badge": "14 cyw."
+        },
+        {
+          "name": "Epoka Zelaza",
+          "badge": "15 cyw."
+        }
+      ],
+      "measure": {
+        "cardCount": 14,
+        "cardNames": [
+          "Grecy",
+          "Rzymianie",
+          "Chińczycy",
+          "Inkowie",
+          "Zulusi",
+          "Egipt",
+          "Sumerowie",
+          "Celtowie",
+          "Germanie",
+          "Harappa",
+          "Hetyci",
+          "Babilonia",
+          "Asyria",
+          "Fenicjanie"
+        ],
+        "lockedCards": 0,
+        "navhint": "Epoka Brazu — dostępnych cywilizacji: 14",
+        "selectedDetailName": "Rzymianie",
+        "viewport": {
+          "w": 1600,
+          "h": 900
+        },
+        "docScrollHeight": 900,
+        "bodyScrollHeight": 900,
+        "isDocScrollable": false,
+        "gridPanel": {
+          "top": 253,
+          "bottom": 5638,
+          "height": 5386
+        },
+        "detail": {
+          "top": 253,
+          "bottom": 5638,
+          "height": 5386
+        },
+        "civLayout": {
+          "top": 253,
+          "bottom": 5638,
+          "height": 5386
+        },
+        "lastCardBottom": 715
+      },
+      "http": [],
+      "console": []
+    },
+    "zelazo": {
+      "epochBadges": [
+        {
+          "name": "Epoka Kamienia",
+          "badge": "8 cyw."
+        },
+        {
+          "name": "Epoka Brazu",
+          "badge": "14 cyw."
+        },
+        {
+          "name": "Epoka Zelaza",
+          "badge": "15 cyw."
+        }
+      ],
+      "measure": {
+        "cardCount": 15,
+        "cardNames": [
+          "Grecy",
+          "Rzymianie",
+          "Chińczycy",
+          "Inkowie",
+          "Zulusi",
+          "Egipt",
+          "Sumerowie",
+          "Celtowie",
+          "Germanie",
+          "Harappa",
+          "Hetyci",
+          "Słowianie",
+          "Babilonia",
+          "Asyria",
+          "Fenicjanie"
+        ],
+        "lockedCards": 0,
+        "navhint": "Epoka Zelaza — dostępnych cywilizacji: 15",
+        "selectedDetailName": "Rzymianie",
+        "viewport": {
+          "w": 1600,
+          "h": 900
+        },
+        "docScrollHeight": 900,
+        "bodyScrollHeight": 900,
+        "isDocScrollable": false,
+        "gridPanel": {
+          "top": 253,
+          "bottom": 5638,
+          "height": 5386
+        },
+        "detail": {
+          "top": 253,
+          "bottom": 5638,
+          "height": 5386
+        },
+        "civLayout": {
+          "top": 253,
+          "bottom": 5638,
+          "height": 5386
+        },
+        "lastCardBottom": 715
+      },
+      "http": [],
+      "console": []
+    }
+  },
+  "click": {
+    "before": "Rzymianie",
+    "after": "Grecy",
+    "selectedCards": [
+      "Grecy"
+    ]
+  }
+}

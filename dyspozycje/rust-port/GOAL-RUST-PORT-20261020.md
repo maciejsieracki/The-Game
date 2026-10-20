@@ -30,7 +30,7 @@ dotykające tych samych plików — zawsze sekwencyjnie, nigdy w tej samej fali.
 | 2 | `R-RUSTPORT-P1-6-CIVCOUNT-MAPSIZE-Q1` | P1.6 | 1/5 | `wf_cffceb53-140` | DISPATCHED (w toku, przeglądarkowy) | 2026-10-20 |
 | 3 | `R-RUSTPORT-P1-7-SETTINGS-VALIDATION-Q1` | P1.7 | 1/5 | `wf_43f129fb-003` | DISPATCHED (w toku, przeglądarkowy) | 2026-10-20 |
 | 4 | `R-RUSTPORT-P1-8-WORLD-GENERATION-Q1` | P1.8 | 1/5 | `wf_276e98f3-8ff` | DISPATCHED (w toku, przeglądarkowy) | 2026-10-20 |
-| 5 | `R-RUSTPORT-P1-4-EPOCH-SELECTION-Q1` | P1.4 | 1/5 | `wf_ce142234-50a` | DISPATCHED (w toku, przeglądarkowy) | 2026-10-20 |
+| 5 | `R-RUSTPORT-P1-9-MAP-HUD-PANELS-Q1` | P1.9 | 1/5 | `wf_d4454326-b9e` | DISPATCHED (w toku, przeglądarkowy) | 2026-10-20 |
 | 6 | `R-RUSTPORT-P1-5-CIV-SELECTION-Q1` | P1.5 | 1/5 | `wf_384dd42c-162` | DISPATCHED (w toku, przeglądarkowy) | 2026-10-20 |
 
 **Zasada stałej:** gdy temat się zamyka (PASS/FAIL ostateczny/DECISION_REQUIRED/LIMIT-5-EXCEEDED),
