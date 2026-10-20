@@ -27,7 +27,7 @@ dotykające tych samych plików — zawsze sekwencyjnie, nigdy w tej samej fali.
 | # | Temat | Faza | Runda | runId Workflow | Status | Ostatnia aktualizacja |
 |---|---|---|---|---|---|---|
 | 1 | `R-RUSTPORT-P0-KALIBRACJA-Q1` | P0 | 1/5 | `wf_6ce4ed38-4e2` | **PASS** (zamknięty) | 2026-10-20 |
-| 2 | — wolny slot — | | | | | |
+| 2 | `R-RUSTPORT-P0-ARCHIWUM-OPENCLAW-AUDYT-Q1` | P0 (pre-P1) | 1/5 | `wf_b1d13754-137` | DISPATCHED (w toku) | 2026-10-20 |
 | 3 | — wolny slot — | | | | | |
 | 4 | — wolny slot — | | | | | |
 | 5 | — wolny slot — | | | | | |
