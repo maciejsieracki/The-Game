@@ -45,6 +45,38 @@ Limit rund: 5, jak w reszcie tego repo. Po 5 rundach bez PASS — `LIMIT-5-EXCEE
 Jeden pisarz na worktree. Allowlista per temat, nigdy `git add -A`.
 Raport Final Control musi zawierać: hash/diff zakres, komendy testów i ich realny wynik (nie deklarację), porównanie z web-source dla tego konkretnego zachowania.
 
+### 2b. Równoległość tematów — do 6 jednocześnie (dodane 2026-10-20, na żądanie właściciela)
+
+Żeby w pełni wykorzystać możliwości Workflow, prowadzę **do 6 niezależnych tematów jednocześnie**,
+każdy jako osobne wywołanie narzędzia Workflow (osobny `runId`, osobna pętla rund w tle) — nie jedno
+wywołanie obsługujące 6 tematów naraz. Zgodne z istniejącą konwencją tego repo
+(`civ-autobot-workflow` §5): pula 6, efektywnie ~5 tematów jeśli watchdog orkiestratora dzieli z nią
+limit uwagi — liczba 6 to pojemność dispatchu, nie gwarancja że wszystkie 6 idą do PASS w tym samym
+tempie.
+
+**Zweryfikowane fakty techniczne (nie z pamięci, zmierzone w tej sesji):**
+- Ten kontener ma 4 rdzenie (`nproc`), więc limit współbieżnych `agent()` **wewnątrz jednego**
+  wywołania Workflow to `min(16, nproc-2)` = **2**. Nie ogranicza to liczby tematów, bo pipeline
+  Operator→Evaluator→Final Control jednego tematu jest **sekwencyjny** (jedna rola aktywna naraz) —
+  6 tematów naraz oznacza najwyżej 6 jednoczesnych `agent()` w całej sesji, po jednym na temat.
+- Nie istnieje udokumentowany twardy pułap liczby **oddzielnych** wywołań Workflow (osobnych
+  `runId`) działających jednocześnie w tle w jednej sesji — traktować empirycznie: jeśli dispatch
+  szóstego tematu zacznie się wyraźnie opóźniać albo kolejkować, to jest sygnał do zejścia z 6 na
+  mniej, nie błąd do zignorowania.
+
+**Zasady przy wielu tematach naraz:**
+1. Każdy temat ma własny pełny dispatch (`dyspozycje/autobot/runs/<ID>/00-dispatch.md`), własny wpis
+   w `dyspozycje/rust-port/LEDGER.md`, własną allowlistę.
+2. **Tematy dotykające tych samych plików nigdy nie idą w tej samej fali** — dispatchowane
+   sekwencyjnie, jeden po drugim, nie równolegle (ta sama reguła co w `civ-autobot-workflow` §dispatch
+   checklist). Przed otwarciem nowego tematu sprawdzam allowlisty aktywnych tematów pod kątem
+   pokrywania się ścieżek.
+3. Limit rund (5) i ledger prowadzone **per temat**, nie wspólnie.
+4. Integracja (commit) nadal wyłącznie moja, po PASS danego tematu — różne tematy integruję osobnymi
+   commitami, nie zbiorczo.
+5. `dyspozycje/rust-port/GOAL-RUST-PORT-20261020.md` §Status bieżący trzyma listę wszystkich aktywnych
+   tematów (do 6), nie jeden wiersz — aktualizowana po każdym zdarzeniu (dispatch/PASS/FAIL/itd.).
+
 ### 2a. Dwie zasady przejęte wprost z `autobot-controller` (uniwersalne, nie OpenClaw-specyficzne)
 
 Właściciel słusznie zwrócił uwagę, że ten skill niesie zasady pierwotnie przeniesione z AutoBota tego repo, nie obcą infrastrukturę. Dwie z nich przyjmuję wprost do tego projektu:

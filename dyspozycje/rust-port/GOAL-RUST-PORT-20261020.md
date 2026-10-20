@@ -15,16 +15,27 @@ Ukończyć funkcjonalny i wizualny port gry webowej `maciejsieracki/The-Game` (`
 2. Lokalizacja: nowa gałąź w tym repo, `rust-port/parity-v2` (tematy robocze nadal pod `autobot/<ID>`).
 3. Model routingu: Orkiestrator = Sonnet 5.5 (tylko orkiestruje). Operator/Evaluator = Haiku 5.5 medium. Final Control = Sonnet 5.5 medium. **Wszystkie trzy role wyłącznie przez `agent()` w skryptach Workflow — nigdy przez narzędzie `Agent`, nigdy wykonywane bezpośrednio przez orkiestratora.**
 
-## Status bieżący
+## Równoległość tematów — do 6 jednocześnie (§2b planu)
 
-| Pole | Wartość |
-|---|---|
-| Faza aktywna | P0 — kalibracja i pinning |
-| Temat aktywny | `R-RUSTPORT-P0-KALIBRACJA-Q1` |
-| Runda | nieotwarta — dispatch przygotowywany |
-| Ostatni werdykt | brak |
-| Ostatnia aktualizacja | 2026-10-20 (założenie projektu) |
-| Następny krok | Workflow: Operator P0.1–P0.3 (git ls-remote, manifest hash, cargo test/build na żywo) |
+Do 6 niezależnych tematów naraz, każdy jako osobne wywołanie Workflow (osobny `runId`). Tematy
+dotykające tych samych plików — zawsze sekwencyjnie, nigdy w tej samej fali. Ten kontener ma 4 rdzenie
+(limit `agent()` wewnątrz jednego Workflow = 2), ale pipeline per temat jest sekwencyjny, więc 6 tematów
+= najwyżej 6 jednoczesnych `agent()` w całej sesji.
+
+## Status bieżący — aktywne tematy (max 6)
+
+| # | Temat | Faza | Runda | runId Workflow | Status | Ostatnia aktualizacja |
+|---|---|---|---|---|---|---|
+| 1 | `R-RUSTPORT-P0-KALIBRACJA-Q1` | P0 | 1/5 | `wf_6ce4ed38-4e2` | DISPATCHED (w toku) | 2026-10-20 |
+| 2 | — wolny slot — | | | | | |
+| 3 | — wolny slot — | | | | | |
+| 4 | — wolny slot — | | | | | |
+| 5 | — wolny slot — | | | | | |
+| 6 | — wolny slot — | | | | | |
+
+Następny krok: po PASS tematu #1 — zamknąć fazę P0, otworzyć pilot P1.1–P1.2 jako temat #1 kolejnej
+fazy; dodatkowe sloty (#2–#6) otwierać dopiero gdy jest więcej niż jeden niezależny, bezkolizyjny wątek
+pracy gotowy do dispatchu (np. po P1 rozbitym na niezależne moduły bez współdzielonych plików).
 
 ## Automatyzacja (mechanizm autonomicznej kontynuacji)
 
