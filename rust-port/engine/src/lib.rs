@@ -1,5 +1,6 @@
 //! Foundational domain API for the staged Rust engine.
 
+pub mod data;
 pub mod domain;
 pub mod logging;
 pub mod version;
