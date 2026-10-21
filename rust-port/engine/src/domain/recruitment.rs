@@ -1,6 +1,8 @@
-use std::{collections::BTreeMap, error::Error, fmt};
+use std::{collections::BTreeMap, error::Error, fmt, sync::OnceLock};
 
 use serde::{Deserialize, Serialize};
+
+use crate::data::units_combat::{parse_units, UnitRecord};
 
 /// Empire-stock quantities used by recruitment and the next-turn resource upkeep.
 pub type ResourceStock = BTreeMap<String, u32>;
@@ -201,702 +203,79 @@ pub fn unit_resource_upkeep_for_turns(unit: &UnitRecruitment, turns: u32) -> Res
     unit.resource_upkeep_for_turns(turns)
 }
 
-/// Canonical recruitment rows mirrored from `gra/data/units.json`.
+/// Canonical recruitment rows derived from `gra/data/units.json` (one source of truth).
+///
+/// Every value comes from the embedded `units.json` through `data::units_combat`;
+/// no unit numbers are written in this module. The mapping is 1:1:
+/// `Pieniądz (koszt)` -> `gold_cost`, `Utrzymanie (Pieniądz/turę)` -> `gold_upkeep`,
+/// `Surowiec` + `Surowiec (ilość)` -> `stock_cost`,
+/// `Utrzymanie surowiec` + `Utrzymanie surowiec (ilość)` -> `resource_upkeep`,
+/// `Super-jednostka == "TAK"` -> `super_unit`. Resource names are lower-cased with
+/// Polish diacritics removed (`Drewno` -> `drewno`, `Brąz` -> `braz`, `Żelazo` -> `zelazo`).
+/// Epoch scaling and the mount horse surcharge applied by the web runtime are NOT
+/// modelled here; see `dyspozycje/rust-port/p3/P3-17-RUNTIME-DATA-WIRING.md`.
 pub fn canonical_recruitment_costs() -> Vec<UnitRecruitment> {
-    fn record(
-        unit_id: &str,
-        unit_type: &str,
-        gold_cost: u32,
-        gold_upkeep: u32,
-        stock: &[(&str, u32)],
-        upkeep: &[(&str, u32)],
-        super_unit: bool,
-    ) -> UnitRecruitment {
-        let unit = stock.iter().fold(
-            UnitRecruitment::new(unit_id, unit_type, gold_cost, gold_upkeep),
-            |unit, (resource, amount)| unit.with_stock_cost(*resource, *amount),
-        );
-        let unit = upkeep.iter().fold(unit, |unit, (resource, amount)| {
-            unit.with_resource_upkeep(*resource, *amount)
-        });
-        if super_unit {
-            unit.with_super_unit()
-        } else {
-            unit
-        }
-    }
+    static CANONICAL: OnceLock<Vec<UnitRecruitment>> = OnceLock::new();
+    CANONICAL
+        .get_or_init(|| {
+            let records = parse_units().expect("embedded units.json must parse");
+            records.iter().map(recruitment_from_unit_record).collect()
+        })
+        .clone()
+}
 
-    [
-        record(
-            "Wojownik",
-            "Swordsman",
-            10,
-            1,
-            &[("drewno", 50)],
-            &[("drewno", 10)],
-            false,
-        ),
-        record(
-            "Procarz",
-            "Slinger",
-            8,
-            1,
-            &[("drewno", 50)],
-            &[("drewno", 10)],
-            false,
-        ),
-        record(
-            "Oszczepnik",
-            "Distance",
-            6,
-            1,
-            &[("drewno", 50)],
-            &[("drewno", 10)],
-            false,
-        ),
-        record(
-            "Łucznik",
-            "Distance",
-            6,
-            1,
-            &[("drewno", 50)],
-            &[("drewno", 10)],
-            false,
-        ),
-        record("Zwiadowca", "Civilian", 8, 0, &[], &[], false),
-        record(
-            "Włócznik",
-            "Spearman",
-            16,
-            2,
-            &[("braz", 50)],
-            &[("braz", 10)],
-            false,
-        ),
-        record(
-            "Wojownik z mieczem i tarczą",
-            "Swordsman",
-            16,
-            2,
-            &[("braz", 50)],
-            &[("braz", 10)],
-            false,
-        ),
-        record(
-            "Rydwan (woły)",
-            "Mount",
-            30,
-            3,
-            &[("braz", 50)],
-            &[("braz", 10)],
-            false,
-        ),
-        record(
-            "Konnica",
-            "Mount",
-            22,
-            3,
-            &[("braz", 50), ("kon", 25)],
-            &[("braz", 10)],
-            false,
-        ),
-        record(
-            "Galera",
-            "Naval",
-            18,
-            3,
-            &[("braz", 50)],
-            &[("braz", 10)],
-            false,
-        ),
-        record(
-            "Falanga",
-            "Falangite",
-            18,
-            2,
-            &[("zelazo", 50)],
-            &[("zelazo", 10)],
-            false,
-        ),
-        record(
-            "Hieros Lochos (Święty Zastęp)",
-            "Swordsman",
-            0,
-            0,
-            &[("zelazo", 75)],
-            &[("zelazo", 15)],
-            true,
-        ),
-        record(
-            "Hastati",
-            "Swordsman",
-            18,
-            2,
-            &[("zelazo", 50)],
-            &[("zelazo", 10)],
-            false,
-        ),
-        record(
-            "Triari",
-            "Spearman",
-            0,
-            0,
-            &[("zelazo", 75)],
-            &[("zelazo", 15)],
-            true,
-        ),
-        record(
-            "Jeździec chiński",
-            "Mount",
-            28,
-            3,
-            &[("braz", 50), ("kon", 25)],
-            &[("braz", 10)],
-            false,
-        ),
-        record(
-            "Hu Ben Wei (Gwardia Tygrysa)",
-            "Swordsman",
-            0,
-            0,
-            &[("braz", 75)],
-            &[("braz", 15)],
-            true,
-        ),
-        record(
-            "Impi",
-            "Spearman",
-            16,
-            2,
-            &[("braz", 50)],
-            &[("braz", 10)],
-            false,
-        ),
-        record(
-            "Oszczepnik Zulu (Izijula)",
-            "Distance",
-            20,
-            1,
-            &[("drewno", 50)],
-            &[("drewno", 10)],
-            false,
-        ),
-        record(
-            "uThulwana (Białe Tarcze)",
-            "Swordsman",
-            0,
-            0,
-            &[("braz", 75)],
-            &[("braz", 15)],
-            true,
-        ),
-        record(
-            "Wojownik z maczugą (Chaska)",
-            "Offensive",
-            26,
-            2,
-            &[("drewno", 50)],
-            &[("drewno", 10)],
-            false,
-        ),
-        record(
-            "Wojownik z toporem",
-            "Offensive",
-            18,
-            2,
-            &[("braz", 50)],
-            &[("braz", 10)],
-            false,
-        ),
-        record(
-            "Procarz (Huaracoc)",
-            "Slinger",
-            8,
-            1,
-            &[("drewno", 50)],
-            &[("drewno", 10)],
-            false,
-        ),
-        record(
-            "Oszczepnik (Estólica)",
-            "Distance",
-            9,
-            1,
-            &[("drewno", 50)],
-            &[("drewno", 10)],
-            false,
-        ),
-        record(
-            "Królewska Gwardia",
-            "Swordsman",
-            0,
-            0,
-            &[("braz", 75)],
-            &[("braz", 15)],
-            true,
-        ),
-        record(
-            "Rydwan konny",
-            "Mount",
-            28,
-            3,
-            &[("braz", 50), ("kon", 25)],
-            &[("braz", 10)],
-            false,
-        ),
-        record(
-            "Łucznik egipski",
-            "Distance",
-            14,
-            1,
-            &[("drewno", 50)],
-            &[("drewno", 10)],
-            false,
-        ),
-        record(
-            "Rydwan egipski",
-            "Mount",
-            32,
-            3,
-            &[("braz", 50), ("kon", 25)],
-            &[("braz", 10)],
-            false,
-        ),
-        record(
-            "Wojownik z khopesh",
-            "Swordsman",
-            18,
-            2,
-            &[("braz", 50)],
-            &[("braz", 10)],
-            false,
-        ),
-        record(
-            "Medżaj (Gwardia Faraona)",
-            "Swordsman",
-            0,
-            0,
-            &[("braz", 75)],
-            &[("braz", 15)],
-            true,
-        ),
-        record(
-            "Łucznik nubijski",
-            "Distance",
-            20,
-            2,
-            &[("drewno", 50)],
-            &[("drewno", 10)],
-            false,
-        ),
-        record(
-            "Łucznik sumeryjski",
-            "Distance",
-            9,
-            1,
-            &[("drewno", 50)],
-            &[("drewno", 10)],
-            false,
-        ),
-        record(
-            "Rydwan sumeryjski",
-            "Mount",
-            38,
-            3,
-            &[("braz", 50), ("kon", 25)],
-            &[("braz", 10)],
-            false,
-        ),
-        record(
-            "Włócznik sumeryjski",
-            "Spearman",
-            18,
-            2,
-            &[("braz", 50)],
-            &[("braz", 10)],
-            false,
-        ),
-        record(
-            "Gwardia Królewska Sumeru",
-            "Swordsman",
-            0,
-            0,
-            &[("braz", 75)],
-            &[("braz", 15)],
-            true,
-        ),
-        record(
-            "Wojownik mykeński",
-            "Swordsman",
-            18,
-            2,
-            &[("braz", 50)],
-            &[("braz", 10)],
-            false,
-        ),
-        record(
-            "Rydwan mykeński",
-            "Mount",
-            30,
-            3,
-            &[("braz", 50), ("kon", 25)],
-            &[("braz", 10)],
-            false,
-        ),
-        record(
-            "Wojownik Sherden",
-            "Swordsman",
-            18,
-            2,
-            &[("braz", 50)],
-            &[("braz", 10)],
-            false,
-        ),
-        record(
-            "Halabardnik Shang",
-            "Swordsman",
-            18,
-            2,
-            &[("braz", 50)],
-            &[("braz", 10)],
-            false,
-        ),
-        record(
-            "Rydwan Shang",
-            "Mount",
-            32,
-            3,
-            &[("braz", 50), ("kon", 25)],
-            &[("braz", 10)],
-            false,
-        ),
-        record(
-            "Łucznik akadyjski",
-            "Distance",
-            16,
-            2,
-            &[("drewno", 50)],
-            &[("drewno", 10)],
-            false,
-        ),
-        record(
-            "Gaesatae",
-            "Swordsman",
-            14,
-            1,
-            &[("zelazo", 50)],
-            &[("zelazo", 10)],
-            false,
-        ),
-        record(
-            "Soldurii",
-            "Swordsman",
-            18,
-            2,
-            &[("zelazo", 50)],
-            &[("zelazo", 10)],
-            false,
-        ),
-        record(
-            "Rydwan celtycki",
-            "Mount",
-            28,
-            3,
-            &[("zelazo", 50), ("kon", 25)],
-            &[("zelazo", 10)],
-            false,
-        ),
-        record(
-            "Wojownik germański",
-            "Swordsman",
-            0,
-            2,
-            &[("zelazo", 75)],
-            &[("zelazo", 15)],
-            true,
-        ),
-        record(
-            "Berserker germański",
-            "Swordsman",
-            16,
-            2,
-            &[("zelazo", 50)],
-            &[("zelazo", 10)],
-            false,
-        ),
-        record(
-            "Taran",
-            "Siege",
-            14,
-            1,
-            &[("drewno", 75)],
-            &[("drewno", 15)],
-            false,
-        ),
-        record(
-            "Taran okuty",
-            "Siege",
-            18,
-            2,
-            &[("braz", 75)],
-            &[("braz", 15)],
-            false,
-        ),
-        record(
-            "Katapulta",
-            "Siege",
-            18,
-            2,
-            &[("zelazo", 75)],
-            &[("zelazo", 15)],
-            false,
-        ),
-        record(
-            "Wieża oblężnicza",
-            "Siege",
-            20,
-            2,
-            &[("braz", 75)],
-            &[("braz", 15)],
-            false,
-        ),
-        record(
-            "Wojownik tyrreński",
-            "Offensive",
-            15,
-            2,
-            &[("braz", 50)],
-            &[("braz", 10)],
-            false,
-        ),
-        record(
-            "Wojownik szekelesz",
-            "Spearman",
-            14,
-            2,
-            &[("braz", 50)],
-            &[("braz", 10)],
-            false,
-        ),
-        record(
-            "Konnica lancowa asyryjska",
-            "Mount",
-            32,
-            3,
-            &[("zelazo", 50), ("kon", 25)],
-            &[("zelazo", 10)],
-            false,
-        ),
-        record(
-            "Konnica łucznicza asyryjska",
-            "Mount",
-            30,
-            3,
-            &[("zelazo", 50), ("kon", 25)],
-            &[("zelazo", 10)],
-            false,
-        ),
-        record(
-            "Łucznik asyryjski",
-            "Distance",
-            14,
-            2,
-            &[("drewno", 50)],
-            &[("drewno", 10)],
-            false,
-        ),
-        record(
-            "Drużynnik",
-            "Swordsman",
-            18,
-            2,
-            &[("zelazo", 50)],
-            &[("zelazo", 10)],
-            false,
-        ),
-        record(
-            "Jeździec z oszczepami",
-            "Mount",
-            26,
-            3,
-            &[("zelazo", 50), ("kon", 25)],
-            &[("zelazo", 10)],
-            false,
-        ),
-        record(
-            "Strażnik bram Harappy",
-            "Spearman",
-            18,
-            2,
-            &[("braz", 50)],
-            &[("braz", 10)],
-            false,
-        ),
-        record(
-            "Piechota induska",
-            "Spearman",
-            18,
-            2,
-            &[("braz", 50)],
-            &[("braz", 10)],
-            false,
-        ),
-        record(
-            "Garnizon Harappy",
-            "Swordsman",
-            18,
-            2,
-            &[("zelazo", 50)],
-            &[("zelazo", 10)],
-            false,
-        ),
-        record(
-            "Rydwan Kapadokijski",
-            "Mount",
-            34,
-            3,
-            &[("braz", 50), ("kon", 25)],
-            &[("braz", 10)],
-            false,
-        ),
-        record(
-            "Piechota hetycka",
-            "Spearman",
-            18,
-            2,
-            &[("braz", 50)],
-            &[("braz", 10)],
-            false,
-        ),
-        record(
-            "Gwardia hetycka",
-            "Swordsman",
-            18,
-            2,
-            &[("zelazo", 50)],
-            &[("zelazo", 10)],
-            false,
-        ),
-        record(
-            "Gwardia Ishtar",
-            "Swordsman",
-            18,
-            2,
-            &[("braz", 50)],
-            &[("braz", 10)],
-            false,
-        ),
-        record(
-            "Wojownik babiloński",
-            "Swordsman",
-            18,
-            2,
-            &[("braz", 50)],
-            &[("braz", 10)],
-            false,
-        ),
-        record(
-            "Piechota neobabilońska",
-            "Swordsman",
-            18,
-            2,
-            &[("zelazo", 50)],
-            &[("zelazo", 10)],
-            false,
-        ),
-        record(
-            "Tyrski miecznik",
-            "Swordsman",
-            18,
-            2,
-            &[("zelazo", 50)],
-            &[("zelazo", 10)],
-            false,
-        ),
-        record(
-            "Wojownik fenicki",
-            "Swordsman",
-            18,
-            2,
-            &[("braz", 50)],
-            &[("braz", 10)],
-            false,
-        ),
-        record(
-            "Gwardia Tyreńska",
-            "Swordsman",
-            18,
-            2,
-            &[("zelazo", 50)],
-            &[("zelazo", 10)],
-            false,
-        ),
-        record(
-            "Thorakites",
-            "Spearman",
-            16,
-            2,
-            &[("zelazo", 50)],
-            &[("zelazo", 10)],
-            false,
-        ),
-        record(
-            "Evocati",
-            "Swordsman",
-            0,
-            0,
-            &[("zelazo", 75)],
-            &[("zelazo", 15)],
-            true,
-        ),
-        record(
-            "iButho z iklwa",
-            "Spearman",
-            16,
-            2,
-            &[("zelazo", 50)],
-            &[("zelazo", 10)],
-            false,
-        ),
-        record(
-            "Gwardzista z champi",
-            "Offensive",
-            18,
-            2,
-            &[("braz", 50)],
-            &[("braz", 10)],
-            false,
-        ),
-        record(
-            "Wojownik z żelaznym khopesh",
-            "Swordsman",
-            18,
-            2,
-            &[("zelazo", 50)],
-            &[("zelazo", 10)],
-            false,
-        ),
-        record(
-            "Mur tarcz (Sargonid)",
-            "Spearman",
-            18,
-            2,
-            &[("zelazo", 50)],
-            &[("zelazo", 10)],
-            false,
-        ),
-        record(
-            "Miecznik galijski",
-            "Swordsman",
-            14,
-            1,
-            &[("zelazo", 50)],
-            &[("zelazo", 10)],
-            false,
-        ),
-    ]
-    .into_iter()
-    .collect()
+fn recruitment_from_unit_record(record: &UnitRecord) -> UnitRecruitment {
+    let mut unit = UnitRecruitment::new(
+        record.jednostka.as_str(),
+        record.typ.as_str(),
+        non_negative(record.pieniadz_koszt, "Pieniądz (koszt)"),
+        non_negative(
+            record.utrzymanie_pieniadz_ture,
+            "Utrzymanie (Pieniądz/turę)",
+        ),
+    );
+    if let Some(resource) = &record.surowiec {
+        unit = unit.with_stock_cost(
+            resource_key(resource),
+            non_negative(record.surowiec_ilosc, "Surowiec (ilość)"),
+        );
+    }
+    if let Some(resource) = &record.utrzymanie_surowiec {
+        unit = unit.with_resource_upkeep(
+            resource_key(resource),
+            non_negative(
+                record.utrzymanie_surowiec_ilosc,
+                "Utrzymanie surowiec (ilość)",
+            ),
+        );
+    }
+    if record.super_jednostka == "TAK" {
+        unit = unit.with_super_unit();
+    }
+    unit
+}
+
+fn non_negative(value: i64, field: &str) -> u32 {
+    u32::try_from(value).unwrap_or_else(|_| panic!("units.json field {field} must be >= 0"))
+}
+
+/// Map a `units.json` resource name to the domain stock key (ASCII, lower case).
+fn resource_key(name: &str) -> String {
+    name.chars()
+        .map(
+            |character| match character.to_lowercase().next().unwrap_or(character) {
+                'ą' => 'a',
+                'ć' => 'c',
+                'ę' => 'e',
+                'ł' => 'l',
+                'ń' => 'n',
+                'ó' => 'o',
+                'ś' => 's',
+                'ź' | 'ż' => 'z',
+                other => other,
+            },
+        )
+        .collect()
 }
 
 /// Find a fresh canonical record by the exact `Jednostka` identifier.

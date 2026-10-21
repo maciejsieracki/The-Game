@@ -193,13 +193,16 @@ fn building_and_recruitment_vectors_keep_purchase_and_work_costs_separate() {
     assert_eq!(stock.get("drewno"), Some(&0));
 
     let warrior = recruitment_for("Wojownik").expect("canonical warrior");
-    assert_eq!(warrior.gold_cost, 10);
+    // Expected values come from gra/data/units.json (Wojownik: Pieniadz 5, Utrzymanie 1,
+    // Surowiec Drewno 13, Utrzymanie surowiec Drewno 3); the former 10/1/50/10 literals were
+    // a stale hand-written table (R-RUSTPORT-P3-17-RUNTIME-DATA-WIRING-Q1).
+    assert_eq!(warrior.gold_cost, 5);
     assert_eq!(warrior.gold_upkeep, 1);
-    assert_eq!(warrior.stock_cost("drewno"), Some(50));
-    assert_eq!(warrior.resource_upkeep("drewno"), Some(10));
+    assert_eq!(warrior.stock_cost("drewno"), Some(13));
+    assert_eq!(warrior.resource_upkeep("drewno"), Some(3));
     let remaining = spend_recruitment(&BTreeMap::from([(String::from("drewno"), 57)]), &warrior)
         .expect("purchase is affordable");
-    assert_eq!(remaining.remaining_stock.get("drewno"), Some(&7));
+    assert_eq!(remaining.remaining_stock.get("drewno"), Some(&44));
 }
 
 #[test]
