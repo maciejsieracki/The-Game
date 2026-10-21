@@ -29,7 +29,7 @@ dotykające tych samych plików — zawsze sekwencyjnie, nigdy w tej samej fali.
 |---|---|---|---|---|---|---|
 | 1 | `R-RUSTPORT-P3-17-RUNTIME-DATA-WIRING-Q1` | P3.17 podpięcie danych JSON do silnika w runtime (rekrutacja z `units.json`) + audyt twardych tabel w `domain/**` | 1/5 | (patrz niżej) | DISPATCHED | 2026-10-21 |
 | 2 | `R-RUSTPORT-P4-4-MODEL-CATALOG-Q1` | P4.4 katalog modeli 3D do odtworzenia w Rust — Opus 5.5 | 1/5 | `wf_7f499719-17a` | DISPATCHED (Final Control) | 2026-10-21 |
-| 3 | `R-RUSTPORT-P4-6-RENDERER-CRATE-SCAFFOLD-Q1` | P4.6 szkielet crate'a `rust-port/renderer` (RR-T0) — Opus 5.5 | 1/5 | `wf_0bec7858-c2b` | DISPATCHED | 2026-10-21 |
+| 3 | — | — | — | — | **WOLNY** (P4.6 zamknięty PASS, szkielet `rust-port/renderer` na parity-v2 `0a496f67`; do uruchomienia RR-T3/T4/T6) | 2026-10-21 |
 | 4 | `R-WEB-MEMORY-LEAKS-FIX-Q1` | naprawa wycieków pamięci w wersji webowej (M1/M2/M3/M6 z P4.3) na osobnej gałęzi `fix/web-memory-leaks-Q1`, na polecenie właściciela — Opus 5.5 | 1/5 | `wf_d931a7e7-06e` | DISPATCHED | 2026-10-21 |
 | 5 | `R-RUSTPORT-P4-7-NEW-MODELS-SPEC-Q1` | P4.7 specyfikacja NOWYCH modeli (miasta dla brakujących państw/epoki żelaza, 5 cudów parkowanych) + port nieużywanych + reguła routingu — Opus 5.5 | 1/5 | (patrz niżej) | DISPATCHED | 2026-10-21 |
 | 6 | — | — | — | — | **WOLNY, ŚWIADOMIE** (jw.) | 2026-10-21 |
