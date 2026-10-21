@@ -27,7 +27,7 @@ dotykające tych samych plików — zawsze sekwencyjnie, nigdy w tej samej fali.
 
 | # | Temat | Faza | Runda | runId Workflow | Status | Ostatnia aktualizacja |
 |---|---|---|---|---|---|---|
-| 1 | — | — | — | — | **WOLNY** (P2.8 PASS, zamknięty) | 2026-10-21 |
+| 1 | `R-RUSTPORT-P2-2-GAMESTATE-CONTRACT-Q1` | P2.2 (kontrakt GameState, PROPOZYCJA) | 1/5 | `wf_31e7977d-973` | DISPATCHED (w toku) | 2026-10-21 |
 | 2 | — | — | — | — | **WOLNY** (P2.9 PASS, zamknięty) | 2026-10-21 |
 | 3 | — | — | — | — | **WOLNY** | 2026-10-21 |
 | 4 | — | — | — | — | **WOLNY** | 2026-10-21 |
