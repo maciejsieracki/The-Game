@@ -707,3 +707,35 @@ Tematy 1–3 nie dotykają tych samych plików co temat `R-RUSTPORT-P1-16B` (`P1
 Nowe liczniki po obronie: PARYTET-AI NAPRAWIONY 9 / NADAL ISTNIEJE 0 / NIEROZSTRZYGNIONY 0. L2 bez zmian: NADAL ISTNIEJE.
 
 **DEPLOY/PUSH: NIE WYKONANO.**
+
+---
+
+## 13. Runda 1/5 — R-RUSTPORT-P1-16C-STOLICE-Q1 (Operator Haiku 5.5 medium, pin `edb8fb56`; wersja po obronie, tura 2 tej samej rundy)
+
+**Dowody:** wyłącznie `git show edb8fb56:…` i `git grep edb8fb56` (numery linii z tych poleceń). Test NIE uruchomiony (odczyt przez git; brak checkoutu, build, dev). §1–§12 nietknięte. Źródło twierdzeń: `dyspozycje/AUDYT-STOLICE-VS-MIASTA-PANSTWA-2026-08-02.md` (tabela „Stan", „Pakowanie MP", „Testy", „Chip").
+**Decyzja ABC:** `MAP-UX-CLUSTER-LABEL-Q1` = ZASTĄPIONE (paczka `ABC-PACZKA-2026-08-06-KOLEJKA` [3/5], FALA 296 `a37f7123`, `dyspozycje/PYTANIA-OTWARTE.md:318`). Brak nowych pytań ABC.
+
+### 13.1 Status per pozycja (5 z §9.4 AUDYT-STOLICE)
+
+| # | Pozycja | Status | Dowód (pin `edb8fb56`) | Korekta względem audytu |
+|---|---|---|---|---|
+| 1 | Luzowanie MP w pakowaniu do 3 hex (audyt: „nadal nie 2”) | NADAL ISTNIEJE (zakres: TYLKO ścieżka repack; hub-chain bez luzowania) | Luzowanie: `gra/src/map/clusters.ts:2894` `looseMin = Math.max(3, minDist − 2)` w `repackClusterStateCitiesIfSparse` (`:2843`, wołane `:2979`, uruchamiane gdy `mpNow < stateCityCount` `:2860`, a `validMp` puste `:2891`). Dla `ki === 0`: `minDist = minDystMiastaPanstwa = opts?.minDystans ?? MIN_DIST_START_CITY_STATE` (`:3399`; `MIN_DIST_START_CITY_STATE = 5`, `:49`, `CLUSTER_CITY_STATE_MIN_HEX = 5`, `:42`). Floor = 3 tylko gdy minDist ≤ 5; przy większym minDist floor = minDist − 2. Ścieżka hub-chain (`packCityStatesAroundCapital` `:2036` → `packCityStatesHubChain` `:1911`): `minDistLevels = [minDist]` (`:2084`), `validCandidate` na `minSep` (`:1941–1944`), `packNearestLegalLand` na `minSep = minDist` (`:1975`, `:2000–2001`, wołanie `:2122`). Brak luzowania. Ostatnia deska do 2: `:2919–2932` (`packCityStatesAroundCapital(…, 2, …)`, `ringDistances: [3, 2]`), tylko gdy retry (`:2894–2913`) daje 0 ważnych MP (`:2920`) | Audyt „nadal nie 2” jest NIEPRAWDZIWY na pinie: deska do 2 istnieje (repack, po retry). Luzowanie do 3 jest warunkowe (ścieżka i minDist), nie ogólne |
+| 2 | Menu MP Standard: min 4 / default 5 / max 7 | (a) twierdzenie audytu 4/5/7: NIEAKTUALNE wobec faktu (korekta, poza zbiorem statusów; ujawnione jawnie) · (b) min 5 MP: NADAL ISTNIEJE | UI: `gra/src/ui/newGameFlow.ts` → `miastaPanstwaMenuForMapLabel` (`gra/src/map/newGameMapDefaults.ts:695`) → `miastaPanstwaTriple` (`:658`): NAJPIERW `eStartMiastaPanstwa` z `gra/data/e-start-params.json` „Standardowy”.`miasta_panstwa` = **6** (`:35–37`) → `clampedDef = 6`, `max = min(clampedDef + 1, MAX)` = 7, `min = max(1, clampedDef − 1)` = 5 (`:659–665`). Wiersz `MIASTA_PANSTWA_MENU_BY_TIER` (`:579`, standard {4,5,7}) to fallback (`:667`), nieosiągalny gdy istnieje wiersz JSON | (a) audytowe 4/5/7 nie zachodzi na pinie. (b) min 5 MP = min 6 etykiet w klastrze (1 stolica + 5 MP): realny problem, osobny od liczb audytu |
+| 3 | Test `node tools/capital-sep-unit-test.cjs` → 36 PASS | NIEROZSTRZYGNIONY | Plik istnieje na pinie: `gra/tools/capital-sep-unit-test.cjs` (121 linii). Przegląd statyczny (bez uruchomienia): licznik PASS = `passed++` przy `console.log('PASS:', msg)` (`:49`); 29 linii zawiera `assert`. Literalne `36` w pliku: brak (`grep -n '36'` = 0 trafień). Wynik 36 nie jest zapisany w kodzie testu, zależy od uruchomienia | — Nierozstrzygnięte do czasu uruchomienia testu (poza zakresem tej rundy) |
+| 4 | Chip: nazwa WIELKIMI + dopisek „· miasto-państwo” dla MP; stolica obca bez dopisku | NADAL ISTNIEJE (częściowo: dopisek i wielkie litery są; stolica obca bez dopisku jest) | Dopisek: `gra/src/game/display-names.ts:8–9` (`CITY_STATE_LABEL`, `CITY_STATE_SEPARATOR = ' · '`), `:17–22` (`formatEntityDisplayName`, dopisek tylko przy `isCityState`). Stolica obca: `:184–189` (gałąź `isCapital && !isCityState` → bez dopisku). Wielkie litery: `gra/src/render/cityMapStatChip.ts:789` `toUpperCase()` na całym napisie. Wywołanie: `gra/src/render/cities.ts:779–787` | Opis audytu zgodny z kodem |
+| 5 | Zgodność z B+C (FALA 296): obca stolica = nazwa cywilizacji | NADAL ISTNIEJE (rozbieżność z wdrożonym B+C trwa; kod realizuje inną wersję, zob. 13.2) | Gałąź obcej stolicy: `gra/src/game/display-names.ts:184–189` → `foreignCapitalMapName` (`:247`) = nazwa MIASTA. Nazwa cywilizacji tylko przy placeholderze (`isTechnicalOwnerLabel`, `:210–217`). Źródło zmiany w kodzie: komentarz `:161–170` i `:234–235` („R-MAPA-ETYKIETA-STOLICY-NAZWA-MIASTA-Q1 (Maciej 2026-09-04)”, ECHO „Sama nazwa miasta, bez cywilizacji”); komentarz `gra/src/render/cities.ts:778` mówi nadal „nazwa cywilizacji” (nieaktualny). Wpis 2026-09-04 w `dyspozycje/PYTANIA-OTWARTE.md`: 0 trafień (`grep -c 'R-MAPA-ETYKIETA\|2026-09-04'` = 0) | Audyt pyta o zgodność z B+C. Literalnie NIEZGODNE. Zmiana ma źródło wyłącznie w komentarzach kodu, bez rejestru |
+
+### 13.2 Wnioski dla orkiestratora (bez pytań do właściciela)
+
+- Kryterium „zero pozycji bez statusu z dowodem”: SPEŁNIONE dla 5/5. Pozycja 2 ma dwa wiersze (a) i (b), oba z dowodem. Pozycja 3 = NIEROZSTRZYGNIONY z jawnym powodem.
+- Pozycja 5: wpis `R-MAPA-ETYKIETA-STOLICY-NAZWA-MIASTA-Q1` do `PYTANIA-OTWARTE.md` to porządek rejestru, nie nowe pytanie. Która wersja obowiązuje, rozstrzyga orkiestrator wg rejestru, nie Operator.
+- Pozycje 1 i 2: liczby audytu (4/5/7, „nie 2”) są nieaktualne. Realne wartości: menu Standard 5/6/7; luzowanie do 3 tylko w repack (warunkowo); deska do 2 po retry.
+- Sep stolic (`capitalMinSeparation`, `clusters.ts:1470–1474`, `duza: 15`) poza zakresem tych 5 pozycji; nie oceniano.
+
+### 13.3 Ograniczenia
+
+- Nie uruchomiono testu `capital-sep-unit-test.cjs`, `cargo`, `npm` ani gry. Test 36 = NIEROZSTRZYGNIONY.
+- Nie potwierdzono „obu nazw z puli `nazwyKlastra` / `miasta_panstwa`” (audyt, sekcja chip): nieprzeliczone.
+- `gra/**` nietknięte. Zapis: ta sekcja §13 oraz `dyspozycje/autobot/runs/R-RUSTPORT-P1-16C-STOLICE-Q1/` (01 i 02). Brak commita, push, deployu.
+
+**DEPLOY/PUSH: NIE WYKONANO.**
