@@ -27,14 +27,32 @@ dotykające tych samych plików — zawsze sekwencyjnie, nigdy w tej samej fali.
 
 | # | Temat | Faza | Runda | runId Workflow | Status | Ostatnia aktualizacja |
 |---|---|---|---|---|---|---|
-| 1 | `R-RUSTPORT-P2-13-FINAL-CONTROL-Q1` | P2.13 (synteza i kontrola całej fazy P2 przed P3) | runda 3 (architektura: fan-out równoległy po 2× LIMIT-5-EXCEEDED sekwencyjnym) | `wf_b55db73d-44f` | DISPATCHED (w toku) | 2026-10-21 |
+| 1 | — | — | — | — | **WOLNY** (P2.13 PASS, zamknięty — FAZA P2 KOMPLETNA) | 2026-10-21 |
 | 2 | — | — | — | — | **WOLNY** (P2.10 PASS, zamknięty) | 2026-10-21 |
 | 3 | — | — | — | — | **WOLNY** | 2026-10-21 |
 | 4 | — | — | — | — | **WOLNY** | 2026-10-21 |
 | 5 | — | — | — | — | **WOLNY** | 2026-10-21 |
 | 6 | — | — | — | — | **WOLNY** | 2026-10-21 |
 
-## *** FAZA P1 ZAMKNIĘTA — FAZA P2 OTWARTA (2026-10-21) ***
+## *** FAZA P2 ZAMKNIĘTA — FAZA P3 OTWARTA (2026-10-21) ***
+
+`R-RUSTPORT-P2-13-FINAL-CONTROL-Q1`: PASS po 3 architekturach (2× LIMIT-5-EXCEEDED sekwencyjne →
+fan-out równoległy zamknął w rundzie 2/5). Wszystkie 12 podtematów P2.1-P2.12 zamknięte PASS.
+Synteza wykryła i orkiestrator NAPRAWIŁ BEZPOŚREDNIO 3 realne sprzeczności międzydokumentowe
+(`inGarnizon` P2.3↔P2.11, `budowaListaBiblioteka` P2.2↔P2.11, D-EV-11 typy payloadu pominięte w
+P2.6) — pierwsze takie znaleziska w całej fazie P2, potwierdzające wartość niezależnej kontroli
+końcowej. **Bramka P2 formalnie otwarta.** Zgodnie z decyzją właściciela (2026-10-21, poz. 4 wyżej):
+start P3 NATYCHMIAST, bez pytania o zgodę.
+
+4 zobowiązania techniczne jawnie przeniesione do P3 (nie blokują, ale wymagają realizacji): (1)
+pełny przegląd linia po linii 195 plików heurystyki eventów przed P3.6; (2) formalna definicja w
+Rust typów ID zaakceptowanych jako rozszerzenie kanonu P2.3 (`DealId`, `BattleId`, `SlotId`, `ItemId`,
+`TechId`, `TradeRouteId`, `WonderId`, `ImprovementId`, `ProductionItemId`, `UnitTypeId`, `CommandId`)
+oraz pozostałych typów danych (`OkolicaTryb`, `OwnerPolicy` i in.) przy pisaniu `bridge.rs`/
+`events.rs`; (3) osobny temat czyszczący rozjazd `babilon`/`babilonia` i klasyfikację 6/15 surowców
+poza `ResourceKey`; (4) kosmetyczne korekty cytowań w P2.12 (15 vs 16 kluczy forced-war).
+
+## *** FAZA P1 ZAMKNIĘTA — FAZA P2 OTWARTA (2026-10-21, zamknięta 2026-10-21) ***
 
 `R-RUSTPORT-P1-GATE-SYNTHESIS-2-Q1`: PASS. Pełna tabela 41 wierszy P1.1-P1.18(+warianty), wszystkie
 PASS lub PASS-WITH-NOTES jako status najnowszego ogniwa. 4 zastrzeżenia Final Control rozstrzygnięte

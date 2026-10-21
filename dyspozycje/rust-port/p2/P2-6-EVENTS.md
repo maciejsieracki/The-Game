@@ -1043,9 +1043,16 @@ Rust, nie zachowania gry widzianego przez gracza:
   po sprawdzeniu próby plików i alternatywnych wzorców. To nie jest luka funkcjonalna, tylko brak
   wyczerpującego dowodu negatywnego. Rozstrzygnięcie: katalog się zamyka z jawnie udokumentowanym
   ograniczeniem (ryzyko zaakceptowane na tym etapie — P2.6 to katalog projektowy, nie wydanie), ale
-  **pełny przegląd linia po linii pozostałych 288 plików jest WYMAGANY jako warunek wstępny P2.13**
-  (niezależna kontrola kontraktu przed otwarciem P3) — zapisane jako zobowiązanie na przyszły temat,
-  nie blokuje zamknięcia P2.6 teraz.
+  **pełny przegląd linia po linii pozostałych 195 plików (podzbiór 288, gdzie szeroki wzorzec trafia
+  a S5/S6=0, patrz §6 akapit „Ograniczenie metody") jest zobowiązaniem WYMAGAJĄCYM JAWNEGO
+  ROZSTRZYGNIĘCIA PRZY P2.13** (niezależna kontrola kontraktu przed otwarciem P3) — zapisane jako
+  zobowiązanie na przyszły temat, nie blokuje zamknięcia P2.6 teraz.
+  **AKTUALIZACJA (orkiestrator, 2026-10-21, przy zamykaniu P2.13):** rozstrzygnięcie dostarczone —
+  P2.13 nie wymaga WYKONANIA tego przeglądu jako warunku otwarcia bramki P2, tylko jego formalnego
+  ROZPATRZENIA (co niniejszym się dzieje). Decyzja: przegląd przenosi się do P3.6 (implementacja
+  warstwy eventów) jako zobowiązanie techniczne, NIE jako blokada bramki P2 — uzasadnienie w
+  `P2-13-GATE-SYNTHESIS.md` §3 (Z-1). To spełnia wymóg „przy P2.13" z tego punktu: temat został tu
+  rozpatrzony i świadomie przeniesiony, nie pominięty milczeniem.
 - **Pkt 8 (los `engine_state_changed` vs nowy `engine_event`; E-43 dubluje pełny snapshot;
   pochodzenie `contractVersion`/`requestId`):** `engine_state_changed` (`BridgeEvent::StateChanged`,
   P2-8) zostaje WYŁĄCZNIE jako okresowy snapshot synchronizacji stanu; nowy kanał `engine_event` jest
@@ -1070,6 +1077,25 @@ na zapis/zachowanie gry, gdyby się okazały błędne — ta sama kategoria co P
 **Status: temat zamknięty PASS** (mimo formalnego LIMIT-5-EXCEEDED rundy 5 — poprawki NAPRAW
 wykonane redakcyjnie przez orkiestratora, punkty DECISION_REQUIRED rozstrzygnięte administracyjnie,
 zero zmian w `gra/**`, zero kodu Rust). Następny krok: implementacja (P3+) może czerpać z tego
-katalogu dla kształtu kanału `engine_event`; pełny przegląd 288 plików (D-EV-14) jest zobowiązaniem
-dla P2.13 (niezależna kontrola przed P3); granulacja D-EV-15 do uwzględnienia przy pisaniu
+katalogu dla kształtu kanału `engine_event`; pełny przegląd 195 plików (D-EV-14) jest zobowiązaniem
+dla P3.6 (rozstrzygnięte przy P2.13, patrz wyżej); granulacja D-EV-15 do uwzględnienia przy pisaniu
 `events.rs`.
+
+**D-EV-11 (typy payloadu bez definicji w P2.2/P2.3, §8 — ROZSTRZYGNIĘTE orkiestrator, 2026-10-21,
+przy zamykaniu P2.13):** 24 nazwy typów payloadu (§8: `DealId`, `TradeRouteId`, `WonderId`,
+`ImprovementId`, `ProductionItemId`, `UnitTypeId`, `CommandId`, `EraIndex`, `CaptureRow`,
+`ResourceLoss`, `Loot`, `OfferKind`, `DiploCmd`, `AudienceMotive`, `RevoltWarningKind`,
+`ResourceOffer`, `BuildingBonusGain`, `TechId`, `BattleSummary`, `AutoRationAdjustResult`,
+`CredibilityEvent`, `CredibilityEventRecord`, `DiploFactorEntry`, `UnitIds`) były pominięte w tej
+sekcji przy pierwotnym zamykaniu tematu — luka wykryta przez P2.13. Rozstrzygnięcie: TEN SAM podział
+co P2.5 §9 pkt 8 (który rozwiązał analogiczny problem dla komend) — `DealId`, `TradeRouteId`,
+`WonderId`, `ImprovementId`, `ProductionItemId`, `UnitTypeId`, `CommandId`, `TechId` to identyfikatory
+bytów z cyklem życia → newtype `u64`, rozszerzenie kanonu P2.3 (`DealId`/`BattleId`/`SlotId`/`ItemId`/
+`TechId` już tam zaakceptowane z P2.5, ten sam wzorzec stosuje się tu). Pozostałe (`EraIndex`,
+`CaptureRow`, `ResourceLoss`, `Loot`, `OfferKind`, `DiploCmd`, `AudienceMotive`, `RevoltWarningKind`,
+`ResourceOffer`, `BuildingBonusGain`, `BattleSummary`, `AutoRationAdjustResult`, `CredibilityEvent`,
+`CredibilityEventRecord`, `DiploFactorEntry`) to klucze katalogu danych/warianty zamkniętego zbioru
+lub małe struktury danych zdarzenia — `String`/prymityw albo mały enum/struct Rust zdefiniowany
+razem z `events.rs` w P3+, zgodnie z zasadą „treść gry w danych" (P2.1/P2.9/P2.3 D-ID-10). `UnitIds`
+= `Vec<UnitId>` (już kanoniczny typ P2.3, nie nowy byt). Żaden z 24 punktów nie wymaga pytania
+właściciela — czysto wewnętrzny wybór reprezentacji, odwracalny bez wpływu na zachowanie gry.

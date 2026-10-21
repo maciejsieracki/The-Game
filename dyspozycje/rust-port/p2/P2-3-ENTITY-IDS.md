@@ -157,7 +157,7 @@ Wszystkie wiersze: plik web `gra/src/units/setup.ts`, interfejs `RuntimeUnit` (l
 | 6 | `r` | `number` | 47 | INNY TYP | `PositionDto.y: u16` (`types.rs:120-121`) | jw. |
 | 7 | `ruch` | `number` | 48 | BRAK | — (maks. ruch nie występuje w DTO ani w `AiUnit`) | |
 | 8 | `ruchLeft` | `number` | 49 | POZA DTO | `AiUnit.movement_left: u32` (`ai_turn.rs:339`); `BarbUnit.movement_left: u32` (`barbarians.rs:187`) | nie w `UnitDto` |
-| 9 | `inGarnizon?` | `boolean` | 51 | BRAK | — | flaga garnizonu; patrz D-ID-5 |
+| 9 | `inGarnizon?` | `boolean` | 51 | BRAK | — | flaga garnizonu; ROZSTRZYGNIĘTE w §9 (korekta 2026-10-21): przechowywana jawnie jako `in_garnizon: bool`, nie wyprowadzana — patrz D-ID-5 |
 | 10 | `fortifyRuchSnapshot?` | `number` | 56 | BRAK | — (grep `fortif`/`ruch_snapshot`: 0 trafień) | |
 | 11 | `hp?` | `number` | 58 | POZA DTO | `CombatUnit.hp: u32` (`combat.rs:34`) | model walki inny (`AiUnit` ma `health_fraction: Option<f64>`, `ai_turn.rs:342`) |
 | 12 | `hpMax?` | `number` | 60 | POZA DTO | `CombatUnit.max_hp: u32` (`combat.rs:35`) | jw. |
@@ -312,14 +312,31 @@ punktu o takim charakterze. Rozstrzygam wszystkie inżyniersko:
   zapisy zachowują swoje ID przez mapowanie z D-ID-1, licznik startuje od maksimum zaimportowanych ID.
 - **D-ID-4:** `city_ids`/`unit_ids` w `CivilizationDto` NIE są przechowywane — wyprowadzane z
   `owner_id` encji na żądanie (zgodne z zasadą „stan wyprowadzalny nie jest przechowywany", P2.2 §1).
-- **D-ID-5 + punkt 9 (oblężenie):** jedno źródło prawdy — `oblega: Option<CityId>` NA JEDNOSTCE
-  (Propozycja B, nie A — web 1:1 wymaga zachowania `oblegaCityId` przy imporcie, D7/P2.2, więc pole
-  musi być jawnie przechowywane, nie tylko wyprowadzane z pozycji). Stan po stronie miasta
+- **D-ID-5 + punkt 9 (oblężenie i garnizon):** jedno źródło prawdy — `oblega: Option<CityId>` NA
+  JEDNOSTCE (Propozycja B, nie A — web 1:1 wymaga zachowania `oblegaCityId` przy imporcie, D7/P2.2,
+  więc pole musi być jawnie przechowywane, nie tylko wyprowadzane z pozycji). Stan po stronie miasta
   (`oblegane`, `oblegajacyOwnerId`, `siegeCapitulationPending`) jest WYPROWADZANY z tego pola przez
-  zapytanie „które jednostki mają `oblega == Some(this_city)`" — nie duplikować. Garnizon (inna
-  sprawa niż oblężenie) pozostaje wyprowadzany z pozycji (Propozycja A) — nie ma odpowiednika w
-  zapisie web wymagającego jawnego pola (`inGarnizon` to flaga UI/runtime, nie trwały stan do
-  importu w tym samym sensie).
+  zapytanie „które jednostki mają `oblega == Some(this_city)`" — nie duplikować.
+  **UZUPEŁNIENIE (orkiestrator, 2026-10-21, przy zamykaniu P2.13 — zgłoszone przez P2.11
+  D-MIG-11):** powyższa derywacja pokrywa WYŁĄCZNIE pytania „czy miasto jest oblężone / przez kogo
+  / czy trwa kapitulacja" — NIE pokrywa „od której tury trwa oblężenie", bo `oblega` nie niesie
+  znacznika czasu. Pole `combat.siege_started_turn: Map<CityId, Turn>` (zaproponowane w P2.11
+  D-MIG-11) jest DODATKOWYM, osobno przechowywanym polem, nie sprzecznością z zasadą derywacji —
+  derywacja nadal obowiązuje dla pozostałych trzech pól miasta, tylko czas startu oblężenia wymaga
+  własnego licznika, bo nie da się go wyprowadzić z samego `oblega`.
+  **KOREKTA (orkiestrator, 2026-10-21, przy zamykaniu P2.13 — P2.11 §10 D-MIG-19 wykryła
+  sprzeczność z pierwotną treścią tego punktu):** garnizon (`in_garnizon: bool`) jest TAKŻE jawnie
+  przechowywany na jednostce (Propozycja B, nie A jak pierwotnie tu zapisano), tym samym
+  uzasadnieniem co `oblega` — builder web zapisuje pełne obiekty jednostek (`units.slice()`,
+  `main.ts:30481`), więc `inGarnizon` JEST w zapisie źródłowym, a import 1:1 (D7) wymaga wiernego
+  zachowania pól zapisu, nie ich derywacji, żeby uniknąć utraty stanu przy nietypowych kombinacjach
+  (np. starym zapisie, w którym jednostka ma `inGarnizon=true`, ale jej pozycja z jakiegoś powodu
+  nie spełnia dziś reguły wyprowadzania — derywacja po cichu zmieniłaby stan gracza przy imporcie,
+  co łamie D7). Pierwotna treść tego punktu (Propozycja A dla garnizonu, „inGarnizon to flaga
+  UI/runtime") była BŁĘDNA — niekonsekwentna z własnym uzasadnieniem użytym dla `oblega` o linię
+  wyżej. P2.11 §10 (D-MIG-19) już to poprawnie rozstrzygnęła niezależnie; ten akapit teraz się z nią
+  zgadza. Nie wymaga to pytania właściciela — to czysto wewnętrzna spójność reprezentacji danych,
+  odwracalna później bez wpływu na zapis/zachowanie gry.
 - **D-ID-6:** kanon `HexCoord{q:i32,r:i32}`; `PositionDto{x:u16,y:u16}` to warstwa serializacji
   DTO→frontend, nie stan gry. Zakres `u16` (0-65535) do zweryfikowania względem maksymalnego
   rozmiaru mapy w P2.12/P3 — żadna dotychczas skatalogowana mapa (P1.8: Malenki/Standardowy/Super

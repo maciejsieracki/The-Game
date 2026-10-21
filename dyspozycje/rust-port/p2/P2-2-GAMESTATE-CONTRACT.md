@@ -206,9 +206,18 @@ web.
   `owners` (indeksowane po właścicielu); (e) `wiarygodnosc*` → `diplomacy` (przyjęta propozycja);
   (f) cała rodzina 15 kluczy fal wojny wymuszonej → `ai.forced_war`, spójnie z D1.
 - Punkt 10 (Final Control): (a) `exploredByHuman` → `map` (mgła wojny per właściciel to stan mapy);
-  (b) flagi UI (`veteranEnemyEducationShown`, `diplomaticDiscoveryPopupShown`, `ownerDisplayName`,
-  `budowaListaBiblioteka`) pozostają klasy U — przy imporcie z D7 są CZYTANE (żeby parser nie padł
-  na nieznanym polu) ale ODRZUCANE, nie trafiają do `GameState`; (c) zasada „stan wyprowadzalny nie
+  (b) flagi UI (`veteranEnemyEducationShown`, `diplomaticDiscoveryPopupShown`, `ownerDisplayName`)
+  pozostają klasy U — przy imporcie z D7 są CZYTANE (żeby parser nie padł na nieznanym polu) ale
+  ODRZUCANE, nie trafiają do `GameState`. **KOREKTA (orkiestrator, 2026-10-21, przy zamykaniu
+  P2.13):** `budowaListaBiblioteka` USUNIĘTE z tej listy — klasyfikacja jako flaga UI była BŁĘDNA.
+  P2.11 §10 (D-MIG-10) wykazała kodem (`onBudowaListaCreateTemplate`, `main.ts:7676-7683`), że to
+  lista SZABLONÓW BUDOWY NAZYWANYCH PRZEZ GRACZA (dane wejściowe gracza, nie stan UI/popup), więc
+  jej odrzucenie przy imporcie zgubiłoby pracę gracza — koliduje wprost z D7 ("gracze nie mogą
+  stracić postępu"). `budowaListaBiblioteka` jest importowana JAKO DANE (kandydat na miejsce: grupa
+  „Ekonomia imperium", patrz wiersz tabeli l.85), nie odrzucana. To nie jest nowa decyzja — to
+  poprawka błędu klasyfikacji wykrytego przez P2.11, niewymagająca pytania właściciela (odwracalna,
+  bez wpływu na zachowanie gry poza poprawnym zachowaniem danych gracza, zgodnym z już podjętym D7).
+  (c) zasada „stan wyprowadzalny nie
   jest przechowywany" (oparta na INV-3) przyjęta jako zasada ogólna projektu, nie tylko dla
   manpower — standardowa dobra praktyka, nie wymaga decyzji właściciela; (d) `trade_routes` jako
   osobne pole najwyższego poziomu (przyjęta propozycja, zgodne z M11 jako odrębnym modułem).
