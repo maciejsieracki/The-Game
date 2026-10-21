@@ -27,12 +27,10 @@ dotykające tych samych plików — zawsze sekwencyjnie, nigdy w tej samej fali.
 
 | # | Temat | Faza | Runda | runId Workflow | Status | Ostatnia aktualizacja |
 |---|---|---|---|---|---|---|
-| 1 | `R-RUSTPORT-P3-18-HARDCODED-TABLES-Q1` | P3.18 pomiar i usunięcie pozostałych ręcznych tabel danych w `domain/**` (diplomacy 0/64 rozjechane, improvements, map_generator, ai_turn, trade, barbarians) | 1/5 | (patrz niżej) | DISPATCHED | 2026-10-21 |
-| 2 | — | — | — | — | **WOLNY, ŚWIADOMIE** (P3.19 OwnerRef/CampId po P3.18 — te same pliki domeny; RR-T2/T5 kamera+materiały wymagają GPU/wyników P4.8–P4.10) | 2026-10-21 |
-| 3 | `R-RUSTPORT-P4-7-NEW-MODELS-SPEC-Q1` | P4.7 specyfikacja nowych modeli + port nieużywanych + routing — Opus 5.5 | 1/5 | `wf_81bfcfa8-d0e` | DISPATCHED | 2026-10-21 |
-| 4 | `R-RUSTPORT-P4-8-GEOMETRY-PRIMS-Q1` | RR-T4 prymitywy geometrii zgodne z Three r169 (`renderer/src/geom`) — Opus 5.5 | 1/5 | `wf_cff53e71-9f8` | DISPATCHED | 2026-10-21 |
-| 5 | `R-RUSTPORT-P4-9-ASSET-REGISTRY-Q1` | RR-T6 rejestr zasobów + test „N tur” (`renderer/src/assets`) — Opus 5.5 | 1/5 | `wf_d19f2ede-7f8` | DISPATCHED | 2026-10-21 |
-| 6 | `R-RUSTPORT-P4-10-PICKING-CPU-Q1` | RR-T3 picking CPU odtwarzający web (`renderer/src/pick`) — Opus 5.5 | 1/5 | `wf_7fb21ca5-e1d` | DISPATCHED | 2026-10-21 |
+| 1 | `R-RUSTPORT-P3-19-FLATTEN-MULTIPLIERS-Q1` | P3.19 runda 3: mnożniki → konkretne edytowalne liczby | 3/5 | `wf_d0304bdc-95d` | DISPATCHED | 2026-10-21 |
+| 2 | `R-RUSTPORT-P3-20-OWNERREF-CAMPID-Q1` | P3.20 `OwnerRef`/`CampId` w domenie | 1/5 | `wf_a8debab3-5a3` | DISPATCHED | 2026-10-21 |
+| 3 | `R-RUSTPORT-P4-11-CAMERA-TERRAIN-CPU-Q1` | RR-T2 kamera + teren CPU (`renderer`) — Opus 5.5 | 1/5 | `wf_7bf11755-730` | DISPATCHED | 2026-10-21 |
+| 4–6 | — | — | — | — | **WOLNE** (GPU-zależne czekają na maszynę właściciela; pytania ABC PACZKA 2–4/4 do zadania) | 2026-10-21 |
 
 **Zamknięte w tej sesji (kod na `rust-port/parity-v2`, HEAD `aa7b225b`, 292 testy):** P3.4b, P3.4c (newtypy ID), P3.8 (assety 428), P3.8b (manifest), P3.9 (data wiring), P3.11 (zgodność danych), P3.12 (loader), P3.14 (fmt/clippy w `src/data`).
 
