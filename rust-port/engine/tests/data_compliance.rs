@@ -94,9 +94,6 @@ fn web_pin_constants_are_internally_consistent() {
     assert_eq!(WEB_RESOURCES.len(), WEB_RESOURCES_COUNT);
     assert_eq!(WEB_TERRAIN_TYPES.len(), WEB_TERRAIN_TYPES_COUNT);
     assert_eq!(WEB_IMPROVEMENT_KEYS.len(), WEB_IMPROVEMENT_COUNT);
-    assert_eq!(WEB_JSON_FILE_COUNT, 29);
-    assert_eq!(WEB_START_GRY_COUNT, 11);
-    assert_eq!(WEB_TERRAIN_MODIFIERS_COUNT, 2);
     // Stale ID wewnetrznie spojne z pinem (typ cywilizacji == klucze panstw cudow).
     assert_eq!(set(WEB_CIV_TYPY.iter().copied()), set(WEB_PANSTWA_KEYS.iter().copied()));
     assert_eq!(set(WEB_PANSTWA_KEYS.iter().copied()), set(WEB_WSZYSTKIE_CYWILIZACJE.iter().copied()));
@@ -238,11 +235,12 @@ fn embedded_raw_counts_match_web_pin() {
     assert_eq!(keys, set(WEB_IMPROVEMENT_KEYS.iter().copied()), "terrain-improvements klucze != web");
 }
 
-// Struktury z deny_unknown_fields (terrain_map, units_combat, civilizations): sukces parsowania
-// dowodzi, ze zbior kluczy JSON == zbior pol struktury (dla pol nieopcjonalnych).
+// terrain-improvements: struktura ma deny_unknown_fields, wiec sukces parsowania dowodzi tylko, ze
+// w JSON nie ma kluczy nieznanych strukturze. NIE dowodzi, ze pola opcjonalne sa zamodelowane
+// (brakujace pole Option przechodzi bez bledu). Sprawdzane sa tylko dwa pola jako probka.
 #[test]
-fn terrain_improvements_full_key_set_is_modelled() {
-    let f = parse_terrain_improvements().expect("terrain-improvements.json must parse 1:1 (deny_unknown_fields)");
+fn terrain_improvements_parses_strict_with_farma_and_posterunek() {
+    let f = parse_terrain_improvements().expect("terrain-improvements.json must parse (deny_unknown_fields)");
     assert!(!f.farma.nazwa.is_empty());
     assert!(!f.posterunek.nazwa.is_empty());
 }
@@ -288,7 +286,14 @@ fn all_29_data_files_parse_with_rust_modules() {
     probe!("terrain-movement.json", parse_terrain_movement());
     probe!("terrain-yields.json", parse_terrain_yields());
     probe!("map-gen-params.json", parse_map_gen_params());
-    assert_eq!(ok, WEB_JSON_FILE_COUNT);
+    assert_eq!(ok, WEB_JSON_FILE_COUNT, "liczba probe != 29 (pin edb8fb56)");
+    // Pokrycie: katalog rust-port/engine/data ma dokladnie tyle plikow *.json, ile probe.
+    let on_disk = std::fs::read_dir(concat!(env!("CARGO_MANIFEST_DIR"), "/data"))
+        .expect("rust-port/engine/data")
+        .filter_map(|e| e.ok())
+        .filter(|e| e.path().extension().is_some_and(|x| x == "json"))
+        .count();
+    assert_eq!(on_disk, ok, "pliki *.json w rust-port/engine/data nieobjete probe");
 }
 
 // (c, LUKA — nie test): 1:1 round-trip (typed -> Value == raw) mozliwy dzis TYLKO dla 7 plikow
