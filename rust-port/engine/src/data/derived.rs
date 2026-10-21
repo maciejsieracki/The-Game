@@ -68,6 +68,9 @@ pub struct BuildingStockRow {
     #[serde(rename = "epokaWejscia")]
     pub epoka_wejscia: i64,
     pub koszt_surowce: StockMap,
+    /// Utrzymanie surowcowe na turę (rozwinięte z webu: 5 na każdy klucz kosztu).
+    /// NIEUŻYWANE w silniku w tym commicie: brak czytnika i brak mechaniki
+    /// utrzymania surowcowego budynków w Rust (zob. P3-19 §2 wiersz 7, §9 pyt. 7).
     pub utrzymanie_surowcowe_na_ture: StockMap,
     /// Wartości bazowe z `buildings.json` (`koszt_surowce`), pochodzenie liczby.
     pub baza_koszt_surowce: StockMap,
