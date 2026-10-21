@@ -12,3 +12,4 @@ pub mod economy_society;
 pub mod economy_society_part2;
 pub mod terrain_map;
 pub mod units_combat;
+pub mod loader;
