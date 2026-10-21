@@ -2,6 +2,7 @@
 
 pub mod domain;
 pub mod logging;
+pub mod version;
 
 pub use domain::building_costs::{
     building_cost, building_cost_for, building_work_cost, canonical_building_costs,
