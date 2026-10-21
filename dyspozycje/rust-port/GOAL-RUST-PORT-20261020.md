@@ -26,16 +26,18 @@ dotykające tych samych plików — zawsze sekwencyjnie, nigdy w tej samej fali.
 
 | # | Temat | Faza | Runda | runId Workflow | Status | Ostatnia aktualizacja |
 |---|---|---|---|---|---|---|
-| 1 | `R-RUSTPORT-P1-16C-PARYTET-AI-Q1` | P1.16c (2/4) | 1/5 | `wf_bb2e2b50-974` | DISPATCHED (w toku) | 2026-10-21 |
+| 1 | `R-RUSTPORT-P1-16C-STOLICE-Q1` | P1.16c (3/4) | 1/5 | `wf_aa463251-cd8` | DISPATCHED (w toku) | 2026-10-21 |
 | 2 | — | — | — | — | **WOLNY** | 2026-10-21 |
 | 3 | — | — | — | — | **WOLNY** | 2026-10-21 |
 | 4 | — | — | — | — | **WOLNY** | 2026-10-21 |
 | 5 | — | — | — | — | **WOLNY** | 2026-10-21 |
 | 6 | — | — | — | — | **WOLNY** | 2026-10-21 |
 
-Zamknięte od ostatniej aktualizacji tej tabeli (patrz `LEDGER.md` po szczegóły): P1.16c-KODU-A (PASS
-— AUDYT-KODU 4 naprawione/1 nadal/5 nierozstrzygnięte, WERYFIKACJA-53 pokrywa się). Kolejny w
-sekwencji (ten sam plik `P1-16-EDGE-CASES.md`): PARYTET-AI, potem STOLICE, potem CIVPEDIA-OPISY.
+Zamknięte od ostatniej aktualizacji tej tabeli (patrz `LEDGER.md` po szczegóły): P1.16c-KODU-A (PASS),
+P1.16c-PARYTET-AI (PASS — 9/9 NAPRAWIONYCH, stary audyt miał błędne negatywy dla #7/#9). Kolejny w
+sekwencji (ten sam plik `P1-16-EDGE-CASES.md`): STOLICE (dispatchowany teraz — bez pytania ABC, bo
+decyzja MAP-UX-CLUSTER-LABEL już dawno zdeployowana FALA 296, patrz LEDGER 2026-10-21), potem
+CIVPEDIA-OPISY jako ostatni, czwarty następca P1.16b.
 
 **P1.16c-PARYTET-AI, P1.16c-STOLICE, P1.16c-CIVPEDIA-OPISY czekają SEKWENCYJNIE** (ten sam plik
 `P1-16-EDGE-CASES.md` co KODU-A) — nie dispatchować równolegle, dopiero po zamknięciu poprzedniego.

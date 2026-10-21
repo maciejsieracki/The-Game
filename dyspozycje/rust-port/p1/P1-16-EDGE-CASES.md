@@ -654,3 +654,56 @@ Tematy 1–3 nie dotykają tych samych plików co temat `R-RUSTPORT-P1-16B` (`P1
 
 - Bez cargo/npm/gry/testów. Zapis: ten plik (§11) i `runs/R-RUSTPORT-P1-16C-KODU-A-Q1/`. Brak commita; `gra/**` nietknięte.
 - Linie audytu nieaktualne; statusy po symbolach i liniach pinu.
+
+---
+
+## 12. Runda 1/5 — R-RUSTPORT-P1-16C-PARYTET-AI-Q1 (Operator Haiku 5.5 medium, pin `edb8fb56`; obrona 1 po zarzutach Evaluatora — §12.5)
+
+**Dowody:** wyłącznie `git show edb8fb56:…` i `git grep edb8fb56` (numery linii z tych poleceń). §1–§11 nietknięte. Pozycje audytu `AUDYT-PARYTET-AI-2026-07-24.md` (✅ / ❌) oceniono przez to, czy na pinie istnieje asymetria gracz↔AI.
+**Legenda (dla tego tematu):** NAPRAWIONY = asymetria/luka nie występuje na pinie (dla pozycji ✅ oznacza potwierdzony parytet); NADAL ISTNIEJE = asymetria/luka występuje; NIEROZSTRZYGNIONY = nieprzeczytane.
+**Uwaga o liniach audytu:** większość odwołań `plik:linia` z audytu jest nieaktualna na pinie (np. `turn-economy.ts:149–160` → `:196`; `main.ts:14269–14283` nie istnieje w tej formie; `main.ts:14863–14893` = kod oblężenia). Statusy poniżej po symbolach i liniach pinu.
+
+### 12.1 Status per pozycja PARYTET-AI
+
+| # | Status | Dowód (plik:linia, pin) | Zmiana względem audytu / uwagi |
+|---|---|---|---|
+| 1 | NAPRAWIONY | `game/building-stock-cost.ts` `ownerResourceStockAll`, `deductBuildingStockCostAcrossCities` (bez gałęzi po `ownerId`); `game/economy-upkeep.ts:448–455` `ownerResourceCapacityPerType` = `(bazaSurowcePanstwo + bonusSurowceNaBudynek·N_Magazyn) × magazynEraMultiplier(era)`; `game/turn-economy.ts:2454–2463` `ownerResourceCapFor` (ten sam cap dla każdego ownera); `main.ts` wiring `empireEpochForOwner` przy `advanceCityEconomy` (`:31359`) | Literalne „100+100” nie zweryfikowane (wartości w parametrach, nieczytane); formuła jest owner-agnostic |
+| 2 | NAPRAWIONY | Gracz: `ui/cityPanel.ts:6275–6276` (`canAffordBuildingStock` + `deductBuildingStockCostAcrossCities(…, city.ownerId, cost)`). AI auto-enqueue: `main.ts:8244–8247` `deductOwnerStockCost` → ta sama deducja; `main.ts:8250` `tryAutoEnqueueBuild`. AI cmd `build`: `main.ts:35160–35220` (`canAfford` z `ownerSurowcePoolFor(ownerId)` + `deductOwnerStockCost(ownerId, cost)`) | Audytowe linie `cityPanel.ts:4291–4308` / `main.ts:4183–4227` / `14822–14841` nieaktualne; parytet potwierdzony na aktualnych liniach |
+| 3 | NAPRAWIONY | `game/turn-economy.ts:965–990` `computePracaUpkeepByOwner` (Map dla WSZYSTKICH ownerów, ta sama funkcja); wywołanie `turn-economy.ts:2365`; pobór `main.ts:32868–32887`: gracz `econ.pracaUpkeepByOwner.get(0)` → `playerPracaPool = Math.max(0, …)`; AI pętla `for (const [oid, up] of econ.pracaUpkeepByOwner)` → `aiPracaPoolByOwner.set(oid, Math.max(0, cur − up))` | Audytowe `main.ts:14269–14283` nieaktualne; symetria potwierdzona na `:32868–32887` |
+| 4 | NAPRAWIONY | (a) Silnik/cykl: `main.ts:20235` `tickCyclicResourceTradeDeals` (bez gałęzi po ownerze; `sellerOkOf` symetryczne względem `sellerOwnerId`/`buyerOwnerId`). (b) AI↔AI: `main.ts:19743` `formAiAiTradeAgreementsIfEligible`; wybór oferty `main.ts:19775–19800` przez `pickResourceDeficitForOwnerPair` / `pickResourceSurplusForOwnerPair` (ten sam silnik co gracz↔AI). Gałąź `eitherIsCityState` (`main.ts:19755`, `:19835` `if (eitherIsCityState && !bestOffer) continue;`) zawęża TYLKO tworzenie umów AI↔AI z miastem-państwem; nie tworzy asymetrii gracz↔AI. (c) AI→gracz: generowanie `game/ai.ts:5454–5520` w `decideAIDiplomacy` (`:5270`) — blok `resOffer` z `resourceTradeOffer` (`:5457`), komenda `zaproponuj_handel_surowiec` `:5514`, bramka `canAiProposeResourceTrade` `:5503`; oferta liczona w `main.ts:33945–33962` przez `pickResourceTradeRelOffer(ownerId, ME(), …)` (`main.ts:19506`, ta sama para pick-funkcji co AI↔AI); kolejka do stołu negocjacyjnego `main.ts:16820–16870` (`enqueueNegotiationFromAiCmd`) z clampem `clampAiResourceTradeCommand` (`game/diplomacy-ai-balance.ts:203`, kontekst `main.ts:9985–10000` — pula gracza `ownerSurowcePoolFor(0)`, ten sam kod co dla AI). Tekst propozycji dla gracza: `game/diplomacy-proposals.ts:1811–1815`. | Audyt `game/ai.ts:2449–2477` NIEPRAWDZIWY jako lokalizacja (to `boostCandidatesForResourceDeficits` / `collectMilitaryRecruitStockDeficits`, wsparcie deficytów budowy). Właściwa ścieżka AI→gracz przeczytana w obronie 1 (zarzut Evaluatora nr 1). |
+| 5 | NAPRAWIONY | `game/turn-economy.ts:196` `applyWonderCityYields`; wywołania `turn-economy.ts:2096` i `:2674` z `wonderCityYieldsByOwner.get(city.ownerId)`; mapa `main.ts:31367` `buildWonderCityYieldsByOwnerMap(cities.map(c => c.ownerId))` | Audytowe `turn-economy.ts:149–160` nieaktualne (funkcja na `:196`) |
+| 6 | NAPRAWIONY | `game/turn-economy.ts:1497–1512` liczniki `stolarniaCountByOwner` / `kamieniarskiCountByOwner` (pętla po wszystkich miastach, klucz `city.ownerId`); użycie per owner `:1534–1543` i `:1737–1761` | Audytowe `:1313–1325` / `:1629–1630` nieaktualne |
+| 7 | NAPRAWIONY (fakt zmieniony) | AI MA ścieżkę zakupu za złoto: `main.ts:35208–35221` — `shouldAIPurchaseUnit({treasury, goldCost, hasManpower})` → `purchaseRecruitmentUnit(cmd.cityId, candId, item.koszt, ownerId)`; `main.ts:3972–3978` `purchaseRecruitmentUnit(…, ownerId = 0)` sprawdza `city.ownerId !== ownerId` (NIE `!== 0`). Komenda: `AICommand` (`game/ai.ts:156–162`) nie ma osobnego typu zakupu — zakup idzie przez `build` (jak w audycie: `AICmdPurchase*` = 0 trafień, ale to nie dowodzi braku ścieżki) | Audyt („na stałe `ownerId !== 0`”, „AI nie ma odpowiednika”) NIEPRAWDZIWY na pinie |
+| 8 | NAPRAWIONY | `main.ts:7919–7936` `aiDiffLevelForOwner` (miasta-państwa z `_menuCityStateDifficulty`, reszta z `_menuDifficulty`); `main.ts:7931–7935` `difficultyCombatMultForOwner` → `qualifiesForMajorAiDifficultyBonus` (`game/ai-difficulty-bonus.ts:18–23`: `ownerId > 0 && !isBarbarian && !isCityState`) → dla miast-państw mnożnik = 1; `game/combat.ts:410` (deklaracja pola opcjonalnego, JSDoc) i konsumpcja: `game/combat.ts:901` (`atkDiffMult = opts.attackerDifficultyCombatMult ?? 1`), `battle/battleScene.ts:8224, 8228`; wiring `main.ts:27207–27209` (`difficultyBattleOpts`). | Audytowe twierdzenie „`bonusWalka` jest martwe” NIEPRAWDZIWE (konsumowane w `combat.ts:901`, `battleScene.ts:8224/8228` i `main.ts:7935`). Cytat „`combat.ts:407–413` jako konsument” był błędny — to deklaracja pola (zarzut Evaluatora nr 4, PRZYJĘTY). Wniosek audytu (brak przecieku trudności do walki PM) potwierdzony, ale z innego powodu |
+| 9 | NAPRAWIONY (fakt zmieniony) | Jednostki MAJĄ koszt surowcowy: `gra/data/units.json` pola `Surowiec` / `Surowiec (ilość)` (nie `koszt_surowce`; audytowy grep był błędnym kluczem). Zmapowanie: `game/building-stock-cost.ts:402–420` `unitStockCost` (+5 Koni dla `Typ: Mount`). Konsumpcja Z PULI PAŃSTWA: `main.ts:3996–4026` (komentarz `JEDNOSTKI-SUROWIEC-01`, `unitStockCost`, `ownerResourceStockAll`, `pickUnitRecruitHint`), `main.ts:4075` `deductBuildingStockCostAcrossCities(cities, ownerId, batchStockCost)`; wielosztuka `main.ts:4140–4174` (`canAffordBuildingStock` + deduct `:4174`); zwrot `main.ts:4199–4206` (`creditOwnerResourceStock`); AI przez tę samą `purchaseRecruitmentUnit` (`main.ts:35220`); utrzymanie jednostek na turę `game/economy-upkeep.ts:784–917` (`unitResourceUpkeep`, `totalUnitResourceUpkeep`) i `turn-economy.ts:2940` | Audyt (r5 Operatora, `buildingStockCost` tylko dla budynków) nie uwzględnił `unitStockCost`. Decyzja A jest wdrożona; asymetrii gracz/AI nie ma |
+
+### 12.2 Liczniki
+
+- PARYTET-AI (9 pozycji: #1–#9): **NAPRAWIONY 9** (w tym #7 i #9 ze zmianą faktu) · NADAL ISTNIEJE 0 · NIEROZSTRZYGNIONY 0.
+- L2 (wyrąb lasu AI): **NADAL ISTNIEJE** (§12.3).
+- Kryterium binarne (zero pozycji bez statusu z dowodem; #9 z przeczytania funkcji konsumującej): **SPEŁNIONE** — po obronie 1 (#4 domknięte przeczytaniem `ai.ts:5454–5520`, `main.ts:33945–33962`, `main.ts:16820–16870`, `main.ts:19775–19835`). Nieprzeczytane pozostają wyłącznie literalne wartości capu w #1 — nie wpływają na status (formuła owner-agnostic, obie strony wołają tę samą funkcję).
+
+### 12.3 L2 — wyrąb lasu AI (NADAL ISTNIEJE, linie poprawione)
+
+- Audytowe `main.ts:14863–14893` = kod oblężenia (`u.oblegaCityId`, `endMapSiege`), nie wyrąb.
+- Wyrąb AI cywilizacji: `main.ts:35268–35300` — komentarz „AI nie ma per-owner wieloturowego `hexClearingStates`”; gałąź `if (meta?.typ === 'wycinka')` usuwa las od razu (`if (hexForImprovement.nakladka !== Nakladka.Las) continue`), odejmuje koszt z `aiPracaPoolByOwner` i kredytuje drewno (`applyStolarniaDrewnoMapInflow`, `pracaTotal`).
+- Gracz/automat gracza: wieloturowo przez `freshClearingState` + `hexClearingStates` (`main.ts:33059–33076`).
+- Konsekwencja: mechanika czasowa różni się (AI natychmiast), netto koszt Pracy/drewna jest zbilansowany komentarzem `P-AI-WYRAB-REFUNDACJA-PRACA-ZAMIAST-DREWNA = A`. Odstępstwo od „zero uproszczeń dla AI” nadal istnieje.
+
+### 12.4 Ograniczenia tej rundy
+
+- Nie uruchomiono `cargo`, `npm`, gry ani testów (zakaz w temacie). `gra/**` nietknięte; odczyt wyłącznie z pinu.
+- Nieprzeczytane (zgłoszone wprost): wyłącznie literalne wartości capu (#1) — nie zmieniają statusu. Dwa poprzednio nieprzeczytane elementy #4 (`eitherIsCityState`, AI→gracz) zostały przeczytane w obronie 1 (§12.5).
+- HEAD repo roboczego w chwili weryfikacji: `f439879c`; wyniki dotyczą pinu `edb8fb56`.
+- Brak commita, brak push, brak deployu. Plik ma niezacommitowane zmiany z rund 1–5 i KODU-A (`git status`: ` M`) — integracja należy do orkiestratora.
+
+### 12.5 Obrona 1 (po zarzutach Evaluatora, ta sama runda 1/5)
+
+- Zarzut 1 (#4 zawężony zakres, zła lokalizacja AI→gracz): **PRZYJMUJE** — przeczytano ścieżkę AI→gracz: `game/ai.ts:5454–5520` (`decideAIDiplomacy`), `main.ts:33945–33962`, `main.ts:16820–16870`, `main.ts:9985–10000`, `game/diplomacy-ai-balance.ts:203`. `ai.ts:2449–2477` to `boostCandidatesForResourceDeficits` (potwierdzone). #4 → NAPRAWIONY, zakres pełny.
+- Zarzut 2 (kryterium „SPEŁNIONE z zastrzeżeniem”): **PRZYJMUJE** — zastrzeżenie usunięte, bo #4 jest domknięte dowodem; kryterium SPEŁNIONE bez zastrzeżeń.
+- Zarzut 3 (BLOKADY „brak”): **PRZYJMUJE** — BLOKADY w `01-operator.md` (obrona) jako lista z rozstrzygnięciem: (a) `ai.ts:2449–2477` — rozstrzygnięte (zarzut 1); (b) `main.ts:19757` `eitherIsCityState` — rozstrzygnięte (zawęża tylko tworzenie umów AI↔AI z miastem-państwem, `main.ts:19835`); (c) literalne wartości capu #1 — NIEROZSTRZYGNIĘTE, bez wpływu na status (formuła owner-agnostic).
+- Zarzut 4 (cytat #8 `combat.ts:407–413`): **PRZYJMUJE** — `combat.ts:407–413` to deklaracja pola (`combat.ts:410`). Konsumpcje: `combat.ts:901`, `battle/battleScene.ts:8224, 8228`, `main.ts:7935`; wiring `main.ts:27207–27209`. Status #8 bez zmian (NAPRAWIONY).
+
+Nowe liczniki po obronie: PARYTET-AI NAPRAWIONY 9 / NADAL ISTNIEJE 0 / NIEROZSTRZYGNIONY 0. L2 bez zmian: NADAL ISTNIEJE.
+
+**DEPLOY/PUSH: NIE WYKONANO.**
