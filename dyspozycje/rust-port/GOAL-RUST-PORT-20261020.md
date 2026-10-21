@@ -27,12 +27,12 @@ dotykające tych samych plików — zawsze sekwencyjnie, nigdy w tej samej fali.
 
 | # | Temat | Faza | Runda | runId Workflow | Status | Ostatnia aktualizacja |
 |---|---|---|---|---|---|---|
-| 1 | `R-RUSTPORT-P3-4B-IDS-NEWTYPE-REFACTOR-Q1` | P3.4b runda 2 (allowlista rozszerzona decyzją właściciela: bridge.rs tylko konwersja id + tests/combat.rs, tests/ai_turn.rs) | 2/5 | `wf_2afc14cc-fa4` | DISPATCHED (w toku) | 2026-10-21 |
+| 1 | `R-RUSTPORT-P3-4C-IDS-REMAINING-Q1` | P3.4c pozostałe surowe ID (AiCity, PlayableCity, PlayableUnit, BarbCamp, UnitCombatResult, komendy) — po P3.4b PASS `914eec6b` | 1/5 | (patrz niżej) | DISPATCHED | 2026-10-21 |
 | 2 | `R-RUSTPORT-P3-11-DATA-COMPLIANCE-Q1` | P3.11 testy zgodności danych (liczba/ID civ, round-trip 1:1) — nowy plik testowy | 1/5 | `wf_74aded24-b12` | DISPATCHED (w toku) | 2026-10-21 |
 | 3 | `R-RUSTPORT-P3-12-DATA-LOADER-Q1` | P3.12 loader/walidator danych + testy negatywne (`src/data/loader.rs`) | 1/5 | `wf_e4a2b632-106` | DISPATCHED (w toku) | 2026-10-21 |
 | 4 | `R-RUSTPORT-P3-8B-ASSET-MANIFEST-VALIDATION-Q1` | P3.8b trwały test manifestu assetów vs P1.11 | 1/5 | `wf_046df4f4-30a` | DISPATCHED (w toku) | 2026-10-21 |
-| 5 | — | — | — | — | **WOLNY, ŚWIADOMIE** (P3.10 fixtures zablokowane: brak nagrań z weba, P2.10 = DECISION_REQUIRED; P3.13 Final Control P3 czeka na zamknięcie 4.-ów powyżej; P4 czeka na bramkę P3) | 2026-10-21 |
-| 6 | — | — | — | — | **WOLNY, ŚWIADOMIE** (jw.; limit dysku: 4 worktree z buildem na wspólnym `CARGO_TARGET_DIR=/home/user/cargo-target-shared`, ok. 5GB wolne) | 2026-10-21 |
+| 5 | `R-RUSTPORT-P3-14-FMT-CLIPPY-HYGIENE-Q1` | P3.14 fmt/clippy w `src/data/*` (CI czerwony na bazie) | 1/5 | (patrz niżej) | DISPATCHED | 2026-10-21 |
+| 6 | — | — | — | — | **WOLNY, ŚWIADOMIE** (P3.10 zablokowane; P3.13 czeka na zamknięcie P3.11/3.12/3.8b; P4 czeka na bramkę P3) | 2026-10-21 |
 
 **KOREKTA BŁĘDU ROUTINGU MODELI (2026-10-21, zgłoszone przez właściciela):** pierwsze uruchomienia
 P3.4b (`wf_afbe5aaf-7a4`) i P3.9 (`wf_8b0cdc58-ca7`) miały w skrypcie Workflow brakujący parametr
