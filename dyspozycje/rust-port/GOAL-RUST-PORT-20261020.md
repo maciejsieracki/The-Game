@@ -27,12 +27,17 @@ dotykające tych samych plików — zawsze sekwencyjnie, nigdy w tej samej fali.
 
 | # | Temat | Faza | Runda | runId Workflow | Status | Ostatnia aktualizacja |
 |---|---|---|---|---|---|---|
-| 1 | — | — | — | — | **WOLNY** (P1.16f-JEDNOSTKI PASS, zamknięty) | 2026-10-21 |
-| 2 | — | — | — | — | **WOLNY** (P1.16f-CUDA PASS, zamknięty) | 2026-10-21 |
-| 3 | — | — | — | — | **WOLNY** (P1.16f-ULEPSZENIA PASS, zamknięty) | 2026-10-21 |
-| 4 | — | — | — | — | **WOLNY** (P1.16f-CYWILIZACJE PASS, zamknięty) | 2026-10-21 |
-| 5 | — | — | — | — | **WOLNY** (P1.16f-POJECIA PASS, zamknięty) | 2026-10-21 |
-| 6 | — | — | — | — | **WOLNY** (P1.16f-TECHNOLOGIE PASS, zamknięty) | 2026-10-21 |
+| 1 | `R-RUSTPORT-P1-GATE-SYNTHESIS-2-Q1` | Synteza bramki P1 | 1/5 | `wf_9d1664bc-d19` | DISPATCHED (w toku) | 2026-10-21 |
+| 2 | — | — | — | — | **WOLNY** | 2026-10-21 |
+| 3 | — | — | — | — | **WOLNY** | 2026-10-21 |
+| 4 | — | — | — | — | **WOLNY** | 2026-10-21 |
+| 5 | — | — | — | — | **WOLNY** | 2026-10-21 |
+| 6 | — | — | — | — | **WOLNY** | 2026-10-21 |
+
+**Wszystkie 6 tematów P1.16f + P1.16e zamknięte PASS (patrz LEDGER powyżej) — cały AUDYT-OPISY
+pokryty.** Dispatchowana świeża, pełna synteza bramki P1 (poprzednia, `P1-GATE-SYNTHESIS.md`, jest
+nieaktualna — sprzed zamknięcia P1.8/P1.9/P1.13b/P1.14b/P1.16-całości). Pozostałe 5 slotów
+świadomie wolne do czasu wyniku syntezy — dopiero ona rozstrzyga, czy formalnie otworzyć P2.
 
 **P1.16b/P1.16c (4/4) ZAMKNIĘTE PASS** — cały łańcuch następców pierwotnego P1.16b jest teraz
 zielony (patrz LEDGER). Ostatni kawałek P1 to `AUDYT-OPISY-CIVPEDIA-PORADNIK-SCIAGI-2026-08-13.md`
