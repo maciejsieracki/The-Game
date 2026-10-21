@@ -1,0 +1,10 @@
+STATUS: PASS-WITH-NOTES
+DOMAIN: GAME
+TEMAT: R-RUSTPORT-P3-5E-DATA-ECON-SOCIETY-Q1
+GOAL: Przeniesc 1:1 dane z 9 plikow gra/data (pin edb8fb56) do struktur Rust serde, embedded przez include_str!, parsowane w tescie jednostkowym.
+ZMIANY/COMMIT: commit cb246109 w worktree wf_d194c8bb-ed5-1 (detached, baza origin/rust-port/parity-v2 @ 9e33fc77). 13 plikow: rust-port/engine/data/{9 x JSON, bajt-w-bajt z pinem}; rust-port/engine/src/data/economy_society.rs (844 l.), economy_society_part2.rs (591 l.); rust-port/engine/tests/data_economy_society.rs; dyspozycje/rust-port/p3/P3-5E-DATA-ECON-SOCIETY.md. Cargo.toml, lib.rs, domain/**, gra/** bez zmian. PUSH: nie.
+TESTY: cargo test --test data_economy_society: 9 passed, 0 failed, exit 0. cargo test (pelny crate): 233 passed, 0 failed (baseline 224 + 9). 0 warningow. Pokrycie kluczy JSON: 2475/2475 wystapien, 0 brakujacych. Blob SHA kopii = blob SHA pinu dla 9/9. Surowe logi w dokumencie P3-5E sekcja 4.
+BLOKADY: (1) git diff --check zglasza CRLF w epoka-ludnosc-manpower.json (bajtowo jak pin; CR zostawiony swiadomie). (2) Dysk / i /tmp zapelnione podczas pracy; build przeniesiony na /dev/shm; usunieto tylko pliki wyjscia narzedzi tej sesji. (3) Dokumenty P2-9, P1-16D, P3-1-2 nie istnieja w bazie 9e33fc77; odczytano z glownego checkoutu (tylko do odczytu). (4) Cargo.lock wygenerowany lokalnie, nie dodany do commita, usuniety z worktree.
+RUNDY: 1/5
+NASTEPNY KROK: Evaluator (Haiku 5.5 medium) weryfikuje cb246109: allowlista, blob SHA, cargo test wg dokumentu P3-5E sekcja 4.
+DEPLOY/PUSH: NIE WYKONANO

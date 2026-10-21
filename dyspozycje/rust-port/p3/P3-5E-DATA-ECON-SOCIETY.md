@@ -39,7 +39,7 @@ Oświadczenie o zakresie: testy weryfikują parsowanie, pokrycie kluczy i wybran
 
 | Plik | Ścieżka | Wartość z JSON |
 |---|---|---|
-| econ-params | `ekonomia_miasta.prog_wzrostu_wspolczynnik.easy` | 12 |
+| econ-params | `ekonomia_miasta.próg_wzrostu_wspolczynnik.easy` | 12 |
 | econ-params | `teren_mapa.teren_rzeka_zywnosc.normal` | 3 |
 | econ-params | `handel_surowce.pakiet_wielkosc.hard` | 10 |
 | society-params | `zdrowie.zdrowie_rzeka.easy` | 3 |
@@ -48,8 +48,8 @@ Oświadczenie o zakresie: testy weryfikują parsowanie, pokrycie kluczy i wybran
 | epoka-ludnosc-manpower | `epoki[0].epoka` | 1 |
 | epoka-ludnosc-manpower | `epoki[0].manpowerNaLudka` | 1000 |
 | epoka-ludnosc-manpower | `epoki[0].manpowerNaJednostke` | 1000 |
-| citizen-resource-upkeep | `kara.szczescieZaDostepny` | 2 |
-| citizen-resource-upkeep | `kara.rozwojPctZaBrakujacy` | -1 |
+| citizen-resource-upkeep | `_kara.szczescieZaDostepny` | 2 |
+| citizen-resource-upkeep | `_kara.rozwojPctZaBrakujacy` | -1 |
 | citizen-resource-upkeep | `epoki[0].epoka` | 1 |
 | miasto-params | `min_dystans_miast.wartosc` | 4 |
 | miasto-params | `zasieg_okolicy_miasta.wartosc` | 10 |
@@ -67,7 +67,7 @@ Oświadczenie o zakresie: testy weryfikują parsowanie, pokrycie kluczy i wybran
 | ui-params | `panel_miasta.font_scale_domyslna_px` | 16 |
 | ui-params | `nowa_gra.ustawienia[0].domyslny` | 1 |
 
-(Uwaga: w tabeli zapisano ścieżki JSON; w kodzie pola to `snake_case` odpowiedniki, np. `manpower_na_ludka`, `szczescie_za_dostepny`, `rozwoj_pct_za_brakujacy`.)
+(Uwaga: tabela podaje ścieżki w notacji JSON, dokładnie jak klucze występują w pliku, z diakrytyką i podkreśleniem tam, gdzie są w pliku: `próg_wzrostu_wspolczynnik`, `_kara`, `szczescieZaDostepny`. W kodzie są odpowiedniki `snake_case` przez `#[serde(rename = "…")]`, np. `prog_wzrostu_wspolczynnik` (rename `próg_wzrostu_wspolczynnik`), `kara` (rename `_kara`), `szczescie_za_dostepny` (rename `szczescieZaDostepny`), `rozwoj_pct_za_brakujacy`. Każda ścieżka z tabeli została sprawdzona po ścieżce JSON na pinie `edb8fb56`: 27/27 zgodnych, zob. sekcja 9.)
 
 ## 4. Surowe logi `cargo test`
 
@@ -96,8 +96,8 @@ test result: ok. 9 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; fini
 
 ### 4.2 Regresja całego crate — `cargo test` (exit 0)
 
-Przed zmianą (baza `9e33fc77`, według P3-1-2): 224 passed, 0 failed.
-Po zmianie: **233 passed, 0 failed** (224 + 9 nowych), 0 warningów kompilacji, 0 binarek z błędem; 27 binarek testowych z `test result: ok`. Sumy wzięte z surowego logu (`grep '^test result'`); pełny log w `scratchpad`, nie w repo.
+Przed zmianą (baza `9e33fc77`): **224 passed, 0 failed**, 27 binarek z `test result: ok`. Zweryfikowane ponownie przez operatora rundy 1: `cargo test` na checkoutcie `9e33fc77` (rustc/cargo 1.97.0), log poza repo. Zgodne z P3-1-2 (`00a00501`: 224 passed).
+Po zmianie (checkout `cb246109`): **233 passed, 0 failed** (224 + 9 nowych), 28 binarek z `test result: ok` (27 bazowych + `data_economy_society`), `grep -ci warning` na logu = 0. Sumy wzięte z surowego logu (`grep '^test result'`); log poza repo (scratchpad operatora).
 
 Kompilacja przy zmianach: `Compiling civ-engine v0.1.0 … Finished \`test\` profile` — bez warningów.
 
@@ -118,8 +118,8 @@ Niezmienione: `Cargo.toml`, `Cargo.lock` (nie istnieje w repo; wygenerowany loka
 ## 7. Blokady i uwagi
 
 - **Miejsce na dysku:** w trakcie prac `/` i `/tmp` były zapełnione (0 MB wolnego na fs narzędzia). Build przeniesiono na `/dev/shm/p3-5e/` (`CARGO_TARGET_DIR`, `TMPDIR`). Usunięto wyłącznie pliki wyjścia wywołań narzędzi tej sesji (`…/tasks/*.output`). Pozostałe pliki w `scratchpad` innych przebiegów nie były ruszane.
-- **Dokumenty źródłowe:** `P2-9-ASSET-DATA-MAPPING.md`, `P1-16D-OPISY-EKONOMIA5X.md` i `P3-1-2-TOOLCHAIN.md` NIE występują w bazie `9e33fc77`. Odczytano je tylko do odczytu z głównego checkoutu repo. Wnioski: P2-9 potwierdza brak pełnej struktury dla tych plików (stan „BRAK”/„CZĘŚCIOWO”), co jest dokładnie luką tego tematu. P1-16D dotyczy rozjazdu ×5 w `buildings.json`/`units.json`/`terrain-improvements.json` oraz wiki — nie dotyczy bezpośrednio 9 plików tego tematu. Wartości skopiowano bez korekt; nie wykonano porównania wartościowego z wiki.
-- **`git diff --check`:** jedyny zgłoszony problem to końce linii CRLF (`\r`) w `rust-port/engine/data/epoka-ludnosc-manpower.json`. Plik jest bajtowo identyczny z pinem (blob `2911354e…`), więc CR zostaje celowo, zgodnie z zakazem zmian w kopii. Pozostałe 8 plików JSON, kod Rust, test i dokument przechodzą `--check` bez uwag.
+- **Dokumenty źródłowe:** `P2-9-ASSET-DATA-MAPPING.md`, `P1-16D-OPISY-EKONOMIA5X.md` i `P3-1-2-TOOLCHAIN.md` NIE występują w bazie `9e33fc77`, ale SĄ w historii git innych gałęzi/commitów. Odczytano je z historii (`git show <sha>:<ścieżka>`, nie z checkoutu): P2-9 `dyspozycje/rust-port/p2/P2-9-ASSET-DATA-MAPPING.md` @ `6e60ca3a`; P1-16D `dyspozycje/rust-port/p1/P1-16D-OPISY-EKONOMIA5X.md` @ `afcb8ede`; P3-1-2 `dyspozycje/rust-port/p3/P3-1-2-TOOLCHAIN.md` @ `00a00501`. Wnioski: P2-9 potwierdza brak pełnej struktury dla tych plików (stan „BRAK”/„CZĘŚCIOWO”), co jest dokładnie luką tego tematu. P1-16D dotyczy rozjazdu ×5 w `buildings.json`/`units.json`/`terrain-improvements.json` oraz wiki — nie dotyczy bezpośrednio 9 plików tego tematu. Wartości skopiowano bez korekt; nie wykonano porównania wartościowego z wiki.
+- **`git diff --check`:** jedyny zgłoszony problem to końce linii CRLF (`\r`) w `rust-port/engine/data/epoka-ludnosc-manpower.json`. Plik jest bajtowo identyczny z pinem (blob `2911354e…`; SHA-1 kopii = SHA-1 `git show edb8fb56:gra/data/epoka-ludnosc-manpower.json`; pin ma 20 linii CRLF, kopia 20), więc CR zostaje celowo, zgodnie z zakazem zmian w kopii 1:1. To uwaga procesowa, nie błąd danych. Pozostałe 8 plików JSON, kod Rust, test i dokument przechodzą `--check` bez uwag.
 - **Brak zmian wartości:** nie przeliczono ani nie skorygowano żadnej liczby. Kopie są identyczne z pinem.
 
 ## 8. Podsumowanie binarne
@@ -129,5 +129,12 @@ Niezmienione: `Cargo.toml`, `Cargo.lock` (nie istnieje w repo; wygenerowany loka
 - 9/9 ma spot-check liczbowy (resources: długość 15).
 - Pełny crate: 233 passed, 0 failed (baseline 224).
 - Pokrycie kluczy: 2475/2475 wystąpień (531 unikalnych renames), 0 brakujących.
+
+## 9. Korekty po zarzutach Evaluatora (runda 1/5, Operator)
+
+- **Zarzut 1 (notacja ścieżek w sekcji 3) — PRZYJĘTY, poprawiony.** Klucz `ekonomia_miasta.próg_wzrostu_wspolczynnik` (z diakrytyką), `_kara` zamiast `kara`. Wszystkie 27 ścieżek z tabeli sprawdzono skryptem po ścieżkach JSON na pinie `edb8fb56`: 27/27 zgodne (w tym `resources`: długość 15, `[0].Surowiec` = "Żywność"). Rust-mapowanie potwierdzone w `economy_society*.rs`: `#[serde(rename = "_kara")] kara`, `#[serde(rename = "próg_wzrostu_wspolczynnik")] prog_wzrostu_wspolczynnik`, `#[serde(rename = "rozwojPctZaBrakujacy")] rozwoj_pct_za_brakujacy`.
+- **Zarzut 2 (baseline 224 niezweryfikowany) — PRZYJĘTY, zweryfikowany.** `cargo test` na `9e33fc77`: 224 passed, 0 failed, 27 binarek. `cargo test` na `cb246109`: 233 passed, 0 failed, 28 binarek, 0 warningów. Liczba „27 binarek” po zmianie w poprzedniej wersji była błędna (poprawne: 28), skorygowano w 4.2.
+- **Zarzut 3 (dokumenty wymagane przez dispatch) — PRZYJĘTY, odczytane z historii git.** Treść P2-9, P1-16D-EKONOMIA5X i P3-1-2 odczytana przez `git show <sha>:<ścieżka>` (sekcja 7). Wnioski niezmienione: P2-9 wskazuje econ/society/citizen/e-start/ai/ui jako BRAK lub CZĘŚCIOWO, co jest zakresem tego tematu; P1-16D nie dotyczy tych 9 plików; P3-1-2 potwierdza 224 jako baseline.
+- **Zarzut 4 (CRLF w `epoka-ludnosc-manpower.json`) — ODRZUCONY z dowodem.** Pin `edb8fb56:gra/data/epoka-ludnosc-manpower.json` ma 20 linii CRLF; kopia w `cb246109` ma 20 linii CRLF; SHA-1 obu plików identyczny. Usunięcie CR złamałoby zasadę kopii 1:1.
 
 DEPLOY/PUSH: NIE WYKONANO.
