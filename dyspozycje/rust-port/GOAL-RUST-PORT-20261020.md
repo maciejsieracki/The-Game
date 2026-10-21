@@ -27,7 +27,7 @@ dotykające tych samych plików — zawsze sekwencyjnie, nigdy w tej samej fali.
 
 | # | Temat | Faza | Runda | runId Workflow | Status | Ostatnia aktualizacja |
 |---|---|---|---|---|---|---|
-| 1 | `R-RUSTPORT-P2-13-FINAL-CONTROL-Q1` | P2.13 (synteza i kontrola całej fazy P2 przed P3) | 2/5 (kontynuacja po LIMIT-5-EXCEEDED r1) | `wf_862932e9-2a1` | DISPATCHED (w toku) | 2026-10-21 |
+| 1 | `R-RUSTPORT-P2-13-FINAL-CONTROL-Q1` | P2.13 (synteza i kontrola całej fazy P2 przed P3) | runda 3 (architektura: fan-out równoległy po 2× LIMIT-5-EXCEEDED sekwencyjnym) | `wf_b55db73d-44f` | DISPATCHED (w toku) | 2026-10-21 |
 | 2 | — | — | — | — | **WOLNY** (P2.10 PASS, zamknięty) | 2026-10-21 |
 | 3 | — | — | — | — | **WOLNY** | 2026-10-21 |
 | 4 | — | — | — | — | **WOLNY** | 2026-10-21 |
