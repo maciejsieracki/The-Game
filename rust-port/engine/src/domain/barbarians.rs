@@ -6,9 +6,9 @@
 //! is mutated by the resolver except the per-unit visit memory, which is an
 //! intentional part of the movement decision state.
 
+use super::UnitId;
 use serde::{Deserialize, Serialize};
 use std::collections::{BTreeMap, BTreeSet, VecDeque};
-use super::UnitId;
 
 /// Sentinel owner used by the neutral hostile faction.
 pub const BARBARIAN_OWNER_ID: i64 = -1;
@@ -688,7 +688,7 @@ pub fn plan_barbarian_rally(
             }
         }
     }
-commands
+    commands
 }
 
 /// Decide one deterministic movement/attack command per movable barbarian.

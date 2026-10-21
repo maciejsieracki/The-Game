@@ -332,7 +332,12 @@ impl EnginePort for MockEngineAdapter {
                 if name.trim().is_empty() {
                     return Err(BridgeError::engine_rejected("player name cannot be empty"));
                 }
-                if self.state.players.iter().any(|player| player.id.get() == id) {
+                if self
+                    .state
+                    .players
+                    .iter()
+                    .any(|player| player.id.get() == id)
+                {
                     return Err(BridgeError::engine_rejected(format!(
                         "player {id} already exists"
                     )));

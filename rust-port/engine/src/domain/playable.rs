@@ -470,7 +470,12 @@ impl PlayableGame {
     }
 
     pub fn add_player(&mut self, id: u64, name: String) -> Result<(), PlayableError> {
-        if self.state.players.iter().any(|player| player.id.get() == id) {
+        if self
+            .state
+            .players
+            .iter()
+            .any(|player| player.id.get() == id)
+        {
             return Err(PlayableError::DuplicatePlayer(id));
         }
         self.state.players.push(PlayablePlayer {

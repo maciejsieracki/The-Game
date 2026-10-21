@@ -1100,7 +1100,9 @@ fn plan_unit_action(input: &AiTurnInput, unit: &AiUnit) -> Option<AiCommand> {
             &own_cities,
             &input.options,
         ) {
-            return Some(AiCommand::FoundCity { unit_id: unit.id.get() });
+            return Some(AiCommand::FoundCity {
+                unit_id: unit.id.get(),
+            });
         }
         let own_city_values: Vec<AiCity> = own_cities.into_iter().cloned().collect();
         let enemy_city_values: Vec<AiCity> = enemy_cities.into_iter().cloned().collect();
