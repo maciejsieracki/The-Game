@@ -1,0 +1,92 @@
+[
+  {
+    "Surowiec": "Żywność",
+    "Typ": "surowy",
+    "Źródło / budynek": "pola (wg terenu)",
+    "Uwagi": "konsumpcja: 1/ludnosc + 1/jednostke"
+  },
+  {
+    "Surowiec": "Drewno",
+    "Typ": "surowy",
+    "Źródło / budynek": "Las",
+    "Uwagi": "budulec; wejscie Tartaku i konwerterow (Cegielnia/Garncarnia/Odlewnia brązu/Odlewnia żelaza/Wielka odlewnia) 1:1 zamiast dawnego Paliwa"
+  },
+  {
+    "Surowiec": "Kamień",
+    "Typ": "surowy",
+    "Źródło / budynek": "Wzgórza/Góry + Kopalnia",
+    "Uwagi": "budulec"
+  },
+  {
+    "Surowiec": "Glina",
+    "Typ": "surowy",
+    "Źródło / budynek": "złoże Glina",
+    "Uwagi": "wejscie Cegielni i Garncarni"
+  },
+  {
+    "Surowiec": "Ruda",
+    "Typ": "surowy",
+    "Źródło / budynek": "złoże miedzi + Kopalnia miedzi",
+    "Uwagi": "wejscie Odlewni brązu (klucz stock: ruda)"
+  },
+  {
+    "Surowiec": "Ruda żelaza",
+    "Typ": "surowy",
+    "Źródło / budynek": "złoże żelaza + Kopalnia",
+    "Uwagi": "wejscie Odlewni żelaza (klucz stock: ruda_zelaza)"
+  },
+  {
+    "Surowiec": "Ruda cyny",
+    "Typ": "surowy",
+    "Źródło / budynek": "złoże cyny (Wzgórza/Góry) + Kopalnia cyny",
+    "Uwagi": "wejscie Odlewni brązu/żelaza/Wielkiej odlewni — TRZECI input konwertera Brązu obok ruda+drewno, proporcja 1 Ruda cyny / 10 cykli (klucz stock: ruda_cyny). GWARANTOWANA każdej cywilizacji (FAIR_PLAY_DEPOSIT_IDS), mimo że złoże 5× rzadsze niż miedzi (Maciej 2026-08-13)."
+  },
+  {
+    "Surowiec": "Koń",
+    "Typ": "hodowla",
+    "Źródło / budynek": "Stadnina (złoże konia) + szlaki handlowe",
+    "Uwagi": "magazyn państwa (klucz stock: kon); Stadnina 25/t (R-EKONOMIA-SUROWCE-SKALA-5X-Q1, Maciej 2026-08-13, ×5 vs poprzedni stan 5/t — poprzedni tekst „1/t” był już wtedy nieaktualny, poprawione przy okazji); rekrut jednostek Typ Mount +25 Koni (było +5, ×5, R-EKONOMIA-SUROWCE-SKALA-5X-Q1); NIEDOSTĘPNY u Majów/Ameryki Pd."
+  },
+  {
+    "Surowiec": "Sól",
+    "Typ": "surowy",
+    "Źródło / budynek": "Warzelnia soli (wybrzeże / złoże sol) + szlaki handlowe",
+    "Uwagi": "magazyn państwa (klucz stock: sol); Warzelnia 50/t (było 10/t); zużycie Spichlerz II (25 Sól/t × działający, było 5) — R-EKONOMIA-SUROWCE-SKALA-5X-Q1 (Maciej 2026-08-13, ×5)"
+  },
+  {
+    "Surowiec": "Złoto",
+    "Typ": "surowy",
+    "Źródło / budynek": "Kopalnia złota + szlaki handlowe",
+    "Uwagi": "magazyn państwa (klucz stock: zloto) ≠ Pieniądz (skarbiec); Kopalnia 1/t; Mennica zużywa 1 Złoto/t w stolicy przy mnożniku handlu"
+  },
+  {
+    "Surowiec": "Cegła",
+    "Typ": "przetworzony",
+    "Źródło / budynek": "Cegielnia (glina+drewno)",
+    "Uwagi": "budulec"
+  },
+  {
+    "Surowiec": "Ceramika",
+    "Typ": "przetworzony",
+    "Źródło / budynek": "Garncarnia (glina+drewno)",
+    "Uwagi": "magazyn państwa (klucz stock: ceramika); zużycie Spichlerz I/II (25 Ceramiki/t, było 5) — R-EKONOMIA-SUROWCE-SKALA-5X-Q1 (Maciej 2026-08-13, ×5); Garncarnia nie zużywa Ceramiki (U-14)"
+  },
+  {
+    "Surowiec": "Brąz",
+    "Typ": "przetworzony",
+    "Źródło / budynek": "Odlewnia brązu (ruda+drewno)",
+    "Uwagi": "budulec + jednostki brazowe"
+  },
+  {
+    "Surowiec": "Żelazo",
+    "Typ": "surowy",
+    "Źródło / budynek": "Odlewnia żelaza (ruda żelaza+drewno)",
+    "Uwagi": "dostęp: Kopalnia żelaza (mapa) + Odlewnia żelaza (miasto); odblokowuje tech Hutnictwo żelaza; Kuźnia żelaza = osobny slot (pancerz)"
+  },
+  {
+    "Surowiec": "Stal",
+    "Typ": "przetworzony",
+    "Źródło / budynek": "Wielka odlewnia (żelazo+drewno)",
+    "Uwagi": "odblokowuje tech Obróbka żelaza; Wielka Kuźnia = tylko pancerz (+45% łańcuch kuźni), bez produkcji stali"
+  }
+]

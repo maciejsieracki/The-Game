@@ -1,0 +1,842 @@
+{
+  "ekonomia_miasta": {
+    "próg_wzrostu_wspolczynnik": {
+      "easy": 12,
+      "normal": 16,
+      "hard": 20,
+      "jednostka": "per 1 ludności",
+      "opis": "Próg wzrostu populacji: Próg(N) = 20 + N × wartość (baza 20 w kodzie, economy.ts/turn-economy.ts). Większy = wolniejszy wzrost. Wartości finalne. [PT]"
+    },
+    "spichlerz_zachowanie_po_wzroscie": {
+      "easy": 0.6,
+      "normal": 0.5,
+      "hard": 0.4,
+      "jednostka": "%",
+      "opis": "Ze Spichlerzem w mieście: ułamek bufora wzrostu zachowany po awansie populacji (+1). Bez Spichlerza bufor zeruje się. Maciej 2026-07-06: normal=50%."
+    },
+    "handel_surowiec_min_stock": {
+      "easy": 2,
+      "normal": 2,
+      "hard": 2,
+      "jednostka": "szt.",
+      "opis": "ABC-15 Maciej 2026-07-04: handel surowcem dopiero gdy stock ≥ wartość; 1 szt. zostaje = dostęp (v2 handlu)."
+    },
+    "akwedukt_prog_ludnosci": {
+      "easy": 6,
+      "normal": 5,
+      "hard": 4,
+      "jednostka": "ludność",
+      "opis": "Max populacja bez ŻADNEGO z dwóch budynków (Spichlerz/Akwedukt) — dolny stopień drabinki R-SPICHLERZ-CAP-LUDNOSCI-ETAP (Maciej 2026-08-09, normal=5, bez zmian). Wzrost zablokowany przy cap — nadwyżka żywności idzie do armii lub przepada (B5). [PT]"
+    },
+    "spichlerz_prog_ludnosci": {
+      "easy": 8,
+      "normal": 8,
+      "hard": 8,
+      "jednostka": "ludność",
+      "opis": "Twardy cap populacji ze Spichlerzem (I lub II), ale BEZ Akweduktu — środkowy stopień drabinki R-SPICHLERZ-CAP-LUDNOSCI-ETAP (Maciej 2026-08-09, ECHO A: normal=8). Płaski 8/8/8 na wszystkich trudnościach — zgodne z dosłownymi słowami Macieja z propozycji, do wiadomości (nie skaluje się z trudnością tak jak akwedukt_prog_ludnosci)."
+    },
+    "akwedukt_max_ludnosci": {
+      "easy": 12,
+      "normal": 12,
+      "hard": 12,
+      "jednostka": "ludność",
+      "opis": "Twardy cap populacji Z Akweduktem — górny stopień drabinki (Maciej 2026-08-09, R-SPICHLERZ-CAP-LUDNOSCI-ETAP ECHO A: obniżka z dawnych 15 → normal=12). Epoka 4+ — osobny unlock (do decyzji ABC)."
+    },
+    "zywnosc_zuzytka_populacja": {
+      "easy": 1,
+      "normal": 1,
+      "hard": 2,
+      "jednostka": "żywność/turę/os.",
+      "opis": "Zużycie żywności na 1 punkt populacji na turę."
+    },
+    "zywnosc_jednostka_ruch": {
+      "easy": 1,
+      "normal": 1,
+      "hard": 2,
+      "jednostka": "żywność/turę",
+      "opis": "Zużycie żywności jednostki wojskowej w ruchu lub w garnizonie."
+    },
+    "zywnosc_jednostka_oboz": {
+      "easy": 0.38,
+      "normal": 0.5,
+      "hard": 0.62,
+      "jednostka": "żywność/turę",
+      "opis": "Zużycie żywności jednostki wojskowej obozującej (bez ruchu)."
+    },
+    "suwak_handel_nauka_domyslnie": {
+      "easy": 20,
+      "normal": 20,
+      "hard": 20,
+      "jednostka": "% Daniny netto miasta (po Walucie i Mennicy: Podatku netto)",
+      "opis": "Domyślny udział strumienia Nauka (= BADANIA) w podziale Daniny netto nowego miasta. 20% (Maciej 2026-06-25, potwierdzone przy decyzji 74 = A z 2026-07-25 — ten strumień zostaje bez zmian)."
+    },
+    "suwak_handel_pieniadz_domyslnie": {
+      "easy": 60,
+      "normal": 60,
+      "hard": 60,
+      "jednostka": "% Daniny netto miasta (po Walucie i Mennicy: Podatku netto)",
+      "opis": "Domyślny udział strumienia Pieniądz (= SKARBIEC) w podziale Daniny netto nowego miasta. Obniżony 70% → 60% decyzją Maciej 2026-07-25 (PYTANIE 74 = A); te 10 punktów procentowych przeszło na Zamożność, żeby nowe miasto nie startowało z ujemnym Szczęściem na trudnym."
+    },
+    "suwak_handel_luksus_domyslnie": {
+      "easy": 20,
+      "normal": 20,
+      "hard": 20,
+      "jednostka": "% Daniny netto miasta (po Walucie i Mennicy: Podatku netto)",
+      "opis": "Domyślny udział strumienia Zamożność (Wealth) w podziale Daniny netto nowego miasta. Podniesiony 10% → 20% decyzją Maciej 2026-07-25 (PYTANIE 74 = A). Powód: 20% to dokładnie próg utrzymania poziomu Zamożności (20% pieniądza miasta przy poziomie 0), więc poziom Zamożności rusza z miejsca bez ręcznej interwencji; w nowej siatce Szczęścia przedział 20-29% daje +1 pkt Szczęścia na normalnym i 0 na trudnym (zamiast 0 / -1 przy dawnych 10%)."
+    },
+    "suwak_praca_budynki_domyslnie": {
+      "easy": 70,
+      "normal": 70,
+      "hard": 70,
+      "jednostka": "%",
+      "opis": "Domyślny udział strumienia Praca→Budynki w podziale Pracy netto. [PT]"
+    },
+    "suwak_praca_teren_domyslnie": {
+      "easy": 30,
+      "normal": 30,
+      "hard": 30,
+      "jednostka": "%",
+      "opis": "Domyślny udział strumienia Praca→Teren (ulepszenia heksów). [PT]"
+    },
+    "suwak_zywnosc_rozwoj_domyslnie": {
+      "easy": 100,
+      "normal": 100,
+      "hard": 100,
+      "jednostka": "%",
+      "opis": "Domyślny udział brutto żywności imperium → rozwój miast (magazyn/wzrost). Reszta → zapasy państwa. Start gry: 100% wzrost, 0% armia (Maciej 2026-07-03)."
+    },
+    "glod_wojska_hp_frac": {
+      "easy": 0.06,
+      "normal": 0.08,
+      "hard": 0.1,
+      "jednostka": "ułamek maxHP",
+      "opis": "Atrycja HP jednostek na mapie gdy zapasy państwa < 0 po koszcie armii, PO karencji glod_wojska_karencja_tur (−8% maxHP/tura normal). Identycznie dla gracza i AI (parytet, Maciej 2026-07-26)."
+    },
+    "glod_wojska_karencja_tur": {
+      "easy": 3,
+      "normal": 3,
+      "hard": 3,
+      "jednostka": "tury",
+      "opis": "C-GLOD-Q1=A (Maciej 2026-07-26, wariant A): liczba kolejnych tur Z RZĘDU z ujemnymi zapasami państwa, zanim ruszy atrycja HP wojska (glod_wojska_hp_frac). Domyślny suwak żywności (suwak_zywnosc_rozwoj_domyslnie) NIE zmieniony przy tej decyzji. Bez różnicowania między poziomami trudności — sama karencja to 3 tury wszędzie."
+    },
+    "glod_wojska_stat_mult": {
+      "easy": 0.75,
+      "normal": 0.75,
+      "hard": 0.75,
+      "jednostka": "mnożnik",
+      "opis": "Mnożnik parametrów bojowych (bez armor) gdy zapasy państwa < 0 po koszcie armii — jednostka osłabiona zanim ruszy atrycja HP."
+    },
+    "zloto_deficyt_hp_frac": {
+      "easy": 0.06,
+      "normal": 0.08,
+      "hard": 0.1,
+      "jednostka": "ułamek maxHP",
+      "opis": "R-DEFICYT-ZLOTA-KARA-Q1=A (Maciej 2026-08-06): atrycja HP jednostek na mapie gdy Skarbiec właściciela < 0 (ownerTreasury(ownerId), PO zbankowaniu tury — R-DEFICYT-ZLOTA-TRIGGER-Q1=B), PO karencji zloto_deficyt_karencja_tur (−8% maxHP/tura normal). Analogia do glod_wojska_hp_frac, ale osobny parametr (Złoto ≠ Żywność). Identycznie dla gracza i AI (PARYTET AI)."
+    },
+    "zloto_deficyt_karencja_tur": {
+      "easy": 3,
+      "normal": 3,
+      "hard": 3,
+      "jednostka": "tury",
+      "opis": "R-DEFICYT-ZLOTA-KARA-Q1=A: liczba kolejnych tur Z RZĘDU ze Skarbcem<0 (ownerTreasury(ownerId)), zanim ruszy atrycja HP (zloto_deficyt_hp_frac). Punkt odniesienia 3 tury, jak Żywność (glod_wojska_karencja_tur) — do dostrojenia w playteście."
+    },
+    "zloto_deficyt_stat_mult": {
+      "easy": 0.75,
+      "normal": 0.75,
+      "hard": 0.75,
+      "jednostka": "mnożnik",
+      "opis": "R-DEFICYT-ZLOTA-KARA-Q1=A: mnożnik parametrów bojowych (bez armor) gdy Skarbiec właściciela < 0 tej tury — jednostka osłabiona zanim ruszy atrycja HP. Analogia do glod_wojska_stat_mult, osobny nazwany parametr."
+    },
+    "zywnosc_mnoznik_terytorium_wlasne": {
+      "easy": 1.0,
+      "normal": 1.0,
+      "hard": 1.0,
+      "jednostka": "mnożnik",
+      "opis": "C-GLOD-Q2=B (Maciej 2026-07-26): mnożnik zużycia żywności jednostki wojskowej stojącej na WŁASNYM terytorium (bez zmian względem stawki bazowej zywnosc_jednostka_ruch/oboz)."
+    },
+    "zywnosc_mnoznik_poza_terytorium": {
+      "easy": 2.0,
+      "normal": 2.0,
+      "hard": 2.0,
+      "jednostka": "mnożnik",
+      "opis": "C-GLOD-Q2=B (Maciej 2026-07-26, wariant uproszczony): mnożnik zużycia żywności jednostki wojskowej stojącej POZA własnym terytorium — bez rozróżniania dróg, ziemi niczyjej, murów ani liczby jednostek w stosie (decyzja właściciela: prosty wariant)."
+    },
+    "spichlerz_pojemnosc_zapasow_panstwa": {
+      "easy": 120,
+      "normal": 100,
+      "hard": 80,
+      "jednostka": "🍞",
+      "opis": "Max zapasów armii na 1 Spichlerz w imperium (100% odkładania). Suma = wartość × liczba Spichlerzy. Bez Spichlerza: odkładanie 50%, bez limitu pojemności."
+    },
+    "armia_odklad_bez_spichlerza": {
+      "easy": 0.6,
+      "normal": 0.5,
+      "hard": 0.4,
+      "jednostka": "ułamek",
+      "opis": "Od startu gry: ułamek netto żywności armii (po koszcie wojska) odkładany do zapasów państwa BEZ Spichlerza w imperium. Reszta przepada."
+    },
+    "armia_odklad_ze_spichlerzem": {
+      "easy": 1,
+      "normal": 1,
+      "hard": 1,
+      "jednostka": "ułamek",
+      "opis": "NIEUŻYWANE (PYTANIE-85) — stary model suwaka żywności. Zostawione dla zgodności zapisów."
+    },
+    "racje_zywnosc_1": {
+      "easy": 2,
+      "normal": 2,
+      "hard": 2,
+      "jednostka": "żywność/turę/os.",
+      "opis": "PYTANIE-85: koszt racji poziom 1 (żywność na mieszkańca/turę). Balans 2026-07-29: 2 (było 1)."
+    },
+    "racje_zywnosc_2": {
+      "easy": 4,
+      "normal": 4,
+      "hard": 4,
+      "jednostka": "żywność/turę/os.",
+      "opis": "PYTANIE-85: koszt racji poziom 2. Balans 2026-07-29: 4 (było 2)."
+    },
+    "racje_zywnosc_3": {
+      "easy": 6,
+      "normal": 6,
+      "hard": 6,
+      "jednostka": "żywność/turę/os.",
+      "opis": "PYTANIE-85: koszt racji poziom 3. Balans 2026-07-29: 6 (było 3)."
+    },
+    "racje_wzrost_proc_1": {
+      "easy": 3,
+      "normal": 3,
+      "hard": 3,
+      "jednostka": "% WZROST/turę",
+      "opis": "PYTANIE-85: bonus wzrostu z racji poziom 1."
+    },
+    "racje_wzrost_proc_2": {
+      "easy": 5,
+      "normal": 5,
+      "hard": 5,
+      "jednostka": "% WZROST/turę",
+      "opis": "PYTANIE-85: bonus wzrostu z racji poziom 2."
+    },
+    "racje_wzrost_proc_3": {
+      "easy": 7,
+      "normal": 7,
+      "hard": 7,
+      "jednostka": "% WZROST/turę",
+      "opis": "PYTANIE-85: bonus wzrostu z racji poziom 3."
+    },
+    "korupcja_wspolczynnik_dystansu": {
+      "easy": 0.5,
+      "normal": 1,
+      "hard": 1.5,
+      "jednostka": "punkty procentowe straty Daniny/Podatku na każde pole odległości od stolicy",
+      "opis": "Korupcja — współczynnik dystansu. Strata% Daniny (po wynalezieniu Waluty: Podatku) += Dystans_od_Stolicy [pola] × wartość. NIE dotyczy Pracy (decyzja Maciej 2026-07-25: korupcja obciąża wyłącznie Daninę/Podatek). Wartości obniżone o 50% wobec pierwotnych 1 / 2 / 3 (decyzja Maciej 2026-07-25: „zbyt rygorystyczne… mają mieć wpływ, ale nie być druzgocące\"). [PT]"
+    },
+    "korupcja_wspolczynnik_miast": {
+      "easy": 0.5,
+      "normal": 0.5,
+      "hard": 1,
+      "jednostka": "punkty procentowe straty Daniny/Podatku na każde miasto w imperium",
+      "opis": "Korupcja — współczynnik liczby miast. Strata% Daniny (po Walucie: Podatku) += Liczba_Miast × wartość; obciąża każde miasto, także stolicę. NIE dotyczy Pracy. Wartości obniżone o 50% wobec pierwotnych 1 / 1 / 2 (decyzja Maciej 2026-07-25). [PT]"
+    },
+    "korupcja_cap": {
+      "easy": 38,
+      "normal": 50,
+      "hard": 62,
+      "jednostka": "% — maksymalna strata Daniny/Podatku w jednym mieście",
+      "opis": "Korupcja — sufit straty. Górne ograniczenie łącznej straty z dystansu i liczby miast. BEZ ZMIAN 2026-07-25 — Maciej obniżył o 50% dwa WSPÓŁCZYNNIKI (dystansu i miast), sufitu nie wymieniał; po obniżce sufit i tak jest praktycznie nieosiągalny (normal wymaga Dystans + 0,5×Liczba_Miast ≥ 50). [PT]"
+    }
+  },
+  "budynki": {
+    "budynek_mlyn_mnoznik_pracy": {
+      "easy": 3,
+      "normal": 2,
+      "hard": 1,
+      "jednostka": "×",
+      "opis": "Mnożnik Młyna na całą Pracę bazową miasta (Praca_brutto = Σ × wartość). [PT]"
+    },
+    "budynek_mlyn_bonus_pracy": {
+      "easy": 3,
+      "normal": 2,
+      "hard": 1,
+      "jednostka": "Praca/turę",
+      "opis": "Stały bonus Pracy dodawany przez Młyn po mnożniku. [PT]"
+    },
+    "budynek_cegielnia_bonus_pracy": {
+      "easy": 0.31,
+      "normal": 0.25,
+      "hard": 0.19,
+      "jednostka": "%",
+      "opis": "Premia Cegielni do lokalnej Pracy (+25% Pracy brutto). [PT]"
+    },
+    "budynek_targowisko_bonus_handlu": {
+      "easy": 0.62,
+      "normal": 0.5,
+      "hard": 0.38,
+      "jednostka": "%",
+      "opis": "Premia Targowiska do Handlu brutto (+50%). [PT]"
+    },
+    "budynek_stolarnia_bonus_drewna_civ": {
+      "easy": 0.10,
+      "normal": 0.10,
+      "hard": 0.10,
+      "jednostka": "%",
+      "opis": "Zadanie 2 (2026-07-23): Stolarnia +10% produkcji Drewna CALEJ CYWILIZACJI za kazda Stolarnie (civ-wide, stackuje addytywnie: ×(1+0.10×liczbaStolarni_ownera)). Wpiete w turn-economy.ts przy akumulacji City.surowce.drewno. PLACEHOLDER do strojenia."
+    },
+    "budynek_kamieniarski_bonus_kamienia_civ": {
+      "easy": 0.10,
+      "normal": 0.10,
+      "hard": 0.10,
+      "jednostka": "%",
+      "opis": "Zadanie 2 (2026-07-23): Warsztat kamieniarski +10% produkcji Kamienia CALEJ CYWILIZACJI za kazda sztuke (civ-wide, stackuje addytywnie: ×(1+0.10×liczbaWarsztatow_ownera)). Wpiete w turn-economy.ts przy akumulacji City.surowce.kamien. PLACEHOLDER do strojenia."
+    },
+    "budynek_garncarnia_bonus_zywnosci_lokalnie": {
+      "easy": 0.10,
+      "normal": 0.10,
+      "hard": 0.10,
+      "jednostka": "%",
+      "opis": "Zadanie 2 (2026-07-23): Garncarnia +10% Zywnosci LOKALNIE (tylko w miescie, gdzie stoi; NIE civ-wide), stackuje addytywnie: ×(1+0.10×garncarnie_w_miescie). Wpiete w economy.ts cityYieldPerTurn (zywnoscBrutto, przed konsumpcja). PLACEHOLDER do strojenia."
+    },
+    "ulepszenie_surowcowe_upkeep_praca": {
+      "easy": 1,
+      "normal": 1,
+      "hard": 1,
+      "jednostka": "Praca/turę/ulepszenie",
+      "opis": "ZADANIE 1 (Maciej 2026-07-23, decyzja B): KAZDE zbudowane ulepszenie surowcowe (tartak/kamieniolom/glinianka/kopalnia/kopalnia_miedzi + DOSTEPOWE warzelnia_soli/stadnina) zuzywa 1 Praca/ture z globalnej puli produkcji cywilizacji (playerPracaPool / aiPracaPoolByOwner w main.ts) -- ciagly upkeep, niezaleznie od obsadzenia ludnoscia. Zwolnione: zywnosciowe (farma/irygacja/tarasy/bydlo/owce/lama/oboz_lowiecki/lodzie_rybackie) + infrastruktura (droga/droga_brukowana/fort/posterunek/wyrab). Wpiete w turn-economy.ts computePracaUpkeepByOwner. PLACEHOLDER do strojenia (koszt=1)."
+    },
+    "budynek_mennica_mnoznik": {
+      "easy": 2,
+      "normal": 1,
+      "hard": 0,
+      "jednostka": "×",
+      "opis": "NIEUŻYWANE (decyzja Maciej 2026-07-25) — było już martwe wcześniej (żaden kod go nie konsumował). Efekt Mennicy jest teraz w całości opisany przez globalne.mennica_mnoznik_po_walucie (jeden mnożnik na cały Handel netto, aktywny gdy Waluta odkryta ORAZ Mennica zbudowana). Zostawione tylko dla zgodności starych zapisów/narzędzi — kod (economy.ts, turn-economy.ts) go już nie czyta."
+    },
+    "budynek_biblioteka_bonus_nauki": {
+      "easy": 0.37,
+      "normal": 0.3,
+      "hard": 0.23,
+      "jednostka": "ułamek — premia do Nauki miasta (0,30 = +30% Nauki tego miasta na turę)",
+      "opis": "Premia Biblioteki do Nauki miasta. Obniżona +50% → +30% (normalny) decyzją Maciej 2026-07-25 (PYTANIE 75 = C). Powód: dotąd tańsza i wcześniejsza Biblioteka dawała PIĘCIOKROTNIE więcej niż droższa Akademia (+50% vs +10%) — logika była odwrócona. Skalowanie trudnością w konwencji pliku (łatwy ×1,24 / trudny ×0,76). Stackuje ADDYTYWNIE z premią Akademii: Nauka × (1 + premia Biblioteki + premia Akademii) = ×1,50 na normalnym przy obu budynkach (Biblioteka i Akademia to para „w bok\" — stoją obok siebie, żadna nie zastępuje drugiej)."
+    },
+    "budynek_akademia_bonus_nauki": {
+      "easy": 0.25,
+      "normal": 0.2,
+      "hard": 0.15,
+      "jednostka": "ułamek — premia do Nauki miasta (0,20 = +20% Nauki tego miasta na turę)",
+      "opis": "Premia Akademii do Nauki miasta. Podniesiona +10% → +20% (normalny) decyzją Maciej 2026-07-25 (PYTANIE 75 = C) i objęta skalowaniem trudnością (łatwy ×1,24 / trudny ×0,76), którego wcześniej nie miała. Powód: Akademia jest droższa i późniejsza od Biblioteki, więc musi dawać wyraźnie mniej niż Biblioteka tylko dlatego, że jest drugim krokiem — a nie pięciokrotnie mniej. Stackuje ADDYTYWNIE z premią Biblioteki: Nauka × (1 + 0,30 + 0,20) = ×1,50 na normalnym."
+    },
+    "waluta_mnoznik": {
+      "easy": 2,
+      "normal": 2,
+      "hard": 2,
+      "jednostka": "×",
+      "opis": "NIEUŻYWANE (decyzja Maciej 2026-07-25): dawny Efekt 1 'sam tech Waluty odkryty → ×2 na cały Handel netto, bez wymogu Mennicy, jednakowo na wszystkich trudnościach' — ZASTĄPIONY przez globalne.mennica_mnoznik_po_walucie (wymaga Waluty ORAZ Mennicy zbudowanej w mieście; wartość różna per trudność: easy ×2 / normal ×1,5 / hard ×1 czyli brak efektu). Zostawione tylko dla zgodności starych zapisów/narzędzi — kod (economy.ts, turn-economy.ts) go już nie czyta w formule Efektu 1."
+    },
+    "targowisko_praca_na_pieniadz_mnoznik": {
+      "easy": 2,
+      "normal": 2,
+      "hard": 2,
+      "jednostka": "×",
+      "opis": "Efekt 2 (Targowisko + Waluta): mnoznik konwersji puli-Pracy (doPuli) na Pieniadz. Aktywny per-miasto gdy maTargowisko=true i walutaOdkryta=true. pieniadzZPracy = floor(doPuli × mnoznik)."
+    },
+    "budynek_tartak_przepustowosc": {
+      "easy": 3,
+      "normal": 2,
+      "hard": 1,
+      "jednostka": "szt/turę",
+      "opis": "Maks konwersja Drewno→Deski w Tartaku na turę. [PT]"
+    },
+    "budynek_cegielnia_przepustowosc": {
+      "easy": 50,
+      "normal": 50,
+      "hard": 50,
+      "jednostka": "szt/turę",
+      "opis": "Maks konwersja (Glina+Drewno)→Cegła w Cegielni na turę (baza przed skalowaniem epoką). [PT] P-KONWERTERY-PRZEPUSTOWOSC-Q1 (Maciej 2026-08-12): 3→10, flat na wszystkich trudnościach (cytat właściciela nie różnicował trudności); +10% tej bazy ADDYTYWNIE za każdą epokę cywilizacji właściciela, patrz converterThroughputForEra w converters.ts. R-EKONOMIA-SUROWCE-SKALA-5X-Q1 (Maciej 2026-08-13): 10→50 (×5, produkcja budynkowa surowców fizycznych)."
+    },
+    "budynek_huta_przepustowosc": {
+      "easy": 25,
+      "normal": 25,
+      "hard": 25,
+      "jednostka": "szt/turę",
+      "opis": "Maks konwersja (Ruda+Drewno)→Brąz w Odlewni brązu (i tier wyższy łańcucha odlewni) na turę. Płaskie (BEZ skalowania epoką). [PT] P-KONWERTERY-PRZEPUSTOWOSC-Q1 (Maciej 2026-08-12): 1→5, flat na wszystkich trudnościach. R-EKONOMIA-SUROWCE-SKALA-5X-Q1 (Maciej 2026-08-13): 5→25 (×5)."
+    },
+    "budynek_odlewnia_zelaza_przepustowosc": {
+      "easy": 25,
+      "normal": 25,
+      "hard": 25,
+      "jednostka": "szt/turę",
+      "opis": "Maks konwersja (Ruda żelaza+Drewno)→Żelazo w Odlewni żelaza / Wielka odlewnia na turę. Płaskie (BEZ skalowania epoką). [PT] P-KONWERTERY-PRZEPUSTOWOSC-Q1 (Maciej 2026-08-12): 1→5, flat na wszystkich trudnościach. R-EKONOMIA-SUROWCE-SKALA-5X-Q1 (Maciej 2026-08-13): 5→25 (×5)."
+    },
+    "budynek_wielka_odlewnia_przepustowosc": {
+      "easy": 25,
+      "normal": 25,
+      "hard": 25,
+      "jednostka": "szt/turę",
+      "opis": "Maks konwersja (Żelazo+Drewno)→Stal w Wielka odlewnia na turę (Maciej 2026-07-27: przeniesione z Wielka Kuźnia). Płaskie (BEZ skalowania epoką). [PT] P-KONWERTERY-PRZEPUSTOWOSC-Q1 (Maciej 2026-08-12): 1→5, flat na wszystkich trudnościach. R-EKONOMIA-SUROWCE-SKALA-5X-Q1 (Maciej 2026-08-13): 5→25 (×5)."
+    },
+    "budynek_garncarnia_przepustowosc": {
+      "easy": 50,
+      "normal": 50,
+      "hard": 50,
+      "jednostka": "szt/turę",
+      "opis": "Maks konwersja (Glina+Drewno)→Ceramika w Garncarni na turę (baza przed skalowaniem epoką, PYTANIE-84-B5). [PT] P-KONWERTERY-PRZEPUSTOWOSC-Q1 (Maciej 2026-08-12): 6→10, flat na wszystkich trudnościach; +10% tej bazy ADDYTYWNIE za każdą epokę cywilizacji właściciela, patrz converterThroughputForEra w converters.ts. R-EKONOMIA-SUROWCE-SKALA-5X-Q1 (Maciej 2026-08-13): 10→50 (×5)."
+    },
+    "budynek_spichlerz_zuzywa_ceramika": {
+      "easy": 25,
+      "normal": 25,
+      "hard": 25,
+      "jednostka": "Ceramika/turę",
+      "opis": "PYTANIE-84-B6 (Maciej 2026-07-27): Spichlerz I zużywa Ceramikę ze skarbca państwa co turę; brak surowca → brak bonusów ludności (U-24=B, U-25B). ⚠️ MARTWY KLUCZ (Operator R-EKONOMIA-SUROWCE-SKALA-5X-Q1, Maciej 2026-08-13): żaden kod nie czyta tego pola JSON — wartość realna to hardkodowana stała SPICHLERZ_DRAIN_CERAMIKA_PER_TURN w building-resource-gate.ts (zaktualizowana ×5 w tym samym zadaniu, 5→25). Wpis tu zaktualizowany WYŁĄCZNIE dla spójności dokumentacji, zero wpływu na grę."
+    },
+    "budynek_spichlerz_ii_zuzywa_sol": {
+      "easy": 25,
+      "normal": 25,
+      "hard": 25,
+      "jednostka": "Sól/turę",
+      "opis": "PYTANIE-84-B7/U-2 (Maciej 2026-07-27): Spichlerz II zużywa Sól ze skarbca × każdy działający Spichlerz II płacący Sól; brak Soli → brak bonusu wojska (imperium-wide). ⚠️ MARTWY KLUCZ (Operator R-EKONOMIA-SUROWCE-SKALA-5X-Q1, Maciej 2026-08-13): żaden kod nie czyta tego pola JSON — wartość realna to hardkodowana stała SPICHLERZ_DRAIN_SOL_PER_TURN w building-resource-gate.ts (zaktualizowana ×5 w tym samym zadaniu, 5→25). Wpis tu zaktualizowany WYŁĄCZNIE dla spójności dokumentacji, zero wpływu na grę."
+    },
+    "budynek_spichlerz_ii_zuzywa_ceramika": {
+      "easy": 25,
+      "normal": 25,
+      "hard": 25,
+      "jednostka": "Ceramika/turę",
+      "opis": "PYTANIE-84-B8 (Maciej 2026-07-27): Spichlerz II zużywa Ceramikę ze skarbca co turę (obok Soli); brak Ceramiki → brak bonusu ludności w mieście. ⚠️ MARTWY KLUCZ (Operator R-EKONOMIA-SUROWCE-SKALA-5X-Q1, Maciej 2026-08-13): żaden kod nie czyta tego pola JSON — wartość realna to hardkodowana stała SPICHLERZ_DRAIN_CERAMIKA_PER_TURN w building-resource-gate.ts (współdzielona z Spichlerz I, zaktualizowana ×5 w tym samym zadaniu). Wpis tu zaktualizowany WYŁĄCZNIE dla spójności dokumentacji, zero wpływu na grę."
+    },
+    "utrzymanie_budynek": {
+      "easy": 1,
+      "normal": 1,
+      "hard": 2,
+      "jednostka": "Pieniądz/turę",
+      "opis": "Domyślna stawka utrzymania TYLKO dla budynku bez własnego wpisu `utrzymanie` w buildings.json. Od 2026-07-25 (decyzja właściciela 19=A) silnik czyta utrzymanie z danych każdego budynku (0–5 Pieniądz/turę, zróżnicowane per budynek) — ta wartość NIE nadpisuje ich, jest wyłącznie zabezpieczeniem na wypadek brakującego wpisu. Dziś wszystkie 39 budynków mają własną wartość, więc ta stawka faktycznie się nie stosuje. [PT]"
+    }
+  },
+  "teren_mapa": {
+    "teren_rzeka_zywnosc": {
+      "easy": 4,
+      "normal": 3,
+      "hard": 2,
+      "jednostka": "żywność/turę",
+      "opis": "Bonus żywności z nakładki Rzeka na pole bazowe. (Bazowe plony → Plony-terenow.xlsx)"
+    },
+    "teren_rzeka_praca": {
+      "easy": 3,
+      "normal": 2,
+      "hard": 1,
+      "jednostka": "Praca/turę",
+      "opis": "Bonus Pracy z nakładki Rzeka na pole bazowe."
+    },
+    "teren_rzeka_handel": {
+      "easy": 3,
+      "normal": 2,
+      "hard": 1,
+      "jednostka": "Handel/turę",
+      "opis": "Bonus Handlu z nakładki Rzeka na pole bazowe."
+    },
+    "teren_las_zywnosc": {
+      "easy": -0.75,
+      "normal": -1,
+      "hard": -1.25,
+      "jednostka": "żywność/turę",
+      "opis": "Modyfikator żywności z nakładki Las (kara — las utrudnia uprawy)."
+    },
+    "teren_las_handel": {
+      "easy": -0.75,
+      "normal": -1,
+      "hard": -1.25,
+      "jednostka": "Handel/turę",
+      "opis": "Modyfikator Handlu z nakładki Las (kara — las utrudnia ruch handlowy)."
+    },
+    "teren_las_drewno": {
+      "easy": 4,
+      "normal": 3,
+      "hard": 2,
+      "jednostka": "Drewno/turę",
+      "opis": "Bonus Drewna z nakładki Las. ⚠️ MARTWY KLUCZ (Operator R-EKONOMIA-SUROWCE-SKALA-5X-Q1 Runda 2, Maciej 2026-08-13): żaden kod w src/ nie czyta tego pola JSON (zweryfikowano grepem całego src/ dla całej grupy `teren_mapa`) — realny bonus Drewna z lasu to `terrain_modifiers` → \"Las (nakładka)\" w data/terrain-yields.json (Drewno=15 po ×5 tej samej rundy), czytany przez terrainModifier()/FOREST_MODIFIER w economy.ts. Wartość TU celowo NIE przeskalowana (BEZ ZMIAN, wciąż 3/normal) — zmiana nie miałaby żadnego obserwowalnego efektu w grze; zgłoszone jako dług techniczny (martwa ścieżka do wyczyszczenia lub podłączenia)."
+    },
+    "teren_las_praca": {
+      "easy": 2.5,
+      "normal": 2,
+      "hard": 1.5,
+      "jednostka": "Praca/turę",
+      "opis": "Bonus Pracy z nakładki Las (dostęp do drewna / wyrąb)."
+    },
+    "ulepszenie_farma_zywnosc": {
+      "easy": 3,
+      "normal": 2,
+      "hard": 1,
+      "jednostka": "żywność/turę",
+      "opis": "Bonus żywności z wybudowanej Farmy na polu (Łąka, Równina). [PT — do strojenia]"
+    },
+    "ulepszenie_irygacja_zywnosc": {
+      "easy": 4,
+      "normal": 3,
+      "hard": 2,
+      "jednostka": "żywność/turę",
+      "opis": "Bonus żywności z Irygacji (lepsze pola uprawne, wymaga tech). [PT — do strojenia]"
+    },
+    "ulepszenie_kopalnia_kamien": {
+      "easy": 3,
+      "normal": 2,
+      "hard": 1,
+      "jednostka": "Kamień/turę",
+      "opis": "Bonus Kamienia z Kopalni na Wzgórzach/Górach (wymaga tech Murarstwo). [PT — do strojenia]"
+    },
+    "ulepszenie_droga_ruch": {
+      "easy": 2,
+      "normal": 1,
+      "hard": 0,
+      "jednostka": "hex/turę bonus",
+      "opis": "Bonus szybkości ruchu jednostek na polach z Drogą (skrócenie kosztu ruchu). [PT — do strojenia]"
+    },
+    "ulepszenie_pastwisko_bydlo_produkcja": {
+      "easy": 3,
+      "normal": 2,
+      "hard": 1,
+      "jednostka": "×",
+      "opis": "Mnożnik Pracy/produkcji gdy bydło przypisane do Pastwiska (×200%). [PT — do strojenia]"
+    },
+    "ulepszenie_pastwisko_owce_zywnosc": {
+      "easy": 3,
+      "normal": 2,
+      "hard": 1,
+      "jednostka": "żywność/turę",
+      "opis": "Bonus żywności gdy owce przypisane do Pastwiska. [PT — do strojenia]"
+    }
+  },
+  "wealth": {
+    "wealth_cap_na_epoke": {
+      "easy": 10,
+      "normal": 10,
+      "hard": 10,
+      "jednostka": "poziom/epoka",
+      "opis": "Cap poziomu Wealth = epoka * wartosc. Epoka 1 -> 10, epoka 10 -> 100."
+    },
+    "wealth_prog_na_poziom": {
+      "easy": 3.5,
+      "normal": 4.5,
+      "hard": 6.0,
+      "jednostka": "srodki",
+      "opis": "Prog awansu L->L+1 = wartosc * (L+1) * epoka. Wyzszy = wolniejszy wzrost Wealth."
+    },
+    "wealth_mnoznik_na_poziom": {
+      "easy": 0.18,
+      "normal": 0.15,
+      "hard": 0.12,
+      "jednostka": "x per poziom",
+      "opis": "Mnoznik strumienia podatku = max(1, 1+(W-1)*wartosc). W=1 -> x1, W=10 -> x2.35 (normal)."
+    },
+    "wealth_utrzymanie_baza": {
+      "easy": 0.15,
+      "normal": 0.20,
+      "hard": 0.25,
+      "jednostka": "udzial pieniadza",
+      "opis": "Udzial pieniadza miasta potrzebny na utrzymanie przy W=0 (rownowaga bazowa)."
+    },
+    "wealth_utrzymanie_przy_cap": {
+      "easy": 0.35,
+      "normal": 0.40,
+      "hard": 0.50,
+      "jednostka": "udzial pieniadza",
+      "opis": "Udzial pieniadza miasta potrzebny na utrzymanie przy W=cap. Liniowa interpolacja miedzy baza a cap."
+    },
+    "wealth_zachowanie_po_awansie": {
+      "easy": 0.6,
+      "normal": 0.5,
+      "hard": 0.4,
+      "jednostka": "ulamek",
+      "opis": "Ulamek puli zachowany po awansie poziomu Wealth (jak Spichlerz po wzroscie populacji)."
+    },
+    "wealth_zadowolenie_max": {
+      "easy": 10,
+      "normal": 10,
+      "hard": 10,
+      "jednostka": "pkt Szczescia",
+      "opis": "R-SZCZESCIE-PRZEBUDOWA-SKALI-Q1 G6 (wlasciciel 2026-09-05): maksymalny wklad Wealth do Szczescia miasta, osiagany przy CAPIE poziomu epoki (wealth_cap_na_epoke * epoka). Zadowolenie = floor(poziom * wealth_zadowolenie_max / cap_epoki). Maksimum +10 w KAZDEJ epoce, ale poziom potrzebny rosnie 10 -> 20 -> 30. Zastepuje wealth_zadowolenie_na_10pkt (floor(W/10)*1), ktore dawalo max +1/+2/+3 w epokach 1-3 i wymagalo poziomu 100 na +10. Wartosc plaska, ta sama na easy/normal/hard (G13)."
+    },
+    "wealth_kara_zero": {
+      "easy": 0,
+      "normal": 0,
+      "hard": -1,
+      "jednostka": "zadowoleni",
+      "opis": "Kara zadowolenia gdy Wealth = 0 (bieda spoleczna). Wartosc ujemna."
+    },
+    "wealth_immunitet_tur": {
+      "easy": 10,
+      "normal": 5,
+      "hard": 3,
+      "jednostka": "tur",
+      "opis": "Tury od założenia miasta bez spadku poziomu W z utrzymania (D18-3=B)."
+    }
+  },
+  "globalne": {
+    "kurs_pieniadz_praca": {
+      "easy": 1,
+      "normal": 1,
+      "hard": 1,
+      "jednostka": "1:1",
+      "opis": "Kurs bazowy: 1 Pieniądz = 1 Praca (używany do wykupu budynków za Pieniądz)."
+    },
+    "mennica_mnoznik_po_walucie": {
+      "easy": 2,
+      "normal": 1.5,
+      "hard": 1,
+      "jednostka": "×",
+      "opis": "JEDYNY mnożnik Handlu netto (decyzja Maciej 2026-07-25, wątek 'scalenie mnożników'): mnoży CAŁY handelNetto miasta (Skarb + Nauka + Zamożność razem, PRZED podziałem suwakiem) aktywny TYLKO gdy technologia Waluta jest odkryta ORAZ Mennica jest zbudowana w tym mieście (bramka AND — sam tech Waluty już NIE wystarcza). Wartości właściciela: easy ×2,0 / normal ×1,5 / hard ×1,0 (hard = brak efektu, nie zeruje dochodu). Poprzednio (do 2026-07-24) istniały DWA osobne mnożniki: `budynki.waluta_mnoznik` (×2 na cały Handel przy samym techu, bez Mennicy) + ten parametr (mnożył TYLKO strumień Pieniądza). Oba zostały scalone w ten jeden efekt — `waluta_mnoznik` zostaje w pliku oznaczony jako nieużywany."
+    },
+    "luksus_przelicznik_zadowolenie": {
+      "easy": 4,
+      "normal": 5,
+      "hard": 6,
+      "jednostka": "Luksus / +1 mieszk.",
+      "opis": "Ile jednostek Luksusu daje +1 zadowolony mieszkaniec. [PT]"
+    },
+    "magazyn_baza_zywnosc": {
+      "easy": 25,
+      "normal": 20,
+      "hard": 15,
+      "jednostka": "żywność",
+      "opis": "Bazowa pojemność Magazynu Żywności (bez Spichlerza). [PT]"
+    },
+    "magazyn_baza_surowce": {
+      "easy": 50000,
+      "normal": 50000,
+      "hard": 50000,
+      "jednostka": "szt/typ surowca (PAŃSTWO), epoka 1 (Kamień)",
+      "opis": "SUROW-CIV-01 (decyzja Macieja 2026-07-24): ZMIANA SEMANTYKI — od teraz to baza pojemności CAŁEGO PAŃSTWA (civ-wide, suma po wszystkich miastach ownera) per typ surowca, przy 0 zbudowanych budynków „Magazyn” w imperium — NIE per-miasto jak dawniej. Model ADDYTYWNY razem z magazyn_bonus_surowce_na_budynek (nie mnożnikowy). BAZA PODNIESIONA 100→500 (Maciej 2026-07-24), 500→1000 (Maciej 2026-07-28), potem 1000→10000 (Maciej 2026-08-12, P-MAGAZYN-SKALOWANIE-EPOKA-Q1: „zwiększ jeszcze wielkość magazynu do 10 tysięcy sztuk dla każdego surowca z obecnego 1000”), potem 10000→50000 (Maciej 2026-08-13, R-EKONOMIA-SUROWCE-SKALA-5X-Q1: ×5 na WSZYSTKIE składowe formuły cap, razem z produkcją/kosztami/utrzymaniem). Ta wartość to EPOKA 1 (Kamień) — od epoki 2 wzwyż PODWAJA SIĘ co epokę CYWILIZACJI WŁAŚCICIELA (epoka2=100000, epoka3=200000; PARYTET AI, ta sama formuła dla gracza i AI) przez ownerResourceCapacityPerType/magazynEraMultiplier w economy-upkeep.ts — JSON zostaje FLAT (era1), skalowanie liczone w kodzie, wzorem P-KONWERTERY-PRZEPUSTOWOSC-Q1. Cap per typ (epoka 1) = 50000 + 500 × liczba Magazynów (każdy Magazyn w dowolnym mieście dokłada +500, nie jednorazowo). Płaskie na easy/normal/hard. Dotyczy WYŁĄCZNIE surowców (drewno/kamień/glina/ruda/ruda_zelaza/cegła/brąz/żelazo/stal) — Żywność/Spichlerz nadal używa modelu mnożnikowego per-miasto (bez zmian, patrz magazyn_baza_zywnosc)."
+    },
+    "magazyn_bonus_surowce_na_budynek": {
+      "easy": 500,
+      "normal": 500,
+      "hard": 500,
+      "jednostka": "szt/typ surowca (PAŃSTWO) / Magazyn, epoka 1 (Kamień)",
+      "opis": "SUROW-CIV-01 (decyzja Macieja 2026-07-24, NOWY PARAMETR): dodatkowa pojemność CAŁEGO PAŃSTWA per typ surowca za KAŻDY budynek „Magazyn” zbudowany GDZIEKOLWIEK w imperium ownera (addytywnie, nie mnożnik — 2 Magazyny = +1000, nie ×2). Cap per typ (epoka 1) = magazyn_baza_surowce + magazyn_bonus_surowce_na_budynek × liczba_magazynow. WARTOŚĆ BAZOWA NIEZMIENIONA przez P-MAGAZYN-SKALOWANIE-EPOKA-Q1 (Maciej 2026-08-12): cytat właściciela „z 100 i 150 na 1000 i 1500” dotyczy PARY Spichlerz I/II (SPICHLERZ_EMPIRE_CAP_I/II w building-resource-gate.ts — potwierdzone grepem komentarza „Spichlerze lokalne +100/+150, Magazyn +100” przy magazyn_centralny_baza_zywnosc niżej), NIE tego pola (ma tylko JEDNĄ wartość, nie parę). PÓŹNIEJ 100→500 (Maciej 2026-08-13, R-EKONOMIA-SUROWCE-SKALA-5X-Q1: ×5, tym razem TO pole EXPLICITE objęte poleceniem „przeskalować WSZYSTKIE składowe formuły cap ×5 — bazę I mnożnik za budynek”). Pole DOSTAJE ten sam mechanizm podwajania co epokę (epoka2=1000, epoka3=2000) przez ownerResourceCapacityPerType/magazynEraMultiplier w economy-upkeep.ts, bo dzieli tę samą formułę cap(typ) z magazyn_baza_surowce."
+    },
+    "magazyn_centralny_baza_zywnosc": {
+      "easy": 1000,
+      "normal": 1000,
+      "hard": 1000,
+      "jednostka": "🍞",
+      "opis": "PYTANIE-85-Q6: baza capu centralnego magazynu żywności imperium (+ Spichlerze lokalne +100/+150, Magazyn +100). Podniesione 500→1000 (Maciej 2026-07-28)."
+    },
+    "magazyn_centralny_bonus_zywnosc_na_budynek": {
+      "easy": 100,
+      "normal": 100,
+      "hard": 100,
+      "jednostka": "🍞 / Magazyn",
+      "opis": "PYTANIE-85: dodatek capu centralnego magazynu żywności za każdy budynek Magazyn w imperium."
+    },
+    "magazyn_mnoznik_spichlerz": {
+      "easy": 6,
+      "normal": 5,
+      "hard": 4,
+      "jednostka": "×",
+      "opis": "Mnożnik pojemności ŻYWNOŚCI przy wybudowanym Spichlerzu (magazyn_baza_zywnosc × ten mnożnik). SUROW-CIV-01 2026-07-24: surowce (drewno/kamień/…) NIE używają już tego mnożnika — patrz magazyn_baza_surowce/magazyn_bonus_surowce_na_budynek (model addytywny, civ-wide). [PT]"
+    },
+    "utrzymanie_jednostka_standard": {
+      "easy": 1,
+      "normal": 1,
+      "hard": 2,
+      "jednostka": "Pieniądz/turę",
+      "opis": "Koszt utrzymania standardowej jednostki wojskowej. [PT]"
+    },
+    "ai_rush_jednostka_rezerwa_zlota": {
+      "easy": 100,
+      "normal": 100,
+      "hard": 100,
+      "jednostka": "Złoto",
+      "opis": "R-AI-KUP-JEDN (Maciej 2026-07-24, parytet AI): bufor skarbca AI, ktory musi zostac PO zaplaceniu za rush-zakup jednostki za zloto (shouldAIRushBuyUnit, game/ai.ts) -- AI kupuje tylko gdy treasury >= wartosc + koszt jednostki. Ta sama wartosc na wszystkich trudnosciach. PLACEHOLDER do strojenia (przeniesione z main.ts AI_UNIT_GOLD_RUSH_RESERVE, wartosc bez zmian)."
+    },
+    "ai_rush_jednostka_max_na_ture": {
+      "easy": 1,
+      "normal": 1,
+      "hard": 1,
+      "jednostka": "szt./ownera/turę",
+      "opis": "R-AI-KUP-JEDN (Maciej 2026-07-24, parytet AI): twardy cap liczby rush-zakupow jednostek za zloto na jednego AI-ownera w jednej turze (shouldAIRushBuyUnit, game/ai.ts) -- zapobiega farmieniu skarbca. Ta sama wartosc na wszystkich trudnosciach. PLACEHOLDER do strojenia (przeniesione z main.ts AI_UNIT_GOLD_RUSH_MAX_PER_TURN, wartosc bez zmian)."
+    },
+    "ai_suwaki_deficyt_zywnosc_prog": {
+      "easy": 0,
+      "normal": 0,
+      "hard": 0,
+      "jednostka": "Żywność (zapasy państwa, pkt)",
+      "opis": "R-AI-SUWAKI (Maciej 2026-07-26, C-AI-SUWAKI=A): próg zapasów Żywności PAŃSTWA (getEmpireFoodReserve(ownerId)) tego ownera, PONIŻEJ którego decideAIEconomySliders (game/ai.ts) przesuwa suwak świeżej żywności (procentRozwoj) w stronę wyżywienia armii. Ta sama wartość na wszystkich trudnościach (zero zapasów = pierwszy sygnał deficytu). PLACEHOLDER do strojenia po playteście."
+    },
+    "ai_suwaki_nadwyzka_zywnosc_prog": {
+      "easy": 50,
+      "normal": 50,
+      "hard": 50,
+      "jednostka": "Żywność (zapasy państwa, pkt)",
+      "opis": "R-AI-SUWAKI (Maciej 2026-07-26, C-AI-SUWAKI=A): próg WYRAŹNEJ nadwyżki zapasów Żywności PAŃSTWA (getEmpireFoodReserve(ownerId)), POWYŻEJ którego decideAIEconomySliders (game/ai.ts) wraca suwakiem świeżej żywności (procentRozwoj) w stronę rozwoju miast. Ta sama wartość na wszystkich trudnościach. PLACEHOLDER do strojenia po playteście."
+    },
+    "ai_suwaki_krok_zywnosc_rozwoj": {
+      "easy": 10,
+      "normal": 10,
+      "hard": 10,
+      "jednostka": "pkt % suwaka procentRozwoj / korekta",
+      "opis": "R-AI-SUWAKI (Maciej 2026-07-26, C-AI-SUWAKI=A): wielkość jednej korekty suwaka świeżej żywności (city.procentRozwoj) w decideAIEconomySliders (game/ai.ts) -- zgodne z krokiem suwaka gracza (HANDEL_PCT_STEP, cities.ts). Ta sama wartość na wszystkich trudnościach. PLACEHOLDER do strojenia po playteście."
+    },
+    "ai_suwaki_krok_praca_nauka": {
+      "easy": 10,
+      "normal": 10,
+      "hard": 10,
+      "jednostka": "pkt % suwaka procentBudynki/procentNauka / korekta",
+      "opis": "R-AI-SUWAKI (Maciej 2026-07-26, C-AI-SUWAKI=A): wielkość jednej korekty suwaków Pracy (podzialPracy.procentBudynki) i Handlu (podzialHandlu.procentNauka) w decideAIEconomySliders (game/ai.ts) -- wojna przesuwa oba suwaki ku Pracy, pokój ku Nauce. Ta sama wartość na wszystkich trudnościach. PLACEHOLDER do strojenia po playteście."
+    },
+    "ai_suwaki_min_odstep_tur": {
+      "easy": 3,
+      "normal": 3,
+      "hard": 3,
+      "jednostka": "tury",
+      "opis": "R-AI-SUWAKI (Maciej 2026-07-26, C-AI-SUWAKI=A): minimalny odstęp między kolejnymi korektami suwaków tego ownera w decideAIEconomySliders (game/ai.ts) -- zabezpieczenie przed oscylacją suwaka tam-i-z-powrotem co turę. Ta sama wartość na wszystkich trudnościach."
+    },
+    "skarbiec_centralny_lokalizacja": {
+      "easy": "stolica",
+      "normal": "stolica",
+    "hard": "stolica",
+      "jednostka": "miasto",
+      "opis": "Skarbiec zawsze w stolicy; utrata stolicy zeruje go do 0."
+    }
+  },
+  "handel_szlaki": {
+    "lad_max_dystans": {
+      "easy": 12,
+      "normal": 12,
+      "hard": 12,
+      "jednostka": "heksow",
+      "opis": "R-HANDEL-SZLAKI-LIMIT-DYSTANSU-USUN-Q1 (Maciej, 2026-09-03): od tego tematu ta wartosc NIE JEST JUZ progiem BLOKUJACYM istnienie szlaku LADOWEGO -- to jawne ODWROCENIE wczesniejszej Q6=B (Maciej 2026-07-20: \"connected = dystans <= prog ORAZ istnieje przechodnia sciezka\"). Dzis connected = WYLACZNIE istnieje przechodnia sciezka po terenie (BFS, woda/gory blokuja) -- BEZ gornego limitu dystansu w linii prostej (na duzych mapach ten prog blokowal handel miedzy stolicami tej samej pary cywilizacji tylko dlatego, ze lezaly daleko od siebie, mimo realnej, przechodniej sciezki). Ta liczba (12) zyje dalej jako pole TradeRouteParams.ladMaxDist w trade-routes.ts, dzis nieuzywane do blokowania (patrz komentarz w kodzie). Referencyjny dystans SZCZYTU krzywej DOCHODU (identyczna dzis liczbowo wartosc 12, ale osobne pole TradeRouteIncomeParams.ladMaxDist) pozostaje bez zmian -- istniejace, bliskie trasy (<=12 heksow) zarabiaja dokladnie tyle co przed ta zmiana."
+    },
+    "morze_max_dystans": {
+      "easy": 20,
+      "normal": 20,
+      "hard": 20,
+      "jednostka": "heksow",
+      "opis": "R-HANDEL-SZLAKI-LIMIT-DYSTANSU-USUN-Q1 (Maciej, 2026-09-03): analogicznie do lad_max_dystans wyzej -- ta wartosc NIE JEST JUZ progiem BLOKUJACYM istnienie szlaku MORSKIEGO (przez Port w OBU miastach, po wodzie: Morze unia Wybrzeze). Connectivity morska = WYLACZNIE fizyczna osiagalnosc po wodzie (BFS) + Port w obu miastach, bez gornego limitu dystansu w linii prostej. Ta liczba (20) zyje dalej jako pole TradeRouteParams.morzeMaxDist w trade-routes.ts, dzis nieuzywane do blokowania. Referencyjny dystans SZCZYTU krzywej DOCHODU (TradeRouteIncomeParams.morzeMaxDist, ta sama liczba 20) pozostaje bez zmian -- istniejace, bliskie trasy morskie (<=20 heksow) zarabiaja dokladnie tyle co przed ta zmiana."
+    },
+    "dochody_ladowe": {
+      "easy": [1, 1, 2, 3, 3, 4, 4, 5, 6, 6, 7, 7, 8],
+      "normal": [1, 1, 2, 3, 3, 4, 4, 5, 6, 6, 7, 7, 8],
+      "hard": [1, 1, 2, 3, 3, 4, 4, 5, 6, 6, 7, 7, 8],
+      "jednostka": "pieniadz/ture",
+      "opis": "Faktyczny dochod ladowej trasy dla kolejnych dystansow 0-12. Wartosc jest juz po redukcji dochodu; nie stosowac dodatkowego dzielenia."
+    },
+    "dochody_morskie": {
+      "easy": [2, 2, 3, 4, 5, 5, 6, 7, 8, 8, 9, 10, 10, 11, 12, 12, 13, 14, 14, 15, 16],
+      "normal": [2, 2, 3, 4, 5, 5, 6, 7, 8, 8, 9, 10, 10, 11, 12, 12, 13, 14, 14, 15, 16],
+      "hard": [2, 2, 3, 4, 5, 5, 6, 7, 8, 8, 9, 10, 10, 11, 12, 12, 13, 14, 14, 15, 16],
+      "jednostka": "pieniadz/ture",
+      "opis": "Faktyczny dochod morskiej trasy dla kolejnych dystansow 0-20. Wartosc zawiera dotychczasowy bonus morski; nie stosowac dodatkowego dzielenia."
+    }
+  },
+  "handel_surowce": {
+    "cena_drewno": {
+      "easy": 1,
+      "normal": 1,
+      "hard": 1,
+      "jednostka": "PN/blok 10 szt.",
+      "opis": "Maciej 2026-07-29; korekta semantyki R-DYPLO-CENNIK-SKALA-5X-Q1: 1 PN za blok Drewna (surowiec_ilosc). R-DYPLO-CENNIK-KROK10-Q1 (2026-08-30): blok powiększony z 5 na 10 szt., cena liczbowo bez zmian — wartość pozycji = liczba sztuk ÷ 10 × cena bloku. Ta sama cena na wszystkich trudnościach."
+    },
+    "cena_glina": {
+      "easy": 2,
+      "normal": 2,
+      "hard": 2,
+      "jednostka": "PN/blok 10 szt.",
+      "opis": "Maciej 2026-07-29; R-DYPLO-CENNIK-SKALA-5X-Q1: 2 PN za blok Gliny. R-DYPLO-CENNIK-KROK10-Q1 (2026-08-30): blok powiększony z 5 na 10 szt., cena liczbowo bez zmian — ta sama cena na wszystkich trudnościach."
+    },
+    "cena_kamien": {
+      "easy": 3,
+      "normal": 3,
+      "hard": 3,
+      "jednostka": "PN/blok 10 szt.",
+      "opis": "Maciej 2026-07-29; R-DYPLO-CENNIK-SKALA-5X-Q1: 3 PN za blok Kamienia. R-DYPLO-CENNIK-KROK10-Q1 (2026-08-30): blok powiększony z 5 na 10 szt., cena liczbowo bez zmian — ta sama cena na wszystkich trudnościach."
+    },
+    "cena_ruda": {
+      "easy": 5,
+      "normal": 5,
+      "hard": 5,
+      "jednostka": "PN/blok 10 szt.",
+      "opis": "Maciej 2026-07-29; R-DYPLO-CENNIK-SKALA-5X-Q1: 5 PN za blok Rudy miedzi (klucz magazynu: ruda). R-DYPLO-CENNIK-KROK10-Q1 (2026-08-30): blok powiększony z 5 na 10 szt., cena liczbowo bez zmian — ta sama cena na wszystkich trudnościach."
+    },
+    "cena_ruda_zelaza": {
+      "easy": 10,
+      "normal": 10,
+      "hard": 10,
+      "jednostka": "PN/blok 10 szt.",
+      "opis": "Maciej 2026-07-29; R-DYPLO-CENNIK-SKALA-5X-Q1: 10 PN za blok Rudy żelaza (klucz magazynu: ruda_zelaza). R-DYPLO-CENNIK-KROK10-Q1 (2026-08-30): blok powiększony z 5 na 10 szt., cena liczbowo bez zmian — ta sama cena na wszystkich trudnościach."
+    },
+    "cena_ruda_cyny": {
+      "easy": 10,
+      "normal": 10,
+      "hard": 10,
+      "jednostka": "PN/blok 10 szt.",
+      "opis": "Maciej 2026-08-13; R-DYPLO-CENNIK-SKALA-5X-Q1: 10 PN za blok Rudy cyny (klucz magazynu: ruda_cyny). Cena analogiczna do rudy żelaza. R-DYPLO-CENNIK-KROK10-Q1 (2026-08-30): blok powiększony z 5 na 10 szt., cena liczbowo bez zmian — ta sama cena na wszystkich trudnościach."
+    },
+    "cena_cegla": {
+      "easy": 5,
+      "normal": 5,
+      "hard": 5,
+      "jednostka": "PN/blok 10 szt.",
+      "opis": "Maciej 2026-07-29; R-DYPLO-CENNIK-SKALA-5X-Q1: 5 PN za blok Cegły. R-DYPLO-CENNIK-KROK10-Q1 (2026-08-30): blok powiększony z 5 na 10 szt., cena liczbowo bez zmian — ta sama cena na wszystkich trudnościach."
+    },
+    "cena_sol": {
+      "easy": 2,
+      "normal": 2,
+      "hard": 2,
+      "jednostka": "PN/blok 10 szt.",
+      "opis": "Maciej 2026-07-29; R-DYPLO-CENNIK-SKALA-5X-Q1: 2 PN za blok Soli. R-DYPLO-CENNIK-KROK10-Q1 (2026-08-30): blok powiększony z 5 na 10 szt., cena liczbowo bez zmian — ta sama cena na wszystkich trudnościach."
+    },
+    "cena_kon": {
+      "easy": 5,
+      "normal": 5,
+      "hard": 5,
+      "jednostka": "PN/blok 10 szt.",
+      "opis": "Maciej 2026-07-29; R-DYPLO-CENNIK-SKALA-5X-Q1: 5 PN za blok Konia. R-DYPLO-CENNIK-KROK10-Q1 (2026-08-30): blok powiększony z 5 na 10 szt., cena liczbowo bez zmian — ta sama cena na wszystkich trudnościach."
+    },
+    "cena_ceramika": {
+      "easy": 5,
+      "normal": 5,
+      "hard": 5,
+      "jednostka": "PN/blok 10 szt.",
+      "opis": "Maciej 2026-07-29; R-DYPLO-CENNIK-SKALA-5X-Q1: 5 PN za blok Ceramiki. R-DYPLO-CENNIK-KROK10-Q1 (2026-08-30): blok powiększony z 5 na 10 szt., cena liczbowo bez zmian — ta sama cena na wszystkich trudnościach."
+    },
+    "cena_braz": {
+      "easy": 15,
+      "normal": 15,
+      "hard": 15,
+      "jednostka": "PN/blok 10 szt.",
+      "opis": "Maciej 2026-07-29; R-DYPLO-CENNIK-SKALA-5X-Q1: 15 PN za blok Brązu (przetworzonego). R-DYPLO-CENNIK-KROK10-Q1 (2026-08-30): blok powiększony z 5 na 10 szt., cena liczbowo bez zmian — ta sama cena na wszystkich trudnościach."
+    },
+    "cena_zelazo": {
+      "easy": 20,
+      "normal": 20,
+      "hard": 20,
+      "jednostka": "PN/blok 10 szt.",
+      "opis": "Maciej 2026-07-29; R-DYPLO-CENNIK-SKALA-5X-Q1: 20 PN za blok Żelaza przetworzonego. R-DYPLO-CENNIK-KROK10-Q1 (2026-08-30): blok powiększony z 5 na 10 szt., cena liczbowo bez zmian — ta sama cena na wszystkich trudnościach."
+    },
+    "cena_stal": {
+      "easy": 25,
+      "normal": 25,
+      "hard": 25,
+      "jednostka": "PN/blok 10 szt.",
+      "opis": "Maciej 2026-07-29; R-DYPLO-CENNIK-SKALA-5X-Q1: 25 PN za blok Stali (przetworzonej). R-DYPLO-CENNIK-KROK10-Q1 (2026-08-30): blok powiększony z 5 na 10 szt., cena liczbowo bez zmian — ta sama cena na wszystkich trudnościach."
+    },
+    "cena_zloto": {
+      "easy": 50,
+      "normal": 50,
+      "hard": 50,
+      "jednostka": "PN/szt. (krok 1)",
+      "opis": "Maciej 2026-07-29; R-DYPLO-CENNIK-SKALA-5X-Q1: 50 PN za 1 szt. Złota (surowiec w magazynie państwa, klucz zloto), krok wymiany 1 szt. Odrębne od Pieniądza (¤) w koszyku typ zloto."
+    },
+    "cena_wegiel": {
+      "easy": 20,
+      "normal": 20,
+      "hard": 20,
+      "jednostka": "PN/szt. (krok 1)",
+      "opis": "Maciej 2026-07-29; R-DYPLO-CENNIK-SKALA-5X-Q1: 20 PN za 1 szt. Węgla w magazynie (gdy stock istnieje), krok wymiany 1 szt. Dostęp do złoża węgla = osobny cennik złoża (handel_zloze)."
+    },
+    "pakiet_wielkosc": {
+      "easy": 10,
+      "normal": 10,
+      "hard": 10,
+      "jednostka": "szt.",
+      "opis": "R-DYP-PAKIET-USUN (2026-08-08, Maciej): koszyk handlu NIE liczy już w pakietach — gracz podaje sztuki wprost (jeden, dziesięć, sto...). Ta wartość NIE mnoży już żadnego transferu; zostaje wyłącznie jako wewnętrzny próg heurystyki AI (deficyt surowca = zapas poniżej tej liczby sztuk, patrz diplomacy-resource-trade-pick.ts / ai-resource-needs.ts). Dawny opis (nieaktualny): C-DYP-SUROWCE-Q1=B wielkość pakietu handlu ilościowego."
+    }
+  }
+}
