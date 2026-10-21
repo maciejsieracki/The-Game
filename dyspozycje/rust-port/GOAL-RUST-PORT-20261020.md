@@ -32,7 +32,7 @@ dotykające tych samych plików — zawsze sekwencyjnie, nigdy w tej samej fali.
 | 3 | — | — | — | — | **WOLNY** (P1.16f-ULEPSZENIA PASS, zamknięty) | 2026-10-21 |
 | 4 | `R-RUSTPORT-P1-16F-CIVPEDIA-CYWILIZACJE-Q1` | P1.16f (4/6) | 1/5 | `wf_00e756e0-00d` | DISPATCHED (w toku) | 2026-10-21 |
 | 5 | `R-RUSTPORT-P1-16F-CIVPEDIA-POJECIA-Q1` | P1.16f (5/6) | 1/5 | `wf_63099c45-f02` | DISPATCHED (w toku) | 2026-10-21 |
-| 6 | `R-RUSTPORT-P1-16F-TECHNOLOGIE-Q1` | P1.16f (6/6) | 1/5 | `wf_aafeb0f3-2a6` | DISPATCHED (w toku) | 2026-10-21 |
+| 6 | — | — | — | — | **WOLNY** (P1.16f-TECHNOLOGIE PASS, zamknięty) | 2026-10-21 |
 
 **P1.16b/P1.16c (4/4) ZAMKNIĘTE PASS** — cały łańcuch następców pierwotnego P1.16b jest teraz
 zielony (patrz LEDGER). Ostatni kawałek P1 to `AUDYT-OPISY-CIVPEDIA-PORADNIK-SCIAGI-2026-08-13.md`
