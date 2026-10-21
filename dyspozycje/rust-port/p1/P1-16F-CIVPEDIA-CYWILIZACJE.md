@@ -197,3 +197,71 @@ Pozycje **niedokończone** (wymagają potwierdzenia Evaluatora, nie zgadywania):
 ---
 
 **Dowody źródłowe (pin edb8fb56):** `gra/src/data/wikiBundle.json` (encyklopedia, `cywilizacje/*`, pola `wikiM`/`full`); `gra/data/civ-matrix.json` (`cywilizacje[]`, `defaults`, `paramDefs`, `_meta`); `gra/src/game/civ-matrix-semantic.ts` (HARMFUL ok. l. 206–215; zbiory REAL/BLOCKED/DEAD/UNWIRED); `gra/src/game/civ-bonuses.ts` (`excludedG1` ok. l. 288–291; `civMovementMultiplier` ok. l. 297–330; `matchingMatrixSum`); `gra/src/battle/battleScene.ts` (ok. l. 7183, 7186–7190).
+
+---
+
+## 7. Runda 2 (Operator, Haiku 5.5 medium): odpowiedź na zarzuty Evaluatora
+
+**Metoda korekty.** Wszystkie odczyty na pinie `edb8fb56`. Kluczowe ustalenie: `civBonusyForOwnerId` (`gra/src/main.ts` ok. l. 8208–8214) zwraca `[...legacy, ...civMatrixBonusyForCivKey(civKey)]`. Legacy = `gra/data/civs.json` `bonusy[]` (`civBonusyForCivKey`, `economy.ts` ok. l. 844). `bonusApplies` (`civ-bonuses.ts` ok. l. 141–175) przepuszcza tylko `realizuje === 'walka'`; wpisy `walka_wygaszone` są pomijane. `excludedG1` (ok. l. 288–291) wyklucza WYŁĄCZNIE wpisy macierzowe, nie legacy. Stąd poprzedni status BLOCKED dla pozycji z `excludedG1` był błędny, gdy ta sama statystyka ma wpis legacy `walka`.
+
+### 7.1 Odpowiedzi na zarzuty
+
+| Nr | Odpowiedź | Dowód (pin edb8fb56) |
+|---|---|---|
+| 1 | PRZYJMUJE | `applyWalkBonus` (ok. l. 181–215) stosuje legacy `walka`: wpis „…ataku…” → `m.atk`; „…pancerza…” → `m.pancerz`; `bonus_obrona` → `m.obrona` (+`m.health` przy „hp”), tylko strona obrony (ok. l. 146). Korekty: R-1 (atk +0.15) i R-2 (pancerz +0.15) → ZGODNE/REAL; E-1 → ZGODNE (atk) REAL; Ch-1 → CZĘŚCIOWO (atk REAL, zasięg BRAK: `civAttackRangeMultiplier` czyta tylko `walka_zasieg_proc` i `walka_dystans_rydwany`); S-1, S-2 → ZGODNE/REAL (obrona, strona obrońcy); S-3 → ZGODNE/REAL (gałąź „hp i obron”, ok. l. 213–216); Gr-1 → ZGODNE wartość, CZĘŚCIOWO warunek („przy ataku frontalnym” nie zakodowane), REAL (obrona, strona obrońcy). Zulusi `walka_dystans_lukownicy` −0.10 i Chińczycy `walka_obrona_piechota` −0.05 pozostają bez efektu (BLOCKED, brak legacy). |
+| 2 | PRZYJMUJE | Wpisy `walka_wygaszone` (civs.json): Celtowie 0.25 i 0.15; Germanie 0.25 i 0.15; Egipt rydwany 0.15; Chiny kawaleria 0.15; Inkowie teren 0.20; Zulusi ruch 0.20 i koszt 0.10. Pominięte przez `bonusApplies` l. 146. Konsekwencje: C-2, G-3, E-2, Z-1 rozstrzygane wyłącznie przez macierz (patrz 7.2). S-4 i S-3 NIE są DEAD: wpis legacy „Ciężkie rydwany… +15% HP i obrony rydwanów” (`realizuje: walka`) przechodzi do gałęzi `opis.includes('hp') && opis.includes('obron')` → `m.health` i `m.obrona` +0.15 (oba strony; brak guardu dla `bonus_walka`). Matrix `walka_obrona_rydwany` = 0 (brak pola). |
+| 3 | PRZYJMUJE | `unitMoneyCost` (production.ts ok. l. 535–546) wywołuje `civRecruitmentDiscount(civBonusy)` (ok. l. 565–575): zwraca `wartosc` > 0 dla `realizuje === 'ekonomia'` i `matrixParamId === 'walka_koszt_rekrutacji_proc'`; koszt = `floor(koszt × (1 − 0.10))`. Wpis: `civ-bonuses.ts` ok. l. 306–307. Wywołania z `civBonusy`: production.ts l. 392, 954, 1057, 2136. Efekt: Z-2a = ZGODNE w skutku (−10%). Konflikt konwencji: `HARMFUL` (civ-matrix-semantic.ts l. 207) traktuje dodatnią wartość jako koszt; konsument czyta ją jako ulgę. Komentarz „effective matrix-options production path does not consume its ID” (semantic ok. l. 225–229) jest nieaktualny. Z-2b (`prod_koszt_jednostki_proc` +0.10) nie ma konsumenta (grep: tylko semantic l. 210) → duplikat wiersza, scalony z Z-2a. |
+| 4 | PRZYJMUJE | `buildingWorkCost` (production.ts ok. l. 516–521) → `buildingCostAfterCivDiscount` → `civBuildingCostDiscount` (civ-bonuses.ts ok. l. 349–360): wpis legacy Rzymianie `koszt_redukcja`, cel `budynki`, 0.20, `realizuje: miasto` → disc 0.20. R-3 = ZGODNE w skutku (−20%). Pole `prod_koszt_budynku_proc` +0.20 (HARMFUL, l. 209) nie ma konsumenta. |
+| 5 | PRZYJMUJE | `git grep mp_regen_proc` na pinie: tylko `civ-matrix-semantic.ts` l. 112 (tekst metadanych) i l. 153 (zbiór). Brak konsumenta w kodzie. Realna ścieżka: legacy `bonus_pobor_regen` 1.0 (Rzymianie, `realizuje: ekonomia`) → `civManpowerRegenMult` (manpower.ts ok. l. 396–410) → ×2. R-5 = NIEZGODNE-WARTOŚĆ (runtime +100% vs CivPedia +35%). Klasyfikator REAL_GAMEPLAY dla `mp_regen_proc` opiera się na nieistniejącym konsumencie. |
+| 6 | PRZYJMUJE | Baza w kodzie: `DEFAULT_REGEN.regenProcMaxPerTurn = 2` (manpower.ts ok. l. 63–66); `gra/data/miasto-params.json` `manpower_regen_proc_max_tura` = 2; civs.json Rzymianie „4% max/turę vs standard 2%”. CivPedia (`wikiBundle.json` `full`): Grecy „vs standard 10%”, Rzymianie „vs standard 10%”. NIEZGODNE-TEKST (baza 10% vs 2%). |
+| 7 | PRZYJMUJE | Gr-4 konsument = legacy `bonus_pobor_regen` −0.15 (`civManpowerRegenMult`: 1 + (−0.15) = ×0.85). Matrix `mp_regen_proc` −0.15 bez konsumenta. Status: ZGODNE wartość względna (×0.85), REAL przez legacy; warunek „państwa-miasta” nie zakodowany; baza 10% → pkt 6. |
+| 8 | PRZYJMUJE | `civEconomyYieldMultipliers` (economy.ts ok. l. 863–876): `realizuje === 'ekonomia'`; `bonus_zloto` cel `handel` → `handel += v`; `bonus_nauka` (dowolny cel) → `nauka += v`. Wywołania: turn-economy.ts ok. l. 2036 i 2612; cityPanel.ts ok. l. 1192. Gr-2 (legacy `bonus_zloto` handel 0.15): REAL; zakres CZĘŚCIOWO (CivPedia „z portów i dróg morskich”, runtime: cały handel). Gr-3 scalony z Gr-2 (ten sam wpis legacy). I-1 (legacy `bonus_nauka` wszystko 0.15): ZGODNE, REAL (zakres „astronomia i agronomia” nie jest zawężony w kodzie). Pola `eko_*` w macierzy bez konsumenta są poprawnie UNWIRED, ale efekt żyje w legacy. |
+| 9 | PRZYJMUJE (z wymiarem warunku) | Macierz `walka_atak_piechota_runda_szarzy` = 0.40 (Germanie). `bonusApplies` ok. l. 161: `_runda_szarzy` wymaga `isChargeRound`. Legacy „Furia +15% na starciu” wygaszone. Status G-3: NIEZGODNE — wartość 40% vs 15%, ORAZ warunek: runtime tylko w rundzie szarży, CivPedia „na starciu”. Mapowanie „na starciu” = runda szarży nadal wymaga potwierdzenia (§4 pkt 1). |
+| 10 | PRZYJMUJE | Scalone w jeden wiersz E-2. `civMatrixBonusyForCivKey` ok. l. 297–304 dodaje `walka_ruch_bitwa_proc` (cel rydwany tylko dla `egipt`) i `walka_ruch_rydwany` (cel rydwany). `matchingMatrixSum` (ok. l. 318–330) sumuje obie: 0.15 + 0.15 = 0.30 → `civMovementMultiplier` → `battleScene.ts` ok. l. 7183. Klasyfikator: `walka_ruch_bitwa_proc` w `BLOCKED_COMBAT_MULTIPLIER` (semantic l. 228); `walka_ruch_rydwany` nie występuje w żadnym zbiorze (grep) → etykieta „UNWIRED” była fallthroughem, nie weryfikacją. Status: NIEZGODNE-WARTOŚĆ (+30% vs +15%). |
+| 11 | PRZYJMUJE | `prod_koszt_budynku_proc` i `prod_koszt_jednostki_proc` występują w zbiorze HARMFUL (semantic l. 209–210). Poprawne sformułowanie: 0 konsumentów poza klasyfikatorem. |
+| 12 | PRZYJMUJE | Podsumowanie przeliczone w §7.3. Pozycja Z-1 jest LIVE-ROZBIEŻNOŚCIĄ (nie „REAL bez zastrzeżeń”, bo klasyfikator = BLOCKED). |
+| 13 | PRZYJMUJE | Wersja 1 nie spełniała kryterium binarnego. Wersja 2 (§7.2) podaje status z dowodem dla każdej pozycji; niedokończone pozycje wymienione w §7.4. |
+
+### 7.2 Korekty statusów (zastępują §2 dla wymienionych ID)
+
+| ID | Nowy status | Runtime (ścieżka) |
+|---|---|---|
+| C-2 | NIEZGODNE-WARTOŚĆ (40% vs 15%) | REAL, macierz `walka_uderzenie_piechota` 0.40; legacy 15% wygaszone |
+| Ch-1 | CZĘŚCIOWO (atk ZGODNE; zasięg BRAK) | REAL, legacy atk 0.20 (gałąź „ataku”) |
+| Ch-2 | CZĘŚCIOWO (wartość ZGODNA; warunek „przy szarży” nie zakodowany) | REAL, macierz `walka_uderzenie_kawaleria` 0.15 bezwarunkowo |
+| E-1 | ZGODNE (atk) | REAL, legacy atk 0.20 |
+| E-2 (scalone E-2a+E-2b) | NIEZGODNE-WARTOŚĆ (+30% vs +15%) | LIVE-ROZBIEŻNOŚĆ (sum macierzy, `civMovementMultiplier`) |
+| G-2 | BRAK | legacy „zasadzka” wygaszona; brak efektu |
+| G-3 | NIEZGODNE (40% vs 15%; warunek: tylko runda szarży) | REAL, macierz runda_szarzy; legacy wygaszone |
+| Gr-1 | CZĘŚCIOWO (wartość ZGODNA; warunek nie zakodowany) | REAL, legacy `bonus_obrona` piechota 0.20, strona obrony |
+| Gr-2 (scalone Gr-2+Gr-3) | CZĘŚCIOWO (zakres: cały handel vs porty i drogi morskie) | REAL, legacy `bonus_zloto` handel 0.15 |
+| Gr-4 | ZGODNE wartość (×0.85); NIEZGODNE-TEKST baza 10% vs 2% | REAL, legacy `bonus_pobor_regen` −0.15 |
+| I-1 | ZGODNE | REAL, legacy `bonus_nauka` wszystko 0.15 |
+| R-1 | ZGODNE | REAL, legacy atk 0.15 |
+| R-2 | ZGODNE | REAL, legacy pancerz 0.15 |
+| R-3 | ZGODNE w skutku (−20%); pole macierzy `prod_koszt_budynku_proc` martwe | REAL, legacy `koszt_redukcja` miasto 0.20 |
+| R-5 | NIEZGODNE-WARTOŚĆ (+100% vs +35%); NIEZGODNE-TEKST baza | REAL, legacy `bonus_pobor_regen` 1.0 → ×2 |
+| S-1, S-2 | ZGODNE (obrona i HP, strona obrony) | REAL, legacy `bonus_obrona` piechota 0.20 |
+| S-3 | ZGODNE (HP) | REAL, legacy `bonus_walka` rydwany 0.15, gałąź „hp i obron” |
+| S-4 | ZGODNE (obrona); zakres stron do potwierdzenia | REAL, ta sama pozycja legacy, `m.obrona` +0.15 |
+| Z-1 | ZGODNE wartość; LIVE-ROZBIEŻNOŚĆ z klasyfikatorem | REAL, macierz `walka_ruch_bitwa_proc` 0.20, cel piechota |
+| Z-2 (scalone Z-2a+Z-2b) | ZGODNE w skutku (−10% kosztu rekrutacji); konflikt konwencji znaku | REAL, `civRecruitmentDiscount` |
+| Z-5 (NOWA) | Dane bez pozycji CivPedii: macierz `walka_uderzenie_piechota` +0.15 (cel piechota) | REAL (civCombatStatMultipliers, nie wygaszone); brak w tekście Zulusów |
+
+Pozycje pozostające BLOCKED bez efektu: Ch `walka_obrona_piechota` −0.05 (brak tekstu liczbowego), Z `walka_dystans_lukownicy` −0.10 („słaby dystans”, bez liczby).
+
+### 7.3 Podsumowanie po korekcie
+
+- Pozycje liczbowe (bez „Strategii”): 45 wierszy (47 − scalenia E-2b, Gr-3, Z-2b + nowe Z-5).
+- Zgodne (wartość i kierunek, REAL): C-1, Ch-2 (wartość), E-1, E-3, G-1, I-1, I-2, R-1, R-2, R-3 (w skutku), S-1, S-2, S-3, S-4, Z-1, Z-2 (w skutku), wszystkie mnożniki i profile AI.
+- Zgodne wartość, niezgodny warunek/zakres: Ch-2 (warunek), Gr-1 (warunek), Gr-2 (zakres), Gr-4 i R-5 (baza).
+- Realne rozbieżności wartości: C-2 (40 vs 15), G-3 (40 vs 15 + warunek), E-2 (30 vs 15), R-5 (100 vs 35).
+- Brak pola / efektu: G-2, R-4, Ch-1 zasięg, E-1 zasięg (brak w tekście liczbowym dla E-1), Z dystans −0.10, Ch obrona −0.05.
+
+### 7.4 Pozycje otwarte (jawna lista)
+
+1. Mapowanie „pierwsze uderzenie / na starciu” → runda szarży (C-1, G-3): hipoteza, nie zweryfikowana w grze.
+2. Konwencja znaku `walka_koszt_rekrutacji_proc` (HARMFUL vs konsument jako ulga): zachowanie runtime udokumentowane, konwencja wymaga decyzji.
+3. Zakres stron S-4 (legacy `bonus_walka`, brak guardu strony): efekt na stronie atakującego do potwierdzenia.
+4. Brak testu runtime: wszystkie statusy wynikają z odczytu kodu, nie z uruchomienia gry.
+5. Sumowanie E-2 (+30%) potwierdzone odczytem `matchingMatrixSum`, nie testem.

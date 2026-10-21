@@ -30,7 +30,7 @@ dotykające tych samych plików — zawsze sekwencyjnie, nigdy w tej samej fali.
 | 1 | — | — | — | — | **WOLNY** (P1.16f-JEDNOSTKI PASS, zamknięty) | 2026-10-21 |
 | 2 | — | — | — | — | **WOLNY** (P1.16f-CUDA PASS, zamknięty) | 2026-10-21 |
 | 3 | — | — | — | — | **WOLNY** (P1.16f-ULEPSZENIA PASS, zamknięty) | 2026-10-21 |
-| 4 | `R-RUSTPORT-P1-16F-CIVPEDIA-CYWILIZACJE-Q1` | P1.16f (4/6) | 1/5 | `wf_00e756e0-00d` | DISPATCHED (w toku) | 2026-10-21 |
+| 4 | — | — | — | — | **WOLNY** (P1.16f-CYWILIZACJE PASS, zamknięty) | 2026-10-21 |
 | 5 | — | — | — | — | **WOLNY** (P1.16f-POJECIA PASS, zamknięty) | 2026-10-21 |
 | 6 | — | — | — | — | **WOLNY** (P1.16f-TECHNOLOGIE PASS, zamknięty) | 2026-10-21 |
 
@@ -41,12 +41,10 @@ WŁASNEGO NOWEGO pliku (`P1-16D-OPISY-*.md`): boilerplate (§2a/b, **PASS**, zam
 reszta §2c/2e/3 (**PASS**, zamknięty — odkryty NOWY rozjazd tartak/kamieniołom 200 vs 50/turę, do
 P2), Poradnik rozdziały 00-10, Poradnik rozdziały 14-16+follow-upy (**PASS**, zamknięty — 8/8 pozycji
 listy B wszystkie NIEZGODNE/CZĘŚCIOWO, w tym rozdz.57 „47/47" przeliczone na 1/49 zgodnych),
-CivPedia hasła + 17 paneli UI (**panele PASS, zamknięte — `P1.16e-OPISY-UI-PANELE`**; 143 pozostałe
-hasła CivPedii/Technologii: **decyzja właściciela 2026-10-21 = pełny, wyczerpujący audyt** —
-podzielone na 6 równoległych następców `P1.16f-*` wg kategorii audytu: Jednostki(51), Cuda(20),
-Ulepszenia(18), Cywilizacje(12), Pojęcia/Miasto/Nauka/Ekonomia(10), Technologie(32), wszystkie w
-toku teraz, każdy do własnego nowego pliku). Gdy wszystkie zamkną się PASS: dispatch
-`P1-GATE-SYNTHESIS` (bramka
+CivPedia hasła + 17 paneli UI (**wszystko PASS, zamknięte — `P1.16e-OPISY-UI-PANELE` + 6/6
+`P1.16f-*`**: Jednostki, Cuda, Ulepszenia, Pojęcia, Technologie, Cywilizacje — pełny, wyczerpujący
+audyt wg decyzji właściciela 2026-10-21 UKOŃCZONY). **CAŁY AUDYT-OPISY jest teraz pokryty — P1.16
+w całości PASS.** Dispatch `P1-GATE-SYNTHESIS` (bramka
 P1 powinna się wtedy formalnie otworzyć — wszystkie P1.1-P1.18 PASS), potem start P2 bez pytania o
 zgodę (decyzja właściciela 2026-10-21, patrz GOAL §"Decyzje przyjęte" poz. 4).
 
