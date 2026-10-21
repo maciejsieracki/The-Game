@@ -132,6 +132,7 @@ import {
   togglePerfDebugOverlay,
   updatePerfDebugOverlay,
 } from './render/perfDebugOverlay';
+import { logRendererMemoryAtTurnEnd } from './render/memDebug';
 import { CIV_PUBLISH_MARKERS } from './buildInfo';
 // C-OBCE-JEDN-Q2: znak właściciela na żetonie mapy. Assety (portrety + ikony
 // brand-booka) wstrzykujemy stąd, bo warstwa render/ nie zależy od warstwy ui/.
@@ -36236,6 +36237,20 @@ async function boot(): Promise<void> {
           endTurnTransition();
           endTurnInProgress = false;
           endTurnStartedAt = 0;
+          // R-WEB-MEMORY-LEAKS-FIX-Q1 (M2): koniec tury = punkt cyklu życia — zwolnij
+          // tekstury plakietek miast, których nie używa już żaden żywy sprite. Potem
+          // opt-in diagnostyka `?memdebug=1` (bez parametru: no-op).
+          try {
+            const freedBadgeTextures = cityRenderer.pruneUnusedStatChipTextures();
+            const cityCounts = cityRenderer.getMemDebugCounts();
+            logRendererMemoryAtTurnEnd(renderer, turn, {
+              cityModels: cityCounts.cityModels,
+              cityBadgeTextures: cityCounts.badgeTextures,
+              cityBadgeTexturesFreed: freedBadgeTextures,
+            });
+          } catch (errMem) {
+            console.warn('[EndTurn] sprzątanie tekstur plakietek / memdebug:', errMem);
+          }
           // P-KONIEC-TURY-ZDARZENIA-NACHODZA-NA-SIEBIE (Maciej 2026-08-14): endTurnInProgress
           // gaśnie TUTAJ, ALE preBattle otwarty w trakcie fazy AI/barbarzyńców (bitwa jest
           // asynchroniczna względem `await runAiPhase()` -- `break ownerLoop`/`continue`

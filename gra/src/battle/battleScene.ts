@@ -3705,6 +3705,17 @@ export class BattleScene {
     }
     disposeSiegeHud1E();
     document.removeEventListener('click', this._onSettingsDocClick);
+    // R-WEB-MEMORY-LEAKS-FIX-Q1 (M3): oba domknięcia trzymały `this` (cała scena bitwy:
+    // renderer, graf sceny, DOM) przez `document`/`window` — po bitwie nigdy nie zdejmowane.
+    // / EN: both closures captured `this`; detach them so the finished scene can be GC'd.
+    if (this._deployToolbarDocClick) {
+      document.removeEventListener('click', this._deployToolbarDocClick);
+      this._deployToolbarDocClick = null;
+    }
+    if (this._deployLayoutListener) {
+      window.removeEventListener('resize', this._deployLayoutListener);
+      this._deployLayoutListener = null;
+    }
     this._settingsGearWrap = null;
     this._settingsPopup = null;
     this._settingsMusicToggle = null;
@@ -11916,6 +11927,11 @@ export class BattleScene {
     document.body.appendChild(bar);
     this._deployToolbar = bar;
 
+    // R-WEB-MEMORY-LEAKS-FIX-Q1 (M3): ponowne zbudowanie paska nadpisywało pole bez zdjęcia
+    // poprzedniego nasłuchiwacza z `document` — zdejmij stary przed podpięciem nowego.
+    if (this._deployToolbarDocClick) {
+      document.removeEventListener('click', this._deployToolbarDocClick);
+    }
     this._deployToolbarDocClick = (e: MouseEvent) => {
       const t = e.target as Node | null;
       if (!t) return;
