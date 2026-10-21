@@ -27,17 +27,26 @@ dotykające tych samych plików — zawsze sekwencyjnie, nigdy w tej samej fali.
 
 | # | Temat | Faza | Runda | runId Workflow | Status | Ostatnia aktualizacja |
 |---|---|---|---|---|---|---|
-| 1 | `R-RUSTPORT-P1-GATE-SYNTHESIS-2-Q1` | Synteza bramki P1 | 1/5 | `wf_9d1664bc-d19` | DISPATCHED (w toku) | 2026-10-21 |
+| 1 | `R-RUSTPORT-P2-1-DOMAIN-MODULES-Q1` | P2.1 (katalog modułów) | 1/5 | `wf_deea0bf4-c6f` | DISPATCHED (w toku) | 2026-10-21 |
 | 2 | — | — | — | — | **WOLNY** | 2026-10-21 |
 | 3 | — | — | — | — | **WOLNY** | 2026-10-21 |
 | 4 | — | — | — | — | **WOLNY** | 2026-10-21 |
 | 5 | — | — | — | — | **WOLNY** | 2026-10-21 |
 | 6 | — | — | — | — | **WOLNY** | 2026-10-21 |
 
-**Wszystkie 6 tematów P1.16f + P1.16e zamknięte PASS (patrz LEDGER powyżej) — cały AUDYT-OPISY
-pokryty.** Dispatchowana świeża, pełna synteza bramki P1 (poprzednia, `P1-GATE-SYNTHESIS.md`, jest
-nieaktualna — sprzed zamknięcia P1.8/P1.9/P1.13b/P1.14b/P1.16-całości). Pozostałe 5 slotów
-świadomie wolne do czasu wyniku syntezy — dopiero ona rozstrzyga, czy formalnie otworzyć P2.
+## *** FAZA P1 ZAMKNIĘTA — FAZA P2 OTWARTA (2026-10-21) ***
+
+`R-RUSTPORT-P1-GATE-SYNTHESIS-2-Q1`: PASS. Pełna tabela 41 wierszy P1.1-P1.18(+warianty), wszystkie
+PASS lub PASS-WITH-NOTES jako status najnowszego ogniwa. 4 zastrzeżenia Final Control rozstrzygnięte
+administracyjnie przez orkiestratora (`04-orchestrator-disposition.md` tego tematu) — żadne nie było
+genuine decyzją produktową. **Bramka P1 formalnie otwarta.** Zgodnie z decyzją właściciela
+(2026-10-21, poz. 4 wyżej): start P2 NATYCHMIAST, bez pytania o zgodę.
+
+Pierwszy temat P2 dispatchowany: **P2.1** (katalog modułów domeny — foundational, czysto
+katalogowy, nie architektoniczny). Pozostałe sloty świadomie wolne: większość P2.2+ (kontrakt
+`GameState`, RNG deterministyczny, ID encji, komendy/eventy) zależy architektonicznie od wyniku
+P2.1 i od siebie nawzajem sekwencyjnie — P2 nie ma takiej samej „6 niezależnych katalogów naraz"
+struktury jak P1. Kolejna fala dispatchu nastąpi natychmiast po zamknięciu P2.1.
 
 **P1.16b/P1.16c (4/4) ZAMKNIĘTE PASS** — cały łańcuch następców pierwotnego P1.16b jest teraz
 zielony (patrz LEDGER). Ostatni kawałek P1 to `AUDYT-OPISY-CIVPEDIA-PORADNIK-SCIAGI-2026-08-13.md`
