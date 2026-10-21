@@ -9,22 +9,17 @@
 // probe parsowania wszystkich 29 plikow `rust-port/engine/data/*.json`.
 
 #[path = "../src/data/buildings_tech.rs"]
-#[allow(dead_code)]
 mod buildings_tech;
 #[path = "../src/data/civilizations.rs"]
 #[allow(dead_code)]
 mod civilizations;
 #[path = "../src/data/economy_society.rs"]
-#[allow(dead_code)]
 mod economy_society;
 #[path = "../src/data/economy_society_part2.rs"]
-#[allow(dead_code)]
 mod economy_society_part2;
 #[path = "../src/data/terrain_map.rs"]
-#[allow(dead_code)]
 mod terrain_map;
 #[path = "../src/data/units_combat.rs"]
-#[allow(dead_code)]
 mod units_combat;
 
 use serde_json::Value;
