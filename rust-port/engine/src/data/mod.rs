@@ -8,6 +8,7 @@
 
 pub mod buildings_tech;
 pub mod civilizations;
+pub mod derived;
 pub mod economy_society;
 pub mod economy_society_part2;
 pub mod loader;

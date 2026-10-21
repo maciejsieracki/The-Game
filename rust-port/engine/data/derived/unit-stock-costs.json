@@ -1,0 +1,1294 @@
+{
+  "meta": {
+    "status": "BOOTSTRAP: wartosci startowe rozwiniete z regul weba. Zrodlem prawdy do recznego balansu jest TA tabela (edytuj liczby, nie mnozniki). Tabela NIE jest porownywana ze wzorem przy buildzie.",
+    "zrodlo": "gra/data/units.json @ edb8fb56 (identyczny z rust-port/engine/data/units.json)",
+    "regula_weba": "building-stock-cost.ts unitStockCost (l.402-420; scaleCostByEpoch l.60-67; epochCostMultiplier l.28-57; MOUNT kon 25 l.368-369, 415-417); economy-upkeep.ts unitResourceUpkeep (l.784-797)",
+    "wygenerowano": "R-RUSTPORT-P3-19-FLATTEN-MULTIPLIERS-Q1 (2026-10-21), generator: P3-19 sekcja 5",
+    "uwaga_epoka": "Mnoznik epoki wynika z pola Epoka (jednostka) / epokaWejscia (budynek) danego wiersza, NIE z aktualnej epoki gry (web nie ma kosztow zaleznych od czasu)."
+  },
+  "wiersze": [
+    {
+      "jednostka": "Wojownik",
+      "epoka": "Kamień",
+      "surowiec": {
+        "drewno": 13
+      },
+      "utrzymanie_surowiec": {
+        "drewno": 3
+      },
+      "baza": {
+        "surowiec": "Drewno",
+        "surowiec_ilosc": 13,
+        "utrzymanie_surowiec": "Drewno",
+        "utrzymanie_surowiec_ilosc": 3,
+        "dodatek_kon_baza": 0
+      }
+    },
+    {
+      "jednostka": "Procarz",
+      "epoka": "Brąz",
+      "surowiec": {
+        "drewno": 50
+      },
+      "utrzymanie_surowiec": {
+        "drewno": 10
+      },
+      "baza": {
+        "surowiec": "Drewno",
+        "surowiec_ilosc": 25,
+        "utrzymanie_surowiec": "Drewno",
+        "utrzymanie_surowiec_ilosc": 5,
+        "dodatek_kon_baza": 0
+      }
+    },
+    {
+      "jednostka": "Oszczepnik",
+      "epoka": "Kamień",
+      "surowiec": {
+        "drewno": 13
+      },
+      "utrzymanie_surowiec": {
+        "drewno": 3
+      },
+      "baza": {
+        "surowiec": "Drewno",
+        "surowiec_ilosc": 13,
+        "utrzymanie_surowiec": "Drewno",
+        "utrzymanie_surowiec_ilosc": 3,
+        "dodatek_kon_baza": 0
+      }
+    },
+    {
+      "jednostka": "Łucznik",
+      "epoka": "Kamień",
+      "surowiec": {
+        "drewno": 13
+      },
+      "utrzymanie_surowiec": {
+        "drewno": 3
+      },
+      "baza": {
+        "surowiec": "Drewno",
+        "surowiec_ilosc": 13,
+        "utrzymanie_surowiec": "Drewno",
+        "utrzymanie_surowiec_ilosc": 3,
+        "dodatek_kon_baza": 0
+      }
+    },
+    {
+      "jednostka": "Zwiadowca",
+      "epoka": "Kamień",
+      "surowiec": {},
+      "utrzymanie_surowiec": {},
+      "baza": {
+        "surowiec": null,
+        "surowiec_ilosc": 0,
+        "utrzymanie_surowiec": null,
+        "utrzymanie_surowiec_ilosc": 0,
+        "dodatek_kon_baza": 0
+      }
+    },
+    {
+      "jednostka": "Włócznik",
+      "epoka": "Brąz",
+      "surowiec": {
+        "braz": 50
+      },
+      "utrzymanie_surowiec": {
+        "braz": 10
+      },
+      "baza": {
+        "surowiec": "Brąz",
+        "surowiec_ilosc": 25,
+        "utrzymanie_surowiec": "Brąz",
+        "utrzymanie_surowiec_ilosc": 5,
+        "dodatek_kon_baza": 0
+      }
+    },
+    {
+      "jednostka": "Wojownik z mieczem i tarczą",
+      "epoka": "Brąz",
+      "surowiec": {
+        "braz": 50
+      },
+      "utrzymanie_surowiec": {
+        "braz": 10
+      },
+      "baza": {
+        "surowiec": "Brąz",
+        "surowiec_ilosc": 25,
+        "utrzymanie_surowiec": "Brąz",
+        "utrzymanie_surowiec_ilosc": 5,
+        "dodatek_kon_baza": 0
+      }
+    },
+    {
+      "jednostka": "Rydwan (woły)",
+      "epoka": "Brąz",
+      "surowiec": {
+        "braz": 50
+      },
+      "utrzymanie_surowiec": {
+        "braz": 10
+      },
+      "baza": {
+        "surowiec": "Brąz",
+        "surowiec_ilosc": 25,
+        "utrzymanie_surowiec": "Brąz",
+        "utrzymanie_surowiec_ilosc": 5,
+        "dodatek_kon_baza": 0
+      }
+    },
+    {
+      "jednostka": "Konnica",
+      "epoka": "Brąz",
+      "surowiec": {
+        "braz": 50,
+        "kon": 50
+      },
+      "utrzymanie_surowiec": {
+        "braz": 10
+      },
+      "baza": {
+        "surowiec": "Brąz",
+        "surowiec_ilosc": 25,
+        "utrzymanie_surowiec": "Brąz",
+        "utrzymanie_surowiec_ilosc": 5,
+        "dodatek_kon_baza": 25
+      }
+    },
+    {
+      "jednostka": "Galera",
+      "epoka": "Brąz",
+      "surowiec": {
+        "braz": 50
+      },
+      "utrzymanie_surowiec": {
+        "braz": 10
+      },
+      "baza": {
+        "surowiec": "Brąz",
+        "surowiec_ilosc": 25,
+        "utrzymanie_surowiec": "Brąz",
+        "utrzymanie_surowiec_ilosc": 5,
+        "dodatek_kon_baza": 0
+      }
+    },
+    {
+      "jednostka": "Falanga",
+      "epoka": "Żelazo",
+      "surowiec": {
+        "zelazo": 100
+      },
+      "utrzymanie_surowiec": {
+        "zelazo": 20
+      },
+      "baza": {
+        "surowiec": "Żelazo",
+        "surowiec_ilosc": 25,
+        "utrzymanie_surowiec": "Żelazo",
+        "utrzymanie_surowiec_ilosc": 5,
+        "dodatek_kon_baza": 0
+      }
+    },
+    {
+      "jednostka": "Hieros Lochos (Święty Zastęp)",
+      "epoka": "Żelazo",
+      "surowiec": {
+        "zelazo": 152
+      },
+      "utrzymanie_surowiec": {
+        "zelazo": 32
+      },
+      "baza": {
+        "surowiec": "Żelazo",
+        "surowiec_ilosc": 38,
+        "utrzymanie_surowiec": "Żelazo",
+        "utrzymanie_surowiec_ilosc": 8,
+        "dodatek_kon_baza": 0
+      }
+    },
+    {
+      "jednostka": "Hastati",
+      "epoka": "Żelazo",
+      "surowiec": {
+        "zelazo": 100
+      },
+      "utrzymanie_surowiec": {
+        "zelazo": 20
+      },
+      "baza": {
+        "surowiec": "Żelazo",
+        "surowiec_ilosc": 25,
+        "utrzymanie_surowiec": "Żelazo",
+        "utrzymanie_surowiec_ilosc": 5,
+        "dodatek_kon_baza": 0
+      }
+    },
+    {
+      "jednostka": "Triari",
+      "epoka": "Żelazo",
+      "surowiec": {
+        "zelazo": 152
+      },
+      "utrzymanie_surowiec": {
+        "zelazo": 32
+      },
+      "baza": {
+        "surowiec": "Żelazo",
+        "surowiec_ilosc": 38,
+        "utrzymanie_surowiec": "Żelazo",
+        "utrzymanie_surowiec_ilosc": 8,
+        "dodatek_kon_baza": 0
+      }
+    },
+    {
+      "jednostka": "Jeździec chiński",
+      "epoka": "Brąz",
+      "surowiec": {
+        "braz": 50,
+        "kon": 50
+      },
+      "utrzymanie_surowiec": {
+        "braz": 10
+      },
+      "baza": {
+        "surowiec": "Brąz",
+        "surowiec_ilosc": 25,
+        "utrzymanie_surowiec": "Brąz",
+        "utrzymanie_surowiec_ilosc": 5,
+        "dodatek_kon_baza": 25
+      }
+    },
+    {
+      "jednostka": "Hu Ben Wei (Gwardia Tygrysa)",
+      "epoka": "Brąz",
+      "surowiec": {
+        "braz": 76
+      },
+      "utrzymanie_surowiec": {
+        "braz": 16
+      },
+      "baza": {
+        "surowiec": "Brąz",
+        "surowiec_ilosc": 38,
+        "utrzymanie_surowiec": "Brąz",
+        "utrzymanie_surowiec_ilosc": 8,
+        "dodatek_kon_baza": 0
+      }
+    },
+    {
+      "jednostka": "Impi",
+      "epoka": "Brąz",
+      "surowiec": {
+        "braz": 50
+      },
+      "utrzymanie_surowiec": {
+        "braz": 10
+      },
+      "baza": {
+        "surowiec": "Brąz",
+        "surowiec_ilosc": 25,
+        "utrzymanie_surowiec": "Brąz",
+        "utrzymanie_surowiec_ilosc": 5,
+        "dodatek_kon_baza": 0
+      }
+    },
+    {
+      "jednostka": "Oszczepnik Zulu (Izijula)",
+      "epoka": "Kamień",
+      "surowiec": {
+        "drewno": 13
+      },
+      "utrzymanie_surowiec": {
+        "drewno": 3
+      },
+      "baza": {
+        "surowiec": "Drewno",
+        "surowiec_ilosc": 13,
+        "utrzymanie_surowiec": "Drewno",
+        "utrzymanie_surowiec_ilosc": 3,
+        "dodatek_kon_baza": 0
+      }
+    },
+    {
+      "jednostka": "uThulwana (Białe Tarcze)",
+      "epoka": "Brąz",
+      "surowiec": {
+        "braz": 76
+      },
+      "utrzymanie_surowiec": {
+        "braz": 16
+      },
+      "baza": {
+        "surowiec": "Brąz",
+        "surowiec_ilosc": 38,
+        "utrzymanie_surowiec": "Brąz",
+        "utrzymanie_surowiec_ilosc": 8,
+        "dodatek_kon_baza": 0
+      }
+    },
+    {
+      "jednostka": "Wojownik z maczugą (Chaska)",
+      "epoka": "Kamień",
+      "surowiec": {
+        "drewno": 13
+      },
+      "utrzymanie_surowiec": {
+        "drewno": 3
+      },
+      "baza": {
+        "surowiec": "Drewno",
+        "surowiec_ilosc": 13,
+        "utrzymanie_surowiec": "Drewno",
+        "utrzymanie_surowiec_ilosc": 3,
+        "dodatek_kon_baza": 0
+      }
+    },
+    {
+      "jednostka": "Wojownik z toporem",
+      "epoka": "Brąz",
+      "surowiec": {
+        "braz": 50
+      },
+      "utrzymanie_surowiec": {
+        "braz": 10
+      },
+      "baza": {
+        "surowiec": "Brąz",
+        "surowiec_ilosc": 25,
+        "utrzymanie_surowiec": "Brąz",
+        "utrzymanie_surowiec_ilosc": 5,
+        "dodatek_kon_baza": 0
+      }
+    },
+    {
+      "jednostka": "Procarz (Huaracoc)",
+      "epoka": "Brąz",
+      "surowiec": {
+        "drewno": 50
+      },
+      "utrzymanie_surowiec": {
+        "drewno": 10
+      },
+      "baza": {
+        "surowiec": "Drewno",
+        "surowiec_ilosc": 25,
+        "utrzymanie_surowiec": "Drewno",
+        "utrzymanie_surowiec_ilosc": 5,
+        "dodatek_kon_baza": 0
+      }
+    },
+    {
+      "jednostka": "Oszczepnik (Estólica)",
+      "epoka": "Kamień",
+      "surowiec": {
+        "drewno": 13
+      },
+      "utrzymanie_surowiec": {
+        "drewno": 3
+      },
+      "baza": {
+        "surowiec": "Drewno",
+        "surowiec_ilosc": 13,
+        "utrzymanie_surowiec": "Drewno",
+        "utrzymanie_surowiec_ilosc": 3,
+        "dodatek_kon_baza": 0
+      }
+    },
+    {
+      "jednostka": "Królewska Gwardia",
+      "epoka": "Brąz",
+      "surowiec": {
+        "braz": 76
+      },
+      "utrzymanie_surowiec": {
+        "braz": 16
+      },
+      "baza": {
+        "surowiec": "Brąz",
+        "surowiec_ilosc": 38,
+        "utrzymanie_surowiec": "Brąz",
+        "utrzymanie_surowiec_ilosc": 8,
+        "dodatek_kon_baza": 0
+      }
+    },
+    {
+      "jednostka": "Rydwan konny",
+      "epoka": "Brąz",
+      "surowiec": {
+        "braz": 50,
+        "kon": 50
+      },
+      "utrzymanie_surowiec": {
+        "braz": 10
+      },
+      "baza": {
+        "surowiec": "Brąz",
+        "surowiec_ilosc": 25,
+        "utrzymanie_surowiec": "Brąz",
+        "utrzymanie_surowiec_ilosc": 5,
+        "dodatek_kon_baza": 25
+      }
+    },
+    {
+      "jednostka": "Łucznik egipski",
+      "epoka": "Kamień",
+      "surowiec": {
+        "drewno": 13
+      },
+      "utrzymanie_surowiec": {
+        "drewno": 3
+      },
+      "baza": {
+        "surowiec": "Drewno",
+        "surowiec_ilosc": 13,
+        "utrzymanie_surowiec": "Drewno",
+        "utrzymanie_surowiec_ilosc": 3,
+        "dodatek_kon_baza": 0
+      }
+    },
+    {
+      "jednostka": "Rydwan egipski",
+      "epoka": "Brąz",
+      "surowiec": {
+        "braz": 50,
+        "kon": 50
+      },
+      "utrzymanie_surowiec": {
+        "braz": 10
+      },
+      "baza": {
+        "surowiec": "Brąz",
+        "surowiec_ilosc": 25,
+        "utrzymanie_surowiec": "Brąz",
+        "utrzymanie_surowiec_ilosc": 5,
+        "dodatek_kon_baza": 25
+      }
+    },
+    {
+      "jednostka": "Wojownik z khopesh",
+      "epoka": "Brąz",
+      "surowiec": {
+        "braz": 50
+      },
+      "utrzymanie_surowiec": {
+        "braz": 10
+      },
+      "baza": {
+        "surowiec": "Brąz",
+        "surowiec_ilosc": 25,
+        "utrzymanie_surowiec": "Brąz",
+        "utrzymanie_surowiec_ilosc": 5,
+        "dodatek_kon_baza": 0
+      }
+    },
+    {
+      "jednostka": "Medżaj (Gwardia Faraona)",
+      "epoka": "Brąz",
+      "surowiec": {
+        "braz": 76
+      },
+      "utrzymanie_surowiec": {
+        "braz": 16
+      },
+      "baza": {
+        "surowiec": "Brąz",
+        "surowiec_ilosc": 38,
+        "utrzymanie_surowiec": "Brąz",
+        "utrzymanie_surowiec_ilosc": 8,
+        "dodatek_kon_baza": 0
+      }
+    },
+    {
+      "jednostka": "Łucznik nubijski",
+      "epoka": "Brąz",
+      "surowiec": {
+        "drewno": 50
+      },
+      "utrzymanie_surowiec": {
+        "drewno": 10
+      },
+      "baza": {
+        "surowiec": "Drewno",
+        "surowiec_ilosc": 25,
+        "utrzymanie_surowiec": "Drewno",
+        "utrzymanie_surowiec_ilosc": 5,
+        "dodatek_kon_baza": 0
+      }
+    },
+    {
+      "jednostka": "Łucznik sumeryjski",
+      "epoka": "Kamień",
+      "surowiec": {
+        "drewno": 13
+      },
+      "utrzymanie_surowiec": {
+        "drewno": 3
+      },
+      "baza": {
+        "surowiec": "Drewno",
+        "surowiec_ilosc": 13,
+        "utrzymanie_surowiec": "Drewno",
+        "utrzymanie_surowiec_ilosc": 3,
+        "dodatek_kon_baza": 0
+      }
+    },
+    {
+      "jednostka": "Rydwan sumeryjski",
+      "epoka": "Brąz",
+      "surowiec": {
+        "braz": 50,
+        "kon": 50
+      },
+      "utrzymanie_surowiec": {
+        "braz": 10
+      },
+      "baza": {
+        "surowiec": "Brąz",
+        "surowiec_ilosc": 25,
+        "utrzymanie_surowiec": "Brąz",
+        "utrzymanie_surowiec_ilosc": 5,
+        "dodatek_kon_baza": 25
+      }
+    },
+    {
+      "jednostka": "Włócznik sumeryjski",
+      "epoka": "Brąz",
+      "surowiec": {
+        "braz": 50
+      },
+      "utrzymanie_surowiec": {
+        "braz": 10
+      },
+      "baza": {
+        "surowiec": "Brąz",
+        "surowiec_ilosc": 25,
+        "utrzymanie_surowiec": "Brąz",
+        "utrzymanie_surowiec_ilosc": 5,
+        "dodatek_kon_baza": 0
+      }
+    },
+    {
+      "jednostka": "Gwardia Królewska Sumeru",
+      "epoka": "Brąz",
+      "surowiec": {
+        "braz": 76
+      },
+      "utrzymanie_surowiec": {
+        "braz": 16
+      },
+      "baza": {
+        "surowiec": "Brąz",
+        "surowiec_ilosc": 38,
+        "utrzymanie_surowiec": "Brąz",
+        "utrzymanie_surowiec_ilosc": 8,
+        "dodatek_kon_baza": 0
+      }
+    },
+    {
+      "jednostka": "Wojownik mykeński",
+      "epoka": "Brąz",
+      "surowiec": {
+        "braz": 50
+      },
+      "utrzymanie_surowiec": {
+        "braz": 10
+      },
+      "baza": {
+        "surowiec": "Brąz",
+        "surowiec_ilosc": 25,
+        "utrzymanie_surowiec": "Brąz",
+        "utrzymanie_surowiec_ilosc": 5,
+        "dodatek_kon_baza": 0
+      }
+    },
+    {
+      "jednostka": "Rydwan mykeński",
+      "epoka": "Brąz",
+      "surowiec": {
+        "braz": 50,
+        "kon": 50
+      },
+      "utrzymanie_surowiec": {
+        "braz": 10
+      },
+      "baza": {
+        "surowiec": "Brąz",
+        "surowiec_ilosc": 25,
+        "utrzymanie_surowiec": "Brąz",
+        "utrzymanie_surowiec_ilosc": 5,
+        "dodatek_kon_baza": 25
+      }
+    },
+    {
+      "jednostka": "Wojownik Sherden",
+      "epoka": "Brąz",
+      "surowiec": {
+        "braz": 50
+      },
+      "utrzymanie_surowiec": {
+        "braz": 10
+      },
+      "baza": {
+        "surowiec": "Brąz",
+        "surowiec_ilosc": 25,
+        "utrzymanie_surowiec": "Brąz",
+        "utrzymanie_surowiec_ilosc": 5,
+        "dodatek_kon_baza": 0
+      }
+    },
+    {
+      "jednostka": "Halabardnik Shang",
+      "epoka": "Brąz",
+      "surowiec": {
+        "braz": 50
+      },
+      "utrzymanie_surowiec": {
+        "braz": 10
+      },
+      "baza": {
+        "surowiec": "Brąz",
+        "surowiec_ilosc": 25,
+        "utrzymanie_surowiec": "Brąz",
+        "utrzymanie_surowiec_ilosc": 5,
+        "dodatek_kon_baza": 0
+      }
+    },
+    {
+      "jednostka": "Rydwan Shang",
+      "epoka": "Brąz",
+      "surowiec": {
+        "braz": 50,
+        "kon": 50
+      },
+      "utrzymanie_surowiec": {
+        "braz": 10
+      },
+      "baza": {
+        "surowiec": "Brąz",
+        "surowiec_ilosc": 25,
+        "utrzymanie_surowiec": "Brąz",
+        "utrzymanie_surowiec_ilosc": 5,
+        "dodatek_kon_baza": 25
+      }
+    },
+    {
+      "jednostka": "Łucznik akadyjski",
+      "epoka": "Brąz",
+      "surowiec": {
+        "drewno": 50
+      },
+      "utrzymanie_surowiec": {
+        "drewno": 10
+      },
+      "baza": {
+        "surowiec": "Drewno",
+        "surowiec_ilosc": 25,
+        "utrzymanie_surowiec": "Drewno",
+        "utrzymanie_surowiec_ilosc": 5,
+        "dodatek_kon_baza": 0
+      }
+    },
+    {
+      "jednostka": "Gaesatae",
+      "epoka": "Żelazo",
+      "surowiec": {
+        "zelazo": 100
+      },
+      "utrzymanie_surowiec": {
+        "zelazo": 20
+      },
+      "baza": {
+        "surowiec": "Żelazo",
+        "surowiec_ilosc": 25,
+        "utrzymanie_surowiec": "Żelazo",
+        "utrzymanie_surowiec_ilosc": 5,
+        "dodatek_kon_baza": 0
+      }
+    },
+    {
+      "jednostka": "Soldurii",
+      "epoka": "Żelazo",
+      "surowiec": {
+        "zelazo": 100
+      },
+      "utrzymanie_surowiec": {
+        "zelazo": 20
+      },
+      "baza": {
+        "surowiec": "Żelazo",
+        "surowiec_ilosc": 25,
+        "utrzymanie_surowiec": "Żelazo",
+        "utrzymanie_surowiec_ilosc": 5,
+        "dodatek_kon_baza": 0
+      }
+    },
+    {
+      "jednostka": "Rydwan celtycki",
+      "epoka": "Żelazo",
+      "surowiec": {
+        "kon": 100,
+        "zelazo": 100
+      },
+      "utrzymanie_surowiec": {
+        "zelazo": 20
+      },
+      "baza": {
+        "surowiec": "Żelazo",
+        "surowiec_ilosc": 25,
+        "utrzymanie_surowiec": "Żelazo",
+        "utrzymanie_surowiec_ilosc": 5,
+        "dodatek_kon_baza": 25
+      }
+    },
+    {
+      "jednostka": "Wojownik germański",
+      "epoka": "Żelazo",
+      "surowiec": {
+        "zelazo": 152
+      },
+      "utrzymanie_surowiec": {
+        "zelazo": 32
+      },
+      "baza": {
+        "surowiec": "Żelazo",
+        "surowiec_ilosc": 38,
+        "utrzymanie_surowiec": "Żelazo",
+        "utrzymanie_surowiec_ilosc": 8,
+        "dodatek_kon_baza": 0
+      }
+    },
+    {
+      "jednostka": "Berserker germański",
+      "epoka": "Żelazo",
+      "surowiec": {
+        "zelazo": 100
+      },
+      "utrzymanie_surowiec": {
+        "zelazo": 20
+      },
+      "baza": {
+        "surowiec": "Żelazo",
+        "surowiec_ilosc": 25,
+        "utrzymanie_surowiec": "Żelazo",
+        "utrzymanie_surowiec_ilosc": 5,
+        "dodatek_kon_baza": 0
+      }
+    },
+    {
+      "jednostka": "Taran",
+      "epoka": "Kamień",
+      "surowiec": {
+        "drewno": 19
+      },
+      "utrzymanie_surowiec": {
+        "drewno": 4
+      },
+      "baza": {
+        "surowiec": "Drewno",
+        "surowiec_ilosc": 19,
+        "utrzymanie_surowiec": "Drewno",
+        "utrzymanie_surowiec_ilosc": 4,
+        "dodatek_kon_baza": 0
+      }
+    },
+    {
+      "jednostka": "Taran okuty",
+      "epoka": "Brąz",
+      "surowiec": {
+        "braz": 76
+      },
+      "utrzymanie_surowiec": {
+        "braz": 16
+      },
+      "baza": {
+        "surowiec": "Brąz",
+        "surowiec_ilosc": 38,
+        "utrzymanie_surowiec": "Brąz",
+        "utrzymanie_surowiec_ilosc": 8,
+        "dodatek_kon_baza": 0
+      }
+    },
+    {
+      "jednostka": "Katapulta",
+      "epoka": "Żelazo",
+      "surowiec": {
+        "zelazo": 152
+      },
+      "utrzymanie_surowiec": {
+        "zelazo": 32
+      },
+      "baza": {
+        "surowiec": "Żelazo",
+        "surowiec_ilosc": 38,
+        "utrzymanie_surowiec": "Żelazo",
+        "utrzymanie_surowiec_ilosc": 8,
+        "dodatek_kon_baza": 0
+      }
+    },
+    {
+      "jednostka": "Wieża oblężnicza",
+      "epoka": "Brąz",
+      "surowiec": {
+        "braz": 76
+      },
+      "utrzymanie_surowiec": {
+        "braz": 16
+      },
+      "baza": {
+        "surowiec": "Brąz",
+        "surowiec_ilosc": 38,
+        "utrzymanie_surowiec": "Brąz",
+        "utrzymanie_surowiec_ilosc": 8,
+        "dodatek_kon_baza": 0
+      }
+    },
+    {
+      "jednostka": "Wojownik tyrreński",
+      "epoka": "Brąz",
+      "surowiec": {
+        "braz": 50
+      },
+      "utrzymanie_surowiec": {
+        "braz": 10
+      },
+      "baza": {
+        "surowiec": "Brąz",
+        "surowiec_ilosc": 25,
+        "utrzymanie_surowiec": "Brąz",
+        "utrzymanie_surowiec_ilosc": 5,
+        "dodatek_kon_baza": 0
+      }
+    },
+    {
+      "jednostka": "Wojownik szekelesz",
+      "epoka": "Brąz",
+      "surowiec": {
+        "braz": 50
+      },
+      "utrzymanie_surowiec": {
+        "braz": 10
+      },
+      "baza": {
+        "surowiec": "Brąz",
+        "surowiec_ilosc": 25,
+        "utrzymanie_surowiec": "Brąz",
+        "utrzymanie_surowiec_ilosc": 5,
+        "dodatek_kon_baza": 0
+      }
+    },
+    {
+      "jednostka": "Konnica lancowa asyryjska",
+      "epoka": "Żelazo",
+      "surowiec": {
+        "kon": 100,
+        "zelazo": 100
+      },
+      "utrzymanie_surowiec": {
+        "zelazo": 20
+      },
+      "baza": {
+        "surowiec": "Żelazo",
+        "surowiec_ilosc": 25,
+        "utrzymanie_surowiec": "Żelazo",
+        "utrzymanie_surowiec_ilosc": 5,
+        "dodatek_kon_baza": 25
+      }
+    },
+    {
+      "jednostka": "Konnica łucznicza asyryjska",
+      "epoka": "Żelazo",
+      "surowiec": {
+        "kon": 100,
+        "zelazo": 100
+      },
+      "utrzymanie_surowiec": {
+        "zelazo": 20
+      },
+      "baza": {
+        "surowiec": "Żelazo",
+        "surowiec_ilosc": 25,
+        "utrzymanie_surowiec": "Żelazo",
+        "utrzymanie_surowiec_ilosc": 5,
+        "dodatek_kon_baza": 25
+      }
+    },
+    {
+      "jednostka": "Łucznik asyryjski",
+      "epoka": "Brąz",
+      "surowiec": {
+        "drewno": 50
+      },
+      "utrzymanie_surowiec": {
+        "drewno": 10
+      },
+      "baza": {
+        "surowiec": "Drewno",
+        "surowiec_ilosc": 25,
+        "utrzymanie_surowiec": "Drewno",
+        "utrzymanie_surowiec_ilosc": 5,
+        "dodatek_kon_baza": 0
+      }
+    },
+    {
+      "jednostka": "Drużynnik",
+      "epoka": "Żelazo",
+      "surowiec": {
+        "zelazo": 100
+      },
+      "utrzymanie_surowiec": {
+        "zelazo": 20
+      },
+      "baza": {
+        "surowiec": "Żelazo",
+        "surowiec_ilosc": 25,
+        "utrzymanie_surowiec": "Żelazo",
+        "utrzymanie_surowiec_ilosc": 5,
+        "dodatek_kon_baza": 0
+      }
+    },
+    {
+      "jednostka": "Jeździec z oszczepami",
+      "epoka": "Żelazo",
+      "surowiec": {
+        "kon": 100,
+        "zelazo": 100
+      },
+      "utrzymanie_surowiec": {
+        "zelazo": 20
+      },
+      "baza": {
+        "surowiec": "Żelazo",
+        "surowiec_ilosc": 25,
+        "utrzymanie_surowiec": "Żelazo",
+        "utrzymanie_surowiec_ilosc": 5,
+        "dodatek_kon_baza": 25
+      }
+    },
+    {
+      "jednostka": "Strażnik bram Harappy",
+      "epoka": "Brąz",
+      "surowiec": {
+        "braz": 50
+      },
+      "utrzymanie_surowiec": {
+        "braz": 10
+      },
+      "baza": {
+        "surowiec": "Brąz",
+        "surowiec_ilosc": 25,
+        "utrzymanie_surowiec": "Brąz",
+        "utrzymanie_surowiec_ilosc": 5,
+        "dodatek_kon_baza": 0
+      }
+    },
+    {
+      "jednostka": "Piechota induska",
+      "epoka": "Brąz",
+      "surowiec": {
+        "braz": 50
+      },
+      "utrzymanie_surowiec": {
+        "braz": 10
+      },
+      "baza": {
+        "surowiec": "Brąz",
+        "surowiec_ilosc": 25,
+        "utrzymanie_surowiec": "Brąz",
+        "utrzymanie_surowiec_ilosc": 5,
+        "dodatek_kon_baza": 0
+      }
+    },
+    {
+      "jednostka": "Garnizon Harappy",
+      "epoka": "Żelazo",
+      "surowiec": {
+        "zelazo": 100
+      },
+      "utrzymanie_surowiec": {
+        "zelazo": 20
+      },
+      "baza": {
+        "surowiec": "Żelazo",
+        "surowiec_ilosc": 25,
+        "utrzymanie_surowiec": "Żelazo",
+        "utrzymanie_surowiec_ilosc": 5,
+        "dodatek_kon_baza": 0
+      }
+    },
+    {
+      "jednostka": "Rydwan Kapadokijski",
+      "epoka": "Brąz",
+      "surowiec": {
+        "braz": 50,
+        "kon": 50
+      },
+      "utrzymanie_surowiec": {
+        "braz": 10
+      },
+      "baza": {
+        "surowiec": "Brąz",
+        "surowiec_ilosc": 25,
+        "utrzymanie_surowiec": "Brąz",
+        "utrzymanie_surowiec_ilosc": 5,
+        "dodatek_kon_baza": 25
+      }
+    },
+    {
+      "jednostka": "Piechota hetycka",
+      "epoka": "Brąz",
+      "surowiec": {
+        "braz": 50
+      },
+      "utrzymanie_surowiec": {
+        "braz": 10
+      },
+      "baza": {
+        "surowiec": "Brąz",
+        "surowiec_ilosc": 25,
+        "utrzymanie_surowiec": "Brąz",
+        "utrzymanie_surowiec_ilosc": 5,
+        "dodatek_kon_baza": 0
+      }
+    },
+    {
+      "jednostka": "Gwardia hetycka",
+      "epoka": "Żelazo",
+      "surowiec": {
+        "zelazo": 100
+      },
+      "utrzymanie_surowiec": {
+        "zelazo": 20
+      },
+      "baza": {
+        "surowiec": "Żelazo",
+        "surowiec_ilosc": 25,
+        "utrzymanie_surowiec": "Żelazo",
+        "utrzymanie_surowiec_ilosc": 5,
+        "dodatek_kon_baza": 0
+      }
+    },
+    {
+      "jednostka": "Gwardia Ishtar",
+      "epoka": "Brąz",
+      "surowiec": {
+        "braz": 50
+      },
+      "utrzymanie_surowiec": {
+        "braz": 10
+      },
+      "baza": {
+        "surowiec": "Brąz",
+        "surowiec_ilosc": 25,
+        "utrzymanie_surowiec": "Brąz",
+        "utrzymanie_surowiec_ilosc": 5,
+        "dodatek_kon_baza": 0
+      }
+    },
+    {
+      "jednostka": "Wojownik babiloński",
+      "epoka": "Brąz",
+      "surowiec": {
+        "braz": 50
+      },
+      "utrzymanie_surowiec": {
+        "braz": 10
+      },
+      "baza": {
+        "surowiec": "Brąz",
+        "surowiec_ilosc": 25,
+        "utrzymanie_surowiec": "Brąz",
+        "utrzymanie_surowiec_ilosc": 5,
+        "dodatek_kon_baza": 0
+      }
+    },
+    {
+      "jednostka": "Piechota neobabilońska",
+      "epoka": "Żelazo",
+      "surowiec": {
+        "zelazo": 100
+      },
+      "utrzymanie_surowiec": {
+        "zelazo": 20
+      },
+      "baza": {
+        "surowiec": "Żelazo",
+        "surowiec_ilosc": 25,
+        "utrzymanie_surowiec": "Żelazo",
+        "utrzymanie_surowiec_ilosc": 5,
+        "dodatek_kon_baza": 0
+      }
+    },
+    {
+      "jednostka": "Tyrski miecznik",
+      "epoka": "Żelazo",
+      "surowiec": {
+        "zelazo": 100
+      },
+      "utrzymanie_surowiec": {
+        "zelazo": 20
+      },
+      "baza": {
+        "surowiec": "Żelazo",
+        "surowiec_ilosc": 25,
+        "utrzymanie_surowiec": "Żelazo",
+        "utrzymanie_surowiec_ilosc": 5,
+        "dodatek_kon_baza": 0
+      }
+    },
+    {
+      "jednostka": "Wojownik fenicki",
+      "epoka": "Brąz",
+      "surowiec": {
+        "braz": 50
+      },
+      "utrzymanie_surowiec": {
+        "braz": 10
+      },
+      "baza": {
+        "surowiec": "Brąz",
+        "surowiec_ilosc": 25,
+        "utrzymanie_surowiec": "Brąz",
+        "utrzymanie_surowiec_ilosc": 5,
+        "dodatek_kon_baza": 0
+      }
+    },
+    {
+      "jednostka": "Gwardia Tyreńska",
+      "epoka": "Żelazo",
+      "surowiec": {
+        "zelazo": 100
+      },
+      "utrzymanie_surowiec": {
+        "zelazo": 20
+      },
+      "baza": {
+        "surowiec": "Żelazo",
+        "surowiec_ilosc": 25,
+        "utrzymanie_surowiec": "Żelazo",
+        "utrzymanie_surowiec_ilosc": 5,
+        "dodatek_kon_baza": 0
+      }
+    },
+    {
+      "jednostka": "Thorakites",
+      "epoka": "Żelazo",
+      "surowiec": {
+        "zelazo": 100
+      },
+      "utrzymanie_surowiec": {
+        "zelazo": 20
+      },
+      "baza": {
+        "surowiec": "Żelazo",
+        "surowiec_ilosc": 25,
+        "utrzymanie_surowiec": "Żelazo",
+        "utrzymanie_surowiec_ilosc": 5,
+        "dodatek_kon_baza": 0
+      }
+    },
+    {
+      "jednostka": "Evocati",
+      "epoka": "Żelazo",
+      "surowiec": {
+        "zelazo": 152
+      },
+      "utrzymanie_surowiec": {
+        "zelazo": 32
+      },
+      "baza": {
+        "surowiec": "Żelazo",
+        "surowiec_ilosc": 38,
+        "utrzymanie_surowiec": "Żelazo",
+        "utrzymanie_surowiec_ilosc": 8,
+        "dodatek_kon_baza": 0
+      }
+    },
+    {
+      "jednostka": "iButho z iklwa",
+      "epoka": "Żelazo",
+      "surowiec": {
+        "zelazo": 100
+      },
+      "utrzymanie_surowiec": {
+        "zelazo": 20
+      },
+      "baza": {
+        "surowiec": "Żelazo",
+        "surowiec_ilosc": 25,
+        "utrzymanie_surowiec": "Żelazo",
+        "utrzymanie_surowiec_ilosc": 5,
+        "dodatek_kon_baza": 0
+      }
+    },
+    {
+      "jednostka": "Gwardzista z champi",
+      "epoka": "Brąz",
+      "surowiec": {
+        "braz": 50
+      },
+      "utrzymanie_surowiec": {
+        "braz": 10
+      },
+      "baza": {
+        "surowiec": "Brąz",
+        "surowiec_ilosc": 25,
+        "utrzymanie_surowiec": "Brąz",
+        "utrzymanie_surowiec_ilosc": 5,
+        "dodatek_kon_baza": 0
+      }
+    },
+    {
+      "jednostka": "Wojownik z żelaznym khopesh",
+      "epoka": "Żelazo",
+      "surowiec": {
+        "zelazo": 100
+      },
+      "utrzymanie_surowiec": {
+        "zelazo": 20
+      },
+      "baza": {
+        "surowiec": "Żelazo",
+        "surowiec_ilosc": 25,
+        "utrzymanie_surowiec": "Żelazo",
+        "utrzymanie_surowiec_ilosc": 5,
+        "dodatek_kon_baza": 0
+      }
+    },
+    {
+      "jednostka": "Mur tarcz (Sargonid)",
+      "epoka": "Żelazo",
+      "surowiec": {
+        "zelazo": 100
+      },
+      "utrzymanie_surowiec": {
+        "zelazo": 20
+      },
+      "baza": {
+        "surowiec": "Żelazo",
+        "surowiec_ilosc": 25,
+        "utrzymanie_surowiec": "Żelazo",
+        "utrzymanie_surowiec_ilosc": 5,
+        "dodatek_kon_baza": 0
+      }
+    },
+    {
+      "jednostka": "Miecznik galijski",
+      "epoka": "Żelazo",
+      "surowiec": {
+        "zelazo": 100
+      },
+      "utrzymanie_surowiec": {
+        "zelazo": 20
+      },
+      "baza": {
+        "surowiec": "Żelazo",
+        "surowiec_ilosc": 25,
+        "utrzymanie_surowiec": "Żelazo",
+        "utrzymanie_surowiec_ilosc": 5,
+        "dodatek_kon_baza": 0
+      }
+    }
+  ]
+}

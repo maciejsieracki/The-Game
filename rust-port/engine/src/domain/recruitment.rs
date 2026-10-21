@@ -2,6 +2,7 @@ use std::{collections::BTreeMap, error::Error, fmt, sync::OnceLock};
 
 use serde::{Deserialize, Serialize};
 
+use crate::data::derived::{parse_unit_stock_costs, UnitStockRow};
 use crate::data::units_combat::{parse_units, UnitRecord};
 
 /// Empire-stock quantities used by recruitment and the next-turn resource upkeep.
@@ -203,28 +204,42 @@ pub fn unit_resource_upkeep_for_turns(unit: &UnitRecruitment, turns: u32) -> Res
     unit.resource_upkeep_for_turns(turns)
 }
 
-/// Canonical recruitment rows derived from `gra/data/units.json` (one source of truth).
+/// Canonical recruitment rows: one per `gra/data/units.json` record (75).
 ///
-/// Every value comes from the embedded `units.json` through `data::units_combat`;
-/// no unit numbers are written in this module. The mapping is 1:1:
-/// `Pieniądz (koszt)` -> `gold_cost`, `Utrzymanie (Pieniądz/turę)` -> `gold_upkeep`,
-/// `Surowiec` + `Surowiec (ilość)` -> `stock_cost`,
-/// `Utrzymanie surowiec` + `Utrzymanie surowiec (ilość)` -> `resource_upkeep`,
-/// `Super-jednostka == "TAK"` -> `super_unit`. Resource names are lower-cased with
-/// Polish diacritics removed (`Drewno` -> `drewno`, `Brąz` -> `braz`, `Żelazo` -> `zelazo`).
-/// Epoch scaling and the mount horse surcharge applied by the web runtime are NOT
-/// modelled here; see `dyspozycje/rust-port/p3/P3-17-RUNTIME-DATA-WIRING.md`.
+/// Source of the values, by field:
+/// - `gold_cost`, `gold_upkeep`, `unit_type`, `super_unit`: embedded `units.json`
+///   (`Pieniądz (koszt)`, `Utrzymanie (Pieniądz/turę)`, `Typ`, `Super-jednostka`), unchanged.
+/// - `stock_cost` and `resource_upkeep`: the EDITABLE value table
+///   `rust-port/engine/data/derived/unit-stock-costs.json` (P3-19). Its numbers are the
+///   bootstrap of the web rules (epoch factor, mount horse surcharge `kon`); the engine
+///   applies no multiplier at runtime. The owner balances by editing those numbers.
+///
+/// Panics only if an embedded file is malformed or a unit has no derived row.
 pub fn canonical_recruitment_costs() -> Vec<UnitRecruitment> {
     static CANONICAL: OnceLock<Vec<UnitRecruitment>> = OnceLock::new();
     CANONICAL
         .get_or_init(|| {
             let records = parse_units().expect("embedded units.json must parse");
-            records.iter().map(recruitment_from_unit_record).collect()
+            let derived = parse_unit_stock_costs().expect("embedded derived unit table must parse");
+            let rows: BTreeMap<&str, &UnitStockRow> = derived
+                .wiersze
+                .iter()
+                .map(|row| (row.jednostka.as_str(), row))
+                .collect();
+            records
+                .iter()
+                .map(|record| {
+                    let row = rows
+                        .get(record.jednostka.as_str())
+                        .unwrap_or_else(|| panic!("derived unit table lacks {}", record.jednostka));
+                    recruitment_from_unit_record(record, row)
+                })
+                .collect()
         })
         .clone()
 }
 
-fn recruitment_from_unit_record(record: &UnitRecord) -> UnitRecruitment {
+fn recruitment_from_unit_record(record: &UnitRecord, row: &UnitStockRow) -> UnitRecruitment {
     let mut unit = UnitRecruitment::new(
         record.jednostka.as_str(),
         record.typ.as_str(),
@@ -234,20 +249,11 @@ fn recruitment_from_unit_record(record: &UnitRecord) -> UnitRecruitment {
             "Utrzymanie (Pieniądz/turę)",
         ),
     );
-    if let Some(resource) = &record.surowiec {
-        unit = unit.with_stock_cost(
-            resource_key(resource),
-            non_negative(record.surowiec_ilosc, "Surowiec (ilość)"),
-        );
+    for (resource, amount) in &row.surowiec {
+        unit = unit.with_stock_cost(resource.as_str(), *amount);
     }
-    if let Some(resource) = &record.utrzymanie_surowiec {
-        unit = unit.with_resource_upkeep(
-            resource_key(resource),
-            non_negative(
-                record.utrzymanie_surowiec_ilosc,
-                "Utrzymanie surowiec (ilość)",
-            ),
-        );
+    for (resource, amount) in &row.utrzymanie_surowiec {
+        unit = unit.with_resource_upkeep(resource.as_str(), *amount);
     }
     if record.super_jednostka == "TAK" {
         unit = unit.with_super_unit();
@@ -257,25 +263,6 @@ fn recruitment_from_unit_record(record: &UnitRecord) -> UnitRecruitment {
 
 fn non_negative(value: i64, field: &str) -> u32 {
     u32::try_from(value).unwrap_or_else(|_| panic!("units.json field {field} must be >= 0"))
-}
-
-/// Map a `units.json` resource name to the domain stock key (ASCII, lower case).
-fn resource_key(name: &str) -> String {
-    name.chars()
-        .map(
-            |character| match character.to_lowercase().next().unwrap_or(character) {
-                'ą' => 'a',
-                'ć' => 'c',
-                'ę' => 'e',
-                'ł' => 'l',
-                'ń' => 'n',
-                'ó' => 'o',
-                'ś' => 's',
-                'ź' | 'ż' => 'z',
-                other => other,
-            },
-        )
-        .collect()
 }
 
 /// Find a fresh canonical record by the exact `Jednostka` identifier.

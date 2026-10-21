@@ -186,8 +186,10 @@ fn canonical_catalog_contains_all_buildings_and_preserves_split_values() {
     let found = building_cost_for("palac_iii").expect("canonical building");
     assert_eq!(found.base_work, 90);
     assert_eq!(found.work_increment, 27);
-    assert_eq!(found.resource_cost("drewno"), Some(50));
-    assert_eq!(found.resource_cost("cegla"), Some(70));
+    // P3-19 derived table: palac_iii koszt_surowce JSON drewno 50 / cegla 70, x2 (FALA2),
+    // then x4 (epokaWejscia 3): drewno 400, cegla 560 (building-stock-cost.ts:84-98).
+    assert_eq!(found.resource_cost("drewno"), Some(400));
+    assert_eq!(found.resource_cost("cegla"), Some(560));
     assert_eq!(found.effective_work_cost(1), 45);
 
     assert!(building_cost_for("not-a-building").is_none());

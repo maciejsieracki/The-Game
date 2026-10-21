@@ -1,0 +1,641 @@
+{
+  "meta": {
+    "status": "BOOTSTRAP: wartosci startowe rozwiniete z regul weba. Zrodlem prawdy do recznego balansu jest TA tabela (edytuj liczby, nie mnozniki). Tabela NIE jest porownywana ze wzorem przy buildzie.",
+    "zrodlo": "gra/data/buildings.json @ edb8fb56 (identyczny z rust-port/engine/data/buildings.json)",
+    "regula_weba": "building-stock-cost.ts buildingStockCost (l.84-98) = r-stawki-strojenie.ts scaleStockCostRecord x2 (l.36-47), potem buildingEraCostMultiplier (l.74-81); economy-upkeep.ts buildingResourceUpkeep (l.686-698, N=5)",
+    "wygenerowano": "R-RUSTPORT-P3-19-FLATTEN-MULTIPLIERS-Q1 (2026-10-21), generator: P3-19 sekcja 5",
+    "uwaga_epoka": "Mnoznik epoki wynika z pola Epoka (jednostka) / epokaWejscia (budynek) danego wiersza, NIE z aktualnej epoki gry (web nie ma kosztow zaleznych od czasu)."
+  },
+  "wiersze": [
+    {
+      "budynek": "stolarnia",
+      "epokaWejscia": 1,
+      "koszt_surowce": {
+        "drewno": 50
+      },
+      "utrzymanie_surowcowe_na_ture": {
+        "drewno": 5
+      },
+      "baza_koszt_surowce": {
+        "drewno": 25
+      }
+    },
+    {
+      "budynek": "kamieniarski",
+      "epokaWejscia": 1,
+      "koszt_surowce": {
+        "drewno": 60
+      },
+      "utrzymanie_surowcowe_na_ture": {
+        "drewno": 5
+      },
+      "baza_koszt_surowce": {
+        "drewno": 30
+      }
+    },
+    {
+      "budynek": "kuznia",
+      "epokaWejscia": 2,
+      "koszt_surowce": {
+        "drewno": 120,
+        "kamien": 120
+      },
+      "utrzymanie_surowcowe_na_ture": {
+        "drewno": 5,
+        "kamien": 5
+      },
+      "baza_koszt_surowce": {
+        "drewno": 30,
+        "kamien": 30
+      }
+    },
+    {
+      "budynek": "odlewnia_brazu",
+      "epokaWejscia": 2,
+      "koszt_surowce": {
+        "drewno": 120,
+        "kamien": 160
+      },
+      "utrzymanie_surowcowe_na_ture": {
+        "drewno": 5,
+        "kamien": 5
+      },
+      "baza_koszt_surowce": {
+        "drewno": 30,
+        "kamien": 40
+      }
+    },
+    {
+      "budynek": "odlewnia_zelaza",
+      "epokaWejscia": 3,
+      "koszt_surowce": {
+        "cegla": 400,
+        "drewno": 320
+      },
+      "utrzymanie_surowcowe_na_ture": {
+        "cegla": 5,
+        "drewno": 5
+      },
+      "baza_koszt_surowce": {
+        "cegla": 50,
+        "drewno": 40
+      }
+    },
+    {
+      "budynek": "wielka_odlewnia",
+      "epokaWejscia": 4,
+      "koszt_surowce": {
+        "cegla": 560,
+        "drewno": 480
+      },
+      "utrzymanie_surowcowe_na_ture": {
+        "cegla": 5,
+        "drewno": 5
+      },
+      "baza_koszt_surowce": {
+        "cegla": 70,
+        "drewno": 60
+      }
+    },
+    {
+      "budynek": "targowisko",
+      "epokaWejscia": 1,
+      "koszt_surowce": {
+        "drewno": 60
+      },
+      "utrzymanie_surowcowe_na_ture": {
+        "drewno": 5
+      },
+      "baza_koszt_surowce": {
+        "drewno": 30
+      }
+    },
+    {
+      "budynek": "port",
+      "epokaWejscia": 2,
+      "koszt_surowce": {
+        "drewno": 240,
+        "kamien": 120
+      },
+      "utrzymanie_surowcowe_na_ture": {
+        "drewno": 5,
+        "kamien": 5
+      },
+      "baza_koszt_surowce": {
+        "drewno": 60,
+        "kamien": 30
+      }
+    },
+    {
+      "budynek": "port_wielki",
+      "epokaWejscia": 3,
+      "koszt_surowce": {
+        "drewno": 480,
+        "kamien": 400
+      },
+      "utrzymanie_surowcowe_na_ture": {
+        "drewno": 5,
+        "kamien": 5
+      },
+      "baza_koszt_surowce": {
+        "drewno": 60,
+        "kamien": 50
+      }
+    },
+    {
+      "budynek": "spichlerz",
+      "epokaWejscia": 1,
+      "koszt_surowce": {
+        "drewno": 80
+      },
+      "utrzymanie_surowcowe_na_ture": {
+        "drewno": 5
+      },
+      "baza_koszt_surowce": {
+        "drewno": 40
+      }
+    },
+    {
+      "budynek": "spichlerz_ii",
+      "epokaWejscia": 2,
+      "koszt_surowce": {
+        "drewno": 160,
+        "kamien": 200
+      },
+      "utrzymanie_surowcowe_na_ture": {
+        "drewno": 5,
+        "kamien": 5
+      },
+      "baza_koszt_surowce": {
+        "drewno": 40,
+        "kamien": 50
+      }
+    },
+    {
+      "budynek": "garncarnia",
+      "epokaWejscia": 1,
+      "koszt_surowce": {
+        "drewno": 60
+      },
+      "utrzymanie_surowcowe_na_ture": {
+        "drewno": 5
+      },
+      "baza_koszt_surowce": {
+        "drewno": 30
+      }
+    },
+    {
+      "budynek": "cegielnia",
+      "epokaWejscia": 2,
+      "koszt_surowce": {
+        "drewno": 120,
+        "kamien": 120
+      },
+      "utrzymanie_surowcowe_na_ture": {
+        "drewno": 5,
+        "kamien": 5
+      },
+      "baza_koszt_surowce": {
+        "drewno": 30,
+        "kamien": 30
+      }
+    },
+    {
+      "budynek": "kamienne_kregi",
+      "epokaWejscia": 1,
+      "koszt_surowce": {
+        "kamien": 80
+      },
+      "utrzymanie_surowcowe_na_ture": {
+        "kamien": 5
+      },
+      "baza_koszt_surowce": {
+        "kamien": 40
+      }
+    },
+    {
+      "budynek": "swiatynia",
+      "epokaWejscia": 2,
+      "koszt_surowce": {
+        "drewno": 120,
+        "kamien": 160
+      },
+      "utrzymanie_surowcowe_na_ture": {
+        "drewno": 5,
+        "kamien": 5
+      },
+      "baza_koszt_surowce": {
+        "drewno": 30,
+        "kamien": 40
+      }
+    },
+    {
+      "budynek": "biblioteka",
+      "epokaWejscia": 2,
+      "koszt_surowce": {
+        "drewno": 120,
+        "kamien": 120
+      },
+      "utrzymanie_surowcowe_na_ture": {
+        "drewno": 5,
+        "kamien": 5
+      },
+      "baza_koszt_surowce": {
+        "drewno": 30,
+        "kamien": 30
+      }
+    },
+    {
+      "budynek": "studnia",
+      "epokaWejscia": 1,
+      "koszt_surowce": {
+        "drewno": 50
+      },
+      "utrzymanie_surowcowe_na_ture": {
+        "drewno": 5
+      },
+      "baza_koszt_surowce": {
+        "drewno": 25
+      }
+    },
+    {
+      "budynek": "akwedukt",
+      "epokaWejscia": 2,
+      "koszt_surowce": {
+        "drewno": 120,
+        "kamien": 240
+      },
+      "utrzymanie_surowcowe_na_ture": {
+        "drewno": 5,
+        "kamien": 5
+      },
+      "baza_koszt_surowce": {
+        "drewno": 30,
+        "kamien": 60
+      }
+    },
+    {
+      "budynek": "mennica",
+      "epokaWejscia": 2,
+      "koszt_surowce": {
+        "drewno": 120,
+        "kamien": 160
+      },
+      "utrzymanie_surowcowe_na_ture": {
+        "drewno": 5,
+        "kamien": 5
+      },
+      "baza_koszt_surowce": {
+        "drewno": 30,
+        "kamien": 40
+      }
+    },
+    {
+      "budynek": "palisada",
+      "epokaWejscia": 1,
+      "koszt_surowce": {
+        "drewno": 120
+      },
+      "utrzymanie_surowcowe_na_ture": {
+        "drewno": 5
+      },
+      "baza_koszt_surowce": {
+        "drewno": 60
+      }
+    },
+    {
+      "budynek": "mury",
+      "epokaWejscia": 2,
+      "koszt_surowce": {
+        "drewno": 160,
+        "kamien": 320
+      },
+      "utrzymanie_surowcowe_na_ture": {
+        "drewno": 5,
+        "kamien": 5
+      },
+      "baza_koszt_surowce": {
+        "drewno": 40,
+        "kamien": 80
+      }
+    },
+    {
+      "budynek": "koszary",
+      "epokaWejscia": 2,
+      "koszt_surowce": {
+        "drewno": 160,
+        "kamien": 160
+      },
+      "utrzymanie_surowcowe_na_ture": {
+        "drewno": 5,
+        "kamien": 5
+      },
+      "baza_koszt_surowce": {
+        "drewno": 40,
+        "kamien": 40
+      }
+    },
+    {
+      "budynek": "magazyn",
+      "epokaWejscia": 2,
+      "koszt_surowce": {
+        "drewno": 200,
+        "kamien": 120
+      },
+      "utrzymanie_surowcowe_na_ture": {
+        "drewno": 5,
+        "kamien": 5
+      },
+      "baza_koszt_surowce": {
+        "drewno": 50,
+        "kamien": 30
+      }
+    },
+    {
+      "budynek": "stela",
+      "epokaWejscia": 1,
+      "koszt_surowce": {
+        "kamien": 60
+      },
+      "utrzymanie_surowcowe_na_ture": {
+        "kamien": 5
+      },
+      "baza_koszt_surowce": {
+        "kamien": 30
+      }
+    },
+    {
+      "budynek": "palac",
+      "epokaWejscia": 1,
+      "koszt_surowce": {},
+      "utrzymanie_surowcowe_na_ture": {},
+      "baza_koszt_surowce": {}
+    },
+    {
+      "budynek": "palac_ii",
+      "epokaWejscia": 2,
+      "koszt_surowce": {
+        "drewno": 200,
+        "kamien": 200
+      },
+      "utrzymanie_surowcowe_na_ture": {
+        "drewno": 5,
+        "kamien": 5
+      },
+      "baza_koszt_surowce": {
+        "drewno": 50,
+        "kamien": 50
+      }
+    },
+    {
+      "budynek": "palac_iii",
+      "epokaWejscia": 3,
+      "koszt_surowce": {
+        "cegla": 560,
+        "drewno": 400
+      },
+      "utrzymanie_surowcowe_na_ture": {
+        "cegla": 5,
+        "drewno": 5
+      },
+      "baza_koszt_surowce": {
+        "cegla": 70,
+        "drewno": 50
+      }
+    },
+    {
+      "budynek": "kuznia_zelaza",
+      "epokaWejscia": 3,
+      "koszt_surowce": {
+        "cegla": 400,
+        "drewno": 320
+      },
+      "utrzymanie_surowcowe_na_ture": {
+        "cegla": 5,
+        "drewno": 5
+      },
+      "baza_koszt_surowce": {
+        "cegla": 50,
+        "drewno": 40
+      }
+    },
+    {
+      "budynek": "wielka_kuznia",
+      "epokaWejscia": 4,
+      "koszt_surowce": {
+        "cegla": 640,
+        "drewno": 480
+      },
+      "utrzymanie_surowcowe_na_ture": {
+        "cegla": 5,
+        "drewno": 5
+      },
+      "baza_koszt_surowce": {
+        "cegla": 80,
+        "drewno": 60
+      }
+    },
+    {
+      "budynek": "fort",
+      "epokaWejscia": 3,
+      "koszt_surowce": {
+        "drewno": 400,
+        "kamien": 800
+      },
+      "utrzymanie_surowcowe_na_ture": {
+        "drewno": 5,
+        "kamien": 5
+      },
+      "baza_koszt_surowce": {
+        "drewno": 50,
+        "kamien": 100
+      }
+    },
+    {
+      "budynek": "baszta",
+      "epokaWejscia": 3,
+      "koszt_surowce": {
+        "drewno": 400,
+        "kamien": 800
+      },
+      "utrzymanie_surowcowe_na_ture": {
+        "drewno": 5,
+        "kamien": 5
+      },
+      "baza_koszt_surowce": {
+        "drewno": 50,
+        "kamien": 100
+      }
+    },
+    {
+      "budynek": "warsztat_oblezniczy",
+      "epokaWejscia": 3,
+      "koszt_surowce": {
+        "drewno": 400,
+        "kamien": 400
+      },
+      "utrzymanie_surowcowe_na_ture": {
+        "drewno": 5,
+        "kamien": 5
+      },
+      "baza_koszt_surowce": {
+        "drewno": 50,
+        "kamien": 50
+      }
+    },
+    {
+      "budynek": "akademia",
+      "epokaWejscia": 3,
+      "koszt_surowce": {
+        "cegla": 560,
+        "drewno": 320
+      },
+      "utrzymanie_surowcowe_na_ture": {
+        "cegla": 5,
+        "drewno": 5
+      },
+      "baza_koszt_surowce": {
+        "cegla": 70,
+        "drewno": 40
+      }
+    },
+    {
+      "budynek": "teatr",
+      "epokaWejscia": 3,
+      "koszt_surowce": {
+        "cegla": 400,
+        "drewno": 320
+      },
+      "utrzymanie_surowcowe_na_ture": {
+        "cegla": 5,
+        "drewno": 5
+      },
+      "baza_koszt_surowce": {
+        "cegla": 50,
+        "drewno": 40
+      }
+    },
+    {
+      "budynek": "sad",
+      "epokaWejscia": 3,
+      "koszt_surowce": {
+        "cegla": 400,
+        "drewno": 240
+      },
+      "utrzymanie_surowcowe_na_ture": {
+        "cegla": 5,
+        "drewno": 5
+      },
+      "baza_koszt_surowce": {
+        "cegla": 50,
+        "drewno": 30
+      }
+    },
+    {
+      "budynek": "dom_starszyzny",
+      "epokaWejscia": 1,
+      "koszt_surowce": {
+        "drewno": 60
+      },
+      "utrzymanie_surowcowe_na_ture": {
+        "drewno": 5
+      },
+      "baza_koszt_surowce": {
+        "drewno": 30
+      }
+    },
+    {
+      "budynek": "dwor_zarzadcy",
+      "epokaWejscia": 2,
+      "koszt_surowce": {
+        "drewno": 120,
+        "kamien": 120
+      },
+      "utrzymanie_surowcowe_na_ture": {
+        "drewno": 5,
+        "kamien": 5
+      },
+      "baza_koszt_surowce": {
+        "drewno": 30,
+        "kamien": 30
+      }
+    },
+    {
+      "budynek": "pretorium",
+      "epokaWejscia": 3,
+      "koszt_surowce": {
+        "cegla": 400,
+        "drewno": 320
+      },
+      "utrzymanie_surowcowe_na_ture": {
+        "cegla": 5,
+        "drewno": 5
+      },
+      "baza_koszt_surowce": {
+        "cegla": 50,
+        "drewno": 40
+      }
+    },
+    {
+      "budynek": "trybunal",
+      "epokaWejscia": 2,
+      "koszt_surowce": {
+        "drewno": 120,
+        "kamien": 160
+      },
+      "utrzymanie_surowcowe_na_ture": {
+        "drewno": 5,
+        "kamien": 5
+      },
+      "baza_koszt_surowce": {
+        "drewno": 30,
+        "kamien": 40
+      }
+    },
+    {
+      "budynek": "garnizon",
+      "epokaWejscia": 1,
+      "koszt_surowce": {
+        "drewno": 60
+      },
+      "utrzymanie_surowcowe_na_ture": {
+        "drewno": 5
+      },
+      "baza_koszt_surowce": {
+        "drewno": 30
+      }
+    },
+    {
+      "budynek": "laznia_publiczna",
+      "epokaWejscia": 3,
+      "koszt_surowce": {
+        "cegla": 480,
+        "drewno": 320
+      },
+      "utrzymanie_surowcowe_na_ture": {
+        "cegla": 5,
+        "drewno": 5
+      },
+      "baza_koszt_surowce": {
+        "cegla": 60,
+        "drewno": 40
+      }
+    },
+    {
+      "budynek": "akademia_wojskowa",
+      "epokaWejscia": 3,
+      "koszt_surowce": {
+        "cegla": 560,
+        "drewno": 400
+      },
+      "utrzymanie_surowcowe_na_ture": {
+        "cegla": 5,
+        "drewno": 5
+      },
+      "baza_koszt_surowce": {
+        "cegla": 70,
+        "drewno": 50
+      }
+    }
+  ]
+}
