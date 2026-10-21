@@ -27,20 +27,52 @@ dotykające tych samych plików — zawsze sekwencyjnie, nigdy w tej samej fali.
 
 | # | Temat | Faza | Runda | runId Workflow | Status | Ostatnia aktualizacja |
 |---|---|---|---|---|---|---|
-| 1 | `R-RUSTPORT-P3-4-IDS-VERSIONING-Q1` | P3.4 (newtype ID konsekwentnie + SCHEMA_VERSION) | 1/5 | `wf_1284f37b-dac` | DISPATCHED (w toku) | 2026-10-21 |
-| 2 | `R-RUSTPORT-P3-5A-DATA-CIV-DIPLO-Q1` | P3.5A (dane: cywilizacje/dyplomacja) | 1/5 (restart po INFRA) | `wf_8533bc3c-8ff` | DISPATCHED (w toku) | 2026-10-21 |
-| 3 | `R-RUSTPORT-P3-5B-DATA-UNITS-COMBAT-Q1` | P3.5B (dane: jednostki/walka) | 1/5 (restart po INFRA) | `wf_9c66e929-2a9` | DISPATCHED (w toku) | 2026-10-21 |
-| 4 | `R-RUSTPORT-P3-5C-DATA-BUILDINGS-TECH-Q1` | P3.5C (dane: budynki/cuda/technologie) | 1/5 | `wf_f73475a1-668` | DISPATCHED (w toku) | 2026-10-21 |
-| 5 | — | — | — | — | **WOLNY, ŚWIADOMIE** (P3.8-ASSETS dispatch napisany i zacommitowany, NIE uruchomiony — dysk był pełny [301MB wolne], po sprzątaniu starych worktree 7,9GB; P3.8 doda ~500MB worktree + ~50MB assetów; czekam na wynik P3.5A/B/C/E zanim dołożę kolejny ciężki worktree, żeby nie powtórzyć INFRA) | 2026-10-21 |
-| 6 | `R-RUSTPORT-P3-5E-DATA-ECON-SOCIETY-Q1` | P3.5E (dane: ekonomia/społeczeństwo, 9 plików) | 1/5 | `wf_d194c8bb-ed5` | DISPATCHED (w toku) | 2026-10-21 |
+| 1 | — | — | — | — | **WOLNY** | 2026-10-21 |
+| 2 | — | — | — | — | **WOLNY** | 2026-10-21 |
+| 3 | — | — | — | — | **WOLNY** | 2026-10-21 |
+| 4 | — | — | — | — | **WOLNY** | 2026-10-21 |
+| 5 | — | — | — | — | **WOLNY** | 2026-10-21 |
+| 6 | — | — | — | — | **WOLNY** | 2026-10-21 |
 
-**Incydent INFRA (2026-10-21):** P3.5A i P3.5B zawiodły z `WorktreeIsolationError` (dysk pełny,
-301MB wolne — worktree NIE używają sparse-checkout, każdy kopiuje cały monorepo ~430MB+cargo target).
-Posprzątano 9 nieużywanych worktree z już zintegrowanych/zamkniętych tematów (P3.1-2, P3.3,
-P3.3-IMPL, P3.5D — zweryfikowane `git merge-base --is-ancestor` przed usunięciem każdego) → 7,9GB
-wolne. P3.5A/B zrestartowane. **Wniosek na przyszłość:** rozważyć sparse-checkout dla worktree
-tematów kodu Rust (tylko `rust-port/**`, bez `gra-robocza/`, `docs/`, `dowody/` itd.) — do wdrożenia
-przy konfiguracji kolejnych Workflow, jeśli INFRA się powtórzy.
+**Pula całkowicie wolna (2026-10-21, po zamknięciu fali P3.5 i P3.4 częściowego):** wszystkie 6
+tematów w locie zamknięte, wszystkie worktree posprzątane, zero `locked`. `origin/rust-port/parity-v2`
+HEAD: `df8d8592`, **256/256 testów PASS**.
+
+**Fala P3.5A-E KOMPLETNA — 5/5 PASS, zintegrowane:** P3.5D (`e72c74f7`), P3.5C (`7c34b7d3`), P3.5E
+(`92ae1e81`/`1051b66d` — wymagał ręcznego scalenia kodu i poprawionego dokumentu Obrony z dwóch
+osobnych worktree tego samego Workflow, szczegóły w `LEDGER.md`), P3.4-SCHEMA_VERSION (`9d4f2aba`),
+P3.5B (`401a625f`), P3.5A (`df8d8592`). Wspólny dług: `serde_json` nadal tylko
+`[dev-dependencies]` w 5 nowych modułach danych — do przeniesienia w osobnym, sekwencyjnym temacie
+konsolidacji (roboczo **P3.9-DATA-CONSOLIDATION**), który podepnie wszystkie moduły do
+`lib.rs`/`domain/mod.rs` naraz (celowo odłożone, by nie kolidować podczas równoległej pracy P3.5A-E).
+
+**P3.4 — DECISION_REQUIRED rozstrzygnięty administracyjnie, zakres podzielony:** Operator trafił
+złą bazę (`edb8fb56` zamiast `origin/rust-port/parity-v2`) i nie miał jasności co do
+`dyspozycje/rust-port/p2/P2-3-ENTITY-IDS.md` (plik istnieje wyłącznie na gałęzi dokumentacyjnej
+`claude/sprawdzenie-funkcjonalnosci-ek4ra0`, nie na `rust-port/parity-v2`) — dispatch nie wyjaśnił
+tej struktury dwóch gałęzi, co wywołało błędne wrażenie niespójności procesu u agentów, nie genuine
+decyzję produktową. Obrona naprawiła bazę i dodała WYŁĄCZNIE `SCHEMA_VERSION`
+(`src/version.rs`+`pub mod version;`) — zweryfikowane przez orkiestratora (`cargo test` zielony) i
+zintegrowane (`9d4f2aba`). Refaktor newtype ID (`PlayablePlayer.id`/`CombatUnit.id`/`AiUnit`/`BarbUnit`)
+NIE podjęty — jawnie odnotowany, przenoszony do nowego tematu **P3.4b** z poprawionym dispatchem:
+jawny pierwszy krok `git fetch && git checkout --detach origin/rust-port/parity-v2`, i wyjaśnienie
+"dokumentacja P2.3 dostępna WYŁĄCZNIE przez `git show <docs-branch-sha>:<ścieżka>` — to oczekiwana
+struktura dwóch gałęzi, nie błąd" w pierwszym akapicie KONTEKST.
+
+**Incydent INFRA (2026-10-21, 3. powtórka w tej sesji) — ZAMKNIĘTY:** P3.5A/B zawiodły pierwotnie z
+`WorktreeIsolationError` (301MB wolne), dysk spadał wielokrotnie do krytycznych poziomów (do 962MB)
+w trakcie równoległej pracy 5+ worktree kodu Rust (każdy ~430MB+ bez sparse-checkout). Orkiestrator
+sprzątał agresywnie po każdej integracji (`git merge-base --is-ancestor` przed każdym usunięciem,
+nigdy worktree w użyciu) — obecnie 3,9GB wolne, zero aktywnych worktree. **Wniosek na przyszłość,
+coraz pilniejszy po 3. powtórce:** wdrożyć sparse-checkout dla worktree tematów kodu Rust (tylko
+`rust-port/**`) PRZED dispatchem kolejnej fali równoległej — priorytet nad P3.8-ASSETS (dodałby
+~500MB) i P3.4b. Do czasu wdrożenia: nie dispatchować więcej niż 2-3 równoległe tematy `isolation:
+worktree` kodu Rust naraz.
+
+**Kolejne kroki (refill puli):** P3.4b (newtype ID refactor, poprawiony dispatch), P3.9-DATA-CONSOLIDATION
+(podpięcie 5 modułów danych P3.5A-E do `lib.rs`, `serde_json` → `[dependencies]`), P3.8-ASSETS
+(dispatch już napisany, czeka na ustabilizowanie dysku/sparse-checkout). Zalecenie: dispatchować
+najwyżej 2-3 na raz do czasu wdrożenia sparse-checkout.
 
 ## *** FAZA P2 ZAMKNIĘTA — FAZA P3 OTWARTA (2026-10-21) ***
 
