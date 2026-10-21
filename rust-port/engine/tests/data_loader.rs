@@ -31,10 +31,10 @@ impl TempDir {
         TempDir(dir)
     }
 
-    /// Kopiuje wszystkie 29 plików z katalogu danych do katalogu tymczasowego.
+    /// Kopiuje wszystkie pliki z `DATA_FILES` z katalogu danych do katalogu tymczasowego.
     fn with_all_data_files(tag: &str) -> Self {
         let tmp = Self::new(tag);
-        for name in DATA_FILES {
+        for name in DATA_FILES.iter() {
             fs::copy(data_dir().join(name), tmp.0.join(name)).expect("copy data file");
         }
         tmp
@@ -101,6 +101,34 @@ fn neg_missing_file_is_file_missing() {
 }
 
 #[test]
+fn neg_every_listed_file_is_required_by_load_all() {
+    // Usunięcie KAŻDEGO z 29 plików po kolei: `load_all` musi zgłosić FileMissing
+    // z nazwą właśnie usuniętego pliku (dowód, że wszystkie są czytane).
+    for name in DATA_FILES.iter() {
+        let tmp = TempDir::with_all_data_files("each");
+        fs::remove_file(tmp.path().join(name)).expect("remove");
+        match load_all(tmp.path()) {
+            Err(LoadError::FileMissing { file }) => assert_eq!(file_name_of(&file), *name),
+            Err(other) => panic!("removing {name}: expected FileMissing, got {other:?}"),
+            Ok(_) => panic!("removing {name}: expected FileMissing, got Ok"),
+        }
+    }
+}
+
+#[test]
+fn neg_unreadable_file_is_io() {
+    // Katalog w miejscu pliku: odczyt zwraca EISDIR (kind != NotFound), więc to `Io`.
+    // Test nie wymaga uprawnień ani zmiany ustawień systemu.
+    let tmp = TempDir::new("io");
+    fs::create_dir(tmp.path().join("civs.json")).expect("mkdir in place of file");
+    match load_file::<CivsFile>(tmp.path(), "civs.json") {
+        Err(LoadError::Io { file, .. }) => assert_eq!(file_name_of(&file), "civs.json"),
+        Err(other) => panic!("expected Io, got {other:?}"),
+        Ok(_) => panic!("expected Io, got Ok"),
+    }
+}
+
+#[test]
 fn neg_empty_file_is_empty() {
     let tmp = TempDir::new("empty");
     tmp.write("civs.json", b"");
@@ -150,12 +178,19 @@ fn neg_syntax_error_is_invalid_json_on_second_line() {
 }
 
 #[test]
-fn neg_number_where_object_expected_is_shape_mismatch() {
+fn neg_number_where_object_expected_is_shape_mismatch_with_position() {
     let tmp = TempDir::new("shape-number");
     tmp.write("civs.json", b"42");
     match load_file::<CivsFile>(tmp.path(), "civs.json") {
-        Err(LoadError::ShapeMismatch { file, message }) => {
+        Err(LoadError::ShapeMismatch {
+            file,
+            line,
+            column,
+            message,
+        }) => {
             assert_eq!(file_name_of(&file), "civs.json");
+            assert_eq!(line, 1);
+            assert!(column >= 1, "column must be reported, got {column}");
             assert!(message.contains("invalid type"), "message: {message}");
         }
         Err(other) => panic!("expected ShapeMismatch, got {other:?}"),
@@ -168,8 +203,14 @@ fn neg_missing_required_field_is_shape_mismatch_naming_field() {
     let tmp = TempDir::new("shape-field");
     tmp.write("civs.json", br#"{"cywilizacje": []}"#);
     match load_file::<CivsFile>(tmp.path(), "civs.json") {
-        Err(LoadError::ShapeMismatch { file, message }) => {
+        Err(LoadError::ShapeMismatch {
+            file,
+            line,
+            message,
+            ..
+        }) => {
             assert_eq!(file_name_of(&file), "civs.json");
+            assert_eq!(line, 1);
             assert!(
                 message.contains("missing field `start_gry`"),
                 "message: {message}"
@@ -186,6 +227,18 @@ fn neg_missing_directory_is_directory_missing() {
     let missing = tmp.path().join("nie-istnieje");
     match load_all(&missing) {
         Err(LoadError::DirectoryMissing { path }) => assert_eq!(path, missing),
+        Err(other) => panic!("expected DirectoryMissing, got {other:?}"),
+        Ok(_) => panic!("expected DirectoryMissing, got Ok"),
+    }
+}
+
+#[test]
+fn neg_path_that_is_a_file_is_directory_missing() {
+    let tmp = TempDir::new("notdir");
+    tmp.write("plik.txt", b"x");
+    let as_dir = tmp.path().join("plik.txt");
+    match load_all(&as_dir) {
+        Err(LoadError::DirectoryMissing { path }) => assert_eq!(path, as_dir),
         Err(other) => panic!("expected DirectoryMissing, got {other:?}"),
         Ok(_) => panic!("expected DirectoryMissing, got Ok"),
     }

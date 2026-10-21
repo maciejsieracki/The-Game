@@ -1,0 +1,40 @@
+   Compiling proc-macro2 v1.0.107
+   Compiling quote v1.0.47
+   Compiling unicode-ident v1.0.27
+   Compiling serde_core v1.0.229
+   Compiling zmij v1.0.23
+   Compiling once_cell v1.21.4
+   Compiling serde v1.0.229
+   Compiling serde_json v1.0.154
+   Compiling tracing-core v0.1.36
+   Compiling memchr v2.8.3
+   Compiling itoa v1.0.18
+   Compiling pin-project-lite v0.2.17
+   Compiling syn v3.0.9
+   Compiling syn v2.0.119
+   Compiling serde_derive v1.0.229
+   Compiling tracing-attributes v0.1.31
+   Compiling tracing v0.1.44
+   Compiling civ-engine v0.1.0 (/home/user/The-Game/.claude/worktrees/wf_e4a2b632-106-3/rust-port/engine)
+    Finished `test` profile [unoptimized] target(s) in 25.90s
+     Running tests/data_loader.rs (/home/user/cargo-target-shared/wf_e4a2b632-106-3/debug/deps/data_loader-c0ce3920f438595a)
+
+running 14 tests
+test data_files_list_matches_directory_contents ... ok
+test neg_empty_file_is_empty ... ok
+test neg_missing_directory_is_directory_missing ... ok
+test neg_missing_required_field_is_shape_mismatch_naming_field ... ok
+test neg_non_utf8_file_is_not_utf8 ... ok
+test neg_number_where_object_expected_is_shape_mismatch_with_position ... ok
+test loads_all_29_files_from_data_dir ... ok
+test neg_path_that_is_a_file_is_directory_missing ... ok
+test neg_missing_file_is_file_missing ... ok
+test neg_unreadable_file_is_io ... ok
+test neg_truncated_json_is_invalid_json_with_position ... ok
+test neg_whitespace_only_file_is_empty ... ok
+test neg_syntax_error_is_invalid_json_on_second_line ... ok
+test neg_every_listed_file_is_required_by_load_all ... ok
+
+test result: ok. 14 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.29s
+
+EXIT=0

@@ -5,15 +5,18 @@
 //! Struktury NIE są duplikowane: każdy plik deserializowany jest do typu
 //! z istniejącego modułu `data::*` (te same `#[derive(Deserialize)]`, co w
 //! `parse_*`). Parsery `parse_*` pozostają nietknięte — czytają wbudowane
-//! `include_str!`, loader czyta z dysku.
+//! `include_str!` o stałej ścieżce, bez argumentu katalogu, więc loader
+//! nie może ich wywołać; zamiast tego używa tych samych typów.
+//!
+//! Lista plików, pola `DataSet` i wywołania `load_file` powstają z JEDNEJ
+//! tabeli (`data_table!`), więc `DATA_FILES` nie może rozjechać się z `load_all`.
 //!
 //! Błędy (`LoadError`) zawsze niosą ścieżkę pliku. Ścieżka nie jest panikującą:
 //! brak `unwrap`/`expect` w ścieżkach błędów.
 //!
-//! Uwaga o „ścieżce serde”: bez nowej zależności (`serde_path_to_error`
-//! jest zabroniona) lokalizacja w pliku to `line`/`column` z `serde_json`
-//! dla błędów składni, a dla błędów kształtu nazwa pola/typu pochodzi
-//! z komunikatu `serde_json` (np. ``missing field `start_gry` at line 1``).
+//! Uwaga o „ścieżce serde”: pełna ścieżka pola (`serde_path_to_error`) wymagałaby
+//! nowej zależności, która jest zakazana. Zamiast tego błąd kształtu niesie
+//! `line`/`column` z `serde_json` oraz komunikat z nazwą pola/typu.
 
 use std::error::Error;
 use std::fmt;
@@ -43,43 +46,10 @@ use super::units_combat::{
     UnitRecord,
 };
 
-/// Nazwy 29 plików danych obsługiwanych przez loader (kopie `rust-port/engine/data/`).
-pub const DATA_FILES: [&str; 29] = [
-    "civs.json",
-    "civ-matrix.json",
-    "civ-params.json",
-    "civ-ai.json",
-    "diplomacy.json",
-    "diplomacy-acceptance-points.json",
-    "city-names-pools.json",
-    "buildings.json",
-    "wonders.json",
-    "tech.json",
-    "econ-params.json",
-    "society-params.json",
-    "epoka-ludnosc-manpower.json",
-    "citizen-resource-upkeep.json",
-    "miasto-params.json",
-    "resources.json",
-    "e-start-params.json",
-    "ai-params.json",
-    "ui-params.json",
-    "terrain-improvements.json",
-    "terrain-movement.json",
-    "terrain-yields.json",
-    "map-gen-params.json",
-    "units.json",
-    "combat-params.json",
-    "terrain-combat.json",
-    "counters.json",
-    "auto-battle-params.json",
-    "power-params.json",
-];
-
 /// Jawne błędy ładowania. Każdy wariant (poza `DirectoryMissing`) niesie `file`.
 #[derive(Debug)]
 pub enum LoadError {
-    /// Katalog nie istnieje albo nie jest katalogiem.
+    /// Ścieżka nie istnieje, nie jest katalogiem albo nie da się jej odczytać jako katalogu.
     DirectoryMissing { path: PathBuf },
     /// Plik nie istnieje (`io::ErrorKind::NotFound`).
     FileMissing { file: PathBuf },
@@ -96,16 +66,24 @@ pub enum LoadError {
         column: usize,
         message: String,
     },
-    /// Poprawny JSON o złym kształcie/typie (zły typ pola, brakujące pole, nieznane pole).
-    ShapeMismatch { file: PathBuf, message: String },
+    /// Poprawny JSON o złym kształcie/typie (zły typ pola, brakujące pole, nieznane pole);
+    /// pozycja (`line`/`column`) z `serde_json` wskazuje miejsce w pliku.
+    ShapeMismatch {
+        file: PathBuf,
+        line: usize,
+        column: usize,
+        message: String,
+    },
 }
 
 impl fmt::Display for LoadError {
     fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
-            Self::DirectoryMissing { path } => {
-                write!(formatter, "data directory does not exist: {}", path.display())
-            }
+            Self::DirectoryMissing { path } => write!(
+                formatter,
+                "data directory is missing or not a directory: {}",
+                path.display()
+            ),
             Self::FileMissing { file } => {
                 write!(formatter, "data file is missing: {}", file.display())
             }
@@ -126,9 +104,16 @@ impl fmt::Display for LoadError {
                 "invalid JSON in {} at line {line} column {column}: {message}",
                 file.display()
             ),
-            Self::ShapeMismatch { file, message } => {
-                write!(formatter, "unexpected shape in {}: {message}", file.display())
-            }
+            Self::ShapeMismatch {
+                file,
+                line,
+                column,
+                message,
+            } => write!(
+                formatter,
+                "unexpected shape in {} at line {line} column {column}: {message}",
+                file.display()
+            ),
         }
     }
 }
@@ -163,6 +148,8 @@ pub fn load_file<T: DeserializeOwned>(dir: &Path, name: &str) -> Result<T, LoadE
     serde_json::from_str::<T>(text).map_err(|error| match error.classify() {
         Category::Data => LoadError::ShapeMismatch {
             file,
+            line: error.line(),
+            column: error.column(),
             message: error.to_string(),
         },
         Category::Syntax | Category::Eof | Category::Io => LoadError::InvalidJson {
@@ -174,76 +161,60 @@ pub fn load_file<T: DeserializeOwned>(dir: &Path, name: &str) -> Result<T, LoadE
     })
 }
 
-/// Wszystkie 29 plików danych, każdy już zdeserializowany do typu z `data::*`.
-pub struct DataSet {
-    pub civs: CivsFile,
-    pub civ_matrix: CivMatrixFile,
-    pub civ_params: CivParamsFile,
-    pub civ_ai: CivAiFile,
-    pub diplomacy: DiplomacyFile,
-    pub diplomacy_acceptance_points: AcceptancePointsFile,
-    pub city_names_pools: CityNamesPoolsFile,
-    pub buildings: Vec<Building>,
-    pub wonders: Wonders,
-    pub tech: TechFile,
-    pub econ_params: EconParams,
-    pub society_params: SocietyParams,
-    pub epoka_ludnosc_manpower: EpokaLudnoscManpower,
-    pub citizen_resource_upkeep: CitizenResourceUpkeep,
-    pub miasto_params: MiastoParams,
-    pub resources: Vec<ResourceItem>,
-    pub e_start_params: EStartParams,
-    pub ai_params: AiParams,
-    pub ui_params: UiParams,
-    pub terrain_improvements: TerrainImprovementsFile,
-    pub terrain_movement: TerrainMovementFile,
-    pub terrain_yields: TerrainYieldsFile,
-    pub map_gen_params: MapGenParamsFile,
-    pub units: Vec<UnitRecord>,
-    pub combat_params: CombatParamsFile,
-    pub terrain_combat: Vec<TerrainCombatRecord>,
-    pub counters: Vec<CounterRule>,
-    pub auto_battle_params: AutoBattleParamsFile,
-    pub power_params: PowerParamsFile,
+/// Jedna tabela: pole `DataSet` ↔ typ z `data::*` ↔ nazwa pliku w katalogu danych.
+/// Z tej tabeli powstają `DATA_FILES`, struktura `DataSet` i `load_all`.
+macro_rules! data_table {
+    ($( $field:ident : $ty:ty => $name:literal ),* $(,)?) => {
+        /// Nazwy plików danych obsługiwanych przez loader (kopie `rust-port/engine/data/`).
+        pub const DATA_FILES: &[&str] = &[$($name),*];
+
+        /// Wszystkie pliki danych, każdy już zdeserializowany do typu z `data::*`.
+        pub struct DataSet {
+            $(pub $field: $ty,)*
+        }
+
+        /// Ładuje wszystkie pliki z `dir` (kolejność zgodna z tabelą). Zwraca pierwszy błąd.
+        pub fn load_all(dir: &Path) -> Result<DataSet, LoadError> {
+            if !dir.is_dir() {
+                return Err(LoadError::DirectoryMissing {
+                    path: dir.to_path_buf(),
+                });
+            }
+            Ok(DataSet {
+                $($field: load_file::<$ty>(dir, $name)?,)*
+            })
+        }
+    };
 }
 
-/// Ładuje wszystkie 29 plików z `dir`. Zwraca pierwszy napotkany błąd
-/// (kolejność zgodna z `DATA_FILES`). Pliki spoza listy są ignorowane.
-pub fn load_all(dir: &Path) -> Result<DataSet, LoadError> {
-    if !dir.is_dir() {
-        return Err(LoadError::DirectoryMissing {
-            path: dir.to_path_buf(),
-        });
-    }
-    Ok(DataSet {
-        civs: load_file(dir, "civs.json")?,
-        civ_matrix: load_file(dir, "civ-matrix.json")?,
-        civ_params: load_file(dir, "civ-params.json")?,
-        civ_ai: load_file(dir, "civ-ai.json")?,
-        diplomacy: load_file(dir, "diplomacy.json")?,
-        diplomacy_acceptance_points: load_file(dir, "diplomacy-acceptance-points.json")?,
-        city_names_pools: load_file(dir, "city-names-pools.json")?,
-        buildings: load_file(dir, "buildings.json")?,
-        wonders: load_file(dir, "wonders.json")?,
-        tech: load_file(dir, "tech.json")?,
-        econ_params: load_file(dir, "econ-params.json")?,
-        society_params: load_file(dir, "society-params.json")?,
-        epoka_ludnosc_manpower: load_file(dir, "epoka-ludnosc-manpower.json")?,
-        citizen_resource_upkeep: load_file(dir, "citizen-resource-upkeep.json")?,
-        miasto_params: load_file(dir, "miasto-params.json")?,
-        resources: load_file(dir, "resources.json")?,
-        e_start_params: load_file(dir, "e-start-params.json")?,
-        ai_params: load_file(dir, "ai-params.json")?,
-        ui_params: load_file(dir, "ui-params.json")?,
-        terrain_improvements: load_file(dir, "terrain-improvements.json")?,
-        terrain_movement: load_file(dir, "terrain-movement.json")?,
-        terrain_yields: load_file(dir, "terrain-yields.json")?,
-        map_gen_params: load_file(dir, "map-gen-params.json")?,
-        units: load_file(dir, "units.json")?,
-        combat_params: load_file(dir, "combat-params.json")?,
-        terrain_combat: load_file(dir, "terrain-combat.json")?,
-        counters: load_file(dir, "counters.json")?,
-        auto_battle_params: load_file(dir, "auto-battle-params.json")?,
-        power_params: load_file(dir, "power-params.json")?,
-    })
+data_table! {
+    civs: CivsFile => "civs.json",
+    civ_matrix: CivMatrixFile => "civ-matrix.json",
+    civ_params: CivParamsFile => "civ-params.json",
+    civ_ai: CivAiFile => "civ-ai.json",
+    diplomacy: DiplomacyFile => "diplomacy.json",
+    diplomacy_acceptance_points: AcceptancePointsFile => "diplomacy-acceptance-points.json",
+    city_names_pools: CityNamesPoolsFile => "city-names-pools.json",
+    buildings: Vec<Building> => "buildings.json",
+    wonders: Wonders => "wonders.json",
+    tech: TechFile => "tech.json",
+    econ_params: EconParams => "econ-params.json",
+    society_params: SocietyParams => "society-params.json",
+    epoka_ludnosc_manpower: EpokaLudnoscManpower => "epoka-ludnosc-manpower.json",
+    citizen_resource_upkeep: CitizenResourceUpkeep => "citizen-resource-upkeep.json",
+    miasto_params: MiastoParams => "miasto-params.json",
+    resources: Vec<ResourceItem> => "resources.json",
+    e_start_params: EStartParams => "e-start-params.json",
+    ai_params: AiParams => "ai-params.json",
+    ui_params: UiParams => "ui-params.json",
+    terrain_improvements: TerrainImprovementsFile => "terrain-improvements.json",
+    terrain_movement: TerrainMovementFile => "terrain-movement.json",
+    terrain_yields: TerrainYieldsFile => "terrain-yields.json",
+    map_gen_params: MapGenParamsFile => "map-gen-params.json",
+    units: Vec<UnitRecord> => "units.json",
+    combat_params: CombatParamsFile => "combat-params.json",
+    terrain_combat: Vec<TerrainCombatRecord> => "terrain-combat.json",
+    counters: Vec<CounterRule> => "counters.json",
+    auto_battle_params: AutoBattleParamsFile => "auto-battle-params.json",
+    power_params: PowerParamsFile => "power-params.json",
 }
