@@ -27,7 +27,7 @@ dotykające tych samych plików — zawsze sekwencyjnie, nigdy w tej samej fali.
 
 | # | Temat | Faza | Runda | runId Workflow | Status | Ostatnia aktualizacja |
 |---|---|---|---|---|---|---|
-| 1 | `R-RUSTPORT-P2-12-COMPLIANCE-MATRIX-Q1` | P2.12 (macierz zgodności kontraktu P2 wobec P1) | 1/5 | `wf_c4c902a8-5a2` | DISPATCHED (w toku) | 2026-10-21 |
+| 1 | — | — | — | — | **WOLNY** (P2.12 PASS, zamknięty) | 2026-10-21 |
 | 2 | — | — | — | — | **WOLNY** (P2.10 PASS, zamknięty) | 2026-10-21 |
 | 3 | — | — | — | — | **WOLNY** | 2026-10-21 |
 | 4 | — | — | — | — | **WOLNY** | 2026-10-21 |
