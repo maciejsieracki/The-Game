@@ -1,0 +1,73 @@
+{
+  "_opis": "Panel-C źródło prawdy · panele-sterowania/export-c.py · Macierz v2 + SS5l + oblęzenie + AI oblężenia",
+  "macierz_v2": {
+    "hit_base": 35,
+    "hit_min": 8,
+    "hit_max": 90,
+    "dmg_scale": 10,
+    "pancerz_divisor": 200,
+    "max_rounds": 200
+  },
+  "tw_v3": {
+    "hit_base": 40,
+    "hit_min": 15,
+    "hit_max": 75,
+    "max_rounds": 200
+  },
+  "ss5l_legacy": {
+    "hit_base": 50,
+    "hit_per_point": 5,
+    "hit_min": 10,
+    "hit_max": 90,
+    "max_rounds": 30
+  },
+  "counter_multiplier": 1.5,
+  "morale_przewaga_mocy": {
+    "_opis": "R-WALKA-PRZEWAGA-LICZEBNA-Q1-W2 GOAL 2 -- startowa kara morale slabszej strony w BITWIE TAKTYCZNEJ 3D (battleScene.ts). r = MOC strony silniejszej / MOC strony slabszej, MOC wazona BIEZACYM HP (combat.ts hpWeightedFieldPower -- te same cegielki co sumRosterFieldM auto-bitwy). spadek = min(sufit_proc, wspolczynnik_proc * log10(r)). Liczone RAZ na starcie bitwy; obniza WYLACZNIE biezaca pule morale (nigdy moraleMax ani fleeMorale); zadnej premii dla silniejszego. Kalibracja wlasciciela: r=10 -> 50%. NIE kopiowac tych liczb do auto-battle-params.json -- auto-bitwa mapy nie ma morale.",
+    "wspolczynnik_proc": 50,
+    "sufit_proc": 65,
+    "epsilon_ponad_flee": 1,
+    "_epsilon_ponad_flee_opis": "R2-1 (ratyfikacja wlasciciela, wariant A) -- KLAMP DOLNY: morale_startowe = max(fleeMorale + epsilon, morale_bazowe * (1 - spadek)). Prog ucieczki to morale <= fleeMorale, wiec sama ROWNOSC oznacza rout; epsilon to margines PONAD progiem, ktory wymusza ostra nierownosc. Jednostka wchodzi maksymalnie zdemoralizowana, ale NIE zlamana. 1 punkt morale, bo biezaca pula jest zaokraglana do liczb calkowitych. Klamp NIE dotyka moraleMax ani fleeMorale i nie zmienia wynikow tam, gdzie nie jest potrzebny (tabela r=1,5/2/3/5/10 bez zmian)."
+  },
+  "river_attack_mult": 0.75,
+  "brod": {
+    "_opis": "C-BTL-BROD-Q1 wariant C -- mechanika brodu (Ford) na planszy bitwy taktycznej (battleScene.ts). karaAtak/karaObrona sa numerycznie te same co river_attack_mult (0.75=1-0.25) ale to OSOBNY, dedykowany dla brodu wpis (tamten zasila swiatowy resolveCombat/instant-resolve dla starcia z obronca-na-rzece; ten zasila per-tile Ford w bitwie taktycznej -- oba moga byc strojone niezaleznie w przyszlosci).",
+    "ruchMult": 0.5,
+    "karaAtak": 0.25,
+    "karaObrona": 0.25,
+    "bonusObronaBrzegu": 0.15
+  },
+  "oblężenie": {
+    "_opis": "wall_base_obrona / wall_per_level_obrona ZEROWANE (Maciej 2026-07-25): obrona miasta dziala WYLACZNIE procentowo (miasto-params.json bonus_obrona_mur_proc=200 / bonus_obrona_cytadela_proc=100, konsumowane przez main.ts structureDefenseBonusFor + combat.ts structureDefBonusPct + battleScene onWallWalkway). Plaski bonus Obrony/Pancerza z muru w game/siege.ts (cityDefenseBonus) dublowal ten procent -- zneutralizowany tutaj zamiast w kodzie, zeby wallLevel/hasWalls (obecnosc muru) nadal dzialaly bez zmian. Pola zostawione (nie usuniete) dla zgodnosci z SiegeParams/wallParamsFromBuildings.",
+    "wall_base_obrona": 0,
+    "wall_per_level_obrona": 0,
+    "wall_max_level": 10,
+    "wall_pancerz_fraction": 0.5,
+    "hill_defense_mult": 1.5,
+    "mountain_defense_mult": 1.75,
+    "fortify_obrona_bonus": 2,
+    "fortify_obrona_proc": 50,
+    "_fortify_obrona_proc_opis": "ufortyfikowanyWPolu (fortyfikacja W POLU, NIE garnizon): +50% Obrony jednostki (mnożnik na efektywnej Obronie przed terenem/brodem). Garnizon miasta nadal używa fortify_obrona_bonus (flat +2 pkt).",
+    "militia_pop_fraction": 0.2,
+    "militia_strength_fraction": 0.5,
+    "siege_max_rounds": 30
+  },
+  "siege_ai": {
+    "t1_assault_ratio": 1.8,
+    "t2_build_min_ratio": 1.4,
+    "t3_starve_min_ratio": 1.1,
+    "t2_max_wait_turns": 5,
+    "units_per_extra_machine": 10
+  },
+  "unit_power": {
+    "_opis": "Moc jednostki M — Panel-C Stale-moc · mirror unit-power.ts",
+    "charge_divisor": 2,
+    "missile_divisor": 2,
+    "hp_field_divisor": 2,
+    "hp_siege_divisor": 10
+  },
+  "battle_loot": {
+    "_opis": "Łup po wygranej bitwie — % bazowego kosztu rekrutacji (Pieniądz + Surowiec) każdej jednostki wroga usuniętej z mapy po walce.",
+    "recruit_cost_pct": 100
+  }
+}
