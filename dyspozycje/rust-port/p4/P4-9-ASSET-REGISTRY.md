@@ -50,7 +50,7 @@ Zero zmian: `Cargo.toml`, `Cargo.lock`, `src/lib.rs`, `rust-port/engine/**`, `sr
 ### 2.4 Subskrypcje (`listeners.rs`)
 
 - `Listeners<E>::subscribe(callback) -> Subscription`. **Drop tokenu wyrejestrowuje callback i dropuje domknięcie** (z wszystkim, co przechwyciło). Brak metody `detach` — trwałe nasłuchiwanie wymaga trzymania tokenu (albo świadomego `mem::forget`, co test wykrywa).
-- Drop tokenu w trakcie `emit` (z callbacku) — kolejka, usunięcie zaraz po `emit`. Rekurencyjny `emit` / `subscribe` w trakcie `emit` tej samej listy → `Err(Busy)`. Token przeżywający listę — drop to no-op.
+- Drop tokenu w trakcie `emit` (z callbacku) — kolejka, usunięcie zaraz po `emit`. **Uwaga (różnica względem DOM):** usunięcie jest odkładane do końca bieżącego `emit`, więc callback, którego token zdropowano wcześniej **w tym samym** `emit` (np. przez callback zarejestrowany przed nim), zostanie w tym `emit` jeszcze wywołany; w DOM `removeEventListener` w trakcie dispatchu wyklucza późniejszy listener z bieżącego zdarzenia. Od następnego `emit` callback nie jest wołany, a jego domknięcie jest zdropowane. Ten przypadek nie ma osobnego testu (uwaga Evaluatora r1). Rekurencyjny `emit` / `subscribe` w trakcie `emit` tej samej listy → `Err(Busy)`. Token przeżywający listę — drop to no-op.
 - `stats()` → `subscribed / unsubscribed / active`.
 
 ### 2.5 Budżet i raport (`budget.rs`)
@@ -62,7 +62,7 @@ Zero zmian: `Cargo.toml`, `Cargo.lock`, `src/lib.rs`, `rust-port/engine/**`, `sr
 
 ### 2.6 Backend-atrapa (`fake.rs`)
 
-`FakeGpu::alloc(kind, bytes) -> FakeResource`; `Drop` zasobu = „zwolnienie”. Liczniki `FakeGpu` są **niezależne** od księgowości rejestru — testy w każdym punkcie kontrolnym sprawdzają `stats.live == gpu.live` per rodzaj i `live_bytes`, czyli że zwolnienie w rejestrze faktycznie dotarło do destruktora zasobu. Opcjonalny dziennik zdarzeń `Alloc/Free` w kolejności (test „nowy przed starym”).
+`FakeGpu::alloc(kind, bytes) -> FakeResource`; `Drop` zasobu = „zwolnienie”. Liczniki `FakeGpu` są **niezależne** od księgowości rejestru — testy w każdym punkcie kontrolnym sprawdzają `stats.live == gpu.live` per rodzaj i `live_bytes`, czyli że zwolnienie w rejestrze faktycznie dotarło do destruktora zasobu. Opcjonalny dziennik zdarzeń `Alloc/Free` w kolejności. **Dziennik NIE dowodzi kolejności „nowy przed starym” w `replace`** (poprawka r2, zarzut Evaluatora r1): nowy zasób alokuje wywołujący przy obliczaniu argumentu, czyli przed wejściem w `replace`, więc dziennik zawsze pokazuje `[Alloc{nowy}, Free{stary}]` niezależnie od kolejności w rejestrze. Dowód kolejności pochodzi z rejestru — patrz §4.1.
 
 ## 3. Mapowanie M1/M2/M3/M6 → mechanizm (jak ma tego użyć warstwa GPU i modele)
 
@@ -80,7 +80,7 @@ Zero zmian: `Cargo.toml`, `Cargo.lock`, `src/lib.rs`, `rust-port/engine/**`, `sr
 
 ### 4.1 API (`tests/assets_registry.rs`, 14)
 
-`stale_handle_is_an_error_not_a_panic` (użycie po zwolnieniu: 6 operacji → `Err(Stale)`, ponowne użycie slotu z nową generacją), `handle_from_another_registry_is_rejected`, `reference_counting_frees_on_last_release`, `registry_replace_creates_new_before_freeing_old` (dziennik `FakeGpu`: dokładnie `[Alloc{nowy}, Free{stary}]`; replace przez przeterminowany uchwyt nie zmienia statystyk), `owned_replace_creates_new_before_freeing_old_and_keeps_shared_old`, `owned_guards_count_references`, `scope_releases_everything_it_created_on_drop`, `drop_and_clone_inside_with_are_deferred_not_panicking`, `cache_lru_by_entries_and_bytes`, `cache_end_of_turn_trims_only_unreferenced_entries`, `subscriptions_unregister_on_drop` (po dropie tokenu `Rc::strong_count` przechwyconego stanu wraca do 1), `subscription_dropped_inside_callback_is_removed_after_emit`, `budget_thresholds_are_configurable`, `live_report_lists_labels`.
+`stale_handle_is_an_error_not_a_panic` (użycie po zwolnieniu: 6 operacji → `Err(Stale)`, ponowne użycie slotu z nową generacją), `handle_from_another_registry_is_rejected`, `reference_counting_frees_on_last_release`, `registry_replace_creates_new_before_freeing_old` (kolejność sprawdzana **po stronie rejestru**: przy jednym żywym buforze `peak_live` rośnie 1 → 2, czyli stary i nowy były żywe jednocześnie, oraz nowy uchwyt ma **inny** indeks slotu niż stary, bo slot starego był jeszcze zajęty w chwili wstawienia; przy kolejności „najpierw zwolnij” `peak_live` zostaje 1, a nowy wpis dostaje zwolniony slot. Dziennik `FakeGpu` potwierdza tylko, że zwolniono dokładnie stary zasób, raz. Replace przez przeterminowany uchwyt nie zmienia statystyk), `owned_replace_creates_new_before_freeing_old_and_keeps_shared_old` (te same dwie asercje rejestru dla `Owned::replace`). Mutacje E1 (`Registry::replace`: zwolnij, potem wstaw) i E2 (`Owned::replace`: zwolnij, potem wstaw) czerwienią odpowiednio te dwa testy — logi w §6a, `owned_guards_count_references`, `scope_releases_everything_it_created_on_drop`, `drop_and_clone_inside_with_are_deferred_not_panicking`, `cache_lru_by_entries_and_bytes`, `cache_end_of_turn_trims_only_unreferenced_entries`, `subscriptions_unregister_on_drop` (po dropie tokenu `Rc::strong_count` przechwyconego stanu wraca do 1), `subscription_dropped_inside_callback_is_removed_after_emit`, `budget_thresholds_are_configurable`, `live_report_lists_labels`.
 
 ### 4.2 Symulacja tur (`tests/assets_nturns.rs`, 6)
 
@@ -499,6 +499,513 @@ test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; fini
 EXIT=0
 
 ```
+
+## 6a. Runda 2 — poprawka testu kolejności i surowe wyjścia (PEŁNE)
+
+Zarzut Evaluatora r1: mutacje E1/E2 (odwrócona kolejność w `Registry::replace` / `Owned::replace`) zostawiały wszystkie testy zielone, bo dziennik `FakeGpu` notuje `Alloc` nowego zasobu już przy obliczaniu argumentu. Poprawka (commit kodu `9b5b69ea`, tylko `tests/assets_registry.rs` i komentarz modułu w `src/assets/fake.rs`; implementacja rejestru bez zmian): oba testy kolejności sprawdzają stan rejestru — `peak_live` bufora 1 → 2 oraz `new.index() != old.index()` (brak ponownego użycia slotu starego). Opis w §2.6 i §4.1.
+
+### 6a.1 Bramki na zacommitowanym kodzie (`9b5b69ea`), po `cargo clean`
+
+Skrypt:
+
+```bash
+#!/usr/bin/env bash
+# Gate run for R-RUSTPORT-P4-9 r2 on the COMMITTED code tree (raw outputs, each command followed by EXIT).
+cd /home/user/The-Game/.claude/worktrees/wf_d19f2ede-7f8-3/rust-port/renderer || exit 1
+export CARGO_INCREMENTAL=0
+export CARGO_TARGET_DIR=/home/user/cargo-target-shared/wf_d19f2ede-7f8-3
+export CARGO_PROFILE_DEV_DEBUG=0
+export CARGO_TERM_COLOR=never
+run() { echo "\$ $*"; "$@" 2>&1; echo "EXIT=$?"; echo; }
+run git rev-parse HEAD
+run git status --short -- .
+run git diff --stat 0a496f67 HEAD -- Cargo.toml Cargo.lock src/lib.rs ../engine ../../src-tauri ../../gra ../../.github
+run cargo clean
+run cargo fmt --all -- --check
+run cargo clippy --locked --all-targets -- -D warnings
+run cargo test --locked --all-targets
+run grep -rn unsafe src/assets tests/assets_registry.rs tests/assets_nturns.rs
+```
+
+Wyjście (pełne):
+
+```text
+$ git rev-parse HEAD
+9b5b69ea5bb176f3b688dceb8bab46bfdf2af42d
+EXIT=0
+
+$ git status --short -- .
+EXIT=0
+
+$ git diff --stat 0a496f67 HEAD -- Cargo.toml Cargo.lock src/lib.rs ../engine ../../src-tauri ../../gra ../../.github
+EXIT=0
+
+$ cargo clean
+     Removed 25 files, 2.7MiB total
+EXIT=0
+
+$ cargo fmt --all -- --check
+EXIT=0
+
+$ cargo clippy --locked --all-targets -- -D warnings
+    Checking pollster v0.4.0
+    Checking civ-renderer v0.1.0 (/home/user/The-Game/.claude/worktrees/wf_d19f2ede-7f8-3/rust-port/renderer)
+    Finished `dev` profile [unoptimized] target(s) in 0.84s
+EXIT=0
+
+$ cargo test --locked --all-targets
+   Compiling pollster v0.4.0
+   Compiling civ-renderer v0.1.0 (/home/user/The-Game/.claude/worktrees/wf_d19f2ede-7f8-3/rust-port/renderer)
+    Finished `test` profile [unoptimized] target(s) in 2.14s
+     Running unittests src/lib.rs (/home/user/cargo-target-shared/wf_d19f2ede-7f8-3/debug/deps/civ_renderer-d95024f3ec20cfd9)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/assets_nturns.rs (/home/user/cargo-target-shared/wf_d19f2ede-7f8-3/debug/deps/assets_nturns-7ff94d6b0438d2d1)
+
+running 6 tests
+[LeakM1 small 40x25] turn= 10 buffer=164 texture=7 pipeline=3 bind_group=27 live_bytes=4953088 subscriptions=1 created=299 destroyed=98
+[Fixed small 40x25] turn= 10 buffer=36 texture=7 pipeline=3 bind_group=9 live_bytes=4560128 subscriptions=1 created=187 destroyed=132
+[Fixed small 40x25] turn= 50 buffer=36 texture=7 pipeline=3 bind_group=9 live_bytes=4560128 subscriptions=1 created=712 destroyed=657
+[LeakM1 small 40x25] turn= 50 buffer=590 texture=7 pipeline=3 bind_group=98 live_bytes=6179968 subscriptions=1 created=1187 destroyed=489
+[Fixed small 40x25] turn= 10 buffer=36 texture=7 pipeline=3 bind_group=9 live_bytes=4560128 subscriptions=1 created=187 destroyed=132
+[Fixed small 40x25] turn= 50 buffer=36 texture=7 pipeline=3 bind_group=9 live_bytes=4560128 subscriptions=1 created=712 destroyed=657
+[new game] after dropping game 1: live=0 live_bytes=0 fake_gpu_live=0
+test new_game_frees_everything_and_restarts_identically ... ok
+[LeakM1 small 40x25] turn=200 buffer=2414 texture=7 pipeline=3 bind_group=402 live_bytes=11433088 subscriptions=1 created=4785 destroyed=1959
+[LeakM1 small 40x25] turn 50 violations: live buffer: baseline=164 current=590 allowed=164; live bind_group: baseline=27 current=98 allowed=27; live bytes: baseline=4953088 current=6179968 allowed=4953088
+[Fixed small 40x25] turn=200 buffer=36 texture=7 pipeline=3 bind_group=9 live_bytes=4560128 subscriptions=1 created=2760 destroyed=2705
+[LeakM1 small 40x25] turn 200 violations: live buffer: baseline=164 current=2414 allowed=164; live bind_group: baseline=27 current=402 allowed=27; live bytes: baseline=4953088 current=11433088 allowed=4953088
+[LeakM2 small 40x25] turn= 10 buffer=36 texture=67 pipeline=3 bind_group=9 live_bytes=5543168 subscriptions=1 created=187 destroyed=72
+[LeakM3 small 40x25] turn= 10 buffer=68 texture=9 pipeline=3 bind_group=11 live_bytes=6722816 subscriptions=5 created=187 destroyed=96
+[LeakM2 small 40x25] turn= 50 buffer=36 texture=306 pipeline=3 bind_group=9 live_bytes=9458944 subscriptions=1 created=712 destroyed=358
+[LeakM3 small 40x25] turn= 50 buffer=196 texture=17 pipeline=3 bind_group=19 live_bytes=15373568 subscriptions=21 created=712 destroyed=477
+[Fixed small 40x25] turn=200 buffer=36 texture=7 pipeline=3 bind_group=9 live_bytes=4560128 subscriptions=1 created=2760 destroyed=2705
+[Fixed small 40x25] budget OK at turns [50, 200]
+[LeakM2 small 40x25] turn=200 buffer=36 texture=1206 pipeline=3 bind_group=9 live_bytes=24204544 subscriptions=1 created=2760 destroyed=1506
+[LeakM2 small 40x25] turn 50 violations: live texture: baseline=67 current=306 allowed=67; live bytes: baseline=5543168 current=9458944 allowed=5543168
+[Fixed large 96x60] turn= 10 buffer=148 texture=25 pipeline=3 bind_group=27 live_bytes=5805056 subscriptions=1 created=637 destroyed=434
+[LeakM2 small 40x25] turn 200 violations: live texture: baseline=67 current=1206 allowed=67; live bytes: baseline=5543168 current=24204544 allowed=5543168
+[LeakM3 small 40x25] turn= 10 buffer=68 texture=9 pipeline=3 bind_group=11 live_bytes=6722816 subscriptions=5 created=187 destroyed=96
+[LeakM3 small 40x25] turn= 50 buffer=196 texture=17 pipeline=3 bind_group=19 live_bytes=15373568 subscriptions=21 created=712 destroyed=477
+[LeakM3 small 40x25] turn=200 buffer=676 texture=47 pipeline=3 bind_group=49 live_bytes=47813888 subscriptions=81 created=2760 destroyed=1985
+[LeakM3 small 40x25] turn=200 buffer=676 texture=47 pipeline=3 bind_group=49 live_bytes=47813888 subscriptions=81 created=2760 destroyed=1985
+[LeakM3 small 40x25] turn 50 violations: live buffer: baseline=68 current=196 allowed=68; live texture: baseline=9 current=17 allowed=9; live bind_group: baseline=11 current=19 allowed=11; live bytes: baseline=6722816 current=15373568 allowed=6722816; subscriptions: baseline=5 current=21 allowed=5
+[LeakM3 small 40x25] turn 200 violations: live buffer: baseline=68 current=676 allowed=68; live texture: baseline=9 current=47 allowed=9; live bind_group: baseline=11 current=49 allowed=11; live bytes: baseline=6722816 current=47813888 allowed=6722816; subscriptions: baseline=5 current=81 allowed=5
+[Fixed large 96x60] turn= 50 buffer=148 texture=25 pipeline=3 bind_group=27 live_bytes=5805056 subscriptions=1 created=2337 destroyed=2134
+[LeakM1 large 96x60] turn= 10 buffer=714 texture=25 pipeline=3 bind_group=106 live_bytes=7547008 subscriptions=1 created=1126 destroyed=278
+test leak_m3_also_retains_battle_scene_resources ... ok
+[Fixed small 40x25] turn= 10 buffer=36 texture=7 pipeline=3 bind_group=9 live_bytes=4560128 subscriptions=1 created=187 destroyed=132
+[Fixed small 40x25] turn= 50 buffer=36 texture=7 pipeline=3 bind_group=9 live_bytes=4560128 subscriptions=1 created=712 destroyed=657
+[Fixed small 40x25] turn=200 buffer=36 texture=7 pipeline=3 bind_group=9 live_bytes=4560128 subscriptions=1 created=2760 destroyed=2705
+[Fixed small 40x25] turn= 10 buffer=36 texture=7 pipeline=3 bind_group=9 live_bytes=4560128 subscriptions=1 created=187 destroyed=132
+[LeakM1 large 96x60] turn= 50 buffer=2502 texture=25 pipeline=3 bind_group=404 live_bytes=12696448 subscriptions=1 created=4324 destroyed=1390
+[Fixed small 40x25] turn= 50 buffer=36 texture=7 pipeline=3 bind_group=9 live_bytes=4560128 subscriptions=1 created=712 destroyed=657
+[Fixed small 40x25] turn=200 buffer=36 texture=7 pipeline=3 bind_group=9 live_bytes=4560128 subscriptions=1 created=2760 destroyed=2705
+[LeakM1 small 40x25] turn= 10 buffer=164 texture=7 pipeline=3 bind_group=27 live_bytes=4953088 subscriptions=1 created=299 destroyed=98
+[Fixed large 96x60] turn=200 buffer=148 texture=25 pipeline=3 bind_group=27 live_bytes=5805056 subscriptions=1 created=8826 destroyed=8623
+[Fixed large 96x60] budget OK at turns [50, 200]
+test fixed_registry_stays_within_budget_after_10_50_200_turns ... ok
+[LeakM1 small 40x25] turn= 50 buffer=590 texture=7 pipeline=3 bind_group=98 live_bytes=6179968 subscriptions=1 created=1187 destroyed=489
+[LeakM1 small 40x25] turn=200 buffer=2414 texture=7 pipeline=3 bind_group=402 live_bytes=11433088 subscriptions=1 created=4785 destroyed=1959
+[LeakM1 small 40x25] turn= 10 buffer=164 texture=7 pipeline=3 bind_group=27 live_bytes=4953088 subscriptions=1 created=299 destroyed=98
+[LeakM1 small 40x25] turn= 50 buffer=590 texture=7 pipeline=3 bind_group=98 live_bytes=6179968 subscriptions=1 created=1187 destroyed=489
+[LeakM1 small 40x25] turn=200 buffer=2414 texture=7 pipeline=3 bind_group=402 live_bytes=11433088 subscriptions=1 created=4785 destroyed=1959
+[LeakM1 large 96x60] turn=200 buffer=9552 texture=25 pipeline=3 bind_group=1579 live_bytes=33000448 subscriptions=1 created=16718 destroyed=5559
+[LeakM1 large 96x60] turn 50 violations: live buffer: baseline=714 current=2502 allowed=714; live bind_group: baseline=106 current=404 allowed=106; live bytes: baseline=7547008 current=12696448 allowed=7547008
+[LeakM1 large 96x60] turn 200 violations: live buffer: baseline=714 current=9552 allowed=714; live bind_group: baseline=106 current=1579 allowed=106; live bytes: baseline=7547008 current=33000448 allowed=7547008
+[LeakM2 large 96x60] turn= 10 buffer=148 texture=265 pipeline=3 bind_group=27 live_bytes=9737216 subscriptions=1 created=637 destroyed=194
+test simulation_is_deterministic ... ok
+[LeakM2 large 96x60] turn= 50 buffer=148 texture=1224 pipeline=3 bind_group=27 live_bytes=25449472 subscriptions=1 created=2336 destroyed=934
+[LeakM2 large 96x60] turn=200 buffer=148 texture=4815 pipeline=3 bind_group=27 live_bytes=84284416 subscriptions=1 created=8817 destroyed=3824
+[rebuild 1000 cycles] start: turn=  0 buffer=36 texture=7 pipeline=3 bind_group=9 live_bytes=4560128 subscriptions=1 created=55 destroyed=0
+[rebuild 1000 cycles] end:   turn=  0 buffer=36 texture=7 pipeline=3 bind_group=9 live_bytes=4560128 subscriptions=1 created=55055 destroyed=55000
+test rebuild_in_place_1000_cycles_returns_to_initial_state ... ok
+[LeakM2 large 96x60] turn 50 violations: live texture: baseline=265 current=1224 allowed=265; live bytes: baseline=9737216 current=25449472 allowed=9737216
+[LeakM2 large 96x60] turn 200 violations: live texture: baseline=265 current=4815 allowed=265; live bytes: baseline=9737216 current=84284416 allowed=9737216
+[LeakM3 large 96x60] turn= 10 buffer=180 texture=27 pipeline=3 bind_group=29 live_bytes=7967744 subscriptions=5 created=637 destroyed=398
+[LeakM3 large 96x60] turn= 50 buffer=308 texture=35 pipeline=3 bind_group=37 live_bytes=16618496 subscriptions=21 created=2337 destroyed=1954
+[LeakM3 large 96x60] turn=200 buffer=788 texture=65 pipeline=3 bind_group=67 live_bytes=49058816 subscriptions=81 created=8826 destroyed=7903
+[LeakM3 large 96x60] turn 50 violations: live buffer: baseline=180 current=308 allowed=180; live texture: baseline=27 current=35 allowed=27; live bind_group: baseline=29 current=37 allowed=29; live bytes: baseline=7967744 current=16618496 allowed=7967744; subscriptions: baseline=5 current=21 allowed=5
+[LeakM3 large 96x60] turn 200 violations: live buffer: baseline=180 current=788 allowed=180; live texture: baseline=27 current=65 allowed=27; live bind_group: baseline=29 current=67 allowed=29; live bytes: baseline=7967744 current=49058816 allowed=7967744; subscriptions: baseline=5 current=81 allowed=5
+test each_leak_pattern_breaks_the_budget ... ok
+
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.23s
+
+     Running tests/assets_registry.rs (/home/user/cargo-target-shared/wf_d19f2ede-7f8-3/debug/deps/assets_registry-ee54812c049c2745)
+
+running 14 tests
+test budget_thresholds_are_configurable ... ok
+test cache_end_of_turn_trims_only_unreferenced_entries ... ok
+test drop_and_clone_inside_with_are_deferred_not_panicking ... ok
+test handle_from_another_registry_is_rejected ... ok
+test live_report_lists_labels ... ok
+test cache_lru_by_entries_and_bytes ... ok
+test registry_replace_creates_new_before_freeing_old ... ok
+test owned_guards_count_references ... ok
+test owned_replace_creates_new_before_freeing_old_and_keeps_shared_old ... ok
+test subscription_dropped_inside_callback_is_removed_after_emit ... ok
+test subscriptions_unregister_on_drop ... ok
+test reference_counting_frees_on_last_release ... ok
+test scope_releases_everything_it_created_on_drop ... ok
+test stale_handle_is_an_error_not_a_panic ... ok
+
+test result: ok. 14 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.02s
+
+     Running tests/cpu_sanity.rs (/home/user/cargo-target-shared/wf_d19f2ede-7f8-3/debug/deps/cpu_sanity-7ee07d9f2002230a)
+
+running 1 test
+test gpu_feature_readback_matches_build_configuration ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/gpu_probe.rs (/home/user/cargo-target-shared/wf_d19f2ede-7f8-3/debug/deps/gpu_probe-08e2d2a6c2a7bdae)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+EXIT=0
+
+$ grep -rn unsafe src/assets tests/assets_registry.rs tests/assets_nturns.rs
+EXIT=1
+```
+
+### 6a.2 Mutacje E1/E2 — nowy test czerwieni się
+
+Skrypt mutacji (kopia crate do scratchpada, bez `target/`, jedna podmiana tekstu na mutację; `diff -u` poniżej to jego wyjście):
+
+```python
+"""Mutations E1/E2 for P4-9 r2: free old BEFORE inserting new. Usage: mutate.py <crate> <outdir>"""
+import os
+import shutil
+import subprocess
+import sys
+
+src, root = sys.argv[1], sys.argv[2]
+muts = {
+    "E1": ("src/assets/registry.rs", """        self.check(old.raw)?;
+        let new = self.insert::<K>(label, bytes, resource);
+        self.release(old)?;
+        Ok(new)""", """        self.check(old.raw)?;
+        self.release(old)?;
+        let new = self.insert::<K>(label, bytes, resource);
+        Ok(new)"""),
+    "E2": ("src/assets/shared.rs", """        let new = self.assets.insert::<K>(label, bytes, resource)?;
+        let old = std::mem::replace(self, new);
+        drop(old);
+        Ok(())""", """        self.assets.release_raw(self.handle.raw());
+        self.armed = false;
+        let new = self.assets.insert::<K>(label, bytes, resource)?;
+        let old = std::mem::replace(self, new);
+        drop(old);
+        Ok(())"""),
+}
+os.makedirs(root, exist_ok=True)
+for name, (f, o, n) in muts.items():
+    d = os.path.join(root, name)
+    shutil.rmtree(d, ignore_errors=True)
+    shutil.copytree(src, d, ignore=shutil.ignore_patterns("target"))
+    p = os.path.join(d, f)
+    s = open(p).read()
+    assert s.count(o) == 1, name
+    open(p, "w").write(s.replace(o, n))
+    subprocess.run(["diff", "-u", os.path.join(src, f), p])
+```
+
+```diff
+--- rust-port/renderer/src/assets/registry.rs (E1)
+@@ -581,8 +581,8 @@
+         resource: R,
+     ) -> Result<Handle<K>, AssetError> {
+         self.check(old.raw)?;
+-        let new = self.insert::<K>(label, bytes, resource);
+         self.release(old)?;
++        let new = self.insert::<K>(label, bytes, resource);
+         Ok(new)
+     }
+--- rust-port/renderer/src/assets/shared.rs (E2)
+@@ -231,6 +231,8 @@
+         bytes: u64,
+         resource: R,
+     ) -> Result<(), AssetError> {
++        self.assets.release_raw(self.handle.raw());
++        self.armed = false;
+         let new = self.assets.insert::<K>(label, bytes, resource)?;
+         let old = std::mem::replace(self, new);
+         drop(old);
+```
+
+Komenda per mutant (osobny `CARGO_TARGET_DIR` na każdy mutant — pierwsze uruchomienie E2 we wspólnym katalogu z E1 użyło nieaktualnej binarki E1, bo `copytree` zachowuje czasy modyfikacji plików; ten przebieg odrzucono i powtórzono w czystym katalogu):
+
+```bash
+cd <scratchpad>/p49-r2-mut/E1 && CARGO_INCREMENTAL=0 CARGO_PROFILE_DEV_DEBUG=0 CARGO_TARGET_DIR=/home/user/cargo-target-shared/wf_d19f2ede-7f8-3-mut cargo test --locked --all-targets > ../E1.log 2>&1; echo "EXIT=$?" | tee -a ../E1.log
+cd <scratchpad>/p49-r2-mut/E2 && CARGO_INCREMENTAL=0 CARGO_PROFILE_DEV_DEBUG=0 CARGO_TARGET_DIR=/home/user/cargo-target-shared/wf_d19f2ede-7f8-3-mutE2 cargo test --locked --all-targets > ../E2.log 2>&1; echo "EXIT=$?" | tee -a ../E2.log
+```
+
+Wynik: E1 → EXIT=101, czerwony `registry_replace_creates_new_before_freeing_old` (`peak_live` left 1, right 2). E2 → EXIT=101, czerwony `owned_replace_creates_new_before_freeing_old_and_keeps_shared_old` (`peak_live` left 1, right 2). Pozostałe testy zielone (mutacje nie zmieniają liczby żywych zasobów po zakończeniu `replace`, więc testy N tur ich nie wykrywają — to jest zadanie testów kolejności).
+
+E1.log (pełny):
+
+```text
+   Compiling pollster v0.4.0
+   Compiling civ-renderer v0.1.0 (/tmp/claude-0/-home-user-The-Game/cbf4a126-dca3-5f50-bfb0-2a747b18a590/scratchpad/p49-r2-mut/E1)
+    Finished `test` profile [unoptimized] target(s) in 0.96s
+     Running unittests src/lib.rs (/home/user/cargo-target-shared/wf_d19f2ede-7f8-3-mut/debug/deps/civ_renderer-d95024f3ec20cfd9)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/assets_nturns.rs (/home/user/cargo-target-shared/wf_d19f2ede-7f8-3-mut/debug/deps/assets_nturns-7ff94d6b0438d2d1)
+
+running 6 tests
+[Fixed small 40x25] turn= 10 buffer=36 texture=7 pipeline=3 bind_group=9 live_bytes=4560128 subscriptions=1 created=187 destroyed=132
+[Fixed small 40x25] turn= 10 buffer=36 texture=7 pipeline=3 bind_group=9 live_bytes=4560128 subscriptions=1 created=187 destroyed=132
+[LeakM1 small 40x25] turn= 10 buffer=164 texture=7 pipeline=3 bind_group=27 live_bytes=4953088 subscriptions=1 created=299 destroyed=98
+[Fixed small 40x25] turn= 50 buffer=36 texture=7 pipeline=3 bind_group=9 live_bytes=4560128 subscriptions=1 created=712 destroyed=657
+[Fixed small 40x25] turn= 50 buffer=36 texture=7 pipeline=3 bind_group=9 live_bytes=4560128 subscriptions=1 created=712 destroyed=657
+[LeakM1 small 40x25] turn= 50 buffer=590 texture=7 pipeline=3 bind_group=98 live_bytes=6179968 subscriptions=1 created=1187 destroyed=489
+[new game] after dropping game 1: live=0 live_bytes=0 fake_gpu_live=0
+[Fixed small 40x25] turn=200 buffer=36 texture=7 pipeline=3 bind_group=9 live_bytes=4560128 subscriptions=1 created=2760 destroyed=2705
+[Fixed small 40x25] turn=200 buffer=36 texture=7 pipeline=3 bind_group=9 live_bytes=4560128 subscriptions=1 created=2760 destroyed=2705
+[Fixed small 40x25] budget OK at turns [50, 200]
+[LeakM3 small 40x25] turn= 10 buffer=68 texture=9 pipeline=3 bind_group=11 live_bytes=6722816 subscriptions=5 created=187 destroyed=96
+[LeakM3 small 40x25] turn= 50 buffer=196 texture=17 pipeline=3 bind_group=19 live_bytes=15373568 subscriptions=21 created=712 destroyed=477
+[Fixed large 96x60] turn= 10 buffer=148 texture=25 pipeline=3 bind_group=27 live_bytes=5805056 subscriptions=1 created=637 destroyed=434
+test new_game_frees_everything_and_restarts_identically ... ok
+[LeakM1 small 40x25] turn=200 buffer=2414 texture=7 pipeline=3 bind_group=402 live_bytes=11433088 subscriptions=1 created=4785 destroyed=1959
+[LeakM1 small 40x25] turn 50 violations: live buffer: baseline=164 current=590 allowed=164; live bind_group: baseline=27 current=98 allowed=27; live bytes: baseline=4953088 current=6179968 allowed=4953088
+[LeakM1 small 40x25] turn 200 violations: live buffer: baseline=164 current=2414 allowed=164; live bind_group: baseline=27 current=402 allowed=27; live bytes: baseline=4953088 current=11433088 allowed=4953088
+[LeakM3 small 40x25] turn=200 buffer=676 texture=47 pipeline=3 bind_group=49 live_bytes=47813888 subscriptions=81 created=2760 destroyed=1985
+[LeakM2 small 40x25] turn= 10 buffer=36 texture=67 pipeline=3 bind_group=9 live_bytes=5543168 subscriptions=1 created=187 destroyed=72
+[Fixed large 96x60] turn= 50 buffer=148 texture=25 pipeline=3 bind_group=27 live_bytes=5805056 subscriptions=1 created=2337 destroyed=2134
+[LeakM2 small 40x25] turn= 50 buffer=36 texture=306 pipeline=3 bind_group=9 live_bytes=9458944 subscriptions=1 created=712 destroyed=358
+test leak_m3_also_retains_battle_scene_resources ... ok
+[Fixed small 40x25] turn= 10 buffer=36 texture=7 pipeline=3 bind_group=9 live_bytes=4560128 subscriptions=1 created=187 destroyed=132
+[Fixed small 40x25] turn= 50 buffer=36 texture=7 pipeline=3 bind_group=9 live_bytes=4560128 subscriptions=1 created=712 destroyed=657
+[LeakM2 small 40x25] turn=200 buffer=36 texture=1206 pipeline=3 bind_group=9 live_bytes=24204544 subscriptions=1 created=2760 destroyed=1506
+[LeakM2 small 40x25] turn 50 violations: live texture: baseline=67 current=306 allowed=67; live bytes: baseline=5543168 current=9458944 allowed=5543168
+[LeakM2 small 40x25] turn 200 violations: live texture: baseline=67 current=1206 allowed=67; live bytes: baseline=5543168 current=24204544 allowed=5543168
+[LeakM3 small 40x25] turn= 10 buffer=68 texture=9 pipeline=3 bind_group=11 live_bytes=6722816 subscriptions=5 created=187 destroyed=96
+[LeakM3 small 40x25] turn= 50 buffer=196 texture=17 pipeline=3 bind_group=19 live_bytes=15373568 subscriptions=21 created=712 destroyed=477
+[Fixed small 40x25] turn=200 buffer=36 texture=7 pipeline=3 bind_group=9 live_bytes=4560128 subscriptions=1 created=2760 destroyed=2705
+[Fixed small 40x25] turn= 10 buffer=36 texture=7 pipeline=3 bind_group=9 live_bytes=4560128 subscriptions=1 created=187 destroyed=132
+[LeakM3 small 40x25] turn=200 buffer=676 texture=47 pipeline=3 bind_group=49 live_bytes=47813888 subscriptions=81 created=2760 destroyed=1985
+[Fixed small 40x25] turn= 50 buffer=36 texture=7 pipeline=3 bind_group=9 live_bytes=4560128 subscriptions=1 created=712 destroyed=657
+[LeakM3 small 40x25] turn 50 violations: live buffer: baseline=68 current=196 allowed=68; live texture: baseline=9 current=17 allowed=9; live bind_group: baseline=11 current=19 allowed=11; live bytes: baseline=6722816 current=15373568 allowed=6722816; subscriptions: baseline=5 current=21 allowed=5
+[LeakM3 small 40x25] turn 200 violations: live buffer: baseline=68 current=676 allowed=68; live texture: baseline=9 current=47 allowed=9; live bind_group: baseline=11 current=49 allowed=11; live bytes: baseline=6722816 current=47813888 allowed=6722816; subscriptions: baseline=5 current=81 allowed=5
+[Fixed large 96x60] turn=200 buffer=148 texture=25 pipeline=3 bind_group=27 live_bytes=5805056 subscriptions=1 created=8826 destroyed=8623
+[Fixed large 96x60] budget OK at turns [50, 200]
+test fixed_registry_stays_within_budget_after_10_50_200_turns ... ok
+[LeakM1 large 96x60] turn= 10 buffer=714 texture=25 pipeline=3 bind_group=106 live_bytes=7547008 subscriptions=1 created=1126 destroyed=278
+[Fixed small 40x25] turn=200 buffer=36 texture=7 pipeline=3 bind_group=9 live_bytes=4560128 subscriptions=1 created=2760 destroyed=2705
+[LeakM1 small 40x25] turn= 10 buffer=164 texture=7 pipeline=3 bind_group=27 live_bytes=4953088 subscriptions=1 created=299 destroyed=98
+[LeakM1 small 40x25] turn= 50 buffer=590 texture=7 pipeline=3 bind_group=98 live_bytes=6179968 subscriptions=1 created=1187 destroyed=489
+[LeakM1 large 96x60] turn= 50 buffer=2502 texture=25 pipeline=3 bind_group=404 live_bytes=12696448 subscriptions=1 created=4324 destroyed=1390
+[LeakM1 small 40x25] turn=200 buffer=2414 texture=7 pipeline=3 bind_group=402 live_bytes=11433088 subscriptions=1 created=4785 destroyed=1959
+[LeakM1 small 40x25] turn= 10 buffer=164 texture=7 pipeline=3 bind_group=27 live_bytes=4953088 subscriptions=1 created=299 destroyed=98
+[LeakM1 small 40x25] turn= 50 buffer=590 texture=7 pipeline=3 bind_group=98 live_bytes=6179968 subscriptions=1 created=1187 destroyed=489
+[LeakM1 small 40x25] turn=200 buffer=2414 texture=7 pipeline=3 bind_group=402 live_bytes=11433088 subscriptions=1 created=4785 destroyed=1959
+test simulation_is_deterministic ... ok
+[rebuild 1000 cycles] start: turn=  0 buffer=36 texture=7 pipeline=3 bind_group=9 live_bytes=4560128 subscriptions=1 created=55 destroyed=0
+[rebuild 1000 cycles] end:   turn=  0 buffer=36 texture=7 pipeline=3 bind_group=9 live_bytes=4560128 subscriptions=1 created=55055 destroyed=55000
+test rebuild_in_place_1000_cycles_returns_to_initial_state ... ok
+[LeakM1 large 96x60] turn=200 buffer=9552 texture=25 pipeline=3 bind_group=1579 live_bytes=33000448 subscriptions=1 created=16718 destroyed=5559
+[LeakM1 large 96x60] turn 50 violations: live buffer: baseline=714 current=2502 allowed=714; live bind_group: baseline=106 current=404 allowed=106; live bytes: baseline=7547008 current=12696448 allowed=7547008
+[LeakM1 large 96x60] turn 200 violations: live buffer: baseline=714 current=9552 allowed=714; live bind_group: baseline=106 current=1579 allowed=106; live bytes: baseline=7547008 current=33000448 allowed=7547008
+[LeakM2 large 96x60] turn= 10 buffer=148 texture=265 pipeline=3 bind_group=27 live_bytes=9737216 subscriptions=1 created=637 destroyed=194
+[LeakM2 large 96x60] turn= 50 buffer=148 texture=1224 pipeline=3 bind_group=27 live_bytes=25449472 subscriptions=1 created=2336 destroyed=934
+[LeakM2 large 96x60] turn=200 buffer=148 texture=4815 pipeline=3 bind_group=27 live_bytes=84284416 subscriptions=1 created=8817 destroyed=3824
+[LeakM2 large 96x60] turn 50 violations: live texture: baseline=265 current=1224 allowed=265; live bytes: baseline=9737216 current=25449472 allowed=9737216
+[LeakM2 large 96x60] turn 200 violations: live texture: baseline=265 current=4815 allowed=265; live bytes: baseline=9737216 current=84284416 allowed=9737216
+[LeakM3 large 96x60] turn= 10 buffer=180 texture=27 pipeline=3 bind_group=29 live_bytes=7967744 subscriptions=5 created=637 destroyed=398
+[LeakM3 large 96x60] turn= 50 buffer=308 texture=35 pipeline=3 bind_group=37 live_bytes=16618496 subscriptions=21 created=2337 destroyed=1954
+[LeakM3 large 96x60] turn=200 buffer=788 texture=65 pipeline=3 bind_group=67 live_bytes=49058816 subscriptions=81 created=8826 destroyed=7903
+[LeakM3 large 96x60] turn 50 violations: live buffer: baseline=180 current=308 allowed=180; live texture: baseline=27 current=35 allowed=27; live bind_group: baseline=29 current=37 allowed=29; live bytes: baseline=7967744 current=16618496 allowed=7967744; subscriptions: baseline=5 current=21 allowed=5
+[LeakM3 large 96x60] turn 200 violations: live buffer: baseline=180 current=788 allowed=180; live texture: baseline=27 current=65 allowed=27; live bind_group: baseline=29 current=67 allowed=29; live bytes: baseline=7967744 current=49058816 allowed=7967744; subscriptions: baseline=5 current=81 allowed=5
+test each_leak_pattern_breaks_the_budget ... ok
+
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.11s
+
+     Running tests/assets_registry.rs (/home/user/cargo-target-shared/wf_d19f2ede-7f8-3-mut/debug/deps/assets_registry-ee54812c049c2745)
+
+running 14 tests
+test budget_thresholds_are_configurable ... ok
+test cache_end_of_turn_trims_only_unreferenced_entries ... ok
+test handle_from_another_registry_is_rejected ... ok
+test drop_and_clone_inside_with_are_deferred_not_panicking ... ok
+test cache_lru_by_entries_and_bytes ... ok
+test live_report_lists_labels ... ok
+test owned_guards_count_references ... ok
+test owned_replace_creates_new_before_freeing_old_and_keeps_shared_old ... ok
+test reference_counting_frees_on_last_release ... ok
+test stale_handle_is_an_error_not_a_panic ... ok
+test scope_releases_everything_it_created_on_drop ... ok
+test subscription_dropped_inside_callback_is_removed_after_emit ... ok
+test subscriptions_unregister_on_drop ... ok
+test registry_replace_creates_new_before_freeing_old ... FAILED
+
+failures:
+
+---- registry_replace_creates_new_before_freeing_old stdout ----
+
+thread 'registry_replace_creates_new_before_freeing_old' (28213) panicked at tests/assets_registry.rs:116:5:
+assertion `left == right` failed: new must be inserted while old is still live
+  left: 1
+ right: 2
+stack backtrace:
+   0: __rustc::rust_begin_unwind
+   1: core::panicking::panic_fmt
+   2: core::panicking::assert_failed_inner
+   3: core::panicking::assert_failed::<u64, u64>
+   4: assets_registry::registry_replace_creates_new_before_freeing_old
+   5: assets_registry::registry_replace_creates_new_before_freeing_old::{closure#0}
+   6: <assets_registry::registry_replace_creates_new_before_freeing_old::{closure#0} as core::ops::function::FnOnce<()>>::call_once
+note: Some details are omitted, run with `RUST_BACKTRACE=full` for a verbose backtrace.
+
+
+failures:
+    registry_replace_creates_new_before_freeing_old
+
+test result: FAILED. 13 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.08s
+
+error: test failed, to rerun pass `--test assets_registry`
+EXIT=101
+```
+
+E2.log (pełny, przebieg w czystym katalogu targetu):
+
+```text
+   Compiling pollster v0.4.0
+   Compiling civ-renderer v0.1.0 (/tmp/claude-0/-home-user-The-Game/cbf4a126-dca3-5f50-bfb0-2a747b18a590/scratchpad/p49-r2-mut/E2)
+    Finished `test` profile [unoptimized] target(s) in 0.94s
+     Running unittests src/lib.rs (/home/user/cargo-target-shared/wf_d19f2ede-7f8-3-mutE2/debug/deps/civ_renderer-d95024f3ec20cfd9)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/assets_nturns.rs (/home/user/cargo-target-shared/wf_d19f2ede-7f8-3-mutE2/debug/deps/assets_nturns-7ff94d6b0438d2d1)
+
+running 6 tests
+[LeakM1 small 40x25] turn= 10 buffer=164 texture=7 pipeline=3 bind_group=27 live_bytes=4953088 subscriptions=1 created=299 destroyed=98
+[Fixed small 40x25] turn= 10 buffer=36 texture=7 pipeline=3 bind_group=9 live_bytes=4560128 subscriptions=1 created=187 destroyed=132
+[Fixed small 40x25] turn= 10 buffer=36 texture=7 pipeline=3 bind_group=9 live_bytes=4560128 subscriptions=1 created=187 destroyed=132
+[Fixed small 40x25] turn= 50 buffer=36 texture=7 pipeline=3 bind_group=9 live_bytes=4560128 subscriptions=1 created=712 destroyed=657
+[LeakM1 small 40x25] turn= 50 buffer=590 texture=7 pipeline=3 bind_group=98 live_bytes=6179968 subscriptions=1 created=1187 destroyed=489
+[Fixed small 40x25] turn= 50 buffer=36 texture=7 pipeline=3 bind_group=9 live_bytes=4560128 subscriptions=1 created=712 destroyed=657
+[Fixed small 40x25] turn=200 buffer=36 texture=7 pipeline=3 bind_group=9 live_bytes=4560128 subscriptions=1 created=2760 destroyed=2705
+[LeakM3 small 40x25] turn= 10 buffer=68 texture=9 pipeline=3 bind_group=11 live_bytes=6722816 subscriptions=5 created=187 destroyed=96
+[LeakM1 small 40x25] turn=200 buffer=2414 texture=7 pipeline=3 bind_group=402 live_bytes=11433088 subscriptions=1 created=4785 destroyed=1959
+[LeakM1 small 40x25] turn 50 violations: live buffer: baseline=164 current=590 allowed=164; live bind_group: baseline=27 current=98 allowed=27; live bytes: baseline=4953088 current=6179968 allowed=4953088
+[LeakM1 small 40x25] turn 200 violations: live buffer: baseline=164 current=2414 allowed=164; live bind_group: baseline=27 current=402 allowed=27; live bytes: baseline=4953088 current=11433088 allowed=4953088
+[LeakM3 small 40x25] turn= 50 buffer=196 texture=17 pipeline=3 bind_group=19 live_bytes=15373568 subscriptions=21 created=712 destroyed=477
+[LeakM2 small 40x25] turn= 10 buffer=36 texture=67 pipeline=3 bind_group=9 live_bytes=5543168 subscriptions=1 created=187 destroyed=72
+[new game] after dropping game 1: live=0 live_bytes=0 fake_gpu_live=0
+[LeakM2 small 40x25] turn= 50 buffer=36 texture=306 pipeline=3 bind_group=9 live_bytes=9458944 subscriptions=1 created=712 destroyed=358
+[Fixed small 40x25] turn=200 buffer=36 texture=7 pipeline=3 bind_group=9 live_bytes=4560128 subscriptions=1 created=2760 destroyed=2705
+[Fixed small 40x25] budget OK at turns [50, 200]
+test new_game_frees_everything_and_restarts_identically ... ok
+[Fixed large 96x60] turn= 10 buffer=148 texture=25 pipeline=3 bind_group=27 live_bytes=5805056 subscriptions=1 created=637 destroyed=434
+[LeakM2 small 40x25] turn=200 buffer=36 texture=1206 pipeline=3 bind_group=9 live_bytes=24204544 subscriptions=1 created=2760 destroyed=1506
+[LeakM2 small 40x25] turn 50 violations: live texture: baseline=67 current=306 allowed=67; live bytes: baseline=5543168 current=9458944 allowed=5543168
+[LeakM2 small 40x25] turn 200 violations: live texture: baseline=67 current=1206 allowed=67; live bytes: baseline=5543168 current=24204544 allowed=5543168
+[LeakM3 small 40x25] turn=200 buffer=676 texture=47 pipeline=3 bind_group=49 live_bytes=47813888 subscriptions=81 created=2760 destroyed=1985
+[LeakM3 small 40x25] turn= 10 buffer=68 texture=9 pipeline=3 bind_group=11 live_bytes=6722816 subscriptions=5 created=187 destroyed=96
+test leak_m3_also_retains_battle_scene_resources ... ok
+[Fixed small 40x25] turn= 10 buffer=36 texture=7 pipeline=3 bind_group=9 live_bytes=4560128 subscriptions=1 created=187 destroyed=132
+[LeakM3 small 40x25] turn= 50 buffer=196 texture=17 pipeline=3 bind_group=19 live_bytes=15373568 subscriptions=21 created=712 destroyed=477
+[Fixed small 40x25] turn= 50 buffer=36 texture=7 pipeline=3 bind_group=9 live_bytes=4560128 subscriptions=1 created=712 destroyed=657
+[Fixed large 96x60] turn= 50 buffer=148 texture=25 pipeline=3 bind_group=27 live_bytes=5805056 subscriptions=1 created=2337 destroyed=2134
+[LeakM3 small 40x25] turn=200 buffer=676 texture=47 pipeline=3 bind_group=49 live_bytes=47813888 subscriptions=81 created=2760 destroyed=1985
+[LeakM3 small 40x25] turn 50 violations: live buffer: baseline=68 current=196 allowed=68; live texture: baseline=9 current=17 allowed=9; live bind_group: baseline=11 current=19 allowed=11; live bytes: baseline=6722816 current=15373568 allowed=6722816; subscriptions: baseline=5 current=21 allowed=5
+[LeakM3 small 40x25] turn 200 violations: live buffer: baseline=68 current=676 allowed=68; live texture: baseline=9 current=47 allowed=9; live bind_group: baseline=11 current=49 allowed=11; live bytes: baseline=6722816 current=47813888 allowed=6722816; subscriptions: baseline=5 current=81 allowed=5
+[Fixed small 40x25] turn=200 buffer=36 texture=7 pipeline=3 bind_group=9 live_bytes=4560128 subscriptions=1 created=2760 destroyed=2705
+[Fixed small 40x25] turn= 10 buffer=36 texture=7 pipeline=3 bind_group=9 live_bytes=4560128 subscriptions=1 created=187 destroyed=132
+[LeakM1 large 96x60] turn= 10 buffer=714 texture=25 pipeline=3 bind_group=106 live_bytes=7547008 subscriptions=1 created=1126 destroyed=278
+[Fixed small 40x25] turn= 50 buffer=36 texture=7 pipeline=3 bind_group=9 live_bytes=4560128 subscriptions=1 created=712 destroyed=657
+[Fixed small 40x25] turn=200 buffer=36 texture=7 pipeline=3 bind_group=9 live_bytes=4560128 subscriptions=1 created=2760 destroyed=2705
+[LeakM1 small 40x25] turn= 10 buffer=164 texture=7 pipeline=3 bind_group=27 live_bytes=4953088 subscriptions=1 created=299 destroyed=98
+[LeakM1 large 96x60] turn= 50 buffer=2502 texture=25 pipeline=3 bind_group=404 live_bytes=12696448 subscriptions=1 created=4324 destroyed=1390
+[LeakM1 small 40x25] turn= 50 buffer=590 texture=7 pipeline=3 bind_group=98 live_bytes=6179968 subscriptions=1 created=1187 destroyed=489
+[LeakM1 small 40x25] turn=200 buffer=2414 texture=7 pipeline=3 bind_group=402 live_bytes=11433088 subscriptions=1 created=4785 destroyed=1959
+[LeakM1 small 40x25] turn= 10 buffer=164 texture=7 pipeline=3 bind_group=27 live_bytes=4953088 subscriptions=1 created=299 destroyed=98
+[LeakM1 small 40x25] turn= 50 buffer=590 texture=7 pipeline=3 bind_group=98 live_bytes=6179968 subscriptions=1 created=1187 destroyed=489
+[LeakM1 small 40x25] turn=200 buffer=2414 texture=7 pipeline=3 bind_group=402 live_bytes=11433088 subscriptions=1 created=4785 destroyed=1959
+test simulation_is_deterministic ... ok
+[Fixed large 96x60] turn=200 buffer=148 texture=25 pipeline=3 bind_group=27 live_bytes=5805056 subscriptions=1 created=8826 destroyed=8623
+[Fixed large 96x60] budget OK at turns [50, 200]
+test fixed_registry_stays_within_budget_after_10_50_200_turns ... ok
+[LeakM1 large 96x60] turn=200 buffer=9552 texture=25 pipeline=3 bind_group=1579 live_bytes=33000448 subscriptions=1 created=16718 destroyed=5559
+[LeakM1 large 96x60] turn 50 violations: live buffer: baseline=714 current=2502 allowed=714; live bind_group: baseline=106 current=404 allowed=106; live bytes: baseline=7547008 current=12696448 allowed=7547008
+[LeakM1 large 96x60] turn 200 violations: live buffer: baseline=714 current=9552 allowed=714; live bind_group: baseline=106 current=1579 allowed=106; live bytes: baseline=7547008 current=33000448 allowed=7547008
+[LeakM2 large 96x60] turn= 10 buffer=148 texture=265 pipeline=3 bind_group=27 live_bytes=9737216 subscriptions=1 created=637 destroyed=194
+[LeakM2 large 96x60] turn= 50 buffer=148 texture=1224 pipeline=3 bind_group=27 live_bytes=25449472 subscriptions=1 created=2336 destroyed=934
+[LeakM2 large 96x60] turn=200 buffer=148 texture=4815 pipeline=3 bind_group=27 live_bytes=84284416 subscriptions=1 created=8817 destroyed=3824
+[LeakM2 large 96x60] turn 50 violations: live texture: baseline=265 current=1224 allowed=265; live bytes: baseline=9737216 current=25449472 allowed=9737216
+[LeakM2 large 96x60] turn 200 violations: live texture: baseline=265 current=4815 allowed=265; live bytes: baseline=9737216 current=84284416 allowed=9737216
+[LeakM3 large 96x60] turn= 10 buffer=180 texture=27 pipeline=3 bind_group=29 live_bytes=7967744 subscriptions=5 created=637 destroyed=398
+[LeakM3 large 96x60] turn= 50 buffer=308 texture=35 pipeline=3 bind_group=37 live_bytes=16618496 subscriptions=21 created=2337 destroyed=1954
+[rebuild 1000 cycles] start: turn=  0 buffer=36 texture=7 pipeline=3 bind_group=9 live_bytes=4560128 subscriptions=1 created=55 destroyed=0
+[rebuild 1000 cycles] end:   turn=  0 buffer=36 texture=7 pipeline=3 bind_group=9 live_bytes=4560128 subscriptions=1 created=55055 destroyed=55000
+test rebuild_in_place_1000_cycles_returns_to_initial_state ... ok
+[LeakM3 large 96x60] turn=200 buffer=788 texture=65 pipeline=3 bind_group=67 live_bytes=49058816 subscriptions=81 created=8826 destroyed=7903
+[LeakM3 large 96x60] turn 50 violations: live buffer: baseline=180 current=308 allowed=180; live texture: baseline=27 current=35 allowed=27; live bind_group: baseline=29 current=37 allowed=29; live bytes: baseline=7967744 current=16618496 allowed=7967744; subscriptions: baseline=5 current=21 allowed=5
+[LeakM3 large 96x60] turn 200 violations: live buffer: baseline=180 current=788 allowed=180; live texture: baseline=27 current=65 allowed=27; live bind_group: baseline=29 current=67 allowed=29; live bytes: baseline=7967744 current=49058816 allowed=7967744; subscriptions: baseline=5 current=81 allowed=5
+test each_leak_pattern_breaks_the_budget ... ok
+
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.07s
+
+     Running tests/assets_registry.rs (/home/user/cargo-target-shared/wf_d19f2ede-7f8-3-mutE2/debug/deps/assets_registry-ee54812c049c2745)
+
+running 14 tests
+test budget_thresholds_are_configurable ... ok
+test cache_end_of_turn_trims_only_unreferenced_entries ... ok
+test cache_lru_by_entries_and_bytes ... ok
+test drop_and_clone_inside_with_are_deferred_not_panicking ... ok
+test handle_from_another_registry_is_rejected ... ok
+test live_report_lists_labels ... ok
+test owned_guards_count_references ... ok
+test registry_replace_creates_new_before_freeing_old ... ok
+test reference_counting_frees_on_last_release ... ok
+test stale_handle_is_an_error_not_a_panic ... ok
+test scope_releases_everything_it_created_on_drop ... ok
+test subscription_dropped_inside_callback_is_removed_after_emit ... ok
+test subscriptions_unregister_on_drop ... ok
+test owned_replace_creates_new_before_freeing_old_and_keeps_shared_old ... FAILED
+
+failures:
+
+---- owned_replace_creates_new_before_freeing_old_and_keeps_shared_old stdout ----
+
+thread 'owned_replace_creates_new_before_freeing_old_and_keeps_shared_old' (28573) panicked at tests/assets_registry.rs:174:5:
+assertion `left == right` failed: new must be inserted while old is still live
+  left: 1
+ right: 2
+stack backtrace:
+   0: __rustc::rust_begin_unwind
+   1: core::panicking::panic_fmt
+   2: core::panicking::assert_failed_inner
+   3: core::panicking::assert_failed::<u64, u64>
+   4: assets_registry::owned_replace_creates_new_before_freeing_old_and_keeps_shared_old
+   5: assets_registry::owned_replace_creates_new_before_freeing_old_and_keeps_shared_old::{closure#0}
+   6: <assets_registry::owned_replace_creates_new_before_freeing_old_and_keeps_shared_old::{closure#0} as core::ops::function::FnOnce<()>>::call_once
+note: Some details are omitted, run with `RUST_BACKTRACE=full` for a verbose backtrace.
+
+
+failures:
+    owned_replace_creates_new_before_freeing_old_and_keeps_shared_old
+
+test result: FAILED. 13 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.08s
+
+error: test failed, to rerun pass `--test assets_registry`
+EXIT=101
+```
+
+Katalogi `/home/user/cargo-target-shared/wf_d19f2ede-7f8-3`, `…-mut`, `…-mutE2` usunięte po pomiarach.
 
 ## 7. Granice
 
