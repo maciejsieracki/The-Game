@@ -1,0 +1,36 @@
+id	zapytanie	trafienia	pierwsze_trafienie
+E-02	alliance ally sojusz	185	rust-port/engine/src/domain/ai_turn.rs:684:/// The output contract is intentionally a value object so callers 
+E-04	deposit zloz grant	118	rust-port/engine/src/domain/diplomacy.rs:1693:    #[serde(rename = "zloze", alias = "deposit")]
+E-05	pending negotiat	4	rust-port/engine/src/domain/diplomacy.rs:209:/// same rules without reading JSON or depending on the UI bundle
+E-06	counter negotiation offer_response	17	rust-port/engine/src/domain/combat.rs:3:/// A counter bonus supplied by the unit data for one opposing unit ty
+E-07	city_state annex absorb	32	rust-port/engine/src/domain/diplomacy.rs:247:    pub annexation_respect_threshold: f64,
+E-08	eliminated eliminat	0	brak
+E-10	border trespass	63	rust-port/engine/src/domain/diplomacy.rs:242:    pub common_border_trust_per_turn: f64,
+E-11	ai_trade handel	17	rust-port/engine/src/domain/diplomacy.rs:538:    #[serde(rename = "handel", alias = "trade")]
+E-12	audience	0	brak
+E-13	forced_war forced	0	brak
+E-14	first_contact discover	0	brak
+E-15	hot_seat inter_human	0	brak
+E-16	hot_seat handoff	3	rust-port/engine/src/domain/ai_turn.rs:1308:/// occupied field (attack/capture handoff); occupied intermediate
+E-17	revolt rebel	0	brak
+E-18	revolt rebel	0	brak
+E-19	production_queue queue	128	rust-port/engine/src/bridge.rs:4://! owns the map, entities, movement rules, and turn phase queue; the fronten
+E-20	captured capture	12	rust-port/engine/src/domain/ai_turn.rs:1142:    // An adjacent enemy city is a move command; the engine resolv
+E-21	plunder capital	20	rust-port/engine/src/domain/diplomacy.rs:2510:/// capital when present, otherwise its first city.
+E-23	army_food food	106	rust-port/engine/src/domain/ai_turn.rs:20:pub const DEFAULT_CITY_SCORE_FOOD: i32 = 3;
+E-24	completed built	57	rust-port/engine/src/bridge.rs:116:/// Stable, serializable error returned when the command cannot be complete
+E-25	wonder	3	rust-port/engine/src/domain/trade.rs:1451:    wonder_trade_bonus_for_owner: F,
+E-26	researched	4	rust-port/engine/src/domain/diplomacy.rs:2203:    #[serde(rename = "researchedByOwner", alias = "researched_by
+E-27	era	176	rust-port/engine/src/domain/ai_turn.rs:3://! The planner is deliberately an engine boundary: it reads an immut
+E-29	starv food_deficit	3	rust-port/engine/src/domain/city_growth.rs:30:/// Cities cannot starve below one citizen.
+E-30	siege	15	rust-port/engine/src/domain/combat.rs:105:    pub is_siege: bool,
+E-32	sentry	0	brak
+E-33	veteran	0	brak
+E-35	march	11	rust-port/engine/src/domain/diplomacy.rs:267:    pub military_march_min_respect: f64,
+E-38	ration	43	rust-port/engine/src/bridge.rs:293:/// Deterministic adapter used by bridge contract tests and shell integrati
+E-39	autosave	0	brak
+E-40	autosave fsa	0	brak
+E-42	raid sea	69	rust-port/engine/src/bridge.rs:180:/// Adapter seam used by the versioned dispatcher.
+E-46	factor	8	rust-port/engine/src/domain/combat.rs:239:pub fn morale_factor(morale: u32) -> f64 {
+E-47	credibil	21	rust-port/engine/src/domain/diplomacy.rs:291:    pub credibility_min_nap: f64,
+E-48	religion	13	rust-port/engine/src/domain/diplomacy.rs:240:    pub same_religion_trust_per_turn: f64,

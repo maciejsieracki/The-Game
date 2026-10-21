@@ -1,0 +1,301 @@
+linia	klasa	klasa_r2	id_wiersza	funkcja	tresc_skrot	przeglad_r3
+3997	W	W	-	purchaseRecruitmentUnit	showHintMessage('Jednostka morska wymaga dostępu do wody (morze lub rzeka)', 2800);	W: zakup/rekrutacja: komunikaty za ownerId===0 (sprawdzone); wywołania: updateHud/applyMenuParams (gracz) oraz runWorldEndTurn (AI, bez komunikatu)
+4005	W	W	-	purchaseRecruitmentUnit	showHintMessage('Za mało rekrutów (Manpower) w imperium', 2800);	W: zakup/rekrutacja: komunikaty za ownerId===0 (sprawdzone); wywołania: updateHud/applyMenuParams (gracz) oraz runWorldEndTurn (AI, bez komunikatu)
+4031	W	W	-	purchaseRecruitmentUnit	if (ownerId === 0) showHintMessage(recruitHint, 2800);	W: zakup/rekrutacja: komunikaty za ownerId===0 (sprawdzone); wywołania: updateHud/applyMenuParams (gracz) oraz runWorldEndTurn (AI, bez komunikatu)
+4041	W	W	-	purchaseRecruitmentUnit	showHintMessage(`Brakuje w magazynie: ${detail}`, 2800);	W: zakup/rekrutacja: komunikaty za ownerId===0 (sprawdzone); wywołania: updateHud/applyMenuParams (gracz) oraz runWorldEndTurn (AI, bez komunikatu)
+4053	W	W	-	purchaseRecruitmentUnit	showHintMessage('Za mało rekrutów (Manpower) w imperium', 2800);	W: zakup/rekrutacja: komunikaty za ownerId===0 (sprawdzone); wywołania: updateHud/applyMenuParams (gracz) oraz runWorldEndTurn (AI, bez komunikatu)
+4062	W	W	-	purchaseRecruitmentUnit	showHintMessage('Za mało rekrutów (Manpower) w imperium', 2800);	W: zakup/rekrutacja: komunikaty za ownerId===0 (sprawdzone); wywołania: updateHud/applyMenuParams (gracz) oraz runWorldEndTurn (AI, bez komunikatu)
+4068	W	W	-	purchaseRecruitmentUnit	showHintMessage('Za mało rekrutów (Manpower) w imperium', 2800);	W: zakup/rekrutacja: komunikaty za ownerId===0 (sprawdzone); wywołania: updateHud/applyMenuParams (gracz) oraz runWorldEndTurn (AI, bez komunikatu)
+4128	W	W	-	purchaseRecruitmentUnits	showHintMessage('Jednostka morska wymaga dostępu do wody (morze lub rzeka)', 2800);	W: zakup/rekrutacja wielu: komunikaty za ownerId===0 (sprawdzone); wywołanie: mountD1bHud (gracz)
+4136	W	W	-	purchaseRecruitmentUnits	if (ownerId === 0) showHintMessage(`Za mało złota na ${count} jedn. rekrutacji`, 2800);	W: zakup/rekrutacja wielu: komunikaty za ownerId===0 (sprawdzone); wywołanie: mountD1bHud (gracz)
+4154	W	W	-	purchaseRecruitmentUnits	showHintMessage(`Brakuje surowców dla ${count} jedn.${detail ? `: ${detail}` : ''}`, 2800	W: zakup/rekrutacja wielu: komunikaty za ownerId===0 (sprawdzone); wywołanie: mountD1bHud (gracz)
+4165	W	W	-	purchaseRecruitmentUnits	if (ownerId === 0) showHintMessage(`Za mało rekrutów (Manpower) na ${count} jedn.`, 2800	W: zakup/rekrutacja wielu: komunikaty za ownerId===0 (sprawdzone); wywołanie: mountD1bHud (gracz)
+4453	W	W	-	tryBeginWonderMapBuild	showHintMessage('Ten cud nie jest teraz dostępny', 3000);	W: budowa cudu w terenie (klik gracza)
+4457	W	W	-	tryBeginWonderMapBuild	showHintMessage('Masz już cud w budowie na mapie — dokończ go najpierw', 3500);	W: budowa cudu w terenie (klik gracza)
+4465	W	W	-	tryBeginWonderMapBuild	showHintMessage('Nie można tu postawić cudu (teren / terytorium / zajęte)', 3000);	W: budowa cudu w terenie (klik gracza)
+4470	W	W	-	tryBeginWonderMapBuild	showHintMessage(	W: budowa cudu w terenie (klik gracza)
+4484	W	W	-	tryBeginWonderMapBuild	showHintMessage(	W: budowa cudu w terenie (klik gracza)
+4489	H	H	E-25	tryBeginWonderMapBuild	showHintMessage(`Ukończono: <b>${w.nazwa}</b> @ ${q},${r}`, 4500);	H: wyjaśnione w sekcji 4
+4502	W	W	-	enqueueWonderForPlayer	showHintMessage('Brak miasta gracza — załóż stolicę, aby budować cuda', 3500);	W: kolejka cudu gracza (klik)
+4506	W	W	-	enqueueWonderForPlayer	showHintMessage('Ten cud nie jest teraz dostępny', 3000);	W: kolejka cudu gracza (klik)
+4514	W	W	-	enqueueWonderForPlayer	showHintMessage(	W: kolejka cudu gracza (klik)
+4522	W	W	-	enqueueWonderForPlayer	showHintMessage('Ten cud jest już w kolejce tego miasta', 3000);	W: kolejka cudu gracza (klik)
+4528	W	W	-	enqueueWonderForPlayer	showHintMessage(	W: kolejka cudu gracza (klik)
+4591	W	W	-	renderWondersPickerContent	showHintMessage('Otwórz 🔨 Budowa w terenie → wybierz cud → kliknij hex', 4000);	W: UI wyboru cudu
+5809	W	W	-	applyOkolicaTileAdjust	showHintMessage(msg[res.reason ?? ''] ?? 'Nie można zmienić przypisania pola.', 2800);	W: korekta okolicy (gracz)
+5821	W	W	-	enterOkolicaMapMode	showHintMessage(	W: tryb okolicy (gracz)
+6441	W	W	-	disbandPlayerUnit	showHintMessage(	W: rozwiązanie jednostki (gracz)
+6570	W	W	-	openUnitReplacePicker	showHintMessage('Zastąp: dostępne tylko na własnym terytorium.', 3000);	W: Zastąp (gracz)
+6574	W	W	-	openUnitReplacePicker	showHintMessage('Zastąp: już wykorzystano w tej turze.', 2500);	W: Zastąp (gracz)
+6579	W	W	-	openUnitReplacePicker	showHintMessage('Zastąp: brak dostępnych zamienników tego typu.', 2500);	W: Zastąp (gracz)
+6621	W	W	-	performUnitReplace	showHintMessage('Zastąp: brak Pieniądza na dopłatę (' + surcharge + ' 💰)', 3000);	W: Zastąp (gracz)
+6652	W	W	-	performUnitReplace	showHintMessage(	W: Zastąp (gracz)
+7291	W	W	-	extraCityPanelConfig	showHintMessage(	W: handlery kontrolek panelu miasta (klik gracza)
+7483	W	W	-	extraCityPanelConfig	showHintMessage(	W: handlery kontrolek panelu miasta (klik gracza)
+7505	W	W	-	extraCityPanelConfig	showHintMessage(	W: handlery kontrolek panelu miasta (klik gracza)
+7524	W	W	-	extraCityPanelConfig	showHintMessage(	W: handlery kontrolek panelu miasta (klik gracza)
+7596	W	W	-	extraCityPanelConfig	showHintMessage(	W: handlery kontrolek panelu miasta (klik gracza)
+7607	W	W	-	extraCityPanelConfig	showHintMessage(	W: handlery kontrolek panelu miasta (klik gracza)
+7633	W	W	-	extraCityPanelConfig	showHintMessage(`${city.name}: ręczna kolejka budowy (tylko to miasto)`, 2800);	W: handlery kontrolek panelu miasta (klik gracza)
+7648	W	W	-	extraCityPanelConfig	showHintMessage(	W: handlery kontrolek panelu miasta (klik gracza)
+7667	W	W	-	extraCityPanelConfig	showHintMessage(	W: handlery kontrolek panelu miasta (klik gracza)
+7688	W	W	-	extraCityPanelConfig	showHintMessage(`${city.name}: zapisano listę „${trimmed}”`, 2400);	W: handlery kontrolek panelu miasta (klik gracza)
+7700	W	W	-	extraCityPanelConfig	showHintMessage(	W: handlery kontrolek panelu miasta (klik gracza)
+7714	W	W	-	extraCityPanelConfig	showHintMessage(`Zmieniono nazwę listy na „${trimmed}”`, 2400);	W: handlery kontrolek panelu miasta (klik gracza)
+7722	W	W	-	extraCityPanelConfig	showHintMessage(`Usunięto listę „${removed?.nazwa ?? templateId}”`, 2400);	W: handlery kontrolek panelu miasta (klik gracza)
+7740	W	W	-	extraCityPanelConfig	showHintMessage(`Lista wgrana do wszystkich miast (${deduped.length} pozycji)`, 3200);	W: handlery kontrolek panelu miasta (klik gracza)
+7773	W	W	-	extraCityPanelConfig	showHintMessage(	W: handlery kontrolek panelu miasta (klik gracza)
+7792	W	W	-	extraCityPanelConfig	showHintMessage(	W: handlery kontrolek panelu miasta (klik gracza)
+8282	L	L	E-24	tryAutoEnqueueBuild	showHintMessage(`Lista ukończona — ${city.name}`, 3200);	L: komunikat wynikający z logiki (wiersz E-)
+9933	L	L	E-09	applyPnTrustForPair	showHintMessage('Dobra wola: +1 Zauf./turę × 3 (nadmiar ≥ 100 PW)', 3500);	L: komunikat wynikający z logiki (wiersz E-)
+10126	H	W	E-06	executeTechTradeDeal	onCancelled: (reason) => showHintMessage(reason, 3500),	onCancelled executeTechTradeDeal: wywoływane przez executePnDealTransfer <- applyProposalOutcome <- resolveNegotiationEntryAt (odpowiedź AI) oraz gracz
+10266	L	L	E-04	suspendZlozeOnWar	showHintMessage('Dostęp do złoża wygasł — wojna', 4000);	L: komunikat wynikający z logiki (wiersz E-)
+10606	H	W	E-01	playerDeclareWarOnOwner	showHintMessage('Traktat pokoju — nie możesz wypowiedzieć wojny: ' + civName, 4000);	playerDeclareWarOnOwner: wywoływane także z resolveNegotiationEntryAt :17152 (odpowiedź AI z warThreat)
+10616	H	W	E-01	playerDeclareWarOnOwner	showHintMessage('Nie możesz teraz wypowiedzieć wojny: ' + civName, 4000);	playerDeclareWarOnOwner: wywoływane także z resolveNegotiationEntryAt :17152 (odpowiedź AI z warThreat)
+10630	H	W	E-01	playerDeclareWarOnOwner	showHintMessage('\u2694 Wypowiedziałeś wojnę: ' + civName, 4500);	playerDeclareWarOnOwner: wywoływane także z resolveNegotiationEntryAt :17152 (odpowiedź AI z warThreat)
+10672	L	L	E-01	ownerDeclareWarOn	showHintMessage('\u2694 ' + ownerDiploLabel(attackerId) + ' wypowiada wojnę (ultimatum)',	L: komunikat wynikający z logiki (wiersz E-)
+10812	L	L	E-32	wakeSentryUnitsOnEnemyContact	showHintMessage(su.typeId + ' obudzony — wróg w polu widzenia!', 3000);	L: komunikat wynikający z logiki (wiersz E-)
+10847	H	W	E-59	applyCityVisitBonusesAlongPath	if (msg) showHintMessage(msg, 4500);	applyCityVisitBonusesAlongPath: wywołania z applyMarchSegmentInstant :25672, endActiveHumanTurn :35920, renderLoop :36328 (showPlayerHints=true) i z ruchu gracza
+10969	L	L	E-33	checkVeteranEnemyFirstEncounter	showHintMessage(veteranFirstEncounterHintHtml(), 6000);	L: komunikat wynikający z logiki (wiersz E-)
+10990	W	W	-	toggleDevFogFull	showHintMessage(	W: narzędzie dev (gracz)
+11004	W	W	-	toggleDevRevealAllLand	showHintMessage(	W: narzędzie dev (gracz)
+11351	K	K	-	switchActiveHuman	// dzisiejszym kodzie to własny `setTimeout` `showHintMessage()` (main.ts:13141+).	komentarz
+12129	W	W	-	promptMergeIfCoLocated	showHintMessage(	W: komunikaty w callbackach onMerge/onSeparate modalu scalania (wybór gracza)
+12204	W	W	-	promptMergeIfCoLocated	showHintMessage(	W: komunikaty w callbackach onMerge/onSeparate modalu scalania (wybór gracza)
+12215	W	W	-	promptMergeIfCoLocated	showHintMessage(	W: komunikaty w callbackach onMerge/onSeparate modalu scalania (wybór gracza)
+12291	W	W	-	openSplitPanelForSelected	showHintMessage('Brak wolnego heksu na rozdzielenie.', 3500);	W: panel rozdzielenia: klik gracza
+12371	W	W	-	openSplitPanelForSelected	showHintMessage(	W: panel rozdzielenia: klik gracza
+12430	W	W	-	openMergePanelForSelected	showHintMessage(	W: panel scalania: klik gracza
+12449	W	W	-	openMergePanelForSelected	showHintMessage(	W: panel scalania: klik gracza
+12495	W	W	-	openMergePanelForSelected	showHintMessage(	W: panel scalania: klik gracza
+12512	W	W	-	openMergePanelForSelected	showHintMessage(	W: panel scalania: klik gracza
+13486	W	W	-	beginOnboardingFoundCity	showHintMessage(	W: onboarding (gracz)
+13509	W	W	-	handleFoundCityMapClick	showHintMessage('Nie można założyć: ' + fc.reason, 2500);	W: klik założenia miasta (gracz)
+13516	W	W	-	tryFoundPlayerCityAt	showHintMessage('Nie można założyć: ' + res.reason, 3000);	W: założenie miasta: wywołania klik gracza
+13524	W	W	-	tryFoundPlayerCityAt	showHintMessage(aff.reason ?? 'Nie stać', 3000);	W: założenie miasta: wywołania klik gracza
+13542	W	W	-	tryFoundPlayerCityAt	showHintMessage('Nie udało się założyć miasta (hex zablokowany)', 3000);	W: założenie miasta: wywołania klik gracza
+13579	W	W	-	tryFoundPlayerCityAt	showHintMessage(	W: założenie miasta: wywołania klik gracza
+13649	W	W	-	undoPendingBuildRequest	showHintMessage('Cofnięto — Praca zwrócona (' + pending.kosztPraca + ')', 2500);	W: cofnięcie budowy (gracz)
+13651	W	W	-	undoPendingBuildRequest	showHintMessage('Cofnięto — ulepszenie już nie istnieje, Praca nie została zwrócona'	W: cofnięcie budowy (gracz)
+13662	W	W	-	showBuildTerritoryBlockedHint	showHintMessage('Tylko w swoim terytorium — ten heks należy do innego państwa', 3000);	W: komunikat po kliku gracza w terytorium
+13664	W	W	-	showBuildTerritoryBlockedHint	showHintMessage('Poza terytorium — rozszerz okolicę miasta', 3000);	W: komunikat po kliku gracza w terytorium
+13716	W	W	-	applyBuildRequest	showHintMessage(	W: budowa gracza: wywołania UI (onSelect :13392, API :23652); w EOT tylko komentarze
+13736	W	W	-	applyBuildRequest	showHintMessage(	W: budowa gracza: wywołania UI (onSelect :13392, API :23652); w EOT tylko komentarze
+13748	W	W	-	applyBuildRequest	showHintMessage('Wymaga technologii', 2500);	W: budowa gracza: wywołania UI (onSelect :13392, API :23652); w EOT tylko komentarze
+13752	W	W	-	applyBuildRequest	showHintMessage('To ulepszenie niedostępne dla twojej cywilizacji', 2500);	W: budowa gracza: wywołania UI (onSelect :13392, API :23652); w EOT tylko komentarze
+13760	W	W	-	applyBuildRequest	showHintMessage(	W: budowa gracza: wywołania UI (onSelect :13392, API :23652); w EOT tylko komentarze
+13771	W	W	-	applyBuildRequest	showHintMessage(getImprovementForestBlockHint(req.key), 4000);	W: budowa gracza: wywołania UI (onSelect :13392, API :23652); w EOT tylko komentarze
+13799	W	W	-	commitBuildRequest	showHintMessage(	W: zatwierdzenie budowy (gracz)
+13818	W	W	-	commitBuildRequest	showHintMessage(	W: zatwierdzenie budowy (gracz)
+13863	W	W	-	commitBuildRequest	showHintMessage('Postawiono: ' + req.key + ' · klik ponownie w turze = cofnij', 2500);	W: zatwierdzenie budowy (gracz)
+14301	D	D	-	showHintMessage	function showHintMessage(	definicja showHintMessage
+14357	K	K	-	notifyPlayerEraChangeIfAdvanced	// P-EPOKA-TOAST-EOT-POLYKANY: podczas endTurnInProgress showHintMessage() i tak	komentarz
+14362	K	K	-	notifyPlayerEraChangeIfAdvanced	// fazą EOT) zachowanie bez zmian — showHintMessage() od razu.	komentarz
+14366	L	L	E-27	notifyPlayerEraChangeIfAdvanced	showHintMessage(toastHtml, ERA_CHANGE_NOTIFY.toastDurationMs);	L: komunikat wynikający z logiki (wiersz E-)
+14408	L	L	E-27	flushPendingEraChangeToast	showHintMessage(msg, durationMs);	L: komunikat wynikający z logiki (wiersz E-)
+14417	L	L	E-23	maybeHintArmyFoodOnFirstPlayerUnit	showHintMessage(	L: komunikat wynikający z logiki (wiersz E-)
+14628	L	L	E-30	handleSiegeCapitulationPhase	showHintMessage(	L: komunikat wynikający z logiki (wiersz E-)
+14814	L	L	E-30	resolveSiegeSurrender	showHintMessage(capitulationMsg, captureOutcome ? 6000 : 5500, { cityId: city.id, ownerId:	L: komunikat wynikający z logiki (wiersz E-)
+14816	L	L	E-30	resolveSiegeSurrender	showHintMessage(city.name + ': głód — oblężenie zakończone bez przejęcia.', 4500);	L: komunikat wynikający z logiki (wiersz E-)
+14866	L	L	E-30	commitBesiege	showHintMessage(city.name + ': brak wojsk przy murze — oblężenie zniesione.', 4000);	L: komunikat wynikający z logiki (wiersz E-)
+14885	W	W	-	commitBesiege	showHintMessage(	W: oblężenie zatwierdzone przez gracza
+14906	W	W	-	commitBesiege	showHintMessage('Odwrót — oblężenie zakończone.', 3000);	W: oblężenie zatwierdzone przez gracza
+14912	W	W	-	commitBesiege	showHintMessage('Kolejka machin: +' + (kind === 'taran' ? 'Taran' : 'Wieża'), 2500);	W: oblężenie zatwierdzone przez gracza
+14915	W	W	-	commitBesiege	showHintMessage('Kolejka machin pełna (max 4)', 2500);	W: oblężenie zatwierdzone przez gracza
+14922	H	W	E-30	startMapSiege	showHintMessage('Miasto bez muru — użyj preBattle (potyczka), nie oblężenia.', 4000);	startMapSiege: wywoływane z scanAutoSiegesAfterAiTurn :14997 (automat po turze AI, city.ownerId===0, guard maMur) i z gracza (offerCityAttackChoice :15036)
+14940	W	W	-	startMapSiege	showHintMessage(	W: oblężenie: komunikat :14940 tylko gdy oblegajacyOwnerId===0 (gracz); :14922 przeniesione do H
+14964	L	L	E-30	validateActiveSieges	showHintMessage(city.name + ': oblężenie zniesione — brak wojsk przy murach.', 4500);	L: komunikat wynikający z logiki (wiersz E-)
+15524	L	L	E-36	reportTradeRouteEvents	showHintMessage('\u{1F9ED} Nowy szlak handlowy: ' + summary, 4500);	L: komunikat wynikający z logiki (wiersz E-)
+15572	L	L	E-37	reportTradeRouteEvents	showHintMessage('⛓️ Szlak handlowy zerwany: ' + summary, 4500);	L: komunikat wynikający z logiki (wiersz E-)
+17008	L	L	E-06	pruneInvalidNegotiations	showHintMessage(DIPLOMACY_MSG_PREFIX + ' propozycja wygasła — ' + (validity.reason ?? '	L: komunikat wynikający z logiki (wiersz E-)
+17127	L	L	E-06	resolveNegotiationEntryAt	showHintMessage(DIPLOMACY_MSG_PREFIX + ' propozycja wygasła — ' + (validity.reason ?? '	L: komunikat wynikający z logiki (wiersz E-)
+17141	L	L	E-06	resolveNegotiationEntryAt	showHintMessage(ownerDiploLabel(awaitingId) + ' odrzuca propozycję — brak zasobów na k	L: komunikat wynikający z logiki (wiersz E-)
+17145	L	L	E-06	resolveNegotiationEntryAt	showHintMessage(ownerDiploLabel(awaitingId) + ' składa kontrofertę: ' + outcome.note, 45	L: komunikat wynikający z logiki (wiersz E-)
+17177	L	L	E-06	resolveNegotiationEntryAt	showHintMessage(	L: komunikat wynikający z logiki (wiersz E-)
+17245	L	L	E-06	handleNegotiationAccept	showHintMessage('Propozycja wygasła — ' + (validity.reason ?? ''), 4000);	L: komunikat wynikający z logiki (wiersz E-)
+17254	W	W	-	handleNegotiationAccept	showHintMessage('Nie można wysłać — ' + (aiPreview.reason ?? 'oferta nieuczciwa dla p	W: akceptacja pakietu przez gracza
+17262	W	W	-	handleNegotiationAccept	showHintMessage('Nie można przyjąć — ' + (preview.reason ?? 'warunki niespełnione'),	W: akceptacja pakietu przez gracza
+17286	W	W	-	handleNegotiationReject	showHintMessage('Wycofano propozycję z stołu', 3500);	W: odrzucenie pakietu przez gracza
+17320	W	W	-	handleNegotiationRemove	showHintMessage('Wycofano propozycję z stołu', 3500);	W: usunięcie pozycji przez gracza
+17322	W	W	-	handleNegotiationRemove	showHintMessage('Usunięto pozycję z pakietu na stole', 3000);	W: usunięcie pozycji przez gracza
+17416	W	W	-	handleNegotiationCounter	showHintMessage('Limit rund osiągnięty — możesz tylko przyjąć lub odrzucić', 3500)	W: kontroferta gracza (limit rund)
+17457	W	W	-	handleNegotiationEditOwn	showHintMessage('Brak wystarczających zasobów na tę ofertę', 3500);	W: edycja własnej oferty (gracz)
+17799	L	L	E-05	enqueueDiplomacyPending	showHintMessage(DIPLOMACY_MSG_PREFIX + ' ' + ownerDiploLabel(ownerId) + ' — ' + diploPen	L: komunikat wynikający z logiki (wiersz E-)
+17816	W	W	-	resolvePendingDiplomacy	showHintMessage('Pokój z: ' + p.civName, 4000);	W: akceptacja/odrzucenie propozycji przez gracza (handler karty)
+17842	W	W	-	resolvePendingDiplomacy	if (result.accepted) showHintMessage('Przyjęto: ' + p.civName, 3500);	W: akceptacja/odrzucenie propozycji przez gracza (handler karty)
+17844	W	W	-	resolvePendingDiplomacy	showHintMessage('Zaakceptowano: ' + p.civName, 3500);	W: akceptacja/odrzucenie propozycji przez gracza (handler karty)
+17861	W	W	-	resolvePendingDiplomacy	showHintMessage('Odrzucono: ' + p.civName, 3000);	W: akceptacja/odrzucenie propozycji przez gracza (handler karty)
+19199	W	W	-	breakTreatyVoluntarily	showHintMessage('Zerwano traktat: ' + treatyDisplayLabel(deal.rodzaj) + ' — ' + ownerDip	W: zerwanie traktatu przez gracza
+19650	L	L	E-11	applyAiAiHandelSurowiecCmd	showHintMessage(`${labelA} handluje z ${labelB}`, 4000);	L: komunikat wynikający z logiki (wiersz E-)
+19688	L	L	E-12	applyAiAudienceRequest	showHintMessage(	L: komunikat wynikający z logiki (wiersz E-)
+20026	L	L	E-02	finalizeAllianceObligationRefusals	showHintMessage(	L: komunikat wynikający z logiki (wiersz E-)
+20058	L	L	E-02	applyAllianceObligationsOnWar	showHintMessage(	L: komunikat wynikający z logiki (wiersz E-)
+20072	L	L	E-02	applyAllianceObligationsOnWar	showHintMessage(	L: komunikat wynikający z logiki (wiersz E-)
+20077	L	L	E-02	applyAllianceObligationsOnWar	showHintMessage(	L: komunikat wynikający z logiki (wiersz E-)
+20118	W	W	-	applyAllianceObligationsOnWar	showHintMessage(	W: hint po kliknięciu potwierdzenia (processPlayerQueue.onFulfill); kolejkę tworzy logika, komunikat na klik gracza
+20418	L	L	E-03	runDiplomacyTurnTick	showHintMessage('Trybut zerwany — brak środków w skarbcu', 3500);	L: komunikat wynikający z logiki (wiersz E-)
+20420	L	L	E-03	runDiplomacyTurnTick	showHintMessage(	L: komunikat wynikający z logiki (wiersz E-)
+20430	L	L	E-03	runDiplomacyTurnTick	showHintMessage('Trybut zerwany — brak środków w skarbcu', 3500);	L: komunikat wynikający z logiki (wiersz E-)
+20648	L	L	E-07	applyProposalOutcome	showHintMessage('Miasto-państwo wchłonięte do imperium', 4000);	L: komunikat wynikający z logiki (wiersz E-)
+20715	H	W	E-06	applyProposalOutcome	showHintMessage('Zaufanie nie naliczone — brak pokrycia w zasobach', 3500);	applyProposalOutcome: wywoływane z resolveNegotiationEntryAt (odpowiedź AI) i z akceptacji gracza
+20767	H	W	E-06	applyProposalOutcome	showHintMessage('Zaufanie nie naliczone — brak pokrycia w zasobach', 3500);	applyProposalOutcome: wywoływane z resolveNegotiationEntryAt (odpowiedź AI) i z akceptacji gracza
+20774	H	W	E-06	applyProposalOutcome	showHintMessage('\u{1F54A} Pokój zawarty', 4000);	applyProposalOutcome: wywoływane z resolveNegotiationEntryAt (odpowiedź AI) i z akceptacji gracza
+21125	W	W	-	handleNegotiatedProposal	showHintMessage('Ta umowa jest już na stole — użyj Przyjmij w Punkty wymiany', 4000);	W: propozycja z koszyka (gracz)
+21135	W	W	-	handleNegotiatedProposal	showHintMessage('Propozycja na stole — użyj Przyjmij w Punkty wymiany', 4000);	W: propozycja z koszyka (gracz)
+21291	W	W	-	applyAudienceAction	showHintMessage('Propozycja pokoju — użyj koszyka na stole negocjacji', 3000);	W: akcja w oknie audiencji (klik gracza)
+21295	W	W	-	applyAudienceAction	showHintMessage(TRAKTAT_HANDLOWY_LABEL + ' — użyj przycisku na stole negocjacji', 3000)	W: akcja w oknie audiencji (klik gracza)
+21299	W	W	-	applyAudienceAction	showHintMessage('Umowa wymiany — użyj koszyka na stole negocjacji', 3000);	W: akcja w oknie audiencji (klik gracza)
+21302	W	W	-	applyAudienceAction	showHintMessage('Akcja dyplomatyczna (wkrótce): ' + civName, 3000);	W: akcja w oknie audiencji (klik gracza)
+21864	W	W	-	handleSelectedUnitHudAction	showHintMessage(	W: akcja przycisku jednostki (klik gracza)
+21876	W	W	-	handleSelectedUnitHudAction	showHintMessage('Usunięto punkt zbiórki.', 2200);	W: akcja przycisku jednostki (klik gracza)
+21903	W	W	-	handleSelectedUnitHudAction	showHintMessage(	W: akcja przycisku jednostki (klik gracza)
+21918	W	W	-	handleSelectedUnitHudAction	showHintMessage(	W: akcja przycisku jednostki (klik gracza)
+21931	W	W	-	handleSelectedUnitHudAction	showHintMessage(u.typeId + ' zdj\u0105\u0142 fortyfikacj\u0119 (obl\u0119\u017cenie trwa)'	W: akcja przycisku jednostki (klik gracza)
+21935	W	W	-	handleSelectedUnitHudAction	showHintMessage(u.typeId + ' ufortyfikowany w polu (obl\u0119\u017cenie trwa)', 2800);	W: akcja przycisku jednostki (klik gracza)
+21944	W	W	-	handleSelectedUnitHudAction	showHintMessage(u.typeId + ' zdj\u0105\u0142 fortyfikacj\u0119', 2000);	W: akcja przycisku jednostki (klik gracza)
+21966	W	W	-	handleSelectedUnitHudAction	showHintMessage(	W: akcja przycisku jednostki (klik gracza)
+21974	W	W	-	handleSelectedUnitHudAction	showHintMessage(u.typeId + ' ufortyfikowany w polu (ruch zu\u017cyty)', 2500);	W: akcja przycisku jednostki (klik gracza)
+21995	W	W	-	handleSelectedUnitHudAction	showHintMessage(u.typeId + ' czuwa (obudź ręcznie)', 2500);	W: akcja przycisku jednostki (klik gracza)
+21999	W	W	-	handleSelectedUnitHudAction	showHintMessage('Obudzono: ' + u.typeId, 2000);	W: akcja przycisku jednostki (klik gracza)
+22009	K	K	-	handleSelectedUnitHudAction	// (który Q1 dawało złotą ramką) dziś zapewnia showHintMessage() niżej (toastu	komentarz
+22027	W	W	-	handleSelectedUnitHudAction	showHintMessage(u.typeId + ' zwiedza map\u0119 \u2014 ruch na koniec tury', 2800);	W: akcja przycisku jednostki (klik gracza)
+22058	W	W	-	handleSelectedUnitHudAction	showHintMessage('Wy\u0142\u0105czono zwiedzanie', 2000);	W: akcja przycisku jednostki (klik gracza)
+22094	W	W	-	openSaveGameDialog	showHintMessage(`Gra zapisana: «${label}» (tura ${turn})`, 3500);	W: zapis z menu (gracz)
+22106	W	W	-	openSaveGameDialog	showHintMessage(	W: zapis z menu (gracz)
+22129	W	W	-	openLoadGameDialog	showHintMessage(	W: wczytanie z menu (gracz)
+22274	W	W	-	openStartupMainMenu	showHintMessage('Autozapis: co ' + Math.max(1, Math.round(turns)) + ' tur (10 ostatnich ws	W: menu startowe
+22698	W	W	-	mountD1bHud	showHintMessage('Ten cud nie jest teraz dostępny', 3000);	W: handlery kontrolek HUD (klik gracza)
+22703	W	W	-	mountD1bHud	showHintMessage('Masz już cud w budowie na mapie', 3500);	W: handlery kontrolek HUD (klik gracza)
+22708	W	W	-	mountD1bHud	showHintMessage('Brak heksów w twoim terytorium na cud', 3500);	W: handlery kontrolek HUD (klik gracza)
+22738	W	W	-	mountD1bHud	showHintMessage(`Państwo: auto ulepszenia · ${focus}`, 2800);	W: handlery kontrolek HUD (klik gracza)
+22745	W	W	-	mountD1bHud	showHintMessage(	W: handlery kontrolek HUD (klik gracza)
+22756	W	W	-	mountD1bHud	showHintMessage(	W: handlery kontrolek HUD (klik gracza)
+22771	W	W	-	mountD1bHud	showHintMessage(	W: handlery kontrolek HUD (klik gracza)
+22787	W	W	-	mountD1bHud	showHintMessage(`Państwo: auto ulepszenia · ${pol.pracaAutoPercent}% budżetu Pracy`, 28	W: handlery kontrolek HUD (klik gracza)
+22808	W	W	-	mountD1bHud	showHintMessage(	W: handlery kontrolek HUD (klik gracza)
+22827	W	W	-	mountD1bHud	showHintMessage(`${city.name}: auto ulepszenia · ${focus}`, 3200);	W: handlery kontrolek HUD (klik gracza)
+22835	W	W	-	mountD1bHud	showHintMessage(	W: handlery kontrolek HUD (klik gracza)
+22849	W	W	-	mountD1bHud	showHintMessage(	W: handlery kontrolek HUD (klik gracza)
+22865	W	W	-	mountD1bHud	showHintMessage(	W: handlery kontrolek HUD (klik gracza)
+22879	W	W	-	mountD1bHud	showHintMessage(	W: handlery kontrolek HUD (klik gracza)
+23116	W	W	-	mountD1bHud	showHintMessage('Auto-Żywienie włączone we wszystkich miastach bez indywidualnego ustaw	W: handlery kontrolek HUD (klik gracza)
+24646	K	K	-	updateHud	// (`focusCameraOnOwnerCapital`) woła `showHintMessage(...)` BEZWARUNKOWO -- zarówno	komentarz
+25315	W	W	-	planMarchTo	showHintMessage('Najpierw załóż pierwsze miasto (🔨 → Załóż miasto · B).', 3500	W: plan marszu z kliknięcia gracza (executeMarchSegmentForUnit: tylko komentarz)
+25319	W	W	-	planMarchTo	showHintMessage(	W: plan marszu z kliknięcia gracza (executeMarchSegmentForUnit: tylko komentarz)
+25331	W	W	-	planMarchTo	showHintMessage(	W: plan marszu z kliknięcia gracza (executeMarchSegmentForUnit: tylko komentarz)
+25348	W	W	-	planMarchTo	showHintMessage('Cel niewidoczny (mgła).', 3500);	W: plan marszu z kliknięcia gracza (executeMarchSegmentForUnit: tylko komentarz)
+25367	L	L	E-35	planMarchTo	showHintMessage('Marsz przerwany: brak trasy do celu', 3500);	L: komunikat wynikający z logiki (wiersz E-)
+25371	W	W	-	planMarchTo	showHintMessage(	W: plan marszu z kliknięcia gracza (executeMarchSegmentForUnit: tylko komentarz)
+25421	W	W	-	launchRallyPointForOwner	showHintMessage('Najpierw ustaw punkt zbiórki.', 2600);	W: przycisk zbiórki (gracz)
+25431	W	W	-	launchRallyPointForOwner	showHintMessage('Brak dostępnej trasy do punktu zbiórki.', 3200);	W: przycisk zbiórki (gracz)
+25434	W	W	-	launchRallyPointForOwner	showHintMessage(`Wysłano ${assigned.length} stosów na punkt (${point.q},${point.r}).`, 3	W: przycisk zbiórki (gracz)
+25444	W	W	-	setRallyPointFromMap	showHintMessage('Punkt zbiórki musi leżeć na przejezdnym lądzie.', 3000);	W: ustawienie punktu zbiórki (klik gracza)
+25448	W	W	-	setRallyPointFromMap	showHintMessage('Nie można ustawić punktu na obcym mieście.', 3000);	W: ustawienie punktu zbiórki (klik gracza)
+25453	W	W	-	setRallyPointFromMap	showHintMessage(`Punkt zbiórki ustawiony: (${q},${r}).`, 2800);	W: ustawienie punktu zbiórki (klik gracza)
+25523	L	L	E-35	finishMarchSegmentHints	showHintMessage('Dotarło do celu', 2800);	L: komunikat wynikający z logiki (wiersz E-)
+25528	L	L	E-35	finishMarchSegmentHints	showHintMessage(prefix + (stopDetail ?? stopReason), 3500);	L: komunikat wynikający z logiki (wiersz E-)
+25548	L	L	E-35	executeMarchSegmentForUnit	showHintMessage('Marsz przerwany: brak punktów ruchu', 3000);	L: komunikat wynikający z logiki (wiersz E-)
+25570	L	L	E-35	executeMarchSegmentForUnit	showHintMessage('Marsz przerwany: ' + (result.stopDetail ?? 'brak ruchu'), 3500);	L: komunikat wynikający z logiki (wiersz E-)
+25736	W	W	-	stopPlannedMarchForSelected	showHintMessage('Zatrzymano', 2200);	W: przycisk zatrzymania marszu (gracz)
+25747	H	W	E-20	finishUnitEnterCityHex	showHintMessage(	finishUnitEnterCityHex: wywoływane z refreshMapAfterCityCapture (applyMapBattleOutcome, captureCityWithoutBattle, finishSiegeStormBattle) i tryAutoCaptureEmptyCityAt; komunikat bez filtra właściciela
+25953	L	L	E-34	checkVillageRewardAt	showHintMessage(icon + ' ' + summary, 5000);	L: komunikat wynikający z logiki (wiersz E-)
+26039	W	W	-	beginMoveSelectedUnitTo	showHintMessage('Najpierw załóż pierwsze miasto (🔨 → Załóż miasto · B).', 3500	W: ruch wybranej jednostki gracza (klik mapy)
+26043	W	W	-	beginMoveSelectedUnitTo	showHintMessage(	W: ruch wybranej jednostki gracza (klik mapy)
+26054	W	W	-	beginMoveSelectedUnitTo	showHintMessage(	W: ruch wybranej jednostki gracza (klik mapy)
+26072	W	W	-	beginMoveSelectedUnitTo	showHintMessage(	W: ruch wybranej jednostki gracza (klik mapy)
+26143	W	W	-	beginMoveSelectedUnitTo	showHintMessage(ok ? 'Raport diagnostyczny skopiowany (Ctrl+Shift+D).' : 'Nie udało się 	W: ruch wybranej jednostki gracza (klik mapy)
+26372	W	W	-	beginMoveSelectedUnitTo	showHintMessage('Kliknij przejezdny heks, aby ustawić punkt zbiórki.', 3000);	W: ruch wybranej jednostki gracza (klik mapy)
+26376	W	W	-	beginMoveSelectedUnitTo	showHintMessage('Kliknij w heks lądu (podświetlony obszar startu)', 2500);	W: ruch wybranej jednostki gracza (klik mapy)
+26409	W	W	-	beginMoveSelectedUnitTo	showHintMessage(	W: ruch wybranej jednostki gracza (klik mapy)
+26463	W	W	-	beginMoveSelectedUnitTo	showHintMessage(	W: ruch wybranej jednostki gracza (klik mapy)
+26470	W	W	-	beginMoveSelectedUnitTo	showHintMessage('Wymaga technologii', 2500);	W: ruch wybranej jednostki gracza (klik mapy)
+26499	W	W	-	beginMoveSelectedUnitTo	else showHintMessage('Nie można założyć: ' + fc.reason, 2500);	W: ruch wybranej jednostki gracza (klik mapy)
+26501	W	W	-	beginMoveSelectedUnitTo	showHintMessage('Wybierz «Załóż miasto» lub ulepszenie w panelu 🔨', 2500);	W: ruch wybranej jednostki gracza (klik mapy)
+26541	W	W	-	beginMoveSelectedUnitTo	showHintMessage(action.cityName + ' — cel niewidoczny (mgła).', 3500);	W: ruch wybranej jednostki gracza (klik mapy)
+26544	W	W	-	beginMoveSelectedUnitTo	showHintMessage(	W: ruch wybranej jednostki gracza (klik mapy)
+26552	W	W	-	beginMoveSelectedUnitTo	showHintMessage(	W: ruch wybranej jednostki gracza (klik mapy)
+26558	W	W	-	beginMoveSelectedUnitTo	showHintMessage(	W: ruch wybranej jednostki gracza (klik mapy)
+26573	W	W	-	beginMoveSelectedUnitTo	showHintMessage(clickedCity.name + ' — brak trasy do miasta.', 3500);	W: ruch wybranej jednostki gracza (klik mapy)
+26600	W	W	-	beginMoveSelectedUnitTo	showHintMessage(clickedCity.name + ' — brak trasy do miasta.', 3500);	W: ruch wybranej jednostki gracza (klik mapy)
+26684	W	W	-	beginMoveSelectedUnitTo	showHintMessage('Brak ruchu — zakończ turę lub wybierz inną jednostkę.', 3500);	W: ruch wybranej jednostki gracza (klik mapy)
+26686	W	W	-	beginMoveSelectedUnitTo	showHintMessage('Cel niewidoczny (mgła).', 3500);	W: ruch wybranej jednostki gracza (klik mapy)
+26690	W	W	-	beginMoveSelectedUnitTo	showHintMessage('Brak trasy do wroga — cel zablokowany.', 3500);	W: ruch wybranej jednostki gracza (klik mapy)
+26694	W	W	-	beginMoveSelectedUnitTo	showHintMessage('Brak trasy do wroga — cel zablokowany.', 3500);	W: ruch wybranej jednostki gracza (klik mapy)
+27365	W	W	-	openPlayerMapUnitAttackCore	showHintMessage('Jednostka zaokrętowana nie może atakować — zejdź na ląd.', 3800);	W: atak gracza z wody (gracz)
+27457	H	H	E-31	doMapAutoResolve	showHintMessage('Atak: brak sił bojowych w składzie', 3000);	H: wyjaśnione w sekcji 4
+27690	L	L	E-31	applyMapBattleOutcomeWithSummary	showHintMessage('Łupy: ' + summaryData.lootNote, 4500);	L: komunikat wynikający z logiki (wiersz E-)
+28121	H	H	E-31	doMapAutoResolveIncoming	showHintMessage('Bitwa: brak sił bojowych w składzie', 3000);	H: wyjaśnione w sekcji 4
+28152	L	L	E-31	doMapAutoResolveIncoming	showHintMessage('Wróg atakuje twoje wojsko!', 5000);	L: komunikat wynikający z logiki (wiersz E-)
+28247	L	L	E-31	doMapAutoResolveIncoming	showHintMessage('Wycofano się z bitwy.', 3000);	L: komunikat wynikający z logiki (wiersz E-)
+28701	W	W	-	focusCameraOnOwnerCapital	showHintMessage('Brak stolicy na mapie — to państwo nie ma jeszcze miasta-stolicy.', 35	W: klik na stolicę (gracz)
+28706	L	L	E-21	focusCameraOnOwnerCapital	showHintMessage('Stolica niedostępna — miasto mogło zostać zdobyte lub zniszczone.', 	L: komunikat wynikający z logiki (wiersz E-)
+28712	W	W	-	focusCameraOnOwnerCapital	showHintMessage(`Stolica: ${city.name}`, 3500);	W: klik na stolicę (gracz)
+28738	W	W	-	trySetPlayerCapital	showHintMessage(	W: ustawienie stolicy (gracz)
+28746	W	W	-	trySetPlayerCapital	showHintMessage(`${target.name} — nowa stolica.`, 3500);	W: ustawienie stolicy (gracz)
+29132	L	L	E-21	runCapitalCapturePlunder	showHintMessage(	L: komunikat wynikający z logiki (wiersz E-)
+29209	L	L	E-21	runCapitalCapturePlunder	showHintMessage(	L: komunikat wynikający z logiki (wiersz E-)
+29289	K	K	-	runCapitalCapturePlunder	// zamiast showHintMessage() — dzielił jeden #hintToast/timer z komunikatem	komentarz
+29964	L	L	E-30	finishSiegeStormBattle	showHintMessage(szturmMsg, elimLabel ? 6000 : 5000);	L: komunikat wynikający z logiki (wiersz E-)
+29966	L	L	E-30	finishSiegeStormBattle	showHintMessage('Szturm odparty — oblężenie trwa.', 4500);	L: komunikat wynikający z logiki (wiersz E-)
+29974	L	L	E-30	finishSiegeStormBattle	showHintMessage('Szturm: remis — wojska odepchnięte od murów, oblężenie zniesione.',	L: komunikat wynikający z logiki (wiersz E-)
+30088	W	W	-	launchSiegeStormFromMap	showHintMessage(	W: szturm inicjowany przez gracza
+30098	W	W	-	launchSiegeStormFromMap	showHintMessage('Szturm: brak miasta lub jednostki atakującej na mapie.', 4000);	W: szturm inicjowany przez gracza
+30102	W	W	-	launchSiegeStormFromMap	showHintMessage('Miasto bez muru — użyj zwykłej potyczki, nie szturmu.', 4000);	W: szturm inicjowany przez gracza
+30217	H	H	E-31	doSiegeAutoResolve	showHintMessage('Szturm: brak sił bojowych w składzie', 3000);	H: wyjaśnione w sekcji 4
+30355	W	W	-	launchBigPresetBattle	showHintMessage('Duża bitwa: brak jednostek (sprawdź dane)', 4000);	W: handler/UI gracza (funkcja launchBigPresetBattle; kontekst linii sprawdzony w przeglądzie r3)
+30388	H	H	E-31	launchBigPresetBattle	showHintMessage('Duża bitwa — wynik: <b>' + wl + '</b>', 6000);	H: wyjaśnione w sekcji 4
+30711	W	W	-	doQuickSave	if (showHintOnSuccess) showHintMessage('Szybki zapis (tura ' + turn + ')', 3000);	W: szybki zapis: komunikat błędu tylko gdy showHintOnSuccess (wywołania klawisz Ctrl+S :36211 i przyciski menu)
+30714	W	W	-	doQuickSave	showHintMessage(	W: szybki zapis: komunikat błędu tylko gdy showHintOnSuccess (wywołania klawisz Ctrl+S :36211 i przyciski menu)
+30786	L	L	E-40	triggerFsaAutosaveBootstrap	showHintMessage(fsaUnavailableMessage(reason), 5000);	L: komunikat wynikający z logiki (wiersz E-)
+30836	L	L	E-39	doRotatingAutosave	showHintMessage('Autozapis nieudany (blad zapisu)', 3000);	L: komunikat wynikający z logiki (wiersz E-)
+30903	L	L	E-39	doRotatingAutosave	showHintMessage(	L: komunikat wynikający z logiki (wiersz E-)
+30912	L	L	E-39	doRotatingAutosave	showHintMessage('Autozapis nieudany (blad zapisu)', 3000);	L: komunikat wynikający z logiki (wiersz E-)
+30932	L	L	E-40	notifyFsaAutosaveDegraded	showHintMessage('Zapis na dysk przerwany (uprawnienie wygasło) — autozapis wraca do zap	L: komunikat wynikający z logiki (wiersz E-)
+31086	W	W	-	hintEndTurnBlocked	showHintMessage('Najpierw załóż pierwsze miasto (🔨 → Załóż miasto · B), potem 	W: odmowa zakończenia tury po próbie gracza (endActiveHumanTurn/advanceSeat = strażnik ponownego wejścia po kliknięciu)
+31097	W	W	-	hintEndTurnBlocked	showHintMessage('Zakończ ekran bitwy, potem zakończ turę.', 3500);	W: odmowa zakończenia tury po próbie gracza (endActiveHumanTurn/advanceSeat = strażnik ponownego wejścia po kliknięciu)
+31101	W	W	-	hintEndTurnBlocked	showHintMessage('Gra zakonczona. Kliknij "Nowa gra" by zagrac ponownie.', 3000);	W: odmowa zakończenia tury po próbie gracza (endActiveHumanTurn/advanceSeat = strażnik ponownego wejścia po kliknięciu)
+31105	W	W	-	hintEndTurnBlocked	showHintMessage('Trwa przejście tury — poczekaj chwilę.', 2500);	W: odmowa zakończenia tury po próbie gracza (endActiveHumanTurn/advanceSeat = strażnik ponownego wejścia po kliknięciu)
+31109	W	W	-	hintEndTurnBlocked	showHintMessage('Trwa tura AI — dokończ bitwę lub poczekaj.', 3500);	W: odmowa zakończenia tury po próbie gracza (endActiveHumanTurn/advanceSeat = strażnik ponownego wejścia po kliknięciu)
+31229	L	L	E-39	runWorldEndTurn	showHintMessage('Autozapis nieudany (blad zapisu)', 3000);	L: komunikat wynikający z logiki (wiersz E-)
+31650	L	L	E-29	runWorldEndTurn	showHintMessage(`Głód: utracono ${playerDestroyedCount} jednostek`, 3500);	L: komunikat wynikający z logiki (wiersz E-)
+31652	L	L	E-29	runWorldEndTurn	showHintMessage(`Głód wojska: −${Math.round(efParams.glodWojskaHpFrac * 100)}% max HP 	L: komunikat wynikający z logiki (wiersz E-)
+31662	L	L	E-56	runWorldEndTurn	showHintMessage(	L: komunikat wynikający z logiki (wiersz E-)
+31742	L	L	E-29	runWorldEndTurn	showHintMessage(	L: komunikat wynikający z logiki (wiersz E-)
+31790	L	L	E-22	runWorldEndTurn	showHintMessage('Wzrost populacji w ' + econ.growth + ' miastach', 2500);	L: komunikat wynikający z logiki (wiersz E-)
+31792	L	L	E-22	runWorldEndTurn	showHintMessage('Głód: spadek populacji w ' + econ.starved + ' miastach', 2500);	L: komunikat wynikający z logiki (wiersz E-)
+31997	K	K	-	runWorldEndTurn	// szedł WYŁĄCZNIE przez `showHintMessage()`, a ta — w fazie `endTurnInProgress`	komentarz
+32033	L	L	E-26	runWorldEndTurn	if (!shouldDeferEotEvents(endTurnInProgress)) showHintMessage(msg, 3500);	L: komunikat wynikający z logiki (wiersz E-)
+32150	L	L	E-28	runWorldEndTurn	showHintMessage(`Deficyt Złota: utracono ${gdPlayerDestroyedCount} jednostek`, 3500);	L: komunikat wynikający z logiki (wiersz E-)
+32152	L	L	E-28	runWorldEndTurn	showHintMessage(	L: komunikat wynikający z logiki (wiersz E-)
+32163	L	L	E-28	runWorldEndTurn	showHintMessage(	L: komunikat wynikający z logiki (wiersz E-)
+32517	L	L	E-18	runWorldEndTurn	showHintMessage(	L: komunikat wynikający z logiki (wiersz E-)
+33126	L	W	E-58	runWorldEndTurn	showHintMessage(`Auto ulepszenie: ${toastLines[0]}`, 3200);	auto-ulepszenie gracza po turze (runWorldEndTurn, guard hOid===humanOwnerId): przeniesione z W
+33128	L	W	E-58	runWorldEndTurn	showHintMessage(`Auto ulepszenia: ${toastLines.length}× (−Praca)`, 3200);	auto-ulepszenia gracza po turze (runWorldEndTurn): przeniesione z W
+33137	L	W	E-58	runWorldEndTurn	showHintMessage(	sygnał nadwyżki Pracy od automatu po turze (runWorldEndTurn): przeniesione z W
+33268	L	L	E-01	runWorldEndTurn	showHintMessage(	L: komunikat wynikający z logiki (wiersz E-)
+34506	L	L	E-01	runWorldEndTurn	showHintMessage('\u2694 ' + ownerDiploLabel(ownerId) + ' — ' + formatAiDiplomacyPlayerMe	L: komunikat wynikający z logiki (wiersz E-)
+35651	L	L	E-42	runWorldEndTurn	showHintMessage(`Rajd Ludów Morza — zniszczone ulepszenie: ${destroyed}!`, 4500, { hex:	L: komunikat wynikający z logiki (wiersz E-)
+35771	L	L	E-41	runWorldEndTurn	showHintMessage('<b>' + formatVictoryTitle(vResult.rodzaj, turn) + '</b>', 4000);	L: komunikat wynikający z logiki (wiersz E-)
+36120	W	W	-	triggerPlayerEndTurn	showHintMessage('Tryb okolicy zakończony.', 2500);	W: klik/klawisz zakończenia tury gracza
+36201	W	W	-	triggerPlayerEndTurn	showHintMessage('Nie wybrano heksu — najedz na pole i nacisnij B', 3000);	W: klik/klawisz zakończenia tury gracza
+37515	W	W	-	doStartPlaytestWalkaMapy	showHintMessage('Playtest walki: brak miejsca na mapie — sprobuj inny seed', 5000);	W: playtest (dev)
+37637	W	W	-	doStartPlaytestWalkaMapy	showHintMessage(primaryHint, 16000);	W: playtest (dev)
+37639	W	W	-	doStartPlaytestWalkaMapy	showHintMessage(	W: playtest (dev)
+37765	W	W	-	doStartPlaytestMiastoEkonomia	showHintMessage('Playtest miasta: brak miejsca na mapie — sprobuj inny seed', 5000);	W: playtest (dev)
+37870	W	W	-	doStartPlaytestMiastoEkonomia	showHintMessage(PLAYTEST_MIASTO_HINT, 16000);	W: playtest (dev)
+37871	W	W	-	doStartPlaytestMiastoEkonomia	showHintMessage(	W: playtest (dev)
+37989	W	W	-	doStartPlaytestMapaSwiata	showHintMessage('Playtest mapy: brak miejsca — sprobuj inny seed', 5000);	W: playtest (dev)
+38119	W	W	-	doStartPlaytestMapaSwiata	showHintMessage(PLAYTEST_MAPA_HINT, 18000);	W: playtest (dev)
+38163	W	W	-	loadGameFromSlot	showHintMessage('Nie można wczytać tego zapisu.', 3000);	W: wczytanie zapisu (gracz)
+38172	W	W	-	loadGameFromSlot	showHintMessage(	W: wczytanie zapisu (gracz)
+38219	K	K	-	loadGameFromSlot	// wywołać się PRZED showHintMessage() -- dopiero po zamontowaniu	komentarz
+38221	K	K	-	loadGameFromSlot	// showHintMessage() czyta, żeby podnieść toast na z-index 600	komentarz
+38233	K	K	-	loadGameFromSlot	// / EN: openStartupMainMenu() MUST run BEFORE showHintMessage() --	komentarz
+38235	K	K	-	loadGameFromSlot	// return true, which showHintMessage() reads to lift the toast to	komentarz
+38247	W	W	-	loadGameFromSlot	showHintMessage(	W: wczytanie zapisu (gracz)
+38260	W	W	-	loadGameFromSlot	showHintMessage(	W: wczytanie zapisu (gracz)
+38294	W	W	-	loadGameFromSlot	showHintMessage(	W: wczytanie zapisu (gracz)
+38306	K	K	-	loadGameFromSlot	// `openStartupMainMenu()` PRZED `showHintMessage()` jest OBOWIĄZKOWA -- ten	komentarz
+38308	K	K	-	loadGameFromSlot	// `showHintMessage()` czyta `isMainMenuOpen()` SYNCHRONICZNIE, więc odwrotna	komentarz
+38314	W	W	-	loadGameFromSlot	showHintMessage(e.message, 6000);	W: wczytanie zapisu (gracz)
+38318	W	W	-	loadGameFromSlot	showHintMessage(	W: wczytanie zapisu (gracz)

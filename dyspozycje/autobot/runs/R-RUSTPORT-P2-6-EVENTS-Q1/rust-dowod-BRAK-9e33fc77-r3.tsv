@@ -1,0 +1,40 @@
+id	zapytanie_git_grep_-inE_9e33fc77	trafienia_bez_komentarzy	wniosek
+E-02	obligat|must_declare|mustdeclare|join_war|ally_war|allied_war	0	0 trafien zapytania obowiazku; typ umowy sojusz/alliance istnieje (diplomacy.rs:77, osobna kwerenda alliance) - brak mechanizmu obowiazku
+E-05	pending_(diplo|negot|offer)|negotiation|counter_offer	0	Brak stolu negocjacyjnego w domenie
+E-06	offer_response|offer_expired|proposal_expired|counter_offer	0	0 trafien; brak odpowiedzi na oferte w domenie
+E-07	absorb|annex|city_?state	36	36 trafien: progi konfiguracji (annexation_respect_threshold, diplomacy.rs:247) - brak zdarzenia wchloniecia
+E-08	eliminat	0	0 trafien
+E-10	trespass|border_violation|violat	0	0 trafien; granice jako geometria BRAK (P2.1 M1)
+E-11	ai_?trade|trade_noticed|handel	16	16 trafien: alias typu umowy handel (diplomacy.rs:538) - brak powiadomienia AI-AI
+E-12	audience	0	0 trafien
+E-13	forced_war|war_wave	0	0 trafien
+E-14	first_contact|contact_established|diplomatic_contact	0	0 trafien
+E-15	hot_?seat|inter_?human	0	0 trafien
+E-16	hot_?seat|handoff	0	0 trafien (poza komentarzami)
+E-17	revolt|rebel|grace	0	0 trafien
+E-18	revolt|rebel|rebellion	0	0 trafien
+E-19	production_queue_empty|queue_empty|prod_?empty	0	0 trafien; kolejka miasta gracza nieobecna (playable.rs bez produkcji miast, P2.1)
+E-20	captur	5	5 trafien (barbarians.rs:535-550): warunki zdobycia, bez zdarzenia
+E-21	plunder|capital_captured|capital_capture	0	0 trafien; szersza kwerenda plunder|loot|capital daje 18 trafien - reguly dystrybucji (diplomacy.rs:2510-2579), nie splądrowanie
+E-23	army_food|food_tip|first_unit_food	0	0 trafien
+E-24	build_completed|construction_(done|complete)|production_completed|improvement_completed	0	0 trafien dla zapytania; szersza kwerenda complet|built|build_done|construction daje 52 - pola planera i bledy, bez eventu ukonczenia
+E-25	wonder_completed|completed_world_wonder|WonderCompleted	0	0 trafien
+E-26	researched_by_owner|tech_researched|TechResearched	4	Jedyny slad: researchedByOwner (diplomacy.rs:2203); brak eventu badania
+E-27	era_changed|era_advanced|EraChanged|era_change	0	0 trafien; pole era definicji techa (diplomacy.rs:2169) to dane, nie zdarzenie
+E-29	food_deficit|army_starv|army_hunger	0	0 trafien
+E-30	siege_state|SiegePhase|siege_phase	0	0 trafien; szersza kwerenda siege daje 14 - pole is_siege (combat.rs:105), brak fazy oblezenia
+E-32	sentry|wake	0	0 trafien
+E-33	veteran	0	0 trafien
+E-34	village_reward|villageReward|hut_reward|chatk	3	3 trafienia: flaga village planera AI (ai_turn.rs:131) - brak nagrody gracza
+E-35	march_progress|planned_march|march_stop|MarchStop	0	0 trafien; szersza kwerenda march daje 11 - pola respektu dyplomacji (diplomacy.rs:267,279), brak postepu marszu
+E-38	auto_ration|ration_adjust|AutoRation	0	0 trafien
+E-39	autosave|auto_save|SaveFailed|save_fail	0	0 trafien
+E-40	fsa|disk_autosave|autosave_degraded	0	0 trafien
+E-42	sea_raid|sea_raider.*destroy|raid.*improvement|destroy.*improvement	5	5 trafien: flaga sea_raider (barbarians.rs:193); brak zdarzenia zniszczenia ulepszenia
+E-46	diplomacy_factor|DiploFactor|factor_log	0	0 trafien
+E-47	credibil(ity)?_event|CredibilityEvent|wiarygod	2	2 trafienia: parametry progow (credibility_min_nap, diplomacy.rs:291); brak logu zdarzen
+E-48	religion_spread|ReligionSpread	0	0 trafien
+E-56	army.*(starv|food)|food.*army|starv.*army|army_hunger	0	0 trafien; apply_hunger_penalty (city_growth.rs:330) dotyczy glodu populacji miasta, nie ostrzezenia wojska
+E-57	merge_prompt|armyMerge|army_merge|separate_return|merge_army	0	0 trafien
+E-58	auto_improv|pick_auto|auto_build	0	0 trafien
+E-59	visit_bonus|city_visit|VisitBonus|garrison_bonus	0	0 trafien; prawo_wojskowe_przemarszu (diplomacy.rs:1374) to nazwa umowy, nie bonus wizyty
