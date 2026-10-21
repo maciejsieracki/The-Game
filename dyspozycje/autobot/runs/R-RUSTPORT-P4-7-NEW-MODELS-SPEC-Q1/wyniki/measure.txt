@@ -1,0 +1,107 @@
+## MIASTO KAMIEN (era 1) — buildMiastoKamien(L, {mur})
+kamien L1 bezMuru	mesh=16	tri=176	mat=13	maxY_swiat=0.318	maxR_swiat_rogiAABB=0.364	{"Circle":1,"Box":12,"Cone4":2,"Cone5":1}
+kamien L2 bezMuru	mesh=26	tri=296	mat=18	maxY_swiat=0.318	maxR_swiat_rogiAABB=0.366	{"Circle":1,"Box":22,"Cone4":2,"Cone5":1}
+kamien L3 bezMuru	mesh=39	tri=468	mat=21	maxY_swiat=0.419	maxR_swiat_rogiAABB=0.380	{"Circle":1,"Box":30,"Cone4":4,"Cone5":1,"Cyl6":2,"Cone6":1}
+kamien L4 bezMuru	mesh=44	tri=528	mat=23	maxY_swiat=0.456	maxR_swiat_rogiAABB=0.418	{"Circle":1,"Box":35,"Cone4":4,"Cone5":1,"Cyl6":2,"Cone6":1}
+kamien L5 bezMuru	mesh=49	tri=608	mat=24	maxY_swiat=0.456	maxR_swiat_rogiAABB=0.435	{"Circle":1,"Box":38,"Cone4":4,"Cone5":1,"Cyl6":2,"Cone6":2,"Cyl8":1}
+kamien L6 bezMuru	mesh=64	tri=784	mat=26	maxY_swiat=0.456	maxR_swiat_rogiAABB=0.435	{"Circle":1,"Box":52,"Cone4":5,"Cone5":1,"Cyl6":2,"Cone6":2,"Cyl8":1}
+kamien L7 bezMuru	mesh=68	tri=832	mat=26	maxY_swiat=0.479	maxR_swiat_rogiAABB=0.460	{"Circle":1,"Box":56,"Cone4":5,"Cyl8":1,"Cone6":2,"Cyl6":2,"Cone5":1}
+kamien L8 bezMuru	mesh=73	tri=892	mat=26	maxY_swiat=0.479	maxR_swiat_rogiAABB=0.460	{"Circle":1,"Box":61,"Cone4":5,"Cyl8":1,"Cone6":2,"Cyl6":2,"Cone5":1}
+kamien L9 bezMuru	mesh=77	tri=964	mat=26	maxY_swiat=0.479	maxR_swiat_rogiAABB=0.460	{"Circle":1,"Box":62,"Cone4":5,"Cyl8":1,"Cone6":3,"Cyl6":4,"Cone5":1}
+kamien L10 bezMuru	mesh=82	tri=1024	mat=27	maxY_swiat=0.479	maxR_swiat_rogiAABB=0.460	{"Circle":1,"Box":67,"Cone4":5,"Cyl8":1,"Cone6":3,"Cyl6":4,"Cone5":1}
+kamien L3 mur(palisada Biskupin)	mesh=158	tri=1896	mat=26	maxY_swiat=0.461	maxR_swiat_rogiAABB=0.417	{"Circle":1,"Box":149,"Cone4":4,"Cone5":1,"Cyl6":2,"Cone6":1}
+kamien L6 mur(palisada Biskupin)	mesh=198	tri=2392	mat=31	maxY_swiat=0.461	maxR_swiat_rogiAABB=0.462	{"Circle":1,"Box":186,"Cone4":5,"Cone5":1,"Cyl6":2,"Cone6":2,"Cyl8":1}
+kamien L10 mur(palisada Biskupin)	mesh=219	tri=2668	mat=32	maxY_swiat=0.479	maxR_swiat_rogiAABB=0.485	{"Circle":1,"Box":204,"Cone4":5,"Cyl8":1,"Cone6":3,"Cyl6":4,"Cone5":1}
+DEKLAROWANE (MIASTO_KAMIEN_LAYOUT.triPoziomy): [176,296,468,528,608,784,832,892,964,1024]
+ZMIERZONE: [176,296,468,528,608,784,832,892,964,1024]
+## MIASTO BRAZ grecja (era >= 2)
+braz-grecja L1 bezMuru	mesh=15	tri=190	mat=11	maxY_swiat=0.340	maxR_swiat_rogiAABB=0.354	{"Circle":1,"Box":12,"Cyl5":2}
+braz-grecja L2 bezMuru	mesh=20	tri=258	mat=15	maxY_swiat=0.340	maxR_swiat_rogiAABB=0.354	{"Circle":1,"Box":16,"Cyl5":3}
+braz-grecja L3 bezMuru	mesh=33	tri=418	mat=21	maxY_swiat=0.340	maxR_swiat_rogiAABB=0.354	{"Circle":1,"Box":27,"Cyl5":4,"Cone4":1}
+braz-grecja L4 bezMuru	mesh=37	tri=474	mat=21	maxY_swiat=0.381	maxR_swiat_rogiAABB=0.376	{"Circle":1,"Box":30,"Cyl5":5,"Cone4":1}
+braz-grecja L5 bezMuru	mesh=46	tri=602	mat=21	maxY_swiat=0.381	maxR_swiat_rogiAABB=0.376	{"Circle":1,"Box":37,"Cyl5":6,"Cone4":1,"Cyl6":1}
+braz-grecja L6 bezMuru	mesh=55	tri=710	mat=21	maxY_swiat=0.381	maxR_swiat_rogiAABB=0.376	{"Circle":1,"Box":46,"Cyl5":6,"Cone4":1,"Cyl6":1}
+braz-grecja L7 bezMuru	mesh=57	tri=746	mat=20	maxY_swiat=0.535	maxR_swiat_rogiAABB=0.416	{"Circle":1,"Box":43,"Cyl5":6,"Cyl3":2,"Cyl4":3,"Cyl6":1,"Cone4":1}
+braz-grecja L8 bezMuru	mesh=65	tri=850	mat=20	maxY_swiat=0.535	maxR_swiat_rogiAABB=0.416	{"Circle":1,"Box":50,"Cyl5":7,"Cyl3":2,"Cyl4":3,"Cyl6":1,"Cone4":1}
+braz-grecja L9 bezMuru	mesh=68	tri=886	mat=21	maxY_swiat=0.535	maxR_swiat_rogiAABB=0.416	{"Circle":1,"Box":53,"Cyl5":7,"Cyl3":2,"Cyl4":3,"Cyl6":1,"Cone4":1}
+braz-grecja L10 bezMuru	mesh=71	tri=922	mat=21	maxY_swiat=0.535	maxR_swiat_rogiAABB=0.416	{"Circle":1,"Box":56,"Cyl5":7,"Cyl3":2,"Cyl4":3,"Cyl6":1,"Cone4":1}
+braz-grecja L3 mur	mesh=60	tri=742	mat=22	maxY_swiat=0.340	maxR_swiat_rogiAABB=0.411	{"Circle":1,"Box":53,"Cyl5":4,"Cone4":1,"Cyl3":1}
+braz-grecja L6 mur	mesh=82	tri=1034	mat=22	maxY_swiat=0.381	maxR_swiat_rogiAABB=0.461	{"Circle":1,"Box":72,"Cyl5":6,"Cone4":1,"Cyl6":1,"Cyl3":1}
+braz-grecja L10 mur	mesh=98	tri=1246	mat=22	maxY_swiat=0.535	maxR_swiat_rogiAABB=0.486	{"Circle":1,"Box":82,"Cyl5":7,"Cyl3":3,"Cyl4":3,"Cyl6":1,"Cone4":1}
+braz-grecja L3 palisada	mesh=152	tri=1846	mat=28	maxY_swiat=0.461	maxR_swiat_rogiAABB=0.417	{"Circle":1,"Box":146,"Cyl5":4,"Cone4":1}
+braz-grecja L6 palisada	mesh=189	tri=2318	mat=28	maxY_swiat=0.461	maxR_swiat_rogiAABB=0.462	{"Circle":1,"Box":180,"Cyl5":6,"Cone4":1,"Cyl6":1}
+braz-grecja L10 palisada	mesh=208	tri=2566	mat=28	maxY_swiat=0.535	maxR_swiat_rogiAABB=0.485	{"Circle":1,"Box":193,"Cyl5":7,"Cyl3":2,"Cyl4":3,"Cyl6":1,"Cone4":1}
+DEKLAROWANE (MIASTO_BRAZ_LAYOUT.triPoziomy.grecja): [190,258,418,474,602,710,746,850,886,922]
+ZMIERZONE: [190,258,418,474,602,710,746,850,886,922]
+## MIASTO BRAZ rzym (era >= 2)
+braz-rzym L1 bezMuru	mesh=15	tri=196	mat=12	maxY_swiat=0.328	maxR_swiat_rogiAABB=0.344	{"Box":10,"Cyl6":2,"Cone6":1,"Cone4":2}
+braz-rzym L2 bezMuru	mesh=23	tri=298	mat=13	maxY_swiat=0.328	maxR_swiat_rogiAABB=0.361	{"Circle":1,"Box":15,"Cyl6":3,"Cone6":2,"Cone4":2}
+braz-rzym L3 bezMuru	mesh=41	tri=522	mat=16	maxY_swiat=0.328	maxR_swiat_rogiAABB=0.372	{"Circle":1,"Box":30,"Cyl6":4,"Cone6":3,"Cone4":3}
+braz-rzym L4 bezMuru	mesh=49	tri=622	mat=22	maxY_swiat=0.252	maxR_swiat_rogiAABB=0.403	{"Circle":1,"Box":38,"Cyl5":2,"Cyl6":3,"Cone4":3,"Cone6":2}
+braz-rzym L5 bezMuru	mesh=54	tri=682	mat=23	maxY_swiat=0.252	maxR_swiat_rogiAABB=0.403	{"Circle":1,"Box":43,"Cyl5":2,"Cyl6":3,"Cone4":3,"Cone6":2}
+braz-rzym L6 bezMuru	mesh=61	tri=778	mat=23	maxY_swiat=0.252	maxR_swiat_rogiAABB=0.403	{"Circle":1,"Box":48,"Cyl5":2,"Cyl6":4,"Cone4":3,"Cone6":3}
+braz-rzym L7 bezMuru	mesh=66	tri=838	mat=23	maxY_swiat=0.279	maxR_swiat_rogiAABB=0.418	{"Circle":1,"Box":53,"Cyl5":2,"Cyl6":4,"Cone4":3,"Cone6":3}
+braz-rzym L8 bezMuru	mesh=71	tri=898	mat=24	maxY_swiat=0.279	maxR_swiat_rogiAABB=0.418	{"Circle":1,"Box":58,"Cyl5":2,"Cyl6":4,"Cone4":3,"Cone6":3}
+braz-rzym L9 bezMuru	mesh=73	tri=922	mat=25	maxY_swiat=0.296	maxR_swiat_rogiAABB=0.418	{"Circle":1,"Box":60,"Cyl5":2,"Cyl6":4,"Cone4":3,"Cone6":3}
+braz-rzym L10 bezMuru	mesh=80	tri=1018	mat=25	maxY_swiat=0.296	maxR_swiat_rogiAABB=0.418	{"Circle":1,"Box":65,"Cyl5":2,"Cyl6":5,"Cone4":3,"Cone6":4}
+braz-rzym L3 mur	mesh=75	tri=866	mat=18	maxY_swiat=0.328	maxR_swiat_rogiAABB=0.418	{"Circle":1,"Box":48,"Cyl6":4,"Cone6":3,"Cone4":19}
+braz-rzym L6 mur	mesh=95	tri=1122	mat=25	maxY_swiat=0.294	maxR_swiat_rogiAABB=0.465	{"Circle":1,"Box":66,"Cyl5":2,"Cyl6":4,"Cone4":19,"Cone6":3}
+braz-rzym L10 mur	mesh=114	tri=1362	mat=27	maxY_swiat=0.296	maxR_swiat_rogiAABB=0.489	{"Circle":1,"Box":83,"Cyl5":2,"Cyl6":5,"Cone4":19,"Cone6":4}
+braz-rzym L3 palisada	mesh=160	tri=1950	mat=23	maxY_swiat=0.461	maxR_swiat_rogiAABB=0.417	{"Circle":1,"Box":149,"Cyl6":4,"Cone6":3,"Cone4":3}
+braz-rzym L6 palisada	mesh=195	tri=2386	mat=30	maxY_swiat=0.461	maxR_swiat_rogiAABB=0.462	{"Circle":1,"Box":182,"Cyl5":2,"Cyl6":4,"Cone4":3,"Cone6":3}
+braz-rzym L10 palisada	mesh=217	tri=2662	mat=32	maxY_swiat=0.461	maxR_swiat_rogiAABB=0.485	{"Circle":1,"Box":202,"Cyl5":2,"Cyl6":5,"Cone4":3,"Cone6":4}
+DEKLAROWANE (MIASTO_BRAZ_LAYOUT.triPoziomy.rzym): [196,298,522,622,682,778,838,898,922,1018]
+ZMIERZONE: [196,298,522,622,682,778,838,898,922,1018]
+## BUDZET MIAST NA POZIOM = ceil(srednia 3 zywych zestawow x 1.10)
+L	tri(kamien,grecja,rzym)	srednia	budzetTri	mesh(kamien,grecja,rzym)	srednia	budzetMesh
+L1	176,190,196	187.3	207	16,15,15	15.3	17
+L2	296,258,298	284.0	313	26,20,23	23.0	26
+L3	468,418,522	469.3	517	39,33,41	37.7	42
+L4	528,474,622	541.3	596	44,37,49	43.3	48
+L5	608,602,682	630.7	694	49,46,54	49.7	55
+L6	784,710,778	757.3	834	64,55,61	60.0	66
+L7	832,746,838	805.3	886	68,57,66	63.7	71
+L8	892,850,898	880.0	969	73,65,71	69.7	77
+L9	964,886,922	924.0	1017	77,68,73	72.7	80
+L10	1024,922,1018	988.0	1087	82,71,80	77.7	86
+MIASTA 30 konfiguracji bez muru: tri srednia=646.7 max=1024; mesh srednia=51.3 max=82
+kontrola mur grecja L3	mesh=60	tri=742	mat=22	maxY_swiat=0.340	maxR_swiat_rogiAABB=0.411	{"Circle":1,"Box":53,"Cyl5":4,"Cone4":1,"Cyl3":1}
+kontrola mur rzym L3	mesh=75	tri=866	mat=18	maxY_swiat=0.328	maxR_swiat_rogiAABB=0.418	{"Circle":1,"Box":48,"Cyl6":4,"Cone6":3,"Cone4":19}
+MUR KAMIENNY: grecja +324 (deklarowane 324), rzym +344 (deklarowane 344); budzet nowego muru = ceil(srednia x 1.10) = 368
+## CUDA — buildWonderModel(id) bez ownerColor; swiat x1.15
+cud piramidy	mesh=2	tri=16	mat=2	maxY_swiat=0.644	maxR_swiat_rogiAABB=0.598	{"Cone4":2}
+cud wielka_stela	mesh=3	tri=32	mat=2	maxY_swiat=0.782	maxR_swiat_rogiAABB=0.114	{"Box":2,"Cone4":1}
+cud wiszace_ogrody	mesh=9	tri=108	mat=3	maxY_swiat=0.403	maxR_swiat_rogiAABB=0.371	{"Box":9}
+cud wyrocznia	mesh=8	tri=108	mat=2	maxY_swiat=0.403	maxR_swiat_rogiAABB=0.488	{"Cyl6":1,"Box":6,"Cone6":1}
+cud roquepertuse	mesh=49	tri=704	mat=4	maxY_swiat=0.374	maxR_swiat_rogiAABB=0.781	{"Cyl10":5,"Box":25,"Cone4":15,"Cone10":3,"Cyl6":1}
+cud stupa_sanchi	mesh=4	tri=92	mat=2	maxY_swiat=0.483	maxR_swiat_rogiAABB=0.390	{"Cyl8":2,"Cone8":1,"Box":1}
+cud petra	mesh=4	tri=56	mat=2	maxY_swiat=0.529	maxR_swiat_rogiAABB=0.287	{"Box":2,"Cyl4":2}
+cud hamonga	mesh=3	tri=36	mat=1	maxY_swiat=0.460	maxR_swiat_rogiAABB=0.262	{"Box":3}
+cud kolos	mesh=19	tri=236	mat=4	maxY_swiat=0.770	maxR_swiat_rogiAABB=0.319	{"Box":17,"Cyl6":1,"Cone4":1}
+cud osada_aschaffenburg	mesh=54	tri=792	mat=5	maxY_swiat=0.564	maxR_swiat_rogiAABB=0.813	{"Cyl12":2,"Box":26,"Cone4":18,"Cyl10":4,"Cone10":4}
+cud ziggurat	mesh=9	tri=108	mat=2	maxY_swiat=0.460	maxR_swiat_rogiAABB=0.391	{"Box":9}
+cud mundo_perdido	mesh=3	tri=36	mat=2	maxY_swiat=0.414	maxR_swiat_rogiAABB=0.358	{"Box":3}
+cud terakotowa_armia	mesh=16	tri=192	mat=2	maxY_swiat=0.184	maxR_swiat_rogiAABB=0.354	{"Box":16}
+cud koloseum	mesh=216	tri=2676	mat=3	maxY_swiat=0.413	maxR_swiat_rogiAABB=0.517	{"Cyl24":1,"Box":215}
+cud dur_sharrukin	mesh=7	tri=80	mat=2	maxY_swiat=0.414	maxR_swiat_rogiAABB=0.423	{"Box":6,"Cone4":1}
+cud brama_narodow	mesh=6	tri=72	mat=2	maxY_swiat=0.483	maxR_swiat_rogiAABB=0.271	{"Box":6}
+cud palac_weiyang	mesh=6	tri=72	mat=3	maxY_swiat=0.276	maxR_swiat_rogiAABB=0.320	{"Box":6}
+cud yerkapi	mesh=4	tri=48	mat=2	maxY_swiat=0.368	maxR_swiat_rogiAABB=0.334	{"Box":4}
+cud posag_peruna	mesh=4	tri=48	mat=2	maxY_swiat=0.460	maxR_swiat_rogiAABB=0.117	{"Box":4}
+cud default (id spoza switch, np. parkowany nalanda)	mesh=2	tri=36	mat=2	maxY_swiat=0.368	maxR_swiat_rogiAABB=0.358	{"Cyl6":1,"Cone6":1}
+cud piramidy +ownerBanner	mesh=4	tri=40	mat=3	maxY_swiat=0.644	maxR_swiat_rogiAABB=0.598	{"Cone4":2,"Box":2}
+CUDA n=19 tri: min=16 max=2676 srednia=290.1 mediana=80 budzet=ceil(srednia x 1.10)=320
+CUDA n=19 mesh: min=2 max=216 srednia=22.4 mediana=6 budzet=ceil(srednia x 1.10)=25
+## GHOST bronzeCityRoblox (podglad zakladania miasta, L1, bez muru) — referencja ksztaltow per cywilizacja
+ghost-braz grecja L1	mesh=16	tri=276	mat=6	maxY_swiat=0.483	maxR_swiat_rogiAABB=0.291	{"Box":9,"Cyl6":7}
+ghost-braz rzym L1	mesh=16	tri=284	mat=7	maxY_swiat=0.483	maxR_swiat_rogiAABB=0.291	{"Box":9,"Cyl6":6,"Cyl8":1}
+ghost-braz sumer L1	mesh=14	tri=220	mat=8	maxY_swiat=0.483	maxR_swiat_rogiAABB=0.314	{"Box":11,"Cyl8":2,"Cyl6":1}
+ghost-braz egipt L1	mesh=15	tri=240	mat=7	maxY_swiat=0.483	maxR_swiat_rogiAABB=0.291	{"Box":10,"Cyl4":2,"Cyl8":2,"Cyl6":1}
+ghost-braz inka L1	mesh=14	tri=180	mat=7	maxY_swiat=0.483	maxR_swiat_rogiAABB=0.291	{"Box":13,"Cyl6":1}
+ghost-braz aztek L1	mesh=16	tri=244	mat=9	maxY_swiat=0.483	maxR_swiat_rogiAABB=0.362	{"Box":13,"Cyl8":2,"Cyl6":1}
+ghost-braz chiny L1	mesh=22	tri=384	mat=7	maxY_swiat=0.673	maxR_swiat_rogiAABB=0.312	{"Box":12,"Cyl6":10}
+ghost-braz zulu L1	mesh=9	tri=240	mat=4	maxY_swiat=0.483	maxR_swiat_rogiAABB=0.343	{"Cyl8":6,"Box":2,"Cyl6":1}
+ghost-braz celtowie L1	mesh=17	tri=268	mat=7	maxY_swiat=0.483	maxR_swiat_rogiAABB=0.291	{"Box":13,"Cyl6":2,"Cyl8":2}
+ghost-braz germanie L1	mesh=12	tri=204	mat=5	maxY_swiat=0.483	maxR_swiat_rogiAABB=0.291	{"Box":7,"Cyl6":5}
+ghost-braz hetyci L1	mesh=21	tri=304	mat=5	maxY_swiat=0.483	maxR_swiat_rogiAABB=0.337	{"Box":18,"Cyl8":2,"Cyl6":1}
+EXTRUDE_HITS=0 (0 = zaden zmierzony model nie uzyl ExtrudeGeometry)
