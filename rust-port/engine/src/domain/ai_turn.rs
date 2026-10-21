@@ -10,6 +10,7 @@
 //! `Civ-AI/Spec-AI-architektura.md`: production commands first, at most one
 //! action per unit, and `endTurn` as the final command.
 
+use civ_engine::domain::UnitId;
 use serde::{Deserialize, Serialize};
 use std::cmp::Reverse;
 use std::collections::{BTreeMap, BTreeSet, BinaryHeap};
@@ -330,7 +331,7 @@ impl UnitKind {
 /// Unit snapshot passed to the planner.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct AiUnit {
-    pub id: u64,
+    pub id: UnitId,
     pub owner_id: u64,
     pub q: i32,
     pub r: i32,
@@ -353,7 +354,7 @@ const fn default_movement() -> u32 {
 impl AiUnit {
     pub fn new(id: u64, owner_id: u64, kind: UnitKind, q: i32, r: i32) -> Self {
         Self {
-            id,
+            id: UnitId::new(id),
             owner_id,
             q,
             r,
@@ -1068,7 +1069,7 @@ fn plan_unit_action(input: &AiTurnInput, unit: &AiUnit) -> Option<AiCommand> {
             candidate.owner_id != input.player_id && visible(&input.options, candidate.position())
         })
         .collect();
-    let occupied = occupied_without(input.units.as_slice(), unit.id);
+    let occupied = occupied_without(input.units.as_slice(), unit.id.get());
 
     // A wounded unit retreats and never attacks in the same turn.
     if unit.health_fraction.is_some_and(|health| health < 0.30) {
@@ -1082,7 +1083,7 @@ fn plan_unit_action(input: &AiTurnInput, unit: &AiUnit) -> Option<AiCommand> {
                 occupied.clone(),
             ) {
                 return Some(AiCommand::Move {
-                    unit_id: unit.id,
+                    unit_id: unit.id.get(),
                     to_q: step.q,
                     to_r: step.r,
                 });
@@ -1099,7 +1100,7 @@ fn plan_unit_action(input: &AiTurnInput, unit: &AiUnit) -> Option<AiCommand> {
             &own_cities,
             &input.options,
         ) {
-            return Some(AiCommand::FoundCity { unit_id: unit.id });
+            return Some(AiCommand::FoundCity { unit_id: unit.id.get() });
         }
         let own_city_values: Vec<AiCity> = own_cities.into_iter().cloned().collect();
         let enemy_city_values: Vec<AiCity> = enemy_cities.into_iter().cloned().collect();
@@ -1134,8 +1135,8 @@ fn plan_unit_action(input: &AiTurnInput, unit: &AiUnit) -> Option<AiCommand> {
         .min_by_key(|enemy| enemy.id)
     {
         return Some(AiCommand::Attack {
-            unit_id: unit.id,
-            target_unit_id: enemy.id,
+            unit_id: unit.id.get(),
+            target_unit_id: enemy.id.get(),
         });
     }
 
@@ -1164,7 +1165,7 @@ fn plan_unit_action(input: &AiTurnInput, unit: &AiUnit) -> Option<AiCommand> {
                             occupied.clone(),
                         ) {
                             return Some(AiCommand::Move {
-                                unit_id: unit.id,
+                                unit_id: unit.id.get(),
                                 to_q: step.q,
                                 to_r: step.r,
                             });
@@ -1244,10 +1245,10 @@ fn move_command_towards(input: &AiTurnInput, unit: &AiUnit, target: HexCoord) ->
         &input.map,
         unit.position(),
         target,
-        occupied_without(input.units.as_slice(), unit.id),
+        occupied_without(input.units.as_slice(), unit.id.get()),
     )?;
     Some(AiCommand::Move {
-        unit_id: unit.id,
+        unit_id: unit.id.get(),
         to_q: step.q,
         to_r: step.r,
     })
@@ -1264,7 +1265,7 @@ fn visible(options: &AiTurnOptions, coordinate: HexCoord) -> bool {
 fn occupied_without(units: &[AiUnit], excluded_id: u64) -> BTreeSet<HexCoord> {
     units
         .iter()
-        .filter(|unit| unit.id != excluded_id)
+        .filter(|unit| unit.id.get() != excluded_id)
         .map(AiUnit::position)
         .collect()
 }

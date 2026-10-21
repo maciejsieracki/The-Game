@@ -1,5 +1,7 @@
 use serde::{Deserialize, Serialize};
 
+use super::UnitId;
+
 /// A counter bonus supplied by the unit data for one opposing unit type.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct CounterBonus {
@@ -23,7 +25,7 @@ impl CounterBonus {
 /// separate from max HP so the same function can resolve damaged units.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct CombatUnit {
-    pub id: u64,
+    pub id: UnitId,
     pub name: String,
     pub unit_type: String,
     pub attack: u32,
@@ -49,7 +51,7 @@ impl CombatUnit {
         morale: u32,
     ) -> Self {
         Self {
-            id,
+            id: UnitId::new(id),
             name: name.into(),
             unit_type: unit_type.into(),
             attack,
@@ -368,7 +370,7 @@ fn apply_loss(units: &[CombatUnit], loss_fraction: f64) -> Vec<UnitCombatResult>
         return units
             .iter()
             .map(|unit| UnitCombatResult {
-                id: unit.id,
+                id: unit.id.get(),
                 hp_after: 0,
                 destroyed: true,
                 broken: false,
@@ -421,7 +423,7 @@ fn apply_loss(units: &[CombatUnit], loss_fraction: f64) -> Vec<UnitCombatResult>
             let destroyed = hp_after == 0;
             let broken = !destroyed && hp_after.saturating_mul(4) <= unit.max_hp;
             UnitCombatResult {
-                id: unit.id,
+                id: unit.id.get(),
                 hp_after,
                 destroyed,
                 broken,

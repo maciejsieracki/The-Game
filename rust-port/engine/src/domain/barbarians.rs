@@ -8,6 +8,7 @@
 
 use serde::{Deserialize, Serialize};
 use std::collections::{BTreeMap, BTreeSet, VecDeque};
+use super::UnitId;
 
 /// Sentinel owner used by the neutral hostile faction.
 pub const BARBARIAN_OWNER_ID: i64 = -1;
@@ -180,7 +181,7 @@ impl BarbCamp {
 /// from a living camp.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct BarbUnit {
-    pub id: u64,
+    pub id: UnitId,
     pub owner_id: i64,
     pub q: i32,
     pub r: i32,
@@ -200,7 +201,7 @@ pub struct BarbUnit {
 impl BarbUnit {
     pub fn new(id: u64, q: i32, r: i32) -> Self {
         Self {
-            id,
+            id: UnitId::new(id),
             owner_id: BARBARIAN_OWNER_ID,
             q,
             r,
@@ -681,13 +682,13 @@ pub fn plan_barbarian_rally(
             blocked.remove(&unit.position());
             if let Some(step) = path_step(map, unit.position(), camp.position(), &blocked) {
                 commands.push(BarbCommand::Move {
-                    unit_id: unit.id,
+                    unit_id: unit.id.get(),
                     to: step,
                 });
             }
         }
     }
-    commands
+commands
 }
 
 /// Decide one deterministic movement/attack command per movable barbarian.
@@ -725,7 +726,7 @@ pub fn decide_barbarian_moves(
             || unit.owner_id != BARBARIAN_OWNER_ID
             || unit.embarked
             || unit.sea_raider
-            || rallied_ids.contains(&unit.id)
+            || rallied_ids.contains(&unit.id.get())
         {
             continue;
         }
@@ -744,7 +745,7 @@ pub fn decide_barbarian_moves(
                     if let Some(step) = path_step(map, unit.position(), camp.position(), &occupied)
                     {
                         commands.push(BarbCommand::Move {
-                            unit_id: unit.id,
+                            unit_id: unit.id.get(),
                             to: step,
                         });
                     }
@@ -758,8 +759,8 @@ pub fn decide_barbarian_moves(
             .find(|enemy| unit.position().distance(enemy.position()) == 1)
         {
             commands.push(BarbCommand::Attack {
-                unit_id: unit.id,
-                target_unit_id: enemy.id,
+                unit_id: unit.id.get(),
+                target_unit_id: enemy.id.get(),
             });
             continue;
         }
@@ -845,7 +846,7 @@ pub fn decide_barbarian_moves(
         if let Some(enemy) = nearest_enemy {
             targets.push((
                 enemy.position(),
-                enemy.id,
+                enemy.id.get(),
                 unit.position().distance(enemy.position()),
                 false,
             ));
@@ -872,7 +873,7 @@ pub fn decide_barbarian_moves(
             }
             if let Some(step) = path_step(map, unit.position(), target, &occupied) {
                 commands.push(BarbCommand::Move {
-                    unit_id: unit.id,
+                    unit_id: unit.id.get(),
                     to: step,
                 });
                 moved = true;
@@ -888,7 +889,7 @@ pub fn decide_barbarian_moves(
             if unit.position().distance(camp.position()) > 1 {
                 if let Some(step) = path_step(map, unit.position(), camp.position(), &occupied) {
                     commands.push(BarbCommand::Move {
-                        unit_id: unit.id,
+                        unit_id: unit.id.get(),
                         to: step,
                     });
                 }

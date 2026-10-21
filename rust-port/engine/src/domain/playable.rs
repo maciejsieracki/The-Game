@@ -8,7 +8,7 @@
 use serde::{Deserialize, Serialize};
 use std::{error::Error, fmt};
 
-use super::{events::*, PositionDto};
+use super::{events::*, PlayerId, PositionDto};
 
 pub const PLAYABLE_STATE_VERSION: u16 = 1;
 const DEFAULT_SEED: u32 = 42;
@@ -282,7 +282,7 @@ impl PlayableMap {
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct PlayablePlayer {
-    pub id: u64,
+    pub id: PlayerId,
     pub name: String,
     pub civilization: String,
     pub is_human: bool,
@@ -415,7 +415,7 @@ impl PlayableGame {
         params.validate()?;
         let map = build_map(&params);
         let players = vec![PlayablePlayer {
-            id: HUMAN_PLAYER_ID,
+            id: PlayerId::new(HUMAN_PLAYER_ID),
             name: params.civ_name.clone(),
             civilization: params.civ_id.clone(),
             is_human: true,
@@ -470,11 +470,11 @@ impl PlayableGame {
     }
 
     pub fn add_player(&mut self, id: u64, name: String) -> Result<(), PlayableError> {
-        if self.state.players.iter().any(|player| player.id == id) {
+        if self.state.players.iter().any(|player| player.id.get() == id) {
             return Err(PlayableError::DuplicatePlayer(id));
         }
         self.state.players.push(PlayablePlayer {
-            id,
+            id: PlayerId::new(id),
             civilization: format!("player-{id}"),
             name,
             is_human: false,

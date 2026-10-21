@@ -1,4 +1,7 @@
 #[allow(dead_code)]
+use civ_engine::domain::UnitId;
+
+#[allow(dead_code)]
 #[path = "../src/domain/combat.rs"]
 mod combat;
 

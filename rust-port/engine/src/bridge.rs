@@ -332,7 +332,7 @@ impl EnginePort for MockEngineAdapter {
                 if name.trim().is_empty() {
                     return Err(BridgeError::engine_rejected("player name cannot be empty"));
                 }
-                if self.state.players.iter().any(|player| player.id == id) {
+                if self.state.players.iter().any(|player| player.id.get() == id) {
                     return Err(BridgeError::engine_rejected(format!(
                         "player {id} already exists"
                     )));
@@ -345,7 +345,7 @@ impl EnginePort for MockEngineAdapter {
                     self.state = game.state().clone();
                 } else {
                     self.state.players.push(PlayablePlayer {
-                        id,
+                        id: civ_engine::domain::PlayerId::new(id),
                         name,
                         civilization: format!("player-{id}"),
                         is_human: false,
@@ -409,7 +409,7 @@ mod add_player_atomicity_tests {
             })
             .expect("first add succeeds");
         // Make the mock mirror drift: the game still holds player 77, the mock does not.
-        adapter.state.players.retain(|player| player.id != 77);
+        adapter.state.players.retain(|player| player.id.get() != 77);
         let before = adapter.state.players.clone();
 
         let error = adapter
