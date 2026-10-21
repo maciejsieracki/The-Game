@@ -3,9 +3,10 @@
 //! Parsed with include_str! + serde_json (exercised by tests/data_economy_society.rs).
 #![allow(dead_code)]
 
-use serde::Deserialize;
+use serde::{Deserialize, Serialize};
 
-#[derive(Debug, Clone, PartialEq, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
 pub struct EStartParamsDefaulty {
     #[serde(rename = "player_civ_id")]
     pub player_civ_id: String,
@@ -19,7 +20,8 @@ pub struct EStartParamsDefaulty {
     pub city_limit_base_default: i64,
 }
 
-#[derive(Debug, Clone, PartialEq, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
 pub struct EStartParamsSkalaMapyMalenkiTypyCywilizacjiPerEpokaKamien {
     #[serde(rename = "default")]
     pub default: i64,
@@ -29,7 +31,8 @@ pub struct EStartParamsSkalaMapyMalenkiTypyCywilizacjiPerEpokaKamien {
     pub max: i64,
 }
 
-#[derive(Debug, Clone, PartialEq, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
 pub struct EStartParamsSkalaMapyMalenkiTypyCywilizacjiPerEpoka {
     #[serde(rename = "kamien")]
     pub kamien: EStartParamsSkalaMapyMalenkiTypyCywilizacjiPerEpokaKamien,
@@ -39,7 +42,8 @@ pub struct EStartParamsSkalaMapyMalenkiTypyCywilizacjiPerEpoka {
     pub zelazo: EStartParamsSkalaMapyMalenkiTypyCywilizacjiPerEpokaKamien,
 }
 
-#[derive(Debug, Clone, PartialEq, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
 pub struct EStartParamsSkalaMapyMalenki {
     #[serde(rename = "rywale_ai")]
     pub rywale_ai: i64,
@@ -55,7 +59,8 @@ pub struct EStartParamsSkalaMapyMalenki {
     pub hex_h: i64,
 }
 
-#[derive(Debug, Clone, PartialEq, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
 pub struct EStartParamsSkalaMapy {
     #[serde(rename = "Malenki")]
     pub malenki: EStartParamsSkalaMapyMalenki,
@@ -71,7 +76,8 @@ pub struct EStartParamsSkalaMapy {
     pub super_huge: EStartParamsSkalaMapyMalenki,
 }
 
-#[derive(Debug, Clone, PartialEq, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
 pub struct EStartParamsGeneratorE2 {
     #[serde(rename = "resource_mult_low")]
     pub resource_mult_low: f64,
@@ -109,7 +115,8 @@ pub struct EStartParamsGeneratorE2 {
     pub forest_threshold_high: f64,
 }
 
-#[derive(Debug, Clone, PartialEq, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
 pub struct EStartParamsTempoGry {
     #[serde(rename = "szybka")]
     pub szybka: f64,
@@ -119,7 +126,8 @@ pub struct EStartParamsTempoGry {
     pub dluga: f64,
 }
 
-#[derive(Debug, Clone, PartialEq, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
 pub struct EStartParamsCityLimits {
     #[serde(rename = "10")]
     pub f_10: i64,
@@ -129,7 +137,8 @@ pub struct EStartParamsCityLimits {
     pub f_20: i64,
 }
 
-#[derive(Debug, Clone, PartialEq, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
 pub struct EStartParamsKosztBudynkowPace {
     #[serde(rename = "niski")]
     pub niski: f64,
@@ -139,7 +148,8 @@ pub struct EStartParamsKosztBudynkowPace {
     pub wysoki: f64,
 }
 
-#[derive(Debug, Clone, PartialEq, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
 pub struct EStartParamsZwyciestwo {
     #[serde(rename = "ostatnia_epoka_v1")]
     pub ostatnia_epoka_v1: i64,
@@ -151,7 +161,8 @@ pub struct EStartParamsZwyciestwo {
     pub nauka_wymaga_rakiety: bool,
 }
 
-#[derive(Debug, Clone, PartialEq, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
 pub struct EStartParamsKreatorZaawansowane {
     #[serde(rename = "seed_mode_default")]
     pub seed_mode_default: String,
@@ -167,7 +178,8 @@ pub struct EStartParamsKreatorZaawansowane {
     pub victory_power_and_dominance_default: bool,
 }
 
-#[derive(Debug, Clone, PartialEq, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
 pub struct EStartParamsDecyzjeKanon {
     #[serde(rename = "e1_reset_nowa_gra")]
     pub e1_reset_nowa_gra: bool,
@@ -185,7 +197,8 @@ pub struct EStartParamsDecyzjeKanon {
     pub e2_buntownicy_od_sredniowiecza: bool,
 }
 
-#[derive(Debug, Clone, PartialEq, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
 pub struct EStartParams {
     #[serde(rename = "_opis")]
     pub opis: String,
@@ -211,7 +224,8 @@ pub struct EStartParams {
     pub decyzje_kanon: EStartParamsDecyzjeKanon,
 }
 
-#[derive(Debug, Clone, PartialEq, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
 pub struct AiParamsTrudnoscPoziom1BonusProdukcja {
     #[serde(rename = "wartosc")]
     pub wartosc: i64,
@@ -221,7 +235,8 @@ pub struct AiParamsTrudnoscPoziom1BonusProdukcja {
     pub opis: String,
 }
 
-#[derive(Debug, Clone, PartialEq, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
 pub struct AiParamsTrudnoscPoziom1BonusWalka {
     #[serde(rename = "wartosc")]
     pub wartosc: f64,
@@ -231,7 +246,8 @@ pub struct AiParamsTrudnoscPoziom1BonusWalka {
     pub opis: String,
 }
 
-#[derive(Debug, Clone, PartialEq, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
 pub struct AiParams {
     #[serde(rename = "trudnosc_poziom1_bonus_produkcja")]
     pub trudnosc_poziom1_bonus_produkcja: AiParamsTrudnoscPoziom1BonusProdukcja,
@@ -507,7 +523,8 @@ pub struct AiParams {
     pub ludy_morza_rajd_okres_trudny: AiParamsTrudnoscPoziom1BonusProdukcja,
 }
 
-#[derive(Debug, Clone, PartialEq, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
 pub struct UiParamsPanelMiastaFontScale {
     #[serde(rename = "label")]
     pub label: String,
@@ -515,7 +532,8 @@ pub struct UiParamsPanelMiastaFontScale {
     pub px: i64,
 }
 
-#[derive(Debug, Clone, PartialEq, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
 pub struct UiParamsPanelMiasta {
     #[serde(rename = "rush_cost_mnoznik")]
     pub rush_cost_mnoznik: f64,
@@ -529,7 +547,8 @@ pub struct UiParamsPanelMiasta {
     pub font_scale_domyslna_px: i64,
 }
 
-#[derive(Debug, Clone, PartialEq, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
 pub struct UiParamsMenuUstawienia {
     #[serde(rename = "key")]
     pub key: String,
@@ -543,7 +562,8 @@ pub struct UiParamsMenuUstawienia {
     pub domyslny: i64,
 }
 
-#[derive(Debug, Clone, PartialEq, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
 pub struct UiParamsMenu {
     #[serde(rename = "wersja")]
     pub wersja: String,
@@ -557,13 +577,15 @@ pub struct UiParamsMenu {
     pub ustawienia: Vec<UiParamsMenuUstawienia>,
 }
 
-#[derive(Debug, Clone, PartialEq, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
 pub struct UiParamsNowaGra {
     #[serde(rename = "ustawienia")]
     pub ustawienia: Vec<UiParamsMenuUstawienia>,
 }
 
-#[derive(Debug, Clone, PartialEq, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
 pub struct UiParams {
     #[serde(rename = "_opis")]
     pub opis: String,

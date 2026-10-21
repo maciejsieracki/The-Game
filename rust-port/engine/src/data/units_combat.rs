@@ -10,7 +10,7 @@
 //! `recruitment.rs`, ktore sa osobnym tematem rewiringu domeny).
 #![allow(dead_code)]
 
-use serde::Deserialize;
+use serde::{Deserialize, Serialize};
 
 pub const UNITS_JSON: &str = include_str!("../../data/units.json");
 pub const COMBAT_PARAMS_JSON: &str = include_str!("../../data/combat-params.json");
@@ -20,7 +20,7 @@ pub const AUTO_BATTLE_PARAMS_JSON: &str = include_str!("../../data/auto-battle-p
 pub const POWER_PARAMS_JSON: &str = include_str!("../../data/power-params.json");
 
 /// Pole, ktore w JSON bywa liczba albo tekst (np. `"—"` dla braku wartosci).
-#[derive(Debug, Clone, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(untagged)]
 pub enum IntOrText {
     Int(i64),
@@ -28,7 +28,7 @@ pub enum IntOrText {
 }
 
 /// Pole, ktore w JSON bywa bool albo tekst (`opcje.*.wartosc` w power-params).
-#[derive(Debug, Clone, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(untagged)]
 pub enum BoolOrText {
     Bool(bool),
@@ -39,14 +39,14 @@ pub enum BoolOrText {
 // units.json  (tablica 75 rekordow jednostek)
 // ---------------------------------------------------------------------------
 
-#[derive(Debug, Clone, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
 pub struct TopEntry {
     pub tytul: String,
     pub tekst: String,
 }
 
-#[derive(Debug, Clone, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
 pub struct UnitRecord {
     #[serde(rename = "Jednostka")]
@@ -181,7 +181,7 @@ pub fn parse_units() -> Result<Vec<UnitRecord>, serde_json::Error> {
 // combat-params.json
 // ---------------------------------------------------------------------------
 
-#[derive(Debug, Clone, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
 pub struct MacierzV2 {
     pub hit_base: i64,
@@ -192,7 +192,7 @@ pub struct MacierzV2 {
     pub max_rounds: i64,
 }
 
-#[derive(Debug, Clone, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
 pub struct TwV3 {
     pub hit_base: i64,
@@ -201,7 +201,7 @@ pub struct TwV3 {
     pub max_rounds: i64,
 }
 
-#[derive(Debug, Clone, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
 pub struct Ss5lLegacy {
     pub hit_base: i64,
@@ -211,7 +211,7 @@ pub struct Ss5lLegacy {
     pub max_rounds: i64,
 }
 
-#[derive(Debug, Clone, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
 pub struct MoralePrzewagaMocy {
     pub _opis: String,
@@ -221,7 +221,7 @@ pub struct MoralePrzewagaMocy {
     pub _epsilon_ponad_flee_opis: String,
 }
 
-#[derive(Debug, Clone, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
 pub struct Brod {
     pub _opis: String,
@@ -235,7 +235,7 @@ pub struct Brod {
     pub bonus_obrona_brzegu: f64,
 }
 
-#[derive(Debug, Clone, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
 pub struct Oblezenie {
     pub _opis: String,
@@ -253,7 +253,7 @@ pub struct Oblezenie {
     pub siege_max_rounds: i64,
 }
 
-#[derive(Debug, Clone, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
 pub struct SiegeAi {
     pub t1_assault_ratio: f64,
@@ -263,7 +263,7 @@ pub struct SiegeAi {
     pub units_per_extra_machine: i64,
 }
 
-#[derive(Debug, Clone, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
 pub struct UnitPowerParams {
     pub _opis: String,
@@ -273,14 +273,14 @@ pub struct UnitPowerParams {
     pub hp_siege_divisor: i64,
 }
 
-#[derive(Debug, Clone, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
 pub struct BattleLoot {
     pub _opis: String,
     pub recruit_cost_pct: i64,
 }
 
-#[derive(Debug, Clone, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
 pub struct CombatParamsFile {
     pub _opis: String,
@@ -306,7 +306,7 @@ pub fn parse_combat_params() -> Result<CombatParamsFile, serde_json::Error> {
 // terrain-combat.json  (tablica 7 rekordow terenu)
 // ---------------------------------------------------------------------------
 
-#[derive(Debug, Clone, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
 pub struct TerrainCombatRecord {
     #[serde(rename = "Teren")]
@@ -331,7 +331,7 @@ pub fn parse_terrain_combat() -> Result<Vec<TerrainCombatRecord>, serde_json::Er
 // counters.json  (tablica 17 regul przewag)
 // ---------------------------------------------------------------------------
 
-#[derive(Debug, Clone, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
 pub struct CounterRule {
     #[serde(rename = "Typ atakujący")]
@@ -354,7 +354,7 @@ pub fn parse_counters() -> Result<Vec<CounterRule>, serde_json::Error> {
 // auto-battle-params.json
 // ---------------------------------------------------------------------------
 
-#[derive(Debug, Clone, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
 pub struct Straty {
     #[serde(rename = "L_MAX")]
@@ -368,7 +368,7 @@ pub struct Straty {
     pub coef_przegrany: f64,
 }
 
-#[derive(Debug, Clone, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
 pub struct AutoBattleParamsFile {
     pub _opis: String,
@@ -385,7 +385,7 @@ pub fn parse_auto_battle_params() -> Result<AutoBattleParamsFile, serde_json::Er
 // power-params.json
 // ---------------------------------------------------------------------------
 
-#[derive(Debug, Clone, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
 pub struct PowerNazewnictwo {
     pub pl_ui: String,
@@ -395,7 +395,7 @@ pub struct PowerNazewnictwo {
     pub modul_ts: String,
 }
 
-#[derive(Debug, Clone, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
 pub struct PowerFormuly {
     #[serde(rename = "rekrutEkw")]
@@ -406,7 +406,7 @@ pub struct PowerFormuly {
     pub respekt: String,
 }
 
-#[derive(Debug, Clone, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
 pub struct MnoznikEpoki {
     pub _status: String,
@@ -432,7 +432,7 @@ pub struct MnoznikEpoki {
     pub ep10: i64,
 }
 
-#[derive(Debug, Clone, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
 pub struct Skladnik {
     pub pkt: f64,
@@ -440,7 +440,7 @@ pub struct Skladnik {
     pub wojskowy: Option<bool>,
 }
 
-#[derive(Debug, Clone, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
 pub struct PowerSkladniki {
     pub jednostka_wojskowa: Skladnik,
@@ -456,7 +456,7 @@ pub struct PowerSkladniki {
     pub religia_jednosc: Skladnik,
 }
 
-#[derive(Debug, Clone, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
 pub struct PowerKalibracja {
     pub scenariusz: String,
@@ -465,7 +465,7 @@ pub struct PowerKalibracja {
     pub cel: String,
 }
 
-#[derive(Debug, Clone, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
 pub struct PowerOpcja {
     pub wartosc: BoolOrText,
@@ -473,7 +473,7 @@ pub struct PowerOpcja {
     pub opis: String,
 }
 
-#[derive(Debug, Clone, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
 pub struct PowerOpcje {
     pub liczy_osadnik_w_armii: PowerOpcja,
@@ -484,7 +484,7 @@ pub struct PowerOpcje {
     pub mnoznik_epoki_aktywny: PowerOpcja,
 }
 
-#[derive(Debug, Clone, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
 pub struct PowerUwagi {
     pub power_vs_respekt: String,
@@ -492,7 +492,7 @@ pub struct PowerUwagi {
     pub panel_b: String,
 }
 
-#[derive(Debug, Clone, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
 pub struct PowerParamsFile {
     pub _opis: String,

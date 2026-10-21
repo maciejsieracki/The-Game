@@ -7,7 +7,7 @@
 //! JSON, ktorego struktura nie odwzorowuje.
 #![allow(dead_code)]
 
-use serde::Deserialize;
+use serde::{Deserialize, Serialize};
 
 pub const TERRAIN_IMPROVEMENTS_JSON: &str = include_str!("../../data/terrain-improvements.json");
 pub const TERRAIN_MOVEMENT_JSON: &str = include_str!("../../data/terrain-movement.json");
@@ -18,7 +18,7 @@ pub const MAP_GEN_PARAMS_JSON: &str = include_str!("../../data/map-gen-params.js
 // terrain-improvements.json
 // ---------------------------------------------------------------------------
 
-#[derive(Debug, Clone, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
 pub struct TerrainImprovementsFile {
     pub _meta: ImprovementsMeta,
@@ -47,7 +47,7 @@ pub struct TerrainImprovementsFile {
     pub _miasto_zasieg_ref: MiastoZasiegRef,
 }
 
-#[derive(Debug, Clone, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
 pub struct ImprovementsMeta {
     pub opis: String,
@@ -63,14 +63,14 @@ pub struct ImprovementsMeta {
     pub pole_surowiec_ilosc_tura: String,
 }
 
-#[derive(Debug, Clone, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
 pub struct MiastoZasiegRef {
     pub _komentarz: String,
 }
 
 /// Bonus heksa. Klucze wystepuja tylko w niektorych ulepszeniach (np. `fort` ma `{}`).
-#[derive(Debug, Clone, Default, Deserialize)]
+#[derive(Debug, Clone, Default, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
 pub struct ImprovementBonus {
     pub zywnosc: Option<i64>,
@@ -82,7 +82,7 @@ pub struct ImprovementBonus {
 }
 
 /// Blok `wyrab.wycinka`.
-#[derive(Debug, Clone, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
 pub struct Wycinka {
     pub praca_per_tura: i64,
@@ -91,7 +91,7 @@ pub struct Wycinka {
 }
 
 /// Jeden rekord ulepszenia terenu. Pola opcjonalne wystepuja tylko w czesci rekordow.
-#[derive(Debug, Clone, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
 pub struct Improvement {
     pub nazwa: String,
@@ -134,7 +134,7 @@ pub fn parse_terrain_improvements() -> Result<TerrainImprovementsFile, serde_jso
 // terrain-movement.json
 // ---------------------------------------------------------------------------
 
-#[derive(Debug, Clone, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
 pub struct TerrainMovementFile {
     pub costs: MovementCosts,
@@ -143,7 +143,7 @@ pub struct TerrainMovementFile {
 }
 
 /// Koszt ruchu per typ terenu (klucze ASCII, bez polskich znakow).
-#[derive(Debug, Clone, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
 pub struct MovementCosts {
     #[serde(rename = "Laka")]
@@ -172,14 +172,14 @@ pub fn parse_terrain_movement() -> Result<TerrainMovementFile, serde_json::Error
 // terrain-yields.json
 // ---------------------------------------------------------------------------
 
-#[derive(Debug, Clone, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
 pub struct TerrainYieldsFile {
     pub terrain_types: Vec<TerrainTypeYield>,
     pub terrain_modifiers: Vec<TerrainModifierYield>,
 }
 
-#[derive(Debug, Clone, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
 pub struct TerrainTypeYield {
     #[serde(rename = "Teren")]
@@ -202,7 +202,7 @@ pub struct TerrainTypeYield {
     pub uwagi: Option<String>,
 }
 
-#[derive(Debug, Clone, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
 pub struct TerrainModifierYield {
     #[serde(rename = "Modyfikator")]
@@ -233,7 +233,7 @@ pub fn parse_terrain_yields() -> Result<TerrainYieldsFile, serde_json::Error> {
 // map-gen-params.json
 // ---------------------------------------------------------------------------
 
-#[derive(Debug, Clone, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
 pub struct MapGenParamsFile {
     pub _meta: MapGenMeta,
@@ -245,7 +245,7 @@ pub struct MapGenParamsFile {
     pub metal_deposit_min_era: MetalDepositMinEra,
 }
 
-#[derive(Debug, Clone, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
 pub struct MapGenMeta {
     pub opis: String,
@@ -253,13 +253,13 @@ pub struct MapGenMeta {
     pub export: String,
 }
 
-#[derive(Debug, Clone, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
 pub struct Mgla {
     pub default_sight_jednostki: DefaultSightJednostki,
 }
 
-#[derive(Debug, Clone, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
 pub struct DefaultSightJednostki {
     pub wartosc: i64,
@@ -267,7 +267,7 @@ pub struct DefaultSightJednostki {
 }
 
 /// Trzy poziomy suwaka: low / medium / high.
-#[derive(Debug, Clone, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
 pub struct Tier3<T> {
     pub low: T,
@@ -276,7 +276,7 @@ pub struct Tier3<T> {
 }
 
 /// Rozmiary map: mala / srednia / duza / ogromna / super.
-#[derive(Debug, Clone, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
 pub struct SizeTier<T> {
     pub mala: T,
@@ -287,7 +287,7 @@ pub struct SizeTier<T> {
     pub super_: T,
 }
 
-#[derive(Debug, Clone, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
 pub struct Gestosc {
     pub surowce_mult: Tier3<f64>,
@@ -303,14 +303,14 @@ pub struct Gestosc {
     pub pasma_gorskie: PasmaGorskie,
 }
 
-#[derive(Debug, Clone, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
 pub struct ReliefPair {
     pub mountain: f64,
     pub highland: f64,
 }
 
-#[derive(Debug, Clone, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
 pub struct ReliefOverflowCapFrac {
     pub _opis: String,
@@ -319,7 +319,7 @@ pub struct ReliefOverflowCapFrac {
     pub high: ReliefPair,
 }
 
-#[derive(Debug, Clone, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
 pub struct PasmaTier {
     pub hexy_na_pasmo: i64,
@@ -330,7 +330,7 @@ pub struct PasmaTier {
     pub obrzeze_szansa: f64,
 }
 
-#[derive(Debug, Clone, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
 pub struct PasmaGorskie {
     pub _opis: String,
@@ -339,7 +339,7 @@ pub struct PasmaGorskie {
     pub high: PasmaTier,
 }
 
-#[derive(Debug, Clone, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
 pub struct MapaSkala {
     pub _opis: String,
@@ -347,7 +347,7 @@ pub struct MapaSkala {
     pub domyslni_rywale: SizeTier<i64>,
 }
 
-#[derive(Debug, Clone, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
 pub struct Generator {
     pub default_width: i64,
@@ -356,7 +356,7 @@ pub struct Generator {
 }
 
 /// Wymiary [szerokosc, wysokosc] per rozmiar mapy.
-#[derive(Debug, Clone, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
 pub struct RozmiarDims {
     pub malenki: [i64; 2],
@@ -368,14 +368,14 @@ pub struct RozmiarDims {
 }
 
 /// Reguła rzadkosci zloza. `_opis` wystepuje tylko przy czesci zloz.
-#[derive(Debug, Clone, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
 pub struct DepositRule {
     pub rarity: f64,
     pub _opis: Option<String>,
 }
 
-#[derive(Debug, Clone, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
 pub struct DepositRules {
     pub miedz: DepositRule,
@@ -388,7 +388,7 @@ pub struct DepositRules {
     pub cyna: DepositRule,
 }
 
-#[derive(Debug, Clone, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
 pub struct MetalDepositMinEra {
     pub miedz: i64,

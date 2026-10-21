@@ -3,9 +3,10 @@
 //! Parsed with include_str! + serde_json (exercised by tests/data_economy_society.rs).
 #![allow(dead_code)]
 
-use serde::Deserialize;
+use serde::{Deserialize, Serialize};
 
-#[derive(Debug, Clone, PartialEq, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
 pub struct EconParamsEkonomiaMiastaProgWzrostuWspolczynnik {
     #[serde(rename = "easy")]
     pub easy: i64,
@@ -19,7 +20,8 @@ pub struct EconParamsEkonomiaMiastaProgWzrostuWspolczynnik {
     pub opis: String,
 }
 
-#[derive(Debug, Clone, PartialEq, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
 pub struct EconParamsEkonomiaMiastaSpichlerzZachowaniePoWzroscie {
     #[serde(rename = "easy")]
     pub easy: f64,
@@ -33,7 +35,8 @@ pub struct EconParamsEkonomiaMiastaSpichlerzZachowaniePoWzroscie {
     pub opis: String,
 }
 
-#[derive(Debug, Clone, PartialEq, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
 pub struct EconParamsEkonomiaMiastaKorupcjaWspolczynnikDystansu {
     #[serde(rename = "easy")]
     pub easy: f64,
@@ -47,7 +50,8 @@ pub struct EconParamsEkonomiaMiastaKorupcjaWspolczynnikDystansu {
     pub opis: String,
 }
 
-#[derive(Debug, Clone, PartialEq, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
 pub struct EconParamsEkonomiaMiastaKorupcjaWspolczynnikMiast {
     #[serde(rename = "easy")]
     pub easy: f64,
@@ -61,7 +65,8 @@ pub struct EconParamsEkonomiaMiastaKorupcjaWspolczynnikMiast {
     pub opis: String,
 }
 
-#[derive(Debug, Clone, PartialEq, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
 pub struct EconParamsEkonomiaMiasta {
     #[serde(rename = "próg_wzrostu_wspolczynnik")]
     pub prog_wzrostu_wspolczynnik: EconParamsEkonomiaMiastaProgWzrostuWspolczynnik,
@@ -135,7 +140,8 @@ pub struct EconParamsEkonomiaMiasta {
     pub korupcja_cap: EconParamsEkonomiaMiastaProgWzrostuWspolczynnik,
 }
 
-#[derive(Debug, Clone, PartialEq, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
 pub struct EconParamsBudynki {
     #[serde(rename = "budynek_mlyn_mnoznik_pracy")]
     pub budynek_mlyn_mnoznik_pracy: EconParamsEkonomiaMiastaProgWzrostuWspolczynnik,
@@ -187,7 +193,8 @@ pub struct EconParamsBudynki {
     pub utrzymanie_budynek: EconParamsEkonomiaMiastaProgWzrostuWspolczynnik,
 }
 
-#[derive(Debug, Clone, PartialEq, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
 pub struct EconParamsTerenMapa {
     #[serde(rename = "teren_rzeka_zywnosc")]
     pub teren_rzeka_zywnosc: EconParamsEkonomiaMiastaProgWzrostuWspolczynnik,
@@ -217,7 +224,8 @@ pub struct EconParamsTerenMapa {
     pub ulepszenie_pastwisko_owce_zywnosc: EconParamsEkonomiaMiastaProgWzrostuWspolczynnik,
 }
 
-#[derive(Debug, Clone, PartialEq, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
 pub struct EconParamsWealth {
     #[serde(rename = "wealth_cap_na_epoke")]
     pub wealth_cap_na_epoke: EconParamsEkonomiaMiastaProgWzrostuWspolczynnik,
@@ -239,7 +247,8 @@ pub struct EconParamsWealth {
     pub wealth_immunitet_tur: EconParamsEkonomiaMiastaProgWzrostuWspolczynnik,
 }
 
-#[derive(Debug, Clone, PartialEq, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
 pub struct EconParamsGlobalneMennicaMnoznikPoWalucie {
     #[serde(rename = "easy")]
     pub easy: i64,
@@ -253,7 +262,8 @@ pub struct EconParamsGlobalneMennicaMnoznikPoWalucie {
     pub opis: String,
 }
 
-#[derive(Debug, Clone, PartialEq, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
 pub struct EconParamsGlobalneSkarbiecCentralnyLokalizacja {
     #[serde(rename = "easy")]
     pub easy: String,
@@ -267,7 +277,8 @@ pub struct EconParamsGlobalneSkarbiecCentralnyLokalizacja {
     pub opis: String,
 }
 
-#[derive(Debug, Clone, PartialEq, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
 pub struct EconParamsGlobalne {
     #[serde(rename = "kurs_pieniadz_praca")]
     pub kurs_pieniadz_praca: EconParamsEkonomiaMiastaProgWzrostuWspolczynnik,
@@ -307,7 +318,8 @@ pub struct EconParamsGlobalne {
     pub skarbiec_centralny_lokalizacja: EconParamsGlobalneSkarbiecCentralnyLokalizacja,
 }
 
-#[derive(Debug, Clone, PartialEq, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
 pub struct EconParamsHandelSzlakiDochodyLadowe {
     #[serde(rename = "easy")]
     pub easy: Vec<i64>,
@@ -321,7 +333,8 @@ pub struct EconParamsHandelSzlakiDochodyLadowe {
     pub opis: String,
 }
 
-#[derive(Debug, Clone, PartialEq, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
 pub struct EconParamsHandelSzlaki {
     #[serde(rename = "lad_max_dystans")]
     pub lad_max_dystans: EconParamsEkonomiaMiastaProgWzrostuWspolczynnik,
@@ -333,7 +346,8 @@ pub struct EconParamsHandelSzlaki {
     pub dochody_morskie: EconParamsHandelSzlakiDochodyLadowe,
 }
 
-#[derive(Debug, Clone, PartialEq, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
 pub struct EconParamsHandelSurowce {
     #[serde(rename = "cena_drewno")]
     pub cena_drewno: EconParamsEkonomiaMiastaProgWzrostuWspolczynnik,
@@ -369,7 +383,8 @@ pub struct EconParamsHandelSurowce {
     pub pakiet_wielkosc: EconParamsEkonomiaMiastaProgWzrostuWspolczynnik,
 }
 
-#[derive(Debug, Clone, PartialEq, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
 pub struct EconParams {
     #[serde(rename = "ekonomia_miasta")]
     pub ekonomia_miasta: EconParamsEkonomiaMiasta,
@@ -387,7 +402,8 @@ pub struct EconParams {
     pub handel_surowce: EconParamsHandelSurowce,
 }
 
-#[derive(Debug, Clone, PartialEq, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
 pub struct SocietyParamsZdrowie {
     #[serde(rename = "zdrowie_rzeka")]
     pub zdrowie_rzeka: EconParamsEkonomiaMiastaProgWzrostuWspolczynnik,
@@ -429,7 +445,8 @@ pub struct SocietyParamsZdrowie {
     pub zdrowie_tempo_ubytku: EconParamsEkonomiaMiastaProgWzrostuWspolczynnik,
 }
 
-#[derive(Debug, Clone, PartialEq, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
 pub struct SocietyParamsSzczescie {
     #[serde(rename = "szczescie_luksus_na_mieszkanca")]
     pub szczescie_luksus_na_mieszkanca: EconParamsEkonomiaMiastaProgWzrostuWspolczynnik,
@@ -467,7 +484,8 @@ pub struct SocietyParamsSzczescie {
     pub szczescie_max_pop_wspolczynnik: EconParamsEkonomiaMiastaSpichlerzZachowaniePoWzroscie,
 }
 
-#[derive(Debug, Clone, PartialEq, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
 pub struct SocietyParamsKultura {
     #[serde(rename = "kultura_palac")]
     pub kultura_palac: EconParamsEkonomiaMiastaProgWzrostuWspolczynnik,
@@ -521,7 +539,8 @@ pub struct SocietyParamsKultura {
     pub kultura_presja_proc_tura: EconParamsEkonomiaMiastaProgWzrostuWspolczynnik,
 }
 
-#[derive(Debug, Clone, PartialEq, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
 pub struct SocietyParamsReligia {
     #[serde(rename = "religia_prog_dominacji")]
     pub religia_prog_dominacji: EconParamsEkonomiaMiastaProgWzrostuWspolczynnik,
@@ -559,7 +578,8 @@ pub struct SocietyParamsReligia {
     pub religia_presja_proc_tura: EconParamsEkonomiaMiastaProgWzrostuWspolczynnik,
 }
 
-#[derive(Debug, Clone, PartialEq, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
 pub struct SocietyParamsReligieCywilizacji {
     #[serde(rename = "Cywilizacja")]
     pub cywilizacja: String,
@@ -571,7 +591,8 @@ pub struct SocietyParamsReligieCywilizacji {
     pub wp_yw_na_parametry_bonusy_propozycja_edytowalne: String,
 }
 
-#[derive(Debug, Clone, PartialEq, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
 pub struct SocietyParamsPorzadek {
     #[serde(rename = "porzadek_waga_szczescie")]
     pub porzadek_waga_szczescie: EconParamsEkonomiaMiastaSpichlerzZachowaniePoWzroscie,
@@ -603,7 +624,8 @@ pub struct SocietyParamsPorzadek {
     pub porzadek_bonus_handel_t2: EconParamsEkonomiaMiastaSpichlerzZachowaniePoWzroscie,
 }
 
-#[derive(Debug, Clone, PartialEq, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
 pub struct SocietyParamsPrawo {
     #[serde(rename = "prawo_garnizon_per_jednostka")]
     pub prawo_garnizon_per_jednostka: EconParamsEkonomiaMiastaProgWzrostuWspolczynnik,
@@ -645,7 +667,8 @@ pub struct SocietyParamsPrawo {
     pub prawo_bonus_stolica_easy: EconParamsEkonomiaMiastaProgWzrostuWspolczynnik,
 }
 
-#[derive(Debug, Clone, PartialEq, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
 pub struct SocietyParams {
     #[serde(rename = "zdrowie")]
     pub zdrowie: SocietyParamsZdrowie,
@@ -663,7 +686,8 @@ pub struct SocietyParams {
     pub prawo: SocietyParamsPrawo,
 }
 
-#[derive(Debug, Clone, PartialEq, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
 pub struct EpokaLudnoscManpowerFormuly {
     #[serde(rename = "ludnoscAbsolutna")]
     pub ludnosc_absolutna: String,
@@ -673,7 +697,8 @@ pub struct EpokaLudnoscManpowerFormuly {
     pub koszt_rekrutacji: String,
 }
 
-#[derive(Debug, Clone, PartialEq, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
 pub struct EpokaLudnoscManpowerEpoki {
     #[serde(rename = "epoka")]
     pub epoka: i64,
@@ -685,7 +710,8 @@ pub struct EpokaLudnoscManpowerEpoki {
     pub manpower_na_jednostke: i64,
 }
 
-#[derive(Debug, Clone, PartialEq, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
 pub struct EpokaLudnoscManpower {
     #[serde(rename = "_opis")]
     pub opis: String,
@@ -695,7 +721,8 @@ pub struct EpokaLudnoscManpower {
     pub epoki: Vec<EpokaLudnoscManpowerEpoki>,
 }
 
-#[derive(Debug, Clone, PartialEq, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
 pub struct CitizenResourceUpkeepKara {
     #[serde(rename = "_opis")]
     pub opis: String,
@@ -707,7 +734,8 @@ pub struct CitizenResourceUpkeepKara {
     pub rozwoj_pct_za_brakujacy: i64,
 }
 
-#[derive(Debug, Clone, PartialEq, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
 pub struct CitizenResourceUpkeepEpoki {
     #[serde(rename = "epoka")]
     pub epoka: i64,
@@ -717,7 +745,8 @@ pub struct CitizenResourceUpkeepEpoki {
     pub surowce: Vec<String>,
 }
 
-#[derive(Debug, Clone, PartialEq, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
 pub struct CitizenResourceUpkeep {
     #[serde(rename = "_opis")]
     pub opis: String,
@@ -727,7 +756,8 @@ pub struct CitizenResourceUpkeep {
     pub epoki: Vec<CitizenResourceUpkeepEpoki>,
 }
 
-#[derive(Debug, Clone, PartialEq, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
 pub struct MiastoParamsMinDystansMiast {
     #[serde(rename = "wartosc")]
     pub wartosc: i64,
@@ -737,7 +767,8 @@ pub struct MiastoParamsMinDystansMiast {
     pub opis: String,
 }
 
-#[derive(Debug, Clone, PartialEq, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
 pub struct MiastoParamsPracaUdzialBudynki {
     #[serde(rename = "wartosc")]
     pub wartosc: f64,
@@ -747,7 +778,8 @@ pub struct MiastoParamsPracaUdzialBudynki {
     pub opis: String,
 }
 
-#[derive(Debug, Clone, PartialEq, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
 pub struct MiastoParams {
     #[serde(rename = "min_dystans_miast")]
     pub min_dystans_miast: MiastoParamsMinDystansMiast,
@@ -803,7 +835,8 @@ pub struct MiastoParams {
     pub udzial_output_rozwoj: MiastoParamsPracaUdzialBudynki,
 }
 
-#[derive(Debug, Clone, PartialEq, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
 pub struct ResourceItem {
     #[serde(rename = "Surowiec")]
     pub surowiec: String,

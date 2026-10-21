@@ -13,7 +13,7 @@
 
 #![allow(dead_code)]
 
-use serde::Deserialize;
+use serde::{Deserialize, Serialize};
 use std::collections::BTreeMap;
 
 // ---------------------------------------------------------------------------
@@ -41,7 +41,8 @@ pub fn parse_tech() -> serde_json::Result<TechFile> {
 // ---------------------------------------------------------------------------
 
 /// Wektor efektów (`baza` i `przyrost` mają identyczny zestaw 8 kluczy).
-#[derive(Debug, Clone, PartialEq, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
 pub struct Efekty {
     pub praca: i64,
     pub pieniadz: i64,
@@ -53,21 +54,24 @@ pub struct Efekty {
     pub mnoznik: i64,
 }
 
-#[derive(Debug, Clone, PartialEq, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
 pub struct Top3 {
     pub tytul: String,
     pub tekst: String,
 }
 
 /// `koszt_surowce` — obecny w 41 z 42 rekordów; każdy surowiec opcjonalny.
-#[derive(Debug, Clone, PartialEq, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
 pub struct KosztSurowce {
     pub drewno: Option<i64>,
     pub kamien: Option<i64>,
     pub cegla: Option<i64>,
 }
 
-#[derive(Debug, Clone, PartialEq, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
 pub struct Building {
     pub id: String,
     #[serde(rename = "dajeSzczescie")]
@@ -114,7 +118,8 @@ pub struct Building {
 // wonders.json — obiekt: _meta, cuda, panstwa, parkowane_epoka4plus
 // ---------------------------------------------------------------------------
 
-#[derive(Debug, Clone, PartialEq, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
 pub struct Wonders {
     #[serde(rename = "_meta")]
     pub meta: WondersMeta,
@@ -123,7 +128,8 @@ pub struct Wonders {
     pub parkowane_epoka4plus: Vec<Parkowany>,
 }
 
-#[derive(Debug, Clone, PartialEq, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
 pub struct WondersMeta {
     pub opis: String,
     #[serde(rename = "dostep_E")]
@@ -154,7 +160,8 @@ pub struct WondersMeta {
     pub kanon_tech_wejscie: String,
 }
 
-#[derive(Debug, Clone, PartialEq, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
 pub struct CudaWyscigoweEpoka {
     pub id: String,
     pub nazwa: String,
@@ -162,27 +169,31 @@ pub struct CudaWyscigoweEpoka {
     pub profil: String,
 }
 
-#[derive(Debug, Clone, PartialEq, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
 pub struct EpokiOpis {
     pub epoki: Vec<i64>,
     pub opis: String,
 }
 
-#[derive(Debug, Clone, PartialEq, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
 pub struct Wieki {
     pub antyk: EpokiOpis,
     pub sredniowiecze: EpokiOpis,
     pub renesans_plus: EpokiOpis,
 }
 
-#[derive(Debug, Clone, PartialEq, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
 pub struct JedynyEfekt {
     pub opis: String,
     pub typ: String,
     pub wartosc: i64,
 }
 
-#[derive(Debug, Clone, PartialEq, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
 pub struct PoAbsolut {
     pub decyzja: String,
     pub hex: String,
@@ -191,7 +202,8 @@ pub struct PoAbsolut {
     pub utrzymanie_wygasly_opis: String,
 }
 
-#[derive(Debug, Clone, PartialEq, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
 pub struct Absolut {
     pub decyzja: String,
     pub domyslnie_antyk: i64,
@@ -201,7 +213,8 @@ pub struct Absolut {
     pub silnik: String,
 }
 
-#[derive(Debug, Clone, PartialEq, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
 pub struct BonusCywilizacjaTypy {
     pub armia_morale: String,
     pub armia_xp: String,
@@ -222,13 +235,15 @@ pub struct BonusCywilizacjaTypy {
     pub wzrost_ludnosci_procent: String,
 }
 
-#[derive(Debug, Clone, PartialEq, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
 pub struct BonusHex {
     pub kultura: Option<i64>,
     pub obrona: Option<i64>,
 }
 
-#[derive(Debug, Clone, PartialEq, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
 pub struct BonusMiasto {
     pub pieniadz: Option<i64>,
     pub praca: Option<i64>,
@@ -239,7 +254,8 @@ pub struct BonusMiasto {
     pub obrona: Option<i64>,
 }
 
-#[derive(Debug, Clone, PartialEq, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
 pub struct BonusTeren {
     #[serde(rename = "typTerenu")]
     pub typ_terenu: String,
@@ -254,7 +270,8 @@ pub struct BonusTeren {
 }
 
 /// `wartosc` bywa całkowita (38 wystąpień) lub zmiennoprzecinkowa (19).
-#[derive(Debug, Clone, PartialEq, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
 pub struct BonusSpecjalny {
     pub typ: String,
     pub wartosc: f64,
@@ -262,7 +279,8 @@ pub struct BonusSpecjalny {
     pub cel: Option<String>,
 }
 
-#[derive(Debug, Clone, PartialEq, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
 pub struct Bonusy {
     pub hex: Option<BonusHex>,
     pub miasto: BonusMiasto,
@@ -270,7 +288,8 @@ pub struct Bonusy {
     pub specjalne: Vec<BonusSpecjalny>,
 }
 
-#[derive(Debug, Clone, PartialEq, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
 pub struct Cud {
     pub id: String,
     pub nazwa: String,
@@ -295,20 +314,23 @@ pub struct Cud {
     pub nazwa_alt: Option<String>,
 }
 
-#[derive(Debug, Clone, PartialEq, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
 pub struct PanstwoCud {
     pub id: String,
     pub dostep: String,
     pub kolejnosc: i64,
 }
 
-#[derive(Debug, Clone, PartialEq, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
 pub struct Panstwo {
     pub nazwa: String,
     pub cuda: Vec<PanstwoCud>,
 }
 
-#[derive(Debug, Clone, PartialEq, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
 pub struct Parkowany {
     pub id: String,
     pub nazwa: String,
@@ -334,7 +356,8 @@ pub struct Parkowany {
 // tech.json — obiekt: drzewko_model, _drzewko_model_opis, tempo_gry, technologie
 // ---------------------------------------------------------------------------
 
-#[derive(Debug, Clone, PartialEq, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
 pub struct TechFile {
     pub drzewko_model: String,
     #[serde(rename = "_drzewko_model_opis")]
@@ -343,7 +366,8 @@ pub struct TechFile {
     pub technologie: Vec<Technologia>,
 }
 
-#[derive(Debug, Clone, PartialEq, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
 pub struct TempoGry {
     pub szybka: i64,
     pub standardowa: i64,
@@ -352,7 +376,8 @@ pub struct TempoGry {
     pub opis: String,
 }
 
-#[derive(Debug, Clone, PartialEq, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
 pub struct Technologia {
     #[serde(rename = "Technologia")]
     pub technologia: String,
