@@ -1,0 +1,358 @@
+path	line	class	ref	note
+gra/src/main.ts	172	c	import	
+gra/src/main.ts	482	c	import	
+gra/src/main.ts	510	c	import	
+gra/src/main.ts	525	c	import	
+gra/src/main.ts	526	c	import	
+gra/src/main.ts	527	c	import	
+gra/src/main.ts	530	c	import	
+gra/src/main.ts	531	c	import	
+gra/src/main.ts	578	c	import	
+gra/src/main.ts	615	c	import	
+gra/src/main.ts	867	c	import	
+gra/src/main.ts	918	c	import	
+gra/src/main.ts	1032	c	import	
+gra/src/main.ts	1235	c	import	
+gra/src/main.ts	1238	c	import	
+gra/src/main.ts	4080	b	R1	purchaseRecruitmentUnits -> enqueueRecruitment
+gra/src/main.ts	4103	b	R1	def purchaseRecruitmentUnits
+gra/src/main.ts	4178	b	R3	enqueueRecruitment w petli zakupu
+gra/src/main.ts	4526	b	B1	kolejka cudu (wariant BuildItem)
+gra/src/main.ts	7028	c	komentarz	
+gra/src/main.ts	7062	c	komentarz	
+gra/src/main.ts	7066	b	S3	enqueueOrSetPlayerResearchSlug
+gra/src/main.ts	7091	c	komentarz	
+gra/src/main.ts	7109	b	S3	reorderPlayerResearchQueue (onReorder)
+gra/src/main.ts	7767	b	U5	onLeaveGarrison
+gra/src/main.ts	7786	b	U5	onLeaveAllGarrison
+gra/src/main.ts	8298	b	B1	enqueue (kolejka miasta)
+gra/src/main.ts	9291	b	Z5	start gry: stolica startowa (nie akcja w turze)
+gra/src/main.ts	9410	b	Z5	start gry: bonusowe miasto startowe
+gra/src/main.ts	9463	c	generator: spawn klastrow miast-panstw (nie akcja gracza)	
+gra/src/main.ts	9885	c	komentarz	
+gra/src/main.ts	9887	c	komentarz	
+gra/src/main.ts	9888	c	komentarz	
+gra/src/main.ts	9900	b	D2	wrapper efektu dyplomatycznego (D2/D6/D10)
+gra/src/main.ts	9929	c	komentarz	
+gra/src/main.ts	10045	c	komentarz	
+gra/src/main.ts	10090	c	komentarz	
+gra/src/main.ts	10105	b	D12	def executeTechTradeDeal
+gra/src/main.ts	10115	b	D12	executeTechTradeDealCore
+gra/src/main.ts	10244	b	D12	wywolanie z propozycji techu
+gra/src/main.ts	10273	c	komentarz	
+gra/src/main.ts	11126	c	komentarz	
+gra/src/main.ts	11127	c	komentarz	
+gra/src/main.ts	11264	c	komentarz	
+gra/src/main.ts	11311	c	komentarz	
+gra/src/main.ts	11449	c	komentarz	
+gra/src/main.ts	11602	c	komentarz	
+gra/src/main.ts	11622	c	komentarz	
+gra/src/main.ts	11644	c	komentarz	
+gra/src/main.ts	12081	c	komentarz	
+gra/src/main.ts	12085	c	komentarz	
+gra/src/main.ts	12121	b	U9	onMerge: enterGarnizon
+gra/src/main.ts	12127	b	U9	onMerge: assignSharedStackGroupId
+gra/src/main.ts	12184	b	U2	przesuniecie powrotne: przypisanie grupy
+gra/src/main.ts	12276	c	komentarz	
+gra/src/main.ts	12280	b	U8	odczyt stackGroupIdOf (openSplitPanelForSelected)
+gra/src/main.ts	12283	b	U8	findSplitDestHexes
+gra/src/main.ts	12310	c	komentarz	
+gra/src/main.ts	12313	b	U8	onSplit: nowa grupa dla odchodzacych
+gra/src/main.ts	12342	c	komentarz	
+gra/src/main.ts	12348	c	komentarz	
+gra/src/main.ts	12428	b	U9	scalenie przy ruchu (merge prompt)
+gra/src/main.ts	12510	b	U9	onMerge: jedna tozsamosc po scaleniu
+gra/src/main.ts	13540	b	B6	tryFoundPlayerCityAt (skrot B = B11) -> foundCityAt
+gra/src/main.ts	14271	b	T-2	def executeFirstBlockingEvent
+gra/src/main.ts	14393	c	komentarz	
+gra/src/main.ts	14398	c	komentarz	
+gra/src/main.ts	14851	b	W1	def commitBesiege
+gra/src/main.ts	14894	b	W1	onBesiege
+gra/src/main.ts	14896	b	W2	onStorm
+gra/src/main.ts	14911	b	W4	onQueueMachine -> queueSiegeMachine
+gra/src/main.ts	14945	b	W1	commitBesiege z ekranu oblezenia
+gra/src/main.ts	14994	b	W4	queueSiegeMachine taran
+gra/src/main.ts	15037	b	W2	onStorm z mapy
+gra/src/main.ts	15201	c	komentarz	
+gra/src/main.ts	15212	c	komentarz	
+gra/src/main.ts	15522	c	T3	widok dochodu (SidePanelEvent)
+gra/src/main.ts	16595	c	T3	widok dochodu w liscie tras
+gra/src/main.ts	17056	c	komentarz	
+gra/src/main.ts	17101	c	komentarz	
+gra/src/main.ts	17109	c	komentarz	
+gra/src/main.ts	17194	c	komentarz	
+gra/src/main.ts	17225	c	komentarz	
+gra/src/main.ts	17230	b	D2	def handleNegotiationAccept
+gra/src/main.ts	17280	b	D8	def handleNegotiationReject
+gra/src/main.ts	17314	b	D8	def handleNegotiationRemove
+gra/src/main.ts	17344	c	komentarz	
+gra/src/main.ts	17377	b	D4	def handleNegotiationAcceptPackage
+gra/src/main.ts	17391	b	D4	handleNegotiationAccept w pakiecie
+gra/src/main.ts	17397	b	D4	def handleNegotiationRejectPackage
+gra/src/main.ts	17401	b	D4	handleNegotiationReject w pakiecie
+gra/src/main.ts	17411	b	D3	def handleNegotiationCounter
+gra/src/main.ts	17431	c	komentarz	
+gra/src/main.ts	17438	c	komentarz	
+gra/src/main.ts	17442	b	D3	def handleNegotiationEditOwn
+gra/src/main.ts	17447	c	komentarz	
+gra/src/main.ts	17546	c	komentarz	
+gra/src/main.ts	17643	c	komentarz	
+gra/src/main.ts	17656	c	komentarz	
+gra/src/main.ts	18159	c	komentarz	
+gra/src/main.ts	18285	c	komentarz	
+gra/src/main.ts	18626	c	komentarz	
+gra/src/main.ts	18641	c	komentarz	
+gra/src/main.ts	18789	c	T3	widok dochodu w buildHudState
+gra/src/main.ts	20941	c	komentarz	
+gra/src/main.ts	21048	c	komentarz	
+gra/src/main.ts	21114	b	D3	handleNegotiatedProposal -> kontroferta
+gra/src/main.ts	21260	b	D5	def applyAudienceAction
+gra/src/main.ts	21495	b	D5	onAction
+gra/src/main.ts	21600	b	D2	onAcceptNegotiation
+gra/src/main.ts	21601	b	D2	onRejectNegotiation
+gra/src/main.ts	21602	b	D4	onAcceptNegotiationPackage
+gra/src/main.ts	21603	b	D4	onRejectNegotiationPackage
+gra/src/main.ts	21604	b	D8	onRemoveNegotiation
+gra/src/main.ts	21606	b	D3	onCounterNegotiation
+gra/src/main.ts	21608	b	D3	onEditOwnNegotiation
+gra/src/main.ts	21728	c	komentarz	
+gra/src/main.ts	21739	c	komentarz	
+gra/src/main.ts	21745	c	komentarz	
+gra/src/main.ts	21825	b	U8	findSplitDestHexes (HUD podzialu)
+gra/src/main.ts	21898	b	U5	unfortify-all
+gra/src/main.ts	21913	b	U5	unfortify (exitGarnizon)
+gra/src/main.ts	21934	b	U4	fortify stosu oblezniczego
+gra/src/main.ts	21960	b	U4	fortify: enterGarnizon
+gra/src/main.ts	21973	b	U4	fortify: enterFieldFortify
+gra/src/main.ts	22019	c	komentarz	
+gra/src/main.ts	22023	c	komentarz	
+gra/src/main.ts	22140	b	Z3	onLoad -> loadGameFromSlot
+gra/src/main.ts	22178	b	Z4	onNewGame: bootstrap autosave (D-CMD-4)
+gra/src/main.ts	22194	b	Z6	onContinue: bootstrap autosave przed odczytem
+gra/src/main.ts	22197	b	Z6	onContinue: loadGameFromSlot
+gra/src/main.ts	22203	b	Z3	onLoad: bootstrap autosave + dialog
+gra/src/main.ts	22552	b	T-2	onExecutePending
+gra/src/main.ts	22556	b	T-1	onEndTurn
+gra/src/main.ts	22912	b	U8	canSplit: odczyt grupy
+gra/src/main.ts	22914	b	U8	findSplitDestHexes w canSplit
+gra/src/main.ts	23059	b	R1	onPurchase
+gra/src/main.ts	23171	c	hook testowy (__eraTestDebug.endTurn)	
+gra/src/main.ts	23303	c	komentarz	
+gra/src/main.ts	23372	c	komentarz	
+gra/src/main.ts	23418	c	hook testowy (domino, foundCityAt)	
+gra/src/main.ts	23999	c	komentarz	
+gra/src/main.ts	24100	c	hook testowy (foundCityAt)	
+gra/src/main.ts	24125	c	komentarz	
+gra/src/main.ts	24520	c	komentarz	
+gra/src/main.ts	24539	c	komentarz	
+gra/src/main.ts	24552	c	komentarz	
+gra/src/main.ts	24765	c	komentarz	
+gra/src/main.ts	24766	c	komentarz	
+gra/src/main.ts	24949	b	B3	wiring cfg.setProduction dla cityPanel (setProd)
+gra/src/main.ts	25653	b	U12	applyEmbarkStateAfterMove po ruchu
+gra/src/main.ts	26526	b	W2	onStorm (ctx akcji)
+gra/src/main.ts	27570	b	Z2	onSave w bitwie -> doQuickSave
+gra/src/main.ts	28099	c	komentarz	
+gra/src/main.ts	28107	c	komentarz	
+gra/src/main.ts	28251	b	Z2	onSave w bitwie -> doQuickSave
+gra/src/main.ts	28757	c	komentarz	
+gra/src/main.ts	29891	b	Z2	onQuickSave
+gra/src/main.ts	30086	b	W2	def launchSiegeStormFromMap
+gra/src/main.ts	30309	b	Z2	onSave -> doQuickSave
+gra/src/main.ts	30708	b	Z2	def doQuickSave
+gra/src/main.ts	30779	b	Z4	def triggerFsaAutosaveBootstrap
+gra/src/main.ts	30859	c	komentarz	
+gra/src/main.ts	30868	c	komentarz	
+gra/src/main.ts	30988	c	komentarz	
+gra/src/main.ts	31004	c	komentarz	
+gra/src/main.ts	31119	c	komentarz	
+gra/src/main.ts	31133	c	komentarz	
+gra/src/main.ts	31864	c	komentarz	
+gra/src/main.ts	31998	c	komentarz	
+gra/src/main.ts	32593	b	A6	autoManageCity (automatyka miast przy koncu tury)
+gra/src/main.ts	32640	c	komentarz	
+gra/src/main.ts	32650	b	A6	enqueue z decyzji autoManage
+gra/src/main.ts	34802	c	AI	kolejka cudu w planerze AI (nie gracz)
+gra/src/main.ts	34883	b	U12	onMoved -> applyEmbarkStateAfterMove (O16)
+gra/src/main.ts	34928	c	AI	galaz cmd.type foundCityAt (tura AI)
+gra/src/main.ts	34965	c	AI	foundCityAt przy wykonaniu rozkazu AI
+gra/src/main.ts	35207	c	AI	enqueue rozkazu AI
+gra/src/main.ts	35624	c	barbarzyncy	ruch jednostki barbarzynskiej (AI)
+gra/src/main.ts	35646	c	barbarzyncy	ruch jednostki barbarzynskiej (AI)
+gra/src/main.ts	35845	c	komentarz	
+gra/src/main.ts	35852	c	komentarz	
+gra/src/main.ts	35858	c	log console.warn	
+gra/src/main.ts	35862	c	log console.warn	
+gra/src/main.ts	35909	b	T-1	zaokretowanie/zejscie w animacji ruchu fazy konca tury
+gra/src/main.ts	35989	c	komentarz	
+gra/src/main.ts	36025	c	log console.warn	
+gra/src/main.ts	36047	b	T-1	def advanceSeat
+gra/src/main.ts	36060	c	komentarz	
+gra/src/main.ts	36100	c	komentarz	
+gra/src/main.ts	36102	b	T-1	def triggerPlayerEndTurn (wrapper advanceSeat)
+gra/src/main.ts	36103	b	T-1	wywolanie advanceSeat
+gra/src/main.ts	36211	b	Z2	Ctrl+S doQuickSave
+gra/src/main.ts	36230	b	T-1	klawisz N -> advanceSeat
+gra/src/main.ts	36302	b	U12	applyEmbarkStateAfterMove przy ruchu gracza
+gra/src/main.ts	36740	b	B3	wiring cfg.setProduction (drugi wariant)
+gra/src/main.ts	38140	b	Z3	def loadGameFromSlot
+gra/src/main.ts	38227	c	komentarz	
+gra/src/main.ts	38232	c	komentarz	
+gra/src/main.ts	38328	c	komentarz	
+gra/src/main.ts	38447	c	komentarz	
+gra/src/main.ts	38458	c	komentarz	
+gra/src/main.ts	22188	c	komentarz	
+gra/src/main.ts	22192	c	komentarz	
+gra/src/main.ts	36046	c	komentarz	
+gra/src/game/armyMerge.ts	56	b	U9	def stackGroupIdOf (tozsamosc stosu)
+gra/src/game/armyMerge.ts	65	b	U8	predykat tego samego stosu
+gra/src/game/armyMerge.ts	82	b	U9	def assignSharedStackGroupId
+gra/src/game/armyMerge.ts	94	c	komentarz	
+gra/src/game/armyMerge.ts	102	b	U8	filtr grupy (stos)
+gra/src/game/armyMerge.ts	123	b	U8	filtr grupy (stos)
+gra/src/game/armyMerge.ts	155	c	komentarz	
+gra/src/game/armyMerge.ts	159	c	komentarz	
+gra/src/game/armyMerge.ts	165	b	U8	choke point grupy przy operacjach stosu
+gra/src/game/armyMerge.ts	176	b	U4	def enterGarnizon
+gra/src/game/armyMerge.ts	193	b	U5	def exitGarnizon
+gra/src/game/armyMerge.ts	209	c	komentarz	
+gra/src/game/armyMerge.ts	211	c	komentarz	
+gra/src/game/armyMerge.ts	219	b	U4	def enterFieldFortify
+gra/src/game/armyMerge.ts	234	c	komentarz	
+gra/src/game/armyMerge.ts	236	c	komentarz	
+gra/src/game/armyMerge.ts	265	c	komentarz	
+gra/src/game/armyMerge.ts	271	c	komentarz	
+gra/src/game/armyMerge.ts	274	c	komentarz	
+gra/src/game/armyMerge.ts	297	c	komentarz	
+gra/src/game/armyMerge.ts	301	c	komentarz	
+gra/src/game/armyMerge.ts	350	b	U8	filtr grupy (stos)
+gra/src/game/armyMerge.ts	358	c	komentarz	
+gra/src/game/armyMerge.ts	369	c	komentarz	
+gra/src/game/armyMerge.ts	376	c	komentarz	
+gra/src/game/armyMerge.ts	379	b	U8	klucz grupy (pozycja + grupa)
+gra/src/game/armyMerge.ts	392	c	komentarz	
+gra/src/game/armyMerge.ts	401	c	komentarz	
+gra/src/game/armyMerge.ts	411	c	komentarz	
+gra/src/game/armyMerge.ts	415	c	komentarz	
+gra/src/game/armyMerge.ts	494	b	U8	def findSplitDestHexes
+gra/src/game/armyMerge.ts	714	c	komentarz	
+gra/src/game/armyMerge.ts	738	b	U2	symulacja wyjscia z garnizonu (podglad ruchu)
+gra/src/game/auto-manage.ts	3	c	komentarz	
+gra/src/game/auto-manage.ts	165	c	komentarz	
+gra/src/game/auto-manage.ts	222	b	B4	def pickNextFromBudowaLista
+gra/src/game/auto-manage.ts	325	b	B4	pickNextFromBudowaLista w planerze
+gra/src/game/auto-manage.ts	381	c	komentarz	
+gra/src/game/auto-manage.ts	395	b	A6	def autoManageCity
+gra/src/game/cities.ts	640	b	B9	def adjustHandelSplit
+gra/src/game/cities.ts	1137	c	komentarz	
+gra/src/game/cities.ts	1269	b	B6	def foundCityAt
+gra/src/game/cities.ts	1326	c	komentarz	
+gra/src/game/cities.ts	1337	c	komentarz	
+gra/src/game/cities.ts	1341	c	komentarz	
+gra/src/game/cities.ts	1349	c	komentarz	
+gra/src/game/cities.ts	1359	c	komentarz	
+gra/src/game/cities.ts	1374	b	B7	def foundCityFromVillage
+gra/src/game/cities.ts	1386	b	B7	foundCityFromVillage -> foundCityAt
+gra/src/game/cities.ts	1388	c	komentarz	
+gra/src/game/cities.ts	1389	c	tekst bledu (nie mutacja)	
+gra/src/game/city-founding.ts	83	c	komentarz	
+gra/src/game/diplomacy-tech-trade.ts	125	c	komentarz	
+gra/src/game/diplomacy-tech-trade.ts	148	c	komentarz	
+gra/src/game/diplomacy-tech-trade.ts	168	b	D12	def executeTechTradeDealCore
+gra/src/game/diplomacy.ts	99	c	komentarz	
+gra/src/game/diplomacy.ts	434	c	komentarz	
+gra/src/game/diplomacy.ts	806	c	komentarz	
+gra/src/game/diplomacy.ts	848	c	komentarz	
+gra/src/game/diplomacy.ts	863	b	D2	def applyDiplomaticEvent (silnik efektu D2/D6)
+gra/src/game/diplomacy.ts	930	c	komentarz	
+gra/src/game/embarkation.ts	11	c	komentarz	
+gra/src/game/embarkation.ts	36	b	U12	def canUnitEmbark
+gra/src/game/embarkation.ts	55	b	U12	canUnitEmbark w applyEmbark
+gra/src/game/embarkation.ts	77	b	U12	def applyEmbarkStateAfterMove
+gra/src/game/playerState.ts	104	c	komentarz	
+gra/src/game/playerState.ts	587	c	komentarz	
+gra/src/game/playerState.ts	613	b	S3	def enqueueResearchTarget
+gra/src/game/production.ts	48	c	komentarz	
+gra/src/game/production.ts	637	b	B5	def buildingGoldPurchaseCost
+gra/src/game/production.ts	1167	b	B1	def enqueue (kolejka produkcji)
+gra/src/game/production.ts	1262	c	komentarz	
+gra/src/game/production.ts	1849	b	R3	def enqueueRecruitment
+gra/src/game/rally-point.ts	10	c	import	
+gra/src/game/rally-point.ts	47	b	U10	odczyt stackGroupIdOf w planie zbiorki
+gra/src/game/research.ts	30	c	komentarz	
+gra/src/game/research.ts	407	c	komentarz	
+gra/src/game/research.ts	462	b	S1	def startResearch
+gra/src/game/save.ts	125	c	komentarz	
+gra/src/game/save.ts	873	c	komentarz	
+gra/src/game/save.ts	904	c	komentarz	
+gra/src/game/save.ts	1042	c	komentarz	
+gra/src/game/save.ts	1047	c	komentarz	
+gra/src/game/siegeMachines.ts	29	b	W4	def queueSiegeMachine
+gra/src/game/trade-routes.ts	127	c	komentarz	
+gra/src/game/trade-routes.ts	827	b	T1	def createTradeRoute
+gra/src/game/trade-routes.ts	973	c	komentarz	
+gra/src/game/trade-routes.ts	1209	c	komentarz	
+gra/src/game/trade-routes.ts	1280	c	komentarz	
+gra/src/game/trade-routes.ts	1375	c	T3	ocena dochodu trasy (widok)
+gra/src/game/trade-routes.ts	1568	c	T3	def tradeRouteIncomeForRoute (widok)
+gra/src/game/trade-routes.ts	1605	c	komentarz	
+gra/src/game/trade-routes.ts	1630	b	T-1	suma dochodu tras w ekonomii tury
+gra/src/game/trade-routes.ts	1671	c	komentarz	
+gra/src/game/trade-routes.ts	1678	c	komentarz	
+gra/src/ui/bottomBarHud.ts	288	c	komentarz	
+gra/src/ui/cityPanel.ts	66	c	import	
+gra/src/ui/cityPanel.ts	103	c	import	
+gra/src/ui/cityPanel.ts	331	c	typ konfiguracji	
+gra/src/ui/cityPanel.ts	638	b	B3	setProd (wrapper zapisu kolejki)
+gra/src/ui/cityPanel.ts	639	b	B3	cfg.setProduction
+gra/src/ui/cityPanel.ts	787	b	B3	reorder kolejki rekrutacji (B3 rozszerzone)
+gra/src/ui/cityPanel.ts	849	b	B3	reorder kolejki budowy (przeciaganie)
+gra/src/ui/cityPanel.ts	4699	b	B9	adjustHandelSplit (suwak)
+gra/src/ui/cityPanel.ts	5397	c	komentarz	
+gra/src/ui/cityPanel.ts	5406	c	komentarz	
+gra/src/ui/cityPanel.ts	6133	b	B3	cancelQueueItem (dequeue)
+gra/src/ui/cityPanel.ts	6259	c	komentarz	
+gra/src/ui/cityPanel.ts	6284	b	B1	enqueue (kolejka)
+gra/src/ui/cityPanel.ts	6305	b	B5	koszt zakupu za zloto (widok ceny)
+gra/src/ui/cityPanel.ts	8269	b	B3	przesuniecie w kolejce rekrutacji (B3 rozszerzone)
+gra/src/ui/cityPanel.ts	8276	b	B3	przesuniecie w kolejce rekrutacji (B3 rozszerzone)
+gra/src/ui/cityPanel.ts	8284	b	R5	dequeueRecruitment (anulowanie rekrutacji)
+gra/src/ui/cityPanel.ts	8400	b	B3	promoteToFront (przod kolejki)
+gra/src/ui/cityPanel.ts	8408	b	B3	promoteToFront / moveQueueItem
+gra/src/ui/cityPanel.ts	8409	b	B3	moveQueueItem
+gra/src/ui/cityPanel.ts	8415	b	B3	moveQueueItem
+gra/src/ui/cityPanel.ts	8477	c	komentarz	
+gra/src/ui/cityPanel.ts	8522	a	B12	setPaused (wstrzymanie produkcji) - nowy wiersz
+gra/src/ui/cityPanel.ts	10990	c	tekst UI	
+gra/src/ui/empireDetailPanel.ts	33	c	import	
+gra/src/ui/empireDetailPanel.ts	129	b	B9	adjustHandelSplit (panel imperium)
+gra/src/ui/empireDetailPanel.ts	1158	c	komentarz	
+gra/src/ui/empireDetailPanel.ts	1217	b	B9	adjustHandelSplit (panel imperium)
+gra/src/ui/preBattle.ts	149	c	komentarz	
+gra/src/battle/mapFieldBattle.ts	142	c	komentarz	doQuickSave w komentarzu; r3 (b W5,W6,Z2) zawężone do komentarza
+gra/src/game/army-concentration.ts	11	c	import	import assignSharedStackGroupId
+gra/src/game/army-concentration.ts	160	b	U9	wywolanie assignSharedStackGroupId(stack) przy grupowaniu stosu
+gra/src/game/ai.ts	94	c	AI	komentarz: foundCityAt bez osadnika (panel budowy AI)
+gra/src/game/ai.ts	96	c	AI	typ akcji AI foundCityAt (nie akcja gracza)
+gra/src/game/ai.ts	784	c	AI	komentarz w przykladzie kodu (startResearch AI)
+gra/src/game/ai.ts	2860	c	AI	komentarz: max 1 miasto/ture przez foundCityAt (AI)
+gra/src/game/ai.ts	2929	c	AI	zwrot akcji AI { type: foundCityAt } (nie akcja gracza)
+gra/src/game/barbarians.ts	436	c	AI	komentarz (barbarzyncy)
+gra/src/game/barbarians.ts	2519	c	AI	komentarz applyEmbarkStateAfterMove (barbarzyncy)
+gra/src/game/capital-capture.ts	27	c	komentarz	komentarz; r3 (b W2) zawezone: tylko komentarz, efekt W2 pokryty wierszem W2
+gra/src/game/capital-capture.ts	65	c	komentarz	komentarz; jw.
+gra/src/map/map-attack-city.ts	8	c	import	import stackGroupIdOf
+gra/src/map/map-attack-city.ts	72	b	W9	odczyt stackGroupIdOf przy wyborze jednostek do ataku na miasto
+gra/src/render/wioska-oboz.ts	23	c	komentarz	render; komentarz (RENDER: BRAK)
+gra/src/render/wioska-oboz.ts	61	c	komentarz	render; komentarz
+gra/src/data/wikiBundle.json	1	c	dane	tekst tresci poradnika w JSON, nie kod
+gra/src/game/diplomacy-factors.ts	10	c	komentarz	komentarz (applyDiplomaticEvent); r3 (b D2) zawezone do komentarza
+gra/src/game/diplomacy-peace-lock.ts	25	c	komentarz	komentarz (applyDiplomaticEvent pokoj); r3 (b D6) zawezone do komentarza
+gra/src/game/empire-city-defaults.ts	349	c	komentarz	komentarz (foundCityAt wpisuje wartosc); r3 (b A3) zawezone do komentarza
+gra/src/ui/diplomacyAcceptanceBalance.ts	305	c	komentarz	komentarz (handleNegotiationAccept); bez mutacji; r3 (b D2) zawezone do komentarza
+gra/src/ui/empireDetailTypes.ts	470	c	komentarz	komentarz (tradeRouteIncomeForRoute w typach danych)
+gra/src/units/setup.ts	87	c	komentarz	komentarz (commitBesiege); r3 (b Z5,U9) zawezone do komentarzy
+gra/src/units/setup.ts	93	c	komentarz	komentarz (exitGarnizon)
+gra/src/units/setup.ts	140	c	komentarz	komentarz (stackGroupIdOf)
+gra/src/units/setup.ts	145	c	komentarz	komentarz (assignSharedStackGroupId)
+gra/src/units/setup.ts	146	c	komentarz	komentarz (stackGroupIdOf)
