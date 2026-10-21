@@ -1,0 +1,118 @@
+{
+  "_meta": {
+    "opis": "Panel-A export — generator E2 + mgła. Kod czyta po P3 / handoff Integratora.",
+    "panel": "panele-sterowania/Panel-A.xlsx",
+    "export": "panele-sterowania/export-a.py"
+  },
+  "mgla": {
+    "default_sight_jednostki": {
+      "wartosc": 3,
+      "opis": "Domyślny promień wzroku jednostki"
+    }
+  },
+  "gestosc": {
+    "surowce_mult": {
+      "low": 0.6,
+      "medium": 1.0,
+      "high": 1.4
+    },
+    "baseline_rarity_mult": 1.35,
+    "rzeki_max_mala_mapa": {
+      "low": 20,
+      "medium": 50,
+      "high": 120
+    },
+    "river_scale": {
+      "mala": 1.0,
+      "srednia": 1.35,
+      "duza": 1.7,
+      "ogromna": 2.1,
+      "super": 2.6
+    },
+    "desert_noise_threshold": {
+      "low": 0.68,
+      "medium": 0.63,
+      "high": 0.58
+    },
+    "forest_noise_threshold": {
+      "low": 0.65,
+      "medium": 0.58,
+      "high": 0.5
+    },
+    "mountain_noise_threshold": {
+      "low": 0.80,
+      "medium": 0.68,
+      "high": 0.52
+    },
+    "highland_noise_threshold": {
+      "low": 0.66,
+      "medium": 0.50,
+      "high": 0.38
+    },
+    "relief_land_fraction": {
+      "low": { "mountain": 0.06, "highland": 0.126 },
+      "medium": { "mountain": 0.10, "highland": 0.15 },
+      "high": { "mountain": 0.24, "highland": 0.324 }
+    },
+    "relief_overflow_cap_frac": {
+      "_opis": "Sufit gęstości reliefu (Góry+Wzgórza) per komórka fair-play, egzekwowany PRZY ZASIEWANIU i PO ROZROŚCIE pasm (RELIEF_OVERFLOW_CAP_MULT w gen-helpers.ts). Maciej 2026-07-29: medium=10% Góry + 15% Wzgórza w komórce 15×15; Mało/Dużo przeskalowane względem poprzedniego stosunku tierów.",
+      "low": { "mountain": 0.09, "highland": 0.132 },
+      "medium": { "mountain": 0.10, "highland": 0.15 },
+      "high": { "mountain": 0.24, "highland": 0.318 }
+    },
+    "pasma_gorskie": {
+      "_opis": "Zadanie HILLS Q1/Q2 (2026-07-20): skupiska gór/wzgórz (seed-and-grow), spięte z tierem suwaka Relief (mountain_noise_threshold/highland_noise_threshold). Bez nowego suwaka UI. ZADANIE 3 (2026-07-20): dłuższe/węższe łańcuchy (kordyliery) zamiast okrągłych plam — dlugosc_min/max w górę, max_pasm_na_mase w dół (mniej ale dłuższych pasm), nowy obrzeze_szansa < 1 zmniejsza rozlewanie foothills na boki.",
+      "low": { "hexy_na_pasmo": 320, "max_pasm_na_mase": 2, "dlugosc_min": 9, "dlugosc_max": 11, "min_masa_hexow": 40, "obrzeze_szansa": 0.30 },
+      "medium": { "hexy_na_pasmo": 240, "max_pasm_na_mase": 3, "dlugosc_min": 11, "dlugosc_max": 14, "min_masa_hexow": 30, "obrzeze_szansa": 0.35 },
+      "high": { "hexy_na_pasmo": 170, "max_pasm_na_mase": 5, "dlugosc_min": 13, "dlugosc_max": 17, "min_masa_hexow": 24, "obrzeze_szansa": 0.40 }
+    }
+  },
+  "mapa_skala": {
+    "_opis": "Trzeciorzędny fallback (używany tylko gdy skala_mapy w e-start-params.json nie ma wpisu). Sync z Panel-E 2026-07-28 (typy_cywilizacji per rozmiar mapy).",
+    "aktywne_typy": {
+      "mala": 4,
+      "srednia": 5,
+      "duza": 6,
+      "ogromna": 12,
+      "super": 15
+    },
+    "domyslni_rywale": {
+      "mala": 12,
+      "srednia": 14,
+      "duza": 18,
+      "ogromna": 22,
+      "super": 30
+    }
+  },
+  "generator": {
+    "default_width": 36,
+    "default_height": 28,
+    "rozmiar_dims": {
+      "malenki": [76, 52],
+      "maly": [108, 74],
+      "standardowy": [168, 120],
+      "duzy": [240, 168],
+      "ogromny": [336, 238],
+      "superogromny": [672, 476]
+    }
+  },
+  "deposit_rules": {
+    "miedz": { "rarity": 0.30, "_opis": "Maciej 2026-08-16/17 (R-SUROWCE-KOPALNIE-MIEDZ-CYNA-3X-Q1): ×3 gęstości złóż miedzi vs poprzedni standard (0.10→0.30) — za mało kopalń utrudniało AI budowę jednostek z kolejnych epok." },
+    "zelazo": { "rarity": 0.08 },
+    "glina": {
+      "rarity": 0.30,
+      "_opis": "Maciej 2026-07-29: ×3 gęstości złóż gliny vs poprzedni standard (0.10→0.30). Szansa spawnu na kwal. heks = rarity × baseline_rarity_mult (1.35) × surowce_mult tieru (Mało 0.6 / Normalnie 1.0 / Dużo 1.4) — proporcje tierów bez zmian."
+    },
+    "konie": { "rarity": 0.025 },
+    "wegiel": { "rarity": 0, "_opis": "SUR-WEGIEL=B: ukryty — brak spawnu na mapie (dyplomacja bez zmian)" },
+    "sol": { "rarity": 0.12 },
+    "zloto": { "rarity": 0.03 },
+    "cyna": { "rarity": 0.06, "_opis": "Maciej 2026-08-13: Ruda cyny — rzadkość = miedź / 5 (proporcja zachowana po ×3 z 2026-08-17). Maciej 2026-08-16/17 (R-SUROWCE-KOPALNIE-MIEDZ-CYNA-3X-Q1): ×3 gęstości złóż cyny vs poprzedni standard (0.02→0.06). GWARANTOWANA każdej cywilizacji (FAIR_PLAY_DEPOSIT_IDS), inaczej niż złoto." }
+  },
+  "metal_deposit_min_era": {
+    "miedz": 2,
+    "zelazo": 3,
+    "wegiel": 8,
+    "cyna": 2
+  }
+}
