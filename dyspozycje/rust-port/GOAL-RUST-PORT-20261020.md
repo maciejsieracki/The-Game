@@ -27,8 +27,8 @@ dotykające tych samych plików — zawsze sekwencyjnie, nigdy w tej samej fali.
 
 | # | Temat | Faza | Runda | runId Workflow | Status | Ostatnia aktualizacja |
 |---|---|---|---|---|---|---|
-| 1 | `R-RUSTPORT-P3-17-RUNTIME-DATA-WIRING-Q1` | P3.17 dane JSON w runtime (rekrutacja z `units.json`) + audyt twardych tabel | 1/5 | `wf_fb9c7958-44a` | DISPATCHED | 2026-10-21 |
-| 2 | — | — | — | — | **WOLNY** (naprawa weba zakończona; gałąź `fix/web-memory-leaks-Q1` czeka na test właściciela) | 2026-10-21 |
+| 1 | `R-RUSTPORT-P3-18-HARDCODED-TABLES-Q1` | P3.18 pomiar i usunięcie pozostałych ręcznych tabel danych w `domain/**` (diplomacy 0/64 rozjechane, improvements, map_generator, ai_turn, trade, barbarians) | 1/5 | (patrz niżej) | DISPATCHED | 2026-10-21 |
+| 2 | — | — | — | — | **WOLNY, ŚWIADOMIE** (P3.19 OwnerRef/CampId po P3.18 — te same pliki domeny; RR-T2/T5 kamera+materiały wymagają GPU/wyników P4.8–P4.10) | 2026-10-21 |
 | 3 | `R-RUSTPORT-P4-7-NEW-MODELS-SPEC-Q1` | P4.7 specyfikacja nowych modeli + port nieużywanych + routing — Opus 5.5 | 1/5 | `wf_81bfcfa8-d0e` | DISPATCHED | 2026-10-21 |
 | 4 | `R-RUSTPORT-P4-8-GEOMETRY-PRIMS-Q1` | RR-T4 prymitywy geometrii zgodne z Three r169 (`renderer/src/geom`) — Opus 5.5 | 1/5 | `wf_cff53e71-9f8` | DISPATCHED | 2026-10-21 |
 | 5 | `R-RUSTPORT-P4-9-ASSET-REGISTRY-Q1` | RR-T6 rejestr zasobów + test „N tur” (`renderer/src/assets`) — Opus 5.5 | 1/5 | `wf_d19f2ede-7f8` | DISPATCHED | 2026-10-21 |
