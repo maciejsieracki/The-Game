@@ -11,12 +11,39 @@ produced by **web code**, not by a re-implementation:
   (`CameraController`), `render/mapRenderStyle.ts`,
   `render/teren-gory-wzgorza.ts`, `game/terrain-improvements.ts`,
   `types/hex.ts`;
-- literal copies (marked `// LITERAL <file>:<lines>` in `gen.ts`) of the
+- copies (marked `// LITERAL <file>:<lines>` in `gen.ts`) of the
   fragments that cannot be imported without DOM/WebGL: `scene.ts`
   (`hexPrismNoBottomGeo`, `isDryLandTeren`, `terrainVis`, prism and solid
   placement loop, `resolveTerrainPick`, `ZERO_MATRIX`, `terrainPickMeshes`),
   `units.ts` (`terrainTopY`, `unitTerrainRelief`, `pickUnitIdAt`),
-  `main.ts` (`pickHexAt`, `pickMapTarget`).
+  `main.ts` (`pickHexAt`, `pickMapTarget`). `LITERAL` means *same logic and
+  arithmetic in the same order*, **not** a character-for-character copy — the
+  adaptations are listed below;
+- one **model** (marked `// MODEL (NIE LITERAL)` in `gen.ts`), not a copy:
+  the effect of fog / cities / LOD on the pick meshes (see below).
+
+## Adaptations (what differs from the web source text)
+
+None of these changes any value that reaches the raycast; regeneration is
+bit-identical to the fixtures (SHA-256 in P4-10 §7).
+
+| Fragment | Adaptation | Why it is neutral for picking |
+|---|---|---|
+| all `LITERAL` fragments | TS types → `any` / removed; source comments removed | type erasure only |
+| `terrainVis` (`scene.ts:166-170`) | `TERRAIN_VISUALS[t]` → `{ height: 0, yOffset: 0 }`, `color` dropped | the civ spec is ignored by `terrainVisualForStyle` for `roblox` (`mapRenderStyle.ts:231`) |
+| `terrainTopY` (`units.ts:214-224`) | `CIV_TERRAIN_TOP[...]` → `{ height: 0, yOffset: 0 }` | same reason |
+| placement loop (`scene.ts:1702-2727`) | `styledTerrain = true`; every `renderStyle` ternary reduced to its `roblox` branch; `B_NO_BOTTOM` fixed to `true` | only style `roblox` is ported (owner decision) |
+| placement loop | removed materials/colours, `castShadow`, `scene.add`, `performance.*`, `*OrigMatrix` bookkeeping | no effect on geometry, instance matrices or hit order |
+| `pickUnitIdAt` (`units.ts:5867-5893`) | `this.tokens` → local `tokens` (synthetic token models) | selection rule unchanged |
+
+**Model, not a copy — fog / cities / LOD** (block after `LITERAL scene.ts:3684, 3691`):
+- prism of a hidden hex (`sig === 2`) → `ZERO_MATRIX`, as in `setFog` `scene.ts:3591-3592`;
+- mountain/hill solids of a hidden hex (`bri <= 0`) or under a city → `ZERO_MATRIX`,
+  as in `applyTerrainFog` `scene.ts:3281-3302` and `hideInstancedOnHex`
+  `scene.ts:3145-3158` called from `hideDecorAtHex` `scene.ts:3168-3184`;
+- LOD `visible = zoomFlags.styledDecor` (`scene.ts:3370-3375`);
+- the roblox **ocean-hide** rule (`scene.ts:3629-3637`) is **not** modelled —
+  `NIE_ZMIERZONO`, P4-10 §5.1.
 
 Unit token models are **synthetic** (Three `Box`/`Cylinder`/`Plane`
 geometries with front, back and double-sided materials); they exercise the

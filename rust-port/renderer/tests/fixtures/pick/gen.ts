@@ -5,11 +5,17 @@
 //  - DOSŁOWNE moduły weba z `git archive edb8fb56 gra/src gra/data`
 //    (picker.ts, camera.ts, hexutil.ts, mapRenderStyle.ts, teren-gory-wzgorza.ts,
 //     terrain-improvements.ts, types/hex.ts) — importowane, nie przepisywane,
-//  - DOSŁOWNE kopie fragmentów, których nie da się zaimportować bez DOM/WebGL
+//  - kopie fragmentów, których nie da się zaimportować bez DOM/WebGL
 //    (scene.ts: hexPrismNoBottomGeo, isDryLandTeren, terrainVis, pętla rozmieszczenia
 //     pryzmów i brył, resolveTerrainPick, ZERO_MATRIX; units.ts: terrainTopY,
 //     unitTerrainRelief, pickUnitIdAt; main.ts: pickHexAt, pickMapTarget) — każda
-//     oznaczona `// LITERAL <plik>:<linie>`.
+//     oznaczona `// LITERAL <plik>:<linie>`. „LITERAL” = ta sama logika i arytmetyka
+//     w tej samej kolejności, NIE kopia znak po znaku: typy → `any`, komentarze usunięte,
+//     ustalony styl roblox (gałęzie `renderStyle`/`styledTerrain=true`/`B_NO_BOTTOM=true`),
+//     martwe dla roblox pola civ (`TERRAIN_VISUALS[t]`, `CIV_TERRAIN_TOP`) → `{height:0,yOffset:0}`,
+//     usunięte materiały/kolory/`castShadow`/`scene.add`/`performance`/`*OrigMatrix`.
+//     Pełna lista: README.md §Adaptations i P4-10 §7.1. Fragmenty oznaczone `MODEL`
+//     (mgła) NIE są kopią — odtwarzają skutek kilku funkcji weba (opis przy nich).
 // Wyjście: JSON-y w katalogu podanym jako argv[2].
 
 import * as THREE from 'three';
@@ -236,8 +242,13 @@ function buildPickScene(spec: MapSpec) {
   // LITERAL scene.ts:3684, 3691
   const terrainPickMeshes: THREE.InstancedMesh[] = [...instancedMeshes, ...goraInst, ...wzgorzeInst];
   refreshInstancedPickBounds(terrainPickMeshes);
-  // Mgła (scene.ts setFog → ZERO_MATRIX dla heksa ukrytego; hideInstancedOnHex dla brył
-  // pod mgłą/miastem) i LOD (scene.ts:3371-3373 visible = zoomFlags.styledDecor).
+  // MODEL (NIE LITERAL) — skutek mgły/miast/LOD na meshach pickingu, nie kopia kodu:
+  //  - pryzm heksa ukrytego (sig === 2) → ZERO_MATRIX: scene.ts:3591-3592 (setFog);
+  //  - bryły gór/wzgórz ukrytego heksa (bri <= 0) lub pod miastem (decorHiddenHexKeys)
+  //    → ZERO_MATRIX: scene.ts:3281-3302 (applyTerrainFog) oraz 3145-3158 (hideInstancedOnHex)
+  //    wołane z 3168-3184 (hideDecorAtHex);
+  //  - LOD: visible = zoomFlags.styledDecor (scene.ts:3370-3375);
+  //  - reguła ocean-hide (scene.ts:3629-3637) NIE jest modelowana (P4-10 §5 NIE_ZMIERZONO).
   for (const h of spec.hexes) {
     const key = `${h.q},${h.r}`;
     if (h.hidden) {

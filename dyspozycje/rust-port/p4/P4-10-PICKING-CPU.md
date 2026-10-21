@@ -17,7 +17,8 @@ Decyzja D-RR-3 (domyślna orkiestratora, do rewizji przez właściciela): dziwac
   macierze kamery, promienie, wierzchołki pryzmów i macierze instancji są równe **bit w bit** (testy niżej).
 - Dane referencyjne: 20 174 punkty ekranowe w 55 scenariuszach (5 map × 4–5 kamer × 3 viewporty), 1 233 wektory
   `worldToAxial`, 23 wartości `Math.round`, 6 przypadków `clientRectToNdc` — wygenerowane przez **kod weba**
-  (moduły z `edb8fb56` importowane bez zmian + dosłowne kopie fragmentów `scene.ts`/`units.ts`/`main.ts`, three@0.169.0).
+  (moduły z `edb8fb56` importowane bez zmian + kopie logiki fragmentów `scene.ts`/`units.ts`/`main.ts` z jawnie wypisanymi
+  adaptacjami (§7.1) + jeden model mgły/miast/LOD (§7.1), three@0.169.0).
 - Wynik: **20 174 / 20 174 zgodnych (100%)**, wszystkie bramki `EXIT=0` (§8). Test mutacyjny: każda z 9 celowo
   wprowadzonych rozbieżności (§6) jest wykrywana przez zestaw złoty.
 - Zero nowych zależności (`Cargo.toml`/`Cargo.lock` bez zmian; parser JSON testu napisany w pliku testu).
@@ -145,7 +146,7 @@ Decyzja D-RR-3 (domyślna orkiestratora, do rewizji przez właściciela): dziwac
 Zgodność 100% dotyczy wektorów z funkcji weba w harnessie node (moduły weba + three@0.169.0). Nie zmierzono:
 
 1. **Realna scena gry** (`buildScene` z prawdziwą mapą, regułą „ocean-hide” A5 w `setFog`, miastami): harness odtwarza tylko część
-   `buildScene` istotną dla pickingu (dosłowne kopie). Do sprawdzenia przez właściciela: nagrać w przeglądarce `pickMapTarget` dla siatki
+   `buildScene` istotną dla pickingu (kopie logiki z adaptacjami i model mgły — §7.1). Do sprawdzenia przez właściciela: nagrać w przeglądarce `pickMapTarget` dla siatki
    punktów na jednej zapisanej grze (np. 64×36 + punkty z P4-3 §3.7) i porównać z Rust (P4-3 §3.8, wymaga zgody na harness Playwright).
 2. **Prawdziwe modele jednostek** (buildery P4-4, `_tokenPlacement`, przesunięcie na mieście `units.ts:5930-5935`, relief na wzgórzu/górze
    `units.ts:219-224`, łodzie `units.ts:6055-6056`, ewentualne `Sprite`/`Line` w tokenach — `Sprite.raycast` ma inną semantykę). Tu modele syntetyczne.
@@ -196,8 +197,8 @@ cp $S/out/*.json /home/user/The-Game/.claude/worktrees/wf_7fb21ca5-e1d-1/rust-po
 - Determinizm: dwa niezależne uruchomienia dają identyczne pliki; SHA-256 plików w repo:
 
 ```text
-94d4704e90b6d89cec0fc90d47b13e36f9ba86f915f6fad4d33870c4c640bc3a  rust-port/renderer/tests/fixtures/pick/README.md
-1f947f31aa5307ee53aa035403237fc827a6ab3d52228689fd3a0b8cbf1a5ae4  rust-port/renderer/tests/fixtures/pick/gen.ts
+171872afdb32e2be32d3216cf1e9f7231379f04727bd2fffb25f95d351e97a21  rust-port/renderer/tests/fixtures/pick/README.md
+d681dd606827ba89f2a2a8b0c12ae69de1de5f4841b449edfd54570d594d47c2  rust-port/renderer/tests/fixtures/pick/gen.ts
 a99269a102e960878b8792cf86d9e4167fd6ad9bac77e735c72fd4c39c476ce4  rust-port/renderer/tests/fixtures/pick/geometry.json
 cefe210fa76730defec94cafe23ae1645b4e4bef96bd6bd9948d540d294247ca  rust-port/renderer/tests/fixtures/pick/golden_pick.json
 5f1815ee9366e95deef77bba5cab5f33c8d3efd9b5483874b021b46ae07435e8  rust-port/renderer/tests/fixtures/pick/math.json
@@ -214,11 +215,17 @@ e0c1031452dfee80fdeebfb6c7f6f31d623885dcf35bb661f9fa5b68c346f714  rust-port/rend
 //  - DOSŁOWNE moduły weba z `git archive edb8fb56 gra/src gra/data`
 //    (picker.ts, camera.ts, hexutil.ts, mapRenderStyle.ts, teren-gory-wzgorza.ts,
 //     terrain-improvements.ts, types/hex.ts) — importowane, nie przepisywane,
-//  - DOSŁOWNE kopie fragmentów, których nie da się zaimportować bez DOM/WebGL
+//  - kopie fragmentów, których nie da się zaimportować bez DOM/WebGL
 //    (scene.ts: hexPrismNoBottomGeo, isDryLandTeren, terrainVis, pętla rozmieszczenia
 //     pryzmów i brył, resolveTerrainPick, ZERO_MATRIX; units.ts: terrainTopY,
 //     unitTerrainRelief, pickUnitIdAt; main.ts: pickHexAt, pickMapTarget) — każda
-//     oznaczona `// LITERAL <plik>:<linie>`.
+//     oznaczona `// LITERAL <plik>:<linie>`. „LITERAL” = ta sama logika i arytmetyka
+//     w tej samej kolejności, NIE kopia znak po znaku: typy → `any`, komentarze usunięte,
+//     ustalony styl roblox (gałęzie `renderStyle`/`styledTerrain=true`/`B_NO_BOTTOM=true`),
+//     martwe dla roblox pola civ (`TERRAIN_VISUALS[t]`, `CIV_TERRAIN_TOP`) → `{height:0,yOffset:0}`,
+//     usunięte materiały/kolory/`castShadow`/`scene.add`/`performance`/`*OrigMatrix`.
+//     Pełna lista: README.md §Adaptations i P4-10 §7.1. Fragmenty oznaczone `MODEL`
+//     (mgła) NIE są kopią — odtwarzają skutek kilku funkcji weba (opis przy nich).
 // Wyjście: JSON-y w katalogu podanym jako argv[2].
 
 import * as THREE from 'three';
@@ -445,8 +452,13 @@ function buildPickScene(spec: MapSpec) {
   // LITERAL scene.ts:3684, 3691
   const terrainPickMeshes: THREE.InstancedMesh[] = [...instancedMeshes, ...goraInst, ...wzgorzeInst];
   refreshInstancedPickBounds(terrainPickMeshes);
-  // Mgła (scene.ts setFog → ZERO_MATRIX dla heksa ukrytego; hideInstancedOnHex dla brył
-  // pod mgłą/miastem) i LOD (scene.ts:3371-3373 visible = zoomFlags.styledDecor).
+  // MODEL (NIE LITERAL) — skutek mgły/miast/LOD na meshach pickingu, nie kopia kodu:
+  //  - pryzm heksa ukrytego (sig === 2) → ZERO_MATRIX: scene.ts:3591-3592 (setFog);
+  //  - bryły gór/wzgórz ukrytego heksa (bri <= 0) lub pod miastem (decorHiddenHexKeys)
+  //    → ZERO_MATRIX: scene.ts:3281-3302 (applyTerrainFog) oraz 3145-3158 (hideInstancedOnHex)
+  //    wołane z 3168-3184 (hideDecorAtHex);
+  //  - LOD: visible = zoomFlags.styledDecor (scene.ts:3370-3375);
+  //  - reguła ocean-hide (scene.ts:3629-3637) NIE jest modelowana (P4-10 §5 NIE_ZMIERZONO).
   for (const h of spec.hexes) {
     const key = `${h.q},${h.r}`;
     if (h.hidden) {
@@ -870,6 +882,35 @@ let total = 0;
 for (const s of golden.scenarios) total += s.points.length;
 console.log(`scenarios=${golden.scenarios.length} points=${total} w2a=${w2a.length} round=${roundDump.length} ndc=${ndcDump.length}`);
 ```
+
+### 7.1 Adaptacje względem tekstu źródła weba (obrona r1, zarzuty Evaluatora 1–2)
+
+Etykieta `// LITERAL <plik>:<linie>` w `gen.ts` oznacza **tę samą logikę i arytmetykę w tej samej kolejności**, a nie kopię znak po znaku.
+Wcześniejsze sformułowanie „dosłowne kopie” było nieprecyzyjne. Pełna lista adaptacji (żadna nie zmienia wartości trafiających do raycastu):
+
+| Fragment | Adaptacja | Dlaczego neutralna dla pickingu |
+|---|---|---|
+| wszystkie `LITERAL` | typy TS → `any` / usunięte; komentarze źródła usunięte | wymazanie typów |
+| `terrainVis` (`scene.ts:166-170`) | `TERRAIN_VISUALS[t]` → `{ height: 0, yOffset: 0 }`, bez `color` | dla stylu `roblox` `terrainVisualForStyle` ignoruje spec civ (`mapRenderStyle.ts:231`) |
+| `terrainTopY` (`units.ts:214-224`) | `CIV_TERRAIN_TOP[...]` → `{ height: 0, yOffset: 0 }` | jak wyżej |
+| pętla rozmieszczenia (`scene.ts:1702-2727`) | `styledTerrain = true`; z ternarów `renderStyle` tylko gałąź `roblox`; `B_NO_BOTTOM` ustalone na `true` | portowany jest wyłącznie styl `roblox` (decyzja właściciela) |
+| pętla rozmieszczenia | usunięte materiały/kolory, `castShadow`, `scene.add`, `performance.*`, `*OrigMatrix` | bez wpływu na geometrię, macierze instancji i kolejność trafień |
+| `pickUnitIdAt` (`units.ts:5867-5893`) | `this.tokens` → lokalne `tokens` (syntetyczne modele) | reguła wyboru bez zmian |
+
+**MODEL, nie kopia — mgła / miasta / LOD** (blok bezpośrednio po `LITERAL scene.ts:3684, 3691`, teraz oznaczony `// MODEL (NIE LITERAL)`):
+- pryzm heksa ukrytego (`sig === 2`) → `ZERO_MATRIX`, jak `setFog` `scene.ts:3591-3592`;
+- bryły gór/wzgórz heksa ukrytego (`bri <= 0`) lub pod miastem → `ZERO_MATRIX`, jak `applyTerrainFog` `scene.ts:3281-3302`
+  oraz `hideInstancedOnHex` `scene.ts:3145-3158` wołane z `hideDecorAtHex` `scene.ts:3168-3184`;
+- LOD: `visible = zoomFlags.styledDecor` (`scene.ts:3370-3375`);
+- reguła **ocean-hide** roblox (`scene.ts:3629-3637`) **nie** jest modelowana — `NIE_ZMIERZONO` (§5.1).
+
+Dowód neutralności poprawki: zmiana `gen.ts` dotyczy wyłącznie komentarzy; regeneracja świeżym `git archive edb8fb56` +
+three@0.169.0 + esbuild@0.24.0 (node v22.22.0) dała `scenarios=55 points=20174 w2a=1233 round=23 ndc=6` i SHA-256 czterech JSON-ów
+identyczne z powyższymi (bit w bit z fixtures w repo).
+
+Uwaga do zarzutu 3 (odrzucony): `main.ts:1885-1901` jest poprawne — `git show edb8fb56:gra/src/main.ts | grep -n` daje
+`1885: function pickHexAt`, `1894: function pickMapTarget`, a zamykające `}` `pickMapTarget` jest w linii 1901 (1884 jest pusta, 1900 to
+`return pickHexAt(clientX, clientY);`).
 
 ## 8. Bramki — pełne surowe logi
 
