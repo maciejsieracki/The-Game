@@ -1,0 +1,119 @@
+{
+  "_opis": "Obiektywna Moc imperium (kod: Power) — kanon P-A (Maciej 2026-06-26). Suma surowych punktów BEZ mnożnika epoki. Respekt = stosunek Mocy dwóch nacji (dyplomacja).",
+  "_nazewnictwo": {
+    "pl_ui": "Moc",
+    "en": "Power",
+    "wycofane": "Wpływ 0–100 (normalizacja vs lider mapy) — nie używać w UI",
+    "decyzja": "P-C3 ZAMKNIĘTE 2026-06-26",
+    "modul_ts": "power-labels.ts · power-objective.ts"
+  },
+  "_formuly": {
+    "rekrutEkw": "floor(rekruci_biezacy / koszt_werbu[epoka])",
+    "powerBase": "suma składników × współczynnik (patrz skladniki)",
+    "power": "round(powerBase)",
+    "respekt": "round(100 × powerSelf / (powerSelf + powerPartner))"
+  },
+  "mnoznikEpoki": {
+    "_status": "ODRZUCONE (P-B) — wszystkie 1, silnik nie mnoży",
+    "1": 1,
+    "2": 1,
+    "3": 1,
+    "4": 1,
+    "5": 1,
+    "6": 1,
+    "7": 1,
+    "8": 1,
+    "9": 1,
+    "10": 1
+  },
+  "skladniki": {
+    "jednostka_wojskowa": {
+      "pkt": 2.5,
+      "wojskowy": true,
+      "opis": "Suma M_pole armii imperium × pkt (unit-power.ts). Oblężnicze = 0 w armii polowej. P-MOC-BALANS-WAGI (Maciej 2026-08-12): 25 → 2.5 (÷10) — Armia stanowiła 44% Mocy, ponad deklarowany cel kalibracji (~8–17%, patrz kalibracja.cel). `wojskowy: true` — tag filtru widoku Moc militarna/gospodarcza w Rankingu (P-MOC-PODZIAL-WIDOK)."
+    },
+    "wygrana_bitwa": {
+      "pkt": 25,
+      "opis": "Legacy flat (NIEAKTYWNE dziś — czytane tylko gdyby opcje.bitwa_power_model wrócił do 'flat_count'; dziś='enemy_m_pre_battle'): liczba wygranych × pkt. P-C2-DEF A: aktywny model enemy_m — WSPÓŁCZYNNIK aktywnej ścieżki ŻYJE W KODZIE (power-objective.ts computeObjectivePower, bitwyCoeff), NIE w tym polu pkt: 1 → 2 od P-MOC-BALANS-WAGI (Maciej 2026-08-12, ×2 zgodnie z jego \"dziś wsp. 1\" — to opisuje AKTYWNY hardcoded coeff, nie ten dormant pkt=25). Ten `pkt` (25) pozostaje bez zmian — dotyczy tylko nieużywanej dziś ścieżki flat, nie wpływa na dzisiejszą rozgrywkę."
+    },
+    "ludek": {
+      "pkt": 5,
+      "opis": "Suma slotów populacji (ludki) we wszystkich miastach — NIE ludność absolutna. @10 miast typowo ~100 ludków."
+    },
+    "rekrut_ekw_jednostki": {
+      "pkt": 10,
+      "wojskowy": true,
+      "opis": "Ekwiwalent jednostek z puli Manpower: floor(rekruci / koszt_werbu[epoka]). Pełna pula ≈ ludki×10 szt. @ ep.1. P-MOC-BALANS-WAGI (Maciej 2026-08-12): 5 → 10 (×2). `wojskowy: true` — tag filtru widoku Rankingu (P-MOC-PODZIAL-WIDOK)."
+    },
+    "miasto": {
+      "pkt": 50,
+      "opis": "Każde miasto imperium."
+    },
+    "heks_terytorium": {
+      "pkt": 1.0,
+      "opis": "Heks w zasięgu terytorium miast (isInTerritory). P-MOC-BALANS-WAGI (Maciej 2026-08-12): 0.5 → 1.0 (×2)."
+    },
+    "budynki": {
+      "pkt": 5,
+      "opis": "Każdy wybudowany budynek we wszystkich miastach."
+    },
+    "tech_zbadane": {
+      "pkt": 80,
+      "opis": "Liczba zbadanych technologii imperium. P-MOC-BALANS-WAGI (Maciej 2026-08-12): 20 → 80 (×4)."
+    },
+    "ulepszenie_terenu": {
+      "pkt": 5,
+      "opis": "Ulepszenia terenu w terytorium imperium (farmy, drogi, hodowla…)."
+    },
+    "kultura_imperium": {
+      "pkt": 0.5,
+      "opis": "KULT-04 A — suma kulturaSkumulowana wszystkich miast imperium × pkt."
+    },
+    "religia_jednosc": {
+      "pkt": 25,
+      "opis": "KULT-04 A — każde miasto z dominującą wiarą państwa × pkt."
+    }
+  },
+  "kalibracja": {
+    "scenariusz": "ep.1, ~10 miast, ~100 ludków (≥10/miasto), 10 jedn., 10 bitew, 8000 rekr. (80 ekw.), 500 heks., 60 budynków, 16 tech, 50 ulepszeń",
+    "powerOczekiwany": 4655,
+    "cel": "Żaden składnik nie dominuje (~8–17% bazy). Bez wag per-cyw — tylko globalne współczynniki. P-MOC-BALANS-WAGI (Maciej 2026-08-12): powerOczekiwany przeliczony 3020 → 4655 po zmianie 6 wag (patrz jednostka_wojskowa/wygrana_bitwa/rekrut_ekw_jednostki/tech_zbadane/heks_terytorium + coeff 'zdobycze' w kodzie). UWAGA — w TYM konkretnym scenariuszu (tylko 16 tech, ep.1) Odkrycia/tech = 1280/4655 ≈ 27,5%, ponad ten sam cel 8–17%; bezpośredni skutek jawnej decyzji właściciela (tech ×4) w scenariuszu z niewielką liczbą technologii, nie błąd przeliczenia — do obserwacji w realnej rozgrywce, nie autonomicznie korygowane."
+  },
+  "opcje": {
+    "liczy_osadnik_w_armii": {
+      "wartosc": true,
+      "typ": "bool",
+      "opis": "P-C1 WYCOFANE — osadnik usunięty z gry; opcja legacy w power-options.ts (no-op)."
+    },
+    "bitwa_wspolczynnik_flat": {
+      "wartosc": false,
+      "typ": "bool",
+      "opis": "Legacy: true = flat 25 pkt/bitwa. P-C2-DEF A: false + bitwa_power_model."
+    },
+    "bitwa_power_model": {
+      "wartosc": "enemy_m_pre_battle",
+      "typ": "string",
+      "opis": "P-C2-DEF A (2026-07-01): pkt/bitwa = suma M_pole pokonanego składu przed walką; bez bonusu underdog."
+    },
+    "hud_etykieta": {
+      "wartosc": "Moc",
+      "typ": "string",
+      "opis": "P-C3 ZAMKNIĘTE: etykieta HUD PL. EN = Power (power-labels.ts MOC_LABEL_EN)."
+    },
+    "hud_etykieta_en": {
+      "wartosc": "Power",
+      "typ": "string",
+      "opis": "P-C3: etykieta EN / docs / i18n."
+    },
+    "mnoznik_epoki_aktywny": {
+      "wartosc": false,
+      "typ": "bool",
+      "opis": "P-B ODRZUCONE — nie włączać (epoka nie mnoży Power)."
+    }
+  },
+  "uwagi": {
+    "power_vs_respekt": "HUD mapy: Moc (absolutna). Dyplomacja: RESPEKT % wobec rozmówcy.",
+    "stary_model": "Wpływ 0–100 (normalizacja vs lider) — wycofany.",
+    "panel_b": "Potega-P-A + Potega-opcje + Manpower-epoki → export-b.py"
+  }
+}
