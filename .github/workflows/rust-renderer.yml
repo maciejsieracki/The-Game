@@ -20,7 +20,8 @@ concurrency:
 
 # GitHub-hosted ubuntu-latest has no GPU.  The `gpu` feature is still built,
 # linted and tested so the wgpu layer cannot rot; tests/gpu_probe.rs then
-# reports "SKIPPED: no GPU adapter" explicitly (visible thanks to --nocapture).
+# writes "SKIPPED: no GPU adapter" explicitly to stderr (visible in a plain
+# `cargo test` run, no --nocapture needed; libtest captures only print macros).
 # A Windows job (DX12/WARP adapter) is intentionally NOT part of this scaffold;
 # it belongs to the embedding spike RR-T1 and needs owner authorization, like
 # the Windows job of rust-engine.yml.
@@ -58,7 +59,7 @@ jobs:
         run: cargo test --locked --all-targets
 
       - name: Tests (feature gpu, probe skips explicitly without adapter)
-        run: cargo test --locked --all-targets --features gpu -- --nocapture
+        run: cargo test --locked --all-targets --features gpu
 
   msrv:
     name: MSRV 1.87 build and tests (feature gpu)
@@ -79,4 +80,4 @@ jobs:
         uses: dtolnay/rust-toolchain@1.87.0
 
       - name: Tests on MSRV with the committed lock
-        run: cargo test --locked --all-targets --features gpu -- --nocapture
+        run: cargo test --locked --all-targets --features gpu
