@@ -28,11 +28,28 @@ dotykające tych samych plików — zawsze sekwencyjnie, nigdy w tej samej fali.
 | # | Temat | Faza | Runda | runId Workflow | Status | Ostatnia aktualizacja |
 |---|---|---|---|---|---|---|
 | 1 | `R-RUSTPORT-P3-4B-IDS-NEWTYPE-REFACTOR-Q1` | P3.4b (newtype ID refactor, poprawiony dispatch) | 1/5 | `wf_afbe5aaf-7a4` | DISPATCHED (w toku) | 2026-10-21 |
-| 2 | `R-RUSTPORT-P3-9-DATA-CONSOLIDATION-Q1` | P3.9 (podpięcie 5 modułów danych do lib.rs, serde_json→[dependencies]) | 1/5 | `wf_8b0cdc58-ca7` | DISPATCHED (w toku) | 2026-10-21 |
-| 3 | — | — | — | — | **WOLNY, ŚWIADOMIE** (tylko 2/6 obsadzone na razie — zalecenie z incydentu INFRA: max 2-3 równoległe worktree kodu Rust do czasu wdrożenia sparse-checkout) | 2026-10-21 |
+| 2 | — | — | — | — | **WOLNY** (P3.9 zamknięty PASS, zintegrowany `9f9ffee7`) | 2026-10-21 |
+| 3 | — | — | — | — | **WOLNY, ŚWIADOMIE** (tylko 1/6 obsadzone — zalecenie z incydentów INFRA: max 2 równoległe worktree kodu Rust do czasu wdrożenia sparse-checkout) | 2026-10-21 |
 | 4 | — | — | — | — | **WOLNY, ŚWIADOMIE** (jw.) | 2026-10-21 |
-| 5 | — | — | — | — | **WOLNY, ŚWIADOMIE** (P3.8-ASSETS dispatch gotowy, czeka na wynik P3.4b/P3.9 i stabilny dysk) | 2026-10-21 |
+| 5 | — | — | — | — | **WOLNY, ŚWIADOMIE** (P3.8-ASSETS dispatch gotowy, czeka na wynik P3.4b i stabilny dysk) | 2026-10-21 |
 | 6 | — | — | — | — | **WOLNY, ŚWIADOMIE** (jw.) | 2026-10-21 |
+
+**P3.9 ZAMKNIĘTY PASS (2026-10-21), zintegrowany `9f9ffee7`.** 5 modułów danych P3.5A-E podpięte pod
+`pub mod data;` w `lib.rs`, `serde_json` → `[dependencies]`. 256/256 testów PASS, zero regresji.
+Szczegóły procesowe (INFRA przerwało Evaluatora, orkiestrator zweryfikował bezpośrednio) w
+`LEDGER.md` i `R-RUSTPORT-P3-9-DATA-CONSOLIDATION-Q1/04-orchestrator-disposition.md`.
+
+**Incydent INFRA #4 (2026-10-21) — ZAMKNIĘTY:** dysk spadł do **0 bajtów wolnych** (100% zajęte),
+do tego stopnia że nawet podstawowe komendy Bash (w tym `df`) chwilowo zawodziły z powodu braku
+miejsca na własny bufor wyjścia narzędzia. Przyczyna: `target/` niesprzątniętych worktree (w tym
+P3.4b 1,2GB, P3.9 Operatora) + dwie zapomniane kopie worktree w scratchpadzie z wczesnej fazy P0
+(`wt` 724MB, `wt-parity-v2` 1,6GB — nieużywane od dawna, nigdy wcześniej nie sprzątnięte, bo leżały
+poza standardowym `git worktree list` z czujności). Posprzątano wszystko → **5,4GB wolne**. **Wniosek,
+teraz NAGLĄCY po 4. powtórce:** sparse-checkout dla worktree kodu Rust jest już nie "do rozważenia",
+tylko wymagany PRZED kolejną falą równoległych tematów kodu — do wdrożenia w najbliższym wolnym
+momencie puli (nie przy obciążonej puli). Do tego czasu: twardy limit 2 równoległe worktree kodu
+Rust, i każdorazowe sprawdzenie `du -sh` wszystkich katalogów scratchpad/worktree (nie tylko
+`git worktree list`) przy każdym podejrzeniu INFRA.
 
 **Pula całkowicie wolna (2026-10-21, po zamknięciu fali P3.5 i P3.4 częściowego):** wszystkie 6
 tematów w locie zamknięte, wszystkie worktree posprzątane, zero `locked`. `origin/rust-port/parity-v2`
