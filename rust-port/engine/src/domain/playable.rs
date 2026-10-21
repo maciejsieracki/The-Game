@@ -8,7 +8,7 @@
 use serde::{Deserialize, Serialize};
 use std::{error::Error, fmt};
 
-use super::{events::*, PlayerId, PositionDto};
+use super::{events::*, CityId, PlayerId, PositionDto, UnitId};
 
 pub const PLAYABLE_STATE_VERSION: u16 = 1;
 const DEFAULT_SEED: u32 = 42;
@@ -291,7 +291,7 @@ pub struct PlayablePlayer {
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct PlayableCity {
-    pub id: u64,
+    pub id: CityId,
     pub owner_id: u64,
     pub name: String,
     pub position: PositionDto,
@@ -306,7 +306,7 @@ pub enum PlayableUnitKind {
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct PlayableUnit {
-    pub id: u64,
+    pub id: UnitId,
     pub owner_id: u64,
     pub kind: PlayableUnitKind,
     pub position: PositionDto,
@@ -421,14 +421,14 @@ impl PlayableGame {
             is_human: true,
         }];
         let cities = vec![PlayableCity {
-            id: CAPITAL_ID,
+            id: CityId::new(CAPITAL_ID),
             owner_id: HUMAN_PLAYER_ID,
             name: capital_name(&params),
             position: PositionDto::new(1, 1),
             is_capital: true,
         }];
         let units = vec![PlayableUnit {
-            id: STARTING_UNIT_ID,
+            id: UnitId::new(STARTING_UNIT_ID),
             owner_id: HUMAN_PLAYER_ID,
             kind: PlayableUnitKind::Warrior,
             position: PositionDto::new(START_X, START_Y),
@@ -493,13 +493,13 @@ impl PlayableGame {
             .state
             .units
             .iter()
-            .find(|unit| unit.id == unit_id)
+            .find(|unit| unit.id.get() == unit_id)
             .ok_or(PlayableError::UnitNotFound(unit_id))?;
         if unit.owner_id != HUMAN_PLAYER_ID {
             return Err(PlayableError::UnitNotOwned(unit_id));
         }
         for candidate in &mut self.state.units {
-            candidate.selected = candidate.id == unit_id;
+            candidate.selected = candidate.id.get() == unit_id;
         }
         self.state.selected_unit_id = Some(unit_id);
         self.state.status = format!("Wybrano jednostkę {}. Kliknij sąsiedni heks.", unit_id);
@@ -526,7 +526,7 @@ impl PlayableGame {
             .state
             .units
             .iter()
-            .position(|unit| unit.id == unit_id)
+            .position(|unit| unit.id.get() == unit_id)
             .ok_or(PlayableError::UnitNotFound(unit_id))?;
         let unit = &self.state.units[unit_index];
         if unit.owner_id != HUMAN_PLAYER_ID {

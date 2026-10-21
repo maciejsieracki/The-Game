@@ -10,7 +10,7 @@
 //! `Civ-AI/Spec-AI-architektura.md`: production commands first, at most one
 //! action per unit, and `endTurn` as the final command.
 
-use civ_engine::domain::UnitId;
+use civ_engine::domain::{CityId, UnitId};
 use serde::{Deserialize, Serialize};
 use std::cmp::Reverse;
 use std::collections::{BTreeMap, BTreeSet, BinaryHeap};
@@ -388,7 +388,7 @@ impl AiUnit {
 /// City snapshot passed to the planner.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct AiCity {
-    pub id: u64,
+    pub id: CityId,
     pub owner_id: u64,
     pub q: i32,
     pub r: i32,
@@ -411,7 +411,7 @@ const fn default_population() -> u32 {
 impl AiCity {
     pub fn new(id: u64, owner_id: u64, q: i32, r: i32) -> Self {
         Self {
-            id,
+            id: CityId::new(id),
             owner_id,
             q,
             r,
@@ -815,7 +815,7 @@ pub fn find_settler_target(
 
 /// Pick one production item for a city without mutating its queue.
 pub fn choose_city_production(input: &AiTurnInput, city_id: u64) -> Option<String> {
-    let city = input.cities.iter().find(|city| city.id == city_id)?;
+    let city = input.cities.iter().find(|city| city.id.get() == city_id)?;
     choose_city_production_for(input, city)
 }
 
@@ -852,7 +852,7 @@ fn choose_city_production_for(input: &AiTurnInput, city: &AiCity) -> Option<Stri
     let mods = input.options.resolved_archetype_mods();
     let early_phase = own_cities.len() < 3;
     let mut built = city.built_buildings.clone();
-    if let Some(recorded_buildings) = input.options.city_buildings.get(&city.id) {
+    if let Some(recorded_buildings) = input.options.city_buildings.get(&city.id.get()) {
         built.extend(recorded_buildings.iter().cloned());
     }
 
@@ -1009,7 +1009,7 @@ pub fn plan_ai_turn(input: &AiTurnInput) -> AiTurnPlan {
     for city in cities {
         if let Some(item_id) = choose_city_production_for(input, city) {
             commands.push(AiCommand::Build {
-                city_id: city.id,
+                city_id: city.id.get(),
                 building_id: item_id,
             });
         }
