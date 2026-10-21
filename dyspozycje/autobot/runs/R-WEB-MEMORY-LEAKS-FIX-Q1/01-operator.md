@@ -90,8 +90,8 @@ Pliki (jawne `git add`): `gra/src/render/cities.ts`, `gra/src/render/memDebug.ts
 Cel: sprawdzić, czy po poprawce liczniki pamięci przestają rosnąć z turami, i porównać z wersją bez poprawki. Potrzebne: Chrome/Edge na komputerze.
 
 **A. Uruchom wersję Z poprawką**
-1. Zbuduj/uruchom grę z gałęzi tego tematu tak, jak zwykle uruchamiasz wersję testową (orkiestrator poda adres po Final Control).
-2. Do adresu dopisz `?memdebug=1` (jeśli w adresie jest już `?`, dopisz `&memdebug=1`). Przykład: `http://localhost:5173/?memdebug=1`.
+1. Zbuduj/uruchom grę z gałęzi tego tematu tak, jak zwykle uruchamiasz wersję testową (orkiestrator poda adres po Final Control). Kroki A–B i 10–11, 12b, 13 działają tak samo w wersji zbudowanej (`vite build`, nazwy klas zminifikowane) i deweloperskiej (`npm run dev` na Twoim komputerze, nazwy klas czytelne). Jedynie krok 12a wymaga wersji deweloperskiej. *(R-WEB-MEMORY-LEAKS-FIX-Q1 r1 obrona, zarzut 2.)*
+2. Do adresu dopisz `?memdebug=1&perfDebug=1` (jeśli w adresie jest już `?`, dopisz `&memdebug=1&perfDebug=1`). Przykład: `http://localhost:5173/?memdebug=1&perfDebug=1`. `perfDebug` jest potrzebny do uczciwego porównania z `main` (krok 9).
 3. Naciśnij **F12** → zakładka **Console**. W polu filtra wpisz `memdebug`.
 4. Zacznij nową grę (najlepiej ta sama mapa/ziarno i ten sam poziom trudności, który dawał spowolnienie), z kilkoma przeciwnikami AI.
 5. Klikaj **Koniec tury**. Po każdej turze w konsoli pojawi się linia:
@@ -105,14 +105,16 @@ Cel: sprawdzić, czy po poprawce liczniki pamięci przestają rosnąć z turami,
 - `jsHeapMB` (tylko Chrome/Edge) — zużycie pamięci JS; po bitwach ręcznych nie powinno trwale skakać w górę.
 
 **B. Porównanie z wersją BEZ poprawki (`origin/main`)**
-7. Uruchom wersję z `origin/main` z `?perfDebug=1` (ta flaga już tam jest; loguje `geometries=`/`textures=` na STARCIE tury — filtr konsoli: `perfDebug`). `?memdebug=1` na `main` nic nie robi.
+7. Uruchom wersję z `origin/main` z `?perfDebug=1` (ta flaga już tam jest; loguje `geometries=`/`textures=` na STARCIE tury gracza — filtr konsoli: `perfDebug`). `?memdebug=1` na `main` nic nie robi.
 8. Zagraj tę samą liczbę tur tym samym scenariuszem i zanotuj `geometries`/`textures` co 10 tur.
-9. Porównaj: na `main` liczby powinny rosnąć szybciej (szczególnie gdy miasta rosną w populacji i zmieniają produkcję). Jeśli obie wersje rosną tak samo i gra tak samo zwalnia — przyczyna niegrywalności leży gdzie indziej (to też jest ważny wynik).
+9. Porównaj **wyłącznie linie `[perfDebug] EOT start` z obu wersji** — to ten sam punkt pomiaru (start tury) i ten sam kod logu w obu wersjach. Linii `[memdebug]` (koniec tury, PO przycięciu cache plakietek) nie zestawiaj z `[perfDebug]` liczba do liczby: różny moment w turze daje różne wartości bez żadnego wycieku; `[memdebug]` służy do oceny trendu w wersji z poprawką i do liczników miast. Porównuj **trend** (przyrost na 10 tur przy podobnej liczbie miast i jednostek), nie pojedyncze wartości. Nie wiadomo z góry, która wersja wyjdzie lepiej — to jest właśnie pomiar (`NIE_ZMIERZONO` do Twojego testu). Jeśli obie wersje rosną tak samo i gra tak samo zwalnia, przyczyna niegrywalności leży gdzie indziej (to też jest ważny wynik). *(Obrona, zarzut 3.)*
 
 **C. Pomiar pamięci w DevTools po N turach AI**
 10. F12 → zakładka **Memory** → zaznacz **Heap snapshot** → **Take snapshot** w turze ~5. Zanotuj rozmiar (np. „85 MB").
 11. Zagraj N tur (np. 50), stocz 2–3 bitwy ręczne. Kliknij ikonę kosza (**Collect garbage**), potem **Take snapshot** ponownie. Zanotuj rozmiar.
-12. (Opcjonalnie) w drugim snapshocie wybierz widok **Comparison** względem pierwszego i wyszukaj `BattleScene` — po poprawce po zakończonych bitwach nie powinno zostawać ich więcej niż ~0–1.
+12. (Opcjonalnie) sprawdzenie, czy zakończone bitwy nie wiszą w pamięci (M3):
+    - **12a — tylko wersja deweloperska (`npm run dev`):** w drugim snapshocie wybierz widok **Comparison** względem pierwszego i wyszukaj `BattleScene`. W wersji zbudowanej (`vite build`) ta nazwa jest zminifikowana i wyszukiwanie nic nie znajdzie, więc tam użyj 12b.
+    - **12b — działa w każdej wersji:** w zakładce **Console** (poza bitwą, na mapie świata) wpisz `getEventListeners(document).click?.length` i `getEventListeners(window).resize?.length`. To polecenie konsoli DevTools Chrome/Edge, nie kod gry. Zanotuj obie liczby, stocz jedną bitwę ręczną z fazą rozstawienia, wróć na mapę i wpisz je ponownie. Zrób tak przy 2–3 bitwach. Na `origin/main` po każdej takiej bitwie oczekiwany jest trwały przyrost, bo dwa nasłuchiwacze sceny bitwy nie były zdejmowane (`addEventListener` w `battleScene.ts:11929`, `:13263`, `:13524`, `:18107` na `edb8fb56`). W wersji z poprawką liczby powinny wracać do wartości sprzed bitwy. Inne części gry mogą dokładać własne nasłuchiwacze, więc patrz na przyrost po bitwie, nie na wartość bezwzględną. *(Obrona, zarzut 2.)*
 13. Zakładka **Performance** → **Record** → 1–2 tury → **Stop**: porównaj czas „Koniec tury" w turze ~5 i ~60 dla obu wersji.
 14. Powtórz 10–13 na wersji z `origin/main` i porównaj liczby.
 

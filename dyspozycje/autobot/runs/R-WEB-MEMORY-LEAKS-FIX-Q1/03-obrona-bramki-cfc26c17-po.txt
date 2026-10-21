@@ -1,0 +1,692 @@
+### git rev-parse HEAD
+cfc26c17630cf9c3a00518e7b50afbff664cff5f
+### git status --short (gra/src)
+M  src/battle/battleScene.ts
+M  src/main.ts
+M  src/render/cities.ts
+A  src/render/memDebug.ts
+### npm ci
+  npm audit fix --force
+
+Run `npm audit` for details.
+EXIT=0
+### npx tsc --noEmit
+EXIT=0
+### node tools/logic-test.cjs
+[logic-test] Bundling src/ with esbuild...
+[logic-test] Bundle written to /home/user/The-Game/.claude/worktrees/wf_d931a7e7-06e-3/gra/tools/.logic-bundle.cjs
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=8 terrain=15 landSea=119 relief=93 coast=18 riversMain=1071 riversFill=1117 forest=5 deposits=15 starts=58 total=2520
+PASS  [1] generateMap hexes > 100
+PASS  [2] computeStartPlacements has playerStart
+PASS  [3] computeStartPlacements aiStarts >= 3
+PASS  [4] placeStartingUnits returns empty (A-START-01)
+PASS  [5] synthetic settler category === "osadnik"
+PASS  [6] computeReachable returns size > 0
+PASS  [7] computeReachable does NOT contain settler own hex
+PASS  [8] computePath returns non-empty path
+PASS  [9] computePath last step === dest
+PASS  [10] computePath does not include start hex
+PASS  [11] computeVisible includes settler own hex
+PASS  [12] every key in computeVisible exists in map.hexes
+PASS  [13] cityRangeForPopulation(4) === 5 (min start)
+PASS  [14] cityRangeForPopulation(9) === 9
+PASS  [15] cityRangeForPopulation(20) === 15 (cap)
+PASS  [16] citySightRadius(9,0) === 9
+PASS  [17] citySightRadius(1,0) === 5
+PASS  [18] computePlayerVisibility city pop9 radius <= 9
+PASS  [19] computePlayerVisibility city pop9 radius >= 9 at edge
+PASS  [20] computePlayerVisibility start fallback radius <= 5
+PASS  [21] unitsVisibleOnMap always shows player units
+PASS  [22] unitsVisibleOnMap hides enemy outside current vision
+PASS  [23] unitsVisibleOnMap shows enemy on visible hex
+PASS  [24] unitsVisibleOnMap shows own garnizon (token na heksie miasta)
+PASS  [25] unitsVisibleOnMap hides enemy garnizon even on visible hex
+PASS  [26] canFoundCity on settler (land) returns ok=true
+PASS  [27] canFoundCity on water hex returns reason="morze"
+PASS  [28] foundCity returns non-null
+PASS  [29] foundCity population === 1
+PASS  [30] MIN_CITY_DISTANCE = 4 heksy (R-AI-KOLONIZACJA, było 5)
+PASS  [31] canFoundCity near city returns "za blisko innego miasta"
+PASS  [32] canFoundCity far from city returns ok=true
+PASS  [33] buildEconParams returns finite progWzrostuWspolczynnik
+PASS  [34] buildEconParams trade-science slider default === 20
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=1 terrain=6 landSea=84 relief=88 coast=16 riversMain=329 riversFill=760 forest=3 deposits=12 starts=53 total=1351
+PASS  [35] economy: player start hex resolved
+PASS  [36] economy: foundCity for tick test non-null
+PASS  [37] economy: workedTilesForCity returns 1..7 tiles
+PASS  [38] economy: every worked tile has a terenBazowy
+PASS  [39] economy: advanceCityEconomy processed 1 city
+PASS  [40] economy: aggregate yields are finite numbers
+PASS  [41] economy: city food store is a number >= 0 or undefined (oblezenie-only field)
+PASS  [42] economy: readCityFoodBuffer zawsze zwraca skończoną liczbę >= 0 (7 przypadków)
+PASS  [43] economy: readCityFoodBuffer(-3) klampuje do 0 (nie przepuszcza ujemnego bufora)
+PASS  [44] economy: readCityFoodBuffer czyta legacy { aktualny } ze starego zapisu
+PASS  [45] economy: population never goes below 1
+PASS  [46] economy: per-city result carries zywnoscNetto
+PASS  [47] research: fresh state era === 1
+PASS  [48] research: fresh state empty treasury+science
+PASS  [49] research: fresh state nothing researched + no current tech
+PASS  [50] research: fresh money multiplier === 1
+PASS  [51] research: found multi-prereq tech (Jeździectwo)
+PASS  [52] research: parsePrereqs splits "A + B" into 2 ids
+PASS  [53] research: prereqsMet false when prereqs missing
+PASS  [54] research: prereqsMet true when all prereqs present
+PASS  [55] research: with no research, only prereq-free techs available
+PASS  [56] research: a tech with prereqs is NOT available initially
+PASS  [57] research: cheapestAvailable returns an available prereq-free tech
+PASS  [58] research: cheapestAvailable has the minimum available cost
+PASS  [59] research: after all Kamień tier 1-2 techs, Brązownictwo becomes available
+PASS  [60] research: found Obróbka drewna (cost 5)
+PASS  [61] research: completing a tech moves it into zbadane
+PASS  [62] research: completing a tech deducts its cost from science
+PASS  [63] research: researchStep reports the completed tech
+PASS  [64] research: after spending all science, a new (different) tech is selected
+PASS  [65] research: insufficient science completes nothing
+PASS  [66] research: insufficient science leaves the pool untouched
+PASS  [67] research: era tech (Brązownictwo) marks the era-advance flag
+PASS  [68] research: era tech bumps player.era by 1
+PASS  [69] research: isEraAdvanceTech true for Brązownictwo
+PASS  [70] research: found Waluta (money tech)
+PASS  [71] research: isMoneyTech true for Waluta
+PASS  [72] research: money tech (Waluta) sets the money flag in completion
+PASS  [73] research: money tech sets pieniadzMnoznik to PIENIADZ_MNOZNIK (x10)
+PASS  [74] research: a large science budget completes multiple techs
+PASS  [75] research: cascade never researches a tech twice
+PASS  [76] research: cascade leaves no available tech behind when fully funded
+PASS  [77] player-research: setPlayerResearchTarget returns true for valid target
+PASS  [78] player-research: playerResearchTargetId set to chosen tech
+PASS  [79] player-research: setPlayerResearchTarget rejects completed tech
+PASS  [80] player-research: playerResearchTargetId unchanged on rejection
+PASS  [81] player-research: setPlayerResearchTarget rejects unmet prereqs
+PASS  [82] player-research: target set before researchStep
+PASS  [83] player-research: researchStep completes the player-chosen tech
+PASS  [84] player-research: playerResearchTargetId cleared after completion
+PASS  [85] player-research: Brązownictwo added to zbadane
+PASS  [86] player-research: no target -> researchStep picks first available (default)
+PASS  [87] player-research: default does not clear playerResearchTargetId (was null)
+PASS  [88] player-research: getResearchState pula equals nauka
+PASS  [89] player-research: getResearchState targetId equals chosen tech
+PASS  [90] player-research: getResearchState kosztCelu equals tech cost
+PASS  [91] player-research: getResearchState postepFraction = 0.5
+PASS  [92] player-research: getResearchState turnsLeft correct
+PASS  [93] player-research: getResearchState uses badana as fallback target
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=1 terrain=7 landSea=131 relief=72 coast=21 riversMain=299 riversFill=804 forest=3 deposits=8 starts=42 total=1388
+PASS  [94] mapgen: generated map has BOTH land and water
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=1 terrain=5 landSea=62 relief=74 coast=14 riversMain=177 riversFill=796 forest=3 deposits=9 starts=44 total=1185
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=1 terrain=4 landSea=62 relief=97 coast=20 riversMain=201 riversFill=771 forest=3 deposits=8 starts=41 total=1210
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=0 terrain=4 landSea=63 relief=62 coast=14 riversMain=167 riversFill=656 forest=3 deposits=8 starts=39 total=1015
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=0 terrain=5 landSea=59 relief=67 coast=12 riversMain=336 riversFill=884 forest=3 deposits=8 starts=37 total=1413
+PASS  [95] mapgen: deposits obey terrain rules (ruda Wzgorza/Gory, glina Laka/coast/river, konie Rownina, wegiel Gory)
+PASS  [96] mapgen: at least some deposits are placed across seeds
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=0 terrain=4 landSea=64 relief=66 coast=13 riversMain=176 riversFill=801 forest=3 deposits=7 starts=38 total=1173
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=1 terrain=3 landSea=67 relief=97 coast=21 riversMain=189 riversFill=782 forest=3 deposits=6 starts=44 total=1213
+PASS  [97] mapgen: deposits identical for the same seed (deterministic)
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=0 terrain=3 landSea=63 relief=67 coast=14 riversMain=175 riversFill=590 forest=3 deposits=7 starts=39 total=962
+PASS  [98] mapgen: deposits differ for a different seed
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=0 terrain=4 landSea=73 relief=72 coast=12 riversMain=152 riversFill=780 forest=3 deposits=6 starts=38 total=1139
+PASS  [99] mapgen: re-running placeDeposits never overwrites forest
+PASS  [100] mapgen: forest+deposit coexistence on the same hex is allowed (decyzja wlasciciela)
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=0 terrain=3 landSea=59 relief=66 coast=12 riversMain=163 riversFill=795 forest=4 deposits=8 starts=51 total=1162
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=0 terrain=3 landSea=59 relief=64 coast=12 riversMain=182 riversFill=829 forest=4 deposits=7 starts=40 total=1200
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=0 terrain=4 landSea=71 relief=71 coast=15 riversMain=168 riversFill=600 forest=3 deposits=7 starts=41 total=980
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=0 terrain=4 landSea=61 relief=63 coast=12 riversMain=257 riversFill=807 forest=3 deposits=7 starts=39 total=1253
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=0 terrain=5 landSea=61 relief=70 coast=13 riversMain=216 riversFill=594 forest=7 deposits=7 starts=42 total=1015
+PASS  [101] mapgen: startPositions has >=5 entries, all on land, pairwise distance >= absMinDist (all seeds)
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=0 terrain=10 landSea=82 relief=69 coast=12 riversMain=173 riversFill=776 forest=3 deposits=8 starts=43 total=1176
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=0 terrain=3 landSea=66 relief=67 coast=12 riversMain=190 riversFill=810 forest=3 deposits=6 starts=39 total=1196
+PASS  [102] mapgen: startPositions identical for the same seed (deterministic)
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=0 terrain=4 landSea=68 relief=76 coast=12 riversMain=116 riversFill=541 forest=3 deposits=8 starts=44 total=873
+PASS  [103] mapgen: computeStartPositions helper returns >=5 land starts
+PASS  [104] siege: wall constants retired to 0 in buildings.json mury (flat bonus removed 2026-07-25)
+PASS  [105] siege: exported WALL_BASE_OBRONA/PER_LEVEL match retired (0) data defaults
+PASS  [106] siege: no walls -> zero Obrona bonus
+PASS  [107] siege: level-1 walls add NO flat Obrona bonus (retired; was 5)
+PASS  [108] siege: wall level no longer changes the flat defence bonus (all 0)
+PASS  [109] siege: walls no longer harden Pancerz (retired; flat bonus == 0)
+PASS  [110] siege: hill terrain defence multiplier === HILL_DEFENSE_MULT (1.5)
+PASS  [111] siege: flat terrain has no defence multiplier (1.0)
+PASS  [112] siege: city on a hill carries the terrain multiplier in its bonus
+PASS  [113] siege: applyCityBonus raises defender effective Obrona on walled hill
+PASS  [114] siege: wall level no longer changes damage dealt here (flat bonus retired; was less)
+PASS  [115] siege: both engagements produced a defender HP loss (sanity)
+PASS  [116] siege: an overwhelming attacker defeats the garrison defender
+PASS  [117] siege: a city with no garrison is capturable
+PASS  [118] siege: captureCity transfers ownership to the new owner
+PASS  [119] siege: captureCity is PURE (does not mutate the input city)
+PASS  [120] siege: captured city has an empty garrison and is no longer fortified
+PASS  [121] siege: a defended city is NOT capturable
+PASS  [122] siege: captureCity refuses to flip a defended city
+PASS  [123] siege: a garrison of only dead units is capturable
+PASS  [124] siege: adjacent enemy may capture an undefended city
+PASS  [125] siege: a non-adjacent enemy may NOT capture (distance > 1)
+PASS  [126] siege: the owner cannot "capture" their own city
+PASS  [127] siege: makeMilitia builds a defender from ~20% of population
+PASS  [128] siege: militia is weaker than a Stone-age Warrior (half strength)
+PASS  [129] siege: a city with no population raises no militia
+PASS  [130] siege: effectiveGarrison falls back to militia for an empty garrison
+PASS  [131] siege: a militia-defended city is engaged (not a free walk-in)
+PASS  [132] siege: same seed => identical outcome, HP losses and round count (deterministic)
+PASS  [133] siege: resolveSiegeAttack never throws and returns finite HP for another seed
+PASS  [134] siege: hitChance clamps to [10,90] and matches 50+(A-D)*5
+PASS  [135] siege: baseDamage = max(1, A-Panc+Przeb) + Uderzenie only on charge
+PASS  [136] order: loadOrderParams reads T1/T2 from society-params.json (normal)
+PASS  [137] order: loadOrderParams reads the Szczęście/Prawo weights from the json
+PASS  [138] order: loadOrderParams scales by difficulty (easy T1=-1, hard T1=1)
+PASS  [139] order: loadOrderParams falls back to constants when block absent
+PASS  [140] order: loadOrderParams falls back per missing key (partial block)
+PASS  [141] order: Order rises with Szczęście
+PASS  [142] order: Order rises with Prawo
+PASS  [143] order: Order is monotonic non-decreasing across an input sweep
+PASS  [144] order: default formula is the average of Szczęście and Prawo (0.5/0.5)
+PASS  [145] order: weights tilt the sum (wP=1,wS=0 => Order === Prawo)
+PASS  [146] order: orderTier returns unrest below T1
+PASS  [147] order: orderTier returns order at/above T2
+PASS  [148] order: orderTier returns neutral between T1 and T2
+PASS  [149] order: unrest effects penalise production+growth+yields and carry revolt risk
+PASS  [150] order: neutral effects are all-1 with no revolt risk
+PASS  [151] order: orderEffectsToYieldMults maps trade bonus to pieniadz on order tier
+PASS  [152] order: pickRevoltMigrationTarget picks highest-order city of same owner
+PASS  [153] order: pickRevoltMigrationTarget returns null when no other city
+PASS  [154] order: loadOrderParams reads B2 unrest yield penalties from json
+PASS  [155] order: order-tier effects give a production+trade bonus and no risk
+PASS  [156] order: the three tiers yield strictly different production multipliers
+PASS  [157] order: revoltRisk is clamped to [0,1]
+PASS  [158] order: production multiplier floored at 0 for an extreme penalty
+PASS  [159] order: computeOrder is deterministic
+PASS  [160] order: evaluateOrder is deterministic (order+tier+effects)
+PASS  [161] order: non-finite inputs are coerced to 0 (NaN-safe, finite output)
+PASS  [162] order: evaluateOrder flags unrest for very low Szczęście+Prawo
+PASS  [163] order: evaluateOrder flags the order bonus for high Szczęście+Prawo
+PASS  [164] culture: loadCultureParams reads border thresholds from society-params.json (normal 100/250/500)
+PASS  [165] culture: cultureThresholds returns the sorted threshold triple
+PASS  [166] culture: loadCultureParams falls back to 100/250/500 when block absent
+PASS  [167] culture: loadCultureParams scales by difficulty (easy thresholds lower than hard)
+PASS  [168] culture: cityBorderRadius is 0 below the first threshold
+PASS  [169] culture: cityBorderRadius is 1 at/above prog1, 2 at prog2, 3 at prog3
+PASS  [170] culture: cityBorderRadius is NaN-safe (coerces to 0)
+PASS  [171] culture: accumulateCulture crossing a threshold expands the border radius
+PASS  [172] culture: accumulateCulture within a band does NOT expand the border
+PASS  [173] culture: accumulateCulture is deterministic and treats negative gain as 0
+PASS  [174] culture: cultureHappiness gives the full-unity bonus at 100% own culture
+PASS  [175] culture: cultureHappiness gives a smaller bonus at >=75% and neutral at 50%
+PASS  [176] culture: cultureHappiness penalises foreign-dominated cities (<50% and <25%)
+PASS  [177] culture: cultureHappiness defaults missing share to 100% (full bonus)
+PASS  [178] culture: convertCulture raises own-culture share toward 1.0
+PASS  [179] culture: a Biblioteka converts culture strictly faster than without
+PASS  [180] culture: Swiatynia (religious-only building, B-KULT-REL split) has NO effect on culture conversion
+PASS  [181] culture: convertCulture caps the per-turn rate (cap from params)
+PASS  [182] religion: loadReligionParams reads the 50% dominance threshold from society-params.json
+PASS  [183] religion: loadReligionParams falls back (dominance 50%) when block absent
+PASS  [184] religion: civReligion maps a civ from society-params.json (Grecy -> Politeizm olimpijski)
+PASS  [185] religion: civReligion returns null for an unknown civ
+PASS  [186] religion: isKnownCiv validates civ names against civs.json
+PASS  [187] religion: dominantReligion returns the >50% faith
+PASS  [188] religion: dominantReligion returns none when no faith exceeds 50% (split)
+PASS  [189] religion: dominantReligion returns none for an empty city
+PASS  [190] religion: dominance is exclusive at exactly 50% (must EXCEED the threshold)
+PASS  [191] religion: religionHappiness rewards our dominant religion and penalises a foreign one
+PASS  [192] religion: convertViaTemple shifts share toward the owner religion
+PASS  [193] religion: a temple converts faith strictly faster than without
+PASS  [194] religion: convertViaTemple is deterministic and conserves total adherents
+PASS  [195] religion: repeated convertViaTemple eventually fully converts the city
+PASS  [196] religion: convertViaTemple does nothing without a target or in an empty city
+PASS  [197] religion: spreadReligion reaches in-range neighbours and adds the source faith
+PASS  [198] religion: spreadReligion never reaches an out-of-range neighbour (n3 at dist 5 > max 3)
+PASS  [199] religion: spreadReligion is deterministic for the same seed
+PASS  [200] religion: a Swiatynia lets religion reach at least as many neighbours as without
+PASS  [201] religion: a city with no dominant religion does not spread
+PASS  [202] religion: makeRng (culture-religion) is a deterministic [0,1) generator for a fixed seed
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=1 terrain=6 landSea=71 relief=73 coast=14 riversMain=349 riversFill=703 forest=3 deposits=8 starts=38 total=1266
+PASS  [203] cityfix: found a valid founding hex in test map
+PASS  [204] cityfix: canFoundCity passes for first city (no territory restriction)
+PASS  [205] cityfix: foundCityAt returns non-null city
+PASS  [206] cityfix: city has correct q,r
+PASS  [207] cityfix: city has id=city0
+PASS  [208] cityfix: city ownerId=0
+PASS  [209] cityfix: city population=1
+PASS  [210] cityfix: cities array has 1 city after push
+PASS  [211] cityfix: city coords in map.hexes
+PASS  [212] cityfix: after 1st city, playerCityNodes has 1 node
+PASS  [213] cityfix: pop1 territory radius is 5 (B min start)
+
+LOGIC OK (213/213)
+EXIT=0
+### node tools/tech-tree-test.cjs
+tech-tree-test: 19 pass, 0 fail
+EXIT=0
+### node tools/research-test.cjs
+
+--- T1: pusta lista → Garncarstwo ---
+  PASS: returns non-null when techs available
+  PASS: empty done → Garncarstwo (score 228, highest) (got "Garncarstwo", want "Garncarstwo")
+
+--- T2: nie wybiera juz zbadanej ---
+  PASS: does not re-choose Garncarstwo when already researched
+  PASS: returns something when other techs available
+
+--- T3: prereqy nie spelnione → nie wybierz ---
+  PASS: Brazownictwo not chosen without Garncarstwo prereq
+  PASS: Kolo not chosen without Oswojenie prereq
+  PASS: Jezdziectwo not chosen without both prereqs
+  PASS: chosen is Garncarstwo (no prereqs needed, highest score) (got "Garncarstwo", want "Garncarstwo")
+
+--- T4: po Garncarstwo → sensowna nastepna ---
+  PASS: returns non-null with Garncarstwo done
+  PASS: does not re-pick Garncarstwo
+  PASS: sensible tech after Garncarstwo: Oswojenie zwierzat
+  PASS: Oswojenie (food+econ=133) beats Brazownictwo (126) (got "Oswojenie zwierzat", want "Oswojenie zwierzat")
+
+--- T4b: Garncarstwo najwyzszy score L1 ---
+  PASS: L1 no-prereq: Garncarstwo wins (score 228 >> others) (got "Garncarstwo", want "Garncarstwo")
+
+--- T5: nauka+2 → Garncarstwo nadal top ---
+  PASS: nauka+2: returns non-null
+  PASS: nauka+2 early: Garncarstwo still top (268 >> others) (got "Garncarstwo", want "Garncarstwo")
+
+--- T5b: Sumer nauka+2, done=Garncarstwo+Obrobka drewna ---
+  PASS: Sumer with prereqs: returns non-null
+  PASS: Sumer early: Oswojenie (173) > Brazownictwo (166) (got "Oswojenie zwierzat", want "Oswojenie zwierzat")
+
+--- T6: zagrozone + Garncarstwo done → Brazownictwo ---
+  PASS: under threat: returns non-null
+  PASS: under threat with Garncarstwo done: Brazownictwo (206) wins (got "Brazownictwo", want "Brazownictwo")
+
+--- T6b: zagrozone bez prereqow → Garncarstwo (228) wygrywa ---
+  PASS: under threat, empty done: Garncarstwo (228) > Murarstwo (136) (got "Garncarstwo", want "Garncarstwo")
+
+--- T7: Spichlerz zbudowany → Oswojenie wygrywa ---
+  PASS: Spichlerz built: Oswojenie (133) > Garncarstwo (108) (got "Oswojenie zwierzat", want "Oswojenie zwierzat")
+
+--- T8: faza srodkowa, done=Garncarstwo+Brazownictwo ---
+  PASS: mid phase: returns non-null
+  PASS: mid phase: sensible tech choice: Wojskowosc
+
+--- T8b: faza srodkowa, done=Brazownictwo only → Garncarstwo ---
+  PASS: mid phase Brazownictwo done: non-null
+  PASS: mid phase with only Brazownictwo: Garncarstwo (228) is still top (got "Garncarstwo", want "Garncarstwo")
+
+--- T9: wszystko zbadane → null ---
+  PASS: all researched → returns null (got null, want null)
+
+--- T10: akceptuje Set i Array ---
+  PASS: Set and Array produce same result (got "Oswojenie zwierzat", want "Oswojenie zwierzat")
+  PASS: returns non-null with Array input
+
+--- T11: Jezdziectwo wymaga Kolo + Brazownictwo oba ---
+  PASS: Jezdziectwo not available with only Kolo (missing Brazownictwo)
+  PASS: Jezdziectwo not available with only Brazownictwo (missing Kolo)
+  PASS: with both prereqs: non-null result
+  PASS: with all prereqs: Wojskowosc (97) wins over Pismo (92) and Jezdziectwo (60) (got "Wojskowosc", want "Wojskowosc")
+
+--- T12: pusta lista techData → null ---
+  PASS: empty tech list → null (got null, want null)
+
+========================================
+PASSED: 33 / FAILED: 0 / TOTAL: 33
+ALL GREEN
+EXIT=0
+### node tools/unit-replace-test.cjs
+
+[unit-replace-test] Running tests...
+
+1. Rzym / Zelazo -- zamienniki dla Hastati (Typ=Swordsman)
+  [OK] lista niepusta
+  [OK] Hastati nie zastepuje samej siebie
+  [OK] zawiera inny miecznik tego samego Typ (Wojownik, uniwersalny)
+  [OK] zawiera Evocati (Rzym, Typ=Swordsman, odblokowany w Zelazie)
+  [OK] NIE zawiera Hieros Lochos (Grecja != Rzym)
+  [OK] każda pozycja ma kind=jednostka i liczbowy koszt
+
+2. "Wojownik tyrreński" (Typ=Offensive) -> dochodzi "Evocati" (Typ=Swordsman)
+  [OK] Evocati obecny mimo innego Typ (pole "Zastąp specjalnie")
+  [OK] nie zastepuje samej siebie
+
+2b. Bez tech "Hutnictwo żelaza" -- Evocati NIE jest jeszcze "dostępny", znika z listy
+  [OK] Evocati zniknal (nieodblokowany w epoce Brazu)
+
+3. Nieznana nazwa jednostki -> []
+  [OK] zwraca pusta tablice dla nieznanej jednostki
+
+4. buildReplaceAvailabilityCtx (main.ts "Zastąp" -- pokrycie UNIT-REPLACE-EVOCATI-Q1)
+  [OK] empireResourceStock z parametrów trafia 1:1 do zwróconego AvailabilityContext
+  [OK] ctx z buildReplaceAvailabilityCtx (empireResourceStock={zelazo:5}) odblokowuje Evocati
+  [OK] ctx z pustym empireResourceStock NIE odblokowuje Evocati (regresja UNIT-REPLACE-EVOCATI-Q1)
+
+[unit-replace-test] WSZYSTKIE TESTY ZIELONE (13/13)
+EXIT=0
+### node tools/combat-test.cjs
+Bundling combat.ts with esbuild...
+
+  ../../../../../../../tmp/combat-bundle-24829-c4wtr9.cjs  111.8kb
+
+⚡ Done in 74ms
+Bundle OK.
+
+TW v3 formulas OK (hit HF=38%, dmg=4, pilum=7).
+
+========================================================================
+COMBAT TEST HARNESS — TW v3 Rome 2 auto-resolve
+========================================================================
+
+------------------------------------------------------------------------
+TEST: 1. Hastati (ATK) vs Falanga (DEF) — Równina
+  Attacker : Hastati (HP 38)
+  Defender : Falanga (HP 40)
+  Terrain  : Płaskie
+  WINNER   : ATTACKER (Hastati)
+  ATK HP left : 10 / 38
+  DEF HP left : 5 / 40
+  Rounds   : 37
+  Routed   : Falanga routed
+  Log (first 6 lines):
+    === Faza dystansowa ===
+    R1[Dyst-ATK] trafienie (25.2<37%) -> 1 obra. Obronca HP: 39
+    R2[Dyst-ATK] trafienie (8.8<37%) -> 1 obra. Obronca HP: 38
+    === Faza zwarczia ===
+    R1[Zwarcie] Szarża zanegowana przez postawe odpierajaca!
+    R3[Zwarcie] ATK chybia (57.7>=37%).
+    ... (72 more lines)
+  PASS
+
+------------------------------------------------------------------------
+TEST: 2. Wojownik z mieczem i tarczą (ATK) vs Włócznik (DEF) — Las
+  Attacker : Wojownik z mieczem i tarczą (HP 28)
+  Defender : Włócznik (HP 32)
+  Terrain  : Las
+  WINNER   : DEFENDER (Włócznik)
+  ATK HP left : 7 / 28
+  DEF HP left : 26 / 32
+  Rounds   : 12
+  Routed   : Wojownik z mieczem i tarczą routed
+  Log (first 6 lines):
+    === Faza zwarczia ===
+    R1[Zwarcie] Szarża zanegowana przez postawe odpierajaca!
+    R1[Zwarcie] ATK trafia (25.2<38%) -> 2 obra. Obronca HP: 30
+    R1[Zwarcie] DEF trafia (8.8<40%) -> 3 obra. Atakujacy HP: 25
+    R2[Zwarcie] ATK chybia (57.7>=38%).
+    R2[Zwarcie] DEF trafia (22.3<40%) -> 3 obra. Atakujacy HP: 22
+    ... (23 more lines)
+  PASS
+
+------------------------------------------------------------------------
+TEST: 3. Gwardia Królewska Sumeru [SUPER] (ATK) vs Hastati (DEF) — Równina
+  Attacker : Gwardia Królewska Sumeru (HP 42)
+  Defender : Hastati (HP 38)
+  Terrain  : Płaskie
+  WINNER   : DEFENDER (Hastati)
+  ATK HP left : 4 / 42
+  DEF HP left : 13 / 38
+  Rounds   : 23
+  Routed   : Gwardia Królewska Sumeru routed
+  Log (first 6 lines):
+    === Faza dystansowa ===
+    R1[Dyst-DEF] trafienie (25.2<39%) -> 1 obra. Atakujacy HP: 41
+    R2[Dyst-DEF] trafienie (8.8<39%) -> 1 obra. Atakujacy HP: 40
+    === Faza zwarczia ===
+    R3[Szarza] ATK chybia (57.7>=51%).
+    R3[Szarza] DEF trafia (22.3<39%) -> 4 obra. Atakujacy HP: 36
+    ... (43 more lines)
+  PASS
+
+------------------------------------------------------------------------
+TEST: 4. Łucznik (ATK) vs Wojownik z mieczem i tarczą (DEF) — Równina (ranged + melee)
+  Attacker : Łucznik (HP 16)
+  Defender : Wojownik z mieczem i tarczą (HP 28)
+  Terrain  : Płaskie
+  WINNER   : DEFENDER (Wojownik z mieczem i tarczą)
+  ATK HP left : 2 / 16
+  DEF HP left : 22 / 28
+  Rounds   : 17
+  Routed   : Łucznik routed
+  Log (first 6 lines):
+    === Faza dystansowa ===
+    R1[Dyst-ATK] trafienie (25.2<37%) -> 1 obra. Obronca HP: 27
+    R2[Dyst-ATK] trafienie (8.8<37%) -> 1 obra. Obronca HP: 26
+    R3[Dyst-ATK] chybienie (57.7>=37%).
+    R4[Dyst-ATK] trafienie (22.3<37%) -> 1 obra. Obronca HP: 25
+    R5[Dyst-ATK] chybienie (37.6>=37%).
+    ... (21 more lines)
+  PASS
+
+------------------------------------------------------------------------
+TEST: 5. Hastati (ATK) vs Falanga (DEF) — Wzgórza (terrain defence bonus)
+  Attacker : Hastati (HP 38)
+  Defender : Falanga (HP 40)
+  Terrain  : Wzgórza
+  WINNER   : ATTACKER (Hastati)
+  ATK HP left : 6 / 38
+  DEF HP left : 5 / 40
+  Rounds   : 41
+  Routed   : Falanga routed
+  Log (first 6 lines):
+    === Faza dystansowa ===
+    R1[Dyst-ATK] trafienie (25.2<32%) -> 1 obra. Obronca HP: 39
+    R2[Dyst-ATK] trafienie (8.8<32%) -> 1 obra. Obronca HP: 38
+    === Faza zwarczia ===
+    R1[Zwarcie] Szarża zanegowana przez postawe odpierajaca!
+    R3[Zwarcie] ATK chybia (57.7>=32%).
+    ... (80 more lines)
+  PASS
+
+------------------------------------------------------------------------
+TEST: 6. Medżaj (Gwardia Faraona) [SUPER+ranged] (ATK) vs Hastati (DEF) — Równina
+  Attacker : Medżaj (Gwardia Faraona) (HP 42)
+  Defender : Hastati (HP 38)
+  Terrain  : Płaskie
+  WINNER   : DEFENDER (Hastati)
+  ATK HP left : 4 / 42
+  DEF HP left : 9 / 38
+  Rounds   : 28
+  Routed   : Medżaj (Gwardia Faraona) routed
+  Log (first 6 lines):
+    === Faza dystansowa ===
+    R1[Dyst-ATK] trafienie (25.2<43%) -> 1 obra. Obronca HP: 37
+    R1[Dyst-DEF] trafienie (8.8<39%) -> 1 obra. Atakujacy HP: 41
+    R2[Dyst-ATK] chybienie (57.7>=43%).
+    R2[Dyst-DEF] trafienie (22.3<39%) -> 1 obra. Atakujacy HP: 40
+    R3[Dyst-ATK] trafienie (37.6<43%) -> 1 obra. Obronca HP: 36
+    ... (51 more lines)
+  PASS
+
+========================================================================
+COMBAT TEST: 6/6 pass
+All sanity checks passed.
+EXIT=0
+### node tools/mgla-sciezka-inwariant-test.cjs
+========================================================================
+P-MGLA-ODKRYCIE-SCIEZKA-INWARIANT-Q1 -- INWARIANT odkrywania wzdluz sciezki
+KOMENDA: grep -rnE '\.(q|r)[[:space:]]*=[^=>]' gra/src --include=*.ts
+========================================================================
+
+[1] SKAN NEGATYWNY gra/src -- ZERO niesklasyfikowanych zapisow pozycji jednostki
+  FAIL: [1] kazdy zapis pozycji jednostki w gra/src jest jawnie sklasyfikowany w KLASYFIKACJA (nowe trafienie = nowe miejsce przemieszczenia -> sklasyfikuj albo domknij odkryciem) -- ["src/battle/battleScene.ts:8009 ru.q = col;","src/battle/battleScene.ts:8010 ru.r = row;"]
+  OK: [1] whitelist nie zawiera MARTWYCH wpisow (kod zniknal, uzasadnienie zostalo) -- inaczej bramka po cichu traci pokrycie
+  OK: [1] kazdy wpis whitelisty ma niepuste uzasadnienie (zakaz wpisow „zeby przeszlo")
+
+[1b] STRAZNIK POKRYCIA -- skan przeczytal realne drzewo zrodel
+  OK: [1b] skan objal >= 300 plikow .ts/.tsx
+  OK: [1b] skan objal > 1 000 000 znakow zrodla
+  OK: [1b] skan znalazl realna liczbe zapisow pozycji (>= 40) -- nie oslepl na wzorcu
+  OK: [1b] skan objal wszystkie pliki niosace znane miejsca przemieszczenia
+
+[1c] WZORCE POSREDNIE -- notacja nawiasowa i Object.assign
+  OK: [1c] ZERO nieuzasadnionych zapisow notacja nawiasowa (`['q'] =` / `['r'] =`) w gra/src -- nowy zapis tej postaci to nowe miejsce przemieszczenia, sklasyfikuj albo domknij odkryciem
+  OK: [1c] whitelist notacji nawiasowej nie zawiera MARTWYCH wpisow
+  OK: [1c] kazdy wpis whitelisty nawiasowej ma niepuste uzasadnienie
+  OK: [1c] sanity: skaner nawiasowy widzi co najmniej tyle trafien, ile ma whitelist (dzis 6: 4x render/cities.ts + 2x manualBattle.ts) -- asercja wyzej nie jest pusta ani slepa
+  OK: [1c] ZERO wywolan `Object.assign(cel, ...)` z celem innym niz `*.style` w gra/src -- `Object.assign(u, { q, r })` zapisuje pozycje jednostki niewidocznie dla wzorca `.q =`
+  OK: [1c] ZERO przypisan ZLOZONYCH i inkrementacji na pozycji jednostki (`u.q += dq`, `u.q++`) w gra/src -- `u.q += 5` przesuwa o piec heksow tak samo jak `u.q = q0 + 5`
+  OK: [1c] sanity: skaner Object.assign widzi realna liczbe wywolan (>= 200; na bazie 20f9993d: 244) -- asercja wyzej nie jest pusta ani slepa
+
+[2] OKNO ODKRYCIA -- kazde miejsce WIELOHEKS-ODKRYWA w main.ts domkniete odkryciem
+  OK: [2] sanity: dokladnie 6 zapisow (3 miejsca x .q + .r) klasy WIELOHEKS-ODKRYWA w main.ts -- asercja nizej nie jest pusta ani slepa
+  OK: [2] kazdy zapis WIELOHEKS-ODKRYWA ma wywolanie odkrycia wzdluz sciezki w oknie -5/+45 linii
+  OK: [2] `computeVisibleAlongPath` zaimportowane z ./game/visibility w main.ts
+
+[3] CZWARTE MIEJSCE -- auto-eksploracja zwiadowcy odkrywa po KAZDYM kroku
+  OK: [3] wywolanie `runScoutsAutoExplore(` znalezione w main.ts
+  OK: [3] hak `onAfterStep` przekazany do runScoutsAutoExplore odkrywa mgle (revealAlongPathForStack/computeVisibleAlongPath) -- bez tego `refreshFog()` po petli odkrywa TYLKO pozycje koncowa
+  OK: [3] odkrycie per-krok zwiadowcy woła helper dla BIEZACEGO heksu kroku
+
+[4] INTEGRALNOSC helpera revealAlongPathForStack
+  OK: [4] definicja `revealAlongPathForStack` znaleziona w main.ts
+  OK: [4] korpus helpera faktycznie dopisuje do `explored` unie widocznosci z CALEJ sciezki
+  OK: [4] helper liczy widocznosc PER JEDNOSTKA stosu (rozny unitSight)
+  OK: [4] miejsce 1/3 (applyMarchSegmentInstant) nietkniete
+  OK: [4] miejsce 2/3 (koniec tury w animacji) nietkniete
+  OK: [4] miejsce 3/3 (koniec animacji, renderLoop) ORAZ korpus helpera — oba obecne (2 wystapienia wzorca `computeVisibleAlongPath(pathHexes, ...)`)
+
+[5] NIETAUTOLOGICZNOSC skanera na zrodle syntetycznym
+  OK: [5] skaner wykrywa NOWE, nieuzasadnione miejsce przemieszczenia (u.q/u.r) w zrodle syntetycznym
+  OK: [5] takie trafienie NIE jest na whiteliscie -> blok [1] bylby czerwony (piate miejsce wykryte)
+  OK: [5] skaner NIE zglasza zapisow pozycji z calych linii komentarza (brak falszywych alarmow)
+  OK: [5] skaner NIE myli porownania (`==`, `===`) z przypisaniem
+  OK: [5] dwa przypisania w jednej linii to JEDNO trafienie (klucz = tekst linii) -- zgodne z whitelista
+  OK: [5] skaner nawiasowy wykrywa NOWE miejsce zapisane jako u['q'] / u["r"] (oba cudzyslowy)
+  OK: [5] takie trafienie NIE jest na whiteliscie nawiasowej -> blok [1c] bylby czerwony
+  OK: [5] skaner nawiasowy NIE myli porownania z przypisaniem
+  OK: [5] skaner nawiasowy NIE lapie innych pol o nazwie zaczynajacej sie na q/r (`['queue']`)
+  OK: [5] skaner Object.assign wyciaga pierwszy argument (`u`) z `Object.assign(u, { q, r })`
+  OK: [5] taki cel NIE jest `*.style` -> blok [1c] bylby czerwony (piate miejsce przez Object.assign)
+  OK: [5] `Object.assign(el.style, ...)` jest rozpoznane jako dozwolone (brak falszywych alarmow)
+  OK: [5] skaner zlozony wykrywa przypisanie zlozone (`u.q += dq`)
+  OK: [5] skaner zlozony wykrywa inkrementacje/dekrementacje (`u.q++`, `--u.r`)
+  OK: [5] skaner zlozony NIE myli operatorow POROWNANIA (`>=`, `<=`, `!==`) z przypisaniem
+  OK: [5] przecinek WEWNATRZ pierwszego argumentu go nie ucina (wycinanie z uwzglednieniem zagniezdzen)
+
+41 pass, 1 fail
+EXIT=1
+### node tools/entity-card-contract-test.cjs
+PASS: slugify("Łucznik") === "lucznik" (nie gubi litery ł, w przeciwieństwie do NFD-strip)
+PASS: slugify("Koło") === "kolo"
+PASS: slugify("Rydwan (woły)") === "rydwan_woly"
+PASS: unitToSlug === slugify (deleguje)
+PASS: buildEntityCardData("unit", "wojownik") znajduje encję
+PASS: unit: kind === "unit"
+PASS: unit: id === id zapytania (kontrakt id)
+PASS: unit: title === "Wojownik"
+PASS: unit: ma >=1 sekcję z >=1 wierszem
+PASS: buildEntityCardData("building", "stolarnia") znajduje encję
+PASS: building: kind === "building"
+PASS: building: id === "stolarnia"
+PASS: building: civpediaLink.folder === "budynki"
+PASS: buildEntityCardData("technology", techToSlug("Łowiectwo")) znajduje encję (technology REUŻYWA TECH_MAP, nie nowy slug.ts)
+PASS: technology: kind === "technology"
+PASS: technology: id === id zapytania
+PASS: technology: title === "Łowiectwo"
+PASS: buildEntityCardData("improvement", "farma") znajduje encję
+PASS: improvement: kind === "improvement"
+PASS: improvement: id === "farma" (nadpisane przez buildEntityCardData, patrz renderer.ts)
+PASS: improvement: title === "Farma"
+PASS: buildEntityCardData zwraca null dla nieistniejącego id
+PASS: renderEntityCard(unit): zwraca HTMLElement
+PASS: renderEntityCard(unit): data-entity-kind poprawny
+PASS: renderEntityCard(unit): data-entity-id poprawny
+PASS: renderEntityCard(unit): h2 z tytułem
+PASS: renderEntityCard(unit): >=1 sekcja w DOM
+PASS: renderEntityCard(building): zwraca HTMLElement
+PASS: renderEntityCard(building): data-entity-kind poprawny
+PASS: renderEntityCard(building): data-entity-id poprawny
+PASS: renderEntityCard(building): h2 z tytułem
+PASS: renderEntityCard(building): >=1 sekcja w DOM
+PASS: renderEntityCard(technology): zwraca HTMLElement
+PASS: renderEntityCard(technology): data-entity-kind poprawny
+PASS: renderEntityCard(technology): data-entity-id poprawny
+PASS: renderEntityCard(technology): h2 z tytułem
+PASS: renderEntityCard(technology): >=1 sekcja w DOM
+PASS: renderEntityCard(improvement): zwraca HTMLElement
+PASS: renderEntityCard(improvement): data-entity-kind poprawny
+PASS: renderEntityCard(improvement): data-entity-id poprawny
+PASS: renderEntityCard(improvement): h2 z tytułem
+PASS: renderEntityCard(improvement): >=1 sekcja w DOM
+PASS: openEntityCard(dialog): backdrop zamontowany w document.body
+PASS: openEntityCard(dialog): karta wewnątrz backdropu
+PASS: dismiss(): backdrop usunięty z DOM
+[entityCards] openEntityCard: brak encji unit/nie_istnieje_xyz
+PASS: openEntityCard z nieistniejącym id NIE rzuca (zwraca no-op dismiss)
+PASS: openEntityCard z nieistniejącym id NIE dodaje backdropu
+PASS: (1) akordeon: sekcja highlighted ma klasę entity-card-section--hi
+PASS: (1) akordeon: sekcja openDefault=true ma data-open="1"
+PASS: (1) akordeon: sekcja openDefault=false ma data-open="0"
+PASS: (1) akordeon: body sekcji zwiniętej ma hidden
+PASS: (1) akordeon: przycisk nagłówka ma aria-expanded="false"
+PASS: (1) akordeon: klik nagłówka rozwija (aria-expanded="true", hidden usunięty)
+PASS: (2) ikona: kafelek ikony obecny w wierszu
+PASS: (2) ikona: SVG wstawiony jako markup (querySelector("svg") działa)
+PASS: (2) ikona: NIE wstawiony jako tekst (textContent nie zawiera "<svg")
+PASS: (3) trailing: element trailing obecny
+PASS: (3) trailing: tekst trailing poprawny
+PASS: (3) trailing: value pozostaje osobne od trailing
+PASS: (4) badge: 3 odznaki per-wiersz w DOM
+PASS: (4) badge: kind="ok" ma klasę entity-card-row-badge--ok
+PASS: (4) badge: kind="warn" ma klasę entity-card-row-badge--warn
+PASS: (4) badge: kind="muted" ma klasę entity-card-row-badge--muted
+PASS: (4) badge: etykieta odznaki poprawna
+PASS: (5) paginacja: pierwsza siatka pokazuje dokładnie previewLimit=3 wiersze
+PASS: (5) paginacja: przycisk "Pokaż pozostałe N" obecny z poprawnym N (=5-3=2)
+PASS: (5) paginacja: reszta wierszy (2) ukryta domyślnie (hidden)
+PASS: (5) paginacja: klik "Pokaż pozostałe" odkrywa resztę (hidden usunięty)
+PASS: (5) paginacja: compactHeaderOnExpand=true dodaje entity-card--compact na karcie po kliknięciu
+PASS: (5) paginacja: bez previewLimit — wszystkie 5 wierszy widoczne, brak przycisku "Pokaż pozostałe"
+PASS: (6) pills: kontener pigułek obecny (layout="pills")
+PASS: (6) pills: 2 pigułki w DOM
+PASS: (6) pills: tekst pierwszej pigułki poprawny
+PASS: (6) pills: checkmark "✓" obecny w pigułce
+PASS: (6) pills: sekcja BEZ layout (domyślnie "grid") NIE renderuje pigułek
+
+[entity-card-contract-test] 75 pass, 0 fail
+Not implemented: HTMLCanvasElement's getContext() method: without installing the canvas npm package
+Not implemented: HTMLCanvasElement's getContext() method: without installing the canvas npm package
+THREE.WebGLRenderer: Error creating WebGL context.
+Not implemented: HTMLCanvasElement's getContext() method: without installing the canvas npm package
+Not implemented: HTMLCanvasElement's getContext() method: without installing the canvas npm package
+THREE.WebGLRenderer: Error creating WebGL context.
+EXIT=0
+### node tools/map-field-battle-test.cjs
+map-field-battle-test
+  [OK] collectBattleRoster: 2 allies dist<=1
+  [OK] collectBattleRoster atk: adjacent scout excluded
+  [OK] collectBattleRoster atk: pozostale trzy jednostki bojowe ZOSTAJA w rosterze
+  [OK] collectAtkRosterNearCity: adjacent scout excluded
+  [OK] parytet collectBattleRoster == collectAtkRosterNearCity (zbior ID, wspolny heks bitwy)
+  [OK] collectCityDefRoster: adjacent defender scout excluded
+  [OK] collectCityDefRoster: scout ON city hex included
+  [OK] shouldIncludeInBattleRoster: neighbor scout not attacker
+  [OK] shouldIncludeInBattleRoster: combat anchor always in
+  [OK] empty city no defenders
+  [OK] garrison unit = defenders
+  [OK] collectCityDefRoster: no garrison no units
+  [OK] collectCityDefRoster: militia synth
+  [OK] collectCityDefRoster: militia def map
+  [OK] collectCityDefRoster: queued Garnizon is not complete
+  [OK] defenderSideTitle: militia label
+  [OK] validate: walled rejected
+  [OK] validate: open OK
+  [OK] planOpenCityFieldBattle: miejsce = city name
+  [OK] planOpenCityFieldBattle: canRetreat
+  [OK] planOpenCityFieldBattle: no mur suffix
+  [OK] planOpenCityFieldBattle: def roster
+  [OK] planOpenCityFieldBattle: completed Garnizon reaches preBattle as virtual militia
+  [OK] router integration: open + defenders → field_battle
+--- 24 ok, 0 fail
+EXIT=0
