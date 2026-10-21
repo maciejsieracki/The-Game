@@ -28,7 +28,7 @@ dotykające tych samych plików — zawsze sekwencyjnie, nigdy w tej samej fali.
 | # | Temat | Faza | Runda | runId Workflow | Status | Ostatnia aktualizacja |
 |---|---|---|---|---|---|---|
 | 1 | — | — | — | — | **WOLNY** (zob. notatka niżej) | 2026-10-21 |
-| 2 | `R-RUSTPORT-P1-16D-OPISY-EKONOMIA5X-Q1` | P1.16d (2/5) | 1/5 | `wf_62a16044-8df` | DISPATCHED (w toku) | 2026-10-21 |
+| 2 | — | — | — | — | **WOLNY** (zob. notatka niżej) | 2026-10-21 |
 | 3 | `R-RUSTPORT-P1-16D-OPISY-PORADNIK-A-Q1` | P1.16d (3/5) | 1/5 | `wf_bcc4713f-13d` | DISPATCHED (w toku) | 2026-10-21 |
 | 4 | `R-RUSTPORT-P1-16D-OPISY-PORADNIK-B-Q1` | P1.16d (4/5) | 1/5 | `wf_1b78b511-e92` | DISPATCHED (w toku) | 2026-10-21 |
 | 5 | `R-RUSTPORT-P1-16D-OPISY-CIVPEDIA-UI-Q1` | P1.16d (5/5) | 1/5 | `wf_2b647098-bac` | DISPATCHED (w toku) | 2026-10-21 |
@@ -38,8 +38,9 @@ dotykające tych samych plików — zawsze sekwencyjnie, nigdy w tej samej fali.
 zielony (patrz LEDGER). Ostatni kawałek P1 to `AUDYT-OPISY-CIVPEDIA-PORADNIK-SCIAGI-2026-08-13.md`
 (69 wierszy, zbyt duże na jeden temat) — podzielony na **5 w pełni równoległych tematów**, każdy do
 WŁASNEGO NOWEGO pliku (`P1-16D-OPISY-*.md`): boilerplate (§2a/b, **PASS**, zamknięty), ekonomia ×5 +
-reszta §2c/2e/3, Poradnik rozdziały 00-10, Poradnik rozdziały 14-16+follow-upy, CivPedia hasła + 17
-paneli UI (4 ostatnie w toku). Gdy wszystkie 5 zamkną się PASS: dispatch `P1-GATE-SYNTHESIS` (bramka
+reszta §2c/2e/3 (**PASS**, zamknięty — odkryty NOWY rozjazd tartak/kamieniołom 200 vs 50/turę, do
+P2), Poradnik rozdziały 00-10, Poradnik rozdziały 14-16+follow-upy, CivPedia hasła + 17 paneli UI
+(3 ostatnie w toku). Gdy wszystkie 5 zamkną się PASS: dispatch `P1-GATE-SYNTHESIS` (bramka
 P1 powinna się wtedy formalnie otworzyć — wszystkie P1.1-P1.18 PASS), potem start P2 bez pytania o
 zgodę (decyzja właściciela 2026-10-21, patrz GOAL §"Decyzje przyjęte" poz. 4).
 
