@@ -28,11 +28,19 @@ dotykające tych samych plików — zawsze sekwencyjnie, nigdy w tej samej fali.
 | # | Temat | Faza | Runda | runId Workflow | Status | Ostatnia aktualizacja |
 |---|---|---|---|---|---|---|
 | 1 | `R-RUSTPORT-P3-4-IDS-VERSIONING-Q1` | P3.4 (newtype ID konsekwentnie + SCHEMA_VERSION) | 1/5 | `wf_1284f37b-dac` | DISPATCHED (w toku) | 2026-10-21 |
-| 2 | `R-RUSTPORT-P3-5A-DATA-CIV-DIPLO-Q1` | P3.5A (dane: cywilizacje/dyplomacja) | 1/5 | `wf_79aa55b9-370` | DISPATCHED (w toku) | 2026-10-21 |
-| 3 | `R-RUSTPORT-P3-5B-DATA-UNITS-COMBAT-Q1` | P3.5B (dane: jednostki/walka) | 1/5 | `wf_465ed497-df5` | DISPATCHED (w toku) | 2026-10-21 |
+| 2 | `R-RUSTPORT-P3-5A-DATA-CIV-DIPLO-Q1` | P3.5A (dane: cywilizacje/dyplomacja) | 1/5 (restart po INFRA) | `wf_8533bc3c-8ff` | DISPATCHED (w toku) | 2026-10-21 |
+| 3 | `R-RUSTPORT-P3-5B-DATA-UNITS-COMBAT-Q1` | P3.5B (dane: jednostki/walka) | 1/5 (restart po INFRA) | `wf_9c66e929-2a9` | DISPATCHED (w toku) | 2026-10-21 |
 | 4 | `R-RUSTPORT-P3-5C-DATA-BUILDINGS-TECH-Q1` | P3.5C (dane: budynki/cuda/technologie) | 1/5 | `wf_f73475a1-668` | DISPATCHED (w toku) | 2026-10-21 |
-| 5 | — | — | — | — | **WOLNY** (P3.5D PASS, zintegrowane do rust-port/parity-v2) | 2026-10-21 |
+| 5 | — | — | — | — | **WOLNY, ŚWIADOMIE** (P3.8-ASSETS dispatch napisany i zacommitowany, NIE uruchomiony — dysk był pełny [301MB wolne], po sprzątaniu starych worktree 7,9GB; P3.8 doda ~500MB worktree + ~50MB assetów; czekam na wynik P3.5A/B/C/E zanim dołożę kolejny ciężki worktree, żeby nie powtórzyć INFRA) | 2026-10-21 |
 | 6 | `R-RUSTPORT-P3-5E-DATA-ECON-SOCIETY-Q1` | P3.5E (dane: ekonomia/społeczeństwo, 9 plików) | 1/5 | `wf_d194c8bb-ed5` | DISPATCHED (w toku) | 2026-10-21 |
+
+**Incydent INFRA (2026-10-21):** P3.5A i P3.5B zawiodły z `WorktreeIsolationError` (dysk pełny,
+301MB wolne — worktree NIE używają sparse-checkout, każdy kopiuje cały monorepo ~430MB+cargo target).
+Posprzątano 9 nieużywanych worktree z już zintegrowanych/zamkniętych tematów (P3.1-2, P3.3,
+P3.3-IMPL, P3.5D — zweryfikowane `git merge-base --is-ancestor` przed usunięciem każdego) → 7,9GB
+wolne. P3.5A/B zrestartowane. **Wniosek na przyszłość:** rozważyć sparse-checkout dla worktree
+tematów kodu Rust (tylko `rust-port/**`, bez `gra-robocza/`, `docs/`, `dowody/` itd.) — do wdrożenia
+przy konfiguracji kolejnych Workflow, jeśli INFRA się powtórzy.
 
 ## *** FAZA P2 ZAMKNIĘTA — FAZA P3 OTWARTA (2026-10-21) ***
 
