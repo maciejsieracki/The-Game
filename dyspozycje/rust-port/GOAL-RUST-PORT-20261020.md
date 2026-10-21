@@ -27,11 +27,11 @@ dotykające tych samych plików — zawsze sekwencyjnie, nigdy w tej samej fali.
 
 | # | Temat | Faza | Runda | runId Workflow | Status | Ostatnia aktualizacja |
 |---|---|---|---|---|---|---|
-| 1 | — | — | — | — | **WOLNY** (P3.16 zamknięty PASS; P3.13 do uruchomienia) | 2026-10-21 |
-| 2 | `R-RUSTPORT-P4-3-RUST-RENDERER-ARCH-Q1` | P4.3 architektura renderera w Rust (wgpu), picking piksel→hex, osadzenie w Tauri, wymagania pamięciowe — Opus 5.5 | 1/5 | (patrz niżej) | DISPATCHED | 2026-10-21 |
-| 3 | `R-RUSTPORT-P4-4-MODEL-CATALOG-Q1` | P4.4 katalog modeli 3D do odtworzenia w Rust — Opus 5.5 | 1/5 | (patrz niżej) | DISPATCHED | 2026-10-21 |
-| 4 | — | — | — | — | **WOLNY** (P4.5 zamknięty PASS, zintegrowany; decyzje `D-UI-1..9` czekają na właściciela) | 2026-10-21 |
-| 5 | — | — | — | — | **WOLNY, ŚWIADOMIE** (P3.13 końcowa kontrola P3 po P3.16; implementacja renderera czeka na dokumenty P4.3/P4.4 i decyzje `D-RR`/`D-MOD`) | 2026-10-21 |
+| 1 | `R-RUSTPORT-P3-13-GATE-FINAL-CONTROL-Q1` | P3.13 niezależna kontrola bramki P3 (dane+assety) | 1/5 | `wf_472a4359-063` | DISPATCHED (Final Control) | 2026-10-21 |
+| 2 | `R-RUSTPORT-P4-4-MODEL-CATALOG-Q1` | P4.4 katalog modeli 3D do odtworzenia w Rust — Opus 5.5 | 1/5 | `wf_7f499719-17a` | DISPATCHED (Final Control) | 2026-10-21 |
+| 3 | `R-RUSTPORT-P4-6-RENDERER-CRATE-SCAFFOLD-Q1` | P4.6 szkielet crate'a `rust-port/renderer` (RR-T0) — Opus 5.5 | 1/5 | `wf_0bec7858-c2b` | DISPATCHED | 2026-10-21 |
+| 4 | `R-WEB-MEMORY-LEAKS-FIX-Q1` | naprawa wycieków pamięci w wersji webowej (M1/M2/M3/M6 z P4.3) na osobnej gałęzi `fix/web-memory-leaks-Q1`, na polecenie właściciela — Opus 5.5 | 1/5 | `wf_d931a7e7-06e` | DISPATCHED | 2026-10-21 |
+| 5 | — | — | — | — | **WOLNY, ŚWIADOMIE** (RR-T3/T4/T6 czekają na szkielet crate'a z P4.6; implementacja modeli na katalog P4.4 i `D-MOD`; P5 czeka na `D-UI-1..9`) | 2026-10-21 |
 | 6 | — | — | — | — | **WOLNY, ŚWIADOMIE** (jw.) | 2026-10-21 |
 
 **Zamknięte w tej sesji (kod na `rust-port/parity-v2`, HEAD `aa7b225b`, 292 testy):** P3.4b, P3.4c (newtypy ID), P3.8 (assety 428), P3.8b (manifest), P3.9 (data wiring), P3.11 (zgodność danych), P3.12 (loader), P3.14 (fmt/clippy w `src/data`).
