@@ -70,6 +70,21 @@ nowsza): `rust-port/engine/src/domain/playable.rs`, `combat.rs`, plik(i) z `AiUn
 zmian w `lib.rs` poza tym co już jest (nie dotykaj deklaracji modułów — to zakres P3.9). Zero zmian
 w `gra/**`.
 
+**ROZSZERZENIE ALLOWLISTY (runda 2, decyzja właściciela 2026-10-21, patrz
+`04-orchestrator-disposition.md` jeśli istnieje w tym momencie):** runda 1 ujawniła, że binarne
+kryterium sukcesu (newtype w `PlayablePlayer.id` i `CombatUnit.id`) wymaga też:
+- `rust-port/engine/src/bridge.rs` — **WYŁĄCZNIE** linie konstruujące/porównujące `PlayablePlayer.id`
+  (Operator zgłosił ~335, 348, 412 — zweryfikuj aktualne numery przed edycją, mogły się przesunąć).
+  Zmiana ma być konwersją na granicy (`.get()`/`UnitId::new()` albo analogiczne), NIE zmianą
+  kontraktu JSON/Tauri wystawianego do frontendu — `PlayablePlayer.id` nadal musi serializować się
+  jako zwykła liczba (sprawdź, czy `UnitId`/`PlayerId` ma już `#[serde(transparent)]` w `ids.rs`;
+  jeśli nie, to BLOCK, nie samodzielna decyzja o zmianie kontraktu).
+- `rust-port/engine/tests/combat.rs` i `rust-port/engine/tests/ai_turn.rs` — WYŁĄCZNIE zmiany
+  potrzebne, by `#[path]`-owy moduł widział `UnitId` (np. doprecyzowanie `use`/ścieżki importu), zero
+  zmian logiki testów, zero nowych testów.
+Zero innych zmian w `bridge.rs` poza konwersją ID. Jeśli przy pracy okaże się, że zakres jest
+szerszy niż to — STOP i zgłoś BLOCK z dokładnym opisem, nie poszerzaj zakresu samodzielnie dalej.
+
 IZOLACJA
 `isolation: worktree`. Baza: `origin/rust-port/parity-v2`, jawnie zweryfikowana jako pierwszy krok
 (patrz KONTEKST wyżej). Commit w worktree dozwolony, PUSH zdalny NIE — integracja po PASS Final
