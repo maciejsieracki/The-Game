@@ -27,12 +27,12 @@ dotykające tych samych plików — zawsze sekwencyjnie, nigdy w tej samej fali.
 
 | # | Temat | Faza | Runda | runId Workflow | Status | Ostatnia aktualizacja |
 |---|---|---|---|---|---|---|
-| 1 | — | — | — | — | **WOLNY** | 2026-10-21 |
-| 2 | — | — | — | — | **WOLNY** | 2026-10-21 |
-| 3 | — | — | — | — | **WOLNY** | 2026-10-21 |
-| 4 | — | — | — | — | **WOLNY** | 2026-10-21 |
-| 5 | — | — | — | — | **WOLNY** | 2026-10-21 |
-| 6 | — | — | — | — | **WOLNY** | 2026-10-21 |
+| 1 | `R-RUSTPORT-P3-4B-IDS-NEWTYPE-REFACTOR-Q1` | P3.4b (newtype ID refactor, poprawiony dispatch) | 1/5 | `wf_afbe5aaf-7a4` | DISPATCHED (w toku) | 2026-10-21 |
+| 2 | `R-RUSTPORT-P3-9-DATA-CONSOLIDATION-Q1` | P3.9 (podpięcie 5 modułów danych do lib.rs, serde_json→[dependencies]) | 1/5 | `wf_8b0cdc58-ca7` | DISPATCHED (w toku) | 2026-10-21 |
+| 3 | — | — | — | — | **WOLNY, ŚWIADOMIE** (tylko 2/6 obsadzone na razie — zalecenie z incydentu INFRA: max 2-3 równoległe worktree kodu Rust do czasu wdrożenia sparse-checkout) | 2026-10-21 |
+| 4 | — | — | — | — | **WOLNY, ŚWIADOMIE** (jw.) | 2026-10-21 |
+| 5 | — | — | — | — | **WOLNY, ŚWIADOMIE** (P3.8-ASSETS dispatch gotowy, czeka na wynik P3.4b/P3.9 i stabilny dysk) | 2026-10-21 |
+| 6 | — | — | — | — | **WOLNY, ŚWIADOMIE** (jw.) | 2026-10-21 |
 
 **Pula całkowicie wolna (2026-10-21, po zamknięciu fali P3.5 i P3.4 częściowego):** wszystkie 6
 tematów w locie zamknięte, wszystkie worktree posprzątane, zero `locked`. `origin/rust-port/parity-v2`
