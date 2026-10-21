@@ -15,14 +15,56 @@ use serde::{Deserialize, Serialize};
 use std::cmp::Reverse;
 use std::collections::{BTreeMap, BTreeSet, BinaryHeap};
 
-pub const DEFAULT_MIN_CITY_DISTANCE: u32 = 5;
-pub const DEFAULT_THREAT_RANGE: u32 = 5;
-pub const DEFAULT_CITY_SCORE_ENEMY_PENALTY: i32 = -3;
-pub const DEFAULT_CITY_SCORE_FOOD: i32 = 3;
-pub const DEFAULT_CITY_SCORE_WORK: i32 = 2;
-pub const DEFAULT_CITY_SCORE_TRADE: i32 = 1;
-pub const DEFAULT_CITY_SCORE_RIVER: i32 = 2;
-pub const DEFAULT_CITY_SCORE_RESOURCE: i32 = 2;
+/// Parametry AI z `data/ai-params.json` (jedno źródło prawdy; web czyta te same klucze
+/// przez `getAiParam`, `gra/src/game/ai.ts`). Plik jest osadzany lokalnie (nie przez
+/// `crate::data`), bo `tests/ai_turn.rs` i `tests/terrain_movement_fix.rs` włączają ten
+/// moduł przez `#[path]` i nie mają modułu `data` w korzeniu crate'a.
+fn ai_param_value(key: &str) -> i64 {
+    static PARAMS: std::sync::OnceLock<serde_json::Value> = std::sync::OnceLock::new();
+    PARAMS
+        .get_or_init(|| {
+            serde_json::from_str(include_str!("../../data/ai-params.json"))
+                .expect("embedded ai-params.json must parse")
+        })
+        .get(key)
+        .and_then(|entry| entry.get("wartosc"))
+        .and_then(serde_json::Value::as_i64)
+        .unwrap_or_else(|| panic!("ai-params.json: missing integer wartosc for {key}"))
+}
+
+/// `ekspansja_min_dystans_miast` (web: `ai.ts:3208`).
+pub fn default_min_city_distance_value() -> u32 {
+    ai_param_value("ekspansja_min_dystans_miast") as u32
+}
+
+/// `ekspansja_zagroz_zasieg` (web: `ai.ts:1241`, `ai.ts:1690`).
+pub fn default_threat_range_value() -> u32 {
+    ai_param_value("ekspansja_zagroz_zasieg") as u32
+}
+
+fn default_city_score_enemy_penalty() -> i32 {
+    ai_param_value("ekspansja_heurystyka_granica_kara") as i32
+}
+
+fn default_city_score_food() -> i32 {
+    ai_param_value("ekspansja_heurystyka_zywnosc_pkt") as i32
+}
+
+fn default_city_score_work() -> i32 {
+    ai_param_value("ekspansja_heurystyka_praca_pkt") as i32
+}
+
+fn default_city_score_trade() -> i32 {
+    ai_param_value("ekspansja_heurystyka_handel_pkt") as i32
+}
+
+fn default_city_score_river() -> i32 {
+    ai_param_value("ekspansja_heurystyka_rzeka_pkt") as i32
+}
+
+fn default_city_score_resource() -> i32 {
+    ai_param_value("ekspansja_heurystyka_surowiec_pkt") as i32
+}
 
 /// Axial coordinate on the pointy-top hex grid used by the game.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord, Serialize, Deserialize)]
@@ -523,12 +565,12 @@ pub struct CityScoreWeights {
 impl Default for CityScoreWeights {
     fn default() -> Self {
         Self {
-            food: DEFAULT_CITY_SCORE_FOOD,
-            work: DEFAULT_CITY_SCORE_WORK,
-            trade: DEFAULT_CITY_SCORE_TRADE,
-            river: DEFAULT_CITY_SCORE_RIVER,
-            resource: DEFAULT_CITY_SCORE_RESOURCE,
-            enemy_penalty: DEFAULT_CITY_SCORE_ENEMY_PENALTY,
+            food: default_city_score_food(),
+            work: default_city_score_work(),
+            trade: default_city_score_trade(),
+            river: default_city_score_river(),
+            resource: default_city_score_resource(),
+            enemy_penalty: default_city_score_enemy_penalty(),
         }
     }
 }
@@ -557,12 +599,12 @@ pub struct AiTurnOptions {
     pub city_score_weights: CityScoreWeights,
 }
 
-const fn default_min_city_distance() -> u32 {
-    DEFAULT_MIN_CITY_DISTANCE
+fn default_min_city_distance() -> u32 {
+    default_min_city_distance_value()
 }
 
-const fn default_threat_range() -> u32 {
-    DEFAULT_THREAT_RANGE
+fn default_threat_range() -> u32 {
+    default_threat_range_value()
 }
 
 fn default_production_items() -> Vec<ProductionItem> {
@@ -589,8 +631,8 @@ impl Default for AiTurnOptions {
             archetype_mods: None,
             city_buildings: BTreeMap::new(),
             production_items: default_production_items(),
-            min_city_distance: DEFAULT_MIN_CITY_DISTANCE,
-            threat_range: DEFAULT_THREAT_RANGE,
+            min_city_distance: default_min_city_distance_value(),
+            threat_range: default_threat_range_value(),
             require_village_for_founding: false,
             visible_hexes: None,
             city_score_weights: CityScoreWeights::default(),
@@ -752,7 +794,7 @@ pub fn hex_city_score(
     }
     if enemy_cities
         .iter()
-        .any(|city| position.distance(city.position()) < DEFAULT_THREAT_RANGE)
+        .any(|city| position.distance(city.position()) < default_threat_range_value())
     {
         score += weights.enemy_penalty;
     }

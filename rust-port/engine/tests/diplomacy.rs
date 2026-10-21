@@ -232,8 +232,30 @@ fn canonical_value_catalog_prices_non_quantity_basket_items() {
             &BasketItem::new(BasketItemKind::Unit, "Wojownik", 1.0),
             &catalog
         ),
-        Some(10.0)
+        Some(5.0)
     );
+}
+
+#[test]
+fn diplomacy_unit_prices_match_units_json_for_every_row() {
+    // Web: diplomacyPnJednostka = Pieniądz (koszt) z units.json; koszt <= 0 => bez wyceny.
+    let records = civ_engine::data::units_combat::parse_units().expect("units.json parses");
+    let catalog = ValueCatalog::default();
+    let mut priced = 0;
+    for record in &records {
+        let expected = (record.pieniadz_koszt > 0).then_some(record.pieniadz_koszt as f64);
+        if expected.is_some() {
+            priced += 1;
+        }
+        let actual = basket_item_pn(
+            &BasketItem::new(BasketItemKind::Unit, record.jednostka.as_str(), 1.0),
+            &catalog,
+        );
+        assert_eq!(actual, expected, "unit {}", record.jednostka);
+    }
+    assert_eq!(records.len(), 75);
+    assert_eq!(priced, 66);
+    assert_eq!(catalog.unit_prices.len(), priced);
 }
 
 #[test]

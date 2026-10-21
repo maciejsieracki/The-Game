@@ -330,3 +330,48 @@ fn ai_turn_input_serde_round_trip_uses_json_map_entries() {
     let decoded: AiTurnInput = serde_json::from_value(value).expect("AI turn input round-trips");
     assert_eq!(decoded, input);
 }
+
+#[test]
+fn ai_turn_default_city_parameters_match_ai_params_json() {
+    // Źródło: data/ai-params.json (web: getAiParam w gra/src/game/ai.ts).
+    let params: serde_json::Value = serde_json::from_str(include_str!("../data/ai-params.json"))
+        .expect("ai-params.json parses");
+    let value = |key: &str| {
+        params[key]["wartosc"]
+            .as_i64()
+            .unwrap_or_else(|| panic!("missing wartosc for {key}"))
+    };
+    let options = AiTurnOptions::default();
+    assert_eq!(
+        options.min_city_distance as i64,
+        value("ekspansja_min_dystans_miast")
+    );
+    assert_eq!(
+        options.threat_range as i64,
+        value("ekspansja_zagroz_zasieg")
+    );
+    let weights = &options.city_score_weights;
+    assert_eq!(
+        weights.food as i64,
+        value("ekspansja_heurystyka_zywnosc_pkt")
+    );
+    assert_eq!(weights.work as i64, value("ekspansja_heurystyka_praca_pkt"));
+    assert_eq!(
+        weights.trade as i64,
+        value("ekspansja_heurystyka_handel_pkt")
+    );
+    assert_eq!(
+        weights.river as i64,
+        value("ekspansja_heurystyka_rzeka_pkt")
+    );
+    assert_eq!(
+        weights.resource as i64,
+        value("ekspansja_heurystyka_surowiec_pkt")
+    );
+    assert_eq!(
+        weights.enemy_penalty as i64,
+        value("ekspansja_heurystyka_granica_kara")
+    );
+    assert_eq!(options.min_city_distance, 4);
+    assert_eq!(options.threat_range, 7);
+}

@@ -1,4 +1,6 @@
 use serde::{Deserialize, Serialize};
+
+use crate::data::units_combat::parse_units;
 use std::collections::{BTreeMap, BTreeSet};
 
 pub const MAX_TRUST: f64 = 100.0;
@@ -1838,74 +1840,7 @@ impl Default for ValueCatalog {
             ("miedz".to_owned(), 120.0),
             ("zelazo".to_owned(), 150.0),
         ]);
-        let unit_prices = BTreeMap::from([
-            ("Wojownik".to_owned(), 10.0),
-            ("Procarz".to_owned(), 8.0),
-            ("Oszczepnik".to_owned(), 6.0),
-            ("Łucznik".to_owned(), 6.0),
-            ("Zwiadowca".to_owned(), 8.0),
-            ("Włócznik".to_owned(), 16.0),
-            ("Wojownik z mieczem i tarczą".to_owned(), 16.0),
-            ("Rydwan (woły)".to_owned(), 30.0),
-            ("Konnica".to_owned(), 22.0),
-            ("Galera".to_owned(), 18.0),
-            ("Falanga".to_owned(), 18.0),
-            ("Hastati".to_owned(), 18.0),
-            ("Jeździec chiński".to_owned(), 28.0),
-            ("Impi".to_owned(), 16.0),
-            ("Oszczepnik Zulu (Izijula)".to_owned(), 20.0),
-            ("Wojownik z maczugą (Chaska)".to_owned(), 26.0),
-            ("Wojownik z toporem".to_owned(), 18.0),
-            ("Procarz (Huaracoc)".to_owned(), 8.0),
-            ("Oszczepnik (Estólica)".to_owned(), 9.0),
-            ("Rydwan konny".to_owned(), 28.0),
-            ("Łucznik egipski".to_owned(), 14.0),
-            ("Rydwan egipski".to_owned(), 32.0),
-            ("Wojownik z khopesh".to_owned(), 18.0),
-            ("Łucznik nubijski".to_owned(), 20.0),
-            ("Łucznik sumeryjski".to_owned(), 9.0),
-            ("Rydwan sumeryjski".to_owned(), 38.0),
-            ("Włócznik sumeryjski".to_owned(), 18.0),
-            ("Wojownik mykeński".to_owned(), 18.0),
-            ("Rydwan mykeński".to_owned(), 30.0),
-            ("Wojownik Sherden".to_owned(), 18.0),
-            ("Halabardnik Shang".to_owned(), 18.0),
-            ("Rydwan Shang".to_owned(), 32.0),
-            ("Łucznik akadyjski".to_owned(), 16.0),
-            ("Gaesatae".to_owned(), 14.0),
-            ("Soldurii".to_owned(), 18.0),
-            ("Rydwan celtycki".to_owned(), 28.0),
-            ("Berserker germański".to_owned(), 16.0),
-            ("Taran".to_owned(), 14.0),
-            ("Taran okuty".to_owned(), 18.0),
-            ("Katapulta".to_owned(), 18.0),
-            ("Wieża oblężnicza".to_owned(), 20.0),
-            ("Wojownik tyrreński".to_owned(), 15.0),
-            ("Wojownik szekelesz".to_owned(), 14.0),
-            ("Konnica lancowa asyryjska".to_owned(), 32.0),
-            ("Konnica łucznicza asyryjska".to_owned(), 30.0),
-            ("Łucznik asyryjski".to_owned(), 14.0),
-            ("Drużynnik".to_owned(), 18.0),
-            ("Jeździec z oszczepami".to_owned(), 26.0),
-            ("Strażnik bram Harappy".to_owned(), 18.0),
-            ("Piechota induska".to_owned(), 18.0),
-            ("Garnizon Harappy".to_owned(), 18.0),
-            ("Rydwan Kapadokijski".to_owned(), 34.0),
-            ("Piechota hetycka".to_owned(), 18.0),
-            ("Gwardia hetycka".to_owned(), 18.0),
-            ("Gwardia Ishtar".to_owned(), 18.0),
-            ("Wojownik babiloński".to_owned(), 18.0),
-            ("Piechota neobabilońska".to_owned(), 18.0),
-            ("Tyrski miecznik".to_owned(), 18.0),
-            ("Wojownik fenicki".to_owned(), 18.0),
-            ("Gwardia Tyreńska".to_owned(), 18.0),
-            ("Thorakites".to_owned(), 16.0),
-            ("iButho z iklwa".to_owned(), 16.0),
-            ("Gwardzista z champi".to_owned(), 18.0),
-            ("Wojownik z żelaznym khopesh".to_owned(), 18.0),
-            ("Mur tarcz (Sargonid)".to_owned(), 18.0),
-            ("Miecznik galijski".to_owned(), 14.0),
-        ]);
+        let unit_prices = unit_prices_from_units_json();
         Self {
             resource_prices_per_block,
             technology_prices,
@@ -1914,6 +1849,22 @@ impl Default for ValueCatalog {
             unit_prices,
         }
     }
+}
+
+/// PN jednostki = `Pieniądz (koszt)` z `units.json` (web: `diplomacyPnJednostka`,
+/// `gra/src/game/diplomacy-value-catalog.ts`). Wpisy z kosztem <= 0 są bez wyceny.
+fn unit_prices_from_units_json() -> BTreeMap<String, f64> {
+    static PRICES: std::sync::OnceLock<BTreeMap<String, f64>> = std::sync::OnceLock::new();
+    PRICES
+        .get_or_init(|| {
+            parse_units()
+                .expect("embedded units.json must parse")
+                .into_iter()
+                .filter(|record| record.pieniadz_koszt > 0)
+                .map(|record| (record.jednostka, record.pieniadz_koszt as f64))
+                .collect()
+        })
+        .clone()
 }
 
 const STEP_TEN_RESOURCES: &[&str] = &[
