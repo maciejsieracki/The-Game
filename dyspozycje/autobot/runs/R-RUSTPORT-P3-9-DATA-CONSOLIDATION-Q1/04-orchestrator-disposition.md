@@ -38,6 +38,13 @@ baza, zero regresji).
 BLOKADY: brak. Dług pozostały: rewiring modułów danych z `domain/**` (osobny przyszły temat),
 `Cargo.lock` nadal nie w repo (znane od P3.1-2).
 RUNDY: 1/5 (de facto — bez pełnej rundy Evaluator/Final Control, patrz uzasadnienie wyżej)
+
+NOTA PROCESOWA (wykryta po fakcie, 2026-10-21): skrypt Workflow tego tematu pominął jawny `model`
+dla roli Operatora — bez tego parametru `agent()` dziedziczy model głównej pętli (Sonnet 5.5), więc
+Operator biegł na Sonnet zamiast wymaganego Haiku 5.5 (`R-PROC-AUTOBOT.md` §5a). Nie podważa to
+wyniku: orkiestrator i tak zweryfikował pracę niezależnie (diff+build+test), nie na podstawie
+deklaracji Operatora. Błąd poprawiony we wszystkich kolejnych dispatchach Workflow (jawny `model`
+per rola, bez wyjątków).
 NASTĘPNY KROK: dalszy dispatch — P3.8-ASSETS, dalsze tematy rewiringu danych.
 DEPLOY/PUSH: WYKONANO (push do `origin/rust-port/parity-v2`, gałąź robocza kodu — nie jest to
 deploy produktu/READY_FOR_DEPLOY)

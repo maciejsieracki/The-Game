@@ -27,12 +27,26 @@ dotykające tych samych plików — zawsze sekwencyjnie, nigdy w tej samej fali.
 
 | # | Temat | Faza | Runda | runId Workflow | Status | Ostatnia aktualizacja |
 |---|---|---|---|---|---|---|
-| 1 | `R-RUSTPORT-P3-4B-IDS-NEWTYPE-REFACTOR-Q1` | P3.4b (newtype ID refactor, poprawiony dispatch) | 1/5 | `wf_afbe5aaf-7a4` | DISPATCHED (w toku) | 2026-10-21 |
-| 2 | — | — | — | — | **WOLNY** (P3.9 zamknięty PASS, zintegrowany `9f9ffee7`) | 2026-10-21 |
-| 3 | — | — | — | — | **WOLNY, ŚWIADOMIE** (tylko 1/6 obsadzone — zalecenie z incydentów INFRA: max 2 równoległe worktree kodu Rust do czasu wdrożenia sparse-checkout) | 2026-10-21 |
+| 1 | `R-RUSTPORT-P3-4B-IDS-NEWTYPE-REFACTOR-Q1` | P3.4b (newtype ID refactor, poprawiony dispatch) | 1/5 (restart v2) | `wf_5b626c1b-664` | DISPATCHED (w toku) | 2026-10-21 |
+| 2 | `R-RUSTPORT-P3-8-ASSETS-Q1` | P3.8 (staging 428 plików assetów runtime 1:1) | 1/5 | `wf_5f739030-b91` | DISPATCHED (w toku) | 2026-10-21 |
+| 3 | — | — | — | — | **WOLNY, ŚWIADOMIE** (2/6 obsadzone — zalecenie z incydentów INFRA: max 2-3 równoległe worktree kodu Rust do czasu wdrożenia sparse-checkout; P3.8 jest lekki, głównie binaria, nie koliduje z P3.4b) | 2026-10-21 |
 | 4 | — | — | — | — | **WOLNY, ŚWIADOMIE** (jw.) | 2026-10-21 |
-| 5 | — | — | — | — | **WOLNY, ŚWIADOMIE** (P3.8-ASSETS dispatch gotowy, czeka na wynik P3.4b i stabilny dysk) | 2026-10-21 |
-| 6 | — | — | — | — | **WOLNY, ŚWIADOMIE** (jw.) | 2026-10-21 |
+| 5 | — | — | — | — | **WOLNY** (brak kolejnego gotowego, bezkolizyjnego materiału — P3.5-P3.7 dane KOMPLETNE (wszystkie 27 plików `gra/data/*.json` już w `rust-port/engine/data/`), P3.10+ fixtures czeka na mechanizm nagrywania z web, P3.11-13 czekają na zamknięcie P3.4b/P3.8) | 2026-10-21 |
+| 6 | — | — | — | — | **WOLNY** (jw.) | 2026-10-21 |
+
+**KOREKTA BŁĘDU ROUTINGU MODELI (2026-10-21, zgłoszone przez właściciela):** pierwsze uruchomienia
+P3.4b (`wf_afbe5aaf-7a4`) i P3.9 (`wf_8b0cdc58-ca7`) miały w skrypcie Workflow brakujący parametr
+`model` dla ról Operator/Evaluator/Obrona — bez jawnego `model`, `agent()` dziedziczy model
+głównej pętli (Sonnet 5.5), więc wszystkie 3 role biegły na Sonnet zamiast wymaganego Haiku 5.5
+(`R-PROC-AUTOBOT.md` §5a, skill `civ-autobot-workflow`). P3.4b **zatrzymany i zrelansowany** (v2,
+`wf_5b626c1b-664`) z jawnym `model: 'claude-haiku-5-5'` dla Operator/Evaluator/Obrona i
+`model: 'claude-sonnet-5-5'` dla Final Control — zero straconej pracy (worktree Operatora był
+jeszcze w trakcie, niescommitowany). P3.9 był już zintegrowany w chwili wykrycia błędu — jego
+Operator (jedyna rola, która zdążyła odpowiedzieć przed INFRA) biegł na Sonnet, ale wynik został
+niezależnie zweryfikowany przez orkiestratora (diff+build+test), więc nie wymaga powtórki — błąd
+modelu odnotowany jako nota procesowa w dyspozycji P3.9, nie podważa wyniku technicznego. **Od tego
+momentu wszystkie nowe dispatche Workflow MUSZĄ jawnie ustawiać `model` per rola — zero poleganie na
+domyślnym dziedziczeniu.**
 
 **P3.9 ZAMKNIĘTY PASS (2026-10-21), zintegrowany `9f9ffee7`.** 5 modułów danych P3.5A-E podpięte pod
 `pub mod data;` w `lib.rs`, `serde_json` → `[dependencies]`. 256/256 testów PASS, zero regresji.
