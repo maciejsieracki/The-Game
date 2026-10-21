@@ -3,7 +3,7 @@
 STATUS: FAIL (rekomendacja Operatora; klauzula 2 bramki PASS, klauzula 1 NIE SPEŁNIONA w runtime)
 DOMAIN: GAME
 TEMAT: R-RUSTPORT-P3-13-GATE-FINAL-CONTROL-Q1
-RUNDA: 1/5
+RUNDA: 2/5 (doc po obronie e1acea29; korekty Final Control r2 ponizej)
 BAZA: `origin/rust-port/parity-v2` = `17454b33abbd3ab4a87a7e75ac2b17c5d86a4d8a` (HEAD worktree detached; zweryfikowane `git rev-parse HEAD`)
 PIN danych: `edb8fb56` (`gra/data/*`)
 DEPLOY/PUSH: NIE WYKONANO
@@ -75,7 +75,7 @@ Lewa kolumna: `git hash-object rust-port/engine/data/<plik>` (worktree `17454b33
 - **`include_str!` w `src/data/*` — 29 wystąpień** (`civilizations.rs` 7, `buildings_tech.rs` 3, `economy_society.rs` 6, `economy_society_part2.rs` 3, `terrain_map.rs` 4, `units_combat.rs` 6). Każdy z 29 plików jest osadzony w binarce przez funkcje `parse_*` / stałe `*_JSON`.
 - **Wywołania produkcyjne:** `grep` po `src/` poza `src/data/`, `src-tauri/src` i `tests/`: ZERO wywołań `parse_*`, `load_all`, `load_file`, stałych `*_JSON`. Wszystkie wywołania są w `tests/` (`data_*.rs`, `data_compliance.rs`, `data_loader.rs`).
 - **Domena nie używa danych:** `grep -rn "data::\|civilizations::\|buildings_tech::\|units_combat::" src/domain` → 0 trafień.
-- **`src-tauri`:** brak `include_str!`, brak odwołań do `civ_engine::data`.
+- **`src-tauri`:** brak `include_str!`, brak odwołań do `civ_engine::data` w `src-tauri/src` (jedyne trafienie `civ_engine` to komentarz `lib.rs:5`). Korekta Final Control (ZMIERZONO): `src-tauri/Cargo.toml:16` DEKLARUJE zależność `civ-engine` (path), ale kod jej nie używa — zależność istnieje, użycie w runtime nie.
 
 **Ocena klauzuli „dane ładowane ze źródła (nie hard-coded)":** loader ze źródła istnieje i działa (testy), ale **silnik nie ładuje danych w runtime**. Ponadto domena zawiera tabelę wpisaną ręcznie: `rust-port/engine/src/domain/recruitment.rs:204` `canonical_recruitment_costs()` — komentarz „mirrored from `gra/data/units.json`" (ZMIERZONO r2: skrypt porównujący tabelę Rust z `units.json` w tym commicie; nazwy 75/75 zgodne; w 4 polach jednocześnie (koszt złota, utrzymanie złota, surowiec+ilość, utrzymanie surowca+ilość) **0/75 wierszy zgodnych**; pojedynczo: koszt złota 9/75, utrzymanie złota 75/75, surowiec+ilość 1/75, utrzymanie surowca+ilość 1/75; przykład Wojownik: Rust koszt 10 / drewno 50 / utrzymanie drewno 10, `units.json` 5 / 13 / 3; LEDGER P2.9 też podaje rozbieżność; P3.5B świadomie nie naprawiony). Klauzula 1 bramki **nie jest spełniona** w runtime.
 
