@@ -1,6 +1,6 @@
 # P4.6 — Szkielet crate'a renderera `rust-port/renderer` (`civ-renderer`)
 
-TEMAT: `R-RUSTPORT-P4-6-RENDERER-CRATE-SCAFFOLD-Q1` · DOMAIN: GAME · RUNDA: 1/5 · ROLA: Operator (Opus 5.5 medium)
+TEMAT: `R-RUSTPORT-P4-6-RENDERER-CRATE-SCAFFOLD-Q1` · DOMAIN: GAME · RUNDA: 2/5 (obrona po FAIL Evaluatora r1) · ROLA: Operator (Opus 5.5 medium)
 Baza: `origin/rust-port/parity-v2` = `17454b33abbd3ab4a87a7e75ac2b17c5d86a4d8a` (P3.16). Data: 2026-10-21.
 Źródło architektury: `dyspozycje/rust-port/p4/P4-3-RUST-RENDERER-ARCH.md` (gałąź dokumentacyjna) — §1, §2, §4.2, §5, §7.3, §8, §9.
 Decyzje właściciela w mocy (LEDGER 2026-10-21): D-RR-1 = A (wgpu bezpośrednio), D-RR-4 = A (tekst w Rust), D-RR-8 = A (tylko styl `roblox`).
@@ -39,7 +39,7 @@ Podział plików pod równoległość: każdy temat dostaje własny plik `src/<m
 
 ### 2.1 `Cargo.lock` — COMMITOWANY (wyjątek)
 
-- Uzasadnienie: drzewo wgpu to 125 pakietów w locku (wszystkie platformy; 79 unikalnych linii `cargo tree --features gpu -e normal` na hoście Linux). Bez locka każdy build CI rozwiązuje zależności na nowo → dryf wersji przechodnich bez zmiany w repo. Dowód, że ryzyko jest realne (zmierzone w tym temacie): lock rozwiązany przez cargo 1.97 wybrał `ordered-float 5.5.0`, które wymaga Rust 1.90, i `cargo +1.87.0 test` padł (`ordered-float@5.5.0 requires rustc 1.90`, EXIT=101). Po rozwiązaniu MSRV-świadomym: `ordered-float 5.4.0`, EXIT=0 (log §4).
+- Uzasadnienie: drzewo wgpu to 125 pakietów w locku (wszystkie platformy; 79 unikalnych linii `cargo tree --features gpu -e normal` na hoście Linux). Bez locka każdy build CI rozwiązuje zależności na nowo → dryf wersji przechodnich bez zmiany w repo. Dowód, że ryzyko jest realne (zmierzone w tym temacie): lock rozwiązany przez cargo 1.97 wybrał `ordered-float 5.5.0`, które wymaga Rust 1.90, i `cargo +1.87.0 test` padł (`ordered-float@5.5.0 requires rustc 1.90`, EXIT=101). Po rozwiązaniu MSRV-świadomym: `ordered-float 5.4.0`, EXIT=0. **Surowy log porażki i naprawy: §4b** (r1 podawał to tylko zdaniem — zarzut 3 Evaluatora r1; w r2 odtworzone i zalogowane).
 - Fakt korygujący dispatch: w repo **jest już** commitowany lock — `src-tauri/Cargo.lock` (`git ls-files | grep Cargo.lock` → `src-tauri/Cargo.lock`). `rust-port/engine` locka nie ma. Renderer jest więc drugim, nie jedynym wyjątkiem.
 - CI używa `--locked` (build pada, jeśli lock nie pasuje do `Cargo.toml`).
 
@@ -73,7 +73,7 @@ Licencje całego locka (`cargo metadata --features gpu`, 125 pakietów bez `civ-
 
 ### 2.6 CI (`.github/workflows/rust-renderer.yml`)
 
-Wzorowany na `rust-engine.yml` (ten plik bez zmian): `on` push/pull_request z `paths: rust-port/renderer/**` + sam workflow, `workflow_dispatch`, `permissions: contents: read`, `concurrency`. Job `linux` (ubuntu-latest): `cargo fmt --all -- --check`; `cargo clippy --locked --all-targets [--features gpu] -- -D warnings`; `cargo test --locked --all-targets`; `cargo test --locked --all-targets --features gpu -- --nocapture` (`--nocapture` → linia SKIPPED widoczna w logu CI). Job `msrv`: test na 1.87.0 z `--locked`.
+Wzorowany na `rust-engine.yml` (ten plik bez zmian): `on` push/pull_request z `paths: rust-port/renderer/**` + sam workflow, `workflow_dispatch`, `permissions: contents: read`, `concurrency`. Job `linux` (ubuntu-latest): `cargo fmt --all -- --check`; `cargo clippy --locked --all-targets [--features gpu] -- -D warnings`; `cargo test --locked --all-targets`; `cargo test --locked --all-targets --features gpu` (r2: **bez** `--nocapture` — linia SKIPPED jest widoczna w zwykłym przebiegu, §3). Job `msrv`: `cargo test --locked --all-targets --features gpu` na 1.87.0.
 
 **Windows — NIE dodany (opisany):** na `windows-latest` wgpu najpewniej dostałby adapter DX12/WARP i sonda wypisałaby nazwę adaptera zamiast SKIPPED — to wartościowe, ale w tym kontenerze **NIE_ZMIERZONO**, a w `rust-engine.yml` job Windows jest „intentionally a separate, owner-authorized job”. Propozycja: dodać job `windows` (te same kroki + `rustc --version --verbose`) w RR-T1 po autoryzacji właściciela.
 
@@ -82,11 +82,15 @@ Składnia YAML sprawdzona parserem (`python3 -I -c "import yaml; yaml.safe_load(
 ## 3. Sonda GPU (`tests/gpu_probe.rs`)
 
 - `wgpu::Instance::new(wgpu::InstanceDescriptor::new_without_display_handle_from_env())` (w wgpu 30 nie ma `InstanceDescriptor::default()`/`from_env_or_default()` — kompilator wskazał te konstruktory) → `pollster::block_on(instance.request_adapter(&RequestAdapterOptions::default()))`.
-- `Err` → test przechodzi i drukuje `SKIPPED: no GPU adapter (request_adapter error: …)` z pełnym powodem od wgpu. `Ok` → drukuje `name`, `backend`, `device_type`, `driver`, `driver_info`.
+- `Err(RequestAdapterError::NotFound {..})` → test przechodzi i wypisuje `SKIPPED: no GPU adapter (request_adapter error: …)` z pełnym powodem od wgpu. `Ok` → wypisuje `name`, `backend`, `device_type`, `driver`, `driver_info`.
+- r2 (zarzut 4): każdy **inny** wariant `RequestAdapterError` (enum jest `#[non_exhaustive]`; w wgpu-types 30.0.1 drugi wariant to `EnvNotSet`, `src/adapter.rs:272`) → test **pada** (`panic!` z `{:?}` i `Display` wariantu), więc błąd konfiguracji nie jest raportowany jako pominięcie. Uwaga: `EnvNotSet` zwraca tylko `wgpu::util::initialize_adapter_from_env` (`wgpu-30.0.1/src/util/init.rs:19,21,53`), którego sonda nie woła; `Instance::request_adapter` daje `NotFound`. Wariant `EnvNotFound` z zarzutu nie istnieje, a błędne `WGPU_ADAPTER_NAME` nie dotyczy tej ścieżki (sonda czyta z env tylko `InstanceDescriptor`). Rozróżnienie jest więc zabezpieczeniem na przyszłe warianty, nie zmianą obecnego wyniku.
 - Wynik w tym kontenerze (§4): `SKIPPED: no GPU adapter (request_adapter error: No suitable graphics adapter found; noop support not compiled in, vulkan drivers/libraries could not be loaded, metal support not compiled in, dx12 support not compiled in, gl drivers/libraries could not be loaded, webgpu support not compiled in)`.
-- Ograniczenie: libtest nie ma statusu „skipped” dla testu, który wystartował; pominięcie jest raportowane linią na stdout (widoczną z `--nocapture`), a status testu to `ok`. Alternatywa `#[ignore]` ukryłaby sondę także na maszynie z GPU.
+- r2 (zarzut 1, PRZYJĘTY): teza r1 „widoczne tylko z `--nocapture`” była **fałszywa**. libtest przechwytuje wyłącznie makra `print!/println!/eprint!/eprintln!`; sonda r2 pisze przez `writeln!(std::io::stderr().lock(), …)` (funkcja `report`), co omija przechwytywanie — linia SKIPPED jest w wyjściu zwykłego `cargo test --locked --all-targets --features gpu` (log §4a, bez `--nocapture`). Workflow CI nie używa już `--nocapture`.
+- Ograniczenie, które zostaje: libtest nie ma statusu „skipped” dla testu, który wystartował — status testu to `ok`, a pominięcie jest raportowane linią w wyjściu. Alternatywa `#[ignore]` ukryłaby sondę także na maszynie z GPU.
 
 ## 4. Surowe wyjścia bramek (PEŁNE)
+
+> **Uwaga r2 (zarzut 2, PRZYJĘTY):** log poniżej (r1) pochodzi z drzewa **niezacommitowanego** — `rev-parse HEAD` w logu daje bazę `17454b33`, a nie commit kodu `171ed63d`. Wyniki r1 potwierdził Evaluator na commicie, ale kod sondy zmienił się w r2. **Wiążący jest log §4a** — z czystego drzewa na commicie kodu r2. Log r1 zostaje jako historia.
 
 Uruchomione skryptem (każda komenda: `echo "$ cmd"; cmd 2>&1; echo "EXIT=$?"`) w `rust-port/renderer`, środowisko: `CARGO_INCREMENTAL=0`, `CARGO_TARGET_DIR=/home/user/cargo-target-shared/wf_0bec7858-c2b-1`, `CARGO_PROFILE_DEV_DEBUG=0`, `CARGO_TERM_COLOR=never`. Po `cargo clean` — build od zera. Treść skryptu:
 
@@ -437,10 +441,424 @@ test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; fini
 EXIT=0
 ```
 
+### 4a. Runda 2 — bramki na commicie kodu r2 (wiążące)
+
+Stan drzewa sprawdzony osobnymi komendami tuż przed i tuż po skrypcie (klasyfikator izolacji worktree nie pozwala uruchomić polecenia VCS wewnątrz skryptu, więc nie ma ich w logu skryptu):
+
+```text
+$ git rev-parse HEAD
+58634cb15fec7d54eb3cd6be2146c9421a7c6c79
+$ git status --short --untracked-files=all
+(pusty wynik — czyste drzewo; tak samo po skrypcie)
+```
+
+`58634cb1` = commit kodu r2 (`tests/gpu_probe.rs`, `.github/workflows/rust-renderer.yml`) na `75c7eacc` (r1 dokumenty) ← `171ed63d` (r1 kod) ← `17454b33`. Skrypt (target `wf_0bec7858-c2b-3`, `cargo clean` na starcie; **bez** `--nocapture`):
+
+```bash
+#!/usr/bin/env bash
+# Gate run r2 for R-RUSTPORT-P4-6 on the COMMITTED tree (raw outputs, each command followed by EXIT).
+WT=/home/user/The-Game/.claude/worktrees/wf_0bec7858-c2b-3
+cd "$WT/rust-port/renderer" || exit 1
+export CARGO_INCREMENTAL=0
+export CARGO_TARGET_DIR=/home/user/cargo-target-shared/wf_0bec7858-c2b-3
+export CARGO_PROFILE_DEV_DEBUG=0
+export CARGO_TERM_COLOR=never
+run() { echo "\$ $*"; "$@" 2>&1; echo "EXIT=$?"; echo; }
+run rustc --version
+run cargo --version
+run ls /dev/dri
+run cargo clean
+run cargo fmt --all -- --check
+run cargo clippy --locked --all-targets -- -D warnings
+run cargo clippy --locked --all-targets --features gpu -- -D warnings
+run cargo test --locked --all-targets
+run cargo test --locked --all-targets --features gpu
+run cargo +1.87.0 test --locked --all-targets --features gpu
+```
+
+Log (bez skrótów):
+
+```text
+$ rustc --version
+rustc 1.97.0 (2d8144b78 2026-07-07)
+EXIT=0
+
+$ cargo --version
+cargo 1.97.0 (c980f4866 2026-06-30)
+EXIT=0
+
+$ ls /dev/dri
+ls: cannot access '/dev/dri': No such file or directory
+EXIT=2
+
+$ cargo clean
+     Removed 623 files, 166.0MiB total
+EXIT=0
+
+$ cargo fmt --all -- --check
+EXIT=0
+
+$ cargo clippy --locked --all-targets -- -D warnings
+    Checking pollster v0.4.0
+    Checking civ-renderer v0.1.0 (/home/user/The-Game/.claude/worktrees/wf_0bec7858-c2b-3/rust-port/renderer)
+    Finished `dev` profile [unoptimized] target(s) in 0.16s
+EXIT=0
+
+$ cargo clippy --locked --all-targets --features gpu -- -D warnings
+   Compiling proc-macro2 v1.0.107
+   Compiling quote v1.0.47
+   Compiling unicode-ident v1.0.27
+    Checking cfg-if v1.0.5
+   Compiling cfg_aliases v0.2.2
+    Checking foldhash v0.2.0
+   Compiling thiserror v2.0.21
+    Checking equivalent v1.0.3
+   Compiling autocfg v1.5.1
+   Compiling libm v0.2.16
+    Checking hashbrown v0.17.1
+   Compiling num-traits v0.2.19
+    Checking libloading v0.8.9
+   Compiling libc v0.2.191
+   Compiling syn v3.0.9
+   Compiling syn v2.0.119
+    Checking log v0.4.34
+   Compiling zerocopy v0.8.63
+    Checking indexmap v2.14.2
+    Checking bitflags v2.13.2
+    Checking rustc-hash v1.1.0
+   Compiling naga v30.0.1
+    Checking bit-vec v0.9.1
+    Checking unicode-width v0.2.2
+    Checking once_cell v1.21.4
+   Compiling ash v0.38.0+1.3.281
+   Compiling parking_lot_core v0.9.12
+   Compiling pkg-config v0.3.34
+    Checking codespan-reporting v0.13.1
+    Checking bit-set v0.10.0
+   Compiling wayland-sys v0.31.11
+    Checking spirv v0.4.0+sdk-1.4.341.0
+   Compiling thiserror-impl v2.0.21
+   Compiling bytemuck_derive v1.12.1
+    Checking arrayvec v0.7.8
+    Checking naga-types v30.0.1
+    Checking smallvec v1.16.3
+    Checking bytemuck v1.25.2
+    Checking raw-window-handle v0.6.2
+    Checking static_assertions v1.1.0
+   Compiling khronos-egl v6.0.0
+    Checking scopeguard v1.2.0
+    Checking allocator-api2 v0.2.21
+   Compiling zerocopy-derive v0.8.63
+    Checking lock_api v0.4.14
+    Checking wgpu-types v30.0.1
+    Checking hashbrown v0.16.1
+    Checking dlib v0.5.3
+   Compiling wgpu-hal v30.0.1
+    Checking presser v0.3.1
+    Checking parking_lot v0.12.5
+    Checking ordered-float v5.4.0
+    Checking glow v0.17.0
+    Checking profiling v1.0.18
+    Checking renderdoc-sys v1.1.0
+   Compiling wgpu-core v30.0.1
+   Compiling litrs v1.0.1
+   Compiling wgpu v30.0.1
+   Compiling document-features v0.2.12
+    Checking half v2.7.1
+    Checking gpu-allocator v0.28.0
+    Checking wgpu-naga-bridge v30.0.1
+    Checking wgpu-core-deps-windows-linux-android v30.0.1
+    Checking civ-renderer v0.1.0 (/home/user/The-Game/.claude/worktrees/wf_0bec7858-c2b-3/rust-port/renderer)
+    Finished `dev` profile [unoptimized] target(s) in 28.68s
+EXIT=0
+
+$ cargo test --locked --all-targets
+   Compiling pollster v0.4.0
+   Compiling civ-renderer v0.1.0 (/home/user/The-Game/.claude/worktrees/wf_0bec7858-c2b-3/rust-port/renderer)
+    Finished `test` profile [unoptimized] target(s) in 0.25s
+     Running unittests src/lib.rs (/home/user/cargo-target-shared/wf_0bec7858-c2b-3/debug/deps/civ_renderer-d95024f3ec20cfd9)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/cpu_sanity.rs (/home/user/cargo-target-shared/wf_0bec7858-c2b-3/debug/deps/cpu_sanity-7ee07d9f2002230a)
+
+running 1 test
+test gpu_feature_readback_matches_build_configuration ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/gpu_probe.rs (/home/user/cargo-target-shared/wf_0bec7858-c2b-3/debug/deps/gpu_probe-08e2d2a6c2a7bdae)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+EXIT=0
+
+$ cargo test --locked --all-targets --features gpu
+   Compiling cfg-if v1.0.5
+   Compiling foldhash v0.2.0
+   Compiling equivalent v1.0.3
+   Compiling thiserror v2.0.21
+   Compiling libloading v0.8.9
+   Compiling libm v0.2.16
+   Compiling log v0.4.34
+   Compiling hashbrown v0.17.1
+   Compiling rustc-hash v1.1.0
+   Compiling bitflags v2.13.2
+   Compiling zerocopy v0.8.63
+   Compiling libc v0.2.191
+   Compiling indexmap v2.14.2
+   Compiling num-traits v0.2.19
+   Compiling bit-vec v0.9.1
+   Compiling naga-types v30.0.1
+   Compiling unicode-width v0.2.2
+   Compiling once_cell v1.21.4
+   Compiling codespan-reporting v0.13.1
+   Compiling bit-set v0.10.0
+   Compiling bytemuck v1.25.2
+   Compiling spirv v0.4.0+sdk-1.4.341.0
+   Compiling scopeguard v1.2.0
+   Compiling smallvec v1.16.3
+   Compiling raw-window-handle v0.6.2
+   Compiling allocator-api2 v0.2.21
+   Compiling arrayvec v0.7.8
+   Compiling static_assertions v1.1.0
+   Compiling wgpu-types v30.0.1
+   Compiling hashbrown v0.16.1
+   Compiling parking_lot_core v0.9.12
+   Compiling lock_api v0.4.14
+   Compiling ash v0.38.0+1.3.281
+   Compiling dlib v0.5.3
+   Compiling presser v0.3.1
+   Compiling wayland-sys v0.31.11
+   Compiling parking_lot v0.12.5
+   Compiling half v2.7.1
+   Compiling khronos-egl v6.0.0
+   Compiling naga v30.0.1
+   Compiling ordered-float v5.4.0
+   Compiling glow v0.17.0
+   Compiling profiling v1.0.18
+   Compiling renderdoc-sys v1.1.0
+   Compiling wgpu-naga-bridge v30.0.1
+   Compiling gpu-allocator v0.28.0
+   Compiling wgpu-hal v30.0.1
+   Compiling wgpu-core-deps-windows-linux-android v30.0.1
+   Compiling wgpu-core v30.0.1
+   Compiling wgpu v30.0.1
+   Compiling civ-renderer v0.1.0 (/home/user/The-Game/.claude/worktrees/wf_0bec7858-c2b-3/rust-port/renderer)
+    Finished `test` profile [unoptimized] target(s) in 29.02s
+     Running unittests src/lib.rs (/home/user/cargo-target-shared/wf_0bec7858-c2b-3/debug/deps/civ_renderer-ba2e020f2268d7cf)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/cpu_sanity.rs (/home/user/cargo-target-shared/wf_0bec7858-c2b-3/debug/deps/cpu_sanity-8d2ce99d6c66c1e8)
+
+running 1 test
+test gpu_feature_readback_matches_build_configuration ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/gpu_probe.rs (/home/user/cargo-target-shared/wf_0bec7858-c2b-3/debug/deps/gpu_probe-0582898013e8e5d9)
+
+running 1 test
+SKIPPED: no GPU adapter (request_adapter error: No suitable graphics adapter found; noop support not compiled in, vulkan drivers/libraries could not be loaded, metal support not compiled in, dx12 support not compiled in, gl drivers/libraries could not be loaded, webgpu support not compiled in)
+test gpu_probe_adapter_or_explicit_skip ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+EXIT=0
+
+$ cargo +1.87.0 test --locked --all-targets --features gpu
+   Compiling proc-macro2 v1.0.107
+   Compiling unicode-ident v1.0.27
+   Compiling quote v1.0.47
+   Compiling cfg-if v1.0.5
+   Compiling cfg_aliases v0.2.2
+   Compiling foldhash v0.2.0
+   Compiling libm v0.2.16
+   Compiling equivalent v1.0.3
+   Compiling thiserror v2.0.21
+   Compiling autocfg v1.5.1
+   Compiling hashbrown v0.17.1
+   Compiling syn v3.0.9
+   Compiling num-traits v0.2.19
+   Compiling syn v2.0.119
+   Compiling libloading v0.8.9
+   Compiling libc v0.2.191
+   Compiling zerocopy v0.8.63
+   Compiling log v0.4.34
+   Compiling indexmap v2.14.2
+   Compiling rustc-hash v1.1.0
+   Compiling bitflags v2.13.2
+   Compiling naga v30.0.1
+   Compiling bit-vec v0.9.1
+   Compiling once_cell v1.21.4
+   Compiling parking_lot_core v0.9.12
+   Compiling thiserror-impl v2.0.21
+   Compiling bytemuck_derive v1.12.1
+   Compiling unicode-width v0.2.2
+   Compiling ash v0.38.0+1.3.281
+   Compiling pkg-config v0.3.34
+   Compiling bytemuck v1.25.2
+   Compiling wayland-sys v0.31.11
+   Compiling naga-types v30.0.1
+   Compiling codespan-reporting v0.13.1
+   Compiling bit-set v0.10.0
+   Compiling spirv v0.4.0+sdk-1.4.341.0
+   Compiling scopeguard v1.2.0
+   Compiling zerocopy-derive v0.8.63
+   Compiling khronos-egl v6.0.0
+   Compiling static_assertions v1.1.0
+   Compiling arrayvec v0.7.8
+   Compiling smallvec v1.16.3
+   Compiling raw-window-handle v0.6.2
+   Compiling allocator-api2 v0.2.21
+   Compiling wgpu-types v30.0.1
+   Compiling hashbrown v0.16.1
+   Compiling lock_api v0.4.14
+   Compiling dlib v0.5.3
+   Compiling wgpu-hal v30.0.1
+   Compiling presser v0.3.1
+   Compiling parking_lot v0.12.5
+   Compiling ordered-float v5.4.0
+   Compiling glow v0.17.0
+   Compiling renderdoc-sys v1.1.0
+   Compiling profiling v1.0.18
+   Compiling wgpu-core v30.0.1
+   Compiling litrs v1.0.1
+   Compiling document-features v0.2.12
+   Compiling wgpu v30.0.1
+   Compiling pollster v0.4.0
+   Compiling half v2.7.1
+   Compiling gpu-allocator v0.28.0
+   Compiling wgpu-naga-bridge v30.0.1
+   Compiling wgpu-core-deps-windows-linux-android v30.0.1
+   Compiling civ-renderer v0.1.0 (/home/user/The-Game/.claude/worktrees/wf_0bec7858-c2b-3/rust-port/renderer)
+    Finished `test` profile [unoptimized] target(s) in 36.47s
+     Running unittests src/lib.rs (/home/user/cargo-target-shared/wf_0bec7858-c2b-3/debug/deps/civ_renderer-6b861a72fe609883)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/cpu_sanity.rs (/home/user/cargo-target-shared/wf_0bec7858-c2b-3/debug/deps/cpu_sanity-3f94db894eb8213d)
+
+running 1 test
+test gpu_feature_readback_matches_build_configuration ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/gpu_probe.rs (/home/user/cargo-target-shared/wf_0bec7858-c2b-3/debug/deps/gpu_probe-669e972a69f08839)
+
+running 1 test
+SKIPPED: no GPU adapter (request_adapter error: No suitable graphics adapter found; noop support not compiled in, vulkan drivers/libraries could not be loaded, metal support not compiled in, dx12 support not compiled in, gl drivers/libraries could not be loaded, webgpu support not compiled in)
+test gpu_probe_adapter_or_explicit_skip ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+EXIT=0
+```
+
+### 4b. Runda 2 — odtworzenie dryfu MSRV (`ordered-float 5.5.0`) — surowy log
+
+Kopia scratch commitowanego crate'a (stan `58634cb1`); lock rozwiązany **bez** MSRV-świadomego fallbacku (`CARGO_RESOLVER_INCOMPATIBLE_RUST_VERSIONS=allow` nadpisuje `.cargo/config.toml`), potem build na 1.87.0, potem rozwiązanie domyślne (fallback z `.cargo/config.toml`) i porównanie z commitowanym lockiem. Skrypt:
+
+```bash
+#!/usr/bin/env bash
+# Repro of the MSRV drift (objection 3): resolve the lock WITHOUT the MSRV-aware
+# fallback in a scratch copy of the committed crate, then build on 1.87.0.
+WT=/home/user/The-Game/.claude/worktrees/wf_0bec7858-c2b-3
+SCR=/tmp/claude-0/-home-user-The-Game/cbf4a126-dca3-5f50-bfb0-2a747b18a590/scratchpad/of-repro
+export CARGO_INCREMENTAL=0
+export CARGO_TARGET_DIR=/home/user/cargo-target-shared/wf_0bec7858-c2b-3-repro
+export CARGO_PROFILE_DEV_DEBUG=0
+export CARGO_TERM_COLOR=never
+run() { echo "\$ $*"; "$@" 2>&1; echo "EXIT=$?"; echo; }
+rm -rf "$SCR"
+run cp -r "$WT/rust-port/renderer" "$SCR"
+cd "$SCR" || exit 1
+run cat .cargo/config.toml
+run grep -A1 '^name = "ordered-float"' Cargo.lock
+echo '$ CARGO_RESOLVER_INCOMPATIBLE_RUST_VERSIONS=allow cargo generate-lockfile'
+CARGO_RESOLVER_INCOMPATIBLE_RUST_VERSIONS=allow cargo generate-lockfile 2>&1; echo "EXIT=$?"; echo
+run grep -A1 '^name = "ordered-float"' Cargo.lock
+run cargo +1.87.0 test --locked --all-targets --features gpu
+run cargo generate-lockfile
+run grep -A1 '^name = "ordered-float"' Cargo.lock
+run cmp Cargo.lock "$WT/rust-port/renderer/Cargo.lock"
+cd / && rm -rf "$SCR" "$CARGO_TARGET_DIR"
+echo "cleanup done"
+```
+
+Log (bez skrótów):
+
+```text
+$ cp -r /home/user/The-Game/.claude/worktrees/wf_0bec7858-c2b-3/rust-port/renderer /tmp/claude-0/-home-user-The-Game/cbf4a126-dca3-5f50-bfb0-2a747b18a590/scratchpad/of-repro
+EXIT=0
+
+$ cat .cargo/config.toml
+# MSRV-aware dependency resolution (cargo >= 1.84): `cargo update` /
+# `cargo generate-lockfile` prefer versions compatible with `rust-version`
+# (1.87) from Cargo.toml. Without this, a lock resolved on a newer toolchain
+# picked ordered-float 5.5.0 (requires Rust 1.90) and broke the declared MSRV.
+[resolver]
+incompatible-rust-versions = "fallback"
+EXIT=0
+
+$ grep -A1 ^name = "ordered-float" Cargo.lock
+name = "ordered-float"
+version = "5.4.0"
+EXIT=0
+
+$ CARGO_RESOLVER_INCOMPATIBLE_RUST_VERSIONS=allow cargo generate-lockfile
+    Updating crates.io index
+     Locking 125 packages to latest compatible versions
+      Adding pollster v0.4.0 (available: v1.0.1)
+EXIT=0
+
+$ grep -A1 ^name = "ordered-float" Cargo.lock
+name = "ordered-float"
+version = "5.5.0"
+EXIT=0
+
+$ cargo +1.87.0 test --locked --all-targets --features gpu
+error: rustc 1.87.0 is not supported by the following package:
+  ordered-float@5.5.0 requires rustc 1.90
+Either upgrade rustc or select compatible dependency versions with
+`cargo update <name>@<current-ver> --precise <compatible-ver>`
+where `<compatible-ver>` is the latest version supporting rustc 1.87.0
+
+EXIT=101
+
+$ cargo generate-lockfile
+    Updating crates.io index
+     Locking 125 packages to latest Rust 1.87 compatible versions
+      Adding ordered-float v5.4.0 (available: v5.5.0, requires Rust 1.90)
+      Adding pollster v0.4.0 (available: v1.0.1)
+EXIT=0
+
+$ grep -A1 ^name = "ordered-float" Cargo.lock
+name = "ordered-float"
+version = "5.4.0"
+EXIT=0
+
+$ cmp Cargo.lock /home/user/The-Game/.claude/worktrees/wf_0bec7858-c2b-3/rust-port/renderer/Cargo.lock
+EXIT=0
+
+cleanup done
+```
+
+Wniosek: bez fallbacku cargo 1.97 wybiera `ordered-float 5.5.0` i `cargo +1.87.0 test --locked` kończy się **EXIT=101**; z fallbackiem `ordered-float 5.4.0`, a wygenerowany lock jest bajtowo identyczny z commitowanym (`cmp` EXIT=0).
+
 ## 5. NIE_ZMIERZONO
 
 1. Jakikolwiek render / utworzenie urządzenia (`request_device`) — brak adaptera w kontenerze (brak `/dev/dri`, brak ICD Vulkan, brak EGL).
-2. Zachowanie sondy na maszynie z GPU (wypis nazwy adaptera) — ścieżka `Ok` skompilowana, nie wykonana.
+2. Zachowanie sondy na maszynie z GPU (wypis nazwy adaptera) — ścieżka `Ok` skompilowana, nie wykonana. Gałąź „inny wariant `RequestAdapterError` → FAIL” (r2) — skompilowana, nie wykonana (w kontenerze wgpu zwraca `NotFound`).
 3. Przebieg workflow na GitHub Actions (brak push) i `actionlint`.
 4. Build na Windows/macOS (pakiety platformowe są w locku, nie budowane).
 5. Rozmiar binarki i czas kompilacji wgpu w CI.
