@@ -6,7 +6,7 @@
 **Referencja:** Three.js **0.169.0** (r169) pobrany `npm pack` do scratchpad poza repo (§4).
 **GOAL:** RR-T4 — biblioteka prymitywów `rust-port/renderer/src/geom/**` zgodna numerycznie z Three.js r169 dla prymitywów używanych przez web (wierzchołki, normalne, UV, indeksy, grupy) + narzędzia składania (TRS, merge, normalne). Czysty CPU, bez GPU.
 
-**Wynik w skrócie:** 13 rodzin, **90 przypadków referencyjnych** z prawdziwego Three 0.169.0; Rust zgodny w 90/90 (tolerancja 1e-6; **89/90 bit w bit**, 1 przypadek — tuba po krzywej Catmull-Rom — max |Δ| = 1.19e-7, czyli 1 ULP f32). Indeksy i grupy materiałów identyczne we wszystkich. Bramki `fmt`/`clippy -D warnings`/`test` EXIT=0 (także `--features gpu` i MSRV 1.87). Brak nowych zależności (`Cargo.toml`/`Cargo.lock` bez zmian).
+**Wynik w skrócie (po obronie, §7):** 14 rodzin, **94 przypadki referencyjne** z prawdziwego Three 0.169.0 (90 geometrii + 4 próbkowania krzywej `curve.json`); Rust zgodny w 94/94. Stan Operatora (`8b907906`): 13 rodzin, 90 przypadków; Rust zgodny w 90/90 (tolerancja 1e-6; **89/90 bit w bit**, 1 przypadek — tuba po krzywej Catmull-Rom — max |Δ| = 1.19e-7, czyli 1 ULP f32). Indeksy i grupy materiałów identyczne we wszystkich. Bramki `fmt`/`clippy -D warnings`/`test` EXIT=0 (także `--features gpu` i MSRV 1.87). Brak nowych zależności (`Cargo.toml`/`Cargo.lock` bez zmian).
 
 ---
 
@@ -85,7 +85,7 @@ Liczby obejmują całe `gra/src` i zgadzają się z P4-4 §1.2 (tam rozbite na `
 | 11 | `ExtrudeGeometry` | 3 (3) | **zaimplementowany** (bez `extrudePath`; bevel tak) | `geom::extrude_geometry` | `extrude.json` (6) |
 | 12 | `OctahedronGeometry` | 2 (1) | **zaimplementowany** | `geom::octahedron_geometry` | `polyhedron.json` |
 | 13 | `ShapeGeometry` | 2 (1) | **zaimplementowany** (pojedynczy kształt i tablica z grupami) | `geom::shape_geometry`, `shape_geometry_multi` | `shape.json` (9) |
-| 14 | `TubeGeometry` + `CatmullRomCurve3` | 1 (1) + 2 | **zaimplementowany** (centripetal/chordal/catmullrom, open/closed) | `geom::tube_geometry`, `geom::CatmullRomCurve3` | `tube.json` (6) |
+| 14 | `TubeGeometry` + `CatmullRomCurve3` | 1 (1) + 2 | **zaimplementowany** (centripetal/chordal/catmullrom, open/closed). Dwa użycia `new CatmullRomCurve3`: (a) `units.ts:6529` `CatmullRomCurve3(points)` (centripetal) → `TubeGeometry` szlaku; (b) `scene.ts:441` `CatmullRomCurve3(points, false, 'catmullrom', 0.5)` bez tuby — wstęga ujścia rzeki (`buildRibbonGeometry`, gałąź `sharp = false`) próbkuje bezpośrednio `getPoint(t)` i `getTangent(t)` dla `t = i / max(20, n·segmentsPerSpan)` | `geom::tube_geometry`, `CatmullRomCurve3::get_point` / `get_tangent` | `tube.json` (6), `curve.json` (4: m.in. `estuary_catmullrom_05` = parametry `scene.ts:441`) |
 | 15 | `TetrahedronGeometry` | 0 | zaimplementowany „za darmo” (ten sam `PolyhedronGeometry`); nieużywany | `geom::tetrahedron_geometry` | `polyhedron.json` |
 | 16 | `LatheGeometry`, `CapsuleGeometry`, `EdgesGeometry`, `WireframeGeometry`, bezpośredni `PolyhedronGeometry` | 0 | **nie** — 0 użyć w webie | — | — |
 | 17 | krzywe w `Shape`/`Path` (`absarc`, `quadraticCurveTo`, `bezierCurveTo`, `splineThru`, `absellipse`) | 5 | **nie** — wszystkie 5 trafień to `ctx.quadraticCurveTo` Canvas 2D w `cityMapStatChip.ts:416–442` (rysowanie tekstury), a nie `THREE.Shape`. Wszystkie 5 `new Shape` / 4 `new Path` budują wielokąty `moveTo/lineTo/closePath` (`bronzeCityRoblox.ts:76`, `stoneCityRoblox.ts:118`, `unitVeteranBadges.ts:155`, `units.ts:489,501`) | `Path2` tylko odcinki | — |
@@ -94,7 +94,7 @@ Liczby obejmują całe `gra/src` i zgadzają się z P4-4 §1.2 (tam rozbite na `
 | 20 | `new BufferGeometry` (ręczne) | 51 | **poza zakresem** — algorytmy wierzchołków terenu/rzek/dekoracji to tematy modeli (P4-4 §1.2: „przepisanie 1:1”) | — | — |
 | 21 | `mergeGeometries` | 2 | **zaimplementowany** (`useGroups` true/false) | `geom::merge_geometries` | `ops.json` |
 | 22 | `computeVertexNormals` | 43 | **zaimplementowany** (indeksowane i nieindeksowane) | `Mesh::compute_vertex_normals` | `ops.json` |
-| 23 | `applyMatrix4` / `rotateX/Y/Z` / `translate` / `scale` | 9 / 18 / 3 / 2 / 5 / — | **zaimplementowane** + TRS z `Object3D.updateMatrix()` (pozycja, Euler 6 kolejności, skala) | `Mesh::apply_matrix4` …, `Mat4::from_trs` | `ops.json` |
+| 23 | `applyMatrix4` / `rotateX/Y/Z` / `translate` / `scale` | 9 / 18 / 3 / 2 / 5 / 0 (`git grep -cE '\.scale\(' edb8fb56 -- gra/src` → brak trafień, EXIT=1; `scale` geometrii nieużywany w webie, zaimplementowany jako element TRS i dla kompletności API) | **zaimplementowane** + TRS z `Object3D.updateMatrix()` (pozycja, Euler 6 kolejności, skala) | `Mesh::apply_matrix4` …, `Mat4::from_trs` | `ops.json` |
 
 Uzasadnienie zakresu Extrude/Shape: wszystkie użycia webu to wielokąty z odcinków (ring heksów z otworem, gwiazda weterana), więc zaimplementowano `Path`/`Shape` dla odcinków + pełny port `Earcut` 2.2.4 z Three (także ścieżka z haszowaniem z-order dla > 80 wierzchołków — przypadek `shape.json:many_points_hashed`) oraz `ExtrudeGeometry` łącznie z bevelem (domyślnie włączonym w Three). Dla odcinków `curveSegments` nie ma wpływu (Three próbkuje `LineCurve` zawsze w 2 punktach), dlatego nie jest parametrem Rust; przypadek `extrude.json:veteran_star` ma `curveSegments: 1` jak web i zgadza się.
 
@@ -337,7 +337,7 @@ e406010ad0c443629271758a0ce01bad5848a2a3254b2b64917abfa340adb57b  torus.json
 8cc542a45645f3fd8b00e53884fa3c24cacabfe053d3d03283c7802a45c628f8  tube.json
 ```
 
-### 4.3 Skrypt generujący (pełny, `rust-port/renderer/tests/fixtures/geom/gen_fixtures.mjs`)
+### 4.3 Skrypt generujący (pełny, `rust-port/renderer/tests/fixtures/geom/gen_fixtures.mjs`; stan po obronie — dodana rodzina `curve`, §7)
 
 ```js
 // Generator of Three.js r169 reference geometry for civ-renderer `geom`
@@ -477,7 +477,27 @@ function applyOp(g, op) {
 }
 
 const num = (x) => (Number.isNaN(x) ? null : x);
+
+// Direct curve sampling without a tube (scene.ts:441-447 river estuary ribbon:
+// CatmullRomCurve3(points, false, 'catmullrom', 0.5), then getPoint(t) and
+// getTangent(t) for t = i / totalSeg). Values are the exact f64 JS results.
+function dumpCurve(name, kind, a) {
+  const pts = a.points.map(([x, y, z]) => new THREE.Vector3(x, y, z));
+  const curve = new THREE.CatmullRomCurve3(pts, a.curveClosed, a.curveType, a.tension);
+  const point = [];
+  const tangent = [];
+  for (let i = 0; i <= a.samples; i++) {
+    const t = i / a.samples;
+    const p = curve.getPoint(t);
+    const tv = curve.getTangent(t);
+    point.push(num(p.x), num(p.y), num(p.z));
+    tangent.push(num(tv.x), num(tv.y), num(tv.z));
+  }
+  return { name, kind, args: a, point, tangent };
+}
+
 function dump(name, kind, args) {
+  if (kind === 'curve') return dumpCurve(name, kind, args);
   const g = build(kind, args);
   const at = (n) => (g.attributes[n] ? Array.from(g.attributes[n].array, num) : []);
   return {
@@ -642,6 +662,18 @@ const families = {
       ['straight_axis', 'tube', { points: [[0, 0, 0], [0, 0, 1], [0, 0, 2]], curveClosed: false, curveType: 'centripetal', tension: 0.5, tubularSegments: 3, radius: 1, radialSegments: 4, closed: false }],
     ];
   })(),
+  curve: (() => {
+    // scene.ts:441 estuary ribbon: catmullrom, tension 0.5, open;
+    // totalSeg = max(20, points.length * segmentsPerSpan), segmentsPerSpan
+    // default 16 (scene.ts:1428).
+    const estuary = [[0, 0.02, 0], [0.75, 0.02, 0.433], [1.5, 0.02, 0.866], [2.6, 0.02, 1.1], [3.2, 0.02, 1.9]];
+    return [
+      ['estuary_catmullrom_05', 'curve', { points: estuary, curveClosed: false, curveType: 'catmullrom', tension: 0.5, samples: 80 }],
+      ['two_points_catmullrom_05', 'curve', { points: [[0, 0, 0], [1, 0, 0.5]], curveClosed: false, curveType: 'catmullrom', tension: 0.5, samples: 32 }],
+      ['estuary_centripetal', 'curve', { points: estuary, curveClosed: false, curveType: 'centripetal', tension: 0.5, samples: 32 }],
+      ['closed_catmullrom_05', 'curve', { points: [[1, 0, 0], [0, 0.3, 1], [-1, 0, 0], [0, -0.3, -1]], curveClosed: true, curveType: 'catmullrom', tension: 0.5, samples: 24 }],
+    ];
+  })(),
   ops: [
     ['box_rotateX_translate', 'transform', { base: { kind: 'box', args: [1, 2, 3, 1, 1, 1] }, ops: [['rotateX', -PI / 2], ['translate', 0.5, -1, 2]] }],
     ['cylinder_rotYZ_scale', 'transform', { base: { kind: 'cylinder', args: [0.5, 1, 2, 6, 1, false, 0, TAU] }, ops: [['rotateY', 0.7], ['rotateZ', PI / 2], ['scale', 1, 2, 0.5]] }],
@@ -668,6 +700,8 @@ console.log(`total cases: ${total}`);
 ```
 
 ## 5. Bramki — pełne surowe logi
+
+> Logi §5 dotyczą commita Operatora `8b907906`. Logi po zmianach obrony (rodzina `curve`, 17 testów) są w §7.3.
 
 Środowisko: `CARGO_INCREMENTAL=0 CARGO_TARGET_DIR=/home/user/cargo-target-shared/wf_cff53e71-9f8-1 CARGO_PROFILE_DEV_DEBUG=0`, katalog `rust-port/renderer`, `cargo 1.97.0`, brak GPU. Logi poniżej to kompletne wyjście każdej komendy (stdout+stderr) z `echo "EXIT=$?"`.
 
@@ -803,7 +837,264 @@ EXIT=0
 
 ## 6. Zmiany i granice
 
-- Zmienione/dodane pliki (allowlista): `rust-port/renderer/src/geom.rs` → `rust-port/renderer/src/geom/{mod,math,prims,polyhedron,earcut,shape,curve,ops}.rs`; `rust-port/renderer/tests/geom_three_parity.rs`; `rust-port/renderer/tests/fixtures/geom/{13×.json, gen_fixtures.mjs, PROVENANCE.md}`; ten dokument; `dyspozycje/autobot/runs/R-RUSTPORT-P4-8-GEOMETRY-PRIMS-Q1/01-operator.md`.
+- Zmienione/dodane pliki (allowlista): `rust-port/renderer/src/geom.rs` → `rust-port/renderer/src/geom/{mod,math,prims,polyhedron,earcut,shape,curve,ops}.rs`; `rust-port/renderer/tests/geom_three_parity.rs`; `rust-port/renderer/tests/fixtures/geom/{14×.json (po obronie; 13 u Operatora), gen_fixtures.mjs, PROVENANCE.md}`; ten dokument; `dyspozycje/autobot/runs/R-RUSTPORT-P4-8-GEOMETRY-PRIMS-Q1/01-operator.md`, `03-obrona.md`.
 - Bez zmian: `Cargo.toml`, `Cargo.lock`, `src/lib.rs`, moduły `pick`/`assets`/inne, `rust-port/engine/**`, `src-tauri/**`, `gra/**`, `.github/**`.
 - Nie zaimplementowano materiałów, GPU ani modeli (zakaz z dispatchu, pkt 4).
 - `NIE_ZMIERZONO`: wydajność builderów (nie było wymagane); zgodność na innych platformach niż Linux x86_64 (różnice `sin/cos/atan2/pow` libm mogą dać ±1 ULP — tolerancja 1e-6 to pokrywa, ale nie zmierzono na Windows/macOS).
+
+## 7. Obrona Operatora (runda 1) — odpowiedź na uwagi Evaluatora
+
+Baza: commit Operatora `8b907906` (rodzic `0a496f67`). Środowisko: `CARGO_INCREMENTAL=0 CARGO_TARGET_DIR=/home/user/cargo-target-shared/wf_cff53e71-9f8-3 CARGO_PROFILE_DEV_DEBUG=0`, katalog `rust-port/renderer`, brak GPU.
+
+### 7.1 Uwaga 1 — §1.1 wiersz 23, `scale` bez liczby: **PRZYJMUJĘ**
+
+```text
+$ git grep -cE '\.scale\(' edb8fb56 -- gra/src; echo "EXIT=$?"
+EXIT=1
+```
+
+Brak trafień = 0 użyć. Wiersz 23 ma teraz liczbę `0` z komendą. (Pętla w §1 nie zawierała wzorca `\.scale\(`, stąd wcześniej „—”.)
+
+### 7.2 Uwaga 2 — drugie użycie `CatmullRomCurve3` (`scene.ts:441`) bez opisu i bez fixture: **PRZYJMUJĘ**
+
+```text
+$ git grep -nE 'new (THREE\.)?CatmullRomCurve3\(' edb8fb56 -- gra/src
+edb8fb56:gra/src/render/scene.ts:441:    const curve = new THREE.CatmullRomCurve3(points, false, 'catmullrom', 0.5);
+edb8fb56:gra/src/render/units.ts:6529:    const curve = new THREE.CatmullRomCurve3(points);
+```
+
+`scene.ts:441–447` (`buildRibbonGeometry`, gałąź `sharp = false`): `totalSeg = Math.max(20, points.length * segmentsPerSpan)`, następnie dla `t = i / totalSeg` wywołuje `curve.getPoint(t)` i `curve.getTangent(t)` — bez `TubeGeometry`. Domyślne `segmentsPerSpan = 16` (`scene.ts:1428`).
+
+Poprawki:
+- §1.1 wiersz 14 opisuje oba użycia.
+- Generator: nowa rodzina `curve` (`dumpCurve`) — zapis dokładnych wartości f64 `getPoint(t)` i `getTangent(t)` z Three 0.169.0. 4 przypadki: `estuary_catmullrom_05` (parametry `scene.ts:441`, 5 punktów, 80 podziałów = 5·16), `two_points_catmullrom_05` (32 = 2·16), `estuary_centripetal` (32), `closed_catmullrom_05` (zamknięta, 24).
+- Test: `parity_curve` w `tests/geom_three_parity.rs` (tolerancja 1e-6, długości dokładnie, determinizm bitowy wszystkich składowych); budowanie krzywej wydzielone do `curve_of` i współdzielone z `tube`.
+- Wynik: `catmullrom` 0.5 (oba otwarte i zamknięty) **bit w bit** (max |Δ| = 0); `centripetal` max |Δ| punkt 2.2e-16, styczna 6.3e-13 (f64, różnica `pow` libm; dalece w tolerancji).
+
+Powtórna generacja (świeżo rozpakowany `three-0.169.0.tgz`, sha256 `c86d0937570fb425d981e156ddf919c43dbc45d4e91fd7c8dd0de56723b3ec71`, node v22.22.0, katalog wyjściowy poza repo) i porównanie z repo:
+
+```text
+$ node gen_fixtures.mjs <three-0.169.0/package> <scratchpad>/def-p48/regen
+box.json: 6 cases
+plane.json: 3 cases
+cylinder.json: 10 cases
+cone.json: 5 cases
+sphere.json: 9 cases
+torus.json: 5 cases
+circle.json: 5 cases
+ring.json: 5 cases
+polyhedron.json: 10 cases
+shape.json: 9 cases
+extrude.json: 6 cases
+tube.json: 6 cases
+curve.json: 4 cases
+ops.json: 11 cases
+total cases: 94
+EXIT=0
+$ for f in regen/*.json; do cmp "$f" <repo fixtures>/$(basename "$f") && echo "$(basename "$f") IDENTICAL"; done
+box.json IDENTICAL
+circle.json IDENTICAL
+cone.json IDENTICAL
+curve.json IDENTICAL
+cylinder.json IDENTICAL
+extrude.json IDENTICAL
+ops.json IDENTICAL
+plane.json IDENTICAL
+polyhedron.json IDENTICAL
+ring.json IDENTICAL
+shape.json IDENTICAL
+sphere.json IDENTICAL
+torus.json IDENTICAL
+tube.json IDENTICAL
+$ ls <repo fixtures>/*.json | wc -l
+14
+```
+
+Kontrola mutacyjna (`+1e-5` do jednej składowej stycznej w kopii `curve.json`, potem przywrócenie):
+
+```text
+thread 'parity_curve' (9514) panicked at tests/geom_three_parity.rs:501:17:
+curve.json:estuary_catmullrom_05: tangent[10].0 got 0.8660317547072754 want 0.8660417547072754
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 16 filtered out; finished in 0.09s
+EXIT=101
+RESTORED
+```
+
+### 7.3 Bramki po obronie — pełne surowe logi
+
+```text
+$ cargo fmt --all -- --check
+EXIT=0
+$ cargo clippy --locked --all-targets -- -D warnings
+    Checking pollster v0.4.0
+    Checking civ-renderer v0.1.0 (/home/user/The-Game/.claude/worktrees/wf_cff53e71-9f8-3/rust-port/renderer)
+    Finished `dev` profile [unoptimized] target(s) in 0.70s
+EXIT=0
+$ cargo test --locked --all-targets
+   Compiling pollster v0.4.0
+   Compiling civ-renderer v0.1.0 (/home/user/The-Game/.claude/worktrees/wf_cff53e71-9f8-3/rust-port/renderer)
+    Finished `test` profile [unoptimized] target(s) in 0.87s
+     Running unittests src/lib.rs (/home/user/cargo-target-shared/wf_cff53e71-9f8-3/debug/deps/civ_renderer-d95024f3ec20cfd9)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/cpu_sanity.rs (/home/user/cargo-target-shared/wf_cff53e71-9f8-3/debug/deps/cpu_sanity-7ee07d9f2002230a)
+
+running 1 test
+test gpu_feature_readback_matches_build_configuration ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/geom_three_parity.rs (/home/user/cargo-target-shared/wf_cff53e71-9f8-3/debug/deps/geom_three_parity-ab6f7952892f0505)
+
+running 17 tests
+test merge_rejects_mixed_indexing ... ok
+test parity_circle ... ok
+test parity_curve ... ok
+test parity_cone ... ok
+test index_buffer_covers_non_indexed_meshes ... ok
+test parity_box ... ok
+test parity_plane ... ok
+test parity_extrude ... ok
+test parity_ops ... ok
+test parity_cylinder ... ok
+test parity_ring ... ok
+test parity_shape ... ok
+test parity_torus ... ok
+test trs_matches_manual_composition ... ok
+test parity_polyhedron ... ok
+test parity_tube ... ok
+test parity_sphere ... ok
+
+test result: ok. 17 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.02s
+
+     Running tests/gpu_probe.rs (/home/user/cargo-target-shared/wf_cff53e71-9f8-3/debug/deps/gpu_probe-08e2d2a6c2a7bdae)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+EXIT=0
+$ cargo test --locked --test geom_three_parity -- --nocapture --test-threads=1
+    Finished `test` profile [unoptimized] target(s) in 0.04s
+     Running tests/geom_three_parity.rs (/home/user/cargo-target-shared/wf_cff53e71-9f8-3/debug/deps/geom_three_parity-ab6f7952892f0505)
+
+running 17 tests
+test index_buffer_covers_non_indexed_meshes ... ok
+test merge_rejects_mixed_indexing ... ok
+test parity_box ... box.json:unit: verts=24 tris=12 max|d| pos=0e0 nor=0e0 uv=0e0
+box.json:typical_small: verts=24 tris=12 max|d| pos=0e0 nor=0e0 uv=0e0
+box.json:segmented: verts=94 tris=104 max|d| pos=0e0 nor=0e0 uv=0e0
+box.json:zero_height: verts=24 tris=12 max|d| pos=0e0 nor=0e0 uv=0e0
+box.json:negative_depth: verts=24 tris=12 max|d| pos=0e0 nor=0e0 uv=0e0
+box.json:large_segments: verts=726 tris=1200 max|d| pos=0e0 nor=0e0 uv=0e0
+ok
+test parity_circle ... circle.json:default: verts=34 tris=32 max|d| pos=0e0 nor=0e0 uv=0e0
+circle.json:hex: verts=8 tris=6 max|d| pos=0e0 nor=0e0 uv=0e0
+circle.json:below_min_clamped: verts=5 tris=3 max|d| pos=0e0 nor=0e0 uv=0e0
+circle.json:partial: verts=10 tris=8 max|d| pos=0e0 nor=0e0 uv=0e0
+circle.json:zero_radius: verts=8 tris=6 max|d| pos=0e0 nor=0e0 uv=0e0
+ok
+test parity_cone ... cone.json:default: verts=131 tris=64 max|d| pos=0e0 nor=0e0 uv=0e0
+cone.json:typical: verts=27 tris=12 max|d| pos=0e0 nor=0e0 uv=0e0
+cone.json:min_segments: verts=15 tris=6 max|d| pos=0e0 nor=0e0 uv=0e0
+cone.json:open_hseg: verts=36 tris=24 max|d| pos=0e0 nor=0e0 uv=0e0
+cone.json:pyramid: verts=19 tris=8 max|d| pos=0e0 nor=0e0 uv=0e0
+ok
+test parity_curve ... curve.json:estuary_catmullrom_05: samples=81 max|d| point=0e0 tangent=0e0
+curve.json:two_points_catmullrom_05: samples=33 max|d| point=0e0 tangent=0e0
+curve.json:estuary_centripetal: samples=33 max|d| point=2.220446049250313e-16 tangent=6.281086761816823e-13
+curve.json:closed_catmullrom_05: samples=25 max|d| point=0e0 tangent=0e0
+ok
+test parity_cylinder ... cylinder.json:default: verts=196 tris=128 max|d| pos=0e0 nor=0e0 uv=0e0
+cylinder.json:typical: verts=52 tris=32 max|d| pos=0e0 nor=0e0 uv=0e0
+cylinder.json:min_segments: verts=22 tris=12 max|d| pos=0e0 nor=0e0 uv=0e0
+cylinder.json:frustum_hseg: verts=54 tris=48 max|d| pos=0e0 nor=0e0 uv=0e0
+cylinder.json:open_ended: verts=21 tris=24 max|d| pos=0e0 nor=0e0 uv=0e0
+cylinder.json:partial_theta: verts=34 tris=20 max|d| pos=0e0 nor=0e0 uv=0e0
+cylinder.json:zero_top: verts=27 tris=12 max|d| pos=0e0 nor=0e0 uv=0e0
+cylinder.json:zero_bottom: verts=27 tris=12 max|d| pos=0e0 nor=0e0 uv=0e0
+cylinder.json:hexagonal_prism: verts=40 tris=24 max|d| pos=0e0 nor=0e0 uv=0e0
+cylinder.json:large: verts=583 tris=640 max|d| pos=0e0 nor=0e0 uv=0e0
+ok
+test parity_extrude ... extrude.json:hex_wall_ring: verts=144 tris=48 max|d| pos=0e0 nor=0e0 uv=0e0
+extrude.json:veteran_star: verts=108 tris=36 max|d| pos=0e0 nor=0e0 uv=0e0
+extrude.json:square_steps3: verts=84 tris=28 max|d| pos=0e0 nor=0e0 uv=0e0
+extrude.json:square_default_bevel: verts=180 tris=60 max|d| pos=0e0 nor=0e0 uv=0e0
+extrude.json:hex_ring_bevel_custom: verts=504 tris=168 max|d| pos=0e0 nor=0e0 uv=0e0
+extrude.json:two_shapes: verts=60 tris=20 max|d| pos=0e0 nor=0e0 uv=0e0
+ok
+test parity_ops ... ops.json:box_rotateX_translate: verts=24 tris=12 max|d| pos=0e0 nor=0e0 uv=0e0
+ops.json:cylinder_rotYZ_scale: verts=40 tris=24 max|d| pos=0e0 nor=0e0 uv=0e0
+ops.json:extrude_hex_rotateX: verts=144 tris=48 max|d| pos=0e0 nor=0e0 uv=0e0
+ops.json:sphere_trs_xyz: verts=63 tris=80 max|d| pos=0e0 nor=0e0 uv=0e0
+ops.json:box_trs_yxz_negscale: verts=24 tris=12 max|d| pos=0e0 nor=0e0 uv=0e0
+ops.json:cone_trs_zyx: verts=23 tris=10 max|d| pos=0e0 nor=0e0 uv=0e0
+ops.json:sphere_recompute_normals: verts=63 tris=80 max|d| pos=0e0 nor=0e0 uv=0e0
+ops.json:cylinder_recompute_normals: verts=47 tris=36 max|d| pos=0e0 nor=0e0 uv=0e0
+ops.json:merge_indexed_groups: verts=99 tris=72 max|d| pos=0e0 nor=0e0 uv=0e0
+ops.json:merge_indexed_nogroups: verts=33 tris=20 max|d| pos=0e0 nor=0e0 uv=0e0
+ops.json:merge_nonindexed_groups: verts=204 tris=68 max|d| pos=0e0 nor=0e0 uv=0e0
+ok
+test parity_plane ... plane.json:unit: verts=4 tris=2 max|d| pos=0e0 nor=0e0 uv=0e0
+plane.json:segmented: verts=20 tris=24 max|d| pos=0e0 nor=0e0 uv=0e0
+plane.json:zero_size: verts=4 tris=2 max|d| pos=0e0 nor=0e0 uv=0e0
+ok
+test parity_polyhedron ... polyhedron.json:icosahedron_d0: verts=60 tris=20 max|d| pos=0e0 nor=0e0 uv=0e0
+polyhedron.json:icosahedron_d1: verts=240 tris=80 max|d| pos=0e0 nor=0e0 uv=0e0
+polyhedron.json:icosahedron_d2: verts=540 tris=180 max|d| pos=0e0 nor=0e0 uv=0e0
+polyhedron.json:dodecahedron_d0: verts=108 tris=36 max|d| pos=0e0 nor=0e0 uv=0e0
+polyhedron.json:dodecahedron_d1: verts=432 tris=144 max|d| pos=0e0 nor=0e0 uv=0e0
+polyhedron.json:octahedron_d0: verts=24 tris=8 max|d| pos=0e0 nor=0e0 uv=0e0
+polyhedron.json:octahedron_d1: verts=96 tris=32 max|d| pos=0e0 nor=0e0 uv=0e0
+polyhedron.json:octahedron_d3: verts=384 tris=128 max|d| pos=0e0 nor=0e0 uv=0e0
+polyhedron.json:tetrahedron_d0: verts=12 tris=4 max|d| pos=0e0 nor=0e0 uv=0e0
+polyhedron.json:tetrahedron_d2: verts=108 tris=36 max|d| pos=0e0 nor=0e0 uv=0e0
+ok
+test parity_ring ... ring.json:default: verts=66 tris=64 max|d| pos=0e0 nor=0e0 uv=0e0
+ring.json:typical: verts=50 tris=48 max|d| pos=0e0 nor=0e0 uv=0e0
+ring.json:below_min_clamped: verts=8 tris=6 max|d| pos=0e0 nor=0e0 uv=0e0
+ring.json:phi_segments: verts=28 tris=36 max|d| pos=0e0 nor=0e0 uv=0e0
+ring.json:partial: verts=27 tris=32 max|d| pos=0e0 nor=0e0 uv=0e0
+ok
+test parity_shape ... shape.json:triangle_default: verts=3 tris=1 max|d| pos=0e0 nor=0e0 uv=0e0
+shape.json:selection_hex_ring: verts=12 tris=12 max|d| pos=0e0 nor=0e0 uv=0e0
+shape.json:owner_hex_ring: verts=12 tris=12 max|d| pos=0e0 nor=0e0 uv=0e0
+shape.json:ccw_hole_not_reversed: verts=12 tris=12 max|d| pos=0e0 nor=0e0 uv=0e0
+shape.json:star: verts=10 tris=8 max|d| pos=0e0 nor=0e0 uv=0e0
+shape.json:concave_two_holes: verts=12 tris=14 max|d| pos=0e0 nor=0e0 uv=0e0
+shape.json:open_outline_not_closed: verts=4 tris=2 max|d| pos=0e0 nor=0e0 uv=0e0
+shape.json:many_points_hashed: verts=102 tris=102 max|d| pos=0e0 nor=0e0 uv=0e0
+shape.json:multi_two_shapes: verts=15 tris=13 max|d| pos=0e0 nor=0e0 uv=0e0
+ok
+test parity_sphere ... sphere.json:default: verts=561 tris=960 max|d| pos=0e0 nor=0e0 uv=0e0
+sphere.json:typical: verts=63 tris=80 max|d| pos=0e0 nor=0e0 uv=0e0
+sphere.json:min_segments: verts=12 tris=6 max|d| pos=0e0 nor=0e0 uv=0e0
+sphere.json:below_min_clamped: verts=12 tris=6 max|d| pos=0e0 nor=0e0 uv=0e0
+sphere.json:hemisphere: verts=91 tris=132 max|d| pos=0e0 nor=0e0 uv=0e0
+sphere.json:lower_cap: verts=91 tris=132 max|d| pos=0e0 nor=0e0 uv=0e0
+sphere.json:partial_phi: verts=66 tris=100 max|d| pos=0e0 nor=0e0 uv=0e0
+sphere.json:zero_radius: verts=35 tris=36 max|d| pos=0e0 nor=0e0 uv=0e0
+sphere.json:large: verts=1225 tris=2208 max|d| pos=0e0 nor=0e0 uv=0e0
+ok
+test parity_torus ... torus.json:default: verts=637 tris=1152 max|d| pos=0e0 nor=0e0 uv=0e0
+torus.json:typical: verts=119 tris=192 max|d| pos=0e0 nor=0e0 uv=0e0
+torus.json:min: verts=12 tris=12 max|d| pos=0e0 nor=0e0 uv=0e0
+torus.json:half_arc: verts=117 tris=192 max|d| pos=0e0 nor=0e0 uv=0e0
+torus.json:zero_tube: verts=35 tris=48 max|d| pos=0e0 nor=0e0 uv=0e0
+ok
+test parity_tube ... tube.json:trade_route: verts=585 tris=1024 max|d| pos=1.1920928955078125e-7 nor=2.9802322387695313e-8 uv=0e0
+tube.json:two_points: verts=20 tris=24 max|d| pos=0e0 nor=0e0 uv=0e0
+tube.json:chordal: verts=78 tris=120 max|d| pos=0e0 nor=0e0 uv=0e0
+tube.json:catmullrom_tension: verts=78 tris=120 max|d| pos=0e0 nor=0e0 uv=0e0
+tube.json:closed_loop: verts=119 tris=192 max|d| pos=0e0 nor=0e0 uv=0e0
+tube.json:straight_axis: verts=20 tris=24 max|d| pos=0e0 nor=0e0 uv=0e0
+ok
+test trs_matches_manual_composition ... ok
+
+test result: ok. 17 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.04s
+
+EXIT=0
+```

@@ -283,6 +283,22 @@ fn apply_op(m: &mut Mesh, op: &[J]) {
     }
 }
 
+fn curve_of(a: &J) -> CatmullRomCurve3 {
+    let points = a
+        .at("points")
+        .arr()
+        .iter()
+        .map(|p| Vec3::new(p.arr()[0].f(), p.arr()[1].f(), p.arr()[2].f()))
+        .collect();
+    let ct = match a.at("curveType").s() {
+        "centripetal" => CurveType::Centripetal,
+        "chordal" => CurveType::Chordal,
+        "catmullrom" => CurveType::CatmullRom,
+        other => panic!("curveType {other}"),
+    };
+    CatmullRomCurve3::new(points, a.at("curveClosed").b(), ct, a.at("tension").f())
+}
+
 #[allow(clippy::too_many_lines)]
 fn build(kind: &str, a: &J) -> Mesh {
     let f = |i: usize| a.arr()[i].f();
@@ -311,20 +327,7 @@ fn build(kind: &str, a: &J) -> Mesh {
             geom::extrude_geometry(&shapes, &extrude_options(a.at("options")))
         }
         "tube" => {
-            let points = a
-                .at("points")
-                .arr()
-                .iter()
-                .map(|p| Vec3::new(p.arr()[0].f(), p.arr()[1].f(), p.arr()[2].f()))
-                .collect();
-            let ct = match a.at("curveType").s() {
-                "centripetal" => CurveType::Centripetal,
-                "chordal" => CurveType::Chordal,
-                "catmullrom" => CurveType::CatmullRom,
-                other => panic!("curveType {other}"),
-            };
-            let curve =
-                CatmullRomCurve3::new(points, a.at("curveClosed").b(), ct, a.at("tension").f());
+            let curve = curve_of(a);
             geom::tube_geometry(
                 &curve,
                 a.at("tubularSegments").u(),
@@ -456,6 +459,57 @@ family_test!(parity_shape, "shape.json", 9);
 family_test!(parity_extrude, "extrude.json", 6);
 family_test!(parity_tube, "tube.json", 6);
 family_test!(parity_ops, "ops.json", 11);
+
+/// Direct `CatmullRomCurve3.getPoint(t)` / `getTangent(t)` sampling without a
+/// tube (web: `scene.ts:441`, estuary ribbon, `'catmullrom'`, tension 0.5).
+/// Fixture values are the exact f64 results of Three 0.169.0.
+#[test]
+fn parity_curve() {
+    let path = format!(
+        "{}/tests/fixtures/geom/curve.json",
+        env!("CARGO_MANIFEST_DIR")
+    );
+    let text = std::fs::read_to_string(&path).unwrap_or_else(|e| panic!("{path}: {e}"));
+    let root = parse(&text);
+    assert_eq!(root.at("three").s(), "0.169.0");
+    let cases = root.at("cases").arr();
+    assert!(cases.len() >= 4, "curve.json has {} cases", cases.len());
+    for c in cases {
+        let name = format!("curve.json:{}", c.at("name").s());
+        assert_eq!(c.at("kind").s(), "curve", "{name}: kind");
+        let a = c.at("args");
+        let curve = curve_of(a);
+        let samples = a.at("samples").u();
+        let want_p = c.at("point").arr();
+        let want_t = c.at("tangent").arr();
+        let n = samples as usize + 1;
+        assert_eq!(want_p.len(), 3 * n, "{name}: point length");
+        assert_eq!(want_t.len(), 3 * n, "{name}: tangent length");
+        let (mut dp, mut dt) = (0.0_f64, 0.0_f64);
+        for i in 0..=samples {
+            let t = f64::from(i) / f64::from(samples);
+            let p = curve.get_point(t);
+            let tv = curve.get_tangent(t);
+            let k = 3 * i as usize;
+            for (j, (g, w)) in [p.x, p.y, p.z].iter().zip(&want_p[k..k + 3]).enumerate() {
+                let d = (g - w.f()).abs();
+                assert!(d <= TOL, "{name}: point[{i}].{j} got {g} want {}", w.f());
+                dp = dp.max(d);
+            }
+            for (j, (g, w)) in [tv.x, tv.y, tv.z].iter().zip(&want_t[k..k + 3]).enumerate() {
+                let d = (g - w.f()).abs();
+                assert!(d <= TOL, "{name}: tangent[{i}].{j} got {g} want {}", w.f());
+                dt = dt.max(d);
+            }
+            // Determinism: a fresh curve gives the same bits.
+            let again = curve_of(a);
+            let bits = |v: Vec3| [v.x.to_bits(), v.y.to_bits(), v.z.to_bits()];
+            assert_eq!(bits(again.get_point(t)), bits(p), "{name}: det point");
+            assert_eq!(bits(again.get_tangent(t)), bits(tv), "{name}: det tangent");
+        }
+        println!("{name}: samples={n} max|d| point={dp:e} tangent={dt:e}");
+    }
+}
 
 // ------------------------------------------------------------ API checks
 

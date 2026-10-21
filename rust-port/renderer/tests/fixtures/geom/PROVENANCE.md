@@ -23,6 +23,10 @@
   normal, uv, index, groups } ] }`. Bufory to dokładna zawartość
   `Float32Array` (NaN → `null`), `index` = `null` dla geometrii
   nieindeksowanej, `groups` = `[start, count, materialIndex]`.
+  Wyjątek: `curve.json` (rodzina `curve`, dodana w obronie runda 1) ma
+  `{ name, kind: "curve", args, point, tangent }` — dokładne wartości f64
+  `CatmullRomCurve3.getPoint(t)` / `getTangent(t)` dla `t = i / samples`
+  (web `scene.ts:441`, bez `TubeGeometry`).
 - Ponowne uruchomienie generatora daje pliki bajtowo identyczne (sprawdzone
   `diff -r -q`, patrz dokument P4.8).
 - Test: `tests/geom_three_parity.rs` (tolerancja 1e-6 dla float, indeksy i

@@ -135,7 +135,27 @@ function applyOp(g, op) {
 }
 
 const num = (x) => (Number.isNaN(x) ? null : x);
+
+// Direct curve sampling without a tube (scene.ts:441-447 river estuary ribbon:
+// CatmullRomCurve3(points, false, 'catmullrom', 0.5), then getPoint(t) and
+// getTangent(t) for t = i / totalSeg). Values are the exact f64 JS results.
+function dumpCurve(name, kind, a) {
+  const pts = a.points.map(([x, y, z]) => new THREE.Vector3(x, y, z));
+  const curve = new THREE.CatmullRomCurve3(pts, a.curveClosed, a.curveType, a.tension);
+  const point = [];
+  const tangent = [];
+  for (let i = 0; i <= a.samples; i++) {
+    const t = i / a.samples;
+    const p = curve.getPoint(t);
+    const tv = curve.getTangent(t);
+    point.push(num(p.x), num(p.y), num(p.z));
+    tangent.push(num(tv.x), num(tv.y), num(tv.z));
+  }
+  return { name, kind, args: a, point, tangent };
+}
+
 function dump(name, kind, args) {
+  if (kind === 'curve') return dumpCurve(name, kind, args);
   const g = build(kind, args);
   const at = (n) => (g.attributes[n] ? Array.from(g.attributes[n].array, num) : []);
   return {
@@ -298,6 +318,18 @@ const families = {
       ['catmullrom_tension', 'tube', { points: route, curveClosed: false, curveType: 'catmullrom', tension: 0.3, tubularSegments: 12, radius: 0.2, radialSegments: 5, closed: false }],
       ['closed_loop', 'tube', { points: [[1, 0, 0], [0, 0.3, 1], [-1, 0, 0], [0, -0.3, -1]], curveClosed: true, curveType: 'centripetal', tension: 0.5, tubularSegments: 16, radius: 0.1, radialSegments: 6, closed: true }],
       ['straight_axis', 'tube', { points: [[0, 0, 0], [0, 0, 1], [0, 0, 2]], curveClosed: false, curveType: 'centripetal', tension: 0.5, tubularSegments: 3, radius: 1, radialSegments: 4, closed: false }],
+    ];
+  })(),
+  curve: (() => {
+    // scene.ts:441 estuary ribbon: catmullrom, tension 0.5, open;
+    // totalSeg = max(20, points.length * segmentsPerSpan), segmentsPerSpan
+    // default 16 (scene.ts:1428).
+    const estuary = [[0, 0.02, 0], [0.75, 0.02, 0.433], [1.5, 0.02, 0.866], [2.6, 0.02, 1.1], [3.2, 0.02, 1.9]];
+    return [
+      ['estuary_catmullrom_05', 'curve', { points: estuary, curveClosed: false, curveType: 'catmullrom', tension: 0.5, samples: 80 }],
+      ['two_points_catmullrom_05', 'curve', { points: [[0, 0, 0], [1, 0, 0.5]], curveClosed: false, curveType: 'catmullrom', tension: 0.5, samples: 32 }],
+      ['estuary_centripetal', 'curve', { points: estuary, curveClosed: false, curveType: 'centripetal', tension: 0.5, samples: 32 }],
+      ['closed_catmullrom_05', 'curve', { points: [[1, 0, 0], [0, 0.3, 1], [-1, 0, 0], [0, -0.3, -1]], curveClosed: true, curveType: 'catmullrom', tension: 0.5, samples: 24 }],
     ];
   })(),
   ops: [
