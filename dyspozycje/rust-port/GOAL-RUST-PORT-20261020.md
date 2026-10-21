@@ -28,7 +28,7 @@ dotykające tych samych plików — zawsze sekwencyjnie, nigdy w tej samej fali.
 | # | Temat | Faza | Runda | runId Workflow | Status | Ostatnia aktualizacja |
 |---|---|---|---|---|---|---|
 | 1 | `R-RUSTPORT-P2-11-SAVE-MIGRATION-Q1` | P2.11 (reguła migracji zapisów web→GameState) | 1/5 | `wf_af46e28a-74c` | DISPATCHED (w toku) | 2026-10-21 |
-| 2 | `R-RUSTPORT-P2-6-EVENTS-Q1` | P2.6 (pełny zestaw eventów Rust→frontend) | 1/5 | `wf_79d77476-98d` | DISPATCHED (w toku) | 2026-10-21 |
+| 2 | — | — | — | — | **WOLNY** (P2.6 PASS, zamknięty) | 2026-10-21 |
 | 3 | — | — | — | — | **WOLNY** | 2026-10-21 |
 | 4 | — | — | — | — | **WOLNY** | 2026-10-21 |
 | 5 | — | — | — | — | **WOLNY** | 2026-10-21 |

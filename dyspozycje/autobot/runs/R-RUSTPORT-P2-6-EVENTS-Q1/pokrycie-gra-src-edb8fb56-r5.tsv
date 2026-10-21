@@ -1,0 +1,458 @@
+sciezka	szeroki_r5_broad	sygnal_S5	S6_nazwy	status_r5	dyspozycja_r5
+gra/src/audio/ambiencePrefs.ts	1	0	0	WYKLUCZONY-ZERO	WYKLUCZONY: S5=0, S6=0 - brak wywołania komunikatu UI, wpisu kroniki ani powiadomienia logiki.
+gra/src/audio/filePlayer.ts	10	0	0	WYKLUCZONY-ZERO	WYKLUCZONY: S5=0, S6=0 - brak wywołania komunikatu UI, wpisu kroniki ani powiadomienia logiki.
+gra/src/audio/musicPrefs.ts	1	0	0	WYKLUCZONY-ZERO	WYKLUCZONY: S5=0, S6=0 - brak wywołania komunikatu UI, wpisu kroniki ani powiadomienia logiki.
+gra/src/audio/muzyka-antyczna.ts	28	0	0	ROZSTRZYGNIETY	WYKLUCZONY: renderEvent (:1348,:1382,:1538,:1979) to synteza nut audio, nie komunikat
+gra/src/audio/sfxPrefs.ts	0	0	0	WYKLUCZONY-ZERO	WYKLUCZONY: S5=0, S6=0 - brak wywołania komunikatu UI, wpisu kroniki ani powiadomienia logiki.
+gra/src/battle/autoBatchPhase.ts	8	0	0	ROZSTRZYGNIETY-R4	WYKLUCZONY: typy i planer intencji batcha (AutoBatchIntent); trafienia to nazwy typow, bez komunikatu
+gra/src/battle/battle-terrain.ts	0	0	0	WYKLUCZONY-ZERO	WYKLUCZONY: S5=0, S6=0 - brak wywołania komunikatu UI, wpisu kroniki ani powiadomienia logiki.
+gra/src/battle/battleHudTheme.ts	51	11	0	ROZSTRZYGNIETY-R4	WYKLUCZONY: styl etykiety trybu applyModeHint1E (:761), bez zdarzenia
+gra/src/battle/battleMinimap.ts	0	0	0	WYKLUCZONY-ZERO	WYKLUCZONY: S5=0, S6=0 - brak wywołania komunikatu UI, wpisu kroniki ani powiadomienia logiki.
+gra/src/battle/battleScene.ts	565	99	2 flashSpeedHud(      12 showBattleRosterFeedback(       2 showBattleStatsOverlay(      25 showDeployFeedback(       1 showDeployFmtFeedback(       2 showEndDetails(       3 showEndScreen(       3 showHoverTooltip(      31 showOrderFeedback(       1 showPostBattleSummary(       1 showResultBanner(	POKRYTY	POKRYTY: E-31 (wiersze sekcji 3).
+gra/src/battle/battleSceneOpen.ts	0	0	0	WYKLUCZONY-ZERO	WYKLUCZONY: S5=0, S6=0 - brak wywołania komunikatu UI, wpisu kroniki ani powiadomienia logiki.
+gra/src/battle/battleTerrainTooltip.ts	6	7	0	ROZSTRZYGNIETY-R5	WYKLUCZONY: `parts.push({text})` (:45-85) buduje etykiety tooltipa terenu po najechaniu (akcja gracza / hover); nie komunikat logiki tury.
+gra/src/battle/endDetails1E.ts	1	0	0	WYKLUCZONY-ZERO	WYKLUCZONY: S5=0, S6=0 - brak wywołania komunikatu UI, wpisu kroniki ani powiadomienia logiki.
+gra/src/battle/endScreen1E.ts	3	0	0	ROZSTRZYGNIETY-R4	WYKLUCZONY: 2 trafienia to komentarz i ikona (:5, :67); wynik bitwy = dane E-31, bez komunikatu w pliku
+gra/src/battle/manualBattle.ts	51	2	2 showBanner(	ROZSTRZYGNIETY-R4	E-31 (prezentacja wyniku bitwy recznej): _showBanner (:1404) wolany z :1395 po phase=done; wyzwalacz = akcja gracza (klasa W), wynik = dane E-31 (initiator Player); this.hint (:561-1277) = podpowiedz tury, UI
+gra/src/battle/mapFieldBattle.ts	6	3	3 showHint(       1 showPreBattle(	ROZSTRZYGNIETY-R4	W: komunikaty bledu ataku gracza (:411, :417, :471), reakcja na akcje gracza (zob. zal. B)
+gra/src/battle/siegeHud1E.ts	3	0	0	WYKLUCZONY-ZERO	WYKLUCZONY: S5=0, S6=0 - brak wywołania komunikatu UI, wpisu kroniki ani powiadomienia logiki.
+gra/src/battle/siegeWall.ts	0	0	0	WYKLUCZONY-ZERO	WYKLUCZONY: S5=0, S6=0 - brak wywołania komunikatu UI, wpisu kroniki ani powiadomienia logiki.
+gra/src/battle/testBattle.ts	3	0	0	ROZSTRZYGNIETY-R4	WYKLUCZONY: harness testowy
+gra/src/buildInfo.ts	2	0	0	ROZSTRZYGNIETY-R4	WYKLUCZONY: stala etykiety buildu
+gra/src/data/e-start-params-loader.ts	0	0	0	WYKLUCZONY-ZERO	WYKLUCZONY: S5=0, S6=0 - brak wywołania komunikatu UI, wpisu kroniki ani powiadomienia logiki.
+gra/src/data/loader.ts	12	0	0	WYKLUCZONY-ZERO	WYKLUCZONY: S5=0, S6=0 - brak wywołania komunikatu UI, wpisu kroniki ani powiadomienia logiki.
+gra/src/data/map-gen-params-loader.ts	0	0	0	WYKLUCZONY-ZERO	WYKLUCZONY: S5=0, S6=0 - brak wywołania komunikatu UI, wpisu kroniki ani powiadomienia logiki.
+gra/src/game/ai-city-capture-executor.ts	0	0	0	WYKLUCZONY-ZERO	WYKLUCZONY: S5=0, S6=0 - brak wywołania komunikatu UI, wpisu kroniki ani powiadomienia logiki.
+gra/src/game/ai-cs-absorption.ts	2	0	0	WYKLUCZONY-ZERO	WYKLUCZONY: S5=0, S6=0 - brak wywołania komunikatu UI, wpisu kroniki ani powiadomienia logiki.
+gra/src/game/ai-difficulty-bonus.ts	2	0	0	ROZSTRZYGNIETY-R4	WYKLUCZONY: komentarz
+gra/src/game/ai-expansion.ts	0	0	0	WYKLUCZONY-ZERO	WYKLUCZONY: S5=0, S6=0 - brak wywołania komunikatu UI, wpisu kroniki ani powiadomienia logiki.
+gra/src/game/ai-fog.ts	0	0	0	WYKLUCZONY-ZERO	WYKLUCZONY: S5=0, S6=0 - brak wywołania komunikatu UI, wpisu kroniki ani powiadomienia logiki.
+gra/src/game/ai-major-absorb.ts	1	0	0	WYKLUCZONY-ZERO	WYKLUCZONY: S5=0, S6=0 - brak wywołania komunikatu UI, wpisu kroniki ani powiadomienia logiki.
+gra/src/game/ai-moc-diag.ts	0	0	0	WYKLUCZONY-ZERO	WYKLUCZONY: S5=0, S6=0 - brak wywołania komunikatu UI, wpisu kroniki ani powiadomienia logiki.
+gra/src/game/ai-production-priorities.ts	0	0	0	WYKLUCZONY-ZERO	WYKLUCZONY: S5=0, S6=0 - brak wywołania komunikatu UI, wpisu kroniki ani powiadomienia logiki.
+gra/src/game/ai-resource-needs.ts	1	0	0	WYKLUCZONY-ZERO	WYKLUCZONY: S5=0, S6=0 - brak wywołania komunikatu UI, wpisu kroniki ani powiadomienia logiki.
+gra/src/game/ai-threat-mode.ts	0	0	0	WYKLUCZONY-ZERO	WYKLUCZONY: S5=0, S6=0 - brak wywołania komunikatu UI, wpisu kroniki ani powiadomienia logiki.
+gra/src/game/ai.ts	65	0	0	ROZSTRZYGNIETY	WYKLUCZONY: 6/6 trafien to deferredUnitIds (planer koncentracji, :3389,:3423,:3520,:3529,:3556,:4223); zero komunikatow. Widocznosc decyzji AI: D-EV-7
+gra/src/game/alliance-war-obligation.ts	0	0	0	WYKLUCZONY-ZERO	WYKLUCZONY: S5=0, S6=0 - brak wywołania komunikatu UI, wpisu kroniki ani powiadomienia logiki.
+gra/src/game/army-concentration.ts	2	0	0	ROZSTRZYGNIETY	WYKLUCZONY: 6/6 trafien to deferredUnitIds jako dane wyjsciowe planera (:21,:214,:255,:312,:328,:331)
+gra/src/game/army-cycle.ts	4	0	0	WYKLUCZONY-ZERO	WYKLUCZONY: S5=0, S6=0 - brak wywołania komunikatu UI, wpisu kroniki ani powiadomienia logiki.
+gra/src/game/army-starvation.ts	0	0	0	WYKLUCZONY-ZERO	WYKLUCZONY: S5=0, S6=0 - brak wywołania komunikatu UI, wpisu kroniki ani powiadomienia logiki.
+gra/src/game/armyMerge.ts	4	0	0	POKRYTY	POKRYTY: E-57 (wiersze sekcji 3).
+gra/src/game/auto-battle-params.ts	0	0	0	WYKLUCZONY-ZERO	WYKLUCZONY: S5=0, S6=0 - brak wywołania komunikatu UI, wpisu kroniki ani powiadomienia logiki.
+gra/src/game/auto-battle-power.ts	0	0	0	WYKLUCZONY-ZERO	WYKLUCZONY: S5=0, S6=0 - brak wywołania komunikatu UI, wpisu kroniki ani powiadomienia logiki.
+gra/src/game/auto-improvements.ts	1	0	0	WYKLUCZONY-ZERO	WYKLUCZONY: S5=0, S6=0 - brak wywołania komunikatu UI, wpisu kroniki ani powiadomienia logiki.
+gra/src/game/auto-manage.ts	7	0	0	WYKLUCZONY-ZERO	WYKLUCZONY: S5=0, S6=0 - brak wywołania komunikatu UI, wpisu kroniki ani powiadomienia logiki.
+gra/src/game/barbarians.ts	24	0	0	WYKLUCZONY-ZERO	WYKLUCZONY: S5=0, S6=0 - brak wywołania komunikatu UI, wpisu kroniki ani powiadomienia logiki.
+gra/src/game/battle-loot.ts	0	0	0	WYKLUCZONY-ZERO	WYKLUCZONY: S5=0, S6=0 - brak wywołania komunikatu UI, wpisu kroniki ani powiadomienia logiki.
+gra/src/game/battle-summary.ts	0	0	0	WYKLUCZONY-ZERO	WYKLUCZONY: S5=0, S6=0 - brak wywołania komunikatu UI, wpisu kroniki ani powiadomienia logiki.
+gra/src/game/border-march-scan.ts	0	0	0	WYKLUCZONY-ZERO	WYKLUCZONY: S5=0, S6=0 - brak wywołania komunikatu UI, wpisu kroniki ani powiadomienia logiki.
+gra/src/game/braz-access.ts	0	0	0	WYKLUCZONY-ZERO	WYKLUCZONY: S5=0, S6=0 - brak wywołania komunikatu UI, wpisu kroniki ani powiadomienia logiki.
+gra/src/game/building-cost-tempo.ts	0	0	0	WYKLUCZONY-ZERO	WYKLUCZONY: S5=0, S6=0 - brak wywołania komunikatu UI, wpisu kroniki ani powiadomienia logiki.
+gra/src/game/building-resource-gate.ts	8	0	0	WYKLUCZONY-ZERO	WYKLUCZONY: S5=0, S6=0 - brak wywołania komunikatu UI, wpisu kroniki ani powiadomienia logiki.
+gra/src/game/building-stock-cost.ts	0	0	0	WYKLUCZONY-ZERO	WYKLUCZONY: S5=0, S6=0 - brak wywołania komunikatu UI, wpisu kroniki ani powiadomienia logiki.
+gra/src/game/building-upgrades.ts	1	1	0	ROZSTRZYGNIETY	WYKLUCZONY: chain.unshift :46 buduje lancuch danych ulepszen, bez komunikatu
+gra/src/game/capital-capture.ts	4	0	0	POKRYTY	POKRYTY: E-21 (wiersze sekcji 3).
+gra/src/game/cities.ts	15	0	0	ROZSTRZYGNIETY	WYKLUCZONY: komentarz o odroczonym spawnie (:1171) | R4: budowaListaUkonczonaHintShown (:973) = flaga jednorazowosci dla E-24 (lista ukonczona)
+gra/src/game/citizen-resource-upkeep.ts	0	0	0	WYKLUCZONY-ZERO	WYKLUCZONY: S5=0, S6=0 - brak wywołania komunikatu UI, wpisu kroniki ani powiadomienia logiki.
+gra/src/game/city-defense.ts	0	0	0	WYKLUCZONY-ZERO	WYKLUCZONY: S5=0, S6=0 - brak wywołania komunikatu UI, wpisu kroniki ani powiadomienia logiki.
+gra/src/game/city-founding.ts	0	0	0	WYKLUCZONY-ZERO	WYKLUCZONY: S5=0, S6=0 - brak wywołania komunikatu UI, wpisu kroniki ani powiadomienia logiki.
+gra/src/game/city-hex-clear.ts	0	0	0	WYKLUCZONY-ZERO	WYKLUCZONY: S5=0, S6=0 - brak wywołania komunikatu UI, wpisu kroniki ani powiadomienia logiki.
+gra/src/game/city-hex-movement.ts	0	0	0	WYKLUCZONY-ZERO	WYKLUCZONY: S5=0, S6=0 - brak wywołania komunikatu UI, wpisu kroniki ani powiadomienia logiki.
+gra/src/game/city-names-pool.ts	0	0	0	WYKLUCZONY-ZERO	WYKLUCZONY: S5=0, S6=0 - brak wywołania komunikatu UI, wpisu kroniki ani powiadomienia logiki.
+gra/src/game/city-state-difficulty.ts	0	0	0	WYKLUCZONY-ZERO	WYKLUCZONY: S5=0, S6=0 - brak wywołania komunikatu UI, wpisu kroniki ani powiadomienia logiki.
+gra/src/game/civ-ai-allocation.ts	0	0	0	WYKLUCZONY-ZERO	WYKLUCZONY: S5=0, S6=0 - brak wywołania komunikatu UI, wpisu kroniki ani powiadomienia logiki.
+gra/src/game/civ-ai-data.ts	0	0	0	WYKLUCZONY-ZERO	WYKLUCZONY: S5=0, S6=0 - brak wywołania komunikatu UI, wpisu kroniki ani powiadomienia logiki.
+gra/src/game/civ-bonuses.ts	0	0	0	WYKLUCZONY-ZERO	WYKLUCZONY: S5=0, S6=0 - brak wywołania komunikatu UI, wpisu kroniki ani powiadomienia logiki.
+gra/src/game/civ-entry-epoch.ts	0	0	0	WYKLUCZONY-ZERO	WYKLUCZONY: S5=0, S6=0 - brak wywołania komunikatu UI, wpisu kroniki ani powiadomienia logiki.
+gra/src/game/civ-matrix-semantic.ts	1	0	0	WYKLUCZONY-ZERO	WYKLUCZONY: S5=0, S6=0 - brak wywołania komunikatu UI, wpisu kroniki ani powiadomienia logiki.
+gra/src/game/civ-matrix.ts	0	0	0	WYKLUCZONY-ZERO	WYKLUCZONY: S5=0, S6=0 - brak wywołania komunikatu UI, wpisu kroniki ani powiadomienia logiki.
+gra/src/game/civ-names.ts	0	0	0	WYKLUCZONY-ZERO	WYKLUCZONY: S5=0, S6=0 - brak wywołania komunikatu UI, wpisu kroniki ani powiadomienia logiki.
+gra/src/game/civ-roster.ts	0	0	0	WYKLUCZONY-ZERO	WYKLUCZONY: S5=0, S6=0 - brak wywołania komunikatu UI, wpisu kroniki ani powiadomienia logiki.
+gra/src/game/civ-visual.ts	0	0	0	WYKLUCZONY-ZERO	WYKLUCZONY: S5=0, S6=0 - brak wywołania komunikatu UI, wpisu kroniki ani powiadomienia logiki.
+gra/src/game/cluster-start.ts	1	0	0	ROZSTRZYGNIETY	WYKLUCZONY: rezerwacja ownerId dla deferred rivals (:63,:76,:337), bez komunikatu
+gra/src/game/combat.ts	34	0	0	WYKLUCZONY-ZERO	WYKLUCZONY: S5=0, S6=0 - brak wywołania komunikatu UI, wpisu kroniki ani powiadomienia logiki.
+gra/src/game/conquest-stability.ts	0	0	0	WYKLUCZONY-ZERO	WYKLUCZONY: S5=0, S6=0 - brak wywołania komunikatu UI, wpisu kroniki ani powiadomienia logiki.
+gra/src/game/converters.ts	5	0	0	WYKLUCZONY-ZERO	WYKLUCZONY: S5=0, S6=0 - brak wywołania komunikatu UI, wpisu kroniki ani powiadomienia logiki.
+gra/src/game/culture-religion.ts	12	0	0	POKRYTY	POKRYTY: E-48 (wiersze sekcji 3).
+gra/src/game/cyna-access.ts	0	0	0	WYKLUCZONY-ZERO	WYKLUCZONY: S5=0, S6=0 - brak wywołania komunikatu UI, wpisu kroniki ani powiadomienia logiki.
+gra/src/game/danina-nazwa.ts	0	0	0	WYKLUCZONY-ZERO	WYKLUCZONY: S5=0, S6=0 - brak wywołania komunikatu UI, wpisu kroniki ani powiadomienia logiki.
+gra/src/game/defenseBreakdown.ts	1	3	0	ROZSTRZYGNIETY-R5	WYKLUCZONY: `out.push({tekst})` (:304-310) rozbicie obrony do podglądu; dane prezentacji, nie komunikat tury.
+gra/src/game/diag-log.ts	6	0	0	WYKLUCZONY-ZERO	WYKLUCZONY: S5=0, S6=0 - brak wywołania komunikatu UI, wpisu kroniki ani powiadomienia logiki.
+gra/src/game/difficulty-cost.ts	0	0	0	WYKLUCZONY-ZERO	WYKLUCZONY: S5=0, S6=0 - brak wywołania komunikatu UI, wpisu kroniki ani powiadomienia logiki.
+gra/src/game/diplomacy-acceptance-points.ts	13	0	0	ROZSTRZYGNIETY	WYKLUCZONY: komentarze (:239,:480) - wypowiedzenie wojny to akcja gracza (showWarConsentModal)
+gra/src/game/diplomacy-ai-balance.ts	1	0	0	WYKLUCZONY-ZERO	WYKLUCZONY: S5=0, S6=0 - brak wywołania komunikatu UI, wpisu kroniki ani powiadomienia logiki.
+gra/src/game/diplomacy-ai-offer-balance.ts	3	0	0	WYKLUCZONY-ZERO	WYKLUCZONY: S5=0, S6=0 - brak wywołania komunikatu UI, wpisu kroniki ani powiadomienia logiki.
+gra/src/game/diplomacy-audience-actions.ts	14	0	0	WYKLUCZONY-ZERO	WYKLUCZONY: S5=0, S6=0 - brak wywołania komunikatu UI, wpisu kroniki ani powiadomienia logiki.
+gra/src/game/diplomacy-barbarian-cooperation.ts	0	0	0	WYKLUCZONY-ZERO	WYKLUCZONY: S5=0, S6=0 - brak wywołania komunikatu UI, wpisu kroniki ani powiadomienia logiki.
+gra/src/game/diplomacy-basket-transfer.ts	18	0	0	WYKLUCZONY-ZERO	WYKLUCZONY: S5=0, S6=0 - brak wywołania komunikatu UI, wpisu kroniki ani powiadomienia logiki.
+gra/src/game/diplomacy-border-march.ts	3	0	1 Notice(	POKRYTY-R5	POKRYTY: E-10 (klasyfikator skutków `classifyPlayerBorderMarchNotice` :254; wywołania main.ts:5180-5219; P2-6 sekcja 9.2).
+gra/src/game/diplomacy-credibility.ts	45	0	0	POKRYTY	POKRYTY: E-47 (wiersze sekcji 3).
+gra/src/game/diplomacy-currency-trade.ts	0	0	0	WYKLUCZONY-ZERO	WYKLUCZONY: S5=0, S6=0 - brak wywołania komunikatu UI, wpisu kroniki ani powiadomienia logiki.
+gra/src/game/diplomacy-deposit-trade.ts	0	0	0	WYKLUCZONY-ZERO	WYKLUCZONY: S5=0, S6=0 - brak wywołania komunikatu UI, wpisu kroniki ani powiadomienia logiki.
+gra/src/game/diplomacy-display.ts	21	0	0	ROZSTRZYGNIETY-R4	WYKLUCZONY: tekst podpowiedzi nastawienia (nastawienieHintPl :341, tooltip); prezentacja stanu relacji (E-43), bez zdarzenia
+gra/src/game/diplomacy-economy.ts	7	0	0	ROZSTRZYGNIETY	WYKLUCZONY: komentarz/placeholder (:215) o pendingDiplomacyInbox; bez wywolania UI
+gra/src/game/diplomacy-factors.ts	22	0	0	POKRYTY	POKRYTY: E-46 (wiersze sekcji 3).
+gra/src/game/diplomacy-goods.ts	9	0	0	WYKLUCZONY-ZERO	WYKLUCZONY: S5=0, S6=0 - brak wywołania komunikatu UI, wpisu kroniki ani powiadomienia logiki.
+gra/src/game/diplomacy-layers.ts	2	0	0	WYKLUCZONY-ZERO	WYKLUCZONY: S5=0, S6=0 - brak wywołania komunikatu UI, wpisu kroniki ani powiadomienia logiki.
+gra/src/game/diplomacy-locks.ts	14	0	0	WYKLUCZONY-ZERO	WYKLUCZONY: S5=0, S6=0 - brak wywołania komunikatu UI, wpisu kroniki ani powiadomienia logiki.
+gra/src/game/diplomacy-pair-summary.ts	2	0	0	WYKLUCZONY-ZERO	WYKLUCZONY: S5=0, S6=0 - brak wywołania komunikatu UI, wpisu kroniki ani powiadomienia logiki.
+gra/src/game/diplomacy-peace-lock.ts	1	0	0	WYKLUCZONY-ZERO	WYKLUCZONY: S5=0, S6=0 - brak wywołania komunikatu UI, wpisu kroniki ani powiadomienia logiki.
+gra/src/game/diplomacy-penalty-preview.ts	3	0	0	ROZSTRZYGNIETY-R4	W: podglad kar do modali potwierdzenia (:137), wolany przez akcje gracza; PURE, bez mutacji
+gra/src/game/diplomacy-pn-engine.ts	5	0	0	WYKLUCZONY-ZERO	WYKLUCZONY: S5=0, S6=0 - brak wywołania komunikatu UI, wpisu kroniki ani powiadomienia logiki.
+gra/src/game/diplomacy-proposals.ts	31	0	0	ROZSTRZYGNIETY	WYKLUCZONY: komentarze (:563,:570,:588) o formularzu gracza; prezentacja kontrofert -> E-05/E-06 bez wlasnego eventu
+gra/src/game/diplomacy-rejection-cooldown.ts	0	0	0	WYKLUCZONY-ZERO	WYKLUCZONY: S5=0, S6=0 - brak wywołania komunikatu UI, wpisu kroniki ani powiadomienia logiki.
+gra/src/game/diplomacy-resource-trade-pick.ts	1	0	0	WYKLUCZONY-ZERO	WYKLUCZONY: S5=0, S6=0 - brak wywołania komunikatu UI, wpisu kroniki ani powiadomienia logiki.
+gra/src/game/diplomacy-tech-trade.ts	49	2	0	WYKLUCZONY-R5	WYKLUCZONY: S5 trafienia to wyłącznie komentarze do `showHintMessage` (:126, :149; testy); kod pliku nie wywołuje komunikatu. Wiersz katalogu: sekcja 1, wiersz „showHintMessage( w pozostałych plikach gra/src/**”.
+gra/src/game/diplomacy-trade-validation.ts	1	0	0	WYKLUCZONY-ZERO	WYKLUCZONY: S5=0, S6=0 - brak wywołania komunikatu UI, wpisu kroniki ani powiadomienia logiki.
+gra/src/game/diplomacy-treaties.ts	8	0	0	WYKLUCZONY-ZERO	WYKLUCZONY: S5=0, S6=0 - brak wywołania komunikatu UI, wpisu kroniki ani powiadomienia logiki.
+gra/src/game/diplomacy-unit-transfer.ts	2	0	0	WYKLUCZONY-ZERO	WYKLUCZONY: S5=0, S6=0 - brak wywołania komunikatu UI, wpisu kroniki ani powiadomienia logiki.
+gra/src/game/diplomacy-value-catalog.ts	15	0	0	WYKLUCZONY-ZERO	WYKLUCZONY: S5=0, S6=0 - brak wywołania komunikatu UI, wpisu kroniki ani powiadomienia logiki.
+gra/src/game/diplomacy-war-gates.ts	0	0	0	WYKLUCZONY-ZERO	WYKLUCZONY: S5=0, S6=0 - brak wywołania komunikatu UI, wpisu kroniki ani powiadomienia logiki.
+gra/src/game/diplomacy.ts	25	0	0	WYKLUCZONY-ZERO	WYKLUCZONY: S5=0, S6=0 - brak wywołania komunikatu UI, wpisu kroniki ani powiadomienia logiki.
+gra/src/game/display-names.ts	1	0	0	WYKLUCZONY-ZERO	WYKLUCZONY: S5=0, S6=0 - brak wywołania komunikatu UI, wpisu kroniki ani powiadomienia logiki.
+gra/src/game/economy-upkeep.ts	16	0	0	ROZSTRZYGNIETY-R4	W: UNIT_RECRUIT_STOCK_ONLY_HINT (:823) i pickUnitRecruitHint (:887) = odmowa zakupu gracza (zob. 9.4 purchaseRecruitmentUnit); AI nie dostaje komunikatu
+gra/src/game/economy.ts	13	3	0	ROZSTRZYGNIETY-R5	WYKLUCZONY: fałszywy pozytyw S5 (`BuildingHappinessCatalogEntry`, :541-555) - typ katalogu danych.
+gra/src/game/effective-difficulty-for-owner.ts	0	0	0	WYKLUCZONY-ZERO	WYKLUCZONY: S5=0, S6=0 - brak wywołania komunikatu UI, wpisu kroniki ani powiadomienia logiki.
+gra/src/game/embarkation.ts	3	0	0	WYKLUCZONY-ZERO	WYKLUCZONY: S5=0, S6=0 - brak wywołania komunikatu UI, wpisu kroniki ani powiadomienia logiki.
+gra/src/game/empire-city-defaults.ts	2	0	0	WYKLUCZONY-ZERO	WYKLUCZONY: S5=0, S6=0 - brak wywołania komunikatu UI, wpisu kroniki ani powiadomienia logiki.
+gra/src/game/empire-diplo-resource-flow.ts	1	0	0	WYKLUCZONY-ZERO	WYKLUCZONY: S5=0, S6=0 - brak wywołania komunikatu UI, wpisu kroniki ani powiadomienia logiki.
+gra/src/game/empire-food.ts	1	0	0	WYKLUCZONY-ZERO	WYKLUCZONY: S5=0, S6=0 - brak wywołania komunikatu UI, wpisu kroniki ani powiadomienia logiki.
+gra/src/game/empire-handel-split.ts	0	0	0	WYKLUCZONY-ZERO	WYKLUCZONY: S5=0, S6=0 - brak wywołania komunikatu UI, wpisu kroniki ani powiadomienia logiki.
+gra/src/game/empire-hud-totals.ts	0	0	0	WYKLUCZONY-ZERO	WYKLUCZONY: S5=0, S6=0 - brak wywołania komunikatu UI, wpisu kroniki ani powiadomienia logiki.
+gra/src/game/eot-event-defer.ts	55	11	1 showHintMessage(	POKRYTY	POKRYTY: E-11, E-44 (E-52, E-53 wykluczone w sekcji 3.F, nie liczone jako pokrycie).
+gra/src/game/era-change-notify.ts	12	1	1 ToastHtml(	POKRYTY-R5	POKRYTY: E-27 (eksport buildera HTML toastu; wywołania w main.ts:14366, :14408; P2-6 sekcja 9.2).
+gra/src/game/era-gate-ui.ts	8	0	0	WYKLUCZONY-ZERO	WYKLUCZONY: S5=0, S6=0 - brak wywołania komunikatu UI, wpisu kroniki ani powiadomienia logiki.
+gra/src/game/first-player-city.ts	0	0	0	WYKLUCZONY-ZERO	WYKLUCZONY: S5=0, S6=0 - brak wywołania komunikatu UI, wpisu kroniki ani powiadomienia logiki.
+gra/src/game/forced-war-bronze.ts	1	0	0	WYKLUCZONY-ZERO	WYKLUCZONY: S5=0, S6=0 - brak wywołania komunikatu UI, wpisu kroniki ani powiadomienia logiki.
+gra/src/game/forced-war-common.ts	1	0	0	WYKLUCZONY-ZERO	WYKLUCZONY: S5=0, S6=0 - brak wywołania komunikatu UI, wpisu kroniki ani powiadomienia logiki.
+gra/src/game/forced-war-iron.ts	4	0	0	WYKLUCZONY-ZERO	WYKLUCZONY: S5=0, S6=0 - brak wywołania komunikatu UI, wpisu kroniki ani powiadomienia logiki.
+gra/src/game/forced-war-stone.ts	0	0	0	WYKLUCZONY-ZERO	WYKLUCZONY: S5=0, S6=0 - brak wywołania komunikatu UI, wpisu kroniki ani powiadomienia logiki.
+gra/src/game/forced-war-waves.ts	0	0	0	POKRYTY	POKRYTY: E-13, E-01 (wiersze sekcji 3).
+gra/src/game/fort-territory.ts	7	0	0	ROZSTRZYGNIETY-R4	WYKLUCZONY: komentarz (:84)
+gra/src/game/fsa-autosave.ts	15	0	7 showDirectoryPicker(	WYKLUCZONY-S6	WYKLUCZONY: S5=0; S6 = wywołania 7 showDirectoryPicker( (otwarcie panelu, hover, ładowanie, API przeglądarki); nie komunikat logiki tury.
+gra/src/game/gold-deficit.ts	3	0	0	WYKLUCZONY-ZERO	WYKLUCZONY: S5=0, S6=0 - brak wywołania komunikatu UI, wpisu kroniki ani powiadomienia logiki.
+gra/src/game/growth-happiness.ts	0	0	0	WYKLUCZONY-ZERO	WYKLUCZONY: S5=0, S6=0 - brak wywołania komunikatu UI, wpisu kroniki ani powiadomienia logiki.
+gra/src/game/human-owners.ts	0	0	0	WYKLUCZONY-ZERO	WYKLUCZONY: S5=0, S6=0 - brak wywołania komunikatu UI, wpisu kroniki ani powiadomienia logiki.
+gra/src/game/idb-storage.ts	2	0	0	WYKLUCZONY-ZERO	WYKLUCZONY: S5=0, S6=0 - brak wywołania komunikatu UI, wpisu kroniki ani powiadomienia logiki.
+gra/src/game/improvement-tech.ts	5	0	0	ROZSTRZYGNIETY-R4	WYKLUCZONY: getImprovementLockHint (:57), tekst blokady w UI, bez zdarzenia
+gra/src/game/inca-llama-seed.ts	0	0	0	WYKLUCZONY-ZERO	WYKLUCZONY: S5=0, S6=0 - brak wywołania komunikatu UI, wpisu kroniki ani powiadomienia logiki.
+gra/src/game/livestock-unlock.ts	0	0	0	WYKLUCZONY-ZERO	WYKLUCZONY: S5=0, S6=0 - brak wywołania komunikatu UI, wpisu kroniki ani powiadomienia logiki.
+gra/src/game/load-map-source.ts	1	0	0	WYKLUCZONY-ZERO	WYKLUCZONY: S5=0, S6=0 - brak wywołania komunikatu UI, wpisu kroniki ani powiadomienia logiki.
+gra/src/game/manpower.ts	1	0	0	WYKLUCZONY-ZERO	WYKLUCZONY: S5=0, S6=0 - brak wywołania komunikatu UI, wpisu kroniki ani powiadomienia logiki.
+gra/src/game/map-rebels.ts	0	0	0	WYKLUCZONY-ZERO	WYKLUCZONY: S5=0, S6=0 - brak wywołania komunikatu UI, wpisu kroniki ani powiadomienia logiki.
+gra/src/game/mapSiegeDetect.ts	0	0	0	WYKLUCZONY-ZERO	WYKLUCZONY: S5=0, S6=0 - brak wywołania komunikatu UI, wpisu kroniki ani powiadomienia logiki.
+gra/src/game/mennica-zloto-grace.ts	1	0	0	WYKLUCZONY-ZERO	WYKLUCZONY: S5=0, S6=0 - brak wywołania komunikatu UI, wpisu kroniki ani powiadomienia logiki.
+gra/src/game/okolica.ts	5	0	0	WYKLUCZONY-ZERO	WYKLUCZONY: S5=0, S6=0 - brak wywołania komunikatu UI, wpisu kroniki ani powiadomienia logiki.
+gra/src/game/order.ts	1	0	0	WYKLUCZONY-ZERO	WYKLUCZONY: S5=0, S6=0 - brak wywołania komunikatu UI, wpisu kroniki ani powiadomienia logiki.
+gra/src/game/owner-epoch.ts	6	0	0	WYKLUCZONY-ZERO	WYKLUCZONY: S5=0, S6=0 - brak wywołania komunikatu UI, wpisu kroniki ani powiadomienia logiki.
+gra/src/game/owner-utils.ts	0	0	0	WYKLUCZONY-ZERO	WYKLUCZONY: S5=0, S6=0 - brak wywołania komunikatu UI, wpisu kroniki ani powiadomienia logiki.
+gra/src/game/pending-improvements.ts	0	0	0	WYKLUCZONY-ZERO	WYKLUCZONY: S5=0, S6=0 - brak wywołania komunikatu UI, wpisu kroniki ani powiadomienia logiki.
+gra/src/game/planned-march.ts	2	0	0	WYKLUCZONY-ZERO	WYKLUCZONY: S5=0, S6=0 - brak wywołania komunikatu UI, wpisu kroniki ani powiadomienia logiki.
+gra/src/game/playerState.ts	19	0	0	WYKLUCZONY-ZERO	WYKLUCZONY: S5=0, S6=0 - brak wywołania komunikatu UI, wpisu kroniki ani powiadomienia logiki.
+gra/src/game/playtestMapaSwiata.ts	1	0	0	ROZSTRZYGNIETY-R4	WYKLUCZONY: stala playtestu (dev)
+gra/src/game/playtestMiastoEkonomia.ts	2	0	0	ROZSTRZYGNIETY-R4	WYKLUCZONY: stala playtestu (dev)
+gra/src/game/playtestOdskok3v3.ts	2	0	0	ROZSTRZYGNIETY-R4	WYKLUCZONY: stale playtestu (dev)
+gra/src/game/playtestWalkaMapy.ts	4	1	0	ROZSTRZYGNIETY	WYKLUCZONY: out.unshift :127 w danych playtestu (dev)
+gra/src/game/population-growth-tempo.ts	0	0	0	WYKLUCZONY-ZERO	WYKLUCZONY: S5=0, S6=0 - brak wywołania komunikatu UI, wpisu kroniki ani powiadomienia logiki.
+gra/src/game/population-growth-v85.ts	0	0	0	WYKLUCZONY-ZERO	WYKLUCZONY: S5=0, S6=0 - brak wywołania komunikatu UI, wpisu kroniki ani powiadomienia logiki.
+gra/src/game/post-battle-map.ts	24	8	0	POKRYTY	POKRYTY: E-31 (wiersze sekcji 3).
+gra/src/game/post-capture-law.ts	3	2	0	ROZSTRZYGNIETY-R4	WYKLUCZONY: postCaptureLawBannerLabel (:115, :139), etykieta stanu UI, nie zdarzenie (zob. E-21)
+gra/src/game/power-objective.ts	0	0	0	WYKLUCZONY-ZERO	WYKLUCZONY: S5=0, S6=0 - brak wywołania komunikatu UI, wpisu kroniki ani powiadomienia logiki.
+gra/src/game/power-options.ts	0	0	0	WYKLUCZONY-ZERO	WYKLUCZONY: S5=0, S6=0 - brak wywołania komunikatu UI, wpisu kroniki ani powiadomienia logiki.
+gra/src/game/power-ranking.ts	0	0	0	WYKLUCZONY-ZERO	WYKLUCZONY: S5=0, S6=0 - brak wywołania komunikatu UI, wpisu kroniki ani powiadomienia logiki.
+gra/src/game/power.ts	0	0	0	WYKLUCZONY-ZERO	WYKLUCZONY: S5=0, S6=0 - brak wywołania komunikatu UI, wpisu kroniki ani powiadomienia logiki.
+gra/src/game/production.ts	26	3	0	ROZSTRZYGNIETY-R5	WYKLUCZONY: fałszywy pozytyw S5 (`BuildingCatalogEntry`, :2168-2201) - typ katalogu danych.
+gra/src/game/r-stawki-strojenie.ts	0	0	0	WYKLUCZONY-ZERO	WYKLUCZONY: S5=0, S6=0 - brak wywołania komunikatu UI, wpisu kroniki ani powiadomienia logiki.
+gra/src/game/rally-point.ts	0	0	0	WYKLUCZONY-ZERO	WYKLUCZONY: S5=0, S6=0 - brak wywołania komunikatu UI, wpisu kroniki ani powiadomienia logiki.
+gra/src/game/relief-preserving-improvements.ts	0	0	0	WYKLUCZONY-ZERO	WYKLUCZONY: S5=0, S6=0 - brak wywołania komunikatu UI, wpisu kroniki ani powiadomienia logiki.
+gra/src/game/research.ts	12	0	0	WYKLUCZONY-ZERO	WYKLUCZONY: S5=0, S6=0 - brak wywołania komunikatu UI, wpisu kroniki ani powiadomienia logiki.
+gra/src/game/resource-access.ts	2	0	0	ROZSTRZYGNIETY-R4	WYKLUCZONY: hexHiddenDepositHint (:108), tooltip hover, nie zdarzenie
+gra/src/game/resource-usage-breakdown.ts	1	0	0	WYKLUCZONY-ZERO	WYKLUCZONY: S5=0, S6=0 - brak wywołania komunikatu UI, wpisu kroniki ani powiadomienia logiki.
+gra/src/game/ruch-swiata-tempo.ts	1	0	0	WYKLUCZONY-ZERO	WYKLUCZONY: S5=0, S6=0 - brak wywołania komunikatu UI, wpisu kroniki ani powiadomienia logiki.
+gra/src/game/save-label.ts	1	0	0	WYKLUCZONY-ZERO	WYKLUCZONY: S5=0, S6=0 - brak wywołania komunikatu UI, wpisu kroniki ani powiadomienia logiki.
+gra/src/game/save.ts	20	3	0	ROZSTRZYGNIETY-R5	WYKLUCZONY z katalogu: `issues.push({code,message})` (:1101-1111) zwraca problemy wczytywanego zapisu do wywołującego (akcja gracza: wczytanie); nie event tury. Zakres: P2.7.
+gra/src/game/scout-auto-explore.ts	0	0	0	WYKLUCZONY-ZERO	WYKLUCZONY: S5=0, S6=0 - brak wywołania komunikatu UI, wpisu kroniki ani powiadomienia logiki.
+gra/src/game/side-panel-event-link.ts	20	1	0	ROZSTRZYGNIETY	WYKLUCZONY: komentarz (:31) wskazujacy E-08 (elim-cs-*)
+gra/src/game/side-panel-event-priority.ts	4	0	0	WYKLUCZONY-ZERO	WYKLUCZONY: S5=0, S6=0 - brak wywołania komunikatu UI, wpisu kroniki ani powiadomienia logiki.
+gra/src/game/siege.ts	16	0	0	WYKLUCZONY-ZERO	WYKLUCZONY: S5=0, S6=0 - brak wywołania komunikatu UI, wpisu kroniki ani powiadomienia logiki.
+gra/src/game/siegeAi.ts	2	0	0	ROZSTRZYGNIETY-R4	WYKLUCZONY: komentarz (:155)
+gra/src/game/siegeDefenders.ts	0	0	0	WYKLUCZONY-ZERO	WYKLUCZONY: S5=0, S6=0 - brak wywołania komunikatu UI, wpisu kroniki ani powiadomienia logiki.
+gra/src/game/siegeMachines.ts	0	0	0	WYKLUCZONY-ZERO	WYKLUCZONY: S5=0, S6=0 - brak wywołania komunikatu UI, wpisu kroniki ani powiadomienia logiki.
+gra/src/game/society-breakdown.ts	3	0	0	POKRYTY	POKRYTY: E-17 (wiersze sekcji 3).
+gra/src/game/society-inputs.ts	0	0	0	WYKLUCZONY-ZERO	WYKLUCZONY: S5=0, S6=0 - brak wywołania komunikatu UI, wpisu kroniki ani powiadomienia logiki.
+gra/src/game/spich-auto-ration-notify.ts	8	0	0	POKRYTY	POKRYTY: E-38 (wiersze sekcji 3).
+gra/src/game/start-preview.ts	1	0	0	WYKLUCZONY-ZERO	WYKLUCZONY: S5=0, S6=0 - brak wywołania komunikatu UI, wpisu kroniki ani powiadomienia logiki.
+gra/src/game/tech-tempo.ts	2	0	0	WYKLUCZONY-ZERO	WYKLUCZONY: S5=0, S6=0 - brak wywołania komunikatu UI, wpisu kroniki ani powiadomienia logiki.
+gra/src/game/tech-tree.ts	4	1	0	ROZSTRZYGNIETY	WYKLUCZONY: chain.unshift :106 - dane drzewka, bez komunikatu
+gra/src/game/terrain-improvements.ts	4	0	0	WYKLUCZONY-ZERO	WYKLUCZONY: S5=0, S6=0 - brak wywołania komunikatu UI, wpisu kroniki ani powiadomienia logiki.
+gra/src/game/trade-routes.ts	12	0	0	WYKLUCZONY-ZERO	WYKLUCZONY: S5=0, S6=0 - brak wywołania komunikatu UI, wpisu kroniki ani powiadomienia logiki.
+gra/src/game/triumph-city-state.ts	5	0	0	ROZSTRZYGNIETY-R4	E-21: stala TRIUMPH_CS_HINT_MS (:11), czas wyswietlenia karty E-21; nie osobny event
+gra/src/game/turn-economy.ts	14	0	0	WYKLUCZONY-ZERO	WYKLUCZONY: S5=0, S6=0 - brak wywołania komunikatu UI, wpisu kroniki ani powiadomienia logiki.
+gra/src/game/unit-building-bonuses.ts	5	0	0	ROZSTRZYGNIETY-R4	E-59: formatter komunikatu formatBuildingBonusGainHint (:421)
+gra/src/game/unit-card-stats.ts	6	0	0	WYKLUCZONY-ZERO	WYKLUCZONY: S5=0, S6=0 - brak wywołania komunikatu UI, wpisu kroniki ani powiadomienia logiki.
+gra/src/game/unit-cost-tempo.ts	0	0	0	WYKLUCZONY-ZERO	WYKLUCZONY: S5=0, S6=0 - brak wywołania komunikatu UI, wpisu kroniki ani powiadomienia logiki.
+gra/src/game/unit-power.ts	0	0	0	WYKLUCZONY-ZERO	WYKLUCZONY: S5=0, S6=0 - brak wywołania komunikatu UI, wpisu kroniki ani powiadomienia logiki.
+gra/src/game/unit-replace-context.ts	2	0	0	WYKLUCZONY-ZERO	WYKLUCZONY: S5=0, S6=0 - brak wywołania komunikatu UI, wpisu kroniki ani powiadomienia logiki.
+gra/src/game/veteran.ts	9	0	0	POKRYTY	POKRYTY: E-33 (wiersze sekcji 3).
+gra/src/game/victory.ts	4	0	0	WYKLUCZONY-ZERO	WYKLUCZONY: S5=0, S6=0 - brak wywołania komunikatu UI, wpisu kroniki ani powiadomienia logiki.
+gra/src/game/villageRewards.ts	4	0	0	POKRYTY	POKRYTY: E-34 (wiersze sekcji 3).
+gra/src/game/visibility.ts	0	0	0	WYKLUCZONY-ZERO	WYKLUCZONY: S5=0, S6=0 - brak wywołania komunikatu UI, wpisu kroniki ani powiadomienia logiki.
+gra/src/game/wealth.ts	0	0	0	WYKLUCZONY-ZERO	WYKLUCZONY: S5=0, S6=0 - brak wywołania komunikatu UI, wpisu kroniki ani powiadomienia logiki.
+gra/src/game/wiarygodnosc-types.ts	8	0	0	WYKLUCZONY-ZERO	WYKLUCZONY: S5=0, S6=0 - brak wywołania komunikatu UI, wpisu kroniki ani powiadomienia logiki.
+gra/src/game/wonder-availability.ts	1	0	0	WYKLUCZONY-ZERO	WYKLUCZONY: S5=0, S6=0 - brak wywołania komunikatu UI, wpisu kroniki ani powiadomienia logiki.
+gra/src/game/wonder-civ-tech.ts	5	0	0	WYKLUCZONY-ZERO	WYKLUCZONY: S5=0, S6=0 - brak wywołania komunikatu UI, wpisu kroniki ani powiadomienia logiki.
+gra/src/game/wonder-map-build.ts	0	0	0	WYKLUCZONY-ZERO	WYKLUCZONY: S5=0, S6=0 - brak wywołania komunikatu UI, wpisu kroniki ani powiadomienia logiki.
+gra/src/game/wonders-data.ts	0	0	0	WYKLUCZONY-ZERO	WYKLUCZONY: S5=0, S6=0 - brak wywołania komunikatu UI, wpisu kroniki ani powiadomienia logiki.
+gra/src/game/zelazo-access.ts	0	0	0	WYKLUCZONY-ZERO	WYKLUCZONY: S5=0, S6=0 - brak wywołania komunikatu UI, wpisu kroniki ani powiadomienia logiki.
+gra/src/game/zloto-access.ts	0	0	0	WYKLUCZONY-ZERO	WYKLUCZONY: S5=0, S6=0 - brak wywołania komunikatu UI, wpisu kroniki ani powiadomienia logiki.
+gra/src/input/picker.ts	3	0	0	WYKLUCZONY-ZERO	WYKLUCZONY: S5=0, S6=0 - brak wywołania komunikatu UI, wpisu kroniki ani powiadomienia logiki.
+gra/src/main.ts	1692	510	1 Notice(       2 NoticeOpen(       2 Toast(       1 ToastHtml(       1 showAllianceObligationModal(       2 showArmyListHud(       3 showArmyMergePanel(       1 showArmyMergePickPanel(       1 showArmySplitPanel(       4 showBuildTerritoryBlockedHint(       1 showCaptureReportNotice(       2 showCityAttackChoice(       2 showCityCaptureNotice(       1 showCityForeignPick(       1 showCityListHud(       2 showCityPanel(       1 showCityUnitPick(       1 showCivElimNotice(       4 showDiploListHud(       2 showDiploPairSummary(       1 showDiplomacyAudience(       1 showDiplomacyPendingModal(       3 showDiplomacyProposalBanner(       2 showEmpireDetailPanel(       4 showErr(       1 showError(       2 showForeignCityHexContext(       2 showGhostCity(       2 showGhostImprovement(       3 showHexContextPanel(     300 showHintMessage(       1 showHotSeatHandoff(       1 showHud(       1 showImprovementBuildConfirmModal(       1 showInterHumanDiplomacyHud(       2 showLoadGameDialog(       9 showMainMenu(       5 showMapLoadingOverlay(       2 showNewGameFlow(       1 showPerfTestPanel(       2 showPostBattleSummary(       3 showPreBattle(       1 showSaveGameDialog(       1 showSceneTimingReport(       2 showScienceHubHud(       1 showSciencePickerDocked(       4 showSiegeMapPanel(       8 showTechDiscoveryNotice(      10 showTechTreeView(       1 showTriumphCityStateNotice(       1 showUnitForeignPick(       1 showUnitInfoCardDialog(       1 showUnitReplacePicker(       2 showVeteranBadgeTip(       1 showVictoryScreen(       2 showWarConsentModal(       2 showWikiHubHud(       3 showWonderCompletedNotice(       1 toast(	POKRYTY-zrodlo	Źródło wszystkich wywołań komunikatów: E-01…E-60 (wywołania `showHintMessage` i wpisy kronik rozpisane w sekcji 3 i załącznikach A/B).
+gra/src/map/cluster-spawn.ts	0	0	0	ROZSTRZYGNIETY	WYKLUCZONY: komentarze (:67,:374) o rezerwacji ownerId
+gra/src/map/clusters.ts	3	0	0	WYKLUCZONY-ZERO	WYKLUCZONY: S5=0, S6=0 - brak wywołania komunikatu UI, wpisu kroniki ani powiadomienia logiki.
+gra/src/map/deposit-era.ts	0	0	0	WYKLUCZONY-ZERO	WYKLUCZONY: S5=0, S6=0 - brak wywołania komunikatu UI, wpisu kroniki ani powiadomienia logiki.
+gra/src/map/earth-land-mask.generated.ts	0	0	0	WYKLUCZONY-ZERO	WYKLUCZONY: S5=0, S6=0 - brak wywołania komunikatu UI, wpisu kroniki ani powiadomienia logiki.
+gra/src/map/earth-land-mask.ts	0	0	0	WYKLUCZONY-ZERO	WYKLUCZONY: S5=0, S6=0 - brak wywołania komunikatu UI, wpisu kroniki ani powiadomienia logiki.
+gra/src/map/gen-helpers.ts	13	1	0	ROZSTRZYGNIETY	WYKLUCZONY: out.unshift :5376 w generacji mapy, bez komunikatu
+gra/src/map/genWorker.ts	7	0	0	WYKLUCZONY-ZERO	WYKLUCZONY: S5=0, S6=0 - brak wywołania komunikatu UI, wpisu kroniki ani powiadomienia logiki.
+gra/src/map/generator.ts	2	0	0	WYKLUCZONY-ZERO	WYKLUCZONY: S5=0, S6=0 - brak wywołania komunikatu UI, wpisu kroniki ani powiadomienia logiki.
+gra/src/map/improvement-build.ts	19	0	0	ROZSTRZYGNIETY-R4	WYKLUCZONY: lockHint pozycji menu budowy (:1497-1499), UI, bez zdarzenia
+gra/src/map/map-attack-city.ts	8	0	0	ROZSTRZYGNIETY-R4	W: typy hint_* (:24-27, :100-134) = walidacja ataku na miasto na akcje gracza
+gra/src/map/mapGenAsync.ts	3	0	0	WYKLUCZONY-ZERO	WYKLUCZONY: S5=0, S6=0 - brak wywołania komunikatu UI, wpisu kroniki ani powiadomienia logiki.
+gra/src/map/mapGenProgress.ts	0	0	0	WYKLUCZONY-ZERO	WYKLUCZONY: S5=0, S6=0 - brak wywołania komunikatu UI, wpisu kroniki ani powiadomienia logiki.
+gra/src/map/mapSnapshot.ts	0	0	0	WYKLUCZONY-ZERO	WYKLUCZONY: S5=0, S6=0 - brak wywołania komunikatu UI, wpisu kroniki ani powiadomienia logiki.
+gra/src/map/minimap.ts	0	0	0	WYKLUCZONY-ZERO	WYKLUCZONY: S5=0, S6=0 - brak wywołania komunikatu UI, wpisu kroniki ani powiadomienia logiki.
+gra/src/map/newGameMapDefaults.ts	8	0	0	ROZSTRZYGNIETY-R4	WYKLUCZONY: podpowiedzi suwakow nowej gry (UI)
+gra/src/map/range-hexes.ts	1	0	0	WYKLUCZONY-ZERO	WYKLUCZONY: S5=0, S6=0 - brak wywołania komunikatu UI, wpisu kroniki ani powiadomienia logiki.
+gra/src/map/riverGenSwitch.ts	0	0	0	WYKLUCZONY-ZERO	WYKLUCZONY: S5=0, S6=0 - brak wywołania komunikatu UI, wpisu kroniki ani powiadomienia logiki.
+gra/src/map/road-movement.ts	2	0	0	WYKLUCZONY-ZERO	WYKLUCZONY: S5=0, S6=0 - brak wywołania komunikatu UI, wpisu kroniki ani powiadomienia logiki.
+gra/src/map/road-network.ts	0	0	0	WYKLUCZONY-ZERO	WYKLUCZONY: S5=0, S6=0 - brak wywołania komunikatu UI, wpisu kroniki ani powiadomienia logiki.
+gra/src/map/startScoring.ts	0	0	0	WYKLUCZONY-ZERO	WYKLUCZONY: S5=0, S6=0 - brak wywołania komunikatu UI, wpisu kroniki ani powiadomienia logiki.
+gra/src/map/territory-border.ts	1	0	0	WYKLUCZONY-ZERO	WYKLUCZONY: S5=0, S6=0 - brak wywołania komunikatu UI, wpisu kroniki ani powiadomienia logiki.
+gra/src/map/territory-work.ts	0	0	0	WYKLUCZONY-ZERO	WYKLUCZONY: S5=0, S6=0 - brak wywołania komunikatu UI, wpisu kroniki ani powiadomienia logiki.
+gra/src/map/territory.ts	0	0	0	WYKLUCZONY-ZERO	WYKLUCZONY: S5=0, S6=0 - brak wywołania komunikatu UI, wpisu kroniki ani powiadomienia logiki.
+gra/src/map/villages.ts	2	0	0	WYKLUCZONY-ZERO	WYKLUCZONY: S5=0, S6=0 - brak wywołania komunikatu UI, wpisu kroniki ani powiadomienia logiki.
+gra/src/map/wonder-placement.ts	0	0	0	WYKLUCZONY-ZERO	WYKLUCZONY: S5=0, S6=0 - brak wywołania komunikatu UI, wpisu kroniki ani powiadomienia logiki.
+gra/src/oblezenie/main.ts	1	0	0	WYKLUCZONY-ZERO	WYKLUCZONY: S5=0, S6=0 - brak wywołania komunikatu UI, wpisu kroniki ani powiadomienia logiki.
+gra/src/perf/hardwareProfile.ts	1	0	0	WYKLUCZONY-ZERO	WYKLUCZONY: S5=0, S6=0 - brak wywołania komunikatu UI, wpisu kroniki ani powiadomienia logiki.
+gra/src/render/braz-konnica-opus5.ts	3	0	0	WYKLUCZONY-ZERO	WYKLUCZONY: S5=0, S6=0 - brak wywołania komunikatu UI, wpisu kroniki ani powiadomienia logiki.
+gra/src/render/braz-lucznik-nubijski-opus5.ts	0	0	0	WYKLUCZONY-ZERO	WYKLUCZONY: S5=0, S6=0 - brak wywołania komunikatu UI, wpisu kroniki ani powiadomienia logiki.
+gra/src/render/braz-miecznik-opus5.ts	0	0	0	WYKLUCZONY-ZERO	WYKLUCZONY: S5=0, S6=0 - brak wywołania komunikatu UI, wpisu kroniki ani powiadomienia logiki.
+gra/src/render/braz-procarz-opus5.ts	0	0	0	WYKLUCZONY-ZERO	WYKLUCZONY: S5=0, S6=0 - brak wywołania komunikatu UI, wpisu kroniki ani powiadomienia logiki.
+gra/src/render/braz-rydwan-kapadokijski-opus5.ts	1	0	0	WYKLUCZONY-ZERO	WYKLUCZONY: S5=0, S6=0 - brak wywołania komunikatu UI, wpisu kroniki ani powiadomienia logiki.
+gra/src/render/braz-rydwan-konny-opus5.ts	0	0	0	WYKLUCZONY-ZERO	WYKLUCZONY: S5=0, S6=0 - brak wywołania komunikatu UI, wpisu kroniki ani powiadomienia logiki.
+gra/src/render/braz-rydwan-woly-opus5.ts	9	2	0	ROZSTRZYGNIETY-R4	WYKLUCZONY: geometria banera jednostki (render), bez komunikatu
+gra/src/render/braz-taran-opus5.ts	43	4	0	ROZSTRZYGNIETY-R4	WYKLUCZONY: geometria banera jednostki (render), bez komunikatu
+gra/src/render/braz-wlocznik-opus5.ts	0	0	0	WYKLUCZONY-ZERO	WYKLUCZONY: S5=0, S6=0 - brak wywołania komunikatu UI, wpisu kroniki ani powiadomienia logiki.
+gra/src/render/bronzeCity.ts	0	0	0	WYKLUCZONY-ZERO	WYKLUCZONY: S5=0, S6=0 - brak wywołania komunikatu UI, wpisu kroniki ani powiadomienia logiki.
+gra/src/render/bronzeCityRoblox.ts	0	0	0	WYKLUCZONY-ZERO	WYKLUCZONY: S5=0, S6=0 - brak wywołania komunikatu UI, wpisu kroniki ani powiadomienia logiki.
+gra/src/render/camera.ts	23	0	0	WYKLUCZONY-ZERO	WYKLUCZONY: S5=0, S6=0 - brak wywołania komunikatu UI, wpisu kroniki ani powiadomienia logiki.
+gra/src/render/cities.ts	0	0	0	ROZSTRZYGNIETY	WYKLUCZONY: odroczone odslonięcie sprite'a (komentarz :429, deferredPlayerUnitRevealIds); cityRenderer.sync wolany w EOT - tylko render, bez komunikatu
+gra/src/render/cityMapOutline.ts	0	0	0	WYKLUCZONY-ZERO	WYKLUCZONY: S5=0, S6=0 - brak wywołania komunikatu UI, wpisu kroniki ani powiadomienia logiki.
+gra/src/render/cityMapStatChip.ts	3	0	0	WYKLUCZONY-ZERO	WYKLUCZONY: S5=0, S6=0 - brak wywołania komunikatu UI, wpisu kroniki ani powiadomienia logiki.
+gra/src/render/cityOkolicaOverlay.ts	0	0	0	WYKLUCZONY-ZERO	WYKLUCZONY: S5=0, S6=0 - brak wywołania komunikatu UI, wpisu kroniki ani powiadomienia logiki.
+gra/src/render/countSceneOverlayCandidates.ts	0	0	0	WYKLUCZONY-ZERO	WYKLUCZONY: S5=0, S6=0 - brak wywołania komunikatu UI, wpisu kroniki ani powiadomienia logiki.
+gra/src/render/dekor-laki-rowniny.ts	1	0	0	WYKLUCZONY-ZERO	WYKLUCZONY: S5=0, S6=0 - brak wywołania komunikatu UI, wpisu kroniki ani powiadomienia logiki.
+gra/src/render/djungla-modele.ts	0	0	0	WYKLUCZONY-ZERO	WYKLUCZONY: S5=0, S6=0 - brak wywołania komunikatu UI, wpisu kroniki ani powiadomienia logiki.
+gra/src/render/droga-6-ramion.ts	0	0	0	WYKLUCZONY-ZERO	WYKLUCZONY: S5=0, S6=0 - brak wywołania komunikatu UI, wpisu kroniki ani powiadomienia logiki.
+gra/src/render/fogDim.ts	0	0	0	WYKLUCZONY-ZERO	WYKLUCZONY: S5=0, S6=0 - brak wywołania komunikatu UI, wpisu kroniki ani powiadomienia logiki.
+gra/src/render/galera-model.ts	0	0	0	WYKLUCZONY-ZERO	WYKLUCZONY: S5=0, S6=0 - brak wywołania komunikatu UI, wpisu kroniki ani powiadomienia logiki.
+gra/src/render/hastati-falangita.ts	0	0	0	WYKLUCZONY-ZERO	WYKLUCZONY: S5=0, S6=0 - brak wywołania komunikatu UI, wpisu kroniki ani powiadomienia logiki.
+gra/src/render/hastati-opus5.ts	0	0	0	WYKLUCZONY-ZERO	WYKLUCZONY: S5=0, S6=0 - brak wywołania komunikatu UI, wpisu kroniki ani powiadomienia logiki.
+gra/src/render/hexShape.ts	0	0	0	WYKLUCZONY-ZERO	WYKLUCZONY: S5=0, S6=0 - brak wywołania komunikatu UI, wpisu kroniki ani powiadomienia logiki.
+gra/src/render/hexutil.ts	0	0	0	WYKLUCZONY-ZERO	WYKLUCZONY: S5=0, S6=0 - brak wywołania komunikatu UI, wpisu kroniki ani powiadomienia logiki.
+gra/src/render/improvements.ts	5	0	0	WYKLUCZONY-ZERO	WYKLUCZONY: S5=0, S6=0 - brak wywołania komunikatu UI, wpisu kroniki ani powiadomienia logiki.
+gra/src/render/jednostki-p1-rdzen.ts	0	0	0	WYKLUCZONY-ZERO	WYKLUCZONY: S5=0, S6=0 - brak wywołania komunikatu UI, wpisu kroniki ani powiadomienia logiki.
+gra/src/render/jednostki-p2-inka.ts	1	0	0	WYKLUCZONY-ZERO	WYKLUCZONY: S5=0, S6=0 - brak wywołania komunikatu UI, wpisu kroniki ani powiadomienia logiki.
+gra/src/render/jednostki-p3-dystans.ts	0	0	0	WYKLUCZONY-ZERO	WYKLUCZONY: S5=0, S6=0 - brak wywołania komunikatu UI, wpisu kroniki ani powiadomienia logiki.
+gra/src/render/jednostki-p4-melee.ts	0	0	0	WYKLUCZONY-ZERO	WYKLUCZONY: S5=0, S6=0 - brak wywołania komunikatu UI, wpisu kroniki ani powiadomienia logiki.
+gra/src/render/jednostki-p57-wlocznie-machiny.ts	0	0	0	WYKLUCZONY-ZERO	WYKLUCZONY: S5=0, S6=0 - brak wywołania komunikatu UI, wpisu kroniki ani powiadomienia logiki.
+gra/src/render/jednostki-p6-super.ts	11	3	0	ROZSTRZYGNIETY-R4	WYKLUCZONY: geometria banera (s6Banner), render
+gra/src/render/jednostki-p8a-bliskiwschod.ts	0	0	0	WYKLUCZONY-ZERO	WYKLUCZONY: S5=0, S6=0 - brak wywołania komunikatu UI, wpisu kroniki ani powiadomienia logiki.
+gra/src/render/jednostki-p8b-rozni.ts	0	0	0	WYKLUCZONY-ZERO	WYKLUCZONY: S5=0, S6=0 - brak wywołania komunikatu UI, wpisu kroniki ani powiadomienia logiki.
+gra/src/render/jednostki-z1-mezopotamia.ts	4	0	0	WYKLUCZONY-ZERO	WYKLUCZONY: S5=0, S6=0 - brak wywołania komunikatu UI, wpisu kroniki ani powiadomienia logiki.
+gra/src/render/jednostki-z2-srodziemne.ts	12	2	0	ROZSTRZYGNIETY-R4	WYKLUCZONY: geometria banera (z2Banner), render
+gra/src/render/jednostki-z3-plemiona.ts	17	2	0	ROZSTRZYGNIETY-R4	WYKLUCZONY: geometria banera (trSuperBanner), render
+gra/src/render/kamien-bazowe-opus5.ts	2	0	0	ROZSTRZYGNIETY-R4	WYKLUCZONY: render (1 trafienie, baner geometryczny)
+gra/src/render/kamien-inka-opus5.ts	1	0	0	WYKLUCZONY-ZERO	WYKLUCZONY: S5=0, S6=0 - brak wywołania komunikatu UI, wpisu kroniki ani powiadomienia logiki.
+gra/src/render/kamien-lucznicy-opus5.ts	1	0	0	WYKLUCZONY-ZERO	WYKLUCZONY: S5=0, S6=0 - brak wywołania komunikatu UI, wpisu kroniki ani powiadomienia logiki.
+gra/src/render/kamien-zulu-taran-opus5.ts	54	4	0	ROZSTRZYGNIETY-R4	WYKLUCZONY: geometria banera (getKTBanner), render
+gra/src/render/kon-nowy-model.ts	2	0	0	WYKLUCZONY-ZERO	WYKLUCZONY: S5=0, S6=0 - brak wywołania komunikatu UI, wpisu kroniki ani powiadomienia logiki.
+gra/src/render/kopalnia-cyny-opus5.ts	1	0	0	WYKLUCZONY-ZERO	WYKLUCZONY: S5=0, S6=0 - brak wywołania komunikatu UI, wpisu kroniki ani powiadomienia logiki.
+gra/src/render/kopalnia-zlota-opus5.ts	1	0	0	WYKLUCZONY-ZERO	WYKLUCZONY: S5=0, S6=0 - brak wywołania komunikatu UI, wpisu kroniki ani powiadomienia logiki.
+gra/src/render/lasy-modele.ts	1	0	0	WYKLUCZONY-ZERO	WYKLUCZONY: S5=0, S6=0 - brak wywołania komunikatu UI, wpisu kroniki ani powiadomienia logiki.
+gra/src/render/mapRenderStyle.ts	10	0	0	WYKLUCZONY-ZERO	WYKLUCZONY: S5=0, S6=0 - brak wywołania komunikatu UI, wpisu kroniki ani powiadomienia logiki.
+gra/src/render/mergeDecor.ts	0	0	0	WYKLUCZONY-ZERO	WYKLUCZONY: S5=0, S6=0 - brak wywołania komunikatu UI, wpisu kroniki ani powiadomienia logiki.
+gra/src/render/miasto-braz.ts	0	0	0	WYKLUCZONY-ZERO	WYKLUCZONY: S5=0, S6=0 - brak wywołania komunikatu UI, wpisu kroniki ani powiadomienia logiki.
+gra/src/render/miasto-kamien.ts	1	0	0	WYKLUCZONY-ZERO	WYKLUCZONY: S5=0, S6=0 - brak wywołania komunikatu UI, wpisu kroniki ani powiadomienia logiki.
+gra/src/render/minecraftScene.ts	0	0	0	WYKLUCZONY-ZERO	WYKLUCZONY: S5=0, S6=0 - brak wywołania komunikatu UI, wpisu kroniki ani powiadomienia logiki.
+gra/src/render/oaza-pustynia.ts	1	0	0	WYKLUCZONY-ZERO	WYKLUCZONY: S5=0, S6=0 - brak wywołania komunikatu UI, wpisu kroniki ani powiadomienia logiki.
+gra/src/render/pastwisko-modele.ts	0	0	0	WYKLUCZONY-ZERO	WYKLUCZONY: S5=0, S6=0 - brak wywołania komunikatu UI, wpisu kroniki ani powiadomienia logiki.
+gra/src/render/perfDebugOverlay.ts	1	0	0	WYKLUCZONY-ZERO	WYKLUCZONY: S5=0, S6=0 - brak wywołania komunikatu UI, wpisu kroniki ani powiadomienia logiki.
+gra/src/render/rangeOverlay.ts	0	0	0	WYKLUCZONY-ZERO	WYKLUCZONY: S5=0, S6=0 - brak wywołania komunikatu UI, wpisu kroniki ani powiadomienia logiki.
+gra/src/render/resources.ts	0	0	0	WYKLUCZONY-ZERO	WYKLUCZONY: S5=0, S6=0 - brak wywołania komunikatu UI, wpisu kroniki ani powiadomienia logiki.
+gra/src/render/riverLod.ts	0	0	0	WYKLUCZONY-ZERO	WYKLUCZONY: S5=0, S6=0 - brak wywołania komunikatu UI, wpisu kroniki ani powiadomienia logiki.
+gra/src/render/robloxCity.ts	0	0	0	WYKLUCZONY-ZERO	WYKLUCZONY: S5=0, S6=0 - brak wywołania komunikatu UI, wpisu kroniki ani powiadomienia logiki.
+gra/src/render/robloxImprovements.ts	10	0	0	WYKLUCZONY-ZERO	WYKLUCZONY: S5=0, S6=0 - brak wywołania komunikatu UI, wpisu kroniki ani powiadomienia logiki.
+gra/src/render/robloxScene.ts	0	0	0	WYKLUCZONY-ZERO	WYKLUCZONY: S5=0, S6=0 - brak wywołania komunikatu UI, wpisu kroniki ani powiadomienia logiki.
+gra/src/render/scene.ts	11	0	0	WYKLUCZONY-ZERO	WYKLUCZONY: S5=0, S6=0 - brak wywołania komunikatu UI, wpisu kroniki ani powiadomienia logiki.
+gra/src/render/settlementModel.ts	0	0	0	WYKLUCZONY-ZERO	WYKLUCZONY: S5=0, S6=0 - brak wywołania komunikatu UI, wpisu kroniki ani powiadomienia logiki.
+gra/src/render/siegeCampModels.ts	0	0	0	WYKLUCZONY-ZERO	WYKLUCZONY: S5=0, S6=0 - brak wywołania komunikatu UI, wpisu kroniki ani powiadomienia logiki.
+gra/src/render/siegeCampSync.ts	0	0	0	WYKLUCZONY-ZERO	WYKLUCZONY: S5=0, S6=0 - brak wywołania komunikatu UI, wpisu kroniki ani powiadomienia logiki.
+gra/src/render/siegeMarker.ts	0	0	0	WYKLUCZONY-ZERO	WYKLUCZONY: S5=0, S6=0 - brak wywołania komunikatu UI, wpisu kroniki ani powiadomienia logiki.
+gra/src/render/stoneCity.ts	0	0	0	WYKLUCZONY-ZERO	WYKLUCZONY: S5=0, S6=0 - brak wywołania komunikatu UI, wpisu kroniki ani powiadomienia logiki.
+gra/src/render/stoneCityRoblox.ts	0	0	0	WYKLUCZONY-ZERO	WYKLUCZONY: S5=0, S6=0 - brak wywołania komunikatu UI, wpisu kroniki ani powiadomienia logiki.
+gra/src/render/styleResources.ts	0	0	0	WYKLUCZONY-ZERO	WYKLUCZONY: S5=0, S6=0 - brak wywołania komunikatu UI, wpisu kroniki ani powiadomienia logiki.
+gra/src/render/swinia-trzoda.ts	0	0	0	WYKLUCZONY-ZERO	WYKLUCZONY: S5=0, S6=0 - brak wywołania komunikatu UI, wpisu kroniki ani powiadomienia logiki.
+gra/src/render/tarasy-model.ts	1	0	0	WYKLUCZONY-ZERO	WYKLUCZONY: S5=0, S6=0 - brak wywołania komunikatu UI, wpisu kroniki ani powiadomienia logiki.
+gra/src/render/teren-gory-wzgorza.ts	3	0	0	WYKLUCZONY-ZERO	WYKLUCZONY: S5=0, S6=0 - brak wywołania komunikatu UI, wpisu kroniki ani powiadomienia logiki.
+gra/src/render/tradeRoutesOverlay.ts	1	0	0	WYKLUCZONY-ZERO	WYKLUCZONY: S5=0, S6=0 - brak wywołania komunikatu UI, wpisu kroniki ani powiadomienia logiki.
+gra/src/render/ulepszenia-modele-p2.ts	0	0	0	WYKLUCZONY-ZERO	WYKLUCZONY: S5=0, S6=0 - brak wywołania komunikatu UI, wpisu kroniki ani powiadomienia logiki.
+gra/src/render/ulepszenia-modele-p3a.ts	0	0	0	WYKLUCZONY-ZERO	WYKLUCZONY: S5=0, S6=0 - brak wywołania komunikatu UI, wpisu kroniki ani powiadomienia logiki.
+gra/src/render/ulepszenia-modele-p3b.ts	3	0	0	WYKLUCZONY-ZERO	WYKLUCZONY: S5=0, S6=0 - brak wywołania komunikatu UI, wpisu kroniki ani powiadomienia logiki.
+gra/src/render/unitOwnerEmblem.ts	2	0	0	WYKLUCZONY-ZERO	WYKLUCZONY: S5=0, S6=0 - brak wywołania komunikatu UI, wpisu kroniki ani powiadomienia logiki.
+gra/src/render/unitStatPlate.ts	0	0	0	WYKLUCZONY-ZERO	WYKLUCZONY: S5=0, S6=0 - brak wywołania komunikatu UI, wpisu kroniki ani powiadomienia logiki.
+gra/src/render/unitUpgradeBadges.ts	2	0	0	WYKLUCZONY-ZERO	WYKLUCZONY: S5=0, S6=0 - brak wywołania komunikatu UI, wpisu kroniki ani powiadomienia logiki.
+gra/src/render/unitVeteranBadges.ts	5	0	0	WYKLUCZONY-ZERO	WYKLUCZONY: S5=0, S6=0 - brak wywołania komunikatu UI, wpisu kroniki ani powiadomienia logiki.
+gra/src/render/unitVitalsPalette.ts	4	0	0	WYKLUCZONY-ZERO	WYKLUCZONY: S5=0, S6=0 - brak wywołania komunikatu UI, wpisu kroniki ani powiadomienia logiki.
+gra/src/render/units.ts	27	11	0	ROZSTRZYGNIETY	WYKLUCZONY: deferredDim / deferredPlayerUnitRevealIds (:445,:5996-6035) - render, bez komunikatu
+gra/src/render/wioska-oboz.ts	0	0	0	WYKLUCZONY-ZERO	WYKLUCZONY: S5=0, S6=0 - brak wywołania komunikatu UI, wpisu kroniki ani powiadomienia logiki.
+gra/src/render/wonderModels.ts	2	2	0	ROZSTRZYGNIETY-R4	WYKLUCZONY: geometria flagi wlasciciela (ownerBanner), render
+gra/src/render/wonderRenderer.ts	0	0	0	WYKLUCZONY-ZERO	WYKLUCZONY: S5=0, S6=0 - brak wywołania komunikatu UI, wpisu kroniki ani powiadomienia logiki.
+gra/src/render/workerFieldOverlay.ts	0	0	0	WYKLUCZONY-ZERO	WYKLUCZONY: S5=0, S6=0 - brak wywołania komunikatu UI, wpisu kroniki ani powiadomienia logiki.
+gra/src/render/zelazo-jezdziec-oszczepami-opus5.ts	6	0	0	WYKLUCZONY-ZERO	WYKLUCZONY: S5=0, S6=0 - brak wywołania komunikatu UI, wpisu kroniki ani powiadomienia logiki.
+gra/src/render/zelazo-konnica-asyryjska-opus5.ts	4	0	0	WYKLUCZONY-ZERO	WYKLUCZONY: S5=0, S6=0 - brak wywołania komunikatu UI, wpisu kroniki ani powiadomienia logiki.
+gra/src/render/zoomLod.ts	0	0	0	WYKLUCZONY-ZERO	WYKLUCZONY: S5=0, S6=0 - brak wywołania komunikatu UI, wpisu kroniki ani powiadomienia logiki.
+gra/src/types/army.ts	0	0	0	WYKLUCZONY-ZERO	WYKLUCZONY: S5=0, S6=0 - brak wywołania komunikatu UI, wpisu kroniki ani powiadomienia logiki.
+gra/src/types/city.ts	0	0	0	WYKLUCZONY-ZERO	WYKLUCZONY: S5=0, S6=0 - brak wywołania komunikatu UI, wpisu kroniki ani powiadomienia logiki.
+gra/src/types/diplomacy.ts	1	0	0	WYKLUCZONY-ZERO	WYKLUCZONY: S5=0, S6=0 - brak wywołania komunikatu UI, wpisu kroniki ani powiadomienia logiki.
+gra/src/types/game-state.ts	1	0	0	WYKLUCZONY-ZERO	WYKLUCZONY: S5=0, S6=0 - brak wywołania komunikatu UI, wpisu kroniki ani powiadomienia logiki.
+gra/src/types/hex.ts	0	0	0	WYKLUCZONY-ZERO	WYKLUCZONY: S5=0, S6=0 - brak wywołania komunikatu UI, wpisu kroniki ani powiadomienia logiki.
+gra/src/types/index.ts	1	0	0	WYKLUCZONY-ZERO	WYKLUCZONY: S5=0, S6=0 - brak wywołania komunikatu UI, wpisu kroniki ani powiadomienia logiki.
+gra/src/types/map.ts	1	0	0	WYKLUCZONY-ZERO	WYKLUCZONY: S5=0, S6=0 - brak wywołania komunikatu UI, wpisu kroniki ani powiadomienia logiki.
+gra/src/types/player.ts	2	0	0	WYKLUCZONY-ZERO	WYKLUCZONY: S5=0, S6=0 - brak wywołania komunikatu UI, wpisu kroniki ani powiadomienia logiki.
+gra/src/types/resources.ts	0	0	0	WYKLUCZONY-ZERO	WYKLUCZONY: S5=0, S6=0 - brak wywołania komunikatu UI, wpisu kroniki ani powiadomienia logiki.
+gra/src/types/tech.ts	9	0	0	WYKLUCZONY-ZERO	WYKLUCZONY: S5=0, S6=0 - brak wywołania komunikatu UI, wpisu kroniki ani powiadomienia logiki.
+gra/src/types/turn.ts	0	0	0	WYKLUCZONY-ZERO	WYKLUCZONY: S5=0, S6=0 - brak wywołania komunikatu UI, wpisu kroniki ani powiadomienia logiki.
+gra/src/types/unit.ts	0	0	0	WYKLUCZONY-ZERO	WYKLUCZONY: S5=0, S6=0 - brak wywołania komunikatu UI, wpisu kroniki ani powiadomienia logiki.
+gra/src/ui/aiCivPicker.ts	2	0	0	WYKLUCZONY-ZERO	WYKLUCZONY: S5=0, S6=0 - brak wywołania komunikatu UI, wpisu kroniki ani powiadomienia logiki.
+gra/src/ui/armyListHud.ts	9	1	1 showArmyListHud(	ROZSTRZYGNIETY-R4	WYKLUCZONY: podpowiedz panelu listy armii (:290-292), UI
+gra/src/ui/armyMergePanel.ts	10	0	1 showArmyMergePanel(	ROZSTRZYGNIETY-R4	W: podpowiedz/komunikat panelu scalania (klik gracza)
+gra/src/ui/armyMergePickPanel.ts	8	0	1 showArmyMergePickPanel(	ROZSTRZYGNIETY-R4	W: podpowiedz panelu wyboru scalania (klik gracza)
+gra/src/ui/armySplitPanel.ts	8	0	1 showArmySplitPanel(	ROZSTRZYGNIETY-R4	W: podpowiedz panelu podzialu (klik gracza)
+gra/src/ui/armyStackHud.ts	13	0	0	WYKLUCZONY-ZERO	WYKLUCZONY: S5=0, S6=0 - brak wywołania komunikatu UI, wpisu kroniki ani powiadomienia logiki.
+gra/src/ui/armyStackPrompt.ts	16	0	2 showArmyStackPrompt(	ROZSTRZYGNIETY-R4	W: modal wyboru stosu (klik gracza), ikony i klasy
+gra/src/ui/bottomBarHud.ts	65	0	0	ROZSTRZYGNIETY-R4	WYKLUCZONY: et-hint blokujacych zadan (:223-226), stan UI wyprowadzany ze stanu (D-EV-4), bez zdarzenia
+gra/src/ui/brandTokenVars.ts	0	0	0	WYKLUCZONY-ZERO	WYKLUCZONY: S5=0, S6=0 - brak wywołania komunikatu UI, wpisu kroniki ani powiadomienia logiki.
+gra/src/ui/buildModeHud.ts	114	4	4 flashBanner(       1 showCardFor(       5 showLockTip(	ROZSTRZYGNIETY-R4	W: flashBanner (:750, :793; def. :938) = komunikat blokady na klik gracza w trybie budowy; lockHint tooltipy UI
+gra/src/ui/buildStampToggle.ts	6	0	0	WYKLUCZONY-ZERO	WYKLUCZONY: S5=0, S6=0 - brak wywołania komunikatu UI, wpisu kroniki ani powiadomienia logiki.
+gra/src/ui/buildingHoverTooltip.ts	2	0	0	WYKLUCZONY-ZERO	WYKLUCZONY: S5=0, S6=0 - brak wywołania komunikatu UI, wpisu kroniki ani powiadomienia logiki.
+gra/src/ui/cityAttackChoice.ts	19	0	1 showCityAttackChoice(	ROZSTRZYGNIETY-R4	W: modal wyboru ataku na miasto (klik gracza); modalIcon = ikony
+gra/src/ui/cityCaptureNotice.ts	44	2	1 Notice(       1 NoticeOpen(       1 showCaptureReportNotice(       1 showCityCaptureNotice(	POKRYTY	POKRYTY: E-20 (mapowanie modułu w P2-6 sekcja 9.2, akapit „Pełna lista 10 modułów modali”).
+gra/src/ui/cityForeignPick.ts	16	0	1 showCityForeignPick(	ROZSTRZYGNIETY-R4	W: modal wyboru (klik gracza); modalIcon = ikony
+gra/src/ui/cityListHud.ts	8	2	1 showCityListHud(	ROZSTRZYGNIETY-R4	WYKLUCZONY: podpowiedz listy miast (:237-239), UI
+gra/src/ui/cityPanel.ts	342	8	1 showCityPanel(       1 showCityUxFrame(       2 showHoverDetailNow(       1 showPinnedDetail(       2 showTechDiscoveryNotice(	WYKLUCZONY-R5	WYKLUCZONY: trafienia to `addEventListener` (drag and drop, kliknięcia) = reakcja UI na akcję gracza (P2-6 sekcja 9.2).
+gra/src/ui/cityUnitPick.ts	19	0	1 showCityUnitPick(	ROZSTRZYGNIETY-R4	W: modal wyboru (klik gracza); modalIcon = ikony
+gra/src/ui/cityUxFrame.ts	23	0	1 showCityUxFrame(	WYKLUCZONY-S6	WYKLUCZONY: S5=0; S6 = wywołania 1 showCityUxFrame( (otwarcie panelu, hover, ładowanie, API przeglądarki); nie komunikat logiki tury.
+gra/src/ui/civBrandDisplay.ts	2	0	0	WYKLUCZONY-ZERO	WYKLUCZONY: S5=0, S6=0 - brak wywołania komunikatu UI, wpisu kroniki ani powiadomienia logiki.
+gra/src/ui/civElimNotice.ts	25	1	1 Notice(       1 showCivElimNotice(	POKRYTY	POKRYTY: E-08 (mapowanie modułu w P2-6 sekcja 9.2, akapit „Pełna lista 10 modułów modali”).
+gra/src/ui/contextPanelHud.ts	3	0	0	WYKLUCZONY-ZERO	WYKLUCZONY: S5=0, S6=0 - brak wywołania komunikatu UI, wpisu kroniki ani powiadomienia logiki.
+gra/src/ui/diploListHud.ts	14	2	1 showDiploListHud(	ROZSTRZYGNIETY-R4	WYKLUCZONY: podpowiedz filtra listy dyplomacji (:381-383), UI
+gra/src/ui/diploUiSkin.ts	0	0	0	WYKLUCZONY-ZERO	WYKLUCZONY: S5=0, S6=0 - brak wywołania komunikatu UI, wpisu kroniki ani powiadomienia logiki.
+gra/src/ui/diplomacyAcceptanceBalance.ts	23	0	0	ROZSTRZYGNIETY-R4	E-05/E-06 (prezentacja bilansu w oknie negocjacji gracza), bez wlasnego eventu; podpowiedzi balanceHint (:440, :478)
+gra/src/ui/diplomacyAudience.ts	205	19	1 showAllianceObligationModal(       2 showBreakTreatyConfirmModal(       1 showDiplomacyAudience(       2 showNegotiationModal(       3 showTradeBasketModal(       1 showWarConfirmModal(       1 showWarConsentModal(	POKRYTY	POKRYTY: E-02 (wiersze sekcji 3).
+gra/src/ui/diplomacyDealDisplay.ts	3	0	0	ROZSTRZYGNIETY-R4	WYKLUCZONY: tooltip modHint (:128-131), prezentacja oferty
+gra/src/ui/diplomacyNegotiationModal.ts	32	1	2 showInvalid(       1 showNegotiationModal(	ROZSTRZYGNIETY	WYKLUCZONY: formularz negocjacji gracza (showNegotiationModal :436, closeModal :255); prezentacja -> E-05/E-06 bez wlasnego eventu
+gra/src/ui/diplomacyPanel.ts	4	0	1 showDiploPairSummary(       1 showDiplomacyPanel(	WYKLUCZONY-S6	WYKLUCZONY: S5=0; S6 = wywołania 1 showDiploPairSummary(    1 showDiplomacyPanel( (otwarcie panelu, hover, ładowanie, API przeglądarki); nie komunikat logiki tury.
+gra/src/ui/diplomacyPendingHud.ts	10	1	1 showDiplomacyPendingModal(	POKRYTY	POKRYTY: E-05 (mapowanie modułu w P2-6 sekcja 9.2, akapit „Pełna lista 10 modułów modali”).
+gra/src/ui/diplomacyProposalBanner.ts	15	3	1 showDiplomacyProposalBanner(	POKRYTY	POKRYTY: E-60, E-05, E-06 (wiersze sekcji 3).
+gra/src/ui/diplomacyTradeBasket.ts	152	2	2 showTradeBasketModal(	ROZSTRZYGNIETY	WYKLUCZONY jako formularz koszyka gracza (showTradeBasketModal :2356, wywolanie z diplomacyAudience :514; openQuickDealBasket :2794); prezentacja kontrofert -> E-06; brak wlasnego eventu
+gra/src/ui/empireBalance.ts	2	0	1 showBalancePanel(	WYKLUCZONY-S6	WYKLUCZONY: S5=0; S6 = wywołania 1 showBalancePanel( (otwarcie panelu, hover, ładowanie, API przeglądarki); nie komunikat logiki tury.
+gra/src/ui/empireDetailPanel.ts	75	0	4 showEmpireDetailPanel(	ROZSTRZYGNIETY-R4	WYKLUCZONY: 1 trafienie UI (panel imperium)
+gra/src/ui/empireDetailTypes.ts	3	0	0	WYKLUCZONY-ZERO	WYKLUCZONY: S5=0, S6=0 - brak wywołania komunikatu UI, wpisu kroniki ani powiadomienia logiki.
+gra/src/ui/empireMiastaTable.ts	2	0	0	WYKLUCZONY-ZERO	WYKLUCZONY: S5=0, S6=0 - brak wywołania komunikatu UI, wpisu kroniki ani powiadomienia logiki.
+gra/src/ui/empireOverlayHud.ts	2	0	1 showCultureOverlay(       1 showReligionOverlay(	WYKLUCZONY-S6	WYKLUCZONY: S5=0; S6 = wywołania 1 showCultureOverlay(    1 showReligionOverlay( (otwarcie panelu, hover, ładowanie, API przeglądarki); nie komunikat logiki tury.
+gra/src/ui/empirePanelSectionMap.ts	0	0	0	WYKLUCZONY-ZERO	WYKLUCZONY: S5=0, S6=0 - brak wywołania komunikatu UI, wpisu kroniki ani powiadomienia logiki.
+gra/src/ui/entityCards/buildingAdapter.ts	10	6	0	ROZSTRZYGNIETY-R5	WYKLUCZONY: `sections.push`/`reqRows.push` (:215-313) - sekcje karty budynku, prezentacja danych.
+gra/src/ui/entityCards/civpediaOpenGate.ts	5	0	0	ROZSTRZYGNIETY	WYKLUCZONY: komentarz (:26)
+gra/src/ui/entityCards/improvementAdapter.ts	11	7	0	ROZSTRZYGNIETY	WYKLUCZONY: komentarz (:13)
+gra/src/ui/entityCards/registry.ts	12	0	0	WYKLUCZONY-ZERO	WYKLUCZONY: S5=0, S6=0 - brak wywołania komunikatu UI, wpisu kroniki ani powiadomienia logiki.
+gra/src/ui/entityCards/renderer.ts	99	6	0	ROZSTRZYGNIETY	WYKLUCZONY: renderer kart; komentarze o techDiscoveryNotice; tresc odkrycia = prezentacja E-26
+gra/src/ui/entityCards/slug.ts	3	0	0	WYKLUCZONY-ZERO	WYKLUCZONY: S5=0, S6=0 - brak wywołania komunikatu UI, wpisu kroniki ani powiadomienia logiki.
+gra/src/ui/entityCards/technologyAdapter.ts	50	2	0	ROZSTRZYGNIETY	WYKLUCZONY: adapter tresci odkrycia technologii (prezentacja E-26), komentarze
+gra/src/ui/entityCards/types.ts	17	0	0	ROZSTRZYGNIETY	WYKLUCZONY: typy i komentarze
+gra/src/ui/entityCards/unitAdapter.ts	19	6	0	ROZSTRZYGNIETY	WYKLUCZONY: komentarze (:32-33)
+gra/src/ui/entityCards/wonderAdapter.ts	12	1	0	ROZSTRZYGNIETY-R5	WYKLUCZONY: `bonusRows.push` (:128) - wiersz karty cudu, prezentacja danych.
+gra/src/ui/escapeOverlayStack.ts	6	0	0	WYKLUCZONY-ZERO	WYKLUCZONY: S5=0, S6=0 - brak wywołania komunikatu UI, wpisu kroniki ani powiadomienia logiki.
+gra/src/ui/formatPl.ts	1	0	0	WYKLUCZONY-ZERO	WYKLUCZONY: S5=0, S6=0 - brak wywołania komunikatu UI, wpisu kroniki ani powiadomienia logiki.
+gra/src/ui/gamePauseMenu.ts	16	0	2 showGamePauseMenu(	ROZSTRZYGNIETY-R4	WYKLUCZONY: atrybut aria-modal (:134), menu pauzy
+gra/src/ui/hexContextTooltip.ts	31	0	0	ROZSTRZYGNIETY-R4	WYKLUCZONY: tooltip hexa (hexHiddenDepositHint :344), UI hover
+gra/src/ui/hotSeatHandoff.ts	9	0	1 showHotSeatHandoff(       1 showPreBattle(	POKRYTY	POKRYTY: E-16 (wiersze sekcji 3).
+gra/src/ui/hoverDetailDock.ts	28	0	5 showContent(       2 showFloat(       2 showHoverDetailNow(       2 showInDock(       2 showPinnedDetail(	ROZSTRZYGNIETY-R4	WYKLUCZONY: mechanizm podpowiedzi kart (sideHint), UI
+gra/src/ui/hud.ts	118	4	2 showCultureOverlay(       2 showFullscreenHint(       1 showHud(       2 showPowerOverlay(       2 showReligionOverlay(	ROZSTRZYGNIETY-R4	WYKLUCZONY: showFullscreenHint (:404) = zdarzenie przegladarki fullscreenchange, nie logika gry; leaderBanners (:1708-1848) = UI; CSS civ-hud-banner
+gra/src/ui/hudChip6c.ts	0	0	0	WYKLUCZONY-ZERO	WYKLUCZONY: S5=0, S6=0 - brak wywołania komunikatu UI, wpisu kroniki ani powiadomienia logiki.
+gra/src/ui/hudLayout.ts	8	0	0	ROZSTRZYGNIETY-R4	WYKLUCZONY: stale ukladu (HUD_MAP_BANNER_BOTTOM_PX :41)
+gra/src/ui/hudPanelDismiss.ts	4	0	0	ROZSTRZYGNIETY-R4	WYKLUCZONY: UI (1 trafienie)
+gra/src/ui/hudTitleTooltip.ts	28	0	2 showFor(	ROZSTRZYGNIETY-R4	WYKLUCZONY: tooltip UI (1 trafienie)
+gra/src/ui/icons/brandAssets.ts	1	0	0	WYKLUCZONY-ZERO	WYKLUCZONY: S5=0, S6=0 - brak wywołania komunikatu UI, wpisu kroniki ani powiadomienia logiki.
+gra/src/ui/icons/iconRegistry.ts	0	0	0	WYKLUCZONY-ZERO	WYKLUCZONY: S5=0, S6=0 - brak wywołania komunikatu UI, wpisu kroniki ani powiadomienia logiki.
+gra/src/ui/icons/scienceOwlIcon.ts	0	0	0	WYKLUCZONY-ZERO	WYKLUCZONY: S5=0, S6=0 - brak wywołania komunikatu UI, wpisu kroniki ani powiadomienia logiki.
+gra/src/ui/icons/scienceProgressRing.ts	0	0	0	WYKLUCZONY-ZERO	WYKLUCZONY: S5=0, S6=0 - brak wywołania komunikatu UI, wpisu kroniki ani powiadomienia logiki.
+gra/src/ui/icons/wikiBookIcon.ts	0	0	0	WYKLUCZONY-ZERO	WYKLUCZONY: S5=0, S6=0 - brak wywołania komunikatu UI, wpisu kroniki ani powiadomienia logiki.
+gra/src/ui/improvementBuildConfirm.ts	10	1	1 showImprovementBuildConfirmModal(	ROZSTRZYGNIETY	WYKLUCZONY: modal potwierdzenia akcji gracza (:39-40)
+gra/src/ui/interHumanDiplomacyHud.ts	10	0	2 showInterHumanDiplomacyHud(	POKRYTY	POKRYTY: E-15 (wiersze sekcji 3).
+gra/src/ui/leaderBannersHud.ts	20	5	0	ROZSTRZYGNIETY-R4	WYKLUCZONY: baner lidera = trwaly wskaznik UI wyprowadzony z stanu (zob. E-43), bez zdarzenia
+gra/src/ui/leaderPortraits.ts	1	0	0	WYKLUCZONY-ZERO	WYKLUCZONY: S5=0, S6=0 - brak wywołania komunikatu UI, wpisu kroniki ani powiadomienia logiki.
+gra/src/ui/mainMenu.ts	28	2	2 showFarewellScreen(       1 showMainMenu(       2 showToast(	ROZSTRZYGNIETY	WYKLUCZONY: soonBtn toast WKROTCE (:262-268) - klik w menu | R4: showToast (:228-235) = komunikat WKROTCE po kliknieciu w menu (W)
+gra/src/ui/mapLoadingOverlay.ts	22	0	1 showError(       1 showMapLoadingOverlay(	ROZSTRZYGNIETY-R4	WYKLUCZONY: overlay ladowania mapy (startup), UI
+gra/src/ui/mapToolbarHud.ts	2	0	0	WYKLUCZONY-ZERO	WYKLUCZONY: S5=0, S6=0 - brak wywołania komunikatu UI, wpisu kroniki ani powiadomienia logiki.
+gra/src/ui/mapUnitCursor.ts	0	0	0	WYKLUCZONY-ZERO	WYKLUCZONY: S5=0, S6=0 - brak wywołania komunikatu UI, wpisu kroniki ani powiadomienia logiki.
+gra/src/ui/mapUnitHudSkin.ts	2	0	0	WYKLUCZONY-ZERO	WYKLUCZONY: S5=0, S6=0 - brak wywołania komunikatu UI, wpisu kroniki ani powiadomienia logiki.
+gra/src/ui/markdownLite.ts	0	0	0	WYKLUCZONY-ZERO	WYKLUCZONY: S5=0, S6=0 - brak wywołania komunikatu UI, wpisu kroniki ani powiadomienia logiki.
+gra/src/ui/minimapHud.ts	3	0	2 showPlaceholder(	WYKLUCZONY-S6	WYKLUCZONY: S5=0; S6 = wywołania 2 showPlaceholder( (otwarcie panelu, hover, ładowanie, API przeglądarki); nie komunikat logiki tury.
+gra/src/ui/minimapLayout.ts	0	0	0	WYKLUCZONY-ZERO	WYKLUCZONY: S5=0, S6=0 - brak wywołania komunikatu UI, wpisu kroniki ani powiadomienia logiki.
+gra/src/ui/naukaLabel.ts	1	0	0	WYKLUCZONY-ZERO	WYKLUCZONY: S5=0, S6=0 - brak wywołania komunikatu UI, wpisu kroniki ani powiadomienia logiki.
+gra/src/ui/newGameFlow.ts	86	1	1 showAdvancedModal(       1 showNewGameFlow(	ROZSTRZYGNIETY	WYKLUCZONY: modal zaawansowany menu (klik gracza) | R4: pola hint: w opcjach nowej gry (:1633-1758) = teksty UI, W
+gra/src/ui/orderPanel.ts	0	0	1 showOrderPanel(	WYKLUCZONY-S6	WYKLUCZONY: S5=0; S6 = wywołania 1 showOrderPanel( (otwarcie panelu, hover, ładowanie, API przeglądarki); nie komunikat logiki tury.
+gra/src/ui/perfReport.ts	31	2	2 showPerfReportModal(	ROZSTRZYGNIETY	WYKLUCZONY: raport wydajnosci (dev/menu) | R4: modal raportu wydajnosci (dev), UI
+gra/src/ui/perfTestPanel.ts	9	0	1 showPerfTestPanel(	ROZSTRZYGNIETY-R4	WYKLUCZONY: narzedzie dev (aria-modal)
+gra/src/ui/postBattleSummary.ts	7	0	1 showPostBattleSummary(	POKRYTY	POKRYTY: E-31 (mapowanie modułu w P2-6 sekcja 9.2, akapit „Pełna lista 10 modułów modali”).
+gra/src/ui/power-labels.ts	0	0	0	WYKLUCZONY-ZERO	WYKLUCZONY: S5=0, S6=0 - brak wywołania komunikatu UI, wpisu kroniki ani powiadomienia logiki.
+gra/src/ui/powerOverlayHud.ts	2	0	1 showPowerOverlay(	WYKLUCZONY-S6	WYKLUCZONY: S5=0; S6 = wywołania 1 showPowerOverlay( (otwarcie panelu, hover, ładowanie, API przeglądarki); nie komunikat logiki tury.
+gra/src/ui/preBattle.ts	70	2	4 Toast(       2 showMapScrim(       2 showPreBattle(       2 showPreBattleSaveToast(	POKRYTY	POKRYTY: E-31 (wiersze sekcji 3).
+gra/src/ui/resourceColors.ts	0	0	0	WYKLUCZONY-ZERO	WYKLUCZONY: S5=0, S6=0 - brak wywołania komunikatu UI, wpisu kroniki ani powiadomienia logiki.
+gra/src/ui/saveLoadDialog.ts	64	3	2 showLoadGameDialog(       1 showSaveGameDialog(	ROZSTRZYGNIETY-R4	WYKLUCZONY: dialog zapisu/wczytania (akcja gracza); hint = opis istniejacych sejwow
+gra/src/ui/sceneTimingReport.ts	3	0	1 showSceneTimingReport(	WYKLUCZONY-S6	WYKLUCZONY: S5=0; S6 = wywołania 1 showSceneTimingReport( (otwarcie panelu, hover, ładowanie, API przeglądarki); nie komunikat logiki tury.
+gra/src/ui/scienceHubHud.ts	53	4	1 showScienceHubHud(       3 showTechDiscoveryNotice(	WYKLUCZONY-R5	WYKLUCZONY: reakcja UI na akcję gracza; `showTechDiscoveryNotice` (:337) po kliknięciu gracza. Modal techa z logiki = E-26 (P2-6 sekcja 9.2).
+gra/src/ui/scienceHubSnapshotLogic.ts	1	0	0	WYKLUCZONY-ZERO	WYKLUCZONY: S5=0, S6=0 - brak wywołania komunikatu UI, wpisu kroniki ani powiadomienia logiki.
+gra/src/ui/sciencePicker.ts	96	1	1 showSciencePicker(       1 showSciencePickerDocked(       3 showSciencePickerInternal(	ROZSTRZYGNIETY	WYKLUCZONY: komentarze/import; wybor gracza w drzewku (E-26 prezentacja)
+gra/src/ui/sideListHud.css.ts	6	0	0	ROZSTRZYGNIETY-R4	WYKLUCZONY: CSS
+gra/src/ui/sidePanelEventFilter.ts	11	0	0	POKRYTY	POKRYTY: E-54 (wiersze sekcji 3).
+gra/src/ui/sidePanelHud.ts	186	0	0	POKRYTY	POKRYTY: E-53 (wiersze sekcji 3).
+gra/src/ui/sidePanelLayout.ts	1	0	0	ROZSTRZYGNIETY-R4	WYKLUCZONY: uklad panelu (1 trafienie), UI
+gra/src/ui/siegeMapPanel.ts	31	0	1 showSiegeMapPanel(	ROZSTRZYGNIETY-R4	E-30: wiersz ostrzezenia kapitulacji (:273) renderowany ze stanu oblezenia; modalIcon = ikony; klik gracza = W
+gra/src/ui/techDiscoveryNotice.ts	104	10	5 Notice(       1 NoticeOpen(       1 showTechDiscoveryNotice(       2 showTechDiscoveryNoticeViaEntityCard(	POKRYTY	POKRYTY: E-26 (mapowanie modułu w P2-6 sekcja 9.2, akapit „Pełna lista 10 modułów modali”).
+gra/src/ui/techIcons.ts	10	0	0	WYKLUCZONY-ZERO	WYKLUCZONY: S5=0, S6=0 - brak wywołania komunikatu UI, wpisu kroniki ani powiadomienia logiki.
+gra/src/ui/techTreeView.ts	61	2	2 showCardFor(       1 showTechDiscoveryNotice(       2 showTechTreeView(	ROZSTRZYGNIETY	WYKLUCZONY: wybor gracza (:924 showTechDiscoveryNotice po kliku) - prezentacja E-26 | R4: civ-ttv-hint (:1067) = podpowiedz sterowania, UI
+gra/src/ui/techUnlockParse.ts	4	0	0	WYKLUCZONY-ZERO	WYKLUCZONY: S5=0, S6=0 - brak wywołania komunikatu UI, wpisu kroniki ani powiadomienia logiki.
+gra/src/ui/treasuryBalanceFormat.ts	0	0	0	WYKLUCZONY-ZERO	WYKLUCZONY: S5=0, S6=0 - brak wywołania komunikatu UI, wpisu kroniki ani powiadomienia logiki.
+gra/src/ui/triumphCityStateNotice.ts	25	2	1 Notice(       2 NoticeMarkup(       1 showTriumphCityStateNotice(	POKRYTY	POKRYTY: E-21 (mapowanie modułu w P2-6 sekcja 9.2, akapit „Pełna lista 10 modułów modali”).
+gra/src/ui/turnTransitionOverlay.ts	1	0	0	WYKLUCZONY-ZERO	WYKLUCZONY: S5=0, S6=0 - brak wywołania komunikatu UI, wpisu kroniki ani powiadomienia logiki.
+gra/src/ui/uiParams.ts	1	0	0	WYKLUCZONY-ZERO	WYKLUCZONY: S5=0, S6=0 - brak wywołania komunikatu UI, wpisu kroniki ani powiadomienia logiki.
+gra/src/ui/unitActionBarHtml.ts	2	0	0	WYKLUCZONY-ZERO	WYKLUCZONY: S5=0, S6=0 - brak wywołania komunikatu UI, wpisu kroniki ani powiadomienia logiki.
+gra/src/ui/unitCardStatus.ts	5	0	0	WYKLUCZONY-ZERO	WYKLUCZONY: S5=0, S6=0 - brak wywołania komunikatu UI, wpisu kroniki ani powiadomienia logiki.
+gra/src/ui/unitCtxDockDiploGate.ts	2	1	0	ROZSTRZYGNIETY-R5	WYKLUCZONY: `notifyDiploUiVisibilityChange` (:24) - powiadomienie UI->UI o widoczności; nie logika->UI.
+gra/src/ui/unitForeignPick.ts	16	0	1 showUnitForeignPick(	ROZSTRZYGNIETY-R4	W: modal wyboru (klik gracza); modalIcon = ikony
+gra/src/ui/unitInfoCard.ts	20	1	1 showUnitInfoCardDialog(	ROZSTRZYGNIETY	WYKLUCZONY: starsza implementacja karty (komentarze :7-9,:115,:161,:408)
+gra/src/ui/unitInfographic.ts	0	0	0	WYKLUCZONY-ZERO	WYKLUCZONY: S5=0, S6=0 - brak wywołania komunikatu UI, wpisu kroniki ani powiadomienia logiki.
+gra/src/ui/unitMiniPreview.ts	0	0	0	WYKLUCZONY-ZERO	WYKLUCZONY: S5=0, S6=0 - brak wywołania komunikatu UI, wpisu kroniki ani powiadomienia logiki.
+gra/src/ui/unitPanelHud.ts	4	0	0	WYKLUCZONY-ZERO	WYKLUCZONY: S5=0, S6=0 - brak wywołania komunikatu UI, wpisu kroniki ani powiadomienia logiki.
+gra/src/ui/unitRecruitCard.ts	8	0	0	WYKLUCZONY-ZERO	WYKLUCZONY: S5=0, S6=0 - brak wywołania komunikatu UI, wpisu kroniki ani powiadomienia logiki.
+gra/src/ui/unitReplacePicker.ts	12	0	1 showUnitReplacePicker(	ROZSTRZYGNIETY	WYKLUCZONY: modal wyboru zamiennika (klik gracza, komentarz :114)
+gra/src/ui/victoryScreen.ts	10	2	1 showVictoryScreen(	POKRYTY	POKRYTY: E-41 (mapowanie modułu w P2-6 sekcja 9.2, akapit „Pełna lista 10 modułów modali”).
+gra/src/ui/wikiHubHud.ts	16	0	1 showWikiHubHud(	ROZSTRZYGNIETY-R4	WYKLUCZONY: encyklopedia, UI (aria-modal)
+gra/src/ui/wonderCompletedNotice.ts	15	1	1 Notice(       1 showWonderCompletedNotice(	POKRYTY	POKRYTY: E-25 (wiersze sekcji 3).
+gra/src/units/battleRoster.ts	8	6	0	POKRYTY	POKRYTY: E-31 (wiersze sekcji 3).
+gra/src/units/setup.ts	7	0	0	WYKLUCZONY-ZERO	WYKLUCZONY: S5=0, S6=0 - brak wywołania komunikatu UI, wpisu kroniki ani powiadomienia logiki.
+gra/src/util/norm-pl-label.ts	0	0	0	WYKLUCZONY-ZERO	WYKLUCZONY: S5=0, S6=0 - brak wywołania komunikatu UI, wpisu kroniki ani powiadomienia logiki.
+gra/src/vite-env.d.ts	0	0	0	WYKLUCZONY-ZERO	WYKLUCZONY: S5=0, S6=0 - brak wywołania komunikatu UI, wpisu kroniki ani powiadomienia logiki.
+gra/src/wonderpreview/main.ts	9	0	0	WYKLUCZONY-ZERO	WYKLUCZONY: S5=0, S6=0 - brak wywołania komunikatu UI, wpisu kroniki ani powiadomienia logiki.
