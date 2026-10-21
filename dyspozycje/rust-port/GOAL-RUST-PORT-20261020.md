@@ -27,8 +27,8 @@ dotykające tych samych plików — zawsze sekwencyjnie, nigdy w tej samej fali.
 
 | # | Temat | Faza | Runda | runId Workflow | Status | Ostatnia aktualizacja |
 |---|---|---|---|---|---|---|
-| 1 | `R-RUSTPORT-P2-1-DOMAIN-MODULES-Q1` | P2.1 (katalog modułów) | 1/5 | `wf_deea0bf4-c6f` | DISPATCHED (w toku) | 2026-10-21 |
-| 2 | — | — | — | — | **WOLNY** | 2026-10-21 |
+| 1 | `R-RUSTPORT-P2-4-RNG-DETERMINISM-Q1` | P2.4 (RNG) | 1/5 | `wf_04dc92f1-381` | DISPATCHED (w toku) | 2026-10-21 |
+| 2 | `R-RUSTPORT-P2-9-ASSET-DATA-MAPPING-Q1` | P2.9 (mapowanie danych) | 1/5 | `wf_67a7daca-629` | DISPATCHED (w toku) | 2026-10-21 |
 | 3 | — | — | — | — | **WOLNY** | 2026-10-21 |
 | 4 | — | — | — | — | **WOLNY** | 2026-10-21 |
 | 5 | — | — | — | — | **WOLNY** | 2026-10-21 |
@@ -42,11 +42,13 @@ administracyjnie przez orkiestratora (`04-orchestrator-disposition.md` tego tema
 genuine decyzją produktową. **Bramka P1 formalnie otwarta.** Zgodnie z decyzją właściciela
 (2026-10-21, poz. 4 wyżej): start P2 NATYCHMIAST, bez pytania o zgodę.
 
-Pierwszy temat P2 dispatchowany: **P2.1** (katalog modułów domeny — foundational, czysto
-katalogowy, nie architektoniczny). Pozostałe sloty świadomie wolne: większość P2.2+ (kontrakt
-`GameState`, RNG deterministyczny, ID encji, komendy/eventy) zależy architektonicznie od wyniku
-P2.1 i od siebie nawzajem sekwencyjnie — P2 nie ma takiej samej „6 niezależnych katalogów naraz"
-struktury jak P1. Kolejna fala dispatchu nastąpi natychmiast po zamknięciu P2.1.
+**P2.1 zamknięty PASS** (katalog 15 modułów domeny, 183/183 plików web przypisanych, stan
+`rust-port/engine` zweryfikowany code-level na obu gałęziach). Kolejna fala: **P2.4** (zgodność RNG
+web↔Rust — weryfikacja faktów, nie decyzja) i **P2.9** (mapowanie `gra/data/*.json` → struktury Rust)
+— oba niezależne od siebie i od reszty P2, każdy do własnego nowego pliku. Wstrzymane na razie:
+P2.2 (kontrakt `GameState`) i P2.3 (schemat ID encji) — to są tematy z realnym ryzykiem
+architektonicznej decyzji, nie czystego katalogowania; dispatchowane zostaną jako następna fala z
+dokładniejszym nadzorem, nie w tej samej turze co proste weryfikacje faktów.
 
 **P1.16b/P1.16c (4/4) ZAMKNIĘTE PASS** — cały łańcuch następców pierwotnego P1.16b jest teraz
 zielony (patrz LEDGER). Ostatni kawałek P1 to `AUDYT-OPISY-CIVPEDIA-PORADNIK-SCIAGI-2026-08-13.md`
