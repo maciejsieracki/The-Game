@@ -12,7 +12,13 @@ fn buildings_json_parses() {
     let buildings = parse_buildings().expect("buildings.json musi się sparsować");
     // Niezależnie policzone: 42 rekordy, 41 z `koszt_surowce`.
     assert_eq!(buildings.len(), 42);
-    assert_eq!(buildings.iter().filter(|b| b.koszt_surowce.is_some()).count(), 41);
+    assert_eq!(
+        buildings
+            .iter()
+            .filter(|b| b.koszt_surowce.is_some())
+            .count(),
+        41
+    );
     // Suma `kosztBudowy` po wszystkich rekordach = 1736; suma `epokaWejscia` = 89.
     let suma_koszt: i64 = buildings.iter().map(|b| b.koszt_budowy).sum();
     assert_eq!(suma_koszt, 1736);

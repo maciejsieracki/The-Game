@@ -1,0 +1,10 @@
+STATUS: BLOCK
+DOMAIN: GAME
+TEMAT: R-RUSTPORT-P3-16-CI-GATES-GREEN-Q1
+GOAL: Domknąć bramki fmt i clippy w `.github/workflows/rust-engine.yml` poza `src/data`, bez zmiany zachowania.
+ZMIANY/COMMIT: rustfmt na 5 plikach allowlisty (`tests/data_buildings_tech.rs`, `tests/data_civilizations.rs`, `tests/data_economy_society.rs`, `tests/data_units_combat.rs`, `src/data/loader.rs`); `src/bridge.rs` `#[allow(clippy::large_enum_variant)]` na `EngineCommand` (boxing odrzucony: wymagałby zmiany `tests/bridge_contract.rs` spoza allowlisty); dokument `dyspozycje/rust-port/p3/P3-16-CI-GATES-GREEN.md`; ten raport. Commit SHA: patrz wiadomość orkiestratora.
+TESTY: `rustfmt --check` 5/5 allowlisty EXIT=0; `cargo fmt --all -- --check` EXIT=1 (pliki spoza allowlisty: `src/data/mod.rs`, `tests/assets_manifest.rs`, `tests/data_compliance.rs`, `tests/data_loader.rs`); `cargo clippy --all-targets -- -D warnings` EXIT=101 (5 x duplicated_attribute w `tests/data_compliance.rs` / `src/data/*`, spoza allowlisty); `cargo clippy --test bridge_add_player -- -D warnings` EXIT=0; `cargo test --offline` EXIT=0, 292 passed (= baseline). Surowe logi: dokument P3-16, sekcje PRZED/PO.
+BLOKADY: (1) binarne kryterium `cargo fmt --all -- --check` i `cargo clippy --all-targets -- -D warnings` nie może być zielone w obrębie allowlisty; blokery to P3.15 (`tests/data_compliance.rs`, `src/data/{buildings_tech,economy_society*,terrain_map,units_combat}.rs`) i testy `data_assets_manifest`/`data_loader`. (2) `CARGO_TARGET_DIR` współdzielony między worktree: artefakty path-dependency o tym samym hashu dały nieaktualną binarkę (39 zamiast 9 testów w `data_compliance`); usunięto przez `touch` źródeł, wynik przebiegu PO pochodzi z tego worktree.
+RUNDY: 1/5
+NASTĘPNY KROK: Decyzja orkiestratora/właściciela: (a) rozszerzyć allowlistę o pliki P3.15 i `tests/assets_manifest.rs`/`tests/data_loader.rs` (formatowanie + usunięcie zduplikowanego `#![allow(dead_code)]`), albo (b) wykonać P3.16 po zamknięciu P3.15. Evaluator ma sprawdzić ten sam zestaw poleceń w tym worktree.
+DEPLOY/PUSH: NIE WYKONANO

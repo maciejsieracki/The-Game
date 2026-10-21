@@ -19,7 +19,11 @@ fn units_parses_and_spot_checks() {
     let units = parse_units().expect("units.json must parse");
     let raw_units = raw(UNITS_JSON);
     let raw_len = raw_units.as_array().expect("units.json is an array").len();
-    assert_eq!(units.len(), raw_len, "record count must match raw JSON array");
+    assert_eq!(
+        units.len(),
+        raw_len,
+        "record count must match raw JSON array"
+    );
     assert_eq!(units.len(), 75);
 
     let mut names: Vec<&str> = units.iter().map(|u| u.jednostka.as_str()).collect();
@@ -61,7 +65,10 @@ fn units_parses_and_spot_checks() {
     assert_eq!(w.health_lc, 22);
     assert_eq!(w.morale_ucieczki, Some(22));
 
-    let taran = units.iter().find(|u| u.jednostka == "Taran").expect("Taran present");
+    let taran = units
+        .iter()
+        .find(|u| u.jednostka == "Taran")
+        .expect("Taran present");
     println!(
         "SPOT Taran siege_power={:?} wall_attack={:?}",
         taran.siege_power, taran.wall_attack
@@ -99,7 +106,10 @@ fn terrain_combat_parses_and_spot_checks() {
     let raw_len = raw(TERRAIN_COMBAT_JSON).as_array().expect("array").len();
     assert_eq!(rows.len(), raw_len);
     assert_eq!(rows.len(), 7);
-    let gory = rows.iter().find(|r| r.teren == "Góry").expect("Góry present");
+    let gory = rows
+        .iter()
+        .find(|r| r.teren == "Góry")
+        .expect("Góry present");
     println!(
         "SPOT terrain-combat rows={} gory.bonus_obrona={} gory.kawaleria={}",
         rows.len(),
@@ -131,7 +141,10 @@ fn counters_parses_and_spot_checks() {
     assert_eq!(first.cel_typ, "Mount");
     assert_eq!(first.bonus, "+50%");
     assert_eq!(first.rodzaj_atak_obrona, "Atak");
-    let flank = rules.iter().find(|r| r.bonus == "−50%").expect("flank rule present");
+    let flank = rules
+        .iter()
+        .find(|r| r.bonus == "−50%")
+        .expect("flank rule present");
     assert_eq!(flank.rodzaj_atak_obrona, "Obrona");
 }
 
@@ -170,5 +183,8 @@ fn power_params_parses_and_spot_checks() {
     assert_eq!(f.mnoznik_epoki.ep1, 1);
     assert_eq!(f.mnoznik_epoki.ep10, 1);
     assert_eq!(f._nazewnictwo.en, "Power");
-    assert_eq!(f._formuly.rekrut_ekw, "floor(rekruci_biezacy / koszt_werbu[epoka])");
+    assert_eq!(
+        f._formuly.rekrut_ekw,
+        "floor(rekruci_biezacy / koszt_werbu[epoka])"
+    );
 }
