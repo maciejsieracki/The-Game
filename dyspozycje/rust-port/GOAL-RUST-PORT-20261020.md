@@ -27,12 +27,12 @@ dotykające tych samych plików — zawsze sekwencyjnie, nigdy w tej samej fali.
 
 | # | Temat | Faza | Runda | runId Workflow | Status | Ostatnia aktualizacja |
 |---|---|---|---|---|---|---|
-| 1 | — | — | — | — | **WOLNY** (zob. notatka niżej) | 2026-10-21 |
-| 2 | — | — | — | — | **WOLNY** (zob. notatka niżej) | 2026-10-21 |
-| 3 | `R-RUSTPORT-P1-16D-OPISY-PORADNIK-A-Q1` | P1.16d (3/5) | ? | `wf_bcc4713f-13d` | DISPATCHED (w toku) | 2026-10-21 |
-| 4 | — | — | — | — | **WOLNY** (zob. notatka niżej) | 2026-10-21 |
-| 5 | `R-RUSTPORT-P1-16E-OPISY-UI-PANELE-Q1` | P1.16e (następca, panele) | 1/5 | `wf_6da3210e-1a6` | DISPATCHED (w toku) | 2026-10-21 |
-| 6 | — | — | — | — | **WOLNY** | 2026-10-21 |
+| 1 | `R-RUSTPORT-P1-16F-CIVPEDIA-JEDNOSTKI-Q1` | P1.16f (1/6) | 1/5 | `wf_5944d2c9-a92` | DISPATCHED (w toku) | 2026-10-21 |
+| 2 | `R-RUSTPORT-P1-16F-CIVPEDIA-CUDA-Q1` | P1.16f (2/6) | 1/5 | `wf_b766eceb-3a9` | DISPATCHED (w toku) | 2026-10-21 |
+| 3 | `R-RUSTPORT-P1-16F-CIVPEDIA-ULEPSZENIA-Q1` | P1.16f (3/6) | 1/5 | `wf_926f69ba-f26` | DISPATCHED (w toku) | 2026-10-21 |
+| 4 | `R-RUSTPORT-P1-16F-CIVPEDIA-CYWILIZACJE-Q1` | P1.16f (4/6) | 1/5 | `wf_00e756e0-00d` | DISPATCHED (w toku) | 2026-10-21 |
+| 5 | `R-RUSTPORT-P1-16F-CIVPEDIA-POJECIA-Q1` | P1.16f (5/6) | 1/5 | `wf_63099c45-f02` | DISPATCHED (w toku) | 2026-10-21 |
+| 6 | `R-RUSTPORT-P1-16F-TECHNOLOGIE-Q1` | P1.16f (6/6) | 1/5 | `wf_aafeb0f3-2a6` | DISPATCHED (w toku) | 2026-10-21 |
 
 **P1.16b/P1.16c (4/4) ZAMKNIĘTE PASS** — cały łańcuch następców pierwotnego P1.16b jest teraz
 zielony (patrz LEDGER). Ostatni kawałek P1 to `AUDYT-OPISY-CIVPEDIA-PORADNIK-SCIAGI-2026-08-13.md`
@@ -41,10 +41,12 @@ WŁASNEGO NOWEGO pliku (`P1-16D-OPISY-*.md`): boilerplate (§2a/b, **PASS**, zam
 reszta §2c/2e/3 (**PASS**, zamknięty — odkryty NOWY rozjazd tartak/kamieniołom 200 vs 50/turę, do
 P2), Poradnik rozdziały 00-10, Poradnik rozdziały 14-16+follow-upy (**PASS**, zamknięty — 8/8 pozycji
 listy B wszystkie NIEZGODNE/CZĘŚCIOWO, w tym rozdz.57 „47/47" przeliczone na 1/49 zgodnych),
-CivPedia hasła + 17 paneli UI (**DECISION_REQUIRED** — zbyt szeroki zakres, podzielony dalej: panele
-wydzielone do `P1.16e-OPISY-UI-PANELE` w toku, 143 pozostałe hasła CivPedii/Technologii czekają na
-decyzję właściciela o zakresie, pytanie zadane w czacie 2026-10-21). Gdy wszystkie zamkną się PASS:
-dispatch `P1-GATE-SYNTHESIS` (bramka
+CivPedia hasła + 17 paneli UI (**panele PASS, zamknięte — `P1.16e-OPISY-UI-PANELE`**; 143 pozostałe
+hasła CivPedii/Technologii: **decyzja właściciela 2026-10-21 = pełny, wyczerpujący audyt** —
+podzielone na 6 równoległych następców `P1.16f-*` wg kategorii audytu: Jednostki(51), Cuda(20),
+Ulepszenia(18), Cywilizacje(12), Pojęcia/Miasto/Nauka/Ekonomia(10), Technologie(32), wszystkie w
+toku teraz, każdy do własnego nowego pliku). Gdy wszystkie zamkną się PASS: dispatch
+`P1-GATE-SYNTHESIS` (bramka
 P1 powinna się wtedy formalnie otworzyć — wszystkie P1.1-P1.18 PASS), potem start P2 bez pytania o
 zgodę (decyzja właściciela 2026-10-21, patrz GOAL §"Decyzje przyjęte" poz. 4).
 
