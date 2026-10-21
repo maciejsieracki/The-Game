@@ -27,23 +27,21 @@ dotykające tych samych plików — zawsze sekwencyjnie, nigdy w tej samej fali.
 
 | # | Temat | Faza | Runda | runId Workflow | Status | Ostatnia aktualizacja |
 |---|---|---|---|---|---|---|
-| 1 | `R-RUSTPORT-P1-16C-CIVPEDIA-KARAWANSERAJ-Q1` | P1.16c (4/4) | 1/5 | `wf_777af84d-464` | DISPATCHED (w toku) | 2026-10-21 |
-| 2 | — | — | — | — | **WOLNY** | 2026-10-21 |
-| 3 | — | — | — | — | **WOLNY** | 2026-10-21 |
-| 4 | — | — | — | — | **WOLNY** | 2026-10-21 |
-| 5 | — | — | — | — | **WOLNY** | 2026-10-21 |
+| 1 | `R-RUSTPORT-P1-16D-OPISY-BOILERPLATE-Q1` | P1.16d (1/5) | 1/5 | `wf_fe2d78fa-6b9` | DISPATCHED (w toku) | 2026-10-21 |
+| 2 | `R-RUSTPORT-P1-16D-OPISY-EKONOMIA5X-Q1` | P1.16d (2/5) | 1/5 | `wf_62a16044-8df` | DISPATCHED (w toku) | 2026-10-21 |
+| 3 | `R-RUSTPORT-P1-16D-OPISY-PORADNIK-A-Q1` | P1.16d (3/5) | 1/5 | `wf_bcc4713f-13d` | DISPATCHED (w toku) | 2026-10-21 |
+| 4 | `R-RUSTPORT-P1-16D-OPISY-PORADNIK-B-Q1` | P1.16d (4/5) | 1/5 | `wf_1b78b511-e92` | DISPATCHED (w toku) | 2026-10-21 |
+| 5 | `R-RUSTPORT-P1-16D-OPISY-CIVPEDIA-UI-Q1` | P1.16d (5/5) | 1/5 | `wf_2b647098-bac` | DISPATCHED (w toku) | 2026-10-21 |
 | 6 | — | — | — | — | **WOLNY** | 2026-10-21 |
 
-Zamknięte od ostatniej aktualizacji tej tabeli (patrz `LEDGER.md` po szczegóły): P1.16c-KODU-A (PASS),
-P1.16c-PARYTET-AI (PASS), P1.16c-STOLICE (PASS — 5/5 statusów, w tym odkrycie że pin realizuje
-PÓŹNIEJSZĄ decyzję `R-MAPA-ETYKIETA-STOLICY-NAZWA-MIASTA-Q1` zamiast literalnego B+C FALA 296; to
-zmiana decyzji w czasie, nie błąd). Ostatni, czwarty następca P1.16b dispatchowany teraz —
-CIVPEDIA-KARAWANSERAJ (bez pytania ABC — PYTANIE 19 już WDROŻONE W KODZIE 2026-07-25).
-
-**Poza zakresem tego ostatniego dispatchu: pełny `AUDYT-OPISY-CIVPEDIA-PORADNIK-SCIAGI-2026-08-13.md`
-(69 wierszy danych, nieprzeliczone).** Sam poprzedni temat (§10.2) ocenił to jako zbyt duże na jeden
-dispatch — wymaga podziału wg rozdziałów/kategorii Poradnika. Decyzja o tym podziale (ile podtematów,
-jaka kolejność) czeka na ten temat się zamknie; nie dispatchowano na ślepo żeby nie zaśmiecić puli.
+**P1.16b/P1.16c (4/4) ZAMKNIĘTE PASS** — cały łańcuch następców pierwotnego P1.16b jest teraz
+zielony (patrz LEDGER). Ostatni kawałek P1 to `AUDYT-OPISY-CIVPEDIA-PORADNIK-SCIAGI-2026-08-13.md`
+(69 wierszy, zbyt duże na jeden temat) — podzielony na **5 w pełni równoległych tematów**, każdy do
+WŁASNEGO NOWEGO pliku (`P1-16D-OPISY-*.md`), więc bez ograniczenia sekwencyjności po pliku: boilerplate
+(§2a/b), ekonomia ×5 + reszta §2c/2e/3, Poradnik rozdziały 00-10, Poradnik rozdziały 14-16+follow-upy,
+CivPedia hasła + 17 paneli UI. Gdy wszystkie 5 zamkną się PASS: dispatch `P1-GATE-SYNTHESIS` (bramka
+P1 powinna się wtedy formalnie otworzyć — wszystkie P1.1-P1.18 PASS), potem start P2 bez pytania o
+zgodę (decyzja właściciela 2026-10-21, patrz GOAL §"Decyzje przyjęte" poz. 4).
 
 **P1.16c-PARYTET-AI, P1.16c-STOLICE, P1.16c-CIVPEDIA-OPISY czekają SEKWENCYJNIE** (ten sam plik
 `P1-16-EDGE-CASES.md` co KODU-A) — nie dispatchować równolegle, dopiero po zamknięciu poprzedniego.

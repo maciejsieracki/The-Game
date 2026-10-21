@@ -803,3 +803,99 @@ Niezależnie od wierszy powyżej: `gra/data/units.json`, `terrain-improvements.j
 - Nie uruchomiono testów, build, gry. Brak commita, push, deployu.
 
 **DEPLOY/PUSH: NIE WYKONANO.**
+
+### 14.6 Obrona 1 (tura 2 tej samej rundy 1/5) — odpowiedzi na zarzuty Evaluatora, pin `edb8fb56`
+
+**Korekta §14.2 i §14.3.** Poprzednie wiersze grupowały pliki zbiorczo i pomijały trafienia w archiwach Office/zip. Poniżej pełna lista z dowodem. §14.3 („SPEŁNIONE”) jest **zastąpione** przez §14.6.7. §1–§13 nietknięte.
+
+**Dowody:** `git grep -I -c -i karawanser edb8fb56` (44 pliki tekstowe); `git grep -n` dla pozycji z liczbą 1 i wybranych; `git ls-tree -r -z` (51 plików `.xlsx/.zip/.docx/...`); przeszukanie członków archiwów przez `python3 -I` + `zipfile` (rekurencyjnie, `.xml/.json/.html/.js/.svg/.md/.rels/.txt`). Brak testów, build, dev, checkoutu.
+
+#### 14.6.1 Civ-UNITS (zarzut 1)
+
+| Plik (pin) | Trafienie | Status |
+|---|---|---|
+| `Civ-UNITS/Galeria-jednostek-4widoki.html` | l. 3971, `{id:"karawanseraj",nazwa:"Karawanseraj",…}` | NADAL ISTNIEJE (osadzone dane w artefakcie UI) |
+| `Civ-UNITS/_backup/Galeria-jednostek-4widoki-20260625-173831.html` | l. 3971, ta sama forma | NADAL ISTNIEJE (backup) |
+| `Civ-UNITS/_backup/Galeria-jednostek-4widoki-20260625-182823.html` | l. 3971, ta sama forma | NADAL ISTNIEJE (backup) |
+| `Civ-UNITS/_backup/Galeria-jednostek-4widoki_20260624_230100.html` | l. 3971, ta sama forma | NADAL ISTNIEJE (backup) |
+
+#### 14.6.2 Archiwa Office i zip (zarzuty 2 i 3)
+
+| Plik (pin) | Trafienia (członek=liczba) | Status |
+|---|---|---|
+| `Technologie-drzewko.xlsx` | sheet4=1, sheet5=2 (`Karawanseraj; Magazyn`) | NADAL ISTNIEJE (arkusz) |
+| `docs/archiwum/panele-legacy/Technologie-drzewko.xlsx` | sheet4=1, sheet5=2 | NADAL ISTNIEJE (archiwum) |
+| `dyspozycje/DRZEWKO-TECH-UKLAD-3TIER.xlsx` | sharedStrings=1 | NADAL ISTNIEJE (arkusz) |
+| `docs/archiwum/panele-legacy/MIASTO/Budynki.xlsx` | sharedStrings=2 (`karawanseraj`, `Karawanseraj`) | NADAL ISTNIEJE (archiwum) |
+| `docs/archiwum/panele-legacy/MIASTO/Panel-przeglad-danych.xlsx` | sheet2=2 | NADAL ISTNIEJE (archiwum) |
+| `UI/KANON — baza wiedzy 1E.zip` | `brand-book/KANON/eksport/icons/buildings/building-icon-map.json`=2; `mockupy/The Game - Budynki infografiki kanon v1 (1E).dc.html`=2; `mockupy/The Game - Ekran Dyplomacja (1E).dc.html`=1 | NADAL ISTNIEJE (archiwum binarne, nieedytowane) |
+| `UI/Ulepszenie infografik.zip` | te same trzy członki, te same liczby | NADAL ISTNIEJE (archiwum binarne, nieedytowane) |
+
+Pozostałe 44 z 51 plików `.xlsx/.zip/.docx/.ods/.odt/.pptx` na pinie: 0 trafień (przeszukane).
+
+Zastrzeżenie: pliki binarne innych formatów (np. `.pdf`, `.png`) nie zostały przeszukane osobno. Porównanie `git grep -a` z `-I` wykazało tylko dwa zip-y z §14.6.2 jako trafienia binarne; reszta tekstu bez zmian.
+
+#### 14.6.3 Pozostałe 40 plików tekstowych z 44 (zarzut 5 — pełna lista ze statusem; 4 z §14.6.1)
+
+Stan wspólny: `NADAL ISTNIEJE` = artefakt/dokument/rejestr/archiwum/build poza zakresem kodu (decyzja właściciela, §14.4). Liczby = `git grep -I -c` na pinie.
+
+- `Gra-FINALNA.html` 18; `Gra-podglad-POLE-BITWY.html` 1; `UI/Gra-podglad-KREATOR-E2.html` 1; `MIASTO/Panel-przeglad-danych.html` 1; `Makieta-drzewko-technologii.html` 1; `STAN-PRACY-HANDOFF-ARCHIWUM-2026-08-20.md` 3; `EKONOMIA/EKONOMIA-analiza-surowce-budynki.md` 1 — NADAL ISTNIEJE
+- `docs/archiwum-ux/Gra-podglad-OKOLICA-UX_PRE-IKONY-2026-06-26.html` 2; `…OKOLICA-UX_TOPBAR-2026-06-26.html` 2; `…PLAYTEST-MIASTO_TOPBAR-2026-06-26.html` 2 — NADAL ISTNIEJE (archiwum UX)
+- `docs/decyzje/B-SUROW-BUD-2026-07-23.md` 1; `docs/decyzje/B2-narzedzia-stabilizacji.md` 1; `docs/decyzje/PACZKA-UPGRADE-2-ABC-2026-07-05.md` 1 — NADAL ISTNIEJE (dokumenty decyzji)
+- `dyspozycje/AUDYT-CIVPEDIA-MARTWE-OBIETNICE.md` 9; `AUDYT-MARTWE-PARAMETRY-BUDYNKOW.md` 1; `AUDYT-WERYFIKACJA-53-WERDYKTY.md` 1; `BACKLOG-PRZYSZLOSC.md` 1; `DECYZJE-BUDYNKI-2026-07-25.md` 2; `DECYZJE-MNOZNIK-ABC.md` 25; `DECYZJE-SUROWCE-EKONOMIA-2026-07-23.md` 2; `PAMIEC-ROBOCZA-CIV.md` 1; `PROBLEMY-I-ROZWIAZANIA-2026-07-25.md` 3; `REJESTR-PROSB-I-ZADAN.md` 5; `SLEDZTWO-MNOZNIK-BUDYNKOW.md` 3; `WERSJE.md` 4; `_handoff/KANAL-PRACA.md` 2 — NADAL ISTNIEJE (rejestry; 13 plików tekstowych w `dyspozycje/*` + 1 xlsx = 14 plików)
+- `gra-robocza/Gra-ROBOCZA-POLE-BITWY.html` 1; `gra-robocza/Gra-ROBOCZA.html` 1; `gra-robocza/data — kopia/buildings.json` 2; `gra-robocza/data — kopia/tech.json` 1; `gra-robocza/srcKopiaMaster/data/wikiBundle.json` 1; `gra-robocza/srcKopiaMaster/ui/icons/brand/building-icon-map.json` 1 — NADAL ISTNIEJE (kopia robocza poza `gra/**`)
+- `gra/Gra-podglad-POLE-BITWY.html:3955` 1 — NADAL ISTNIEJE (osadzony podgląd w `gra/`)
+- `gra/tools/.diag-playtest-bundle.cjs` 2; `gra/tools/.pt-layout-bundle.cjs` 2; `gra/tools/.zeton-max-dist/index.html` 1; `gra/tools/.zeton-mockup-dist/index.html` 1; `gra/tools/.zeton-tabliczka-dist/index.html` 1; `gra/tools/.zeton-tabliczka-kat-dist/kat.html` 1 — NADAL ISTNIEJE (artefakty buildu; usuwane przez rebuild)
+- `gra/src/game/trade-routes.ts:904` 1 — **NAPRAWIONY (kod)**; zostaje wyłącznie komentarz historyczny
+
+#### 14.6.4 Ścieżki (bez trafień tekstowych)
+
+- `gra/src/ui/icons/brand/buildings/bld-karawanseraj.svg` — NADAL ISTNIEJE (osierocony asset, §14.4 pkt 1)
+- `gra-robocza/srcKopiaMaster/ui/icons/brand/buildings/bld-karawanseraj.svg` — NADAL ISTNIEJE (kopia robocza)
+
+#### 14.6.5 Miejsca z dispatchu i audytu bez trafień (zarzut 4)
+
+- `gra/src/ui/empireDetailPanel.ts` — 0 trafień na pinie (`git grep -n -i karawan edb8fb56 -- …` pusto); audytowe l. 434 nie zawiera Karawanseraju. **NAPRAWIONY / czysto.**
+- `docs/encyklopedia/budynki/karawanseraj.md` — **nieobecny** na pinie (`git ls-tree -r edb8fb56 -- docs/encyklopedia/budynki/` nie zawiera pliku). **NAPRAWIONY / czysto.**
+- `docs/encyklopedia/indeks.md` — 0 trafień na pinie (l. 12 to link „Targowisko (Rynek)”). **NAPRAWIONY / czysto.**
+- `gra/src/data/wikiBundle.json` — 0 trafień karawanser (w `gra-robocza/…wikiBundle.json` 1, §14.6.3). **NAPRAWIONY w `gra/`.**
+- `gra/data/tech.json`, `gra/data/buildings.json`, `gra/src/ui/icons/brand/building-icon-map.json`, `gra/src/ui/cityPanel.ts`, `docs/PORADNIK-GRACZA/*` — 0 trafień na pinie (`git grep -I -c -i karawanser edb8fb56` ich nie wymienia). **NAPRAWIONY.**
+
+#### 14.6.6 Źródła frazy 8b (zarzut 8)
+
+Fraza „+1 ¤ na poz. 2 / na poziom 2 / na wyższych poziomach w danych” występuje także poza `wikiBundle.json`:
+
+- `docs/encyklopedia/budynki/koszary.md:37` — „2 ¤/turę (+1 ¤ na poz. 2)”
+- `docs/encyklopedia/budynki/mury.md:34` — „2 ¤/turę (+1 ¤ na poziom 2)”
+- `docs/encyklopedia/budynki/targowisko.md:38` — „1 ¤/turę (+1 ¤ na wyższych poziomach w danych)”
+- `gra/src/data/wikiBundle.json` `encyklopedia[57]` (`budynki/koszary`), `[77]` (`budynki/mury`), `[131]` (`budynki/targowisko`) — pola `wikiM` i `full`, te same frazy.
+
+Statusy z §14.1 **bez zmian** (dane `buildings.json` zgodne z frazami): Koszary NAPRAWIONY, Mury NAPRAWIONY, Targowisko NADAL ISTNIEJE. Stan w `docs/encyklopedia/*.md` i w `wikiBundle.json` jest identyczny, więc nie ma rozbieżności między nośnikami.
+
+#### 14.6.7 Liczniki po korekcie (zastępują §14.3)
+
+- Trzy hasła 8b: **NAPRAWIONY 2** (Koszary, Mury) · **NADAL ISTNIEJE 1** (Targowisko, fraza). Źródła: 3 pliki `.md` + 6 pól `wikiBundle.json`.
+- Karawanseraj w `gra/src/**` i `gra/data/**`: **NAPRAWIONY** (trade-routes.ts poza komentarzem, cityPanel.ts, tech.json, wikiBundle.json, buildings.json, building-icon-map.json, `docs/PORADNIK-GRACZA/*` 25 plików, empireDetailPanel.ts, indeks.md, nieobecny karawanseraj.md).
+- Karawanseraj poza kodem: **NADAL ISTNIEJE** — 43 pliki tekstowe (z 44 bez `trade-routes.ts`) + 7 plików archiwów Office/zip (5 xlsx, 2 zip) + 2 ścieżki SVG, wszystkie wymienione w §14.6.1–§14.6.4.
+- Kryterium binarne (zero pozycji bez statusu z dowodem): **SPEŁNIONE dopiero po §14.6** (każda pozycja z `git grep -I -c`, `git ls-tree` i przeszukania zip/xlsx ma status). Przed §14.6 kryterium **nie było** spełnione.
+
+#### 14.6.8 Odpowiedzi na zarzuty Evaluatora (tura 2, pin `edb8fb56`)
+
+- **Zarzut 1 — PRZYJMUJE.** Dodano §14.6.1. Dowód: `git grep -n` (l. 3971 we wszystkich czterech plikach), literal `{id:"karawanseraj",nazwa:"Karawanseraj"}`.
+- **Zarzut 2 — PRZYJMUJE.** Dodano §14.6.2 (pięć plików xlsx, dowód: członki `xl/…` przez `zipfile`). Liczba „13 plików” w §14.6.3 była niepełna: `dyspozycje/*` = 13 tekstowych + `DRZEWKO-TECH-UKLAD-3TIER.xlsx` = 14.
+- **Zarzut 3 — PRZYJMUJE.** `UI/KANON — baza wiedzy 1E.zip` i `UI/Ulepszenie infografik.zip` mają trafienia (3 członki każdy). Pierwszy skan pominął pierwszy zip, bo ścieżka z `—` jest cytowana przez git (`core.quotePath`); powtórzony skan NUL-safe (`git ls-tree -r -z`) obejmuje oba. Status: NADAL ISTNIEJE (archiwum binarne), nie „nieprzeliczone”.
+- **Zarzut 4 — PRZYJMUJE.** Dodano §14.6.5: `empireDetailPanel.ts` (0), `karawanseraj.md` (nieobecny), `indeks.md` (0), z dowodem `git grep`/`git ls-tree`.
+- **Zarzut 5 — PRZYJMUJE.** §14.3 „SPEŁNIONE” było przedwczesne. Poprawiono w §14.6.7; nagłówek raportu zostaje PASS-WITH-NOTES (Targowisko i artefakty poza kodem wymagają decyzji).
+- **Zarzut 6 — PRZYJMUJE (korekta faktu).** Raport r1 podał „Brak commita” — to było nieprawdziwe. Commit `b602c663` (2026-10-21 05:07:47 +0000, +64/−0 w `P1-16-EDGE-CASES.md`, komunikat „interim … operator round-1 write (§14)”) istnieje na gałęzi `claude/sprawdzenie-funkcjonalnosci-ek4ra0` (lokalnie i `origin`). Nie istnieje na `rust-port/parity-v2` (`git cat-file -e` → brak). Tej tury nie wykonano żadnego commita ani pusha. Working tree: `P1-16-EDGE-CASES.md` bez zmian względem HEAD. Kto wykonał commit, nie ustalono z pliku.
+- **Zarzut 7 — ODRZUCAM (z zastrzeżeniem dla orkiestratora).** Ta sesja ma wprost zakaz pisania plików raportu `.md`; dispatch wymaga zwrotu raportu w tekście (FORMAT ODPOWIEDZI). Pakiet `runs/<ID>/` jest na allowliście, ale nie jest zlecony jako zapis Operatora. Trwały zapis `runs/<ID>/` (CLAUDE.md, minimalny kontrakt raportu) musi wykonać orkiestrator z tekstu odpowiedzi. Kontrola tego nie blokuje, ale zostaje jako otwarta pozycja procesu.
+- **Zarzut 8 — PRZYJMUJE.** Dodano §14.6.6 (3 pliki `.md` + 6 pól `wikiBundle.json`). Statusy nie zmieniają się.
+
+#### 14.6.9 Ograniczenia tej tury
+
+- Nie zmieniono §1–§13 ani żadnego pliku poza tym jednym (dopisanie na końcu §14).
+- Nie przeliczono kwot z mnożnikami FALA2 i ery (zastrzeżenie §14.1).
+- Nie przeszukano plików binarnych innych formatów niż Office/zip (np. `.pdf`, `.png`); `git grep -a` nie dał dodatkowych trafień tekstowych.
+- Nie zrobiono nowego `runs/…/01-*.md` (zob. zarzut 7).
+- Poza zakresem: korekta frazy Targowiska w `wikiBundle.json`/`.md`, usunięcie osieroconego SVG, decyzja o artefaktach HTML/zip/xlsx — osobne dispatche (§14.4).
+
+**DEPLOY/PUSH: NIE WYKONANO.**
