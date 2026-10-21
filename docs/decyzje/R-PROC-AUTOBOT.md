@@ -574,6 +574,20 @@ każdy temat jawnie w dyspozycji (graficzny → Opus 5 obie role; logika/dane �
 Sonnet 5 baza) i zapisuje tę klasyfikację w raporcie/rejestrze, tak jak inne
 decyzje model+effort per rola.
 
+**Wyjątek: inicjatywa portu Rust/Tauri (`dyspozycje/rust-port/**`, potwierdzone
+przez właściciela, patrz `GOAL-RUST-PORT-20261020.md` „Decyzje przyjęte" poz. 3,
+oraz ustnie 2026-10-21).** Dla WSZYSTKICH tematów AutoBot w ramach tej inicjatywy
+(ID zaczynające się `R-RUSTPORT-*`), niezależnie od fazy P0-P11: Operator →
+**Haiku 5.5, effort Medium**; Evaluator → **Haiku 5.5, effort Medium** (nie High —
+odstępstwo od reguły bazowej, bo wolumen tematów w tej inicjatywie jest duży, a
+praca w większości mechaniczna: wiring, dane 1:1, assety, newtype); Final Control →
+**Sonnet 5.5, effort Medium**, wykonywany przez OSOBNEGO subagenta jak w regule
+bazowej. Ten wyjątek NIE dotyczy żadnej innej inicjatywy w tym repo — tam nadal
+obowiązuje reguła bazowa (Sonnet 5 Medium/High) powyżej. Jeśli Operator/Evaluator
+tematu `R-RUSTPORT-*` napotka w swoim prompcie lub w tym pliku pozorną sprzeczność
+model+effort — ROZSTRZYGA ten akapit, nie reguła bazowa wyżej; nie jest to pytanie
+wymagające decyzji właściciela (już rozstrzygnięte), tylko kontynuuj zadanie.
+
 ## 6. Bramki
 
 Uruchamiaj z katalogu `gra/`. Zweryfikowane świeżo 2026-08-20 na czystym checkoucie
