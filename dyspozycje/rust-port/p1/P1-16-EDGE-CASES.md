@@ -739,3 +739,67 @@ Nowe liczniki po obronie: PARYTET-AI NAPRAWIONY 9 / NADAL ISTNIEJE 0 / NIEROZSTR
 - `gra/**` nietknięte. Zapis: ta sekcja §13 oraz `dyspozycje/autobot/runs/R-RUSTPORT-P1-16C-STOLICE-Q1/` (01 i 02). Brak commita, push, deployu.
 
 **DEPLOY/PUSH: NIE WYKONANO.**
+
+---
+
+## 14. Runda 1/5 — R-RUSTPORT-P1-16C-CIVPEDIA-KARAWANSERAJ-Q1 (Operator Haiku 5.5 medium, pin `edb8fb56`)
+
+**Dowody:** wyłącznie `git show edb8fb56:…`, `git grep -I edb8fb56` i odczyt JSON z pinu (`python3 -I`). Numery linii z tych poleceń. §1–§13 nietknięte. Brak testów, build, dev, checkoutu. `gra/**` nietknięte.
+
+### 14.0 Warunek wstępny: PYTANIE 19 (nieaktualny w dispatchu z r1 P1.16B)
+
+- `dyspozycje/PYTANIA-OTWARTE.md:567` (pin): `STATUS: WDROŻONE W KODZIE (2026-07-25 decyzja A, economy-upkeep.ts)`. Pytania nie zadawano ponownie.
+- Weryfikacja na pinie: `gra/src/game/economy-upkeep.ts:623` (komentarz „decyzja wlasciciela 19=A”), funkcja `buildingUpkeep` `:637–656`: dla budynku z wpisem `utrzymanie` stawka = `floor(buildingEffectAtLevel(utrzymanie, przyrostUtrzymania, lvl))`, a płaski `budynekUtrzymanieFlat` jest tylko domyślną wartością dla budynku bez wpisu (`:645–646`). Decyzja A jest na pinie wdrożona.
+
+### 14.1 Trzy hasła z frazą wariantową (§9.3 pozycja 8b)
+
+Źródło tekstu: `gra/src/data/wikiBundle.json`, wpisy `budynki/<id>` (pola `wikiS`/`wikiM`). Dane: `gra/data/buildings.json` (odczyt JSON). Silnik: wzór z §14.0.
+
+| Hasło (id) | Fraza na pinie | Dane `utrzymanie` / `przyrostUtrzymania` | Wynik silnika (baza, bez mnożników) | Status |
+|---|---|---|---|---|
+| Koszary (`koszary`) | „utrzymanie **2** ¤/t (+1 ¤ na poz. 2)” | 2 / 1 | poz. 1 = 2, poz. 2 = 3 | NAPRAWIONY (zgodne; maks. 2 poz.) |
+| Mury (`mury`) | „utrzymanie **2** ¤/t (+1 ¤ na poziom 2)” | 2 / 1 | poz. 1 = 2, poz. 2 = 3 | NAPRAWIONY (zgodne; maks. 2 poz.) |
+| Targowisko (`targowisko`) | „utrzymanie **1** ¤/t (+1 ¤ na wyższych poziomach w danych)” | 1 / 1 | poz. 1 = 1, poz. 2 = 2, poz. 3 = 3 | NADAL ISTNIEJE (tylko fraza: liczby zgodne, ale „+1 na wyższych poziomach” sugeruje stałe +1; wg wzoru przyrost kumuluje się, poz. 3 = +2 względem poz. 1) |
+
+Zastrzeżenie: fraza podaje wartości bazowe. Mnożniki FALA2 (`R_STAWKI_FALA2_MULT`, `:654`) i ery (`buildingEraCostMultiplier`, `:655`) nie są w tekście i nie zostały porównane z kwotą pobieraną w grze.
+
+### 14.2 Karawanseraj: lista miejsc (decyzja 15B, usunięty 2026-07-25)
+
+Polecenie: `git grep -I -i 'karawanser' edb8fb56` (potwierdzenie na szerszym `karawan`, bo część trafień to ogólne „karawany”, nie budynek).
+
+| Miejsce (pin) | Trafienia | Status | Uwaga |
+|---|---|---|---|
+| `gra/src/game/trade-routes.ts:904` | 1 (komentarz) | NAPRAWIONY (kod) | `TRADE_BUILDING_IDS` = `targowisko, port, port_wielki`; zostaje wyłącznie komentarz historyczny |
+| `gra/src/ui/cityPanel.ts` | 0 (`karawan*`) | NAPRAWIONY | plik ma 11986 linii; linie 7316 i 7395 z audytu nie dotyczą Karawanseraju |
+| `gra/data/tech.json` | 0 (`karawanser`) | NAPRAWIONY | „Karawany kupieckie” (`:277`) to ogólny opis narracyjny, nie budynek |
+| `gra/src/data/wikiBundle.json` | 0 (`karawanser`) | NAPRAWIONY | `karawany` (opisy ogólne) poza zakresem |
+| `gra/src/ui/icons/brand/building-icon-map.json` | 0 | NAPRAWIONY (mapowanie) | brak wpisu `karawanseraj` |
+| `gra/src/ui/icons/brand/buildings/bld-karawanseraj.svg` | plik istnieje | NADAL ISTNIEJE | osierocona ikona (brak odwołania w mapie ani w `import.meta.glob` dla `brand/buildings`) |
+| `gra/data/buildings.json` | 0 | NAPRAWIONY | brak wpisu budynku |
+| `docs/PORADNIK-GRACZA/*` (25 plików) | 0 (`karawan*`) | NAPRAWIONY | — |
+| `gra/Gra-podglad-POLE-BITWY.html:3955` | 1 | NADAL ISTNIEJE | osadzony snapshot danych z wpisem `karawanseraj` (artefakt podglądu w `gra/`) |
+| `gra/tools/.zeton-max-dist/index.html`, `.zeton-mockup-dist/index.html`, `.zeton-tabliczka-dist/index.html`, `.zeton-tabliczka-kat-dist/kat.html`, `.diag-playtest-bundle.cjs` (2), `.pt-layout-bundle.cjs` (2) | 1–2 każdy | NADAL ISTNIEJE | artefakty buildu (`bld-karawanseraj.svg`, `id: "karawanseraj"`); usuwane przez rebuild, nie ręcznie |
+| Poza `gra/`: `Gra-FINALNA.html` (18), `UI/Gra-podglad-KREATOR-E2.html` (1), `gra-robocza/**`, `docs/archiwum-ux/*.html` (3), `docs/decyzje/B-SUROW-BUD-2026-07-23.md`, `B2-narzedzia-stabilizacji.md`, `PACZKA-UPGRADE-2-ABC-2026-07-05.md`, `dyspozycje/*` (13 plików), `EKONOMIA/EKONOMIA-analiza-surowce-budynki.md`, `MIASTO/Panel-przeglad-danych.html`, `Makieta-drzewko-technologii.html`, `STAN-PRACY-HANDOFF-ARCHIWUM-2026-08-20.md` | 1–18 każdy | NADAL ISTNIEJE (poza zakresem `gra/**`) | artefakty i rejestry historyczne; decyzja właściciela, nie korekta tego tematu. Pliki binarne `UI/*.zip` nie przeliczone |
+
+Niezależnie od wierszy powyżej: `gra/data/units.json`, `terrain-improvements.json`, `wonders.json`, `gra/src/render/tradeRoutesOverlay.ts:26` zawierają tylko ogólne „karawana/karawany” (nie budynek). Brak statusu usunięcia dla nich nie jest potrzebny.
+
+### 14.3 Liczniki
+
+- Trzy hasła 8b: **NAPRAWIONY 2** (Koszary, Mury) · **NADAL ISTNIEJE 1** (Targowisko: fraza nieprecyzyjna, liczby zgodne).
+- Karawanseraj, pozycje z listy dispatchu: **NAPRAWIONY** trade-routes (kod), tech.json, wikiBundle.json, cityPanel.ts, building-icon-map.json, PORADNIK (25), buildings.json · **NADAL ISTNIEJE** osierocony SVG `bld-karawanseraj.svg`.
+- Pozostałe trafienia Karawanseraju: NADAL ISTNIEJE (artefakty w `gra/` i poza nim, §14.2).
+- Kryterium binarne (zero pozycji bez statusu z dowodem): **SPEŁNIONE** dla 3 haseł i wszystkich miejsc z dispatchu oraz miejsc z `git grep`.
+
+### 14.4 Zalecenia dla orkiestratora (poza tym tematem, wymagają osobnego dispatchu)
+
+1. Usunąć `gra/src/ui/icons/brand/buildings/bld-karawanseraj.svg` (osierocony asset).
+2. Zmienić frazę Targowiska w `gra/src/data/wikiBundle.json` na precyzyjną (poz. 3 = +2 względem poz. 1), bez zmiany liczb.
+3. Decyzja właściciela co do artefaktów HTML z `gra/` i poza nim (§14.2).
+
+### 14.5 Ograniczenia
+
+- Nie przeliczono pozostałych haseł CivPedii i rozdziałów Poradnika (poza grepem `karawan`).
+- Nie porównano kwot z mnożnikami FALA2 i ery (§14.1, zastrzeżenie).
+- Nie uruchomiono testów, build, gry. Brak commita, push, deployu.
+
+**DEPLOY/PUSH: NIE WYKONANO.**
