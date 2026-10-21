@@ -1,3 +1,12 @@
+#[path = "../src/data/economy_society_part2.rs"]
+pub mod economy_society_part2;
+
+/// Ścieżka `crate::data::economy_society_part2` używana przez `domain/ai_turn.rs` (jak w `lib.rs`).
+#[allow(dead_code)]
+pub mod data {
+    pub use crate::economy_society_part2;
+}
+
 #[path = "../src/domain/ai_turn.rs"]
 pub mod ai_turn;
 
@@ -374,4 +383,30 @@ fn ai_turn_default_city_parameters_match_ai_params_json() {
     );
     assert_eq!(options.min_city_distance, 4);
     assert_eq!(options.threat_range, 7);
+}
+
+#[test]
+fn hex_city_score_enemy_penalty_follows_threat_range_option() {
+    // Wróg w odległości 6: kara za wrogie sąsiedztwo tylko przy zasięgu > 6 (domyślnie 7 z
+    // ai-params.json). Test pilnuje, że `hex_city_score` używa `threat_range` z opcji, a nie
+    // stałej domyślnej.
+    let tile = MapTile::new(Terrain::Grassland);
+    let position = HexCoord::new(0, 0);
+    let enemy = [idle_city(9, 2, 6, 0)];
+    let penalty = ai_turn::CityScoreWeights::default().enemy_penalty;
+    let with_range_7 = ai_turn::hex_city_score(
+        &tile,
+        position,
+        &enemy,
+        ai_turn::CityScoreWeights::default(),
+        7,
+    );
+    let with_range_5 = ai_turn::hex_city_score(
+        &tile,
+        position,
+        &enemy,
+        ai_turn::CityScoreWeights::default(),
+        5,
+    );
+    assert_eq!(with_range_7 - with_range_5, penalty);
 }

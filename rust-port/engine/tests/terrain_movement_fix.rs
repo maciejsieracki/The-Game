@@ -7,6 +7,15 @@
 //! `Desert => Some(2)`), which `MovementRules::default().desert` in
 //! pathfinding.rs:246 corroborates with the same value.
 
+#[path = "../src/data/economy_society_part2.rs"]
+pub mod economy_society_part2;
+
+/// Ścieżka `crate::data::economy_society_part2` używana przez `domain/ai_turn.rs` (jak w `lib.rs`).
+#[allow(dead_code)]
+pub mod data {
+    pub use crate::economy_society_part2;
+}
+
 #[path = "../src/domain/ai_turn.rs"]
 pub mod ai_turn;
 

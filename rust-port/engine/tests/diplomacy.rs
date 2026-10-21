@@ -238,22 +238,27 @@ fn canonical_value_catalog_prices_non_quantity_basket_items() {
 
 #[test]
 fn diplomacy_unit_prices_match_units_json_for_every_row() {
-    // Web: diplomacyPnJednostka = Pieniądz (koszt) z units.json; koszt <= 0 => bez wyceny.
-    let records = civ_engine::data::units_combat::parse_units().expect("units.json parses");
+    // Niezależnie od `parse_units()` (używanego przez produkcję): surowy odczyt pliku
+    // `data/units.json` (bajtowo = `gra/data/units.json` @ edb8fb56).
+    // Web: diplomacyPnJednostka = `Pieniądz (koszt)`; wartość <= 0 => brak wyceny.
+    let raw: serde_json::Value =
+        serde_json::from_str(include_str!("../data/units.json")).expect("units.json parses");
+    let rows = raw.as_array().expect("units.json is a JSON array");
+    assert_eq!(rows.len(), 75);
     let catalog = ValueCatalog::default();
     let mut priced = 0;
-    for record in &records {
-        let expected = (record.pieniadz_koszt > 0).then_some(record.pieniadz_koszt as f64);
+    for row in rows {
+        let name = row["Jednostka"].as_str().expect("Jednostka is a string");
+        let cost = row["Pieniądz (koszt)"]
+            .as_i64()
+            .expect("Pieniądz (koszt) is an integer");
+        let expected = (cost > 0).then_some(cost as f64);
         if expected.is_some() {
             priced += 1;
         }
-        let actual = basket_item_pn(
-            &BasketItem::new(BasketItemKind::Unit, record.jednostka.as_str(), 1.0),
-            &catalog,
-        );
-        assert_eq!(actual, expected, "unit {}", record.jednostka);
+        let actual = basket_item_pn(&BasketItem::new(BasketItemKind::Unit, name, 1.0), &catalog);
+        assert_eq!(actual, expected, "unit {name}");
     }
-    assert_eq!(records.len(), 75);
     assert_eq!(priced, 66);
     assert_eq!(catalog.unit_prices.len(), priced);
 }

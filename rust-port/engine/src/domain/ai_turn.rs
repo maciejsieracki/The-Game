@@ -15,55 +15,48 @@ use serde::{Deserialize, Serialize};
 use std::cmp::Reverse;
 use std::collections::{BTreeMap, BTreeSet, BinaryHeap};
 
+use crate::data::economy_society_part2::{parse_ai_params, AiParams};
+
 /// Parametry AI z `data/ai-params.json` (jedno źródło prawdy; web czyta te same klucze
-/// przez `getAiParam`, `gra/src/game/ai.ts`). Plik jest osadzany lokalnie (nie przez
-/// `crate::data`), bo `tests/ai_turn.rs` i `tests/terrain_movement_fix.rs` włączają ten
-/// moduł przez `#[path]` i nie mają modułu `data` w korzeniu crate'a.
-fn ai_param_value(key: &str) -> i64 {
-    static PARAMS: std::sync::OnceLock<serde_json::Value> = std::sync::OnceLock::new();
-    PARAMS
-        .get_or_init(|| {
-            serde_json::from_str(include_str!("../../data/ai-params.json"))
-                .expect("embedded ai-params.json must parse")
-        })
-        .get(key)
-        .and_then(|entry| entry.get("wartosc"))
-        .and_then(serde_json::Value::as_i64)
-        .unwrap_or_else(|| panic!("ai-params.json: missing integer wartosc for {key}"))
+/// przez `getAiParam`, `gra/src/game/ai.ts`). Parsowanie przez `crate::data` (`parse_ai_params`),
+/// tak jak w reszcie domeny; testy włączające ten moduł przez `#[path]` dostarczają `crate::data`.
+fn ai_params() -> &'static AiParams {
+    static PARAMS: std::sync::OnceLock<AiParams> = std::sync::OnceLock::new();
+    PARAMS.get_or_init(|| parse_ai_params().expect("embedded ai-params.json must parse"))
 }
 
 /// `ekspansja_min_dystans_miast` (web: `ai.ts:3208`).
 pub fn default_min_city_distance_value() -> u32 {
-    ai_param_value("ekspansja_min_dystans_miast") as u32
+    ai_params().ekspansja_min_dystans_miast.wartosc as u32
 }
 
 /// `ekspansja_zagroz_zasieg` (web: `ai.ts:1241`, `ai.ts:1690`).
 pub fn default_threat_range_value() -> u32 {
-    ai_param_value("ekspansja_zagroz_zasieg") as u32
+    ai_params().ekspansja_zagroz_zasieg.wartosc as u32
 }
 
 fn default_city_score_enemy_penalty() -> i32 {
-    ai_param_value("ekspansja_heurystyka_granica_kara") as i32
+    ai_params().ekspansja_heurystyka_granica_kara.wartosc as i32
 }
 
 fn default_city_score_food() -> i32 {
-    ai_param_value("ekspansja_heurystyka_zywnosc_pkt") as i32
+    ai_params().ekspansja_heurystyka_zywnosc_pkt.wartosc as i32
 }
 
 fn default_city_score_work() -> i32 {
-    ai_param_value("ekspansja_heurystyka_praca_pkt") as i32
+    ai_params().ekspansja_heurystyka_praca_pkt.wartosc as i32
 }
 
 fn default_city_score_trade() -> i32 {
-    ai_param_value("ekspansja_heurystyka_handel_pkt") as i32
+    ai_params().ekspansja_heurystyka_handel_pkt.wartosc as i32
 }
 
 fn default_city_score_river() -> i32 {
-    ai_param_value("ekspansja_heurystyka_rzeka_pkt") as i32
+    ai_params().ekspansja_heurystyka_rzeka_pkt.wartosc as i32
 }
 
 fn default_city_score_resource() -> i32 {
-    ai_param_value("ekspansja_heurystyka_surowiec_pkt") as i32
+    ai_params().ekspansja_heurystyka_surowiec_pkt.wartosc as i32
 }
 
 /// Axial coordinate on the pointy-top hex grid used by the game.
@@ -775,6 +768,7 @@ pub fn hex_city_score(
     position: HexCoord,
     enemy_cities: &[AiCity],
     weights: CityScoreWeights,
+    threat_range: u32,
 ) -> i32 {
     let mut score = 0;
     if tile.food >= 3 {
@@ -794,7 +788,7 @@ pub fn hex_city_score(
     }
     if enemy_cities
         .iter()
-        .any(|city| position.distance(city.position()) < default_threat_range_value())
+        .any(|city| position.distance(city.position()) < threat_range)
     {
         score += weights.enemy_penalty;
     }
@@ -802,7 +796,13 @@ pub fn hex_city_score(
 }
 
 pub fn score_city_site(tile: &MapTile, position: HexCoord, enemy_cities: &[AiCity]) -> i32 {
-    hex_city_score(tile, position, enemy_cities, CityScoreWeights::default())
+    hex_city_score(
+        tile,
+        position,
+        enemy_cities,
+        CityScoreWeights::default(),
+        default_threat_range_value(),
+    )
 }
 
 /// Find the highest-scoring reachable city site for a settler.
@@ -838,7 +838,13 @@ pub fn find_settler_target(
         {
             continue;
         }
-        let score = hex_city_score(tile, *coordinate, enemy_cities, options.city_score_weights);
+        let score = hex_city_score(
+            tile,
+            *coordinate,
+            enemy_cities,
+            options.city_score_weights,
+            options.threat_range,
+        );
         let distance = settler.position().distance(*coordinate);
         let candidate = (score, distance, *coordinate);
         let better = best
