@@ -30,7 +30,7 @@ dotykające tych samych plików — zawsze sekwencyjnie, nigdy w tej samej fali.
 | 1 | `R-RUSTPORT-P3-16-CI-GATES-GREEN-Q1` | P3.16 runda 3 (poszerzona allowlista, fmt+clippy zielone) | 3/5 | (patrz niżej) | DISPATCHED | 2026-10-21 |
 | 2 | `R-RUSTPORT-P4-3-RUST-RENDERER-ARCH-Q1` | P4.3 architektura renderera w Rust (wgpu), picking piksel→hex, osadzenie w Tauri, wymagania pamięciowe — Opus 5.5 | 1/5 | (patrz niżej) | DISPATCHED | 2026-10-21 |
 | 3 | `R-RUSTPORT-P4-4-MODEL-CATALOG-Q1` | P4.4 katalog modeli 3D do odtworzenia w Rust — Opus 5.5 | 1/5 | (patrz niżej) | DISPATCHED | 2026-10-21 |
-| 4 | `R-RUSTPORT-P4-5-UI-SHELL-AUDIT-Q1` | P4.5 audyt powłoki UI (webview) wokół natywnego renderera — Opus 5.5 | 1/5 | (patrz niżej) | DISPATCHED | 2026-10-21 |
+| 4 | — | — | — | — | **WOLNY** (P4.5 zamknięty PASS, zintegrowany; decyzje `D-UI-1..9` czekają na właściciela) | 2026-10-21 |
 | 5 | — | — | — | — | **WOLNY, ŚWIADOMIE** (P3.13 końcowa kontrola P3 po P3.16; implementacja renderera czeka na dokumenty P4.3/P4.4 i decyzje `D-RR`/`D-MOD`) | 2026-10-21 |
 | 6 | — | — | — | — | **WOLNY, ŚWIADOMIE** (jw.) | 2026-10-21 |
 
