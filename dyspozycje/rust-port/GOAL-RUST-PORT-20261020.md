@@ -27,7 +27,7 @@ dotykające tych samych plików — zawsze sekwencyjnie, nigdy w tej samej fali.
 
 | # | Temat | Faza | Runda | runId Workflow | Status | Ostatnia aktualizacja |
 |---|---|---|---|---|---|---|
-| 1 | — | — | — | — | **WOLNY** (P3.3 PASS, zamknięty) | 2026-10-21 |
+| 1 | `R-RUSTPORT-P3-3-IMPL-Q1` | P3.3-IMPL (szkielet tracing + naprawa events.rs/AddPlayer) | 1/5 | `wf_082d01b8-163` | DISPATCHED (w toku) | 2026-10-21 |
 | 2 | — | — | — | — | **WOLNY** (P2.10 PASS, zamknięty) | 2026-10-21 |
 | 3 | — | — | — | — | **WOLNY** | 2026-10-21 |
 | 4 | — | — | — | — | **WOLNY** | 2026-10-21 |
