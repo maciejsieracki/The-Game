@@ -579,3 +579,52 @@ Stan zbiorczy: każdy z 15 wariantów ma jawny status z dowodem w każdym wymien
 - `wchloniecie`: decyzja projektowa dla K2 i K8 (LUKA 14, jak w E4).
 - `umowa_*`: rozstrzygnąć, czy payload AI może nieść koszyk bez `goldOnce` (LUKA 9–10, warunkowa).
 - Pokrycie K11 i K12 bez luk wariantowych.
+
+## I. Runda 3/5 — obrona Operatora (odpowiedź na zarzuty 1–5 Evaluatora; korekty dopisane, sekcja H nietknięta)
+
+**Pin i metoda:** `edb8fb56`; każdy dowód przez `git show edb8fb56:<ścieżka>` / `git grep … edb8fb56` w tej obronie. Sekcja H (`:516`–`:581`, 66 linii) pozostaje bez zmian — allowlista dopuszcza wyłącznie dopisanie. **Sekcja I nadpisuje statusy H3 dla pozycji wskazanych w I2.**
+
+### I1. Werdykty na zarzuty
+
+| # | Zarzut (skrót) | Werdykt | Dowód (pin) |
+|---|---|---|---|
+| 1 | H3 #13: „`'7'` nie ustawia warThreat" jest fałszywe | **PRZYJĘTY** (sformułowanie niepełne; status LUKA bez zmian) | `'7'` w `TRADE_BASKET_ACTION_IDS` (`ui/diplomacyTradeBasket.ts:2819`) → `getTradeBasketMode` = `'treaty'` (:2822–:2826) → `showWarThreat = !blocked && mode ∈ {trade,treaty}` (:2284) → checkbox `.cdb-war-threat-cb` (:2112 w `warThreatBlockHtml` :2107) → zmiana stanu (:2535) i odczyt przy zatwierdzeniu (:2723) → `payload.warThreat = true` (:2740, :2754). Case `'7'` w `buildTreatyPayload` (:1216–:1219) faktycznie nie ustawia `warThreat` — ustawia go checkbox, domyślnie `false` (`let warThreat = action.id === '9'`, :2375). Odrzucenie z `warThreat` → `playerDeclareWarOnOwner` / `ownerDeclareWarOn` (`main.ts:17150`–`:17155`). Akceptacja → `{accepted:true}` bez efektu wojny (`game/diplomacy-proposals.ts:2078`–`:2080`). Wniosek „zgoda bez efektu wojny" pozostaje. |
+| 2 | Overclaim osiągalności z UI dla `tech`/`ultimatum`; `validateTreatyForm` dla `'6'`/`'9'` NIEPRZECZYTANE | **PRZYJĘTY w części dowodu; osiągalność z UI POTWIERDZONA** (status LUKA bez zmian) | Odczytane w tej obronie: `validateTreatyForm` (`ui/diplomacyTradeBasket.ts:951`–`:1010`): case `'6'` (:982–:1003) wymaga `techId`, a przy `techPaymentMode !== 'tech'` — `goldOnce ≥ 1`; **nie zakazuje koszyka**; **brak case `'9'`** (zero walidacji). `validateBasketForm`, gałąź `mode === 'treaty'` (:1272–:1295): wywołuje `validateTreatyForm`, potem waliduje wyłącznie wycenę koszyka i `needsTurns` — **nie zakazuje koszyka dla `'6'`/`'9'`**. Jedyny dodatkowy warunek: `isCurrencyProposalForbiddenDuringWar` (`game/diplomacy-war-gates.ts:46`–`:54`, blokuje płatność walutową w stanie wojny poza akcjami pokojowymi). Stąd: `tech` z koszykiem i `ultimatum` z koszykiem są wysyłalne z UI w pokoju; w wojnie ścieżka z walutą jest zablokowana (dla `tech` tryb tech-za-tech bez gotówki — czy koszyk jest liczony jako płatność walutowa, **nieprzesądzone**). Dla `'9'` z UI ustawiane `goldOnce` i `warThreat` (`buildTreatyPayload` :1220–:1223). |
+| 3 | `umowa_handlowa`/`umowa_szlakow`: status LUKA niespójny z H3 #10 | **PRZYJĘTY** | Korekta I2 #9–#10: **KANDYDAT LUKI (warunkowy)**. |
+| 4 | Zawężenie definicji „OBSŁUŻONY WSZĘDZIE" w H (linia „Zakres statusu") | **PRZYJĘTY jako decyzja zakresu, nie wynik dispatchu** | Definicja z H nie pochodzi z dispatchu, który mówi o „obsłudze w KAŻDYM miejscu konsumpcji" (switch/case, if-else, mapowanie UI). Operator **nie przesądza**, czy efekty `addTreaty` w systemach tur poza K4 wchodzą w kryterium. Korekta I2: 8 wariantów oznaczone jako „OBSŁUŻONY w konsumentach; efekty poza K4 NIEPRZEŚLEDZONE". Decyzja zakresu — dla Final Control. |
+| 5a | H3 #6 `tech` = OBSŁUŻONA mimo nieprzeczytanego `grantTechToOwner` | **PRZYJĘTY** | Korekta I2 #6: ścieżka K4 prześledzona do `executeTechTradeDealCore` (`game/diplomacy-tech-trade.ts:168`–`:236`), ciało silnikowe `grantTechToOwner` **NIEPRZECZYTANE** (H4). |
+| 5b | „67 linii" vs faktyczne 66 | **PRZYJĘTY** | Sekcja H = `:516`–`:581` włącznie = **66 linii** (`grep -n '^## '` + `wc -l` = 581). Raport `03-operator.md` poprawiony w `04-operator-obrona.md`. |
+
+### I2. Korekty statusów H3 (nadpisują H3; H nietknięte)
+
+| # | Wariant | Status po obronie | Uwagi |
+|---|---|---|---|
+| 1 | `nap` | **OBSŁUŻONY w konsumentach** (K1–K12); efekty traktatu poza K4 NIEPRZEŚLEDZONE | I1 #4 |
+| 2 | `sojusz_defensywny` | jw. | I1 #4 |
+| 3 | `sojusz_pelny` | jw. | I1 #4 |
+| 4 | `granice` | jw. | I1 #4 |
+| 5 | `wasal` | jw. | I1 #4 |
+| 6 | `tech` | **LUKA W K4** (`main.ts:10243`–`:10246`); ścieżka złota/tech-za-tech OBSŁUŻONA do `executeTechTradeDealCore`; ciało `grantTechToOwner` NIEPRZECZYTANE | **Z UI: TAK** (I1 #2). |
+| 7 | `ultimatum` | **LUKA W K4** (`main.ts:10248`–`:10251`) | **Z UI: TAK w pokoju** (I1 #2). Odrzucenie → wojna przez `warThreat` (`main.ts:17150`–`:17155`) — OK. |
+| 8 | `handel` | **OBSŁUŻONY w konsumentach**; efekty poza K4 NIEPRZEŚLEDZONE | I1 #4 |
+| 9 | `umowa_handlowa` | **KANDYDAT LUKI (warunkowy)** | Rodzaj `UmowaSzlakow` (`game/diplomacy-proposals.ts:1555`–`:1558`); transfer tylko przy `goldOnce > 0` (`main.ts:20719`–`:20720`); **z UI: brak producenta** (K7); **przez payload AI: NIEPRZESĄDZONE**. |
+| 10 | `umowa_szlakow` | **KANDYDAT LUKI (warunkowy)** | Z UI: poza `TRADE_BASKET_ACTION_IDS` (`ui/diplomacyTradeBasket.ts:2818`–`:2820`, komentarz :2813–:2816), `buildTreatyPayload` case `'5'` (:1197–:1204) bez `goldOnce` → zachowanie zamierzone z UI; **przez payload AI: NIEPRZESĄDZONE** (`main.ts:20718`–`:20721`). |
+| 11 | `trybut_zadanie` | **OBSŁUŻONY w konsumentach**; efekty poza K4 NIEPRZEŚLEDZONE | I1 #4 |
+| 12 | `trybut_oferta` | **LUKA W K4** (deal, `main.ts:20659`–`:20735`, brak `trybut_oferta_przyjeta`) | bez zmian (H2 pkt 4) |
+| 13 | `namow_wojne` | **LUKA W K4** (brak gałęzi `main.ts:20605`–`:20775`) | bez zmian; korekta treści wg I1 #1: wojna możliwa przez checkbox `warThreat` przy odrzuceniu, nie przy zgodzie. |
+| 14 | `wchloniecie` | **LUKA W K2 i K8** | bez zmian (H3 #14) |
+| 15 | `pokoj` | **OBSŁUŻONY w konsumentach**; efekty poza K4 NIEPRZEŚLEDZONE | I1 #4 |
+
+### I3. Podsumowanie po obronie (15/15)
+
+- **Jawny status z dowodem: 15/15** (kryterium binarne z dispatchu — spełnione).
+- **OBSŁUŻONE w konsumentach: 8** (`nap`, `sojusz_defensywny`, `sojusz_pelny`, `granice`, `wasal`, `handel`, `trybut_zadanie`, `pokoj`) — zakres efektów poza K4 do decyzji FC.
+- **LUKI potwierdzone: 5** (`tech`, `ultimatum` — osiągalne z UI w pokoju; `trybut_oferta` — zdarzenie; `namow_wojne` — mechanika; `wchloniecie` — dane K2/K8).
+- **KANDYDACI LUKI warunkowe: 2** (`umowa_handlowa` — brak producenta w UI, AI nieprzesądzone; `umowa_szlakow` — zamierzone z UI, AI nieprzesądzone).
+- Suma: 8 + 5 + 2 = 15.
+
+### I4. Ograniczenia po obronie
+
+- Brak uruchomienia runtime (statyka).
+- NIEPRZECZYTANE nadal: ciało `grantTechToOwner` (poza `main.ts`), `normalizeTreatyKind` (ciało), `payloadHasCurrencyPayment` (czy koszyk liczy się jako płatność walutowa w wojnie), osiągalność `umowa_*` z payloadów AI / `applyCounterOffer`.
+- Efekty `addTreaty` w systemach tur poza K4 — poza zakresem I1 #4 (decyzja FC).

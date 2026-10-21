@@ -26,20 +26,27 @@ dotykające tych samych plików — zawsze sekwencyjnie, nigdy w tej samej fali.
 
 | # | Temat | Faza | Runda | runId Workflow | Status | Ostatnia aktualizacja |
 |---|---|---|---|---|---|---|
-| 1 | `R-RUSTPORT-P1-16B-AUDIT-CROSSCHECK-Q1` | P1.16b | ? | `wf_8634e0dd-bf2` | DISPATCHED (w toku) | 2026-10-20 |
-| 2 | — | — | — | — | **WOLNY** | 2026-10-20 |
-| 3 | `R-RUSTPORT-P1-13B-PROPOSAL-COVERAGE-Q1` | P1.13b | ? | `wf_05c470f2-661` | DISPATCHED (w toku) | 2026-10-20 |
-| 4 | — | — | — | — | **WOLNY** | 2026-10-20 |
-| 5 | — | — | — | — | **WOLNY** | 2026-10-20 |
-| 6 | — | — | — | — | **WOLNY** | 2026-10-20 |
+| 1 | `R-RUSTPORT-P1-16C-KODU-A-Q1` | P1.16c (1/4) | 1/5 | `wf_176939fc-85d` | DISPATCHED (w toku) | 2026-10-21 |
+| 2 | — | — | — | — | **WOLNY** | 2026-10-21 |
+| 3 | — | — | — | — | **WOLNY** | 2026-10-21 |
+| 4 | — | — | — | — | **WOLNY** | 2026-10-21 |
+| 5 | — | — | — | — | **WOLNY** | 2026-10-21 |
+| 6 | — | — | — | — | **WOLNY** | 2026-10-21 |
 
-Zamknięte PASS od ostatniej aktualizacji tej tabeli (patrz `LEDGER.md` po szczegóły):
-P1.17c (scalona klasyfikacja REUSE/ADAPT/REPLACE/UNKNOWN), P1.8 (generowanie świata),
-P1.9 (mapa/HUD/panele), P1.15b→P1.15c (finalny indeks zrzutów, zamknięty).
+Zamknięte od ostatniej aktualizacji tej tabeli (patrz `LEDGER.md` po szczegóły): P1.13b (PASS, 15/15
+`ProposalActionId` z dowodem), P1.16b (LIMIT-5-EXCEEDED → podzielone na 4 następców `P1.16c-*`,
+pierwszy z nich — KODU-A — właśnie dispatchowany w slocie 1).
 
-**Stan: tylko 2 z 6 slotów mają realną, niewyczerpaną treść P1 (P1.16b, P1.13b).** Pozostałe 4
-sloty są świadomie puste w oczekiwaniu na decyzję właściciela (patrz pytanie zadane w czacie
-2026-10-20) — nie wypełnione sztucznymi tematami wyłącznie dla zasady „pula 6".
+**P1.16c-PARYTET-AI, P1.16c-STOLICE, P1.16c-CIVPEDIA-OPISY czekają SEKWENCYJNIE** (ten sam plik
+`P1-16-EDGE-CASES.md` co KODU-A) — nie dispatchować równolegle, dopiero po zamknięciu poprzedniego.
+
+**Realna, niewyczerpana treść P1 poza łańcuchem P1.16c: BRAK.** Wszystkie pozostałe tematy
+P1.1-P1.18 (poza wariantami 16c) mają PASS w LEDGER. 5 z 6 slotów jest teraz wolnych nie dlatego, że
+czekają na decyzję właściciela (ta z STOLICE okazała się już rozstrzygnięta, patrz LEDGER
+2026-10-21), ale dlatego że P1.16c jest z natury sekwencyjny (jeden plik) i nie ma już
+niezależnego, gotowego, bezkolizyjnego materiału P1 do obsadzenia pozostałych slotów bez wchodzenia
+w P1-GATE-SYNTHESIS (przedwczesne — P1.16c jeszcze nie zamknięte) albo we wczesny P2 (wymaga decyzji
+właściciela o rozpoczęciu, patrz pytanie w czacie 2026-10-21).
 
 **Zasada stałej:** gdy temat się zamyka (PASS/FAIL ostateczny/DECISION_REQUIRED/LIMIT-5-EXCEEDED),
 natychmiast otwieram kolejny w zwolnionym slocie — pula 6 ma być stale w pełni wykorzystana, bez
