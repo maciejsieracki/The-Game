@@ -9,8 +9,7 @@
 
 use serde::Deserialize;
 
-pub const TERRAIN_IMPROVEMENTS_JSON: &str =
-    include_str!("../../data/terrain-improvements.json");
+pub const TERRAIN_IMPROVEMENTS_JSON: &str = include_str!("../../data/terrain-improvements.json");
 pub const TERRAIN_MOVEMENT_JSON: &str = include_str!("../../data/terrain-movement.json");
 pub const TERRAIN_YIELDS_JSON: &str = include_str!("../../data/terrain-yields.json");
 pub const MAP_GEN_PARAMS_JSON: &str = include_str!("../../data/map-gen-params.json");

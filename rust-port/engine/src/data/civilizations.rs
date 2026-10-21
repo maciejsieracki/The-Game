@@ -1,6 +1,5 @@
 // GENEROWANE 1:1 z ksztaltu JSON na pinie edb8fb56 (gra/data/*.json) przez skrypt gen.py.
 // Nie edytowac recznie bez ponownego wygenerowania i testu round-trip.
-#![allow(dead_code)]
 
 use std::collections::BTreeMap;
 
@@ -1303,13 +1302,13 @@ pub struct CityPool {
 
 pub type CityNamesPoolsFile = BTreeMap<String, CityPool>;
 
-
 pub const CIVS_JSON: &str = include_str!("../../data/civs.json");
 pub const CIV_MATRIX_JSON: &str = include_str!("../../data/civ-matrix.json");
 pub const CIV_PARAMS_JSON: &str = include_str!("../../data/civ-params.json");
 pub const CIV_AI_JSON: &str = include_str!("../../data/civ-ai.json");
 pub const DIPLOMACY_JSON: &str = include_str!("../../data/diplomacy.json");
-pub const DIPLOMACY_ACCEPTANCE_POINTS_JSON: &str = include_str!("../../data/diplomacy-acceptance-points.json");
+pub const DIPLOMACY_ACCEPTANCE_POINTS_JSON: &str =
+    include_str!("../../data/diplomacy-acceptance-points.json");
 pub const CITY_NAMES_POOLS_JSON: &str = include_str!("../../data/city-names-pools.json");
 
 pub fn parse_civs() -> serde_json::Result<CivsFile> {

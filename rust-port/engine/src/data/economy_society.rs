@@ -148,9 +148,11 @@ pub struct EconParamsBudynki {
     #[serde(rename = "budynek_stolarnia_bonus_drewna_civ")]
     pub budynek_stolarnia_bonus_drewna_civ: EconParamsEkonomiaMiastaSpichlerzZachowaniePoWzroscie,
     #[serde(rename = "budynek_kamieniarski_bonus_kamienia_civ")]
-    pub budynek_kamieniarski_bonus_kamienia_civ: EconParamsEkonomiaMiastaSpichlerzZachowaniePoWzroscie,
+    pub budynek_kamieniarski_bonus_kamienia_civ:
+        EconParamsEkonomiaMiastaSpichlerzZachowaniePoWzroscie,
     #[serde(rename = "budynek_garncarnia_bonus_zywnosci_lokalnie")]
-    pub budynek_garncarnia_bonus_zywnosci_lokalnie: EconParamsEkonomiaMiastaSpichlerzZachowaniePoWzroscie,
+    pub budynek_garncarnia_bonus_zywnosci_lokalnie:
+        EconParamsEkonomiaMiastaSpichlerzZachowaniePoWzroscie,
     #[serde(rename = "ulepszenie_surowcowe_upkeep_praca")]
     pub ulepszenie_surowcowe_upkeep_praca: EconParamsEkonomiaMiastaProgWzrostuWspolczynnik,
     #[serde(rename = "budynek_mennica_mnoznik")]
