@@ -27,7 +27,7 @@ dotykające tych samych plików — zawsze sekwencyjnie, nigdy w tej samej fali.
 
 | # | Temat | Faza | Runda | runId Workflow | Status | Ostatnia aktualizacja |
 |---|---|---|---|---|---|---|
-| 1 | `R-RUSTPORT-P1-16F-CIVPEDIA-JEDNOSTKI-Q1` | P1.16f (1/6) | 1/5 | `wf_5944d2c9-a92` | DISPATCHED (w toku) | 2026-10-21 |
+| 1 | — | — | — | — | **WOLNY** (P1.16f-JEDNOSTKI PASS, zamknięty) | 2026-10-21 |
 | 2 | — | — | — | — | **WOLNY** (P1.16f-CUDA PASS, zamknięty) | 2026-10-21 |
 | 3 | — | — | — | — | **WOLNY** (P1.16f-ULEPSZENIA PASS, zamknięty) | 2026-10-21 |
 | 4 | `R-RUSTPORT-P1-16F-CIVPEDIA-CYWILIZACJE-Q1` | P1.16f (4/6) | 1/5 | `wf_00e756e0-00d` | DISPATCHED (w toku) | 2026-10-21 |
