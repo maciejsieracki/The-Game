@@ -21,7 +21,9 @@ Oznaczenia: **ZMIERZONO** = własna komenda w tym przebiegu; **LEDGER** = tylko 
 |---|---|---|
 | `cargo fmt --all -- --check` | EXIT=0 | Załącznik A |
 | `cargo clippy --all-targets -- -D warnings` | EXIT=0 | Załącznik B |
-| `cargo test --offline` | 323 passed, 0 failed, EXIT=0 (40 sekcji `test result`, suma passed = 323) | Załącznik C |
+| `cargo test --offline` | 323 passed, 0 failed, EXIT=0 (36 sekcji `test result`, suma passed = 323; ZMIERZONO r2: `grep -c "test result"` = 36; poprzednie „40” był błąd) | Załącznik C |
+
+Runda 2 (ZMIERZONO r2, pełne surowe wyjścia z `EXIT=` w `runs/R-RUSTPORT-P3-13-GATE-FINAL-CONTROL-Q1/fmt-r2.txt`, `clippy-r2.txt`, `test-r2.txt`): fmt EXIT=0; clippy EXIT=0; test EXIT=0, 36 sekcji `test result`, 323 passed, 0 failed. Załączniki A–C poniżej są z rundy 1 (identyczne wyniki).
 
 Uruchomienie: `CARGO_INCREMENTAL=0 CARGO_TARGET_DIR=/home/user/cargo-target-shared/wf_472a4359-063-1 CARGO_PROFILE_DEV_DEBUG=0`. Po zakończeniu podkatalog targetu zostanie usunięty. Powstał nieśledzony `rust-port/engine/Cargo.lock` — NIE został dodany do commita.
 
@@ -75,12 +77,12 @@ Lewa kolumna: `git hash-object rust-port/engine/data/<plik>` (worktree `17454b33
 - **Domena nie używa danych:** `grep -rn "data::\|civilizations::\|buildings_tech::\|units_combat::" src/domain` → 0 trafień.
 - **`src-tauri`:** brak `include_str!`, brak odwołań do `civ_engine::data`.
 
-**Ocena klauzuli „dane ładowane ze źródła (nie hard-coded)":** loader ze źródła istnieje i działa (testy), ale **silnik nie ładuje danych w runtime**. Ponadto domena zawiera tabelę wpisaną ręcznie: `rust-port/engine/src/domain/recruitment.rs:204` `canonical_recruitment_costs()` — komentarz „mirrored from `gra/data/units.json`" (LEDGER P2.9: 75/75 nazw zgodnych, **75/75 wartości rozbieżnych**; P3.5B świadomie nie naprawiony). Klauzula 1 bramki **nie jest spełniona** w runtime.
+**Ocena klauzuli „dane ładowane ze źródła (nie hard-coded)":** loader ze źródła istnieje i działa (testy), ale **silnik nie ładuje danych w runtime**. Ponadto domena zawiera tabelę wpisaną ręcznie: `rust-port/engine/src/domain/recruitment.rs:204` `canonical_recruitment_costs()` — komentarz „mirrored from `gra/data/units.json`" (ZMIERZONO r2: skrypt porównujący tabelę Rust z `units.json` w tym commicie; nazwy 75/75 zgodne; w 4 polach jednocześnie (koszt złota, utrzymanie złota, surowiec+ilość, utrzymanie surowca+ilość) **0/75 wierszy zgodnych**; pojedynczo: koszt złota 9/75, utrzymanie złota 75/75, surowiec+ilość 1/75, utrzymanie surowca+ilość 1/75; przykład Wojownik: Rust koszt 10 / drewno 50 / utrzymanie drewno 10, `units.json` 5 / 13 / 3; LEDGER P2.9 też podaje rozbieżność; P3.5B świadomie nie naprawiony). Klauzula 1 bramki **nie jest spełniona** w runtime.
 
 ### 2.3 Round-trip i normalizacje (P3.11 / P3.15)
 
 - `tests/data_compliance.rs` przeszedł w `cargo test` (ZMIERZONO). Obejmuje m.in. `roundtrip_covers_all_29_data_files` (ZMIERZONO: nazwa w wyjściu, ok).
-- LEDGER P3.15: literalnie równe 22/29; 7 plików (buildings, map-gen-params, power-params, tech, terrain-improvements, units, wonders) przez N1 (brak klucza `Option` ≡ `null`, 1190 wystąpień) i N2 (int vs f64, 120 wystąpień), liczniki przypięte w teście — **LEDGER, nie re-weryfikowane osobno liczniki**.
+- LEDGER P3.15: literalnie równe 22/29; 7 plików (buildings, map-gen-params, power-params, tech, terrain-improvements, units, wonders) przez N1 (brak klucza `Option` ≡ `null`, 1190 wystąpień) i N2 (int vs f64, 120 wystąpień), liczniki przypięte w teście — **NIE_ZMIERZONO** w r2 (liczniki 1190/120 nie przeliczone; wartości tylko z LEDGER).
 - Ocena: N1/N2 to różnice reprezentacji, nie wartości; akceptowalne dla bramki danych. Ryzyko: N1 maskuje różnicę „brak klucza vs null" — do oceny przy kontrakcie zapisu (P2.7).
 
 ---
@@ -103,36 +105,36 @@ Zawartość `rust-port/assets/` = 429 plików = 428 + `MANIFEST.tsv`.
 | JSON (mapy ikon) + CSS (style) | 12 (8+4) / 27 945 | 12 (8 JSON 20 000 + 4 CSS 7 945) / 27 945 | TAK |
 | JPG (portrety) | 45 / 445 951 | 45 / 445 951 | TAK |
 | PNG (hero) | 2 / 4 214 674 | 2 / 4 214 674 | TAK |
-| MP3 aktywna | 59 / 42 350 853 | 59 (łącznie z wykluczonymi, patrz niżej) | TAK (suma poniżej) |
+| MP3 aktywna | 59 / 42 350 853 | 59 / 42 350 853 (bez 3 plików `_wykluczone/`; 59 + 3 = 62 plików, 42 350 853 + 2 233 830 = 44 584 683 B) | TAK (suma poniżej) |
 | MP3 wykluczona (`_wykluczone/`) | 3 / 2 233 830 | 3 / 2 233 830 | TAK, ale patrz uwaga |
 | MP3 razem | 62 / 44 584 683 | 62 / 44 584 683 | TAK |
 | **Razem** | **428 / 49 381 484** (441 łącznie z `.ts`/`.md`, 49 545 994 B) | **428 / 49 381 484** | TAK |
 
-Uwaga: P1.11 §2 oznacza 3 pliki `_wykluczone/` jako „do decyzji właściciela, czy wchodzą do manifestu". Manifest je zawiera. Decyzja właściciela — NIE_ZMIERZONO, do potwierdzenia.
+Uwaga: P1.11 §2 oznacza 3 pliki `_wykluczone/` jako „do decyzji właściciela, czy wchodzą do manifestu". Manifest je zawiera. Decyzja właściciela — **OPEN** (nie znaleziono dowodu, że decyzja zapadła). Wcześniejsza klasyfikacja „nie blokuje” była bez dowodu i jest cofnięta do OPEN; nie blokuje P4, wymaga decyzji właściciela.
 
 ### 3.3 Brak fontów / modeli 3D / SFX w pinie (P3.8)
 
 Rozszerzenia w manifeście: wyłącznie `svg, json, css, jpg, png, mp3`. P1.11 §2: fonty 0, modele 3D 0, SFX-pliki 0 — **zgodne**. Dźwięk SFX jest syntetyzowany w kodzie Web Audio (P1.11 §5), muzyka brązu/kamienia częściowo syntetyczna — to do odtworzenia w Rust/Tauri (P3.8/P5), nie kopiowania plików.
 
-Zgodność z decyzją o rendererze: LEDGER (ostatni wpis zmiany decyzji właściciela) — renderer w Rust (wgpu), modele 3D jako kod (P4.4). Pin ma 88 plików `three` w `gra/src/render/**` i geometrię proceduralną (P1.11 §5). Brak plików modeli jest zgodny z tą decyzją. Nie weryfikowałem decyzji poza LEDGER.
+Zgodność z decyzją o rendererze: LEDGER (ostatni wpis zmiany decyzji właściciela) — renderer w Rust (wgpu), modele 3D jako kod (P4.4). Pin ma 80 plików importujących `three` w `gra/src/render/**` (ZMIERZONO r2: `git grep -l "from ['\"]three['\"]" edb8fb56 -- gra/src/render` = 80; wcześniejsza liczba 88 bez dowodu — NIE_ZMIERZONO, nie podtrzymywana) i geometrię proceduralną (P1.11 §5). Brak plików modeli jest zgodny z tą decyzją. Nie weryfikowałem decyzji poza LEDGER.
 
 ---
 
 ## 4. Zgodność ID i newtypów (P3.4b/c)
 
-Źródło: `dyspozycje/rust-port/p3/P3-4C-IDS-REMAINING.md` §1b (LEDGER: `5e694021`). Zmienione na newtypy: `PlayerId`/`UnitId` (P3.4b), `CityId`/`UnitId` w `AiCity`, `PlayableCity`, `PlayableUnit`, `CitySnapshot` (P3.4c). Pozostają `u64` (wg §1b, ZMIERZONO spot-check: 73 deklaracje (P3-4C podaje 91 miejsc łącznie z użyciami) `owner_id: i64|Option<u64>|u64` w `src/`; `OwnerRef` obecny tylko w dokumentacji, nie w kodzie):
+Źródło: `dyspozycje/rust-port/p3/P3-4C-IDS-REMAINING.md` §1b (LEDGER: `5e694021`). Zmienione na newtypy: `PlayerId`/`UnitId` (P3.4b), `CityId`/`UnitId` w `AiCity`, `PlayableCity`, `PlayableUnit`, `CitySnapshot` (P3.4c). Pozostają `u64` (wg §1b; ZMIERZONO r2: `grep -rnE "owner_id\s*:\s*(Option<)?(u64|i64)|player_id\s*:\s*(Option<)?u64" rust-port/engine/src` = 76 linii deklaracji; liczby 91 (P3-4C: „miejsc łącznie z użyciami”) i 73 (wcześniejszy spot-check) NIE są reprodukowane tą miarą i nie są podtrzymywane; `OwnerRef`/`CampId` w `rust-port/engine/src`: 0 trafień ZMIERZONO r2):
 
 | Grupa | Liczba | Pola | Blokuje P4–P6? |
 |---|---|---|---|
 | CITY | 7 | `AiOptions.city_buildings` (klucz mapy), `AiCommand::Build.city_id`, `choose_*`, `BarbUnit.cleared_city_ids`, `BarbCityGarrison(Spawn).city_id` | P6 (barbarzyńcy, produkcja AI) — niskie |
 | CAMP | 7 | `BarbCamp.id`, `BarbUnit.camp_id`, `BarbSpawn.camp_id` — brak `CampId` w `ids.rs` | P6 — średnie |
-| OWNER | 91 | `owner_id`/`player_id`; `MapTile.owner_id: Option<u64>`; `barbarians.rs:143` `owner_id: i64` (ujemny sentinel) | **P6 (dyplomacja, handel, hot-seat) — TAK, wysokie**; P4 nie |
+| OWNER | 76 (deklaracje, ZMIERZONO r2) | `owner_id`/`player_id`; `MapTile.owner_id: Option<u64>`; `barbarians.rs:143` `owner_id: i64` (ujemny sentinel) | **P6 (dyplomacja, handel, hot-seat) — TAK, wysokie**; P4 nie |
 | UNIT-CMD | 6 | `AiCommand::{Move,FoundCity,Attack,Build}`, `BarbCommand::{Move,Attack}` | P6 — niskie (kontrakt JSON) |
 | UNIT-RESULT / SURVIVORS | 1 + 2 | `UnitCombatResult.id`, `survivors_*` | P6 — niskie |
 | UNIT-BOUNDARY / PLAYER-INPUT | 6 + 2 | granica komend `bridge.rs`, `select_unit`, `add_player(id: u64)` | P5 (kontrakt UI) — niskie |
 | CTOR-WRAP | 2 | `BarbUnit::new`, `CombatUnit::new` | nie |
 
-Ocena: nic z tego nie blokuje P4 (geometria/renderer). **OWNER (91) i sentinel `i64` blokują P6** — brak typowania właścicieli (`OwnerRef` z P2.3 §9) to realny dług kontraktu. Dispatch zakładał listę z P3-4C §1b — zgodna.
+Ocena: nic z tego nie blokuje P4 (geometria/renderer). **OWNER (76 deklaracji) i sentinel `i64` blokują P6** — brak typowania właścicieli (`OwnerRef` z P2.3 §9) to realny dług kontraktu. Dispatch zakładał listę z P3-4C §1b — zgodna.
 
 ---
 
@@ -144,15 +146,15 @@ Ocena: nic z tego nie blokuje P4 (geometria/renderer). **OWNER (91) i sentinel `
 | P3.3 błędy/logging | `logging.rs` integrated (LEDGER PASS-ZINTEGROWANE) | ZMIERZONO: `pub mod logging;` w `lib.rs`; `tracing` NIE podpięty do `bridge.rs`/`src-tauri` (LEDGER) | PASS-WITH-NOTES |
 | P3.4 ID/config/wersjonowanie | LEDGER: `SCHEMA_VERSION` w `src/version.rs` | ZMIERZONO: `pub mod version;` w `lib.rs`; zakres częściowy (LEDGER) | PASS-WITH-NOTES |
 | P3.4b newtypy PlayerId/UnitId | `914eec6b` | LEDGER PASS-WITH-NOTES (build src-tauri niezweryfikowany) | PASS-WITH-NOTES |
-| P3.4c newtypy CityId/UnitId | `5e694021` | LEDGER PASS; §4 tego dokumentu | PASS (z pozostawionymi u64, §4) |
-| P3.5A–E dane (29 plików) | `df8d8592` (5A, ostatni z LEDGER-SHA), `401a625f` (5B); 5C/5D/5E wg LEDGER zintegrowane | ZMIERZONO: 29/29 hash MATCH (§2.1), `include_str!` 29 (§2.2) | PASS dla pliku/zawartości; runtime — patrz P3.9 |
+| P3.4c newtypy CityId/UnitId | `5e694021` (przed rebase; ZMIERZONO r2: NIE jest przodkiem `17454b33`; odpowiedniki na parity-v2: `275297a2`, `0a04fc7c` — oba przodkowie `17454b33`) | LEDGER PASS; §4 tego dokumentu | PASS (z pozostawionymi u64, §4) |
+| P3.5A–E dane (29 plików) | `df8d8592` (5A, ostatni z LEDGER-SHA), `401a625f` (5B); 5C/5D/5E wg LEDGER zintegrowane | ZMIERZONO: 29/29 hash MATCH (§2.1), `include_str!` 29 (§2.2) | PASS dla pliku/zawartości (29/29); **runtime: NIE SPEŁNIONE** — patrz P3.9 |
 | P3.6–P3.7 (zakres w P3.5A–E) | jw. | jw. | PASS |
 | P3.8 assety | `1d53dcdb` (LEDGER: 428/428 PASS) | ZMIERZONO: 428/428, sumy zgodne (§3) | PASS |
 | P3.8b walidacja manifestu | `667f1743` | ZMIERZONO: `tests/assets_manifest.rs` 13/13 ok | PASS |
-| P3.9 loader/walidator (podpięcie modułów) | LEDGER: podpięcie `pub mod data;` | ZMIERZONO: `pub mod data;` w `lib.rs`; **brak wywołań produkcyjnych loadera** (§2.2) | PASS-WITH-NOTES (w literalnym sensie „ze źródła" NIE — §2.2) |
+| P3.9 loader/walidator (podpięcie modułów) | LEDGER: podpięcie `pub mod data;` | ZMIERZONO: `pub mod data;` w `lib.rs`; **brak wywołań produkcyjnych loadera** (§2.2) | **FAIL / OPEN** (klauzula „ze źródła” literalnie NIE spełniona w runtime — §2.2; ZMIERZONO r2: 0 wywołań loadera poza `src/data/**` i `tests/**`) |
 | P3.10 fixtures seedów/map/scenariuszy | BRAK | ZMIERZONO: brak `P3-10*` w `dyspozycje/rust-port/p3/`; `find rust-port -iname "*fixture*"` → 0 plików; LEDGER: „zablokowane" | **NIE ZAMKNIĘTE** (blokada: brak nagrań z web; P2.10 — D-FIX-1,3,4,9–14,16–19 otwarte) |
-| P3.11 testy zgodności liczby/ID civ | `f3cbbf04` (LEDGER PASS-WITH-NOTES) | ZMIERZONO: `data_compliance.rs` ok | PASS-WITH-NOTES (round-trip domknięty przez P3.15) |
-| P3.12 testy brakujących/uszkodzonych danych | `5cecefc8`/`4caa8717` (LEDGER PASS-WITH-NOTES) | ZMIERZONO: `data_loader.rs` 14 ok | PASS-WITH-NOTES |
+| P3.11 testy zgodności liczby/ID civ | `f3cbbf04` (przed rebase; ZMIERZONO r2: NIE przodek `17454b33`; odpowiedniki na parity-v2: `e67444a9`, `a9441bd9` — przodkowie `17454b33`) (LEDGER PASS-WITH-NOTES) | ZMIERZONO: `data_compliance.rs` ok | PASS-WITH-NOTES (round-trip domknięty przez P3.15) |
+| P3.12 testy brakujących/uszkodzonych danych | `5cecefc8`/`4caa8717` (przed rebase; ZMIERZONO r2: NIE przodkowie `17454b33`; odpowiedniki na parity-v2: `7f155227`, `ae9b85ea` — przodkowie `17454b33`) (LEDGER PASS-WITH-NOTES) | ZMIERZONO: `data_loader.rs` 14 ok | PASS-WITH-NOTES |
 | P3.14 fmt/clippy hygiene | `aa7b225b` (LEDGER PASS) | ZMIERZONO: fmt EXIT=0, clippy EXIT=0 | PASS |
 | P3.15 round-trip 29/29 | `f7aa0997` (LEDGER PASS) | ZMIERZONO: `roundtrip_covers_all_29_data_files` ok; N1/N2 (§2.3) | PASS-WITH-NOTES |
 | P3.16 bramki CI zielone | `17454b33` | ZMIERZONO: fmt 0, clippy 0, test 323/0 | PASS |
@@ -167,17 +169,17 @@ Dodatkowo: `gen.py` — `rust-port/engine/src/data/civilizations.rs:1` deklaruje
 | # | Punkt | Ocena | Blokuje |
 |---|---|---|---|
 | 1 | **Loader nie podpięty do runtime; domena nie czyta `gra/data`** (§2.2) | Klauzula 1 bramki NIE spełniona | **P6** (gameplay); P4 tylko jeśli P4 nie konsumuje danych gameplay |
-| 2 | **`recruitment.rs:204` hard-coded tabela; 75/75 wartości ≠ `units.json`** (LEDGER P2.9; P3.5B świadomie nie naprawione) | Realna rozbieżność danych | **P6** (rekrutacja) |
+| 2 | **`recruitment.rs:204` hard-coded tabela; 0/75 wierszy zgodnych w 4 polach z `units.json`** (ZMIERZONO r2; LEDGER P2.9; P3.5B świadomie nie naprawione) | Realna rozbieżność danych | **P6** (rekrutacja) |
 | 3 | P3.10 fixtures — brak (blokada: brak nagrań z web; P2.10 D-FIX otwarte) | Nie zamknięte | **P6 testy zgodności**; nie P4 |
-| 4 | OWNER: 91× `u64`/`i64`, `OwnerRef` nieobecny w kodzie (§4) | Dług kontraktu P2.3 §9 | **P6** (dyplomacja/handel/hot-seat) |
+| 4 | OWNER: 76 deklaracji `u64`/`i64` (ZMIERZONO r2), `OwnerRef` nieobecny w kodzie (§4) | Dług kontraktu P2.3 §9 | **P6** (dyplomacja/handel/hot-seat) |
 | 5 | CAMP: brak `CampId` (§4) | Dług | P6 (barbarzyńcy) |
 | 6 | `gen.py` nieobecny w repo (§5) | Nieodtwarzalna proweniencja | nie |
 | 7 | `src-tauri` nie buduje się w kontenerze (brak GTK3/gdk-3.0; LEDGER P0/P3.4b) | Blokada środowiskowa, NIE zweryfikowane w tym przebiegu | P2/P7 (wg LEDGER); nie P4 |
-| 8 | `tracing` nie podpięty do `bridge.rs` / `src-tauri` (LEDGER P3.3) | Dług | nie |
-| 9 | Round-trip N1/N2 dla 7/29 plików (§2.3) | Akceptowalne z notą | P2.7-zgodność zapisu, nie P4 |
-| 10 | 3 pliki MP3 `_wykluczone/` w manifeście (§3.2) | Decyzja właściciela NIE_ZMIERZONO | nie |
+| 8 | `tracing` nie podpięty do `bridge.rs` / `src-tauri` (ZMIERZONO r2: 0 odwołań do `tracing` w `src-tauri/src` i `rust-port/engine/src/bridge.rs`; LEDGER P3.3) | Dług | nie |
+| 9 | Round-trip N1/N2 dla 7/29 plików (§2.3; liczniki 1190/120 NIE_ZMIERZONO r2) | Akceptowalne z notą | P2.7-zgodność zapisu, nie P4 |
+| 10 | 3 pliki MP3 `_wykluczone/` w manifeście (§3.2) | **OPEN** — brak dowodu decyzji właściciela (P1.11 §2) | nie blokuje P4; decyzja właściciela |
 | 11 | `Cargo.lock` nieśledzony w repo (LEDGER P3.1–2); w worktree nieśledzony | Dług (nie commitować) | nie |
-| 12 | Serde `deny_unknown_fields` w 3 modułach (LEDGER P3.15) — pozostałe moduły nie | Dług | nie |
+| 12 | Serde `deny_unknown_fields` w 6 plikach `src/data/` (ZMIERZONO r2: `grep -rln deny_unknown_fields rust-port/engine/src`; LEDGER podawał 3 moduły) — pozostałe nie | Dług | nie |
 
 ---
 
@@ -186,7 +188,7 @@ Dodatkowo: `gen.py` — `rust-port/engine/src/data/civilizations.rs:1` deklaruje
 **Werdykt: FAIL** (w literalnym brzmieniu bramki PLAN §4).
 
 - Klauzula 2 „manifest assetów przechodzi walidację wobec web": **PASS** — 428/428 (rozmiary, SHA-1, brak braków, sumy per kategoria = P1.11 §2), 13/13 testów.
-- Klauzula 1 „dane ładowane ze źródła (nie hard-coded)": **NIE SPEŁNIONA w runtime** — 29/29 plików bajtowo zgodnych z pinem i loader z katalogu istnieje, ale silnik nie wywołuje loadera; domena zawiera ręczną tabelę rekrutacji rozjechaną z `units.json` (75/75 wartości).
+- Klauzula 1 „dane ładowane ze źródła (nie hard-coded)": **NIE SPEŁNIONA w runtime** — 29/29 plików bajtowo zgodnych z pinem i loader z katalogu istnieje, ale silnik nie wywołuje loadera; domena zawiera ręczną tabelę rekrutacji rozjechaną z `units.json` (0/75 wierszy zgodnych w 4 polach, ZMIERZONO r2).
 
 **Rekomendacja orkiestratora:**
 
