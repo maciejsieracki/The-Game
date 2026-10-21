@@ -27,7 +27,7 @@ dotykające tych samych plików — zawsze sekwencyjnie, nigdy w tej samej fali.
 
 | # | Temat | Faza | Runda | runId Workflow | Status | Ostatnia aktualizacja |
 |---|---|---|---|---|---|---|
-| 1 | `R-RUSTPORT-P2-7-SAVE-SERIALIZATION-Q1` | P2.7 (serializacja save) | 1/5 | `wf_c090f109-008` | DISPATCHED (w toku) | 2026-10-21 |
+| 1 | `R-RUSTPORT-P2-8-TAURI-ADAPTER-Q1` | P2.8 (granica Tauri) | 1/5 | `wf_5286b26f-07b` | DISPATCHED (w toku) | 2026-10-21 |
 | 2 | `R-RUSTPORT-P2-9-ASSET-DATA-MAPPING-Q1` | P2.9 (mapowanie danych) | 1/5 | `wf_67a7daca-629` | DISPATCHED (w toku) | 2026-10-21 |
 | 3 | — | — | — | — | **WOLNY** | 2026-10-21 |
 | 4 | — | — | — | — | **WOLNY** | 2026-10-21 |
