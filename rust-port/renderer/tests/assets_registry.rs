@@ -1,5 +1,6 @@
 //! RR-T6 API tests of the asset registry (CPU only): stale handles,
-//! reference counting, RAII scopes, "new before old" replacement, cache
+//! reference counting, RAII scopes, "new before old" replacement (checked
+//! via registry peak/slot reuse, not via the FakeGpu log), cache
 //! eviction, listener tokens and budget arithmetic.
 
 use std::cell::Cell;
@@ -99,10 +100,31 @@ fn registry_replace_creates_new_before_freeing_old() {
     let mut reg: Registry<R> = Registry::new();
     let old = reg.insert::<kinds::Buffer>("city v1", 100, buf(&gpu, 100));
     let old_id = reg.get(old).unwrap().id();
+    assert_eq!(reg.stats().kind(ResourceKind::Buffer).peak_live, 1);
     let _ = gpu.take_events();
 
     let new = reg.replace(old, "city v2", 200, buf(&gpu, 200)).unwrap();
     let new_id = reg.get(new).unwrap().id();
+    // ORDER evidence comes from the registry itself, not from the FakeGpu
+    // log: the new resource is allocated while evaluating the argument, i.e.
+    // before `replace` runs, so the log reads [Alloc, Free] in either order.
+    // (1) Both entries were live at the same time inside `replace`: the
+    //     peak rises 1 -> 2. Free-then-insert would keep the peak at 1.
+    // (2) The new entry could not reuse the old slot, because that slot was
+    //     still occupied when the new one was inserted. Free-then-insert
+    //     would pop the just-freed slot (same index, next generation).
+    assert_eq!(
+        reg.stats().kind(ResourceKind::Buffer).peak_live,
+        2,
+        "new must be inserted while old is still live"
+    );
+    assert_ne!(
+        new.raw().index(),
+        old.raw().index(),
+        "new must not reuse the old slot (old was still live at insert)"
+    );
+    // The log only proves that exactly the old resource was freed, once,
+    // and that the new one was not.
     assert_eq!(
         gpu.take_events(),
         vec![
@@ -115,7 +137,6 @@ fn registry_replace_creates_new_before_freeing_old() {
                 kind: ResourceKind::Buffer
             },
         ],
-        "new must exist before old is freed"
     );
     assert!(reg.get(old).is_err());
     assert_eq!(reg.stats().kind(ResourceKind::Buffer).live, 1);
@@ -140,9 +161,26 @@ fn owned_replace_creates_new_before_freeing_old_and_keeps_shared_old() {
         .insert::<kinds::Buffer>("m1", 10, buf(&gpu, 10))
         .unwrap();
     let old_id = model.with_resource(FakeResource::id).unwrap();
+    let old_handle = model.handle();
+    assert_eq!(
+        assets.stats().unwrap().kind(ResourceKind::Buffer).peak_live,
+        1
+    );
     let _ = gpu.take_events();
     model.replace("m2", 20, buf(&gpu, 20)).unwrap();
     let new_id = model.with_resource(FakeResource::id).unwrap();
+    // Order evidence from the registry (see the registry test above for
+    // why the FakeGpu log cannot prove it): peak 1 -> 2 and no slot reuse.
+    assert_eq!(
+        assets.stats().unwrap().kind(ResourceKind::Buffer).peak_live,
+        2,
+        "new must be inserted while old is still live"
+    );
+    assert_ne!(
+        model.handle().raw().index(),
+        old_handle.raw().index(),
+        "new must not reuse the old slot (old was still live at insert)"
+    );
     assert_eq!(
         gpu.take_events(),
         vec![

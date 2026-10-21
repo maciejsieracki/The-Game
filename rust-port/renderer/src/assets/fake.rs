@@ -5,7 +5,10 @@
 //! The counters here are kept **independently** of the registry's own
 //! bookkeeping, so tests can cross-check that a release in the registry
 //! really reached the resource's destructor. An optional event log records
-//! the exact alloc/free order (used by the "new before old" test).
+//! the exact alloc/free order. Note: it cannot prove the registry's
+//! "new before old" order of `replace`, because the new resource is
+//! allocated by the caller before `replace` runs; that order is checked on
+//! the registry side (`peak_live`, slot reuse).
 
 use std::cell::{Cell, RefCell};
 use std::fmt;
