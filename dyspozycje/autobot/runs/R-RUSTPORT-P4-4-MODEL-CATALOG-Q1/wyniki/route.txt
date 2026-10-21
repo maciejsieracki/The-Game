@@ -1,0 +1,85 @@
+RULES 85 DISTINCT_RULE_TARGETS 70
+Wojownik | EN=Warrior | Kamień | cat=miecznik |  | PL→buildWojownikOpus5@1603 | EN→buildWojownikOpus5@1603 | same
+Procarz | EN=Slinger | Brąz | cat=procarz |  | PL→buildProcarzBrazOpus5@1612 | EN→buildProcarzBrazOpus5@1612 | same
+Oszczepnik | EN=Javelineer | Kamień | cat=oszczepnik |  | PL→buildCategoryModel('oszczepnik')@None | EN→buildCategoryModel('oszczepnik')@None | same
+Łucznik | EN=Archer | Kamień | cat=lucznik |  | PL→buildCategoryModel('lucznik')@None | EN→buildCategoryModel('lucznik')@None | same
+Zwiadowca | EN=Scout | Kamień | cat=zwiadowca |  | PL→buildCategoryModel('zwiadowca')@None | EN→buildCategoryModel('zwiadowca')@None | same
+Włócznik | EN=Spearman | Brąz | cat=wlocznik |  | PL→buildWlocznikBrazOpus5@1610 | EN→buildWlocznikBrazOpus5@1610 | same
+Wojownik z mieczem i tarczą | EN=Swordsman | Brąz | cat=miecznik |  | PL→buildMiecznikBrazOpus5@1611 | EN→buildMiecznikBrazOpus5@1611 | same
+Rydwan (woły) | EN=Ox Chariot | Brąz | cat=rydwan |  | PL→buildRydwanWolyBrazOpus5@1613 | EN→buildRydwanWolyBrazOpus5@1613 | same
+Konnica | EN=Horseman | Brąz | cat=konnica |  | PL→buildKonnicaBrazOpus5@1637 | EN→buildKonnicaBrazOpus5@1637 | same
+Galera | EN=Galley | Brąz | cat=galera |  | PL→buildCategoryModel('galera')@None | EN→buildCategoryModel('galera')@None | same
+Falanga | EN=Phalanx | Żelazo | cat=falanga |  | PL→newBuildFalangita@1526 | EN→newBuildFalangita@1526 | same
+Hieros Lochos (Święty Zastęp) | EN=Hieros Lochos (Sacred Band) | Żelazo | cat=super | S | PL→buildSuperGreece@None | EN→buildSuperGreece@None | same
+Hastati | EN=Hastati | Żelazo | cat=legionista |  | PL→buildHastatiOpus5@1665 | EN→buildHastatiOpus5@1665 | same
+Triari | EN=Triari | Żelazo | cat=super | S | PL→buildTriari@None | EN→buildTriari@None | same
+Jeździec chiński | EN=Chinese Cavalry | Brąz | cat=konnica |  | PL→buildChineseCavalry@1584 | EN→buildChineseCavalry@1584 | same
+Hu Ben Wei (Gwardia Tygrysa) | EN=Hu Ben Wei (Tiger Guard) | Brąz | cat=super | S | PL→buildHuBenWei@1693 | EN→buildHuBenWei@1693 | same
+Impi | EN=Impi | Brąz | cat=wlocznik |  | PL→buildImpi@1564 | EN→buildImpi@1564 | same
+Oszczepnik Zulu (Izijula) | EN=Zulu Javelineer (Isijula) | Kamień | cat=oszczepnik |  | PL→buildZuluJavelineer@1565 | EN→buildZuluJavelineer@1565 | same
+uThulwana (Białe Tarcze) | EN=uThulwana (White Shields) | Brąz | cat=super | S | PL→buildUThulwana@1695 | EN→buildUThulwana@1695 | same
+Wojownik z maczugą (Chaska) | EN=Mace Warrior | Kamień | cat=maczuga |  | PL→buildMaceWarrior@1683 | EN→buildMaceWarrior@1683 | same
+Wojownik z toporem | EN=Axe Warrior | Brąz | cat=topor |  | PL→buildAxeWarriorInka@1684 | EN→buildCategoryModel('topor')@None | DIFF
+Procarz (Huaracoc) | EN=Slinger (Huaraca) | Brąz | cat=procarz |  | PL→buildInkaSlinger@1581 | EN→buildInkaSlinger@1582 | same
+Oszczepnik (Estólica) | EN=Javelineer (Estolica) | Kamień | cat=oszczepnik |  | PL→buildInkaJavelineer@1579 | EN→buildInkaJavelineer@1580 | same
+Królewska Gwardia | EN=Royal Guard | Brąz | cat=super | S | PL→buildInkaRoyalGuard@1697 | EN→buildInkaRoyalGuard@1697 | same
+Rydwan konny | EN=War Chariot | Brąz | cat=rydwan |  | PL→buildRydwanKonnyBrazOpus5@1644 | EN→buildRydwanKonnyBrazOpus5@1644 | same
+Łucznik egipski | EN=Egyptian Archer | Kamień | cat=lucznik |  | PL→buildEgyptianArcher@1571 | EN→buildEgyptianArcher@1571 | same
+Rydwan egipski | EN=Egyptian Chariot | Brąz | cat=rydwan |  | PL→buildEgyptianChariot@1577 | EN→buildEgyptianChariot@1577 | same
+Wojownik z khopesh | EN=Khopesh Warrior | Brąz | cat=miecznik |  | PL→buildKhopeshWarrior@1576 | EN→buildKhopeshWarrior@1576 | same
+Medżaj (Gwardia Faraona) | EN=Medjay (Pharaoh's Guard) | Brąz | cat=super | S | PL→buildMedjay@1688 | EN→buildMedjay@1688 | same
+Łucznik nubijski | EN=Nubian Archer | Brąz | cat=lucznik |  | PL→buildNubianArcherOpus5@1575 | EN→buildNubianArcherOpus5@1575 | same
+Łucznik sumeryjski | EN=Sumerian Archer | Kamień | cat=lucznik |  | PL→buildSumerianArcher@1568 | EN→buildSumerianArcher@1568 | same
+Rydwan sumeryjski | EN=Sumerian Chariot | Brąz | cat=rydwan |  | PL→buildSumerianChariot@1569 | EN→buildSumerianChariot@1569 | same
+Włócznik sumeryjski | EN=Sumerian Spearman | Brąz | cat=wlocznik |  | PL→buildSumerianSpearman@1567 | EN→buildSumerianSpearman@1567 | same
+Gwardia Królewska Sumeru | EN=Sumerian Royal Guard | Brąz | cat=super | S | PL→buildSumerianRoyalGuard@1691 | EN→buildSumerianRoyalGuard@1691 | same
+Wojownik mykeński | EN=Mycenaean Warrior | Brąz | cat=miecznik |  | PL→buildMycenaeanWarrior@1528 | EN→buildMycenaeanWarrior@1553 | same
+Rydwan mykeński | EN=Mycenaean Chariot | Brąz | cat=rydwan |  | PL→decorateChariot@1529 | EN→decorateChariot@1554 | same
+Wojownik Sherden | EN=Sherden Warrior | Brąz | cat=miecznik |  | PL→buildSherden@1539 | EN→buildSherden@1539 | same
+Halabardnik Shang | EN=Shang Halberdier | Brąz | cat=miecznik |  | PL→buildShangHalberdier@1540 | EN→buildShangHalberdier@1558 | same
+Rydwan Shang | EN=Shang Chariot | Brąz | cat=rydwan |  | PL→decorateChariot@1541 | EN→decorateChariot@1559 | same
+Łucznik akadyjski | EN=Akkadian Archer | Brąz | cat=lucznik |  | PL→buildAkkadianArcher@1544 | EN→buildAkkadianArcher@1544 | same
+Gaesatae | EN=Gaesatae | Żelazo | cat=miecznik |  | PL→buildGaesatae@1495 | EN→buildGaesatae@1495 | same
+Soldurii | EN=Soldurii | Żelazo | cat=miecznik |  | PL→buildSoldurii@1494 | EN→buildSoldurii@1494 | same
+Rydwan celtycki | EN=Celtic Chariot | Żelazo | cat=rydwan |  | PL→decorateChariot@1500 | EN→decorateChariot@1548 | same
+Wojownik germański | EN=Germanic Warrior | Żelazo | cat=super | S | PL→buildGermanSuper@None | EN→buildGermanSuper@None | same
+Berserker germański | EN=Germanic Berserker | Żelazo | cat=miecznik |  | PL→buildBerserkerZ3@1508 | EN→buildBerserkerZ3@1508 | same
+Taran | EN=Battering Ram | Kamień | cat=obleznicza |  | PL→buildBatteringRam@1649 | EN→buildBatteringRam@1649 | same
+Taran okuty | EN=Bronze-Shod Ram | Brąz | cat=obleznicza |  | PL→buildTaranOkutyOpus5@1648 | EN→buildTaranOkutyOpus5@1648 | same
+Katapulta | EN=Catapult | Żelazo | cat=obleznicza |  | PL→buildCatapult@1657 | EN→buildCatapult@1657 | same
+Wieża oblężnicza | EN=Siege Tower | Brąz | cat=obleznicza |  | PL→buildSiegeTower@1658 | EN→buildSiegeTower@1658 | same
+Wojownik tyrreński | EN=Tyrrhenian Warrior | Brąz | cat=topor |  | PL→buildTyrrhenian@1660 | EN→buildTyrrhenian@1660 | same
+Wojownik szekelesz | EN=Shekelesh Warrior | Brąz | cat=wlocznik |  | PL→buildShekelesh@1661 | EN→buildShekelesh@1661 | same
+Konnica lancowa asyryjska | EN=Assyrian Lancer | Żelazo | cat=konnica |  | PL→buildZelazoKonnicaLancowaAsyryjska@1620 | EN→buildZelazoKonnicaLancowaAsyryjska@1620 | same
+Konnica łucznicza asyryjska | EN=Assyrian Horse Archer | Żelazo | cat=konnica |  | PL→buildZelazoKonnicaLuczniczaAsyryjska@1621 | EN→buildZelazoKonnicaLuczniczaAsyryjska@1621 | same
+Łucznik asyryjski | EN=Assyrian Archer | Brąz | cat=lucznik |  | PL→buildAssyrianArcher@1669 | EN→buildAssyrianArcher@1669 | same
+Drużynnik | EN=Druzhinnik | Żelazo | cat=miecznik |  | PL→buildDruzynnik@1760 | EN→buildDruzynnik@1760 | same
+Jeździec z oszczepami | EN=Slavic Javelin Cavalry | Żelazo | cat=konnica |  | PL→buildZelazoJezdziecOszczepami@1632 | EN→buildZelazoJezdziecOszczepami@1632 | same
+Strażnik bram Harappy | EN=Harappan Gate Guard | Brąz | cat=wlocznik |  | PL→buildStraznikHarappy@1674 | EN→buildCategoryModel('wlocznik')@None | DIFF
+Piechota induska | EN=Indus Infantry | Brąz | cat=wlocznik |  | PL→buildPiechotaInduska@1675 | EN→buildPiechotaInduska@1675 | same
+Garnizon Harappy | EN=Harappan Garrison | Żelazo | cat=miecznik |  | PL→buildGarnizonHarappy@1714 | EN→buildGarnizonHarappy@1714 | same
+Rydwan Kapadokijski | EN=Cappadocian Chariot | Brąz | cat=rydwan |  | PL→buildRydwanKapadokijskiOpus5@1538 | EN→buildRydwanKapadokijskiOpus5@1538 | same
+Piechota hetycka | EN=Hittite Infantry | Brąz | cat=wlocznik |  | PL→buildPiechotaHetycka@1670 | EN→buildPiechotaHetycka@1670 | same
+Gwardia hetycka | EN=Hittite Guard | Żelazo | cat=miecznik |  | PL→buildGwardiaHetycka@1711 | EN→buildGwardiaHetycka@1711 | same
+Gwardia Ishtar | EN=Ishtar Guard | Brąz | cat=miecznik |  | PL→buildGwardiaIshtar@1671 | EN→buildGwardiaIshtar@1671 | same
+Wojownik babiloński | EN=Babylonian Warrior | Brąz | cat=miecznik |  | PL→buildWojownikBabilonski@1672 | EN→buildWojownikBabilonski@1672 | same
+Piechota neobabilońska | EN=Neo-Babylonian Infantry | Żelazo | cat=miecznik |  | PL→buildPiechotaNeobabilonska@1712 | EN→buildPiechotaNeobabilonska@1712 | same
+Tyrski miecznik | EN=Tyrian Swordsman | Żelazo | cat=miecznik |  | PL→buildTyrskiMiecznik@1748 | EN→buildTyrskiMiecznik@1748 | same
+Wojownik fenicki | EN=Phoenician Warrior | Brąz | cat=miecznik |  | PL→buildWojownikFenicki@1673 | EN→buildWojownikFenicki@1673 | same
+Gwardia Tyreńska | EN=Tyre Guard | Żelazo | cat=miecznik |  | PL→buildGwardiaTyrenska@1749 | EN→buildGwardiaTyrenska@1749 | same
+Thorakites | EN=Thorakites | Żelazo | cat=wlocznik |  | PL→buildThorakites@1751 | EN→buildThorakites@1751 | same
+Evocati | EN=Evocati | Żelazo | cat=super | S | PL→buildSuperRome@None | EN→buildSuperRome@None | same
+iButho z iklwa | EN=iButho with iklwa | Żelazo | cat=wlocznik |  | PL→buildIButho@1761 | EN→buildIButho@1761 | same
+Gwardzista z champi | EN=Champi Guardsman | Brąz | cat=maczuga |  | PL→buildGwardzistaChampi@1677 | EN→buildGwardzistaChampi@1677 | same
+Wojownik z żelaznym khopesh | EN=Iron Khopesh Warrior | Żelazo | cat=miecznik |  | PL→buildZelaznyKhopesh@1750 | EN→buildKhopeshWarrior@1576 | DIFF
+Mur tarcz (Sargonid) | EN=Shield Wall (Sargonid) | Żelazo | cat=wlocznik |  | PL→buildMurTarcz@1713 | EN→buildMurTarcz@1713 | same
+Miecznik galijski | EN=Gallic Swordsman | Żelazo | cat=miecznik |  | PL→buildMiecznikGalijski@1762 | EN→buildMiecznikGalijski@1762 | same
+PL_DISTINCT_ROUTES 73
+PL_CATEGORY_FALLBACK ['Oszczepnik', 'Łucznik', 'Zwiadowca', 'Galera']
+EN_DIFF_COUNT 3
+  EN_DIFF Wojownik z toporem / Axe Warrior : buildAxeWarriorInka -> buildCategoryModel('topor')
+  EN_DIFF Strażnik bram Harappy / Harappan Gate Guard : buildStraznikHarappy -> buildCategoryModel('wlocznik')
+  EN_DIFF Wojownik z żelaznym khopesh / Iron Khopesh Warrior : buildZelaznyKhopesh -> buildKhopeshWarrior
+UNUSED_BY_PL ['buildCeltWarrior', 'buildCrossbowman', 'buildGermanWarrior', 'buildHierosLochos', 'buildLegionRzymski']
+UNUSED_BY_PL_AND_EN ['buildCeltWarrior', 'buildCrossbowman', 'buildGermanWarrior', 'buildHierosLochos', 'buildLegionRzymski']
+ROUTE_COUNTS_PL [('decorateChariot', 3), ('buildWojownikOpus5', 1), ('buildProcarzBrazOpus5', 1), ("buildCategoryModel('oszczepnik')", 1)]

@@ -1,0 +1,309 @@
+# plik | IN (gra/src) | IN spoza gra/src | OUT (gra/src)
+render/braz-konnica-opus5.ts | IN 1: render/units.ts | TOOLS 0:  | OUT 1: render/hexutil.ts
+render/braz-lucznik-nubijski-opus5.ts | IN 1: render/units.ts | TOOLS 0:  | OUT 1: render/hexutil.ts
+render/braz-miecznik-opus5.ts | IN 1: render/units.ts | TOOLS 0:  | OUT 1: render/hexutil.ts
+render/braz-procarz-opus5.ts | IN 1: render/units.ts | TOOLS 0:  | OUT 1: render/hexutil.ts
+render/braz-rydwan-kapadokijski-opus5.ts | IN 1: render/units.ts | TOOLS 0:  | OUT 1: render/hexutil.ts
+render/braz-rydwan-konny-opus5.ts | IN 1: render/units.ts | TOOLS 0:  | OUT 1: render/hexutil.ts
+render/braz-rydwan-woly-opus5.ts | IN 1: render/units.ts | TOOLS 0:  | OUT 1: render/hexutil.ts
+render/braz-taran-opus5.ts | IN 1: render/units.ts | TOOLS 0:  | OUT 1: render/hexutil.ts
+render/braz-wlocznik-opus5.ts | IN 1: render/units.ts | TOOLS 0:  | OUT 1: render/hexutil.ts
+render/bronzeCity.ts | IN 8: battle/battleScene.ts,battle/siegeWall.ts,main.ts,render/bronzeCityRoblox.ts,render/cities.ts,render/settlementModel.ts,render/stoneCity.ts,render/stoneCityRoblox.ts | TOOLS 0:  | OUT 0:
+render/bronzeCityRoblox.ts | IN 1: render/settlementModel.ts | TOOLS 0:  | OUT 2: render/bronzeCity.ts,render/hexutil.ts
+render/camera.ts | IN 1: main.ts | TOOLS 2: gra/tools/bitwa-mapa-kamera-blokada-test.cjs,gra/tools/camera-zoom-block-test.cjs | OUT 0:
+render/cities.ts | IN 1: main.ts | TOOLS 41: gra/tools/.logic-test-13b.cjs,gra/tools/adjust-handel-split-suma-test.cjs,gra/tools/ai-nauka-podzial-tura1-seed-test.cjs,gra/tools/ai-praca-podzial-tura1-seed-test.cjs… | OUT 17: game/building-stock-cost.ts,game/cities.ts,game/display-names.ts,game/human-owners.ts,game/production.ts,input/picker.ts,render/bronzeCity.ts,render/cityMapOutline.ts,render/cityMapStatChip.ts,render/hexutil.ts,render/mapRenderStyle.ts,render/miasto-braz.ts,render/miasto-kamien.ts,render/settlementModel.ts,render/zoomLod.ts,types/hex.ts,types/map.ts
+render/cityMapOutline.ts | IN 1: render/cities.ts | TOOLS 0:  | OUT 2: render/hexShape.ts,render/hexutil.ts
+render/cityMapStatChip.ts | IN 2: main.ts,render/cities.ts | TOOLS 5: gra/tools/city-badge-growth-percent-test.cjs,gra/tools/city-badge-zoom-lod-test.cjs,gra/tools/city-growth-percent-rounding-parity-test.cjs,gra/tools/city-map-badge-test.cjs… | OUT 3: game/production.ts,render/unitOwnerEmblem.ts,render/zoomLod.ts
+render/cityOkolicaOverlay.ts | IN 1: main.ts | TOOLS 1: gra/tools/chlopek-pole-warstwy-test.cjs | OUT 10: game/human-owners.ts,game/okolica.ts,game/terrain-improvements.ts,render/hexutil.ts,render/mapRenderStyle.ts,render/rangeOverlay.ts,render/workerFieldOverlay.ts,types/hex.ts,types/map.ts,units/setup.ts
+render/countSceneOverlayCandidates.ts | IN 0:  | TOOLS 2: gra/tools/merge-decor-no-regress-test.cjs,gra/tools/scene-perf-diag.cjs | OUT 5: game/terrain-improvements.ts,render/mapRenderStyle.ts,types/hex.ts,types/map.ts,units/setup.ts
+render/dekor-laki-rowniny.ts | IN 1: render/scene.ts | TOOLS 1: gra/tools/merge-decor-no-regress-test.cjs | OUT 0:
+render/djungla-modele.ts | IN 1: render/scene.ts | TOOLS 1: gra/tools/merge-decor-no-regress-test.cjs | OUT 0:
+render/droga-6-ramion.ts | IN 2: render/improvements.ts,render/robloxImprovements.ts | TOOLS 1: gra/tools/droga-6-ramion-geom-test.cjs | OUT 1: map/road-network.ts
+render/fogDim.ts | IN 3: main.ts,render/scene.ts,render/workerFieldOverlay.ts | TOOLS 0:  | OUT 1: game/visibility.ts
+render/galera-model.ts | IN 1: render/units.ts | TOOLS 0:  | OUT 0:
+render/hastati-falangita.ts | IN 1: render/units.ts | TOOLS 1: gra/tools/.hastati-preview-entry.ts | OUT 1: render/hexutil.ts
+render/hastati-opus5.ts | IN 1: render/units.ts | TOOLS 1: gra/tools/.hastati-preview-entry.ts | OUT 1: render/hexutil.ts
+render/hexShape.ts | IN 1: render/cityMapOutline.ts | TOOLS 1: gra/tools/droga-6-ramion-geom-test.cjs | OUT 0:
+render/hexutil.ts | IN 55: battle/manualBattle.ts,main.ts,map/minimap.ts,map/territory-border.ts,render/braz-konnica-opus5.ts,render/braz-lucznik-nubijski-opus5.ts,render/braz-miecznik-opus5.ts,render/braz-procarz-opus5.ts,render/braz-rydwan-kapadokijski-opus5.ts,render/braz-rydwan-konny-opus5.ts,render/braz-rydwan-woly-opus5.ts,render/braz-taran-opus5.ts,render/braz-wlocznik-opus5.ts,render/bronzeCityRoblox.ts,render/cities.ts,render/cityMapOutline.ts,render/cityOkolicaOverlay.ts,render/hastati-falangita.ts,render/hastati-opus5.ts,render/jednostki-p1-rdzen.ts,render/jednostki-p2-inka.ts,render/jednostki-p3-dystans.ts,render/jednostki-p4-melee.ts,render/jednostki-p57-wlocznie-machiny.ts,render/jednostki-p6-super.ts,render/jednostki-p8a-bliskiwschod.ts,render/jednostki-p8b-rozni.ts,render/jednostki-z1-mezopotamia.ts,render/jednostki-z2-srodziemne.ts,render/jednostki-z3-plemiona.ts,render/kamien-bazowe-opus5.ts,render/kamien-inka-opus5.ts,render/kamien-lucznicy-opus5.ts,render/kamien-zulu-taran-opus5.ts,render/kon-nowy-model.ts,render/kopalnia-cyny-opus5.ts,render/kopalnia-zlota-opus5.ts,render/mapRenderStyle.ts,render/rangeOverlay.ts,render/scene.ts,render/siegeMarker.ts,render/stoneCityRoblox.ts,render/tradeRoutesOverlay.ts,render/unitOwnerEmblem.ts,render/unitStatPlate.ts,render/unitUpgradeBadges.ts,render/unitVeteranBadges.ts,render/units.ts,render/wonderModels.ts,render/wonderRenderer.ts,render/workerFieldOverlay.ts,render/zelazo-jezdziec-oszczepami-opus5.ts,render/zelazo-konnica-asyryjska-opus5.ts,ui/cityPanel.ts,wonderpreview/main.ts | TOOLS 17: gra/_backup/units.ts.TRUNC-as-found-b6,gra/tools/.zeton-max/main.ts,gra/tools/.zeton-mockup/main.ts,gra/tools/.zeton-tabliczka/kat.ts… | OUT 0:
+render/improvements.ts | IN 10: game/ai.ts,game/auto-improvements.ts,game/pending-improvements.ts,game/resource-access.ts,main.ts,map/improvement-build.ts,render/robloxImprovements.ts,ui/buildModeHud.ts,ui/hexContextTooltip.ts,ui/techDiscoveryNotice.ts | TOOLS 5: gra/podglad-sektory/main.ts,gra/tools/kopalnia-cyny-render-test.cjs,gra/tools/science-hub-unlock-icons-real-render-test.cjs,gra/tools/science-picker-tooltip-icons-real-render-test.cjs… | OUT 7: map/road-network.ts,render/droga-6-ramion.ts,render/kopalnia-cyny-opus5.ts,render/kopalnia-zlota-opus5.ts,render/mapRenderStyle.ts,render/robloxImprovements.ts,render/styleResources.ts
+render/jednostki-p1-rdzen.ts | IN 1: render/units.ts | TOOLS 1: gra/tools/.kamien-bazowe-preview-entry.ts | OUT 1: render/hexutil.ts
+render/jednostki-p2-inka.ts | IN 1: render/units.ts | TOOLS 0:  | OUT 1: render/hexutil.ts
+render/jednostki-p3-dystans.ts | IN 1: render/units.ts | TOOLS 3: gra/tools/.kamien-lucznicy-preview-entry.ts,gra/tools/.kamien-zulu-taran-preview-entry.ts,gra/tools/.kzt-shot.ts | OUT 1: render/hexutil.ts
+render/jednostki-p4-melee.ts | IN 1: render/units.ts | TOOLS 0:  | OUT 1: render/hexutil.ts
+render/jednostki-p57-wlocznie-machiny.ts | IN 1: render/units.ts | TOOLS 2: gra/tools/.kamien-zulu-taran-preview-entry.ts,gra/tools/.kzt-shot.ts | OUT 1: render/hexutil.ts
+render/jednostki-p6-super.ts | IN 1: render/units.ts | TOOLS 0:  | OUT 1: render/hexutil.ts
+render/jednostki-p8a-bliskiwschod.ts | IN 1: render/units.ts | TOOLS 0:  | OUT 1: render/hexutil.ts
+render/jednostki-p8b-rozni.ts | IN 1: render/units.ts | TOOLS 0:  | OUT 1: render/hexutil.ts
+render/jednostki-z1-mezopotamia.ts | IN 1: render/units.ts | TOOLS 0:  | OUT 1: render/hexutil.ts
+render/jednostki-z2-srodziemne.ts | IN 1: render/units.ts | TOOLS 0:  | OUT 1: render/hexutil.ts
+render/jednostki-z3-plemiona.ts | IN 1: render/units.ts | TOOLS 0:  | OUT 1: render/hexutil.ts
+render/kamien-bazowe-opus5.ts | IN 1: render/units.ts | TOOLS 1: gra/tools/.kamien-bazowe-preview-entry.ts | OUT 1: render/hexutil.ts
+render/kamien-inka-opus5.ts | IN 1: render/units.ts | TOOLS 0:  | OUT 1: render/hexutil.ts
+render/kamien-lucznicy-opus5.ts | IN 1: render/units.ts | TOOLS 1: gra/tools/.kamien-lucznicy-preview-entry.ts | OUT 1: render/hexutil.ts
+render/kamien-zulu-taran-opus5.ts | IN 1: render/units.ts | TOOLS 2: gra/tools/.kamien-zulu-taran-preview-entry.ts,gra/tools/.kzt-shot.ts | OUT 1: render/hexutil.ts
+render/kon-nowy-model.ts | IN 3: render/styleResources.ts,render/ulepszenia-modele-p3a.ts,render/units.ts | TOOLS 1: gra/tools/merge-decor-no-regress-test.cjs | OUT 1: render/hexutil.ts
+render/kopalnia-cyny-opus5.ts | IN 2: render/improvements.ts,render/robloxImprovements.ts | TOOLS 1: gra/tools/kopalnia-cyny-render-test.cjs | OUT 1: render/hexutil.ts
+render/kopalnia-zlota-opus5.ts | IN 2: render/improvements.ts,render/robloxImprovements.ts | TOOLS 0:  | OUT 1: render/hexutil.ts
+render/lasy-modele.ts | IN 1: render/scene.ts | TOOLS 1: gra/tools/merge-decor-no-regress-test.cjs | OUT 0:
+render/mapRenderStyle.ts | IN 16: main.ts,render/cities.ts,render/cityOkolicaOverlay.ts,render/countSceneOverlayCandidates.ts,render/improvements.ts,render/minecraftScene.ts,render/rangeOverlay.ts,render/robloxImprovements.ts,render/robloxScene.ts,render/scene.ts,render/settlementModel.ts,render/styleResources.ts,render/tradeRoutesOverlay.ts,render/units.ts,render/wonderRenderer.ts,render/workerFieldOverlay.ts | TOOLS 8: gra/tools/.zloze-mockup/main.ts,gra/tools/_tmp-river-audit.cjs,gra/tools/map-coast-buffer-test.cjs,gra/tools/map-quality-forest-parity-test.cjs… | OUT 5: map/gen-helpers.ts,render/hexutil.ts,render/teren-gory-wzgorza.ts,types/hex.ts,types/map.ts
+render/mergeDecor.ts | IN 2: main.ts,render/scene.ts | TOOLS 1: gra/tools/merge-decor-no-regress-test.cjs | OUT 0:
+render/miasto-braz.ts | IN 1: render/cities.ts | TOOLS 0:  | OUT 1: render/miasto-kamien.ts
+render/miasto-kamien.ts | IN 2: render/cities.ts,render/miasto-braz.ts | TOOLS 1: gra/tools/.palisada-obrys-entry.ts | OUT 0:
+render/minecraftScene.ts | IN 0:  | TOOLS 0:  | OUT 3: render/mapRenderStyle.ts,render/scene.ts,types/map.ts
+render/oaza-pustynia.ts | IN 1: render/scene.ts | TOOLS 0:  | OUT 0:
+render/pastwisko-modele.ts | IN 3: render/robloxImprovements.ts,render/styleResources.ts,render/swinia-trzoda.ts | TOOLS 1: gra/tools/diplomacy-goods-kat-test.cjs | OUT 0:
+render/perfDebugOverlay.ts | IN 1: main.ts | TOOLS 0:  | OUT 0:
+render/rangeOverlay.ts | IN 2: main.ts,render/cityOkolicaOverlay.ts | TOOLS 4: gra/tools/granice-pas-pomiar.cjs,gra/tools/granice-relacja-dyplomatyczna-test.cjs,gra/tools/granice-styk-nakladanie-test.cjs,gra/tools/kopalnia-podswietlenie-heksow-test.cjs | OUT 5: map/territory-border.ts,render/hexutil.ts,render/mapRenderStyle.ts,types/hex.ts,types/map.ts
+render/resources.ts | IN 1: render/styleResources.ts | TOOLS 1: gra/tools/kopalnia-cyny-render-test.cjs | OUT 1: types/hex.ts
+render/riverLod.ts | IN 1: render/scene.ts | TOOLS 1: gra/tools/river-fog-visibility-test.cjs | OUT 0:
+render/robloxCity.ts | IN 2: render/robloxScene.ts,render/scene.ts | TOOLS 0:  | OUT 0:
+render/robloxImprovements.ts | IN 2: render/improvements.ts,render/scene.ts | TOOLS 1: gra/tools/kopalnia-cyny-render-test.cjs | OUT 12: map/road-network.ts,render/droga-6-ramion.ts,render/improvements.ts,render/kopalnia-cyny-opus5.ts,render/kopalnia-zlota-opus5.ts,render/mapRenderStyle.ts,render/pastwisko-modele.ts,render/styleResources.ts,render/swinia-trzoda.ts,render/ulepszenia-modele-p2.ts,render/ulepszenia-modele-p3a.ts,render/ulepszenia-modele-p3b.ts
+render/robloxScene.ts | IN 0:  | TOOLS 0:  | OUT 4: render/mapRenderStyle.ts,render/robloxCity.ts,render/scene.ts,types/map.ts
+render/scene.ts | IN 5: main.ts,render/minecraftScene.ts,render/robloxScene.ts,ui/perfReport.ts,ui/sceneTimingReport.ts | TOOLS 2: gra/tools/merge-decor-no-regress-test.cjs,gra/tools/river-fog-visibility-test.cjs | OUT 19: game/terrain-improvements.ts,game/visibility.ts,input/picker.ts,map/gen-helpers.ts,render/dekor-laki-rowniny.ts,render/djungla-modele.ts,render/fogDim.ts,render/hexutil.ts,render/lasy-modele.ts,render/mapRenderStyle.ts,render/mergeDecor.ts,render/oaza-pustynia.ts,render/riverLod.ts,render/robloxCity.ts,render/robloxImprovements.ts,render/teren-gory-wzgorza.ts,render/zoomLod.ts,types/hex.ts,types/map.ts
+render/settlementModel.ts | IN 2: main.ts,render/cities.ts | TOOLS 0:  | OUT 5: render/bronzeCity.ts,render/bronzeCityRoblox.ts,render/mapRenderStyle.ts,render/stoneCity.ts,render/stoneCityRoblox.ts
+render/siegeCampModels.ts | IN 1: render/siegeMarker.ts | TOOLS 0:  | OUT 1: game/siegeMachines.ts
+render/siegeCampSync.ts | IN 1: main.ts | TOOLS 0:  | OUT 1: game/siegeMachines.ts
+render/siegeMarker.ts | IN 1: main.ts | TOOLS 0:  | OUT 4: game/siegeMachines.ts,render/hexutil.ts,render/siegeCampModels.ts,types/map.ts
+render/stoneCity.ts | IN 2: render/settlementModel.ts,render/stoneCityRoblox.ts | TOOLS 0:  | OUT 1: render/bronzeCity.ts
+render/stoneCityRoblox.ts | IN 1: render/settlementModel.ts | TOOLS 0:  | OUT 3: render/bronzeCity.ts,render/hexutil.ts,render/stoneCity.ts
+render/styleResources.ts | IN 3: main.ts,render/improvements.ts,render/robloxImprovements.ts | TOOLS 3: gra/tools/.zloze-mockup/main.ts,gra/tools/kopalnia-cyny-render-test.cjs,gra/tools/zloze-zloto-render-test.cjs | OUT 7: render/kon-nowy-model.ts,render/mapRenderStyle.ts,render/pastwisko-modele.ts,render/resources.ts,render/swinia-trzoda.ts,render/ulepszenia-modele-p3b.ts,types/hex.ts
+render/swinia-trzoda.ts | IN 2: render/robloxImprovements.ts,render/styleResources.ts | TOOLS 0:  | OUT 1: render/pastwisko-modele.ts
+render/tarasy-model.ts | IN 1: main.ts | TOOLS 0:  | OUT 0:
+render/teren-gory-wzgorza.ts | IN 3: main.ts,render/mapRenderStyle.ts,render/scene.ts | TOOLS 1: gra/tools/merge-decor-no-regress-test.cjs | OUT 0:
+render/tradeRoutesOverlay.ts | IN 1: main.ts | TOOLS 0:  | OUT 4: render/hexutil.ts,render/mapRenderStyle.ts,types/hex.ts,types/map.ts
+render/ulepszenia-modele-p2.ts | IN 1: render/robloxImprovements.ts | TOOLS 1: gra/tools/kopalnia-cyny-render-test.cjs | OUT 0:
+render/ulepszenia-modele-p3a.ts | IN 1: render/robloxImprovements.ts | TOOLS 0:  | OUT 1: render/kon-nowy-model.ts
+render/ulepszenia-modele-p3b.ts | IN 2: render/robloxImprovements.ts,render/styleResources.ts | TOOLS 2: gra/tools/kopalnia-cyny-render-test.cjs,gra/tools/zloze-zloto-render-test.cjs | OUT 0:
+render/unitOwnerEmblem.ts | IN 5: main.ts,render/cityMapStatChip.ts,render/unitStatPlate.ts,render/unitUpgradeBadges.ts,render/units.ts | TOOLS 3: gra/tools/.zeton-max/main.ts,gra/tools/.zeton-tabliczka/kat.ts,gra/tools/.zeton-tabliczka/main.ts | OUT 1: render/hexutil.ts
+render/unitStatPlate.ts | IN 2: render/unitUpgradeBadges.ts,render/units.ts | TOOLS 2: gra/tools/.zeton-tabliczka/kat.ts,gra/tools/.zeton-tabliczka/main.ts | OUT 3: render/hexutil.ts,render/unitOwnerEmblem.ts,render/unitVitalsPalette.ts
+render/unitUpgradeBadges.ts | IN 3: main.ts,render/unitVeteranBadges.ts,render/units.ts | TOOLS 3: gra/tools/.zeton-max/main.ts,gra/tools/.zeton-tabliczka/kat.ts,gra/tools/.zeton-tabliczka/main.ts | OUT 5: game/unit-building-bonuses.ts,game/veteran.ts,render/hexutil.ts,render/unitOwnerEmblem.ts,render/unitStatPlate.ts
+render/unitVeteranBadges.ts | IN 1: render/units.ts | TOOLS 3: gra/tools/.zeton-max/main.ts,gra/tools/.zeton-tabliczka/kat.ts,gra/tools/.zeton-tabliczka/main.ts | OUT 3: game/veteran.ts,render/hexutil.ts,render/unitUpgradeBadges.ts
+render/unitVitalsPalette.ts | IN 2: render/unitStatPlate.ts,ui/hexContextTooltip.ts | TOOLS 0:  | OUT 0:
+render/units.ts | IN 4: battle/battleScene.ts,battle/manualBattle.ts,main.ts,ui/unitMiniPreview.ts | TOOLS 17: gra/tools/.zeton-max/main.ts,gra/tools/.zeton-mockup/main.ts,gra/tools/.zeton-tabliczka/kat.ts,gra/tools/.zeton-tabliczka/main.ts… | OUT 42: game/armyMerge.ts,game/human-owners.ts,input/picker.ts,render/braz-konnica-opus5.ts,render/braz-lucznik-nubijski-opus5.ts,render/braz-miecznik-opus5.ts,render/braz-procarz-opus5.ts,render/braz-rydwan-kapadokijski-opus5.ts,render/braz-rydwan-konny-opus5.ts,render/braz-rydwan-woly-opus5.ts,render/braz-taran-opus5.ts,render/braz-wlocznik-opus5.ts,render/galera-model.ts,render/hastati-falangita.ts,render/hastati-opus5.ts,render/hexutil.ts,render/jednostki-p1-rdzen.ts,render/jednostki-p2-inka.ts,render/jednostki-p3-dystans.ts,render/jednostki-p4-melee.ts,render/jednostki-p57-wlocznie-machiny.ts,render/jednostki-p6-super.ts,render/jednostki-p8a-bliskiwschod.ts,render/jednostki-p8b-rozni.ts,render/jednostki-z1-mezopotamia.ts,render/jednostki-z2-srodziemne.ts,render/jednostki-z3-plemiona.ts,render/kamien-bazowe-opus5.ts,render/kamien-inka-opus5.ts,render/kamien-lucznicy-opus5.ts,render/kamien-zulu-taran-opus5.ts,render/kon-nowy-model.ts,render/mapRenderStyle.ts,render/unitOwnerEmblem.ts,render/unitStatPlate.ts,render/unitUpgradeBadges.ts,render/unitVeteranBadges.ts,render/zelazo-jezdziec-oszczepami-opus5.ts,render/zelazo-konnica-asyryjska-opus5.ts,types/hex.ts,types/map.ts,units/setup.ts
+render/wioska-oboz.ts | IN 1: main.ts | TOOLS 0:  | OUT 0:
+render/wonderModels.ts | IN 2: render/wonderRenderer.ts,wonderpreview/main.ts | TOOLS 0:  | OUT 1: render/hexutil.ts
+render/wonderRenderer.ts | IN 1: main.ts | TOOLS 0:  | OUT 5: render/hexutil.ts,render/mapRenderStyle.ts,render/wonderModels.ts,types/hex.ts,types/map.ts
+render/workerFieldOverlay.ts | IN 2: main.ts,render/cityOkolicaOverlay.ts | TOOLS 1: gra/tools/chlopek-pole-warstwy-test.cjs | OUT 5: render/fogDim.ts,render/hexutil.ts,render/mapRenderStyle.ts,types/hex.ts,types/map.ts
+render/zelazo-jezdziec-oszczepami-opus5.ts | IN 1: render/units.ts | TOOLS 0:  | OUT 1: render/hexutil.ts
+render/zelazo-konnica-asyryjska-opus5.ts | IN 1: render/units.ts | TOOLS 0:  | OUT 1: render/hexutil.ts
+render/zoomLod.ts | IN 3: render/cities.ts,render/cityMapStatChip.ts,render/scene.ts | TOOLS 1: gra/tools/city-badge-zoom-lod-test.cjs | OUT 0:
+battle/battleScene.ts | IN 4: battle/mapFieldBattle.ts,battle/testBattle.ts,main.ts,oblezenie/main.ts | TOOLS 1: gra/tools/auto-battle-simultaneous-test.cjs | OUT 28: audio/muzyka-antyczna.ts,battle/autoBatchPhase.ts,battle/battle-terrain.ts,battle/battleHudTheme.ts,battle/battleMinimap.ts,battle/battleSceneOpen.ts,battle/battleTerrainTooltip.ts,battle/endDetails1E.ts,battle/endScreen1E.ts,battle/siegeHud1E.ts,battle/siegeWall.ts,game/army-starvation.ts,game/battle-loot.ts,game/battle-summary.ts,game/city-defense.ts,game/civ-bonuses.ts,game/combat.ts,game/gold-deficit.ts,game/unit-building-bonuses.ts,game/unit-power.ts,game/veteran.ts,input/picker.ts,render/bronzeCity.ts,render/units.ts,ui/icons/brandAssets.ts,ui/leaderPortraits.ts,ui/postBattleSummary.ts,units/battleRoster.ts
+battle/manualBattle.ts | IN 0:  | TOOLS 0:  | OUT 7: game/army-starvation.ts,game/civ-bonuses.ts,game/combat.ts,game/gold-deficit.ts,game/veteran.ts,render/hexutil.ts,render/units.ts
+battle/siegeWall.ts | IN 1: battle/battleScene.ts | TOOLS 0:  | OUT 1: render/bronzeCity.ts
+input/picker.ts | IN 5: battle/battleScene.ts,main.ts,render/cities.ts,render/scene.ts,render/units.ts | TOOLS 1: gra/tools/picker-test.cjs | OUT 1: units/setup.ts
+main.ts | IN 0:  | TOOLS 0:  | OUT 283: audio/ambiencePrefs.ts,audio/musicPrefs.ts,audio/muzyka-antyczna.ts,audio/sfxPrefs.ts,battle/battle-terrain.ts,battle/battleScene.ts,battle/battleSceneOpen.ts,battle/mapFieldBattle.ts,battle/testBattle.ts,buildInfo.ts,data/loader.ts,game/ai-city-capture-executor.ts,game/ai-cs-absorption.ts,game/ai-difficulty-bonus.ts,game/ai-fog.ts,game/ai-major-absorb.ts,game/ai-moc-diag.ts,game/ai-resource-needs.ts,game/ai.ts,game/army-concentration.ts,game/army-cycle.ts,game/army-starvation.ts,game/armyMerge.ts,game/auto-battle-power.ts,game/auto-improvements.ts,game/auto-manage.ts,game/barbarians.ts,game/battle-loot.ts,game/battle-summary.ts,game/border-march-scan.ts,game/braz-access.ts,game/building-resource-gate.ts,game/building-stock-cost.ts,game/building-upgrades.ts,game/capital-capture.ts,game/cities.ts,game/citizen-resource-upkeep.ts,game/city-defense.ts,game/city-founding.ts,game/city-hex-clear.ts,game/city-hex-movement.ts,game/city-state-difficulty.ts,game/civ-ai-allocation.ts,game/civ-ai-data.ts,game/civ-bonuses.ts,game/civ-entry-epoch.ts,game/civ-names.ts,game/civ-roster.ts,game/civ-visual.ts,game/cluster-start.ts,game/combat.ts,game/conquest-stability.ts,game/converters.ts,game/culture-religion.ts,game/cyna-access.ts,game/danina-nazwa.ts,game/defenseBreakdown.ts,game/diag-log.ts,game/difficulty-cost.ts,game/diplomacy-acceptance-points.ts,game/diplomacy-ai-balance.ts,game/diplomacy-ai-offer-balance.ts,game/diplomacy-audience-actions.ts,game/diplomacy-barbarian-cooperation.ts,game/diplomacy-basket-transfer.ts,game/diplomacy-border-march.ts,game/diplomacy-credibility.ts,game/diplomacy-display.ts,game/diplomacy-economy.ts,game/diplomacy-factors.ts,game/diplomacy-goods.ts,game/diplomacy-layers.ts,game/diplomacy-locks.ts,game/diplomacy-pair-summary.ts,game/diplomacy-peace-lock.ts,game/diplomacy-penalty-preview.ts,game/diplomacy-pn-engine.ts,game/diplomacy-proposals.ts,game/diplomacy-rejection-cooldown.ts,game/diplomacy-resource-trade-pick.ts,game/diplomacy-tech-trade.ts,game/diplomacy-treaties.ts,game/diplomacy-unit-transfer.ts,game/diplomacy-value-catalog.ts,game/diplomacy.ts,game/display-names.ts,game/economy-upkeep.ts,game/economy.ts,game/effective-difficulty-for-owner.ts,game/embarkation.ts,game/empire-city-defaults.ts,game/empire-diplo-resource-flow.ts,game/empire-food.ts,game/empire-handel-split.ts,game/eot-event-defer.ts,game/era-change-notify.ts,game/era-gate-ui.ts,game/first-player-city.ts,game/forced-war-bronze.ts,game/forced-war-common.ts,game/forced-war-iron.ts,game/forced-war-stone.ts,game/forced-war-waves.ts,game/fort-territory.ts,game/fsa-autosave.ts,game/gold-deficit.ts,game/human-owners.ts,game/improvement-tech.ts,game/livestock-unlock.ts,game/load-map-source.ts,game/manpower.ts,game/mapSiegeDetect.ts,game/mennica-zloto-grace.ts,game/okolica.ts,game/order.ts,game/owner-epoch.ts,game/owner-utils.ts,game/pending-improvements.ts,game/planned-march.ts,game/playerState.ts,game/playtestMapaSwiata.ts,game/playtestMiastoEkonomia.ts,game/playtestOdskok3v3.ts,game/playtestWalkaMapy.ts,game/population-growth-v85.ts,game/post-battle-map.ts,game/post-capture-law.ts,game/power-objective.ts,game/power-options.ts,game/power-ranking.ts,game/power.ts,game/production.ts,game/r-stawki-strojenie.ts,game/rally-point.ts,game/relief-preserving-improvements.ts,game/research.ts,game/resource-access.ts,game/resource-usage-breakdown.ts,game/ruch-swiata-tempo.ts,game/save-label.ts,game/save.ts,game/scout-auto-explore.ts,game/side-panel-event-link.ts,game/side-panel-event-priority.ts,game/siege.ts,game/siegeAi.ts,game/siegeDefenders.ts,game/siegeMachines.ts,game/society-breakdown.ts,game/society-inputs.ts,game/spich-auto-ration-notify.ts,game/tech-tempo.ts,game/terrain-improvements.ts,game/trade-routes.ts,game/triumph-city-state.ts,game/turn-economy.ts,game/unit-building-bonuses.ts,game/unit-card-stats.ts,game/unit-power.ts,game/unit-replace-context.ts,game/veteran.ts,game/victory.ts,game/villageRewards.ts,game/visibility.ts,game/wealth.ts,game/wonder-availability.ts,game/wonder-map-build.ts,game/wonders-data.ts,game/zelazo-access.ts,game/zloto-access.ts,input/picker.ts,map/clusters.ts,map/deposit-era.ts,map/gen-helpers.ts,map/generator.ts,map/improvement-build.ts,map/map-attack-city.ts,map/mapGenAsync.ts,map/mapGenProgress.ts,map/mapSnapshot.ts,map/minimap.ts,map/newGameMapDefaults.ts,map/range-hexes.ts,map/road-movement.ts,map/road-network.ts,map/startScoring.ts,map/territory-work.ts,map/territory.ts,map/wonder-placement.ts,render/bronzeCity.ts,render/camera.ts,render/cities.ts,render/cityMapStatChip.ts,render/cityOkolicaOverlay.ts,render/fogDim.ts,render/hexutil.ts,render/improvements.ts,render/mapRenderStyle.ts,render/mergeDecor.ts,render/perfDebugOverlay.ts,render/rangeOverlay.ts,render/scene.ts,render/settlementModel.ts,render/siegeCampSync.ts,render/siegeMarker.ts,render/styleResources.ts,render/tarasy-model.ts,render/teren-gory-wzgorza.ts,render/tradeRoutesOverlay.ts,render/unitOwnerEmblem.ts,render/unitUpgradeBadges.ts,render/units.ts,render/wioska-oboz.ts,render/wonderRenderer.ts,render/workerFieldOverlay.ts,types/diplomacy.ts,types/hex.ts,types/map.ts,types/player.ts,ui/armyListHud.ts,ui/armyMergePanel.ts,ui/armyMergePickPanel.ts,ui/armySplitPanel.ts,ui/armyStackHud.ts,ui/cityAttackChoice.ts,ui/cityCaptureNotice.ts,ui/cityForeignPick.ts,ui/cityListHud.ts,ui/cityPanel.ts,ui/cityUnitPick.ts,ui/cityUxFrame.ts,ui/civElimNotice.ts,ui/diploListHud.ts,ui/diploUiSkin.ts,ui/diplomacyAudience.ts,ui/diplomacyNegotiationModal.ts,ui/diplomacyPanel.ts,ui/diplomacyPendingHud.ts,ui/diplomacyProposalBanner.ts,ui/diplomacyTradeBasket.ts,ui/empireDetailPanel.ts,ui/empireDetailTypes.ts,ui/empireOverlayHud.ts,ui/escapeOverlayStack.ts,ui/formatPl.ts,ui/gamePauseMenu.ts,ui/hexContextTooltip.ts,ui/hotSeatHandoff.ts,ui/hud.ts,ui/icons/brandAssets.ts,ui/improvementBuildConfirm.ts,ui/interHumanDiplomacyHud.ts,ui/leaderPortraits.ts,ui/mainMenu.ts,ui/mapLoadingOverlay.ts,ui/mapUnitCursor.ts,ui/newGameFlow.ts,ui/orderPanel.ts,ui/perfReport.ts,ui/perfTestPanel.ts,ui/postBattleSummary.ts,ui/power-labels.ts,ui/powerOverlayHud.ts,ui/preBattle.ts,ui/saveLoadDialog.ts,ui/sceneTimingReport.ts,ui/scienceHubHud.ts,ui/sciencePicker.ts,ui/siegeMapPanel.ts,ui/techDiscoveryNotice.ts,ui/techIcons.ts,ui/techTreeView.ts,ui/triumphCityStateNotice.ts,ui/turnTransitionOverlay.ts,ui/uiParams.ts,ui/unitForeignPick.ts,ui/unitInfoCard.ts,ui/unitReplacePicker.ts,ui/victoryScreen.ts,ui/wikiHubHud.ts,ui/wonderCompletedNotice.ts,units/battleRoster.ts,units/setup.ts
+ui/perfTestPanel.ts | IN 1: main.ts | TOOLS 0:  | OUT 5: map/mapGenAsync.ts,perf/hardwareProfile.ts,ui/brandTokenVars.ts,ui/icons/brandAssets.ts,ui/uiParams.ts
+ui/unitMiniPreview.ts | IN 3: ui/cityPanel.ts,ui/entityCards/renderer.ts,ui/unitInfoCard.ts | TOOLS 1: gra/tools/unit-card-3d-preview-coverage-test.cjs | OUT 3: data/loader.ts,render/units.ts,units/setup.ts
+wonderpreview/main.ts | IN 0:  | TOOLS 0:  | OUT 2: render/hexutil.ts,render/wonderModels.ts
+
+# cykle 2-elementowe (A importuje B i B importuje A), pliki inwentarza
+CYCLE render/improvements.ts <-> render/robloxImprovements.ts
+
+# krawędzie render/** + 8 spoza (A -> B), tylko między plikami inwentarza
+EDGE render/braz-konnica-opus5.ts -> render/hexutil.ts
+EDGE render/braz-lucznik-nubijski-opus5.ts -> render/hexutil.ts
+EDGE render/braz-miecznik-opus5.ts -> render/hexutil.ts
+EDGE render/braz-procarz-opus5.ts -> render/hexutil.ts
+EDGE render/braz-rydwan-kapadokijski-opus5.ts -> render/hexutil.ts
+EDGE render/braz-rydwan-konny-opus5.ts -> render/hexutil.ts
+EDGE render/braz-rydwan-woly-opus5.ts -> render/hexutil.ts
+EDGE render/braz-taran-opus5.ts -> render/hexutil.ts
+EDGE render/braz-wlocznik-opus5.ts -> render/hexutil.ts
+EDGE render/bronzeCityRoblox.ts -> render/bronzeCity.ts
+EDGE render/bronzeCityRoblox.ts -> render/hexutil.ts
+EDGE render/cities.ts -> input/picker.ts
+EDGE render/cities.ts -> render/bronzeCity.ts
+EDGE render/cities.ts -> render/cityMapOutline.ts
+EDGE render/cities.ts -> render/cityMapStatChip.ts
+EDGE render/cities.ts -> render/hexutil.ts
+EDGE render/cities.ts -> render/mapRenderStyle.ts
+EDGE render/cities.ts -> render/miasto-braz.ts
+EDGE render/cities.ts -> render/miasto-kamien.ts
+EDGE render/cities.ts -> render/settlementModel.ts
+EDGE render/cities.ts -> render/zoomLod.ts
+EDGE render/cityMapOutline.ts -> render/hexShape.ts
+EDGE render/cityMapOutline.ts -> render/hexutil.ts
+EDGE render/cityMapStatChip.ts -> render/unitOwnerEmblem.ts
+EDGE render/cityMapStatChip.ts -> render/zoomLod.ts
+EDGE render/cityOkolicaOverlay.ts -> render/hexutil.ts
+EDGE render/cityOkolicaOverlay.ts -> render/mapRenderStyle.ts
+EDGE render/cityOkolicaOverlay.ts -> render/rangeOverlay.ts
+EDGE render/cityOkolicaOverlay.ts -> render/workerFieldOverlay.ts
+EDGE render/countSceneOverlayCandidates.ts -> render/mapRenderStyle.ts
+EDGE render/hastati-falangita.ts -> render/hexutil.ts
+EDGE render/hastati-opus5.ts -> render/hexutil.ts
+EDGE render/improvements.ts -> render/droga-6-ramion.ts
+EDGE render/improvements.ts -> render/kopalnia-cyny-opus5.ts
+EDGE render/improvements.ts -> render/kopalnia-zlota-opus5.ts
+EDGE render/improvements.ts -> render/mapRenderStyle.ts
+EDGE render/improvements.ts -> render/robloxImprovements.ts
+EDGE render/improvements.ts -> render/styleResources.ts
+EDGE render/jednostki-p1-rdzen.ts -> render/hexutil.ts
+EDGE render/jednostki-p2-inka.ts -> render/hexutil.ts
+EDGE render/jednostki-p3-dystans.ts -> render/hexutil.ts
+EDGE render/jednostki-p4-melee.ts -> render/hexutil.ts
+EDGE render/jednostki-p57-wlocznie-machiny.ts -> render/hexutil.ts
+EDGE render/jednostki-p6-super.ts -> render/hexutil.ts
+EDGE render/jednostki-p8a-bliskiwschod.ts -> render/hexutil.ts
+EDGE render/jednostki-p8b-rozni.ts -> render/hexutil.ts
+EDGE render/jednostki-z1-mezopotamia.ts -> render/hexutil.ts
+EDGE render/jednostki-z2-srodziemne.ts -> render/hexutil.ts
+EDGE render/jednostki-z3-plemiona.ts -> render/hexutil.ts
+EDGE render/kamien-bazowe-opus5.ts -> render/hexutil.ts
+EDGE render/kamien-inka-opus5.ts -> render/hexutil.ts
+EDGE render/kamien-lucznicy-opus5.ts -> render/hexutil.ts
+EDGE render/kamien-zulu-taran-opus5.ts -> render/hexutil.ts
+EDGE render/kon-nowy-model.ts -> render/hexutil.ts
+EDGE render/kopalnia-cyny-opus5.ts -> render/hexutil.ts
+EDGE render/kopalnia-zlota-opus5.ts -> render/hexutil.ts
+EDGE render/mapRenderStyle.ts -> render/hexutil.ts
+EDGE render/mapRenderStyle.ts -> render/teren-gory-wzgorza.ts
+EDGE render/miasto-braz.ts -> render/miasto-kamien.ts
+EDGE render/minecraftScene.ts -> render/mapRenderStyle.ts
+EDGE render/minecraftScene.ts -> render/scene.ts
+EDGE render/rangeOverlay.ts -> render/hexutil.ts
+EDGE render/rangeOverlay.ts -> render/mapRenderStyle.ts
+EDGE render/robloxImprovements.ts -> render/droga-6-ramion.ts
+EDGE render/robloxImprovements.ts -> render/improvements.ts
+EDGE render/robloxImprovements.ts -> render/kopalnia-cyny-opus5.ts
+EDGE render/robloxImprovements.ts -> render/kopalnia-zlota-opus5.ts
+EDGE render/robloxImprovements.ts -> render/mapRenderStyle.ts
+EDGE render/robloxImprovements.ts -> render/pastwisko-modele.ts
+EDGE render/robloxImprovements.ts -> render/styleResources.ts
+EDGE render/robloxImprovements.ts -> render/swinia-trzoda.ts
+EDGE render/robloxImprovements.ts -> render/ulepszenia-modele-p2.ts
+EDGE render/robloxImprovements.ts -> render/ulepszenia-modele-p3a.ts
+EDGE render/robloxImprovements.ts -> render/ulepszenia-modele-p3b.ts
+EDGE render/robloxScene.ts -> render/mapRenderStyle.ts
+EDGE render/robloxScene.ts -> render/robloxCity.ts
+EDGE render/robloxScene.ts -> render/scene.ts
+EDGE render/scene.ts -> input/picker.ts
+EDGE render/scene.ts -> render/dekor-laki-rowniny.ts
+EDGE render/scene.ts -> render/djungla-modele.ts
+EDGE render/scene.ts -> render/fogDim.ts
+EDGE render/scene.ts -> render/hexutil.ts
+EDGE render/scene.ts -> render/lasy-modele.ts
+EDGE render/scene.ts -> render/mapRenderStyle.ts
+EDGE render/scene.ts -> render/mergeDecor.ts
+EDGE render/scene.ts -> render/oaza-pustynia.ts
+EDGE render/scene.ts -> render/riverLod.ts
+EDGE render/scene.ts -> render/robloxCity.ts
+EDGE render/scene.ts -> render/robloxImprovements.ts
+EDGE render/scene.ts -> render/teren-gory-wzgorza.ts
+EDGE render/scene.ts -> render/zoomLod.ts
+EDGE render/settlementModel.ts -> render/bronzeCity.ts
+EDGE render/settlementModel.ts -> render/bronzeCityRoblox.ts
+EDGE render/settlementModel.ts -> render/mapRenderStyle.ts
+EDGE render/settlementModel.ts -> render/stoneCity.ts
+EDGE render/settlementModel.ts -> render/stoneCityRoblox.ts
+EDGE render/siegeMarker.ts -> render/hexutil.ts
+EDGE render/siegeMarker.ts -> render/siegeCampModels.ts
+EDGE render/stoneCity.ts -> render/bronzeCity.ts
+EDGE render/stoneCityRoblox.ts -> render/bronzeCity.ts
+EDGE render/stoneCityRoblox.ts -> render/hexutil.ts
+EDGE render/stoneCityRoblox.ts -> render/stoneCity.ts
+EDGE render/styleResources.ts -> render/kon-nowy-model.ts
+EDGE render/styleResources.ts -> render/mapRenderStyle.ts
+EDGE render/styleResources.ts -> render/pastwisko-modele.ts
+EDGE render/styleResources.ts -> render/resources.ts
+EDGE render/styleResources.ts -> render/swinia-trzoda.ts
+EDGE render/styleResources.ts -> render/ulepszenia-modele-p3b.ts
+EDGE render/swinia-trzoda.ts -> render/pastwisko-modele.ts
+EDGE render/tradeRoutesOverlay.ts -> render/hexutil.ts
+EDGE render/tradeRoutesOverlay.ts -> render/mapRenderStyle.ts
+EDGE render/ulepszenia-modele-p3a.ts -> render/kon-nowy-model.ts
+EDGE render/unitOwnerEmblem.ts -> render/hexutil.ts
+EDGE render/unitStatPlate.ts -> render/hexutil.ts
+EDGE render/unitStatPlate.ts -> render/unitOwnerEmblem.ts
+EDGE render/unitStatPlate.ts -> render/unitVitalsPalette.ts
+EDGE render/unitUpgradeBadges.ts -> render/hexutil.ts
+EDGE render/unitUpgradeBadges.ts -> render/unitOwnerEmblem.ts
+EDGE render/unitUpgradeBadges.ts -> render/unitStatPlate.ts
+EDGE render/unitVeteranBadges.ts -> render/hexutil.ts
+EDGE render/unitVeteranBadges.ts -> render/unitUpgradeBadges.ts
+EDGE render/units.ts -> input/picker.ts
+EDGE render/units.ts -> render/braz-konnica-opus5.ts
+EDGE render/units.ts -> render/braz-lucznik-nubijski-opus5.ts
+EDGE render/units.ts -> render/braz-miecznik-opus5.ts
+EDGE render/units.ts -> render/braz-procarz-opus5.ts
+EDGE render/units.ts -> render/braz-rydwan-kapadokijski-opus5.ts
+EDGE render/units.ts -> render/braz-rydwan-konny-opus5.ts
+EDGE render/units.ts -> render/braz-rydwan-woly-opus5.ts
+EDGE render/units.ts -> render/braz-taran-opus5.ts
+EDGE render/units.ts -> render/braz-wlocznik-opus5.ts
+EDGE render/units.ts -> render/galera-model.ts
+EDGE render/units.ts -> render/hastati-falangita.ts
+EDGE render/units.ts -> render/hastati-opus5.ts
+EDGE render/units.ts -> render/hexutil.ts
+EDGE render/units.ts -> render/jednostki-p1-rdzen.ts
+EDGE render/units.ts -> render/jednostki-p2-inka.ts
+EDGE render/units.ts -> render/jednostki-p3-dystans.ts
+EDGE render/units.ts -> render/jednostki-p4-melee.ts
+EDGE render/units.ts -> render/jednostki-p57-wlocznie-machiny.ts
+EDGE render/units.ts -> render/jednostki-p6-super.ts
+EDGE render/units.ts -> render/jednostki-p8a-bliskiwschod.ts
+EDGE render/units.ts -> render/jednostki-p8b-rozni.ts
+EDGE render/units.ts -> render/jednostki-z1-mezopotamia.ts
+EDGE render/units.ts -> render/jednostki-z2-srodziemne.ts
+EDGE render/units.ts -> render/jednostki-z3-plemiona.ts
+EDGE render/units.ts -> render/kamien-bazowe-opus5.ts
+EDGE render/units.ts -> render/kamien-inka-opus5.ts
+EDGE render/units.ts -> render/kamien-lucznicy-opus5.ts
+EDGE render/units.ts -> render/kamien-zulu-taran-opus5.ts
+EDGE render/units.ts -> render/kon-nowy-model.ts
+EDGE render/units.ts -> render/mapRenderStyle.ts
+EDGE render/units.ts -> render/unitOwnerEmblem.ts
+EDGE render/units.ts -> render/unitStatPlate.ts
+EDGE render/units.ts -> render/unitUpgradeBadges.ts
+EDGE render/units.ts -> render/unitVeteranBadges.ts
+EDGE render/units.ts -> render/zelazo-jezdziec-oszczepami-opus5.ts
+EDGE render/units.ts -> render/zelazo-konnica-asyryjska-opus5.ts
+EDGE render/wonderModels.ts -> render/hexutil.ts
+EDGE render/wonderRenderer.ts -> render/hexutil.ts
+EDGE render/wonderRenderer.ts -> render/mapRenderStyle.ts
+EDGE render/wonderRenderer.ts -> render/wonderModels.ts
+EDGE render/workerFieldOverlay.ts -> render/fogDim.ts
+EDGE render/workerFieldOverlay.ts -> render/hexutil.ts
+EDGE render/workerFieldOverlay.ts -> render/mapRenderStyle.ts
+EDGE render/zelazo-jezdziec-oszczepami-opus5.ts -> render/hexutil.ts
+EDGE render/zelazo-konnica-asyryjska-opus5.ts -> render/hexutil.ts
+EDGE battle/battleScene.ts -> battle/siegeWall.ts
+EDGE battle/battleScene.ts -> input/picker.ts
+EDGE battle/battleScene.ts -> render/bronzeCity.ts
+EDGE battle/battleScene.ts -> render/units.ts
+EDGE battle/manualBattle.ts -> render/hexutil.ts
+EDGE battle/manualBattle.ts -> render/units.ts
+EDGE battle/siegeWall.ts -> render/bronzeCity.ts
+EDGE main.ts -> battle/battleScene.ts
+EDGE main.ts -> input/picker.ts
+EDGE main.ts -> render/bronzeCity.ts
+EDGE main.ts -> render/camera.ts
+EDGE main.ts -> render/cities.ts
+EDGE main.ts -> render/cityMapStatChip.ts
+EDGE main.ts -> render/cityOkolicaOverlay.ts
+EDGE main.ts -> render/fogDim.ts
+EDGE main.ts -> render/hexutil.ts
+EDGE main.ts -> render/improvements.ts
+EDGE main.ts -> render/mapRenderStyle.ts
+EDGE main.ts -> render/mergeDecor.ts
+EDGE main.ts -> render/perfDebugOverlay.ts
+EDGE main.ts -> render/rangeOverlay.ts
+EDGE main.ts -> render/scene.ts
+EDGE main.ts -> render/settlementModel.ts
+EDGE main.ts -> render/siegeCampSync.ts
+EDGE main.ts -> render/siegeMarker.ts
+EDGE main.ts -> render/styleResources.ts
+EDGE main.ts -> render/tarasy-model.ts
+EDGE main.ts -> render/teren-gory-wzgorza.ts
+EDGE main.ts -> render/tradeRoutesOverlay.ts
+EDGE main.ts -> render/unitOwnerEmblem.ts
+EDGE main.ts -> render/unitUpgradeBadges.ts
+EDGE main.ts -> render/units.ts
+EDGE main.ts -> render/wioska-oboz.ts
+EDGE main.ts -> render/wonderRenderer.ts
+EDGE main.ts -> render/workerFieldOverlay.ts
+EDGE main.ts -> ui/perfTestPanel.ts
+EDGE ui/unitMiniPreview.ts -> render/units.ts
+EDGE wonderpreview/main.ts -> render/hexutil.ts
+EDGE wonderpreview/main.ts -> render/wonderModels.ts
+EDGES_TOTAL 206

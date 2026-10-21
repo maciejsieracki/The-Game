@@ -1,0 +1,178 @@
+braz-konnica-opus5.ts buildKonnicaBrazOpus5 EXT 1 TOOLS 0 render/units.ts
+braz-lucznik-nubijski-opus5.ts buildNubianArcherOpus5 EXT 1 TOOLS 3 render/units.ts
+braz-miecznik-opus5.ts buildMiecznikBrazOpus5 EXT 1 TOOLS 0 render/units.ts
+braz-procarz-opus5.ts buildProcarzBrazOpus5 EXT 1 TOOLS 0 render/units.ts
+braz-rydwan-kapadokijski-opus5.ts buildRydwanKapadokijskiOpus5 EXT 1 TOOLS 0 render/units.ts
+braz-rydwan-konny-opus5.ts buildRydwanKonnyBrazOpus5 EXT 1 TOOLS 0 render/units.ts
+braz-rydwan-woly-opus5.ts buildRydwanWolyBrazOpus5 EXT 1 TOOLS 1 render/units.ts
+braz-taran-opus5.ts buildTaranOkutyOpus5 EXT 1 TOOLS 0 render/units.ts
+braz-wlocznik-opus5.ts buildWlocznikBrazOpus5 EXT 1 TOOLS 0 render/units.ts
+bronzeCity.ts buildBronzeCity EXT 3 TOOLS 0 render/bronzeCityRoblox.ts,render/cities.ts,render/settlementModel.ts
+bronzeCityRoblox.ts buildBronzeCityRoblox EXT 2 TOOLS 0 render/cities.ts,render/settlementModel.ts
+cityMapOutline.ts buildCityMapOutline EXT 1 TOOLS 0 render/cities.ts
+cityMapStatChip.ts makeCityMapBadgeSprite EXT 1 TOOLS 3 render/cities.ts
+cityOkolicaOverlay.ts buildCityOkolicaOverlayGroup EXT 0 TOOLS 1
+dekor-laki-rowniny.ts buildDekorLaka EXT 0 TOOLS 0
+dekor-laki-rowniny.ts buildDekorRownina EXT 0 TOOLS 0
+droga-6-ramion.ts buildDrogaGwiazda EXT 3 TOOLS 1 render/improvements.ts,render/robloxImprovements.ts,render/ulepszenia-modele-p3b.ts
+galera-model.ts buildGalera EXT 1 TOOLS 0 render/units.ts
+hastati-falangita.ts buildHastati EXT 2 TOOLS 2 render/hastati-opus5.ts,render/units.ts
+hastati-falangita.ts buildFalangita EXT 3 TOOLS 1 render/jednostki-p6-super.ts,render/jednostki-z2-srodziemne.ts,render/units.ts
+hastati-opus5.ts buildHastatiOpus5 EXT 1 TOOLS 2 render/units.ts
+improvements.ts buildImprovement EXT 4 TOOLS 20 game/ai.ts,game/auto-improvements.ts,main.ts
+improvements.ts buildImprovementSectored EXT 5 TOOLS 1 main.ts,render/mapRenderStyle.ts,render/robloxImprovements.ts
+improvements.ts buildImprovementStack EXT 1 TOOLS 0 main.ts
+jednostki-p1-rdzen.ts buildWojownikKamien EXT 1 TOOLS 1 render/kamien-bazowe-opus5.ts
+jednostki-p1-rdzen.ts buildOszczepnik EXT 1 TOOLS 1 render/kamien-bazowe-opus5.ts
+jednostki-p1-rdzen.ts buildLucznik EXT 1 TOOLS 1 render/kamien-bazowe-opus5.ts
+jednostki-p1-rdzen.ts buildZwiadowca EXT 1 TOOLS 1 render/kamien-bazowe-opus5.ts
+jednostki-p1-rdzen.ts buildProcarz EXT 2 TOOLS 0 render/braz-procarz-opus5.ts,render/units.ts
+jednostki-p1-rdzen.ts buildWlocznik EXT 2 TOOLS 0 render/braz-wlocznik-opus5.ts,render/units.ts
+jednostki-p1-rdzen.ts buildMiecznik EXT 1 TOOLS 0 render/units.ts
+jednostki-p2-inka.ts buildMaceWarrior EXT 2 TOOLS 0 render/kamien-inka-opus5.ts,render/units.ts
+jednostki-p2-inka.ts buildInkaJavelineer EXT 2 TOOLS 0 render/kamien-inka-opus5.ts,render/units.ts
+jednostki-p2-inka.ts buildAxeWarriorInka EXT 1 TOOLS 0 render/units.ts
+jednostki-p2-inka.ts buildInkaSlinger EXT 2 TOOLS 0 render/braz-procarz-opus5.ts,render/units.ts
+jednostki-p3-dystans.ts buildZuluJavelineer EXT 2 TOOLS 2 render/kamien-zulu-taran-opus5.ts,render/units.ts
+jednostki-p3-dystans.ts buildEgyptianArcher EXT 2 TOOLS 1 render/kamien-lucznicy-opus5.ts,render/units.ts
+jednostki-p3-dystans.ts buildSumerianArcher EXT 2 TOOLS 1 render/kamien-lucznicy-opus5.ts,render/units.ts
+jednostki-p3-dystans.ts buildAkkadianArcher EXT 1 TOOLS 0 render/units.ts
+jednostki-p3-dystans.ts buildAssyrianArcher EXT 2 TOOLS 0 render/units.ts,render/zelazo-konnica-asyryjska-opus5.ts
+jednostki-p4-melee.ts buildSherden EXT 1 TOOLS 0 render/units.ts
+jednostki-p4-melee.ts buildTyrrhenian EXT 1 TOOLS 0 render/units.ts
+jednostki-p4-melee.ts buildShekelesh EXT 1 TOOLS 0 render/units.ts
+jednostki-p4-melee.ts buildMycenaeanWarrior EXT 1 TOOLS 0 render/units.ts
+jednostki-p4-melee.ts buildShangHalberdier EXT 1 TOOLS 0 render/units.ts
+jednostki-p4-melee.ts buildKhopeshWarrior EXT 2 TOOLS 0 render/jednostki-z2-srodziemne.ts,render/units.ts
+jednostki-p57-wlocznie-machiny.ts buildImpi EXT 1 TOOLS 0 render/units.ts
+jednostki-p57-wlocznie-machiny.ts buildSumerianSpearman EXT 2 TOOLS 0 render/jednostki-z1-mezopotamia.ts,render/units.ts
+jednostki-p57-wlocznie-machiny.ts buildBatteringRam EXT 2 TOOLS 3 render/kamien-zulu-taran-opus5.ts,render/units.ts
+jednostki-p57-wlocznie-machiny.ts buildSiegeTower EXT 1 TOOLS 0 render/units.ts
+jednostki-p6-super.ts buildSuperGreece EXT 1 TOOLS 1 render/units.ts
+jednostki-p6-super.ts buildSuperRome EXT 2 TOOLS 1 render/jednostki-z2-srodziemne.ts,render/units.ts
+jednostki-p8a-bliskiwschod.ts buildPiechotaHetycka EXT 3 TOOLS 0 render/braz-rydwan-kapadokijski-opus5.ts,render/jednostki-z1-mezopotamia.ts,render/units.ts
+jednostki-p8a-bliskiwschod.ts buildGwardiaIshtar EXT 1 TOOLS 0 render/units.ts
+jednostki-p8a-bliskiwschod.ts buildWojownikBabilonski EXT 2 TOOLS 0 render/jednostki-z1-mezopotamia.ts,render/units.ts
+jednostki-p8a-bliskiwschod.ts buildWojownikFenicki EXT 1 TOOLS 0 render/units.ts
+jednostki-p8b-rozni.ts buildStraznikHarappy EXT 2 TOOLS 0 render/jednostki-z1-mezopotamia.ts,render/units.ts
+jednostki-p8b-rozni.ts buildPiechotaInduska EXT 1 TOOLS 0 render/units.ts
+jednostki-p8b-rozni.ts buildLegionRzymski EXT 2 TOOLS 0 render/units.ts,units/setup.ts
+jednostki-p8b-rozni.ts buildGwardzistaChampi EXT 1 TOOLS 0 render/units.ts
+jednostki-z1-mezopotamia.ts buildGwardiaHetycka EXT 1 TOOLS 0 render/units.ts
+jednostki-z1-mezopotamia.ts buildPiechotaNeobabilonska EXT 1 TOOLS 0 render/units.ts
+jednostki-z1-mezopotamia.ts buildMurTarcz EXT 1 TOOLS 0 render/units.ts
+jednostki-z1-mezopotamia.ts buildGarnizonHarappy EXT 1 TOOLS 0 render/units.ts
+jednostki-z2-srodziemne.ts buildTyrskiMiecznik EXT 1 TOOLS 0 render/units.ts
+jednostki-z2-srodziemne.ts buildGwardiaTyrenska EXT 1 TOOLS 0 render/units.ts
+jednostki-z2-srodziemne.ts buildZelaznyKhopesh EXT 1 TOOLS 0 render/units.ts
+jednostki-z2-srodziemne.ts buildThorakites EXT 1 TOOLS 0 render/units.ts
+jednostki-z2-srodziemne.ts buildTriari EXT 1 TOOLS 2 render/units.ts
+jednostki-z3-plemiona.ts buildDruzynnik EXT 2 TOOLS 1 render/units.ts,render/zelazo-jezdziec-oszczepami-opus5.ts
+jednostki-z3-plemiona.ts buildIButho EXT 1 TOOLS 1 render/units.ts
+jednostki-z3-plemiona.ts buildBerserker EXT 1 TOOLS 1 render/units.ts
+jednostki-z3-plemiona.ts buildGermanSuper EXT 1 TOOLS 1 render/units.ts
+jednostki-z3-plemiona.ts buildMiecznikGalijski EXT 1 TOOLS 1 render/units.ts
+kamien-bazowe-opus5.ts buildWojownikOpus5 EXT 2 TOOLS 1 render/braz-miecznik-opus5.ts,render/units.ts
+kamien-bazowe-opus5.ts buildOszczepnikOpus5 EXT 2 TOOLS 1 render/braz-wlocznik-opus5.ts,render/units.ts
+kamien-bazowe-opus5.ts buildLucznikOpus5 EXT 1 TOOLS 1 render/units.ts
+kamien-bazowe-opus5.ts buildZwiadowcaOpus5 EXT 1 TOOLS 1 render/units.ts
+kamien-inka-opus5.ts buildMaceWarriorOpus5 EXT 1 TOOLS 0 render/units.ts
+kamien-inka-opus5.ts buildInkaJavelineerOpus5 EXT 1 TOOLS 0 render/units.ts
+kamien-lucznicy-opus5.ts buildEgyptianArcherOpus5 EXT 2 TOOLS 1 render/braz-lucznik-nubijski-opus5.ts,render/units.ts
+kamien-lucznicy-opus5.ts buildSumerianArcherOpus5 EXT 1 TOOLS 1 render/units.ts
+kamien-zulu-taran-opus5.ts buildZuluJavelineerOpus5 EXT 1 TOOLS 2 render/units.ts
+kamien-zulu-taran-opus5.ts buildBatteringRamOpus5 EXT 1 TOOLS 2 render/units.ts
+kon-nowy-model.ts buildHorse EXT 3 TOOLS 1 render/braz-rydwan-woly-opus5.ts,render/ulepszenia-modele-p3a.ts,render/units.ts
+kon-nowy-model.ts buildZlozeKonie EXT 1 TOOLS 1 render/styleResources.ts
+kopalnia-cyny-opus5.ts buildKopalniaCyny EXT 2 TOOLS 1 render/improvements.ts,render/robloxImprovements.ts
+kopalnia-zlota-opus5.ts buildKopalniaZlota EXT 3 TOOLS 0 render/improvements.ts,render/kopalnia-cyny-opus5.ts,render/robloxImprovements.ts
+lasy-modele.ts buildLas EXT 0 TOOLS 0
+mapRenderStyle.ts buildStyleForestCluster EXT 3 TOOLS 1 render/djungla-modele.ts,render/lasy-modele.ts,render/scene.ts
+mapRenderStyle.ts buildStyleMountainPeak EXT 2 TOOLS 0 render/scene.ts,render/teren-gory-wzgorza.ts
+mapRenderStyle.ts buildStyleTarasyTerrace EXT 3 TOOLS 0 render/improvements.ts,render/robloxImprovements.ts,render/tarasy-model.ts
+mapRenderStyle.ts buildStyleHillBump EXT 2 TOOLS 0 render/scene.ts,render/teren-gory-wzgorza.ts
+mapRenderStyle.ts buildGalleryBuildingPad EXT 0 TOOLS 0
+mapRenderStyle.ts buildGalleryFortMount EXT 0 TOOLS 0
+mapRenderStyle.ts buildStyleBeachRing EXT 1 TOOLS 0 render/scene.ts
+mapRenderStyle.ts buildStyleCoastSandTopCap EXT 0 TOOLS 0
+mapRenderStyle.ts buildStyleLandCoastSandCap EXT 0 TOOLS 0
+mapRenderStyle.ts buildStyleCoastSandEdges EXT 1 TOOLS 0 render/scene.ts
+mapRenderStyle.ts buildStyleCoastWaterCap EXT 0 TOOLS 0
+mapRenderStyle.ts buildStyleDune EXT 2 TOOLS 0 render/oaza-pustynia.ts,render/scene.ts
+mapRenderStyle.ts buildStyleOasis EXT 2 TOOLS 0 render/oaza-pustynia.ts,render/scene.ts
+miasto-braz.ts buildMiastoBrazGrecja EXT 0 TOOLS 0
+miasto-braz.ts buildMiastoBrazRzym EXT 0 TOOLS 0
+miasto-braz.ts buildMiastoBraz EXT 2 TOOLS 0 render/cities.ts,render/miasto-kamien.ts
+miasto-kamien.ts buildMiastoKamien EXT 2 TOOLS 1 render/cities.ts,render/miasto-braz.ts
+miasto-kamien.ts buildPalisadaWal EXT 1 TOOLS 0 render/miasto-braz.ts
+minecraftScene.ts buildMinecraftScene EXT 0 TOOLS 0
+oaza-pustynia.ts buildOaza EXT 2 TOOLS 0 render/countSceneOverlayCandidates.ts,render/scene.ts
+oaza-pustynia.ts buildDekorPustynia EXT 0 TOOLS 0
+pastwisko-modele.ts buildKrowa EXT 1 TOOLS 0 render/swinia-trzoda.ts
+pastwisko-modele.ts buildOwca EXT 1 TOOLS 0 render/robloxImprovements.ts
+pastwisko-modele.ts buildLama EXT 1 TOOLS 0 render/robloxImprovements.ts
+pastwisko-modele.ts buildPastwiskoZwierzeta EXT 3 TOOLS 0 render/robloxImprovements.ts,render/swinia-trzoda.ts,render/ulepszenia-modele-p2.ts
+pastwisko-modele.ts buildZlozeKrowy EXT 1 TOOLS 0 render/styleResources.ts
+pastwisko-modele.ts buildZlozeOwce EXT 2 TOOLS 0 render/robloxImprovements.ts,render/styleResources.ts
+rangeOverlay.ts buildTerritoryBorderGroup EXT 1 TOOLS 4 main.ts
+rangeOverlay.ts buildRangeOverlayGroup EXT 2 TOOLS 1 main.ts,render/cityOkolicaOverlay.ts
+resources.ts buildResourceOverlay EXT 1 TOOLS 0 render/styleResources.ts
+resources.ts buildResourceOverlayFromZloze EXT 1 TOOLS 1 render/styleResources.ts
+riverLod.ts buildRiverRibbonFullIndex EXT 1 TOOLS 1 render/scene.ts
+riverLod.ts buildRiverRibbonFogIndex EXT 1 TOOLS 1 render/scene.ts
+riverLod.ts buildMergedRiverFullIndex EXT 1 TOOLS 1 render/scene.ts
+riverLod.ts buildMergedRiverFogIndex EXT 1 TOOLS 1 render/scene.ts
+robloxCity.ts buildRobloxCity EXT 1 TOOLS 0 render/robloxScene.ts
+robloxCity.ts buildRobloxRomeCity EXT 1 TOOLS 0 render/robloxScene.ts
+robloxImprovements.ts buildRobloxImprovement EXT 1 TOOLS 1 render/improvements.ts
+robloxImprovements.ts buildRobloxFoodStack EXT 3 TOOLS 0 render/improvements.ts,render/ulepszenia-modele-p2.ts,render/ulepszenia-modele-p3b.ts
+robloxScene.ts buildRobloxScene EXT 0 TOOLS 0
+scene.ts buildScene EXT 8 TOOLS 5 buildInfo.ts,main.ts,render/countSceneOverlayCandidates.ts
+settlementModel.ts buildSettlementModel EXT 4 TOOLS 0 main.ts,render/cities.ts,render/miasto-braz.ts
+siegeCampModels.ts makeSiegeSoldiers EXT 0 TOOLS 0
+siegeCampModels.ts makeSiegeRam EXT 0 TOOLS 0
+siegeCampModels.ts makeSiegeTower EXT 0 TOOLS 0
+siegeCampModels.ts buildSiegeCampGroup EXT 1 TOOLS 0 render/siegeMarker.ts
+stoneCity.ts buildStoneAgeCity EXT 3 TOOLS 0 render/cities.ts,render/robloxCity.ts,render/settlementModel.ts
+stoneCityRoblox.ts buildStoneAgeCityRoblox EXT 2 TOOLS 0 render/cities.ts,render/settlementModel.ts
+styleResources.ts buildStyledSheep EXT 0 TOOLS 0
+styleResources.ts buildStyledCow EXT 0 TOOLS 0
+styleResources.ts buildStyledResourceOverlay EXT 2 TOOLS 5 main.ts,render/ulepszenia-modele-p3b.ts
+swinia-trzoda.ts buildSwinia EXT 0 TOOLS 0
+swinia-trzoda.ts buildTrzoda EXT 2 TOOLS 0 render/robloxImprovements.ts,render/styleResources.ts
+tarasy-model.ts buildTarasy EXT 1 TOOLS 0 main.ts
+teren-gory-wzgorza.ts buildWzgorze EXT 1 TOOLS 0 main.ts
+teren-gory-wzgorza.ts buildGora EXT 0 TOOLS 0
+tradeRoutesOverlay.ts buildTradeRoutesOverlayGroup EXT 1 TOOLS 1 main.ts
+ulepszenia-modele-p2.ts buildFarma EXT 2 TOOLS 0 render/robloxImprovements.ts,render/ulepszenia-modele-p3b.ts
+ulepszenia-modele-p2.ts buildKopalnia EXT 3 TOOLS 1 render/kopalnia-cyny-opus5.ts,render/kopalnia-zlota-opus5.ts,render/robloxImprovements.ts
+ulepszenia-modele-p2.ts buildKamieniolom EXT 1 TOOLS 0 render/robloxImprovements.ts
+ulepszenia-modele-p2.ts buildTartak EXT 1 TOOLS 0 render/robloxImprovements.ts
+ulepszenia-modele-p2.ts buildZagrodaDodatki EXT 1 TOOLS 0 render/robloxImprovements.ts
+ulepszenia-modele-p3a.ts buildWyrab EXT 2 TOOLS 0 render/lasy-modele.ts,render/robloxImprovements.ts
+ulepszenia-modele-p3a.ts buildObozLowiecki EXT 1 TOOLS 0 render/robloxImprovements.ts
+ulepszenia-modele-p3a.ts buildGlinianka EXT 1 TOOLS 0 render/robloxImprovements.ts
+ulepszenia-modele-p3a.ts buildWarzelniaSoli EXT 1 TOOLS 0 render/robloxImprovements.ts
+ulepszenia-modele-p3a.ts buildLodzieRybackie EXT 1 TOOLS 0 render/robloxImprovements.ts
+ulepszenia-modele-p3a.ts buildStadnina EXT 1 TOOLS 0 render/robloxImprovements.ts
+ulepszenia-modele-p3b.ts buildIrygacja EXT 1 TOOLS 0 render/robloxImprovements.ts
+ulepszenia-modele-p3b.ts buildPoleIrygowane EXT 1 TOOLS 0 render/robloxImprovements.ts
+ulepszenia-modele-p3b.ts buildFort EXT 2 TOOLS 0 render/robloxImprovements.ts,render/wioska-oboz.ts
+ulepszenia-modele-p3b.ts buildPosterunek EXT 2 TOOLS 0 render/robloxImprovements.ts,render/wioska-oboz.ts
+ulepszenia-modele-p3b.ts buildZlozeKlaster EXT 0 TOOLS 0
+ulepszenia-modele-p3b.ts buildZlozeMiedz EXT 1 TOOLS 0 render/styleResources.ts
+ulepszenia-modele-p3b.ts buildZlozeZelazo EXT 1 TOOLS 0 render/styleResources.ts
+ulepszenia-modele-p3b.ts buildZlozeWegiel EXT 1 TOOLS 0 render/styleResources.ts
+ulepszenia-modele-p3b.ts buildZlozeSol EXT 1 TOOLS 0 render/styleResources.ts
+ulepszenia-modele-p3b.ts buildZlozeZloto EXT 1 TOOLS 2 render/styleResources.ts
+ulepszenia-modele-p3b.ts buildZlozeCyna EXT 1 TOOLS 1 render/styleResources.ts
+ulepszenia-modele-p3b.ts buildZlozeGlina EXT 1 TOOLS 0 render/styleResources.ts
+unitStatPlate.ts makeFlatBadgeMaterial EXT 1 TOOLS 0 render/unitUpgradeBadges.ts
+units.ts buildUnitModel EXT 7 TOOLS 21 battle/README-manualBattle.md,battle/battleScene.ts,battle/manualBattle.ts
+wioska-oboz.ts buildWioska EXT 1 TOOLS 0 main.ts
+wioska-oboz.ts buildObozBarbarzyncow EXT 1 TOOLS 0 main.ts
+wonderModels.ts buildWonderModel EXT 2 TOOLS 0 render/wonderRenderer.ts,wonderpreview/main.ts
+workerFieldOverlay.ts buildWorkerFieldOverlayGroup EXT 0 TOOLS 1
+zelazo-jezdziec-oszczepami-opus5.ts buildZelazoJezdziecOszczepami EXT 1 TOOLS 1 render/units.ts
+zelazo-konnica-asyryjska-opus5.ts buildZelazoKonnicaLancowaAsyryjska EXT 1 TOOLS 1 render/units.ts
+zelazo-konnica-asyryjska-opus5.ts buildZelazoKonnicaLuczniczaAsyryjska EXT 1 TOOLS 1 render/units.ts

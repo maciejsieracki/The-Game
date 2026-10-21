@@ -1,0 +1,123 @@
+Wojownik | Kamień | buildWojownikOpus5 | kamien-bazowe-opus5.ts
+Procarz | Brąz | buildProcarzBrazOpus5 | braz-procarz-opus5.ts
+Oszczepnik | Kamień | buildCategoryModel('oszczepnik') | kamien-bazowe-opus5.ts
+Łucznik | Kamień | buildCategoryModel('lucznik') | kamien-bazowe-opus5.ts
+Zwiadowca | Kamień | buildCategoryModel('zwiadowca') | kamien-bazowe-opus5.ts
+Włócznik | Brąz | buildWlocznikBrazOpus5 | braz-wlocznik-opus5.ts
+Wojownik z mieczem i tarczą | Brąz | buildMiecznikBrazOpus5 | braz-miecznik-opus5.ts
+Rydwan (woły) | Brąz | buildRydwanWolyBrazOpus5 | braz-rydwan-woly-opus5.ts
+Konnica | Brąz | buildKonnicaBrazOpus5 | braz-konnica-opus5.ts
+Galera | Brąz | buildCategoryModel('galera') | galera-model.ts
+Falanga | Żelazo | newBuildFalangita | hastati-falangita.ts
+Hieros Lochos (Święty Zastęp) | Żelazo | buildSuperGreece | jednostki-p6-super.ts
+Hastati | Żelazo | buildHastatiOpus5 | hastati-opus5.ts
+Triari | Żelazo | buildTriari | jednostki-z2-srodziemne.ts
+Jeździec chiński | Brąz | buildChineseCavalry | kon-nowy-model.ts,units.ts
+Hu Ben Wei (Gwardia Tygrysa) | Brąz | buildHuBenWei | units.ts
+Impi | Brąz | buildImpi | jednostki-p57-wlocznie-machiny.ts
+Oszczepnik Zulu (Izijula) | Kamień | buildZuluJavelineer | kamien-zulu-taran-opus5.ts
+uThulwana (Białe Tarcze) | Brąz | buildUThulwana | units.ts
+Wojownik z maczugą (Chaska) | Kamień | buildMaceWarrior | kamien-inka-opus5.ts
+Wojownik z toporem | Brąz | buildAxeWarriorInka | jednostki-p2-inka.ts
+Procarz (Huaracoc) | Brąz | buildInkaSlinger | jednostki-p2-inka.ts
+Oszczepnik (Estólica) | Kamień | buildInkaJavelineer | kamien-inka-opus5.ts
+Królewska Gwardia | Brąz | buildInkaRoyalGuard | units.ts
+Rydwan konny | Brąz | buildRydwanKonnyBrazOpus5 | braz-rydwan-konny-opus5.ts
+Łucznik egipski | Kamień | buildEgyptianArcher | kamien-lucznicy-opus5.ts
+Rydwan egipski | Brąz | buildEgyptianChariot | units.ts
+Wojownik z khopesh | Brąz | buildKhopeshWarrior | jednostki-p4-melee.ts
+Medżaj (Gwardia Faraona) | Brąz | buildMedjay | units.ts
+Łucznik nubijski | Brąz | buildNubianArcherOpus5 | braz-lucznik-nubijski-opus5.ts
+Łucznik sumeryjski | Kamień | buildSumerianArcher | kamien-lucznicy-opus5.ts
+Rydwan sumeryjski | Brąz | buildSumerianChariot | kon-nowy-model.ts,units.ts
+Włócznik sumeryjski | Brąz | buildSumerianSpearman | jednostki-p57-wlocznie-machiny.ts
+Gwardia Królewska Sumeru | Brąz | buildSumerianRoyalGuard | units.ts
+Wojownik mykeński | Brąz | buildMycenaeanWarrior | jednostki-p4-melee.ts
+Rydwan mykeński | Brąz | decorateChariot | kon-nowy-model.ts,units.ts
+Wojownik Sherden | Brąz | buildSherden | jednostki-p4-melee.ts
+Halabardnik Shang | Brąz | buildShangHalberdier | jednostki-p4-melee.ts
+Rydwan Shang | Brąz | decorateChariot | kon-nowy-model.ts,units.ts
+Łucznik akadyjski | Brąz | buildAkkadianArcher | jednostki-p3-dystans.ts
+Gaesatae | Żelazo | buildGaesatae | units.ts
+Soldurii | Żelazo | buildSoldurii | units.ts
+Rydwan celtycki | Żelazo | decorateChariot | kon-nowy-model.ts,units.ts
+Wojownik germański | Żelazo | buildGermanSuper | jednostki-z3-plemiona.ts
+Berserker germański | Żelazo | buildBerserkerZ3 | jednostki-z3-plemiona.ts
+Taran | Kamień | buildBatteringRam | kamien-zulu-taran-opus5.ts
+Taran okuty | Brąz | buildTaranOkutyOpus5 | braz-taran-opus5.ts
+Katapulta | Żelazo | buildCatapult | units.ts
+Wieża oblężnicza | Brąz | buildSiegeTower | jednostki-p57-wlocznie-machiny.ts
+Wojownik tyrreński | Brąz | buildTyrrhenian | jednostki-p4-melee.ts
+Wojownik szekelesz | Brąz | buildShekelesh | jednostki-p4-melee.ts
+Konnica lancowa asyryjska | Żelazo | buildZelazoKonnicaLancowaAsyryjska | zelazo-konnica-asyryjska-opus5.ts
+Konnica łucznicza asyryjska | Żelazo | buildZelazoKonnicaLuczniczaAsyryjska | zelazo-konnica-asyryjska-opus5.ts
+Łucznik asyryjski | Brąz | buildAssyrianArcher | jednostki-p3-dystans.ts
+Drużynnik | Żelazo | buildDruzynnik | jednostki-z3-plemiona.ts
+Jeździec z oszczepami | Żelazo | buildZelazoJezdziecOszczepami | zelazo-jezdziec-oszczepami-opus5.ts
+Strażnik bram Harappy | Brąz | buildStraznikHarappy | jednostki-p8b-rozni.ts
+Piechota induska | Brąz | buildPiechotaInduska | jednostki-p8b-rozni.ts
+Garnizon Harappy | Żelazo | buildGarnizonHarappy | jednostki-z1-mezopotamia.ts
+Rydwan Kapadokijski | Brąz | buildRydwanKapadokijskiOpus5 | braz-rydwan-kapadokijski-opus5.ts
+Piechota hetycka | Brąz | buildPiechotaHetycka | jednostki-p8a-bliskiwschod.ts
+Gwardia hetycka | Żelazo | buildGwardiaHetycka | jednostki-z1-mezopotamia.ts
+Gwardia Ishtar | Brąz | buildGwardiaIshtar | jednostki-p8a-bliskiwschod.ts
+Wojownik babiloński | Brąz | buildWojownikBabilonski | jednostki-p8a-bliskiwschod.ts
+Piechota neobabilońska | Żelazo | buildPiechotaNeobabilonska | jednostki-z1-mezopotamia.ts
+Tyrski miecznik | Żelazo | buildTyrskiMiecznik | jednostki-z2-srodziemne.ts
+Wojownik fenicki | Brąz | buildWojownikFenicki | jednostki-p8a-bliskiwschod.ts
+Gwardia Tyreńska | Żelazo | buildGwardiaTyrenska | jednostki-z2-srodziemne.ts
+Thorakites | Żelazo | buildThorakites | jednostki-z2-srodziemne.ts
+Evocati | Żelazo | buildSuperRome | jednostki-p6-super.ts
+iButho z iklwa | Żelazo | buildIButho | jednostki-z3-plemiona.ts
+Gwardzista z champi | Brąz | buildGwardzistaChampi | jednostki-p8b-rozni.ts
+Wojownik z żelaznym khopesh | Żelazo | buildZelaznyKhopesh | jednostki-z2-srodziemne.ts
+Mur tarcz (Sargonid) | Żelazo | buildMurTarcz | jednostki-z1-mezopotamia.ts
+Miecznik galijski | Żelazo | buildMiecznikGalijski | jednostki-z3-plemiona.ts
+
+FILE braz-konnica-opus5.ts | 1 rek. | epoki {'Brąz': 1} | Konnica [Brąz]
+FILE braz-lucznik-nubijski-opus5.ts | 1 rek. | epoki {'Brąz': 1} | Łucznik nubijski [Brąz]
+FILE braz-miecznik-opus5.ts | 1 rek. | epoki {'Brąz': 1} | Wojownik z mieczem i tarczą [Brąz]
+FILE braz-procarz-opus5.ts | 1 rek. | epoki {'Brąz': 1} | Procarz [Brąz]
+FILE braz-rydwan-kapadokijski-opus5.ts | 1 rek. | epoki {'Brąz': 1} | Rydwan Kapadokijski [Brąz]
+FILE braz-rydwan-konny-opus5.ts | 1 rek. | epoki {'Brąz': 1} | Rydwan konny [Brąz]
+FILE braz-rydwan-woly-opus5.ts | 1 rek. | epoki {'Brąz': 1} | Rydwan (woły) [Brąz]
+FILE braz-taran-opus5.ts | 1 rek. | epoki {'Brąz': 1} | Taran okuty [Brąz]
+FILE braz-wlocznik-opus5.ts | 1 rek. | epoki {'Brąz': 1} | Włócznik [Brąz]
+FILE galera-model.ts | 1 rek. | epoki {'Brąz': 1} | Galera [Brąz]
+FILE hastati-falangita.ts | 1 rek. | epoki {'Żelazo': 1} | Falanga [Żelazo]
+FILE hastati-opus5.ts | 1 rek. | epoki {'Żelazo': 1} | Hastati [Żelazo]
+FILE jednostki-p2-inka.ts | 2 rek. | epoki {'Brąz': 2} | Wojownik z toporem [Brąz]; Procarz (Huaracoc) [Brąz]
+FILE jednostki-p3-dystans.ts | 2 rek. | epoki {'Brąz': 2} | Łucznik akadyjski [Brąz]; Łucznik asyryjski [Brąz]
+FILE jednostki-p4-melee.ts | 6 rek. | epoki {'Brąz': 6} | Wojownik z khopesh [Brąz]; Wojownik mykeński [Brąz]; Wojownik Sherden [Brąz]; Halabardnik Shang [Brąz]; Wojownik tyrreński [Brąz]; Wojownik szekelesz [Brąz]
+FILE jednostki-p57-wlocznie-machiny.ts | 3 rek. | epoki {'Brąz': 3} | Impi [Brąz]; Włócznik sumeryjski [Brąz]; Wieża oblężnicza [Brąz]
+FILE jednostki-p6-super.ts | 2 rek. | epoki {'Żelazo': 2} | Hieros Lochos (Święty Zastęp) [Żelazo]; Evocati [Żelazo]
+FILE jednostki-p8a-bliskiwschod.ts | 4 rek. | epoki {'Brąz': 4} | Piechota hetycka [Brąz]; Gwardia Ishtar [Brąz]; Wojownik babiloński [Brąz]; Wojownik fenicki [Brąz]
+FILE jednostki-p8b-rozni.ts | 3 rek. | epoki {'Brąz': 3} | Strażnik bram Harappy [Brąz]; Piechota induska [Brąz]; Gwardzista z champi [Brąz]
+FILE jednostki-z1-mezopotamia.ts | 4 rek. | epoki {'Żelazo': 4} | Garnizon Harappy [Żelazo]; Gwardia hetycka [Żelazo]; Piechota neobabilońska [Żelazo]; Mur tarcz (Sargonid) [Żelazo]
+FILE jednostki-z2-srodziemne.ts | 5 rek. | epoki {'Żelazo': 5} | Triari [Żelazo]; Tyrski miecznik [Żelazo]; Gwardia Tyreńska [Żelazo]; Thorakites [Żelazo]; Wojownik z żelaznym khopesh [Żelazo]
+FILE jednostki-z3-plemiona.ts | 5 rek. | epoki {'Żelazo': 5} | Wojownik germański [Żelazo]; Berserker germański [Żelazo]; Drużynnik [Żelazo]; iButho z iklwa [Żelazo]; Miecznik galijski [Żelazo]
+FILE kamien-bazowe-opus5.ts | 4 rek. | epoki {'Kamień': 4} | Wojownik [Kamień]; Oszczepnik [Kamień]; Łucznik [Kamień]; Zwiadowca [Kamień]
+FILE kamien-inka-opus5.ts | 2 rek. | epoki {'Kamień': 2} | Wojownik z maczugą (Chaska) [Kamień]; Oszczepnik (Estólica) [Kamień]
+FILE kamien-lucznicy-opus5.ts | 2 rek. | epoki {'Kamień': 2} | Łucznik egipski [Kamień]; Łucznik sumeryjski [Kamień]
+FILE kamien-zulu-taran-opus5.ts | 2 rek. | epoki {'Kamień': 2} | Oszczepnik Zulu (Izijula) [Kamień]; Taran [Kamień]
+FILE kon-nowy-model.ts | 5 rek. | epoki {'Brąz': 4, 'Żelazo': 1} | Jeździec chiński [Brąz]; Rydwan sumeryjski [Brąz]; Rydwan mykeński [Brąz]; Rydwan Shang [Brąz]; Rydwan celtycki [Żelazo]
+FILE units.ts | 14 rek. | epoki {'Brąz': 10, 'Żelazo': 4} | Jeździec chiński [Brąz]; Hu Ben Wei (Gwardia Tygrysa) [Brąz]; uThulwana (Białe Tarcze) [Brąz]; Królewska Gwardia [Brąz]; Rydwan egipski [Brąz]; Medżaj (Gwardia Faraona) [Brąz]; Rydwan sumeryjski [Brąz]; Gwardia Królewska Sumeru [Brąz]; Rydwan mykeński [Brąz]; Rydwan Shang [Brąz]; Gaesatae [Żelazo]; Soldurii [Żelazo]; Rydwan celtycki [Żelazo]; Katapulta [Żelazo]
+FILE zelazo-jezdziec-oszczepami-opus5.ts | 1 rek. | epoki {'Żelazo': 1} | Jeździec z oszczepami [Żelazo]
+FILE zelazo-konnica-asyryjska-opus5.ts | 2 rek. | epoki {'Żelazo': 2} | Konnica lancowa asyryjska [Żelazo]; Konnica łucznicza asyryjska [Żelazo]
+
+IMPORTED_MODEL_FILES 35
+FILES_WITHOUT_RECORD ['hexutil.ts', 'jednostki-p1-rdzen.ts', 'mapRenderStyle.ts', 'unitStatPlate.ts', 'unitUpgradeBadges.ts', 'unitVeteranBadges.ts']
+
+# modele nazwane bez rekordu (route.py UNUSED_BY_PL) + martwe -> pliki
+UNUSED buildCeltWarrior -> ['units.ts']
+UNUSED buildCrossbowman -> ['units.ts']
+UNUSED buildGermanWarrior -> ['units.ts']
+UNUSED buildHierosLochos -> ['units.ts']
+UNUSED buildLegionRzymski -> ['jednostki-p8b-rozni.ts']
+UNUSED buildHastati -> ['hastati-falangita.ts']
+UNUSED buildBerserker -> ['units.ts']
+
+# ścieżka EN (route.py EN_DIFF) -> pliki
+EN Axe Warrior -> buildCategoryModel('topor') -> ['units.ts']
+EN Harappan Gate Guard -> buildCategoryModel('wlocznik') -> ['jednostki-p1-rdzen.ts']
+EN Iron Khopesh Warrior -> buildKhopeshWarrior -> ['jednostki-p4-melee.ts']
