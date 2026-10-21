@@ -17,6 +17,10 @@ pub const TAURI_COMMAND: &str = "engine_command";
 pub const EVENT_STATE_CHANGED: &str = "engine_state_changed";
 
 /// Commands accepted by [`TAURI_COMMAND`].
+// `CreateSession` carries the full wizard DTO by value; boxing it would change
+// the constructor contract used by the root `tests/bridge_contract.rs`, which is
+// outside this topic's allowlist, so the size lint is accepted here.
+#[allow(clippy::large_enum_variant)]
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(tag = "kind", rename_all = "snake_case")]
 pub enum EngineCommand {

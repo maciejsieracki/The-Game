@@ -7,9 +7,9 @@ mod civilizations;
 
 use civilizations::{
     parse_city_names_pools, parse_civ_ai, parse_civ_matrix, parse_civ_params, parse_civs,
-    parse_diplomacy, parse_diplomacy_acceptance_points, Num, WartoscValue, CIVS_JSON,
-    CIV_AI_JSON, CIV_MATRIX_JSON, CIV_PARAMS_JSON, CITY_NAMES_POOLS_JSON,
-    DIPLOMACY_ACCEPTANCE_POINTS_JSON, DIPLOMACY_JSON,
+    parse_diplomacy, parse_diplomacy_acceptance_points, Num, WartoscValue, CITY_NAMES_POOLS_JSON,
+    CIVS_JSON, CIV_AI_JSON, CIV_MATRIX_JSON, CIV_PARAMS_JSON, DIPLOMACY_ACCEPTANCE_POINTS_JSON,
+    DIPLOMACY_JSON,
 };
 use serde_json::Value;
 
@@ -60,7 +60,10 @@ fn civ_matrix_json_parses_and_spot_checks() {
     assert!(f.cywilizacje.iter().all(|c| c.params.len() == 93));
     // Typ liczby zachowany z JSON: default int (2), per-cywilizacja float (2.3).
     assert_eq!(f.defaults["meta_mnoznik_waluta"], Num::Int(2));
-    assert_eq!(f.cywilizacje[0].params["meta_mnoznik_waluta"], Num::Float(2.3));
+    assert_eq!(
+        f.cywilizacje[0].params["meta_mnoznik_waluta"],
+        Num::Float(2.3)
+    );
     println!(
         "SPOT civ-matrix paramDefs={} defaults={} cywilizacje={} babilonia.tier={} grecy.meta={:?} default.meta={:?}",
         f.param_defs.len(),

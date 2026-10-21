@@ -28,11 +28,11 @@ use std::str::Utf8Error;
 use serde::de::DeserializeOwned;
 use serde_json::error::Category;
 
+use super::buildings_tech::{Building, TechFile, Wonders};
 use super::civilizations::{
     AcceptancePointsFile, CityNamesPoolsFile, CivAiFile, CivMatrixFile, CivParamsFile, CivsFile,
     DiplomacyFile,
 };
-use super::buildings_tech::{Building, TechFile, Wonders};
 use super::economy_society::{
     CitizenResourceUpkeep, EconParams, EpokaLudnoscManpower, MiastoParams, ResourceItem,
     SocietyParams,
@@ -88,11 +88,19 @@ impl fmt::Display for LoadError {
                 write!(formatter, "data file is missing: {}", file.display())
             }
             Self::Io { file, source } => {
-                write!(formatter, "cannot read data file {}: {source}", file.display())
+                write!(
+                    formatter,
+                    "cannot read data file {}: {source}",
+                    file.display()
+                )
             }
             Self::Empty { file } => write!(formatter, "data file is empty: {}", file.display()),
             Self::NotUtf8 { file, source } => {
-                write!(formatter, "data file is not valid UTF-8 {}: {source}", file.display())
+                write!(
+                    formatter,
+                    "data file is not valid UTF-8 {}: {source}",
+                    file.display()
+                )
             }
             Self::InvalidJson {
                 file,
