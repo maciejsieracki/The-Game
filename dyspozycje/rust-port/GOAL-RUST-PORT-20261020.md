@@ -26,16 +26,16 @@ dotykające tych samych plików — zawsze sekwencyjnie, nigdy w tej samej fali.
 
 | # | Temat | Faza | Runda | runId Workflow | Status | Ostatnia aktualizacja |
 |---|---|---|---|---|---|---|
-| 1 | `R-RUSTPORT-P1-16C-KODU-A-Q1` | P1.16c (1/4) | 1/5 | `wf_176939fc-85d` | DISPATCHED (w toku) | 2026-10-21 |
+| 1 | `R-RUSTPORT-P1-16C-PARYTET-AI-Q1` | P1.16c (2/4) | 1/5 | `wf_bb2e2b50-974` | DISPATCHED (w toku) | 2026-10-21 |
 | 2 | — | — | — | — | **WOLNY** | 2026-10-21 |
 | 3 | — | — | — | — | **WOLNY** | 2026-10-21 |
 | 4 | — | — | — | — | **WOLNY** | 2026-10-21 |
 | 5 | — | — | — | — | **WOLNY** | 2026-10-21 |
 | 6 | — | — | — | — | **WOLNY** | 2026-10-21 |
 
-Zamknięte od ostatniej aktualizacji tej tabeli (patrz `LEDGER.md` po szczegóły): P1.13b (PASS, 15/15
-`ProposalActionId` z dowodem), P1.16b (LIMIT-5-EXCEEDED → podzielone na 4 następców `P1.16c-*`,
-pierwszy z nich — KODU-A — właśnie dispatchowany w slocie 1).
+Zamknięte od ostatniej aktualizacji tej tabeli (patrz `LEDGER.md` po szczegóły): P1.16c-KODU-A (PASS
+— AUDYT-KODU 4 naprawione/1 nadal/5 nierozstrzygnięte, WERYFIKACJA-53 pokrywa się). Kolejny w
+sekwencji (ten sam plik `P1-16-EDGE-CASES.md`): PARYTET-AI, potem STOLICE, potem CIVPEDIA-OPISY.
 
 **P1.16c-PARYTET-AI, P1.16c-STOLICE, P1.16c-CIVPEDIA-OPISY czekają SEKWENCYJNIE** (ten sam plik
 `P1-16-EDGE-CASES.md` co KODU-A) — nie dispatchować równolegle, dopiero po zamknięciu poprzedniego.

@@ -622,3 +622,35 @@ Tematy 1–3 nie dotykają tych samych plików co temat `R-RUSTPORT-P1-16B` (`P1
 **Wynik obrony r5:** zarzuty 1, 2, 3, 5, 6, 7a, 7b, 7c PRZYJĘTE i poprawione; zarzut 4 PRZYJĘTY w części (pokrycie #9) i ODRZUCONY w części (brak statusu). **Kryterium binarne: NIESPEŁNIONE.** Runda 5/5, `LIMIT-5-EXCEEDED` utrzymany. Podział na tematy z §10.2 pozostaje, po poprawkach z §10.1 i §10.2.
 
 **DEPLOY/PUSH: NIE WYKONANO.** Brak commita.
+
+---
+
+## 11. Runda 1/5 — R-RUSTPORT-P1-16C-KODU-A-Q1 (Operator, obrona 1, pin `edb8fb56`)
+
+**Dowody:** wyłącznie `git show edb8fb56:…` / `git grep edb8fb56` (linie z tych poleceń). §1–§10 nietknięte. Ta wersja §11 zastępuje wersję sprzed obrony.
+
+### 11.1 Status per pozycja (`*` = część nierozstrzygnięta; [=KODU] = też WERYFIKACJA-53)
+
+| # | Status | Dowód (plik:linia, pin) | Brakuje |
+|---|---|---|---|
+| #2 [=KODU] | NAPRAWIONY | `main.ts:30068–30070`, `:30229` (`survivors` = undefined); `main.ts:28343–28344`; `git grep 'survivors: \[\]'` = 0 | — |
+| #4 | NIEROZSTRZYGNIONY | Racja 0% = koszt 0: `WYZYWIENIE_MIN=0` (`population-growth-v85.ts:27`), `computeCityRationCost` (`:205–213`), `bilansLokalny = brutto − koszt` (`turn-economy.ts:1656`), deficyt z bilansu (`empire-food.ts:233–234`, `:252`). Przeciwwaga: `WYZYWIENIE_GROWTH_PCT[0] = -10` (`population-growth-v85.ts:53–54`, użycie `:255`). | Czy −10%/turę to dostateczna kara: decyzja balansowa, nie rozstrzygnięta w kodzie. |
+| #20 [=KODU] | NAPRAWIONY | `diplomacy-acceptance-points.ts:303–304` (`relClamped = min(100,…)`), `diplomacy-value-catalog.ts:617–620`, `diplomacy-pn-engine.ts:197`. | Guard ¤↔¤ nieczytany; przy kursie ≤1:1 brak zysku (nie oceniane jako błąd). |
+| #31 [=KODU] | NIEROZSTRZYGNIONY\* | Budynki: kandydaci `'mury'` `ai.ts:1746`, `:1786` → komendy `ai.ts:3238`, `:4077` (`buildingId`); id `mury` w `buildings.json`. `ai.ts:717–724` = scoring badań, nie emisja. | `buildAllowed` dla `targowisko` (`ai.ts:724` tylko scoring); ścieżka jednostek (`main.ts:35120–35123`) nieczytana. |
+| #48 [=KODU] | NIEROZSTRZYGNIONY\* | Dominacja: `eliminateOwner` `main.ts:28902–28912`; `disbandOwnerUnits` `capital-capture.ts:258–260`. | Ranking HUD: `allPowerOwnerIds` `main.ts:15888–15893`, `filterOwnersForPowerRanking` `power-ranking.ts:22` nieczytane. |
+| #49 [=KODU] | NAPRAWIONY | Dowód negatywny z r1 był błędny: `buildingLevelForEpoch(` ma 4 wywołania w `main.ts`: `:7166` (`era = empireEpochForOwner(ownerId)`), `:15269` i `:15347` (`epoch = ctx.epoch`, ustawiane `empireEpochForOwner(city.ownerId)` w `:15231`), `:32369` (`:32371`). Ocena porządku: `main.ts:32401`, `:32412`. | Pętla `:32223–32410` nieczytana linia po linii. |
+| #53 [=KODU] | NIEROZSTRZYGNIONY\* | Rejestracja przed prognozą: `battle/mapFieldBattle.ts:326–331` przed `:339`. Klucz `'militia-'+city.id` (`game/siegeDefenders.ts:131`): jeden na miasto, nadpisywany przy każdej rejestracji (`mapFieldBattle.ts:326–331`, `main.ts:28531`). | Podpunkt „wpis nigdy nie usuwany" (`main.ts:37161` tylko nowa gra): wpływ na wynik niewykazany; odczyty `unitDefFor` (`main.ts:27020`) nie zostały w pełni sprawdzone. |
+| #59 | NIEROZSTRZYGNIONY | Realny tick: `turn-economy.ts:2664` (`cityYieldPerTurn`), `:2667` (kara `applyOrderYieldMults`), `:2717–2721` (`pieniadzZPracy` przeliczony po karze). Lokalizacja audytu `economy.ts:921`: `pieniadzZPracy` z praca przed karą (`:1005–1006`). | Punkt (b) floor/round nieadresowany; czy Mennica/korupcja (krok 7, `economy.ts`) obejmują poprawioną wartość: nieczytane (`turn-economy.ts:2719–2721` ich nie powtarza). |
+| #60 | NAPRAWIONY | `checkVillageRewardAt` (`main.ts:25797`; nagroda `kind === 'tech'` w `:25859`) → `researchStep` `:25873` → `reconcilePlayerEraFromResearch` → `setEra` `:25876–25886`. | — |
+| #62 | NADAL ISTNIEJE | Pangea: `generator.ts:283–292` → `removeInlandSeaPools` (`gen-helpers.ts:4320–4326`) = `removeInlandWaterPools` (`:4137–4150`), bez progu; `maxInlandPoolSize` dopiero `:4800–4801`. | Kontynenty (`removeSmallInlandWaterPools(…,8)`) nieprzeliczone; nie zmienia werdyktu pangea. |
+
+### 11.2 Liczniki
+
+- AUDYT-KODU (10): **NAPRAWIONY 4** (#2, #20, #49, #60) · **NADAL ISTNIEJE 1** (#62) · **NIEROZSTRZYGNIONY 5** (#4, #31\*, #48\*, #53\*, #59).
+- WERYFIKACJA-53 [=KODU] (6): **NAPRAWIONY 3** (#2, #20, #49) · **NIEROZSTRZYGNIONY 3** (#31\*, #48\*, #53\*).
+- Każda pozycja ma status z dowodem (kryterium „zero bez statusu”: spełnione). Temat **nie jest domknięty**: 6 z 10 pozycji AUDYT-KODU ma status bez pełnego dowodu lub z częścią nierozstrzygniętą.
+
+### 11.3 Ograniczenia
+
+- Bez cargo/npm/gry/testów. Zapis: ten plik (§11) i `runs/R-RUSTPORT-P1-16C-KODU-A-Q1/`. Brak commita; `gra/**` nietknięte.
+- Linie audytu nieaktualne; statusy po symbolach i liniach pinu.
