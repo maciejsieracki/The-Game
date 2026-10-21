@@ -31,7 +31,7 @@ dotykające tych samych plików — zawsze sekwencyjnie, nigdy w tej samej fali.
 | 2 | `R-RUSTPORT-P3-5A-DATA-CIV-DIPLO-Q1` | P3.5A (dane: cywilizacje/dyplomacja) | 1/5 | `wf_79aa55b9-370` | DISPATCHED (w toku) | 2026-10-21 |
 | 3 | `R-RUSTPORT-P3-5B-DATA-UNITS-COMBAT-Q1` | P3.5B (dane: jednostki/walka) | 1/5 | `wf_465ed497-df5` | DISPATCHED (w toku) | 2026-10-21 |
 | 4 | `R-RUSTPORT-P3-5C-DATA-BUILDINGS-TECH-Q1` | P3.5C (dane: budynki/cuda/technologie) | 1/5 | `wf_f73475a1-668` | DISPATCHED (w toku) | 2026-10-21 |
-| 5 | `R-RUSTPORT-P3-5D-DATA-TERRAIN-MAP-Q1` | P3.5D (dane: teren/mapa) | 1/5 | `wf_23193283-2cc` | DISPATCHED (w toku) | 2026-10-21 |
+| 5 | — | — | — | — | **WOLNY** (P3.5D PASS, zintegrowane do rust-port/parity-v2) | 2026-10-21 |
 | 6 | `R-RUSTPORT-P3-5E-DATA-ECON-SOCIETY-Q1` | P3.5E (dane: ekonomia/społeczeństwo, 9 plików) | 1/5 | `wf_d194c8bb-ed5` | DISPATCHED (w toku) | 2026-10-21 |
 
 ## *** FAZA P2 ZAMKNIĘTA — FAZA P3 OTWARTA (2026-10-21) ***
