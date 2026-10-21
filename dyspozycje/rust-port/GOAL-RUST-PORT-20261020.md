@@ -27,12 +27,12 @@ dotykające tych samych plików — zawsze sekwencyjnie, nigdy w tej samej fali.
 
 | # | Temat | Faza | Runda | runId Workflow | Status | Ostatnia aktualizacja |
 |---|---|---|---|---|---|---|
-| 1 | `R-RUSTPORT-P3-17-RUNTIME-DATA-WIRING-Q1` | P3.17 podpięcie danych JSON do silnika w runtime (rekrutacja z `units.json`) + audyt twardych tabel w `domain/**` | 1/5 | (patrz niżej) | DISPATCHED | 2026-10-21 |
-| 2 | `R-RUSTPORT-P4-4-MODEL-CATALOG-Q1` | P4.4 katalog modeli 3D do odtworzenia w Rust — Opus 5.5 | 1/5 | `wf_7f499719-17a` | DISPATCHED (Final Control) | 2026-10-21 |
-| 3 | — | — | — | — | **WOLNY** (P4.6 zamknięty PASS, szkielet `rust-port/renderer` na parity-v2 `0a496f67`; do uruchomienia RR-T3/T4/T6) | 2026-10-21 |
-| 4 | `R-WEB-MEMORY-LEAKS-FIX-Q1` | naprawa wycieków pamięci w wersji webowej (M1/M2/M3/M6 z P4.3) na osobnej gałęzi `fix/web-memory-leaks-Q1`, na polecenie właściciela — Opus 5.5 | 1/5 | `wf_d931a7e7-06e` | DISPATCHED | 2026-10-21 |
-| 5 | `R-RUSTPORT-P4-7-NEW-MODELS-SPEC-Q1` | P4.7 specyfikacja NOWYCH modeli (miasta dla brakujących państw/epoki żelaza, 5 cudów parkowanych) + port nieużywanych + reguła routingu — Opus 5.5 | 1/5 | (patrz niżej) | DISPATCHED | 2026-10-21 |
-| 6 | — | — | — | — | **WOLNY, ŚWIADOMIE** (jw.) | 2026-10-21 |
+| 1 | `R-RUSTPORT-P3-17-RUNTIME-DATA-WIRING-Q1` | P3.17 dane JSON w runtime (rekrutacja z `units.json`) + audyt twardych tabel | 1/5 | `wf_fb9c7958-44a` | DISPATCHED | 2026-10-21 |
+| 2 | `R-WEB-MEMORY-LEAKS-FIX-Q1` | naprawa wycieków pamięci weba (osobna gałąź `fix/web-memory-leaks-Q1`) — Opus 5.5 | 1/5 | `wf_d931a7e7-06e` | DISPATCHED | 2026-10-21 |
+| 3 | `R-RUSTPORT-P4-7-NEW-MODELS-SPEC-Q1` | P4.7 specyfikacja nowych modeli + port nieużywanych + routing — Opus 5.5 | 1/5 | `wf_81bfcfa8-d0e` | DISPATCHED | 2026-10-21 |
+| 4 | `R-RUSTPORT-P4-8-GEOMETRY-PRIMS-Q1` | RR-T4 prymitywy geometrii zgodne z Three r169 (`renderer/src/geom`) — Opus 5.5 | 1/5 | `wf_cff53e71-9f8` | DISPATCHED | 2026-10-21 |
+| 5 | `R-RUSTPORT-P4-9-ASSET-REGISTRY-Q1` | RR-T6 rejestr zasobów + test „N tur” (`renderer/src/assets`) — Opus 5.5 | 1/5 | `wf_d19f2ede-7f8` | DISPATCHED | 2026-10-21 |
+| 6 | `R-RUSTPORT-P4-10-PICKING-CPU-Q1` | RR-T3 picking CPU odtwarzający web (`renderer/src/pick`) — Opus 5.5 | 1/5 | `wf_7fb21ca5-e1d` | DISPATCHED | 2026-10-21 |
 
 **Zamknięte w tej sesji (kod na `rust-port/parity-v2`, HEAD `aa7b225b`, 292 testy):** P3.4b, P3.4c (newtypy ID), P3.8 (assety 428), P3.8b (manifest), P3.9 (data wiring), P3.11 (zgodność danych), P3.12 (loader), P3.14 (fmt/clippy w `src/data`).
 
