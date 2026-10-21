@@ -23,17 +23,17 @@ fn canonical_unit_record_keeps_purchase_and_upkeep_separate() {
     assert_eq!(warrior.resource_upkeep("drewno"), Some(3));
     assert_eq!(warrior.gold_upkeep, 1);
 
+    // P3-19 (derived table, bootstrap of web rules): Konnica is Epoka Brąz (x2).
+    // Surowiec Brąz 25 -> 50; Typ Mount adds kon 25 -> 50 (building-stock-cost.ts:368-369,
+    // 415-417); Utrzymanie surowiec Brąz 5 -> 10 (economy-upkeep.ts:784-797).
     let cavalry = recruitment_for("Konnica").expect("canonical cavalry");
-    assert_eq!(cavalry.stock_cost("braz"), Some(25));
-    // KNOWN DIVERGENCE (P3-17 audit, objection 6): the web runtime adds a mount horse
-    // surcharge (`MOUNT_UNIT_HORSE_STOCK_COST = 25` on `kon`, building-stock-cost.ts:368-369,
-    // 383-389, 415-417) for every Typ == Mount unit except Rydwan (woły), scaled by epoch.
-    // units.json has no `kon` column, so the domain row carries no `kon` cost. This assertion
-    // pins the JSON value; it does NOT claim parity with the web surcharge (see doc section 3).
-    assert_eq!(cavalry.stock_cost("kon"), None);
-    assert_eq!(cavalry.resource_upkeep("braz"), Some(5));
+    assert_eq!(cavalry.stock_cost("braz"), Some(50));
+    assert_eq!(cavalry.stock_cost("kon"), Some(50));
+    assert_eq!(cavalry.resource_upkeep("braz"), Some(10));
 
+    // Rydwan (woły) is the only Mount exempt from the horse surcharge (building-stock-cost.ts:371).
     let ox_chariot = recruitment_for("Rydwan (woły)").expect("canonical ox chariot");
+    assert_eq!(ox_chariot.stock_cost("braz"), Some(50));
     assert_eq!(ox_chariot.stock_cost("kon"), None);
 }
 
@@ -48,8 +48,9 @@ fn recruitment_affordability_checks_only_the_one_time_purchase_stock() {
         &stock(&[("drewno", 57), ("kamien", 999)]),
         &spearman
     ));
-    assert!(can_afford_recruitment(&stock(&[("braz", 25)]), &spearman));
-    assert!(!can_afford_recruitment(&stock(&[("braz", 24)]), &spearman));
+    // Włócznik: Epoka Brąz, Surowiec Brąz 25 -> 50 (P3-19 derived table).
+    assert!(can_afford_recruitment(&stock(&[("braz", 50)]), &spearman));
+    assert!(!can_afford_recruitment(&stock(&[("braz", 49)]), &spearman));
 }
 
 #[test]
@@ -91,25 +92,8 @@ fn upkeep_totals_are_grouped_by_resource_and_ignore_unknown_units() {
         "unit-that-does-not-exist",
     ]);
 
-    assert_eq!(total, stock(&[("braz", 5), ("drewno", 6)]));
-}
-
-/// Lower-case, strip Polish diacritics: the domain key convention for resources.
-fn domain_key(name: &str) -> String {
-    name.to_lowercase()
-        .chars()
-        .map(|c| match c {
-            'ą' => 'a',
-            'ć' => 'c',
-            'ę' => 'e',
-            'ł' => 'l',
-            'ń' => 'n',
-            'ó' => 'o',
-            'ś' => 's',
-            'ź' | 'ż' => 'z',
-            other => other,
-        })
-        .collect()
+    // Wojownik x2: Kamień (x1) drewno 3 + 3; Włócznik: Brąz (x2) braz 5 -> 10 (P3-19 derived table).
+    assert_eq!(total, stock(&[("braz", 10), ("drewno", 6)]));
 }
 
 #[test]
@@ -119,6 +103,15 @@ fn canonical_catalog_matches_units_json_for_all_75_rows() {
 
     let catalog = canonical_recruitment_costs();
     assert_eq!(catalog.len(), records.len());
+
+    let derived =
+        civ_engine::data::derived::parse_unit_stock_costs().expect("derived table parses");
+    let derived_units: std::collections::BTreeMap<&str, &civ_engine::data::derived::UnitStockRow> =
+        derived
+            .wiersze
+            .iter()
+            .map(|row| (row.jednostka.as_str(), row))
+            .collect();
 
     for record in &records {
         let unit = recruitment_for(&record.jednostka)
@@ -137,25 +130,14 @@ fn canonical_catalog_matches_units_json_for_all_75_rows() {
             "Utrzymanie (Pieniądz/turę) of {id}"
         );
 
-        let expected_stock: ResourceStock = record
-            .surowiec
-            .iter()
-            .map(|resource| (domain_key(resource), record.surowiec_ilosc as u32))
-            .collect();
-        assert_eq!(unit.stock_cost, expected_stock, "Surowiec of {id}");
-
-        let expected_upkeep: ResourceStock = record
-            .utrzymanie_surowiec
-            .iter()
-            .map(|resource| {
-                (
-                    domain_key(resource),
-                    record.utrzymanie_surowiec_ilosc as u32,
-                )
-            })
-            .collect();
+        // P3-19: stock and upkeep are wired from the editable derived table. This checks the
+        // wiring only; the numbers are owner-editable and are not recomputed from a formula.
+        let row = derived_units
+            .get(id)
+            .unwrap_or_else(|| panic!("derived row missing for {id}"));
+        assert_eq!(unit.stock_cost, row.surowiec, "Surowiec of {id}");
         assert_eq!(
-            unit.resource_upkeep, expected_upkeep,
+            unit.resource_upkeep, row.utrzymanie_surowiec,
             "Utrzymanie surowiec of {id}"
         );
 

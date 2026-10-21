@@ -181,7 +181,9 @@ fn building_and_recruitment_vectors_keep_purchase_and_work_costs_separate() {
         ),
         (20, 30, 15)
     );
-    assert_eq!(canonical.resource_cost("drewno"), Some(25));
+    // P3-19 derived table: stolarnia koszt_surowce JSON drewno 25, x2 (FALA2, epokaWejscia 1 => x1)
+    // = 50 (building-stock-cost.ts:84-98; r-stawki-strojenie.ts:36-47). Former value 25 was the raw JSON.
+    assert_eq!(canonical.resource_cost("drewno"), Some(50));
 
     let custom = BuildingCost::new("vector", 20, 10).with_resource_cost("drewno", 25);
     let mut work = 10;

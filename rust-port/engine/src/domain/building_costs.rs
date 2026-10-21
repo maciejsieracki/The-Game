@@ -2,6 +2,8 @@ use std::{collections::BTreeMap, error::Error, fmt};
 
 use serde::{Deserialize, Serialize};
 
+use crate::data::derived::{parse_building_stock_costs, StockMap};
+
 /// Resource quantities charged once when a building is queued.
 ///
 /// The keys intentionally remain strings because they are the canonical keys
@@ -100,80 +102,78 @@ impl BuildingCost {
     }
 }
 
-/// Canonical building-cost records currently present in `gra/data/buildings.json`.
+/// Canonical building-cost records: the 42 buildings of `gra/data/buildings.json`.
 ///
-/// The Rust port keeps this table explicit until the data-loader boundary is
-/// introduced. Returning fresh values prevents callers from mutating a shared
-/// global catalog and makes the function safe to use in tests and simulations.
+/// Returning fresh values prevents callers from mutating a shared global catalog
+/// and makes the function safe to use in tests and simulations.
 pub fn canonical_building_costs() -> Vec<BuildingCost> {
-    fn record(
-        building_id: &str,
-        base_work: u32,
-        work_increment: u32,
-        resources: &[(&str, u32)],
-    ) -> BuildingCost {
-        resources.iter().fold(
-            BuildingCost::new(building_id, base_work, work_increment),
-            |cost, (resource, amount)| cost.with_resource_cost(*resource, *amount),
-        )
-    }
+    // Work (Praca) columns stay the literal `kosztBudowy` / `przyrostKosztu` pairs
+    // (P3-19 scope is stock costs only; Work multipliers are a separate follow-up).
+    // Stock (`koszt_surowce`) values come from the editable derived table
+    // `data/derived/building-stock-costs.json`; no multiplier is applied at runtime.
+    const WORK: [(&str, u32, u32); 42] = [
+        ("stolarnia", 20, 10),
+        ("kamieniarski", 20, 10),
+        ("kuznia", 30, 10),
+        ("odlewnia_brazu", 28, 10),
+        ("odlewnia_zelaza", 35, 12),
+        ("wielka_odlewnia", 80, 15),
+        ("targowisko", 25, 10),
+        ("port", 30, 10),
+        ("port_wielki", 55, 12),
+        ("spichlerz", 20, 8),
+        ("spichlerz_ii", 35, 12),
+        ("garncarnia", 18, 8),
+        ("cegielnia", 22, 9),
+        ("kamienne_kregi", 18, 8),
+        ("swiatynia", 25, 10),
+        ("biblioteka", 25, 10),
+        ("studnia", 15, 5),
+        ("akwedukt", 30, 12),
+        ("mennica", 28, 10),
+        ("palisada", 22, 8),
+        ("mury", 35, 12),
+        ("koszary", 25, 10),
+        ("magazyn", 20, 8),
+        ("stela", 15, 5),
+        ("palac", 40, 12),
+        ("palac_ii", 60, 18),
+        ("palac_iii", 90, 27),
+        ("kuznia_zelaza", 60, 15),
+        ("wielka_kuznia", 90, 18),
+        ("fort", 70, 15),
+        ("baszta", 70, 15),
+        ("warsztat_oblezniczy", 65, 15),
+        ("akademia", 70, 15),
+        ("teatr", 55, 12),
+        ("sad", 55, 12),
+        ("dom_starszyzny", 25, 5),
+        ("dwor_zarzadcy", 45, 9),
+        ("pretorium", 75, 15),
+        ("trybunal", 30, 10),
+        ("garnizon", 30, 6),
+        ("laznia_publiczna", 50, 12),
+        ("akademia_wojskowa", 80, 18),
+    ];
 
-    [
-        record("stolarnia", 20, 10, &[("drewno", 25)]),
-        record("kamieniarski", 20, 10, &[("drewno", 30)]),
-        record("kuznia", 30, 10, &[("drewno", 30), ("kamien", 30)]),
-        record("odlewnia_brazu", 28, 10, &[("drewno", 30), ("kamien", 40)]),
-        record("odlewnia_zelaza", 35, 12, &[("drewno", 40), ("cegla", 50)]),
-        record("wielka_odlewnia", 80, 15, &[("drewno", 60), ("cegla", 70)]),
-        record("targowisko", 25, 10, &[("drewno", 30)]),
-        record("port", 30, 10, &[("drewno", 60), ("kamien", 30)]),
-        record("port_wielki", 55, 12, &[("drewno", 60), ("kamien", 50)]),
-        record("spichlerz", 20, 8, &[("drewno", 40)]),
-        record("spichlerz_ii", 35, 12, &[("drewno", 40), ("kamien", 50)]),
-        record("garncarnia", 18, 8, &[("drewno", 30)]),
-        record("cegielnia", 22, 9, &[("drewno", 30), ("kamien", 30)]),
-        record("kamienne_kregi", 18, 8, &[("kamien", 40)]),
-        record("swiatynia", 25, 10, &[("drewno", 30), ("kamien", 40)]),
-        record("biblioteka", 25, 10, &[("drewno", 30), ("kamien", 30)]),
-        record("studnia", 15, 5, &[("drewno", 25)]),
-        record("akwedukt", 30, 12, &[("drewno", 30), ("kamien", 60)]),
-        record("mennica", 28, 10, &[("drewno", 30), ("kamien", 40)]),
-        record("palisada", 22, 8, &[("drewno", 60)]),
-        record("mury", 35, 12, &[("drewno", 40), ("kamien", 80)]),
-        record("koszary", 25, 10, &[("drewno", 40), ("kamien", 40)]),
-        record("magazyn", 20, 8, &[("drewno", 50), ("kamien", 30)]),
-        record("stela", 15, 5, &[("kamien", 30)]),
-        record("palac", 40, 12, &[]),
-        record("palac_ii", 60, 18, &[("drewno", 50), ("kamien", 50)]),
-        record("palac_iii", 90, 27, &[("drewno", 50), ("cegla", 70)]),
-        record("kuznia_zelaza", 60, 15, &[("drewno", 40), ("cegla", 50)]),
-        record("wielka_kuznia", 90, 18, &[("drewno", 60), ("cegla", 80)]),
-        record("fort", 70, 15, &[("drewno", 50), ("kamien", 100)]),
-        record("baszta", 70, 15, &[("drewno", 50), ("kamien", 100)]),
-        record(
-            "warsztat_oblezniczy",
-            65,
-            15,
-            &[("drewno", 50), ("kamien", 50)],
-        ),
-        record("akademia", 70, 15, &[("drewno", 40), ("cegla", 70)]),
-        record("teatr", 55, 12, &[("drewno", 40), ("cegla", 50)]),
-        record("sad", 55, 12, &[("drewno", 30), ("cegla", 50)]),
-        record("dom_starszyzny", 25, 5, &[("drewno", 30)]),
-        record("dwor_zarzadcy", 45, 9, &[("drewno", 30), ("kamien", 30)]),
-        record("pretorium", 75, 15, &[("drewno", 40), ("cegla", 50)]),
-        record("trybunal", 30, 10, &[("drewno", 30), ("kamien", 40)]),
-        record("garnizon", 30, 6, &[("drewno", 30)]),
-        record("laznia_publiczna", 50, 12, &[("drewno", 40), ("cegla", 60)]),
-        record(
-            "akademia_wojskowa",
-            80,
-            18,
-            &[("drewno", 50), ("cegla", 70)],
-        ),
-    ]
-    .into_iter()
-    .collect()
+    let derived = parse_building_stock_costs().expect("embedded derived building table must parse");
+    let stock: BTreeMap<&str, &StockMap> = derived
+        .wiersze
+        .iter()
+        .map(|row| (row.budynek.as_str(), &row.koszt_surowce))
+        .collect();
+
+    WORK.iter()
+        .map(|(building_id, base_work, work_increment)| {
+            let resources = stock
+                .get(building_id)
+                .unwrap_or_else(|| panic!("derived building table lacks {building_id}"));
+            resources.iter().fold(
+                BuildingCost::new(*building_id, *base_work, *work_increment),
+                |cost, (resource, amount)| cost.with_resource_cost(resource.as_str(), *amount),
+            )
+        })
+        .collect()
 }
 
 /// Find one canonical building record by its data-file identifier.
