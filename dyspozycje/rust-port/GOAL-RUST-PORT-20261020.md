@@ -31,7 +31,7 @@ dotykające tych samych plików — zawsze sekwencyjnie, nigdy w tej samej fali.
 | 2 | — | — | — | — | **WOLNY** (P1.16f-CUDA PASS, zamknięty) | 2026-10-21 |
 | 3 | — | — | — | — | **WOLNY** (P1.16f-ULEPSZENIA PASS, zamknięty) | 2026-10-21 |
 | 4 | `R-RUSTPORT-P1-16F-CIVPEDIA-CYWILIZACJE-Q1` | P1.16f (4/6) | 1/5 | `wf_00e756e0-00d` | DISPATCHED (w toku) | 2026-10-21 |
-| 5 | `R-RUSTPORT-P1-16F-CIVPEDIA-POJECIA-Q1` | P1.16f (5/6) | 1/5 | `wf_63099c45-f02` | DISPATCHED (w toku) | 2026-10-21 |
+| 5 | — | — | — | — | **WOLNY** (P1.16f-POJECIA PASS, zamknięty) | 2026-10-21 |
 | 6 | — | — | — | — | **WOLNY** (P1.16f-TECHNOLOGIE PASS, zamknięty) | 2026-10-21 |
 
 **P1.16b/P1.16c (4/4) ZAMKNIĘTE PASS** — cały łańcuch następców pierwotnego P1.16b jest teraz

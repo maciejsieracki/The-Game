@@ -35,6 +35,9 @@ Każde twierdzenie liczbowe z pól `wikiS`, `wikiM`, `full` i `historia` zestawi
 1. Hasła Szczęście, Suwak handlu, Bogactwo, Porządek (progi), Spichlerz (pojemność) i Suwak żywności opisują model sprzed przebudowy wykonanej w `R-SZCZESCIE-PRZEBUDOWA-SKALI-Q1` (decyzje G1–G15, 2026-09-05), `R-PRAWO-PRZEBUDOWA-SKALI-Q1` (D1–D7), `R-HANDEL-LIMIT-TRAS-PELNY-Q1` (2026-09-04), decyzji C-HANDEL-UMOWA=B (2026-07-23) i PYTANIE-85 (pojemność magazynu). Pin ma nowe wartości w JSON i w kodzie. Liczby w tych hasłach są w większości nieaktualne.
 2. Zamożność nie ma osobnego hasła w grupie. Pojęcie pokrywają Bogactwo (poziom W) i Suwak handlu (udział Zamożności).
 3. Garnizon (budynek) leży poza grupą. Sprawdzono go krzyżowo, bo dispatch o to prosi. `budynki/garnizon` podaje koszt 60 pracy + 60 drewna, utrzymanie 4 ¤/t. Pin (`gra/data/buildings.json`, id `garnizon`): `kosztBudowy` 30, `utrzymanie` 2. Rozjazd potwierdzony. Prawo z Garnizonu 25/35/47 per epoka zgadza się z `prawo_garnizon_budynek_epoka`.
+4. Pole `historia` jest puste (`''`) we wszystkich 10 hasłach (sprawdzono w `gra/src/data/wikiBundle.json` na pinie, `git show edb8fb56:...`). Zakres `historia` = 0 twierdzeń, zamknięty; nie ma tu liczb do weryfikacji.
+
+**Rewizja 2 (2026-10-21, obrona Operatora po zarzutach Evaluatora).** Zmiany: §8 Świątynia (ZGODNE → ROZJAZD); §10 Umowa (wartości −10/−15 ZGODNE, nazwa ROZJAZD, relacja −15 NIEZWERYFIKOWANE); dopisano wiersze dla liczb z haseł Bogactwo, Bunt, Porządek, Suwak handlu, Szczęście, które wcześniej nie miały wiersza. Łącznie 151 twierdzeń: ZGODNE 73, ROZJAZD 56, NIEZWERYFIKOWANE 22.
 
 ---
 
@@ -51,6 +54,7 @@ Każde twierdzenie liczbowe z pól `wikiS`, `wikiM`, `full` i `historia` zestawi
 | Domyślny udział 20% (`suwak_handel_luksus_domyslnie`) | `econ-params.json`: 20 we wszystkich trudnościach; `cities.ts` `DEFAULT_PODZIAL_HANDLU.procentLuksus` = 20 | ZGODNE |
 | Immunitet (hard), „D18" | `wealth.ts` ma `immunitetTur`, nie zweryfikowano wartości per trudność | NIEZWERYFIKOWANE |
 | Tabela „Bogactwo vs złoto" (źródła, rola) | Jakościowo, bez liczb | NIEZWERYFIKOWANE |
+| Przykład „próg 1→2 = 4,5×2×1 = 9 jedn., przy 4/t → ~3 tury (9÷4)" | `wealth.ts` wealthProg(poziom 1, epoka 1) = 4,5·2·1 = 9 (wiersz 1 powyżej); 9÷4 = 2,25 → 3 tury zaokr. w górę | ZGODNE |
 
 ---
 
@@ -70,6 +74,8 @@ Progi i mnożniki wg `society-params.json` (`porzadek_*`, normal) i `order.ts` (
 | Bunt skrajny: porządek <10% przez 2 tury → rebelia AI | Próg 12 (normal). `porzadek_grace_tur_bunt` normal = **3** (nie 2). | ROZJAZD |
 | Przykład: pop 6, porządek 35%, praca 20→17, złoto 8→6,8, wzrost 4→3 | Arytmetyka i mnożniki zgodne | ZGODNE |
 | Przykład: 10 tur → ~30 pracy, ~12 ¤, ~10 żywności | Arytmetyka poprawna | ZGODNE |
+| Przykład: porządek 7% → „bunt skrajny", 2 tury grace z alertem | 7 < 12 (`porzadek_prog_bunt_skrajny_pct` normal) → skrajny zgodnie z progiem pinu; grace = `porzadek_grace_tur_bunt` normal **3**, nie 2 | ROZJAZD |
+| „Naprawa w 3 turach": kary znikają od razu (bez opóźnienia) | Nie zweryfikowano w tej rundzie (brak sprawdzenia natychmiastowości zdjęcia kar w `order.ts`) | NIEZWERYFIKOWANE |
 | Naprawa: suwak 50% Zamożności = „+4 pkt Szczęścia (normal)" | `luksusHappinessBonus(50, normal)` = −10 + 20·(50/90) ≈ **+1,1** (`szczescie_podatki_min` −10, `_max` +10, `_prog_pct` 90) | ROZJAZD |
 | Naprawa: 2 jednostki (+prawo) → porządek 72% | Wymaga pełnego przeliczenia PrawPct/PorPct | NIEZWERYFIKOWANE |
 | Dźwignie: teatr, łaźnia, świątynia → szczęście | `buildings.json`: `dajeSzczescie: true` dla `teatr`, `laznia_publiczna`, `swiatynia`. Uwaga: `teatr` ma `suppressed: true` (merge do Akademii) — wiki wskazuje budynek nieaktywny jako osobny. | ZGODNE |
@@ -94,6 +100,7 @@ Progi i mnożniki wg `society-params.json` (`porzadek_*`, normal) i `order.ts` (
 | Prawo podnoszą: wojsko, sąd, pretorium, niski bunt | `prawo_sad` 19, `prawo_pretorium` 38 (normal) — ZGODNE. „Niski bunt" jako źródło Prawa nie zweryfikowano. | NIEZWERYFIKOWANE |
 | Przykład: 0,5×56 + 0,5×70 = 63 → Napięcie | Arytmetyka i tier poprawne | ZGODNE |
 | Przykład: 20 pracy ×0,95 = 19 | Arytmetyka poprawna | ZGODNE |
+| Przykład: 10 tur przy Napięciu → −10 pracy (−1/t) | 20 × (1 − 0,95) = 1/t × 10 tur = 10 | ZGODNE |
 | Przykład: 0,5×70 + 0,5×70 = 70 → Spokój | Poprawne | ZGODNE |
 | Przykład: 0,5×20 + 0,5×90 = 55 → Napięcie | Poprawne | ZGODNE |
 
@@ -146,6 +153,9 @@ Progi i mnożniki wg `society-params.json` (`porzadek_*`, normal) i `order.ts` (
 | Scenariusz 25% → 40/20/40 = +2 pkt więcej | Kod: 25% ≈ −4,4 → 40% ≈ −1,1 (≈ +3,3 pkt; wiki podaje +2 względem +1 → +3) | ROZJAZD |
 | Koszt 6 → 4 skarbca/t = −20 ¤ w 10 turach | Arytmetyka poprawna | ZGODNE |
 | Pieniądz z Targowiska dzieli się suwakiem | `targowisko_praca_na_pieniadz_mnoznik` istnieje; podział nie zweryfikowany | NIEZWERYFIKOWANE |
+| Przykład „miasto stołeczne 20/20/60" (skarbiec/nauka/zamożność): suma podziału | 20 + 20 + 60 = 100; trzy kategorie jak w wierszu 1 tej sekcji | ZGODNE |
+| Przykład „stołeczne 20/20/60 → dużo szczęścia" | Pin: udział Zamożności 60% → `luksusHappinessBonus` = −10 + 20·min(1; 60/90) = **+3,3** pkt. Wiki nie podaje liczby („dużo") | NIEZWERYFIKOWANE |
+| Przykład „miasto graniczne 80/10/10 → więcej złota, ryzyko buntu" | Suma 100 ZGODNE. Pin: 10% Zamożności → −10 + 20·(10/90) = **−7,8** pkt. Związek z buntem nie zweryfikowany | NIEZWERYFIKOWANE |
 
 ---
 
@@ -192,7 +202,7 @@ Progi i mnożniki wg `society-params.json` (`porzadek_*`, normal) i `order.ts` (
 | Szczęście % = 100 × netto / SzMax | `society-breakdown.ts` `pctFromNetto` | ZGODNE |
 | Cap 120% | `szczescie_pct_cap` normal 120 | ZGODNE |
 | Netto nie mniej niż 0 | `clampPct` nie zweryfikowano | NIEZWERYFIKOWANE |
-| Świątynia +1 | `swiatynia` `dajeSzczescie: true` → ryczałt budynków (G1). Wartość ryczałtu +1 nie zweryfikowana. | ZGODNE |
+| Świątynia +1 | `swiatynia` `dajeSzczescie: true` → ryczałt **+1** (`BUILDING_HAPPINESS_BASE_PER_BUILDING` = 1, `economy.ts`) **plus** `baza.zadowolenie` = 2 z `buildings.json` → razem ≈ **+3** na poziomie 1 (wg docstringu `economy.ts` ~l. 527–530; przelicznik poziomu nie zweryfikowany wprost). Wiki podaje +1 | ROZJAZD |
 | Teatr / amfiteatr +1 | `teatr` `dajeSzczescie: true`, ale `suppressed: true` (merge do Akademii). Amfiteatr nie występuje w `buildings.json` jako osobny wpis. | ROZJAZD |
 | Luksus (co 5 jedn. w puli) +1 | Nie zaimplementowane. Pin: Wealth wg G6 (§1). | ROZJAZD |
 | Zamożność w Daninie: tabela 10 przedziałów (−1…+8 normal) | Skala liniowa −10…+10 (§5) | ROZJAZD |
@@ -206,6 +216,10 @@ Progi i mnożniki wg `society-params.json` (`porzadek_*`, normal) i `order.ts` (
 | Przykład: Brąz, pop 5, netto = 1 + 3 − 3 − 1 = 0 → 0% | Kod: SzMax = 50 × 1,04³ ≈ 56,2; wszystkie składniki (zagęszczenie, Osiedle, podatki, wojna) inne | ROZJAZD |
 | Przykład: pop 3, Osiedle +2, świątynia +1 → netto +3 → 17% | Osiedle w kodzie = 8 (pop 3), SzMax w kodzie = 50 × 1,04 ≈ 52 | ROZJAZD |
 | Strategia: „przed pop 5 → Akwedukt, inaczej zagęszczenie −1" | Zagęszczenie usunięte (G12) | ROZJAZD |
+| Scenariusz „zamożność 50% → netto +1 → 100×1/18 ≈ 6%" (SzMax 18) | Pin: SzMax Brąz normal (pop ≤ 2) = **50** (`szczescie_max_epoka`), nie 18. Udział 50% = +1,1 pkt (§5). 1/50 = **2%** | ROZJAZD |
+| Scenariusz „Teatr +1 → netto +2 → ≈11%" | Teatr `suppressed: true` (wiersz §8 „Teatr / amfiteatr"). Przy SzMax 50: 2/50 = **4%**, nie 11% | ROZJAZD |
+| Scenariusz „zakończ wojnę (+3 netto) → netto +5 → ≈28%" | Pin: kara wojny = **−5** (`szczescie_kara_wojna`, G9), nie −3. Przy SzMax 50: 5/50 = **10%**, nie 28% | ROZJAZD |
+| „Cel ≥50% (netto ≥9 pkt)" | Pin: 50% z SzMax 50 = netto ≥ **25** pkt (Brąz, pop ≤ 2) | ROZJAZD |
 
 ---
 
@@ -242,7 +256,9 @@ Progi i mnożniki wg `society-params.json` (`porzadek_*`, normal) i `order.ts` (
 | +5% Handlu za każdą trasę (kumulatywnie), obu stronom | `TRADE_ROUTE_BUILDING_BONUS_RATE` = 0,05 per trasa, tylko gdy `budynekOdblokowany` (pokrycie budynkowe). Wiki nie podaje tego warunku. | ZGODNE (z zastrzeżeniem) |
 | Dochód z dystansu (`tradeRouteDistanceIncome`, `econ-params.json`) | Nie zweryfikowano wartości | NIEZWERYFIKOWANE |
 | Dostęp do brązu / żelaza / konia przez trasę (E3b) | Nie zweryfikowano w tej rundzie | NIEZWERYFIKOWANE |
-| Umowa Handlowa: AI proponuje; zerwanie −10 vs −15 zaufania | Nazwa w kodzie to „Umowa Szlaków" (`UmowaSzlakow`). Liczb −10 / −15 nie znaleziono w `diplomacy*.ts` / `diplomacy.json` (grep). Nazwa wiki ≠ kod. | NIEZWERYFIKOWANE |
+| Umowa Handlowa: zerwanie kosztuje **−10** zaufania (umowa handlowa) vs **−15** (inny traktat) | `diplomacy-penalty-preview.ts:168`: `pushLine(lines,'zaufanie', isTrade ? -10 : -15, …)`. `isHandelTreatyKind` (l. 65–68) obejmuje `RodzajTraktatu.UmowaSzlakow`. Wiki (`wikiM`) podaje te same −10 / −15. (Poprzednia wersja audytu błędnie twierdziła, że liczb brak.) | ZGODNE |
+| Nazwa „Umowa Handlowa" (wiki) vs kod „Umowa Szlaków" | Kod: `RodzajTraktatu.UmowaSzlakow` (`diplomacy-display.ts:356`, `diplomacy-treaties.ts:216`). Wiki używa nazwy „Umowa Handlowa", kod „Umowa Szlaków". Rozbieżność nazwy, nie wartości | ROZJAZD |
+| Zerwanie umowy szlaków: −15 **Relacja** (opis w `diplomacy.json` akcja 5) | Opis tekstowy w `diplomacy.json`: „Zerwanie: −15 Relacja, −10 Zaufanie". Kara Relacji w kodzie nie zweryfikowana w tej rundzie | NIEZWERYFIKOWANE |
 | Przykład: limit 1 trasa (1 Targowisko po każdej stronie) | Wg kodu slotów = 1 + 1 = 2 po każdej stronie | ROZJAZD |
 | Kiedyś 5% Handlu i dystans 6 heksów → trasa aktywna | Warunki traktatu i slotów inne niż w wiki | ROZJAZD |
 
@@ -259,9 +275,11 @@ Tych twierdzeń nie domknięto w rundzie 1. Wymagają dalszej pracy w kolejnej r
 5. Suwak handlu: praca nie objęta korupcją; Targowisko i dzielenie Pieniądza.
 6. Suwak pracy: tartak 25 pracy; „błąd 90/10" (jakościowo).
 7. Suwak żywności: „nie blokuje rekrutacji"; koszt żywności jednostki (1 żywn./t).
-8. Szczęście: netto ≥ 0 (clamp); wartość ryczałtu budynku +1.
+8. Szczęście: netto ≥ 0 (clamp). (Ryczałt budynku +1 zweryfikowany; Świątynia — ROZJAZD, patrz §8.)
 9. Drzewko: bramki Zasady 1–2 w `research.ts`; pole `awansDoEpoki`; ekran UI.
-10. Szlaki: dystans (`tradeRouteDistanceIncome`); dostęp do surowców przez trasę (E3b); liczby zaufania Umowy −10 / −15 (nazwa Umowa Szlaków).
+10. Szlaki: dystans (`tradeRouteDistanceIncome`); dostęp do surowców przez trasę (E3b); kara Relacji −15 umowy szlaków (`diplomacy.json` akcja 5). (Zaufanie −10 / −15 zweryfikowane — ZGODNE, §10.)
+11. Bunt: „Naprawa w 3 turach — kary znikają od razu" (natychmiastowość w `order.ts`).
+12. Suwak handlu: „dużo szczęścia" (stołeczne 20/20/60) i „ryzyko buntu" (graniczne 80/10/10) — sformułowania jakościowe bez liczby w wiki.
 
 ---
 
