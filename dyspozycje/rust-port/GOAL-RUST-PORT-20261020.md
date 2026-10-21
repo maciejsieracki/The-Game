@@ -27,7 +27,7 @@ dotykające tych samych plików — zawsze sekwencyjnie, nigdy w tej samej fali.
 
 | # | Temat | Faza | Runda | runId Workflow | Status | Ostatnia aktualizacja |
 |---|---|---|---|---|---|---|
-| 1 | `R-RUSTPORT-P2-3-ENTITY-IDS-Q1` | P2.3 (schemat ID encji) | 1/5 | `wf_689c1489-f1e` | DISPATCHED (w toku) | 2026-10-21 |
+| 1 | — | — | — | — | **WOLNY** (P2.3 PASS, zamknięty) | 2026-10-21 |
 | 2 | — | — | — | — | **WOLNY** (P2.9 PASS, zamknięty) | 2026-10-21 |
 | 3 | — | — | — | — | **WOLNY** | 2026-10-21 |
 | 4 | — | — | — | — | **WOLNY** | 2026-10-21 |
@@ -45,10 +45,19 @@ genuine decyzją produktową. **Bramka P1 formalnie otwarta.** Zgodnie z decyzj�
 **P2.1 zamknięty PASS** (katalog 15 modułów domeny, 183/183 plików web przypisanych, stan
 `rust-port/engine` zweryfikowany code-level na obu gałęziach). Kolejna fala: **P2.4** (zgodność RNG
 web↔Rust — weryfikacja faktów, nie decyzja) i **P2.9** (mapowanie `gra/data/*.json` → struktury Rust)
-— oba niezależne od siebie i od reszty P2, każdy do własnego nowego pliku. Wstrzymane na razie:
-P2.2 (kontrakt `GameState`) i P2.3 (schemat ID encji) — to są tematy z realnym ryzykiem
-architektonicznej decyzji, nie czystego katalogowania; dispatchowane zostaną jako następna fala z
-dokładniejszym nadzorem, nie w tej samej turze co proste weryfikacje faktów.
+— oba niezależne od siebie i od reszty P2, każdy do własnego nowego pliku.
+
+**P2.2 (kontrakt `GameState`) ZAMKNIĘTY PASS** — 1 genuine decyzja produktowa zadana właścicielowi
+(D7: Rust czyta zapisy web 1:1 → TAK, wymaga P2.11), 15 punktów strukturalnych rozstrzygniętych
+administracyjnie, patrz `04-orchestrator-disposition.md` tego tematu i §8 dokumentu.
+
+**P2.3 (schemat ID encji + pełne porównanie pól UnitState/CityState) ZAMKNIĘTY PASS** — 14 punktów
+DECISION_REQUIRED (D-ID-1..D-ID-11 + 3 dodatkowe Final Control), WSZYSTKIE rozstrzygnięte
+administracyjnie (żadna genuine decyzja produktowa — same wybory reprezentacji danych Rust), patrz
+`04-orchestrator-disposition.md` tego tematu i §9 `P2-3-ENTITY-IDS.md`. Kluczowe: ID = newtype `u64`
+per typ (PlayerId/CityId/UnitId), monotoniczny licznik bez ponownego użycia, `OwnerRef` enum zamiast
+liczb ujemnych, `oblega: Option<CityId>` JAWNIE PRZECHOWYWANE (nie wyprowadzane — wymóg importu
+zapisów 1:1), `kind` jednostki = klucz katalogu danych (nie zamknięty enum).
 
 **P1.16b/P1.16c (4/4) ZAMKNIĘTE PASS** — cały łańcuch następców pierwotnego P1.16b jest teraz
 zielony (patrz LEDGER). Ostatni kawałek P1 to `AUDYT-OPISY-CIVPEDIA-PORADNIK-SCIAGI-2026-08-13.md`
