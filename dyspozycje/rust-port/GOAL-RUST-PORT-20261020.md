@@ -27,7 +27,7 @@ dotykające tych samych plików — zawsze sekwencyjnie, nigdy w tej samej fali.
 
 | # | Temat | Faza | Runda | runId Workflow | Status | Ostatnia aktualizacja |
 |---|---|---|---|---|---|---|
-| 1 | — | — | — | — | **WOLNY** (P3.3-IMPL PASS, zintegrowane do rust-port/parity-v2) | 2026-10-21 |
+| 1 | `R-RUSTPORT-P3-4-IDS-VERSIONING-Q1` | P3.4 (newtype ID konsekwentnie + SCHEMA_VERSION) | 1/5 | `wf_1284f37b-dac` | DISPATCHED (w toku) | 2026-10-21 |
 | 2 | `R-RUSTPORT-P3-5A-DATA-CIV-DIPLO-Q1` | P3.5A (dane: cywilizacje/dyplomacja) | 1/5 | `wf_79aa55b9-370` | DISPATCHED (w toku) | 2026-10-21 |
 | 3 | `R-RUSTPORT-P3-5B-DATA-UNITS-COMBAT-Q1` | P3.5B (dane: jednostki/walka) | 1/5 | `wf_465ed497-df5` | DISPATCHED (w toku) | 2026-10-21 |
 | 4 | `R-RUSTPORT-P3-5C-DATA-BUILDINGS-TECH-Q1` | P3.5C (dane: budynki/cuda/technologie) | 1/5 | `wf_f73475a1-668` | DISPATCHED (w toku) | 2026-10-21 |
