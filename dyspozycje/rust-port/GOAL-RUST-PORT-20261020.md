@@ -28,8 +28,8 @@ dotykające tych samych plików — zawsze sekwencyjnie, nigdy w tej samej fali.
 | # | Temat | Faza | Runda | runId Workflow | Status | Ostatnia aktualizacja |
 |---|---|---|---|---|---|---|
 | 1 | `R-RUSTPORT-P1-16F-CIVPEDIA-JEDNOSTKI-Q1` | P1.16f (1/6) | 1/5 | `wf_5944d2c9-a92` | DISPATCHED (w toku) | 2026-10-21 |
-| 2 | `R-RUSTPORT-P1-16F-CIVPEDIA-CUDA-Q1` | P1.16f (2/6) | 1/5 | `wf_b766eceb-3a9` | DISPATCHED (w toku) | 2026-10-21 |
-| 3 | `R-RUSTPORT-P1-16F-CIVPEDIA-ULEPSZENIA-Q1` | P1.16f (3/6) | 1/5 | `wf_926f69ba-f26` | DISPATCHED (w toku) | 2026-10-21 |
+| 2 | — | — | — | — | **WOLNY** (P1.16f-CUDA PASS, zamknięty) | 2026-10-21 |
+| 3 | — | — | — | — | **WOLNY** (P1.16f-ULEPSZENIA PASS, zamknięty) | 2026-10-21 |
 | 4 | `R-RUSTPORT-P1-16F-CIVPEDIA-CYWILIZACJE-Q1` | P1.16f (4/6) | 1/5 | `wf_00e756e0-00d` | DISPATCHED (w toku) | 2026-10-21 |
 | 5 | `R-RUSTPORT-P1-16F-CIVPEDIA-POJECIA-Q1` | P1.16f (5/6) | 1/5 | `wf_63099c45-f02` | DISPATCHED (w toku) | 2026-10-21 |
 | 6 | `R-RUSTPORT-P1-16F-TECHNOLOGIE-Q1` | P1.16f (6/6) | 1/5 | `wf_aafeb0f3-2a6` | DISPATCHED (w toku) | 2026-10-21 |
