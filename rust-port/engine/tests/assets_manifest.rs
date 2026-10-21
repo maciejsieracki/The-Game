@@ -38,7 +38,9 @@ fn assets_dir() -> PathBuf {
 
 /// Parsuje manifest; zwraca wpisy danych (bez nagłówka). Błąd przy złym nagłówku lub kolumnach.
 fn parse_manifest(text: &str) -> Result<Vec<Entry>, String> {
-    let mut lines = text.split('\n');
+    // Dopuszczalny wyłącznie jeden końcowy '\n'; każda inna pusta linia jest błędem.
+    let body = text.strip_suffix('\n').unwrap_or(text);
+    let mut lines = body.split('\n');
     let header = lines.next().ok_or("manifest pusty")?;
     if header != MANIFEST_HEADER {
         return Err(format!("zły nagłówek: {header:?}"));
@@ -46,8 +48,7 @@ fn parse_manifest(text: &str) -> Result<Vec<Entry>, String> {
     let mut out = Vec::new();
     for (i, line) in lines.enumerate() {
         if line.is_empty() {
-            // dopuszczalny tylko końcowy newline (ostatni element po split)
-            continue;
+            return Err(format!("wiersz {}: pusta linia", i + 2));
         }
         let cols: Vec<&str> = line.split('\t').collect();
         if cols.len() != 4 {
@@ -308,6 +309,7 @@ fn negative_validator_rejects_wrong_size() {
 fn negative_validator_rejects_missing_file() {
     let mut entries = load_manifest();
     entries.truncate(3);
+    assert!(validate(&entries, &repo_root(), false).is_empty(), "kontrola: prawdziwe wpisy przechodzą");
     entries[0].dst = "rust-port/assets/icons/does-not-exist-xyz.svg".to_string();
     let errors = validate(&entries, &repo_root(), false);
     assert_eq!(errors.len(), 1, "brakujący plik musi dać dokładnie 1 błąd: {errors:?}");
@@ -318,6 +320,7 @@ fn negative_validator_rejects_missing_file() {
 fn negative_validator_rejects_duplicate_dest() {
     let mut entries = load_manifest();
     entries.truncate(3);
+    assert!(validate(&entries, &repo_root(), false).is_empty(), "kontrola: prawdziwe wpisy przechodzą");
     let dup = entries[0].clone();
     entries.push(dup);
     let errors = validate(&entries, &repo_root(), false);
@@ -339,8 +342,12 @@ fn negative_validator_rejects_wrong_sha() {
 
 #[test]
 fn negative_parser_rejects_bad_header_and_columns() {
+    let real = fs::read_to_string(manifest_path()).expect("MANIFEST.tsv czytelny");
+    assert!(parse_manifest(&real).is_ok(), "kontrola: prawdziwy manifest parsuje się");
     let bad_header = "sha\tsize\tsrc\tdst\na\t1\tb\tc\n";
     assert!(parse_manifest(bad_header).is_err(), "zły nagłówek musi być odrzucony");
     let bad_cols = format!("{MANIFEST_HEADER}\nabc\t1\tsrc\n");
     assert!(parse_manifest(&bad_cols).is_err(), "wiersz z 3 kolumnami musi być odrzucony");
+    let blank_mid = format!("{MANIFEST_HEADER}\nabc\t1\tsrc\tdst\n\nabc\t1\tsrc\tdst2\n");
+    assert!(parse_manifest(&blank_mid).is_err(), "pusta linia w środku musi być odrzucona");
 }
