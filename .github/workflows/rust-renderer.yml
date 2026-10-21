@@ -1,0 +1,82 @@
+name: Rust renderer (scaffold, CPU + GPU feature build)
+
+"on":
+  pull_request:
+    paths:
+      - "rust-port/renderer/**"
+      - ".github/workflows/rust-renderer.yml"
+  push:
+    paths:
+      - "rust-port/renderer/**"
+      - ".github/workflows/rust-renderer.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: rust-renderer-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+# GitHub-hosted ubuntu-latest has no GPU.  The `gpu` feature is still built,
+# linted and tested so the wgpu layer cannot rot; tests/gpu_probe.rs then
+# reports "SKIPPED: no GPU adapter" explicitly (visible thanks to --nocapture).
+# A Windows job (DX12/WARP adapter) is intentionally NOT part of this scaffold;
+# it belongs to the embedding spike RR-T1 and needs owner authorization, like
+# the Windows job of rust-engine.yml.
+jobs:
+  linux:
+    name: Format, clippy and tests (no GPU)
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    defaults:
+      run:
+        working-directory: rust-port/renderer
+    env:
+      CARGO_TERM_COLOR: always
+      CARGO_INCREMENTAL: 0
+      CARGO_BUILD_JOBS: 2
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install stable Rust with quality tools
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt, clippy
+
+      - name: Format check
+        run: cargo fmt --all -- --check
+
+      - name: Clippy (CPU only)
+        run: cargo clippy --locked --all-targets -- -D warnings
+
+      - name: Clippy (feature gpu)
+        run: cargo clippy --locked --all-targets --features gpu -- -D warnings
+
+      - name: Tests (CPU only)
+        run: cargo test --locked --all-targets
+
+      - name: Tests (feature gpu, probe skips explicitly without adapter)
+        run: cargo test --locked --all-targets --features gpu -- --nocapture
+
+  msrv:
+    name: MSRV 1.87 build and tests (feature gpu)
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    defaults:
+      run:
+        working-directory: rust-port/renderer
+    env:
+      CARGO_TERM_COLOR: always
+      CARGO_INCREMENTAL: 0
+      CARGO_BUILD_JOBS: 2
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install Rust 1.87.0 (rust-version of civ-renderer)
+        uses: dtolnay/rust-toolchain@1.87.0
+
+      - name: Tests on MSRV with the committed lock
+        run: cargo test --locked --all-targets --features gpu -- --nocapture

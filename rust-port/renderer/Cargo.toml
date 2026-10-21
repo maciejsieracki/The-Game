@@ -1,0 +1,29 @@
+[package]
+name = "civ-renderer"
+version = "0.1.0"
+edition = "2021"
+rust-version = "1.87"
+description = "Staging crate for the native Rust map renderer (wgpu); scaffold only (R-RUSTPORT-P4-6)"
+publish = false
+
+# Standalone crate (like rust-port/engine): no workspace.
+#
+# Feature `gpu` is OFF by default:
+# - the CPU modules (geom, pick, camera, assets, view, ...) must build and be
+#   tested without any GPU stack, quickly, on every CI runner;
+# - wgpu pulls a large transitive tree (naga, wgpu-core, wgpu-hal, ...) that
+#   only the GPU layer needs.
+# Enable with `cargo test --features gpu`.
+[features]
+default = []
+gpu = ["dep:wgpu"]
+
+[dependencies]
+# Engine decision D-RR-1 = A (wgpu directly). Pinned to an exact version;
+# MSRV of wgpu 30.0.1 is 1.87 (hence rust-version above).
+wgpu = { version = "=30.0.1", optional = true }
+
+[dev-dependencies]
+# Blocks on wgpu's async adapter request in tests/gpu_probe.rs (no async
+# runtime, no dependencies of its own). Only used by the GPU probe test.
+pollster = "0.4"
