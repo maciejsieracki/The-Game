@@ -208,5 +208,8 @@ fn imported_queue_below_the_sequence_ceiling_still_accepts_enqueue() {
     let mut restored: EventQueue<&str> =
         serde_json::from_str(near_max).expect("MAX-2 is a valid imported sequence");
     assert_eq!(restored.next_sequence(), 18446744073709551614);
-    assert!(restored.try_enqueue(1, TurnPhase::Ai, "tail").is_ok());
+    // Plain `enqueue` (not the checked variant): the call must not panic.
+    let tail = restored.enqueue(1, TurnPhase::Ai, "tail");
+    assert_eq!(tail, 18446744073709551614);
+    assert_eq!(restored.next_sequence(), 18446744073709551615);
 }
