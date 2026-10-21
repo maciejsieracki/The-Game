@@ -819,6 +819,77 @@ fn assert_roundtrip<T: DeserializeOwned + Serialize>(name: &str) {
             shown.join("\n")
         );
     }
+    // Liczniki N1/N2 sa przypiete per plik: zmiana liczby = FAIL (nie moga cicho rosnac ani zanikac).
+    let (exp_n1, exp_n2) = RT_PINNED_NORMALIZATIONS
+        .iter()
+        .find(|(n, _, _)| *n == name)
+        .map(|(_, a, b)| (*a, *b))
+        .unwrap_or_else(|| panic!("{name}: brak przypietych licznikow N1/N2"));
+    assert_eq!(
+        d.n1_null_for_absent, exp_n1,
+        "{name}: licznik N1 (null za brakiem klucza) rozni sie od przypietego"
+    );
+    assert_eq!(
+        d.n2_int_float, exp_n2,
+        "{name}: licznik N2 (int vs float) rozni sie od przypietego"
+    );
+}
+
+/// Przypiete liczniki N1/N2 per plik (pomiar P3-15, dowod: P3-15-DATA-ROUNDTRIP.md §4 i §6.3).
+/// Sumy: N1 = 1190, N2 = 120. Literalne `==` Value spelnione dla 22 plikow (N1 = N2 = 0).
+const RT_PINNED_NORMALIZATIONS: &[(&str, usize, usize)] = &[
+    ("ai-params.json", 0, 0),
+    ("auto-battle-params.json", 0, 0),
+    ("buildings.json", 277, 0),
+    ("citizen-resource-upkeep.json", 0, 0),
+    ("city-names-pools.json", 0, 0),
+    ("civ-ai.json", 0, 0),
+    ("civ-matrix.json", 0, 0),
+    ("civ-params.json", 0, 0),
+    ("civs.json", 0, 0),
+    ("combat-params.json", 0, 0),
+    ("counters.json", 0, 0),
+    ("diplomacy-acceptance-points.json", 0, 0),
+    ("diplomacy.json", 0, 0),
+    ("e-start-params.json", 0, 0),
+    ("econ-params.json", 0, 0),
+    ("epoka-ludnosc-manpower.json", 0, 0),
+    ("map-gen-params.json", 4, 1),
+    ("miasto-params.json", 0, 0),
+    ("power-params.json", 9, 8),
+    ("resources.json", 0, 0),
+    ("society-params.json", 0, 0),
+    ("tech.json", 61, 0),
+    ("terrain-combat.json", 0, 0),
+    ("terrain-improvements.json", 375, 21),
+    ("terrain-movement.json", 0, 0),
+    ("terrain-yields.json", 0, 0),
+    ("ui-params.json", 0, 0),
+    ("units.json", 217, 52),
+    ("wonders.json", 247, 38),
+];
+
+#[test]
+fn roundtrip_pins_cover_all_29_files_exactly() {
+    assert_eq!(
+        RT_PINNED_NORMALIZATIONS.len(),
+        WEB_JSON_FILE_COUNT,
+        "P3-15: liczba przypietych licznikow N1/N2"
+    );
+    let pinned: BTreeSet<&str> = RT_PINNED_NORMALIZATIONS
+        .iter()
+        .map(|(n, _, _)| *n)
+        .collect();
+    assert_eq!(
+        pinned.len(),
+        RT_PINNED_NORMALIZATIONS.len(),
+        "P3-15: zduplikowany plik w przypietych licznikach"
+    );
+    assert_eq!(
+        pinned,
+        set(DATA_FILES.iter().copied()),
+        "P3-15: przypiete liczniki != DATA_FILES"
+    );
 }
 
 macro_rules! roundtrip_cases {
