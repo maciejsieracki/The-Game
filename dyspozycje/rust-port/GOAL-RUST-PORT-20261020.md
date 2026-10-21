@@ -29,9 +29,9 @@ dotykające tych samych plików — zawsze sekwencyjnie, nigdy w tej samej fali.
 |---|---|---|---|---|---|---|
 | 1 | — | — | — | — | **WOLNY** (zob. notatka niżej) | 2026-10-21 |
 | 2 | — | — | — | — | **WOLNY** (zob. notatka niżej) | 2026-10-21 |
-| 3 | `R-RUSTPORT-P1-16D-OPISY-PORADNIK-A-Q1` | P1.16d (3/5) | 1/5 | `wf_bcc4713f-13d` | DISPATCHED (w toku) | 2026-10-21 |
+| 3 | `R-RUSTPORT-P1-16D-OPISY-PORADNIK-A-Q1` | P1.16d (3/5) | ? | `wf_bcc4713f-13d` | DISPATCHED (w toku) | 2026-10-21 |
 | 4 | — | — | — | — | **WOLNY** (zob. notatka niżej) | 2026-10-21 |
-| 5 | `R-RUSTPORT-P1-16D-OPISY-CIVPEDIA-UI-Q1` | P1.16d (5/5) | 1/5 | `wf_2b647098-bac` | DISPATCHED (w toku) | 2026-10-21 |
+| 5 | `R-RUSTPORT-P1-16E-OPISY-UI-PANELE-Q1` | P1.16e (następca, panele) | 1/5 | `wf_6da3210e-1a6` | DISPATCHED (w toku) | 2026-10-21 |
 | 6 | — | — | — | — | **WOLNY** | 2026-10-21 |
 
 **P1.16b/P1.16c (4/4) ZAMKNIĘTE PASS** — cały łańcuch następców pierwotnego P1.16b jest teraz
@@ -41,8 +41,10 @@ WŁASNEGO NOWEGO pliku (`P1-16D-OPISY-*.md`): boilerplate (§2a/b, **PASS**, zam
 reszta §2c/2e/3 (**PASS**, zamknięty — odkryty NOWY rozjazd tartak/kamieniołom 200 vs 50/turę, do
 P2), Poradnik rozdziały 00-10, Poradnik rozdziały 14-16+follow-upy (**PASS**, zamknięty — 8/8 pozycji
 listy B wszystkie NIEZGODNE/CZĘŚCIOWO, w tym rozdz.57 „47/47" przeliczone na 1/49 zgodnych),
-CivPedia hasła + 17 paneli UI (2 ostatnie w toku). Gdy wszystkie 5 zamkną się PASS: dispatch
-`P1-GATE-SYNTHESIS` (bramka
+CivPedia hasła + 17 paneli UI (**DECISION_REQUIRED** — zbyt szeroki zakres, podzielony dalej: panele
+wydzielone do `P1.16e-OPISY-UI-PANELE` w toku, 143 pozostałe hasła CivPedii/Technologii czekają na
+decyzję właściciela o zakresie, pytanie zadane w czacie 2026-10-21). Gdy wszystkie zamkną się PASS:
+dispatch `P1-GATE-SYNTHESIS` (bramka
 P1 powinna się wtedy formalnie otworzyć — wszystkie P1.1-P1.18 PASS), potem start P2 bez pytania o
 zgodę (decyzja właściciela 2026-10-21, patrz GOAL §"Decyzje przyjęte" poz. 4).
 
