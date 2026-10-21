@@ -552,6 +552,10 @@ High/Medium") odnoszą się do innego narzędzia wykonawczego pracującego nad
 tym samym repozytorium i nie są tu nadpisywane. Pełny opis integracji z
 narzędziem orkiestracji: `AUTOBOT-UNIVERSAL.md` §11.
 
+**Uzupełnienie dla `R-RUSTPORT-*` — tematy graficzne/renderowe (właściciel, 2026-10-21):** wszędzie, gdzie wchodzą rendery, modele 3D i grafika
+(renderer w Rust, katalog i port modeli, UI wizualne), Operator, Evaluator i Final Control → **Opus 5.5, effort Medium** (`claude-opus-5-5`). Pozostałe tematy rust-port
+(dane, ID, testy, CI, loader) zostają na Haiku 5.5/Sonnet 5.5 jak wyżej. Orkiestrator klasyfikuje temat w dyspozycji (linia `MODEL+EFFORT`).
+
 **Wyjątek graficzny/wizualny (Maciej, 2026-08-22).** Dla tematów, których
 istotą jest wygląd/UX (CSS, layout, ikony, pozycjonowanie tooltipów, zgodność
 z makietą designera — nie logika/dane/ekonomia): **Operator I Evaluator →

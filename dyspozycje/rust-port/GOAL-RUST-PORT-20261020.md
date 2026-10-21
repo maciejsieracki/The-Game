@@ -27,11 +27,11 @@ dotykające tych samych plików — zawsze sekwencyjnie, nigdy w tej samej fali.
 
 | # | Temat | Faza | Runda | runId Workflow | Status | Ostatnia aktualizacja |
 |---|---|---|---|---|---|---|
-| 1 | `R-RUSTPORT-P3-15-DATA-ROUNDTRIP-Q1` | P3.15 `Serialize` + round-trip 1:1 dla 29 plików danych | 1/5 | (patrz niżej) | DISPATCHED | 2026-10-21 |
-| 2 | `R-RUSTPORT-P3-16-CI-GATES-GREEN-Q1` | P3.16 fmt w `tests/data_*`+`loader.rs`, clippy `bridge.rs:22` | 1/5 | (patrz niżej) | DISPATCHED | 2026-10-21 |
-| 3 | `R-RUSTPORT-P4-0-RENDERER-ARCHITECTURE-Q1` | P4.0 dokument architektury renderera (Three.js w webview vs Rust), `D-REND-n` dla właściciela | 1/5 | (patrz niżej) | DISPATCHED | 2026-10-21 |
-| 4 | — | — | — | — | **WOLNY, ŚWIADOMIE** (P3.13 Final Control P3 czeka na P3.15+P3.16; P3.10 zablokowane — brak nagrań z weba) | 2026-10-21 |
-| 5 | — | — | — | — | **WOLNY, ŚWIADOMIE** (P4.1–P4.5 model świata: w `domain/` istnieją hex/terrain/map_generator, ale bramka P3 jeszcze nie zamknięta) | 2026-10-21 |
+| 1 | `R-RUSTPORT-P3-16-CI-GATES-GREEN-Q1` | P3.16 runda 3 (poszerzona allowlista, fmt+clippy zielone) | 3/5 | (patrz niżej) | DISPATCHED | 2026-10-21 |
+| 2 | `R-RUSTPORT-P4-3-RUST-RENDERER-ARCH-Q1` | P4.3 architektura renderera w Rust (wgpu), picking piksel→hex, osadzenie w Tauri, wymagania pamięciowe — Opus 5.5 | 1/5 | (patrz niżej) | DISPATCHED | 2026-10-21 |
+| 3 | `R-RUSTPORT-P4-4-MODEL-CATALOG-Q1` | P4.4 katalog modeli 3D do odtworzenia w Rust — Opus 5.5 | 1/5 | (patrz niżej) | DISPATCHED | 2026-10-21 |
+| 4 | `R-RUSTPORT-P4-5-UI-SHELL-AUDIT-Q1` | P4.5 audyt powłoki UI (webview) wokół natywnego renderera — Opus 5.5 | 1/5 | (patrz niżej) | DISPATCHED | 2026-10-21 |
+| 5 | — | — | — | — | **WOLNY, ŚWIADOMIE** (P3.13 końcowa kontrola P3 po P3.16; implementacja renderera czeka na dokumenty P4.3/P4.4 i decyzje `D-RR`/`D-MOD`) | 2026-10-21 |
 | 6 | — | — | — | — | **WOLNY, ŚWIADOMIE** (jw.) | 2026-10-21 |
 
 **Zamknięte w tej sesji (kod na `rust-port/parity-v2`, HEAD `aa7b225b`, 292 testy):** P3.4b, P3.4c (newtypy ID), P3.8 (assety 428), P3.8b (manifest), P3.9 (data wiring), P3.11 (zgodność danych), P3.12 (loader), P3.14 (fmt/clippy w `src/data`).
