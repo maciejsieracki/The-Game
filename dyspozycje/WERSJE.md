@@ -1,10 +1,11 @@
-﻿## ROBOCZA APPROVED 3b6610b7 -- 2026-10-20 -- PR141 bounded source release
+## ROBOCZA APPROVED 3b6610b7 -- 2026-10-20 -- PR141 bounded source release
 
-- STATUS: APPROVED_FOR_BOUNDED_PUBLICATION by root after Final Control PASS-WITH-NOTES; commit/push and remote readback are pending. Both browser attempts remain FAIL for the complete flow; attempt 02 founded the first city but did not complete audience dismissal. No deployment or external website is claimed.
+- STATUS: PUBLISHED to `origin/main` at `b4d37d9f81686b5b21bb256087a55e3a592721f0`; pinned GitHub raw readback PASS for bundle, manifest, and START (all HTTP 200, exact hashes/bytes). A separate bounded menu/canvas check passed on the fetched bundle. Both predeploy full-flow browser attempts remain FAIL; no complete gameplay smoke or external website deployment is claimed.
 - Base `c799325c77bc11c24684c1b35077ae80913d6f8d`; actual source/test delta: 51 modified and 49 added paths. Already-pushed recruitment regeneration, diplomacy overlay, and river changes are in the base.
 - Bundle `gra-robocza/Gra-ROBOCZA.html`: MD5 `3b6610b74fd6586c5507908fe7665369`, SHA-256 `234dff75036b22e423b33f9d6134428c559b612922b866399346f0e94ebfca4a`, 69,943,587 bytes. `verify-robocza-bundle.cjs` reports `VERIFY OK`, manifest match; known Linux stamp self-MD5 warning remains.
 - Direct TypeScript noEmit and Vite (893 modules) passed. Focused suites passed, including rush 72/72, semantic consumer 52/52, and corrected population behavior 24/24. See release run evaluator record for exact suite list and retained first fixture failure history.
-- No full 93x15 gameplay acceptance, full runtime/save-load parity, F-05 legal battle observation, or terrain/runtime closure is claimed. Both browser attempts are recorded as FAIL for the complete flow; bounded publication is accepted with notes. KANON/FINALNA are not included.
+- No full 93x15 gameplay acceptance, full runtime/save-load parity, F-05 legal battle observation, or terrain/runtime closure is claimed. Both predeploy attempts remain FAIL for the complete flow; the separate bounded menu/canvas check is not full gameplay acceptance. KANON/FINALNA are not included.
+- Readback receipt: `dyspozycje/autobot/runs/R-PR141-CODEX-FULL-RELEASE-20261020/07-publication-receipt.md`; raw Git readback evidence and hashes are retained in that run. External production host not identified or claimed.
 
 # WERSJE â€” jedyny rejestr wersji bundli (prowadzi: publikujÄ…cy, czyli INTEGRATOR)
 

@@ -7904,3 +7904,8 @@ STATUS: DEPLOY-ROBOCZA / REMOTE-READBACK-PASS — selektywna publikacja trzech n
 |- Odbiór zmian: Final Control F-01 `t_8a2396ee/run60`, F-02 `t_cf652715/run63`, F-03 `t_de434c66/run68` — zakresy ograniczone do integracji selektywnej. Istniejący gate `t_ceb77ee5` pozostaje blocked/unassigned/workerless.
 |- Odczyt zdalny: main i branch `47981902f4aa98c254e8c1e7d04bab8b13776f4a`; bundle+manifest z GitHub HTTP 200, MD5/SHA-256/bytes zgodne, Chromium smoke pobranego bundla PASS (canvas/HUD, zero page/console errors). Zewnętrzny serving website nie był osobno sprawdzany.
 CZEKAM-NA: właściciel — Ctrl+F5 + bounded playtest ROBOCZA `0e3ad637`; nowy agent ma czytać release receipt i zachować F-04/F-05/G11 holds.
+
+
+## [2026-10-21 UTC] ROOT -> RELEASE — PR141 bounded ROBOCZA publication/readback
+
+`R-PR141-CODEX-FULL-RELEASE-20261020` opublikowano na `origin/main` w commicie `b4d37d9f81686b5b21bb256087a55e3a592721f0`. Pinned GitHub raw readback bundle/manifest/START: HTTP 200, zgodne SHA-256 i bajty. Osobny ograniczony menu/canvas check dokładnie pobranego bundla: PASS (tytuł, start, dwa canvasy, zero błędów strony/konsoli). Obie wcześniejsze próby pełnego predeploy flow pozostają FAIL; brak twierdzenia o pełnej akceptacji gameplay/runtime/save-load/93x15 albo F-05. Zewnętrzny host produkcyjny nie został wskazany ani zweryfikowany. Szczegóły i hashe: `dyspozycje/autobot/runs/R-PR141-CODEX-FULL-RELEASE-20261020/07-publication-receipt.md` oraz zachowany raw readback. Bundel bez zmian.

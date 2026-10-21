@@ -1,5 +1,5 @@
 {
-  "releaseState": "approved for bounded publication; commit/push/deploy pending",
+  "releaseState": "published to origin/main; pinned Git artifact readback PASS; external host not identified",
   "bundle": "Gra-ROBOCZA.html",
   "bundleMd5": "3b6610b74fd6586c5507908fe7665369",
   "bundleSha256": "234dff75036b22e423b33f9d6134428c559b612922b866399346f0e94ebfca4a",
@@ -91,6 +91,22 @@
     {
       "path": "dyspozycje/autobot/runs/R-PR141-CODEX-FULL-RELEASE-20261020/04-browser-attempt-02.md",
       "sha256": "ab0f56113259d2047b7d776923ee925379f2df7007589aa292b96596d6de26f0"
+    },
+    {
+      "path": "dyspozycje/autobot/runs/R-PR141-CODEX-FULL-RELEASE-20261020/07-publication-receipt.md",
+      "sha256": "dbad9c7961ef9f5072a7511811bdf8812b106e5fdeaccf150a516a2478a31f62"
+    },
+    {
+      "path": "dyspozycje/autobot/runs/R-PR141-CODEX-FULL-RELEASE-20261020/evidence/remote-readback-b4d37d9f-20261020-02/readback-receipt.md",
+      "sha256": "09add91a2c7aa0e90a51a1570336c9ebbd5ea0bdf4acc6ab1c8d96f0fddf66b3"
+    },
+    {
+      "path": "dyspozycje/autobot/runs/R-PR141-CODEX-FULL-RELEASE-20261020/evidence/remote-readback-b4d37d9f-20261020-02/evidence/report.json",
+      "sha256": "3a54cb84c44dffc94e73cf7a26572801917fdb187bf895f340a0333fe74af8c8"
+    },
+    {
+      "path": "dyspozycje/autobot/runs/R-PR141-CODEX-FULL-RELEASE-20261020/evidence/remote-readback-b4d37d9f-20261020-02/evidence/postdeploy-menu-canvas.png",
+      "sha256": "3f6622e386545efabcb6f9573486e745dbe8547458fa029e44a2856092de9653"
     }
   ],
   "finalControl": {
@@ -100,16 +116,34 @@
     "scope": "bounded source/artifact publication only; complete browser flow remains FAIL"
   },
   "rootIntegration": {
-    "status": "APPROVED_FOR_BOUNDED_PUBLICATION",
+    "status": "PUBLISHED_AND_READBACK_VERIFIED_BOUNDED_SCOPE",
     "reportPath": "dyspozycje/autobot/runs/R-PR141-CODEX-FULL-RELEASE-20261020/06-integration.md",
     "reportSha256": "34770ff8f0d20a51cf724b69dc0652e0ca37e48e89747d64268ccea61ca9e7c4",
-    "commitPushDeployment": "pending"
+    "commitPushDeployment": "source/artifact commit pushed; pinned Git artifact readback PASS; no external-host deployment claimed"
   },
   "publication": {
     "baseCommit": "c799325c77bc11c24684c1b35077ae80913d6f8d",
     "proposedBranch": "codex/pr141-full-release-20261020",
-    "commit": null,
-    "remoteReadback": "PENDING",
+    "commit": "b4d37d9f81686b5b21bb256087a55e3a592721f0",
+    "tree": "bad1ab8c9778ab9b102009231817bcf4890ee179",
+    "parent": "c799325c77bc11c24684c1b35077ae80913d6f8d",
+    "remoteReadback": "PASS",
+    "remoteReadbackReceipt": "dyspozycje/autobot/runs/R-PR141-CODEX-FULL-RELEASE-20261020/evidence/remote-readback-b4d37d9f-20261020-02/readback-receipt.md",
+    "remoteReadbackReceiptSha256": "09add91a2c7aa0e90a51a1570336c9ebbd5ea0bdf4acc6ab1c8d96f0fddf66b3",
+    "verifiedAt": "2026-10-21",
+    "verifiedArtifacts": [
+      "Gra-ROBOCZA.html",
+      "ROBOCZA-MANIFEST.json",
+      "START.html"
+    ],
     "externalHost": "not identified; not claimed"
+  },
+  "postdeployMenuCheck": {
+    "status": "PASS_BOUNDED_MENU_CANVAS_ONLY",
+    "reportPath": "dyspozycje/autobot/runs/R-PR141-CODEX-FULL-RELEASE-20261020/evidence/remote-readback-b4d37d9f-20261020-02/evidence/report.json",
+    "reportSha256": "3a54cb84c44dffc94e73cf7a26572801917fdb187bf895f340a0333fe74af8c8",
+    "screenshotPath": "dyspozycje/autobot/runs/R-PR141-CODEX-FULL-RELEASE-20261020/evidence/remote-readback-b4d37d9f-20261020-02/evidence/postdeploy-menu-canvas.png",
+    "screenshotSha256": "3f6622e386545efabcb6f9573486e745dbe8547458fa029e44a2856092de9653",
+    "note": "Pinned Git bundle was served locally after raw URL fetch; title/start/two canvases visible, zero page/console errors. Not a complete gameplay smoke."
   }
 }

@@ -1,0 +1,20 @@
+{
+  "kind": "minimal-postdeploy-remote-artifact-readback",
+  "startedAt": "2026-10-21T10:17:01.187Z",
+  "bundleUrl": "http://127.0.0.1:18742/Gra-ROBOCZA.html",
+  "expectedSha256": "234dff75036b22e423b33f9d6134428c559b612922b866399346f0e94ebfca4a",
+  "result": "PASS",
+  "consoleErrors": [],
+  "pageErrors": [],
+  "bundleHttpStatus": 200,
+  "bundleResolvedUrl": "http://127.0.0.1:18742/Gra-ROBOCZA.html",
+  "actualSha256": "234dff75036b22e423b33f9d6134428c559b612922b866399346f0e94ebfca4a",
+  "bundleBytes": 69943587,
+  "appUrl": "http://127.0.0.1:18742/Gra-ROBOCZA.html?skipMenuRedirect=1",
+  "title": "The Game — 4X",
+  "startButtonVisible": true,
+  "visibleCanvasCount": 2,
+  "screenshot": "postdeploy-menu-canvas.png",
+  "endedAt": "2026-10-21T10:17:06.001Z",
+  "elapsedMs": 4814
+}
