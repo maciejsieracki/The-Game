@@ -1,6 +1,7 @@
 //! Foundational domain API for the staged Rust engine.
 
 pub mod domain;
+pub mod logging;
 
 pub use domain::building_costs::{
     building_cost, building_cost_for, building_work_cost, canonical_building_costs,

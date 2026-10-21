@@ -128,6 +128,10 @@ pub const fn phase_order() -> &'static [TurnPhase; PHASE_COUNT] {
 /// Identifier assigned to an event when it enters a queue.
 pub type EventId = u64;
 
+/// Imported queues whose next sequence reaches this floor log a warning: the
+/// queue is within a million sequences of `EventId::MAX`.
+const SEQUENCE_WARN_FLOOR: EventId = EventId::MAX - 1_000_000;
+
 /// A small built-in event vocabulary for the standard turn pipeline.
 ///
 /// [`EventQueue`] is generic, so applications with richer command payloads do
@@ -510,9 +514,27 @@ impl<T> EventQueue<T> {
             .make_contiguous()
             .sort_by_key(|entry| entry.order_key());
 
+        // A queue that has reached EventId::MAX cannot assign another sequence,
+        // and `enqueue` would panic on it. Reject such imports instead of
+        // carrying them into live state.
+        if self.next_sequence == EventId::MAX {
+            tracing::error!(
+                next_sequence = self.next_sequence,
+                "rejected imported event queue: next sequence is exhausted"
+            );
+            return Err(EventQueueError::SequenceExhausted);
+        }
+
         let mut seen = BTreeSet::new();
         let mut maximum = None;
         for entry in &self.events {
+            if entry.sequence == EventId::MAX {
+                tracing::error!(
+                    sequence = entry.sequence,
+                    "rejected imported event queue: entry sequence is exhausted"
+                );
+                return Err(EventQueueError::SequenceExhausted);
+            }
             if !seen.insert(entry.sequence) {
                 return Err(EventQueueError::DuplicateSequence(entry.sequence));
             }
@@ -522,8 +544,23 @@ impl<T> EventQueue<T> {
         }
 
         if let Some(maximum) = maximum {
-            let required_next = maximum.checked_add(1).unwrap_or(EventId::MAX);
+            // The first enqueue after import must be able to take a sequence:
+            // a maximum of MAX-1 would leave next_sequence at MAX.
+            if maximum == EventId::MAX - 1 {
+                tracing::error!(
+                    sequence = maximum,
+                    "rejected imported event queue: no sequence left after its last entry"
+                );
+                return Err(EventQueueError::SequenceExhausted);
+            }
+            let required_next = maximum + 1;
             self.next_sequence = self.next_sequence.max(required_next);
+            if required_next >= SEQUENCE_WARN_FLOOR {
+                tracing::warn!(
+                    next_sequence = required_next,
+                    "imported event queue is approaching the sequence ceiling"
+                );
+            }
         }
         Ok(())
     }

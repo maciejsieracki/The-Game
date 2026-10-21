@@ -337,16 +337,19 @@ impl EnginePort for MockEngineAdapter {
                         "player {id} already exists"
                     )));
                 }
-                self.state.players.push(PlayablePlayer {
-                    id,
-                    name,
-                    civilization: format!("player-{id}"),
-                    is_human: false,
-                });
+                // Fallible game call first: a rejected player must not leave a
+                // trace in the mock state (the mock is compiled into production).
                 if let Some(game) = &mut self.game {
-                    game.add_player(id, self.state.players.last().unwrap().name.clone())
+                    game.add_player(id, name)
                         .map_err(|error| BridgeError::engine_rejected(error.to_string()))?;
                     self.state = game.state().clone();
+                } else {
+                    self.state.players.push(PlayablePlayer {
+                        id,
+                        name,
+                        civilization: format!("player-{id}"),
+                        is_human: false,
+                    });
                 }
             }
             EngineCommand::SelectUnit { unit_id } => {
@@ -384,5 +387,41 @@ impl EnginePort for MockEngineAdapter {
         }
 
         Ok(self.state.clone())
+    }
+}
+
+#[cfg(test)]
+mod add_player_atomicity_tests {
+    use super::*;
+
+    #[test]
+    fn add_player_leaves_mock_state_untouched_when_the_game_rejects_it() {
+        let mut adapter = MockEngineAdapter::default();
+        adapter
+            .execute(EngineCommand::CreateSession {
+                params: StartGameParams::default(),
+            })
+            .expect("session starts");
+        adapter
+            .execute(EngineCommand::AddPlayer {
+                id: 77,
+                name: "Alpha".to_owned(),
+            })
+            .expect("first add succeeds");
+        // Make the mock mirror drift: the game still holds player 77, the mock does not.
+        adapter.state.players.retain(|player| player.id != 77);
+        let before = adapter.state.players.clone();
+
+        let error = adapter
+            .execute(EngineCommand::AddPlayer {
+                id: 77,
+                name: "Beta".to_owned(),
+            })
+            .expect_err("the game rejects the duplicate id");
+        assert_eq!(error.code, BridgeErrorCode::EngineRejected);
+        assert_eq!(
+            adapter.state.players, before,
+            "a rejected AddPlayer must not leave a player in the mock state"
+        );
     }
 }

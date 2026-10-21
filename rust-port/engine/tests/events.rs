@@ -167,3 +167,46 @@ fn queue_round_trip_preserves_order_and_allocates_a_fresh_sequence() {
     );
     assert!(restored.is_empty());
 }
+
+#[test]
+fn imported_queue_with_max_sequence_is_rejected_before_enqueue_can_panic() {
+    // An entry at u64::MAX leaves no successor sequence: accepting it would let
+    // the next `enqueue` reach the `expect` in `EventQueue::enqueue`.
+    let max_entry = r#"{
+        "events": [
+            {"sequence": 18446744073709551615, "turn": 1, "phase": "Economy", "event": "last"}
+        ],
+        "next_sequence": 0
+    }"#;
+    serde_json::from_str::<EventQueue<&str>>(max_entry)
+        .expect_err("a sequence of u64::MAX must be rejected on import");
+
+    // A stored next_sequence of u64::MAX makes the next enqueue panic the same way.
+    let max_next = r#"{"events": [], "next_sequence": 18446744073709551615}"#;
+    serde_json::from_str::<EventQueue<&str>>(max_next)
+        .expect_err("a next_sequence of u64::MAX must be rejected on import");
+
+    // An entry at MAX-1 would raise next_sequence to MAX through normalize.
+    let max_minus_one = r#"{
+        "events": [
+            {"sequence": 18446744073709551614, "turn": 1, "phase": "Economy", "event": "edge"}
+        ],
+        "next_sequence": 0
+    }"#;
+    serde_json::from_str::<EventQueue<&str>>(max_minus_one)
+        .expect_err("an entry at u64::MAX-1 must be rejected on import");
+}
+
+#[test]
+fn imported_queue_below_the_sequence_ceiling_still_accepts_enqueue() {
+    let near_max = r#"{
+        "events": [
+            {"sequence": 18446744073709551613, "turn": 1, "phase": "Economy", "event": "near"}
+        ],
+        "next_sequence": 0
+    }"#;
+    let mut restored: EventQueue<&str> =
+        serde_json::from_str(near_max).expect("MAX-2 is a valid imported sequence");
+    assert_eq!(restored.next_sequence(), 18446744073709551614);
+    assert!(restored.try_enqueue(1, TurnPhase::Ai, "tail").is_ok());
+}
