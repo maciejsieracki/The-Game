@@ -27,7 +27,7 @@ dotykające tych samych plików — zawsze sekwencyjnie, nigdy w tej samej fali.
 
 | # | Temat | Faza | Runda | runId Workflow | Status | Ostatnia aktualizacja |
 |---|---|---|---|---|---|---|
-| 1 | — | — | — | — | **WOLNY** (P2.13 PASS, zamknięty — FAZA P2 KOMPLETNA) | 2026-10-21 |
+| 1 | `R-RUSTPORT-P3-1-2-TOOLCHAIN-Q1` | P3.1-2 (toolchain: cargo build/test zielony od zera) | 1/5 | `wf_9007cc5f-1a2` | DISPATCHED (w toku) | 2026-10-21 |
 | 2 | — | — | — | — | **WOLNY** (P2.10 PASS, zamknięty) | 2026-10-21 |
 | 3 | — | — | — | — | **WOLNY** | 2026-10-21 |
 | 4 | — | — | — | — | **WOLNY** | 2026-10-21 |
