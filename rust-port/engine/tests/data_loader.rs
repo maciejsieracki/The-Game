@@ -20,12 +20,8 @@ impl TempDir {
     fn new(tag: &str) -> Self {
         static COUNTER: AtomicUsize = AtomicUsize::new(0);
         let n = COUNTER.fetch_add(1, Ordering::SeqCst);
-        let dir = std::env::temp_dir().join(format!(
-            "civ-loader-{}-{}-{}",
-            std::process::id(),
-            tag,
-            n
-        ));
+        let dir =
+            std::env::temp_dir().join(format!("civ-loader-{}-{}-{}", std::process::id(), tag, n));
         let _ = fs::remove_dir_all(&dir);
         fs::create_dir_all(&dir).expect("create temp dir");
         TempDir(dir)
@@ -78,7 +74,12 @@ fn loads_all_29_files_from_data_dir() {
 fn data_files_list_matches_directory_contents() {
     let mut on_disk: Vec<String> = fs::read_dir(data_dir())
         .expect("read data dir")
-        .map(|e| e.expect("dir entry").file_name().to_string_lossy().into_owned())
+        .map(|e| {
+            e.expect("dir entry")
+                .file_name()
+                .to_string_lossy()
+                .into_owned()
+        })
         .filter(|n| n.ends_with(".json"))
         .collect();
     on_disk.sort();

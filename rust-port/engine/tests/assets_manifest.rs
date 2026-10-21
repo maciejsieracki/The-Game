@@ -29,11 +29,16 @@ fn repo_root() -> PathBuf {
 }
 
 fn manifest_path() -> PathBuf {
-    Path::new(env!("CARGO_MANIFEST_DIR")).join("..").join("assets").join("MANIFEST.tsv")
+    Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join("..")
+        .join("assets")
+        .join("MANIFEST.tsv")
 }
 
 fn assets_dir() -> PathBuf {
-    Path::new(env!("CARGO_MANIFEST_DIR")).join("..").join("assets")
+    Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join("..")
+        .join("assets")
 }
 
 /// Parsuje manifest; zwraca wpisy danych (bez nagłówka). Błąd przy złym nagłówku lub kolumnach.
@@ -109,7 +114,11 @@ fn walk_files(dir: &Path, root: &Path, out: &mut BTreeSet<String>) {
         if path.is_dir() {
             walk_files(&path, root, out);
         } else {
-            let rel = path.strip_prefix(root).expect("prefix").to_string_lossy().replace('\\', "/");
+            let rel = path
+                .strip_prefix(root)
+                .expect("prefix")
+                .to_string_lossy()
+                .replace('\\', "/");
             out.insert(rel);
         }
     }
@@ -120,7 +129,13 @@ fn walk_files(dir: &Path, root: &Path, out: &mut BTreeSet<String>) {
 // ---------------------------------------------------------------------------
 
 fn sha1(data: &[u8]) -> [u8; 20] {
-    let mut h: [u32; 5] = [0x6745_2301, 0xEFCD_AB89, 0x98BA_DCFE, 0x1032_5476, 0xC3D2_E1F0];
+    let mut h: [u32; 5] = [
+        0x6745_2301,
+        0xEFCD_AB89,
+        0x98BA_DCFE,
+        0x1032_5476,
+        0xC3D2_E1F0,
+    ];
     let bit_len = (data.len() as u64).wrapping_mul(8);
     let mut msg = Vec::with_capacity(data.len() + 72);
     msg.extend_from_slice(data);
@@ -133,7 +148,12 @@ fn sha1(data: &[u8]) -> [u8; 20] {
     for chunk in msg.chunks_exact(64) {
         let mut w = [0u32; 80];
         for i in 0..16 {
-            w[i] = u32::from_be_bytes([chunk[4 * i], chunk[4 * i + 1], chunk[4 * i + 2], chunk[4 * i + 3]]);
+            w[i] = u32::from_be_bytes([
+                chunk[4 * i],
+                chunk[4 * i + 1],
+                chunk[4 * i + 2],
+                chunk[4 * i + 3],
+            ]);
         }
         for i in 16..80 {
             w[i] = (w[i - 3] ^ w[i - 8] ^ w[i - 14] ^ w[i - 16]).rotate_left(1);
@@ -194,13 +214,21 @@ fn load_manifest() -> Vec<Entry> {
 fn sha1_matches_known_vectors() {
     // FIPS 180-4 / powszechnie znane wektory; źródło: RFC 3174 / NIST.
     assert_eq!(hex(&sha1(b"")), "da39a3ee5e6b4b0d3255bfef95601890afd80709");
-    assert_eq!(hex(&sha1(b"abc")), "a9993e364706816aba3e25717850c26c9cd0d89d");
     assert_eq!(
-        hex(&sha1(b"abcdbcdecdefdefgefghfghighijhijkijkljklmklmnlmnomnopnopq")),
+        hex(&sha1(b"abc")),
+        "a9993e364706816aba3e25717850c26c9cd0d89d"
+    );
+    assert_eq!(
+        hex(&sha1(
+            b"abcdbcdecdefdefgefghfghighijhijkijkljklmklmnlmnomnopnopq"
+        )),
         "84983e441c3bd26ebaae4aa1f95129e5e54670f1"
     );
     // git blob pustego pliku (git hash-object /dev/null)
-    assert_eq!(git_blob_sha1_hex(b""), "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391");
+    assert_eq!(
+        git_blob_sha1_hex(b""),
+        "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391"
+    );
 }
 
 #[test]
@@ -209,16 +237,28 @@ fn manifest_has_header_and_428_data_rows() {
     let first = text.split('\n').next().expect("pierwszy wiersz");
     assert_eq!(first, MANIFEST_HEADER, "nagłówek manifestu");
     let entries = parse_manifest(&text).expect("parse");
-    assert_eq!(entries.len(), EXPECTED_DATA_ROWS, "liczba wierszy danych (P3-8: 428/428)");
+    assert_eq!(
+        entries.len(),
+        EXPECTED_DATA_ROWS,
+        "liczba wierszy danych (P3-8: 428/428)"
+    );
 }
 
 #[test]
 fn manifest_dest_paths_are_unique() {
     let entries = load_manifest();
     let unique: BTreeSet<&str> = entries.iter().map(|e| e.dst.as_str()).collect();
-    assert_eq!(unique.len(), entries.len(), "ścieżki docelowe muszą być unikalne");
+    assert_eq!(
+        unique.len(),
+        entries.len(),
+        "ścieżki docelowe muszą być unikalne"
+    );
     for e in &entries {
-        assert!(e.dst.starts_with(DEST_PREFIX), "prefiks docelowy: {}", e.dst);
+        assert!(
+            e.dst.starts_with(DEST_PREFIX),
+            "prefiks docelowy: {}",
+            e.dst
+        );
     }
 }
 
@@ -226,14 +266,22 @@ fn manifest_dest_paths_are_unique() {
 fn every_manifest_entry_exists_with_declared_size() {
     let entries = load_manifest();
     let errors = validate(&entries, &repo_root(), false);
-    assert!(errors.is_empty(), "rozbieżności manifestu z katalogiem:\n{}", errors.join("\n"));
+    assert!(
+        errors.is_empty(),
+        "rozbieżności manifestu z katalogiem:\n{}",
+        errors.join("\n")
+    );
 }
 
 #[test]
 fn every_entry_blob_sha1_matches_manifest_column() {
     let entries = load_manifest();
     let errors = validate(&entries, &repo_root(), true);
-    assert!(errors.is_empty(), "rozbieżności blob-SHA1:\n{}", errors.join("\n"));
+    assert!(
+        errors.is_empty(),
+        "rozbieżności blob-SHA1:\n{}",
+        errors.join("\n")
+    );
 }
 
 #[test]
@@ -248,7 +296,10 @@ fn no_files_outside_manifest_in_assets_dir() {
     let extra: Vec<&String> = on_disk.difference(&expected).collect();
     let missing: Vec<&String> = expected.difference(&on_disk).collect();
     assert!(extra.is_empty(), "pliki spoza manifestu: {extra:?}");
-    assert!(missing.is_empty(), "pliki z manifestu brak na dysku: {missing:?}");
+    assert!(
+        missing.is_empty(),
+        "pliki z manifestu brak na dysku: {missing:?}"
+    );
     assert_eq!(on_disk.len(), EXPECTED_DATA_ROWS);
 }
 
@@ -268,7 +319,11 @@ fn counts_per_extension_match_p1_11() {
     assert_eq!(counts.get("jpg"), Some(&45), "jpg");
     assert_eq!(counts.get("png"), Some(&2), "png");
     assert_eq!(counts.get("mp3"), Some(&62), "mp3");
-    assert_eq!(counts.values().sum::<usize>(), EXPECTED_DATA_ROWS, "suma rozszerzeń");
+    assert_eq!(
+        counts.values().sum::<usize>(),
+        EXPECTED_DATA_ROWS,
+        "suma rozszerzeń"
+    );
 }
 
 #[test]
@@ -287,21 +342,48 @@ fn byte_sums_per_category_match_p1_11() {
         slot.0 += 1;
         slot.1 += e.size;
     }
-    assert_eq!(sums.get("icons"), Some(&(319, 136_176)), "ikony (P1.11 §2 wiersze 26+27)");
-    assert_eq!(sums.get("portraits"), Some(&(45, 445_951)), "portrety (P1.11 §2 wiersz 28)");
-    assert_eq!(sums.get("hero"), Some(&(2, 4_214_674)), "hero (P1.11 §2 wiersz 29)");
-    assert_eq!(sums.get("music"), Some(&(62, 44_584_683)), "muzyka (P1.11 §2 wiersze 31+32)");
-    assert_eq!(sums.len(), 4, "dokładnie 4 kategorie runtime; brak fontów/3D/SFX (P1.11 §5)");
+    assert_eq!(
+        sums.get("icons"),
+        Some(&(319, 136_176)),
+        "ikony (P1.11 §2 wiersze 26+27)"
+    );
+    assert_eq!(
+        sums.get("portraits"),
+        Some(&(45, 445_951)),
+        "portrety (P1.11 §2 wiersz 28)"
+    );
+    assert_eq!(
+        sums.get("hero"),
+        Some(&(2, 4_214_674)),
+        "hero (P1.11 §2 wiersz 29)"
+    );
+    assert_eq!(
+        sums.get("music"),
+        Some(&(62, 44_584_683)),
+        "muzyka (P1.11 §2 wiersze 31+32)"
+    );
+    assert_eq!(
+        sums.len(),
+        4,
+        "dokładnie 4 kategorie runtime; brak fontów/3D/SFX (P1.11 §5)"
+    );
 }
 
 #[test]
 fn negative_validator_rejects_wrong_size() {
     let mut entries = load_manifest();
     entries.truncate(3);
-    assert!(validate(&entries, &repo_root(), false).is_empty(), "kontrola: prawdziwe wpisy przechodzą");
+    assert!(
+        validate(&entries, &repo_root(), false).is_empty(),
+        "kontrola: prawdziwe wpisy przechodzą"
+    );
     entries[1].size += 1;
     let errors = validate(&entries, &repo_root(), false);
-    assert_eq!(errors.len(), 1, "zły rozmiar musi dać dokładnie 1 błąd: {errors:?}");
+    assert_eq!(
+        errors.len(),
+        1,
+        "zły rozmiar musi dać dokładnie 1 błąd: {errors:?}"
+    );
     assert!(errors[0].starts_with("size mismatch"), "{errors:?}");
 }
 
@@ -309,10 +391,17 @@ fn negative_validator_rejects_wrong_size() {
 fn negative_validator_rejects_missing_file() {
     let mut entries = load_manifest();
     entries.truncate(3);
-    assert!(validate(&entries, &repo_root(), false).is_empty(), "kontrola: prawdziwe wpisy przechodzą");
+    assert!(
+        validate(&entries, &repo_root(), false).is_empty(),
+        "kontrola: prawdziwe wpisy przechodzą"
+    );
     entries[0].dst = "rust-port/assets/icons/does-not-exist-xyz.svg".to_string();
     let errors = validate(&entries, &repo_root(), false);
-    assert_eq!(errors.len(), 1, "brakujący plik musi dać dokładnie 1 błąd: {errors:?}");
+    assert_eq!(
+        errors.len(),
+        1,
+        "brakujący plik musi dać dokładnie 1 błąd: {errors:?}"
+    );
     assert!(errors[0].starts_with("brak pliku"), "{errors:?}");
 }
 
@@ -320,11 +409,18 @@ fn negative_validator_rejects_missing_file() {
 fn negative_validator_rejects_duplicate_dest() {
     let mut entries = load_manifest();
     entries.truncate(3);
-    assert!(validate(&entries, &repo_root(), false).is_empty(), "kontrola: prawdziwe wpisy przechodzą");
+    assert!(
+        validate(&entries, &repo_root(), false).is_empty(),
+        "kontrola: prawdziwe wpisy przechodzą"
+    );
     let dup = entries[0].clone();
     entries.push(dup);
     let errors = validate(&entries, &repo_root(), false);
-    assert_eq!(errors.len(), 1, "duplikat musi dać dokładnie 1 błąd: {errors:?}");
+    assert_eq!(
+        errors.len(),
+        1,
+        "duplikat musi dać dokładnie 1 błąd: {errors:?}"
+    );
     assert!(errors[0].starts_with("duplikat"), "{errors:?}");
 }
 
@@ -333,21 +429,40 @@ fn negative_validator_rejects_wrong_sha() {
     let mut entries = load_manifest();
     entries.truncate(2);
     let real = validate(&entries, &repo_root(), true);
-    assert!(real.is_empty(), "kontrola: prawdziwe SHA przechodzą: {real:?}");
+    assert!(
+        real.is_empty(),
+        "kontrola: prawdziwe SHA przechodzą: {real:?}"
+    );
     entries[0].sha = "0".repeat(40);
     let errors = validate(&entries, &repo_root(), true);
-    assert_eq!(errors.len(), 1, "zły SHA musi dać dokładnie 1 błąd: {errors:?}");
+    assert_eq!(
+        errors.len(),
+        1,
+        "zły SHA musi dać dokładnie 1 błąd: {errors:?}"
+    );
     assert!(errors[0].starts_with("sha mismatch"), "{errors:?}");
 }
 
 #[test]
 fn negative_parser_rejects_bad_header_and_columns() {
     let real = fs::read_to_string(manifest_path()).expect("MANIFEST.tsv czytelny");
-    assert!(parse_manifest(&real).is_ok(), "kontrola: prawdziwy manifest parsuje się");
+    assert!(
+        parse_manifest(&real).is_ok(),
+        "kontrola: prawdziwy manifest parsuje się"
+    );
     let bad_header = "sha\tsize\tsrc\tdst\na\t1\tb\tc\n";
-    assert!(parse_manifest(bad_header).is_err(), "zły nagłówek musi być odrzucony");
+    assert!(
+        parse_manifest(bad_header).is_err(),
+        "zły nagłówek musi być odrzucony"
+    );
     let bad_cols = format!("{MANIFEST_HEADER}\nabc\t1\tsrc\n");
-    assert!(parse_manifest(&bad_cols).is_err(), "wiersz z 3 kolumnami musi być odrzucony");
+    assert!(
+        parse_manifest(&bad_cols).is_err(),
+        "wiersz z 3 kolumnami musi być odrzucony"
+    );
     let blank_mid = format!("{MANIFEST_HEADER}\nabc\t1\tsrc\tdst\n\nabc\t1\tsrc\tdst2\n");
-    assert!(parse_manifest(&blank_mid).is_err(), "pusta linia w środku musi być odrzucona");
+    assert!(
+        parse_manifest(&blank_mid).is_err(),
+        "pusta linia w środku musi być odrzucona"
+    );
 }
