@@ -27,10 +27,13 @@ export class Object3D {
 export class Group extends Object3D {}
 export class Mesh extends Object3D { constructor(g, m) { super(); this.geometry = g; this.material = m; this.isMesh = true; } }
 
-class Geo { constructor(tri, bb) { this.tri = tri; this.bb = bb; } dispose() {} }
+class Geo { constructor(tri, bb) { this.tri = tri; this.bb = bb; this.verts = null; } dispose() {} }
+// r2: wierzcholki dokladne (r169) dla Box/Cylinder/Cone/Circle — do pomiaru promienia per wierzcholek.
+function ringVerts(rt, rb, h, seg) { const v = []; for (const [r, y] of [[rt, h / 2], [rb, -h / 2]]) for (let i = 0; i <= seg; i++) { const t = i / seg * Math.PI * 2; v.push([r * Math.sin(t), y, r * Math.cos(t)]); } return v; }
 export class BufferGeometry extends Geo { constructor() { super(null, null); } }
 export class BoxGeometry extends Geo { constructor(w = 1, h = 1, d = 1, ws = 1, hs = 1, ds = 1) {
-  super(2 * (ws * hs + hs * ds + ws * ds) * 2, [-w / 2, -h / 2, -d / 2, w / 2, h / 2, d / 2]); this.kind = 'Box'; } }
+  super(2 * (ws * hs + hs * ds + ws * ds) * 2, [-w / 2, -h / 2, -d / 2, w / 2, h / 2, d / 2]); this.kind = 'Box';
+  this.verts = []; for (const x of [-w / 2, w / 2]) for (const y of [-h / 2, h / 2]) for (const z of [-d / 2, d / 2]) this.verts.push([x, y, z]); } }
 function cylTri(rt, rb, seg, hs, open) {
   let t = 0;
   for (let y = 0; y < hs; y++) { if (rt > 0 || y !== 0) t += seg; if (rb > 0 || y !== hs - 1) t += seg; }
@@ -38,10 +41,10 @@ function cylTri(rt, rb, seg, hs, open) {
   return t;
 }
 export class CylinderGeometry extends Geo { constructor(rt = 1, rb = 1, h = 1, seg = 32, hs = 1, open = false) {
-  const r = Math.max(rt, rb); super(cylTri(rt, rb, seg, hs, open), [-r, -h / 2, -r, r, h / 2, r]); this.kind = 'Cyl' + seg; } }
+  const r = Math.max(rt, rb); super(cylTri(rt, rb, seg, hs, open), [-r, -h / 2, -r, r, h / 2, r]); this.kind = 'Cyl' + seg; this.verts = ringVerts(rt, rb, h, seg); } }
 export class ConeGeometry extends Geo { constructor(r = 1, h = 1, seg = 32, hs = 1, open = false) {
-  super(cylTri(0, r, seg, hs, open), [-r, -h / 2, -r, r, h / 2, r]); this.kind = 'Cone' + seg; } }
-export class CircleGeometry extends Geo { constructor(r = 1, seg = 32) { super(seg, [-r, -r, 0, r, r, 0]); this.kind = 'Circle'; } }
+  super(cylTri(0, r, seg, hs, open), [-r, -h / 2, -r, r, h / 2, r]); this.kind = 'Cone' + seg; this.verts = ringVerts(0, r, h, seg); } }
+export class CircleGeometry extends Geo { constructor(r = 1, seg = 32) { super(seg, [-r, -r, 0, r, r, 0]); this.kind = 'Circle'; this.verts = [[0, 0, 0]]; for (let i = 0; i <= seg; i++) { const t = i / seg * Math.PI * 2; this.verts.push([r * Math.cos(t), r * Math.sin(t), 0]); } } }
 export class SphereGeometry extends Geo { constructor(r = 1, w = 32, h = 16) { super(w * (2 * h - 2), [-r, -r, -r, r, r, r]); this.kind = 'Sph'; } }
 export class PlaneGeometry extends Geo { constructor(w = 1, h = 1, ws = 1, hs = 1) { super(2 * ws * hs, [-w / 2, -h / 2, 0, w / 2, h / 2, 0]); } }
 export class RingGeometry extends Geo { constructor(i = 0.5, o = 1, ts = 32, ps = 1) { super(2 * ts * ps, [-o, -o, 0, o, o, 0]); } }
@@ -74,7 +77,7 @@ function local(o) {
 export function __measure(root) {
   let meshes = 0, tri = 0, triUnknown = 0, mats = new Set();
   const bb = [Infinity, Infinity, Infinity, -Infinity, -Infinity, -Infinity];
-  let maxR = 0;
+  let maxR = 0, maxRv = 0, vertUnknown = 0;
   const kinds = {};
   const walk = (o, M) => {
     const W = mul(M, local(o));
@@ -83,6 +86,10 @@ export function __measure(root) {
       const g = o.geometry;
       kinds[g.kind || g.constructor.name] = (kinds[g.kind || g.constructor.name] || 0) + 1;
       if (g.tri == null) triUnknown++; else tri += g.tri;
+      if (g.verts) for (const [x, y, z] of g.verts) {
+        const X = W[0] * x + W[1] * y + W[2] * z + W[3], Z = W[8] * x + W[9] * y + W[10] * z + W[11];
+        maxRv = Math.max(maxRv, Math.hypot(X, Z));
+      } else if (g.bb) { vertUnknown++; }
       if (g.bb) {
         const [x0, y0, z0, x1, y1, z1] = g.bb;
         for (const x of [x0, x1]) for (const y of [y0, y1]) for (const z of [z0, z1]) {
@@ -96,5 +103,5 @@ export function __measure(root) {
     for (const c of o.children) walk(c, W);
   };
   walk(root, [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1]);
-  return { meshes, tri, triUnknown, materials: mats.size, maxY: bb[4], maxR_corners: maxR, kinds };
+  return { meshes, tri, triUnknown, materials: mats.size, maxY: bb[4], maxR_corners: maxR, maxR_vert: maxRv, vertUnknown, kinds };
 }

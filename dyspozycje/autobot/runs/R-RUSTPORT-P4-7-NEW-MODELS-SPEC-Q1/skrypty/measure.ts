@@ -3,7 +3,7 @@
 // `three` = three-mock.js, bez npm, bez buildu, bez uruchamiania weba).
 import { __measure, __extrudeHits } from 'three';
 import { buildMiastoKamien, MIASTO_KAMIEN_LAYOUT } from './src/miasto-kamien.ts';
-import { buildMiastoBrazGrecja, buildMiastoBrazRzym, MIASTO_BRAZ_LAYOUT } from './src/miasto-braz.ts';
+import { buildMiastoBrazGrecja, buildMiastoBrazRzym, MIASTO_BRAZ_LAYOUT, makeMatsG, makeMatsR, swiatyniaMykenska, swiatynkaEtruska, domGrecki, domTufu, capanna, megaron } from './src/miasto-braz.ts';
 import { buildWonderModel, WONDER_MODEL_IDS } from './src/wonderModels.ts';
 import { buildBronzeCityRoblox } from './src/bronzeCityRoblox.ts';
 import { BRONZE_CIVS } from './src/bronzeCity.ts';
@@ -19,7 +19,7 @@ const median = (a: number[]) => { const s = [...a].sort((x, y) => x - y); const 
 
 function row(name: string, g: any, worldScale: number) {
   const m = __measure(g);
-  p(`${name}\tmesh=${m.meshes}\ttri=${m.tri}${m.triUnknown ? '+?' + m.triUnknown : ''}\tmat=${m.materials}\tmaxY_swiat=${f3(m.maxY * worldScale)}\tmaxR_swiat_rogiAABB=${f3(m.maxR_corners * worldScale)}\t${JSON.stringify(m.kinds)}`);
+  p(`${name}\tmesh=${m.meshes}\ttri=${m.tri}${m.triUnknown ? '+?' + m.triUnknown : ''}\tmat=${m.materials}\tmaxY_swiat=${f3(m.maxY * worldScale)}\tmaxR_swiat_rogiAABB=${f3(m.maxR_corners * worldScale)}\tmaxR_swiat_wierzch=${f3(m.maxR_vert * worldScale)}${m.vertUnknown ? '+?' + m.vertUnknown : ''}\tmaxR_wewn_wierzch=${f3(m.maxR_vert)}\t${JSON.stringify(m.kinds)}`);
   return m;
 }
 
@@ -68,5 +68,16 @@ p(`CUDA n=${wm.length} mesh: min=${Math.min(...wm)} max=${Math.max(...wm)} sredn
 
 p('## GHOST bronzeCityRoblox (podglad zakladania miasta, L1, bez muru) — referencja ksztaltow per cywilizacja');
 for (const c of BRONZE_CIVS) row(`ghost-braz ${c} L1`, buildBronzeCityRoblox(c, 1, 0xffd54a, false), CITY_SCALE);
+p('## MODULY Grecji/Rzymu (r2: zarzut E2 — zapas budzetu nakladek Z-GR/Z-RZ); skala 1 = wewn. = swiat');
+{ const mg = makeMatsG(0xffd54a), mr = makeMatsR(0xffd54a);
+  row('modul grecja swiatyniaMykenska(1.15) [centrum L7-10]', swiatyniaMykenska(mg, 1.15), 1);
+  row('modul grecja megaron(1.12,4) [centrum L4-6]', megaron(mg, 1.12, 4), 1);
+  row('modul grecja domGrecki(1)', domGrecki(mg, 1), 1);
+  row('modul grecja domGrecki(1,pietro)', domGrecki(mg, 1, true), 1);
+  row('modul rzym swiatynkaEtruska(1.22,vex) [centrum L9-10]', swiatynkaEtruska(mr, 1.22, true), 1);
+  row('modul rzym domTufu(1)', domTufu(mr, 1), 1);
+  row('modul rzym capanna(1)', capanna(mr, 1), 1); }
+p('## GHOST bronzeCityRoblox L1..L10 bez muru (r2: zarzut E1 — istniejace zestawy per cywilizacja, 10 poziomow)');
+for (const c of BRONZE_CIVS) for (let L = 1; L <= 10; L++) row(`ghost-braz ${c} L${L}`, buildBronzeCityRoblox(c, L, 0xffd54a, false), CITY_SCALE);
 p(`EXTRUDE_HITS=${__extrudeHits()} (0 = zaden zmierzony model nie uzyl ExtrudeGeometry)`);
 console.log(out.join('\n'));

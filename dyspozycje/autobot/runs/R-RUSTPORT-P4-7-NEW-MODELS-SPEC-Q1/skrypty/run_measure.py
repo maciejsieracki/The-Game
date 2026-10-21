@@ -52,6 +52,8 @@ def main() -> None:
         for f in FILES:
             s = show(f"gra/src/render/{f}.ts")
             s = re.sub(r"from '\./([A-Za-z0-9_-]+)'", r"from './\1.ts'", s)
+            if f == "miasto-braz":  # r2: eksport modulow (tylko kopia tymczasowa) do pomiaru centrum/domow Grecji i Rzymu
+                s += "\nexport { makeMatsG, makeMatsR, swiatyniaMykenska, swiatynkaEtruska, domGrecki, domTufu, capanna, megaron };\n"
             open(os.path.join(tmp, "src", f + ".ts"), "w", encoding="utf-8").write(s)
         shutil.copy(os.path.join(HERE, "measure.ts"), os.path.join(tmp, "measure.ts"))
         r = subprocess.run(["node", "--experimental-strip-types", "--no-warnings", "measure.ts"], cwd=tmp, capture_output=True, text=True)

@@ -1,55 +1,55 @@
 ## MIASTO KAMIEN (era 1) — buildMiastoKamien(L, {mur})
-kamien L1 bezMuru	mesh=16	tri=176	mat=13	maxY_swiat=0.318	maxR_swiat_rogiAABB=0.364	{"Circle":1,"Box":12,"Cone4":2,"Cone5":1}
-kamien L2 bezMuru	mesh=26	tri=296	mat=18	maxY_swiat=0.318	maxR_swiat_rogiAABB=0.366	{"Circle":1,"Box":22,"Cone4":2,"Cone5":1}
-kamien L3 bezMuru	mesh=39	tri=468	mat=21	maxY_swiat=0.419	maxR_swiat_rogiAABB=0.380	{"Circle":1,"Box":30,"Cone4":4,"Cone5":1,"Cyl6":2,"Cone6":1}
-kamien L4 bezMuru	mesh=44	tri=528	mat=23	maxY_swiat=0.456	maxR_swiat_rogiAABB=0.418	{"Circle":1,"Box":35,"Cone4":4,"Cone5":1,"Cyl6":2,"Cone6":1}
-kamien L5 bezMuru	mesh=49	tri=608	mat=24	maxY_swiat=0.456	maxR_swiat_rogiAABB=0.435	{"Circle":1,"Box":38,"Cone4":4,"Cone5":1,"Cyl6":2,"Cone6":2,"Cyl8":1}
-kamien L6 bezMuru	mesh=64	tri=784	mat=26	maxY_swiat=0.456	maxR_swiat_rogiAABB=0.435	{"Circle":1,"Box":52,"Cone4":5,"Cone5":1,"Cyl6":2,"Cone6":2,"Cyl8":1}
-kamien L7 bezMuru	mesh=68	tri=832	mat=26	maxY_swiat=0.479	maxR_swiat_rogiAABB=0.460	{"Circle":1,"Box":56,"Cone4":5,"Cyl8":1,"Cone6":2,"Cyl6":2,"Cone5":1}
-kamien L8 bezMuru	mesh=73	tri=892	mat=26	maxY_swiat=0.479	maxR_swiat_rogiAABB=0.460	{"Circle":1,"Box":61,"Cone4":5,"Cyl8":1,"Cone6":2,"Cyl6":2,"Cone5":1}
-kamien L9 bezMuru	mesh=77	tri=964	mat=26	maxY_swiat=0.479	maxR_swiat_rogiAABB=0.460	{"Circle":1,"Box":62,"Cone4":5,"Cyl8":1,"Cone6":3,"Cyl6":4,"Cone5":1}
-kamien L10 bezMuru	mesh=82	tri=1024	mat=27	maxY_swiat=0.479	maxR_swiat_rogiAABB=0.460	{"Circle":1,"Box":67,"Cone4":5,"Cyl8":1,"Cone6":3,"Cyl6":4,"Cone5":1}
-kamien L3 mur(palisada Biskupin)	mesh=158	tri=1896	mat=26	maxY_swiat=0.461	maxR_swiat_rogiAABB=0.417	{"Circle":1,"Box":149,"Cone4":4,"Cone5":1,"Cyl6":2,"Cone6":1}
-kamien L6 mur(palisada Biskupin)	mesh=198	tri=2392	mat=31	maxY_swiat=0.461	maxR_swiat_rogiAABB=0.462	{"Circle":1,"Box":186,"Cone4":5,"Cone5":1,"Cyl6":2,"Cone6":2,"Cyl8":1}
-kamien L10 mur(palisada Biskupin)	mesh=219	tri=2668	mat=32	maxY_swiat=0.479	maxR_swiat_rogiAABB=0.485	{"Circle":1,"Box":204,"Cone4":5,"Cyl8":1,"Cone6":3,"Cyl6":4,"Cone5":1}
+kamien L1 bezMuru	mesh=16	tri=176	mat=13	maxY_swiat=0.318	maxR_swiat_rogiAABB=0.364	maxR_swiat_wierzch=0.337	maxR_wewn_wierzch=0.244	{"Circle":1,"Box":12,"Cone4":2,"Cone5":1}
+kamien L2 bezMuru	mesh=26	tri=296	mat=18	maxY_swiat=0.318	maxR_swiat_rogiAABB=0.366	maxR_swiat_wierzch=0.366	maxR_wewn_wierzch=0.265	{"Circle":1,"Box":22,"Cone4":2,"Cone5":1}
+kamien L3 bezMuru	mesh=39	tri=468	mat=21	maxY_swiat=0.419	maxR_swiat_rogiAABB=0.380	maxR_swiat_wierzch=0.366	maxR_wewn_wierzch=0.265	{"Circle":1,"Box":30,"Cone4":4,"Cone5":1,"Cyl6":2,"Cone6":1}
+kamien L4 bezMuru	mesh=44	tri=528	mat=23	maxY_swiat=0.456	maxR_swiat_rogiAABB=0.418	maxR_swiat_wierzch=0.401	maxR_wewn_wierzch=0.291	{"Circle":1,"Box":35,"Cone4":4,"Cone5":1,"Cyl6":2,"Cone6":1}
+kamien L5 bezMuru	mesh=49	tri=608	mat=24	maxY_swiat=0.456	maxR_swiat_rogiAABB=0.435	maxR_swiat_wierzch=0.401	maxR_wewn_wierzch=0.291	{"Circle":1,"Box":38,"Cone4":4,"Cone5":1,"Cyl6":2,"Cone6":2,"Cyl8":1}
+kamien L6 bezMuru	mesh=64	tri=784	mat=26	maxY_swiat=0.456	maxR_swiat_rogiAABB=0.435	maxR_swiat_wierzch=0.401	maxR_wewn_wierzch=0.291	{"Circle":1,"Box":52,"Cone4":5,"Cone5":1,"Cyl6":2,"Cone6":2,"Cyl8":1}
+kamien L7 bezMuru	mesh=68	tri=832	mat=26	maxY_swiat=0.479	maxR_swiat_rogiAABB=0.460	maxR_swiat_wierzch=0.420	maxR_wewn_wierzch=0.305	{"Circle":1,"Box":56,"Cone4":5,"Cyl8":1,"Cone6":2,"Cyl6":2,"Cone5":1}
+kamien L8 bezMuru	mesh=73	tri=892	mat=26	maxY_swiat=0.479	maxR_swiat_rogiAABB=0.460	maxR_swiat_wierzch=0.420	maxR_wewn_wierzch=0.305	{"Circle":1,"Box":61,"Cone4":5,"Cyl8":1,"Cone6":2,"Cyl6":2,"Cone5":1}
+kamien L9 bezMuru	mesh=77	tri=964	mat=26	maxY_swiat=0.479	maxR_swiat_rogiAABB=0.460	maxR_swiat_wierzch=0.420	maxR_wewn_wierzch=0.305	{"Circle":1,"Box":62,"Cone4":5,"Cyl8":1,"Cone6":3,"Cyl6":4,"Cone5":1}
+kamien L10 bezMuru	mesh=82	tri=1024	mat=27	maxY_swiat=0.479	maxR_swiat_rogiAABB=0.460	maxR_swiat_wierzch=0.420	maxR_wewn_wierzch=0.305	{"Circle":1,"Box":67,"Cone4":5,"Cyl8":1,"Cone6":3,"Cyl6":4,"Cone5":1}
+kamien L3 mur(palisada Biskupin)	mesh=158	tri=1896	mat=26	maxY_swiat=0.461	maxR_swiat_rogiAABB=0.417	maxR_swiat_wierzch=0.417	maxR_wewn_wierzch=0.302	{"Circle":1,"Box":149,"Cone4":4,"Cone5":1,"Cyl6":2,"Cone6":1}
+kamien L6 mur(palisada Biskupin)	mesh=198	tri=2392	mat=31	maxY_swiat=0.461	maxR_swiat_rogiAABB=0.462	maxR_swiat_wierzch=0.462	maxR_wewn_wierzch=0.335	{"Circle":1,"Box":186,"Cone4":5,"Cone5":1,"Cyl6":2,"Cone6":2,"Cyl8":1}
+kamien L10 mur(palisada Biskupin)	mesh=219	tri=2668	mat=32	maxY_swiat=0.479	maxR_swiat_rogiAABB=0.485	maxR_swiat_wierzch=0.485	maxR_wewn_wierzch=0.352	{"Circle":1,"Box":204,"Cone4":5,"Cyl8":1,"Cone6":3,"Cyl6":4,"Cone5":1}
 DEKLAROWANE (MIASTO_KAMIEN_LAYOUT.triPoziomy): [176,296,468,528,608,784,832,892,964,1024]
 ZMIERZONE: [176,296,468,528,608,784,832,892,964,1024]
 ## MIASTO BRAZ grecja (era >= 2)
-braz-grecja L1 bezMuru	mesh=15	tri=190	mat=11	maxY_swiat=0.340	maxR_swiat_rogiAABB=0.354	{"Circle":1,"Box":12,"Cyl5":2}
-braz-grecja L2 bezMuru	mesh=20	tri=258	mat=15	maxY_swiat=0.340	maxR_swiat_rogiAABB=0.354	{"Circle":1,"Box":16,"Cyl5":3}
-braz-grecja L3 bezMuru	mesh=33	tri=418	mat=21	maxY_swiat=0.340	maxR_swiat_rogiAABB=0.354	{"Circle":1,"Box":27,"Cyl5":4,"Cone4":1}
-braz-grecja L4 bezMuru	mesh=37	tri=474	mat=21	maxY_swiat=0.381	maxR_swiat_rogiAABB=0.376	{"Circle":1,"Box":30,"Cyl5":5,"Cone4":1}
-braz-grecja L5 bezMuru	mesh=46	tri=602	mat=21	maxY_swiat=0.381	maxR_swiat_rogiAABB=0.376	{"Circle":1,"Box":37,"Cyl5":6,"Cone4":1,"Cyl6":1}
-braz-grecja L6 bezMuru	mesh=55	tri=710	mat=21	maxY_swiat=0.381	maxR_swiat_rogiAABB=0.376	{"Circle":1,"Box":46,"Cyl5":6,"Cone4":1,"Cyl6":1}
-braz-grecja L7 bezMuru	mesh=57	tri=746	mat=20	maxY_swiat=0.535	maxR_swiat_rogiAABB=0.416	{"Circle":1,"Box":43,"Cyl5":6,"Cyl3":2,"Cyl4":3,"Cyl6":1,"Cone4":1}
-braz-grecja L8 bezMuru	mesh=65	tri=850	mat=20	maxY_swiat=0.535	maxR_swiat_rogiAABB=0.416	{"Circle":1,"Box":50,"Cyl5":7,"Cyl3":2,"Cyl4":3,"Cyl6":1,"Cone4":1}
-braz-grecja L9 bezMuru	mesh=68	tri=886	mat=21	maxY_swiat=0.535	maxR_swiat_rogiAABB=0.416	{"Circle":1,"Box":53,"Cyl5":7,"Cyl3":2,"Cyl4":3,"Cyl6":1,"Cone4":1}
-braz-grecja L10 bezMuru	mesh=71	tri=922	mat=21	maxY_swiat=0.535	maxR_swiat_rogiAABB=0.416	{"Circle":1,"Box":56,"Cyl5":7,"Cyl3":2,"Cyl4":3,"Cyl6":1,"Cone4":1}
-braz-grecja L3 mur	mesh=60	tri=742	mat=22	maxY_swiat=0.340	maxR_swiat_rogiAABB=0.411	{"Circle":1,"Box":53,"Cyl5":4,"Cone4":1,"Cyl3":1}
-braz-grecja L6 mur	mesh=82	tri=1034	mat=22	maxY_swiat=0.381	maxR_swiat_rogiAABB=0.461	{"Circle":1,"Box":72,"Cyl5":6,"Cone4":1,"Cyl6":1,"Cyl3":1}
-braz-grecja L10 mur	mesh=98	tri=1246	mat=22	maxY_swiat=0.535	maxR_swiat_rogiAABB=0.486	{"Circle":1,"Box":82,"Cyl5":7,"Cyl3":3,"Cyl4":3,"Cyl6":1,"Cone4":1}
-braz-grecja L3 palisada	mesh=152	tri=1846	mat=28	maxY_swiat=0.461	maxR_swiat_rogiAABB=0.417	{"Circle":1,"Box":146,"Cyl5":4,"Cone4":1}
-braz-grecja L6 palisada	mesh=189	tri=2318	mat=28	maxY_swiat=0.461	maxR_swiat_rogiAABB=0.462	{"Circle":1,"Box":180,"Cyl5":6,"Cone4":1,"Cyl6":1}
-braz-grecja L10 palisada	mesh=208	tri=2566	mat=28	maxY_swiat=0.535	maxR_swiat_rogiAABB=0.485	{"Circle":1,"Box":193,"Cyl5":7,"Cyl3":2,"Cyl4":3,"Cyl6":1,"Cone4":1}
+braz-grecja L1 bezMuru	mesh=15	tri=190	mat=11	maxY_swiat=0.340	maxR_swiat_rogiAABB=0.354	maxR_swiat_wierzch=0.354	maxR_wewn_wierzch=0.257	{"Circle":1,"Box":12,"Cyl5":2}
+braz-grecja L2 bezMuru	mesh=20	tri=258	mat=15	maxY_swiat=0.340	maxR_swiat_rogiAABB=0.354	maxR_swiat_wierzch=0.354	maxR_wewn_wierzch=0.257	{"Circle":1,"Box":16,"Cyl5":3}
+braz-grecja L3 bezMuru	mesh=33	tri=418	mat=21	maxY_swiat=0.340	maxR_swiat_rogiAABB=0.354	maxR_swiat_wierzch=0.354	maxR_wewn_wierzch=0.257	{"Circle":1,"Box":27,"Cyl5":4,"Cone4":1}
+braz-grecja L4 bezMuru	mesh=37	tri=474	mat=21	maxY_swiat=0.381	maxR_swiat_rogiAABB=0.376	maxR_swiat_wierzch=0.376	maxR_wewn_wierzch=0.273	{"Circle":1,"Box":30,"Cyl5":5,"Cone4":1}
+braz-grecja L5 bezMuru	mesh=46	tri=602	mat=21	maxY_swiat=0.381	maxR_swiat_rogiAABB=0.376	maxR_swiat_wierzch=0.376	maxR_wewn_wierzch=0.273	{"Circle":1,"Box":37,"Cyl5":6,"Cone4":1,"Cyl6":1}
+braz-grecja L6 bezMuru	mesh=55	tri=710	mat=21	maxY_swiat=0.381	maxR_swiat_rogiAABB=0.376	maxR_swiat_wierzch=0.376	maxR_wewn_wierzch=0.273	{"Circle":1,"Box":46,"Cyl5":6,"Cone4":1,"Cyl6":1}
+braz-grecja L7 bezMuru	mesh=57	tri=746	mat=20	maxY_swiat=0.535	maxR_swiat_rogiAABB=0.416	maxR_swiat_wierzch=0.416	maxR_wewn_wierzch=0.301	{"Circle":1,"Box":43,"Cyl5":6,"Cyl3":2,"Cyl4":3,"Cyl6":1,"Cone4":1}
+braz-grecja L8 bezMuru	mesh=65	tri=850	mat=20	maxY_swiat=0.535	maxR_swiat_rogiAABB=0.416	maxR_swiat_wierzch=0.416	maxR_wewn_wierzch=0.301	{"Circle":1,"Box":50,"Cyl5":7,"Cyl3":2,"Cyl4":3,"Cyl6":1,"Cone4":1}
+braz-grecja L9 bezMuru	mesh=68	tri=886	mat=21	maxY_swiat=0.535	maxR_swiat_rogiAABB=0.416	maxR_swiat_wierzch=0.416	maxR_wewn_wierzch=0.301	{"Circle":1,"Box":53,"Cyl5":7,"Cyl3":2,"Cyl4":3,"Cyl6":1,"Cone4":1}
+braz-grecja L10 bezMuru	mesh=71	tri=922	mat=21	maxY_swiat=0.535	maxR_swiat_rogiAABB=0.416	maxR_swiat_wierzch=0.416	maxR_wewn_wierzch=0.301	{"Circle":1,"Box":56,"Cyl5":7,"Cyl3":2,"Cyl4":3,"Cyl6":1,"Cone4":1}
+braz-grecja L3 mur	mesh=60	tri=742	mat=22	maxY_swiat=0.340	maxR_swiat_rogiAABB=0.411	maxR_swiat_wierzch=0.411	maxR_wewn_wierzch=0.298	{"Circle":1,"Box":53,"Cyl5":4,"Cone4":1,"Cyl3":1}
+braz-grecja L6 mur	mesh=82	tri=1034	mat=22	maxY_swiat=0.381	maxR_swiat_rogiAABB=0.461	maxR_swiat_wierzch=0.461	maxR_wewn_wierzch=0.334	{"Circle":1,"Box":72,"Cyl5":6,"Cone4":1,"Cyl6":1,"Cyl3":1}
+braz-grecja L10 mur	mesh=98	tri=1246	mat=22	maxY_swiat=0.535	maxR_swiat_rogiAABB=0.486	maxR_swiat_wierzch=0.486	maxR_wewn_wierzch=0.352	{"Circle":1,"Box":82,"Cyl5":7,"Cyl3":3,"Cyl4":3,"Cyl6":1,"Cone4":1}
+braz-grecja L3 palisada	mesh=152	tri=1846	mat=28	maxY_swiat=0.461	maxR_swiat_rogiAABB=0.417	maxR_swiat_wierzch=0.417	maxR_wewn_wierzch=0.302	{"Circle":1,"Box":146,"Cyl5":4,"Cone4":1}
+braz-grecja L6 palisada	mesh=189	tri=2318	mat=28	maxY_swiat=0.461	maxR_swiat_rogiAABB=0.462	maxR_swiat_wierzch=0.462	maxR_wewn_wierzch=0.335	{"Circle":1,"Box":180,"Cyl5":6,"Cone4":1,"Cyl6":1}
+braz-grecja L10 palisada	mesh=208	tri=2566	mat=28	maxY_swiat=0.535	maxR_swiat_rogiAABB=0.485	maxR_swiat_wierzch=0.485	maxR_wewn_wierzch=0.352	{"Circle":1,"Box":193,"Cyl5":7,"Cyl3":2,"Cyl4":3,"Cyl6":1,"Cone4":1}
 DEKLAROWANE (MIASTO_BRAZ_LAYOUT.triPoziomy.grecja): [190,258,418,474,602,710,746,850,886,922]
 ZMIERZONE: [190,258,418,474,602,710,746,850,886,922]
 ## MIASTO BRAZ rzym (era >= 2)
-braz-rzym L1 bezMuru	mesh=15	tri=196	mat=12	maxY_swiat=0.328	maxR_swiat_rogiAABB=0.344	{"Box":10,"Cyl6":2,"Cone6":1,"Cone4":2}
-braz-rzym L2 bezMuru	mesh=23	tri=298	mat=13	maxY_swiat=0.328	maxR_swiat_rogiAABB=0.361	{"Circle":1,"Box":15,"Cyl6":3,"Cone6":2,"Cone4":2}
-braz-rzym L3 bezMuru	mesh=41	tri=522	mat=16	maxY_swiat=0.328	maxR_swiat_rogiAABB=0.372	{"Circle":1,"Box":30,"Cyl6":4,"Cone6":3,"Cone4":3}
-braz-rzym L4 bezMuru	mesh=49	tri=622	mat=22	maxY_swiat=0.252	maxR_swiat_rogiAABB=0.403	{"Circle":1,"Box":38,"Cyl5":2,"Cyl6":3,"Cone4":3,"Cone6":2}
-braz-rzym L5 bezMuru	mesh=54	tri=682	mat=23	maxY_swiat=0.252	maxR_swiat_rogiAABB=0.403	{"Circle":1,"Box":43,"Cyl5":2,"Cyl6":3,"Cone4":3,"Cone6":2}
-braz-rzym L6 bezMuru	mesh=61	tri=778	mat=23	maxY_swiat=0.252	maxR_swiat_rogiAABB=0.403	{"Circle":1,"Box":48,"Cyl5":2,"Cyl6":4,"Cone4":3,"Cone6":3}
-braz-rzym L7 bezMuru	mesh=66	tri=838	mat=23	maxY_swiat=0.279	maxR_swiat_rogiAABB=0.418	{"Circle":1,"Box":53,"Cyl5":2,"Cyl6":4,"Cone4":3,"Cone6":3}
-braz-rzym L8 bezMuru	mesh=71	tri=898	mat=24	maxY_swiat=0.279	maxR_swiat_rogiAABB=0.418	{"Circle":1,"Box":58,"Cyl5":2,"Cyl6":4,"Cone4":3,"Cone6":3}
-braz-rzym L9 bezMuru	mesh=73	tri=922	mat=25	maxY_swiat=0.296	maxR_swiat_rogiAABB=0.418	{"Circle":1,"Box":60,"Cyl5":2,"Cyl6":4,"Cone4":3,"Cone6":3}
-braz-rzym L10 bezMuru	mesh=80	tri=1018	mat=25	maxY_swiat=0.296	maxR_swiat_rogiAABB=0.418	{"Circle":1,"Box":65,"Cyl5":2,"Cyl6":5,"Cone4":3,"Cone6":4}
-braz-rzym L3 mur	mesh=75	tri=866	mat=18	maxY_swiat=0.328	maxR_swiat_rogiAABB=0.418	{"Circle":1,"Box":48,"Cyl6":4,"Cone6":3,"Cone4":19}
-braz-rzym L6 mur	mesh=95	tri=1122	mat=25	maxY_swiat=0.294	maxR_swiat_rogiAABB=0.465	{"Circle":1,"Box":66,"Cyl5":2,"Cyl6":4,"Cone4":19,"Cone6":3}
-braz-rzym L10 mur	mesh=114	tri=1362	mat=27	maxY_swiat=0.296	maxR_swiat_rogiAABB=0.489	{"Circle":1,"Box":83,"Cyl5":2,"Cyl6":5,"Cone4":19,"Cone6":4}
-braz-rzym L3 palisada	mesh=160	tri=1950	mat=23	maxY_swiat=0.461	maxR_swiat_rogiAABB=0.417	{"Circle":1,"Box":149,"Cyl6":4,"Cone6":3,"Cone4":3}
-braz-rzym L6 palisada	mesh=195	tri=2386	mat=30	maxY_swiat=0.461	maxR_swiat_rogiAABB=0.462	{"Circle":1,"Box":182,"Cyl5":2,"Cyl6":4,"Cone4":3,"Cone6":3}
-braz-rzym L10 palisada	mesh=217	tri=2662	mat=32	maxY_swiat=0.461	maxR_swiat_rogiAABB=0.485	{"Circle":1,"Box":202,"Cyl5":2,"Cyl6":5,"Cone4":3,"Cone6":4}
+braz-rzym L1 bezMuru	mesh=15	tri=196	mat=12	maxY_swiat=0.328	maxR_swiat_rogiAABB=0.344	maxR_swiat_wierzch=0.344	maxR_wewn_wierzch=0.250	{"Box":10,"Cyl6":2,"Cone6":1,"Cone4":2}
+braz-rzym L2 bezMuru	mesh=23	tri=298	mat=13	maxY_swiat=0.328	maxR_swiat_rogiAABB=0.361	maxR_swiat_wierzch=0.344	maxR_wewn_wierzch=0.250	{"Circle":1,"Box":15,"Cyl6":3,"Cone6":2,"Cone4":2}
+braz-rzym L3 bezMuru	mesh=41	tri=522	mat=16	maxY_swiat=0.328	maxR_swiat_rogiAABB=0.372	maxR_swiat_wierzch=0.346	maxR_wewn_wierzch=0.251	{"Circle":1,"Box":30,"Cyl6":4,"Cone6":3,"Cone4":3}
+braz-rzym L4 bezMuru	mesh=49	tri=622	mat=22	maxY_swiat=0.252	maxR_swiat_rogiAABB=0.403	maxR_swiat_wierzch=0.376	maxR_wewn_wierzch=0.273	{"Circle":1,"Box":38,"Cyl5":2,"Cyl6":3,"Cone4":3,"Cone6":2}
+braz-rzym L5 bezMuru	mesh=54	tri=682	mat=23	maxY_swiat=0.252	maxR_swiat_rogiAABB=0.403	maxR_swiat_wierzch=0.376	maxR_wewn_wierzch=0.273	{"Circle":1,"Box":43,"Cyl5":2,"Cyl6":3,"Cone4":3,"Cone6":2}
+braz-rzym L6 bezMuru	mesh=61	tri=778	mat=23	maxY_swiat=0.252	maxR_swiat_rogiAABB=0.403	maxR_swiat_wierzch=0.376	maxR_wewn_wierzch=0.273	{"Circle":1,"Box":48,"Cyl5":2,"Cyl6":4,"Cone4":3,"Cone6":3}
+braz-rzym L7 bezMuru	mesh=66	tri=838	mat=23	maxY_swiat=0.279	maxR_swiat_rogiAABB=0.418	maxR_swiat_wierzch=0.418	maxR_wewn_wierzch=0.303	{"Circle":1,"Box":53,"Cyl5":2,"Cyl6":4,"Cone4":3,"Cone6":3}
+braz-rzym L8 bezMuru	mesh=71	tri=898	mat=24	maxY_swiat=0.279	maxR_swiat_rogiAABB=0.418	maxR_swiat_wierzch=0.418	maxR_wewn_wierzch=0.303	{"Circle":1,"Box":58,"Cyl5":2,"Cyl6":4,"Cone4":3,"Cone6":3}
+braz-rzym L9 bezMuru	mesh=73	tri=922	mat=25	maxY_swiat=0.296	maxR_swiat_rogiAABB=0.418	maxR_swiat_wierzch=0.418	maxR_wewn_wierzch=0.303	{"Circle":1,"Box":60,"Cyl5":2,"Cyl6":4,"Cone4":3,"Cone6":3}
+braz-rzym L10 bezMuru	mesh=80	tri=1018	mat=25	maxY_swiat=0.296	maxR_swiat_rogiAABB=0.418	maxR_swiat_wierzch=0.418	maxR_wewn_wierzch=0.303	{"Circle":1,"Box":65,"Cyl5":2,"Cyl6":5,"Cone4":3,"Cone6":4}
+braz-rzym L3 mur	mesh=75	tri=866	mat=18	maxY_swiat=0.328	maxR_swiat_rogiAABB=0.418	maxR_swiat_wierzch=0.414	maxR_wewn_wierzch=0.300	{"Circle":1,"Box":48,"Cyl6":4,"Cone6":3,"Cone4":19}
+braz-rzym L6 mur	mesh=95	tri=1122	mat=25	maxY_swiat=0.294	maxR_swiat_rogiAABB=0.465	maxR_swiat_wierzch=0.462	maxR_wewn_wierzch=0.335	{"Circle":1,"Box":66,"Cyl5":2,"Cyl6":4,"Cone4":19,"Cone6":3}
+braz-rzym L10 mur	mesh=114	tri=1362	mat=27	maxY_swiat=0.296	maxR_swiat_rogiAABB=0.489	maxR_swiat_wierzch=0.486	maxR_wewn_wierzch=0.352	{"Circle":1,"Box":83,"Cyl5":2,"Cyl6":5,"Cone4":19,"Cone6":4}
+braz-rzym L3 palisada	mesh=160	tri=1950	mat=23	maxY_swiat=0.461	maxR_swiat_rogiAABB=0.417	maxR_swiat_wierzch=0.417	maxR_wewn_wierzch=0.302	{"Circle":1,"Box":149,"Cyl6":4,"Cone6":3,"Cone4":3}
+braz-rzym L6 palisada	mesh=195	tri=2386	mat=30	maxY_swiat=0.461	maxR_swiat_rogiAABB=0.462	maxR_swiat_wierzch=0.462	maxR_wewn_wierzch=0.335	{"Circle":1,"Box":182,"Cyl5":2,"Cyl6":4,"Cone4":3,"Cone6":3}
+braz-rzym L10 palisada	mesh=217	tri=2662	mat=32	maxY_swiat=0.461	maxR_swiat_rogiAABB=0.485	maxR_swiat_wierzch=0.485	maxR_wewn_wierzch=0.352	{"Circle":1,"Box":202,"Cyl5":2,"Cyl6":5,"Cone4":3,"Cone6":4}
 DEKLAROWANE (MIASTO_BRAZ_LAYOUT.triPoziomy.rzym): [196,298,522,622,682,778,838,898,922,1018]
 ZMIERZONE: [196,298,522,622,682,778,838,898,922,1018]
 ## BUDZET MIAST NA POZIOM = ceil(srednia 3 zywych zestawow x 1.10)
@@ -65,43 +65,162 @@ L8	892,850,898	880.0	969	73,65,71	69.7	77
 L9	964,886,922	924.0	1017	77,68,73	72.7	80
 L10	1024,922,1018	988.0	1087	82,71,80	77.7	86
 MIASTA 30 konfiguracji bez muru: tri srednia=646.7 max=1024; mesh srednia=51.3 max=82
-kontrola mur grecja L3	mesh=60	tri=742	mat=22	maxY_swiat=0.340	maxR_swiat_rogiAABB=0.411	{"Circle":1,"Box":53,"Cyl5":4,"Cone4":1,"Cyl3":1}
-kontrola mur rzym L3	mesh=75	tri=866	mat=18	maxY_swiat=0.328	maxR_swiat_rogiAABB=0.418	{"Circle":1,"Box":48,"Cyl6":4,"Cone6":3,"Cone4":19}
+kontrola mur grecja L3	mesh=60	tri=742	mat=22	maxY_swiat=0.340	maxR_swiat_rogiAABB=0.411	maxR_swiat_wierzch=0.411	maxR_wewn_wierzch=0.298	{"Circle":1,"Box":53,"Cyl5":4,"Cone4":1,"Cyl3":1}
+kontrola mur rzym L3	mesh=75	tri=866	mat=18	maxY_swiat=0.328	maxR_swiat_rogiAABB=0.418	maxR_swiat_wierzch=0.414	maxR_wewn_wierzch=0.300	{"Circle":1,"Box":48,"Cyl6":4,"Cone6":3,"Cone4":19}
 MUR KAMIENNY: grecja +324 (deklarowane 324), rzym +344 (deklarowane 344); budzet nowego muru = ceil(srednia x 1.10) = 368
 ## CUDA — buildWonderModel(id) bez ownerColor; swiat x1.15
-cud piramidy	mesh=2	tri=16	mat=2	maxY_swiat=0.644	maxR_swiat_rogiAABB=0.598	{"Cone4":2}
-cud wielka_stela	mesh=3	tri=32	mat=2	maxY_swiat=0.782	maxR_swiat_rogiAABB=0.114	{"Box":2,"Cone4":1}
-cud wiszace_ogrody	mesh=9	tri=108	mat=3	maxY_swiat=0.403	maxR_swiat_rogiAABB=0.371	{"Box":9}
-cud wyrocznia	mesh=8	tri=108	mat=2	maxY_swiat=0.403	maxR_swiat_rogiAABB=0.488	{"Cyl6":1,"Box":6,"Cone6":1}
-cud roquepertuse	mesh=49	tri=704	mat=4	maxY_swiat=0.374	maxR_swiat_rogiAABB=0.781	{"Cyl10":5,"Box":25,"Cone4":15,"Cone10":3,"Cyl6":1}
-cud stupa_sanchi	mesh=4	tri=92	mat=2	maxY_swiat=0.483	maxR_swiat_rogiAABB=0.390	{"Cyl8":2,"Cone8":1,"Box":1}
-cud petra	mesh=4	tri=56	mat=2	maxY_swiat=0.529	maxR_swiat_rogiAABB=0.287	{"Box":2,"Cyl4":2}
-cud hamonga	mesh=3	tri=36	mat=1	maxY_swiat=0.460	maxR_swiat_rogiAABB=0.262	{"Box":3}
-cud kolos	mesh=19	tri=236	mat=4	maxY_swiat=0.770	maxR_swiat_rogiAABB=0.319	{"Box":17,"Cyl6":1,"Cone4":1}
-cud osada_aschaffenburg	mesh=54	tri=792	mat=5	maxY_swiat=0.564	maxR_swiat_rogiAABB=0.813	{"Cyl12":2,"Box":26,"Cone4":18,"Cyl10":4,"Cone10":4}
-cud ziggurat	mesh=9	tri=108	mat=2	maxY_swiat=0.460	maxR_swiat_rogiAABB=0.391	{"Box":9}
-cud mundo_perdido	mesh=3	tri=36	mat=2	maxY_swiat=0.414	maxR_swiat_rogiAABB=0.358	{"Box":3}
-cud terakotowa_armia	mesh=16	tri=192	mat=2	maxY_swiat=0.184	maxR_swiat_rogiAABB=0.354	{"Box":16}
-cud koloseum	mesh=216	tri=2676	mat=3	maxY_swiat=0.413	maxR_swiat_rogiAABB=0.517	{"Cyl24":1,"Box":215}
-cud dur_sharrukin	mesh=7	tri=80	mat=2	maxY_swiat=0.414	maxR_swiat_rogiAABB=0.423	{"Box":6,"Cone4":1}
-cud brama_narodow	mesh=6	tri=72	mat=2	maxY_swiat=0.483	maxR_swiat_rogiAABB=0.271	{"Box":6}
-cud palac_weiyang	mesh=6	tri=72	mat=3	maxY_swiat=0.276	maxR_swiat_rogiAABB=0.320	{"Box":6}
-cud yerkapi	mesh=4	tri=48	mat=2	maxY_swiat=0.368	maxR_swiat_rogiAABB=0.334	{"Box":4}
-cud posag_peruna	mesh=4	tri=48	mat=2	maxY_swiat=0.460	maxR_swiat_rogiAABB=0.117	{"Box":4}
-cud default (id spoza switch, np. parkowany nalanda)	mesh=2	tri=36	mat=2	maxY_swiat=0.368	maxR_swiat_rogiAABB=0.358	{"Cyl6":1,"Cone6":1}
-cud piramidy +ownerBanner	mesh=4	tri=40	mat=3	maxY_swiat=0.644	maxR_swiat_rogiAABB=0.598	{"Cone4":2,"Box":2}
+cud piramidy	mesh=2	tri=16	mat=2	maxY_swiat=0.644	maxR_swiat_rogiAABB=0.598	maxR_swiat_wierzch=0.423	maxR_wewn_wierzch=0.368	{"Cone4":2}
+cud wielka_stela	mesh=3	tri=32	mat=2	maxY_swiat=0.782	maxR_swiat_rogiAABB=0.114	maxR_swiat_wierzch=0.114	maxR_wewn_wierzch=0.099	{"Box":2,"Cone4":1}
+cud wiszace_ogrody	mesh=9	tri=108	mat=3	maxY_swiat=0.403	maxR_swiat_rogiAABB=0.371	maxR_swiat_wierzch=0.371	maxR_wewn_wierzch=0.323	{"Box":9}
+cud wyrocznia	mesh=8	tri=108	mat=2	maxY_swiat=0.403	maxR_swiat_rogiAABB=0.488	maxR_swiat_wierzch=0.345	maxR_wewn_wierzch=0.300	{"Cyl6":1,"Box":6,"Cone6":1}
+cud roquepertuse	mesh=49	tri=704	mat=4	maxY_swiat=0.374	maxR_swiat_rogiAABB=0.781	maxR_swiat_wierzch=0.552	maxR_wewn_wierzch=0.480	{"Cyl10":5,"Box":25,"Cone4":15,"Cone10":3,"Cyl6":1}
+cud stupa_sanchi	mesh=4	tri=92	mat=2	maxY_swiat=0.483	maxR_swiat_rogiAABB=0.390	maxR_swiat_wierzch=0.276	maxR_wewn_wierzch=0.240	{"Cyl8":2,"Cone8":1,"Box":1}
+cud petra	mesh=4	tri=56	mat=2	maxY_swiat=0.529	maxR_swiat_rogiAABB=0.287	maxR_swiat_wierzch=0.287	maxR_wewn_wierzch=0.250	{"Box":2,"Cyl4":2}
+cud hamonga	mesh=3	tri=36	mat=1	maxY_swiat=0.460	maxR_swiat_rogiAABB=0.262	maxR_swiat_wierzch=0.262	maxR_wewn_wierzch=0.228	{"Box":3}
+cud kolos	mesh=19	tri=236	mat=4	maxY_swiat=0.770	maxR_swiat_rogiAABB=0.319	maxR_swiat_wierzch=0.319	maxR_wewn_wierzch=0.278	{"Box":17,"Cyl6":1,"Cone4":1}
+cud osada_aschaffenburg	mesh=54	tri=792	mat=5	maxY_swiat=0.564	maxR_swiat_rogiAABB=0.813	maxR_swiat_wierzch=0.631	maxR_wewn_wierzch=0.549	{"Cyl12":2,"Box":26,"Cone4":18,"Cyl10":4,"Cone10":4}
+cud ziggurat	mesh=9	tri=108	mat=2	maxY_swiat=0.460	maxR_swiat_rogiAABB=0.391	maxR_swiat_wierzch=0.391	maxR_wewn_wierzch=0.340	{"Box":9}
+cud mundo_perdido	mesh=3	tri=36	mat=2	maxY_swiat=0.414	maxR_swiat_rogiAABB=0.358	maxR_swiat_wierzch=0.358	maxR_wewn_wierzch=0.311	{"Box":3}
+cud terakotowa_armia	mesh=16	tri=192	mat=2	maxY_swiat=0.184	maxR_swiat_rogiAABB=0.354	maxR_swiat_wierzch=0.354	maxR_wewn_wierzch=0.308	{"Box":16}
+cud koloseum	mesh=216	tri=2676	mat=3	maxY_swiat=0.413	maxR_swiat_rogiAABB=0.517	maxR_swiat_wierzch=0.517	maxR_wewn_wierzch=0.450	{"Cyl24":1,"Box":215}
+cud dur_sharrukin	mesh=7	tri=80	mat=2	maxY_swiat=0.414	maxR_swiat_rogiAABB=0.423	maxR_swiat_wierzch=0.423	maxR_wewn_wierzch=0.368	{"Box":6,"Cone4":1}
+cud brama_narodow	mesh=6	tri=72	mat=2	maxY_swiat=0.483	maxR_swiat_rogiAABB=0.271	maxR_swiat_wierzch=0.271	maxR_wewn_wierzch=0.235	{"Box":6}
+cud palac_weiyang	mesh=6	tri=72	mat=3	maxY_swiat=0.276	maxR_swiat_rogiAABB=0.320	maxR_swiat_wierzch=0.320	maxR_wewn_wierzch=0.278	{"Box":6}
+cud yerkapi	mesh=4	tri=48	mat=2	maxY_swiat=0.368	maxR_swiat_rogiAABB=0.334	maxR_swiat_wierzch=0.334	maxR_wewn_wierzch=0.290	{"Box":4}
+cud posag_peruna	mesh=4	tri=48	mat=2	maxY_swiat=0.460	maxR_swiat_rogiAABB=0.117	maxR_swiat_wierzch=0.117	maxR_wewn_wierzch=0.102	{"Box":4}
+cud default (id spoza switch, np. parkowany nalanda)	mesh=2	tri=36	mat=2	maxY_swiat=0.368	maxR_swiat_rogiAABB=0.358	maxR_swiat_wierzch=0.253	maxR_wewn_wierzch=0.220	{"Cyl6":1,"Cone6":1}
+cud piramidy +ownerBanner	mesh=4	tri=40	mat=3	maxY_swiat=0.644	maxR_swiat_rogiAABB=0.598	maxR_swiat_wierzch=0.423	maxR_wewn_wierzch=0.368	{"Cone4":2,"Box":2}
 CUDA n=19 tri: min=16 max=2676 srednia=290.1 mediana=80 budzet=ceil(srednia x 1.10)=320
 CUDA n=19 mesh: min=2 max=216 srednia=22.4 mediana=6 budzet=ceil(srednia x 1.10)=25
 ## GHOST bronzeCityRoblox (podglad zakladania miasta, L1, bez muru) — referencja ksztaltow per cywilizacja
-ghost-braz grecja L1	mesh=16	tri=276	mat=6	maxY_swiat=0.483	maxR_swiat_rogiAABB=0.291	{"Box":9,"Cyl6":7}
-ghost-braz rzym L1	mesh=16	tri=284	mat=7	maxY_swiat=0.483	maxR_swiat_rogiAABB=0.291	{"Box":9,"Cyl6":6,"Cyl8":1}
-ghost-braz sumer L1	mesh=14	tri=220	mat=8	maxY_swiat=0.483	maxR_swiat_rogiAABB=0.314	{"Box":11,"Cyl8":2,"Cyl6":1}
-ghost-braz egipt L1	mesh=15	tri=240	mat=7	maxY_swiat=0.483	maxR_swiat_rogiAABB=0.291	{"Box":10,"Cyl4":2,"Cyl8":2,"Cyl6":1}
-ghost-braz inka L1	mesh=14	tri=180	mat=7	maxY_swiat=0.483	maxR_swiat_rogiAABB=0.291	{"Box":13,"Cyl6":1}
-ghost-braz aztek L1	mesh=16	tri=244	mat=9	maxY_swiat=0.483	maxR_swiat_rogiAABB=0.362	{"Box":13,"Cyl8":2,"Cyl6":1}
-ghost-braz chiny L1	mesh=22	tri=384	mat=7	maxY_swiat=0.673	maxR_swiat_rogiAABB=0.312	{"Box":12,"Cyl6":10}
-ghost-braz zulu L1	mesh=9	tri=240	mat=4	maxY_swiat=0.483	maxR_swiat_rogiAABB=0.343	{"Cyl8":6,"Box":2,"Cyl6":1}
-ghost-braz celtowie L1	mesh=17	tri=268	mat=7	maxY_swiat=0.483	maxR_swiat_rogiAABB=0.291	{"Box":13,"Cyl6":2,"Cyl8":2}
-ghost-braz germanie L1	mesh=12	tri=204	mat=5	maxY_swiat=0.483	maxR_swiat_rogiAABB=0.291	{"Box":7,"Cyl6":5}
-ghost-braz hetyci L1	mesh=21	tri=304	mat=5	maxY_swiat=0.483	maxR_swiat_rogiAABB=0.337	{"Box":18,"Cyl8":2,"Cyl6":1}
+ghost-braz grecja L1	mesh=16	tri=276	mat=6	maxY_swiat=0.483	maxR_swiat_rogiAABB=0.291	maxR_swiat_wierzch=0.291	maxR_wewn_wierzch=0.211	{"Box":9,"Cyl6":7}
+ghost-braz rzym L1	mesh=16	tri=284	mat=7	maxY_swiat=0.483	maxR_swiat_rogiAABB=0.291	maxR_swiat_wierzch=0.291	maxR_wewn_wierzch=0.211	{"Box":9,"Cyl6":6,"Cyl8":1}
+ghost-braz sumer L1	mesh=14	tri=220	mat=8	maxY_swiat=0.483	maxR_swiat_rogiAABB=0.314	maxR_swiat_wierzch=0.314	maxR_wewn_wierzch=0.228	{"Box":11,"Cyl8":2,"Cyl6":1}
+ghost-braz egipt L1	mesh=15	tri=240	mat=7	maxY_swiat=0.483	maxR_swiat_rogiAABB=0.291	maxR_swiat_wierzch=0.291	maxR_wewn_wierzch=0.211	{"Box":10,"Cyl4":2,"Cyl8":2,"Cyl6":1}
+ghost-braz inka L1	mesh=14	tri=180	mat=7	maxY_swiat=0.483	maxR_swiat_rogiAABB=0.291	maxR_swiat_wierzch=0.291	maxR_wewn_wierzch=0.211	{"Box":13,"Cyl6":1}
+ghost-braz aztek L1	mesh=16	tri=244	mat=9	maxY_swiat=0.483	maxR_swiat_rogiAABB=0.362	maxR_swiat_wierzch=0.362	maxR_wewn_wierzch=0.262	{"Box":13,"Cyl8":2,"Cyl6":1}
+ghost-braz chiny L1	mesh=22	tri=384	mat=7	maxY_swiat=0.673	maxR_swiat_rogiAABB=0.312	maxR_swiat_wierzch=0.312	maxR_wewn_wierzch=0.226	{"Box":12,"Cyl6":10}
+ghost-braz zulu L1	mesh=9	tri=240	mat=4	maxY_swiat=0.483	maxR_swiat_rogiAABB=0.343	maxR_swiat_wierzch=0.291	maxR_wewn_wierzch=0.211	{"Cyl8":6,"Box":2,"Cyl6":1}
+ghost-braz celtowie L1	mesh=17	tri=268	mat=7	maxY_swiat=0.483	maxR_swiat_rogiAABB=0.291	maxR_swiat_wierzch=0.291	maxR_wewn_wierzch=0.211	{"Box":13,"Cyl6":2,"Cyl8":2}
+ghost-braz germanie L1	mesh=12	tri=204	mat=5	maxY_swiat=0.483	maxR_swiat_rogiAABB=0.291	maxR_swiat_wierzch=0.291	maxR_wewn_wierzch=0.211	{"Box":7,"Cyl6":5}
+ghost-braz hetyci L1	mesh=21	tri=304	mat=5	maxY_swiat=0.483	maxR_swiat_rogiAABB=0.337	maxR_swiat_wierzch=0.337	maxR_wewn_wierzch=0.244	{"Box":18,"Cyl8":2,"Cyl6":1}
+## MODULY Grecji/Rzymu (r2: zarzut E2 — zapas budzetu nakladek Z-GR/Z-RZ); skala 1 = wewn. = swiat
+modul grecja swiatyniaMykenska(1.15) [centrum L7-10]	mesh=14	tri=200	mat=8	maxY_swiat=0.535	maxR_swiat_rogiAABB=0.272	maxR_swiat_wierzch=0.272	maxR_wewn_wierzch=0.272	{"Box":8,"Cyl5":4,"Cyl3":2}
+modul grecja megaron(1.12,4) [centrum L4-6]	mesh=15	tri=212	mat=9	maxY_swiat=0.381	maxR_swiat_rogiAABB=0.207	maxR_swiat_wierzch=0.207	maxR_wewn_wierzch=0.207	{"Box":11,"Cyl5":4}
+modul grecja domGrecki(1)	mesh=3	tri=36	mat=3	maxY_swiat=0.135	maxR_swiat_rogiAABB=0.103	maxR_swiat_wierzch=0.103	maxR_wewn_wierzch=0.103	{"Box":3}
+modul grecja domGrecki(1,pietro)	mesh=6	tri=72	mat=3	maxY_swiat=0.233	maxR_swiat_rogiAABB=0.103	maxR_swiat_wierzch=0.103	maxR_wewn_wierzch=0.103	{"Box":6}
+modul rzym swiatynkaEtruska(1.22,vex) [centrum L9-10]	mesh=15	tri=196	mat=11	maxY_swiat=0.296	maxR_swiat_rogiAABB=0.259	maxR_swiat_wierzch=0.259	maxR_wewn_wierzch=0.259	{"Box":13,"Cyl5":2}
+modul rzym domTufu(1)	mesh=5	tri=60	mat=4	maxY_swiat=0.176	maxR_swiat_rogiAABB=0.129	maxR_swiat_wierzch=0.129	maxR_wewn_wierzch=0.129	{"Box":5}
+modul rzym capanna(1)	mesh=7	tri=96	mat=4	maxY_swiat=0.249	maxR_swiat_rogiAABB=0.150	maxR_swiat_wierzch=0.111	maxR_wewn_wierzch=0.111	{"Cyl6":1,"Cone6":1,"Box":5}
+## GHOST bronzeCityRoblox L1..L10 bez muru (r2: zarzut E1 — istniejace zestawy per cywilizacja, 10 poziomow)
+ghost-braz grecja L1	mesh=16	tri=276	mat=6	maxY_swiat=0.483	maxR_swiat_rogiAABB=0.291	maxR_swiat_wierzch=0.291	maxR_wewn_wierzch=0.211	{"Box":9,"Cyl6":7}
+ghost-braz grecja L2	mesh=18	tri=300	mat=6	maxY_swiat=0.483	maxR_swiat_rogiAABB=0.358	maxR_swiat_wierzch=0.358	maxR_wewn_wierzch=0.260	{"Box":11,"Cyl6":7}
+ghost-braz grecja L3	mesh=22	tri=348	mat=6	maxY_swiat=0.483	maxR_swiat_rogiAABB=0.426	maxR_swiat_wierzch=0.426	maxR_wewn_wierzch=0.309	{"Box":15,"Cyl6":7}
+ghost-braz grecja L4	mesh=26	tri=396	mat=6	maxY_swiat=0.483	maxR_swiat_rogiAABB=0.530	maxR_swiat_wierzch=0.530	maxR_wewn_wierzch=0.384	{"Box":19,"Cyl6":7}
+ghost-braz grecja L5	mesh=30	tri=444	mat=6	maxY_swiat=0.483	maxR_swiat_rogiAABB=0.618	maxR_swiat_wierzch=0.618	maxR_wewn_wierzch=0.448	{"Box":23,"Cyl6":7}
+ghost-braz grecja L6	mesh=36	tri=516	mat=6	maxY_swiat=0.509	maxR_swiat_rogiAABB=0.681	maxR_swiat_wierzch=0.681	maxR_wewn_wierzch=0.494	{"Box":29,"Cyl6":7}
+ghost-braz grecja L7	mesh=42	tri=588	mat=6	maxY_swiat=0.536	maxR_swiat_rogiAABB=0.731	maxR_swiat_wierzch=0.731	maxR_wewn_wierzch=0.530	{"Box":35,"Cyl6":7}
+ghost-braz grecja L8	mesh=48	tri=660	mat=6	maxY_swiat=0.564	maxR_swiat_rogiAABB=0.945	maxR_swiat_wierzch=0.945	maxR_wewn_wierzch=0.685	{"Box":41,"Cyl6":7}
+ghost-braz grecja L9	mesh=56	tri=756	mat=6	maxY_swiat=0.592	maxR_swiat_rogiAABB=1.154	maxR_swiat_wierzch=1.154	maxR_wewn_wierzch=0.836	{"Box":49,"Cyl6":7}
+ghost-braz grecja L10	mesh=64	tri=852	mat=6	maxY_swiat=0.619	maxR_swiat_rogiAABB=1.248	maxR_swiat_wierzch=1.248	maxR_wewn_wierzch=0.904	{"Box":57,"Cyl6":7}
+ghost-braz rzym L1	mesh=16	tri=284	mat=7	maxY_swiat=0.483	maxR_swiat_rogiAABB=0.291	maxR_swiat_wierzch=0.291	maxR_wewn_wierzch=0.211	{"Box":9,"Cyl6":6,"Cyl8":1}
+ghost-braz rzym L2	mesh=19	tri=320	mat=7	maxY_swiat=0.483	maxR_swiat_rogiAABB=0.358	maxR_swiat_wierzch=0.358	maxR_wewn_wierzch=0.260	{"Box":12,"Cyl6":6,"Cyl8":1}
+ghost-braz rzym L3	mesh=25	tri=392	mat=7	maxY_swiat=0.483	maxR_swiat_rogiAABB=0.426	maxR_swiat_wierzch=0.426	maxR_wewn_wierzch=0.309	{"Box":18,"Cyl6":6,"Cyl8":1}
+ghost-braz rzym L4	mesh=31	tri=464	mat=7	maxY_swiat=0.483	maxR_swiat_rogiAABB=0.524	maxR_swiat_wierzch=0.524	maxR_wewn_wierzch=0.380	{"Box":24,"Cyl6":6,"Cyl8":1}
+ghost-braz rzym L5	mesh=37	tri=536	mat=7	maxY_swiat=0.483	maxR_swiat_rogiAABB=0.613	maxR_swiat_wierzch=0.613	maxR_wewn_wierzch=0.444	{"Box":30,"Cyl6":6,"Cyl8":1}
+ghost-braz rzym L6	mesh=46	tri=644	mat=7	maxY_swiat=0.483	maxR_swiat_rogiAABB=0.676	maxR_swiat_wierzch=0.676	maxR_wewn_wierzch=0.490	{"Box":39,"Cyl6":6,"Cyl8":1}
+ghost-braz rzym L7	mesh=55	tri=752	mat=7	maxY_swiat=0.483	maxR_swiat_rogiAABB=0.727	maxR_swiat_wierzch=0.727	maxR_wewn_wierzch=0.527	{"Box":48,"Cyl6":6,"Cyl8":1}
+ghost-braz rzym L8	mesh=64	tri=860	mat=7	maxY_swiat=0.488	maxR_swiat_rogiAABB=0.942	maxR_swiat_wierzch=0.942	maxR_wewn_wierzch=0.682	{"Box":57,"Cyl6":6,"Cyl8":1}
+ghost-braz rzym L9	mesh=76	tri=1004	mat=7	maxY_swiat=0.511	maxR_swiat_rogiAABB=1.149	maxR_swiat_wierzch=1.149	maxR_wewn_wierzch=0.832	{"Box":69,"Cyl6":6,"Cyl8":1}
+ghost-braz rzym L10	mesh=88	tri=1148	mat=7	maxY_swiat=0.534	maxR_swiat_rogiAABB=1.243	maxR_swiat_wierzch=1.243	maxR_wewn_wierzch=0.901	{"Box":81,"Cyl6":6,"Cyl8":1}
+ghost-braz sumer L1	mesh=14	tri=220	mat=8	maxY_swiat=0.483	maxR_swiat_rogiAABB=0.314	maxR_swiat_wierzch=0.314	maxR_wewn_wierzch=0.228	{"Box":11,"Cyl8":2,"Cyl6":1}
+ghost-braz sumer L2	mesh=17	tri=276	mat=8	maxY_swiat=0.483	maxR_swiat_rogiAABB=0.358	maxR_swiat_wierzch=0.358	maxR_wewn_wierzch=0.260	{"Box":13,"Cyl8":3,"Cyl6":1}
+ghost-braz sumer L3	mesh=23	tri=388	mat=8	maxY_swiat=0.483	maxR_swiat_rogiAABB=0.426	maxR_swiat_wierzch=0.426	maxR_wewn_wierzch=0.309	{"Box":17,"Cyl8":5,"Cyl6":1}
+ghost-braz sumer L4	mesh=29	tri=500	mat=8	maxY_swiat=0.514	maxR_swiat_rogiAABB=0.530	maxR_swiat_wierzch=0.530	maxR_wewn_wierzch=0.384	{"Box":21,"Cyl8":7,"Cyl6":1}
+ghost-braz sumer L5	mesh=35	tri=612	mat=8	maxY_swiat=0.545	maxR_swiat_rogiAABB=0.618	maxR_swiat_wierzch=0.618	maxR_wewn_wierzch=0.448	{"Box":25,"Cyl8":9,"Cyl6":1}
+ghost-braz sumer L6	mesh=44	tri=780	mat=8	maxY_swiat=0.577	maxR_swiat_rogiAABB=0.681	maxR_swiat_wierzch=0.681	maxR_wewn_wierzch=0.494	{"Box":31,"Cyl8":12,"Cyl6":1}
+ghost-braz sumer L7	mesh=53	tri=948	mat=8	maxY_swiat=0.608	maxR_swiat_rogiAABB=0.731	maxR_swiat_wierzch=0.731	maxR_wewn_wierzch=0.530	{"Box":37,"Cyl8":15,"Cyl6":1}
+ghost-braz sumer L8	mesh=62	tri=1116	mat=8	maxY_swiat=0.640	maxR_swiat_rogiAABB=0.945	maxR_swiat_wierzch=0.945	maxR_wewn_wierzch=0.685	{"Box":43,"Cyl8":18,"Cyl6":1}
+ghost-braz sumer L9	mesh=74	tri=1340	mat=8	maxY_swiat=0.671	maxR_swiat_rogiAABB=1.154	maxR_swiat_wierzch=1.154	maxR_wewn_wierzch=0.836	{"Box":51,"Cyl8":22,"Cyl6":1}
+ghost-braz sumer L10	mesh=86	tri=1564	mat=8	maxY_swiat=0.703	maxR_swiat_rogiAABB=1.248	maxR_swiat_wierzch=1.248	maxR_wewn_wierzch=0.904	{"Box":59,"Cyl8":26,"Cyl6":1}
+ghost-braz egipt L1	mesh=15	tri=240	mat=7	maxY_swiat=0.483	maxR_swiat_rogiAABB=0.291	maxR_swiat_wierzch=0.291	maxR_wewn_wierzch=0.211	{"Box":10,"Cyl4":2,"Cyl8":2,"Cyl6":1}
+ghost-braz egipt L2	mesh=18	tri=296	mat=7	maxY_swiat=0.483	maxR_swiat_rogiAABB=0.358	maxR_swiat_wierzch=0.358	maxR_wewn_wierzch=0.260	{"Box":12,"Cyl4":2,"Cyl8":3,"Cyl6":1}
+ghost-braz egipt L3	mesh=24	tri=408	mat=7	maxY_swiat=0.483	maxR_swiat_rogiAABB=0.426	maxR_swiat_wierzch=0.426	maxR_wewn_wierzch=0.309	{"Box":16,"Cyl4":2,"Cyl8":5,"Cyl6":1}
+ghost-braz egipt L4	mesh=30	tri=520	mat=7	maxY_swiat=0.483	maxR_swiat_rogiAABB=0.530	maxR_swiat_wierzch=0.530	maxR_wewn_wierzch=0.384	{"Box":20,"Cyl4":2,"Cyl8":7,"Cyl6":1}
+ghost-braz egipt L5	mesh=36	tri=632	mat=7	maxY_swiat=0.483	maxR_swiat_rogiAABB=0.618	maxR_swiat_wierzch=0.618	maxR_wewn_wierzch=0.448	{"Box":24,"Cyl4":2,"Cyl8":9,"Cyl6":1}
+ghost-braz egipt L6	mesh=45	tri=800	mat=7	maxY_swiat=0.486	maxR_swiat_rogiAABB=0.681	maxR_swiat_wierzch=0.681	maxR_wewn_wierzch=0.494	{"Box":30,"Cyl4":2,"Cyl8":12,"Cyl6":1}
+ghost-braz egipt L7	mesh=54	tri=968	mat=7	maxY_swiat=0.512	maxR_swiat_rogiAABB=0.731	maxR_swiat_wierzch=0.731	maxR_wewn_wierzch=0.530	{"Box":36,"Cyl4":2,"Cyl8":15,"Cyl6":1}
+ghost-braz egipt L8	mesh=63	tri=1136	mat=7	maxY_swiat=0.539	maxR_swiat_rogiAABB=0.945	maxR_swiat_wierzch=0.945	maxR_wewn_wierzch=0.685	{"Box":42,"Cyl4":2,"Cyl8":18,"Cyl6":1}
+ghost-braz egipt L9	mesh=75	tri=1360	mat=7	maxY_swiat=0.565	maxR_swiat_rogiAABB=1.154	maxR_swiat_wierzch=1.154	maxR_wewn_wierzch=0.836	{"Box":50,"Cyl4":2,"Cyl8":22,"Cyl6":1}
+ghost-braz egipt L10	mesh=87	tri=1584	mat=7	maxY_swiat=0.592	maxR_swiat_rogiAABB=1.248	maxR_swiat_wierzch=1.248	maxR_wewn_wierzch=0.904	{"Box":58,"Cyl4":2,"Cyl8":26,"Cyl6":1}
+ghost-braz inka L1	mesh=14	tri=180	mat=7	maxY_swiat=0.483	maxR_swiat_rogiAABB=0.291	maxR_swiat_wierzch=0.291	maxR_wewn_wierzch=0.211	{"Box":13,"Cyl6":1}
+ghost-braz inka L2	mesh=17	tri=216	mat=7	maxY_swiat=0.483	maxR_swiat_rogiAABB=0.358	maxR_swiat_wierzch=0.358	maxR_wewn_wierzch=0.260	{"Box":16,"Cyl6":1}
+ghost-braz inka L3	mesh=23	tri=288	mat=7	maxY_swiat=0.508	maxR_swiat_rogiAABB=0.426	maxR_swiat_wierzch=0.426	maxR_wewn_wierzch=0.309	{"Box":22,"Cyl6":1}
+ghost-braz inka L4	mesh=29	tri=360	mat=7	maxY_swiat=0.541	maxR_swiat_rogiAABB=0.524	maxR_swiat_wierzch=0.524	maxR_wewn_wierzch=0.380	{"Box":28,"Cyl6":1}
+ghost-braz inka L5	mesh=35	tri=432	mat=7	maxY_swiat=0.574	maxR_swiat_rogiAABB=0.613	maxR_swiat_wierzch=0.613	maxR_wewn_wierzch=0.444	{"Box":34,"Cyl6":1}
+ghost-braz inka L6	mesh=44	tri=540	mat=7	maxY_swiat=0.607	maxR_swiat_rogiAABB=0.676	maxR_swiat_wierzch=0.676	maxR_wewn_wierzch=0.490	{"Box":43,"Cyl6":1}
+ghost-braz inka L7	mesh=53	tri=648	mat=7	maxY_swiat=0.640	maxR_swiat_rogiAABB=0.727	maxR_swiat_wierzch=0.727	maxR_wewn_wierzch=0.527	{"Box":52,"Cyl6":1}
+ghost-braz inka L8	mesh=62	tri=756	mat=7	maxY_swiat=0.673	maxR_swiat_rogiAABB=0.942	maxR_swiat_wierzch=0.942	maxR_wewn_wierzch=0.682	{"Box":61,"Cyl6":1}
+ghost-braz inka L9	mesh=74	tri=900	mat=7	maxY_swiat=0.707	maxR_swiat_rogiAABB=1.149	maxR_swiat_wierzch=1.149	maxR_wewn_wierzch=0.832	{"Box":73,"Cyl6":1}
+ghost-braz inka L10	mesh=86	tri=1044	mat=7	maxY_swiat=0.740	maxR_swiat_rogiAABB=1.243	maxR_swiat_wierzch=1.243	maxR_wewn_wierzch=0.901	{"Box":85,"Cyl6":1}
+ghost-braz aztek L1	mesh=16	tri=244	mat=9	maxY_swiat=0.483	maxR_swiat_rogiAABB=0.362	maxR_swiat_wierzch=0.362	maxR_wewn_wierzch=0.262	{"Box":13,"Cyl8":2,"Cyl6":1}
+ghost-braz aztek L2	mesh=19	tri=300	mat=9	maxY_swiat=0.483	maxR_swiat_rogiAABB=0.389	maxR_swiat_wierzch=0.389	maxR_wewn_wierzch=0.282	{"Box":15,"Cyl8":3,"Cyl6":1}
+ghost-braz aztek L3	mesh=25	tri=412	mat=9	maxY_swiat=0.508	maxR_swiat_rogiAABB=0.426	maxR_swiat_wierzch=0.426	maxR_wewn_wierzch=0.309	{"Box":19,"Cyl8":5,"Cyl6":1}
+ghost-braz aztek L4	mesh=31	tri=524	mat=9	maxY_swiat=0.541	maxR_swiat_rogiAABB=0.530	maxR_swiat_wierzch=0.530	maxR_wewn_wierzch=0.384	{"Box":23,"Cyl8":7,"Cyl6":1}
+ghost-braz aztek L5	mesh=37	tri=636	mat=9	maxY_swiat=0.574	maxR_swiat_rogiAABB=0.618	maxR_swiat_wierzch=0.618	maxR_wewn_wierzch=0.448	{"Box":27,"Cyl8":9,"Cyl6":1}
+ghost-braz aztek L6	mesh=46	tri=804	mat=9	maxY_swiat=0.607	maxR_swiat_rogiAABB=0.681	maxR_swiat_wierzch=0.681	maxR_wewn_wierzch=0.494	{"Box":33,"Cyl8":12,"Cyl6":1}
+ghost-braz aztek L7	mesh=55	tri=972	mat=9	maxY_swiat=0.640	maxR_swiat_rogiAABB=0.731	maxR_swiat_wierzch=0.731	maxR_wewn_wierzch=0.530	{"Box":39,"Cyl8":15,"Cyl6":1}
+ghost-braz aztek L8	mesh=64	tri=1140	mat=9	maxY_swiat=0.673	maxR_swiat_rogiAABB=0.945	maxR_swiat_wierzch=0.945	maxR_wewn_wierzch=0.685	{"Box":45,"Cyl8":18,"Cyl6":1}
+ghost-braz aztek L9	mesh=76	tri=1364	mat=9	maxY_swiat=0.707	maxR_swiat_rogiAABB=1.154	maxR_swiat_wierzch=1.154	maxR_wewn_wierzch=0.836	{"Box":53,"Cyl8":22,"Cyl6":1}
+ghost-braz aztek L10	mesh=88	tri=1588	mat=9	maxY_swiat=0.740	maxR_swiat_rogiAABB=1.248	maxR_swiat_wierzch=1.248	maxR_wewn_wierzch=0.904	{"Box":61,"Cyl8":26,"Cyl6":1}
+ghost-braz chiny L1	mesh=22	tri=384	mat=7	maxY_swiat=0.673	maxR_swiat_rogiAABB=0.312	maxR_swiat_wierzch=0.312	maxR_wewn_wierzch=0.226	{"Box":12,"Cyl6":10}
+ghost-braz chiny L2	mesh=25	tri=432	mat=7	maxY_swiat=0.724	maxR_swiat_rogiAABB=0.358	maxR_swiat_wierzch=0.358	maxR_wewn_wierzch=0.260	{"Box":14,"Cyl6":11}
+ghost-braz chiny L3	mesh=31	tri=528	mat=7	maxY_swiat=0.774	maxR_swiat_rogiAABB=0.426	maxR_swiat_wierzch=0.426	maxR_wewn_wierzch=0.309	{"Box":18,"Cyl6":13}
+ghost-braz chiny L4	mesh=37	tri=624	mat=7	maxY_swiat=0.825	maxR_swiat_rogiAABB=0.515	maxR_swiat_wierzch=0.515	maxR_wewn_wierzch=0.373	{"Box":22,"Cyl6":15}
+ghost-braz chiny L5	mesh=43	tri=720	mat=7	maxY_swiat=0.875	maxR_swiat_rogiAABB=0.631	maxR_swiat_wierzch=0.631	maxR_wewn_wierzch=0.457	{"Box":26,"Cyl6":17}
+ghost-braz chiny L6	mesh=52	tri=864	mat=7	maxY_swiat=0.926	maxR_swiat_rogiAABB=0.702	maxR_swiat_wierzch=0.702	maxR_wewn_wierzch=0.508	{"Box":32,"Cyl6":20}
+ghost-braz chiny L7	mesh=61	tri=1008	mat=7	maxY_swiat=0.976	maxR_swiat_rogiAABB=0.750	maxR_swiat_wierzch=0.750	maxR_wewn_wierzch=0.544	{"Box":38,"Cyl6":23}
+ghost-braz chiny L8	mesh=70	tri=1152	mat=7	maxY_swiat=1.027	maxR_swiat_rogiAABB=0.962	maxR_swiat_wierzch=0.962	maxR_wewn_wierzch=0.697	{"Box":44,"Cyl6":26}
+ghost-braz chiny L9	mesh=82	tri=1344	mat=7	maxY_swiat=1.078	maxR_swiat_rogiAABB=1.161	maxR_swiat_wierzch=1.161	maxR_wewn_wierzch=0.841	{"Box":52,"Cyl6":30}
+ghost-braz chiny L10	mesh=94	tri=1536	mat=7	maxY_swiat=1.128	maxR_swiat_rogiAABB=1.238	maxR_swiat_wierzch=1.238	maxR_wewn_wierzch=0.897	{"Box":60,"Cyl6":34}
+ghost-braz zulu L1	mesh=9	tri=240	mat=4	maxY_swiat=0.483	maxR_swiat_rogiAABB=0.343	maxR_swiat_wierzch=0.291	maxR_wewn_wierzch=0.211	{"Cyl8":6,"Box":2,"Cyl6":1}
+ghost-braz zulu L2	mesh=11	tri=304	mat=4	maxY_swiat=0.483	maxR_swiat_rogiAABB=0.369	maxR_swiat_wierzch=0.358	maxR_wewn_wierzch=0.260	{"Cyl8":8,"Box":2,"Cyl6":1}
+ghost-braz zulu L3	mesh=15	tri=432	mat=4	maxY_swiat=0.483	maxR_swiat_rogiAABB=0.426	maxR_swiat_wierzch=0.426	maxR_wewn_wierzch=0.309	{"Cyl8":12,"Box":2,"Cyl6":1}
+ghost-braz zulu L4	mesh=19	tri=560	mat=4	maxY_swiat=0.483	maxR_swiat_rogiAABB=0.565	maxR_swiat_wierzch=0.522	maxR_wewn_wierzch=0.378	{"Cyl8":16,"Box":2,"Cyl6":1}
+ghost-braz zulu L5	mesh=23	tri=688	mat=4	maxY_swiat=0.483	maxR_swiat_rogiAABB=0.639	maxR_swiat_wierzch=0.613	maxR_wewn_wierzch=0.444	{"Cyl8":20,"Box":2,"Cyl6":1}
+ghost-braz zulu L6	mesh=29	tri=880	mat=4	maxY_swiat=0.483	maxR_swiat_rogiAABB=0.712	maxR_swiat_wierzch=0.678	maxR_wewn_wierzch=0.492	{"Cyl8":26,"Box":2,"Cyl6":1}
+ghost-braz zulu L7	mesh=35	tri=1072	mat=4	maxY_swiat=0.483	maxR_swiat_rogiAABB=0.760	maxR_swiat_wierzch=0.750	maxR_wewn_wierzch=0.543	{"Cyl8":32,"Box":2,"Cyl6":1}
+ghost-braz zulu L8	mesh=41	tri=1264	mat=4	maxY_swiat=0.483	maxR_swiat_rogiAABB=0.970	maxR_swiat_wierzch=0.958	maxR_wewn_wierzch=0.694	{"Cyl8":38,"Box":2,"Cyl6":1}
+ghost-braz zulu L9	mesh=49	tri=1520	mat=4	maxY_swiat=0.483	maxR_swiat_rogiAABB=1.169	maxR_swiat_wierzch=1.135	maxR_wewn_wierzch=0.822	{"Cyl8":46,"Box":2,"Cyl6":1}
+ghost-braz zulu L10	mesh=57	tri=1776	mat=4	maxY_swiat=0.483	maxR_swiat_rogiAABB=1.265	maxR_swiat_wierzch=1.230	maxR_wewn_wierzch=0.891	{"Cyl8":54,"Box":2,"Cyl6":1}
+ghost-braz celtowie L1	mesh=17	tri=268	mat=7	maxY_swiat=0.483	maxR_swiat_rogiAABB=0.291	maxR_swiat_wierzch=0.291	maxR_wewn_wierzch=0.211	{"Box":13,"Cyl6":2,"Cyl8":2}
+ghost-braz celtowie L2	mesh=19	tri=292	mat=7	maxY_swiat=0.483	maxR_swiat_rogiAABB=0.358	maxR_swiat_wierzch=0.358	maxR_wewn_wierzch=0.260	{"Box":15,"Cyl6":2,"Cyl8":2}
+ghost-braz celtowie L3	mesh=23	tri=380	mat=7	maxY_swiat=0.483	maxR_swiat_rogiAABB=0.426	maxR_swiat_wierzch=0.426	maxR_wewn_wierzch=0.309	{"Box":17,"Cyl6":2,"Cyl8":4}
+ghost-braz celtowie L4	mesh=27	tri=428	mat=7	maxY_swiat=0.500	maxR_swiat_rogiAABB=0.531	maxR_swiat_wierzch=0.531	maxR_wewn_wierzch=0.385	{"Box":21,"Cyl6":2,"Cyl8":4}
+ghost-braz celtowie L5	mesh=31	tri=516	mat=7	maxY_swiat=0.531	maxR_swiat_rogiAABB=0.616	maxR_swiat_wierzch=0.616	maxR_wewn_wierzch=0.446	{"Box":23,"Cyl6":2,"Cyl8":6}
+ghost-braz celtowie L6	mesh=37	tri=588	mat=7	maxY_swiat=0.562	maxR_swiat_rogiAABB=0.686	maxR_swiat_wierzch=0.686	maxR_wewn_wierzch=0.497	{"Box":29,"Cyl6":2,"Cyl8":6}
+ghost-braz celtowie L7	mesh=43	tri=700	mat=7	maxY_swiat=0.592	maxR_swiat_rogiAABB=0.738	maxR_swiat_wierzch=0.738	maxR_wewn_wierzch=0.535	{"Box":33,"Cyl6":2,"Cyl8":8}
+ghost-braz celtowie L8	mesh=49	tri=812	mat=7	maxY_swiat=0.623	maxR_swiat_rogiAABB=0.950	maxR_swiat_wierzch=0.950	maxR_wewn_wierzch=0.688	{"Box":37,"Cyl6":2,"Cyl8":10}
+ghost-braz celtowie L9	mesh=57	tri=948	mat=7	maxY_swiat=0.654	maxR_swiat_rogiAABB=1.153	maxR_swiat_wierzch=1.153	maxR_wewn_wierzch=0.835	{"Box":43,"Cyl6":2,"Cyl8":12}
+ghost-braz celtowie L10	mesh=65	tri=1084	mat=7	maxY_swiat=0.684	maxR_swiat_rogiAABB=1.248	maxR_swiat_wierzch=1.248	maxR_wewn_wierzch=0.905	{"Box":49,"Cyl6":2,"Cyl8":14}
+ghost-braz germanie L1	mesh=12	tri=204	mat=5	maxY_swiat=0.483	maxR_swiat_rogiAABB=0.291	maxR_swiat_wierzch=0.291	maxR_wewn_wierzch=0.211	{"Box":7,"Cyl6":5}
+ghost-braz germanie L2	mesh=14	tri=252	mat=5	maxY_swiat=0.483	maxR_swiat_rogiAABB=0.358	maxR_swiat_wierzch=0.358	maxR_wewn_wierzch=0.260	{"Box":7,"Cyl6":7}
+ghost-braz germanie L3	mesh=18	tri=348	mat=5	maxY_swiat=0.483	maxR_swiat_rogiAABB=0.426	maxR_swiat_wierzch=0.426	maxR_wewn_wierzch=0.309	{"Box":7,"Cyl6":11}
+ghost-braz germanie L4	mesh=22	tri=420	mat=5	maxY_swiat=0.483	maxR_swiat_rogiAABB=0.541	maxR_swiat_wierzch=0.516	maxR_wewn_wierzch=0.374	{"Box":9,"Cyl6":13}
+ghost-braz germanie L5	mesh=26	tri=516	mat=5	maxY_swiat=0.483	maxR_swiat_rogiAABB=0.644	maxR_swiat_wierzch=0.610	maxR_wewn_wierzch=0.442	{"Box":9,"Cyl6":17}
+ghost-braz germanie L6	mesh=32	tri=636	mat=5	maxY_swiat=0.483	maxR_swiat_rogiAABB=0.716	maxR_swiat_wierzch=0.677	maxR_wewn_wierzch=0.491	{"Box":11,"Cyl6":21}
+ghost-braz germanie L7	mesh=38	tri=780	mat=5	maxY_swiat=0.483	maxR_swiat_rogiAABB=0.758	maxR_swiat_wierzch=0.737	maxR_wewn_wierzch=0.534	{"Box":11,"Cyl6":27}
+ghost-braz germanie L8	mesh=44	tri=900	mat=5	maxY_swiat=0.483	maxR_swiat_rogiAABB=0.973	maxR_swiat_wierzch=0.952	maxR_wewn_wierzch=0.690	{"Box":13,"Cyl6":31}
+ghost-braz germanie L9	mesh=52	tri=1068	mat=5	maxY_swiat=0.483	maxR_swiat_rogiAABB=1.181	maxR_swiat_wierzch=1.181	maxR_wewn_wierzch=0.856	{"Box":15,"Cyl6":37}
+ghost-braz germanie L10	mesh=60	tri=1236	mat=5	maxY_swiat=0.499	maxR_swiat_rogiAABB=1.266	maxR_swiat_wierzch=1.266	maxR_wewn_wierzch=0.917	{"Box":17,"Cyl6":43}
+ghost-braz hetyci L1	mesh=21	tri=304	mat=5	maxY_swiat=0.483	maxR_swiat_rogiAABB=0.337	maxR_swiat_wierzch=0.337	maxR_wewn_wierzch=0.244	{"Box":18,"Cyl8":2,"Cyl6":1}
+ghost-braz hetyci L2	mesh=24	tri=360	mat=5	maxY_swiat=0.483	maxR_swiat_rogiAABB=0.362	maxR_swiat_wierzch=0.362	maxR_wewn_wierzch=0.263	{"Box":20,"Cyl8":3,"Cyl6":1}
+ghost-braz hetyci L3	mesh=30	tri=472	mat=5	maxY_swiat=0.483	maxR_swiat_rogiAABB=0.426	maxR_swiat_wierzch=0.426	maxR_wewn_wierzch=0.309	{"Box":24,"Cyl8":5,"Cyl6":1}
+ghost-braz hetyci L4	mesh=36	tri=584	mat=5	maxY_swiat=0.483	maxR_swiat_rogiAABB=0.530	maxR_swiat_wierzch=0.530	maxR_wewn_wierzch=0.384	{"Box":28,"Cyl8":7,"Cyl6":1}
+ghost-braz hetyci L5	mesh=42	tri=696	mat=5	maxY_swiat=0.483	maxR_swiat_rogiAABB=0.618	maxR_swiat_wierzch=0.618	maxR_wewn_wierzch=0.448	{"Box":32,"Cyl8":9,"Cyl6":1}
+ghost-braz hetyci L6	mesh=51	tri=864	mat=5	maxY_swiat=0.486	maxR_swiat_rogiAABB=0.681	maxR_swiat_wierzch=0.681	maxR_wewn_wierzch=0.494	{"Box":38,"Cyl8":12,"Cyl6":1}
+ghost-braz hetyci L7	mesh=60	tri=1032	mat=5	maxY_swiat=0.512	maxR_swiat_rogiAABB=0.731	maxR_swiat_wierzch=0.731	maxR_wewn_wierzch=0.530	{"Box":44,"Cyl8":15,"Cyl6":1}
+ghost-braz hetyci L8	mesh=69	tri=1200	mat=5	maxY_swiat=0.539	maxR_swiat_rogiAABB=0.945	maxR_swiat_wierzch=0.945	maxR_wewn_wierzch=0.685	{"Box":50,"Cyl8":18,"Cyl6":1}
+ghost-braz hetyci L9	mesh=81	tri=1424	mat=5	maxY_swiat=0.565	maxR_swiat_rogiAABB=1.154	maxR_swiat_wierzch=1.154	maxR_wewn_wierzch=0.836	{"Box":58,"Cyl8":22,"Cyl6":1}
+ghost-braz hetyci L10	mesh=93	tri=1648	mat=5	maxY_swiat=0.592	maxR_swiat_rogiAABB=1.248	maxR_swiat_wierzch=1.248	maxR_wewn_wierzch=0.904	{"Box":66,"Cyl8":26,"Cyl6":1}
 EXTRUDE_HITS=0 (0 = zaden zmierzony model nie uzyl ExtrudeGeometry)
