@@ -6,7 +6,7 @@
 //! is mutated by the resolver except the per-unit visit memory, which is an
 //! intentional part of the movement decision state.
 
-use super::UnitId;
+use super::{CityId, UnitId};
 use serde::{Deserialize, Serialize};
 use std::collections::{BTreeMap, BTreeSet, VecDeque};
 
@@ -133,7 +133,7 @@ impl BarbarianMap {
 /// A city snapshot used for spacing, targeting, and capture checks.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct CitySnapshot {
-    pub id: u64,
+    pub id: CityId,
     pub owner_id: i64,
     pub q: i32,
     pub r: i32,
@@ -141,7 +141,12 @@ pub struct CitySnapshot {
 
 impl CitySnapshot {
     pub const fn new(id: u64, owner_id: i64, q: i32, r: i32) -> Self {
-        Self { id, owner_id, q, r }
+        Self {
+            id: CityId::new(id),
+            owner_id,
+            q,
+            r,
+        }
     }
 
     pub const fn position(&self) -> HexCoord {
@@ -797,7 +802,7 @@ pub fn decide_barbarian_moves(
                 let undefended = !enemies
                     .iter()
                     .any(|enemy| enemy.position() == city.position());
-                !undefended || !unit.cleared_city_ids.contains(&city.id)
+                !undefended || !unit.cleared_city_ids.contains(&city.id.get())
             })
             .collect::<Vec<_>>();
         if city_targets.is_empty() {
@@ -814,7 +819,7 @@ pub fn decide_barbarian_moves(
         // city always wins over a city this unit has already cleared.
         let considered = city_targets
             .iter()
-            .map(|city| city.id)
+            .map(|city| city.id.get())
             .collect::<BTreeSet<_>>();
 
         let nearest_enemy = nearest(unit.position(), enemies.iter(), |enemy| enemy.position());
@@ -824,7 +829,7 @@ pub fn decide_barbarian_moves(
             .map(|city| {
                 (
                     city.position(),
-                    city.id,
+                    city.id.get(),
                     unit.position().distance(city.position()),
                     true,
                 )
@@ -833,11 +838,11 @@ pub fn decide_barbarian_moves(
         targets.extend(
             own_cities
                 .iter()
-                .filter(|city| !considered.contains(&city.id))
+                .filter(|city| !considered.contains(&city.id.get()))
                 .map(|city| {
                     (
                         city.position(),
-                        city.id,
+                        city.id.get(),
                         unit.position().distance(city.position()),
                         true,
                     )
@@ -862,7 +867,7 @@ pub fn decide_barbarian_moves(
                     .iter()
                     .any(|enemy| enemy.position() == city.position())
             {
-                unit.cleared_city_ids.insert(city.id);
+                unit.cleared_city_ids.insert(city.id.get());
             }
         }
 
