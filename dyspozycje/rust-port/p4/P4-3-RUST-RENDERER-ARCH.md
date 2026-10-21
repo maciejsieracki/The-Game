@@ -1,6 +1,6 @@
 # P4.3 — Architektura renderera mapy w Rust (wgpu): silnik, osadzenie w Tauri, picking, potok modeli, testy 1:1, pamięć
 
-**Temat:** `R-RUSTPORT-P4-3-RUST-RENDERER-ARCH-Q1` · **Domena:** GAME · **Rola:** Operator (Opus 5.5 medium) · **Runda:** 1/5
+**Temat:** `R-RUSTPORT-P4-3-RUST-RENDERER-ARCH-Q1` · **Domena:** GAME · **Rola:** Operator (Opus 5.5 medium) · **Runda:** 2/5 (poprawki po FAIL Evaluatora r1, zarzuty 1–11 — rejestr zmian w §10)
 **Status dokumentu:** projekt architektury z punktami decyzji `D-RR-n`. Nic tu nie jest rozstrzygnięte po cichu.
 **Decyzja wejściowa właściciela (LEDGER 2026-10-21):** renderer mapy i wszystkie modele 3D w Rust; picking piksel→heks w Rust; zakres 3D z D-REND-8 = B (mapa, bitwa ręczna, cuda, miniatury). P4.1 i P4.2 (wariant Three.js) są unieważnione.
 
@@ -20,8 +20,8 @@
 2. **Osadzenie:** rekomendacja **(a) jedno okno Tauri**: na spodzie natywna powierzchnia wgpu, nad nią przezroczysty webview z HUD. Warunek: **spike na Windows i Linux** przed implementacją. Kod Tauri 2.11.5/wry 0.55.1 ma potrzebne API (przezroczystość, `raw-window-handle`, webview-dziecko), ale dwa z nich stoją za flagą `unstable`, a webview-dziecko na Linuksie działa tylko pod X11. Tego, czy złożenie działa (fokus, kliknięcia przez przezroczyste piksele, DPI), **nie zmierzono**. → `D-RR-2`.
 3. **Picking:** matematykę webu wyprowadziłem z kodu (§3). Ważne: **sama płaszczyzna Y=const nie daje identycznych wyników.** Web trafia promieniem w realne bryły: pryzmy terenu z bokami, bryły gór i wzgórz, modele jednostek (mają pierwszeństwo). Płaszczyzna jest tylko awaryjna, gdy nic nie trafiono (np. heks pod mgłą). Są też dwie pułapki zgodności numerycznej: `Math.round` w JS ≠ `f64::round` w Rust oraz dwie różne funkcje `worldToAxial` w webie. → `D-RR-3`.
 4. **Modele:** web buduje wszystko proceduralnie z kilku prymitywów (1 494× `BoxGeometry`, 397× `CylinderGeometry`, 121× `ConeGeometry` …). W Rust potrzebny jest wspólny **„builder prymitywów” zgodny wierzchołek w wierzchołek z Three.js r169** oraz model materiałów Lambert/Standard/Basic z mgłą i tone mappingiem. Tekstury z `<canvas>` (tekst na plakietkach) to osobny, trudny problem → `D-RR-4`.
-5. **Pamięć (motyw właściciela):** w kodzie są **dowiedzione wycieki i rosnące cache** zależne od tury (§7.1): przebudowa modelu miasta przy każdej zmianie populacji bez zwolnienia geometrii, rosnący cache tekstur plakietek miast, nasłuchiwacze bitwy nigdy nieusuwane. Web sam to podejrzewał (`P-PERF-SPOWOLNIENIE-PO-60-TURACH`). **Nie dowodzę, że to jest TA przyczyna niegrywalności** — bez profilera to `NIE_ZMIERZONO`. Wymagania dla Rust: §7.3 (własność zasobów, pule, budżet, test „N tur”).
-6. **Skala:** to przepisanie rzędu **tygodni, a raczej miesięcy pracy agentów, nie dni**. Do odtworzenia: ~83 tys. LOC plików z 3D, 2 080 konstrukcji geometrii w `render/**`, 3D bitwy (19 493 LOC pliku). Dokładnej wyceny nie podaję — brak metody (`NIE_ZMIERZONO`). Kolejność tematów: §8.
+5. **Pamięć (motyw właściciela):** w kodzie są **dowiedzione ścieżki kodu bez zwolnienia zasobów i rosnące cache** zależne od tury (§7.1): przebudowa modelu miasta przy każdej zmianie populacji bez `dispose()` geometrii, rosnący cache tekstur plakietek miast, nasłuchiwacze bitwy nigdy nieusuwane. Dowód dotyczy **ścieżki kodu**, nie zmierzonej retencji pamięci GPU: to, że brak `dispose()` zatrzymuje bufor GPU, opiera się na wnętrzu Three r169 (niesprawdzonym tu, źródła brak w repo) i na tezie projektu z `mergeDecor.ts:146-150`. Wyjątki dowiedzione na poziomie JS: M2 (`Map` trzyma referencje do tekstur) i M3 (nasłuchiwacze trzymają `this`). Web sam to podejrzewał (`P-PERF-SPOWOLNIENIE-PO-60-TURACH`). **Nie dowodzę, że to jest TA przyczyna niegrywalności** — bez profilera to `NIE_ZMIERZONO`. Wymagania dla Rust: §7.3 (własność zasobów, pule, budżet, test „N tur”).
+6. **Skala:** to przepisanie rzędu **tygodni, a raczej miesięcy pracy agentów, nie dni**. Do odtworzenia: ~83 tys. LOC plików z 3D — **to dolna granica**, bo nie obejmuje części 3D w `main.ts` (39 350 LOC, udział NIE_ZMIERZONO, P4-0 l.184) — 2 080 konstrukcji geometrii w `render/**`, 3D bitwy (19 493 LOC pliku). Dokładnej wyceny nie podaję — brak metody (`NIE_ZMIERZONO`). Kolejność tematów: §8.
 
 ---
 
@@ -34,7 +34,7 @@
 | Toolchain | `cargo --version` → `cargo 1.97.0 (c980f4866 2026-06-30)`; `rustc 1.97.0` |
 | Shell Tauri wymaga | `src-tauri/Cargo.toml` (`f7aa0997`): `rust-version = "1.77.2"`, `tauri = "=2.11.5"`, `tauri-build = "=2.6.3"` |
 | Okno Tauri w lockfile | `src-tauri/Cargo.lock`: `tao 0.35.3`, `wry 0.55.1`, `tauri-runtime-wry 2.11.4`, `raw-window-handle 0.6.2`, `webview2-com 0.38.2`, `webkit2gtk 2.0.2`, `gtk 0.18.2`, `softbuffer 0.4.8`, `windows 0.61.3`; łącznie 433 pakiety (`grep -c '^name = '` → 433). **Brak** `wgpu`, `winit`, `bevy`. |
-| Cache offline `~/.cargo/registry/cache` | 302 crate'y; `grep -iE 'wgpu|bevy|naga|winit|glam|egui|glow|metal'` → **0 trafień**. Obecne m.in.: `tao-0.35.3`, `wry-0.55.1`, `raw-window-handle-0.6.2`, `png-0.17.16`, `png-0.18.1`. Źródła `tauri-2.11.5`, `wry-0.55.1`, `tao-0.35.3` są w `~/.cargo/registry/src/` (z nich cytuję API w §2). |
+| Cache offline `~/.cargo/registry/cache` | **Stan przed tym tematem:** 302 crate'y; `grep -iE 'wgpu|bevy|naga|winit|glam|egui|glow|metal'` → 0 trafień. **Stan po r1 (ujawnienie, zarzut 2):** `cargo info` Operatora r1 pobrał do cache same archiwa najwyższego poziomu — `ls -la --time-style=full-iso ~/.cargo/registry/cache/*/` → `wgpu-30.0.1.crate` 19:01:11, `bevy-0.20.0-rc.2.crate` 19:01:11, `three-d-0.19.0.crate` 19:01:12, `bevy-0.20.0.crate` 19:06:31 (2026-10-21 UTC); rozpakowane źródła w `~/.cargo/registry/src/*/` (z nich cytuję `Cargo.toml` niżej). Zależności przechodnich (`naga`, `wgpu-core`, `wgpu-hal`, `winit` itd.) **nadal nie ma** (`ls … | grep -iE 'wgpu|bevy|naga|winit|three'` → tylko te 4 pliki). Wniosek „offline się nie zbuduje” bez zmian. Obecne m.in.: `tao-0.35.3`, `wry-0.55.1`, `raw-window-handle-0.6.2`, `png-0.17.16`, `png-0.18.1`. Źródła `tauri-2.11.5`, `wry-0.55.1`, `tao-0.35.3` są w `~/.cargo/registry/src/` (z nich cytuję API w §2). |
 | Dostępność rejestru (sieć przez proxy) | `cargo search wgpu` → `wgpu = "30.0.1"`; `cargo search bevy` → `bevy = "0.20.0"`; `cargo search three-d` → `three-d = "0.19.0"`. Rejestr jest osiągalny, **zależności nie są w cache** → pierwszy build potrzebuje sieci. |
 | GPU w tym środowisku | `ls /dev/dri` → brak; `/usr/share/vulkan/icd.d` → brak (jest tylko loader `libvulkan.so.1`, brak sterownika ICD, więc brak lavapipe); Mesa: `swrast_dri.so`, `kms_swrast_dri.so`, `zink_dri.so`, `libgallium-25.2.8`; `Xvfb`/`xvfb-run` są; `libwebkit2gtk` **nie** występuje w `ldconfig -p`. 4 CPU, 15 GiB RAM. |
 
@@ -46,14 +46,14 @@
 |---|---|---|---|
 | Wersja | 30.0.1 | 0.20.0 | 0.19.0 |
 | Licencja | MIT OR Apache-2.0 | MIT OR Apache-2.0 | MIT |
-| MSRV | 1.87.0 (> 1.77.2 shella → **trzeba podnieść `rust-version` w `src-tauri`**) | 1.96.0 (także wymaga podniesienia) | `unknown` |
+| MSRV | 1.87.0 (`wgpu-30.0.1/Cargo.toml:14`; > 1.77.2 shella → **trzeba podnieść `rust-version` w `src-tauri`**; ≤ lokalny `rustc 1.97.0` → OK) | **1.97.1** (`bevy-0.20.0/Cargo.toml:14` `rust-version = "1.97.1"`; r1 podał błędnie 1.96.0 — to wartość z `bevy-0.20.0-rc.2/Cargo.toml:14`). **> lokalny `rustc 1.97.0 (2d8144b78 2026-07-07)` → Bevy 0.20.0 nie zbuduje się bez nowszego toolchainu** | brak pola `rust-version` w `three-d-0.19.0/Cargo.toml` (`grep rust-version` → 0) |
 | Backendy / platformy | domyślne cechy: `dx12, metal, gles, vulkan, wgsl, webgpu` (`cargo info wgpu`) → Windows (DX12/Vulkan), macOS (Metal), Linux (Vulkan/GLES) | cechy `x11`, `wayland`, `webgl2`, `webgpu`, `bevy_winit`, `bevy_pbr`, `bevy_render`; domyślne `2d, 3d, ui, audio` (`cargo info bevy@0.20.0 -v`) | domyślna cecha `window = [glutin, winit, raw-window-handle, …]`; na OpenGL (glutin/glow) |
 | Okno / pętla zdarzeń | **nie posiada** — powierzchnia z `raw-window-handle` (cecha `std = [raw-window-handle/std, …]`) → można podpiąć pod okno tao/Tauri | posiada przez `bevy_winit` (winit); praca w oknie hosta (tao) bez winit — **NIE_ZMIERZONO** | `winit` w cechach domyślnych; tryb bez okna przez `raw-window-handle` — **NIE_ZMIERZONO** |
 | Model programowania | ręczny render graph, własne bufory i potoki | ECS + gotowy PBR, picking, UI, audio | prosty „scene-graph” zbliżony do Three.js, ale na GL |
 | Rozmiar zależności | **NIE_ZMIERZONO** (bez `cargo tree`/fetch) | **NIE_ZMIERZONO**; z cech wynika, że jest znacznie większy (pełny silnik gry) | **NIE_ZMIERZONO** |
-| Offline | nie ma w cache | nie ma w cache | nie ma w cache |
+| Offline | w cache tylko archiwum `wgpu-30.0.1` (pobrane w r1), bez zależności | w cache tylko `bevy-0.20.0` i `-rc.2` (pobrane w r1), bez zależności | w cache tylko `three-d-0.19.0` (pobrane w r1), bez zależności |
 | Testy wizualne headless | wgpu umie renderować do tekstury bez okna i odczytać piksele `[zewn., niezweryfikowane]`; w tym kontenerze **brak adaptera GPU** (brak ICD Vulkan, brak EGL w `ldconfig -p`) → **NIE_ZMIERZONO**, czy dostaniemy jakikolwiek adapter | jak wgpu (Bevy stoi na wgpu `[zewn., niezweryfikowane]`) | software GL przez Mesa swrast jest w systemie; czy three-d go użyje — **NIE_ZMIERZONO** |
-| Ryzyko 1:1 z Three.js | pełna kontrola nad shaderami → można odtworzyć wzory Lamberta, mgłę i ACES z Three r169 linijka po linijce | trzeba nadpisać/obejść jego PBR i tone mapping; własne materiały możliwe, ale walka z domyślnymi | bliższe Three.js nazewnictwem; parzystość shaderów z r169 — **NIE_ZMIERZONO** |
+| Ryzyko 1:1 z Three.js | pełna kontrola nad shaderami → można odtworzyć wzory Lamberta i mgłę z Three r169 linijka po linijce; tone mapping w grze (styl `roblox`) **wyłączony** — ACES tylko dla stylu `civ` (`scene.ts:1638-1641`) | trzeba nadpisać/obejść jego PBR i tone mapping; własne materiały możliwe, ale walka z domyślnymi | bliższe Three.js nazewnictwem; parzystość shaderów z r169 — **NIE_ZMIERZONO** |
 
 **Ocena (nie decyzja):**
 - **Bevy:** największe ryzyko integracyjne. Dwie pętle okien (winit i tao) w jednym procesie. Nie sprawdziłem, czy Bevy może renderować do okna utworzonego przez Tauri. ECS jest dla nas zbędny: stan gry trzyma `civ-engine`, a renderer tylko go odzwierciedla.
@@ -77,7 +77,7 @@
 
 | Możliwość | Dowód (źródła w `~/.cargo/registry/src/*/`) | Uwaga |
 |---|---|---|
-| Uchwyt okna dla wgpu | `tauri-2.11.5/src/window/mod.rs:1010` `impl HasWindowHandle for Window<R>`; `:1018` `HasDisplayHandle`; `src/webview/webview_window.rs:1469` dla `WebviewWindow` | Bez flag. `raw-window-handle 0.6.2` w lockfile. Zgodność wersji `raw-window-handle` z wgpu 30 — **NIE_ZMIERZONO** |
+| Uchwyt okna dla wgpu | `tauri-2.11.5/src/window/mod.rs:1010` `impl HasWindowHandle for Window<R>`; `:1018` `HasDisplayHandle`; `src/webview/webview_window.rs:1469` dla `WebviewWindow` | Bez flag. `raw-window-handle 0.6.2` w lockfile (`src-tauri/Cargo.lock`, `f7aa0997`). **Zgodne statycznie:** `wgpu-30.0.1/Cargo.toml:186-189` `[dependencies.raw-window-handle] version = "0.6.2"` (semver `^0.6.2`) → ta sama wersja 0.6.2 spełnia oba. Działanie w runtime — spike RR-T1 |
 | Przezroczyste okno | `tauri-2.11.5/src/window/mod.rs:907-918` `transparent()`; na macOS tylko z cechą `macos-private-api` (`#[cfg(any(not(target_os = "macos"), feature = "macos-private-api"))]`) | macOS wymaga prywatnego API |
 | Przezroczysty webview | `tauri-2.11.5/src/webview/mod.rs:1015-1025` `transparent()` (ten sam warunek macOS); `wry-0.55.1/src/lib.rs:912-917` `with_transparent` — „**Windows 7**: Not supported” | |
 | Webview jako dziecko okna (wiele webview w oknie) | `tauri-2.11.5/src/window/mod.rs:1126-1134` `add_child` — `#[cfg(any(test, all(desktop, feature = "unstable")))]`; `Window::builder` `:1118-1123` — też `unstable`; `Cargo.toml:130` `unstable = ["tauri-runtime-wry?/unstable"]` | **Wymaga `unstable`** |
@@ -147,7 +147,10 @@
   - `input/picker.ts:49-81` (**używana przy kliku**): przy `dq > ds && dq > dr` poprawia q; w przeciwnym razie przy `ds > dr` poprawia s; **w pozostałych przypadkach (także `ds == dr`) poprawia r**.
   - `render/hexutil.ts:53-71` (galeria, ustawianie tokenów): przy `dr > ds` poprawia r; **przy `dr == ds` poprawia s** (q, r bez zmian).
   - Wynik różni się tylko przy dokładnym remisie reszt `dr == ds` (zbiór miary zero, np. punkty na krawędziach i w rogach). Rust musi odtworzyć **wariant z `picker.ts`** dla kliku. Wariant z `hexutil.ts` jest potrzebny tylko tam, gdzie web go używa.
-- **Zaokrąglanie:** JS `Math.round(x)` = `floor(x + 0,5)` (połówki w górę, także dla ujemnych: `Math.round(−0,5) = −0`, `Math.round(−1,5) = −1`). Rust `f64::round` zaokrągla połówki **od zera** (`−0,5 → −1`). Port musi używać `(x + 0.5).floor()`, inaczej wyniki rozjadą się na połówkach ujemnych (kliki poza lewą/górną krawędzią mapy, `qf` ujemne dla `r > 0` blisko `q = 0`). `[semantyka Math.round/f64::round — wiedza standardowa, do potwierdzenia testem jednostkowym w RR-T3]`.
+- **Zaokrąglanie:** `worldToAxial` używa `Math.round` (`picker.ts:61-63`, `hexutil.ts:59-61`). Semantyka JS: najbliższa liczba całkowita, **dokładna połówka w stronę +∞** (`Math.round(−0,5) = −0`, `Math.round(−1,5) = −1`). Rust `f64::round` zaokrągla dokładną połówkę **od zera** (`−0,5 → −1`, `−1,5 → −2`). Obie funkcje różnią się **wyłącznie na dokładnych połówkach ujemnych** (`x = k + 0,5`, `k < 0`); poza nimi wynik jest identyczny. To zbiór miary zero — realne ryzyko tylko tam, gdzie reszta cube-round wypada dokładnie na połówce (testy jednostkowe, klik dokładnie w krawędź poza mapą). r1 przesadził z zakresem.
+  - **Recepta r1 `(x + 0.5).floor()` była błędna:** dla `x = 0,49999999999999994` suma `x + 0,5` zaokrągla się w IEEE do `1,0` → wynik 1, a `Math.round` daje 0; podobnie `x = 4503599627370497` (wynik o 1 za duży).
+  - **Recepta poprawna:** `let f = x.floor(); if x - f >= 0.5 { f + 1.0 } else { f }` (różnica `x − floor(x)` jest dokładna w IEEE 754 dla każdego skończonego `x`). Jedyna różnica względem `Math.round` to znak zera (`−0` vs `+0`), bez znaczenia po rzutowaniu na `i32`.
+  - **Dowód (emulacja w IEEE 754 double, `node -e`, ta sesja):** `0.49999999999999994` → `Math.round=0`, `floor(x+.5)=1`, recepta `0`; `-0.5` → `0 / 0 / 0`, emulowane `f64::round` `−1`; `-2.5` → `−2 / −2 / −2`, emulowane `f64::round` `−3`; `4503599627370497` → `Math.round=…497`, `floor(x+.5)=…498`, recepta `…497`; 2 mln losowych wartości o module 2^−5..2^55 oraz wszystkie `k/2 ± 1e−16` dla `k ∈ [−2000, 2000]` → **0 rozbieżności** recepty z `Math.round`. Uruchomienia w Rust brak (zakaz buildu) — potwierdzić testem jednostkowym w RR-T3 na tych samych wektorach.
 - Klucze: `"${q},${r}"` (`picker.ts:260-262`).
 
 ### 3.5 Co raycast webu faktycznie trafia
@@ -155,11 +158,12 @@
 `picker.ts:175-250` + `scene.ts`:
 
 1. **Lista celów** `terrainPickMeshes = [...instancedMeshes, ...goraInst, ...wzgorzeInst]` (`scene.ts:3684`): pryzmy bazowe wszystkich typów terenu (InstancedMesh) oraz instancjonowane bryły gór i wzgórz. Bryły są rejestrowane w `terrainPickKeys` (`scene.ts:2717-2727`; komentarz: klik w wizualny szczyt nie może trafiać w sąsiada). Lasów, dekoracji, rzek, miast i ulepszeń **nie ma** na liście.
-2. **Pryzm:** `hexPrismNoBottomGeo(hexR, vis.height)` — boki + górna pokrywa, bez dna (`scene.ts:1563-1575`). Promień `hexR = 1,008·R` w stylu `roblox` (`scene.ts:1774`), czyli **sąsiednie pryzmy nachodzą na siebie o 0,8%**. Wierzch: `surfaceTopY = vis.height + vis.yOffset − coastalDrop` (`scene.ts:2250-2256`); `coastalDrop = 0,045R` dla lądu z plażą (`landCoastSandNeeded`, styl roblox). Woda w roblox: środek `seaSurfaceY − h/2` (`scene.ts:2257-2261`), wierzch = `seaSurfaceY` (`scene.ts:2089`).
-3. **Wysokości wierzchu** (styl gry = `roblox`, `render/mapRenderStyle.ts:40`; `terrainVisualForStyle` `:226-242`; stałe `:164-194`): `SEA_SURFACE_TOP_Y = 0,18`, `WYBRZEZE_SURFACE_TOP_Y = 0,22`, `FLAT_LAND_SURFACE_Y = 0,18 + 0,28 = 0,46` (Łąka/Równina/Pustynia/Polarny), Wzgórza `= 0,46 + 0,18 = 0,64`, Góry `= 0,46 + 0,32 = 0,78`. Bryły gór/wzgórz wystają **ponad** te wierzchy (`scene.ts:2414-2450`, `topY + peakH/2`); ich kształt zależy od wariantu i seeda (`wariantDlaHeksa`).
+2. **Pryzm:** `hexPrismNoBottomGeo(hexR, vis.height)` — boki + górna pokrywa, bez dna (`scene.ts:1563-1575`). Promień `hexR = 1,008·R` w stylu `roblox` (`scene.ts:1774`), czyli **sąsiednie pryzmy nachodzą na siebie o 0,8%**. Wierzch: `surfaceTopY = vis.height + vis.yOffset − coastalDrop` (`scene.ts:2250-2256`); `coastalDrop = 0,045R` dla lądu z plażą (`landCoastSandNeeded`, styl roblox). Woda w roblox (**każda**: `Morze` i `PlytkieMorze`, bo `isDryLandTeren` w `scene.ts:578-580` zwraca `false` dla obu): środek `seaSurfaceY − h/2` (`scene.ts:2257-2261`), więc wierzch = `seaSurfaceY` = wierzch `Morze` = **0,18** (`scene.ts:2088-2089`).
+3. **Wysokości wierzchu** (styl gry = `roblox`, `render/mapRenderStyle.ts:40`; `terrainVisualForStyle` `:226-242`; stałe `:164-194`): `SEA_SURFACE_TOP_Y = 0,18`; `WYBRZEZE_SURFACE_TOP_Y = 0,22` — **ale to NIE jest wierzch rysowanego i trafianego pryzmu `PlytkieMorze`** (ten leży na 0,18, pkt 2); 0,22 trafia tylko do `topYAt` ścieżki awaryjnej (`units.ts:214-217` → `terrainVisualForStyle`, `mapRenderStyle.ts:231-235`); `FLAT_LAND_SURFACE_Y = 0,18 + 0,28 = 0,46` (Łąka/Równina/Pustynia/Polarny), Wzgórza `= 0,46 + 0,18 = 0,64`, Góry `= 0,46 + 0,32 = 0,78`. Bryły gór/wzgórz wystają **ponad** te wierzchy (`scene.ts:2414-2450`, `topY + peakH/2`); ich kształt zależy od wariantu i seeda (`wariantDlaHeksa`).
 4. **Kolejność decyzji** w `pixelToHex`:
    - trafienia posortowane po odległości (Three.js `intersectObjects`); pomija `visible === false` (`picker.ts:203`);
-   - trafienie w instancję z kluczem: jeśli normalna świata `n.y > 0,5` (powierzchnia „od góry”) → **ten heks** (`:211-212`). W przeciwnym razie (bok pryzmu/bryły) heks jest przyjmowany tylko wtedy, gdy `worldToAxial(punkt) == heks instancji` (`:215-216`). Inaczej zapamiętywany jako `sideResolvedFallback` (pierwszy taki) i pętla idzie dalej;
+   - trafienie w instancję z kluczem: jeśli normalna świata `n.y > 0,5` (powierzchnia „od góry”) → **ten heks** (`:211-212`). W przeciwnym razie (bok pryzmu/bryły) heks jest przyjmowany tylko wtedy, gdy `worldToAxial(punkt) == heks instancji` (`:215-216`). Inaczej zapamiętywany jako `sideResolvedFallback` (pierwszy taki) i pętla idzie dalej (`:217-218`);
+   - trafienie **bez rozwiązanej instancji** (obiekt nie jest `InstancedMesh`, brak `instanceId` albo `resolveTerrainInstance` zwraca `null`): jeśli `worldUpNormal(h) > 0,5` → **natychmiast** `worldToAxial(h.point)` (`:221-223`), bez czekania na `sideResolvedFallback`; inaczej pętla idzie dalej (gałąź pominięta w r1);
    - po pętli: `sideResolvedFallback` (`:225`), potem pierwsze widoczne trafienie → `worldToAxial(punkt)` (`:226-229`);
    - **awaria** (brak trafień): płaszczyzna `y = 0` → `coarse` (`:232-238`), potem korekta: `topY = unitRenderer.topYAt(coarse)` (`units.ts:6409-6412` → `terrainTopY` `units.ts:214-217`); jeśli `topY > 0`, druga płaszczyzna `y = topY` → wynik (`:239-248`).
 5. **Mgła:** heksy nieznane (`!visible && !explored`, `scene.ts:3529`) mają macierz instancji zerową (`ZERO_MATRIX`, `scene.ts:3139`), więc **nie da się ich trafić**. Klik w czarny obszar zawsze idzie ścieżką awaryjną (4). Heksy „explored” są tylko przyciemnione kolorem (`render/fogDim.ts:29-43`, `FOG_EXPLORED_BRIGHTNESS = 0,175`, `game/visibility.ts:31`) i można je trafić.
@@ -176,6 +180,7 @@
 | Pas 0,8% nakładania pryzmów (`1,008R`) | przy równych wysokościach dwie współpłaszczyznowe pokrywy w tej samej odległości → wynik zależy od kolejności sortowania trafień (meshe po typie terenu) | czysty `worldToAxial` | **Może się różnić** na pasku szerokości ~0,008R przy krawędzi |
 | Heks pod mgłą (ukryty) | `y = 0` → `coarse` → `y = topYAt(coarse)` (`terrainTopY` **bez** `coastalDrop`; dla wody `TERRAIN_SURFACE_Y`) | zależy od `h` | Zgodne tylko przy odtworzeniu tej samej dwustopniowej procedury |
 | Ląd z plażą (`coastalDrop`) | wierzch pryzmu 0,045 niżej niż `topYAt` | — | Ścieżka trafienia i ścieżka awaryjna różnią się wysokością o 0,045 |
+| `PlytkieMorze` (Wybrzeże) | wierzch pryzmu 0,18 (`scene.ts:2257-2261`), a `topYAt` = 0,22 (`units.ts:214-217`) | — | **Drugi rozjazd, o 0,04**, między ścieżką trafienia a awaryjną (dopisany w r2) |
 | Jednostka stojąca na heksie, model zachodzi na sąsiada | **heks jednostki** | heks terenu | **Nie** |
 | Kursor nad panelem HTML | `isPointOverCityPanelUi` → brak kliku (`main.ts:26362`) | — | Musi to zrobić warstwa UI (webview), nie renderer |
 
@@ -183,7 +188,7 @@
 - **(P1) CPU, analitycznie:** promień kontra pryzmy heksów (trawersowanie siatki heksów wzdłuż promienia, test pokrywy na `surfaceTopY` i 6 boków) + trójkąty brył gór i wzgórz (te same dane CPU, z których budujemy bufor GPU) + bryły jednostek (AABB albo trójkąty). Deterministyczne, testowalne bez GPU (`cargo test`), identyczne na każdej maszynie.
 - **(P2) GPU, bufor ID:** render instancji do tekstury `R32Uint`, odczyt piksela pod kursorem. „Co widzisz, to trafiasz” z definicji, ale wymaga GPU w testach, a reguła `n.y > 0,5` / `fromPoint` dla boków nie odtworzy się sama.
 - **Rekomendacja:** P1 dla terenu (zgodność reguł z `picker.ts` i testy bez GPU) + P1 z bryłami dla jednostek. P2 tylko diagnostycznie.
-- **Osobna decyzja:** czy odtwarzamy dziwactwa webu 1:1 (remis `dr == ds`, różnica 0,045 przy plaży między ścieżkami, kolejność przy nakładaniu 1,008R), czy je „poprawiamy”. Zgodnie z zasadą 1:1 rekomenduję odtworzenie, a poprawki jako osobne zgłoszenia — decyzja właściciela.
+- **Osobna decyzja:** czy odtwarzamy dziwactwa webu 1:1 (remis `dr == ds`, różnica 0,045 przy plaży i 0,04 przy `PlytkieMorze` między ścieżkami, kolejność przy nakładaniu 1,008R), czy je „poprawiamy”. Zgodnie z zasadą 1:1 rekomenduję odtworzenie, a poprawki jako osobne zgłoszenia — decyzja właściciela.
 
 ### 3.7 Przypadki brzegowe (lista do testów)
 
@@ -193,7 +198,7 @@
 4. Róg trzech heksów (remis cube-round, w tym dokładny `dr == ds`).
 5. Szczyt bryły góry/wzgórza zachodzący na sąsiada „za” nim.
 6. Heks nieznany (mgła) obok znanego; heks `explored`.
-7. Ląd z plażą (`coastalDrop`), woda `PlytkieMorze` (wierzch 0,22) i `Morze` (0,18).
+7. Ląd z plażą (`coastalDrop`), woda `PlytkieMorze` i `Morze` (obie z wierzchem pryzmu 0,18; dla `PlytkieMorze` ścieżka awaryjna używa 0,22 — testować obie ścieżki).
 8. Jednostka na mieście (podbicie tokenu, `units.ts:5930-5935`) i na wzgórzu/górze (`unitTerrainRelief`, `units.ts:219-224`).
 9. Jednostka zaokrętowana (łódź, `units.ts:6055-6056`).
 10. Klik poza mapą (ujemne `q`/`r`, półwartości → test `Math.round`).
@@ -207,6 +212,26 @@
 - **Złoty zestaw z webu:** dla stałego seeda i rozmiaru mapy, kilku stanów kamery (`T`, `d`, rozmiar viewportu) i siatki punktów ekranowych (np. 64×36 + punkty z §3.7) zapisać wynik `pickMapTarget` z webu do JSON. Wymaga **uruchomienia weba** (harness Playwright z P1.9) — w tym temacie zakazane, więc to zadanie dla `RR-T3`. Zakres zgody na uruchomienie weba — decyzja orkiestratora.
 - **Test Rust:** ten sam JSON → `assert_eq!` dla każdego punktu. Dodatkowo testy jednostkowe czystej matematyki (`worldToAxial` z remisami i połówkami, `clientRectToNdc`, baza kamery) — możliwe bez GPU i bez weba (wartości oczekiwane liczone ręcznie wg §3.2–3.4).
 - **Kryterium:** 100% zgodności na złotym zestawie (picking jest dyskretny — tolerancja 0). Rozbieżność = finding.
+
+### 3.9 Pętla klatek, animacje i wejście ciągłe — właściciel w Rust (dopisane w r2, zarzut 8)
+
+**Fakty z webu:**
+- **Pętla klatek:** `main.ts:36248-36249` `renderLoop()` → `requestAnimationFrame(renderLoop)`; `dt` z `performance.now()`, przycięte do 100 ms (komentarz `:36250`); start `startRenderLoop` `:36240-36245`.
+- **Animacja ruchu jednostek:** obiekt `anim` budowany przy ruchu (`main.ts:25485-25499`: `points` z `unitRenderer.getTokenPlacement`, `seg`, `t`, `isAnimating = true`), postęp co klatkę `anim.t += dt / ANIM_SEG_DUR` i przejście segmentów (`main.ts:36267-36270`).
+- **Kamera ciągła:** `camCtrl.update()` w pętli klatek (`main.ts:36472`, warunek `!isBattleSceneOpen()`; komentarz `:36463-36469`: to jedyne miejsce, gdzie WASD/edge-pan ruszają kamerę mapy) oraz `main.ts:39332`. `CameraController.update()` `camera.ts:275-289`; edge-pan `:251-272`; pozycja kursora pamiętana zawsze (`camera.ts:176`).
+- **Nasłuchiwacze kamery:** `camera.ts:225-234` — `mousedown`/`wheel` na canvasie, `mousemove`/`mouseup`/`keydown`/`keyup`/`blur` na `window`, `mouseleave` na `document`.
+- **Hover z pickingiem:** `main.ts:26230` `mousemove` na canvasie → `pickVeteranBadgeUnitIdAt` (`:26235`) i `pickStatChipCityIdAt` (`:26253`) — raycast **przy każdym ruchu myszy**.
+
+**Konsekwencja dla opcji (a):** webview leży na wierzchu, więc wszystkie zdarzenia ciągłe (`mousemove`, `wheel`, `keydown/keyup`, `blur`) trafiają najpierw do JS. Bez decyzji o właścicielu pętla klatek, animacje, kamera i hover zostałyby „pomiędzy” warstwami.
+
+**Wymagania (propozycja):**
+1. **Właścicielem pętli klatek jest Rust** (wątek renderu, `dt` z zegara monotonicznego, ten sam limit 100 ms). Animacje ruchu (`anim`), kamera (`CameraController` z §3.2, WASD, edge-pan, zoom) i interpolacje żyją w Rust. JS nie wywołuje `requestAnimationFrame` dla mapy.
+2. **Kanał wejścia:** JS przekazuje surowe zdarzenia (`pointermove`/`down`/`up`, `wheel`, `keydown/keyup`, `blur`, rozmiar viewportu, DPR) do Rust; stan klawiszy i pozycję kursora (edge-pan) trzyma Rust. Koalescencja `mousemove` do jednego zdarzenia na klatkę.
+3. **Opóźnienie IPC:** `invoke`/zdarzenia Tauri przechodzą przez serializację JSON; dla `mousemove` co klatkę to ryzyko lagu kamery i hovera — **NIE_ZMIERZONO** (pomiar w RR-T1: opóźnienie wejście→klatka, cel do ustalenia w D-RR-10). Alternatywa: natywne zdarzenia okna (tao) dla obszaru mapy przy odwróconych warstwach (§2.3) — NIE_ZMIERZONO.
+4. **Hover-picking** (gwiazdki weterana, pigułki miast, „ostatnio najechany heks” dla skrótu B, P4-0 l.134) liczony w Rust tą samą procedurą co §3.5, wynik wysyłany do UI jako zdarzenie tylko przy zmianie.
+5. **DTO widoku (§4.3)** i animacje: Rust renderer konsumuje zmiany stanu z `civ-engine` (`engine_state_changed`, `src-tauri/src/lib.rs:42-45`) i sam animuje przejścia; nie czeka na JS.
+
+→ `D-RR-10` (właściciel pętli i kanał wejścia) oraz tematy `RR-T12`, `RR-T13` w §8.
 
 ---
 
@@ -236,7 +261,7 @@ Mechanizmy:
 - **Instancing:** teren i dekoracje jako `InstancedMesh` (`scene.ts`), ukrywanie przez `ZERO_MATRIX` (`scene.ts:3139`), kolor per instancja (`instanceColor`, `scene.ts:1851`, `:2702`, `:2774`).
 - **Mgła wojny = kolor:** mnożenie `material.color` przez jasność (`fogDim.ts:29-43`). Mutuje **materiał**, więc współdzielony materiał przyciemniłby wszystkich użytkowników. Web temu zapobiega materiałami per token.
 - **Mgła odległości:** `THREE.Fog`/`FogExp2` (`scene.ts:1658`, `:1662`, `:3070`).
-- **Oświetlenie i wyjście:** `ACESFilmicToneMapping`, ekspozycja 1,05 tylko dla stylu `civ` (`scene.ts:1638-1641`); cienie `PCFSoftShadowMap` „na żądanie” (`scene.ts:1642-1652`); `setPixelRatio(min(dpr, preset.pixelRatioMax))` (`scene.ts:1626`, `:3239`); antyaliasing z presetu (`scene.ts:1624`).
+- **Oświetlenie i wyjście:** `ACESFilmicToneMapping`, ekspozycja 1,05 **tylko dla stylu `civ`** (`scene.ts:1638-1641`, `if (renderStyle === 'civ')`); dla stylu gry `roblox` kod nie ustawia `toneMapping`, więc obowiązuje domyślny Three r169 (`NoToneMapping` `[zewn., niezweryfikowane — wartość domyślna r169]`) → wymóg 1:1 dla mapy gry = **brak tone mappingu**; cienie `PCFSoftShadowMap` „na żądanie” (`scene.ts:1642-1652`); `setPixelRatio(min(dpr, preset.pixelRatioMax))` (`scene.ts:1626`, `:3239`); antyaliasing z presetu (`scene.ts:1624`).
 - **Tekstury z canvasu:** plakietki miast, tabliczki statystyk, emblematy właściciela, gwiazdki, znaczniki oblężeń, ikony robotników (`cities.ts:718`, `cityMapStatChip.ts:1076`, `unitStatPlate.ts:437,573,618`, `unitOwnerEmblem.ts:349`, `unitUpgradeBadges.ts:324`, `units.ts:6298,6356,6386,6598`, `workerFieldOverlay.ts:56-107`). Tekst rysuje `CanvasRenderingContext2D` przeglądarki (fonty przeglądarki).
 - **LOD zoomu:** `zoomLod.ts`, `scene.ts:3518-3519`.
 - **Style:** w grze zawsze `GAME_MAP_RENDER_STYLE = 'roblox'` (`mapRenderStyle.ts:40`; przekazywane w `main.ts:1776`, `:1789`). Gałęzie `civ`/`minecraft` są osiągalne tylko z innych wejść (podglądy) — zakres to `D-RR-8`.
@@ -248,7 +273,7 @@ Mechanizmy:
 | `geom` — builder prymitywów: Box, Cylinder (z grupami i opcją „bez dna”), Cone, Sphere, Icosa, Torus, Plane, Circle, Ring, Dodeca, Octa, Extrude/Shape, Tube | `THREE.*Geometry` r169 | **Ta sama kolejność wierzchołków, normalne, segmenty i UV.** Wymóg dla `flatShading` i pickingu. Do odtworzenia z kodu Three.js 0.169 (`gra/node_modules` nie jest w repo; źródło Three.js — **NIE_ZMIERZONO**, gdzie je wziąć offline) |
 | `merge` — scalanie geometrii do jednego bufora | `mergeGeometries`, `collapseToMergedMesh` | |
 | `mesh/instancing` — bufory instancji (macierz + kolor), ukrywanie przez flagę lub skalę 0 | `InstancedMesh`, `ZERO_MATRIX` | W Rust lepiej kompaktować listę widocznych niż wysyłać macierze zerowe — wynik musi być ten sam |
-| `material` — Lambert, Standard (PBR Three), Basic, Sprite, Line; `flatShading`, `transparent`, `depthWrite`, `side` | materiały Three | **Shadery WGSL wiernie odtwarzające `meshlambert`/`meshphysical` r169**, z mgłą, ACES i przestrzenią sRGB |
+| `material` — Lambert, Standard (PBR Three), Basic, Sprite, Line; `flatShading`, `transparent`, `depthWrite`, `side` | materiały Three | **Shadery WGSL wiernie odtwarzające `meshlambert`/`meshphysical` r169**, z mgłą i przestrzenią sRGB; **bez tone mappingu dla stylu `roblox`**; ACES tylko, jeśli D-RR-8 obejmie styl `civ` |
 | `tint` — mnożnik koloru per instancja/obiekt (mgła wojny) | `fogDim.ts` | W Rust **uniform per obiekt**, nie mutacja współdzielonego materiału |
 | `shadow` — mapa cieni z aktualizacją na żądanie | `PCFSoftShadowMap`, `autoUpdate=false` | Filtr PCF-soft Three.js do odtworzenia 1:1 |
 | `text/sprite` — rasteryzacja tekstu do atlasu + billboardy | `CanvasTexture` + `Sprite` | **Największe ryzyko 1:1**: inne fonty i hinting niż w przeglądarce → `D-RR-4` |
@@ -301,21 +326,22 @@ Wniosek: CI tego środowiska obsłuży testy CPU i ewentualnie software renderin
 
 ### 6.2 `D-RR-n` (do rozstrzygnięcia przez właściciela)
 
-- **D-RR-1 — Silnik.** A: wgpu bezpośrednio (rekomendowane). B: Bevy. C: three-d. Konsekwencja: podniesienie `rust-version` w `src-tauri/Cargo.toml` z 1.77.2 do ≥ 1.87 (wgpu) lub ≥ 1.96 (Bevy).
+- **D-RR-1 — Silnik.** A: wgpu bezpośrednio (rekomendowane). B: Bevy. C: three-d. Konsekwencja: podniesienie `rust-version` w `src-tauri/Cargo.toml` z 1.77.2 do ≥ 1.87 (wgpu; lokalny `rustc 1.97.0` wystarcza) lub ≥ **1.97.1** (Bevy 0.20.0, `bevy-0.20.0/Cargo.toml:14`). **Wariant B wymaga dodatkowo aktualizacji toolchainu** środowiska i CI: lokalny `rustc 1.97.0` < 1.97.1, więc Bevy 0.20.0 się nie zbuduje (alternatywa: przypięcie starszej wersji Bevy — MSRV i API takiej wersji NIE_ZMIERZONO).
 - **D-RR-2 — Osadzenie.** (a) rekomendowane po spike'u / (b) / (c) / (d) (§2.3). Dodatkowo: czy akceptujemy cechę `unstable` Tauri (`add_child`, `Window::builder`) oraz `macos-private-api` (przezroczystość na macOS)? Czy macOS jest platformą docelową (bundle ma dziś tylko `msi`, `nsis`)?
-- **D-RR-3 — Picking.** P1 (CPU, rekomendowane) / P2 (GPU ID-buffer). Podpunkt: odtwarzamy dziwactwa webu 1:1 (remis `dr == ds` z `picker.ts`, różnica `coastalDrop` 0,045 między ścieżką trafienia i awaryjną, kolejność przy nakładaniu `1,008R`) czy je poprawiamy?
+- **D-RR-3 — Picking.** P1 (CPU, rekomendowane) / P2 (GPU ID-buffer). Podpunkt: odtwarzamy dziwactwa webu 1:1 (remis `dr == ds` z `picker.ts`, różnica `coastalDrop` 0,045 oraz różnica 0,04 dla `PlytkieMorze` (0,18 vs 0,22) między ścieżką trafienia i awaryjną, kolejność przy nakładaniu `1,008R`) czy je poprawiamy?
 - **D-RR-4 — Tekst i tekstury z canvasu.** A: rasteryzacja tekstu w Rust (font dołączony do gry; 1:1 z Chromium niemożliwe co do piksela). B: plakietki/tabliczki jako elementy HTML w webview, pozycjonowane z Rust przez `worldToClient` (wierne fonty, ale synchronizacja pozycji co klatkę przez IPC i ryzyko „pływania” przy panowaniu). C: hybryda (tekst statyczny w atlasie, dynamiczny w HTML). Wpływa na tolerancje `D-RR-6`.
 - **D-RR-5 — Minimalny GPU / tryb awaryjny.** Web nie ma fallbacku mapy (P4-0 §1.1). Czy wymagamy trybu software (WARP na Windows, llvmpipe/lavapipe na Linuksie), czy komunikat „brak GPU”?
 - **D-RR-6 — Kryterium 1:1.** Metryka i progi (ΔE/SSIM, maska tekstu), lista scen referencyjnych, kto zatwierdza wyjątki. Czy referencją jest Chromium (web dziś), czy WebView2?
 - **D-RR-7 — Budżet pamięci i test „N tur”.** Wartości graniczne (np. „zasoby GPU po 200 turach AI ≤ zasoby po 10 turach + X%”) i rozmiar mapy testowej (§7.3).
 - **D-RR-8 — Zakres stylów.** Port tylko stylu `roblox` (jedyny używany w grze, `mapRenderStyle.ts:40`, `main.ts:1776,1789`), czy także gałęzi `civ`/`minecraft` (osiągalne z podglądów)? Łączy się z D-REND-7.
+- **D-RR-10 — Pętla klatek i wejście ciągłe (dopisane w r2).** A: Rust jest właścicielem pętli, animacji, kamery i hover-pickingu; JS przekazuje surowe zdarzenia (rekomendowane, §3.9). B: JS zostaje właścicielem `requestAnimationFrame`/kamery i co klatkę wysyła stan kamery do Rust (mniej IPC wejścia, ale logika kamery w JS — sprzeczne z „raz, a porządnie”). Próg akceptowalnego opóźnienia wejście→klatka — do ustalenia po pomiarze w RR-T1.
 - **D-RR-9 — Jeden renderer, wiele scen.** Czy bitwa ręczna, podgląd cudów i miniatury korzystają z jednego urządzenia GPU i jednej biblioteki (rekomendowane), czy z osobnych okien/kontekstów (jak 5 `WebGLRenderer` w webie)?
 
 ---
 
 ## 7. Pamięć (pytanie 7 — motyw właściciela)
 
-**Zastrzeżenie:** wszystko poniżej to analiza statyczna kodu na `edb8fb56`. Nie uruchamiałem gry ani profilera. „Wyciek” oznacza: kod tworzy zasób i w pokazanej ścieżce go nie zwalnia. **Czy to on powoduje niegrywalność po kolejnych turach — NIE_ZMIERZONO.**
+**Zastrzeżenie:** wszystko poniżej to analiza statyczna kodu na `edb8fb56`. Nie uruchamiałem gry ani profilera. „Wyciek” oznacza: kod tworzy zasób i w pokazanej **ścieżce kodu** go nie zwalnia (brak `dispose()` albo brak usunięcia z cache). **To nie jest dowód retencji pamięci GPU:** że bufor lub tekstura bez `dispose()` zostaje w GPU, wynika z wnętrza Three r169 (zwalnianie zasobu WebGL na zdarzenie `dispose`) — źródła Three nie ma w repo, więc to `[zewn., niezweryfikowane]`, wsparte tylko tezą projektu z `mergeDecor.ts:146-150`. Dowiedzione na poziomie JS: **M2** (`statTexCache` — `Map` trzyma referencje do `CanvasTexture`, więc nawet GC JS ich nie zbierze) i **M3** (nasłuchiwacze na `document`/`window` trzymają domknięcia z `this`). M1, M4, M5: dowód ścieżki kodu; retencja GPU — NIE_ZMIERZONO. **Czy to on powoduje niegrywalność po kolejnych turach — NIE_ZMIERZONO.**
 
 ### 7.1 Ustalenia z dowodami
 
@@ -325,7 +351,7 @@ Wniosek: CI tego środowiska obsłuży testy CPU i ewentualnie software renderin
 |---|---|---|---|
 | M1 | **Model miasta przebudowywany przy każdej zmianie populacji bez zwolnienia geometrii i materiałów.** `visualKey = style|era|civ|level|wallKind`. `level = population` (1–10). Zmiana klucza → `scene.remove(grp)` + `_disposeModel` + nowy model. `_disposeModel` zwalnia tylko `userData['mats']` i `userData['perCityGeos']`. Builderzy używani w grze (`buildMiastoBraz`, `buildMiastoKamien`) tworzą świeże `BoxGeometry`/`CylinderGeometry`/`ConeGeometry`/`CircleGeometry` i `MeshLambertMaterial` przy każdym wywołaniu i **nie ustawiają** żadnego z tych kluczy. `perCityGeos` ustawia tylko prosty model zapasowy | `render/cities.ts:474-481` (`level`, `visualKey`); `main.ts:2600-2603` (`getLevel` = populacja); `cities.ts:504-511` (usunięcie + `_disposeModel`); `cities.ts:516` (przebudowa); `cities.ts:229-248` (roblox → `buildMiastoBraz`/`buildMiastoKamien`); `cities.ts:934-946` (`_registerModel`/`_disposeModel`); `cities.ts:216` (jedyne `perCityGeos`); `miasto-braz.ts:104,113,127,140,225,367-383` i `miasto-kamien.ts:94,103,117,130,190,460-477` (konstrukcje per wywołanie); `grep "userData\['mats'\]\|perCityGeos"` w `miasto-braz.ts`/`miasto-kamien.ts` → 0 | **Tak**: każda zmiana populacji (1–10), ery, murów. Liczba: miasta × zmiany. Rozmiar w bajtach — NIE_ZMIERZONO |
 | M2 | **Cache tekstur plakietek miast rośnie z turą.** Klucz zawiera nazwę, populację, budynek/jednostkę w produkcji, etykietę wzrostu %, ostrzeżenie surowców, hover, erę, stolicę i LOD. Każda zmiana tekstu = nowa `CanvasTexture` w cache. Stare wpisy są usuwane **tylko** przy zmianie poziomu LOD (usuwa wpisy innego LOD) i przy `dispose()` całego renderera miast. Przy stałym zoomie stare tekstury zostają do końca sesji | `cityMapStatChip.ts:960-1012` (`cityMapBadgeKey`); `:1068-1080` (nowa tekstura przy braku klucza); `:1034-1048` (czyszczenie tylko innego LOD); `cities.ts:415` (`statTexCache`); `cities.ts:575` i `:697` (jedyne wywołania czyszczenia); `cities.ts:750-761` (komentarz: tekstura nie jest zwalniana przy zdjęciu plakietki) | **Tak**: wzrost % i produkcja zmieniają się co turę |
-| M3 | **Nasłuchiwacze bitwy nigdy nie są zdejmowane.** `document.addEventListener('click', this._deployToolbarDocClick)` i `window.addEventListener('resize', this._deployLayoutListener)`. Oba domknięcia trzymają `this` (`BattleScene`). `grep removeEventListener` dla tych pól → 0. `BattleScene` powstaje przy każdej bitwie | `battle/battleScene.ts:11919-11929`, `:13258-13263`, `:13513-13524`, `:18102-18107`; brak `remove…` (porównanie `comm` add/remove w `battle/`); `new BattleScene(` w `main.ts:27514`, `:28160`, `:29884` | **Tak**: każda bitwa ręczna. Czy `dispose()` sceny (`battleScene.ts:3657`) zeruje referencje do grafu (czyli ile pamięci JS zostaje) — NIE_ZMIERZONO |
+| M3 | **Nasłuchiwacze bitwy nigdy nie są zdejmowane.** `document.addEventListener('click', this._deployToolbarDocClick)` i `window.addEventListener('resize', this._deployLayoutListener)`. Oba domknięcia trzymają `this` (`BattleScene`). `grep removeEventListener` dla tych pól → 0. `BattleScene` powstaje przy każdej bitwie | `battle/battleScene.ts:11919-11929`, `:13258-13263`, `:13513-13524`, `:18102-18107`; brak `remove…` (porównanie `comm` add/remove w `battle/`); `new BattleScene(` w `main.ts` — **5 miejsc** (r1 podał 3): `:27514`, `:28160`, `:29884` (fabryka `createBattleScene`), `:30250`, `:30384` (`grep -n "new BattleScene(" main.ts`) | **Tak**: każda bitwa ręczna. Czy `dispose()` sceny (`battleScene.ts:3657`) zeruje referencje do grafu (czyli ile pamięci JS zostaje) — NIE_ZMIERZONO |
 | M4 | **Nakładki surowców:** przy usuwaniu zwalniane są tylko grupy po `collapseToMergedMesh` (≥ 7 meshy). Mniejsze grupy są zdejmowane ze sceny bez `dispose`. Celowo — dzieci mogą być współdzielonymi singletonami | `main.ts:2826-2840` (`clearResourceOverlays`), `:2843-2852`; `mergeDecor.ts:10-11`, `:154-175` | Częściowo (przebudowa przy zakładaniu miasta). Czy małe grupy mają geometrie per wywołanie (wtedy wyciek GPU) — NIE_ZMIERZONO per builder |
 | M5 | **`collapseToMergedMesh` usuwa dzieci bez `dispose`.** Jeśli grupa nigdy nie była renderowana, bufory GPU nie powstały (ryzyko tylko w JS). Jeśli była — wyciek | `mergeDecor.ts:105-120` | Zależy od ścieżki — NIE_ZMIERZONO |
 | M6 | **24 z 32 eksportowanych funkcji `dispose*` w `render/` nie ma żadnego wywołania** (np. `disposeBrazKonnicaOpus5Geometries`, `disposeUnitStatPlateResources`, `disposeWorkerFieldSpriteCache`, `disposeRiverBuckets`). Singletony modułów nie są więc zwalniane nawet przy nowej grze | `grep -hoE "^export function dispose…" render/*.ts` → 32; wywołania `fn(` poza definicją i komentarzami → 0 dla 24 funkcji (lista w metodzie §9) | **Nie** (zbiory ograniczone liczbą typów), ale nie spadają po „nowej grze” |
@@ -372,17 +398,19 @@ Nazwy robocze `RR-Tn`; numer P4.x nada orkiestrator (P4-0 używa już numerów P
 | RR-T2 | Rdzeń: kamera + teren (pryzmy roblox, wysokości, kolory, plaże) + mgła (ukrycie/przyciemnienie) | §3.2, §4.2 | `rust-port/renderer/**` | RR-T1 | do obrazu tak; testy CPU nie | Średni |
 | RR-T3 | Picking CPU + złote dane z weba | §3.5–3.8; jednostki pierwsze | `rust-port/renderer/src/pick/**`, fixture JSON | RR-T2 (geometria), zgoda na harness web | Nie | Średni |
 | RR-T4 | Biblioteka prymitywów zgodna z Three r169 + testy liczbowe | `geom`, `merge` | `rust-port/renderer/src/geom/**` | źródło Three.js 0.169 (NIE_ZMIERZONO) | Nie | Średni |
-| RR-T5 | Materiały/shadery Lambert/Standard/Basic + mgła + ACES + cienie PCF | `material`, `shadow` | `rust-port/renderer/src/material/**`, `*.wgsl` | RR-T2 | **Tak** | Duży (wierność 1:1) |
+| RR-T5 | Materiały/shadery Lambert/Standard/Basic + mgła + cienie PCF; tone mapping: brak (roblox), ACES tylko przy D-RR-8 ⊇ `civ` | `material`, `shadow` | `rust-port/renderer/src/material/**`, `*.wgsl` | RR-T2 | **Tak** | Duży (wierność 1:1) |
 | RR-T6 | Rejestr zasobów + budżet + test „N tur” (CPU) | §7.3 | `rust-port/renderer/src/assets/**`, testy | RR-T2 | Nie | Średni |
 | RR-T7..T7n | Modele partiami wg katalogu P4.4 (jednostki, miasta, ulepszenia, dekoracje, cuda, obozy, statki) | odtworzenie 1:1 | `rust-port/renderer/src/models/<partia>/**` | RR-T4, RR-T5, P4.4 | Tak (porównanie) | **Największy**: 2 080 konstrukcji geometrii w `render/**`, ~30+ plików modeli |
 | RR-T8 | Tekst/plakietki/sprite'y | wg D-RR-4 | `rust-port/renderer/src/text/**` (+ ew. UI) | D-RR-4, RR-T5 | Tak | Duży |
 | RR-T9 | Nakładki: zasięg, trasy, okolica, robotnicy, oblężenia, rzeki, drogi, LOD | | `rust-port/renderer/src/overlays/**` | RR-T5 | Tak | Średni–duży |
 | RR-T10 | Bitwa ręczna 3D + oblężenia + podgląd cudów + miniatury | D-REND-8 = B | `rust-port/renderer/src/{battle,preview}/**` | RR-T7, RR-T8 | Tak | Duży (`battleScene.ts` 19 493 LOC pliku) |
 | RR-T11 | Harness 1:1 (referencje z weba, porównanie, maski) | §5 | `rust-port/renderer/tests/**`, artefakty | D-RR-6, RR-T2 | Tak | Średni |
+| RR-T12 | Pętla klatek + animacje ruchu + kamera ciągła (WASD, edge-pan, zoom) + kanał wejścia z webview + pomiar opóźnienia IPC (dopisane w r2) | §3.9 | `rust-port/renderer/src/{frame,input,camera}/**`, `src-tauri/**` (kanał zdarzeń), frontend JS przekazujący zdarzenia | D-RR-10, RR-T1, RR-T2 | Tak (pomiar opóźnienia) | Średni |
+| RR-T13 | DTO widoku (`PositionDto` ↔ `(q,r)`, §4.3) + hover-picking (gwiazdki, pigułki miast, ostatnio najechany heks) (dopisane w r2) | §3.9, §4.3 | `rust-port/renderer/src/{view,pick}/**`, ew. `rust-port/engine/**` (tylko DTO, wg P2) | RR-T3, P2-2 | Nie (CPU) | Średni |
 
-**Kolejność:** RR-T1 → (RR-T2 ∥ RR-T4 ∥ RR-T6) → RR-T3 → RR-T5 → RR-T11 → RR-T7 (partie) ∥ RR-T9 → RR-T8 → RR-T10.
+**Kolejność:** RR-T1 → (RR-T2 ∥ RR-T4 ∥ RR-T6) → RR-T12 → RR-T3 → RR-T13 → RR-T5 → RR-T11 → RR-T7 (partie) ∥ RR-T9 → RR-T8 → RR-T10.
 
-**Uczciwa wycena:** do odtworzenia jest ~59 tys. LOC plików `render/**` i ~23 tys. LOC plików 3D poza nim (P4-0 §4), w tym 2 080 konstrukcji geometrii i 116 materiałów w `render/**`. Wierność shaderów Three.js i tekstu na canvasie to otwarte ryzyka. To **tygodnie, a raczej miesiące pracy, nie dni**. Liczby dni nie podaję (`NIE_ZMIERZONO`). Realną prędkość pokaże RR-T1 + RR-T2 + pierwsza partia RR-T7.
+**Uczciwa wycena:** do odtworzenia jest ~59 tys. LOC plików `render/**` i ~23 tys. LOC plików 3D poza nim (P4-0 §4) — **razem ~83 tys. LOC jako dolna granica**, bo nie liczy części 3D i pętli renderu w `main.ts` (39 350 LOC; m.in. pętla klatek, animacje ruchu, nakładki, hover — §3.9; udział NIE_ZMIERZONO, P4-0 l.184, l.242), w tym 2 080 konstrukcji geometrii i 116 materiałów w `render/**`. Wierność shaderów Three.js i tekstu na canvasie to otwarte ryzyka. To **tygodnie, a raczej miesiące pracy, nie dni**. Liczby dni nie podaję (`NIE_ZMIERZONO`). Realną prędkość pokaże RR-T1 + RR-T2 + pierwsza partia RR-T7.
 
 ---
 
@@ -399,7 +427,7 @@ Nazwy robocze `RR-Tn`; numer P4.x nada orkiestrator (P4-0 używa już numerów P
 **NIE_ZMIERZONO:**
 1. Rozmiar drzewa zależności wgpu/Bevy/three-d (brak `cargo tree`).
 2. Czy Bevy lub three-d mogą renderować do okna Tauri (tao) bez własnego winit.
-3. Zgodność `raw-window-handle 0.6.2` (Tauri) z wersją wymaganą przez wgpu 30.
+3. ~~Zgodność `raw-window-handle`~~ — zmierzone statycznie w r2 (§2.2): wgpu 30.0.1 wymaga `^0.6.2`, Tauri ma 0.6.2 → zgodne.
 4. Wykonalność opcji (a): kolejność warstw, przezroczystość, fokus, DPI na Windows/Linux X11/Wayland/macOS.
 5. WebGPU/WebGL2 w WebView2 i WebKitGTK (opcja c).
 6. Dostępność adaptera wgpu (software) w tym kontenerze.
@@ -412,3 +440,20 @@ Nazwy robocze `RR-Tn`; numer P4.x nada orkiestrator (P4-0 używa już numerów P
 13. Licznik pamięci GPU dostępny z wgpu.
 14. Czas realizacji w dniach/tygodniach (tylko rząd wielkości).
 15. Automatyzacja zrzutów okna Tauri (WebDriver).
+16. Opóźnienie IPC wejście→klatka w opcji (a) (`mousemove`/`wheel` co klatkę, §3.9).
+
+## 10. Rejestr zmian r2 (odpowiedź na FAIL Evaluatora r1)
+
+| Zarzut | Werdykt | Gdzie poprawione |
+|---|---|---|
+| 1 MSRV Bevy | PRZYJĘTY — 1.97.1 (`bevy-0.20.0/Cargo.toml:14`); 1.96.0 pochodziło z `-rc.2`; wniosek o toolchainie w D-RR-1 | §1.2, §6.2 D-RR-1 |
+| 2 cache „0 trafień” | PRZYJĘTY — ujawnione pobranie 4 archiwów przez `cargo info` r1 (znaczniki czasu) | §1.1, §1.2 |
+| 3 wierzch `PlytkieMorze` | PRZYJĘTY — 0,18 (`scene.ts:578-580`, `:2257-2261`, `:2089`); drugi rozjazd 0,04 z `topYAt` | §3.5, §3.6, §3.7, D-RR-3 |
+| 4 `Math.round` | PRZYJĘTY — nowa recepta + emulacja IEEE; zakres zawężony do dokładnych połówek ujemnych | §3.4 |
+| 5 gałąź `picker.ts:221-223` | PRZYJĘTY | §3.5 pkt 4 |
+| 6 ACES | PRZYJĘTY — tylko `civ`; roblox bez tone mappingu | §1.2, §4.1, §4.2, RR-T5 |
+| 7 `raw-window-handle` | PRZYJĘTY — zgodne statycznie (`^0.6.2` vs 0.6.2) | §2.2, §9 pkt 3 |
+| 8 pętla/animacje/wejście/hover/DTO | PRZYJĘTY — nowa §3.9, D-RR-10, RR-T12, RR-T13 | §3.9, §6.2, §8 |
+| 9 ~83 tys. LOC | PRZYJĘTY — oznaczone jako dolna granica | §0, §8 |
+| 10 `new BattleScene(` | PRZYJĘTY — 5 miejsc | §7.1 M3 |
+| 11 „dowiedzione wycieki” | PRZYJĘTY — przeformułowane na dowód ścieżki kodu; M2/M3 dowiedzione na poziomie JS | §0, §7 |
