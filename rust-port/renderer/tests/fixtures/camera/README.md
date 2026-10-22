@@ -39,14 +39,14 @@ git archive --format=tar -o $S/websrc.tar edb8fb56 gra/src gra/data && tar -xf $
 cp rust-port/renderer/tests/fixtures/camera/gen.ts $S/refscript/camera_gen.ts
 cd $S/refscript
 NODE_PATH=$S/ref/node_modules $S/ref/node_modules/.bin/esbuild camera_gen.ts --bundle --platform=node --format=esm --outfile=camera_gen.mjs --log-level=warning
-node camera_gen.mjs $S/out/camera   # node v22.22.0; prints: camera scenarios=33 steps=6504
+node camera_gen.mjs $S/out/camera   # node v22.22.0; prints: camera scenarios=34 steps=6524
 ```
 
 ## Files
 
 | File | Content |
 |---|---|
-| `camera.json` | 33 scenarios (9 hand-written edge cases + 24 LCG fuzz streams of 250 events on 9×7, 40×30, 128×80, 240×168 maps and 3 viewports): options, limits, initial state, and after **every** event the web `target.x/z`, `dist`, `camera.position` (and `matrixWorld` for the hand-written ones) |
+| `camera.json` | 34 scenarios (10 hand-written edge cases, incl. `edge-zone-zero` with `edgePanZonePx: 0`, + 24 LCG fuzz streams of 250 events on 9×7, 40×30, 128×80, 240×168 maps and 3 viewports): options, limits, initial state, and after **every** event the web `target.x/z`, `dist`, `camera.position` (and `matrixWorld` for the hand-written ones) |
 | `gen.ts` | the generator above |
 
 SHA-256 at creation: see `dyspozycje/rust-port/p4/P4-11-CAMERA-TERRAIN-CPU.md`.

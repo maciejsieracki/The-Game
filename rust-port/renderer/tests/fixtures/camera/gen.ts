@@ -222,6 +222,14 @@ scenarios.push({ name: 'custom', W: 20, H: 15, opts: 'custom', rect: VP2, separa
   steps: [{ k: 'edge', on: true }, { k: 'move', x: 40, y: 20 }, { k: 'frame' }, { k: 'kd', key: 'w' }, { k: 'frame' },
     { k: 'wheel', x: 300, y: 300, dy: -3 }, { k: 'frame' }, { k: 'down', x: 300, y: 300 }, { k: 'move', x: 330, y: 280 },
     { k: 'move', x: 380, y: 260 }, { k: 'up' }, { k: 'frame' }] });
+// 6b. Edge pan with `edgePanZonePx: 0` (`?? 32` keeps 0, camera.ts:117): the cursor exactly on
+//     every edge/corner must not pan (camera.ts:266-270 use strict `<`/`>`; `<=` would give 0/0 = NaN).
+scenarios.push({ name: 'edge-zone-zero', W: 20, H: 15, opts: 'custom', rect: VP, separateWheel: true,
+  custom: { minDist: 3, maxDist: 50, keyPanSpeed: 0.7, mousePanFactor: 0.0035, zoomFactor: 0.2, edgePanZonePx: 0, edgePanSpeed: 1.3 },
+  steps: [{ k: 'edge', on: true }, { k: 'move', x: 0, y: 360 }, { k: 'frame' }, { k: 'move', x: 1280, y: 360 }, { k: 'frame' },
+    { k: 'move', x: 640, y: 0 }, { k: 'frame' }, { k: 'move', x: 640, y: 720 }, { k: 'frame' }, { k: 'move', x: 0, y: 0 }, { k: 'frame' },
+    { k: 'move', x: 1280, y: 720 }, { k: 'frame' }, { k: 'move', x: 0.25, y: 719.75 }, { k: 'frame' }, { k: 'kd', key: 'd' },
+    { k: 'move', x: 0, y: 720 }, { k: 'frame' }, { k: 'ku', key: 'd' }, { k: 'frame' }] });
 // 7. LCG fuzz: random event streams on several maps / viewports.
 const KEYS = ['w', 'a', 's', 'd', 'W', 'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'q', 'Shift'];
 const fuzzMaps: Array<[number, number, Rect]> = [[9, 7, VP], [40, 30, VP2], [128, 80, VP], [240, 168, { left: 0, top: 56, width: 375, height: 812 }]];

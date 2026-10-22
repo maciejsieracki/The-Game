@@ -1,6 +1,6 @@
 # P4.11 — Kamera i teren CPU w Rust (RR-T2a): kontroler kamery + siatki terenu, 1:1 z webem
 
-STATUS dokumentu: Operator r1 (do oceny Evaluatora)
+STATUS dokumentu: Operator r1 + obrona r1 (§11; do Final Control)
 TEMAT: R-RUSTPORT-P4-11-CAMERA-TERRAIN-CPU-Q1 · DOMAIN: GAME · baza kodu: `origin/rust-port/parity-v2` @ `7aab83f5` · commit kodu: `eb30eefc`
 Web źródłowy: `edb8fb56` (wyłącznie `git archive` do katalogu scratch, bez `npm run build/dev`, bez zmian w `gra/**`).
 Rozstrzygnięcia orkiestratora (dispatch, runda 1): Q1 = kamera bez obrotu, Q2 = przesuw ciągły × `dt·60` z limitem długiej klatki, Q3 = mgła w siatce terenu (ukrycie + przyciemnienie); mgła/LOD brył gór/wzgórz/lasów poza zakresem.
@@ -18,7 +18,7 @@ Rozstrzygnięcia orkiestratora (dispatch, runda 1): Q1 = kamera bez obrotu, Q2 =
   kolory instancji `Float32` (THREE.Color r169 z zarządzaniem kolorem), kolory materiałów; macierze brył gór/wzgórz (5+5 wariantów);
   plaże = 5 warstw instancji brzegu (FALA 141) z deltami i ujściami rzek; tło oceanu + ramka świata; mgła `setFog`
   (`ZERO_MATRIX`, ×`FOG_EXPLORED_BRIGHTNESS = 0,175`, reguła „ocean-hide”, pamięć podręczna A5).
-- **Wynik:** kamera — 33 scenariusze / **6 504 zdarzenia / 47 430 skalarów: 0 rozbieżności (bitowo)**; teren — 7 map / 11 605 instancji /
+- **Wynik:** kamera — 34 scenariusze / **6 524 zdarzenia / 47 892 skalary: 0 rozbieżności (bitowo)** (obrona r1: +`edge-zone-zero`, §11); teren — 7 map / 11 605 instancji /
   **271 747 skalarów budowy + 80 332 skalarów po 16 wywołaniach mgły: 100% bitowo** (0 wartości nawet „w 1e-6”);
   matematyka koloru 15 360 skalarów + 2 048 `getHex` + 6 144 `Math.pow` + 2 048 `Math.hypot` + 24 presety: 0 rozbieżności.
   Wszystkie wektory z **uruchomionego kodu weba** (moduły `edb8fb56` importowane bez zmian + oznaczone kopie fragmentów `scene.ts`/`main.ts`), three@0.169.0, node v22.22.0.
@@ -26,7 +26,7 @@ Rozstrzygnięcia orkiestratora (dispatch, runda 1): Q1 = kamera bez obrotu, Q2 =
   `base::ieee754::pow` z V8 12.4.254.21 (pochodna fdlibm z jedną odchyłką V8 w kroku `2**z`) → 0/200 000 rozbieżności w osobnym teście scratch, 0/6 144 w fixture.
 - Bramki renderera (§9, pełne logi): `cargo fmt --all -- --check` EXIT=0; `cargo clippy --locked --all-targets --features gpu -- -D warnings` EXIT=0;
   `cargo clippy --locked --all-targets -- -D warnings` EXIT=0; `cargo test --locked --all-targets` EXIT=0.
-- Test mutacyjny (§6): **19/19** mutacji wykrytych. Zero nowych zależności, `Cargo.toml`/`Cargo.lock` bez zmian, brak `unsafe` (`#![forbid(unsafe_code)]` w crate).
+- Test mutacyjny (§6): **19/19** mutacji wykrytych; obrona r1 (§11): +4 mutacje granic edge-pan (`<`→`<=`, `>`→`>=`), 4/4 wykryte po dodaniu `edge-zone-zero` (wcześniej 0/4). Zero nowych zależności, `Cargo.toml`/`Cargo.lock` bez zmian, brak `unsafe` (`#![forbid(unsafe_code)]` w crate).
 
 ## 1. Zakres i rozstrzygnięcia
 
@@ -156,7 +156,7 @@ Kolejność operacji IEEE 754 jak w TS (np. `speed = keyPanSpeed·(dist/30)`, po
 
 | Zestaw | Liczba | Wynik | Co sprawdza |
 |---|---|---|---|
-| `camera/camera.json` | 33 scenariusze, **6 504 zdarzenia**, 47 430 skalarów (`target.x/z`, `dist`, `camera.position` po każdym zdarzeniu; `matrixWorld` w 9 scenariuszach ręcznych) | **0 rozbieżności, bitowo** | 9 ręcznych: `drag-threshold`, `wheel-clamp-blocks` ×2 (osobny / domyślny `blockWheelAt`), `keys`, `edge-pan`, `edge-pan-offset-rect` (rect 800×600 @ (37,5; 12) i zmiana na 375×812), `focus`, `defaults`, `custom`; 24 fuzz LCG × 250 zdarzeń na mapach 9×7, 40×30, 128×80, 240×168 |
+| `camera/camera.json` | 34 scenariusze, **6 524 zdarzenia**, 47 892 skalary (`target.x/z`, `dist`, `camera.position` po każdym zdarzeniu; `matrixWorld` w 10 scenariuszach ręcznych) | **0 rozbieżności, bitowo** | 10 ręcznych: `drag-threshold`, `wheel-clamp-blocks` ×2 (osobny / domyślny `blockWheelAt`), `keys`, `edge-pan`, `edge-pan-offset-rect` (rect 800×600 @ (37,5; 12) i zmiana na 375×812), `focus`, `defaults`, `custom`, `edge-zone-zero` (`edgePanZonePx: 0`, kursor dokładnie na krawędziach/rogach; §11); 24 fuzz LCG × 250 zdarzeń na mapach 9×7, 40×30, 128×80, 240×168 |
 | `terrain/map_{A,A-lite,B,C,D,E,F}.json` | 7 map, **11 605 instancji** (pryzmy + bryły + brzeg), **271 747 skalarów** (geometrie, kolory materiałów, macierze i kolory instancji, kolor bazowy f64 każdego heksa, tło/ramka) + klucze, indeksy, grupy, delty, krawędzie ujść, `robloxLite` | **100% bitowo** | wszystkie 8 typów terenu, wybrzeże/morze, `tarasy`, dziury w siatce, odwrócona kolejność kluczy, ujemne `q/r`, ziarna 12345 / −42 / 2026 / 123456789 / −2147483648 / 7, detal `high`/`medium`/`low`, mapa 3 500 heksów (lite z progu 3 000), rzeki `main/medium/short/tributary` i bez `riverPathKinds` |
 | — mgła | **16 wywołań `setFog`** (A: 8, B: 4, C: 2, F: 2), **80 332 skalarów** (macierze + kolory wszystkich pryzm po każdym wywołaniu) + flaga `showOceanBackdrop` | **100% bitowo** | ścieżka różnicowa, ponowne wywołanie bez zmian, zmiana kontekstu (ocean-hide ↔ brak), `landReveal`, wszystko ukryte, wszystko widoczne |
 | `terrain/color.json` | 1 024 `setHex` + 2 048 `getHSL`/`setHSL` (15 360 skalarów), 2 048 `getHex`, 6 144 `Math.pow`, 2 048 `Math.hypot`, 24 presety `robloxLite` | **0 rozbieżności** | prymitywy numeryczne użyte przez kolory i brzeg |
@@ -216,7 +216,7 @@ mkdir -p $S/ref $S/websrc $S/refscript $S/out
 cd $S/ref && npm init -y && npm install --ignore-scripts three@0.169.0 esbuild@0.24.0
 cd /home/user/The-Game/.claude/worktrees/wf_5eb5677d-3de-1 && git archive --format=tar -o $S/websrc.tar edb8fb56 gra/src gra/data
 cd $S && tar -xf websrc.tar -C websrc
-bash $S/run_gen.sh camera    # stdout: camera scenarios=33 steps=6504
+bash $S/run_gen.sh camera    # stdout: camera scenarios=34 steps=6524 (r1: 33/6504; obrona r1 §11)
 bash $S/run_gen.sh terrain   # stdout: terrain maps=7 instances=11605 fogCalls=16 colorCases=5120 pow=6144 hypot=2048
 cp $S/out/camera/*.json  rust-port/renderer/tests/fixtures/camera/
 cp $S/out/terrain/*.json rust-port/renderer/tests/fixtures/terrain/
@@ -226,12 +226,12 @@ cd $S/powchk && CARGO_TARGET_DIR=/home/user/cargo-target-shared/wf_5eb5677d-3de-
 # stdout: n=200000 port_mismatch=0 libm_mismatch=19915   (czysty fdlibm przed poprawką V8: port_mismatch=8866)
 ```
 
-- Determinizm: dwa niezależne uruchomienia obu generatorów dają identyczne pliki; SHA-256 plików w repo (commit `eb30eefc`):
+- Determinizm: dwa niezależne uruchomienia obu generatorów dają identyczne pliki; SHA-256 plików w repo (commit `eb30eefc`; trzy pliki `camera/*` zaktualizowane w obronie r1, §11 — wartości r1: README `04acf9b1…323da`, `camera.json` `0f43ae5c…b1bd`, `gen.ts` `baf4b6cf…a207`):
 
 ```text
-04acf9b1ea1cbb9ee9825958fc7a34eadbaf114acf1bda8f6e9a910720a323da  rust-port/renderer/tests/fixtures/camera/README.md
-0f43ae5c53904f2d52ff9ddc7e2266fd4eb2de76fa22ba414edb471003b3d1bd  rust-port/renderer/tests/fixtures/camera/camera.json
-baf4b6cfbdc8008f1dcc1f5752be6374d4b64bcf2e0ae7c9750b47c7f0f1a207  rust-port/renderer/tests/fixtures/camera/gen.ts
+ae13c5d5cf33669c8257a1ddc71c23edbb8c6ac0ae7a531bab09de6c23aca545  rust-port/renderer/tests/fixtures/camera/README.md
+4df8809516941a704257d81733dcfb02f4b8c77e1129f94663c20ec0956ca1cf  rust-port/renderer/tests/fixtures/camera/camera.json
+a37e8d1b05f58a683964c707151ac40859214402cb6c9c79b0742ea4f851cb06  rust-port/renderer/tests/fixtures/camera/gen.ts
 9d625d60073b955a53685d0dcc5ef4e63efe750439f52ec885dc172bf6ffdcd4  rust-port/renderer/tests/fixtures/terrain/README.md
 e1425d294f8a7711dca32a5fff8ec282e2ada658dcda06eb40f91594b45b7af6  rust-port/renderer/tests/fixtures/terrain/color.json
 214fe929e8c2480c3a08be31608d4e5a053fd66d95933a0d5feba7baa8f4056e  rust-port/renderer/tests/fixtures/terrain/gen.ts
@@ -703,6 +703,14 @@ scenarios.push({ name: 'custom', W: 20, H: 15, opts: 'custom', rect: VP2, separa
   steps: [{ k: 'edge', on: true }, { k: 'move', x: 40, y: 20 }, { k: 'frame' }, { k: 'kd', key: 'w' }, { k: 'frame' },
     { k: 'wheel', x: 300, y: 300, dy: -3 }, { k: 'frame' }, { k: 'down', x: 300, y: 300 }, { k: 'move', x: 330, y: 280 },
     { k: 'move', x: 380, y: 260 }, { k: 'up' }, { k: 'frame' }] });
+// 6b. Edge pan with `edgePanZonePx: 0` (`?? 32` keeps 0, camera.ts:117): the cursor exactly on
+//     every edge/corner must not pan (camera.ts:266-270 use strict `<`/`>`; `<=` would give 0/0 = NaN).
+scenarios.push({ name: 'edge-zone-zero', W: 20, H: 15, opts: 'custom', rect: VP, separateWheel: true,
+  custom: { minDist: 3, maxDist: 50, keyPanSpeed: 0.7, mousePanFactor: 0.0035, zoomFactor: 0.2, edgePanZonePx: 0, edgePanSpeed: 1.3 },
+  steps: [{ k: 'edge', on: true }, { k: 'move', x: 0, y: 360 }, { k: 'frame' }, { k: 'move', x: 1280, y: 360 }, { k: 'frame' },
+    { k: 'move', x: 640, y: 0 }, { k: 'frame' }, { k: 'move', x: 640, y: 720 }, { k: 'frame' }, { k: 'move', x: 0, y: 0 }, { k: 'frame' },
+    { k: 'move', x: 1280, y: 720 }, { k: 'frame' }, { k: 'move', x: 0.25, y: 719.75 }, { k: 'frame' }, { k: 'kd', key: 'd' },
+    { k: 'move', x: 0, y: 720 }, { k: 'frame' }, { k: 'ku', key: 'd' }, { k: 'frame' }] });
 // 7. LCG fuzz: random event streams on several maps / viewports.
 const KEYS = ['w', 'a', 's', 'd', 'W', 'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'q', 'Shift'];
 const fuzzMaps: Array<[number, number, Rect]> = [[9, 7, VP], [40, 30, VP2], [128, 80, VP], [240, 168, { left: 0, top: 56, width: 375, height: 812 }]];
@@ -1596,4 +1604,360 @@ fn main() {
     }
     println!("n={n} port_mismatch={bad_port} libm_mismatch={bad_libm}");
 }
+```
+
+## 11. Obrona Operatora r1 (odpowiedź na uwagi Evaluatora, PASS-WITH-NOTES)
+
+Stan odtworzony z commita Operatora `7de81e7c` (kod `eb30eefc`), worktree `/home/user/The-Game/.claude/worktrees/wf_5eb5677d-3de-3`, `git checkout --detach 7de81e7c`.
+Tekst zarzutów przekazany Operatorowi był **ucięty** w połowie surowego logu `cargo test` Evaluatora (`[LeakM2 large 96x60] turn= 50 … destroyed=`); poniżej odpowiedź na każdą uwagę możliwą do zidentyfikowania w otrzymanej części.
+
+### Z1. „Mutacja `mx<zone`→`mx<=zone` przeżyła, ale jest równoważna (przy `mx==zone` wkład `speed·0 = 0`)” — **PRZYJMUJĘ jako lukę wektorów; ODRZUCAM tezę o równoważności**
+
+- Mutant **nie jest równoważny**. `edgePanZonePx` to opcja (`camera.ts:56`), a `opts.edgePanZonePx ?? 32` (`camera.ts:117`) zachowuje `0`.
+  Przy `zone = 0` i kursorze na krawędzi (`mx = 0`): web (`camera.ts:266`, ścisłe `<`) nie wchodzi w gałąź → `dx = 0`, `_edgePanDelta` zwraca `null` (`:270`);
+  mutant liczy `speed·((0 − 0)/0) = speed·NaN = NaN` → `target.x = NaN`. Ten sam mechanizm dotyczy trzech pozostałych porównań (`:267-269`, `>` → `>=` przy `mx = width`, `my = 0`, `my = height`).
+  Argument Evaluatora (`speed·0 = 0`) jest prawdziwy tylko dla `zone > 0`.
+- Poprawka (wyłącznie fixture, kod `src/camera.rs` bez zmian): scenariusz `edge-zone-zero` w `tests/fixtures/camera/gen.ts` (opcje `custom` z `edgePanZonePx: 0`, kursor dokładnie na każdej krawędzi i rogu, punkt wewnętrzny, kontrola że klawisz `d` nadal przesuwa), wektor **wygenerowany przez uruchomiony web `CameraController`** (`edb8fb56`, three@0.169.0, esbuild@0.24.0, node v22.22.0; ta sama procedura co §8):
+  przed zmianą generator odtworzył bitowo `camera.json` r1 (`0f43ae5c…b1bd`, `camera scenarios=33 steps=6504`), po zmianie `camera scenarios=34 steps=6524`, `4df88095…a1cf`.
+  Web w tym scenariuszu: `target` bez zmian na wszystkich krawędziach/rogach, jedyny ruch po `kd d` + `frame` (`tx 22.516660498395403 → 23.394595575721738`).
+- Test mutacyjny granic (skrypt scratch `mut.sh` niżej; każda mutacja na `src/camera.rs`, `cargo test --locked --test camera_web_parity`, przywrócenie oryginału, `git diff --stat -- src/camera.rs` pusty po pętli):
+
+```text
+### stary camera.json (r1, 0f43ae5c…b1bd) — wszystkie 4 PRZEŻYWAJĄ
+### MUTACJA: 'mx < zone {' -> 'mx <= zone {'
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.03s
+EXIT=0
+### MUTACJA: 'my < zone {' -> 'my <= zone {'
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.03s
+EXIT=0
+### MUTACJA: 'mx > rect.width - zone {' -> 'mx >= rect.width - zone {'
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.03s
+EXIT=0
+### MUTACJA: 'my > rect.height - zone {' -> 'my >= rect.height - zone {'
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.03s
+EXIT=0
+restore-diff-empty-above
+### nowy camera.json (obrona r1, 4df88095…a1cf) — wszystkie 4 WYKRYTE
+### MUTACJA: 'mx < zone {' -> 'mx <= zone {'
+camera parity: scenarios=34 steps=6524 scalars=47892 mismatches=216
+thread 'camera_controller_matches_web_100_percent' (25883) panicked at tests/camera_web_parity.rs:475:5:
+test result: FAILED. 4 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.09s
+EXIT=101
+### MUTACJA: 'my < zone {' -> 'my <= zone {'
+camera parity: scenarios=34 steps=6524 scalars=47892 mismatches=168
+thread 'camera_controller_matches_web_100_percent' (25940) panicked at tests/camera_web_parity.rs:475:5:
+test result: FAILED. 4 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.09s
+EXIT=101
+### MUTACJA: 'mx > rect.width - zone {' -> 'mx >= rect.width - zone {'
+camera parity: scenarios=34 steps=6524 scalars=47892 mismatches=192
+thread 'camera_controller_matches_web_100_percent' (25997) panicked at tests/camera_web_parity.rs:475:5:
+test result: FAILED. 4 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.09s
+EXIT=101
+### MUTACJA: 'my > rect.height - zone {' -> 'my >= rect.height - zone {'
+camera parity: scenarios=34 steps=6524 scalars=47892 mismatches=144
+thread 'camera_controller_matches_web_100_percent' (26054) panicked at tests/camera_web_parity.rs:475:5:
+test result: FAILED. 4 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.09s
+EXIT=101
+restore-diff-empty-above
+```
+
+```bash
+#!/bin/bash
+# mut.sh (scratch, poza repo)
+cd /home/user/The-Game/.claude/worktrees/wf_5eb5677d-3de-3/rust-port/renderer || exit 9
+export CARGO_INCREMENTAL=0 CARGO_TARGET_DIR=/home/user/cargo-target-shared/wf_5eb5677d-3de-3 CARGO_PROFILE_DEV_DEBUG=0
+cp src/camera.rs /tmp/claude-0/-home-user-The-Game/cbf4a126-dca3-5f50-bfb0-2a747b18a590/scratchpad/camera.rs.orig
+for m in 'mx < zone {|mx <= zone {' 'my < zone {|my <= zone {' 'mx > rect.width - zone {|mx >= rect.width - zone {' 'my > rect.height - zone {|my >= rect.height - zone {'; do
+  from="${m%%|*}"; to="${m##*|}"
+  python3 -I -c "import sys;p='src/camera.rs';s=open(p).read();assert s.count(sys.argv[1])==1;open(p,'w').write(s.replace(sys.argv[1],sys.argv[2]))" "$from" "$to"
+  echo "### MUTACJA: '$from' -> '$to'"
+  cargo test --locked --test camera_web_parity 2>&1 | grep -E 'camera parity|panicked|first mismatch|mismatch|test result' | head -6
+  echo "EXIT=${PIPESTATUS[0]}"
+  cp /tmp/claude-0/-home-user-The-Game/cbf4a126-dca3-5f50-bfb0-2a747b18a590/scratchpad/camera.rs.orig src/camera.rs
+done
+git diff --stat -- src/camera.rs; echo "restore-diff-empty-above"
+```
+
+- Bilans mutacji po obronie: 19 (§6) + 4 granice edge-pan = **23/23 wykryte**. Kod Rust był od początku zgodny z webem (ścisłe `<`/`>`, `src/camera.rs:405-416`); zmieniła się wyłącznie siła wektorów.
+
+### Z2. „Evaluator: 7 mutacji, 6 wykrytych” vs „Operator: 19/19” — **ODRZUCAM jako sprzeczność**
+Różne zbiory mutacji (Evaluator: własne 7, §6: C1–C8, T1–T11). Jedyny ocalały mutant Evaluatora jest obsłużony w Z1; po Z1 wszystkie 7 mutacji Evaluatora zostałyby wykryte (6 jego wyników EXIT=101 + `mx<=zone` EXIT=101 wyżej).
+
+### Z3. Q2 (prędkość przesuwu przy FPS ≠ 60 różna od weba) — **ODRZUCAM jako zarzut wobec pracy Operatora**
+To rozstrzygnięcie orkiestratora z dispatchu (runda 1, Q2), wdrożone dokładnie (§1, test `frame_at_60_fps_is_exactly_one_web_frame`) i jawnie opisane jako odchylenie i `NIE_ZMIERZONO` 7 (§7). Rewizja należy do właściciela przez orkiestratora; brak zmian w kodzie.
+
+### Z4. Uwagi nieczytelne (ucięty tekst zarzutów) — `NIE_ZMIERZONO`
+Część zarzutów po uciętym logu nie dotarła do Operatora. Wszystkie twierdzenia Evaluatora z otrzymanej części (allowlista, bazy, SHA, bramki, odtworzenie wektorów, `LITERAL`, pokrycie) potwierdzają raport Operatora; jeśli w dalszej części były inne uwagi, wymagają ponownego przekazania z tym samym ID.
+
+### Zmiany obrony (allowlista)
+`rust-port/renderer/tests/fixtures/camera/{gen.ts,camera.json,README.md}` (+ scenariusz `edge-zone-zero`), ten dokument (§0, §5, §8 SHA, §10.1 = `gen.ts`, §11), `dyspozycje/autobot/runs/R-RUSTPORT-P4-11-CAMERA-TERRAIN-CPU-Q1/03-operator-obrona-r1.md`.
+Bez zmian: `src/**` (w tym `src/camera.rs`), `tests/*.rs`, `pick`, `geom`, `assets`, `Cargo.toml`/`Cargo.lock`, `engine`, `gra`, `src-tauri`, `.github`. §10.1 vs `tests/fixtures/camera/gen.ts`: `diff` pusty (`DIFF_EXIT=0`, 266 linii).
+Nowe SHA-256: README `ae13c5d5cf33669c8257a1ddc71c23edbb8c6ac0ae7a531bab09de6c23aca545`, `camera.json` `4df8809516941a704257d81733dcfb02f4b8c77e1129f94663c20ec0956ca1cf`, `gen.ts` `a37e8d1b05f58a683964c707151ac40859214402cb6c9c79b0742ea4f851cb06` (pliki `terrain/*` bez zmian, SHA jak §8).
+
+### 11.1 Surowe logi bramek po obronie (czysty target: `rm -rf /home/user/cargo-target-shared/wf_5eb5677d-3de-3`, `CARGO_INCREMENTAL=0 CARGO_PROFILE_DEV_DEBUG=0`, `cd rust-port/renderer`; HEAD `7de81e7c` + zmiany obrony w drzewie roboczym)
+
+```text
+### HEAD 7de81e7c + working tree
+### cargo fmt --all -- --check
+EXIT=0
+### cargo clippy --locked --all-targets --features gpu -- -D warnings
+   Compiling proc-macro2 v1.0.107
+   Compiling quote v1.0.47
+   Compiling unicode-ident v1.0.27
+    Checking cfg-if v1.0.5
+   Compiling cfg_aliases v0.2.2
+    Checking foldhash v0.2.0
+    Checking equivalent v1.0.3
+   Compiling libm v0.2.16
+   Compiling autocfg v1.5.1
+   Compiling thiserror v2.0.21
+    Checking hashbrown v0.17.1
+   Compiling num-traits v0.2.19
+   Compiling syn v3.0.9
+   Compiling syn v2.0.119
+    Checking libloading v0.8.9
+   Compiling libc v0.2.191
+    Checking log v0.4.34
+   Compiling zerocopy v0.8.63
+    Checking indexmap v2.14.2
+    Checking rustc-hash v1.1.0
+    Checking bitflags v2.13.2
+   Compiling naga v30.0.1
+   Compiling pkg-config v0.3.34
+    Checking unicode-width v0.2.2
+    Checking once_cell v1.21.4
+    Checking bit-vec v0.9.1
+   Compiling parking_lot_core v0.9.12
+   Compiling ash v0.38.0+1.3.281
+    Checking bit-set v0.10.0
+    Checking codespan-reporting v0.13.1
+   Compiling wayland-sys v0.31.11
+   Compiling thiserror-impl v2.0.21
+   Compiling bytemuck_derive v1.12.1
+    Checking spirv v0.4.0+sdk-1.4.341.0
+    Checking bytemuck v1.25.2
+    Checking allocator-api2 v0.2.21
+    Checking naga-types v30.0.1
+   Compiling zerocopy-derive v0.8.63
+    Checking static_assertions v1.1.0
+    Checking scopeguard v1.2.0
+   Compiling khronos-egl v6.0.0
+    Checking arrayvec v0.7.8
+    Checking raw-window-handle v0.6.2
+    Checking smallvec v1.16.3
+    Checking hashbrown v0.16.1
+    Checking wgpu-types v30.0.1
+    Checking lock_api v0.4.14
+    Checking dlib v0.5.3
+   Compiling wgpu-hal v30.0.1
+    Checking presser v0.3.1
+    Checking parking_lot v0.12.5
+    Checking ordered-float v5.4.0
+    Checking glow v0.17.0
+    Checking profiling v1.0.18
+    Checking renderdoc-sys v1.1.0
+   Compiling wgpu-core v30.0.1
+   Compiling litrs v1.0.1
+   Compiling document-features v0.2.12
+   Compiling wgpu v30.0.1
+    Checking pollster v0.4.0
+    Checking half v2.7.1
+    Checking gpu-allocator v0.28.0
+    Checking wgpu-naga-bridge v30.0.1
+    Checking wgpu-core-deps-windows-linux-android v30.0.1
+    Checking civ-renderer v0.1.0 (/home/user/The-Game/.claude/worktrees/wf_5eb5677d-3de-3/rust-port/renderer)
+    Finished `dev` profile [unoptimized] target(s) in 21.66s
+EXIT=0
+### cargo clippy --locked --all-targets -- -D warnings
+    Checking civ-renderer v0.1.0 (/home/user/The-Game/.claude/worktrees/wf_5eb5677d-3de-3/rust-port/renderer)
+    Finished `dev` profile [unoptimized] target(s) in 1.13s
+EXIT=0
+### cargo test --locked --all-targets
+   Compiling pollster v0.4.0
+   Compiling civ-renderer v0.1.0 (/home/user/The-Game/.claude/worktrees/wf_5eb5677d-3de-3/rust-port/renderer)
+    Finished `test` profile [unoptimized] target(s) in 1.73s
+     Running unittests src/lib.rs (/home/user/cargo-target-shared/wf_5eb5677d-3de-3/debug/deps/civ_renderer-d95024f3ec20cfd9)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/assets_nturns.rs (/home/user/cargo-target-shared/wf_5eb5677d-3de-3/debug/deps/assets_nturns-7ff94d6b0438d2d1)
+
+running 6 tests
+[Fixed small 40x25] turn= 10 buffer=36 texture=7 pipeline=3 bind_group=9 live_bytes=4560128 subscriptions=1 created=187 destroyed=132
+[LeakM1 small 40x25] turn= 10 buffer=164 texture=7 pipeline=3 bind_group=27 live_bytes=4953088 subscriptions=1 created=299 destroyed=98
+[Fixed small 40x25] turn= 10 buffer=36 texture=7 pipeline=3 bind_group=9 live_bytes=4560128 subscriptions=1 created=187 destroyed=132
+[Fixed small 40x25] turn= 50 buffer=36 texture=7 pipeline=3 bind_group=9 live_bytes=4560128 subscriptions=1 created=712 destroyed=657
+[LeakM1 small 40x25] turn= 50 buffer=590 texture=7 pipeline=3 bind_group=98 live_bytes=6179968 subscriptions=1 created=1187 destroyed=489
+[Fixed small 40x25] turn= 50 buffer=36 texture=7 pipeline=3 bind_group=9 live_bytes=4560128 subscriptions=1 created=712 destroyed=657
+[Fixed small 40x25] turn=200 buffer=36 texture=7 pipeline=3 bind_group=9 live_bytes=4560128 subscriptions=1 created=2760 destroyed=2705
+[new game] after dropping game 1: live=0 live_bytes=0 fake_gpu_live=0
+[LeakM3 small 40x25] turn= 10 buffer=68 texture=9 pipeline=3 bind_group=11 live_bytes=6722816 subscriptions=5 created=187 destroyed=96
+[LeakM1 small 40x25] turn=200 buffer=2414 texture=7 pipeline=3 bind_group=402 live_bytes=11433088 subscriptions=1 created=4785 destroyed=1959
+[LeakM1 small 40x25] turn 50 violations: live buffer: baseline=164 current=590 allowed=164; live bind_group: baseline=27 current=98 allowed=27; live bytes: baseline=4953088 current=6179968 allowed=4953088
+[LeakM1 small 40x25] turn 200 violations: live buffer: baseline=164 current=2414 allowed=164; live bind_group: baseline=27 current=402 allowed=27; live bytes: baseline=4953088 current=11433088 allowed=4953088
+[LeakM2 small 40x25] turn= 10 buffer=36 texture=67 pipeline=3 bind_group=9 live_bytes=5543168 subscriptions=1 created=187 destroyed=72
+[LeakM3 small 40x25] turn= 50 buffer=196 texture=17 pipeline=3 bind_group=19 live_bytes=15373568 subscriptions=21 created=712 destroyed=477
+[LeakM2 small 40x25] turn= 50 buffer=36 texture=306 pipeline=3 bind_group=9 live_bytes=9458944 subscriptions=1 created=712 destroyed=358
+[Fixed small 40x25] turn=200 buffer=36 texture=7 pipeline=3 bind_group=9 live_bytes=4560128 subscriptions=1 created=2760 destroyed=2705
+[Fixed small 40x25] budget OK at turns [50, 200]
+[Fixed large 96x60] turn= 10 buffer=148 texture=25 pipeline=3 bind_group=27 live_bytes=5805056 subscriptions=1 created=637 destroyed=434
+[LeakM2 small 40x25] turn=200 buffer=36 texture=1206 pipeline=3 bind_group=9 live_bytes=24204544 subscriptions=1 created=2760 destroyed=1506
+[LeakM2 small 40x25] turn 50 violations: live texture: baseline=67 current=306 allowed=67; live bytes: baseline=5543168 current=9458944 allowed=5543168
+[LeakM2 small 40x25] turn 200 violations: live texture: baseline=67 current=1206 allowed=67; live bytes: baseline=5543168 current=24204544 allowed=5543168
+[LeakM3 small 40x25] turn=200 buffer=676 texture=47 pipeline=3 bind_group=49 live_bytes=47813888 subscriptions=81 created=2760 destroyed=1985
+[LeakM3 small 40x25] turn= 10 buffer=68 texture=9 pipeline=3 bind_group=11 live_bytes=6722816 subscriptions=5 created=187 destroyed=96
+test new_game_frees_everything_and_restarts_identically ... ok
+test leak_m3_also_retains_battle_scene_resources ... ok
+[Fixed small 40x25] turn= 10 buffer=36 texture=7 pipeline=3 bind_group=9 live_bytes=4560128 subscriptions=1 created=187 destroyed=132
+[LeakM3 small 40x25] turn= 50 buffer=196 texture=17 pipeline=3 bind_group=19 live_bytes=15373568 subscriptions=21 created=712 destroyed=477
+[Fixed large 96x60] turn= 50 buffer=148 texture=25 pipeline=3 bind_group=27 live_bytes=5805056 subscriptions=1 created=2337 destroyed=2134
+[Fixed small 40x25] turn= 50 buffer=36 texture=7 pipeline=3 bind_group=9 live_bytes=4560128 subscriptions=1 created=712 destroyed=657
+[LeakM3 small 40x25] turn=200 buffer=676 texture=47 pipeline=3 bind_group=49 live_bytes=47813888 subscriptions=81 created=2760 destroyed=1985
+[LeakM3 small 40x25] turn 50 violations: live buffer: baseline=68 current=196 allowed=68; live texture: baseline=9 current=17 allowed=9; live bind_group: baseline=11 current=19 allowed=11; live bytes: baseline=6722816 current=15373568 allowed=6722816; subscriptions: baseline=5 current=21 allowed=5
+[LeakM3 small 40x25] turn 200 violations: live buffer: baseline=68 current=676 allowed=68; live texture: baseline=9 current=47 allowed=9; live bind_group: baseline=11 current=49 allowed=11; live bytes: baseline=6722816 current=47813888 allowed=6722816; subscriptions: baseline=5 current=81 allowed=5
+[Fixed small 40x25] turn=200 buffer=36 texture=7 pipeline=3 bind_group=9 live_bytes=4560128 subscriptions=1 created=2760 destroyed=2705
+[Fixed small 40x25] turn= 10 buffer=36 texture=7 pipeline=3 bind_group=9 live_bytes=4560128 subscriptions=1 created=187 destroyed=132
+[LeakM1 large 96x60] turn= 10 buffer=714 texture=25 pipeline=3 bind_group=106 live_bytes=7547008 subscriptions=1 created=1126 destroyed=278
+[Fixed small 40x25] turn= 50 buffer=36 texture=7 pipeline=3 bind_group=9 live_bytes=4560128 subscriptions=1 created=712 destroyed=657
+[Fixed small 40x25] turn=200 buffer=36 texture=7 pipeline=3 bind_group=9 live_bytes=4560128 subscriptions=1 created=2760 destroyed=2705
+[LeakM1 large 96x60] turn= 50 buffer=2502 texture=25 pipeline=3 bind_group=404 live_bytes=12696448 subscriptions=1 created=4324 destroyed=1390
+[LeakM1 small 40x25] turn= 10 buffer=164 texture=7 pipeline=3 bind_group=27 live_bytes=4953088 subscriptions=1 created=299 destroyed=98
+[LeakM1 small 40x25] turn= 50 buffer=590 texture=7 pipeline=3 bind_group=98 live_bytes=6179968 subscriptions=1 created=1187 destroyed=489
+[Fixed large 96x60] turn=200 buffer=148 texture=25 pipeline=3 bind_group=27 live_bytes=5805056 subscriptions=1 created=8826 destroyed=8623
+[Fixed large 96x60] budget OK at turns [50, 200]
+test fixed_registry_stays_within_budget_after_10_50_200_turns ... ok
+[LeakM1 small 40x25] turn=200 buffer=2414 texture=7 pipeline=3 bind_group=402 live_bytes=11433088 subscriptions=1 created=4785 destroyed=1959
+[LeakM1 small 40x25] turn= 10 buffer=164 texture=7 pipeline=3 bind_group=27 live_bytes=4953088 subscriptions=1 created=299 destroyed=98
+[LeakM1 small 40x25] turn= 50 buffer=590 texture=7 pipeline=3 bind_group=98 live_bytes=6179968 subscriptions=1 created=1187 destroyed=489
+[LeakM1 small 40x25] turn=200 buffer=2414 texture=7 pipeline=3 bind_group=402 live_bytes=11433088 subscriptions=1 created=4785 destroyed=1959
+test simulation_is_deterministic ... ok
+[LeakM1 large 96x60] turn=200 buffer=9552 texture=25 pipeline=3 bind_group=1579 live_bytes=33000448 subscriptions=1 created=16718 destroyed=5559
+[LeakM1 large 96x60] turn 50 violations: live buffer: baseline=714 current=2502 allowed=714; live bind_group: baseline=106 current=404 allowed=106; live bytes: baseline=7547008 current=12696448 allowed=7547008
+[LeakM1 large 96x60] turn 200 violations: live buffer: baseline=714 current=9552 allowed=714; live bind_group: baseline=106 current=1579 allowed=106; live bytes: baseline=7547008 current=33000448 allowed=7547008
+[LeakM2 large 96x60] turn= 10 buffer=148 texture=265 pipeline=3 bind_group=27 live_bytes=9737216 subscriptions=1 created=637 destroyed=194
+[LeakM2 large 96x60] turn= 50 buffer=148 texture=1224 pipeline=3 bind_group=27 live_bytes=25449472 subscriptions=1 created=2336 destroyed=934
+[LeakM2 large 96x60] turn=200 buffer=148 texture=4815 pipeline=3 bind_group=27 live_bytes=84284416 subscriptions=1 created=8817 destroyed=3824
+[LeakM2 large 96x60] turn 50 violations: live texture: baseline=265 current=1224 allowed=265; live bytes: baseline=9737216 current=25449472 allowed=9737216
+[LeakM2 large 96x60] turn 200 violations: live texture: baseline=265 current=4815 allowed=265; live bytes: baseline=9737216 current=84284416 allowed=9737216
+[LeakM3 large 96x60] turn= 10 buffer=180 texture=27 pipeline=3 bind_group=29 live_bytes=7967744 subscriptions=5 created=637 destroyed=398
+[rebuild 1000 cycles] start: turn=  0 buffer=36 texture=7 pipeline=3 bind_group=9 live_bytes=4560128 subscriptions=1 created=55 destroyed=0
+[rebuild 1000 cycles] end:   turn=  0 buffer=36 texture=7 pipeline=3 bind_group=9 live_bytes=4560128 subscriptions=1 created=55055 destroyed=55000
+test rebuild_in_place_1000_cycles_returns_to_initial_state ... ok
+[LeakM3 large 96x60] turn= 50 buffer=308 texture=35 pipeline=3 bind_group=37 live_bytes=16618496 subscriptions=21 created=2337 destroyed=1954
+[LeakM3 large 96x60] turn=200 buffer=788 texture=65 pipeline=3 bind_group=67 live_bytes=49058816 subscriptions=81 created=8826 destroyed=7903
+[LeakM3 large 96x60] turn 50 violations: live buffer: baseline=180 current=308 allowed=180; live texture: baseline=27 current=35 allowed=27; live bind_group: baseline=29 current=37 allowed=29; live bytes: baseline=7967744 current=16618496 allowed=7967744; subscriptions: baseline=5 current=21 allowed=5
+[LeakM3 large 96x60] turn 200 violations: live buffer: baseline=180 current=788 allowed=180; live texture: baseline=27 current=65 allowed=27; live bind_group: baseline=29 current=67 allowed=29; live bytes: baseline=7967744 current=49058816 allowed=7967744; subscriptions: baseline=5 current=81 allowed=5
+test each_leak_pattern_breaks_the_budget ... ok
+
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.06s
+
+     Running tests/assets_registry.rs (/home/user/cargo-target-shared/wf_5eb5677d-3de-3/debug/deps/assets_registry-ee54812c049c2745)
+
+running 14 tests
+test drop_and_clone_inside_with_are_deferred_not_panicking ... ok
+test budget_thresholds_are_configurable ... ok
+test cache_end_of_turn_trims_only_unreferenced_entries ... ok
+test cache_lru_by_entries_and_bytes ... ok
+test handle_from_another_registry_is_rejected ... ok
+test live_report_lists_labels ... ok
+test owned_guards_count_references ... ok
+test owned_replace_creates_new_before_freeing_old_and_keeps_shared_old ... ok
+test reference_counting_frees_on_last_release ... ok
+test registry_replace_creates_new_before_freeing_old ... ok
+test scope_releases_everything_it_created_on_drop ... ok
+test stale_handle_is_an_error_not_a_panic ... ok
+test subscription_dropped_inside_callback_is_removed_after_emit ... ok
+test subscriptions_unregister_on_drop ... ok
+
+test result: ok. 14 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/camera_web_parity.rs (/home/user/cargo-target-shared/wf_5eb5677d-3de-3/debug/deps/camera_web_parity-96e1465f8bdd64b3)
+
+running 5 tests
+test frame_at_60_fps_is_exactly_one_web_frame ... ok
+test drag_and_wheel_do_not_depend_on_dt ... ok
+test pan_scales_with_dt_and_long_frames_are_capped ... ok
+test fixture_covers_every_branch ... ok
+test camera_controller_matches_web_100_percent ... ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.03s
+
+     Running tests/cpu_sanity.rs (/home/user/cargo-target-shared/wf_5eb5677d-3de-3/debug/deps/cpu_sanity-7ee07d9f2002230a)
+
+running 1 test
+test gpu_feature_readback_matches_build_configuration ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/geom_three_parity.rs (/home/user/cargo-target-shared/wf_5eb5677d-3de-3/debug/deps/geom_three_parity-ab6f7952892f0505)
+
+running 17 tests
+test index_buffer_covers_non_indexed_meshes ... ok
+test merge_rejects_mixed_indexing ... ok
+test parity_circle ... ok
+test parity_curve ... ok
+test parity_cone ... ok
+test parity_box ... ok
+test parity_plane ... ok
+test parity_cylinder ... ok
+test parity_extrude ... ok
+test parity_ops ... ok
+test parity_ring ... ok
+test parity_shape ... ok
+test parity_torus ... ok
+test parity_polyhedron ... ok
+test trs_matches_manual_composition ... ok
+test parity_tube ... ok
+test parity_sphere ... ok
+
+test result: ok. 17 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+     Running tests/gpu_probe.rs (/home/user/cargo-target-shared/wf_5eb5677d-3de-3/debug/deps/gpu_probe-08e2d2a6c2a7bdae)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/pick_golden.rs (/home/user/cargo-target-shared/wf_5eb5677d-3de-3/debug/deps/pick_golden-b6b94fb9d9c318d1)
+
+running 7 tests
+test client_rect_to_ndc_matches_web ... ok
+test js_round_matches_math_round ... ok
+test prism_geometry_is_bitwise_three_cylinder ... ok
+test world_to_axial_both_variants_match_web ... ok
+test terrain_scene_instances_are_bitwise_web ... ok
+test camera_matrices_and_rays_are_bitwise_three ... ok
+test golden_picks_match_web_100_percent ... ok
+
+test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.37s
+
+     Running tests/terrain_web_parity.rs (/home/user/cargo-target-shared/wf_5eb5677d-3de-3/debug/deps/terrain_web_parity-5b12acf27f4f9ccd)
+
+running 5 tests
+test js_pow_special_cases_follow_v8 ... ok
+test fog_hides_unknown_and_dims_explored ... ok
+test color_math_matches_three ... ok
+test terrain_fog_matches_web ... ok
+test terrain_build_matches_web ... ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.19s
+
+EXIT=0
+### cargo test --locked --test camera_web_parity -- --nocapture
+    Finished `test` profile [unoptimized] target(s) in 0.04s
+     Running tests/camera_web_parity.rs (/home/user/cargo-target-shared/wf_5eb5677d-3de-3/debug/deps/camera_web_parity-96e1465f8bdd64b3)
+
+running 5 tests
+test frame_at_60_fps_is_exactly_one_web_frame ... ok
+test drag_and_wheel_do_not_depend_on_dt ... ok
+test pan_scales_with_dt_and_long_frames_are_capped ... ok
+test fixture_covers_every_branch ... ok
+camera parity: scenarios=34 steps=6524 scalars=47892 mismatches=0
+test camera_controller_matches_web_100_percent ... ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.03s
+
+EXIT=0
 ```
