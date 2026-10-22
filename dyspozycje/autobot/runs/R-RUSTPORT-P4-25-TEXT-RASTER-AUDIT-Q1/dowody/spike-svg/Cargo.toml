@@ -1,0 +1,9 @@
+[package]
+name = "svg-spike"
+version = "0.0.0"
+edition = "2021"
+rust-version = "1.87"
+publish = false
+
+[dependencies]
+resvg = { version = "=0.48.1", default-features = false }

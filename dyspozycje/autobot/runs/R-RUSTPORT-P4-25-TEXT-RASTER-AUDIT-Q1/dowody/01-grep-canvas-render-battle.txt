@@ -1,0 +1,149 @@
+gra/src/battle/battleScene.ts:11069:    const ctx = this._minimapCanvas.getContext('2d');
+gra/src/battle/battleScene.ts:18647:  private _makeGroupNumberTexture(label: string): THREE.CanvasTexture {
+gra/src/battle/battleScene.ts:18651:    const ctx = c.getContext('2d')!;
+gra/src/battle/battleScene.ts:18658:    ctx.font = 'bold 16px sans-serif';
+gra/src/battle/battleScene.ts:18661:    ctx.fillText(label, 14, 15);
+gra/src/battle/battleScene.ts:18662:    const tex = new THREE.CanvasTexture(c);
+gra/src/battle/battleScene.ts:18713:      const spriteMat = new THREE.SpriteMaterial({
+gra/src/battle/battleScene.ts:18720:      const sprite = new THREE.Sprite(spriteMat);
+gra/src/render/cities.ts:410:  private revoltTex: THREE.CanvasTexture | null = null;
+gra/src/render/cities.ts:415:  private statTexCache: Map<string, THREE.CanvasTexture> = new Map();
+gra/src/render/cities.ts:708:  private _revoltTexture(): THREE.CanvasTexture {
+gra/src/render/cities.ts:713:      const ctx = c.getContext('2d')!;
+gra/src/render/cities.ts:714:      ctx.font = '48px serif';
+gra/src/render/cities.ts:717:      ctx.fillText('\u{1F525}', 32, 36);
+gra/src/render/cities.ts:718:      this.revoltTex = new THREE.CanvasTexture(c);
+gra/src/render/cities.ts:727:      (s.material as THREE.SpriteMaterial).dispose();
+gra/src/render/cities.ts:738:    const mat = new THREE.SpriteMaterial({
+gra/src/render/cities.ts:743:    const sprite = new THREE.Sprite(mat);
+gra/src/render/cities.ts:754:      // Uwaga: NIE dispose'ować (s.material as THREE.SpriteMaterial).map — tekstura jest
+gra/src/render/cities.ts:757:      (s.material as THREE.SpriteMaterial).dispose();
+gra/src/render/cityMapStatChip.ts:92: * z `measureText` dokładnie tym fontem, więc długi zapis nie wchodzi na glif produkcji.
+gra/src/render/cityMapStatChip.ts:577:  ctx.font = 'bold 20px "Segoe UI Symbol", "Segoe UI", Arial, sans-serif';
+gra/src/render/cityMapStatChip.ts:580:  ctx.fillText('◆', cx, cy + 1);
+gra/src/render/cityMapStatChip.ts:684:  ctx.font = 'bold 11px Arial, Helvetica, sans-serif';
+gra/src/render/cityMapStatChip.ts:687:  ctx.fillText('!', cx, cy + 0.5);
+gra/src/render/cityMapStatChip.ts:708:  ctx.font = font;
+gra/src/render/cityMapStatChip.ts:711:  if (ctx.measureText(line).width > maxTextW && line.length > 1) {
+gra/src/render/cityMapStatChip.ts:713:    while (s.length > 1 && ctx.measureText(s + '…').width > maxTextW) s = s.slice(0, -1);
+gra/src/render/cityMapStatChip.ts:717:  ctx.fillText(line, x, y);
+gra/src/render/cityMapStatChip.ts:759:  ctx.font = GROWTH_FONT;
+gra/src/render/cityMapStatChip.ts:763:  ctx.fillText(label, x, cy);
+gra/src/render/cityMapStatChip.ts:772:  ctx.font = font;
+gra/src/render/cityMapStatChip.ts:773:  if (ctx.measureText(name).width <= maxW) return name;
+gra/src/render/cityMapStatChip.ts:775:  while (s.length > 1 && ctx.measureText(s + '…').width > maxW) {
+gra/src/render/cityMapStatChip.ts:805:  const measure = document.createElement('canvas').getContext('2d')!;
+gra/src/render/cityMapStatChip.ts:813:    measure.font = GROWTH_FONT;
+gra/src/render/cityMapStatChip.ts:814:    growthW = Math.ceil(measure.measureText(growthLabel).width);
+gra/src/render/cityMapStatChip.ts:816:  measure.font = nameFont;
+gra/src/render/cityMapStatChip.ts:824:  if (measure.measureText(name).width > maxNameW) {
+gra/src/render/cityMapStatChip.ts:827:  const nameW = measure.measureText(displayName).width;
+gra/src/render/cityMapStatChip.ts:850:  const ctx = canvas.getContext('2d')!;
+gra/src/render/cityMapStatChip.ts:898:  ctx.font = nameFont;
+gra/src/render/cityMapStatChip.ts:902:  ctx.fillText(displayName, nameX, cy);
+gra/src/render/cityMapStatChip.ts:921:  ctx.font = popFont;
+gra/src/render/cityMapStatChip.ts:925:  ctx.fillText(popStr, cx, cy + 1);
+gra/src/render/cityMapStatChip.ts:1035:  cache: Map<string, THREE.CanvasTexture>,
+gra/src/render/cityMapStatChip.ts:1054:  texCache: Map<string, THREE.CanvasTexture>,
+gra/src/render/cityMapStatChip.ts:1059:  texCache: Map<string, THREE.CanvasTexture>,
+gra/src/render/cityMapStatChip.ts:1063:  b: Map<string, THREE.CanvasTexture> | number,
+gra/src/render/cityMapStatChip.ts:1064:  c?: Map<string, THREE.CanvasTexture>,
+gra/src/render/cityMapStatChip.ts:1069:  const texCache = (typeof a === 'string' ? c : b) as Map<string, THREE.CanvasTexture>;
+gra/src/render/cityMapStatChip.ts:1076:    tex = new THREE.CanvasTexture(canvas);
+gra/src/render/cityMapStatChip.ts:1111:  const mat = new THREE.SpriteMaterial({
+gra/src/render/cityMapStatChip.ts:1117:  const sprite = new THREE.Sprite(mat);
+gra/src/render/cityMapStatChip.ts:1130:export function disposeCityStatChipTextures(cache: Map<string, THREE.CanvasTexture>): void {
+gra/src/render/cityOkolicaOverlay.ts:138:  ctx.font = `bold ${WORKER_BADGE_GLYPH_PX}px Segoe UI, Arial`;
+gra/src/render/cityOkolicaOverlay.ts:142:  ctx.fillText('👤', cx, cy + 1);
+gra/src/render/cityOkolicaOverlay.ts:162:  ctx.font = YIELD_EMOJI_FONT(emojiPx);
+gra/src/render/cityOkolicaOverlay.ts:163:  const emojiW = ctx.measureText(line.emoji).width;
+gra/src/render/cityOkolicaOverlay.ts:164:  ctx.font = YIELD_DIGIT_FONT(digitPx);
+gra/src/render/cityOkolicaOverlay.ts:165:  const numW = ctx.measureText(numStr).width;
+gra/src/render/cityOkolicaOverlay.ts:168:  ctx.font = YIELD_EMOJI_FONT(emojiPx);
+gra/src/render/cityOkolicaOverlay.ts:170:  ctx.fillText(line.emoji, x, y);
+gra/src/render/cityOkolicaOverlay.ts:173:  ctx.font = YIELD_DIGIT_FONT(digitPx);
+gra/src/render/cityOkolicaOverlay.ts:178:  ctx.fillText(numStr, x, y - (worked ? 2 : 0));
+gra/src/render/cityOkolicaOverlay.ts:198:  const ctx = canvas.getContext('2d')!;
+gra/src/render/cityOkolicaOverlay.ts:203:  ctx.font = YIELD_DIGIT_FONT(fontPx);
+gra/src/render/cityOkolicaOverlay.ts:210:  const tex = new THREE.CanvasTexture(canvas);
+gra/src/render/cityOkolicaOverlay.ts:213:  const mat = new THREE.SpriteMaterial({
+gra/src/render/cityOkolicaOverlay.ts:220:  const sprite = new THREE.Sprite(mat);
+gra/src/render/cityOkolicaOverlay.ts:330:      const mat = sprite.material as THREE.SpriteMaterial;
+gra/src/render/siegeMarker.ts:23:let siegeTex: THREE.CanvasTexture | null = null;
+gra/src/render/siegeMarker.ts:35:function siegeSpriteTexture(): THREE.CanvasTexture {
+gra/src/render/siegeMarker.ts:40:    const ctx = c.getContext('2d')!;
+gra/src/render/siegeMarker.ts:42:    ctx.font = 'bold 96px Arial';
+gra/src/render/siegeMarker.ts:45:    ctx.fillText('\u2694', 64, 70);
+gra/src/render/siegeMarker.ts:46:    siegeTex = new THREE.CanvasTexture(c);
+gra/src/render/siegeMarker.ts:118:    const spriteMat = new THREE.SpriteMaterial({
+gra/src/render/siegeMarker.ts:125:    const sprite = new THREE.Sprite(spriteMat);
+gra/src/render/siegeMarker.ts:236:      const sm = entry.sprite.material as THREE.SpriteMaterial;
+gra/src/render/unitOwnerEmblem.ts:43: * ── TECHNIKA: CanvasTexture + THREE.Sprite ────────────────────────────────
+gra/src/render/unitOwnerEmblem.ts:45: * THREE.CanvasTexture, na niej THREE.SpriteMaterial. Sprite zawsze zwrócony
+gra/src/render/unitOwnerEmblem.ts:260:  ctx.font = 'bold 58px "Segoe UI Symbol", "Segoe UI", Arial, sans-serif';
+gra/src/render/unitOwnerEmblem.ts:263:  ctx.fillText(variant === 'barbarian' ? '☠' : '◆', c, c + 3);
+gra/src/render/unitOwnerEmblem.ts:295:  texture: THREE.CanvasTexture;
+gra/src/render/unitOwnerEmblem.ts:296:  material: THREE.SpriteMaterial;
+gra/src/render/unitOwnerEmblem.ts:336:  const ctx = canvas.getContext('2d');
+gra/src/render/unitOwnerEmblem.ts:349:  const texture = new THREE.CanvasTexture(canvas);
+gra/src/render/unitOwnerEmblem.ts:352:  const material = new THREE.SpriteMaterial({
+gra/src/render/unitOwnerEmblem.ts:436: * `SpriteMaterial` znaczy billboard, a billboardy w jednym obiekcie przesuwają
+gra/src/render/unitOwnerEmblem.ts:441:export function ownerEmblemMaterial(octx: UnitOwnerEmblemContext): THREE.SpriteMaterial | null {
+gra/src/render/unitOwnerEmblem.ts:451:export function ownerEmblemTexture(octx: UnitOwnerEmblemContext): THREE.CanvasTexture | null {
+gra/src/render/unitOwnerEmblem.ts:496:  const sprite = new THREE.Sprite(asset.material);
+gra/src/render/unitStatPlate.ts:47: * ROZWIĄZANIE: wypełnienie paska to THREE.Sprite BEZ TEKSTURY (SpriteMaterial
+gra/src/render/unitStatPlate.ts:395:let bgAsset: { texture: THREE.CanvasTexture; material: THREE.MeshStandardMaterial } | null = null;
+gra/src/render/unitStatPlate.ts:403:function getPlateBgAsset(): { texture: THREE.CanvasTexture; material: THREE.MeshStandardMaterial } | null {
+gra/src/render/unitStatPlate.ts:408:  const ctx = canvas.getContext('2d');
+gra/src/render/unitStatPlate.ts:437:  const texture = new THREE.CanvasTexture(canvas);
+gra/src/render/unitStatPlate.ts:472: * używać `SpriteMaterial` (billboard = rozjazd, patrz PLATE_TILT_RAD).
+gra/src/render/unitStatPlate.ts:518:// Ramka: JEDNA biała tekstura + materiał barwiony `SpriteMaterial.color`,
+gra/src/render/unitStatPlate.ts:542:let powerFrameTex: THREE.CanvasTexture | null = null;
+gra/src/render/unitStatPlate.ts:545:const powerDigitTex: Array<THREE.CanvasTexture | null> = new Array(10).fill(null);
+gra/src/render/unitStatPlate.ts:549: * barwę państwa nadaje dopiero `SpriteMaterial.color` — inaczej każdy kolor
+gra/src/render/unitStatPlate.ts:556:function getPowerFrameTexture(): THREE.CanvasTexture | null {
+gra/src/render/unitStatPlate.ts:561:  const ctx = canvas.getContext('2d');
+gra/src/render/unitStatPlate.ts:573:  powerFrameTex = new THREE.CanvasTexture(canvas);
+gra/src/render/unitStatPlate.ts:606:  const ctx = canvas.getContext('2d');
+gra/src/render/unitStatPlate.ts:609:  ctx.font = `900 ${Math.round(POWER_DIGIT_CANVAS_H * 0.94)}px "Segoe UI", Arial, sans-serif`;
+gra/src/render/unitStatPlate.ts:615:  ctx.strokeText(String(digit), POWER_DIGIT_CANVAS_W / 2, POWER_DIGIT_CANVAS_H / 2 + 1);
+gra/src/render/unitStatPlate.ts:617:  ctx.fillText(String(digit), POWER_DIGIT_CANVAS_W / 2, POWER_DIGIT_CANVAS_H / 2 + 1);
+gra/src/render/unitStatPlate.ts:618:  const tex = new THREE.CanvasTexture(canvas);
+gra/src/render/unitUpgradeBadges.ts:305:  texture: THREE.CanvasTexture;
+gra/src/render/unitUpgradeBadges.ts:319:  const ctx = canvas.getContext('2d');
+gra/src/render/unitUpgradeBadges.ts:324:  const texture = new THREE.CanvasTexture(canvas);
+gra/src/render/units.ts:6206:      (sprite.material as THREE.SpriteMaterial).dispose();
+gra/src/render/units.ts:6242:        (sprite.material as THREE.SpriteMaterial).dispose();
+gra/src/render/units.ts:6291:    const ctx = canvas.getContext('2d')!;
+gra/src/render/units.ts:6294:    ctx.font = 'bold 104px "Segoe UI Symbol", "Segoe UI Emoji", "Segoe UI", Arial, sans-serif';
+gra/src/render/units.ts:6297:    ctx.fillText('\u2620', 64, 70);
+gra/src/render/units.ts:6298:    const tex = new THREE.CanvasTexture(canvas);
+gra/src/render/units.ts:6299:    const mat = new THREE.SpriteMaterial({
+gra/src/render/units.ts:6305:    const sp = new THREE.Sprite(mat);
+gra/src/render/units.ts:6323:    const ctx = canvas.getContext('2d')!;
+gra/src/render/units.ts:6356:    const tex = new THREE.CanvasTexture(canvas);
+gra/src/render/units.ts:6357:    const mat = new THREE.SpriteMaterial({
+gra/src/render/units.ts:6363:    const sp = new THREE.Sprite(mat);
+gra/src/render/units.ts:6373:    const ctx = canvas.getContext('2d')!;
+gra/src/render/units.ts:6382:    ctx.font = 'bold 26px Segoe UI, Arial, sans-serif';
+gra/src/render/units.ts:6385:    ctx.fillText('\u00d7' + String(count), 32, 34);
+gra/src/render/units.ts:6386:    const tex = new THREE.CanvasTexture(canvas);
+gra/src/render/units.ts:6387:    const mat = new THREE.SpriteMaterial({ map: tex, transparent: true, depthTest: false });
+gra/src/render/units.ts:6388:    const sp = new THREE.Sprite(mat);
+gra/src/render/units.ts:6584:    const ctx = canvas.getContext('2d')!;
+gra/src/render/units.ts:6594:    ctx.font = 'bold 20px Segoe UI, Arial, sans-serif';
+gra/src/render/units.ts:6597:    ctx.fillText(text, canvas.width / 2, canvas.height / 2 + 1);
+gra/src/render/units.ts:6598:    const tex = new THREE.CanvasTexture(canvas);
+gra/src/render/units.ts:6599:    const mat = new THREE.SpriteMaterial({ map: tex, transparent: true, depthTest: false });
+gra/src/render/units.ts:6600:    const sp = new THREE.Sprite(mat);
+gra/src/render/units.ts:6626:        const mat = obj.material as THREE.SpriteMaterial;
+gra/src/render/workerFieldOverlay.ts:56:const workerSpriteCache = new Map<string, THREE.CanvasTexture>();
+gra/src/render/workerFieldOverlay.ts:63:function getWorkerIconTexture(ownerId: number, playerOwnerId: number): THREE.CanvasTexture {
+gra/src/render/workerFieldOverlay.ts:73:  const ctx = canvas.getContext('2d')!;
+gra/src/render/workerFieldOverlay.ts:98:  ctx.font = 'bold 16px Segoe UI, Arial';
+gra/src/render/workerFieldOverlay.ts:102:  ctx.fillText('👤', cx, cy + 1);
+gra/src/render/workerFieldOverlay.ts:104:  tex = new THREE.CanvasTexture(canvas);
+gra/src/render/workerFieldOverlay.ts:113:  const mat = new THREE.SpriteMaterial({
+gra/src/render/workerFieldOverlay.ts:122:  const sprite = new THREE.Sprite(mat);
+gra/src/render/workerFieldOverlay.ts:188:    const mat = sprite.material as THREE.SpriteMaterial;
+gra/src/render/workerFieldOverlay.ts:201:    const mat = sprite.material as THREE.SpriteMaterial;
