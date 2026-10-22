@@ -49,11 +49,16 @@ pub const LEGACY_REBEL_OWNER_ID: i64 = -99;
 /// The serialized form stays a single JSON number so the existing DTO and save
 /// contract is unchanged: a player serializes as its id (`>= 0`), barbarians as
 /// `-1` and rebels as `-99`. No arithmetic is provided on owners.
+///
+/// Ordering: the derived `Ord` follows variant declaration order, so the
+/// variants are declared `Rebel < Barbarian < Player(_)`. That is exactly the
+/// order of the legacy `i64` values (`-99 < -1 < 0 < 1 < ...`), so sorted and
+/// `BTreeMap` iteration order is unchanged by the migration. Do not reorder.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord)]
 pub enum OwnerRef {
-    Player(PlayerId),
-    Barbarian,
     Rebel,
+    Barbarian,
+    Player(PlayerId),
 }
 
 impl OwnerRef {

@@ -269,8 +269,8 @@ fn trade_route_vector_uses_stable_hex_path_and_wire_identity() {
     for q in 0..5 {
         map.insert(TradeHexCoord::new(q, 0), TradeTerrainType::Plains);
     }
-    let from = TradeCity::new("from", 1, 0, 0);
-    let to = TradeCity::new("to", 2, 4, 0);
+    let from = TradeCity::new("from", PlayerId::new(1), 0, 0);
+    let to = TradeCity::new("to", PlayerId::new(2), 4, 0);
 
     let connection = find_city_connection(&from, &to, &map, TradeRouteMedium::Land);
     assert!(connection.connected);

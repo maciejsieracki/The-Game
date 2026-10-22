@@ -2,7 +2,7 @@
 
 use std::collections::BTreeMap;
 
-use civ_engine::domain::trade;
+use civ_engine::domain::{trade, PlayerId};
 use trade::{
     compute_sea_trade_bonus_income_by_city, compute_sea_trade_route_count_by_city,
     compute_trade_route_resource_grants, create_trade_route, diff_trade_routes,
@@ -22,7 +22,7 @@ fn line_map(length: i32) -> TradeMap {
 }
 
 fn city(id: &str, owner_id: u64, q: i32, r: i32) -> TradeCity {
-    TradeCity::new(id, owner_id, q, r)
+    TradeCity::new(id, PlayerId::new(owner_id), q, r)
 }
 
 #[allow(clippy::too_many_arguments)]
@@ -41,8 +41,8 @@ fn route(
         id,
         from_city_id,
         to_city_id,
-        owner_id,
-        to_owner_id,
+        PlayerId::new(owner_id),
+        PlayerId::new(to_owner_id),
         medium,
         distance,
         status,
@@ -135,8 +135,8 @@ fn land_border_is_required_only_when_territory_data_is_supplied() {
     assert!(without_territory.connected);
 
     let separated = [
-        TerritoryNode::new(10, 0, 0, 2),
-        TerritoryNode::new(20, 10, 0, 2),
+        TerritoryNode::new(PlayerId::new(10), 0, 0, 2),
+        TerritoryNode::new(PlayerId::new(20), 10, 0, 2),
     ];
     let blocked = find_city_connection_with_options(
         &from,
@@ -150,8 +150,8 @@ fn land_border_is_required_only_when_territory_data_is_supplied() {
     assert!(!blocked.connected);
 
     let touching = [
-        TerritoryNode::new(10, 0, 0, 5),
-        TerritoryNode::new(20, 10, 0, 5),
+        TerritoryNode::new(PlayerId::new(10), 0, 0, 5),
+        TerritoryNode::new(PlayerId::new(20), 10, 0, 5),
     ];
     let connected = find_city_connection_with_options(
         &from,
@@ -220,8 +220,8 @@ fn refresh_requires_treaty_and_war_free_route_but_allows_internal_trade() {
         |_left, _right| false,
     );
     assert_eq!(no_treaty.len(), 1);
-    assert_eq!(no_treaty[0].owner_id, 0);
-    assert_eq!(no_treaty[0].to_owner_id, 0);
+    assert_eq!(no_treaty[0].owner_id, PlayerId::new(0));
+    assert_eq!(no_treaty[0].to_owner_id, PlayerId::new(0));
 
     let with_treaty = refresh_trade_routes(
         &all,
@@ -234,23 +234,28 @@ fn refresh_requires_treaty_and_war_free_route_but_allows_internal_trade() {
     assert_eq!(with_treaty.len(), 2);
     assert!(with_treaty
         .iter()
-        .any(|r| r.owner_id == 0 && r.to_owner_id == 1));
+        .any(|r| r.owner_id == PlayerId::new(0) && r.to_owner_id == PlayerId::new(1)));
     assert!(with_treaty
         .iter()
-        .any(|r| r.owner_id == 0 && r.to_owner_id == 0));
+        .any(|r| r.owner_id == PlayerId::new(0) && r.to_owner_id == PlayerId::new(0)));
 
     let at_war = refresh_trade_routes(
         &all,
         &with_treaty,
         &map,
         &built,
-        |left, right| (left == 0 && right == 1) || (left == 1 && right == 0),
+        |left, right| {
+            (left == PlayerId::new(0) && right == PlayerId::new(1))
+                || (left == PlayerId::new(1) && right == PlayerId::new(0))
+        },
         |_left, _right| true,
     );
     assert!(at_war
         .iter()
-        .all(|r| !(r.owner_id == 0 && r.to_owner_id == 1)));
-    assert!(at_war.iter().any(|r| r.owner_id == 0 && r.to_owner_id == 0));
+        .all(|r| !(r.owner_id == PlayerId::new(0) && r.to_owner_id == PlayerId::new(1))));
+    assert!(at_war
+        .iter()
+        .any(|r| r.owner_id == PlayerId::new(0) && r.to_owner_id == PlayerId::new(0)));
 }
 
 #[test]
@@ -352,7 +357,7 @@ fn route_income_building_and_sea_bonuses_are_aggregated_per_city() {
         std::slice::from_ref(&land),
         &params,
         |owner, _| {
-            if owner == 0 {
+            if owner == PlayerId::new(0) {
                 0.5
             } else {
                 0.0
@@ -401,24 +406,50 @@ fn grants_are_symmetric_and_disappear_with_inactive_routes() {
         status: TradeRouteStatus::NoConnection,
         ..active.clone()
     };
-    let native =
-        |owner: u64, key: &str| (owner == 5 && key == "zelazo") || (owner == 6 && key == "braz");
+    let native = |owner: PlayerId, key: &str| {
+        (owner == PlayerId::new(5) && key == "zelazo")
+            || (owner == PlayerId::new(6) && key == "braz")
+    };
 
     let grants = compute_trade_route_resource_grants(std::slice::from_ref(&active), native);
     assert_eq!(grants.len(), 2);
-    assert!(has_trade_route_resource_access(&grants, 5, "braz"));
-    assert!(has_trade_route_resource_access(&grants, 6, "zelazo"));
-    assert!(!has_trade_route_resource_access(&grants, 5, "zelazo"));
+    assert!(has_trade_route_resource_access(
+        &grants,
+        PlayerId::new(5),
+        "braz"
+    ));
+    assert!(has_trade_route_resource_access(
+        &grants,
+        PlayerId::new(6),
+        "zelazo"
+    ));
+    assert!(!has_trade_route_resource_access(
+        &grants,
+        PlayerId::new(5),
+        "zelazo"
+    ));
     assert_eq!(grants[0].via_city_id, "city-a");
     assert_eq!(grants[0].route_id, "route-2");
     assert!(compute_trade_route_resource_grants(&[inactive], native).is_empty());
 
     let ordered = [
-        trade::TradeRouteResourceGrant::new(5, "braz", 6, "city-a", "z-route"),
-        trade::TradeRouteResourceGrant::new(5, "braz", 6, "city-a", "a-route"),
+        trade::TradeRouteResourceGrant::new(
+            PlayerId::new(5),
+            "braz",
+            PlayerId::new(6),
+            "city-a",
+            "z-route",
+        ),
+        trade::TradeRouteResourceGrant::new(
+            PlayerId::new(5),
+            "braz",
+            PlayerId::new(6),
+            "city-a",
+            "a-route",
+        ),
     ];
     assert_eq!(
-        trade::first_trade_route_resource_grant(&ordered, 5, "braz")
+        trade::first_trade_route_resource_grant(&ordered, PlayerId::new(5), "braz")
             .expect("grant exists")
             .route_id,
         "a-route"
@@ -451,7 +482,7 @@ fn resource_flow_moves_only_surplus_and_uses_deterministic_ledger() {
             false,
         ),
     ];
-    let stocks = |owner: u64, key: &str| match (owner, key) {
+    let stocks = |owner: PlayerId, key: &str| match (owner.get(), key) {
         (1, "cegla") => 10,
         (2, "cegla") => 0,
         (3, "cegla") => 0,
@@ -466,8 +497,8 @@ fn resource_flow_moves_only_surplus_and_uses_deterministic_ledger() {
     assert_eq!(flows.len(), 1);
     assert_eq!(flows[0].route_id, "a-route");
     assert_eq!(flows[0].amount, 8);
-    assert_eq!(flows[0].from_owner_id, 1);
-    assert_eq!(flows[0].to_owner_id, 3);
+    assert_eq!(flows[0].from_owner_id, PlayerId::new(1));
+    assert_eq!(flows[0].to_owner_id, PlayerId::new(3));
 
     let at_reserve = trade::compute_trade_route_resource_flow_with_options(
         &[route(
@@ -532,7 +563,13 @@ fn map_and_resource_dtos_use_json_safe_camel_case_contracts() {
     let decoded_map: TradeMap = serde_json::from_value(encoded_map).expect("trade map round-trips");
     assert_eq!(decoded_map, map);
 
-    let grant = trade::TradeRouteResourceGrant::new(2, "braz", 1, "city-b", "route-1");
+    let grant = trade::TradeRouteResourceGrant::new(
+        PlayerId::new(2),
+        "braz",
+        PlayerId::new(1),
+        "city-b",
+        "route-1",
+    );
     let encoded_grant = serde_json::to_value(&grant).expect("grant serializes");
     assert_eq!(encoded_grant["resourceKey"], "braz");
     assert!(encoded_grant.get("resource_key").is_none());
@@ -540,7 +577,13 @@ fn map_and_resource_dtos_use_json_safe_camel_case_contracts() {
         serde_json::from_value(encoded_grant).expect("grant deserializes");
     assert_eq!(decoded_grant, grant);
 
-    let flow = trade::TradeRouteResourceFlow::new("route-1", "zloto", 1, 2, 3);
+    let flow = trade::TradeRouteResourceFlow::new(
+        "route-1",
+        "zloto",
+        PlayerId::new(1),
+        PlayerId::new(2),
+        3,
+    );
     let encoded_flow = serde_json::to_value(&flow).expect("flow serializes");
     assert_eq!(encoded_flow["resourceKey"], "zloto");
     assert!(encoded_flow.get("resource_key").is_none());

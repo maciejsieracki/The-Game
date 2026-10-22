@@ -7,6 +7,7 @@
 //! so the module can be wired into the engine without coupling it to Tauri or
 //! the renderer.
 
+use super::PlayerId;
 use serde::{Deserialize, Serialize};
 use std::collections::{BTreeMap, BTreeSet, HashMap, VecDeque};
 use std::fmt;
@@ -236,7 +237,7 @@ pub struct TradeCity {
     #[serde(rename = "id")]
     pub id: String,
     #[serde(rename = "ownerId", alias = "owner_id")]
-    pub owner_id: u64,
+    pub owner_id: PlayerId,
     pub q: i32,
     pub r: i32,
 }
@@ -244,7 +245,7 @@ pub struct TradeCity {
 pub type TradeRouteCityRef = TradeCity;
 
 impl TradeCity {
-    pub fn new(id: impl Into<String>, owner_id: u64, q: i32, r: i32) -> Self {
+    pub fn new(id: impl Into<String>, owner_id: PlayerId, q: i32, r: i32) -> Self {
         Self {
             id: id.into(),
             owner_id,
@@ -263,14 +264,14 @@ impl TradeCity {
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 pub struct TerritoryNode {
     #[serde(rename = "ownerId", alias = "owner_id")]
-    pub owner_id: u64,
+    pub owner_id: PlayerId,
     pub q: i32,
     pub r: i32,
     pub radius: u32,
 }
 
 impl TerritoryNode {
-    pub const fn new(owner_id: u64, q: i32, r: i32, radius: u32) -> Self {
+    pub const fn new(owner_id: PlayerId, q: i32, r: i32, radius: u32) -> Self {
         Self {
             owner_id,
             q,
@@ -396,9 +397,9 @@ pub struct TradeRoute {
     #[serde(rename = "toCityId", alias = "to_city_id")]
     pub to_city_id: String,
     #[serde(rename = "ownerId", alias = "owner_id")]
-    pub owner_id: u64,
+    pub owner_id: PlayerId,
     #[serde(rename = "toOwnerId", alias = "to_owner_id")]
-    pub to_owner_id: u64,
+    pub to_owner_id: PlayerId,
     pub medium: TradeRouteMedium,
     #[serde(rename = "dystans", alias = "distance")]
     pub distance: u32,
@@ -413,8 +414,8 @@ impl TradeRoute {
         id: impl Into<String>,
         from_city_id: impl Into<String>,
         to_city_id: impl Into<String>,
-        owner_id: u64,
-        to_owner_id: u64,
+        owner_id: PlayerId,
+        to_owner_id: PlayerId,
         medium: TradeRouteMedium,
         distance: u32,
         status: TradeRouteStatus,
@@ -545,8 +546,8 @@ fn is_water_passable(terrain: TerrainType) -> bool {
     terrain.is_water_passable()
 }
 
-fn territory_owner_at(coordinate: HexCoord, nodes: &[TerritoryNode]) -> Option<u64> {
-    let mut best: Option<(u32, u64)> = None;
+fn territory_owner_at(coordinate: HexCoord, nodes: &[TerritoryNode]) -> Option<PlayerId> {
+    let mut best: Option<(u32, PlayerId)> = None;
     for node in nodes {
         let distance = coordinate.distance(node.coordinate());
         if distance > node.radius {
@@ -561,8 +562,8 @@ fn territory_owner_at(coordinate: HexCoord, nodes: &[TerritoryNode]) -> Option<u
 
 /// Return whether two different owners have adjacent, passable land territory.
 pub fn owners_have_shared_land_border(
-    owner_a: u64,
-    owner_b: u64,
+    owner_a: PlayerId,
+    owner_b: PlayerId,
     territory_nodes: &[TerritoryNode],
     map: &TradeMap,
 ) -> bool {
@@ -939,8 +940,8 @@ pub fn refresh_trade_routes<B, FWar, FTreaty>(
 ) -> Vec<TradeRoute>
 where
     B: BuildingLookup + ?Sized,
-    FWar: Fn(u64, u64) -> bool,
-    FTreaty: Fn(u64, u64) -> bool,
+    FWar: Fn(PlayerId, PlayerId) -> bool,
+    FTreaty: Fn(PlayerId, PlayerId) -> bool,
 {
     refresh_trade_routes_with_options(
         cities,
@@ -973,9 +974,9 @@ pub fn refresh_trade_routes_with_options<B, FWar, FTreaty, FTech>(
 ) -> Vec<TradeRoute>
 where
     B: BuildingLookup + ?Sized,
-    FWar: Fn(u64, u64) -> bool,
-    FTreaty: Fn(u64, u64) -> bool,
-    FTech: Fn(u64) -> bool,
+    FWar: Fn(PlayerId, PlayerId) -> bool,
+    FTreaty: Fn(PlayerId, PlayerId) -> bool,
+    FTech: Fn(PlayerId) -> bool,
 {
     if cities.is_empty() {
         return Vec::new();
@@ -983,11 +984,11 @@ where
 
     let city_by_id: BTreeMap<&str, &TradeCity> =
         cities.iter().map(|city| (city.id.as_str(), city)).collect();
-    let mut cities_by_owner: BTreeMap<u64, Vec<&TradeCity>> = BTreeMap::new();
+    let mut cities_by_owner: BTreeMap<PlayerId, Vec<&TradeCity>> = BTreeMap::new();
     for city in cities {
         cities_by_owner.entry(city.owner_id).or_default().push(city);
     }
-    let owner_ids: Vec<u64> = cities_by_owner.keys().copied().collect();
+    let owner_ids: Vec<PlayerId> = cities_by_owner.keys().copied().collect();
 
     let mut still_valid = Vec::new();
     for route in existing_routes {
@@ -1236,8 +1237,8 @@ where
 
 /// Explain the common reasons an external partner has no route.
 pub fn diagnose_missing_trade_route_for_partner<B, FWar>(
-    player_owner_id: u64,
-    partner_owner_id: u64,
+    player_owner_id: PlayerId,
+    partner_owner_id: PlayerId,
     cities: &[TradeCity],
     map: &TradeMap,
     built_by_city: &B,
@@ -1245,7 +1246,7 @@ pub fn diagnose_missing_trade_route_for_partner<B, FWar>(
 ) -> Option<String>
 where
     B: BuildingLookup + ?Sized,
-    FWar: Fn(u64, u64) -> bool,
+    FWar: Fn(PlayerId, PlayerId) -> bool,
 {
     diagnose_missing_trade_route_for_partner_with_options(
         player_owner_id,
@@ -1262,8 +1263,8 @@ where
 
 #[allow(clippy::too_many_arguments)]
 pub fn diagnose_missing_trade_route_for_partner_with_options<B, FWar>(
-    player_owner_id: u64,
-    partner_owner_id: u64,
+    player_owner_id: PlayerId,
+    partner_owner_id: PlayerId,
     cities: &[TradeCity],
     map: &TradeMap,
     built_by_city: &B,
@@ -1274,7 +1275,7 @@ pub fn diagnose_missing_trade_route_for_partner_with_options<B, FWar>(
 ) -> Option<String>
 where
     B: BuildingLookup + ?Sized,
-    FWar: Fn(u64, u64) -> bool,
+    FWar: Fn(PlayerId, PlayerId) -> bool,
 {
     if is_at_war(player_owner_id, partner_owner_id) {
         return Some("wojna — szlaki zawieszone".to_owned());
@@ -1451,7 +1452,7 @@ pub fn compute_trade_route_income_by_city_with_params<F>(
     wonder_trade_bonus_for_owner: F,
 ) -> BTreeMap<String, u64>
 where
-    F: Fn(u64, TradeRouteMedium) -> f64,
+    F: Fn(PlayerId, TradeRouteMedium) -> f64,
 {
     let mut result = BTreeMap::new();
     for route in routes.iter().filter(|route| route.is_connected()) {
@@ -1583,11 +1584,11 @@ pub type TradeRouteStockFlowResourceKey = String;
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct TradeRouteResourceGrant {
     #[serde(rename = "ownerId", alias = "owner_id")]
-    pub owner_id: u64,
+    pub owner_id: PlayerId,
     #[serde(rename = "resourceKey", alias = "resource_key")]
     pub resource_key: String,
     #[serde(rename = "viaOwnerId", alias = "via_owner_id")]
-    pub via_owner_id: u64,
+    pub via_owner_id: PlayerId,
     #[serde(rename = "viaCityId", alias = "via_city_id")]
     pub via_city_id: String,
     #[serde(rename = "routeId", alias = "route_id")]
@@ -1596,9 +1597,9 @@ pub struct TradeRouteResourceGrant {
 
 impl TradeRouteResourceGrant {
     pub fn new(
-        owner_id: u64,
+        owner_id: PlayerId,
         resource_key: impl Into<String>,
-        via_owner_id: u64,
+        via_owner_id: PlayerId,
         via_city_id: impl Into<String>,
         route_id: impl Into<String>,
     ) -> Self {
@@ -1617,7 +1618,7 @@ pub fn compute_trade_route_resource_grants<F>(
     owner_has_native_access: F,
 ) -> Vec<TradeRouteResourceGrant>
 where
-    F: Fn(u64, &str) -> bool,
+    F: Fn(PlayerId, &str) -> bool,
 {
     compute_trade_route_resource_grants_with_keys(
         routes,
@@ -1632,7 +1633,7 @@ pub fn compute_trade_route_resource_grants_with_keys<F>(
     resource_keys: &[&str],
 ) -> Vec<TradeRouteResourceGrant>
 where
-    F: Fn(u64, &str) -> bool,
+    F: Fn(PlayerId, &str) -> bool,
 {
     let mut grants = Vec::new();
     for route in routes.iter().filter(|route| route.is_connected()) {
@@ -1666,7 +1667,7 @@ where
 
 pub fn has_trade_route_resource_access(
     grants: &[TradeRouteResourceGrant],
-    owner_id: u64,
+    owner_id: PlayerId,
     resource_key: &str,
 ) -> bool {
     grants
@@ -1676,7 +1677,7 @@ pub fn has_trade_route_resource_access(
 
 pub fn first_trade_route_resource_grant<'a>(
     grants: &'a [TradeRouteResourceGrant],
-    owner_id: u64,
+    owner_id: PlayerId,
     resource_key: &str,
 ) -> Option<&'a TradeRouteResourceGrant> {
     grants
@@ -1711,9 +1712,9 @@ pub struct TradeRouteResourceFlow {
     #[serde(rename = "resourceKey", alias = "resource_key")]
     pub resource_key: String,
     #[serde(rename = "fromOwnerId", alias = "from_owner_id")]
-    pub from_owner_id: u64,
+    pub from_owner_id: PlayerId,
     #[serde(rename = "toOwnerId", alias = "to_owner_id")]
-    pub to_owner_id: u64,
+    pub to_owner_id: PlayerId,
     pub amount: u64,
 }
 
@@ -1721,8 +1722,8 @@ impl TradeRouteResourceFlow {
     pub fn new(
         route_id: impl Into<String>,
         resource_key: impl Into<String>,
-        from_owner_id: u64,
-        to_owner_id: u64,
+        from_owner_id: PlayerId,
+        to_owner_id: PlayerId,
         amount: u64,
     ) -> Self {
         Self {
@@ -1740,7 +1741,7 @@ pub fn compute_trade_route_resource_flow<F>(
     owner_stock: F,
 ) -> Vec<TradeRouteResourceFlow>
 where
-    F: Fn(u64, &str) -> u64,
+    F: Fn(PlayerId, &str) -> u64,
 {
     compute_trade_route_resource_flow_with_options(
         routes,
@@ -1757,9 +1758,9 @@ pub fn compute_trade_route_resource_flow_with_options<F>(
     resource_keys: &[&str],
 ) -> Vec<TradeRouteResourceFlow>
 where
-    F: Fn(u64, &str) -> u64,
+    F: Fn(PlayerId, &str) -> u64,
 {
-    let mut ledger: BTreeMap<(u64, String), u64> = BTreeMap::new();
+    let mut ledger: BTreeMap<(PlayerId, String), u64> = BTreeMap::new();
     let mut active_routes: Vec<&TradeRoute> =
         routes.iter().filter(|route| route.is_connected()).collect();
     active_routes.sort_by(|left, right| left.id.cmp(&right.id));
@@ -1802,13 +1803,13 @@ where
 }
 
 fn ledger_stock<F>(
-    ledger: &mut BTreeMap<(u64, String), u64>,
-    owner_id: u64,
+    ledger: &mut BTreeMap<(PlayerId, String), u64>,
+    owner_id: PlayerId,
     resource_key: &str,
     owner_stock: &F,
 ) -> u64
 where
-    F: Fn(u64, &str) -> u64,
+    F: Fn(PlayerId, &str) -> u64,
 {
     *ledger
         .entry((owner_id, resource_key.to_owned()))

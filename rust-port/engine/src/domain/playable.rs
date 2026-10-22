@@ -12,7 +12,7 @@ use super::{events::*, CityId, PlayerId, PositionDto, UnitId};
 
 pub const PLAYABLE_STATE_VERSION: u16 = 1;
 const DEFAULT_SEED: u32 = 42;
-const HUMAN_PLAYER_ID: u64 = 1;
+const HUMAN_PLAYER_ID: PlayerId = PlayerId::new(1);
 const CAPITAL_ID: u64 = 1;
 const STARTING_UNIT_ID: u64 = 1;
 const START_X: u16 = 2;
@@ -292,7 +292,7 @@ pub struct PlayablePlayer {
 #[serde(rename_all = "camelCase")]
 pub struct PlayableCity {
     pub id: CityId,
-    pub owner_id: u64,
+    pub owner_id: PlayerId,
     pub name: String,
     pub position: PositionDto,
     pub is_capital: bool,
@@ -307,7 +307,7 @@ pub enum PlayableUnitKind {
 #[serde(rename_all = "camelCase")]
 pub struct PlayableUnit {
     pub id: UnitId,
-    pub owner_id: u64,
+    pub owner_id: PlayerId,
     pub kind: PlayableUnitKind,
     pub position: PositionDto,
     pub movement: u8,
@@ -415,7 +415,7 @@ impl PlayableGame {
         params.validate()?;
         let map = build_map(&params);
         let players = vec![PlayablePlayer {
-            id: PlayerId::new(HUMAN_PLAYER_ID),
+            id: HUMAN_PLAYER_ID,
             name: params.civ_name.clone(),
             civilization: params.civ_id.clone(),
             is_human: true,

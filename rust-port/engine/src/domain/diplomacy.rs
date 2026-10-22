@@ -1,7 +1,11 @@
+use super::PlayerId;
 use serde::{Deserialize, Serialize};
 
 use crate::data::units_combat::parse_units;
 use std::collections::{BTreeMap, BTreeSet};
+
+/// Legacy owner value `0` used by the diplomacy gates as "the human player".
+const PLAYER_ZERO_OWNER: PlayerId = PlayerId::new(0);
 
 pub const MAX_TRUST: f64 = 100.0;
 pub const MAX_RESPECT: f64 = 100.0;
@@ -159,14 +163,14 @@ impl Relation {
 /// Canonical, order-independent key for a pair of civilizations.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize)]
 pub struct CivilizationPair {
-    pub first: u64,
-    pub second: u64,
+    pub first: PlayerId,
+    pub second: PlayerId,
 }
 
 pub type PairKey = CivilizationPair;
 
 impl CivilizationPair {
-    pub fn new(a: u64, b: u64) -> Self {
+    pub fn new(a: PlayerId, b: PlayerId) -> Self {
         if a <= b {
             Self {
                 first: a,
@@ -180,15 +184,15 @@ impl CivilizationPair {
         }
     }
 
-    pub fn as_tuple(self) -> (u64, u64) {
+    pub fn as_tuple(self) -> (PlayerId, PlayerId) {
         (self.first, self.second)
     }
 
-    pub fn contains(self, owner_id: u64) -> bool {
+    pub fn contains(self, owner_id: PlayerId) -> bool {
         self.first == owner_id || self.second == owner_id
     }
 
-    pub fn other(self, owner_id: u64) -> Option<u64> {
+    pub fn other(self, owner_id: PlayerId) -> Option<PlayerId> {
         if self.first == owner_id {
             Some(self.second)
         } else if self.second == owner_id {
@@ -199,8 +203,8 @@ impl CivilizationPair {
     }
 }
 
-impl From<(u64, u64)> for CivilizationPair {
-    fn from((a, b): (u64, u64)) -> Self {
+impl From<(PlayerId, PlayerId)> for CivilizationPair {
+    fn from((a, b): (PlayerId, PlayerId)) -> Self {
         Self::new(a, b)
     }
 }
@@ -1401,9 +1405,9 @@ impl TreatyKind {
 #[derive(Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
 pub struct TreatyEconomy {
     #[serde(rename = "payerOwnerId", alias = "payer_owner_id")]
-    pub payer_owner_id: u64,
+    pub payer_owner_id: PlayerId,
     #[serde(rename = "receiverOwnerId", alias = "receiver_owner_id")]
-    pub receiver_owner_id: u64,
+    pub receiver_owner_id: PlayerId,
     #[serde(rename = "pieniadzePerTura", alias = "money_per_turn")]
     pub money_per_turn: f64,
 }
@@ -1423,9 +1427,9 @@ pub struct CyclicResourceTransfer {
     #[serde(rename = "pakietyPerTura", alias = "units_per_turn")]
     pub units_per_turn: f64,
     #[serde(rename = "sellerOwnerId", alias = "seller_owner_id")]
-    pub seller_owner_id: u64,
+    pub seller_owner_id: PlayerId,
     #[serde(rename = "buyerOwnerId", alias = "buyer_owner_id")]
-    pub buyer_owner_id: u64,
+    pub buyer_owner_id: PlayerId,
     #[serde(rename = "zaplataTyp", alias = "payment")]
     pub payment: Option<PaymentKind>,
     #[serde(rename = "zaplataPerTura", alias = "payment_per_turn")]
@@ -1470,8 +1474,8 @@ pub struct ActiveDeal {
 impl ActiveDeal {
     pub fn new(
         kind: TreatyKind,
-        owner_a: u64,
-        owner_b: u64,
+        owner_a: PlayerId,
+        owner_b: PlayerId,
         formed_turn: u32,
         expires_turn: Option<u32>,
     ) -> Self {
@@ -1517,7 +1521,7 @@ fn treaty_wire_name(kind: TreatyKind) -> &'static str {
 }
 
 mod pair_array {
-    use super::CivilizationPair;
+    use super::{CivilizationPair, PlayerId};
     use serde::{Deserialize, Deserializer, Serialize, Serializer};
 
     pub fn serialize<S>(pair: &CivilizationPair, serializer: S) -> Result<S::Ok, S::Error>
@@ -1530,8 +1534,8 @@ mod pair_array {
     #[derive(Deserialize)]
     #[serde(untagged)]
     enum WirePair {
-        Array([u64; 2]),
-        Object { first: u64, second: u64 },
+        Array([PlayerId; 2]),
+        Object { first: PlayerId, second: PlayerId },
     }
 
     pub fn deserialize<'de, D>(deserializer: D) -> Result<CivilizationPair, D::Error>
@@ -1547,7 +1551,7 @@ mod pair_array {
 }
 
 mod pair_relation_map {
-    use super::{CivilizationPair, Relation};
+    use super::{CivilizationPair, PlayerId, Relation};
     use serde::de::Error as DeError;
     use serde::{Deserialize, Deserializer, Serialize, Serializer};
     use std::collections::BTreeMap;
@@ -1595,7 +1599,7 @@ mod pair_relation_map {
                     "invalid second owner in diplomacy pair key {key:?}"
                 ))
             })?;
-            let pair = CivilizationPair::new(first, second);
+            let pair = CivilizationPair::new(PlayerId::new(first), PlayerId::new(second));
             if relations.insert(pair, relation).is_some() {
                 return Err(D::Error::custom(format!(
                     "duplicate diplomacy pair key {key:?}"
@@ -1621,7 +1625,7 @@ impl DiplomacyState {
         Self::default()
     }
 
-    pub fn relation(&self, owner_a: u64, owner_b: u64) -> Option<&Relation> {
+    pub fn relation(&self, owner_a: PlayerId, owner_b: PlayerId) -> Option<&Relation> {
         self.relations.get(&CivilizationPair::new(owner_a, owner_b))
     }
 
@@ -1630,13 +1634,18 @@ impl DiplomacyState {
             .insert(CivilizationPair::new(pair.first, pair.second), relation);
     }
 
-    pub fn ensure_relation(&mut self, owner_a: u64, owner_b: u64) -> &mut Relation {
+    pub fn ensure_relation(&mut self, owner_a: PlayerId, owner_b: PlayerId) -> &mut Relation {
         self.relations
             .entry(CivilizationPair::new(owner_a, owner_b))
             .or_insert_with(Relation::starting)
     }
 
-    pub fn apply_event(&mut self, owner_a: u64, owner_b: u64, event: DiplomaticEvent) -> Relation {
+    pub fn apply_event(
+        &mut self,
+        owner_a: PlayerId,
+        owner_b: PlayerId,
+        event: DiplomaticEvent,
+    ) -> Relation {
         let pair = CivilizationPair::new(owner_a, owner_b);
         let current = self
             .relations
@@ -1650,8 +1659,8 @@ impl DiplomacyState {
 
     pub fn tick_pair(
         &mut self,
-        owner_a: u64,
-        owner_b: u64,
+        owner_a: PlayerId,
+        owner_b: PlayerId,
         context: &TickContext,
         params: &DiplomacyParams,
     ) -> Relation {
@@ -1676,7 +1685,7 @@ impl DiplomacyState {
         self.deals.retain(|deal| deal.is_active_at(turn));
     }
 
-    pub fn has_deal(&self, owner_a: u64, owner_b: u64, kind: Option<TreatyKind>) -> bool {
+    pub fn has_deal(&self, owner_a: PlayerId, owner_b: PlayerId, kind: Option<TreatyKind>) -> bool {
         let pair = CivilizationPair::new(owner_a, owner_b);
         self.deals.iter().any(|deal| {
             deal.parties == pair && kind.map(|wanted| wanted == deal.kind).unwrap_or(true)
@@ -1982,8 +1991,8 @@ pub enum BasketSide {
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub struct ProposalPnOptions {
     pub difficulty: Difficulty,
-    pub proposer_owner_id: Option<u64>,
-    pub player_owner_id: u64,
+    pub proposer_owner_id: Option<PlayerId>,
+    pub player_owner_id: PlayerId,
     pub turns_multiplier: f64,
     pub per_turn: bool,
 }
@@ -1993,7 +2002,7 @@ impl Default for ProposalPnOptions {
         Self {
             difficulty: Difficulty::Normal,
             proposer_owner_id: None,
-            player_owner_id: 0,
+            player_owner_id: PLAYER_ZERO_OWNER,
             turns_multiplier: 1.0,
             per_turn: false,
         }
@@ -2140,9 +2149,9 @@ impl TechDefinition {
 pub struct ResourceAccessGrant {
     pub id: String,
     #[serde(rename = "granterOwnerId", alias = "granter_owner_id")]
-    pub granter_owner_id: u64,
+    pub granter_owner_id: PlayerId,
     #[serde(rename = "granteeOwnerId", alias = "grantee_owner_id")]
-    pub grantee_owner_id: u64,
+    pub grantee_owner_id: PlayerId,
     #[serde(rename = "rawKey", alias = "resource_key")]
     pub resource_key: String,
     pub active: bool,
@@ -2152,7 +2161,7 @@ pub struct ResourceAccessGrant {
 #[serde(default)]
 pub struct BasketTransferContext {
     #[serde(rename = "researchedByOwner", alias = "researched_by_owner")]
-    pub researched_by_owner: BTreeMap<u64, BTreeSet<String>>,
+    pub researched_by_owner: BTreeMap<PlayerId, BTreeSet<String>>,
     #[serde(rename = "surowiecBooleanGrants", alias = "resource_grants")]
     pub resource_grants: Vec<ResourceAccessGrant>,
     #[serde(rename = "techCatalog", alias = "tech_catalog")]
@@ -2223,7 +2232,7 @@ fn next_resource_grant_id(grants: &[ResourceAccessGrant]) -> String {
 pub fn grant_technology(
     context: &BasketTransferContext,
     tech_id: &str,
-    to_owner_id: u64,
+    to_owner_id: PlayerId,
 ) -> GrantTechResult {
     let id = tech_id.trim();
     if id.is_empty() {
@@ -2304,7 +2313,7 @@ pub fn grant_technology(
 
 pub fn grant_tech_to_owner(
     tech_id: &str,
-    to_owner_id: u64,
+    to_owner_id: PlayerId,
     context: &BasketTransferContext,
 ) -> GrantTechResult {
     grant_technology(context, tech_id, to_owner_id)
@@ -2313,8 +2322,8 @@ pub fn grant_tech_to_owner(
 pub fn grant_resource_access(
     context: &BasketTransferContext,
     resource_key: &str,
-    from_owner_id: u64,
-    to_owner_id: u64,
+    from_owner_id: PlayerId,
+    to_owner_id: PlayerId,
 ) -> GrantResourceResult {
     let key = normalized_key(resource_key);
     if key.is_empty() {
@@ -2366,8 +2375,8 @@ pub fn grant_resource_access(
 
 pub fn grant_surowiec_boolean_access(
     resource_key: &str,
-    from_owner_id: u64,
-    to_owner_id: u64,
+    from_owner_id: PlayerId,
+    to_owner_id: PlayerId,
     context: &BasketTransferContext,
 ) -> GrantResourceResult {
     grant_resource_access(context, resource_key, from_owner_id, to_owner_id)
@@ -2376,8 +2385,8 @@ pub fn grant_surowiec_boolean_access(
 pub fn has_resource_access(
     context: &BasketTransferContext,
     resource_key: &str,
-    from_owner_id: u64,
-    to_owner_id: u64,
+    from_owner_id: PlayerId,
+    to_owner_id: PlayerId,
 ) -> bool {
     let key = normalized_key(resource_key);
     context.resource_grants.iter().any(|grant| {
@@ -2390,8 +2399,8 @@ pub fn has_resource_access(
 
 pub fn has_surowiec_boolean_access(
     resource_key: &str,
-    from_owner_id: u64,
-    to_owner_id: u64,
+    from_owner_id: PlayerId,
+    to_owner_id: PlayerId,
     context: &BasketTransferContext,
 ) -> bool {
     has_resource_access(context, resource_key, from_owner_id, to_owner_id)
@@ -2401,13 +2410,13 @@ pub fn has_surowiec_boolean_access(
 pub struct CityResourceState {
     pub id: String,
     #[serde(rename = "ownerId", alias = "owner_id")]
-    pub owner_id: u64,
+    pub owner_id: PlayerId,
     #[serde(rename = "surowce", alias = "resources")]
     pub resources: BTreeMap<String, f64>,
 }
 
 impl CityResourceState {
-    pub fn new(id: impl Into<String>, owner_id: u64) -> Self {
+    pub fn new(id: impl Into<String>, owner_id: PlayerId) -> Self {
         Self {
             id: id.into(),
             owner_id,
@@ -2415,7 +2424,7 @@ impl CityResourceState {
         }
     }
 
-    pub fn with_resources<I, K>(id: impl Into<String>, owner_id: u64, resources: I) -> Self
+    pub fn with_resources<I, K>(id: impl Into<String>, owner_id: PlayerId, resources: I) -> Self
     where
         I: IntoIterator<Item = (K, f64)>,
         K: Into<String>,
@@ -2462,8 +2471,8 @@ pub type ResourceIloscTransferResult = ResourceTransferResult;
 pub fn transfer_quantity_resource(
     resource_key: &str,
     total_units: f64,
-    from_owner_id: u64,
-    to_owner_id: u64,
+    from_owner_id: PlayerId,
+    to_owner_id: PlayerId,
     capital_city_id: Option<&str>,
     cities: &[CityResourceState],
 ) -> ResourceTransferResult {
@@ -2566,8 +2575,8 @@ pub fn transfer_quantity_resource(
 pub fn transfer_surowiec_ilosc(
     resource_key: &str,
     total_units: f64,
-    from_owner_id: u64,
-    to_owner_id: u64,
+    from_owner_id: PlayerId,
+    to_owner_id: PlayerId,
     capital_city_id: Option<&str>,
     cities: &[CityResourceState],
 ) -> ResourceIloscTransferResult {
@@ -2582,8 +2591,8 @@ pub fn transfer_surowiec_ilosc(
 }
 
 pub fn build_cyclic_resource_transfers(
-    proposer_id: u64,
-    responder_id: u64,
+    proposer_id: PlayerId,
+    responder_id: PlayerId,
     give_items: &[BasketItem],
     receive_items: &[BasketItem],
 ) -> Vec<CyclicResourceTransfer> {
@@ -2775,7 +2784,7 @@ pub struct ProposalPayload {
     pub resource: Option<String>,
     pub amount: Option<f64>,
     #[serde(rename = "targetOwnerId", alias = "target_owner_id")]
-    pub target_owner_id: Option<u64>,
+    pub target_owner_id: Option<PlayerId>,
     #[serde(rename = "borderMilitary", alias = "border_military")]
     pub border_military: bool,
     #[serde(rename = "barbarianCooperation", alias = "barbarian_cooperation")]
@@ -2815,17 +2824,17 @@ pub struct DiplomaticProposal {
     #[serde(rename = "actionId", alias = "action")]
     pub action: ProposalAction,
     #[serde(rename = "proposerOwnerId", alias = "proposer_owner_id")]
-    pub proposer_owner_id: u64,
+    pub proposer_owner_id: PlayerId,
     #[serde(rename = "responderOwnerId", alias = "responder_owner_id")]
-    pub responder_owner_id: u64,
+    pub responder_owner_id: PlayerId,
     pub payload: ProposalPayload,
 }
 
 impl DiplomaticProposal {
     pub fn new(
         action: ProposalAction,
-        proposer_owner_id: u64,
-        responder_owner_id: u64,
+        proposer_owner_id: PlayerId,
+        responder_owner_id: PlayerId,
         payload: ProposalPayload,
     ) -> Self {
         Self {
@@ -2861,7 +2870,7 @@ pub struct ProposalEvalContext {
     pub tech_min_price: f64,
     pub package_sibling_give_pn: f64,
     pub package_sibling_receive_pn: f64,
-    pub author_owner_id: Option<u64>,
+    pub author_owner_id: Option<PlayerId>,
     pub has_trade_tech_proposer: Option<bool>,
     pub has_trade_tech_responder: Option<bool>,
 }
@@ -3048,7 +3057,7 @@ pub fn handel_willingness_multiplier(
     }
 }
 
-fn pair_has_kind(deals: &[ActiveDeal], a: u64, b: u64, kind: TreatyKind) -> bool {
+fn pair_has_kind(deals: &[ActiveDeal], a: PlayerId, b: PlayerId, kind: TreatyKind) -> bool {
     let pair = CivilizationPair::new(a, b);
     deals
         .iter()
@@ -3151,7 +3160,7 @@ pub fn evaluate_proposal_with_params(
     let pn_options = ProposalPnOptions {
         difficulty: context.difficulty,
         proposer_owner_id: Some(proposal.proposer_owner_id),
-        player_owner_id: 0,
+        player_owner_id: PLAYER_ZERO_OWNER,
         turns_multiplier,
         per_turn,
     };
@@ -3176,7 +3185,7 @@ pub fn evaluate_proposal_with_params(
         let author = context
             .author_owner_id
             .unwrap_or(proposal.proposer_owner_id);
-        let player_is_author = author == 0;
+        let player_is_author = author == PLAYER_ZERO_OWNER;
         let gap = if payload.treaty_turns.is_some() || payload.turns.is_some() {
             let required = effective_treaty_pn_required(
                 base,
@@ -3231,7 +3240,7 @@ pub fn evaluate_proposal_with_params(
     // ordinary fair-trade gate.  This is the Rust equivalent of the shared
     // `treatyPnGate` in the reference diplomacy implementation; it applies to
     // every treaty with a configured base value, not only trade agreements.
-    if proposal.proposer_owner_id == 0
+    if proposal.proposer_owner_id == PLAYER_ZERO_OWNER
         && treaty_base_pn_for_payload(proposal.action, payload, &params) > 0.0
         && receive_pn > 0.0
         && !pn_deal_accepted_by_ai(give_pn, receive_pn, relation_total)
@@ -3480,7 +3489,7 @@ pub fn evaluate_proposal_with_params(
             if !has_payload {
                 return ProposalEvaluation::reject("Brak wartości w ofercie");
             }
-            let responder_is_player = proposal.responder_owner_id == 0;
+            let responder_is_player = proposal.responder_owner_id == PLAYER_ZERO_OWNER;
             let multiplier = handel_willingness_multiplier(
                 context.responder_willingness_trade,
                 responder_is_player,
@@ -3551,7 +3560,7 @@ pub fn evaluate_proposal_with_params(
             }
             let base = treaty_base_pn_for_payload(proposal.action, payload, &params);
             let mut balance = None;
-            if proposal.proposer_owner_id == 0 && base > 0.0 {
+            if proposal.proposer_owner_id == PLAYER_ZERO_OWNER && base > 0.0 {
                 let gap = treaty_base_fairness_gap(
                     base,
                     give_pn + context.package_sibling_give_pn,
@@ -3846,7 +3855,7 @@ pub struct UnitDefinition {
 pub struct RuntimeUnit {
     pub id: String,
     #[serde(rename = "ownerId", alias = "owner_id")]
-    pub owner_id: u64,
+    pub owner_id: PlayerId,
     #[serde(rename = "typeId", alias = "type_id")]
     pub type_id: String,
     pub category: String,
@@ -3863,7 +3872,7 @@ pub struct RuntimeUnit {
 pub struct UnitTransferContext {
     pub units: Vec<RuntimeUnit>,
     #[serde(rename = "capitalHexByOwner", alias = "capital_hex_by_owner")]
-    pub capital_hex_by_owner: BTreeMap<u64, UnitHex>,
+    pub capital_hex_by_owner: BTreeMap<PlayerId, UnitHex>,
     #[serde(rename = "unitDefinitions", alias = "unit_definitions")]
     pub unit_definitions: BTreeMap<String, UnitDefinition>,
     #[serde(rename = "nextUnitSequence", alias = "next_unit_sequence")]
@@ -3989,7 +3998,7 @@ fn unit_category(type_id: &str, role: Option<&str>, super_unit: bool) -> String 
 /// TypeScript P6 transfer hook. The context is updated only after all checks pass.
 pub fn spawn_transferred_unit(
     unit_type_id: &str,
-    to_owner_id: u64,
+    to_owner_id: PlayerId,
     near_hex: Option<UnitHex>,
     context: &mut UnitTransferContext,
 ) -> SpawnTransferredUnitResult {

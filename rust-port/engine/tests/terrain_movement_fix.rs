@@ -28,6 +28,7 @@ use civ_engine::domain::trade::{
     find_city_connection, owners_have_shared_land_border, HexCoord as TradeHex,
     TerrainType as TradeTerrain, TerritoryNode, TradeCity, TradeMap, TradeRouteMedium,
 };
+use civ_engine::domain::PlayerId;
 
 #[test]
 fn ai_turn_desert_movement_cost_matches_web_and_pathfinder() {
@@ -145,8 +146,8 @@ fn land_route_bfs_is_blocked_by_tundra_field() {
     // Real land-connection BFS (`bfs_path` with `is_land_passable`):
     // cities two hexes apart, everything between them is Tundra.
     let map = trade_disc(TradeTerrain::Tundra);
-    let from = TradeCity::new("a", 1, 0, 0);
-    let to = TradeCity::new("b", 2, 2, 0);
+    let from = TradeCity::new("a", PlayerId::new(1), 0, 0);
+    let to = TradeCity::new("b", PlayerId::new(2), 2, 0);
     let result = find_city_connection(&from, &to, &map, TradeRouteMedium::Land);
     assert!(
         !result.connected,
@@ -159,8 +160,8 @@ fn land_route_bfs_crosses_desert_field() {
     // Control for the test above: identical geometry with Desert (passable)
     // must connect, so the failure above is caused by Tundra alone.
     let map = trade_disc(TradeTerrain::Desert);
-    let from = TradeCity::new("a", 1, 0, 0);
-    let to = TradeCity::new("b", 2, 2, 0);
+    let from = TradeCity::new("a", PlayerId::new(1), 0, 0);
+    let to = TradeCity::new("b", PlayerId::new(2), 2, 0);
     let result = find_city_connection(&from, &to, &map, TradeRouteMedium::Land);
     assert!(result.connected, "Desert field blocked route: {result:?}");
 }
@@ -169,15 +170,15 @@ fn land_route_bfs_crosses_desert_field() {
 fn owners_land_border_ignores_tundra_neighbour() {
     // Owner 1 holds (0,0), owner 2 holds the adjacent (1,0).
     let nodes = [
-        TerritoryNode::new(1, 0, 0, 0),
-        TerritoryNode::new(2, 1, 0, 0),
+        TerritoryNode::new(PlayerId::new(1), 0, 0, 0),
+        TerritoryNode::new(PlayerId::new(2), 1, 0, 0),
     ];
 
     let mut tundra_border = TradeMap::new(0, 0);
     tundra_border.insert(TradeHex::new(0, 0), TradeTerrain::Grassland);
     tundra_border.insert(TradeHex::new(1, 0), TradeTerrain::Tundra);
     assert!(
-        !owners_have_shared_land_border(1, 2, &nodes, &tundra_border),
+        !owners_have_shared_land_border(PlayerId::new(1), PlayerId::new(2), &nodes, &tundra_border),
         "Tundra must not count as a shared passable land border"
     );
 
@@ -185,5 +186,10 @@ fn owners_land_border_ignores_tundra_neighbour() {
     let mut grass_border = TradeMap::new(0, 0);
     grass_border.insert(TradeHex::new(0, 0), TradeTerrain::Grassland);
     grass_border.insert(TradeHex::new(1, 0), TradeTerrain::Grassland);
-    assert!(owners_have_shared_land_border(1, 2, &nodes, &grass_border));
+    assert!(owners_have_shared_land_border(
+        PlayerId::new(1),
+        PlayerId::new(2),
+        &nodes,
+        &grass_border
+    ));
 }

@@ -1,4 +1,5 @@
 use civ_engine::domain::diplomacy::*;
+use civ_engine::domain::PlayerId;
 use std::collections::{BTreeMap, BTreeSet};
 
 #[test]
@@ -16,7 +17,12 @@ fn context(rel: Relation) -> ProposalEvalContext {
 }
 
 fn proposal(action: ProposalAction, proposer: u64, responder: u64) -> DiplomaticProposal {
-    DiplomaticProposal::new(action, proposer, responder, ProposalPayload::default())
+    DiplomaticProposal::new(
+        action,
+        PlayerId::new(proposer),
+        PlayerId::new(responder),
+        ProposalPayload::default(),
+    )
 }
 
 #[test]
@@ -84,19 +90,34 @@ fn tick_stacks_trade_and_peace_tier_but_positive_growth_stops_in_war() {
 
 #[test]
 fn pair_state_canonicalizes_reversed_owner_ids_and_expires_deals() {
-    let pair = CivilizationPair::new(9, 2);
-    assert_eq!(pair, CivilizationPair::new(2, 9));
-    assert_eq!(pair.as_tuple(), (2, 9));
+    let pair = CivilizationPair::new(PlayerId::new(9), PlayerId::new(2));
+    assert_eq!(
+        pair,
+        CivilizationPair::new(PlayerId::new(2), PlayerId::new(9))
+    );
+    assert_eq!(pair.as_tuple(), (PlayerId::new(2), PlayerId::new(9)));
 
-    let deal = ActiveDeal::new(TreatyKind::Nap, 9, 2, 4, Some(8));
+    let deal = ActiveDeal::new(
+        TreatyKind::Nap,
+        PlayerId::new(9),
+        PlayerId::new(2),
+        4,
+        Some(8),
+    );
     let mut state = DiplomacyState::new();
     state.set_relation(pair, relation(40.0, 30.0));
     state.add_deal(deal.clone());
-    assert!(state.has_deal(2, 9, Some(TreatyKind::Nap)));
+    assert!(state.has_deal(PlayerId::new(2), PlayerId::new(9), Some(TreatyKind::Nap)));
 
     state.expire_deals(8);
-    assert!(!state.has_deal(2, 9, Some(TreatyKind::Nap)));
-    assert_eq!(state.relation(9, 2).unwrap().trust, 40.0);
+    assert!(!state.has_deal(PlayerId::new(2), PlayerId::new(9), Some(TreatyKind::Nap)));
+    assert_eq!(
+        state
+            .relation(PlayerId::new(9), PlayerId::new(2))
+            .unwrap()
+            .trust,
+        40.0
+    );
 }
 
 #[test]
@@ -123,10 +144,17 @@ fn trade_event_has_no_flat_trust_bonus_and_fairness_keeps_high_relation_discount
 #[test]
 fn transfer_is_atomic_when_recipient_is_missing_and_deterministic_when_split() {
     let cities = vec![
-        CityResourceState::with_resources("b", 1, [("glina", 7.0)]),
-        CityResourceState::with_resources("a", 1, [("glina", 10.0)]),
+        CityResourceState::with_resources("b", PlayerId::new(1), [("glina", 7.0)]),
+        CityResourceState::with_resources("a", PlayerId::new(1), [("glina", 10.0)]),
     ];
-    let missing = transfer_quantity_resource("glina", 10.0, 1, 2, None, &cities);
+    let missing = transfer_quantity_resource(
+        "glina",
+        10.0,
+        PlayerId::new(1),
+        PlayerId::new(2),
+        None,
+        &cities,
+    );
     assert_eq!(missing.moved, 0.0);
     assert_eq!(
         missing.reason,
@@ -135,8 +163,19 @@ fn transfer_is_atomic_when_recipient_is_missing_and_deterministic_when_split() {
     assert_eq!(missing.cities, cities);
 
     let mut cities = cities;
-    cities.push(CityResourceState::with_resources("z", 2, [("glina", 0.0)]));
-    let result = transfer_quantity_resource("glina", 12.0, 1, 2, Some("z"), &cities);
+    cities.push(CityResourceState::with_resources(
+        "z",
+        PlayerId::new(2),
+        [("glina", 0.0)],
+    ));
+    let result = transfer_quantity_resource(
+        "glina",
+        12.0,
+        PlayerId::new(1),
+        PlayerId::new(2),
+        Some("z"),
+        &cities,
+    );
     assert_eq!(result.moved, 12.0);
     assert_eq!(result.cities[0].resources["glina"], 5.0);
     assert_eq!(result.cities[1].resources["glina"], 0.0);
@@ -146,26 +185,41 @@ fn transfer_is_atomic_when_recipient_is_missing_and_deterministic_when_split() {
 #[test]
 fn tech_and_boolean_resource_transfers_are_immutable_and_idempotent() {
     let mut researched = BTreeMap::new();
-    researched.insert(1, BTreeSet::from(["Bronze".to_owned()]));
+    researched.insert(PlayerId::new(1), BTreeSet::from(["Bronze".to_owned()]));
     let ctx = BasketTransferContext {
         researched_by_owner: researched,
         resource_grants: Vec::new(),
         tech_catalog: Some(vec![TechDefinition::new("Iron", ["Bronze"])]),
     };
 
-    let granted = grant_technology(&ctx, "Iron", 1);
+    let granted = grant_technology(&ctx, "Iron", PlayerId::new(1));
     assert!(granted.granted);
-    assert!(granted.context.researched_by_owner[&1].contains("Iron"));
-    assert!(!ctx.researched_by_owner[&1].contains("Iron"));
+    assert!(granted.context.researched_by_owner[&PlayerId::new(1)].contains("Iron"));
+    assert!(!ctx.researched_by_owner[&PlayerId::new(1)].contains("Iron"));
 
-    let duplicate = grant_technology(&granted.context, "Iron", 1);
+    let duplicate = grant_technology(&granted.context, "Iron", PlayerId::new(1));
     assert!(!duplicate.granted);
 
-    let access = grant_resource_access(&granted.context, " zelazo ", 2, 1);
+    let access = grant_resource_access(
+        &granted.context,
+        " zelazo ",
+        PlayerId::new(2),
+        PlayerId::new(1),
+    );
     assert!(access.granted);
     assert_eq!(access.grant_id.as_deref(), Some("sraw_1"));
-    assert!(has_resource_access(&access.context, "zelazo", 2, 1));
-    let duplicate_access = grant_resource_access(&access.context, "zelazo", 2, 1);
+    assert!(has_resource_access(
+        &access.context,
+        "zelazo",
+        PlayerId::new(2),
+        PlayerId::new(1)
+    ));
+    let duplicate_access = grant_resource_access(
+        &access.context,
+        "zelazo",
+        PlayerId::new(2),
+        PlayerId::new(1),
+    );
     assert!(!duplicate_access.granted);
 }
 
@@ -194,13 +248,13 @@ fn technology_transfer_obeys_epoch_and_tier_gates() {
             iron_tier_two.clone(),
         ]),
     };
-    assert!(!grant_technology(&ctx, "Iron", 1).granted);
+    assert!(!grant_technology(&ctx, "Iron", PlayerId::new(1)).granted);
 
-    let bronze_done = grant_technology(&ctx, "Bronze", 1);
+    let bronze_done = grant_technology(&ctx, "Bronze", PlayerId::new(1));
     assert!(bronze_done.granted);
-    let iron_done = grant_technology(&bronze_done.context, "Iron", 1);
+    let iron_done = grant_technology(&bronze_done.context, "Iron", PlayerId::new(1));
     assert!(iron_done.granted);
-    assert!(!grant_technology(&iron_done.context, "Iron II", 1).granted);
+    assert!(!grant_technology(&iron_done.context, "Iron II", PlayerId::new(1)).granted);
 }
 
 #[test]
@@ -266,7 +320,7 @@ fn diplomacy_unit_prices_match_units_json_for_every_row() {
 #[test]
 fn transferred_unit_spawns_at_near_hex_or_recipient_capital() {
     let mut ctx = UnitTransferContext {
-        capital_hex_by_owner: BTreeMap::from([(1, UnitHex { q: 5, r: 5 })]),
+        capital_hex_by_owner: BTreeMap::from([(PlayerId::new(1), UnitHex { q: 5, r: 5 })]),
         unit_definitions: BTreeMap::from([(
             "Wojownik".to_owned(),
             UnitDefinition {
@@ -278,16 +332,21 @@ fn transferred_unit_spawns_at_near_hex_or_recipient_capital() {
         )]),
         ..UnitTransferContext::default()
     };
-    let spawned = spawn_transferred_unit("Wojownik", 1, None, &mut ctx);
+    let spawned = spawn_transferred_unit("Wojownik", PlayerId::new(1), None, &mut ctx);
     assert!(spawned.ok);
     let unit = spawned.unit.unwrap();
-    assert_eq!(unit.owner_id, 1);
+    assert_eq!(unit.owner_id, PlayerId::new(1));
     assert_eq!(unit.type_id, "Wojownik");
     assert_eq!((unit.q, unit.r), (5, 5));
     assert_eq!(unit.movement_left, 3.0);
     assert_eq!(spawned.pn_cost, Some(10.0));
 
-    let near = spawn_transferred_unit("Wojownik", 1, Some(UnitHex { q: 9, r: 9 }), &mut ctx);
+    let near = spawn_transferred_unit(
+        "Wojownik",
+        PlayerId::new(1),
+        Some(UnitHex { q: 9, r: 9 }),
+        &mut ctx,
+    );
     assert!(near.ok);
     let near_unit = near.unit.unwrap();
     assert_eq!((near_unit.q, near_unit.r), (9, 9));
@@ -296,7 +355,7 @@ fn transferred_unit_spawns_at_near_hex_or_recipient_capital() {
 #[test]
 fn transferred_unit_rejects_unknown_type_and_missing_capital_without_mutation() {
     let mut ctx = UnitTransferContext::default();
-    let unknown = spawn_transferred_unit("NieIstniejeXYZ", 1, None, &mut ctx);
+    let unknown = spawn_transferred_unit("NieIstniejeXYZ", PlayerId::new(1), None, &mut ctx);
     assert!(!unknown.ok);
     assert_eq!(
         unknown.reason,
@@ -311,7 +370,7 @@ fn transferred_unit_rejects_unknown_type_and_missing_capital_without_mutation() 
             ..UnitDefinition::default()
         },
     );
-    let missing = spawn_transferred_unit("Wojownik", 1, None, &mut ctx);
+    let missing = spawn_transferred_unit("Wojownik", PlayerId::new(1), None, &mut ctx);
     assert!(!missing.ok);
     assert_eq!(missing.pn_cost, Some(10.0));
     assert_eq!(missing.reason, Some(SpawnTransferredUnitReason::NoCapital));
@@ -322,13 +381,14 @@ fn transferred_unit_rejects_unknown_type_and_missing_capital_without_mutation() 
 fn cyclic_resource_offer_normalizes_units_and_preserves_direction() {
     let give = vec![BasketItem::quantity_resource("glina", 25.0)];
     let receive = vec![BasketItem::new(BasketItemKind::Gold, "", 4.0)];
-    let transfers = build_cyclic_resource_transfers(3, 8, &give, &receive);
+    let transfers =
+        build_cyclic_resource_transfers(PlayerId::new(3), PlayerId::new(8), &give, &receive);
 
     assert_eq!(transfers.len(), 1);
     assert_eq!(transfers[0].resource_key, "glina");
     assert_eq!(transfers[0].units_per_turn, 20.0);
-    assert_eq!(transfers[0].seller_owner_id, 3);
-    assert_eq!(transfers[0].buyer_owner_id, 8);
+    assert_eq!(transfers[0].seller_owner_id, PlayerId::new(3));
+    assert_eq!(transfers[0].buyer_owner_id, PlayerId::new(8));
     assert_eq!(transfers[0].payment, Some(PaymentKind::Gold));
     assert_eq!(transfers[0].payment_per_turn, 4.0);
 }
@@ -347,7 +407,7 @@ fn proposal_conditions_cover_war_peace_duplicate_and_trade_fairness() {
     let rejected = evaluate_proposal(
         &peace,
         &ProposalEvalContext {
-            author_owner_id: Some(0),
+            author_owner_id: Some(PlayerId::new(0)),
             ..peace_ctx.clone()
         },
     );
@@ -369,7 +429,13 @@ fn proposal_conditions_cover_war_peace_duplicate_and_trade_fairness() {
 
     let nap = proposal(ProposalAction::Nap, 0, 1);
     let mut nap_ctx = context(relation(60.0, 60.0));
-    nap_ctx.active_deals = vec![ActiveDeal::new(TreatyKind::Nap, 0, 1, 10, Some(20))];
+    nap_ctx.active_deals = vec![ActiveDeal::new(
+        TreatyKind::Nap,
+        PlayerId::new(0),
+        PlayerId::new(1),
+        10,
+        Some(20),
+    )];
     let duplicate = evaluate_proposal(&nap, &nap_ctx);
     assert!(!duplicate.accepted);
     assert!(duplicate.reason.contains("już"));
@@ -385,7 +451,10 @@ fn proposal_builds_treaties_with_canonical_pair_and_duration() {
 
     assert!(result.accepted, "{}", result.reason);
     let deal = result.deal.unwrap();
-    assert_eq!(deal.parties.as_tuple(), (3, 8));
+    assert_eq!(
+        deal.parties.as_tuple(),
+        (PlayerId::new(3), PlayerId::new(8))
+    );
     assert_eq!(deal.expires_turn, Some(22));
     assert_eq!(deal.kind, TreatyKind::Nap);
 }
@@ -447,18 +516,33 @@ fn initial_relation_treats_same_minor_type_like_same_type() {
 #[test]
 fn diplomacy_state_serializes_non_empty_pair_map() {
     let mut state = DiplomacyState::new();
-    state.set_relation(CivilizationPair::new(8, 3), relation(40.0, 30.0));
+    state.set_relation(
+        CivilizationPair::new(PlayerId::new(8), PlayerId::new(3)),
+        relation(40.0, 30.0),
+    );
 
     let json = serde_json::to_string(&state).expect("pair state should be JSON-safe");
     assert!(json.contains("3_8"));
     let decoded: DiplomacyState = serde_json::from_str(&json).expect("pair state should decode");
-    assert_eq!(decoded.relation(3, 8), state.relation(3, 8));
+    assert_eq!(
+        decoded.relation(PlayerId::new(3), PlayerId::new(8)),
+        state.relation(PlayerId::new(3), PlayerId::new(8))
+    );
 
-    let deal = ActiveDeal::new(TreatyKind::Nap, 8, 3, 4, Some(8));
+    let deal = ActiveDeal::new(
+        TreatyKind::Nap,
+        PlayerId::new(8),
+        PlayerId::new(3),
+        4,
+        Some(8),
+    );
     let deal_json = serde_json::to_string(&deal).expect("deal should be JSON-safe");
     assert!(deal_json.contains("\"strony\":[3,8]"));
     let decoded_deal: ActiveDeal = serde_json::from_str(&deal_json).unwrap();
-    assert_eq!(decoded_deal.parties, CivilizationPair::new(3, 8));
+    assert_eq!(
+        decoded_deal.parties,
+        CivilizationPair::new(PlayerId::new(3), PlayerId::new(8))
+    );
 }
 
 #[test]
@@ -589,11 +673,17 @@ fn annexation_requires_vassal_economy_orientation() {
     annexation.payload.gold_once = Some(200.0);
     let reversed = ActiveDeal {
         economy: Some(TreatyEconomy {
-            payer_owner_id: 0,
-            receiver_owner_id: 1,
+            payer_owner_id: PlayerId::new(0),
+            receiver_owner_id: PlayerId::new(1),
             money_per_turn: 10.0,
         }),
-        ..ActiveDeal::new(TreatyKind::Vassalization, 0, 1, 0, None)
+        ..ActiveDeal::new(
+            TreatyKind::Vassalization,
+            PlayerId::new(0),
+            PlayerId::new(1),
+            0,
+            None,
+        )
     };
     let mut ctx = context(relation(100.0, 100.0));
     ctx.responder_is_city_state = true;
@@ -606,8 +696,8 @@ fn annexation_requires_vassal_economy_orientation() {
     assert!(rejected.reason.contains("Brak aktywnej"));
 
     ctx.active_deals[0].economy = Some(TreatyEconomy {
-        payer_owner_id: 1,
-        receiver_owner_id: 0,
+        payer_owner_id: PlayerId::new(1),
+        receiver_owner_id: PlayerId::new(0),
         money_per_turn: 10.0,
     });
     let accepted = evaluate_proposal(&annexation, &ctx);

@@ -10,7 +10,7 @@
 //! `Civ-AI/Spec-AI-architektura.md`: production commands first, at most one
 //! action per unit, and `endTurn` as the final command.
 
-use civ_engine::domain::{CityId, UnitId};
+use civ_engine::domain::{CityId, PlayerId, UnitId};
 use serde::{Deserialize, Serialize};
 use std::cmp::Reverse;
 use std::collections::{BTreeMap, BTreeSet, BinaryHeap};
@@ -167,7 +167,7 @@ pub struct MapTile {
     pub village: bool,
     /// `None` is neutral; a value marks an occupied territory.
     #[serde(default)]
-    pub owner_id: Option<u64>,
+    pub owner_id: Option<PlayerId>,
 }
 
 pub type Tile = MapTile;
@@ -208,7 +208,7 @@ impl MapTile {
         self
     }
 
-    pub const fn owned(mut self, owner_id: u64) -> Self {
+    pub const fn owned(mut self, owner_id: PlayerId) -> Self {
         self.owner_id = Some(owner_id);
         self
     }
@@ -367,7 +367,7 @@ impl UnitKind {
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct AiUnit {
     pub id: UnitId,
-    pub owner_id: u64,
+    pub owner_id: PlayerId,
     pub q: i32,
     pub r: i32,
     pub kind: UnitKind,
@@ -387,7 +387,7 @@ const fn default_movement() -> u32 {
 }
 
 impl AiUnit {
-    pub fn new(id: u64, owner_id: u64, kind: UnitKind, q: i32, r: i32) -> Self {
+    pub fn new(id: u64, owner_id: PlayerId, kind: UnitKind, q: i32, r: i32) -> Self {
         Self {
             id: UnitId::new(id),
             owner_id,
@@ -424,7 +424,7 @@ impl AiUnit {
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct AiCity {
     pub id: CityId,
-    pub owner_id: u64,
+    pub owner_id: PlayerId,
     pub q: i32,
     pub r: i32,
     #[serde(default = "default_population")]
@@ -444,7 +444,7 @@ const fn default_population() -> u32 {
 }
 
 impl AiCity {
-    pub fn new(id: u64, owner_id: u64, q: i32, r: i32) -> Self {
+    pub fn new(id: u64, owner_id: PlayerId, q: i32, r: i32) -> Self {
         Self {
             id: CityId::new(id),
             owner_id,
@@ -648,7 +648,7 @@ impl AiTurnOptions {
 /// Input contract for one pure planning call.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct AiTurnInput {
-    pub player_id: u64,
+    pub player_id: PlayerId,
     pub units: Vec<AiUnit>,
     pub cities: Vec<AiCity>,
     pub map: AiMap,
@@ -659,7 +659,7 @@ pub struct AiTurnInput {
 pub type AITurnInput = AiTurnInput;
 
 impl AiTurnInput {
-    pub fn new(player_id: u64, units: Vec<AiUnit>, cities: Vec<AiCity>, map: AiMap) -> Self {
+    pub fn new(player_id: PlayerId, units: Vec<AiUnit>, cities: Vec<AiCity>, map: AiMap) -> Self {
         Self {
             player_id,
             units,
