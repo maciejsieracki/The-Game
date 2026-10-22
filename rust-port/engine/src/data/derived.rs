@@ -1784,3 +1784,104 @@ pub fn ruch_jednostek_params() -> &'static RuchJednostekParamsFile {
         parse_ruch_jednostek_params().expect("ruch-jednostek-params.json must parse")
     })
 }
+
+// ---------------------------------------------------------------------------
+// P6.5A (R-RUSTPORT-P6-5A-JEDNOSTKI-ZYCIE-A-Q1): tempo kosztu jednostek (`unit-cost-tempo.ts`) i
+// stale stosow armii (`armyMerge.ts`). Kod `domain/recruitment.rs::army_merge` nie zawiera ich
+// literalow.
+// ---------------------------------------------------------------------------
+
+pub const UNIT_COST_TEMPO_JSON: &str = include_str!("../../data/derived/unit-cost-tempo.json");
+pub const ARMY_MERGE_PARAMS_JSON: &str = include_str!("../../data/derived/army-merge-params.json");
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct TempoKosztuRow {
+    pub klucz: String,
+    pub mnoznik: f64,
+}
+
+/// Plik `unit-cost-tempo.json`.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct UnitCostTempoFile {
+    pub meta: serde_json::Value,
+    pub zrodlo_web: String,
+    pub min_koszt: f64,
+    pub tempa: Vec<TempoKosztuRow>,
+}
+
+impl UnitCostTempoFile {
+    /// Mnoznik dla klucza tempa (`niski` / `normalny` / `wysoki`); `None`, gdy klucza nie ma w tabeli.
+    pub fn mnoznik(&self, klucz: &str) -> Option<f64> {
+        self.tempa
+            .iter()
+            .find(|row| row.klucz == klucz)
+            .map(|row| row.mnoznik)
+    }
+}
+
+pub fn parse_unit_cost_tempo() -> Result<UnitCostTempoFile, serde_json::Error> {
+    serde_json::from_str(UNIT_COST_TEMPO_JSON)
+}
+
+/// Tabela tempa kosztow jednostek (jednorazowy odczyt; blad danych = panika z komunikatem).
+pub fn unit_cost_tempo() -> &'static UnitCostTempoFile {
+    static TABLE: std::sync::OnceLock<UnitCostTempoFile> = std::sync::OnceLock::new();
+    TABLE.get_or_init(|| parse_unit_cost_tempo().expect("unit-cost-tempo.json must parse"))
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct IdStosuParams {
+    pub zrodlo_web: String,
+    pub prefiks: String,
+    pub separator: String,
+    pub podstawa: u32,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct AkcjaStosuParams {
+    pub id: String,
+    pub etykieta: String,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct PodzialStosuParams {
+    pub zrodlo_web: String,
+    pub etykieta_ten_heks: String,
+    pub min_stos_rozdzielenia: usize,
+    pub akcja_rozdziel: AkcjaStosuParams,
+    pub akcja_polacz: AkcjaStosuParams,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct StanStosuParams {
+    pub zrodlo_web: String,
+    pub poziom_odznaki_poczatkowy: u8,
+    pub poziom_weterana_poczatkowy: u8,
+    pub gwiazdki_poczatkowe: u32,
+}
+
+/// Plik `army-merge-params.json`.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct ArmyMergeParamsFile {
+    pub meta: serde_json::Value,
+    pub id_stosu: IdStosuParams,
+    pub podzial: PodzialStosuParams,
+    pub stan_stosu: StanStosuParams,
+}
+
+pub fn parse_army_merge_params() -> Result<ArmyMergeParamsFile, serde_json::Error> {
+    serde_json::from_str(ARMY_MERGE_PARAMS_JSON)
+}
+
+/// Stale stosow armii (jednorazowy odczyt; blad danych = panika z komunikatem).
+pub fn army_merge_params() -> &'static ArmyMergeParamsFile {
+    static TABLE: std::sync::OnceLock<ArmyMergeParamsFile> = std::sync::OnceLock::new();
+    TABLE.get_or_init(|| parse_army_merge_params().expect("army-merge-params.json must parse"))
+}

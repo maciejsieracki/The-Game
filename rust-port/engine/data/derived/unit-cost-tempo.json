@@ -1,0 +1,14 @@
+{
+  "meta": {
+    "status": "P6.5A (R-RUSTPORT-P6-5A-JEDNOSTKI-ZYCIE-A-Q1): edytowalna tabela tempa kosztow rekrutacji jednostek (kreator: Niski/Normalny/Wysoki) i dolna granica kosztu. Kod Rust (domain/recruitment.rs, modul army_merge, funkcja apply_unit_cost_pace) nie zawiera tych wartosci.",
+    "pin_web": "edb8fb56",
+    "wygenerowano": "R-RUSTPORT-P6-5A-JEDNOSTKI-ZYCIE-A-Q1 runda 1: wartosci przepisane z TS; zgodnosc z webem sprawdzona wektorami (tests/p6_5a_vectors/cost.json) i verify-p65a-vectors.py (regex po zrodle TS)."
+  },
+  "zrodlo_web": "gra/src/game/unit-cost-tempo.ts:19-23 (KOSZT_JEDNOSTEK_PACE), :38 (Math.max(1, Math.round(bazowyKoszt * mnoznik)): dolna granica kosztu)",
+  "min_koszt": 1,
+  "tempa": [
+    { "klucz": "niski", "mnoznik": 1.0 },
+    { "klucz": "normalny", "mnoznik": 2.0 },
+    { "klucz": "wysoki", "mnoznik": 4.0 }
+  ]
+}
