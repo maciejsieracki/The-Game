@@ -22,7 +22,7 @@ use tauri::{AppHandle, Emitter, Manager, WebviewWindow};
 use crate::clock::{self, ClockOffset, SyncSample};
 use crate::gpu::{self, wgpu, FrameOutcome, Gpu, WindowTarget};
 use crate::log;
-use crate::memory::{current_process_memory, MemorySample};
+use crate::memory::{current_process_memory, webview_memory, GpuAllocSample, MemorySample};
 use crate::protocol::{
     DomObservation, NativeEvent, NativeEventKind, R2wPing, R2wResult, TimedInput, UiRects,
     WizardAnswer,
@@ -99,6 +99,8 @@ struct Shared {
     first_frame_ms: Mutex<Option<f64>>,
     render_tx: Mutex<Option<Sender<RenderCmd>>>,
     instance: Mutex<Option<wgpu::Instance>>,
+    /// Clone of the render device, for the wgpu memory counter (5).
+    device: Mutex<Option<wgpu::Device>>,
     memory: Mutex<Vec<MemorySample>>,
     resized_events: AtomicU64,
     finished: AtomicBool,
@@ -188,6 +190,7 @@ fn start_rendering(app: &AppHandle) -> Result<(), String> {
         r.env("surface_main", target.describe());
     }
     *st().instance.lock().unwrap() = Some(instance);
+    *st().device.lock().unwrap() = Some(gpu.device.clone());
     let (tx, rx) = mpsc::channel();
     *st().render_tx.lock().unwrap() = Some(tx);
     std::thread::Builder::new()
@@ -270,6 +273,33 @@ pub(crate) fn with_platform_webview<T: Send + 'static>(
         .map_err(|e| format!("with_webview: brak wyniku w 5 s ({e})"))
 }
 
+/// wgpu's own GPU memory counter (P4-3 §9 pkt 13), backend permitting.
+fn gpu_alloc_sample() -> GpuAllocSample {
+    let report = st()
+        .device
+        .lock()
+        .unwrap()
+        .as_ref()
+        .map(|d| d.generate_allocator_report());
+    match report {
+        Some(Some(r)) => GpuAllocSample {
+            available: true,
+            allocated_bytes: Some(r.total_allocated_bytes),
+            reserved_bytes: Some(r.total_reserved_bytes),
+            blocks: Some(r.blocks.len() as u64),
+            note: "wgpu Device::generate_allocator_report: pamiec przydzielona przez alokator wgpu; NIE caly VRAM (lancuch wymiany i pamiec sterownika poza raportem)".into(),
+        },
+        Some(None) => GpuAllocSample {
+            note: "backend wgpu nie udostepnia raportu alokatora (generate_allocator_report = None)".into(),
+            ..GpuAllocSample::default()
+        },
+        None => GpuAllocSample {
+            note: "brak urzadzenia wgpu w chwili probki".into(),
+            ..GpuAllocSample::default()
+        },
+    }
+}
+
 /// Memory samples at 0, 10, 30, 60 and 65 s after the first frame.
 fn memory_sampler() {
     let t0 = std::time::Instant::now();
@@ -281,14 +311,24 @@ fn memory_sampler() {
         let t_s = t0.elapsed().as_secs_f64();
         match current_process_memory() {
             Ok((rss, private, source)) => {
+                let webview = webview_memory();
+                let gpu_alloc = gpu_alloc_sample();
                 log::line(format!(
-                    "PAMIEC t={t_s:.1}s rss={rss} private={private:?} ({source})"
+                    "PAMIEC t={t_s:.1}s rss={rss} private={private:?} ({source}); webview measured={} rss={:?} procesow={} ({}; {})",
+                    webview.measured,
+                    webview.rss_bytes,
+                    webview.processes.len(),
+                    webview.source,
+                    webview.note
                 ));
+                log::line(format!("PAMIEC t={t_s:.1}s gpu_alloc={gpu_alloc:?}"));
                 st().memory.lock().unwrap().push(MemorySample {
                     t_s,
                     rss_bytes: rss,
                     private_bytes: private,
                     source,
+                    webview,
+                    gpu_alloc,
                 });
             }
             Err(e) => log::line(format!("PAMIEC t={t_s:.1}s BLAD: {e}")),
@@ -803,8 +843,8 @@ fn finalize(reason: &str) -> Result<String, String> {
 
     // (5) memory
     let mem = s.memory.lock().unwrap().clone();
-    let (st5, msg5) = eval_memory(&mem);
-    report.set(CheckId::P5Pamiec60s, st5, vec![msg5], json!(mem));
+    let (st5, ev5) = eval_memory(&mem);
+    report.set(CheckId::P5Pamiec60s, st5, ev5, json!(mem));
 
     // (6) focus
     if focus.webview_direct.is_some() || focus.webview_after_set_focus.is_some() {
@@ -913,6 +953,7 @@ pub fn run() {
         first_frame_ms: Mutex::new(None),
         render_tx: Mutex::new(None),
         instance: Mutex::new(None),
+        device: Mutex::new(None),
         memory: Mutex::new(Vec::new()),
         resized_events: AtomicU64::new(0),
         finished: AtomicBool::new(false),

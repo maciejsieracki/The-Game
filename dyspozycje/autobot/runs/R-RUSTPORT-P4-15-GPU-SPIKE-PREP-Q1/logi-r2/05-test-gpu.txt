@@ -1,0 +1,69 @@
+# cwd: /home/user/The-Game/.claude/worktrees/wf_d050c8fc-9a3-3/rust-port/spike-gpu-embed
+# env: CARGO_INCREMENTAL=0 CARGO_TARGET_DIR=/tmp/claude-0/-home-user-The-Game/cbf4a126-dca3-5f50-bfb0-2a747b18a590/scratchpad/target-spike
+# rustc: rustc 1.97.0 (2d8144b78 2026-07-07) / cargo 1.97.0 (c980f4866 2026-06-30)
+$ cargo test --locked --no-default-features --features gpu -- --nocapture
+   Compiling spike-gpu-embed v0.1.0 (/home/user/The-Game/.claude/worktrees/wf_d050c8fc-9a3-3/rust-port/spike-gpu-embed)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 2.51s
+     Running unittests src/lib.rs (/tmp/claude-0/-home-user-The-Game/cbf4a126-dca3-5f50-bfb0-2a747b18a590/scratchpad/target-spike/debug/deps/spike_gpu_embed-8948b2683fd77e1d)
+
+running 42 tests
+test clock::tests::rejects_invalid_samples ... ok
+test clock::tests::one_way_latencies ... ok
+test clock::tests::negative_offset_is_fine ... ok
+test clock::tests::picks_min_rtt_sample ... ok
+test gpu::tests::centroid_pixel ... ok
+test gpu::tests::expected_unorm_values ... ok
+test log::tests::clock_is_monotonic ... ok
+test log::tests::format_is_stable ... ok
+[     0.055 ms] test line (stderr only)
+test log::tests::line_without_file_does_not_panic ... ok
+test memory::tests::children_summarized ... ok
+test memory::tests::proc_stat_parsed_with_awkward_comm ... ok
+test memory::tests::old_sample_json_without_webview_still_parses ... ok
+test memory::tests::descendants_found_recursively_and_cycle_safe ... ok
+test memory::tests::ps_and_powershell_parsed ... ok
+test memory::tests::reads_own_memory_on_linux ... ok
+test memory::tests::vmrss_parsed ... ok
+test protocol::tests::native_event_roundtrip ... ok
+SKIPPED: no GPU adapter (request_adapter: No suitable graphics adapter found; noop support not compiled in, vulkan drivers/libraries could not be loaded, metal support not compiled in, dx12 support not compiled in, gl drivers/libraries could not be loaded, webgpu support not compiled in)
+test protocol::tests::r2w_result_from_js_json ... ok
+test gpu::tests::offscreen_selftest_or_skip ... ok
+test protocol::tests::timed_input_from_js_json ... ok
+test protocol::tests::ui_rects_flattened ... ok
+test regions::tests::bad_scale_or_nan_rects ... ok
+test regions::tests::clipped_to_window_and_empty_dropped ... ok
+test memory::tests::reads_child_memory_on_linux ... ok
+test regions::tests::fractional_scale_rounds_outward ... ok
+test regions::tests::over_ui_half_open ... ok
+test regions::tests::physical_point_normalisation ... ok
+test regions::tests::scale_1_is_identity_for_integers ... ok
+test report::tests::focus_rule ... ok
+test report::tests::fullscreen_rule ... ok
+test report::tests::input_split_rule ... ok
+test report::tests::memory_rule ... ok
+test report::tests::memory_webview_line ... ok
+test report::tests::ipc_rule ... ok
+test report::tests::new_report_is_all_nie_zmierzono ... ok
+test report::tests::render_rule ... ok
+test stats::tests::nearest_rank_on_1_to_100 ... ok
+test report::tests::set_and_summary ... ok
+test stats::tests::nearest_rank_small_sets ... ok
+test stats::tests::stats_reject_non_finite_and_empty ... ok
+test stats::tests::stats_unsorted_input_and_mean ... ok
+test stats::tests::stats_1000_samples_like_the_spike ... ok
+
+test result: ok. 42 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running unittests src/main.rs (/tmp/claude-0/-home-user-The-Game/cbf4a126-dca3-5f50-bfb0-2a747b18a590/scratchpad/target-spike/debug/deps/spike_gpu_embed-3d0b32b59340ea14)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+   Doc-tests spike_gpu_embed
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+EXIT=0

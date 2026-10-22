@@ -1,6 +1,6 @@
 # P4.15 — Spike RR-T1: powierzchnia wgpu pod przezroczystym webview w Tauri (przygotowanie do uruchomienia u właściciela)
 
-**Temat:** `R-RUSTPORT-P4-15-GPU-SPIKE-PREP-Q1` · **Domena:** GAME · **Rola:** Operator (Opus 5.5 medium) · **Runda:** 1/5
+**Temat:** `R-RUSTPORT-P4-15-GPU-SPIKE-PREP-Q1` · **Domena:** GAME · **Rola:** Operator (Opus 5.5 medium) · **Runda:** 2/5 (obrona r1: §10)
 **Baza kodu:** `origin/rust-port/parity-v2` = `69f432ba1987fd58d6f06eeb25a96827a4017c28`.
 **Źródła:** `P4-3-RUST-RENDERER-ARCH.md` (§2 osadzenie, §8 RR-T1, D-RR-2 = A), `P4-5B-MAP-UI-SEAM.md` (§2 M1/M2/M3, §3.1, §4.1, §10, §12 T14, §15), `P4-6-RENDERER-CRATE-SCAFFOLD.md` (wzór crate'a, lock, MSRV), `src-tauri/Cargo.toml` + `Cargo.lock` (wersje).
 **Zasada tego dokumentu:** środowisko agenta **nie ma GPU, okna ani WebView**. Nic tu nie twierdzi, że coś „działa na GPU / w oknie / w WebView”. Wszystko, czego nie wykonano, jest `NIE_ZMIERZONO`. Spike jest narzędziem pomiarowym do uruchomienia przez właściciela; dopiero jego raport (JSON) rozstrzyga punkty (1)–(7).
@@ -13,7 +13,7 @@
 2. Uruchomienie u właściciela **jedną komendą** z katalogu crate'a: `cargo run --release --locked`. Kreator w oknie prowadzi przez kroki (kilka kliknięć i dwa naciśnięcia klawisza `K`, ok. 2–3 minuty), a na końcu zapisuje `wyniki/raport-<os>-<czas>.json` i `wyniki/log-<os>-<czas>.txt`. Te dwa pliki właściciel odsyła.
 3. Spike mierzy punkty (1)–(7) z dispatchu (§1). Każdy punkt kończy się `PASS` / `FAIL` / `NIE_ZMIERZONO` z dowodem w raporcie.
 4. Implementacja platform (§4): **Windows** — M1 (`SetWindowRgn` na hoście WebView2), M2 (własne okno-dziecko HWND nad webview, wgpu w nim), hak natywny (`SetWindowSubclass`); **Linux** — M1 (`input_shape_combine_region` na `GdkWindow` web view, z bezpiecznikiem), hak natywny (sygnały GTK), M2 = stub; **macOS** — M1/M2/hak = stub (komunikat w raporcie). Renderowanie, IPC, pamięć i pełny ekran — na wszystkich trzech.
-5. Zweryfikowane **tutaj**: część CPU (raport, statystyki, regiony, zegar, pamięć, protokół) — **33 testy zielone**; warstwa wgpu (`--features gpu`) — kompiluje się, 36 testów zielonych, samotest offscreen kończy się jawnym `SKIPPED: no GPU adapter`; **cały program z Tauri dla Windows** — `cargo check` i `cargo clippy -D warnings` dla `x86_64-pc-windows-msvc` → EXIT=0. **Niezweryfikowane kompilacją:** kod Linux (brak bibliotek GTK/WebKit w kontenerze, EXIT=101 na `gdk-sys`) i macOS (brak kompilatora Objective-C, EXIT=101 na `objc2-exception-helper`). Uruchomienie gdziekolwiek: `NIE_ZMIERZONO`.
+5. Zweryfikowane **tutaj**: część CPU (raport, statystyki, regiony, zegar, pamięć, protokół) — **39 testów zielonych** (r2; r1: 33); warstwa wgpu (`--features gpu`) — kompiluje się, 42 testy zielone (r2; r1: 36), samotest offscreen kończy się jawnym `SKIPPED: no GPU adapter`; **cały program z Tauri dla Windows** — `cargo check` i `cargo clippy -D warnings` dla `x86_64-pc-windows-msvc` → EXIT=0. **Niezweryfikowane kompilacją:** kod Linux (brak bibliotek GTK/WebKit w kontenerze, EXIT=101 na `gdk-sys`) i macOS (brak kompilatora Objective-C, EXIT=101 na `objc2-exception-helper`). Uruchomienie gdziekolwiek: `NIE_ZMIERZONO`.
 6. Ustalenie z tej rundy (ważne dla integracji RR-T1 w `src-tauri`): **wspólny lockfile Tauri + wgpu może się „zszyć” niekompilowalnie na Windows** — `gpu-allocator 0.28.0` przypięty do `windows 0.61.3` (z drzewa Tauri) zamiast `0.62.2` (wymagane przez `wgpu-hal 30.0.1`) → 3 błędy typów w `wgpu-hal/src/dx12/suballocation.rs` (log `logi-r1/04`). Naprawa: `cargo update -p gpu-allocator` → `windows v0.62.2` (log `logi-r1/13`), potem EXIT=0 (log `logi-r1/05`). §2.4.
 
 ---
@@ -27,13 +27,60 @@
 | (3) | M2: odwrócone warstwy, jeśli M1 się nie uda | Tylko gdy (2) nie jest PASS (albo `SPIKE_FORCE_M2=1`): Windows — okno-dziecko `SPIKE_M2_MAP` nad webview (`HWND_TOP`), region = okno minus prostokąty UI; render wgpu przełączony do tego okna; te same dwa kliknięcia + pytanie wizualne | jak (2); pominięte przy M1 = PASS → `NIE_ZMIERZONO` z adnotacją | P4-5B §15 pkt 1 (M2); P4-3 §2.3 „Ryzyko krytyczne” |
 | (4a) | Opóźnienie IPC webview→Rust, 1000 × `PointerMove` | Synchronizacja zegarów (50 rund, próbka o min. RTT; niepewność = RTT/2). Seria „paced”: 1 zdarzenie na `requestAnimationFrame` (jak koalescowany `PointerMove`, P4-5B §3.1), ładunek = `MapInput` z P4-5B §3.1. Seria „burst”: 1000 bez czekania (dane dodatkowe). Rust znakuje czas odbioru | `PASS` = 1000/1000 dostarczonych i p95 ≤ 16,7 ms (ZAŁOŻENIE Z-S1); inaczej `FAIL`. Raport: min/p50/p95/max/średnia + niepewność zegara | P4-5B §15 pkt 3; P4-3 §3.9 pkt 3; D-RR-10 |
 | (4b) | Opóźnienie IPC Rust→webview | Rust emituje 1000 zdarzeń `r2w_ping` co 8 ms; webview znakuje odbiór i odsyła tablicę; Rust liczy statystyki z tym samym przesunięciem zegara | jak (4a) | P4-5B §15 pkt 3 (`HoverChanged`, `CameraState`) |
-| (5) | Pamięć procesu po 1 min renderowania | Próbki RSS w t = 0, 10, 30, 60, 65 s od pierwszej klatki (Windows: `WorkingSet64` + `PrivateMemorySize64`; Linux: `VmRSS`; macOS: `ps rss`) | `PASS` = przyrost RSS między próbką ≥ 10 s a ≥ 60 s ≤ 32 MiB (Z-S2); inaczej `FAIL`; brak próbki 60 s = `NIE_ZMIERZONO`. **VRAM poza procesem: NIE_ZMIERZONO** (zawsze dopisane) | P4-3 §7 (pamięć); motyw właściciela „pamięć w webview” |
+| (5) | Pamięć procesu po 1 min renderowania | Próbki w t = 0, 10, 30, 60, 65 s od pierwszej klatki. **(a) proces spike'a** — Windows: `GetProcessMemoryInfo` w procesie (`WorkingSetSize` + `PrivateUsage`; r2: bez uruchamiania PowerShell, więc bez okna konsoli); Linux: `VmRSS`; macOS: `ps rss`. **(b) procesy webview** (r2) — suma RSS wszystkich procesów potomnych spike'a z listą (pid, nazwa, RSS): Windows `CreateToolhelp32Snapshot` + `GetProcessMemoryInfo` (`msedgewebview2.exe`), Linux `/proc/*/stat` + `VmRSS` (`WebKitWebProcess`, `WebKitNetworkProcess`); **macOS: NIE_ZMIERZONO** (procesy WebContent to usługi XPC launchd, nie potomkowie). **(c) licznik pamięci GPU wgpu** (r2) — `Device::generate_allocator_report()` (przydzielone/zarezerwowane bajty, bloki), gdy backend go udostępnia | `PASS` = przyrost RSS **procesu spike'a** między próbką ≥ 10 s a ≥ 60 s ≤ 32 MiB (Z-S2); inaczej `FAIL`; brak próbki 60 s = `NIE_ZMIERZONO`. (b) i (c) to osobne linie dowodu, **nie zmieniają statusu** (Z-S14); gdy nieodczytane — jawnie `NIE_ZMIERZONO` z powodem. **VRAM poza alokatorem wgpu: NIE_ZMIERZONO** (zawsze dopisane) | P4-3 §7 — **częściowo** (tabela §1a); „pamięć w webview” — (b), poza macOS; P4-3 §9 pkt 13 — **częściowo** (c) |
 | (6) | Fokus klawiatury po kliknięciu w okno natywne | Zaraz po kliknięciu w dziurę, które dotarło do okna natywnego: „naciśnij K” (czy webview dostaje klawisz bez niczego); potem Rust woła `Webview::set_focus`, „naciśnij K jeszcze raz” | `PASS` = klawisz dotarł do webview bezpośrednio albo po `set_focus` (P4-5B Z3); `FAIL` = w obu próbach nie; brak natywnego kliknięcia = `NIE_ZMIERZONO` | P4-5B §15 pkt 2; Z3 |
 | (7) | `Window::is_fullscreen` po `set_fullscreen` | `set_fullscreen(true)` → 1,5 s → `is_fullscreen()`; `set_fullscreen(false)` → 1,5 s → `is_fullscreen()`; liczba `WindowEvent::Resized` w tym czasie | `PASS` = `true` potem `false`; inaczej `FAIL` | P4-5B §15 pkt 8; §10; T13 |
 
 Poza listą dispatchu raport zawiera też: współczynnik skali i rozmiar okna, adapter GPU (nazwa, backend, sterownik), konfigurację powierzchni (format, tryb prezentacji, alfa), wynik samotestu offscreen, wszystkie zdarzenia natywne i obserwacje DOM ze znacznikami czasu, odpowiedzi właściciela, zmienne środowiskowe istotne dla Linuksa (`WAYLAND_DISPLAY`, `DISPLAY`, `XDG_SESSION_TYPE`, `GDK_BACKEND`, `WEBKIT_DISABLE_COMPOSITING_MODE`) i `WGPU_BACKEND`.
 
 **Czego spike nie mierzy (świadomie, poza zakresem dispatchu):** DPI/zmiana skali w trakcie (loguje tylko `ScaleFactorChanged`), kursory własne (Z9), kolejność PPM `mouseup`/`contextmenu` (Z15), natywne „leave” (Z13), M3 (to tylko publiczne API — mierzy go pośrednio (4a)).
+
+Kolumna „Odpowiada na” wskazuje źródło; **zakres pokrycia** (pełne / częściowe / brak) rozstrzyga wyłącznie tabela odwrotna §1a (r2). Pola `maps_to` w raporcie JSON mają te same oznaczenia `CZESCIOWO`.
+
+### 1a. Tabela odwrotna (r2): pozycja `NIE_ZMIERZONO` → pokrycie przez spike
+
+Legenda: **TAK** — przebieg u właściciela rozstrzyga pozycję; **CZĘŚCIOWO** — rozstrzyga tylko wymienioną część; **NIE** — spike jej nie dotyczy (powód). Pozycji oznaczonych CZĘŚCIOWO/NIE orkiestrator **nie zamyka** na podstawie raportu spike'a.
+
+**P4-3 §9:**
+
+| Pkt | Pozycja | Pokrycie | Którym punktem / powód |
+|---|---|---|---|
+| 1 | Rozmiar drzewa zależności wgpu/Bevy/three-d | NIE | spike nie robi `cargo tree`; ubocznie: lock Tauri+wgpu = 487 pakietów (`grep -c '^name = ' Cargo.lock`), to nie jest porównanie Bevy/three-d |
+| 2 | Bevy/three-d w oknie Tauri bez własnego winit | NIE | spike używa czystego wgpu (D-RR-2 = A) |
+| 3 | Zgodność `raw-window-handle` | (zamknięte w P4-3 r2) | spike to dodatkowo potwierdza kompilacją Windows (`logi-r2/08`) |
+| 4 | Wykonalność opcji (a): kolejność warstw, przezroczystość, fokus, DPI; Windows/X11/Wayland/macOS | CZĘŚCIOWO | warstwy + przezroczystość: (1); wejście: (2)/(3); fokus: (6); X11/Wayland: warianty §3.5. **DPI: NIE** — raport zapisuje tylko `window_scale_factor` i zdarzenia `ScaleFactorChanged`, bez testu zmiany skali; **macOS: M1/M2/hak = stub** |
+| 5 | WebGPU/WebGL2 w WebView2/WebKitGTK (opcja c) | NIE | poza D-RR-2 = A |
+| 6 | Adapter wgpu w tym kontenerze | TAK (tutaj) | samotest offscreen: `SKIPPED: no GPU adapter` (`logi-r2/05`) |
+| 7 | Źródło Three.js 0.169 offline | NIE | nie dotyczy spike'a |
+| 8 | `PositionDto` ↔ `(q,r)` | NIE | nie dotyczy |
+| 9 | Złote dane pickingu z weba | NIE | nie dotyczy |
+| 10 | Wycieki M1–M5 weba w bajtach | NIE | pamięć JS weba, nie portu |
+| 11 | `BattleScene.dispose()` | NIE | jw. |
+| 12 | `userData['mats']` | NIE | P4.4 |
+| 13 | Licznik pamięci GPU dostępny z wgpu | CZĘŚCIOWO (r2) | (5c): `generate_allocator_report()` — raport mówi, czy backend go udostępnia (np. dx12/Vulkan przez `gpu-allocator`) i ile przydzielono; **cały VRAM (łańcuch wymiany, pamięć sterownika): NIE** |
+| 14 | Czas realizacji | NIE | nie dotyczy |
+| 15 | Automatyzacja zrzutów okna Tauri (WebDriver) | NIE | spike używa odpowiedzi właściciela, nie zrzutów |
+| 16 | Opóźnienie IPC **wejście→klatka** w opcji (a) | CZĘŚCIOWO | (4a)/(4b) mierzą tylko IPC jednokierunkowo (webview→Rust, Rust→webview); **czas od zdarzenia do klatki z jego skutkiem: NIE** (spike nie wiąże zdarzenia z numerem klatki) |
+
+**P4-5B §15:**
+
+| Pkt | Pozycja | Pokrycie | Którym punktem / powód |
+|---|---|---|---|
+| 1 | Wykonalność M1 / M2 | CZĘŚCIOWO | Windows: M1 (2) + M2 (3); Linux: M1 (2), **M2 = stub**; **macOS: oba stub** |
+| 2 | Fokus po kliknięciu w okno-rodzica; `Webview::set_focus` | TAK (Windows, Linux) / NIE (macOS) | (6); macOS bez haka natywnego → `NIE_ZMIERZONO`. „Bez efektów ubocznych”: tylko obserwacja w logu, bez osobnego kryterium |
+| 3 | IPC dla `HitRegions`, `PointerMove` nad UI, `HoverChanged`, `CameraState` | CZĘŚCIOWO | `PointerMove`: (4a). `HoverChanged`/`CameraState`: (4b) z **ładunkiem zastępczym** (`r2w_ping`), nie z prawdziwą strukturą. **`HitRegions`: opóźnienie NIE mierzone** (prostokąty UI idą `spike_ui_rects` przy `ResizeObserver` i w krokach kreatora, bez znacznika czasu nadania) |
+| 4 | Wyścig `HitRegions` przy szybkim otwieraniu paneli | NIE | spike ma jeden statyczny panel |
+| 5 | F4 w przeglądarce | NIE | nie dotyczy |
+| 6 | F4a w runtime | NIE | nie dotyczy |
+| 7 | Kursory własne Windows/Linux | NIE | poza zakresem (Z9) |
+| 8 | `Escape` i `set_fullscreen` w WebView2/WebKitGTK | CZĘŚCIOWO | `set_fullscreen`/`is_fullscreen`: (7). **`Escape` (wyjście z pełnego ekranu klawiszem): NIE mierzone** |
+| 9 | `worldToAxial` w minimapie | (zamknięte w P4-5B r2) | — |
+| 10 | Kontenery-blokery w kopii UI | NIE | P5-1 |
+| 11 | `isPointOverCityPanelUi` | NIE | nie dotyczy |
+| 12 | Wejście bitwy | NIE | RR-T10 |
+| 13 | (RR-T1) Kolejność `mouseup`/`contextmenu` PPM (Z15) i natywne „leave” (Z13) | NIE (r2: jawnie) | przypisane do RR-T1, ale **nie** jest w punktach (1)–(7) dispatchu tego tematu; hak natywny loguje tylko `*BUTTONDOWN`/klawisze/fokus. Pozostaje otwarte dla RR-T1 (kandydat na kolejny przebieg spike'a) |
+| 14 | Wartości UI vs pola klasy (c) | NIE | P5-0 |
+| 15 | Dźwięk pozycyjny | NIE | poza tematem |
 
 ---
 
@@ -56,7 +103,7 @@ rust-port/spike-gpu-embed/
   src/stats.rs          min/p50/p95/max (percentyl nearest-rank, bez interpolacji), testy
   src/clock.rs          synchronizacja zegarów JS<->Rust (min RTT), opóźnienia jednokierunkowe, testy
   src/regions.rs        prostokąty CSS -> fizyczne (zaokrąglenie na zewnątrz, przycięcie), over_ui, testy
-  src/memory.rs         RSS procesu bez zależności (proc / ps / PowerShell), parsery z testami
+  src/memory.rs         RSS procesu (proc / ps / Win32 GetProcessMemoryInfo), procesy webview (potomkowie), parsery i drzewo procesów z testami
   src/protocol.rs       komunikaty webview<->Rust (MapInput z P4-5B §3.1, UiRects, NativeEvent...), testy JSON
   src/log.rs            log do pliku + stderr, zegar ms od startu
   src/gpu.rs            (cecha gpu) urządzenie, potok trójkąta (WGSL), WindowTarget, samotest offscreen
@@ -75,7 +122,7 @@ rust-port/spike-gpu-embed/
 | `gpu` | `wgpu =30.0.1`, `pollster 0.4` | warstwa GPU kompilowalna i testowalna bez GTK/WebKit |
 | (brak) `--no-default-features` | tylko `serde`, `serde_json` | logika CPU z testami, działa wszędzie |
 
-Wszystkie zależności z listy dispatchu; `windows` i `gtk` w **tych samych wersjach**, co w `src-tauri/Cargo.lock` (typy `HWND`, `gtk::ApplicationWindow` są te, które zwraca Tauri). Funkcje `windows` włączone: `Win32_Foundation`, `Win32_Graphics_Gdi`, `Win32_System_LibraryLoader`, `Win32_UI_Shell`, `Win32_UI_WindowsAndMessaging` (cechy, nie nowe pakiety). Brak `objc2` (macOS = stub). **ZAŁOŻENIE Z-S8:** `tauri-build` (zależność budowania) nie jest wymieniony w dispatchu, ale jest częścią narzędzi Tauri (`generate_context!` potrzebuje środowiska, które ustawia) — ta sama wersja `=2.6.3` co `src-tauri`. **ZAŁOŻENIE Z-S9:** cecha `macos-private-api` (przezroczystość na macOS, P4-3 §2.2) włączona; cecha `unstable` (`add_child`) **nie** — M2 na Windows jest zrobione surowym Win32, bez webview-dzieci.
+Wszystkie zależności z listy dispatchu; `windows` i `gtk` w **tych samych wersjach**, co w `src-tauri/Cargo.lock` (typy `HWND`, `gtk::ApplicationWindow` są te, które zwraca Tauri). Funkcje `windows` włączone: `Win32_Foundation`, `Win32_Graphics_Gdi`, `Win32_System_LibraryLoader`, `Win32_UI_Shell`, `Win32_UI_WindowsAndMessaging`, a od r2 także `Win32_System_ProcessStatus`, `Win32_System_Threading`, `Win32_System_Diagnostics_ToolHelp` (pamięć procesu i procesów webview, §1 (5)) — cechy, nie nowe pakiety; `Cargo.lock` bez zmian (`--locked` przechodzi, `logi-r2/08`). Brak `objc2` (macOS = stub). **ZAŁOŻENIE Z-S8:** `tauri-build` (zależność budowania) nie jest wymieniony w dispatchu, ale jest częścią narzędzi Tauri (`generate_context!` potrzebuje środowiska, które ustawia) — ta sama wersja `=2.6.3` co `src-tauri`. **ZAŁOŻENIE Z-S9:** cecha `macos-private-api` (przezroczystość na macOS, P4-3 §2.2) włączona; cecha `unstable` (`add_child`) **nie** — M2 na Windows jest zrobione surowym Win32, bez webview-dzieci.
 
 `unsafe`: w odróżnieniu od `rust-port/renderer` (`#![forbid(unsafe_code)]`) spike zawiera `unsafe` w `platform_windows.rs` (Win32, `WindowHandle::borrow_raw`) — zgodnie z P4-5B Z2 (hak platformowy poza rendererem). Renderer i silnik bez zmian.
 
@@ -165,7 +212,8 @@ Minimalny zestaw zgodny z P4-3 §8 RR-T1 („Windows + Linux X11/Wayland”): Wi
 | M1 — region wejścia webview (2) | `SetWindowRgn` na hoście `WRY_WEBVIEW` (`ICoreWebView2Controller::ParentWindow`) | `gdk::Window::input_shape_combine_region` na `GdkWindow` web view; **bezpiecznik:** jeśli web view nie ma własnego `GdkWindow`, odmowa z powodem (inaczej klik w dziurę trafiłby do pulpitu) | **stub** (`hitTest:` wymaga podklasy przez `objc2`) |
 | M2 — okno-dziecko nad webview (3) | własna klasa `SPIKE_M2_MAP`, `WS_CHILD`, `HWND_TOP`, region = okno − UI, wgpu przełączony do niego | **stub** | **stub** |
 | Fokus (6) | zaimplementowane (`Webview::set_focus`) | zaimplementowane | wykonalne tylko bez natywnego kliknięcia → `NIE_ZMIERZONO` |
-| IPC (4), pamięć (5), pełny ekran (7) | zaimplementowane | zaimplementowane | zaimplementowane |
+| IPC (4), pamięć procesu (5a), licznik wgpu (5c), pełny ekran (7) | zaimplementowane | zaimplementowane | zaimplementowane |
+| Pamięć procesów webview (5b, r2) | ToolHelp + `GetProcessMemoryInfo` | `/proc` (spacer sprawdzony testem tutaj) | **NIE_ZMIERZONO** (XPC, Z-S15) |
 | **Kompilacja w tym temacie** | `cargo check` + `clippy -D warnings` dla `x86_64-pc-windows-msvc` → **EXIT=0** (`logi-r1/05`, `logi-r1/10`) | **NIE_ZMIERZONO** — `cargo check` → EXIT=101, `gdk-sys`: „The system library `gdk-3.0` … was not found” (`logi-r1/03`); kod `platform_linux.rs` i ścieżka `app` na Linuksie nieskompilowane | **NIE_ZMIERZONO** — EXIT=101 na `objc2-exception-helper` (brak kompilatora Apple, `logi-r1/06`) |
 | **Uruchomienie** | NIE_ZMIERZONO | NIE_ZMIERZONO | NIE_ZMIERZONO |
 
@@ -195,6 +243,8 @@ Wyniki (przepisz z panelu "Gotowe" albo z pola "log" w JSON):
  (4a) P4aIpcWebviewDoRust:   ...   p50/p95 = ... / ... ms
  (4b) P4bIpcRustDoWebview:   ...   p50/p95 = ... / ... ms
  (5) P5Pamiec60s:            ...   RSS 10 s / 60 s = ... / ... MiB
+                                   webview (potomne) 10 s / 60 s = ... / ... MiB  albo NIE_ZMIERZONO
+                                   licznik wgpu przydzielone/zarezerwowane = ... / ... MiB  albo NIE_ZMIERZONO
  (6) P6FokusKlawiatury:      ...
  (7) P7Fullscreen:           ...
 
@@ -202,11 +252,11 @@ Obserwacje wzrokowe (wolny tekst): miganie przy zmianie rozmiaru? czarne tło? p
                                    zachowanie przy przeciąganiu okna między monitorami (jeśli sprawdzono)?
 ```
 
-Struktura JSON (schemat `spike-gpu-embed/1`, typy w `src/report.rs`):
+Struktura JSON (schemat `spike-gpu-embed/2` od r2 — dane (5) mają w każdej próbce pola `webview` {measured, rss_bytes, private_bytes, processes[], source, note} i `gpu_alloc` {available, allocated_bytes, reserved_bytes, blocks, note}; typy w `src/report.rs` i `src/memory.rs`):
 
 ```json
 {
-  "schema": "spike-gpu-embed/1",
+  "schema": "spike-gpu-embed/2",
   "temat": "R-RUSTPORT-P4-15-GPU-SPIKE-PREP-Q1",
   "platform": { "os": "windows", "arch": "x86_64", "family": "windows" },
   "environment": { "gpu_adapter": {"name": "...", "backend": "Dx12"}, "surface_main": "...",
@@ -240,6 +290,8 @@ Orkiestrator przenosi wyniki do P4-3 §9 / P4-5B §15 (zamyka lub potwierdza poz
 | Z-S11 | Status (4a) z serii „paced” (1/klatkę); seria „burst” tylko jako dane |
 | Z-S12 | Domyślna cecha = `app` (jedna komenda u właściciela); testy tutaj przez `--no-default-features` / `--features gpu` |
 | Z-S13 | Wyniki w `<crate>/wyniki/` (`CARGO_MANIFEST_DIR` z czasu kompilacji — spike uruchamiany ze źródeł) lub `SPIKE_OUT_DIR` |
+| Z-S14 | (r2) Status (5) liczy się wyłącznie z RSS procesu spike'a (litera dispatchu: „pamięć procesu”). Pamięć procesów webview (suma RSS potomków; górne oszacowanie, bo strony współdzielone liczone wielokrotnie) i licznik alokatora wgpu są osobnymi liniami dowodu, bez progu; orkiestrator ocenia je z surowych liczb |
+| Z-S15 | (r2) „Procesy webview” = wszyscy potomkowie procesu spike'a. Na Windows i Linux spike nie uruchamia innych procesów potomnych (r2 usunęło PowerShell ze ścieżki `app`), więc lista to procesy silnika webview; raport zawiera nazwy, żeby to sprawdzić. macOS: NIE_ZMIERZONO (XPC) |
 
 ---
 
@@ -252,6 +304,8 @@ Orkiestrator przenosi wyniki do P4-3 §9 / P4-5B §15 (zamyka lub potwierdza poz
 5. **Pełny ekran:** stałe 1,5 s oczekiwania; wolny menedżer okien może dać fałszywy `FAIL` — notatki zawierają liczbę `Resized`.
 6. **Klik w dziurę bez M1** (gdy M1 = stub) trafia do webview — to poprawny `NIE_ZMIERZONO`/`FAIL`, nie błąd.
 7. Kod Linux/macOS nie przeszedł kompilacji tutaj — możliwe błędy kompilacji u właściciela (wtedy: §3.6).
+8. (r2, uwaga Evaluatora r1) **M2 + pełny ekran:** po przełączeniu renderu na okno-dziecko M2 (`SPIKE_M2_MAP`) obsługa `WindowEvent::Resized` zmienia rozmiar powierzchni wgpu, ale **nie** rozmiaru ani regionu samego okna-dziecka. W przebiegu z M2 (`SPIKE_FORCE_M2=1` albo M1 ≠ PASS) test (7) zostawia okno-dziecko w rozmiarze sprzed pełnego ekranu: (7) mierzy wtedy nadal tylko `is_fullscreen` (wynik ważny), ale obraz w pełnym ekranie i po powrocie może być przycięty/rozciągnięty — to **nie** jest `FAIL` (1)/(3) i nie należy go tak oceniać. Na przebieg bez M2 nie wpływa. Naprawa (śledzenie rozmiaru okna-dziecka) — kandydat do RR-T1, poza zakresem tej rundy.
+9. (r2) Pamięć procesów webview to suma RSS — górne oszacowanie (Z-S14). Licznik alokatora wgpu nie obejmuje łańcucha wymiany ani pamięci sterownika.
 
 ---
 
@@ -277,10 +331,41 @@ Dodatkowo: `node --check ui/spike.js` → EXIT=0 (składnia JS). Cele `x86_64-pc
 
 ---
 
-## 9. `NIE_ZMIERZONO` (stan po rundzie 1)
+### 8.1 Runda 2 — surowe logi (`logi-r2/`, skrypt `logi-r2/gates-r2.sh`, ten sam rodzaj `CARGO_TARGET_DIR` w scratchpadzie, usunięty po pracy)
 
-1. Punkty (1)–(7) na każdej platformie — czekają na przebieg u właściciela.
-2. Kompilacja ścieżki `app` na Linuksie (`platform_linux.rs`) i macOS.
-3. Linkowanie i uruchomienie binarki na Windows.
-4. Czas pierwszej kompilacji u właściciela.
-5. Wymagania systemowe z §3.1 oznaczone `[zewn., niezweryfikowane]`.
+| Log | Komenda | Wynik |
+|---|---|---|
+| `01-lock-odtworzenie.txt` | kopia crate'a w scratchpadzie; `Cargo.lock` = `git show 69f432ba:src-tauri/Cargo.lock`; `cargo metadata --offline` (dopisuje 55 pakietów, w tym `gpu-allocator v0.28.0`, `windows v0.62.2`); `cargo tree -p gpu-allocator` (PRZED: `windows v0.61.3`); `cargo update --offline -p gpu-allocator`; `cargo tree` (PO: `windows v0.62.2`); `diff` z commitowanym lockiem | wszystkie **EXIT=0**; **odtworzony lock bajtowo identyczny z commitowanym** (`diff` EXIT=0) — brakujący w r1 dowód zasiania i jedynej ręcznej korekty |
+| `02-node-check.txt` | `node --check ui/spike.js` | **EXIT=0** |
+| `03-check-linux-app.txt` | `cargo check --locked` (Linux, `app`) | **EXIT=101** — `gdk-3.0` nie znaleziony (środowisko, jak r1) |
+| `04-test-cpu.txt` | `cargo test --locked --no-default-features` | **EXIT=0**, 39 passed (w tym `reads_child_memory_on_linux` — prawdziwy proces potomny `sleep` odczytany przez spacer po `/proc`) |
+| `05-test-gpu.txt` | `cargo test --locked --no-default-features --features gpu -- --nocapture` | **EXIT=0**, 42 passed; `SKIPPED: no GPU adapter` |
+| `06-clippy-gpu-linux.txt` | `cargo clippy --locked --all-targets --no-default-features --features gpu -- -D warnings` | **EXIT=0** |
+| `07-clippy-cpu-linux.txt` | `cargo clippy --locked --all-targets --no-default-features -- -D warnings` | **EXIT=0** |
+| `08-clippy-windows-app.txt` | `cargo clippy --locked --all-targets --target x86_64-pc-windows-msvc -- -D warnings` (ścieżka `app`: `GetProcessMemoryInfo`, ToolHelp, licznik wgpu) | **EXIT=0** |
+| `09-clippy-windows-cpu.txt` | to samo z `--no-default-features` (ścieżka PowerShell + `CREATE_NO_WINDOW`) | **EXIT=0** |
+| `10-fmt-check.txt` | `cargo fmt --all -- --check` | **EXIT=0** |
+| `11-grep-powershell-createnowindow.txt` | `grep` po `powershell`, `CREATE_NO_WINDOW`, `GetProcessMemoryInfo`, `windows_subsystem` w `src/` | PowerShell występuje tylko w gałęzi `#[cfg(all(windows, not(feature = "app")))]`, z `CREATE_NO_WINDOW` |
+
+## 9. `NIE_ZMIERZONO` (stan po rundzie 2)
+
+1. Punkty (1)–(7) na każdej platformie — czekają na przebieg u właściciela. Zakres, w jakim ich wynik zamknie pozycje P4-3 §9 / P4-5B §15 — wyłącznie wg §1a.
+2. (r2) Pamięć procesów webview na macOS (XPC) i VRAM poza alokatorem wgpu.
+3. (r2) Działanie `GetProcessMemoryInfo`/ToolHelp na prawdziwym Windows (tylko kompilacja, `logi-r2/08`); spacer po `/proc` sprawdzony tutaj na prawdziwym procesie potomnym (`logi-r2/04`), ale nie na `WebKitWebProcess`.
+4. (r2) Pozycje z §1a oznaczone CZĘŚCIOWO/NIE: m.in. DPI, opóźnienie wejście→klatka, opóźnienie `HitRegions`, `Escape`, Z13/Z15 (P4-5B §15 pkt 13).
+5. Kompilacja ścieżki `app` na Linuksie (`platform_linux.rs`) i macOS.
+6. Linkowanie i uruchomienie binarki na Windows.
+7. Czas pierwszej kompilacji u właściciela.
+8. Wymagania systemowe z §3.1 oznaczone `[zewn., niezweryfikowane]`.
+
+---
+
+## 10. Obrona Operatora r2 (odpowiedź na FAIL Evaluatora r1, `02-evaluator-r1.md`)
+
+| # | Zarzut | Odpowiedź | Poprawka / dowód |
+|---|---|---|---|
+| 1 | (blokujący) Release `windows_subsystem = "windows"` + PowerShell bez `CREATE_NO_WINDOW` w próbkach pamięci → okno konsoli może ukraść fokus/klik w (2)/(3)/(6) | **PRZYJMUJĘ** | `src/memory.rs`: w buildzie `app` na Windows pamięć czytana w procesie przez `GetProcessMemoryInfo` (`PROCESS_MEMORY_COUNTERS_EX`: `WorkingSetSize`, `PrivateUsage`) — **żaden proces nie jest uruchamiany**; PowerShell został tylko w ścieżce bez `app` (testy) i z `CREATE_NO_WINDOW`. Cechy `Win32_System_ProcessStatus`/`Threading`/`Diagnostics_ToolHelp` crate'a `windows =0.61.3` (już w locku; lock bez zmian). Dowód: `logi-r2/08`, `09` (clippy Windows obu ścieżek EXIT=0), `11` (grep) |
+| 2 | (5) mapowane na „pamięć w webview”, a mierzy tylko RSS procesu spike'a | **PRZYJMUJĘ** | Nowa część (5b): suma RSS + lista procesów potomnych (Windows ToolHelp + `GetProcessMemoryInfo` → `msedgewebview2.exe`; Linux `/proc`); macOS jawnie `NIE_ZMIERZONO` z powodem (XPC). Raport: osobna linia dowodu „procesy webview: …” albo „procesy webview: NIE_ZMIERZONO (powód)”; schemat `spike-gpu-embed/2`. Status (5) nadal z RSS procesu (Z-S14). Dodatkowo (5c) licznik `generate_allocator_report()` wgpu (częściowo P4-3 §9 pkt 13). `maps_to` i §1 poprawione na „CZĘŚCIOWO”. Testy: `descendants_found_recursively_and_cycle_safe`, `children_summarized`, `proc_stat_parsed_with_awkward_comm`, `reads_child_memory_on_linux`, `old_sample_json_without_webview_still_parses`, `memory_webview_line` (`logi-r2/04`) |
+| 3 | Mapowanie tylko w jedną stronę, częściowe pokrycie podane jako pełne; brak tabeli odwrotnej (P4-3 §9 pkt 4/13/16, P4-5B §15 pkt 3/8/13) | **PRZYJMUJĘ** | §1a: tabela odwrotna dla **wszystkich** pozycji P4-3 §9 (1–16) i P4-5B §15 (1–15), TAK/CZĘŚCIOWO/NIE z powodem; wszystkie 6 wskazanych pozycji opisane (DPI — NIE; pkt 13 — CZĘŚCIOWO po r2; pkt 16 — tylko IPC; `HitRegions` — NIE; `Escape` — NIE; P4-5B pkt 13 — NIE, jawnie). `maps_to` w `src/report.rs` z oznaczeniem `CZESCIOWO` |
+| 4 | Brak surowych logów: `cargo update -p gpu-allocator` i zasianie locka; dziura `logi-r1/02`; brak logu `node --check`; raport mówi 11 logów, jest 12 | **PRZYJMUJĘ** | `logi-r2/01-lock-odtworzenie.txt`: zasianie + rozwiązanie + `cargo update -p gpu-allocator` + `cargo tree` przed/po + `diff` z commitowanym lockiem → identyczny (EXIT=0). Oryginalnego wyjścia z r1 nie da się odzyskać — r2 to odtworzenie dające bajtowo ten sam lock. `logi-r2/02-node-check.txt` (EXIT=0). `logi-r1/02` nie istnieje — numer pominięty w r1, pliku nigdy nie było; plików w `logi-r1/` jest **12** (01, 03–13), „11” w raporcie r1 to błąd. `logi-r1/` zostawione bez zmian (zapis historyczny); komplet bramek r2 w `logi-r2/` (01–11 bez dziur + `gates-r2.sh`) |
+| U | (nieblokująca) M2 nie zmienia rozmiaru okna-dziecka przy `Resized` — istotne dla (7) | **PRZYJMUJĘ (dokumentacyjnie)** | §7 pkt 8: skutek dla przebiegu z M2 i reguła oceny; naprawa kodu poza zakresem rundy (ZAŁOŻENIE: uwaga nieblokująca → dokument, nie kod) |
