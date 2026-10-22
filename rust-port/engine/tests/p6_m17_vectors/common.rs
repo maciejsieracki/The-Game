@@ -206,7 +206,8 @@ pub fn map_to_value(m: &SnapshotMap) -> Value {
     Value::Object(out)
 }
 
-/// Rownosc strukturalna JSON; liczby porownywane BITOWO jako f64 (calkowite 3 == 3.0).
+/// Rownosc strukturalna JSON; liczby porownywane BITOWO jako f64 (calkowite 3 == 3.0), z JEDYNYM wyjatkiem: +0 == -0
+/// (`JSON.stringify(-0)` daje `"0"`, wiec web nie niesie znaku zera; wektor `liczby-egzotyczne` ma `seed: -0`).
 pub fn json_eq(a: &Value, b: &Value) -> Result<(), String> {
     fn go(a: &Value, b: &Value, path: &str) -> Result<(), String> {
         match (a, b) {

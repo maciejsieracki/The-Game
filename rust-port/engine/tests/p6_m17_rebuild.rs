@@ -42,6 +42,72 @@ fn rebuild_matches_web() {
     assert!(ok >= 50 && err >= 10, "pokrycie: ok={ok} err={err}");
 }
 
+/// Zarzut 2 (runda 2): nie tylko `is_err()` - klasa bledu Rust (wariant + pole) musi odpowiadac klasie awarii OBSERWOWANEJ w webie:
+/// `throws` (TypeError) -> `HexIndex`; `undefined` w polu X -> `DictIndex` (pole dict) albo `ColumnLength` (za krotka kolumna gesta).
+/// Oczekiwanie jest wyprowadzane ze sciezki `undefinedPaths` z weba, nie z recznej listy etykiet.
+#[test]
+fn rebuild_error_class_matches_web_failure_class() {
+    let d = load("rebuild.json");
+    let mut seen = std::collections::BTreeSet::new();
+    for c in cases(&d) {
+        let label = c["label"].as_str().unwrap();
+        let outcome = c["outcome"].as_str().unwrap();
+        if outcome == "ok" {
+            continue;
+        }
+        let snap: SerializedMapData = serde_json::from_value(c["snapshot"].clone()).unwrap();
+        let e = build_game_map_from_snapshot(&snap).unwrap_err();
+        let class = if outcome == "throws" {
+            assert_eq!(c["error"], "TypeError", "{label}");
+            assert!(
+                matches!(e, MapSnapshotError::HexIndex { .. }),
+                "{label}: {e}"
+            );
+            "HexIndex".to_string()
+        } else {
+            let paths = c["undefinedPaths"].as_array().unwrap();
+            assert_eq!(
+                paths.len(),
+                1,
+                "{label}: web ma dokladnie jedna sciezke undefined"
+            );
+            let path = paths[0].as_str().unwrap();
+            let (want_dict, want_col): (Option<&str>, Option<&str>) =
+                if path.ends_with(".terenBazowy") {
+                    (Some("terenIdx"), None)
+                } else if path.ends_with(".nakladka") {
+                    (Some("nakladkaIdx"), None)
+                } else if path.ends_with(".wlasciciel") {
+                    (Some("wlascicielIdx"), None)
+                } else if path.ends_with(".zloze") {
+                    (Some("zloze"), None)
+                } else if path.contains(".ulepszenia.") {
+                    (Some("ulepszenia"), None)
+                } else if path.ends_with("widocznosc.undefined") {
+                    (Some("widocznosc.playerIdx"), None)
+                } else if path.ends_with(".coords.q") {
+                    (None, Some("q"))
+                } else if path.ends_with(".wioska.ludnosc") {
+                    (None, Some("wioskaLudnosc"))
+                } else {
+                    panic!("{label}: nieznana sciezka undefined {path}")
+                };
+            match (want_dict, want_col, &e) {
+                (Some(f), _, MapSnapshotError::DictIndex { field, .. }) => {
+                    assert_eq!(*field, f, "{label}")
+                }
+                (_, Some(f), MapSnapshotError::ColumnLength { field }) => {
+                    assert_eq!(*field, f, "{label}")
+                }
+                _ => panic!("{label}: web={path}, Rust={e}"),
+            }
+            want_dict.or(want_col).unwrap().to_string()
+        };
+        seen.insert(class);
+    }
+    assert_eq!(seen.len(), 9, "pokrycie klas bledu: {seen:?}");
+}
+
 #[test]
 fn rebuild_errors_name_the_failing_field() {
     let d = load("rebuild.json");
