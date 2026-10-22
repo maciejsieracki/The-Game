@@ -1,0 +1,616 @@
+{
+ "rozmiarDims": {
+  "malenki": [
+   76,
+   52
+  ],
+  "maly": [
+   108,
+   74
+  ],
+  "standardowy": [
+   168,
+   120
+  ],
+  "duzy": [
+   240,
+   168
+  ],
+  "ogromny": [
+   336,
+   238
+  ],
+  "superogromny": [
+   672,
+   476
+  ]
+ },
+ "rozmiarKeysOrder": [
+  "malenki",
+  "maly",
+  "standardowy",
+  "duzy",
+  "ogromny",
+  "superogromny"
+ ],
+ "menuLabels": [
+  "Malenki",
+  "Mały",
+  "Standardowy",
+  "Duży",
+  "Ogromny",
+  "Super Huge"
+ ],
+ "rozmiarToDims": {
+  "malenki": {
+   "w": 76,
+   "h": 52
+  },
+  "maly": {
+   "w": 108,
+   "h": 74
+  },
+  "standardowy": {
+   "w": 168,
+   "h": 120
+  },
+  "duzy": {
+   "w": 240,
+   "h": 168
+  },
+  "ogromny": {
+   "w": 336,
+   "h": 238
+  },
+  "superogromny": {
+   "w": 672,
+   "h": 476
+  }
+ },
+ "fromMenuLabel": [
+  {
+   "label": "Malenki",
+   "rozmiar": "malenki",
+   "dims": {
+    "w": 76,
+    "h": 52
+   }
+  },
+  {
+   "label": "Mały",
+   "rozmiar": "maly",
+   "dims": {
+    "w": 108,
+    "h": 74
+   }
+  },
+  {
+   "label": "Standardowy",
+   "rozmiar": "standardowy",
+   "dims": {
+    "w": 168,
+    "h": 120
+   }
+  },
+  {
+   "label": "Duży",
+   "rozmiar": "duzy",
+   "dims": {
+    "w": 240,
+    "h": 168
+   }
+  },
+  {
+   "label": "Ogromny",
+   "rozmiar": "ogromny",
+   "dims": {
+    "w": 336,
+    "h": 238
+   }
+  },
+  {
+   "label": "Super Huge",
+   "rozmiar": "superogromny",
+   "dims": {
+    "w": 672,
+    "h": 476
+   }
+  },
+  {
+   "label": "Malenka",
+   "rozmiar": "malenki",
+   "dims": {
+    "w": 76,
+    "h": 52
+   }
+  },
+  {
+   "label": "Mala",
+   "rozmiar": "maly",
+   "dims": {
+    "w": 108,
+    "h": 74
+   }
+  },
+  {
+   "label": "Mały",
+   "rozmiar": "maly",
+   "dims": {
+    "w": 108,
+    "h": 74
+   }
+  },
+  {
+   "label": "mały",
+   "rozmiar": "maly",
+   "dims": {
+    "w": 108,
+    "h": 74
+   }
+  },
+  {
+   "label": "MAŁY",
+   "rozmiar": "maly",
+   "dims": {
+    "w": 108,
+    "h": 74
+   }
+  },
+  {
+   "label": "Mala ",
+   "rozmiar": "maly",
+   "dims": {
+    "w": 108,
+    "h": 74
+   }
+  },
+  {
+   "label": " Standardowy ",
+   "rozmiar": "standardowy",
+   "dims": {
+    "w": 168,
+    "h": 120
+   }
+  },
+  {
+   "label": "Średnia",
+   "rozmiar": "standardowy",
+   "dims": {
+    "w": 168,
+    "h": 120
+   }
+  },
+  {
+   "label": "Srednia",
+   "rozmiar": "standardowy",
+   "dims": {
+    "w": 168,
+    "h": 120
+   }
+  },
+  {
+   "label": "Sredni",
+   "rozmiar": "standardowy",
+   "dims": {
+    "w": 168,
+    "h": 120
+   }
+  },
+  {
+   "label": "Duża",
+   "rozmiar": "duzy",
+   "dims": {
+    "w": 240,
+    "h": 168
+   }
+  },
+  {
+   "label": "Duza",
+   "rozmiar": "duzy",
+   "dims": {
+    "w": 240,
+    "h": 168
+   }
+  },
+  {
+   "label": "Duzy",
+   "rozmiar": "duzy",
+   "dims": {
+    "w": 240,
+    "h": 168
+   }
+  },
+  {
+   "label": "Large",
+   "rozmiar": "duzy",
+   "dims": {
+    "w": 240,
+    "h": 168
+   }
+  },
+  {
+   "label": "large",
+   "rozmiar": "duzy",
+   "dims": {
+    "w": 240,
+    "h": 168
+   }
+  },
+  {
+   "label": "Medium",
+   "rozmiar": "standardowy",
+   "dims": {
+    "w": 168,
+    "h": 120
+   }
+  },
+  {
+   "label": "Small",
+   "rozmiar": "maly",
+   "dims": {
+    "w": 108,
+    "h": 74
+   }
+  },
+  {
+   "label": "small",
+   "rozmiar": "maly",
+   "dims": {
+    "w": 108,
+    "h": 74
+   }
+  },
+  {
+   "label": "XLarge",
+   "rozmiar": "ogromny",
+   "dims": {
+    "w": 336,
+    "h": 238
+   }
+  },
+  {
+   "label": "xlarge",
+   "rozmiar": "ogromny",
+   "dims": {
+    "w": 336,
+    "h": 238
+   }
+  },
+  {
+   "label": "Kolosalny",
+   "rozmiar": "superogromny",
+   "dims": {
+    "w": 672,
+    "h": 476
+   }
+  },
+  {
+   "label": "Super",
+   "rozmiar": "superogromny",
+   "dims": {
+    "w": 672,
+    "h": 476
+   }
+  },
+  {
+   "label": "superhuge",
+   "rozmiar": "superogromny",
+   "dims": {
+    "w": 672,
+    "h": 476
+   }
+  },
+  {
+   "label": "SUPER HUGE",
+   "rozmiar": "superogromny",
+   "dims": {
+    "w": 672,
+    "h": 476
+   }
+  },
+  {
+   "label": "Ogromna",
+   "rozmiar": "ogromny",
+   "dims": {
+    "w": 336,
+    "h": 238
+   }
+  },
+  {
+   "label": "Ogromny!",
+   "rozmiar": "ogromny",
+   "dims": {
+    "w": 336,
+    "h": 238
+   }
+  },
+  {
+   "label": "Wielki",
+   "rozmiar": "standardowy",
+   "dims": {
+    "w": 168,
+    "h": 120
+   }
+  },
+  {
+   "label": "xyz",
+   "rozmiar": "standardowy",
+   "dims": {
+    "w": 168,
+    "h": 120
+   }
+  },
+  {
+   "label": "",
+   "rozmiar": "standardowy",
+   "dims": {
+    "w": 168,
+    "h": 120
+   }
+  },
+  {
+   "label": " ",
+   "rozmiar": "standardowy",
+   "dims": {
+    "w": 168,
+    "h": 120
+   }
+  },
+  {
+   "label": "ćńś",
+   "rozmiar": "standardowy",
+   "dims": {
+    "w": 168,
+    "h": 120
+   }
+  },
+  {
+   "label": "Żółć",
+   "rozmiar": "standardowy",
+   "dims": {
+    "w": 168,
+    "h": 120
+   }
+  },
+  {
+   "label": "standard",
+   "rozmiar": "standardowy",
+   "dims": {
+    "w": 168,
+    "h": 120
+   }
+  },
+  {
+   "label": "stand",
+   "rozmiar": "standardowy",
+   "dims": {
+    "w": 168,
+    "h": 120
+   }
+  },
+  {
+   "label": "sre",
+   "rozmiar": "standardowy",
+   "dims": {
+    "w": 168,
+    "h": 120
+   }
+  },
+  {
+   "label": "ogr",
+   "rozmiar": "ogromny",
+   "dims": {
+    "w": 336,
+    "h": 238
+   }
+  },
+  {
+   "label": "mal",
+   "rozmiar": "maly",
+   "dims": {
+    "w": 108,
+    "h": 74
+   }
+  },
+  {
+   "label": "malen",
+   "rozmiar": "malenki",
+   "dims": {
+    "w": 76,
+    "h": 52
+   }
+  },
+  {
+   "label": "duz",
+   "rozmiar": "duzy",
+   "dims": {
+    "w": 240,
+    "h": 168
+   }
+  },
+  {
+   "label": "Kontynenty",
+   "rozmiar": "standardowy",
+   "dims": {
+    "w": 168,
+    "h": 120
+   }
+  },
+  {
+   "label": "Pangea",
+   "rozmiar": "standardowy",
+   "dims": {
+    "w": 168,
+    "h": 120
+   }
+  },
+  {
+   "label": "Wyspy",
+   "rozmiar": "standardowy",
+   "dims": {
+    "w": 168,
+    "h": 120
+   }
+  },
+  {
+   "label": "Ziemia",
+   "rozmiar": "standardowy",
+   "dims": {
+    "w": 168,
+    "h": 120
+   }
+  },
+  {
+   "label": "KONTYNENTY",
+   "rozmiar": "standardowy",
+   "dims": {
+    "w": 168,
+    "h": 120
+   }
+  },
+  {
+   "label": "Ziemia ",
+   "rozmiar": "standardowy",
+   "dims": {
+    "w": 168,
+    "h": 120
+   }
+  },
+  {
+   "label": "Wyspa",
+   "rozmiar": "standardowy",
+   "dims": {
+    "w": 168,
+    "h": 120
+   }
+  },
+  {
+   "label": "Mało",
+   "rozmiar": "maly",
+   "dims": {
+    "w": 108,
+    "h": 74
+   }
+  },
+  {
+   "label": "Normalnie",
+   "rozmiar": "standardowy",
+   "dims": {
+    "w": 168,
+    "h": 120
+   }
+  },
+  {
+   "label": "Dużo",
+   "rozmiar": "duzy",
+   "dims": {
+    "w": 240,
+    "h": 168
+   }
+  },
+  {
+   "label": "Duzo",
+   "rozmiar": "duzy",
+   "dims": {
+    "w": 240,
+    "h": 168
+   }
+  },
+  {
+   "label": "Low",
+   "rozmiar": "standardowy",
+   "dims": {
+    "w": 168,
+    "h": 120
+   }
+  },
+  {
+   "label": "HIGH",
+   "rozmiar": "standardowy",
+   "dims": {
+    "w": 168,
+    "h": 120
+   }
+  },
+  {
+   "label": "high",
+   "rozmiar": "standardowy",
+   "dims": {
+    "w": 168,
+    "h": 120
+   }
+  },
+  {
+   "label": "low",
+   "rozmiar": "standardowy",
+   "dims": {
+    "w": 168,
+    "h": 120
+   }
+  },
+  {
+   "label": "malo",
+   "rozmiar": "maly",
+   "dims": {
+    "w": 108,
+    "h": 74
+   }
+  },
+  {
+   "label": "Niska",
+   "rozmiar": "standardowy",
+   "dims": {
+    "w": 168,
+    "h": 120
+   }
+  },
+  {
+   "label": "Wysoka",
+   "rozmiar": "standardowy",
+   "dims": {
+    "w": 168,
+    "h": 120
+   }
+  },
+  {
+   "label": "Šmieszne",
+   "rozmiar": "standardowy",
+   "dims": {
+    "w": 168,
+    "h": 120
+   }
+  },
+  {
+   "label": "Mąka",
+   "rozmiar": "standardowy",
+   "dims": {
+    "w": 168,
+    "h": 120
+   }
+  },
+  {
+   "label": "Ęę",
+   "rozmiar": "standardowy",
+   "dims": {
+    "w": 168,
+    "h": 120
+   }
+  },
+  {
+   "label": "Ąą",
+   "rozmiar": "standardowy",
+   "dims": {
+    "w": 168,
+    "h": 120
+   }
+  },
+  {
+   "label": "àà",
+   "rozmiar": "standardowy",
+   "dims": {
+    "w": 168,
+    "h": 120
+   }
+  }
+ ]
+}

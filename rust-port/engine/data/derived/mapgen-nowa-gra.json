@@ -1,0 +1,165 @@
+{
+  "meta": {
+    "status": "BOOTSTRAP P6.M02: wartosci przepisane z weba (pin edb8fb56). Zrodlem prawdy do recznego balansu jest TA tabela.",
+    "pin_web": "edb8fb56",
+    "temat": "R-RUSTPORT-P6-M02-PARAMETRY-NOWEJ-GRY-Q1",
+    "uwaga": "Tabele liczbowe plikow gra/data/map-gen-params.json i gra/data/e-start-params.json zyja w data/map-gen-params.json i data/e-start-params.json (DANE-JUZ-W-RUST); tutaj tylko stale, ktore web trzyma w KODZIE (gra/src/map/{generator,newGameMapDefaults,deposit-era,riverGenSwitch}.ts)."
+  },
+  "rozmiary": {
+    "zrodlo_web": "gra/src/map/generator.ts:757-818 (RozmiarSwiata, ROZMIAR_MENU_LABELS, rozmiarFromMenuLabel); gra/src/map/newGameMapDefaults.ts:568-570 (MAP_MENU_TIER_ORDER)",
+    "kolejnosc": ["malenki", "maly", "standardowy", "duzy", "ogromny", "superogromny"],
+    "domyslny": "standardowy",
+    "etykiety_menu": ["Malenki", "Mały", "Standardowy", "Duży", "Ogromny", "Super Huge"],
+    "rozpoznawanie": [
+      { "prefiksy": ["malen"], "rowne": ["malenki"], "rozmiar": "malenki" },
+      { "prefiksy": ["mal"], "rowne": ["maly", "small"], "rozmiar": "maly" },
+      { "prefiksy": ["stand", "sre"], "rowne": ["standardowy", "medium"], "rozmiar": "standardowy" },
+      { "prefiksy": ["duz"], "rowne": ["large"], "rozmiar": "duzy" },
+      { "prefiksy": ["super"], "rowne": ["superhuge", "kolosalny"], "rozmiar": "superogromny" },
+      { "prefiksy": ["ogr"], "rowne": ["ogromny", "xlarge"], "rozmiar": "ogromny" }
+    ]
+  },
+  "etykieta_mapy": {
+    "zrodlo_web": "gra/src/map/newGameMapDefaults.ts:61-69 (mapSizeLabelFromDims)",
+    "progi_pola": [
+      { "ponizej": 4800, "etykieta": "mala" },
+      { "ponizej": 12000, "etykieta": "srednia" },
+      { "ponizej": 25200, "etykieta": "duza" },
+      { "ponizej": 100000, "etykieta": "ogromna" }
+    ],
+    "w_przeciwnym_razie": "super"
+  },
+  "typ_swiata": {
+    "zrodlo_web": "gra/src/map/newGameMapDefaults.ts:42-54,125-128; gra/src/map/gen-helpers.ts:3254-3262 (defaultLandFractionForTyp - KOPIA zalezna od M01, patrz dokument)",
+    "etykiety_menu": ["Kontynenty", "Pangea", "Wyspy", "Ziemia"],
+    "z_etykiety": { "kontynenty": "kontynenty", "pangea": "pangea", "wyspy": "wyspy", "ziemia": "ziemia" },
+    "domyslny": "kontynenty",
+    "udzial_ladu": { "pangea": 0.6, "kontynenty": 0.3, "wyspy": 0.5, "ziemia": 0.21 }
+  },
+  "gestosc": {
+    "zrodlo_web": "gra/src/map/newGameMapDefaults.ts:192-208 (DensityTier, densityTierFromLabel)",
+    "etykiety_menu": ["Mało", "Normalnie", "Dużo"],
+    "z_etykiety_niskie": ["malo", "low"],
+    "z_etykiety_wysokie": ["duzo", "high"],
+    "domyslna_z_etykiety": "medium",
+    "domyslna_etykieta_reliefu": "Normalnie",
+    "domyslny_preset": { "resources": "medium", "rivers": "medium", "desert": "medium", "forest": "medium", "relief": "medium" }
+  },
+  "rzeki": {
+    "zrodlo_web": "gra/src/map/newGameMapDefaults.ts:254-416",
+    "min_dlugosc_tier": { "low": 15, "medium": 25, "high": 35 },
+    "komorka_siatki_tier": { "low": 10, "medium": 5, "high": 5 },
+    "limit_akceptacji_tier": { "low": 5, "medium": 6, "high": 8 },
+    "powierzchnia_referencyjna": { "szerokosc": 168, "wysokosc": 120 },
+    "dopyw_komorka": { "mnoznik_glownej": 0.5, "minimum": 3 },
+    "glowne_stride": 1,
+    "min_len": { "mnoznik_obszaru_dol": 0.65, "dolny_clamp": 6, "ulamek_min_wymiaru": 0.35 },
+    "max_len": { "mnoznik_min_len_a": 2, "ulamek_min_wymiaru_a": 0.22, "mnoznik_min_len_b": 3, "ulamek_min_wymiaru_sufit": 0.75 },
+    "siatka_trace": { "dolny_clamp": 3, "ulamek_min_wymiaru": 0.12, "gorny_podloga": 3 },
+    "doplyw_min_len": { "dolny_clamp": 3, "odjecie_od_siatki": 1, "ulamek_min_wymiaru": 0.08, "gorny_podloga": 3 },
+    "twarde_meandry": { "baza": 8, "min": 3, "max": 8 },
+    "ogon_ujscia": { "baza": 5, "min": 3, "max": 5 },
+    "min_w_glab_ladu": { "prog_min_wymiaru": 40, "gdy_duza": 2, "gdy_mala": 1 },
+    "szukanie_reliefu": { "min": 2, "max": { "baza": 14, "min": 6, "max": 28 }, "bonus_zrodla": 0 },
+    "duza_mapa_prog_skali": 1.35,
+    "przebiegi_doplywow": {
+      "duza": { "baza": 2, "mnoznik_skali": 0.4, "min": 2, "max": 4 },
+      "mala": { "baza": 4, "mnoznik_skali": 1.0, "min": 4, "max": 10 }
+    },
+    "przebiegi_dopelnienia": {
+      "duza": { "baza": 2, "mnoznik_skali": 0.4, "min": 2, "max": 4 },
+      "mala": { "baza": 6, "mnoznik_skali": 2.0, "min": 6, "max": 16 }
+    },
+    "separacja_zrodel_doplywu": 0.35,
+    "promien_rozszerzenia_zrodla": { "baza": 2, "min": 1, "max": 5 },
+    "min_w_glab_komorki": { "dolny_clamp": 4, "ulamek_min_len": 0.35 },
+    "limity_trasy_legacy": {
+      "prog_pola": 20000,
+      "min_len_duza": 5,
+      "min_len_mala": 4,
+      "max_len_dolny": 40,
+      "max_len_ulamek_min_wymiaru": 0.22,
+      "margines_dolny": 2,
+      "margines_ulamek_min_wymiaru": 0.025
+    },
+    "maks_rzek_legacy": { "dzielnik_pola": 5000, "boost_min": 1, "wynik_min": 2 }
+  },
+  "progi_szumu": {
+    "zrodlo_web": "gra/src/map/newGameMapDefaults.ts:426-429 (forestNoiseThresholdFromTier), :504-507 (resourceBaseline)",
+    "las_odjecie": 0.12,
+    "las_dolny_prog": 0.32,
+    "bazowa_rzadkosc_bez_presetu": 1.0
+  },
+  "udzial_ladu": {
+    "zrodlo_web": "gra/src/map/newGameMapDefaults.ts:459-477",
+    "opcje_procent": [80, 70, 60, 50, 40, 30, 20],
+    "przelicznik_procent": 100,
+    "min": 0.15,
+    "max": 0.85
+  },
+  "miasta_panstwa": {
+    "zrodlo_web": "gra/src/map/newGameMapDefaults.ts:520-540,567-586,658-703",
+    "sufit": 9,
+    "dolna_granica": 1,
+    "dolna_granica_gdy_zero_dozwolone": 0,
+    "menu_wg_rozmiaru": [
+      { "min": 2, "default": 3, "max": 4 },
+      { "min": 3, "default": 4, "max": 5 },
+      { "min": 4, "default": 5, "max": 7 },
+      { "min": 5, "default": 6, "max": 8 },
+      { "min": 6, "default": 7, "max": 9 },
+      { "min": 7, "default": 8, "max": 9 }
+    ],
+    "podpowiedzi": {
+      "domyslna": "Zalecane dla tej mapy (np. Sparta, Kapua) — min 3 hex",
+      "mniej": "Mniej miast w klastrze",
+      "wiecej": "Więcej miast w klastrze"
+    }
+  },
+  "typy_cywilizacji": {
+    "zrodlo_web": "gra/src/map/newGameMapDefaults.ts:539-656,704-740",
+    "sufit_menu": 15,
+    "epoka_domyslna": "kamien",
+    "epoka_domyslna_aktywnych_typow": "zelazo",
+    "aliasy_epok": { "braz": ["braz", "bronz"], "zelazo": ["zelazo", "iron"] },
+    "pula_wg_epoki": { "kamien": 8, "braz": 14, "zelazo": 15 },
+    "domyslne_wg_rozmiaru_fallback": {
+      "kamien": [3, 4, 5, 6, 7, 8],
+      "braz": [4, 5, 6, 9, 11, 13],
+      "zelazo": [4, 5, 6, 10, 12, 14]
+    },
+    "triple_z_domyslnej": { "krok_max": 1, "krok_min": 1, "minimum": 1 },
+    "podpowiedzi": {
+      "domyslna": "Zalecane dla tej mapy (obce klastry ≥5 hex od stolicy)",
+      "mniej": "Mniej frakcji na mapie",
+      "wiecej": "Więcej frakcji na mapie"
+    }
+  },
+  "rywale_menu": {
+    "zrodlo_web": "gra/src/map/newGameMapDefaults.ts:105-122",
+    "minimum": 1,
+    "gorna_nadwyzka": 2,
+    "dolna_roznica": 1,
+    "odjecie_od_typow": 1,
+    "podpowiedzi": {
+      "domyslna": "Zalecane dla tej mapy",
+      "mniej": "Mniej starć",
+      "wiecej": "Gęstsza mapa"
+    }
+  },
+  "zloza_epoka": {
+    "zrodlo_web": "gra/src/map/deposit-era.ts:11-46",
+    "min_epoka_domyslna": 1,
+    "nigdy_widoczne": ["wegiel"]
+  },
+  "rzeki_przelacznik": {
+    "zrodlo_web": "gra/src/map/riverGenSwitch.ts:12-83",
+    "fazy": ["main", "main+medium", "all"],
+    "faza_domyslna": "main+medium",
+    "faza_tylko_glowne": "main",
+    "faza_pelna": "all",
+    "generowanie_domyslne": true,
+    "tokeny_wlaczone": ["1", "true"],
+    "tokeny_wylaczone": ["0", "false"]
+  }
+}

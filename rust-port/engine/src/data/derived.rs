@@ -1838,3 +1838,396 @@ pub fn mapgen_cluster_rivals() -> &'static MapgenClusterRivalsFile {
         parse_mapgen_cluster_rivals().expect("mapgen-cluster-rivals.json must parse")
     })
 }
+
+// ---------------------------------------------------------------------------
+// P6.M02 (R-RUSTPORT-P6-M02-PARAMETRY-NOWEJ-GRY-Q1): stale parametrow nowej gry
+// trzymane w KODZIE weba (generator.ts / newGameMapDefaults.ts / deposit-era.ts /
+// riverGenSwitch.ts). Czytane przez `domain/mapgen/params.rs`. Wartosci sa EDYTOWALNE
+// w `data/derived/mapgen-nowa-gra.json`; kod nie zawiera ich literalow.
+// ---------------------------------------------------------------------------
+
+pub const MAPGEN_NOWA_GRA_JSON: &str = include_str!("../../data/derived/mapgen-nowa-gra.json");
+
+/// Metadane tabeli (pochodzenie).
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct MapgenMeta {
+    pub status: String,
+    pub pin_web: String,
+    pub temat: String,
+    pub uwaga: String,
+}
+
+/// Trzy poziomy suwaka (low / medium / high) w tabelach mapgen.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct TierTriple<T> {
+    pub low: T,
+    pub medium: T,
+    pub high: T,
+}
+
+/// Regula rozpoznawania rozmiaru z etykiety menu (kolejnosc ma znaczenie).
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct RozmiarRegula {
+    pub prefiksy: Vec<String>,
+    pub rowne: Vec<String>,
+    pub rozmiar: String,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct MapgenRozmiary {
+    pub zrodlo_web: String,
+    pub kolejnosc: Vec<String>,
+    pub domyslny: String,
+    pub etykiety_menu: Vec<String>,
+    pub rozpoznawanie: Vec<RozmiarRegula>,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct ProgPola {
+    pub ponizej: f64,
+    pub etykieta: String,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct MapgenEtykietaMapy {
+    pub zrodlo_web: String,
+    pub progi_pola: Vec<ProgPola>,
+    pub w_przeciwnym_razie: String,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct UdzialLaduTyp {
+    pub pangea: f64,
+    pub kontynenty: f64,
+    pub wyspy: f64,
+    pub ziemia: f64,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct MapgenTypSwiata {
+    pub zrodlo_web: String,
+    pub etykiety_menu: Vec<String>,
+    pub z_etykiety: BTreeMap<String, String>,
+    pub domyslny: String,
+    pub udzial_ladu: UdzialLaduTyp,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct PresetGestosci {
+    pub resources: String,
+    pub rivers: String,
+    pub desert: String,
+    pub forest: String,
+    pub relief: String,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct MapgenGestosc {
+    pub zrodlo_web: String,
+    pub etykiety_menu: Vec<String>,
+    pub z_etykiety_niskie: Vec<String>,
+    pub z_etykiety_wysokie: Vec<String>,
+    pub domyslna_z_etykiety: String,
+    pub domyslna_etykieta_reliefu: String,
+    pub domyslny_preset: PresetGestosci,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct PowierzchniaReferencyjna {
+    pub szerokosc: f64,
+    pub wysokosc: f64,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct DoplywKomorka {
+    pub mnoznik_glownej: f64,
+    pub minimum: i64,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct MinLenRegula {
+    pub mnoznik_obszaru_dol: f64,
+    pub dolny_clamp: i64,
+    pub ulamek_min_wymiaru: f64,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct MaxLenRegula {
+    pub mnoznik_min_len_a: i64,
+    pub ulamek_min_wymiaru_a: f64,
+    pub mnoznik_min_len_b: i64,
+    pub ulamek_min_wymiaru_sufit: f64,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct SiatkaTraceRegula {
+    pub dolny_clamp: i64,
+    pub ulamek_min_wymiaru: f64,
+    pub gorny_podloga: i64,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct DoplywMinLenRegula {
+    pub dolny_clamp: i64,
+    pub odjecie_od_siatki: i64,
+    pub ulamek_min_wymiaru: f64,
+    pub gorny_podloga: i64,
+}
+
+/// `clamp(round(baza * areaScale), min, max)`.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct SkalowanyClamp {
+    pub baza: f64,
+    pub min: i64,
+    pub max: i64,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct MinWGlabLadu {
+    pub prog_min_wymiaru: i64,
+    pub gdy_duza: i64,
+    pub gdy_mala: i64,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct SzukanieReliefu {
+    pub min: i64,
+    pub max: SkalowanyClamp,
+    pub bonus_zrodla: i64,
+}
+
+/// `clamp(baza + floor(areaScale * mnoznik_skali), min, max)`.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct PrzebiegiRegula {
+    pub baza: i64,
+    pub mnoznik_skali: f64,
+    pub min: i64,
+    pub max: i64,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct PrzebiegiWgMapy {
+    pub duza: PrzebiegiRegula,
+    pub mala: PrzebiegiRegula,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct MinWGlabKomorki {
+    pub dolny_clamp: i64,
+    pub ulamek_min_len: f64,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct LimityTrasyLegacy {
+    pub prog_pola: f64,
+    pub min_len_duza: i64,
+    pub min_len_mala: i64,
+    pub max_len_dolny: i64,
+    pub max_len_ulamek_min_wymiaru: f64,
+    pub margines_dolny: i64,
+    pub margines_ulamek_min_wymiaru: f64,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct MaksRzekLegacy {
+    pub dzielnik_pola: f64,
+    pub boost_min: f64,
+    pub wynik_min: i64,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct MapgenRzeki {
+    pub zrodlo_web: String,
+    pub min_dlugosc_tier: TierTriple<i64>,
+    pub komorka_siatki_tier: TierTriple<i64>,
+    pub limit_akceptacji_tier: TierTriple<i64>,
+    pub powierzchnia_referencyjna: PowierzchniaReferencyjna,
+    pub dopyw_komorka: DoplywKomorka,
+    pub glowne_stride: i64,
+    pub min_len: MinLenRegula,
+    pub max_len: MaxLenRegula,
+    pub siatka_trace: SiatkaTraceRegula,
+    pub doplyw_min_len: DoplywMinLenRegula,
+    pub twarde_meandry: SkalowanyClamp,
+    pub ogon_ujscia: SkalowanyClamp,
+    pub min_w_glab_ladu: MinWGlabLadu,
+    pub szukanie_reliefu: SzukanieReliefu,
+    pub duza_mapa_prog_skali: f64,
+    pub przebiegi_doplywow: PrzebiegiWgMapy,
+    pub przebiegi_dopelnienia: PrzebiegiWgMapy,
+    pub separacja_zrodel_doplywu: f64,
+    pub promien_rozszerzenia_zrodla: SkalowanyClamp,
+    pub min_w_glab_komorki: MinWGlabKomorki,
+    pub limity_trasy_legacy: LimityTrasyLegacy,
+    pub maks_rzek_legacy: MaksRzekLegacy,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct MapgenProgiSzumu {
+    pub zrodlo_web: String,
+    pub las_odjecie: f64,
+    pub las_dolny_prog: f64,
+    pub bazowa_rzadkosc_bez_presetu: f64,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct MapgenUdzialLadu {
+    pub zrodlo_web: String,
+    pub opcje_procent: Vec<i64>,
+    pub przelicznik_procent: f64,
+    pub min: f64,
+    pub max: f64,
+}
+
+/// Trojka min / domyslna / max (web `MapScaleTriple`).
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct TripleRow {
+    pub min: i64,
+    pub default: i64,
+    pub max: i64,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct Podpowiedzi {
+    pub domyslna: String,
+    pub mniej: String,
+    pub wiecej: String,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct MapgenMiastaPanstwa {
+    pub zrodlo_web: String,
+    pub sufit: i64,
+    pub dolna_granica: i64,
+    pub dolna_granica_gdy_zero_dozwolone: i64,
+    pub menu_wg_rozmiaru: Vec<TripleRow>,
+    pub podpowiedzi: Podpowiedzi,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct AliasyEpok {
+    pub braz: Vec<String>,
+    pub zelazo: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct WgEpoki<T> {
+    pub kamien: T,
+    pub braz: T,
+    pub zelazo: T,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct TripleZDomyslnej {
+    pub krok_max: i64,
+    pub krok_min: i64,
+    pub minimum: i64,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct MapgenTypyCywilizacji {
+    pub zrodlo_web: String,
+    pub sufit_menu: i64,
+    pub epoka_domyslna: String,
+    pub epoka_domyslna_aktywnych_typow: String,
+    pub aliasy_epok: AliasyEpok,
+    pub pula_wg_epoki: WgEpoki<i64>,
+    pub domyslne_wg_rozmiaru_fallback: WgEpoki<Vec<i64>>,
+    pub triple_z_domyslnej: TripleZDomyslnej,
+    pub podpowiedzi: Podpowiedzi,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct MapgenRywaleMenu {
+    pub zrodlo_web: String,
+    pub minimum: i64,
+    pub gorna_nadwyzka: i64,
+    pub dolna_roznica: i64,
+    pub odjecie_od_typow: i64,
+    pub podpowiedzi: Podpowiedzi,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct MapgenZlozaEpoka {
+    pub zrodlo_web: String,
+    pub min_epoka_domyslna: i64,
+    pub nigdy_widoczne: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct MapgenRzekiPrzelacznik {
+    pub zrodlo_web: String,
+    pub fazy: Vec<String>,
+    pub faza_domyslna: String,
+    pub faza_tylko_glowne: String,
+    pub faza_pelna: String,
+    pub generowanie_domyslne: bool,
+    pub tokeny_wlaczone: Vec<String>,
+    pub tokeny_wylaczone: Vec<String>,
+}
+
+/// Plik `mapgen-nowa-gra.json`.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct MapgenNowaGraFile {
+    pub meta: MapgenMeta,
+    pub rozmiary: MapgenRozmiary,
+    pub etykieta_mapy: MapgenEtykietaMapy,
+    pub typ_swiata: MapgenTypSwiata,
+    pub gestosc: MapgenGestosc,
+    pub rzeki: MapgenRzeki,
+    pub progi_szumu: MapgenProgiSzumu,
+    pub udzial_ladu: MapgenUdzialLadu,
+    pub miasta_panstwa: MapgenMiastaPanstwa,
+    pub typy_cywilizacji: MapgenTypyCywilizacji,
+    pub rywale_menu: MapgenRywaleMenu,
+    pub zloza_epoka: MapgenZlozaEpoka,
+    pub rzeki_przelacznik: MapgenRzekiPrzelacznik,
+}
+
+pub fn parse_mapgen_nowa_gra() -> Result<MapgenNowaGraFile, serde_json::Error> {
+    serde_json::from_str(MAPGEN_NOWA_GRA_JSON)
+}
+
+/// Tabela parametrow nowej gry (jednorazowy odczyt; blad danych = panika z komunikatem).
+pub fn mapgen_nowa_gra() -> &'static MapgenNowaGraFile {
+    static TABLE: std::sync::OnceLock<MapgenNowaGraFile> = std::sync::OnceLock::new();
+    TABLE.get_or_init(|| parse_mapgen_nowa_gra().expect("mapgen-nowa-gra.json must parse"))
+}
