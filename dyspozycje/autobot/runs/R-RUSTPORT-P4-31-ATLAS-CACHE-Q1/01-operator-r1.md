@@ -1,0 +1,10 @@
+STATUS: PASS-WITH-NOTES
+DOMAIN: GAME
+TEMAT: R-RUSTPORT-P4-31-ATLAS-CACHE-Q1
+GOAL: RR-T8d (P4-25 §6) w `rust-port/renderer`: klucze treści (port `cityMapBadgeKey` i pokrewnych, wektory z weba), polityka cache LRU/refcount (M2, test N tur), mipmapy CPU T7/T9/T11 (zmierzone vs WebGL2), skala DPI×LOD z limitem 2048, upload wgpu (sRGB, alfa) za cechą `gpu`, rejestr zasobów RR-T6 bez duplikacji.
+ZMIANY/COMMIT: baza `origin/rust-port/parity-v2` @ `672c2059`; commit w worktree (SHA w odpowiedzi Operatora). Pliki: `rust-port/renderer/src/raster/atlas/{mod,keys,scale,cache,mip,upload,gpu}.rs` (nowe), `src/raster/mod.rs` (+1 linia `pub mod atlas;`), `tests/atlas_{json,keys,mip,nturns,gpu}.rs`, `tests/fixtures/atlas/{atlas_keys.json,atlas_gl.json,gen.ts,gen.sh,gen_gl.mjs,README.md,SHA256SUMS}` (2,4 MB), `dyspozycje/rust-port/p4/P4-31-ATLAS-CACHE.md`, ten katalog runu. `Cargo.toml`/`Cargo.lock`/`src/lib.rs`/`src/gpu.rs`/`assets/**`/`core/**` bez zmian; zero nowych zależności.
+TESTY: `dowody/01-gates.log`: fmt EXIT=0; clippy CPU EXIT=0; clippy `--features gpu` EXIT=0; `cargo test --locked --all-targets` EXIT=0 (304 passed); gpu (`atlas_gpu` 2 passed + 1 ignored z powodem, `gpu_probe` SKIPPED: no GPU adapter) EXIT=0; `cargo +1.87.0 test --locked --all-targets` EXIT=0 (304 passed). Parzystość z webem: klucze 7993/7993, skala/LOD 2342/2342, purge LOD 300/300 bit w bit; mip RGBA8 parzyste 12550/12550, pozostałe ≤ 1 LSB (99,66 % / 98,95 % / 99,85 %); niepremultiplikacja 99,33 % ≤ 1 LSB; N=200 tur: tekstury = żywe klucze ≤ miasta w każdej turze (t10 14, t50 24, t200 40), model pinu bez prune rośnie do 668. Mutacje 27/27 (`dowody/08-mutations.log`). Fixtury odtworzone ponownie bajt w bajt (`dowody/06-fixtures-repro.log`).
+BLOKADY: brak. Uwagi: filtr mipmap i niepremultiplikacja zmierzone wyłącznie na SwiftShader (ANGLE→Vulkan) — D3D11 u właściciela NIE_ZMIERZONO; upload na GPU niezweryfikowany (brak adaptera, test `#[ignore]`); pierwsza próba bramki 1.87 padła na pełnym dysku kontenera (naprawione `cargo clean` w skrypcie bramek).
+RUNDY: 1/5
+NASTĘPNY KROK: Evaluator (R-RUSTPORT-P4-31-ATLAS-CACHE-Q1, runda 1).
+DEPLOY/PUSH: NIE WYKONANO

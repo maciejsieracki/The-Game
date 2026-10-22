@@ -19,6 +19,7 @@
 //! blended as-is, like a Chromium 2D canvas). The output is deterministic for
 //! a given build of this crate (golden hashes in `tests/raster_scenes.rs`).
 
+pub mod atlas;
 mod canvas;
 mod color;
 pub mod image;
