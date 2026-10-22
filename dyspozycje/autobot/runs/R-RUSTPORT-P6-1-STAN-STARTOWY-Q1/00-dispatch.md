@@ -20,3 +20,8 @@ IZOLACJA: `isolation: worktree`. Commit w worktree (jawne `git add`, NIGDY `-A`)
 PROCEDURA NAPRAWCZA PRZY FAIL: ten sam ID; po 5 rundach LIMIT-5-EXCEEDED. Raport max ok. 400 słów.
 FORMAT ODPOWIEDZI: STATUS / DOMAIN / TEMAT / GOAL / ZMIANY-COMMIT / TESTY / BLOKADY / RUNDY / NASTĘPNY KROK
 DEPLOY/PUSH: NIE WYKONANO
+
+
+RUNDA 3 — po PASS-WITH-NOTES r2 (zintegrowane na `parity-v2` ≥ `9ec9c9d8`: 17 symboli PORTOWANE, 2 NIE-DOTYCZY, 179 RUNDA-2; silnik 401 testów):
+- PIERWSZY KROK: `git fetch origin rust-port/parity-v2 && git checkout --detach origin/rust-port/parity-v2` (r1–r2 już w bazie; NIE cherry-pickuj).
+- ZAKRES r3: pełne pliki wg listy RUNDA-2 z `dyspozycje/rust-port/p6/P6-1-STAN-STARTOWY.md`, w kolejności: `playerState.ts` (617 LOC; `data::buildings_tech::Technologia` + stałe 10 i 4 → `data/derived/*.json`), `first-player-city.ts`, `cluster-start.ts`, `inca-llama-seed.ts`, `city-names-pool.ts`, `braz-access.ts`, `civ-bonuses.ts` (logika, nie dane); reszta → RUNDA-4 z listą. Każdy plik PEŁNY (wszystkie eksportowane symbole logiki), wektory z uruchomionego weba + niezależny weryfikator, brak literałów, niepuste logi z EXIT, `git diff --check` czysty. Spłaszczanie mnożników dla mechanik tego zakresu (mapa/start) jest KRYTERIUM AKCEPTACJI (zob. LEDGER, decyzja o P3.23).
