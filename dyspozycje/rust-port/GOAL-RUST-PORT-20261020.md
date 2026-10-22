@@ -30,6 +30,9 @@ dotykające tych samych plików — zawsze sekwencyjnie, nigdy w tej samej fali.
 | 3 | `R-RUSTPORT-P6-25-MAPA-GAP-Q1` | P6.25 analiza luk katalogu `gra/src/map/` (27 plików, niepokryty przez P6.0) — Operator Sonnet | 1/5 | `wf_aa802f0f-4ff` | DISPATCHED | 2026-10-22 |
 | 6 | `R-RUSTPORT-P5-5-PORT-POZIOM2-Q1` | P5.5 port paneli UI poziom 1–2 niecykliczne — Opus 5.5 | 1/5 | `wf_a26c16b2-31b` | DISPATCHED | 2026-10-22 |
 | 5 | `R-RUSTPORT-P6-4-JEDNOSTKI-RUCH-Q1` | P6.4 `embarkation`, `planned-march`, `rally-point`, `scout-auto-explore` — Operator Sonnet | 1/5 | `wf_9ed3ca33-8bb` | DISPATCHED | 2026-10-22 |
+| 6 | `R-RUSTPORT-P4-29-TEXT-FONTS-Q1` | RR-T8b font + tekst (ab_glyph, rustybuzz, Liberation/DejaVu) — Opus 5.5 | 1/5 | `wf_ba6243e3-648` | DISPATCHED | 2026-10-22 |
+
+Slot wolny (5/6 + wydanie ROBOCZEJ): brak gotowego, bezkolizyjnego kawałka — P6.5 czeka na P6.4 (recruitment.rs), RR-T8c czeka na wybór emoji (D-TXT-3=C) i dzieli `raster/mod.rs` z RR-T8b, P6.2b rozbite po tematach P6.5–P6.12.
 
 Kolejka (aktualizacja 2026-10-22): P3.23 FLATTEN etap 3 (po P3.21 — te same pliki domeny: macierz counter 35g, struktury, wzrost 35b, mapa 35j–k, społeczeństwo 35n, wioski 35c, ruch 35i, produkcja 19–22b), MOD-07 jednostki żelaza, ujednolicenie typu drzewa sceny, P5.3+ kolejne poziomy `PORTING-QUEUE.md`, pierwotna kolejka: MOD-06/07 (jednostki brązu/żelaza, po P4.19), MOD-09 miasta, MOD-13 misc, ujednolicenie typu drzewa sceny (3 typy: `core::scene`, `wonders::model`, `unit_core::model`) po paczkach, P3.21 `CityId` po P3.22, P5.2+ kolejka portowania paneli (`PORTING-QUEUE.md`), RR-T1 spike (wymaga GPU właściciela).
 
