@@ -12,6 +12,10 @@
 //    (and their own imports, e.g. render/kon-nowy-model.ts, render/hexutil.ts).
 // No web code is copied: the generator only calls the web API and dumps the object
 // graph (THREE.Group / THREE.Mesh, no WebGLRenderer).
+// Exception (section 6 only, legacy.json): the uncalled `rbx*` builders and `addCyl` of
+// robloxImprovements.ts are not exported, so the scratch copy gets ONE appended line,
+// legacy-export.txt (an `export { … }` list; no statement of the module changes). Without
+// that line section 6 is skipped and models/sigs/data/protokeys.json are byte-identical.
 // Output: JSON files in the directory given as argv[2].
 
 import * as THREE from 'three';
@@ -22,6 +26,7 @@ import {
   buildImprovement, buildImprovementSectored, buildImprovementStack, IMPROVEMENTS, SECTOR_R_ELEVATED,
 } from '../websrc/gra/src/render/improvements';
 import { buildRobloxFoodStack, buildRobloxImprovement } from '../websrc/gra/src/render/robloxImprovements';
+import * as RI from '../websrc/gra/src/render/robloxImprovements';
 import {
   buildStyledResourceOverlay, placeLivestockPair, placeLivestockFigure, buildStyledCow, buildStyledSheep,
   LIVESTOCK_FIGURE_SCALE,
@@ -375,6 +380,44 @@ C('stack:brak', buildImprovementStack(['brak', '']));
 C('stack:farma+farma+owce', buildImprovementStack(['farma', 'farma', 'owce', 'droga']));
 F('stack-full:farma+bydlo+owce+fort', buildImprovementStack(['farma', 'bydlo', 'owce', 'fort']));
 
+// 6) Uncalled `rbx*` builders + `addCyl` (D-MOD-3 = B). The web module does not export
+// them; they exist on `RI` only when the scratch copy has the one line from README.md
+// ("legacy export") appended. Without it nothing is written for this section, and the
+// other three files are byte-identical either way (an `export` list changes no code).
+const LEGACY = [
+  'rbxDroga', 'rbxDrogaBrukowana', 'rbxFarma', 'rbxPastwisko', 'rbxKopalnia', 'rbxKamieniolom',
+  'rbxObozLowiecki', 'rbxWyrab', 'rbxTartak', 'rbxPoleIrygowane', 'rbxGlinianka', 'rbxLodzie',
+  'rbxWarzelniaSoli', 'rbxFort', 'rbxPosterunek',
+];
+const RIX = RI as any;
+const legacy: any[] = [];
+if (LEGACY.every((n) => typeof RIX[n] === 'function') && typeof RIX['addCyl'] === 'function') {
+  const L = (name: string, g: THREE.Group) => legacy.push({ name, model: dumpModel(g) });
+  for (const n of LEGACY) {
+    const owners = n === 'rbxFort' || n === 'rbxPosterunek' ? [0xffd54a, 0x8e24aa, 0x1234abcd, 0, -1] : [undefined];
+    for (const o of owners) {
+      const g = new THREE.Group();
+      RIX[n](g, o);
+      L(o === undefined ? `legacy:${n}` : `legacy:${n}:${o}`, g);
+    }
+  }
+  { const g = new THREE.Group(); RIX['addCyl'](g, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0x123456); L('legacy:addCyl:default', g); }
+  { const g = new THREE.Group(); RIX['addCyl'](g, 0.3, 0.1, 0.25, -0.2, 0.05, 0.7, 0xabcdef, 9); L('legacy:addCyl:9', g); }
+}
+
+// 7) Z6: keys that are names of `Object.prototype` members. `BUILDERS[key]` then finds the
+// inherited member; record whether the web throws (message) or returns a group (full dump).
+const PROTO_KEYS = ['__proto__', 'hasOwnProperty', 'valueOf', '__defineGetter__', 'constructor', 'toString',
+  'isPrototypeOf', 'propertyIsEnumerable', 'toLocaleString', '__lookupGetter__', '__defineSetter__', '__lookupSetter__'];
+const protoKeys: any[] = [];
+for (const k of PROTO_KEYS) {
+  try {
+    protoKeys.push({ key: k, threw: null, model: dumpModel(buildImprovement(k as any)) });
+  } catch (e: any) {
+    protoKeys.push({ key: k, threw: String(e && e.message), model: null });
+  }
+}
+
 // ---------------------------------------------------------------------------
 const data = {
   improvements: IMPROVEMENTS,
@@ -396,4 +439,6 @@ const data = {
 fs.writeFileSync(path.join(OUT, 'data.json'), ser(data));
 fs.writeFileSync(path.join(OUT, 'models.json'), ser({ models: full }));
 fs.writeFileSync(path.join(OUT, 'sigs.json'), ser({ models: sigs }));
-console.log(`improvements full=${full.length} sigs=${sigs.length}`);
+fs.writeFileSync(path.join(OUT, 'protokeys.json'), ser({ keys: protoKeys }));
+if (legacy.length > 0) fs.writeFileSync(path.join(OUT, 'legacy.json'), ser({ models: legacy }));
+console.log(`improvements full=${full.length} sigs=${sigs.length} legacy=${legacy.length}`);

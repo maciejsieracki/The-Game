@@ -35,7 +35,7 @@ use pal::*;
 
 /// Local `box` + `addBox(g, w, h, d, x, y, z, c)`: bottom at `y`, new
 /// material, cast + receive shadow.
-fn add_box(
+pub(super) fn add_box(
     m: &mut ImprovementModel,
     g: NodeId,
     w: f64,
@@ -53,7 +53,7 @@ fn add_box(
 }
 
 /// `rbxFarmHut(g, x, z, scale = 1)` (`:105-114`).
-fn rbx_farm_hut(m: &mut ImprovementModel, g: NodeId, x: f64, z: f64, scale: f64) {
+pub(super) fn rbx_farm_hut(m: &mut ImprovementModel, g: NodeId, x: f64, z: f64, scale: f64) {
     let w = 0.14 * scale;
     let h = 0.11 * scale;
     add_box(m, g, w, h, w * 0.9, x, 0.0, z, WOOD_DK);
@@ -64,7 +64,14 @@ fn rbx_farm_hut(m: &mut ImprovementModel, g: NodeId, x: f64, z: f64, scale: f64)
 }
 
 /// `rbxFarmMiniField(g, cx, cz, w, d)` (`:116-128`).
-fn rbx_farm_mini_field(m: &mut ImprovementModel, g: NodeId, cx: f64, cz: f64, w: f64, d: f64) {
+pub(super) fn rbx_farm_mini_field(
+    m: &mut ImprovementModel,
+    g: NodeId,
+    cx: f64,
+    cz: f64,
+    w: f64,
+    d: f64,
+) {
     add_box(m, g, w, 0.03, d, cx, 0.0, cz, SOIL);
     for row in 0..2_u32 {
         for col in 0..3_u32 {
@@ -78,7 +85,7 @@ fn rbx_farm_mini_field(m: &mut ImprovementModel, g: NodeId, cx: f64, cz: f64, w:
 }
 
 /// `rbxFarmSettlement(g, { livestock })` (`:131-139`).
-fn rbx_farm_settlement(m: &mut ImprovementModel, g: NodeId, bydlo: bool) {
+pub(super) fn rbx_farm_settlement(m: &mut ImprovementModel, g: NodeId, bydlo: bool) {
     rbx_farm_hut(m, g, -0.46, 0.22, 1.0);
     rbx_farm_hut(m, g, -0.46, -0.18, 0.82);
     add_box(m, g, 0.08, 0.06, 0.1, -0.46, 0.03, -0.02, WOOD);
@@ -89,7 +96,7 @@ fn rbx_farm_settlement(m: &mut ImprovementModel, g: NodeId, bydlo: bool) {
 }
 
 /// `rbxIrygacjaLarge(g, false)` (`:258-277`; `cornerHut` is never true).
-fn rbx_irygacja_large(m: &mut ImprovementModel, g: NodeId) {
+pub(super) fn rbx_irygacja_large(m: &mut ImprovementModel, g: NodeId) {
     add_box(m, g, 1.42, 0.04, 1.22, 0.0, 0.0, 0.0, SOIL);
     for z in [-0.34, 0.0, 0.34] {
         add_box(m, g, 1.36, 0.06, 0.12, 0.0, 0.04, z, WATER);

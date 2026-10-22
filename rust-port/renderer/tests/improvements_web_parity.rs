@@ -15,6 +15,10 @@
 //! `sigs.json`: the combinatorial cases (64 road masks × 2, sector layouts,
 //! stacks, food stacks) as counts + bbox + an FNV-1a signature over exactly
 //! the same scalars, in the same order.
+//! `legacy.json`: full graphs of the 15 uncalled `rbx*` builders and `addCyl`
+//! (D-MOD-3 = B), generated from the web module plus one `export` line.
+//! `protokeys.json`: what the web `buildImprovement` does for keys named like
+//! `Object.prototype` members (Z6; Rust deviation pinned in a test).
 
 #![allow(clippy::float_cmp, clippy::too_many_lines)]
 
@@ -33,6 +37,7 @@ use civ_renderer::models::improvements::p2::{self, WariantFarmy};
 use civ_renderer::models::improvements::p3a;
 use civ_renderer::models::improvements::p3b::{self, ZlozeTyp};
 use civ_renderer::models::improvements::roblox::build_style_tarasy_terrace;
+use civ_renderer::models::improvements::roblox_legacy::{add_cyl, build_rbx_legacy, RbxLegacy};
 use civ_renderer::models::improvements::zasoby::{
     build_styled_cow, build_styled_sheep, place_livestock_figure, place_livestock_pair, Livestock,
     LIVESTOCK_FIGURE_SCALE,
@@ -1344,6 +1349,39 @@ fn cases() -> Vec<(String, Builder)> {
         "stack-full:farma+bydlo+owce+fort".into(),
         st(&["farma", "bydlo", "owce", "fort"]),
     );
+    // 6) uncalled rbx* builders + addCyl (legacy.json)
+    for kind in RbxLegacy::ALL {
+        let name = kind.web_name();
+        if matches!(kind, RbxLegacy::Fort | RbxLegacy::Posterunek) {
+            for o in [0x00ff_d54a_i64, 0x008e_24aa, 0x1234_abcd, 0, -1] {
+                add(
+                    format!("legacy:{name}:{o}"),
+                    Box::new(move || some(build_rbx_legacy(kind, owner_from_js(o)))),
+                );
+            }
+        } else {
+            add(
+                format!("legacy:{name}"),
+                Box::new(move || some(build_rbx_legacy(kind, DEFAULT_OWNER_COL))),
+            );
+        }
+    }
+    add(
+        "legacy:addCyl:default".into(),
+        Box::new(|| {
+            some(group_with(|m| {
+                add_cyl(m, ROOT, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0x0012_3456, 6);
+            }))
+        }),
+    );
+    add(
+        "legacy:addCyl:9".into(),
+        Box::new(|| {
+            some(group_with(|m| {
+                add_cyl(m, ROOT, 0.3, 0.1, 0.25, -0.2, 0.05, 0.7, 0x00ab_cdef, 9);
+            }))
+        }),
+    );
     v
 }
 
@@ -1354,7 +1392,7 @@ fn models_are_bit_identical_to_web() {
     let table: HashMap<String, Builder> = cases().into_iter().collect();
     let mut c = Cmp::default();
     let mut seen = 0;
-    for file in ["models.json", "sigs.json"] {
+    for file in ["models.json", "sigs.json", "legacy.json"] {
         let j = load(file);
         for e in j.get("models").arr() {
             let name = e.get("name").str();
@@ -1367,7 +1405,7 @@ fn models_are_bit_identical_to_web() {
                 (None, Json::Null) => {}
                 (Some(m), w @ Json::Obj(_)) => {
                     let d = dump(&m);
-                    if file == "models.json" {
+                    if file != "sigs.json" {
                         compare_full(&mut c, name, &d, w);
                     } else {
                         c.eq(
@@ -1389,6 +1427,40 @@ fn models_are_bit_identical_to_web() {
     assert_eq!(seen, table.len(), "every Rust case has a fixture entry");
     c.finish(&format!("models: cases={seen}"));
     assert!(c.ok(), "MOD-11 models differ from the web");
+}
+
+/// Z6: keys named like `Object.prototype` members. The web either throws
+/// (`BUILDERS[key]` is an inherited `Object.prototype` method, called with
+/// `this` undefined) or returns an empty group; Rust always returns an empty group.
+/// The web side is pinned from `protokeys.json` so a change shows up here.
+#[test]
+fn prototype_keys_documented_deviation() {
+    let j = load("protokeys.json");
+    let mut c = Cmp::default();
+    let mut threw = 0;
+    let mut empty = 0;
+    for e in j.get("keys").arr() {
+        let key = e.get("key").str();
+        let d = dump(&build_improvement(key, DEFAULT_OWNER_COL));
+        // Rust: always the empty root group.
+        c.eq(&format!("proto:{key}.rust_nodes"), d.nodes.len(), 1);
+        match (e.get("threw"), e.get("model")) {
+            (Json::Str(_), Json::Null) => threw += 1,
+            (Json::Null, w @ Json::Obj(_)) => {
+                empty += 1;
+                compare_full(&mut c, &format!("proto:{key}"), &d, w);
+            }
+            other => c.st(key, &format!("unexpected fixture entry {other:?}")),
+        }
+    }
+    c.finish(&format!("proto keys: threw={threw} empty={empty}"));
+    assert!(
+        c.ok(),
+        "prototype-key behaviour differs from the documented deviation"
+    );
+    // Measured on the web (edb8fb56): 10 of 12 keys throw, `constructor` and
+    // `toString` give an empty group (doc §1 Z6).
+    assert_eq!((threw, empty), (10, 2));
 }
 
 #[test]

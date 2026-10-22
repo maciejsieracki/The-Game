@@ -1,7 +1,7 @@
 # P4.20 — MOD-11: modele ulepszeń terenu i zasobów w Rust, 1:1 z webem
 
-**Temat:** `R-RUSTPORT-P4-20-MOD11-IMPROVEMENTS-Q1` · **Domena:** GAME · **Rola:** Operator, runda 1/5 (Opus 5.5 medium, R-PROC-AUTOBOT §5a)
-**Pin web (tylko odczyt):** `edb8fb56`. **Baza kodu:** `rust-port/parity-v2` @ `bf59164b`. **Commit kodu:** `acb1915e` (worktree, bez push).
+**Temat:** `R-RUSTPORT-P4-20-MOD11-IMPROVEMENTS-Q1` · **Domena:** GAME · **Rola:** Operator r1 + Obrona r1 (§10), runda 1/5 (Opus 5.5 medium, R-PROC-AUTOBOT §5a)
+**Pin web (tylko odczyt):** `edb8fb56`. **Baza kodu:** `rust-port/parity-v2` @ `bf59164b`. **Commit kodu:** `acb1915e` (Operator) + commit Obrony (§10) (worktree, bez push).
 **Paczka:** MOD-11 z `P4-4-MODEL-CATALOG.md` §2.4 i tabeli paczek §4.2 (wiersz 11: `improvements`, `robloxImprovements`, `ulepszenia-modele-p2/p3a/p3b`, `kopalnia-cyny-opus5`, `kopalnia-zlota-opus5`, `droga-6-ramion`, `pastwisko-modele`, `swinia-trzoda`, `styleResources`, `resources` → „24 + złoża + zwierzęta”).
 
 ## 0. Streszczenie
@@ -10,6 +10,7 @@
 - Drzewo modelu = **`unit_core::model::UnitModel`** (zgodnie z dispatchem, bez nowego typu drzewa). To, czego `UnitModel` nie niesie, jest w równoległych tabelach w `model.rs` (minimalne typy we własnym module, §1 Z4): cienie, `userData`, rodzaj materiału (Lambert/Standard) i liniowy `emissive`, dwie geometrie spoza `Prim` (dwunastościan, stożek po `rotateY`).
 - Koń stadniny i złoża koni = MOD-04 `unit_core::horse::{build_horse, build_zloze_konie}` (reużyte, nie skopiowane).
 - **Zgodność z uruchomionym kodem weba: bitowa, 0 rozbieżności** — 432 przypadki (195 pełnych grafów + 237 sygnatur): 173 070 skalarów porównanych `to_bits`, plus liczby węzłów/meshy/wierzchołków/trójkątów, hashe geometrii, parametry geometrii, sloty i parametry materiałów, cienie, `userData`, bbox. Tabele danych: 35 skalarów + `IMPROVEMENTS`/klucze/maski dróg, 0 różnic.
+- **Obrona r1 (§10):** dodatkowo przeniesione 15 nieużywanych funkcji `rbx*` + `addCyl` (D-MOD-3 = B) do `roblox_legacy.rs`, 25 nowych przypadków bitowo (razem **457 przypadków, 192 046 skalarów, 0 różnic**); Z6 zmierzone na webie (`protokeys.json`, test odchylenia); podstawa Z1 poprawiona (D-MOD-1 rozstrzygnięte) i kolizja z D-MOD-3 = B nazwana jawnie (`K-MOD11-1`).
 - Test mutacyjny: 24/26 zabitych, 2 przeżyły jako mutanty równoważne na danych (opisane w §5, zastąpione silniejszymi M21b/M22b — zabite).
 - Ocena wzrokowa: `NIE_ZMIERZONO` (brak GPU), lista §7.
 
@@ -20,7 +21,7 @@
 | `improvements.ts`: `ImprovementKey`, `IMPROVEMENTS`, `buildImprovement`, `buildImprovementSectored`, `buildImprovementStack`, `SECTOR_R_ELEVATED` | `registry.rs` — port 1:1 gałęzi `roblox` | `improvements.ts:20-47,339-344,392-515,518-602` |
 | `improvements.ts` klasyczny `switch` (24 `case`) i jego prywatne buildery (`farma`, `kopalnia`, `fort`, …) | **nieportowane** (Z1) | `:345-380`, `:65-337`; osiągalne tylko przy `style !== 'roblox'` |
 | `robloxImprovements.ts`: 24 `BUILDERS`, `buildRobloxImprovement`, `buildRobloxFoodStack` + używane helpery (`rbxFarmHut`, `rbxFarmMiniField`, `rbxFarmSettlement`, `rbxIrygacjaLarge`, `rbxTarasy`, żywność) | `roblox.rs` | `:105-186,258-306,388-484` |
-| 15 martwych funkcji `rbx*` (`rbxDroga`, `rbxDrogaBrukowana`, `rbxFarma`, `rbxPastwisko`, `rbxKopalnia`, `rbxKamieniolom`, `rbxObozLowiecki`, `rbxWyrab`, `rbxTartak`, `rbxPoleIrygowane`, `rbxGlinianka`, `rbxLodzie`, `rbxWarzelniaSoli`, `rbxFort`, `rbxPosterunek`) | **nieportowane** (Z2) | `grep -c "\b<nazwa>(" robloxImprovements.ts` = 1 (tylko definicja) dla każdej |
+| 15 nieużywanych funkcji `rbx*` (`rbxDroga`, `rbxDrogaBrukowana`, `rbxFarma`, `rbxPastwisko`, `rbxKopalnia`, `rbxKamieniolom`, `rbxObozLowiecki`, `rbxWyrab`, `rbxTartak`, `rbxPoleIrygowane`, `rbxGlinianka`, `rbxLodzie`, `rbxWarzelniaSoli`, `rbxFort`, `rbxPosterunek`) + `addCyl` | `roblox_legacy.rs` — **port 1:1 (Obrona r1, D-MOD-3 = B)**, bitowo (`legacy.json`, 25 przypadków) | `:49-54,82-103,146-154,188-256,290-303,309-386`; `grep -c "\b<nazwa>(" robloxImprovements.ts` = 1 (tylko definicja) dla każdej — nikt ich nie woła (Z2) |
 | `setImprovementDetailQuality` | brak odpowiednika (Z3) | `:33-34` — wartość nieczytana przez żaden builder |
 | `ulepszenia-modele-p2.ts` (5 builderów + layout) | `p2.rs` | `:116-308,317-345` |
 | `ulepszenia-modele-p3a.ts` (6 builderów + layout) | `p3a.rs` | `:133-480,490-510` |
@@ -35,12 +36,22 @@
 | Koń (`kon-nowy-model.ts`) | reużyty z MOD-04 | dispatch; `unit_core::horse` |
 
 **ZAŁOŻENIA (luki dispatchu, przyjęte wartości domyślne):**
-- **Z1. Tylko styl `roblox` (D-RR-8 = A, D-MOD-1).** Dispatch wymienia `resources` w paczce, ale cały `resources.ts` i gałęzie klasyczne są w grze nieosiągalne (tabela wyżej). Port ich bez decyzji właściciela byłby portem martwego kodu; zostawione do decyzji (D-MOD-1). Przy zmianie decyzji: osobny temat, ten sam generator (wystarczy dopisać `style` do wywołań).
-- **Z2.** Martwe funkcje `rbx*` nie są portowane (0 wywołań). `addCyl` (`robloxImprovements.ts:49`) używają wyłącznie martwe funkcje.
+- **Z1. Tylko styl `roblox` — podstawa: decyzja ROZSTRZYGNIĘTA, nie otwarta** (poprawione w Obronie r1; wersja r1 błędnie podawała D-MOD-1 jako otwarte). D-RR-8 = A „portujemy tylko styl `roblox`” (`dyspozycje/rust-port/LEDGER.md:123`, gałąź dokumentacji), a D-MOD-1 jest rozstrzygnięte przez D-RR-8 = A (`LEDGER.md:127` — wpis P4.4; `LEDGER.md:128` — „Już rozstrzygnięte wcześniej: D-MOD-1 (styl tylko `roblox`, D-RR-8=A)”). Dlatego `resources.ts` (wołany wyłącznie przy `style === 'civ'`, `styleResources.ts:445-449`), gałęzie `civ`/`minecraft` w `styleResources.ts` i klasyczny `switch` w `improvements.ts` (`:345-380`, `:65-337`) **nie są portowane**, choć dispatch wymienia `resources` w paczce.
+  - **Kolizja `K-MOD11-1` (jawnie, jak `D-NM-17` w `P4-7-NEW-MODELS-SPEC.md:524`): D-MOD-1 ↔ D-MOD-3 = B.** D-MOD-3 = B (`LEDGER.md:128`) każe „portować WSZYSTKIE istniejące modele, także nieużywane”; D-MOD-1 wyłącza style inne niż `roblox`. Przyjmuję pierwszeństwo **D-MOD-1 jako decyzji szczegółowej** (dotyczy właśnie stylu) — tak samo, jak przyjęto w `D-NM-17` dla `buildBronzeCity`/`buildStoneAgeCity` (styl `civ`). Skutek: poza portem zostają `resources.ts` (`buildResourceOverlay*`), funkcje `styled*`/`horseLegacy` gałęzi `civ`/`minecraft` i klasyczne buildery `improvements.ts`. **Do potwierdzenia przez orkiestratora/właściciela razem z `D-NM-17`**; przy decyzji odwrotnej: osobny temat, ten sam generator (dopisać `style` do wywołań), bez zmian w tym, co już przeniesione.
+- **Z2. Nieużywane funkcje `rbx*` i `addCyl` — PRZENIESIONE (Obrona r1).** Wersja r1 ich nie przenosiła z uzasadnieniem „nic ich nie wywołuje”, co jest sprzeczne z D-MOD-3 = B (`LEDGER.md:128`); to modele stylu `roblox`, więc D-MOD-1 ich nie wyklucza (brak kolizji — inaczej niż w Z1). Port: `src/models/improvements/roblox_legacy.rs` (`RbxLegacy` — 15 wariantów w kolejności pliku, `build_rbx_legacy[_into](kind, owner)`, `add_cyl`); używane nadal helpery (`addBox`, `rbxFarmHut`, `rbxFarmMiniField`, `rbxFarmSettlement`, `rbxIrygacjaLarge`) są współdzielone z `roblox.rs` (`pub(super)`), nie skopiowane. **Metoda weryfikacji:** funkcje nie są eksportowane, więc w **kopii scratch** `robloxImprovements.ts` dopisywana jest jedna linia `tests/fixtures/improvements/legacy-export.txt` (`export { addCyl, rbxDroga, … };` — sama lista eksportów, żadna instrukcja modułu się nie zmienia; `gra/**` nietknięte). Dowód nieszkodliwości: `models.json`, `sigs.json`, `data.json`, `protokeys.json` z tej kopii są bajtowo identyczne z przebiegiem bez tej linii i z fixturami r1 (`cmp`, §10). Przypadki: 13 funkcji bez właściciela + `rbxFort`/`rbxPosterunek` × 5 właścicieli (`0xffd54a`, `0x8e24aa`, `0x1234abcd`, `0`, `-1`) + `addCyl` z domyślnym i jawnym `seg` = 25 pełnych grafów, 0 różnic. Uwaga do okoliczności łagodzącej z zarzutu: komentarze „wycofany” w webie (`robloxImprovements.ts:9,416`) dotyczą `buildPastwiskoZwierzeta`, nie funkcji `rbx*`.
 - **Z3.** `setImprovementDetailQuality` zapisuje zmienną modułu, której żaden builder nie czyta (`grep _improvementDetailQuality robloxImprovements.ts` → tylko `:33-34`); bez odpowiednika.
 - **Z4. Typ drzewa.** `UnitModel` z `unit_core` + tablice równoległe (`NodeExt`, `MatExt`) w `improvements::model`. Materiał Lambert jest zapisany w `unit_core::model::Material` z `metalness = 0`, `roughness = 1` (Lambert ich nie ma; `MatExt::kind` mówi, które pola mają znaczenie). Geometrie spoza `Prim` (`DodecahedronGeometry`, `ConeGeometry` + `rotateY`) jako `ExtraGeo` z węzłem-zaślepką `Prim` w drzewie; `ImprovementModel::geometry()` zawsze bierze `ExtraGeo`, gdy jest. `unit_core/**` i `geom/**` bez zmian.
 - **Z5. Kolor właściciela** jako `u32`: web robi `ownerCol & 0xffffff` (ToInt32 & maska) — dla całkowitych argumentów to dokładnie 24 młodsze bity `u32` (przetestowane: `0x8e24aa`, `0x1234abcd`, `0`, `-1`, `0x7fabcdef`).
-- **Z6. Klucze** jako `&str` (web rzuca `k as ImprovementKey` na dowolne napisy). Nieznany klucz → pusta grupa (zmierzone: `nieznane`, `brak`, `""`, `toString`). **Odchylenie, NIE_ZMIERZONO:** klucze będące nazwami innych składowych `Object.prototype` (np. `__proto__`, `__defineGetter__`) mogą w webie rzucić wyjątek (`BUILDERS[key]` nie jest funkcją lub funkcja rzuca); Rust zwraca pustą grupę.
+- **Z6. Klucze** jako `&str` (web rzuca `k as ImprovementKey` na dowolne napisy). Nieznany klucz → pusta grupa (zmierzone: `nieznane`, `brak`, `""`, `toString`). **Klucze o nazwach składowych `Object.prototype` — ZMIERZONE (Obrona r1; w r1 było NIE_ZMIERZONO):** `gen.ts` sekcja 7 → `tests/fixtures/improvements/protokeys.json`, `buildImprovement(key)` na webie `edb8fb56`:
+
+  | Klucz | Web | Rust |
+  |---|---|---|
+  | `__proto__` | wyjątek `fn is not a function` | pusta grupa |
+  | `hasOwnProperty`, `valueOf`, `__defineGetter__`, `isPrototypeOf`, `propertyIsEnumerable`, `__lookupGetter__`, `__defineSetter__`, `__lookupSetter__` | wyjątek `Cannot convert undefined or null to object` | pusta grupa |
+  | `toLocaleString` | wyjątek `Object.prototype.toLocaleString called on null or undefined` | pusta grupa |
+  | `constructor`, `toString` | pusta grupa (graf bitowo = Rust) | pusta grupa |
+
+  Wynik zgodny z pomiarem Evaluatora (`02-evaluator-r1.md`, zarzut 3). **Odchylenie jawne i przypięte testem** `prototype_keys_documented_deviation`: z fixtury 10 wyjątków / 2 puste grupy (asercja liczb), Rust zawsze pusta grupa (1 węzeł), dla 2 pustych grup pełne porównanie bitowe. Uzasadnienie: wyjątek w webie wynika z dziedziczenia `BUILDERS` po `Object.prototype` (artefakt JS); żaden z tych napisów nie jest kluczem ulepszenia w danych gry (`IMPROVEMENTS`, `data.json`). Jeśli orkiestrator wymaga 1:1 także tu — zmiana jednej gałęzi `_ =>` w `roblox_builder` na błąd.
 - **Z7. Singletony materiałów kopalń** (`MATS` w obu modułach) są w webie globalne dla procesu; w Rust `MineMats` dzieli materiał po (moduł, kolor) w obrębie jednego modelu wynikowego. Współdzielenie widoczne w grafie (te same sloty materiałów dla powtarzanych kolorów) jest identyczne — sprawdzone w obu kopalniach osobno i razem w jednym układzie sektorowym (`sect:all`, `sect:hexR1.3`); mutacja M12 (wyłączenie cache) daje 452 różnice strukturalne. Między osobnymi modelami współdzielenie obiektu nie jest obserwowalne bez GPU. Singletony geometrii (`GEOS`) nie mają znaczenia dla danych (opis `Prim` jest wartością).
 - **Z8.** `build_zloze_into(…, ZlozeTyp::Inne)` traktuje „inne” jak glinę; web nie ma takiej funkcji (`buildZlozeKlaster` z nieznanym typem → gałąź `else` = glina — to jest przetestowane).
 - **Z9. `src/models.rs`** to plik-moduł (odpowiednik „`models/mod.rs`” z allowlisty); dopisana wyłącznie jedna linia `pub mod improvements;`, komentarz pliku nietknięty.
@@ -66,7 +77,8 @@
 |---|---|---|
 | `BUILDERS` `robloxImprovements.ts:388-427` | `roblox_builder` (`match`) | `kopalnia_zelaza` i `kopalnia_miedzi` → ten sam `buildKopalnia` + `rotY -0.95`; `pastwisko` = farma (`rotY -1.15`) + trzoda + dodatki zagrody, w tej kolejności (`g.add(f, …)`); `lama` z `position (0.63, 0, 0.04)` |
 | `buildRobloxFoodStack` `:439-484` | `build_roblox_food_stack[_into]` | 9 gałęzi w tej samej kolejności; `None` = `null` |
-| `box`/`addBox`/`addCyl` `:36-54` | `add_box` | `addBox`: nowy materiał na każdy klocek, cień rzucany i przyjmowany |
+| `box`/`addBox`/`addCyl` `:36-54` | `roblox::add_box`, `roblox_legacy::add_cyl` | `addBox`: nowy materiał na każdy klocek, cień rzucany i przyjmowany; `addCyl`: `y + h/2`, tylko cień rzucany, `seg` domyślnie 6 |
+| 15 nieużywanych `rbx*` `:82-103,146-154,188-256,290-303,309-386` | `roblox_legacy::build_rbx_legacy(RbxLegacy, owner)` | dachy/namiot `ConeGeometry(r, h, 4)` + `rotation.y = π/4`; kłody `rotation.x`/`rotation.z = π/2`; `rbxFort` — wewnętrzna grupa `scale.setScalar(1/3)`; `rbxPosterunek` — `(i/n)·π·2`, pominięcie `|a − π/2| < 0.35`, `jsmath::js_cos/js_sin`; `i % 2` w `rbxDroga` dla ujemnych `i` (JS −1 → prawda) |
 | `B`/`CYL`/`CONE`/`azXZ`/`tangRotY` (p2/p3a/p3b, pastwisko, świnia) | `kit::{b, cyl, cone, az_xz, tang_rot_y}` | `rotation.set` tylko gdy któryś kąt ≠ 0 (`if (rx || ry || rz)`); CONE p2/p3a (`rotation.y = ry`) = `set(0, ry, 0)` p3b |
 | `buildFarma` p2 `:116-177` | `build_farma_into` | wariant ≠ `solo` zwraca samą stodołę; `solo` — stodoła jako podgrupa |
 | kopalnie: `mat` (Standard, `emissive = Color(c).multiplyScalar(k)` w przestrzeni liniowej), `B` (cień rzucany + przyjmowany), `C`, `strut` (`setFromUnitVectors`, skala `(r, len, r)`), `SL_Q` (`Euler(0.40, 0.55, 0, 'YXZ')`), `sluice` (`applyQuaternion`), `BSL` (`quaternion.copy`) | `kopalnie.rs` | `applyQuaternion` przepisany operacja po operacji (three r169 `Vector3.js:252-271`); `emissive` = `SRGBToLinear(c/255) · k` |
@@ -95,7 +107,9 @@
 | wszystkie eksportowane buildery p2/p3a/p3b, obie kopalnie, zwierzęta (wszystkie pozy/warianty), układy pastwiska/trzody, tarasy, figury roblox, nakładki zasobów (8 `Nakladka` × 13 `zloze`) | bitowo |
 | gwiazda drogi: 2 typy × 64 maski (hexR 1) + 5 masek przy hexR 0,8 | bitowo (sygnatury) |
 | układ sektorowy (44 przypadki: pojedyncze klucze, mieszanki, maski dróg, hexR, `sectorR`, `surfaceY` dodatnie/ujemne/NaN), stosy (32 + 6), stosy żywności (18) | bitowo (sygnatury) |
-| styl `civ`/`minecraft`, `resources.ts`, martwe `rbx*`, `setImprovementDetailQuality` | pominięte (Z1–Z3) |
+| 15 nieużywanych `rbx*` + `addCyl` (D-MOD-3 = B) | bitowo (`legacy.json`, 25 przypadków; Obrona r1) |
+| klucze `Object.prototype` (12) | zachowanie weba zmierzone, odchylenie przypięte testem (Z6) |
+| styl `civ`/`minecraft`, `resources.ts`, `setImprovementDetailQuality` | pominięte (Z1 + kolizja `K-MOD11-1`, Z3) |
 | `dispose*Geometrie`, `material.dispose` | brak zasobów GPU — bez odpowiednika |
 | Lambert/Standard cieniowanie, cienie, mgła, rysowanie, `collapseToMergedMesh` | poza zakresem (RR-T5) — `NIE_ZMIERZONO` |
 
@@ -172,7 +186,18 @@ Fixtury (`rust-port/renderer/tests/fixtures/improvements/`):
 
 Liczby kontrolne 24 ulepszeń (meshe / trójkąty, z `models.json`): droga 32/408, droga_brukowana 44/552, farma 35/416, bydlo 38/444, owce 32/384, lama 17/204, stadnina 64/796, kopalnia_zelaza 23/300, kamieniolom 21/264, oboz_lowiecki 33/398, wyrab 25/372, tartak 25/384, irygacja 37/468, pole_irygowane 40/480, glinianka 29/396, tarasy 16/312, lodzie_rybackie 32/384, warzelnia_soli 27/332, fort 35/416, posterunek 35/428, pastwisko 65/764, kopalnia_miedzi 23/300, kopalnia_zlota 57/992, kopalnia_cyny 56/944.
 
-Testy: `tests/improvements_web_parity.rs` — `models_are_bit_identical_to_web` (432 przypadki; asercja, że każdy przypadek Rust ma wpis w fixturach i odwrotnie), `data_tables_match_web`.
+Testy: `tests/improvements_web_parity.rs` — `models_are_bit_identical_to_web` (432 przypadki r1 + 25 z `legacy.json` = **457**; asercja, że każdy przypadek Rust ma wpis w fixturach i odwrotnie), `data_tables_match_web`, `prototype_keys_documented_deviation` (Obrona r1).
+
+**Fixtury dodane/zmienione w Obronie r1** (`models.json`/`sigs.json`/`data.json` bez zmian, sumy jak wyżej; `gen.ts` zastąpiony nową wersją z sekcjami 6–7):
+
+| Plik | Rozmiar | SHA-256 |
+|---|---:|---|
+| `gen.ts` | 22 103 | `73dacdeaf2d5337eb11f5beaea46fd0c7af142394992d3bda27bd74dcc4620b5` |
+| `legacy.json` | 215 058 | `d84e1c84e237cb6ed5b156887e7772e952669203fde643af5bdd66b891a5b00c` |
+| `protokeys.json` | 1 427 | `38d666bd853aefa66ab3ccb3ffee7117aaa60cabc5c75c22a1cb89944d150a40` |
+| `legacy-export.txt` | 224 | `36d43fae96e735b68de07f1c25b4ea6a1813a46a1ff8b01f9a27d212c1266402` |
+
+`legacy.json`: 25 modeli / 548 węzłów / 516 meshy. Liczby kontrolne (meshe/trójkąty): rbxDroga 27/324, rbxDrogaBrukowana 33/396, rbxFarma 18/208, rbxPastwisko 47/584, rbxKopalnia 9/160, rbxKamieniolom 6/92, rbxObozLowiecki 7/96, rbxWyrab 6/136, rbxTartak 5/80, rbxPoleIrygowane 84/1000, rbxGlinianka 7/164, rbxLodzie 7/92, rbxWarzelniaSoli 13/152, rbxFort 16/184, rbxPosterunek 33/448, addCyl 1/24 (seg 6) i 1/36 (seg 9).
 
 ## 7. `NIE_ZMIERZONO` — do oceny wzrokiem po RR-T5 (GPU)
 
@@ -183,6 +208,7 @@ Testy: `tests/improvements_web_parity.rs` — `models_are_bit_identical_to_web` 
 5. Zwierzęta (krowa/owca/świnia/lama/koń) w skali mapy, pozy pasąca/skubiąca/ryjąca; uszy świni (stożek 3-boczny po `rotateY`).
 6. Nakładki zasobów (złoża) obok miast/ulepszeń; `depositDisplayScale = 2` koni (konsumpcja w `main.ts` — poza MOD-11).
 7. Łodzie rybackie na heksie wody (y = 0,015) — czy kadłuby nie znikają w tafli.
+8. (Obrona r1) 15 modeli `rbx*` z `roblox_legacy.rs` — w grze nieużywane; ocenić tylko, jeśli zostaną gdzieś podpięte.
 Dodatkowo: libm Windows/macOS nie wpływa na pozycje (wszystko przez `jsmath`), ale `geom` dla walców/stożków o innej liczbie segmentów niż w fixturach nie jest tu dowiedziony (ryzyko jak w P4.14 §3).
 
 ## 8. Bramki i skrypty
@@ -556,4 +582,87 @@ test models_are_bit_identical_to_web ... ok
 test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.95s
 
 EXIT=0
+```
+
+## 10. Obrona r1 (odpowiedź na `02-evaluator-r1.md`, FAIL, 3 zarzuty)
+
+Stan wyjściowy: commit Evaluatora `4a2bdea6` (na `4e96a7e8` → `acb1915e` → `bf59164b`). Allowlista dotrzymana: zmiany wyłącznie w `rust-port/renderer/src/models/improvements/**` (nowy `roblox_legacy.rs`, `mod.rs` +1 moduł + opis, `roblox.rs` — 5 funkcji `pub(super)`), `tests/improvements_web_parity.rs`, `tests/fixtures/improvements/**`, ten dokument i `dyspozycje/autobot/runs/R-RUSTPORT-P4-20-MOD11-IMPROVEMENTS-Q1/**`. `src/models.rs`, `lib.rs`, `Cargo.toml`, `Cargo.lock`, `unit_core/**`, `geom/**`, `gra/**` bez zmian.
+
+| # | Zarzut | Odpowiedź | Dowód |
+|---|---|---|---|
+| 1 | Z2: 15 `rbx*` + `addCyl` nieprzeniesione wbrew D-MOD-3 = B | **PRZYJMUJĘ** — przeniesione | `roblox_legacy.rs` (449 linii); `legacy.json` 25 pełnych grafów z kodu weba (metoda: jedna linia `export {…}` w kopii scratch, §1 Z2); `models: cases=457 … bit_diff=0 struct_diff=0`; mutacje niżej |
+| 2 | Z1: D-MOD-1 podane jako otwarte; brak jawnej kolizji z D-MOD-3 = B | **PRZYJMUJĘ** — podstawa poprawiona, kolizja nazwana `K-MOD11-1` (wzór `D-NM-17`) | §1 Z1 (`LEDGER.md:123,127,128`); zakres nieportowany bez zmian (`resources.ts`, `civ`/`minecraft`, klasyczny `switch`) — do potwierdzenia przez orkiestratora razem z `D-NM-17` |
+| 3 | Z6 mierzalne, zostało NIE_ZMIERZONO | **PRZYJMUJĘ** — zmierzone i przypięte testem | `gen.ts` sekcja 7 → `protokeys.json` (12 kluczy: 10 wyjątków, 2 puste grupy; wyniki = pomiar Evaluatora); test `prototype_keys_documented_deviation`: `proto keys: threw=10 empty=2: scalars=52 bit_diff=0 struct_diff=0` |
+
+Uwagi Evaluatora bez zarzutu (do wiedzy orkiestratora, bez zmian): `tests/jsmath_wiring.rs` nie skanuje `src/models/improvements` (poza allowlistą; nowy plik `roblox_legacy.rs` używa wyłącznie `jsmath::js_cos/js_sin`; `grep -nE '\.(sin|cos|tan|atan2)\(' src/models/improvements/roblox_legacy.rs` → 0 trafień); ocena wzrokowa NIE_ZMIERZONO (brak GPU) — do listy §7 dochodzi pkt 8: 15 modeli `rbx*` (nieużywane w grze; ocena tylko, jeśli zostaną gdzieś podpięte).
+
+### 10.1 Generator (scratch poza repo, usunięty po pracy)
+
+Skrypt: `git archive edb8fb56 gra/src gra/data` → kopia; przebieg A bez zmian, przebieg B z dopisaną linią `legacy-export.txt` (dwukrotnie). Surowy wynik:
+
+```
+283c1cc3f347d210ebf207709caa5af064beaed7abc7c3bb76258b4fdbe4c735  …/websrc/gra/src/render/robloxImprovements.ts
+== plain
+improvements full=195 sigs=237 legacy=0
+EXIT=0
+plain/models.json == fixture
+plain/sigs.json == fixture
+plain/data.json == fixture
+== legacy export
+484a485
+> export { addCyl, rbxDroga, rbxDrogaBrukowana, rbxFarma, rbxPastwisko, rbxKopalnia, rbxKamieniolom, rbxObozLowiecki, rbxWyrab, rbxTartak, rbxPoleIrygowane, rbxGlinianka, rbxLodzie, rbxWarzelniaSoli, rbxFort, rbxPosterunek };
+improvements full=195 sigs=237 legacy=25
+EXIT=0
+improvements full=195 sigs=237 legacy=25
+EXIT=0
+legacy/models.json == fixture
+legacy/sigs.json == fixture
+legacy/data.json == fixture
+legacy.json deterministic
+models plain==legacy
+sigs plain==legacy
+data plain==legacy
+protokeys plain==legacy
+```
+
+(`sha256` pliku weba = §6, czyli kopia przed dopisaniem linii jest identyczna z pinem.)
+
+### 10.2 Mutacje `roblox_legacy.rs` (każda na kopii pliku, potem przywrócenie; `cmp` z kopią zapasową = identyczny)
+
+```
+L2: KILLED models: cases=457: scalars=192046 bit_diff=0 within_1e-12=0 struct_diff=63     (addCyl receiveShadow=true)
+L3b: KILLED models: cases=457: scalars=192046 bit_diff=540 within_1e-12=0 struct_diff=5   (fort scale 1/3 -> 0.333)
+L4: KILLED models: cases=457: scalars=192046 bit_diff=12 within_1e-12=0 struct_diff=5     (i % 2 != 0 -> == 1, ujemne i)
+L5: KILLED models: cases=457: scalars=192046 bit_diff=0 within_1e-12=0 struct_diff=2      (posterunek bez & 0xffffff)
+L6: KILLED models: cases=457: scalars=192046 bit_diff=19 within_1e-12=0 struct_diff=1     (tartak rot_z -> rot_x)
+L7b: KILLED models: cases=457: scalars=186086 bit_diff=0 within_1e-12=0 struct_diff=5     (próg 0.35 -> 0.20)
+L8: KILLED models: cases=457: scalars=192046 bit_diff=12 within_1e-12=0 struct_diff=3     (pastwisko hut scale 0.88 -> 0.89)
+L1: SURVIVED  (js_cos -> f64::cos w rbxPosterunek)
+L3: SURVIVED  (1.0 / 3.0 -> 0.333_333_333_333_333_3)
+L7: SURVIVED  (próg 0.35 -> 0.30)
+```
+
+Przeżyłe = mutanty równoważne, nie luki testu: L3 — literał `0.333_333_333_333_333_3` to dokładnie ten sam `f64` co `1.0 / 3.0` (najkrótszy zapis round-trip); L7 — kąty `i/14·2π` najbliższe `π/2` mają `|a − π/2| ≈ 0.224` (i = 3, 4) lub ≥ 0.673, więc każdy próg w (0.224, 0.673) daje ten sam wynik (L7b z 0.20 zabity); L1 — dla 14 kątów tego modelu platformowy `cos/sin` daje te same bity co V8 (jak M3 dla innych miejsc: różnice pojawiają się dopiero przy innych argumentach; `jsmath` zostaje dla zasady P4.16).
+
+### 10.3 Bramki (worktree Obrony, przed commitem; `touch src/lib.rs` przed każdym clippy)
+
+```
+== cargo fmt --all -- --check
+EXIT=0
+== cargo clippy --locked --all-targets -- -D warnings
+    Checking civ-renderer v0.1.0 (…/rust-port/renderer)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 4.07s
+EXIT=0
+== cargo clippy --locked --all-targets --features gpu -- -D warnings
+    Checking civ-renderer v0.1.0 (…/rust-port/renderer)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 29.61s
+EXIT=0
+== cargo test --locked --all-targets
+EXIT=0
+18          (binarek z "test result: ok")
+0           (binarek z "test result: FAILED")
+data: scalars=35 bit_diff=0 within_1e-12=0 struct_diff=0
+proto keys: threw=10 empty=2: scalars=52 bit_diff=0 within_1e-12=0 struct_diff=0
+models: cases=457: scalars=192046 bit_diff=0 within_1e-12=0 struct_diff=0
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out
 ```

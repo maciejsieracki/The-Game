@@ -9,6 +9,9 @@
 //! - [`roblox`] — `render/robloxImprovements.ts` (24 `BUILDERS`,
 //!   `buildRobloxFoodStack`) and `buildStyleTarasyTerrace('roblox')` of
 //!   `render/mapRenderStyle.ts`;
+//! - [`roblox_legacy`] — the 15 uncalled `rbx*` builders and `addCyl` of
+//!   `render/robloxImprovements.ts` (D-MOD-3 = B: port every existing model,
+//!   also unused ones);
 //! - [`p2`], [`p3a`], [`p3b`] — `render/ulepszenia-modele-p2/p3a/p3b.ts`;
 //! - [`kopalnie`] — `render/kopalnia-cyny-opus5.ts`,
 //!   `render/kopalnia-zlota-opus5.ts`;
@@ -32,6 +35,7 @@ pub mod p3a;
 pub mod p3b;
 pub mod registry;
 pub mod roblox;
+pub mod roblox_legacy;
 pub mod zasoby;
 pub mod zwierzeta;
 

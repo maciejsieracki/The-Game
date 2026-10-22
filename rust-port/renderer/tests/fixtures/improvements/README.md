@@ -16,6 +16,14 @@ Reference object graphs for `tests/improvements_web_parity.rs`, produced by **we
 No web code is copied or adapted: `gen.ts` only calls the web API (no
 `WebGLRenderer`; groups, meshes, geometries and materials only) and dumps the graph.
 
+**One exception, `legacy.json` only:** the 15 uncalled `rbx*` builders and `addCyl`
+of `render/robloxImprovements.ts` (ported because of D-MOD-3 = B) are module-private.
+To call them, the **scratch copy** of that file gets the single line from
+`legacy-export.txt` appended (an `export { … }` list — it adds names to the module's
+export table and changes no statement). Without that line `gen.ts` skips section 6
+and does not write `legacy.json`; `models.json`, `sigs.json`, `data.json` and
+`protokeys.json` are byte-identical with and without it (checked with `cmp`).
+
 ## Regeneration (outside the repository only)
 
 ```bash
@@ -24,11 +32,12 @@ mkdir -p $S/ref $S/websrc $S/refscript $S/out
 (cd $S/ref && npm init -y && npm install --ignore-scripts three@0.169.0 esbuild@0.24.0)
 ln -s ref/node_modules $S/node_modules          # lets esbuild resolve 'three' for websrc/ and refscript/
 git archive --format=tar -o $S/websrc.tar edb8fb56 gra/src gra/data && tar -xf $S/websrc.tar -C $S/websrc
+cat rust-port/renderer/tests/fixtures/improvements/legacy-export.txt >> $S/websrc/gra/src/render/robloxImprovements.ts
 cp rust-port/renderer/tests/fixtures/improvements/gen.ts $S/refscript/improvements_gen.ts
 cd $S/refscript
 ../ref/node_modules/.bin/esbuild improvements_gen.ts --bundle --platform=node --format=esm --outfile=improvements_gen.mjs --log-level=warning
 node improvements_gen.mjs $S/out/improvements
-# prints: improvements full=195 sigs=237
+# prints: improvements full=195 sigs=237 legacy=25   (legacy=0 without the cat line)
 ```
 
 A second run gives byte-identical files (`cmp`). Numbers are written with a
@@ -40,7 +49,10 @@ serializer that keeps `-0`; every other number is the shortest round-trip decima
 |---|---|
 | `models.json` | 195 full graphs: `buildImprovement` for the 24 keys (+ owners `0x8e24aa`, `0x1234abcd`, `0`, `-1` for fort/outpost, + keys `nieznane`, `brak`, `""`, `toString`), every exported builder of p2/p3a/p3b, both mines, cow/sheep/llama/pig in all poses and variants, pasture/herd layouts, terraces, roblox livestock figures, `buildStyledResourceOverlay(nakladka, 'roblox', zloze)` for all 8 `Nakladka` × 13 `zloze` values that matter (`null` results kept as `null`), 6 road stars, 2 sector layouts, 1 stack. Per node: type, parent, position, quaternion, scale, `castShadow`/`receiveShadow`, `userData`, `matrixWorld`; per mesh: geometry type + parameters, vertex/index count, FNV-1a hash of the Float32 attributes, indices and groups, material slot (first use); per material: model, `getHex`, linear `r,g,b`, `flatShading`, metalness/roughness (Standard), linear emissive; totals, `Box3.setFromObject(g, true)`, signature. |
 | `sigs.json` | 237 combinatorial cases as node/mesh/vertex/triangle counts + bbox + signature (FNV-1a over exactly the scalars of a full dump): `buildDrogaGwiazda` for 2 types × 64 masks (hexR 1) + 5 masks at hexR 0.8, 44 `buildImprovementSectored` layouts (single keys, mixes, road masks, hexR, `sectorR`, three `surfaceY` functions incl. negative and NaN), 16 `buildRobloxFoodStack` + 32 `buildImprovementStack` subsets + extras. |
+| `legacy.json` | 25 full graphs (same format as `models.json`): the 15 uncalled `rbx*` builders (`rbxFort`/`rbxPosterunek` with owners `0xffd54a`, `0x8e24aa`, `0x1234abcd`, `0`, `-1`) and `addCyl` with the default and an explicit segment count. |
+| `protokeys.json` | `buildImprovement(key)` for 12 keys named like `Object.prototype` members: the thrown message, or the full graph when the web returns a group. |
 | `data.json` | `IMPROVEMENTS`, the 24 keys, `SECTOR_R_ELEVATED`, `PASTWISKO_S`, pasture/herd slots (with `toFixed(3)`), `LIVESTOCK_FIGURE_SCALE`, road constants, `roadPortRotationY(0..6)`, arms/node/lone-patch for all 64 masks. |
+| `legacy-export.txt` | the one line appended to the scratch copy for `legacy.json` |
 | `gen.ts` | the generator above |
 
 SHA-256 at creation: see `dyspozycje/rust-port/p4/P4-20-MOD11-IMPROVEMENTS.md` §6.
