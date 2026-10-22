@@ -1,0 +1,55 @@
+{
+ "stack": {
+  "stackGroupIdOf": 90,
+  "sameStackGroup": 90,
+  "freshSequence": 1,
+  "visibleStackOnHex": 100,
+  "coLocatedForMergePrompt": 100,
+  "adjacentVisibleArmyHexes": 100,
+  "activeUnitStack": 100,
+  "garrisonUnitsOnHex": 100,
+  "enterGarnizon": 90,
+  "exitGarnizon": 90,
+  "enterFieldFortify": 90,
+  "exitFieldFortify": 90,
+  "allDefendersFortifiedInGarnizon": 90,
+  "wakeStackForMoveOrder": 90,
+  "stackRenderKey": 90,
+  "countLawGarrisonOnCityHex": 100,
+  "unitsOnCityHexForLaw": 100,
+  "stackKey": 94,
+  "fortifyChain": 120
+ },
+ "display": {
+  "pickStackRepresentative": 118,
+  "computeStackDisplay": 148,
+  "unitAtRepresentative": 110,
+  "stackHpPool": 110,
+  "stackFieldPowerM": 110,
+  "stackBadges": 110,
+  "stackVitals": 110,
+  "defs": "object"
+ },
+ "ruch": {
+  "findAdjacentEmptyHexes": 110,
+  "findSplitDestHexes": 110,
+  "assignBounceHexesForUnits": 130,
+  "findBounceHexFromOrigin": 130,
+  "computeSeparateReturn": 110,
+  "resolveSeparateReturnHex": 130,
+  "stackHudMergeSplitActions": 56,
+  "stackRuchLeft": 110,
+  "planningStackRuchLeft": 110,
+  "planningUnitRuchLeft": 110,
+  "stackRuchMax": 110,
+  "syncStackRuchLeft": 110,
+  "deductStackRuchLeft": 110,
+  "unitWithStackRuch": 110,
+  "unitWithPlanningStackRuch": 110
+ },
+ "cost": {
+  "constants": "object",
+  "applyUnitCostPace": 714,
+  "buildReplaceAvailabilityCtx": 20
+ }
+}

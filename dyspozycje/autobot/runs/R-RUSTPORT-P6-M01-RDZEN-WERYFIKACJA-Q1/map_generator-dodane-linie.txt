@@ -1,0 +1,27 @@
++
++use super::mapgen::prims;
++use super::mapgen::prims::fbm;
++    /// Kierunki sasiadow: jedno zrodlo w `mapgen::prims::HEX_DIRECTIONS` (web `HEX_DIRECTIONS`).
++    pub const DIRECTIONS: [Self; 6] = {
++        let mut out = [Self { q: 0, r: 0 }; 6];
++        let mut index = 0;
++        while index < 6 {
++            out[index] = Self {
++                q: prims::HEX_DIRECTIONS[index].0,
++                r: prims::HEX_DIRECTIONS[index].1,
++            };
++            index += 1;
++        }
++        out
++    };
++        prims::hex_distance_axial(self.q as i64, self.r as i64, other.q as i64, other.r as i64)
++            as u32
++        let (state, output) = prims::mulberry32_step(self.state);
++        self.state = state;
++        output
++        prims::mulberry32_unit(self.next_u32())
++    prims::build_perm_table(|| rng.next_f64())
++    if prims::earth_template_land_at(i64::from(q), i64::from(r), width, height) <= 0.0 {
++    prims::climate_band_at(i64::from(r), height, is_earth)
++    f64::from(hash ^ (hash >> 16)) / prims::UNIT_SCALE
++    use super::prims::value_noise_2d;

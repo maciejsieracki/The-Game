@@ -1,0 +1,6 @@
+M11 JSON: prog_szablonu_ladu 0.46 -> WYKRYTA (testy czerwone: )
+M12 probka: zly skladnik dwuliniowy (x1,y0 zamiast x1,y1) -> WYKRYTA (testy czerwone: )
+M25 map_generator: HexCoord::distance bez prims -> WYKRYTA (testy czerwone: )
+
+WYKRYTE: 3/3
+EXIT=0

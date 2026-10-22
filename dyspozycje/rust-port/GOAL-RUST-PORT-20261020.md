@@ -27,8 +27,6 @@ dotykające tych samych plików — zawsze sekwencyjnie, nigdy w tej samej fali.
 
 | # | Temat | Faza | Runda | runId Workflow | Status | Ostatnia aktualizacja |
 |---|---|---|---|---|---|---|
-| 3 | `R-RUSTPORT-P6-M01-RDZEN-WERYFIKACJA-Q1` | generator mapy: rdzeń i weryfikacja — Operator Sonnet | 1/5 | `wf_320a8312-64a` | DISPATCHED | 2026-10-22 |
-| 6 | `R-RUSTPORT-P6-5A-JEDNOSTKI-ZYCIE-A-Q1` | P6.5A armyMerge, unit-cost-tempo, unit-replace-context — Operator Sonnet | 1/5 | `wf_54f56b61-dce` | DISPATCHED | 2026-10-22 |
 | 7 | `R-RUSTPORT-P4-30-IMAGES-Q1` | RR-T8c obrazy: JPG, SVG (resvg), emoji wg D-TXT-3=C — Opus 5.5 | 1/5 | `wf_5b41339e-109` | DISPATCHED | 2026-10-22 |
 | 8 | `R-RUSTPORT-P6-M15-DROGI-RUCH-REGULY-Q1` | mapgen M15 drogi — reguły ruchu — Operator Sonnet | 1/5 | `wf_c44b7468-d53` | DISPATCHED | 2026-10-22 |
 | 9 | `R-RUSTPORT-P6-M17-SNAPSHOT-MAPY-Q1` | mapgen M17 snapshot mapy — Operator Sonnet | 1/5 | `wf_77971ea5-0ed` | DISPATCHED | 2026-10-22 |
