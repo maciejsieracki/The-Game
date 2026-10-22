@@ -1,0 +1,19 @@
+--- edb8fb56:gra/src/ui/power-labels.ts
++++ src-tauri/frontend-v2/src/ui/power-labels.ts
+@@ -11,12 +11,12 @@
+ /** Etykieta angielska (docs, i18n przyszłość). */
+ export const MOC_LABEL_EN = 'Power';
+ 
+-import powerParams from '../../data/power-params.json';
+-import { loadPowerOpcje } from '../game/power-options';
++import { staticCatalog } from '../controller/staticCatalog';
+ 
+-/** Etykieta HUD — z power-params.json (Panel-B Potega-opcje) lub domyślnie „Moc”. */
++/** Etykieta HUD — z power-params.json (Panel-B Potega-opcje) lub domyślnie „Moc”.
++ * P5.2: wartość rozstrzyga Rust (`StaticCatalogDto.labels.powerHudLabelPl`). */
+ export function mocLabel(): string {
+-  return loadPowerOpcje().hudEtykietaPl || MOC_LABEL_PL;
++  return staticCatalog().labels.powerHudLabelPl || MOC_LABEL_PL;
+ }
+ 
+ /**

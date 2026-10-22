@@ -1,0 +1,22 @@
+--- edb8fb56:gra/src/ui/icons/brandAssets.ts
++++ src-tauri/frontend-v2/src/ui/icons/brandAssets.ts
+@@ -5,8 +5,8 @@
+  * Zrodlo syncu: docs/ux/claude-design/.../brand-book/eksport/ → gra/src/ui/icons/brand/
+  */
+ 
+-import type { BuildingDef, UnitDef } from '../../data/loader';
+-import { categoryOf } from '../../units/setup';
++import type { BuildingDefDto as BuildingDef, UnitDefDto as UnitDef } from '../../viewmodel/types';
++import { unitCategoryFromCatalog } from '../../controller/staticCatalog';
+ import buildingMapJson from './brand/building-icon-map.json';
+ import civMapJson from './brand/civ-icon-map.json';
+ import epochMapJson from './brand/epoch-icon-map.json';
+@@ -174,7 +174,7 @@
+ 
+ function unitCategoryKey(u: UnitDef | undefined, id?: string, isSuper?: boolean): string {
+   if (isSuper) return 'super-jednostka';
+-  const cat = categoryOf(u?.Jednostka ?? id ?? '', u?.['Rola (linia)'] ?? '', !!isSuper, u?.['Typ']);
++  const cat = unitCategoryFromCatalog(u?.Jednostka ?? id ?? '', u !== undefined);
+   return cat;
+ }
+ 

@@ -1,0 +1,10 @@
+STATUS: PASS
+DOMAIN: GAME
+TEMAT: R-RUSTPORT-P5-2-PORT-LEVEL0-Q1
+GOAL: Pierwsza partia portu paneli UI do `src-tauri/frontend-v2/`: 15 modułów poziomu 0 z `PORTING-QUEUE.md` (wiersze 1–15) skopiowanych z pinu `edb8fb56`, z importami logiki/danych zastąpionymi DTO (`viewmodel/types.ts`), kontrolerem MOCK (`controller/*`) i `StaticCatalogDto`; reguły gry z modułów → pola DTO; harness porównania DOM z pinem.
+ZMIANY/COMMIT: allowlista: `src-tauri/frontend-v2/**` (15 modułów `src/ui/`, `src/ui/portLevel0.ts`, kontroler `staticCatalog/diagnostics/saveSlots/unitThumbnails/mockCatalog`, zmiany `types.ts`/`mock.ts`/`commands.ts`/`index.ts`/`main.ts`, zasoby UI `src/ui/icons/brand/**` (+318) i `src/assets/portrety/*.jpg` (45) jako kopie bajtowe pinu, `tools/pin-manifest.json` +362, `tools/dom-harness/**`, `package.json` (+`jsdom@29.1.1`, +`esbuild@0.21.5` jawnie), `package-lock.json`, `PORTING-QUEUE.md`), `dyspozycje/rust-port/p5/P5-2-PORT-LEVEL0.md` (NOWY), `dyspozycje/autobot/runs/R-RUSTPORT-P5-2-PORT-LEVEL0-Q1/**`. SHA commita: w komunikacie zwrotnym Operatora (commit nie może zawierać własnego SHA). Baza: `origin/rust-port/parity-v2` @ `b338830e`.
+TESTY: `r1-logi/`: `npm ci` EXIT=0; `tsc --noEmit` EXIT=0; `npm run check` EXIT=0 (`plików=64 plików_z_trafieniami=0 trafień=0`, `verify-pin-copies plików=401 niezgodnych=0`); `vite build` EXIT=0; harness DOM `przypadków=3861 różnic=0` EXIT=0 (14/15 modułów porównanych z pinem; `unitMiniPreview.ts` NIE_ZMIERZONO — WebGL, 4/4 asercje v2); mutacje harnessu 14/14 wykryte EXIT=0; kalibracja bramy: te same 15 plików na pinie 33 trafienia (EXIT=1) → v2 0 (EXIT=0). Diffy pin → v2: `r1-logi/diffs/*.diff`, `09-diff-stat.log`.
+BLOKADY: brak. ZAŁOŻENIA P5.2-Z1..Z8 i NIE_ZMIERZONO w `P5-2-PORT-LEVEL0.md` §8–§9 (m.in. brak uruchomienia w WebView/Tauri, komendy Rust dla nowych DTO tylko jako atrapa MOCK).
+RUNDY: 1/5
+NASTĘPNY KROK: Evaluator (Opus 5.5 medium) — weryfikacja tabel §2–§4 (diff ograniczony do importów i wylistowanych miejsc, klasyfikacja GRANICZNY §4.2), odtworzenie bram i harnessu (§7).
+DEPLOY/PUSH: NIE WYKONANO
