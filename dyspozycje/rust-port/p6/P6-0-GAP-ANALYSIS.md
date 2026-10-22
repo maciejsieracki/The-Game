@@ -23,18 +23,18 @@ Generatory i surowe wyjścia: `dyspozycje/autobot/runs/R-RUSTPORT-P6-0-GAP-ANALY
 | Wierszy w tabeli §3 | 183 (build_gap.py: brak brakujących i nadmiarowych wierszy) |
 | LOC niepuste web (gra/src/game) | 64869 |
 | Łączna liczba eksportów web | 2872 |
-| Pliki klasy SYSTEM+DATA | 159 (eksportów: 2652) |
-| Pliki klasy UI/DEV (NIE-DOTYCZY) | 24 |
+| Pliki klasy SYSTEM+DATA | 162 (eksportów: 2709) |
+| Pliki klasy UI/DEV (NIE-DOTYCZY) | 21 |
 | PORTOWANE-1:1 (z dowodem) | 0 (NIE_ZMIERZONO — brak dowodu per funkcja) |
 | Pliki CZĘŚCIOWO, tier nazwa (dowód nazwowy) | 18 |
 | Pliki CZĘŚCIOWO, tier domena (bez dowodu nazwowego) | 70 |
-| Pliki BRAK | 70 |
+| Pliki BRAK | 73 |
 | Pliki ISTNIEJE-NIEZWERYFIKOWANE | 1 |
-| Pokrycie plikowe SYSTEM+DATA — CZĘŚCIOWO, wszystkie tiery (górna granica) | 88 / 159 = 55.3% |
-| Pokrycie plikowe SYSTEM+DATA — CZĘŚCIOWO tier nazwa (dolna granica dowodowa) | 18 / 159 = 11.3% |
-| Pokrycie eksportów SYSTEM+DATA — CZĘŚCIOWO, wszystkie tiery (ważone eksportami) | 1844 / 2652 = 69.5% |
-| Pokrycie eksportów SYSTEM+DATA — CZĘŚCIOWO tier nazwa | 595 / 2652 = 22.4% |
-| Pokrycie eksportów SYSTEM+DATA — PORTOWANE-1:1 z dowodem | 0 / 2652 = 0.0% (NIE_ZMIERZONO per funkcja) |
+| Pokrycie plikowe SYSTEM+DATA — CZĘŚCIOWO, wszystkie tiery (górna granica) | 88 / 162 = 54.3% |
+| Pokrycie plikowe SYSTEM+DATA — CZĘŚCIOWO tier nazwa (dolna granica dowodowa) | 18 / 162 = 11.1% |
+| Pokrycie eksportów SYSTEM+DATA — CZĘŚCIOWO, wszystkie tiery (ważone eksportami) | 1844 / 2709 = 68.1% |
+| Pokrycie eksportów SYSTEM+DATA — CZĘŚCIOWO tier nazwa | 595 / 2709 = 22.0% |
+| Pokrycie eksportów SYSTEM+DATA — PORTOWANE-1:1 z dowodem | 0 / 2709 = 0.0% (NIE_ZMIERZONO per funkcja) |
 
 Uwaga o wskaźnikach: rząd wielkości jest niepewny. Górna granica (wszystkie tiery) i dolna granica dowodowa (tier nazwa) różnią się wielokrotnie — to jest właściwy zakres niepewności; pojedynczy procent nie jest wiarygodnym wskaźnikiem parytetu. Rzeczywisty parytet wymaga testów wektorowych z weba (P6.23), których jeszcze nie ma.
 
@@ -47,15 +47,15 @@ Uwaga o wskaźnikach: rząd wielkości jest niepewny. Górna granica (wszystkie 
 | P6.3 | 1 | 0 | 2 | 0 | 0 | 3 |
 | P6.4 | 0 | 0 | 4 | 0 | 0 | 4 |
 | P6.5 | 0 | 2 | 3 | 0 | 0 | 5 |
-| P6.6 | 0 | 2 | 4 | 0 | 0 | 6 |
+| P6.6 | 0 | 2 | 5 | 0 | 0 | 7 |
 | P6.7 | 1 | 7 | 0 | 0 | 0 | 8 |
 | P6.8 | 1 | 11 | 6 | 0 | 0 | 18 |
 | P6.9 | 1 | 1 | 0 | 0 | 0 | 2 |
 | P6.10 | 0 | 1 | 1 | 0 | 0 | 2 |
 | P6.11 | 2 | 6 | 9 | 0 | 0 | 17 |
 | P6.12 | 0 | 0 | 8 | 0 | 0 | 8 |
-| P6.13 | 2 | 5 | 8 | 0 | 0 | 15 |
-| P6.14 | 6 | 11 | 7 | 1 | 0 | 25 |
+| P6.13 | 2 | 5 | 9 | 0 | 0 | 16 |
+| P6.14 | 6 | 11 | 8 | 1 | 0 | 26 |
 | P6.15 | 1 | 3 | 5 | 0 | 0 | 9 |
 | P6.16 | 0 | 0 | 1 | 0 | 0 | 1 |
 | P6.17 | 1 | 6 | 2 | 0 | 0 | 9 |
@@ -63,30 +63,30 @@ Uwaga o wskaźnikach: rząd wielkości jest niepewny. Górna granica (wszystkie 
 | P6.19 | 0 | 0 | 1 | 0 | 0 | 1 |
 | P6.20 | 0 | 2 | 0 | 0 | 1 | 3 |
 | P6.21 | 0 | 0 | 1 | 0 | 0 | 1 |
-| - | 0 | 0 | 0 | 0 | 23 | 23 |
+| - | 0 | 0 | 0 | 0 | 20 | 20 |
 
 ## 2. Graf zależności (BRAK / CZĘŚCIOWO / ISTNIEJE-NIEZWERYFIKOWANE)
 
 Krawędzie = importy wewnętrzne z `web-inventory.tsv` (kolumna `importy_wewn`) od plików SYSTEM/DATA o statusie BRAK, CZĘŚCIOWO lub ISTNIEJE-NIEZWERYFIKOWANE do plików tych samych statusów.
 
-Liczba krawędzi: 308. Najczęściej importowane pliki (huby, top 15):
+Liczba krawędzi: 323. Najczęściej importowane pliki (huby, top 15):
 
 | Plik (cel) | status | punkt P6 | importujących |
 |---|---|---|---|
 | `cities.ts` | CZĘŚCIOWO (heur., domena) | P6.6 | 26 |
+| `diplomacy.ts` | CZĘŚCIOWO (heur., nazwa) | P6.14 | 13 |
 | `difficulty-cost.ts` | CZĘŚCIOWO (heur., domena) | P6.11 | 12 |
-| `diplomacy.ts` | CZĘŚCIOWO (heur., nazwa) | P6.14 | 12 |
 | `terrain-improvements.ts` | CZĘŚCIOWO (heur., nazwa) | P6.3 | 12 |
+| `diplomacy-pn-engine.ts` | CZĘŚCIOWO (heur., nazwa) | P6.14 | 10 |
 | `okolica.ts` | CZĘŚCIOWO (heur., domena) | P6.8 | 9 |
-| `diplomacy-pn-engine.ts` | CZĘŚCIOWO (heur., nazwa) | P6.14 | 9 |
 | `building-stock-cost.ts` | CZĘŚCIOWO (heur., domena) | P6.7 | 8 |
 | `production.ts` | CZĘŚCIOWO (heur., domena) | P6.8 | 8 |
 | `barbarians.ts` | CZĘŚCIOWO (heur., nazwa) | P6.18 | 7 |
+| `civ-matrix.ts` | CZĘŚCIOWO (heur., domena) | P6.1 | 7 |
 | `diplomacy-value-catalog.ts` | CZĘŚCIOWO (heur., domena) | P6.14 | 7 |
+| `diplomacy-treaties.ts` | CZĘŚCIOWO (heur., nazwa) | P6.14 | 7 |
 | `r-stawki-strojenie.ts` | CZĘŚCIOWO (heur., domena) | P6.7 | 6 |
 | `economy.ts` | CZĘŚCIOWO (heur., domena) | P6.8 | 6 |
-| `civ-matrix.ts` | CZĘŚCIOWO (heur., domena) | P6.1 | 6 |
-| `diplomacy-treaties.ts` | CZĘŚCIOWO (heur., nazwa) | P6.14 | 6 |
 | `building-resource-gate.ts` | CZĘŚCIOWO (heur., domena) | P6.7 | 5 |
 
 Pełna lista krawędzi (źródło → cel) jest wyprowadzalna z `web-inventory.tsv` przez `build_gap.py`. Uwaga: importy są wyłącznie po nazwie bazowej pliku (`basename`), więc krawędź może być fałszywie dodatnia przy kolizji nazw między katalogami.
@@ -164,7 +164,7 @@ Kolumny dowodu: *dowód web* = linia deklaracji pierwszego eksportu pliku web; *
 | 65 | `diplomacy-credibility.ts` | SYSTEM | 627 | 37 | domain/diplomacy.rs | 3849 | CZĘŚCIOWO (heur., domena) | P6.14 | gra/src/game/diplomacy-credibility.ts:483 (CREDIBILITY_EVENT_LABELS_PL) | domain/diplomacy.rs:11 (pierwszy pub: MAX_TRUST) | - | wiarygodność |
 | 66 | `diplomacy-currency-trade.ts` | SYSTEM | 33 | 3 | domain/trade.rs | 1807 | CZĘŚCIOWO (heur., domena) | P6.15 | gra/src/game/diplomacy-currency-trade.ts:7 (HANDEL_KURS_RELACJA_BAZA) | domain/trade.rs:22 (pierwszy pub: serialize) | - | handel walutą |
 | 67 | `diplomacy-deposit-trade.ts` | SYSTEM | 59 | 5 | domain/trade.rs | 1807 | BRAK (heur.) | P6.15 | gra/src/game/diplomacy-deposit-trade.ts:17 (HANDEL_KURS_RELACJA_BAZA) | domain/trade.rs:22 (pierwszy pub: serialize) | - | handel depozytami |
-| 68 | `diplomacy-display.ts` | UI | 671 | 34 | - | - | NIE-DOTYCZY | - | gra/src/game/diplomacy-display.ts:439 (BasketItemFormatCtx) | - | - | prezentacja dyplomacji |
+| 68 | `diplomacy-display.ts` | SYSTEM | 671 | 34 | - | - | BRAK (heur.) | P6.14 | gra/src/game/diplomacy-display.ts:439 (BasketItemFormatCtx) | - | - | Final Control r2: zawiera logike gry, nie tylko prezentacje: sameCultureCircle (diplomacy-display.ts:213) importowane przez culture-religion.ts:605 i conquest-stability.ts:18; splitNegotiationDealPlayerSides (:562) importowane przez diplomacy-acceptance-points.ts:22; resolveFormalDiplomaticStatus (:289). Rust: tylko pole danych typ_cywilizacji (data/civilizations.rs:82,154), brak funkcji kregu kulturowego (grep culture_circle/kr[aa]g w src = 0 trafien) |
 | 69 | `diplomacy-economy.ts` | SYSTEM | 281 | 34 | domain/diplomacy.rs | 3849 | CZĘŚCIOWO (heur., domena) | P6.14 | gra/src/game/diplomacy-economy.ts:263 (AI_AUDIENCE_REQUEST_COOLDOWN_TURNS) | domain/diplomacy.rs:11 (pierwszy pub: MAX_TRUST) | - | ekonomia dyplomacji |
 | 70 | `diplomacy-factors.ts` | SYSTEM | 187 | 10 | domain/diplomacy.rs | 3849 | CZĘŚCIOWO (heur., domena) | P6.14 | gra/src/game/diplomacy-factors.ts:97 (BreakdownPeaceTier) | domain/diplomacy.rs:11 (pierwszy pub: MAX_TRUST) | - | czynniki dyplomacji |
 | 71 | `diplomacy-goods.ts` | SYSTEM | 126 | 7 | domain/trade.rs | 1807 | CZĘŚCIOWO (heur., domena) | P6.15 | gra/src/game/diplomacy-goods.ts:22 (OwnerGoodsIndexInput) | domain/trade.rs:22 (pierwszy pub: serialize) | - | towary w dyplomacji |
@@ -184,7 +184,7 @@ Kolumny dowodu: *dowód web* = linia deklaracji pierwszego eksportu pliku web; *
 | 85 | `diplomacy-value-catalog.ts` | DATA | 661 | 40 | domain/diplomacy.rs | 3849 | CZĘŚCIOWO (heur., domena) | P6.14 | gra/src/game/diplomacy-value-catalog.ts:136 (BASKET_PN_DIFFICULTY_MULT_PLAYER_GIVE) | domain/diplomacy.rs:11 (pierwszy pub: MAX_TRUST) | canonical_value_catalog_prices_non_quantity_basket_items | katalog wartości |
 | 86 | `diplomacy-war-gates.ts` | SYSTEM | 46 | 6 | domain/diplomacy.rs | 3849 | CZĘŚCIOWO (heur., nazwa) | P6.14 | gra/src/game/diplomacy-war-gates.ts:26 (CurrencyPayloadSlice) | domain/diplomacy.rs:2726 (isCurrencyProposalForbiddenDuringWar) | war_currency_gate_allows_only_peace_settlements | web isCurrencyProposalForbiddenDuringWar (diplomacy-war-gates.ts:46) ~ Rust is_currency_proposal_forbidden_during_war (domain/diplomacy.rs:2726), wyjątek Peace/TributeOffer ~ pokoj/trybut_oferta. Test: tests/diplomacy.rs:549. Zgodność nazwy i wyjątku po odczycie kodu; bez wektorów z weba (NIE_ZMIERZONO) |
 | 87 | `diplomacy.ts` | SYSTEM | 1617 | 45 | domain/diplomacy.rs | 3849 | CZĘŚCIOWO (heur., nazwa) | P6.14 | gra/src/game/diplomacy.ts:1087 (AIDiplomacyContext) | domain/diplomacy.rs:1011 (AIDiplomacyContext) | diplomacy_state_serializes_non_empty_pair_map | dyplomacja (1617 LOC) |
-| 88 | `display-names.ts` | UI | 288 | 19 | - | - | NIE-DOTYCZY | - | gra/src/game/display-names.ts:8 (CITY_STATE_LABEL) | - | - | nazwy wyświetlane |
+| 88 | `display-names.ts` | SYSTEM | 288 | 19 | - | - | BRAK (heur.) | P6.6 | gra/src/game/display-names.ts:8 (CITY_STATE_LABEL) | - | - | Final Control r2: zawiera logike gry: isOwnerClusterCityState (display-names.ts:50) importowane przez power-ranking.ts:12,33 (wykluczenie miast-panstw z rankingu mocy) oraz wskazane jako predykat w komentarzu forced-war-iron.ts:53-54; clearCityStateFlagOnCapture (:88) wolane przy kazdym przejeciu miasta (cities.ts:1139-1149, post-battle-map.ts:470). Rust: tylko pola proposer_is_city_state/responder_is_city_state (domain/diplomacy.rs:2858-2859), brak logiki flagi miasta-panstwa przy przejeciu |
 | 89 | `economy-upkeep.ts` | SYSTEM | 1083 | 67 | domain/turn_economy.rs | 340 | CZĘŚCIOWO (heur., domena) | P6.8 | gra/src/game/economy-upkeep.ts:679 (BUILDING_RESOURCE_UPKEEP_UNITS_PER_TYPE) | domain/turn_economy.rs:21 (pierwszy pub: ResourceStock) | - | utrzymanie ekonomii |
 | 90 | `economy.ts` | SYSTEM | 1243 | 41 | domain/turn_economy.rs | 340 | CZĘŚCIOWO (heur., domena) | P6.8 | gra/src/game/economy.ts:513 (BUILDING_HAPPINESS_BASE_PER_BUILDING) | domain/turn_economy.rs:21 (pierwszy pub: ResourceStock) | - | ekonomia (1243 LOC) |
 | 91 | `effective-difficulty-for-owner.ts` | SYSTEM | 13 | 1 | data/derived.rs | 578 | CZĘŚCIOWO (heur., domena) | P6.11 | gra/src/game/effective-difficulty-for-owner.ts:8 (effectiveGameDifficultyForOwnerPure) | data/derived.rs:16 (pierwszy pub: UNIT_STOCK_COSTS_JSON) | difficulty_is_one_type_across_domain_modules | trudność właściciela |
@@ -264,7 +264,7 @@ Kolumny dowodu: *dowód web* = linia deklaracji pierwszego eksportu pliku web; *
 | 165 | `triumph-city-state.ts` | SYSTEM | 70 | 5 | domain/barbarians.rs | 925 | BRAK (heur.) | P6.18 | gra/src/game/triumph-city-state.ts:11 (TRIUMPH_CS_HINT_MS) | domain/barbarians.rs:15 (pierwszy pub: HexCoord) | - | triumf państwa-miasta |
 | 166 | `turn-economy.ts` | SYSTEM | 2782 | 47 | domain/turn_economy.rs | 340 | CZĘŚCIOWO (heur., nazwa) | P6.9 | gra/src/game/turn-economy.ts:1097 (CityEconomyTick) | domain/types.rs:497 (Difficulty) | - | ekonomia tury (2782 LOC) |
 | 167 | `unit-building-bonuses.ts` | SYSTEM | 488 | 33 | domain/combat.rs | 467 | BRAK (heur.) | P6.5 | gra/src/game/unit-building-bonuses.ts:67 (ARMOR_BUILDING_IDS) | domain/combat.rs:8 (pierwszy pub: CounterBonus) | - | bonusy budynków jednostek |
-| 168 | `unit-card-stats.ts` | UI | 116 | 4 | - | - | NIE-DOTYCZY | - | gra/src/game/unit-card-stats.ts:16 (UnitCardCombatBases) | - | - | statystyki karty jednostki |
+| 168 | `unit-card-stats.ts` | SYSTEM | 116 | 4 | - | - | BRAK (heur.) | P6.13 | gra/src/game/unit-card-stats.ts:16 (UnitCardCombatBases) | - | - | Final Control r2: zawiera logike gry: effectiveMaxHp (unit-card-stats.ts:79) importowane przez combat.ts:6 i uzywane w combat.ts:924,936 do liczenia HP w walce (bonus parametrow + weteran). Rust: grep veteran w src = 0 trafien, brak odpowiednika efektywnego max HP |
 | 169 | `unit-cost-tempo.ts` | DATA | 36 | 3 | domain/recruitment.rs | 260 | CZĘŚCIOWO (heur., domena) | P6.5 | gra/src/game/unit-cost-tempo.ts:19 (KOSZT_JEDNOSTEK_PACE) | domain/recruitment.rs:11 (pierwszy pub: ResourceStock) | unit_table_has_one_row_per_units_json_record_and_no_extra_rows | tempo kosztu jednostek |
 | 170 | `unit-power.ts` | SYSTEM | 191 | 11 | domain/combat.rs | 467 | CZĘŚCIOWO (heur., domena) | P6.13 | gra/src/game/unit-power.ts:36 (PowerBreakdown) | domain/combat.rs:8 (pierwszy pub: CounterBonus) | counters_parses_and_spot_checks | moc jednostki |
 | 171 | `unit-replace-context.ts` | SYSTEM | 60 | 2 | domain/recruitment.rs | 260 | BRAK (heur.) | P6.5 | gra/src/game/unit-replace-context.ts:50 (ReplaceAvailabilityCtxParams) | domain/recruitment.rs:11 (pierwszy pub: ResourceStock) | - | kontekst zastąpienia jednostki |
@@ -334,14 +334,14 @@ Rozmiar = suma LOC niepuste plików web, których **punkt główny** (pierwszy p
 | R-RUSTPORT-P6-3-TEREN | P6.3 | 3 | 720 | M | domain/terrain.rs, domain/improvements.rs, domain/pathfinding.rs, tests/p6_3_teren.rs (nowy) | P6.2 | sekwencyjnie z P6-4 (pathfinding.rs) |
 | R-RUSTPORT-P6-4-JEDNOSTKI-RUCH | P6.4 | 4 | 877 | M | domain/pathfinding.rs, domain/recruitment.rs, tests/p6_4_ruch.rs (nowy) | P6.3 | sekwencyjnie z P6-3 i P6-5 |
 | R-RUSTPORT-P6-5-JEDNOSTKI-ZYCIE | P6.5 | 5 | 2336 | XL | domain/recruitment.rs, domain/combat.rs (tylko bonusy budynków), tests/p6_5_jednostki.rs (nowy) | P6.4 | sekwencyjnie z P6-4 |
-| R-RUSTPORT-P6-6-MIASTA-ZAKLADANIE | P6.6 | 6 | 2502 | XL | domain/state.rs, domain/terrain.rs, tests/p6_6_miasta.rs (nowy) | P6.5 | po P6-5 (state.rs) |
+| R-RUSTPORT-P6-6-MIASTA-ZAKLADANIE | P6.6 | 7 | 2790 | XL | domain/state.rs, domain/terrain.rs, tests/p6_6_miasta.rs (nowy) | P6.5 | po P6-5 (state.rs) |
 | R-RUSTPORT-P6-7-MIASTA-WZROST | P6.7 | 8 | 2644 | XL | domain/city_growth.rs, domain/building_costs.rs, tests/p6_7_wzrost.rs (nowy) | P6.6 | sekwencyjnie z P6-6 |
 | R-RUSTPORT-P6-8-MIASTA-EKONOMIA | P6.8 | 18 | 9306 | XL | domain/resource_production.rs, domain/turn_economy.rs, domain/improvements.rs, tests/p6_8_ekonomia.rs (nowy) | P6.7 | sekwencyjnie z P6-7; XL: podział 8a produkcja / 8b utrzymanie / 8c okolica |
 | R-RUSTPORT-P6-9-TURA | P6.9, P6.10 | 4 | 3079 | XL | domain/turn_economy.rs, domain/events.rs, tests/p6_9_tura.rs (nowy) | P6.8 | po P6-8 (turn_economy.rs) |
 | R-RUSTPORT-P6-11-AI | P6.11 | 17 | 7413 | XL | domain/ai_turn.rs, domain/power.rs (nowy), data/derived.rs, tests/p6_11_ai.rs (nowy) | P6.9 | 11a–11c sekwencyjnie (ai_turn.rs) |
 | R-RUSTPORT-P6-12-AI-WOJNY | P6.12 | 8 | 1951 | L | domain/forced_war.rs (nowy), domain/ai_turn.rs (tylko wywołanie), tests/p6_12_wojny.rs (nowy) | P6.11 (wspólny ai_turn.rs) | równolegle z P6-13/P6-16/P6-17 (rozłączne allowlisty, patrz §6b-i) |
-| R-RUSTPORT-P6-13-WALKA | P6.13 | 15 | 4639 | XL | domain/combat.rs, data/units_combat.rs, tests/p6_13_walka.rs (nowy) | P6.4, P6.9 | równolegle z P6-12/P6-16/P6-17 (rozłączne allowlisty) |
-| R-RUSTPORT-P6-14-DYPLOMACJA | P6.14 | 25 | 10295 | XL | domain/diplomacy.rs, tests/p6_14_dyplomacja.rs (nowy); podział 14a propozycje/traktaty, 14b bilans AI, 14c katalog wartości | P6.9 | 14a–14c sekwencyjnie (diplomacy.rs) |
+| R-RUSTPORT-P6-13-WALKA | P6.13 | 16 | 4755 | XL | domain/combat.rs, data/units_combat.rs, tests/p6_13_walka.rs (nowy) | P6.4, P6.9 | równolegle z P6-12/P6-16/P6-17 (rozłączne allowlisty) |
+| R-RUSTPORT-P6-14-DYPLOMACJA | P6.14 | 26 | 10966 | XL | domain/diplomacy.rs, tests/p6_14_dyplomacja.rs (nowy); podział 14a propozycje/traktaty, 14b bilans AI, 14c katalog wartości | P6.9 | 14a–14c sekwencyjnie (diplomacy.rs) |
 | R-RUSTPORT-P6-15-HANDEL | P6.15 | 9 | 2752 | XL | domain/trade.rs, tests/p6_15_handel.rs (nowy) | P6.14 | po P6-14 |
 | R-RUSTPORT-P6-16-KULTURA-RELIGIA | P6.16 | 1 | 1365 | L | domain/culture.rs (nowy), domain/turn_economy.rs (tylko pole culture), tests/p6_16_kultura.rs (nowy) | P6.9 | równolegle z P6-12/P6-13/P6-17 (turn_economy.rs po P6-9) |
 | R-RUSTPORT-P6-17-TECHNOLOGIE-CUDA | P6.17 | 9 | 1617 | L | data/buildings_tech.rs, domain/improvements.rs (po P6-8), tests/p6_17_tech.rs (nowy) | P6.8 | równolegle z P6-12/P6-13/P6-16 (improvements.rs po P6-8) |
@@ -427,5 +427,9 @@ Każdy zarzut ma werdykt: PRZYJMUJĘ (poprawka + dowód) albo ODRZUCAM (dowód).
 13. **PRZYJMUJĘ.** Kolizja `tests/**` rozwiązana regułą per temat (`tests/p6_<id>_*.rs`, §6a), co potwierdza brak `[[test]]` w `Cargo.toml`. Ścieżka krytyczna przepisana z tabeli §6b: `P6.11` i `P6.13` nie są na niej, a są gałęziami, które muszą się zakończyć przed P6.20. Kontrola kolizji allowlist jest skryptowa (§6b-i); P6-12 ‖ P6-13 ‖ P6-16 ‖ P6-17 mają rozłączne allowlisty.
 14. **PRZYJMUJĘ.** `diplomacy-basket-transfer.ts`: test `basket_and_treaty_duration_read_diplomacy_table` (`tests/derived_values.rs:911`) dotyczy czasu trwania traktatu, nie transferu koszyka; kolumna testu ustawiona na `-`.
 15. **PRZYJMUJĘ.** Dodano ryzyka: `idb-storage.ts` jest importowany przez `save.ts:80` (ryzyko dla P6.20); `side-panel-event-priority.ts` (`isBlockingSidePanelEvent`, `:7`) blokuje koniec tury (`main.ts:14264`), klasa zmieniona na SYSTEM, status BRAK, punkt P6.10.
+
+### 9a. Poprawka Final Control (runda 2): pozostałe NIE-DOTYCZY z logiką gry
+
+Final Control sprawdził skryptem wszystkie 24 pliki NIE-DOTYCZY pod kątem importu przez pliki SYSTEM/DATA (zarzut 15 w tej samej klasie co 1–3). Trzy pliki UI zawierały logikę gry, a Operator ich nie ujął: `diplomacy-display.ts` (`sameCultureCircle` używane przez `culture-religion.ts:605`, `conquest-stability.ts:18`; `splitNegotiationDealPlayerSides` przez `diplomacy-acceptance-points.ts:22`), `display-names.ts` (`isOwnerClusterCityState` w `power-ranking.ts:33`; `clearCityStateFlagOnCapture`), `unit-card-stats.ts` (`effectiveMaxHp` w `combat.ts:924,936`). Klasa zmieniona na SYSTEM, status BRAK (Rust ma tylko pola danych), punkty P6.14, P6.6, P6.13. Po korekcie NIE-DOTYCZY = 21 plików; jedyny import przez SYSTEM/DATA z pozostałych to `idb-storage.ts` (`save.ts`, odnotowany w pkt 15).
 
 Wniosek rundy 2: wszystkie 15 zarzutów rozpatrzone; jedyne częściowe odrzucenie to zarzut 9 (część faktyczna o słowach w pliku). Brak PORTOWANE-1:1. Deploy/push: NIE WYKONANO.
