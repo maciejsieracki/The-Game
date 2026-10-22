@@ -1,1 +1,2 @@
+# komenda: cargo fmt --manifest-path rust-port/engine/Cargo.toml -- --check
 EXIT=0
