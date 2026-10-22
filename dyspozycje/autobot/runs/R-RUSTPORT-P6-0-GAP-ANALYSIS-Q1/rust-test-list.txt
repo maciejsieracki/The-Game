@@ -1,3 +1,6 @@
+# komenda: cargo test --manifest-path rust-port/engine/Cargo.toml -- --list
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.04s
+     Running unittests src/lib.rs (/tmp/claude-0/-home-user-The-Game/cbf4a126-dca3-5f50-bfb0-2a747b18a590/scratchpad/p6v/target-p6r2/debug/deps/civ_engine-534d0fbe62d81309)
 domain::map_generator::tests::axial_distance_and_neighbours_match_hex_contract: test
 domain::map_generator::tests::canonical_climate_band_vectors_match_typescript: test
 domain::map_generator::tests::canonical_mask_vectors_match_typescript: test
@@ -6,6 +9,7 @@ domain::map_generator::tests::terrain_bias_and_classification_match_typescript_g
 domain::map_generator::tests::value_noise_and_fbm_match_typescript_golden_vectors: test
 
 6 tests, 0 benchmarks
+     Running tests/ai_turn.rs (/tmp/claude-0/-home-user-The-Game/cbf4a126-dca3-5f50-bfb0-2a747b18a590/scratchpad/p6v/target-p6r2/debug/deps/ai_turn-5996b168185bf541)
 ai_turn_default_city_parameters_match_ai_params_json: test
 ai_turn_input_serde_round_trip_uses_json_map_entries: test
 civilian_units_do_not_receive_combat_orders: test
@@ -21,6 +25,7 @@ settler_founds_only_on_a_qualifying_village_and_respects_city_spacing: test
 wounded_units_retreat_before_attacking: test
 
 13 tests, 0 benchmarks
+     Running tests/assets_manifest.rs (/tmp/claude-0/-home-user-The-Game/cbf4a126-dca3-5f50-bfb0-2a747b18a590/scratchpad/p6v/target-p6r2/debug/deps/assets_manifest-15ace12bc1887d43)
 byte_sums_per_category_match_p1_11: test
 counts_per_extension_match_p1_11: test
 every_entry_blob_sha1_matches_manifest_column: test
@@ -36,6 +41,7 @@ no_files_outside_manifest_in_assets_dir: test
 sha1_matches_known_vectors: test
 
 13 tests, 0 benchmarks
+     Running tests/barbarians.rs (/tmp/claude-0/-home-user-The-Game/cbf4a126-dca3-5f50-bfb0-2a747b18a590/scratchpad/p6v/target-p6r2/debug/deps/barbarians-a5e14b9c4c48801b)
 barbarian_city_garrison_spawns_units_without_a_building_queue: test
 camp_destruction_removes_only_the_entered_camp: test
 camp_spawning_is_deterministic_and_honours_city_and_camp_spacing: test
@@ -48,9 +54,11 @@ rally_moves_multiple_units_toward_their_shared_camp: test
 state_round_trip_preserves_camp_identity_and_visit_memory: test
 
 10 tests, 0 benchmarks
+     Running tests/bridge_add_player.rs (/tmp/claude-0/-home-user-The-Game/cbf4a126-dca3-5f50-bfb0-2a747b18a590/scratchpad/p6v/target-p6r2/debug/deps/bridge_add_player-b44cc64b72465353)
 bridge::add_player_atomicity_tests::add_player_leaves_mock_state_untouched_when_the_game_rejects_it: test
 
 1 test, 0 benchmarks
+     Running tests/building_costs.rs (/tmp/claude-0/-home-user-The-Game/cbf4a126-dca3-5f50-bfb0-2a747b18a590/scratchpad/p6v/target-p6r2/debug/deps/building_costs-10012e32693dbe76)
 canonical_catalog_contains_all_buildings_and_preserves_split_values: test
 effective_work_cost_is_raw_work_web_one_to_one: test
 empty_resource_cost_is_affordable_without_a_stock_map: test
@@ -63,6 +71,7 @@ successful_spend_deducts_effective_work_and_raw_stock_atomically: test
 work_cost_is_linear_and_levels_are_one_based: test
 
 10 tests, 0 benchmarks
+     Running tests/city_growth.rs (/tmp/claude-0/-home-user-The-Game/cbf4a126-dca3-5f50-bfb0-2a747b18a590/scratchpad/p6v/target-p6r2/debug/deps/city_growth-05d7c932e40c39aa)
 a_threshold_multiplier_is_rounded_and_only_one_citizen_is_added_per_turn: test
 deficit_reduces_population_to_one_without_health_boosting_negative_food: test
 fractional_growth_accumulates_and_freezes_at_the_population_cap: test
@@ -75,6 +84,7 @@ population_cap_uses_the_three_canonical_building_steps: test
 positive_food_is_health_adjusted_and_crossing_the_threshold_grows_once: test
 
 10 tests, 0 benchmarks
+     Running tests/city_id.rs (/tmp/claude-0/-home-user-The-Game/cbf4a126-dca3-5f50-bfb0-2a747b18a590/scratchpad/p6v/target-p6r2/debug/deps/city_id-896e6a3bad264f21)
 barbarian_city_garrison_json_keeps_numeric_city_id: test
 barbarian_cleared_cities_round_trip_as_numbers: test
 city_id_conversions_round_trip: test
@@ -83,6 +93,7 @@ city_id_ordering_matches_raw_value: test
 city_id_serializes_as_bare_number: test
 
 6 tests, 0 benchmarks
+     Running tests/combat.rs (/tmp/claude-0/-home-user-The-Game/cbf4a126-dca3-5f50-bfb0-2a747b18a590/scratchpad/p6v/target-p6r2/debug/deps/combat-08d43b63cfbe765a)
 canonical_counter_table_matches_confirmed_attack_rows: test
 effective_strength_applies_counters_terrain_and_siege_structures: test
 empty_attacker_side_gives_non_empty_defender_the_win: test
@@ -92,6 +103,7 @@ resolver_is_order_independent_and_preserves_ids: test
 resolver_returns_deterministic_winner_and_per_unit_losses: test
 
 7 tests, 0 benchmarks
+     Running tests/combat_ai_multipliers.rs (/tmp/claude-0/-home-user-The-Game/cbf4a126-dca3-5f50-bfb0-2a747b18a590/scratchpad/p6v/target-p6r2/debug/deps/combat_ai_multipliers-c21c0d8a2b437070)
 accessors_return_the_table_value_not_a_constant: test
 city_structure_bonuses_are_positive_and_mur_is_the_largest_single_bonus: test
 las_row_is_class_a_and_marked_read_by_domain: test
@@ -99,11 +111,13 @@ table_has_each_row_once_with_known_class_and_status: test
 veteran_levels_are_complete_and_non_decreasing: test
 
 5 tests, 0 benchmarks
+     Running tests/data_buildings_tech.rs (/tmp/claude-0/-home-user-The-Game/cbf4a126-dca3-5f50-bfb0-2a747b18a590/scratchpad/p6v/target-p6r2/debug/deps/data_buildings_tech-eac4da05df1eb17f)
 buildings_json_parses: test
 tech_json_parses: test
 wonders_json_parses: test
 
 3 tests, 0 benchmarks
+     Running tests/data_civilizations.rs (/tmp/claude-0/-home-user-The-Game/cbf4a126-dca3-5f50-bfb0-2a747b18a590/scratchpad/p6v/target-p6r2/debug/deps/data_civilizations-ba1bb20bf96ba8a5)
 city_names_pools_json_parses_and_spot_checks: test
 civ_ai_json_parses_and_spot_checks: test
 civ_matrix_json_parses_and_spot_checks: test
@@ -113,6 +127,7 @@ diplomacy_acceptance_points_json_parses_and_spot_checks: test
 diplomacy_json_parses_and_spot_checks: test
 
 7 tests, 0 benchmarks
+     Running tests/data_compliance.rs (/tmp/claude-0/-home-user-The-Game/cbf4a126-dca3-5f50-bfb0-2a747b18a590/scratchpad/p6v/target-p6r2/debug/deps/data_compliance-e79e9f82ae549bf2)
 all_29_data_files_parse_with_rust_modules: test
 civ_auxiliary_files_civ_ids_match_web_pin: test
 civs_count_and_ids_match_web_pin: test
@@ -155,6 +170,7 @@ web_pin_constants_are_internally_consistent: test
 wonders_state_keys_match_web_pin: test
 
 40 tests, 0 benchmarks
+     Running tests/data_economy_society.rs (/tmp/claude-0/-home-user-The-Game/cbf4a126-dca3-5f50-bfb0-2a747b18a590/scratchpad/p6v/target-p6r2/debug/deps/data_economy_society-1144b51dc72182b6)
 parse_ai_params_parses_and_spot_checks: test
 parse_citizen_resource_upkeep_parses_and_spot_checks: test
 parse_e_start_params_parses_and_spot_checks: test
@@ -166,6 +182,7 @@ parse_society_params_parses_and_spot_checks: test
 parse_ui_params_parses_and_spot_checks: test
 
 9 tests, 0 benchmarks
+     Running tests/data_loader.rs (/tmp/claude-0/-home-user-The-Game/cbf4a126-dca3-5f50-bfb0-2a747b18a590/scratchpad/p6v/target-p6r2/debug/deps/data_loader-dedaef4756ca03d6)
 data_files_list_matches_directory_contents: test
 loads_all_29_files_from_data_dir: test
 neg_empty_file_is_empty: test
@@ -182,12 +199,14 @@ neg_unreadable_file_is_io: test
 neg_whitespace_only_file_is_empty: test
 
 14 tests, 0 benchmarks
+     Running tests/data_terrain_map.rs (/tmp/claude-0/-home-user-The-Game/cbf4a126-dca3-5f50-bfb0-2a747b18a590/scratchpad/p6v/target-p6r2/debug/deps/data_terrain_map-2cfa81b7363a7766)
 map_gen_params_parses_and_spot_checks: test
 terrain_improvements_parses_and_spot_checks: test
 terrain_movement_parses_and_spot_checks: test
 terrain_yields_parses_and_spot_checks: test
 
 4 tests, 0 benchmarks
+     Running tests/data_units_combat.rs (/tmp/claude-0/-home-user-The-Game/cbf4a126-dca3-5f50-bfb0-2a747b18a590/scratchpad/p6v/target-p6r2/debug/deps/data_units_combat-317f0d4a1a57866b)
 auto_battle_params_parses_and_spot_checks: test
 combat_params_parses_and_spot_checks: test
 counters_parses_and_spot_checks: test
@@ -196,6 +215,7 @@ terrain_combat_parses_and_spot_checks: test
 units_parses_and_spot_checks: test
 
 6 tests, 0 benchmarks
+     Running tests/derived_values.rs (/tmp/claude-0/-home-user-The-Game/cbf4a126-dca3-5f50-bfb0-2a747b18a590/scratchpad/p6v/target-p6r2/debug/deps/derived_values-9e0de78b6d1575dc)
 basket_and_treaty_duration_read_diplomacy_table: test
 building_gold_upkeep_has_one_row_per_building_level: test
 building_table_has_exactly_the_42_canonical_ids_once_each: test
@@ -223,6 +243,7 @@ work_table_has_exactly_the_42_buildings_once_each_and_positive_values: test
 work_table_is_read_by_the_domain_without_recomputation: test
 
 25 tests, 0 benchmarks
+     Running tests/diplomacy.rs (/tmp/claude-0/-home-user-The-Game/cbf4a126-dca3-5f50-bfb0-2a747b18a590/scratchpad/p6v/target-p6r2/debug/deps/diplomacy-f26ca20556fdc538)
 alliance_sweetener_ease_is_measured_in_points: test
 alliance_uses_configured_hegemon_threshold: test
 annexation_requires_vassal_economy_orientation: test
@@ -257,6 +278,7 @@ trust_events_match_the_canonical_one_shot_deltas: test
 war_currency_gate_allows_only_peace_settlements: test
 
 32 tests, 0 benchmarks
+     Running tests/events.rs (/tmp/claude-0/-home-user-The-Game/cbf4a126-dca3-5f50-bfb0-2a747b18a590/scratchpad/p6v/target-p6r2/debug/deps/events-2c95c98fba4386f0)
 built_in_events_map_to_their_responsible_phases: test
 canonical_turn_phases_are_explicit_and_stable: test
 deserializing_a_queue_restores_order_and_rejects_duplicate_ids: test
@@ -267,6 +289,7 @@ queue_orders_turn_then_phase_then_insertion_sequence: test
 queue_round_trip_preserves_order_and_allocates_a_fresh_sequence: test
 
 8 tests, 0 benchmarks
+     Running tests/hex_terrain.rs (/tmp/claude-0/-home-user-The-Game/cbf4a126-dca3-5f50-bfb0-2a747b18a590/scratchpad/p6v/target-p6r2/debug/deps/hex_terrain-17f3f2e9996fbacd)
 axial_coordinates_keep_the_cube_invariant: test
 coordinates_and_terrain_are_json_round_trip_safe: test
 coordinates_round_trip_through_the_canonical_map_key: test
@@ -279,6 +302,7 @@ terrain_qualification_matches_the_world_map_rules: test
 tile_qualification_is_a_pure_terrain_projection: test
 
 10 tests, 0 benchmarks
+     Running tests/improvements.rs (/tmp/claude-0/-home-user-The-Game/cbf4a126-dca3-5f50-bfb0-2a747b18a590/scratchpad/p6v/target-p6r2/debug/deps/improvements-2db277c8f154a09e)
 food_layers_allow_farm_with_irrigation_or_trzoda_but_not_without_farm: test
 food_layers_can_coexist_with_non_food_layers: test
 forest_rules_distinguish_dependent_and_compatible_improvements: test
@@ -294,6 +318,7 @@ tile_and_production_are_json_round_trip_safe: test
 trzoda_is_not_qualifying_on_forest_but_is_on_open_flat_land: test
 
 13 tests, 0 benchmarks
+     Running tests/map_generator.rs (/tmp/claude-0/-home-user-The-Game/cbf4a126-dca3-5f50-bfb0-2a747b18a590/scratchpad/p6v/target-p6r2/debug/deps/map_generator-db277ade9f4c4158)
 invalid_dimensions_are_rejected_before_allocation: test
 map_dimensions_and_seed_are_stable: test
 map_golden_vector_matches_typescript_core_contract: test
@@ -302,6 +327,7 @@ river_markers_are_land_and_reach_water: test
 world_types_and_default_seed_match_typescript_contract: test
 
 6 tests, 0 benchmarks
+     Running tests/owner_ref.rs (/tmp/claude-0/-home-user-The-Game/cbf4a126-dca3-5f50-bfb0-2a747b18a590/scratchpad/p6v/target-p6r2/debug/deps/owner_ref-a8f54f3d06facc8b)
 camp_id_is_a_transparent_newtype: test
 owner_and_camp_fields_are_plain_numbers_in_struct_json: test
 owner_ref_accessors_and_player_conversion: test
@@ -314,6 +340,7 @@ owner_ref_serializes_every_variant_as_the_legacy_number: test
 player_keyed_maps_keep_numeric_string_keys: test
 
 10 tests, 0 benchmarks
+     Running tests/parity_suite.rs (/tmp/claude-0/-home-user-The-Game/cbf4a126-dca3-5f50-bfb0-2a747b18a590/scratchpad/p6v/target-p6r2/debug/deps/parity_suite-2b2cc7249c21cb62)
 building_and_recruitment_vectors_keep_purchase_and_work_costs_separate: test
 canonical_state_dto_vector_round_trips_through_json: test
 city_growth_vector_preserves_health_threshold_and_population_cap: test
@@ -327,6 +354,7 @@ trade_route_vector_uses_stable_hex_path_and_wire_identity: test
 turn_economy_vector_credits_before_spending_and_resets_work: test
 
 11 tests, 0 benchmarks
+     Running tests/pathfinding.rs (/tmp/claude-0/-home-user-The-Game/cbf4a126-dca3-5f50-bfb0-2a747b18a590/scratchpad/p6v/target-p6r2/debug/deps/pathfinding-34bef5e38d700926)
 dijkstra_chooses_the_same_least_cost_path_every_time: test
 impassable_destination_is_allowed_as_the_final_step: test
 movement_cost_applies_terrain_overlay_river_and_road_rules: test
@@ -337,6 +365,7 @@ terrain_qualification_keeps_workability_separate_from_movement: test
 unreachable_and_missing_fields_are_rejected: test
 
 8 tests, 0 benchmarks
+     Running tests/playable_slice.rs (/tmp/claude-0/-home-user-The-Game/cbf4a126-dca3-5f50-bfb0-2a747b18a590/scratchpad/p6v/target-p6r2/debug/deps/playable_slice-194ba5d83a273536)
 advance_turn_drains_the_canonical_phase_queue_and_refreshes_state: test
 create_session_is_deterministic_and_contains_playable_entities: test
 frontend_non_default_payload_reaches_the_rust_start_dto: test
@@ -346,6 +375,7 @@ selected_start_values_change_the_scenario_without_claiming_unsupported_effects: 
 start_params_round_trip_with_frontend_camel_case_names: test
 
 7 tests, 0 benchmarks
+     Running tests/recruitment.rs (/tmp/claude-0/-home-user-The-Game/cbf4a126-dca3-5f50-bfb0-2a747b18a590/scratchpad/p6v/target-p6r2/debug/deps/recruitment-11d3dd91ada574b6)
 canonical_catalog_contains_all_unit_rows_and_round_trips: test
 canonical_catalog_matches_units_json_for_all_75_rows: test
 canonical_unit_record_keeps_purchase_and_upkeep_separate: test
@@ -356,6 +386,7 @@ successful_recruitment_spends_purchase_stock_but_not_future_upkeep: test
 upkeep_totals_are_grouped_by_resource_and_ignore_unknown_units: test
 
 8 tests, 0 benchmarks
+     Running tests/replay.rs (/tmp/claude-0/-home-user-The-Game/cbf4a126-dca3-5f50-bfb0-2a747b18a590/scratchpad/p6v/target-p6r2/debug/deps/replay-8015bba42843fb1e)
 playback_cursor_observes_peek_remaining_and_reset: test
 recording_same_inputs_seed_and_rng_checkpoints_is_byte_deterministic: test
 replay_log_round_trips_some_snapshot_with_all_snapshot_data: test
@@ -364,6 +395,7 @@ replay_rejects_missing_or_unsupported_version_and_non_contiguous_steps: test
 replay_validation_rejects_invalid_checkpoint_snapshots: test
 
 6 tests, 0 benchmarks
+     Running tests/resource_production.rs (/tmp/claude-0/-home-user-The-Game/cbf4a126-dca3-5f50-bfb0-2a747b18a590/scratchpad/p6v/target-p6r2/debug/deps/resource_production-df78b54d426ec5ae)
 era_scaling_rounds_like_the_typescript_resolver_and_saturates: test
 invalid_or_missing_era_is_safe_and_other_improvements_stay_flat: test
 lumber_mill_and_quarry_follow_the_200_300_450_era_vector: test
@@ -371,12 +403,14 @@ multiple_layers_stack_additively_per_resource: test
 resolver_rejects_non_producers_and_accepts_legacy_aliases: test
 
 5 tests, 0 benchmarks
+     Running tests/rng.rs (/tmp/claude-0/-home-user-The-Game/cbf4a126-dca3-5f50-bfb0-2a747b18a590/scratchpad/p6v/target-p6r2/debug/deps/rng-21730c75b639a538)
 copied_state_and_forks_reproduce_independent_streams: test
 ranges_reject_empty_or_reversed_bounds_and_stay_inside_exclusive_end: test
 seeded_stream_matches_the_typescript_lcg_and_repeats: test
 serialized_state_round_trip_resumes_the_exact_stream: test
 
 4 tests, 0 benchmarks
+     Running tests/save_load.rs (/tmp/claude-0/-home-user-The-Game/cbf4a126-dca3-5f50-bfb0-2a747b18a590/scratchpad/p6v/target-p6r2/debug/deps/save_load-be7ee1c15db6ad78)
 current_snapshot_round_trips_with_state_queue_rng_and_version: test
 explicit_v1_constructor_uses_the_same_migration_contract: test
 future_and_incomplete_versions_are_rejected_without_silent_defaults: test
@@ -385,10 +419,12 @@ snapshot_parts_can_be_moved_into_a_runtime_restore: test
 version_one_snapshot_migrates_by_adding_an_empty_queue: test
 
 6 tests, 0 benchmarks
+     Running tests/smoke.rs (/tmp/claude-0/-home-user-The-Game/cbf4a126-dca3-5f50-bfb0-2a747b18a590/scratchpad/p6v/target-p6r2/debug/deps/smoke-b4eb83668bde7d9f)
 engine_state_can_be_created_advanced_and_round_tripped: test
 one_based_turn_invariant_is_enforced_on_construction_and_deserialization: test
 
 2 tests, 0 benchmarks
+     Running tests/state_dto.rs (/tmp/claude-0/-home-user-The-Game/cbf4a126-dca3-5f50-bfb0-2a747b18a590/scratchpad/p6v/target-p6r2/debug/deps/state_dto-c04d7d23c1e80ec3)
 canonical_state_round_trips_through_serde: test
 city_rejects_empty_names_and_zero_population: test
 civilization_rejects_empty_names_and_duplicate_entity_references: test
@@ -401,6 +437,7 @@ state_rejects_unknown_and_mismatched_entity_owners: test
 state_rejects_unknown_unit_reference: test
 
 10 tests, 0 benchmarks
+     Running tests/steam_adapter.rs (/tmp/claude-0/-home-user-The-Game/cbf4a126-dca3-5f50-bfb0-2a747b18a590/scratchpad/p6v/target-p6r2/debug/deps/steam_adapter-2091d45b06597c49)
 in_memory_adapter_round_trips_cloud_save_bytes_exactly: test
 in_memory_adapter_unlocks_achievements_and_reports_overlay_status: test
 missing_cloud_save_key_is_reported_without_fabricating_data: test
@@ -408,6 +445,7 @@ production_adapter_is_explicitly_disconnected_and_side_effect_free: test
 unavailable_mock_rejects_every_steam_operation: test
 
 5 tests, 0 benchmarks
+     Running tests/terrain_movement_fix.rs (/tmp/claude-0/-home-user-The-Game/cbf4a126-dca3-5f50-bfb0-2a747b18a590/scratchpad/p6v/target-p6r2/debug/deps/terrain_movement_fix-38aaee5f1e2c06b0)
 ai_turn_desert_movement_cost_matches_web_and_pathfinder: test
 ai_turn_movement_costs_agree_with_terrain_module_for_shared_terrains: test
 barbarian_camps_never_spawn_on_tundra: test
@@ -419,6 +457,7 @@ owners_land_border_ignores_tundra_neighbour: test
 trade_routes_do_not_cross_tundra: test
 
 9 tests, 0 benchmarks
+     Running tests/trade.rs (/tmp/claude-0/-home-user-The-Game/cbf4a126-dca3-5f50-bfb0-2a747b18a590/scratchpad/p6v/target-p6r2/debug/deps/trade-84045a31742e30fa)
 connection_result_and_tile_helpers_are_small_and_stable: test
 diagonal_path_uses_the_canonical_hex_neighbor_order: test
 diff_and_serialization_preserve_route_contract: test
@@ -433,6 +472,7 @@ route_identity_construction_and_building_limits_are_deterministic: test
 route_income_building_and_sea_bonuses_are_aggregated_per_city: test
 
 12 tests, 0 benchmarks
+     Running tests/turn_economy.rs (/tmp/claude-0/-home-user-The-Game/cbf4a126-dca3-5f50-bfb0-2a747b18a590/scratchpad/p6v/target-p6r2/debug/deps/turn_economy-04c0931c73cef09f)
 flow_helpers_are_deterministic_and_saturating: test
 invalid_and_overflow_turn_boundaries_are_rejected_without_mutation: test
 pure_preview_does_not_mutate_input_balances: test
@@ -442,6 +482,7 @@ settlement_credits_income_before_paying_expenses: test
 unused_work_is_reset_but_persistent_balances_carry_forward: test
 
 7 tests, 0 benchmarks
+     Running tests/unit_epoch.rs (/tmp/claude-0/-home-user-The-Game/cbf4a126-dca3-5f50-bfb0-2a747b18a590/scratchpad/p6v/target-p6r2/debug/deps/unit_epoch-94f71196dafa30d0)
 current_and_previous_epochs_are_available: test
 epoch_labels_round_trip_and_reject_unknown_values: test
 non_scout_from_current_epoch_is_available_but_future_unit_is_not: test
@@ -449,4 +490,6 @@ scout_is_available_in_every_epoch: test
 units_older_than_the_previous_epoch_are_rejected: test
 
 5 tests, 0 benchmarks
+   Doc-tests civ_engine
 0 tests, 0 benchmarks
+EXIT=0
