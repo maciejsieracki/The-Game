@@ -121,7 +121,7 @@ fn diacritics_table_maps_single_chars_outside_ascii() {
         assert!(!k.is_ascii(), "klucz ASCII {k:?}");
         assert!(v != k, "wartosc {k:?} -> {v:?}");
         if v.is_empty() {
-            // pusta wartosc dozwolona tylko dla samych znakow laczacych (np. U+0340 -> U+0300)
+            // pusta wartosc dozwolona tylko dla samych znakow laczacych (NFD sprowadza je do znaku laczacego, ktory jest usuwany, np. U+0340)
             assert!(
                 k.chars().all(|ch| ('\u{0300}'..='\u{036F}').contains(&ch)),
                 "pusta wartosc dla {k:?}"

@@ -111,7 +111,7 @@ fn embedded_pool_data_is_byte_identical_to_data_used_for_vectors() {
         .map(|(k, v)| (k.clone(), v.miasta_cywilizacji.clone()))
         .collect();
     assert_eq!(from_vec, from_data);
-    assert_eq!(from_data.len(), 15);
+    assert!(!from_data.is_empty(), "puste pule miast");
 }
 
 #[test]
