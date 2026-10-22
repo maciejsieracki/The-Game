@@ -13,7 +13,7 @@ use crate::memory::MemorySample;
 use crate::stats::LatencyStats;
 
 /// Report schema id (bump on incompatible change).
-pub const SCHEMA: &str = "spike-gpu-embed/1";
+pub const SCHEMA: &str = "spike-gpu-embed/2";
 /// Topic id.
 pub const TEMAT: &str = "R-RUSTPORT-P4-15-GPU-SPIKE-PREP-Q1";
 
@@ -85,7 +85,9 @@ impl CheckId {
             CheckId::P4bIpcRustDoWebview => {
                 "(4b) IPC Rust -> webview: 1000 zdarzen (min/p50/p95/max)"
             }
-            CheckId::P5Pamiec60s => "(5) Pamiec procesu po 1 min renderowania",
+            CheckId::P5Pamiec60s => {
+                "(5) Pamiec procesu po 1 min renderowania (+ procesy webview osobno)"
+            }
             CheckId::P6FokusKlawiatury => "(6) Fokus klawiatury po kliknieciu w okno natywne",
             CheckId::P7Fullscreen => "(7) Window::is_fullscreen po set_fullscreen",
         }
@@ -95,15 +97,15 @@ impl CheckId {
     pub fn maps_to(self) -> &'static str {
         match self {
             CheckId::P1RenderPodWebview => {
-                "P4-3 §2.3 'Przezroczystosc'/'Windows'/'Linux', §9 pkt 4; RR-T1"
+                "P4-3 §2.3 'Przezroczystosc'/'Windows'/'Linux'; §9 pkt 4 CZESCIOWO (kolejnosc warstw + przezroczystosc; DPI nie); RR-T1"
             }
-            CheckId::P2M1RegionWejscia => "P4-5B §15 pkt 1 (M1); §2 M1; T14",
+            CheckId::P2M1RegionWejscia => "P4-5B §15 pkt 1 (M1); §2 M1; T14; P4-3 §9 pkt 4 CZESCIOWO (warstwy)",
             CheckId::P3M2OdwroconeWarstwy => "P4-5B §15 pkt 1 (M2); P4-3 §2.3 'Ryzyko krytyczne'",
-            CheckId::P4aIpcWebviewDoRust => "P4-5B §15 pkt 3; P4-3 §3.9 pkt 3; D-RR-10",
-            CheckId::P4bIpcRustDoWebview => "P4-5B §15 pkt 3 (HoverChanged/CameraState)",
-            CheckId::P5Pamiec60s => "P4-3 §7 (pamiec); motyw wlasciciela 'pamiec w webview'",
-            CheckId::P6FokusKlawiatury => "P4-5B §15 pkt 2; Z3",
-            CheckId::P7Fullscreen => "P4-5B §15 pkt 8; §10; T13",
+            CheckId::P4aIpcWebviewDoRust => "P4-5B §15 pkt 3 CZESCIOWO (PointerMove; HitRegions nie); P4-3 §9 pkt 16 CZESCIOWO (IPC bez wejscie->klatka); D-RR-10",
+            CheckId::P4bIpcRustDoWebview => "P4-5B §15 pkt 3 CZESCIOWO (ladunek zastepczy HoverChanged/CameraState)",
+            CheckId::P5Pamiec60s => "P4-3 §7 CZESCIOWO: RSS procesu spike'a (status) + procesy webview potomne (informacyjnie; macOS NIE_ZMIERZONO); P4-3 §9 pkt 13 CZESCIOWO (licznik alokatora wgpu, nie caly VRAM)",
+            CheckId::P6FokusKlawiatury => "P4-5B §15 pkt 2; Z3; P4-3 §9 pkt 4 CZESCIOWO (fokus)",
+            CheckId::P7Fullscreen => "P4-5B §15 pkt 8 CZESCIOWO (set_fullscreen; Escape nie); §10; T13",
         }
     }
 }
@@ -300,17 +302,20 @@ pub fn eval_ipc(stats: Option<&LatencyStats>, expected: usize) -> (Status, Strin
     }
 }
 
-/// Memory rule: needs a sample at t >= 60 s; growth vs the first sample at
-/// t >= 10 s must stay within [`MEMORY_GROWTH_LIMIT_BYTES`].
-pub fn eval_memory(samples: &[MemorySample]) -> (Status, String) {
+/// Memory rule: needs a sample at t >= 60 s; growth of the SPIKE PROCESS RSS
+/// vs the first sample at t >= 10 s must stay within
+/// [`MEMORY_GROWTH_LIMIT_BYTES`]. The webview (descendant) processes are
+/// reported on their own evidence line; they do NOT change the status
+/// (ZAŁOŻENIE Z-S14) and are marked NIE_ZMIERZONO when not read.
+pub fn eval_memory(samples: &[MemorySample]) -> (Status, Vec<String>) {
     let base = samples.iter().find(|s| s.t_s >= 10.0);
     let end = samples.iter().rev().find(|s| s.t_s >= 60.0);
+    let mib = |v: f64| v / (1024.0 * 1024.0);
     match (base, end) {
         (Some(b), Some(e)) => {
             let growth = e.rss_bytes as i64 - b.rss_bytes as i64;
-            let mib = |v: f64| v / (1024.0 * 1024.0);
             let msg = format!(
-                "RSS t={:.1}s: {:.1} MiB; t={:.1}s: {:.1} MiB; przyrost {:.1} MiB (prog {} MiB, ZALOZENIE Z-S2); zrodlo: {}; VRAM poza procesem NIE_ZMIERZONO",
+                "proces spike'a: RSS t={:.1}s: {:.1} MiB; t={:.1}s: {:.1} MiB; przyrost {:.1} MiB (prog {} MiB, ZALOZENIE Z-S2); zrodlo: {}; VRAM poza procesem NIE_ZMIERZONO",
                 b.t_s,
                 mib(b.rss_bytes as f64),
                 e.t_s,
@@ -319,15 +324,49 @@ pub fn eval_memory(samples: &[MemorySample]) -> (Status, String) {
                 MEMORY_GROWTH_LIMIT_BYTES / (1024 * 1024),
                 e.source
             );
-            if growth <= MEMORY_GROWTH_LIMIT_BYTES {
-                (Status::Pass, msg)
+            let web = match (b.webview.rss_bytes, e.webview.rss_bytes) {
+                (Some(wb), Some(we)) if b.webview.measured && e.webview.measured => format!(
+                    "procesy webview (potomne): RSS t={:.1}s: {:.1} MiB ({} proc.); t={:.1}s: {:.1} MiB ({} proc.); przyrost {:.1} MiB - informacyjnie, nie zmienia statusu (ZALOZENIE Z-S14); {}; zrodlo: {}",
+                    b.t_s,
+                    mib(wb as f64),
+                    b.webview.processes.len(),
+                    e.t_s,
+                    mib(we as f64),
+                    e.webview.processes.len(),
+                    mib(we as f64 - wb as f64),
+                    e.webview.note,
+                    e.webview.source
+                ),
+                _ => format!(
+                    "procesy webview: NIE_ZMIERZONO ({})",
+                    if e.webview.note.is_empty() { &b.webview.note } else { &e.webview.note }
+                ),
+            };
+            let status = if growth <= MEMORY_GROWTH_LIMIT_BYTES {
+                Status::Pass
             } else {
-                (Status::Fail, msg)
-            }
+                Status::Fail
+            };
+            let g = &e.gpu_alloc;
+            let gpu = match (g.available, g.allocated_bytes, g.reserved_bytes) {
+                (true, Some(al), Some(re)) => format!(
+                    "licznik pamieci GPU wgpu (generate_allocator_report) t={:.1}s: przydzielone {:.1} MiB, zarezerwowane {:.1} MiB, blokow {} - informacyjnie; {}",
+                    e.t_s,
+                    mib(al as f64),
+                    mib(re as f64),
+                    g.blocks.unwrap_or(0),
+                    g.note
+                ),
+                _ => format!("licznik pamieci GPU wgpu: NIE_ZMIERZONO ({})", g.note),
+            };
+            (status, vec![msg, web, gpu])
         }
         _ => (
             Status::NieZmierzono,
-            format!("brak probek t>=10 s i t>=60 s (probek: {})", samples.len()),
+            vec![format!(
+                "brak probek t>=10 s i t>=60 s (probek: {}); procesy webview: NIE_ZMIERZONO",
+                samples.len()
+            )],
         ),
     }
 }
@@ -456,6 +495,8 @@ mod tests {
             rss_bytes: mib * 1024 * 1024,
             private_bytes: None,
             source: "t".into(),
+            webview: Default::default(),
+            gpu_alloc: Default::default(),
         }
     }
 
@@ -473,6 +514,59 @@ mod tests {
         assert_eq!(eval_memory(&[]).0, Status::NieZmierzono);
         // shrinking memory is fine
         assert_eq!(eval_memory(&[ms(10.0, 150), ms(60.0, 120)]).0, Status::Pass);
+    }
+
+    #[test]
+    fn memory_webview_line() {
+        // not measured -> explicit NIE_ZMIERZONO line with the reason
+        let (st, ev) = eval_memory(&[ms(10.0, 150), ms(60.0, 150)]);
+        assert_eq!(st, Status::Pass);
+        assert_eq!(ev.len(), 3);
+        assert!(
+            ev[1].starts_with("procesy webview: NIE_ZMIERZONO"),
+            "{ev:?}"
+        );
+        assert!(
+            ev[2].starts_with("licznik pamieci GPU wgpu: NIE_ZMIERZONO"),
+            "{ev:?}"
+        );
+        // measured on both samples -> numbers; big webview growth does not
+        // change the status (Z-S14)
+        let web = |mib: u64| {
+            crate::memory::summarize_children(
+                vec![crate::memory::ChildProcess {
+                    pid: 2,
+                    ppid: 1,
+                    name: "msedgewebview2.exe".into(),
+                    rss_bytes: Some(mib * 1024 * 1024),
+                    private_bytes: None,
+                    error: None,
+                }],
+                "test",
+            )
+        };
+        let mut a = ms(10.0, 150);
+        a.webview = web(200);
+        let mut b = ms(60.0, 150);
+        b.webview = web(400);
+        b.gpu_alloc = crate::memory::GpuAllocSample {
+            available: true,
+            allocated_bytes: Some(3 * 1024 * 1024),
+            reserved_bytes: Some(64 * 1024 * 1024),
+            blocks: Some(2),
+            note: "n".into(),
+        };
+        let (st, ev) = eval_memory(&[a, b]);
+        assert!(
+            ev[2].contains("3.0 MiB") && ev[2].contains("64.0 MiB"),
+            "{ev:?}"
+        );
+        assert_eq!(st, Status::Pass);
+        assert!(
+            ev[1].contains("200.0 MiB") && ev[1].contains("400.0 MiB"),
+            "{ev:?}"
+        );
+        assert!(ev[1].contains("Z-S14"));
     }
 
     #[test]

@@ -1,0 +1,92 @@
+# Odtworzenie locka spike'a w kopii crate'a: /tmp/claude-0/-home-user-The-Game/cbf4a126-dca3-5f50-bfb0-2a747b18a590/scratchpad/lock-repro
+# zasiew: git show 69f432ba:src-tauri/Cargo.lock > Cargo.lock
+$ sha256sum Cargo.lock (zasiew)
+3d17c2afea7041cf656bc28f092ecd5598b9443fcad359abad7e13a20ae200d8  Cargo.lock
+$ cargo metadata --format-version 1 --offline > /dev/null   # rozwiazanie z zasianym lockiem (dopisuje wgpu itd.)
+     Locking 55 packages to latest Rust 1.87 compatible versions
+      Adding allocator-api2 v0.2.21
+      Adding arrayvec v0.7.8
+      Adding ash v0.38.0+1.3.281
+      Adding bit-set v0.10.0
+      Adding bit-vec v0.9.1
+      Adding bytemuck_derive v1.12.1
+      Adding cfg_aliases v0.2.2
+      Adding codespan-reporting v0.13.1
+      Adding crunchy v0.2.4
+      Adding dlib v0.5.3
+      Adding document-features v0.2.12
+      Adding gl_generator v0.14.0
+      Adding glow v0.17.0
+      Adding glutin_wgl_sys v0.6.1
+      Adding gpu-allocator v0.28.0
+      Adding half v2.7.1
+      Adding hashbrown v0.16.1
+      Adding khronos-egl v6.0.0
+      Adding khronos_api v3.1.0
+      Adding libloading v0.8.9
+      Adding libm v0.2.16
+      Adding litrs v1.0.1
+      Adding naga v30.0.1
+      Adding naga-types v30.0.1
+      Adding objc2-metal v0.3.2
+      Adding ordered-float v5.4.0 (available: v5.5.0, requires Rust 1.90)
+      Adding pollster v0.4.0
+      Adding presser v0.3.1
+      Adding profiling v1.0.18
+      Adding range-alloc v0.1.5
+      Adding raw-window-metal v1.1.0
+      Adding renderdoc-sys v1.1.0
+      Adding rustc-hash v1.1.0
+      Adding slotmap v1.1.1
+      Adding spirv v0.4.0+sdk-1.4.341.0
+      Adding static_assertions v1.1.0
+      Adding termcolor v1.4.1
+      Adding unicode-width v0.2.2
+      Adding wayland-sys v0.31.11
+      Adding wgpu v30.0.1
+      Adding wgpu-core v30.0.1
+      Adding wgpu-core-deps-apple v30.0.1
+      Adding wgpu-core-deps-emscripten v30.0.1
+      Adding wgpu-core-deps-windows-linux-android v30.0.1
+      Adding wgpu-hal v30.0.1
+      Adding wgpu-naga-bridge v30.0.1
+      Adding wgpu-types v30.0.1
+      Adding windows v0.62.2
+      Adding windows-collections v0.3.2
+      Adding windows-future v0.3.2
+      Adding windows-numerics v0.3.1
+      Adding windows-threading v0.2.1
+      Adding xml-rs v0.8.29
+      Adding zerocopy v0.8.63
+      Adding zerocopy-derive v0.8.63
+EXIT=0
+$ cargo tree --offline -p gpu-allocator --target x86_64-pc-windows-msvc --depth 1 (PRZED korekta)
+gpu-allocator v0.28.0
+├── ash v0.38.0+1.3.281
+├── hashbrown v0.16.1
+├── log v0.4.34
+├── presser v0.3.1
+├── thiserror v2.0.20
+└── windows v0.61.3
+EXIT=0
+$ cargo update --offline -p gpu-allocator
+     Locking 0 packages to latest Rust 1.87 compatible versions
+note: pass `--verbose` to see 19 unchanged dependencies behind latest
+EXIT=0
+$ cargo tree --offline -p gpu-allocator --target x86_64-pc-windows-msvc --depth 1 (PO korekcie)
+gpu-allocator v0.28.0
+├── ash v0.38.0+1.3.281
+├── hashbrown v0.16.1
+├── log v0.4.34
+├── presser v0.3.1
+├── thiserror v2.0.20
+└── windows v0.62.2
+EXIT=0
+$ diff lock-przed-korekta.lock Cargo.lock (zmiana wprowadzona przez cargo update -p gpu-allocator)
+1292c1292
+<  "windows 0.61.3",
+---
+>  "windows 0.62.2",
+EXIT=1 (1 = sa roznice)
+$ diff <odtworzony Cargo.lock> rust-port/spike-gpu-embed/Cargo.lock (commitowany)
+EXIT=0 (0 = odtworzony lock identyczny z commitowanym)
