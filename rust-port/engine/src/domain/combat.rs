@@ -1,7 +1,7 @@
 use serde::{Deserialize, Serialize};
 
 use super::UnitId;
-use crate::data::derived::combat_ai_multiplier_value;
+use crate::data::derived::{combat_ai_multiplier_value, counter_multiplier_value};
 
 /// A counter bonus supplied by the unit data for one opposing unit type.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
@@ -181,9 +181,10 @@ impl CombatResult {
 
 /// Return a unit's counter multiplier against one target type.
 ///
-/// Explicit data wins. The built-in table mirrors every confirmed attack
-/// counter in `gra/data/counters.json`, keeping a minimally populated DTO
-/// faithful to the canonical data.
+/// Explicit data wins. The fallback is the editable table
+/// `data/derived/counter-multipliers.json` (P3-23 etap 3), which mirrors every
+/// confirmed attack counter in `gra/data/counters.json`; pairs outside the table
+/// give 1.0 (no bonus).
 pub fn counter_multiplier(
     attacker_type: &str,
     defender_type: &str,
@@ -198,23 +199,8 @@ pub fn counter_multiplier(
     }
 
     let attacker = canonical_type(attacker_type);
-    match (attacker.as_str(), defender.as_str()) {
-        ("spearman", "mount")
-        | ("mount", "distance")
-        | ("mount", "slinger")
-        | ("slinger", "spearman")
-        | ("swordsman", "mount")
-        | ("falangite", "mount") => 1.50,
-        ("mount", "offensive") | ("offensive", "swordsman") => 1.25,
-        ("swordsman", "spearman")
-        | ("spearman", "spearman")
-        | ("mount", "spearman")
-        | ("distance", "spearman")
-        | ("naval", "spearman")
-        | ("offensive", "distance")
-        | ("offensive", "slinger") => 1.15,
-        _ => 1.0,
-    }
+    // Macierz z data/derived/counter-multipliers.json (P3-23 etap 3, wiersz 35g).
+    counter_multiplier_value(&attacker, &defender).unwrap_or(1.0)
 }
 
 /// Rola atakująca „dystans” / „flanka” z webu (ZAŁOŻENIE P3-22 sekcja 12):

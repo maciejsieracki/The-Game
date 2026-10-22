@@ -643,3 +643,51 @@ pub fn combat_ai_multiplier_by_key(id: &str, key: &str) -> f64 {
         .and_then(|map| map.get(key).copied())
         .unwrap_or_else(|| panic!("combat-ai-multipliers.json: brak wartosci {id}[{key}]"))
 }
+
+/// Tabela MACIERZY COUNTER (P3-23 etap 3, grupa WALKA, wiersz 35g): edytowalne liczby.
+pub const COUNTER_MULTIPLIERS_JSON: &str =
+    include_str!("../../data/derived/counter-multipliers.json");
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct CounterMultipliersFile {
+    pub meta: serde_json::Value,
+    /// Typy jednostek (klucze kanoniczne, małe litery, bez spacji), 8 sztuk.
+    pub typy: Vec<String>,
+    pub pary: Vec<CounterMultiplierPair>,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct CounterMultiplierPair {
+    /// Typ atakujący (klucz kanoniczny).
+    pub atakujacy: String,
+    /// Typ celu (klucz kanoniczny).
+    pub cel: String,
+    /// Mnożnik ataku (1.0 = brak premii).
+    pub mnoznik: f64,
+}
+
+pub fn parse_counter_multipliers() -> Result<CounterMultipliersFile, serde_json::Error> {
+    serde_json::from_str(COUNTER_MULTIPLIERS_JSON)
+}
+
+fn counter_multiplier_map() -> &'static BTreeMap<(String, String), f64> {
+    static MAP: std::sync::OnceLock<BTreeMap<(String, String), f64>> = std::sync::OnceLock::new();
+    MAP.get_or_init(|| {
+        parse_counter_multipliers()
+            .expect("counter-multipliers.json must parse")
+            .pary
+            .into_iter()
+            .map(|p| ((p.atakujacy, p.cel), p.mnoznik))
+            .collect()
+    })
+}
+
+/// Mnożnik counter z tabeli dla pary kanonicznych typów; `None` = para spoza tabeli
+/// (traktowana jako brak premii przez domenę).
+pub fn counter_multiplier_value(attacker: &str, defender: &str) -> Option<f64> {
+    counter_multiplier_map()
+        .get(&(attacker.to_owned(), defender.to_owned()))
+        .copied()
+}
