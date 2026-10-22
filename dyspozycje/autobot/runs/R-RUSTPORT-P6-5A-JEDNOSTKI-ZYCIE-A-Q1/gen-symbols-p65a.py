@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """Tabela symboli P6.5A: KAZDY eksport trzech plikow TS (wyciagniety regexem ze zrodel pinu) ma status
-PORTOWANY / DANE-JUZ-W-RUST / NIE-DOTYCZY / RUNDA-2, odpowiednik Rust (plik:linia) i test.
+PORTOWANY / PORTOWANY-Z-WSTRZYKNIETYMI / PORTOWANY-ZAWEZONY / DANE-JUZ-W-RUST / NIE-DOTYCZY / RUNDA-2, odpowiednik Rust (plik:linia) i test.
 
 Uzycie: gen-symbols-p65a.py <WEB_ROOT> <ENGINE_DIR> > symbols-p65a-r1.tsv
 Blad (exit 1), gdy eksport TS nie ma wiersza w mapowaniu albo mapowanie wskazuje symbol, ktorego nie ma
@@ -25,6 +25,8 @@ P = "PORTOWANY"
 D = "DANE-JUZ-W-RUST"
 N = "NIE-DOTYCZY"
 R2 = "RUNDA-2"
+PI = "PORTOWANY-Z-WSTRZYKNIETYMI"  # logika portowana; czesc wartosci pochodzi z domkniec (zaleznosci z innych plikow TS nieportowane)
+PZ = "PORTOWANY-ZAWEZONY"  # port z udokumentowanym zawezeniem typu (zob. ZA6)
 
 # nazwa TS -> (status, symbol Rust do znalezienia w pliku, plik 'rs'|'der'|'p4', test, uwaga)
 M = {
@@ -45,7 +47,7 @@ M = {
     "pickStackRepresentative": (P, "pub fn pick_stack_representative", "rs", "p6_5a_display::representative_matches_web_including_utf16_id_order_and_nan_attack", "pusty stos: web rzuca TypeError, Rust zwraca None (zmierzone w wektorze: threw=true)"),
     "garrisonUnitsOnHex": (P, "pub fn garrison_units_on_hex", "rs", "p6_5a_stack::visible_colocated_and_garrison_queries_match_web", ""),
     "stackRenderKey": (P, "pub fn stack_render_key", "rs", "p6_5a_stack::stack_group_id_and_render_key_match_web", ""),
-    "computeStackDisplay": (P, "pub fn compute_stack_display", "rs", "p6_5a_display::compute_stack_display_matches_web_order_and_vitals", "kolejnosc Set/Map zachowana; zaleznosci vitals wstrzykiwane"),
+    "computeStackDisplay": (PI, "pub fn compute_stack_display", "rs", "p6_5a_display::compute_stack_display_matches_web_order_and_vitals", "kolejnosc Set/Map zachowana; zaleznosci vitals wstrzykiwane"),
     "unitAtRepresentative": (P, "pub fn unit_at_representative", "rs", "p6_5a_display::unit_at_representative_matches_web", ""),
     "findAdjacentEmptyHexes": (P, "pub fn find_adjacent_empty_hexes", "rs", "p6_5a_ruch::adjacent_empty_and_split_destinations_match_web", ""),
     "SplitDestHex": (P, "pub struct SplitDestHex", "rs", "p6_5a_ruch::adjacent_empty_and_split_destinations_match_web", ""),
@@ -62,14 +64,14 @@ M = {
     "wakeStackForMoveOrder": (P, "pub fn wake_stack_for_move_order", "rs", "p6_5a_stack::all_defenders_and_wake_stack_match_web", ""),
     "stackRuchMax": (P, "pub fn stack_ruch_max", "rs", "p6_5a_ruch::ruch_pools_match_web_bitwise", ""),
     "stackHpPool": (P, "pub fn stack_hp_pool", "rs", "p6_5a_display::hp_pool_matches_web_including_nonfinite_and_overfull_hp", ""),
-    "stackFieldPowerM": (P, "pub fn stack_field_power_m", "rs", "p6_5a_display::field_power_passes_roster_in_web_order_and_returns_sum", "sumRosterFieldM (auto-battle-power.ts) wstrzykiwane; roster (typ+definicja, kolejnosc) asertowany wzgledem weba"),
-    "stackArmorBadgeLevel": (P, "pub fn stack_armor_badge_level", "rs", "p6_5a_display::badge_and_veteran_maxima_match_web", "armorPathBadgeLevel (unit-building-bonuses.ts, czesc B) wstrzykiwane"),
-    "stackSoftBadgeLevel": (P, "pub fn stack_soft_badge_level", "rs", "p6_5a_display::badge_and_veteran_maxima_match_web", "softPathBadgeLevel (czesc B) wstrzykiwane"),
-    "stackVeteranLevel": (P, "pub fn stack_veteran_level", "rs", "p6_5a_display::badge_and_veteran_maxima_match_web", "veteranLevel (veteran.ts) wstrzykiwane"),
-    "stackVeteranStarCount": (P, "pub fn stack_veteran_star_count", "rs", "p6_5a_display::badge_and_veteran_maxima_match_web", "veteranStarCount (veteran.ts) wstrzykiwane"),
+    "stackFieldPowerM": (PI, "pub fn stack_field_power_m", "rs", "p6_5a_display::field_power_passes_roster_in_web_order_and_returns_sum", "sumRosterFieldM (auto-battle-power.ts) wstrzykiwane; roster (typ+definicja, kolejnosc) asertowany wzgledem weba"),
+    "stackArmorBadgeLevel": (PI, "pub fn stack_armor_badge_level", "rs", "p6_5a_display::badge_and_veteran_maxima_match_web", "armorPathBadgeLevel (unit-building-bonuses.ts, czesc B) wstrzykiwane"),
+    "stackSoftBadgeLevel": (PI, "pub fn stack_soft_badge_level", "rs", "p6_5a_display::badge_and_veteran_maxima_match_web", "softPathBadgeLevel (czesc B) wstrzykiwane"),
+    "stackVeteranLevel": (PI, "pub fn stack_veteran_level", "rs", "p6_5a_display::badge_and_veteran_maxima_match_web", "veteranLevel (veteran.ts) wstrzykiwane"),
+    "stackVeteranStarCount": (PI, "pub fn stack_veteran_star_count", "rs", "p6_5a_display::badge_and_veteran_maxima_match_web", "veteranStarCount (veteran.ts) wstrzykiwane"),
     "StackVitals": (P, "pub struct StackVitals", "rs", "p6_5a_display::stack_vitals_matches_web", ""),
-    "StackVitalsDeps": (P, "pub struct StackVitalsDeps", "rs", "p6_5a_display::stack_vitals_matches_web", "rozszerzone o zaleznosci importowane przez web z innych plikow (zob. uwagi wyzej)"),
-    "stackVitals": (P, "pub fn stack_vitals", "rs", "p6_5a_display::stack_vitals_matches_web", ""),
+    "StackVitalsDeps": (PI, "pub struct StackVitalsDeps", "rs", "p6_5a_display::stack_vitals_matches_web", "web ma 2 pola (maxHpOf, defOf); Rust ma 7 domkniec: +sumRosterFieldM, armorBadge, softBadge, veteranLevel, veteranStarCount (zaleznosci z innych plikow TS, nieportowane: ZA2, §7)"),
+    "stackVitals": (PI, "pub fn stack_vitals", "rs", "p6_5a_display::stack_vitals_matches_web", ""),
     "syncStackRuchLeft": (P, "pub fn sync_stack_ruch_left", "rs", "p6_5a_ruch::sync_and_deduct_match_web", ""),
     "deductStackRuchLeft": (P, "pub fn deduct_stack_ruch_left", "rs", "p6_5a_ruch::sync_and_deduct_match_web", ""),
     "unitWithStackRuch": (P, "pub fn unit_with_stack_ruch", "rs", "p6_5a_ruch::unit_with_pooled_ruch_matches_web", "tozsamosc referencji (===) nie dotyczy Rust: zwracana kopia; wartosc sprawdzona"),
@@ -77,10 +79,10 @@ M = {
     "countLawGarrisonOnCityHex": (P, "pub fn count_law_garrison_on_city_hex", "rs", "p6_5a_stack::law_garrison_counts_match_web", ""),
     "unitsOnCityHexForLaw": (P, "pub fn units_on_city_hex_for_law", "rs", "p6_5a_stack::law_garrison_counts_match_web", ""),
     "KOSZT_JEDNOSTEK_PACE": (P, "pub fn unit_cost_tempo", "der", "p6_5a_cost::table_constants_equal_the_running_web_object + p6_5a_tables", "tabela data/derived/unit-cost-tempo.json (edytowalna), wartosci = obiekt z uruchomionego weba"),
-    "KosztJednostekPace": (N, "pub enum UnitCostPace", "rs", "p6_5a_cost::unit_cost_pace_matches_web_bitwise", "typ TS (klucz tempa); Rust: UnitCostPace::Key(&str) | Multiplier(f64) (obejmuje tez `| number`)"),
+    "KosztJednostekPace": (P, "pub enum UnitCostPace", "rs", "p6_5a_cost::unit_cost_pace_matches_web_bitwise", "typ TS (`keyof typeof KOSZT_JEDNOSTEK_PACE | number`) ma odpowiednik Rust UnitCostPace::Key(&str) | Multiplier(f64); zachowanie dla nieznanego klucza zmierzone wektorami"),
     "applyUnitCostPace": (P, "pub fn apply_unit_cost_pace", "rs", "p6_5a_cost::unit_cost_pace_matches_web_bitwise", "Math.round/Math.max semantyka JS (js_round/js_max)"),
-    "ReplaceAvailabilityCtxParams": (P, "pub struct ReplaceAvailabilityCtxParams", "rs", "p6_5a_cost::replace_context_keeps_every_field_and_the_required_stock", "generyczne po polach reszta AvailabilityContext (production.ts, poza zakresem: RUNDA-2 konkretny typ); empireResourceStock obowiazkowy (typ nie-Option)"),
-    "buildReplaceAvailabilityCtx": (P, "pub fn build_replace_availability_ctx", "rs", "p6_5a_cost::replace_context_keeps_every_field_and_the_required_stock", "`{...params}`; tozsamosc referencji obiektow nie dotyczy Rust"),
+    "ReplaceAvailabilityCtxParams": (PZ, "pub struct ReplaceAvailabilityCtxParams", "rs", "p6_5a_cost::replace_context_keeps_every_field_and_the_required_stock", "generyczne po polach reszta AvailabilityContext (production.ts, poza zakresem: RUNDA-2 konkretny typ); empireResourceStock obowiazkowy (typ nie-Option); ZAWEZENIE: web Record<string, number>, Rust BTreeMap<String,u32> - wartosci ujemne/ulamkowe/NaN/Infinity nie sa reprezentowalne i nie sa zmierzone (ZA6, §7: NIE_ZMIERZONO)"),
+    "buildReplaceAvailabilityCtx": (PZ, "pub fn build_replace_availability_ctx", "rs", "p6_5a_cost::replace_context_keeps_every_field_and_the_required_stock", "`{...params}`; tozsamosc referencji obiektow nie dotyczy Rust; zawezenie wartosci stocku do u32 jak wyzej (ZA6, §7)"),
 }
 # elementy prywatne / modulowe
 PRIV = {
