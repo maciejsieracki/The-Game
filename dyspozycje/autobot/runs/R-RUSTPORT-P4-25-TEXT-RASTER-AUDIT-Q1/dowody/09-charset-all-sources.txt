@@ -1,0 +1,87 @@
+# 09 — repertuar znaków dla WSZYSTKICH tekstów mapy (runda 2, obrona; zarzut E-9)
+# Wejście: git archive edb8fb56 gra/src gra/data | tar -x (scratchpad). Skrypt Python (-I) tylko w scratchpadzie.
+# Metoda: dla każdego źródła zbiór znaków o kodzie > 127, sprawdzenie znaków łączących
+# (unicodedata.combining), pokrycie: fc-list ':charset=<cp>' family (fonty kontenera).
+# Źródła tekstów (pin edb8fb56, ścieżki względem gra/):
+#  T14 nazwa      : data/city-names-pools.json, wszystkie wartości tekstowe, .upper() (jak dowody/07; cityMapStatChip.ts toUpperCase)
+#  T14 hover      : linia `${cat} · ${name}` (src/render/cityMapStatChip.ts:700-705);
+#                   cat = 'Budynek'|'Jednostka' (src/render/cities.ts:816-817);
+#                   name = front?.nazwa (src/render/cities.ts:836), gdzie nazwa pochodzi z:
+#                     - buildings.json `nazwa` (src/game/production.ts:363, :2261),
+#                     - upgradeProductionDisplayName = `Rozbuduj ${prev.nazwa} → ${target.nazwa}`
+#                       (src/game/building-upgrades.ts:54-62; użycie production.ts:866; 10 budynków z upgradeFrom),
+#                     - units.json `Jednostka` (src/game/production.ts:391, :964, :1082, :1098);
+#                   literały ' · wstrzymana', 'Produkcja wstrzymana', 'Brak surowców w magazynie', '…' (:703-713), '!' (:684)
+#  R4 chip budowy : src/main.ts:12863-12867 (IMPROVEMENT_CHIP), :13049/:13052/:13061 ('🏛'), :13070 (fallback '🔨'),
+#                   :12945-12949 ('Kliknij hex'/'Niedozwolone'), :13075-13077 (powód dla drogi)
+#  R5 oblężenie   : src/main.ts:14569 ('⚔ OBLĘŻENIE' + <small>city.name bez toUpperCase)
+#  R15a / R15b    : src/battle/battleScene.ts:9093 ('-'+dmg), :7225 ('-'+dmg+' (mur)'), :7311 ('MUR WYBURZONY!')
+# Uwaga: city.name zawiera 'ß' i 'ı'; po toUpperCase dają 'SS' i 'I' (dlatego nie ma ich w zbiorze T14 nazwa).
+# Znaków łączących: 0 we wszystkich źródłach (brak linii "ZNAK ŁĄCZĄCY" poniżej).
+# Wynik:
+== T14 nazwa miasta (upper): 1665 tekstów, 22 znaków spoza ASCII
+   Á Ä Å Ç É Í Ñ Ó Ö Ø Ú Ü Ą Ę Ğ Ł Ń Ř Ś Ş Ź Ż
+== T14 hover: nazwy budynków (buildings.json nazwa): 42 tekstów, 8 znaków spoza ASCII
+   ó ą ę Ł ł Ś ź ż
+== T14 hover: rozbudowa "Rozbuduj A → B": 10 tekstów, 6 znaków spoza ASCII
+   ó ą ł ź ż →
+== T14 hover: jednostki (units.json Jednostka): 75 tekstów, 9 znaków spoza ASCII
+   ó ą ę Ł ł ń Ś ź ż
+== T14 hover: literały: 8 tekstów, 3 znaków spoza ASCII
+   · ó …
+== R4 chip budowy: 21 tekstów, 22 znaków spoza ASCII
+   ą ć ę ł ż ⛏ 🌾 🎣 🏔 🏛 🏰 🏹 🏺 🐑 💧 🔨 🛡 🛤 🧂 🪓 🪚 🪨
+== R5 oblężenie (literał): 2 tekstów, 3 znaków spoza ASCII
+   Ę Ż ⚔
+== R5 nazwa miasta (oryginalna wielkość liter): 1665 tekstów, 26 znaków spoza ASCII
+   Ç ß á ä å ç é í ñ ó ö ø ú ü ą ę ğ ı Ł ł ń ř ś ş ź ż
+== R15a/R15b bitwa (literały): 3 tekstów, 0 znaków spoza ASCII
+   (brak)
+
+== Znaki spoza ASCII NIEOBECNE w nazwach miast (dowody/07), z pokryciem fontów kontenera
+U+00B7 · MIDDLE DOT                               LibSans=tak LibSerif=tak DejaVuSans=tak NotoColorEmoji=NIE  [T14 hover: literały]
+U+00DF ß LATIN SMALL LETTER SHARP S               LibSans=tak LibSerif=tak DejaVuSans=tak NotoColorEmoji=NIE  [R5 nazwa miasta (oryginalna wielkość liter)]
+U+00E1 á LATIN SMALL LETTER A WITH ACUTE          LibSans=tak LibSerif=tak DejaVuSans=tak NotoColorEmoji=NIE  [R5 nazwa miasta (oryginalna wielkość liter)]
+U+00E4 ä LATIN SMALL LETTER A WITH DIAERESIS      LibSans=tak LibSerif=tak DejaVuSans=tak NotoColorEmoji=NIE  [R5 nazwa miasta (oryginalna wielkość liter)]
+U+00E5 å LATIN SMALL LETTER A WITH RING ABOVE     LibSans=tak LibSerif=tak DejaVuSans=tak NotoColorEmoji=NIE  [R5 nazwa miasta (oryginalna wielkość liter)]
+U+00E7 ç LATIN SMALL LETTER C WITH CEDILLA        LibSans=tak LibSerif=tak DejaVuSans=tak NotoColorEmoji=NIE  [R5 nazwa miasta (oryginalna wielkość liter)]
+U+00E9 é LATIN SMALL LETTER E WITH ACUTE          LibSans=tak LibSerif=tak DejaVuSans=tak NotoColorEmoji=NIE  [R5 nazwa miasta (oryginalna wielkość liter)]
+U+00ED í LATIN SMALL LETTER I WITH ACUTE          LibSans=tak LibSerif=tak DejaVuSans=tak NotoColorEmoji=NIE  [R5 nazwa miasta (oryginalna wielkość liter)]
+U+00F1 ñ LATIN SMALL LETTER N WITH TILDE          LibSans=tak LibSerif=tak DejaVuSans=tak NotoColorEmoji=NIE  [R5 nazwa miasta (oryginalna wielkość liter)]
+U+00F3 ó LATIN SMALL LETTER O WITH ACUTE          LibSans=tak LibSerif=tak DejaVuSans=tak NotoColorEmoji=NIE  [T14 hover: nazwy budynków (buildings.json nazwa); T14 hover: rozbudowa "Rozbuduj A → B"; T14 hover: jednostki (units.json Jednostka); T14 hover: literały; R5 nazwa miasta (oryginalna wielkość liter)]
+U+00F6 ö LATIN SMALL LETTER O WITH DIAERESIS      LibSans=tak LibSerif=tak DejaVuSans=tak NotoColorEmoji=NIE  [R5 nazwa miasta (oryginalna wielkość liter)]
+U+00F8 ø LATIN SMALL LETTER O WITH STROKE         LibSans=tak LibSerif=tak DejaVuSans=tak NotoColorEmoji=NIE  [R5 nazwa miasta (oryginalna wielkość liter)]
+U+00FA ú LATIN SMALL LETTER U WITH ACUTE          LibSans=tak LibSerif=tak DejaVuSans=tak NotoColorEmoji=NIE  [R5 nazwa miasta (oryginalna wielkość liter)]
+U+00FC ü LATIN SMALL LETTER U WITH DIAERESIS      LibSans=tak LibSerif=tak DejaVuSans=tak NotoColorEmoji=NIE  [R5 nazwa miasta (oryginalna wielkość liter)]
+U+0105 ą LATIN SMALL LETTER A WITH OGONEK         LibSans=tak LibSerif=tak DejaVuSans=tak NotoColorEmoji=NIE  [T14 hover: nazwy budynków (buildings.json nazwa); T14 hover: rozbudowa "Rozbuduj A → B"; T14 hover: jednostki (units.json Jednostka); R4 chip budowy; R5 nazwa miasta (oryginalna wielkość liter)]
+U+0107 ć LATIN SMALL LETTER C WITH ACUTE          LibSans=tak LibSerif=tak DejaVuSans=tak NotoColorEmoji=NIE  [R4 chip budowy]
+U+0119 ę LATIN SMALL LETTER E WITH OGONEK         LibSans=tak LibSerif=tak DejaVuSans=tak NotoColorEmoji=NIE  [T14 hover: nazwy budynków (buildings.json nazwa); T14 hover: jednostki (units.json Jednostka); R4 chip budowy; R5 nazwa miasta (oryginalna wielkość liter)]
+U+011F ğ LATIN SMALL LETTER G WITH BREVE          LibSans=tak LibSerif=tak DejaVuSans=tak NotoColorEmoji=NIE  [R5 nazwa miasta (oryginalna wielkość liter)]
+U+0131 ı LATIN SMALL LETTER DOTLESS I             LibSans=tak LibSerif=tak DejaVuSans=tak NotoColorEmoji=NIE  [R5 nazwa miasta (oryginalna wielkość liter)]
+U+0142 ł LATIN SMALL LETTER L WITH STROKE         LibSans=tak LibSerif=tak DejaVuSans=tak NotoColorEmoji=NIE  [T14 hover: nazwy budynków (buildings.json nazwa); T14 hover: rozbudowa "Rozbuduj A → B"; T14 hover: jednostki (units.json Jednostka); R4 chip budowy; R5 nazwa miasta (oryginalna wielkość liter)]
+U+0144 ń LATIN SMALL LETTER N WITH ACUTE          LibSans=tak LibSerif=tak DejaVuSans=tak NotoColorEmoji=NIE  [T14 hover: jednostki (units.json Jednostka); R5 nazwa miasta (oryginalna wielkość liter)]
+U+0159 ř LATIN SMALL LETTER R WITH CARON          LibSans=tak LibSerif=tak DejaVuSans=tak NotoColorEmoji=NIE  [R5 nazwa miasta (oryginalna wielkość liter)]
+U+015B ś LATIN SMALL LETTER S WITH ACUTE          LibSans=tak LibSerif=tak DejaVuSans=tak NotoColorEmoji=NIE  [R5 nazwa miasta (oryginalna wielkość liter)]
+U+015F ş LATIN SMALL LETTER S WITH CEDILLA        LibSans=tak LibSerif=tak DejaVuSans=tak NotoColorEmoji=NIE  [R5 nazwa miasta (oryginalna wielkość liter)]
+U+017A ź LATIN SMALL LETTER Z WITH ACUTE          LibSans=tak LibSerif=tak DejaVuSans=tak NotoColorEmoji=NIE  [T14 hover: nazwy budynków (buildings.json nazwa); T14 hover: rozbudowa "Rozbuduj A → B"; T14 hover: jednostki (units.json Jednostka); R5 nazwa miasta (oryginalna wielkość liter)]
+U+017C ż LATIN SMALL LETTER Z WITH DOT ABOVE      LibSans=tak LibSerif=tak DejaVuSans=tak NotoColorEmoji=NIE  [T14 hover: nazwy budynków (buildings.json nazwa); T14 hover: rozbudowa "Rozbuduj A → B"; T14 hover: jednostki (units.json Jednostka); R4 chip budowy; R5 nazwa miasta (oryginalna wielkość liter)]
+U+2026 … HORIZONTAL ELLIPSIS                      LibSans=tak LibSerif=tak DejaVuSans=tak NotoColorEmoji=NIE  [T14 hover: literały]
+U+2192 → RIGHTWARDS ARROW                         LibSans=tak LibSerif=tak DejaVuSans=tak NotoColorEmoji=NIE  [T14 hover: rozbudowa "Rozbuduj A → B"]
+U+2694 ⚔ CROSSED SWORDS                           LibSans=NIE LibSerif=NIE DejaVuSans=tak NotoColorEmoji=tak  [R5 oblężenie (literał)]
+U+26CF ⛏ PICK                                     LibSans=NIE LibSerif=NIE DejaVuSans=NIE NotoColorEmoji=tak  [R4 chip budowy]
+U+1F33E 🌾 EAR OF RICE                              LibSans=NIE LibSerif=NIE DejaVuSans=NIE NotoColorEmoji=tak  [R4 chip budowy]
+U+1F3A3 🎣 FISHING POLE AND FISH                    LibSans=NIE LibSerif=NIE DejaVuSans=NIE NotoColorEmoji=tak  [R4 chip budowy]
+U+1F3D4 🏔 SNOW CAPPED MOUNTAIN                     LibSans=NIE LibSerif=NIE DejaVuSans=NIE NotoColorEmoji=tak  [R4 chip budowy]
+U+1F3DB 🏛 CLASSICAL BUILDING                       LibSans=NIE LibSerif=NIE DejaVuSans=NIE NotoColorEmoji=tak  [R4 chip budowy]
+U+1F3F0 🏰 EUROPEAN CASTLE                          LibSans=NIE LibSerif=NIE DejaVuSans=NIE NotoColorEmoji=tak  [R4 chip budowy]
+U+1F3F9 🏹 BOW AND ARROW                            LibSans=NIE LibSerif=NIE DejaVuSans=NIE NotoColorEmoji=tak  [R4 chip budowy]
+U+1F3FA 🏺 AMPHORA                                  LibSans=NIE LibSerif=NIE DejaVuSans=NIE NotoColorEmoji=tak  [R4 chip budowy]
+U+1F411 🐑 SHEEP                                    LibSans=NIE LibSerif=NIE DejaVuSans=NIE NotoColorEmoji=tak  [R4 chip budowy]
+U+1F4A7 💧 DROPLET                                  LibSans=NIE LibSerif=NIE DejaVuSans=NIE NotoColorEmoji=tak  [R4 chip budowy]
+U+1F528 🔨 HAMMER                                   LibSans=NIE LibSerif=NIE DejaVuSans=NIE NotoColorEmoji=tak  [R4 chip budowy]
+U+1F6E1 🛡 SHIELD                                   LibSans=NIE LibSerif=NIE DejaVuSans=NIE NotoColorEmoji=tak  [R4 chip budowy]
+U+1F6E4 🛤 RAILWAY TRACK                            LibSans=NIE LibSerif=NIE DejaVuSans=NIE NotoColorEmoji=tak  [R4 chip budowy]
+U+1F9C2 🧂 SALT SHAKER                              LibSans=NIE LibSerif=NIE DejaVuSans=NIE NotoColorEmoji=tak  [R4 chip budowy]
+U+1FA93 🪓 AXE                                      LibSans=NIE LibSerif=NIE DejaVuSans=NIE NotoColorEmoji=tak  [R4 chip budowy]
+U+1FA9A 🪚 CARPENTRY SAW                            LibSans=NIE LibSerif=NIE DejaVuSans=NIE NotoColorEmoji=tak  [R4 chip budowy]
+U+1FAA8 🪨 ROCK                                     LibSans=NIE LibSerif=NIE DejaVuSans=NIE NotoColorEmoji=tak  [R4 chip budowy]

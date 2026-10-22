@@ -1,0 +1,44 @@
+# 10 — uzupełnienia crate'ów w rundzie 2 (obrona; zarzuty E-6, E-7, E-8). Data: 2026-10-22.
+
+## E-6: rustybuzz 0.20.1 — zależności (crates.io API)
+## curl https://crates.io/api/v1/crates/rustybuzz/0.20.1/dependencies
+bitflags ^2.4.1 normal required
+bytemuck ^1.5 normal required [extern_crate_alloc]
+core_maths ^0.1.0 normal required
+libc ^0.2 dev required
+log ^0.4.22 normal required
+pico-args ^0.5 dev required
+smallvec ^1.6 normal required
+ttf-parser ^0.25.0 normal required [opentype-layout, apple-layout, variable-fonts, glyph-names, no-std-float]
+unicode-bidi-mirroring ^0.4.0 normal required
+unicode-ccc ^0.4.0 normal required
+unicode-properties ^0.1.3 normal required [general-category]
+unicode-script ^0.5.2 normal required
+wasmi ^0.37.0 normal OPTIONAL
+## curl https://crates.io/api/v1/crates/rustybuzz/0.20.1 → features, rust_version
+features: {'default': ['std'], 'std': ['ttf-parser/std'], 'wasm-shaper': ['std', 'dep:wasmi']}   rust_version: None
+=> wasmi jest włączany wyłącznie cechą `wasm-shaper`, której nie ma w `default`.
+
+## E-7: zune-jpeg — wersje (curl https://crates.io/api/v1/crates/zune-jpeg/versions)
+## num yanked rust_version crate_size license created
+0.5.16-rc3 False 1.77.1 144678 MIT OR Apache-2.0 OR Zlib 2026-10-19
+0.5.16-rc2 False 1.77.1 126185 MIT OR Apache-2.0 OR Zlib 2026-09-08
+0.5.16-rc1 False 1.77.1 122060 MIT OR Apache-2.0 OR Zlib 2026-08-07
+0.5.15 False 1.75.0 88879 MIT OR Apache-2.0 OR Zlib 2026-03-26      <- najnowsza stabilna
+0.5.14 False 1.75.0 153693 MIT OR Apache-2.0 OR Zlib 2026-03-21
+## static.crates.io/crates/zune-jpeg/zune-jpeg-0.5.15.crate (rozpakowane w scratchpadzie)
+sha256(.crate) = 27bc9d5b815bc103f142aa054f561d9187d191692ec7c2d1e2b4737f8dbd7296, 88 879 B
+Cargo.toml: rust-version = "1.75.0"; [dependencies] zune-core 0.5.1
+src: 9 737 linii (*.rs), 85 linii z \bunsafe\b (grep -rcw)
+lib.rs:163: #![cfg_attr(not(any(feature = "x86", feature = "neon")), forbid(unsafe_code))]
+
+## E-8: pochodzenie plików Liberation w kontenerze
+$ dpkg -S /usr/share/fonts/truetype/liberation/LiberationSans-Bold.ttf
+fonts-liberation: /usr/share/fonts/truetype/liberation/LiberationSans-Bold.ttf
+$ dpkg -S /usr/share/fonts/truetype/liberation/LiberationSerif-Bold.ttf
+fonts-liberation: /usr/share/fonts/truetype/liberation/LiberationSerif-Bold.ttf
+$ dpkg -l fonts-liberation fonts-liberation2
+ii  fonts-liberation  1:2.1.5-3    all          fonts with the same metrics as Times, Arial and Courier
+ii  fonts-liberation2 1:2.1.5-3    all          transitional dummy package
+$ grep -n License /usr/share/doc/fonts-liberation/copyright
+9:License: SIL-OFL-1.1

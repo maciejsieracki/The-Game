@@ -1,10 +1,10 @@
 # P4-25 — Audyt i specyfikacja tekstu / rasteryzacji w rendererze Rust
 
-TEMAT: `R-RUSTPORT-P4-25-TEXT-RASTER-AUDIT-Q1` · DOMAIN: GAME · runda 1/5 · Operator
+TEMAT: `R-RUSTPORT-P4-25-TEXT-RASTER-AUDIT-Q1` · DOMAIN: GAME · runda 1/5 · Operator, poprawiony po obronie (zarzuty Evaluatora E-1..E-10: `dyspozycje/autobot/runs/R-RUSTPORT-P4-25-TEXT-RASTER-AUDIT-Q1/03-operator-obrona-r1.md`)
 Baza dokumentów: `origin/claude/sprawdzenie-funkcjonalnosci-ek4ra0` (`a576c63d`). Web: pin `edb8fb56` (tylko `git show` / `git grep` / `git archive` do scratchpadu; zero buildu i uruchomienia weba). Crate renderera: `origin/rust-port/parity-v2` (`e810d0d3`), tylko odczyt.
 Decyzje wejściowe: **D-RR-4 = A** (tekst na mapie rysuje Rust, font dołączony do gry, `LEDGER.md:123`), **UI-Q2 = A** (etykiety zakotwiczone rysuje Rust, `LEDGER.md:134`). Temat projektowo-odczytowy: zero kodu w `rust-port/**`, `gra/**`, `src-tauri/**`.
 
-Dowody surowe: `dyspozycje/autobot/runs/R-RUSTPORT-P4-25-TEXT-RASTER-AUDIT-Q1/dowody/` (pliki `01`–`07`, dwa jednorazowe spike'i w scratchpadzie, skopiowane jako `spike-text/`, `spike-svg/`).
+Dowody surowe: `dyspozycje/autobot/runs/R-RUSTPORT-P4-25-TEXT-RASTER-AUDIT-Q1/dowody/`, pliki `01`–`10`. Dwa jednorazowe spike'i powstały wyłącznie w scratchpadzie, poza repo. Ich kodu **nie ma w repo** (usunięty po zarzucie E-2). Odtwarzalność zapewniają hashe, konfiguracja resolvera i zamrożone wersje z checksumami w `dowody/08-spike-repro.txt`.
 
 Konwencja: `plik:linia` bez prefiksu = `gra/src/` w pinie `edb8fb56`. `NIE_ZMIERZONO` = nie sprawdzone w tym temacie. `[zewn., niezweryfikowane]` = wiedza spoza repo i spoza pomiaru.
 
@@ -12,11 +12,11 @@ Konwencja: `plik:linia` bez prefiksu = `gra/src/` w pinie `edb8fb56`. `NIE_ZMIER
 
 ## 0. Streszczenie
 
-1. **Inwentarz:** 149 linii `git grep` (wzorzec w §1) w 10 plikach. Wynika z nich **15 producentów tekstur 2D** (14 w `render/**`, 1 w `battle/**`) oraz 1 kanwa HUD w DOM (minimapa bitwy, to nie tekstura). Plus 3 grupy etykiet DOM z `main.ts`/`battleScene.ts`, które według UI-Q2 = A przechodzą do Rust (§2.3).
+1. **Inwentarz:** 149 linii `git grep` (wzorzec w §1) w 10 plikach. Wynika z nich **15 producentów tekstur 2D** (14 w `render/**`, 1 w `battle/**`) oraz 1 kanwa HUD w DOM (minimapa bitwy, to nie tekstura). Do tego 5 grup etykiet DOM z `main.ts`/`battleScene.ts`, które według UI-Q2 = A przechodzą do Rust: R4, R5, R6, R15a i R15b (etykiety muru w bitwie). Szczegóły w §2.3.
 2. **Web używa 34 członków API `CanvasRenderingContext2D` i `CanvasGradient.addColorStop`** (§4.1). Nie używa m.in. `globalAlpha`, `globalCompositeOperation`, `setLineDash`, `bezierCurveTo`, `ellipse`, `createRadialGradient`, `createPattern`, `filter`, `imageSmoothing*` (0 trafień w kanwach).
-3. **Fonty:** w pinie nie ma ani jednego pliku fontu ani `@font-face`. Wszystkie fonty na mapie to stosy systemowe z Windows: `Segoe UI`, `Segoe UI Symbol`, `Segoe UI Emoji`, `Arial`, `Georgia`, plus generyczne `serif`/`sans-serif`. To fonty własnościowe, więc **nie wolno ich dołączyć do gry**. Wygląd 1:1 co do glifu jest niemożliwy. Osiągalna jest zgodność metryczna dla Arial (Liberation Sans, zmierzone) i Times New Roman (Liberation Serif). Dla Georgii i Segoe UI otwarty zamiennik metryczny jest tylko kandydatem `[zewn., niezweryfikowane]` (§3).
-4. **8 glifów spoza łaciny** (⚔ ☠ ◆ 👤 🔥 🍞 🔨 💰) web rysuje dziś **z fallbacku systemowego**. Liberation Sans nie ma żadnego z nich (zmierzone). Wygląd ⚔/☠/👤/🔥 zależy więc od tego, czy przeglądarka wybierze glif monochromatyczny, czy kolorowe emoji. Na Windows to `NIE_ZMIERZONO`, rozstrzyga D-TXT-3.
-5. **Spike CPU bez GPU (zmierzone):** `ab_glyph 0.2.32` + `tiny-skia 0.12.0` buduje się na **Rust 1.87.0** pod `#![forbid(unsafe_code)]` (23 pakiety w locku) i rasteryzuje do bufora RGBA. Narysował pigułkę z gradientem, obrysem, tekstem „ZAŻÓŁĆ GĘŚLĄ JAŹŃ”, cyfrą z `strokeText` i emoji CBDT. Wynik jest **bitowo identyczny** w 4 wariantach: rustc 1.87 i 1.97, debug i release. Szerokość `−99,9%` w Liberation Sans Bold 13 px = 44,453 → `ceil` = **45 px**, czyli ta sama liczba co pomiar w Chromium cytowany w kodzie weba (`cityMapStatChip.ts:113-114`). `resvg 0.48.1` (SVG → RGBA) też buduje się na 1.87.0.
+3. **Fonty:** w pinie nie ma ani jednego pliku fontu ani `@font-face`. Wszystkie fonty na mapie to stosy systemowe z Windows: `Segoe UI`, `Segoe UI Symbol`, `Segoe UI Emoji`, `Arial`, `Georgia`, plus generyczne `serif`/`sans-serif`. To fonty własnościowe. Prawa do ich redystrybucji z grą **nie zweryfikowano** `[zewn., niezweryfikowane]`. ZAŁOŻENIE Z-6 przyjmuje roboczo, że takiego prawa nie ma bez osobnej licencji. Jeśli Z-6 się potwierdzi i właściciel nie wybierze licencji komercyjnej (D-TXT-1 D), wygląd 1:1 co do glifu nie będzie osiągalny. Osiągalna pozostaje zgodność metryczna dla Arial (Liberation Sans, zmierzone) i Times New Roman (Liberation Serif). Dla Georgii i Segoe UI otwarty zamiennik metryczny jest tylko kandydatem `[zewn., niezweryfikowane]` (§3).
+4. **8 glifów spoza łaciny** (⚔ ☠ ◆ 👤 🔥 🍞 🔨 💰) web rysuje dziś **z fallbacku systemowego**. Liberation Sans nie ma żadnego z nich (zmierzone). Wygląd ⚔/☠/👤/🔥 zależy więc od tego, czy przeglądarka wybierze glif monochromatyczny, czy kolorowe emoji. Na Windows to `NIE_ZMIERZONO`, rozstrzyga D-TXT-3. Etykieta DOM R4 (chip budowy, `main.ts:12863-12867`, `:13049`, `:13070`) dokłada **16 kolejnych emoji** (⛏ 🌾 🎣 🏔 🏛 🏰 🏹 🏺 🐑 💧 🛡 🛤 🧂 🪓 🪚 🪨, plus 🔨 już liczony). Razem na mapie to **24 glify z fallbacku** (`dowody/09-charset-all-sources.txt`, §3.3).
+5. **Spike CPU bez GPU (zmierzone):** `ab_glyph 0.2.32` + `tiny-skia 0.12.0` buduje się na **Rust 1.87.0** pod `#![forbid(unsafe_code)]` (23 pakiety w locku) i rasteryzuje do bufora RGBA. Narysował pigułkę z gradientem, obrysem, tekstem „ZAŻÓŁĆ GĘŚLĄ JAŹŃ”, cyfrą z `strokeText` i emoji CBDT. Wynik jest **bitowo identyczny** w 4 wariantach: rustc 1.87 i 1.97, debug i release. Szerokość `−99,9%` w Liberation Sans Bold 13 px = 44,453 → `ceil` = **45 px**, czyli ta sama liczba co pomiar w Chromium cytowany w kodzie weba (`cityMapStatChip.ts:113-114`). `resvg 0.48.1` (SVG → RGBA) też buduje się na 1.87.0. Spike'i budowano poza repo, w scratchpadzie. ZAŁOŻENIE Z-8 wyjaśnia, dlaczego mieści się to w zakresie „zero buildu”. W repo zostały tylko logi i hashe.
 6. **Rekomendacja techniczna (do decyzji D-TXT-6):** `tiny-skia` jako jedyny rasteryzator kształtów i konturów glifów, `ab_glyph` lub `ttf-parser` do konturów i metryk, `rustybuzz` lub `harfrust` do kerningu GPOS, `resvg`/`usvg` do SVG, osobny dekoder JPG. `cosmic-text`, `vello`, `vello_cpu` odpadają na MSRV (1.89 > 1.87).
 7. **Plan paczek:** RR-T8a (rasteryzator 2D „mini-Canvas”) → RR-T8b (font + tekst) → RR-T8c (obrazy: SVG/JPG/emoji) → RR-T8d (atlas/cache/upload) → MOD-08 → MOD-10 → RR-T8e (kotwice DOM → Rust). Szczegóły w §6.
 8. **Decyzje właściciela:** `D-TXT-1..8` (§7). Nic nie zostało rozstrzygnięte po cichu. Domyślne wartości robocze są oznaczone jako ZAŁOŻENIE.
@@ -42,7 +42,10 @@ git grep -nE "@font-face|fonts\.googleapis|fonts\.gstatic" edb8fb56 -- 'gra/**' 
 git grep -nE "document\.fonts|FontFace" edb8fb56 -- 'gra/src/**'               # → 0 linii
 # (4) crate'y: `cargo info <crate>` (crates.io przez proxy) + rozpakowane .crate z ~/.cargo/registry/cache
 #     (dowody/03-, 04-); pokrycie glifów fontami systemu kontenera: fc-list ":charset=<cp>" (dowody/05-)
-# (5) spike: dowody/spike-text (ab_glyph+tiny-skia), dowody/spike-svg (resvg), log: dowody/06-spike-text-run.txt
+# (5) spike'i poza repo (scratchpad): ab_glyph+tiny-skia, resvg. Log: dowody/06-spike-text-run.txt.
+#     Odtwarzalność: dowody/08-spike-repro.txt (config resolvera, wersje + checksumy, sha256 źródeł, blob-y w 212f9e38)
+# (6) repertuar znaków dla wszystkich tekstów mapy (T14 nazwa + hover, R4, R5, R15a/b): dowody/09-charset-all-sources.txt
+# (7) uzupełnienia crate'ów r2 (rustybuzz/wasmi, zune-jpeg stabilna, pakiet Liberation): dowody/10-crates-r2.txt
 ```
 
 Pin nie zawiera `node_modules`, więc źródeł Three r169 nie ma w repo. Wszystkie domyślne ustawienia `CanvasTexture` z Three (np. `minFilter`) są oznaczone jako `[zewn., niezweryfikowane]`.
@@ -66,7 +69,7 @@ Pin nie zawiera `node_modules`, więc źródeł Three r169 nie ma w repo. Wszyst
 | T7 | `render/unitStatPlate.ts:403-447` `getPlateBgAsset` | `roundedRectPath` (`arcTo`×4) fill+stroke 5 px, 2 koryta pasków | **512×168** (`BG_CANVAS_H = round(512·0,194/0,590)`, `:312`; komentarz „130” przy `:312` jest nieaktualny) | singleton | raz | **mipmapy**, `LinearMipmapLinear`, sRGB; `MeshStandardMaterial` (bryła, nie sprite) |
 | T8 | `render/unitStatPlate.ts:556-578` `getPowerFrameTexture` | zaokrąglony prostokąt, wnętrze `rgba(6,9,14,.9)`, biały obrys 12 px (barwa przez `material.color`) | 256×213 | singleton | raz | `LinearFilter`, sRGB |
 | T9 | `render/unitStatPlate.ts:602-625` `getPowerDigitMaterial` | cyfra 0–9: **`strokeText`** (28 px, `lineJoin=round`, `#05070b`) + `fillText` `#fdf6e3`, `900 118px "Segoe UI", Arial, sans-serif` | 72×126 | 10 sztuk na grę | raz na cyfrę | **mipmapy**, sRGB |
-| T10 | `render/unitOwnerEmblem.ts:327-412` `getEmblemAsset` | tarcza (`arc` fill+stroke), glif zastępczy **☠/◆** `bold 58px "Segoe UI Symbol","Segoe UI",Arial`. Asynchronicznie `drawImage`: portret JPG (`clip` do koła, cover-fit) albo sygnet SVG 76 px | 128×128 | per wariant (`civ:<id>:<era>`, `cs:<id>`, `barb`) | raz, potem **przemalowanie** po wczytaniu obrazka (`needsUpdate`) | `LinearFilter`, sRGB |
+| T10 | `render/unitOwnerEmblem.ts:327-412` `getEmblemAsset` | tarcza (`arc` fill+stroke), glif zastępczy **☠/◆** `bold 58px "Segoe UI Symbol", "Segoe UI", Arial, sans-serif` (`unitOwnerEmblem.ts:260`). Asynchronicznie `drawImage`: portret JPG (`clip` do koła, cover-fit) albo sygnet SVG 76 px | 128×128 | per wariant (`civ:<id>:<era>`, `cs:<id>`, `barb`) | raz, potem **przemalowanie** po wczytaniu obrazka (`needsUpdate`) | `LinearFilter`, sRGB |
 | T11 | `render/unitUpgradeBadges.ts:312-342` `getBadgeAsset` | `roundedRectPath` (`arcTo`) r=24, fill + obrys 9 px, `drawImage` ikony SVG 92 px | 128×128 | per (ścieżka, poziom), maks. 6 | raz + przemalowanie | **mipmapy**, sRGB |
 | T12 | `render/workerFieldOverlay.ts:63-109` `getWorkerIconTexture` | 2 obręcze + krążek (`arc`), glif **👤** U+1F464 `bold 16px Segoe UI, Arial`, `fillStyle rgba(255,255,255,.92)` | 64×64 | `Map` per (właściciel, gracz?) | raz; czyszczenie tylko w `disposeWorkerFieldSpriteCache` `:208-211` | `LinearFilter`, sRGB |
 | T13 | `render/cityOkolicaOverlay.ts:181-228` `makeLabelSprite` (+ `drawWorkerBadge` `:119-143`, `drawYieldLine` `:145-179`) | emoji **🍞 🔨 💰** (`"Segoe UI Emoji","Apple Color Emoji","Noto Color Emoji",sans-serif`, 16/18 px) + liczby `bold 16/20px Arial` z **cieniem** (`shadowBlur` 2–3, `shadowOffsetY` 1); opcjonalnie odznaka 👤 `bold 13px Segoe UI, Arial` | 128 × h, h ∈ [46, 72] bez robotnika, [68, 98] z robotnikiem (1–3 wiersze) | **brak** | cała grupa przebudowywana przy każdym `syncCityOkolicaOverlay` (`:310-323`, `main.ts:5755`) | `LinearFilter`, sRGB |
@@ -75,6 +78,8 @@ Pin nie zawiera `node_modules`, więc źródeł Three r169 nie ma w repo. Wszyst
 | H1 | `battle/battleMinimap.ts:39-94` (`battleScene.ts:10933-10941`, `:11067-11072`) | minimapa: `fillRect` siatki, `arc` jednostek, `strokeRect` | 180×120 (`battleMinimap.ts:30-31`) | — | co odświeżenie HUD | **kanwa DOM w HUD, nie tekstura**. ZAŁOŻENIE Z-1: zostaje w webview (UI-Q1 = A), poza rasteryzatorem mapy |
 
 Pozostałe trafienia grepa to obsługa materiałów i sprite'ów bez rysowania 2D (`dispose`, typy, komentarze). Przykłady: `units.ts:6206/6242/6626`, `cityOkolicaOverlay.ts:330`, `siegeMarker.ts:236`, `workerFieldOverlay.ts:188/201`, `unitOwnerEmblem.ts:43-45/436-496`, `unitStatPlate.ts:47/472/518/549`. Dalsze kanwy z `battleScene.ts:2751` i `manualBattle.ts:551` to płótna `WebGLRenderer`, nie 2D.
+
+Poza zakresem dispatchu (`render/**`, `battle/**`) Canvas 2D występuje też w `ui/minimapHud.ts:223`, `ui/hud.ts:1452`, `ui/unitMiniPreview.ts:106` i `wonderpreview/main.ts:126`. Wskazał je Evaluator, tutaj nie są inwentaryzowane. Przypuszczalnie, podobnie jak H1 (Z-1), zostają w webview, ale tego nie zweryfikowano.
 
 **`unitVeteranBadges.ts` (MOD-08) nie używa Canvas.** Gwiazdki to `ExtrudeGeometry` + `MeshStandardMaterial` (`unitVeteranBadges.ts:147-247`). Paczka MOD-08 zależy od rasteryzatora tylko przez T7–T11.
 
@@ -94,10 +99,13 @@ Pozostałe trafienia grepa to obsługa materiałów i sprite'ów bez rysowania 2
 
 | Grupa | Web | Tekst | Font |
 |---|---|---|---|
-| R4 chip budowy | `main.ts:12851-12859`, `:12939-12968` | etykieta + „Kliknij hex”/„Niedozwolone”, powód (≤ 220 px) | `12px/1.2 Arial,sans-serif` (`:12856`); spany 16 px i 11 px (`:12960`, `:12963`); `box-shadow` |
+| R4 chip budowy | `main.ts:12851-12859`, `:12939-12968` | ikona-emoji (17 możliwych: `IMPROVEMENT_CHIP` `:12863-12867`, 🏛 `:13049-13061`, fallback 🔨 `:13070`) + „Kliknij hex”/„Niedozwolone”, powód (≤ 220 px, `:13075-13077`) | `12px/1.2 Arial,sans-serif` (`:12856`); spany 16 px (ikona) i 11 px (`:12960`, `:12963`); `box-shadow` |
 | R5 etykiety oblężenia | `main.ts:14560-14603` | „⚔ OBLĘŻENIE” + `<small>` nazwa miasta | `bold 11px/1.3 Arial,sans-serif`, ⚔ w spanie 18 px (`:14569`, `:14573`) |
 | R6 galeria (dev) | `main.ts:36417-36455` | nazwa typu jednostki | zależne od D-UI-7 |
 | R15a liczby obrażeń (bitwa) | `battle/battleScene.ts:9091-9115` | `-<dmg>` | `bold 15px sans-serif`, `textShadow: 0 0 6px #000, 1px 1px 2px #000` |
+| R15b etykiety muru (bitwa, oblężenie) | `battle/battleScene.ts:7477-7493` `_spawnWallLabel`; wywołania `:7225` (`'-'+dmg+' (mur)'`, `#ff8800`), `:7311` (`'MUR WYBURZONY!'`, `#ff4400`) | `-<dmg> (mur)`, `MUR WYBURZONY!` | `bold 13px sans-serif`, ten sam `textShadow` co R15a |
+
+R15a i R15b mają **wspólny mechanizm**. Oba zapisy trafiają do `floatLabels` (`:7488`, `:9111`), a `_tickFloatLabels` (`:8624-8642`) co klatkę rzutuje `worldPos` przez `worldToScreen` (`:8635`, definicja `:19419`). Etykieta unosi się z prędkością `riseRate` 0,00012 i wygasa po 2000 ms, z przezroczystością `1 − p²`. Innych użyć `worldToScreen` ani `floatLabels.push` w `battleScene.ts` nie ma (`grep -nE "floatLabels|worldToScreen"`). Uwaga P4-5B §7 wymienia tylko R15a. R15b to uzupełnienie z tego audytu.
 
 To jest **layout HTML**: łamanie `<br>`, padding, `border-radius`, `box-shadow`. Rust musi to odwzorować ręcznie, prostym układem bloków na tym samym rasteryzatorze (RR-T8e).
 
@@ -117,7 +125,7 @@ To jest **layout HTML**: łamanie `<br>`, padding, `border-radius`, `box-shadow`
 - `@font-face`, Google Fonts, `document.fonts`, `FontFace`: **0 trafień**.
 - Tokeny UI: `--tg-font-title: Georgia, 'Times New Roman', serif` i `--tg-font-ui: 'Segoe UI', Tahoma, sans-serif` (`ui/icons/brand/tokens.css:25-26`), `BATTLE_FONT = "'Segoe UI', Tahoma, sans-serif"` (`battle/battleHudTheme.ts:13`). Najczęstsze deklaracje w `gra/src`: `font-family:Arial,sans-serif` ×42, `var(--civ-font-ui)` ×20, `Georgia,serif` ×18 (`git grep -hoE "font-family:[^;\"]*…"`, §1).
 
-### 3.2 Fonty na mapie (kanwy T1–T15 + kotwice R4/R5/R15a)
+### 3.2 Fonty na mapie (kanwy T1–T15 + kotwice R4/R5/R15a/R15b)
 
 | Stos (tak jak w kodzie) | Grubość / rozmiar | Gdzie | Treść |
 |---|---|---|---|
@@ -131,22 +139,29 @@ To jest **layout HTML**: łamanie `<br>`, padding, `border-radius`, `box-shadow`
 | `"Segoe UI Symbol", "Segoe UI Emoji", "Segoe UI", Arial, sans-serif` | bold / 104 | T3 | ☠ |
 | `"Segoe UI Emoji", "Apple Color Emoji", "Noto Color Emoji", sans-serif` | 400 / 16, 18 | T13 | 🍞 🔨 💰 |
 | `serif` | 400 / 48 | T1 | 🔥 |
-| `sans-serif` | bold / 16; bold / 15 | T15; R15a | cyfry, `-` |
-| `Arial,sans-serif` (DOM) | 400 / 12, 16, 11; bold / 11 | R4, R5 | tekst PL, ⚔ |
+| `sans-serif` | bold / 16; bold / 15; bold / 13 | T15; R15a; R15b | cyfry, `-`, „ (mur)”, „MUR WYBURZONY!” |
+| `Arial,sans-serif` (DOM) | 400 / 12, 16, 11; bold / 11 | R4, R5 | tekst PL, ⚔, 17 emoji ikon R4 (fallback) |
 
-Wszystkie konkretne rodziny (Segoe UI, Segoe UI Symbol, Segoe UI Emoji, Arial, Georgia, Times New Roman, Tahoma) to fonty dostarczane z systemem, głównie z Windows. Ich licencja nie pozwala na redystrybucję z grą `[zewn., niezweryfikowane]`, dlatego **nie są kandydatami do dołączenia**.
+Wszystkie konkretne rodziny (Segoe UI, Segoe UI Symbol, Segoe UI Emoji, Arial, Georgia, Times New Roman, Tahoma) to fonty dostarczane z systemem, głównie z Windows. **Czy ich licencja pozwala na redystrybucję z grą, nie zweryfikowano** `[zewn., niezweryfikowane]`. Nie czytałem tekstu licencji ani EULA. ZAŁOŻENIE Z-6: roboczo zakładam, że bez osobnej licencji redystrybucja nie jest dozwolona, więc fonty open-source z §3.5 to ścieżka domyślna. Alternatywę, czyli zakup licencji komercyjnej z prawem osadzenia w aplikacji, opisuje opcja D-TXT-1 D. Jej dostępność, koszt i warunki: **NIE_ZMIERZONO**.
 
 ### 3.3 Repertuar znaków
 
 - Nazwy miast: `data/city-names-pools.json`, 1 665 wartości tekstowych. Po `toUpperCase()` występują **22 znaki spoza ASCII**: Ö Ł Ü Ń Ó Ø Ş Ğ Ç Ą Ż Á Ñ É Ś Ę Ú Ř Í Å Ä Ź (`dowody/07-city-names-nonascii.txt`). Wszystkie są prekomponowane (Latin-1 + Latin Extended-A), bez znaków łączących. Liberation Sans/Serif mają wszystkie (`fc-list ':charset=15e 11e 158 d8 c5'`). **Wymóg orkiestratora (pełne PL) jest spełnialny bez kształtowania złożonego** (bez łączenia diakrytyków, bez skryptów RTL).
-- Interpunkcja i symbole: `× … − — · % , !` są w Liberation Sans i Serif (`dowody/05-fc-list-glyph-coverage.txt`).
+- **Pozostałe teksty mapy (pomiar r2, `dowody/09-charset-all-sources.txt`).** Wiersz hover T14 (`${cat} · ${name}`, `cityMapStatChip.ts:700-705`) bierze `name` z `front?.nazwa` (`cities.ts:836`). Źródła: `buildings.json` `nazwa` (42), „Rozbuduj A → B” z `building-upgrades.ts:54-62` (10), `units.json` `Jednostka` (75) oraz literały. R5 dokłada `city.name` **bez** `toUpperCase` (`main.ts:14569`), a R4, R15a i R15b swoje literały. Poza zbiorem z nazw miast pojawia się **46 znaków**:
+  - **25 małych liter łacińskich**: ą ć ę ł ń ó ś ź ż ß ı á ä å ç é í ñ ö ø ú ü ğ ř ş. Do tego `·`, `…` i **`→` U+2192** (rozbudowa budynku). Wszystkie są w Liberation Sans i Serif.
+  - **⚔ (R5) i 17 emoji z R4**: ⛏ 🌾 🎣 🏔 🏛 🏰 🏹 🏺 🐑 💧 🔨 🛡 🛤 🧂 🪓 🪚 🪨. Żadnego z nich nie ma w Liberation, z tych 17 żadnego nie ma też w DejaVu Sans. Noto Color Emoji ma wszystkie.
+  - Znaków łączących brak we wszystkich źródłach. `ß` i `ı` zamieniają się po `toUpperCase` w `SS` i `I`, więc w T14 nie występują. W R5 zostają jako małe litery.
+  - Wniosek co do diakrytyków pozostaje: wystarcza mapowanie cmap bez kształtowania złożonego. **Zbiór emoji jest jednak trzy razy większy** (24 glify zamiast 8), co wpływa na D-TXT-3 i podzbiór fontu emoji.
+- Interpunkcja i symbole: `× … − — · % , ! →` są w Liberation Sans i Serif (`dowody/05-fc-list-glyph-coverage.txt`, `dowody/09`).
 - Symbole i emoji: **⚔ ☠ ◆ 👤 🔥 🍞 🔨 💰**. Liberation Sans Bold nie ma żadnego z 8, DejaVu Sans Bold nie ma 5 emoji, a Noto Color Emoji ma 7 z 8 (bez ◆). Zmierzone w spike'u: `dowody/06-spike-text-run.txt`, linie `missing`.
 - `toUpperCase()` (JS) a `str::to_uppercase()` (Rust): oba są niezależne od locale. Dla 22 zmierzonych znaków wynik jest taki sam `[zewn., niezweryfikowane — nie testowano automatem]`, do testu w RR-T8b.
 
 ### 3.4 Zależność od fallbacku systemowego (D-MOD-6, sprite ⚔)
 
 - T2 (⚔ `bold 96px Arial`), T1 (🔥 `48px serif`), T12/T13 (👤 `Segoe UI, Arial`): żaden font ze stosu nie ma glifu, więc przeglądarka wybiera font zastępczy. Który i czy kolorowy, zależy od systemu. Na Windows prawdopodobnie Segoe UI Emoji albo Segoe UI Symbol `[zewn., niezweryfikowane]`. Jaki obraz widzi dziś właściciel: **NIE_ZMIERZONO**, potrzebny zrzut, D-TXT-3.
-- **Konsekwencja `fillStyle`:** T2 i T1 nie ustawiają koloru (domyślnie czarny). Glif monochromatyczny będzie więc czarny, a kolorowe emoji ma własne kolory, bo bitmapa ignoruje `fillStyle`. T3 (☠) ustawia `#e01e1e`, co działa tylko dla glifu monochromatycznego. Rust musi to jawnie odtworzyć według decyzji D-TXT-3.
+- **Konsekwencja `fillStyle`:** T2 i T1 nie ustawiają koloru (domyślnie czarny). Glif monochromatyczny będzie więc czarny. Kolorowe emoji przypuszczalnie zachowuje własne kolory, bo kanał RGB bitmapy nie jest zastępowany kolorem `fillStyle` `[zewn., niezweryfikowane]`. T3 (☠) ustawia `#e01e1e`, co przy tym założeniu działa tylko dla glifu monochromatycznego.
+- **Alfa z `fillStyle` przy emoji:** trzy miejsca rysują emoji półprzezroczystym białym. Są to T12 👤 `rgba(255,255,255,0.92)` (`workerFieldOverlay.ts:101`), odznaka 👤 w T13 `0.92` (`cityOkolicaOverlay.ts:141`) i 🍞 🔨 💰 w T13 `0.95` (`cityOkolicaOverlay.ts:169`). Czy Chromium mnoży bitmapę kolorowego glifu przez alfę `fillStyle` (wtedy emoji jest w 92–95% kryjące), czy ją pomija: `[zewn., niezweryfikowane]`, **NIE_ZMIERZONO**. ZAŁOŻENIE Z-7: Rust mnoży kolorowy glif przez alfę `fillStyle` i nie zmienia jego RGB. Do potwierdzenia zrzutem z przeglądarki (D-TXT-3 C, test w RR-T8c). Przy glifie monochromatycznym kolor i alfa z `fillStyle` działają standardowo.
+- Rust musi obie reguły odtworzyć jawnie, zależnie od D-TXT-3.
 
 ### 3.5 Kandydaci open-source do dołączenia
 
@@ -154,13 +169,13 @@ Pomiar dotyczy fontów obecnych w kontenerze: wersje z pakietów Debian, licencj
 
 | Rola w webie | Kandydat | Licencja | Rozmiar pliku (Bold) | Zgodność metryczna |
 |---|---|---|---|---|
-| Arial (T13, T14, R4, R5) | **Liberation Sans** (Regular/Bold) | SIL OFL 1.1 (`fonts-liberation2/copyright`) | 414 568 B | **zmierzona na 1 próbce:** `−99,9%` 700 13 px = 44,453 → `ceil` 45, tak samo jak pomiar Chromium cytowany w `cityMapStatChip.ts:113-114`. Szersza próba: RR-T8b |
+| Arial (T13, T14, R4, R5) | **Liberation Sans** (Regular/Bold) | SIL OFL 1.1 (`/usr/share/doc/fonts-liberation/copyright:9`; pliki należą do pakietu Debian `fonts-liberation` 1:2.1.5-3, `dpkg -S`; `fonts-liberation2` to pakiet przejściowy, `dowody/10-crates-r2.txt`) | 414 568 B | **zmierzona na 1 próbce:** `−99,9%` 700 13 px = 44,453 → `ceil` 45, tak samo jak pomiar Chromium cytowany w `cityMapStatChip.ts:113-114`. Szersza próba: RR-T8b |
 | Georgia (T14 nazwa) | Gelasio `[zewn., niezweryfikowane: deklarowany zamiennik metryczny Georgii; w kontenerze brak]`; awaryjnie Liberation Serif (= metryka Times New Roman, drugi element stosu) | OFL `[zewn.]` / SIL OFL 1.1 | — / 370 196 B | Liberation Serif Bold 22 px `UMGUNGUNDLOVU` = **213,877 px**. Kod weba podaje 213,9 px „w żywym Chromium fontem `700 22px Georgia`” (`cityMapStatChip.ts:103-104`). Zgodność do 0,03 px **sugeruje**, że pomiar weba wykonano bez Georgii, na fallbacku Times New Roman → Liberation Serif (Linux). To wniosek, nie pomiar: **NIE_ZMIERZONO**, D-TXT-1 |
 | Segoe UI (T5, T6, T9, T12) | brak zamiennika metrycznego w kontenerze. Kandydaci: Selawik `[zewn., niezweryfikowane: OFL, deklarowany fallback Segoe UI]`, Noto Sans / Open Sans `[zewn.]`; w kontenerze są Inter i DejaVu Sans | — | — | NIE_ZMIERZONO. Grubość **900** (T9) wymaga fontu z odmianą Black/Heavy albo osi `wght` |
 | Segoe UI Symbol (◆ ☠ ⚔) | DejaVu Sans (ma ⚔ ☠ ◆) | Bitstream Vera + modyfikacje (`fonts-dejavu-core/copyright`) | 708 920 B | glify inne niż Segoe; tylko pokrycie |
-| emoji (🔥 👤 🍞 🔨 💰, opcjonalnie ⚔ ☠) | **Noto Color Emoji** | SIL OFL 1.1 + Apache-2.0 (`fonts-noto-color-emoji/copyright`) | **10 788 068 B** (CBDT, bitmapy PNG 136×128 przy 109 ppem, zmierzone) | wygląd inny niż Segoe UI Emoji (D-TXT-3). Rozmiar: podzbiór do 8 glifów to KB, nie MB, ale wymaga narzędzia (`NIE_ZMIERZONO`) |
+| emoji (🔥 👤 🍞 🔨 💰 + 16 ikon R4, opcjonalnie ⚔ ☠) | **Noto Color Emoji** | SIL OFL 1.1 + Apache-2.0 (`fonts-noto-color-emoji/copyright`) | **10 788 068 B** (CBDT, bitmapy PNG 136×128 przy 109 ppem, zmierzone) | wygląd inny niż Segoe UI Emoji (D-TXT-3). Rozmiar podzbioru do 24 glifów: przypuszczalnie KB, nie MB. Wymaga narzędzia, rozmiar `NIE_ZMIERZONO` |
 
-**Co trzeba dołączyć dla „1:1 w granicach możliwego” (ZAŁOŻENIE Z-3, do decyzji D-TXT-1):** Liberation Sans Regular+Bold (Arial), font serif do nazwy miasta (Gelasio albo Liberation Serif Bold), font sans dla „Segoe UI” z odmianą 900, źródło symboli ⚔ ☠ ◆ oraz źródło 5 emoji. Minimum 4–6 plików TTF.
+**Co trzeba dołączyć dla „1:1 w granicach możliwego” (ZAŁOŻENIE Z-3, warunkowe wobec Z-6; do decyzji D-TXT-1):** Liberation Sans Regular+Bold (Arial), font serif do nazwy miasta (Gelasio albo Liberation Serif Bold), font sans dla „Segoe UI” z odmianą 900, źródło symboli ⚔ ☠ ◆ i źródło emoji: 5 z kanw oraz 17 z R4, wśród nich 🔨 wspólne. Minimum 4–6 plików TTF. Jeśli właściciel wybierze D-TXT-1 D (licencja komercyjna), ta lista zamienia się na licencjonowane pliki oryginałów.
 
 ---
 
@@ -215,7 +230,7 @@ Rasteryzacja na CPU do bufora RGBA jest w pełni testowalna w CI bez adaptera GP
 | `ab_glyph` | 0.2.32 | Apache-2.0 | brak; **zbudowane na 1.87.0** | 20 967 | 1 931 | 0 / nie | parser fontu, kontury, metryki, bitmapy CBDT | kerning tylko `kern` (§4.2) |
 | `ttf-parser` | 0.25.1 | MIT OR Apache-2.0 | 1.63.0 | 201 121 | 23 196 | 3 / tak | niskopoziomowy parser (pod ab_glyph, rustybuzz) | — |
 | `fontdue` | 0.9.5 | MIT OR Apache-2.0 OR Zlib | brak | 142 035 | 5 060 | 30 / nie | własny rasteryzator glifów + layout | rasteryzuje glify sam, więc dwa rasteryzatory (glif ≠ kształt); zależy od `rayon` |
-| `rustybuzz` | 0.20.1 | MIT | brak | 272 721 | 29 264 | 25 / nie | shaper (port HarfBuzz), GPOS kerning, ligatury | zależy od `ttf-parser`; ma też `wasmi` w zależnościach (opcjonalne? `NIE_ZMIERZONO`) |
+| `rustybuzz` | 0.20.1 | MIT | brak | 272 721 | 29 264 | 25 / nie | shaper (port HarfBuzz), GPOS kerning, ligatury | zależy od `ttf-parser`. `wasmi ^0.37.0` jest zależnością **opcjonalną**, włączaną tylko cechą `wasm-shaper`, której nie ma w `default = ["std"]` (crates.io API, `dowody/10-crates-r2.txt`) |
 | `harfrust` | 0.15.0 | MIT | 1.85 | 356 317 | 42 204 | 27 / tak | shaper (następca rustybuzz na `read-fonts`) | zgodny z MSRV 1.87 deklaratywnie, build NIE_ZMIERZONO |
 | `skrifa` | 0.49.0 | MIT OR Apache-2.0 | 1.85 | 349 449 | 41 381 | 0 / tak | parser + kontury + metryki (fontations) | alternatywa dla ab_glyph |
 | `swash` | 0.2.10 | Apache-2.0 OR MIT | brak | 238 263 | 26 528 | 54 / nie | shaper + scaler + rasteryzator glifów | jak fontdue: drugi rasteryzator |
@@ -224,7 +239,7 @@ Rasteryzacja na CPU do bufora RGBA jest w pełni testowalna w CI bez adaptera GP
 | `vello_cpu` | 0.3.0 | Apache-2.0 OR MIT | **1.89** | 129 991 | 13 954 | 0 / tak | rasteryzator 2D CPU | MSRV > 1.87, **odpada** (chyba że D-TXT-8) |
 | `resvg` | 0.48.1 | Apache-2.0 OR MIT | 1.85.0; **zbudowane na 1.87.0** (`default-features=false`, 37 pakietów w locku) | 78 696 | 4 614 | 0 / tak | SVG → pixmap tiny-skia | wymaga `tiny-skia 0.12.0`, czyli tej samej wersji co rasteryzator |
 | `usvg` | 0.48.1 | Apache-2.0 OR MIT | 1.85.0 | 146 652 | 19 373 | 0 / tak | parser SVG (pod resvg) | tekst w SVG przez `fontdb`+`harfrust` (cecha opcjonalna; ikony weba tekstu nie mają, `NIE_ZMIERZONO`) |
-| `zune-jpeg` | 0.5.16-rc3 (najnowsza w indeksie) | MIT OR Apache-2.0 OR Zlib | 1.77.1 | 144 678 | 15 999 | 89 / tak (cfg) | dekoder JPG portretów | wersja RC jako „latest”; stabilną wybrać w RR-T8c |
+| `zune-jpeg` | **0.5.15** (najnowsza stabilna, 2026-03-26) | MIT OR Apache-2.0 OR Zlib | 1.75.0 | 88 879 | 9 737 | 85 / tak (cfg: `forbid` tylko bez cech `x86`/`neon`, `lib.rs:163`) | dekoder JPG portretów | jedyna zależność: `zune-core 0.5.1`. Indeks podaje jako „latest” 0.5.16-rc3 (MSRV 1.77.1, 144 678 B), ale to wersja RC, której nie wybieramy (`dowody/10-crates-r2.txt`). Build na 1.87: NIE_ZMIERZONO |
 | `jpeg-decoder` | 0.3.2 | MIT OR Apache-2.0 | 1.61.0 | 745 371 | 5 400 | 16 / tak | dekoder JPG (alternatywa) | zależy od `rayon` |
 | `fontdb` | 0.24.0 | MIT | 1.71 | 119 122 | 2 857 | 6 / nie | baza fontów systemowych | **niepotrzebny**, bo fonty są dołączane (D-RR-4 = A) |
 | `image-compare` | 0.5.0 | MIT | brak | — | — | — | SSIM/RMS do testów | kandydat do metryki §5.3 (dev-dep) |
@@ -232,10 +247,14 @@ Rasteryzacja na CPU do bufora RGBA jest w pełni testowalna w CI bez adaptera GP
 
 Surowe dane: `dowody/03-crates-io-cargo-info.txt`, `dowody/04-crates-src-inspect.txt`.
 
-### 5.2 Spike (zmierzone, kod jednorazowy poza repo, kopia w `dowody/spike-*`)
+### 5.2 Spike (zmierzone, kod jednorazowy wyłącznie w scratchpadzie, bez kopii w repo)
 
-- `spike-text`: `ab_glyph =0.2.32` + `tiny-skia =0.12.0`, `rust-version = "1.87"`, `incompatible-rust-versions = "fallback"` (jak `civ-renderer`), `#![forbid(unsafe_code)]`. `cargo +1.87.0 build --release`: OK, 21,07 s, **23 pakiety w locku**. Rysuje pigułkę 360×48: gradient liniowy, zaokrąglony prostokąt z `quad_to`, obrys 2 px, tekst PL jako kontury glifów wypełnione AA, cyfra z obrysem `LineJoin::Round` + wypełnieniem (wzór T9), emoji 🔥 z CBDT/PNG. Wynik `dowody/spike-text/out.png`.
-- `spike-svg`: `resvg =0.48.1` (`default-features = false`) na 1.87.0: OK. SVG 24×24 → 92×92 (wzór T11) daje 1 056 nieprzezroczystych pikseli.
+Kod spike'ów nie jest artefaktem tego tematu (zarzut E-2, ZAŁOŻENIE Z-8). Do odtworzenia w paczce RR-T8a/b służą:
+- `dowody/08-spike-repro.txt`: treść `.cargo/config.toml` (`[resolver] incompatible-rust-versions = "fallback"`), deklaracje zależności, zamrożone wersje z checksumami obu locków (23 i 37 pakietów), sha256 usuniętych plików;
+- bloby w historii Git: `git show 212f9e38:dyspozycje/autobot/runs/R-RUSTPORT-P4-25-TEXT-RASTER-AUDIT-Q1/dowody/spike-text/src/main.rs`. Dostępne, dopóki commit `212f9e38` jest osiągalny. Po integracji ze squashem: tylko hashe.
+
+- `spike-text`: `ab_glyph =0.2.32` + `tiny-skia =0.12.0`, `rust-version = "1.87"`, `incompatible-rust-versions = "fallback"` w `.cargo/config.toml` (jak `civ-renderer`), `#![forbid(unsafe_code)]`. `cargo +1.87.0 build --release`: OK, 21,07 s, **23 pakiety w locku**. Rysuje pigułkę 360×48: gradient liniowy, zaokrąglony prostokąt z `quad_to`, obrys 2 px, tekst PL jako kontury glifów wypełnione AA, cyfra z obrysem `LineJoin::Round` + wypełnieniem (wzór T9), emoji 🔥 z CBDT/PNG. Wynik: PNG sha256 `b8fa5178…68a51` (`dowody/06`, `dowody/08`). Samego pliku PNG nie ma w repo.
+- `spike-svg`: `resvg =0.48.1` (`default-features = false`) na 1.87.0: OK, 37 pakietów w locku (lock sha256 `820fadea…b271e`). SVG 24×24 → 92×92 (wzór T11) daje 1 056 nieprzezroczystych pikseli. Wynik potwierdzony ponownie w r2 z `--locked --offline`.
 - Determinizm: 4 przebiegi (1.87 release ×2, 1.87 debug, 1.97 release) dają ten sam hash RGBA i PNG.
 
 ### 5.3 Metryka zgodności wizualnej z webem (propozycja do D-TXT-4 / D-RR-6)
@@ -260,7 +279,7 @@ Numeracja rozwija RR-T8 z P4-3 §9 (`P4-3-RUST-RENDERER-ARCH.md:404`). Allowlist
 | **RR-T8d** atlas / cache / upload | klucze treści (port `cityMapBadgeKey`), polityka LRU/refcount (P4-3 §7.3 pkt 4, klasa M2), upload do wgpu (sRGB, premultiplied), mipmapy CPU dla T7/T9/T11, skala DPI×LOD z limitem 2048 | RR-T8a–c, RR-T5 (rejestr zasobów), RR-T1 (DPI) | test „N tur” bez wzrostu liczby tekstur; część GPU w `--features gpu` | częściowo |
 | **MOD-08** | nakładki jednostek T7–T11 (+ gwiazdki weterana: geometria, bez rasteryzatora) | RR-T8a–d, paczka 2 (P4-4) | wg dispatchu MOD-08 | wg MOD |
 | **MOD-10** | T12, T13, T14 | RR-T8a–d, 8, 9, 13 (P4-4 `:559`) | wg dispatchu MOD-10 | wg MOD |
-| **RR-T8e** kotwice DOM → Rust | R4, R5, R15a (§2.3): prosty layout bloków (padding, `border-radius`, łamanie `<br>`, `box-shadow` jako blur) na RR-T8a/b | RR-T8b, P4-5B §7 | 3 grupy wyrenderowane; pozycjonowanie wg P4-5B | nie (tekstura), tak (scena) |
+| **RR-T8e** kotwice DOM → Rust | R4, R5, R15a, R15b (§2.3): prosty layout bloków (padding, `border-radius`, łamanie `<br>`, `box-shadow`/`textShadow` jako blur) na RR-T8a/b, emoji R4 wg D-TXT-3 przez RR-T8c; wspólny mechanizm „float label” dla R15a/R15b (wznoszenie, wygaszanie `1 − p²`, 2000 ms) | RR-T8b, RR-T8c, P4-5B §7 | 4 grupy wyrenderowane (R6 wg D-UI-7); pozycjonowanie wg P4-5B | nie (tekstura), tak (scena) |
 | tekstury „luźne” | T1 (`cities`), T2 (`siege`), T3–T6 (`units`), T15 (bitwa) | RR-T8a–c | dopięcie do istniejących modułów (P4-21, P4-22, MOD-04/05, RR-T10) | — |
 
 **Kolejność:** RR-T8a → RR-T8b ∥ RR-T8c (rozłączne allowlisty: `text/**` oraz `raster/image/**`) → RR-T8d → MOD-08 → MOD-10 → RR-T8e. Odpowiada to P4-4 `:574` (paczka 8 przed 10). Ścieżka krytyczna MOD-08 nie wymaga emoji (T7–T11 mają tylko cyfry i ☠/◆ zastępczo), więc MOD-08 może ruszyć po RR-T8a + RR-T8b + części SVG/JPG z RR-T8c.
@@ -271,9 +290,9 @@ Numeracja rozwija RR-T8 z P4-3 §9 (`P4-3-RUST-RENDERER-ARCH.md:404`). Allowlist
 
 | ID | Pytanie | Opcje | Domyślne robocze (ZAŁOŻENIE, do rewizji) |
 |---|---|---|---|
-| **D-TXT-1** | Które fonty dołączamy (licencja, wygląd)? | A: Liberation Sans (Arial) + Liberation Serif (nazwa miasta) + sans dla „Segoe UI” (np. Selawik/Noto Sans) + DejaVu Sans (symbole). B: jak A, ale Gelasio zamiast Liberation Serif (bliżej Georgii, `[zewn.]`). C: jeden font sans na wszystko (prostsze, większe odstępstwo) | A (licencje OFL/Bitstream Vera, metryka Arial zmierzona) |
+| **D-TXT-1** | Które fonty dołączamy (licencja, wygląd)? | A: Liberation Sans (Arial) + Liberation Serif (nazwa miasta) + sans dla „Segoe UI” (np. Selawik/Noto Sans) + DejaVu Sans (symbole). B: jak A, ale Gelasio zamiast Liberation Serif (bliżej Georgii, `[zewn.]`). C: jeden font sans na wszystko (prostsze, większe odstępstwo). **D: licencja komercyjna oryginałów** (Arial, Georgia, Segoe UI…) z prawem osadzenia w aplikacji, co daje wygląd glifów 1:1. Licencjodawcy, koszt i warunki: NIE_ZMIERZONO `[zewn.]` | A (licencje OFL/Bitstream Vera, metryka Arial zmierzona). Wartość domyślna opiera się na Z-6, a D pozostaje w pełni otwarte |
 | **D-TXT-2** | Fallback per glif czy jeden font na element? | A: łańcuch fallbacku per glif jak w przeglądarce. B: każdy element ma jeden font, a brak glifu jest błędem testu | A |
-| **D-TXT-3** | ⚔ ☠ 👤 🔥 🍞 🔨 💰: kolorowe emoji czy monochrom? | A: kolorowe (Noto Color Emoji, podzbiór 8 glifów). B: monochrom (DejaVu dla ⚔ ☠ ◆; 👤 🔥 🍞 🔨 💰 trzeba zastąpić ikonami SVG). C: najpierw zrzut z gry właściciela (Windows), potem wybór | C (wygląd dzisiejszy jest NIE_ZMIERZONO, §3.4) |
+| **D-TXT-3** | ⚔ ☠ 👤 🔥 🍞 🔨 💰 oraz 16 ikon emoji R4 (§3.3): kolorowe emoji czy monochrom? Dodatkowo: czy kolorowy glif ma przejmować alfę `fillStyle` (Z-7)? | A: kolorowe (Noto Color Emoji, podzbiór 24 glifów). B: monochrom (DejaVu dla ⚔ ☠ ◆; 👤 🔥 🍞 🔨 💰 i 16 ikon R4 trzeba zastąpić ikonami SVG). C: najpierw zrzut z gry właściciela (Windows), potem wybór | C (wygląd dzisiejszy jest NIE_ZMIERZONO, §3.4) |
 | **D-TXT-4** | Akceptowalna różnica wizualna tekstu | A: tylko warstwy 1+2 z §5.3 (layout twardo, wygląd ocenia właściciel). B: dodatkowo SSIM ≥ próg na teksturach. C: ΔE + maska tekstu wg D-RR-6 | A + ocena wzrokowa; próg SSIM po pierwszych zrzutach |
 | **D-TXT-5** | Referencja metryk: Chromium z fontami dołączonymi do strony testowej czy obecny web (fonty Windows)? | A: Chromium + te same pliki fontów (porównanie uczciwe). B: obecny web na Windows (porównanie z wyglądem gracza, ale fonty inne z definicji) | A dla testów automatycznych, B dla oceny wzrokowej |
 | **D-TXT-6** | Stos bibliotek | A: `tiny-skia` + `ab_glyph` (kontury, metryki) + `rustybuzz`/`harfrust` (GPOS) + `resvg` + dekoder JPG. B: A bez shapera (kerning tylko z `kern`, ryzyko szerokości). C: `fontdue`/`swash` (osobny rasteryzator glifów) | A |
@@ -288,10 +307,13 @@ Związek z istniejącymi decyzjami: D-TXT-4/5 zawężają **D-RR-6**. D-TXT-6/7/
 
 - **Z-1:** minimapa bitwy (H1) zostaje kanwą DOM w webview (UI-Q1 = A), poza rasteryzatorem mapy.
 - **Z-2:** Rust rysuje od razu stan końcowy tekstur zależnych od obrazków, bez fazy „tarcza bez portretu”.
-- **Z-3:** „1:1” dla tekstu znaczy: te same treści, rozmiary w px CSS, kolory, układ i decyzje przycięcia. Kształt glifów różni się z konieczności (fonty Windows są nie do dołączenia).
+- **Z-3:** „1:1” dla tekstu znaczy: te same treści, rozmiary w px CSS, kolory, układ i decyzje przycięcia. Kształt glifów różni się, **o ile** zachodzi Z-6 i właściciel nie wybierze D-TXT-1 D.
+- **Z-6:** fontów systemowych Windows (Segoe UI, Arial, Georgia, …) nie można redystrybuować z grą bez osobnej licencji. To przesłanka `[zewn., niezweryfikowane]`: tekstu licencji nie czytano. Obowiązuje do rozstrzygnięcia D-TXT-1. Opcja D (licencja komercyjna) unieważnia Z-6.
+- **Z-7:** kolorowy glif (bitmapa CBDT) rysowany jest z alfą `fillStyle` przemnożoną przez bitmapę, a RGB `fillStyle` jest ignorowane. Dotyczy `workerFieldOverlay.ts:101`, `cityOkolicaOverlay.ts:141` i `:169`. Zachowanie Chromium: NIE_ZMIERZONO.
+- **Z-8:** zapis dispatchu „zero kodu Rust/TS, zero buildu” rozumiem tak: żadnego kodu ani buildu **w repo**, czyli w `gra/**`, `rust-port/**`, `src-tauri/**` i w artefaktach tematu, oraz zakaz buildu weba. Dispatch jednocześnie każe „sprawdzać crate'y realnie”. Jednorazowe buildy w scratchpadzie traktuję więc jako pomiar, tak jak `cargo info`. W r1 kod spike'ów trafił do `dowody/`, co naruszało ten zakres (zarzut E-2). W r2 usunięto go z repo, a zostały tylko logi i hashe. Jeśli orkiestrator uzna, że także build w scratchpadzie wykracza poza zakres, z §0 pkt 5, §4.4 i §5.2 trzeba usunąć tezy „zbudowane na 1.87.0” i oznaczyć je jako NIE_ZMIERZONO. Wymaga to jawnej decyzji orkiestratora.
 - **Z-4:** AA w skali szarości, bez subpikseli i bez hintingu.
 - **Z-5:** `turnLabel` w T6 jest w pinie nieużywany przez wywołujących (`main.ts:25274`, `:25303` podają `turnStops`). Treść T6 to więc tylko cyfry.
 
 ## 9. NIE_ZMIERZONO (zbiorczo)
 
-Wygląd glifów ⚔ ☠ 👤 🔥 na Windows u właściciela. Domyślne ustawienia Three r169 dla `CanvasTexture` (filtry, `premultiplyAlpha`). Hinting i AA tekstu Chromium/DirectWrite. Liczba tekstur T3–T6/T13 tworzonych na turę. Determinizm tiny-skia poza x86_64. Build `harfrust`/`rustybuzz`/dekoderów JPG na 1.87 (zbudowano tylko tiny-skia, ab_glyph, resvg). Metryczna zgodność Gelasio/Selawik. Narzędzie do subsetowania emoji. Rzeczywista szerokość nazw w fontach Georgia/Segoe UI (pomiar weba może pochodzić z Linuksa, §3.5). Skala DPI okna Tauri.
+Wygląd glifów ⚔ ☠ 👤 🔥 na Windows u właściciela. Domyślne ustawienia Three r169 dla `CanvasTexture` (filtry, `premultiplyAlpha`). Hinting i AA tekstu Chromium/DirectWrite. Liczba tekstur T3–T6/T13 tworzonych na turę. Determinizm tiny-skia poza x86_64. Build `harfrust`/`rustybuzz`/dekoderów JPG na 1.87 (zbudowano tylko tiny-skia, ab_glyph, resvg). Metryczna zgodność Gelasio/Selawik. Narzędzie do subsetowania emoji. Rzeczywista szerokość nazw w fontach Georgia/Segoe UI (pomiar weba może pochodzić z Linuksa, §3.5). Skala DPI okna Tauri. Prawo redystrybucji fontów Windows i warunki licencji komercyjnej (Z-6, D-TXT-1 D). Czy Chromium stosuje alfę `fillStyle` do kolorowych glifów (Z-7). Wygląd 17 emoji R4 na Windows. Build `zune-jpeg 0.5.15` na 1.87.
