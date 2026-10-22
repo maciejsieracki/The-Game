@@ -1,0 +1,59 @@
+{
+  "meta": {
+    "temat": "R-RUSTPORT-P6-1E-CIV-DANE-MACIERZE-Q1",
+    "pin_web": "edb8fb56",
+    "status": "BOOTSTRAP P6.1E: stale balansowe/strukturalne civ-matrix.ts, civ-ai-data.ts, civ-roster.ts, civ-names.ts przepisane z weba (wartosci zweryfikowane regexem w verify-p61e-web-vectors.py). Zrodlem prawdy jest TA tabela.",
+    "zrodlo_web": {
+      "trudnosc": "gra/src/game/civ-matrix.ts:77-79",
+      "formula_domyslna": "gra/src/game/civ-matrix.ts:112,118",
+      "ai_dane": "gra/src/game/civ-ai-data.ts:49,53,66-68,91-100,138,169,176,192,196,207,213,217",
+      "roster": "gra/src/game/civ-roster.ts:72,160,171",
+      "nazwy": "gra/src/game/civ-names.ts:32"
+    }
+  },
+  "trudnosc": {
+    "formula_skalowana": "skala",
+    "delta_latwy": -1,
+    "delta_trudny": 1,
+    "min": 1,
+    "max": 10
+  },
+  "formula_domyslna": "mul_proc",
+  "nazwy": {
+    "miasta_cywilizacji_len": 100
+  },
+  "roster": {
+    "przesuniecie_ziarna_tasowania_ai": 7919,
+    "awaryjny_typ": "grecy",
+    "min_typow": 1
+  },
+  "ai": {
+    "parametry": {
+      "agresywnosc": "ai_agresywnosc",
+      "ekspansywnosc": "ai_ekspansywnosc",
+      "priorytet_militarny": "ai_priorytet_militarny",
+      "priorytet_ekonomia": "ai_priorytet_ekonomia",
+      "priorytet_nauka": "ai_priorytet_nauka",
+      "tolerancja_ryzyka": "ai_tolerancja_ryzyka",
+      "sklonnosc_podboju": "ai_sklonnosc_podboju",
+      "profil_obronna": "ai_profil_obronna"
+    },
+    "domyslna_wartosc_skali": 5,
+    "dzielnik_skali": 10,
+    "zakres": {
+      "min": 0,
+      "max": 1
+    },
+    "profil_obronna_wartosc": 1,
+    "profil_mapy_obronna": "kopia_typu_obronna",
+    "profil_mapy_standardowa": "standardowa"
+  },
+  "dyplomacja": {
+    "parametr_handel": "dip_handlowosc_archetyp",
+    "dzielnik_otwartosc_handel": 10,
+    "parametr_nastawienie": "dip_nastawienie_bazowe",
+    "nastawienie_baza_domyslna": 50,
+    "nastawienie_podzial": 2
+  },
+  "typ_bez_nazwy_excel": "drobna_cywilizacja"
+}

@@ -1352,3 +1352,329 @@ pub fn teren_ruch_reguly() -> &'static TerenRuchRegulyFile {
     static TABLE: std::sync::OnceLock<TerenRuchRegulyFile> = std::sync::OnceLock::new();
     TABLE.get_or_init(|| parse_teren_ruch_reguly().expect("teren-ruch-reguly.json must parse"))
 }
+
+// ---------------------------------------------------------------------------
+// P6.1E (R-RUSTPORT-P6-1E-CIV-DANE-MACIERZE-Q1): stale macierzy cywilizacji, profili AI,
+// przydzialu cywilizacji i semantycznej prezentacji macierzy (web civ-matrix.ts,
+// civ-matrix-semantic.ts, civ-ai-data.ts, civ-roster.ts, civ-names.ts). Czytaja je
+// `domain/civ_matrix.rs` i `domain/civ_names.rs`.
+// ---------------------------------------------------------------------------
+
+pub const CIV_MATRIX_PARAMS_JSON: &str = include_str!("../../data/derived/civ-matrix-params.json");
+pub const CIV_MATRIX_SEMANTIC_JSON: &str =
+    include_str!("../../data/derived/civ-matrix-semantic.json");
+
+/// `civ-matrix-params.json`: trudnosc, formula domyslna, profile AI, dyplomacja, przydzial.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct CivMatrixParamsFile {
+    pub meta: serde_json::Value,
+    pub trudnosc: CivMatrixDifficultyRule,
+    pub formula_domyslna: String,
+    pub nazwy: CivNamesParams,
+    pub roster: CivRosterParams,
+    pub ai: CivAiParams,
+    pub dyplomacja: CivDiplomacyParams,
+    /// Wartosc `TypCywilizacji`, dla ktorej web nie ma nazwy Excel (`DrobnaCywilizacja`).
+    pub typ_bez_nazwy_excel: String,
+}
+
+/// Skalowanie parametrow `skala` poziomem trudnosci (web `civMatrixParamAtDifficulty`).
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct CivMatrixDifficultyRule {
+    pub formula_skalowana: String,
+    pub delta_latwy: f64,
+    pub delta_trudny: f64,
+    pub min: f64,
+    pub max: f64,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct CivNamesParams {
+    /// Web `MIASTA_CYWILIZACJI_LEN`: pierwsze N pozycji wspolnej puli to miasta cywilizacji.
+    pub miasta_cywilizacji_len: usize,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct CivRosterParams {
+    pub przesuniecie_ziarna_tasowania_ai: i64,
+    pub awaryjny_typ: String,
+    pub min_typow: i64,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct CivAiParams {
+    pub parametry: CivAiParamIds,
+    pub domyslna_wartosc_skali: f64,
+    pub dzielnik_skali: f64,
+    pub zakres: CivUnitRange,
+    pub profil_obronna_wartosc: f64,
+    pub profil_mapy_obronna: String,
+    pub profil_mapy_standardowa: String,
+}
+
+/// Identyfikatory parametrow macierzy czytane przez profil AI.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct CivAiParamIds {
+    pub agresywnosc: String,
+    pub ekspansywnosc: String,
+    pub priorytet_militarny: String,
+    pub priorytet_ekonomia: String,
+    pub priorytet_nauka: String,
+    pub tolerancja_ryzyka: String,
+    pub sklonnosc_podboju: String,
+    pub profil_obronna: String,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct CivUnitRange {
+    pub min: f64,
+    pub max: f64,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct CivDiplomacyParams {
+    pub parametr_handel: String,
+    pub dzielnik_otwartosc_handel: f64,
+    pub parametr_nastawienie: String,
+    pub nastawienie_baza_domyslna: f64,
+    pub nastawienie_podzial: f64,
+}
+
+/// `civ-matrix-semantic.json`: zbiory statusow, teksty i slowniki prezentacji macierzy.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct CivMatrixSemanticFile {
+    pub meta: serde_json::Value,
+    pub wersja: String,
+    pub trudnosc: String,
+    pub baza_porownania: String,
+    pub zrodlo_wartosci: CivSemanticSources,
+    pub nieznane: CivSemanticUnknown,
+    pub skala_intensywnosci: CivSemanticScale,
+    pub polaryzacja: CivSemanticPolarityNames,
+    pub etykiety_kierunku: CivSemanticDirectionLabels,
+    pub polityka_pasm: String,
+    pub pasma_neutralne: CivSemanticBands,
+    pub zbiory: CivSemanticSets,
+    /// Status (`REAL_GAMEPLAY`, ...) -> etykieta PL.
+    pub etykiety_statusow: BTreeMap<String, String>,
+    pub powody: CivSemanticReasons,
+    pub blokada_wejscia: CivSemanticInputBlocks,
+    pub zachowanie_trudnosci: CivSemanticDifficultyTexts,
+    /// Parametr -> opis udowodnionego konsumenta po stronie weba.
+    pub dowody_konsumentow: BTreeMap<String, String>,
+    pub etykieta_parametru: CivSemanticParamLabel,
+    pub formatowanie: CivSemanticFormatting,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct CivSemanticSources {
+    pub macierz: String,
+    pub brak: String,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct CivSemanticUnknown {
+    pub wersja_macierzy: String,
+    pub domena: String,
+    pub jednostka: String,
+    pub formula: String,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct CivSemanticScale {
+    pub min: f64,
+    pub max: f64,
+    pub mnoznik: f64,
+    pub zaokraglenie: f64,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct CivSemanticPolarityNames {
+    pub korzystna: String,
+    pub szkodliwa: String,
+    pub neutralna: String,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct CivSemanticDirectionLabels {
+    pub pozytywny: String,
+    pub negatywny: String,
+    pub neutralny: String,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct CivSemanticBands {
+    /// Kolejnosc ma znaczenie: pierwsza pasujaca regula wygrywa.
+    pub reguly: Vec<CivSemanticBandRule>,
+    pub domyslne: CivSemanticBandValue,
+    pub nieznany_parametr: CivSemanticBandValue,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct CivSemanticBandRule {
+    pub klucz: String,
+    pub tolerancja: f64,
+    /// Regula pasuje, gdy formula LUB jednostka parametru jest na liscie.
+    pub gdy_formula: Vec<String>,
+    pub gdy_jednostka: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct CivSemanticBandValue {
+    pub klucz: String,
+    pub tolerancja: f64,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct CivSemanticSets {
+    pub real_gameplay: Vec<String>,
+    pub ui_only: Vec<String>,
+    pub decision_required: Vec<String>,
+    pub szkodliwe: Vec<String>,
+    pub walka_zablokowana: Vec<String>,
+    pub walka_martwa: Vec<String>,
+    pub domeny_neutralne: Vec<String>,
+    pub prefiksy_neutralne: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct CivSemanticReasons {
+    #[serde(rename = "REAL_GAMEPLAY")]
+    pub real_gameplay: CivSemanticRealReasons,
+    #[serde(rename = "UI_ONLY")]
+    pub ui_only: String,
+    #[serde(rename = "DEAD_UNWIRED")]
+    pub dead_unwired: String,
+    #[serde(rename = "PROPOSAL")]
+    pub proposal: String,
+    #[serde(rename = "REFERENCE_NEEDS_REVIEW")]
+    pub reference_needs_review: String,
+    #[serde(rename = "UNWIRED")]
+    pub unwired: CivSemanticReasonWithExceptions,
+    #[serde(rename = "BLOCKED")]
+    pub blocked: CivSemanticBlockedReasons,
+    #[serde(rename = "DECISION_REQUIRED")]
+    pub decision_required: CivSemanticReasonWithExceptions,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct CivSemanticRealReasons {
+    pub neutralny: String,
+    pub pozostale: String,
+}
+
+/// Tekst domyslny (szablon z `{parametr}`) + wyjatki per identyfikator parametru.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct CivSemanticReasonWithExceptions {
+    pub domyslny: String,
+    pub wyjatki: BTreeMap<String, String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct CivSemanticBlockedReasons {
+    pub domyslny: String,
+    pub grupa_walka_zablokowana: String,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct CivSemanticInputBlocks {
+    pub nieznany_parametr: String,
+    pub brak_wartosci: String,
+    pub nieznana_cywilizacja: String,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct CivSemanticDifficultyTexts {
+    pub bez_roznic_statusy: Vec<String>,
+    pub bez_roznic_tekst: String,
+    pub wyjatki: BTreeMap<String, String>,
+    pub grupa_bez_wzmocnien: CivSemanticDifficultyGroup,
+    pub prefiks_ai: CivSemanticDifficultyPrefix,
+    pub domyslny: String,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct CivSemanticDifficultyGroup {
+    pub parametry: Vec<String>,
+    pub tekst: String,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct CivSemanticDifficultyPrefix {
+    pub prefiks: String,
+    pub tekst: String,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct CivSemanticParamLabel {
+    pub separator_czesci: String,
+    pub sufiks_proc: CivSemanticSuffixRule,
+    pub slownik: BTreeMap<String, String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct CivSemanticSuffixRule {
+    pub koncowka: String,
+    pub zamiennik: String,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct CivSemanticFormatting {
+    pub brak: String,
+    pub flag_tak: String,
+    pub flag_nie: String,
+    pub jednostki_ulamek: Vec<String>,
+    pub jednostka_flaga: String,
+    pub mnoznik_procent: f64,
+    pub cyfry_procent: usize,
+    pub cyfry_wartosc: usize,
+}
+
+pub fn parse_civ_matrix_params() -> Result<CivMatrixParamsFile, serde_json::Error> {
+    serde_json::from_str(CIV_MATRIX_PARAMS_JSON)
+}
+
+pub fn parse_civ_matrix_semantic() -> Result<CivMatrixSemanticFile, serde_json::Error> {
+    serde_json::from_str(CIV_MATRIX_SEMANTIC_JSON)
+}
+
+/// Tabela parametrow macierzy (zaladowana raz; blad parsowania to blad danych pokryty testem ksztaltu).
+pub fn civ_matrix_params() -> &'static CivMatrixParamsFile {
+    static TABLE: std::sync::OnceLock<CivMatrixParamsFile> = std::sync::OnceLock::new();
+    TABLE.get_or_init(|| parse_civ_matrix_params().expect("civ-matrix-params.json must parse"))
+}
+
+/// Tabela semantyki macierzy (zaladowana raz).
+pub fn civ_matrix_semantic() -> &'static CivMatrixSemanticFile {
+    static TABLE: std::sync::OnceLock<CivMatrixSemanticFile> = std::sync::OnceLock::new();
+    TABLE.get_or_init(|| parse_civ_matrix_semantic().expect("civ-matrix-semantic.json must parse"))
+}

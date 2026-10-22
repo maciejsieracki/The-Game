@@ -11,13 +11,12 @@
 //! - tokeny dopasowania tekstu (opisy i nazwy po polsku, bez polskich znakow) - logika
 //!   parsowania `opis`/`typNazwa`, w module `tok`.
 //!
-//! `civMatrixParam` (civ-matrix.ts) jest tu reprodukowany tylko jako prywatny odczyt
-//! `matrix_param` (semantyka 1:1: wiersz po `ikonaId`/`typCywilizacji`/`Cywilizacja`,
-//! potem `defaults`, potem 0); pelny port civ-matrix.ts nalezy do osobnego tematu.
+//! `civMatrixParam` (civ-matrix.ts) jest od P6.1E pelnym portem w [`super::civ_matrix`];
+//! prywatny `matrix_param` tego modulu deleguje do `civ_matrix::civ_matrix_param`.
 
 use std::collections::HashMap;
 
-use crate::data::civilizations::{BonusyItem, CivMatrixFile, Num, WartoscValue};
+use crate::data::civilizations::{BonusyItem, CivMatrixFile, WartoscValue};
 use crate::data::derived::{
     civ_bonus_diacritics, civ_bonus_matrix_specs, civ_bonus_rules, CivBonusStatRule,
 };
@@ -501,31 +500,11 @@ pub fn apply_multiplier(base: f64, add_frac: f64) -> f64 {
     base * (1.0 + add_frac)
 }
 
-fn num_to_f64(n: &Num) -> f64 {
-    match n {
-        Num::Int(i) => *i as f64,
-        Num::Float(f) => *f,
-    }
-}
-
-/// Reprodukcja `civMatrixParam` (civ-matrix.ts) - odczyt surowej wartosci parametru macierzy.
+/// `civMatrixParam` (civ-matrix.ts): od P6.1E pelny port zyje w [`super::civ_matrix`]; tu tylko
+/// krotki alias dla wywolan wewnatrz modulu (semantyka bez zmian: wiersz po
+/// `ikonaId`/`typCywilizacji`/`Cywilizacja`, potem `defaults`, potem 0).
 fn matrix_param(matrix: &CivMatrixFile, civ_key: &str, param_id: &str) -> f64 {
-    let key = civ_key.to_lowercase();
-    let row = matrix.cywilizacje.iter().find(|c| {
-        c.ikona_id.to_lowercase() == key
-            || c.typ_cywilizacji.to_lowercase() == key
-            || c.cywilizacja.to_lowercase() == key
-    });
-    let default = matrix.defaults.get(param_id).map(num_to_f64);
-    match row {
-        None => default.unwrap_or(0.0),
-        Some(row) => row
-            .params
-            .get(param_id)
-            .map(num_to_f64)
-            .or(default)
-            .unwrap_or(0.0),
-    }
+    super::civ_matrix::civ_matrix_param(matrix, civ_key, param_id)
 }
 
 /// Wpisy bonusow walki/ekonomii wynikajace z macierzy cywilizacji dla klucza `civ_key`

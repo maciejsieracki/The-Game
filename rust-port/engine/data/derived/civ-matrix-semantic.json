@@ -1,0 +1,428 @@
+{
+  "meta": {
+    "temat": "R-RUSTPORT-P6-1E-CIV-DANE-MACIERZE-Q1",
+    "pin_web": "edb8fb56",
+    "status": "BOOTSTRAP P6.1E: tabele wygenerowane z URUCHOMIONEGO weba (gen-p61e-tables.mjs). Zrodlem prawdy jest TA tabela; test ksztaltu nie pinuje wartosci.",
+    "zrodlo_web": {
+      "plik": "gra/src/game/civ-matrix-semantic.ts",
+      "wersja": "linia 11 (CIV_MATRIX_SEMANTIC_VERSION)",
+      "konsumenci": "linie 90-129 (PROVEN_CONSUMERS)",
+      "zbiory": "linie 131-256 (REAL_GAMEPLAY, UI_ONLY, DECISION_REQUIRED, HARMFUL, BLOCKED_COMBAT_MULTIPLIER, DEAD_UNWIRED_COMBAT)",
+      "pasma": "linie 305-323 (civMatrixNeutralBand)",
+      "teksty": "linie 338-415 (statusLabel, statusReason, difficultyBehavior, consumerExplanation)",
+      "slownik_etykiet": "linie 593-618 (civMatrixParameterLabelPl)"
+    },
+    "uwaga": "Statusy REAL_GAMEPLAY/UI_ONLY/... to ADNOTACJE weba o tym, kto konsumuje parametr; NIE opisuja stanu silnika Rust. Edycja zbiorow nie zmienia mechaniki gry."
+  },
+  "wersja": "normal-median-signed-v1",
+  "trudnosc": "normal",
+  "baza_porownania": "normal-median-all-15",
+  "zrodlo_wartosci": {
+    "macierz": "gra/data/civ-matrix.json",
+    "brak": "missing"
+  },
+  "nieznane": {
+    "wersja_macierzy": "unknown",
+    "domena": "unknown",
+    "jednostka": "unknown",
+    "formula": "unknown"
+  },
+  "skala_intensywnosci": {
+    "min": -10,
+    "max": 10,
+    "mnoznik": 10,
+    "zaokraglenie": 100
+  },
+  "polaryzacja": {
+    "korzystna": "beneficial",
+    "szkodliwa": "harmful",
+    "neutralna": "neutral/not-applicable"
+  },
+  "etykiety_kierunku": {
+    "pozytywny": "POZYTYWNY",
+    "negatywny": "NEGATYWNY",
+    "neutralny": "NEUTRALNY"
+  },
+  "polityka_pasm": "unit-aware-v1",
+  "pasma_neutralne": {
+    "reguly": [
+      {
+        "klucz": "exact_flag",
+        "tolerancja": 0,
+        "gdy_formula": [
+          "flag"
+        ],
+        "gdy_jednostka": [
+          "flag_0_1"
+        ]
+      },
+      {
+        "klucz": "fraction_0_005",
+        "tolerancja": 0.005,
+        "gdy_formula": [],
+        "gdy_jednostka": [
+          "ulamek",
+          "ulamek_0_1"
+        ]
+      },
+      {
+        "klucz": "scale_0_5",
+        "tolerancja": 0.5,
+        "gdy_formula": [],
+        "gdy_jednostka": [
+          "skala_1_10"
+        ]
+      },
+      {
+        "klucz": "integer_0_5",
+        "tolerancja": 0.5,
+        "gdy_formula": [],
+        "gdy_jednostka": [
+          "integer"
+        ]
+      },
+      {
+        "klucz": "integer_0_5",
+        "tolerancja": 0.5,
+        "gdy_formula": [
+          "add",
+          "stat_abs"
+        ],
+        "gdy_jednostka": []
+      }
+    ],
+    "domyslne": {
+      "klucz": "decimal_0_05",
+      "tolerancja": 0.05
+    },
+    "nieznany_parametr": {
+      "klucz": "exact_flag",
+      "tolerancja": 0
+    }
+  },
+  "zbiory": {
+    "real_gameplay": [
+      "lud_wzrost_proc",
+      "lud_spadek_proc",
+      "lud_zdrowie_proc",
+      "lud_zadowolenie_bazowe",
+      "lud_limit_populacji",
+      "meta_mnoznik_waluta",
+      "walka_atak_morska",
+      "walka_atak_kawaleria",
+      "walka_atak_rydwany",
+      "walka_atak_obleczenie",
+      "walka_obrona_morska",
+      "walka_atak_piechota_teren_plytkie_morze",
+      "walka_obrona_piechota_teren_plytkie_morze",
+      "walka_dystans_rydwany",
+      "walka_obrona_piechota_teren_las",
+      "walka_uderzenie_piechota",
+      "walka_uderzenie_kawaleria",
+      "walka_atak_piechota_teren_las",
+      "walka_obrona_piechota_terytorium_wlasne",
+      "walka_obrona_piechota_w_murze",
+      "walka_atak_piechota_runda_szarzy",
+      "mp_regen_proc",
+      "mp_max_proc",
+      "mp_koszt_jednostki_proc",
+      "dip_handlowosc_archetyp",
+      "ai_agresywnosc",
+      "ai_ekspansywnosc",
+      "ai_priorytet_militarny",
+      "ai_priorytet_ekonomia",
+      "ai_priorytet_nauka",
+      "ai_tolerancja_ryzyka",
+      "ai_sklonnosc_podboju",
+      "ai_profil_obronna"
+    ],
+    "ui_only": [
+      "dip_sklonnosc_sojusze",
+      "dip_lojalnosc",
+      "dip_prog_wojny",
+      "dip_pamietliwosc",
+      "dip_otwartosc_handel"
+    ],
+    "decision_required": [
+      "dip_nastawienie_bazowe",
+      "dip_agresja_archetyp"
+    ],
+    "szkodliwe": [
+      "walka_koszt_rekrutacji_proc",
+      "eko_korupcja_proc",
+      "prod_koszt_budynku_proc",
+      "prod_koszt_jednostki_proc",
+      "prod_rush_koszt_proc",
+      "lud_spadek_proc",
+      "mp_koszt_jednostki_proc"
+    ],
+    "walka_zablokowana": [
+      "walka_atak_piechota",
+      "walka_obrona_piechota",
+      "walka_pancerz_piechota",
+      "walka_dystans_lukownicy",
+      "walka_hp_piechota",
+      "walka_hp_rydwany",
+      "walka_ruch_bitwa_proc",
+      "walka_koszt_rekrutacji_proc"
+    ],
+    "walka_martwa": [
+      "walka_atak_lukownicy",
+      "walka_atak_wszystkie",
+      "walka_obrona_lukownicy",
+      "walka_obrona_kawaleria",
+      "walka_obrona_rydwany",
+      "walka_obrona_obleczenie",
+      "walka_pancerz_lukownicy",
+      "walka_pancerz_kawaleria",
+      "walka_pancerz_rydwany",
+      "walka_uderzenie_rydwany",
+      "walka_hp_kawaleria",
+      "walka_zasieg_proc",
+      "walka_oblezenie_proc",
+      "walka_atak_piechota_terytorium_wlasne",
+      "walka_atak_piechota_w_murze",
+      "walka_obrona_piechota_runda_szarzy",
+      "obl_obrona_miasta_proc",
+      "obl_mur_proc",
+      "obl_machines_proc"
+    ],
+    "domeny_neutralne": [
+      "ai",
+      "dyplomacja"
+    ],
+    "prefiksy_neutralne": [
+      "ai_",
+      "dip_"
+    ]
+  },
+  "etykiety_statusow": {
+    "REAL_GAMEPLAY": "AKTYWNE",
+    "UI_ONLY": "TYLKO INFORMACJA",
+    "REFERENCE_NEEDS_REVIEW": "DO WERYFIKACJI",
+    "UNWIRED": "NIEAKTYWNE — BRAK KONSUMENTA",
+    "DEAD_UNWIRED": "ZAMKNIĘTE — NIEAKTYWNE",
+    "PROPOSAL": "PROPOZYCJA",
+    "BLOCKED": "ZABLOKOWANE",
+    "DECISION_REQUIRED": "WYMAGA DECYZJI WŁAŚCICIELA"
+  },
+  "powody": {
+    "REAL_GAMEPLAY": {
+      "neutralny": "Wartość ma potwierdzone użycie w profilu AI/relacji; badge pozostaje neutralny, a opis profilu jest osobny.",
+      "pozostale": "Wartość ma potwierdzony konsument produkcyjny; badge opisuje kierunek względem mediany, nie dodatkowy efekt."
+    },
+    "UI_ONLY": "Wartość służy tylko do opisu relacji/profilu w UI; nie jest premią gameplayową.",
+    "DEAD_UNWIRED": "Pole zachowane jako proweniencja, bez aktywnego wpływu.",
+    "PROPOSAL": "Wartość/specyfikacja jest propozycją; nie wpływa na runtime.",
+    "REFERENCE_NEEDS_REVIEW": "Znaleziono ślad referencyjny, ale brak dowodu efektu w runtime.",
+    "UNWIRED": {
+      "domyslny": "Brak potwierdzonego konsumenta dla {parametr}; wymagane osobne rozstrzygnięcie aktora, warunku, formuły, precedencji i testu.",
+      "wyjatki": {
+        "dip_nastawienie_bazowe": "Brak potwierdzonego live konsumenta dla dip_nastawienie_bazowe; inicjalizator klastra nie używa tego pola, a kontrakt właściciela dla aktora i warunku pozostaje nierozstrzygnięty."
+      }
+    },
+    "BLOCKED": {
+      "domyslny": "Pole zablokowane do decyzji; nie ma efektywnego wpływu.",
+      "grupa_walka_zablokowana": "Zablokowane do decyzji właściciela (runda 2, R-CYWILIZACJE-MACIERZ-WIRING-COMBAT-RECON-ORIGIN-20260922): {parametr} opisuje ten sam efekt walki, który już dziś dostarcza niezależny kanał civs.json→bonusy[]→civ-bonuses.ts; bez decyzji o precedencji (zastąp / sumuj / ignoruj macierz) podłączenie civ-matrix.json ryzykuje ciche podwojenie lub konflikt bonusu. Patrz 02-decision-packet-combat.md."
+    },
+    "DECISION_REQUIRED": {
+      "domyslny": "Pole wymaga decyzji właściciela przed wiringiem; brak jednoznacznego kontraktu aktora, warunku, formuły i precedencji.",
+      "wyjatki": {
+        "dip_nastawienie_bazowe": "Runda 2: potwierdzono ponownie brak żywego konsumenta — pomocnik nastawienieBazoweZaufanieDelta jest wołany wyłącznie z czystego initialRelation, a initialRelation nie ma żadnego wywołania runtime w main.ts/cluster-start.ts (żywy start klastra używa startRelationForPair, który tego pola nie czyta). Decyzja właściciela (aktor, warunek, precedencja) wymagana przed jakimkolwiek wiringiem — patrz pakiet A/B/C.",
+        "dip_agresja_archetyp": "Runda 2: potwierdzono ponownie brak jakiegokolwiek wywołania runtime dla dip_agresja_archetyp w gra/src poza samym klasyfikatorem/danymi macierzy; istniejący konsument agresji (resolveArchetypeAggression) czyta wyłącznie ai_agresywnosc. Decyzja właściciela (aktor, warunek, relacja wobec ai_agresywnosc) wymagana przed jakimkolwiek wiringiem — patrz pakiet A/B/C."
+      }
+    }
+  },
+  "blokada_wejscia": {
+    "nieznany_parametr": "Nieznany parametr {parametr}; brak cichego fallbacku.",
+    "brak_wartosci": "Brak wartości dla {cywilizacja}/{parametr}; brak cichego fallbacku do Grecji.",
+    "nieznana_cywilizacja": "Nieznana cywilizacja „{cywilizacja}”; profil zablokowany. Nie użyto danych Grecji jako fallbacku."
+  },
+  "zachowanie_trudnosci": {
+    "bez_roznic_statusy": [
+      "UI_ONLY",
+      "UNWIRED",
+      "PROPOSAL",
+      "BLOCKED",
+      "DECISION_REQUIRED"
+    ],
+    "bez_roznic_tekst": "Panel etykiet używa wyłącznie tożsamości Normal; brak deklarowanego efektu Easy/Hard.",
+    "wyjatki": {
+      "lud_wzrost_proc": "Normal ×1.00; aktywny konsument wzrostu stosuje Easy ×0.50 i Hard ×1.50 do wkładu cywilizacji."
+    },
+    "grupa_bez_wzmocnien": {
+      "parametry": [
+        "lud_spadek_proc",
+        "lud_zdrowie_proc",
+        "lud_zadowolenie_bazowe"
+      ],
+      "tekst": "Normal ×1.00; Easy i Hard nie wzmacniają ani nie osłabiają wartości macierzy — istniejąca logika trudności pozostaje bez zmian."
+    },
+    "prefiks_ai": {
+      "prefiks": "ai_",
+      "tekst": "Tożsamość Normal w panelu; istniejący konsument skali AI ma jawny krok Normal−1 / Normal / Normal+1, ograniczony do 1…10."
+    },
+    "domyslny": "Tożsamość Normal w panelu; nie przepisuje surowej wartości na Easy/Hard."
+  },
+  "dowody_konsumentow": {
+    "lud_wzrost_proc": "population-growth-v85.ts:230–232 — wkład wzrostu ludności; trudność ×0.50/×1.00/×1.50",
+    "lud_spadek_proc": "population-growth-v85.ts:339–365, 490–528 — centralny głód skaluje istniejący ubytek liniowo przez bufor ułamkowy; minimum populacji zachowane",
+    "lud_zdrowie_proc": "population-growth-v85.ts:248–255, 496–503 — centralny growthPct skaluje raz istniejący wkład floor(max(0, zdrowie)/10); raw health i legacy healthModifier bez zmian",
+    "lud_zadowolenie_bazowe": "main.ts:32134–32149 + population-growth-v85.ts:248–255, 496–503 — jeden resolved bonus ownerCivMap trafia do Order/rewolty i bounded happiness-to-growth",
+    "lud_limit_populacji": "economy.ts:1143–1160 + population-growth-v85.ts:293–297, 537–538 — buildingCap 5/8/12 plus approved Matrix delta -1/0/+1/+2, shared by legacy and central growth paths",
+    "meta_mnoznik_waluta": "economy.ts:826–877 + turn-economy.ts:297 + cityPanel.ts:1196,10897; civ-matrix-meta-roster-wiring-test.cjs:60–100 — matrix-backed currency multiplier, owner-approved Q69 difficulty delta and 63/63 roster/yield receipt",
+    "walka_atak_morska": "civ-bonuses.ts:264–295 MATRIX_COMBAT_SPECS→bonus_walka/morska; civCombatStatMultipliers()/bonusApplies() require unit category morska; combat.ts:874–881,904–907 applies attacker stats; main.ts owner bonus resolution→BattleScene attackerCivBonusy. Existing effect only; no new difficulty rule.",
+    "walka_atak_kawaleria": "civ-bonuses.ts:264–295 MATRIX_COMBAT_SPECS→bonus_walka/kawaleria; bonusApplies() unit category gate; civCombatStatMultipliers()/applyWalkBonus() produce atk; combat.ts:874–881,904–907 applies attacker stats; main.ts:8213–8219 supplies matrix bonuses for each owner. Existing effect only; no new difficulty rule.",
+    "walka_atak_rydwany": "civ-bonuses.ts:264–295 MATRIX_COMBAT_SPECS→bonus_walka/rydwany; bonusApplies() unit category gate; civCombatStatMultipliers()/applyWalkBonus() produce atk; combat.ts:874–881,904–907 applies attacker stats; main.ts:8213–8219 supplies matrix bonuses for each owner. Existing effect only; no new difficulty rule.",
+    "walka_atak_obleczenie": "civ-bonuses.ts:264–295 MATRIX_COMBAT_SPECS→bonus_walka/obleczenie; bonusApplies() siege-category gate; civCombatStatMultipliers()/applyWalkBonus() produce atk; combat.ts:874–881,904–907 applies attacker stats; main.ts:8213–8219 supplies matrix bonuses for each owner. Existing effect only; no new difficulty rule.",
+    "walka_obrona_morska": "civ-bonuses.ts:264–295 MATRIX_COMBAT_SPECS→bonus_obrona/morska; civCombatStatMultipliers()/bonusApplies() require unit category morska and defender side; combat.ts:887–894,909–912 applies defender stats; main.ts owner bonus resolution→BattleScene defenderCivBonusy. Existing effect only; no new difficulty rule.",
+    "walka_atak_piechota_teren_plytkie_morze": "civ-bonuses.ts:264–295 MATRIX_COMBAT_SPECS→bonus_walka/piechota; civCombatStatMultipliers()/bonusApplies() require infantry and ctx.shallowSea=true; combat.ts:874–881 passes the shallow-sea context and applies attacker stats; main.ts owner bonus resolution→BattleScene attackerCivBonusy. Existing conditional effect only.",
+    "walka_obrona_piechota_teren_plytkie_morze": "civ-bonuses.ts:264–295 MATRIX_COMBAT_SPECS→bonus_obrona/piechota; civCombatStatMultipliers()/bonusApplies() require infantry, defender side and ctx.shallowSea=true; combat.ts:887–894 passes context and applies defender stats; main.ts owner bonus resolution→BattleScene defenderCivBonusy. Existing conditional effect only.",
+    "walka_dystans_rydwany": "civ-bonuses.ts:264–295 MATRIX_COMBAT_SPECS→bonus_walka/rydwany; civCombatStatMultipliers() maps the entry to rangedAtk (combat.ts:874–912) and civAttackRangeMultiplier() applies the chariot range factor (battleScene.ts:7186–7190); main.ts owner bonus resolution supplies BattleScene attacker/defender entries. Existing effect only.",
+    "walka_obrona_piechota_teren_las": "civ-bonuses.ts:264–295 MATRIX_COMBAT_SPECS→bonus_obrona/piechota; civCombatStatMultipliers()/bonusApplies() require infantry, defender side and terrainIsForestOrJungle (forest/jungle/mountain); combat.ts:887–894 passes defender terrain; main.ts owner bonus resolution→BattleScene defenderCivBonusy. Existing conditional effect only.",
+    "walka_uderzenie_piechota": "civ-bonuses.ts:264–295 MATRIX_COMBAT_SPECS→bonus_walka/piechota; bonusApplies() category gate and applyWalkBonus() maps walka_uderzenie_* to uderzenie (194); combat.ts:1080–1105,1115–1126 applies it to charge hit/damage; main.ts:8213–8219 supplies matrix bonuses for each owner. Existing effect only; no new difficulty rule.",
+    "walka_uderzenie_kawaleria": "civ-bonuses.ts:264–295 MATRIX_COMBAT_SPECS→bonus_walka/kawaleria; bonusApplies() category gate and applyWalkBonus() maps walka_uderzenie_* to uderzenie (194); combat.ts:1080–1105,1115–1126 applies it to charge hit/damage; main.ts:8213–8219 supplies matrix bonuses for each owner. Existing effect only; no new difficulty rule.",
+    "walka_atak_piechota_teren_las": "civ-bonuses.ts:264–295 MATRIX_COMBAT_SPECS→bonus_walka/piechota; bonusApplies() gates _teren_las by terrainIsForestOrJungle (117–120,159); combat.ts:874–881 passes defender terrain and 904–907 applies attacker stats; main.ts:8213–8219 supplies matrix bonuses for each owner. Existing conditional effect only.",
+    "walka_obrona_piechota_terytorium_wlasne": "civ-bonuses.ts:264–295 MATRIX_COMBAT_SPECS→bonus_obrona/piechota; bonusApplies() requires ownTerritory (154–157) and defender side; combat.ts:887–894 passes defender ownership and 909–912 applies defense; main.ts:8213–8219 supplies matrix bonuses for each owner. Existing conditional effect only.",
+    "walka_obrona_piechota_w_murze": "civ-bonuses.ts:264–295 MATRIX_COMBAT_SPECS→bonus_obrona/piechota; civWallDefenseMultiplier() matches this ID (340–342); combat.ts:976–982 and battleScene.ts:8231–8234 apply it only on the wall walkway; main.ts:8213–8219 supplies matrix bonuses for each owner. Existing conditional effect only.",
+    "walka_atak_piechota_runda_szarzy": "civ-bonuses.ts:264–295 MATRIX_COMBAT_SPECS→bonus_walka/piechota; bonusApplies() requires isChargeRound for _runda_szarzy (161); combat.ts:1080–1105,1115–1126 passes the round condition and applies attacker stats; main.ts:8213–8219 supplies matrix bonuses for each owner. Existing conditional effect only.",
+    "mp_regen_proc": "manpower.ts + turn-economy.ts — exact civ-matrix multiplier is applied to live city regeneration for player and AI owners",
+    "mp_max_proc": "manpower.ts + turn-economy.ts + population-growth-v85.ts — exact civ-matrix multiplier is applied to city max/current caps and population-change refresh",
+    "mp_koszt_jednostki_proc": "manpower.ts + production.ts + main.ts + cityPanel.ts — exact civ-matrix multiplier is applied to recruitment, queued completion/refund, replenishment and UI cost previews",
+    "dip_handlowosc_archetyp": "civ-ai-data.ts:184–198 + diplomacy.ts:1267–1308 — skłonność AI do handlu",
+    "ai_agresywnosc": "civ-ai-data.ts:39–53/156–178 + diplomacy.ts:1261–1285 — gotowość AI do wojny",
+    "ai_ekspansywnosc": "civ-ai-data.ts:88–101 + ai-expansion.ts — scoring ekspansji i zakładania miast",
+    "ai_priorytet_militarny": "civ-ai-data.ts:88–101 + ai-production-priorities.ts — scoring produkcji wojskowej",
+    "ai_priorytet_ekonomia": "civ-ai-data.ts:88–101 + ai-production-priorities.ts — scoring produkcji ekonomicznej",
+    "ai_priorytet_nauka": "civ-ai-data.ts:88–101 + ai-production-priorities.ts — scoring produkcji naukowej",
+    "ai_tolerancja_ryzyka": "civ-ai-data.ts:88–101 + main.ts:19783–19795 — bias decyzji dyplomatycznych",
+    "ai_sklonnosc_podboju": "civ-ai-data.ts:88–101 + ai.ts:3165–3166 — decyzje podboju/patroli",
+    "ai_profil_obronna": "civ-ai-data.ts:56–68/88–101 + main.ts:9171–9173 — rola defensywnej kopii miasta",
+    "dip_sklonnosc_sojusze": "diplomacy-display.ts:55 + TAG_RULES — tag relacyjny tylko w UI",
+    "dip_lojalnosc": "diplomacy-display.ts:64 + TAG_RULES — tag relacyjny tylko w UI",
+    "dip_prog_wojny": "diplomacy-display.ts:73 + TAG_RULES — tag relacyjny tylko w UI",
+    "dip_pamietliwosc": "diplomacy-display.ts:82 + TAG_RULES — tag relacyjny tylko w UI",
+    "dip_otwartosc_handel": "diplomacy-display.ts:46 + TAG_RULES — tag relacyjny tylko w UI"
+  },
+  "etykieta_parametru": {
+    "separator_czesci": " · ",
+    "sufiks_proc": {
+      "koncowka": "proc",
+      "zamiennik": "%"
+    },
+    "slownik": {
+      "meta": "Meta",
+      "walka": "Walka",
+      "spec": "Jednostka specjalna",
+      "eko": "Ekonomia",
+      "prod": "Produkcja",
+      "lud": "Ludność",
+      "mp": "Manpower",
+      "wealth": "Bogactwo",
+      "kultura": "Kultura",
+      "religia": "Religia",
+      "porzadek": "Porządek",
+      "obl": "Oblężenie",
+      "dip": "Dyplomacja",
+      "ai": "Profil AI",
+      "atak": "atak",
+      "obrona": "obrona",
+      "pancerz": "pancerz",
+      "uderzenie": "uderzenie",
+      "dystans": "dystans",
+      "hp": "punkty zdrowia",
+      "ruch": "ruch",
+      "zasieg": "zasięg",
+      "koszt": "koszt",
+      "szybkosc": "szybkość",
+      "piechota": "piechoty",
+      "lukownicy": "łuczników",
+      "kawaleria": "kawalerii",
+      "rydwany": "rydwanów",
+      "morska": "morski",
+      "wszystkie": "wszystkich",
+      "oblezenie": "oblężenia",
+      "teren": "teren",
+      "las": "lasu",
+      "terytorium": "własnym terytorium",
+      "murze": "murze",
+      "runda": "rundzie szarży",
+      "plytkie": "płytkim morzu",
+      "proc": "%",
+      "skala": "skala",
+      "agresywnosc": "agresywność",
+      "ekspansywnosc": "ekspansywność",
+      "priorytet": "priorytet",
+      "ekonomia": "ekonomia",
+      "nauka": "nauka",
+      "tolerancja": "tolerancja",
+      "ryzyka": "ryzyka",
+      "sklonnosc": "skłonność",
+      "podboju": "podboju",
+      "profil": "profil",
+      "obronna": "obronny",
+      "epoka": "epoka",
+      "kamien": "kamienia",
+      "braz": "brązu",
+      "zelazo": "żelaza",
+      "mnoznik": "mnożnik",
+      "waluta": "waluty",
+      "tier": "tier",
+      "roster": "puli",
+      "praca": "pracy",
+      "pieniadz": "pieniędzy",
+      "port": "portu",
+      "zywnosc": "żywności",
+      "luksus": "luksusu",
+      "zadowolenie": "zadowolenia",
+      "handel": "handlu",
+      "brutto": "brutto",
+      "korupcja": "korupcji",
+      "wzrost": "wzrostu",
+      "spadek": "spadku",
+      "zdrowie": "zdrowia",
+      "limit": "limitu",
+      "regen": "regeneracji",
+      "max": "maksimum",
+      "naplyw": "napływu",
+      "spread": "rozprzestrzeniania",
+      "budynku": "budynku",
+      "jednostki": "jednostki",
+      "rush": "przyspieszenia",
+      "obrona_miasta": "obrony miasta",
+      "mur": "muru",
+      "machines": "machin",
+      "sklonnosc_sojusze": "skłonność do sojuszy",
+      "lojalnosc": "lojalność",
+      "prog_wojny": "próg wojny",
+      "pamietliwosc": "pamiętliwość",
+      "otwartosc": "otwartość",
+      "handlowosc": "handlowość",
+      "archetyp": "archetypu",
+      "nastawienie": "nastawienie bazowe",
+      "morale": "morale",
+      "obrazenia": "obrażeń",
+      "przebicie": "przebicia",
+      "health": "zdrowia",
+      "pociski": "pocisków",
+      "widok": "widoku",
+      "dezercja": "dezercji",
+      "utrzymanie": "utrzymania",
+      "ture": "na turę",
+      "podwoju": "podboju"
+    }
+  },
+  "formatowanie": {
+    "brak": "brak wartości",
+    "flag_tak": "tak (1)",
+    "flag_nie": "nie (0)",
+    "jednostki_ulamek": [
+      "ulamek",
+      "ulamek_0_1"
+    ],
+    "jednostka_flaga": "flag_0_1",
+    "mnoznik_procent": 100,
+    "cyfry_procent": 1,
+    "cyfry_wartosc": 3
+  }
+}
