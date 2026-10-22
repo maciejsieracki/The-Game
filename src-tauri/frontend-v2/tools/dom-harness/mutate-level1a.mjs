@@ -35,6 +35,10 @@ const MUTS = [
   ['L14 kopia bajtowa: bottomBarHud', 'src/ui/bottomBarHud.ts', `<span>Zakończ turę</span>`, `<span>Zakończ ture</span>`],
   ['L15 kopia bajtowa: battleHudTheme (kolor wroga)', 'src/ui/battleHudTheme.ts', `export const BATTLE_ENEMY_TEXT = '#e08a8a';`, `export const BATTLE_ENEMY_TEXT = '#e08a8b';`],
   ['L16 kopia bajtowa: diploUiSkin (ton proporczyka)', 'src/ui/diploUiSkin.ts', `if (t >= 4) return 'gold';`, `if (t >= 3) return 'gold';`],
+  // Obrona r1 (zarzuty Evaluatora r1, noty 1–2):
+  ['L17 rekrutacja: id zamiast etykiety z DTO', 'src/ui/unitRecruitCard.ts', `name.textContent = item.label;`, `name.textContent = item.id;`],
+  ['L18 cityAttackChoice: legenda klawiszy (stan otwarty)', 'src/ui/cityAttackChoice.ts', `<b>2</b> = Szturm`, `<b>2</b> = Szturmm`],
+  ['L19 kopia bajtowa: cityListHud — kolor plakietki stolicy', 'src/ui/cityListHud.ts', `text: 'stolica', variant: 'gold'`, `text: 'stolica', variant: 'neutral'`],
 ];
 
 let missed = 0;

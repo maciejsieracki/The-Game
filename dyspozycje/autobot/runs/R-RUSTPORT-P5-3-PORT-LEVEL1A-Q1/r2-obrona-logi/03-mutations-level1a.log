@@ -1,0 +1,21 @@
+L1 kropki koszar czytają poziom kuźni: EXIT=1 WYKRYTA [unitCardStatus.ts] dom-harness-level1a: pin=edb8fb56 modułów=17 przypadków=3618 różnic=416 jsdomErrors=0
+L2 próg chipów ścieżki: EXIT=1 WYKRYTA [unitCardStatus.ts] dom-harness-level1a: pin=edb8fb56 modułów=17 przypadków=3618 różnic=21 jsdomErrors=0
+L3 surowiec: id zamiast etykiety z DTO: EXIT=1 WYKRYTA [diplomacyDealDisplay.ts] dom-harness-level1a: pin=edb8fb56 modułów=17 przypadków=3618 różnic=125 jsdomErrors=0
+L4 „showContext=false” ignorowane: EXIT=1 WYKRYTA [diplomacyDealDisplay.ts] dom-harness-level1a: pin=edb8fb56 modułów=17 przypadków=3618 różnic=48 jsdomErrors=0
+L5 poziom porządku stały: EXIT=1 WYKRYTA [orderPanel.ts] dom-harness-level1a: pin=edb8fb56 modułów=17 przypadków=3618 różnic=45 jsdomErrors=0
+L6 rekrutacja ignoruje affordable: EXIT=1 WYKRYTA [unitRecruitCard.ts] dom-harness-level1a: pin=edb8fb56 modułów=17 przypadków=3618 różnic=12 jsdomErrors=0
+L7 formater rekrutów (tys.): EXIT=1 WYKRYTA [unitRecruitCard.ts] dom-harness-level1a: pin=edb8fb56 modułów=17 przypadków=3618 różnic=22 jsdomErrors=0
+L8 klawisz 2 szturmuje bez uprawnienia: EXIT=1 WYKRYTA [siegeMapPanel.ts] dom-harness-level1a: pin=edb8fb56 modułów=17 przypadków=3618 różnic=4 jsdomErrors=0
+L9 milicja z DTO ignorowana: EXIT=1 WYKRYTA [siegeMapPanel.ts] dom-harness-level1a: pin=edb8fb56 modułów=17 przypadków=3618 różnic=57 jsdomErrors=0
+L10 tekst panelu ataku na miasto: EXIT=1 WYKRYTA [cityAttackChoice.ts] dom-harness-level1a: pin=edb8fb56 modułów=17 przypadków=3618 różnic=16 jsdomErrors=0
+L11 suma strat po bitwie: EXIT=1 WYKRYTA [postBattleSummary.ts] dom-harness-level1a: pin=edb8fb56 modułów=17 przypadków=3618 różnic=4 jsdomErrors=0
+L12 kolor plakietki „uśpiona”: EXIT=1 WYKRYTA [armyListHud.ts] dom-harness-level1a: pin=edb8fb56 modułów=17 przypadków=3618 różnic=7 jsdomErrors=0
+L13 plakietka stanu wyłączona: EXIT=1 WYKRYTA [armyListHud.ts] dom-harness-level1a: pin=edb8fb56 modułów=17 przypadków=3618 różnic=22 jsdomErrors=0
+L14 kopia bajtowa: bottomBarHud: EXIT=1 WYKRYTA [bottomBarHud.ts] dom-harness-level1a: pin=edb8fb56 modułów=17 przypadków=3618 różnic=7 jsdomErrors=0
+L15 kopia bajtowa: battleHudTheme (kolor wroga): EXIT=1 WYKRYTA [postBattleSummary.ts] dom-harness-level1a: pin=edb8fb56 modułów=17 przypadków=3618 różnic=8 jsdomErrors=0
+L16 kopia bajtowa: diploUiSkin (ton proporczyka): EXIT=1 WYKRYTA [diploUiSkin.ts] dom-harness-level1a: pin=edb8fb56 modułów=17 przypadków=3618 różnic=1 jsdomErrors=0
+L17 rekrutacja: id zamiast etykiety z DTO: EXIT=1 WYKRYTA [unitRecruitCard.ts] dom-harness-level1a: pin=edb8fb56 modułów=17 przypadków=3618 różnic=78 jsdomErrors=0
+L18 cityAttackChoice: legenda klawiszy (stan otwarty): EXIT=1 WYKRYTA [cityAttackChoice.ts] dom-harness-level1a: pin=edb8fb56 modułów=17 przypadków=3618 różnic=16 jsdomErrors=0
+L19 kopia bajtowa: cityListHud — kolor plakietki stolicy: EXIT=1 WYKRYTA [cityListHud.ts] dom-harness-level1a: pin=edb8fb56 modułów=17 przypadków=3618 różnic=3 jsdomErrors=0
+mutate-level1a: mutacji=19 niewykrytych=0 (pliki przywrócone bajtowo)
+EXIT=0

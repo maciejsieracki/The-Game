@@ -406,8 +406,10 @@ try {
     for (const u of unitsJson) {
       const v = variants[k++ % variants.length];
       const koszt = 30 + (k % 5) * 20;
-      const item = { kind: 'unit', id: u.Jednostka, nazwa: u.Jednostka, koszt };
-      const itemDto = { kind: 'unit', id: u.Jednostka, label: u.Jednostka, koszt, postep: 0, etaTurns: null, stockCost: {}, stockMissing: {} };
+      // Etykieta ≠ id (zarzut Evaluatora r1, nota 1): podmiana `item.label → item.id` musi dać różnicę.
+      const nazwa = `${u.Jednostka} «etykieta ${k}»`;
+      const item = { kind: 'unit', id: u.Jednostka, nazwa, koszt };
+      const itemDto = { kind: 'unit', id: u.Jednostka, label: nazwa, koszt, postep: 0, etaTurns: null, stockCost: {}, stockMissing: {} };
       const common = { ...v, treasuryIconHtml: '<i class="tr"></i>', onRecruit: act('onRecruit') };
       await domCase(M, `card(${u.Jednostka},#${k % variants.length})`,
         () => { document.body.appendChild(P.buildUnitRecruitCard({ ...common, udef: u, item, data: {} })); },
@@ -432,8 +434,8 @@ try {
         document.body.appendChild(pre);
       };
       await domCase(M, `interakcja#${i}`,
-        () => steps(P, { ...v, treasuryIconHtml: '¤', onRecruit: act('onRecruit'), udef: u0, item: { kind: 'unit', id: u0.Jednostka, nazwa: u0.Jednostka, koszt }, data: {} }),
-        () => steps(V, { ...v, treasuryIconHtml: '¤', onRecruit: act('onRecruit'), udef: u0, item: { kind: 'unit', id: u0.Jednostka, label: u0.Jednostka, koszt, postep: 0, etaTurns: null, stockCost: {}, stockMissing: {} }, data: catalog, affordable: v.skarb === undefined || v.skarb >= koszt }));
+        () => steps(P, { ...v, treasuryIconHtml: '¤', onRecruit: act('onRecruit'), udef: u0, item: { kind: 'unit', id: u0.Jednostka, nazwa: 'Rekrut <' + i + '>', koszt }, data: {} }),
+        () => steps(V, { ...v, treasuryIconHtml: '¤', onRecruit: act('onRecruit'), udef: u0, item: { kind: 'unit', id: u0.Jednostka, label: 'Rekrut <' + i + '>', koszt, postep: 0, etaTurns: null, stockCost: {}, stockMissing: {} }, data: catalog, affordable: v.skarb === undefined || v.skarb >= koszt }));
     }
   }
 
@@ -449,11 +451,16 @@ try {
     const M = 'cityAttackChoice.ts';
     const P = pin['ui/' + M];
     const V = v2['ui/' + M];
+    let cacOpenNonEmpty = 0;
     for (const [i, c] of ctxs.entries()) {
       for (const k of [null, '1', '2', 'Escape-cancel']) {
         const run = (S) => {
           S.showCityAttackChoice(c, { onSiege: act('onSiege'), onStorm: act('onStorm'), onCancel: act('onCancel') });
           const open = S.isCityAttackChoiceOpen();
+          // Zarzut r1 nota 2: po zamknięciu DOM bywa pusty — porównujemy też stan otwarty (przed akcją).
+          const openDom = [...document.body.childNodes].map(ser).join('');
+          if (S === V && open && /<div[^>]*class="[^"]*civ-cac/.test(openDom)) cacOpenNonEmpty++;
+          actionLog.push('dom-otwarty=' + openDom);
           if (k === 'Escape-cancel') click('[data-act="cancel"]');
           else if (k) key(k);
           actionLog.push('open=' + open + ' after=' + S.isCityAttackChoiceOpen());
@@ -462,6 +469,7 @@ try {
         P.hideCityAttackChoice(); V.hideCityAttackChoice();
       }
     }
+    assertV2(M, [[`stan otwarty v2 niepusty (panel .civ-cac*) w ${ctxs.length * 4}/${ctxs.length * 4} przypadków`, cacOpenNonEmpty === ctxs.length * 4]]);
   }
 
   // 6. postBattleSummary.ts
@@ -683,7 +691,9 @@ try {
         inGarnizon: !!(m & 1), ufortyfikowanyWPolu: !!(m & 2), sentry: !!(m & 4), autoExplore: !!(m & 8),
         ...(m % 5 === 0 ? {} : { hp: 37 - m * 2, hpMax: 40, ruchLeft: m % 3, ruchMax: 2 }), ...(m % 4 === 1 ? { detailLine: 'Szczegół', metaLine: 'Meta' } : {}) });
     }
-    for (const [label, list, withCard] of [['pusto', [], false], ['16', entries, true], ['16-bez-karty', entries, false]]) {
+    for (const [label, list, withCard] of [['pusto', [], false], ['16', entries, true], ['16-bez-karty', entries, false],
+      ['1', [entries[5]], true], ['16-odwrotnie', [...entries].reverse(), true], ['bez-wybranej', entries.filter((e) => e.id !== 'a5'), true],
+      ...entries.map((e, m) => [`flagi#${m}`, [e], m % 2 === 0])]) {
       const run = (S, conv) => {
         const api = S.createArmyListHud({ getArmies: () => list.map(conv), onSelectArmy: act('onSelectArmy'), ...(withCard ? { onOpenUnitCard: act('onOpenUnitCard') } : {}), onClose: act('onClose') });
         api.show();
@@ -738,7 +748,8 @@ try {
       { id: 'c3', name: 'Capua', population: 7, productionName: 'Łucznik', productionProgress: 30, productionMax: 25, garrison: 1 },
       { id: 'c4', name: 'Pompeje', population: 0, productionName: 'X', productionProgress: 1 },
     ];
-    for (const [label, list] of [['pusto', []], ['4', cities]]) {
+    for (const [label, list] of [['pusto', []], ['4', cities], ['4-odwrotnie', [...cities].reverse()],
+      ...cities.map((c, i) => [`1#${i}`, [c]])]) {
       const run = (S) => {
         const api = S.createCityListHud({ getCities: () => list, onSelectCity: act('onSelectCity'), onClose: act('onClose') });
         api.toggle();

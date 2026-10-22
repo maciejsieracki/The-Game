@@ -177,6 +177,11 @@ Panele P5.3 słuchają `keydown` na `document` (`cityAttackChoice.ts:155-166`, `
 
 **Czułość** (`06-harness-mutations-level1a.log`): 16 mutacji (L1–L13 w modułach zmienionych, w tym odczyt pól DTO: `badges`, `label`, `tierUi`, `affordable`, `playerCanStorm` klawiszem, `milicjaEst`, `status`; L14–L16 w kopiach bajtowych `bottomBarHud.ts`, `battleHudTheme.ts`, `diploUiSkin.ts`) → **16/16 wykrytych**, pliki przywrócone bajtowo.
 
+**Obrona r1 (po zarzutach Evaluatora r1, noty 1–2; logi `runs/R-RUSTPORT-P5-3-PORT-LEVEL1A-Q1/r2-obrona-logi/`):**
+- Nota 1 (PRZYJĘTA): fikstury `unitRecruitCard` mają teraz `nazwa`/`label` ≠ `id` (`"<Jednostka> «etykieta k»"`, w interakcji `"Rekrut <i>"`); nowa mutacja **L17** `name.textContent = item.label → item.id` → WYKRYTA (78 różnic).
+- Nota 2 (PRZYJĘTA): `cityAttackChoice` — log akcji zawiera teraz serializację `body` w stanie otwartym (przed klawiszem/klikiem), więc 12 przypadków z pustym DOM końcowym porównuje też panel otwarty; asercja v2 „stan otwarty niepusty 16/16”; mutacja **L18** (legenda klawiszy) → WYKRYTA (16 różnic). `armyListHud` 4 → **23** przypadki (lista 1-elementowa, odwrócona, bez wybranej `a5`, każda z 16 kombinacji flag osobno). `cityListHud` 2 → **7** (odwrócona, każde miasto osobno); mutacja **L19** w kopii bajtowej (kolor plakietki stolicy) → WYKRYTA (3 różnice). `DOM_puste` liczy nadal stan końcowy (bez zmian metryki).
+- Wynik: `modułów=17 przypadków=3618 różnic=0` (EXIT=0); mutacje **19/19** wykrytych (EXIT=0); regresja P5.2 3861/0; `tsc`, `npm run check` (0 trafień / 0 niezgodnych w 411), `vite build` EXIT=0. Kod modułów `src/ui/**` bez zmian względem `663ac6dd` — zmieniono wyłącznie `tools/dom-harness/run-level1a.mjs` i `mutate-level1a.mjs`.
+
 **NIE_ZMIERZONO (harness):** (1) zachowanie w realnym WebView/Tauri; (2) klawisz `Escape` (stos `escapeOverlayStack.ts` — moduł P5.1, nie porównywany tu); (3) `pointerdown/pointerup` w `bottomBarHud.ts` (zachowanie fokusu przycisku przy przerenderowaniu); (4) zbieżność wzorów oblężenia „Rust” z przyszłym silnikiem Rust — harness odtwarza wzory pina.
 
 ## 7. Uruchomienie bram (odtworzenie)
