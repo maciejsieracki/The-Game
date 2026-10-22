@@ -1,0 +1,97 @@
+{
+  "topic": "R-RUSTPORT-P4-16-JSMATH-Q1",
+  "node": "v22.22.0",
+  "v8": "12.4.254.21-node.33",
+  "execArgv": [],
+  "format": "little-endian f64 rows: arity arguments then the result",
+  "functions": [
+    {
+      "name": "sin",
+      "arity": 1,
+      "count": 20021,
+      "nanResults": 3,
+      "file": "sin.bin",
+      "sha256": "a2503af3f48db7589282621dd8a523f20c543fcef98ccf1f5bb5359919a525c7"
+    },
+    {
+      "name": "cos",
+      "arity": 1,
+      "count": 20021,
+      "nanResults": 3,
+      "file": "cos.bin",
+      "sha256": "defb0ae3610dcbe136ecdb3ba3f7be1a596117d271edf22a7584dd1c9503a76a"
+    },
+    {
+      "name": "tan",
+      "arity": 1,
+      "count": 20021,
+      "nanResults": 3,
+      "file": "tan.bin",
+      "sha256": "799bc18e8c248010a4cb05714be54271685f8bcd7dc9d9de5bb4f808157a2def"
+    },
+    {
+      "name": "atan",
+      "arity": 1,
+      "count": 20021,
+      "nanResults": 1,
+      "file": "atan.bin",
+      "sha256": "26d984b38ea86735fb68b5594799f20671817b72f6504367ffb2b0eef99bd02e"
+    },
+    {
+      "name": "acos",
+      "arity": 1,
+      "count": 20021,
+      "nanResults": 671,
+      "file": "acos.bin",
+      "sha256": "d9649a47b41eab4f8c94e362642ff2886d5d85b8f5dad7d5de0625220e4468c7"
+    },
+    {
+      "name": "exp",
+      "arity": 1,
+      "count": 20021,
+      "nanResults": 1,
+      "file": "exp.bin",
+      "sha256": "698616b9cb75e3dbf8b0535d35fbc6b9f9c195f1d200110e9ac036a010101b3e"
+    },
+    {
+      "name": "log",
+      "arity": 1,
+      "count": 20021,
+      "nanResults": 510,
+      "file": "log.bin",
+      "sha256": "d347c1bc73777a6c4837c46c1b1633e7d633c72940244b03b0ff9a101c76bb90"
+    },
+    {
+      "name": "atan2",
+      "arity": 2,
+      "count": 20441,
+      "nanResults": 135,
+      "file": "atan2.bin",
+      "sha256": "4544dcc284ffc298d008034f6308ef48fd18e3e94b50728540b159a3b2013ee6"
+    },
+    {
+      "name": "pow",
+      "arity": 2,
+      "count": 21024,
+      "nanResults": 1693,
+      "file": "pow.bin",
+      "sha256": "c342d8f6410bae6b9c70902f271f27aaa77dbbea8aaca2cd4c39f6c7ee05234a"
+    },
+    {
+      "name": "hypot",
+      "arity": 2,
+      "count": 20441,
+      "nanResults": 37,
+      "file": "hypot.bin",
+      "sha256": "b98a950940fda4d157d814bfdff9b8e49ab293bc6f7f37f05c971c66715639d1"
+    },
+    {
+      "name": "hypot3",
+      "arity": 3,
+      "count": 3004,
+      "nanResults": 1,
+      "file": "hypot3.bin",
+      "sha256": "71edd4eb47677047f4e7db3fcb026bab3a10cc8786c1a2d14d843a6bb8709595"
+    }
+  ]
+}

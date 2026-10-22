@@ -17,6 +17,7 @@
 use std::collections::{HashMap, HashSet};
 
 use crate::geom::{box_geometry, cylinder_geometry, Mesh};
+use crate::jsmath::js_atan2;
 use crate::pick::hex::{axial_to_world, sqrt3, HexCoord, HEX_R};
 use crate::pick::terrain::Terrain;
 use crate::pick::three::Vec3;
@@ -249,37 +250,10 @@ pub fn river_mouth_edges(map: &TerrainAt, rivers: &[RiverPath]) -> HashSet<(HexC
     keys
 }
 
-/// V8 `Math.hypot` for two arguments (`builtins/math.tq` `MathHypot`):
-/// scale by the larger magnitude, Kahan-compensated sum, `sqrt(sum) * max`.
-#[must_use]
-pub fn js_hypot(a: f64, b: f64) -> f64 {
-    if a.is_infinite() || b.is_infinite() {
-        return f64::INFINITY;
-    }
-    if a.is_nan() || b.is_nan() {
-        return f64::NAN;
-    }
-    let abs = [a.abs(), b.abs()];
-    let mut max = 0.0f64;
-    for v in abs {
-        if v > max {
-            max = v;
-        }
-    }
-    if max == 0.0 {
-        return 0.0;
-    }
-    let mut sum = 0.0f64;
-    let mut compensation = 0.0f64;
-    for v in abs {
-        let n = v / max;
-        let summand = n * n - compensation;
-        let preliminary = sum + summand;
-        compensation = (preliminary - sum) - summand;
-        sum = preliminary;
-    }
-    sum.sqrt() * max
-}
+/// V8 `Math.hypot` for two arguments (`builtins/math.tq` `MathHypot`), from
+/// the shared [`crate::jsmath`] module (moved there in P4.16; re-exported
+/// here so `terrain::coast::js_hypot` keeps working).
+pub use crate::jsmath::js_hypot;
 
 /// The five instance buffers of `createCoastInstBuffers()`, in flush order.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
@@ -424,7 +398,7 @@ pub(crate) fn collect_coast_water(
             let nz = dz / dist;
             let ex = x + nx * (apothem + strip_depth * 0.42);
             let ez = z + nz * (apothem + strip_depth * 0.42);
-            let yaw = nx.atan2(nz);
+            let yaw = js_atan2(nx, nz);
             buf.push(
                 CoastLayerKind::WaterEdge,
                 instance_matrix(Vec3::new(ex, sea_top_y + strip_h * 0.52 + 0.014, ez), yaw),
@@ -465,7 +439,7 @@ pub(crate) fn collect_coast_water(
                     CoastLayerKind::WaterTongue,
                     instance_matrix(
                         Vec3::new(ex, sea_top_y + strip_h * 0.58 + 0.014, ez),
-                        nx.atan2(nz),
+                        js_atan2(nx, nz),
                     ),
                     h,
                 );
@@ -502,7 +476,7 @@ pub(crate) fn collect_land_sand(
         let nz = dz / dist;
         let ex = x + nx * (apothem - strip_depth * 0.52);
         let ez = z + nz * (apothem - strip_depth * 0.52);
-        let yaw = nx.atan2(nz);
+        let yaw = js_atan2(nx, nz);
         buf.push(
             CoastLayerKind::LandSand,
             instance_matrix(Vec3::new(ex, top_y + flush_lift + strip_h * 0.5, ez), yaw),

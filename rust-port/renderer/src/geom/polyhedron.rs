@@ -7,6 +7,7 @@
 use super::math::Vec3;
 use super::ops::soup_with_flat_normals;
 use super::{to_f32, Mesh};
+use crate::jsmath::js_atan2;
 use std::f64::consts::PI;
 
 /// `new THREE.PolyhedronGeometry(vertices, indices, radius, detail)`.
@@ -144,11 +145,11 @@ fn correct_uv(uvb: &mut [f64], uv_x: f64, stride: usize, vector: Vec3, azimuth: 
 }
 
 fn azimuth(v: Vec3) -> f64 {
-    v.z.atan2(-v.x)
+    js_atan2(v.z, -v.x)
 }
 
 fn inclination(v: Vec3) -> f64 {
-    (-v.y).atan2((v.x * v.x + v.z * v.z).sqrt())
+    js_atan2(-v.y, (v.x * v.x + v.z * v.z).sqrt())
 }
 
 /// `Math.max(a, b, c)` (NaN-propagating, unlike `f64::max`).

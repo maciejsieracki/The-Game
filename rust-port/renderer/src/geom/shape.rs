@@ -13,6 +13,7 @@
 use super::earcut;
 use super::ops::soup_with_flat_normals;
 use super::{Builder, Group, Mesh};
+use crate::jsmath::{js_cos, js_sin};
 use std::f64::consts::PI;
 
 /// 2D point (Three `Vector2`).
@@ -455,8 +456,8 @@ fn add_extruded_shape(
     let bs_full = bevel_size + bevel_offset;
     for b in 0..bevel_segments {
         let t = f64::from(b) / f64::from(bevel_segments);
-        let z = bevel_thickness * (t * PI / 2.0).cos();
-        let bs = bevel_size * (t * PI / 2.0).sin() + bevel_offset;
+        let z = bevel_thickness * js_cos(t * PI / 2.0);
+        let bs = bevel_size * js_sin(t * PI / 2.0) + bevel_offset;
         push_layer(&mut v, bs, -z);
     }
     for i in 0..vlen {
@@ -479,8 +480,8 @@ fn add_extruded_shape(
     }
     for b in (0..bevel_segments).rev() {
         let t = f64::from(b) / f64::from(bevel_segments);
-        let z = bevel_thickness * (t * PI / 2.0).cos();
-        let bs = bevel_size * (t * PI / 2.0).sin() + bevel_offset;
+        let z = bevel_thickness * js_cos(t * PI / 2.0);
+        let bs = bevel_size * js_sin(t * PI / 2.0) + bevel_offset;
         push_layer(&mut v, bs, depth + z);
     }
 

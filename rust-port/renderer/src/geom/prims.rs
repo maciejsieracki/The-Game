@@ -9,6 +9,7 @@
 
 use super::math::Vec3;
 use super::{Builder, Mesh};
+use crate::jsmath::{js_cos, js_sin};
 use std::f64::consts::PI;
 
 /// One `buildPlane(u, v, w, udir, vdir, width, height, depth, gridX, gridY,
@@ -225,8 +226,8 @@ pub fn cylinder_geometry(
             for x in 0..=radial_segments {
                 let u = f64::from(x) / f64::from(radial_segments);
                 let theta = u * theta_length + theta_start;
-                let sin_theta = theta.sin();
-                let cos_theta = theta.cos();
+                let sin_theta = js_sin(theta);
+                let cos_theta = js_cos(theta);
                 b.pos.extend_from_slice(&[
                     radius * sin_theta,
                     -v * height + half_height,
@@ -275,8 +276,8 @@ pub fn cylinder_geometry(
         for x in 0..=radial_segments {
             let u = f64::from(x) / f64::from(radial_segments);
             let theta = u * theta_length + theta_start;
-            let cos_theta = theta.cos();
-            let sin_theta = theta.sin();
+            let cos_theta = js_cos(theta);
+            let sin_theta = js_sin(theta);
             b.pos
                 .extend_from_slice(&[radius * sin_theta, half_height * sign, radius * cos_theta]);
             b.nor.extend_from_slice(&[0.0, sign, 0.0]);
@@ -363,12 +364,12 @@ pub fn sphere_geometry(
         for ix in 0..=width_segments {
             let u = f64::from(ix) / f64::from(width_segments);
             let vx = -radius
-                * (phi_start + u * phi_length).cos()
-                * (theta_start + v * theta_length).sin();
-            let vy = radius * (theta_start + v * theta_length).cos();
+                * js_cos(phi_start + u * phi_length)
+                * js_sin(theta_start + v * theta_length);
+            let vy = radius * js_cos(theta_start + v * theta_length);
             let vz = radius
-                * (phi_start + u * phi_length).sin()
-                * (theta_start + v * theta_length).sin();
+                * js_sin(phi_start + u * phi_length)
+                * js_sin(theta_start + v * theta_length);
             b.pos.extend_from_slice(&[vx, vy, vz]);
             let n = Vec3::new(vx, vy, vz).normalize();
             b.nor.extend_from_slice(&[n.x, n.y, n.z]);
@@ -411,13 +412,13 @@ pub fn torus_geometry(
             let u = f64::from(i) / f64::from(tubular_segments) * arc;
             let v = f64::from(j) / f64::from(radial_segments) * PI * 2.0;
             let vertex = Vec3::new(
-                (radius + tube * v.cos()) * u.cos(),
-                (radius + tube * v.cos()) * u.sin(),
-                tube * v.sin(),
+                (radius + tube * js_cos(v)) * js_cos(u),
+                (radius + tube * js_cos(v)) * js_sin(u),
+                tube * js_sin(v),
             );
             b.pos.extend_from_slice(&[vertex.x, vertex.y, vertex.z]);
             // `center.z` is never written in Three (stays 0).
-            let center = Vec3::new(radius * u.cos(), radius * u.sin(), 0.0);
+            let center = Vec3::new(radius * js_cos(u), radius * js_sin(u), 0.0);
             let n = vertex.minus(center).normalize();
             b.nor.extend_from_slice(&[n.x, n.y, n.z]);
             b.uv.push(f64::from(i) / f64::from(tubular_segments));
@@ -447,8 +448,8 @@ pub fn circle_geometry(radius: f64, segments: u32, theta_start: f64, theta_lengt
     b.uv.extend_from_slice(&[0.5, 0.5]);
     for s in 0..=segments {
         let segment = theta_start + f64::from(s) / f64::from(segments) * theta_length;
-        let x = radius * segment.cos();
-        let y = radius * segment.sin();
+        let x = radius * js_cos(segment);
+        let y = radius * js_sin(segment);
         b.pos.extend_from_slice(&[x, y, 0.0]);
         b.nor.extend_from_slice(&[0.0, 0.0, 1.0]);
         b.uv.extend_from_slice(&[(x / radius + 1.0) / 2.0, (y / radius + 1.0) / 2.0]);
@@ -478,8 +479,8 @@ pub fn ring_geometry(
     for _ in 0..=phi_segments {
         for i in 0..=theta_segments {
             let segment = theta_start + f64::from(i) / f64::from(theta_segments) * theta_length;
-            let x = radius * segment.cos();
-            let y = radius * segment.sin();
+            let x = radius * js_cos(segment);
+            let y = radius * js_sin(segment);
             b.pos.extend_from_slice(&[x, y, 0.0]);
             b.nor.extend_from_slice(&[0.0, 0.0, 1.0]);
             b.uv.extend_from_slice(&[

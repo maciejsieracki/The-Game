@@ -7,6 +7,7 @@
 
 use super::math::{Mat4, Vec3};
 use super::{Builder, Mesh};
+use crate::jsmath::{js_acos, js_cos, js_pow, js_sin};
 use std::cell::RefCell;
 use std::f64::consts::PI;
 
@@ -147,9 +148,9 @@ impl CatmullRomCurve3 {
                 } else {
                     0.25
                 };
-                let mut dt0 = p0.distance_to_squared(p1).powf(pow);
-                let mut dt1 = p1.distance_to_squared(p2).powf(pow);
-                let mut dt2 = p2.distance_to_squared(p3).powf(pow);
+                let mut dt0 = js_pow(p0.distance_to_squared(p1), pow);
+                let mut dt1 = js_pow(p1.distance_to_squared(p2), pow);
+                let mut dt2 = js_pow(p2.distance_to_squared(p3), pow);
                 if dt1 < 1e-4 {
                     dt1 = 1.0;
                 }
@@ -292,7 +293,7 @@ impl CatmullRomCurve3 {
             vec = tangents[i - 1].cross(tangents[i]);
             if vec.length() > f64::EPSILON {
                 vec = vec.normalize();
-                let theta = clamp(tangents[i - 1].dot(tangents[i]), -1.0, 1.0).acos();
+                let theta = js_acos(clamp(tangents[i - 1].dot(tangents[i]), -1.0, 1.0));
                 n = n.apply_mat4(&Mat4::rotation_axis(vec, theta));
             }
             normals.push(n);
@@ -300,7 +301,7 @@ impl CatmullRomCurve3 {
         }
         if closed {
             let seg = segments as usize;
-            let mut theta = clamp(normals[0].dot(normals[seg]), -1.0, 1.0).acos();
+            let mut theta = js_acos(clamp(normals[0].dot(normals[seg]), -1.0, 1.0));
             theta /= f64::from(segments);
             if tangents[0].dot(normals[0].cross(normals[seg])) > 0.0 {
                 theta = -theta;
@@ -357,8 +358,8 @@ pub fn tube_geometry(
         let bn = frames.binormals[i as usize];
         for j in 0..=radial_segments {
             let v = f64::from(j) / f64::from(radial_segments) * PI * 2.0;
-            let sin = v.sin();
-            let cos = -v.cos();
+            let sin = js_sin(v);
+            let cos = -js_cos(v);
             let normal = Vec3::new(
                 cos * n.x + sin * bn.x,
                 cos * n.y + sin * bn.y,

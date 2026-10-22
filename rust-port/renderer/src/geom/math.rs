@@ -7,6 +7,8 @@
 //! `cos`, `sqrt`, ... agree, and within a few ULP otherwise. No external math
 //! crate is used (dispatch R-RUSTPORT-P4-8: no new dependencies).
 
+use crate::jsmath::{js_cos, js_sin};
+
 /// 3-component vector in f64 (JavaScript numbers are f64).
 #[derive(Debug, Clone, Copy, PartialEq, Default)]
 pub struct Vec3 {
@@ -201,8 +203,8 @@ impl Mat4 {
     /// `Matrix4.makeRotationX(theta)`.
     #[must_use]
     pub fn rotation_x(theta: f64) -> Self {
-        let c = theta.cos();
-        let s = theta.sin();
+        let c = js_cos(theta);
+        let s = js_sin(theta);
         Self::from_rows(
             1.0, 0.0, 0.0, 0.0, 0.0, c, -s, 0.0, 0.0, s, c, 0.0, 0.0, 0.0, 0.0, 1.0,
         )
@@ -211,8 +213,8 @@ impl Mat4 {
     /// `Matrix4.makeRotationY(theta)`.
     #[must_use]
     pub fn rotation_y(theta: f64) -> Self {
-        let c = theta.cos();
-        let s = theta.sin();
+        let c = js_cos(theta);
+        let s = js_sin(theta);
         Self::from_rows(
             c, 0.0, s, 0.0, 0.0, 1.0, 0.0, 0.0, -s, 0.0, c, 0.0, 0.0, 0.0, 0.0, 1.0,
         )
@@ -221,8 +223,8 @@ impl Mat4 {
     /// `Matrix4.makeRotationZ(theta)`.
     #[must_use]
     pub fn rotation_z(theta: f64) -> Self {
-        let c = theta.cos();
-        let s = theta.sin();
+        let c = js_cos(theta);
+        let s = js_sin(theta);
         Self::from_rows(
             c, -s, 0.0, 0.0, s, c, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0,
         )
@@ -231,8 +233,8 @@ impl Mat4 {
     /// `Matrix4.makeRotationAxis(axis, angle)` (axis must be normalized).
     #[must_use]
     pub fn rotation_axis(axis: Vec3, angle: f64) -> Self {
-        let c = angle.cos();
-        let s = angle.sin();
+        let c = js_cos(angle);
+        let s = js_sin(angle);
         let t = 1.0 - c;
         let (x, y, z) = (axis.x, axis.y, axis.z);
         let tx = t * x;
@@ -455,12 +457,12 @@ impl Quat {
     /// `Quaternion.setFromEuler(euler)`.
     #[must_use]
     pub fn from_euler(eu: Euler) -> Self {
-        let c1 = (eu.x / 2.0).cos();
-        let c2 = (eu.y / 2.0).cos();
-        let c3 = (eu.z / 2.0).cos();
-        let s1 = (eu.x / 2.0).sin();
-        let s2 = (eu.y / 2.0).sin();
-        let s3 = (eu.z / 2.0).sin();
+        let c1 = js_cos(eu.x / 2.0);
+        let c2 = js_cos(eu.y / 2.0);
+        let c3 = js_cos(eu.z / 2.0);
+        let s1 = js_sin(eu.x / 2.0);
+        let s2 = js_sin(eu.y / 2.0);
+        let s3 = js_sin(eu.z / 2.0);
         let (x, y, z, w) = match eu.order {
             EulerOrder::Xyz => (
                 s1 * c2 * c3 + c1 * s2 * s3,
