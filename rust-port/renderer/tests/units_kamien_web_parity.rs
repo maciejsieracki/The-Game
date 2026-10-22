@@ -114,6 +114,9 @@ fn three_type(prim: &Prim) -> &'static str {
             | KamienGeo::NguniFace { .. } => "BufferGeometry",
             KamienGeo::Circle { .. } => "CircleGeometry",
         },
+        // MOD-06 geometries (R-RUSTPORT-P4-23-MOD06-UNITS-BRONZE-Q1); never
+        // produced by a MOD-05 builder, mapped for exhaustiveness only.
+        Prim::Braz(b) => b.three_type(),
     }
 }
 

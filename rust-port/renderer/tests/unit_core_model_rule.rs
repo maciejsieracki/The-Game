@@ -199,8 +199,10 @@ fn web_signature_classes_equal_rust_model_id_classes() {
     );
     // Galera, 3 chariots, 2 civilians (PL) + Galley/3 chariots EN + Axe Warrior→topor
     // + Harappan Gate Guard→p1 wlocznik = 12, + the 10 MOD-05 Stone records PL and EN
-    // (R-RUSTPORT-P4-19-MOD05-UNITS-STONE-Q1) = 32
-    assert_eq!(compared_records, 32);
+    // (R-RUSTPORT-P4-19-MOD05-UNITS-STONE-Q1) = 32, + 73 PL/EN record calls whose
+    // route lands on a MOD-06 Bronze builder (R-RUSTPORT-P4-23-MOD06-UNITS-BRONZE-Q1)
+    // = 105
+    assert_eq!(compared_records, 105);
     assert!(
         compared > compared_records,
         "super probes must reach ported builders too"

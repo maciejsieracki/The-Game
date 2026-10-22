@@ -8,8 +8,8 @@
 //! `Number`). The platform `libm` is measured alongside, for information only.
 
 use civ_renderer::jsmath::{
-    js_acos, js_atan, js_atan2, js_cos, js_exp, js_hypot, js_hypot_n, js_log, js_pow, js_sin,
-    js_tan, PLATFORM_FALLBACK,
+    js_acos, js_asin, js_atan, js_atan2, js_cos, js_exp, js_hypot, js_hypot_n, js_log, js_pow,
+    js_sin, js_tan, PLATFORM_FALLBACK,
 };
 
 const MIN_CASES: usize = 20_000;
@@ -106,6 +106,8 @@ unary!(cos_matches_v8, "cos", js_cos, f64::cos);
 unary!(tan_matches_v8, "tan", js_tan, f64::tan);
 unary!(atan_matches_v8, "atan", js_atan, f64::atan);
 unary!(acos_matches_v8, "acos", js_acos, f64::acos);
+// R-RUSTPORT-P4-23-MOD06-UNITS-BRONZE-Q1: `js_asin` moved into `jsmath`.
+unary!(asin_matches_v8, "asin", js_asin, f64::asin);
 unary!(exp_matches_v8, "exp", js_exp, f64::exp);
 unary!(log_matches_v8, "log", js_log, f64::ln);
 binary!(atan2_matches_v8, "atan2", js_atan2, f64::atan2);
@@ -133,6 +135,9 @@ fn whole_domain_without_platform_fallback() {
     assert_eq!(js_atan2(0.0, -0.0), std::f64::consts::PI);
     assert_eq!(js_atan2(-0.0, 1.0).to_bits(), (-0.0f64).to_bits());
     assert_eq!(js_acos(-1.0), std::f64::consts::PI);
+    assert_eq!(js_asin(1.0), std::f64::consts::FRAC_PI_2);
+    assert_eq!(js_asin(-0.0).to_bits(), (-0.0f64).to_bits());
+    assert!(js_asin(1.5).is_nan());
     assert_eq!(js_hypot(3.0, 4.0), 5.0);
     assert_eq!(js_hypot(f64::NAN, f64::NEG_INFINITY), f64::INFINITY);
     assert_eq!(js_hypot_n(&[]), 0.0);
@@ -140,11 +145,14 @@ fn whole_domain_without_platform_fallback() {
 
 #[test]
 fn compatibility_paths_are_the_same_functions() {
+    use civ_renderer::models::units_kamien::kit as kamien_kit;
     use civ_renderer::models::wonders;
     use civ_renderer::terrain::{coast, jsmath as terrain_jsmath};
     for x in [0.3, 1.0, 2.5, -7.25, 1e5, 123_456.789] {
         assert_eq!(wonders::js_sin(x).to_bits(), js_sin(x).to_bits());
         assert_eq!(wonders::js_cos(x).to_bits(), js_cos(x).to_bits());
+        let a = js_sin(x);
+        assert_eq!(kamien_kit::js_asin(a).to_bits(), js_asin(a).to_bits());
         assert_eq!(
             terrain_jsmath::js_pow(x.abs(), 2.4).to_bits(),
             js_pow(x.abs(), 2.4).to_bits()

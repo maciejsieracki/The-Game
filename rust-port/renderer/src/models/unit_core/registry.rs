@@ -193,14 +193,19 @@ impl fmt::Display for NotYetPorted {
 
 impl std::error::Error for NotYetPorted {}
 
-/// `true` for the packages whose builders are ported: MOD-04 (this module)
-/// and MOD-05 Stone ([`crate::models::units_kamien`],
-/// `R-RUSTPORT-P4-19-MOD05-UNITS-STONE-Q1`). Private: no new public API.
+/// `true` for the packages whose builders are ported: MOD-04 (this module),
+/// MOD-05 Stone ([`crate::models::units_kamien`],
+/// `R-RUSTPORT-P4-19-MOD05-UNITS-STONE-Q1`) and MOD-06 Bronze
+/// ([`crate::models::units_braz`], `R-RUSTPORT-P4-23-MOD06-UNITS-BRONZE-Q1`).
+/// Private: no new public API.
 const fn is_ported(pkg: Package) -> bool {
-    matches!(pkg, Package::Mod04Core | Package::Mod05Stone)
+    matches!(
+        pkg,
+        Package::Mod04Core | Package::Mod05Stone | Package::Mod06Bronze
+    )
 }
 
-/// Builders still waiting for their package (packages 6–7).
+/// Builders still waiting for their package (package 7).
 #[must_use]
 pub fn pending() -> Vec<Base> {
     Base::ALL
@@ -214,10 +219,13 @@ pub fn pending() -> Vec<Base> {
 ///
 /// # Errors
 /// [`NotYetPorted`] for every builder of a package not ported yet
-/// (MOD-06, MOD-07).
+/// (MOD-07).
 pub fn build_base(base: Base, owner: u32) -> Result<UnitModel, NotYetPorted> {
     if base.package() == Package::Mod05Stone {
         return crate::models::units_kamien::build(base, owner).ok_or(NotYetPorted::of(base));
+    }
+    if base.package() == Package::Mod06Bronze {
+        return crate::models::units_braz::build(base, owner).ok_or(NotYetPorted::of(base));
     }
     match base {
         Base::CatLegionista => build_category_model(UnitCategory::Legionista, owner),

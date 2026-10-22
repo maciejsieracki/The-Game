@@ -5,7 +5,7 @@
 //! Why: the platform `libm` (glibc on Linux, UCRT on Windows, libSystem on
 //! macOS) rounds differently from V8 in the last bit for some inputs. Every
 //! renderer module that mirrors a web `Math.sin/cos/tan/atan/atan2/acos/
-//! exp/log/pow/hypot` call ([`crate::geom`], [`crate::terrain`],
+//! asin/exp/log/pow/hypot` call ([`crate::geom`], [`crate::terrain`],
 //! [`crate::models::wonders`]) calls this module instead of `f64::sin` & co.,
 //! so there is ONE implementation and the results do not depend on the
 //! platform.
@@ -14,7 +14,8 @@
 //! `12.4.254.21-node.33`):
 //! - `src/base/ieee754.cc` (SHA-256 `da01a549…433a67fc`): fdlibm 5.3 ports
 //!   `sin`, `cos`, `tan` (with `__ieee754_rem_pio2`, `__kernel_rem_pio2`),
-//!   `atan`, `atan2`, `acos`, `exp`, `log`, `pow`;
+//!   `atan`, `atan2`, `acos`, `asin` (moved here from `units_kamien::kit` by
+//!   `R-RUSTPORT-P4-23-MOD06-UNITS-BRONZE-Q1`), `exp`, `log`, `pow`;
 //! - `src/builtins/math.tq` (SHA-256 `569ff61e…4fbf18ff`): `Math.hypot`
 //!   (Torque builtin, not fdlibm).
 //!
@@ -43,7 +44,7 @@ mod words;
 
 pub use exp_log::{js_exp, js_log};
 pub use hypot::{js_hypot, js_hypot_n};
-pub use inverse::{js_acos, js_atan, js_atan2};
+pub use inverse::{js_acos, js_asin, js_atan, js_atan2};
 pub use pow::js_pow;
 pub use trig::{js_cos, js_sin, js_tan};
 

@@ -14,5 +14,6 @@ pub mod cities;
 pub mod improvements;
 pub mod misc;
 pub mod unit_core;
+pub mod units_braz;
 pub mod units_kamien;
 pub mod wonders;

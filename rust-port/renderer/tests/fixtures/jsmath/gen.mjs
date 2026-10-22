@@ -252,6 +252,22 @@ function hypotArgs() {
   return r;
 }
 
+// fdlibm `e_asin.c` branches: |x| < 2^-27, |x| < 0.5, 0.5 <= |x| < 0.975
+// (split sqrt), |x| > 0.975 (`0x3fef3333`), |x| = 1, |x| > 1 (NaN).
+function asinArgs() {
+  const a = [...SPECIAL];
+  for (const b of [0.5, 0.975, fromBits(0x3fef333300000000n), 1, 2 ** -27, 2 ** -28, 1e-17]) {
+    for (let k = -3; k <= 3; k++) a.push(ulps(b, k), -ulps(b, k));
+  }
+  for (let i = 0; i < 8000; i++) a.push(uni(-1, 1));
+  for (let i = 0; i < 3000; i++) a.push(sign() * uni(0.5, 1)); // split-sqrt / > 0.975 branches
+  for (let i = 0; i < 3000; i++) a.push(sign() * (1 - Math.pow(10, uni(-16, -1)))); // near ±1
+  for (let i = 0; i < 3000; i++) a.push(logUni(-320, 0)); // tiny incl. subnormal
+  for (let i = 0; i < 1000; i++) a.push(Math.sin(uni(-10, 10))); // sin of an angle (Euler round trips)
+  while (a.length < N + SPECIAL.length) a.push(uni(-1.5, 1.5)); // incl. |x| > 1 → NaN
+  return a;
+}
+
 function hypot3Args() {
   const r = [];
   for (let i = 0; i < 2000; i++) r.push([uni(-10, 10), uni(-10, 10), uni(-10, 10)]);
@@ -273,6 +289,10 @@ const FUNCS = [
   ['pow', 2, powArgs, (a) => Math.pow(a[0], a[1])],
   ['hypot', 2, hypotArgs, (a) => Math.hypot(a[0], a[1])],
   ['hypot3', 3, hypot3Args, (a) => Math.hypot(a[0], a[1], a[2])],
+  // Added by R-RUSTPORT-P4-23-MOD06-UNITS-BRONZE-Q1 (js_asin moved into
+  // jsmath). LAST in the list on purpose: the PRNG stream of every function
+  // above is unchanged, so their .bin files stay byte-identical.
+  ['asin', 1, asinArgs, (x) => Math.asin(x)],
 ];
 
 const manifest = {

@@ -8,7 +8,8 @@
 //! provide are reproduced from three r169 sources:
 //! `Object3D.rotateOnAxis` (`rotateY`/`rotateZ`), `Quaternion.setFromAxisAngle`,
 //! `Quaternion.multiply`, `Euler.setFromQuaternion` (used by
-//! `quaternion.copy(q); rotation.y += …`) and V8 `Math.asin`, `Math.sign`.
+//! `quaternion.copy(q); rotation.y += …`, with V8 `Math.asin` from
+//! [`crate::jsmath`]) and `Math.sign`.
 
 use crate::geom::{Euler, Mat4, Quat, Vec3};
 use crate::jsmath::{js_atan2, js_cos, js_sin};
@@ -244,76 +245,7 @@ pub fn q_from_units(from: Vec3, to: Vec3) -> Quat {
     quat_from_unit_vectors(from, to)
 }
 
-/// V8 `Math.asin` (`base::ieee754::asin`, fdlibm 5.3 `e_asin.c`).
-#[must_use]
-#[allow(
-    clippy::many_single_char_names,
-    clippy::cast_possible_truncation,
-    clippy::cast_possible_wrap,
-    clippy::excessive_precision,
-    clippy::approx_constant,
-    clippy::cast_sign_loss
-)]
-pub fn js_asin(x: f64) -> f64 {
-    const ONE: f64 = 1.000_000_000_000_000_000_00e+00;
-    const HUGE: f64 = 1.000e+300;
-    const PIO2_HI: f64 = 1.570_796_326_794_896_558_00e+00;
-    const PIO2_LO: f64 = 6.123_233_995_736_766_035_87e-17;
-    const PIO4_HI: f64 = 7.853_981_633_974_482_789_99e-01;
-    const PS0: f64 = 1.666_666_666_666_666_574_15e-01;
-    const PS1: f64 = -3.255_658_186_224_009_154_05e-01;
-    const PS2: f64 = 2.012_125_321_348_629_258_81e-01;
-    const PS3: f64 = -4.005_553_450_067_941_140_27e-02;
-    const PS4: f64 = 7.915_349_942_898_145_321_76e-04;
-    const PS5: f64 = 3.479_331_075_960_211_675_70e-05;
-    const QS1: f64 = -2.403_394_911_734_414_218_78e+00;
-    const QS2: f64 = 2.020_945_760_233_505_694_71e+00;
-    const QS3: f64 = -6.882_839_716_054_532_930_30e-01;
-    const QS4: f64 = 7.703_815_055_590_193_527_91e-02;
-
-    let hx = (x.to_bits() >> 32) as u32 as i32;
-    let ix = hx & 0x7fff_ffff;
-    let mut t = 0.0;
-    if ix >= 0x3ff0_0000 {
-        let lx = x.to_bits() as u32;
-        if ((ix - 0x3ff0_0000) as u32 | lx) == 0 {
-            return x * PIO2_HI + x * PIO2_LO;
-        }
-        // fdlibm `(x - x) / (x - x)`: NaN (a JS `Number` cannot observe the
-        // payload, see `crate::jsmath`).
-        return f64::NAN;
-    } else if ix < 0x3fe0_0000 {
-        if ix < 0x3e40_0000 {
-            if HUGE + x > ONE {
-                return x;
-            }
-        } else {
-            t = x * x;
-        }
-        let p = t * (PS0 + t * (PS1 + t * (PS2 + t * (PS3 + t * (PS4 + t * PS5)))));
-        let q = ONE + t * (QS1 + t * (QS2 + t * (QS3 + t * QS4)));
-        let w = p / q;
-        return x + x * w;
-    }
-    let w = ONE - x.abs();
-    t = w * 0.5;
-    let mut p = t * (PS0 + t * (PS1 + t * (PS2 + t * (PS3 + t * (PS4 + t * PS5)))));
-    let mut q = ONE + t * (QS1 + t * (QS2 + t * (QS3 + t * QS4)));
-    let s = t.sqrt();
-    if ix >= 0x3fef_3333 {
-        let w = p / q;
-        t = PIO2_HI - (2.0 * (s + s * w) - PIO2_LO);
-    } else {
-        let w = f64::from_bits(s.to_bits() & 0xffff_ffff_0000_0000);
-        let c = (t - w * w) / (s + w);
-        let r = p / q;
-        p = 2.0 * s * r - (PIO2_LO - 2.0 * c);
-        q = PIO4_HI - 2.0 * w;
-        t = PIO4_HI - (p - q);
-    }
-    if hx > 0 {
-        t
-    } else {
-        -t
-    }
-}
+/// V8 `Math.asin` — the ONE implementation lives in [`crate::jsmath`]
+/// (moved there by `R-RUSTPORT-P4-23-MOD06-UNITS-BRONZE-Q1`); re-exported here
+/// so the existing `units_kamien::kit::js_asin` path keeps working.
+pub use crate::jsmath::js_asin;

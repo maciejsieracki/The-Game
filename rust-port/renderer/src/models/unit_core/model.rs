@@ -152,6 +152,10 @@ pub enum Prim {
     /// MOD-05 Stone package (`R-RUSTPORT-P4-19-MOD05-UNITS-STONE-Q1`), built
     /// by [`crate::models::units_kamien::geo`].
     Kamien(crate::models::units_kamien::geo::KamienGeo),
+    /// `OctahedronGeometry` and the non-parametric `BufferGeometry` bodies
+    /// of the MOD-06 Bronze package (`R-RUSTPORT-P4-23-MOD06-UNITS-BRONZE-Q1`),
+    /// built by [`crate::models::units_braz::geo`].
+    Braz(crate::models::units_braz::geo::BrazGeo),
 }
 
 impl Prim {
@@ -237,6 +241,7 @@ impl Prim {
             Self::HexRing { outer, inner } => hex_ring_geometry(outer, inner),
             Self::LeafBlade { len, w_max } => leaf_blade_geometry(len, w_max),
             Self::Kamien(g) => g.build(),
+            Self::Braz(g) => g.build(),
         }
     }
 }

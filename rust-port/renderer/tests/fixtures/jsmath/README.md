@@ -17,6 +17,7 @@ produced by **running** node v22.22.0 (`process.versions.v8` =
 | `pow.bin` | `Math.pow(x, y)` | 2 | 21 024 |
 | `hypot.bin` | `Math.hypot(a, b)` | 2 | 20 441 |
 | `hypot3.bin` | `Math.hypot(a, b, c)` | 3 | 3 004 |
+| `asin.bin` | `Math.asin` | 1 | 20 021 |
 
 Format: little-endian `f64` rows — the arguments, then the result. Counts and
 SHA-256 of every file: `manifest.json`. Argument classes (see `gen.mjs`):
@@ -29,8 +30,8 @@ next to `k·π/2` whose reduction needs the third iteration of
 `__ieee754_rem_pio2` (`HARD_REDUCTION`, found by an exhaustive scratch search,
 see `dyspozycje/rust-port/p4/P4-16-JSMATH.md` §5) and random finite bit
 patterns; function-specific sets for `exp` (overflow/underflow thresholds,
-`k·ln2`), `log` (near 1, subnormal, negative), `acos` (near ±1, out of
-range), `atan2` (all special pairs, `|y/x|` around `2^±60`, `x = 1`), `pow`
+`k·ln2`), `log` (near 1, subnormal, negative), `acos` and `asin` (near ±1,
+the `|x| < 0.5` / `0.975` branch borders, out of range), `atan2` (all special pairs, `|y/x|` around `2^±60`, `x = 1`), `pow`
 (sRGB exponents 2.4 / 0.41666, near-1 bases, negative bases with integer
 exponents, over/underflow, subnormal results) and `hypot`.
 
@@ -54,3 +55,10 @@ Measured on 2026-10-22: the three runs give byte-identical files (33 hashes,
 11 distinct), equal to the committed ones (`manifest.json`). The arguments
 come from a fixed-seed xorshift128+, so a re-run reproduces the files bit for
 bit.
+
+`asin.bin` was added by R-RUSTPORT-P4-23-MOD06-UNITS-BRONZE-Q1 (`js_asin`
+moved from `models::units_kamien::kit` into `jsmath`): the generator appends
+it as the LAST entry, so every earlier `.bin` is byte-identical to the P4.16
+set; measured on 2026-10-22 the default, `--jitless` and `--always-turbofan`
+runs give the same `asin.bin` (SHA-256 `10f84739…f36d`, 20 021 rows, 661 of
+them NaN results).

@@ -92,6 +92,14 @@
       "nanResults": 1,
       "file": "hypot3.bin",
       "sha256": "71edd4eb47677047f4e7db3fcb026bab3a10cc8786c1a2d14d843a6bb8709595"
+    },
+    {
+      "name": "asin",
+      "arity": 1,
+      "count": 20021,
+      "nanResults": 661,
+      "file": "asin.bin",
+      "sha256": "10f847394bd950681c74f3c5dbfb2e47806c429256545e5fda3312c25f13f36d"
     }
   ]
 }
