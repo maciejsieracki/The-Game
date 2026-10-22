@@ -1,0 +1,10 @@
+STATUS: PASS
+DOMAIN: GAME
+TEMAT: R-RUSTPORT-P4-20-MOD11-IMPROVEMENTS-Q1
+GOAL: Paczka MOD-11 (`P4-4-MODEL-CATALOG.md`): modele ulepszeń terenu i zasobów w Rust 1:1 z kodem weba `edb8fb56` (improvements, robloxImprovements, ulepszenia-modele-p2/p3a/p3b, kopalnia-cyny/zlota-opus5, droga-6-ramion, pastwisko-modele, swinia-trzoda, styleResources; resources — patrz BLOKADY/Z1), koń z `models::unit_core`, drzewo = `unit_core::model::UnitModel`, zgodność bitowa z uruchomionym webem.
+ZMIANY/COMMIT: kod `acb1915e` (worktree, bez push): `rust-port/renderer/src/models/improvements/**` (12 plików, 6 461 linii), 1 linia `pub mod improvements;` w `src/models.rs`, `tests/improvements_web_parity.rs`, `tests/fixtures/improvements/{gen.ts,README.md,models.json,sigs.json,data.json}` (~2,4 MB); dokument `dyspozycje/rust-port/p4/P4-20-MOD11-IMPROVEMENTS.md` + ten raport — commit dokumentacyjny w tym samym worktree (SHA w odpowiedzi Operatora / `git log`).
+TESTY: na `acb1915e`: `cargo fmt --all -- --check` EXIT=0; `cargo clippy --locked --all-targets -- -D warnings` EXIT=0; to samo `--features gpu` EXIT=0; `cargo test --locked --all-targets` EXIT=0 (18 binarek); `improvements_web_parity`: 432 przypadki (195 pełnych grafów + 237 sygnatur), 173 070 skalarów, bit_diff=0, struct_diff=0; tabele danych 35 skalarów 0 różnic. Mutacje 24/26 zabitych, 2 równoważne na danych (zastąpione M21b/M22b — zabite). Generator deterministyczny (2 przebiegi, `cmp` identyczne). Pełne surowe logi: dokument §9.
+BLOKADY: brak blokad technicznych. Do wiadomości orkiestratora (bez pytań ABC, rozstrzygnięte założeniami w dokumencie §1): Z1 — `resources.ts` i gałęzie `civ`/`minecraft` nieportowane jako nieosiągalne przy D-RR-8 = A (stały styl `roblox`); Z6 — klucze `Object.prototype` (np. `__proto__`) mogą w webie rzucać, Rust daje pustą grupę (NIE_ZMIERZONO); skaner `jsmath_wiring` nie obejmuje nowego katalogu (sprawdzone ręcznie grepem; dopisanie poza allowlistą). Ocena wzrokowa NIE_ZMIERZONO (brak GPU) — lista §7 dokumentu.
+RUNDY: 1/5
+NASTĘPNY KROK: Evaluator (Opus 5.5 medium) — odtworzenie fixtur skryptem z README, bramki na `acb1915e`, mutacje §8.3.
+DEPLOY/PUSH: NIE WYKONANO
