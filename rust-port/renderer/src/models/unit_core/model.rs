@@ -148,6 +148,10 @@ pub enum Prim {
         /// Maximum width.
         w_max: f64,
     },
+    /// Non-parametric `BufferGeometry` bodies and the `CircleGeometry` of the
+    /// MOD-05 Stone package (`R-RUSTPORT-P4-19-MOD05-UNITS-STONE-Q1`), built
+    /// by [`crate::models::units_kamien::geo`].
+    Kamien(crate::models::units_kamien::geo::KamienGeo),
 }
 
 impl Prim {
@@ -232,6 +236,7 @@ impl Prim {
             Self::Icosahedron { r, detail } => geom::icosahedron_geometry(r, detail),
             Self::HexRing { outer, inner } => hex_ring_geometry(outer, inner),
             Self::LeafBlade { len, w_max } => leaf_blade_geometry(len, w_max),
+            Self::Kamien(g) => g.build(),
         }
     }
 }

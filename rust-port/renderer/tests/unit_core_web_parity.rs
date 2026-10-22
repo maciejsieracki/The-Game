@@ -306,16 +306,14 @@ fn compare_model(c: &mut Cmp, id: &str, m: &UnitModel, w: &J) {
     }
 }
 
-/// Expected stubs: case → builder of another package.
+/// Expected stubs: case → builder of another package. The MOD-05 Stone
+/// cases (`lucznik`, `oszczepnik`, `zwiadowca`, `obleznicza`, `domyslny`,
+/// `nieznana-kategoria`) are ported since R-RUSTPORT-P4-19-MOD05-UNITS-STONE-Q1
+/// and compared bit for bit like every other case.
 fn expected_pending(id: &str) -> Option<Base> {
     let label = id.strip_prefix("cat:")?;
     match label {
         "falanga" => Some(Base::Falangita),
-        "lucznik" => Some(Base::LucznikOpus5),
-        "oszczepnik" => Some(Base::OszczepnikOpus5),
-        "zwiadowca" => Some(Base::ZwiadowcaOpus5),
-        "obleznicza" => Some(Base::BatteringRam),
-        "domyslny" | "nieznana-kategoria" => Some(Base::WojownikOpus5),
         _ => None,
     }
 }
@@ -352,8 +350,8 @@ fn every_web_case_is_reproduced_bit_for_bit() {
         c.values,
         pending.len()
     );
-    assert_eq!(pending.len(), 7, "pending stub cases");
-    assert_eq!(ported, 61, "compared cases");
+    assert_eq!(pending.len(), 1, "pending stub cases");
+    assert_eq!(ported, 67, "compared cases");
     assert!(
         c.errs.is_empty(),
         "{} mismatches:\n{}",

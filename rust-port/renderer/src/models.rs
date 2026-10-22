@@ -7,4 +7,5 @@
 //! first batch lands (now: `unit_core`, `wonders`).
 
 pub mod unit_core;
+pub mod units_kamien;
 pub mod wonders;

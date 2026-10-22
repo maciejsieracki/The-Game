@@ -193,22 +193,33 @@ impl fmt::Display for NotYetPorted {
 
 impl std::error::Error for NotYetPorted {}
 
-/// Builders still waiting for their package (everything not in
-/// [`Package::Mod04Core`]).
+/// `true` for the packages whose builders are ported: MOD-04 (this module)
+/// and MOD-05 Stone ([`crate::models::units_kamien`],
+/// `R-RUSTPORT-P4-19-MOD05-UNITS-STONE-Q1`).
+#[must_use]
+pub const fn is_ported(pkg: Package) -> bool {
+    matches!(pkg, Package::Mod04Core | Package::Mod05Stone)
+}
+
+/// Builders still waiting for their package (packages 6–7).
 #[must_use]
 pub fn pending() -> Vec<Base> {
     Base::ALL
         .iter()
         .copied()
-        .filter(|b| b.package() != Package::Mod04Core)
+        .filter(|b| !is_ported(b.package()))
         .collect()
 }
 
 /// Builds `base` for `owner`.
 ///
 /// # Errors
-/// [`NotYetPorted`] for every builder outside [`Package::Mod04Core`].
+/// [`NotYetPorted`] for every builder of a package not ported yet
+/// (MOD-06, MOD-07).
 pub fn build_base(base: Base, owner: u32) -> Result<UnitModel, NotYetPorted> {
+    if base.package() == Package::Mod05Stone {
+        return crate::models::units_kamien::build(base, owner).ok_or(NotYetPorted::of(base));
+    }
     match base {
         Base::CatLegionista => build_category_model(UnitCategory::Legionista, owner),
         Base::CatOsadnik => build_category_model(UnitCategory::Osadnik, owner),

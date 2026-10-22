@@ -164,9 +164,9 @@ impl UnitCategory {
 /// `buildCategoryModel(category, ownerColor)`.
 ///
 /// # Errors
-/// [`NotYetPorted`] for the cases delegating to packages 5–7
-/// (`falanga`, `lucznik`, `oszczepnik`, `zwiadowca`, `obleznicza`,
-/// `domyslny`).
+/// [`NotYetPorted`] for the case delegating to a package not ported yet
+/// (`falanga` → MOD-07); `lucznik`, `oszczepnik`, `zwiadowca`,
+/// `obleznicza`, `domyslny` build the MOD-05 Stone models.
 pub fn build_category_model(cat: UnitCategory, owner: u32) -> Result<UnitModel, NotYetPorted> {
     match cat {
         UnitCategory::Legion | UnitCategory::Legionary | UnitCategory::Legionista => {
@@ -183,12 +183,15 @@ pub fn build_category_model(cat: UnitCategory, owner: u32) -> Result<UnitModel, 
         UnitCategory::Super => Ok(cat_super(owner)),
         UnitCategory::Robotnik => Ok(cat_robotnik(owner)),
         UnitCategory::Galera => Ok(build_galera(owner, GaleraPoza::Plyniecie)),
-        UnitCategory::Falanga
-        | UnitCategory::Lucznik
+        // MOD-05 Stone (`R-RUSTPORT-P4-19-MOD05-UNITS-STONE-Q1`):
+        // `kamien-bazowe-opus5` / `kamien-zulu-taran-opus5`.
+        UnitCategory::Lucznik
         | UnitCategory::Oszczepnik
         | UnitCategory::Zwiadowca
         | UnitCategory::Obleznicza
-        | UnitCategory::Domyslny => Err(NotYetPorted::of(cat.base())),
+        | UnitCategory::Domyslny => crate::models::units_kamien::build(cat.base(), owner)
+            .ok_or(NotYetPorted::of(cat.base())),
+        UnitCategory::Falanga => Err(NotYetPorted::of(cat.base())),
     }
 }
 
