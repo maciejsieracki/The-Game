@@ -27,9 +27,9 @@ dotykające tych samych plików — zawsze sekwencyjnie, nigdy w tej samej fali.
 
 | # | Temat | Faza | Runda | runId Workflow | Status | Ostatnia aktualizacja |
 |---|---|---|---|---|---|---|
-| 1 | `R-RUSTPORT-P6-1-STAN-STARTOWY-Q1` | P6.1 stan początkowy/seed/hot-seat (16 plików web, 3 291 LOC) — Haiku/Haiku/Sonnet | 1/5 | (patrz niżej) | DISPATCHED | 2026-10-22 |
+| 1 | `R-RUSTPORT-P6-1-STAN-STARTOWY-Q1` | P6.1 stan początkowy/seed/hot-seat (16 plików web, 3 291 LOC) — Haiku/Haiku/Sonnet | 1/5 | `wf_022130ad-1b3` | DISPATCHED | 2026-10-22 |
 | 2 | `R-RUSTPORT-P5-3-PORT-LEVEL1A-Q1` | P5-3 portowanie paneli UI poziomu 1 bez cyklu (17 modułów) — Opus 5.5 | 1/5 | `wf_259a8c04-548` | DISPATCHED | 2026-10-22 |
-| 3 | `R-RUSTPORT-P4-26-MOD07-UNITS-IRON-Q1` | MOD-07 jednostki żelaza (24) + ostatnie stuby `unit_core` — Opus 5.5 | 1/5 | (patrz niżej) | DISPATCHED | 2026-10-22 |
+| 3 | `R-RUSTPORT-P4-26-MOD07-UNITS-IRON-Q1` | MOD-07 jednostki żelaza (24) + ostatnie stuby `unit_core` — Opus 5.5 | 1/5 | `wf_91ec5ced-915` | DISPATCHED | 2026-10-22 |
 | 4–6 | — | — | — | — | **WOLNE** (zależności: P4.27 ujednolicenie drzewa sceny po P4.26; MOD-08/10 + RR-T8 czekają na D-TXT (ABC); P6.x sekwencyjnie po P6.1; P5.4 cykl C4 po P5.3) | 2026-10-22 |
 
 Kolejka (aktualizacja 2026-10-22): P3.23 FLATTEN etap 3 (po P3.21 — te same pliki domeny: macierz counter 35g, struktury, wzrost 35b, mapa 35j–k, społeczeństwo 35n, wioski 35c, ruch 35i, produkcja 19–22b), MOD-07 jednostki żelaza, ujednolicenie typu drzewa sceny, P5.3+ kolejne poziomy `PORTING-QUEUE.md`, pierwotna kolejka: MOD-06/07 (jednostki brązu/żelaza, po P4.19), MOD-09 miasta, MOD-13 misc, ujednolicenie typu drzewa sceny (3 typy: `core::scene`, `wonders::model`, `unit_core::model`) po paczkach, P3.21 `CityId` po P3.22, P5.2+ kolejka portowania paneli (`PORTING-QUEUE.md`), RR-T1 spike (wymaga GPU właściciela).
