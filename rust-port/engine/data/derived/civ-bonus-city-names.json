@@ -1,0 +1,31 @@
+{
+  "meta": {
+    "zrodlo_web": {
+      "plik": "gra/src/game/city-names-pool.ts",
+      "pin": "edb8fb56",
+      "dlugosc_regularna": "linia 20",
+      "dlugosc_panstwa": "linia 21",
+      "rzymskie": "linia 153",
+      "fallbacki": "linie 85, 96, 169"
+    },
+    "opis": "Edytowalne stale pul nazw miast: dlugosci puli, sufiksy rzymskie przy wyczerpaniu puli oraz teksty zastepcze. COMMON_LEN = regularna + panstwa; NAZWY_KLASTRA_LEN = panstwa."
+  },
+  "dlugosc_regularna": 100,
+  "dlugosc_panstwa": 10,
+  "rzymskie": [
+    "",
+    "",
+    "II",
+    "III",
+    "IV",
+    "V",
+    "VI",
+    "VII",
+    "VIII",
+    "IX",
+    "X"
+  ],
+  "fallback_stolica": "Stolica",
+  "fallback_miasto": "Miasto",
+  "fallback_rywal_prefiks": "Rywal "
+}

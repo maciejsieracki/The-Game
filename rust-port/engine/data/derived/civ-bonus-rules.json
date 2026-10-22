@@ -1,0 +1,88 @@
+{
+  "meta": {
+    "zrodlo_web": {
+      "plik": "gra/src/game/civ-bonuses.ts",
+      "pin": "edb8fb56",
+      "applyWalkBonus": "od linii 181",
+      "bonusApplies": "od linii 141",
+      "matchingMatrixSum": "linia 311",
+      "civBuildingCostDiscount": "od linii 349"
+    },
+    "opis": "Edytowalne reguly routingu parametrow macierzy do statystyk, warunki kontekstu oraz stale znizki kosztu budynkow. Kolejnosc wierszy \"statystyki\" jest znaczaca tylko dla czytelnosci (reguly sa addytywne, nie wykluczajace sie)."
+  },
+  "pomijane": {
+    "prefiksy": [
+      "walka_ruch_"
+    ],
+    "id": [
+      "walka_zasieg_proc",
+      "walka_oblezenie_proc"
+    ]
+  },
+  "statystyki": [
+    {
+      "prefiks": "walka_atak_",
+      "stat": "atk",
+      "wyklucz_fragment": null
+    },
+    {
+      "prefiks": "walka_obrona_",
+      "stat": "obrona",
+      "wyklucz_fragment": "_w_murze"
+    },
+    {
+      "prefiks": "walka_pancerz_",
+      "stat": "pancerz",
+      "wyklucz_fragment": null
+    },
+    {
+      "prefiks": "walka_uderzenie_",
+      "stat": "uderzenie",
+      "wyklucz_fragment": null
+    },
+    {
+      "prefiks": "walka_dystans_",
+      "stat": "rangedAtk",
+      "wyklucz_fragment": null
+    },
+    {
+      "prefiks": "walka_hp_",
+      "stat": "health",
+      "wyklucz_fragment": null
+    }
+  ],
+  "warunki_kontekstu": {
+    "terytorium_wlasne_id": [
+      "walka_atak_piechota_terytorium_wlasne",
+      "walka_obrona_piechota_terytorium_wlasne"
+    ],
+    "fragment_mur": "_w_murze",
+    "fragment_las": "_teren_las",
+    "fragment_plytkie_morze": "_teren_plytkie_morze",
+    "fragment_runda_szarzy": "_runda_szarzy"
+  },
+  "grupy_mnoznikow": {
+    "ruch": [
+      "walka_ruch_bitwa_proc",
+      "walka_ruch_rydwany",
+      "walka_ruch_piechota_teren_plytkie_morze"
+    ],
+    "zasieg": [
+      "walka_zasieg_proc",
+      "walka_dystans_rydwany"
+    ],
+    "oblezenie": [
+      "walka_oblezenie_proc"
+    ],
+    "mur": [
+      "walka_obrona_piechota_w_murze"
+    ]
+  },
+  "koszt_budynkow": {
+    "typ": "koszt_redukcja",
+    "cel": "budynki",
+    "realizuje": "miasto",
+    "max_znizka": 0.75,
+    "min_koszt": 1
+  }
+}

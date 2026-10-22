@@ -1,0 +1,242 @@
+{
+  "meta": {
+    "zrodlo_web": {
+      "plik": "gra/src/game/civ-bonuses.ts",
+      "pin": "edb8fb56",
+      "matrix_combat_specs": "linie 264-283",
+      "excluded_g1": "linia 288",
+      "petla_ruchu": "od linii 297",
+      "koszt_rekrutacji": "linie 306-307"
+    },
+    "opis": "Edytowalna tabela generowania wpisow bonusow walki z macierzy cywilizacji (civMatrixBonusyForCivKey). Kolejnosc wierszy = kolejnosc wyniku. Zmiana wiersza nie wymaga zmiany kodu ani testu ksztaltu."
+  },
+  "etykiety": {
+    "opis_prefiks": "Matrix:",
+    "realizuje_walka": "walka",
+    "realizuje_ekonomia": "ekonomia",
+    "typ_walka": "bonus_walka"
+  },
+  "spec_walka": [
+    {
+      "id": "walka_atak_piechota",
+      "typ": "bonus_walka",
+      "cel": "piechota"
+    },
+    {
+      "id": "walka_atak_lukownicy",
+      "typ": "bonus_walka",
+      "cel": "lukownicy"
+    },
+    {
+      "id": "walka_atak_kawaleria",
+      "typ": "bonus_walka",
+      "cel": "kawaleria"
+    },
+    {
+      "id": "walka_atak_rydwany",
+      "typ": "bonus_walka",
+      "cel": "rydwany"
+    },
+    {
+      "id": "walka_atak_obleczenie",
+      "typ": "bonus_walka",
+      "cel": "obleczenie"
+    },
+    {
+      "id": "walka_atak_morska",
+      "typ": "bonus_walka",
+      "cel": "morska"
+    },
+    {
+      "id": "walka_atak_wszystkie",
+      "typ": "bonus_walka",
+      "cel": "wszystko"
+    },
+    {
+      "id": "walka_obrona_piechota",
+      "typ": "bonus_obrona",
+      "cel": "piechota"
+    },
+    {
+      "id": "walka_obrona_lukownicy",
+      "typ": "bonus_obrona",
+      "cel": "lukownicy"
+    },
+    {
+      "id": "walka_obrona_kawaleria",
+      "typ": "bonus_obrona",
+      "cel": "kawaleria"
+    },
+    {
+      "id": "walka_obrona_rydwany",
+      "typ": "bonus_obrona",
+      "cel": "rydwany"
+    },
+    {
+      "id": "walka_obrona_obleczenie",
+      "typ": "bonus_obrona",
+      "cel": "obleczenie"
+    },
+    {
+      "id": "walka_obrona_morska",
+      "typ": "bonus_obrona",
+      "cel": "morska"
+    },
+    {
+      "id": "walka_pancerz_piechota",
+      "typ": "bonus_walka",
+      "cel": "piechota"
+    },
+    {
+      "id": "walka_pancerz_lukownicy",
+      "typ": "bonus_walka",
+      "cel": "lukownicy"
+    },
+    {
+      "id": "walka_pancerz_kawaleria",
+      "typ": "bonus_walka",
+      "cel": "kawaleria"
+    },
+    {
+      "id": "walka_pancerz_rydwany",
+      "typ": "bonus_walka",
+      "cel": "rydwany"
+    },
+    {
+      "id": "walka_uderzenie_piechota",
+      "typ": "bonus_walka",
+      "cel": "piechota"
+    },
+    {
+      "id": "walka_uderzenie_kawaleria",
+      "typ": "bonus_walka",
+      "cel": "kawaleria"
+    },
+    {
+      "id": "walka_uderzenie_rydwany",
+      "typ": "bonus_walka",
+      "cel": "rydwany"
+    },
+    {
+      "id": "walka_dystans_lukownicy",
+      "typ": "bonus_walka",
+      "cel": "lukownicy"
+    },
+    {
+      "id": "walka_dystans_rydwany",
+      "typ": "bonus_walka",
+      "cel": "rydwany"
+    },
+    {
+      "id": "walka_hp_piechota",
+      "typ": "bonus_obrona",
+      "cel": "piechota"
+    },
+    {
+      "id": "walka_hp_kawaleria",
+      "typ": "bonus_obrona",
+      "cel": "kawaleria"
+    },
+    {
+      "id": "walka_hp_rydwany",
+      "typ": "bonus_obrona",
+      "cel": "rydwany"
+    },
+    {
+      "id": "walka_atak_piechota_teren_las",
+      "typ": "bonus_walka",
+      "cel": "piechota"
+    },
+    {
+      "id": "walka_obrona_piechota_teren_las",
+      "typ": "bonus_obrona",
+      "cel": "piechota"
+    },
+    {
+      "id": "walka_atak_piechota_terytorium_wlasne",
+      "typ": "bonus_walka",
+      "cel": "piechota"
+    },
+    {
+      "id": "walka_obrona_piechota_terytorium_wlasne",
+      "typ": "bonus_obrona",
+      "cel": "piechota"
+    },
+    {
+      "id": "walka_atak_piechota_w_murze",
+      "typ": "bonus_walka",
+      "cel": "piechota"
+    },
+    {
+      "id": "walka_obrona_piechota_w_murze",
+      "typ": "bonus_obrona",
+      "cel": "piechota"
+    },
+    {
+      "id": "walka_atak_piechota_runda_szarzy",
+      "typ": "bonus_walka",
+      "cel": "piechota"
+    },
+    {
+      "id": "walka_obrona_piechota_runda_szarzy",
+      "typ": "bonus_obrona",
+      "cel": "piechota"
+    },
+    {
+      "id": "walka_atak_piechota_teren_plytkie_morze",
+      "typ": "bonus_walka",
+      "cel": "piechota"
+    },
+    {
+      "id": "walka_obrona_piechota_teren_plytkie_morze",
+      "typ": "bonus_obrona",
+      "cel": "piechota"
+    },
+    {
+      "id": "walka_ruch_piechota_teren_plytkie_morze",
+      "typ": "bonus_walka",
+      "cel": "piechota"
+    }
+  ],
+  "wykluczone_g1": [
+    "walka_atak_lukownicy",
+    "walka_atak_piechota",
+    "walka_dystans_lukownicy",
+    "walka_hp_piechota",
+    "walka_hp_rydwany",
+    "walka_obrona_piechota",
+    "walka_pancerz_piechota"
+  ],
+  "parametry_dodatkowe": [
+    {
+      "id": "walka_ruch_bitwa_proc",
+      "cel_domyslne": "piechota",
+      "wyjatki_civ": [
+        {
+          "civ_key": "egipt",
+          "cel": "rydwany"
+        }
+      ]
+    },
+    {
+      "id": "walka_ruch_rydwany",
+      "cel_domyslne": "rydwany",
+      "wyjatki_civ": []
+    },
+    {
+      "id": "walka_zasieg_proc",
+      "cel_domyslne": "wszystko",
+      "wyjatki_civ": []
+    },
+    {
+      "id": "walka_oblezenie_proc",
+      "cel_domyslne": "wszystko",
+      "wyjatki_civ": []
+    }
+  ],
+  "koszt_rekrutacji": {
+    "id": "walka_koszt_rekrutacji_proc",
+    "typ": "koszt_redukcja",
+    "cel": "jednostki"
+  }
+}

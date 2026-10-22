@@ -850,4 +850,188 @@ pub fn start_llama_params() -> &'static StartLlamaParamsFile {
 pub fn start_braz_access() -> &'static StartBrazAccessFile {
     static TABLE: std::sync::OnceLock<StartBrazAccessFile> = std::sync::OnceLock::new();
     TABLE.get_or_init(|| parse_start_braz_access().expect("start-braz-access.json must parse"))
+
+// P6.1D: tabele bonusow cywilizacji i pul nazw miast (civ-bonuses.ts, city-names-pool.ts).
+// Pliki `data/derived/civ-bonus-*.json` sa EDYTOWALNE; generator: `gen-p61d-tables.mjs`
+// w runie R-RUSTPORT-P6-1D-CIV-BONUSY-NAZWY-Q1.
+// ---------------------------------------------------------------------------
+
+/// Tabela generowania wpisow bonusow walki z macierzy cywilizacji (MATRIX_COMBAT_SPECS itd.).
+pub const CIV_BONUS_MATRIX_SPECS_JSON: &str =
+    include_str!("../../data/derived/civ-bonus-matrix-specs.json");
+/// Reguly routingu parametrow macierzy do statystyk, warunki kontekstu, stale znizki kosztu.
+pub const CIV_BONUS_RULES_JSON: &str = include_str!("../../data/derived/civ-bonus-rules.json");
+/// Stale pul nazw miast (dlugosci, sufiksy rzymskie, teksty zastepcze).
+pub const CIV_BONUS_CITY_NAMES_JSON: &str =
+    include_str!("../../data/derived/civ-bonus-city-names.json");
+/// Tabela dekompozycji znakow (odpowiednik `stripDiacritics` weba: NFD bez U+0300-U+036F).
+pub const CIV_BONUS_DIACRITICS_JSON: &str =
+    include_str!("../../data/derived/civ-bonus-diacritics.json");
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct CivBonusMatrixSpecsFile {
+    pub meta: serde_json::Value,
+    pub etykiety: CivBonusLabels,
+    pub spec_walka: Vec<CivBonusMatrixSpec>,
+    pub wykluczone_g1: Vec<String>,
+    pub parametry_dodatkowe: Vec<CivBonusExtraParam>,
+    pub koszt_rekrutacji: CivBonusRecruitmentSpec,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct CivBonusLabels {
+    pub opis_prefiks: String,
+    pub realizuje_walka: String,
+    pub realizuje_ekonomia: String,
+    pub typ_walka: String,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct CivBonusMatrixSpec {
+    pub id: String,
+    pub typ: String,
+    pub cel: String,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct CivBonusExtraParam {
+    pub id: String,
+    pub cel_domyslne: String,
+    pub wyjatki_civ: Vec<CivBonusCelException>,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct CivBonusCelException {
+    pub civ_key: String,
+    pub cel: String,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct CivBonusRecruitmentSpec {
+    pub id: String,
+    pub typ: String,
+    pub cel: String,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct CivBonusRulesFile {
+    pub meta: serde_json::Value,
+    pub pomijane: CivBonusSkipped,
+    pub statystyki: Vec<CivBonusStatRule>,
+    pub warunki_kontekstu: CivBonusContextRules,
+    pub grupy_mnoznikow: CivBonusMultiplierGroups,
+    pub koszt_budynkow: CivBonusBuildingCostRule,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct CivBonusSkipped {
+    pub prefiksy: Vec<String>,
+    pub id: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct CivBonusStatRule {
+    pub prefiks: String,
+    /// Nazwa statystyki: `atk`, `obrona`, `pancerz`, `uderzenie`, `rangedAtk`, `health`.
+    pub stat: String,
+    pub wyklucz_fragment: Option<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct CivBonusContextRules {
+    pub terytorium_wlasne_id: Vec<String>,
+    pub fragment_mur: String,
+    pub fragment_las: String,
+    pub fragment_plytkie_morze: String,
+    pub fragment_runda_szarzy: String,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct CivBonusMultiplierGroups {
+    pub ruch: Vec<String>,
+    pub zasieg: Vec<String>,
+    pub oblezenie: Vec<String>,
+    pub mur: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct CivBonusBuildingCostRule {
+    pub typ: String,
+    pub cel: String,
+    pub realizuje: String,
+    pub max_znizka: f64,
+    pub min_koszt: f64,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct CivBonusCityNamesFile {
+    pub meta: serde_json::Value,
+    pub dlugosc_regularna: usize,
+    pub dlugosc_panstwa: usize,
+    /// Indeks = liczba porzadkowa (0 i 1 puste; 2 => "II" ... 10 => "X").
+    pub rzymskie: Vec<String>,
+    pub fallback_stolica: String,
+    pub fallback_miasto: String,
+    pub fallback_rywal_prefiks: String,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct CivBonusDiacriticsFile {
+    pub meta: serde_json::Value,
+    pub mapa: BTreeMap<String, String>,
+}
+
+pub fn parse_civ_bonus_matrix_specs() -> Result<CivBonusMatrixSpecsFile, serde_json::Error> {
+    serde_json::from_str(CIV_BONUS_MATRIX_SPECS_JSON)
+}
+
+pub fn parse_civ_bonus_rules() -> Result<CivBonusRulesFile, serde_json::Error> {
+    serde_json::from_str(CIV_BONUS_RULES_JSON)
+}
+
+pub fn parse_civ_bonus_city_names() -> Result<CivBonusCityNamesFile, serde_json::Error> {
+    serde_json::from_str(CIV_BONUS_CITY_NAMES_JSON)
+}
+
+pub fn parse_civ_bonus_diacritics() -> Result<CivBonusDiacriticsFile, serde_json::Error> {
+    serde_json::from_str(CIV_BONUS_DIACRITICS_JSON)
+}
+
+/// Tabela specyfikacji macierzy (zaladowana raz; blad parsowania to blad danych pokryty testem ksztaltu).
+pub fn civ_bonus_matrix_specs() -> &'static CivBonusMatrixSpecsFile {
+    static TABLE: std::sync::OnceLock<CivBonusMatrixSpecsFile> = std::sync::OnceLock::new();
+    TABLE.get_or_init(|| {
+        parse_civ_bonus_matrix_specs().expect("civ-bonus-matrix-specs.json must parse")
+    })
+}
+
+pub fn civ_bonus_rules() -> &'static CivBonusRulesFile {
+    static TABLE: std::sync::OnceLock<CivBonusRulesFile> = std::sync::OnceLock::new();
+    TABLE.get_or_init(|| parse_civ_bonus_rules().expect("civ-bonus-rules.json must parse"))
+}
+
+pub fn civ_bonus_city_names() -> &'static CivBonusCityNamesFile {
+    static TABLE: std::sync::OnceLock<CivBonusCityNamesFile> = std::sync::OnceLock::new();
+    TABLE
+        .get_or_init(|| parse_civ_bonus_city_names().expect("civ-bonus-city-names.json must parse"))
+}
+
+pub fn civ_bonus_diacritics() -> &'static CivBonusDiacriticsFile {
+    static TABLE: std::sync::OnceLock<CivBonusDiacriticsFile> = std::sync::OnceLock::new();
+    TABLE
+        .get_or_init(|| parse_civ_bonus_diacritics().expect("civ-bonus-diacritics.json must parse"))
 }
