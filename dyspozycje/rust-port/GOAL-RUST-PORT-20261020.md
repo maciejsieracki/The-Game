@@ -27,7 +27,6 @@ dotykające tych samych plików — zawsze sekwencyjnie, nigdy w tej samej fali.
 
 | # | Temat | Faza | Runda | runId Workflow | Status | Ostatnia aktualizacja |
 |---|---|---|---|---|---|---|
-| 6 | `R-RUSTPORT-P4-29-TEXT-FONTS-Q1` | RR-T8b font + tekst (ab_glyph, rustybuzz, Liberation/DejaVu) — Opus 5.5 | 1/5 | `wf_ba6243e3-648` | DISPATCHED | 2026-10-22 |
 | 2 | `R-RUSTPORT-P6-M09-KLASTRY-RYWALE-MIN-Q1` | klastry — minimalny wycinek rywali (odblokowuje P6.1C RUNDA-2) — Operator Sonnet | 1/5 | `wf_c26c9e68-dd7` | DISPATCHED | 2026-10-22 |
 | 3 | `R-RUSTPORT-P6-M01-RDZEN-WERYFIKACJA-Q1` | generator mapy: rdzeń i weryfikacja — Operator Sonnet | 1/5 | `wf_320a8312-64a` | DISPATCHED | 2026-10-22 |
 | 4 | `R-RUSTPORT-P6-M02-PARAMETRY-NOWEJ-GRY-Q1` | generator mapy: parametry nowej gry — Operator Sonnet | 1/5 | `wf_8ae2c889-684` | DISPATCHED | 2026-10-22 |

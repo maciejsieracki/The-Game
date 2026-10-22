@@ -1,0 +1,148 @@
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.06s
+     Running unittests src/lib.rs (target/debug/deps/civ_renderer-5fff57e1f8a29ac2)
+
+running 10 tests
+test raster::text::font::tests::prefix_keywords_and_line_height ... ok
+test raster::text::font::tests::invalid_values_are_rejected ... ok
+test raster::text::font::tests::quoted_generic_is_a_family_name ... ok
+test raster::text::fonts::tests::web_stacks_map_like_a_browser_without_windows_fonts ... ok
+test raster::text::font::tests::web_font_strings_parse ... ok
+test raster::text::tests::round_64_is_26_6 ... ok
+test raster::text::tests::per_glyph_fallback_switches_face ... ok
+test raster::text::tests::px_scale_is_not_the_css_em ... ok
+test raster::text::tests::whitespace_is_replaced_by_space ... ok
+test raster::text::fonts::tests::all_faces_parse_and_have_latin ... ok
+
+test result: ok. 10 passed; 0 failed; 0 ignored; 0 measured; 36 filtered out; finished in 0.00s
+
+EXIT=0
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.07s
+     Running tests/text_api_closed.rs (target/debug/deps/text_api_closed-ada6cc8c286eb5f5)
+
+running 3 tests
+test shapes_file_gained_no_public_method ... ok
+test text_api_is_exactly_the_six_web_members ... ok
+test unused_text_members_are_not_implemented ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+     Running tests/text_fonts.rs (target/debug/deps/text_fonts-41cc4f65361eb8dd)
+
+running 5 tests
+test charset_has_no_notdef ... ok
+test emoji_are_out_of_scope_and_render_notdef ... ok
+test fonts_match_manifest_sha256 ... ok
+test sha256_matches_standard_vectors ... ok
+test symbols_fall_back_to_dejavu ... ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.20s
+
+     Running tests/text_metrics.rs (target/debug/deps/text_metrics-9d1e70a04d5d9db2)
+
+running 6 tests
+test baselines_match_chromium ... ok
+test default_font_is_10px_sans_serif ... ok
+test font_shorthand_parsing_matches_chromium ... ok
+test invalid_font_keeps_previous_value ... ok
+test measure_text_widths_match_chromium ... widths: 5105 rows, max |Δ| = 0 ()
+ok
+test truncation_decisions_match_the_web ... truncation: 12620 cases, 2532 truncated by the web, 0 differ
+ok
+
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 12.46s
+
+     Running tests/text_scenes.rs (target/debug/deps/text_scenes-af8783576f078ad1)
+
+running 4 tests
+test manifest_lists_every_fixture ... ok
+test rendering_twice_is_identical ... ok
+test scenes_match_chromium ... scene | size | max_abs | mean_abs | px>16 % | ssim | source
+t5_stack_badge_x2 | 64x64 | 51 | 1.1646 | 3.931 | 0.99542 | render/units.ts:6374-6385
+t5_stack_badge_x3 | 64x64 | 51 | 1.1935 | 3.955 | 0.99534 | render/units.ts:6374-6385
+t5_stack_badge_x12 | 64x64 | 51 | 1.2806 | 4.346 | 0.99536 | render/units.ts:6374-6385
+t6_turn_label_1 | 128x48 | 33 | 0.1517 | 0.602 | 0.99939 | render/units.ts:6580-6597
+t6_turn_label_7 | 128x48 | 36 | 0.1392 | 0.342 | 0.99967 | render/units.ts:6580-6597
+t6_turn_label_23 | 128x48 | 74 | 0.2875 | 1.009 | 0.99904 | render/units.ts:6580-6597
+t9_power_digit_0 | 72x126 | 90 | 0.6223 | 2.568 | 0.99471 | render/unitStatPlate.ts:608-617
+t9_power_digit_1 | 72x126 | 36 | 0.2244 | 0.661 | 0.99876 | render/unitStatPlate.ts:608-617
+t9_power_digit_2 | 72x126 | 84 | 0.5868 | 2.458 | 0.99616 | render/unitStatPlate.ts:608-617
+t9_power_digit_3 | 72x126 | 88 | 0.6663 | 2.954 | 0.99465 | render/unitStatPlate.ts:608-617
+t9_power_digit_4 | 72x126 | 83 | 0.4859 | 1.565 | 0.99742 | render/unitStatPlate.ts:608-617
+t9_power_digit_5 | 72x126 | 111 | 0.6197 | 2.260 | 0.99502 | render/unitStatPlate.ts:608-617
+t9_power_digit_6 | 72x126 | 70 | 0.7337 | 3.417 | 0.99390 | render/unitStatPlate.ts:608-617
+t9_power_digit_7 | 72x126 | 58 | 0.3620 | 1.036 | 0.99831 | render/unitStatPlate.ts:608-617
+t9_power_digit_8 | 72x126 | 87 | 0.7318 | 2.987 | 0.99325 | render/unitStatPlate.ts:608-617
+t9_power_digit_9 | 72x126 | 103 | 0.6461 | 2.679 | 0.99455 | render/unitStatPlate.ts:608-617
+t15_group_number_1 | 28x28 | 18 | 0.1524 | 0.128 | 0.99939 | battle/battleScene.ts:18652-18661
+t15_group_number_2 | 28x28 | 34 | 0.2331 | 0.765 | 0.99903 | battle/battleScene.ts:18652-18661
+t15_group_number_7 | 28x28 | 20 | 0.1167 | 0.128 | 0.99912 | battle/battleScene.ts:18652-18661
+t15_group_number_10 | 28x28 | 24 | 0.4780 | 0.510 | 0.99888 | battle/battleScene.ts:18652-18661
+t10_glyph_barbarian | 128x128 | 80 | 0.5607 | 1.453 | 0.99801 | render/unitOwnerEmblem.ts:260-263 (glyph only)
+t10_glyph_civ | 128x128 | 42 | 0.1148 | 0.256 | 0.99945 | render/unitOwnerEmblem.ts:260-263 (glyph only)
+t13_yield_digits_idle | 128x40 | 46 | 0.1824 | 0.488 | 0.99807 | render/cityOkolicaOverlay.ts:157-178 (digits)
+t13_yield_digits_worked | 128x40 | 41 | 0.1908 | 0.508 | 0.99925 | render/cityOkolicaOverlay.ts:157-178 (digits)
+t14_text_x1 | 360x48 | 63 | 1.3447 | 3.426 | 0.99429 | render/cityMapStatChip.ts:851, :898-925, :759-763, :577-580, :684-687 (text only)
+t14_text_x2 | 720x96 | 85 | 0.6021 | 1.435 | 0.99688 | render/cityMapStatChip.ts:851, :898-925, :759-763, :577-580, :684-687 (text only)
+t14_text_x3 | 1080x144 | 70 | 0.2120 | 0.593 | 0.99854 | render/cityMapStatChip.ts:851, :898-925, :759-763, :577-580, :684-687 (text only)
+t14_text_x1_5 | 540x72 | 66 | 0.4100 | 0.874 | 0.99798 | render/cityMapStatChip.ts:851, :898-925, :759-763, :577-580, :684-687 (text only)
+t14_hover_row_x2 | 720x44 | 68 | 0.5017 | 1.588 | 0.99783 | render/cityMapStatChip.ts:707-717
+x_text_align | 240x120 | 67 | 0.1552 | 0.795 | 0.99952 | textAlign start/end/left/right/center
+x_text_baselines | 360x70 | 41 | 0.1255 | 1.143 | 0.99958 | textBaseline ×6
+x_text_rotated_gradient | 200x120 | 66 | 0.2525 | 1.775 | 0.99852 | rotate + gradient fill + strokeText (round join)
+x_text_charset_sans | 420x90 | 64 | 0.2972 | 2.011 | 0.99826 | P4-25 §3.3: 22 upper + 25 lower + punctuation, Liberation Sans
+x_text_charset_serif | 420x60 | 55 | 0.2683 | 1.806 | 0.99865 | P4-25 §3.3: 22 upper chars, Liberation Serif Bold (name font)
+x_text_save_restore_font | 200x50 | 64 | 0.2193 | 2.230 | 0.99948 | font/textAlign/textBaseline saved and restored
+x_text_path_untouched | 120x60 | 46 | 0.2815 | 1.028 | 0.99861 | fillText does not touch the current path
+ok
+test scenes_match_golden_hashes ... # R-RUSTPORT-P4-29 golden FNV-1a 64 of the premultiplied RGBA8 buffer per scene
+t5_stack_badge_x2	1a593f36ab72ef07
+t5_stack_badge_x3	3938523f1b799302
+t5_stack_badge_x12	cd71b837c7d0ae7d
+t6_turn_label_1	5f97891c2f59fd70
+t6_turn_label_7	ba5def5a69ad90e5
+t6_turn_label_23	00501707f06997bf
+t9_power_digit_0	82d23cd3db07c830
+t9_power_digit_1	a71f3fc7c18787f0
+t9_power_digit_2	f2c39abe430f1cc2
+t9_power_digit_3	56d08594176cc86b
+t9_power_digit_4	e217bfa068e1aa74
+t9_power_digit_5	d1aa4d12c2b3c894
+t9_power_digit_6	602868bc52211a27
+t9_power_digit_7	4f20d6d812b78f9b
+t9_power_digit_8	148f48084c6a1332
+t9_power_digit_9	f4ac0b36fda15c00
+t15_group_number_1	c5434e4a95960fa3
+t15_group_number_2	d7f62e5e120f7eed
+t15_group_number_7	ef231e871c5a4e08
+t15_group_number_10	c08409e194ce8b80
+t10_glyph_barbarian	a1f08c13ee030043
+t10_glyph_civ	34e5988d8ed5ed59
+t13_yield_digits_idle	fb25302802bb1247
+t13_yield_digits_worked	58dce77f5c463c44
+t14_text_x1	c5bca8fda8bc8ebf
+t14_text_x2	270ab575cbb9d2b4
+t14_text_x3	80d5cf1ea78f9ad7
+t14_text_x1_5	30178f36cac2fca0
+t14_hover_row_x2	6f67dcf34b833b9a
+x_text_align	da023ad4860b9f5d
+x_text_baselines	c16f8b418cb58145
+x_text_rotated_gradient	b19141eeab99d5af
+x_text_charset_sans	2b17b0c696a693a0
+x_text_charset_serif	4c4507bbb600b889
+x_text_save_restore_font	d013d91f9d28ea38
+x_text_path_untouched	2aa30044ef3c4202
+ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.98s
+
+     Running tests/text_upper.rs (target/debug/deps/text_upper-d2c426d6ed14ffab)
+
+running 3 tests
+test all_city_names_upper_case_like_js ... ok
+test the_22_city_name_letters_upper_case_like_js ... ok
+test whole_unicode_table_agrees_on_european_scripts ... checked 1680 code points strictly; 0 differences in the whole table
+ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+EXIT=0
