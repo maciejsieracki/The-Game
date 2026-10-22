@@ -31,6 +31,7 @@ pub mod material;
 pub mod models;
 pub mod overlays;
 pub mod pick;
+pub mod terrain;
 pub mod text;
 pub mod view;
 
