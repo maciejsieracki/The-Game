@@ -1,0 +1,1 @@
+EXIT(grep)=1 (1 = brak trafien)

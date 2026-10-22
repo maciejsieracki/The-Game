@@ -1,0 +1,41 @@
+plik	symbol	rodzaj	status	dowod
+city-names-pool.ts	CivsForCityNames	interface	NIE-DOTYCZY	typ wejsciowy bez logiki; Rust domain::city_names::CivForCityNames (struct bez logiki), uzywany w validate/resolve
+city-names-pool.ts	CITY_NAMES_POOL_REGULAR_LEN	const	PORTOWANY	domain::city_names::city_names_pool_regular_len(); wartosc z data/derived/civ-bonus-city-names.json; wektor constants.regular
+city-names-pool.ts	CITY_NAMES_POOL_STATE_LEN	const	PORTOWANY	domain::city_names::city_names_pool_state_len(); tabela civ-bonus-city-names.json; wektor constants.state
+city-names-pool.ts	CITY_NAMES_POOL_COMMON_LEN	const	PORTOWANY	domain::city_names::city_names_pool_common_len() = regularna + panstwa; wektor constants.common
+city-names-pool.ts	NAZWY_KLASTRA_LEN	const	PORTOWANY	domain::city_names::nazwy_klastra_len(); wektor constants.klastra
+city-names-pool.ts	nazwaKlastraAt	function	PORTOWANY	domain::city_names::nazwa_klastra_at; wektor cityNames.klastraAt (24)
+city-names-pool.ts	CityNamesPoolEntry	interface	DANE-JUZ-W-RUST	data::civilizations::CityPool (pola nazwa_pl, miasta_cywilizacji); city-names-pools.json parsowany od P1
+city-names-pool.ts	CityNamesPoolsData	type	DANE-JUZ-W-RUST	data::civilizations::CityNamesPoolsFile; alias domain::city_names::CityNamesPoolsData; odcisk FNV danych == dane wektorow
+city-names-pool.ts	rivalPoolIndex	function	PORTOWANY	domain::city_names::rival_pool_index; wektor cityNames.rivalIdx (80)
+city-names-pool.ts	stateCityNameAt	function	PORTOWANY	domain::city_names::state_city_name_at; wektor cityNames.stateAt (128 x 3 warianty used)
+city-names-pool.ts	playerCapitalFromPool	function	PORTOWANY	domain::city_names::player_capital_from_pool; wektor cityNames.realPick.capital
+city-names-pool.ts	clusterRivalFromPool	function	PORTOWANY	domain::city_names::cluster_rival_from_pool; wektor cityNames.rivals (128 x 3)
+city-names-pool.ts	foreignCapitalFromPool	function	PORTOWANY	domain::city_names::foreign_capital_from_pool; wektor cityNames.realPick.foreign
+city-names-pool.ts	collectUsedCityNames	function	PORTOWANY	domain::city_names::collect_used_city_names; wektor cityNames.collect.byArrays/byArraysShortOwners
+city-names-pool.ts	collectUsedCityNamesFromCities	function	PORTOWANY	domain::city_names::collect_used_city_names_from_cities; wektor cityNames.collect.byCities
+city-names-pool.ts	cityNameWithSuffix	function	PORTOWANY	domain::city_names::city_name_with_suffix; wektor cityNames.suffix (48)
+city-names-pool.ts	pickNextCityNameFromNames	function	PORTOWANY	domain::city_names::pick_next_city_name_from_names; wektor cityNames.pick (50 kolejek syntetycznych)
+city-names-pool.ts	pickNextCityName	function	PORTOWANY	domain::city_names::pick_next_city_name; wektor cityNames.realPick.nextFb/nextDefault (160)
+city-names-pool.ts	pickNextRegularCityName	function	PORTOWANY	domain::city_names::pick_next_regular_city_name; wektor cityNames.realPick.regular
+city-names-pool.ts	suggestPlayerFoundCityName	function	PORTOWANY	domain::city_names::suggest_player_found_city_name; wektor cityNames.suggest
+city-names-pool.ts	pickAiFoundCityName	function	PORTOWANY	domain::city_names::pick_ai_found_city_name; wektor cityNames.suggest.ai
+city-names-pool.ts	validateCityNamesPools	function	PORTOWANY	domain::city_names::validate_city_names_pools; wektor cityNames.validate (11 przypadkow + dane weba = 0 bledow)
+city-names-pool.ts	resolveStateCityName	function	PORTOWANY	domain::city_names::resolve_state_city_name; wektor cityNames.resolve (168)
+civ-bonuses.ts	CivBonusEntry	interface	NIE-DOTYCZY	typ danych wpisu bonusu bez logiki; Rust domain::civ_bonuses::CivBonusEntry (+ From<&BonusyItem>), wartosc = BonusValue
+civ-bonuses.ts	CivBonusUnitShape	interface	NIE-DOTYCZY	typ wejsciowy bez logiki; Rust domain::civ_bonuses::CivBonusUnitShape
+civ-bonuses.ts	CivCombatContext	interface	NIE-DOTYCZY	typ wejsciowy bez logiki; Rust domain::civ_bonuses::CivCombatContext (+ CombatSide); brak pola weba == false/pusty tekst
+civ-bonuses.ts	CivStatMultipliers	interface	NIE-DOTYCZY	typ wynikowy bez logiki; Rust domain::civ_bonuses::CivStatMultipliers (Default = zera, odpowiednik ONE)
+civ-bonuses.ts	unitCombatCategory	function	PORTOWANY	domain::civ_bonuses::unit_combat_category; wektor unitCategory (174 jednostki) + stripCat (49)
+civ-bonuses.ts	unitMatchesCel	function	PORTOWANY	domain::civ_bonuses::unit_matches_cel; wektor matchesCel (174 x 19 celow)
+civ-bonuses.ts	bonusApplies	function	PORTOWANY	domain::civ_bonuses::bonus_applies; wektor apply.bits + applyEntries (160 kontekstow)
+civ-bonuses.ts	civCombatStatMultipliers	function	PORTOWANY	domain::civ_bonuses::civ_combat_stat_multipliers; wektor apply.mult (1440 zapisow x 160 kontekstow), undefinedMult
+civ-bonuses.ts	applyMultiplier	function	PORTOWANY	domain::civ_bonuses::apply_multiplier; wektor applyMul
+civ-bonuses.ts	civMatrixBonusyForCivKey	function	PORTOWANY	domain::civ_bonuses::civ_matrix_bonusy_for_civ_key; tabele civ-bonus-matrix-specs.json; wektor matrixBonusy (51 kluczy)
+civ-bonuses.ts	civMovementMultiplier	function	PORTOWANY	domain::civ_bonuses::civ_movement_multiplier; grupa ruch z civ-bonus-rules.json; wektor mults.movement
+civ-bonuses.ts	civAttackRangeMultiplier	function	PORTOWANY	domain::civ_bonuses::civ_attack_range_multiplier; wektor mults.range
+civ-bonuses.ts	civSiegeAttackMultiplier	function	PORTOWANY	domain::civ_bonuses::civ_siege_attack_multiplier; wektor mults.siege
+civ-bonuses.ts	civWallDefenseMultiplier	function	PORTOWANY	domain::civ_bonuses::civ_wall_defense_multiplier; wektor mults.wall
+civ-bonuses.ts	civBuildingCostDiscount	function	PORTOWANY	domain::civ_bonuses::civ_building_cost_discount; limit z civ-bonus-rules.json; wektor discount (29 list)
+civ-bonuses.ts	buildingCostAfterCivDiscount	function	PORTOWANY	domain::civ_bonuses::building_cost_after_civ_discount; wektor discount.costs (16 kosztow x 29 list)
+civ-bonuses.ts	isCombatModifierBonus	function	PORTOWANY	domain::civ_bonuses::is_combat_modifier_bonus; wektor combatMod
