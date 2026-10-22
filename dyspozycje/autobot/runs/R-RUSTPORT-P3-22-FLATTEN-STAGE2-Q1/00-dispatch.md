@@ -21,3 +21,10 @@ IZOLACJA: `isolation: worktree`. Commit w worktree (jawne `git add`, NIGDY `-A`)
 PROCEDURA NAPRAWCZA PRZY FAIL: ten sam ID; po 5 rundach LIMIT-5-EXCEEDED. Raport max ok. 400 słów.
 FORMAT ODPOWIEDZI: STATUS / DOMAIN / TEMAT / GOAL / ZMIANY-COMMIT / TESTY / BLOKADY / RUNDY / NASTĘPNY KROK
 DEPLOY/PUSH: NIE WYKONANO
+
+RUNDA 3 — WIĄŻĄCE WYTYCZNE ORKIESTRATORA (rundy 1–2 zamknęły tylko grupę HANDEL — za wąsko; zintegrowane na `parity-v2` jako `5c90c3b1`, `ba762e98`, `2cb3ca43`):
+- Zakres rundy 3: DYPLOMACJA (22, 35d, 35e, 35m) + AI (35a) + BARBARZYŃCY + WALKA/OBLĘŻENIE (35f–h, 35l) — w tej kolejności; każda grupa PEŁNA. Jeśli zostanie czas, dalej: WZROST (35b), MAPA (35j–k), SPOŁECZEŃSTWO (35n), WIOSKI (35c), RUCH (35i), 19–21. Nie rób jednej małej grupy na rundę.
+- Decyzja techniczna (rozstrzygnięta): trzy duplikaty `enum Difficulty` w `domain/` (`trade.rs:1852`, `diplomacy.rs:429`, `barbarians.rs:300`) → ZUNIFIKUJ do jednego typu w `domain/types.rs` (publiczny re-eksport zachowujący dotychczasowe ścieżki), zachowaj serializację JSON bez zmian; analogicznie `GamePace`/`TerritoryKind` itp. jeśli duplikowane. To wejścia stanów (b) w API domeny (P-R4-1 rozstrzygnięte: jawne parametry typów domeny).
+- Wykonaj rozstrzygnięcia administracyjne z dispatchu (`pieniadzMnoznik` = martwa flaga, `utrzymanie_surowcowe_na_ture` = dane zachowane/brak mechaniki).
+- Wzorzec jakości z grupy HANDEL zostaje: generator uruchamiający kod weba + niezależny weryfikator, 0 rozbieżności, PEŁNE logi w repo (`git add -f` dla `*.log`), test asercji wartości (nie tylko kształtu), `check-etap3`.
+- Baza: `origin/rust-port/parity-v2` (≥ `d925acb3`+commity P3.22). Dysk: usuń swój worktree-target po pracy.

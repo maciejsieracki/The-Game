@@ -1,0 +1,16 @@
+rust-port/engine/src/data/civilizations.rs:69:    #[serde(rename = "mnoznikHandelPieniadz")]
+rust-port/engine/src/data/civilizations.rs:70:    pub mnoznik_handel_pieniadz: f64,
+rust-port/engine/src/data/derived.rs:468:/// Wiersze ROZWINIĘTE (`TRADE_ROUTE_BUILDING_BONUS_RATE`, `PORT_SEA_TRADE_BONUS_PIENIADZ`)
+rust-port/engine/src/domain/trade.rs:1478:/// Udział bonusu budynku trasy (web `TRADE_ROUTE_BUILDING_BONUS_RATE`), z tabeli
+rust-port/engine/src/domain/trade.rs:1481:    crate::data::derived::trade_multiplier_value("TRADE_ROUTE_BUILDING_BONUS_RATE")
+rust-port/engine/src/domain/trade.rs:1556:/// Premia Pieniądza za dodatkową trasę morską portu (web `PORT_SEA_TRADE_BONUS_PIENIADZ`),
+rust-port/engine/src/domain/trade.rs:1559:    crate::data::derived::trade_multiplier_value("PORT_SEA_TRADE_BONUS_PIENIADZ") as u64
+rust-port/engine/tests/data_civilizations.rs:41:    assert_eq!(f.cywilizacje[0].mnoznik_handel_pieniadz, 2.3);
+rust-port/engine/tests/data_civilizations.rs:47:        f.cywilizacje[0].mnoznik_handel_pieniadz,
+rust-port/engine/tests/derived_values.rs:734:        row("TRADE_ROUTE_INTERNATIONAL_MULTIPLIER").wartosc,
+rust-port/engine/tests/derived_values.rs:737:    assert_eq!(row("TRADE_ROUTE_INCOME_HALF_DIVISOR").wartosc, Some(2.0));
+rust-port/engine/tests/derived_values.rs:738:    assert_eq!(row("FALLBACK_TRADE_MULT").wartosc, Some(1.0));
+rust-port/engine/tests/derived_values.rs:739:    assert_eq!(row("TRADE_ROUTE_BUILDING_BONUS_RATE").wartosc, Some(0.05));
+rust-port/engine/tests/derived_values.rs:740:    assert_eq!(row("PORT_SEA_TRADE_BONUS_PIENIADZ").wartosc, Some(1.0));
+rust-port/engine/tests/derived_values.rs:741:    let delta = row("MNOZNIK_HANDEL_TRUDNOSC_DELTA");
+EXIT=0

@@ -1,0 +1,4 @@
+rust-port/engine/data/econ-params.json:334:    "targowisko_praca_na_pieniadz_mnoznik": {
+rust-port/engine/src/data/economy_society.rs:172:    #[serde(rename = "targowisko_praca_na_pieniadz_mnoznik")]
+rust-port/engine/src/data/economy_society.rs:173:    pub targowisko_praca_na_pieniadz_mnoznik: EconParamsEkonomiaMiastaProgWzrostuWspolczynnik,
+EXIT=0 (1 = brak trafien)

@@ -1,0 +1,36 @@
+edb8fb56:gra/src/game/building-resource-gate.ts:326: *  2026-08-13): ×5, było 5 (utrzymanie surowcowe budynków — Ceramika to surowiec
+edb8fb56:gra/src/game/economy-upkeep.ts:674: * (flat N/typ), tylko N przeskalowane; „utrzymanie surowcowe budynków” z zadania.
+edb8fb56:gra/src/game/economy-upkeep.ts:906:/** Live preview: budynki + jednostki — utrzymanie surowcowe państwa per owner. */
+edb8fb56:gra/src/game/resource-usage-breakdown.ts:6: * budynki (utrzymanie surowcowe), obywatele (drenaż realny, stawka
+edb8fb56:gra/src/game/resource-usage-breakdown.ts:8: * i wojsko (utrzymanie surowcowe jednostek) — dla przycisku „Zobacz szczegóły" na
+edb8fb56:gra/src/game/turn-economy.ts:1188:  /** Analogiczne do `resourceUpkeepBuildingsByOwner`, tylko utrzymanie surowcowe jednostek. */
+edb8fb56:gra/src/main.ts:4724:     * P-SUROWCE-BRAK-SZCZEGOLOW-ZUZYCIA (Maciej 2026-08-12): utrzymanie surowcowe budynków /
+edb8fb56:gra/src/main.ts:7148:            utrzymanieSurowcowBudynkow: buildingResourceUpkeepForCityId(tk.cityId, ownerId),
+edb8fb56:gra/src/main.ts:7390:            bogactwoUtrzymanieSurowcowBudynkow: hs.bogactwoUtrzymanieSurowcowBudynkow,
+edb8fb56:gra/src/main.ts:7404:            utrzymanieSurowcowBudynkow: row.utrzymanieSurowcowBudynkow,
+edb8fb56:gra/src/main.ts:11431:      _lastBogactwoUtrzymanieSurowcow = {}; _lastPlayerCityEcon = [];
+edb8fb56:gra/src/main.ts:11678:    let _lastBogactwoUtrzymanieSurowcow: Record<string, number> = {};
+edb8fb56:gra/src/main.ts:11690:      utrzymanieSurowcowBudynkow: Record<string, number>;
+edb8fb56:gra/src/main.ts:16225:          utrzymanieSurowcowBudynkow: tk?.utrzymanieSurowcowBudynkow,
+edb8fb56:gra/src/main.ts:18565:      _lastBogactwoUtrzymanieSurowcow = previewOwnerTotalResourceUpkeep(
+edb8fb56:gra/src/main.ts:18861:        bogactwoUtrzymanieSurowcowBudynkow: { ..._lastBogactwoUtrzymanieSurowcow },
+edb8fb56:gra/src/main.ts:31923:                _lastBogactwoUtrzymanieSurowcow = { ...(econ.resourceUpkeepByOwner.get(hOid) ?? {}) };
+edb8fb56:gra/src/main.ts:37236:      _lastBogactwoUtrzymanieSurowcow = {};
+edb8fb56:gra/src/main.ts:39049:      _lastBogactwoUtrzymanieSurowcow = {};
+edb8fb56:gra/src/ui/cityPanel.ts:1102:  bogactwoUtrzymanieSurowcowBudynkow?: Record<string, number>;
+edb8fb56:gra/src/ui/cityPanel.ts:1120:  utrzymanieSurowcowBudynkow?: Record<string, number>;
+edb8fb56:gra/src/ui/cityPanel.ts:4750:    { label: 'Utrzymanie surowców budynków', value: formatResourceUpkeepSummary(snap.utrzymanieSurowcowBudynkow ?? {}), cls: Object.keys(snap.utrzymanieSurowcowBudynkow ?? {}).length > 0 ? 'red' : undefined },
+edb8fb56:gra/src/ui/cityPanel.ts:5853:  const utrzRes = empire.bogactwoUtrzymanieSurowcowBudynkow ?? {};
+edb8fb56:gra/src/ui/cityPanel.ts:5872:    gridDetailRow(gCity, 'Utrzymanie surowców budynków', formatResourceUpkeepSummary(moneySnap.utrzymanieSurowcowBudynkow ?? {}));
+edb8fb56:gra/src/ui/empireDetailPanel.ts:979:  const utrzRes = economy.bogactwoUtrzymanieSurowcowBudynkow ?? {};
+edb8fb56:gra/src/ui/empireDetailPanel.ts:1066:  const utrzRes = economy.bogactwoUtrzymanieSurowcowBudynkow ?? {};
+edb8fb56:gra/src/ui/empireDetailPanel.ts:1735:    // Punkt (b): utrzymanie surowcowe budynków W TYM mieście — patrz JSDoc
+edb8fb56:gra/src/ui/empireDetailPanel.ts:1736:    // EmpireCityEconRow.utrzymanieSurowcowBudynkow (empireDetailTypes.ts) skąd DOKŁADNIE
+edb8fb56:gra/src/ui/empireDetailPanel.ts:1803:      surowce: econ?.utrzymanieSurowcowBudynkow,
+edb8fb56:gra/src/ui/empireDetailTypes.ts:197:   * P-SUROWCE-BRAK-SZCZEGOLOW-ZUZYCIA punkt 2 (Maciej 2026-08-12): utrzymanie surowcowe
+edb8fb56:gra/src/ui/empireDetailTypes.ts:201:   * wywołanie, którym `_lastPlayerCityEcon.utrzymanieSurowcowBudynkow` jest już liczone (patrz
+edb8fb56:gra/src/ui/empireDetailTypes.ts:215:  utrzymanieSurowcowBudynkow?: Record<string, number>;
+edb8fb56:gra/src/ui/empireMiastaTable.ts:10: *       `EmpireCityEconRow.utrzymanieSurowcowBudynkow` — tu tylko `sumResourceRecords` do
+edb8fb56:gra/src/ui/hud.ts:143:  bogactwoUtrzymanieSurowcowBudynkow?: Record<string, number>;
+edb8fb56:gra/src/ui/unitRecruitCard.ts:94:   * Utrzymanie surowcowe jednostki (units.json Utrzymanie surowiec), już
+EXIT=0
