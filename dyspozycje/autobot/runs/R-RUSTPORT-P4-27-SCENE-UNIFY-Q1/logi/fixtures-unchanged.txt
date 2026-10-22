@@ -1,0 +1,2 @@
+$ git diff --stat --exit-code 9ec9c9d8 -- tests/fixtures; echo "EXIT=$?"
+EXIT=0
