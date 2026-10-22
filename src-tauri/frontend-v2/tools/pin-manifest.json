@@ -9,6 +9,276 @@
       "bytes": 1812
     },
     {
+      "path": "src/assets/portrety/portrait-asyria-braz.jpg",
+      "pin": "edb8fb56:gra/src/assets/portrety/portrait-asyria-braz.jpg",
+      "sha256": "40e06c99e9c2dfd1776cdde04e370588fefcd6635ab8be100c5158735a9b463c",
+      "bytes": 10836
+    },
+    {
+      "path": "src/assets/portrety/portrait-asyria-kamien.jpg",
+      "pin": "edb8fb56:gra/src/assets/portrety/portrait-asyria-kamien.jpg",
+      "sha256": "6b15fe0c6378480f94fb0566022307cf788f70835137751458318dd5c6fa3714",
+      "bytes": 8866
+    },
+    {
+      "path": "src/assets/portrety/portrait-asyria-zelazo.jpg",
+      "pin": "edb8fb56:gra/src/assets/portrety/portrait-asyria-zelazo.jpg",
+      "sha256": "8e3da5ec8d2e23b59f41a0270ba33eb189aa133f07a3252b43e2dab4e8a3f114",
+      "bytes": 9967
+    },
+    {
+      "path": "src/assets/portrety/portrait-babilonia-braz.jpg",
+      "pin": "edb8fb56:gra/src/assets/portrety/portrait-babilonia-braz.jpg",
+      "sha256": "832617c365d4c3c7793438f59ffbaef679fbfca480c0fdb7491f5a985d926771",
+      "bytes": 11584
+    },
+    {
+      "path": "src/assets/portrety/portrait-babilonia-kamien.jpg",
+      "pin": "edb8fb56:gra/src/assets/portrety/portrait-babilonia-kamien.jpg",
+      "sha256": "eed75e62f697f179958286d5c62a08cf40ad57200a883e6c307185e7d6922179",
+      "bytes": 8518
+    },
+    {
+      "path": "src/assets/portrety/portrait-babilonia-zelazo.jpg",
+      "pin": "edb8fb56:gra/src/assets/portrety/portrait-babilonia-zelazo.jpg",
+      "sha256": "8fe770da4b75e556656a37e5dba504cda1ce0b036161f8ad75a658cc78a1d178",
+      "bytes": 9997
+    },
+    {
+      "path": "src/assets/portrety/portrait-celtowie-braz.jpg",
+      "pin": "edb8fb56:gra/src/assets/portrety/portrait-celtowie-braz.jpg",
+      "sha256": "3ec13434db9150739923f6de08a965e2e6ac7a148cf79bc29e97898fa5350701",
+      "bytes": 9944
+    },
+    {
+      "path": "src/assets/portrety/portrait-celtowie-kamien.jpg",
+      "pin": "edb8fb56:gra/src/assets/portrety/portrait-celtowie-kamien.jpg",
+      "sha256": "c9ea144e549df55c8b088a8bf7192d135d683c1f64213e3da8693cd0868b5898",
+      "bytes": 8577
+    },
+    {
+      "path": "src/assets/portrety/portrait-celtowie-zelazo.jpg",
+      "pin": "edb8fb56:gra/src/assets/portrety/portrait-celtowie-zelazo.jpg",
+      "sha256": "817042402722a62fc34ab258fd1a096a14ae3cec7f60dc5b24c69447e4433168",
+      "bytes": 9839
+    },
+    {
+      "path": "src/assets/portrety/portrait-chinczycy-braz.jpg",
+      "pin": "edb8fb56:gra/src/assets/portrety/portrait-chinczycy-braz.jpg",
+      "sha256": "9c9b7c604728c61cf908bf093863b970f75fa64fe62b03928fe746d597d0f07e",
+      "bytes": 10119
+    },
+    {
+      "path": "src/assets/portrety/portrait-chinczycy-kamien.jpg",
+      "pin": "edb8fb56:gra/src/assets/portrety/portrait-chinczycy-kamien.jpg",
+      "sha256": "3149e674b294bb3880e62c6efd7a3f5ba3c18a004e8dfdd47f224e26f8b098b7",
+      "bytes": 7922
+    },
+    {
+      "path": "src/assets/portrety/portrait-chinczycy-zelazo.jpg",
+      "pin": "edb8fb56:gra/src/assets/portrety/portrait-chinczycy-zelazo.jpg",
+      "sha256": "61538d2e7f96785e522c97fac20f786c09f1ff6a22b7d27d81c727af07a28d68",
+      "bytes": 9772
+    },
+    {
+      "path": "src/assets/portrety/portrait-egipt-braz.jpg",
+      "pin": "edb8fb56:gra/src/assets/portrety/portrait-egipt-braz.jpg",
+      "sha256": "20bce9ae3e080f0228fe8660a45b2cdf9b4fa3451d3fb5d58f82f7af38dcb640",
+      "bytes": 12337
+    },
+    {
+      "path": "src/assets/portrety/portrait-egipt-kamien.jpg",
+      "pin": "edb8fb56:gra/src/assets/portrety/portrait-egipt-kamien.jpg",
+      "sha256": "45c7a6b6d7b854458c2f6aecdc6ce1915c009dde374228fadd497a728b13ca85",
+      "bytes": 9787
+    },
+    {
+      "path": "src/assets/portrety/portrait-egipt-zelazo.jpg",
+      "pin": "edb8fb56:gra/src/assets/portrety/portrait-egipt-zelazo.jpg",
+      "sha256": "5173431aea0a9d6b849d592d91c904b2a5363a91695eb9d1c94eaa8f6382f1b0",
+      "bytes": 11854
+    },
+    {
+      "path": "src/assets/portrety/portrait-fenicjanie-braz.jpg",
+      "pin": "edb8fb56:gra/src/assets/portrety/portrait-fenicjanie-braz.jpg",
+      "sha256": "e888350e0077b6c8f7bcb2b1c4fce2c5d3f5584efc31dcf1585bbd29dcfc0f47",
+      "bytes": 10578
+    },
+    {
+      "path": "src/assets/portrety/portrait-fenicjanie-kamien.jpg",
+      "pin": "edb8fb56:gra/src/assets/portrety/portrait-fenicjanie-kamien.jpg",
+      "sha256": "6081e7b9211dfea2822dbc68602244945ab7a61d50a2578ee788dad750065894",
+      "bytes": 8126
+    },
+    {
+      "path": "src/assets/portrety/portrait-fenicjanie-zelazo.jpg",
+      "pin": "edb8fb56:gra/src/assets/portrety/portrait-fenicjanie-zelazo.jpg",
+      "sha256": "bbfaa12488dd05bad2284ff738da2ac368097c2da7468b90d1511d5eebdf1d20",
+      "bytes": 9347
+    },
+    {
+      "path": "src/assets/portrety/portrait-germanie-braz.jpg",
+      "pin": "edb8fb56:gra/src/assets/portrety/portrait-germanie-braz.jpg",
+      "sha256": "bd9d4cf4cfdccf87f262a08295342e7400076f023d0345eed9fb8adc0cbeb823",
+      "bytes": 10407
+    },
+    {
+      "path": "src/assets/portrety/portrait-germanie-kamien.jpg",
+      "pin": "edb8fb56:gra/src/assets/portrety/portrait-germanie-kamien.jpg",
+      "sha256": "f6263a5dd964e8e3c4c43f59d2a2f40b4866fe6c272dec7fc2aec4289113b4f9",
+      "bytes": 9473
+    },
+    {
+      "path": "src/assets/portrety/portrait-germanie-zelazo.jpg",
+      "pin": "edb8fb56:gra/src/assets/portrety/portrait-germanie-zelazo.jpg",
+      "sha256": "daadbe60242caf5705029e026fa4b3c013cd4272605a5efef97aa8f871280411",
+      "bytes": 10180
+    },
+    {
+      "path": "src/assets/portrety/portrait-grecy-braz.jpg",
+      "pin": "edb8fb56:gra/src/assets/portrety/portrait-grecy-braz.jpg",
+      "sha256": "7bb61ea6079952c21b5abd3888d5c1946cc9baea5cb3fc4af82289499a65b1ec",
+      "bytes": 9328
+    },
+    {
+      "path": "src/assets/portrety/portrait-grecy-kamien.jpg",
+      "pin": "edb8fb56:gra/src/assets/portrety/portrait-grecy-kamien.jpg",
+      "sha256": "5f98c5131244b3be9f4b59689949a0d64bfe1a86c858dee30abf9e1b534232cf",
+      "bytes": 9035
+    },
+    {
+      "path": "src/assets/portrety/portrait-grecy-zelazo.jpg",
+      "pin": "edb8fb56:gra/src/assets/portrety/portrait-grecy-zelazo.jpg",
+      "sha256": "7903bd789976308791bdae29401bfb1f6397a3be707e9b0605c0f2d30e4fc884",
+      "bytes": 10714
+    },
+    {
+      "path": "src/assets/portrety/portrait-harappa-braz.jpg",
+      "pin": "edb8fb56:gra/src/assets/portrety/portrait-harappa-braz.jpg",
+      "sha256": "37175eead1eca9cef87c9c96bb0eb53488a6bdc990f501e3a2a3d1b294aa82ae",
+      "bytes": 10737
+    },
+    {
+      "path": "src/assets/portrety/portrait-harappa-kamien.jpg",
+      "pin": "edb8fb56:gra/src/assets/portrety/portrait-harappa-kamien.jpg",
+      "sha256": "bef99d06a6a87f203e36d57dad46a99ed3428e7dc8b002739c663724a410325a",
+      "bytes": 9479
+    },
+    {
+      "path": "src/assets/portrety/portrait-harappa-zelazo.jpg",
+      "pin": "edb8fb56:gra/src/assets/portrety/portrait-harappa-zelazo.jpg",
+      "sha256": "ba907c5e82229eddbc4368dfd0847785b1ebd7966367ebe1ff0cd3fcaa51a230",
+      "bytes": 10194
+    },
+    {
+      "path": "src/assets/portrety/portrait-hetyci-braz.jpg",
+      "pin": "edb8fb56:gra/src/assets/portrety/portrait-hetyci-braz.jpg",
+      "sha256": "b2e33afa477efb1d4296e58c8de040e07a7794083e63ee8f235203d0c6309a46",
+      "bytes": 10238
+    },
+    {
+      "path": "src/assets/portrety/portrait-hetyci-kamien.jpg",
+      "pin": "edb8fb56:gra/src/assets/portrety/portrait-hetyci-kamien.jpg",
+      "sha256": "280f57b4fa2213c87d8e57dcd2d35e1ed60cc448fadbb0c37460e5705da05b52",
+      "bytes": 9043
+    },
+    {
+      "path": "src/assets/portrety/portrait-hetyci-zelazo.jpg",
+      "pin": "edb8fb56:gra/src/assets/portrety/portrait-hetyci-zelazo.jpg",
+      "sha256": "2ee6e9d0dcfc66ba31e2a962745c4269696ea6925da362d4b5ff85e655b47539",
+      "bytes": 9567
+    },
+    {
+      "path": "src/assets/portrety/portrait-inkowie-braz.jpg",
+      "pin": "edb8fb56:gra/src/assets/portrety/portrait-inkowie-braz.jpg",
+      "sha256": "06345ae5e426546b48121fa6015136883bc96ff43f880c2b1a8424e05f525929",
+      "bytes": 11290
+    },
+    {
+      "path": "src/assets/portrety/portrait-inkowie-kamien.jpg",
+      "pin": "edb8fb56:gra/src/assets/portrety/portrait-inkowie-kamien.jpg",
+      "sha256": "9f15c6a34e4b16f25eee961faa26db64b62a8cbaee66723813dfd30e6deb3274",
+      "bytes": 8701
+    },
+    {
+      "path": "src/assets/portrety/portrait-inkowie-zelazo.jpg",
+      "pin": "edb8fb56:gra/src/assets/portrety/portrait-inkowie-zelazo.jpg",
+      "sha256": "c7b4b5b65e8799c4df94ffcacd2aa903ee8198d7ff2c2a18c9a74c79cc1004f1",
+      "bytes": 10617
+    },
+    {
+      "path": "src/assets/portrety/portrait-rzymianie-braz.jpg",
+      "pin": "edb8fb56:gra/src/assets/portrety/portrait-rzymianie-braz.jpg",
+      "sha256": "d22d20f75e7b82f8073f34106a42363205d855d2dbb762f2fac26b4a99920e8f",
+      "bytes": 9274
+    },
+    {
+      "path": "src/assets/portrety/portrait-rzymianie-kamien.jpg",
+      "pin": "edb8fb56:gra/src/assets/portrety/portrait-rzymianie-kamien.jpg",
+      "sha256": "6fb2de126aef5f8fe6803f8d60574c541076678e413b88d2077f52c13f8e88a6",
+      "bytes": 13209
+    },
+    {
+      "path": "src/assets/portrety/portrait-rzymianie-zelazo.jpg",
+      "pin": "edb8fb56:gra/src/assets/portrety/portrait-rzymianie-zelazo.jpg",
+      "sha256": "82715801694b54e27d03b5bb10d75d50edba782bdd72c6833cc81a553d7a2a4d",
+      "bytes": 8832
+    },
+    {
+      "path": "src/assets/portrety/portrait-slowianie-braz.jpg",
+      "pin": "edb8fb56:gra/src/assets/portrety/portrait-slowianie-braz.jpg",
+      "sha256": "28fe23b352c56d4c4394f0d1b0f473e9c2a7bd55408717a366101539c4bcb016",
+      "bytes": 9787
+    },
+    {
+      "path": "src/assets/portrety/portrait-slowianie-kamien.jpg",
+      "pin": "edb8fb56:gra/src/assets/portrety/portrait-slowianie-kamien.jpg",
+      "sha256": "28bfc9fbfb855d63052ef49c739517da7323f5b4f199ded5c77bee598180eafc",
+      "bytes": 8442
+    },
+    {
+      "path": "src/assets/portrety/portrait-slowianie-zelazo.jpg",
+      "pin": "edb8fb56:gra/src/assets/portrety/portrait-slowianie-zelazo.jpg",
+      "sha256": "21912ce700935e5dbd651457f733b7d6dba9d1379e8c3dba4af95f145594bf4a",
+      "bytes": 8698
+    },
+    {
+      "path": "src/assets/portrety/portrait-sumer-braz.jpg",
+      "pin": "edb8fb56:gra/src/assets/portrety/portrait-sumer-braz.jpg",
+      "sha256": "2ab612b9f3efdb757583b9ae49ca6c7283333aabf2715eb93169a7bcd107fc07",
+      "bytes": 10942
+    },
+    {
+      "path": "src/assets/portrety/portrait-sumer-kamien.jpg",
+      "pin": "edb8fb56:gra/src/assets/portrety/portrait-sumer-kamien.jpg",
+      "sha256": "d540ffceec33c0241494a15b6db2bccef2d9ae053f0a7b7afbfa97e2c15ca9b9",
+      "bytes": 9107
+    },
+    {
+      "path": "src/assets/portrety/portrait-sumer-zelazo.jpg",
+      "pin": "edb8fb56:gra/src/assets/portrety/portrait-sumer-zelazo.jpg",
+      "sha256": "9e0795945e1b8f88c1c448893f4faa4b0e92fec8f3066666768342445c165c10",
+      "bytes": 10023
+    },
+    {
+      "path": "src/assets/portrety/portrait-zulusi-braz.jpg",
+      "pin": "edb8fb56:gra/src/assets/portrety/portrait-zulusi-braz.jpg",
+      "sha256": "fec2a87927480bf27a6944e1e3983ab19d04659857c783aade33f780d53cc48d",
+      "bytes": 11414
+    },
+    {
+      "path": "src/assets/portrety/portrait-zulusi-kamien.jpg",
+      "pin": "edb8fb56:gra/src/assets/portrety/portrait-zulusi-kamien.jpg",
+      "sha256": "9a9f7060311cd92d1c6632e69bd8ff71be673588c3af5c15150bc548aaa1ba4e",
+      "bytes": 8929
+    },
+    {
+      "path": "src/assets/portrety/portrait-zulusi-zelazo.jpg",
+      "pin": "edb8fb56:gra/src/assets/portrety/portrait-zulusi-zelazo.jpg",
+      "sha256": "b2c34366b93191ce14251c509b25eb2dbb8dd15a23fc14655ee442e400df5b41",
+      "bytes": 10321
+    },
+    {
       "path": "src/ui/aiCivPicker.ts",
       "pin": "edb8fb56:gra/src/ui/aiCivPicker.ts",
       "sha256": "24827022c974d8dd997a9a7436659e56e62c7ddf60216513190b818febfd7245",
@@ -117,16 +387,1918 @@
       "bytes": 10294
     },
     {
+      "path": "src/ui/icons/brand/aquila-emblem.svg",
+      "pin": "edb8fb56:gra/src/ui/icons/brand/aquila-emblem.svg",
+      "sha256": "e0a4ed7d0d80c8bc4d51c11a003024b18aa8e9bd7e1e5c2c81d2340572ffdff3",
+      "bytes": 550
+    },
+    {
+      "path": "src/ui/icons/brand/building-icon-map.json",
+      "pin": "edb8fb56:gra/src/ui/icons/brand/building-icon-map.json",
+      "sha256": "4a7a6c326e6b7e494fe803c6ebc50486c754f53f2bf47fa5cb0041631e4efeb0",
+      "bytes": 1577
+    },
+    {
+      "path": "src/ui/icons/brand/buildings/bld-admin.svg",
+      "pin": "edb8fb56:gra/src/ui/icons/brand/buildings/bld-admin.svg",
+      "sha256": "20f99fbd1f463b19144d6aaa0c19b5e4c84c6bd06c2107210d09f6467a2fdcce",
+      "bytes": 332
+    },
+    {
+      "path": "src/ui/icons/brand/buildings/bld-akademia.svg",
+      "pin": "edb8fb56:gra/src/ui/icons/brand/buildings/bld-akademia.svg",
+      "sha256": "6e3be4fe4041a27d02d3c9049e1f216a8b6bce476104a5729e88317711a37843",
+      "bytes": 390
+    },
+    {
+      "path": "src/ui/icons/brand/buildings/bld-akademia_wojskowa.svg",
+      "pin": "edb8fb56:gra/src/ui/icons/brand/buildings/bld-akademia_wojskowa.svg",
+      "sha256": "d2012a300422b1263e3f6052850bbf6a0180f5936992650c38964beca0bce10e",
+      "bytes": 418
+    },
+    {
+      "path": "src/ui/icons/brand/buildings/bld-akwedukt.svg",
+      "pin": "edb8fb56:gra/src/ui/icons/brand/buildings/bld-akwedukt.svg",
+      "sha256": "502c4d76a634661d51fc26517efac15901dc2cac0992971e751e7305add4d013",
+      "bytes": 342
+    },
+    {
+      "path": "src/ui/icons/brand/buildings/bld-biblioteka.svg",
+      "pin": "edb8fb56:gra/src/ui/icons/brand/buildings/bld-biblioteka.svg",
+      "sha256": "53fa53eccd0170be5a2d77eb9e07b3924db1268d45377248acef6a4fb1fbbe32",
+      "bytes": 372
+    },
+    {
+      "path": "src/ui/icons/brand/buildings/bld-cegielnia.svg",
+      "pin": "edb8fb56:gra/src/ui/icons/brand/buildings/bld-cegielnia.svg",
+      "sha256": "4166529d8e47afab17e23ad22673ab7ae7a6c07a6f16805458d471b721922d87",
+      "bytes": 324
+    },
+    {
+      "path": "src/ui/icons/brand/buildings/bld-culture.svg",
+      "pin": "edb8fb56:gra/src/ui/icons/brand/buildings/bld-culture.svg",
+      "sha256": "24dcfa2b4c07d49b7dedab1d0e257771366946431efe153fa9004663adb8eae0",
+      "bytes": 360
+    },
+    {
+      "path": "src/ui/icons/brand/buildings/bld-default.svg",
+      "pin": "edb8fb56:gra/src/ui/icons/brand/buildings/bld-default.svg",
+      "sha256": "4447e79e23dcc01230b4e19abab6bf4eabaa2a9a9fcba314652063677c5a672c",
+      "bytes": 289
+    },
+    {
+      "path": "src/ui/icons/brand/buildings/bld-defense.svg",
+      "pin": "edb8fb56:gra/src/ui/icons/brand/buildings/bld-defense.svg",
+      "sha256": "5b8c9148f7427dab61633931444edac648322c8629a5ca015caf223e42336cf6",
+      "bytes": 304
+    },
+    {
+      "path": "src/ui/icons/brand/buildings/bld-food.svg",
+      "pin": "edb8fb56:gra/src/ui/icons/brand/buildings/bld-food.svg",
+      "sha256": "27a3cf5921209b8bf6f3a8d6a4bd8d6b094568e33b823c76c95fc11fd85dc37e",
+      "bytes": 433
+    },
+    {
+      "path": "src/ui/icons/brand/buildings/bld-fort.svg",
+      "pin": "edb8fb56:gra/src/ui/icons/brand/buildings/bld-fort.svg",
+      "sha256": "2254c49f0604bc7edf203d4b4af3e6080c2618de36ac8a68ad9964c74faea54c",
+      "bytes": 415
+    },
+    {
+      "path": "src/ui/icons/brand/buildings/bld-garncarnia.svg",
+      "pin": "edb8fb56:gra/src/ui/icons/brand/buildings/bld-garncarnia.svg",
+      "sha256": "7e2c3fd4cc8639938f63249208ec6064d14c5ef069a8d76d3951ce158294a04b",
+      "bytes": 382
+    },
+    {
+      "path": "src/ui/icons/brand/buildings/bld-garnizon.svg",
+      "pin": "edb8fb56:gra/src/ui/icons/brand/buildings/bld-garnizon.svg",
+      "sha256": "f98b90cdf2d2fd38d7b2b68516298e1615ee8191aad58b45b19113d5d6e577cb",
+      "bytes": 540
+    },
+    {
+      "path": "src/ui/icons/brand/buildings/bld-health.svg",
+      "pin": "edb8fb56:gra/src/ui/icons/brand/buildings/bld-health.svg",
+      "sha256": "c46a500ee1a9162d68f3bd4655ead4fda5c659f72a42c0df4db92e44819a1d29",
+      "bytes": 500
+    },
+    {
+      "path": "src/ui/icons/brand/buildings/bld-kamieniarski.svg",
+      "pin": "edb8fb56:gra/src/ui/icons/brand/buildings/bld-kamieniarski.svg",
+      "sha256": "f3e133907f0452b06d791965d2dc31b86850afe0bfa13cfbaa0c8b0aaa24e5b7",
+      "bytes": 326
+    },
+    {
+      "path": "src/ui/icons/brand/buildings/bld-kamienne_kregi.svg",
+      "pin": "edb8fb56:gra/src/ui/icons/brand/buildings/bld-kamienne_kregi.svg",
+      "sha256": "5e95dd7baa4e3f6f60f96fc7090a391065406b2bb913530440e720667b6fa402",
+      "bytes": 379
+    },
+    {
+      "path": "src/ui/icons/brand/buildings/bld-karawanseraj.svg",
+      "pin": "edb8fb56:gra/src/ui/icons/brand/buildings/bld-karawanseraj.svg",
+      "sha256": "3193f6df6875dee7c4261d2237183ded2f5ccdfce4c3ee1dbbf4c31da0b152fd",
+      "bytes": 509
+    },
+    {
+      "path": "src/ui/icons/brand/buildings/bld-koszary.svg",
+      "pin": "edb8fb56:gra/src/ui/icons/brand/buildings/bld-koszary.svg",
+      "sha256": "34109c18bd24ed1cc23851a3af259b6dd758efbcd13f14fa2a045fc08dbb95a5",
+      "bytes": 579
+    },
+    {
+      "path": "src/ui/icons/brand/buildings/bld-kuznia.svg",
+      "pin": "edb8fb56:gra/src/ui/icons/brand/buildings/bld-kuznia.svg",
+      "sha256": "97926d5438c82d52365b4414850e51156cbd1eee19fa80eb4ad6481a90cd4809",
+      "bytes": 336
+    },
+    {
+      "path": "src/ui/icons/brand/buildings/bld-kuznia_zelaza.svg",
+      "pin": "edb8fb56:gra/src/ui/icons/brand/buildings/bld-kuznia_zelaza.svg",
+      "sha256": "905cd98c369cbc5b2c390cba9157372c89990e94722710f097245dc5e4dad8de",
+      "bytes": 338
+    },
+    {
+      "path": "src/ui/icons/brand/buildings/bld-lazaret.svg",
+      "pin": "edb8fb56:gra/src/ui/icons/brand/buildings/bld-lazaret.svg",
+      "sha256": "c63b62690fa9d3d0de8d5b5c43d97235bc3a7af1440bb6f2274af90f8299ecfe",
+      "bytes": 291
+    },
+    {
+      "path": "src/ui/icons/brand/buildings/bld-laznia_publiczna.svg",
+      "pin": "edb8fb56:gra/src/ui/icons/brand/buildings/bld-laznia_publiczna.svg",
+      "sha256": "07b365f8b4f631389ca116df759b6c1fb0c1307fd99cb48fd5c32f26082f05ac",
+      "bytes": 366
+    },
+    {
+      "path": "src/ui/icons/brand/buildings/bld-magazyn.svg",
+      "pin": "edb8fb56:gra/src/ui/icons/brand/buildings/bld-magazyn.svg",
+      "sha256": "c4a2267ed59e484ee697d90a536f650c3e888df3488ed6fb373dbf5739bbb267",
+      "bytes": 320
+    },
+    {
+      "path": "src/ui/icons/brand/buildings/bld-mennica.svg",
+      "pin": "edb8fb56:gra/src/ui/icons/brand/buildings/bld-mennica.svg",
+      "sha256": "7c3649353ab11e6bd0125b9aef6e12b195c8792c7218519c26b647e30eb01d6f",
+      "bytes": 351
+    },
+    {
+      "path": "src/ui/icons/brand/buildings/bld-mielerz.svg",
+      "pin": "edb8fb56:gra/src/ui/icons/brand/buildings/bld-mielerz.svg",
+      "sha256": "b96ee0290b85dd8a4a56d6d3b2fa993284037f52a2dfd42d8f242ca829aee9e0",
+      "bytes": 339
+    },
+    {
+      "path": "src/ui/icons/brand/buildings/bld-military.svg",
+      "pin": "edb8fb56:gra/src/ui/icons/brand/buildings/bld-military.svg",
+      "sha256": "afb5141c35706a087415716890ed0a78d4fea2d08253b2eda77aa7380f38ce77",
+      "bytes": 298
+    },
+    {
+      "path": "src/ui/icons/brand/buildings/bld-monument.svg",
+      "pin": "edb8fb56:gra/src/ui/icons/brand/buildings/bld-monument.svg",
+      "sha256": "f9caa06876cde9ae84d47535e43b3b60ce1b5ae9ea3c57deec51756b3ae0f347",
+      "bytes": 310
+    },
+    {
+      "path": "src/ui/icons/brand/buildings/bld-mury.svg",
+      "pin": "edb8fb56:gra/src/ui/icons/brand/buildings/bld-mury.svg",
+      "sha256": "3275276c7339291eaf1be460afd83f9bd42feea2f05ce28708c4499462fcaeb3",
+      "bytes": 374
+    },
+    {
+      "path": "src/ui/icons/brand/buildings/bld-odlewnia_brazu.svg",
+      "pin": "edb8fb56:gra/src/ui/icons/brand/buildings/bld-odlewnia_brazu.svg",
+      "sha256": "447daafd3e011fd8214d54c4a4746450d9cd4f845bd861846ba2b1514a54f621",
+      "bytes": 367
+    },
+    {
+      "path": "src/ui/icons/brand/buildings/bld-odlewnia_zelaza.svg",
+      "pin": "edb8fb56:gra/src/ui/icons/brand/buildings/bld-odlewnia_zelaza.svg",
+      "sha256": "0c962819e0751eb21fafd8f6a496d931ba4fd0822c43f7ccaa2f3c6694862ae0",
+      "bytes": 369
+    },
+    {
+      "path": "src/ui/icons/brand/buildings/bld-palac.svg",
+      "pin": "edb8fb56:gra/src/ui/icons/brand/buildings/bld-palac.svg",
+      "sha256": "86244b2e04bfd12d7e31a2e78df9b17a420890232880cd92177025ea587e9506",
+      "bytes": 637
+    },
+    {
+      "path": "src/ui/icons/brand/buildings/bld-palisada.svg",
+      "pin": "edb8fb56:gra/src/ui/icons/brand/buildings/bld-palisada.svg",
+      "sha256": "a6885bd989d3034b4a965fcbd281afa1c1a05a44f6b98bcfe2c4d15ccd8bdf4a",
+      "bytes": 545
+    },
+    {
+      "path": "src/ui/icons/brand/buildings/bld-port.svg",
+      "pin": "edb8fb56:gra/src/ui/icons/brand/buildings/bld-port.svg",
+      "sha256": "0d4e6939863bbdf0239471c6c5a09b329ddfa065c9a65969705e73b2812b467f",
+      "bytes": 403
+    },
+    {
+      "path": "src/ui/icons/brand/buildings/bld-port_wielki.svg",
+      "pin": "edb8fb56:gra/src/ui/icons/brand/buildings/bld-port_wielki.svg",
+      "sha256": "c6a17c18f20efd679da070d83a7bce6dba0620c0c58dd707c98ea9bed8a53800",
+      "bytes": 690
+    },
+    {
+      "path": "src/ui/icons/brand/buildings/bld-pretorium.svg",
+      "pin": "edb8fb56:gra/src/ui/icons/brand/buildings/bld-pretorium.svg",
+      "sha256": "720d79d9202f65c514e7954321d1f4e01e1613f9810d6210431c2e9376d3e030",
+      "bytes": 354
+    },
+    {
+      "path": "src/ui/icons/brand/buildings/bld-production.svg",
+      "pin": "edb8fb56:gra/src/ui/icons/brand/buildings/bld-production.svg",
+      "sha256": "601c3ecb4dfbfefa715219f40d9ee5c11ca5351873c4dc7cef4d4d1b3ec23b5f",
+      "bytes": 310
+    },
+    {
+      "path": "src/ui/icons/brand/buildings/bld-religion.svg",
+      "pin": "edb8fb56:gra/src/ui/icons/brand/buildings/bld-religion.svg",
+      "sha256": "7f32786246785fb84489464a653c0de28d57f1cc5c1c88b9359c82cdf839bed9",
+      "bytes": 352
+    },
+    {
+      "path": "src/ui/icons/brand/buildings/bld-sad.svg",
+      "pin": "edb8fb56:gra/src/ui/icons/brand/buildings/bld-sad.svg",
+      "sha256": "7ecf3dec2b0e36ba8022c4216e2f6daf3ca814bf73cd90dc0036a4b82dc8d1fa",
+      "bytes": 449
+    },
+    {
+      "path": "src/ui/icons/brand/buildings/bld-science.svg",
+      "pin": "edb8fb56:gra/src/ui/icons/brand/buildings/bld-science.svg",
+      "sha256": "4447e79e23dcc01230b4e19abab6bf4eabaa2a9a9fcba314652063677c5a672c",
+      "bytes": 289
+    },
+    {
+      "path": "src/ui/icons/brand/buildings/bld-spichlerz.svg",
+      "pin": "edb8fb56:gra/src/ui/icons/brand/buildings/bld-spichlerz.svg",
+      "sha256": "fc6b58183b9bb875343aa1ab33023e8279c306faf752310160746b59791ae76f",
+      "bytes": 611
+    },
+    {
+      "path": "src/ui/icons/brand/buildings/bld-stela.svg",
+      "pin": "edb8fb56:gra/src/ui/icons/brand/buildings/bld-stela.svg",
+      "sha256": "5a2fcf371e2d31313cb176ab5572975974004564ce175f4a3abf5254dfeffa36",
+      "bytes": 294
+    },
+    {
+      "path": "src/ui/icons/brand/buildings/bld-stolarnia.svg",
+      "pin": "edb8fb56:gra/src/ui/icons/brand/buildings/bld-stolarnia.svg",
+      "sha256": "4920cdb4218c98adedfe5d0d72e90d098f35d5dbdc83dc15c538d8828da5af71",
+      "bytes": 396
+    },
+    {
+      "path": "src/ui/icons/brand/buildings/bld-storage.svg",
+      "pin": "edb8fb56:gra/src/ui/icons/brand/buildings/bld-storage.svg",
+      "sha256": "fe3fb14209e38852824cda2ec69b14f43d7be2430929678a88ae9e5ea787a1ae",
+      "bytes": 292
+    },
+    {
+      "path": "src/ui/icons/brand/buildings/bld-studnia.svg",
+      "pin": "edb8fb56:gra/src/ui/icons/brand/buildings/bld-studnia.svg",
+      "sha256": "aef3275e5228919f3fc96d9ca8a9b21376750d9e5d51d12700263291a194e3f5",
+      "bytes": 378
+    },
+    {
+      "path": "src/ui/icons/brand/buildings/bld-swiatynia.svg",
+      "pin": "edb8fb56:gra/src/ui/icons/brand/buildings/bld-swiatynia.svg",
+      "sha256": "d1fdef5a3653db496dbcbd97d25d621909001d4f1431327dffd8c4e72c9e5887",
+      "bytes": 345
+    },
+    {
+      "path": "src/ui/icons/brand/buildings/bld-targowisko.svg",
+      "pin": "edb8fb56:gra/src/ui/icons/brand/buildings/bld-targowisko.svg",
+      "sha256": "83357d0dbef675521c371e2ae293a34d8a3200c873e65e94ec965bfdcda4ef10",
+      "bytes": 487
+    },
+    {
+      "path": "src/ui/icons/brand/buildings/bld-teatr.svg",
+      "pin": "edb8fb56:gra/src/ui/icons/brand/buildings/bld-teatr.svg",
+      "sha256": "cbc079d3461505cfaef52cff0be268e358d36b8719564496d1bf7c447f17e3a8",
+      "bytes": 474
+    },
+    {
+      "path": "src/ui/icons/brand/buildings/bld-trade.svg",
+      "pin": "edb8fb56:gra/src/ui/icons/brand/buildings/bld-trade.svg",
+      "sha256": "47c6f56086ed995ae42320c793ae78678729533ff4803f0fbc85c15a2e4c9b2b",
+      "bytes": 482
+    },
+    {
+      "path": "src/ui/icons/brand/buildings/bld-warsztat_oblezniczy.svg",
+      "pin": "edb8fb56:gra/src/ui/icons/brand/buildings/bld-warsztat_oblezniczy.svg",
+      "sha256": "f1f1ab9ff25725e5bdc20c1ffb8f179744956e55d29ce41b91b64a7560239d04",
+      "bytes": 391
+    },
+    {
+      "path": "src/ui/icons/brand/buildings/bld-wielka_kuznia.svg",
+      "pin": "edb8fb56:gra/src/ui/icons/brand/buildings/bld-wielka_kuznia.svg",
+      "sha256": "ea5749355f17293aa0b486dee1c911cc752c49705816813ba2dea2dbffb32a48",
+      "bytes": 394
+    },
+    {
+      "path": "src/ui/icons/brand/chip-crate.svg",
+      "pin": "edb8fb56:gra/src/ui/icons/brand/chip-crate.svg",
+      "sha256": "840ddd84b393612543c385ae19ec82954d18a56abc404eb52fc2aa2c996c818a",
+      "bytes": 292
+    },
+    {
+      "path": "src/ui/icons/brand/chip-death.svg",
+      "pin": "edb8fb56:gra/src/ui/icons/brand/chip-death.svg",
+      "sha256": "501433ce16e798b31ae1d65d1966f89dfdb28af2f782ee41398bf52fa58702e1",
+      "bytes": 373
+    },
+    {
+      "path": "src/ui/icons/brand/chip-garrison.svg",
+      "pin": "edb8fb56:gra/src/ui/icons/brand/chip-garrison.svg",
+      "sha256": "2046e5cf5d033465a3b140cf97f30ab3c9183c92f9645e6776d9f56efd428555",
+      "bytes": 280
+    },
+    {
+      "path": "src/ui/icons/brand/chip-heart.svg",
+      "pin": "edb8fb56:gra/src/ui/icons/brand/chip-heart.svg",
+      "sha256": "acef6678db4a2f013e39d96298d9614e41dc999a031d449e6e316553a46ea6ad",
+      "bytes": 282
+    },
+    {
+      "path": "src/ui/icons/brand/chip-manpower.svg",
+      "pin": "edb8fb56:gra/src/ui/icons/brand/chip-manpower.svg",
+      "sha256": "a79b222e3b1d004b75fb4e864531624bcb9655b3483c1bdf29aa3fa00a67fcb5",
+      "bytes": 308
+    },
+    {
+      "path": "src/ui/icons/brand/chip-map.svg",
+      "pin": "edb8fb56:gra/src/ui/icons/brand/chip-map.svg",
+      "sha256": "b0ac72b6a583014615de70d95697c481cc7ddb3821dc59e14ba62a0a3a686e9a",
+      "bytes": 271
+    },
+    {
+      "path": "src/ui/icons/brand/chip-star.svg",
+      "pin": "edb8fb56:gra/src/ui/icons/brand/chip-star.svg",
+      "sha256": "4d3d4e5448a8d846bd1f76743d38c0d54d064f9c37832503de769b426f27b68a",
+      "bytes": 276
+    },
+    {
+      "path": "src/ui/icons/brand/chip-trend-up.svg",
+      "pin": "edb8fb56:gra/src/ui/icons/brand/chip-trend-up.svg",
+      "sha256": "a69e777e14fbc5c444bf947d735b1b727f017002df27e3bbc224e93d2ca5ceed",
+      "bytes": 255
+    },
+    {
+      "path": "src/ui/icons/brand/chip-warning.svg",
+      "pin": "edb8fb56:gra/src/ui/icons/brand/chip-warning.svg",
+      "sha256": "a06fce3166b936f9cf662d7fa425dc240bfa85d7ceecfba1db861a2a6f67ec2a",
+      "bytes": 254
+    },
+    {
+      "path": "src/ui/icons/brand/civ-icon-map.json",
+      "pin": "edb8fb56:gra/src/ui/icons/brand/civ-icon-map.json",
+      "sha256": "4e47619470e1e60bcb7f7a4b9498f143546293380c7c4359c4953e042dac612a",
+      "bytes": 1133
+    },
+    {
+      "path": "src/ui/icons/brand/civilizations/civ-asyria.svg",
+      "pin": "edb8fb56:gra/src/ui/icons/brand/civilizations/civ-asyria.svg",
+      "sha256": "f5d2af1089864868d2bfa49a661069a6cfb28830108fbc7833aecb71df2e7087",
+      "bytes": 344
+    },
+    {
+      "path": "src/ui/icons/brand/civilizations/civ-babilonia.svg",
+      "pin": "edb8fb56:gra/src/ui/icons/brand/civilizations/civ-babilonia.svg",
+      "sha256": "e8b83d1a5d4fb9d4ade9df4d18d596344c5dbd95461ddc44accea4d7c4b06eea",
+      "bytes": 301
+    },
+    {
+      "path": "src/ui/icons/brand/civilizations/civ-celtowie.svg",
+      "pin": "edb8fb56:gra/src/ui/icons/brand/civilizations/civ-celtowie.svg",
+      "sha256": "7b0ba9dc28de478027af8f94de8b9431fe5007e3dc24f33d7097027ebe697576",
+      "bytes": 360
+    },
+    {
+      "path": "src/ui/icons/brand/civilizations/civ-chinczycy.svg",
+      "pin": "edb8fb56:gra/src/ui/icons/brand/civilizations/civ-chinczycy.svg",
+      "sha256": "7bd6f1148250f837abcc0e493d7d048bfd3e1bad8f292a76fd478c304f6eac7d",
+      "bytes": 646
+    },
+    {
+      "path": "src/ui/icons/brand/civilizations/civ-default.svg",
+      "pin": "edb8fb56:gra/src/ui/icons/brand/civilizations/civ-default.svg",
+      "sha256": "e90f2229ea0a6fdf4ddc7016e54fa3f0e7d4115f32b155eb325963f421a10fcd",
+      "bytes": 222
+    },
+    {
+      "path": "src/ui/icons/brand/civilizations/civ-egipt.svg",
+      "pin": "edb8fb56:gra/src/ui/icons/brand/civilizations/civ-egipt.svg",
+      "sha256": "006946afee28980ee6de9cdc6dc8d798ea3a12f51f9ae542642510e933a34398",
+      "bytes": 264
+    },
+    {
+      "path": "src/ui/icons/brand/civilizations/civ-fenicjanie.svg",
+      "pin": "edb8fb56:gra/src/ui/icons/brand/civilizations/civ-fenicjanie.svg",
+      "sha256": "6ed4e9e9e881e0f4b60e64bef5ab14b67b2977906d6e61bf8c6a80edde99bb70",
+      "bytes": 327
+    },
+    {
+      "path": "src/ui/icons/brand/civilizations/civ-germanie.svg",
+      "pin": "edb8fb56:gra/src/ui/icons/brand/civilizations/civ-germanie.svg",
+      "sha256": "9b168dd1a8592875995d523f20bf391a212f216435a000e224f1fe2b897b8250",
+      "bytes": 304
+    },
+    {
+      "path": "src/ui/icons/brand/civilizations/civ-grecy.svg",
+      "pin": "edb8fb56:gra/src/ui/icons/brand/civilizations/civ-grecy.svg",
+      "sha256": "20f99fbd1f463b19144d6aaa0c19b5e4c84c6bd06c2107210d09f6467a2fdcce",
+      "bytes": 332
+    },
+    {
+      "path": "src/ui/icons/brand/civilizations/civ-harappa.svg",
+      "pin": "edb8fb56:gra/src/ui/icons/brand/civilizations/civ-harappa.svg",
+      "sha256": "c8f07c95d99fe593a0147325ae99afd1979fecf4023aceecd22349e006a07cfc",
+      "bytes": 428
+    },
+    {
+      "path": "src/ui/icons/brand/civilizations/civ-hetyci.svg",
+      "pin": "edb8fb56:gra/src/ui/icons/brand/civilizations/civ-hetyci.svg",
+      "sha256": "12d25b035ecccea27e6a3970f63a1800a3279af743c40c8532ab6f6b3dddcfd8",
+      "bytes": 372
+    },
+    {
+      "path": "src/ui/icons/brand/civilizations/civ-inkowie.svg",
+      "pin": "edb8fb56:gra/src/ui/icons/brand/civilizations/civ-inkowie.svg",
+      "sha256": "99e2b651f6d5a5514ee856db19f8141d1f45fd9d04329c4027f98ac6a699b407",
+      "bytes": 341
+    },
+    {
+      "path": "src/ui/icons/brand/civilizations/civ-rzymianie.svg",
+      "pin": "edb8fb56:gra/src/ui/icons/brand/civilizations/civ-rzymianie.svg",
+      "sha256": "be5fd76c5d0d2128f44fc4389e799d4e9941b9e38245c696cfb00e70e010d41e",
+      "bytes": 591
+    },
+    {
+      "path": "src/ui/icons/brand/civilizations/civ-slowianie.svg",
+      "pin": "edb8fb56:gra/src/ui/icons/brand/civilizations/civ-slowianie.svg",
+      "sha256": "7bc48ff9f0124fbe7dced902c31597f74e7e38438cd0c98244e20ade7949b707",
+      "bytes": 378
+    },
+    {
+      "path": "src/ui/icons/brand/civilizations/civ-sumer.svg",
+      "pin": "edb8fb56:gra/src/ui/icons/brand/civilizations/civ-sumer.svg",
+      "sha256": "65bbbb1fdab936bfbd4095771d860a7b296c84fc8827cc199987b7ce8336c4cf",
+      "bytes": 454
+    },
+    {
+      "path": "src/ui/icons/brand/civilizations/civ-zulusi.svg",
+      "pin": "edb8fb56:gra/src/ui/icons/brand/civilizations/civ-zulusi.svg",
+      "sha256": "1d1881d6937a822b72d073c7febea1c5044ab249f54f4906c5b844643a2d199b",
+      "bytes": 349
+    },
+    {
+      "path": "src/ui/icons/brand/cp-health.svg",
+      "pin": "edb8fb56:gra/src/ui/icons/brand/cp-health.svg",
+      "sha256": "59261a73d6b83976b0dd97e935a692d4ce822674b4749519c823d50cb7d82492",
+      "bytes": 595
+    },
+    {
+      "path": "src/ui/icons/brand/cp-order.svg",
+      "pin": "edb8fb56:gra/src/ui/icons/brand/cp-order.svg",
+      "sha256": "2dc7de5bfdb0e866d8c274c7ec762ffe9a13e27f5c1d08f75e6ab81665a9e30b",
+      "bytes": 518
+    },
+    {
+      "path": "src/ui/icons/brand/dip-gift.svg",
+      "pin": "edb8fb56:gra/src/ui/icons/brand/dip-gift.svg",
+      "sha256": "32dfdfc36593d160279a1739f154a891648596c76a1bafd1c0055a17e8ad893f",
+      "bytes": 272
+    },
+    {
+      "path": "src/ui/icons/brand/dip-peace.svg",
+      "pin": "edb8fb56:gra/src/ui/icons/brand/dip-peace.svg",
+      "sha256": "21a80a6eaed4bad057371995fffdef43cc712a3d12c4fcfd283b60203dcf3dd8",
+      "bytes": 522
+    },
+    {
+      "path": "src/ui/icons/brand/dip-vassal.svg",
+      "pin": "edb8fb56:gra/src/ui/icons/brand/dip-vassal.svg",
+      "sha256": "1cee071ed306852613894e08d4c2c7afb6cb712a180b07a1f4e8a3cb22cfd030",
+      "bytes": 245
+    },
+    {
+      "path": "src/ui/icons/brand/dip-war.svg",
+      "pin": "edb8fb56:gra/src/ui/icons/brand/dip-war.svg",
+      "sha256": "724b236b18c540d2bcf0121ba7f688279540f9bbfe4bc85cf5fa425230b97e6b",
+      "bytes": 292
+    },
+    {
+      "path": "src/ui/icons/brand/earth-emblem.svg",
+      "pin": "edb8fb56:gra/src/ui/icons/brand/earth-emblem.svg",
+      "sha256": "f7783cfcf1a56f5fcef59700df3563b003c2e99c856a49886e73e21bc4bd95d4",
+      "bytes": 418
+    },
+    {
+      "path": "src/ui/icons/brand/epoch-icon-map.json",
+      "pin": "edb8fb56:gra/src/ui/icons/brand/epoch-icon-map.json",
+      "sha256": "ed43171e4721de97a6b92cf0b28d64da9ac101aef7dd4523f1b90095c3722f14",
+      "bytes": 264
+    },
+    {
+      "path": "src/ui/icons/brand/epochs/epoch-braz.svg",
+      "pin": "edb8fb56:gra/src/ui/icons/brand/epochs/epoch-braz.svg",
+      "sha256": "f59637c8bda192ceed4aa839a597cc8fc49a733c8cd90e43ad2a69194cf42a75",
+      "bytes": 355
+    },
+    {
+      "path": "src/ui/icons/brand/epochs/epoch-kamien.svg",
+      "pin": "edb8fb56:gra/src/ui/icons/brand/epochs/epoch-kamien.svg",
+      "sha256": "ada6e176eeda1c30d239754f422ef0a07937610bdaaecdf8ba03764d6f78cb25",
+      "bytes": 300
+    },
+    {
+      "path": "src/ui/icons/brand/epochs/epoch-zelazo.svg",
+      "pin": "edb8fb56:gra/src/ui/icons/brand/epochs/epoch-zelazo.svg",
+      "sha256": "5192b7759ffc0b9b4e340d62e08c8e3b29a3bc47c914c87b56fc77cccab8d9b0",
+      "bytes": 292
+    },
+    {
+      "path": "src/ui/icons/brand/icons-manifest.json",
+      "pin": "edb8fb56:gra/src/ui/icons/brand/icons-manifest.json",
+      "sha256": "9c54cadf8f9f94d3dbc55eb79220f2f38161577f492421bfa754bddc2da3a9f5",
+      "bytes": 11892
+    },
+    {
+      "path": "src/ui/icons/brand/improvement-icon-map.json",
+      "pin": "edb8fb56:gra/src/ui/icons/brand/improvement-icon-map.json",
+      "sha256": "293c3c46a3d6c3bea53ca6437190d0cedd24767a41094d5529ab935db3ec7cb0",
+      "bytes": 940
+    },
+    {
+      "path": "src/ui/icons/brand/improvements/imp-farm.svg",
+      "pin": "edb8fb56:gra/src/ui/icons/brand/improvements/imp-farm.svg",
+      "sha256": "8e66d3f9b032650eeefcd5e6c0e8ea6e811c224361a04f650d0e9aaeda522e8f",
+      "bytes": 324
+    },
+    {
+      "path": "src/ui/icons/brand/improvements/imp-fishing.svg",
+      "pin": "edb8fb56:gra/src/ui/icons/brand/improvements/imp-fishing.svg",
+      "sha256": "2adabcd936e7ce0d88b6703a4151ec952c260255a554aba3973b581d637ba8e0",
+      "bytes": 330
+    },
+    {
+      "path": "src/ui/icons/brand/improvements/imp-fort.svg",
+      "pin": "edb8fb56:gra/src/ui/icons/brand/improvements/imp-fort.svg",
+      "sha256": "790f30d338285778794e8a8e33a36a42a9b4f52f3d9a6945be20acf03f1ec516",
+      "bytes": 266
+    },
+    {
+      "path": "src/ui/icons/brand/improvements/imp-irrigation.svg",
+      "pin": "edb8fb56:gra/src/ui/icons/brand/improvements/imp-irrigation.svg",
+      "sha256": "47514135bcffa9a0ded1d9abc74b164bc44554fef41e9a608d503b6bd093a593",
+      "bytes": 348
+    },
+    {
+      "path": "src/ui/icons/brand/improvements/imp-lumber.svg",
+      "pin": "edb8fb56:gra/src/ui/icons/brand/improvements/imp-lumber.svg",
+      "sha256": "e227aa2bc5d146cb2077b75ed13598dbbefa81db8cb3b3f4cb9bfd506a57dd6d",
+      "bytes": 300
+    },
+    {
+      "path": "src/ui/icons/brand/improvements/imp-mine.svg",
+      "pin": "edb8fb56:gra/src/ui/icons/brand/improvements/imp-mine.svg",
+      "sha256": "03886e3735d94c4b378b48ba3b78d5f61731bf33f8724fa62fbc67d9491c38b7",
+      "bytes": 310
+    },
+    {
+      "path": "src/ui/icons/brand/improvements/imp-outpost.svg",
+      "pin": "edb8fb56:gra/src/ui/icons/brand/improvements/imp-outpost.svg",
+      "sha256": "bdccd92cfd76134c6eac1a255b6fae48963e452711527885c4e697606a8995cd",
+      "bytes": 269
+    },
+    {
+      "path": "src/ui/icons/brand/improvements/imp-pasture.svg",
+      "pin": "edb8fb56:gra/src/ui/icons/brand/improvements/imp-pasture.svg",
+      "sha256": "e9f683cebf7c3168badc69e69a0f572aa2c7b6f7522ab249d5fd8628154e9837",
+      "bytes": 330
+    },
+    {
+      "path": "src/ui/icons/brand/improvements/imp-quarry.svg",
+      "pin": "edb8fb56:gra/src/ui/icons/brand/improvements/imp-quarry.svg",
+      "sha256": "28da14f69a36fcb3025ba9ea17f1b8389cca940c76c124a50d0218ffe65d4c9d",
+      "bytes": 278
+    },
+    {
+      "path": "src/ui/icons/brand/improvements/imp-road.svg",
+      "pin": "edb8fb56:gra/src/ui/icons/brand/improvements/imp-road.svg",
+      "sha256": "8cd742686021d23b102d09fe14648426506415c924e68a9408cec1f3dcc05e11",
+      "bytes": 264
+    },
+    {
+      "path": "src/ui/icons/brand/menu-background.css",
+      "pin": "edb8fb56:gra/src/ui/icons/brand/menu-background.css",
+      "sha256": "bfd140730e21d88bd335275a15d1643c9ae4c923a7c12a077571d4952a5bcaa7",
+      "bytes": 608
+    },
+    {
+      "path": "src/ui/icons/brand/menu-components.css",
+      "pin": "edb8fb56:gra/src/ui/icons/brand/menu-components.css",
+      "sha256": "d5e37d02f580fd9839f7b22cc5b0eb1f8f5eee5008efe580deca01e2dfb29de2",
+      "bytes": 1949
+    },
+    {
+      "path": "src/ui/icons/brand/menu-emblem.svg",
+      "pin": "edb8fb56:gra/src/ui/icons/brand/menu-emblem.svg",
+      "sha256": "1a7971de8d6161420b53663a631d9e1064ffc9c1a2e7a31b392c6d34066bd1fb",
+      "bytes": 404
+    },
+    {
+      "path": "src/ui/icons/brand/menu/menu-achievements-24.svg",
+      "pin": "edb8fb56:gra/src/ui/icons/brand/menu/menu-achievements-24.svg",
+      "sha256": "da5663ab8bc9b6a40eac09a510ed4f4ba31c8d325e5c6c214c732b870711504f",
+      "bytes": 332
+    },
+    {
+      "path": "src/ui/icons/brand/menu/menu-achievements-40.svg",
+      "pin": "edb8fb56:gra/src/ui/icons/brand/menu/menu-achievements-40.svg",
+      "sha256": "3890f6df01caf2fe76005c64b759bb14d0ecfab6d56d55ea278f9810e4d64f27",
+      "bytes": 330
+    },
+    {
+      "path": "src/ui/icons/brand/menu/menu-audio-24.svg",
+      "pin": "edb8fb56:gra/src/ui/icons/brand/menu/menu-audio-24.svg",
+      "sha256": "3daf309f49fca7f9ba805a49333e6dc5e9fb551c7f847f69ee6bfb2a749e236b",
+      "bytes": 292
+    },
+    {
+      "path": "src/ui/icons/brand/menu/menu-audio-40.svg",
+      "pin": "edb8fb56:gra/src/ui/icons/brand/menu/menu-audio-40.svg",
+      "sha256": "5e3c60bc09157118a1c0f7646d2bb2ac2a60d5bfb9f1b2b87b96d6281a3d02ef",
+      "bytes": 290
+    },
+    {
+      "path": "src/ui/icons/brand/menu/menu-campaign-24.svg",
+      "pin": "edb8fb56:gra/src/ui/icons/brand/menu/menu-campaign-24.svg",
+      "sha256": "0e1634a532135d4e0e40629b0f9e86c384b28c327646c913e3654545a6965e3d",
+      "bytes": 258
+    },
+    {
+      "path": "src/ui/icons/brand/menu/menu-campaign-40.svg",
+      "pin": "edb8fb56:gra/src/ui/icons/brand/menu/menu-campaign-40.svg",
+      "sha256": "5f28ba108db541d18a80cba95cddf675758d64724dc6559b43ce5993af8423ea",
+      "bytes": 256
+    },
+    {
+      "path": "src/ui/icons/brand/menu/menu-controls-24.svg",
+      "pin": "edb8fb56:gra/src/ui/icons/brand/menu/menu-controls-24.svg",
+      "sha256": "e4c30cf980eedecaf22b106d2e3c4565acc4c58702faa04e254b83e28394c397",
+      "bytes": 358
+    },
+    {
+      "path": "src/ui/icons/brand/menu/menu-controls-40.svg",
+      "pin": "edb8fb56:gra/src/ui/icons/brand/menu/menu-controls-40.svg",
+      "sha256": "a078d38405304e4fc31b5ab0922e65657d44edbf7d7ab2de13ad90a8b735914b",
+      "bytes": 356
+    },
+    {
+      "path": "src/ui/icons/brand/menu/menu-credits-24.svg",
+      "pin": "edb8fb56:gra/src/ui/icons/brand/menu/menu-credits-24.svg",
+      "sha256": "4d1c419a05b3b2a36b5db6ffda902b9fdc8bb23a7b97730dbc52d945b050c5e6",
+      "bytes": 322
+    },
+    {
+      "path": "src/ui/icons/brand/menu/menu-credits-40.svg",
+      "pin": "edb8fb56:gra/src/ui/icons/brand/menu/menu-credits-40.svg",
+      "sha256": "ea5216358e8efc4e444b515c94654618caeda21a4cec35b631559cdfb6a73725",
+      "bytes": 320
+    },
+    {
+      "path": "src/ui/icons/brand/menu/menu-emblem-mini-24.svg",
+      "pin": "edb8fb56:gra/src/ui/icons/brand/menu/menu-emblem-mini-24.svg",
+      "sha256": "88d5f36338bda55bee844bcc99cb0cae5cc7ee7030eaed654cc16d2123d8b090",
+      "bytes": 324
+    },
+    {
+      "path": "src/ui/icons/brand/menu/menu-emblem-mini-40.svg",
+      "pin": "edb8fb56:gra/src/ui/icons/brand/menu/menu-emblem-mini-40.svg",
+      "sha256": "1108e6d1cf7b9c5ec635304a7ba8e7540fb236f1377543d276ec15e247690c0e",
+      "bytes": 322
+    },
+    {
+      "path": "src/ui/icons/brand/menu/menu-exit-24.svg",
+      "pin": "edb8fb56:gra/src/ui/icons/brand/menu/menu-exit-24.svg",
+      "sha256": "4e20116186f675f808985e7c093e09552faa1cdc14a6bc24bf2839e65e666d8e",
+      "bytes": 254
+    },
+    {
+      "path": "src/ui/icons/brand/menu/menu-exit-40.svg",
+      "pin": "edb8fb56:gra/src/ui/icons/brand/menu/menu-exit-40.svg",
+      "sha256": "a84cbafe5bdb9b6b6fb5493ac027a413e6cfa53b7630ba905e2c25c3a198e927",
+      "bytes": 252
+    },
+    {
+      "path": "src/ui/icons/brand/menu/menu-info-24.svg",
+      "pin": "edb8fb56:gra/src/ui/icons/brand/menu/menu-info-24.svg",
+      "sha256": "6b5978fabe37c736e666244b99211546be9d69f73208537e9434c04c9e1964f2",
+      "bytes": 317
+    },
+    {
+      "path": "src/ui/icons/brand/menu/menu-info-40.svg",
+      "pin": "edb8fb56:gra/src/ui/icons/brand/menu/menu-info-40.svg",
+      "sha256": "3ad39d2210ae2e83b4dab6016cd67ece8e64fd3d0d6511a565c8a4338ee4fbaf",
+      "bytes": 315
+    },
+    {
+      "path": "src/ui/icons/brand/menu/menu-language-24.svg",
+      "pin": "edb8fb56:gra/src/ui/icons/brand/menu/menu-language-24.svg",
+      "sha256": "079ae15f593bc87717df2cd048d01afd5fa711ebcb264b3fe13a5b4204faaa2f",
+      "bytes": 300
+    },
+    {
+      "path": "src/ui/icons/brand/menu/menu-language-40.svg",
+      "pin": "edb8fb56:gra/src/ui/icons/brand/menu/menu-language-40.svg",
+      "sha256": "25dc4b41501f9f5539593e2c90d426b5db75b0930eb75c81047a0b7741730f42",
+      "bytes": 298
+    },
+    {
+      "path": "src/ui/icons/brand/menu/menu-load-24.svg",
+      "pin": "edb8fb56:gra/src/ui/icons/brand/menu/menu-load-24.svg",
+      "sha256": "b73988e81333188e09e9bba52a0aef4781581ca7b104c726e1bd5fafa1a8f5c5",
+      "bytes": 260
+    },
+    {
+      "path": "src/ui/icons/brand/menu/menu-load-40.svg",
+      "pin": "edb8fb56:gra/src/ui/icons/brand/menu/menu-load-40.svg",
+      "sha256": "91119c40c1751dc0f2f43d00481a35244af4de91c5499c8e454fa2b4e3e7c2bb",
+      "bytes": 258
+    },
+    {
+      "path": "src/ui/icons/brand/menu/menu-more-24.svg",
+      "pin": "edb8fb56:gra/src/ui/icons/brand/menu/menu-more-24.svg",
+      "sha256": "906d79377d554ecacd04b593ac8ffc262758d736b602104c17a08c58f8eb79b5",
+      "bytes": 306
+    },
+    {
+      "path": "src/ui/icons/brand/menu/menu-more-40.svg",
+      "pin": "edb8fb56:gra/src/ui/icons/brand/menu/menu-more-40.svg",
+      "sha256": "b683d148a2d6a11c70f4b0e6ad70221935c5545bf0415218511552257a0c9d08",
+      "bytes": 304
+    },
+    {
+      "path": "src/ui/icons/brand/menu/menu-multiplayer-24.svg",
+      "pin": "edb8fb56:gra/src/ui/icons/brand/menu/menu-multiplayer-24.svg",
+      "sha256": "57c6e2e402a10f6ca5d9afbdbebe50454e70c9c4702896792734d169c4cad0ba",
+      "bytes": 386
+    },
+    {
+      "path": "src/ui/icons/brand/menu/menu-multiplayer-40.svg",
+      "pin": "edb8fb56:gra/src/ui/icons/brand/menu/menu-multiplayer-40.svg",
+      "sha256": "05af30d1fd4d5a8eb5266d465b467b2afb3ac3003865b2c1353302a79fe5a654",
+      "bytes": 384
+    },
+    {
+      "path": "src/ui/icons/brand/menu/menu-play-24.svg",
+      "pin": "edb8fb56:gra/src/ui/icons/brand/menu/menu-play-24.svg",
+      "sha256": "5cf87f7c9fd58cf31a4e05eea67507d71acb7ec1fdf8eee318c8bd9f08e4df69",
+      "bytes": 218
+    },
+    {
+      "path": "src/ui/icons/brand/menu/menu-play-40.svg",
+      "pin": "edb8fb56:gra/src/ui/icons/brand/menu/menu-play-40.svg",
+      "sha256": "09a50d96f9cc2d2f0efc580180f800bacabbd6de5918c434d671c981d901d629",
+      "bytes": 216
+    },
+    {
+      "path": "src/ui/icons/brand/menu/menu-save-24.svg",
+      "pin": "edb8fb56:gra/src/ui/icons/brand/menu/menu-save-24.svg",
+      "sha256": "08904aa3f91855d60a362254333503bc14f065e110bca0f7067582e441968cf7",
+      "bytes": 294
+    },
+    {
+      "path": "src/ui/icons/brand/menu/menu-save-40.svg",
+      "pin": "edb8fb56:gra/src/ui/icons/brand/menu/menu-save-40.svg",
+      "sha256": "ce3aa341b24af685a0a93221420f3f3a440b339274e1d8fe2c5b14e14076e933",
+      "bytes": 292
+    },
+    {
+      "path": "src/ui/icons/brand/menu/menu-settings-24.svg",
+      "pin": "edb8fb56:gra/src/ui/icons/brand/menu/menu-settings-24.svg",
+      "sha256": "e7f7b31debeca0c3502e6fa55302755cabb4d0a1ed3e77ee1346948e0670ab42",
+      "bytes": 351
+    },
+    {
+      "path": "src/ui/icons/brand/menu/menu-settings-40.svg",
+      "pin": "edb8fb56:gra/src/ui/icons/brand/menu/menu-settings-40.svg",
+      "sha256": "d2f06e1a8e584bd43979acce482684b74143d9eae879e20640d638138a453ee4",
+      "bytes": 349
+    },
+    {
+      "path": "src/ui/icons/brand/motion.css",
+      "pin": "edb8fb56:gra/src/ui/icons/brand/motion.css",
+      "sha256": "b72e65e8e9923dcc676aa9720a6f06f6b40f2fa12e57bb4f0c851e67ef6188ff",
+      "bytes": 1040
+    },
+    {
+      "path": "src/ui/icons/brand/res-cattle.svg",
+      "pin": "edb8fb56:gra/src/ui/icons/brand/res-cattle.svg",
+      "sha256": "f9852b585579842e436e1790978704ea8f33d233e0950ca989a22099904dd639",
+      "bytes": 422
+    },
+    {
+      "path": "src/ui/icons/brand/res-clay.svg",
+      "pin": "edb8fb56:gra/src/ui/icons/brand/res-clay.svg",
+      "sha256": "81aff29bf48bf301e83b0227f334dd322f389d4e53401d65e476653ae1337b42",
+      "bytes": 339
+    },
+    {
+      "path": "src/ui/icons/brand/res-culture.svg",
+      "pin": "edb8fb56:gra/src/ui/icons/brand/res-culture.svg",
+      "sha256": "272518e5d7ac6779ddc18c3765b1bed704dc2216ad5f8602bfe7eb92533c9c81",
+      "bytes": 585
+    },
+    {
+      "path": "src/ui/icons/brand/res-food.svg",
+      "pin": "edb8fb56:gra/src/ui/icons/brand/res-food.svg",
+      "sha256": "2f50fd2cd9a4d18b78c215075de12d9989d67121a697a9d94866890b707de2c3",
+      "bytes": 481
+    },
+    {
+      "path": "src/ui/icons/brand/res-horses.svg",
+      "pin": "edb8fb56:gra/src/ui/icons/brand/res-horses.svg",
+      "sha256": "49cfb5f7577fd121d7fe56c8689f30e132e32b33e3b67cc037f9a6f46af35fd9",
+      "bytes": 310
+    },
+    {
+      "path": "src/ui/icons/brand/res-influence.svg",
+      "pin": "edb8fb56:gra/src/ui/icons/brand/res-influence.svg",
+      "sha256": "247c95c7a3757e5585f2186fb31580d1aa9e5fc60a588623b3cf73f5c2c99e6f",
+      "bytes": 484
+    },
+    {
+      "path": "src/ui/icons/brand/res-population.svg",
+      "pin": "edb8fb56:gra/src/ui/icons/brand/res-population.svg",
+      "sha256": "66c04d84397835c1c4dcc6d065dddb73ec667a9d4c761ba63f0141c158e426a0",
+      "bytes": 386
+    },
+    {
+      "path": "src/ui/icons/brand/res-religion.svg",
+      "pin": "edb8fb56:gra/src/ui/icons/brand/res-religion.svg",
+      "sha256": "55fab265c47769426f38c818a59efa458e72f7b4161c747212aa87e8a8a8ecf5",
+      "bytes": 352
+    },
+    {
+      "path": "src/ui/icons/brand/res-salt.svg",
+      "pin": "edb8fb56:gra/src/ui/icons/brand/res-salt.svg",
+      "sha256": "e274854d82093290d4808dd319103367a7debfa2f6e6405f6cea715d4f2713c2",
+      "bytes": 312
+    },
+    {
+      "path": "src/ui/icons/brand/res-science.svg",
+      "pin": "edb8fb56:gra/src/ui/icons/brand/res-science.svg",
+      "sha256": "768f63c722f141d87e12cd6b6b2ee181ccbf33130fd48bbe1b088e360b5e4847",
+      "bytes": 490
+    },
+    {
+      "path": "src/ui/icons/brand/res-settlements.svg",
+      "pin": "edb8fb56:gra/src/ui/icons/brand/res-settlements.svg",
+      "sha256": "20f334181e2873da4f587bad1269ec237db60be791a95deb7a327450ef132363",
+      "bytes": 368
+    },
+    {
+      "path": "src/ui/icons/brand/res-treasury.svg",
+      "pin": "edb8fb56:gra/src/ui/icons/brand/res-treasury.svg",
+      "sha256": "3b21cd1eefe31adb6380ec93ea217ffe8a682f99e664f417daa3c39470f53b35",
+      "bytes": 366
+    },
+    {
+      "path": "src/ui/icons/brand/res-work.svg",
+      "pin": "edb8fb56:gra/src/ui/icons/brand/res-work.svg",
+      "sha256": "fc2b6d111a1a3139b6ce5018055ec53a81ae43d3cc8508dd7377b0d3910e716f",
+      "bytes": 310
+    },
+    {
+      "path": "src/ui/icons/brand/resources-map-icon-map.json",
+      "pin": "edb8fb56:gra/src/ui/icons/brand/resources-map-icon-map.json",
+      "sha256": "98b09c74a31becdaf7928aea3842141793e08c0d2ec8d921cfbeb33f16539df5",
+      "bytes": 2897
+    },
+    {
+      "path": "src/ui/icons/brand/resources-map/res-brick.svg",
+      "pin": "edb8fb56:gra/src/ui/icons/brand/resources-map/res-brick.svg",
+      "sha256": "3517a067b8f644bb92ebbcece91b8452077487636edc825f918f71d7ca07494b",
+      "bytes": 281
+    },
+    {
+      "path": "src/ui/icons/brand/resources-map/res-bronze.svg",
+      "pin": "edb8fb56:gra/src/ui/icons/brand/resources-map/res-bronze.svg",
+      "sha256": "e8dbac9658de785009ffc0bbb2eba15daee06b267de1854884d7e007891f334a",
+      "bytes": 273
+    },
+    {
+      "path": "src/ui/icons/brand/resources-map/res-cattle.svg",
+      "pin": "edb8fb56:gra/src/ui/icons/brand/resources-map/res-cattle.svg",
+      "sha256": "f9852b585579842e436e1790978704ea8f33d233e0950ca989a22099904dd639",
+      "bytes": 422
+    },
+    {
+      "path": "src/ui/icons/brand/resources-map/res-ceramics.svg",
+      "pin": "edb8fb56:gra/src/ui/icons/brand/resources-map/res-ceramics.svg",
+      "sha256": "dcc631407a7aed48f89b96e64cef9938191129a32c684b32b287b876f6203714",
+      "bytes": 513
+    },
+    {
+      "path": "src/ui/icons/brand/resources-map/res-clay.svg",
+      "pin": "edb8fb56:gra/src/ui/icons/brand/resources-map/res-clay.svg",
+      "sha256": "10e333f7fa69f23b02a9ecbdd9ba6a1a33f978850f74b9731b0cc98bbdfe9384",
+      "bytes": 393
+    },
+    {
+      "path": "src/ui/icons/brand/resources-map/res-copper-ore.svg",
+      "pin": "edb8fb56:gra/src/ui/icons/brand/resources-map/res-copper-ore.svg",
+      "sha256": "7e27178359ac0b22d91fbb0d6efd575e7fa2cad457ae40ea28395759ee61e98b",
+      "bytes": 344
+    },
+    {
+      "path": "src/ui/icons/brand/resources-map/res-gold.svg",
+      "pin": "edb8fb56:gra/src/ui/icons/brand/resources-map/res-gold.svg",
+      "sha256": "d937fcbbd29d0df3657261ddb52b8b6b3250d9dd5743d6f5aecf6772e35fbe3a",
+      "bytes": 366
+    },
+    {
+      "path": "src/ui/icons/brand/resources-map/res-horse.svg",
+      "pin": "edb8fb56:gra/src/ui/icons/brand/resources-map/res-horse.svg",
+      "sha256": "d7dbf2ea27ddcef14c679af1e4c99035f6c885dc36b604596faecd0c008f2e02",
+      "bytes": 467
+    },
+    {
+      "path": "src/ui/icons/brand/resources-map/res-horses.svg",
+      "pin": "edb8fb56:gra/src/ui/icons/brand/resources-map/res-horses.svg",
+      "sha256": "c5df8eed672dd94a08d83cd0941ab589e38ddfcad32272e82086aca6386fe091",
+      "bytes": 560
+    },
+    {
+      "path": "src/ui/icons/brand/resources-map/res-iron-ore.svg",
+      "pin": "edb8fb56:gra/src/ui/icons/brand/resources-map/res-iron-ore.svg",
+      "sha256": "7c1e37edf208d96859d0c1c82539067649d0a47809725dc4a42858bd53065981",
+      "bytes": 361
+    },
+    {
+      "path": "src/ui/icons/brand/resources-map/res-iron.svg",
+      "pin": "edb8fb56:gra/src/ui/icons/brand/resources-map/res-iron.svg",
+      "sha256": "a4e8df14286d2dd549bbe8406e09131414c10cb43c85c7d852a53f4987ad79a3",
+      "bytes": 273
+    },
+    {
+      "path": "src/ui/icons/brand/resources-map/res-salt.svg",
+      "pin": "edb8fb56:gra/src/ui/icons/brand/resources-map/res-salt.svg",
+      "sha256": "329d366219e9885ec73b44ed3e936eb7f65e1114e6c6c693326291429a052406",
+      "bytes": 295
+    },
+    {
+      "path": "src/ui/icons/brand/resources-map/res-steel.svg",
+      "pin": "edb8fb56:gra/src/ui/icons/brand/resources-map/res-steel.svg",
+      "sha256": "bead3cffe3b9cac321354cb92c1c135ac647682ab9606190ef011b0c028fa615",
+      "bytes": 282
+    },
+    {
+      "path": "src/ui/icons/brand/resources-map/res-stone.svg",
+      "pin": "edb8fb56:gra/src/ui/icons/brand/resources-map/res-stone.svg",
+      "sha256": "8042bc1d7ed0fcc57ac3b5de12611d8f45bff2ab0dabc5a26c4f349996ce1a98",
+      "bytes": 427
+    },
+    {
+      "path": "src/ui/icons/brand/resources-map/res-tin-ore.svg",
+      "pin": "edb8fb56:gra/src/ui/icons/brand/resources-map/res-tin-ore.svg",
+      "sha256": "41f09ccfa029cf54918c6a9ad097b35590677ddf9c1173af584e3e37bf15e02d",
+      "bytes": 307
+    },
+    {
+      "path": "src/ui/icons/brand/resources-map/res-wood.svg",
+      "pin": "edb8fb56:gra/src/ui/icons/brand/resources-map/res-wood.svg",
+      "sha256": "2566dd4a4a66261b1543f29117fc0b89ec0e78e07e3758a7fc8869e78e9d9776",
+      "bytes": 402
+    },
+    {
+      "path": "src/ui/icons/brand/setting-icon-map.json",
+      "pin": "edb8fb56:gra/src/ui/icons/brand/setting-icon-map.json",
+      "sha256": "d6713ed4d2dc19215e0194093ea4bc19fc3b20b906314d26add9c735bd23c453",
+      "bytes": 622
+    },
+    {
+      "path": "src/ui/icons/brand/settings/sett-city-states.svg",
+      "pin": "edb8fb56:gra/src/ui/icons/brand/settings/sett-city-states.svg",
+      "sha256": "b5e4c131cd820bbbf46859661c9186f6638773c10abcd858094bb0f18f686eff",
+      "bytes": 398
+    },
+    {
+      "path": "src/ui/icons/brand/settings/sett-civ-types.svg",
+      "pin": "edb8fb56:gra/src/ui/icons/brand/settings/sett-civ-types.svg",
+      "sha256": "d7243e3d256d9cb6e155f487184c2b0485a5512d7a12e648873601fff4d451b2",
+      "bytes": 311
+    },
+    {
+      "path": "src/ui/icons/brand/settings/sett-difficulty.svg",
+      "pin": "edb8fb56:gra/src/ui/icons/brand/settings/sett-difficulty.svg",
+      "sha256": "86db0fcf63c4f332fbb965516112b053fdd3dd3cd018837a95c654134f2a5e0e",
+      "bytes": 523
+    },
+    {
+      "path": "src/ui/icons/brand/settings/sett-game-speed.svg",
+      "pin": "edb8fb56:gra/src/ui/icons/brand/settings/sett-game-speed.svg",
+      "sha256": "21871468e31e884dc3c93e5247b0d43d674b44ffdac749ea4a3ae7e721763361",
+      "bytes": 414
+    },
+    {
+      "path": "src/ui/icons/brand/settings/sett-map-size.svg",
+      "pin": "edb8fb56:gra/src/ui/icons/brand/settings/sett-map-size.svg",
+      "sha256": "ccf92add629aea440800ad50bf61d76495dbe600f95376310deb719a0b5d0fc6",
+      "bytes": 575
+    },
+    {
+      "path": "src/ui/icons/brand/settings/sett-world-type.svg",
+      "pin": "edb8fb56:gra/src/ui/icons/brand/settings/sett-world-type.svg",
+      "sha256": "94e61d13218aeb2e24b8593a9fb751586ad9e2d4819b2d558ad4082f5f009a29",
+      "bytes": 508
+    },
+    {
+      "path": "src/ui/icons/brand/tb-army.svg",
+      "pin": "edb8fb56:gra/src/ui/icons/brand/tb-army.svg",
+      "sha256": "982e0691b367f4b037688f561c14c78fa41c2eb78611eca210f12bbfdcfbf9fa",
+      "bytes": 292
+    },
+    {
+      "path": "src/ui/icons/brand/tb-cities.svg",
+      "pin": "edb8fb56:gra/src/ui/icons/brand/tb-cities.svg",
+      "sha256": "d3be62f7f00b452c857a287a785aeed2311f2d84b0de39875593a1c93e06c3ca",
+      "bytes": 332
+    },
+    {
+      "path": "src/ui/icons/brand/tb-diplomacy.svg",
+      "pin": "edb8fb56:gra/src/ui/icons/brand/tb-diplomacy.svg",
+      "sha256": "573e09f6a38cd496c04692fb721d8e700ff1846433168483b5edee811850a92c",
+      "bytes": 491
+    },
+    {
+      "path": "src/ui/icons/brand/tier1/res-culture-24.svg",
+      "pin": "edb8fb56:gra/src/ui/icons/brand/tier1/res-culture-24.svg",
+      "sha256": "6ea4bacdae6c8460aa1a7869e1cad157d45460be78700129fc2b4787cff5e3f5",
+      "bytes": 585
+    },
+    {
+      "path": "src/ui/icons/brand/tier1/res-culture-40.svg",
+      "pin": "edb8fb56:gra/src/ui/icons/brand/tier1/res-culture-40.svg",
+      "sha256": "8fcf827c7a18edcb16248dde2e3e5bc969f2bd2272af1967d2c48010d5fdcd5e",
+      "bytes": 583
+    },
+    {
+      "path": "src/ui/icons/brand/tier1/res-food-24.svg",
+      "pin": "edb8fb56:gra/src/ui/icons/brand/tier1/res-food-24.svg",
+      "sha256": "f21b0c851ad7f2fa8c8c38a23c6342dd6b4e3f1d61ae5a00f55e3151be22a188",
+      "bytes": 481
+    },
+    {
+      "path": "src/ui/icons/brand/tier1/res-food-40.svg",
+      "pin": "edb8fb56:gra/src/ui/icons/brand/tier1/res-food-40.svg",
+      "sha256": "9834a4eb72b176856ad273118e4fcc90c277bc713e566ff8bcf001c4241e93b1",
+      "bytes": 479
+    },
+    {
+      "path": "src/ui/icons/brand/tier1/res-influence-24.svg",
+      "pin": "edb8fb56:gra/src/ui/icons/brand/tier1/res-influence-24.svg",
+      "sha256": "279ad4d876513b96a11209fe56a1cf0e9589ce2b4a71a8b6a61f94a50270d9b5",
+      "bytes": 484
+    },
+    {
+      "path": "src/ui/icons/brand/tier1/res-influence-40.svg",
+      "pin": "edb8fb56:gra/src/ui/icons/brand/tier1/res-influence-40.svg",
+      "sha256": "c2071eea3918e69c22e02596d4ffcb4caeaea7184506322496933bdbc5d60e21",
+      "bytes": 482
+    },
+    {
+      "path": "src/ui/icons/brand/tier1/res-population-24.svg",
+      "pin": "edb8fb56:gra/src/ui/icons/brand/tier1/res-population-24.svg",
+      "sha256": "82109ce79e2c84026933c191a47ab36502165f74b1d37d941beedd3dcaa638aa",
+      "bytes": 386
+    },
+    {
+      "path": "src/ui/icons/brand/tier1/res-population-40.svg",
+      "pin": "edb8fb56:gra/src/ui/icons/brand/tier1/res-population-40.svg",
+      "sha256": "2c8d4a454546de78c3feec4779584e117d5f0edc30a8277d240bb1ba1bf0dcfa",
+      "bytes": 384
+    },
+    {
+      "path": "src/ui/icons/brand/tier1/res-religion-24.svg",
+      "pin": "edb8fb56:gra/src/ui/icons/brand/tier1/res-religion-24.svg",
+      "sha256": "7f32786246785fb84489464a653c0de28d57f1cc5c1c88b9359c82cdf839bed9",
+      "bytes": 352
+    },
+    {
+      "path": "src/ui/icons/brand/tier1/res-religion-40.svg",
+      "pin": "edb8fb56:gra/src/ui/icons/brand/tier1/res-religion-40.svg",
+      "sha256": "35d4dd5ad1661d80f36ce630fb67c274135378064ea20b2f659694ae992a2d90",
+      "bytes": 350
+    },
+    {
       "path": "src/ui/icons/brand/tier1/res-science-24.svg",
       "pin": "edb8fb56:gra/src/ui/icons/brand/tier1/res-science-24.svg",
       "sha256": "acad6c665118046bea09093343ef2b40af05494858aa63c8810092fee03e8625",
       "bytes": 490
     },
     {
+      "path": "src/ui/icons/brand/tier1/res-science-40.svg",
+      "pin": "edb8fb56:gra/src/ui/icons/brand/tier1/res-science-40.svg",
+      "sha256": "64cbcae7c5a65823895ac1b57dec808c3562fc6f14a5f051a4d4b1a15aad7d01",
+      "bytes": 488
+    },
+    {
+      "path": "src/ui/icons/brand/tier1/res-settlements-24.svg",
+      "pin": "edb8fb56:gra/src/ui/icons/brand/tier1/res-settlements-24.svg",
+      "sha256": "1c26c48854595c7d3826aecf84dce8b0def72ed3fc458ff98ab026e8311f3cc0",
+      "bytes": 368
+    },
+    {
+      "path": "src/ui/icons/brand/tier1/res-settlements-40.svg",
+      "pin": "edb8fb56:gra/src/ui/icons/brand/tier1/res-settlements-40.svg",
+      "sha256": "21397a9eeaf0ff6109972d59189a3fd59ba5a3ce60c9f719e692a12f0a1ab9f1",
+      "bytes": 366
+    },
+    {
+      "path": "src/ui/icons/brand/tier1/res-treasury-24.svg",
+      "pin": "edb8fb56:gra/src/ui/icons/brand/tier1/res-treasury-24.svg",
+      "sha256": "d937fcbbd29d0df3657261ddb52b8b6b3250d9dd5743d6f5aecf6772e35fbe3a",
+      "bytes": 366
+    },
+    {
+      "path": "src/ui/icons/brand/tier1/res-treasury-40.svg",
+      "pin": "edb8fb56:gra/src/ui/icons/brand/tier1/res-treasury-40.svg",
+      "sha256": "a9dddd160281d60d7a7e5c505fb0dc3fb10b64c5bd7e03ee10f23cdec848c420",
+      "bytes": 364
+    },
+    {
+      "path": "src/ui/icons/brand/tier1/res-work-24.svg",
+      "pin": "edb8fb56:gra/src/ui/icons/brand/tier1/res-work-24.svg",
+      "sha256": "601c3ecb4dfbfefa715219f40d9ee5c11ca5351873c4dc7cef4d4d1b3ec23b5f",
+      "bytes": 310
+    },
+    {
+      "path": "src/ui/icons/brand/tier1/res-work-40.svg",
+      "pin": "edb8fb56:gra/src/ui/icons/brand/tier1/res-work-40.svg",
+      "sha256": "600450672559b2939c23ddd339859741232e61040540c68f4af1ab5ccf159713",
+      "bytes": 308
+    },
+    {
+      "path": "src/ui/icons/brand/tier2/tb-army-24.svg",
+      "pin": "edb8fb56:gra/src/ui/icons/brand/tier2/tb-army-24.svg",
+      "sha256": "e126a97de85dbf062ec54801be04c67bc4dfaeb308d5a3f8a63b121719be40ba",
+      "bytes": 292
+    },
+    {
+      "path": "src/ui/icons/brand/tier2/tb-army-40.svg",
+      "pin": "edb8fb56:gra/src/ui/icons/brand/tier2/tb-army-40.svg",
+      "sha256": "4ae0c34fcb51ab8dd84c576f9f436226b194c6c9b8a4abce2f1c15a052f44a2e",
+      "bytes": 290
+    },
+    {
+      "path": "src/ui/icons/brand/tier2/tb-build-24.svg",
+      "pin": "edb8fb56:gra/src/ui/icons/brand/tier2/tb-build-24.svg",
+      "sha256": "601c3ecb4dfbfefa715219f40d9ee5c11ca5351873c4dc7cef4d4d1b3ec23b5f",
+      "bytes": 310
+    },
+    {
+      "path": "src/ui/icons/brand/tier2/tb-build-40.svg",
+      "pin": "edb8fb56:gra/src/ui/icons/brand/tier2/tb-build-40.svg",
+      "sha256": "600450672559b2939c23ddd339859741232e61040540c68f4af1ab5ccf159713",
+      "bytes": 308
+    },
+    {
+      "path": "src/ui/icons/brand/tier2/tb-cities-24.svg",
+      "pin": "edb8fb56:gra/src/ui/icons/brand/tier2/tb-cities-24.svg",
+      "sha256": "20f99fbd1f463b19144d6aaa0c19b5e4c84c6bd06c2107210d09f6467a2fdcce",
+      "bytes": 332
+    },
+    {
+      "path": "src/ui/icons/brand/tier2/tb-cities-40.svg",
+      "pin": "edb8fb56:gra/src/ui/icons/brand/tier2/tb-cities-40.svg",
+      "sha256": "e684f429c2a6270657f511ce5bb0d047bdbac55a7281cce093c4c3d0bfc09f82",
+      "bytes": 330
+    },
+    {
+      "path": "src/ui/icons/brand/tier2/tb-diplomacy-24.svg",
+      "pin": "edb8fb56:gra/src/ui/icons/brand/tier2/tb-diplomacy-24.svg",
+      "sha256": "7e1124000f4d2a8e2a2eb60560b714a9e182da2da222ee18ab1d755bf459b2ab",
+      "bytes": 491
+    },
+    {
+      "path": "src/ui/icons/brand/tier2/tb-diplomacy-40.svg",
+      "pin": "edb8fb56:gra/src/ui/icons/brand/tier2/tb-diplomacy-40.svg",
+      "sha256": "37f2fbc28ddd93e1b8eef3c6e028e3b308feeb41b44c118cb203ffeb43c8f9cf",
+      "bytes": 489
+    },
+    {
+      "path": "src/ui/icons/brand/tier2/tb-science-24.svg",
+      "pin": "edb8fb56:gra/src/ui/icons/brand/tier2/tb-science-24.svg",
+      "sha256": "acad6c665118046bea09093343ef2b40af05494858aa63c8810092fee03e8625",
+      "bytes": 490
+    },
+    {
+      "path": "src/ui/icons/brand/tier2/tb-science-40.svg",
+      "pin": "edb8fb56:gra/src/ui/icons/brand/tier2/tb-science-40.svg",
+      "sha256": "64cbcae7c5a65823895ac1b57dec808c3562fc6f14a5f051a4d4b1a15aad7d01",
+      "bytes": 488
+    },
+    {
+      "path": "src/ui/icons/brand/tier3/cp-buildings-24.svg",
+      "pin": "edb8fb56:gra/src/ui/icons/brand/tier3/cp-buildings-24.svg",
+      "sha256": "20f99fbd1f463b19144d6aaa0c19b5e4c84c6bd06c2107210d09f6467a2fdcce",
+      "bytes": 332
+    },
+    {
+      "path": "src/ui/icons/brand/tier3/cp-buildings-40.svg",
+      "pin": "edb8fb56:gra/src/ui/icons/brand/tier3/cp-buildings-40.svg",
+      "sha256": "e684f429c2a6270657f511ce5bb0d047bdbac55a7281cce093c4c3d0bfc09f82",
+      "bytes": 330
+    },
+    {
+      "path": "src/ui/icons/brand/tier3/cp-culture-24.svg",
+      "pin": "edb8fb56:gra/src/ui/icons/brand/tier3/cp-culture-24.svg",
+      "sha256": "6ea4bacdae6c8460aa1a7869e1cad157d45460be78700129fc2b4787cff5e3f5",
+      "bytes": 585
+    },
+    {
+      "path": "src/ui/icons/brand/tier3/cp-culture-40.svg",
+      "pin": "edb8fb56:gra/src/ui/icons/brand/tier3/cp-culture-40.svg",
+      "sha256": "8fcf827c7a18edcb16248dde2e3e5bc969f2bd2272af1967d2c48010d5fdcd5e",
+      "bytes": 583
+    },
+    {
+      "path": "src/ui/icons/brand/tier3/cp-granary-24.svg",
+      "pin": "edb8fb56:gra/src/ui/icons/brand/tier3/cp-granary-24.svg",
+      "sha256": "27a3cf5921209b8bf6f3a8d6a4bd8d6b094568e33b823c76c95fc11fd85dc37e",
+      "bytes": 433
+    },
+    {
+      "path": "src/ui/icons/brand/tier3/cp-granary-40.svg",
+      "pin": "edb8fb56:gra/src/ui/icons/brand/tier3/cp-granary-40.svg",
+      "sha256": "021e0fe0d51427080d33e1988ccf69e3e1243bb48f646658d5e8fd06f41636a0",
+      "bytes": 431
+    },
+    {
+      "path": "src/ui/icons/brand/tier3/cp-health-24.svg",
+      "pin": "edb8fb56:gra/src/ui/icons/brand/tier3/cp-health-24.svg",
+      "sha256": "2304982ff75913905c8de37e5b351887e6ad62f3ce46af5a89f3a1a93c87b000",
+      "bytes": 595
+    },
+    {
+      "path": "src/ui/icons/brand/tier3/cp-health-40.svg",
+      "pin": "edb8fb56:gra/src/ui/icons/brand/tier3/cp-health-40.svg",
+      "sha256": "76371fadad8a99d718608e6f7a77240113002d9a5586a2fc28e95494c7cf1a0d",
+      "bytes": 593
+    },
+    {
+      "path": "src/ui/icons/brand/tier3/cp-labor-24.svg",
+      "pin": "edb8fb56:gra/src/ui/icons/brand/tier3/cp-labor-24.svg",
+      "sha256": "601c3ecb4dfbfefa715219f40d9ee5c11ca5351873c4dc7cef4d4d1b3ec23b5f",
+      "bytes": 310
+    },
+    {
+      "path": "src/ui/icons/brand/tier3/cp-labor-40.svg",
+      "pin": "edb8fb56:gra/src/ui/icons/brand/tier3/cp-labor-40.svg",
+      "sha256": "600450672559b2939c23ddd339859741232e61040540c68f4af1ab5ccf159713",
+      "bytes": 308
+    },
+    {
+      "path": "src/ui/icons/brand/tier3/cp-order-24.svg",
+      "pin": "edb8fb56:gra/src/ui/icons/brand/tier3/cp-order-24.svg",
+      "sha256": "1056027c7ee3ffe9757cc1a272b36ddc368fc59aab669eca060d70f17a21bf96",
+      "bytes": 518
+    },
+    {
+      "path": "src/ui/icons/brand/tier3/cp-order-40.svg",
+      "pin": "edb8fb56:gra/src/ui/icons/brand/tier3/cp-order-40.svg",
+      "sha256": "74cf78a1c46e8428c0fb88ac1ba3cbbc7a76190ad5553d794c3a6b4956815e02",
+      "bytes": 516
+    },
+    {
+      "path": "src/ui/icons/brand/tier3/cp-recruit-24.svg",
+      "pin": "edb8fb56:gra/src/ui/icons/brand/tier3/cp-recruit-24.svg",
+      "sha256": "e126a97de85dbf062ec54801be04c67bc4dfaeb308d5a3f8a63b121719be40ba",
+      "bytes": 292
+    },
+    {
+      "path": "src/ui/icons/brand/tier3/cp-recruit-40.svg",
+      "pin": "edb8fb56:gra/src/ui/icons/brand/tier3/cp-recruit-40.svg",
+      "sha256": "4ae0c34fcb51ab8dd84c576f9f436226b194c6c9b8a4abce2f1c15a052f44a2e",
+      "bytes": 290
+    },
+    {
+      "path": "src/ui/icons/brand/tier3/cp-religion-24.svg",
+      "pin": "edb8fb56:gra/src/ui/icons/brand/tier3/cp-religion-24.svg",
+      "sha256": "7f32786246785fb84489464a653c0de28d57f1cc5c1c88b9359c82cdf839bed9",
+      "bytes": 352
+    },
+    {
+      "path": "src/ui/icons/brand/tier3/cp-religion-40.svg",
+      "pin": "edb8fb56:gra/src/ui/icons/brand/tier3/cp-religion-40.svg",
+      "sha256": "35d4dd5ad1661d80f36ce630fb67c274135378064ea20b2f659694ae992a2d90",
+      "bytes": 350
+    },
+    {
+      "path": "src/ui/icons/brand/tier3/cp-trade-24.svg",
+      "pin": "edb8fb56:gra/src/ui/icons/brand/tier3/cp-trade-24.svg",
+      "sha256": "abfebdef11b2eaf31b875613ae1300b106e46e15244e8bd4634493d1ab9ea34b",
+      "bytes": 352
+    },
+    {
+      "path": "src/ui/icons/brand/tier3/cp-trade-40.svg",
+      "pin": "edb8fb56:gra/src/ui/icons/brand/tier3/cp-trade-40.svg",
+      "sha256": "0ea1c47cadfa295bb2d017348c54cb5a37b8e3d63af593f3c781a9d9808f48ef",
+      "bytes": 350
+    },
+    {
+      "path": "src/ui/icons/brand/tier4/chip-crate-24.svg",
+      "pin": "edb8fb56:gra/src/ui/icons/brand/tier4/chip-crate-24.svg",
+      "sha256": "fe3fb14209e38852824cda2ec69b14f43d7be2430929678a88ae9e5ea787a1ae",
+      "bytes": 292
+    },
+    {
+      "path": "src/ui/icons/brand/tier4/chip-crate-40.svg",
+      "pin": "edb8fb56:gra/src/ui/icons/brand/tier4/chip-crate-40.svg",
+      "sha256": "8faeb8412d90aed5a579700cbc1922566a926cb195e75ba2db60252e51cbd87b",
+      "bytes": 290
+    },
+    {
+      "path": "src/ui/icons/brand/tier4/chip-death-24.svg",
+      "pin": "edb8fb56:gra/src/ui/icons/brand/tier4/chip-death-24.svg",
+      "sha256": "446c1f5091632e178d320c1d71ffe955bf76b6acbf0a47f619e36decf888273a",
+      "bytes": 373
+    },
+    {
+      "path": "src/ui/icons/brand/tier4/chip-death-40.svg",
+      "pin": "edb8fb56:gra/src/ui/icons/brand/tier4/chip-death-40.svg",
+      "sha256": "b8a2c86838a5952d9893d0b07e9ec2b2ac2e07addba24e5d72953e30e39366cd",
+      "bytes": 371
+    },
+    {
+      "path": "src/ui/icons/brand/tier4/chip-garrison-24.svg",
+      "pin": "edb8fb56:gra/src/ui/icons/brand/tier4/chip-garrison-24.svg",
+      "sha256": "5aa8b4e7c5c1c2dec1becaef2dcd541cfc8ddcf8f9ee338205928c724b7593a1",
+      "bytes": 280
+    },
+    {
+      "path": "src/ui/icons/brand/tier4/chip-garrison-40.svg",
+      "pin": "edb8fb56:gra/src/ui/icons/brand/tier4/chip-garrison-40.svg",
+      "sha256": "c70dbd19b0059c5a57a096e428832528a1854e5b26a1d8afb026b7522f72e9f3",
+      "bytes": 278
+    },
+    {
+      "path": "src/ui/icons/brand/tier4/chip-grain-24.svg",
+      "pin": "edb8fb56:gra/src/ui/icons/brand/tier4/chip-grain-24.svg",
+      "sha256": "107c5f5b0cc1566448f5c8b4ea63de16deb0e54db198cde536bb528587836896",
+      "bytes": 380
+    },
+    {
+      "path": "src/ui/icons/brand/tier4/chip-grain-40.svg",
+      "pin": "edb8fb56:gra/src/ui/icons/brand/tier4/chip-grain-40.svg",
+      "sha256": "92e0d61602fd5ae03a5f812e37d3cab6ae3f23e322ddc43f17c825671c98abcb",
+      "bytes": 378
+    },
+    {
+      "path": "src/ui/icons/brand/tier4/chip-happiness-24.svg",
+      "pin": "edb8fb56:gra/src/ui/icons/brand/tier4/chip-happiness-24.svg",
+      "sha256": "3f3881ceb1339db3937d2561210bdacaf7b2b5b84f0b69f62f2d72924f9e3e4d",
+      "bytes": 311
+    },
+    {
+      "path": "src/ui/icons/brand/tier4/chip-happiness-40.svg",
+      "pin": "edb8fb56:gra/src/ui/icons/brand/tier4/chip-happiness-40.svg",
+      "sha256": "5d18c6b2b12b4cc6cc55fa11208fbc721099b03d23fd73d94e5127835a16bc84",
+      "bytes": 309
+    },
+    {
+      "path": "src/ui/icons/brand/tier4/chip-heart-24.svg",
+      "pin": "edb8fb56:gra/src/ui/icons/brand/tier4/chip-heart-24.svg",
+      "sha256": "6ea568634e8512381aa64ee407911c5b4996010a022745c67f14577e4f0a53e8",
+      "bytes": 282
+    },
+    {
+      "path": "src/ui/icons/brand/tier4/chip-heart-40.svg",
+      "pin": "edb8fb56:gra/src/ui/icons/brand/tier4/chip-heart-40.svg",
+      "sha256": "431a227e1277115c151194e86d84258f6c9bcbae5df2e32d834ffdad189a939c",
+      "bytes": 280
+    },
+    {
+      "path": "src/ui/icons/brand/tier4/chip-manpower-24.svg",
+      "pin": "edb8fb56:gra/src/ui/icons/brand/tier4/chip-manpower-24.svg",
+      "sha256": "7682716ac1581685a494f5a2798a056ff7fa03a66d060c618e5bdb5dd0799696",
+      "bytes": 308
+    },
+    {
+      "path": "src/ui/icons/brand/tier4/chip-manpower-40.svg",
+      "pin": "edb8fb56:gra/src/ui/icons/brand/tier4/chip-manpower-40.svg",
+      "sha256": "fb207bb48d2f15d6789e142052af55547390c757b855d0f9f731d83f7768f2b4",
+      "bytes": 306
+    },
+    {
+      "path": "src/ui/icons/brand/tier4/chip-map-24.svg",
+      "pin": "edb8fb56:gra/src/ui/icons/brand/tier4/chip-map-24.svg",
+      "sha256": "74d59c386b1e7fed67b1eb7ca5470c5cacdbe25354880e444015d2ecf81b534b",
+      "bytes": 271
+    },
+    {
+      "path": "src/ui/icons/brand/tier4/chip-map-40.svg",
+      "pin": "edb8fb56:gra/src/ui/icons/brand/tier4/chip-map-40.svg",
+      "sha256": "509359250212dcc8f1e885bd1544ab77c4923a5882dbc81f226d058b879b26e9",
+      "bytes": 269
+    },
+    {
+      "path": "src/ui/icons/brand/tier4/chip-order-24.svg",
+      "pin": "edb8fb56:gra/src/ui/icons/brand/tier4/chip-order-24.svg",
+      "sha256": "4a30b8643c57cce844e9a9c97112958a503e6eb16de7edbc424caef670009d6c",
+      "bytes": 188
+    },
+    {
+      "path": "src/ui/icons/brand/tier4/chip-order-40.svg",
+      "pin": "edb8fb56:gra/src/ui/icons/brand/tier4/chip-order-40.svg",
+      "sha256": "7272ae0f3353b565f692ab1041b6a661d66e540c28dd5427b01be3f715aa4eee",
+      "bytes": 186
+    },
+    {
+      "path": "src/ui/icons/brand/tier4/chip-rebellion-24.svg",
+      "pin": "edb8fb56:gra/src/ui/icons/brand/tier4/chip-rebellion-24.svg",
+      "sha256": "fce218d112188fe1444042b6c058b1fc3f6ac3efa2069a227d7bf2fd5f53fd70",
+      "bytes": 287
+    },
+    {
+      "path": "src/ui/icons/brand/tier4/chip-rebellion-40.svg",
+      "pin": "edb8fb56:gra/src/ui/icons/brand/tier4/chip-rebellion-40.svg",
+      "sha256": "2916a4f3a7420266b3e9c56946e0bde14724a880d68443d2d5742cbb1f77e38e",
+      "bytes": 285
+    },
+    {
+      "path": "src/ui/icons/brand/tier4/chip-star-24.svg",
+      "pin": "edb8fb56:gra/src/ui/icons/brand/tier4/chip-star-24.svg",
+      "sha256": "de4f83ca7e3748e90d87ed464023da9014c9726d7d2dc3303567c4c780f6b974",
+      "bytes": 276
+    },
+    {
+      "path": "src/ui/icons/brand/tier4/chip-star-40.svg",
+      "pin": "edb8fb56:gra/src/ui/icons/brand/tier4/chip-star-40.svg",
+      "sha256": "237dec2c6da27c16172d12b271bcd9e5134a3bc529a8cd80631837dd4edec251",
+      "bytes": 274
+    },
+    {
+      "path": "src/ui/icons/brand/tier4/chip-trend-up-24.svg",
+      "pin": "edb8fb56:gra/src/ui/icons/brand/tier4/chip-trend-up-24.svg",
+      "sha256": "91dfb8c9111eaefa2bd799f2e986010ebb9e4f9f1ba4431a26e01f39dce7999d",
+      "bytes": 255
+    },
+    {
+      "path": "src/ui/icons/brand/tier4/chip-trend-up-40.svg",
+      "pin": "edb8fb56:gra/src/ui/icons/brand/tier4/chip-trend-up-40.svg",
+      "sha256": "b6ebecbe2270414849f0f0ecb10836b28a122c172fbff5380c2a0b7a1bae2c4f",
+      "bytes": 253
+    },
+    {
+      "path": "src/ui/icons/brand/tier4/chip-warning-24.svg",
+      "pin": "edb8fb56:gra/src/ui/icons/brand/tier4/chip-warning-24.svg",
+      "sha256": "cbd66f43bf2ae356a7895dd993f93bda01fb38f9e6f4519b78852777fd53b072",
+      "bytes": 254
+    },
+    {
+      "path": "src/ui/icons/brand/tier4/chip-warning-40.svg",
+      "pin": "edb8fb56:gra/src/ui/icons/brand/tier4/chip-warning-40.svg",
+      "sha256": "497935655acbd0f1618efe025778bb324e2b0541efd82a93b6706d320a7f1028",
+      "bytes": 252
+    },
+    {
+      "path": "src/ui/icons/brand/tier5/dip-alliance-24.svg",
+      "pin": "edb8fb56:gra/src/ui/icons/brand/tier5/dip-alliance-24.svg",
+      "sha256": "7e1124000f4d2a8e2a2eb60560b714a9e182da2da222ee18ab1d755bf459b2ab",
+      "bytes": 491
+    },
+    {
+      "path": "src/ui/icons/brand/tier5/dip-alliance-40.svg",
+      "pin": "edb8fb56:gra/src/ui/icons/brand/tier5/dip-alliance-40.svg",
+      "sha256": "37f2fbc28ddd93e1b8eef3c6e028e3b308feeb41b44c118cb203ffeb43c8f9cf",
+      "bytes": 489
+    },
+    {
+      "path": "src/ui/icons/brand/tier5/dip-pact-24.svg",
+      "pin": "edb8fb56:gra/src/ui/icons/brand/tier5/dip-pact-24.svg",
+      "sha256": "a8427f33f0a8f5eb58da638d237c1941a6b1632dfe98a0305acb2f5f83354351",
+      "bytes": 431
+    },
+    {
+      "path": "src/ui/icons/brand/tier5/dip-pact-40.svg",
+      "pin": "edb8fb56:gra/src/ui/icons/brand/tier5/dip-pact-40.svg",
+      "sha256": "58268e0e559e23331bfc4cf56a651678781713e7d45e20652cebd4d046bc6826",
+      "bytes": 429
+    },
+    {
+      "path": "src/ui/icons/brand/tier5/dip-peace-24.svg",
+      "pin": "edb8fb56:gra/src/ui/icons/brand/tier5/dip-peace-24.svg",
+      "sha256": "f0e3f20321a713b649759eb5836b41ef1c25c5326956872a5e2fb1f717b5f1df",
+      "bytes": 522
+    },
+    {
+      "path": "src/ui/icons/brand/tier5/dip-peace-40.svg",
+      "pin": "edb8fb56:gra/src/ui/icons/brand/tier5/dip-peace-40.svg",
+      "sha256": "51be3fe0cd2ad33a915157319cc33962594e4e4f505875ae4b1f778df2b8fc84",
+      "bytes": 520
+    },
+    {
+      "path": "src/ui/icons/brand/tier5/dip-war-24.svg",
+      "pin": "edb8fb56:gra/src/ui/icons/brand/tier5/dip-war-24.svg",
+      "sha256": "4956641c4007fcec18880c7952ef41a7d4eee3c06f09ee75587d7122cbac0668",
+      "bytes": 292
+    },
+    {
+      "path": "src/ui/icons/brand/tier5/dip-war-40.svg",
+      "pin": "edb8fb56:gra/src/ui/icons/brand/tier5/dip-war-40.svg",
+      "sha256": "d230f2d40cd88dabdd9450e5131492dbac2a7dadc33257927dffe6113fe7e1ad",
+      "bytes": 290
+    },
+    {
+      "path": "src/ui/icons/brand/tier5/dip-war-strip-24.svg",
+      "pin": "edb8fb56:gra/src/ui/icons/brand/tier5/dip-war-strip-24.svg",
+      "sha256": "4956641c4007fcec18880c7952ef41a7d4eee3c06f09ee75587d7122cbac0668",
+      "bytes": 292
+    },
+    {
+      "path": "src/ui/icons/brand/tier5/dip-war-strip-40.svg",
+      "pin": "edb8fb56:gra/src/ui/icons/brand/tier5/dip-war-strip-40.svg",
+      "sha256": "d230f2d40cd88dabdd9450e5131492dbac2a7dadc33257927dffe6113fe7e1ad",
+      "bytes": 290
+    },
+    {
+      "path": "src/ui/icons/brand/tier5/ui-accepted-24.svg",
+      "pin": "edb8fb56:gra/src/ui/icons/brand/tier5/ui-accepted-24.svg",
+      "sha256": "ec58c3512d4b45570b8536fc934b0485eb5591e341b7b71c8d6a74293345777b",
+      "bytes": 269
+    },
+    {
+      "path": "src/ui/icons/brand/tier5/ui-accepted-40.svg",
+      "pin": "edb8fb56:gra/src/ui/icons/brand/tier5/ui-accepted-40.svg",
+      "sha256": "c33e0031cd26d91a33f2dab029ed30c787fd48d02baff740289a2b1da2d5be89",
+      "bytes": 267
+    },
+    {
+      "path": "src/ui/icons/brand/tier5/ui-check-24.svg",
+      "pin": "edb8fb56:gra/src/ui/icons/brand/tier5/ui-check-24.svg",
+      "sha256": "178e3992aed56f2c52c333b3f44e263ba9be9f2953d7928318836253cef58bea",
+      "bytes": 224
+    },
+    {
+      "path": "src/ui/icons/brand/tier5/ui-check-40.svg",
+      "pin": "edb8fb56:gra/src/ui/icons/brand/tier5/ui-check-40.svg",
+      "sha256": "507b0cee8a005c0ac406d28b5abd8f8ab3ac29efc46b973d22b2b46835fb0465",
+      "bytes": 222
+    },
+    {
+      "path": "src/ui/icons/brand/tier5/ui-close-24.svg",
+      "pin": "edb8fb56:gra/src/ui/icons/brand/tier5/ui-close-24.svg",
+      "sha256": "fd4583d315f14e458eb79d9f666f9adb532e453cd5320ff5de4ffda69e5a7014",
+      "bytes": 222
+    },
+    {
+      "path": "src/ui/icons/brand/tier5/ui-close-40.svg",
+      "pin": "edb8fb56:gra/src/ui/icons/brand/tier5/ui-close-40.svg",
+      "sha256": "efdda21d7ee427df8ac7da33116ea6daf522192edccca79e822169e86cdb898b",
+      "bytes": 220
+    },
+    {
+      "path": "src/ui/icons/brand/tier5/ui-denied-24.svg",
+      "pin": "edb8fb56:gra/src/ui/icons/brand/tier5/ui-denied-24.svg",
+      "sha256": "7722a70a0e69108a3db6e738f462a48e7248d55557c909090e6543b2f816cbda",
+      "bytes": 277
+    },
+    {
+      "path": "src/ui/icons/brand/tier5/ui-denied-40.svg",
+      "pin": "edb8fb56:gra/src/ui/icons/brand/tier5/ui-denied-40.svg",
+      "sha256": "bfb295e29ad4c6ca919eb62417ab5bc4232a3ef8dc0fd34343a9db1abd8fb6f7",
+      "bytes": 275
+    },
+    {
+      "path": "src/ui/icons/brand/tier5/ui-end-turn-24.svg",
+      "pin": "edb8fb56:gra/src/ui/icons/brand/tier5/ui-end-turn-24.svg",
+      "sha256": "0dc6d90789847c846783309c0c04706584556ac3e9a68ce941e4df0b0b00c1b8",
+      "bytes": 244
+    },
+    {
+      "path": "src/ui/icons/brand/tier5/ui-end-turn-40.svg",
+      "pin": "edb8fb56:gra/src/ui/icons/brand/tier5/ui-end-turn-40.svg",
+      "sha256": "6f262e4369e4a9898f629920a5f6cfe79c56bea5cbdcf5e6399508c41dfa117b",
+      "bytes": 242
+    },
+    {
+      "path": "src/ui/icons/brand/tier5/ui-lock-24.svg",
+      "pin": "edb8fb56:gra/src/ui/icons/brand/tier5/ui-lock-24.svg",
+      "sha256": "ab7387cadb6c5e91902ed57adb96a31b82ff74f70255220fc13eb854ae4658cc",
+      "bytes": 280
+    },
+    {
+      "path": "src/ui/icons/brand/tier5/ui-lock-40.svg",
+      "pin": "edb8fb56:gra/src/ui/icons/brand/tier5/ui-lock-40.svg",
+      "sha256": "5b5b9bab524283da0457a20e4ebb28e952e65277a84d7d6043753fd136150c0b",
+      "bytes": 278
+    },
+    {
+      "path": "src/ui/icons/brand/tier5/ui-menu-24.svg",
+      "pin": "edb8fb56:gra/src/ui/icons/brand/tier5/ui-menu-24.svg",
+      "sha256": "3811fcab9ccea5d357d8d325ddc49ea64c7082f4042ef3a38ae95a0bb218d60e",
+      "bytes": 225
+    },
+    {
+      "path": "src/ui/icons/brand/tier5/ui-menu-40.svg",
+      "pin": "edb8fb56:gra/src/ui/icons/brand/tier5/ui-menu-40.svg",
+      "sha256": "7779cbb9aef18e7faf03f196812696c1e60b6a0d244da551e01542eca8192d53",
+      "bytes": 223
+    },
+    {
+      "path": "src/ui/icons/brand/tier5/ui-pause-24.svg",
+      "pin": "edb8fb56:gra/src/ui/icons/brand/tier5/ui-pause-24.svg",
+      "sha256": "0a3368e13883d98879e697aa4ed6048f2be25f3f179bdb3b394ef812bc9d7e68",
+      "bytes": 217
+    },
+    {
+      "path": "src/ui/icons/brand/tier5/ui-pause-40.svg",
+      "pin": "edb8fb56:gra/src/ui/icons/brand/tier5/ui-pause-40.svg",
+      "sha256": "0a2a28e43d4a46638b62c4bdfe673ccdd2af9949eebcd2c7c8b54ef4c1ea49ca",
+      "bytes": 215
+    },
+    {
+      "path": "src/ui/icons/brand/tier5/ui-play-24.svg",
+      "pin": "edb8fb56:gra/src/ui/icons/brand/tier5/ui-play-24.svg",
+      "sha256": "5cf87f7c9fd58cf31a4e05eea67507d71acb7ec1fdf8eee318c8bd9f08e4df69",
+      "bytes": 218
+    },
+    {
+      "path": "src/ui/icons/brand/tier5/ui-play-40.svg",
+      "pin": "edb8fb56:gra/src/ui/icons/brand/tier5/ui-play-40.svg",
+      "sha256": "09a50d96f9cc2d2f0efc580180f800bacabbd6de5918c434d671c981d901d629",
+      "bytes": 216
+    },
+    {
+      "path": "src/ui/icons/brand/tier5/ui-wiki-24.svg",
+      "pin": "edb8fb56:gra/src/ui/icons/brand/tier5/ui-wiki-24.svg",
+      "sha256": "262df5c76f0e1d7792c10d2caf09c2cf41a91d3260c6f43faef64ba2282cda78",
+      "bytes": 355
+    },
+    {
+      "path": "src/ui/icons/brand/tier5/ui-wiki-40.svg",
+      "pin": "edb8fb56:gra/src/ui/icons/brand/tier5/ui-wiki-40.svg",
+      "sha256": "7a206b46f0f80ca89f92657fb1e5093cf497f64b8839e521429f9f0ef9922ad0",
+      "bytes": 355
+    },
+    {
+      "path": "src/ui/icons/brand/tier6/field-balanced-24.svg",
+      "pin": "edb8fb56:gra/src/ui/icons/brand/tier6/field-balanced-24.svg",
+      "sha256": "afc96c4fec28925b5840da561de1e9f493298824168bbe637d3d22a03c78f6a0",
+      "bytes": 328
+    },
+    {
+      "path": "src/ui/icons/brand/tier6/field-balanced-40.svg",
+      "pin": "edb8fb56:gra/src/ui/icons/brand/tier6/field-balanced-40.svg",
+      "sha256": "a0d4936c0f07e67af1bbec177bcdc4b1e8ec1620ea9a094f2607b85a8c23d4ad",
+      "bytes": 328
+    },
+    {
+      "path": "src/ui/icons/brand/tier6/field-food-24.svg",
+      "pin": "edb8fb56:gra/src/ui/icons/brand/tier6/field-food-24.svg",
+      "sha256": "107c5f5b0cc1566448f5c8b4ea63de16deb0e54db198cde536bb528587836896",
+      "bytes": 380
+    },
+    {
+      "path": "src/ui/icons/brand/tier6/field-food-40.svg",
+      "pin": "edb8fb56:gra/src/ui/icons/brand/tier6/field-food-40.svg",
+      "sha256": "92e0d61602fd5ae03a5f812e37d3cab6ae3f23e322ddc43f17c825671c98abcb",
+      "bytes": 378
+    },
+    {
+      "path": "src/ui/icons/brand/tier6/field-production-24.svg",
+      "pin": "edb8fb56:gra/src/ui/icons/brand/tier6/field-production-24.svg",
+      "sha256": "601c3ecb4dfbfefa715219f40d9ee5c11ca5351873c4dc7cef4d4d1b3ec23b5f",
+      "bytes": 310
+    },
+    {
+      "path": "src/ui/icons/brand/tier6/field-production-40.svg",
+      "pin": "edb8fb56:gra/src/ui/icons/brand/tier6/field-production-40.svg",
+      "sha256": "600450672559b2939c23ddd339859741232e61040540c68f4af1ab5ccf159713",
+      "bytes": 308
+    },
+    {
+      "path": "src/ui/icons/brand/tier6/field-tax-24.svg",
+      "pin": "edb8fb56:gra/src/ui/icons/brand/tier6/field-tax-24.svg",
+      "sha256": "d937fcbbd29d0df3657261ddb52b8b6b3250d9dd5743d6f5aecf6772e35fbe3a",
+      "bytes": 366
+    },
+    {
+      "path": "src/ui/icons/brand/tier6/field-tax-40.svg",
+      "pin": "edb8fb56:gra/src/ui/icons/brand/tier6/field-tax-40.svg",
+      "sha256": "a9dddd160281d60d7a7e5c505fb0dc3fb10b64c5bd7e03ee10f23cdec848c420",
+      "bytes": 364
+    },
+    {
+      "path": "src/ui/icons/brand/tier7/terrain-desert-24.svg",
+      "pin": "edb8fb56:gra/src/ui/icons/brand/tier7/terrain-desert-24.svg",
+      "sha256": "8c72bb00125cab995eccd039a49f264fda44385a63192414f2b1e08f928a445a",
+      "bytes": 267
+    },
+    {
+      "path": "src/ui/icons/brand/tier7/terrain-desert-40.svg",
+      "pin": "edb8fb56:gra/src/ui/icons/brand/tier7/terrain-desert-40.svg",
+      "sha256": "f9b1ac635ca90a08d04f7604ef35d933a0a0d4ca53817916f14f0b55ba74977e",
+      "bytes": 265
+    },
+    {
+      "path": "src/ui/icons/brand/tier7/terrain-hills-24.svg",
+      "pin": "edb8fb56:gra/src/ui/icons/brand/tier7/terrain-hills-24.svg",
+      "sha256": "a1bda685a90c108888d2b3529c50364b4780add358506f9b0a0430a5a1440cb6",
+      "bytes": 281
+    },
+    {
+      "path": "src/ui/icons/brand/tier7/terrain-hills-40.svg",
+      "pin": "edb8fb56:gra/src/ui/icons/brand/tier7/terrain-hills-40.svg",
+      "sha256": "9c235ecc502d755799ee6cfc908f13f768892702b73a5e5c5e68971c257e2234",
+      "bytes": 279
+    },
+    {
+      "path": "src/ui/icons/brand/tier7/terrain-mountains-24.svg",
+      "pin": "edb8fb56:gra/src/ui/icons/brand/tier7/terrain-mountains-24.svg",
+      "sha256": "365c22d27c46e5b1ad22e4452bf1354b6d9141172e843d23d6ad24beea3c1b13",
+      "bytes": 263
+    },
+    {
+      "path": "src/ui/icons/brand/tier7/terrain-mountains-40.svg",
+      "pin": "edb8fb56:gra/src/ui/icons/brand/tier7/terrain-mountains-40.svg",
+      "sha256": "19c2f6a2ce1ed098029e574734278aa106b24ac6f3ddaf99d8cc5fca470c64a2",
+      "bytes": 261
+    },
+    {
+      "path": "src/ui/icons/brand/tier7/terrain-plains-24.svg",
+      "pin": "edb8fb56:gra/src/ui/icons/brand/tier7/terrain-plains-24.svg",
+      "sha256": "f8ddce5f4a17027f30ea3506a77431feadb4da97a5398ecfd0ee2ed986bcf8ab",
+      "bytes": 311
+    },
+    {
+      "path": "src/ui/icons/brand/tier7/terrain-plains-40.svg",
+      "pin": "edb8fb56:gra/src/ui/icons/brand/tier7/terrain-plains-40.svg",
+      "sha256": "8cb6549bdcef8765d11131b99207adbd1f5df1ae28427dcf3466202ccc7c3f39",
+      "bytes": 309
+    },
+    {
+      "path": "src/ui/icons/brand/tier7/terrain-water-24.svg",
+      "pin": "edb8fb56:gra/src/ui/icons/brand/tier7/terrain-water-24.svg",
+      "sha256": "942f1e13f67322818cdfd5bfa6f4df0a890cc54f7e362ce5742db3bdb4bd9cb8",
+      "bytes": 360
+    },
+    {
+      "path": "src/ui/icons/brand/tier7/terrain-water-40.svg",
+      "pin": "edb8fb56:gra/src/ui/icons/brand/tier7/terrain-water-40.svg",
+      "sha256": "fb2e826ab1be1ba9229cd5158cf4a08ec8bce33a3313cf8ae4c8041fc21e84c9",
+      "bytes": 358
+    },
+    {
       "path": "src/ui/icons/brand/tokens.css",
       "pin": "edb8fb56:gra/src/ui/icons/brand/tokens.css",
       "sha256": "71ffe744d894783d14b53e393096ee482007dc84ed6ec928bc55a78f5eeff706",
       "bytes": 4348
+    },
+    {
+      "path": "src/ui/icons/brand/ui-accepted.svg",
+      "pin": "edb8fb56:gra/src/ui/icons/brand/ui-accepted.svg",
+      "sha256": "1e904dc1f61e205a6e7d2f47b67a0d8e8675f2a5046bcc2d851c8f926b9557f4",
+      "bytes": 269
+    },
+    {
+      "path": "src/ui/icons/brand/ui-check.svg",
+      "pin": "edb8fb56:gra/src/ui/icons/brand/ui-check.svg",
+      "sha256": "4fabadb52b5c4d7f4690a7b101d1eb03b20fc6123dd5ed596395e49c4e3745c9",
+      "bytes": 224
+    },
+    {
+      "path": "src/ui/icons/brand/ui-close.svg",
+      "pin": "edb8fb56:gra/src/ui/icons/brand/ui-close.svg",
+      "sha256": "08feb853984508f58d2a41ecf34b4bed70fe7726a762db9a1087a02f1a13f4f1",
+      "bytes": 222
+    },
+    {
+      "path": "src/ui/icons/brand/ui-denied.svg",
+      "pin": "edb8fb56:gra/src/ui/icons/brand/ui-denied.svg",
+      "sha256": "8fdee8c1063bfdecde7dacf985a3b32b717ab1acd32e6c9cf92b779812342afb",
+      "bytes": 277
+    },
+    {
+      "path": "src/ui/icons/brand/ui-end-turn.svg",
+      "pin": "edb8fb56:gra/src/ui/icons/brand/ui-end-turn.svg",
+      "sha256": "61234613ad05f5da5f04acb56138dd30fbbfdfd6fd0fb6866f041854d62f81ee",
+      "bytes": 244
+    },
+    {
+      "path": "src/ui/icons/brand/ui-lock.svg",
+      "pin": "edb8fb56:gra/src/ui/icons/brand/ui-lock.svg",
+      "sha256": "c9600f697633d83837b46009b1610b7bf43660dfaf575626b94f3e8e5479bd01",
+      "bytes": 280
+    },
+    {
+      "path": "src/ui/icons/brand/ui-menu.svg",
+      "pin": "edb8fb56:gra/src/ui/icons/brand/ui-menu.svg",
+      "sha256": "82cdaa9a2685be05c8969eacc0b9a049c4effd81724984890a9d06d1de1b5e4e",
+      "bytes": 225
+    },
+    {
+      "path": "src/ui/icons/brand/ui-pause.svg",
+      "pin": "edb8fb56:gra/src/ui/icons/brand/ui-pause.svg",
+      "sha256": "c369ef7495c7d8dc8c855f30ba1ef50bc447b1cdc6cd86cc17bb3d607dd147da",
+      "bytes": 217
+    },
+    {
+      "path": "src/ui/icons/brand/ui-play.svg",
+      "pin": "edb8fb56:gra/src/ui/icons/brand/ui-play.svg",
+      "sha256": "33af3c23a1890bb1937f8e5811884bc62bc8d4cacb3de38ac0850db2166f9bcd",
+      "bytes": 218
+    },
+    {
+      "path": "src/ui/icons/brand/ui/globe-continents.svg",
+      "pin": "edb8fb56:gra/src/ui/icons/brand/ui/globe-continents.svg",
+      "sha256": "5bf34b60f701942d7eee7d6830315800ef0af1b910be2e96b1b25a38fb11d880",
+      "bytes": 820
+    },
+    {
+      "path": "src/ui/icons/brand/unit-icon-map.json",
+      "pin": "edb8fb56:gra/src/ui/icons/brand/unit-icon-map.json",
+      "sha256": "ef71f2a5df463bee9d1f7c04b3559f2c3e3fe01f18b6d16e79b692845e3223c4",
+      "bytes": 675
+    },
+    {
+      "path": "src/ui/icons/brand/units/unit-archer.svg",
+      "pin": "edb8fb56:gra/src/ui/icons/brand/units/unit-archer.svg",
+      "sha256": "b4e3cf885fd51bd8082324c51f06e897ccfb4238811934b5b42ec4fb9d257eb9",
+      "bytes": 279
+    },
+    {
+      "path": "src/ui/icons/brand/units/unit-cavalry.svg",
+      "pin": "edb8fb56:gra/src/ui/icons/brand/units/unit-cavalry.svg",
+      "sha256": "3a065c713414086c63bb308bb5c2de49457052f39fa1bca4483b91d00f77509a",
+      "bytes": 311
+    },
+    {
+      "path": "src/ui/icons/brand/units/unit-chariot.svg",
+      "pin": "edb8fb56:gra/src/ui/icons/brand/units/unit-chariot.svg",
+      "sha256": "0d9982a9d12bc05a30a7cae9285a58da5af7baae8cd48d52d9da9b76cac14e43",
+      "bytes": 311
+    },
+    {
+      "path": "src/ui/icons/brand/units/unit-default.svg",
+      "pin": "edb8fb56:gra/src/ui/icons/brand/units/unit-default.svg",
+      "sha256": "e126a97de85dbf062ec54801be04c67bc4dfaeb308d5a3f8a63b121719be40ba",
+      "bytes": 292
+    },
+    {
+      "path": "src/ui/icons/brand/units/unit-elite.svg",
+      "pin": "edb8fb56:gra/src/ui/icons/brand/units/unit-elite.svg",
+      "sha256": "018803189807f0e9a5c51c9de4f15f366f40000cdb7f3bdcbcbb620786d4bd5d",
+      "bytes": 353
+    },
+    {
+      "path": "src/ui/icons/brand/units/unit-melee.svg",
+      "pin": "edb8fb56:gra/src/ui/icons/brand/units/unit-melee.svg",
+      "sha256": "e126a97de85dbf062ec54801be04c67bc4dfaeb308d5a3f8a63b121719be40ba",
+      "bytes": 292
+    },
+    {
+      "path": "src/ui/icons/brand/units/unit-naval.svg",
+      "pin": "edb8fb56:gra/src/ui/icons/brand/units/unit-naval.svg",
+      "sha256": "0d1d96fc4fc74ed9a604d0e9a36ef48c25e98d3d0bcedfc4415a56f0c76d9a69",
+      "bytes": 252
+    },
+    {
+      "path": "src/ui/icons/brand/units/unit-scout.svg",
+      "pin": "edb8fb56:gra/src/ui/icons/brand/units/unit-scout.svg",
+      "sha256": "fcd58db06906515b8ba86de888e991769f8abe525dc2d90309671905abdd8095",
+      "bytes": 308
+    },
+    {
+      "path": "src/ui/icons/brand/units/unit-siege.svg",
+      "pin": "edb8fb56:gra/src/ui/icons/brand/units/unit-siege.svg",
+      "sha256": "a194f0a1b2edf2af8b0c0f362ad613263eb447264bab466f682899844220056c",
+      "bytes": 351
+    },
+    {
+      "path": "src/ui/icons/brand/units/unit-sling.svg",
+      "pin": "edb8fb56:gra/src/ui/icons/brand/units/unit-sling.svg",
+      "sha256": "716e936e0079d22895c709252ee371b9712a82a903212ad0e3f8e20da00b6f3a",
+      "bytes": 293
+    },
+    {
+      "path": "src/ui/icons/brand/units/unit-spear.svg",
+      "pin": "edb8fb56:gra/src/ui/icons/brand/units/unit-spear.svg",
+      "sha256": "070941f48ab2fb671c85d9504a02f05c1c319b9b88f10feefe0f14b05cd87553",
+      "bytes": 280
+    },
+    {
+      "path": "src/ui/icons/brand/units/unit-worker.svg",
+      "pin": "edb8fb56:gra/src/ui/icons/brand/units/unit-worker.svg",
+      "sha256": "acc6bac49d908b9854bf94fe0eb36c5f454f1031fad90adf68641e7d38d73801",
+      "bytes": 312
     },
     {
       "path": "src/ui/icons/scienceOwlIcon.ts",

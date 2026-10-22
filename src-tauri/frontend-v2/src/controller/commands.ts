@@ -52,6 +52,8 @@ export type ProposedCommand =
   | { kind: 'save_game'; slot: SlotId; label: string }
   | { kind: 'load_game'; slot: SlotId }
   | { kind: 'delete_save'; slot: SlotId }
+  /** P5.2 (`saveLoadDialog.ts`): identyfikator nowego slotu nadaje powłoka (P5-0 §6.15). */
+  | { kind: 'allocate_save_slot'; label: string }
   | { kind: 'camera_focus'; hex: HexCoord }
   | { kind: 'get_view'; key: ViewKey }
   | { kind: 'select_unit_view'; unit: UnitId | null };

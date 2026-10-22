@@ -8,6 +8,7 @@ import type { BridgeRequest, BridgeResponse, StateChangedEvent } from './command
 import { CONTRACT_VERSION, EVENT_STATE_CHANGED, TAURI_ENGINE_COMMAND } from './commands';
 import type { Transport, Unlisten } from './transport';
 import type { CityGrowthDto, CityRefDto, ViewKey, ViewRevision } from '../viewmodel/types';
+import { MOCK_STATIC_CATALOG } from './mockCatalog';
 
 export const MOCK_LABEL = 'MOCK' as const;
 
@@ -74,6 +75,10 @@ export function createMockTransport(): Transport {
         throw { code: 'unsupported_version', message: 'MOCK: zła wersja kontraktu' };
       }
       const kind = request.command.kind;
+      if (kind === 'get_view' && request.command.key?.kind === 'staticCatalog') {
+        // P5.2: katalog statyczny MOCK (kształt `StaticCatalogDto`, P5-0 §6.1).
+        return { contractVersion: CONTRACT_VERSION, requestId: request.requestId, result: { kind: 'state', state: MOCK_STATIC_CATALOG } } as T;
+      }
       if (kind === 'get_view' && request.command.key) {
         const payload: MockViewPayload = { mock: MOCK_LABEL, key: request.command.key, city: MOCK_CITY, growth: MOCK_GROWTH };
         return { contractVersion: CONTRACT_VERSION, requestId: request.requestId, result: { kind: 'state', state: payload } } as T;

@@ -1,0 +1,17 @@
+--- edb8fb56:gra/src/ui/leaderPortraits.ts
++++ src-tauri/frontend-v2/src/ui/leaderPortraits.ts
+@@ -14,8 +14,12 @@
+  * nazw nie trzeba (nie ma np. "sumer" vs "sumerowie" — civs.json ma "sumer").
+  */
+ 
+-import civsRaw from '../../data/civs.json';
+-import type { CivsData } from '../data/loader';
++import type { CivsCatalogDto as CivsData } from '../viewmodel/types';
++import { staticCatalog } from '../controller/staticCatalog';
++
++// P5.2: dane cywilizacji z `StaticCatalogDto.civs` (zamiast `gra/data/civs.json`); odczyt przy ewaluacji
++// modułu — wymaga katalogu zainstalowanego przed importem (ZAŁOŻENIE P5.2-Z1, `controller/staticCatalog.ts`).
++const civsRaw = staticCatalog().civs;
+ 
+ type EpochKey = 'kamien' | 'braz' | 'zelazo' | 'antyk';
+ 

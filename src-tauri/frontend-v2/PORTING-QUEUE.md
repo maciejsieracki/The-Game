@@ -4,6 +4,12 @@
 
 Reguła nadrzędna **P5.13**: UI nie liczy reguł gry. Moduł trafia do `frontend-v2/src/ui/` dopiero, gdy każdy jego import logiki (`game|map|units|battle|render|data`, `three`, a także `types|audio|perf|util` i `buildInfo` spoza `ui/` — po rundzie 2 wszystkie te formy łapie `npm run check`) zostanie zastąpiony polem DTO (`src/viewmodel/types.ts`) albo komendą kontrolera (`src/controller/`), a `npm run check` daje 0 trafień.
 
+## Status P5.2 (`R-RUSTPORT-P5-2-PORT-LEVEL0-Q1`, runda 1/5)
+
+Moduły **poziomu 0** (wiersze 1–15 tabeli niżej) są **przeniesione** do `src/ui/` — importy logiki/danych zastąpione `viewmodel/types.ts` (DTO), `controller/*` (atrapa MOCK) i `StaticCatalogDto` (`controller/staticCatalog.ts`). Szczegóły (diff vs pin, import → DTO, reguła → pole DTO, harness DOM): `dyspozycje/rust-port/p5/P5-2-PORT-LEVEL0.md`. Po P5.2 w kolejce zostaje **68** modułów (34 BEZPOŚREDNIE + 34 PRZECHODNIE); poziom 1 jest teraz odblokowany w części zależnej od modułów 1–15 (np. `icons/iconRegistry.ts`, `mapUnitHudSkin.ts`, `diploUiSkin.ts` — każdy nadal wymaga przeglądu reguł bez importu).
+
+**Zmiana API względem pinu (dla konsumentów z kolejki):** `diplomacyAcceptanceBalance.ts` nie eksportuje już `pickPrimaryNegotiationRow`, `balancePanelDataFromRow`, `filterActionableNegotiationRows`, `balancePanelDataFromRows`, `NegotiationBalanceSource` (reguły → Rust: `PnBalancePanelDto`); `renderPnBalancePanelFromBasket`/`ForTreaty`/`ForPeace`/`renderRelationDealModRowHtml`/`renderAcceptanceCompactHtml` przyjmują DTO; `saveLoadDialog.ts` nie eksportuje `slotIdFromLabel`, a `saveContextLine` przyjmuje pola `SaveSlotMetaDto`; `improvementBuildConfirm.ts` przyjmuje `ImprovementBuildImpactDto`. Konsumenci (`diplomacyAudience.ts`, `diplomacyTradeBasket.ts`, `main.ts`) muszą to uwzględnić przy swoim porcie.
+
 ## Skład (117 plików `.ts` w `gra/src/ui` na pinie)
 
 | Zbiór | Liczba | Status |
@@ -41,21 +47,21 @@ Kolumny: **Poziom** = długość najdłuższego łańcucha zależności UI z kol
 
 | # | Moduł (`src/ui/…`) | Typ | Poziom | Cykl | LOC | Importy logiki (cel × linie) | Klasy P5-0 §3 | Blokujące zależności UI (z kolejki) | Bezpośrednich dependentów w kolejce | DTO / komenda (P5-0) |
 |---:|---|---|---:|---|---:|---|---|---|---|---|
-| 1 | `icons/brandAssets.ts` | BEZPOŚREDNI | 0 | — | 267 | data 1, units 1 | S1 T2 | — | 46 (armyListHud.ts, armyMergePanel.ts, armyMergePickPanel.ts, armySplitPanel.ts, …) | `StaticCatalogDto.units[].category` |
-| 2 | `leaderPortraits.ts` | BEZPOŚREDNI | 0 | — | 225 | data 1, gra/data 1 | S1 T1 | — | 5 (diploUiSkin.ts, diplomacyAudience.ts, hud.ts, postBattleSummary.ts, …) | `StaticCatalogDto.civs` |
-| 3 | `uiParams.ts` | BEZPOŚREDNI | 0 | — | 98 | gra/data 1 | S1 | — | 4 (cityPanel.ts, mainMenu.ts, newGameFlow.ts, perfTestPanel.ts) | `StaticCatalogDto.ui_params` (lub plik frontendu — Z2) |
-| 4 | `unitInfographic.ts` | BEZPOŚREDNI | 0 | — | 171 | data 1, units 1 | S1 T1 | — | 4 (cityPanel.ts, entityCards/unitAdapter.ts, unitInfoCard.ts, unitRecruitCard.ts) | `UnitCardDto` |
-| 5 | `power-labels.ts` | BEZPOŚREDNI | 0 | — | 36 | game 1, gra/data 1 | S2 (`powerParams`° martwy) | — | 3 (empireDetailPanel.ts, hud.ts, powerOverlayHud.ts) | `StaticCatalogDto` |
-| 6 | `unitMiniPreview.ts` | BEZPOŚREDNI | 0 | — | 155 | data 1, render 1, three 1, units 1 | S1 X1 T1 | — | 3 (cityPanel.ts, entityCards/renderer.ts, unitInfoCard.ts) | miniatura z Rust (D-UI-3, P4-5C) |
-| 7 | `civBrandDisplay.ts` | BEZPOŚREDNI | 0 | — | 68 | gra/data 1 | S1 | — | 2 (diplomacyAudience.ts, empireDetailPanel.ts) | `StaticCatalogDto.civs` |
-| 8 | `diplomacyAcceptanceBalance.ts` | BEZPOŚREDNI | 0 | — | 911 | game 4 | R7 F1 T1 | — | 2 (diplomacyAudience.ts, diplomacyTradeBasket.ts) | `DiplomacyBasketPreviewDto.accepted/balance_pn/...` (§6.6) |
-| 9 | `techUnlockParse.ts` | BEZPOŚREDNI | 0 | — | 52 | gra/data 1 | S1 | — | 2 (sciencePicker.ts, techTreeView.ts) | `StaticCatalogDto` |
-| 10 | `minimapHud.ts` | BEZPOŚREDNI | 0 | — | 448 | game 1 | X1 | — | 1 (hud.ts) | `StaticCatalogDto.constants` + `MinimapDto` (§6.14) |
-| 11 | `perfReport.ts` | BEZPOŚREDNI | 0 | — | 315 | buildInfo 1, map 3, render 1 | X3 T2 | — | 1 (sceneTimingReport.ts) | D-UI-7 |
-| 12 | `improvementBuildConfirm.ts` | BEZPOŚREDNI | 0 | — | 93 | game 1, map 2 | F2 T1 | — | 0 | `ImprovementBuildImpactDto` (§6.7) |
-| 13 | `mapLoadingOverlay.ts` | BEZPOŚREDNI | 0 | — | 260 | map 1 | X1 | — | 0 | `MapGenProgressEvent {phase, total, label}` (§6.16) |
-| 14 | `saveLoadDialog.ts` | BEZPOŚREDNI | 0 | — | 623 | game 2 | M3 IO6 F2 K1 T2 | — | 0 | `SaveSlotsDto` (§6.15); komendy sesji P2-5 §2.10 |
-| 15 | `victoryScreen.ts` | BEZPOŚREDNI | 0 | — | 346 | game 2 | K1 T1 | — | 0 | `VictoryDto` (§6.13) |
+| 1 | `icons/brandAssets.ts` **— PRZENIESIONY P5.2** | BEZPOŚREDNI | 0 | — | 267 | data 1, units 1 | S1 T2 | — | 46 (armyListHud.ts, armyMergePanel.ts, armyMergePickPanel.ts, armySplitPanel.ts, …) | `StaticCatalogDto.units[].category` |
+| 2 | `leaderPortraits.ts` **— PRZENIESIONY P5.2** | BEZPOŚREDNI | 0 | — | 225 | data 1, gra/data 1 | S1 T1 | — | 5 (diploUiSkin.ts, diplomacyAudience.ts, hud.ts, postBattleSummary.ts, …) | `StaticCatalogDto.civs` |
+| 3 | `uiParams.ts` **— PRZENIESIONY P5.2** | BEZPOŚREDNI | 0 | — | 98 | gra/data 1 | S1 | — | 4 (cityPanel.ts, mainMenu.ts, newGameFlow.ts, perfTestPanel.ts) | `StaticCatalogDto.ui_params` (lub plik frontendu — Z2) |
+| 4 | `unitInfographic.ts` **— PRZENIESIONY P5.2** | BEZPOŚREDNI | 0 | — | 171 | data 1, units 1 | S1 T1 | — | 4 (cityPanel.ts, entityCards/unitAdapter.ts, unitInfoCard.ts, unitRecruitCard.ts) | `UnitCardDto` |
+| 5 | `power-labels.ts` **— PRZENIESIONY P5.2** | BEZPOŚREDNI | 0 | — | 36 | game 1, gra/data 1 | S2 (`powerParams`° martwy) | — | 3 (empireDetailPanel.ts, hud.ts, powerOverlayHud.ts) | `StaticCatalogDto` |
+| 6 | `unitMiniPreview.ts` **— PRZENIESIONY P5.2** | BEZPOŚREDNI | 0 | — | 155 | data 1, render 1, three 1, units 1 | S1 X1 T1 | — | 3 (cityPanel.ts, entityCards/renderer.ts, unitInfoCard.ts) | miniatura z Rust (D-UI-3, P4-5C) |
+| 7 | `civBrandDisplay.ts` **— PRZENIESIONY P5.2** | BEZPOŚREDNI | 0 | — | 68 | gra/data 1 | S1 | — | 2 (diplomacyAudience.ts, empireDetailPanel.ts) | `StaticCatalogDto.civs` |
+| 8 | `diplomacyAcceptanceBalance.ts` **— PRZENIESIONY P5.2** | BEZPOŚREDNI | 0 | — | 911 | game 4 | R7 F1 T1 | — | 2 (diplomacyAudience.ts, diplomacyTradeBasket.ts) | `DiplomacyBasketPreviewDto.accepted/balance_pn/...` (§6.6) |
+| 9 | `techUnlockParse.ts` **— PRZENIESIONY P5.2** | BEZPOŚREDNI | 0 | — | 52 | gra/data 1 | S1 | — | 2 (sciencePicker.ts, techTreeView.ts) | `StaticCatalogDto` |
+| 10 | `minimapHud.ts` **— PRZENIESIONY P5.2** | BEZPOŚREDNI | 0 | — | 448 | game 1 | X1 | — | 1 (hud.ts) | `StaticCatalogDto.constants` + `MinimapDto` (§6.14) |
+| 11 | `perfReport.ts` **— PRZENIESIONY P5.2** | BEZPOŚREDNI | 0 | — | 315 | buildInfo 1, map 3, render 1 | X3 T2 | — | 1 (sceneTimingReport.ts) | D-UI-7 |
+| 12 | `improvementBuildConfirm.ts` **— PRZENIESIONY P5.2** | BEZPOŚREDNI | 0 | — | 93 | game 1, map 2 | F2 T1 | — | 0 | `ImprovementBuildImpactDto` (§6.7) |
+| 13 | `mapLoadingOverlay.ts` **— PRZENIESIONY P5.2** | BEZPOŚREDNI | 0 | — | 260 | map 1 | X1 | — | 0 | `MapGenProgressEvent {phase, total, label}` (§6.16) |
+| 14 | `saveLoadDialog.ts` **— PRZENIESIONY P5.2** | BEZPOŚREDNI | 0 | — | 623 | game 2 | M3 IO6 F2 K1 T2 | — | 0 | `SaveSlotsDto` (§6.15); komendy sesji P2-5 §2.10 |
+| 15 | `victoryScreen.ts` **— PRZENIESIONY P5.2** | BEZPOŚREDNI | 0 | — | 346 | game 2 | K1 T1 | — | 0 | `VictoryDto` (§6.13) |
 | 16 | `entityCards/registry.ts` | BEZPOŚREDNI | 1 | C4 | 194 | data 1, gra/data 5 | S5 T2 | `sciencePicker.ts` | 8 (cityPanel.ts, entityCards/buildingAdapter.ts, entityCards/improvementAdapter.ts, entityCards/renderer.ts, …) | `StaticCatalogDto` |
 | 17 | `techDiscoveryNotice.ts` | BEZPOŚREDNI | 1 | C4 | 946 | gra/data 4, render 1 | S4 T1 | `entityCards/registry.ts`, `entityCards/renderer.ts`, `icons/brandAssets.ts` | 4 (cityPanel.ts, scienceHubHud.ts, sciencePicker.ts, techTreeView.ts) | `StaticCatalogDto` |
 | 18 | `unitCardStatus.ts` | BEZPOŚREDNI | 1 | — | 394 | game 3 | R3 T3 | `icons/brandAssets.ts` | 4 (armyStackHud.ts, contextPanelHud.ts, hexContextTooltip.ts, unitPanelHud.ts) | `UnitCardDto.badges` (§6.8) |

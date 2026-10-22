@@ -1,0 +1,15 @@
+--- edb8fb56:gra/src/ui/uiParams.ts
++++ src-tauri/frontend-v2/src/ui/uiParams.ts
+@@ -12,7 +12,11 @@
+  * LANE: src/ui/* + data/ui-params.json.  Pure data, no DOM, no game logic.
+  */
+ 
+-import raw from '../../data/ui-params.json';
++import { staticCatalog } from '../controller/staticCatalog';
++
++// P5.2: parametry UI z `StaticCatalogDto.uiParams` (zamiast `gra/data/ui-params.json`); odczyt przy
++// ewaluacji modułu — wymaga katalogu zainstalowanego przed importem (ZAŁOŻENIE P5.2-Z1).
++const raw = staticCatalog().uiParams;
+ 
+ /** One selectable font-scale step for the city view. */
+ export interface UiFontScale {

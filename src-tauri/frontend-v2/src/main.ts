@@ -4,10 +4,24 @@
  * Nie jest kopią `gra/src/main.ts` (to spoiwo z logiką gry, P5.13). Montuje tokeny marki
  * (kopia `ui/brandTokenVars.ts`), podpina kontroler z atrapą MOCK i pokazuje jawną etykietę MOCK.
  * Panele zależne od logiki (PORTING-QUEUE.md) dochodzą w kolejnych tematach.
+ *
+ * P5.2: przed jakimkolwiek panelem instaluje `StaticCatalogDto` (z `get_view { staticCatalog }`),
+ * diagnostykę D-UI-7 i usługę slotów zapisu — atrapy MOCK (ZAŁOŻENIE P5.2-Z1: panele poziomu 0
+ * czytające katalog przy ewaluacji modułu są importowane dopiero po instalacji).
  */
 import { ensureBrandRootTokens } from './ui/brandTokenVars';
 import { formatLiczbaPl } from './ui/formatPl';
-import { createController, createMockTransport, MOCK_LABEL } from './controller';
+import {
+  createController,
+  createMockSaveSlotsService,
+  createMockTransport,
+  installPerfDiagnostics,
+  installSaveSlotsService,
+  installStaticCatalog,
+  MOCK_LABEL,
+  MOCK_PERF_DIAGNOSTICS,
+} from './controller';
+import type { StaticCatalogDto } from './viewmodel/types';
 import type { MockViewPayload } from './controller/mock';
 
 function el<K extends keyof HTMLElementTagNameMap>(tag: K, text?: string, cls?: string): HTMLElementTagNameMap[K] {
@@ -23,6 +37,9 @@ async function boot(): Promise<void> {
   if (!app) throw new Error('frontend-v2: brak #app w index.html');
 
   const controller = createController(createMockTransport());
+  installStaticCatalog(await controller.getView<StaticCatalogDto>({ kind: 'staticCatalog' }));
+  installPerfDiagnostics(MOCK_PERF_DIAGNOSTICS);
+  installSaveSlotsService(createMockSaveSlotsService());
 
   const shell = el('section', undefined, 'v2-shell');
   shell.style.cssText =
@@ -38,6 +55,9 @@ async function boot(): Promise<void> {
     el('p', `Miasto: ${view.city?.name ?? '—'}${mockTag}`),
     el('p', `Wzrost/turę (DTO): ${view.growth ? formatLiczbaPl(view.growth.pctPerTurn) : '—'}%${mockTag}`),
   );
+  // P5.2: panele poziomu 0 ładowane po instalacji katalogu (ZAŁOŻENIE P5.2-Z1); nic nie montują.
+  const level0 = await import('./ui/portLevel0');
+  shell.append(el('p', `Panele poziomu 0 (P5.2): ${level0.PORTED_LEVEL0.length}${mockTag}`));
   const status = el('p', `Źródło danych: ${controller.source}`, 'v2-status');
   shell.append(status);
 

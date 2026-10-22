@@ -14,6 +14,11 @@ export * from './commands';
 export type { Transport, Unlisten } from './transport';
 export { createTauriTransport, isTauriAvailable } from './transport';
 export { createMockTransport, MOCK_LABEL } from './mock';
+export { installStaticCatalog, hasStaticCatalog, staticCatalog, unitCategoryFromCatalog } from './staticCatalog';
+export { installPerfDiagnostics, perfDiagnostics } from './diagnostics';
+export type { SaveSlotsService } from './saveSlots';
+export { installSaveSlotsService, saveSlotsService } from './saveSlots';
+export { MOCK_STATIC_CATALOG, MOCK_PERF_DIAGNOSTICS, MOCK_SAVE_SLOTS, createMockSaveSlotsService } from './mockCatalog';
 
 export interface Controller {
   readonly source: Transport['source'];

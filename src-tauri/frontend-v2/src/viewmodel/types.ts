@@ -83,6 +83,13 @@ export interface StaticCatalogConstantsDto {
   handelZlozeCenaBaza: number;
   barbarianCooperationDefaultDurationTurns: number;
   fogExploredBrightness: number;
+  /** P5.2 (`mapLoadingOverlay.ts`): liczba faz generatora mapy (web: `MAP_GEN_PHASE_TOTAL`, `map/mapGenProgress.ts:6`). */
+  mapGenPhaseTotal: number;
+  /**
+   * P5.2 (`perfReport.ts`): etykiety faz generatora w kolejności faz (web: `MAP_GEN_PHASE_LABELS`,
+   * `map/mapGenProgress.ts:16-27`). Kolejność kluczy = kolejność faz (Rust: mapa z zachowaniem kolejności).
+   */
+  mapGenPhaseLabels: Readonly<Record<string, string>>;
   epochNumberToName: Readonly<Record<string, string>>;
   improvementKeys: string[];
   cityBuildingPrereq: NieZmierzonoDto;
@@ -98,26 +105,80 @@ export interface StaticCatalogLabelsDto {
   porBandLabels: string[];
   traktatHandlowyLabel: string;
   resourceAccessTradeWithdrawnReason: string;
+  /**
+   * P5.2 (`power-labels.ts`): etykieta HUD „Mocy” już rozstrzygnięta przez Rust
+   * (web: `loadPowerOpcje().hudEtykietaPl`, `game/power-options.ts:39-48` — odczyt `power-params.json`
+   * z wartością domyślną „Moc”). Pusty string = UI używa `MOC_LABEL_PL`.
+   */
+  powerHudLabelPl: string;
+}
+
+// ─── P5.2: wiersze katalogu statycznego czytane przez panele poziomu 0 ───────
+// Kształty = podzbiór typów web `data/loader.ts` (`UnitDef` :37-…, `BuildingDef` :84-…, `CivDef` :211-…,
+// `CivsData` :246-249) — wyłącznie pola czytane przez porty P5.2; reszta wiersza dociera bez typu.
+
+export interface UnitDefDto {
+  Jednostka: string;
+  Tech?: string | null;
+  'Super-jednostka'?: string | null;
+  'Rola (linia)'?: string | null;
+  Typ?: string | null;
+  readonly [field: string]: unknown;
+}
+
+export interface BuildingDefDto {
+  id: string;
+  kategoria?: string;
+  readonly [field: string]: unknown;
+}
+
+export type LeaderEpochKey = 'kamien' | 'braz' | 'zelazo' | 'antyk';
+
+export interface CivDefDto {
+  Cywilizacja?: string;
+  ikonaId?: string;
+  typCywilizacji?: string;
+  'Styl / charakter'?: string | null;
+  'Jednostka specjalna'?: string | null;
+  wodzowie?: Partial<Record<LeaderEpochKey, string>>;
+  wodzowiePula?: readonly string[];
+  readonly [field: string]: unknown;
+}
+
+export interface CivsCatalogDto {
+  cywilizacje: CivDefDto[];
+  readonly [field: string]: unknown;
 }
 
 /** Zawartość JSON 1:1 (D-UI-4; P5-0 Z2) + stałe + etykiety. */
 export interface StaticCatalogDto {
   contentHash: string;
   buildings: unknown;
-  units: unknown;
+  units: UnitDefDto[];
   tech: unknown;
   terrainImprovements: unknown;
   wonders: unknown;
   counters: unknown;
-  civs: unknown;
+  civs: CivsCatalogDto;
   cityNamesPools: unknown;
   powerParams: unknown;
   uiParams: unknown;
   wiki: unknown;
   constants: StaticCatalogConstantsDto;
   labels: StaticCatalogLabelsDto;
-  /** Zastępuje `categoryOf` (P5-0 §6.1). */
+  /**
+   * Zastępuje `categoryOf` (P5-0 §6.1). Klucz = `UnitDef.Jednostka`; wartość = wynik
+   * `categoryOf(Jednostka, 'Rola (linia)', Super-jednostka === 'TAK', Typ)` (`units/setup.ts:239`)
+   * policzony w Rust dla każdej jednostki katalogu.
+   */
   unitCategory: Readonly<Record<UnitTypeKey, string>>;
+  /**
+   * P5.2: kategoria liczona przez web BEZ wiersza `UnitDef` — `categoryOf(id, '', false, undefined)`
+   * (same słowa kluczowe nazwy), używana gdy panel zna tylko nazwę jednostki (np.
+   * `unitIconSvg(undefined, u.Jednostka)` w `techDiscoveryNotice.ts:386`, `technologyAdapter.ts:215`,
+   * `cityPanel.ts:6403`). Osobna mapa, by zachować 1:1 zachowanie web (może różnić się od `unitCategory`).
+   */
+  unitCategoryNameOnly: Readonly<Record<UnitTypeKey, string>>;
 }
 
 // ─── §5 / §6.2 Miasto (pola dzielone renderer ↔ UI, D-UI-9) ───────────────────
@@ -358,6 +419,93 @@ export interface DiplomacyBasketPreviewRequest {
   resourceTradeMode: string;
 }
 
+/**
+ * P5.2 (`diplomacyAcceptanceBalance.ts`): wiersz „Wpływ Relacji na deal”. Wszystkie liczby z Rust
+ * (web liczył je w UI: `relationPnModPct(relationSignedFromTotal(total))` `:85,107`,
+ * `formatRelationModLabel(total)` `:121`, mnożnik uczciwej wymiany `100 / max(1, total)` `:88`).
+ */
+export interface RelationDealDto {
+  total: number;
+  modPct: number;
+  modLabel: string;
+  /** Mnożnik PW do uczciwej wymiany przy Relacji < 100 (web: `100 / Math.max(1, relTotal)`). */
+  tradeFairMult: number;
+  /** Parytet 1:1 w handlu (web: `relTotal >= 100`, `diplomacyAcceptanceBalance.ts:87,109,112`). */
+  tradeParity: boolean;
+}
+
+/** P5.2: = `AcceptanceSideBalance` (`game/diplomacy-acceptance-points.ts:33-60`) 1:1. */
+export interface AcceptanceSideBalanceDto {
+  offerPn: number;
+  demandPn: number;
+  fairMinPn: number;
+  balancePn: number;
+  treatyBasePn: number;
+  treatyEffectivePn?: number;
+  relationModPct?: number;
+  relationModLabel?: string;
+  relRequired?: number;
+  relCurrent?: number;
+  relBalance?: number;
+  mode: 'gift' | 'basket' | 'treaty' | 'mixed';
+  statusLabel: string;
+  accepted: boolean;
+}
+
+/**
+ * P5.2: = `PnBalancePanelData` (`diplomacyAcceptanceBalance.ts:36-55` na pinie) — wynik
+ * `balancePanelDataFromRows` (`:229-431`: wybór wiersza głównego, suma PW pakietu, min `pwBalance`,
+ * bramka `canAccept`/`blockReason`, tryb pakietu) liczony w Rust (zapytanie stołu negocjacji —
+ * proponowane `diplomacy_table_balance`, NIE_ZMIERZONO w silniku). `relation` = relacja wiersza
+ * głównego (web: `their.relCurrent ?? my.relCurrent ?? 100`, `:140,633`).
+ */
+export interface PnBalancePanelDto {
+  actionLabel: string;
+  negotiationId?: string;
+  direction: 'own' | 'incoming';
+  myOfferPn: number;
+  theirOfferPn: number;
+  theirBalance: AcceptanceSideBalanceDto;
+  myBalance?: AcceptanceSideBalanceDto;
+  canAccept?: boolean;
+  extraOnTable?: number;
+  awaitingAiResponse?: boolean;
+  responderPreview?: { accepted: boolean; reason?: string; pwBalance?: number };
+  canCounter?: boolean;
+  uiActionId?: string;
+  relation: RelationDealDto;
+}
+
+/**
+ * P5.2: podgląd koszyka traktatu (web: `renderPnBalancePanelForTreaty`, `diplomacyAcceptanceBalance.ts:753-871`
+ * liczył w UI PW gracza/partnera @ Relacji, koszyk netto, bilans asymetryczny, bramkę koszyka i
+ * akceptację). Wszystkie pola z Rust.
+ */
+export interface TreatyBalancePreviewDto {
+  /** Baza traktatu (web: `treatyBasePw ?? partnerTreatyPw ?? playerTreatyPw`). */
+  basePw: number;
+  /** PW gracza @ Relacji (web: `treatyPwForRole(base, rel, 'player')`). */
+  playerPw: number;
+  /** PW partnera (web: `treatyPwForRole(base, rel, 'partner')`). */
+  partnerPw: number;
+  basketGivePn: number;
+  basketReceivePn: number;
+  /** Web: `max(0, basketGivePn − basketReceivePn)`. */
+  basketNet: number;
+  /** Web: `playerPw + basketGivePn`. */
+  myDisplayPw: number;
+  /** Web: `partnerPw + basketReceivePn`. */
+  theirDisplayPw: number;
+  relRequired: number | null;
+  /** Web: `relRequired == null || relTotal >= relRequired`. */
+  relOk: boolean;
+  /** Web: `basketReceivePn <= 0 || pnDealAcceptedByAi(...)` — ta sama funkcja co bramka. */
+  basketFair: boolean;
+  accepted: boolean;
+  balancePn: number;
+  relation: RelationDealDto;
+}
+
 export interface DiplomacyBasketPreviewDto {
   givePn: number | null;
   receivePn: number | null;
@@ -365,7 +513,8 @@ export interface DiplomacyBasketPreviewDto {
   balancePn: number;
   /** Liczone TĄ SAMĄ funkcją Rust co bramka przyjęcia (P5-0 §6.6 wymóg). */
   accepted: boolean;
-  relation: { total: number; signed: number; modPct: number; modLabel: string };
+  /** P5.2: rozszerzone o pola `RelationDealDto` (wiersz „Wpływ Relacji na deal”). */
+  relation: RelationDealDto & { signed: number };
   treatyPw: { my: number; their: number; bilateral: number; base: number };
   trust: { surplusPn: number; delta: number; deltaRaw: number; cap: number; gained: number };
   dobraWola: { perTurn: number; turns: number } | null;
@@ -424,6 +573,12 @@ export interface HexContextDto {
 }
 
 export interface ImprovementBuildImpactDto {
+  /** P5.2: nazwa wyświetlana nowego ulepszenia (web: `improvementDisplayName(newKey)`, `game/terrain-improvements.ts:385`). */
+  newLabel: string;
+  /**
+   * Nazwy tego, co zniknie z heksa, w kolejności web (`formatImprovementBuildImpactList`,
+   * `map/improvement-build.ts:662-671`: zdjęte ulepszenia, potem „Las”). Pusta = nic nie znika.
+   */
   lines: string[];
 }
 
@@ -544,8 +699,14 @@ export interface PreBattleDto {
 /** = `PostBattleSummaryData` (postBattleSummary.ts:4) — pola NIE_ZMIERZONO. */
 export type BattleSummaryDto = NieZmierzonoDto;
 
+/** = `VictoryResult` (`game/victory.ts:95-98`). */
+export interface VictoryResultDto {
+  winner: PlayerId;
+  rodzaj: 'dominacja' | 'nauka' | 'przegrana';
+}
+
 export interface VictoryDto {
-  result: NieZmierzonoDto;
+  result: VictoryResultDto;
   progDominacjiPct: number;
 }
 
@@ -578,13 +739,36 @@ export interface MinimapDto {
 
 // ─── §6.15 Zapisy ────────────────────────────────────────────────────────────
 
-export type SaveSlotMetaDto = NieZmierzonoDto;
+/**
+ * P5.2: = `SaveSlotMeta` (`game/save.ts:214-227`) + `slotId`. Rust zwraca metadane także dla starych
+ * zapisów bez osobnego klucza meta (web: fallback pełnego `loadFromLocal` + `extractSaveContextFields`,
+ * `saveLoadDialog.ts:206-219`, `game/save.ts:230-…`).
+ */
+export interface SaveSlotMetaDto {
+  slotId: SlotId;
+  label: string;
+  tura: number;
+  savedAt: string;
+  mapSize: string;
+  /** Surowy klucz typu świata (np. 'kontynenty'); etykieta PL w UI. */
+  worldType: string;
+  civId: string;
+  unitsCount: number;
+  citiesCount: number;
+  seed: number;
+  /** 'playtest' albo ''. */
+  saveOrigin: string;
+}
 
 export interface SaveSlotsDto {
   slots: SaveSlotMetaDto[];
   lastPlayed: SlotId | null;
+  /** Zapisy z dysku (web: rotacja FSA, `game/fsa-autosave.ts`); `slotId` z prefiksem `diskSlotPrefix`. */
   autosaves: SaveSlotMetaDto[];
+  /** Web: `isIdbAvailable()` (`game/save.ts`) — false = baner ostrzegawczy. */
   storageAvailable: boolean;
+  /** Web: `FSA_SLOT_PREFIX = 'fsa:'` (`game/save.ts:163`). */
+  diskSlotPrefix: string;
 }
 
 // ─── §6.16 Zdarzenia (nie DTO stanu) ─────────────────────────────────────────
@@ -608,6 +792,63 @@ export interface HoverEvent {
 // ─── §6.17 Diagnostyka (warunkowo, D-UI-7) ───────────────────────────────────
 
 export type PerfReportDto = NieZmierzonoDto;
+
+/** P5.2 (`perfReport.ts`) = `MapGenPhaseTimings` (`map/mapGenProgress.ts:53-…`), ms. */
+export interface MapGenPhaseTimingsDto {
+  prep: number;
+  terrain: number;
+  landSea: number;
+  relief: number;
+  coast: number;
+  riversMain: number;
+  riversFill: number;
+  forest: number;
+  deposits: number;
+  starts: number;
+  total: number;
+}
+
+/** P5.2 (`perfReport.ts`) = `SceneBuildTimings` (`render/scene.ts`), ms — kształt struktury, bez sond WebGL (D-UI-7). */
+export interface SceneBuildTimingsDto {
+  hexes: number;
+  coast: number;
+  overlays: number;
+  rivers: number;
+  tail: number;
+  total: number;
+  hexCount: number;
+  overlayTotal: number;
+  riverStage: number;
+  detail?: {
+    heksy: {
+      alokacja: number;
+      pryzmy: number;
+      instancjeReliefu: number;
+      styledWPetli: number;
+      brzegWPetli: number;
+      pustynia: number;
+      finalizacja: number;
+    };
+    nakladki: {
+      scalMerge: number;
+      instancjePlazaWydmy: number;
+      scalMergeCollapsed?: number;
+      scalMergeSkippedMerged?: number;
+      scalMergeSkippedLight?: number;
+    };
+  };
+}
+
+/**
+ * P5.2 (`perfReport.ts`): stan diagnostyczny dostarczany przez powłokę/Rust zamiast importów
+ * `buildInfo.ts` (`CIV_BUILD_STAMP`) i `map/riverGenSwitch.ts` (`getRiverGenEnabled`/`getRiverGenPhase`).
+ */
+export interface PerfDiagnosticsDto {
+  buildStamp: string;
+  riverGenEnabled: boolean;
+  /** Web: `RiverGenPhase = 'main' | 'main+medium' | 'all'` (`map/riverGenSwitch.ts:12`). */
+  riverGenPhase: 'main' | 'main+medium' | 'all';
+}
 
 // ─── Granica mapa ↔ UI (P4-5B §4.1, §4.3, §5.2, §5.3) — tylko typy komunikatów ──
 

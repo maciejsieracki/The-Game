@@ -1,0 +1,171 @@
+{
+  "pin": "edb8fb56",
+  "totalCases": 3861,
+  "totalDiffs": 0,
+  "modules": [
+    {
+      "module": "icons/brandAssets.ts",
+      "cases": 814,
+      "diffs": 0,
+      "examples": [],
+      "notMeasured": []
+    },
+    {
+      "module": "leaderPortraits.ts",
+      "cases": 888,
+      "diffs": 0,
+      "examples": [],
+      "notMeasured": []
+    },
+    {
+      "module": "uiParams.ts",
+      "cases": 1,
+      "diffs": 0,
+      "examples": [],
+      "notMeasured": []
+    },
+    {
+      "module": "unitInfographic.ts",
+      "cases": 455,
+      "diffs": 0,
+      "examples": [],
+      "notMeasured": []
+    },
+    {
+      "module": "power-labels.ts",
+      "cases": 10,
+      "diffs": 0,
+      "examples": [],
+      "notMeasured": [],
+      "v2Assertions": [
+        {
+          "check": "DTO „Siła-TEST” → mocLabel()",
+          "ok": true
+        },
+        {
+          "check": "DTO → mocTitle(7)",
+          "ok": true
+        },
+        {
+          "check": "DTO pusty → MOC_LABEL_PL",
+          "ok": true
+        }
+      ],
+      "v2AssertionsFailed": 0
+    },
+    {
+      "module": "unitMiniPreview.ts",
+      "cases": 0,
+      "diffs": 0,
+      "examples": [],
+      "notMeasured": [
+        "pin renderuje miniaturę przez THREE.WebGLRenderer + render/units.buildUnitModel (pin :26-113) — w jsdom brak WebGL; D-UI-3: obraz z Rust. Sprawdzono tylko strukturę v2 (asercje niżej)."
+      ],
+      "v2Assertions": [
+        {
+          "check": "klasa kontenera",
+          "ok": true
+        },
+        {
+          "check": "stan ładowania = <span class=\"unit-mini-loading\">…</span>",
+          "ok": true
+        },
+        {
+          "check": "placeholder .unit-mini-canvas 80×80",
+          "ok": true
+        },
+        {
+          "check": "defaultOwnerColor = 0x3b7dd8 (pin :11)",
+          "ok": true
+        }
+      ],
+      "v2AssertionsFailed": 0
+    },
+    {
+      "module": "civBrandDisplay.ts",
+      "cases": 108,
+      "diffs": 0,
+      "examples": [],
+      "notMeasured": []
+    },
+    {
+      "module": "diplomacyAcceptanceBalance.ts",
+      "cases": 1245,
+      "diffs": 0,
+      "examples": [],
+      "notMeasured": []
+    },
+    {
+      "module": "techUnlockParse.ts",
+      "cases": 67,
+      "diffs": 0,
+      "examples": [],
+      "notMeasured": []
+    },
+    {
+      "module": "minimapHud.ts",
+      "cases": 3,
+      "diffs": 0,
+      "examples": [],
+      "notMeasured": [
+        "piksele canvas: porównano sekwencję wywołań kontekstu 2D (rejestrator), nie rastrowanie (jsdom bez canvas)"
+      ],
+      "canvasLogGlobalAlphaSets": 16
+    },
+    {
+      "module": "perfReport.ts",
+      "cases": 37,
+      "diffs": 0,
+      "examples": [],
+      "notMeasured": []
+    },
+    {
+      "module": "improvementBuildConfirm.ts",
+      "cases": 96,
+      "diffs": 0,
+      "examples": [],
+      "notMeasured": [],
+      "dtoJoinMatchesPin": true,
+      "keys": 22
+    },
+    {
+      "module": "mapLoadingOverlay.ts",
+      "cases": 48,
+      "diffs": 0,
+      "examples": [],
+      "notMeasured": []
+    },
+    {
+      "module": "saveLoadDialog.ts",
+      "cases": 17,
+      "diffs": 0,
+      "examples": [],
+      "notMeasured": [
+        "zapisy z dysku (FSA) i „ostatnio grane”: jsdom nie ma File System Access API, a pin wymaga pełnego zapisu do walidacji lastPlayed — porównano listę pustą/3 sloty lokalne, lastPlayed=null, autosaves=[]",
+        "akcje (klik usuń/wczytaj/zapisz → komendy) — nie klikane w harnessie"
+      ],
+      "pinIsIdbAvailable": false,
+      "nonVacuous": [
+        {
+          "scenario": "pusto",
+          "rowsInDom": 0,
+          "expected": 0,
+          "ok": true
+        },
+        {
+          "scenario": "3 sloty",
+          "rowsInDom": 3,
+          "expected": 3,
+          "ok": true
+        }
+      ]
+    },
+    {
+      "module": "victoryScreen.ts",
+      "cases": 72,
+      "diffs": 0,
+      "examples": [],
+      "notMeasured": []
+    }
+  ]
+}

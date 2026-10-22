@@ -3,13 +3,17 @@
   "private": true,
   "version": "0.0.0",
   "type": "module",
-  "description": "Szkielet frontendu Tauri (P5.1, UI-Q1=A): kopia paneli gra/src/ui/** niezaleznych od logiki + Vite + kontroler MOCK.",
+  "description": "Frontend Tauri (UI-Q1=A): kopia paneli gra/src/ui/** + Vite + kontroler MOCK; P5.2: panele poziomu 0 przeniesione na DTO (harness DOM: tools/dom-harness, jsdom).",
   "scripts": {
     "typecheck": "tsc --noEmit",
     "check": "node tools/check-no-logic-imports.mjs --self-test && node tools/check-no-logic-imports.mjs src index.html vite.config.ts && node tools/verify-pin-copies.mjs",
-    "build": "vite build"
+    "build": "vite build",
+    "harness": "node tools/dom-harness/run.mjs",
+    "harness:mutate": "node tools/dom-harness/mutate.mjs"
   },
   "devDependencies": {
+    "esbuild": "0.21.5",
+    "jsdom": "29.1.1",
     "typescript": "5.9.3",
     "vite": "5.4.21"
   }

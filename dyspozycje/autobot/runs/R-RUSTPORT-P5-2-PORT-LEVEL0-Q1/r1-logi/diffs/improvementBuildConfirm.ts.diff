@@ -1,0 +1,36 @@
+--- edb8fb56:gra/src/ui/improvementBuildConfirm.ts
++++ src-tauri/frontend-v2/src/ui/improvementBuildConfirm.ts
+@@ -2,9 +2,7 @@
+  * improvementBuildConfirm.ts — potwierdzenie zastąpienia ulepszeń / lasu przy budowie z mapy.
+  */
+ 
+-import type { ImprovementBuildImpact } from '../map/improvement-build';
+-import { formatImprovementBuildImpactList } from '../map/improvement-build';
+-import { improvementDisplayName } from '../game/terrain-improvements';
++import type { ImprovementBuildImpactDto as ImprovementBuildImpact } from '../viewmodel/types';
+ import { pushOverlay, popOverlay } from './escapeOverlayStack';
+ 
+ let overlay: HTMLDivElement | null = null;
+@@ -36,17 +34,18 @@
+   document.head.appendChild(style);
+ }
+ 
+-/** Modal: „Zastąpić X przez Y?” — lista tego, co zniknie z heksa. */
++/** Modal: „Zastąpić X przez Y?” — lista tego, co zniknie z heksa.
++ * P5.2: nazwy z `ImprovementBuildImpactDto` (Rust); `_newKey` zostaje w sygnaturze dla zgodności wywołań. */
+ export function showImprovementBuildConfirmModal(
+-  newKey: string,
++  _newKey: string,
+   impact: ImprovementBuildImpact,
+   onConfirm: () => void,
+ ): void {
+   ensureStyles();
+   if (overlay !== null) overlay.remove();
+ 
+-  const newLabel = improvementDisplayName(newKey);
+-  const removedList = formatImprovementBuildImpactList(impact);
++  const newLabel = impact.newLabel;
++  const removedList = impact.lines.join(', ');
+   const removedHtml = removedList
+     ? `<p>Zniknie: <strong>${esc(removedList)}</strong></p>`
+     : '';

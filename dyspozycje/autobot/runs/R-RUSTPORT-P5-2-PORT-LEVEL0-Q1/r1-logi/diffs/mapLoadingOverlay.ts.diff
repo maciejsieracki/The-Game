@@ -1,0 +1,22 @@
+--- edb8fb56:gra/src/ui/mapLoadingOverlay.ts
++++ src-tauri/frontend-v2/src/ui/mapLoadingOverlay.ts
+@@ -2,9 +2,7 @@
+  * mapLoadingOverlay.ts — panel postępu generacji mapy (DYSPOZYCJA-WYDAJNOSC C2 + C2b).
+  */
+ import { CIV_BRAND_SCOPE_VARS, ensureBrandRootTokens } from './brandTokenVars';
+-import { MAP_GEN_PHASE_TOTAL } from '../map/mapGenProgress';
+-
+-const MAP_LOADING_PHASE_TOTAL = MAP_GEN_PHASE_TOTAL;
++import { staticCatalog } from '../controller/staticCatalog';
+ 
+ export interface MapLoadingOverlayHandle {
+   setProgress: (faza: string, pct: number, phaseNum?: number, phaseTotal?: number) => void;
+@@ -229,7 +227,7 @@
+ 
+   return {
+     setProgress(faza: string, pct: number, phaseNum?: number, phaseTotal?: number) {
+-      const total = phaseTotal ?? MAP_LOADING_PHASE_TOTAL;
++      const total = phaseTotal ?? staticCatalog().constants.mapGenPhaseTotal;
+       const prefix = phaseNum && phaseNum > 0 ? `${phaseNum}/${total} · ` : '';
+       phaseEl.textContent = prefix + faza;
+       barEl.style.width = `${Math.min(100, Math.max(0, pct))}%`;

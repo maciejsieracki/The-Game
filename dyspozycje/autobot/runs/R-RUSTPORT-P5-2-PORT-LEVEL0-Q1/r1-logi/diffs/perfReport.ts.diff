@@ -1,0 +1,45 @@
+--- edb8fb56:gra/src/ui/perfReport.ts
++++ src-tauri/frontend-v2/src/ui/perfReport.ts
+@@ -1,11 +1,19 @@
+ /**
+  * perfReport.ts — trwały raport czasów mapy: auto-download, localStorage, chip HUD (FALA 159).
+  */
+-import { CIV_BUILD_STAMP } from '../buildInfo';
+-import type { MapGenPhaseTimings } from '../map/mapGenProgress';
+-import { MAP_GEN_PHASE_LABELS } from '../map/mapGenProgress';
+-import { getRiverGenEnabled, getRiverGenPhase } from '../map/riverGenSwitch';
+-import type { SceneBuildTimings } from '../render/scene';
++import type {
++  MapGenPhaseTimingsDto as MapGenPhaseTimings,
++  SceneBuildTimingsDto as SceneBuildTimings,
++  PerfDiagnosticsDto,
++} from '../viewmodel/types';
++import { staticCatalog } from '../controller/staticCatalog';
++import { perfDiagnostics } from '../controller/diagnostics';
++
++// P5.2 (D-UI-7, rozstrzygnięcie tymczasowe: tylko typy/struktura, bez sond WebGL): stan, który web
++// czytał z `buildInfo.ts` i `map/riverGenSwitch.ts`, dostarcza powłoka (`PerfDiagnosticsDto`);
++// etykiety faz — `StaticCatalogDto.constants.mapGenPhaseLabels`.
++const getRiverGenEnabled = (): boolean => perfDiagnostics().riverGenEnabled;
++const getRiverGenPhase = (): PerfDiagnosticsDto['riverGenPhase'] => perfDiagnostics().riverGenPhase;
+ 
+ export const PERF_REPORT_STORAGE_KEY = 'civ-last-perf-report';
+ export const PERF_REPORT_FILENAME_KEY = 'civ-last-perf-filename';
+@@ -98,7 +106,7 @@
+     lines.push('  Rzeki (gen): GŁÓWNE + ŚREDNIE (riverGenPhase=main+medium)');
+   }
+   if (gen) {
+-    for (const [k, label] of Object.entries(MAP_GEN_PHASE_LABELS) as [keyof MapGenPhaseTimings, string][]) {
++    for (const [k, label] of Object.entries(staticCatalog().constants.mapGenPhaseLabels) as [keyof MapGenPhaseTimings, string][]) {
+       if (k !== 'total') lines.push(`  ${label}: ${gen[k]} ms`);
+     }
+     lines.push(`  RAZEM: ${gen.total} ms`);
+@@ -160,7 +168,7 @@
+   }
+ 
+   lines.push('');
+-  lines.push(`Stempel builda: ${CIV_BUILD_STAMP}`);
++  lines.push(`Stempel builda: ${perfDiagnostics().buildStamp}`);
+ 
+   return lines.join('\n');
+ }
