@@ -20,4 +20,3 @@ IZOLACJA: `isolation: worktree`. Commit w worktree (jawne `git add`, NIGDY `-A`)
 PROCEDURA NAPRAWCZA PRZY FAIL: ten sam ID; po 5 rundach LIMIT-5-EXCEEDED. Raport max ok. 400 słów.
 FORMAT ODPOWIEDZI: STATUS / DOMAIN / TEMAT / GOAL / ZMIANY-COMMIT / TESTY / BLOKADY / RUNDY / NASTĘPNY KROK
 DEPLOY/PUSH: NIE WYKONANO
-
