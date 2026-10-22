@@ -1,8 +1,7 @@
 use serde::{Deserialize, Serialize};
 
 use super::UnitId;
-// Modul dolaczany w tests/combat.rs przez #[path] (poza drzewem `domain`), stad pelna sciezka crate.
-use civ_engine::data::derived::combat_ai_multiplier_value;
+use crate::data::derived::combat_ai_multiplier_value;
 
 /// A counter bonus supplied by the unit data for one opposing unit type.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
@@ -218,10 +217,23 @@ pub fn counter_multiplier(
     }
 }
 
-pub fn terrain_defense_multiplier(terrain: Terrain) -> f64 {
+/// Rola atakująca „dystans” / „flanka” z webu (ZAŁOŻENIE P3-22 sekcja 12):
+/// dystans = `distance` / `slinger`, flanka (kawaleria) = `mount`.
+fn is_ranged_or_cavalry(unit_type: &str) -> bool {
+    matches!(
+        canonical_type(unit_type).as_str(),
+        "distance" | "slinger" | "mount"
+    )
+}
+
+pub fn terrain_defense_multiplier(terrain: Terrain, attacker_ranged_or_cavalry: bool) -> f64 {
     match terrain {
         Terrain::Plain => 1.0,
-        Terrain::Forest => 1.25,
+        // Las: web gra/src/game/combat.ts:638 — 1.5 TYLKO wobec dystansu/flanki, inaczej 1.0.
+        Terrain::Forest if attacker_ranged_or_cavalry => {
+            combat_ai_multiplier_value("LAS_DEFENSE_MULT_VS_DYSTANS_FLANKA")
+        }
+        Terrain::Forest => 1.0,
         // Wzgorze i gory: combat-ai-multipliers.json (P3-22 runda 4, web 1.5 / 1.75).
         Terrain::Hills => combat_ai_multiplier_value("HILL_DEFENSE_MULT"),
         Terrain::Mountain => combat_ai_multiplier_value("MOUNTAIN_DEFENSE_MULT"),
@@ -278,8 +290,11 @@ pub fn effective_strength(
         .iter()
         .map(|unit| unit.unit_type.as_str())
         .collect();
+    let attacker_ranged_or_cavalry = opposing_units
+        .iter()
+        .any(|unit| is_ranged_or_cavalry(&unit.unit_type));
     let terrain_multiplier = if is_defender {
-        terrain_defense_multiplier(terrain)
+        terrain_defense_multiplier(terrain, attacker_ranged_or_cavalry)
     } else {
         1.0
     };

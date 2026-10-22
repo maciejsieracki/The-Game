@@ -28,6 +28,17 @@
       "opis": "Mnoznik obrony w gorach."
     },
     {
+      "id": "LAS_DEFENSE_MULT_VS_DYSTANS_FLANKA",
+      "klasa": "a",
+      "wartosc": 1.5,
+      "zrodlo_wartosci": "ODCZYT_LITERALU",
+      "definicja_web": "gra/src/game/combat.ts:638 (pin edb8fb56; literal `return isRangedOrCav ? 1.5 : 1.0;`)",
+      "uzycie_web": "gra/src/game/combat.ts:612-638 terrainDefenseMultiplier: Las +50% TYLKO gdy rola atakujacego zawiera 'dystans' lub 'flanka'; w pozostalych przypadkach x1.0",
+      "status_rust": "ROZWINIETE",
+      "rust": "rust-port/engine/src/domain/combat.rs terrain_defense_multiplier(Terrain::Forest, attacker_ranged_or_cavalry). ZALOZENIE: rola web 'dystans' = Rust distance|slinger, 'flanka' = Rust mount; atakujacy = jednostki strony przeciwnej w effective_strength (any). Modul combat.rs podpiety do drzewa domain/mod.rs (pub mod combat).",
+      "opis": "Mnoznik obrony lasu wobec ataku dystansowego lub kawalerii (web 1.5). Wobec pozostalych rol: 1.0 (zachowanie webu, nie plaski 1.25 Rust)."
+    },
+    {
       "id": "MUR_BONUS_PROC",
       "klasa": "a",
       "wartosc": 200,
@@ -118,7 +129,12 @@
     {
       "id": "VETERAN_BONUS_FRAC",
       "klasa": "b",
-      "wartosci_po_stanie": { "0": 0, "1": 0.10, "2": 0.15, "3": 0.20 },
+      "wartosci_po_stanie": {
+        "0": 0,
+        "1": 0.1,
+        "2": 0.15,
+        "3": 0.2
+      },
       "zrodlo_wartosci": "URUCHOMIONY_WEB",
       "definicja_web": "gra/src/game/veteran.ts:71 (VETERAN_BONUS_FRAC; klucz = poziom weterana 0-3)",
       "uzycie_web": "gra/src/game/veteran.ts:125-135",

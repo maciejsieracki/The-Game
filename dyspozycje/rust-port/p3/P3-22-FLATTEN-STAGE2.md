@@ -332,3 +332,110 @@ Podzial (z `gate-test-r4.log`): lib = 6, testy integracyjne (`tests/*.rs`) = 359
 - `dyspozycje/rust-port/p3/P3-22-FLATTEN-STAGE2.md` (ta sekcja); `dyspozycje/autobot/runs/R-RUSTPORT-P3-22-FLATTEN-STAGE2-Q1/`: `gen-combat-web.mjs`, `verify-combat-web.py`, `grep-literals-r4.txt`, `gate-*-r4.log`, `dowody/web-combat-values.json`, `dowody/web-diplo-values-r4.json`.
 - Poza zakresem (nietkniete): `bridge.rs`, `playable.rs`, `Cargo.toml`, `gra/**`, `rust-port/renderer/**`, `src-tauri/**`.
 - PUSH: NIE WYKONANO.
+
+## 12. RUNDA 5 (ostatnia; Operator, obrona po FAIL Evaluatora r4)
+
+Baza: commit `58b8d291` (runda 4). Zmiany rundy 5 w osobnym commicie na tym samym temacie. Pin weba: `edb8fb56`. Wszystkie numery `gra/...:linia` odnoszą się do pinu `edb8fb56` (`git show edb8fb56:<ścieżka>`), NIE do working tree gałęzi `parity-v2`, które jest nowsze.
+
+### 12.0 Odpowiedzi na zarzuty Evaluatora r4
+
+| # | Zarzut | Odpowiedź | Dowód |
+|---|---|---|---|
+| 1 | ROZWINIETE dla 5 wierszy WALKA, a `combat.rs` poza drzewem `domain/` | PRZYJMUJĘ (podpięcie). `domain/mod.rs`: `pub mod combat;`. `tests/combat.rs` używa teraz `civ_engine::domain::combat` zamiast `#[path]`. Wiersze LAS/HILL/MOUNTAIN/MUR/FORT/POSTERUNEK czytane przez kod w drzewie domeny. ZASTRZEŻENIE (jawne założenie): w Rust NIE MA wywołania `effective_strength`/`resolve_combat` z pętli rozgrywki; wpięcie walki do rozgrywki = ETAP 3 (osobny temat). Status ROZWINIETE w tej rundzie znaczy „czytany przez kod domeny”, nie „używany w grze”. | `git grep -n combat_ai_multiplier_value -- rust-port/engine/src/domain` (combat.rs:4, 234, 238, 239, 252); `rust-port/engine/tests/combat.rs:1-3` |
+| 2 | `combat.rs:224` `Terrain::Forest => 1.25` bez klasy/wiersza/było-jest; web Las ×1.5 tylko vs dystans/flanka | PRZYJMUJĘ. Wiersz tabeli `LAS_DEFENSE_MULT_VS_DYSTANS_FLANKA` (klasa a, wartość 1.5, web `gra/src/game/combat.ts:638` `return isRangedOrCav ? 1.5 : 1.0;`, warunek `combat.ts:633-635`). `terrain_defense_multiplier(terrain, attacker_ranged_or_cavalry)`: Las = 1.5 wobec dystans/flanki, inaczej 1.0 (zgodnie z webem, nie płaskie 1.25). ZAŁOŻENIE mapowania ról: web `dystans` = Rust `distance`/`slinger`, web `flanka` = Rust `mount`; atakujący = jednostki strony przeciwnej (`any`). Zmiana zachowania odnotowana w 12.4. Numery linii z 11.x: literał Las był w `combat.rs:224` w working tree rundy 4 (weryfikacja `grep -n` w `58b8d291`); w 11.3/11.7 podano 222/224 — korekta: patrz 12.6. | tabela `combat-ai-multipliers.json` (wiersz LAS); `grep-literals-r5.txt` (brak `Terrain::Forest => 1.25`) |
+| 3 | `handel_willingness_multiplier` (`diplomacy.rs:3046,3049`) poza inwentarzem, grupa HANDEL „zamknięta” | PRZYJMUJĘ z KOREKTĄ etykiety. Mnożnik NIE zależy od czasu gry; zależy od `willingness` (stan respondenta, ciągły w [0,1]) i od parametru `DiplomacyParams.trade_willingness_min` (web: `params.progHandelWillingnessMin`). Stąd: FUNKCJA = klasa c (ciągła w `willingness`, parametry jawne, bez zmiany sygnatury); STAŁE 0.15 / 0.20 = klasa a w tabeli `diplomacy-multipliers.json` (`HANDEL_WILLINGNESS_EASE_MAX_PCT`, `HANDEL_WILLINGNESS_PENALTY_MAX_PCT`, ROZWINIETE). Web: `gra/src/game/diplomacy-proposals.ts:908` (EASE 0.15), `:910` (PENALTY 0.20), `:936` i `:940` (użycie), `:925-941` (funkcja). HANDEL reotwarta i zamknięta dla tych dwóch wierszy. | `diplomacy-multipliers.json` (wiersze HANDEL_*); `diplomacy.rs:3047,3051` |
+| 4 | `diplomacy.rs:668,670,714,716` i `:3046,:3049` bez statusu („do klasyfikacji”) | PRZYJMUJĘ. (a) 668, 670, 714, 716 (`w/100*0.5`) = `WIARYGODNOSC_TEMPO_AMPLITUDA` (klasa a, 0.5, ROZWINIETE); web `gra/data/diplomacy.json:132` (`params.wiarygodnoscTempoAmplituda`), kopia `gra/src/game/diplomacy.ts:413`; użycie `gra/src/game/diplomacy-credibility.ts:600` (wzrost) i `:613` (spadek). Funkcje `w ↦ mnożnik` są ciągłe w W = klasa c, parametry jawne. (b) 723 (`clamp(W)*0.03`) = `WIARYGODNOSC_ZAUFANIE_DRYF_NA_100` (klasa a, 0.03, ROZWINIETE); web `gra/data/diplomacy.json:133`, kopia `gra/src/game/diplomacy.ts:420`, użycie `gra/src/game/diplomacy-credibility.ts:641`. Nie ma odroczeń. | `diplomacy-multipliers.json` (WIARYGODNOSC_*); `diplomacy.rs:668,670,714,716,724` |
+| 5 | Sprzeczny nagłówek i test porównujący tabelę ze stałymi (`table_values_match_web_vectors`) | PRZYJMUJĘ. Usunięto `KLASA_A` i porównanie wartości. Nowe testy: `accessors_return_the_table_value_not_a_constant` (akcesor = wartość z tabeli, bez stałej), `veteran_levels_are_complete_and_non_decreasing` (kształt + monotoniczność), `city_structure_bonuses_are_positive_and_mur_is_the_largest_single_bonus` (invariant zamiast 200/300/400). Nagłówek pliku poprawiony. Zgodność z webem = wyłącznie weryfikator (poza cargo test). | `tests/combat_ai_multipliers.rs` (cały plik przepisany) |
+| 6 | Nazwa testu `peace_price_uses_treaty_duration_precedence_and_multiplier` nieaktualna | PRZYJMUJĘ. Przemianowano na `peace_price_is_independent_of_treaty_duration` (treść bez zmian: 500 PN przy 20 turach = accepted, równość z 10 turami). | `tests/diplomacy.rs:708` |
+
+Zauważone przy okazji (ODRZUCAM jako zarzut, ale ujawniam dług): `tests/derived_values.rs::diplomacy_multipliers_cover_each_constant_once_with_web_values` (runda 3) nadal pinuje wartości webu dla wierszy DYPLOMACJA (np. `BUILDING_PN_FACTOR == 1.1`). Ten sam wzorzec, który Evaluator odrzucił w combat. W R5 zmieniono tylko liczbę wierszy (11 → 15) i listę ID; wartości nie były przedmiotem zarzutu i zostają. Oznaczam jako dług do przepisania w ETAP 3 (ten sam wzorzec co `combat_ai_multipliers.rs` przed R5).
+
+### 12.1 Status pozycji (zmiany R5; pełny stan etapu w 12.5)
+
+| Pozycja | Klasa | Status R5 | Dowód |
+|---|---|---|---|
+| LAS (Forest, combat.rs) | a (warunkowa: dystans/flanka) | ROZWINIETE (tabela + funkcja) | `combat.ts:638`; tabela; `combat.rs` `terrain_defense_multiplier` |
+| HANDEL: ease 0.15 / penalty 0.20 | a | ROZWINIETE | `diplomacy-proposals.ts:908,910`; `diplomacy.rs:3047,3051` |
+| HANDEL: funkcja `handel_willingness_multiplier` | c (ciągła w willingness) | KLASA C (parametry jawne: willingness, trade_willingness_min) | `diplomacy-proposals.ts:925-941` |
+| Wiarygodność: tempo 0.5 | a | ROZWINIETE (4 miejsca w diplomacy.rs) | `diplomacy.json:132`; `diplomacy-credibility.ts:600,613` |
+| Wiarygodność: dryf 0.03 | a | ROZWINIETE | `diplomacy.json:133`; `diplomacy-credibility.ts:641` |
+| Funkcje `credibility_trust_drift`, `compute_trust_delta`, `apply_credibility_tempo` | c (ciągłe w W) | KLASA C (parametr W jawny, stałe z tabeli) | `diplomacy.rs:665-724` |
+| Wiersze WALKA z 12.0 #1 (HILL, MOUNTAIN, MUR, FORT, POSTERUNEK) | a | ROZWINIETE: czytane przez kod w drzewie `domain` (`pub mod combat`); wpięcie do rozgrywki = ETAP 3 | `domain/mod.rs`; `tests/combat.rs` |
+
+### 12.2 Tabela było/jest (zmiany zachowania R5)
+
+| Element | Było (58b8d291) | Jest (R5) | Zmiana zachowania |
+|---|---|---|---|
+| Las, obrona terenu (`terrain_defense_multiplier`) | 1.25 dla każdego atakującego | 1.5 wobec dystans/flanki (`mount`/`distance`/`slinger`), 1.0 inaczej | TAK. Funkcja nie jest wołana z rozgrywki (12.0 #1), zmiana w obrębie `effective_strength`. Brak testu, który by pinował 1.25 (`grep -rn Forest rust-port/engine/tests`: `Terrain::Forest` nie występuje; trafienia `TerrainType::Forest` tylko w `trade.rs`, inny typ). |
+| Handel: ease / penalty (`handel_willingness_multiplier`) | literal 0.15 / 0.20 | tabela 0.15 / 0.20 | 0 (wartości identyczne) |
+| Wiarygodność: tempo (`compute_trust_delta`, `apply_credibility_tempo`) | literal `0.5` | tabela 0.5 | 0 |
+| Wiarygodność: dryf (`credibility_trust_drift`) | literal `0.03` | tabela 0.03 | 0 |
+| Wiersze combat: MUR / FORT / POSTERUNEK / HILL / MOUNTAIN | odczyt z tabeli (R4) | bez zmian | 0 |
+| Peace | x1 (R4) | x1 | 0 (R5 nie zmienia) |
+
+### 12.3 Zmiany testów (jawna lista)
+
+- `tests/combat.rs`: usunięto `#[path = "../src/domain/combat.rs"] mod combat;` oraz nieużywany `use civ_engine::domain::UnitId;` (zgłoszony przez clippy `-D unused-imports` w trakcie bramki, usunięty przed zapisem logu); dodano `use civ_engine::domain::combat;`. Asercje bez zmian (0 osłabień).
+- `tests/combat_ai_multipliers.rs`: PRZEPISANY (5 testów zamiast 3). Usunięto porównanie z `KLASA_A` (pin wartości), dodano `LAS` do listy ROZWINIETE i do listy 26 ID. Nowe testy: kształt/status (26 wierszy), akcesor = tabela, weterani (kształt + monotoniczność), invariant struktur miejskich, wiersz LAS. Powód: zarzut 5 Evaluatora.
+- `tests/derived_values.rs`: `diplomacy_multipliers_cover_each_constant_once_with_web_values`: liczba wierszy 11 → 15, do listy ID dodano 4 nowe. Pozostałe asercje bez zmian (patrz dług w 12.0).
+- `tests/diplomacy.rs`: przemianowanie `peace_price_uses_treaty_duration_precedence_and_multiplier` → `peace_price_is_independent_of_treaty_duration` (zarzut 6). Treść bez zmian.
+
+### 12.4 Weryfikacja web (weryfikatory niezależne; 0 rozbieżności)
+
+- `verify-combat-web.py` (rozszerzony o LAS i literal `combat.ts:638`, sprawdzenie braku `Terrain::Forest => 1.25` w `combat.rs`): `sprawdzono wierszy: 26 z 26`, `LICZBA ROZBIEZNOSCI: 0`, EXIT=0. Log: `gate-verify-combat-r5.log` (w katalogu runu).
+- `verify-diplomacy-web.py` (rozszerzony o 4 nowe wiersze: literal `diplomacy-proposals.ts` 908/910 i wartości JSON `diplomacy.json` params): `sprawdzono wierszy: 15 z 15`, `LICZBA ROZBIEZNOSCI: 0`, EXIT=0. Log: `gate-verify-diplo-r5.log`.
+- Uwaga o metodzie: wartości nowych wierszy pochodzą z ODCZYTU LITERAŁU (`combat.ts:638`, `diplomacy-proposals.ts:908,910`) i z JSON weba (`diplomacy.json:132,133`); NIE z uruchomionego kodu TS (pliki `combat.ts` i `diplomacy-proposals.ts` nie są ładowane w Node w tym środowisku). Oznaczenie: `zrodlo_wartosci` = ODCZYT_LITERALU dla LAS; dla HANDEL i WIARYGODNOSC weryfikator porównuje literal/JSON z tabelą. Wektor z uruchomionego kodu tych wierszy: NIE_ZMIERZONO.
+- Dla LAS nie wykonano uruchomionego testu funkcji przeciwko webowi (`combat.ts` ma zależności poza Node); zgodność oparta na literale warunku i wartości.
+
+### 12.5 Pozostałe literały mnożnikowe w `domain/combat.rs` i `domain/diplomacy.rs` (stan po R5; `grep-literals-r5.txt`)
+
+Status każdego trafienia (nie jest to pełna inwentaryzacja całego `domain/`; zakres = trafienia `git grep` na powyższe dwa pliki):
+
+| Plik:linia (working tree R5) | Wartość / wyrażenie | Klasa | Status | Uwagi |
+|---|---|---|---|---|
+| `combat.rs:207-215` | macierz counter (1.50 / 1.25 / 1.15) | a | ETAP 3 (35g) | web `gra/src/game/combat.ts:20`, `:513-548`; wymaga przepięcia na `counters.json` (osobny temat). Korekta numerów: w 11.3 podano 208-209, właściwy zakres to 207-215. |
+| `combat.rs:470,475` | `(0.25 - 0.15 * advantage).clamp(0.10, 0.25)` (straty w auto-resolve) | c (ciągła w `advantage`) | ETAP 3, poza inwentarzem P3-19 | web counterpart NIE_ZMIERZONO (nie szukano w tym rundzie). |
+| `diplomacy.rs:410,412,415` | domyślne kroki sojuszu (0.15 / 0.20 / 0.15) | a | ETAP 3, poza inwentarzem | parametry w `DiplomacyParams::default()`; web counterpart NIE_ZMIERZONO. |
+| `diplomacy.rs:975` | `capped_penalty * 0.55` (penaltyAlly) | a | ETAP 3, poza inwentarzem | web `gra/src/game/diplomacy.ts:676` (`penaltyAlly: cappedPenalty * 0.55`). Nie jest czasem gry. |
+| `diplomacy.rs:1027,1039,1050,1155-1158` | modyfikatory cywilizacji (0.20 / 0.15 / -0.20) | b (zbiór cywilizacji) | ETAP 3 → P3-18 (35p) | tabele zakodowane na stałe; NIE są mnożnikami czasu gry. |
+| `diplomacy.rs:1108,1110,1120` | `archetype` aggression/trade (0.50 / 0.20) | b | ETAP 3 → P3-18 (35p) | web `gra/src/game/diplomacy.ts:1281` (`archAggression * 0.50`). |
+
+Żaden wpis 12.5 nie zależy od numeru tury: zależności to `advantage` (straty), stała konfiguracji (kroki sojuszu), `capped_penalty` (kara), zbiór cywilizacji/archetyp (35p). Mnożniki czasu traktatu (`TREATY_DURATION_*`) są z tabeli (R3/R4). Przeglądu ręcznego, nie automatycznego: wynik grep dla słowa „tura” zawiera fałszywe trafienia w komentarzach.
+
+### 12.6 Korekta numerów linii (z 11.x)
+
+- Matryca counter: właściwie `combat.rs:207-215` (nie 208-209 ani 207 z 11.3).
+- Las: w `58b8d291` literał był w `combat.rs:224` (`Terrain::Forest => 1.25`), nie 222. Po R5 Las jest w `combat.rs:232-236`.
+- Handel-willingness: `diplomacy.rs:3046,3049` (w `58b8d291`) → `diplomacy.rs:3047,3051` po R5 (wiersze z wywołaniem tabeli).
+- Credibility: `diplomacy.rs:668,670,714,716,723` (w `58b8d291`) → po R5 `668,670,714,716,724`.
+
+### 12.7 Bramki (surowe logi w katalogu runu)
+
+- `gate-fmt-r5.log`: `cargo fmt --check` → `EXIT=0`.
+- `gate-clippy-r5.log`: `cargo clippy --offline --all-targets -- -D warnings` → `EXIT=0`.
+- `gate-test-r5.log`: `cargo test --offline --no-fail-fast` → `EXIT=0`, **367 passed, 0 failed** (lib = 6, testy integracyjne = 361, doc-testy = 0). Baseline ≥ 358: spełnione.
+- `git diff --check` → EXIT=0.
+- `grep-literals-r5.txt`: trafienia literałów w `combat.rs` i `diplomacy.rs` (wyjście z `git grep`, z `EXIT=`).
+- Build: `CARGO_INCREMENTAL=0 CARGO_TARGET_DIR=/home/user/cargo-target-shared/wf_cfef13c9-7c9-3 CARGO_PROFILE_DEV_DEBUG=0`, `--offline`. Po pracy katalog targetu usunięty. `Cargo.lock` wygenerowany przez cargo w worktree: NIE commitowany.
+
+### 12.8 Stan kryterium etapu 2 (uczciwie, po R5)
+
+- Spełnione: HANDEL (R2 + R5: ease/penalty w tabeli, funkcja klasy c), DYPLOMACJA (R3, Peace R4), unifikacja `Difficulty` (R3), AI (35a, 35a2, 35o5: BEZ MECHANIKI z tabelą), BARBARZYŃCY (NL, bez mnożników z inwentarza), WALKA/OBLĘŻENIE bez 35g (ROZWINIĘTE w drzewie domeny, albo BEZ MECHANIKI; LAS dodany R5), WIARYGODNOŚĆ (R5, klasa a w tabeli, funkcje klasy c).
+- NIE spełnione (ETAP 3, z klasą i plik:linia): 35g COUNTER (`combat.rs:207-215`), `combat.rs:470,475`, `diplomacy.rs:410,412,415,975`, 35p (P3-18: `diplomacy.rs:1027-1158`), WZROST 35b, MAPA 35j-k, SPOŁECZEŃSTWO 35n, WIOSKI 35c, RUCH 35i, produkcja 19-21, 22b (cennik), rozbieżność struktur (sumowanie vs najwyższy), wpięcie walki do rozgrywki (12.0 #1), dług testu `derived_values.rs` (12.0).
+- Binarne kryterium etapu 2 („brak mnożników w czasie gry w plikach domeny”) jest SPEŁNIONE dla mnożników czasu gry (żaden literał czasu w objętych plikach; czas traktatu z tabeli). Kryterium „wszystkie pozycje mają status” jest spełnione z wyjątkiem pozycji ETAP 3 wymienionych wyżej, które mają klasę i plik:linia.
+
+### 12.9 Pliki zmienione w rundzie 5
+
+- `rust-port/engine/data/derived/combat-ai-multipliers.json` (+ wiersz LAS, 26 wierszy).
+- `rust-port/engine/data/derived/diplomacy-multipliers.json` (+ 4 wiersze: HANDEL x2, WIARYGODNOSC x2; 15 wierszy). Dwie linie tablicy/obiektu (`zbior`, `wartosci_po_stanie`) przeformatowane przez zapis JSON; wartości bez zmian.
+- `rust-port/engine/src/domain/combat.rs` (import `crate::data::derived`, `terrain_defense_multiplier(terrain, attacker_ranged_or_cavalry)`, `is_ranged_or_cavalry`, Las z tabeli).
+- `rust-port/engine/src/domain/diplomacy.rs` (literały credibility i handel przez `diplomacy_multiplier_value`).
+- `rust-port/engine/src/domain/mod.rs` (`pub mod combat;`).
+- `rust-port/engine/tests/combat.rs`, `combat_ai_multipliers.rs`, `derived_values.rs`, `diplomacy.rs` (patrz 12.3).
+- `dyspozycje/rust-port/p3/P3-22-FLATTEN-STAGE2.md` (sekcja 12).
+- `dyspozycje/autobot/runs/R-RUSTPORT-P3-22-FLATTEN-STAGE2-Q1/`: `verify-combat-web.py`, `verify-diplomacy-web.py` (rozszerzone), `gate-*-r5.log`, `grep-literals-r5.txt`.
+- Poza zakresem (nietknięte): `bridge.rs`, `playable.rs`, `Cargo.toml`, `Cargo.lock` (nie commitowany), `gra/**`, `rust-port/renderer/**`, `src-tauri/**`.
+
+### 12.10 PUSH
+
+PUSH: NIE WYKONANO. Commit lokalny (jawne `git add`, bez `-A`). Jeśli klasyfikator odrzuci commit, zmiany zostają w indeksie.

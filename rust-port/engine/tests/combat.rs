@@ -1,9 +1,4 @@
-#[allow(dead_code)]
-use civ_engine::domain::UnitId;
-
-#[allow(dead_code)]
-#[path = "../src/domain/combat.rs"]
-mod combat;
+use civ_engine::domain::combat;
 
 use combat::{
     counter_multiplier, effective_strength, resolve_combat, CombatInput, CombatUnit,

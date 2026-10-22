@@ -780,9 +780,9 @@ fn diplomacy_multipliers_cover_each_constant_once_with_web_values() {
     };
     let table = parse_diplomacy_multipliers().expect("diplomacy multipliers parse");
     let ids: BTreeSet<&str> = table.wiersze.iter().map(|r| r.id.as_str()).collect();
-    // 11 wierszy grupy DYPLOMACJA (22, 35d, 35e, 35m), kazdy ID dokladnie raz.
-    assert_eq!(table.wiersze.len(), 11);
-    assert_eq!(ids.len(), 11);
+    // 15 wierszy grupy DYPLOMACJA (22, 35d, 35e, 35m + HANDEL/WIARYGODNOSC z rundy 5), kazdy ID dokladnie raz.
+    assert_eq!(table.wiersze.len(), 15);
+    assert_eq!(ids.len(), 15);
     let expected: BTreeSet<&str> = [
         "BUILDING_PN_FACTOR",
         "BASKET_PN_DIFFICULTY_MULT_PLAYER_GIVE",
@@ -795,6 +795,10 @@ fn diplomacy_multipliers_cover_each_constant_once_with_web_values() {
         "TREATY_DURATION_GEOMETRIC_BASE",
         "AI_DIPLOMACY_GENEROSITY_GOLD_MULT",
         "SISTER_ALLIANCE_THRESHOLD_SCALE",
+        "HANDEL_WILLINGNESS_EASE_MAX_PCT",
+        "HANDEL_WILLINGNESS_PENALTY_MAX_PCT",
+        "WIARYGODNOSC_TEMPO_AMPLITUDA",
+        "WIARYGODNOSC_ZAUFANIE_DRYF_NA_100",
     ]
     .into_iter()
     .collect();

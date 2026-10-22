@@ -43,7 +43,11 @@
     {
       "id": "TREATY_DURATION_MULTIPLIER_ACTIONS",
       "klasa": "NL",
-      "zbior": ["nap", "trybut_zadanie", "trybut_oferta"],
+      "zbior": [
+        "nap",
+        "trybut_zadanie",
+        "trybut_oferta"
+      ],
       "definicja_web": "gra/src/game/diplomacy-proposals.ts:595",
       "uzycie_web": "gra/src/game/diplomacy-proposals.ts:617 (treatyDurationPnMultiplier)",
       "opis": "Zbiór identyfikatorów akcji, dla których działa mnożnik czasu traktatu. NIE jest współczynnikiem. Web wyłącza 'pokoj' (komentarz: poza zakresem z definicji).",
@@ -119,6 +123,42 @@
       "uzycie_web": "gra/src/game/diplomacy.ts:729 (SISTER_ALLIANCE_THRESHOLD_SCALE[level]; kopia DiplomacyParams dla sojuszu między siostrami)",
       "opis": "Skala progu sojuszu między siostrami klastra wg stanu 'low|normal|strong' (klucze jak w webie; NIE są to klucze easy/normal/hard).",
       "rust": "BEZ MECHANIKI: brak sojuszu między siostrami w domain/diplomacy.rs (grep 'sister|SISTER' w rust-port/engine/src: 0 trafień). Tabela NIEUŻYWANA."
+    },
+    {
+      "id": "HANDEL_WILLINGNESS_EASE_MAX_PCT",
+      "klasa": "a",
+      "wartosc": 0.15,
+      "definicja_web": "gra/src/game/diplomacy-proposals.ts:908 (pin edb8fb56; const HANDEL_WILLINGNESS_EASE_MAX_PCT = 0.15)",
+      "uzycie_web": "gra/src/game/diplomacy-proposals.ts:936 handelWillingnessMultiplier: 1 - EASE * t (w >= progHandelWillingnessMin)",
+      "opis": "Max ulga progu PW handlu przy pelnej chęci respondenta-AI (klasa a; funkcja w zaleznosci od willingness jest klasa c, patrz P3-22 sekcja 12).",
+      "rust": "ROZWINIETE: diplomacy.rs handel_willingness_multiplier (galaz w >= midpoint)"
+    },
+    {
+      "id": "HANDEL_WILLINGNESS_PENALTY_MAX_PCT",
+      "klasa": "a",
+      "wartosc": 0.2,
+      "definicja_web": "gra/src/game/diplomacy-proposals.ts:910 (pin edb8fb56; const HANDEL_WILLINGNESS_PENALTY_MAX_PCT = 0.20)",
+      "uzycie_web": "gra/src/game/diplomacy-proposals.ts:940 handelWillingnessMultiplier: 1 + PENALTY * t (w < progHandelWillingnessMin)",
+      "opis": "Max kara progu PW handlu przy zerowej chęci respondenta-AI (klasa a).",
+      "rust": "ROZWINIETE: diplomacy.rs handel_willingness_multiplier (galaz w < midpoint)"
+    },
+    {
+      "id": "WIARYGODNOSC_TEMPO_AMPLITUDA",
+      "klasa": "a",
+      "wartosc": 0.5,
+      "definicja_web": "gra/src/game/diplomacy.ts:413 (pin edb8fb56; wiarygodnoscTempoAmplituda: 0.5; rownolegle gra/data/diplomacy.json:132)",
+      "uzycie_web": "gra/src/game/diplomacy-credibility.ts:600 wiarygodnoscWzrostMult; :613 wiarygodnoscSpadekMult",
+      "opis": "Amplituda tempa Wiarygodnosc -> Zaufanie (klasa a). Rust: literal 0.5 w compute_trust_delta i apply_credibility_tempo.",
+      "rust": "ROZWINIETE: diplomacy.rs compute_trust_delta, apply_credibility_tempo"
+    },
+    {
+      "id": "WIARYGODNOSC_ZAUFANIE_DRYF_NA_100",
+      "klasa": "a",
+      "wartosc": 0.03,
+      "definicja_web": "gra/src/game/diplomacy.ts:420 (pin edb8fb56; wiarygodnoscZaufanieDryfNa100: 0.03; rownolegle gra/data/diplomacy.json:133)",
+      "uzycie_web": "gra/src/game/diplomacy-credibility.ts:641 (wKlamrowane * P.wiarygodnoscZaufanieDryfNa100)",
+      "opis": "Dryf Zaufania na 100 pkt Wiarygodnosci (klasa a). Rust: literal 0.03 w credibility_trust_drift.",
+      "rust": "ROZWINIETE: diplomacy.rs credibility_trust_drift"
     }
   ]
 }

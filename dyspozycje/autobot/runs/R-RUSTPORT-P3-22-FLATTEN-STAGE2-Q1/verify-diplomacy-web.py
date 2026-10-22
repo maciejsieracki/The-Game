@@ -44,13 +44,15 @@ web = json.load(open(web_json, encoding="utf-8"))
 table = json.load(open(table_json, encoding="utf-8"))
 rows = {r["id"]: r for r in table["wiersze"]}
 
-# 0. Kompletnosc: 11 wierszy, kazdy ID raz.
+# 0. Kompletnosc: 15 wierszy (runda 5: +HANDEL, +WIARYGODNOSC), kazdy ID raz.
 EXPECTED = {
     "BUILDING_PN_FACTOR", "BASKET_PN_DIFFICULTY_MULT_PLAYER_GIVE",
     "BASKET_PN_DIFFICULTY_MULT_PLAYER_RECEIVE", "TREATY_DURATION_MULTIPLIER_ACTIONS",
     "TREATY_DURATION_UNLIMITED_MULT", "TREATY_DURATION_MIN_TURNS", "TREATY_DURATION_MAX_TURNS",
     "TREATY_DURATION_TURNS_PER_DOUBLING", "TREATY_DURATION_GEOMETRIC_BASE",
     "AI_DIPLOMACY_GENEROSITY_GOLD_MULT", "SISTER_ALLIANCE_THRESHOLD_SCALE",
+    "HANDEL_WILLINGNESS_EASE_MAX_PCT", "HANDEL_WILLINGNESS_PENALTY_MAX_PCT",
+    "WIARYGODNOSC_TEMPO_AMPLITUDA", "WIARYGODNOSC_ZAUFANIE_DRYF_NA_100",
 }
 if set(rows) != EXPECTED or len(table["wiersze"]) != len(EXPECTED):
     mismatches.append(f"KOMPLETNOSC: brak={EXPECTED - set(rows)} nadmiar={set(rows) - EXPECTED}")
@@ -144,6 +146,18 @@ check("BUILDING_PN_FACTOR literal vs tabela", rows["BUILDING_PN_FACTOR"]["wartos
 for lvl, got in ((1, web["building_pn"]["poziom1"]), (2, web["building_pn"]["poziom2"])):
     want = math.floor(koszt * fac ** (lvl - 1) + 0.5)
     check(f"diplomacyPnBudynek targowisko lvl{lvl}", got, want)
+
+# 4b. Runda 5 (literaly zrodlowe, pin edb8fb56).
+hw = src("gra/src/game/diplomacy-proposals.ts")
+for cname, rid in (("HANDEL_WILLINGNESS_EASE_MAX_PCT", "HANDEL_WILLINGNESS_EASE_MAX_PCT"),
+                   ("HANDEL_WILLINGNESS_PENALTY_MAX_PCT", "HANDEL_WILLINGNESS_PENALTY_MAX_PCT")):
+    m = re.search(rf"const {cname} = ([0-9.]+);", hw)
+    check(f"{rid} literal", rows[rid]["wartosc"], float(m.group(1)) if m else None)
+dip_json = json.load(open(f"{root}/gra/data/diplomacy.json", encoding="utf-8"))
+check("WIARYGODNOSC_TEMPO_AMPLITUDA json", rows["WIARYGODNOSC_TEMPO_AMPLITUDA"]["wartosc"],
+      dip_json["params"]["wiarygodnoscTempoAmplituda"])
+check("WIARYGODNOSC_ZAUFANIE_DRYF_NA_100 json", rows["WIARYGODNOSC_ZAUFANIE_DRYF_NA_100"]["wartosc"],
+      dip_json["params"]["wiarygodnoscZaufanieDryfNa100"])
 
 # 5. Kazde plik:linia z tabeli wskazuje istniejacy, niepusty wiersz zrodla.
 for row in table["wiersze"]:

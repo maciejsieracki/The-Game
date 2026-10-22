@@ -705,7 +705,7 @@ fn annexation_requires_vassal_economy_orientation() {
 }
 
 #[test]
-fn peace_price_uses_treaty_duration_precedence_and_multiplier() {
+fn peace_price_is_independent_of_treaty_duration() {
     let mut peace = proposal(ProposalAction::Peace, 0, 1);
     peace.payload.give_pn = Some(500.0);
     peace.payload.turns = Some(20.0);

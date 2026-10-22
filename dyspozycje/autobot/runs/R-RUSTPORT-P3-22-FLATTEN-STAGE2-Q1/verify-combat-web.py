@@ -43,7 +43,7 @@ table = json.load(open(table_json, encoding="utf-8"))
 rows = {r["id"]: r for r in table["wiersze"]}
 rust = open(combat_rs, encoding="utf-8").read()
 
-# 0. Kompletnosc: 25 wierszy, kazdy ID raz.
+# 0. Kompletnosc: 26 wierszy (runda 5 + LAS), kazdy ID raz.
 EXPECTED = {
     "HILL_DEFENSE_MULT", "MOUNTAIN_DEFENSE_MULT", "MUR_BONUS_PROC", "CYTADELA_BONUS_PROC",
     "BASZTA_BONUS_PROC", "PALISADA_BONUS_PROC", "FORT_TERENOWY_BONUS_PROC", "POSTERUNEK_BONUS_PROC",
@@ -52,6 +52,7 @@ EXPECTED = {
     "BROD_RUCH_MULT", "BROD_KARA_ATAK", "BROD_KARA_OBRONA", "BROD_BONUS_BRZEG",
     "MORALE_HIT_LOSS_SCALE", "MORALE_ARMY_COLLAPSE_RATIO", "MORALE_ARMY_COLLAPSE_MULT",
     "AI_MAJOR_EARLY_ECON_BUILDING_MULT", "TERYTORIUM_MNOZNIK", "AI_MAJOR_ABSORB_POWER_RATIO_MIN",
+    "LAS_DEFENSE_MULT_VS_DYSTANS_FLANKA",
 }
 if set(rows) != EXPECTED or len(table["wiersze"]) != len(EXPECTED):
     mismatches.append(f"KOMPLETNOSC: brak={sorted(EXPECTED - set(rows))} nadmiar={sorted(set(rows) - EXPECTED)}")
@@ -132,6 +133,12 @@ check("AI_MAJOR_EARLY_ECON_BUILDING_MULT literal", rows["AI_MAJOR_EARLY_ECON_BUI
       literal_const(ai, "AI_MAJOR_EARLY_ECON_BUILDING_MULT"))
 check("TERYTORIUM_MNOZNIK literal", rows["TERYTORIUM_MNOZNIK"]["wartosc"], literal_const(ai, "TERYTORIUM_MNOZNIK"))
 
+# 2b. Runda 5: LAS = web combat.ts:638 literal `isRangedOrCav ? 1.5 : 1.0` (pin edb8fb56).
+las_src = src("gra/src/game/combat.ts")
+if not re.search(r"return isRangedOrCav \? 1\.5 : 1\.0;", las_src):
+    mismatches.append("LITERAL LAS (combat.ts isRangedOrCav ? 1.5 : 1.0) nie znaleziony")
+check("LAS_DEFENSE_MULT_VS_DYSTANS_FLANKA literal", rows["LAS_DEFENSE_MULT_VS_DYSTANS_FLANKA"]["wartosc"], 1.5)
+
 # 3. Plik:linia w polu definicja_web istnieje i nie jest pusty (dla kazdego wiersza).
 for row in table["wiersze"]:
     m = re.match(r"(gra/(?:src|data)/[^:\s]+):(\d+)", row["definicja_web"])
@@ -144,7 +151,7 @@ for row in table["wiersze"]:
 
 # 4. Status Rust: ROZWINIETE tylko gdy combat.rs czyta wiersz; NIEUZYWANE nie moze byc czytane.
 used = {"HILL_DEFENSE_MULT", "MOUNTAIN_DEFENSE_MULT", "MUR_BONUS_PROC",
-        "FORT_TERENOWY_BONUS_PROC", "POSTERUNEK_BONUS_PROC"}
+        "FORT_TERENOWY_BONUS_PROC", "POSTERUNEK_BONUS_PROC", "LAS_DEFENSE_MULT_VS_DYSTANS_FLANKA"}
 for row in table["wiersze"]:
     rid = row["id"]
     reads = f'combat_ai_multiplier_value("{rid}")' in rust or f'pct("{rid}")' in rust
@@ -156,7 +163,7 @@ for row in table["wiersze"]:
         mismatches.append(f"STATUS {rid}: brak odczytu w combat.rs")
 
 # 5. Brak literalow mnoznikowych w galeziach podpietych funkcji combat.rs.
-for pat in (r"Terrain::Hills => 1\.5", r"Terrain::Mountain => 1\.75", r"1\.0 \+ if structures\.wall \{ 2\.0"):
+for pat in (r"Terrain::Hills => 1\.5", r"Terrain::Mountain => 1\.75", r"1\.0 \+ if structures\.wall \{ 2\.0", r"Terrain::Forest => 1\.25"):
     if re.search(pat, rust):
         mismatches.append(f"LITERAL w combat.rs: /{pat}/")
 

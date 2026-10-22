@@ -665,9 +665,9 @@ pub fn apply_diplomatic_event_with_params(
     if let Some(value) = credibility {
         let w = clamp(value, -100.0, 100.0);
         trust_delta *= if trust_delta >= 0.0 {
-            1.0 + w / 100.0 * 0.5
+            1.0 + w / 100.0 * diplomacy_multiplier_value("WIARYGODNOSC_TEMPO_AMPLITUDA")
         } else {
-            1.0 - w / 100.0 * 0.5
+            1.0 - w / 100.0 * diplomacy_multiplier_value("WIARYGODNOSC_TEMPO_AMPLITUDA")
         };
     }
 
@@ -711,16 +711,17 @@ pub fn apply_credibility_tempo(delta: f64, credibility: Option<f64>) -> f64 {
     };
     let w = clamp(value, -100.0, 100.0);
     if delta > 0.0 {
-        delta * (1.0 + w / 100.0 * 0.5)
+        delta * (1.0 + w / 100.0 * diplomacy_multiplier_value("WIARYGODNOSC_TEMPO_AMPLITUDA"))
     } else if delta < 0.0 {
-        delta * (1.0 - w / 100.0 * 0.5)
+        delta * (1.0 - w / 100.0 * diplomacy_multiplier_value("WIARYGODNOSC_TEMPO_AMPLITUDA"))
     } else {
         0.0
     }
 }
 
 pub fn credibility_trust_drift(credibility: f64) -> f64 {
-    clamp(credibility, -100.0, 100.0) * 0.03
+    clamp(credibility, -100.0, 100.0)
+        * diplomacy_multiplier_value("WIARYGODNOSC_ZAUFANIE_DRYF_NA_100")
 }
 
 pub fn compute_trust_delta(ctx: &TickContext, at_war: bool, params: &DiplomacyParams) -> f64 {
@@ -3043,10 +3044,12 @@ pub fn handel_willingness_multiplier(
     let midpoint = params.trade_willingness_min.clamp(0.0, 1.0);
     if willingness >= midpoint {
         let span = (1.0 - midpoint).max(1e-6);
-        1.0 - 0.15 * ((willingness - midpoint) / span).min(1.0)
+        1.0 - diplomacy_multiplier_value("HANDEL_WILLINGNESS_EASE_MAX_PCT")
+            * ((willingness - midpoint) / span).min(1.0)
     } else {
         let span = midpoint.max(1e-6);
-        1.0 + 0.20 * ((midpoint - willingness) / span).min(1.0)
+        1.0 + diplomacy_multiplier_value("HANDEL_WILLINGNESS_PENALTY_MAX_PCT")
+            * ((midpoint - willingness) / span).min(1.0)
     }
 }
 

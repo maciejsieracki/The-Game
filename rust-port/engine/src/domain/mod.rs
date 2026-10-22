@@ -3,6 +3,7 @@
 pub mod barbarians;
 pub mod building_costs;
 pub mod city_growth;
+pub mod combat;
 pub mod diplomacy;
 mod error;
 pub mod events;
