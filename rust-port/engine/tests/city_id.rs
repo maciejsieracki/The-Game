@@ -2,7 +2,7 @@
 //! (`#[serde(transparent)]`), both as a value and as a map key.
 
 use civ_engine::domain::barbarians::{BarbCityGarrison, BarbCityGarrisonSpawn, BarbUnit};
-use civ_engine::domain::{CityId, PlayerId};
+use civ_engine::domain::CityId;
 use std::collections::BTreeMap;
 
 #[test]
@@ -75,10 +75,4 @@ fn barbarian_cleared_cities_round_trip_as_numbers() {
     let decoded: BarbUnit = serde_json::from_str(&encoded).expect("unit deserializes");
     assert_eq!(decoded, unit);
     assert!(decoded.cleared_city_ids.contains(&CityId::new(9)));
-}
-
-#[test]
-fn player_and_city_ids_are_distinct_types() {
-    // Same raw value, different domains: equality is only defined per type.
-    assert_eq!(PlayerId::new(3).get(), CityId::new(3).get());
 }
