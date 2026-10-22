@@ -1,0 +1,184 @@
+plik	klasa	rust	status	punkt_P6	test_rust	uwagi
+ai-city-capture-executor.ts	SYSTEM	domain/ai_turn.rs	CZĘŚCIOWO (heur.)	P6.11	-	przejęcie miasta przez AI
+ai-cs-absorption.ts	SYSTEM	domain/barbarians.rs	BRAK (heur.)	P6.18	-	wchłanianie city-states
+ai-difficulty-bonus.ts	SYSTEM	data/derived.rs	CZĘŚCIOWO (heur.)	P6.11	-	bonusy trudności AI
+ai-expansion.ts	SYSTEM	domain/ai_turn.rs	CZĘŚCIOWO (heur.)	P6.11	-	ekspansja AI
+ai-fog.ts	SYSTEM	domain/ai_turn.rs	BRAK (heur.)	P6.11	-	mgła wojny dla AI
+ai-major-absorb.ts	SYSTEM	domain/ai_turn.rs	BRAK (heur.)	P6.11	-	wchłanianie major przez AI
+ai-moc-diag.ts	DEV	-	NIE-DOTYCZY	-	-	diagnostyka mocy AI
+ai-production-priorities.ts	SYSTEM	domain/ai_turn.rs	CZĘŚCIOWO (heur.)	P6.11	production_matches_spec_priority_and_skips_already_built_buildings	priorytety produkcji
+ai-resource-needs.ts	SYSTEM	domain/ai_turn.rs	BRAK (heur.)	P6.11	-	potrzeby zasobowe AI
+ai-threat-mode.ts	SYSTEM	domain/ai_turn.rs	CZĘŚCIOWO (heur.)	P6.11	hex_city_score_enemy_penalty_follows_threat_range_option	tryb zagrożenia
+ai.ts	SYSTEM	domain/ai_turn.rs	CZĘŚCIOWO (heur.)	P6.11-P6.12	planner_returns_production_then_actions_and_always_ends_the_turn	główny planner AI (5656 LOC)
+alliance-war-obligation.ts	SYSTEM	domain/diplomacy.rs	CZĘŚCIOWO (heur.)	P6.14	alliance_uses_configured_hegemon_threshold	obowiązek wojny sojuszu
+army-concentration.ts	SYSTEM	domain/ai_turn.rs	BRAK (heur.)	P6.11	-	koncentracja armii
+army-cycle.ts	SYSTEM	domain/ai_turn.rs	BRAK (heur.)	P6.12	-	cykl armii
+army-starvation.ts	SYSTEM	domain/ai_turn.rs	BRAK (heur.)	P6.12	-	głód armii
+armyMerge.ts	SYSTEM	domain/recruitment.rs	BRAK (heur.)	P6.5	-	łączenie armii
+auto-battle-params.ts	DATA	data/units_combat.rs	CZĘŚCIOWO (heur.)	P6.13	auto_battle_params_parses_and_spot_checks	parametry auto-walki
+auto-battle-power.ts	SYSTEM	domain/combat.rs	CZĘŚCIOWO (heur.)	P6.13	effective_strength_applies_counters_terrain_and_siege_structures	siła auto-walki
+auto-improvements.ts	SYSTEM	domain/improvements.rs	CZĘŚCIOWO (heur.)	P6.8	-	automatyczne ulepszenia
+auto-manage.ts	SYSTEM	domain/ai_turn.rs	BRAK (heur.)	P6.12	-	auto-zarządzanie
+barbarians.ts	SYSTEM	domain/barbarians.rs	CZĘŚCIOWO (heur.)	P6.18	camp_spawning_is_deterministic_and_honours_city_and_camp_spacing	barbarzyńcy
+battle-loot.ts	SYSTEM	domain/combat.rs	BRAK (heur.)	P6.13	-	łup bitewny
+battle-summary.ts	UI	-	NIE-DOTYCZY	-	-	podsumowanie bitwy (prezentacja)
+border-march-scan.ts	SYSTEM	domain/pathfinding.rs	BRAK (heur.)	P6.14	-	skan marszu granicą
+braz-access.ts	DATA	data/civilizations.rs	CZĘŚCIOWO (heur.)	P6.1	-	dostęp zasobu cywilizacji
+building-cost-tempo.ts	DATA	domain/building_costs.rs	CZĘŚCIOWO (heur.)	P6.7	building_table_has_exactly_the_42_canonical_ids_once_each	tempo kosztów budynków
+building-resource-gate.ts	SYSTEM	domain/building_costs.rs	CZĘŚCIOWO (heur.)	P6.7	expenditure_requires_both_work_and_all_resources	bramka zasobowa budowy
+building-stock-cost.ts	SYSTEM	domain/building_costs.rs	CZĘŚCIOWO (heur.)	P6.7	successful_spend_deducts_effective_work_and_raw_stock_atomically	koszt magazynowy
+building-upgrades.ts	SYSTEM	domain/improvements.rs	CZĘŚCIOWO (heur.)	P6.8	-	ulepszanie budynków
+capital-capture.ts	SYSTEM	domain/combat.rs	BRAK (heur.)	P6.13	-	zdobycie stolicy
+cities.ts	SYSTEM	domain/state.rs	CZĘŚCIOWO (heur.)	P6.6	-	model miast (1293 LOC)
+citizen-resource-upkeep.ts	SYSTEM	domain/resource_production.rs	CZĘŚCIOWO (heur.)	P6.8	parse_citizen_resource_upkeep_parses_and_spot_checks	utrzymanie obywateli
+city-defense.ts	SYSTEM	domain/combat.rs	BRAK (heur.)	P6.13	-	obrona miasta
+city-founding.ts	SYSTEM	domain/state.rs	CZĘŚCIOWO (heur.)	P6.6	settler_founds_only_on_a_qualifying_village_and_respects_city_spacing	zakładanie miasta
+city-hex-clear.ts	SYSTEM	domain/terrain.rs	BRAK (heur.)	P6.6	-	czyszczenie heksu miasta
+city-hex-movement.ts	SYSTEM	domain/pathfinding.rs	BRAK (heur.)	P6.3	-	ruch w heksie miasta
+city-names-pool.ts	DATA	data/loader.rs	CZĘŚCIOWO (heur.)	P6.1	city_names_pools_json_parses_and_spot_checks	pula nazw miast
+city-state-difficulty.ts	SYSTEM	domain/barbarians.rs	BRAK (heur.)	P6.18	-	trudność city-states
+civ-ai-allocation.ts	SYSTEM	domain/ai_turn.rs	BRAK (heur.)	P6.11	-	alokacja AI cywilizacji
+civ-ai-data.ts	DATA	data/civilizations.rs	CZĘŚCIOWO (heur.)	P6.1	civ_ai_json_parses_and_spot_checks	dane AI cywilizacji
+civ-bonuses.ts	SYSTEM	data/civilizations.rs	CZĘŚCIOWO (heur.)	P6.1	civs_json_parses_and_spot_checks	bonusy cywilizacji
+civ-entry-epoch.ts	SYSTEM	domain/unit_epoch.rs	CZĘŚCIOWO (heur.)	P6.1	-	epoka wejścia cywilizacji
+civ-matrix-semantic.ts	DATA	data/civilizations.rs	CZĘŚCIOWO (heur.)	P6.1	civ_matrix_json_parses_and_spot_checks	semantyka macierzy cywilizacji
+civ-matrix.ts	DATA	data/civilizations.rs	CZĘŚCIOWO (heur.)	P6.1	civ_matrix_json_parses_and_spot_checks	macierz cywilizacji
+civ-names.ts	DATA	data/civilizations.rs	CZĘŚCIOWO (heur.)	P6.1	civs_count_and_ids_match_web_pin	nazwy cywilizacji
+civ-roster.ts	DATA	data/civilizations.rs	CZĘŚCIOWO (heur.)	P6.1	civs_count_and_ids_match_web_pin	lista cywilizacji
+civ-visual.ts	UI	-	NIE-DOTYCZY	-	-	wizualizacja cywilizacji
+cluster-start.ts	SYSTEM	domain/map_generator.rs	BRAK (heur.)	P6.1	-	start klastra (poza gra/src/game w mapie)
+combat.ts	SYSTEM	domain/combat.rs	CZĘŚCIOWO (heur.)	P6.13	resolver_returns_deterministic_winner_and_per_unit_losses	walka (1259 LOC)
+conquest-stability.ts	SYSTEM	domain/state.rs	BRAK (heur.)	P6.6	-	stabilność podboju
+converters.ts	SYSTEM	domain/types.rs	CZĘŚCIOWO (heur.)	P6.20	-	konwertery danych
+culture-religion.ts	SYSTEM	domain/turn_economy.rs (pole culture, linia 32)	CZĘŚCIOWO (heur.)	P6.16	-	Rust ma tylko magazyn culture (turn_economy.rs:32); brak religii i logiki kultury (web: loadCultureParams, culture-religion.ts:235)
+cyna-access.ts	DATA	data/economy_society.rs	CZĘŚCIOWO (heur.)	P6.8	-	dostęp zasobu cyna
+danina-nazwa.ts	DATA	domain/diplomacy.rs	BRAK (heur.)	P6.14	-	nazwa daniny
+defenseBreakdown.ts	UI	-	NIE-DOTYCZY	-	-	rozbicie obrony (prezentacja)
+diag-log.ts	DEV	-	NIE-DOTYCZY	-	-	logi diagnostyczne
+difficulty-cost.ts	SYSTEM	data/derived.rs	CZĘŚCIOWO (heur.)	P6.11	difficulty_is_one_type_across_domain_modules	koszt trudności
+diplomacy-acceptance-points.ts	SYSTEM	domain/diplomacy.rs	CZĘŚCIOWO (heur.)	P6.14	diplomacy_acceptance_points_json_parses_and_spot_checks	punkty akceptacji
+diplomacy-ai-balance.ts	SYSTEM	domain/diplomacy.rs	CZĘŚCIOWO (heur.)	P6.14	-	bilans AI dyplomacji
+diplomacy-ai-offer-balance.ts	SYSTEM	domain/diplomacy.rs	CZĘŚCIOWO (heur.)	P6.14	-	bilans ofert AI
+diplomacy-audience-actions.ts	SYSTEM	domain/diplomacy.rs	CZĘŚCIOWO (heur.)	P6.14	-	akcje audiencji
+diplomacy-barbarian-cooperation.ts	SYSTEM	domain/diplomacy.rs	BRAK (heur.)	P6.14	-	współpraca z barbarzyńcami
+diplomacy-basket-transfer.ts	SYSTEM	domain/diplomacy.rs	CZĘŚCIOWO (heur.)	P6.14	basket_and_treaty_duration_read_diplomacy_table	transfer koszyka
+diplomacy-border-march.ts	SYSTEM	domain/diplomacy.rs	BRAK (heur.)	P6.14	-	marsz graniczny
+diplomacy-credibility.ts	SYSTEM	domain/diplomacy.rs	CZĘŚCIOWO (heur.)	P6.14	-	wiarygodność
+diplomacy-currency-trade.ts	SYSTEM	domain/trade.rs	CZĘŚCIOWO (heur.)	P6.15	-	handel walutą
+diplomacy-deposit-trade.ts	SYSTEM	domain/trade.rs	BRAK (heur.)	P6.15	-	handel depozytami
+diplomacy-display.ts	UI	-	NIE-DOTYCZY	-	-	prezentacja dyplomacji
+diplomacy-economy.ts	SYSTEM	domain/diplomacy.rs	CZĘŚCIOWO (heur.)	P6.14	-	ekonomia dyplomacji
+diplomacy-factors.ts	SYSTEM	domain/diplomacy.rs	CZĘŚCIOWO (heur.)	P6.14	-	czynniki dyplomacji
+diplomacy-goods.ts	SYSTEM	domain/trade.rs	CZĘŚCIOWO (heur.)	P6.15	-	towary w dyplomacji
+diplomacy-layers.ts	UI	-	NIE-DOTYCZY	-	-	warstwy UI dyplomacji
+diplomacy-locks.ts	SYSTEM	domain/diplomacy.rs	CZĘŚCIOWO (heur.)	P6.14	-	blokady dyplomacji
+diplomacy-pair-summary.ts	UI	-	NIE-DOTYCZY	-	-	podsumowanie pary (prezentacja)
+diplomacy-peace-lock.ts	SYSTEM	domain/diplomacy.rs	CZĘŚCIOWO (heur.)	P6.14	-	blokada pokoju
+diplomacy-penalty-preview.ts	UI	-	NIE-DOTYCZY	-	-	podgląd kar (prezentacja)
+diplomacy-pn-engine.ts	SYSTEM	domain/diplomacy.rs	CZĘŚCIOWO (heur.)	P6.14	-	silnik PN dyplomacji
+diplomacy-proposals.ts	SYSTEM	domain/diplomacy.rs	CZĘŚCIOWO (heur.)	P6.14	-	propozycje dyplomatyczne (2605 LOC)
+diplomacy-rejection-cooldown.ts	SYSTEM	domain/diplomacy.rs	BRAK (heur.)	P6.14	-	cooldown odrzuceń
+diplomacy-resource-trade-pick.ts	SYSTEM	domain/trade.rs	BRAK (heur.)	P6.15	-	wybór handlu zasobami
+diplomacy-tech-trade.ts	SYSTEM	domain/trade.rs	BRAK (heur.)	P6.15	-	handel technologią
+diplomacy-trade-validation.ts	SYSTEM	domain/trade.rs	CZĘŚCIOWO (heur.)	P6.15	-	walidacja handlu
+diplomacy-treaties.ts	SYSTEM	domain/diplomacy.rs	CZĘŚCIOWO (heur.)	P6.14	-	traktaty
+diplomacy-unit-transfer.ts	SYSTEM	domain/diplomacy.rs	BRAK (heur.)	P6.14	-	transfer jednostek
+diplomacy-value-catalog.ts	DATA	domain/diplomacy.rs	CZĘŚCIOWO (heur.)	P6.14	canonical_value_catalog_prices_non_quantity_basket_items	katalog wartości
+diplomacy-war-gates.ts	SYSTEM	domain/diplomacy.rs	BRAK (heur.)	P6.14	-	bramki wojenne
+diplomacy.ts	SYSTEM	domain/diplomacy.rs	CZĘŚCIOWO (heur.)	P6.14	diplomacy_state_serializes_non_empty_pair_map	dyplomacja (1617 LOC)
+display-names.ts	UI	-	NIE-DOTYCZY	-	-	nazwy wyświetlane
+economy-upkeep.ts	SYSTEM	domain/turn_economy.rs	CZĘŚCIOWO (heur.)	P6.8	-	utrzymanie ekonomii
+economy.ts	SYSTEM	domain/turn_economy.rs	CZĘŚCIOWO (heur.)	P6.8	-	ekonomia (1243 LOC)
+effective-difficulty-for-owner.ts	SYSTEM	data/derived.rs	CZĘŚCIOWO (heur.)	P6.11	difficulty_is_one_type_across_domain_modules	trudność właściciela
+embarkation.ts	SYSTEM	domain/pathfinding.rs	BRAK (heur.)	P6.4	-	wsiadanie na statek
+empire-city-defaults.ts	SYSTEM	domain/state.rs	BRAK (heur.)	P6.6	-	domyślne miasta imperium
+empire-diplo-resource-flow.ts	SYSTEM	domain/trade.rs	BRAK (heur.)	P6.15	-	przepływ zasobów dyplomacji
+empire-food.ts	SYSTEM	domain/city_growth.rs	CZĘŚCIOWO (heur.)	P6.7	positive_food_is_health_adjusted_and_crossing_the_threshold_grows_once	żywność imperium
+empire-handel-split.ts	SYSTEM	domain/trade.rs	BRAK (heur.)	P6.15	-	podział handlu
+empire-hud-totals.ts	UI	-	NIE-DOTYCZY	-	-	sumy HUD
+eot-event-defer.ts	SYSTEM	domain/events.rs	CZĘŚCIOWO (heur.)	P6.10	-	odroczenie zdarzeń końca tury
+era-change-notify.ts	UI	-	NIE-DOTYCZY	-	-	powiadomienie o epoce
+era-gate-ui.ts	UI	-	NIE-DOTYCZY	-	-	bramka epoki w UI
+first-player-city.ts	SYSTEM	domain/playable.rs	CZĘŚCIOWO (heur.)	P6.1	-	pierwsze miasto gracza
+forced-war-bronze.ts	SYSTEM	-	BRAK (heur.)	P6.12	-	NOWY SYSTEM: wymuszone wojny (brąz)
+forced-war-common.ts	SYSTEM	-	BRAK (heur.)	P6.12	-	NOWY SYSTEM: wspólne mechanizmy wymuszonych wojen
+forced-war-iron.ts	SYSTEM	-	BRAK (heur.)	P6.12	-	NOWY SYSTEM: wymuszone wojny (żelazo)
+forced-war-stone.ts	SYSTEM	-	BRAK (heur.)	P6.12	-	NOWY SYSTEM: wymuszone wojny (kamień)
+forced-war-waves.ts	SYSTEM	-	BRAK (heur.)	P6.12	-	NOWY SYSTEM: fale wymuszonych wojen
+fort-territory.ts	SYSTEM	domain/terrain.rs	BRAK (heur.)	P6.3	-	terytorium fortów
+fsa-autosave.ts	DEV	domain/save_load.rs	NIE-DOTYCZY	P6.20	-	autozapis przeglądarkowy (File System Access)
+gold-deficit.ts	SYSTEM	domain/turn_economy.rs	CZĘŚCIOWO (heur.)	P6.8	-	deficyt złota
+growth-happiness.ts	SYSTEM	domain/city_growth.rs	CZĘŚCIOWO (heur.)	P6.7	hunger_penalty_is_separate_and_never_drops_below_one	wzrost a szczęście
+human-owners.ts	SYSTEM	domain/playable.rs	CZĘŚCIOWO (heur.)	P6.1	-	właściciele ludzcy (hot-seat)
+idb-storage.ts	DEV	-	NIE-DOTYCZY	-	-	magazyn IndexedDB (przeglądarka)
+improvement-tech.ts	SYSTEM	domain/improvements.rs	CZĘŚCIOWO (heur.)	P6.17	improvement_and_wonder_tables_cover_every_entry_once	ulepszenia a technologie
+inca-llama-seed.ts	SYSTEM	domain/map_generator.rs	BRAK (heur.)	P6.1	-	ziarno lam Inków
+livestock-unlock.ts	SYSTEM	domain/improvements.rs	BRAK (heur.)	P6.17	-	odblokowanie hodowli
+load-map-source.ts	SYSTEM	domain/save_load.rs	BRAK (heur.)	P6.21	-	źródło mapy przy wczytaniu
+manpower.ts	SYSTEM	domain/recruitment.rs	CZĘŚCIOWO (heur.)	P6.5	domain_recruitment_reads_the_unit_table_values_without_recomputing_them	manpower (798 LOC)
+map-rebels.ts	SYSTEM	domain/barbarians.rs	BRAK (heur.)	P6.18	-	buntownicy na mapie
+mapSiegeDetect.ts	SYSTEM	domain/combat.rs	BRAK (heur.)	P6.13	-	detekcja oblężenia
+mennica-zloto-grace.ts	SYSTEM	domain/turn_economy.rs	BRAK (heur.)	P6.8	-	łaska mennicy
+okolica.ts	SYSTEM	domain/city_growth.rs	CZĘŚCIOWO (heur.)	P6.8	-	okolica miasta (worked tiles, 760 LOC)
+order.ts	SYSTEM	domain/types.rs	CZĘŚCIOWO (heur.)	P6.2	command_wire_shape_is_stable_for_engine_integration	komendy/rozkazy
+owner-epoch.ts	SYSTEM	domain/unit_epoch.rs	CZĘŚCIOWO (heur.)	P6.1	-	epoka właściciela
+owner-utils.ts	SYSTEM	domain/player.rs	CZĘŚCIOWO (heur.)	P6.1	-	narzędzia właściciela
+pending-improvements.ts	SYSTEM	domain/improvements.rs	BRAK (heur.)	P6.8	-	oczekujące ulepszenia
+planned-march.ts	SYSTEM	domain/pathfinding.rs	BRAK (heur.)	P6.4	-	planowany marsz
+playerState.ts	SYSTEM	domain/playable.rs	CZĘŚCIOWO (heur.)	P6.1	-	stan gracza (617 LOC)
+playtestMapaSwiata.ts	DEV	-	NIE-DOTYCZY	-	-	playtest (dev-tool)
+playtestMiastoEkonomia.ts	DEV	-	NIE-DOTYCZY	-	-	playtest (dev-tool)
+playtestOdskok3v3.ts	DEV	-	NIE-DOTYCZY	-	-	playtest (dev-tool)
+playtestWalkaMapy.ts	DEV	-	NIE-DOTYCZY	-	-	playtest (dev-tool)
+population-growth-tempo.ts	DATA	domain/city_growth.rs	CZĘŚCIOWO (heur.)	P6.7	a_threshold_multiplier_is_rounded_and_only_one_citizen_is_added_per_turn	tempo wzrostu
+population-growth-v85.ts	SYSTEM	domain/city_growth.rs	CZĘŚCIOWO (heur.)	P6.7	fractional_growth_accumulates_and_freezes_at_the_population_cap	wzrost populacji v85
+post-battle-map.ts	SYSTEM	domain/combat.rs	BRAK (heur.)	P6.13	-	mapa po bitwie
+post-capture-law.ts	SYSTEM	domain/combat.rs	BRAK (heur.)	P6.13	-	prawo po zdobyciu
+power-objective.ts	SYSTEM	domain/ai_turn.rs	BRAK (heur.)	P6.11	-	cel mocy AI
+power-options.ts	DATA	data/derived.rs	CZĘŚCIOWO (heur.)	P6.11	power_params_parses_and_spot_checks	opcje mocy
+power-ranking.ts	SYSTEM	domain/ai_turn.rs	BRAK (heur.)	P6.11	-	ranking mocy
+power.ts	SYSTEM	domain/ai_turn.rs	BRAK (heur.)	P6.11	-	moc (ranking/AI)
+production.ts	SYSTEM	domain/resource_production.rs	CZĘŚCIOWO (heur.)	P6.8	production_matches_spec_priority_and_skips_already_built_buildings	produkcja (2233 LOC)
+r-stawki-strojenie.ts	DEV	-	NIE-DOTYCZY	-	-	strojenie stawek (dev-tool)
+rally-point.ts	SYSTEM	domain/pathfinding.rs	BRAK (heur.)	P6.4	rally_moves_multiple_units_toward_their_shared_camp	punkt zbiórki
+relief-preserving-improvements.ts	SYSTEM	domain/improvements.rs	BRAK (heur.)	P6.8	-	ulepszenia zachowujące ulgę
+research.ts	SYSTEM	domain/turn_economy.rs	CZĘŚCIOWO (heur.)	P6.17	research_costs_cover_each_tech_tempo_and_axis_once	badania
+resource-access.ts	SYSTEM	domain/resource_production.rs	CZĘŚCIOWO (heur.)	P6.8	-	dostęp do zasobów
+resource-usage-breakdown.ts	UI	-	NIE-DOTYCZY	-	-	rozbicie zużycia (prezentacja)
+ruch-swiata-tempo.ts	DATA	domain/turn_economy.rs	CZĘŚCIOWO (heur.)	P6.9	-	tempo ruchu świata
+save-label.ts	UI	-	NIE-DOTYCZY	-	-	etykieta zapisu
+save.ts	SYSTEM	domain/save_load.rs	CZĘŚCIOWO (heur.)	P6.20	state_round_trip_preserves_camp_identity_and_visit_memory	zapis (1040 LOC)
+scout-auto-explore.ts	SYSTEM	domain/pathfinding.rs	BRAK (heur.)	P6.4	-	auto-eksploracja zwiadowcy
+side-panel-event-link.ts	UI	-	NIE-DOTYCZY	-	-	link zdarzenia (prezentacja)
+side-panel-event-priority.ts	UI	-	NIE-DOTYCZY	-	-	priorytet zdarzeń (prezentacja)
+siege.ts	SYSTEM	domain/combat.rs	CZĘŚCIOWO (heur.)	P6.13	-	oblężenie (774 LOC)
+siegeAi.ts	SYSTEM	domain/ai_turn.rs	BRAK (heur.)	P6.13	-	AI oblężenia
+siegeDefenders.ts	SYSTEM	domain/combat.rs	BRAK (heur.)	P6.13	-	obrońcy oblężenia
+siegeMachines.ts	SYSTEM	data/units_combat.rs	CZĘŚCIOWO (heur.)	P6.13	city_structure_bonuses_are_positive_and_mur_is_the_largest_single_bonus	maszyny oblężnicze
+society-breakdown.ts	UI	-	NIE-DOTYCZY	-	-	rozbicie społeczeństwa (prezentacja, 1058 LOC)
+society-inputs.ts	SYSTEM	data/economy_society.rs	CZĘŚCIOWO (heur.)	P6.8	parse_society_params_parses_and_spot_checks	wejścia społeczeństwa
+spich-auto-ration-notify.ts	UI	-	NIE-DOTYCZY	-	-	powiadomienie o racjonowaniu
+start-preview.ts	UI	-	NIE-DOTYCZY	-	-	podgląd startu
+tech-tempo.ts	DATA	data/buildings_tech.rs	CZĘŚCIOWO (heur.)	P6.17	research_costs_cover_each_tech_tempo_and_axis_once	tempo technologii
+tech-tree.ts	SYSTEM	data/buildings_tech.rs	CZĘŚCIOWO (heur.)	P6.17	tech_json_parses	drzewko technologii
+terrain-improvements.ts	SYSTEM	domain/improvements.rs	CZĘŚCIOWO (heur.)	P6.3	terrain_improvements_parses_strict_with_farma_and_posterunek	ulepszenia terenu
+trade-routes.ts	SYSTEM	domain/trade.rs	CZĘŚCIOWO (heur.)	P6.15	-	szlaki handlowe (1945 LOC)
+triumph-city-state.ts	SYSTEM	domain/barbarians.rs	BRAK (heur.)	P6.18	-	triumf państwa-miasta
+turn-economy.ts	SYSTEM	domain/turn_economy.rs	CZĘŚCIOWO (heur.)	P6.9	-	ekonomia tury (2782 LOC)
+unit-building-bonuses.ts	SYSTEM	domain/combat.rs	BRAK (heur.)	P6.5	-	bonusy budynków jednostek
+unit-card-stats.ts	UI	-	NIE-DOTYCZY	-	-	statystyki karty jednostki
+unit-cost-tempo.ts	DATA	domain/recruitment.rs	CZĘŚCIOWO (heur.)	P6.5	unit_table_has_one_row_per_units_json_record_and_no_extra_rows	tempo kosztu jednostek
+unit-power.ts	SYSTEM	domain/combat.rs	CZĘŚCIOWO (heur.)	P6.13	counters_parses_and_spot_checks	moc jednostki
+unit-replace-context.ts	SYSTEM	domain/recruitment.rs	BRAK (heur.)	P6.5	-	kontekst zastąpienia jednostki
+veteran.ts	SYSTEM	domain/combat.rs	CZĘŚCIOWO (heur.)	P6.13	veteran_levels_are_complete_and_non_decreasing	weterani
+victory.ts	SYSTEM	domain/events.rs (TurnPhase::Victory, linia 60)	CZĘŚCIOWO (heur.)	P6.19	-	Rust ma tylko slot fazy Victory (events.rs:60); brak logiki warunków zwycięstwa (web: checkVictory, victory.ts:204)
+villageRewards.ts	SYSTEM	domain/barbarians.rs	BRAK (heur.)	P6.18	-	nagrody wiosek
+visibility.ts	SYSTEM	domain/state.rs	BRAK (heur.)	P6.6	-	widoczność
+wealth.ts	SYSTEM	data/economy_society.rs	CZĘŚCIOWO (heur.)	P6.8	-	bogactwo
+wiarygodnosc-types.ts	DATA	domain/diplomacy.rs	CZĘŚCIOWO (heur.)	P6.14	-	typy wiarygodności
+wonder-availability.ts	SYSTEM	data/buildings_tech.rs	CZĘŚCIOWO (heur.)	P6.17	wonders_json_parses	dostępność cudów
+wonder-civ-tech.ts	SYSTEM	data/buildings_tech.rs	CZĘŚCIOWO (heur.)	P6.17	wonders_state_keys_match_web_pin	cuda a cywilizacja
+wonder-map-build.ts	SYSTEM	domain/improvements.rs	BRAK (heur.)	P6.17	-	budowa cudów na mapie
+wonders-data.ts	DATA	data/buildings_tech.rs	CZĘŚCIOWO (heur.)	P6.17	wonders_json_parses	dane cudów
+zelazo-access.ts	DATA	data/economy_society.rs	CZĘŚCIOWO (heur.)	P6.8	-	dostęp zasobu żelazo
+zloto-access.ts	DATA	data/economy_society.rs	CZĘŚCIOWO (heur.)	P6.8	-	dostęp zasobu złoto
