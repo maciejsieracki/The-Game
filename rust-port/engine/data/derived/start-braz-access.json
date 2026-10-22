@@ -1,0 +1,28 @@
+{
+  "meta": {
+    "status": "BOOTSTRAP P6.1C: identyfikatory przepisane z weba. Zrodlem prawdy jest TA tabela.",
+    "pin_web": "edb8fb56",
+    "temat": "R-RUSTPORT-P6-1C-START-KLASTRA-Q1"
+  },
+  "budynek_odlewnia_brazu": {
+    "wartosc": "odlewnia_brazu",
+    "zrodlo_web": "gra/src/game/braz-access.ts:9 (PIEC_HUTNICZY_BUILDING_ID)"
+  },
+  "budynki_ulepszenia_odlewni": {
+    "wartosc": ["odlewnia_zelaza", "wielka_odlewnia"],
+    "zrodlo_web": "gra/src/game/braz-access.ts:39-41 (cityHasPiecHutniczy)"
+  },
+  "ulepszenie_zrodlo_miedzi": {
+    "wartosc": "kopalnia_miedzi",
+    "zrodlo_web": "gra/src/game/braz-access.ts:12 (KOPALNIA_MIEDZI_KEY)"
+  },
+  "klucz_magazynu_brazu": {
+    "wartosc": "braz",
+    "zrodlo_web": "gra/src/game/braz-access.ts:50 (stock.braz)"
+  },
+  "aliasy_kluczy_ulepszen": {
+    "wartosc": { "pastwisko": "bydlo" },
+    "zrodlo_web": "gra/src/game/terrain-improvements.ts:33-35 (LEGACY_KEY_ALIASES); uzywane przez normalizeImprovementKey",
+    "uwaga": "normalizeImprovementKey akceptuje tez klucz bez aliasu, o ile istnieje w terrain-improvements.json (czytane z data::terrain_map)."
+  }
+}

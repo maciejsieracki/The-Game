@@ -1,0 +1,22 @@
+DOWOD, ZE TESTY I WERYFIKATOR NIE SA PUSTE (mutacje wykonane w r1, po nich PRZYWROCONE; stan koncowy = zielony, patrz gate-test-r1.log)
+
+[Rust] Mutacja 1: data/derived/start-cluster-params.json min_dystans_miast_start_miasto_panstwo 3 -> 4
+       Wynik (cargo test --no-fail-fast --test p6_1c_*):
+         test constants_and_start_relations_match_web ... FAILED
+         test build_cluster_start_plan_matches_web_for_all_cases ... FAILED
+[Rust] Mutacja 2: domain/start_position.rs sortowanie kandydatow lamy rosnaco -> malejaco
+       Wynik:
+         test seed_inca_llama_deposits_matches_web_for_all_cases ... FAILED
+       (hash_pos_* i hex_keys_* nadal ok: mutacja dotyka tylko selekcji)
+
+[Python] verify-p61c-vectors.py na skazonej kopii wektorow (dopisane 999 do typCityCopyOwners, zmieniony wynik
+         pickSecond, seeded+1, odwrocony wynik access) -> 4 ROZBIEZNOSCI, EXIT=1:
+  ROZBIEZNOSC pickSecond k42 {'q': 3, 'r': 3} blisko 42 5: py={'q': 14, 'r': 11} json={'q': 0, 'r': 0}
+  ROZBIEZNOSC plan k42/rzymianie/r6/brak/pools typCityCopyOwners: py=[2, 3, 4, 5, 6, 7, 9, 10, 11, 12, 13, 20] json=[2, 3, 4, 5, 6, 7, 9, 10, 11, 12, 13, 20, 999]
+  ROZBIEZNOSC llama k42/jeden-start/def-def/brak/brak/s4294967295 seeded: py=3 json=4
+  ROZBIEZNOSC access {'stock': {'kind': 'null'}, 'builtIds': ['x'], 'result': True}: py=False json=True
+  RAZEM: 6315 sprawdzen, rozbieznosci: 4
+  EXIT=1
+
+[Powtarzalnosc] Regeneracja wektorow (gen-p61c-vectors.mjs) do osobnego katalogu daje pliki bajt-w-bajt identyczne
+  z zacommitowanymi: maps.json, cluster-start.json, llama.json, braz.json (cmp, brak roznic).

@@ -1,0 +1,17 @@
+{
+  "meta": {
+    "status": "BOOTSTRAP P6.1C: wartosci startowe przepisane z weba. Zrodlem prawdy do recznego balansu jest TA tabela.",
+    "pin_web": "edb8fb56",
+    "temat": "R-RUSTPORT-P6-1C-START-KLASTRA-Q1"
+  },
+  "promien_regionu_startowego": {
+    "wartosc": 3,
+    "zrodlo_web": "gra/src/game/inca-llama-seed.ts:16 (LLAMA_START_RADIUS)",
+    "jednostka": "heksy"
+  },
+  "zloza_na_start": {
+    "wartosc": 3,
+    "zrodlo_web": "gra/src/game/inca-llama-seed.ts:18 (LLAMA_PER_START)",
+    "jednostka": "zloza lamy na jeden start Inkow (o ile starczy wzgorz/gor)"
+  }
+}
