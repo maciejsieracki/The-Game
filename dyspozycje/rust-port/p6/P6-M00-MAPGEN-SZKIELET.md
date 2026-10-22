@@ -38,7 +38,7 @@ Kolizje nazw: `ls rust-port/engine/src/domain | grep -E 'territory|wonder|roads|
 
 Zakres web per plik jest w komentarzach `//!` danego pliku (zgodny z kolumna "zakres web" P6-25 §6). Po M00 zaden temat M* nie edytuje `domain/mod.rs`.
 
-## 3. Zaleznosci i sekwencja (z P6-25 §6)
+## 3. Zaleznosci i sekwencja (z P6-25 §6; zakres M01..M18, M18 = `generate.rs`)
 
 - Start: M00 (ten temat). Po M00 rownolegle: M01, M02, M09, M14, M15, M17 (rozlaczne pliki).
 - M03, M04 po M01+M02 (rownolegle ze soba). M05A -> M05B -> M06A -> M06B -> M07A -> M07B -> M07C -> M07D -> M07E1 -> M07E2 (lancuch).
@@ -50,14 +50,14 @@ Zakres web per plik jest w komentarzach `//!` danego pliku (zgodny z kolumna "za
 
 ## 4. Test
 
-`rust-port/engine/tests/p6_m00_skeleton.rs` (4 testy): moduly kompiluja sie i sa publiczne (`use civ_engine::domain::{mapgen, ...}` oraz wszystkie 22 podmoduly), lista plikow/modulow zgodna z wierszem M00 tabeli P6-25 §6 zapisanym w runie (`dyspozycje/autobot/runs/R-RUSTPORT-P6-M00-MAPGEN-SZKIELET-Q1/p6-25-sec6-m00-row.txt`, linia 740 dokumentu), pliki zawieraja wylacznie `//!`, `mapgen/mod.rs` deklaruje dokladnie moduly z dokumentu i nie ma plikow-sierot, `domain/mod.rs` deklaruje moduly szkieletu. Bez pinow wartosci.
+`rust-port/engine/tests/p6_m00_skeleton.rs` (5 testow): moduly kompiluja sie i sa publiczne (`use civ_engine::domain::{mapgen, ...}` oraz wszystkie 22 podmoduly), lista plikow/modulow zgodna z wierszem M00 tabeli P6-25 §6 zapisanym w runie (`dyspozycje/autobot/runs/R-RUSTPORT-P6-M00-MAPGEN-SZKIELET-Q1/p6-25-sec6-m00-row.txt`, linia 740 dokumentu), pliki zawieraja wylacznie `//!`, `mapgen/mod.rs` deklaruje dokladnie moduly z dokumentu i nie ma plikow-sierot, `domain/mod.rs` deklaruje moduly szkieletu. Dodatkowo `skeleton_headers_name_full_owner_ids_from_table` porownuje pelne ID wlasciciela z naglowka `//!` kazdego pliku z kolumna "allowlista Rust" wierszy M01..M18 (`p6-25-sec6-rows-m00-m18.txt`, linie 740-765 P6-25); wyjatek jawny: `mapgen/types.rs` = M01 (ZALOZENIE Z2; wiersz M01 nie wymienia pliku). Test czerwienieje przy blednym wlascicielu (mutacja M04->M99 sprawdzona). Zalezy od artefaktu w runie, bo tak wymagal dispatch; run jest trwalym zapisem audytu. Bez pinow wartosci.
 
 ## 5. Bramki (surowe logi w runie, EXIT=0)
 
 - `gate-fmt.log` - `cargo fmt --check`: EXIT=0
 - `gate-clippy.log` - `cargo clippy --all-targets -- -D warnings`: EXIT=0
-- `gate-test.log` - `cargo test`: EXIT=0, 562 passed / 0 failed (baza >= 558, +4 nowe)
-- `git diff --check`: czysty (patrz raport)
+- `gate-test.log` - `cargo test`: EXIT=0, 563 passed / 0 failed (baza 558, +5 nowych)
+- `gate-diffcheck.log` - diff --check wzgledem d8429335: EXIT=0
 
 ## 6. Tabela bylo/jest
 

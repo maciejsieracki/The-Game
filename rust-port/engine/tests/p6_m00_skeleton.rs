@@ -1,7 +1,7 @@
 //! P6.M00 - szkielet generatora mapy: moduly kompiluja sie, sa publiczne,
 //! a lista nazw zgadza sie z wierszem M00 tabeli P6-25 §6 (plik w runie).
 
-use std::collections::BTreeSet;
+use std::collections::{BTreeMap, BTreeSet};
 use std::fs;
 use std::path::PathBuf;
 
@@ -74,6 +74,64 @@ fn files_exist_and_are_empty_doc_only() {
             src.contains("R-RUSTPORT-P6-M"),
             "{p}: brak tematu wlasciciela"
         );
+    }
+}
+
+/// Wlasciciele plikow szkieletu wg wszystkich wierszy M00..M18 tabeli P6-25 §6
+/// (kolumna "allowlista Rust"). Plik wspolny (relief.rs) ma kilku wlascicieli.
+fn doc_owners() -> BTreeMap<String, BTreeSet<String>> {
+    let p = engine_dir().join(
+        "../../dyspozycje/autobot/runs/R-RUSTPORT-P6-M00-MAPGEN-SZKIELET-Q1/p6-25-sec6-rows-m00-m18.txt",
+    );
+    let all = fs::read_to_string(&p).unwrap_or_else(|e| panic!("brak {}: {e}", p.display()));
+    let mut out: BTreeMap<String, BTreeSet<String>> = BTreeMap::new();
+    for row in all.lines().filter(|l| l.starts_with("| `R-RUSTPORT-P6-M")) {
+        let cols: Vec<&str> = row.split(" | ").collect();
+        let owner = cols[0]
+            .trim_start_matches("| ")
+            .trim_matches('`')
+            .to_string();
+        if owner.starts_with("R-RUSTPORT-P6-M00-") {
+            continue;
+        }
+        for t in cols[4].split('`') {
+            if t.starts_with("src/domain/") && t.ends_with(".rs") {
+                out.entry(t.to_string()).or_default().insert(owner.clone());
+            }
+        }
+    }
+    // ZALOZENIE Z2 (P6-25 §9): model MapHex w `mapgen/types.rs` nalezy do M01,
+    // choc wiersz M01 nie wymienia tego pliku (wymienia go tylko M00).
+    out.entry("src/domain/mapgen/types.rs".to_string())
+        .or_default()
+        .insert("R-RUSTPORT-P6-M01-RDZEN-WERYFIKACJA-Q1".to_string());
+    out
+}
+
+#[test]
+fn skeleton_headers_name_full_owner_ids_from_table() {
+    let owners = doc_owners();
+    for p in doc_paths() {
+        if p.ends_with("/mod.rs") {
+            continue;
+        }
+        let expected = owners
+            .get(&p)
+            .unwrap_or_else(|| panic!("{p}: brak wlasciciela w tabeli P6-25 §6"));
+        let src = fs::read_to_string(engine_dir().join(&p)).unwrap();
+        let header = src
+            .lines()
+            .find(|l| l.contains("Temat wlasciciel:"))
+            .unwrap_or_else(|| panic!("{p}: brak linii 'Temat wlasciciel:'"));
+        let listed: BTreeSet<String> = header
+            .split("Temat wlasciciel:")
+            .nth(1)
+            .unwrap()
+            .split(|c: char| !(c.is_ascii_alphanumeric() || c == '-'))
+            .filter(|t| t.starts_with("R-RUSTPORT-P6-M"))
+            .map(str::to_string)
+            .collect();
+        assert_eq!(&listed, expected, "{p}: wlasciciel w naglowku != tabela");
     }
 }
 
