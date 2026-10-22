@@ -493,6 +493,10 @@ for (const [i, v] of [undefined, null, 0, 1, '', 'snapshot', true, false, [], [1
   addVal(`non-object-${i}`, v);
 }
 
+// RUNDA-2 (zarzut 3): wynik WEBA `isValidMapSnapshot` dla KAZDEGO snapshotu zwroconego przez WEBOWE `serializeMapForSave`
+// (round-trip przez JSON jak przy zapisie: `snapshot` w serialize.json jest juz JSON.parse(JSON.stringify(...))).
+for (const c of serCases) addVal(`serialize:${c.label}`, c.snapshot);
+
 write('serialize.json', { source: 'gra/src/map/mapSnapshot.ts@edb8fb56', cases: serCases });
 write('rebuild.json', { source: 'gra/src/map/mapSnapshot.ts@edb8fb56', cases: rebCases });
 write('validate.json', { source: 'gra/src/map/mapSnapshot.ts@edb8fb56', cases: valCases });

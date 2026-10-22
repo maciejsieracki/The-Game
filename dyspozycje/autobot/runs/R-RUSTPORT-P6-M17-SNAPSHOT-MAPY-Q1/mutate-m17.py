@@ -45,6 +45,7 @@ MUTANTS = [
     ("valid: widocznosc valIdx nie porownywane", "        (Some(a), Some(b), Some(c)) if a == b && a == c => {}", "        (Some(a), Some(b), Some(_c)) if a == b => {}"),
     ("valid: riverPaths nie sprawdzane", "    if array_len(field(snap, \"riverPaths\")).is_none() {\n        return false;\n    }\n", ""),
     ("valid: dict nie sprawdzany", "    if array_len(field(snap, \"dict\")).is_none() {\n        return false;\n    }\n", ""),
+    ("rebuild: indeks dict poza zakresem -> wariant ColumnLength (RUNDA-2, klasa bledu)", ".ok_or(MapSnapshotError::DictIndex { field, index })", ".ok_or({\n            let _ = index;\n            MapSnapshotError::ColumnLength { field }\n        })"),
 ]
 
 survived = []
