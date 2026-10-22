@@ -1,0 +1,30 @@
+M01-platform-trig|src/decor/js.rs|s/^pub use crate::models::wonders::{js_cos, js_sin};/pub fn js_sin(x: f64) -> f64 { x.sin() } pub fn js_cos(x: f64) -> f64 { x.cos() }/
+M02-pushtri-swap-le|src/decor/parts.rs|s/nz \* r\[2\] < 0.0/nz * r[2] <= 0.0/
+M03-rgb-red-256|src/decor/parts.rs|0,/\/ 255.0,/s//\/ 256.0,/
+M04-blob-jit|src/decor/forest.rs|s/1.0, 0.86, 1.10/1.0, 0.87, 1.10/
+M05-ring6-op-order|src/decor/relief.rs|s/let a = yaw + i as f64 \* PI \/ 3.0;/let a = yaw + i as f64 * (PI \/ 3.0);/
+M06-kepka-tilt|src/decor/meadow.rs|s/r \* tl \* 1.2 }/r * tl * 1.21 }/
+M07-pow-platform|src/decor/desert.rs|s/js_pow(t, 1.4)/t.powf(1.4)/
+M08-punktluku-ceil|src/decor/terraces.rs|s/let k = (a_deg \/ 60.0).floor();/let k = (a_deg \/ 60.0).ceil();/
+M09-tree-bias-salt|src/decor/style.rs|s/decor_variant5(q, r, seed, 300)/decor_variant5(q, r, seed, 301)/
+M10-coast-renderorder|src/decor/style.rs|0,/g.add_leaf(sand, 3);/s//g.add_leaf(sand, 2);/
+M11-fogsig-31|src/decor/river_lod.rs|s/wrapping_mul(31)/wrapping_mul(37)/
+M12-relief-doubleside|src/decor/relief.rs|s/side: Side::Front,/side: Side::Double,/
+M13-quat-platform|src/decor/js.rs|s/Mat4::compose(n.position, quat_from_euler(n.rotation), n.scale)/Mat4::compose(n.position, Quat::from_euler(n.rotation), n.scale)/
+M14-hypot-platform|src/decor/meadow.rs|s/js_hypot(wx, wz)/wx.hypot(wz)/
+M15-climate-plains|src/decor/style.rs|s/CLIMATE_PLAINS_HALF_FRAC: f64 = 0.075/CLIMATE_PLAINS_HALF_FRAC: f64 = 0.08/
+M16-staw-r|src/decor/desert.rs|s/0.36, 0.29, 0.40/0.36, 0.30, 0.40/
+M17-palma-frond|src/decor/jungle.rs|s/js_cos(fa) \* 0.16/js_cos(fa) * 0.17/
+M18-oaza-rot-guard|src/decor/desert.rs|s/if rx != 0.0 || ry != 0.0 || rz != 0.0 {/if rx != 0.0 || ry != 0.0 {/
+M19-tarasy-faza|src/decor/terraces.rs|s/o.uprawa\[(i + o.faza) % 2\]/o.uprawa[i % 2]/
+M20-dune-threshold|src/decor/style.rs|s/hash2d(q, r, seed, 9) >= 0.34/hash2d(q, r, seed, 9) >= 0.35/
+M21-wrap-variant|src/decor/js.rs|s/((w % n + n) % n) as usize/(w.rem_euclid(n) as usize + 1) % n as usize/
+M22-merged-sep|src/decor/river_lod.rs|s/sig = sig_step(sig, 2);/sig = sig_step(sig, 3);/
+M23-reveal-empty|src/decor/river_lod.rs|s/if reveal.is_some() {/if reveal.is_some_and(|r| !r.is_empty()) {/
+M24-mouth-skip|src/decor/style.rs|0,/if mouth_edges.contains(&(HexCoord::new(lq, lr), HexCoord::new(p.q, p.r))) {/s//if mouth_edges.contains(\&(HexCoord::new(p.q, p.r), HexCoord::new(lq, lr))) {/
+M25-tafla-winding|src/decor/desert.rs|s/pos.extend_from_slice(&\[0.0, 0.0, 0.0, bx, 0.0, bz, ax, 0.0, az\]);/pos.extend_from_slice(\&[0.0, 0.0, 0.0, ax, 0.0, az, bx, 0.0, bz]);/
+M26-jungle-kind|src/decor/style.rs|s/if kind > 0.66 {/if kind > 0.67 {/
+M27-relief-wariant|src/decor/style.rs|0,/let w = wariant_dla_heksa(p.q, p.r, LICZBA_WARIANTOW_TERENU, p.seed) as i32;/s//let w = wariant_dla_heksa(p.q, p.r, LICZBA_WARIANTOW_TERENU, p.seed + 1) as i32;/
+M28-cultivated-shrub|src/decor/style.rs|s/0x2d_8a27/0x2d_8a28/
+M29-water-tongue|src/decor/style.rs|s/tongue_len \* 0.44/tongue_len * 0.45/
+M30-relief-ray-y|src/decor/relief.rs|s/const PROMIEN_START_Y: f64 = 4.0;/const PROMIEN_START_Y: f64 = 0.9;/

@@ -1,0 +1,30 @@
+M01-platform-trig KILLED :: builders: scalars=282338 bit_diff=900 thread 'builders_are_bit_identical_to_web' (5485) panicked at tests/decor_web_parity.rs:335:9:
+M02-pushtri-swap-le KILLED :: geometries: scalars=90917 bit_diff=24 thread 'shared_geometries_are_bit_identical_to_web' (6554) panicked at tests/decor_web_parity.rs:335:9: builders: scalars=282338 bit_diff=1 thread 'builders_are_bit_identical_to_web' (6549) panicked at tests/decor_web_pari
+M03-rgb-red-256 KILLED :: geometries: scalars=90917 bit_diff=10066 thread 'shared_geometries_are_bit_identical_to_web' (6978) panicked at tests/decor_web_parity.rs:335:9: builders: scalars=282338 bit_diff=176 thread 'builders_are_bit_identical_to_web' (6973) panicked at tests/decor_web
+M04-blob-jit KILLED :: geometries: scalars=90917 bit_diff=1505 thread 'shared_geometries_are_bit_identical_to_web' (7339) panicked at tests/decor_web_parity.rs:335:9: builders: scalars=282338 bit_diff=12 thread 'builders_are_bit_identical_to_web' (7334) panicked at tests/decor_web_p
+M05-ring6-op-order SURVIVED
+M06-kepka-tilt KILLED :: geometries: scalars=90917 bit_diff=469 thread 'shared_geometries_are_bit_identical_to_web' (8078) panicked at tests/decor_web_parity.rs:335:9: builders: scalars=282338 bit_diff=27 thread 'builders_are_bit_identical_to_web' (8073) panicked at tests/decor_web_pa
+M07-pow-platform SURVIVED
+M08-punktluku-ceil KILLED :: geometries: scalars=90917 bit_diff=1850 thread 'shared_geometries_are_bit_identical_to_web' (8867) panicked at tests/decor_web_parity.rs:335:9: builders: scalars=282338 bit_diff=8 thread 'builders_are_bit_identical_to_web' (8862) panicked at tests/decor_web_pa
+M09-tree-bias-salt KILLED :: builders: scalars=279728 bit_diff=43233 thread 'builders_are_bit_identical_to_web' (9308) panicked at tests/decor_web_parity.rs:335:9:
+M10-coast-renderorder KILLED :: coast: scalars=27027 bit_diff=76 thread 'coast_builders_are_bit_identical_to_web' (9926) panicked at tests/decor_web_parity.rs:335:9:
+M11-fogsig-31 KILLED :: riverlod: scalars=830 bit_diff=84 thread 'river_lod_matches_web' (10376) panicked at tests/decor_web_parity.rs:335:9:
+M12-relief-doubleside SURVIVED
+M13-quat-platform KILLED :: builders: scalars=282338 bit_diff=860 thread 'builders_are_bit_identical_to_web' (11345) panicked at tests/decor_web_parity.rs:335:9:
+M14-hypot-platform SURVIVED
+M15-climate-plains KILLED :: hashes: scalars=98543 bit_diff=4 thread 'hex_hash_functions_match_web' (12265) panicked at tests/decor_web_parity.rs:335:9:
+M16-staw-r KILLED :: builders: scalars=282338 bit_diff=3 thread 'builders_are_bit_identical_to_web' (12673) panicked at tests/decor_web_parity.rs:335:9:
+M17-palma-frond KILLED :: geometries: scalars=90917 bit_diff=1601 thread 'shared_geometries_are_bit_identical_to_web' (13050) panicked at tests/decor_web_parity.rs:335:9:
+M18-oaza-rot-guard SURVIVED
+M19-tarasy-faza KILLED :: geometries: scalars=90917 bit_diff=290 thread 'shared_geometries_are_bit_identical_to_web' (13773) panicked at tests/decor_web_parity.rs:335:9: builders: scalars=282338 bit_diff=2 thread 'builders_are_bit_identical_to_web' (13768) panicked at tests/decor_web_p
+M20-dune-threshold KILLED :: builders: scalars=282338 bit_diff=2 thread 'builders_are_bit_identical_to_web' (14176) panicked at tests/decor_web_parity.rs:335:9:
+M21-wrap-variant KILLED :: geometries: scalars=85328 bit_diff=64227 thread 'shared_geometries_are_bit_identical_to_web' (14547) panicked at tests/decor_web_parity.rs:335:9: relief: scalars=25968 bit_diff=10402 thread 'relief_surface_height_matches_web' (14545) panicked at tests/decor_we
+M22-merged-sep KILLED :: riverlod: scalars=830 bit_diff=60 thread 'river_lod_matches_web' (14918) panicked at tests/decor_web_parity.rs:335:9:
+M23-reveal-empty KILLED :: riverlod: scalars=830 bit_diff=32 thread 'river_lod_matches_web' (15298) panicked at tests/decor_web_parity.rs:335:9:
+M24-mouth-skip KILLED :: coast: scalars=27027 bit_diff=28 thread 'coast_builders_are_bit_identical_to_web' (15691) panicked at tests/decor_web_parity.rs:335:9:
+M25-tafla-winding KILLED :: builders: scalars=282338 bit_diff=3 thread 'builders_are_bit_identical_to_web' (16116) panicked at tests/decor_web_parity.rs:335:9:
+M26-jungle-kind KILLED :: builders: scalars=281663 bit_diff=685 thread 'builders_are_bit_identical_to_web' (16520) panicked at tests/decor_web_parity.rs:335:9:
+M27-relief-wariant KILLED :: builders: scalars=282338 bit_diff=316 thread 'builders_are_bit_identical_to_web' (16918) panicked at tests/decor_web_parity.rs:335:9:
+M28-cultivated-shrub KILLED :: builders: scalars=282338 bit_diff=8 thread 'builders_are_bit_identical_to_web' (17296) panicked at tests/decor_web_parity.rs:335:9:
+M29-water-tongue KILLED :: coast: scalars=27027 bit_diff=74 thread 'coast_builders_are_bit_identical_to_web' (17722) panicked at tests/decor_web_parity.rs:335:9:
+M30-relief-ray-y KILLED :: relief: scalars=25968 bit_diff=6896 thread 'relief_surface_height_matches_web' (18366) panicked at tests/decor_web_parity.rs:335:9:

@@ -1,0 +1,25 @@
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.08s
+     Running tests/decor_web_parity.rs (target/debug/deps/decor_web_parity-faad5ae118a41e5c)
+
+running 6 tests
+test builders_are_bit_identical_to_web ... builders: [("buildDekorLaka", 9), ("buildDekorPustynia", 9), ("buildDekorRownina", 9), ("buildGalleryBuildingPad", 16), ("buildGalleryFortMount", 3), ("buildGora", 9), ("buildLas", 9), ("buildOaza", 1), ("buildStyleBeachRing", 2), ("buildStyleCoastSandTopCap", 2), ("buildStyleDune", 460), ("buildStyleForestCluster", 270), ("buildStyleHillBump", 60), ("buildStyleMountainPeak", 60), ("buildStyleOasis", 5), ("buildStyleTarasyTerrace", 4), ("buildTarasy", 2), ("buildWzgorze", 9)] meshes=5733
+builders: scalars=282338 bit_diff=0
+ok
+test coast_builders_are_bit_identical_to_web ... coast: 301 builds, 333 meshes
+coast: scalars=27027 bit_diff=0
+ok
+test hex_hash_functions_match_web ... hashes: 98010 samples, 54 seeds
+hashes: scalars=98543 bit_diff=0
+ok
+test relief_surface_height_matches_web ... relief: 9197 positive heights
+relief: scalars=25968 bit_diff=0
+ok
+test river_lod_matches_web ... riverlod: scalars=830 bit_diff=0
+ok
+test shared_geometries_are_bit_identical_to_web ... geometries: 34 variants, 3344 triangles
+geometries: scalars=90917 bit_diff=0
+ok
+
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.83s
+
+EXIT=0

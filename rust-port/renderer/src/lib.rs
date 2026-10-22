@@ -27,6 +27,7 @@
 pub mod assets;
 pub mod camera;
 pub mod core;
+pub mod decor;
 pub mod geom;
 pub mod jsmath;
 pub mod material;
