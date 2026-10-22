@@ -1,0 +1,9 @@
+$ npm run check
+
+> civ-frontend-v2@0.0.0 check
+> node tools/check-no-logic-imports.mjs --self-test && node tools/check-no-logic-imports.mjs src && node tools/verify-pin-copies.mjs
+
+self-test: 15 pozytywnych, 8 negatywnych, błędów: 0
+check-no-logic-imports: katalog=src plików=41 plików_z_trafieniami=0 trafień=0
+verify-pin-copies: pin=edb8fb56 plików=39 niezgodnych=0
+EXIT=0

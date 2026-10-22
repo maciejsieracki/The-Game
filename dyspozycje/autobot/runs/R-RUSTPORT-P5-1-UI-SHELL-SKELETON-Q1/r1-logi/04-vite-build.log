@@ -1,0 +1,23 @@
+$ npx vite build
+vite v5.4.21 building for production...
+transforming...
+✓ 12 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/index.html                 1.83 kB │ gzip: 1.01 kB
+dist/assets/index-CbORj_XS.js  10.08 kB │ gzip: 4.48 kB
+✓ built in 184ms
+EXIT=0
+$ ls -la dist dist/assets
+dist:
+total 16
+drwxr-xr-x 3 root root 4096 Oct 22 11:49 .
+drwxr-xr-x 6 root root 4096 Oct 22 11:49 ..
+drwxr-xr-x 2 root root 4096 Oct 22 11:49 assets
+-rw-r--r-- 1 root root 1838 Oct 22 11:49 index.html
+
+dist/assets:
+total 20
+drwxr-xr-x 2 root root  4096 Oct 22 11:49 .
+drwxr-xr-x 3 root root  4096 Oct 22 11:49 ..
+-rw-r--r-- 1 root root 10176 Oct 22 11:49 index-CbORj_XS.js
