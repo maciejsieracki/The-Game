@@ -29,7 +29,7 @@ dotykające tych samych plików — zawsze sekwencyjnie, nigdy w tej samej fali.
 |---|---|---|---|---|---|---|
 | 1 | `R-RUSTPORT-P3-23-FLATTEN-STAGE3-Q1` | etap 3 mnożników (macierz counter, struktury, wzrost, społeczeństwo, produkcja, mapa, wioski, ruch) — Haiku/Haiku/Sonnet | 1/5 | `wf_e461f64a-457` | DISPATCHED | 2026-10-22 |
 | 2 | `R-RUSTPORT-P5-2-PORT-LEVEL0-Q1` | P5-2 portowanie paneli UI poziomu 0 (15 modułów) — Opus 5.5 | 1/5 | `wf_18adcd70-aa5` | DISPATCHED | 2026-10-22 |
-| 3 | `R-RUSTPORT-P4-21-MOD09-CITIES-Q1` | MOD-09 istniejące modele miast i osad — Opus 5.5 | 1/5 | `wf_33be5035-445` | DISPATCHED | 2026-10-22 |
+| 3 | `R-RUSTPORT-P4-25-TEXT-RASTER-AUDIT-Q1` | audyt Canvas/tekstu/fontów i spec rasteryzatora (D-RR-4, D-MOD-6; odblokowuje MOD-08/10) — doc, Opus 5.5 | 1/5 | `wf_aae17b00-09b` | DISPATCHED | 2026-10-22 |
 | 4 | `R-RUSTPORT-P4-24-MISC-RELIEF-WIRE-Q1` | podpięcie prawdziwego samplera reliefu w `models/misc` + deduplikacja `toFixed` — Opus 5.5 | 1/5 | `wf_4f3a5fff-372` | DISPATCHED | 2026-10-22 |
 | 5 | `R-RUSTPORT-P3-13R-GATE-RERUN-Q1` | ponowna bramka fazy P3 po P3.17–P3.23 (pomiar + werdykt, bez zmian kodu) — Haiku/Haiku/Sonnet | 1/5 | `wf_66f475c2-396` | DISPATCHED | 2026-10-22 |
 | 6 | `R-RUSTPORT-P4-23-MOD06-UNITS-BRONZE-Q1` | MOD-06 jednostki brązu (37) + `js_asin` → `jsmath` — Opus 5.5 | 1/5 | `wf_5677ef33-8d2` | DISPATCHED | 2026-10-22 |
