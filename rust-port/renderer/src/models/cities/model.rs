@@ -15,8 +15,8 @@
 
 use std::f64::consts::PI;
 
+use crate::core::hex_shape::{append_pointy_top_hex, hex_ring_points_xz};
 use crate::geom::{self, Mat4, Vec3};
-use crate::jsmath::{js_cos, js_sin};
 use crate::models::unit_core::model::{quat_from_euler, NodeId, UnitModel, ROOT};
 use crate::pick::three::{js_max, js_min};
 use crate::terrain::color::Color;
@@ -83,41 +83,6 @@ pub enum CityGeo {
     },
 }
 
-/// `tracePointyTopHex(path, radius, reverse)` (`bronzeCityRoblox.ts:57-68`,
-/// identical in `stoneCityRoblox.ts:99-110`) with V8 `Math.cos/sin`.
-fn trace_pointy_top_hex(radius: f64, reverse: bool) -> geom::Path2 {
-    const FORWARD: [u32; 6] = [0, 1, 2, 3, 4, 5];
-    const BACKWARD: [u32; 6] = [5, 4, 3, 2, 1, 0];
-    let order = if reverse { BACKWARD } else { FORWARD };
-    let mut path = geom::Path2::new();
-    for (j, &i) in order.iter().enumerate() {
-        let angle = PI / 2.0 + (f64::from(i) * PI) / 3.0;
-        let x = radius * js_cos(angle);
-        let y = radius * js_sin(angle);
-        if j == 0 {
-            path.move_to(x, y);
-        } else {
-            path.line_to(x, y);
-        }
-    }
-    path.close_path();
-    path
-}
-
-/// `hexRingPointsXZ(R, y)` (`hexShape.ts:7-14`) with V8 `Math.cos/sin`.
-///
-/// Note: `core::hex_shape::hex_ring_points_xz` (P4.12) uses the platform
-/// `f64::cos/sin`; this module needs V8 bits, hence the local copy.
-#[must_use]
-pub fn hex_ring_points_xz_js(radius: f64, y: f64) -> [Vec3; 6] {
-    let mut out = [Vec3::default(); 6];
-    for (i, v) in (0u32..).zip(out.iter_mut()) {
-        let angle = PI / 2.0 + (f64::from(i) * PI) / 3.0;
-        *v = Vec3::new(radius * js_cos(angle), y, radius * js_sin(angle));
-    }
-    out
-}
-
 impl CityGeo {
     /// Builds the CPU geometry (vertex-for-vertex Three r169, see [`crate::geom`]).
     #[must_use]
@@ -136,9 +101,16 @@ impl CityGeo {
                 inner,
                 height,
             } => {
+                // `tracePointyTopHex` (`bronzeCityRoblox.ts:57-68`, identical in
+                // `stoneCityRoblox.ts:99-110`) == `appendPointyTopHex`
+                // (`hexShape.ts:17-32`) on a fresh path: reuse `core::hex_shape`.
+                let mut outline = geom::Path2::new();
+                append_pointy_top_hex(&mut outline, outer, false);
+                let mut hole = geom::Path2::new();
+                append_pointy_top_hex(&mut hole, inner, true);
                 let shape = geom::Shape {
-                    outline: trace_pointy_top_hex(outer, false),
-                    holes: vec![trace_pointy_top_hex(inner, true)],
+                    outline,
+                    holes: vec![hole],
                 };
                 let mut m = geom::extrude_geometry(&[shape], &geom::ExtrudeOptions::flat(height));
                 m.rotate_x(-PI / 2.0);
@@ -146,7 +118,7 @@ impl CityGeo {
             }
             Self::HexLoop { r, y } => {
                 let mut positions = Vec::with_capacity(18);
-                for p in hex_ring_points_xz_js(r, y) {
+                for p in hex_ring_points_xz(r, y) {
                     // `position.push(point.x, point.y, point.z || 0)`
                     let z = if p.z == 0.0 || p.z.is_nan() { 0.0 } else { p.z };
                     #[allow(clippy::cast_possible_truncation)]

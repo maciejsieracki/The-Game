@@ -21,7 +21,7 @@ use super::outline::{
     build_city_map_outline, place_city_map_outline, CityMapOutlineKind, OutlineData,
 };
 use crate::core::bronze::BronzeCiv;
-use crate::core::map_style::{civ_terrain_vis, terrain_visual_for_style, GAME_MAP_RENDER_STYLE};
+use crate::core::map_style::{terrain_surface_top_y, GAME_MAP_RENDER_STYLE};
 use crate::geom::Vec3;
 use crate::jsmath::{js_cos, js_sin};
 use crate::models::unit_core::model::ROOT;
@@ -72,11 +72,14 @@ pub fn default_civ(owner_id: i32) -> BronzeCiv {
     }
 }
 
-/// `terrainTopY(hex)` (`cities.ts:82-86`) with the game style.
+/// `terrainTopY(hex)` (`cities.ts:82-86`) with the game style: delegates to
+/// the shared `core::map_style::terrain_surface_top_y` (`mapRenderStyle.ts:336-343`,
+/// `extraYOffset = 0`) instead of repeating the lookup. The web `+ 0` is a
+/// bit-for-bit no-op here (`height + y_offset` is never `-0.0`; checked by
+/// `cities_web_parity`).
 #[must_use]
 pub fn terrain_top_y(t: Terrain) -> f64 {
-    let spec = terrain_visual_for_style(t, GAME_MAP_RENDER_STYLE, civ_terrain_vis(t));
-    spec.height + spec.y_offset
+    terrain_surface_top_y(t, GAME_MAP_RENDER_STYLE, 0.0)
 }
 
 /// `CityWallKind` (`cities.ts:275`).
@@ -623,5 +626,21 @@ mod tests {
         assert_eq!(owner_color(-8), Some(0x00ff_d54a));
         assert_eq!(default_civ(12), BronzeCiv::Sumer);
         assert_eq!(default_civ(-3), BronzeCiv::Grecja);
+    }
+
+    /// `terrain_top_y` delegates to `terrain_surface_top_y(.., 0.0)`; the
+    /// extra `+ 0.0` must not change any bit versus the r1 inline formula
+    /// (`height + y_offset`) for any terrain.
+    #[test]
+    fn terrain_top_y_matches_inline_formula_bitwise() {
+        use crate::core::map_style::{civ_terrain_vis, terrain_visual_for_style};
+        for t in Terrain::ALL {
+            let spec = terrain_visual_for_style(t, GAME_MAP_RENDER_STYLE, civ_terrain_vis(t));
+            assert_eq!(
+                terrain_top_y(t).to_bits(),
+                (spec.height + spec.y_offset).to_bits(),
+                "{t:?}"
+            );
+        }
     }
 }
