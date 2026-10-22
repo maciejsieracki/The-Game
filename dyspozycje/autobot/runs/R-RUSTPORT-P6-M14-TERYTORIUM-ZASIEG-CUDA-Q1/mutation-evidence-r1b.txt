@@ -1,0 +1,4 @@
+PRZEZYL   : owned_by: brak fail-closed
+WYKRYTY   : religia: bez floor szerzenia -> 1 testow czerwonych: religion_range_matches_web
+mutantow=23 przezylo/niekompilujace=1
+   owned_by: brak fail-closed

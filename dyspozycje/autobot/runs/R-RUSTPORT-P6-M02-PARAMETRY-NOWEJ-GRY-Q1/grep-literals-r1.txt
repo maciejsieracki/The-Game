@@ -1,0 +1,30 @@
+240:pub fn rozmiar_dims(rozmiar: RozmiarSwiata) -> [i64; 2] {
+282:        .unwrap_or(0);
+330:); 6] {
+334:        (labels[0].as_str(), &rows.malenki),
+335:        (labels[1].as_str(), &rows.ma_y),
+336:        (labels[2].as_str(), &rows.standardowy),
+337:        (labels[3].as_str(), &rows.duzy),
+338:        (labels[4].as_str(), &rows.ogromny),
+339:        (labels[5].as_str(), &rows.super_huge),
+368:    if stone > 0 {
+440:        if from_e >= 0 {
+468:        n += 1;
+470:    let domyslny = opts.iter().position(|o| *o == def.to_string()).unwrap_or(0);
+519:        DensityTier::Low => &labels[0],
+520:        DensityTier::Medium => &labels[1],
+521:        DensityTier::High => &labels[2],
+882:    let mut best = opts[0];
+1007:    if epoch_max <= 0 {
+1015:        min = minimum.max(max - 1);
+1036:        min = cfg.minimum.max(max - 1);
+1039:        adjusted = (min + 1).min(max);
+1042:        adjusted = (min + 1).max(max - 1);
+1082:        if legacy > 0 {
+1093:        if from_e > 0 {
+1098:                min = cfg.minimum.max(max - 1);
+1141:        .unwrap_or(1);
+1152:        if from_e > 0 {
+1301:            Self::Main => &phases[0],
+1302:            Self::MainMedium => &phases[1],
+1303:            Self::All => &phases[2],
