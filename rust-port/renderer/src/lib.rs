@@ -38,6 +38,7 @@ pub mod raster;
 pub mod scene;
 pub mod terrain;
 pub mod text;
+pub mod units;
 pub mod view;
 
 #[cfg(feature = "gpu")]

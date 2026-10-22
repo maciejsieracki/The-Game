@@ -1,0 +1,38 @@
+# R-RUSTPORT-P4-32 golden FNV-1a 64 of the premultiplied RGBA8 of every overlay texture
+# web id<TAB>texture<TAB>initial<TAB>final
+t0	OwnerEmblem("civ:grecy:2")	8f02d91e198c8672	18260a17314e7f93
+t1	OwnerEmblem("civ:zulusi:3")	8f02d91e198c8672	edc9e7a5a9305055
+t10	OwnerEmblem("cs:nieznana")	bc37d5c899a96098	fbf6dafe5762d0ac
+t11	OwnerEmblem("barb")	d06c6326a68776cf	f53e86627109de3a
+t12	PlateBackground	4108f229edeb9dda	4108f229edeb9dda
+t13	PowerFrame	d9b90c083b0307a5	d9b90c083b0307a5
+t14	PowerDigit(4)	e217bfa068e1aa74	e217bfa068e1aa74
+t15	PowerDigit(2)	f2c39abe430f1cc2	f2c39abe430f1cc2
+t16	PowerDigit(1)	a71f3fc7c18787f0	a71f3fc7c18787f0
+t17	PowerDigit(3)	56d08594176cc86b	56d08594176cc86b
+t18	PowerDigit(7)	4f20d6d812b78f9b	4f20d6d812b78f9b
+t19	PowerDigit(9)	f4ac0b36fda15c00	f4ac0b36fda15c00
+t2	OwnerEmblem("civ:egipt:1")	8f02d91e198c8672	ccc7e95e40431545
+t20	PowerDigit(0)	82d23cd3db07c830	82d23cd3db07c830
+t21	PowerDigit(5)	d1aa4d12c2b3c894	d1aa4d12c2b3c894
+t22	PowerDigit(6)	602868bc52211a27	602868bc52211a27
+t23	PowerDigit(8)	148f48084c6a1332	148f48084c6a1332
+t24	UpgradeBadge(Soft, 1)	1f10b5f53f8f5f65	8653a6b53834e9f3
+t25	UpgradeBadge(Soft, 2)	27ae8091def08bb0	ffcadbeff523f186
+t26	UpgradeBadge(Soft, 3)	9bca68a74de6e726	42c171a8c583e82a
+t27	UpgradeBadge(Armor, 1)	1f10b5f53f8f5f65	3edf09ce99622110
+t28	UpgradeBadge(Armor, 2)	27ae8091def08bb0	1cffecfc3410cab8
+t29	UpgradeBadge(Armor, 3)	9bca68a74de6e726	bfcc393aa5e2e5e1
+t3	OwnerEmblem("civ:grecy:1")	8f02d91e198c8672	b9e9ed3d684ad405
+t30	OwnerEmblem("civ:grecy:2") no-assets	8f02d91e198c8672	8f02d91e198c8672
+t31	OwnerEmblem("cs:grecy") no-assets	bc37d5c899a96098	bc37d5c899a96098
+t32	OwnerEmblem("barb") no-assets	d06c6326a68776cf	d06c6326a68776cf
+t33	UpgradeBadge(Soft, 2) no-assets	27ae8091def08bb0	27ae8091def08bb0
+t34	UpgradeBadge(Armor, 1) no-assets	1f10b5f53f8f5f65	1f10b5f53f8f5f65
+t35	UpgradeBadge(Armor, 3) no-assets	9bca68a74de6e726	9bca68a74de6e726
+t4	OwnerEmblem("civ:nieznana:2")	8f02d91e198c8672	cb7502e396acc82f
+t5	OwnerEmblem("civ:brak:2")	8f02d91e198c8672	8f02d91e198c8672
+t6	OwnerEmblem("civ:unknown:2")	8f02d91e198c8672	8f02d91e198c8672
+t7	OwnerEmblem("cs:grecy")	bc37d5c899a96098	1c9ae47e6530e21c
+t8	OwnerEmblem("cs:zulusi")	bc37d5c899a96098	54df0ed3a9bd91c0
+t9	OwnerEmblem("cs:brak")	bc37d5c899a96098	bc37d5c899a96098
