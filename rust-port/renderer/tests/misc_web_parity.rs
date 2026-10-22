@@ -14,7 +14,11 @@
 use std::path::PathBuf;
 
 use civ_renderer::geom::{Mat4, Mesh};
-use civ_renderer::models::misc::model::{MiscGeo, NodeKind};
+// P4.27 (R-RUSTPORT-P4-27-SCENE-UNIFY-Q1): forced type adjustments only — a
+// MOD-13 model is a `scene::Scene` (node fields instead of `NodeInfo`,
+// `Prim::Circle/Ring`, linear colour with `hex()`, MOD-13 `signature(m)`);
+// every assertion is unchanged.
+use civ_renderer::models::misc::model::{signature as misc_signature, MiscGeo, NodeKind};
 use civ_renderer::models::misc::overlay::js_to_fixed;
 use civ_renderer::models::misc::range::{
     ReliefFn, CULTURE_RANGE_STYLE, MINE_ELIGIBLE_STYLE, RELIGION_RANGE_STYLE,
@@ -347,15 +351,16 @@ fn geo_type(g: &MiscGeo) -> &'static str {
         MiscGeo::Prim(Prim::Cone { .. }) => "ConeGeometry",
         MiscGeo::Prim(Prim::Sphere { .. }) => "SphereGeometry",
         MiscGeo::Prim(Prim::Icosahedron { .. }) => "IcosahedronGeometry",
+        MiscGeo::Prim(Prim::Circle { .. }) => "CircleGeometry",
+        MiscGeo::Prim(Prim::Ring { .. }) => "RingGeometry",
         MiscGeo::Prim(_) => "other",
-        MiscGeo::Circle { .. } => "CircleGeometry",
-        MiscGeo::Ring { .. } => "RingGeometry",
+        MiscGeo::Body(_) | MiscGeo::Buffer(_) => "other",
     }
 }
 
 fn cmp_mat(c: &mut Cmp, ctx: &str, m: &civ_renderer::models::misc::MiscMaterial, w: &Json) {
     c.eq(&format!("{ctx}.t"), m.kind.three_type(), w.get("t").str());
-    c.eq(&format!("{ctx}.color"), m.color, w.get("color").u32());
+    c.eq(&format!("{ctx}.color"), m.hex(), w.get("color").u32());
     let lin = m.linear_color();
     c.fs(
         &format!("{ctx}.lin"),
@@ -418,10 +423,10 @@ fn flatten<'a>(models: &[&'a MiscModel], scene_root: Option<&'a MiscModel>) -> V
     }
     for m in models {
         let order = m.traverse();
-        let mut pos = vec![usize::MAX; m.tree.nodes.len()];
+        let mut pos = vec![usize::MAX; m.nodes.len()];
         for &id in &order {
-            let local = m.tree.local_matrix(id);
-            let (parent, world) = match m.tree.nodes[id].parent {
+            let local = m.local_matrix(id);
+            let (parent, world) = match m.nodes[id].parent {
                 Some(p) => {
                     let pi = pos[p];
                     (i64::try_from(pi).expect("idx"), out[pi].world.mul(&local))
@@ -452,15 +457,16 @@ fn cmp_flat(c: &mut Cmp, ctx: &str, flat: &[Flat<'_>], rec: &Json) {
     let mut hi = [f64::NEG_INFINITY; 3];
     for (i, (fl, w)) in flat.iter().zip(nodes).enumerate() {
         let cx = format!("{ctx}#{i}");
-        let n = &fl.model.tree.nodes[fl.id];
-        let info = &fl.model.info[fl.id];
-        let kind = fl.model.kind(fl.id);
+        let n = &fl.model.nodes[fl.id];
+        let info = n;
         let wk = w.get("k").str();
-        let rk = match kind {
-            NodeKind::Mesh => "Mesh",
-            NodeKind::Sprite => "Sprite",
+        let rk = match &n.kind {
+            NodeKind::Mesh(_) => "Mesh",
+            NodeKind::Sprite(_) => "Sprite",
             NodeKind::Group if wk == "Scene" && i == 0 => "Scene",
             NodeKind::Group => "Group",
+            NodeKind::Object3D => "Object3D",
+            NodeKind::LineLoop(_) => "LineLoop",
         };
         c.eq(&format!("{cx}.k"), rk, wk);
         c.eq(&format!("{cx}.name"), n.name.as_str(), w.get("name").str());
@@ -486,7 +492,11 @@ fn cmp_flat(c: &mut Cmp, ctx: &str, flat: &[Flat<'_>], rec: &Json) {
         } else {
             c.eq(&format!("{cx}.mat?"), false, w.opt("mat").is_some());
         }
-        if let Some((geo, _)) = fl.model.mesh_of(fl.id) {
+        let mesh_of = match &n.kind {
+            NodeKind::Mesh(md) => Some((md.geo.clone(), md.material())),
+            _ => None,
+        };
+        if let Some((geo, _)) = mesh_of {
             let g = geo.build();
             let wg = w.get("geo");
             c.eq(&format!("{cx}.geo.t"), geo_type(&geo), wg.get("t").str());
@@ -536,7 +546,7 @@ fn cmp_flat(c: &mut Cmp, ctx: &str, flat: &[Flat<'_>], rec: &Json) {
 fn cmp_model(c: &mut Cmp, ctx: &str, m: &MiscModel, rec: &Json) {
     let flat = flatten(&[m], None);
     cmp_flat(c, ctx, &flat, rec);
-    let sig = m.signature();
+    let sig = misc_signature(m);
     c.eq(
         &format!("{ctx}.sig.meshes"),
         sig.meshes,

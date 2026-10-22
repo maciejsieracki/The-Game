@@ -24,7 +24,7 @@ impl CityModel {
         if r[0] != 0.0 || r[1] != 0.0 || r[2] != 0.0 {
             self.set_rot(id, r[0], r[1], r[2]);
         }
-        self.drawable_mut(id).cast_shadow = true;
+        self.node(id).cast_shadow = true;
         id
     }
 
@@ -118,7 +118,7 @@ impl CityModel {
         m: CityMatId,
     ) -> NodeId {
         let id = self.mesh(g, CityGeo::Circle { r, segments: seg }, m);
-        self.tree.node(id).rot_x(-PI / 2.0);
+        self.node(id).rot_x(-PI / 2.0);
         self.set_pos(id, c[0], c[1], c[2]);
         id
     }
@@ -148,7 +148,7 @@ impl CityModel {
     ) {
         let id = self.mesh(g, CityGeo::Box { w, h, d }, m);
         self.set_pos(id, x, y + h / 2.0, z);
-        let dr = self.drawable_mut(id);
+        let dr = self.node(id);
         dr.cast_shadow = true;
         dr.receive_shadow = true;
     }
@@ -179,7 +179,7 @@ impl CityModel {
             m,
         );
         self.set_pos(id, x, y + h / 2.0, z);
-        self.drawable_mut(id).cast_shadow = true;
+        self.node(id).cast_shadow = true;
     }
 }
 

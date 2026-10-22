@@ -28,11 +28,11 @@ pub const fn sky_cloud_count(lite: bool) -> u32 {
 pub fn add_roblox_sky_decor(cx: f64, cz: f64, span: f64, lite: bool) -> MiscModel {
     let mut m = MiscModel::new();
     let scene = m.root();
-    let mut cloud = MiscMaterial::new(MatKind::Lambert, 0xff_ffff);
+    let mut cloud = MiscMaterial::new(MatKind::Lambert, Some(0xff_ffff));
     cloud.flat_shading = true;
     cloud.transparent = true;
     cloud.opacity = 0.9;
-    let cloud_mat = m.mat(cloud);
+    let cloud_mat = m.add_material(cloud);
     let puff = Prim::Icosahedron { r: 1.0, detail: 0 };
     for i in 0..sky_cloud_count(lite) {
         let n = f64::from(i);

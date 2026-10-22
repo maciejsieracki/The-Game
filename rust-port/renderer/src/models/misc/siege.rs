@@ -10,10 +10,11 @@
 
 use std::f64::consts::PI;
 
-use super::model::{GlyphTexture, MatKind, MiscGeo, MiscMaterial, MiscModel, Side};
+use super::model::{GlyphTexture, MatKind, MiscMaterial, MiscModel, Side};
 use crate::jsmath::{js_atan2, js_sin};
 use crate::models::unit_core::model::{MatId, NodeId, Prim};
 use crate::pick::hex::{axial_to_world_f, HEX_R};
+use crate::scene::Texture;
 
 /// `SiegeMachineKind` (`game/siegeMachines.ts:6`).
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
@@ -51,7 +52,7 @@ pub const CAMP_SCALE: f64 = 0.42;
 pub const DEFAULT_SIEGE_ATTACKER_COLOR: u32 = 0xc4_2020;
 
 fn mk(m: &mut MiscModel, c: u32) -> MatId {
-    m.mat(MiscMaterial::lambert(c))
+    m.add_material(MiscMaterial::lambert(c))
 }
 
 fn add(m: &mut MiscModel, parent: NodeId, prim: Prim, mt: MatId) -> NodeId {
@@ -480,12 +481,12 @@ impl SiegeMarkerRenderer {
         let root = m.root();
         m.render_order(root, 80);
 
-        let mut disc_m = MiscMaterial::new(MatKind::Basic, SIEGE_DISC_COLOR);
+        let mut disc_m = MiscMaterial::new(MatKind::Basic, Some(SIEGE_DISC_COLOR));
         disc_m.transparent = true;
         disc_m.opacity = 0.42;
         disc_m.depth_write = false;
         disc_m.depth_test = false;
-        let disc_mat = m.mat(disc_m);
+        let disc_mat = m.add_material(disc_m);
         let disc = m.mesh(
             root,
             Prim::cyl(HEX_R * 0.88, HEX_R * 0.88, 0.035, 6),
@@ -493,16 +494,16 @@ impl SiegeMarkerRenderer {
         );
         m.render_order(disc, 81);
 
-        let mut ring_m = MiscMaterial::new(MatKind::Basic, SIEGE_RING_COLOR);
+        let mut ring_m = MiscMaterial::new(MatKind::Basic, Some(SIEGE_RING_COLOR));
         ring_m.transparent = true;
         ring_m.opacity = 0.88;
         ring_m.side = Side::Double;
         ring_m.depth_write = false;
         ring_m.depth_test = false;
-        let ring_mat = m.mat(ring_m);
-        let ring = m.custom_mesh(
+        let ring_mat = m.add_material(ring_m);
+        let ring = m.mesh(
             root,
-            MiscGeo::Ring {
+            Prim::Ring {
                 inner: HEX_R * 0.78,
                 outer: HEX_R * 1.05,
                 segments: 6,
@@ -512,18 +513,18 @@ impl SiegeMarkerRenderer {
         m.node(ring).rot_x(-PI / 2.0);
         m.render_order(ring, 82);
 
-        let mut sprite_m = MiscMaterial::new(MatKind::Sprite, 0xff_ffff);
+        let mut sprite_m = MiscMaterial::new(MatKind::Sprite, Some(0xff_ffff));
         sprite_m.transparent = true;
         sprite_m.depth_write = false;
         sprite_m.depth_test = false;
-        sprite_m.map = Some(SIEGE_GLYPH);
-        let sprite_mat = m.mat(sprite_m);
+        sprite_m.map = Some(Texture::Glyph(SIEGE_GLYPH));
+        let sprite_mat = m.add_material(sprite_m);
         let sprite = m.sprite(root, sprite_mat);
         m.node(sprite).set_scale(1.35, 1.35, 1.0);
         m.render_order(sprite, 90);
 
-        let base_nodes = m.tree.nodes.len();
-        let base_mats = m.mats.len();
+        let base_nodes = m.nodes.len();
+        let base_mats = m.materials.len();
         CityMarker {
             model: m,
             disc,
@@ -595,7 +596,7 @@ impl SiegeMarkerRenderer {
                 };
                 let camp = build_siege_camp_in(m, Some(root), &opts);
                 let (cx, cz) = axial_to_world_f(cq, cr, HEX_R);
-                let gp = m.tree.nodes[root].position;
+                let gp = m.nodes[root].position;
                 let y = top_y(cq, cr) + MARKER_LIFT * 0.5;
                 m.node(camp).set_pos(cx - gp.x, y, cz - gp.z);
                 m.render_order(camp, 85);
@@ -613,9 +614,8 @@ impl SiegeMarkerRenderer {
         for (_, e) in &mut self.markers {
             let ring = e.ring;
             e.model.node(ring).set_scale(pulse, pulse, 1.0);
-            if let Some(sm) = e.model.info[e.sprite].sprite {
-                e.model.mats[sm].opacity = opacity;
-                e.model.tree.materials[sm].opacity = opacity;
+            if let Some(sm) = e.model.nodes[e.sprite].sprite_material() {
+                e.model.materials[sm].opacity = opacity;
             }
         }
     }

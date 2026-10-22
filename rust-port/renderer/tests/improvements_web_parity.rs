@@ -32,7 +32,13 @@ use civ_renderer::models::improvements::droga::{
     ROAD_NODE_RADIUS_RATIO,
 };
 use civ_renderer::models::improvements::kopalnie::{build_kopalnia_cyny, build_kopalnia_zlota};
-use civ_renderer::models::improvements::model::{hex_to_linear, ExtraGeo, MatKind};
+// P4.27 (R-RUSTPORT-P4-27-SCENE-UNIFY-Q1): forced type adjustments only — the
+// model is a `scene::Scene` (shadows / userData / material class + emissive
+// are scene fields, `Prim::Dodecahedron`, `TwistedCone` body); every
+// assertion is unchanged.
+use civ_renderer::models::improvements::model::{
+    hex_to_linear, user_data, ImprovementExt, MatKind, TwistedCone,
+};
 use civ_renderer::models::improvements::p2::{self, WariantFarmy};
 use civ_renderer::models::improvements::p3a;
 use civ_renderer::models::improvements::p3b::{self, ZlozeTyp};
@@ -373,24 +379,22 @@ fn u(n: usize) -> u32 {
 }
 
 fn geo_dump(m: &ImprovementModel, id: usize) -> GeoDump {
-    if let Some(x) = m.node_ext[id].extra {
-        return match x {
-            ExtraGeo::Dodecahedron { r, detail } => GeoDump {
-                ty: "dodeca",
-                params: vec![("r", r), ("detail", f64::from(detail))],
-                open: false,
-            },
-            ExtraGeo::TwistedCone { r, h, radial, .. } => GeoDump {
-                ty: "cone",
-                params: vec![("r", r), ("h", h), ("seg", f64::from(radial))],
-                open: false,
-            },
-        };
-    }
-    let Some(md) = m.tree.nodes[id].mesh() else {
+    let Some(md) = m.nodes[id].mesh() else {
         panic!("not a mesh")
     };
+    if let Some(&TwistedCone { r, h, radial, .. }) = md.geo.body_as::<TwistedCone>() {
+        return GeoDump {
+            ty: "cone",
+            params: vec![("r", r), ("h", h), ("seg", f64::from(radial))],
+            open: false,
+        };
+    }
     match md.geo.prim().expect("improvement meshes are primitives") {
+        Prim::Dodecahedron { r, detail } => GeoDump {
+            ty: "dodeca",
+            params: vec![("r", r), ("detail", f64::from(detail))],
+            open: false,
+        },
         Prim::Box { w, h, d } => GeoDump {
             ty: "box",
             params: vec![("w", w), ("h", h), ("d", d)],
@@ -427,13 +431,13 @@ fn dump(m: &ImprovementModel) -> Dump {
     let mut nodes = Vec::new();
     let (mut vertices, mut triangles) = (0, 0);
     for (id, world) in m.subtree(ROOT) {
-        let n = &m.tree.nodes[id];
-        let e = &m.node_ext[id];
+        let n = &m.nodes[id];
+        let e = n;
         let parent = n
             .parent
             .and_then(|p| index.get(&p).copied())
             .map_or(-1, |i| i64::try_from(i).expect("i64"));
-        let ud = e.user_data.map(|d| {
+        let ud = user_data(m, id).map(|d| {
             (
                 d.mats.map_or(-1, |v| i64::try_from(v).expect("i64")),
                 d.per_token_geos
@@ -488,9 +492,8 @@ fn dump(m: &ImprovementModel) -> Dump {
     let mats: Vec<MatDump> = mats_order
         .iter()
         .map(|&mi| {
-            let mt = &m.tree.materials[mi];
-            let ext = &m.mat_ext[mi];
-            let standard = ext.kind == MatKind::Standard;
+            let mt = &m.materials[mi];
+            let standard = mt.kind == MatKind::Standard;
             MatDump {
                 standard,
                 hex: mt.hex(),
@@ -498,7 +501,7 @@ fn dump(m: &ImprovementModel) -> Dump {
                 flat: mt.flat_shading,
                 metal: if standard { mt.metalness } else { 0.0 },
                 rough: if standard { mt.roughness } else { 0.0 },
-                em: ext.emissive,
+                em: [mt.emissive.r, mt.emissive.g, mt.emissive.b],
             }
         })
         .collect();

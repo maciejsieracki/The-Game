@@ -12,7 +12,8 @@ use crate::jsmath::{js_cos, js_sin};
 use crate::models::unit_core::model::{MatId, NodeId, Prim, ROOT};
 
 use super::kit::b;
-use super::model::{ExtraGeo, ImprovementModel};
+use super::model::ImprovementExt;
+use super::model::{twisted_cone, ImprovementModel};
 
 /// `PASTWISKO_S = (2.05 / 3) * 1.5` (`pastwisko-modele.ts`).
 #[must_use]
@@ -748,17 +749,7 @@ fn ear(
     twist: f64,
 ) {
     let id = if twist != 0.0 {
-        m.mesh_extra(
-            g,
-            ExtraGeo::TwistedCone {
-                r,
-                h,
-                radial: 3,
-                twist,
-            },
-            Prim::cone(r, h, 3),
-            mat,
-        )
+        m.mesh(g, twisted_cone(r, h, 3, twist), mat)
     } else {
         m.mesh(g, Prim::cone(r, h, 3), mat)
     };

@@ -16,7 +16,8 @@ use std::collections::HashMap;
 use crate::geom::{Euler, EulerOrder, Quat, Vec3};
 use crate::models::unit_core::model::{quat_from_euler, MatId, NodeId, Prim, ROOT};
 
-use super::model::{hex_to_linear, ImprovementModel, UserData};
+use super::model::ImprovementExt;
+use super::model::{hex_to_linear, set_user_data, ImprovementModel, UserData};
 
 /// `HEX_R` (`hexutil.ts:24`).
 const R: f64 = 1.0;
@@ -221,11 +222,15 @@ impl Ctx<'_> {
 }
 
 fn mark_shared(m: &mut ImprovementModel, g: NodeId) {
-    m.ext(g).user_data = Some(UserData {
-        mats: Some(0),
-        per_token_geos: Some(0),
-        deposit_display_scale: None,
-    });
+    set_user_data(
+        m,
+        g,
+        UserData {
+            mats: Some(0),
+            per_token_geos: Some(0),
+            deposit_display_scale: None,
+        },
+    );
 }
 
 /// `buildKopalniaCyny()` (`kopalnia-cyny-opus5.ts:227-344`) into `g`.

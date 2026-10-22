@@ -6,6 +6,7 @@ use std::f64::consts::PI;
 use crate::models::unit_core::model::{MatId, NodeId, ROOT};
 
 use super::kit::{az_xz, b, b0, cone, cyl};
+use super::model::ImprovementExt;
 use super::model::ImprovementModel;
 
 /// Palette `P3B` (`:137-159`).

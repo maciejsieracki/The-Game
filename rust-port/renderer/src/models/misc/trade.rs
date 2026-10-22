@@ -113,7 +113,7 @@ pub fn build_trade_routes_overlay_group(
             TradeMedium::Morze => SEA_COLOR,
             TradeMedium::Lad => LAND_COLOR,
         };
-        let mut mat = MiscMaterial::new(MatKind::LineBasic, color);
+        let mut mat = MiscMaterial::new(MatKind::LineBasic, Some(color));
         mat.transparent = true;
         mat.opacity = LINE_OPACITY;
         mat.depth_write = false;

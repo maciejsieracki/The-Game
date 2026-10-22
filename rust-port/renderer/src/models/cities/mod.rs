@@ -19,11 +19,11 @@
 //! - [`renderer`] = the CPU part of `render/cities.ts` (`CityRenderer`
 //!   without the stat chip / revolt sprite, which are MOD-10 / overlays).
 //!
-//! A model is a [`CityModel`]: the shared unit-core object tree
-//! ([`UnitModel`](crate::models::unit_core::UnitModel)) plus one
-//! [`Drawable`] per mesh node (CPU geometry description [`CityGeo`] and a
-//! material index; materials are data, [`CityMaterial`]). Nothing here needs
-//! a GPU. All `Math.sin/cos/atan2/hypot/pow` go through [`crate::jsmath`].
+//! A model is a [`CityModel`] = the renderer's one scene-tree type
+//! ([`crate::scene::Scene`], P4.27): meshes and line loops are scene nodes
+//! with a [`crate::scene::Geo`] and a scene material; [`CityGeo`],
+//! [`CityMaterial`] and [`Drawable`] are constructor / read views of them.
+//! Nothing here needs a GPU. All `Math.sin/cos/atan2/hypot/pow` go through [`crate::jsmath`].
 
 pub mod braz;
 pub mod ghost_braz;
@@ -46,8 +46,8 @@ pub use kamien::{
     MiastoKamienOpts, Poziom,
 };
 pub use model::{
-    js_number_to_string, CityGeo, CityMatId, CityMaterial, CityModel, CityUserData, DrawKind,
-    Drawable, Rozmiar,
+    city_user_data, drawable, js_number_to_string, set_city_user_data, CityGeo, CityMatId,
+    CityMaterial, CityModel, CityUserData, DrawKind, Drawable, HexLoop, HexWallRing, Rozmiar,
 };
 pub use outline::{
     build_city_map_outline, place_city_map_outline, CityMapOutlineKind, OutlineData,

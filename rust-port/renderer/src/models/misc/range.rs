@@ -192,7 +192,7 @@ fn hex_vertices(cx: f64, y: f64, cz: f64, radius: f64) -> [Vec3; 6] {
 }
 
 fn basic(color: u32, opacity: f64, double: bool) -> MiscMaterial {
-    let mut m = MiscMaterial::new(MatKind::Basic, color);
+    let mut m = MiscMaterial::new(MatKind::Basic, Some(color));
     m.transparent = true;
     m.opacity = opacity;
     m.depth_write = false;
@@ -203,7 +203,7 @@ fn basic(color: u32, opacity: f64, double: bool) -> MiscMaterial {
 }
 
 fn line_basic(color: u32, opacity: f64) -> MiscMaterial {
-    let mut m = MiscMaterial::new(MatKind::LineBasic, color);
+    let mut m = MiscMaterial::new(MatKind::LineBasic, Some(color));
     m.transparent = true;
     m.opacity = opacity;
     m.depth_write = false;

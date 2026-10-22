@@ -42,7 +42,7 @@ struct Sp {
 
 /// `stonePalette(civ, ownerCol)` (`stoneCityRoblox.ts:44-78`).
 fn stone_palette(c: &mut CityModel, civ: StoneCiv, owner_col: u32) -> Sp {
-    let mut rbx = |hex: u32| c.lambert(hex, true);
+    let mut rbx = |hex: u32| c.lambert_mat(hex, true);
     let stone = rbx(0x009a_9a94);
     let stone_dk = rbx(0x0077_694f);
     let wood = rbx(0x008b_6914);
@@ -531,7 +531,7 @@ fn hex_wall(c: &mut CityModel, spread: f64, mat: CityMatId) -> NodeId {
         },
         mat,
     );
-    let d = c.drawable_mut(id);
+    let d = c.node(id);
     d.cast_shadow = true;
     d.receive_shadow = true;
     g
@@ -593,7 +593,7 @@ pub fn build_stone_age_city_roblox(
         6,
     );
     if let Some(center) = proto_center(&mut c, civ, l, plat_h, &p) {
-        c.tree.node(center).position.y = plat_h;
+        c.node(center).position.y = plat_h;
         c.attach(ROOT, center);
     }
 
@@ -672,7 +672,7 @@ pub fn build_stone_age_city_roblox_universal(
     );
     if l >= 3.0 {
         let center = fire_pit(&mut c, plat_h, &p);
-        c.tree.node(center).position.y = plat_h;
+        c.node(center).position.y = plat_h;
         c.attach(ROOT, center);
     }
 

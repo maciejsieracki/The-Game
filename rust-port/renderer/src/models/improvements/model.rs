@@ -1,93 +1,66 @@
 //! Object tree of an improvement / resource model.
 //!
-//! The tree itself is the MOD-04 type [`UnitModel`] (dispatch: "Typ drzewa
-//! modelu = ten z `models::unit_core::model`"). The web improvement builders
-//! need three things that `UnitModel` does not carry, so they live in
-//! parallel side tables here (minimal types, no change to `unit_core`):
+//! Since R-RUSTPORT-P4-27-SCENE-UNIFY-Q1 the model is the renderer's one
+//! scene-tree type, [`crate::scene::Scene`] ([`ImprovementModel`] is an
+//! alias). What P4.20 kept in side tables is carried by the scene itself:
 //!
-//! - [`NodeExt`] per node: `castShadow` / `receiveShadow`, `userData` and the
-//!   two geometries that `unit_core::model::Prim` cannot describe
-//!   ([`ExtraGeo`]: `DodecahedronGeometry` and a `ConeGeometry` rotated with
-//!   `BufferGeometry.rotateY`);
-//! - [`MatExt`] per material: material model (`MeshLambertMaterial` /
-//!   `MeshStandardMaterial`) and the linear `emissive` colour.
+//! - `castShadow` / `receiveShadow` and `userData` are node fields (the
+//!   typed view of the `userData` keys the MOD-11 builders write is
+//!   [`UserData`], read and written with [`user_data`] / [`set_user_data`]);
+//! - the material class (`MeshLambertMaterial` / `MeshStandardMaterial`,
+//!   [`MatKind`]) and the linear `emissive` colour are material fields;
+//! - `DodecahedronGeometry` is a parametric [`Prim::Dodecahedron`], the
+//!   `ConeGeometry` rotated with `BufferGeometry.rotateY` is the module body
+//!   [`TwistedCone`].
 //!
-//! `unit_core::model::Material` is reused for colour / `flatShading` /
-//! `metalness` / `roughness`; a Lambert material stores `metalness = 0`,
-//! `roughness = 1` there (Lambert has neither parameter, [`MatExt::kind`]
-//! says which fields are meaningful).
+//! The builder conveniences of P4.20 (`lambert`, `standard`, the box and
+//! geometry readers) are the extension trait [`ImprovementExt`] on
+//! [`Scene`].
 
 use crate::geom::{self, Mat4, Vec3};
-use crate::models::unit_core::model::{
-    quat_from_euler, Geo, MatId, Material, Node, NodeId, Prim, UnitModel, ROOT,
-};
 use crate::pick::three::js_max;
-use crate::terrain::color::srgb_to_linear;
+pub use crate::scene::MaterialKind as MatKind;
+use crate::scene::{Geo, GeoBody, MatId, Material, NodeId, Prim, Scene, UserValue, ROOT};
+use crate::terrain::color::{srgb_to_linear, Color};
 
-/// Material model of a [`MatExt`].
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub enum MatKind {
-    /// `THREE.MeshLambertMaterial`.
-    Lambert,
-    /// `THREE.MeshStandardMaterial`.
-    Standard,
-}
+/// An improvement / resource model (alias of [`Scene`]).
+pub type ImprovementModel = Scene;
 
-/// Material data that `unit_core::model::Material` does not carry.
+/// `new THREE.ConeGeometry(r, h, radial)` followed by
+/// `geometry.rotateY(twist)` (`swinia-trzoda.ts` `EAR`).
 #[derive(Debug, Clone, Copy, PartialEq)]
-pub struct MatExt {
-    /// Material model.
-    pub kind: MatKind,
-    /// `material.emissive` in the linear working colour space (`r, g, b`).
-    pub emissive: [f64; 3],
+pub struct TwistedCone {
+    /// Radius.
+    pub r: f64,
+    /// Height.
+    pub h: f64,
+    /// Radial segments.
+    pub radial: u32,
+    /// `rotateY` angle.
+    pub twist: f64,
 }
 
-/// Geometries outside `unit_core::model::Prim`.
-#[derive(Debug, Clone, Copy, PartialEq)]
-pub enum ExtraGeo {
-    /// `new THREE.DodecahedronGeometry(r, detail)`.
-    Dodecahedron {
-        /// Radius.
-        r: f64,
-        /// Detail.
-        detail: u32,
-    },
-    /// `new THREE.ConeGeometry(r, h, radial)` followed by
-    /// `geometry.rotateY(twist)` (`swinia-trzoda.ts` `EAR`).
-    TwistedCone {
-        /// Radius.
-        r: f64,
-        /// Height.
-        h: f64,
-        /// Radial segments.
-        radial: u32,
-        /// `rotateY` angle.
-        twist: f64,
-    },
-}
-
-impl ExtraGeo {
-    /// Builds the CPU geometry (vertex-for-vertex like Three r169).
-    #[must_use]
-    pub fn build(&self) -> geom::Mesh {
-        match *self {
-            Self::Dodecahedron { r, detail } => geom::dodecahedron_geometry(r, detail),
-            Self::TwistedCone {
-                r,
-                h,
-                radial,
-                twist,
-            } => {
-                let mut m =
-                    geom::cone_geometry(r, h, radial, 1, false, 0.0, std::f64::consts::PI * 2.0);
-                m.rotate_y(twist);
-                m
-            }
-        }
+impl GeoBody for TwistedCone {
+    fn build(&self) -> geom::Mesh {
+        let mut m = geom::cone_geometry(
+            self.r,
+            self.h,
+            self.radial,
+            1,
+            false,
+            0.0,
+            std::f64::consts::PI * 2.0,
+        );
+        m.rotate_y(self.twist);
+        m
+    }
+    fn three_type(&self) -> &'static str {
+        "ConeGeometry"
     }
 }
 
-/// `object.userData` keys used by the MOD-11 builders.
+/// `object.userData` keys written by the MOD-11 builders (typed view of
+/// [`crate::scene::Node::user_data`]).
 #[derive(Debug, Clone, Copy, PartialEq, Default)]
 pub struct UserData {
     /// `userData['mats']` is set to an array of this length.
@@ -98,17 +71,33 @@ pub struct UserData {
     pub deposit_display_scale: Option<f64>,
 }
 
-/// Per-node data that `unit_core::model::Node` does not carry.
-#[derive(Debug, Clone, Copy, PartialEq, Default)]
-pub struct NodeExt {
-    /// `castShadow`.
-    pub cast_shadow: bool,
-    /// `receiveShadow`.
-    pub receive_shadow: bool,
-    /// Geometry override (the node's `Geo` is then a placeholder).
-    pub extra: Option<ExtraGeo>,
-    /// `userData` (only nodes where a builder writes it).
-    pub user_data: Option<UserData>,
+/// Writes the keys of `d` into the `userData` of node `id`.
+pub fn set_user_data(m: &mut Scene, id: NodeId, d: UserData) {
+    let ud = &mut m.nodes[id].user_data;
+    if let Some(n) = d.mats {
+        ud.set("mats", UserValue::Len(n));
+    }
+    if let Some(n) = d.per_token_geos {
+        ud.set("perTokenGeos", UserValue::Len(n));
+    }
+    if let Some(v) = d.deposit_display_scale {
+        ud.set("depositDisplayScale", UserValue::Num(v));
+    }
+}
+
+/// The MOD-11 `userData` keys of node `id` (`None` when the builders wrote
+/// none).
+#[must_use]
+pub fn user_data(m: &Scene, id: NodeId) -> Option<UserData> {
+    let ud = &m.nodes[id].user_data;
+    if ud.is_empty() {
+        return None;
+    }
+    Some(UserData {
+        mats: ud.array_len("mats"),
+        per_token_geos: ud.array_len("perTokenGeos"),
+        deposit_display_scale: ud.num("depositDisplayScale"),
+    })
 }
 
 /// Axis-aligned box (`THREE.Box3`), empty = `+inf / -inf`.
@@ -250,62 +239,45 @@ pub fn hex_to_linear(hex: u32) -> [f64; 3] {
     [c(16), c(8), c(0)]
 }
 
-/// An improvement / resource model: [`UnitModel`] tree + side tables.
-#[derive(Debug, Clone, PartialEq)]
-pub struct ImprovementModel {
-    /// The object tree; [`ROOT`] is the group the web builder returns.
-    pub tree: UnitModel,
-    /// One entry per `tree.materials` element.
-    pub mat_ext: Vec<MatExt>,
-    /// One entry per `tree.nodes` element.
-    pub node_ext: Vec<NodeExt>,
-}
-
-impl Default for ImprovementModel {
-    fn default() -> Self {
-        Self::new()
-    }
-}
-
-impl ImprovementModel {
-    /// An empty root group.
-    #[must_use]
-    pub fn new() -> Self {
-        Self {
-            tree: UnitModel::new(),
-            mat_ext: Vec::new(),
-            node_ext: vec![NodeExt::default()],
-        }
-    }
-
-    /// Extends the side tables after nodes were added through `tree`
-    /// directly (e.g. `unit_core::horse::build_horse`).
-    pub fn sync(&mut self) {
-        self.node_ext
-            .resize(self.tree.nodes.len(), NodeExt::default());
-    }
-
-    /// `new THREE.MeshLambertMaterial({ color, flatShading })`.
-    pub fn lambert_mat(&mut self, color: u32, flat_shading: bool) -> MatId {
-        let mut mt = Material::lambert(color);
-        mt.flat_shading = flat_shading;
-        let id = self.tree.untracked_mat(mt);
-        self.mat_ext.push(MatExt {
-            kind: MatKind::Lambert,
-            emissive: [0.0; 3],
-        });
-        id
-    }
-
+/// The builder conveniences of the MOD-11 files on the one scene type.
+pub trait ImprovementExt {
     /// `new THREE.MeshLambertMaterial({ color, flatShading: true })` — the
     /// `mat(c)` of every roblox improvement file.
-    pub fn lambert(&mut self, color: u32) -> MatId {
-        self.lambert_mat(color, true)
-    }
+    fn lambert(&mut self, color: u32) -> MatId;
 
     /// `new THREE.MeshStandardMaterial({ color, flatShading, metalness,
     /// roughness, emissive })` with `emissive` already linear.
-    pub fn standard(
+    fn standard(
+        &mut self,
+        color: u32,
+        flat_shading: bool,
+        metalness: f64,
+        roughness: f64,
+        emissive: [f64; 3],
+    ) -> MatId;
+
+    /// The CPU geometry of a mesh node.
+    fn geometry(&self, id: NodeId) -> Option<geom::Mesh>;
+
+    /// `new THREE.Box3().setFromObject(node)` (non-precise: geometry
+    /// bounding boxes transformed by the world matrix), with `node` treated
+    /// as a parentless root, as at the call sites of
+    /// `buildImprovementSectored`.
+    fn box_from_object(&self, root: NodeId) -> Box3;
+
+    /// `new THREE.Box3().setFromObject(root, true)` (every vertex).
+    fn box_precise(&self) -> Box3;
+
+    /// Mesh / vertex / triangle totals over the tree.
+    fn totals(&self) -> (usize, usize, usize);
+}
+
+impl ImprovementExt for Scene {
+    fn lambert(&mut self, color: u32) -> MatId {
+        self.lambert_mat(color, true)
+    }
+
+    fn standard(
         &mut self,
         color: u32,
         flat_shading: bool,
@@ -315,157 +287,15 @@ impl ImprovementModel {
     ) -> MatId {
         let mut mt = Material::standard(color, metalness, roughness);
         mt.flat_shading = flat_shading;
-        mt.emissive = crate::terrain::color::Color::rgb(emissive[0], emissive[1], emissive[2]);
-        let id = self.tree.untracked_mat(mt);
-        self.mat_ext.push(MatExt {
-            kind: MatKind::Standard,
-            emissive,
-        });
-        id
+        mt.emissive = Color::rgb(emissive[0], emissive[1], emissive[2]);
+        self.add_material(mt)
     }
 
-    /// `new THREE.Group()`, not attached.
-    pub fn detached(&mut self) -> NodeId {
-        let id = self.tree.detached_group();
-        self.sync();
-        id
+    fn geometry(&self, id: NodeId) -> Option<geom::Mesh> {
+        self.nodes[id].mesh().map(|md| md.geo.build())
     }
 
-    /// `parent.add(new THREE.Group())`.
-    pub fn group(&mut self, parent: NodeId) -> NodeId {
-        let id = self.tree.add_group(parent);
-        self.sync();
-        id
-    }
-
-    /// `parent.add(new THREE.Mesh(prim, material))` (no shadows).
-    pub fn mesh(&mut self, parent: NodeId, prim: Prim, material: MatId) -> NodeId {
-        let id = self.tree.add_mesh_id(parent, Geo::Prim(prim), material);
-        self.sync();
-        id
-    }
-
-    /// A mesh whose geometry is an [`ExtraGeo`] (`placeholder` is stored in
-    /// the `unit_core` node and ignored by [`Self::geometry`]).
-    pub fn mesh_extra(
-        &mut self,
-        parent: NodeId,
-        extra: ExtraGeo,
-        placeholder: Prim,
-        material: MatId,
-    ) -> NodeId {
-        let id = self.mesh(parent, placeholder, material);
-        self.node_ext[id].extra = Some(extra);
-        id
-    }
-
-    /// `parent.add(child)`.
-    pub fn attach(&mut self, parent: NodeId, child: NodeId) {
-        self.tree.attach(parent, child);
-    }
-
-    /// Node access.
-    pub fn node(&mut self, id: NodeId) -> &mut Node {
-        &mut self.tree.nodes[id]
-    }
-
-    /// Side-table access.
-    pub fn ext(&mut self, id: NodeId) -> &mut NodeExt {
-        &mut self.node_ext[id]
-    }
-
-    /// `castShadow = true` (and optionally `receiveShadow = true`).
-    pub fn shadows(&mut self, id: NodeId, cast: bool, receive: bool) {
-        let e = &mut self.node_ext[id];
-        e.cast_shadow = cast;
-        e.receive_shadow = receive;
-    }
-
-    /// `rotation.set(x, y, z)` (Euler `XYZ`) and the quaternion update.
-    pub fn set_rotation(&mut self, id: NodeId, x: f64, y: f64, z: f64) {
-        let n = &mut self.tree.nodes[id];
-        n.rotation.x = x;
-        n.rotation.y = y;
-        n.rotation.z = z;
-        n.quaternion = quat_from_euler(n.rotation);
-    }
-
-    /// Copies the children of `other`'s root under `parent` (the root of
-    /// `other` must be an untransformed group, as `buildZlozeKonie` returns).
-    /// All materials of `other` are `MeshStandardMaterial` with black
-    /// emissive (the only use is `kon-nowy-model.ts:323-342`).
-    pub fn graft_standard(&mut self, parent: NodeId, other: &UnitModel) {
-        let node_base = self.tree.nodes.len();
-        let mat_base = self.tree.materials.len();
-        for m in &other.materials {
-            self.tree.materials.push(*m);
-            self.mat_ext.push(MatExt {
-                kind: MatKind::Standard,
-                emissive: [0.0; 3],
-            });
-        }
-        let map = |id: NodeId| -> NodeId {
-            if id == ROOT {
-                parent
-            } else {
-                node_base + id - 1
-            }
-        };
-        for (old, n) in other.nodes.iter().enumerate().skip(1) {
-            let mut c = n.clone();
-            c.parent = n.parent.map(map);
-            c.children = n.children.iter().map(|&k| map(k)).collect();
-            if let Some(md) = c.mesh_mut() {
-                for s in &mut md.materials {
-                    *s += mat_base;
-                }
-            }
-            debug_assert_eq!(self.tree.nodes.len(), map(old));
-            self.tree.nodes.push(c);
-        }
-        for &k in &other.nodes[ROOT].children {
-            self.tree.nodes[parent].children.push(map(k));
-        }
-        self.sync();
-    }
-
-    /// The CPU geometry of a mesh node.
-    #[must_use]
-    pub fn geometry(&self, id: NodeId) -> Option<geom::Mesh> {
-        let md = self.tree.nodes[id].mesh()?;
-        Some(match self.node_ext[id].extra {
-            Some(x) => x.build(),
-            None => md.geo.build(),
-        })
-    }
-
-    /// Pre-order traversal of the subtree of `root` (children in `add()`
-    /// order) with the world matrices that `updateWorldMatrix` gives when
-    /// `root` has no parent.
-    #[must_use]
-    pub fn subtree(&self, root: NodeId) -> Vec<(NodeId, Mat4)> {
-        let mut out = Vec::new();
-        let mut stack = vec![(root, None::<Mat4>)];
-        while let Some((id, parent)) = stack.pop() {
-            let local = self.tree.local_matrix(id);
-            let world = match parent {
-                Some(p) => p.mul(&local),
-                None => local,
-            };
-            out.push((id, world));
-            for &c in self.tree.nodes[id].children.iter().rev() {
-                stack.push((c, Some(world)));
-            }
-        }
-        out
-    }
-
-    /// `new THREE.Box3().setFromObject(node)` (non-precise: geometry
-    /// bounding boxes transformed by the world matrix), with `node` treated
-    /// as a parentless root, as at the call sites of
-    /// `buildImprovementSectored`.
-    #[must_use]
-    pub fn box_from_object(&self, root: NodeId) -> Box3 {
+    fn box_from_object(&self, root: NodeId) -> Box3 {
         let mut b = Box3::empty();
         for (id, world) in self.subtree(root) {
             if let Some(g) = self.geometry(id) {
@@ -475,9 +305,7 @@ impl ImprovementModel {
         b
     }
 
-    /// `new THREE.Box3().setFromObject(root, true)` (every vertex).
-    #[must_use]
-    pub fn box_precise(&self) -> Box3 {
+    fn box_precise(&self) -> Box3 {
         let mut b = Box3::empty();
         for (id, world) in self.subtree(ROOT) {
             if let Some(g) = self.geometry(id) {
@@ -492,9 +320,7 @@ impl ImprovementModel {
         b
     }
 
-    /// Mesh / vertex / triangle totals over the tree.
-    #[must_use]
-    pub fn totals(&self) -> (usize, usize, usize) {
+    fn totals(&self) -> (usize, usize, usize) {
         let mut t = (0, 0, 0);
         for (id, _) in self.subtree(ROOT) {
             if let Some(g) = self.geometry(id) {
@@ -505,4 +331,21 @@ impl ImprovementModel {
         }
         t
     }
+}
+
+/// `Geo` of a `DodecahedronGeometry(r, detail)`.
+#[must_use]
+pub const fn dodecahedron(r: f64, detail: u32) -> Prim {
+    Prim::Dodecahedron { r, detail }
+}
+
+/// `Geo` of the twisted ear cone.
+#[must_use]
+pub fn twisted_cone(r: f64, h: f64, radial: u32, twist: f64) -> Geo {
+    Geo::body(TwistedCone {
+        r,
+        h,
+        radial,
+        twist,
+    })
 }

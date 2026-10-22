@@ -18,6 +18,7 @@ use crate::models::unit_core::model::{NodeId, ROOT};
 
 use super::droga::{build_droga_gwiazda_into, RoadTyp, ROAD_MASK_FULL};
 use super::kopalnie::MineMats;
+use super::model::ImprovementExt;
 use super::model::{js_max_nan, js_min_nan, Box3, ImprovementModel};
 use super::roblox::{build_roblox_food_stack_into, roblox_builder};
 

@@ -3,7 +3,7 @@
 //! war). Two `LineLoop`s, `renderOrder = 12`, transparent line materials
 //! without depth write.
 
-use super::model::{CityGeo, CityMaterial, CityModel, DrawKind};
+use super::model::{CityGeo, CityMaterial, CityModel};
 use crate::models::unit_core::model::{NodeId, ROOT};
 use crate::pick::hex::{axial_to_world, HexCoord, HEX_R};
 use crate::terrain::color::Color;
@@ -70,14 +70,17 @@ fn make_hex_ring(
     opacity: f64,
     y: f64,
 ) {
-    let mat = c.add_material(CityMaterial::LineBasic {
-        color: Color::from_hex(color.unwrap_or(0x00ff_ffff)),
-        transparent: true,
-        opacity,
-        depth_write: false,
-    });
-    let id = c.drawable(parent, DrawKind::LineLoop, CityGeo::HexLoop { r, y }, mat);
-    c.drawable_mut(id).render_order = 12;
+    let mat = c.add_material(
+        CityMaterial::LineBasic {
+            color: Color::from_hex(color.unwrap_or(0x00ff_ffff)),
+            transparent: true,
+            opacity,
+            depth_write: false,
+        }
+        .into(),
+    );
+    let id = c.add_line_loop(parent, CityGeo::HexLoop { r, y }, mat);
+    c.node(id).render_order = 12;
 }
 
 /// `buildCityMapOutline(q, r, topY, civColor, atWar = false)`

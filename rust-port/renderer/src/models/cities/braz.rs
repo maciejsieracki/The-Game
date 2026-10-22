@@ -8,7 +8,7 @@ use std::f64::consts::PI;
 
 use super::kamien::{build_palisada_wal, poziom_z_argumentu, rozmiar_of_clamped, Poziom};
 use super::kit::{az_xz, ku_srodkowi_az, tang_rot_y};
-use super::model::{CityMatId, CityModel, CityUserData, Rozmiar};
+use super::model::{set_city_user_data, CityMatId, CityModel, CityUserData, Rozmiar};
 use crate::jsmath::{js_cos, js_sin};
 use crate::models::unit_core::model::{NodeId, ROOT};
 use crate::terrain::color::Color;
@@ -100,7 +100,7 @@ struct Mg {
 /// `makeMatsG(color)`.
 fn make_mats_g(c: &mut CityModel, color: u32) -> Mg {
     let kal = Color::from_hex(0x00a8_583a).lerp(Color::from_hex(color & 0x00ff_ffff), 0.40);
-    let mut mat = |hex: u32| c.lambert(hex, true);
+    let mut mat = |hex: u32| c.lambert_mat(hex, true);
     let biel = mat(0x00f6_f1e4);
     let biel_dk = mat(0x00e4_dcc8);
     let marmur = mat(0x00ef_e7d2);
@@ -712,7 +712,7 @@ struct Mr {
 /// is created but never used).
 fn make_mats_r(c: &mut CityModel, color: u32) -> Mr {
     let kal = Color::from_hex(0x0093_402a).lerp(Color::from_hex(color & 0x00ff_ffff), 0.40);
-    let mut mat = |hex: u32| c.lambert(hex, true);
+    let mut mat = |hex: u32| c.lambert_mat(hex, true);
     let strzecha = mat(0x00cd_a45c);
     let strzecha_dk = mat(0x00a3_8147);
     let daub = mat(0x00dc_be93);
@@ -809,7 +809,7 @@ fn capanna(c: &mut CityModel, m: &Mr, s: f64, wodz: bool) -> NodeId {
         6,
         R0,
     );
-    c.tree.node(a).scale.z = 0.84;
+    c.node(a).scale.z = 0.84;
     let b = c.cone(
         g,
         0.115 * s,
@@ -819,7 +819,7 @@ fn capanna(c: &mut CityModel, m: &Mr, s: f64, wodz: bool) -> NodeId {
         6,
         R0,
     );
-    c.tree.node(b).scale.z = 0.84;
+    c.node(b).scale.z = 0.84;
     for a in [0.72, -0.72] {
         c.br(
             g,
@@ -1255,11 +1255,14 @@ fn sklad_faza_duza_r(c: &mut CityModel, g: NodeId, m: &Mr, l: f64) {
 fn zapakuj(c: &mut CityModel, inner: NodeId, model: &'static str, rz: Rozmiar, l: f64) {
     c.set_scale_scalar(inner, 1.0 / MIASTO_BRAZ_CITY_MODEL_SCALE);
     c.attach(ROOT, inner);
-    c.user_data = CityUserData {
-        model: Some(model),
-        poziom: Some(l),
-        rozmiar: Some(rz),
-    };
+    set_city_user_data(
+        c,
+        CityUserData {
+            model: Some(model),
+            poziom: Some(l),
+            rozmiar: Some(rz),
+        },
+    );
 }
 
 /// `buildMiastoBrazGrecja(poziom = 10, opts = {})` (`miasto-braz.ts:818-833`).

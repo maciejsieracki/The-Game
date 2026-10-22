@@ -15,6 +15,7 @@ use crate::models::unit_core::model::{NodeId, Prim, ROOT};
 
 use super::droga::{build_droga_gwiazda_into, RoadTyp, ROAD_MASK_FULL};
 use super::kopalnie::{build_kopalnia_cyny_into, build_kopalnia_zlota_into, MineMats};
+use super::model::ImprovementExt;
 use super::model::ImprovementModel;
 use super::p2::{self, WariantFarmy};
 use super::p3a;

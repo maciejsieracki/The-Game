@@ -14,11 +14,10 @@
 //! | `map/territory-border.ts` | [`territory`] | boundary loops (input of the territory band) |
 //! | `render/tradeRoutesOverlay.ts` | [`trade`] | trade-route arcs as CPU line buffers |
 //!
-//! Models use the P4.13 object tree
-//! ([`crate::models::unit_core::model::UnitModel`]) wrapped in
-//! [`model::MiscModel`], which adds only what that tree lacks (Lambert /
-//! Basic / Sprite material data, circle / ring geometry, sprites, shadow
-//! flags, `renderOrder`). Overlays are [`overlay::OverlayGroup`]s: geometry,
+//! Models are the renderer's one scene-tree type ([`crate::scene::Scene`],
+//! P4.27; [`model::MiscModel`] is an alias): Lambert / Basic / Sprite
+//! materials, circle / ring geometry, sprites, shadow flags and
+//! `renderOrder` are all carried by the scene. Overlays are [`overlay::OverlayGroup`]s: geometry,
 //! instance matrices and material parameters as data. Nothing here needs a
 //! GPU; `Math.*` goes through [`crate::jsmath`].
 //!
@@ -34,9 +33,7 @@ pub mod territory;
 pub mod trade;
 pub mod wioska;
 
-pub use model::{
-    MatKind, MiscGeo, MiscMaterial, MiscModel, MiscSignature, NodeInfo, NodeKind, Side,
-};
+pub use model::{MatKind, MiscGeo, MiscMaterial, MiscModel, MiscSignature, NodeKind, Side};
 pub use overlay::{HexKey, HexKeySet, OverlayGroup, OverlayKind, OverlayMap, OverlayObject};
 pub use range::{
     build_range_overlay_group, build_range_overlay_group_game, build_territory_border_group,

@@ -19,9 +19,10 @@
 //! - [`zwierzeta`] — `render/pastwisko-modele.ts`, `render/swinia-trzoda.ts`;
 //! - [`zasoby`] — `render/styleResources.ts` (`buildStyledResourceOverlay`,
 //!   livestock figures);
-//! - [`model`] — the object tree ([`crate::models::unit_core::model::UnitModel`])
-//!   plus the side tables the improvement builders need (shadows,
-//!   `userData`, Lambert/Standard material data, two extra geometries).
+//! - [`model`] — the object tree is the renderer's one scene type
+//!   ([`crate::scene::Scene`], P4.27; shadows, `userData`, Lambert/Standard
+//!   material data are scene fields), plus the typed `userData` view, the
+//!   twisted-cone body and the builder conveniences ([`ImprovementExt`]).
 //!
 //! The horse of the stud farm and of the horse deposit is the MOD-04 horse
 //! (`unit_core::horse`). No GPU work here: shading/upload is RR-T5.
@@ -39,7 +40,10 @@ pub mod roblox_legacy;
 pub mod zasoby;
 pub mod zwierzeta;
 
-pub use model::{Box3, ExtraGeo, ImprovementModel, MatExt, MatKind, NodeExt, UserData};
+pub use model::{
+    dodecahedron, set_user_data, twisted_cone, user_data, Box3, ImprovementExt, ImprovementModel,
+    MatKind, TwistedCone, UserData,
+};
 pub use registry::{
     build_improvement, build_improvement_sectored, build_improvement_sectored_default,
     build_improvement_stack, ImprovementInfo, ImprovementKey, SectorRelief, DEFAULT_OWNER_COL,

@@ -252,10 +252,13 @@ pub fn build_legacy_city_model(owner_col: Option<u32>) -> CityModel {
     let mut c = CityModel::new();
     // `MeshLambertMaterial({ color })`; `color: undefined` keeps white.
     let mut mat = |hex: Option<u32>| {
-        c.add_material(CityMaterial::Lambert {
-            color: Color::from_hex(hex.unwrap_or(0x00ff_ffff)),
-            flat_shading: false,
-        })
+        c.add_material(
+            CityMaterial::Lambert {
+                color: Color::from_hex(hex.unwrap_or(0x00ff_ffff)),
+                flat_shading: false,
+            }
+            .into(),
+        )
     };
     let m_platform = mat(Some(0x009b_9b8a));
     let m_house_wall = mat(Some(0x00cd_a77a));
@@ -275,7 +278,7 @@ pub fn build_legacy_city_model(owner_col: Option<u32>) -> CityModel {
         },
         m_platform,
     );
-    c.tree.node(id).position.y = platform_height * 0.5;
+    c.node(id).position.y = platform_height * 0.5;
     let platform_top = platform_height;
 
     for angle in [PI * 0.0, PI * (2.0 / 3.0), PI * (4.0 / 3.0)] {
@@ -301,7 +304,7 @@ pub fn build_legacy_city_model(owner_col: Option<u32>) -> CityModel {
             m_house_roof,
         );
         c.set_pos(roof, hx, platform_top + house_h + roof_h * 0.35, hz);
-        c.tree.node(roof).rot_x(PI * 0.25);
+        c.node(roof).rot_x(PI * 0.25);
     }
 
     let temple = c.mesh(
@@ -313,7 +316,7 @@ pub fn build_legacy_city_model(owner_col: Option<u32>) -> CityModel {
         },
         m_temple_body,
     );
-    c.tree.node(temple).position.y = platform_top + temple_h * 0.5;
+    c.node(temple).position.y = platform_top + temple_h * 0.5;
     let temple_top = platform_top + temple_h;
 
     let troof = c.mesh(
@@ -325,8 +328,8 @@ pub fn build_legacy_city_model(owner_col: Option<u32>) -> CityModel {
         },
         m_temple_roof,
     );
-    c.tree.node(troof).position.y = temple_top + temple_roof_height * 0.5;
-    c.tree.node(troof).rot_y(PI * 0.25);
+    c.node(troof).position.y = temple_top + temple_roof_height * 0.5;
+    c.node(troof).rot_y(PI * 0.25);
 
     let pole_base = temple_top + temple_roof_height;
     let pole = c.mesh(
@@ -339,7 +342,7 @@ pub fn build_legacy_city_model(owner_col: Option<u32>) -> CityModel {
         },
         m_pole,
     );
-    c.tree.node(pole).position.y = pole_base + pole_height * 0.5;
+    c.node(pole).position.y = pole_base + pole_height * 0.5;
 
     let flag = c.mesh(
         ROOT,
@@ -350,9 +353,9 @@ pub fn build_legacy_city_model(owner_col: Option<u32>) -> CityModel {
         },
         m_flag,
     );
-    c.tree.node(flag).position.y = pole_base + pole_height + flag_height * 0.5;
-    c.tree.node(flag).rot_z(PI * 0.5);
-    c.tree.node(flag).position.x = flag_radius * 0.5;
+    c.node(flag).position.y = pole_base + pole_height + flag_height * 0.5;
+    c.node(flag).rot_z(PI * 0.5);
+    c.node(flag).position.x = flag_radius * 0.5;
     c
 }
 
@@ -611,7 +614,7 @@ impl CityRenderer {
 /// Root position of a rendered object (`group.position`).
 #[must_use]
 pub fn root_position(m: &CityModel) -> Vec3 {
-    m.tree.nodes[ROOT].position
+    m.nodes[ROOT].position
 }
 
 #[cfg(test)]

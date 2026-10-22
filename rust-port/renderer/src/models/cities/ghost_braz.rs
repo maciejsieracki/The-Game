@@ -46,7 +46,7 @@ struct Rp {
 /// first, then the per-civ overrides (`{ ...base, … }`).
 #[allow(clippy::too_many_lines)]
 fn palette(c: &mut CityModel, civ: BronzeCiv, owner_col: u32) -> Rp {
-    let mut rbx = |hex: u32| c.lambert(hex, true);
+    let mut rbx = |hex: u32| c.lambert_mat(hex, true);
     let stone = rbx(0x00aa_bbcc);
     let stone2 = rbx(0x0088_99aa);
     let wood = rbx(0x00cd_853f);
@@ -640,7 +640,7 @@ fn walls(c: &mut CityModel, civ: BronzeCiv, spread: f64, p: &Rp) -> NodeId {
         },
         mat,
     );
-    let d = c.drawable_mut(id);
+    let d = c.node(id);
     d.cast_shadow = true;
     d.receive_shadow = true;
     g

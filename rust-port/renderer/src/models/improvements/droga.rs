@@ -6,6 +6,7 @@
 use crate::jsmath::js_atan2;
 use crate::models::unit_core::model::{MatId, NodeId, Prim, ROOT};
 
+use super::model::ImprovementExt;
 use super::model::ImprovementModel;
 
 /// `RoadTyp` (`droga-6-ramion.ts:47`).

@@ -7,6 +7,7 @@ use std::f64::consts::PI;
 use crate::models::unit_core::model::{NodeId, ROOT};
 
 use super::kit::{az_xz, b, b0, cone, cyl, tang_rot_y};
+use super::model::ImprovementExt;
 use super::model::ImprovementModel;
 
 /// `WariantFarmy` (`ulepszenia-modele-p2.ts:52`).

@@ -6,7 +6,7 @@
 
 use std::f64::consts::PI;
 
-use super::model::{MiscGeo, MiscMaterial, MiscModel};
+use super::model::{MiscMaterial, MiscModel};
 use crate::jsmath::{js_cos, js_sin};
 use crate::models::unit_core::model::{MatId, NodeId, Prim};
 
@@ -77,7 +77,7 @@ mod p {
 }
 
 fn mat(m: &mut MiscModel, c: u32) -> MatId {
-    m.mat(MiscMaterial::lambert_flat(c))
+    m.add_material(MiscMaterial::lambert_flat(c))
 }
 
 /// Rotation applied when any component is non-zero (`if (rx || ry || rz)`).
@@ -155,10 +155,10 @@ pub fn build_wioska() -> MiscModel {
     let plachta = mat(&mut m, p::PLACHTA);
 
     // KLEPISKO
-    let plac = m.custom_mesh(
+    let plac = m.mesh(
         g,
-        MiscGeo::Circle {
-            radius: 0.165,
+        Prim::Circle {
+            r: 0.165,
             segments: 6,
         },
         sciezka,

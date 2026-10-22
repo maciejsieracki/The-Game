@@ -9,6 +9,7 @@ use crate::models::unit_core::horse::build_horse;
 use crate::models::unit_core::model::{MatId, NodeId, ROOT};
 
 use super::kit::{az_xz, b, b0, cone, cyl, tang_rot_y};
+use super::model::ImprovementExt;
 use super::model::ImprovementModel;
 
 /// Palette `P` (`:117-130`).
@@ -683,8 +684,7 @@ pub fn build_stadnina_into(m: &mut ImprovementModel, g: NodeId, liczba_koni: i32
         let k = m.detached();
         let mb = m.lambert(cialo);
         let mm = m.lambert(grzywa);
-        build_horse(&mut m.tree, k, mb, mm, None, 0.0, 0.0);
-        m.sync();
+        build_horse(m, k, mb, mm, None, 0.0, 0.0);
         let (x, z) = az_xz(az, r);
         m.node(k)
             .set_scale_scalar(0.56)

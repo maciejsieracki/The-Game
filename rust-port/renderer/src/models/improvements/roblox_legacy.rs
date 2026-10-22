@@ -20,6 +20,7 @@ use std::f64::consts::PI;
 use crate::jsmath::{js_cos, js_sin};
 use crate::models::unit_core::model::{NodeId, Prim, ROOT};
 
+use super::model::ImprovementExt;
 use super::model::ImprovementModel;
 use super::roblox::{
     add_box, rbx_farm_hut, rbx_farm_mini_field, rbx_farm_settlement, rbx_irygacja_large,

@@ -20,14 +20,19 @@ use std::path::PathBuf;
 
 use civ_renderer::core::bronze::BronzeCiv;
 use civ_renderer::geom::{Mat4, Mesh};
+// P4.27 (R-RUSTPORT-P4-27-SCENE-UNIFY-Q1): forced type adjustments only — a city
+// model is a `scene::Scene`; the drawables table / `user_data` field became the
+// read views `drawable(m, id)` / `city_user_data(m)` / `CityMaterial::of`;
+// every assertion is unchanged.
 use civ_renderer::models::cities::{
     braz, build_bronze_city_roblox, build_city_map_outline, build_legacy_city_model,
     build_miasto_braz, build_miasto_braz_grecja, build_miasto_braz_rzym, build_miasto_kamien,
     build_palisada_wal_model, build_settlement_model, build_stone_age_city_roblox,
-    build_stone_age_city_roblox_universal, kamien, place_city_map_outline, renderer::terrain_top_y,
-    rozmiar_dla_poziomu, stone_civ_label, City, CityGeo, CityMapOutlineKind, CityMaterial,
-    CityModel, CityRenderOptions, CityRenderer, CityWallKind, DrawKind, MiastoBrazOpts,
-    MiastoKamienOpts, Poziom, Rozmiar, SceneObject, STONE_CIVS,
+    build_stone_age_city_roblox_universal, city_user_data, drawable, kamien,
+    place_city_map_outline, renderer::terrain_top_y, rozmiar_dla_poziomu, stone_civ_label, City,
+    CityGeo, CityMapOutlineKind, CityMaterial, CityModel, CityRenderOptions, CityRenderer,
+    CityWallKind, DrawKind, MiastoBrazOpts, MiastoKamienOpts, Poziom, Rozmiar, SceneObject,
+    STONE_CIVS,
 };
 use civ_renderer::models::unit_core::model::{Fnv, ROOT};
 use civ_renderer::pick::hex::{axial_to_world, HexCoord, HEX_R};
@@ -390,7 +395,7 @@ fn mat_hash(f: &mut Fnv, m: &CityMaterial) {
 fn summarize(m: &CityModel, root_parent: Option<&Mat4>, root_visible: bool) -> Summary {
     let world = m.world_matrices(root_parent);
     let order = m.traverse();
-    let mut index = vec![-1i64; m.tree.nodes.len()];
+    let mut index = vec![-1i64; m.nodes.len()];
     let mut mats: Vec<usize> = Vec::new();
     let mut f = Fnv::default();
     let mut s = Summary {
@@ -406,9 +411,9 @@ fn summarize(m: &CityModel, root_parent: Option<&Mat4>, root_visible: bool) -> S
     };
     for (k, &id) in order.iter().enumerate() {
         index[id] = i64::try_from(k).expect("index");
-        let n = &m.tree.nodes[id];
+        let n = &m.nodes[id];
         let parent = n.parent.map_or(-1, |p| index[p]);
-        let d = m.drawables[id];
+        let d = drawable(m, id);
         let t = match d.map(|d| d.kind) {
             None => 1,
             Some(DrawKind::Mesh) => 2,
@@ -485,7 +490,10 @@ fn summarize(m: &CityModel, root_parent: Option<&Mat4>, root_visible: bool) -> S
         }
         s.detail.push(info);
     }
-    s.materials = mats.iter().map(|&i| m.materials[i]).collect();
+    s.materials = mats
+        .iter()
+        .map(|&i| CityMaterial::of(&m.materials[i]).expect("city material class"))
+        .collect();
     for mt in &s.materials {
         mat_hash(&mut f, mt);
     }
@@ -807,11 +815,11 @@ fn user_data_ok(ck: &mut Check, label: &str, m: &CityModel, web: &Json) {
         .map(|j| j.str().to_owned());
     ck.eq(
         &format!("{label} userData.model"),
-        m.user_data.model.map(str::to_owned),
+        city_user_data(m).model.map(str::to_owned),
         wm,
     );
     match (
-        m.user_data.poziom,
+        city_user_data(m).poziom,
         ud.opt("poziom").filter(|j| !j.is_null()),
     ) {
         (Some(r), Some(w)) => ck.eq_bits(&format!("{label} userData.poziom"), r, w.num()),
@@ -828,7 +836,7 @@ fn user_data_ok(ck: &mut Check, label: &str, m: &CityModel, web: &Json) {
         .map(|j| j.str().to_owned());
     ck.eq(
         &format!("{label} userData.rozmiar"),
-        m.user_data.rozmiar.map(|r| r.web_id().to_owned()),
+        city_user_data(m).rozmiar.map(|r| r.web_id().to_owned()),
         wr,
     );
 }
@@ -1107,7 +1115,7 @@ fn compare_scene(ck: &mut Check, step: &str, cr: &CityRenderer, web: &[Json]) {
                 ck.eq(&format!("{l} q"), c.q, w.get("q").i32());
                 ck.eq(&format!("{l} r"), c.r, w.get("r").i32());
                 ck.eq(&format!("{l} visible"), c.visible, w.get("visible").bool());
-                let n = &c.model.tree.nodes[ROOT];
+                let n = &c.model.nodes[ROOT];
                 let p = w.get("p").f64s();
                 let s = w.get("s").f64s();
                 for (i, (&rv, &sv)) in [n.position.x, n.position.y, n.position.z]
@@ -1239,7 +1247,7 @@ fn legacy_city_model_matches_web() {
             civ_renderer::models::cities::renderer::CITY_MODEL_SCALE,
         );
         let p = entry.get("p").f64s();
-        let n = &m.tree.nodes[ROOT];
+        let n = &m.nodes[ROOT];
         ck.eq_bits("legacy p.x", n.position.x, p[0]);
         ck.eq_bits("legacy p.y", n.position.y, p[1]);
         ck.eq_bits("legacy p.z", n.position.z, p[2]);

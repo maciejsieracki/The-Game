@@ -11,7 +11,8 @@
 use crate::models::unit_core::horse::build_zloze_konie;
 use crate::models::unit_core::model::{MatId, NodeId, Prim, ROOT};
 
-use super::model::{ExtraGeo, ImprovementModel, UserData};
+use super::model::ImprovementExt;
+use super::model::{dodecahedron, set_user_data, ImprovementModel, UserData};
 use super::p3b::{build_zloze_into, ZlozeTyp};
 use super::zwierzeta::{build_trzoda_into, build_zloze_owce_into, JakoscTrzody};
 
@@ -397,18 +398,7 @@ pub fn styled_ore_into(m: &mut ImprovementModel, g: NodeId) {
         (-0.06 * s, 0.05 * s, 0.7),
     ];
     for (px, pz, sc) in spots {
-        let r = m.mesh_extra(
-            g,
-            ExtraGeo::Dodecahedron {
-                r: 0.05 * s * sc,
-                detail: 0,
-            },
-            Prim::Icosahedron {
-                r: 0.05 * s * sc,
-                detail: 0,
-            },
-            rock,
-        );
+        let r = m.mesh(g, dodecahedron(0.05 * s * sc, 0), rock);
         m.node(r).set_pos(px, 0.045 * s * sc, pz);
         m.set_rotation(r, px * 2.0, pz * 3.0, sc);
         m.shadows(r, true, false);
@@ -522,7 +512,7 @@ pub fn build_styled_sheep() -> ImprovementModel {
 /// `unit_core::horse::build_zloze_konie`) grafted into `g`.
 fn zloze_konie_into(m: &mut ImprovementModel, g: NodeId) {
     let um = build_zloze_konie(1.0);
-    m.graft_standard(g, &um);
+    m.graft_children(g, &um);
 }
 
 /// `buildStyledResourceOverlay(nakladka, 'roblox', zloze)`
@@ -535,11 +525,15 @@ pub fn build_styled_resource_overlay(
     let mut m = ImprovementModel::new();
     let g = ROOT;
     let depo2 = |m: &mut ImprovementModel| {
-        m.ext(ROOT).user_data = Some(UserData {
-            mats: None,
-            per_token_geos: None,
-            deposit_display_scale: Some(2.0),
-        });
+        set_user_data(
+            m,
+            ROOT,
+            UserData {
+                mats: None,
+                per_token_geos: None,
+                deposit_display_scale: Some(2.0),
+            },
+        );
     };
     let done = match nakladka {
         Nakladka::ZlozeKonia => {

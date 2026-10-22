@@ -1,28 +1,107 @@
 //! Object tree of a city model: the CPU equivalent of the `THREE.Group` that
 //! the web city builders return.
 //!
-//! The tree itself is the shared [`UnitModel`] arena of
-//! `models::unit_core::model` (nodes, parent/children, `position` /
-//! `rotation` / `quaternion` / `scale`, V8-exact `setFromEuler`), as the
-//! dispatch requires (no new tree type). Its mesh payload
-//! (`unit_core::model::Geo`, `Material`) is a closed enum outside this
-//! topic's allowlist and cannot express what the city files draw
-//! (`CircleGeometry`, the extruded hex wall ring, `LineLoop` outlines,
-//! `MeshLambertMaterial` / `LineBasicMaterial` with linear-space colours),
-//! so the tree's own `mesh` field stays `None` and every drawable is kept
-//! in [`CityModel::drawables`], indexed by the same [`NodeId`] (the
-//! "minimal type in the own module" of the dispatch).
+//! Since R-RUSTPORT-P4-27-SCENE-UNIFY-Q1 a city model is the renderer's one
+//! scene-tree type, [`crate::scene::Scene`] ([`CityModel`] is an alias). The
+//! P4.21 side table of drawables is gone: meshes and line loops are
+//! [`NodeKind::Mesh`] / [`NodeKind::LineLoop`] nodes whose geometry is a
+//! [`Geo`] and whose material is a scene [`Material`]; shadows and
+//! `renderOrder` are node fields; `root.userData` is the root node's
+//! `user_data`.
+//!
+//! The P4.21 names stay as constructor / read views of that data:
+//! [`CityGeo`] (constructor arguments; converted into [`Geo`] when a mesh is
+//! added, read back with [`CityGeo::of`]), [`CityMaterial`] (likewise for
+//! [`Material`]), [`Drawable`] / [`DrawKind`] (read view of a drawable node,
+//! [`drawable`]) and [`CityUserData`] ([`city_user_data`] /
+//! [`set_city_user_data`]).
 
 use std::f64::consts::PI;
 
 use crate::core::hex_shape::{append_pointy_top_hex, hex_ring_points_xz};
-use crate::geom::{self, Mat4, Vec3};
-use crate::models::unit_core::model::{quat_from_euler, NodeId, UnitModel, ROOT};
-use crate::pick::three::{js_max, js_min};
+use crate::geom;
+use crate::models::unit_core::model::{NodeId, ROOT};
+pub use crate::scene::{Geo, GeoBody, Material, MaterialKind, NodeKind, Prim, Scene};
+use crate::scene::{MatId, UserValue};
 use crate::terrain::color::Color;
 
-/// Geometry of one drawable (Three.js constructor arguments; every other
-/// argument is the Three r169 default).
+/// A built city (or outline) model (alias of [`Scene`]).
+pub type CityModel = Scene;
+
+/// Index of a material in the model's `materials`.
+pub type CityMatId = MatId;
+
+/// `getHexWallRingGeo(outerR, innerR, height)` of
+/// `bronzeCityRoblox.ts:72-85` / `stoneCityRoblox.ts:114-127`: a pointy-top
+/// hex ring (outer outline + reversed inner hole) extruded by `height`
+/// without bevel, then `rotateX(-π/2)`.
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub struct HexWallRing {
+    /// Outer radius.
+    pub outer: f64,
+    /// Inner radius.
+    pub inner: f64,
+    /// Extrusion depth.
+    pub height: f64,
+}
+
+impl GeoBody for HexWallRing {
+    fn build(&self) -> geom::Mesh {
+        // `tracePointyTopHex` (`bronzeCityRoblox.ts:57-68`, identical in
+        // `stoneCityRoblox.ts:99-110`) == `appendPointyTopHex`
+        // (`hexShape.ts:17-32`) on a fresh path: reuse `core::hex_shape`.
+        let mut outline = geom::Path2::new();
+        append_pointy_top_hex(&mut outline, self.outer, false);
+        let mut hole = geom::Path2::new();
+        append_pointy_top_hex(&mut hole, self.inner, true);
+        let shape = geom::Shape {
+            outline,
+            holes: vec![hole],
+        };
+        let mut m = geom::extrude_geometry(&[shape], &geom::ExtrudeOptions::flat(self.height));
+        m.rotate_x(-PI / 2.0);
+        m
+    }
+    fn three_type(&self) -> &'static str {
+        "ExtrudeGeometry"
+    }
+}
+
+/// `new BufferGeometry().setFromPoints(hexRingPointsXZ(r, y))`
+/// (`cityMapOutline.ts:25`): 6 points, positions only, no index.
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub struct HexLoop {
+    /// Ring radius.
+    pub r: f64,
+    /// Ring height.
+    pub y: f64,
+}
+
+impl GeoBody for HexLoop {
+    fn build(&self) -> geom::Mesh {
+        let mut positions = Vec::with_capacity(18);
+        for p in hex_ring_points_xz(self.r, self.y) {
+            // `position.push(point.x, point.y, point.z || 0)`
+            let z = if p.z == 0.0 || p.z.is_nan() { 0.0 } else { p.z };
+            #[allow(clippy::cast_possible_truncation)]
+            positions.extend_from_slice(&[p.x as f32, p.y as f32, z as f32]);
+        }
+        geom::Mesh {
+            positions,
+            normals: Vec::new(),
+            uvs: Vec::new(),
+            indices: None,
+            groups: Vec::new(),
+        }
+    }
+    fn three_type(&self) -> &'static str {
+        "BufferGeometry"
+    }
+}
+
+/// Geometry of one city drawable as Three.js constructor arguments (every
+/// other argument is the Three r169 default) — a constructor / read view of
+/// [`Geo`].
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub enum CityGeo {
     /// `new BoxGeometry(w, h, d)`.
@@ -61,10 +140,7 @@ pub enum CityGeo {
         /// Segments.
         segments: u32,
     },
-    /// `getHexWallRingGeo(outerR, innerR, height)` of
-    /// `bronzeCityRoblox.ts:72-85` / `stoneCityRoblox.ts:114-127`: a
-    /// pointy-top hex ring (outer outline + reversed inner hole) extruded by
-    /// `height` without bevel, then `rotateX(-π/2)`.
+    /// [`HexWallRing`].
     HexWallRing {
         /// Outer radius.
         outer: f64,
@@ -73,8 +149,7 @@ pub enum CityGeo {
         /// Extrusion depth.
         height: f64,
     },
-    /// `new BufferGeometry().setFromPoints(hexRingPointsXZ(r, y))`
-    /// (`cityMapOutline.ts:25`): 6 points, positions only, no index.
+    /// [`HexLoop`].
     HexLoop {
         /// Ring radius.
         r: f64,
@@ -83,60 +158,84 @@ pub enum CityGeo {
     },
 }
 
-impl CityGeo {
-    /// Builds the CPU geometry (vertex-for-vertex Three r169, see [`crate::geom`]).
-    #[must_use]
-    pub fn build(&self) -> geom::Mesh {
-        match *self {
-            Self::Box { w, h, d } => geom::box_geometry(w, h, d, 1, 1, 1),
-            Self::Cylinder { rt, rb, h, radial } => {
-                geom::cylinder_geometry(rt, rb, h, radial, 1, false, 0.0, PI * 2.0)
-            }
-            Self::Cone { r, h, radial } => {
-                geom::cone_geometry(r, h, radial, 1, false, 0.0, PI * 2.0)
-            }
-            Self::Circle { r, segments } => geom::circle_geometry(r, segments, 0.0, PI * 2.0),
-            Self::HexWallRing {
+impl From<CityGeo> for Geo {
+    fn from(g: CityGeo) -> Self {
+        match g {
+            CityGeo::Box { w, h, d } => Geo::Prim(Prim::bx(w, h, d)),
+            CityGeo::Cylinder { rt, rb, h, radial } => Geo::Prim(Prim::cyl(rt, rb, h, radial)),
+            CityGeo::Cone { r, h, radial } => Geo::Prim(Prim::cone(r, h, radial)),
+            CityGeo::Circle { r, segments } => Geo::Prim(Prim::Circle { r, segments }),
+            CityGeo::HexWallRing {
                 outer,
                 inner,
                 height,
-            } => {
-                // `tracePointyTopHex` (`bronzeCityRoblox.ts:57-68`, identical in
-                // `stoneCityRoblox.ts:99-110`) == `appendPointyTopHex`
-                // (`hexShape.ts:17-32`) on a fresh path: reuse `core::hex_shape`.
-                let mut outline = geom::Path2::new();
-                append_pointy_top_hex(&mut outline, outer, false);
-                let mut hole = geom::Path2::new();
-                append_pointy_top_hex(&mut hole, inner, true);
-                let shape = geom::Shape {
-                    outline,
-                    holes: vec![hole],
-                };
-                let mut m = geom::extrude_geometry(&[shape], &geom::ExtrudeOptions::flat(height));
-                m.rotate_x(-PI / 2.0);
-                m
-            }
-            Self::HexLoop { r, y } => {
-                let mut positions = Vec::with_capacity(18);
-                for p in hex_ring_points_xz(r, y) {
-                    // `position.push(point.x, point.y, point.z || 0)`
-                    let z = if p.z == 0.0 || p.z.is_nan() { 0.0 } else { p.z };
-                    #[allow(clippy::cast_possible_truncation)]
-                    positions.extend_from_slice(&[p.x as f32, p.y as f32, z as f32]);
-                }
-                geom::Mesh {
-                    positions,
-                    normals: Vec::new(),
-                    uvs: Vec::new(),
-                    indices: None,
-                    groups: Vec::new(),
-                }
-            }
+            } => Geo::body(HexWallRing {
+                outer,
+                inner,
+                height,
+            }),
+            CityGeo::HexLoop { r, y } => Geo::body(HexLoop { r, y }),
         }
     }
 }
 
-/// Material parameters as data (shading is RR-T5).
+impl CityGeo {
+    /// The city view of a scene geometry (`None` for a geometry no city
+    /// builder creates).
+    #[must_use]
+    pub fn of(g: &Geo) -> Option<Self> {
+        match g {
+            Geo::Prim(Prim::Box { w, h, d }) => Some(Self::Box {
+                w: *w,
+                h: *h,
+                d: *d,
+            }),
+            Geo::Prim(Prim::Cylinder {
+                rt,
+                rb,
+                h,
+                radial,
+                open: false,
+            }) => Some(Self::Cylinder {
+                rt: *rt,
+                rb: *rb,
+                h: *h,
+                radial: *radial,
+            }),
+            Geo::Prim(Prim::Cone { r, h, radial }) => Some(Self::Cone {
+                r: *r,
+                h: *h,
+                radial: *radial,
+            }),
+            Geo::Prim(Prim::Circle { r, segments }) => Some(Self::Circle {
+                r: *r,
+                segments: *segments,
+            }),
+            Geo::Body(_) => {
+                if let Some(w) = g.body_as::<HexWallRing>() {
+                    Some(Self::HexWallRing {
+                        outer: w.outer,
+                        inner: w.inner,
+                        height: w.height,
+                    })
+                } else {
+                    g.body_as::<HexLoop>()
+                        .map(|l| Self::HexLoop { r: l.r, y: l.y })
+                }
+            }
+            _ => None,
+        }
+    }
+
+    /// Builds the CPU geometry (vertex-for-vertex Three r169, see [`crate::geom`]).
+    #[must_use]
+    pub fn build(&self) -> geom::Mesh {
+        Geo::from(*self).build()
+    }
+}
+
+/// Material parameters of a city drawable — a constructor / read view of
+/// [`Material`].
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub enum CityMaterial {
     /// `new MeshLambertMaterial({ color, flatShading })` (front side, opaque).
@@ -159,6 +258,33 @@ pub enum CityMaterial {
     },
 }
 
+impl From<CityMaterial> for Material {
+    fn from(m: CityMaterial) -> Self {
+        match m {
+            CityMaterial::Lambert {
+                color,
+                flat_shading,
+            } => {
+                let mut mt = Material::with_color(MaterialKind::Lambert, Some(color));
+                mt.flat_shading = flat_shading;
+                mt
+            }
+            CityMaterial::LineBasic {
+                color,
+                transparent,
+                opacity,
+                depth_write,
+            } => {
+                let mut mt = Material::with_color(MaterialKind::LineBasic, Some(color));
+                mt.transparent = transparent;
+                mt.opacity = opacity;
+                mt.depth_write = depth_write;
+                mt
+            }
+        }
+    }
+}
+
 impl CityMaterial {
     /// `material.color` (linear).
     #[must_use]
@@ -167,10 +293,27 @@ impl CityMaterial {
             Self::Lambert { color, .. } | Self::LineBasic { color, .. } => color,
         }
     }
-}
 
-/// Index of a material in [`CityModel::materials`].
-pub type CityMatId = usize;
+    /// The city view of a scene material (`None` for a class no city
+    /// builder creates).
+    #[must_use]
+    pub fn of(m: &Material) -> Option<Self> {
+        let color = m.linear_color();
+        match m.kind {
+            MaterialKind::Lambert => Some(Self::Lambert {
+                color,
+                flat_shading: m.flat_shading,
+            }),
+            MaterialKind::LineBasic => Some(Self::LineBasic {
+                color,
+                transparent: m.transparent,
+                opacity: m.opacity,
+                depth_write: m.depth_write,
+            }),
+            _ => None,
+        }
+    }
+}
 
 /// How a drawable is drawn.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -181,7 +324,7 @@ pub enum DrawKind {
     LineLoop,
 }
 
-/// The drawable attached to a node.
+/// Read view of a drawable node.
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub struct Drawable {
     /// Mesh or line loop.
@@ -196,6 +339,25 @@ pub struct Drawable {
     pub receive_shadow: bool,
     /// `renderOrder`.
     pub render_order: i32,
+}
+
+/// The drawable of node `id` (`None` for a group).
+#[must_use]
+pub fn drawable(m: &Scene, id: NodeId) -> Option<Drawable> {
+    let n = &m.nodes[id];
+    let (kind, md) = match &n.kind {
+        NodeKind::Mesh(md) => (DrawKind::Mesh, md),
+        NodeKind::LineLoop(md) => (DrawKind::LineLoop, md),
+        _ => return None,
+    };
+    Some(Drawable {
+        kind,
+        geo: CityGeo::of(&md.geo)?,
+        material: md.material(),
+        cast_shadow: n.cast_shadow,
+        receive_shadow: n.receive_shadow,
+        render_order: n.render_order,
+    })
 }
 
 /// `Rozmiar` threshold (`RozmiarMiastaKamien` = `RozmiarMiastaBraz`,
@@ -233,219 +395,38 @@ pub struct CityUserData {
     pub rozmiar: Option<Rozmiar>,
 }
 
-/// A built city (or outline) model.
-#[derive(Debug, Clone, PartialEq)]
-pub struct CityModel {
-    /// Object tree (shared unit-core arena); [`ROOT`] is the returned group.
-    pub tree: UnitModel,
-    /// Drawable per node id (`None` = `THREE.Group`).
-    pub drawables: Vec<Option<Drawable>>,
-    /// Materials in creation order (unused ones included, like the web
-    /// palettes that create every material up front).
-    pub materials: Vec<CityMaterial>,
-    /// `root.userData` of the `miasto-*` builders.
-    pub user_data: CityUserData,
-}
-
-impl Default for CityModel {
-    fn default() -> Self {
-        Self::new()
+/// `root.userData = { model, poziom, rozmiar }`.
+pub fn set_city_user_data(m: &mut Scene, d: CityUserData) {
+    let ud = &mut m.nodes[ROOT].user_data;
+    if let Some(v) = d.model {
+        ud.set("model", UserValue::Str(v.to_owned()));
+    }
+    if let Some(v) = d.poziom {
+        ud.set("poziom", UserValue::Num(v));
+    }
+    if let Some(v) = d.rozmiar {
+        ud.set("rozmiar", UserValue::Str(v.web_id().to_owned()));
     }
 }
 
-impl CityModel {
-    /// Empty root group.
-    #[must_use]
-    pub fn new() -> Self {
-        Self {
-            tree: UnitModel::new(),
-            drawables: vec![None],
-            materials: Vec::new(),
-            user_data: CityUserData::default(),
-        }
-    }
-
-    /// `new MeshLambertMaterial({ color: hex, flatShading })`.
-    pub fn lambert(&mut self, hex: u32, flat_shading: bool) -> CityMatId {
-        self.lambert_color(Color::from_hex(hex), flat_shading)
-    }
-
-    /// `new MeshLambertMaterial({ color: <THREE.Color>, flatShading })`.
-    pub fn lambert_color(&mut self, color: Color, flat_shading: bool) -> CityMatId {
-        self.add_material(CityMaterial::Lambert {
-            color,
-            flat_shading,
-        })
-    }
-
-    /// Adds a material.
-    pub fn add_material(&mut self, m: CityMaterial) -> CityMatId {
-        self.materials.push(m);
-        self.materials.len() - 1
-    }
-
-    /// `parent.add(new THREE.Group())`.
-    pub fn group(&mut self, parent: NodeId) -> NodeId {
-        let id = self.tree.add_group(parent);
-        self.drawables.push(None);
-        id
-    }
-
-    /// `new THREE.Group()` not yet attached.
-    pub fn detached_group(&mut self) -> NodeId {
-        let id = self.tree.detached_group();
-        self.drawables.push(None);
-        id
-    }
-
-    /// `parent.add(child)`.
-    pub fn attach(&mut self, parent: NodeId, child: NodeId) {
-        self.tree.attach(parent, child);
-    }
-
-    /// `parent.add(new THREE.Mesh(geo, material))` (no shadow flags).
-    pub fn mesh(&mut self, parent: NodeId, geo: CityGeo, material: CityMatId) -> NodeId {
-        self.drawable(parent, DrawKind::Mesh, geo, material)
-    }
-
-    /// `parent.add(new THREE.<kind>(geo, material))`.
-    pub fn drawable(
-        &mut self,
-        parent: NodeId,
-        kind: DrawKind,
-        geo: CityGeo,
-        material: CityMatId,
-    ) -> NodeId {
-        let id = self.tree.add_group(parent);
-        self.drawables.push(Some(Drawable {
-            kind,
-            geo,
-            material,
-            cast_shadow: false,
-            receive_shadow: false,
-            render_order: 0,
-        }));
-        id
-    }
-
-    /// Mutable drawable of a node (panics on a group).
-    pub fn drawable_mut(&mut self, id: NodeId) -> &mut Drawable {
-        self.drawables[id]
-            .as_mut()
-            .unwrap_or_else(|| panic!("node {id} is a group"))
-    }
-
-    /// `object.position.set(x, y, z)`.
-    pub fn set_pos(&mut self, id: NodeId, x: f64, y: f64, z: f64) {
-        self.tree.node(id).set_pos(x, y, z);
-    }
-
-    /// `object.rotation.set(x, y, z)` (order `XYZ`; quaternion recomputed
-    /// with V8 trig).
-    pub fn set_rot(&mut self, id: NodeId, x: f64, y: f64, z: f64) {
-        let n = self.tree.node(id);
-        n.rotation.x = x;
-        n.rotation.y = y;
-        n.rotation.z = z;
-        n.quaternion = quat_from_euler(n.rotation);
-    }
-
-    /// `object.rotation.y = v`.
-    pub fn set_rot_y(&mut self, id: NodeId, v: f64) {
-        self.tree.node(id).rot_y(v);
-    }
-
-    /// `object.scale.setScalar(s)`.
-    pub fn set_scale_scalar(&mut self, id: NodeId, s: f64) {
-        self.tree.node(id).set_scale_scalar(s);
-    }
-
-    /// Node ids in `Object3D.traverse` order from [`ROOT`].
-    #[must_use]
-    pub fn traverse(&self) -> Vec<NodeId> {
-        self.tree.traverse()
-    }
-
-    /// Drawable nodes in traverse order.
-    #[must_use]
-    pub fn drawable_nodes(&self) -> Vec<NodeId> {
-        self.traverse()
+/// `root.userData` of a city model.
+#[must_use]
+pub fn city_user_data(m: &Scene) -> CityUserData {
+    let ud = &m.nodes[ROOT].user_data;
+    let model = ud.str("model").and_then(|s| {
+        ["miasto-kamien", "miasto-braz-grecja", "miasto-braz-rzym"]
             .into_iter()
-            .filter(|&n| self.drawables[n].is_some())
-            .collect()
-    }
-
-    /// `updateMatrixWorld(true)` with the root under `root_parent` (`None`
-    /// = the root is a scene-graph root, whose `matrixWorld` is its
-    /// `matrix`). One matrix per node id.
-    #[must_use]
-    pub fn world_matrices(&self, root_parent: Option<&Mat4>) -> Vec<Mat4> {
-        let mut world = vec![Mat4::IDENTITY; self.tree.nodes.len()];
-        for id in self.traverse() {
-            let local = self.tree.local_matrix(id);
-            world[id] = match self.tree.nodes[id].parent {
-                Some(p) => world[p].mul(&local),
-                None => match root_parent {
-                    Some(m) if id == ROOT => m.mul(&local),
-                    _ => local,
-                },
-            };
-        }
-        world
-    }
-
-    /// `new Box3().setFromObject(root, true)` as
-    /// `[min.x, min.y, min.z, max.x, max.y, max.z]` (every drawable vertex,
-    /// meshes and line loops).
-    #[must_use]
-    pub fn bounding_box(&self, root_parent: Option<&Mat4>) -> [f64; 6] {
-        let world = self.world_matrices(root_parent);
-        let mut b = [
-            f64::INFINITY,
-            f64::INFINITY,
-            f64::INFINITY,
-            f64::NEG_INFINITY,
-            f64::NEG_INFINITY,
-            f64::NEG_INFINITY,
-        ];
-        for id in self.drawable_nodes() {
-            let Some(d) = self.drawables[id] else {
-                continue;
-            };
-            let g = d.geo.build();
-            for v in g.positions.chunks_exact(3) {
-                let p = Vec3::new(f64::from(v[0]), f64::from(v[1]), f64::from(v[2]))
-                    .apply_mat4(&world[id]);
-                b[0] = js_min(b[0], p.x);
-                b[1] = js_min(b[1], p.y);
-                b[2] = js_min(b[2], p.z);
-                b[3] = js_max(b[3], p.x);
-                b[4] = js_max(b[4], p.y);
-                b[5] = js_max(b[5], p.z);
-            }
-        }
-        b
-    }
-
-    /// Number of `THREE.Mesh` nodes.
-    #[must_use]
-    pub fn mesh_count(&self) -> usize {
-        self.drawables
-            .iter()
-            .flatten()
-            .filter(|d| d.kind == DrawKind::Mesh)
-            .count()
-    }
-
-    /// Number of triangles over every mesh (line loops excluded).
-    #[must_use]
-    pub fn triangle_count(&self) -> usize {
-        self.drawables
-            .iter()
-            .flatten()
-            .filter(|d| d.kind == DrawKind::Mesh)
-            .map(|d| d.geo.build().triangle_count())
-            .sum()
+            .find(|k| *k == s)
+    });
+    let rozmiar = ud.str("rozmiar").and_then(|s| {
+        [Rozmiar::Male, Rozmiar::Srednie, Rozmiar::Duze]
+            .into_iter()
+            .find(|r| r.web_id() == s)
+    });
+    CityUserData {
+        model,
+        poziom: ud.num("poziom"),
+        rozmiar,
     }
 }
 

@@ -6,7 +6,7 @@
 use std::f64::consts::PI;
 
 use super::kit::{az_xz, ku_srodkowi, ku_srodkowi_az, tang_rot_y};
-use super::model::{CityMatId, CityModel, CityUserData, Rozmiar};
+use super::model::{set_city_user_data, CityMatId, CityModel, CityUserData, Rozmiar};
 use crate::jsmath::{js_cos, js_hypot, js_sin};
 use crate::models::unit_core::model::{NodeId, ROOT};
 use crate::pick::hex::js_round;
@@ -131,7 +131,7 @@ pub(crate) struct M {
 /// `makeMats(color)` (`miasto-kamien.ts:176-192`).
 pub(crate) fn make_mats(c: &mut CityModel, color: u32) -> M {
     let kal = Color::from_hex(0x00db_a044).lerp(Color::from_hex(color & 0x00ff_ffff), 0.45);
-    let mut mat = |hex: u32| c.lambert(hex, true);
+    let mut mat = |hex: u32| c.lambert_mat(hex, true);
     let sciana = mat(0x00d9_a05b);
     let sciana_dk = mat(0x00c0_8a4a);
     let glina = mat(0x00c4_9a62);
@@ -1019,11 +1019,14 @@ pub fn build_miasto_kamien(poziom: Poziom, opts: MiastoKamienOpts) -> CityModel 
     }
     c.set_scale_scalar(inner, 1.0 / MIASTO_KAMIEN_CITY_MODEL_SCALE);
     c.attach(ROOT, inner);
-    c.user_data = CityUserData {
-        model: Some("miasto-kamien"),
-        poziom: Some(l),
-        rozmiar: Some(rz),
-    };
+    set_city_user_data(
+        &mut c,
+        CityUserData {
+            model: Some("miasto-kamien"),
+            poziom: Some(l),
+            rozmiar: Some(rz),
+        },
+    );
     c
 }
 
