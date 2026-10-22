@@ -34,3 +34,8 @@ IZOLACJA: `isolation: worktree`, baza `origin/rust-port/parity-v2`. Commit w wor
 PROCEDURA NAPRAWCZA PRZY FAIL: ten sam ID; po 5 rundach LIMIT-5-EXCEEDED. Raport max ok. 400 słów.
 FORMAT ODPOWIEDZI: STATUS / DOMAIN / TEMAT / GOAL / ZMIANY-COMMIT / TESTY / BLOKADY / RUNDY / NASTĘPNY KROK
 DEPLOY/PUSH: NIE WYKONANO
+
+RUNDA 1 — PONOWNE URUCHOMIENIE (przebieg wf_7bf11755-730 zwrócił pytania zamiast pracy: skażony kontekst). ROZSTRZYGNIĘCIA ORKIESTRATORA (tymczasowe, do rewizji przez właściciela; NIE pytaj, NIE generuj pytań ABC — wykonaj pracę):
+- Q1: kamera = wierna kopia weba, BEZ obrotu (kąt poziomy 0, nachylenie 52°); „obrót” wykreśl z zakresu i odnotuj.
+- Q2: przesuw klawiszami/edge-pan skalowany czasem: dt×60 (przy 60 fps = wynik weba), z limitem długiej klatki; wektory z weba porównuj przy dt=1/60; odchylenie opisz.
+- Q3: mgła wojny w siatce terenu: ukrywanie (ZERO_MATRIX) ORAZ przyciemnianie odkrytych-niewidocznych (FOG_EXPLORED_BRIGHTNESS 0,175) liczone z funkcji weba; góry/wzgórza/lasy poza zakresem → NIE_ZMIERZONO/kolejny temat.

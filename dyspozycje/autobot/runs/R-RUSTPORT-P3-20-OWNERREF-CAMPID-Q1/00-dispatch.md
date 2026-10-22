@@ -31,3 +31,8 @@ IZOLACJA: `isolation: worktree`, baza `origin/rust-port/parity-v2`. Commit w wor
 PROCEDURA NAPRAWCZA PRZY FAIL: ten sam ID; po 5 rundach LIMIT-5-EXCEEDED. Raport max ok. 400 słów.
 FORMAT ODPOWIEDZI: STATUS / DOMAIN / TEMAT / GOAL / ZMIANY-COMMIT / TESTY / BLOKADY / RUNDY / NASTĘPNY KROK
 DEPLOY/PUSH: NIE WYKONANO
+
+RUNDA 1 — PONOWNE URUCHOMIENIE (przebieg wf_a8debab3-5a3 zwrócił pytania zamiast pracy: skażony kontekst). ROZSTRZYGNIĘCIA ORKIESTRATORA (administracyjne, zgodne z rekomendacjami; NIE pytaj, NIE generuj pytań ABC — wykonaj pracę):
+- JSON właściciela = LICZBA jak dziś (gracz=ID, Barbarian=-1, Rebel=-99); enum tylko wewnątrz Rust, własny Serialize/Deserialize, testy round-trip. Kontrakt JSON/save/DTO/parity_suite bez zmian oczekiwań.
+- Zakres: pola właściciela w allowliście + BarbCamp.id: CampId. Reszta surowych ID → lista w dokumencie jako kandydat P3.21.
+- Rebel bez danych w enum; `rebelPreviousOwnerId` odnotuj w dokumencie jako brak po stronie Rust (pole Option<PlayerId> przy mieście dodaj tylko jeśli mieści się w allowliście bez zmiany JSON; inaczej opisz).
