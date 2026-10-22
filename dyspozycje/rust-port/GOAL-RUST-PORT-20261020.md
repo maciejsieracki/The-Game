@@ -27,7 +27,11 @@ dotykające tych samych plików — zawsze sekwencyjnie, nigdy w tej samej fali.
 
 | # | Temat | Faza | Runda | runId Workflow | Status | Ostatnia aktualizacja |
 |---|---|---|---|---|---|---|
-| 1–6 | — | — | — | — | **WOLNE** (po P5.3, P6.1 r2, P4.26 — zob. LEDGER; w kolejce: P6.1 runda 3 (RUNDA-2: 179 symboli), P4.27 ujednolicenie drzewa sceny, RR-T8a/b rasteryzator+tekst wg D-TXT, P5.4 cykl C4, P6.2+ sekwencyjnie) | 2026-10-22 |
+| 1 | `R-RUSTPORT-P6-1-STAN-STARTOWY-Q1` | P6.1 runda 3: `playerState`, `first-player-city`, `cluster-start`, `inca-llama-seed`, `city-names-pool`, `braz-access`, `civ-bonuses` — Haiku/Haiku/Sonnet | 3/5 | `wf_1b6ac8de-518` | DISPATCHED | 2026-10-22 |
+| 2 | `R-RUSTPORT-P4-27-SCENE-UNIFY-Q1` | ujednolicenie typu drzewa sceny (decor, wonders, unit_core, units_*, improvements, cities, misc) — Opus 5.5 | 1/5 | `wf_f2947d22-ac9` | DISPATCHED | 2026-10-22 |
+| 3 | `R-RUSTPORT-P5-4-PORT-CYKL-C4-Q1` | P5-4 portowanie cyklu C4 (entityCards, science*, techDiscoveryNotice…) — Opus 5.5 | 1/5 | `wf_3a3da300-198` | DISPATCHED | 2026-10-22 |
+| 4 | `R-RUSTPORT-P4-28-RASTER-SHAPES-Q1` | RR-T8a rasteryzator kształtów (tiny-skia, D-TXT-6=A) — Opus 5.5 | 1/5 | `wf_99676387-673` | DISPATCHED | 2026-10-22 |
+| 5–6 | — | — | — | — | **WOLNE** (P6.2+ sekwencyjnie po P6.1; RR-T8b font+tekst po RR-T8a; MOD-08/10 po T8b; P5.5+ (newGameFlow, cityPanel, hud) po P5.4) | 2026-10-22 |
 
 Kolejka (aktualizacja 2026-10-22): P3.23 FLATTEN etap 3 (po P3.21 — te same pliki domeny: macierz counter 35g, struktury, wzrost 35b, mapa 35j–k, społeczeństwo 35n, wioski 35c, ruch 35i, produkcja 19–22b), MOD-07 jednostki żelaza, ujednolicenie typu drzewa sceny, P5.3+ kolejne poziomy `PORTING-QUEUE.md`, pierwotna kolejka: MOD-06/07 (jednostki brązu/żelaza, po P4.19), MOD-09 miasta, MOD-13 misc, ujednolicenie typu drzewa sceny (3 typy: `core::scene`, `wonders::model`, `unit_core::model`) po paczkach, P3.21 `CityId` po P3.22, P5.2+ kolejka portowania paneli (`PORTING-QUEUE.md`), RR-T1 spike (wymaga GPU właściciela).
 
