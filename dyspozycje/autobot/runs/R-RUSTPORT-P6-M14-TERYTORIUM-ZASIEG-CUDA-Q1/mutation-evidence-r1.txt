@@ -1,0 +1,27 @@
+WYKRYTY   : owner_at: remis -> ostatni (dist <= best) -> 9 testow czerwonych: territory_keys_by_owner_match_web, owner_tie_goes_to_first_node, is_player_territory_hex_matches_web, territory_owner_at_matches_web
+WYKRYTY   : js_trim: bez U+FEFF -> 1 testow czerwonych: religion_range_matches_web
+WYKRYTY   : sight: brak wczesnego return 0 -> 2 testow czerwonych: culture_range_matches_web, city_sight_radius_matches_web
+WYKRYTY   : legal: parsowanie przed centrum -> 1 testow czerwonych: reczne_key_legal_matches_web
+WYKRYTY   : reconcile: bez usuwania centrow -> 2 testow czerwonych: reconcile_all_matches_web, reconcile_for_owner_matches_web
+WYKRYTY   : reconcile: bez warstwy lost -> 2 testow czerwonych: reconcile_for_owner_matches_web, reconcile_all_matches_web
+WYKRYTY   : reconcile: niesparsowalny klucz usuwany -> 2 testow czerwonych: reconcile_all_matches_web, reconcile_for_owner_matches_web
+PRZEZYL   : owned_by: brak fail-closed
+WYKRYTY   : filter: pominiecie base -> 1 testow czerwonych: workable_filter_matches_web
+PRZEZYL   : religia: bez floor szerzenia
+WYKRYTY   : religia: bez filtra stanu -> 1 testow czerwonych: religion_range_matches_web
+WYKRYTY   : religia: bez trim -> 1 testow czerwonych: religion_range_matches_web
+WYKRYTY   : kultura: sight bez pierscienia -> 2 testow czerwonych: culture_range_matches_web, city_sight_radius_matches_web
+WYKRYTY   : js_number: pusty -> NaN -> 6 testow czerwonych: religion_range_matches_web, territory_keys_by_owner_match_web, culture_range_matches_web, reconcile_all_matches_web
+WYKRYTY   : js_number: bez hex -> 6 testow czerwonych: territory_keys_by_owner_match_web, culture_range_matches_web, religion_range_matches_web, reczne_key_legal_matches_web
+WYKRYTY   : by_owner: bez filtra -> 1 testow czerwonych: territory_keys_by_owner_match_web
+WYKRYTY   : is_player_hex: zawsze isInTerritory -> 1 testow czerwonych: is_player_territory_hex_matches_web
+WYKRYTY   : wonder: dist==0 dopuszczone -> 3 testow czerwonych: list_for_city_matches_web, pick_matches_web, list_for_owner_matches_web
+WYKRYTY   : wonder: bez sortowania q -> 3 testow czerwonych: pick_matches_web, list_for_owner_matches_web, list_for_city_matches_web
+WYKRYTY   : wonder: gory dozwolone -> 3 testow czerwonych: pick_matches_web, list_for_owner_matches_web, list_for_city_matches_web
+WYKRYTY   : wonder: plytkie morze dozwolone -> 3 testow czerwonych: pick_matches_web, list_for_city_matches_web, list_for_owner_matches_web
+WYKRYTY   : wonder: zajete tylko cuda -> 2 testow czerwonych: list_for_city_matches_web, list_for_owner_matches_web
+WYKRYTY   : wonder owner: building nie dolaczone -> 1 testow czerwonych: list_for_owner_matches_web
+mutantow=23 przezylo/niekompilujace=2
+   owned_by: brak fail-closed
+   religia: bez floor szerzenia
+EXIT=1
