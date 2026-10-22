@@ -47,6 +47,6 @@ pub use state::{
     CanonicalState, CityState, CivilizationState, GameStateDto, MapState, TurnState, UnitState,
 };
 pub use types::{
-    CityDto, CivilizationDto, MapDto, PositionDto, TerrainDto, TileDto, TurnDto, UnitDto,
-    UnitKindDto, ValidationError,
+    CityDto, CivilizationDto, Difficulty, MapDto, PositionDto, TerrainDto, TileDto, TurnDto,
+    UnitDto, UnitKindDto, ValidationError,
 };

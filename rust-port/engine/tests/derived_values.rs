@@ -772,3 +772,238 @@ fn trade_multipliers_cover_each_constant_once_with_values() {
     assert_eq!(trade_route_building_bonus_rate(), 0.05);
     assert_eq!(port_sea_trade_bonus_pieniadz(), 1);
 }
+
+#[test]
+fn diplomacy_multipliers_cover_each_constant_once_with_web_values() {
+    use civ_engine::data::derived::{
+        diplomacy_multiplier_by_key, diplomacy_multiplier_value, parse_diplomacy_multipliers,
+    };
+    let table = parse_diplomacy_multipliers().expect("diplomacy multipliers parse");
+    let ids: BTreeSet<&str> = table.wiersze.iter().map(|r| r.id.as_str()).collect();
+    // 11 wierszy grupy DYPLOMACJA (22, 35d, 35e, 35m), kazdy ID dokladnie raz.
+    assert_eq!(table.wiersze.len(), 11);
+    assert_eq!(ids.len(), 11);
+    let expected: BTreeSet<&str> = [
+        "BUILDING_PN_FACTOR",
+        "BASKET_PN_DIFFICULTY_MULT_PLAYER_GIVE",
+        "BASKET_PN_DIFFICULTY_MULT_PLAYER_RECEIVE",
+        "TREATY_DURATION_MULTIPLIER_ACTIONS",
+        "TREATY_DURATION_UNLIMITED_MULT",
+        "TREATY_DURATION_MIN_TURNS",
+        "TREATY_DURATION_MAX_TURNS",
+        "TREATY_DURATION_TURNS_PER_DOUBLING",
+        "TREATY_DURATION_GEOMETRIC_BASE",
+        "AI_DIPLOMACY_GENEROSITY_GOLD_MULT",
+        "SISTER_ALLIANCE_THRESHOLD_SCALE",
+    ]
+    .into_iter()
+    .collect();
+    assert_eq!(ids, expected);
+    // Klasa a: dokladnie jedna wartosc. Klasa b: dokladnie jedna mapa stanow. NL: zbior.
+    for row in &table.wiersze {
+        match row.klasa.as_str() {
+            "a" => assert!(row.wartosc.is_some() && row.wartosci_po_trudnosci.is_none()),
+            "b" => assert!(row.wartosci_po_trudnosci.is_some() ^ row.wartosci_po_stanie.is_some()),
+            "NL" => assert!(row.zbior.is_some() && row.wartosc.is_none()),
+            other => panic!("nieznana klasa {other} dla {}", row.id),
+        }
+        assert!(
+            row.rust.starts_with("BEZ MECHANIKI")
+                || row.rust.starts_with("ROZWINI")
+                || row.rust.starts_with("NL"),
+            "status Rust wiersza {} niejednoznaczny",
+            row.id
+        );
+    }
+    // Wektory Rust-autorskie: wartosci zaobserwowane z uruchomionego kodu weba (runda 3).
+    assert_eq!(diplomacy_multiplier_value("BUILDING_PN_FACTOR"), 1.1);
+    assert_eq!(
+        diplomacy_multiplier_value("TREATY_DURATION_UNLIMITED_MULT"),
+        8.0
+    );
+    assert_eq!(
+        diplomacy_multiplier_value("TREATY_DURATION_MIN_TURNS"),
+        10.0
+    );
+    assert_eq!(
+        diplomacy_multiplier_value("TREATY_DURATION_MAX_TURNS"),
+        20.0
+    );
+    assert_eq!(
+        diplomacy_multiplier_value("TREATY_DURATION_TURNS_PER_DOUBLING"),
+        5.0
+    );
+    assert_eq!(
+        diplomacy_multiplier_value("TREATY_DURATION_GEOMETRIC_BASE"),
+        2.0
+    );
+    assert_eq!(
+        diplomacy_multiplier_by_key("BASKET_PN_DIFFICULTY_MULT_PLAYER_GIVE", "easy"),
+        1.5
+    );
+    assert_eq!(
+        diplomacy_multiplier_by_key("BASKET_PN_DIFFICULTY_MULT_PLAYER_GIVE", "normal"),
+        1.0
+    );
+    assert_eq!(
+        diplomacy_multiplier_by_key("BASKET_PN_DIFFICULTY_MULT_PLAYER_GIVE", "hard"),
+        0.5
+    );
+    assert_eq!(
+        diplomacy_multiplier_by_key("BASKET_PN_DIFFICULTY_MULT_PLAYER_RECEIVE", "easy"),
+        0.5
+    );
+    assert_eq!(
+        diplomacy_multiplier_by_key("BASKET_PN_DIFFICULTY_MULT_PLAYER_RECEIVE", "normal"),
+        1.0
+    );
+    assert_eq!(
+        diplomacy_multiplier_by_key("BASKET_PN_DIFFICULTY_MULT_PLAYER_RECEIVE", "hard"),
+        1.5
+    );
+    assert_eq!(
+        diplomacy_multiplier_by_key("AI_DIPLOMACY_GENEROSITY_GOLD_MULT", "easy"),
+        1.0
+    );
+    assert_eq!(
+        diplomacy_multiplier_by_key("AI_DIPLOMACY_GENEROSITY_GOLD_MULT", "normal"),
+        0.5
+    );
+    assert_eq!(
+        diplomacy_multiplier_by_key("AI_DIPLOMACY_GENEROSITY_GOLD_MULT", "hard"),
+        0.3
+    );
+    assert_eq!(
+        diplomacy_multiplier_by_key("SISTER_ALLIANCE_THRESHOLD_SCALE", "low"),
+        0.6
+    );
+    assert_eq!(
+        diplomacy_multiplier_by_key("SISTER_ALLIANCE_THRESHOLD_SCALE", "normal"),
+        0.3
+    );
+    assert_eq!(
+        diplomacy_multiplier_by_key("SISTER_ALLIANCE_THRESHOLD_SCALE", "strong"),
+        0.15
+    );
+    // Wiersz NL: zbior akcji z webu (pokoj poza zbiorem, zob. sekcja 1c dokumentu).
+    let nl = table
+        .wiersze
+        .iter()
+        .find(|r| r.id == "TREATY_DURATION_MULTIPLIER_ACTIONS")
+        .expect("wiersz NL");
+    assert_eq!(
+        nl.zbior.as_deref(),
+        Some(
+            &[
+                "nap".to_string(),
+                "trybut_zadanie".to_string(),
+                "trybut_oferta".to_string()
+            ][..]
+        )
+    );
+}
+
+#[test]
+fn basket_and_treaty_duration_read_diplomacy_table() {
+    use civ_engine::domain::diplomacy::{
+        basket_side_difficulty_multiplier, treaty_duration_pn_multiplier, BasketSide,
+        ProposalAction, ProposalPayload, ProposalPnOptions,
+    };
+    use civ_engine::domain::{Difficulty, PlayerId};
+    let opts = |difficulty: Difficulty, proposer: u64| ProposalPnOptions {
+        difficulty,
+        proposer_owner_id: Some(PlayerId::new(proposer)),
+        player_owner_id: PlayerId::new(0),
+        turns_multiplier: 1.0,
+        per_turn: false,
+    };
+    // Koszyk: gracz proponuje -> Give = sprzedaz (My oddajemy), Receive = kupno.
+    assert_eq!(
+        basket_side_difficulty_multiplier(BasketSide::Give, &opts(Difficulty::Easy, 0)),
+        1.5
+    );
+    assert_eq!(
+        basket_side_difficulty_multiplier(BasketSide::Give, &opts(Difficulty::Hard, 0)),
+        0.5
+    );
+    assert_eq!(
+        basket_side_difficulty_multiplier(BasketSide::Receive, &opts(Difficulty::Easy, 0)),
+        0.5
+    );
+    assert_eq!(
+        basket_side_difficulty_multiplier(BasketSide::Receive, &opts(Difficulty::Hard, 0)),
+        1.5
+    );
+    // AI proponuje -> role odwrocone (web basketSidePnDifficultyMultiplier, proposer 1).
+    assert_eq!(
+        basket_side_difficulty_multiplier(BasketSide::Give, &opts(Difficulty::Easy, 1)),
+        0.5
+    );
+    assert_eq!(
+        basket_side_difficulty_multiplier(BasketSide::Receive, &opts(Difficulty::Hard, 1)),
+        0.5
+    );
+    // Brak proposera -> x1 (jak w webie: wymaga proposerOwnerId).
+    let no_proposer = ProposalPnOptions {
+        proposer_owner_id: None,
+        ..opts(Difficulty::Hard, 0)
+    };
+    assert_eq!(
+        basket_side_difficulty_multiplier(BasketSide::Give, &no_proposer),
+        1.0
+    );
+    // Czas traktatu NAP: wektory z uruchomionego weba (diplo-web: treaty_probe, action nap).
+    let nap = |turns: Option<f64>| {
+        treaty_duration_pn_multiplier(
+            ProposalAction::Nap,
+            &ProposalPayload {
+                turns,
+                ..ProposalPayload::default()
+            },
+        )
+    };
+    assert_eq!(nap(None), 1.0);
+    assert_eq!(nap(Some(0.0)), 8.0);
+    assert_eq!(nap(Some(-3.0)), 8.0);
+    assert_eq!(nap(Some(5.0)), 1.0);
+    assert_eq!(nap(Some(10.0)), 1.0);
+    assert!((nap(Some(12.0)) - 2.0_f64.powf(0.4)).abs() < 1e-12);
+    assert_eq!(nap(Some(15.0)), 2.0);
+    assert_eq!(nap(Some(20.0)), 4.0);
+    assert_eq!(nap(Some(25.0)), 4.0);
+    // ROZBIEZNOSC Rust-web (zachowanie NIE zmienione): web wyklucza 'pokoj' z mnoznika
+    // (web: pokoj = 1 dla wszystkich czasow), Rust liczy Peace jak NAP. Test pinuje stan
+    // obecny; zmiana wymaga decyzji wlasciciela (P3-22 sekcja 1c, pozycja 35d).
+    assert_eq!(
+        treaty_duration_pn_multiplier(
+            ProposalAction::Peace,
+            &ProposalPayload {
+                turns: Some(15.0),
+                ..ProposalPayload::default()
+            },
+        ),
+        2.0
+    );
+}
+
+#[test]
+fn difficulty_is_one_type_across_domain_modules() {
+    use civ_engine::domain::{barbarians, diplomacy, trade, Difficulty};
+    // Trzy dawne duplikaty sa jednym typem: ta sama sciezka i ten sam typ.
+    let _: diplomacy::Difficulty = Difficulty::Hard;
+    let _: barbarians::Difficulty = Difficulty::Hard;
+    let _: trade::Difficulty = Difficulty::Hard;
+    assert_eq!(Difficulty::default(), Difficulty::Normal);
+    assert_eq!(Difficulty::Easy.key(), "easy");
+    assert_eq!(Difficulty::Normal.key(), "normal");
+    assert_eq!(Difficulty::Hard.key(), "hard");
+    // Serializacja JSON bez zmian wzgledem diplomacy.rs (lowercase).
+    assert_eq!(
+        serde_json::to_string(&Difficulty::Easy).unwrap(),
+        "\"easy\""
+    );
+    assert_eq!(
+        serde_json::from_str::<Difficulty>("\"hard\"").unwrap(),
+        Difficulty::Hard
+    );
+}

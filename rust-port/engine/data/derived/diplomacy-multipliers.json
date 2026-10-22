@@ -1,0 +1,124 @@
+{
+  "meta": {
+    "status": "P3-22 ETAP 2, grupa DYPLOMACJA (runda 3). Tabela jest edytowalnym źródłem prawdy: zmienia się konkretną liczbę w polu wartosc / wartosci_po_trudnosci / wartosci_po_stanie. Klasa a: pole wartosc. Klasa b (skończony zbiór stanów): wartosci_po_trudnosci (klucze easy/normal/hard) albo wartosci_po_stanie (klucze wg webu, np. low/normal/strong). Wiersz NL (zbiór identyfikatorów, nie współczynnik): pole zbior.",
+    "pin_web": "edb8fb56",
+    "wygenerowano": "R-RUSTPORT-P3-22-FLATTEN-STAGE2-Q1 runda 3: wartosci zaobserwowane z URUCHOMIONEGO kodu TS weba przez gen-diplomacy-web.mjs (node --experimental-transform-types + gen-loader-register.mjs), niezależnie sprawdzone verify-diplomacy-web.py (0 rozbieznosci). Lista wierszy i pochodzenie: dyspozycje/rust-port/p3/P3-22-FLATTEN-STAGE2.md sekcja 1c."
+  },
+  "wiersze": [
+    {
+      "id": "BUILDING_PN_FACTOR",
+      "klasa": "a",
+      "wartosc": 1.1,
+      "definicja_web": "gra/src/game/diplomacy-value-catalog.ts:35",
+      "uzycie_web": "gra/src/game/diplomacy-value-catalog.ts:217-224 (diplomacyPnBudynek; w danych nadpisywane przez gra/data/diplomacy.json:192 pn_budynek_skalowanie = 1.1)",
+      "opis": "Wykładnik skali PN budynku na poziom: round(kosztBudowy * factor^(poziom-1)). Budynki miasta nie są pozycją handlu (komentarz D3-KAT-NO-BLD).",
+      "rust": "BEZ MECHANIKI: domain/diplomacy.rs nie ma wyceny PN budynku; pole civilizations.rs:674 jest tylko deserializowane (brak czytnika w domenie). Tabela NIEUŻYWANA."
+    },
+    {
+      "id": "BASKET_PN_DIFFICULTY_MULT_PLAYER_GIVE",
+      "klasa": "b",
+      "wartosci_po_trudnosci": {
+        "easy": 1.5,
+        "normal": 1.0,
+        "hard": 0.5
+      },
+      "definicja_web": "gra/src/game/diplomacy-value-catalog.ts:136",
+      "uzycie_web": "gra/src/game/diplomacy-value-catalog.ts:175-185 (basketSidePnDifficultyMultiplier, rola 'sell')",
+      "opis": "Mnożnik PN koszyka, strona 'My oddajemy' (gracz sprzedaje), wg trudności.",
+      "rust": "ROZWINIĘTE: domain/diplomacy.rs basket_side_difficulty_multiplier() czyta tę tabelę (wcześniej literały match 1.5/1.0/0.5)."
+    },
+    {
+      "id": "BASKET_PN_DIFFICULTY_MULT_PLAYER_RECEIVE",
+      "klasa": "b",
+      "wartosci_po_trudnosci": {
+        "easy": 0.5,
+        "normal": 1.0,
+        "hard": 1.5
+      },
+      "definicja_web": "gra/src/game/diplomacy-value-catalog.ts:146",
+      "uzycie_web": "gra/src/game/diplomacy-value-catalog.ts:175-185 (basketSidePnDifficultyMultiplier, rola 'buy')",
+      "opis": "Mnożnik PN koszyka, strona 'My dostajemy' (gracz kupuje), wg trudności.",
+      "rust": "ROZWINIĘTE: domain/diplomacy.rs basket_side_difficulty_multiplier() czyta tę tabelę (wcześniej literały match 0.5/1.0/1.5)."
+    },
+    {
+      "id": "TREATY_DURATION_MULTIPLIER_ACTIONS",
+      "klasa": "NL",
+      "zbior": ["nap", "trybut_zadanie", "trybut_oferta"],
+      "definicja_web": "gra/src/game/diplomacy-proposals.ts:595",
+      "uzycie_web": "gra/src/game/diplomacy-proposals.ts:617 (treatyDurationPnMultiplier)",
+      "opis": "Zbiór identyfikatorów akcji, dla których działa mnożnik czasu traktatu. NIE jest współczynnikiem. Web wyłącza 'pokoj' (komentarz: poza zakresem z definicji).",
+      "rust": "NL, kod bez zmian: domain/diplomacy.rs treaty_duration_pn_multiplier() ma zbiór w match (Nap, TributeDemand, TributeOffer, PEACE). ROZBIEŻNOŚĆ Rust-web: Peace jest w zbiorze Rust, a nie ma go w webie. Zachowanie NIE zmienione (decyzja właściciela, sekcja 1c dokumentu)."
+    },
+    {
+      "id": "TREATY_DURATION_UNLIMITED_MULT",
+      "klasa": "a",
+      "wartosc": 8,
+      "definicja_web": "gra/src/game/diplomacy-proposals.ts:621",
+      "uzycie_web": "gra/src/game/diplomacy-proposals.ts:621 (turns <= 0 -> 8; sonda web: turns=0 -> 8, -3 -> 8)",
+      "opis": "Mnożnik bazy PW traktatu bezterminowego (turns <= 0).",
+      "rust": "ROZWINIĘTE: domain/diplomacy.rs treaty_duration_pn_multiplier() czyta tę wartość (wcześniej literał 8.0)."
+    },
+    {
+      "id": "TREATY_DURATION_MIN_TURNS",
+      "klasa": "a",
+      "wartosc": 10,
+      "definicja_web": "gra/src/game/diplomacy-proposals.ts:622",
+      "uzycie_web": "gra/src/game/diplomacy-proposals.ts:622 (clamp dolny; brak turns -> 10 -> x1)",
+      "opis": "Dolna granica czasu traktatu w formule (poniżej: mnożnik x1).",
+      "rust": "ROZWINIĘTE: domain/diplomacy.rs treaty_duration_pn_multiplier() czyta tę wartość (wcześniej literał 10.0)."
+    },
+    {
+      "id": "TREATY_DURATION_MAX_TURNS",
+      "klasa": "a",
+      "wartosc": 20,
+      "definicja_web": "gra/src/game/diplomacy-proposals.ts:622",
+      "uzycie_web": "gra/src/game/diplomacy-proposals.ts:622 (clamp górny; sonda web: 20 -> x4, 25 -> x4)",
+      "opis": "Górna granica czasu traktatu w formule (powyżej: mnożnik nie rośnie).",
+      "rust": "ROZWINIĘTE: domain/diplomacy.rs treaty_duration_pn_multiplier() czyta tę wartość (wcześniej literał 20.0)."
+    },
+    {
+      "id": "TREATY_DURATION_TURNS_PER_DOUBLING",
+      "klasa": "a",
+      "wartosc": 5,
+      "definicja_web": "gra/src/game/diplomacy-proposals.ts:623",
+      "uzycie_web": "gra/src/game/diplomacy-proposals.ts:623 (wykładnik (turns - 10) / 5; sonda web: 15 -> x2)",
+      "opis": "Liczba tur na podwojenie mnożnika w formule wykładniczej.",
+      "rust": "ROZWINIĘTE: domain/diplomacy.rs treaty_duration_pn_multiplier() czyta tę wartość (wcześniej literał 5.0)."
+    },
+    {
+      "id": "TREATY_DURATION_GEOMETRIC_BASE",
+      "klasa": "a",
+      "wartosc": 2,
+      "definicja_web": "gra/src/game/diplomacy-proposals.ts:623",
+      "uzycie_web": "gra/src/game/diplomacy-proposals.ts:623 (Math.pow(2, ...); sonda web: 12 -> 2^0,4 = 1,3195)",
+      "opis": "Podstawa geometryczna mnożnika czasu traktatu.",
+      "rust": "ROZWINIĘTE: domain/diplomacy.rs treaty_duration_pn_multiplier() czyta tę wartość (wcześniej literał 2.0)."
+    },
+    {
+      "id": "AI_DIPLOMACY_GENEROSITY_GOLD_MULT",
+      "klasa": "b",
+      "wartosci_po_trudnosci": {
+        "easy": 1.0,
+        "normal": 0.5,
+        "hard": 0.3
+      },
+      "definicja_web": "gra/src/game/diplomacy-economy.ts:164",
+      "uzycie_web": "gra/src/game/diplomacy-economy.ts:179 (AI_DIPLOMACY_GENEROSITY_GOLD_MULT[difficulty])",
+      "opis": "Mnożnik hojności AI (prezenty ¤, osłodziki przy proaktywnych ofertach) wg trudności.",
+      "rust": "BEZ MECHANIKI: brak hojności AI (grep 'generos' w rust-port/engine/src: 0 trafień poza tabelą). Tabela NIEUŻYWANA."
+    },
+    {
+      "id": "SISTER_ALLIANCE_THRESHOLD_SCALE",
+      "klasa": "b",
+      "wartosci_po_stanie": {
+        "low": 0.6,
+        "normal": 0.3,
+        "strong": 0.15
+      },
+      "definicja_web": "gra/src/game/diplomacy.ts:702",
+      "uzycie_web": "gra/src/game/diplomacy.ts:729 (SISTER_ALLIANCE_THRESHOLD_SCALE[level]; kopia DiplomacyParams dla sojuszu między siostrami)",
+      "opis": "Skala progu sojuszu między siostrami klastra wg stanu 'low|normal|strong' (klucze jak w webie; NIE są to klucze easy/normal/hard).",
+      "rust": "BEZ MECHANIKI: brak sojuszu między siostrami w domain/diplomacy.rs (grep 'sister|SISTER' w rust-port/engine/src: 0 trafień). Tabela NIEUŻYWANA."
+    }
+  ]
+}

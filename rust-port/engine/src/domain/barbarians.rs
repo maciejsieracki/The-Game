@@ -295,13 +295,8 @@ impl Default for BarbParams {
 pub static FALLBACK_BARB_PARAMS: std::sync::LazyLock<BarbParams> =
     std::sync::LazyLock::new(BarbParams::default);
 
-/// The game difficulty gate for empty-city capture.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
-pub enum Difficulty {
-    Easy,
-    Normal,
-    Hard,
-}
+/// The game difficulty gate for empty-city capture. Typ wspólny: `domain::types::Difficulty`.
+pub use super::types::Difficulty;
 
 pub const fn is_barbarian(owner_id: OwnerRef) -> bool {
     owner_id.is_barbarian()

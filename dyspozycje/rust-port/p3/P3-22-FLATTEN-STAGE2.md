@@ -1,6 +1,8 @@
-# P3-22 — FLATTEN-MULTIPLIERS, ETAP 2 (runda 2/5, Operator, poprawka po FAIL)
+# P3-22 — FLATTEN-MULTIPLIERS, ETAP 2 (runda 3/5, Operator, obrona po FAIL Evaluatora r3)
 
-STATUS: PASS-WITH-NOTES (runda 2/5). Zamknięta grupa HANDEL w całości (6 wierszy: H1–H6). Zakres etapu 2 NIE jest zamknięty: grupy dyplomacja, AI, wzrost, wioski, mapa, walka/oblężenie, ruch, społeczeństwo są ETAP 3 z klasą i plik:linia (sekcja 1, każdy plik:linia sprawdzony skryptem).
+STATUS (runda 3/5): zamknięte w tej rundzie: grupa DYPLOMACJA (wiersze 22, 35d, 35e, 35m — 11 wierszy tabeli, sekcja 10) oraz unifikacja `enum Difficulty` (sekcja 10.5). Zakres etapu 2 NIE jest zamknięty: AI (35a), barbarzyńcy, walka/oblężenie, wzrost, mapa, społeczeństwo, wioski, ruch, produkcja (19–21) są ETAP 3 (sekcja 1b/10.6) i wchodzą do rundy 4. Binarne kryterium etapu 2 NIE jest spełnione (patrz sekcja 10.7).
+
+Poprzedni status rundy 2: PASS-WITH-NOTES. Zamknięta grupa HANDEL w całości (6 wierszy: H1–H6). Zakres etapu 2 NIE jest zamknięty: grupy dyplomacja, AI, wzrost, wioski, mapa, walka/oblężenie, ruch, społeczeństwo są ETAP 3 z klasą i plik:linia (sekcja 1, każdy plik:linia sprawdzony skryptem).
 
 TEMAT: R-RUSTPORT-P3-22-FLATTEN-STAGE2-Q1
 BAZA: `86311e3b` (origin/rust-port/parity-v2). Commit rundy 1: `5c90c3b1`. Pin weba: `edb8fb56`.
@@ -144,3 +146,106 @@ Budowanie: `CARGO_INCREMENTAL=0 CARGO_TARGET_DIR=/home/user/cargo-target-shared/
 ## 9. Wnioski
 
 Grupa HANDEL zamknięta: 6 wierszy (4 BEZ MECHANIKI, 2 ROZWINIĘTE). Binarne kryterium etapu 2 NIE jest spełnione (poza HANDEL 16+ grup ETAP 3). Bramki fmt/clippy/test EXIT=0, 359 testów. DEPLOY/PUSH: NIE WYKONANO.
+
+## 10. RUNDA 3 (Operator, obrona po FAIL Evaluatora r3)
+
+Baza: `origin/rust-port/parity-v2` = `708755ea` (worktree przed pracą: czysty, detached; wcześniejszy HEAD sesji `cfc26c17` nie był bazą i został porzucony). Pin weba: `edb8fb56`.
+
+### 10.1 Odpowiedzi na zarzuty Evaluatora r3
+
+| # | Zarzut (skrót) | Odpowiedź | Dowód |
+|---|---|---|---|
+| 1 | Zakres r3 niewykonany (DYPLOMACJA, AI, barbarzyńcy, walka) | PRZYJMUJĘ częściowo. DYPLOMACJA wykonana w całości (tabela, parser, podpięcie w domenie, test, wektory, generator i weryfikator). AI, barbarzyńcy i walka NIE są wykonane w tej rundzie; przechodzą do rundy 4 jako ETAP 3 z klasą i plik:linia (sekcja 1b, potwierdzone `check-etap3-r3.log`). | sekcja 10.2, 10.6 |
+| 2 | Brak statusu pozycji per grupa | PRZYJMUJĘ dla DYPLOMACJI (sekcja 10.2, status per wiersz). Pozostałe grupy: status ETAP 3 z plik:linia w sekcji 1b. | `dowody/check-etap3-r3.log` (OK, 0 błędów) |
+| 3 | Brak wpisu rundy 3 | PRZYJMUJĘ. Ten wpis (sekcja 10). | sekcja 10 |
+| 4 | Brak generatora i weryfikatora dla grupy poza HANDEL | PRZYJMUJĘ dla DYPLOMACJI: `gen-diplomacy-web.mjs` URUCHAMIA kod TS weba (node `--experimental-transform-types` + loader `gen-loader-*.mjs`, nie literały); `verify-diplomacy-web.py` niezależnie porównuje tabelę z wartościami z uruchomienia i z literałami regex. Sanity: zmieniona wartość (8→9) daje 7 rozbieżności, exit 1. | `dowody/gen-diplomacy-web.log`, `dowody/verify-diplomacy-web.log` (0 rozbieżności) |
+| 5 | `enum Difficulty` nie zunifikowany | PRZYJMUJĘ i WYKONUJĘ: jeden typ w `domain/types.rs:497`, re-eksport z `domain::{diplomacy,barbarians,trade}`. | sekcja 10.5; `git grep "enum Difficulty"` = 1 trafienie |
+| 6 | Rozstrzygnięcia administracyjne niewykonane (`pieniadzMnoznik`, `utrzymanie_surowcowe_na_ture`) | ODRZUCAM z dowodem: wykonano w rundzie 2 (sekcja 7 tego dokumentu; `dowody/grep-admin-*.txt`). W rundzie 3 nie zmieniano. Zarzut dotyczy stanu rundy 2 sprzed zapisu sekcji 7. | sekcja 7; `dowody/grep-admin-pieniadz-web.txt`, `dowody/grep-admin-utrzymanie-web.txt` |
+| 7 | Uzasadnienie BLOKADY błędne (dispatch nie przewiduje rundy 4) | PRZYJMUJĘ. Dispatch dopuszcza zamknięcie części zakresu w rundzie i resztę jako ETAP 3 z klasą i plik:linia; to zrobiono (sekcja 10.6). | sekcja 10.6 |
+| 8 | Brak dowodu technicznego (gate-fmt/clippy/test, check-etap3) | PRZYJMUJĘ. Pełne logi z `EXIT=` w katalogu runu (sekcja 10.4). | `gate-fmt.log`, `gate-clippy.log`, `gate-test.log`, `dowody/check-etap3-r3.log` |
+| 9 | Brak tabeli było/jest i listy zmian testów | PRZYJMUJĘ. Sekcje 10.3 i 10.4. | sekcja 10.3, 10.4 |
+| 10 | Brak `git grep` na mnożniki w domenie objętej etapem | PRZYJMUJĘ, WYNIK NEGATYWNY: `domain/diplomacy.rs:1022–1063` (`archetype_aggression`, `archetype_trade`) zawiera literały współczynników spoza inwentarza P3-19. Kryterium „brak mnożników w plikach domeny objętych etapem” NIE jest spełnione dla `diplomacy.rs`. Pozycja dopisana do ETAP 3 (10.6, pozycja 35p). | `dowody/grep-dyplo-rust.txt` |
+| 11 | Brak `cargo` w r3 (brak pomiaru) | ODRZUCAM: build wykonany (fmt/clippy/test z `EXIT=` w logach; `cargo test` 362 zaliczone, 0 niezaliczonych). Zarzut 11 r3 dotyczy innego stanu (worktree bez zmian), ta runda ma zmiany. | `gate-test.log` |
+| 12 | Brak dowodu czystości worktree i SHA | PRZYJMUJĘ. Wynik `git status --short` (przed pracą: pusty) i `git rev-parse HEAD` = `708755ea` (sekcja 10 wyżej). Worktree innego Operatora (`wf_4a60bbaf-350-1`) nie był dostępny z tej izolacji; ta runda pracuje w `wf_4a60bbaf-350-3`. | sekcja 10 |
+
+### 10.2 Status pozycji grupy DYPLOMACJA (zamknięta w tej rundzie)
+
+Tabela edytowalna: `rust-port/engine/data/derived/diplomacy-multipliers.json` (11 wierszy). Parser i akcesory: `src/data/derived.rs` (`diplomacy_multiplier_value`, `diplomacy_multiplier_by_key`). Wartości zaobserwowane z URUCHOMIONEGO kodu weba: `dowody/diplomacy-web-values.json`.
+
+| # | Pozycja (web) | Klasa | Definicja / użycie web | Status R3 |
+|---|---|---|---|---|
+| D1 | BUILDING_PN_FACTOR = 1.1 | a | `gra/src/game/diplomacy-value-catalog.ts:35` / `:217–224`; dane `gra/data/diplomacy.json:192` | BEZ MECHANIKI (domena nie liczy PN budynku; `civilizations.rs:674` tylko deserializacja) |
+| D2 | BASKET_PN_DIFFICULTY_MULT_PLAYER_GIVE (easy 1.5 / normal 1.0 / hard 0.5) | b | `diplomacy-value-catalog.ts:136` / `:175–185` | ROZWINIĘTE: `domain/diplomacy.rs` `basket_side_difficulty_multiplier()` czyta tabelę |
+| D3 | BASKET_PN_DIFFICULTY_MULT_PLAYER_RECEIVE (easy 0.5 / normal 1.0 / hard 1.5) | b | `diplomacy-value-catalog.ts:146` / `:175–185` | ROZWINIĘTE (jak D2) |
+| D4 | TREATY_DURATION_MULTIPLIER_ACTIONS = {nap, trybut_zadanie, trybut_oferta} | NL (zbiór akcji) | `diplomacy-proposals.ts:595` / `:617` | NL. ROZBIEŻNOŚĆ: Rust `treaty_duration_pn_multiplier()` liczy też `Peace` (web: `pokoj` = x1 dla każdego czasu, sonda `treaty_probe`). ZACHOWANIE NIE ZMIENIONE — decyzja właściciela (czy Peace ma mieć mnożnik). |
+| D5 | TREATY_DURATION_UNLIMITED_MULT = 8 | a | `diplomacy-proposals.ts:621` | ROZWINIĘTE: `domain/diplomacy.rs` `treaty_duration_pn_multiplier()` |
+| D6 | TREATY_DURATION_MIN_TURNS = 10 | a | `diplomacy-proposals.ts:622` | ROZWINIĘTE (jak D5) |
+| D7 | TREATY_DURATION_MAX_TURNS = 20 | a | `diplomacy-proposals.ts:622` | ROZWINIĘTE (jak D5) |
+| D8 | TREATY_DURATION_TURNS_PER_DOUBLING = 5 | a | `diplomacy-proposals.ts:623` | ROZWINIĘTE (jak D5) |
+| D9 | TREATY_DURATION_GEOMETRIC_BASE = 2 | a | `diplomacy-proposals.ts:623` | ROZWINIĘTE (jak D5) |
+| D10 | AI_DIPLOMACY_GENEROSITY_GOLD_MULT (easy 1.0 / normal 0.5 / hard 0.3) | b | `diplomacy-economy.ts:164` / `:179` | BEZ MECHANIKI (`grep -i generos rust-port/engine/src`: brak mechaniki hojności AI) |
+| D11 | SISTER_ALLIANCE_THRESHOLD_SCALE (low 0.6 / normal 0.3 / strong 0.15) | b | `diplomacy.ts:702` / `:729` | BEZ MECHANIKI (brak sojuszu między siostrami w Rust). Klucze jak w webie (low/normal/strong), NIE easy/normal/hard. |
+
+Pozycja 22 „cennik PN”: wartości cennika są w danych `gra/data/diplomacy.json:158` (`pn_zloto`, `pn_praca`, `pn_zywnosc`), a nie stałą kodu; wiązanie z danymi jest z P3-17 i NIE jest mnożnikiem tej grupy → ETAP 3 (sekcja 10.6, pozycja 22b), NIE_ZMIERZONO w tej rundzie.
+
+Założenie (ZAŁOŻENIE rundy 3): stan (b) trudności w API domeny = typ `domain::Difficulty` (jawny parametr, `ProposalPnOptions.difficulty`), zgodnie z P-R4-1 dispatchu. Stan „low/normal/strong” (D11) nie ma wejścia w Rust, bo mechanika jest BEZ MECHANIKI.
+
+### 10.3 Tabela było/jest zmian zachowania (runda 3)
+
+| Element | Było | Jest | Zmiana zachowania |
+|---|---|---|---|
+| `enum Difficulty` (3 duplikaty) | `trade.rs:1852` bez serde; `diplomacy.rs:429` serde lowercase, Default=normal; `barbarians.rs:300` serde domyślny (`Easy`) | jeden typ `domain/types.rs:497` (serde lowercase), re-eksport z trzech modułów | Brak w JSON: typ `barbarians::Difficulty` nie występuje w żadnej strukturze serializowanej (grep: tylko parametry funkcji). Zmiana tylko nazw serializacji tego typu, której nikt nie używa (0 zmian w danych). |
+| Koszyk PN x trudność (D2, D3) | literały `match` 1.5/1.0/0.5 i 0.5/1.0/1.5 | odczyt z `diplomacy-multipliers.json` | 0 (wartości identyczne; test `basket_and_treaty_duration_read_diplomacy_table`) |
+| Mnożnik czasu traktatu NAP/trybut (D5–D9) | literały 8.0, 10.0, 20.0, 5.0, 2.0 | odczyt z tabeli | 0 (wektory: 0→8, 5→1, 10→1, 12→2^0,4, 15→2, 20→4, 25→4; test) |
+| Mnożnik czasu traktatu Peace | liczony (Rust) | liczony (Rust) — bez zmiany | 0; rozbieżność z webem POZOSTAJE (D4), test pinuje stan obecny z komentarzem |
+| AI hojność (D10), sojusz siostrzany (D11) | brak w Rust | tabela NIEUŻYWANA | 0 |
+| BUILDING_PN_FACTOR (D1) | brak w Rust | tabela NIEUŻYWANA | 0 |
+
+### 10.4 Zmiany testów i bramki
+
+Zmiany testów (jawnie):
+- Brak zmian istniejących asercji. `cargo fmt` przeformatował linie nowych funkcji w `src/data/derived.rs` i `tests/derived_values.rs` (zmiany tylko w kodzie tej rundy; `git diff --stat` potwierdza).
+- Nowe testy w `tests/derived_values.rs`: `diplomacy_multipliers_cover_each_constant_once_with_web_values` (11 wierszy, ID raz, klasy, wektory web), `basket_and_treaty_duration_read_diplomacy_table` (koszyk x rola x trudność, czas traktatu NAP i rozbieżność Peace pinowana), `difficulty_is_one_type_across_domain_modules` (jeden typ, klucze, serde).
+- Liczba testów: 359 (runda 2) → 362 (runda 3), 0 niezaliczonych.
+
+Bramki (pełne surowe logi w katalogu runu, każdy z `EXIT=`):
+- `gate-fmt.log`: `cargo fmt --check` → `EXIT=0`.
+- `gate-clippy.log`: `cargo clippy --offline --all-targets -- -D warnings` → `EXIT=0`.
+- `gate-test.log`: `cargo test --offline --no-fail-fast` → `EXIT=0`, 362 passed, 0 failed.
+- `dowody/gen-diplomacy-web.log`: generator uruchomił kod weba → `EXIT=0`.
+- `dowody/verify-diplomacy-web.log`: `sprawdzono wierszy: 11 z 11`, `LICZBA ROZBIEZNOSCI: 0`, `EXIT=0`.
+- `dowody/check-etap3-r3.log`: `LICZBA BLEDOW ETAP3: 0`, `EXIT=0`.
+- Build: `CARGO_INCREMENTAL=0 CARGO_TARGET_DIR=/home/user/cargo-target-shared/wf_4a60bbaf-350-3 CARGO_PROFILE_DEV_DEBUG=0`, `--offline`. Katalog targetu usunięty po pracy. `rust-port/engine/Cargo.lock` powstał przy buildzie, jest nieśledzony i NIE jest commitowany.
+
+Narzędzie uruchamiające web: `node --experimental-transform-types --import ./gen-loader-register.mjs ./gen-diplomacy-web.mjs <KORZEN> <wyjście>`, KORZEŃ = `git archive edb8fb56 gra/src gra/data` rozpakowany poza repo. Loader (`gen-loader-hooks.mjs`) dopisuje `.ts` / `/index.ts` i czyta `.json`. Bez `--experimental-transform-types` enumy TS nie działają (Node 22.22: `ERR_UNSUPPORTED_TYPESCRIPT_SYNTAX`).
+
+### 10.5 Unifikacja `enum Difficulty` (decyzja techniczna z dispatchu)
+
+Jeden typ: `rust-port/engine/src/domain/types.rs` (`Difficulty`, `Default` = Normal, serde `easy`/`normal`/`hard`, metoda `key()`). Re-eksport zachowujący ścieżki: `domain::Difficulty`, `domain::diplomacy::Difficulty`, `domain::barbarians::Difficulty`, `domain::trade::Difficulty`. `git grep "enum Difficulty" -- rust-port/engine/src` → 1 trafienie (`types.rs:497`).
+
+### 10.6 Status zakresu po rundzie 3 (ETAP 3 z klasą i plik:linia)
+
+- AI (wiersz 35a): `ai.ts:1265` (AI_MAJOR_EARLY_ECON_BUILDING_MULT, a), `ai.ts:4568` (TERYTORIUM_MNOZNIK, a) — ETAP 3, runda 4 (plik:linia z sekcji 1b, zweryfikowane `check-etap3-r3.log`).
+- Barbarzyńcy: `diplomacy-barbarian-cooperation.ts:10, :21, :25` (NL-mnożnikowa, sekcja 1b, 35o6). Brak stałych-mnożników w inwentarzu barbarzyńców; `barbarians.rs` nie ma literałów mnożnikowych w tej rundzie NIE_ZMIERZONO → ETAP 3.
+- Walka/oblężenie (35f–h, 35l, 35l2, 35o1–35o4): ETAP 3, runda 4 (sekcja 1b).
+- Wzrost (35b, b): `population-growth-v85.ts:92`; mapa (35j–k); społeczeństwo (35n); wioski (35c); ruch (35i); produkcja/magazyn/ludność (19–21): ETAP 3 (sekcja 1b).
+- 22b cennik PN (dane `gra/data/diplomacy.json:158`): ETAP 3.
+- 35p (NOWA, rozbieżność z przeglądu r3): `archetype_aggression` i `archetype_trade` w `rust-port/engine/src/domain/diplomacy.rs:1022–1063` — literały per cywilizacja (wartości 0.15–0.90), klasa b (skończony zbiór cywilizacji), NIE w inwentarzu P3-19; odpowiednik w webie NIE_ZMIERZONO → ETAP 3, runda 4, z decyzją właściciela, czy wchodzą do etapu 2.
+
+### 10.7 Stan kryterium etapu 2 (uczciwie)
+
+- Spełnione: HANDEL (6 wierszy), DYPLOMACJA (11 wierszy), unifikacja `Difficulty`, bramki EXIT=0, 362 testy ≥ 358.
+- NIE spełnione: brak mnożników w czasie gry w plikach domeny objętych etapem — `domain/diplomacy.rs` nadal ma literały archetypów (35p); AI, barbarzyńcy, walka, wzrost, mapa, społeczeństwo, wioski, ruch, produkcja 19–21 niezrobione (ETAP 3).
+- Rozbieżność Rust–web NIEROZSTRZYGNIĘTA (wymaga decyzji właściciela, nie zmieniano): Peace w mnożniku czasu traktatu (D4); ceil(x/2) dochodu tras (H3, z rundy 2).
+
+### 10.8 Pliki zmienione w rundzie 3
+
+- `rust-port/engine/data/derived/diplomacy-multipliers.json` (nowy).
+- `rust-port/engine/src/data/derived.rs` (akcesory dyplomacji).
+- `rust-port/engine/src/domain/types.rs`, `mod.rs`, `diplomacy.rs`, `barbarians.rs`, `trade.rs` (Difficulty; koszyk i czas traktatu czytają tabelę).
+- `rust-port/engine/tests/derived_values.rs` (3 nowe testy).
+- `dyspozycje/rust-port/p3/P3-22-FLATTEN-STAGE2.md` (ten dokument).
+- `dyspozycje/autobot/runs/R-RUSTPORT-P3-22-FLATTEN-STAGE2-Q1/`: `gen-diplomacy-web.mjs`, `gen-loader-hooks.mjs`, `gen-loader-register.mjs`, `verify-diplomacy-web.py`, `check-etap3.py` (bez zmian), `dowody/*` (nowe logi), `gate-*.log` (zaktualizowane).
+- Poza zakresem (nietknięte): `bridge.rs`, `playable.rs`, `Cargo.toml`, `gra/**`, `rust-port/renderer/**`, `src-tauri/**`.
+
+DEPLOY/PUSH: NIE WYKONANO.

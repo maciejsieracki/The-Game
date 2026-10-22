@@ -1847,13 +1847,8 @@ pub fn diff_trade_routes(prev_routes: &[TradeRoute], next_routes: &[TradeRoute])
     }
 }
 
-/// Difficulty labels used by the data loader.
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub enum Difficulty {
-    Easy,
-    Normal,
-    Hard,
-}
+/// Difficulty labels used by the data loader. Typ wspólny: `domain::types::Difficulty`.
+pub use super::types::Difficulty;
 
 #[derive(Debug, Clone, Copy, PartialEq, Serialize, Deserialize, Default)]
 pub struct RawParamRow {

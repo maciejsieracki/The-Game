@@ -488,3 +488,29 @@ where
     }
     Ok(())
 }
+
+/// Poziom trudności gry: JEDYNY typ w `domain/` (P3-22 etap 2, runda 3, decyzja techniczna).
+/// Re-eksportowany z `domain::diplomacy`, `domain::barbarians` i `domain::trade`, więc dotychczasowe
+/// ścieżki importu działają bez zmian. Serializacja `easy` / `normal` / `hard` jak w web.
+/// Klucze tabel `data/derived/*.json` dla klasy (b) używają tych samych nazw (`difficulty_key`).
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default, Serialize, Deserialize)]
+pub enum Difficulty {
+    #[serde(rename = "easy")]
+    Easy,
+    #[default]
+    #[serde(rename = "normal")]
+    Normal,
+    #[serde(rename = "hard")]
+    Hard,
+}
+
+impl Difficulty {
+    /// Klucz tabel danych (`easy` / `normal` / `hard`), zgodny z webem.
+    pub const fn key(self) -> &'static str {
+        match self {
+            Self::Easy => "easy",
+            Self::Normal => "normal",
+            Self::Hard => "hard",
+        }
+    }
+}

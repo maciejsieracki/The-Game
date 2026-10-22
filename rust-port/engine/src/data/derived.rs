@@ -510,3 +510,73 @@ pub fn trade_multiplier_value(id: &str) -> f64 {
         .and_then(|row| row.wartosc)
         .unwrap_or_else(|| panic!("trade-multipliers.json: brak wartosc klasy a dla {id}"))
 }
+
+/// Stałe dyplomacji (P3-22 grupa DYPLOMACJA, runda 3): `diplomacy-multipliers.json`.
+/// Wiersze ROZWINIĘTE (koszyk PN wg trudności, formuła czasu traktatu) są czytane przez
+/// `domain/diplomacy.rs`; wiersze BEZ MECHANIKI są NIEUŻYWANE; wiersz NL to zbiór akcji.
+pub const DIPLOMACY_MULTIPLIERS_JSON: &str =
+    include_str!("../../data/derived/diplomacy-multipliers.json");
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct DiplomacyMultipliersFile {
+    pub meta: serde_json::Value,
+    pub wiersze: Vec<DiplomacyMultiplierRow>,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct DiplomacyMultiplierRow {
+    pub id: String,
+    pub klasa: String,
+    /// Wartość klasy a (stała).
+    #[serde(default)]
+    pub wartosc: Option<f64>,
+    /// Klasa b po kluczu trudności (`easy` / `normal` / `hard`).
+    #[serde(default)]
+    pub wartosci_po_trudnosci: Option<BTreeMap<String, f64>>,
+    /// Klasa b po stanie o kluczach z webu (`low` / `normal` / `strong`).
+    #[serde(default)]
+    pub wartosci_po_stanie: Option<BTreeMap<String, f64>>,
+    /// Wiersz NL: zbiór identyfikatorów akcji (nie współczynnik).
+    #[serde(default)]
+    pub zbior: Option<Vec<String>>,
+    pub definicja_web: String,
+    pub uzycie_web: String,
+    pub opis: String,
+    pub rust: String,
+}
+
+pub fn parse_diplomacy_multipliers() -> Result<DiplomacyMultipliersFile, serde_json::Error> {
+    serde_json::from_str(DIPLOMACY_MULTIPLIERS_JSON)
+}
+
+fn diplomacy_row(id: &str) -> &'static DiplomacyMultiplierRow {
+    static TABLE: std::sync::OnceLock<DiplomacyMultipliersFile> = std::sync::OnceLock::new();
+    TABLE
+        .get_or_init(|| {
+            parse_diplomacy_multipliers().expect("diplomacy-multipliers.json must parse")
+        })
+        .wiersze
+        .iter()
+        .find(|row| row.id == id)
+        .unwrap_or_else(|| panic!("diplomacy-multipliers.json: brak wiersza {id}"))
+}
+
+/// Wartość klasy a wiersza `id` z `diplomacy-multipliers.json`. Brak wartości = błąd danych.
+pub fn diplomacy_multiplier_value(id: &str) -> f64 {
+    diplomacy_row(id)
+        .wartosc
+        .unwrap_or_else(|| panic!("diplomacy-multipliers.json: brak wartosc klasy a dla {id}"))
+}
+
+/// Wartość klasy b wiersza `id` dla stanu `key` (`easy`/`normal`/`hard` albo `low`/`normal`/`strong`).
+/// Brak wiersza lub klucza = błąd danych (pokrywa go test kształtu).
+pub fn diplomacy_multiplier_by_key(id: &str, key: &str) -> f64 {
+    let row = diplomacy_row(id);
+    row.wartosci_po_trudnosci
+        .as_ref()
+        .or(row.wartosci_po_stanie.as_ref())
+        .and_then(|map| map.get(key).copied())
+        .unwrap_or_else(|| panic!("diplomacy-multipliers.json: brak wartosci {id}[{key}]"))
+}

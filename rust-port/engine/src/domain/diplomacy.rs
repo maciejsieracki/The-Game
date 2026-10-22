@@ -1,6 +1,7 @@
 use super::PlayerId;
 use serde::{Deserialize, Serialize};
 
+use crate::data::derived::{diplomacy_multiplier_by_key, diplomacy_multiplier_value};
 use crate::data::units_combat::parse_units;
 use std::collections::{BTreeMap, BTreeSet};
 
@@ -425,16 +426,8 @@ impl Default for DiplomacyParams {
     }
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Default, Serialize, Deserialize)]
-pub enum Difficulty {
-    #[serde(rename = "easy")]
-    Easy,
-    #[default]
-    #[serde(rename = "normal")]
-    Normal,
-    #[serde(rename = "hard")]
-    Hard,
-}
+/// Typ wspólny trudności: `domain::types::Difficulty` (P3-22 runda 3).
+pub use super::types::Difficulty;
 
 impl Difficulty {
     fn threshold_delta(self) -> f64 {
@@ -2009,7 +2002,9 @@ impl Default for ProposalPnOptions {
     }
 }
 
-fn basket_side_difficulty_multiplier(side: BasketSide, options: &ProposalPnOptions) -> f64 {
+/// Mnożnik trudności strony koszyka PN. Wartości czytane z `diplomacy-multipliers.json`
+/// (wiersze `BASKET_PN_DIFFICULTY_MULT_PLAYER_GIVE` / `_RECEIVE`, klasa b wg trudności).
+pub fn basket_side_difficulty_multiplier(side: BasketSide, options: &ProposalPnOptions) -> f64 {
     let Some(proposer_owner_id) = options.proposer_owner_id else {
         return 1.0;
     };
@@ -2018,14 +2013,12 @@ fn basket_side_difficulty_multiplier(side: BasketSide, options: &ProposalPnOptio
         BasketSide::Give => player_is_proposer,
         BasketSide::Receive => !player_is_proposer,
     };
-    match (player_sells, options.difficulty) {
-        (true, Difficulty::Easy) => 1.5,
-        (true, Difficulty::Normal) => 1.0,
-        (true, Difficulty::Hard) => 0.5,
-        (false, Difficulty::Easy) => 0.5,
-        (false, Difficulty::Normal) => 1.0,
-        (false, Difficulty::Hard) => 1.5,
-    }
+    let row = if player_sells {
+        "BASKET_PN_DIFFICULTY_MULT_PLAYER_GIVE"
+    } else {
+        "BASKET_PN_DIFFICULTY_MULT_PLAYER_RECEIVE"
+    };
+    diplomacy_multiplier_by_key(row, options.difficulty.key())
 }
 
 fn basket_item_is_per_turn(kind: BasketItemKind) -> bool {
@@ -3094,11 +3087,18 @@ pub fn treaty_duration_pn_multiplier(action: ProposalAction, payload: &ProposalP
     if !raw.is_finite() {
         return 1.0;
     }
+    // Parametry formuły z `diplomacy-multipliers.json` (P3-22 runda 3); wartości = web
+    // proposal `treatyDurationPnMultiplier` (diplomacy-proposals.ts:621-623).
+    let unlimited = diplomacy_multiplier_value("TREATY_DURATION_UNLIMITED_MULT");
     if raw <= 0.0 {
-        return 8.0;
+        return unlimited;
     }
-    let turns = raw.clamp(10.0, 20.0);
-    2.0_f64.powf((turns - 10.0) / 5.0)
+    let min_turns = diplomacy_multiplier_value("TREATY_DURATION_MIN_TURNS");
+    let max_turns = diplomacy_multiplier_value("TREATY_DURATION_MAX_TURNS");
+    let per_doubling = diplomacy_multiplier_value("TREATY_DURATION_TURNS_PER_DOUBLING");
+    let base = diplomacy_multiplier_value("TREATY_DURATION_GEOMETRIC_BASE");
+    let turns = raw.clamp(min_turns, max_turns);
+    base.powf((turns - min_turns) / per_doubling)
 }
 
 fn treaty_base_pn_for_payload(
