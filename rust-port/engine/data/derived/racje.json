@@ -1,0 +1,64 @@
+{
+  "meta": {
+    "status": "BOOTSTRAP: wartości startowe rozwinięte z reguł weba. Źródłem prawdy do ręcznego balansu jest TA tabela (edytuj liczby, nie mnożniki). Tabela NIE jest porównywana ze wzorem przy buildzie.",
+    "zrodlo": "gra/src/game/population-growth-v85.ts",
+    "regula_weba": "population-growth-v85.ts:27-44 (WYZYWIENIE 0..6 krok 0,5), :165-191 clampPoziomRacji / rationFoodCostPerPop",
+    "pin_web": "edb8fb56",
+    "wygenerowano": "R-RUSTPORT-P3-19-FLATTEN-MULTIPLIERS-Q1 runda 4, generator: gen-round4.mjs",
+    "uwaga": "Żywność na mieszkańca = poziom x 2 (R_STAWKI_KOSZT_MULT)."
+  },
+  "wiersze": [
+    {
+      "poziom_racji": 0,
+      "zywnosc_na_mieszkanca": 0
+    },
+    {
+      "poziom_racji": 0.5,
+      "zywnosc_na_mieszkanca": 1
+    },
+    {
+      "poziom_racji": 1,
+      "zywnosc_na_mieszkanca": 2
+    },
+    {
+      "poziom_racji": 1.5,
+      "zywnosc_na_mieszkanca": 3
+    },
+    {
+      "poziom_racji": 2,
+      "zywnosc_na_mieszkanca": 4
+    },
+    {
+      "poziom_racji": 2.5,
+      "zywnosc_na_mieszkanca": 5
+    },
+    {
+      "poziom_racji": 3,
+      "zywnosc_na_mieszkanca": 6
+    },
+    {
+      "poziom_racji": 3.5,
+      "zywnosc_na_mieszkanca": 7
+    },
+    {
+      "poziom_racji": 4,
+      "zywnosc_na_mieszkanca": 8
+    },
+    {
+      "poziom_racji": 4.5,
+      "zywnosc_na_mieszkanca": 9
+    },
+    {
+      "poziom_racji": 5,
+      "zywnosc_na_mieszkanca": 10
+    },
+    {
+      "poziom_racji": 5.5,
+      "zywnosc_na_mieszkanca": 11
+    },
+    {
+      "poziom_racji": 6,
+      "zywnosc_na_mieszkanca": 12
+    }
+  ]
+}

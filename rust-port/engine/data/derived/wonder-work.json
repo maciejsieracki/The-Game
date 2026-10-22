@@ -1,0 +1,145 @@
+{
+  "meta": {
+    "status": "BOOTSTRAP: wartości startowe rozwinięte z reguł weba. Źródłem prawdy do ręcznego balansu jest TA tabela (edytuj liczby, nie mnożniki). Tabela NIE jest porównywana ze wzorem przy buildzie.",
+    "zrodlo": "gra/data/wonders.json",
+    "regula_weba": "r-stawki-strojenie.ts:56-63 scaledWonderWorkCost / scaledWonderFoodCost",
+    "pin_web": "edb8fb56",
+    "wygenerowano": "R-RUSTPORT-P3-19-FLATTEN-MULTIPLIERS-Q1 runda 4, generator: gen-round4.mjs",
+    "uwaga": "Statyczne per cud."
+  },
+  "wiersze": [
+    {
+      "cud": "piramidy",
+      "nazwa": "Piramidy",
+      "kosztBudowy": 160,
+      "praca": 320,
+      "zywnosc": 320
+    },
+    {
+      "cud": "wielka_stela",
+      "nazwa": "Wielka stela",
+      "kosztBudowy": 220,
+      "praca": 440,
+      "zywnosc": 440
+    },
+    {
+      "cud": "wiszace_ogrody",
+      "nazwa": "Wiszące ogrody",
+      "kosztBudowy": 150,
+      "praca": 300,
+      "zywnosc": 300
+    },
+    {
+      "cud": "wyrocznia",
+      "nazwa": "Wyrocznia",
+      "kosztBudowy": 180,
+      "praca": 360,
+      "zywnosc": 360
+    },
+    {
+      "cud": "roquepertuse",
+      "nazwa": "Roquepertuse",
+      "kosztBudowy": 290,
+      "praca": 580,
+      "zywnosc": 580
+    },
+    {
+      "cud": "stupa_sanchi",
+      "nazwa": "Stupa w Sanchi",
+      "kosztBudowy": 210,
+      "praca": 420,
+      "zywnosc": 420
+    },
+    {
+      "cud": "petra",
+      "nazwa": "Petra",
+      "kosztBudowy": 165,
+      "praca": 330,
+      "zywnosc": 330
+    },
+    {
+      "cud": "hamonga",
+      "nazwa": "Kamień Ha'amonga",
+      "kosztBudowy": 220,
+      "praca": 440,
+      "zywnosc": 440
+    },
+    {
+      "cud": "kolos",
+      "nazwa": "Kolos Rodyjski",
+      "kosztBudowy": 230,
+      "praca": 460,
+      "zywnosc": 460
+    },
+    {
+      "cud": "osada_aschaffenburg",
+      "nazwa": "Osada Aschaffenburg (hala dębowa)",
+      "kosztBudowy": 300,
+      "praca": 600,
+      "zywnosc": 600
+    },
+    {
+      "cud": "ziggurat",
+      "nazwa": "Ziggurat / Piramida Słońca",
+      "kosztBudowy": 240,
+      "praca": 480,
+      "zywnosc": 480
+    },
+    {
+      "cud": "mundo_perdido",
+      "nazwa": "Świątynia Mundo Perdido",
+      "kosztBudowy": 220,
+      "praca": 440,
+      "zywnosc": 440
+    },
+    {
+      "cud": "terakotowa_armia",
+      "nazwa": "Terakotowa armia",
+      "kosztBudowy": 320,
+      "praca": 640,
+      "zywnosc": 640
+    },
+    {
+      "cud": "koloseum",
+      "nazwa": "Koloseum",
+      "kosztBudowy": 310,
+      "praca": 620,
+      "zywnosc": 620
+    },
+    {
+      "cud": "dur_sharrukin",
+      "nazwa": "Dur-Sharrukin",
+      "kosztBudowy": 260,
+      "praca": 520,
+      "zywnosc": 520
+    },
+    {
+      "cud": "brama_narodow",
+      "nazwa": "Brama wszystkich narodów",
+      "kosztBudowy": 280,
+      "praca": 560,
+      "zywnosc": 560
+    },
+    {
+      "cud": "palac_weiyang",
+      "nazwa": "Pałac Weiyang",
+      "kosztBudowy": 290,
+      "praca": 580,
+      "zywnosc": 580
+    },
+    {
+      "cud": "yerkapi",
+      "nazwa": "Yerkapı (Brama w ziemi)",
+      "kosztBudowy": 240,
+      "praca": 480,
+      "zywnosc": 480
+    },
+    {
+      "cud": "posag_peruna",
+      "nazwa": "Posąg Peruna",
+      "kosztBudowy": 140,
+      "praca": 280,
+      "zywnosc": 280
+    }
+  ]
+}

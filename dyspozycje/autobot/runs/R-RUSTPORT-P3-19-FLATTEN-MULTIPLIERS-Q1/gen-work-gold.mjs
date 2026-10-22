@@ -119,6 +119,27 @@ export function unitUpkeepFromTable(upkeepRaw, epoka) {
   return Math.round(base * R_STAWKI_FALA1_FALA2_MULT);
 }
 
+// units/setup.ts:239-250 categoryOf -- tylko gałęzie, które mogą zwrócić 'super' lub 'zwiadowca'
+// (pierwsze dopasowanie w kolejności kodu: isSuper -> 'super'; osadnik/robotnik -> pominięte w
+// kategorii 'zwiadowca'; potem 'zwiadowca'). Pełna funkcja zwraca inne kategorie dla pozostałych
+// jednostek; dla reguły utrzymania złota (economy-upkeep.ts:967-968) liczy się tylko 0-kategorie.
+export function categoryOfForUpkeep(name, role, isSuper) {
+  const norm = (s) => (s ?? '').normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[Łł]/g, 'l').toLowerCase();
+  if (isSuper) return 'super';
+  const n = norm(name);
+  const r = norm(role);
+  if (n.includes('osadnik') || r.includes('osadnik')) return 'osadnik';
+  if (n.includes('robotnik') || n.includes('worker') || n.includes('budown') || r.includes('robotnik')) return 'robotnik';
+  if (n.includes('zwiadowca') || n.includes('scout') || n.includes('zwiad') || r.includes('zwiadowca')) return 'zwiadowca';
+  return 'inna';
+}
+// economy-upkeep.ts:922-977 unitUpkeep: byCat===0 -> 0 (zwiadowca:0, super:0), inaczej tabela typeId
+export function unitUpkeepWeb(category, tableValueScaled) {
+  if (category === 'super' || category === 'zwiadowca') return 0;
+  if (tableValueScaled <= 0) return 0;
+  return Math.round(tableValueScaled * R_STAWKI_FALA1_FALA2_MULT);
+}
+
 // ---------------------------------------------------------------------------
 const [, , unitsPath, buildingsPath, miastoPath, outDir] = process.argv;
 const units = JSON.parse(fs.readFileSync(unitsPath, 'utf8'));
@@ -156,18 +177,20 @@ for (const b of buildings) {
 }
 
 // Równoważność bootstrapu (złoto jednostek) i utrzymanie x4.
+// Runda 4: reguła kategorii (super/zwiadowca -> 0) wchodzi do bootstrapu; bez niej Wojownik germański
+// (Super-jednostka=TAK, Utrzymanie=2) dostałby 32 zamiast 0 (web: economy-upkeep.ts:967-968).
 const goldRows = units.map((u) => {
   const cost = scaleCostByEpoch(unitCostFromDef(u), u.Epoka);
   const upkeepRaw = u['Utrzymanie (Pieniądz/turę)'];
-  const upkeep = unitUpkeepFromTable(
-    typeof upkeepRaw === 'number' && Number.isFinite(upkeepRaw) ? upkeepRaw : undefined,
-    u.Epoka,
-  );
+  const kategoria = categoryOfForUpkeep(u.Jednostka, u['Rola (linia)'] ?? '', u['Super-jednostka'] === 'TAK');
+  const numeric = typeof upkeepRaw === 'number' && Number.isFinite(upkeepRaw);
+  const upkeep = unitUpkeepWeb(kategoria, numeric ? scaleCostByEpoch(upkeepRaw, u.Epoka) : 0);
   return {
     jednostka: u.Jednostka,
     epoka: u.Epoka,
     pieniadz_koszt: cost,
-    utrzymanie_pieniadz_ture: upkeep ?? 0,
+    utrzymanie_pieniadz_ture: upkeep,
+    kategoria_utrzymania: kategoria,
     baza: {
       pieniadz_koszt_zrodlo: u['Pieniądz (koszt)'],
       rola_linia: u['Rola (linia)'] ?? null,
@@ -176,6 +199,7 @@ const goldRows = units.map((u) => {
     },
   };
 });
+if (goldRows.some((r) => r.baza.utrzymanie_zrodlo === null)) throw new Error('brak numerycznego utrzymania w units.json');
 
 const meta = (zrodlo, regula) => ({
   status: 'BOOTSTRAP: wartosci startowe rozwiniete z regul weba. Zrodlem prawdy do recznego balansu jest TA tabela (edytuj liczby, nie mnozniki). Tabela NIE jest porownywana ze wzorem przy buildzie.',
@@ -193,7 +217,7 @@ fs.writeFileSync(`${outDir}/building-work-costs.json`, JSON.stringify({
 }, null, 2) + '\n');
 fs.writeFileSync(`${outDir}/unit-gold-costs.json`, JSON.stringify({
   meta: meta('gra/data/units.json @ edb8fb56 + gra/data/miasto-params.json (domyslne koszty roli)',
-    'production.ts unitCostFromDef (l.255-289) + scaleCostByEpoch(Epoka); economy-upkeep.ts unitUpkeep (l.962-977) x4 po scaleCostByEpoch (buildUnitUpkeepTable l.1000-1023). UWAGA: regula kategorii (zwiadowca/super -> 0, economy-upkeep.ts:967-968) zalezy od pola kategorii instancji (main.ts:7193), NIE od units.json; NIE odtworzono w tabeli (P3-19 sek. 9)'),
+    'production.ts unitCostFromDef (l.255-289) + scaleCostByEpoch(Epoka); economy-upkeep.ts unitUpkeep (l.962-977) x4 po scaleCostByEpoch (buildUnitUpkeepTable l.1000-1023); kategoria: units/setup.ts categoryOf (l.239-250, port gałęzi super/zwiadowca), reguła byCat===0 -> 0 (economy-upkeep.ts:967-968) WLICZONA w wartość (runda 4)'),
   wiersze: goldRows,
 }, null, 2) + '\n');
 

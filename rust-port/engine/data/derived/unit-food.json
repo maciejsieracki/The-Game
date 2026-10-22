@@ -1,0 +1,6852 @@
+{
+  "meta": {
+    "status": "BOOTSTRAP: wartości startowe rozwinięte z reguł weba. Źródłem prawdy do ręcznego balansu jest TA tabela (edytuj liczby, nie mnożniki). Tabela NIE jest porównywana ze wzorem przy buildzie.",
+    "zrodlo": "gra/data/units.json, econ-params.json",
+    "regula_weba": "economy-upkeep.ts:1038-1066 unitFoodPerTurn, :1051-1066 buildUnitFoodTable, :608-611 readNum, r-stawki-strojenie.ts:12 (x4)",
+    "pin_web": "edb8fb56",
+    "wygenerowano": "R-RUSTPORT-P3-19-FLATTEN-MULTIPLIERS-Q1 runda 4, generator: gen-round4.mjs",
+    "uwaga": "Wartości w setnych żywności (zywnosc_setne = żywność x 100), liczby całkowite. Zależność od trudności tylko w stanie obozu (zywnosc_jednostka_oboz / zywnosc_jednostka_ruch)."
+  },
+  "osie": {
+    "stan": [
+      "ruch",
+      "oboz"
+    ],
+    "terytorium": [
+      "wlasne",
+      "poza"
+    ],
+    "poziom_trudnosci": [
+      "easy",
+      "normal",
+      "hard"
+    ]
+  },
+  "wiersze": [
+    {
+      "jednostka": "Wojownik",
+      "epoka": "Kamień",
+      "zywnosc_baza_tabela": 1,
+      "wartosci": [
+        {
+          "stan": "ruch",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "easy",
+          "zywnosc_setne": 400,
+          "zywnosc_dokladnie": 4
+        },
+        {
+          "stan": "ruch",
+          "terytorium": "poza",
+          "poziom_trudnosci": "easy",
+          "zywnosc_setne": 800,
+          "zywnosc_dokladnie": 8
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "easy",
+          "zywnosc_setne": 152,
+          "zywnosc_dokladnie": 1.52
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "poza",
+          "poziom_trudnosci": "easy",
+          "zywnosc_setne": 304,
+          "zywnosc_dokladnie": 3.04
+        },
+        {
+          "stan": "ruch",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "normal",
+          "zywnosc_setne": 400,
+          "zywnosc_dokladnie": 4
+        },
+        {
+          "stan": "ruch",
+          "terytorium": "poza",
+          "poziom_trudnosci": "normal",
+          "zywnosc_setne": 800,
+          "zywnosc_dokladnie": 8
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "normal",
+          "zywnosc_setne": 200,
+          "zywnosc_dokladnie": 2
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "poza",
+          "poziom_trudnosci": "normal",
+          "zywnosc_setne": 400,
+          "zywnosc_dokladnie": 4
+        },
+        {
+          "stan": "ruch",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "hard",
+          "zywnosc_setne": 400,
+          "zywnosc_dokladnie": 4
+        },
+        {
+          "stan": "ruch",
+          "terytorium": "poza",
+          "poziom_trudnosci": "hard",
+          "zywnosc_setne": 800,
+          "zywnosc_dokladnie": 8
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "hard",
+          "zywnosc_setne": 124,
+          "zywnosc_dokladnie": 1.24
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "poza",
+          "poziom_trudnosci": "hard",
+          "zywnosc_setne": 248,
+          "zywnosc_dokladnie": 2.48
+        }
+      ]
+    },
+    {
+      "jednostka": "Procarz",
+      "epoka": "Brąz",
+      "zywnosc_baza_tabela": 2,
+      "wartosci": [
+        {
+          "stan": "ruch",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "easy",
+          "zywnosc_setne": 800,
+          "zywnosc_dokladnie": 8
+        },
+        {
+          "stan": "ruch",
+          "terytorium": "poza",
+          "poziom_trudnosci": "easy",
+          "zywnosc_setne": 1600,
+          "zywnosc_dokladnie": 16
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "easy",
+          "zywnosc_setne": 304,
+          "zywnosc_dokladnie": 3.04
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "poza",
+          "poziom_trudnosci": "easy",
+          "zywnosc_setne": 608,
+          "zywnosc_dokladnie": 6.08
+        },
+        {
+          "stan": "ruch",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "normal",
+          "zywnosc_setne": 800,
+          "zywnosc_dokladnie": 8
+        },
+        {
+          "stan": "ruch",
+          "terytorium": "poza",
+          "poziom_trudnosci": "normal",
+          "zywnosc_setne": 1600,
+          "zywnosc_dokladnie": 16
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "normal",
+          "zywnosc_setne": 400,
+          "zywnosc_dokladnie": 4
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "poza",
+          "poziom_trudnosci": "normal",
+          "zywnosc_setne": 800,
+          "zywnosc_dokladnie": 8
+        },
+        {
+          "stan": "ruch",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "hard",
+          "zywnosc_setne": 800,
+          "zywnosc_dokladnie": 8
+        },
+        {
+          "stan": "ruch",
+          "terytorium": "poza",
+          "poziom_trudnosci": "hard",
+          "zywnosc_setne": 1600,
+          "zywnosc_dokladnie": 16
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "hard",
+          "zywnosc_setne": 248,
+          "zywnosc_dokladnie": 2.48
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "poza",
+          "poziom_trudnosci": "hard",
+          "zywnosc_setne": 496,
+          "zywnosc_dokladnie": 4.96
+        }
+      ]
+    },
+    {
+      "jednostka": "Oszczepnik",
+      "epoka": "Kamień",
+      "zywnosc_baza_tabela": 1,
+      "wartosci": [
+        {
+          "stan": "ruch",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "easy",
+          "zywnosc_setne": 400,
+          "zywnosc_dokladnie": 4
+        },
+        {
+          "stan": "ruch",
+          "terytorium": "poza",
+          "poziom_trudnosci": "easy",
+          "zywnosc_setne": 800,
+          "zywnosc_dokladnie": 8
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "easy",
+          "zywnosc_setne": 152,
+          "zywnosc_dokladnie": 1.52
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "poza",
+          "poziom_trudnosci": "easy",
+          "zywnosc_setne": 304,
+          "zywnosc_dokladnie": 3.04
+        },
+        {
+          "stan": "ruch",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "normal",
+          "zywnosc_setne": 400,
+          "zywnosc_dokladnie": 4
+        },
+        {
+          "stan": "ruch",
+          "terytorium": "poza",
+          "poziom_trudnosci": "normal",
+          "zywnosc_setne": 800,
+          "zywnosc_dokladnie": 8
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "normal",
+          "zywnosc_setne": 200,
+          "zywnosc_dokladnie": 2
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "poza",
+          "poziom_trudnosci": "normal",
+          "zywnosc_setne": 400,
+          "zywnosc_dokladnie": 4
+        },
+        {
+          "stan": "ruch",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "hard",
+          "zywnosc_setne": 400,
+          "zywnosc_dokladnie": 4
+        },
+        {
+          "stan": "ruch",
+          "terytorium": "poza",
+          "poziom_trudnosci": "hard",
+          "zywnosc_setne": 800,
+          "zywnosc_dokladnie": 8
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "hard",
+          "zywnosc_setne": 124,
+          "zywnosc_dokladnie": 1.24
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "poza",
+          "poziom_trudnosci": "hard",
+          "zywnosc_setne": 248,
+          "zywnosc_dokladnie": 2.48
+        }
+      ]
+    },
+    {
+      "jednostka": "Łucznik",
+      "epoka": "Kamień",
+      "zywnosc_baza_tabela": 1,
+      "wartosci": [
+        {
+          "stan": "ruch",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "easy",
+          "zywnosc_setne": 400,
+          "zywnosc_dokladnie": 4
+        },
+        {
+          "stan": "ruch",
+          "terytorium": "poza",
+          "poziom_trudnosci": "easy",
+          "zywnosc_setne": 800,
+          "zywnosc_dokladnie": 8
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "easy",
+          "zywnosc_setne": 152,
+          "zywnosc_dokladnie": 1.52
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "poza",
+          "poziom_trudnosci": "easy",
+          "zywnosc_setne": 304,
+          "zywnosc_dokladnie": 3.04
+        },
+        {
+          "stan": "ruch",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "normal",
+          "zywnosc_setne": 400,
+          "zywnosc_dokladnie": 4
+        },
+        {
+          "stan": "ruch",
+          "terytorium": "poza",
+          "poziom_trudnosci": "normal",
+          "zywnosc_setne": 800,
+          "zywnosc_dokladnie": 8
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "normal",
+          "zywnosc_setne": 200,
+          "zywnosc_dokladnie": 2
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "poza",
+          "poziom_trudnosci": "normal",
+          "zywnosc_setne": 400,
+          "zywnosc_dokladnie": 4
+        },
+        {
+          "stan": "ruch",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "hard",
+          "zywnosc_setne": 400,
+          "zywnosc_dokladnie": 4
+        },
+        {
+          "stan": "ruch",
+          "terytorium": "poza",
+          "poziom_trudnosci": "hard",
+          "zywnosc_setne": 800,
+          "zywnosc_dokladnie": 8
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "hard",
+          "zywnosc_setne": 124,
+          "zywnosc_dokladnie": 1.24
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "poza",
+          "poziom_trudnosci": "hard",
+          "zywnosc_setne": 248,
+          "zywnosc_dokladnie": 2.48
+        }
+      ]
+    },
+    {
+      "jednostka": "Zwiadowca",
+      "epoka": "Kamień",
+      "zywnosc_baza_tabela": 0,
+      "wartosci": [
+        {
+          "stan": "ruch",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "easy",
+          "zywnosc_setne": 0,
+          "zywnosc_dokladnie": 0
+        },
+        {
+          "stan": "ruch",
+          "terytorium": "poza",
+          "poziom_trudnosci": "easy",
+          "zywnosc_setne": 0,
+          "zywnosc_dokladnie": 0
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "easy",
+          "zywnosc_setne": 0,
+          "zywnosc_dokladnie": 0
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "poza",
+          "poziom_trudnosci": "easy",
+          "zywnosc_setne": 0,
+          "zywnosc_dokladnie": 0
+        },
+        {
+          "stan": "ruch",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "normal",
+          "zywnosc_setne": 0,
+          "zywnosc_dokladnie": 0
+        },
+        {
+          "stan": "ruch",
+          "terytorium": "poza",
+          "poziom_trudnosci": "normal",
+          "zywnosc_setne": 0,
+          "zywnosc_dokladnie": 0
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "normal",
+          "zywnosc_setne": 0,
+          "zywnosc_dokladnie": 0
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "poza",
+          "poziom_trudnosci": "normal",
+          "zywnosc_setne": 0,
+          "zywnosc_dokladnie": 0
+        },
+        {
+          "stan": "ruch",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "hard",
+          "zywnosc_setne": 0,
+          "zywnosc_dokladnie": 0
+        },
+        {
+          "stan": "ruch",
+          "terytorium": "poza",
+          "poziom_trudnosci": "hard",
+          "zywnosc_setne": 0,
+          "zywnosc_dokladnie": 0
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "hard",
+          "zywnosc_setne": 0,
+          "zywnosc_dokladnie": 0
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "poza",
+          "poziom_trudnosci": "hard",
+          "zywnosc_setne": 0,
+          "zywnosc_dokladnie": 0
+        }
+      ]
+    },
+    {
+      "jednostka": "Włócznik",
+      "epoka": "Brąz",
+      "zywnosc_baza_tabela": 2,
+      "wartosci": [
+        {
+          "stan": "ruch",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "easy",
+          "zywnosc_setne": 800,
+          "zywnosc_dokladnie": 8
+        },
+        {
+          "stan": "ruch",
+          "terytorium": "poza",
+          "poziom_trudnosci": "easy",
+          "zywnosc_setne": 1600,
+          "zywnosc_dokladnie": 16
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "easy",
+          "zywnosc_setne": 304,
+          "zywnosc_dokladnie": 3.04
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "poza",
+          "poziom_trudnosci": "easy",
+          "zywnosc_setne": 608,
+          "zywnosc_dokladnie": 6.08
+        },
+        {
+          "stan": "ruch",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "normal",
+          "zywnosc_setne": 800,
+          "zywnosc_dokladnie": 8
+        },
+        {
+          "stan": "ruch",
+          "terytorium": "poza",
+          "poziom_trudnosci": "normal",
+          "zywnosc_setne": 1600,
+          "zywnosc_dokladnie": 16
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "normal",
+          "zywnosc_setne": 400,
+          "zywnosc_dokladnie": 4
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "poza",
+          "poziom_trudnosci": "normal",
+          "zywnosc_setne": 800,
+          "zywnosc_dokladnie": 8
+        },
+        {
+          "stan": "ruch",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "hard",
+          "zywnosc_setne": 800,
+          "zywnosc_dokladnie": 8
+        },
+        {
+          "stan": "ruch",
+          "terytorium": "poza",
+          "poziom_trudnosci": "hard",
+          "zywnosc_setne": 1600,
+          "zywnosc_dokladnie": 16
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "hard",
+          "zywnosc_setne": 248,
+          "zywnosc_dokladnie": 2.48
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "poza",
+          "poziom_trudnosci": "hard",
+          "zywnosc_setne": 496,
+          "zywnosc_dokladnie": 4.96
+        }
+      ]
+    },
+    {
+      "jednostka": "Wojownik z mieczem i tarczą",
+      "epoka": "Brąz",
+      "zywnosc_baza_tabela": 2,
+      "wartosci": [
+        {
+          "stan": "ruch",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "easy",
+          "zywnosc_setne": 800,
+          "zywnosc_dokladnie": 8
+        },
+        {
+          "stan": "ruch",
+          "terytorium": "poza",
+          "poziom_trudnosci": "easy",
+          "zywnosc_setne": 1600,
+          "zywnosc_dokladnie": 16
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "easy",
+          "zywnosc_setne": 304,
+          "zywnosc_dokladnie": 3.04
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "poza",
+          "poziom_trudnosci": "easy",
+          "zywnosc_setne": 608,
+          "zywnosc_dokladnie": 6.08
+        },
+        {
+          "stan": "ruch",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "normal",
+          "zywnosc_setne": 800,
+          "zywnosc_dokladnie": 8
+        },
+        {
+          "stan": "ruch",
+          "terytorium": "poza",
+          "poziom_trudnosci": "normal",
+          "zywnosc_setne": 1600,
+          "zywnosc_dokladnie": 16
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "normal",
+          "zywnosc_setne": 400,
+          "zywnosc_dokladnie": 4
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "poza",
+          "poziom_trudnosci": "normal",
+          "zywnosc_setne": 800,
+          "zywnosc_dokladnie": 8
+        },
+        {
+          "stan": "ruch",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "hard",
+          "zywnosc_setne": 800,
+          "zywnosc_dokladnie": 8
+        },
+        {
+          "stan": "ruch",
+          "terytorium": "poza",
+          "poziom_trudnosci": "hard",
+          "zywnosc_setne": 1600,
+          "zywnosc_dokladnie": 16
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "hard",
+          "zywnosc_setne": 248,
+          "zywnosc_dokladnie": 2.48
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "poza",
+          "poziom_trudnosci": "hard",
+          "zywnosc_setne": 496,
+          "zywnosc_dokladnie": 4.96
+        }
+      ]
+    },
+    {
+      "jednostka": "Rydwan (woły)",
+      "epoka": "Brąz",
+      "zywnosc_baza_tabela": 2,
+      "wartosci": [
+        {
+          "stan": "ruch",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "easy",
+          "zywnosc_setne": 800,
+          "zywnosc_dokladnie": 8
+        },
+        {
+          "stan": "ruch",
+          "terytorium": "poza",
+          "poziom_trudnosci": "easy",
+          "zywnosc_setne": 1600,
+          "zywnosc_dokladnie": 16
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "easy",
+          "zywnosc_setne": 304,
+          "zywnosc_dokladnie": 3.04
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "poza",
+          "poziom_trudnosci": "easy",
+          "zywnosc_setne": 608,
+          "zywnosc_dokladnie": 6.08
+        },
+        {
+          "stan": "ruch",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "normal",
+          "zywnosc_setne": 800,
+          "zywnosc_dokladnie": 8
+        },
+        {
+          "stan": "ruch",
+          "terytorium": "poza",
+          "poziom_trudnosci": "normal",
+          "zywnosc_setne": 1600,
+          "zywnosc_dokladnie": 16
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "normal",
+          "zywnosc_setne": 400,
+          "zywnosc_dokladnie": 4
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "poza",
+          "poziom_trudnosci": "normal",
+          "zywnosc_setne": 800,
+          "zywnosc_dokladnie": 8
+        },
+        {
+          "stan": "ruch",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "hard",
+          "zywnosc_setne": 800,
+          "zywnosc_dokladnie": 8
+        },
+        {
+          "stan": "ruch",
+          "terytorium": "poza",
+          "poziom_trudnosci": "hard",
+          "zywnosc_setne": 1600,
+          "zywnosc_dokladnie": 16
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "hard",
+          "zywnosc_setne": 248,
+          "zywnosc_dokladnie": 2.48
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "poza",
+          "poziom_trudnosci": "hard",
+          "zywnosc_setne": 496,
+          "zywnosc_dokladnie": 4.96
+        }
+      ]
+    },
+    {
+      "jednostka": "Konnica",
+      "epoka": "Brąz",
+      "zywnosc_baza_tabela": 2,
+      "wartosci": [
+        {
+          "stan": "ruch",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "easy",
+          "zywnosc_setne": 800,
+          "zywnosc_dokladnie": 8
+        },
+        {
+          "stan": "ruch",
+          "terytorium": "poza",
+          "poziom_trudnosci": "easy",
+          "zywnosc_setne": 1600,
+          "zywnosc_dokladnie": 16
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "easy",
+          "zywnosc_setne": 304,
+          "zywnosc_dokladnie": 3.04
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "poza",
+          "poziom_trudnosci": "easy",
+          "zywnosc_setne": 608,
+          "zywnosc_dokladnie": 6.08
+        },
+        {
+          "stan": "ruch",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "normal",
+          "zywnosc_setne": 800,
+          "zywnosc_dokladnie": 8
+        },
+        {
+          "stan": "ruch",
+          "terytorium": "poza",
+          "poziom_trudnosci": "normal",
+          "zywnosc_setne": 1600,
+          "zywnosc_dokladnie": 16
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "normal",
+          "zywnosc_setne": 400,
+          "zywnosc_dokladnie": 4
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "poza",
+          "poziom_trudnosci": "normal",
+          "zywnosc_setne": 800,
+          "zywnosc_dokladnie": 8
+        },
+        {
+          "stan": "ruch",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "hard",
+          "zywnosc_setne": 800,
+          "zywnosc_dokladnie": 8
+        },
+        {
+          "stan": "ruch",
+          "terytorium": "poza",
+          "poziom_trudnosci": "hard",
+          "zywnosc_setne": 1600,
+          "zywnosc_dokladnie": 16
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "hard",
+          "zywnosc_setne": 248,
+          "zywnosc_dokladnie": 2.48
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "poza",
+          "poziom_trudnosci": "hard",
+          "zywnosc_setne": 496,
+          "zywnosc_dokladnie": 4.96
+        }
+      ]
+    },
+    {
+      "jednostka": "Galera",
+      "epoka": "Brąz",
+      "zywnosc_baza_tabela": 2,
+      "wartosci": [
+        {
+          "stan": "ruch",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "easy",
+          "zywnosc_setne": 800,
+          "zywnosc_dokladnie": 8
+        },
+        {
+          "stan": "ruch",
+          "terytorium": "poza",
+          "poziom_trudnosci": "easy",
+          "zywnosc_setne": 1600,
+          "zywnosc_dokladnie": 16
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "easy",
+          "zywnosc_setne": 304,
+          "zywnosc_dokladnie": 3.04
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "poza",
+          "poziom_trudnosci": "easy",
+          "zywnosc_setne": 608,
+          "zywnosc_dokladnie": 6.08
+        },
+        {
+          "stan": "ruch",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "normal",
+          "zywnosc_setne": 800,
+          "zywnosc_dokladnie": 8
+        },
+        {
+          "stan": "ruch",
+          "terytorium": "poza",
+          "poziom_trudnosci": "normal",
+          "zywnosc_setne": 1600,
+          "zywnosc_dokladnie": 16
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "normal",
+          "zywnosc_setne": 400,
+          "zywnosc_dokladnie": 4
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "poza",
+          "poziom_trudnosci": "normal",
+          "zywnosc_setne": 800,
+          "zywnosc_dokladnie": 8
+        },
+        {
+          "stan": "ruch",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "hard",
+          "zywnosc_setne": 800,
+          "zywnosc_dokladnie": 8
+        },
+        {
+          "stan": "ruch",
+          "terytorium": "poza",
+          "poziom_trudnosci": "hard",
+          "zywnosc_setne": 1600,
+          "zywnosc_dokladnie": 16
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "hard",
+          "zywnosc_setne": 248,
+          "zywnosc_dokladnie": 2.48
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "poza",
+          "poziom_trudnosci": "hard",
+          "zywnosc_setne": 496,
+          "zywnosc_dokladnie": 4.96
+        }
+      ]
+    },
+    {
+      "jednostka": "Falanga",
+      "epoka": "Żelazo",
+      "zywnosc_baza_tabela": 4,
+      "wartosci": [
+        {
+          "stan": "ruch",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "easy",
+          "zywnosc_setne": 1600,
+          "zywnosc_dokladnie": 16
+        },
+        {
+          "stan": "ruch",
+          "terytorium": "poza",
+          "poziom_trudnosci": "easy",
+          "zywnosc_setne": 3200,
+          "zywnosc_dokladnie": 32
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "easy",
+          "zywnosc_setne": 608,
+          "zywnosc_dokladnie": 6.08
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "poza",
+          "poziom_trudnosci": "easy",
+          "zywnosc_setne": 1216,
+          "zywnosc_dokladnie": 12.16
+        },
+        {
+          "stan": "ruch",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "normal",
+          "zywnosc_setne": 1600,
+          "zywnosc_dokladnie": 16
+        },
+        {
+          "stan": "ruch",
+          "terytorium": "poza",
+          "poziom_trudnosci": "normal",
+          "zywnosc_setne": 3200,
+          "zywnosc_dokladnie": 32
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "normal",
+          "zywnosc_setne": 800,
+          "zywnosc_dokladnie": 8
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "poza",
+          "poziom_trudnosci": "normal",
+          "zywnosc_setne": 1600,
+          "zywnosc_dokladnie": 16
+        },
+        {
+          "stan": "ruch",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "hard",
+          "zywnosc_setne": 1600,
+          "zywnosc_dokladnie": 16
+        },
+        {
+          "stan": "ruch",
+          "terytorium": "poza",
+          "poziom_trudnosci": "hard",
+          "zywnosc_setne": 3200,
+          "zywnosc_dokladnie": 32
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "hard",
+          "zywnosc_setne": 496,
+          "zywnosc_dokladnie": 4.96
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "poza",
+          "poziom_trudnosci": "hard",
+          "zywnosc_setne": 992,
+          "zywnosc_dokladnie": 9.92
+        }
+      ]
+    },
+    {
+      "jednostka": "Hieros Lochos (Święty Zastęp)",
+      "epoka": "Żelazo",
+      "zywnosc_baza_tabela": 4,
+      "wartosci": [
+        {
+          "stan": "ruch",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "easy",
+          "zywnosc_setne": 1600,
+          "zywnosc_dokladnie": 16
+        },
+        {
+          "stan": "ruch",
+          "terytorium": "poza",
+          "poziom_trudnosci": "easy",
+          "zywnosc_setne": 3200,
+          "zywnosc_dokladnie": 32
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "easy",
+          "zywnosc_setne": 608,
+          "zywnosc_dokladnie": 6.08
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "poza",
+          "poziom_trudnosci": "easy",
+          "zywnosc_setne": 1216,
+          "zywnosc_dokladnie": 12.16
+        },
+        {
+          "stan": "ruch",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "normal",
+          "zywnosc_setne": 1600,
+          "zywnosc_dokladnie": 16
+        },
+        {
+          "stan": "ruch",
+          "terytorium": "poza",
+          "poziom_trudnosci": "normal",
+          "zywnosc_setne": 3200,
+          "zywnosc_dokladnie": 32
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "normal",
+          "zywnosc_setne": 800,
+          "zywnosc_dokladnie": 8
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "poza",
+          "poziom_trudnosci": "normal",
+          "zywnosc_setne": 1600,
+          "zywnosc_dokladnie": 16
+        },
+        {
+          "stan": "ruch",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "hard",
+          "zywnosc_setne": 1600,
+          "zywnosc_dokladnie": 16
+        },
+        {
+          "stan": "ruch",
+          "terytorium": "poza",
+          "poziom_trudnosci": "hard",
+          "zywnosc_setne": 3200,
+          "zywnosc_dokladnie": 32
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "hard",
+          "zywnosc_setne": 496,
+          "zywnosc_dokladnie": 4.96
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "poza",
+          "poziom_trudnosci": "hard",
+          "zywnosc_setne": 992,
+          "zywnosc_dokladnie": 9.92
+        }
+      ]
+    },
+    {
+      "jednostka": "Hastati",
+      "epoka": "Żelazo",
+      "zywnosc_baza_tabela": 4,
+      "wartosci": [
+        {
+          "stan": "ruch",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "easy",
+          "zywnosc_setne": 1600,
+          "zywnosc_dokladnie": 16
+        },
+        {
+          "stan": "ruch",
+          "terytorium": "poza",
+          "poziom_trudnosci": "easy",
+          "zywnosc_setne": 3200,
+          "zywnosc_dokladnie": 32
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "easy",
+          "zywnosc_setne": 608,
+          "zywnosc_dokladnie": 6.08
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "poza",
+          "poziom_trudnosci": "easy",
+          "zywnosc_setne": 1216,
+          "zywnosc_dokladnie": 12.16
+        },
+        {
+          "stan": "ruch",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "normal",
+          "zywnosc_setne": 1600,
+          "zywnosc_dokladnie": 16
+        },
+        {
+          "stan": "ruch",
+          "terytorium": "poza",
+          "poziom_trudnosci": "normal",
+          "zywnosc_setne": 3200,
+          "zywnosc_dokladnie": 32
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "normal",
+          "zywnosc_setne": 800,
+          "zywnosc_dokladnie": 8
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "poza",
+          "poziom_trudnosci": "normal",
+          "zywnosc_setne": 1600,
+          "zywnosc_dokladnie": 16
+        },
+        {
+          "stan": "ruch",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "hard",
+          "zywnosc_setne": 1600,
+          "zywnosc_dokladnie": 16
+        },
+        {
+          "stan": "ruch",
+          "terytorium": "poza",
+          "poziom_trudnosci": "hard",
+          "zywnosc_setne": 3200,
+          "zywnosc_dokladnie": 32
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "hard",
+          "zywnosc_setne": 496,
+          "zywnosc_dokladnie": 4.96
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "poza",
+          "poziom_trudnosci": "hard",
+          "zywnosc_setne": 992,
+          "zywnosc_dokladnie": 9.92
+        }
+      ]
+    },
+    {
+      "jednostka": "Triari",
+      "epoka": "Żelazo",
+      "zywnosc_baza_tabela": 4,
+      "wartosci": [
+        {
+          "stan": "ruch",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "easy",
+          "zywnosc_setne": 1600,
+          "zywnosc_dokladnie": 16
+        },
+        {
+          "stan": "ruch",
+          "terytorium": "poza",
+          "poziom_trudnosci": "easy",
+          "zywnosc_setne": 3200,
+          "zywnosc_dokladnie": 32
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "easy",
+          "zywnosc_setne": 608,
+          "zywnosc_dokladnie": 6.08
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "poza",
+          "poziom_trudnosci": "easy",
+          "zywnosc_setne": 1216,
+          "zywnosc_dokladnie": 12.16
+        },
+        {
+          "stan": "ruch",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "normal",
+          "zywnosc_setne": 1600,
+          "zywnosc_dokladnie": 16
+        },
+        {
+          "stan": "ruch",
+          "terytorium": "poza",
+          "poziom_trudnosci": "normal",
+          "zywnosc_setne": 3200,
+          "zywnosc_dokladnie": 32
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "normal",
+          "zywnosc_setne": 800,
+          "zywnosc_dokladnie": 8
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "poza",
+          "poziom_trudnosci": "normal",
+          "zywnosc_setne": 1600,
+          "zywnosc_dokladnie": 16
+        },
+        {
+          "stan": "ruch",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "hard",
+          "zywnosc_setne": 1600,
+          "zywnosc_dokladnie": 16
+        },
+        {
+          "stan": "ruch",
+          "terytorium": "poza",
+          "poziom_trudnosci": "hard",
+          "zywnosc_setne": 3200,
+          "zywnosc_dokladnie": 32
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "hard",
+          "zywnosc_setne": 496,
+          "zywnosc_dokladnie": 4.96
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "poza",
+          "poziom_trudnosci": "hard",
+          "zywnosc_setne": 992,
+          "zywnosc_dokladnie": 9.92
+        }
+      ]
+    },
+    {
+      "jednostka": "Jeździec chiński",
+      "epoka": "Brąz",
+      "zywnosc_baza_tabela": 2,
+      "wartosci": [
+        {
+          "stan": "ruch",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "easy",
+          "zywnosc_setne": 800,
+          "zywnosc_dokladnie": 8
+        },
+        {
+          "stan": "ruch",
+          "terytorium": "poza",
+          "poziom_trudnosci": "easy",
+          "zywnosc_setne": 1600,
+          "zywnosc_dokladnie": 16
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "easy",
+          "zywnosc_setne": 304,
+          "zywnosc_dokladnie": 3.04
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "poza",
+          "poziom_trudnosci": "easy",
+          "zywnosc_setne": 608,
+          "zywnosc_dokladnie": 6.08
+        },
+        {
+          "stan": "ruch",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "normal",
+          "zywnosc_setne": 800,
+          "zywnosc_dokladnie": 8
+        },
+        {
+          "stan": "ruch",
+          "terytorium": "poza",
+          "poziom_trudnosci": "normal",
+          "zywnosc_setne": 1600,
+          "zywnosc_dokladnie": 16
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "normal",
+          "zywnosc_setne": 400,
+          "zywnosc_dokladnie": 4
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "poza",
+          "poziom_trudnosci": "normal",
+          "zywnosc_setne": 800,
+          "zywnosc_dokladnie": 8
+        },
+        {
+          "stan": "ruch",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "hard",
+          "zywnosc_setne": 800,
+          "zywnosc_dokladnie": 8
+        },
+        {
+          "stan": "ruch",
+          "terytorium": "poza",
+          "poziom_trudnosci": "hard",
+          "zywnosc_setne": 1600,
+          "zywnosc_dokladnie": 16
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "hard",
+          "zywnosc_setne": 248,
+          "zywnosc_dokladnie": 2.48
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "poza",
+          "poziom_trudnosci": "hard",
+          "zywnosc_setne": 496,
+          "zywnosc_dokladnie": 4.96
+        }
+      ]
+    },
+    {
+      "jednostka": "Hu Ben Wei (Gwardia Tygrysa)",
+      "epoka": "Brąz",
+      "zywnosc_baza_tabela": 2,
+      "wartosci": [
+        {
+          "stan": "ruch",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "easy",
+          "zywnosc_setne": 800,
+          "zywnosc_dokladnie": 8
+        },
+        {
+          "stan": "ruch",
+          "terytorium": "poza",
+          "poziom_trudnosci": "easy",
+          "zywnosc_setne": 1600,
+          "zywnosc_dokladnie": 16
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "easy",
+          "zywnosc_setne": 304,
+          "zywnosc_dokladnie": 3.04
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "poza",
+          "poziom_trudnosci": "easy",
+          "zywnosc_setne": 608,
+          "zywnosc_dokladnie": 6.08
+        },
+        {
+          "stan": "ruch",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "normal",
+          "zywnosc_setne": 800,
+          "zywnosc_dokladnie": 8
+        },
+        {
+          "stan": "ruch",
+          "terytorium": "poza",
+          "poziom_trudnosci": "normal",
+          "zywnosc_setne": 1600,
+          "zywnosc_dokladnie": 16
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "normal",
+          "zywnosc_setne": 400,
+          "zywnosc_dokladnie": 4
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "poza",
+          "poziom_trudnosci": "normal",
+          "zywnosc_setne": 800,
+          "zywnosc_dokladnie": 8
+        },
+        {
+          "stan": "ruch",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "hard",
+          "zywnosc_setne": 800,
+          "zywnosc_dokladnie": 8
+        },
+        {
+          "stan": "ruch",
+          "terytorium": "poza",
+          "poziom_trudnosci": "hard",
+          "zywnosc_setne": 1600,
+          "zywnosc_dokladnie": 16
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "hard",
+          "zywnosc_setne": 248,
+          "zywnosc_dokladnie": 2.48
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "poza",
+          "poziom_trudnosci": "hard",
+          "zywnosc_setne": 496,
+          "zywnosc_dokladnie": 4.96
+        }
+      ]
+    },
+    {
+      "jednostka": "Impi",
+      "epoka": "Brąz",
+      "zywnosc_baza_tabela": 2,
+      "wartosci": [
+        {
+          "stan": "ruch",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "easy",
+          "zywnosc_setne": 800,
+          "zywnosc_dokladnie": 8
+        },
+        {
+          "stan": "ruch",
+          "terytorium": "poza",
+          "poziom_trudnosci": "easy",
+          "zywnosc_setne": 1600,
+          "zywnosc_dokladnie": 16
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "easy",
+          "zywnosc_setne": 304,
+          "zywnosc_dokladnie": 3.04
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "poza",
+          "poziom_trudnosci": "easy",
+          "zywnosc_setne": 608,
+          "zywnosc_dokladnie": 6.08
+        },
+        {
+          "stan": "ruch",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "normal",
+          "zywnosc_setne": 800,
+          "zywnosc_dokladnie": 8
+        },
+        {
+          "stan": "ruch",
+          "terytorium": "poza",
+          "poziom_trudnosci": "normal",
+          "zywnosc_setne": 1600,
+          "zywnosc_dokladnie": 16
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "normal",
+          "zywnosc_setne": 400,
+          "zywnosc_dokladnie": 4
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "poza",
+          "poziom_trudnosci": "normal",
+          "zywnosc_setne": 800,
+          "zywnosc_dokladnie": 8
+        },
+        {
+          "stan": "ruch",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "hard",
+          "zywnosc_setne": 800,
+          "zywnosc_dokladnie": 8
+        },
+        {
+          "stan": "ruch",
+          "terytorium": "poza",
+          "poziom_trudnosci": "hard",
+          "zywnosc_setne": 1600,
+          "zywnosc_dokladnie": 16
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "hard",
+          "zywnosc_setne": 248,
+          "zywnosc_dokladnie": 2.48
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "poza",
+          "poziom_trudnosci": "hard",
+          "zywnosc_setne": 496,
+          "zywnosc_dokladnie": 4.96
+        }
+      ]
+    },
+    {
+      "jednostka": "Oszczepnik Zulu (Izijula)",
+      "epoka": "Kamień",
+      "zywnosc_baza_tabela": 1,
+      "wartosci": [
+        {
+          "stan": "ruch",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "easy",
+          "zywnosc_setne": 400,
+          "zywnosc_dokladnie": 4
+        },
+        {
+          "stan": "ruch",
+          "terytorium": "poza",
+          "poziom_trudnosci": "easy",
+          "zywnosc_setne": 800,
+          "zywnosc_dokladnie": 8
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "easy",
+          "zywnosc_setne": 152,
+          "zywnosc_dokladnie": 1.52
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "poza",
+          "poziom_trudnosci": "easy",
+          "zywnosc_setne": 304,
+          "zywnosc_dokladnie": 3.04
+        },
+        {
+          "stan": "ruch",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "normal",
+          "zywnosc_setne": 400,
+          "zywnosc_dokladnie": 4
+        },
+        {
+          "stan": "ruch",
+          "terytorium": "poza",
+          "poziom_trudnosci": "normal",
+          "zywnosc_setne": 800,
+          "zywnosc_dokladnie": 8
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "normal",
+          "zywnosc_setne": 200,
+          "zywnosc_dokladnie": 2
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "poza",
+          "poziom_trudnosci": "normal",
+          "zywnosc_setne": 400,
+          "zywnosc_dokladnie": 4
+        },
+        {
+          "stan": "ruch",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "hard",
+          "zywnosc_setne": 400,
+          "zywnosc_dokladnie": 4
+        },
+        {
+          "stan": "ruch",
+          "terytorium": "poza",
+          "poziom_trudnosci": "hard",
+          "zywnosc_setne": 800,
+          "zywnosc_dokladnie": 8
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "hard",
+          "zywnosc_setne": 124,
+          "zywnosc_dokladnie": 1.24
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "poza",
+          "poziom_trudnosci": "hard",
+          "zywnosc_setne": 248,
+          "zywnosc_dokladnie": 2.48
+        }
+      ]
+    },
+    {
+      "jednostka": "uThulwana (Białe Tarcze)",
+      "epoka": "Brąz",
+      "zywnosc_baza_tabela": 2,
+      "wartosci": [
+        {
+          "stan": "ruch",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "easy",
+          "zywnosc_setne": 800,
+          "zywnosc_dokladnie": 8
+        },
+        {
+          "stan": "ruch",
+          "terytorium": "poza",
+          "poziom_trudnosci": "easy",
+          "zywnosc_setne": 1600,
+          "zywnosc_dokladnie": 16
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "easy",
+          "zywnosc_setne": 304,
+          "zywnosc_dokladnie": 3.04
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "poza",
+          "poziom_trudnosci": "easy",
+          "zywnosc_setne": 608,
+          "zywnosc_dokladnie": 6.08
+        },
+        {
+          "stan": "ruch",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "normal",
+          "zywnosc_setne": 800,
+          "zywnosc_dokladnie": 8
+        },
+        {
+          "stan": "ruch",
+          "terytorium": "poza",
+          "poziom_trudnosci": "normal",
+          "zywnosc_setne": 1600,
+          "zywnosc_dokladnie": 16
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "normal",
+          "zywnosc_setne": 400,
+          "zywnosc_dokladnie": 4
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "poza",
+          "poziom_trudnosci": "normal",
+          "zywnosc_setne": 800,
+          "zywnosc_dokladnie": 8
+        },
+        {
+          "stan": "ruch",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "hard",
+          "zywnosc_setne": 800,
+          "zywnosc_dokladnie": 8
+        },
+        {
+          "stan": "ruch",
+          "terytorium": "poza",
+          "poziom_trudnosci": "hard",
+          "zywnosc_setne": 1600,
+          "zywnosc_dokladnie": 16
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "hard",
+          "zywnosc_setne": 248,
+          "zywnosc_dokladnie": 2.48
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "poza",
+          "poziom_trudnosci": "hard",
+          "zywnosc_setne": 496,
+          "zywnosc_dokladnie": 4.96
+        }
+      ]
+    },
+    {
+      "jednostka": "Wojownik z maczugą (Chaska)",
+      "epoka": "Kamień",
+      "zywnosc_baza_tabela": 1,
+      "wartosci": [
+        {
+          "stan": "ruch",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "easy",
+          "zywnosc_setne": 400,
+          "zywnosc_dokladnie": 4
+        },
+        {
+          "stan": "ruch",
+          "terytorium": "poza",
+          "poziom_trudnosci": "easy",
+          "zywnosc_setne": 800,
+          "zywnosc_dokladnie": 8
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "easy",
+          "zywnosc_setne": 152,
+          "zywnosc_dokladnie": 1.52
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "poza",
+          "poziom_trudnosci": "easy",
+          "zywnosc_setne": 304,
+          "zywnosc_dokladnie": 3.04
+        },
+        {
+          "stan": "ruch",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "normal",
+          "zywnosc_setne": 400,
+          "zywnosc_dokladnie": 4
+        },
+        {
+          "stan": "ruch",
+          "terytorium": "poza",
+          "poziom_trudnosci": "normal",
+          "zywnosc_setne": 800,
+          "zywnosc_dokladnie": 8
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "normal",
+          "zywnosc_setne": 200,
+          "zywnosc_dokladnie": 2
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "poza",
+          "poziom_trudnosci": "normal",
+          "zywnosc_setne": 400,
+          "zywnosc_dokladnie": 4
+        },
+        {
+          "stan": "ruch",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "hard",
+          "zywnosc_setne": 400,
+          "zywnosc_dokladnie": 4
+        },
+        {
+          "stan": "ruch",
+          "terytorium": "poza",
+          "poziom_trudnosci": "hard",
+          "zywnosc_setne": 800,
+          "zywnosc_dokladnie": 8
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "hard",
+          "zywnosc_setne": 124,
+          "zywnosc_dokladnie": 1.24
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "poza",
+          "poziom_trudnosci": "hard",
+          "zywnosc_setne": 248,
+          "zywnosc_dokladnie": 2.48
+        }
+      ]
+    },
+    {
+      "jednostka": "Wojownik z toporem",
+      "epoka": "Brąz",
+      "zywnosc_baza_tabela": 2,
+      "wartosci": [
+        {
+          "stan": "ruch",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "easy",
+          "zywnosc_setne": 800,
+          "zywnosc_dokladnie": 8
+        },
+        {
+          "stan": "ruch",
+          "terytorium": "poza",
+          "poziom_trudnosci": "easy",
+          "zywnosc_setne": 1600,
+          "zywnosc_dokladnie": 16
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "easy",
+          "zywnosc_setne": 304,
+          "zywnosc_dokladnie": 3.04
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "poza",
+          "poziom_trudnosci": "easy",
+          "zywnosc_setne": 608,
+          "zywnosc_dokladnie": 6.08
+        },
+        {
+          "stan": "ruch",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "normal",
+          "zywnosc_setne": 800,
+          "zywnosc_dokladnie": 8
+        },
+        {
+          "stan": "ruch",
+          "terytorium": "poza",
+          "poziom_trudnosci": "normal",
+          "zywnosc_setne": 1600,
+          "zywnosc_dokladnie": 16
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "normal",
+          "zywnosc_setne": 400,
+          "zywnosc_dokladnie": 4
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "poza",
+          "poziom_trudnosci": "normal",
+          "zywnosc_setne": 800,
+          "zywnosc_dokladnie": 8
+        },
+        {
+          "stan": "ruch",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "hard",
+          "zywnosc_setne": 800,
+          "zywnosc_dokladnie": 8
+        },
+        {
+          "stan": "ruch",
+          "terytorium": "poza",
+          "poziom_trudnosci": "hard",
+          "zywnosc_setne": 1600,
+          "zywnosc_dokladnie": 16
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "hard",
+          "zywnosc_setne": 248,
+          "zywnosc_dokladnie": 2.48
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "poza",
+          "poziom_trudnosci": "hard",
+          "zywnosc_setne": 496,
+          "zywnosc_dokladnie": 4.96
+        }
+      ]
+    },
+    {
+      "jednostka": "Procarz (Huaracoc)",
+      "epoka": "Brąz",
+      "zywnosc_baza_tabela": 2,
+      "wartosci": [
+        {
+          "stan": "ruch",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "easy",
+          "zywnosc_setne": 800,
+          "zywnosc_dokladnie": 8
+        },
+        {
+          "stan": "ruch",
+          "terytorium": "poza",
+          "poziom_trudnosci": "easy",
+          "zywnosc_setne": 1600,
+          "zywnosc_dokladnie": 16
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "easy",
+          "zywnosc_setne": 304,
+          "zywnosc_dokladnie": 3.04
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "poza",
+          "poziom_trudnosci": "easy",
+          "zywnosc_setne": 608,
+          "zywnosc_dokladnie": 6.08
+        },
+        {
+          "stan": "ruch",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "normal",
+          "zywnosc_setne": 800,
+          "zywnosc_dokladnie": 8
+        },
+        {
+          "stan": "ruch",
+          "terytorium": "poza",
+          "poziom_trudnosci": "normal",
+          "zywnosc_setne": 1600,
+          "zywnosc_dokladnie": 16
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "normal",
+          "zywnosc_setne": 400,
+          "zywnosc_dokladnie": 4
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "poza",
+          "poziom_trudnosci": "normal",
+          "zywnosc_setne": 800,
+          "zywnosc_dokladnie": 8
+        },
+        {
+          "stan": "ruch",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "hard",
+          "zywnosc_setne": 800,
+          "zywnosc_dokladnie": 8
+        },
+        {
+          "stan": "ruch",
+          "terytorium": "poza",
+          "poziom_trudnosci": "hard",
+          "zywnosc_setne": 1600,
+          "zywnosc_dokladnie": 16
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "hard",
+          "zywnosc_setne": 248,
+          "zywnosc_dokladnie": 2.48
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "poza",
+          "poziom_trudnosci": "hard",
+          "zywnosc_setne": 496,
+          "zywnosc_dokladnie": 4.96
+        }
+      ]
+    },
+    {
+      "jednostka": "Oszczepnik (Estólica)",
+      "epoka": "Kamień",
+      "zywnosc_baza_tabela": 1,
+      "wartosci": [
+        {
+          "stan": "ruch",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "easy",
+          "zywnosc_setne": 400,
+          "zywnosc_dokladnie": 4
+        },
+        {
+          "stan": "ruch",
+          "terytorium": "poza",
+          "poziom_trudnosci": "easy",
+          "zywnosc_setne": 800,
+          "zywnosc_dokladnie": 8
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "easy",
+          "zywnosc_setne": 152,
+          "zywnosc_dokladnie": 1.52
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "poza",
+          "poziom_trudnosci": "easy",
+          "zywnosc_setne": 304,
+          "zywnosc_dokladnie": 3.04
+        },
+        {
+          "stan": "ruch",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "normal",
+          "zywnosc_setne": 400,
+          "zywnosc_dokladnie": 4
+        },
+        {
+          "stan": "ruch",
+          "terytorium": "poza",
+          "poziom_trudnosci": "normal",
+          "zywnosc_setne": 800,
+          "zywnosc_dokladnie": 8
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "normal",
+          "zywnosc_setne": 200,
+          "zywnosc_dokladnie": 2
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "poza",
+          "poziom_trudnosci": "normal",
+          "zywnosc_setne": 400,
+          "zywnosc_dokladnie": 4
+        },
+        {
+          "stan": "ruch",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "hard",
+          "zywnosc_setne": 400,
+          "zywnosc_dokladnie": 4
+        },
+        {
+          "stan": "ruch",
+          "terytorium": "poza",
+          "poziom_trudnosci": "hard",
+          "zywnosc_setne": 800,
+          "zywnosc_dokladnie": 8
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "hard",
+          "zywnosc_setne": 124,
+          "zywnosc_dokladnie": 1.24
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "poza",
+          "poziom_trudnosci": "hard",
+          "zywnosc_setne": 248,
+          "zywnosc_dokladnie": 2.48
+        }
+      ]
+    },
+    {
+      "jednostka": "Królewska Gwardia",
+      "epoka": "Brąz",
+      "zywnosc_baza_tabela": 2,
+      "wartosci": [
+        {
+          "stan": "ruch",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "easy",
+          "zywnosc_setne": 800,
+          "zywnosc_dokladnie": 8
+        },
+        {
+          "stan": "ruch",
+          "terytorium": "poza",
+          "poziom_trudnosci": "easy",
+          "zywnosc_setne": 1600,
+          "zywnosc_dokladnie": 16
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "easy",
+          "zywnosc_setne": 304,
+          "zywnosc_dokladnie": 3.04
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "poza",
+          "poziom_trudnosci": "easy",
+          "zywnosc_setne": 608,
+          "zywnosc_dokladnie": 6.08
+        },
+        {
+          "stan": "ruch",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "normal",
+          "zywnosc_setne": 800,
+          "zywnosc_dokladnie": 8
+        },
+        {
+          "stan": "ruch",
+          "terytorium": "poza",
+          "poziom_trudnosci": "normal",
+          "zywnosc_setne": 1600,
+          "zywnosc_dokladnie": 16
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "normal",
+          "zywnosc_setne": 400,
+          "zywnosc_dokladnie": 4
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "poza",
+          "poziom_trudnosci": "normal",
+          "zywnosc_setne": 800,
+          "zywnosc_dokladnie": 8
+        },
+        {
+          "stan": "ruch",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "hard",
+          "zywnosc_setne": 800,
+          "zywnosc_dokladnie": 8
+        },
+        {
+          "stan": "ruch",
+          "terytorium": "poza",
+          "poziom_trudnosci": "hard",
+          "zywnosc_setne": 1600,
+          "zywnosc_dokladnie": 16
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "hard",
+          "zywnosc_setne": 248,
+          "zywnosc_dokladnie": 2.48
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "poza",
+          "poziom_trudnosci": "hard",
+          "zywnosc_setne": 496,
+          "zywnosc_dokladnie": 4.96
+        }
+      ]
+    },
+    {
+      "jednostka": "Rydwan konny",
+      "epoka": "Brąz",
+      "zywnosc_baza_tabela": 2,
+      "wartosci": [
+        {
+          "stan": "ruch",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "easy",
+          "zywnosc_setne": 800,
+          "zywnosc_dokladnie": 8
+        },
+        {
+          "stan": "ruch",
+          "terytorium": "poza",
+          "poziom_trudnosci": "easy",
+          "zywnosc_setne": 1600,
+          "zywnosc_dokladnie": 16
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "easy",
+          "zywnosc_setne": 304,
+          "zywnosc_dokladnie": 3.04
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "poza",
+          "poziom_trudnosci": "easy",
+          "zywnosc_setne": 608,
+          "zywnosc_dokladnie": 6.08
+        },
+        {
+          "stan": "ruch",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "normal",
+          "zywnosc_setne": 800,
+          "zywnosc_dokladnie": 8
+        },
+        {
+          "stan": "ruch",
+          "terytorium": "poza",
+          "poziom_trudnosci": "normal",
+          "zywnosc_setne": 1600,
+          "zywnosc_dokladnie": 16
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "normal",
+          "zywnosc_setne": 400,
+          "zywnosc_dokladnie": 4
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "poza",
+          "poziom_trudnosci": "normal",
+          "zywnosc_setne": 800,
+          "zywnosc_dokladnie": 8
+        },
+        {
+          "stan": "ruch",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "hard",
+          "zywnosc_setne": 800,
+          "zywnosc_dokladnie": 8
+        },
+        {
+          "stan": "ruch",
+          "terytorium": "poza",
+          "poziom_trudnosci": "hard",
+          "zywnosc_setne": 1600,
+          "zywnosc_dokladnie": 16
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "hard",
+          "zywnosc_setne": 248,
+          "zywnosc_dokladnie": 2.48
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "poza",
+          "poziom_trudnosci": "hard",
+          "zywnosc_setne": 496,
+          "zywnosc_dokladnie": 4.96
+        }
+      ]
+    },
+    {
+      "jednostka": "Łucznik egipski",
+      "epoka": "Kamień",
+      "zywnosc_baza_tabela": 1,
+      "wartosci": [
+        {
+          "stan": "ruch",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "easy",
+          "zywnosc_setne": 400,
+          "zywnosc_dokladnie": 4
+        },
+        {
+          "stan": "ruch",
+          "terytorium": "poza",
+          "poziom_trudnosci": "easy",
+          "zywnosc_setne": 800,
+          "zywnosc_dokladnie": 8
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "easy",
+          "zywnosc_setne": 152,
+          "zywnosc_dokladnie": 1.52
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "poza",
+          "poziom_trudnosci": "easy",
+          "zywnosc_setne": 304,
+          "zywnosc_dokladnie": 3.04
+        },
+        {
+          "stan": "ruch",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "normal",
+          "zywnosc_setne": 400,
+          "zywnosc_dokladnie": 4
+        },
+        {
+          "stan": "ruch",
+          "terytorium": "poza",
+          "poziom_trudnosci": "normal",
+          "zywnosc_setne": 800,
+          "zywnosc_dokladnie": 8
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "normal",
+          "zywnosc_setne": 200,
+          "zywnosc_dokladnie": 2
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "poza",
+          "poziom_trudnosci": "normal",
+          "zywnosc_setne": 400,
+          "zywnosc_dokladnie": 4
+        },
+        {
+          "stan": "ruch",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "hard",
+          "zywnosc_setne": 400,
+          "zywnosc_dokladnie": 4
+        },
+        {
+          "stan": "ruch",
+          "terytorium": "poza",
+          "poziom_trudnosci": "hard",
+          "zywnosc_setne": 800,
+          "zywnosc_dokladnie": 8
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "hard",
+          "zywnosc_setne": 124,
+          "zywnosc_dokladnie": 1.24
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "poza",
+          "poziom_trudnosci": "hard",
+          "zywnosc_setne": 248,
+          "zywnosc_dokladnie": 2.48
+        }
+      ]
+    },
+    {
+      "jednostka": "Rydwan egipski",
+      "epoka": "Brąz",
+      "zywnosc_baza_tabela": 2,
+      "wartosci": [
+        {
+          "stan": "ruch",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "easy",
+          "zywnosc_setne": 800,
+          "zywnosc_dokladnie": 8
+        },
+        {
+          "stan": "ruch",
+          "terytorium": "poza",
+          "poziom_trudnosci": "easy",
+          "zywnosc_setne": 1600,
+          "zywnosc_dokladnie": 16
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "easy",
+          "zywnosc_setne": 304,
+          "zywnosc_dokladnie": 3.04
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "poza",
+          "poziom_trudnosci": "easy",
+          "zywnosc_setne": 608,
+          "zywnosc_dokladnie": 6.08
+        },
+        {
+          "stan": "ruch",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "normal",
+          "zywnosc_setne": 800,
+          "zywnosc_dokladnie": 8
+        },
+        {
+          "stan": "ruch",
+          "terytorium": "poza",
+          "poziom_trudnosci": "normal",
+          "zywnosc_setne": 1600,
+          "zywnosc_dokladnie": 16
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "normal",
+          "zywnosc_setne": 400,
+          "zywnosc_dokladnie": 4
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "poza",
+          "poziom_trudnosci": "normal",
+          "zywnosc_setne": 800,
+          "zywnosc_dokladnie": 8
+        },
+        {
+          "stan": "ruch",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "hard",
+          "zywnosc_setne": 800,
+          "zywnosc_dokladnie": 8
+        },
+        {
+          "stan": "ruch",
+          "terytorium": "poza",
+          "poziom_trudnosci": "hard",
+          "zywnosc_setne": 1600,
+          "zywnosc_dokladnie": 16
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "hard",
+          "zywnosc_setne": 248,
+          "zywnosc_dokladnie": 2.48
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "poza",
+          "poziom_trudnosci": "hard",
+          "zywnosc_setne": 496,
+          "zywnosc_dokladnie": 4.96
+        }
+      ]
+    },
+    {
+      "jednostka": "Wojownik z khopesh",
+      "epoka": "Brąz",
+      "zywnosc_baza_tabela": 2,
+      "wartosci": [
+        {
+          "stan": "ruch",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "easy",
+          "zywnosc_setne": 800,
+          "zywnosc_dokladnie": 8
+        },
+        {
+          "stan": "ruch",
+          "terytorium": "poza",
+          "poziom_trudnosci": "easy",
+          "zywnosc_setne": 1600,
+          "zywnosc_dokladnie": 16
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "easy",
+          "zywnosc_setne": 304,
+          "zywnosc_dokladnie": 3.04
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "poza",
+          "poziom_trudnosci": "easy",
+          "zywnosc_setne": 608,
+          "zywnosc_dokladnie": 6.08
+        },
+        {
+          "stan": "ruch",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "normal",
+          "zywnosc_setne": 800,
+          "zywnosc_dokladnie": 8
+        },
+        {
+          "stan": "ruch",
+          "terytorium": "poza",
+          "poziom_trudnosci": "normal",
+          "zywnosc_setne": 1600,
+          "zywnosc_dokladnie": 16
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "normal",
+          "zywnosc_setne": 400,
+          "zywnosc_dokladnie": 4
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "poza",
+          "poziom_trudnosci": "normal",
+          "zywnosc_setne": 800,
+          "zywnosc_dokladnie": 8
+        },
+        {
+          "stan": "ruch",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "hard",
+          "zywnosc_setne": 800,
+          "zywnosc_dokladnie": 8
+        },
+        {
+          "stan": "ruch",
+          "terytorium": "poza",
+          "poziom_trudnosci": "hard",
+          "zywnosc_setne": 1600,
+          "zywnosc_dokladnie": 16
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "hard",
+          "zywnosc_setne": 248,
+          "zywnosc_dokladnie": 2.48
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "poza",
+          "poziom_trudnosci": "hard",
+          "zywnosc_setne": 496,
+          "zywnosc_dokladnie": 4.96
+        }
+      ]
+    },
+    {
+      "jednostka": "Medżaj (Gwardia Faraona)",
+      "epoka": "Brąz",
+      "zywnosc_baza_tabela": 2,
+      "wartosci": [
+        {
+          "stan": "ruch",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "easy",
+          "zywnosc_setne": 800,
+          "zywnosc_dokladnie": 8
+        },
+        {
+          "stan": "ruch",
+          "terytorium": "poza",
+          "poziom_trudnosci": "easy",
+          "zywnosc_setne": 1600,
+          "zywnosc_dokladnie": 16
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "easy",
+          "zywnosc_setne": 304,
+          "zywnosc_dokladnie": 3.04
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "poza",
+          "poziom_trudnosci": "easy",
+          "zywnosc_setne": 608,
+          "zywnosc_dokladnie": 6.08
+        },
+        {
+          "stan": "ruch",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "normal",
+          "zywnosc_setne": 800,
+          "zywnosc_dokladnie": 8
+        },
+        {
+          "stan": "ruch",
+          "terytorium": "poza",
+          "poziom_trudnosci": "normal",
+          "zywnosc_setne": 1600,
+          "zywnosc_dokladnie": 16
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "normal",
+          "zywnosc_setne": 400,
+          "zywnosc_dokladnie": 4
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "poza",
+          "poziom_trudnosci": "normal",
+          "zywnosc_setne": 800,
+          "zywnosc_dokladnie": 8
+        },
+        {
+          "stan": "ruch",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "hard",
+          "zywnosc_setne": 800,
+          "zywnosc_dokladnie": 8
+        },
+        {
+          "stan": "ruch",
+          "terytorium": "poza",
+          "poziom_trudnosci": "hard",
+          "zywnosc_setne": 1600,
+          "zywnosc_dokladnie": 16
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "hard",
+          "zywnosc_setne": 248,
+          "zywnosc_dokladnie": 2.48
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "poza",
+          "poziom_trudnosci": "hard",
+          "zywnosc_setne": 496,
+          "zywnosc_dokladnie": 4.96
+        }
+      ]
+    },
+    {
+      "jednostka": "Łucznik nubijski",
+      "epoka": "Brąz",
+      "zywnosc_baza_tabela": 2,
+      "wartosci": [
+        {
+          "stan": "ruch",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "easy",
+          "zywnosc_setne": 800,
+          "zywnosc_dokladnie": 8
+        },
+        {
+          "stan": "ruch",
+          "terytorium": "poza",
+          "poziom_trudnosci": "easy",
+          "zywnosc_setne": 1600,
+          "zywnosc_dokladnie": 16
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "easy",
+          "zywnosc_setne": 304,
+          "zywnosc_dokladnie": 3.04
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "poza",
+          "poziom_trudnosci": "easy",
+          "zywnosc_setne": 608,
+          "zywnosc_dokladnie": 6.08
+        },
+        {
+          "stan": "ruch",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "normal",
+          "zywnosc_setne": 800,
+          "zywnosc_dokladnie": 8
+        },
+        {
+          "stan": "ruch",
+          "terytorium": "poza",
+          "poziom_trudnosci": "normal",
+          "zywnosc_setne": 1600,
+          "zywnosc_dokladnie": 16
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "normal",
+          "zywnosc_setne": 400,
+          "zywnosc_dokladnie": 4
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "poza",
+          "poziom_trudnosci": "normal",
+          "zywnosc_setne": 800,
+          "zywnosc_dokladnie": 8
+        },
+        {
+          "stan": "ruch",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "hard",
+          "zywnosc_setne": 800,
+          "zywnosc_dokladnie": 8
+        },
+        {
+          "stan": "ruch",
+          "terytorium": "poza",
+          "poziom_trudnosci": "hard",
+          "zywnosc_setne": 1600,
+          "zywnosc_dokladnie": 16
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "hard",
+          "zywnosc_setne": 248,
+          "zywnosc_dokladnie": 2.48
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "poza",
+          "poziom_trudnosci": "hard",
+          "zywnosc_setne": 496,
+          "zywnosc_dokladnie": 4.96
+        }
+      ]
+    },
+    {
+      "jednostka": "Łucznik sumeryjski",
+      "epoka": "Kamień",
+      "zywnosc_baza_tabela": 1,
+      "wartosci": [
+        {
+          "stan": "ruch",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "easy",
+          "zywnosc_setne": 400,
+          "zywnosc_dokladnie": 4
+        },
+        {
+          "stan": "ruch",
+          "terytorium": "poza",
+          "poziom_trudnosci": "easy",
+          "zywnosc_setne": 800,
+          "zywnosc_dokladnie": 8
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "easy",
+          "zywnosc_setne": 152,
+          "zywnosc_dokladnie": 1.52
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "poza",
+          "poziom_trudnosci": "easy",
+          "zywnosc_setne": 304,
+          "zywnosc_dokladnie": 3.04
+        },
+        {
+          "stan": "ruch",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "normal",
+          "zywnosc_setne": 400,
+          "zywnosc_dokladnie": 4
+        },
+        {
+          "stan": "ruch",
+          "terytorium": "poza",
+          "poziom_trudnosci": "normal",
+          "zywnosc_setne": 800,
+          "zywnosc_dokladnie": 8
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "normal",
+          "zywnosc_setne": 200,
+          "zywnosc_dokladnie": 2
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "poza",
+          "poziom_trudnosci": "normal",
+          "zywnosc_setne": 400,
+          "zywnosc_dokladnie": 4
+        },
+        {
+          "stan": "ruch",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "hard",
+          "zywnosc_setne": 400,
+          "zywnosc_dokladnie": 4
+        },
+        {
+          "stan": "ruch",
+          "terytorium": "poza",
+          "poziom_trudnosci": "hard",
+          "zywnosc_setne": 800,
+          "zywnosc_dokladnie": 8
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "hard",
+          "zywnosc_setne": 124,
+          "zywnosc_dokladnie": 1.24
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "poza",
+          "poziom_trudnosci": "hard",
+          "zywnosc_setne": 248,
+          "zywnosc_dokladnie": 2.48
+        }
+      ]
+    },
+    {
+      "jednostka": "Rydwan sumeryjski",
+      "epoka": "Brąz",
+      "zywnosc_baza_tabela": 2,
+      "wartosci": [
+        {
+          "stan": "ruch",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "easy",
+          "zywnosc_setne": 800,
+          "zywnosc_dokladnie": 8
+        },
+        {
+          "stan": "ruch",
+          "terytorium": "poza",
+          "poziom_trudnosci": "easy",
+          "zywnosc_setne": 1600,
+          "zywnosc_dokladnie": 16
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "easy",
+          "zywnosc_setne": 304,
+          "zywnosc_dokladnie": 3.04
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "poza",
+          "poziom_trudnosci": "easy",
+          "zywnosc_setne": 608,
+          "zywnosc_dokladnie": 6.08
+        },
+        {
+          "stan": "ruch",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "normal",
+          "zywnosc_setne": 800,
+          "zywnosc_dokladnie": 8
+        },
+        {
+          "stan": "ruch",
+          "terytorium": "poza",
+          "poziom_trudnosci": "normal",
+          "zywnosc_setne": 1600,
+          "zywnosc_dokladnie": 16
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "normal",
+          "zywnosc_setne": 400,
+          "zywnosc_dokladnie": 4
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "poza",
+          "poziom_trudnosci": "normal",
+          "zywnosc_setne": 800,
+          "zywnosc_dokladnie": 8
+        },
+        {
+          "stan": "ruch",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "hard",
+          "zywnosc_setne": 800,
+          "zywnosc_dokladnie": 8
+        },
+        {
+          "stan": "ruch",
+          "terytorium": "poza",
+          "poziom_trudnosci": "hard",
+          "zywnosc_setne": 1600,
+          "zywnosc_dokladnie": 16
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "hard",
+          "zywnosc_setne": 248,
+          "zywnosc_dokladnie": 2.48
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "poza",
+          "poziom_trudnosci": "hard",
+          "zywnosc_setne": 496,
+          "zywnosc_dokladnie": 4.96
+        }
+      ]
+    },
+    {
+      "jednostka": "Włócznik sumeryjski",
+      "epoka": "Brąz",
+      "zywnosc_baza_tabela": 2,
+      "wartosci": [
+        {
+          "stan": "ruch",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "easy",
+          "zywnosc_setne": 800,
+          "zywnosc_dokladnie": 8
+        },
+        {
+          "stan": "ruch",
+          "terytorium": "poza",
+          "poziom_trudnosci": "easy",
+          "zywnosc_setne": 1600,
+          "zywnosc_dokladnie": 16
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "easy",
+          "zywnosc_setne": 304,
+          "zywnosc_dokladnie": 3.04
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "poza",
+          "poziom_trudnosci": "easy",
+          "zywnosc_setne": 608,
+          "zywnosc_dokladnie": 6.08
+        },
+        {
+          "stan": "ruch",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "normal",
+          "zywnosc_setne": 800,
+          "zywnosc_dokladnie": 8
+        },
+        {
+          "stan": "ruch",
+          "terytorium": "poza",
+          "poziom_trudnosci": "normal",
+          "zywnosc_setne": 1600,
+          "zywnosc_dokladnie": 16
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "normal",
+          "zywnosc_setne": 400,
+          "zywnosc_dokladnie": 4
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "poza",
+          "poziom_trudnosci": "normal",
+          "zywnosc_setne": 800,
+          "zywnosc_dokladnie": 8
+        },
+        {
+          "stan": "ruch",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "hard",
+          "zywnosc_setne": 800,
+          "zywnosc_dokladnie": 8
+        },
+        {
+          "stan": "ruch",
+          "terytorium": "poza",
+          "poziom_trudnosci": "hard",
+          "zywnosc_setne": 1600,
+          "zywnosc_dokladnie": 16
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "hard",
+          "zywnosc_setne": 248,
+          "zywnosc_dokladnie": 2.48
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "poza",
+          "poziom_trudnosci": "hard",
+          "zywnosc_setne": 496,
+          "zywnosc_dokladnie": 4.96
+        }
+      ]
+    },
+    {
+      "jednostka": "Gwardia Królewska Sumeru",
+      "epoka": "Brąz",
+      "zywnosc_baza_tabela": 2,
+      "wartosci": [
+        {
+          "stan": "ruch",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "easy",
+          "zywnosc_setne": 800,
+          "zywnosc_dokladnie": 8
+        },
+        {
+          "stan": "ruch",
+          "terytorium": "poza",
+          "poziom_trudnosci": "easy",
+          "zywnosc_setne": 1600,
+          "zywnosc_dokladnie": 16
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "easy",
+          "zywnosc_setne": 304,
+          "zywnosc_dokladnie": 3.04
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "poza",
+          "poziom_trudnosci": "easy",
+          "zywnosc_setne": 608,
+          "zywnosc_dokladnie": 6.08
+        },
+        {
+          "stan": "ruch",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "normal",
+          "zywnosc_setne": 800,
+          "zywnosc_dokladnie": 8
+        },
+        {
+          "stan": "ruch",
+          "terytorium": "poza",
+          "poziom_trudnosci": "normal",
+          "zywnosc_setne": 1600,
+          "zywnosc_dokladnie": 16
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "normal",
+          "zywnosc_setne": 400,
+          "zywnosc_dokladnie": 4
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "poza",
+          "poziom_trudnosci": "normal",
+          "zywnosc_setne": 800,
+          "zywnosc_dokladnie": 8
+        },
+        {
+          "stan": "ruch",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "hard",
+          "zywnosc_setne": 800,
+          "zywnosc_dokladnie": 8
+        },
+        {
+          "stan": "ruch",
+          "terytorium": "poza",
+          "poziom_trudnosci": "hard",
+          "zywnosc_setne": 1600,
+          "zywnosc_dokladnie": 16
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "hard",
+          "zywnosc_setne": 248,
+          "zywnosc_dokladnie": 2.48
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "poza",
+          "poziom_trudnosci": "hard",
+          "zywnosc_setne": 496,
+          "zywnosc_dokladnie": 4.96
+        }
+      ]
+    },
+    {
+      "jednostka": "Wojownik mykeński",
+      "epoka": "Brąz",
+      "zywnosc_baza_tabela": 2,
+      "wartosci": [
+        {
+          "stan": "ruch",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "easy",
+          "zywnosc_setne": 800,
+          "zywnosc_dokladnie": 8
+        },
+        {
+          "stan": "ruch",
+          "terytorium": "poza",
+          "poziom_trudnosci": "easy",
+          "zywnosc_setne": 1600,
+          "zywnosc_dokladnie": 16
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "easy",
+          "zywnosc_setne": 304,
+          "zywnosc_dokladnie": 3.04
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "poza",
+          "poziom_trudnosci": "easy",
+          "zywnosc_setne": 608,
+          "zywnosc_dokladnie": 6.08
+        },
+        {
+          "stan": "ruch",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "normal",
+          "zywnosc_setne": 800,
+          "zywnosc_dokladnie": 8
+        },
+        {
+          "stan": "ruch",
+          "terytorium": "poza",
+          "poziom_trudnosci": "normal",
+          "zywnosc_setne": 1600,
+          "zywnosc_dokladnie": 16
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "normal",
+          "zywnosc_setne": 400,
+          "zywnosc_dokladnie": 4
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "poza",
+          "poziom_trudnosci": "normal",
+          "zywnosc_setne": 800,
+          "zywnosc_dokladnie": 8
+        },
+        {
+          "stan": "ruch",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "hard",
+          "zywnosc_setne": 800,
+          "zywnosc_dokladnie": 8
+        },
+        {
+          "stan": "ruch",
+          "terytorium": "poza",
+          "poziom_trudnosci": "hard",
+          "zywnosc_setne": 1600,
+          "zywnosc_dokladnie": 16
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "hard",
+          "zywnosc_setne": 248,
+          "zywnosc_dokladnie": 2.48
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "poza",
+          "poziom_trudnosci": "hard",
+          "zywnosc_setne": 496,
+          "zywnosc_dokladnie": 4.96
+        }
+      ]
+    },
+    {
+      "jednostka": "Rydwan mykeński",
+      "epoka": "Brąz",
+      "zywnosc_baza_tabela": 2,
+      "wartosci": [
+        {
+          "stan": "ruch",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "easy",
+          "zywnosc_setne": 800,
+          "zywnosc_dokladnie": 8
+        },
+        {
+          "stan": "ruch",
+          "terytorium": "poza",
+          "poziom_trudnosci": "easy",
+          "zywnosc_setne": 1600,
+          "zywnosc_dokladnie": 16
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "easy",
+          "zywnosc_setne": 304,
+          "zywnosc_dokladnie": 3.04
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "poza",
+          "poziom_trudnosci": "easy",
+          "zywnosc_setne": 608,
+          "zywnosc_dokladnie": 6.08
+        },
+        {
+          "stan": "ruch",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "normal",
+          "zywnosc_setne": 800,
+          "zywnosc_dokladnie": 8
+        },
+        {
+          "stan": "ruch",
+          "terytorium": "poza",
+          "poziom_trudnosci": "normal",
+          "zywnosc_setne": 1600,
+          "zywnosc_dokladnie": 16
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "normal",
+          "zywnosc_setne": 400,
+          "zywnosc_dokladnie": 4
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "poza",
+          "poziom_trudnosci": "normal",
+          "zywnosc_setne": 800,
+          "zywnosc_dokladnie": 8
+        },
+        {
+          "stan": "ruch",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "hard",
+          "zywnosc_setne": 800,
+          "zywnosc_dokladnie": 8
+        },
+        {
+          "stan": "ruch",
+          "terytorium": "poza",
+          "poziom_trudnosci": "hard",
+          "zywnosc_setne": 1600,
+          "zywnosc_dokladnie": 16
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "hard",
+          "zywnosc_setne": 248,
+          "zywnosc_dokladnie": 2.48
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "poza",
+          "poziom_trudnosci": "hard",
+          "zywnosc_setne": 496,
+          "zywnosc_dokladnie": 4.96
+        }
+      ]
+    },
+    {
+      "jednostka": "Wojownik Sherden",
+      "epoka": "Brąz",
+      "zywnosc_baza_tabela": 2,
+      "wartosci": [
+        {
+          "stan": "ruch",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "easy",
+          "zywnosc_setne": 800,
+          "zywnosc_dokladnie": 8
+        },
+        {
+          "stan": "ruch",
+          "terytorium": "poza",
+          "poziom_trudnosci": "easy",
+          "zywnosc_setne": 1600,
+          "zywnosc_dokladnie": 16
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "easy",
+          "zywnosc_setne": 304,
+          "zywnosc_dokladnie": 3.04
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "poza",
+          "poziom_trudnosci": "easy",
+          "zywnosc_setne": 608,
+          "zywnosc_dokladnie": 6.08
+        },
+        {
+          "stan": "ruch",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "normal",
+          "zywnosc_setne": 800,
+          "zywnosc_dokladnie": 8
+        },
+        {
+          "stan": "ruch",
+          "terytorium": "poza",
+          "poziom_trudnosci": "normal",
+          "zywnosc_setne": 1600,
+          "zywnosc_dokladnie": 16
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "normal",
+          "zywnosc_setne": 400,
+          "zywnosc_dokladnie": 4
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "poza",
+          "poziom_trudnosci": "normal",
+          "zywnosc_setne": 800,
+          "zywnosc_dokladnie": 8
+        },
+        {
+          "stan": "ruch",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "hard",
+          "zywnosc_setne": 800,
+          "zywnosc_dokladnie": 8
+        },
+        {
+          "stan": "ruch",
+          "terytorium": "poza",
+          "poziom_trudnosci": "hard",
+          "zywnosc_setne": 1600,
+          "zywnosc_dokladnie": 16
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "hard",
+          "zywnosc_setne": 248,
+          "zywnosc_dokladnie": 2.48
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "poza",
+          "poziom_trudnosci": "hard",
+          "zywnosc_setne": 496,
+          "zywnosc_dokladnie": 4.96
+        }
+      ]
+    },
+    {
+      "jednostka": "Halabardnik Shang",
+      "epoka": "Brąz",
+      "zywnosc_baza_tabela": 2,
+      "wartosci": [
+        {
+          "stan": "ruch",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "easy",
+          "zywnosc_setne": 800,
+          "zywnosc_dokladnie": 8
+        },
+        {
+          "stan": "ruch",
+          "terytorium": "poza",
+          "poziom_trudnosci": "easy",
+          "zywnosc_setne": 1600,
+          "zywnosc_dokladnie": 16
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "easy",
+          "zywnosc_setne": 304,
+          "zywnosc_dokladnie": 3.04
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "poza",
+          "poziom_trudnosci": "easy",
+          "zywnosc_setne": 608,
+          "zywnosc_dokladnie": 6.08
+        },
+        {
+          "stan": "ruch",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "normal",
+          "zywnosc_setne": 800,
+          "zywnosc_dokladnie": 8
+        },
+        {
+          "stan": "ruch",
+          "terytorium": "poza",
+          "poziom_trudnosci": "normal",
+          "zywnosc_setne": 1600,
+          "zywnosc_dokladnie": 16
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "normal",
+          "zywnosc_setne": 400,
+          "zywnosc_dokladnie": 4
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "poza",
+          "poziom_trudnosci": "normal",
+          "zywnosc_setne": 800,
+          "zywnosc_dokladnie": 8
+        },
+        {
+          "stan": "ruch",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "hard",
+          "zywnosc_setne": 800,
+          "zywnosc_dokladnie": 8
+        },
+        {
+          "stan": "ruch",
+          "terytorium": "poza",
+          "poziom_trudnosci": "hard",
+          "zywnosc_setne": 1600,
+          "zywnosc_dokladnie": 16
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "hard",
+          "zywnosc_setne": 248,
+          "zywnosc_dokladnie": 2.48
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "poza",
+          "poziom_trudnosci": "hard",
+          "zywnosc_setne": 496,
+          "zywnosc_dokladnie": 4.96
+        }
+      ]
+    },
+    {
+      "jednostka": "Rydwan Shang",
+      "epoka": "Brąz",
+      "zywnosc_baza_tabela": 2,
+      "wartosci": [
+        {
+          "stan": "ruch",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "easy",
+          "zywnosc_setne": 800,
+          "zywnosc_dokladnie": 8
+        },
+        {
+          "stan": "ruch",
+          "terytorium": "poza",
+          "poziom_trudnosci": "easy",
+          "zywnosc_setne": 1600,
+          "zywnosc_dokladnie": 16
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "easy",
+          "zywnosc_setne": 304,
+          "zywnosc_dokladnie": 3.04
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "poza",
+          "poziom_trudnosci": "easy",
+          "zywnosc_setne": 608,
+          "zywnosc_dokladnie": 6.08
+        },
+        {
+          "stan": "ruch",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "normal",
+          "zywnosc_setne": 800,
+          "zywnosc_dokladnie": 8
+        },
+        {
+          "stan": "ruch",
+          "terytorium": "poza",
+          "poziom_trudnosci": "normal",
+          "zywnosc_setne": 1600,
+          "zywnosc_dokladnie": 16
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "normal",
+          "zywnosc_setne": 400,
+          "zywnosc_dokladnie": 4
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "poza",
+          "poziom_trudnosci": "normal",
+          "zywnosc_setne": 800,
+          "zywnosc_dokladnie": 8
+        },
+        {
+          "stan": "ruch",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "hard",
+          "zywnosc_setne": 800,
+          "zywnosc_dokladnie": 8
+        },
+        {
+          "stan": "ruch",
+          "terytorium": "poza",
+          "poziom_trudnosci": "hard",
+          "zywnosc_setne": 1600,
+          "zywnosc_dokladnie": 16
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "hard",
+          "zywnosc_setne": 248,
+          "zywnosc_dokladnie": 2.48
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "poza",
+          "poziom_trudnosci": "hard",
+          "zywnosc_setne": 496,
+          "zywnosc_dokladnie": 4.96
+        }
+      ]
+    },
+    {
+      "jednostka": "Łucznik akadyjski",
+      "epoka": "Brąz",
+      "zywnosc_baza_tabela": 2,
+      "wartosci": [
+        {
+          "stan": "ruch",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "easy",
+          "zywnosc_setne": 800,
+          "zywnosc_dokladnie": 8
+        },
+        {
+          "stan": "ruch",
+          "terytorium": "poza",
+          "poziom_trudnosci": "easy",
+          "zywnosc_setne": 1600,
+          "zywnosc_dokladnie": 16
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "easy",
+          "zywnosc_setne": 304,
+          "zywnosc_dokladnie": 3.04
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "poza",
+          "poziom_trudnosci": "easy",
+          "zywnosc_setne": 608,
+          "zywnosc_dokladnie": 6.08
+        },
+        {
+          "stan": "ruch",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "normal",
+          "zywnosc_setne": 800,
+          "zywnosc_dokladnie": 8
+        },
+        {
+          "stan": "ruch",
+          "terytorium": "poza",
+          "poziom_trudnosci": "normal",
+          "zywnosc_setne": 1600,
+          "zywnosc_dokladnie": 16
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "normal",
+          "zywnosc_setne": 400,
+          "zywnosc_dokladnie": 4
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "poza",
+          "poziom_trudnosci": "normal",
+          "zywnosc_setne": 800,
+          "zywnosc_dokladnie": 8
+        },
+        {
+          "stan": "ruch",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "hard",
+          "zywnosc_setne": 800,
+          "zywnosc_dokladnie": 8
+        },
+        {
+          "stan": "ruch",
+          "terytorium": "poza",
+          "poziom_trudnosci": "hard",
+          "zywnosc_setne": 1600,
+          "zywnosc_dokladnie": 16
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "hard",
+          "zywnosc_setne": 248,
+          "zywnosc_dokladnie": 2.48
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "poza",
+          "poziom_trudnosci": "hard",
+          "zywnosc_setne": 496,
+          "zywnosc_dokladnie": 4.96
+        }
+      ]
+    },
+    {
+      "jednostka": "Gaesatae",
+      "epoka": "Żelazo",
+      "zywnosc_baza_tabela": 4,
+      "wartosci": [
+        {
+          "stan": "ruch",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "easy",
+          "zywnosc_setne": 1600,
+          "zywnosc_dokladnie": 16
+        },
+        {
+          "stan": "ruch",
+          "terytorium": "poza",
+          "poziom_trudnosci": "easy",
+          "zywnosc_setne": 3200,
+          "zywnosc_dokladnie": 32
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "easy",
+          "zywnosc_setne": 608,
+          "zywnosc_dokladnie": 6.08
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "poza",
+          "poziom_trudnosci": "easy",
+          "zywnosc_setne": 1216,
+          "zywnosc_dokladnie": 12.16
+        },
+        {
+          "stan": "ruch",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "normal",
+          "zywnosc_setne": 1600,
+          "zywnosc_dokladnie": 16
+        },
+        {
+          "stan": "ruch",
+          "terytorium": "poza",
+          "poziom_trudnosci": "normal",
+          "zywnosc_setne": 3200,
+          "zywnosc_dokladnie": 32
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "normal",
+          "zywnosc_setne": 800,
+          "zywnosc_dokladnie": 8
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "poza",
+          "poziom_trudnosci": "normal",
+          "zywnosc_setne": 1600,
+          "zywnosc_dokladnie": 16
+        },
+        {
+          "stan": "ruch",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "hard",
+          "zywnosc_setne": 1600,
+          "zywnosc_dokladnie": 16
+        },
+        {
+          "stan": "ruch",
+          "terytorium": "poza",
+          "poziom_trudnosci": "hard",
+          "zywnosc_setne": 3200,
+          "zywnosc_dokladnie": 32
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "hard",
+          "zywnosc_setne": 496,
+          "zywnosc_dokladnie": 4.96
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "poza",
+          "poziom_trudnosci": "hard",
+          "zywnosc_setne": 992,
+          "zywnosc_dokladnie": 9.92
+        }
+      ]
+    },
+    {
+      "jednostka": "Soldurii",
+      "epoka": "Żelazo",
+      "zywnosc_baza_tabela": 4,
+      "wartosci": [
+        {
+          "stan": "ruch",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "easy",
+          "zywnosc_setne": 1600,
+          "zywnosc_dokladnie": 16
+        },
+        {
+          "stan": "ruch",
+          "terytorium": "poza",
+          "poziom_trudnosci": "easy",
+          "zywnosc_setne": 3200,
+          "zywnosc_dokladnie": 32
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "easy",
+          "zywnosc_setne": 608,
+          "zywnosc_dokladnie": 6.08
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "poza",
+          "poziom_trudnosci": "easy",
+          "zywnosc_setne": 1216,
+          "zywnosc_dokladnie": 12.16
+        },
+        {
+          "stan": "ruch",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "normal",
+          "zywnosc_setne": 1600,
+          "zywnosc_dokladnie": 16
+        },
+        {
+          "stan": "ruch",
+          "terytorium": "poza",
+          "poziom_trudnosci": "normal",
+          "zywnosc_setne": 3200,
+          "zywnosc_dokladnie": 32
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "normal",
+          "zywnosc_setne": 800,
+          "zywnosc_dokladnie": 8
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "poza",
+          "poziom_trudnosci": "normal",
+          "zywnosc_setne": 1600,
+          "zywnosc_dokladnie": 16
+        },
+        {
+          "stan": "ruch",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "hard",
+          "zywnosc_setne": 1600,
+          "zywnosc_dokladnie": 16
+        },
+        {
+          "stan": "ruch",
+          "terytorium": "poza",
+          "poziom_trudnosci": "hard",
+          "zywnosc_setne": 3200,
+          "zywnosc_dokladnie": 32
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "hard",
+          "zywnosc_setne": 496,
+          "zywnosc_dokladnie": 4.96
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "poza",
+          "poziom_trudnosci": "hard",
+          "zywnosc_setne": 992,
+          "zywnosc_dokladnie": 9.92
+        }
+      ]
+    },
+    {
+      "jednostka": "Rydwan celtycki",
+      "epoka": "Żelazo",
+      "zywnosc_baza_tabela": 4,
+      "wartosci": [
+        {
+          "stan": "ruch",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "easy",
+          "zywnosc_setne": 1600,
+          "zywnosc_dokladnie": 16
+        },
+        {
+          "stan": "ruch",
+          "terytorium": "poza",
+          "poziom_trudnosci": "easy",
+          "zywnosc_setne": 3200,
+          "zywnosc_dokladnie": 32
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "easy",
+          "zywnosc_setne": 608,
+          "zywnosc_dokladnie": 6.08
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "poza",
+          "poziom_trudnosci": "easy",
+          "zywnosc_setne": 1216,
+          "zywnosc_dokladnie": 12.16
+        },
+        {
+          "stan": "ruch",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "normal",
+          "zywnosc_setne": 1600,
+          "zywnosc_dokladnie": 16
+        },
+        {
+          "stan": "ruch",
+          "terytorium": "poza",
+          "poziom_trudnosci": "normal",
+          "zywnosc_setne": 3200,
+          "zywnosc_dokladnie": 32
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "normal",
+          "zywnosc_setne": 800,
+          "zywnosc_dokladnie": 8
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "poza",
+          "poziom_trudnosci": "normal",
+          "zywnosc_setne": 1600,
+          "zywnosc_dokladnie": 16
+        },
+        {
+          "stan": "ruch",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "hard",
+          "zywnosc_setne": 1600,
+          "zywnosc_dokladnie": 16
+        },
+        {
+          "stan": "ruch",
+          "terytorium": "poza",
+          "poziom_trudnosci": "hard",
+          "zywnosc_setne": 3200,
+          "zywnosc_dokladnie": 32
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "hard",
+          "zywnosc_setne": 496,
+          "zywnosc_dokladnie": 4.96
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "poza",
+          "poziom_trudnosci": "hard",
+          "zywnosc_setne": 992,
+          "zywnosc_dokladnie": 9.92
+        }
+      ]
+    },
+    {
+      "jednostka": "Wojownik germański",
+      "epoka": "Żelazo",
+      "zywnosc_baza_tabela": 4,
+      "wartosci": [
+        {
+          "stan": "ruch",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "easy",
+          "zywnosc_setne": 1600,
+          "zywnosc_dokladnie": 16
+        },
+        {
+          "stan": "ruch",
+          "terytorium": "poza",
+          "poziom_trudnosci": "easy",
+          "zywnosc_setne": 3200,
+          "zywnosc_dokladnie": 32
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "easy",
+          "zywnosc_setne": 608,
+          "zywnosc_dokladnie": 6.08
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "poza",
+          "poziom_trudnosci": "easy",
+          "zywnosc_setne": 1216,
+          "zywnosc_dokladnie": 12.16
+        },
+        {
+          "stan": "ruch",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "normal",
+          "zywnosc_setne": 1600,
+          "zywnosc_dokladnie": 16
+        },
+        {
+          "stan": "ruch",
+          "terytorium": "poza",
+          "poziom_trudnosci": "normal",
+          "zywnosc_setne": 3200,
+          "zywnosc_dokladnie": 32
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "normal",
+          "zywnosc_setne": 800,
+          "zywnosc_dokladnie": 8
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "poza",
+          "poziom_trudnosci": "normal",
+          "zywnosc_setne": 1600,
+          "zywnosc_dokladnie": 16
+        },
+        {
+          "stan": "ruch",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "hard",
+          "zywnosc_setne": 1600,
+          "zywnosc_dokladnie": 16
+        },
+        {
+          "stan": "ruch",
+          "terytorium": "poza",
+          "poziom_trudnosci": "hard",
+          "zywnosc_setne": 3200,
+          "zywnosc_dokladnie": 32
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "hard",
+          "zywnosc_setne": 496,
+          "zywnosc_dokladnie": 4.96
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "poza",
+          "poziom_trudnosci": "hard",
+          "zywnosc_setne": 992,
+          "zywnosc_dokladnie": 9.92
+        }
+      ]
+    },
+    {
+      "jednostka": "Berserker germański",
+      "epoka": "Żelazo",
+      "zywnosc_baza_tabela": 4,
+      "wartosci": [
+        {
+          "stan": "ruch",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "easy",
+          "zywnosc_setne": 1600,
+          "zywnosc_dokladnie": 16
+        },
+        {
+          "stan": "ruch",
+          "terytorium": "poza",
+          "poziom_trudnosci": "easy",
+          "zywnosc_setne": 3200,
+          "zywnosc_dokladnie": 32
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "easy",
+          "zywnosc_setne": 608,
+          "zywnosc_dokladnie": 6.08
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "poza",
+          "poziom_trudnosci": "easy",
+          "zywnosc_setne": 1216,
+          "zywnosc_dokladnie": 12.16
+        },
+        {
+          "stan": "ruch",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "normal",
+          "zywnosc_setne": 1600,
+          "zywnosc_dokladnie": 16
+        },
+        {
+          "stan": "ruch",
+          "terytorium": "poza",
+          "poziom_trudnosci": "normal",
+          "zywnosc_setne": 3200,
+          "zywnosc_dokladnie": 32
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "normal",
+          "zywnosc_setne": 800,
+          "zywnosc_dokladnie": 8
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "poza",
+          "poziom_trudnosci": "normal",
+          "zywnosc_setne": 1600,
+          "zywnosc_dokladnie": 16
+        },
+        {
+          "stan": "ruch",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "hard",
+          "zywnosc_setne": 1600,
+          "zywnosc_dokladnie": 16
+        },
+        {
+          "stan": "ruch",
+          "terytorium": "poza",
+          "poziom_trudnosci": "hard",
+          "zywnosc_setne": 3200,
+          "zywnosc_dokladnie": 32
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "hard",
+          "zywnosc_setne": 496,
+          "zywnosc_dokladnie": 4.96
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "poza",
+          "poziom_trudnosci": "hard",
+          "zywnosc_setne": 992,
+          "zywnosc_dokladnie": 9.92
+        }
+      ]
+    },
+    {
+      "jednostka": "Taran",
+      "epoka": "Kamień",
+      "zywnosc_baza_tabela": 1,
+      "wartosci": [
+        {
+          "stan": "ruch",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "easy",
+          "zywnosc_setne": 400,
+          "zywnosc_dokladnie": 4
+        },
+        {
+          "stan": "ruch",
+          "terytorium": "poza",
+          "poziom_trudnosci": "easy",
+          "zywnosc_setne": 800,
+          "zywnosc_dokladnie": 8
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "easy",
+          "zywnosc_setne": 152,
+          "zywnosc_dokladnie": 1.52
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "poza",
+          "poziom_trudnosci": "easy",
+          "zywnosc_setne": 304,
+          "zywnosc_dokladnie": 3.04
+        },
+        {
+          "stan": "ruch",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "normal",
+          "zywnosc_setne": 400,
+          "zywnosc_dokladnie": 4
+        },
+        {
+          "stan": "ruch",
+          "terytorium": "poza",
+          "poziom_trudnosci": "normal",
+          "zywnosc_setne": 800,
+          "zywnosc_dokladnie": 8
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "normal",
+          "zywnosc_setne": 200,
+          "zywnosc_dokladnie": 2
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "poza",
+          "poziom_trudnosci": "normal",
+          "zywnosc_setne": 400,
+          "zywnosc_dokladnie": 4
+        },
+        {
+          "stan": "ruch",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "hard",
+          "zywnosc_setne": 400,
+          "zywnosc_dokladnie": 4
+        },
+        {
+          "stan": "ruch",
+          "terytorium": "poza",
+          "poziom_trudnosci": "hard",
+          "zywnosc_setne": 800,
+          "zywnosc_dokladnie": 8
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "hard",
+          "zywnosc_setne": 124,
+          "zywnosc_dokladnie": 1.24
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "poza",
+          "poziom_trudnosci": "hard",
+          "zywnosc_setne": 248,
+          "zywnosc_dokladnie": 2.48
+        }
+      ]
+    },
+    {
+      "jednostka": "Taran okuty",
+      "epoka": "Brąz",
+      "zywnosc_baza_tabela": 2,
+      "wartosci": [
+        {
+          "stan": "ruch",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "easy",
+          "zywnosc_setne": 800,
+          "zywnosc_dokladnie": 8
+        },
+        {
+          "stan": "ruch",
+          "terytorium": "poza",
+          "poziom_trudnosci": "easy",
+          "zywnosc_setne": 1600,
+          "zywnosc_dokladnie": 16
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "easy",
+          "zywnosc_setne": 304,
+          "zywnosc_dokladnie": 3.04
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "poza",
+          "poziom_trudnosci": "easy",
+          "zywnosc_setne": 608,
+          "zywnosc_dokladnie": 6.08
+        },
+        {
+          "stan": "ruch",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "normal",
+          "zywnosc_setne": 800,
+          "zywnosc_dokladnie": 8
+        },
+        {
+          "stan": "ruch",
+          "terytorium": "poza",
+          "poziom_trudnosci": "normal",
+          "zywnosc_setne": 1600,
+          "zywnosc_dokladnie": 16
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "normal",
+          "zywnosc_setne": 400,
+          "zywnosc_dokladnie": 4
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "poza",
+          "poziom_trudnosci": "normal",
+          "zywnosc_setne": 800,
+          "zywnosc_dokladnie": 8
+        },
+        {
+          "stan": "ruch",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "hard",
+          "zywnosc_setne": 800,
+          "zywnosc_dokladnie": 8
+        },
+        {
+          "stan": "ruch",
+          "terytorium": "poza",
+          "poziom_trudnosci": "hard",
+          "zywnosc_setne": 1600,
+          "zywnosc_dokladnie": 16
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "hard",
+          "zywnosc_setne": 248,
+          "zywnosc_dokladnie": 2.48
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "poza",
+          "poziom_trudnosci": "hard",
+          "zywnosc_setne": 496,
+          "zywnosc_dokladnie": 4.96
+        }
+      ]
+    },
+    {
+      "jednostka": "Katapulta",
+      "epoka": "Żelazo",
+      "zywnosc_baza_tabela": 4,
+      "wartosci": [
+        {
+          "stan": "ruch",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "easy",
+          "zywnosc_setne": 1600,
+          "zywnosc_dokladnie": 16
+        },
+        {
+          "stan": "ruch",
+          "terytorium": "poza",
+          "poziom_trudnosci": "easy",
+          "zywnosc_setne": 3200,
+          "zywnosc_dokladnie": 32
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "easy",
+          "zywnosc_setne": 608,
+          "zywnosc_dokladnie": 6.08
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "poza",
+          "poziom_trudnosci": "easy",
+          "zywnosc_setne": 1216,
+          "zywnosc_dokladnie": 12.16
+        },
+        {
+          "stan": "ruch",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "normal",
+          "zywnosc_setne": 1600,
+          "zywnosc_dokladnie": 16
+        },
+        {
+          "stan": "ruch",
+          "terytorium": "poza",
+          "poziom_trudnosci": "normal",
+          "zywnosc_setne": 3200,
+          "zywnosc_dokladnie": 32
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "normal",
+          "zywnosc_setne": 800,
+          "zywnosc_dokladnie": 8
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "poza",
+          "poziom_trudnosci": "normal",
+          "zywnosc_setne": 1600,
+          "zywnosc_dokladnie": 16
+        },
+        {
+          "stan": "ruch",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "hard",
+          "zywnosc_setne": 1600,
+          "zywnosc_dokladnie": 16
+        },
+        {
+          "stan": "ruch",
+          "terytorium": "poza",
+          "poziom_trudnosci": "hard",
+          "zywnosc_setne": 3200,
+          "zywnosc_dokladnie": 32
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "hard",
+          "zywnosc_setne": 496,
+          "zywnosc_dokladnie": 4.96
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "poza",
+          "poziom_trudnosci": "hard",
+          "zywnosc_setne": 992,
+          "zywnosc_dokladnie": 9.92
+        }
+      ]
+    },
+    {
+      "jednostka": "Wieża oblężnicza",
+      "epoka": "Brąz",
+      "zywnosc_baza_tabela": 2,
+      "wartosci": [
+        {
+          "stan": "ruch",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "easy",
+          "zywnosc_setne": 800,
+          "zywnosc_dokladnie": 8
+        },
+        {
+          "stan": "ruch",
+          "terytorium": "poza",
+          "poziom_trudnosci": "easy",
+          "zywnosc_setne": 1600,
+          "zywnosc_dokladnie": 16
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "easy",
+          "zywnosc_setne": 304,
+          "zywnosc_dokladnie": 3.04
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "poza",
+          "poziom_trudnosci": "easy",
+          "zywnosc_setne": 608,
+          "zywnosc_dokladnie": 6.08
+        },
+        {
+          "stan": "ruch",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "normal",
+          "zywnosc_setne": 800,
+          "zywnosc_dokladnie": 8
+        },
+        {
+          "stan": "ruch",
+          "terytorium": "poza",
+          "poziom_trudnosci": "normal",
+          "zywnosc_setne": 1600,
+          "zywnosc_dokladnie": 16
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "normal",
+          "zywnosc_setne": 400,
+          "zywnosc_dokladnie": 4
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "poza",
+          "poziom_trudnosci": "normal",
+          "zywnosc_setne": 800,
+          "zywnosc_dokladnie": 8
+        },
+        {
+          "stan": "ruch",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "hard",
+          "zywnosc_setne": 800,
+          "zywnosc_dokladnie": 8
+        },
+        {
+          "stan": "ruch",
+          "terytorium": "poza",
+          "poziom_trudnosci": "hard",
+          "zywnosc_setne": 1600,
+          "zywnosc_dokladnie": 16
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "hard",
+          "zywnosc_setne": 248,
+          "zywnosc_dokladnie": 2.48
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "poza",
+          "poziom_trudnosci": "hard",
+          "zywnosc_setne": 496,
+          "zywnosc_dokladnie": 4.96
+        }
+      ]
+    },
+    {
+      "jednostka": "Wojownik tyrreński",
+      "epoka": "Brąz",
+      "zywnosc_baza_tabela": 2,
+      "wartosci": [
+        {
+          "stan": "ruch",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "easy",
+          "zywnosc_setne": 800,
+          "zywnosc_dokladnie": 8
+        },
+        {
+          "stan": "ruch",
+          "terytorium": "poza",
+          "poziom_trudnosci": "easy",
+          "zywnosc_setne": 1600,
+          "zywnosc_dokladnie": 16
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "easy",
+          "zywnosc_setne": 304,
+          "zywnosc_dokladnie": 3.04
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "poza",
+          "poziom_trudnosci": "easy",
+          "zywnosc_setne": 608,
+          "zywnosc_dokladnie": 6.08
+        },
+        {
+          "stan": "ruch",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "normal",
+          "zywnosc_setne": 800,
+          "zywnosc_dokladnie": 8
+        },
+        {
+          "stan": "ruch",
+          "terytorium": "poza",
+          "poziom_trudnosci": "normal",
+          "zywnosc_setne": 1600,
+          "zywnosc_dokladnie": 16
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "normal",
+          "zywnosc_setne": 400,
+          "zywnosc_dokladnie": 4
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "poza",
+          "poziom_trudnosci": "normal",
+          "zywnosc_setne": 800,
+          "zywnosc_dokladnie": 8
+        },
+        {
+          "stan": "ruch",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "hard",
+          "zywnosc_setne": 800,
+          "zywnosc_dokladnie": 8
+        },
+        {
+          "stan": "ruch",
+          "terytorium": "poza",
+          "poziom_trudnosci": "hard",
+          "zywnosc_setne": 1600,
+          "zywnosc_dokladnie": 16
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "hard",
+          "zywnosc_setne": 248,
+          "zywnosc_dokladnie": 2.48
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "poza",
+          "poziom_trudnosci": "hard",
+          "zywnosc_setne": 496,
+          "zywnosc_dokladnie": 4.96
+        }
+      ]
+    },
+    {
+      "jednostka": "Wojownik szekelesz",
+      "epoka": "Brąz",
+      "zywnosc_baza_tabela": 2,
+      "wartosci": [
+        {
+          "stan": "ruch",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "easy",
+          "zywnosc_setne": 800,
+          "zywnosc_dokladnie": 8
+        },
+        {
+          "stan": "ruch",
+          "terytorium": "poza",
+          "poziom_trudnosci": "easy",
+          "zywnosc_setne": 1600,
+          "zywnosc_dokladnie": 16
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "easy",
+          "zywnosc_setne": 304,
+          "zywnosc_dokladnie": 3.04
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "poza",
+          "poziom_trudnosci": "easy",
+          "zywnosc_setne": 608,
+          "zywnosc_dokladnie": 6.08
+        },
+        {
+          "stan": "ruch",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "normal",
+          "zywnosc_setne": 800,
+          "zywnosc_dokladnie": 8
+        },
+        {
+          "stan": "ruch",
+          "terytorium": "poza",
+          "poziom_trudnosci": "normal",
+          "zywnosc_setne": 1600,
+          "zywnosc_dokladnie": 16
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "normal",
+          "zywnosc_setne": 400,
+          "zywnosc_dokladnie": 4
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "poza",
+          "poziom_trudnosci": "normal",
+          "zywnosc_setne": 800,
+          "zywnosc_dokladnie": 8
+        },
+        {
+          "stan": "ruch",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "hard",
+          "zywnosc_setne": 800,
+          "zywnosc_dokladnie": 8
+        },
+        {
+          "stan": "ruch",
+          "terytorium": "poza",
+          "poziom_trudnosci": "hard",
+          "zywnosc_setne": 1600,
+          "zywnosc_dokladnie": 16
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "hard",
+          "zywnosc_setne": 248,
+          "zywnosc_dokladnie": 2.48
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "poza",
+          "poziom_trudnosci": "hard",
+          "zywnosc_setne": 496,
+          "zywnosc_dokladnie": 4.96
+        }
+      ]
+    },
+    {
+      "jednostka": "Konnica lancowa asyryjska",
+      "epoka": "Żelazo",
+      "zywnosc_baza_tabela": 4,
+      "wartosci": [
+        {
+          "stan": "ruch",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "easy",
+          "zywnosc_setne": 1600,
+          "zywnosc_dokladnie": 16
+        },
+        {
+          "stan": "ruch",
+          "terytorium": "poza",
+          "poziom_trudnosci": "easy",
+          "zywnosc_setne": 3200,
+          "zywnosc_dokladnie": 32
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "easy",
+          "zywnosc_setne": 608,
+          "zywnosc_dokladnie": 6.08
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "poza",
+          "poziom_trudnosci": "easy",
+          "zywnosc_setne": 1216,
+          "zywnosc_dokladnie": 12.16
+        },
+        {
+          "stan": "ruch",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "normal",
+          "zywnosc_setne": 1600,
+          "zywnosc_dokladnie": 16
+        },
+        {
+          "stan": "ruch",
+          "terytorium": "poza",
+          "poziom_trudnosci": "normal",
+          "zywnosc_setne": 3200,
+          "zywnosc_dokladnie": 32
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "normal",
+          "zywnosc_setne": 800,
+          "zywnosc_dokladnie": 8
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "poza",
+          "poziom_trudnosci": "normal",
+          "zywnosc_setne": 1600,
+          "zywnosc_dokladnie": 16
+        },
+        {
+          "stan": "ruch",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "hard",
+          "zywnosc_setne": 1600,
+          "zywnosc_dokladnie": 16
+        },
+        {
+          "stan": "ruch",
+          "terytorium": "poza",
+          "poziom_trudnosci": "hard",
+          "zywnosc_setne": 3200,
+          "zywnosc_dokladnie": 32
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "hard",
+          "zywnosc_setne": 496,
+          "zywnosc_dokladnie": 4.96
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "poza",
+          "poziom_trudnosci": "hard",
+          "zywnosc_setne": 992,
+          "zywnosc_dokladnie": 9.92
+        }
+      ]
+    },
+    {
+      "jednostka": "Konnica łucznicza asyryjska",
+      "epoka": "Żelazo",
+      "zywnosc_baza_tabela": 4,
+      "wartosci": [
+        {
+          "stan": "ruch",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "easy",
+          "zywnosc_setne": 1600,
+          "zywnosc_dokladnie": 16
+        },
+        {
+          "stan": "ruch",
+          "terytorium": "poza",
+          "poziom_trudnosci": "easy",
+          "zywnosc_setne": 3200,
+          "zywnosc_dokladnie": 32
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "easy",
+          "zywnosc_setne": 608,
+          "zywnosc_dokladnie": 6.08
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "poza",
+          "poziom_trudnosci": "easy",
+          "zywnosc_setne": 1216,
+          "zywnosc_dokladnie": 12.16
+        },
+        {
+          "stan": "ruch",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "normal",
+          "zywnosc_setne": 1600,
+          "zywnosc_dokladnie": 16
+        },
+        {
+          "stan": "ruch",
+          "terytorium": "poza",
+          "poziom_trudnosci": "normal",
+          "zywnosc_setne": 3200,
+          "zywnosc_dokladnie": 32
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "normal",
+          "zywnosc_setne": 800,
+          "zywnosc_dokladnie": 8
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "poza",
+          "poziom_trudnosci": "normal",
+          "zywnosc_setne": 1600,
+          "zywnosc_dokladnie": 16
+        },
+        {
+          "stan": "ruch",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "hard",
+          "zywnosc_setne": 1600,
+          "zywnosc_dokladnie": 16
+        },
+        {
+          "stan": "ruch",
+          "terytorium": "poza",
+          "poziom_trudnosci": "hard",
+          "zywnosc_setne": 3200,
+          "zywnosc_dokladnie": 32
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "hard",
+          "zywnosc_setne": 496,
+          "zywnosc_dokladnie": 4.96
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "poza",
+          "poziom_trudnosci": "hard",
+          "zywnosc_setne": 992,
+          "zywnosc_dokladnie": 9.92
+        }
+      ]
+    },
+    {
+      "jednostka": "Łucznik asyryjski",
+      "epoka": "Brąz",
+      "zywnosc_baza_tabela": 2,
+      "wartosci": [
+        {
+          "stan": "ruch",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "easy",
+          "zywnosc_setne": 800,
+          "zywnosc_dokladnie": 8
+        },
+        {
+          "stan": "ruch",
+          "terytorium": "poza",
+          "poziom_trudnosci": "easy",
+          "zywnosc_setne": 1600,
+          "zywnosc_dokladnie": 16
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "easy",
+          "zywnosc_setne": 304,
+          "zywnosc_dokladnie": 3.04
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "poza",
+          "poziom_trudnosci": "easy",
+          "zywnosc_setne": 608,
+          "zywnosc_dokladnie": 6.08
+        },
+        {
+          "stan": "ruch",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "normal",
+          "zywnosc_setne": 800,
+          "zywnosc_dokladnie": 8
+        },
+        {
+          "stan": "ruch",
+          "terytorium": "poza",
+          "poziom_trudnosci": "normal",
+          "zywnosc_setne": 1600,
+          "zywnosc_dokladnie": 16
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "normal",
+          "zywnosc_setne": 400,
+          "zywnosc_dokladnie": 4
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "poza",
+          "poziom_trudnosci": "normal",
+          "zywnosc_setne": 800,
+          "zywnosc_dokladnie": 8
+        },
+        {
+          "stan": "ruch",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "hard",
+          "zywnosc_setne": 800,
+          "zywnosc_dokladnie": 8
+        },
+        {
+          "stan": "ruch",
+          "terytorium": "poza",
+          "poziom_trudnosci": "hard",
+          "zywnosc_setne": 1600,
+          "zywnosc_dokladnie": 16
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "hard",
+          "zywnosc_setne": 248,
+          "zywnosc_dokladnie": 2.48
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "poza",
+          "poziom_trudnosci": "hard",
+          "zywnosc_setne": 496,
+          "zywnosc_dokladnie": 4.96
+        }
+      ]
+    },
+    {
+      "jednostka": "Drużynnik",
+      "epoka": "Żelazo",
+      "zywnosc_baza_tabela": 4,
+      "wartosci": [
+        {
+          "stan": "ruch",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "easy",
+          "zywnosc_setne": 1600,
+          "zywnosc_dokladnie": 16
+        },
+        {
+          "stan": "ruch",
+          "terytorium": "poza",
+          "poziom_trudnosci": "easy",
+          "zywnosc_setne": 3200,
+          "zywnosc_dokladnie": 32
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "easy",
+          "zywnosc_setne": 608,
+          "zywnosc_dokladnie": 6.08
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "poza",
+          "poziom_trudnosci": "easy",
+          "zywnosc_setne": 1216,
+          "zywnosc_dokladnie": 12.16
+        },
+        {
+          "stan": "ruch",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "normal",
+          "zywnosc_setne": 1600,
+          "zywnosc_dokladnie": 16
+        },
+        {
+          "stan": "ruch",
+          "terytorium": "poza",
+          "poziom_trudnosci": "normal",
+          "zywnosc_setne": 3200,
+          "zywnosc_dokladnie": 32
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "normal",
+          "zywnosc_setne": 800,
+          "zywnosc_dokladnie": 8
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "poza",
+          "poziom_trudnosci": "normal",
+          "zywnosc_setne": 1600,
+          "zywnosc_dokladnie": 16
+        },
+        {
+          "stan": "ruch",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "hard",
+          "zywnosc_setne": 1600,
+          "zywnosc_dokladnie": 16
+        },
+        {
+          "stan": "ruch",
+          "terytorium": "poza",
+          "poziom_trudnosci": "hard",
+          "zywnosc_setne": 3200,
+          "zywnosc_dokladnie": 32
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "hard",
+          "zywnosc_setne": 496,
+          "zywnosc_dokladnie": 4.96
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "poza",
+          "poziom_trudnosci": "hard",
+          "zywnosc_setne": 992,
+          "zywnosc_dokladnie": 9.92
+        }
+      ]
+    },
+    {
+      "jednostka": "Jeździec z oszczepami",
+      "epoka": "Żelazo",
+      "zywnosc_baza_tabela": 4,
+      "wartosci": [
+        {
+          "stan": "ruch",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "easy",
+          "zywnosc_setne": 1600,
+          "zywnosc_dokladnie": 16
+        },
+        {
+          "stan": "ruch",
+          "terytorium": "poza",
+          "poziom_trudnosci": "easy",
+          "zywnosc_setne": 3200,
+          "zywnosc_dokladnie": 32
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "easy",
+          "zywnosc_setne": 608,
+          "zywnosc_dokladnie": 6.08
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "poza",
+          "poziom_trudnosci": "easy",
+          "zywnosc_setne": 1216,
+          "zywnosc_dokladnie": 12.16
+        },
+        {
+          "stan": "ruch",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "normal",
+          "zywnosc_setne": 1600,
+          "zywnosc_dokladnie": 16
+        },
+        {
+          "stan": "ruch",
+          "terytorium": "poza",
+          "poziom_trudnosci": "normal",
+          "zywnosc_setne": 3200,
+          "zywnosc_dokladnie": 32
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "normal",
+          "zywnosc_setne": 800,
+          "zywnosc_dokladnie": 8
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "poza",
+          "poziom_trudnosci": "normal",
+          "zywnosc_setne": 1600,
+          "zywnosc_dokladnie": 16
+        },
+        {
+          "stan": "ruch",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "hard",
+          "zywnosc_setne": 1600,
+          "zywnosc_dokladnie": 16
+        },
+        {
+          "stan": "ruch",
+          "terytorium": "poza",
+          "poziom_trudnosci": "hard",
+          "zywnosc_setne": 3200,
+          "zywnosc_dokladnie": 32
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "hard",
+          "zywnosc_setne": 496,
+          "zywnosc_dokladnie": 4.96
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "poza",
+          "poziom_trudnosci": "hard",
+          "zywnosc_setne": 992,
+          "zywnosc_dokladnie": 9.92
+        }
+      ]
+    },
+    {
+      "jednostka": "Strażnik bram Harappy",
+      "epoka": "Brąz",
+      "zywnosc_baza_tabela": 2,
+      "wartosci": [
+        {
+          "stan": "ruch",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "easy",
+          "zywnosc_setne": 800,
+          "zywnosc_dokladnie": 8
+        },
+        {
+          "stan": "ruch",
+          "terytorium": "poza",
+          "poziom_trudnosci": "easy",
+          "zywnosc_setne": 1600,
+          "zywnosc_dokladnie": 16
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "easy",
+          "zywnosc_setne": 304,
+          "zywnosc_dokladnie": 3.04
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "poza",
+          "poziom_trudnosci": "easy",
+          "zywnosc_setne": 608,
+          "zywnosc_dokladnie": 6.08
+        },
+        {
+          "stan": "ruch",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "normal",
+          "zywnosc_setne": 800,
+          "zywnosc_dokladnie": 8
+        },
+        {
+          "stan": "ruch",
+          "terytorium": "poza",
+          "poziom_trudnosci": "normal",
+          "zywnosc_setne": 1600,
+          "zywnosc_dokladnie": 16
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "normal",
+          "zywnosc_setne": 400,
+          "zywnosc_dokladnie": 4
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "poza",
+          "poziom_trudnosci": "normal",
+          "zywnosc_setne": 800,
+          "zywnosc_dokladnie": 8
+        },
+        {
+          "stan": "ruch",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "hard",
+          "zywnosc_setne": 800,
+          "zywnosc_dokladnie": 8
+        },
+        {
+          "stan": "ruch",
+          "terytorium": "poza",
+          "poziom_trudnosci": "hard",
+          "zywnosc_setne": 1600,
+          "zywnosc_dokladnie": 16
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "hard",
+          "zywnosc_setne": 248,
+          "zywnosc_dokladnie": 2.48
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "poza",
+          "poziom_trudnosci": "hard",
+          "zywnosc_setne": 496,
+          "zywnosc_dokladnie": 4.96
+        }
+      ]
+    },
+    {
+      "jednostka": "Piechota induska",
+      "epoka": "Brąz",
+      "zywnosc_baza_tabela": 2,
+      "wartosci": [
+        {
+          "stan": "ruch",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "easy",
+          "zywnosc_setne": 800,
+          "zywnosc_dokladnie": 8
+        },
+        {
+          "stan": "ruch",
+          "terytorium": "poza",
+          "poziom_trudnosci": "easy",
+          "zywnosc_setne": 1600,
+          "zywnosc_dokladnie": 16
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "easy",
+          "zywnosc_setne": 304,
+          "zywnosc_dokladnie": 3.04
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "poza",
+          "poziom_trudnosci": "easy",
+          "zywnosc_setne": 608,
+          "zywnosc_dokladnie": 6.08
+        },
+        {
+          "stan": "ruch",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "normal",
+          "zywnosc_setne": 800,
+          "zywnosc_dokladnie": 8
+        },
+        {
+          "stan": "ruch",
+          "terytorium": "poza",
+          "poziom_trudnosci": "normal",
+          "zywnosc_setne": 1600,
+          "zywnosc_dokladnie": 16
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "normal",
+          "zywnosc_setne": 400,
+          "zywnosc_dokladnie": 4
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "poza",
+          "poziom_trudnosci": "normal",
+          "zywnosc_setne": 800,
+          "zywnosc_dokladnie": 8
+        },
+        {
+          "stan": "ruch",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "hard",
+          "zywnosc_setne": 800,
+          "zywnosc_dokladnie": 8
+        },
+        {
+          "stan": "ruch",
+          "terytorium": "poza",
+          "poziom_trudnosci": "hard",
+          "zywnosc_setne": 1600,
+          "zywnosc_dokladnie": 16
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "hard",
+          "zywnosc_setne": 248,
+          "zywnosc_dokladnie": 2.48
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "poza",
+          "poziom_trudnosci": "hard",
+          "zywnosc_setne": 496,
+          "zywnosc_dokladnie": 4.96
+        }
+      ]
+    },
+    {
+      "jednostka": "Garnizon Harappy",
+      "epoka": "Żelazo",
+      "zywnosc_baza_tabela": 4,
+      "wartosci": [
+        {
+          "stan": "ruch",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "easy",
+          "zywnosc_setne": 1600,
+          "zywnosc_dokladnie": 16
+        },
+        {
+          "stan": "ruch",
+          "terytorium": "poza",
+          "poziom_trudnosci": "easy",
+          "zywnosc_setne": 3200,
+          "zywnosc_dokladnie": 32
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "easy",
+          "zywnosc_setne": 608,
+          "zywnosc_dokladnie": 6.08
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "poza",
+          "poziom_trudnosci": "easy",
+          "zywnosc_setne": 1216,
+          "zywnosc_dokladnie": 12.16
+        },
+        {
+          "stan": "ruch",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "normal",
+          "zywnosc_setne": 1600,
+          "zywnosc_dokladnie": 16
+        },
+        {
+          "stan": "ruch",
+          "terytorium": "poza",
+          "poziom_trudnosci": "normal",
+          "zywnosc_setne": 3200,
+          "zywnosc_dokladnie": 32
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "normal",
+          "zywnosc_setne": 800,
+          "zywnosc_dokladnie": 8
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "poza",
+          "poziom_trudnosci": "normal",
+          "zywnosc_setne": 1600,
+          "zywnosc_dokladnie": 16
+        },
+        {
+          "stan": "ruch",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "hard",
+          "zywnosc_setne": 1600,
+          "zywnosc_dokladnie": 16
+        },
+        {
+          "stan": "ruch",
+          "terytorium": "poza",
+          "poziom_trudnosci": "hard",
+          "zywnosc_setne": 3200,
+          "zywnosc_dokladnie": 32
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "hard",
+          "zywnosc_setne": 496,
+          "zywnosc_dokladnie": 4.96
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "poza",
+          "poziom_trudnosci": "hard",
+          "zywnosc_setne": 992,
+          "zywnosc_dokladnie": 9.92
+        }
+      ]
+    },
+    {
+      "jednostka": "Rydwan Kapadokijski",
+      "epoka": "Brąz",
+      "zywnosc_baza_tabela": 2,
+      "wartosci": [
+        {
+          "stan": "ruch",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "easy",
+          "zywnosc_setne": 800,
+          "zywnosc_dokladnie": 8
+        },
+        {
+          "stan": "ruch",
+          "terytorium": "poza",
+          "poziom_trudnosci": "easy",
+          "zywnosc_setne": 1600,
+          "zywnosc_dokladnie": 16
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "easy",
+          "zywnosc_setne": 304,
+          "zywnosc_dokladnie": 3.04
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "poza",
+          "poziom_trudnosci": "easy",
+          "zywnosc_setne": 608,
+          "zywnosc_dokladnie": 6.08
+        },
+        {
+          "stan": "ruch",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "normal",
+          "zywnosc_setne": 800,
+          "zywnosc_dokladnie": 8
+        },
+        {
+          "stan": "ruch",
+          "terytorium": "poza",
+          "poziom_trudnosci": "normal",
+          "zywnosc_setne": 1600,
+          "zywnosc_dokladnie": 16
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "normal",
+          "zywnosc_setne": 400,
+          "zywnosc_dokladnie": 4
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "poza",
+          "poziom_trudnosci": "normal",
+          "zywnosc_setne": 800,
+          "zywnosc_dokladnie": 8
+        },
+        {
+          "stan": "ruch",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "hard",
+          "zywnosc_setne": 800,
+          "zywnosc_dokladnie": 8
+        },
+        {
+          "stan": "ruch",
+          "terytorium": "poza",
+          "poziom_trudnosci": "hard",
+          "zywnosc_setne": 1600,
+          "zywnosc_dokladnie": 16
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "hard",
+          "zywnosc_setne": 248,
+          "zywnosc_dokladnie": 2.48
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "poza",
+          "poziom_trudnosci": "hard",
+          "zywnosc_setne": 496,
+          "zywnosc_dokladnie": 4.96
+        }
+      ]
+    },
+    {
+      "jednostka": "Piechota hetycka",
+      "epoka": "Brąz",
+      "zywnosc_baza_tabela": 2,
+      "wartosci": [
+        {
+          "stan": "ruch",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "easy",
+          "zywnosc_setne": 800,
+          "zywnosc_dokladnie": 8
+        },
+        {
+          "stan": "ruch",
+          "terytorium": "poza",
+          "poziom_trudnosci": "easy",
+          "zywnosc_setne": 1600,
+          "zywnosc_dokladnie": 16
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "easy",
+          "zywnosc_setne": 304,
+          "zywnosc_dokladnie": 3.04
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "poza",
+          "poziom_trudnosci": "easy",
+          "zywnosc_setne": 608,
+          "zywnosc_dokladnie": 6.08
+        },
+        {
+          "stan": "ruch",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "normal",
+          "zywnosc_setne": 800,
+          "zywnosc_dokladnie": 8
+        },
+        {
+          "stan": "ruch",
+          "terytorium": "poza",
+          "poziom_trudnosci": "normal",
+          "zywnosc_setne": 1600,
+          "zywnosc_dokladnie": 16
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "normal",
+          "zywnosc_setne": 400,
+          "zywnosc_dokladnie": 4
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "poza",
+          "poziom_trudnosci": "normal",
+          "zywnosc_setne": 800,
+          "zywnosc_dokladnie": 8
+        },
+        {
+          "stan": "ruch",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "hard",
+          "zywnosc_setne": 800,
+          "zywnosc_dokladnie": 8
+        },
+        {
+          "stan": "ruch",
+          "terytorium": "poza",
+          "poziom_trudnosci": "hard",
+          "zywnosc_setne": 1600,
+          "zywnosc_dokladnie": 16
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "hard",
+          "zywnosc_setne": 248,
+          "zywnosc_dokladnie": 2.48
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "poza",
+          "poziom_trudnosci": "hard",
+          "zywnosc_setne": 496,
+          "zywnosc_dokladnie": 4.96
+        }
+      ]
+    },
+    {
+      "jednostka": "Gwardia hetycka",
+      "epoka": "Żelazo",
+      "zywnosc_baza_tabela": 4,
+      "wartosci": [
+        {
+          "stan": "ruch",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "easy",
+          "zywnosc_setne": 1600,
+          "zywnosc_dokladnie": 16
+        },
+        {
+          "stan": "ruch",
+          "terytorium": "poza",
+          "poziom_trudnosci": "easy",
+          "zywnosc_setne": 3200,
+          "zywnosc_dokladnie": 32
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "easy",
+          "zywnosc_setne": 608,
+          "zywnosc_dokladnie": 6.08
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "poza",
+          "poziom_trudnosci": "easy",
+          "zywnosc_setne": 1216,
+          "zywnosc_dokladnie": 12.16
+        },
+        {
+          "stan": "ruch",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "normal",
+          "zywnosc_setne": 1600,
+          "zywnosc_dokladnie": 16
+        },
+        {
+          "stan": "ruch",
+          "terytorium": "poza",
+          "poziom_trudnosci": "normal",
+          "zywnosc_setne": 3200,
+          "zywnosc_dokladnie": 32
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "normal",
+          "zywnosc_setne": 800,
+          "zywnosc_dokladnie": 8
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "poza",
+          "poziom_trudnosci": "normal",
+          "zywnosc_setne": 1600,
+          "zywnosc_dokladnie": 16
+        },
+        {
+          "stan": "ruch",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "hard",
+          "zywnosc_setne": 1600,
+          "zywnosc_dokladnie": 16
+        },
+        {
+          "stan": "ruch",
+          "terytorium": "poza",
+          "poziom_trudnosci": "hard",
+          "zywnosc_setne": 3200,
+          "zywnosc_dokladnie": 32
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "hard",
+          "zywnosc_setne": 496,
+          "zywnosc_dokladnie": 4.96
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "poza",
+          "poziom_trudnosci": "hard",
+          "zywnosc_setne": 992,
+          "zywnosc_dokladnie": 9.92
+        }
+      ]
+    },
+    {
+      "jednostka": "Gwardia Ishtar",
+      "epoka": "Brąz",
+      "zywnosc_baza_tabela": 2,
+      "wartosci": [
+        {
+          "stan": "ruch",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "easy",
+          "zywnosc_setne": 800,
+          "zywnosc_dokladnie": 8
+        },
+        {
+          "stan": "ruch",
+          "terytorium": "poza",
+          "poziom_trudnosci": "easy",
+          "zywnosc_setne": 1600,
+          "zywnosc_dokladnie": 16
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "easy",
+          "zywnosc_setne": 304,
+          "zywnosc_dokladnie": 3.04
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "poza",
+          "poziom_trudnosci": "easy",
+          "zywnosc_setne": 608,
+          "zywnosc_dokladnie": 6.08
+        },
+        {
+          "stan": "ruch",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "normal",
+          "zywnosc_setne": 800,
+          "zywnosc_dokladnie": 8
+        },
+        {
+          "stan": "ruch",
+          "terytorium": "poza",
+          "poziom_trudnosci": "normal",
+          "zywnosc_setne": 1600,
+          "zywnosc_dokladnie": 16
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "normal",
+          "zywnosc_setne": 400,
+          "zywnosc_dokladnie": 4
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "poza",
+          "poziom_trudnosci": "normal",
+          "zywnosc_setne": 800,
+          "zywnosc_dokladnie": 8
+        },
+        {
+          "stan": "ruch",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "hard",
+          "zywnosc_setne": 800,
+          "zywnosc_dokladnie": 8
+        },
+        {
+          "stan": "ruch",
+          "terytorium": "poza",
+          "poziom_trudnosci": "hard",
+          "zywnosc_setne": 1600,
+          "zywnosc_dokladnie": 16
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "hard",
+          "zywnosc_setne": 248,
+          "zywnosc_dokladnie": 2.48
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "poza",
+          "poziom_trudnosci": "hard",
+          "zywnosc_setne": 496,
+          "zywnosc_dokladnie": 4.96
+        }
+      ]
+    },
+    {
+      "jednostka": "Wojownik babiloński",
+      "epoka": "Brąz",
+      "zywnosc_baza_tabela": 2,
+      "wartosci": [
+        {
+          "stan": "ruch",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "easy",
+          "zywnosc_setne": 800,
+          "zywnosc_dokladnie": 8
+        },
+        {
+          "stan": "ruch",
+          "terytorium": "poza",
+          "poziom_trudnosci": "easy",
+          "zywnosc_setne": 1600,
+          "zywnosc_dokladnie": 16
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "easy",
+          "zywnosc_setne": 304,
+          "zywnosc_dokladnie": 3.04
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "poza",
+          "poziom_trudnosci": "easy",
+          "zywnosc_setne": 608,
+          "zywnosc_dokladnie": 6.08
+        },
+        {
+          "stan": "ruch",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "normal",
+          "zywnosc_setne": 800,
+          "zywnosc_dokladnie": 8
+        },
+        {
+          "stan": "ruch",
+          "terytorium": "poza",
+          "poziom_trudnosci": "normal",
+          "zywnosc_setne": 1600,
+          "zywnosc_dokladnie": 16
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "normal",
+          "zywnosc_setne": 400,
+          "zywnosc_dokladnie": 4
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "poza",
+          "poziom_trudnosci": "normal",
+          "zywnosc_setne": 800,
+          "zywnosc_dokladnie": 8
+        },
+        {
+          "stan": "ruch",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "hard",
+          "zywnosc_setne": 800,
+          "zywnosc_dokladnie": 8
+        },
+        {
+          "stan": "ruch",
+          "terytorium": "poza",
+          "poziom_trudnosci": "hard",
+          "zywnosc_setne": 1600,
+          "zywnosc_dokladnie": 16
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "hard",
+          "zywnosc_setne": 248,
+          "zywnosc_dokladnie": 2.48
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "poza",
+          "poziom_trudnosci": "hard",
+          "zywnosc_setne": 496,
+          "zywnosc_dokladnie": 4.96
+        }
+      ]
+    },
+    {
+      "jednostka": "Piechota neobabilońska",
+      "epoka": "Żelazo",
+      "zywnosc_baza_tabela": 4,
+      "wartosci": [
+        {
+          "stan": "ruch",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "easy",
+          "zywnosc_setne": 1600,
+          "zywnosc_dokladnie": 16
+        },
+        {
+          "stan": "ruch",
+          "terytorium": "poza",
+          "poziom_trudnosci": "easy",
+          "zywnosc_setne": 3200,
+          "zywnosc_dokladnie": 32
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "easy",
+          "zywnosc_setne": 608,
+          "zywnosc_dokladnie": 6.08
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "poza",
+          "poziom_trudnosci": "easy",
+          "zywnosc_setne": 1216,
+          "zywnosc_dokladnie": 12.16
+        },
+        {
+          "stan": "ruch",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "normal",
+          "zywnosc_setne": 1600,
+          "zywnosc_dokladnie": 16
+        },
+        {
+          "stan": "ruch",
+          "terytorium": "poza",
+          "poziom_trudnosci": "normal",
+          "zywnosc_setne": 3200,
+          "zywnosc_dokladnie": 32
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "normal",
+          "zywnosc_setne": 800,
+          "zywnosc_dokladnie": 8
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "poza",
+          "poziom_trudnosci": "normal",
+          "zywnosc_setne": 1600,
+          "zywnosc_dokladnie": 16
+        },
+        {
+          "stan": "ruch",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "hard",
+          "zywnosc_setne": 1600,
+          "zywnosc_dokladnie": 16
+        },
+        {
+          "stan": "ruch",
+          "terytorium": "poza",
+          "poziom_trudnosci": "hard",
+          "zywnosc_setne": 3200,
+          "zywnosc_dokladnie": 32
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "hard",
+          "zywnosc_setne": 496,
+          "zywnosc_dokladnie": 4.96
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "poza",
+          "poziom_trudnosci": "hard",
+          "zywnosc_setne": 992,
+          "zywnosc_dokladnie": 9.92
+        }
+      ]
+    },
+    {
+      "jednostka": "Tyrski miecznik",
+      "epoka": "Żelazo",
+      "zywnosc_baza_tabela": 4,
+      "wartosci": [
+        {
+          "stan": "ruch",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "easy",
+          "zywnosc_setne": 1600,
+          "zywnosc_dokladnie": 16
+        },
+        {
+          "stan": "ruch",
+          "terytorium": "poza",
+          "poziom_trudnosci": "easy",
+          "zywnosc_setne": 3200,
+          "zywnosc_dokladnie": 32
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "easy",
+          "zywnosc_setne": 608,
+          "zywnosc_dokladnie": 6.08
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "poza",
+          "poziom_trudnosci": "easy",
+          "zywnosc_setne": 1216,
+          "zywnosc_dokladnie": 12.16
+        },
+        {
+          "stan": "ruch",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "normal",
+          "zywnosc_setne": 1600,
+          "zywnosc_dokladnie": 16
+        },
+        {
+          "stan": "ruch",
+          "terytorium": "poza",
+          "poziom_trudnosci": "normal",
+          "zywnosc_setne": 3200,
+          "zywnosc_dokladnie": 32
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "normal",
+          "zywnosc_setne": 800,
+          "zywnosc_dokladnie": 8
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "poza",
+          "poziom_trudnosci": "normal",
+          "zywnosc_setne": 1600,
+          "zywnosc_dokladnie": 16
+        },
+        {
+          "stan": "ruch",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "hard",
+          "zywnosc_setne": 1600,
+          "zywnosc_dokladnie": 16
+        },
+        {
+          "stan": "ruch",
+          "terytorium": "poza",
+          "poziom_trudnosci": "hard",
+          "zywnosc_setne": 3200,
+          "zywnosc_dokladnie": 32
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "hard",
+          "zywnosc_setne": 496,
+          "zywnosc_dokladnie": 4.96
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "poza",
+          "poziom_trudnosci": "hard",
+          "zywnosc_setne": 992,
+          "zywnosc_dokladnie": 9.92
+        }
+      ]
+    },
+    {
+      "jednostka": "Wojownik fenicki",
+      "epoka": "Brąz",
+      "zywnosc_baza_tabela": 2,
+      "wartosci": [
+        {
+          "stan": "ruch",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "easy",
+          "zywnosc_setne": 800,
+          "zywnosc_dokladnie": 8
+        },
+        {
+          "stan": "ruch",
+          "terytorium": "poza",
+          "poziom_trudnosci": "easy",
+          "zywnosc_setne": 1600,
+          "zywnosc_dokladnie": 16
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "easy",
+          "zywnosc_setne": 304,
+          "zywnosc_dokladnie": 3.04
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "poza",
+          "poziom_trudnosci": "easy",
+          "zywnosc_setne": 608,
+          "zywnosc_dokladnie": 6.08
+        },
+        {
+          "stan": "ruch",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "normal",
+          "zywnosc_setne": 800,
+          "zywnosc_dokladnie": 8
+        },
+        {
+          "stan": "ruch",
+          "terytorium": "poza",
+          "poziom_trudnosci": "normal",
+          "zywnosc_setne": 1600,
+          "zywnosc_dokladnie": 16
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "normal",
+          "zywnosc_setne": 400,
+          "zywnosc_dokladnie": 4
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "poza",
+          "poziom_trudnosci": "normal",
+          "zywnosc_setne": 800,
+          "zywnosc_dokladnie": 8
+        },
+        {
+          "stan": "ruch",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "hard",
+          "zywnosc_setne": 800,
+          "zywnosc_dokladnie": 8
+        },
+        {
+          "stan": "ruch",
+          "terytorium": "poza",
+          "poziom_trudnosci": "hard",
+          "zywnosc_setne": 1600,
+          "zywnosc_dokladnie": 16
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "hard",
+          "zywnosc_setne": 248,
+          "zywnosc_dokladnie": 2.48
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "poza",
+          "poziom_trudnosci": "hard",
+          "zywnosc_setne": 496,
+          "zywnosc_dokladnie": 4.96
+        }
+      ]
+    },
+    {
+      "jednostka": "Gwardia Tyreńska",
+      "epoka": "Żelazo",
+      "zywnosc_baza_tabela": 4,
+      "wartosci": [
+        {
+          "stan": "ruch",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "easy",
+          "zywnosc_setne": 1600,
+          "zywnosc_dokladnie": 16
+        },
+        {
+          "stan": "ruch",
+          "terytorium": "poza",
+          "poziom_trudnosci": "easy",
+          "zywnosc_setne": 3200,
+          "zywnosc_dokladnie": 32
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "easy",
+          "zywnosc_setne": 608,
+          "zywnosc_dokladnie": 6.08
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "poza",
+          "poziom_trudnosci": "easy",
+          "zywnosc_setne": 1216,
+          "zywnosc_dokladnie": 12.16
+        },
+        {
+          "stan": "ruch",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "normal",
+          "zywnosc_setne": 1600,
+          "zywnosc_dokladnie": 16
+        },
+        {
+          "stan": "ruch",
+          "terytorium": "poza",
+          "poziom_trudnosci": "normal",
+          "zywnosc_setne": 3200,
+          "zywnosc_dokladnie": 32
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "normal",
+          "zywnosc_setne": 800,
+          "zywnosc_dokladnie": 8
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "poza",
+          "poziom_trudnosci": "normal",
+          "zywnosc_setne": 1600,
+          "zywnosc_dokladnie": 16
+        },
+        {
+          "stan": "ruch",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "hard",
+          "zywnosc_setne": 1600,
+          "zywnosc_dokladnie": 16
+        },
+        {
+          "stan": "ruch",
+          "terytorium": "poza",
+          "poziom_trudnosci": "hard",
+          "zywnosc_setne": 3200,
+          "zywnosc_dokladnie": 32
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "hard",
+          "zywnosc_setne": 496,
+          "zywnosc_dokladnie": 4.96
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "poza",
+          "poziom_trudnosci": "hard",
+          "zywnosc_setne": 992,
+          "zywnosc_dokladnie": 9.92
+        }
+      ]
+    },
+    {
+      "jednostka": "Thorakites",
+      "epoka": "Żelazo",
+      "zywnosc_baza_tabela": 4,
+      "wartosci": [
+        {
+          "stan": "ruch",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "easy",
+          "zywnosc_setne": 1600,
+          "zywnosc_dokladnie": 16
+        },
+        {
+          "stan": "ruch",
+          "terytorium": "poza",
+          "poziom_trudnosci": "easy",
+          "zywnosc_setne": 3200,
+          "zywnosc_dokladnie": 32
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "easy",
+          "zywnosc_setne": 608,
+          "zywnosc_dokladnie": 6.08
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "poza",
+          "poziom_trudnosci": "easy",
+          "zywnosc_setne": 1216,
+          "zywnosc_dokladnie": 12.16
+        },
+        {
+          "stan": "ruch",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "normal",
+          "zywnosc_setne": 1600,
+          "zywnosc_dokladnie": 16
+        },
+        {
+          "stan": "ruch",
+          "terytorium": "poza",
+          "poziom_trudnosci": "normal",
+          "zywnosc_setne": 3200,
+          "zywnosc_dokladnie": 32
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "normal",
+          "zywnosc_setne": 800,
+          "zywnosc_dokladnie": 8
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "poza",
+          "poziom_trudnosci": "normal",
+          "zywnosc_setne": 1600,
+          "zywnosc_dokladnie": 16
+        },
+        {
+          "stan": "ruch",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "hard",
+          "zywnosc_setne": 1600,
+          "zywnosc_dokladnie": 16
+        },
+        {
+          "stan": "ruch",
+          "terytorium": "poza",
+          "poziom_trudnosci": "hard",
+          "zywnosc_setne": 3200,
+          "zywnosc_dokladnie": 32
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "hard",
+          "zywnosc_setne": 496,
+          "zywnosc_dokladnie": 4.96
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "poza",
+          "poziom_trudnosci": "hard",
+          "zywnosc_setne": 992,
+          "zywnosc_dokladnie": 9.92
+        }
+      ]
+    },
+    {
+      "jednostka": "Evocati",
+      "epoka": "Żelazo",
+      "zywnosc_baza_tabela": 4,
+      "wartosci": [
+        {
+          "stan": "ruch",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "easy",
+          "zywnosc_setne": 1600,
+          "zywnosc_dokladnie": 16
+        },
+        {
+          "stan": "ruch",
+          "terytorium": "poza",
+          "poziom_trudnosci": "easy",
+          "zywnosc_setne": 3200,
+          "zywnosc_dokladnie": 32
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "easy",
+          "zywnosc_setne": 608,
+          "zywnosc_dokladnie": 6.08
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "poza",
+          "poziom_trudnosci": "easy",
+          "zywnosc_setne": 1216,
+          "zywnosc_dokladnie": 12.16
+        },
+        {
+          "stan": "ruch",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "normal",
+          "zywnosc_setne": 1600,
+          "zywnosc_dokladnie": 16
+        },
+        {
+          "stan": "ruch",
+          "terytorium": "poza",
+          "poziom_trudnosci": "normal",
+          "zywnosc_setne": 3200,
+          "zywnosc_dokladnie": 32
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "normal",
+          "zywnosc_setne": 800,
+          "zywnosc_dokladnie": 8
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "poza",
+          "poziom_trudnosci": "normal",
+          "zywnosc_setne": 1600,
+          "zywnosc_dokladnie": 16
+        },
+        {
+          "stan": "ruch",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "hard",
+          "zywnosc_setne": 1600,
+          "zywnosc_dokladnie": 16
+        },
+        {
+          "stan": "ruch",
+          "terytorium": "poza",
+          "poziom_trudnosci": "hard",
+          "zywnosc_setne": 3200,
+          "zywnosc_dokladnie": 32
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "hard",
+          "zywnosc_setne": 496,
+          "zywnosc_dokladnie": 4.96
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "poza",
+          "poziom_trudnosci": "hard",
+          "zywnosc_setne": 992,
+          "zywnosc_dokladnie": 9.92
+        }
+      ]
+    },
+    {
+      "jednostka": "iButho z iklwa",
+      "epoka": "Żelazo",
+      "zywnosc_baza_tabela": 4,
+      "wartosci": [
+        {
+          "stan": "ruch",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "easy",
+          "zywnosc_setne": 1600,
+          "zywnosc_dokladnie": 16
+        },
+        {
+          "stan": "ruch",
+          "terytorium": "poza",
+          "poziom_trudnosci": "easy",
+          "zywnosc_setne": 3200,
+          "zywnosc_dokladnie": 32
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "easy",
+          "zywnosc_setne": 608,
+          "zywnosc_dokladnie": 6.08
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "poza",
+          "poziom_trudnosci": "easy",
+          "zywnosc_setne": 1216,
+          "zywnosc_dokladnie": 12.16
+        },
+        {
+          "stan": "ruch",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "normal",
+          "zywnosc_setne": 1600,
+          "zywnosc_dokladnie": 16
+        },
+        {
+          "stan": "ruch",
+          "terytorium": "poza",
+          "poziom_trudnosci": "normal",
+          "zywnosc_setne": 3200,
+          "zywnosc_dokladnie": 32
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "normal",
+          "zywnosc_setne": 800,
+          "zywnosc_dokladnie": 8
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "poza",
+          "poziom_trudnosci": "normal",
+          "zywnosc_setne": 1600,
+          "zywnosc_dokladnie": 16
+        },
+        {
+          "stan": "ruch",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "hard",
+          "zywnosc_setne": 1600,
+          "zywnosc_dokladnie": 16
+        },
+        {
+          "stan": "ruch",
+          "terytorium": "poza",
+          "poziom_trudnosci": "hard",
+          "zywnosc_setne": 3200,
+          "zywnosc_dokladnie": 32
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "hard",
+          "zywnosc_setne": 496,
+          "zywnosc_dokladnie": 4.96
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "poza",
+          "poziom_trudnosci": "hard",
+          "zywnosc_setne": 992,
+          "zywnosc_dokladnie": 9.92
+        }
+      ]
+    },
+    {
+      "jednostka": "Gwardzista z champi",
+      "epoka": "Brąz",
+      "zywnosc_baza_tabela": 2,
+      "wartosci": [
+        {
+          "stan": "ruch",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "easy",
+          "zywnosc_setne": 800,
+          "zywnosc_dokladnie": 8
+        },
+        {
+          "stan": "ruch",
+          "terytorium": "poza",
+          "poziom_trudnosci": "easy",
+          "zywnosc_setne": 1600,
+          "zywnosc_dokladnie": 16
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "easy",
+          "zywnosc_setne": 304,
+          "zywnosc_dokladnie": 3.04
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "poza",
+          "poziom_trudnosci": "easy",
+          "zywnosc_setne": 608,
+          "zywnosc_dokladnie": 6.08
+        },
+        {
+          "stan": "ruch",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "normal",
+          "zywnosc_setne": 800,
+          "zywnosc_dokladnie": 8
+        },
+        {
+          "stan": "ruch",
+          "terytorium": "poza",
+          "poziom_trudnosci": "normal",
+          "zywnosc_setne": 1600,
+          "zywnosc_dokladnie": 16
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "normal",
+          "zywnosc_setne": 400,
+          "zywnosc_dokladnie": 4
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "poza",
+          "poziom_trudnosci": "normal",
+          "zywnosc_setne": 800,
+          "zywnosc_dokladnie": 8
+        },
+        {
+          "stan": "ruch",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "hard",
+          "zywnosc_setne": 800,
+          "zywnosc_dokladnie": 8
+        },
+        {
+          "stan": "ruch",
+          "terytorium": "poza",
+          "poziom_trudnosci": "hard",
+          "zywnosc_setne": 1600,
+          "zywnosc_dokladnie": 16
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "hard",
+          "zywnosc_setne": 248,
+          "zywnosc_dokladnie": 2.48
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "poza",
+          "poziom_trudnosci": "hard",
+          "zywnosc_setne": 496,
+          "zywnosc_dokladnie": 4.96
+        }
+      ]
+    },
+    {
+      "jednostka": "Wojownik z żelaznym khopesh",
+      "epoka": "Żelazo",
+      "zywnosc_baza_tabela": 4,
+      "wartosci": [
+        {
+          "stan": "ruch",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "easy",
+          "zywnosc_setne": 1600,
+          "zywnosc_dokladnie": 16
+        },
+        {
+          "stan": "ruch",
+          "terytorium": "poza",
+          "poziom_trudnosci": "easy",
+          "zywnosc_setne": 3200,
+          "zywnosc_dokladnie": 32
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "easy",
+          "zywnosc_setne": 608,
+          "zywnosc_dokladnie": 6.08
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "poza",
+          "poziom_trudnosci": "easy",
+          "zywnosc_setne": 1216,
+          "zywnosc_dokladnie": 12.16
+        },
+        {
+          "stan": "ruch",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "normal",
+          "zywnosc_setne": 1600,
+          "zywnosc_dokladnie": 16
+        },
+        {
+          "stan": "ruch",
+          "terytorium": "poza",
+          "poziom_trudnosci": "normal",
+          "zywnosc_setne": 3200,
+          "zywnosc_dokladnie": 32
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "normal",
+          "zywnosc_setne": 800,
+          "zywnosc_dokladnie": 8
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "poza",
+          "poziom_trudnosci": "normal",
+          "zywnosc_setne": 1600,
+          "zywnosc_dokladnie": 16
+        },
+        {
+          "stan": "ruch",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "hard",
+          "zywnosc_setne": 1600,
+          "zywnosc_dokladnie": 16
+        },
+        {
+          "stan": "ruch",
+          "terytorium": "poza",
+          "poziom_trudnosci": "hard",
+          "zywnosc_setne": 3200,
+          "zywnosc_dokladnie": 32
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "hard",
+          "zywnosc_setne": 496,
+          "zywnosc_dokladnie": 4.96
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "poza",
+          "poziom_trudnosci": "hard",
+          "zywnosc_setne": 992,
+          "zywnosc_dokladnie": 9.92
+        }
+      ]
+    },
+    {
+      "jednostka": "Mur tarcz (Sargonid)",
+      "epoka": "Żelazo",
+      "zywnosc_baza_tabela": 4,
+      "wartosci": [
+        {
+          "stan": "ruch",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "easy",
+          "zywnosc_setne": 1600,
+          "zywnosc_dokladnie": 16
+        },
+        {
+          "stan": "ruch",
+          "terytorium": "poza",
+          "poziom_trudnosci": "easy",
+          "zywnosc_setne": 3200,
+          "zywnosc_dokladnie": 32
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "easy",
+          "zywnosc_setne": 608,
+          "zywnosc_dokladnie": 6.08
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "poza",
+          "poziom_trudnosci": "easy",
+          "zywnosc_setne": 1216,
+          "zywnosc_dokladnie": 12.16
+        },
+        {
+          "stan": "ruch",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "normal",
+          "zywnosc_setne": 1600,
+          "zywnosc_dokladnie": 16
+        },
+        {
+          "stan": "ruch",
+          "terytorium": "poza",
+          "poziom_trudnosci": "normal",
+          "zywnosc_setne": 3200,
+          "zywnosc_dokladnie": 32
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "normal",
+          "zywnosc_setne": 800,
+          "zywnosc_dokladnie": 8
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "poza",
+          "poziom_trudnosci": "normal",
+          "zywnosc_setne": 1600,
+          "zywnosc_dokladnie": 16
+        },
+        {
+          "stan": "ruch",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "hard",
+          "zywnosc_setne": 1600,
+          "zywnosc_dokladnie": 16
+        },
+        {
+          "stan": "ruch",
+          "terytorium": "poza",
+          "poziom_trudnosci": "hard",
+          "zywnosc_setne": 3200,
+          "zywnosc_dokladnie": 32
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "hard",
+          "zywnosc_setne": 496,
+          "zywnosc_dokladnie": 4.96
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "poza",
+          "poziom_trudnosci": "hard",
+          "zywnosc_setne": 992,
+          "zywnosc_dokladnie": 9.92
+        }
+      ]
+    },
+    {
+      "jednostka": "Miecznik galijski",
+      "epoka": "Żelazo",
+      "zywnosc_baza_tabela": 4,
+      "wartosci": [
+        {
+          "stan": "ruch",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "easy",
+          "zywnosc_setne": 1600,
+          "zywnosc_dokladnie": 16
+        },
+        {
+          "stan": "ruch",
+          "terytorium": "poza",
+          "poziom_trudnosci": "easy",
+          "zywnosc_setne": 3200,
+          "zywnosc_dokladnie": 32
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "easy",
+          "zywnosc_setne": 608,
+          "zywnosc_dokladnie": 6.08
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "poza",
+          "poziom_trudnosci": "easy",
+          "zywnosc_setne": 1216,
+          "zywnosc_dokladnie": 12.16
+        },
+        {
+          "stan": "ruch",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "normal",
+          "zywnosc_setne": 1600,
+          "zywnosc_dokladnie": 16
+        },
+        {
+          "stan": "ruch",
+          "terytorium": "poza",
+          "poziom_trudnosci": "normal",
+          "zywnosc_setne": 3200,
+          "zywnosc_dokladnie": 32
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "normal",
+          "zywnosc_setne": 800,
+          "zywnosc_dokladnie": 8
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "poza",
+          "poziom_trudnosci": "normal",
+          "zywnosc_setne": 1600,
+          "zywnosc_dokladnie": 16
+        },
+        {
+          "stan": "ruch",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "hard",
+          "zywnosc_setne": 1600,
+          "zywnosc_dokladnie": 16
+        },
+        {
+          "stan": "ruch",
+          "terytorium": "poza",
+          "poziom_trudnosci": "hard",
+          "zywnosc_setne": 3200,
+          "zywnosc_dokladnie": 32
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "wlasne",
+          "poziom_trudnosci": "hard",
+          "zywnosc_setne": 496,
+          "zywnosc_dokladnie": 4.96
+        },
+        {
+          "stan": "oboz",
+          "terytorium": "poza",
+          "poziom_trudnosci": "hard",
+          "zywnosc_setne": 992,
+          "zywnosc_dokladnie": 9.92
+        }
+      ]
+    }
+  ]
+}

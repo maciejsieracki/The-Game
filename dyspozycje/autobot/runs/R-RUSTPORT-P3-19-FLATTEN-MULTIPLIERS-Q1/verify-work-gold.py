@@ -70,7 +70,13 @@ for u in units:
     else:
         cost = max(1, round_half_up(role_default.get(u.get('Rola (linia)'), default_cost) * m))
     up = u['Utrzymanie (Pieniądz/turę)']
-    if up > 0:
+    # Runda 4: reguła kategorii (super / zwiadowca -> 0), zgodnie z economy-upkeep.ts:967-968
+    # i kategoryzacją units/setup.ts:239-250 (super = Super-jednostka TAK; zwiadowca = nazwa/rola zwiad).
+    low = name.lower()
+    is_zero_cat = u.get('Super-jednostka') == 'TAK' or 'zwiad' in low
+    if is_zero_cat:
+        upkeep = 0
+    elif up > 0:
         upkeep = max(1, round_half_up(up * m)) * 4
     else:
         upkeep = 0

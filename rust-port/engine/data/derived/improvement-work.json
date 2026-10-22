@@ -1,0 +1,166 @@
+{
+  "meta": {
+    "status": "BOOTSTRAP: wartości startowe rozwinięte z reguł weba. Źródłem prawdy do ręcznego balansu jest TA tabela (edytuj liczby, nie mnożniki). Tabela NIE jest porównywana ze wzorem przy buildzie.",
+    "zrodlo": "gra/data/terrain-improvements.json",
+    "regula_weba": "terrain-improvements.ts:76-110 scaleTerrainImprovementWorkCost; r-stawki-strojenie.ts:50-53",
+    "pin_web": "edb8fb56",
+    "wygenerowano": "R-RUSTPORT-P3-19-FLATTEN-MULTIPLIERS-Q1 runda 4, generator: gen-round4.mjs",
+    "uwaga": "Statyczne per ulepszenie; epoka z terrain-improvements.json."
+  },
+  "wiersze": [
+    {
+      "ulepszenie": "farma",
+      "nazwa": "Farma",
+      "epoka": 1,
+      "koszt_praca_baza": 20,
+      "praca": 40
+    },
+    {
+      "ulepszenie": "irygacja",
+      "nazwa": "Irygacja",
+      "epoka": 2,
+      "koszt_praca_baza": 30,
+      "praca": 120
+    },
+    {
+      "ulepszenie": "bydlo",
+      "nazwa": "Trzoda",
+      "epoka": 1,
+      "koszt_praca_baza": 20,
+      "praca": 40
+    },
+    {
+      "ulepszenie": "owce",
+      "nazwa": "Owce",
+      "epoka": 1,
+      "koszt_praca_baza": 20,
+      "praca": 40
+    },
+    {
+      "ulepszenie": "lama",
+      "nazwa": "Lama",
+      "epoka": 1,
+      "koszt_praca_baza": 20,
+      "praca": 40
+    },
+    {
+      "ulepszenie": "stadnina",
+      "nazwa": "Stadnina",
+      "epoka": 2,
+      "koszt_praca_baza": 28,
+      "praca": 112
+    },
+    {
+      "ulepszenie": "glinianka",
+      "nazwa": "Glinianka",
+      "epoka": 2,
+      "koszt_praca_baza": 20,
+      "praca": 80
+    },
+    {
+      "ulepszenie": "kamieniolom",
+      "nazwa": "Kamieniołom",
+      "epoka": 1,
+      "koszt_praca_baza": 22,
+      "praca": 44
+    },
+    {
+      "ulepszenie": "oboz_lowiecki",
+      "nazwa": "Obóz łowiecki",
+      "epoka": 1,
+      "koszt_praca_baza": 18,
+      "praca": 36
+    },
+    {
+      "ulepszenie": "wyrab",
+      "nazwa": "Wycinka",
+      "epoka": 1,
+      "koszt_praca_baza": 2.5,
+      "praca": 5
+    },
+    {
+      "ulepszenie": "tartak",
+      "nazwa": "Tartak",
+      "epoka": 1,
+      "koszt_praca_baza": 25,
+      "praca": 50
+    },
+    {
+      "ulepszenie": "tarasy",
+      "nazwa": "Tarasy uprawne",
+      "epoka": 2,
+      "koszt_praca_baza": 25,
+      "praca": 100
+    },
+    {
+      "ulepszenie": "lodzie_rybackie",
+      "nazwa": "Łodzie rybackie",
+      "epoka": 1,
+      "koszt_praca_baza": 20,
+      "praca": 40
+    },
+    {
+      "ulepszenie": "warzelnia_soli",
+      "nazwa": "Warzelnia soli",
+      "epoka": 2,
+      "koszt_praca_baza": 20,
+      "praca": 80
+    },
+    {
+      "ulepszenie": "fort",
+      "nazwa": "Fort",
+      "epoka": 3,
+      "koszt_praca_baza": 25,
+      "praca": 200
+    },
+    {
+      "ulepszenie": "droga",
+      "nazwa": "Droga",
+      "epoka": 1,
+      "koszt_praca_baza": 15,
+      "praca": 30
+    },
+    {
+      "ulepszenie": "droga_brukowana",
+      "nazwa": "Droga brukowana",
+      "epoka": 3,
+      "koszt_praca_baza": 25,
+      "praca": 200
+    },
+    {
+      "ulepszenie": "kopalnia_miedzi",
+      "nazwa": "Kopalnia miedzi",
+      "epoka": 2,
+      "koszt_praca_baza": 22,
+      "praca": 88
+    },
+    {
+      "ulepszenie": "kopalnia_zelaza",
+      "nazwa": "Kopalnia żelaza",
+      "epoka": 3,
+      "koszt_praca_baza": 22,
+      "praca": 176
+    },
+    {
+      "ulepszenie": "kopalnia_cyny",
+      "nazwa": "Kopalnia cyny",
+      "epoka": 2,
+      "koszt_praca_baza": 22,
+      "praca": 88
+    },
+    {
+      "ulepszenie": "kopalnia_zlota",
+      "nazwa": "Kopalnia złota",
+      "epoka": 2,
+      "koszt_praca_baza": 22,
+      "praca": 88
+    },
+    {
+      "ulepszenie": "posterunek",
+      "nazwa": "Posterunek (Strażnica)",
+      "epoka": 2,
+      "koszt_praca_baza": 30,
+      "praca": 120
+    }
+  ]
+}

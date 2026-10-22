@@ -2,7 +2,7 @@
   "meta": {
     "status": "BOOTSTRAP: wartosci startowe rozwiniete z regul weba. Zrodlem prawdy do recznego balansu jest TA tabela (edytuj liczby, nie mnozniki). Tabela NIE jest porownywana ze wzorem przy buildzie.",
     "zrodlo": "gra/data/units.json @ edb8fb56 + gra/data/miasto-params.json (domyslne koszty roli)",
-    "regula_weba": "production.ts unitCostFromDef (l.255-289) + scaleCostByEpoch(Epoka); economy-upkeep.ts unitUpkeep (l.962-977) x4 po scaleCostByEpoch (buildUnitUpkeepTable l.1000-1023). UWAGA: regula kategorii (zwiadowca/super -> 0, economy-upkeep.ts:967-968) zalezy od pola kategorii instancji (main.ts:7193), NIE od units.json; NIE odtworzono w tabeli (P3-19 sek. 9)",
+    "regula_weba": "production.ts unitCostFromDef (l.255-289) + scaleCostByEpoch(Epoka); economy-upkeep.ts unitUpkeep (l.962-977) x4 po scaleCostByEpoch (buildUnitUpkeepTable l.1000-1023); kategoria: units/setup.ts categoryOf (l.239-250, port gałęzi super/zwiadowca), reguła byCat===0 -> 0 (economy-upkeep.ts:967-968) WLICZONA w wartość (runda 4)",
     "wygenerowano": "R-RUSTPORT-P3-19-FLATTEN-MULTIPLIERS-Q1 runda 3, generator: gen-work-gold.mjs",
     "uwaga_stan": "Wartosci dotycza stanu bazowego web: pace niski (x1), trudnosc normal (x1), bez ulgi cywilizacji. Stany (b) NIE sa rozwiniete w tej tabeli (P3-19 sek. 9)."
   },
@@ -12,6 +12,7 @@
       "epoka": "Kamień",
       "pieniadz_koszt": 5,
       "utrzymanie_pieniadz_ture": 4,
+      "kategoria_utrzymania": "inna",
       "baza": {
         "pieniadz_koszt_zrodlo": 5,
         "rola_linia": "Wręcz",
@@ -24,6 +25,7 @@
       "epoka": "Brąz",
       "pieniadz_koszt": 8,
       "utrzymanie_pieniadz_ture": 8,
+      "kategoria_utrzymania": "inna",
       "baza": {
         "pieniadz_koszt_zrodlo": 4,
         "rola_linia": "Dystans",
@@ -36,6 +38,7 @@
       "epoka": "Kamień",
       "pieniadz_koszt": 3,
       "utrzymanie_pieniadz_ture": 4,
+      "kategoria_utrzymania": "inna",
       "baza": {
         "pieniadz_koszt_zrodlo": 3,
         "rola_linia": "Dystans",
@@ -48,6 +51,7 @@
       "epoka": "Kamień",
       "pieniadz_koszt": 3,
       "utrzymanie_pieniadz_ture": 4,
+      "kategoria_utrzymania": "inna",
       "baza": {
         "pieniadz_koszt_zrodlo": 3,
         "rola_linia": "Dystans",
@@ -60,6 +64,7 @@
       "epoka": "Kamień",
       "pieniadz_koszt": 4,
       "utrzymanie_pieniadz_ture": 0,
+      "kategoria_utrzymania": "zwiadowca",
       "baza": {
         "pieniadz_koszt_zrodlo": 4,
         "rola_linia": "Wsparcie",
@@ -72,6 +77,7 @@
       "epoka": "Brąz",
       "pieniadz_koszt": 16,
       "utrzymanie_pieniadz_ture": 16,
+      "kategoria_utrzymania": "inna",
       "baza": {
         "pieniadz_koszt_zrodlo": 8,
         "rola_linia": "Wręcz",
@@ -84,6 +90,7 @@
       "epoka": "Brąz",
       "pieniadz_koszt": 16,
       "utrzymanie_pieniadz_ture": 16,
+      "kategoria_utrzymania": "inna",
       "baza": {
         "pieniadz_koszt_zrodlo": 8,
         "rola_linia": "Wręcz",
@@ -96,6 +103,7 @@
       "epoka": "Brąz",
       "pieniadz_koszt": 30,
       "utrzymanie_pieniadz_ture": 24,
+      "kategoria_utrzymania": "inna",
       "baza": {
         "pieniadz_koszt_zrodlo": 15,
         "rola_linia": "Flanka",
@@ -108,6 +116,7 @@
       "epoka": "Brąz",
       "pieniadz_koszt": 22,
       "utrzymanie_pieniadz_ture": 24,
+      "kategoria_utrzymania": "inna",
       "baza": {
         "pieniadz_koszt_zrodlo": 11,
         "rola_linia": "Flanka",
@@ -120,6 +129,7 @@
       "epoka": "Brąz",
       "pieniadz_koszt": 18,
       "utrzymanie_pieniadz_ture": 24,
+      "kategoria_utrzymania": "inna",
       "baza": {
         "pieniadz_koszt_zrodlo": 9,
         "rola_linia": "Morska",
@@ -132,6 +142,7 @@
       "epoka": "Żelazo",
       "pieniadz_koszt": 36,
       "utrzymanie_pieniadz_ture": 32,
+      "kategoria_utrzymania": "inna",
       "baza": {
         "pieniadz_koszt_zrodlo": 9,
         "rola_linia": "Wręcz",
@@ -144,6 +155,7 @@
       "epoka": "Żelazo",
       "pieniadz_koszt": 0,
       "utrzymanie_pieniadz_ture": 0,
+      "kategoria_utrzymania": "super",
       "baza": {
         "pieniadz_koszt_zrodlo": 0,
         "rola_linia": "Wręcz",
@@ -156,6 +168,7 @@
       "epoka": "Żelazo",
       "pieniadz_koszt": 36,
       "utrzymanie_pieniadz_ture": 32,
+      "kategoria_utrzymania": "inna",
       "baza": {
         "pieniadz_koszt_zrodlo": 9,
         "rola_linia": "Wręcz",
@@ -168,6 +181,7 @@
       "epoka": "Żelazo",
       "pieniadz_koszt": 0,
       "utrzymanie_pieniadz_ture": 0,
+      "kategoria_utrzymania": "super",
       "baza": {
         "pieniadz_koszt_zrodlo": 0,
         "rola_linia": "Wręcz",
@@ -180,6 +194,7 @@
       "epoka": "Brąz",
       "pieniadz_koszt": 28,
       "utrzymanie_pieniadz_ture": 24,
+      "kategoria_utrzymania": "inna",
       "baza": {
         "pieniadz_koszt_zrodlo": 14,
         "rola_linia": "Flanka",
@@ -192,6 +207,7 @@
       "epoka": "Brąz",
       "pieniadz_koszt": 0,
       "utrzymanie_pieniadz_ture": 0,
+      "kategoria_utrzymania": "super",
       "baza": {
         "pieniadz_koszt_zrodlo": 0,
         "rola_linia": "Wręcz",
@@ -204,6 +220,7 @@
       "epoka": "Brąz",
       "pieniadz_koszt": 16,
       "utrzymanie_pieniadz_ture": 16,
+      "kategoria_utrzymania": "inna",
       "baza": {
         "pieniadz_koszt_zrodlo": 8,
         "rola_linia": "Wręcz",
@@ -216,6 +233,7 @@
       "epoka": "Kamień",
       "pieniadz_koszt": 10,
       "utrzymanie_pieniadz_ture": 4,
+      "kategoria_utrzymania": "inna",
       "baza": {
         "pieniadz_koszt_zrodlo": 10,
         "rola_linia": "Dystans",
@@ -228,6 +246,7 @@
       "epoka": "Brąz",
       "pieniadz_koszt": 0,
       "utrzymanie_pieniadz_ture": 0,
+      "kategoria_utrzymania": "super",
       "baza": {
         "pieniadz_koszt_zrodlo": 0,
         "rola_linia": "Wręcz",
@@ -240,6 +259,7 @@
       "epoka": "Kamień",
       "pieniadz_koszt": 13,
       "utrzymanie_pieniadz_ture": 8,
+      "kategoria_utrzymania": "inna",
       "baza": {
         "pieniadz_koszt_zrodlo": 13,
         "rola_linia": "Wręcz",
@@ -252,6 +272,7 @@
       "epoka": "Brąz",
       "pieniadz_koszt": 18,
       "utrzymanie_pieniadz_ture": 16,
+      "kategoria_utrzymania": "inna",
       "baza": {
         "pieniadz_koszt_zrodlo": 9,
         "rola_linia": "Wręcz",
@@ -264,6 +285,7 @@
       "epoka": "Brąz",
       "pieniadz_koszt": 8,
       "utrzymanie_pieniadz_ture": 8,
+      "kategoria_utrzymania": "inna",
       "baza": {
         "pieniadz_koszt_zrodlo": 4,
         "rola_linia": "Dystans",
@@ -276,6 +298,7 @@
       "epoka": "Kamień",
       "pieniadz_koszt": 5,
       "utrzymanie_pieniadz_ture": 4,
+      "kategoria_utrzymania": "inna",
       "baza": {
         "pieniadz_koszt_zrodlo": 5,
         "rola_linia": "Dystans",
@@ -288,6 +311,7 @@
       "epoka": "Brąz",
       "pieniadz_koszt": 0,
       "utrzymanie_pieniadz_ture": 0,
+      "kategoria_utrzymania": "super",
       "baza": {
         "pieniadz_koszt_zrodlo": 0,
         "rola_linia": "Wręcz",
@@ -300,6 +324,7 @@
       "epoka": "Brąz",
       "pieniadz_koszt": 28,
       "utrzymanie_pieniadz_ture": 24,
+      "kategoria_utrzymania": "inna",
       "baza": {
         "pieniadz_koszt_zrodlo": 14,
         "rola_linia": "Flanka",
@@ -312,6 +337,7 @@
       "epoka": "Kamień",
       "pieniadz_koszt": 7,
       "utrzymanie_pieniadz_ture": 4,
+      "kategoria_utrzymania": "inna",
       "baza": {
         "pieniadz_koszt_zrodlo": 7,
         "rola_linia": "Dystans",
@@ -324,6 +350,7 @@
       "epoka": "Brąz",
       "pieniadz_koszt": 32,
       "utrzymanie_pieniadz_ture": 24,
+      "kategoria_utrzymania": "inna",
       "baza": {
         "pieniadz_koszt_zrodlo": 16,
         "rola_linia": "Flanka",
@@ -336,6 +363,7 @@
       "epoka": "Brąz",
       "pieniadz_koszt": 18,
       "utrzymanie_pieniadz_ture": 16,
+      "kategoria_utrzymania": "inna",
       "baza": {
         "pieniadz_koszt_zrodlo": 9,
         "rola_linia": "Wręcz",
@@ -348,6 +376,7 @@
       "epoka": "Brąz",
       "pieniadz_koszt": 0,
       "utrzymanie_pieniadz_ture": 0,
+      "kategoria_utrzymania": "super",
       "baza": {
         "pieniadz_koszt_zrodlo": 0,
         "rola_linia": "Wręcz",
@@ -360,6 +389,7 @@
       "epoka": "Brąz",
       "pieniadz_koszt": 20,
       "utrzymanie_pieniadz_ture": 16,
+      "kategoria_utrzymania": "inna",
       "baza": {
         "pieniadz_koszt_zrodlo": 10,
         "rola_linia": "Dystans",
@@ -372,6 +402,7 @@
       "epoka": "Kamień",
       "pieniadz_koszt": 5,
       "utrzymanie_pieniadz_ture": 4,
+      "kategoria_utrzymania": "inna",
       "baza": {
         "pieniadz_koszt_zrodlo": 5,
         "rola_linia": "Dystans",
@@ -384,6 +415,7 @@
       "epoka": "Brąz",
       "pieniadz_koszt": 38,
       "utrzymanie_pieniadz_ture": 24,
+      "kategoria_utrzymania": "inna",
       "baza": {
         "pieniadz_koszt_zrodlo": 19,
         "rola_linia": "Flanka",
@@ -396,6 +428,7 @@
       "epoka": "Brąz",
       "pieniadz_koszt": 18,
       "utrzymanie_pieniadz_ture": 16,
+      "kategoria_utrzymania": "inna",
       "baza": {
         "pieniadz_koszt_zrodlo": 9,
         "rola_linia": "Wręcz",
@@ -408,6 +441,7 @@
       "epoka": "Brąz",
       "pieniadz_koszt": 0,
       "utrzymanie_pieniadz_ture": 0,
+      "kategoria_utrzymania": "super",
       "baza": {
         "pieniadz_koszt_zrodlo": 0,
         "rola_linia": "Wręcz",
@@ -420,6 +454,7 @@
       "epoka": "Brąz",
       "pieniadz_koszt": 18,
       "utrzymanie_pieniadz_ture": 16,
+      "kategoria_utrzymania": "inna",
       "baza": {
         "pieniadz_koszt_zrodlo": 9,
         "rola_linia": "Wręcz",
@@ -432,6 +467,7 @@
       "epoka": "Brąz",
       "pieniadz_koszt": 30,
       "utrzymanie_pieniadz_ture": 24,
+      "kategoria_utrzymania": "inna",
       "baza": {
         "pieniadz_koszt_zrodlo": 15,
         "rola_linia": "Flanka",
@@ -444,6 +480,7 @@
       "epoka": "Brąz",
       "pieniadz_koszt": 18,
       "utrzymanie_pieniadz_ture": 16,
+      "kategoria_utrzymania": "inna",
       "baza": {
         "pieniadz_koszt_zrodlo": 9,
         "rola_linia": "Wręcz",
@@ -456,6 +493,7 @@
       "epoka": "Brąz",
       "pieniadz_koszt": 18,
       "utrzymanie_pieniadz_ture": 16,
+      "kategoria_utrzymania": "inna",
       "baza": {
         "pieniadz_koszt_zrodlo": 9,
         "rola_linia": "Wręcz",
@@ -468,6 +506,7 @@
       "epoka": "Brąz",
       "pieniadz_koszt": 32,
       "utrzymanie_pieniadz_ture": 24,
+      "kategoria_utrzymania": "inna",
       "baza": {
         "pieniadz_koszt_zrodlo": 16,
         "rola_linia": "Flanka",
@@ -480,6 +519,7 @@
       "epoka": "Brąz",
       "pieniadz_koszt": 16,
       "utrzymanie_pieniadz_ture": 16,
+      "kategoria_utrzymania": "inna",
       "baza": {
         "pieniadz_koszt_zrodlo": 8,
         "rola_linia": "Dystans",
@@ -492,6 +532,7 @@
       "epoka": "Żelazo",
       "pieniadz_koszt": 28,
       "utrzymanie_pieniadz_ture": 16,
+      "kategoria_utrzymania": "inna",
       "baza": {
         "pieniadz_koszt_zrodlo": 7,
         "rola_linia": "Wręcz",
@@ -504,6 +545,7 @@
       "epoka": "Żelazo",
       "pieniadz_koszt": 36,
       "utrzymanie_pieniadz_ture": 32,
+      "kategoria_utrzymania": "inna",
       "baza": {
         "pieniadz_koszt_zrodlo": 9,
         "rola_linia": "Wręcz",
@@ -516,6 +558,7 @@
       "epoka": "Żelazo",
       "pieniadz_koszt": 56,
       "utrzymanie_pieniadz_ture": 48,
+      "kategoria_utrzymania": "inna",
       "baza": {
         "pieniadz_koszt_zrodlo": 14,
         "rola_linia": "Flanka",
@@ -527,7 +570,8 @@
       "jednostka": "Wojownik germański",
       "epoka": "Żelazo",
       "pieniadz_koszt": 0,
-      "utrzymanie_pieniadz_ture": 32,
+      "utrzymanie_pieniadz_ture": 0,
+      "kategoria_utrzymania": "super",
       "baza": {
         "pieniadz_koszt_zrodlo": 0,
         "rola_linia": "Wręcz",
@@ -540,6 +584,7 @@
       "epoka": "Żelazo",
       "pieniadz_koszt": 32,
       "utrzymanie_pieniadz_ture": 32,
+      "kategoria_utrzymania": "inna",
       "baza": {
         "pieniadz_koszt_zrodlo": 8,
         "rola_linia": "Wręcz",
@@ -552,6 +597,7 @@
       "epoka": "Kamień",
       "pieniadz_koszt": 7,
       "utrzymanie_pieniadz_ture": 4,
+      "kategoria_utrzymania": "inna",
       "baza": {
         "pieniadz_koszt_zrodlo": 7,
         "rola_linia": "Oblężnicza",
@@ -564,6 +610,7 @@
       "epoka": "Brąz",
       "pieniadz_koszt": 18,
       "utrzymanie_pieniadz_ture": 16,
+      "kategoria_utrzymania": "inna",
       "baza": {
         "pieniadz_koszt_zrodlo": 9,
         "rola_linia": "Oblężnicza",
@@ -576,6 +623,7 @@
       "epoka": "Żelazo",
       "pieniadz_koszt": 36,
       "utrzymanie_pieniadz_ture": 32,
+      "kategoria_utrzymania": "inna",
       "baza": {
         "pieniadz_koszt_zrodlo": 9,
         "rola_linia": "Oblężnicza",
@@ -588,6 +636,7 @@
       "epoka": "Brąz",
       "pieniadz_koszt": 20,
       "utrzymanie_pieniadz_ture": 16,
+      "kategoria_utrzymania": "inna",
       "baza": {
         "pieniadz_koszt_zrodlo": 10,
         "rola_linia": "Oblężnicza",
@@ -600,6 +649,7 @@
       "epoka": "Brąz",
       "pieniadz_koszt": 16,
       "utrzymanie_pieniadz_ture": 16,
+      "kategoria_utrzymania": "inna",
       "baza": {
         "pieniadz_koszt_zrodlo": 8,
         "rola_linia": "Wręcz",
@@ -612,6 +662,7 @@
       "epoka": "Brąz",
       "pieniadz_koszt": 14,
       "utrzymanie_pieniadz_ture": 16,
+      "kategoria_utrzymania": "inna",
       "baza": {
         "pieniadz_koszt_zrodlo": 7,
         "rola_linia": "Wręcz",
@@ -624,6 +675,7 @@
       "epoka": "Żelazo",
       "pieniadz_koszt": 64,
       "utrzymanie_pieniadz_ture": 48,
+      "kategoria_utrzymania": "inna",
       "baza": {
         "pieniadz_koszt_zrodlo": 16,
         "rola_linia": "Flanka",
@@ -636,6 +688,7 @@
       "epoka": "Żelazo",
       "pieniadz_koszt": 60,
       "utrzymanie_pieniadz_ture": 48,
+      "kategoria_utrzymania": "inna",
       "baza": {
         "pieniadz_koszt_zrodlo": 15,
         "rola_linia": "Flanka",
@@ -648,6 +701,7 @@
       "epoka": "Brąz",
       "pieniadz_koszt": 14,
       "utrzymanie_pieniadz_ture": 16,
+      "kategoria_utrzymania": "inna",
       "baza": {
         "pieniadz_koszt_zrodlo": 7,
         "rola_linia": "Dystans",
@@ -660,6 +714,7 @@
       "epoka": "Żelazo",
       "pieniadz_koszt": 36,
       "utrzymanie_pieniadz_ture": 32,
+      "kategoria_utrzymania": "inna",
       "baza": {
         "pieniadz_koszt_zrodlo": 9,
         "rola_linia": "Wręcz",
@@ -672,6 +727,7 @@
       "epoka": "Żelazo",
       "pieniadz_koszt": 52,
       "utrzymanie_pieniadz_ture": 48,
+      "kategoria_utrzymania": "inna",
       "baza": {
         "pieniadz_koszt_zrodlo": 13,
         "rola_linia": "Flanka",
@@ -684,6 +740,7 @@
       "epoka": "Brąz",
       "pieniadz_koszt": 18,
       "utrzymanie_pieniadz_ture": 16,
+      "kategoria_utrzymania": "inna",
       "baza": {
         "pieniadz_koszt_zrodlo": 9,
         "rola_linia": "Wręcz",
@@ -696,6 +753,7 @@
       "epoka": "Brąz",
       "pieniadz_koszt": 18,
       "utrzymanie_pieniadz_ture": 16,
+      "kategoria_utrzymania": "inna",
       "baza": {
         "pieniadz_koszt_zrodlo": 9,
         "rola_linia": "Wręcz",
@@ -708,6 +766,7 @@
       "epoka": "Żelazo",
       "pieniadz_koszt": 36,
       "utrzymanie_pieniadz_ture": 32,
+      "kategoria_utrzymania": "inna",
       "baza": {
         "pieniadz_koszt_zrodlo": 9,
         "rola_linia": "Wręcz",
@@ -720,6 +779,7 @@
       "epoka": "Brąz",
       "pieniadz_koszt": 34,
       "utrzymanie_pieniadz_ture": 24,
+      "kategoria_utrzymania": "inna",
       "baza": {
         "pieniadz_koszt_zrodlo": 17,
         "rola_linia": "Flanka",
@@ -732,6 +792,7 @@
       "epoka": "Brąz",
       "pieniadz_koszt": 18,
       "utrzymanie_pieniadz_ture": 16,
+      "kategoria_utrzymania": "inna",
       "baza": {
         "pieniadz_koszt_zrodlo": 9,
         "rola_linia": "Wręcz",
@@ -744,6 +805,7 @@
       "epoka": "Żelazo",
       "pieniadz_koszt": 36,
       "utrzymanie_pieniadz_ture": 32,
+      "kategoria_utrzymania": "inna",
       "baza": {
         "pieniadz_koszt_zrodlo": 9,
         "rola_linia": "Wręcz",
@@ -756,6 +818,7 @@
       "epoka": "Brąz",
       "pieniadz_koszt": 18,
       "utrzymanie_pieniadz_ture": 16,
+      "kategoria_utrzymania": "inna",
       "baza": {
         "pieniadz_koszt_zrodlo": 9,
         "rola_linia": "Wręcz",
@@ -768,6 +831,7 @@
       "epoka": "Brąz",
       "pieniadz_koszt": 18,
       "utrzymanie_pieniadz_ture": 16,
+      "kategoria_utrzymania": "inna",
       "baza": {
         "pieniadz_koszt_zrodlo": 9,
         "rola_linia": "Wręcz",
@@ -780,6 +844,7 @@
       "epoka": "Żelazo",
       "pieniadz_koszt": 36,
       "utrzymanie_pieniadz_ture": 32,
+      "kategoria_utrzymania": "inna",
       "baza": {
         "pieniadz_koszt_zrodlo": 9,
         "rola_linia": "Wręcz",
@@ -792,6 +857,7 @@
       "epoka": "Żelazo",
       "pieniadz_koszt": 36,
       "utrzymanie_pieniadz_ture": 32,
+      "kategoria_utrzymania": "inna",
       "baza": {
         "pieniadz_koszt_zrodlo": 9,
         "rola_linia": "Wręcz",
@@ -804,6 +870,7 @@
       "epoka": "Brąz",
       "pieniadz_koszt": 18,
       "utrzymanie_pieniadz_ture": 16,
+      "kategoria_utrzymania": "inna",
       "baza": {
         "pieniadz_koszt_zrodlo": 9,
         "rola_linia": "Wręcz",
@@ -816,6 +883,7 @@
       "epoka": "Żelazo",
       "pieniadz_koszt": 36,
       "utrzymanie_pieniadz_ture": 32,
+      "kategoria_utrzymania": "inna",
       "baza": {
         "pieniadz_koszt_zrodlo": 9,
         "rola_linia": "Wręcz",
@@ -828,6 +896,7 @@
       "epoka": "Żelazo",
       "pieniadz_koszt": 32,
       "utrzymanie_pieniadz_ture": 32,
+      "kategoria_utrzymania": "inna",
       "baza": {
         "pieniadz_koszt_zrodlo": 8,
         "rola_linia": "Wręcz",
@@ -840,6 +909,7 @@
       "epoka": "Żelazo",
       "pieniadz_koszt": 0,
       "utrzymanie_pieniadz_ture": 0,
+      "kategoria_utrzymania": "super",
       "baza": {
         "pieniadz_koszt_zrodlo": 0,
         "rola_linia": "Wręcz",
@@ -852,6 +922,7 @@
       "epoka": "Żelazo",
       "pieniadz_koszt": 32,
       "utrzymanie_pieniadz_ture": 32,
+      "kategoria_utrzymania": "inna",
       "baza": {
         "pieniadz_koszt_zrodlo": 8,
         "rola_linia": "Wręcz",
@@ -864,6 +935,7 @@
       "epoka": "Brąz",
       "pieniadz_koszt": 18,
       "utrzymanie_pieniadz_ture": 16,
+      "kategoria_utrzymania": "inna",
       "baza": {
         "pieniadz_koszt_zrodlo": 9,
         "rola_linia": "Wręcz",
@@ -876,6 +948,7 @@
       "epoka": "Żelazo",
       "pieniadz_koszt": 36,
       "utrzymanie_pieniadz_ture": 32,
+      "kategoria_utrzymania": "inna",
       "baza": {
         "pieniadz_koszt_zrodlo": 9,
         "rola_linia": "Wręcz",
@@ -888,6 +961,7 @@
       "epoka": "Żelazo",
       "pieniadz_koszt": 36,
       "utrzymanie_pieniadz_ture": 32,
+      "kategoria_utrzymania": "inna",
       "baza": {
         "pieniadz_koszt_zrodlo": 9,
         "rola_linia": "Wręcz",
@@ -900,6 +974,7 @@
       "epoka": "Żelazo",
       "pieniadz_koszt": 28,
       "utrzymanie_pieniadz_ture": 16,
+      "kategoria_utrzymania": "inna",
       "baza": {
         "pieniadz_koszt_zrodlo": 7,
         "rola_linia": "Wręcz",

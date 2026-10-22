@@ -1,0 +1,100 @@
+{
+  "meta": {
+    "status": "BOOTSTRAP: wartości startowe rozwinięte z reguł weba. Źródłem prawdy do ręcznego balansu jest TA tabela (edytuj liczby, nie mnożniki). Tabela NIE jest porównywana ze wzorem przy buildzie.",
+    "zrodlo": "gra/data/econ-params.json (globalne)",
+    "regula_weba": "economy-upkeep.ts:392-394 magazynEraMultiplier, :448-458 ownerResourceCapacityPerType, :120-127 readNum",
+    "pin_web": "edb8fb56",
+    "wygenerowano": "R-RUSTPORT-P3-19-FLATTEN-MULTIPLIERS-Q1 runda 4, generator: gen-round4.mjs",
+    "uwaga": "cap(typ) = surowce_baza_epoki + surowce_bonus_na_magazyn_epoki x liczba_Magazynow (liczba = wejście jawne, nie w tabeli)."
+  },
+  "osie": {
+    "poziom_trudnosci": [
+      "easy",
+      "normal",
+      "hard"
+    ]
+  },
+  "wiersze": [
+    {
+      "epoka_ordynal": 1,
+      "mnoznik_ery": 1,
+      "wartosci": [
+        {
+          "poziom_trudnosci": "easy",
+          "surowce_baza_epoki": 50000,
+          "surowce_bonus_na_magazyn_epoki": 500,
+          "zywnosc_baza": 25,
+          "zywnosc_mnoznik_spichlerz": 6
+        },
+        {
+          "poziom_trudnosci": "normal",
+          "surowce_baza_epoki": 50000,
+          "surowce_bonus_na_magazyn_epoki": 500,
+          "zywnosc_baza": 20,
+          "zywnosc_mnoznik_spichlerz": 5
+        },
+        {
+          "poziom_trudnosci": "hard",
+          "surowce_baza_epoki": 50000,
+          "surowce_bonus_na_magazyn_epoki": 500,
+          "zywnosc_baza": 15,
+          "zywnosc_mnoznik_spichlerz": 4
+        }
+      ]
+    },
+    {
+      "epoka_ordynal": 2,
+      "mnoznik_ery": 2,
+      "wartosci": [
+        {
+          "poziom_trudnosci": "easy",
+          "surowce_baza_epoki": 100000,
+          "surowce_bonus_na_magazyn_epoki": 1000,
+          "zywnosc_baza": 25,
+          "zywnosc_mnoznik_spichlerz": 6
+        },
+        {
+          "poziom_trudnosci": "normal",
+          "surowce_baza_epoki": 100000,
+          "surowce_bonus_na_magazyn_epoki": 1000,
+          "zywnosc_baza": 20,
+          "zywnosc_mnoznik_spichlerz": 5
+        },
+        {
+          "poziom_trudnosci": "hard",
+          "surowce_baza_epoki": 100000,
+          "surowce_bonus_na_magazyn_epoki": 1000,
+          "zywnosc_baza": 15,
+          "zywnosc_mnoznik_spichlerz": 4
+        }
+      ]
+    },
+    {
+      "epoka_ordynal": 3,
+      "mnoznik_ery": 4,
+      "wartosci": [
+        {
+          "poziom_trudnosci": "easy",
+          "surowce_baza_epoki": 200000,
+          "surowce_bonus_na_magazyn_epoki": 2000,
+          "zywnosc_baza": 25,
+          "zywnosc_mnoznik_spichlerz": 6
+        },
+        {
+          "poziom_trudnosci": "normal",
+          "surowce_baza_epoki": 200000,
+          "surowce_bonus_na_magazyn_epoki": 2000,
+          "zywnosc_baza": 20,
+          "zywnosc_mnoznik_spichlerz": 5
+        },
+        {
+          "poziom_trudnosci": "hard",
+          "surowce_baza_epoki": 200000,
+          "surowce_bonus_na_magazyn_epoki": 2000,
+          "zywnosc_baza": 15,
+          "zywnosc_mnoznik_spichlerz": 4
+        }
+      ]
+    }
+  ]
+}

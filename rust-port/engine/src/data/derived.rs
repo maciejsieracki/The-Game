@@ -128,6 +128,9 @@ pub struct UnitGoldRow {
     pub epoka: String,
     pub pieniadz_koszt: u32,
     pub utrzymanie_pieniadz_ture: u32,
+    /// Kategoria jednostki wg `categoryOf` (web). `super` i `zwiadowca` mają utrzymanie 0
+    /// (economy-upkeep.ts:967-968); wartość w `utrzymanie_pieniadz_ture` to już wynik tej reguły.
+    pub kategoria_utrzymania: String,
     pub baza: UnitGoldBase,
 }
 
@@ -154,4 +157,309 @@ pub fn parse_unit_gold_costs() -> Result<UnitGoldCostsFile, serde_json::Error> {
 
 pub fn parse_building_stock_costs() -> Result<BuildingStockCostsFile, serde_json::Error> {
     serde_json::from_str(BUILDING_STOCK_COSTS_JSON)
+}
+
+// ---------------------------------------------------------------------------
+// Runda 4 (P3-19): tabele wartości rozwiniętych dla wierszy 12-18 i 25 oraz osi (b)
+// Pracy budynków i złota jednostek. Wszystkie pliki są edytowalnym źródłem prawdy
+// (liczby, nie mnożniki); bootstrap = dyspozycje/autobot/runs/R-RUSTPORT-P3-19-FLATTEN-MULTIPLIERS-Q1/.
+// ---------------------------------------------------------------------------
+
+/// Oś (b) Pracy budynków: poziom x pace x tryb x zniżka cywilizacji.
+pub const BUILDING_WORK_STATES_JSON: &str =
+    include_str!("../../data/derived/building-work-states.json");
+/// Oś (b) złota jednostek: pace x tryb x zniżka rekrutacji.
+pub const UNIT_GOLD_STATES_JSON: &str = include_str!("../../data/derived/unit-gold-states.json");
+/// Utrzymanie złota budynku (wiersz 12), per poziom.
+pub const BUILDING_GOLD_UPKEEP_JSON: &str =
+    include_str!("../../data/derived/building-gold-upkeep.json");
+/// Żywność wojska w setnych (wiersz 13): stan x terytorium x poziom trudności.
+pub const UNIT_FOOD_JSON: &str = include_str!("../../data/derived/unit-food.json");
+/// Żywność na mieszkańca przy poziomie racji (wiersz 14).
+pub const RACJE_JSON: &str = include_str!("../../data/derived/racje.json");
+/// Koszt badań (wiersz 15): tempo x tryb.
+pub const RESEARCH_COSTS_JSON: &str = include_str!("../../data/derived/research-costs.json");
+/// Praca ulepszeń terenu (wiersze 16 i 25), per ulepszenie.
+pub const IMPROVEMENT_WORK_JSON: &str = include_str!("../../data/derived/improvement-work.json");
+/// Praca i żywność cudów (wiersz 17), per cud.
+pub const WONDER_WORK_JSON: &str = include_str!("../../data/derived/wonder-work.json");
+/// Limity magazynu (wiersz 18): epoka x poziom trudności; liczba Magazynów = wejście jawne.
+pub const STORAGE_CAPS_JSON: &str = include_str!("../../data/derived/storage-caps.json");
+
+/// Tolerancja porównania zniżki (wartości w JSON są dokładnymi ułamkami dziesiętnymi).
+const ZNIZKA_EPS: f64 = 1e-9;
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct BuildingWorkStatesFile {
+    pub meta: serde_json::Value,
+    pub osie: serde_json::Value,
+    pub wiersze: Vec<BuildingWorkStatesRow>,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct BuildingWorkStatesRow {
+    pub budynek: String,
+    pub poziom: u32,
+    #[serde(rename = "epokaWejscia")]
+    pub epoka_wejscia: i64,
+    pub koszt_przed_tempem: u32,
+    pub wartosci: Vec<BuildingWorkValue>,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct BuildingWorkValue {
+    pub pace: String,
+    pub tryb: String,
+    pub znizka_cywilizacji: f64,
+    pub praca: u32,
+    /// Koszt zakupu budynku za złoto w tym stanie (web: Praca x 2, production.ts:635-638).
+    pub zakup_zloto: u32,
+}
+
+impl BuildingWorkStatesFile {
+    /// Praca budynku dla konkretnego stanu (b). `None`, gdy klucza nie ma w tabeli.
+    pub fn lookup(
+        &self,
+        budynek: &str,
+        poziom: u32,
+        pace: &str,
+        tryb: &str,
+        znizka_cywilizacji: f64,
+    ) -> Option<u32> {
+        let row = self
+            .wiersze
+            .iter()
+            .find(|r| r.budynek == budynek && r.poziom == poziom)?;
+        row.wartosci
+            .iter()
+            .find(|w| {
+                w.pace == pace
+                    && w.tryb == tryb
+                    && (w.znizka_cywilizacji - znizka_cywilizacji).abs() < ZNIZKA_EPS
+            })
+            .map(|w| w.praca)
+    }
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct UnitGoldStatesFile {
+    pub meta: serde_json::Value,
+    pub osie: serde_json::Value,
+    pub wiersze: Vec<UnitGoldStatesRow>,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct UnitGoldStatesRow {
+    pub jednostka: String,
+    pub epoka: String,
+    pub koszt_przed_tempem: u32,
+    pub wartosci: Vec<UnitGoldValue>,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct UnitGoldValue {
+    pub pace: String,
+    pub tryb: String,
+    pub znizka_rekrutacji: f64,
+    pub pieniadz: u32,
+}
+
+impl UnitGoldStatesFile {
+    /// Koszt zakupu jednostki w złocie dla konkretnego stanu (b).
+    pub fn lookup(
+        &self,
+        jednostka: &str,
+        pace: &str,
+        tryb: &str,
+        znizka_rekrutacji: f64,
+    ) -> Option<u32> {
+        let row = self.wiersze.iter().find(|r| r.jednostka == jednostka)?;
+        row.wartosci
+            .iter()
+            .find(|w| {
+                w.pace == pace
+                    && w.tryb == tryb
+                    && (w.znizka_rekrutacji - znizka_rekrutacji).abs() < ZNIZKA_EPS
+            })
+            .map(|w| w.pieniadz)
+    }
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct BuildingGoldUpkeepFile {
+    pub meta: serde_json::Value,
+    pub wiersze: Vec<BuildingGoldUpkeepRow>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct BuildingGoldUpkeepRow {
+    pub budynek: String,
+    pub poziom: u32,
+    #[serde(rename = "epokaWejscia")]
+    pub epoka_wejscia: i64,
+    pub utrzymanie_zlota: u32,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct UnitFoodFile {
+    pub meta: serde_json::Value,
+    pub osie: serde_json::Value,
+    pub wiersze: Vec<UnitFoodRow>,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct UnitFoodRow {
+    pub jednostka: String,
+    pub epoka: String,
+    pub zywnosc_baza_tabela: Option<u32>,
+    pub wartosci: Vec<UnitFoodValue>,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct UnitFoodValue {
+    pub stan: String,
+    pub terytorium: String,
+    pub poziom_trudnosci: String,
+    /// Żywność na turę x 100 (liczba całkowita; 152 = 1,52).
+    pub zywnosc_setne: u32,
+    pub zywnosc_dokladnie: f64,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct RacjeFile {
+    pub meta: serde_json::Value,
+    pub wiersze: Vec<RacjeRow>,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct RacjeRow {
+    pub poziom_racji: f64,
+    pub zywnosc_na_mieszkanca: u32,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct ResearchCostsFile {
+    pub meta: serde_json::Value,
+    pub osie: serde_json::Value,
+    pub wiersze: Vec<ResearchCostsRow>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct ResearchCostsRow {
+    pub technologia: String,
+    pub epoka: String,
+    pub koszt_bazowy: u32,
+    pub wartosci: Vec<ResearchCostValue>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct ResearchCostValue {
+    pub tempo: String,
+    pub tryb: String,
+    pub koszt: u32,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct ImprovementWorkFile {
+    pub meta: serde_json::Value,
+    pub wiersze: Vec<ImprovementWorkRow>,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct ImprovementWorkRow {
+    pub ulepszenie: String,
+    pub nazwa: String,
+    pub epoka: i64,
+    pub koszt_praca_baza: f64,
+    pub praca: u32,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct WonderWorkFile {
+    pub meta: serde_json::Value,
+    pub wiersze: Vec<WonderWorkRow>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct WonderWorkRow {
+    pub cud: String,
+    pub nazwa: String,
+    #[serde(rename = "kosztBudowy")]
+    pub koszt_budowy: i64,
+    pub praca: u32,
+    pub zywnosc: u32,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct StorageCapsFile {
+    pub meta: serde_json::Value,
+    pub osie: serde_json::Value,
+    pub wiersze: Vec<StorageCapsRow>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct StorageCapsRow {
+    pub epoka_ordynal: u32,
+    pub mnoznik_ery: u32,
+    pub wartosci: Vec<StorageCapValue>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct StorageCapValue {
+    pub poziom_trudnosci: String,
+    pub surowce_baza_epoki: u32,
+    pub surowce_bonus_na_magazyn_epoki: u32,
+    pub zywnosc_baza: u32,
+    pub zywnosc_mnoznik_spichlerz: u32,
+}
+
+pub fn parse_building_work_states() -> Result<BuildingWorkStatesFile, serde_json::Error> {
+    serde_json::from_str(BUILDING_WORK_STATES_JSON)
+}
+pub fn parse_unit_gold_states() -> Result<UnitGoldStatesFile, serde_json::Error> {
+    serde_json::from_str(UNIT_GOLD_STATES_JSON)
+}
+pub fn parse_building_gold_upkeep() -> Result<BuildingGoldUpkeepFile, serde_json::Error> {
+    serde_json::from_str(BUILDING_GOLD_UPKEEP_JSON)
+}
+pub fn parse_unit_food() -> Result<UnitFoodFile, serde_json::Error> {
+    serde_json::from_str(UNIT_FOOD_JSON)
+}
+pub fn parse_racje() -> Result<RacjeFile, serde_json::Error> {
+    serde_json::from_str(RACJE_JSON)
+}
+pub fn parse_research_costs() -> Result<ResearchCostsFile, serde_json::Error> {
+    serde_json::from_str(RESEARCH_COSTS_JSON)
+}
+pub fn parse_improvement_work() -> Result<ImprovementWorkFile, serde_json::Error> {
+    serde_json::from_str(IMPROVEMENT_WORK_JSON)
+}
+pub fn parse_wonder_work() -> Result<WonderWorkFile, serde_json::Error> {
+    serde_json::from_str(WONDER_WORK_JSON)
+}
+pub fn parse_storage_caps() -> Result<StorageCapsFile, serde_json::Error> {
+    serde_json::from_str(STORAGE_CAPS_JSON)
 }

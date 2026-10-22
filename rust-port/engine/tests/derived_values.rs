@@ -448,3 +448,266 @@ fn domain_recruitment_reads_the_gold_table_without_recomputation() {
         );
     }
 }
+
+// ---------------------------------------------------------------------------
+// Runda 4 (P3-19): KSZTAŁT i KOMPLETNOŚĆ tabel wierszy 12-18, 25 oraz osi (b).
+// Nie porównują liczb ze wzorem weba. Sprawdzają: każdy budynek x każdy poziom 1..maks
+// (lub każda jednostka / technologia / cud / ulepszenie / epoka) występuje dokładnie raz,
+// każda kombinacja osi (b) występuje dokładnie raz, wartości są liczbami >= 0 (>= 1 dla Pracy),
+// osie w pliku zgadzają się z listą stanów, a lookup zwraca wartość dla każdego klucza.
+// ---------------------------------------------------------------------------
+
+use civ_engine::data::buildings_tech::{parse_buildings, parse_wonders};
+use civ_engine::data::derived::{
+    parse_building_gold_upkeep, parse_building_work_states, parse_improvement_work, parse_racje,
+    parse_research_costs, parse_storage_caps, parse_unit_food, parse_unit_gold_states,
+    parse_wonder_work,
+};
+
+const PACE_AXIS: [&str; 3] = ["niski", "normalny", "wysoki"];
+const TRYB_AXIS: [&str; 5] = [
+    "normalny",
+    "latwy_gracz",
+    "latwy_ai",
+    "trudny_gracz",
+    "trudny_ai",
+];
+const ZNIZKA_BUDYNKI_AXIS: [f64; 2] = [0.0, 0.2];
+const ZNIZKA_REKRUT_AXIS: [f64; 2] = [0.0, 0.1];
+const POZIOM_TRUDNOSCI_AXIS: [&str; 3] = ["easy", "normal", "hard"];
+
+fn znizka_key(z: f64) -> i64 {
+    (z * 1000.0).round() as i64
+}
+
+fn expected_work_keys() -> BTreeSet<(String, String, i64)> {
+    let mut out = BTreeSet::new();
+    for p in PACE_AXIS {
+        for t in TRYB_AXIS {
+            for z in ZNIZKA_BUDYNKI_AXIS {
+                out.insert((p.to_string(), t.to_string(), znizka_key(z)));
+            }
+        }
+    }
+    out
+}
+
+#[test]
+fn building_work_states_cover_each_building_level_and_axis_combination_exactly_once() {
+    let buildings = parse_buildings().expect("buildings.json parses");
+    let table = parse_building_work_states().expect("building work states parse");
+
+    let expected_rows: usize = buildings.iter().map(|b| b.maks_poziom as usize).sum();
+    assert_eq!(expected_rows, 65, "42 budynki, poziomy 1..maks");
+    assert_eq!(table.wiersze.len(), expected_rows);
+    assert_eq!(table.osie["pace"], serde_json::json!(PACE_AXIS));
+    assert_eq!(table.osie["tryb"], serde_json::json!(TRYB_AXIS));
+
+    let mut seen = BTreeSet::new();
+    for row in &table.wiersze {
+        let b = buildings
+            .iter()
+            .find(|b| b.id == row.budynek)
+            .expect("budynek exists in buildings.json");
+        assert!(row.poziom >= 1 && i64::from(row.poziom) <= b.maks_poziom);
+        assert!(
+            seen.insert((row.budynek.clone(), row.poziom)),
+            "duplicate row"
+        );
+        assert_eq!(row.wartosci.len(), 30, "3 pace x 5 tryb x 2 zniżki");
+        let keys: BTreeSet<(String, String, i64)> = row
+            .wartosci
+            .iter()
+            .map(|w| {
+                (
+                    w.pace.clone(),
+                    w.tryb.clone(),
+                    znizka_key(w.znizka_cywilizacji),
+                )
+            })
+            .collect();
+        assert_eq!(keys, expected_work_keys(), "axis combinations exactly once");
+        for w in &row.wartosci {
+            assert!(w.praca >= 1, "Praca budynku >= 1");
+            assert_eq!(
+                table.lookup(
+                    &row.budynek,
+                    row.poziom,
+                    &w.pace,
+                    &w.tryb,
+                    w.znizka_cywilizacji
+                ),
+                Some(w.praca),
+                "lookup returns the stored value"
+            );
+        }
+    }
+    assert_eq!(
+        table.lookup("stolarnia", 99, "niski", "normalny", 0.0),
+        None,
+        "unknown level"
+    );
+}
+
+#[test]
+fn unit_gold_states_cover_each_unit_and_axis_combination_exactly_once() {
+    let units = parse_units().expect("units.json parses");
+    let table = parse_unit_gold_states().expect("unit gold states parse");
+
+    assert_eq!(units.len(), 75);
+    assert_eq!(table.wiersze.len(), 75);
+    let axis: Vec<f64> = serde_json::from_value(table.osie["znizka_rekrutacji"].clone())
+        .expect("znizka_rekrutacji axis is a list of numbers");
+    assert_eq!(axis, ZNIZKA_REKRUT_AXIS.to_vec());
+
+    let mut ids = BTreeSet::new();
+    let mut expected = BTreeSet::new();
+    for p in PACE_AXIS {
+        for t in TRYB_AXIS {
+            for z in ZNIZKA_REKRUT_AXIS {
+                expected.insert((p.to_string(), t.to_string(), znizka_key(z)));
+            }
+        }
+    }
+    for row in &table.wiersze {
+        assert!(ids.insert(row.jednostka.clone()), "duplicate jednostka");
+        assert_eq!(row.wartosci.len(), 30);
+        let keys: BTreeSet<(String, String, i64)> = row
+            .wartosci
+            .iter()
+            .map(|w| {
+                (
+                    w.pace.clone(),
+                    w.tryb.clone(),
+                    znizka_key(w.znizka_rekrutacji),
+                )
+            })
+            .collect();
+        assert_eq!(keys, expected);
+        for w in &row.wartosci {
+            assert_eq!(
+                table.lookup(&row.jednostka, &w.pace, &w.tryb, w.znizka_rekrutacji),
+                Some(w.pieniadz)
+            );
+        }
+    }
+    for u in &units {
+        assert!(
+            ids.contains(&u.jednostka),
+            "every units.json unit has a row"
+        );
+    }
+}
+
+#[test]
+fn building_gold_upkeep_has_one_row_per_building_level() {
+    let buildings = parse_buildings().expect("buildings parse");
+    let table = parse_building_gold_upkeep().expect("upkeep parses");
+    let expected: usize = buildings.iter().map(|b| b.maks_poziom as usize).sum();
+    assert_eq!(table.wiersze.len(), expected);
+    let mut seen = BTreeSet::new();
+    for row in &table.wiersze {
+        assert!(
+            seen.insert((row.budynek.clone(), row.poziom)),
+            "duplicate row"
+        );
+        assert!(buildings.iter().any(|b| b.id == row.budynek));
+    }
+}
+
+#[test]
+fn unit_food_has_twelve_states_per_unit_and_integer_hundredths() {
+    let units = parse_units().expect("units parse");
+    let table = parse_unit_food().expect("unit food parses");
+    assert_eq!(table.wiersze.len(), units.len());
+    assert_eq!(
+        table.osie["poziom_trudnosci"],
+        serde_json::json!(POZIOM_TRUDNOSCI_AXIS)
+    );
+    for row in &table.wiersze {
+        assert_eq!(row.wartosci.len(), 12, "2 stany x 2 terytoria x 3 poziomy");
+        let keys: BTreeSet<(String, String, String)> = row
+            .wartosci
+            .iter()
+            .map(|w| {
+                (
+                    w.stan.clone(),
+                    w.terytorium.clone(),
+                    w.poziom_trudnosci.clone(),
+                )
+            })
+            .collect();
+        assert_eq!(keys.len(), 12, "each state exactly once");
+        for w in &row.wartosci {
+            let diff = (f64::from(w.zywnosc_setne) - w.zywnosc_dokladnie * 100.0).abs();
+            assert!(diff < 1e-6, "setne = dokladnie x 100 (spójność kolumn)");
+        }
+    }
+}
+
+#[test]
+fn racje_cover_every_half_step_from_zero_to_six_once() {
+    let table = parse_racje().expect("racje parse");
+    assert_eq!(table.wiersze.len(), 13);
+    let mut seen = BTreeSet::new();
+    for row in &table.wiersze {
+        assert!(seen.insert(row.poziom_racji.to_bits()), "duplicate poziom");
+        assert!((0.0..=6.0).contains(&row.poziom_racji));
+    }
+}
+
+#[test]
+fn research_costs_cover_each_tech_tempo_and_axis_once() {
+    let table = parse_research_costs().expect("research parse");
+    assert_eq!(table.wiersze.len(), 32);
+    let mut names = BTreeSet::new();
+    for row in &table.wiersze {
+        assert!(
+            names.insert(row.technologia.clone()),
+            "duplicate technologia"
+        );
+        assert_eq!(row.wartosci.len(), 15, "3 tempa x 5 trybów");
+        let keys: BTreeSet<(String, String)> = row
+            .wartosci
+            .iter()
+            .map(|w| (w.tempo.clone(), w.tryb.clone()))
+            .collect();
+        assert_eq!(keys.len(), 15);
+        assert!(row.wartosci.iter().all(|w| w.koszt >= 1));
+    }
+}
+
+#[test]
+fn improvement_and_wonder_tables_cover_every_entry_once() {
+    let imp = parse_improvement_work().expect("improvement parse");
+    assert_eq!(imp.wiersze.len(), 22);
+    let names: BTreeSet<&str> = imp.wiersze.iter().map(|r| r.ulepszenie.as_str()).collect();
+    assert_eq!(names.len(), 22, "no duplicate ulepszenie");
+
+    let wonders = parse_wonders().expect("wonders parse");
+    let table = parse_wonder_work().expect("wonder work parse");
+    assert_eq!(table.wiersze.len(), wonders.cuda.len());
+    let ids: BTreeSet<&str> = table.wiersze.iter().map(|r| r.cud.as_str()).collect();
+    assert_eq!(ids.len(), table.wiersze.len());
+    for w in &wonders.cuda {
+        assert!(
+            ids.contains(w.id.as_str()),
+            "every wonders.json cud has a row"
+        );
+    }
+}
+
+#[test]
+fn storage_caps_cover_each_era_and_difficulty_once() {
+    let table = parse_storage_caps().expect("storage parse");
+    assert_eq!(table.wiersze.len(), 3);
+    for row in &table.wiersze {
+        let diffs: BTreeSet<&str> = row
+            .wartosci
+            .iter()
+            .map(|w| w.poziom_trudnosci.as_str())
+            .collect();
+        assert_eq!(diffs.len(), 3);
+        assert!(diffs.iter().all(|d| POZIOM_TRUDNOSCI_AXIS.contains(d)));
+    }
+}

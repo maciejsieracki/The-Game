@@ -1,0 +1,402 @@
+{
+  "meta": {
+    "status": "BOOTSTRAP: wartości startowe rozwinięte z reguł weba. Źródłem prawdy do ręcznego balansu jest TA tabela (edytuj liczby, nie mnożniki). Tabela NIE jest porównywana ze wzorem przy buildzie.",
+    "zrodlo": "gra/data/buildings.json",
+    "regula_weba": "economy-upkeep.ts:637-657 buildingUpkeep (floor(floor(raw*2)*m_ery)); production.ts:247-251 buildingEffectAtLevel",
+    "pin_web": "edb8fb56",
+    "wygenerowano": "R-RUSTPORT-P3-19-FLATTEN-MULTIPLIERS-Q1 runda 4, generator: gen-round4.mjs",
+    "uwaga": "Statyczne per poziom; brak zależności od trudności (readNum używany tylko dla fallbacku bez wpisu, którego nie ma w danych)."
+  },
+  "wiersze": [
+    {
+      "budynek": "stolarnia",
+      "poziom": 1,
+      "epokaWejscia": 1,
+      "utrzymanie_zlota": 2
+    },
+    {
+      "budynek": "stolarnia",
+      "poziom": 2,
+      "epokaWejscia": 1,
+      "utrzymanie_zlota": 2
+    },
+    {
+      "budynek": "stolarnia",
+      "poziom": 3,
+      "epokaWejscia": 1,
+      "utrzymanie_zlota": 2
+    },
+    {
+      "budynek": "kamieniarski",
+      "poziom": 1,
+      "epokaWejscia": 1,
+      "utrzymanie_zlota": 2
+    },
+    {
+      "budynek": "kamieniarski",
+      "poziom": 2,
+      "epokaWejscia": 1,
+      "utrzymanie_zlota": 2
+    },
+    {
+      "budynek": "kamieniarski",
+      "poziom": 3,
+      "epokaWejscia": 1,
+      "utrzymanie_zlota": 2
+    },
+    {
+      "budynek": "kuznia",
+      "poziom": 1,
+      "epokaWejscia": 2,
+      "utrzymanie_zlota": 8
+    },
+    {
+      "budynek": "odlewnia_brazu",
+      "poziom": 1,
+      "epokaWejscia": 2,
+      "utrzymanie_zlota": 8
+    },
+    {
+      "budynek": "odlewnia_zelaza",
+      "poziom": 1,
+      "epokaWejscia": 3,
+      "utrzymanie_zlota": 24
+    },
+    {
+      "budynek": "wielka_odlewnia",
+      "poziom": 1,
+      "epokaWejscia": 4,
+      "utrzymanie_zlota": 32
+    },
+    {
+      "budynek": "targowisko",
+      "poziom": 1,
+      "epokaWejscia": 1,
+      "utrzymanie_zlota": 2
+    },
+    {
+      "budynek": "targowisko",
+      "poziom": 2,
+      "epokaWejscia": 1,
+      "utrzymanie_zlota": 4
+    },
+    {
+      "budynek": "targowisko",
+      "poziom": 3,
+      "epokaWejscia": 1,
+      "utrzymanie_zlota": 6
+    },
+    {
+      "budynek": "port",
+      "poziom": 1,
+      "epokaWejscia": 2,
+      "utrzymanie_zlota": 8
+    },
+    {
+      "budynek": "port_wielki",
+      "poziom": 1,
+      "epokaWejscia": 3,
+      "utrzymanie_zlota": 24
+    },
+    {
+      "budynek": "spichlerz",
+      "poziom": 1,
+      "epokaWejscia": 1,
+      "utrzymanie_zlota": 2
+    },
+    {
+      "budynek": "spichlerz_ii",
+      "poziom": 1,
+      "epokaWejscia": 2,
+      "utrzymanie_zlota": 8
+    },
+    {
+      "budynek": "garncarnia",
+      "poziom": 1,
+      "epokaWejscia": 1,
+      "utrzymanie_zlota": 2
+    },
+    {
+      "budynek": "garncarnia",
+      "poziom": 2,
+      "epokaWejscia": 1,
+      "utrzymanie_zlota": 2
+    },
+    {
+      "budynek": "garncarnia",
+      "poziom": 3,
+      "epokaWejscia": 1,
+      "utrzymanie_zlota": 2
+    },
+    {
+      "budynek": "cegielnia",
+      "poziom": 1,
+      "epokaWejscia": 2,
+      "utrzymanie_zlota": 4
+    },
+    {
+      "budynek": "cegielnia",
+      "poziom": 2,
+      "epokaWejscia": 2,
+      "utrzymanie_zlota": 4
+    },
+    {
+      "budynek": "kamienne_kregi",
+      "poziom": 1,
+      "epokaWejscia": 1,
+      "utrzymanie_zlota": 2
+    },
+    {
+      "budynek": "kamienne_kregi",
+      "poziom": 2,
+      "epokaWejscia": 1,
+      "utrzymanie_zlota": 2
+    },
+    {
+      "budynek": "kamienne_kregi",
+      "poziom": 3,
+      "epokaWejscia": 1,
+      "utrzymanie_zlota": 2
+    },
+    {
+      "budynek": "swiatynia",
+      "poziom": 1,
+      "epokaWejscia": 2,
+      "utrzymanie_zlota": 4
+    },
+    {
+      "budynek": "swiatynia",
+      "poziom": 2,
+      "epokaWejscia": 2,
+      "utrzymanie_zlota": 8
+    },
+    {
+      "budynek": "biblioteka",
+      "poziom": 1,
+      "epokaWejscia": 2,
+      "utrzymanie_zlota": 4
+    },
+    {
+      "budynek": "biblioteka",
+      "poziom": 2,
+      "epokaWejscia": 2,
+      "utrzymanie_zlota": 8
+    },
+    {
+      "budynek": "studnia",
+      "poziom": 1,
+      "epokaWejscia": 1,
+      "utrzymanie_zlota": 2
+    },
+    {
+      "budynek": "studnia",
+      "poziom": 2,
+      "epokaWejscia": 1,
+      "utrzymanie_zlota": 2
+    },
+    {
+      "budynek": "studnia",
+      "poziom": 3,
+      "epokaWejscia": 1,
+      "utrzymanie_zlota": 2
+    },
+    {
+      "budynek": "akwedukt",
+      "poziom": 1,
+      "epokaWejscia": 2,
+      "utrzymanie_zlota": 8
+    },
+    {
+      "budynek": "akwedukt",
+      "poziom": 2,
+      "epokaWejscia": 2,
+      "utrzymanie_zlota": 12
+    },
+    {
+      "budynek": "mennica",
+      "poziom": 1,
+      "epokaWejscia": 2,
+      "utrzymanie_zlota": 8
+    },
+    {
+      "budynek": "mennica",
+      "poziom": 2,
+      "epokaWejscia": 2,
+      "utrzymanie_zlota": 12
+    },
+    {
+      "budynek": "palisada",
+      "poziom": 1,
+      "epokaWejscia": 1,
+      "utrzymanie_zlota": 2
+    },
+    {
+      "budynek": "mury",
+      "poziom": 1,
+      "epokaWejscia": 2,
+      "utrzymanie_zlota": 8
+    },
+    {
+      "budynek": "mury",
+      "poziom": 2,
+      "epokaWejscia": 2,
+      "utrzymanie_zlota": 12
+    },
+    {
+      "budynek": "koszary",
+      "poziom": 1,
+      "epokaWejscia": 2,
+      "utrzymanie_zlota": 8
+    },
+    {
+      "budynek": "koszary",
+      "poziom": 2,
+      "epokaWejscia": 2,
+      "utrzymanie_zlota": 12
+    },
+    {
+      "budynek": "magazyn",
+      "poziom": 1,
+      "epokaWejscia": 2,
+      "utrzymanie_zlota": 4
+    },
+    {
+      "budynek": "magazyn",
+      "poziom": 2,
+      "epokaWejscia": 2,
+      "utrzymanie_zlota": 4
+    },
+    {
+      "budynek": "stela",
+      "poziom": 1,
+      "epokaWejscia": 1,
+      "utrzymanie_zlota": 0
+    },
+    {
+      "budynek": "stela",
+      "poziom": 2,
+      "epokaWejscia": 1,
+      "utrzymanie_zlota": 0
+    },
+    {
+      "budynek": "stela",
+      "poziom": 3,
+      "epokaWejscia": 1,
+      "utrzymanie_zlota": 0
+    },
+    {
+      "budynek": "palac",
+      "poziom": 1,
+      "epokaWejscia": 1,
+      "utrzymanie_zlota": 4
+    },
+    {
+      "budynek": "palac_ii",
+      "poziom": 1,
+      "epokaWejscia": 2,
+      "utrzymanie_zlota": 12
+    },
+    {
+      "budynek": "palac_iii",
+      "poziom": 1,
+      "epokaWejscia": 3,
+      "utrzymanie_zlota": 40
+    },
+    {
+      "budynek": "kuznia_zelaza",
+      "poziom": 1,
+      "epokaWejscia": 3,
+      "utrzymanie_zlota": 24
+    },
+    {
+      "budynek": "wielka_kuznia",
+      "poziom": 1,
+      "epokaWejscia": 4,
+      "utrzymanie_zlota": 32
+    },
+    {
+      "budynek": "fort",
+      "poziom": 1,
+      "epokaWejscia": 3,
+      "utrzymanie_zlota": 24
+    },
+    {
+      "budynek": "baszta",
+      "poziom": 1,
+      "epokaWejscia": 3,
+      "utrzymanie_zlota": 24
+    },
+    {
+      "budynek": "warsztat_oblezniczy",
+      "poziom": 1,
+      "epokaWejscia": 3,
+      "utrzymanie_zlota": 24
+    },
+    {
+      "budynek": "akademia",
+      "poziom": 1,
+      "epokaWejscia": 3,
+      "utrzymanie_zlota": 24
+    },
+    {
+      "budynek": "teatr",
+      "poziom": 1,
+      "epokaWejscia": 3,
+      "utrzymanie_zlota": 16
+    },
+    {
+      "budynek": "sad",
+      "poziom": 1,
+      "epokaWejscia": 3,
+      "utrzymanie_zlota": 16
+    },
+    {
+      "budynek": "dom_starszyzny",
+      "poziom": 1,
+      "epokaWejscia": 1,
+      "utrzymanie_zlota": 2
+    },
+    {
+      "budynek": "dwor_zarzadcy",
+      "poziom": 1,
+      "epokaWejscia": 2,
+      "utrzymanie_zlota": 8
+    },
+    {
+      "budynek": "pretorium",
+      "poziom": 1,
+      "epokaWejscia": 3,
+      "utrzymanie_zlota": 24
+    },
+    {
+      "budynek": "trybunal",
+      "poziom": 1,
+      "epokaWejscia": 2,
+      "utrzymanie_zlota": 4
+    },
+    {
+      "budynek": "trybunal",
+      "poziom": 2,
+      "epokaWejscia": 2,
+      "utrzymanie_zlota": 8
+    },
+    {
+      "budynek": "garnizon",
+      "poziom": 1,
+      "epokaWejscia": 1,
+      "utrzymanie_zlota": 4
+    },
+    {
+      "budynek": "laznia_publiczna",
+      "poziom": 1,
+      "epokaWejscia": 3,
+      "utrzymanie_zlota": 16
+    },
+    {
+      "budynek": "akademia_wojskowa",
+      "poziom": 1,
+      "epokaWejscia": 3,
+      "utrzymanie_zlota": 32
+    }
+  ]
+}
