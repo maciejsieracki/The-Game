@@ -37,3 +37,6 @@ pub use material::{GlyphTexture, Material, MaterialKind, Side, Texture};
 pub use node::{
     quat_from_unit_vectors, MatId, MeshData, Node, NodeId, NodeKind, UserData, UserValue, ROOT,
 };
+
+#[cfg(test)]
+mod tests;

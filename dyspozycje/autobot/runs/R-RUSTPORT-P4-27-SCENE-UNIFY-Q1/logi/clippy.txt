@@ -1,0 +1,4 @@
+$ cargo clippy --locked --all-targets -- -D warnings; echo "EXIT=$?"
+    Checking civ-renderer v0.1.0 (/home/user/The-Game/.claude/worktrees/wf_f2947d22-ac9-1/rust-port/renderer)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 11.68s
+EXIT=0

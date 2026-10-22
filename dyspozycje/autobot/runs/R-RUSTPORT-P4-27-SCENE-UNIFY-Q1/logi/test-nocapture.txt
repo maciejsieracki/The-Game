@@ -1,0 +1,651 @@
+$ cargo test --locked --all-targets -- --nocapture; echo "EXIT=$?"
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.07s
+     Running unittests src/lib.rs (target/debug/deps/civ_renderer-3390857ab33a1fe3)
+
+running 22 tests
+test core::jsnum::tests::to_fixed3_matches_node ... ok
+test core::jsnum::tests::to_uint32_matches_ecmascript ... ok
+test jsmath::words::tests::scalbn_is_exact_power_of_two_scaling ... ok
+test jsmath::words::tests::words_round_trip ... ok
+test models::cities::renderer::tests::terrain_top_y_matches_inline_formula_bitwise ... ok
+test models::misc::overlay::tests::to_fixed5_matches_node ... ok
+test models::misc::overlay::tests::to_fixed_d3_equals_core_to_fixed3 ... ok
+test models::wonders::builders::tests::grey_matches_hand_computation ... ok
+test models::cities::model::tests::number_to_string_follows_ecma ... ok
+test models::cities::renderer::tests::owner_color_and_civ_follow_js_remainder ... ok
+test models::wonders::builders::tests::registry_covers_the_19_ids_and_defaults_the_rest ... ok
+test models::wonders::renderer::tests::default_owner_color_follows_js_remainder ... ok
+test scene::material::tests::defaults_follow_three ... ok
+test scene::material::tests::hex_round_trip_is_exact_for_every_24_bit_colour ... ok
+test scene::tests::euler_setters_keep_the_quaternion_in_sync ... ok
+test scene::tests::graft_moves_nodes_and_materials_with_shifted_ids ... ok
+test scene::tests::mesh_root_and_named_build_a_one_node_scene ... ok
+test scene::tests::module_bodies_downcast_through_the_arc_and_compare_by_value ... ok
+test scene::tests::tracked_materials_and_retint_follow_the_unit_factory ... ok
+test scene::tests::user_data_keeps_insertion_order_and_types ... ok
+test scene::tests::world_matrices_compose_parent_first_and_skip_detached_nodes ... ok
+test scene::tests::gpu_export_lists_every_drawable_with_buffers_and_transforms ... ok
+
+test result: ok. 22 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+     Running tests/assets_nturns.rs (target/debug/deps/assets_nturns-8f7d0ea4505dd8a8)
+
+running 6 tests
+[Fixed small 40x25] turn= 10 buffer=36 texture=7 pipeline=3 bind_group=9 live_bytes=4560128 subscriptions=1 created=187 destroyed=132
+[Fixed small 40x25] turn= 10 buffer=36 texture=7 pipeline=3 bind_group=9 live_bytes=4560128 subscriptions=1 created=187 destroyed=132
+[Fixed small 40x25] turn= 50 buffer=36 texture=7 pipeline=3 bind_group=9 live_bytes=4560128 subscriptions=1 created=712 destroyed=657
+[Fixed small 40x25] turn= 50 buffer=36 texture=7 pipeline=3 bind_group=9 live_bytes=4560128 subscriptions=1 created=712 destroyed=657
+[LeakM1 small 40x25] turn= 10 buffer=164 texture=7 pipeline=3 bind_group=27 live_bytes=4953088 subscriptions=1 created=299 destroyed=98
+[LeakM1 small 40x25] turn= 50 buffer=590 texture=7 pipeline=3 bind_group=98 live_bytes=6179968 subscriptions=1 created=1187 destroyed=489
+[Fixed small 40x25] turn=200 buffer=36 texture=7 pipeline=3 bind_group=9 live_bytes=4560128 subscriptions=1 created=2760 destroyed=2705
+[LeakM1 small 40x25] turn=200 buffer=2414 texture=7 pipeline=3 bind_group=402 live_bytes=11433088 subscriptions=1 created=4785 destroyed=1959
+[LeakM1 small 40x25] turn 50 violations: live buffer: baseline=164 current=590 allowed=164; live bind_group: baseline=27 current=98 allowed=27; live bytes: baseline=4953088 current=6179968 allowed=4953088
+[LeakM1 small 40x25] turn 200 violations: live buffer: baseline=164 current=2414 allowed=164; live bind_group: baseline=27 current=402 allowed=27; live bytes: baseline=4953088 current=11433088 allowed=4953088
+[LeakM2 small 40x25] turn= 10 buffer=36 texture=67 pipeline=3 bind_group=9 live_bytes=5543168 subscriptions=1 created=187 destroyed=72
+[LeakM2 small 40x25] turn= 50 buffer=36 texture=306 pipeline=3 bind_group=9 live_bytes=9458944 subscriptions=1 created=712 destroyed=358
+[Fixed small 40x25] turn=200 buffer=36 texture=7 pipeline=3 bind_group=9 live_bytes=4560128 subscriptions=1 created=2760 destroyed=2705
+[Fixed small 40x25] budget OK at turns [50, 200]
+[LeakM2 small 40x25] turn=200 buffer=36 texture=1206 pipeline=3 bind_group=9 live_bytes=24204544 subscriptions=1 created=2760 destroyed=1506
+[LeakM2 small 40x25] turn 50 violations: live texture: baseline=67 current=306 allowed=67; live bytes: baseline=5543168 current=9458944 allowed=5543168
+[LeakM2 small 40x25] turn 200 violations: live texture: baseline=67 current=1206 allowed=67; live bytes: baseline=5543168 current=24204544 allowed=5543168
+[LeakM3 small 40x25] turn= 10 buffer=68 texture=9 pipeline=3 bind_group=11 live_bytes=6722816 subscriptions=5 created=187 destroyed=96
+[LeakM3 small 40x25] turn= 50 buffer=196 texture=17 pipeline=3 bind_group=19 live_bytes=15373568 subscriptions=21 created=712 destroyed=477
+[LeakM3 small 40x25] turn=200 buffer=676 texture=47 pipeline=3 bind_group=49 live_bytes=47813888 subscriptions=81 created=2760 destroyed=1985
+[LeakM3 small 40x25] turn 50 violations: live buffer: baseline=68 current=196 allowed=68; live texture: baseline=9 current=17 allowed=9; live bind_group: baseline=11 current=19 allowed=11; live bytes: baseline=6722816 current=15373568 allowed=6722816; subscriptions: baseline=5 current=21 allowed=5
+[LeakM3 small 40x25] turn 200 violations: live buffer: baseline=68 current=676 allowed=68; live texture: baseline=9 current=47 allowed=9; live bind_group: baseline=11 current=49 allowed=11; live bytes: baseline=6722816 current=47813888 allowed=6722816; subscriptions: baseline=5 current=81 allowed=5
+[LeakM1 large 96x60] turn= 10 buffer=714 texture=25 pipeline=3 bind_group=106 live_bytes=7547008 subscriptions=1 created=1126 destroyed=278
+[new game] after dropping game 1: live=0 live_bytes=0 fake_gpu_live=0
+test new_game_frees_everything_and_restarts_identically ... ok
+[Fixed large 96x60] turn= 10 buffer=148 texture=25 pipeline=3 bind_group=27 live_bytes=5805056 subscriptions=1 created=637 destroyed=434
+[LeakM3 small 40x25] turn= 10 buffer=68 texture=9 pipeline=3 bind_group=11 live_bytes=6722816 subscriptions=5 created=187 destroyed=96
+[LeakM3 small 40x25] turn= 50 buffer=196 texture=17 pipeline=3 bind_group=19 live_bytes=15373568 subscriptions=21 created=712 destroyed=477
+[LeakM1 large 96x60] turn= 50 buffer=2502 texture=25 pipeline=3 bind_group=404 live_bytes=12696448 subscriptions=1 created=4324 destroyed=1390
+[LeakM3 small 40x25] turn=200 buffer=676 texture=47 pipeline=3 bind_group=49 live_bytes=47813888 subscriptions=81 created=2760 destroyed=1985
+[Fixed large 96x60] turn= 50 buffer=148 texture=25 pipeline=3 bind_group=27 live_bytes=5805056 subscriptions=1 created=2337 destroyed=2134
+test leak_m3_also_retains_battle_scene_resources ... ok
+[Fixed small 40x25] turn= 10 buffer=36 texture=7 pipeline=3 bind_group=9 live_bytes=4560128 subscriptions=1 created=187 destroyed=132
+[Fixed small 40x25] turn= 50 buffer=36 texture=7 pipeline=3 bind_group=9 live_bytes=4560128 subscriptions=1 created=712 destroyed=657
+[Fixed small 40x25] turn=200 buffer=36 texture=7 pipeline=3 bind_group=9 live_bytes=4560128 subscriptions=1 created=2760 destroyed=2705
+[Fixed small 40x25] turn= 10 buffer=36 texture=7 pipeline=3 bind_group=9 live_bytes=4560128 subscriptions=1 created=187 destroyed=132
+[Fixed small 40x25] turn= 50 buffer=36 texture=7 pipeline=3 bind_group=9 live_bytes=4560128 subscriptions=1 created=712 destroyed=657
+[Fixed small 40x25] turn=200 buffer=36 texture=7 pipeline=3 bind_group=9 live_bytes=4560128 subscriptions=1 created=2760 destroyed=2705
+[LeakM1 small 40x25] turn= 10 buffer=164 texture=7 pipeline=3 bind_group=27 live_bytes=4953088 subscriptions=1 created=299 destroyed=98
+[LeakM1 large 96x60] turn=200 buffer=9552 texture=25 pipeline=3 bind_group=1579 live_bytes=33000448 subscriptions=1 created=16718 destroyed=5559
+[LeakM1 large 96x60] turn 50 violations: live buffer: baseline=714 current=2502 allowed=714; live bind_group: baseline=106 current=404 allowed=106; live bytes: baseline=7547008 current=12696448 allowed=7547008
+[LeakM1 large 96x60] turn 200 violations: live buffer: baseline=714 current=9552 allowed=714; live bind_group: baseline=106 current=1579 allowed=106; live bytes: baseline=7547008 current=33000448 allowed=7547008
+[LeakM2 large 96x60] turn= 10 buffer=148 texture=265 pipeline=3 bind_group=27 live_bytes=9737216 subscriptions=1 created=637 destroyed=194
+[LeakM1 small 40x25] turn= 50 buffer=590 texture=7 pipeline=3 bind_group=98 live_bytes=6179968 subscriptions=1 created=1187 destroyed=489
+[LeakM2 large 96x60] turn= 50 buffer=148 texture=1224 pipeline=3 bind_group=27 live_bytes=25449472 subscriptions=1 created=2336 destroyed=934
+[LeakM1 small 40x25] turn=200 buffer=2414 texture=7 pipeline=3 bind_group=402 live_bytes=11433088 subscriptions=1 created=4785 destroyed=1959
+[LeakM1 small 40x25] turn= 10 buffer=164 texture=7 pipeline=3 bind_group=27 live_bytes=4953088 subscriptions=1 created=299 destroyed=98
+[LeakM1 small 40x25] turn= 50 buffer=590 texture=7 pipeline=3 bind_group=98 live_bytes=6179968 subscriptions=1 created=1187 destroyed=489
+[Fixed large 96x60] turn=200 buffer=148 texture=25 pipeline=3 bind_group=27 live_bytes=5805056 subscriptions=1 created=8826 destroyed=8623
+[Fixed large 96x60] budget OK at turns [50, 200]
+test fixed_registry_stays_within_budget_after_10_50_200_turns ... ok
+[LeakM1 small 40x25] turn=200 buffer=2414 texture=7 pipeline=3 bind_group=402 live_bytes=11433088 subscriptions=1 created=4785 destroyed=1959
+test simulation_is_deterministic ... ok
+[rebuild 1000 cycles] start: turn=  0 buffer=36 texture=7 pipeline=3 bind_group=9 live_bytes=4560128 subscriptions=1 created=55 destroyed=0
+[rebuild 1000 cycles] end:   turn=  0 buffer=36 texture=7 pipeline=3 bind_group=9 live_bytes=4560128 subscriptions=1 created=55055 destroyed=55000
+test rebuild_in_place_1000_cycles_returns_to_initial_state ... ok
+[LeakM2 large 96x60] turn=200 buffer=148 texture=4815 pipeline=3 bind_group=27 live_bytes=84284416 subscriptions=1 created=8817 destroyed=3824
+[LeakM2 large 96x60] turn 50 violations: live texture: baseline=265 current=1224 allowed=265; live bytes: baseline=9737216 current=25449472 allowed=9737216
+[LeakM2 large 96x60] turn 200 violations: live texture: baseline=265 current=4815 allowed=265; live bytes: baseline=9737216 current=84284416 allowed=9737216
+[LeakM3 large 96x60] turn= 10 buffer=180 texture=27 pipeline=3 bind_group=29 live_bytes=7967744 subscriptions=5 created=637 destroyed=398
+[LeakM3 large 96x60] turn= 50 buffer=308 texture=35 pipeline=3 bind_group=37 live_bytes=16618496 subscriptions=21 created=2337 destroyed=1954
+[LeakM3 large 96x60] turn=200 buffer=788 texture=65 pipeline=3 bind_group=67 live_bytes=49058816 subscriptions=81 created=8826 destroyed=7903
+[LeakM3 large 96x60] turn 50 violations: live buffer: baseline=180 current=308 allowed=180; live texture: baseline=27 current=35 allowed=27; live bind_group: baseline=29 current=37 allowed=29; live bytes: baseline=7967744 current=16618496 allowed=7967744; subscriptions: baseline=5 current=21 allowed=5
+[LeakM3 large 96x60] turn 200 violations: live buffer: baseline=180 current=788 allowed=180; live texture: baseline=27 current=65 allowed=27; live bind_group: baseline=29 current=67 allowed=29; live bytes: baseline=7967744 current=49058816 allowed=7967744; subscriptions: baseline=5 current=81 allowed=5
+test each_leak_pattern_breaks_the_budget ... ok
+
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.15s
+
+     Running tests/assets_registry.rs (target/debug/deps/assets_registry-c3f9969dbcf4ae07)
+
+running 14 tests
+test budget_thresholds_are_configurable ... ok
+test cache_end_of_turn_trims_only_unreferenced_entries ... ok
+test cache_lru_by_entries_and_bytes ... ok
+test drop_and_clone_inside_with_are_deferred_not_panicking ... ok
+test live_report_lists_labels ... ok
+test handle_from_another_registry_is_rejected ... ok
+test owned_guards_count_references ... ok
+test owned_replace_creates_new_before_freeing_old_and_keeps_shared_old ... ok
+test reference_counting_frees_on_last_release ... ok
+test registry_replace_creates_new_before_freeing_old ... ok
+test scope_releases_everything_it_created_on_drop ... ok
+test stale_handle_is_an_error_not_a_panic ... ok
+test subscription_dropped_inside_callback_is_removed_after_emit ... ok
+test subscriptions_unregister_on_drop ... ok
+
+test result: ok. 14 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+     Running tests/camera_web_parity.rs (target/debug/deps/camera_web_parity-ed19813f9fcbbf13)
+
+running 5 tests
+test drag_and_wheel_do_not_depend_on_dt ... ok
+test frame_at_60_fps_is_exactly_one_web_frame ... ok
+test pan_scales_with_dt_and_long_frames_are_capped ... ok
+test fixture_covers_every_branch ... ok
+camera parity: scenarios=34 steps=6524 scalars=47892 mismatches=0
+test camera_controller_matches_web_100_percent ... ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.09s
+
+     Running tests/cities_web_parity.rs (target/debug/deps/cities_web_parity-b32fe1be50768412)
+
+running 5 tests
+city outlines: compared 616 values, 0 mismatches
+test city_map_outlines_match_web ... ok
+layout: compared 57 values, 0 mismatches
+legacy: compared 992 values, 0 mismatches
+test legacy_city_model_matches_web ... ok
+test layout_constants_and_types_match_web ... ok
+city renderer: compared 27035 values, 0 mismatches
+test city_renderer_matches_web ... ok
+families: {"braz": 220, "braz_grecja": 3, "braz_grecja_default": 1, "braz_rzym": 3, "braz_rzym_default": 1, "ghost_braz": 287, "ghost_braz_default_walls": 1, "ghost_kamien": 286, "ghost_kamien_default_walls": 1, "ghost_kamien_uni": 24, "ghost_kamien_uni_default_walls": 1, "kamien": 72, "kamien_default": 1, "palisada": 3, "settlement": 144}
+city models: compared 192347 values, 0 mismatches
+test city_models_match_web ... ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 3.63s
+
+     Running tests/core_web_parity.rs (target/debug/deps/core_web_parity-27c98cd457a8290f)
+
+running 8 tests
+fogDim: 951 values compared bit for bit, 0 mismatches
+hexShape: 761 values compared bit for bit, 0 mismatches
+bronzeCity: 4219 values compared bit for bit, 0 mismatches
+test fog_dim_matches_web ... ok
+test hex_shape_matches_web ... ok
+test bronze_city_types_match_web ... ok
+unitVitalsPalette: 12 values compared bit for bit, 0 mismatches
+test vitals_match_web ... ok
+zoomLod: 1258 values compared bit for bit, 0 mismatches
+test zoom_lod_matches_web ... ok
+mapRenderStyle: 4895 values compared bit for bit, 0 mismatches
+test map_style_matches_web ... ok
+mergeDecor: 6616 values compared bit for bit, 0 mismatches
+test merge_decor_matches_web ... ok
+hexutil: 8660 values compared bit for bit, 0 mismatches
+test hexutil_matches_web ... ok
+
+test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.03s
+
+     Running tests/cpu_sanity.rs (target/debug/deps/cpu_sanity-0295d7bf5a63866f)
+
+running 1 test
+test gpu_feature_readback_matches_build_configuration ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/decor_web_parity.rs (target/debug/deps/decor_web_parity-faad5ae118a41e5c)
+
+running 8 tests
+test decor_reuses_core_instead_of_copies ... ok
+test decor_uses_jsmath_not_platform_libm ... ok
+hashes: 98010 samples, 54 seeds
+hashes: scalars=98543 bit_diff=0
+test hex_hash_functions_match_web ... ok
+riverlod: scalars=830 bit_diff=0
+test river_lod_matches_web ... ok
+coast: 301 builds, 333 meshes
+coast: scalars=27027 bit_diff=0
+test coast_builders_are_bit_identical_to_web ... ok
+geometries: 34 variants, 3344 triangles
+geometries: scalars=90917 bit_diff=0
+test shared_geometries_are_bit_identical_to_web ... ok
+relief: 9197 positive heights
+relief: scalars=29468 bit_diff=0
+test relief_surface_height_matches_web ... ok
+builders: [("buildDekorLaka", 9), ("buildDekorPustynia", 9), ("buildDekorRownina", 9), ("buildGalleryBuildingPad", 16), ("buildGalleryFortMount", 3), ("buildGora", 9), ("buildLas", 9), ("buildOaza", 1), ("buildStyleBeachRing", 2), ("buildStyleCoastSandTopCap", 2), ("buildStyleDune", 460), ("buildStyleForestCluster", 270), ("buildStyleHillBump", 310), ("buildStyleMountainPeak", 310), ("buildStyleOasis", 5), ("buildStyleTarasyTerrace", 4), ("buildTarasy", 2), ("buildWzgorze", 9)] meshes=6233
+builders: scalars=324838 bit_diff=0
+test builders_are_bit_identical_to_web ... ok
+
+test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.15s
+
+     Running tests/geom_three_parity.rs (target/debug/deps/geom_three_parity-0f596b3cbdb71744)
+
+running 17 tests
+test index_buffer_covers_non_indexed_meshes ... ok
+test merge_rejects_mixed_indexing ... ok
+circle.json:default: verts=34 tris=32 max|d| pos=0e0 nor=0e0 uv=0e0
+circle.json:hex: verts=8 tris=6 max|d| pos=0e0 nor=0e0 uv=0e0
+circle.json:below_min_clamped: verts=5 tris=3 max|d| pos=0e0 nor=0e0 uv=0e0
+circle.json:partial: verts=10 tris=8 max|d| pos=0e0 nor=0e0 uv=0e0
+circle.json:zero_radius: verts=8 tris=6 max|d| pos=0e0 nor=0e0 uv=0e0
+test parity_circle ... ok
+curve.json:estuary_catmullrom_05: samples=81 max|d| point=0e0 tangent=0e0
+curve.json:two_points_catmullrom_05: samples=33 max|d| point=0e0 tangent=0e0
+curve.json:estuary_centripetal: samples=33 max|d| point=0e0 tangent=0e0
+curve.json:closed_catmullrom_05: samples=25 max|d| point=0e0 tangent=0e0
+test parity_curve ... ok
+cone.json:default: verts=131 tris=64 max|d| pos=0e0 nor=0e0 uv=0e0
+cone.json:typical: verts=27 tris=12 max|d| pos=0e0 nor=0e0 uv=0e0
+cone.json:min_segments: verts=15 tris=6 max|d| pos=0e0 nor=0e0 uv=0e0
+cone.json:open_hseg: verts=36 tris=24 max|d| pos=0e0 nor=0e0 uv=0e0
+cone.json:pyramid: verts=19 tris=8 max|d| pos=0e0 nor=0e0 uv=0e0
+cylinder.json:default: verts=196 tris=128 max|d| pos=0e0 nor=0e0 uv=0e0
+cylinder.json:typical: verts=52 tris=32 max|d| pos=0e0 nor=0e0 uv=0e0
+cylinder.json:min_segments: verts=22 tris=12 max|d| pos=0e0 nor=0e0 uv=0e0
+cylinder.json:frustum_hseg: verts=54 tris=48 max|d| pos=0e0 nor=0e0 uv=0e0
+cylinder.json:open_ended: verts=21 tris=24 max|d| pos=0e0 nor=0e0 uv=0e0
+cylinder.json:partial_theta: verts=34 tris=20 max|d| pos=0e0 nor=0e0 uv=0e0
+cylinder.json:zero_top: verts=27 tris=12 max|d| pos=0e0 nor=0e0 uv=0e0
+cylinder.json:zero_bottom: verts=27 tris=12 max|d| pos=0e0 nor=0e0 uv=0e0
+cylinder.json:hexagonal_prism: verts=40 tris=24 max|d| pos=0e0 nor=0e0 uv=0e0
+cylinder.json:large: verts=583 tris=640 max|d| pos=0e0 nor=0e0 uv=0e0
+extrude.json:hex_wall_ring: verts=144 tris=48 max|d| pos=0e0 nor=0e0 uv=0e0
+box.json:unit: verts=24 tris=12 max|d| pos=0e0 nor=0e0 uv=0e0
+extrude.json:veteran_star: verts=108 tris=36 max|d| pos=0e0 nor=0e0 uv=0e0
+box.json:typical_small: verts=24 tris=12 max|d| pos=0e0 nor=0e0 uv=0e0
+extrude.json:square_steps3: verts=84 tris=28 max|d| pos=0e0 nor=0e0 uv=0e0
+box.json:segmented: verts=94 tris=104 max|d| pos=0e0 nor=0e0 uv=0e0
+extrude.json:square_default_bevel: verts=180 tris=60 max|d| pos=0e0 nor=0e0 uv=0e0
+extrude.json:hex_ring_bevel_custom: verts=504 tris=168 max|d| pos=0e0 nor=0e0 uv=0e0
+extrude.json:two_shapes: verts=60 tris=20 max|d| pos=0e0 nor=0e0 uv=0e0
+test parity_cone ... ok
+test parity_cylinder ... ok
+test parity_extrude ... ok
+plane.json:unit: verts=4 tris=2 max|d| pos=0e0 nor=0e0 uv=0e0
+plane.json:segmented: verts=20 tris=24 max|d| pos=0e0 nor=0e0 uv=0e0
+plane.json:zero_size: verts=4 tris=2 max|d| pos=0e0 nor=0e0 uv=0e0
+test parity_plane ... ok
+box.json:zero_height: verts=24 tris=12 max|d| pos=0e0 nor=0e0 uv=0e0
+box.json:negative_depth: verts=24 tris=12 max|d| pos=0e0 nor=0e0 uv=0e0
+ring.json:default: verts=66 tris=64 max|d| pos=0e0 nor=0e0 uv=0e0
+ring.json:typical: verts=50 tris=48 max|d| pos=0e0 nor=0e0 uv=0e0
+ring.json:below_min_clamped: verts=8 tris=6 max|d| pos=0e0 nor=0e0 uv=0e0
+ring.json:phi_segments: verts=28 tris=36 max|d| pos=0e0 nor=0e0 uv=0e0
+ring.json:partial: verts=27 tris=32 max|d| pos=0e0 nor=0e0 uv=0e0
+test parity_ring ... ok
+shape.json:triangle_default: verts=3 tris=1 max|d| pos=0e0 nor=0e0 uv=0e0
+shape.json:selection_hex_ring: verts=12 tris=12 max|d| pos=0e0 nor=0e0 uv=0e0
+shape.json:owner_hex_ring: verts=12 tris=12 max|d| pos=0e0 nor=0e0 uv=0e0
+shape.json:ccw_hole_not_reversed: verts=12 tris=12 max|d| pos=0e0 nor=0e0 uv=0e0
+shape.json:star: verts=10 tris=8 max|d| pos=0e0 nor=0e0 uv=0e0
+shape.json:concave_two_holes: verts=12 tris=14 max|d| pos=0e0 nor=0e0 uv=0e0
+shape.json:open_outline_not_closed: verts=4 tris=2 max|d| pos=0e0 nor=0e0 uv=0e0
+shape.json:many_points_hashed: verts=102 tris=102 max|d| pos=0e0 nor=0e0 uv=0e0
+shape.json:multi_two_shapes: verts=15 tris=13 max|d| pos=0e0 nor=0e0 uv=0e0
+test parity_shape ... ok
+polyhedron.json:icosahedron_d0: verts=60 tris=20 max|d| pos=0e0 nor=0e0 uv=0e0
+polyhedron.json:icosahedron_d1: verts=240 tris=80 max|d| pos=0e0 nor=0e0 uv=0e0
+sphere.json:default: verts=561 tris=960 max|d| pos=0e0 nor=0e0 uv=0e0
+sphere.json:typical: verts=63 tris=80 max|d| pos=0e0 nor=0e0 uv=0e0
+sphere.json:min_segments: verts=12 tris=6 max|d| pos=0e0 nor=0e0 uv=0e0
+sphere.json:below_min_clamped: verts=12 tris=6 max|d| pos=0e0 nor=0e0 uv=0e0
+box.json:large_segments: verts=726 tris=1200 max|d| pos=0e0 nor=0e0 uv=0e0
+sphere.json:hemisphere: verts=91 tris=132 max|d| pos=0e0 nor=0e0 uv=0e0
+sphere.json:lower_cap: verts=91 tris=132 max|d| pos=0e0 nor=0e0 uv=0e0
+test parity_box ... ok
+sphere.json:partial_phi: verts=66 tris=100 max|d| pos=0e0 nor=0e0 uv=0e0
+sphere.json:zero_radius: verts=35 tris=36 max|d| pos=0e0 nor=0e0 uv=0e0
+sphere.json:large: verts=1225 tris=2208 max|d| pos=0e0 nor=0e0 uv=0e0
+test parity_sphere ... ok
+tube.json:trade_route: verts=585 tris=1024 max|d| pos=0e0 nor=0e0 uv=0e0
+tube.json:two_points: verts=20 tris=24 max|d| pos=0e0 nor=0e0 uv=0e0
+tube.json:chordal: verts=78 tris=120 max|d| pos=0e0 nor=0e0 uv=0e0
+tube.json:catmullrom_tension: verts=78 tris=120 max|d| pos=0e0 nor=0e0 uv=0e0
+tube.json:closed_loop: verts=119 tris=192 max|d| pos=0e0 nor=0e0 uv=0e0
+tube.json:straight_axis: verts=20 tris=24 max|d| pos=0e0 nor=0e0 uv=0e0
+test parity_tube ... ok
+polyhedron.json:icosahedron_d2: verts=540 tris=180 max|d| pos=0e0 nor=0e0 uv=0e0
+polyhedron.json:dodecahedron_d0: verts=108 tris=36 max|d| pos=0e0 nor=0e0 uv=0e0
+test trs_matches_manual_composition ... ok
+torus.json:default: verts=637 tris=1152 max|d| pos=0e0 nor=0e0 uv=0e0
+torus.json:typical: verts=119 tris=192 max|d| pos=0e0 nor=0e0 uv=0e0
+torus.json:min: verts=12 tris=12 max|d| pos=0e0 nor=0e0 uv=0e0
+torus.json:half_arc: verts=117 tris=192 max|d| pos=0e0 nor=0e0 uv=0e0
+polyhedron.json:dodecahedron_d1: verts=432 tris=144 max|d| pos=0e0 nor=0e0 uv=0e0
+torus.json:zero_tube: verts=35 tris=48 max|d| pos=0e0 nor=0e0 uv=0e0
+polyhedron.json:octahedron_d0: verts=24 tris=8 max|d| pos=0e0 nor=0e0 uv=0e0
+test parity_torus ... ok
+polyhedron.json:octahedron_d1: verts=96 tris=32 max|d| pos=0e0 nor=0e0 uv=0e0
+polyhedron.json:octahedron_d3: verts=384 tris=128 max|d| pos=0e0 nor=0e0 uv=0e0
+polyhedron.json:tetrahedron_d0: verts=12 tris=4 max|d| pos=0e0 nor=0e0 uv=0e0
+polyhedron.json:tetrahedron_d2: verts=108 tris=36 max|d| pos=0e0 nor=0e0 uv=0e0
+test parity_polyhedron ... ok
+ops.json:box_rotateX_translate: verts=24 tris=12 max|d| pos=0e0 nor=0e0 uv=0e0
+ops.json:cylinder_rotYZ_scale: verts=40 tris=24 max|d| pos=0e0 nor=0e0 uv=0e0
+ops.json:extrude_hex_rotateX: verts=144 tris=48 max|d| pos=0e0 nor=0e0 uv=0e0
+ops.json:sphere_trs_xyz: verts=63 tris=80 max|d| pos=0e0 nor=0e0 uv=0e0
+ops.json:box_trs_yxz_negscale: verts=24 tris=12 max|d| pos=0e0 nor=0e0 uv=0e0
+ops.json:cone_trs_zyx: verts=23 tris=10 max|d| pos=0e0 nor=0e0 uv=0e0
+ops.json:sphere_recompute_normals: verts=63 tris=80 max|d| pos=0e0 nor=0e0 uv=0e0
+ops.json:cylinder_recompute_normals: verts=47 tris=36 max|d| pos=0e0 nor=0e0 uv=0e0
+ops.json:merge_indexed_groups: verts=99 tris=72 max|d| pos=0e0 nor=0e0 uv=0e0
+ops.json:merge_indexed_nogroups: verts=33 tris=20 max|d| pos=0e0 nor=0e0 uv=0e0
+ops.json:merge_nonindexed_groups: verts=204 tris=68 max|d| pos=0e0 nor=0e0 uv=0e0
+test parity_ops ... ok
+
+test result: ok. 17 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.03s
+
+     Running tests/gpu_probe.rs (target/debug/deps/gpu_probe-b90f27ad8c898393)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/improvements_web_parity.rs (target/debug/deps/improvements_web_parity-7642b2e4c63525aa)
+
+running 3 tests
+proto keys: threw=10 empty=2: scalars=52 bit_diff=0 within_1e-12=0 struct_diff=0
+data: scalars=35 bit_diff=0 within_1e-12=0 struct_diff=0
+test prototype_keys_documented_deviation ... ok
+test data_tables_match_web ... ok
+models: cases=457: scalars=192046 bit_diff=0 within_1e-12=0 struct_diff=0
+test models_are_bit_identical_to_web ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.81s
+
+     Running tests/jsmath_v8_parity.rs (target/debug/deps/jsmath_v8_parity-fee50190cb35806f)
+
+running 14 tests
+acos: cases=20021 port_mismatches=0 libm_mismatches=1016
+test acos_matches_v8 ... ok
+test compatibility_paths_are_the_same_functions ... ok
+asin: cases=20021 port_mismatches=0 libm_mismatches=963
+test asin_matches_v8 ... ok
+atan2: cases=20441 port_mismatches=0 libm_mismatches=2704
+test atan2_matches_v8 ... ok
+atan: cases=20021 port_mismatches=0 libm_mismatches=393
+test atan_matches_v8 ... ok
+hypot3: cases=3004 port_mismatches=0 libm_mismatches=728
+test hypot_three_arguments_matches_v8 ... ok
+hypot: cases=20441 port_mismatches=0 libm_mismatches=3340
+log: cases=20021 port_mismatches=0 libm_mismatches=99
+exp: cases=20021 port_mismatches=0 libm_mismatches=1559
+test hypot_matches_v8 ... ok
+test log_matches_v8 ... ok
+test exp_matches_v8 ... ok
+cos: cases=20021 port_mismatches=0 libm_mismatches=698
+test cos_matches_v8 ... ok
+test whole_domain_without_platform_fallback ... ok
+sin: cases=20021 port_mismatches=0 libm_mismatches=687
+tan: cases=20021 port_mismatches=0 libm_mismatches=559
+test sin_matches_v8 ... ok
+test tan_matches_v8 ... ok
+pow: cases=21024 port_mismatches=0 libm_mismatches=1342
+test pow_matches_v8 ... ok
+
+test result: ok. 14 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.10s
+
+     Running tests/jsmath_wiring.rs (target/debug/deps/jsmath_wiring-b0f96cca402d817c)
+
+running 6 tests
+test geom_rotation_and_euler_use_v8_trig ... ok
+test pick_hex_prism_vertices_use_v8_trig ... ok
+test pick_quat_from_euler_xyz_uses_v8_trig ... ok
+instance_matrix: 2 angles where platform libm and V8 differ after f32 storage
+test terrain_rotation_uses_v8_trig ... ok
+test scanner_catches_known_bypass_forms ... ok
+test no_platform_transcendentals_anywhere_in_src ... ok
+
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.29s
+
+     Running tests/jsnum_to_fixed_v8.rs (target/debug/deps/jsnum_to_fixed_v8-f655627a428aa1de)
+
+running 3 tests
+
+thread 'to_fixed_rejects_digits_above_100' (15908) panicked at src/core/jsnum.rs:73:5:
+toFixed() digits argument must be between 0 and 100
+stack backtrace:
+   0: __rustc::rust_begin_unwind
+             at /rustc/2d8144b7880597b6e6d3dfd63a9a9efae3f533d3/library/std/src/panicking.rs:689:5
+   1: core::panicking::panic_fmt
+             at /rustc/2d8144b7880597b6e6d3dfd63a9a9efae3f533d3/library/core/src/panicking.rs:80:14
+   2: civ_renderer::core::jsnum::js_to_fixed
+             at ./src/core/jsnum.rs:73:5
+   3: jsnum_to_fixed_v8::to_fixed_rejects_digits_above_100
+             at ./tests/jsnum_to_fixed_v8.rs:116:13
+   4: jsnum_to_fixed_v8::to_fixed_rejects_digits_above_100::{closure#0}
+             at ./tests/jsnum_to_fixed_v8.rs:115:39
+   5: <jsnum_to_fixed_v8::to_fixed_rejects_digits_above_100::{closure#0} as core::ops::function::FnOnce<()>>::call_once
+             at /rustc/2d8144b7880597b6e6d3dfd63a9a9efae3f533d3/library/core/src/ops/function.rs:250:5
+   6: <fn() -> core::result::Result<(), alloc::string::String> as core::ops::function::FnOnce<()>>::call_once
+             at /rustc/2d8144b7880597b6e6d3dfd63a9a9efae3f533d3/library/core/src/ops/function.rs:250:5
+test to_fixed_entry_points_are_one_function ... ok
+toFixed vs V8: 27808 cases identical (negative 12503, |x|>=1e21 2536, NaN/Inf 303, exact ties 4810, digits>20 7804)
+test to_fixed_matches_v8 ... ok
+note: Some details are omitted, run with `RUST_BACKTRACE=full` for a verbose backtrace.
+test to_fixed_rejects_digits_above_100 - should panic ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.14s
+
+     Running tests/misc_web_parity.rs (target/debug/deps/misc_web_parity-f6fc6b6b2b7c3c19)
+
+running 11 tests
+quadratic bezier: scalars 2088 (bit-equal), checks 0
+test quadratic_bezier_matches_three ... ok
+models: scalars 50440 (bit-equal), checks 27510
+test models_match_web ... ok
+siege marker: scalars 9424 (bit-equal), checks 5010
+test siege_marker_matches_web ... ok
+siege sync: scalars 4 (bit-equal), checks 18
+test siege_sync_matches_web ... ok
+relief sampler (real): scalars 16560 (bit-equal), checks 424
+test relief_sampler_matches_web ... ok
+territory border: scalars 288 (bit-equal), checks 470
+test territory_border_matches_web ... ok
+test to_fixed_on_hex_corners_is_sign_stable ... ok
+territory loops: scalars 952 (bit-equal), checks 18
+test territory_loops_match_web ... ok
+trade routes: scalars 84 (bit-equal), checks 132
+test trade_routes_match_web ... ok
+range overlay: scalars 61344 (bit-equal), checks 13831
+test range_overlay_matches_web ... ok
+range overlay (real relief): scalars 80704 (bit-equal), checks 16506
+test range_overlay_real_relief_matches_web ... ok
+
+test result: ok. 11 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 3.07s
+
+     Running tests/pick_golden.rs (target/debug/deps/pick_golden-5edd88b94adda948)
+
+running 7 tests
+test client_rect_to_ndc_matches_web ... ok
+test prism_geometry_is_bitwise_three_cylinder ... ok
+instance matrices compared bitwise: 380
+test terrain_scene_instances_are_bitwise_web ... ok
+test js_round_matches_math_round ... ok
+worldToAxial vectors: 1233 (variants differ on 100)
+test world_to_axial_both_variants_match_web ... ok
+camera rays compared bitwise: 275
+test camera_matrices_and_rays_are_bitwise_three ... ok
+golden points: 20174, units-first wins: 339
+by rule: {"PlaneCoarse": 2809, "PlaneRefined": 3805, "SideFallback": 985, "SideMatch": 557, "TopFace": 12018}
+by point kind: {"center": 247, "corner": 1498, "edge": 1494, "edge-in": 1494, "edge-out": 1494, "fog": 1780, "grid": 5720, "int": 660, "overlap": 1494, "side": 1500, "side-low": 1518, "solid": 514, "solid-peak": 41, "unit": 720}
+test golden_picks_match_web_100_percent ... ok
+
+test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.57s
+
+     Running tests/terrain_web_parity.rs (target/debug/deps/terrain_web_parity-7ed099e492a012e9)
+
+running 5 tests
+test js_pow_special_cases_follow_v8 ... ok
+map A build (instances 159): scalars=7888 exact=7888 within1e-6=0 bad=0
+map A fog (8 calls): scalars=9576 exact=9576 within1e-6=0 bad=0
+test fog_hides_unknown_and_dims_explored ... ok
+map A-lite build (instances 126): scalars=6871 exact=6871 within1e-6=0 bad=0
+color: getHex cases=2048 mismatches=0; Math.pow cases=6144 mismatches=0; Math.hypot cases=2048 mismatches=0; preset cases=24 mismatches=0: scalars=15360 exact=15360 within1e-6=0 bad=0
+map B build (instances 186): scalars=7955 exact=7955 within1e-6=0 bad=0
+map B fog (4 calls): scalars=8056 exact=8056 within1e-6=0 bad=0
+test color_math_matches_three ... ok
+map C build (instances 1802): scalars=42162 exact=42162 within1e-6=0 bad=0
+map C fog (2 calls): scalars=45600 exact=45600 within1e-6=0 bad=0
+map D build (instances 3783): scalars=82699 exact=82699 within1e-6=0 bad=0
+map E build (instances 4817): scalars=105234 exact=105234 within1e-6=0 bad=0
+map F build (instances 732): scalars=18938 exact=18938 within1e-6=0 bad=0
+TOTAL build: maps=7 instances=11605 scalars=271747 exact=271747 within1e-6=0 bad=0
+test terrain_build_matches_web ... ok
+map F fog (2 calls): scalars=17100 exact=17100 within1e-6=0 bad=0
+TOTAL fog: calls=16 scalars=80332 exact=80332 within1e-6=0 bad=0
+test terrain_fog_matches_web ... ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.33s
+
+     Running tests/unit_core_json.rs (target/debug/deps/unit_core_json-b55ab56d4e2236c3)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/unit_core_model_rule.rs (target/debug/deps/unit_core_model_rule-2f5305891471a8dc)
+
+running 7 tests
+pending builders: 0
+test pending_registry_is_explicit ... ok
+test legacy_en_path_reproduces_exactly_the_three_web_divergences ... ok
+test unknown_type_falls_back_to_category_with_a_warning ... ok
+test rule_table_covers_exactly_the_77_unit_types ... ok
+test table_equals_the_legacy_pl_route_and_names_never_matter ... ok
+names: 403 web values checked
+test norm_name_and_culture_match_the_web ... ok
+model rule: 175 calls (152 records PL+EN), 175 ported signatures compared
+test web_signature_classes_equal_rust_model_id_classes ... ok
+
+test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.86s
+
+     Running tests/unit_core_trig.rs (target/debug/deps/unit_core_trig-30b01be29ad89d90)
+
+running 2 tests
+quat_from_euler orders: 5 angle triples x 6 orders checked
+test quat_from_euler_honours_every_order ... ok
+trig: n=11226 port_mismatch=0 libm_mismatch=792
+test js_trig_matches_v8_bit_for_bit_and_libm_does_not ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.02s
+
+     Running tests/unit_core_web_parity.rs (target/debug/deps/unit_core_web_parity-eb9ca6d0cfd9b82c)
+
+running 3 tests
+test signature_is_sensitive_to_owner_colour_and_pose ... ok
+test part_catalogues_match_the_web_singletons ... ok
+unit_core parity: 68 cases, 68 compared (134622 values bit-exact checked), 0 pending stubs: []
+test every_web_case_is_reproduced_bit_for_bit ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.42s
+
+     Running tests/units_braz_web_parity.rs (target/debug/deps/units_braz_web_parity-658717995623588c)
+
+running 4 tests
+buildProcarzBrazOpus5: meshes 100 tris 1120 (web 100 / 1120)
+buildWlocznikBrazOpus5: meshes 77 tris 1228 (web 77 / 1228)
+buildMiecznikBrazOpus5: meshes 81 tris 1204 (web 81 / 1204)
+buildRydwanWolyBrazOpus5: meshes 108 tris 1496 (web 108 / 1496)
+buildKonnicaBrazOpus5: meshes 104 tris 1572 (web 104 / 1572)
+buildRydwanKonnyBrazOpus5: meshes 145 tris 1936 (web 145 / 1936)
+test routing_no_longer_returns_not_yet_ported_for_the_bronze_package ... ok
+buildRydwanKapadokijskiOpus5: meshes 149 tris 2096 (web 149 / 2096)
+buildNubianArcherOpus5: meshes 84 tris 1052 (web 84 / 1052)
+buildTaranOkutyOpus5: meshes 102 tris 1600 (web 102 / 1600)
+buildAxeWarriorInka: meshes 35 tris 420 (web 35 / 420)
+buildInkaSlinger: meshes 33 tris 396 (web 33 / 396)
+buildAkkadianArcher: meshes 36 tris 448 (web 36 / 448)
+buildAssyrianArcher: meshes 37 tris 460 (web 37 / 460)
+buildSherden: meshes 34 tris 460 (web 34 / 460)
+buildTyrrhenian: meshes 33 tris 452 (web 33 / 452)
+buildShekelesh: meshes 33 tris 452 (web 33 / 452)
+buildMycenaeanWarrior: meshes 29 tris 416 (web 29 / 416)
+buildShangHalberdier: meshes 33 tris 412 (web 33 / 412)
+buildKhopeshWarrior: meshes 28 tris 396 (web 28 / 396)
+buildImpi: meshes 36 tris 458 (web 36 / 458)
+buildSumerianSpearman: meshes 36 tris 448 (web 36 / 448)
+buildSiegeTower: meshes 46 tris 656 (web 46 / 656)
+buildPiechotaHetycka: meshes 31 tris 420 (web 31 / 420)
+test unit_core_record_signatures_of_the_bronze_records_match ... ok
+buildGwardiaIshtar: meshes 35 tris 460 (web 35 / 460)
+buildWojownikBabilonski: meshes 31 tris 416 (web 31 / 416)
+buildWojownikFenicki: meshes 32 tris 458 (web 32 / 458)
+buildStraznikHarappy: meshes 34 tris 424 (web 34 / 424)
+buildPiechotaInduska: meshes 29 tris 384 (web 29 / 384)
+buildLegionRzymski: meshes 31 tris 414 (web 31 / 414)
+buildGwardzistaChampi: meshes 38 tris 456 (web 38 / 456)
+buildChineseCavalry (Jeździec chiński): meshes 53 tris 764 (web 53 / 764)
+buildHuBenWei (Hu Ben Wei (Gwardia Tygrysa)): meshes 43 tris 544 (web 43 / 544)
+buildUThulwana (uThulwana (Białe Tarcze)): meshes 38 tris 568 (web 38 / 568)
+buildInkaRoyalGuard (Królewska Gwardia): meshes 62 tris 788 (web 62 / 788)
+buildEgyptianChariot (Rydwan egipski): meshes 101 tris 1376 (web 101 / 1376)
+buildMedjay (Medżaj (Gwardia Faraona)): meshes 40 tris 580 (web 40 / 580)
+buildSumerianChariot (Rydwan sumeryjski): meshes 88 tris 1304 (web 88 / 1304)
+buildSumerianRoyalGuard (Gwardia Królewska Sumeru): meshes 42 tris 524 (web 42 / 524)
+test the_records_cover_every_mod06_builder_and_counts_match_the_web ... ok
+units_braz parity: 180 cases (fn 60 / unit PL 40 / unit PL owner B 40 / unit EN 40; 96 via sameAs), 478906 values bit-exact checked, 0 mismatches
+test every_web_case_is_reproduced_bit_for_bit ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.21s
+
+     Running tests/units_kamien_web_parity.rs (target/debug/deps/units_kamien_web_parity-94e8e4a61ab4daac)
+
+running 5 tests
+asin: n=5027 mismatches=0
+test asin_matches_v8 ... ok
+buildWojownikOpus5: meshes 87 tris 1198 vertices 2329 (web 87 / 1198)
+buildOszczepnikOpus5: meshes 71 tris 1016 vertices 2073 (web 71 / 1016)
+buildLucznikOpus5: meshes 84 tris 1138 vertices 2242 (web 84 / 1138)
+buildZwiadowcaOpus5: meshes 81 tris 1092 vertices 2157 (web 81 / 1092)
+buildMaceWarriorOpus5: meshes 100 tris 1308 vertices 2550 (web 100 / 1308)
+buildInkaJavelineerOpus5: meshes 85 tris 1112 vertices 2164 (web 85 / 1112)
+buildZuluJavelineerOpus5: meshes 86 tris 1342 vertices 2532 (web 86 / 1342)
+buildBatteringRamOpus5: meshes 85 tris 1244 vertices 2084 (web 85 / 1244)
+buildEgyptianArcherOpus5: meshes 86 tris 1032 vertices 2064 (web 86 / 1032)
+buildSumerianArcherOpus5: meshes 95 tris 1136 vertices 2275 (web 95 / 1136)
+test routing_no_longer_returns_not_yet_ported_for_the_stone_package ... ok
+test the_ten_records_cover_every_mod05_builder_and_counts_match_the_web ... ok
+test unit_core_record_signatures_of_the_stone_records_match ... ok
+units_kamien parity: 40 cases (fn 20 / unit PL 10 / unit EN 10), 156496 values bit-exact checked, 0 mismatches
+test every_web_case_is_reproduced_bit_for_bit ... ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.64s
+
+     Running tests/units_zelazo_web_parity.rs (target/debug/deps/units_zelazo_web_parity-dfa457e997b98fee)
+
+running 4 tests
+buildHastatiOpus5: meshes 92 tris 1378 (web 92 / 1378)
+buildHastati: meshes 35 tris 462 (web 35 / 462)
+buildFalangita: meshes 27 tris 404 (web 27 / 404)
+buildSuperGreece: meshes 40 tris 552 (web 40 / 552)
+buildSuperRome: meshes 39 tris 514 (web 39 / 514)
+buildGwardiaHetycka: meshes 34 tris 456 (web 34 / 456)
+buildPiechotaNeobabilonska: meshes 37 tris 460 (web 37 / 460)
+buildMurTarcz: meshes 35 tris 436 (web 35 / 436)
+buildGarnizonHarappy: meshes 37 tris 464 (web 37 / 464)
+buildTyrskiMiecznik: meshes 30 tris 416 (web 30 / 416)
+buildGwardiaTyrenska: meshes 33 tris 452 (web 33 / 452)
+buildZelaznyKhopesh: meshes 31 tris 396 (web 31 / 396)
+buildThorakites: meshes 32 tris 430 (web 32 / 430)
+buildTriari: meshes 37 tris 486 (web 37 / 486)
+buildDruzynnik: meshes 32 tris 424 (web 32 / 424)
+buildIButho: meshes 39 tris 482 (web 39 / 482)
+buildBerserker: meshes 30 tris 360 (web 30 / 360)
+buildGermanSuper: meshes 37 tris 492 (web 37 / 492)
+buildMiecznikGalijski: meshes 44 tris 570 (web 44 / 570)
+buildZelazoJezdziecOszczepami: meshes 117 tris 2074 (web 117 / 2074)
+buildZelazoKonnicaLancowaAsyryjska: meshes 101 tris 1618 (web 101 / 1618)
+buildZelazoKonnicaLuczniczaAsyryjska: meshes 107 tris 1430 (web 107 / 1430)
+test no_unit_builder_is_a_stub_any_more ... ok
+buildGaesatae (Gaesatae): meshes 29 tris 824 (web 29 / 824)
+buildSoldurii (Soldurii): meshes 32 tris 694 (web 32 / 694)
+buildCatapult (Katapulta): meshes 48 tris 1560 (web 48 / 1560)
+test the_records_cover_every_mod07_builder_and_counts_match_the_web ... ok
+test unit_core_record_signatures_of_the_iron_records_match ... ok
+units_zelazo parity: 146 cases (fn 44 / unit PL 25 / unit PL owner B 25 / unit EN 25 / unit EN owner B 25 / cat 2; 92 via sameAs), 329382 values bit-exact checked, 0 mismatches
+test every_web_case_is_reproduced_bit_for_bit ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.90s
+
+     Running tests/wonders_web_parity.rs (target/debug/deps/wonders_web_parity-d8d9a630ca3a6684)
+
+running 4 tests
+trig: angles=4477 platform sin/cos differ from V8 at 272 angles
+trig: scalars=8954 bit_diff=0 within_1e-12=0
+renderer: steps=9 wonder-states=140
+renderer: scalars=3080 bit_diff=0 within_1e-12=0
+test js_trig_is_bit_identical_to_v8 ... ok
+test renderer_scenario_is_bit_identical_to_web ... ok
+test registry_matches_web_ids ... ok
+models=157 meshes=2850
+models: scalars=103073 bit_diff=0 within_1e-12=0
+test models_are_bit_identical_to_web ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.31s
+
+EXIT=0
