@@ -5104,3 +5104,19 @@ bold 96px Arial	◆1	127.21875
 700 22px Georgia, "Times New Roman", serif	⚔	19.72265625
 700 22px Georgia, "Times New Roman", serif	A☠B	50.2841796875
 700 22px Georgia, "Times New Roman", serif	◆1	27.9189453125
+bolder 22px Arial, sans-serif	GRECY	78.2353515625
+bolder 22px Arial, sans-serif	Jednostka · Wojownik	230.6240234375
+bolder 22px Arial, sans-serif	ZAŻÓŁĆ GĘŚLĄ JAŹŃ	234.6630859375
+bolder 22px Arial, sans-serif	0123456789	122.353515625
+lighter 22px Arial, sans-serif	GRECY	78.2353515625
+lighter 22px Arial, sans-serif	Jednostka · Wojownik	213.576171875
+lighter 22px Arial, sans-serif	ZAŻÓŁĆ GĘŚLĄ JAŹŃ	227.3798828125
+lighter 22px Arial, sans-serif	0123456789	122.353515625
+bolder 16px serif	GRECY	57.78125
+bolder 16px serif	Jednostka · Wojownik	152.9296875
+bolder 16px serif	ZAŻÓŁĆ GĘŚLĄ JAŹŃ	171.59375
+bolder 16px serif	0123456789	80
+lighter 16px serif	GRECY	54.2265625
+lighter 16px serif	Jednostka · Wojownik	142.6953125
+lighter 16px serif	ZAŻÓŁĆ GĘŚLĄ JAŹŃ	161.765625
+lighter 16px serif	0123456789	80

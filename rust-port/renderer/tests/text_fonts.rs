@@ -12,6 +12,10 @@
 //!   to a real glyph (not `.notdef`) in the faces the web stacks select;
 //! - `symbols_fall_back_to_dejavu`: ☠ ◆ ⚔ (T3, T10, T14, T2) are not in
 //!   Liberation and are found in DejaVu Sans by the per-glyph fallback.
+//! - `fixtures_match_manifest_sha256` (obrona r1, zarzut 4): every line of
+//!   `tests/fixtures/text/MANIFEST.sha256` (fixtures, Chromium references
+//!   and the fonts it names) has that sha256, and every fixture file of the
+//!   directory (incl. `ref/`) is listed.
 
 use civ_renderer::raster::text::{face_chain, face_has_glyph, parse_font, shape_text, BundledFace};
 
@@ -145,6 +149,48 @@ fn fonts_match_manifest_sha256() {
     for lic in ["LICENSE-Liberation.txt", "LICENSE-DejaVu.txt"] {
         assert!(listed.contains(&lic.to_owned()), "{lic}");
     }
+}
+
+#[test]
+fn fixtures_match_manifest_sha256() {
+    let dir = format!("{}/tests/fixtures/text", env!("CARGO_MANIFEST_DIR"));
+    let man = std::fs::read_to_string(format!("{dir}/MANIFEST.sha256")).expect("manifest");
+    let mut listed = Vec::new();
+    for line in man.lines() {
+        let (h, f) = line.split_once("  ").expect("sha256sum line");
+        let data = std::fs::read(format!("{dir}/{f}")).unwrap_or_else(|e| panic!("{f}: {e}"));
+        assert_eq!(hex(&sha256(&data)), h, "{f}: sha256");
+        listed.push(f.to_owned());
+    }
+    let mut on_disk = Vec::new();
+    for sub in ["", "ref/"] {
+        for e in std::fs::read_dir(format!("{dir}/{sub}")).expect("dir") {
+            let e = e.expect("entry");
+            if e.file_type().expect("type").is_file() {
+                on_disk.push(format!(
+                    "{sub}{}",
+                    e.file_name().into_string().expect("utf-8")
+                ));
+            }
+        }
+    }
+    let mut checked = 0;
+    for f in on_disk {
+        // `golden.tsv` is written by the Rust test itself (`TEXT_BLESS=1`),
+        // not by `gen.mjs`; its contents are the asserted hashes.
+        if f != "MANIFEST.sha256" && f != "golden.tsv" {
+            assert!(listed.contains(&f), "{f} missing from MANIFEST.sha256");
+            checked += 1;
+        }
+    }
+    assert!(checked >= 45, "only {checked} fixture files");
+    assert_eq!(
+        listed
+            .iter()
+            .filter(|f| f.starts_with("../../../assets/fonts/"))
+            .count(),
+        BundledFace::ALL.len()
+    );
 }
 
 /// P4-25 §3.3 (`dowody/07-city-names-nonascii.txt`).

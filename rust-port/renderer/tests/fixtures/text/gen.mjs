@@ -177,6 +177,10 @@ for (const f of Object.values(F)) {
 for (const f of [F.medal, F.emblem, F.skull, F.siege, F.serif48, F.name]) {
   for (const c of ['☠', '◆', '⚔', 'A☠B', '◆1']) addW(f, c); // per-glyph fallback to DejaVu
 }
+// Obrona r1 (zarzut 2, E05): relative weights select the face — `bolder` → Bold, `lighter` → Regular.
+for (const f of ['bolder 22px Arial, sans-serif', 'lighter 22px Arial, sans-serif', 'bolder 16px serif', 'lighter 16px serif']) {
+  for (const t of ['GRECY', 'Jednostka · Wojownik', 'ZAŻÓŁĆ GĘŚLĄ JAŹŃ', '0123456789']) addW(f, t);
+}
 
 // ---------------------------------------------------------------------------
 // Font shorthand parsing probes
@@ -187,6 +191,8 @@ const FONT_PROBES = [
   '12px/normal x', '10px "sans-serif", serif', '', 'bold', '12px', 'Arial 12px', 'bold bold 12px x',
   '12em x', '12% x', '-1px x', '1001 12px x', "12px 'unterminated", '12px x,', '12px inherit',
   '12px x y, , z', '500 11px Arial', '1in serif', '10.5px Arial', 'oblique 12px x', 'semi-expanded 9px x',
+  // Obrona r1 (zarzut 2, E05): relative weight keywords.
+  'bolder 10px x', 'bolder 22px Arial, sans-serif', 'italic bolder 12px x', 'bolder lighter 12px x',
 ];
 
 // ---------------------------------------------------------------------------
@@ -493,6 +499,19 @@ const truncJobs = [];
 for (const n of uniqueCityNames) for (const maxW of [305, 285, 266, 240, 213.8, 180, 120, 60]) truncJobs.push(['name', F.name, maxW, n.trim().toUpperCase()]);
 for (const b of buildingNames) for (const maxW of [80, 140, 200]) truncJobs.push(['hover', F.hover, maxW, `Budynek · ${b} · wstrzymana`]);
 for (const u of unitNames) for (const maxW of [80, 140]) truncJobs.push(['hover', F.hover, maxW, `Jednostka · ${u}`]);
+// Obrona r1 (zarzuty 1–2, E03/E09): boundary cases. maxW given as ['w', text] is resolved IN Chromium
+// to measureText(text).width (exact float), so `<=` / `>` comparisons are hit at equality.
+for (const n of uniqueCityNames.slice(0, 40)) {
+  const u = n.trim().toUpperCase();
+  truncJobs.push(['name', F.name, ['w', u], u]); // fits exactly → name (cityMapStatChip.ts:773 `<=`)
+  if (u.length > 3) truncJobs.push(['name', F.name, ['w', u.slice(0, -2) + '…'], u]); // loop stops at equality (:775 `>`)
+}
+for (const l of ['Budynek · Spichlerz · wstrzymana', 'Jednostka · Wojownik', 'Produkcja wstrzymana']) {
+  truncJobs.push(['hover', F.hover, ['w', l], l]); // fits exactly → unchanged (:711 `>`)
+  truncJobs.push(['hover', F.hover, ['w', l.slice(0, -3) + '…'], l]); // loop stops at equality (:713)
+}
+for (const l of ['AB', 'Ż·', 'WA', 'A', '·']) truncJobs.push(['hover', F.hover, 1, l]); // length 2 → cut, 1 → kept (:711 `length > 1`)
+for (const l of ['AB', 'ŻÓ', 'A']) truncJobs.push(['name', F.name, 1, l]); // `s.length > 1` loop guard (:774)
 
 const result = await page.evaluate(async ({ faces, scenes, widthRows, truncJobs, BASELINE_FONTS, FONT_PROBES, mapFontSrc, mapFamilySrc, truncateNameSrc }) => {
   for (const [fam, w, b64] of faces) {
@@ -517,7 +536,13 @@ const result = await page.evaluate(async ({ faces, scenes, widthRows, truncJobs,
     set font(v) { m.font = mapFont(v); },
     measureText: (t) => m.measureText(t),
   };
-  const trunc = truncJobs.map(([kind, font, maxW, input]) => {
+  const truncMaxW = truncJobs.map(([, font, maxW]) => {
+    if (!Array.isArray(maxW)) return maxW;
+    m.font = mapFont(font);
+    return m.measureText(maxW[1]).width;
+  });
+  const trunc = truncJobs.map(([kind, font, , input], i) => {
+    const maxW = truncMaxW[i];
     if (kind === 'name') return truncateName(proxy, input, maxW, font);
     // render/cityMapStatChip.ts:711-715 (hover row), verbatim.
     proxy.font = font;
@@ -578,7 +603,7 @@ const result = await page.evaluate(async ({ faces, scenes, widthRows, truncJobs,
     }
     out[sc.name] = b64(ctx.getImageData(0, 0, sc.w, sc.h).data);
   }
-  return { widths, trunc, baselines, fontparse, out, ua: navigator.userAgent };
+  return { widths, trunc, truncMaxW, baselines, fontparse, out, ua: navigator.userAgent };
 }, {
   faces, scenes, widthRows, truncJobs, BASELINE_FONTS, FONT_PROBES,
   mapFontSrc: mapFont.toString(), mapFamilySrc: mapFamily.toString(), truncateNameSrc: truncateName.toString(),
@@ -590,7 +615,7 @@ let w = '# font (web value)<TAB>text<TAB>Chromium measureText(text).width (font 
 widthRows.forEach(([f, t], i) => { w += [f, t, num(result.widths[i])].map(noTab).join('\t') + '\n'; });
 writeFileSync(OUT + 'widths.tsv', w);
 let t = '# kind<TAB>font<TAB>maxW<TAB>input<TAB>web result (cityMapStatChip.ts truncateName :767-779 / hover row :711-716)\n';
-truncJobs.forEach((j, i) => { t += [...j.map(num), result.trunc[i]].map(noTab).join('\t') + '\n'; });
+truncJobs.forEach((j, i) => { t += [j[0], j[1], result.truncMaxW[i], j[3]].map(num).concat(result.trunc[i]).map(noTab).join('\t') + '\n'; });
 writeFileSync(OUT + 'truncate.tsv', t);
 let b = '# font<TAB>textBaseline<TAB>measureText("Hg").alphabeticBaseline\n';
 for (const r of result.baselines) b += r.map((x) => noTab(num(x))).join('\t') + '\n';

@@ -38,3 +38,7 @@ bold bold 12px x	0	10px sentinel-a
 10.5px Arial	1	10.5px Arial
 oblique 12px x	1	italic 12px x
 semi-expanded 9px x	1	9px x
+bolder 10px x	1	bold 10px x
+bolder 22px Arial, sans-serif	1	bold 22px Arial, sans-serif
+italic bolder 12px x	1	italic bold 12px x
+bolder lighter 12px x	0	10px sentinel-a

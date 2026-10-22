@@ -14,12 +14,12 @@ Konwencja: `plik:linia` bez prefiksu = `gra/src/` w pinie `edb8fb56`. `[zewn.]` 
 1. Nowy podmoduł `rust-port/renderer/src/raster/text/` (`mod.rs`, `font.rs`, `fonts.rs`) + `pub mod text;` w `raster/mod.rs`. `Canvas2dLite` dostaje 6 członków tekstowych (`set_font`, `set_text_align`, `set_text_baseline`, `fill_text`, `stroke_text`, `measure_text`) — **dokładnie** te z P4-25 §4.1, lista zamknięta testem `tests/text_api_closed.rs`. `#![forbid(unsafe_code)]` bez zmian. `src/lib.rs` **nietknięty** (moduł jest podmodułem `raster`).
 2. Zależności: **`ab_glyph =0.2.32`**, **`rustybuzz =0.20.1`** (obie `default-features = false, features = ["std"]`). Lock: +10 pakietów (`ab_glyph`, `ab_glyph_rasterizer`, `owned_ttf_parser`, `ttf-parser`, `rustybuzz`, `core_maths`, `unicode-bidi-mirroring`, `unicode-ccc`, `unicode-properties`, `unicode-script`); `libm`, `bitflags`, `smallvec`, `bytemuck`, `log` były już w locku. Build + testy na **rustc 1.87.0: EXIT=0** (§7). Bez `cosmic-text`/`vello`.
 3. Fonty w `rust-port/renderer/assets/fonts/`: 6 plików TTF + 2 licencje + `SOURCES.txt` + `MANIFEST.sha256`, razem **3 069 998 B** (≤ 6 MB). Wkompilowane `include_bytes!`. Test `text_fonts::fonts_match_manifest_sha256` liczy sha256 (własna implementacja FIPS 180-4 sprawdzona wektorami NIST) i porównuje z bajtami w binarce.
-4. **`measureText().width`: 5 105/5 105 szerokości bit w bit jak Chromium 141** (max |Δ| = 0; wszystkie 1 543 unikalne nazwy miast po `toUpperCase` + z „…”, etykiety WZROST% −25…25 co 0,25, liczby, `×N`, cyfry T9, wiersze hover z `buildings.json`/`units.json`, 22+25 liter, interpunkcja, pary kerningowe, symbole z fallbackiem). **Decyzje przycięcia „…”: 12 620/12 620 identyczne** (2 532 przycięte przez web).
-5. Linie bazowe (`textBaseline` ×6) — 216/216 wartości `TextMetrics.alphabeticBaseline` zgodne (3 rodziny × 2 grubości × 12 rozmiarów × 6). Parser skrótu `font`: 39/39 sond zgodnych z Chromium co do akceptacji, rozmiaru i grubości.
+4. **`measureText().width`: 5 121/5 121 szerokości bit w bit jak Chromium 141** (test porównuje `to_bits` — obrona r1) (max |Δ| = 0; wszystkie 1 543 unikalne nazwy miast po `toUpperCase` + z „…”, etykiety WZROST% −25…25 co 0,25, liczby, `×N`, cyfry T9, wiersze hover z `buildings.json`/`units.json`, 22+25 liter, interpunkcja, pary kerningowe, symbole z fallbackiem). **Decyzje przycięcia „…”: 12 714/12 714 identyczne** (2 578 przycięte przez web; w tym przypadki brzegowe `maxW == measureText` i wejścia 1–2 jednostek UTF-16 — obrona r1).
+5. Linie bazowe (`textBaseline` ×6) — 216/216 wartości `TextMetrics.alphabeticBaseline` zgodne (3 rodziny × 2 grubości × 12 rozmiarów × 6). Parser skrótu `font`: 43/43 sondy (z `bolder` — obrona r1) zgodnych z Chromium co do akceptacji, rozmiaru i grubości.
 6. **Sceny: 36** (T5 ×3, T6 ×3, **T9 ×10 cyfr**, T15 ×4, T10 glif ×2, T13 cyfry z cieniem ×2, T14 tekst ×4 skale + wiersz hover, 7 scen semantycznych) — **wszystkie w progach RR-T8a**: SSIM min **0,9933**, mean_abs max **1,34**, px>16 max **4,35 %** (§5).
 7. `toUpperCase`: 1 665/1 665 nazw miast i 1 680 punktów kodowych (Latin/Greek/Cyrillic/Armenian + Latin Ext. Additional) identycznie jak V8 (node v22); w całej tablicy V8 (1 552 zmieniających się znaków) **0 różnic**.
 8. Determinizm: złote hashe 36 scen identyczne na rustc **1.87.0 i 1.97.0, debug i release, ×2** (§6). Referencje Chromium wygenerowane drugi raz — `MANIFEST.sha256` **identyczny**.
-9. Mutacje: **23/23 zabite** (§8). Bramy: fmt / clippy / clippy `gpu` / test stable / test 1.87.0 — EXIT=0 (§7).
+9. Mutacje: **23/23 zabite** (§8) + obrona r1: **9/9** (§8a, w tym E03/E05/E09 Evaluatora). Bramy: fmt / clippy / clippy `gpu` / test stable / test 1.87.0 — EXIT=0 (§7).
 
 ---
 
@@ -127,9 +127,9 @@ Dispatch dopuszcza „minimalne udostępnienie API `Canvas2dLite` potrzebne do r
 Generator `tests/fixtures/text/gen.mjs` (node v22.22.0, playwright 1.56.1, **Chromium 141.0.7390.37** headless, `--disable-gpu --force-color-profile=srgb --font-render-hinting=none`). Fonty ładowane jako `FontFace` pod prywatnymi nazwami (`CivLiberationSans`, …) z **tych samych plików** co `assets/fonts/`; stosy weba tłumaczone `mapFont()` (druga, niezależna implementacja Z-29-1) + zawsze `CivDejaVuSans` na końcu, więc Chromium nie sięga do fontów systemowych. Dane weba z pinu przez `git show edb8fb56:gra/data/{city-names-pools,buildings,units}.json`.
 
 ### 4.1 Szerokości (`widths.tsv`, 5 105 wierszy) — `text_metrics::measure_text_widths_match_chromium`
-**max |Δ| = 0** (tolerancja w teście 1e-9). Zawartość: 1 543 unikalne nazwy miast (z 1 665 wartości) po `trim().toUpperCase()` fontem nazwy, te same + „…”, 201 etykiet `formatCityGrowthPercentLabel` (kopia `cityMapStatChip.ts:741-747`) + „—”, liczby populacji/tur/grup/plonów, `×2…×99`, cyfry 0–9 `900 118px`, 42+75 wierszy hover, oraz dla każdego z 16 fontów weba: każdy z 22+25 znaków i interpunkcji osobno, ciągi znaków, „ZAŻÓŁĆ GĘŚLĄ JAŹŃ”, pary kerningowe `AV To LT Wa Yo Te P. F, VA «»`; ☠ ◆ ⚔ `A☠B` `◆1` w 6 stosach (fallback).
+**max |Δ| = 0**; od obrony r1 test porównuje **bitowo** (`to_bits`, ±0 równe) zamiast tolerancji 1e-9 — mutacja „+1 ulp” (O7) jest zabijana. Zawartość: 1 543 unikalne nazwy miast (z 1 665 wartości) po `trim().toUpperCase()` fontem nazwy, te same + „…”, 201 etykiet `formatCityGrowthPercentLabel` (kopia `cityMapStatChip.ts:741-747`) + „—”, liczby populacji/tur/grup/plonów, `×2…×99`, cyfry 0–9 `900 118px`, 42+75 wierszy hover, oraz dla każdego z 16 fontów weba: każdy z 22+25 znaków i interpunkcji osobno, ciągi znaków, „ZAŻÓŁĆ GĘŚLĄ JAŹŃ”, pary kerningowe `AV To LT Wa Yo Te P. F, VA «»`; ☠ ◆ ⚔ `A☠B` `◆1` w 6 stosach (fallback).
 
-### 4.2 Przycinanie (`truncate.tsv`, 12 620 przypadków) — `truncation_decisions_match_the_web`
+### 4.2 Przycinanie (`truncate.tsv`, 12 714 przypadków; obrona r1: +94 brzegowe, §8a) — `truncation_decisions_match_the_web`
 Web: pętle **dosłownie** z `cityMapStatChip.ts:767-779` (`truncateName`) i `:711-716` (wiersz hover) wykonane w Chromium. Rust: `truncate_name` / `truncate_hover_line` — pętla po **jednostkach UTF-16** (`Vec<u16>`, `pop()` = `slice(0,-1)`, `len()` = `length`; połówka pary zastępczej → U+FFFD przy pomiarze). Budżety nazw 305, 285, 266, 240, 213,8, 180, 120, 60 px (z `CITY_NAME_BUDGET_BASE` 305 `:138` minus sloty `:87-88`, `:199`). **0 różnic**, 2 532 przypadki przycięte.
 
 ### 4.3 Linie bazowe i parser — §3.1, §3.3.
@@ -182,7 +182,7 @@ Referencje Chromium wygenerowane drugi raz: `MANIFEST.sha256` (51 wpisów, w tym
 | `src/raster/text/*` (unit) | 10 | parser (formy weba, prefiksy, błędne wartości, cudzysłów), mapowanie stosów, PxScale ≠ em, fallback per glif, białe znaki, `round_64` |
 | `tests/text_metrics.rs` | 6 | §4.1–4.3, niepoprawny font zostaje, domyślny `10px sans-serif` |
 | `tests/text_scenes.rs` | 4 | §5, złote hashe, dwukrotny render, kompletność manifestu |
-| `tests/text_fonts.rs` | 5 | sha256 (wektory NIST), manifest + rozmiar ≤ 6 MB + bajty w binarce, brak `.notdef` (22+25+ASCII+`×…−—·%,!→`), fallback ☠◆⚔ → DejaVu, emoji → `.notdef` (RR-T8c) |
+| `tests/text_fonts.rs` | 6 | sha256 (wektory NIST), sha256 fixtur `tests/fixtures/text/MANIFEST.sha256` (obrona r1), manifest + rozmiar ≤ 6 MB + bajty w binarce, brak `.notdef` (22+25+ASCII+`×…−—·%,!→`), fallback ☠◆⚔ → DejaVu, emoji → `.notdef` (RR-T8c) |
 | `tests/text_upper.rs` | 3 | §4.4 |
 | `tests/text_api_closed.rs` | 3 | 6 członków tekstowych, brak nieużywanych, `canvas.rs` bez nowych `pub fn` |
 
@@ -232,6 +232,20 @@ Każda mutacja = jedna podmiana fragmentu (asercja jednokrotnego wystąpienia), 
 **Wynik: 23/23 zabitych** (`dowody/08-mutations.log`, EXIT=0). Historia (uczciwie): pierwszy przebieg (`dowody/08a-mutations-first-pass.log`) dał **22/23** — przeżyła M04 (hanging liczone w f64 zamiast `float`), bo `baselines_match_chromium` porównywał w precyzji f32. Test zaostrzono do porównania bitowego (`to_bits`; wszystkie wartości Chromium i nasze są dokładnymi ułamkami binarnymi) i powtórzono cały zestaw.
 
 ---
+
+## 8a. Obrona r1 (zarzuty Evaluatora r1, PASS-WITH-NOTES)
+
+Zmiany wyłącznie w `tests/fixtures/text/{gen.mjs,widths.tsv,truncate.tsv,fontparse.tsv,MANIFEST.sha256}`, `tests/text_metrics.rs`, `tests/text_fonts.rs` i tym dokumencie. Kod `src/**` bez zmian. Referencje odtworzone tym samym `gen.mjs` w Chromium 141.0.7390.37: **wszystkie 36 plików `ref/*.rgba`, `scenes.tsv`, `baselines.tsv`, `upper.tsv`, `city_names.txt`, `versions.txt` — sha256 identyczne jak w r1** (zmieniły się tylko pliki z nowymi wierszami). Fixtury: 3 869 084 B (≤ 8 MB).
+
+| # | zarzut | odpowiedź | dowód |
+|---|---|---|---|
+| 1 | E03 (`<=`→`<` w `truncate_name`) przeżyła — brak przypadku `maxW == measureText(name)` | **PRZYJMUJĘ.** `gen.mjs`: `maxW` podany jako `['w', tekst]` jest liczony **w Chromium** (`measureText(tekst).width`, dokładny float) — 40 nazw z budżetem = szerokość nazwy (`cityMapStatChip.ts:773` `<=`), 40 z budżetem = szerokość `nazwa[..-2]+'…'` (pętla `:775` `>` w równości), 3+3 analogicznie dla wiersza hover (`:711`, `:713`). Test liczy i wymaga ≥ 40 przypadków „mieści się dokładnie” (zmierzone 43). | O1 KILLED; O4 (`>`→`>=` w pętli nazwy), O5 (`>`→`>=` hover) KILLED |
+| 2 | E09 (`units.len() > 1` → `> 2`) i E05 (`bolder` → 400) przeżyły | **PRZYJMUJĘ.** Hover `AB`, `Ż·`, `WA` (2 jednostki) i `A`, `·` (1) przy `maxW = 1`; nazwy `AB`, `ŻÓ`, `A` (strażnik `s.length > 1`, `:774`). Sondy `fontparse.tsv`: `bolder 10px x`, `bolder 22px Arial, sans-serif`, `italic bolder 12px x` (Chromium serializuje `bold` → 700) i `bolder lighter 12px x` (odrzucone — dwie wagi). Dodatkowo `widths.tsv` +16 wierszy `bolder`/`lighter` (wybór twarzy Bold/Regular, bit w bit). | O2, O3, O6 KILLED |
+| 3 | `measureText` porównywane z tolerancją 1e-9, nie `to_bits` | **PRZYJMUJĘ.** `same_bits()` (`to_bits`, ±0 równe) we `measure_text_widths_match_chromium` i `baselines_match_chromium`; `WIDTH_TOL` usunięty. | O7 (szerokość ×(1+ε), +1 ulp) KILLED |
+| 4 | `manifest_lists_every_fixture` nie sprawdza sha256 fixtur | **PRZYJMUJĘ.** Nowy `text_fonts::fixtures_match_manifest_sha256` liczy sha256 (ta sama implementacja FIPS 180-4) każdej linii `tests/fixtures/text/MANIFEST.sha256` (fixtury, 36 `ref/*.rgba`, 6 fontów przez `../../../assets/fonts/`) i wymaga, by każdy plik katalogu i `ref/` był na liście. Wyjątek jawny: `golden.tsv` — pisany przez test Rust (`TEXT_BLESS=1`), nie przez `gen.mjs`, więc nie w manifeście generatora (ujawnione przez nowy test przy pierwszym uruchomieniu). | O8 (dopisany bajt w `versions.txt`), O9 (1 bit w `ref/t10_glyph_civ.rgba`) KILLED |
+| 5 | `dowody/01-gates.log` pokazuje HEAD bazowy `d8429335` | **PRZYJMUJĘ (formalnie).** Bramy r1 biegły na drzewie roboczym przed commitem. W obronie bramy uruchomione **po** commicie kodu obrony — `dowody/02-obrona-gates.log` zapisuje HEAD = SHA tego commita. | `dowody/02-obrona-gates.log` |
+
+Mutacje obrony: `dowody/02-obrona-mutations.py`, log `dowody/02-obrona-mutations.log` — **9/9 KILLED** (O1–O9).
 
 ## 9. ZAŁOŻENIA (zbiorczo) i NIE_ZMIERZONO
 - Z-29-0 … Z-29-6: §1. Progi metryki: Z-28-6 (D-TXT-4 = A).

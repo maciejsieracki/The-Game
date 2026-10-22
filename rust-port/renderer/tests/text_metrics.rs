@@ -15,10 +15,12 @@ use civ_renderer::raster::text::{
 };
 use civ_renderer::raster::Canvas2dLite;
 
-/// Width tolerance (px). Measured maximum deviation is printed; the
-/// generator stores Chromium's `float` results, which are exact binary
-/// fractions of `size / 2048`, so the expected error is 0.
-const WIDTH_TOL: f64 = 1e-9;
+/// Same bits, treating `+0.0` and `-0.0` as equal. Chromium's widths are
+/// `float`s printed exactly by JS and parsed exactly by Rust, so the
+/// comparison is bit-exact (obrona r1, zarzut 3: no tolerance).
+fn same_bits(a: f64, b: f64) -> bool {
+    a.to_bits() == b.to_bits() || (a == 0.0 && b == 0.0)
+}
 
 fn fixture(rel: &str) -> String {
     let p = format!("{}/tests/fixtures/text/{rel}", env!("CARGO_MANIFEST_DIR"));
@@ -50,7 +52,7 @@ fn measure_text_widths_match_chromium() {
                 format!("{} | {:?} | rust {got} chromium {want}", r[0], r[1]),
             );
         }
-        if d > WIDTH_TOL {
+        if !same_bits(got, want) {
             bad.push(format!(
                 "{} | {:?} | rust {got} chromium {want}",
                 r[0], r[1]
@@ -76,9 +78,28 @@ fn truncation_decisions_match_the_web() {
     let rows = rows("truncate.tsv");
     let mut c = Canvas2dLite::new(1, 1).expect("canvas");
     let (mut n, mut cut) = (0, 0);
+    let (mut exact_fit, mut short_hover, mut short_name) = (0, 0, 0);
     let mut bad = Vec::new();
     for r in &rows {
         let max_w: f64 = r[2].parse().expect("maxW");
+        // Boundary coverage (obrona r1, zarzuty 1–2): maxW == measureText(input)
+        // (cityMapStatChip.ts:773 `<=`, :711 `>`), and 1–2 UTF-16 unit
+        // inputs (`length > 1` guards at :711 / :774).
+        let units = r[3].encode_utf16().count();
+        if r[3] == r[4]
+            && same_bits(
+                max_w,
+                shape_text(&parse_font(&r[1]).expect("font"), &r[3]).width,
+            )
+        {
+            exact_fit += 1;
+        }
+        if units <= 2 && r[0] == "hover" {
+            short_hover += 1;
+        }
+        if units <= 2 && r[0] == "name" {
+            short_name += 1;
+        }
         let got = match r[0].as_str() {
             "name" => truncate_name(&mut c, &r[3], max_w, &r[1]),
             "hover" => {
@@ -104,6 +125,15 @@ fn truncation_decisions_match_the_web() {
     );
     assert!(cut > 1000, "too few truncated cases: {cut}");
     assert!(bad.is_empty(), "{:#?}", &bad[..bad.len().min(20)]);
+    println!(
+        "boundary: exact fit {exact_fit}, hover ≤2 units {short_hover}, name ≤2 units {short_name}"
+    );
+    assert!(exact_fit >= 40, "too few maxW == width cases: {exact_fit}");
+    assert!(
+        short_hover >= 5,
+        "too few 1–2 unit hover rows: {short_hover}"
+    );
+    assert!(short_name >= 3, "too few 1–2 unit names: {short_name}");
 }
 
 #[test]
@@ -128,7 +158,7 @@ fn baselines_match_chromium() {
         let got = baseline_shift(&spec, b);
         // Chromium reports a float, printed by JS exactly; every value of
         // ours is an exact binary fraction too → bit-exact comparison.
-        if got.to_bits() != want.to_bits() && !(got == 0.0 && want == 0.0) {
+        if !same_bits(got, want) {
             bad.push(format!("{} {}: rust {got} chromium {want}", r[0], r[1]));
         }
     }
