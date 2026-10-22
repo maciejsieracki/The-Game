@@ -1,7 +1,7 @@
 # P4-31 — RR-T8d: klucze treści, cache tekstur, mipmapy, skala DPI×LOD, upload (R-RUSTPORT-P4-31-ATLAS-CACHE-Q1)
 
-Temat: `R-RUSTPORT-P4-31-ATLAS-CACHE-Q1`, DOMAIN: GAME, runda 1/5 (Operator). Plan: `P4-25-TEXT-RASTER-AUDIT.md` §6, wiersz RR-T8d. Baza: `rust-port/parity-v2` @ `672c2059` (RR-T8a/b/c zintegrowane).
-Kod: `rust-port/renderer/src/raster/atlas/**` (+ jedna linia `pub mod atlas;` w `src/raster/mod.rs`). Testy: `tests/atlas_{keys,mip,nturns,gpu,json}.rs`. Fixtury: `tests/fixtures/atlas/**` (2,4 MB). Dowody surowe: `dyspozycje/autobot/runs/R-RUSTPORT-P4-31-ATLAS-CACHE-Q1/dowody/`.
+Temat: `R-RUSTPORT-P4-31-ATLAS-CACHE-Q1`, DOMAIN: GAME, runda 2/5 (Operator; odpowiedzi na zarzuty Evaluatora r1 — §12). Plan: `P4-25-TEXT-RASTER-AUDIT.md` §6, wiersz RR-T8d. Baza: `rust-port/parity-v2` @ `672c2059` (RR-T8a/b/c zintegrowane).
+Kod: `rust-port/renderer/src/raster/atlas/**` (+ jedna linia `pub mod atlas;` w `src/raster/mod.rs`). Testy: `tests/atlas_{keys,mip,nturns,gpu,json}.rs`. Fixtury: `tests/fixtures/atlas/**` (3,1 MB po rundzie 2). Dowody surowe: `dyspozycje/autobot/runs/R-RUSTPORT-P4-31-ATLAS-CACHE-Q1/dowody/`.
 
 Konwencja: `plik:linia` bez prefiksu = `gra/src/render/` w pinie `edb8fb56`; `three.module.js:N` = `three@0.169.0/build/three.module.js`. `NIE_ZMIERZONO` = nie sprawdzone. `[zewn.]` = wiedza spoza repo, nieczytana w źródłach.
 
@@ -13,7 +13,7 @@ Konwencja: `plik:linia` bez prefiksu = `gra/src/render/` w pinie `edb8fb56`; `th
 4. **Skala DPI×LOD z limitem 2048 (pkt 4)** — czyste funkcje, 2342/2342 wektorów z weba bit w bit (LOD z odległości, mnożnik LOD, `badgePixelRatio`, `badgeCanvasScale`, `Math.round(W·s)`); dla każdej osiągalnej plakietki (W ≤ 463, H ≤ 70 px CSS) limit nie zadziała (463·4 = 1852). Limit 2048 = `wgpu::Limits::downlevel_defaults().max_texture_dimension_2d` (test).
 5. **Upload (pkt 5)** — CPU: niepremultiplikacja jak Chromium przy `texImage2D` (zmierzona, 99,33 %, ≤ 1 LSB), ustawienia T1–T15 z kodu weba + domyślnych Three r169 (odkrycie: T1–T6 i T15 **mają** mipmapy i są `RGBA8` bez sRGB — P4-25 miał to jako `[zewn., niezweryfikowane]`), blending Three `NormalBlending`. GPU (`--features gpu`): `Rgba8UnormSrgb`/`Rgba8Unorm`, wszystkie poziomy przez `Queue::write_texture`, sampler, `BlendState`; **kompiluje się i przechodzi clippy z `--features gpu`**; test z urządzeniem `#[ignore]` (brak adaptera w kontenerze, spike P4-15 u właściciela).
 6. **Rejestr zasobów (pkt 6)** — użyty `assets` (RR-T6): `Assets`, `Cache`, `Owned`, `FakeGpu`; LOD z `core::zoom_lod` (P4-17). Nic nie zduplikowano; `assets/**` i `core/**` bez zmian.
-7. **Mutacje 27/27 zabite** (`dowody/08-mutations.log`). Determinizm: fixtury odtworzone drugi raz bajt w bajt; ślad N tur identyczny przy tym samym ziarnie. **Zero nowych zależności**, `Cargo.toml`/`Cargo.lock` bez zmian, `forbid(unsafe_code)` zostaje.
+7. **Mutacje 27/27 zabite** (`dowody/08-mutations.log`; runda 2: **31/31**, `08-mutations-r2.log`). Determinizm: fixtury odtworzone drugi raz bajt w bajt; ślad N tur identyczny przy tym samym ziarnie. **Zero nowych zależności**, `Cargo.toml`/`Cargo.lock` bez zmian, `forbid(unsafe_code)` zostaje.
 
 ## 1. Metoda (reprodukcja)
 
@@ -28,7 +28,7 @@ PLAYWRIGHT_BROWSERS_PATH=/opt/pw-browsers node rust-port/renderer/tests/fixtures
 
 Adaptacje generatora kluczy (pełna tabela: `tests/fixtures/atlas/README.md`): funkcje prywatne modułów stają się importowalne przez **dopisanie** jednej linii `export { … };` do kopii pliku w scratchu (ciała funkcji nietknięte); `window.devicePixelRatio` podstawiany przez `globalThis.window`; dwa fragmenty niebędące funkcjami skopiowane dosłownie (`unitUpgradeBadges.ts:312`, `cityMapStatChip.ts:848-849`).
 
-Pomiary modeli mipmap i niepremultiplikacji dopasowywano skryptami jednorazowymi w scratchu (numpy), na większym zbiorze (dodatkowo 512×168 T7, 256×213 T8; 166 860 tekseli). Do repo trafił zestaw zredukowany (0,95 MB); liczby w tym dokumencie pochodzą z testów Rust na fixturze w repo.
+Pomiary modeli mipmap i niepremultiplikacji dopasowywano skryptami jednorazowymi w scratchu (numpy), na większym zbiorze (dodatkowo 512×168 T7, 256×213 T8; 166 860 tekseli). Do repo trafił zestaw zredukowany (0,95 MB); liczby w tym dokumencie pochodzą z testów Rust na fixturze w repo. Runda 2: fixtura w repo zawiera już przypadek rozmiaru T7 (512×168, `SRGB8_ALPHA8`, 10 poziomów; test `t7_size_chain_matches_webgl`). 256×213 (T8) nie jest w repo, ale T8 ma `LinearFilter` (bez mipmap, §4.1), więc nie dotyczy filtra mip.
 
 ## 2. Klucze treści (pkt 1)
 
@@ -112,6 +112,9 @@ Zgodność modelu Rust (`tests/atlas_mip.rs`, krok z poziomu GL / cały łańcuc
 | RGBA8, nieparzysty | 3247/3258 (99,66 %) | 3246/3258 | 1 |
 | sRGB, parzysty | 12418/12550 (98,95 %) | 12399/12550 | 1 |
 | sRGB, nieparzysty | 3253/3258 (99,85 %) | 3232/3258 | 1 |
+| **T7 512×168 sRGB** (runda 2, osobny test) | 28200/28647 (98,44 %) | 28048/28647 (97,91 %) | 1 |
+
+Cztery pierwsze wiersze nie obejmują przypadku T7 (liczony osobno, żeby progi z rundy 1 się nie zmieniły). Próg testu T7: krok ≥ 0,984, łańcuch ≥ 0,979, maks. |Δ| ≤ 1.
 
 Co jest wiarygodnie odtwarzalne: struktura filtra (z poprzedniego poziomu, blit dwuliniowy, sRGB w świetle liniowym) i bajty RGBA8 parzystych poziomów. Reszta (resztkowe ≤ 1 LSB w sRGB — prawdopodobnie przybliżona funkcja potęgowa SwiftShadera `[zewn.]`) — nieodtworzone. Filtr na sprzęcie właściciela (ANGLE → D3D11; D3D11 `GenerateMips` jest zdefiniowany przez sterownik `[zewn.]`) — **NIE_ZMIERZONO**; to dotyczy też tego, czy sRGB jest tam filtrowane liniowo.
 
@@ -132,9 +135,9 @@ Rust generuje mipmapy na alfie prostej (straight), dokładnie jak web (canvas �
 ### 5.3 API Rust
 
 `raster::atlas::upload`: `AlphaMode::{Straight (domyślny, zgodny z webem), Premultiplied}`, `TexFormat::{Rgba8UnormSrgb, Rgba8Unorm}`, `MinFilter`, `Producer::options()` (tabela §4.1), `unpremultiply`, `prepare(premul, w, h, opts) -> TextureData` (konwersja alfy → łańcuch mip), `blend_for`. Wejście: `Canvas2dLite::pixels_premultiplied()` (tiny-skia, premultiplikowane sRGB).
-`raster::atlas::gpu` (`--features gpu`): `wgpu_format`, `wgpu_blend_state`, `texture_descriptor` (`TEXTURE_BINDING | COPY_DST`, liczba poziomów z danych), `sampler_descriptor` (liniowy mag/min, `MipmapFilterMode::Linear` dla `LinearMipmapLinear`, `ClampToEdge` = domyślne `ClampToEdgeWrapping` Three), `upload(device, queue, label, data)` — `Queue::write_texture` dla każdego poziomu (bez wymogu wyrównania 256 B, który dotyczy tylko kopii bufor↔tekstura). Moduł `src/gpu.rs` nie był zmieniany (allowlista: tylko gdy konieczne — nie było).
+`raster::atlas::gpu` (`--features gpu`): `wgpu_format`, `wgpu_blend_state`, `texture_descriptor` (`TEXTURE_USAGE` = `TEXTURE_BINDING | COPY_DST`, liczba poziomów z danych), `texture_descriptor_with_usage` / `upload_with_usage` (jawne `usage`; `READBACK_TEXTURE_USAGE` = `TEXTURE_USAGE | COPY_SRC` dla testu odczytu — runda 2), `sampler_descriptor` (liniowy mag/min, `MipmapFilterMode::Linear` dla `LinearMipmapLinear`, `ClampToEdge` = domyślne `ClampToEdgeWrapping` Three), `upload(device, queue, label, data)` — `Queue::write_texture` dla każdego poziomu (bez wymogu wyrównania 256 B, który dotyczy tylko kopii bufor↔tekstura). Moduł `src/gpu.rs` nie był zmieniany (allowlista: tylko gdy konieczne — nie było).
 
-Testy GPU (`tests/atlas_gpu.rs`): bez urządzenia — formaty, `BlendState` (straight = SRC_ALPHA…, premultiplied = `BlendState::PREMULTIPLIED_ALPHA_BLENDING`), deskryptory T9 (7 poziomów, `Rgba8UnormSrgb`), `MAX_TEXTURE_SIZE == Limits::downlevel_defaults().max_texture_dimension_2d`. Z urządzeniem (`#[ignore]`, powód w atrybucie): upload T9 i odczyt każdego poziomu (`copy_texture_to_buffer`, wiersze 256 B) == dane CPU. `gpu_probe` w kontenerze: `SKIPPED: no GPU adapter` (log 01).
+Testy GPU (`tests/atlas_gpu.rs`): bez urządzenia — formaty, `BlendState` (straight = SRC_ALPHA…, premultiplied = `BlendState::PREMULTIPLIED_ALPHA_BLENDING`), deskryptory T9 (7 poziomów, `Rgba8UnormSrgb`), `MAX_TEXTURE_SIZE == Limits::downlevel_defaults().max_texture_dimension_2d`. Z urządzeniem (`#[ignore]`, powód w atrybucie): upload T9 z `READBACK_TEXTURE_USAGE` (wgpu wymaga `COPY_SRC` na źródle `copy_texture_to_buffer`) i odczyt każdego poziomu (wiersze 256 B) == dane CPU. Test bez urządzenia sprawdza, że deskryptor odczytu ma `COPY_SRC | COPY_DST | TEXTURE_BINDING`, a produkcyjny dokładnie `TEXTURE_BINDING | COPY_DST`. `gpu_probe` w kontenerze: `SKIPPED: no GPU adapter` (log 01).
 
 ## 6. Skala DPI×LOD (pkt 4)
 
@@ -146,7 +149,9 @@ Wektory: 317 odległości, 11 poziomów, 13 segmentów, 23 DPR (w tym 0, −0, N
 
 `cargo fmt --all -- --check` EXIT=0; `cargo clippy --locked --all-targets -- -D warnings` EXIT=0; `cargo clippy --locked --all-targets --features gpu -- -D warnings` EXIT=0; `cargo test --locked --all-targets` EXIT=0 (rustc 1.97.0; 304 passed, 0 failed); `cargo test --locked --features gpu --test atlas_gpu --test gpu_probe` EXIT=0 (atlas_gpu: 2 passed, 1 ignored; probe: `SKIPPED: no GPU adapter`); `cargo +1.87.0 test --locked --all-targets` EXIT=0 (304 passed, 0 failed; przed nim `cargo clean`, bo dysk kontenera jest współdzielony — pierwsza próba bez czyszczenia padła na `No space left on device`, §10). `git diff --check` EXIT=0, `Cargo.toml`/`Cargo.lock` bez zmian, `#![forbid(unsafe_code)]` w `src/lib.rs`.
 
-## 8. Mutacje (`dowody/08-mutations.{py,log}`) — 27/27 zabitych
+## 8. Mutacje (`dowody/08-mutations.{py,log}`) — runda 1: 27/27; runda 2 (`08-mutations-r2.log`): 31/31 zabitych
+
+Runda 2 dodała A28–A31 (§12) i trzecią komendę testów (`--features gpu --test atlas_gpu`, bez urządzenia). Pierwszy przebieg rundy 2 (`08-mutations-r2-pass1.log`) dał 30/31: przeżył wariant „kodowanie RGB sRGB połówki do parzystej” — **mutant równoważny** (po nieliniowej potędze dokładne .5 praktycznie nie występuje; 0 różnic na fixturze), więc A31 zastąpiono zaokrągleniem alfy tekstur sRGB, gdzie średnie bajtów trafiają w dokładne .5 (zabita). Drugi przebieg przerwał brak miejsca na współdzielonym dysku (`No space left on device` → fałszywe „KILLED (build)”); powtórzony z `CARGO_INCREMENTAL=0` — wynik w `08-mutations-r2.log` nie ma żadnego wpisu „build”.
 
 Klucze (A01–A11: trim Rust zamiast JS, brak `toLowerCase`, `floor`→`round`, era `round`→`floor`, kropka zamiast przecinka, `-` zamiast U+2212, LOD 1 nierozpoznany, domyślne `b`, segment `w` z `hoverExpanded`, klucz barbarzyńców, odwrócony pierścień robotnika), skala (A12–A14: limit 4→5, DPR 3→2, brak limitu 2048), cache (A15–A19: prune nic nie zwalnia, czyszczenie LOD odwrócone, brak skrótu „ten sam klucz”, brak prune w `finish_sync`, zmiana LOD nie planuje czyszczenia), mip (A20–A23: połówki w górę, brak przesunięcia środka, sRGB na bajtach zakodowanych, o jeden poziom za mało), upload (A24–A27: obcięcie zamiast zaokrąglenia, mipmapy dla `LinearFilter`, blend `ONE` zamiast `SRC_ALPHA`, T1–T6/T15 jako sRGB).
 
@@ -171,3 +176,17 @@ Filtr `generateMipmap` i niepremultiplikacja na ANGLE → D3D11 (Windows właśc
 3. T1–T6, T15 jako `Rgba8Unorm` (bez dekodowania sRGB): jasność/nasycenie ikon 🔥 ⚔ ☠ vs web.
 4. T14 plakietka miasta po przejściach progu LOD (5,5 / 11 j.św.) i przy DPI 1/1,5/2/3 — ostrość, brak „skoku” wielkości.
 5. Hover plakietki po wstrzymaniu kolejki (Z-31-3) — czy stan „wstrzymana” się odświeża (w webie nie).
+
+## 12. Runda 2 — odpowiedzi na zarzuty Evaluatora r1 (`02-evaluator-r1.md`)
+
+| # | Zarzut | Odpowiedź | Dowód |
+|---|---|---|---|
+| 1 | test `upload_and_read_back_every_level` bez `COPY_SRC` | **PRZYJMUJĘ.** `gpu.rs`: stałe `TEXTURE_USAGE` (produkcja, bez zmian: `TEXTURE_BINDING \| COPY_DST`) i `READBACK_TEXTURE_USAGE` (`+ COPY_SRC`), `texture_descriptor_with_usage`, `upload_with_usage`; test odczytu używa `READBACK_TEXTURE_USAGE`. Test bez urządzenia sprawdza obie maski. | `tests/atlas_gpu.rs` `descriptors_follow_the_texture_data`; mutacja A30 (usunięcie `COPY_SRC`) zabita. Na GPU nadal **NIE_ZMIERZONO** (brak adaptera) |
+| 2 | liczby w doc-komentarzach niezgodne z testem i §4.2, „`f64`” | **PRZYJMUJĘ.** `mip.rs` podaje teraz liczby z testu (12550/12550; 3247/3258 = 99,66 %; 12418/12550 = 98,95 %; 3253/3258 = 99,85 %; T7 98,44 %) i opisuje arytmetykę: tablica dekodowania i filtr w `f32`, kodowanie sRGB i zaokrąglenie w `f64`. `upload.rs`: 48632/48960 = 99,33 % (dwa miejsca); „reproduces the web exactly” → „follows the web's pipeline”. Liczby z rundy 1 (119 232, 99,54 %, 99,40/99,82 %, 99,35 %) pochodziły ze skryptów jednorazowych na większym zbiorze (§1) — nieodtwarzalne z repo, więc usunięte | `cargo test --test atlas_mip -- --nocapture` (`dowody/11-gates-r2.log`) |
+| 3 | luka w `purge_other_lod` (`contains` przeżywa) | **ODRZUCAM fakt, PRZYJMUJĘ wzmocnienie.** Na commicie `d4d15f5e` mutacja `ends_with` → `contains` jest **zabijana**: wektor `Ateny\|3\|l1x` (gen.ts) zawiera `\|l1` nie na końcu, web go usuwa, `contains` by go zostawił → `lod_purge_matches_web` FAILED (odtworzone w rundzie 2 w czystym `CARGO_TARGET_DIR`). Prawdopodobna przyczyna wyniku Evaluatora: współdzielony katalog `tgt` z innym agentem (sam to zgłosił). Mimo to dodano wektory z `\|l1`/`\|l2` wewnątrz nazwy miasta (`Ateny\|l1`, `Sparta\|l2\|l1`, `Teby\|l3`, `X\|l2\|y\|l1\|z`) z prawdziwego `cityMapBadgeKey` i strażnik pokrycia w teście (≥ 120 przypadków z takim kluczem usuniętym) | `dowody/12-mutation-contains-d4d15f5e.log`; mutacja A28 zabita; test: 360 kluczy w 120 przypadkach |
+| 4 | brak fixtury T7 w repo | **PRZYJMUJĘ.** `gen_gl.mjs` §3: przypadek 512×168 `SRGB8_ALPHA8` dopisany PO `up` — poprzednie 56 przypadków i `up` bajt w bajt jak w rundzie 1 (sprawdzone porównaniem JSON). Test `t7_size_chain_matches_webgl`: krok 28200/28647 (98,44 %), łańcuch 28048/28647 (97,91 %), maks. \|Δ\| 1 | §4.2, `tests/fixtures/atlas/README.md`, `SHA256SUMS` |
+| 5 | `unpremultiply` dla `a = 0` niepokryte | **PRZYJMUJĘ.** Asercje `unpremultiply(&[200,100,50,0]) == [0,0,0,0]` i para pikseli; doc doprecyzowany („RGB zerowane także dla danych nie-premultiplikowanych”) | mutacja A29 zabita |
+
+Nowe mutacje rundy 2: A28–A31 (§8; 31/31). Skrypt mutacji uruchamia teraz także `cargo test --features gpu --test atlas_gpu`. Bramki rundy 2: `dowody/11-gates-r2.log` (ten sam skrypt `01-gates.sh`, `CARGO_INCREMENTAL=0`, własny `CARGO_TARGET_DIR`).
+
+Uwaga do ZAŁOŻENIA E-31-1 Evaluatora: przyjmuję jego mapowanie (ocena według `00-dispatch.md`).

@@ -19,9 +19,9 @@
 //!   (three.module.js:23288-23289).
 //!
 //! The Rust raster ([`crate::raster::Canvas2dLite`], tiny-skia) holds
-//! PREMULTIPLIED RGBA8. [`AlphaMode::Straight`] reproduces the web exactly:
+//! PREMULTIPLIED RGBA8. [`AlphaMode::Straight`] follows the web's pipeline:
 //! un-premultiply on the CPU (Chromium's conversion, measured: ≤ 1 LSB,
-//! 99.35 % exact), mip on straight alpha (the web's dark fringes included),
+//! 48 632 / 48 960 channels = 99.33 % exact), mip on straight alpha (the web's dark fringes included),
 //! straight-alpha blending. [`AlphaMode::Premultiplied`] keeps the raster
 //! bytes and blends with `ONE, ONE_MINUS_SRC_ALPHA` — no conversion loss and
 //! no fringes, but NOT the web's pixels; offered for later decisions, not
@@ -159,10 +159,12 @@ impl Producer {
 }
 
 /// Un-premultiplies RGBA8 the way Chromium's canvas → WebGL upload does
-/// (measured on 16 384 texels, P4-31 §5.2): `c' = round_half_even(c·255/a)`
-/// in `f64`, clamped to 255; `a = 0` → `(0, 0, 0, 0)`; alpha unchanged.
-/// 99.35 % of the channels are bit-exact, the rest differ by 1 (the exact
-/// Chromium/Skia conversion is `NIE_ZMIERZONO`).
+/// (measured on a 256×64 canvas, P4-31 §5.2): `c' = round_half_even(c·255/a)`
+/// in `f64`, clamped to 255; `a = 0` → `(0, 0, 0, 0)` (RGB zeroed even if
+/// the input is not valid premultiplied data); alpha unchanged.
+/// Of the 48 960 RGB channels with `a > 0`, 48 632 (99.33 %) are bit-exact,
+/// the rest differ by 1 (`tests/atlas_mip.rs`; the exact Chromium/Skia
+/// conversion is `NIE_ZMIERZONO`).
 ///
 /// # Panics
 /// If `premul.len()` is not a multiple of 4.
@@ -292,6 +294,13 @@ mod tests {
     #[test]
     fn unpremultiply_edges() {
         assert_eq!(unpremultiply(&[0, 0, 0, 0]), vec![0, 0, 0, 0]);
+        // `a = 0` zeroes RGB even for non-premultiplied input (doc contract;
+        // round 2, zarzut 5): an "RGB kept" variant fails here.
+        assert_eq!(unpremultiply(&[200, 100, 50, 0]), vec![0, 0, 0, 0]);
+        assert_eq!(
+            unpremultiply(&[255, 255, 255, 0, 7, 7, 7, 7]),
+            vec![0, 0, 0, 0, 255, 255, 255, 7]
+        );
         assert_eq!(unpremultiply(&[10, 20, 30, 255]), vec![10, 20, 30, 255]);
         assert_eq!(unpremultiply(&[1, 0, 0, 2]), vec![128, 0, 0, 2]); // 127.5 → even 128
         assert_eq!(unpremultiply(&[5, 0, 0, 6]), vec![212, 0, 0, 6]); // 212.5 → even 212

@@ -16,6 +16,8 @@
 //     `Texture.premultiplyAlpha = false`, src/textures/Texture.js:61; set at
 //     three.module.js:24887) next to the same canvas uploaded with `= true` (= the premultiplied
 //     canvas bytes) and `getImageData`.
+//  3. One T7-sized case (512×168, SRGB8_ALPHA8, random), generated AFTER `up`, so the xorshift
+//     stream — and therefore every byte of cases 1–56 and of `up` — is unchanged.
 import { createRequire } from 'node:module';
 import * as fs from 'node:fs';
 import * as path from 'node:path';
@@ -100,6 +102,31 @@ const res = await page.evaluate(() => {
     up[pm ? 'premul' : 'straight'] = b64(readLevel(tex, 0, 256, 64));
   }
   up.getImageData = b64(new Uint8Array(ctx.getImageData(0, 0, 256, 64).data.buffer));
+  // 3. T7 stat-plate size (512×168, SRGB8_ALPHA8 like `unitStatPlate.ts:437-443`), appended
+  //    AFTER `up` so the xorshift stream of every earlier case is unchanged (round 2, zarzut 4).
+  {
+    const [w, h] = [512, 168];
+    const data = new Uint8Array(w * h * 4);
+    for (let i = 0; i < w * h; i++) {
+      const r = rnd();
+      data[4 * i] = r & 255; data[4 * i + 1] = (r >>> 8) & 255; data[4 * i + 2] = (r >>> 16) & 255; data[4 * i + 3] = (r >>> 24) & 255;
+    }
+    const tex = gl.createTexture();
+    gl.bindTexture(gl.TEXTURE_2D, tex);
+    gl.pixelStorei(gl.UNPACK_ALIGNMENT, 1);
+    gl.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, false);
+    const L = Math.log2(Math.max(w, h)) + 1; // three.module.js:24401
+    gl.texStorage2D(gl.TEXTURE_2D, L, gl.SRGB8_ALPHA8, w, h);
+    gl.texSubImage2D(gl.TEXTURE_2D, 0, 0, 0, w, h, gl.RGBA, gl.UNSIGNED_BYTE, data);
+    gl.generateMipmap(gl.TEXTURE_2D);
+    const levels = [];
+    for (let l = 0; l < Math.trunc(L); l++) {
+      const lw = Math.max(1, w >> l), lh = Math.max(1, h >> l);
+      levels.push({ w: lw, h: lh, rgba: b64(readLevel(tex, l, lw, lh)) });
+    }
+    gl.deleteTexture(tex);
+    cases.push({ srgb: true, w, h, kind: 't7', levels });
+  }
   const dbg = gl.getExtension('WEBGL_debug_renderer_info');
   return {
     renderer: gl.getParameter(dbg.UNMASKED_RENDERER_WEBGL),

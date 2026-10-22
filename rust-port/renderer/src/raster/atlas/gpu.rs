@@ -45,12 +45,33 @@ pub const fn wgpu_blend_state(b: BlendSpec) -> wgpu::BlendState {
     }
 }
 
-/// Texture descriptor for `data` (2D, one layer, `TEXTURE_BINDING |
-/// COPY_DST`).
+/// Usage of an atlas texture in the renderer: sampled + written by
+/// `Queue::write_texture`. No `COPY_SRC` — nothing reads it back in play.
+pub const TEXTURE_USAGE: wgpu::TextureUsages =
+    wgpu::TextureUsages::TEXTURE_BINDING.union(wgpu::TextureUsages::COPY_DST);
+
+/// Usage for a read-back check: [`TEXTURE_USAGE`] plus `COPY_SRC`, which
+/// `CommandEncoder::copy_texture_to_buffer` requires on the source texture
+/// (wgpu validation error otherwise).
+pub const READBACK_TEXTURE_USAGE: wgpu::TextureUsages =
+    TEXTURE_USAGE.union(wgpu::TextureUsages::COPY_SRC);
+
+/// Texture descriptor for `data` (2D, one layer, [`TEXTURE_USAGE`]).
 #[must_use]
 pub fn texture_descriptor<'a>(
     label: Option<&'a str>,
     data: &TextureData,
+) -> wgpu::TextureDescriptor<'a> {
+    texture_descriptor_with_usage(label, data, TEXTURE_USAGE)
+}
+
+/// [`texture_descriptor`] with an explicit `usage` (e.g.
+/// [`READBACK_TEXTURE_USAGE`] for a read-back test).
+#[must_use]
+pub fn texture_descriptor_with_usage<'a>(
+    label: Option<&'a str>,
+    data: &TextureData,
+    usage: wgpu::TextureUsages,
 ) -> wgpu::TextureDescriptor<'a> {
     wgpu::TextureDescriptor {
         label,
@@ -63,7 +84,7 @@ pub fn texture_descriptor<'a>(
         sample_count: 1,
         dimension: wgpu::TextureDimension::D2,
         format: wgpu_format(data.desc.options.format),
-        usage: wgpu::TextureUsages::TEXTURE_BINDING | wgpu::TextureUsages::COPY_DST,
+        usage,
         view_formats: &[],
     }
 }
@@ -88,7 +109,7 @@ pub fn sampler_descriptor(min_filter: MinFilter) -> wgpu::SamplerDescriptor<'sta
     }
 }
 
-/// Creates the texture and writes every level.
+/// Creates the texture ([`TEXTURE_USAGE`]) and writes every level.
 #[must_use]
 pub fn upload(
     device: &wgpu::Device,
@@ -96,7 +117,19 @@ pub fn upload(
     label: Option<&str>,
     data: &TextureData,
 ) -> wgpu::Texture {
-    let texture = device.create_texture(&texture_descriptor(label, data));
+    upload_with_usage(device, queue, label, data, TEXTURE_USAGE)
+}
+
+/// [`upload`] with an explicit `usage`; it must contain `COPY_DST`.
+#[must_use]
+pub fn upload_with_usage(
+    device: &wgpu::Device,
+    queue: &wgpu::Queue,
+    label: Option<&str>,
+    data: &TextureData,
+    usage: wgpu::TextureUsages,
+) -> wgpu::Texture {
+    let texture = device.create_texture(&texture_descriptor_with_usage(label, data, usage));
     for (level, bytes) in data.chain.levels.iter().enumerate() {
         let level = u32::try_from(level).unwrap_or(u32::MAX);
         let (w, h) = super::mip::mip_size(data.desc.width, data.desc.height, level);

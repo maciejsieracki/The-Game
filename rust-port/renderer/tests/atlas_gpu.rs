@@ -10,7 +10,8 @@
 
 use civ_renderer::gpu::wgpu;
 use civ_renderer::raster::atlas::gpu::{
-    sampler_descriptor, texture_descriptor, upload, wgpu_blend_state, wgpu_format,
+    sampler_descriptor, texture_descriptor, texture_descriptor_with_usage, upload_with_usage,
+    wgpu_blend_state, wgpu_format, READBACK_TEXTURE_USAGE, TEXTURE_USAGE,
 };
 use civ_renderer::raster::atlas::mip::mip_size;
 use civ_renderer::raster::atlas::scale::MAX_TEXTURE_SIZE;
@@ -68,7 +69,20 @@ fn descriptors_follow_the_texture_data() {
     assert_eq!(td.size.width, 72);
     assert_eq!(td.size.height, 126);
     assert_eq!(td.format, wgpu::TextureFormat::Rgba8UnormSrgb);
-    assert!(td.usage.contains(wgpu::TextureUsages::COPY_DST));
+    assert_eq!(
+        td.usage,
+        wgpu::TextureUsages::TEXTURE_BINDING | wgpu::TextureUsages::COPY_DST
+    );
+    assert_eq!(td.usage, TEXTURE_USAGE);
+    // The read-back test copies texture -> buffer: wgpu requires COPY_SRC on
+    // the source (round 2, zarzut 1), on top of the upload's COPY_DST.
+    let rb = texture_descriptor_with_usage(Some("t9"), &d, READBACK_TEXTURE_USAGE);
+    assert!(rb.usage.contains(wgpu::TextureUsages::COPY_SRC));
+    assert!(rb.usage.contains(wgpu::TextureUsages::COPY_DST));
+    assert!(rb.usage.contains(wgpu::TextureUsages::TEXTURE_BINDING));
+    assert_eq!(rb.size, td.size);
+    assert_eq!(rb.mip_level_count, td.mip_level_count);
+    assert_eq!(rb.format, td.format);
     let s = sampler_descriptor(MinFilter::LinearMipmapLinear);
     assert_eq!(s.mipmap_filter, wgpu::MipmapFilterMode::Linear);
     assert_eq!(s.min_filter, wgpu::FilterMode::Linear);
@@ -95,7 +109,8 @@ fn upload_and_read_back_every_level() {
         pollster::block_on(adapter.request_device(&wgpu::DeviceDescriptor::default()))
             .expect("device");
     let data = t9_like();
-    let tex = upload(&device, &queue, Some("t9"), &data);
+    // COPY_SRC: `copy_texture_to_buffer` below reads this texture.
+    let tex = upload_with_usage(&device, &queue, Some("t9"), &data, READBACK_TEXTURE_USAGE);
     for level in 0..data.desc.mip_level_count {
         let (w, h) = mip_size(data.desc.width, data.desc.height, level);
         let padded = (4 * w).div_ceil(wgpu::COPY_BYTES_PER_ROW_ALIGNMENT)

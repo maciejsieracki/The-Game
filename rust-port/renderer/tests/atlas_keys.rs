@@ -15,10 +15,10 @@ use civ_renderer::assets::{Assets, CachePolicy, FakeGpu, FakeResource, ResourceK
 use civ_renderer::core::zoom_lod::{city_badge_lod_level_for_dist, city_badge_lod_texture_scale};
 use civ_renderer::raster::atlas::cache::TextureCache;
 use civ_renderer::raster::atlas::keys::{
-    city_badge_lod_segment, city_map_badge_key, city_map_badge_key_legacy, civ_sigil_cache_key,
-    format_city_growth_percent_label, leader_portrait_cache_key, owner_emblem_key,
-    prod_icon_cache_key, upgrade_badge_key, worker_sprite_cache_key, BadgePath, CityMapBadgeInput,
-    OwnerEmblemContext,
+    city_badge_lod_segment, city_badge_lod_suffix, city_map_badge_key, city_map_badge_key_legacy,
+    civ_sigil_cache_key, format_city_growth_percent_label, leader_portrait_cache_key,
+    owner_emblem_key, prod_icon_cache_key, upgrade_badge_key, worker_sprite_cache_key, BadgePath,
+    CityMapBadgeInput, OwnerEmblemContext,
 };
 use civ_renderer::raster::atlas::scale::{
     badge_canvas_px, badge_canvas_scale, badge_pixel_ratio, BADGE_MAX_CSS_WIDTH, MAX_TEXTURE_SIZE,
@@ -270,6 +270,7 @@ fn lod_purge_matches_web() {
     let j = data();
     let v = j.get("purge").arr();
     let fake = FakeGpu::new();
+    let (mut inner_total, mut inner_cases) = (0usize, 0usize);
     for e in v {
         let assets: Assets<FakeResource> = Assets::new();
         let mut cache = TextureCache::new(&assets, CachePolicy::UNBOUNDED);
@@ -291,13 +292,30 @@ fn lod_purge_matches_web() {
         assert_eq!(got, kept, "kept for lod {lod}");
         let disposed: BTreeSet<&str> = e.get("disposed").arr().iter().map(Json::str).collect();
         assert_eq!(disposed.len(), freed);
+        // Coverage guard (round 2, zarzut 3): keys that hold the kept
+        // `|l<seg>` INSIDE (city name) but end differently — disposed by the
+        // web's `endsWith`; a `contains` match would keep them.
+        let keep = city_badge_lod_suffix(Some(lod));
+        let inner_hits = disposed
+            .iter()
+            .filter(|k| k.contains(keep.as_str()) && !k.ends_with(keep.as_str()))
+            .count();
+        inner_total += inner_hits;
+        if inner_hits > 0 {
+            inner_cases += 1;
+        }
         drop(cache);
         assets.flush().expect("flush");
     }
     eprintln!(
-        "disposeCityMapBadgeTexturesForOtherLod: {}/{} exact",
+        "disposeCityMapBadgeTexturesForOtherLod: {}/{} exact; disposed keys with the kept suffix inside: {inner_total} in {inner_cases} cases",
         v.len(),
         v.len()
+    );
+    // Every LOD 1 / 2 case has the `|l1` / `|l2`-inside vectors (gen.ts §5).
+    assert!(
+        inner_cases >= 120,
+        "inner-suffix vectors: {inner_cases} cases"
     );
     assert_eq!(fake.live_total(), 0, "every fake texture freed");
 }

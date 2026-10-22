@@ -14,16 +14,23 @@
 //!   resample (a plain 2×2 box with a dropped row/column is off by up to
 //!   128 there);
 //! - [`MipSpace::Linear`] (RGBA8 / `NoColorSpace`): filtered on the stored
-//!   bytes, rounded half to EVEN — bit-exact on every even level measured
-//!   (119 232 texels), ≤ 1 LSB on odd ones (99.54 % exact);
+//!   bytes, rounded half to EVEN — bit-exact on every level made from an
+//!   even-sized one (12 550 / 12 550 texels), ≤ 1 LSB from odd-sized ones
+//!   (3 247 / 3 258 = 99.66 % exact);
 //! - [`MipSpace::Srgb`] (`SRGB8_ALPHA8`): RGB decoded to linear light,
 //!   filtered, re-encoded and rounded half UP; alpha filtered linearly —
-//!   ≤ 1 LSB (99.40 % / 99.82 % exact, even / odd).
+//!   ≤ 1 LSB (even 12 418 / 12 550 = 98.95 %, odd 3 253 / 3 258 = 99.85 %
+//!   exact; T7 size 512×168: 28 200 / 28 647 = 98.44 %).
+//!
+//! These figures are per-step (each level from the GL's previous level) and
+//! are printed by `tests/atlas_mip.rs` (`--nocapture`); P4-31 §4.2.
 //!
 //! The filter of the owner's GL (ANGLE → D3D11 on Windows) and of other
 //! drivers is NOT measured (`NIE_ZMIERZONO`); GL leaves it
-//! implementation-defined. Arithmetic is `f64` with the crate's `jsmath`
-//! power function (no platform `libm`, `tests/jsmath_wiring.rs`).
+//! implementation-defined. Arithmetic: the decode table and the bilinear
+//! filter are `f32` (like the GPU blit); the sRGB re-encode and the rounding
+//! are `f64`, with the crate's `jsmath` power function (no platform `libm`,
+//! `tests/jsmath_wiring.rs`).
 
 use crate::jsmath::js_pow;
 

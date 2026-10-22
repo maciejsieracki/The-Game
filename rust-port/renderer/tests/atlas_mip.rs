@@ -13,6 +13,10 @@ use atlas_json::{base64, load, Json};
 use civ_renderer::raster::atlas::mip::{downsample, mip_level_count, MipChain, MipSpace};
 use civ_renderer::raster::atlas::upload::unpremultiply;
 
+/// Measured on the T7 case (P4-31 §4.2), set just below the measured value.
+const T7_STEP_MIN: f64 = 0.984; // measured 28200/28647 = 0.9844
+const T7_CHAIN_MIN: f64 = 0.979; // measured 28048/28647 = 0.9791
+
 #[derive(Default, Debug, Clone, Copy)]
 struct Tally {
     texels: u64,
@@ -58,6 +62,9 @@ fn tallies() -> ([Tally; 4], [Tally; 4]) {
     let mut step = [Tally::default(); 4];
     let mut chain_t = [Tally::default(); 4];
     for c in j.get("cases").arr() {
+        if c.get("kind").str() == "t7" {
+            continue; // measured on its own: `t7_size_chain_matches_webgl`
+        }
         let srgb = c.get("srgb").bool();
         let space = if srgb {
             MipSpace::Srgb
@@ -135,6 +142,67 @@ fn mip_filter_matches_webgl_generate_mipmap() {
         assert!(t.max_abs <= 1, "chain max |d| {}", t.max_abs);
         assert!(t.ratio() >= 0.987, "chain {:.4}", t.ratio());
     }
+}
+
+/// T7 (stat-plate background, 512×168, `SRGB8_ALPHA8`): one random case in
+/// the fixture (`gen_gl.mjs` §3). Level chain 512×168 → … → 1×1 crosses odd
+/// sizes from level 3 (64×21) on. Thresholds = the measured agreement
+/// (P4-31 §4.2).
+#[test]
+fn t7_size_chain_matches_webgl() {
+    let j = gl();
+    let cases: Vec<&Json> = j
+        .get("cases")
+        .arr()
+        .iter()
+        .filter(|c| c.get("kind").str() == "t7")
+        .collect();
+    assert_eq!(cases.len(), 1, "one T7 case in atlas_gl.json");
+    let c = cases[0];
+    assert!(c.get("srgb").bool(), "T7 is an sRGB texture");
+    let (w, h) = (c.get("w").u32(), c.get("h").u32());
+    assert_eq!((w, h), (512, 168));
+    let levels: Vec<(u32, u32, Vec<u8>)> = c
+        .get("levels")
+        .arr()
+        .iter()
+        .map(|l| {
+            (
+                l.get("w").u32(),
+                l.get("h").u32(),
+                base64(l.get("rgba").str()),
+            )
+        })
+        .collect();
+    assert_eq!(levels.len() as u32, mip_level_count(w, h));
+    assert_eq!(levels.len(), 10);
+    let chain = MipChain::generate(levels[0].2.clone(), w, h, MipSpace::Srgb);
+    let (mut step, mut whole) = (Tally::default(), Tally::default());
+    for i in 1..levels.len() {
+        let (pw, ph, ref prev) = levels[i - 1];
+        let (lw, lh, ref exp) = levels[i];
+        step.add(&downsample(prev, pw, ph, lw, lh, MipSpace::Srgb), exp);
+        whole.add(&chain.levels[i], exp);
+    }
+    eprintln!(
+        "T7 512x168 sRGB step: {}/{} exact ({:.4}), max|d| {} | chain: {}/{} ({:.4}), max|d| {}",
+        step.exact,
+        step.texels,
+        step.ratio(),
+        step.max_abs,
+        whole.exact,
+        whole.texels,
+        whole.ratio(),
+        whole.max_abs
+    );
+    assert!(step.max_abs <= 1, "T7 step max |d| {}", step.max_abs);
+    assert!(whole.max_abs <= 1, "T7 chain max |d| {}", whole.max_abs);
+    assert!(step.ratio() >= T7_STEP_MIN, "T7 step {:.4}", step.ratio());
+    assert!(
+        whole.ratio() >= T7_CHAIN_MIN,
+        "T7 chain {:.4}",
+        whole.ratio()
+    );
 }
 
 #[test]

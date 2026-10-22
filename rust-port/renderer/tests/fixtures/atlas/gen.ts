@@ -258,6 +258,13 @@ for (let i = 0; i < 60; i++) {
   }
   ks.push('Ateny|3|l1x'); // suffix-match edge: does not end with `|l1`
   ks.push('noLodSuffix');
+  // Round 2 (zarzut 3): `|l1` / `|l2` INSIDE the key (city name) but a different
+  // LOD suffix — only a suffix match (`endsWith`, cityMapStatChip.ts:1038-1040) disposes
+  // them. Deterministic (no rnd() call), so every other vector is unchanged.
+  ks.push(cityMapBadgeKey({ ...base, cityName: 'Ateny|l1', lodLevel: 0 } as any));
+  ks.push(cityMapBadgeKey({ ...base, cityName: 'Sparta|l2|l1', lodLevel: 3 } as any));
+  ks.push(cityMapBadgeKey({ ...base, cityName: 'Teby|l3', lodLevel: 2 } as any));
+  ks.push('X|l2|y|l1|z');
   purgeKeySets.push(ks);
 }
 for (const ks of purgeKeySets) {

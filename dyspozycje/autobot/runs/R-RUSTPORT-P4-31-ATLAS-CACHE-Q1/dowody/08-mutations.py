@@ -17,6 +17,7 @@ S = 'src/raster/atlas/scale.rs'
 C = 'src/raster/atlas/cache.rs'
 MP = 'src/raster/atlas/mip.rs'
 U = 'src/raster/atlas/upload.rs'
+G = 'src/raster/atlas/gpu.rs'
 
 M = [
     ("A01", K, "JS trim replaced by Rust str::trim (U+FEFF / U+0085 differ)",
@@ -79,11 +80,27 @@ M = [
     ("A27", U, "default-filter producers (T1-T6, T15) uploaded as sRGB",
      "(TexFormat::Rgba8Unorm, MinFilter::LinearMipmapLinear)",
      "(TexFormat::Rgba8UnormSrgb, MinFilter::LinearMipmapLinear)"),
+    # Round 2 (Evaluator r1 zarzuty 1, 3, 4, 5).
+    ("A28", C, "LOD purge matches the suffix anywhere (contains instead of endsWith)",
+     ".filter(|k| !k.ends_with(&keep))", ".filter(|k| !k.contains(&keep))"),
+    ("A29", U, "unpremultiply keeps RGB for a = 0",
+     "out.extend_from_slice(&[0, 0, 0, 0]);", "out.extend_from_slice(&[px[0], px[1], px[2], 0]);"),
+    ("A30", G, "read-back usage without COPY_SRC (copy_texture_to_buffer would fail validation)",
+     "TEXTURE_USAGE.union(wgpu::TextureUsages::COPY_SRC);", "TEXTURE_USAGE;"),
+    # A31 (pass 1) "sRGB RGB re-encode half-even instead of half-up" SURVIVED: an EQUIVALENT
+    # mutant — after the non-linear pow an exact .5 practically never occurs (0 differences on
+    # the fixture); see 08-mutations-r2-pass1.log and P4-31 §12. Replaced by the alpha channel
+    # of sRGB textures, where averages of bytes do hit exact .5 ties.
+    ("A31", MP, "sRGB texture alpha rounded half-even instead of half-up",
+     "(MipSpace::Srgb, false) => round_half_up_u8(v),",
+     "(MipSpace::Srgb, false) => round_half_even_u8(v),"),
 ]
 
 TEST_CMDS = [
     ["cargo", "test", "--locked", "--lib", "raster::atlas"],
     ["cargo", "test", "--locked", "--test", "atlas_keys", "--test", "atlas_mip", "--test", "atlas_nturns"],
+    # Device-free GPU checks (the read-back test itself stays #[ignore]d: no adapter).
+    ["cargo", "test", "--locked", "--features", "gpu", "--test", "atlas_gpu"],
 ]
 
 
