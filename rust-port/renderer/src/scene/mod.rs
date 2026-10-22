@@ -29,7 +29,7 @@ pub mod hash;
 pub mod material;
 pub mod node;
 
-pub use export::{GeometryKey, GpuMesh, Topology};
+pub use export::{GeometryKey, GpuExport, GpuGroup, GpuMesh, GpuSprite, Topology};
 pub use geometry::{DynEq, Geo, GeoBody, Geometry, Prim};
 pub use graph::{Scene, WorldMesh};
 pub use hash::{geo_hash, Fnv};

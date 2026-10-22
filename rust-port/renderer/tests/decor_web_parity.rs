@@ -480,7 +480,11 @@ fn cmp_object(c: &mut Cmp, ctx: &str, obj: Option<&DecorObject>, w: &Json) {
     let worlds = world_matrices(obj);
     let nodes = w.get("nodes").arr();
     c.eq(&format!("{ctx}.nodes"), flat.len(), nodes.len());
-    c.eq(&format!("{ctx}.meta"), obj.node_count(), flat.len());
+    // P4.27 r2: was `obj.node_count() == flat.len()` (two traversals of the
+    // same arena, always true). The former side-table check (`meta.len()`,
+    // one entry per built node) is now: every node of the arena is reachable
+    // from the root (no orphan / detached leftovers in a decor object).
+    c.eq(&format!("{ctx}.meta"), obj.nodes.len(), flat.len());
     for (i, ((n, parent), wn)) in flat.iter().zip(nodes).enumerate() {
         let k = format!("{ctx}#{i}");
         let ty = match &n.kind {
@@ -1403,7 +1407,7 @@ fn river_lod_matches_web() {
             );
             c.eq(
                 &format!("{ctx}.ro"),
-                i64::from(e.render_order),
+                i64::from(e.render_order()),
                 w.get("ro").i64(),
             );
             let root = &e.mesh.nodes[e.mesh.root()];
@@ -1451,7 +1455,11 @@ fn river_lod_matches_web() {
         let w = d.get("mergeAll").arr();
         c.eq("mergeAll.len", out.len(), w.len());
         for (e, we) in out.iter().zip(w) {
-            c.eq("mergeAll.ro", i64::from(e.render_order), we.get("ro").i64());
+            c.eq(
+                "mergeAll.ro",
+                i64::from(e.render_order()),
+                we.get("ro").i64(),
+            );
             c.eq("mergeAll.merged", e.merged, we.get("merged").bool());
             c.eq(
                 "mergeAll.hash",
@@ -1496,8 +1504,6 @@ fn river_lod_matches_web() {
         }
         RiverBucketMesh {
             mesh: Scene::new(),
-            render_order: 0,
-            visible: true,
             geometry: Arc::new(Geometry::default()),
             hex_keys: ks,
             merged: true,
@@ -1585,13 +1591,13 @@ fn river_lod_matches_web() {
             &|key| explored.contains(key),
             RIVER_LOD_HIDE_FROM_LEVEL,
         );
-        let vis: Vec<bool> = entries.iter().map(|e| e.visible).collect();
+        let vis: Vec<bool> = entries.iter().map(RiverBucketMesh::visible).collect();
         let wv: Vec<bool> = cs.get("visApply").arr().iter().map(Json::bool).collect();
         c.eq(&format!("{k}.visApply"), vis, wv);
         let mut entries2: Vec<RiverBucketMesh> = segs.iter().map(|s| entry(s)).collect();
         let ret = apply_river_lod_visibility(&mut entries2, level, RIVER_LOD_HIDE_FROM_LEVEL);
         c.eq(&format!("{k}.lodRet"), ret, cs.get("lodRet").bool());
-        let vis2: Vec<bool> = entries2.iter().map(|e| e.visible).collect();
+        let vis2: Vec<bool> = entries2.iter().map(RiverBucketMesh::visible).collect();
         let wv2: Vec<bool> = cs.get("visLod").arr().iter().map(Json::bool).collect();
         c.eq(&format!("{k}.visLod"), vis2, wv2);
     }

@@ -12,6 +12,7 @@ use super::model::WonderModel;
 use crate::geom::{Mat4, Quat, Vec3};
 use crate::pick::hex::{axial_to_world, HexCoord, HEX_R};
 use crate::pick::terrain::Terrain;
+use crate::scene::ROOT;
 
 /// `OWNER_COLORS` (`wonderRenderer.ts:21-24`).
 pub const OWNER_COLORS: [u32; 8] = [
@@ -78,11 +79,20 @@ pub struct RenderedWonder {
     pub position: Vec3,
     /// `group.scale` (`setScalar(WONDER_SCALE)`).
     pub scale: Vec3,
-    /// `group.visible`.
-    pub visible: bool,
 }
 
 impl RenderedWonder {
+    /// `group.visible` (the model root; P4.27 r2: no side copy).
+    #[must_use]
+    pub fn visible(&self) -> bool {
+        self.model.nodes[ROOT].visible
+    }
+
+    /// `group.visible = v`.
+    pub fn set_visible(&mut self, v: bool) {
+        self.model.nodes[ROOT].visible = v;
+    }
+
     /// `group.matrixWorld` under the scene (`scene.matrixWorld × group.matrix`).
     #[must_use]
     pub fn world_matrix(&self) -> Mat4 {
@@ -144,7 +154,7 @@ impl WonderRenderer {
 
             if let Some(i) = self.find(&key) {
                 let grp = &mut self.models[i];
-                grp.visible = visible;
+                grp.set_visible(visible);
                 if grp.visual_key == visual_key {
                     let (x, z) = axial_to_world(HexCoord::new(w.q, w.r), HEX_R);
                     grp.position = Vec3::new(x, y_base, z);
@@ -157,13 +167,14 @@ impl WonderRenderer {
                 Some(f) => Some(f(w.owner_id)),
                 None => default_owner_color(w.owner_id),
             };
-            let model = build_wonder_model(
+            let mut model = build_wonder_model(
                 &w.wonder_id,
                 WonderModelOptions {
                     ruin: w.ruin,
                     owner_color,
                 },
             );
+            model.nodes[ROOT].visible = visible;
             let (x, z) = axial_to_world(HexCoord::new(w.q, w.r), HEX_R);
             self.models.push(RenderedWonder {
                 key,
@@ -171,7 +182,6 @@ impl WonderRenderer {
                 model,
                 position: Vec3::new(x, y_base, z),
                 scale: Vec3::new(WONDER_SCALE, WONDER_SCALE, WONDER_SCALE),
-                visible,
             });
         }
         self.models.retain(|m| present.contains(&m.key));
@@ -183,11 +193,12 @@ impl WonderRenderer {
     pub fn apply_fog_visibility(&mut self, vis: &HashSet<String>, fog_on: bool) {
         for grp in &mut self.models {
             if !fog_on {
-                grp.visible = true;
+                grp.set_visible(true);
                 continue;
             }
             let hex_key = grp.key.split('@').nth(1).unwrap_or("");
-            grp.visible = vis.contains(hex_key);
+            let v = vis.contains(hex_key);
+            grp.set_visible(v);
         }
     }
 

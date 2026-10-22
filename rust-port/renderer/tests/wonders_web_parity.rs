@@ -675,7 +675,11 @@ fn renderer_scenario_is_bit_identical_to_web() {
                 g.visual_key.as_str(),
                 w.get("visualKey").str(),
             );
-            c.eq(&format!("{cx}.visible"), g.visible, w.get("visible").bool());
+            c.eq(
+                &format!("{cx}.visible"),
+                g.visible(),
+                w.get("visible").bool(),
+            );
             c.fs(
                 &format!("{cx}.p"),
                 &[g.position.x, g.position.y, g.position.z],

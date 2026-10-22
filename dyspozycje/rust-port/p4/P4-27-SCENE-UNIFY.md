@@ -1,6 +1,6 @@
 # P4.27 — jeden typ drzewa sceny w `rust-port/renderer` (`scene::Scene`)
 
-**TEMAT:** `R-RUSTPORT-P4-27-SCENE-UNIFY-Q1` · **DOMAIN:** GAME · **Rola:** Operator, runda 1
+**TEMAT:** `R-RUSTPORT-P4-27-SCENE-UNIFY-Q1` · **DOMAIN:** GAME · **Rola:** Operator, runda 1 + obrona rundy 2 (§9)
 **Baza:** odłączony `origin/rust-port/parity-v2` @ `9ec9c9d8` · **Crate:** `rust-port/renderer` (bez GPU, `forbid(unsafe_code)`, bez nowych zależności, `Cargo.lock` bez zmian, `geom/**`, `pick/**`, `terrain/**`, `assets/**`, `camera.rs`, `jsmath/**` nietknięte)
 
 ## 0. Streszczenie
@@ -8,9 +8,9 @@
 - Przed tematem w crate były **trzy reprezentacje** drzewa modelu: rekurencyjny `core::scene::SceneNode` (P4.12; `decor`, `core::fog_dim`, `core::merge_decor`, z tabelą boczną `decor::NodeMeta`), rekurencyjny `models::wonders::model::Node` (P4.14) i arena `unit_core::model::UnitModel` (P4.13) z obejściami `Prim::Kamien/Braz/Zelazo` oraz tabelami bocznymi `MiscModel{mats,info}`, `ImprovementModel{mat_ext,node_ext}`, `CityModel{drawables,materials,user_data}`.
 - Teraz jest **jeden typ**: `crate::scene::Scene` (`src/scene/`, nowy) — arena `Node` (transformacja `position/rotation/quaternion/scale`, ładunek `NodeKind::{Group, Object3D, Mesh, LineLoop, Sprite}`, `name`, `castShadow/receiveShadow`, `renderOrder`, `matrixAutoUpdate`, `userData`) + współdzielone `Material` (dane: klasa, kolor liniowy, emissive, metalness/roughness, transparent/opacity, flatShading, vertexColors, depthWrite/Test, side, polygonOffset, map, fogBaseColor) + geometria jako dane `Geo::{Prim(Prim), Body(Arc<dyn GeoBody>), Buffer(Arc<Geometry>)}`.
 - **Zmigrowane wszystkie moduły**: `decor` (+ `core::fog_dim`, `core::merge_decor`), `wonders`, `unit_core`, `units_kamien`, `units_braz`, `units_zelazo`, `improvements`, `misc`, `cities`. **Zlikwidowane**: warianty `Prim::Kamien/Braz/Zelazo` (oraz `Prim::HexRing/LeafBlade`, `Geo::Part/Horse`), tabela `drawables`, wrappery `MiscModel`/`ImprovementModel`/`CityModel`/`DecorObject`/`WonderModel` jako typy (zostały wyłącznie **aliasy** `pub type X = Scene` dla zachowania ścieżek publicznych), tabele boczne `NodeInfo`, `NodeExt`, `MatExt`, `NodeMeta`, `MiscMaterial`-mirror.
-- **Widok eksportu do GPU (czysty CPU):** `Scene::export_gpu(root_parent) -> Vec<GpuMesh>` (`src/scene/export.rs`): na każdy mesh/line w kolejności `traverse` bufory `f32` pozycji/normalnych/UV/kolorów, indeksy `u32` (lub `0..n`), topologia (`Triangles`/`LineLoop`), materiał jako dane, kolor bazowy `f32`, macierz świata `[f32;16]` (column-major), cienie, `renderOrder`, klucz współdzielenia geometrii (`Prim` = parametry, `Buffer` = wskaźnik).
+- **Widok eksportu do GPU (czysty CPU):** `Scene::export_gpu(root_parent) -> GpuExport { meshes, sprites }` (`src/scene/export.rs`): na każdy **widoczny** (z przodkami, `Node::visible`) mesh/line w kolejności `traverse` bufory `f32` pozycji/normalnych/UV/kolorów, indeksy `u32` (lub `0..n`) + flaga `indexed`, topologia (`Triangles`/`LineLoop`), materiał jako dane (pierwszy slot) oraz — dla tablicy materiałów — grupy rysowania `GpuGroup{start,count,slot,material}`, kolor bazowy `f32`, macierz świata `[f32;16]` (column-major), cienie, `renderOrder`, klucz współdzielenia geometrii (`Prim` = parametry, `Buffer` = wskaźnik); na każdy widoczny `Sprite` — `GpuSprite{material, base_color, world, render_order}` (r2).
 - **Parytet:** wszystkie testy zgodności z webem zielone, **fixtury bitowo bez zmian** (`git diff --stat --exit-code 9ec9c9d8 -- tests/fixtures` → EXIT=0, `logi/fixtures-unchanged.txt`). Zmiany testów wyłącznie wymuszone typem (§3), liczba asercji nie zmalała (+2 nowe).
-- **Mutacje:** 22/22 wykrytych, każda przez test zgodności z webem (§4).
+- **Mutacje:** r1 22/22; r2 36/36 (M23–M36: eksport GPU, `world_meshes`, widoczność) — wynik i log §9.
 - **Bramki:** fmt, clippy, clippy `--features gpu`, `cargo test --locked --all-targets` — EXIT=0 (§5, Załącznik A).
 
 ## 1. Decyzje i ZAŁOŻENIA
@@ -29,8 +29,11 @@
 | Z10 | Wygody builderów | `improvements::model::ImprovementExt` (trait na `Scene`: `lambert`, `standard`, `geometry`, `box_from_object`, `box_precise`, `totals`) — 236 wywołań `m.lambert(c)` bez zmian; `cities/kit.rs` dalej ma `impl CityModel { pub(crate) fn klocek/b/br/cyl/cone/plac/put/add_box/add_cyl }` (inherent na aliasie = na `Scene`, widoczne tylko w crate). Miasta: `lambert(hex, flat)` → `lambert_mat(hex, flat)` (konflikt nazw z `ImprovementExt::lambert`). |
 | Z11 | `UnitPart::prim()` | Zwraca teraz `Geo` (dodane `geo()`; `prim()` zostaje aliasem — wywołania `p.prim().build()` w testach bez zmian), bo `SelectionHexRing/OwnerHexRing` to ciało `HexRing`, nie `Prim`. |
 | Z12 | Singletony decor | Geometrie decor zostają `Geo::Buffer(Arc<Geometry>)` (tożsamość wskaźnika sprawdza `decor_web_parity` — `sameGeo` kubełków rzek); nie zamieniano ich na `Prim`, choć części (box/cyl/cone) dałoby się (to byłaby zmiana poza „mechaniczną”). |
-| Z13 | Wzorzec weryfikacji P4.11 (generator web) | **Nie zastosowano nowych wektorów**: temat nie dodaje zachowania widocznego w webie, a dispatch wymaga, by istniejące fixtury pozostały bitowo bez zmian — one są wzorcem. Widok eksportu GPU nie ma odpowiednika w webie (three robi to wewnątrz `WebGLRenderer`) → zweryfikowany testem spójności z `world_meshes` i geometrią (unit test), porównanie z GPU: NIE_ZMIERZONO. Katalog scratch nie był potrzebny (pomocnicze skrypty migracji w scratchpad sesji, poza repo). |
+| Z13 | Wzorzec weryfikacji P4.11 (generator web) | **Nie zastosowano nowych wektorów**: temat nie dodaje zachowania widocznego w webie, a dispatch wymaga, by istniejące fixtury pozostały bitowo bez zmian — one są wzorcem. Widok eksportu GPU nie ma odpowiednika w webie (three robi to wewnątrz `WebGLRenderer`). **r2 (zarzut 1):** test r1 był cykliczny (porównywał eksport z `world_meshes`) — zastąpiony (a) testem jednostkowym z wartościami policzonymi ręcznie (macierze `T·S` wypisane literalnie, każde pole `GpuMesh`/`GpuSprite`, grupy, ukrywanie) i (b) porównaniem eksportu z **wartościami webowymi** istniejących fixtur MOD-13 (`tests/misc_web_parity.rs::cmp_export`: `w` → `f32` bitowo, `cs/rs/ro`, klasa → topologia, `lin` → `f32`, hash FNV geometrii odbudowanej z buforów eksportu); fixtury bez zmian. Porównanie z GPU: NIE_ZMIERZONO. Katalog scratch nie był potrzebny (pomocnicze skrypty migracji w scratchpad sesji, poza repo). |
 | Z14 | Model / wiadomości właściciela | Wg dispatchu: Opus 5.5 medium, bez pytań ABC; brak luk wymagających decyzji. |
+| Z15 | `misc::overlay::OverlayGroup`/`OverlayObject` poza `Scene` (r2, zarzut 4) — **ODCHYLENIE jawne** | GOAL dispatchu wylicza trzy reprezentacje drzewa (`core::scene::SceneNode`, `wonders::model`, `UnitModel` + `Prim::*` + tabele boczne); `OverlayGroup` nie jest drzewem modelu, tylko płaską (jeden poziom, bez transformacji węzłów — pozycje w przestrzeni świata wpalone w bufory, `instanceMatrix` per instancja) listą nakładek MOD-13 przebudowywaną z danych gry (`rangeOverlay.ts`, `tradeRoutes`, `territoryBorders`). Ma klasy `InstancedMesh`/`Line`/`LineSegments` i `frustumCulled`, których `NodeKind` nie ma, a jej parytet (overlays/relief_real: ~142 k skalarów) przechodzi bitowo dzisiaj. Migracja = nowe warianty `NodeKind` + topologie eksportu + instancing — to nie jest „mechaniczna” zmiana typu i wykracza poza GOAL. **Zostaje poza `Scene` i poza `export_gpu`**; warstwa GPU rysuje ją z własnych pól (`instances`, `geometry`, `material`, `render_order`). ZAŁOŻENIE: osobny temat „overlay → Scene/instancing” po RR-T5 (do decyzji orkiestratora). |
+| Z16 | `visible` (r2, zarzut 5) | `Node::visible` (domyślnie `true`, `Object3D.visible`). `export_gpu` pomija węzeł niewidoczny razem z poddrzewem (`Scene::rendered_mask`; three r169 `WebGLRenderer.projectObject` zwraca przy `visible === false` — linia w źródle three NIE_ZMIERZONO lokalnie, brak `node_modules`). Pola boczne usunięte: `RiverBucketMesh.{visible, render_order}` → korzeń `mesh` (akcesory `visible()/set_visible()/render_order()`), `RenderedCity.visible`, `RenderedOutline.visible`, `RenderedWonder.visible` → korzeń `model` (akcesory). Pozostaje świadomie: `RenderedWonder.{position, scale}` (web: `group.position/scale` nadpisywane przez renderer; tu jako pola z `world_matrix()`, porównywane z webem w `wonders_web_parity`) — nie objęte zarzutem, bez zmian zachowania. |
+| Z17 | Tablica materiałów w eksporcie (r2, zarzut 3) | Jak three: dla `Array.isArray(mesh.material)` rysowanie po `geometry.groups` z `material[group.materialIndex]` (grupa bez materiału pomijana; tablica bez grup = nic nie rysuje → `material_array=true, groups=[]`); dla pojedynczego materiału grupy ignorowane (`groups=[]`). Pole `material` = pierwszy slot (wygoda). W modelach crate żaden builder nie używa dziś `add_mesh_multi` (grep `src/` poza `scene/`: 0 trafień) — ścieżkę pokrywa test jednostkowy z `BoxGeometry` × 6 materiałów. |
 
 ## 2. Architektura `src/scene/` (2 222 linii z testami)
 
@@ -38,28 +41,28 @@
 |---|---|
 | `mod.rs` | dokumentacja, re-eksporty |
 | `node.rs` | `Node`, `NodeKind`, `MeshData{geo, materials, material_array}`, `NodeId/MatId/ROOT`, `UserData`/`UserValue` (klucze w kolejności wstawiania), settery transformacji, `quat_from_unit_vectors` |
-| `graph.rs` | `Scene`: materiały (`add_material`, `mat` = fabryka jednostek ze śledzeniem `userData.mats`, `lambert_mat`, `lambert_color`, `retint`, `tracked`), węzły (`add_mesh`, `add_mesh_multi`, `add_line_loop`, `sprite`, `add_group`, `detached_group`, `attach`, `graft`, `graft_children`, `truncate`), skróty transformacji, `traverse`/`traverse_from`/`traverse_with_parent`, `meshes`/`drawables`, `world_matrices(root_parent)`, `subtree`, `world_meshes`, `bounding_box` (`Box3.setFromObject(root,true)`, `Math.min/max`), liczniki |
+| `graph.rs` | `Scene`: materiały (`add_material`, `mat` = fabryka jednostek ze śledzeniem `userData.mats`, `lambert_mat`, `lambert_color`, `retint`, `tracked`), węzły (`add_mesh`, `add_mesh_multi`, `add_line_loop`, `sprite`, `add_group`, `detached_group`, `attach`, `graft`, `graft_children`, `truncate`), skróty transformacji, `traverse`/`traverse_from`/`traverse_with_parent`, `meshes`/`drawables`, `world_matrices(root_parent)`, `subtree`, `world_meshes`, `bounding_box` / `mesh_bounding_box` (jedna pętla `bounding_box_of`; `Box3.setFromObject(root,true)`, `Math.min/max`; `decor::js::bounding_box` deleguje do `mesh_bounding_box` — r2, zarzut 7), liczniki |
 | `geometry.rs` | `Prim`, `GeoBody` (+ `DynEq` dla równości obiektów cech), `Geo`, `Geometry` (mesh + atrybut `color`) |
 | `material.rs` | `MaterialKind` (9 klas), `Side`, `GlyphTexture`/`Texture`, `Material` |
 | `hash.rs` | `Fnv`, `geo_hash`, `Signature`/`signature` (strumień `unit_core/gen.ts`) |
-| `export.rs` | `GpuMesh`, `Topology`, `GeometryKey`, `Scene::export_gpu`, `mat4_to_f32` |
-| `tests.rs` | 8 testów jednostkowych (downcast ciał przez `Arc` — regresja błędu znalezionego w etapie 2, synchronizacja kwaternionu, macierze świata i węzły odłączone, `graft` z przesunięciem slotów, `retint`/`tracked`, `UserData`, eksport GPU dla cudu/obrysu miasta/lasu, `mesh_root`) |
+| `export.rs` | `GpuExport`, `GpuMesh`, `GpuGroup`, `GpuSprite`, `Topology`, `GeometryKey`, `Scene::export_gpu`, `Scene::rendered_mask`, `mat4_to_f32` |
+| `tests.rs` | 9 testów jednostkowych (downcast ciał przez `Arc` — regresja błędu znalezionego w etapie 2, synchronizacja kwaternionu, macierze świata i węzły odłączone, `graft` z przesunięciem slotów, `retint`/`tracked`, `UserData`, **r2:** eksport GPU z wartościami policzonymi ręcznie — każde pole, grupy, sprite, ukrywanie, rodzic — oraz eksport realnych modeli: cud/obrys miasta/las, `mesh_root`) |
 
 Etapy (każdy z pełnymi testami, osobny commit w worktree): **1** `6a97696b` typ + `decor` + `core::{fog_dim,merge_decor}` + `wonders`; **2** `348893d0` jednostki (`unit_core`, `units_kamien/braz/zelazo`, minimalne dopasowania `misc`/`improvements`); **3** `4b5f9ea7` `improvements`, `misc`, `cities`; **4** (ten commit) testy jednostkowe `scene`, dokument, run.
 
 ## 3. Testy: zmiany wymuszone typem (asercje bez osłabienia)
 
-Liczba wywołań asercji (`c.eq/f/f32/f64/fs/bits/bits32`, `assert*!`) baza → teraz: cities 66→66, core 172→173, decor 140→140, improvements 70→70, misc 104→104, unit_core 44→44, units_braz 50→50, units_kamien 48→48, units_zelazo 52→52, wonders 68→69 (skrypt w §6).
+Liczba wywołań asercji (`c.eq/f/f32/f64/fs/bits/bits32`, `assert*!`) baza → r1 → r2: cities 66→66→66, core 172→173→173, decor 140→140→140 (r2: tautologia zastąpiona, liczba bez zmian), improvements 70→70→70, misc 104→104→120, unit_core 44→44→44, units_braz 50→50→50, units_kamien 48→48→48, units_zelazo 52→52→52, wonders 68→69→69; razem 712→714→730 (skrypt w §6).
 
 | Plik | Dopasowania |
 |---|---|
 | `tests/core_web_parity.rs` | budowa specyfikacji do areny (`build(scene, parent, spec, shared)`; „shared” = jeden slot materiału jak jeden obiekt three), `check_colors` po `traverse`, dzieci/flagi korzenia przez `nodes[ROOT]` i `userData`; +1 asercja `array || mats.len()==1` |
-| `tests/decor_web_parity.rs` | spacer po `traverse_with_parent` zamiast rekurencji; `name/renderOrder` z węzła; materiał przez slot; geometria z `Geo::Buffer`; kubełek rzeki: korzeń sceny-mesha; `mat.clone()` → `mat` (`Copy`) |
-| `tests/wonders_web_parity.rs` | pola `Prim` (`w/h/d`, `rt/rb/h/radial/open`, `r/h/radial`), `hex()` zamiast pola `color`, arena + `world_matrices`; +1 asercja `open == false` |
+| `tests/decor_web_parity.rs` | spacer po `traverse_with_parent` zamiast rekurencji; `name/renderOrder` z węzła; materiał przez slot; geometria z `Geo::Buffer`; kubełek rzeki: korzeń sceny-mesha; `mat.clone()` → `mat` (`Copy`). **r2:** asercja `{ctx}.meta` w r1 brzmiała `obj.node_count() == flat.len()` (dwa przejścia tej samej areny — tautologia, zarzut 6); znaczenie bazowe (`meta.len()` = jeden wpis tabeli bocznej na zbudowany węzeł) odtworzone jako `obj.nodes.len() == flat.len()` (każdy węzeł areny osiągalny z korzenia, brak sierot). `RiverBucketMesh`: `e.render_order` → `e.render_order()`, `e.visible` → `RiverBucketMesh::visible`, konstruktor testowy bez pól bocznych (Z16). |
+| `tests/wonders_web_parity.rs` | pola `Prim` (`w/h/d`, `rt/rb/h/radial/open`, `r/h/radial`), `hex()` zamiast pola `color`, arena + `world_matrices`; +1 asercja `open == false`. r2: `g.visible` → `g.visible()` (Z16) |
 | `tests/unit_core_web_parity.rs`, `tests/units_{kamien,braz,zelazo}_web_parity.rs` | `mesh()`/`material()`/`tracked()` (akcesory), `celtic_retint(m)`, `hex()`/`linear_color()`, `world_matrices(None)`; funkcja testowa `three_type` mapuje `Geo` (prymitywy + ciała przez `body_as`, to samo odwzorowanie co wcześniej) |
 | `tests/improvements_web_parity.rs` | `nodes`/`materials` sceny, `user_data(m,id)`, klasa i emissive z materiału, `Prim::Dodecahedron` / `TwistedCone` |
-| `tests/misc_web_parity.rs` | pola węzła zamiast `NodeInfo`, `NodeKind` z ładunkiem, `Prim::Circle/Ring`, `hex()`, `misc_signature(m)` |
-| `tests/cities_web_parity.rs` | `nodes`, `drawable(m,id)`, `CityMaterial::of`, `city_user_data(m)` |
+| `tests/misc_web_parity.rs` | pola węzła zamiast `NodeInfo`, `NodeKind` z ładunkiem, `Prim::Circle/Ring`, `hex()`, `misc_signature(m)`. **r2 (zarzut 1, nowe asercje, nie dopasowanie):** `cmp_export` — eksport GPU każdego modelu (modele MOD-13 i 6 kroków markerów oblężenia, w tym sprite'y) porównany z wartościami webowymi (§9) — +16 wywołań asercji |
+| `tests/cities_web_parity.rs` | `nodes`, `drawable(m,id)`, `CityMaterial::of`, `city_user_data(m)`. r2: `c.visible`/`o.visible` → `c.visible()`/`o.visible()` (Z16) |
 
 `tests/unit_core_model_rule.rs` — bez zmian (wywołanie `m.signature()` działa na `Scene`).
 
@@ -193,16 +196,56 @@ Ocena wizualna 1:1 wymaga GPU — **NIE_ZMIERZONO**. Po RR-T5 (materiały/shader
 3. Decor: kolory wierzchołków scalonej grupy (`mergeDecor`) i ściemnienie mgłą (`fogBaseColor × brightness`) na materiałach współdzielonych slotem.
 4. Ulepszenia: ucho świni (`TwistedCone`), głazy (`Dodecahedron`), emisja kopalni (`emissive`).
 5. Cuda: sztandar właściciela (wariant ruiny) i cienie (`castShadow`/`receiveShadow`).
-6. Sprite oblężenia (`Texture::Glyph`) i przezroczystości nakładek MOD-13.
+6. Sprite oblężenia (`Texture::Glyph`) — od r2 jest w `GpuExport::sprites` (zarzut 2) — oraz przezroczystości nakładek MOD-13; nakładki (`OverlayGroup`) NIE są w `export_gpu` (Z15) — oceniać z ich własnych pól.
+7. Ukrywanie (`visible`): miasta/cuda/rzeki pod mgłą znikają razem z poddrzewem (Z16).
+8. Mesh z tablicą materiałów: kolory per grupa (Z17; dziś brak użyć w modelach).
 
 ## 8. Pliki (allowlista)
 
 - **Nowe:** `rust-port/renderer/src/scene/{mod,node,graph,geometry,material,hash,export,tests}.rs`.
 - **Zmienione:** `src/lib.rs` (+1 linia), `src/core/scene.rs` (re-eksport + alias), `src/core/{fog_dim,merge_decor}.rs` (Z2), `src/decor/**`, `src/models/**` (wonders, unit_core, units_kamien, units_braz, units_zelazo, improvements, misc, cities), `tests/*_web_parity.rs` (§3).
 - **Bez zmian:** `tests/fixtures/**`, `geom/**`, `pick/**`, `assets/**`, `camera.rs`, `terrain/**`, `jsmath/**`, `Cargo.toml`, `Cargo.lock`, `gra/**`, `src-tauri/**`, `rust-port/engine/**`.
-- **Dokumentacja/run:** ten plik; `dyspozycje/autobot/runs/R-RUSTPORT-P4-27-SCENE-UNIFY-Q1/{00-dispatch.md, 01-operator-r1.md, gates.sh, mutate.py, logi/}`.
+- **Dokumentacja/run:** ten plik; `dyspozycje/autobot/runs/R-RUSTPORT-P4-27-SCENE-UNIFY-Q1/{00-dispatch.md, 01-operator-r1.md, 03-operator-r2.md, gates.sh, mutate.py, logi/ (+ logi/.gitattributes, r2)}`. r2 dodatkowo zmienia: `src/decor/{js,river_lod}.rs`, `src/models/{cities,wonders}/renderer.rs`, `src/scene/{export,graph,mod,node,tests}.rs`, `tests/{cities,decor,misc,wonders}_web_parity.rs` — wszystko w allowliście.
 
-## Załącznik A — surowe logi
+## 9. Runda 2 — obrona wobec zarzutów Evaluatora (r1: FAIL)
+
+Stan wyjściowy: commit Operatora `c6c47970` (odłączony HEAD). Każdy zarzut: PRZYJMUJĘ (poprawka + dowód) albo ODRZUCAM (dowód).
+
+| # | Zarzut | Odpowiedź | Poprawka / dowód |
+|---|---|---|---|
+| 1 | Test eksportu GPU cykliczny, eksport praktycznie nietestowany (E1–E5 przeżyły) | **PRZYJMUJĘ** | `scene::tests::gpu_export_checks_every_field_against_hand_computed_values`: macierze świata wypisane literalnie (`T(11,4,3)·S(2)`, `T(1,2,8)`, sprite `T(11,2,5)·S(2)`, z rodzicem `+100` w x), KAŻDE pole `GpuMesh` (`positions/normals/uvs/indices/indexed/colors/material/material_array/groups/base_color/world/cast_shadow/receive_shadow/render_order/geometry_key`) i `GpuSprite` — niezależnie od kodu eksportu. `tests/misc_web_parity.rs::cmp_export`: eksport porównany z **wartościami webowymi** fixtur MOD-13 (`w`→`f32` bitowo, `cs/rs/ro`, topologia, `lin`, hash FNV geometrii odbudowanej z buforów eksportu — łapie zgubione normalne/UV/indeks), w tym 6 kroków markerów oblężenia (`ro` 80–90, sprite'y). Mutacje M23–M36 (14, z czego 9 w `export.rs`/`world_meshes`; odpowiedniki E1–E6 = M23–M28) — wynik niżej. |
+| 2 | `export_gpu` gubi sprite'y | **PRZYJMUJĘ** | `GpuExport { meshes, sprites }`, `GpuSprite{node, material, base_color, world, render_order}`; sprite oblężenia sprawdzany z webem (`cmp_export`, `{ctx}.export.sprites` = liczba webowych `Sprite`). §7 pkt 6 poprawiony. M29, M30. |
+| 3 | Multi-materiał: tylko pierwszy slot | **PRZYJMUJĘ** | `GpuMesh.{material_array, groups: Vec<GpuGroup{start,count,slot,material}>}` wg semantyki three (Z17); test z `BoxGeometry` × 6 materiałów (grupa `i` = indeksy `6i..6i+6` → slot `i`). M31. |
+| 4 | `OverlayGroup`/`OverlayObject` — równoległy typ niezmigrowany i nieopisany | **PRZYJMUJĘ częściowo**: dokumentacja TAK, migracja NIE | Jawne ODCHYLENIE Z15 z uzasadnieniem (poza trzema typami z GOAL; płaska lista nakładek bez transformacji węzłów; klasy `InstancedMesh/Line/LineSegments` + instancing — migracja niemechaniczna); nota w nagłówku `export.rs`; follow-up do decyzji orkiestratora. |
+| 5 | `visible` poza węzłem; `RiverBucketMesh` dubluje `render_order` | **PRZYJMUJĘ** | `Node::visible` + `Scene::rendered_mask`; eksport pomija niewidoczne poddrzewa (test: ukryta grupa, ukryty mesh, ukryty korzeń → pusty eksport). Pola boczne usunięte: `RiverBucketMesh.{visible,render_order}`, `RenderedCity.visible`, `RenderedOutline.visible`, `RenderedWonder.visible` → korzeń sceny + akcesory (Z16). Parytet z webem bez zmian (`visible` porównywane jak wcześniej, przez akcesor). M32, M34–M36. |
+| 6 | Tautologiczna asercja `{ctx}.meta` w decor | **PRZYJMUJĘ** | Zastąpiona `obj.nodes.len() == flat.len()` (brak sierot w arenie = odpowiednik dawnego `meta.len()`); opis w §3. |
+| 7 | Bounding box zaimplementowany dwa razy | **PRZYJMUJĘ** | Jedna pętla `Scene::bounding_box_of`; `bounding_box` (mesh+line) i `mesh_bounding_box` (mesh) ją wołają; `decor::js::bounding_box` deleguje do `mesh_bounding_box`. Dowód: M04 (`js_min→js_max` w tej jednej pętli) łapie teraz także `decor_web_parity` (r1: nie łapał). |
+| 8 | Edytowany „surowy” log | **PRZYJMUJĘ** | Logi przegenerowane i NIEEDYTOWANE (końcowe spacje zostają: `grep -cE " +$" logi/test-nocapture.txt` = 3); `logi/.gitattributes` z `* -whitespace` → `git diff --check` EXIT=0 bez ruszania treści logów. |
+
+**Bramki r2** (`gates.sh`, surowe logi `logi/`): fmt EXIT=0; clippy EXIT=0; clippy `--features gpu` EXIT=0; `cargo test --locked --all-targets` EXIT=0 — 25 celów, **165 passed, 0 failed** (r1: 164; test eksportu r1 zastąpiony dwoma); fixtury `git diff --stat --exit-code 9ec9c9d8 -- tests/fixtures` EXIT=0; `git diff --check` EXIT=0. Parytet MOD-13 po dodaniu `cmp_export`: `models: scalars 75159, checks 35384`, `siege marker: scalars 13814, checks 6386` (r1: 50440/27510 i 9424/5010), 0 rozjazdów.
+
+**Mutacje r2** (`gates.sh mutate`, `logi/mutate.txt`): **36/36 wykrytych, EXIT=0** (M01–M22 z r1 — wszystkie nadal wykryte; M04 łapie teraz również `decor_web_parity`, zarzut 7). Nowe:
+
+| # | Mutacja | Wynik |
+|---|---|---|
+| M23 | export: renderOrder always 0 | DETECTED (2 failed; --lib, --test misc_web_parity; web-parity: YES) |
+| M24 | export: receiveShadow copied from castShadow | DETECTED (3 failed; --lib, --test misc_web_parity; web-parity: YES) |
+| M25 | export: normals dropped | DETECTED (3 failed; --lib, --test misc_web_parity; web-parity: YES) |
+| M26 | export: uvs dropped | DETECTED (3 failed; --lib, --test misc_web_parity; web-parity: YES) |
+| M27 | world_meshes: world[0] instead of world[id] | DETECTED (3 failed; --lib, --test misc_web_parity; web-parity: YES) |
+| M28 | world_meshes: castShadow taken from receiveShadow | DETECTED (3 failed; --lib, --test misc_web_parity; web-parity: YES) |
+| M29 | export: sprites dropped | DETECTED (2 failed; --lib, --test misc_web_parity; web-parity: YES) |
+| M30 | export: sprite world = local matrix | DETECTED (2 failed; --lib, --test misc_web_parity; web-parity: YES) |
+| M31 | export: group material = first slot | DETECTED (1 failed; --lib; web-parity: no) |
+| M32 | export: visible ignored | DETECTED (1 failed; --lib; web-parity: no) |
+| M33 | export: indexed flag always true | DETECTED (2 failed; --lib, --test misc_web_parity; web-parity: YES) |
+| M34 | river visibility: fog decision not stored | DETECTED (1 failed; --test decor_web_parity; web-parity: YES) |
+| M35 | cities: new group not hidden when invisible | DETECTED (1 failed; --test cities_web_parity; web-parity: YES) |
+| M36 | wonders: fog visibility not stored | DETECTED (1 failed; --test wonders_web_parity; web-parity: YES) |
+
+M31 (slot grupy) i M32 (ignorowanie `visible` w eksporcie) łapie wyłącznie test jednostkowy z wartościami ręcznymi — w fixturach webowych nie ma meshy z tablicą materiałów ani ukrytych węzłów w modelach MOD-13 (ZAŁOŻENIE: wystarczające; widoczność rendererów z webem sprawdzają M34–M36). Uwaga przebiegu: wcześniejsza próba mutacji przerwana przez brak miejsca na dysku (wspólny scratch) — powtórzona w całości z `CARGO_INCREMENTAL=0`; w `logi/mutate.txt` jest wyłącznie przebieg końcowy.
+
+## Załącznik A — surowe logi (runda 1; surowe logi rundy 2 — nienaruszone, z końcowymi spacjami — w `logi/`, zob. §9)
 
 ### A.fmt.txt (`logi/fmt.txt`)
 

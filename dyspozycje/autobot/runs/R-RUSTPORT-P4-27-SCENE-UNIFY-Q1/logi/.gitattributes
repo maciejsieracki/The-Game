@@ -1,0 +1,4 @@
+# P4.27 r2 (objection 8 of the Evaluator): the logs here are RAW command
+# output (trailing spaces included); exempt them from whitespace checks so
+# `git diff --check` passes without editing them.
+* -whitespace

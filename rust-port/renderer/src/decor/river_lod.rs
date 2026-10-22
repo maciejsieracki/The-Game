@@ -15,7 +15,7 @@ use std::collections::HashSet;
 use std::sync::Arc;
 
 use crate::geom::merge_geometries;
-use crate::scene::{Geometry, Material, Scene};
+use crate::scene::{Geometry, Material, Scene, ROOT};
 
 /// `RIVER_LOD_MARKER` (`:33`).
 pub const RIVER_LOD_MARKER: &str = "civ-river-lod-merge";
@@ -67,18 +67,35 @@ pub struct RiverGeoBucket {
 #[derive(Clone, Debug, PartialEq)]
 pub struct RiverBucketMesh {
     /// `mesh` (castShadow / receiveShadow `false`), as a scene whose root is
-    /// the mesh (its `renderOrder` is set too).
+    /// the mesh. `mesh.renderOrder` and `mesh.visible` live on that root
+    /// node only (P4.27 r2: no side copies), read through
+    /// [`RiverBucketMesh::render_order`] / [`RiverBucketMesh::visible`].
     pub mesh: Scene,
-    /// `mesh.renderOrder`.
-    pub render_order: i32,
-    /// `mesh.visible`.
-    pub visible: bool,
     /// `geometry` (the merged buffer).
     pub geometry: Arc<Geometry>,
     /// `hexKeys`.
     pub hex_keys: KeySet,
     /// `merged` (`> 1` segment).
     pub merged: bool,
+}
+
+impl RiverBucketMesh {
+    /// `mesh.renderOrder` (the root node of [`Self::mesh`]).
+    #[must_use]
+    pub fn render_order(&self) -> i32 {
+        self.mesh.nodes[ROOT].render_order
+    }
+
+    /// `mesh.visible` (the root node of [`Self::mesh`]).
+    #[must_use]
+    pub fn visible(&self) -> bool {
+        self.mesh.nodes[ROOT].visible
+    }
+
+    /// `mesh.visible = v`.
+    pub fn set_visible(&mut self, v: bool) {
+        self.mesh.nodes[ROOT].visible = v;
+    }
 }
 
 /// `createRiverBucket(mat, renderOrder)` (`:70-75`).
@@ -143,8 +160,6 @@ pub fn flush_river_bucket(bucket: &mut RiverGeoBucket) -> Option<RiverBucketMesh
     bucket.geos.clear();
     Some(RiverBucketMesh {
         mesh,
-        render_order: bucket.render_order,
-        visible: true,
         geometry: merged,
         hex_keys: bucket.hex_keys.clone(),
         merged: was_merged,
@@ -174,7 +189,7 @@ pub fn apply_river_lod_visibility(
     let visible = rivers_visible_at_lod(level, hide_from_level);
     if !visible {
         for e in entries.iter_mut() {
-            e.visible = false;
+            e.set_visible(false);
         }
     }
     visible
@@ -337,11 +352,11 @@ pub fn apply_river_visibility(
     let lod_visible = rivers_visible_at_lod(level, hide_from_level);
     for e in entries.iter_mut() {
         if !lod_visible {
-            e.visible = false;
+            e.set_visible(false);
             continue;
         }
         if !any_hidden {
-            e.visible = true;
+            e.set_visible(true);
             continue;
         }
         let mut show = e.hex_keys.size() > 0;
@@ -353,7 +368,7 @@ pub fn apply_river_visibility(
                 }
             }
         }
-        e.visible = show;
+        e.set_visible(show);
     }
 }
 

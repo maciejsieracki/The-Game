@@ -1114,7 +1114,11 @@ fn compare_scene(ck: &mut Check, step: &str, cr: &CityRenderer, web: &[Json]) {
                 ck.eq(&format!("{l} ownerId"), c.owner_id, w.get("ownerId").i32());
                 ck.eq(&format!("{l} q"), c.q, w.get("q").i32());
                 ck.eq(&format!("{l} r"), c.r, w.get("r").i32());
-                ck.eq(&format!("{l} visible"), c.visible, w.get("visible").bool());
+                ck.eq(
+                    &format!("{l} visible"),
+                    c.visible(),
+                    w.get("visible").bool(),
+                );
                 let n = &c.model.nodes[ROOT];
                 let p = w.get("p").f64s();
                 let s = w.get("s").f64s();
@@ -1132,7 +1136,7 @@ fn compare_scene(ck: &mut Check, step: &str, cr: &CityRenderer, web: &[Json]) {
                     &c.model,
                     w.get("model"),
                     Some(&Mat4::IDENTITY),
-                    c.visible,
+                    c.visible(),
                 );
             }
             SceneObject::Outline(o) => {
@@ -1157,14 +1161,18 @@ fn compare_scene(ck: &mut Check, step: &str, cr: &CityRenderer, web: &[Json]) {
                     o.data.hex,
                     HexCoord::new(hex.get("q").i32(), hex.get("r").i32()),
                 );
-                ck.eq(&format!("{l} visible"), o.visible, w.get("visible").bool());
+                ck.eq(
+                    &format!("{l} visible"),
+                    o.visible(),
+                    w.get("visible").bool(),
+                );
                 compare_model(
                     ck,
                     &l,
                     &o.model,
                     w.get("model"),
                     Some(&Mat4::IDENTITY),
-                    o.visible,
+                    o.visible(),
                 );
             }
         }

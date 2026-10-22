@@ -41,6 +41,7 @@ use civ_renderer::models::unit_core::model::geo_hash;
 use civ_renderer::pick::hex::{axial_to_world, HexCoord, HEX_R};
 use civ_renderer::pick::terrain::Terrain;
 use civ_renderer::pick::three::{js_max, js_min};
+use civ_renderer::scene::{GpuExport, Topology, ROOT};
 
 // ---------------------------------------------------------------------------
 // Minimal JSON reader (no dependencies; fixtures are trusted files produced
@@ -540,6 +541,110 @@ fn cmp_flat(c: &mut Cmp, ctx: &str, flat: &[Flat<'_>], rec: &Json) {
         &[lo[0], lo[1], lo[2], hi[0], hi[1], hi[2]],
         &rec.get("bbox").hx(),
     );
+    cmp_export(c, ctx, flat, nodes);
+}
+
+/// P4.27 r2 (R-RUSTPORT-P4-27-SCENE-UNIFY-Q1, objection 1 of the
+/// Evaluator): the CPU GPU-export view (`Scene::export_gpu`) of every
+/// model in `flat`, checked against the WEB values of the same nodes (not
+/// against the Rust traversal it is built from): `matrixWorld` (web `w`
+/// rounded to `f32`, bit for bit), `castShadow` / `receiveShadow` /
+/// `renderOrder`, class -> topology, linear material colour (`lin` rounded
+/// to `f32`) and the FNV geometry hash rebuilt from the exported position /
+/// normal / uv / index buffers. Every web mesh, line loop and sprite must
+/// have exactly one export entry.
+#[allow(clippy::cast_possible_truncation)] // the export is f32 by design
+fn cmp_export(c: &mut Cmp, ctx: &str, flat: &[Flat<'_>], nodes: &[Json]) {
+    let to32 = |v: &[f64]| -> Vec<f64> { v.iter().map(|&x| f64::from(x as f32)).collect() };
+    let from32 = |v: &[f32]| -> Vec<f64> { v.iter().map(|&x| f64::from(x)).collect() };
+    // one export per model, with the root under the scene (identity) when
+    // the flattened root has a parent, like `flatten`
+    let mut exports: Vec<(*const MiscModel, GpuExport)> = Vec::new();
+    for fl in flat.iter().filter(|fl| fl.id == ROOT) {
+        let base = (fl.parent >= 0).then_some(Mat4::IDENTITY);
+        exports.push((
+            std::ptr::from_ref(fl.model),
+            fl.model.export_gpu(base.as_ref()),
+        ));
+    }
+    let (mut web_meshes, mut web_sprites) = (0usize, 0usize);
+    for (i, (fl, w)) in flat.iter().zip(nodes).enumerate() {
+        let cx = format!("{ctx}#{i}.export");
+        let key = std::ptr::from_ref(fl.model);
+        let Some((_, ex)) = exports.iter().find(|(k, _)| *k == key) else {
+            c.eq(&format!("{cx}.model"), false, true);
+            continue;
+        };
+        let web_w = to32(&w.get("w").hx());
+        match w.get("k").str() {
+            k @ ("Mesh" | "LineLoop") => {
+                web_meshes += 1;
+                let Some(g) = ex.meshes.iter().find(|g| g.node == fl.id) else {
+                    c.eq(&format!("{cx}.present"), false, true);
+                    continue;
+                };
+                let topo = if k == "Mesh" {
+                    Topology::Triangles
+                } else {
+                    Topology::LineLoop
+                };
+                c.eq(&format!("{cx}.topology"), g.topology, topo);
+                c.fs(&format!("{cx}.w"), &from32(&g.world), &web_w);
+                c.eq(&format!("{cx}.cs"), g.cast_shadow, w.get("cs").bool());
+                c.eq(&format!("{cx}.rs"), g.receive_shadow, w.get("rs").bool());
+                c.eq(&format!("{cx}.ro"), g.render_order, w.get("ro").i32());
+                let wm = w.get("mat");
+                c.eq(
+                    &format!("{cx}.color"),
+                    g.material.hex(),
+                    wm.get("color").u32(),
+                );
+                c.fs(
+                    &format!("{cx}.lin"),
+                    &from32(&g.base_color),
+                    &to32(&wm.get("lin").hx()),
+                );
+                if k == "Mesh" {
+                    let groups = match &fl.model.nodes[fl.id].kind {
+                        NodeKind::Mesh(md) => md.geo.mesh().groups.clone(),
+                        _ => Vec::new(),
+                    };
+                    let rebuilt = Mesh {
+                        positions: g.positions.clone(),
+                        normals: g.normals.clone(),
+                        uvs: g.uvs.clone(),
+                        indices: g.indexed.then(|| g.indices.clone()),
+                        groups,
+                    };
+                    c.eq(
+                        &format!("{cx}.geo.hash"),
+                        geo_hash(&rebuilt),
+                        w.get("geo").get("hash").u32(),
+                    );
+                }
+            }
+            "Sprite" => {
+                web_sprites += 1;
+                let Some(g) = ex.sprites.iter().find(|g| g.node == fl.id) else {
+                    c.eq(&format!("{cx}.present"), false, true);
+                    continue;
+                };
+                c.fs(&format!("{cx}.w"), &from32(&g.world), &web_w);
+                c.eq(&format!("{cx}.ro"), g.render_order, w.get("ro").i32());
+                let wm = w.get("mat");
+                c.eq(
+                    &format!("{cx}.color"),
+                    g.material.hex(),
+                    wm.get("color").u32(),
+                );
+            }
+            _ => {}
+        }
+    }
+    let total_meshes: usize = exports.iter().map(|(_, e)| e.meshes.len()).sum();
+    let total_sprites: usize = exports.iter().map(|(_, e)| e.sprites.len()).sum();
+    c.eq(&format!("{ctx}.export.meshes"), total_meshes, web_meshes);
+    c.eq(&format!("{ctx}.export.sprites"), total_sprites, web_sprites);
 }
 
 /// Model compare: flattened tree + the model's own signature / bbox.

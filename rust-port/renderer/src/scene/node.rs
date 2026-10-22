@@ -209,6 +209,9 @@ pub struct Node {
     pub receive_shadow: bool,
     /// `renderOrder`.
     pub render_order: i32,
+    /// `visible` (three's renderer skips an invisible object together with
+    /// its whole sub-tree; [`super::Scene::export_gpu`] does the same).
+    pub visible: bool,
     /// `matrixAutoUpdate`.
     pub matrix_auto_update: bool,
     /// `userData`.
@@ -231,6 +234,7 @@ impl Node {
             cast_shadow: false,
             receive_shadow: false,
             render_order: 0,
+            visible: true,
             matrix_auto_update: true,
             user_data: UserData::default(),
         }

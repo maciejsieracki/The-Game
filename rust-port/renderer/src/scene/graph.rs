@@ -549,6 +549,18 @@ impl Scene {
     /// `[min.x, min.y, min.z, max.x, max.y, max.z]`.
     #[must_use]
     pub fn bounding_box(&self, root_parent: Option<&Mat4>) -> [f64; 6] {
+        self.bounding_box_of(&self.drawables(), root_parent)
+    }
+
+    /// [`Self::bounding_box`] over the `isMesh` nodes only (lines left out),
+    /// the variant the decor generators use (`decor::js::bounding_box`).
+    #[must_use]
+    pub fn mesh_bounding_box(&self, root_parent: Option<&Mat4>) -> [f64; 6] {
+        self.bounding_box_of(&self.meshes(), root_parent)
+    }
+
+    /// The one `Box3.setFromObject(…, true)` loop over the given nodes.
+    fn bounding_box_of(&self, ids: &[NodeId], root_parent: Option<&Mat4>) -> [f64; 6] {
         let world = self.world_matrices(root_parent);
         let mut b = [
             f64::INFINITY,
@@ -558,7 +570,7 @@ impl Scene {
             f64::NEG_INFINITY,
             f64::NEG_INFINITY,
         ];
-        for id in self.drawables() {
+        for &id in ids {
             let Some(md) = self.nodes[id].mesh() else {
                 continue;
             };

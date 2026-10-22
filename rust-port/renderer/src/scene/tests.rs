@@ -174,8 +174,156 @@ fn user_data_keeps_insertion_order_and_types() {
     assert_eq!(u.array_len("n"), Some(3));
 }
 
+/// Column-major `f32` matrix `T(tx, ty, tz) · S(s)` written out by hand
+/// (independent of `Mat4::compose` / `world_matrices`).
+fn ts(tx: f32, ty: f32, tz: f32, s: f32) -> [f32; 16] {
+    [
+        s, 0.0, 0.0, 0.0, 0.0, s, 0.0, 0.0, 0.0, 0.0, s, 0.0, tx, ty, tz, 1.0,
+    ]
+}
+
+/// A hand-built scene with known world matrices (translations and uniform
+/// scales only), every per-mesh field set to a non-default value, a
+/// multi-material mesh, a sprite and hidden sub-trees.
+struct Fixture {
+    s: Scene,
+    boxm: NodeId,
+    tri: NodeId,
+    spr: NodeId,
+    mats: Vec<MatId>,
+    tri_mat: MatId,
+    spr_mat: MatId,
+}
+
+fn export_fixture() -> Fixture {
+    let mut s = Scene::new();
+    s.root_mut().set_pos(1.0, 2.0, 3.0);
+    let g = s.add_group(ROOT);
+    s.node(g).set_pos(10.0, 0.0, 0.0).set_scale(2.0, 2.0, 2.0);
+    let mats: Vec<MatId> = (0..6u32)
+        .map(|i| s.add_material(Material::lambert(0x10_0000 * (i + 1))))
+        .collect();
+    let boxm = s.add_mesh_multi(g, Prim::bx(1.0, 1.0, 1.0), mats.clone());
+    s.node(boxm).set_pos(0.0, 1.0, 0.0);
+    s.shadows(boxm, true, false);
+    s.render_order(boxm, 7);
+    let tri_mat = s.add_material(Material::standard(0x20_4060, 0.25, 0.75));
+    let tri = s.add_mesh_id(ROOT, Geo::body(Tri(1.0)), tri_mat);
+    s.node(tri).set_pos(0.0, 0.0, 5.0);
+    s.shadows(tri, false, true);
+    s.render_order(tri, -3);
+    let spr_mat = s.add_material(Material::new(MaterialKind::Sprite, None));
+    let spr = s.sprite(g, spr_mat);
+    s.node(spr).set_pos(0.0, 0.0, 1.0);
+    s.render_order(spr, 11);
+    // hidden: a group with a mesh and a sprite under it, and a hidden mesh
+    let hidden = s.add_group(ROOT);
+    s.node(hidden).visible = false;
+    s.add_mesh_id(hidden, Prim::bx(1.0, 1.0, 1.0), tri_mat);
+    s.sprite(hidden, spr_mat);
+    let hm = s.add_mesh_id(g, Prim::bx(2.0, 2.0, 2.0), tri_mat);
+    s.node(hm).visible = false;
+    Fixture {
+        s,
+        boxm,
+        tri,
+        spr,
+        mats,
+        tri_mat,
+        spr_mat,
+    }
+}
+
 #[test]
-fn gpu_export_lists_every_drawable_with_buffers_and_transforms() {
+fn gpu_export_checks_every_field_against_hand_computed_values() {
+    let f = export_fixture();
+    let ex = f.s.export_gpu(None);
+    assert_eq!(
+        ex.meshes.iter().map(|m| m.node).collect::<Vec<_>>(),
+        vec![f.boxm, f.tri],
+        "hidden mesh / hidden sub-tree are skipped, traverse order kept"
+    );
+    assert_eq!(
+        ex.sprites.iter().map(|m| m.node).collect::<Vec<_>>(),
+        vec![f.spr]
+    );
+
+    // the box: T(1,2,3)·T(10,0,0)·S(2)·T(0,1,0) = T(11,4,3)·S(2)
+    let b = &ex.meshes[0];
+    assert_eq!(b.world, ts(11.0, 4.0, 3.0, 2.0));
+    assert_eq!(b.topology, Topology::Triangles);
+    assert_eq!((b.cast_shadow, b.receive_shadow), (true, false));
+    assert_eq!(b.render_order, 7);
+    // BoxGeometry(1,1,1): 24 vertices, 36 indices, +x face first
+    assert_eq!(b.positions.len(), 72);
+    assert_eq!(b.normals.len(), 72);
+    assert_eq!(&b.normals[..3], &[1.0, 0.0, 0.0]);
+    assert_eq!(b.uvs.len(), 48);
+    assert_eq!(&b.uvs[..4], &[0.0, 1.0, 1.0, 1.0]);
+    assert!(b.indexed);
+    assert_eq!(b.indices.len(), 36);
+    assert_eq!(&b.indices[..6], &[0, 2, 1, 2, 3, 1]);
+    assert!(b.colors.is_none());
+    assert_eq!(b.material.hex(), 0x10_0000);
+    assert!(b.material_array);
+    assert_eq!(b.groups.len(), 6);
+    for (i, g) in b.groups.iter().enumerate() {
+        let i32_ = u32::try_from(i).expect("i");
+        assert_eq!((g.start, g.count), (6 * i32_, 6), "group {i}");
+        assert_eq!(g.slot, f.mats[i]);
+        assert_eq!(g.material.hex(), 0x10_0000 * (i32_ + 1));
+    }
+    assert!(matches!(b.geometry_key, GeometryKey::Prim(_)));
+
+    // the triangle body: T(1,2,3)·T(0,0,5), non-indexed, no normals / uvs
+    let t = &ex.meshes[1];
+    assert_eq!(t.world, ts(1.0, 2.0, 8.0, 1.0));
+    assert_eq!((t.cast_shadow, t.receive_shadow), (false, true));
+    assert_eq!(t.render_order, -3);
+    assert_eq!(
+        t.positions,
+        vec![0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0, 0.0]
+    );
+    assert!(t.normals.is_empty() && t.uvs.is_empty());
+    assert!(!t.indexed);
+    assert_eq!(t.indices, vec![0, 1, 2]);
+    assert!(!t.material_array);
+    assert!(t.groups.is_empty());
+    assert_eq!(t.material, f.s.materials[f.tri_mat]);
+    assert_eq!(t.material.hex(), 0x20_4060);
+    assert_eq!((t.material.metalness, t.material.roughness), (0.25, 0.75));
+    assert_eq!(
+        t.base_color,
+        Color::from_hex(0x20_4060).to_f32(),
+        "linear colour"
+    );
+    assert_eq!(t.geometry_key, GeometryKey::Body);
+
+    // the sprite: T(1,2,3)·T(10,0,0)·S(2)·T(0,0,1) = T(11,2,5)·S(2)
+    let sp = &ex.sprites[0];
+    assert_eq!(sp.world, ts(11.0, 2.0, 5.0, 2.0));
+    assert_eq!(sp.render_order, 11);
+    assert_eq!(sp.material, f.s.materials[f.spr_mat]);
+    assert_eq!(sp.base_color, [1.0, 1.0, 1.0]);
+
+    // under a parent T(100,0,0): every world matrix moves by +100 in x
+    let moved = f.s.export_gpu(Some(&Mat4::compose(
+        Vec3::new(100.0, 0.0, 0.0),
+        Quat::default(),
+        Vec3::new(1.0, 1.0, 1.0),
+    )));
+    assert_eq!(moved.meshes[0].world, ts(111.0, 4.0, 3.0, 2.0));
+    assert_eq!(moved.meshes[1].world, ts(101.0, 2.0, 8.0, 1.0));
+    assert_eq!(moved.sprites[0].world, ts(111.0, 2.0, 5.0, 2.0));
+
+    // a hidden root hides everything
+    let mut hidden = f.s.clone();
+    hidden.root_mut().visible = false;
+    assert_eq!(hidden.export_gpu(None), GpuExport::default());
+}
+
+#[test]
+fn gpu_export_of_real_models_keeps_topology_buffers_and_sharing_keys() {
     let model = crate::models::wonders::build_wonder_model(
         "koloseum",
         crate::models::wonders::WonderModelOptions {
@@ -183,38 +331,24 @@ fn gpu_export_lists_every_drawable_with_buffers_and_transforms() {
             owner_color: Some(0x00c8_3030),
         },
     );
-    let parent = Mat4::compose(
-        Vec3::new(1.0, 0.5, -2.0),
-        Quat::default(),
-        Vec3::new(0.8, 0.8, 0.8),
-    );
-    let out = model.export_gpu(Some(&parent));
-    assert_eq!(out.len(), model.mesh_count());
-    let world = model.world_meshes(Some(&parent));
-    for (g, w) in out.iter().zip(&world) {
-        assert_eq!(g.node, w.node);
+    let out = model.export_gpu(None);
+    assert_eq!(out.meshes.len(), model.mesh_count());
+    assert!(out.sprites.is_empty());
+    for g in &out.meshes {
         assert_eq!(g.topology, Topology::Triangles);
-        let mesh = w.geo.mesh();
-        assert_eq!(g.positions, mesh.positions);
-        assert_eq!(g.indices, mesh.index_buffer());
         assert_eq!(g.indices.len() % 3, 0);
-        assert_eq!(g.world, export::mat4_to_f32(&w.world));
-        let mt = model.materials[w.materials[0]];
-        assert_eq!(g.material, mt);
-        assert_eq!(g.base_color, mt.linear_color().to_f32());
         assert!(matches!(g.geometry_key, GeometryKey::Prim(_)));
-        assert_eq!(g.cast_shadow, model.nodes[g.node].cast_shadow);
     }
     // a line loop (city outline) is exported with its topology
     let (outline, _) =
         crate::models::cities::build_city_map_outline(0, 0, 0.1, Some(0x00ff_0000), false);
-    let lines = outline.export_gpu(None);
+    let lines = outline.export_gpu(None).meshes;
     assert_eq!(lines.len(), 2);
     assert!(lines.iter().all(|l| l.topology == Topology::LineLoop));
     assert!(lines.iter().all(|l| l.indices == vec![0, 1, 2, 3, 4, 5]));
     // a shared decor buffer keeps its pointer as sharing key and its colours
     let las = crate::decor::forest::build_las(2);
-    let ex = las.export_gpu(None);
+    let ex = las.export_gpu(None).meshes;
     assert_eq!(ex.len(), 1);
     assert!(matches!(ex[0].geometry_key, GeometryKey::Buffer(_)));
     assert_eq!(

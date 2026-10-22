@@ -165,10 +165,22 @@ pub struct RenderedCity {
     pub q: i32,
     /// `userData.r`.
     pub r: i32,
-    /// `group.visible`.
-    pub visible: bool,
-    /// The model; its root carries `position` and `scale` (1.38).
+    /// The model; its root carries `position`, `scale` (1.38) and
+    /// `group.visible` (P4.27 r2: no side copy, see [`Self::visible`]).
     pub model: CityModel,
+}
+
+impl RenderedCity {
+    /// `group.visible` (the model root).
+    #[must_use]
+    pub fn visible(&self) -> bool {
+        self.model.nodes[ROOT].visible
+    }
+
+    /// `group.visible = v`.
+    pub fn set_visible(&mut self, v: bool) {
+        self.model.nodes[ROOT].visible = v;
+    }
 }
 
 /// One outline group on the map.
@@ -180,10 +192,22 @@ pub struct RenderedOutline {
     pub key: String,
     /// `userData` of the outline.
     pub data: OutlineData,
-    /// `group.visible`.
-    pub visible: bool,
-    /// The two line loops (root carries the position).
+    /// The two line loops (root carries the position and `group.visible`,
+    /// see [`Self::visible`]).
     pub model: CityModel,
+}
+
+impl RenderedOutline {
+    /// `group.visible` (the model root).
+    #[must_use]
+    pub fn visible(&self) -> bool {
+        self.model.nodes[ROOT].visible
+    }
+
+    /// `group.visible = v`.
+    pub fn set_visible(&mut self, v: bool) {
+        self.model.nodes[ROOT].visible = v;
+    }
 }
 
 /// A child of the scene.
@@ -454,7 +478,7 @@ impl CityRenderer {
                 grp.owner_id = owner;
                 grp.q = q;
                 grp.r = r;
-                grp.visible = visible;
+                grp.set_visible(visible);
                 if grp.visual_key == visual_key {
                     grp.model.set_pos(ROOT, x, y_base, z);
                     grp.model.set_scale_scalar(ROOT, CITY_MODEL_SCALE);
@@ -470,13 +494,13 @@ impl CityRenderer {
             let mut model = build_settlement_model_for_style(era, civ, level, col, wall_kind);
             model.set_pos(ROOT, x, y_base, z);
             model.set_scale_scalar(ROOT, CITY_MODEL_SCALE);
+            model.nodes[ROOT].visible = visible;
             self.scene.push(SceneObject::City(RenderedCity {
                 city_id: city.id.clone(),
                 visual_key,
                 owner_id: owner,
                 q,
                 r,
-                visible,
                 model,
             }));
             self.sync_map_outline(&city.id, q, r, top_y, owner, o, visible);
@@ -505,7 +529,7 @@ impl CityRenderer {
         for city in cities {
             let top_y = self.top_y(city.q, city.r);
             let visible = o.is_visible.is_none_or(|f| f(city));
-            let grp_visible = self.city(&city.id).is_none_or(|g| g.visible);
+            let grp_visible = self.city(&city.id).is_none_or(RenderedCity::visible);
             self.sync_map_outline(
                 &city.id,
                 city.q,
@@ -529,26 +553,28 @@ impl CityRenderer {
         for ob in &mut self.scene {
             if let SceneObject::City(grp) = ob {
                 if !fog_on || grp.owner_id == player_owner_id {
-                    grp.visible = true;
+                    grp.set_visible(true);
                     continue;
                 }
-                grp.visible = vis.contains(&format!("{},{}", grp.q, grp.r));
+                let v = vis.contains(&format!("{},{}", grp.q, grp.r));
+                grp.set_visible(v);
             }
         }
         let vis_of: Vec<(String, bool)> = self
             .scene
             .iter()
             .filter_map(|ob| match ob {
-                SceneObject::City(c) => Some((c.city_id.clone(), c.visible)),
+                SceneObject::City(c) => Some((c.city_id.clone(), c.visible())),
                 SceneObject::Outline(_) => None,
             })
             .collect();
         for ob in &mut self.scene {
             if let SceneObject::Outline(ol) = ob {
-                ol.visible = vis_of
+                let v = vis_of
                     .iter()
                     .find(|(id, _)| *id == ol.city_id)
                     .is_some_and(|(_, v)| *v);
+                ol.set_visible(v);
             }
         }
     }
@@ -594,7 +620,7 @@ impl CityRenderer {
             if let SceneObject::Outline(ol) = &mut self.scene[i] {
                 if ol.key == key {
                     place_city_map_outline(&mut ol.model, &mut ol.data, q, r, top_y);
-                    ol.visible = true;
+                    ol.set_visible(true);
                     return;
                 }
             }
@@ -605,7 +631,6 @@ impl CityRenderer {
             city_id: city_id.to_owned(),
             key,
             data,
-            visible: true,
             model,
         }));
     }

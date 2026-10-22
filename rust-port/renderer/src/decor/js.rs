@@ -98,24 +98,10 @@ impl Box3 {
 /// divide).
 #[must_use]
 pub fn bounding_box(root: &Scene) -> Box3 {
-    let worlds = root.world_matrices(None);
-    let mut b = Box3::empty();
-    for id in root.meshes() {
-        let Some(md) = root.nodes[id].mesh() else {
-            continue;
-        };
-        let m = &worlds[id];
-        let g = md.geo.mesh();
-        let p = &g.positions;
-        for k in 0..p.len() / 3 {
-            let v = Vec3::new(
-                f64::from(p[3 * k]),
-                f64::from(p[3 * k + 1]),
-                f64::from(p[3 * k + 2]),
-            )
-            .apply_mat4(m);
-            b.expand(v);
-        }
+    // P4.27 r2: the one loop lives in `Scene` (meshes only, like before).
+    let b = root.mesh_bounding_box(None);
+    Box3 {
+        min: Vec3::new(b[0], b[1], b[2]),
+        max: Vec3::new(b[3], b[4], b[5]),
     }
-    b
 }
