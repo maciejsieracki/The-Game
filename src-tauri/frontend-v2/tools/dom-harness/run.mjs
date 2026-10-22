@@ -405,13 +405,18 @@ try {
       const relOk = relRequired == null || t >= relRequired;
       const basketFairMin = recv > 0 ? VC.diplomacyFairGivePn(recv, Math.min(100, t)) : 0;
       const basketFair = recv <= 0 || E.pnDealAcceptedByAi(give, recv, t);
+      // = `DiplomacyBasketPreviewDto` dla `mode: 'treaty'` (P5-0 §6.6) + `treatyGate` (ZAŁOŻENIE P5.2-Z9).
+      // `treatyPw.bilateral` renderer nie czyta (0 = wartość atrapy harnessu).
       return {
-        basePw: base, playerPw, partnerPw, basketGivePn: give, basketReceivePn: recv,
-        basketNet: Math.max(0, give - recv), myDisplayPw: myDisplay, theirDisplayPw: theirDisplay,
-        relRequired: relRequired ?? null, relOk, basketFair,
+        givePn: give, receivePn: recv,
+        treatyPw: { my: playerPw, their: partnerPw, bilateral: 0, base },
         accepted: relOk && asym >= 0 && basketFair,
         balancePn: basketFair ? asym : (give - basketFairMin),
-        relation: rel(t),
+        relation: { ...rel(t), signed: E.relationSignedFromTotal(t) },
+        treatyGate: {
+          basketNet: Math.max(0, give - recv), myDisplayPw: myDisplay, theirDisplayPw: theirDisplay,
+          relRequired: relRequired ?? null, relOk, basketFair,
+        },
       };
     };
     for (const ptp of [0, 40]) for (const give of [0, 30, 110]) for (const recv of [0, 50]) for (const t of [27.8, 80, 100, 140])

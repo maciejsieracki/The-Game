@@ -1,0 +1,10 @@
+rm -rf node_modules dist
+PORTING-QUEUE.md
+index.html
+package-lock.json
+package.json
+src
+tools
+tsconfig.json
+vite.config.ts
+EXIT=0

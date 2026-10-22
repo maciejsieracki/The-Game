@@ -4,7 +4,7 @@
  *
  * P5.2 (P5.13: UI nie liczy reguł gry): wszystkie liczby i decyzje akceptacji przychodzą z Rust
  * w DTO (`viewmodel/types.ts`: `PnBalancePanelDto`, `DiplomacyBasketPreviewDto`,
- * `TreatyBalancePreviewDto`, `RelationDealDto`, `AcceptanceSideBalanceDto`). Moduł tylko składa HTML.
+ * `DiplomacyTreatyBasketPreviewDto`, `RelationDealDto`, `AcceptanceSideBalanceDto`). Moduł tylko składa HTML.
  * Usunięte (reguły → Rust, tabela w `dyspozycje/rust-port/p5/P5-2-PORT-LEVEL0.md`):
  * `pickPrimaryNegotiationRow`, `balancePanelDataFromRow`, `filterActionableNegotiationRows`,
  * `balancePanelDataFromRows`, typ `NegotiationBalanceSource`.
@@ -13,8 +13,8 @@ import type {
   AcceptanceSideBalanceDto as AcceptanceSideBalance,
   DiplomacyBasketPreviewDto,
   PnBalancePanelDto,
+  DiplomacyTreatyBasketPreviewDto,
   RelationDealDto,
-  TreatyBalancePreviewDto,
 } from '../viewmodel/types';
 import { formatLiczbaPl } from './formatPl';
 
@@ -461,26 +461,28 @@ export function renderPnBalancePanelFromBasket(
  * Koszyk traktatu — asymetryczny PW (gracz @ Relacji, partner = baza) + koszyk.
  */
 export function renderPnBalancePanelForTreaty(
-  preview: TreatyBalancePreviewDto,
+  preview: DiplomacyTreatyBasketPreviewDto,
   actionLabel: string,
   treatyMetaLabel = 'Traktat',
 ): string {
   // P5.2: PW gracza/partnera @ Relacji, koszyk netto, bilans asymetryczny, bramka koszyka
-  // (`treatyPnGate`) i akceptacja — wszystko z `TreatyBalancePreviewDto` (Rust); web liczył to tu
-  // (`treatyPwForRole`, `relationPnModPct`, `diplomacyFairGivePn`, `pnDealAcceptedByAi`).
-  const base = preview.basePw;
-  const partnerPw = preview.partnerPw;
-  const playerPw = preview.playerPw;
+  // (`treatyPnGate`) i akceptacja — wszystko z `DiplomacyBasketPreviewDto` dla `mode: 'treaty'`
+  // (P5-0 §6.6: `treatyPw`, `givePn`/`receivePn`, `balancePn`, `accepted`; + `treatyGate`, Z9) liczone
+  // w Rust; web liczył to tu (`treatyPwForRole`, `relationPnModPct`, `diplomacyFairGivePn`, `pnDealAcceptedByAi`).
+  const gate = preview.treatyGate;
+  const base = preview.treatyPw.base;
+  const partnerPw = preview.treatyPw.their;
+  const playerPw = preview.treatyPw.my;
   const relTotal = preview.relation.total;
   const modPct = preview.relation.modPct;
-  const basketGivePn = preview.basketGivePn;
-  const basketReceivePn = preview.basketReceivePn;
-  const basketNet = preview.basketNet;
-  const myDisplay = preview.myDisplayPw;
-  const theirDisplay = preview.theirDisplayPw;
-  const relRequired = preview.relRequired ?? undefined;
-  const relOk = preview.relOk;
-  const basketFair = preview.basketFair;
+  const basketGivePn = preview.givePn ?? 0;
+  const basketReceivePn = preview.receivePn ?? 0;
+  const basketNet = gate.basketNet;
+  const myDisplay = gate.myDisplayPw;
+  const theirDisplay = gate.theirDisplayPw;
+  const relRequired = gate.relRequired ?? undefined;
+  const relOk = gate.relOk;
+  const basketFair = gate.basketFair;
   const accepted = preview.accepted;
   const balancePn = preview.balancePn;
   const balCls = accepted ? 'ok' : 'no';
@@ -562,10 +564,10 @@ export function renderPnBalancePanelForTreaty(
 
 /** @deprecated alias — użyj renderPnBalancePanelForTreaty */
 export function renderPnBalancePanelForPeace(
-  preview: TreatyBalancePreviewDto,
+  preview: DiplomacyTreatyBasketPreviewDto,
   actionLabel = 'Propozycja pokoju',
 ): string {
-  // P5.2: web przekazywał `partnerTreatyPw = treatyBasePw` — teraz ta wartość jest w `preview.partnerPw` (Rust).
+  // P5.2: web przekazywał `partnerTreatyPw = treatyBasePw` — teraz ta wartość jest w `preview.treatyPw.their` (Rust).
   return renderPnBalancePanelForTreaty(preview, actionLabel, 'Traktat pokoju');
 }
 

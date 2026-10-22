@@ -1,3 +1,4 @@
 # Diffy pin -> v2 (diff -u) maja linie kontekstu " " dla pustych wierszy zrodla — artefakt formatu,
 # nie bialy znak w kodzie. Wylaczamy dla nich kontrole `git diff --check` (precedens: P5.1, .gitattributes techIcons.ts).
 r1-logi/diffs/*.diff -whitespace
+r2-logi/diffs/*.diff -whitespace

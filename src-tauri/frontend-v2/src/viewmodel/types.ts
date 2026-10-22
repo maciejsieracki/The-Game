@@ -458,6 +458,8 @@ export interface AcceptanceSideBalanceDto {
  * bramka `canAccept`/`blockReason`, tryb pakietu) liczony w Rust (zapytanie stołu negocjacji —
  * proponowane `diplomacy_table_balance`, NIE_ZMIERZONO w silniku). `relation` = relacja wiersza
  * głównego (web: `their.relCurrent ?? my.relCurrent ?? 100`, `:140,633`).
+ * ROZSZERZENIE kontraktu P5-0 §6.6 (ZAŁOŻENIE P5.2-Z10): P5-0 nie przewiduje DTO stołu negocjacji
+ * (wiele propozycji na stole), a `DiplomacyBasketPreviewDto` opisuje jeden koszyk przed wysłaniem.
  */
 export interface PnBalancePanelDto {
   actionLabel: string;
@@ -467,6 +469,11 @@ export interface PnBalancePanelDto {
   theirOfferPn: number;
   theirBalance: AcceptanceSideBalanceDto;
   myBalance?: AcceptanceSideBalanceDto;
+  /**
+   * WYMÓG (jak `DiplomacyBasketPreviewDto.accepted`, P5-0 §6.6): liczy TA SAMA funkcja Rust co bramka
+   * komendy przyjęcia propozycji ze stołu — UI nie może pokazać „można przyjąć” dla pakietu, który
+   * silnik odrzuci (web: `canAccept` `:379` liczony w UI osobno od bramki).
+   */
   canAccept?: boolean;
   extraOnTable?: number;
   awaitingAiResponse?: boolean;
@@ -477,19 +484,14 @@ export interface PnBalancePanelDto {
 }
 
 /**
- * P5.2: podgląd koszyka traktatu (web: `renderPnBalancePanelForTreaty`, `diplomacyAcceptanceBalance.ts:753-871`
- * liczył w UI PW gracza/partnera @ Relacji, koszyk netto, bilans asymetryczny, bramkę koszyka i
- * akceptację). Wszystkie pola z Rust.
+ * P5.2 — ROZSZERZENIE kontraktu P5-0 §6.6 (ZAŁOŻENIE P5.2-Z9, `P5-2-PORT-LEVEL0.md` §8): blok
+ * `DiplomacyBasketPreviewDto.treatyGate`, wypełniany przez Rust tylko dla zapytania
+ * `diplomacy_preview_basket { mode: 'treaty' }` (dla `trade`/`gift` = `null`). Pola, których P5-0 §6.6
+ * nie przewiduje, a które web liczył w UI (`renderPnBalancePanelForTreaty`, pin
+ * `diplomacyAcceptanceBalance.ts:753-871`). PW gracza/partnera/bazy NIE są tu powielane — są w
+ * `DiplomacyBasketPreviewDto.treatyPw.{my,their,base}` (P5-0 §6.6); koszyk w `givePn`/`receivePn`.
  */
-export interface TreatyBalancePreviewDto {
-  /** Baza traktatu (web: `treatyBasePw ?? partnerTreatyPw ?? playerTreatyPw`). */
-  basePw: number;
-  /** PW gracza @ Relacji (web: `treatyPwForRole(base, rel, 'player')`). */
-  playerPw: number;
-  /** PW partnera (web: `treatyPwForRole(base, rel, 'partner')`). */
-  partnerPw: number;
-  basketGivePn: number;
-  basketReceivePn: number;
+export interface DiplomacyTreatyGateDto {
   /** Web: `max(0, basketGivePn − basketReceivePn)`. */
   basketNet: number;
   /** Web: `playerPw + basketGivePn`. */
@@ -499,11 +501,8 @@ export interface TreatyBalancePreviewDto {
   relRequired: number | null;
   /** Web: `relRequired == null || relTotal >= relRequired`. */
   relOk: boolean;
-  /** Web: `basketReceivePn <= 0 || pnDealAcceptedByAi(...)` — ta sama funkcja co bramka. */
+  /** Web: `basketReceivePn <= 0 || pnDealAcceptedByAi(...)` — ta sama funkcja Rust co bramka przyjęcia. */
   basketFair: boolean;
-  accepted: boolean;
-  balancePn: number;
-  relation: RelationDealDto;
 }
 
 export interface DiplomacyBasketPreviewDto {
@@ -523,7 +522,18 @@ export interface DiplomacyBasketPreviewDto {
   currencyForbiddenWar: boolean;
   turnsMultiplier: number;
   brief: { give: string; receive: string };
+  /** P5.2 — rozszerzenie P5-0 §6.6 (ZAŁOŻENIE P5.2-Z9): tylko `mode = 'treaty'`, inaczej `null`. */
+  treatyGate: DiplomacyTreatyGateDto | null;
 }
+
+/**
+ * P5.2: wejście renderera koszyka traktatu (`renderPnBalancePanelForTreaty`/`ForPeace`) = wynik
+ * `diplomacy_preview_basket { mode: 'treaty' }` (P5-0 §6.6) z niepustym `treatyGate`. Jeden typ
+ * wyniku dla handlu i traktatu — bez osobnego DTO podglądu traktatu.
+ */
+export type DiplomacyTreatyBasketPreviewDto =
+  Pick<DiplomacyBasketPreviewDto, 'givePn' | 'receivePn' | 'balancePn' | 'accepted' | 'relation' | 'treatyPw'>
+  & { treatyGate: DiplomacyTreatyGateDto };
 
 export interface TradeableItemsDto {
   units: string[];
