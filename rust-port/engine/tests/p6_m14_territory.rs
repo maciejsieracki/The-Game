@@ -167,8 +167,11 @@ fn owner_tie_goes_to_first_node() {
     // Test ksztaltu (bez pinu liczb): dwa wezly tego samego zasiegu w rownej odleglosci -> pierwszy.
     use civ_engine::domain::terrain::CityNode;
     use civ_engine::domain::territory::TerritoryNode;
-    let a = TerritoryNode::new(CityNode::city(2, 0, 8.0), 11);
-    let b = TerritoryNode::new(CityNode::city(-2, 2, 8.0), 22);
-    assert_eq!(territory_owner_at(0, 0, &[a.clone(), b.clone()]), Some(11));
-    assert_eq!(territory_owner_at(0, 0, &[b, a]), Some(22));
+    // Identyfikatory wlascicieli sa tylko etykietami: asercje odwoluja sie do pol wezlow, nie do liczb.
+    let a = TerritoryNode::new(CityNode::city(2, 0, 8.0), 0);
+    let b = TerritoryNode::new(CityNode::city(-2, 2, 8.0), a.owner_id + 1);
+    let (oa, ob) = (a.owner_id, b.owner_id);
+    assert_ne!(oa, ob);
+    assert_eq!(territory_owner_at(0, 0, &[a.clone(), b.clone()]), Some(oa));
+    assert_eq!(territory_owner_at(0, 0, &[b, a]), Some(ob));
 }

@@ -1,6 +1,6 @@
 # P6.M14 - Terytorium, zasieg, rozmieszczenie cudow (port `gra/src/map/` do Rust)
 
-Temat: `R-RUSTPORT-P6-M14-TERYTORIUM-ZASIEG-CUDA-Q1` - DOMAIN: GAME - RUNDA 1/5 (Operator).
+Temat: `R-RUSTPORT-P6-M14-TERYTORIUM-ZASIEG-CUDA-Q1` - DOMAIN: GAME - RUNDA 2/5 (Operator, obrona zarzutow Evaluatora r1).
 Pin web: `edb8fb56`. Baza Rust: `origin/rust-port/parity-v2` @ `1570419b` (595 testow).
 Artefakty runu: `dyspozycje/autobot/runs/R-RUSTPORT-P6-M14-TERYTORIUM-ZASIEG-CUDA-Q1/`.
 
@@ -47,24 +47,43 @@ Legenda: PORTOWANY = kod + test + wektor z uruchomionego weba, 0 rozbieznosci.
 | territory-work.ts:77 | `isReczneKeyLegal` | PORTOWANY | `is_reczne_key_legal` | `reczne_key_legal_matches_web` (1680) |
 | territory-work.ts:106 | `reconcileWorkedTilesForOwner` | PORTOWANY | `reconcile_worked_tiles_for_owner` | `reconcile_for_owner_matches_web` (120, w tym `changed` i stan po) |
 | territory-work.ts:156 | `reconcileAllWorkedTiles` | PORTOWANY | `reconcile_all_worked_tiles` | `reconcile_all_matches_web` (100) |
-| range-hexes.ts:13 | `RangeCityInput` | PORTOWANY (struct) | `territory::RangeCityInput` | uzywany w testach range |
+| range-hexes.ts:13 | `RangeCityInput` | PORTOWANY (struct) | `territory::RangeCityInput` | `range_cities` buduje `RangeCityInput` z pol wektora (`tests/p6_m14_range.rs:22-26`); wyniki `culture_range_matches_web`/`religion_range_matches_web` zalezą od wszystkich pol struct |
 | range-hexes.ts:28 | `collectTerritoryHexKeysByOwner` | PORTOWANY | `collect_territory_hex_keys_by_owner` | `territory_keys_by_owner_match_web` (40) |
 | range-hexes.ts:53 | `collectCultureRangeHexKeys` | PORTOWANY (+ `border_radius` od wywolujacego) | `collect_culture_range_hex_keys` | `culture_range_matches_web` (60) |
 | range-hexes.ts:75 | `collectReligionRangeHexKeys` | PORTOWANY (+ `dominant_religion` od wywolujacego) | `collect_religion_range_hex_keys` | `religion_range_matches_web` (144, w tym klucze ulamkowe) |
 | wonder-placement.ts:11 | `WonderPlacementCity` | PORTOWANY (struct) | `wonder_placement::WonderPlacementCity` | testy wonder |
 | wonder-placement.ts:19 | `PickWonderHexInput` | PORTOWANY (struct, mapa jako lista `WonderMapHex`) | `PickWonderHexInput<'a>` | j.w. |
-| wonder-placement.ts:36 | `isLandBuildable` (nieeksp.) | PORTOWANY | prywatna `is_land_buildable` | przez `list_for_city` |
-| wonder-placement.ts:41 | `isOccupied` (nieeksp.) | PORTOWANY | prywatna `is_occupied` | przez `list_for_city` |
-| wonder-placement.ts:30 | `hexAt` (nieeksp.) | NIE-DOTYCZY (martwy kod: zero wywolan w pliku) | - | - |
+| wonder-placement.ts:32 | `isLandBuildable` (nieeksp.) | PORTOWANY | prywatna `is_land_buildable` | przez `list_for_city` |
+| wonder-placement.ts:37 | `isOccupied` (nieeksp.) | PORTOWANY | prywatna `is_occupied` | przez `list_for_city` |
+| wonder-placement.ts:28 | `hexAt` (nieeksp.) | NIE-DOTYCZY (martwy kod: zero wywolan w pliku) | - | - |
 | wonder-placement.ts:53 | `listQualifyingWonderHexesForCity` | PORTOWANY | `list_qualifying_wonder_hexes_for_city` | `list_for_city_matches_web` (80, kolejnosc 1:1) |
 | wonder-placement.ts:83 | `WonderMapPlacementInput` | PORTOWANY (struct) | `WonderMapPlacementInput<'a>` | testy wonder |
 | wonder-placement.ts:93 | `listQualifyingWonderHexesForOwner` | PORTOWANY (dedup, kolejnosc pierwszego wystapienia) | `list_qualifying_wonder_hexes_for_owner` | `list_for_owner_matches_web` (80) |
 | wonder-placement.ts:116 | `pickWonderHexForCity` | PORTOWANY | `pick_wonder_hex_for_city` | `pick_matches_web` (80) |
 
-Podsumowanie: 22 eksporty runtime (9 + 7 + 3 + 3) i 8 typow/interfejsow/aliasow - wszystkie z jawnym statusem; RUNDA-2: brak
-elementow z zakresu M14. Zaleznosci spoza M14 (NIE portowane tutaj, dostarcza wywolujacy - ZALOZENIE Z5):
-`cityBorderRadius`, `dominantReligion` (`culture-religion.ts`, P6.16), `computeLostToNearerSiblingByCity` (`okolica.ts`, P6.8).
-Testy podaja im WYNIKI prawdziwych funkcji weba z tabel w wektorach (`border`, `dominant`), nie reimplementacje.
+Podsumowanie: 22 eksporty runtime (9 + 7 + 3 + 3) i 7 typow/interfejsow/aliasow weba z zakresu M14 (CityNode, TerritoryNode,
+re-eksport TerritoryNode, RangeCityInput, WonderPlacementCity, PickWonderHexInput, WonderMapPlacementInput - tyle wierszy ma tabela)
+- wszystkie z jawnym statusem; RUNDA-2: brak elementow z zakresu M14.
+
+### 2a. Typy dodane po stronie Rust bez odpowiednika-eksportu w zakresie M14 (jawny status)
+
+| Typ Rust | Pochodzenie | Status |
+|---|---|---|
+| `WorkCity` (`territory.rs`) | projekcja `City` (`gra/src/types`, poza M14, Z2) do pol uzywanych w `territory-work.ts` | NIE-DOTYCZY jako port typu (adapter wejscia); pola uzywane przez funkcje sa testowane wektorami `work.json` |
+| `WonderMapHex` (`wonder_placement.rs`) | projekcja `Hex` z `GameMap.hexes` do `coords`+`terenBazowy` (Z2: `Hex` poza M14) | NIE-DOTYCZY jako port typu (adapter wejscia); zachowanie funkcji potwierdzone `wonder.json` |
+| `HexOwnerFilter` (alias) | typ parametru `filterHex?` z `range-hexes.ts:31` | NIE-DOTYCZY (alias typu domkniecia); uzyty w `territory_keys_by_owner_match_web` |
+| `DominantStatus` | `DominantReligionResult.status` (`culture-religion.ts:622`, P6.16) | ZALOZENIE Z7 (nizej): minimalne odwzorowanie na potrzeby `collect_religion_range_hex_keys`; pelny port P6.16 |
+| `ReligionState` (Rust) / `DominantReligion` (Rust) | `ReligionState` (`culture-religion.ts:616`) i `DominantReligionResult` (`:622`) - OBA POZA M14 | ZALOZENIE Z7: tylko pola czytane przez `range-hexes.ts` (`counts`, `religion`, `status`); `share` pominiety; pelny typ i funkcja `dominantReligion` naleza do P6.16 |
+
+### 2b. Zalozenia dodatkowe M14 (numerowane; Z1-Z6 pochodza z P6-25 §9)
+
+- **Z5 (tresc z P6-25 §9)**: wyłącznie promien z `okolica.ts` (P6.8) - M14 przyjmuje go od wywolujacego. Poprawka r2: w r1 blednie
+  podciagnalem pod Z5 takze `cityBorderRadius` i `dominantReligion`.
+- **Z7 (NOWE, M14)**: `cityBorderRadius` (`culture-religion.ts:313`, P6.16) i `dominantReligion` (`culture-religion.ts:675`, P6.16) NIE sa
+  portowane w M14; wywolujacy dostarcza je jako domkniecia (`&dyn Fn`). Powod: ich port jest w P6.16, a rownoleglosc nie pozwala
+  edytowac cudzych plikow. Po P6.16 wywolujacy podstawia Rust `city_border_radius`/`dominant_religion`.
+- **Z8 (NOWE, M14)**: zakres weryfikacji tych domkniec - patrz §3.7.
+- **Z9 (NOWE, M14)**: spojnosc kluczy z `coords` - patrz §3.8.
 
 ## 3. Swiadome decyzje i ograniczenia
 
@@ -81,6 +100,26 @@ Testy podaja im WYNIKI prawdziwych funkcji weba z tabel w wektorach (`border`, `
    Nie dodano nic do `data/derived.rs` ani `data/derived/*.json` (nie bylo stalych balansowych do wydzielenia).
 6. `trade.rs` (P6.15) ma wlasna prywatna kopie `territory_owner_at`/`TerritoryNode{radius}`: nie ruszana (poza allowlista);
    P6.15 powinien po M14 przejsc na `territory::territory_owner_at` (regula identyczna, potwierdzona wektorem).
+
+6. **Odstepstwa sygnatur od weba (kompletna lista, r2)** - zmiany sa tylko po stronie wejscia; logika 1:1:
+   | Web | Rust | Powod |
+   |---|---|---|
+   | `citySightRadius(pop, kultura=0)` | `city_sight_radius(pop, kultura, &dyn Fn(f64)->f64)` | `cityBorderRadius` poza M14 (Z7); web-domyslne `kultura=0` testowane osobnym wierszem wektora (`kultura: null`) |
+   | `collectTerritoryHexKeysByOwner(map, nodes, filterHex?)` | `(hex_keys: &[String], nodes, Option<&HexOwnerFilter>)` | web uzywa tylko `Object.keys(map.hexes)`; `GameMap` poza M14 (Z2) |
+   | `collectCultureRangeHexKeys(map, cities, ownerId=0)` | `(hex_keys, cities, owner_id, &dyn Fn(f64)->f64)` | j.w. + `cityBorderRadius` (Z7); `owner_id` jawny (domyslne 0 po stronie wywolujacego) |
+   | `collectReligionRangeHexKeys(map, cities, cityRelig, stateReligion, params, ownerId=0)` | `(hex_keys, cities, city_relig, Option<&str>, szerzenie_max_dystans: Option<f64>, &dyn Fn(&ReligionState)->DominantReligion, owner_id)` | `params` redukowany do jedynego czytanego pola `szerzenieMaxDystans`; `dominantReligion(rel, params)` jako domkniecie (Z7) |
+   | `listQualifyingWonderHexesForCity/ForOwner/pick`: `map: GameMap` | `map: &[WonderMapHex]` | `GameMap`/`Hex` poza M14 (Z2); patrz §3.3 |
+   | `Map<number, Set<string>>` | `BTreeMap<i64, BTreeSet<String>>` | §3.2 |
+7. **Zakres weryfikacji domkniec `cityBorderRadius`/`dominantReligion` (Z8)**: Rust `city_sight_radius`, `collect_culture_range_hex_keys`
+   i `collect_religion_range_hex_keys` sa zweryfikowane WYLACZNIE na wejsciach pokrytych tabelami wektorow: `border` = 17 wartosci kultury
+   w `territory.json` i 18 w `range.json` (0, 50, 99, 100, 101, 249-251, 499-501, 1000000, -5, NaN, +-Infinity, 100.5; w `range.json` dodatkowo 900), `dominant` = 195 par (`counts`, `progDominacjiPct`) w `range.json`.
+   Dla innych wejsc domkniecie w tescie panikuje (`brak wektora ...`, `p6_m14_range.rs:107,146`), wiec test nie moze po cichu przejsc
+   na niepokrytym wejsciu. Poprawnosc tych dwoch funkcji dla pozostalych wartosci jest zadaniem P6.16, nie M14.
+8. **Klucz vs `coords` (Z9)**: web czyta w dwoch wariantach. `range-hexes.ts:34-37,63-66,106-109` (3 funkcje) PARSUJE KLUCZ `"q,r"` z `Object.keys(map.hexes)`
+   - Rust przyjmuje te same klucze. `wonder-placement.ts:68-71` iteruje klucze, ale CZYTA `hex.coords` (klucz uzywa tylko martwy `hexAt`:28-30) - Rust
+   przyjmuje liste `WonderMapHex{coords,terrain}`, czyli tez dokladnie to pole. Zatem obie strony czytaja ten sam skladnik, wiec rozjazd klucza i `coords` nie
+   zmienia zgodnosci. Generator wektorow buduje klucze z `coords` (klucz == coords) i NIE zawiera przypadku z rozjazdem: to NIE_ZMIERZONO wektorem; wniosek
+   wynika z lektury kodu (linie wyzej). Hex bez wartosci (`!hex`, `wonder-placement.ts:70`) nie wystepuje w grze.
 
 ## 4. Testy: bylo / jest
 

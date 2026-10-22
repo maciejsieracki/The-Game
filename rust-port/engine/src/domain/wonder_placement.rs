@@ -51,12 +51,12 @@ pub struct WonderMapPlacementInput<'a> {
     pub city_hexes: &'a [HexCoord],
 }
 
-/// Web `isLandBuildable` (`wonder-placement.ts:36`): nie woda i nie gory.
+/// Web `isLandBuildable` (`wonder-placement.ts:32`): nie woda i nie gory.
 fn is_land_buildable(terrain: TerrainType) -> bool {
     !terrain.is_water() && terrain != TerrainType::Mountains
 }
 
-/// Web `isOccupied` (`wonder-placement.ts:41`).
+/// Web `isOccupied` (`wonder-placement.ts:37`).
 fn is_occupied(q: i32, r: i32, wonders: &[HexCoord], city_hexes: &[HexCoord]) -> bool {
     wonders.iter().any(|w| w.q == q && w.r == r) || city_hexes.iter().any(|c| c.q == q && c.r == r)
 }
