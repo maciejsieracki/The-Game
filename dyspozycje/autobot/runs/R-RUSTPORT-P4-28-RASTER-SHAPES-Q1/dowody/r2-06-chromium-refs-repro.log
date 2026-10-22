@@ -1,0 +1,17 @@
+$ NODE_PATH=/opt/node22/lib/node_modules node gen.mjs
+scenes=46 colors=119 chromium=141.0.7390.37
+EXIT=0
+$ diff manifest_r1 MANIFEST.sha256
+1c1
+< 56a260d212e83b126dbb06cdce7ad40c17bf7d3ad474ce66ba208d7d5ae06b48  gen.mjs
+---
+> 3e9642d247834e675c0be81374267391e43a07657e54e5b437d127c85294c958  gen.mjs
+EXIT=1 (1 expected: only the gen.mjs line differs)
+$ diff <(grep -v " gen.mjs$" manifest_r1) <(grep -v " gen.mjs$" MANIFEST.sha256)
+EXIT=0 (0 = every reference file identical)
+$ sha256sum -c --quiet MANIFEST.sha256
+EXIT=0
+node v22.22.0
+playwright 1.56.1
+chromium 141.0.7390.37
+userAgent Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/141.0.7390.37 Safari/537.36

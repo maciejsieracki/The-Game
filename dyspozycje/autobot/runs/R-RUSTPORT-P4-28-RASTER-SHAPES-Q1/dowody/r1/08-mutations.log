@@ -1,0 +1,22 @@
+M01 KILLED exit=101 [src/raster/path.rs] conic→quad tolerance 4× coarser; failing tests: raster::path::tests::big_circle_subdivides, scenes_match_golden_hashes, scenes_match_chromium, clip_limits_drawing_and_restore_removes_it, arc_to_corner_matches_quarter_circle, round_rect_radius_is_clamped_to_half_side
+M02 KILLED exit=101 [src/raster/path.rs] full circle becomes a half circle; failing tests: raster::path::tests::full_circle_is_four_quadrants_open, raster::path::tests::big_circle_subdivides, scenes_match_golden_hashes, scenes_match_chromium, clip_limits_drawing_and_restore_removes_it, circle_area_matches_pi_r_squared
+M03 KILLED exit=101 [src/raster/path.rs] arcTo tangent distance formula; failing tests: scenes_match_golden_hashes, scenes_match_chromium
+M04 KILLED exit=101 [src/raster/path.rs] roundRect radius not clamped; failing tests: round_rect_radius_is_clamped_to_half_side
+M05 KILLED exit=101 [src/raster/canvas.rs] miter limit = tiny-skia default 4 instead of Canvas 10; failing tests: miter_limit_ten_keeps_a_20_degree_miter
+M06 KILLED exit=101 [src/raster/canvas.rs] clearRect anti-aliased (Chromium is not); failing tests: scenes_match_golden_hashes, scenes_match_chromium
+M07 KILLED exit=101 [src/raster/canvas.rs] drawImage nearest instead of bilinear; failing tests: scenes_match_golden_hashes, scenes_match_chromium
+M08 KILLED exit=101 [src/raster/canvas.rs] degenerate gradient paints (should paint nothing); failing tests: degenerate_gradients_paint_nothing
+M09 KILLED exit=101 [src/raster/canvas.rs] stroke ignores the CTM for the outline geometry; failing tests: scenes_match_golden_hashes, scenes_match_chromium
+M10 KILLED exit=101 [src/raster/color.rs] #rgb expansion ×16 instead of ×17; failing tests: raster::color::tests::forms_used_by_the_web, opaque_colours_are_bit_exact, filled_pixel_matches_chromium_within_one_step
+M11 KILLED exit=101 [src/raster/color.rs] rgb() channel floor instead of round; failing tests: opaque_colours_are_bit_exact
+M12 KILLED exit=101 [src/raster/shadow.rs] shadow sigma = blur instead of blur/2; failing tests: scenes_match_golden_hashes, scenes_match_chromium
+M13 KILLED exit=101 [src/raster/canvas.rs] first clip not anti-aliased; failing tests: -
+M14 KILLED exit=101 [src/raster/canvas.rs] restore keeps the clip; failing tests: scenes_match_golden_hashes, scenes_match_chromium, clip_limits_drawing_and_restore_removes_it
+M15 KILLED exit=101 [src/raster/path.rs] anticlockwise arcs drawn clockwise; failing tests: raster::path::tests::half_arc_ccw_goes_through_top, scenes_match_golden_hashes, scenes_match_chromium
+M16 KILLED exit=101 [src/raster/canvas.rs] rotate() direction inverted; failing tests: scenes_match_golden_hashes, scenes_match_chromium, translate_rotate_and_set_transform
+M17 KILLED exit=101 [src/raster/canvas.rs] equal-offset colour stops inserted before (not after) earlier ones; failing tests: equal_offset_stops_keep_insertion_order
+M18 KILLED exit=101 [src/raster/canvas.rs] offset-only (blur 0) shadow dropped; failing tests: shadow_is_drawn_below_and_offset
+M19 KILLED exit=101 [src/raster/path.rs] lineTo without subpath does not act as moveTo; failing tests: line_to_without_subpath_acts_as_move_to
+M20 KILLED exit=101 [src/raster/canvas.rs] gradient ignores the CTM; failing tests: scenes_match_golden_hashes, scenes_match_chromium, gradient_follows_the_ctm_at_paint_time
+killed 20/20
+EXIT=0
