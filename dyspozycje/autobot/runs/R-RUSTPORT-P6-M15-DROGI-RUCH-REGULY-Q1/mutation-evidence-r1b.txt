@@ -1,0 +1,3 @@
+WYKRYTY   : modifier: podloga zwyklej drogi -> 1 testow czerwonych: apply_modifier_matches_web_bitwise
+WYKRYTY   : modifier: mnoznik drogi z bruku -> 1 testow czerwonych: apply_modifier_matches_web_bitwise
+mutantow=15 przezylo/niekompilujace=0
