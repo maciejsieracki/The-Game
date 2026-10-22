@@ -1,0 +1,10 @@
+[package]
+name = "text-raster-spike"
+version = "0.0.0"
+edition = "2021"
+rust-version = "1.87"
+publish = false
+
+[dependencies]
+ab_glyph = "=0.2.32"
+tiny-skia = "=0.12.0"
