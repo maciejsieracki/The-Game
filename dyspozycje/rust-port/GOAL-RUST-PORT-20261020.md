@@ -30,6 +30,9 @@ dotykające tych samych plików — zawsze sekwencyjnie, nigdy w tej samej fali.
 | 3 | `R-RUSTPORT-P6-M01-RDZEN-WERYFIKACJA-Q1` | generator mapy: rdzeń i weryfikacja — Operator Sonnet | 1/5 | `wf_320a8312-64a` | DISPATCHED | 2026-10-22 |
 | 6 | `R-RUSTPORT-P6-5A-JEDNOSTKI-ZYCIE-A-Q1` | P6.5A armyMerge, unit-cost-tempo, unit-replace-context — Operator Sonnet | 1/5 | `wf_54f56b61-dce` | DISPATCHED | 2026-10-22 |
 | 7 | `R-RUSTPORT-P4-30-IMAGES-Q1` | RR-T8c obrazy: JPG, SVG (resvg), emoji wg D-TXT-3=C — Opus 5.5 | 1/5 | `wf_5b41339e-109` | DISPATCHED | 2026-10-22 |
+| 8 | `R-RUSTPORT-P6-M15-DROGI-RUCH-REGULY-Q1` | mapgen M15 drogi — reguły ruchu — Operator Sonnet | 1/5 | `wf_c44b7468-d53` | DISPATCHED | 2026-10-22 |
+| 9 | `R-RUSTPORT-P6-M17-SNAPSHOT-MAPY-Q1` | mapgen M17 snapshot mapy — Operator Sonnet | 1/5 | `wf_77971ea5-0ed` | DISPATCHED | 2026-10-22 |
+| 10 | `R-RUSTPORT-P6-M16-ULEPSZENIA-BUDOWA-REGULY-Q1` | mapgen M16 budowa ulepszeń — Operator Sonnet | 1/5 | `wf_53c8e07a-dff` | DISPATCHED | 2026-10-22 |
 
 
 Kolejka (aktualizacja 2026-10-22): P3.23 FLATTEN etap 3 (po P3.21 — te same pliki domeny: macierz counter 35g, struktury, wzrost 35b, mapa 35j–k, społeczeństwo 35n, wioski 35c, ruch 35i, produkcja 19–22b), MOD-07 jednostki żelaza, ujednolicenie typu drzewa sceny, P5.3+ kolejne poziomy `PORTING-QUEUE.md`, pierwotna kolejka: MOD-06/07 (jednostki brązu/żelaza, po P4.19), MOD-09 miasta, MOD-13 misc, ujednolicenie typu drzewa sceny (3 typy: `core::scene`, `wonders::model`, `unit_core::model`) po paczkach, P3.21 `CityId` po P3.22, P5.2+ kolejka portowania paneli (`PORTING-QUEUE.md`), RR-T1 spike (wymaga GPU właściciela).
