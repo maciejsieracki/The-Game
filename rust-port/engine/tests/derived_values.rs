@@ -971,18 +971,25 @@ fn basket_and_treaty_duration_read_diplomacy_table() {
     assert_eq!(nap(Some(15.0)), 2.0);
     assert_eq!(nap(Some(20.0)), 4.0);
     assert_eq!(nap(Some(25.0)), 4.0);
-    // ROZBIEZNOSC Rust-web (zachowanie NIE zmienione): web wyklucza 'pokoj' z mnoznika
-    // (web: pokoj = 1 dla wszystkich czasow), Rust liczy Peace jak NAP. Test pinuje stan
-    // obecny; zmiana wymaga decyzji wlasciciela (P3-22 sekcja 1c, pozycja 35d).
+    // Peace (pokoj): web wyklucza 'pokoj' z mnoznika czasu (diplomacy-proposals.ts:595,
+    // treaty_probe pokoj = 1 dla kazdego czasu, wektor z uruchomionego weba: 9/9 probek = 1).
+    // P3-22 runda 4, Q1=A (web 1:1): Rust zmieniony z 2.0 na 1.0 (patrz tabela было/jest).
+    for turns in [0.0, -3.0, 5.0, 10.0, 12.0, 15.0, 20.0, 25.0] {
+        assert_eq!(
+            treaty_duration_pn_multiplier(
+                ProposalAction::Peace,
+                &ProposalPayload {
+                    turns: Some(turns),
+                    ..ProposalPayload::default()
+                },
+            ),
+            1.0,
+            "pokoj turns={turns}"
+        );
+    }
     assert_eq!(
-        treaty_duration_pn_multiplier(
-            ProposalAction::Peace,
-            &ProposalPayload {
-                turns: Some(15.0),
-                ..ProposalPayload::default()
-            },
-        ),
-        2.0
+        treaty_duration_pn_multiplier(ProposalAction::Peace, &ProposalPayload::default()),
+        1.0
     );
 }
 

@@ -1,6 +1,8 @@
 use serde::{Deserialize, Serialize};
 
 use super::UnitId;
+// Modul dolaczany w tests/combat.rs przez #[path] (poza drzewem `domain`), stad pelna sciezka crate.
+use civ_engine::data::derived::combat_ai_multiplier_value;
 
 /// A counter bonus supplied by the unit data for one opposing unit type.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
@@ -220,8 +222,9 @@ pub fn terrain_defense_multiplier(terrain: Terrain) -> f64 {
     match terrain {
         Terrain::Plain => 1.0,
         Terrain::Forest => 1.25,
-        Terrain::Hills => 1.5,
-        Terrain::Mountain => 1.75,
+        // Wzgorze i gory: combat-ai-multipliers.json (P3-22 runda 4, web 1.5 / 1.75).
+        Terrain::Hills => combat_ai_multiplier_value("HILL_DEFENSE_MULT"),
+        Terrain::Mountain => combat_ai_multiplier_value("MOUNTAIN_DEFENSE_MULT"),
         Terrain::River => 1.0,
     }
 }
@@ -231,11 +234,23 @@ pub fn structure_defense_multiplier(structures: DefenseStructures, is_siege: boo
         return 1.0;
     }
 
-    // Structure bonuses are additive percentage points: wall +200%, fort
-    // +100%, outpost +50%, matching structureDefenseBonusFor in the game.
-    1.0 + if structures.wall { 2.0 } else { 0.0 }
-        + if structures.fort { 1.0 } else { 0.0 }
-        + if structures.outpost { 0.5 } else { 0.0 }
+    // Structure bonuses are additive percentage points, read from
+    // combat-ai-multipliers.json (P3-22 runda 4): MUR 200%, fort terenowy 100%,
+    // posterunek 50%, zgodnie z structureDefenseBonusFor w grze (main.ts).
+    let pct = |id: &str| combat_ai_multiplier_value(id) / 100.0;
+    1.0 + if structures.wall {
+        pct("MUR_BONUS_PROC")
+    } else {
+        0.0
+    } + if structures.fort {
+        pct("FORT_TERENOWY_BONUS_PROC")
+    } else {
+        0.0
+    } + if structures.outpost {
+        pct("POSTERUNEK_BONUS_PROC")
+    } else {
+        0.0
+    }
 }
 
 pub fn morale_factor(morale: u32) -> f64 {

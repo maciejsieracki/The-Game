@@ -3072,12 +3072,11 @@ fn treaty_base_pn(action: ProposalAction, params: &DiplomacyParams) -> f64 {
 }
 
 pub fn treaty_duration_pn_multiplier(action: ProposalAction, payload: &ProposalPayload) -> f64 {
+    // Zbior akcji zgodny z webem (diplomacy-proposals.ts TREATY_DURATION_MULTIPLIER_ACTIONS):
+    // nap, trybut_zadanie, trybut_oferta. Pokoj (Peace) NIE ma mnoznika czasu (web: x1).
     if !matches!(
         action,
-        ProposalAction::Nap
-            | ProposalAction::TributeDemand
-            | ProposalAction::TributeOffer
-            | ProposalAction::Peace
+        ProposalAction::Nap | ProposalAction::TributeDemand | ProposalAction::TributeOffer
     ) {
         return 1.0;
     }

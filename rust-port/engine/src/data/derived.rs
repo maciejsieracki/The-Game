@@ -580,3 +580,66 @@ pub fn diplomacy_multiplier_by_key(id: &str, key: &str) -> f64 {
         .and_then(|map| map.get(key).copied())
         .unwrap_or_else(|| panic!("diplomacy-multipliers.json: brak wartosci {id}[{key}]"))
 }
+
+/// Tabela WALKA/OBLĘŻENIE i AI (P3-22 etap 2, runda 4): edytowalne liczby, klasa a/b.
+pub const COMBAT_AI_MULTIPLIERS_JSON: &str =
+    include_str!("../../data/derived/combat-ai-multipliers.json");
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct CombatAiMultipliersFile {
+    pub meta: serde_json::Value,
+    pub wiersze: Vec<CombatAiMultiplierRow>,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct CombatAiMultiplierRow {
+    pub id: String,
+    pub klasa: String,
+    /// Wartość klasy a (stała).
+    #[serde(default)]
+    pub wartosc: Option<f64>,
+    /// Klasa b po kluczu stanu (np. poziom weterana `0`..`3`).
+    #[serde(default)]
+    pub wartosci_po_stanie: Option<BTreeMap<String, f64>>,
+    pub zrodlo_wartosci: String,
+    pub definicja_web: String,
+    pub uzycie_web: String,
+    /// `ROZWINIETE` (domena czyta wartość) albo `NIEUZYWANE` (bez mechaniki w Rust).
+    pub status_rust: String,
+    pub rust: String,
+    pub opis: String,
+}
+
+pub fn parse_combat_ai_multipliers() -> Result<CombatAiMultipliersFile, serde_json::Error> {
+    serde_json::from_str(COMBAT_AI_MULTIPLIERS_JSON)
+}
+
+fn combat_ai_row(id: &str) -> &'static CombatAiMultiplierRow {
+    static TABLE: std::sync::OnceLock<CombatAiMultipliersFile> = std::sync::OnceLock::new();
+    TABLE
+        .get_or_init(|| {
+            parse_combat_ai_multipliers().expect("combat-ai-multipliers.json must parse")
+        })
+        .wiersze
+        .iter()
+        .find(|row| row.id == id)
+        .unwrap_or_else(|| panic!("combat-ai-multipliers.json: brak wiersza {id}"))
+}
+
+/// Wartość klasy a wiersza `id` z `combat-ai-multipliers.json`. Brak wartości = błąd danych.
+pub fn combat_ai_multiplier_value(id: &str) -> f64 {
+    combat_ai_row(id)
+        .wartosc
+        .unwrap_or_else(|| panic!("combat-ai-multipliers.json: brak wartosc klasy a dla {id}"))
+}
+
+/// Wartość klasy b wiersza `id` dla klucza stanu `key` (np. `"2"` dla poziomu weterana).
+pub fn combat_ai_multiplier_by_key(id: &str, key: &str) -> f64 {
+    combat_ai_row(id)
+        .wartosci_po_stanie
+        .as_ref()
+        .and_then(|map| map.get(key).copied())
+        .unwrap_or_else(|| panic!("combat-ai-multipliers.json: brak wartosci {id}[{key}]"))
+}

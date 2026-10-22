@@ -718,32 +718,27 @@ fn peace_price_uses_treaty_duration_precedence_and_multiplier() {
     let ten_turns = evaluate_proposal(&peace, &war_context);
     assert!(ten_turns.accepted, "{}", ten_turns.reason);
 
+    // P3-22 runda 4 (Q1=A, web 1:1): pokoj NIE ma mnoznika czasu traktatu
+    // (web diplomacy-proposals.ts TREATY_DURATION_MULTIPLIER_ACTIONS = nap/trybut; treaty_probe
+    // pokoj = 1 dla kazdego czasu). BYLO: 20 tur. = x4 (wymagane 2000 PN), 15 tur. = x2,
+    // bezterminowy = x8. JEST: cena pokoju niezalezna od czasu, taka jak przy 10 turach.
+    // Test pinuje rownosc decyzji dla kazdego czasu, a nie stare progi mnoznikowe.
+    for (treaty_turns, give_pn) in [(20.0, 500.0), (15.0, 500.0), (0.0, 500.0), (20.0, 1_999.0)] {
+        peace.payload.treaty_turns = Some(treaty_turns);
+        peace.payload.give_pn = Some(give_pn);
+        let at_duration = evaluate_proposal(&peace, &war_context);
+        peace.payload.treaty_turns = Some(10.0);
+        let at_ten = evaluate_proposal(&peace, &war_context);
+        assert_eq!(
+            at_duration.accepted, at_ten.accepted,
+            "pokoj turns={treaty_turns} give={give_pn}: cena nie moze zalezec od czasu"
+        );
+    }
+
     peace.payload.treaty_turns = Some(20.0);
-    peace.payload.give_pn = Some(1_999.0);
-    let twenty_turns = evaluate_proposal(&peace, &war_context);
-    assert!(!twenty_turns.accepted);
-
-    peace.payload.give_pn = Some(2_000.0);
-    let twenty_turns_paid = evaluate_proposal(&peace, &war_context);
-    assert!(twenty_turns_paid.accepted, "{}", twenty_turns_paid.reason);
-
-    peace.payload.treaty_turns = Some(15.0);
     peace.payload.give_pn = Some(500.0);
-    let fifteen_turns = evaluate_proposal(&peace, &war_context);
-    assert!(!fifteen_turns.accepted);
-
-    peace.payload.give_pn = Some(1_000.0);
-    let fifteen_turns_paid = evaluate_proposal(&peace, &war_context);
-    assert!(fifteen_turns_paid.accepted, "{}", fifteen_turns_paid.reason);
-
-    peace.payload.treaty_turns = Some(0.0);
-    peace.payload.give_pn = Some(3_999.0);
-    let indefinite = evaluate_proposal(&peace, &war_context);
-    assert!(!indefinite.accepted);
-
-    peace.payload.give_pn = Some(4_000.0);
-    let indefinite_paid = evaluate_proposal(&peace, &war_context);
-    assert!(indefinite_paid.accepted, "{}", indefinite_paid.reason);
+    let twenty_turns = evaluate_proposal(&peace, &war_context);
+    assert!(twenty_turns.accepted, "{}", twenty_turns.reason);
 }
 
 #[test]

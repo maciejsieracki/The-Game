@@ -249,3 +249,86 @@ Jeden typ: `rust-port/engine/src/domain/types.rs` (`Difficulty`, `Default` = Nor
 - Poza zakresem (nietknięte): `bridge.rs`, `playable.rs`, `Cargo.toml`, `gra/**`, `rust-port/renderer/**`, `src-tauri/**`.
 
 DEPLOY/PUSH: NIE WYKONANO.
+
+## 11. RUNDA 4 (Operator, po FAIL Final Control r3)
+
+Baza: `origin/rust-port/parity-v2` = `bf59164b` (checkout detached), potem `git cherry-pick 3e6940fc` (runda 3: DYPLOMACJA + `Difficulty`), wynik `76f5f4d9`. Pin weba: `edb8fb56` (`git archive edb8fb56 gra/src gra/data` rozpakowane poza repo).
+
+### 11.1 Zakres rundy 4 i status
+
+| # | Pozycja (web) | Klasa | Status R4 | Dowód |
+|---|---|---|---|---|
+| D4 | TREATY_DURATION_MULTIPLIER_ACTIONS: Peace | NL (zbior) | ROZWINIETE: Rust zgodny z webem (pokoj x1) | `dowody/web-diplo-values-r4.json` (pokoj 9/9 = 1); `derived_values.rs`, `tests/diplomacy.rs` |
+| 35a | AI_MAJOR_EARLY_ECON_BUILDING_MULT = 0.70 | a | BEZ MECHANIKI (tabela NIEUZYWANA) | `ai.ts:1265` (literal), `ai.ts:2039` (uzycie); Rust: brak mnoznika, `ai_turn.rs:958-984` (priorytety calkowite) |
+| 35a2 | TERYTORIUM_MNOZNIK = 1.25 | a | BEZ MECHANIKI (NIEUZYWANA) | `ai.ts:4568` (literal), `ai.ts:4647`; Rust: brak silaAI z terytorium |
+| 35o5 | AI_MAJOR_ABSORB_POWER_RATIO_MIN = 10 (prog) | a | BEZ MECHANIKI (NIEUZYWANA) | `ai-major-absorb.ts:10` (uruchomiony), `:73`; Rust: brak `instant_annex` |
+| 35f | HILL_DEFENSE_MULT = 1.5 / MOUNTAIN_DEFENSE_MULT = 1.75 | a | ROZWINIETE w tabeli i w `combat.rs` (`terrain_defense_multiplier`), ALE plik `combat.rs` NIE jest w drzewie `domain/mod.rs`; dolacza go wylacznie `tests/combat.rs` (`#[path]`) | `siege.ts:118,124` (uruchomiony), `combat-params.json:46-47` |
+| 35o3 | MUR 200 / CYTADELA 100 / BASZTA 100 / PALISADA 100 (miasto) | a | MUR: ROZWINIETE (`wall`, tylko przez `tests/combat.rs`); CYTADELA, BASZTA, PALISADA: BEZ MECHANIKI (Rust nie ma tych budynkow, NIEUZYWANE) | `miasto-params.json:79,84,89,94`; `city-defense.ts:55` (uruchomiony, probki 6/6) |
+| 35o3b | Fort terenowy 100 / posterunek 50 (structureDefBonusPct) | a | ROZWINIETE (`fort`, `outpost`; tylko przez `tests/combat.rs`) | `terrain-improvements.json` (`fort`, `posterunek`, `bonus_obrona_proc`); `combat.ts:327-328` |
+| 35o1 | FORTIFY_OBRONA_BONUS = 2 / FORTIFY_OBRONA_PROC = 50 | a | BEZ MECHANIKI (pola `units_combat.rs:248-249` tylko deserializowane) | `siege.ts:131` (uruchomiony), `combat-params.json:48-49`, `city-defense.ts:170` |
+| 35o2 | VETERAN_BONUS_FRAC {0:0, 1:0.10, 2:0.15, 3:0.20} | b (poziom 0-3) | BEZ MECHANIKI (brak weterana w `domain/`) | `veteran.ts:71` (uruchomiony, 4/4) |
+| 35h | EMBARK_DEFENSE_MULT = 0.5 | a | BEZ MECHANIKI (brak obrony na wodzie w `domain/`) | `embarkation.ts:28` (uruchomiony); `git grep -i embark -- rust-port/engine/src/domain` = tylko ruch |
+| 35o4 | SIEGE_AI T1 1.8 / T2 1.4 / T3 1.1 (progi) | a (prog) | BEZ MECHANIKI (brak oblezenia AI; `units_combat.rs:259-261` tylko deserializacja) | `siegeAi.ts:37,43,46` (uruchomiony), `combat-params.json:56-58` |
+| 35l | MORALE_HIT_LOSS_SCALE 100 / MORALE_ARMY_COLLAPSE_RATIO 0.40 / MORALE_ARMY_COLLAPSE_MULT 1.3 | a | BEZ MECHANIKI (Rust: tylko `morale_factor`, `combat.rs:241`) | `battleScene.ts:1050,1070,1071` (ODCZYT_LITERALU: plik nie laduje sie w Node) |
+| 35l2 | BROD_RUCH 0.5 / KARA_ATAK 0.25 / KARA_OBRONA 0.25 / BONUS_BRZEG 0.15 | a | BEZ MECHANIKI (brak brodu w `domain/`) | `combat-params.json:33-39` (JSON), `battleScene.ts:918-921` |
+| 35g | COUNTER_MULT = 1.5 (domyslny) | a | ETAP 3 (patrz 11.3) | `combat.ts:20`, `combat.ts:513-548`; Rust: literalowa macierz `combat.rs:208-209` |
+| 35p | `archetype_aggression` / `archetype_trade` | b | ETAP 3 → P3-18 (tabele zakodowane na stale, nie mnozniki) | `diplomacy.rs:1022-1063` (poza inwentarzem P3-19) |
+| 35o6 | BARBARIAN_COOPERATION_RADIUS / _TURNS / _DEFAULT_DURATION_TURNS | NL | NIE-MNOZNIK (promien/czas) — poza zakresem etapu 2 | `diplomacy-barbarian-cooperation.ts:10,21,25`; Rust `barbarians.rs`: brak literalow mnoznikowych z inwentarza (`grep-literals-r4.txt`) |
+
+Grupa BARBARZYNCY: w inwentarzu nie ma wiersza klasy a/b poza 35o6 (NL). Status: ZAMKNIETE jako NL/BEZ MECHANIKI, bez tabeli.
+Grupa AI: 35a, 35a2, 35o5 ZAMKNIETE jako BEZ MECHANIKI z tabela NIEUZYWANA (ai.ts nie laduje sie w Node: wartosci z odczytu literalu, pole `zrodlo_wartosci`).
+Grupa WALKA/OBLEZENIE: 35f, 35o3, 35o3b, 35o1, 35o2, 35h, 35o4, 35l, 35l2 ZAMKNIETE (ROZWINIETE albo BEZ MECHANIKI); 35g ETAP 3.
+
+### 11.2 Tabela `rust-port/engine/data/derived/combat-ai-multipliers.json` (25 wierszy)
+
+Parser i akcesory: `src/data/derived.rs` (`combat_ai_multiplier_value`, `combat_ai_multiplier_by_key`). Generator URUCHAMIA kod weba: `dyspozycje/autobot/runs/R-RUSTPORT-P3-22-FLATTEN-STAGE2-Q1/gen-combat-web.mjs` (wynik: `dowody/web-combat-values.json`). Weryfikator niezalezny: `verify-combat-web.py` → `LICZBA ROZBIEZNOSCI: 0`, EXIT=0.
+Wiersze ROZWINIETE: 5 (HILL, MOUNTAIN, MUR, FORT_TERENOWY, POSTERUNEK). NIEUZYWANE: 20. Status NIEUZYWANE nie moze byc czytany przez kod (sprawdza weryfikator).
+
+### 11.3 ETAP 3 (z klasa i plik:linia, NIE zrobione w rundzie 4)
+
+- 35g COUNTER_MULT (a): `gra/src/game/combat.ts:20`, uzycie `:513-548`. Rust: macierz literalowa `rust-port/engine/src/domain/combat.rs:208-209` (1.50, 1.25, 1.15 w `counter_multiplier`) oraz `combat.rs:224` (Forest 1.25, poza inwentarzem). Wymaga przepiecia macierzy na dane `counters.json` — osobny temat.
+- Poza inwentarzem P3-19 (zgloszone, NIE zmieniane): `rust-port/engine/src/domain/diplomacy.rs:668,670,714,716` (wspolczynnik `0.5` w `w/100*0.5` — wplyw relacji na PN; brak odpowiednika w inwentarzu). Klasa: do klasyfikacji w rundzie 5.
+- Rozbieznosc struktur (NIE zmieniona, zgloszona): Rust `structure_defense_multiplier` SUMUJE wall+fort+outpost; web `structureDefenseBonusFor` (main.ts) bierze NAJWYZSZY wariant (miasto → `cityWallDefenseBonusPercent`, potem fort, potem posterunek). Dotyczy hexa z kilkoma strukturami naraz; nie zmieniano w R4.
+- Wiersze z odczytem literalu (ai.ts, battleScene.ts): wartosci sprawdzone regexem weryfikatora; NIE sa uruchomione w Node (`ai.ts` wymaga pakietu `three`, niedostepnego w archiwum). NIE_ZMIERZONO: wynik uruchomionego kodu tych dwoch plikow.
+- Barbarzyncy: 35o6 (NL, promien/czas) poza zakresem etapu 2.
+
+### 11.4 Tabela było/jest zmian zachowania (runda 4)
+
+| Element | Było | Jest | Zmiana zachowania |
+|---|---|---|---|
+| Mnoznik czasu traktatu `Peace` (`treaty_duration_pn_multiplier`) | liczony jak NAP (20 tur = x4, 15 tur = x2, 0 = x8) | x1 dla kazdego czasu (zbior akcji z webu: nap, trybut_zadanie, trybut_oferta) | TAK: decyzja `Peace` (`evaluate_proposal`) nie zalezy od czasu. Wektor web: `dowody/web-diplo-values-r4.json` (pokoj 9/9 = 1). Test `tests/diplomacy.rs::peace_price_uses_treaty_duration_precedence_and_multiplier` PRZEPISANY (11.5). `derived_values.rs`: Peace = 1.0 dla 0,-3,5,10,12,15,20,25. |
+| Wzgorze / gory (`terrain_defense_multiplier`, `combat.rs`, tylko test) | literal 1.5 / 1.75 | odczyt tabeli 1.5 / 1.75 | 0 (wartosci identyczne) |
+| Structure (`structure_defense_multiplier`, `combat.rs`, tylko test) | literal 2.0 / 1.0 / 0.5 | odczyt tabeli: MUR 200, FORT 100, POSTERUNEK 50 (÷100) | 0 (wartosci identyczne; `tests/combat.rs` przechodzi bez zmian) |
+| Nowe wiersze NIEUZYWANE (20) | brak | tabela, bez wiazania | 0 |
+
+### 11.5 Zmiany testow (jawna lista)
+
+- `tests/diplomacy.rs::peace_price_uses_treaty_duration_precedence_and_multiplier`: PRZEPISANY. Powod: test pinowal mnoznik czasu dla Peace (1999 odrzucone przy 20 turach, 4000 przy bezterminowym). Po decyzji Q1=A (web 1:1) progi mnoznikowe sa nieprawdziwe. Nowy test: decyzja Peace nie zalezy od czasu (rownosc z 10 turami) oraz 500 PN przy 20 turach = accepted. Test FAIL po zmianie Peace byl zgodny z oczekiwaniem zmiany i nie zostal zlagodzony.
+- `tests/derived_values.rs`: sekcja Peace (2.0) zamieniona na 1.0 z wektorami web; reszta bez zmian.
+- Nowy `tests/combat_ai_multipliers.rs` (3 testy): ksztalt/kompletnosc/statusy (25 wierszy, ID raz), wektory web (klasa a + veterani), arytmetyka cityWall (100/200/300/400).
+- Zadnej asercji nie osłabiono.
+
+### 11.6 Testy i bramki (surowe logi w katalogu runu)
+
+Liczba testow: po R4 = **365**, 0 failed (baza po cherry-picku R3 = 362).
+Podzial (z `gate-test-r4.log`): lib = 6, testy integracyjne (`tests/*.rs`) = 359, doc-testy = 0. Rozbieznosc sum R3 (362 vs 367) jest raportowana jawnie w tym podziale.
+- `gate-fmt-r4.log`: `cargo fmt --check` → `EXIT=0`.
+- `gate-clippy-r4.log`: `cargo clippy --offline --all-targets -- -D warnings` → `EXIT=0`.
+- `gate-test-r4.log`: `cargo test --offline --no-fail-fast` → `EXIT=0`, 365 passed, 0 failed.
+- `dowody/`: `web-combat-values.json`, `web-diplo-values-r4.json`; `verify-combat-web.py` → 0 rozbieznosci.
+- `grep-literals-r4.txt`: pozostale literaly mnoznikowe w domenie objetej etapem (ETAP 3 / poza inwentarzem, 11.3).
+- Build: `CARGO_INCREMENTAL=0 CARGO_TARGET_DIR=/home/user/cargo-target-shared/wf_cfef13c9-7c9-1 CARGO_PROFILE_DEV_DEBUG=0`, `--offline`. Po pracy katalog targetu usuniety. `Cargo.lock` nieśledzony, NIE commitowany.
+
+### 11.7 Stan kryterium etapu 2 (uczciwie)
+
+- Spelnione: HANDEL (R2), DYPLOMACJA (R3, Peace w R4), unifikacja `Difficulty` (R3), AI (35a, 35a2, 35o5 — BEZ MECHANIKI z tabela), BARBARZYNCY (NL, brak mnoznikow z inwentarza), WALKA/OBLEZENIE bez 35g (ROZWINIETE albo BEZ MECHANIKI), bramki EXIT=0, 365 testow ≥ 358.
+- NIE spelnione: 35g (ETAP 3, `combat.rs:208-209`), WZROST 35b, MAPA 35j-k, SPOLECZENSTWO 35n, WIOSKI 35c, RUCH 35i, produkcja 19-21, 22b (dane cennika), 35p (P3-18), `diplomacy.rs:668-716` (poza inwentarzem), rozbieznosc struktur (sumowanie vs najwyzszy). Te pozycje wchodza do rundy 5 albo do osobnego tematu.
+- Ograniczenie wiarygodnosci: mechanika walki (`combat.rs`) NIE jest czescia silnika (plik poza `domain/mod.rs`; dolaczany tylko przez `tests/combat.rs`). Wiersze WALKA oznaczone ROZWINIETE sa podpiete do funkcji testowanej, nie do rozgrywki. Do decyzji właściciela: podpiecie modulu do drzewa albo usuniecie martwego kodu.
+
+### 11.8 Pliki zmienione w rundzie 4
+
+- `rust-port/engine/data/derived/combat-ai-multipliers.json` (nowy); `rust-port/engine/src/data/derived.rs` (akcesory); `rust-port/engine/src/domain/combat.rs` (odczyt tabeli, tylko przez `tests/combat.rs`); `rust-port/engine/src/domain/diplomacy.rs` (Peace = x1).
+- `rust-port/engine/tests/derived_values.rs`, `rust-port/engine/tests/diplomacy.rs` (przepisany test Peace), `rust-port/engine/tests/combat_ai_multipliers.rs` (nowy).
+- `dyspozycje/rust-port/p3/P3-22-FLATTEN-STAGE2.md` (ta sekcja); `dyspozycje/autobot/runs/R-RUSTPORT-P3-22-FLATTEN-STAGE2-Q1/`: `gen-combat-web.mjs`, `verify-combat-web.py`, `grep-literals-r4.txt`, `gate-*-r4.log`, `dowody/web-combat-values.json`, `dowody/web-diplo-values-r4.json`.
+- Poza zakresem (nietkniete): `bridge.rs`, `playable.rs`, `Cargo.toml`, `gra/**`, `rust-port/renderer/**`, `src-tauri/**`.
+- PUSH: NIE WYKONANO.

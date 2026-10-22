@@ -1,0 +1,284 @@
+{
+  "meta": {
+    "status": "P3-22 ETAP 2, grupy WALKA/OBLEZENIE i AI (runda 4). Tabela jest edytowalnym źródłem prawdy: zmienia sie konkretna liczbe w polu wartosc (klasa a) albo wartosci_po_stanie (klasa b, klucze jak w webie). status_rust ROZWINIETE = domena czyta te liczbe; NIEUZYWANE = Rust nie ma odpowiadajacej mechaniki (bez mechaniki, dane zachowane).",
+    "pin_web": "edb8fb56",
+    "wygenerowano": "R-RUSTPORT-P3-22-FLATTEN-STAGE2-Q1 runda 4: wartosci z URUCHOMIONEGO kodu TS weba przez gen-combat-web.mjs (game/siege, veteran, embarkation, siegeAi, ai-major-absorb, city-defense) i z JSON weba (combat-params, terrain-improvements, miasto-params); odczyt literalu zrodlowego (ODCZYT_LITERALU) dla battleScene.ts i ai.ts (ai.ts nie laduje sie w Node: brak pakietu three). Niezalezny weryfikator: verify-combat-web.py. Lista wierszy: dyspozycje/rust-port/p3/P3-22-FLATTEN-STAGE2.md sekcja 11."
+  },
+  "wiersze": [
+    {
+      "id": "HILL_DEFENSE_MULT",
+      "klasa": "a",
+      "wartosc": 1.5,
+      "zrodlo_wartosci": "URUCHOMIONY_WEB",
+      "definicja_web": "gra/src/game/siege.ts:118 (OBL.hill_defense_mult; dane gra/data/combat-params.json:46)",
+      "uzycie_web": "gra/src/game/siege.ts:406 (domyslny parametr hillMult)",
+      "status_rust": "ROZWINIETE",
+      "rust": "rust-port/engine/src/domain/combat.rs terrain_defense_multiplier (Terrain::Hills). UWAGA: combat.rs NIE jest w drzewie modulow domain/mod.rs; dolaczany wylacznie przez tests/combat.rs (#[path]). Mechanika walki nie jest w silniku (P3-22 sekcja 11).",
+      "opis": "Mnoznik obrony na wzgorzu."
+    },
+    {
+      "id": "MOUNTAIN_DEFENSE_MULT",
+      "klasa": "a",
+      "wartosc": 1.75,
+      "zrodlo_wartosci": "URUCHOMIONY_WEB",
+      "definicja_web": "gra/src/game/siege.ts:124 (OBL.mountain_defense_mult; dane gra/data/combat-params.json:47)",
+      "uzycie_web": "gra/src/game/siege.ts:407 (domyslny parametr mtnMult)",
+      "status_rust": "ROZWINIETE",
+      "rust": "rust-port/engine/src/domain/combat.rs terrain_defense_multiplier (Terrain::Mountain). Jak HILL: tylko przez tests/combat.rs (#[path]).",
+      "opis": "Mnoznik obrony w gorach."
+    },
+    {
+      "id": "MUR_BONUS_PROC",
+      "klasa": "a",
+      "wartosc": 200,
+      "zrodlo_wartosci": "URUCHOMIONY_WEB",
+      "definicja_web": "gra/data/miasto-params.json:79 (bonus_obrona_mur_proc.wartosc); main.ts:26889 (fallback ?? 200)",
+      "uzycie_web": "gra/src/game/city-defense.ts:55 cityWallDefenseBonusPercent (mury -> 200)",
+      "status_rust": "ROZWINIETE",
+      "rust": "rust-port/engine/src/domain/combat.rs structure_defense_multiplier (wall). Jak HILL: tylko przez tests/combat.rs (#[path]).",
+      "opis": "Procent obrony miasta z murami (Rust: pole wall w DefenseStructures)."
+    },
+    {
+      "id": "CYTADELA_BONUS_PROC",
+      "klasa": "a",
+      "wartosc": 100,
+      "zrodlo_wartosci": "URUCHOMIONY_WEB",
+      "definicja_web": "gra/data/miasto-params.json:84 (bonus_obrona_cytadela_proc.wartosc); main.ts:26890",
+      "uzycie_web": "gra/src/game/city-defense.ts:55 (mury+fort -> +100 ponad mur)",
+      "status_rust": "NIEUZYWANE",
+      "rust": "BEZ MECHANIKI: Rust nie ma budynku Cytadela w DefenseStructures (combat.rs:93-97: wall, fort, outpost). Pole fort w Rust = fort terenowy (FORT_TERENOWY_BONUS_PROC).",
+      "opis": "Dodatek Cytadeli miejskiej. Dane zachowane."
+    },
+    {
+      "id": "BASZTA_BONUS_PROC",
+      "klasa": "a",
+      "wartosc": 100,
+      "zrodlo_wartosci": "URUCHOMIONY_WEB",
+      "definicja_web": "gra/data/miasto-params.json:89 (bonus_obrona_baszta_proc.wartosc); main.ts:26891",
+      "uzycie_web": "gra/src/game/city-defense.ts:55 (baszta dodaje +100)",
+      "status_rust": "NIEUZYWANE",
+      "rust": "BEZ MECHANIKI: Rust nie ma budynku Baszta.",
+      "opis": "Dodatek Baszty miejskiej. Dane zachowane."
+    },
+    {
+      "id": "PALISADA_BONUS_PROC",
+      "klasa": "a",
+      "wartosc": 100,
+      "zrodlo_wartosci": "URUCHOMIONY_WEB",
+      "definicja_web": "gra/data/miasto-params.json:94 (bonus_obrona_palisada_proc.wartosc); main.ts:26892",
+      "uzycie_web": "gra/src/game/city-defense.ts:55 (palisada bez muru -> 100)",
+      "status_rust": "NIEUZYWANE",
+      "rust": "BEZ MECHANIKI: Rust nie ma budynku Palisada.",
+      "opis": "Wczesna palisada drewniana. Dane zachowane."
+    },
+    {
+      "id": "FORT_TERENOWY_BONUS_PROC",
+      "klasa": "a",
+      "wartosc": 100,
+      "zrodlo_wartosci": "URUCHOMIONY_WEB",
+      "definicja_web": "gra/data/terrain-improvements.json:275 (bonus_obrona_proc, ulepszenie 'fort'; odczyt JSON)",
+      "uzycie_web": "gra/src/main.ts structureDefenseBonusFor (fort terenowy -> 100%); gra/src/game/combat.ts:327",
+      "status_rust": "ROZWINIETE",
+      "rust": "rust-port/engine/src/domain/combat.rs structure_defense_multiplier (fort). Jak HILL: tylko przez tests/combat.rs (#[path]).",
+      "opis": "Procent obrony fortu terenowego (poza miastem)."
+    },
+    {
+      "id": "POSTERUNEK_BONUS_PROC",
+      "klasa": "a",
+      "wartosc": 50,
+      "zrodlo_wartosci": "URUCHOMIONY_WEB",
+      "definicja_web": "gra/data/terrain-improvements.json:399 (bonus_obrona_proc, ulepszenie 'posterunek'; odczyt JSON)",
+      "uzycie_web": "gra/src/main.ts structureDefenseBonusFor (posterunek -> 50%); gra/src/game/combat.ts:328",
+      "status_rust": "ROZWINIETE",
+      "rust": "rust-port/engine/src/domain/combat.rs structure_defense_multiplier (outpost). Jak HILL: tylko przez tests/combat.rs (#[path]).",
+      "opis": "Procent obrony posterunku."
+    },
+    {
+      "id": "FORTIFY_OBRONA_BONUS",
+      "klasa": "a",
+      "wartosc": 2,
+      "zrodlo_wartosci": "URUCHOMIONY_WEB",
+      "definicja_web": "gra/src/game/siege.ts:131 (OBL.fortify_obrona_bonus; dane gra/data/combat-params.json:48)",
+      "uzycie_web": "gra/src/game/siege.ts:408 (garnizon miasta, flat +2)",
+      "status_rust": "NIEUZYWANE",
+      "rust": "BEZ MECHANIKI: pole units_combat.rs:248 tylko deserializowane; brak uzycia w domain/ (git grep fortif -- rust-port/engine/src/domain: 0).",
+      "opis": "Plaski bonus obrony garnizonu przy umocnieniu. Dane zachowane."
+    },
+    {
+      "id": "FORTIFY_OBRONA_PROC",
+      "klasa": "a",
+      "wartosc": 50,
+      "zrodlo_wartosci": "URUCHOMIONY_WEB",
+      "definicja_web": "gra/data/combat-params.json:49 (fortify_obrona_proc; opis :50)",
+      "uzycie_web": "gra/src/game/city-defense.ts:170 fieldFortifyDefenseBonus (ufortyfikowany w polu: +50%)",
+      "status_rust": "NIEUZYWANE",
+      "rust": "BEZ MECHANIKI: pole units_combat.rs:249 tylko deserializowane; brak fortyfikacji polowej w domain/.",
+      "opis": "Procent obrony jednostki ufortyfikowanej w polu. Dane zachowane."
+    },
+    {
+      "id": "VETERAN_BONUS_FRAC",
+      "klasa": "b",
+      "wartosci_po_stanie": { "0": 0, "1": 0.10, "2": 0.15, "3": 0.20 },
+      "zrodlo_wartosci": "URUCHOMIONY_WEB",
+      "definicja_web": "gra/src/game/veteran.ts:71 (VETERAN_BONUS_FRAC; klucz = poziom weterana 0-3)",
+      "uzycie_web": "gra/src/game/veteran.ts:125-135",
+      "status_rust": "NIEUZYWANE",
+      "rust": "BEZ MECHANIKI: brak weterana w rust-port/engine/src/domain (git grep -i veteran: 0).",
+      "opis": "Bonus weterana po poziomie (skonczony zbior 0-3). Dane zachowane."
+    },
+    {
+      "id": "EMBARK_DEFENSE_MULT",
+      "klasa": "a",
+      "wartosc": 0.5,
+      "zrodlo_wartosci": "URUCHOMIONY_WEB",
+      "definicja_web": "gra/src/game/embarkation.ts:28",
+      "uzycie_web": "gra/src/main.ts effectiveDefenderM (obrona na wodzie x0.5)",
+      "status_rust": "NIEUZYWANE",
+      "rust": "BEZ MECHANIKI: brak obrony jednostki na wodzie w domain/combat.rs (embarked w barbarians.rs/ai_turn.rs dotyczy ruchu, nie obrony).",
+      "opis": "Mnoznik obrony zaokretowanej jednostki. Dane zachowane."
+    },
+    {
+      "id": "SIEGE_AI_T1_ASSAULT_RATIO",
+      "klasa": "a",
+      "wartosc": 1.8,
+      "zrodlo_wartosci": "URUCHOMIONY_WEB",
+      "definicja_web": "gra/src/game/siegeAi.ts:37 (dane gra/data/combat-params.json:56 siege_ai.t1_assault_ratio)",
+      "uzycie_web": "gra/src/game/siegeAi.ts (prog szturmu)",
+      "status_rust": "NIEUZYWANE",
+      "rust": "BEZ MECHANIKI: brak oblezenia AI w domain/ (units_combat.rs:259-261 tylko deserializacja).",
+      "opis": "Prog stosunku sil do szturmu (prog, nie mnoznik)."
+    },
+    {
+      "id": "SIEGE_AI_T2_BUILD_MIN_RATIO",
+      "klasa": "a",
+      "wartosc": 1.4,
+      "zrodlo_wartosci": "URUCHOMIONY_WEB",
+      "definicja_web": "gra/src/game/siegeAi.ts:43 (dane combat-params.json:57)",
+      "uzycie_web": "gra/src/game/siegeAi.ts (prog budowy maszyn)",
+      "status_rust": "NIEUZYWANE",
+      "rust": "BEZ MECHANIKI: brak oblezenia AI w domain/.",
+      "opis": "Prog stosunku sil do budowy maszyn oblezniczych (prog)."
+    },
+    {
+      "id": "SIEGE_AI_T3_STARVE_MIN_RATIO",
+      "klasa": "a",
+      "wartosc": 1.1,
+      "zrodlo_wartosci": "URUCHOMIONY_WEB",
+      "definicja_web": "gra/src/game/siegeAi.ts:46 (dane combat-params.json:58)",
+      "uzycie_web": "gra/src/game/siegeAi.ts (prog zaglodzenia)",
+      "status_rust": "NIEUZYWANE",
+      "rust": "BEZ MECHANIKI: brak oblezenia AI w domain/ (units_combat.rs:261 tylko deserializacja).",
+      "opis": "Prog stosunku sil do zaglodzenia (prog)."
+    },
+    {
+      "id": "BROD_RUCH_MULT",
+      "klasa": "a",
+      "wartosc": 0.5,
+      "zrodlo_wartosci": "URUCHOMIONY_WEB",
+      "definicja_web": "gra/data/combat-params.json:36 (brod.ruchMult); gra/src/battle/battleScene.ts:918 (BROD.ruchMult)",
+      "uzycie_web": "gra/src/battle/battleScene.ts:8003, :8041",
+      "status_rust": "NIEUZYWANE",
+      "rust": "BEZ MECHANIKI: brak brodu (ford) w bitwie w rust-port/engine/src/domain.",
+      "opis": "Predkosc brodzenia w brodzie. Dane zachowane."
+    },
+    {
+      "id": "BROD_KARA_ATAK",
+      "klasa": "a",
+      "wartosc": 0.25,
+      "zrodlo_wartosci": "URUCHOMIONY_WEB",
+      "definicja_web": "gra/data/combat-params.json:37 (brod.karaAtak); battleScene.ts:919",
+      "uzycie_web": "battleScene.ts (kara ataku w brodzie)",
+      "status_rust": "NIEUZYWANE",
+      "rust": "BEZ MECHANIKI: brak brodu w domain/.",
+      "opis": "Kara ataku walczacego w brodzie. Dane zachowane."
+    },
+    {
+      "id": "BROD_KARA_OBRONA",
+      "klasa": "a",
+      "wartosc": 0.25,
+      "zrodlo_wartosci": "URUCHOMIONY_WEB",
+      "definicja_web": "gra/data/combat-params.json:38 (brod.karaObrona); battleScene.ts:920",
+      "uzycie_web": "battleScene.ts:8165 (defFordMlt)",
+      "status_rust": "NIEUZYWANE",
+      "rust": "BEZ MECHANIKI: brak brodu w domain/.",
+      "opis": "Kara obrony walczacego w brodzie. Dane zachowane."
+    },
+    {
+      "id": "BROD_BONUS_BRZEG",
+      "klasa": "a",
+      "wartosc": 0.15,
+      "zrodlo_wartosci": "URUCHOMIONY_WEB",
+      "definicja_web": "gra/data/combat-params.json:39 (brod.bonusObronaBrzegu); battleScene.ts:921",
+      "uzycie_web": "battleScene.ts:8168 (shoreBonusMlt)",
+      "status_rust": "NIEUZYWANE",
+      "rust": "BEZ MECHANIKI: brak brodu w domain/.",
+      "opis": "Bonus obrony brzegu przeciw atakujacemu z brodu. Dane zachowane."
+    },
+    {
+      "id": "MORALE_HIT_LOSS_SCALE",
+      "klasa": "a",
+      "wartosc": 100,
+      "zrodlo_wartosci": "ODCZYT_LITERALU",
+      "definicja_web": "gra/src/battle/battleScene.ts:1050 (literal; plik nie laduje sie w Node)",
+      "uzycie_web": "battleScene.ts:8298 (projMorale)",
+      "status_rust": "NIEUZYWANE",
+      "rust": "BEZ MECHANIKI: rust-port/engine/src/domain/combat.rs:241 morale_factor tylko normalizuje morale; brak utraty morale z HP.",
+      "opis": "Skala utraty morale z trafienia (10% HP = -10). Dane zachowane."
+    },
+    {
+      "id": "MORALE_ARMY_COLLAPSE_RATIO",
+      "klasa": "a",
+      "wartosc": 0.4,
+      "zrodlo_wartosci": "ODCZYT_LITERALU",
+      "definicja_web": "gra/src/battle/battleScene.ts:1070 (literal)",
+      "uzycie_web": "battleScene.ts (prog zalamania armii)",
+      "status_rust": "NIEUZYWANE",
+      "rust": "BEZ MECHANIKI: brak utraty morale z HP w domain/combat.rs.",
+      "opis": "Prog stosunku morale armii, ponizej ktorego strata jest wzmacniana (prog)."
+    },
+    {
+      "id": "MORALE_ARMY_COLLAPSE_MULT",
+      "klasa": "a",
+      "wartosc": 1.3,
+      "zrodlo_wartosci": "ODCZYT_LITERALU",
+      "definicja_web": "gra/src/battle/battleScene.ts:1071 (literal)",
+      "uzycie_web": "battleScene.ts:8298 (wzmocnienie straty morale zalamanej armii)",
+      "status_rust": "NIEUZYWANE",
+      "rust": "BEZ MECHANIKI: brak utraty morale z HP w domain/combat.rs.",
+      "opis": "Mnoznik straty morale zalamanej armii. Dane zachowane."
+    },
+    {
+      "id": "AI_MAJOR_EARLY_ECON_BUILDING_MULT",
+      "klasa": "a",
+      "wartosc": 0.7,
+      "zrodlo_wartosci": "ODCZYT_LITERALU",
+      "definicja_web": "gra/src/game/ai.ts:1265 (literal; ai.ts nie laduje sie w Node: brak pakietu three)",
+      "uzycie_web": "gra/src/game/ai.ts:2039 (c.score x0.70)",
+      "status_rust": "NIEUZYWANE",
+      "rust": "BEZ MECHANIKI: rust-port/engine/src/domain/ai_turn.rs nie ma mnoznika oceny budynku wczesnej ekonomii (early_phase uzywa priorytetow calkowitych 200/180/165, ai_turn.rs:958-984).",
+      "opis": "Mnoznik oceny budynkow ekonomicznych AI w fazie wczesnej. Dane zachowane."
+    },
+    {
+      "id": "TERYTORIUM_MNOZNIK",
+      "klasa": "a",
+      "wartosc": 1.25,
+      "zrodlo_wartosci": "ODCZYT_LITERALU",
+      "definicja_web": "gra/src/game/ai.ts:4568 (literal; nie laduje sie w Node)",
+      "uzycie_web": "gra/src/game/ai.ts:4647 (silaAI x1.25 na wlasnym terytorium)",
+      "status_rust": "NIEUZYWANE",
+      "rust": "BEZ MECHANIKI: brak silaAI z terytorium w domain/ai_turn.rs.",
+      "opis": "Mnoznik sily AI na wlasnym terytorium. Dane zachowane."
+    },
+    {
+      "id": "AI_MAJOR_ABSORB_POWER_RATIO_MIN",
+      "klasa": "a",
+      "wartosc": 10,
+      "zrodlo_wartosci": "URUCHOMIONY_WEB",
+      "definicja_web": "gra/src/game/ai-major-absorb.ts:10 (prog; modul uruchomiony w Node)",
+      "uzycie_web": "gra/src/game/ai-major-absorb.ts:73",
+      "status_rust": "NIEUZYWANE",
+      "rust": "BEZ MECHANIKI: brak wchloniecia (instant_annex) AI w domain/.",
+      "opis": "Minimalny stosunek sily do wchloniecia (prog, nie mnoznik)."
+    }
+  ]
+}
