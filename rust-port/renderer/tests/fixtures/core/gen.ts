@@ -329,6 +329,16 @@ const SCENES: Record<string, NodeSpec> = {
   singleVc: { type: 'group', children: [
     { type: 'mesh', geo: { kind: 'box', args: [0.1, 0.1, 0.1, 1, 1, 1] }, mats: [{ type: 'lambert', color: 0x202020, vertexColors: true }] },
   ] },
+  // isAlreadyMergedDecor reads mat[0] only (mergeDecor.ts:25): a material array where only a
+  // LATER entry has vertexColors is NOT merged (and is then collapsed), and vice versa.
+  singleVcArrayLast: { type: 'group', children: [
+    { type: 'mesh', geo: { kind: 'box', args: [0.1, 0.1, 0.1, 2, 1, 1] }, array: true, pos: [0.2, 0, -0.1],
+      mats: [L(0x406080), { type: 'lambert', color: 0x202020, vertexColors: true }] },
+  ] },
+  singleVcArrayFirst: { type: 'group', children: [
+    { type: 'mesh', geo: { kind: 'box', args: [0.1, 0.1, 0.1, 2, 1, 1] }, array: true,
+      mats: [{ type: 'lambert', color: 0x202020, vertexColors: true }, L(0x406080)] },
+  ] },
   single: { type: 'group', children: [
     { type: 'mesh', geo: { kind: 'box', args: [0.1, 0.2, 0.3, 1, 1, 1] }, mats: [L(0xc0ffee)], pos: [0.3, 0.2, 0.1], rot: [0.3, 0.2, 0.1, 'XZY'] },
   ] },

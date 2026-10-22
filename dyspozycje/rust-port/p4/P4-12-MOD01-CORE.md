@@ -11,9 +11,9 @@ Paczka: `P4-4-MODEL-CATALOG.md` §5 wiersz 1 (`R-RUSTPORT-P4-MOD-01-CORE`).
   `mapRenderStyle` (bez builderów), `bronzeCity` (typy + `rnd`; builder poza zakresem — D-MOD-1).
 - **Bez duplikacji**: wszystko, co już było w P4.8/P4.10/P4.11, jest re-eksportowane / wywoływane
   (tabela §2). Nowy kod tylko tam, gdzie w crate nic nie było.
-- Weryfikacja: 8 testów `tests/core_web_parity.rs`, **26 960 wartości porównanych bit w bit**
+- Weryfikacja: 8 testów `tests/core_web_parity.rs`, **27 372 wartości porównanych bit w bit** (r1: 26 960; r2 +412 w `mergeDecor`, §6a)
   (`to_bits`) z wektorami wygenerowanymi przez **uruchomiony kod weba** (`three@0.169.0`) —
-  **0 rozbieżności**. Test mutacyjny: 32 mutanty, 29 zabitych, 3 przeżyłe są równoważne (§6).
+  **0 rozbieżności**. Test mutacyjny: 32 mutanty, 29 zabitych, 3 przeżyłe są równoważne (§6); r2: +2 mutanty `mat[0]` zabite (§6a).
 - Bramki na commicie `169c608c`, świeży `CARGO_TARGET_DIR`: `fmt` EXIT=0, `clippy` EXIT=0,
   `clippy --features gpu` EXIT=0, `test --all-targets` EXIT=0 (§9). Dodatkowo MSRV 1.87:
   `core_web_parity` + testy jednostkowe EXIT=0.
@@ -122,17 +122,17 @@ na plikach JSON). Wynik testu (§9, `core-nocapture.log`):
 | `hex_shape_matches_web` | 761 | 0 |
 | `fog_dim_matches_web` | 951 | 0 |
 | `zoom_lod_matches_web` | 1 258 | 0 |
-| `merge_decor_matches_web` | 6 204 | 0 |
+| `merge_decor_matches_web` | 6 616 (r1: 6 204) | 0 |
 | `vitals_match_web` | 12 | 0 |
 | `map_style_matches_web` | 4 895 | 0 |
 | `bronze_city_types_match_web` | 4 219 | 0 |
-| **razem** | **26 960** | **0** |
+| **razem** | **27 372** (r1: 26 960) | **0** |
 
-Rozmiar fixtur: 684 KB (`du -sh tests/fixtures/core`), daleko poniżej limitu 8 MB; nic nie pominięto.
+Rozmiar fixtur: 700 KB po r2 (r1: 684 KB) (`du -sh tests/fixtures/core`), daleko poniżej limitu 8 MB; nic nie pominięto.
 Regeneracja daje pliki bajtowo identyczne (sprawdzone: drugi przebieg generatora z poprawionym nagłówkiem → `diff`
 sum SHA-256 pusty).
 
-SHA-256 (commit `169c608c`):
+SHA-256 (r2; w `169c608c` różniły się tylko `mergedecor.json` = `f6507270…` i `gen.ts` = `b88b82a6…`):
 
 ```text
 0bead79eb2001c0fd80ec9e00d3e232d14855ef9afa5a9cfc2f24aeca54344fd  bronze.json
@@ -140,10 +140,10 @@ SHA-256 (commit `169c608c`):
 351260b758ad77e42f120acfe10f085d752dd716efb23c248905357e0766073c  hexshape.json
 d9122c64710c6589bf0ddd2083f41a2d714a37c2e4666b50f5cc921cd2445af1  hexutil.json
 1f868e57bed175d6593b44234bc05e10f66c37a3970076b5bf0d96e26e3a8586  mapstyle.json
-f6507270e71833e21b9a36a6f41993dc3a70dd3847177c48b3579f3dc7bb932e  mergedecor.json
+86adbc9a2ede15c86cfe6230d3c2350aeb7c24cf7e177f14301970c534272608  mergedecor.json
 195228d261cedb143196fd06b69ada34ff749170e18d8d42ee27d18d9f8dbc52  vitals.json
 ad97dca6cb723d6b8026d17de2b271ef3389c08de204b840f485c0f468ce97ca  zoomlod.json
-b88b82a64ed62ab89c60a8efe090d19629137d35ea9b62a287475b0e977cffd4  gen.ts
+d1b44c6098ac3499bf315dcb6d816256fe15a0edf3ba037c623bb229b7a00c24  gen.ts
 ```
 
 ## 6. Test mutacyjny
@@ -159,6 +159,30 @@ osiągalnego):
 2. `elevated_terrain_edge_surface_y`: `a·b` → `b·a + 0.0` — mnożenie IEEE jest przemienne, `+0.0` neutralne dla
    wyniku ≠ −0.
 3. format `LAND_MIN_CLEARANCE_ABOVE_SEA` `{}` → `{:.2}` — dla 0.28 oba dają `0.28`.
+
+### 6a. Runda 2 (obrona, zarzut Evaluatora nr 1) — luka pokrycia `mat[0]`
+
+Evaluator wykazał, że mutant `materials.first()` → `materials.last()` w `is_already_merged_decor`
+(`merge_decor.rs:35`) przeżywał: żaden wektor nie miał pojedynczego mesha z TABLICĄ materiałów, w której
+`vertexColors` ma tylko jeden z elementów. Stwierdzenie r1 „przeżyłe = równoważne” było prawdziwe tylko dla
+zestawu 32 mutantów r1, który tego warunku nie obejmował. Web (`mergeDecor.ts:24-26`):
+`const m0 = Array.isArray(mat) ? mat[0] : mat; return !!m0?.vertexColors;`.
+
+Poprawka (tylko wektory, kod `src/core/**` bez zmian): w `gen.ts` dwie sceny —
+`singleVcArrayLast` (`[Lambert 0x406080, Lambert vc]`: web `before.already=false`, kolaps → 180 floatów pozycji,
+dispose `[1,1]`) i `singleVcArrayFirst` (`[Lambert vc, Lambert 0x406080]`: `already=true`, brak kolapsu).
+Regeneracja w prywatnym scratch sesji (nie we współdzielonym `scratchpad/web/`), kroki z README fixtur:
+build EXIT=0, node EXIT=0; 7 plików JSON bajtowo identycznych z r1 (`cmp`), zmienił się tylko `mergedecor.json`.
+
+| Mutant (`merge_decor.rs:35`) | Wynik `core_web_parity` |
+|---|---|
+| `materials.first()` → `materials.last()` | ZABITY (`merge_decor_matches_web` FAILED, panic `tests/core_web_parity.rs:870` — brak kolapsu dla `singleVcArrayLast`) |
+| `materials.first().is_some_and(..)` → `materials.iter().any(..)` | ZABITY (j.w.) |
+| oryginał | 8/8 ok, `mergeDecor: 6616 values compared bit for bit, 0 mismatches` |
+
+Bramki r2 (świeży `CARGO_TARGET_DIR`): `fmt` EXIT=0, `clippy` EXIT=0, `clippy --features gpu` EXIT=0,
+`test --locked --all-targets` EXIT=0 (`core_web_parity` 8/8). Po mutacjach `src/core/merge_decor.rs` przywrócony,
+`git status` pokazuje wyłącznie zmiany fixtur/dokumentacji.
 
 ## 7. `NIE_ZMIERZONO`
 

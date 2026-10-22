@@ -60,7 +60,7 @@ node core_gen.mjs $S/out/core
 | `hexshape.json` | 25 `hexRingPointsXZ` (6 radii × 4 `y` + default `y`), 16 `appendPointyTopHex` (4 radii × reverse × `Shape`/`Path`, `getPoints()`), 1 shape with a reversed hole (`extractPoints`) |
 | `fogdim.json` | 14 `fogBrightnessForHex`; 5 scenes × 11 `applyFogDimToObject3D` calls (1, 0.175, 0, 0.5, −1, 1, 0.175, 2, 0.333, NaN, 1): colours of every material after every call (Lambert/Standard/Basic/Phong dimmed; Physical/Toon/Normal/Sprite not) |
 | `zoomlod.json` | 96 `normalizedZoomT`, 17 `resolveZoomLodLevel`, 10 `zoomLodFlags`, 60 `effectivePixelRatio` (no `window` + 5 `devicePixelRatio`), 14 `cityBadgeLodLevelForDist`, 8 `cityBadgeLodTextureScale`, 192 `zoomLodForCamera` |
-| `mergedecor.json` | 10 scenes (nested groups, 4 Euler orders, non-uniform scale, vertex-colour geometry, material arrays, empty material array, `MeshNormalMaterial`, non-indexed geometry, sprite, mesh as root, empty / flagged / single vertex-colour / groups-only / empty-geometry groups): `isAlreadyMergedDecor`, `countMeshesInGroup`, `collapseToMergedMesh` (full Float32 `position` and `color` buffers, material, flags), second collapse, fog on the result, `disposeMergedDecor` counts |
+| `mergedecor.json` | 12 scenes (nested groups, 4 Euler orders, non-uniform scale, vertex-colour geometry, material arrays, empty material array, `MeshNormalMaterial`, non-indexed geometry, sprite, mesh as root, empty / flagged / single vertex-colour / groups-only / empty-geometry groups; single mesh with a material ARRAY where only `[1]` has `vertexColors` (`singleVcArrayLast`, not merged → collapsed) and only `[0]` has it (`singleVcArrayFirst`, already merged), pinning `mat[0]` of `mergeDecor.ts:25`): `isAlreadyMergedDecor`, `countMeshesInGroup`, `collapseToMergedMesh` (full Float32 `position` and `color` buffers, material, flags), second collapse, fog on the result, `disposeMergedDecor` counts |
 | `vitals.json` | all 11 exports of `unitVitalsPalette.ts` |
 | `mapstyle.json` | constants, `DEFAULT_MAP_RENDER_OPTIONS`, `TERRAIN_SURFACE_Y`, `ROBLOX_TERRAIN_VIS`, 72 `terrainVisualForStyle`, 104 `terrainSurfaceTopY`, 4 `coastWaterCapTopY`, 3 `terrainHeightAudit` (with the Polish messages), 24 `styleTerrainColor`, 3 `styleScenePalette`, 6 `riverSurfaceLiftY`, 10 `normalizeMapRenderOptions`, 243 `resolveRenderPreset`, 5 `isSceneBuildFastPath`, 22 `isDenseLandmassMap`/`isRiverRenderFast`/`isSceneBuildAggressive`, 600 `hash2D`/`decorVariant5`/`forestTreeCountForHex`/`jungleForestTreeCountForHex`, 11 `styleHillBumpSurfaceY`, 200 `styleMountainPeakSurfaceY`, 128 `galleryDecorSurfaceY`, 8 `elevatedTerrainEdgeSurfaceY`, `GORA_APEX_Y`, `WZGORZE_SZCZYT_Y` |
 | `bronze.json` | `BRONZE_CIVS`; 35 `ikonaIdToBronzeCiv` (all 23 table keys incl. aliases, unknown ids, case, whitespace, and 5 `Object.prototype` names = documented JS quirk); 4 152 `rnd` (integers −5..300 × 7 salts, random integers / fractions, 2³¹, 2³², 2⁵³, −2⁴⁰, 10²⁰, NaN, ∞) |
@@ -74,8 +74,8 @@ SHA-256 at creation (also in `dyspozycje/rust-port/p4/P4-12-MOD01-CORE.md`):
 351260b758ad77e42f120acfe10f085d752dd716efb23c248905357e0766073c  hexshape.json
 d9122c64710c6589bf0ddd2083f41a2d714a37c2e4666b50f5cc921cd2445af1  hexutil.json
 1f868e57bed175d6593b44234bc05e10f66c37a3970076b5bf0d96e26e3a8586  mapstyle.json
-f6507270e71833e21b9a36a6f41993dc3a70dd3847177c48b3579f3dc7bb932e  mergedecor.json
+86adbc9a2ede15c86cfe6230d3c2350aeb7c24cf7e177f14301970c534272608  mergedecor.json
 195228d261cedb143196fd06b69ada34ff749170e18d8d42ee27d18d9f8dbc52  vitals.json
 ad97dca6cb723d6b8026d17de2b271ef3389c08de204b840f485c0f468ce97ca  zoomlod.json
-b88b82a64ed62ab89c60a8efe090d19629137d35ea9b62a287475b0e977cffd4  gen.ts
+d1b44c6098ac3499bf315dcb6d816256fe15a0edf3ba037c623bb229b7a00c24  gen.ts
 ```
