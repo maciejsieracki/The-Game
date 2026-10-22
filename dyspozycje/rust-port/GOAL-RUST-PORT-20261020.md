@@ -27,14 +27,14 @@ dotykające tych samych plików — zawsze sekwencyjnie, nigdy w tej samej fali.
 
 | # | Temat | Faza | Runda | runId Workflow | Status | Ostatnia aktualizacja |
 |---|---|---|---|---|---|---|
-| 1 | `R-RUSTPORT-P3-22-FLATTEN-STAGE2-Q1` | etap 2 mnożników — runda 4: AI, barbarzyńcy, walka/oblężenie (dyplomacja+Difficulty przyjęte w r3: `3e6940fc`) | 4/5 | `wf_cfef13c9-7c9` | DISPATCHED | 2026-10-22 |
-| 2 | `R-RUSTPORT-P5-2-PORT-LEVEL0-Q1` | P5-2 portowanie paneli UI poziomu 0 (15 modułów) do `frontend-v2` — Opus 5.5 | 1/5 | `wf_18adcd70-aa5` | DISPATCHED | 2026-10-22 |
+| 1 | `R-RUSTPORT-P3-21-CITYID-Q1` | `CityId` newtype w `domain/**` — Haiku/Haiku/Sonnet | 1/5 | `wf_35cb5300-073` | DISPATCHED | 2026-10-22 |
+| 2 | `R-RUSTPORT-P5-2-PORT-LEVEL0-Q1` | P5-2 portowanie paneli UI poziomu 0 (15 modułów) — Opus 5.5 | 1/5 | `wf_18adcd70-aa5` | DISPATCHED | 2026-10-22 |
 | 3 | `R-RUSTPORT-P4-21-MOD09-CITIES-Q1` | MOD-09 istniejące modele miast i osad — Opus 5.5 | 1/5 | `wf_33be5035-445` | DISPATCHED | 2026-10-22 |
-| 4 | `R-RUSTPORT-P4-22-MOD13-MISC-Q1` | MOD-13 wioski/obozy/oblężenie/nakładki zasięgu i tras/sky decor — Opus 5.5 | 1/5 | `wf_63260a26-711` | DISPATCHED | 2026-10-22 |
-| 5 | `R-RUSTPORT-P4-19-MOD05-UNITS-STONE-Q1` | MOD-05 jednostki kamienia (10 rekordów) — Opus 5.5 | 1/5 | `wf_b18637ca-db2` | DISPATCHED | 2026-10-22 |
-| 6 | `R-RUSTPORT-P4-20-MOD11-IMPROVEMENTS-Q1` | MOD-11 ulepszenia/złoża/zwierzęta — Opus 5.5 | 1/5 | `wf_abfb7ff0-c37` | DISPATCHED | 2026-10-22 |
+| 4 | `R-RUSTPORT-P4-22-MOD13-MISC-Q1` | MOD-13 wioski/obozy/oblężenie/nakładki/sky decor — Opus 5.5 | 1/5 | `wf_63260a26-711` | DISPATCHED | 2026-10-22 |
+| 5 | `R-RUSTPORT-P4-20-MOD11-IMPROVEMENTS-Q1` | MOD-11 ulepszenia/złoża/zwierzęta — Opus 5.5 | 1/5 | `wf_abfb7ff0-c37` | DISPATCHED | 2026-10-22 |
+| 6 | `R-RUSTPORT-P4-23-MOD06-UNITS-BRONZE-Q1` | MOD-06 jednostki brązu (37) + `js_asin` → `jsmath` — Opus 5.5 | 1/5 | `wf_5677ef33-8d2` | DISPATCHED | 2026-10-22 |
 
-Kolejka: MOD-06/07 (jednostki brązu/żelaza, po P4.19), MOD-09 miasta, MOD-13 misc, ujednolicenie typu drzewa sceny (3 typy: `core::scene`, `wonders::model`, `unit_core::model`) po paczkach, P3.21 `CityId` po P3.22, P5.2+ kolejka portowania paneli (`PORTING-QUEUE.md`), RR-T1 spike (wymaga GPU właściciela).
+Kolejka (aktualizacja 2026-10-22): P3.23 FLATTEN etap 3 (po P3.21 — te same pliki domeny: macierz counter 35g, struktury, wzrost 35b, mapa 35j–k, społeczeństwo 35n, wioski 35c, ruch 35i, produkcja 19–22b), MOD-07 jednostki żelaza, ujednolicenie typu drzewa sceny, P5.3+ kolejne poziomy `PORTING-QUEUE.md`, pierwotna kolejka: MOD-06/07 (jednostki brązu/żelaza, po P4.19), MOD-09 miasta, MOD-13 misc, ujednolicenie typu drzewa sceny (3 typy: `core::scene`, `wonders::model`, `unit_core::model`) po paczkach, P3.21 `CityId` po P3.22, P5.2+ kolejka portowania paneli (`PORTING-QUEUE.md`), RR-T1 spike (wymaga GPU właściciela).
 
 **Zamknięte w tej sesji (kod na `rust-port/parity-v2`, HEAD `aa7b225b`, 292 testy):** P3.4b, P3.4c (newtypy ID), P3.8 (assety 428), P3.8b (manifest), P3.9 (data wiring), P3.11 (zgodność danych), P3.12 (loader), P3.14 (fmt/clippy w `src/data`).
 
