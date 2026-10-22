@@ -1,0 +1,54 @@
+--- pin:gra/src/ui/orderPanel.ts
++++ v2:src-tauri/frontend-v2/src/ui/orderPanel.ts
+@@ -8,8 +8,10 @@
+  * LANE: src/ui/*.  Source: literalny UTF-8.
+  */
+ 
+-import type { SocietyLine } from '../game/society-breakdown';
+-import type { CitizenUpkeepCoverage } from '../game/citizen-resource-upkeep';
++import type {
++  CitizenUpkeepCoverageDto as CitizenUpkeepCoverage,
++  SocietyLineDto as SocietyLine,
++} from '../viewmodel/types';
+ import { brandIconSvg } from './icons/brandAssets';
+ 
+ export interface OrderState {
+@@ -44,6 +46,12 @@
+   szLines?: SocietyLine[];
+   /** Rozpiska Prawa +/-. */
+   prawLines?: SocietyLine[];
++  /**
++   * P5.3 (ROZSZ. Z3-3, `CityPanelDto.order`): poziom statusu 0/1/2 liczy Rust — reguła web
++   * `orderTierUi` (pin `orderPanel.ts:118-130`: bunt/rebelia/ostrzeżenie → 2; `porPct` <10/<30 → 2,
++   * <70 → 1; tryb legacy: `szczescie + porzadek` vs `progT2`/`progT1`).
++   */
++  tierUi: 0 | 1 | 2;
+   /** Progi legacy (kompat). */
+   progT1: number;
+   progT2: number;
+@@ -110,23 +118,14 @@
+   prawPct: 42,
+   porPct: 50,
+   bandLabel: 'Napięcie',
++  tierUi: 1,
+   progT1: 8,
+   progT2: 4,
+   bunt: false,
+ };
+ 
+ export function orderTierUi(s: OrderState): 0 | 1 | 2 {
+-  if (s.rebelState || s.bunt) return 2;
+-  if (s.revoltWarning || (s.porPct !== undefined && s.porPct < 10)) return 2;
+-  if (s.porPct !== undefined) {
+-    if (s.porPct < 30) return 2;
+-    if (s.porPct < 70) return 1;
+-    return 0;
+-  }
+-  const z = s.szczescie + s.porzadek;
+-  if (s.bunt || z < s.progT2) return 2;
+-  if (z < s.progT1) return 1;
+-  return 0;
++  return s.tierUi;
+ }
+ 
+ function orderBarHtml(value: number, max = 100, color: string, barClass = 'bar', fillClass = 'fill'): string {

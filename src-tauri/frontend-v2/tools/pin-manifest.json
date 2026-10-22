@@ -285,10 +285,28 @@
       "bytes": 3539
     },
     {
+      "path": "src/ui/armyMergePanel.ts",
+      "pin": "edb8fb56:gra/src/ui/armyMergePanel.ts",
+      "sha256": "370dba4802a76cfd38b0fed4d92cdc116a495379cb8374704a544635ec16b935",
+      "bytes": 9934
+    },
+    {
       "path": "src/ui/armyStackPrompt.ts",
       "pin": "edb8fb56:gra/src/ui/armyStackPrompt.ts",
       "sha256": "7cc2c169b2a265eb7b3ce64c81e3c02fde266bc48f2f1efa4c1576ab1e3aac56",
       "bytes": 6627
+    },
+    {
+      "path": "src/ui/battleHudTheme.ts",
+      "pin": "edb8fb56:gra/src/battle/battleHudTheme.ts",
+      "sha256": "b9a1a4fc32007276861776beb3a274ecc5e06714a48332c17559121b6d38594a",
+      "bytes": 68826
+    },
+    {
+      "path": "src/ui/bottomBarHud.ts",
+      "pin": "edb8fb56:gra/src/ui/bottomBarHud.ts",
+      "sha256": "b3a1195d06473f8ff61bb9c2d4e1178cd2aee6e094b6cb40adfadf092b166b88",
+      "bytes": 18978
     },
     {
       "path": "src/ui/brandTokenVars.ts",
@@ -309,10 +327,22 @@
       "bytes": 239
     },
     {
+      "path": "src/ui/cityListHud.ts",
+      "pin": "edb8fb56:gra/src/ui/cityListHud.ts",
+      "sha256": "0322251eb0e1ebb1e1fe0ce6049f4fe8b87ec48252f6c8a3080356106d2896a7",
+      "bytes": 12328
+    },
+    {
       "path": "src/ui/civElimNotice.ts",
       "pin": "edb8fb56:gra/src/ui/civElimNotice.ts",
       "sha256": "52cdf7674498e894ab5174f81bbad07e70c2bb7423e7dc5efe202c1e8263505c",
       "bytes": 6349
+    },
+    {
+      "path": "src/ui/diploUiSkin.ts",
+      "pin": "edb8fb56:gra/src/ui/diploUiSkin.ts",
+      "sha256": "b51c74906785f375aab6edf06e4b2450c38154077451639671fb5f1234476340",
+      "bytes": 11908
     },
     {
       "path": "src/ui/empireBalance.ts",
@@ -325,6 +355,12 @@
       "pin": "edb8fb56:gra/src/ui/empireMiastaTable.ts",
       "sha256": "b4eb5ff0665ed08d8caa0bf2ac6669ae490cf1b96779d90d2b66b2cbe614ec21",
       "bytes": 6550
+    },
+    {
+      "path": "src/ui/empireOverlayHud.ts",
+      "pin": "edb8fb56:gra/src/ui/empireOverlayHud.ts",
+      "sha256": "c5fd7d46ad939251b35280ae03e13393a2e25e1f9dcc1e982b8159db7fbb95f7",
+      "bytes": 6333
     },
     {
       "path": "src/ui/empirePanelSectionMap.ts",
@@ -2301,6 +2337,12 @@
       "bytes": 312
     },
     {
+      "path": "src/ui/icons/iconRegistry.ts",
+      "pin": "edb8fb56:gra/src/ui/icons/iconRegistry.ts",
+      "sha256": "6f7eaa7d9b56023f26efbb405c69396c8caa1ca4eb93b768692f651c8123fd41",
+      "bytes": 1468
+    },
+    {
       "path": "src/ui/icons/scienceOwlIcon.ts",
       "pin": "edb8fb56:gra/src/ui/icons/scienceOwlIcon.ts",
       "sha256": "1e2337e4a3edd98e69b3228ca4d4a480679964c86247e31d6c1255591aa658b6",
@@ -2313,10 +2355,22 @@
       "bytes": 1138
     },
     {
+      "path": "src/ui/icons/wikiBookIcon.ts",
+      "pin": "edb8fb56:gra/src/ui/icons/wikiBookIcon.ts",
+      "sha256": "b2a39c89ff46282bff561309a016bd406417cca62b7306847b26c6c0b1d342ac",
+      "bytes": 1109
+    },
+    {
       "path": "src/ui/mapUnitCursor.ts",
       "pin": "edb8fb56:gra/src/ui/mapUnitCursor.ts",
       "sha256": "45ff8208a7dabd7843c6a46ec1e651120440fe692832be7b89b2c79d8825df1e",
       "bytes": 4120
+    },
+    {
+      "path": "src/ui/mapUnitHudSkin.ts",
+      "pin": "edb8fb56:gra/src/ui/mapUnitHudSkin.ts",
+      "sha256": "c6f48c157d235a5bba7c7ea1f07e977349f1fc66cfa36ab1c4b8959f78165c88",
+      "bytes": 5129
     },
     {
       "path": "src/ui/markdownLite.ts",
@@ -2335,6 +2389,12 @@
       "pin": "edb8fb56:gra/src/ui/naukaLabel.ts",
       "sha256": "080daba99c142687db33852504ac274c65e9dc5424892721974e2d19d04db8b1",
       "bytes": 546
+    },
+    {
+      "path": "src/ui/powerOverlayHud.ts",
+      "pin": "edb8fb56:gra/src/ui/powerOverlayHud.ts",
+      "sha256": "742083841504f0dc21809ddb21624217b1160a4ca16b829448ed5c00b020cde7",
+      "bytes": 11387
     },
     {
       "path": "src/ui/resourceColors.ts",

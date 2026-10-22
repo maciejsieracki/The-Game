@@ -10,6 +10,14 @@ Moduły **poziomu 0** (wiersze 1–15 tabeli niżej) są **przeniesione** do `sr
 
 **Zmiana API względem pinu (dla konsumentów z kolejki):** `diplomacyAcceptanceBalance.ts` nie eksportuje już `pickPrimaryNegotiationRow`, `balancePanelDataFromRow`, `filterActionableNegotiationRows`, `balancePanelDataFromRows`, `NegotiationBalanceSource` (reguły → Rust: `PnBalancePanelDto`); `renderPnBalancePanelFromBasket`/`ForTreaty`/`ForPeace`/`renderRelationDealModRowHtml`/`renderAcceptanceCompactHtml` przyjmują DTO (r2: `ForTreaty`/`ForPeace` przyjmują `DiplomacyBasketPreviewDto` dla `mode: 'treaty'` z blokiem `treatyGate` — jeden typ wyniku `diplomacy_preview_basket` jak P5-0 §6.6; osobny `TreatyBalancePreviewDto` z r1 usunięty); `saveLoadDialog.ts` nie eksportuje `slotIdFromLabel`, a `saveContextLine` przyjmuje pola `SaveSlotMetaDto`; `improvementBuildConfirm.ts` przyjmuje `ImprovementBuildImpactDto`. Konsumenci (`diplomacyAudience.ts`, `diplomacyTradeBasket.ts`, `main.ts`) muszą to uwzględnić przy swoim porcie.
 
+## Status P5.3 (`R-RUSTPORT-P5-3-PORT-LEVEL1A-Q1`, runda 1/5)
+
+Moduły **poziomu 1 bez cyklu** — wiersze 18, 21, 26, 27, 28, 31, 33 (BEZPOŚREDNIE) oraz 34, 36–44 (PRZECHODNIE) — są **przeniesione** do `src/ui/` (17/17; żaden moduł z zakresu nie został pominięty — każdy zależy wyłącznie od modułów już w `frontend-v2`). Poza zakresem tej rundy (dispatch): cykl C4 (wiersze 16, 17, 19, 20, 22–25, 35, 45), `newGameFlow.ts` (29), `perfTestPanel.ts`/`sceneTimingReport.ts` (30, 32 — D-UI-7) oraz wiersze 46–53 (PRZECHODNIE poziomu 1 spoza listy dispatchu). Szczegóły (diff vs pin, import → DTO, reguła → pole DTO, harness DOM `tools/dom-harness/run-level1a.mjs`): `dyspozycje/rust-port/p5/P5-3-PORT-LEVEL1A.md`. Po P5.3 w kolejce zostaje **51** modułów (27 BEZPOŚREDNICH + 24 PRZECHODNICH).
+
+10 plików przeniesiono jako **kopie bajtowe** pinu (0 importów logiki; wpisane do `tools/pin-manifest.json`, sprawdzane przez `npm run check`): `diploUiSkin.ts`, `icons/iconRegistry.ts`, `mapUnitHudSkin.ts`, `armyMergePanel.ts`, `icons/wikiBookIcon.ts`, `powerOverlayHud.ts`, `bottomBarHud.ts`, `cityListHud.ts`, `empireOverlayHud.ts` oraz `gra/src/battle/battleHudTheme.ts` → `src/ui/battleHudTheme.ts` (stałe wyglądu bitwy dla `postBattleSummary.ts`; P5-0 §6.13: „kopia w frontendzie, klasa X”).
+
+**Zmiana API względem pinu (dla konsumentów z kolejki — P5.3):** `unitCardStatus.ts` — `UnitCardStatusInput` wymaga `badges: UnitCardBadgesDto` (poziomy ścieżek i gwiazdki weterana z Rust; konsumenci: `armyStackHud.ts`, `contextPanelHud.ts`, `hexContextTooltip.ts`, `unitPanelHud.ts`); `diplomacyDealDisplay.ts` — funkcje stołu przyjmują `NegotiationDealSidesDto | null` zamiast `(payload, incoming)` (konsumenci: `diplomacyAudience.ts`, `diplomacyTradeBasket.ts`); `orderPanel.ts` — `OrderState.tierUi` wymagane, `orderTierUi` czyta pole (konsument: `cityPanel.ts`); `unitRecruitCard.ts` — `item: ProductionItemDto` (`label` zamiast `nazwa`), nowe wymagane `affordable` (konsument: `cityPanel.ts`); `siegeMapPanel.ts` — `showSiegeMapPanel(panel: SiegePanelDto, …)`, `updateSiegeMapPanelTurn(turn, panel?: SiegePanelDto)`; `cityAttackChoice.ts` — `MapSiegeContextDto`; `postBattleSummary.ts` — `BattleSummaryDto`, hak `window.__postBattleSummaryTestDebug` bez `build`; `armyListHud.ts` — `ArmyListEntry.status: ArmyUnitStatusDto | null` wymagane (konsument: `hud.ts`).
+
 ## Skład (117 plików `.ts` w `gra/src/ui` na pinie)
 
 | Zbiór | Liczba | Status |
@@ -28,7 +36,8 @@ Kolumny: **Poziom** = długość najdłuższego łańcucha zależności UI z kol
 
 **Reguły wpisane bez importu** (brama ich nie wykrywa; P5-0 §9 pkt 3).
 
-- W kolejce (z P5-0, przegląd ręczny przy porcie każdego modułu): `siegeMapPanel.ts:219-223`, `cityPanel.ts:3228-3229`, `cityPanel.ts:645-720`. Pozostałe moduły kolejki: `NIE_ZMIERZONO`.
+- W kolejce (z P5-0, przegląd ręczny przy porcie każdego modułu): `cityPanel.ts:3228-3229`, `cityPanel.ts:645-720`. Pozostałe moduły kolejki: `NIE_ZMIERZONO`.
+- **P5.3** (przegląd linia po linii 17 modułów, tabela w `P5-3-PORT-LEVEL1A.md` §4): `siegeMapPanel.ts:219-223` → `SiegePanelDto.{zuzycie, atrycjaNext, milicjaEst, playerCanStorm}` (także klawisz `2`, `:203`); `orderPanel.ts:118-130` (`orderTierUi`) → `OrderState.tierUi`; `unitRecruitCard.ts:157` (stać na zakup) → `affordable`; użycie `sideListHud.css.ts:115-126` (`armyStatusBadge`) w `armyListHud.ts:190` → `ArmyListEntry.status`. Pozostałe miejsca sklasyfikowane jako GRANICZNY (prezentacja) w tej samej tabeli.
 - W zbiorze CZYSTYM skopiowanym w P5.1 (runda 2: pełny przegląd 34 plików linia po linii, `P5-1-UI-SHELL-SKELETON.md` §6 pkt 5). Skopiowane 1:1 i nieużywane w `frontend-v2`. Nie wolno ich wpiąć do kodu P5.x bez zastąpienia polem DTO:
 
 | Moduł | Wynik | Plik:linia | Docelowe DTO |
@@ -64,33 +73,33 @@ Kolumny: **Poziom** = długość najdłuższego łańcucha zależności UI z kol
 | 15 | `victoryScreen.ts` **— PRZENIESIONY P5.2** | BEZPOŚREDNI | 0 | — | 346 | game 2 | K1 T1 | — | 0 | `VictoryDto` (§6.13); próg dominacji P5.2: `StaticCatalogDto.constants.progDominacjiPower` (§6.1 — P5-0 podaje oba źródła; wybór i warunek jednego parametru Rust: P5.2-Z17) |
 | 16 | `entityCards/registry.ts` | BEZPOŚREDNI | 1 | C4 | 194 | data 1, gra/data 5 | S5 T2 | `sciencePicker.ts` | 8 (cityPanel.ts, entityCards/buildingAdapter.ts, entityCards/improvementAdapter.ts, entityCards/renderer.ts, …) | `StaticCatalogDto` |
 | 17 | `techDiscoveryNotice.ts` | BEZPOŚREDNI | 1 | C4 | 946 | gra/data 4, render 1 | S4 T1 | `entityCards/registry.ts`, `entityCards/renderer.ts`, `icons/brandAssets.ts` | 4 (cityPanel.ts, scienceHubHud.ts, sciencePicker.ts, techTreeView.ts) | `StaticCatalogDto` |
-| 18 | `unitCardStatus.ts` | BEZPOŚREDNI | 1 | — | 394 | game 3 | R3 T3 | `icons/brandAssets.ts` | 4 (armyStackHud.ts, contextPanelHud.ts, hexContextTooltip.ts, unitPanelHud.ts) | `UnitCardDto.badges` (§6.8) |
+| 18 | `unitCardStatus.ts` **— PRZENIESIONY P5.3** | BEZPOŚREDNI | 1 | — | 394 | game 3 | R3 T3 | `icons/brandAssets.ts` | 4 (armyStackHud.ts, contextPanelHud.ts, hexContextTooltip.ts, unitPanelHud.ts) | `UnitCardDto.badges` (§6.8) |
 | 19 | `entityCards/unitAdapter.ts` | BEZPOŚREDNI | 1 | C4 | 291 | data 1, gra/data 1, units 1 | S2 T2 | `entityCards/registry.ts`, `unitInfographic.ts` | 3 (cityPanel.ts, entityCards/renderer.ts, unitInfoCard.ts) | `StaticCatalogDto` (+ `unit_category`) |
 | 20 | `sciencePicker.ts` | BEZPOŚREDNI | 1 | C4 | 1666 | game 3, gra/data 3 | R1 F1 S2 T2 | `scienceHubHud.ts`, `techDiscoveryNotice.ts`, `techUnlockParse.ts` | 3 (entityCards/registry.ts, scienceHubHud.ts, techTreeView.ts) | `ResearchViewDto.techs[].effective_cost` (§6.9) |
-| 21 | `diplomacyDealDisplay.ts` | BEZPOŚREDNI | 1 | — | 312 | game 3 | F2 T3 | `icons/brandAssets.ts` | 2 (diplomacyAudience.ts, diplomacyTradeBasket.ts) | `DealDisplayDto` (część §6.6) |
+| 21 | `diplomacyDealDisplay.ts` **— PRZENIESIONY P5.3** | BEZPOŚREDNI | 1 | — | 312 | game 3 | F2 T3 | `icons/brandAssets.ts` | 2 (diplomacyAudience.ts, diplomacyTradeBasket.ts) | `DealDisplayDto` (część §6.6) |
 | 22 | `entityCards/buildingAdapter.ts` | BEZPOŚREDNI | 1 | C4 | 340 | data 1, game 8, gra/data 1 | R8 F2 S1 T4 | `entityCards/registry.ts`, `icons/brandAssets.ts` | 2 (cityPanel.ts, entityCards/renderer.ts) | `EntityCardDto::Building` (§6.11) |
 | 23 | `scienceHubHud.ts` | BEZPOŚREDNI | 1 | C4 | 792 | data 1, game 2 | K1 T2 | `icons/brandAssets.ts`, `sciencePicker.ts`, `techDiscoveryNotice.ts` | 2 (hud.ts, sciencePicker.ts) | §6.9 |
 | 24 | `entityCards/improvementAdapter.ts` | BEZPOŚREDNI | 1 | C4 | 249 | gra/data 1 | S1 | `entityCards/registry.ts`, `icons/brandAssets.ts` | 1 (entityCards/renderer.ts) | `StaticCatalogDto` |
 | 25 | `entityCards/technologyAdapter.ts` | BEZPOŚREDNI | 1 | C4 | 386 | gra/data 4 | S4 | `entityCards/registry.ts`, `icons/brandAssets.ts` | 1 (entityCards/renderer.ts) | `StaticCatalogDto` |
-| 26 | `orderPanel.ts` | BEZPOŚREDNI | 1 | — | 231 | game 2 | T2 | `icons/brandAssets.ts` | 1 (cityPanel.ts) | `CityPanelDto.order` |
-| 27 | `unitRecruitCard.ts` | BEZPOŚREDNI | 1 | — | 286 | data 1, game 2, units 1 | F1 S1 T3 | `icons/brandAssets.ts`, `unitInfographic.ts` | 1 (cityPanel.ts) | `RecruitOptionDto` (§6.3) |
-| 28 | `cityAttackChoice.ts` | BEZPOŚREDNI | 1 | — | 239 | game 1 | T1 | `icons/brandAssets.ts` | 0 | `SiegePanelDto.ctx` |
+| 26 | `orderPanel.ts` **— PRZENIESIONY P5.3** | BEZPOŚREDNI | 1 | — | 231 | game 2 | T2 | `icons/brandAssets.ts` | 1 (cityPanel.ts) | `CityPanelDto.order` |
+| 27 | `unitRecruitCard.ts` **— PRZENIESIONY P5.3** | BEZPOŚREDNI | 1 | — | 286 | data 1, game 2, units 1 | F1 S1 T3 | `icons/brandAssets.ts`, `unitInfographic.ts` | 1 (cityPanel.ts) | `RecruitOptionDto` (§6.3) |
+| 28 | `cityAttackChoice.ts` **— PRZENIESIONY P5.3** | BEZPOŚREDNI | 1 | — | 239 | game 1 | T1 | `icons/brandAssets.ts` | 0 | `SiegePanelDto.ctx` |
 | 29 | `newGameFlow.ts` | BEZPOŚREDNI | 1 | — | 2373 | data 1, game 7, map 1 | R15 F5 K5 S1 T11 | `icons/brandAssets.ts`, `uiParams.ts` | 0 | `NewGameOptionsDto` + zapytanie `new_game_preview` (§6.10) — przed `create_session` |
 | 30 | `perfTestPanel.ts` | BEZPOŚREDNI | 1 | — | 677 | map 1, perf 1, three 1 | M1 | `icons/brandAssets.ts`, `uiParams.ts` | 0 | D-UI-7 (poza P5 albo komenda diagnostyczna) |
-| 31 | `postBattleSummary.ts` | BEZPOŚREDNI | 1 | — | 603 | battle 1, game 2 | R1 X11 T3 | `icons/brandAssets.ts`, `leaderPortraits.ts` | 0 | `BattleSummaryDto` (§6.13) |
+| 31 | `postBattleSummary.ts` **— PRZENIESIONY P5.3** | BEZPOŚREDNI | 1 | — | 603 | battle 1, game 2 | R1 X11 T3 | `icons/brandAssets.ts`, `leaderPortraits.ts` | 0 | `BattleSummaryDto` (§6.13) |
 | 32 | `sceneTimingReport.ts` | BEZPOŚREDNI | 1 | — | 212 | map 3, render 1 | X2 T2 | `perfReport.ts` | 0 | D-UI-7 |
-| 33 | `siegeMapPanel.ts` | BEZPOŚREDNI | 1 | — | 371 | game 4 | R1 T4 (+ 4 reguły bez importu) | `icons/brandAssets.ts` | 0 | `SiegePanelDto` (§6.12) |
-| 34 | `diploUiSkin.ts` | PRZECHODNI | 1 | — | 231 | — (0 bezpośrednich) | — | `icons/brandAssets.ts`, `leaderPortraits.ts` | 8 (diploListHud.ts, diplomacyAudience.ts, diplomacyNegotiationModal.ts, diplomacyPanel.ts, …) | przez zależności (kolumna 9) |
+| 33 | `siegeMapPanel.ts` **— PRZENIESIONY P5.3** | BEZPOŚREDNI | 1 | — | 371 | game 4 | R1 T4 (+ 4 reguły bez importu) | `icons/brandAssets.ts` | 0 | `SiegePanelDto` (§6.12) |
+| 34 | `diploUiSkin.ts` **— PRZENIESIONY P5.3** | PRZECHODNI | 1 | — | 231 | — (0 bezpośrednich) | — | `icons/brandAssets.ts`, `leaderPortraits.ts` | 8 (diploListHud.ts, diplomacyAudience.ts, diplomacyNegotiationModal.ts, diplomacyPanel.ts, …) | przez zależności (kolumna 9) |
 | 35 | `entityCards/renderer.ts` | PRZECHODNI | 1 | C4 | 1212 | — (0 bezpośrednich) | — | `entityCards/buildingAdapter.ts`, `entityCards/improvementAdapter.ts`, `entityCards/registry.ts`, `entityCards/technologyAdapter.ts`, `entityCards/unitAdapter.ts`, `entityCards/wonderAdapter.ts`, `unitMiniPreview.ts` | 4 (buildModeHud.ts, cityPanel.ts, techDiscoveryNotice.ts, unitInfoCard.ts) | przez zależności (kolumna 9) |
-| 36 | `icons/iconRegistry.ts` | PRZECHODNI | 1 | — | 49 | — (0 bezpośrednich) | — | `icons/brandAssets.ts` | 3 (hud.ts, hudChip6c.ts, mapToolbarHud.ts) | przez zależności (kolumna 9) |
-| 37 | `mapUnitHudSkin.ts` | PRZECHODNI | 1 | — | 78 | — (0 bezpośrednich) | — | `icons/brandAssets.ts` | 3 (armyStackHud.ts, unitPanelHud.ts, unitReplacePicker.ts) | przez zależności (kolumna 9) |
-| 38 | `armyMergePanel.ts` | PRZECHODNI | 1 | — | 221 | — (0 bezpośrednich) | — | `icons/brandAssets.ts` | 2 (armyMergePickPanel.ts, armySplitPanel.ts) | przez zależności (kolumna 9) |
-| 39 | `icons/wikiBookIcon.ts` | PRZECHODNI | 1 | — | 19 | — (0 bezpośrednich) | — | `icons/brandAssets.ts` | 2 (hud.ts, wikiHubHud.ts) | przez zależności (kolumna 9) |
-| 40 | `powerOverlayHud.ts` | PRZECHODNI | 1 | — | 238 | — (0 bezpośrednich) | — | `power-labels.ts` | 2 (empireDetailPanel.ts, hud.ts) | przez zależności (kolumna 9) |
-| 41 | `armyListHud.ts` | PRZECHODNI | 1 | — | 368 | — (0 bezpośrednich) | — | `icons/brandAssets.ts` | 1 (hud.ts) | przez zależności (kolumna 9) |
-| 42 | `bottomBarHud.ts` | PRZECHODNI | 1 | — | 335 | — (0 bezpośrednich) | — | `icons/brandAssets.ts` | 1 (hud.ts) | przez zależności (kolumna 9) |
-| 43 | `cityListHud.ts` | PRZECHODNI | 1 | — | 332 | — (0 bezpośrednich) | — | `icons/brandAssets.ts` | 1 (hud.ts) | przez zależności (kolumna 9) |
-| 44 | `empireOverlayHud.ts` | PRZECHODNI | 1 | — | 138 | — (0 bezpośrednich) | — | `icons/brandAssets.ts` | 1 (hud.ts) | przez zależności (kolumna 9) |
+| 36 | `icons/iconRegistry.ts` **— PRZENIESIONY P5.3** | PRZECHODNI | 1 | — | 49 | — (0 bezpośrednich) | — | `icons/brandAssets.ts` | 3 (hud.ts, hudChip6c.ts, mapToolbarHud.ts) | przez zależności (kolumna 9) |
+| 37 | `mapUnitHudSkin.ts` **— PRZENIESIONY P5.3** | PRZECHODNI | 1 | — | 78 | — (0 bezpośrednich) | — | `icons/brandAssets.ts` | 3 (armyStackHud.ts, unitPanelHud.ts, unitReplacePicker.ts) | przez zależności (kolumna 9) |
+| 38 | `armyMergePanel.ts` **— PRZENIESIONY P5.3** | PRZECHODNI | 1 | — | 221 | — (0 bezpośrednich) | — | `icons/brandAssets.ts` | 2 (armyMergePickPanel.ts, armySplitPanel.ts) | przez zależności (kolumna 9) |
+| 39 | `icons/wikiBookIcon.ts` **— PRZENIESIONY P5.3** | PRZECHODNI | 1 | — | 19 | — (0 bezpośrednich) | — | `icons/brandAssets.ts` | 2 (hud.ts, wikiHubHud.ts) | przez zależności (kolumna 9) |
+| 40 | `powerOverlayHud.ts` **— PRZENIESIONY P5.3** | PRZECHODNI | 1 | — | 238 | — (0 bezpośrednich) | — | `power-labels.ts` | 2 (empireDetailPanel.ts, hud.ts) | przez zależności (kolumna 9) |
+| 41 | `armyListHud.ts` **— PRZENIESIONY P5.3** | PRZECHODNI | 1 | — | 368 | — (0 bezpośrednich) | — | `icons/brandAssets.ts` | 1 (hud.ts) | przez zależności (kolumna 9) |
+| 42 | `bottomBarHud.ts` **— PRZENIESIONY P5.3** | PRZECHODNI | 1 | — | 335 | — (0 bezpośrednich) | — | `icons/brandAssets.ts` | 1 (hud.ts) | przez zależności (kolumna 9) |
+| 43 | `cityListHud.ts` **— PRZENIESIONY P5.3** | PRZECHODNI | 1 | — | 332 | — (0 bezpośrednich) | — | `icons/brandAssets.ts` | 1 (hud.ts) | przez zależności (kolumna 9) |
+| 44 | `empireOverlayHud.ts` **— PRZENIESIONY P5.3** | PRZECHODNI | 1 | — | 138 | — (0 bezpośrednich) | — | `icons/brandAssets.ts` | 1 (hud.ts) | przez zależności (kolumna 9) |
 | 45 | `entityCards/wonderAdapter.ts` | PRZECHODNI | 1 | C4 | 156 | — (0 bezpośrednich) | — | `entityCards/registry.ts` | 1 (entityCards/renderer.ts) | przez zależności (kolumna 9) |
 | 46 | `leaderBannersHud.ts` | PRZECHODNI | 1 | — | 68 | — (0 bezpośrednich) | — | `icons/brandAssets.ts` | 1 (hud.ts) | przez zależności (kolumna 9) |
 | 47 | `cityCaptureNotice.ts` | PRZECHODNI | 1 | — | 356 | — (0 bezpośrednich) | — | `icons/brandAssets.ts` | 0 | przez zależności (kolumna 9) |

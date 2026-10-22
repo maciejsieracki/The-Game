@@ -58,6 +58,9 @@ async function boot(): Promise<void> {
   // P5.2: panele poziomu 0 ładowane po instalacji katalogu (ZAŁOŻENIE P5.2-Z1); nic nie montują.
   const level0 = await import('./ui/portLevel0');
   shell.append(el('p', `Panele poziomu 0 (P5.2): ${level0.PORTED_LEVEL0.length}${mockTag}`));
+  // P5.3: panele poziomu 1 bez cyklu — jw., nic nie montują.
+  const level1a = await import('./ui/portLevel1a');
+  shell.append(el('p', `Panele poziomu 1 bez cyklu (P5.3): ${level1a.PORTED_LEVEL1A.length}${mockTag}`));
   const status = el('p', `Źródło danych: ${controller.source}`, 'v2-status');
   shell.append(status);
 

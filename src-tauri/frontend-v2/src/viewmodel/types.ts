@@ -123,6 +123,8 @@ export interface UnitDefDto {
   'Super-jednostka'?: string | null;
   'Rola (linia)'?: string | null;
   Typ?: string | null;
+  /** P5.3 (`unitRecruitCard.ts:70`): epoka jednostki (`data/loader.ts:39`). */
+  Epoka?: string | null;
   readonly [field: string]: unknown;
 }
 
@@ -249,8 +251,20 @@ export interface RationPreviewDto {
 
 export type EmpireFoodDto = NieZmierzonoDto;
 export type CityHealthLineDto = NieZmierzonoDto;
-export type SocietyLineDto = NieZmierzonoDto;
-export type CitizenUpkeepCoverageDto = NieZmierzonoDto;
+/** P5.3: = web `SocietyLine` (`game/society-breakdown.ts:23-27`) — wiersz rozpiski Szczęścia/Prawa. */
+export interface SocietyLineDto {
+  id: string;
+  label: string;
+  value: number;
+}
+/** P5.3: = web `CitizenUpkeepCoverage` (`game/citizen-resource-upkeep.ts:166-177`), liczy Rust. */
+export interface CitizenUpkeepCoverageDto {
+  required: readonly string[];
+  available: readonly string[];
+  missing: readonly string[];
+  happinessDelta: number;
+  growthPctDelta: number;
+}
 export type CultureStateDto = NieZmierzonoDto;
 export type ReligionStateDto = NieZmierzonoDto;
 export type CityMoneySnapDto = NieZmierzonoDto;
@@ -407,7 +421,16 @@ export interface EmpireDetailDto {
 
 // ─── §6.6 Dyplomacja ─────────────────────────────────────────────────────────
 
-export type BasketItemDto = NieZmierzonoDto;
+/** P5.3: typ pozycji koszyka = web `WartoscPozycjaTyp` (`game/diplomacy-value-catalog.ts:18-26`). */
+export type BasketItemTyp = 'zloto' | 'praca' | 'zloze' | 'tech' | 'jednostka' | 'surowiec_boolean' | 'surowiec_ilosc' | 'zywnosc';
+
+/** P5.3: = web `BasketItem` (`game/diplomacy-pn-engine.ts:107-112`). */
+export interface BasketItemDto {
+  typ: BasketItemTyp;
+  id: string;
+  ilosc?: number;
+  hexKey?: string;
+}
 
 export interface DiplomacyBasketPreviewRequest {
   partner: PlayerId;
@@ -559,6 +582,30 @@ export interface DiplomacyAudienceDto {
 
 export interface DealDisplayDto {
   lines: string[];
+  /** P5.3 (ROZSZ. Z3-1): strony stołu jako pozycje (ikony surowców) — `NegotiationDealSidesDto`. */
+  sides?: NegotiationDealSidesDto | null;
+}
+
+/**
+ * P5.3 (`diplomacyDealDisplay.ts`, ROZSZ. Z3-1): pozycja koszyka do wyświetlenia — `BasketItemDto`
+ * + `label` = nazwa wyświetlana surowca (web `resourceDisplayLabel(id)`, `game/diplomacy-display.ts:434-437`).
+ */
+export interface DealBasketItemViewDto extends BasketItemDto {
+  label: string;
+}
+
+/**
+ * P5.3 (ROZSZ. Z3-1): podział propozycji na strony z perspektywy gracza — wynik web
+ * `splitNegotiationDealPlayerSides(payload, incoming)` (`game/diplomacy-display.ts:562-592`, w tym
+ * fallback starego `goldOnce` i tekst `schedule`) + kontekst formatowania z payloadu
+ * (`perTurn = resourceTradeMode === 'per_turn'`, `turns`). `null` = web `split === null` (pusta oferta).
+ */
+export interface NegotiationDealSidesDto {
+  weOffer: DealBasketItemViewDto[];
+  theyOffer: DealBasketItemViewDto[];
+  schedule: string | null;
+  perTurn: boolean;
+  turns: number | null;
 }
 
 export interface DiploListDto {
@@ -594,9 +641,41 @@ export interface ImprovementBuildImpactDto {
 
 // ─── §6.8 Jednostki ──────────────────────────────────────────────────────────
 
-/** = `UnitCardCombatDisplay` (game/unit-card-stats.ts:37-…) — pola NIE_ZMIERZONO. */
-export type UnitCardCombatDisplayDto = NieZmierzonoDto;
-export type VeteranProgressDto = NieZmierzonoDto;
+/** P5.3: = `UnitCardCombatDisplay` (`game/unit-card-stats.ts:37-62`) — wartości bazowe i efektywne liczy Rust. */
+export interface UnitCardCombatDisplayDto {
+  atakBase: number;
+  atakEffective: number;
+  obronaBase: number;
+  obronaEffective: number;
+  hpMaxBase: number;
+  hpMaxEffective: number;
+  pancerzBase: number;
+  pancerzEffective: number;
+  weaponDamageBase: number;
+  weaponDamageEffective: number;
+  piercingBase: number;
+  piercingEffective: number;
+  chargeBonusBase: number;
+  chargeBonusEffective: number;
+  missileAttackBase: number;
+  missileAttackEffective: number;
+}
+/** P5.3: = web `VeteranProgress` (`game/veteran.ts:90-92`). */
+export interface VeteranProgressDto {
+  battlesSurvived?: number;
+}
+/** P5.3: poziom odznaki ścieżki 0–3 = web `PathBadgeLevel` (`game/unit-building-bonuses.ts:292,454`). */
+export type PathBadgeLevelDto = 0 | 1 | 2 | 3;
+/**
+ * P5.3: = `UnitCardDto.badges` (P5-0 §6.8) — liczy Rust: `softPath` = `softPathBadgeLevel`,
+ * `armorPath` = `armorPathBadgeLevel` (`game/unit-building-bonuses.ts:312-336`, tercje 0/15/30 i 0/16/33 pp),
+ * `veteranStars` = `veteranStarCount` (`game/veteran.ts:118-120`).
+ */
+export interface UnitCardBadgesDto {
+  softPath: PathBadgeLevelDto;
+  armorPath: PathBadgeLevelDto;
+  veteranStars: number;
+}
 /** = `UnitSufferingStatusFields` (unitCardStatus.ts:32-55) — pola NIE_ZMIERZONO. */
 export type UnitSufferingStatusDto = NieZmierzonoDto;
 
@@ -624,13 +703,20 @@ export interface UnitCardDto {
   combat: UnitCardCombatDisplayDto;
   power: number;
   status: UnitCardStatusDto;
-  badges: { softPath: number; armorPath: number; veteranStars: number };
+  badges: UnitCardBadgesDto;
   vitals: { hp: number; hpMax: number; ruchLeft: number; ruchMax: number; mov: number; rng: number };
   displayName: string | null;
   buildingBonusLabel: string | null;
 }
 
 export type UnitPanelActionDto = NieZmierzonoDto;
+
+/**
+ * P5.3 (`armyListHud.ts`, ROZSZ. Z3-5 — P5-1/`PORTING-QUEUE.md`: proponowane `ArmyStackDto.cards[].status`):
+ * jeden stan rozkazu reprezentanta stosu, wybrany przez Rust z flag jednostki (web `armyStatusBadge`,
+ * `sideListHud.css.ts:115-126`: garnizon > fortyfikacja w polu > czuwanie > auto-eksploracja). `null` = brak.
+ */
+export type ArmyUnitStatusDto = 'garrison' | 'fieldFortified' | 'sentry' | 'autoExplore';
 
 export interface ArmyStackDto {
   hexLabel: string;
@@ -684,9 +770,52 @@ export type EntityCardDto =
 
 // ─── §6.12 Oblężenie ─────────────────────────────────────────────────────────
 
-export type MapSiegeContextDto = NieZmierzonoDto;
-export type SiegeMachinesStateDto = NieZmierzonoDto;
+/** P5.3: = web `SiegeMachineKind` (`game/siegeMachines.ts:6`). */
+export type SiegeMachineKindDto = 'taran' | 'wieza';
 
+/** P5.3: = web `SiegeMachinesState` (`game/siegeMachines.ts:8-13`). */
+export interface SiegeMachinesStateDto {
+  queue: SiegeMachineKindDto[];
+  ready: SiegeMachineKindDto[];
+  buildProgress: number;
+}
+
+/**
+ * P5.3 (ROZSZ. Z3-4): pola `City` czytane przez `cityAttackChoice.ts`/`siegeMapPanel.ts`
+ * (`game/cities.ts`: `id`, `name`, `ownerId`, `population`, `maMur` :860, `garnizon` :896,
+ * `siegeCapitulationPending` :900, `siegeMachines` :902). Id miasta = string jak w webie (akcje panelu).
+ */
+export interface SiegeCityDto {
+  id: string;
+  name: string;
+  ownerId: PlayerId;
+  population: number;
+  maMur?: boolean;
+  garnizon?: number;
+  siegeCapitulationPending?: boolean;
+  siegeMachines?: SiegeMachinesStateDto;
+}
+
+/** P5.3 (ROZSZ. Z3-4): pola `RuntimeUnit` czytane przez panele oblężenia (`typeId`, `ownerId`). */
+export interface SiegeUnitRefDto {
+  id: string;
+  typeId: string;
+  ownerId: PlayerId;
+}
+
+/** P5.3: = web `MapSiegeContext` (`game/mapSiegeDetect.ts:10-19`) — klasyfikację starcia robi Rust. */
+export interface MapSiegeContextDto {
+  tryb: 'oblezenie' | 'zdobycie_z_marszu' | 'bitwa_polowa';
+  city: SiegeCityDto;
+  atakujacy: SiegeUnitRefDto;
+  garnizonUnit: SiegeUnitRefDto | null;
+  oblegajacyOwnerId: PlayerId;
+}
+
+/**
+ * P5.3: panel oblężenia czyta dane miasta z `ctx.city` (jak web `siegeMapPanel.ts:216`); `city: CityRefDto`
+ * (P5-0 §6.12) zostaje w kontrakcie, panel go nie czyta (ZAŁOŻENIE P5.3-Z4).
+ */
 export interface SiegePanelDto {
   ctx: MapSiegeContextDto;
   city: CityRefDto;
@@ -706,8 +835,49 @@ export interface PreBattleDto {
   sides: { nazwa: string; cywilizacja: string; wodz: string; bonusChips: string[] }[];
 }
 
-/** = `PostBattleSummaryData` (postBattleSummary.ts:4) — pola NIE_ZMIERZONO. */
-export type BattleSummaryDto = NieZmierzonoDto;
+/** P5.3: = web `BattleSummaryUnitCard` (`game/battle-summary.ts:16-27`); procenty i `dead` liczy Rust. */
+export interface BattleSummaryUnitCardDto {
+  typeId: string;
+  kategoria: string;
+  hpBefore: number;
+  hpAfter: number;
+  maxHp: number;
+  hpBeforePct: number;
+  hpAfterPct: number;
+  lossPct: number;
+  dead: boolean;
+}
+
+/** P5.3: = web `BattleSummarySide` (`game/battle-summary.ts:29-42`). */
+export interface BattleSummarySideDto {
+  label: string;
+  civLabel?: string;
+  civIconId?: string;
+  isCityState?: boolean;
+  isBarbarian?: boolean;
+  era?: number;
+  units: BattleSummaryUnitCardDto[];
+  totalBefore: number;
+  totalAfter: number;
+  totalDead: number;
+}
+
+/**
+ * P5.3: = web `PostBattleSummaryData` (`game/battle-summary.ts:44-57`) — wynik `buildPostBattleSummary`
+ * (`game/battle-summary.ts:82-…`) liczony w Rust (P5-0 §6.13).
+ */
+export interface BattleSummaryDto {
+  title: string;
+  subtitle?: string;
+  teren?: string;
+  winner: 'atakujacy' | 'obronca' | 'remis';
+  winnerLabel: string;
+  mode: 'auto' | 'manual' | 'szturm';
+  atakujacy: BattleSummarySideDto;
+  obronca: BattleSummarySideDto;
+  playerSide?: 'atk' | 'def';
+  lootNote?: string;
+}
 
 /** = `VictoryResult` (`game/victory.ts:95-98`). */
 export interface VictoryResultDto {

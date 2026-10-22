@@ -1,0 +1,75 @@
+--- pin:gra/src/ui/unitCardStatus.ts
++++ v2:src-tauri/frontend-v2/src/ui/unitCardStatus.ts
+@@ -2,13 +2,12 @@
+  * unitCardStatus.ts — wspólny wiersz statusów karty jednostki (C-OBCE-JEDN-KARTA).
+  * Kolejność ścieżek: koszary · kuźnia · weteran.
+  */
+-import {
+-  armorPathBadgeLevel,
+-  softPathBadgeLevel,
+-  type PathBadgeLevel,
+-} from '../game/unit-building-bonuses';
+-import { veteranStarCount, type VeteranProgress } from '../game/veteran';
+-import type { UnitCardCombatDisplay } from '../game/unit-card-stats';
++import type {
++  PathBadgeLevelDto as PathBadgeLevel,
++  UnitCardBadgesDto,
++  UnitCardCombatDisplayDto as UnitCardCombatDisplay,
++  VeteranProgressDto as VeteranProgress,
++} from '../viewmodel/types';
+ import { brandIconSvg } from './icons/brandAssets';
+ import { formatLiczbaPl } from './formatPl';
+ 
+@@ -88,6 +87,8 @@
+   sentry?: boolean;
+   ufortyfikowanyWPolu?: boolean;
+   oblegaCityName?: string;
++  /** P5.3: poziomy odznak ścieżek + gwiazdki weterana liczy Rust (`UnitCardDto.badges`, P5-0 §6.8). */
++  badges: UnitCardBadgesDto;
+   esc: (raw: string) => string;
+ }
+ 
+@@ -142,9 +143,9 @@
+ /** Kompaktowy wiersz ikon: koszary · kuźnia · doświadczenie z poziomami 1-2-3. */
+ export function buildPathLevelIconsRowHtml(input: UnitCardStatusInput): string {
+   const esc = input.esc;
+-  const softLvl = softPathBadgeLevel({ parametryBonusProc: input.parametryPathPp ?? 0 });
+-  const armorLvl = armorPathBadgeLevel({ pancerzBonusProc: input.pancerzPathPp ?? 0 });
+-  const vetStars = veteranStarCount(input.veteranProgress ?? null);
++  const softLvl = input.badges.softPath;
++  const armorLvl = input.badges.armorPath;
++  const vetStars = input.badges.veteranStars;
+ 
+   const koszaryIc = brandIconSvg('bld-koszary', 16) || '🛡';
+   const kuzniaIc = brandIconSvg('bld-kuznia', 16) || '⚒';
+@@ -179,7 +180,7 @@
+   const koszary = pathBadgeChipHtml(
+     '🛡',
+     'Koszary',
+-    softPathBadgeLevel({ parametryBonusProc: softPct }),
++    input.badges.softPath,
+     softPct,
+     esc,
+   );
+@@ -188,7 +189,7 @@
+   const kuznia = pathBadgeChipHtml(
+     '⚒',
+     'Kuźnia',
+-    armorPathBadgeLevel({ pancerzBonusProc: armorPct }),
++    input.badges.armorPath,
+     armorPct,
+     esc,
+   );
+@@ -208,10 +209,8 @@
+ 
+ /** Czy wiersz ścieżek ma jakiekolwiek chipy (koszary/kuźnia/weteran). */
+ export function pathStatusRowHasChips(input: UnitCardStatusInput): boolean {
+-  const softPct = input.parametryPathPp ?? 0;
+-  const armorPct = input.pancerzPathPp ?? 0;
+-  if (softPathBadgeLevel({ parametryBonusProc: softPct }) > 0) return true;
+-  if (armorPathBadgeLevel({ pancerzBonusProc: armorPct }) > 0) return true;
++  if (input.badges.softPath > 0) return true;
++  if (input.badges.armorPath > 0) return true;
+   if (input.veteranBadgeLabel) return true;
+   return false;
+ }
