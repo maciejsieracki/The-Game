@@ -34,14 +34,14 @@ const MAX_MEAN_ABS: f64 = 1.5;
 const MAX_FRAC_PX_OVER_16: f64 = 0.05;
 
 /// Scenes allowed a larger `mean_abs` (SSIM and px>16 stay strict), each
-/// with its documented reason (`P4-30-IMAGES.md` §5.3). The bound is the
+/// with its documented reason (`P4-30-IMAGES.md` §6.2). The bound is the
 /// measured value rounded up, so a regression still fails.
 /// - `t14_prod_icon_x1`: a 16 px icon of 1.2 px round-capped strokes filling
 ///   a 24×24 canvas — every pixel is an anti-aliased edge, and tiny-skia's
 ///   (resvg's) 1/4-coverage AA differs from Chromium's Skia there; measured
-///   1.576 (×2: 0.95, ×3: 0.49 — in limits). Supersampling ×2/×4, a
+///   1.5755 (×2: 0.95, ×3: 0.49 — in limits). Supersampling ×2/×4, a
 ///   ±0.05 px offset and bitmap-scaled rasterisation were tried and are
-///   worse (§5.3).
+///   worse (§5.2, §6.2).
 const MEAN_ABS_EXCEPTIONS: &[(&str, f64)] = &[("t14_prod_icon_x1", 1.6)];
 
 fn fixture(rel: &str) -> String {

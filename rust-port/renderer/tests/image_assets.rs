@@ -12,8 +12,8 @@
 //!   fixture file (incl. `input/`, `ref/`) is listed — except `golden.tsv`,
 //!   written by the Rust test itself — and the directory is ≤ 8 MB;
 //! - `inputs_are_the_pin_bytes`: the image inputs are the files of pin
-//!   `edb8fb56` (`gra/src/assets/portrety/*.jpg`, byte-identical to the
-//!   copies in `gra/src/assets/portrety/` of this checkout when present).
+//!   `edb8fb56` (`gra/src/assets/portrety/*.jpg`): their sha256 equals the
+//!   hashes of the pin's blobs, hard-coded in the test (no `gra/` needed).
 
 use civ_renderer::raster::image::emoji::{emoji_font_data, EMOJI_FONT_FILE};
 
@@ -197,18 +197,30 @@ fn fixtures_match_manifest_sha256() {
 
 #[test]
 fn inputs_are_the_pin_bytes() {
-    // Same bytes as the web's copies in this checkout (gra/ is the pin's
-    // tree for these files; the generator took them with `git show edb8fb56:`).
-    for f in [
-        "portrait-grecy-braz.jpg",
-        "portrait-zulusi-zelazo.jpg",
-        "portrait-egipt-kamien.jpg",
-    ] {
-        let web = root(&format!("../../gra/src/assets/portrety/{f}"));
-        let Ok(web) = std::fs::read(&web) else {
-            continue; // gra/ not checked out next to the crate
-        };
+    // SHA-256 of the pin's blobs, measured with
+    // `git show edb8fb56:gra/src/assets/portrety/<f> | sha256sum`
+    // (P4-30-IMAGES.md Z-30-6). Checked unconditionally, so the test depends
+    // neither on a `gra/` checkout next to the crate nor on its revision.
+    const PIN: [(&str, &str); 3] = [
+        (
+            "portrait-grecy-braz.jpg",
+            "7bb61ea6079952c21b5abd3888d5c1946cc9baea5cb3fc4af82289499a65b1ec",
+        ),
+        (
+            "portrait-zulusi-zelazo.jpg",
+            "b2c34366b93191ce14251c509b25eb2dbb8dd15a23fc14655ee442e400df5b41",
+        ),
+        (
+            "portrait-egipt-kamien.jpg",
+            "45c7a6b6d7b854458c2f6aecdc6ce1915c009dde374228fadd497a728b13ca85",
+        ),
+    ];
+    for (f, pin_sha) in PIN {
         let ours = std::fs::read(root(&format!("tests/fixtures/image/input/{f}"))).expect("input");
-        assert_eq!(web, ours, "{f}");
+        assert_eq!(
+            hex(&sha256(&ours)),
+            pin_sha,
+            "{f}: not the pin edb8fb56 bytes"
+        );
     }
 }
