@@ -295,12 +295,6 @@ impl Canvas2dLite {
             .is_some()
     }
 
-    /// `ctx.strokeStyle = gradient` (not used by the web today, but
-    /// `strokeStyle` accepts a gradient in the same IDL slot as `fillStyle`).
-    pub fn set_stroke_style_gradient(&mut self, g: &CanvasGradient) {
-        self.state.stroke = Style::Gradient(g.clone());
-    }
-
     /// `ctx.lineWidth = w`; ignored unless finite and `> 0`.
     pub fn set_line_width(&mut self, w: f64) {
         if w.is_finite() && w > 0.0 {
@@ -562,8 +556,9 @@ impl Canvas2dLite {
         }
     }
 
-    /// `ctx.drawImage(image, dx, dy, dw, dh)` with bilinear filtering and
-    /// anti-aliased destination edges (image smoothing on, quality "low").
+    /// `ctx.drawImage(image, dx, dy, dw, dh)` with bilinear sampling (image
+    /// smoothing on, quality "low") and NON-anti-aliased destination edges
+    /// (pixel-centre coverage, as measured in Chromium; see below).
     pub fn draw_image(&mut self, image: &RasterImage, dx: f64, dy: f64, dw: f64, dh: f64) {
         if ![dx, dy, dw, dh].iter().all(|v| v.is_finite()) || dw == 0.0 || dh == 0.0 {
             return;

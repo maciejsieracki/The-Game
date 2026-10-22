@@ -86,7 +86,6 @@ fn play(sc: &Scene, done: &HashMap<String, Canvas2dLite>) -> Canvas2dLite {
             "fillStyle" => assert!(c.set_fill_style(&a[0]), "{}: fillStyle {:?}", sc.name, a[0]),
             "strokeStyle" => assert!(c.set_stroke_style(&a[0]), "{}: strokeStyle", sc.name),
             "fillGrad" => c.set_fill_style_gradient(&grads[&a[0]]),
-            "strokeGrad" => c.set_stroke_style_gradient(&grads[&a[0]]),
             "lineWidth" => c.set_line_width(n(0)),
             "lineJoin" => assert!(c.set_line_join(&a[0])),
             "shadowColor" => assert!(c.set_shadow_color(&a[0])),

@@ -46,11 +46,6 @@ const CANVAS_MEMBERS: &[(&str, &str, &str)] = &[
         "render/units.ts:6344",
     ),
     (
-        "set_stroke_style_gradient",
-        "strokeStyle = <gradient>",
-        "(same IDL slot; not called today)",
-    ),
-    (
         "create_linear_gradient",
         "createLinearGradient",
         "render/cityMapStatChip.ts:856",
@@ -122,6 +117,8 @@ const FORBIDDEN: &[&str] = &[
     "reset_transform",
     "rect",
     "is_point_in_path",
+    // strokeStyle is only ever assigned CSS strings in the pin (P4-28 §4).
+    "set_stroke_style_gradient",
 ];
 
 /// `pub fn` names per `impl <Type>` block of a source file.

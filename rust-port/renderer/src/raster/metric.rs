@@ -122,6 +122,65 @@ mod tests {
         assert!((d.ssim - 1.0).abs() < 1e-12);
     }
 
+    /// Known sparse difference: every statistic has a hand-computed value.
+    #[test]
+    fn known_sparse_difference() {
+        let a = vec![0u8; 8 * 8 * 4];
+        let mut b = a.clone();
+        b[(3 * 8 + 2) * 4] = 40; // pixel (2,3), R +40 → "visibly different"
+        b[(5 * 8 + 6) * 4 + 1] = 10; // pixel (6,5), G +10 → below the 16 cut
+        let d = compare_premultiplied(&a, &b, 8, 8);
+        assert_eq!(d.max_abs, 40);
+        assert_eq!(d.mean_abs, 50.0 / 256.0);
+        assert_eq!(d.frac_px_over_16, 1.0 / 64.0);
+        assert!(d.ssim < 1.0 && d.ssim > 0.0, "ssim {}", d.ssim);
+        // Symmetric in its arguments.
+        assert_eq!(compare_premultiplied(&b, &a, 8, 8), d);
+    }
+
+    /// Constant planes (zero variance): SSIM reduces to the luminance term
+    /// `(2·μa·μb + C1) / (μa² + μb² + C1)` on every channel.
+    #[test]
+    fn known_constant_offset_ssim() {
+        let a = vec![100u8; 7 * 7 * 4];
+        let b = vec![110u8; 7 * 7 * 4];
+        let d = compare_premultiplied(&a, &b, 7, 7);
+        let c1 = (0.01f64 * 255.0) * (0.01 * 255.0);
+        let want = (2.0 * 100.0 * 110.0 + c1) / (100.0 * 100.0 + 110.0 * 110.0 + c1);
+        assert!((d.ssim - want).abs() < 1e-12, "{} vs {want}", d.ssim);
+        assert_eq!(d.max_abs, 10);
+        assert_eq!(d.mean_abs, 10.0);
+        assert_eq!(d.frac_px_over_16, 0.0);
+    }
+
+    /// Inverted structure (checkerboard vs its negative) must fail any
+    /// sensible SSIM threshold: correlation is −1, so SSIM is negative.
+    #[test]
+    fn inverted_structure_has_negative_ssim() {
+        let px = |x: usize, y: usize, inv: bool| {
+            let on = ((x + y) & 1 == 0) ^ inv;
+            if on {
+                [255u8; 4]
+            } else {
+                [0, 0, 0, 255]
+            }
+        };
+        let img =
+            |inv: bool| -> Vec<u8> { (0..16 * 16).flat_map(|i| px(i % 16, i / 16, inv)).collect() };
+        let d = compare_premultiplied(&img(false), &img(true), 16, 16);
+        assert!(d.ssim < 0.0, "ssim {}", d.ssim);
+        assert_eq!(d.max_abs, 255);
+        assert_eq!(d.frac_px_over_16, 1.0);
+    }
+
+    /// Hidden colour of a fully transparent pixel does not count.
+    #[test]
+    fn transparent_hidden_colour_is_ignored_after_premultiply() {
+        let a = premultiply_straight(&[255, 0, 0, 0]);
+        let b = premultiply_straight(&[0, 255, 0, 0]);
+        assert_eq!(compare_premultiplied(&a, &b, 1, 1).max_abs, 0);
+    }
+
     #[test]
     fn premultiply_rounds() {
         assert_eq!(

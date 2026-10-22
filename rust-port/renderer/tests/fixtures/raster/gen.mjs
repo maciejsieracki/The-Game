@@ -37,7 +37,7 @@ class Grad {
 class Rec {
   constructor() { this.ops = []; }
   set fillStyle(v) { this.ops.push(v instanceof Grad ? ['fillGrad', v.id] : ['fillStyle', v]); }
-  set strokeStyle(v) { this.ops.push(v instanceof Grad ? ['strokeGrad', v.id] : ['strokeStyle', v]); }
+  set strokeStyle(v) { if (v instanceof Grad) throw new Error('strokeStyle = gradient: not used by the web pin (RR-T8a scope)'); this.ops.push(['strokeStyle', v]); }
   set lineWidth(v) { this.ops.push(['lineWidth', v]); }
   set lineJoin(v) { this.ops.push(['lineJoin', v]); }
   set shadowColor(v) { this.ops.push(['shadowColor', v]); }
@@ -901,7 +901,6 @@ const result = await page.evaluate(({ scenes, probes }) => {
         case 'fillStyle': ctx.fillStyle = a[0]; break;
         case 'strokeStyle': ctx.strokeStyle = a[0]; break;
         case 'fillGrad': ctx.fillStyle = grads[a[0]]; break;
-        case 'strokeGrad': ctx.strokeStyle = grads[a[0]]; break;
         case 'lineWidth': ctx.lineWidth = a[0]; break;
         case 'lineJoin': ctx.lineJoin = a[0]; break;
         case 'shadowColor': ctx.shadowColor = a[0]; break;

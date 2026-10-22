@@ -1,0 +1,41 @@
+$ cargo +1.87.0 test --locked  --test raster_scenes scenes_match_golden_hashes -- --nocapture   # run 1
+EXIT=0
+scene hash lines: 46
+sha256 of printed scene hashes: 28428dbab698fa2f04f9ed28b6d8e1af93b2947aa0c25f2a74e982b22e9711f7
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 3 filtered out; finished in 0.88s
+$ cargo +1.87.0 test --locked  --test raster_scenes scenes_match_golden_hashes -- --nocapture   # run 2
+EXIT=0
+scene hash lines: 46
+sha256 of printed scene hashes: 28428dbab698fa2f04f9ed28b6d8e1af93b2947aa0c25f2a74e982b22e9711f7
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 3 filtered out; finished in 1.03s
+$ cargo +1.87.0 test --locked --release --test raster_scenes scenes_match_golden_hashes -- --nocapture   # run 1
+EXIT=0
+scene hash lines: 46
+sha256 of printed scene hashes: 28428dbab698fa2f04f9ed28b6d8e1af93b2947aa0c25f2a74e982b22e9711f7
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 3 filtered out; finished in 0.05s
+$ cargo +1.87.0 test --locked --release --test raster_scenes scenes_match_golden_hashes -- --nocapture   # run 2
+EXIT=0
+scene hash lines: 46
+sha256 of printed scene hashes: 28428dbab698fa2f04f9ed28b6d8e1af93b2947aa0c25f2a74e982b22e9711f7
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 3 filtered out; finished in 0.04s
+$ cargo +stable test --locked  --test raster_scenes scenes_match_golden_hashes -- --nocapture   # run 1
+EXIT=0
+scene hash lines: 46
+sha256 of printed scene hashes: 28428dbab698fa2f04f9ed28b6d8e1af93b2947aa0c25f2a74e982b22e9711f7
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 3 filtered out; finished in 0.86s
+$ cargo +stable test --locked  --test raster_scenes scenes_match_golden_hashes -- --nocapture   # run 2
+EXIT=0
+scene hash lines: 46
+sha256 of printed scene hashes: 28428dbab698fa2f04f9ed28b6d8e1af93b2947aa0c25f2a74e982b22e9711f7
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 3 filtered out; finished in 0.71s
+$ cargo +stable test --locked --release --test raster_scenes scenes_match_golden_hashes -- --nocapture   # run 1
+EXIT=0
+scene hash lines: 46
+sha256 of printed scene hashes: 28428dbab698fa2f04f9ed28b6d8e1af93b2947aa0c25f2a74e982b22e9711f7
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 3 filtered out; finished in 0.04s
+$ cargo +stable test --locked --release --test raster_scenes scenes_match_golden_hashes -- --nocapture   # run 2
+EXIT=0
+scene hash lines: 46
+sha256 of printed scene hashes: 28428dbab698fa2f04f9ed28b6d8e1af93b2947aa0c25f2a74e982b22e9711f7
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 3 filtered out; finished in 0.05s
+sha256 of golden.tsv body: 28428dbab698fa2f04f9ed28b6d8e1af93b2947aa0c25f2a74e982b22e9711f7

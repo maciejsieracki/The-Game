@@ -1,9 +1,9 @@
 # P4-28 — Rasteryzator kształtów na CPU (`raster::Canvas2dLite`, RR-T8a)
 
-TEMAT: `R-RUSTPORT-P4-28-RASTER-SHAPES-Q1` · DOMAIN: GAME · runda 1/5 · Operator (Opus 5.5 medium)
+TEMAT: `R-RUSTPORT-P4-28-RASTER-SHAPES-Q1` · DOMAIN: GAME · runda 2/5 (obrona po FAIL Evaluatora r1) · Operator (Opus 5.5 medium)
 Baza kodu: `origin/rust-port/parity-v2` @ `9ec9c9d8`. Web: pin `edb8fb56` (`git archive edb8fb56 gra/src gra/data` do scratchpadu poza repo, tylko odczyt; zero buildu weba, zero zmian w `gra/**`).
 Decyzje wejściowe: **D-TXT-6 = A** (tiny-skia), **D-RR-4 = A**. Plan paczek: `P4-25-TEXT-RASTER-AUDIT.md` §6 (RR-T8a).
-Dowody surowe: `dyspozycje/autobot/runs/R-RUSTPORT-P4-28-RASTER-SHAPES-Q1/dowody/01…08`.
+Dowody surowe (pełne logi z `EXIT=`, **w commicie** — `*.log` jest w `.gitignore:20`, więc dodane jawnie `git add -f`): runda 1 `dyspozycje/autobot/runs/R-RUSTPORT-P4-28-RASTER-SHAPES-Q1/dowody/r1/01…09-*.log` (skrypty `dowody/05,06,08,09-*`), runda 2 `dowody/r2-06-*.log`, `dowody/r2-08-*.log`, `dowody/r2-09-*.log` (skrypty `dowody/r2-*`). Odwołania `dowody/0N` w tekście = `dowody/r1/0N-*.log`.
 
 Konwencja: `plik:linia` bez prefiksu = `gra/src/` w pinie `edb8fb56`. `[zewn.]` = wiedza o wnętrzu Chromium/Skia spoza repo — nieczytana w źródłach, **sprawdzana wyłącznie empirycznie** (piksele Chromium, §5). `NIE_ZMIERZONO` = nie sprawdzone.
 
@@ -17,7 +17,7 @@ Konwencja: `plik:linia` bez prefiksu = `gra/src/` w pinie `edb8fb56`. `[zewn.]` 
 4. **46 scen** (32 sceny producentów T4–T15 + H1, 12 scen semantycznych `x_*`, 2 syntetyczne obrazy-źródła; §4) wykonanych tym samym op-listem w Rust i w **prawdziwym Chromium 141** (Canvas 2D, software). Wszystkie w progach: SSIM min **0,9914**, mean_abs max **1,08**, px>16 max **3,22 %** (§5). Bitowa zgodność z Chromium niemożliwa (inny skaner AA) — progi to ZAŁOŻENIE do D-TXT-4.
 5. **Determinizm**: hash FNV-1a 64 bufora RGBA wszystkich 46 scen identyczny w 8 przebiegach: rustc 1.87.0 i 1.97.0 × debug/release × 2 (`dowody/05`). Referencje Chromium regenerowane drugi raz — `MANIFEST.sha256` identyczny (`dowody/06`).
 6. Kolory CSS: 119 sond w Chromium; akceptacja zgodna poza 3 udokumentowanymi wyjątkami, piksel 101/107 bit w bit, reszta ±1, alfa zawsze dokładna (§3.4).
-7. Bramy: fmt / clippy (bez i z `gpu`) / `cargo test --locked --all-targets` stable i 1.87.0 — **EXIT=0**, 207 testów zielonych na każdym toolchainie (`dowody/09-final-gates.log`). Mutacje: **20/20 zabitych** (§7).
+7. Bramy (r2): fmt / clippy (bez i z `gpu`) / `cargo test --locked --all-targets` stable i 1.87.0 — **EXIT=0**, **211** testów zielonych na każdym toolchainie (`dowody/r2-09-final-gates.log`; r1: 207 w `dowody/r1/09-final-gates.log`). Mutacje: **25/25 zabitych (r2; r1: 20/20)** (§7).
 
 ---
 
@@ -31,7 +31,7 @@ Konwencja: `plik:linia` bez prefiksu = `gra/src/` w pinie `edb8fb56`. `[zewn.]` 
 | bez tekstu (RR-T8b), bez SVG/JPG/emoji (RR-T8c) | `drawImage` przyjmuje tylko zdekodowany `RasterImage` (RGBA8 albo inna kanwa) |
 | zależność tiny-skia 0.12.x, MSRV 1.87, lock commitowany | §0 pkt 2 |
 | determinizm 2+ przebiegi, 1.87 vs najnowszy | §6 |
-| testy strukturalne znanych pikseli | `tests/raster_unit.rs`, 29 testów (§6) |
+| testy strukturalne znanych pikseli | `tests/raster_unit.rs`, 32 testy (§6) |
 | metryka zgodności + ≥30 scen z Chromium | §4–§5 |
 | mutacje ≥ 10 | §7 |
 
@@ -54,7 +54,9 @@ grep -rohE "\b(ctx|c|g|context)\.[a-zA-Z]+\b *[(=]?" render/cities.ts render/sie
 ```
 Wynik (członkowie `ctx.`; `g.*` to grupy Three, nie gradient): `fillStyle=` 40, `beginPath` 28, `strokeStyle=` 24, `lineWidth=` 24, `font=` 22, `stroke` 20, `fill` 20, `arc` 20, `fillText` 18, `textBaseline=` 17, `textAlign=` 17, `lineTo` 15, `clearRect` 12, `arcTo` 8, `moveTo` 7, `measureText` 6, `drawImage` 6, `quadraticCurveTo` 5, `closePath` 5, `fillRect` 4, `strokeRect` 3, `shadowColor=` 3, `shadowBlur=` 3, `save` 3, `restore` 3, `createLinearGradient` 2, `clip` 2, `translate` 1, `strokeText` 1, `shadowOffsetY=` 1, `setTransform` 1, `roundRect` 1, `rotate` 1, `lineJoin=` 1 — **identycznie jak P4-25 §4.1**. `addColorStop` (zmienna `grad`): `cityMapStatChip.ts:480-482`, `:857-858`.
 
-Mapowanie Rust ↔ Canvas (z miejscem użycia w webie) jest tabelą `CANVAS_MEMBERS` w `tests/raster_api_closed.rs`; każde z 30 cytowań `plik:linia` sprawdzone skryptem (`sed -n <linia>p`) — wszystkie wskazują właściwe wywołanie.
+Mapowanie Rust ↔ Canvas (z miejscem użycia w webie) jest tabelą `CANVAS_MEMBERS` w `tests/raster_api_closed.rs` (r2: 29 wpisów = 28 członków, `fillStyle` w dwóch postaciach: CSS i gradient; każdy wpis ma cytowanie `plik:linia`, sprawdzone skryptem `sed -n <linia>p`).
+
+**`strokeStyle = <gradient>` (r2, zarzut 2 Evaluatora): NIE implementowane.** Pomiar: `git grep -nE "strokeStyle\s*=" edb8fb56 -- gra/src` — wszystkie przypisania to łańcuchy CSS (literały, stałe kolorów, `pal.stroke` z `DEFENSE_COLORS` `cityMapStatChip.ts:80-82`, `hexToRgba`/`workerOwnerColorRgba`); żadne nie przypisuje gradientu. Metodę `set_stroke_style_gradient` z r1 usunięto i dopisano do listy zakazanej `FORBIDDEN` w `tests/raster_api_closed.rs`; `gen.mjs` rzuca błąd przy próbie przypisania gradientu do `strokeStyle`, a ścieżka `strokeGrad` zniknęła z generatora i z `tests/raster_scenes.rs`. Referencje Chromium odtworzone tym `gen.mjs` są bit w bit takie same (zmienił się tylko wiersz `gen.mjs` w `MANIFEST.sha256`, `dowody/r2-06-chromium-refs-repro.log`).
 
 ---
 
@@ -119,7 +121,15 @@ Szerokości tekstów w T14 (`nameW`, `growthW`) są stałymi wejściowymi (w web
 Na kanałach **premultiplied** (Chromium: `getImageData` → premultiply z zaokrągleniem): `max_abs`, `mean_abs`, `frac_px_over_16` (udział pikseli z różnicą kanału > 16), `ssim` (średnia z R,G,B,A; okno 7×7 jednorodne, krok 1, kowariancja próbkowa, C1=(0,01·255)², C2=(0,03·255)²).
 **Progi (ZAŁOŻENIE Z-28-6, do rewizji właściciela w D-TXT-4):** SSIM ≥ 0,985, mean_abs ≤ 1,5, px>16 ≤ 5 % na scenę. `max_abs` raportowany, bez progu (pojedyncze piksele krawędzi różnią się o ≤ 123).
 
-### 5.2 Wyniki (pełny log `dowody/07`)
+### 5.1a Testy jednostkowe metryki (r2, zarzut 5 Evaluatora)
+Czułość metryki jest teraz dowiedziona testami w repo (`src/raster/metric.rs`), nie tylko mutacjami:
+- `known_sparse_difference` — 8×8, R +40 w jednym pikselu i G +10 w drugim: `max_abs = 40`, `mean_abs = 50/256` (dokładnie), `frac_px_over_16 = 1/64` (próg 16 rozróżnia 40 od 10), `0 < SSIM < 1`, symetria argumentów;
+- `known_constant_offset_ssim` — płaszczyzny stałe 100 vs 110 (7×7): SSIM = `(2·100·110 + C1)/(100² + 110² + C1)` z dokładnością 1e-12, `mean_abs = 10`, `frac_px_over_16 = 0`;
+- `inverted_structure_has_negative_ssim` — szachownica vs negatyw 16×16: SSIM < 0, `max_abs = 255`, `frac_px_over_16 = 1`;
+- `transparent_hidden_colour_is_ignored_after_premultiply` — ukryty kolor piksela z alfą 0 nie liczy się.
+Mutacje metryki M21–M25 (§7) — wynik w `dowody/r2-08-mutations.log`.
+
+### 5.2 Wyniki (pełny log `dowody/r1/07-raster-tests-nocapture.log`)
 
 | scena | max | mean | px>16 % | SSIM |
 |---|---|---|---|---|
@@ -161,7 +171,7 @@ Ocena 1:1 na ekranie gry: krawędzie pierścieni medalionu T10 (14 px) i tła T7
 
 | plik | testy | co sprawdza |
 |---|---|---|
-| `src/raster/*` (unit) | 9 | conic/arc (ćwiartki, otwarty pełny okrąg, CCW), arcTo, kolor, jądro Gaussa, metryka |
+| `src/raster/*` (unit) | 13 | conic/arc (ćwiartki, otwarty pełny okrąg, CCW), arcTo, kolor, jądro Gaussa, metryka (r2: +4 testy znanych różnic — §5.1a) |
 | `tests/raster_unit.rs` | 32 | znane piksele: pełne wypełnienia bit w bit, krawędź AA 75 %/50 %, pole koła/roundRect/arcTo, gradient w punktach kontrolnych i pod CTM, gradienty zdegenerowane, błędy (`IndexSize`, `Syntax`), clip + restore, pusty clip, clearRect w klipie, translate/rotate/setTransform, save/restore stylu, strokeRect, lineWidth ignorowany ≤ 0, joins miter/round/bevel, miter limit 10 (kąt 20° zostaje miter, ~5,7° bevel), cień twardy i rozmyty, drawImage (kopiowanie, ujemny rozmiar), wyjście proste, argumenty nieskończone, `lineTo` bez podścieżki, kolejność przystanków o równym offsecie |
 | `tests/raster_color.rs` | 5 | §3.4 (+ kolory nieprzezroczyste bit w bit) |
 | `tests/raster_scenes.rs` | 4 | §5 (progi), złote hashe `golden.tsv` (46), dwukrotne renderowanie identyczne, kompletność `MANIFEST.sha256` |
@@ -170,20 +180,20 @@ Ocena 1:1 na ekranie gry: krawędzie pierścieni medalionu T10 (14 px) i tła T7
 Determinizm (`dowody/05`): `scenes_match_golden_hashes` na rustc 1.87.0 i 1.97.0, debug i release, po 2 przebiegi — 8 × EXIT=0, sha256 46 wydrukowanych hashy = sha256 treści `golden.tsv` = `28428dba…9711f7` we wszystkich 8. Platforma: x86_64 Linux; inne architektury NIE_ZMIERZONO (wyłączony `simd` zmniejsza ryzyko rozjazdu ścieżek SIMD, ale nie jest dowodem).
 Przebłogosławienie hashy: `RASTER_BLESS=1 cargo test --test raster_scenes scenes_match_golden_hashes` (tylko po świadomej zmianie). Zrzuty do diagnostyki: `RASTER_DUMP=<katalog>`.
 
-### 6.1 Bramy (surowe logi `dowody/01–04`; po ostatnich dopisanych testach powtórzone w `dowody/09-final-gates.log`: fmt/clippy/clippy gpu/test stable/test 1.87.0 — wszystkie EXIT=0, 207 testów na toolchain; `clippy` dla 1.87.0 niezainstalowany w kontenerze → NIE_ZMIERZONO, poza bramami dispatchu)
+### 6.1 Bramy (r1: surowe logi `dowody/r1/01–04`, `dowody/r1/09-final-gates.log`, 207 testów; **r2: `dowody/r2-09-final-gates.log`** — fmt/clippy/clippy gpu/test stable/test 1.87.0 — wszystkie EXIT=0, 211 testów na toolchain; `clippy` dla 1.87.0 niezainstalowany w kontenerze → EXIT=1 „cargo-clippy is not installed”, NIE_ZMIERZONO, poza bramami dispatchu)
 ```
-cargo fmt --all -- --check                                      EXIT=0   (dowody/01-fmt.log)
-cargo clippy --locked --all-targets -- -D warnings              EXIT=0   (dowody/02-clippy.log)
-cargo clippy --locked --all-targets --features gpu -- -D warnings EXIT=0 (dowody/02-clippy.log)
-cargo test --locked --all-targets            (rustc 1.97.0)     EXIT=0   207 passed, 0 failed (dowody/09; wcześniej 203 w dowody/03)
-cargo +1.87.0 test --locked --all-targets    (MSRV)             EXIT=0   207 passed, 0 failed (dowody/09; wcześniej 203 w dowody/04)
+cargo fmt --all -- --check                                      EXIT=0   (r2-09; r1/01-fmt.log)
+cargo clippy --locked --all-targets -- -D warnings              EXIT=0   (r2-09; r1/02-clippy.log)
+cargo clippy --locked --all-targets --features gpu -- -D warnings EXIT=0 (r2-09; r1/02-clippy.log)
+cargo test --locked --all-targets            (rustc 1.97.0)     EXIT=0   211 passed, 0 failed (r2-09; r1: 207 w r1/09, 203 w r1/03)
+cargo +1.87.0 test --locked --all-targets    (MSRV)             EXIT=0   211 passed, 0 failed (r2-09; r1: 207 w r1/09, 203 w r1/04)
 ```
 
 ---
 
 ## 7. Mutacje
 
-Skrypt `dowody/08-mutations.py` (każda mutacja = jedna podmiana fragmentu, asercja jednokrotnego wystąpienia, test `--lib` + 4 pliki `raster_*`, przywrócenie pliku). Wynik: `dowody/08-mutations.log`.
+Skrypt `dowody/08-mutations.py` (r1: M01–M20) i `dowody/r2-08-mutations.py` (r2: M01–M25, cały zestaw powtórzony na kodzie r2; każda mutacja = jedna podmiana fragmentu, asercja jednokrotnego wystąpienia, test `--lib` + 4 pliki `raster_*`, przywrócenie pliku). Wyniki: `dowody/r1/08-mutations.log`, `dowody/r2-08-mutations.log`. Kolumna „zabija” w wierszach M01–M20 — z r1.
 
 | ID | plik | mutacja | wynik | zabija |
 |---|---|---|---|---|
@@ -207,8 +217,13 @@ Skrypt `dowody/08-mutations.py` (każda mutacja = jedna podmiana fragmentu, aser
 | M18 | `src/raster/canvas.rs` | offset-only (blur 0) shadow dropped | **KILLED** | shadow_is_drawn_below_and_offset |
 | M19 | `src/raster/path.rs` | lineTo without subpath does not act as moveTo | **KILLED** | line_to_without_subpath_acts_as_move_to |
 | M20 | `src/raster/canvas.rs` | gradient ignores the CTM | **KILLED** | scenes_match_golden_hashes, scenes_match_chromium, gradient_follows_the_ctm_at_paint_time |
+| M21 | `src/raster/metric.rs` | mean_abs per pixel instead of per channel (r2) | **KILLED** | metric::known_constant_offset_ssim, metric::known_sparse_difference, scenes_match_chromium |
+| M22 | `src/raster/metric.rs` | visibly-different cut 16 → 64 (r2) | **KILLED** | metric::known_sparse_difference |
+| M23 | `src/raster/metric.rs` | SSIM constant C1 dropped (r2) | **KILLED** | metric::known_constant_offset_ssim, metric::known_sparse_difference |
+| M24 | `src/raster/metric.rs` | SSIM ignores the sign of the covariance (r2) | **KILLED** | metric::inverted_structure_has_negative_ssim |
+| M25 | `src/raster/metric.rs` | one-sided difference, metric not symmetric (r2) | **KILLED** | metric::inverted_structure_has_negative_ssim, metric::known_sparse_difference, metric::known_constant_offset_ssim |
 
-**Wynik: 20/20 zabitych.** Historia (uczciwie): pierwszy przebieg dał 17/20 — przeżyły M05 (miter limit 4 vs 10), M11 (floor vs round w `rgb()`), M17 (kolejność przystanków o równym offsecie), a w przebiegu wstępnym także M19 (`lineTo` bez podścieżki). Dopisano testy `miter_limit_ten_keeps_a_20_degree_miter`, `opaque_colours_are_bit_exact`, `equal_offset_stops_keep_insertion_order`, `line_to_without_subpath_acts_as_move_to` i powtórzono cały zestaw (log powyżej). Wniosek dla D-TXT-4: miękka metryka vs Chromium nie wykrywa M13 (clip bez AA) — od subtelnych regresji chronią złote hashe.
+**Wynik r2: 25/25 zabitych** (`dowody/r2-08-mutations.log`, EXIT=0; M01–M20 z tymi samymi testami zabijającymi co w r1, M13 tym razem nazwany przez skrypt). **Wynik r1: 20/20 zabitych.** Historia (uczciwie): pierwszy przebieg dał 17/20 — przeżyły M05 (miter limit 4 vs 10), M11 (floor vs round w `rgb()`), M17 (kolejność przystanków o równym offsecie), a w przebiegu wstępnym także M19 (`lineTo` bez podścieżki). Dopisano testy `miter_limit_ten_keeps_a_20_degree_miter`, `opaque_colours_are_bit_exact`, `equal_offset_stops_keep_insertion_order`, `line_to_without_subpath_acts_as_move_to` i powtórzono cały zestaw (log powyżej). Wniosek dla D-TXT-4: miękka metryka vs Chromium nie wykrywa M13 (clip bez AA) — od subtelnych regresji chronią złote hashe.
 
 ---
 
@@ -217,6 +232,7 @@ Skrypt `dowody/08-mutations.py` (każda mutacja = jedna podmiana fragmentu, aser
 - Z-28-1 … Z-28-5: §1. Z-28-6: progi metryki §5.1 (D-TXT-4).
 - Z-28-7: `set_fill_style_gradient` kopiuje gradient w chwili przypisania; w JS `fillStyle` trzyma referencję i późniejsze `addColorStop` zmieniłoby wygląd. Web zawsze dodaje przystanki przed przypisaniem (`cityMapStatChip.ts:479-495`, `:856-859`), więc różnica jest nieobserwowalna dla obecnego kodu.
 - Z-28-8: `sin`/`cos`/`exp` przez `jsmath` (f64 → f32) zamiast `sinf`/`cosf` Skii — różnica rzędu kilku ULP f32, nieobserwowalna w pikselach scen.
+- Uwaga Evaluatora U1 (r2, bez zmiany): scena `h1_battle_minimap` używa syntetycznych kolorów jednostek; w webie `BATTLE_PLAYER '#3a6ad0'` i `BATTLE_ENEMY '#c84040'` (`battle/battleHudTheme.ts:17,22`). Kolory te są zwykłymi `#rrggbb` (forma pokryta testem `opaque_colours_are_bit_exact`), scena testuje pokrycie geometrii — podmiana zmieniłaby referencje i złote hashe bez zysku dowodowego; do ewentualnego ujednolicenia przy RR-T8b.
 - NIE_ZMIERZONO: determinizm poza x86_64; zachowanie Chromium na Windows/GPU (referencje to raster programowy Linux); wygląd po mipmapach/GPU (§5.4); tekst/glify/obrazy (RR-T8b/c).
 
 DEPLOY/PUSH: NIE WYKONANO
