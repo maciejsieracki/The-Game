@@ -28,7 +28,13 @@ dotykające tych samych plików — zawsze sekwencyjnie, nigdy w tej samej fali.
 | # | Temat | Faza | Runda | runId Workflow | Status | Ostatnia aktualizacja |
 |---|---|---|---|---|---|---|
 | 1 | `R-RUSTPORT-P3-19-FLATTEN-MULTIPLIERS-Q1` | P3.19 runda 3 — **WSTRZYMANY: czeka na odpowiedzi właściciela (paczka ABC P3-19 Q1–Q3)** | 3/5 | — | DECISION_REQUIRED | 2026-10-22 |
-| 2–6 | — | — | — | — | **WOLNE** (P3.21 `CityId` startuje po P3.19 — te same pliki domeny; RR-T5 materiały/RR-T1 spike wymagają GPU; modele NM/MOD czekają na decyzje D-NM i spike) | 2026-10-22 |
+| 2 | `R-RUSTPORT-P4-12-MOD01-CORE-Q1` | MOD-01 rdzeń renderera (hex, fog, LOD, rnd, palety) — Opus 5.5 | 1/5 | `wf_911d780b-448` | DISPATCHED | 2026-10-22 |
+| 3 | `R-RUSTPORT-P4-13-MOD04-UNIT-CORE-Q1` | MOD-04 rdzeń modeli jednostek + routing D-MOD-9 — Opus 5.5 | 1/5 | `wf_590a7af3-626` | DISPATCHED | 2026-10-22 |
+| 4 | `R-RUSTPORT-P4-14-MOD12-WONDERS-Q1` | MOD-12 modele cudów — Opus 5.5 | 1/5 | `wf_dd392c86-f69` | DISPATCHED | 2026-10-22 |
+| 5 | `R-RUSTPORT-P5-0-VIEWMODEL-CATALOG-Q1` | P5-0 katalog modelu widoku (DTO UI) — doc, Opus 5.5 | 1/5 | `wf_fa168dd5-cbe` | DISPATCHED | 2026-10-22 |
+| 6 | `R-RUSTPORT-P4-5B-MAP-UI-SEAM-Q1` | P4-5B kontrakt granicy mapa↔UI — doc, Opus 5.5 | 1/5 | `wf_1b7cdb13-1cb` | DISPATCHED | 2026-10-22 |
+
+Kolejka (po MOD-01/04): MOD-03 teren-dekor, MOD-05/06/07 jednostki epok, MOD-09 miasta, MOD-11 ulepszenia, MOD-13 misc; P3.21 `CityId` po P3.19. Zasada: blokada na pytaniach NIE zatrzymuje puli — uruchamiaj niezależne tematy równolegle (korekta właściciela 2026-10-22).
 
 **Zamknięte w tej sesji (kod na `rust-port/parity-v2`, HEAD `aa7b225b`, 292 testy):** P3.4b, P3.4c (newtypy ID), P3.8 (assety 428), P3.8b (manifest), P3.9 (data wiring), P3.11 (zgodność danych), P3.12 (loader), P3.14 (fmt/clippy w `src/data`).
 
