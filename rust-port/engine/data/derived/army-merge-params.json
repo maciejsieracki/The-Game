@@ -1,0 +1,26 @@
+{
+  "meta": {
+    "status": "P6.5A (R-RUSTPORT-P6-5A-JEDNOSTKI-ZYCIE-A-Q1): edytowalne stale i teksty stosow armii (armyMerge.ts). Kod Rust (domain/recruitment.rs, modul army_merge) nie zawiera tych wartosci; kolejnosc sasiadow oraz separator i przyrostek klucza stosu sa czytane z data/derived/ruch-jednostek-params.json (P6.4).",
+    "pin_web": "edb8fb56",
+    "wygenerowano": "R-RUSTPORT-P6-5A-JEDNOSTKI-ZYCIE-A-Q1 runda 1: wartosci przepisane z TS; zgodnosc z webem sprawdzona wektorami (tests/p6_5a_vectors/*.json) i verify-p65a-vectors.py (regex po zrodle TS)."
+  },
+  "id_stosu": {
+    "zrodlo_web": "gra/src/game/armyMerge.ts:71-74 (freshStackGroupId: 'sg' + ownerId + '_' + Date.now().toString(36) + '_' + seq.toString(36))",
+    "prefiks": "sg",
+    "separator": "_",
+    "podstawa": 36
+  },
+  "podzial": {
+    "zrodlo_web": "gra/src/game/armyMerge.ts:503 (etykieta celu 'W miescie (ten heks)'), :689-704 (stackHudMergeSplitActions: prog 2 jednostek, identyfikatory i etykiety akcji)",
+    "etykieta_ten_heks": "W mieście (ten heks)",
+    "min_stos_rozdzielenia": 2,
+    "akcja_rozdziel": { "id": "split", "etykieta": "Rozdziel" },
+    "akcja_polacz": { "id": "merge", "etykieta": "Połącz" }
+  },
+  "stan_stosu": {
+    "zrodlo_web": "gra/src/game/armyMerge.ts:855 i :865 (poczatkowy poziom odznaki 0), :875 (poczatkowy poziom weterana 1), :893 (poczatkowa liczba gwiazdek 0)",
+    "poziom_odznaki_poczatkowy": 0,
+    "poziom_weterana_poczatkowy": 1,
+    "gwiazdki_poczatkowe": 0
+  }
+}
