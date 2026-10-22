@@ -1,0 +1,50 @@
+$ (cwd rust-port/spike-gpu-embed) CARGO_INCREMENTAL=0 CARGO_TARGET_DIR=<scratchpad>/target-spike cargo check --locked
+# 2026-10-22T12:01:31Z  rustc 1.97.0 (2d8144b78 2026-07-07)  cargo 1.97.0 (c980f4866 2026-06-30)
+   Compiling gdk-sys v0.18.2
+   Compiling pango-sys v0.18.0
+   Compiling cairo-sys-rs v0.18.2
+   Compiling gdk-pixbuf-sys v0.18.0
+error: failed to run custom build command for `gdk-sys v0.18.2`
+note: To improve backtraces for build dependencies, set the CARGO_PROFILE_DEV_BUILD_OVERRIDE_DEBUG=true environment variable to enable debug information generation.
+
+Caused by:
+  process didn't exit successfully: `/tmp/claude-0/-home-user-The-Game/cbf4a126-dca3-5f50-bfb0-2a747b18a590/scratchpad/target-spike/debug/build/gdk-sys-48c43f9baf9dc33b/build-script-build` (exit status: 1)
+  --- stdout
+  cargo:rerun-if-env-changed=GDK_3.0_NO_PKG_CONFIG
+  cargo:rerun-if-env-changed=PKG_CONFIG_x86_64-unknown-linux-gnu
+  cargo:rerun-if-env-changed=PKG_CONFIG_x86_64_unknown_linux_gnu
+  cargo:rerun-if-env-changed=HOST_PKG_CONFIG
+  cargo:rerun-if-env-changed=PKG_CONFIG
+  cargo:rerun-if-env-changed=PKG_CONFIG_PATH_x86_64-unknown-linux-gnu
+  cargo:rerun-if-env-changed=PKG_CONFIG_PATH_x86_64_unknown_linux_gnu
+  cargo:rerun-if-env-changed=HOST_PKG_CONFIG_PATH
+  cargo:rerun-if-env-changed=PKG_CONFIG_PATH
+  cargo:rerun-if-env-changed=PKG_CONFIG_LIBDIR_x86_64-unknown-linux-gnu
+  cargo:rerun-if-env-changed=PKG_CONFIG_LIBDIR_x86_64_unknown_linux_gnu
+  cargo:rerun-if-env-changed=HOST_PKG_CONFIG_LIBDIR
+  cargo:rerun-if-env-changed=PKG_CONFIG_LIBDIR
+  cargo:rerun-if-env-changed=PKG_CONFIG_SYSROOT_DIR_x86_64-unknown-linux-gnu
+  cargo:rerun-if-env-changed=PKG_CONFIG_SYSROOT_DIR_x86_64_unknown_linux_gnu
+  cargo:rerun-if-env-changed=HOST_PKG_CONFIG_SYSROOT_DIR
+  cargo:rerun-if-env-changed=PKG_CONFIG_SYSROOT_DIR
+
+  --- stderr
+
+  pkg-config exited with status code 1
+  > PKG_CONFIG_ALLOW_SYSTEM_CFLAGS=1 pkg-config --libs --cflags gdk-3.0 'gdk-3.0 >= 3.22'
+
+  pkg-config output:
+    Package gdk-3.0 was not found in the pkg-config search path.
+    Perhaps you should add the directory containing `gdk-3.0.pc'
+    to the PKG_CONFIG_PATH environment variable
+    Package 'gdk-3.0', required by 'virtual:world', not found
+    Package 'gdk-3.0', required by 'virtual:world', not found
+
+  The system library `gdk-3.0` required by crate `gdk-sys` was not found.
+  The file `gdk-3.0.pc` needs to be installed and the PKG_CONFIG_PATH environment variable must contain its parent directory.
+  The PKG_CONFIG_PATH environment variable is not set.
+
+  HINT: if you have installed the library, try setting PKG_CONFIG_PATH to the directory containing `gdk-3.0.pc`.
+
+warning: build failed, waiting for other jobs to finish...
+EXIT=101

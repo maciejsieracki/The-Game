@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="pl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Spike RR-T1</title>
+<style>
+  /* The page MUST stay transparent: the wgpu frame is underneath. */
+  html, body { margin: 0; padding: 0; background: transparent; height: 100%; overflow: hidden;
+               font: 14px/1.4 system-ui, -apple-system, "Segoe UI", sans-serif; color: #111; }
+  /* UI rect 1: wizard panel on the right */
+  #panel { position: fixed; top: 0; right: 0; width: 380px; height: 100%; box-sizing: border-box;
+           padding: 14px 16px; background: rgba(250, 248, 240, 0.97); border-left: 3px solid #333;
+           overflow-y: auto; }
+  /* UI rect 2: small HTML bar ABOVE the map area (top-left) */
+  #topbar { position: fixed; top: 10px; left: 10px; width: 320px; height: 36px; box-sizing: border-box;
+            padding: 8px 10px; background: rgba(255, 255, 255, 0.92); border: 2px solid #333;
+            border-radius: 6px; font-weight: 600; }
+  h1 { font-size: 16px; margin: 0 0 6px; }
+  .step { font-size: 15px; background: #fff3c4; border: 1px solid #c9a227; padding: 8px; margin: 8px 0;
+          border-radius: 4px; min-height: 40px; }
+  .btns button, #ui-button { font-size: 15px; padding: 6px 14px; margin: 4px 6px 4px 0; cursor: pointer; }
+  #ui-button { background: #2a6; color: #fff; border: 0; border-radius: 4px; display: none; }
+  #log { font: 11px/1.3 ui-monospace, Consolas, monospace; white-space: pre-wrap; background: #f4f4f4;
+         border: 1px solid #ccc; padding: 6px; max-height: 280px; overflow-y: auto; }
+  .muted { color: #555; font-size: 12px; }
+</style>
+</head>
+<body>
+  <div id="topbar" data-ui-rect="topbar">HTML nad mapa (pasek testowy)</div>
+  <div id="panel" data-ui-rect="panel">
+    <h1>Spike RR-T1 &mdash; kreator pomiaru</h1>
+    <div class="muted">R-RUSTPORT-P4-15-GPU-SPIKE-PREP-Q1 &middot; <span id="platform">?</span></div>
+    <div class="step" id="step">Start&hellip;</div>
+    <div class="btns" id="btns"></div>
+    <button id="ui-button" type="button">PRZYCISK UI</button>
+    <div class="muted" id="status"></div>
+    <h1>Dziennik</h1>
+    <div id="log"></div>
+  </div>
+  <script src="spike.js"></script>
+</body>
+</html>
