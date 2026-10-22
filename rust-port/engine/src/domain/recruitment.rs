@@ -2,7 +2,9 @@ use std::{collections::BTreeMap, error::Error, fmt, sync::OnceLock};
 
 use serde::{Deserialize, Serialize};
 
-use crate::data::derived::{parse_unit_stock_costs, UnitStockRow};
+use crate::data::derived::{
+    parse_unit_gold_costs, parse_unit_stock_costs, UnitGoldRow, UnitStockRow,
+};
 use crate::data::units_combat::{parse_units, UnitRecord};
 
 /// Empire-stock quantities used by recruitment and the next-turn resource upkeep.
@@ -207,8 +209,11 @@ pub fn unit_resource_upkeep_for_turns(unit: &UnitRecruitment, turns: u32) -> Res
 /// Canonical recruitment rows: one per `gra/data/units.json` record (75).
 ///
 /// Source of the values, by field:
-/// - `gold_cost`, `gold_upkeep`, `unit_type`, `super_unit`: embedded `units.json`
-///   (`Pieniądz (koszt)`, `Utrzymanie (Pieniądz/turę)`, `Typ`, `Super-jednostka`), unchanged.
+/// - `gold_cost`, `gold_upkeep`: the EDITABLE value table
+///   `rust-port/engine/data/derived/unit-gold-costs.json` (P3-19 runda 3). Its numbers are the
+///   bootstrap of the web rules: `scaleCostByEpoch(Pieniądz (koszt), Epoka)` and the gold upkeep
+///   `scaleCostByEpoch(Utrzymanie, Epoka) x4` (FALA1 x FALA2); no multiplier at runtime.
+/// - `unit_type`, `super_unit`: embedded `units.json` (`Typ`, `Super-jednostka`), unchanged.
 /// - `stock_cost` and `resource_upkeep`: the EDITABLE value table
 ///   `rust-port/engine/data/derived/unit-stock-costs.json` (P3-19). Its numbers are the
 ///   bootstrap of the web rules (epoch factor, mount horse surcharge `kon`); the engine
@@ -221,7 +226,13 @@ pub fn canonical_recruitment_costs() -> Vec<UnitRecruitment> {
         .get_or_init(|| {
             let records = parse_units().expect("embedded units.json must parse");
             let derived = parse_unit_stock_costs().expect("embedded derived unit table must parse");
+            let gold = parse_unit_gold_costs().expect("embedded derived gold table must parse");
             let rows: BTreeMap<&str, &UnitStockRow> = derived
+                .wiersze
+                .iter()
+                .map(|row| (row.jednostka.as_str(), row))
+                .collect();
+            let gold_rows: BTreeMap<&str, &UnitGoldRow> = gold
                 .wiersze
                 .iter()
                 .map(|row| (row.jednostka.as_str(), row))
@@ -232,22 +243,26 @@ pub fn canonical_recruitment_costs() -> Vec<UnitRecruitment> {
                     let row = rows
                         .get(record.jednostka.as_str())
                         .unwrap_or_else(|| panic!("derived unit table lacks {}", record.jednostka));
-                    recruitment_from_unit_record(record, row)
+                    let gold_row = gold_rows
+                        .get(record.jednostka.as_str())
+                        .unwrap_or_else(|| panic!("derived gold table lacks {}", record.jednostka));
+                    recruitment_from_unit_record(record, row, gold_row)
                 })
                 .collect()
         })
         .clone()
 }
 
-fn recruitment_from_unit_record(record: &UnitRecord, row: &UnitStockRow) -> UnitRecruitment {
+fn recruitment_from_unit_record(
+    record: &UnitRecord,
+    row: &UnitStockRow,
+    gold: &UnitGoldRow,
+) -> UnitRecruitment {
     let mut unit = UnitRecruitment::new(
         record.jednostka.as_str(),
         record.typ.as_str(),
-        non_negative(record.pieniadz_koszt, "Pieniądz (koszt)"),
-        non_negative(
-            record.utrzymanie_pieniadz_ture,
-            "Utrzymanie (Pieniądz/turę)",
-        ),
+        gold.pieniadz_koszt,
+        gold.utrzymanie_pieniadz_ture,
     );
     for (resource, amount) in &row.surowiec {
         unit = unit.with_stock_cost(resource.as_str(), *amount);
@@ -259,10 +274,6 @@ fn recruitment_from_unit_record(record: &UnitRecord, row: &UnitStockRow) -> Unit
         unit = unit.with_super_unit();
     }
     unit
-}
-
-fn non_negative(value: i64, field: &str) -> u32 {
-    u32::try_from(value).unwrap_or_else(|_| panic!("units.json field {field} must be >= 0"))
 }
 
 /// Find a fresh canonical record by the exact `Jednostka` identifier.

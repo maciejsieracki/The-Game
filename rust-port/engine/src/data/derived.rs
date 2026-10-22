@@ -16,6 +16,11 @@ use serde::{Deserialize, Serialize};
 pub const UNIT_STOCK_COSTS_JSON: &str = include_str!("../../data/derived/unit-stock-costs.json");
 pub const BUILDING_STOCK_COSTS_JSON: &str =
     include_str!("../../data/derived/building-stock-costs.json");
+/// Praca (Work) budynków: wartości już pomnożone przez mnożnik ery (runda 3, Q1=A).
+pub const BUILDING_WORK_COSTS_JSON: &str =
+    include_str!("../../data/derived/building-work-costs.json");
+/// Złoto jednostek: koszt zakupu (po mnożniku epoki) i utrzymanie (po epoce i x4).
+pub const UNIT_GOLD_COSTS_JSON: &str = include_str!("../../data/derived/unit-gold-costs.json");
 
 /// Klucz zasobu magazynu państwa (ASCII, małe litery) -> ilość. Liczby całkowite >= 0.
 pub type StockMap = BTreeMap<String, u32>;
@@ -76,8 +81,75 @@ pub struct BuildingStockRow {
     pub baza_koszt_surowce: StockMap,
 }
 
+/// Plik `building-work-costs.json`: jeden wiersz na każdy budynek z `buildings.json`.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct BuildingWorkCostsFile {
+    pub meta: serde_json::Value,
+    pub wiersze: Vec<BuildingWorkRow>,
+}
+
+/// Rozwinięta Praca budynku: `praca_bazowa` = kosztBudowy x mnożnik ery,
+/// `praca_przyrost` = przyrostKosztu x mnożnik ery (poziom n: bazowa + przyrost x (n-1)).
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct BuildingWorkRow {
+    pub budynek: String,
+    #[serde(rename = "epokaWejscia")]
+    pub epoka_wejscia: i64,
+    pub praca_bazowa: u32,
+    pub praca_przyrost: u32,
+    pub baza: BuildingWorkBase,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct BuildingWorkBase {
+    #[serde(rename = "kosztBudowy")]
+    pub koszt_budowy: i64,
+    #[serde(rename = "przyrostKosztu")]
+    pub przyrost_kosztu: i64,
+    pub mnoznik_ery: i64,
+}
+
+/// Plik `unit-gold-costs.json`: jeden wiersz na każdą jednostkę z `units.json`.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct UnitGoldCostsFile {
+    pub meta: serde_json::Value,
+    pub wiersze: Vec<UnitGoldRow>,
+}
+
+/// Rozwinięte złoto jednostki: koszt zakupu i utrzymanie na turę (liczby całkowite >= 0).
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct UnitGoldRow {
+    pub jednostka: String,
+    pub epoka: String,
+    pub pieniadz_koszt: u32,
+    pub utrzymanie_pieniadz_ture: u32,
+    pub baza: UnitGoldBase,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct UnitGoldBase {
+    pub pieniadz_koszt_zrodlo: Option<i64>,
+    pub rola_linia: Option<String>,
+    pub super_jednostka: Option<String>,
+    pub utrzymanie_zrodlo: Option<i64>,
+}
+
 pub fn parse_unit_stock_costs() -> Result<UnitStockCostsFile, serde_json::Error> {
     serde_json::from_str(UNIT_STOCK_COSTS_JSON)
+}
+
+pub fn parse_building_work_costs() -> Result<BuildingWorkCostsFile, serde_json::Error> {
+    serde_json::from_str(BUILDING_WORK_COSTS_JSON)
+}
+
+pub fn parse_unit_gold_costs() -> Result<UnitGoldCostsFile, serde_json::Error> {
+    serde_json::from_str(UNIT_GOLD_COSTS_JSON)
 }
 
 pub fn parse_building_stock_costs() -> Result<BuildingStockCostsFile, serde_json::Error> {

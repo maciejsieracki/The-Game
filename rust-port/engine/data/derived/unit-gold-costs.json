@@ -1,0 +1,911 @@
+{
+  "meta": {
+    "status": "BOOTSTRAP: wartosci startowe rozwiniete z regul weba. Zrodlem prawdy do recznego balansu jest TA tabela (edytuj liczby, nie mnozniki). Tabela NIE jest porownywana ze wzorem przy buildzie.",
+    "zrodlo": "gra/data/units.json @ edb8fb56 + gra/data/miasto-params.json (domyslne koszty roli)",
+    "regula_weba": "production.ts unitCostFromDef (l.255-289) + scaleCostByEpoch(Epoka); economy-upkeep.ts unitUpkeep (l.962-977) x4 po scaleCostByEpoch (buildUnitUpkeepTable l.1000-1023). UWAGA: regula kategorii (zwiadowca/super -> 0, economy-upkeep.ts:967-968) zalezy od pola kategorii instancji (main.ts:7193), NIE od units.json; NIE odtworzono w tabeli (P3-19 sek. 9)",
+    "wygenerowano": "R-RUSTPORT-P3-19-FLATTEN-MULTIPLIERS-Q1 runda 3, generator: gen-work-gold.mjs",
+    "uwaga_stan": "Wartosci dotycza stanu bazowego web: pace niski (x1), trudnosc normal (x1), bez ulgi cywilizacji. Stany (b) NIE sa rozwiniete w tej tabeli (P3-19 sek. 9)."
+  },
+  "wiersze": [
+    {
+      "jednostka": "Wojownik",
+      "epoka": "Kamień",
+      "pieniadz_koszt": 5,
+      "utrzymanie_pieniadz_ture": 4,
+      "baza": {
+        "pieniadz_koszt_zrodlo": 5,
+        "rola_linia": "Wręcz",
+        "super_jednostka": "—",
+        "utrzymanie_zrodlo": 1
+      }
+    },
+    {
+      "jednostka": "Procarz",
+      "epoka": "Brąz",
+      "pieniadz_koszt": 8,
+      "utrzymanie_pieniadz_ture": 8,
+      "baza": {
+        "pieniadz_koszt_zrodlo": 4,
+        "rola_linia": "Dystans",
+        "super_jednostka": "—",
+        "utrzymanie_zrodlo": 1
+      }
+    },
+    {
+      "jednostka": "Oszczepnik",
+      "epoka": "Kamień",
+      "pieniadz_koszt": 3,
+      "utrzymanie_pieniadz_ture": 4,
+      "baza": {
+        "pieniadz_koszt_zrodlo": 3,
+        "rola_linia": "Dystans",
+        "super_jednostka": "—",
+        "utrzymanie_zrodlo": 1
+      }
+    },
+    {
+      "jednostka": "Łucznik",
+      "epoka": "Kamień",
+      "pieniadz_koszt": 3,
+      "utrzymanie_pieniadz_ture": 4,
+      "baza": {
+        "pieniadz_koszt_zrodlo": 3,
+        "rola_linia": "Dystans",
+        "super_jednostka": "—",
+        "utrzymanie_zrodlo": 1
+      }
+    },
+    {
+      "jednostka": "Zwiadowca",
+      "epoka": "Kamień",
+      "pieniadz_koszt": 4,
+      "utrzymanie_pieniadz_ture": 0,
+      "baza": {
+        "pieniadz_koszt_zrodlo": 4,
+        "rola_linia": "Wsparcie",
+        "super_jednostka": "—",
+        "utrzymanie_zrodlo": 0
+      }
+    },
+    {
+      "jednostka": "Włócznik",
+      "epoka": "Brąz",
+      "pieniadz_koszt": 16,
+      "utrzymanie_pieniadz_ture": 16,
+      "baza": {
+        "pieniadz_koszt_zrodlo": 8,
+        "rola_linia": "Wręcz",
+        "super_jednostka": "—",
+        "utrzymanie_zrodlo": 2
+      }
+    },
+    {
+      "jednostka": "Wojownik z mieczem i tarczą",
+      "epoka": "Brąz",
+      "pieniadz_koszt": 16,
+      "utrzymanie_pieniadz_ture": 16,
+      "baza": {
+        "pieniadz_koszt_zrodlo": 8,
+        "rola_linia": "Wręcz",
+        "super_jednostka": "—",
+        "utrzymanie_zrodlo": 2
+      }
+    },
+    {
+      "jednostka": "Rydwan (woły)",
+      "epoka": "Brąz",
+      "pieniadz_koszt": 30,
+      "utrzymanie_pieniadz_ture": 24,
+      "baza": {
+        "pieniadz_koszt_zrodlo": 15,
+        "rola_linia": "Flanka",
+        "super_jednostka": "—",
+        "utrzymanie_zrodlo": 3
+      }
+    },
+    {
+      "jednostka": "Konnica",
+      "epoka": "Brąz",
+      "pieniadz_koszt": 22,
+      "utrzymanie_pieniadz_ture": 24,
+      "baza": {
+        "pieniadz_koszt_zrodlo": 11,
+        "rola_linia": "Flanka",
+        "super_jednostka": "—",
+        "utrzymanie_zrodlo": 3
+      }
+    },
+    {
+      "jednostka": "Galera",
+      "epoka": "Brąz",
+      "pieniadz_koszt": 18,
+      "utrzymanie_pieniadz_ture": 24,
+      "baza": {
+        "pieniadz_koszt_zrodlo": 9,
+        "rola_linia": "Morska",
+        "super_jednostka": "—",
+        "utrzymanie_zrodlo": 3
+      }
+    },
+    {
+      "jednostka": "Falanga",
+      "epoka": "Żelazo",
+      "pieniadz_koszt": 36,
+      "utrzymanie_pieniadz_ture": 32,
+      "baza": {
+        "pieniadz_koszt_zrodlo": 9,
+        "rola_linia": "Wręcz",
+        "super_jednostka": "—",
+        "utrzymanie_zrodlo": 2
+      }
+    },
+    {
+      "jednostka": "Hieros Lochos (Święty Zastęp)",
+      "epoka": "Żelazo",
+      "pieniadz_koszt": 0,
+      "utrzymanie_pieniadz_ture": 0,
+      "baza": {
+        "pieniadz_koszt_zrodlo": 0,
+        "rola_linia": "Wręcz",
+        "super_jednostka": "TAK",
+        "utrzymanie_zrodlo": 0
+      }
+    },
+    {
+      "jednostka": "Hastati",
+      "epoka": "Żelazo",
+      "pieniadz_koszt": 36,
+      "utrzymanie_pieniadz_ture": 32,
+      "baza": {
+        "pieniadz_koszt_zrodlo": 9,
+        "rola_linia": "Wręcz",
+        "super_jednostka": "—",
+        "utrzymanie_zrodlo": 2
+      }
+    },
+    {
+      "jednostka": "Triari",
+      "epoka": "Żelazo",
+      "pieniadz_koszt": 0,
+      "utrzymanie_pieniadz_ture": 0,
+      "baza": {
+        "pieniadz_koszt_zrodlo": 0,
+        "rola_linia": "Wręcz",
+        "super_jednostka": "TAK",
+        "utrzymanie_zrodlo": 0
+      }
+    },
+    {
+      "jednostka": "Jeździec chiński",
+      "epoka": "Brąz",
+      "pieniadz_koszt": 28,
+      "utrzymanie_pieniadz_ture": 24,
+      "baza": {
+        "pieniadz_koszt_zrodlo": 14,
+        "rola_linia": "Flanka",
+        "super_jednostka": "—",
+        "utrzymanie_zrodlo": 3
+      }
+    },
+    {
+      "jednostka": "Hu Ben Wei (Gwardia Tygrysa)",
+      "epoka": "Brąz",
+      "pieniadz_koszt": 0,
+      "utrzymanie_pieniadz_ture": 0,
+      "baza": {
+        "pieniadz_koszt_zrodlo": 0,
+        "rola_linia": "Wręcz",
+        "super_jednostka": "TAK",
+        "utrzymanie_zrodlo": 0
+      }
+    },
+    {
+      "jednostka": "Impi",
+      "epoka": "Brąz",
+      "pieniadz_koszt": 16,
+      "utrzymanie_pieniadz_ture": 16,
+      "baza": {
+        "pieniadz_koszt_zrodlo": 8,
+        "rola_linia": "Wręcz",
+        "super_jednostka": "—",
+        "utrzymanie_zrodlo": 2
+      }
+    },
+    {
+      "jednostka": "Oszczepnik Zulu (Izijula)",
+      "epoka": "Kamień",
+      "pieniadz_koszt": 10,
+      "utrzymanie_pieniadz_ture": 4,
+      "baza": {
+        "pieniadz_koszt_zrodlo": 10,
+        "rola_linia": "Dystans",
+        "super_jednostka": "—",
+        "utrzymanie_zrodlo": 1
+      }
+    },
+    {
+      "jednostka": "uThulwana (Białe Tarcze)",
+      "epoka": "Brąz",
+      "pieniadz_koszt": 0,
+      "utrzymanie_pieniadz_ture": 0,
+      "baza": {
+        "pieniadz_koszt_zrodlo": 0,
+        "rola_linia": "Wręcz",
+        "super_jednostka": "TAK",
+        "utrzymanie_zrodlo": 0
+      }
+    },
+    {
+      "jednostka": "Wojownik z maczugą (Chaska)",
+      "epoka": "Kamień",
+      "pieniadz_koszt": 13,
+      "utrzymanie_pieniadz_ture": 8,
+      "baza": {
+        "pieniadz_koszt_zrodlo": 13,
+        "rola_linia": "Wręcz",
+        "super_jednostka": "—",
+        "utrzymanie_zrodlo": 2
+      }
+    },
+    {
+      "jednostka": "Wojownik z toporem",
+      "epoka": "Brąz",
+      "pieniadz_koszt": 18,
+      "utrzymanie_pieniadz_ture": 16,
+      "baza": {
+        "pieniadz_koszt_zrodlo": 9,
+        "rola_linia": "Wręcz",
+        "super_jednostka": "—",
+        "utrzymanie_zrodlo": 2
+      }
+    },
+    {
+      "jednostka": "Procarz (Huaracoc)",
+      "epoka": "Brąz",
+      "pieniadz_koszt": 8,
+      "utrzymanie_pieniadz_ture": 8,
+      "baza": {
+        "pieniadz_koszt_zrodlo": 4,
+        "rola_linia": "Dystans",
+        "super_jednostka": "—",
+        "utrzymanie_zrodlo": 1
+      }
+    },
+    {
+      "jednostka": "Oszczepnik (Estólica)",
+      "epoka": "Kamień",
+      "pieniadz_koszt": 5,
+      "utrzymanie_pieniadz_ture": 4,
+      "baza": {
+        "pieniadz_koszt_zrodlo": 5,
+        "rola_linia": "Dystans",
+        "super_jednostka": "—",
+        "utrzymanie_zrodlo": 1
+      }
+    },
+    {
+      "jednostka": "Królewska Gwardia",
+      "epoka": "Brąz",
+      "pieniadz_koszt": 0,
+      "utrzymanie_pieniadz_ture": 0,
+      "baza": {
+        "pieniadz_koszt_zrodlo": 0,
+        "rola_linia": "Wręcz",
+        "super_jednostka": "TAK",
+        "utrzymanie_zrodlo": 0
+      }
+    },
+    {
+      "jednostka": "Rydwan konny",
+      "epoka": "Brąz",
+      "pieniadz_koszt": 28,
+      "utrzymanie_pieniadz_ture": 24,
+      "baza": {
+        "pieniadz_koszt_zrodlo": 14,
+        "rola_linia": "Flanka",
+        "super_jednostka": "—",
+        "utrzymanie_zrodlo": 3
+      }
+    },
+    {
+      "jednostka": "Łucznik egipski",
+      "epoka": "Kamień",
+      "pieniadz_koszt": 7,
+      "utrzymanie_pieniadz_ture": 4,
+      "baza": {
+        "pieniadz_koszt_zrodlo": 7,
+        "rola_linia": "Dystans",
+        "super_jednostka": "—",
+        "utrzymanie_zrodlo": 1
+      }
+    },
+    {
+      "jednostka": "Rydwan egipski",
+      "epoka": "Brąz",
+      "pieniadz_koszt": 32,
+      "utrzymanie_pieniadz_ture": 24,
+      "baza": {
+        "pieniadz_koszt_zrodlo": 16,
+        "rola_linia": "Flanka",
+        "super_jednostka": "—",
+        "utrzymanie_zrodlo": 3
+      }
+    },
+    {
+      "jednostka": "Wojownik z khopesh",
+      "epoka": "Brąz",
+      "pieniadz_koszt": 18,
+      "utrzymanie_pieniadz_ture": 16,
+      "baza": {
+        "pieniadz_koszt_zrodlo": 9,
+        "rola_linia": "Wręcz",
+        "super_jednostka": "—",
+        "utrzymanie_zrodlo": 2
+      }
+    },
+    {
+      "jednostka": "Medżaj (Gwardia Faraona)",
+      "epoka": "Brąz",
+      "pieniadz_koszt": 0,
+      "utrzymanie_pieniadz_ture": 0,
+      "baza": {
+        "pieniadz_koszt_zrodlo": 0,
+        "rola_linia": "Wręcz",
+        "super_jednostka": "TAK",
+        "utrzymanie_zrodlo": 0
+      }
+    },
+    {
+      "jednostka": "Łucznik nubijski",
+      "epoka": "Brąz",
+      "pieniadz_koszt": 20,
+      "utrzymanie_pieniadz_ture": 16,
+      "baza": {
+        "pieniadz_koszt_zrodlo": 10,
+        "rola_linia": "Dystans",
+        "super_jednostka": "—",
+        "utrzymanie_zrodlo": 2
+      }
+    },
+    {
+      "jednostka": "Łucznik sumeryjski",
+      "epoka": "Kamień",
+      "pieniadz_koszt": 5,
+      "utrzymanie_pieniadz_ture": 4,
+      "baza": {
+        "pieniadz_koszt_zrodlo": 5,
+        "rola_linia": "Dystans",
+        "super_jednostka": "—",
+        "utrzymanie_zrodlo": 1
+      }
+    },
+    {
+      "jednostka": "Rydwan sumeryjski",
+      "epoka": "Brąz",
+      "pieniadz_koszt": 38,
+      "utrzymanie_pieniadz_ture": 24,
+      "baza": {
+        "pieniadz_koszt_zrodlo": 19,
+        "rola_linia": "Flanka",
+        "super_jednostka": "—",
+        "utrzymanie_zrodlo": 3
+      }
+    },
+    {
+      "jednostka": "Włócznik sumeryjski",
+      "epoka": "Brąz",
+      "pieniadz_koszt": 18,
+      "utrzymanie_pieniadz_ture": 16,
+      "baza": {
+        "pieniadz_koszt_zrodlo": 9,
+        "rola_linia": "Wręcz",
+        "super_jednostka": "—",
+        "utrzymanie_zrodlo": 2
+      }
+    },
+    {
+      "jednostka": "Gwardia Królewska Sumeru",
+      "epoka": "Brąz",
+      "pieniadz_koszt": 0,
+      "utrzymanie_pieniadz_ture": 0,
+      "baza": {
+        "pieniadz_koszt_zrodlo": 0,
+        "rola_linia": "Wręcz",
+        "super_jednostka": "TAK",
+        "utrzymanie_zrodlo": 0
+      }
+    },
+    {
+      "jednostka": "Wojownik mykeński",
+      "epoka": "Brąz",
+      "pieniadz_koszt": 18,
+      "utrzymanie_pieniadz_ture": 16,
+      "baza": {
+        "pieniadz_koszt_zrodlo": 9,
+        "rola_linia": "Wręcz",
+        "super_jednostka": "—",
+        "utrzymanie_zrodlo": 2
+      }
+    },
+    {
+      "jednostka": "Rydwan mykeński",
+      "epoka": "Brąz",
+      "pieniadz_koszt": 30,
+      "utrzymanie_pieniadz_ture": 24,
+      "baza": {
+        "pieniadz_koszt_zrodlo": 15,
+        "rola_linia": "Flanka",
+        "super_jednostka": "—",
+        "utrzymanie_zrodlo": 3
+      }
+    },
+    {
+      "jednostka": "Wojownik Sherden",
+      "epoka": "Brąz",
+      "pieniadz_koszt": 18,
+      "utrzymanie_pieniadz_ture": 16,
+      "baza": {
+        "pieniadz_koszt_zrodlo": 9,
+        "rola_linia": "Wręcz",
+        "super_jednostka": "—",
+        "utrzymanie_zrodlo": 2
+      }
+    },
+    {
+      "jednostka": "Halabardnik Shang",
+      "epoka": "Brąz",
+      "pieniadz_koszt": 18,
+      "utrzymanie_pieniadz_ture": 16,
+      "baza": {
+        "pieniadz_koszt_zrodlo": 9,
+        "rola_linia": "Wręcz",
+        "super_jednostka": "—",
+        "utrzymanie_zrodlo": 2
+      }
+    },
+    {
+      "jednostka": "Rydwan Shang",
+      "epoka": "Brąz",
+      "pieniadz_koszt": 32,
+      "utrzymanie_pieniadz_ture": 24,
+      "baza": {
+        "pieniadz_koszt_zrodlo": 16,
+        "rola_linia": "Flanka",
+        "super_jednostka": "—",
+        "utrzymanie_zrodlo": 3
+      }
+    },
+    {
+      "jednostka": "Łucznik akadyjski",
+      "epoka": "Brąz",
+      "pieniadz_koszt": 16,
+      "utrzymanie_pieniadz_ture": 16,
+      "baza": {
+        "pieniadz_koszt_zrodlo": 8,
+        "rola_linia": "Dystans",
+        "super_jednostka": "—",
+        "utrzymanie_zrodlo": 2
+      }
+    },
+    {
+      "jednostka": "Gaesatae",
+      "epoka": "Żelazo",
+      "pieniadz_koszt": 28,
+      "utrzymanie_pieniadz_ture": 16,
+      "baza": {
+        "pieniadz_koszt_zrodlo": 7,
+        "rola_linia": "Wręcz",
+        "super_jednostka": "—",
+        "utrzymanie_zrodlo": 1
+      }
+    },
+    {
+      "jednostka": "Soldurii",
+      "epoka": "Żelazo",
+      "pieniadz_koszt": 36,
+      "utrzymanie_pieniadz_ture": 32,
+      "baza": {
+        "pieniadz_koszt_zrodlo": 9,
+        "rola_linia": "Wręcz",
+        "super_jednostka": "—",
+        "utrzymanie_zrodlo": 2
+      }
+    },
+    {
+      "jednostka": "Rydwan celtycki",
+      "epoka": "Żelazo",
+      "pieniadz_koszt": 56,
+      "utrzymanie_pieniadz_ture": 48,
+      "baza": {
+        "pieniadz_koszt_zrodlo": 14,
+        "rola_linia": "Flanka",
+        "super_jednostka": "—",
+        "utrzymanie_zrodlo": 3
+      }
+    },
+    {
+      "jednostka": "Wojownik germański",
+      "epoka": "Żelazo",
+      "pieniadz_koszt": 0,
+      "utrzymanie_pieniadz_ture": 32,
+      "baza": {
+        "pieniadz_koszt_zrodlo": 0,
+        "rola_linia": "Wręcz",
+        "super_jednostka": "TAK",
+        "utrzymanie_zrodlo": 2
+      }
+    },
+    {
+      "jednostka": "Berserker germański",
+      "epoka": "Żelazo",
+      "pieniadz_koszt": 32,
+      "utrzymanie_pieniadz_ture": 32,
+      "baza": {
+        "pieniadz_koszt_zrodlo": 8,
+        "rola_linia": "Wręcz",
+        "super_jednostka": "—",
+        "utrzymanie_zrodlo": 2
+      }
+    },
+    {
+      "jednostka": "Taran",
+      "epoka": "Kamień",
+      "pieniadz_koszt": 7,
+      "utrzymanie_pieniadz_ture": 4,
+      "baza": {
+        "pieniadz_koszt_zrodlo": 7,
+        "rola_linia": "Oblężnicza",
+        "super_jednostka": "—",
+        "utrzymanie_zrodlo": 1
+      }
+    },
+    {
+      "jednostka": "Taran okuty",
+      "epoka": "Brąz",
+      "pieniadz_koszt": 18,
+      "utrzymanie_pieniadz_ture": 16,
+      "baza": {
+        "pieniadz_koszt_zrodlo": 9,
+        "rola_linia": "Oblężnicza",
+        "super_jednostka": "—",
+        "utrzymanie_zrodlo": 2
+      }
+    },
+    {
+      "jednostka": "Katapulta",
+      "epoka": "Żelazo",
+      "pieniadz_koszt": 36,
+      "utrzymanie_pieniadz_ture": 32,
+      "baza": {
+        "pieniadz_koszt_zrodlo": 9,
+        "rola_linia": "Oblężnicza",
+        "super_jednostka": "—",
+        "utrzymanie_zrodlo": 2
+      }
+    },
+    {
+      "jednostka": "Wieża oblężnicza",
+      "epoka": "Brąz",
+      "pieniadz_koszt": 20,
+      "utrzymanie_pieniadz_ture": 16,
+      "baza": {
+        "pieniadz_koszt_zrodlo": 10,
+        "rola_linia": "Oblężnicza",
+        "super_jednostka": "—",
+        "utrzymanie_zrodlo": 2
+      }
+    },
+    {
+      "jednostka": "Wojownik tyrreński",
+      "epoka": "Brąz",
+      "pieniadz_koszt": 16,
+      "utrzymanie_pieniadz_ture": 16,
+      "baza": {
+        "pieniadz_koszt_zrodlo": 8,
+        "rola_linia": "Wręcz",
+        "super_jednostka": "—",
+        "utrzymanie_zrodlo": 2
+      }
+    },
+    {
+      "jednostka": "Wojownik szekelesz",
+      "epoka": "Brąz",
+      "pieniadz_koszt": 14,
+      "utrzymanie_pieniadz_ture": 16,
+      "baza": {
+        "pieniadz_koszt_zrodlo": 7,
+        "rola_linia": "Wręcz",
+        "super_jednostka": "—",
+        "utrzymanie_zrodlo": 2
+      }
+    },
+    {
+      "jednostka": "Konnica lancowa asyryjska",
+      "epoka": "Żelazo",
+      "pieniadz_koszt": 64,
+      "utrzymanie_pieniadz_ture": 48,
+      "baza": {
+        "pieniadz_koszt_zrodlo": 16,
+        "rola_linia": "Flanka",
+        "super_jednostka": "—",
+        "utrzymanie_zrodlo": 3
+      }
+    },
+    {
+      "jednostka": "Konnica łucznicza asyryjska",
+      "epoka": "Żelazo",
+      "pieniadz_koszt": 60,
+      "utrzymanie_pieniadz_ture": 48,
+      "baza": {
+        "pieniadz_koszt_zrodlo": 15,
+        "rola_linia": "Flanka",
+        "super_jednostka": "—",
+        "utrzymanie_zrodlo": 3
+      }
+    },
+    {
+      "jednostka": "Łucznik asyryjski",
+      "epoka": "Brąz",
+      "pieniadz_koszt": 14,
+      "utrzymanie_pieniadz_ture": 16,
+      "baza": {
+        "pieniadz_koszt_zrodlo": 7,
+        "rola_linia": "Dystans",
+        "super_jednostka": "—",
+        "utrzymanie_zrodlo": 2
+      }
+    },
+    {
+      "jednostka": "Drużynnik",
+      "epoka": "Żelazo",
+      "pieniadz_koszt": 36,
+      "utrzymanie_pieniadz_ture": 32,
+      "baza": {
+        "pieniadz_koszt_zrodlo": 9,
+        "rola_linia": "Wręcz",
+        "super_jednostka": "—",
+        "utrzymanie_zrodlo": 2
+      }
+    },
+    {
+      "jednostka": "Jeździec z oszczepami",
+      "epoka": "Żelazo",
+      "pieniadz_koszt": 52,
+      "utrzymanie_pieniadz_ture": 48,
+      "baza": {
+        "pieniadz_koszt_zrodlo": 13,
+        "rola_linia": "Flanka",
+        "super_jednostka": "—",
+        "utrzymanie_zrodlo": 3
+      }
+    },
+    {
+      "jednostka": "Strażnik bram Harappy",
+      "epoka": "Brąz",
+      "pieniadz_koszt": 18,
+      "utrzymanie_pieniadz_ture": 16,
+      "baza": {
+        "pieniadz_koszt_zrodlo": 9,
+        "rola_linia": "Wręcz",
+        "super_jednostka": "—",
+        "utrzymanie_zrodlo": 2
+      }
+    },
+    {
+      "jednostka": "Piechota induska",
+      "epoka": "Brąz",
+      "pieniadz_koszt": 18,
+      "utrzymanie_pieniadz_ture": 16,
+      "baza": {
+        "pieniadz_koszt_zrodlo": 9,
+        "rola_linia": "Wręcz",
+        "super_jednostka": "—",
+        "utrzymanie_zrodlo": 2
+      }
+    },
+    {
+      "jednostka": "Garnizon Harappy",
+      "epoka": "Żelazo",
+      "pieniadz_koszt": 36,
+      "utrzymanie_pieniadz_ture": 32,
+      "baza": {
+        "pieniadz_koszt_zrodlo": 9,
+        "rola_linia": "Wręcz",
+        "super_jednostka": "—",
+        "utrzymanie_zrodlo": 2
+      }
+    },
+    {
+      "jednostka": "Rydwan Kapadokijski",
+      "epoka": "Brąz",
+      "pieniadz_koszt": 34,
+      "utrzymanie_pieniadz_ture": 24,
+      "baza": {
+        "pieniadz_koszt_zrodlo": 17,
+        "rola_linia": "Flanka",
+        "super_jednostka": "—",
+        "utrzymanie_zrodlo": 3
+      }
+    },
+    {
+      "jednostka": "Piechota hetycka",
+      "epoka": "Brąz",
+      "pieniadz_koszt": 18,
+      "utrzymanie_pieniadz_ture": 16,
+      "baza": {
+        "pieniadz_koszt_zrodlo": 9,
+        "rola_linia": "Wręcz",
+        "super_jednostka": "—",
+        "utrzymanie_zrodlo": 2
+      }
+    },
+    {
+      "jednostka": "Gwardia hetycka",
+      "epoka": "Żelazo",
+      "pieniadz_koszt": 36,
+      "utrzymanie_pieniadz_ture": 32,
+      "baza": {
+        "pieniadz_koszt_zrodlo": 9,
+        "rola_linia": "Wręcz",
+        "super_jednostka": "—",
+        "utrzymanie_zrodlo": 2
+      }
+    },
+    {
+      "jednostka": "Gwardia Ishtar",
+      "epoka": "Brąz",
+      "pieniadz_koszt": 18,
+      "utrzymanie_pieniadz_ture": 16,
+      "baza": {
+        "pieniadz_koszt_zrodlo": 9,
+        "rola_linia": "Wręcz",
+        "super_jednostka": "—",
+        "utrzymanie_zrodlo": 2
+      }
+    },
+    {
+      "jednostka": "Wojownik babiloński",
+      "epoka": "Brąz",
+      "pieniadz_koszt": 18,
+      "utrzymanie_pieniadz_ture": 16,
+      "baza": {
+        "pieniadz_koszt_zrodlo": 9,
+        "rola_linia": "Wręcz",
+        "super_jednostka": "—",
+        "utrzymanie_zrodlo": 2
+      }
+    },
+    {
+      "jednostka": "Piechota neobabilońska",
+      "epoka": "Żelazo",
+      "pieniadz_koszt": 36,
+      "utrzymanie_pieniadz_ture": 32,
+      "baza": {
+        "pieniadz_koszt_zrodlo": 9,
+        "rola_linia": "Wręcz",
+        "super_jednostka": "—",
+        "utrzymanie_zrodlo": 2
+      }
+    },
+    {
+      "jednostka": "Tyrski miecznik",
+      "epoka": "Żelazo",
+      "pieniadz_koszt": 36,
+      "utrzymanie_pieniadz_ture": 32,
+      "baza": {
+        "pieniadz_koszt_zrodlo": 9,
+        "rola_linia": "Wręcz",
+        "super_jednostka": "—",
+        "utrzymanie_zrodlo": 2
+      }
+    },
+    {
+      "jednostka": "Wojownik fenicki",
+      "epoka": "Brąz",
+      "pieniadz_koszt": 18,
+      "utrzymanie_pieniadz_ture": 16,
+      "baza": {
+        "pieniadz_koszt_zrodlo": 9,
+        "rola_linia": "Wręcz",
+        "super_jednostka": "—",
+        "utrzymanie_zrodlo": 2
+      }
+    },
+    {
+      "jednostka": "Gwardia Tyreńska",
+      "epoka": "Żelazo",
+      "pieniadz_koszt": 36,
+      "utrzymanie_pieniadz_ture": 32,
+      "baza": {
+        "pieniadz_koszt_zrodlo": 9,
+        "rola_linia": "Wręcz",
+        "super_jednostka": "—",
+        "utrzymanie_zrodlo": 2
+      }
+    },
+    {
+      "jednostka": "Thorakites",
+      "epoka": "Żelazo",
+      "pieniadz_koszt": 32,
+      "utrzymanie_pieniadz_ture": 32,
+      "baza": {
+        "pieniadz_koszt_zrodlo": 8,
+        "rola_linia": "Wręcz",
+        "super_jednostka": "—",
+        "utrzymanie_zrodlo": 2
+      }
+    },
+    {
+      "jednostka": "Evocati",
+      "epoka": "Żelazo",
+      "pieniadz_koszt": 0,
+      "utrzymanie_pieniadz_ture": 0,
+      "baza": {
+        "pieniadz_koszt_zrodlo": 0,
+        "rola_linia": "Wręcz",
+        "super_jednostka": "TAK",
+        "utrzymanie_zrodlo": 0
+      }
+    },
+    {
+      "jednostka": "iButho z iklwa",
+      "epoka": "Żelazo",
+      "pieniadz_koszt": 32,
+      "utrzymanie_pieniadz_ture": 32,
+      "baza": {
+        "pieniadz_koszt_zrodlo": 8,
+        "rola_linia": "Wręcz",
+        "super_jednostka": "—",
+        "utrzymanie_zrodlo": 2
+      }
+    },
+    {
+      "jednostka": "Gwardzista z champi",
+      "epoka": "Brąz",
+      "pieniadz_koszt": 18,
+      "utrzymanie_pieniadz_ture": 16,
+      "baza": {
+        "pieniadz_koszt_zrodlo": 9,
+        "rola_linia": "Wręcz",
+        "super_jednostka": "—",
+        "utrzymanie_zrodlo": 2
+      }
+    },
+    {
+      "jednostka": "Wojownik z żelaznym khopesh",
+      "epoka": "Żelazo",
+      "pieniadz_koszt": 36,
+      "utrzymanie_pieniadz_ture": 32,
+      "baza": {
+        "pieniadz_koszt_zrodlo": 9,
+        "rola_linia": "Wręcz",
+        "super_jednostka": "—",
+        "utrzymanie_zrodlo": 2
+      }
+    },
+    {
+      "jednostka": "Mur tarcz (Sargonid)",
+      "epoka": "Żelazo",
+      "pieniadz_koszt": 36,
+      "utrzymanie_pieniadz_ture": 32,
+      "baza": {
+        "pieniadz_koszt_zrodlo": 9,
+        "rola_linia": "Wręcz",
+        "super_jednostka": "—",
+        "utrzymanie_zrodlo": 2
+      }
+    },
+    {
+      "jednostka": "Miecznik galijski",
+      "epoka": "Żelazo",
+      "pieniadz_koszt": 28,
+      "utrzymanie_pieniadz_ture": 16,
+      "baza": {
+        "pieniadz_koszt_zrodlo": 7,
+        "rola_linia": "Wręcz",
+        "super_jednostka": "—",
+        "utrzymanie_zrodlo": 1
+      }
+    }
+  ]
+}

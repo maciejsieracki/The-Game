@@ -18,10 +18,12 @@ fn canonical_unit_record_keeps_purchase_and_upkeep_separate() {
 
     // Values from gra/data/units.json (Wojownik: koszt 5, Drewno 13, utrzymanie 1 + Drewno 3).
     // Previously hard-coded 10 / 50 / 10 (see P3-17 audit, Wojownik row).
+    // P3-19 runda 3: Wojownik is Epoka Kamień (x1) for cost; gold upkeep is 1 x4 (FALA1 x FALA2,
+    // economy-upkeep.ts:976). Former runtime value 1 was the raw JSON without the web x4.
     assert_eq!(warrior.gold_cost, 5);
     assert_eq!(warrior.stock_cost("drewno"), Some(13));
     assert_eq!(warrior.resource_upkeep("drewno"), Some(3));
-    assert_eq!(warrior.gold_upkeep, 1);
+    assert_eq!(warrior.gold_upkeep, 4);
 
     // P3-19 (derived table, bootstrap of web rules): Konnica is Epoka Brąz (x2).
     // Surowiec Brąz 25 -> 50; Typ Mount adds kon 25 -> 50 (building-stock-cost.ts:368-369,
@@ -113,20 +115,31 @@ fn canonical_catalog_matches_units_json_for_all_75_rows() {
             .map(|row| (row.jednostka.as_str(), row))
             .collect();
 
+    let gold_file = civ_engine::data::derived::parse_unit_gold_costs().expect("gold table parses");
+    let gold_units: std::collections::BTreeMap<&str, &civ_engine::data::derived::UnitGoldRow> =
+        gold_file
+            .wiersze
+            .iter()
+            .map(|row| (row.jednostka.as_str(), row))
+            .collect();
+
     for record in &records {
         let unit = recruitment_for(&record.jednostka)
             .unwrap_or_else(|| panic!("missing canonical row {}", record.jednostka));
         let id = record.jednostka.as_str();
 
         assert_eq!(unit.unit_type, record.typ, "Typ of {id}");
+        // P3-19 runda 3: gold cost and gold upkeep are wired from the editable derived table
+        // `unit-gold-costs.json` (wiring check only; values are owner-editable).
+        let gold_row = gold_units
+            .get(id)
+            .unwrap_or_else(|| panic!("derived gold row missing for {id}"));
         assert_eq!(
-            i64::from(unit.gold_cost),
-            record.pieniadz_koszt,
+            unit.gold_cost, gold_row.pieniadz_koszt,
             "Pieniądz (koszt) of {id}"
         );
         assert_eq!(
-            i64::from(unit.gold_upkeep),
-            record.utrzymanie_pieniadz_ture,
+            unit.gold_upkeep, gold_row.utrzymanie_pieniadz_ture,
             "Utrzymanie (Pieniądz/turę) of {id}"
         );
 

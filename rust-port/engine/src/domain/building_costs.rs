@@ -2,7 +2,9 @@ use std::{collections::BTreeMap, error::Error, fmt};
 
 use serde::{Deserialize, Serialize};
 
-use crate::data::derived::{parse_building_stock_costs, StockMap};
+use std::sync::OnceLock;
+
+use crate::data::derived::{parse_building_stock_costs, parse_building_work_costs, StockMap};
 
 /// Resource quantities charged once when a building is queued.
 ///
@@ -107,73 +109,41 @@ impl BuildingCost {
 /// Returning fresh values prevents callers from mutating a shared global catalog
 /// and makes the function safe to use in tests and simulations.
 pub fn canonical_building_costs() -> Vec<BuildingCost> {
-    // Work (Praca) columns stay the literal `kosztBudowy` / `przyrostKosztu` pairs
-    // (P3-19 scope is stock costs only; Work multipliers are a separate follow-up).
-    // Stock (`koszt_surowce`) values come from the editable derived table
-    // `data/derived/building-stock-costs.json`; no multiplier is applied at runtime.
-    const WORK: [(&str, u32, u32); 42] = [
-        ("stolarnia", 20, 10),
-        ("kamieniarski", 20, 10),
-        ("kuznia", 30, 10),
-        ("odlewnia_brazu", 28, 10),
-        ("odlewnia_zelaza", 35, 12),
-        ("wielka_odlewnia", 80, 15),
-        ("targowisko", 25, 10),
-        ("port", 30, 10),
-        ("port_wielki", 55, 12),
-        ("spichlerz", 20, 8),
-        ("spichlerz_ii", 35, 12),
-        ("garncarnia", 18, 8),
-        ("cegielnia", 22, 9),
-        ("kamienne_kregi", 18, 8),
-        ("swiatynia", 25, 10),
-        ("biblioteka", 25, 10),
-        ("studnia", 15, 5),
-        ("akwedukt", 30, 12),
-        ("mennica", 28, 10),
-        ("palisada", 22, 8),
-        ("mury", 35, 12),
-        ("koszary", 25, 10),
-        ("magazyn", 20, 8),
-        ("stela", 15, 5),
-        ("palac", 40, 12),
-        ("palac_ii", 60, 18),
-        ("palac_iii", 90, 27),
-        ("kuznia_zelaza", 60, 15),
-        ("wielka_kuznia", 90, 18),
-        ("fort", 70, 15),
-        ("baszta", 70, 15),
-        ("warsztat_oblezniczy", 65, 15),
-        ("akademia", 70, 15),
-        ("teatr", 55, 12),
-        ("sad", 55, 12),
-        ("dom_starszyzny", 25, 5),
-        ("dwor_zarzadcy", 45, 9),
-        ("pretorium", 75, 15),
-        ("trybunal", 30, 10),
-        ("garnizon", 30, 6),
-        ("laznia_publiczna", 50, 12),
-        ("akademia_wojskowa", 80, 18),
-    ];
+    // P3-19 runda 3 (Q1=A): Praca i koszt surowcowy są CAŁKOWICIE z tabel wartości
+    // `data/derived/building-work-costs.json` i `building-stock-costs.json`. Liczby już
+    // zawierają mnożnik ery (web `buildingEraCostMultiplier`) i FALA2 (dla surowców);
+    // silnik nie mnoży niczego w czasie gry.
+    static CANONICAL: OnceLock<Vec<BuildingCost>> = OnceLock::new();
+    CANONICAL
+        .get_or_init(|| {
+            let work_file =
+                parse_building_work_costs().expect("embedded derived work table must parse");
+            let stock_file =
+                parse_building_stock_costs().expect("embedded derived building table must parse");
+            let stock: BTreeMap<&str, &StockMap> = stock_file
+                .wiersze
+                .iter()
+                .map(|row| (row.budynek.as_str(), &row.koszt_surowce))
+                .collect();
 
-    let derived = parse_building_stock_costs().expect("embedded derived building table must parse");
-    let stock: BTreeMap<&str, &StockMap> = derived
-        .wiersze
-        .iter()
-        .map(|row| (row.budynek.as_str(), &row.koszt_surowce))
-        .collect();
-
-    WORK.iter()
-        .map(|(building_id, base_work, work_increment)| {
-            let resources = stock
-                .get(building_id)
-                .unwrap_or_else(|| panic!("derived building table lacks {building_id}"));
-            resources.iter().fold(
-                BuildingCost::new(*building_id, *base_work, *work_increment),
-                |cost, (resource, amount)| cost.with_resource_cost(resource.as_str(), *amount),
-            )
+            work_file
+                .wiersze
+                .iter()
+                .map(|work| {
+                    let building_id = work.budynek.as_str();
+                    let resources = stock
+                        .get(building_id)
+                        .unwrap_or_else(|| panic!("derived building table lacks {building_id}"));
+                    resources.iter().fold(
+                        BuildingCost::new(building_id, work.praca_bazowa, work.praca_przyrost),
+                        |cost, (resource, amount)| {
+                            cost.with_resource_cost(resource.as_str(), *amount)
+                        },
+                    )
+                })
+                .collect()
         })
-        .collect()
+        .clone()
 }
 
 /// Find one canonical building record by its data-file identifier.
@@ -233,10 +203,14 @@ impl fmt::Display for BuildingSpendError {
 
 impl Error for BuildingSpendError {}
 
-/// Apply the global 50% Work reduction with the same integer rounding as the
-/// game's `Math.round`: half units round upward, and zero remains zero.
+/// Effective Work cost of a building at a given raw level cost.
+///
+/// P3-19 runda 3 (Q1=A, web 1:1): the former global 50% reduction (`raw / 2`, rounded up)
+/// was a Rust-only divergence from the web (`buildingWorkCost`, `production.ts:514-529`,
+/// stacking 0.25 x 2 x 2 = 1.0). The value is now the raw table value; the multiplier of
+/// the building's entry era is already inside the derived table.
 pub fn effective_work_cost(raw_work: u32) -> u32 {
-    raw_work / 2 + raw_work % 2
+    raw_work
 }
 
 /// Resolve the raw linear cost from its JSON-equivalent fields.

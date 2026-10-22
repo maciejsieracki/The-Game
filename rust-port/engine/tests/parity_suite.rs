@@ -179,14 +179,16 @@ fn building_and_recruitment_vectors_keep_purchase_and_work_costs_separate() {
             canonical.work_cost(2),
             canonical.effective_work_cost(2)
         ),
-        (20, 30, 15)
+        (20, 30, 30)
     );
+    // P3-19 runda 3 (Q1=A): Praca = web 1:1, bez dzielenia przez 2 (dawniej effective 15).
     // P3-19 derived table: stolarnia koszt_surowce JSON drewno 25, x2 (FALA2, epokaWejscia 1 => x1)
     // = 50 (building-stock-cost.ts:84-98; r-stawki-strojenie.ts:36-47). Former value 25 was the raw JSON.
     assert_eq!(canonical.resource_cost("drewno"), Some(50));
 
     let custom = BuildingCost::new("vector", 20, 10).with_resource_cost("drewno", 25);
-    let mut work = 10;
+    // P3-19 runda 3: Praca = raw (bez /2). Stan 20 (poziom 1, 20 Pracy) wystarcza dokładnie.
+    let mut work = 20;
     let mut stock = BTreeMap::from([(String::from("drewno"), 25)]);
     custom
         .try_spend(&mut work, &mut stock, 1)
@@ -199,7 +201,8 @@ fn building_and_recruitment_vectors_keep_purchase_and_work_costs_separate() {
     // Surowiec Drewno 13, Utrzymanie surowiec Drewno 3); the former 10/1/50/10 literals were
     // a stale hand-written table (R-RUSTPORT-P3-17-RUNTIME-DATA-WIRING-Q1).
     assert_eq!(warrior.gold_cost, 5);
-    assert_eq!(warrior.gold_upkeep, 1);
+    // P3-19 runda 3: gold upkeep = web 1 x4 (FALA1 x FALA2); former raw value 1.
+    assert_eq!(warrior.gold_upkeep, 4);
     assert_eq!(warrior.stock_cost("drewno"), Some(13));
     assert_eq!(warrior.resource_upkeep("drewno"), Some(3));
     let remaining = spend_recruitment(&BTreeMap::from([(String::from("drewno"), 57)]), &warrior)

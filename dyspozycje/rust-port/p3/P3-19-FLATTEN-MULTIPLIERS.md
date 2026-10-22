@@ -1,12 +1,130 @@
 # P3-19 — Spłaszczenie mnożników do wartości (FLATTEN-MULTIPLIERS)
 
-STATUS: PASS-WITH-NOTES (etap Operatora, runda 2/5; odpowiedź na 5 zarzutów Evaluatora w §10a; zarzut 3 (zakres) = DECISION_REQUIRED, pytania właściciela w §9; Evaluator i Final Control jeszcze nie oceniali)
+STATUS: BLOCK (runda 3/5, częściowo: Praca i złoto rozwinięte, klasyfikacja inwentarza domknięta; wiersze 12–18 i 25 oraz osie (b) NIEROZWINIĘTE — szczegóły w sekcji R3.6). Poprzednie statusy rund 1–2 w sekcjach 0–10a są historyczne.
 DOMAIN: GAME
 TEMAT: R-RUSTPORT-P3-19-FLATTEN-MULTIPLIERS-Q1
 BAZA: `origin/rust-port/parity-v2` = `d3a73641` (detached)
 PIN web: `edb8fb56` (`gra/src/**`, `gra/data/*.json`) — tylko odczyt (`git show` / `git grep`), zero buildu weba, zero zmian w `gra/**`
 ZMIANY: niezcommitowane w chwili pisania dokumentu (commit: patrz sekcja 11); DEPLOY/PUSH: NIE WYKONANO
-RUNDA: 2/5 (runda 1: Evaluator FAIL, zarzuty 1-5; runda 2: ten dokument)
+RUNDA: 3/5 (runda 1: Evaluator FAIL, zarzuty 1-5; runda 2: Evaluator FAIL zarzut 6 + pytania 1-8; runda 3: sekcja R3)
+
+---
+
+## R3. RUNDA 3/5 — stan i rozstrzygnięcia (NADRZĘDNE względem sekcji 0–10a poniżej)
+
+STATUS: BLOCK (częściowo; kryterium binarne rundy 3 NIESPEŁNIONE: wiersze 12–18 i 25 oraz osie (b) Pracy/złota NIE są rozwinięte — patrz R3.6). Zrealizowano: Praca budynków (wiersze 8–9, Q1=A), złoto jednostek i utrzymanie złota (wiersze 10–11), klasyfikację wszystkich pozycji inwentarza (zarzut 6), jednorazową równoważność bootstrapu, testy kształtu i kompletności, tabelę było/jest.
+DOMAIN: GAME
+TEMAT: R-RUSTPORT-P3-19-FLATTEN-MULTIPLIERS-Q1 (runda 3/5)
+BAZA: `origin/rust-port/parity-v2` = `69f432ba` (P4.11 PASS) + cherry-pick `3acfbc86` (runda 1) i `264d4b43` (runda 2) → commit rundy 3 (SHA w sekcji 11)
+PIN web: `edb8fb56` (bez zmian; tylko `git show` / `git grep`, zero buildu i zmian w `gra/**`)
+DEPLOY/PUSH: NIE WYKONANO
+
+### R3.1 Rozstrzygnięcia właściciela (2026-10-22, A/B/C) — wdrożone
+
+- **Q1 = A (Praca budynków = web 1:1):** usunięto dzielenie Pracy przez 2 w `effective_work_cost` (`building_costs.rs`), wartości Pracy per budynek per epoka wejścia są w tabeli `data/derived/building-work-costs.json` (mnożnik ery x1/x2/x4 już wliczony). Rozjazd z `R3`/§2b (Rust ×0,5 vs web ×1,0) NAPRAWIONY w tej rundzie.
+- **Q2 = B (zakres rundy):** rekrutacja i budynki: Praca (wiersze 8–9), złoto (wiersz 10), utrzymanie złota jednostek (wiersz 11) — ZROBIONE. Wiersze 12–18 i 25 — NIEROZWINIĘTE (R3.6, BLOCK).
+- **Q3 = A (stany (b) o skończonym zbiorze → tabele indeksowane):** NIEZREALIZOWANE w tej rundzie (R3.7). Powód: osie (b) Pracy (pace × trudność × zniżka cywilizacji) są nieliniowe (`floor`/`round` na każdym kroku, `production.ts:514-529`, `civ-bonuses.ts:363-370`), więc wymagają tabeli per poziom i nowego wejścia API w `building_costs.rs`; w tym jednym etapie nie zrobiono tego bez ryzyka błędnej równoważności. Patrz pytanie P-R3-1.
+- **Pakiet 2/2 (rozstrzygnięcie orkiestratora):** `pieniadzMnoznik` — martwa flaga (R3.3); `utrzymanie_surowcowe_na_ture` — web CZYTA (nie martwe), Rust nie ma mechaniki (R3.3).
+
+### R3.2 Co zmieniono w kodzie i danych (allowlista rundy 3)
+
+Nowe pliki: `rust-port/engine/data/derived/building-work-costs.json` (42 wiersze), `rust-port/engine/data/derived/unit-gold-costs.json` (75 wierszy). Generator: `runs/R-RUSTPORT-P3-19-FLATTEN-MULTIPLIERS-Q1/gen-work-gold.mjs`; niezależna weryfikacja: `runs/.../verify-work-gold.py`.
+
+Zmienione pliki Rust:
+- `src/data/derived.rs`: `BUILDING_WORK_COSTS_JSON`, `UNIT_GOLD_COSTS_JSON`, struktury i parsery (`deny_unknown_fields`).
+- `src/domain/building_costs.rs`: `canonical_building_costs()` czyta Pracę z tabeli (usunięty literał `WORK`); `effective_work_cost(raw)` = `raw` (usunięte `raw/2 + raw%2`). Sygnatury publiczne bez zmian.
+- `src/domain/recruitment.rs`: `gold_cost` i `gold_upkeep` z `unit-gold-costs.json` (usunięte odczyty `Pieniądz (koszt)` / `Utrzymanie` z `units.json` oraz `non_negative`). Sygnatury bez zmian.
+- Brak jakiegokolwiek mnożenia współczynnika balansu w czasie gry: `git grep` w `src/domain/building_costs.rs` i `src/domain/recruitment.rs` (wzorce `*`, `/ 2`, `R_STAWKI`, `FALA`, `Epoka`) zwraca tylko arytmetykę liczenia poziomów (`base + przyrost x (poziom-1)`, `saturating_mul`) i mnożenie przez liczbę tur w `resource_upkeep_for_turns` — NIE są to mnożniki balansu.
+
+Zmienione testy Rust (każda zmiana oczekiwania z uzasadnieniem; wszystkie to wektory autorstwa Rust, NIE nagrania weba):
+- `tests/building_costs.rs`: `effective_work_cost_is_exactly_half_without_scaling_resources` → `effective_work_cost_is_raw_work_web_one_to_one` (było 10/15/20/16; jest 20/30/40/31; powód: web 1:1, R3.1 Q1=A). Testy `resource_cost_is_independent...`, `expenditure_requires...`, `successful_spend...`, `mutable_spend...`: argumenty Pracy dostosowane do nowej wartości efektywnej (30 / 40) — bez zmiany oczekiwanych zasobów. `canonical_catalog...`: `palac_iii` `base_work` 90 → 360, `work_increment` 27 → 108, `effective_work_cost(1)` 45 → 360 (epokaWejscia 3 → x4, web `buildingEraCostMultiplier`).
+- `tests/parity_suite.rs`: `stolarnia` (20,30,15) → (20,30,30) (web 1:1); wektor wydania Pracy `work` 10 → 20 (ten sam test, przeniesienie do nowej Pracy); `Wojownik` `gold_upkeep` 1 → 4 (FALA1 x FALA2 = x4, `economy-upkeep.ts:976`).
+- `tests/recruitment.rs`: `Wojownik` `gold_upkeep` 1 → 4 (ta sama przyczyna); pętla kompletności porównuje teraz `gold_cost`/`gold_upkeep` z tabelą `unit-gold-costs.json` (wiring, nie formuła).
+- Nowe testy KSZTAŁTU i KOMPLETNOŚCI w `tests/derived_values.rs` (4 testy): 42 wiersze Pracy unikalne i dodatnie; domena czyta Pracę z tabeli bez przeliczania; 75 wierszy złota unikalnych i znane epoki; domena czyta złoto z tabeli. Testy NIE porównują liczb ze wzorem (zgodnie z doprecyzowaniem właściciela).
+
+### R3.3 Klasyfikacja pozycji dodatkowych (zarzut 6 rundy 2 — domknięcie)
+
+- **Wiersz 7 (utrzymanie surowcowe budynku, N=5 na typ):** web CZYTA (`economy-upkeep.ts:718, 734`; `ui/cityPanel.ts:6656, 6668`; `ui/entityCards/buildingAdapter.ts:297`) — NIE martwe. Dane zachowane w `building-stock-costs.json` (kolumna `utrzymanie_surowcowe_na_ture`); Rust nie ma mechaniki utrzymania budynków → NIEUŻYWANE W SILNIKU RUST (P3-19b). Pytanie P-R3-3.
+- **Wiersz 27 (`pieniadzMnoznik`, PIENIADZ_MNOZNIK = 10):** dowód braku odczytu: `git grep -n -I -E 'pieniadzMnoznik|PIENIADZ_MNOZNIK' edb8fb56 -- gra/src` → definicja `playerState.ts:75`, typ/pole `:112`, init `:153`, zapis `:451`, reset `main.ts:28633, 37086, 37434, 37711, 37930`; komentarze `playerState.ts:28, 39`. ŻADEN plik nie czyta wartości do obliczenia kosztu, dochodu ani innej reguły. Klasa: **MARTWA FLAGA — NIEISTOTNA dla balansu**. Nie rozwijana, zero zmian w Rust. Rozstrzygnięcie orkiestratora zastosowane.
+- **Wiersze 19–22 (były NIE_ZMIERZONO):** poza zakresem Q2 (R3.6), nieruszane w tej rundzie. Klasa przypisana wg funkcji i nazwy (klasa wstępna, NIE zweryfikowana w kodzie w tej rundzie — to jest luka, patrz R3.6):
+  - 19 `citizen-resource-upkeep` (PRZYWRÓCONA 1,0, skala ×5 z danych): **a** (stała danych), NIEROZWINIĘTE → P3-19c (utrzymanie ludności, nie koszt budowy/rekrutacji).
+  - 20 `converters.ts:68` (throughputFallback ×5): **a** (produkcja, nie koszt), NIEROZWINIĘTE.
+  - 21 `building-resource-gate.ts:325-330` (Spichlerz I/II ×5 w komentarzach): **a**, NIEROZWINIĘTE.
+  - 22 wartości dyplomacji (`diplomacy-value-catalog.ts:284-301`, PN jednostek ×2 wg P3-17): **a** (katalog) z częścią **b** (zależność od trudności — 3 wartości, enumerowalne), NIEROZWINIĘTE; `diplomacy.rs` poza allowlistą P3-19 (równoległe P3.18/P3.20).
+- **Wiersz 35 (stałe `*_MULT` / `*_FACTOR` / `*_SCALE` spoza kosztów):** klasa wstępna wg nazwy stałej i miejsca użycia z załącznika D, NIE zweryfikowana w kodzie w tej rundzie:
+  - **b** (stan gry w czasie wykonania): `MORALE_ARMY_COLLAPSE_MULT`, `AI_DIPLOMACY_GENEROSITY_GOLD_MULT`, `BASKET_PN_DIFFICULTY_MULT_*` (poziom trudności, 3 wartości).
+  - **a** (dane/teren/typ, stała): `BROD_RUCH_MULT`, `HILL_DEFENSE_MULT`, `MOUNTAIN_DEFENSE_MULT`, `COUNTER_MULT` (para jednostek), `EMBARK_DEFENSE_MULT`, `ROAD_MOVE_SPEED_MULT`, `ROAD_BRUK_MOVE_SPEED_MULT`, `MOUNTAIN_RANGE_REGROW_TARGET_MULT`.
+  - Wszystkie NIEROZWINIĘTE → P3-19c/d; poza zakresem Q2.
+
+### R3.4 Praca budynków — dane i równoważność (wiersze 8–9)
+
+- Stan bazowy web: pace `niski` (x1.0), trudność `normal` (x1), bez ulgi cywilizacji, `ownerId` bez znaczenia (`production.ts:514-529`: `0.25 x 2 x 2 = 1.0`).
+- Wzór weba w stanie bazowym: `Praca(n) = m_ery x (kosztBudowy + przyrostKosztu x (n-1))`, gdzie `m_ery = buildingEraCostMultiplier(epokaWejscia)` (`building-stock-cost.ts:74-81`). Mnożenie jest całkowite (m ∈ {1,2,4}, wejścia całkowite), więc `round` nie zmienia wyniku.
+- Tabela: `praca_bazowa = kosztBudowy x m_ery`, `praca_przyrost = przyrostKosztu x m_ery`.
+- **Równoważność bootstrapu (jednorazowo, ZMIERZONO):** `gen-work-gold.mjs` (literalna kopia `itemCost` + `buildingWorkCost` stanu bazowego) — porównań 8400 (42 budynki x poziomy 1..200), rozbieżności **0**. `verify-work-gold.py` (reguły z tego dokumentu, BEZ kodu weba) — porównań **8550** (Praca 8400 + złoto 75 x 2), rozbieżności **0**. Wynik surowy: `runs/.../verify-work-gold.py` (sekcja R3.8).
+
+### R3.5 Złoto jednostek (wiersze 10–11) — dane i równoważność
+
+- Koszt zakupu web (`production.ts:255-289`, `itemCost` jednostka): `scaleCostByEpoch(unitCostFromDef(u), Epoka)`; `unitCostFromDef`: raw>0 → raw; raw=0 i Super-jednostka=TAK → 0 (9 jednostek); w innym razie domyślny koszt roli z `miasto-params.json`. Tabela: `pieniadz_koszt`.
+- Utrzymanie złota web (`economy-upkeep.ts:962-977`, `:1000-1023`): `base = scaleCostByEpoch(Utrzymanie, Epoka)`; `base<=0 → 0`; `round(base x 4)` (FALA1 x FALA2 = `R_STAWKI_FALA1_FALA2_MULT`, `r-stawki-strojenie.ts:12-13`). Tabela: `utrzymanie_pieniadz_ture`.
+- **Otwarta reguła (pytanie P-R3-2):** `economy-upkeep.ts:967-968` — gdy kategoria instancji jednostki to `zwiadowca` lub `super`, utrzymanie = 0 niezależnie od tabeli. Kategoria instancji (`main.ts:7193`, `u.category ?? Kategoria ?? 'domyslny'`) NIE jest w `units.json` (brak pola `Kategoria`). Tabela tej reguły NIE odtwarza; jednostki `zwiadowca`/`super` mają w tabeli wartość z danych.
+- Pozostałe (b) złota — NIEROZWINIĘTE: `unitMoneyCost` (`production.ts:535`: ulga cywilizacji, tempo kosztów jednostek, trudność; `unit-cost-tempo.ts`, `difficulty-cost.ts`).
+
+### R3.6 Zakres rundy 3 — status każdego wiersza (kryterium binarne)
+
+| # | Pozycja | Status w rundzie 3 |
+|---|---|---|
+| 1, 2 | Koszt epoki, `scaleCostByEpoch` (stock) | ROZWINIĘTE (runda 2) |
+| 3 | Dopłata `kon` | ROZWINIĘTE (runda 2) |
+| 4 | Utrzymanie surowcowe jednostek | ROZWINIĘTE (runda 2) |
+| 5, 6 | FALA2 x2, mnożnik ery (stock budynków) | ROZWINIĘTE (runda 2) |
+| 7 | Utrzymanie surowcowe budynku | DANE ROZWINIĘTE; web czyta; Rust nie ma mechaniki (R3.3) |
+| 8 | Praca budynku (era, poziom) | ROZWINIĘTE (R3.4), Rust = web 1:1 (Q1=A). Osie (b) — NIEROZWINIĘTE (P-R3-1) |
+| 9 | `buildingWorkCost` (netto x1.0) | ROZWINIĘTE w stanie bazowym (R3.4); rozjazd ×0,5 NAPRAWIONY. Osie (b) — NIEROZWINIĘTE |
+| 10 | Koszt zakupu jednostki w złocie (epoka) | ROZWINIĘTE w stanie bazowym (R3.5). (b) NIEROZWINIĘTE |
+| 11 | Utrzymanie złota jednostki (x4) | ROZWINIĘTE (R3.5), z zastrzeżeniem P-R3-2 |
+| 12 | Utrzymanie złota budynku (`floor(floor(raw·2)·m)`, per poziom) | **NIEROZWINIĘTE — BLOCK** (wymaga tabeli per poziom; kolejny etap) |
+| 13 | Żywność wojska (epoka, ×4, terytorium, obóz) | **NIEROZWINIĘTE — BLOCK** (części (b) z terytorium i obozem) |
+| 14 | `R_STAWKI_KOSZT_MULT` (racje, badania, Praca) | **NIEROZWINIĘTE — BLOCK** |
+| 15 | Koszt badań (tempo, x2, x2 Brąz/Żelazo, trudność) | **NIEROZWINIĘTE — BLOCK** (b) |
+| 16 | `scaleImprovementWorkCost` x2 | **NIEROZWINIĘTE — BLOCK** |
+| 17 | Cuda (`scaledWonderWorkCost`, `scaledWonderFoodCost`) x2 | **NIEROZWINIĘTE — BLOCK** |
+| 18 | Cap magazynu (50000/500, `magazynEraMultiplier`) | **NIEROZWINIĘTE — BLOCK** |
+| 19–22 | Patrz R3.3 | NIEROZWINIĘTE (poza Q2), klasa wstępna |
+| 25 | Praca ulepszeń terenu (`TERRAIN_IMPROVEMENT_ERA_MULTIPLIERS`) | **NIEROZWINIĘTE — BLOCK** (`improvements.rs` w allowliście, ale równoległy P3.18) |
+| 27 | `pieniadzMnoznik` | MARTWA FLAGA (R3.3) |
+| 35 | Stałe spoza kosztów | klasa wstępna (R3.3), NIEROZWINIĘTE |
+
+Wniosek: kryterium „inwentarz kompletny + wszystkie mnożniki klasy (a) i wejścia (b) skończone rozwinięte" — NIESPEŁNIONE: wiersze 12–18, 25 oraz osie (b) Pracy i złota (pace, trudność, zniżka cywilizacji) pozostają NIEROZWINIĘTE. Bramki (fmt, clippy, test) są zielone i nie zależą od tej luki.
+
+### R3.7 Dynamiczne (klasa b) — aktualizacja sekcji 9
+
+- Praca (b): `applyBuildingCostPace` (pace niski x1 / normalny x2 / wysoki x4; `building-cost-tempo.ts:14-40`), `applyDifficultyCostMultiplier` (normal: x1; easy: gracz x1, AI x2; hard: gracz x2, AI x1; `difficulty-cost.ts:50-82`), `buildingCostAfterCivDiscount` (`civ-bonuses.ts:363-370`: `floor(base x (1 - min(sum(koszt_redukcja budynki), 0.75)))`). Każdy krok ma własne `round`/`floor`, więc tabela musi być per poziom (nie mnożnik na wierzchu). Rust nie ma tych wejść w `building_costs.rs`.
+- Złoto (b): `unitMoneyCost` (ulga cywilizacji, pace kosztów jednostek, trudność).
+
+### R3.8 Surowy wynik weryfikacji (jednorazowo, ZMIERZONO)
+
+```text
+$ python3 -I verify-work-gold.py rust-port/engine/data/units.json rust-port/engine/data/buildings.json <miasto-params.json z edb8fb56> rust-port/engine/data/derived/building-work-costs.json rust-port/engine/data/derived/unit-gold-costs.json
+porownan=8550 rozbieznosci=0
+EXIT=0
+$ node gen-work-gold.mjs <units> <buildings> <miasto-params> <outDir>
+praca: sprawdzone=8400 rozbieznosci=0 budynki=42
+zloto: jednostki=75
+EXIT=0
+```
+
+### R3.9 Pytania do właściciela (DECISION_REQUIRED; Operator nie zgaduje)
+
+- **P-R3-1 (osie (b) Pracy i tabela per poziom):** czy tabela Pracy ma być indeksowana po poziomie budynku (1..`maksPoziom` z `buildings.json`), po paceie (niski/normalny/wysoki), po trudności (gracz/AI x normal/easy/hard) i po zniżce cywilizacji? Ile zniżek cywilizacji i jaki zakres poziomów? Bez tej odpowiedzi osie (b) zostają NIEROZWINIĘTE.
+- **P-R3-2 (kategoria jednostki w utrzymaniu złota):** reguła weba `zwiadowca`/`super` → utrzymanie 0 (`economy-upkeep.ts:967-968`) wymaga źródła kategorii instancji, którego nie ma w `units.json`. Czy dodać pole kategorii do tabeli, czy zostawić wartość z danych?
+- **P-R3-3 (utrzymanie surowcowe budynków):** web je czyta (N=5 na typ). Czy Rust ma mieć mechanikę (kolejny temat), czy dane zostają tylko w tabeli?
+- **P-R3-4 (zmiana balansu — do potwierdzenia przed integracją):** Praca i złoto po rozwinięciu zmieniają wartości gry względem obecnego Rust (tabele R3.10). Największe skoki: Praca `palac_iii` 45 → 360 (poz. 1), `odlewnia_zelaza` 18 → 140; złoto `Rydwan egipski` 16 → 32, `Gaesatae` 7 → 28. Czy właściciel potwierdza te liczby jako zamierzone (wg wzoru weba 1:1)?
+
+### R3.10 Tabele było/jest (zmiany wartości gry; dowód: `git show edb8fb56` + wzory z R3.4–R3.5)
+
+Patrz sekcja „Załącznik E" na końcu dokumentu (wygenerowane z tabel JSON i z `buildings.json` / `units.json`).
+
 
 ---
 
@@ -1965,3 +2083,727 @@ render/*, ui/*, wonderpreview/*: stałe `*_SCALE` (rozmiary modeli, czcionki, LO
 
 - Commit w worktree (jawne `git add`, bez `-A`), bez push. Cargo.lock nie dodawany (`git status` przed commitem).
 - DEPLOY/PUSH: NIE WYKONANO.
+
+---
+
+## Załącznik E — RUNDA 3: tabele było/jest oraz surowe logi (fmt, clippy, test, generator, weryfikacja)
+
+### Tabela było/jest: Praca budynków (poziom 1 i 2; było = Rust `effective_work_cost`, jest = web 1:1)
+
+| Budynek | epokaWejscia | mnożnik ery | Praca poz.1 BYŁO | Praca poz.1 JEST | Praca poz.2 BYŁO | Praca poz.2 JEST |
+|---|---|---|---|---|---|---|
+| stolarnia | 1 | x1 | 10 | 20 | 15 | 30 |
+| kamieniarski | 1 | x1 | 10 | 20 | 15 | 30 |
+| kuznia | 2 | x2 | 15 | 60 | 20 | 80 |
+| odlewnia_brazu | 2 | x2 | 14 | 56 | 19 | 76 |
+| odlewnia_zelaza | 3 | x4 | 18 | 140 | 24 | 188 |
+| wielka_odlewnia | 4 | x4 | 40 | 320 | 48 | 380 |
+| targowisko | 1 | x1 | 13 | 25 | 18 | 35 |
+| port | 2 | x2 | 15 | 60 | 20 | 80 |
+| port_wielki | 3 | x4 | 28 | 220 | 34 | 268 |
+| spichlerz | 1 | x1 | 10 | 20 | 14 | 28 |
+| spichlerz_ii | 2 | x2 | 18 | 70 | 24 | 94 |
+| garncarnia | 1 | x1 | 9 | 18 | 13 | 26 |
+| cegielnia | 2 | x2 | 11 | 44 | 16 | 62 |
+| kamienne_kregi | 1 | x1 | 9 | 18 | 13 | 26 |
+| swiatynia | 2 | x2 | 13 | 50 | 18 | 70 |
+| biblioteka | 2 | x2 | 13 | 50 | 18 | 70 |
+| studnia | 1 | x1 | 8 | 15 | 10 | 20 |
+| akwedukt | 2 | x2 | 15 | 60 | 21 | 84 |
+| mennica | 2 | x2 | 14 | 56 | 19 | 76 |
+| palisada | 1 | x1 | 11 | 22 | 15 | 30 |
+| mury | 2 | x2 | 18 | 70 | 24 | 94 |
+| koszary | 2 | x2 | 13 | 50 | 18 | 70 |
+| magazyn | 2 | x2 | 10 | 40 | 14 | 56 |
+| stela | 1 | x1 | 8 | 15 | 10 | 20 |
+| palac | 1 | x1 | 20 | 40 | 26 | 52 |
+| palac_ii | 2 | x2 | 30 | 120 | 39 | 156 |
+| palac_iii | 3 | x4 | 45 | 360 | 59 | 468 |
+| kuznia_zelaza | 3 | x4 | 30 | 240 | 38 | 300 |
+| wielka_kuznia | 4 | x4 | 45 | 360 | 54 | 432 |
+| fort | 3 | x4 | 35 | 280 | 43 | 340 |
+| baszta | 3 | x4 | 35 | 280 | 43 | 340 |
+| warsztat_oblezniczy | 3 | x4 | 33 | 260 | 40 | 320 |
+| akademia | 3 | x4 | 35 | 280 | 43 | 340 |
+| teatr | 3 | x4 | 28 | 220 | 34 | 268 |
+| sad | 3 | x4 | 28 | 220 | 34 | 268 |
+| dom_starszyzny | 1 | x1 | 13 | 25 | 15 | 30 |
+| dwor_zarzadcy | 2 | x2 | 23 | 90 | 27 | 108 |
+| pretorium | 3 | x4 | 38 | 300 | 45 | 360 |
+| trybunal | 2 | x2 | 15 | 60 | 20 | 80 |
+| garnizon | 1 | x1 | 15 | 30 | 18 | 36 |
+| laznia_publiczna | 3 | x4 | 25 | 200 | 31 | 248 |
+| akademia_wojskowa | 3 | x4 | 40 | 320 | 49 | 392 |
+
+### Tabela było/jest: złoto jednostek (tylko wiersze ze zmianą kosztu LUB utrzymania; było = Rust literal units.json)
+
+| Jednostka | Epoka | Koszt zakupu BYŁO | Koszt zakupu JEST | Utrzymanie złota BYŁO | Utrzymanie złota JEST |
+|---|---|---|---|---|---|
+| Wojownik | Kamień | 5 | 5 | 1 | 4 |
+| Procarz | Brąz | 4 | 8 | 1 | 8 |
+| Oszczepnik | Kamień | 3 | 3 | 1 | 4 |
+| Łucznik | Kamień | 3 | 3 | 1 | 4 |
+| Włócznik | Brąz | 8 | 16 | 2 | 16 |
+| Wojownik z mieczem i tarczą | Brąz | 8 | 16 | 2 | 16 |
+| Rydwan (woły) | Brąz | 15 | 30 | 3 | 24 |
+| Konnica | Brąz | 11 | 22 | 3 | 24 |
+| Galera | Brąz | 9 | 18 | 3 | 24 |
+| Falanga | Żelazo | 9 | 36 | 2 | 32 |
+| Hastati | Żelazo | 9 | 36 | 2 | 32 |
+| Jeździec chiński | Brąz | 14 | 28 | 3 | 24 |
+| Impi | Brąz | 8 | 16 | 2 | 16 |
+| Oszczepnik Zulu (Izijula) | Kamień | 10 | 10 | 1 | 4 |
+| Wojownik z maczugą (Chaska) | Kamień | 13 | 13 | 2 | 8 |
+| Wojownik z toporem | Brąz | 9 | 18 | 2 | 16 |
+| Procarz (Huaracoc) | Brąz | 4 | 8 | 1 | 8 |
+| Oszczepnik (Estólica) | Kamień | 5 | 5 | 1 | 4 |
+| Rydwan konny | Brąz | 14 | 28 | 3 | 24 |
+| Łucznik egipski | Kamień | 7 | 7 | 1 | 4 |
+| Rydwan egipski | Brąz | 16 | 32 | 3 | 24 |
+| Wojownik z khopesh | Brąz | 9 | 18 | 2 | 16 |
+| Łucznik nubijski | Brąz | 10 | 20 | 2 | 16 |
+| Łucznik sumeryjski | Kamień | 5 | 5 | 1 | 4 |
+| Rydwan sumeryjski | Brąz | 19 | 38 | 3 | 24 |
+| Włócznik sumeryjski | Brąz | 9 | 18 | 2 | 16 |
+| Wojownik mykeński | Brąz | 9 | 18 | 2 | 16 |
+| Rydwan mykeński | Brąz | 15 | 30 | 3 | 24 |
+| Wojownik Sherden | Brąz | 9 | 18 | 2 | 16 |
+| Halabardnik Shang | Brąz | 9 | 18 | 2 | 16 |
+| Rydwan Shang | Brąz | 16 | 32 | 3 | 24 |
+| Łucznik akadyjski | Brąz | 8 | 16 | 2 | 16 |
+| Gaesatae | Żelazo | 7 | 28 | 1 | 16 |
+| Soldurii | Żelazo | 9 | 36 | 2 | 32 |
+| Rydwan celtycki | Żelazo | 14 | 56 | 3 | 48 |
+| Wojownik germański | Żelazo | 0 | 0 | 2 | 32 |
+| Berserker germański | Żelazo | 8 | 32 | 2 | 32 |
+| Taran | Kamień | 7 | 7 | 1 | 4 |
+| Taran okuty | Brąz | 9 | 18 | 2 | 16 |
+| Katapulta | Żelazo | 9 | 36 | 2 | 32 |
+| Wieża oblężnicza | Brąz | 10 | 20 | 2 | 16 |
+| Wojownik tyrreński | Brąz | 8 | 16 | 2 | 16 |
+| Wojownik szekelesz | Brąz | 7 | 14 | 2 | 16 |
+| Konnica lancowa asyryjska | Żelazo | 16 | 64 | 3 | 48 |
+| Konnica łucznicza asyryjska | Żelazo | 15 | 60 | 3 | 48 |
+| Łucznik asyryjski | Brąz | 7 | 14 | 2 | 16 |
+| Drużynnik | Żelazo | 9 | 36 | 2 | 32 |
+| Jeździec z oszczepami | Żelazo | 13 | 52 | 3 | 48 |
+| Strażnik bram Harappy | Brąz | 9 | 18 | 2 | 16 |
+| Piechota induska | Brąz | 9 | 18 | 2 | 16 |
+| Garnizon Harappy | Żelazo | 9 | 36 | 2 | 32 |
+| Rydwan Kapadokijski | Brąz | 17 | 34 | 3 | 24 |
+| Piechota hetycka | Brąz | 9 | 18 | 2 | 16 |
+| Gwardia hetycka | Żelazo | 9 | 36 | 2 | 32 |
+| Gwardia Ishtar | Brąz | 9 | 18 | 2 | 16 |
+| Wojownik babiloński | Brąz | 9 | 18 | 2 | 16 |
+| Piechota neobabilońska | Żelazo | 9 | 36 | 2 | 32 |
+| Tyrski miecznik | Żelazo | 9 | 36 | 2 | 32 |
+| Wojownik fenicki | Brąz | 9 | 18 | 2 | 16 |
+| Gwardia Tyreńska | Żelazo | 9 | 36 | 2 | 32 |
+| Thorakites | Żelazo | 8 | 32 | 2 | 32 |
+| iButho z iklwa | Żelazo | 8 | 32 | 2 | 32 |
+| Gwardzista z champi | Brąz | 9 | 18 | 2 | 16 |
+| Wojownik z żelaznym khopesh | Żelazo | 9 | 36 | 2 | 32 |
+| Mur tarcz (Sargonid) | Żelazo | 9 | 36 | 2 | 32 |
+| Miecznik galijski | Żelazo | 7 | 28 | 1 | 16 |
+
+Liczba zmienionych kosztów zakupu: 56 z 75; zmienionych utrzymań złota: 66 z 75.
+
+### E1 fmt (surowe, EXIT z echo)
+
+```text
+EXIT=0
+```
+
+### E2 clippy -D warnings (surowe, EXIT z echo)
+
+```text
+    Checking civ-engine v0.1.0 (/home/user/The-Game/.claude/worktrees/wf_e8c1af53-44e-1/rust-port/engine)
+    Finished `dev` profile [unoptimized] target(s) in 22.26s
+EXIT=0
+```
+
+### E3 cargo test --offline --no-fail-fast (surowe, pełne, EXIT z echo)
+
+```text
+   Compiling civ-engine v0.1.0 (/home/user/The-Game/.claude/worktrees/wf_e8c1af53-44e-1/rust-port/engine)
+    Finished `test` profile [unoptimized] target(s) in 27.61s
+     Running unittests src/lib.rs (/home/user/cargo-target-shared/wf_e8c1af53-44e-1/debug/deps/civ_engine-16aabb0664806a8f)
+
+running 6 tests
+test domain::map_generator::tests::canonical_climate_band_vectors_match_typescript ... ok
+test domain::map_generator::tests::mulberry32_matches_typescript_first_values ... ok
+test domain::map_generator::tests::terrain_bias_and_classification_match_typescript_golden_vectors ... ok
+test domain::map_generator::tests::axial_distance_and_neighbours_match_hex_contract ... ok
+test domain::map_generator::tests::value_noise_and_fbm_match_typescript_golden_vectors ... ok
+test domain::map_generator::tests::canonical_mask_vectors_match_typescript ... ok
+
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/ai_turn.rs (/home/user/cargo-target-shared/wf_e8c1af53-44e-1/debug/deps/ai_turn-3ff8b634b4adc9fc)
+
+running 13 tests
+test command_wire_shape_is_stable_for_engine_integration ... ok
+test hex_city_score_enemy_penalty_follows_threat_range_option ... ok
+test nearest_unreachable_enemy_city_is_skipped_for_a_reachable_target ... ok
+test civilian_units_do_not_receive_combat_orders ... ok
+test planner_returns_production_then_actions_and_always_ends_the_turn ... ok
+test ai_turn_input_serde_round_trip_uses_json_map_entries ... ok
+test ai_turn_default_city_parameters_match_ai_params_json ... ok
+test planner_uses_deterministic_pathfinding_and_never_walks_through_mountains ... ok
+test planner_uses_dijkstra_weighted_terrain_costs_and_stable_tie_breaking ... ok
+test production_matches_spec_priority_and_skips_already_built_buildings ... ok
+test ranged_units_hold_back_when_an_enemy_city_is_close ... ok
+test settler_founds_only_on_a_qualifying_village_and_respects_city_spacing ... ok
+test wounded_units_retreat_before_attacking ... ok
+
+test result: ok. 13 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/assets_manifest.rs (/home/user/cargo-target-shared/wf_e8c1af53-44e-1/debug/deps/assets_manifest-d56e5fd4df394dc5)
+
+running 13 tests
+test byte_sums_per_category_match_p1_11 ... ok
+test counts_per_extension_match_p1_11 ... ok
+test manifest_has_header_and_428_data_rows ... ok
+test manifest_dest_paths_are_unique ... ok
+test negative_parser_rejects_bad_header_and_columns ... ok
+test negative_validator_rejects_duplicate_dest ... ok
+test negative_validator_rejects_missing_file ... ok
+test negative_validator_rejects_wrong_size ... ok
+test negative_validator_rejects_wrong_sha ... ok
+test sha1_matches_known_vectors ... ok
+test no_files_outside_manifest_in_assets_dir ... ok
+test every_manifest_entry_exists_with_declared_size ... ok
+test every_entry_blob_sha1_matches_manifest_column ... ok
+
+test result: ok. 13 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.33s
+
+     Running tests/barbarians.rs (/home/user/cargo-target-shared/wf_e8c1af53-44e-1/debug/deps/barbarians-6b7f5fd3cf04bc2a)
+
+running 10 tests
+test camp_spawning_rejects_owned_and_permanently_cleared_hexes ... ok
+test camp_destruction_removes_only_the_entered_camp ... ok
+test barbarian_city_garrison_spawns_units_without_a_building_queue ... ok
+test empty_city_capture_is_hard_only_and_defenders_block_barbarians ... ok
+test camp_tick_decrements_cooldown_and_respects_owned_unit_cap ... ok
+test naval_camps_are_purged_without_spawning_sea_peoples ... ok
+test movement_prioritizes_retreat_then_adjacent_attack_then_nearest_target ... ok
+test camp_spawning_is_deterministic_and_honours_city_and_camp_spacing ... ok
+test rally_moves_multiple_units_toward_their_shared_camp ... ok
+test state_round_trip_preserves_camp_identity_and_visit_memory ... ok
+
+test result: ok. 10 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/bridge_add_player.rs (/home/user/cargo-target-shared/wf_e8c1af53-44e-1/debug/deps/bridge_add_player-29d21d45c2674db3)
+
+running 1 test
+test bridge::add_player_atomicity_tests::add_player_leaves_mock_state_untouched_when_the_game_rejects_it ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/building_costs.rs (/home/user/cargo-target-shared/wf_e8c1af53-44e-1/debug/deps/building_costs-df466ad6818fd31d)
+
+running 10 tests
+test expenditure_requires_both_work_and_all_resources ... ok
+test effective_work_cost_is_raw_work_web_one_to_one ... ok
+test empty_resource_cost_is_affordable_without_a_stock_map ... ok
+test resource_cost_is_independent_and_missing_resources_are_reported ... ok
+test failed_spend_does_not_mutate_the_input_stock ... ok
+test mutable_spend_is_atomic_and_preserves_unrelated_resources ... ok
+test successful_spend_deducts_effective_work_and_raw_stock_atomically ... ok
+test serde_round_trip_keeps_the_split_cost_contract ... ok
+test canonical_catalog_contains_all_buildings_and_preserves_split_values ... ok
+test work_cost_is_linear_and_levels_are_one_based ... ok
+
+test result: ok. 10 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/city_growth.rs (/home/user/cargo-target-shared/wf_e8c1af53-44e-1/debug/deps/city_growth-be95b00ce9d4c52b)
+
+running 10 tests
+test fractional_growth_can_cross_multiple_slots_but_is_disabled_when_unfed ... ok
+test deficit_reduces_population_to_one_without_health_boosting_negative_food ... ok
+test a_threshold_multiplier_is_rounded_and_only_one_citizen_is_added_per_turn ... ok
+test granary_retains_food_after_growth_and_tier_two_uses_its_fixed_retention ... ok
+test fractional_growth_accumulates_and_freezes_at_the_population_cap ... ok
+test growth_slot_helpers_report_no_growth_for_invalid_or_capped_inputs ... ok
+test population_at_cap_is_frozen_but_surplus_food_is_not_spent ... ok
+test population_cap_uses_the_three_canonical_building_steps ... ok
+test hunger_penalty_is_separate_and_never_drops_below_one ... ok
+test positive_food_is_health_adjusted_and_crossing_the_threshold_grows_once ... ok
+
+test result: ok. 10 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/combat.rs (/home/user/cargo-target-shared/wf_e8c1af53-44e-1/debug/deps/combat-7737db4785daf590)
+
+running 7 tests
+test canonical_counter_table_matches_confirmed_attack_rows ... ok
+test effective_strength_applies_counters_terrain_and_siege_structures ... ok
+test empty_attacker_side_gives_non_empty_defender_the_win ... ok
+test empty_defender_side_gives_non_empty_attacker_the_win ... ok
+test losses_are_smaller_for_the_winner_in_a_decisive_matchup ... ok
+test resolver_returns_deterministic_winner_and_per_unit_losses ... ok
+test resolver_is_order_independent_and_preserves_ids ... ok
+
+test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/data_buildings_tech.rs (/home/user/cargo-target-shared/wf_e8c1af53-44e-1/debug/deps/data_buildings_tech-92a54ec12302afcb)
+
+running 3 tests
+test tech_json_parses ... ok
+test wonders_json_parses ... ok
+test buildings_json_parses ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/data_civilizations.rs (/home/user/cargo-target-shared/wf_e8c1af53-44e-1/debug/deps/data_civilizations-c9a95e0d071840a4)
+
+running 7 tests
+test civ_ai_json_parses_and_spot_checks ... ok
+test civ_params_json_parses_and_spot_checks ... ok
+test city_names_pools_json_parses_and_spot_checks ... ok
+test diplomacy_acceptance_points_json_parses_and_spot_checks ... ok
+test diplomacy_json_parses_and_spot_checks ... ok
+test civs_json_parses_and_spot_checks ... ok
+test civ_matrix_json_parses_and_spot_checks ... ok
+
+test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+     Running tests/data_compliance.rs (/home/user/cargo-target-shared/wf_e8c1af53-44e-1/debug/deps/data_compliance-bce92961776df717)
+
+running 40 tests
+test civ_auxiliary_files_civ_ids_match_web_pin ... ok
+test civs_count_and_ids_match_web_pin ... ok
+test collection_id_sets_match_web_pin ... ok
+test roundtrip_covers_all_29_data_files ... ok
+test collection_counts_match_web_pin ... ok
+test roundtrip_pins_cover_all_29_files_exactly ... ok
+test rt_auto_battle_params ... ok
+test rt_ai_params ... ok
+test embedded_raw_counts_match_web_pin ... ok
+test rt_citizen_resource_upkeep ... ok
+test rt_civ_ai ... ok
+test rt_city_names_pools ... ok
+test rt_civ_params ... ok
+test all_29_data_files_parse_with_rust_modules ... ok
+test rt_combat_params ... ok
+test rt_counters ... ok
+test rt_civs ... ok
+test rt_diplomacy_acceptance_points ... ok
+test rt_e_start_params ... ok
+test rt_diplomacy ... ok
+test rt_civ_matrix ... ok
+test rt_epoka_ludnosc_manpower ... ok
+test rt_map_gen_params ... ok
+test rt_power_params ... ok
+test rt_miasto_params ... ok
+test rt_resources ... ok
+test rt_econ_params ... ok
+test rt_terrain_combat ... ok
+test rt_tech ... ok
+test rt_society_params ... ok
+test rt_terrain_movement ... ok
+test rt_terrain_improvements ... ok
+test rt_ui_params ... ok
+test rt_terrain_yields ... ok
+test rt_buildings ... ok
+test web_pin_constants_are_internally_consistent ... ok
+test wonders_state_keys_match_web_pin ... ok
+test terrain_improvements_parses_strict_with_farma_and_posterunek ... ok
+test rt_wonders ... ok
+test rt_units ... ok
+
+test result: ok. 40 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.04s
+
+     Running tests/data_economy_society.rs (/home/user/cargo-target-shared/wf_e8c1af53-44e-1/debug/deps/data_economy_society-fd9354f0ea49ebbb)
+
+running 9 tests
+test parse_econ_params_parses_and_spot_checks ... ok
+test parse_citizen_resource_upkeep_parses_and_spot_checks ... ok
+test parse_epoka_ludnosc_manpower_parses_and_spot_checks ... ok
+test parse_e_start_params_parses_and_spot_checks ... ok
+test parse_miasto_params_parses_and_spot_checks ... ok
+test parse_resources_parses_and_spot_checks ... ok
+test parse_ai_params_parses_and_spot_checks ... ok
+test parse_ui_params_parses_and_spot_checks ... ok
+test parse_society_params_parses_and_spot_checks ... ok
+
+test result: ok. 9 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/data_loader.rs (/home/user/cargo-target-shared/wf_e8c1af53-44e-1/debug/deps/data_loader-4b1b0c97d63f2050)
+
+running 14 tests
+test neg_empty_file_is_empty ... ok
+test neg_missing_directory_is_directory_missing ... ok
+test data_files_list_matches_directory_contents ... ok
+test neg_missing_required_field_is_shape_mismatch_naming_field ... ok
+test neg_non_utf8_file_is_not_utf8 ... ok
+test neg_number_where_object_expected_is_shape_mismatch_with_position ... ok
+test neg_path_that_is_a_file_is_directory_missing ... ok
+test neg_syntax_error_is_invalid_json_on_second_line ... ok
+test neg_truncated_json_is_invalid_json_with_position ... ok
+test neg_unreadable_file_is_io ... ok
+test neg_whitespace_only_file_is_empty ... ok
+test neg_missing_file_is_file_missing ... ok
+test loads_all_29_files_from_data_dir ... ok
+test neg_every_listed_file_is_required_by_load_all ... ok
+
+test result: ok. 14 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.32s
+
+     Running tests/data_terrain_map.rs (/home/user/cargo-target-shared/wf_e8c1af53-44e-1/debug/deps/data_terrain_map-c0e779a3719f4442)
+
+running 4 tests
+test terrain_movement_parses_and_spot_checks ... ok
+test map_gen_params_parses_and_spot_checks ... ok
+test terrain_yields_parses_and_spot_checks ... ok
+test terrain_improvements_parses_and_spot_checks ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/data_units_combat.rs (/home/user/cargo-target-shared/wf_e8c1af53-44e-1/debug/deps/data_units_combat-013a0bd100633d2e)
+
+running 6 tests
+test auto_battle_params_parses_and_spot_checks ... ok
+test power_params_parses_and_spot_checks ... ok
+test terrain_combat_parses_and_spot_checks ... ok
+test counters_parses_and_spot_checks ... ok
+test combat_params_parses_and_spot_checks ... ok
+test units_parses_and_spot_checks ... ok
+
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+     Running tests/derived_values.rs (/home/user/cargo-target-shared/wf_e8c1af53-44e-1/debug/deps/derived_values-7eb2b3615468dd51)
+
+running 13 tests
+test domain_building_costs_read_the_building_table_values_without_recomputing_them ... ok
+test building_table_has_exactly_the_42_canonical_ids_once_each ... ok
+test building_table_palac_has_no_stock_cost_and_others_do ... ok
+test building_table_key_shape_is_known_resources_and_mirrors_the_base_keys ... ok
+test domain_recruitment_reads_the_gold_table_without_recomputation ... ok
+test gold_table_has_exactly_the_75_units_once_each_and_known_eras ... ok
+test domain_recruitment_reads_the_unit_table_values_without_recomputing_them ... ok
+test unit_table_epoch_field_matches_units_json ... ok
+test unit_table_has_one_row_per_units_json_record_and_no_extra_rows ... ok
+test work_table_has_exactly_the_42_buildings_once_each_and_positive_values ... ok
+test work_table_is_read_by_the_domain_without_recomputation ... ok
+test unit_table_keeps_the_units_json_base_as_provenance ... ok
+test unit_table_key_shape_and_positive_integer_values ... ok
+
+test result: ok. 13 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.02s
+
+     Running tests/diplomacy.rs (/home/user/cargo-target-shared/wf_e8c1af53-44e-1/debug/deps/diplomacy-d94c0845f92f376e)
+
+running 32 tests
+test alliance_sweetener_ease_is_measured_in_points ... ok
+test alliance_uses_configured_hegemon_threshold ... ok
+test canonical_value_catalog_prices_non_quantity_basket_items ... ok
+test annexation_requires_vassal_economy_orientation ... ok
+test cyclic_resource_offer_normalizes_units_and_preserves_direction ... ok
+test pair_state_canonicalizes_reversed_owner_ids_and_expires_deals ... ok
+test diplomacy_state_serializes_non_empty_pair_map ... ok
+test initial_relation_treats_same_minor_type_like_same_type ... ok
+test production_diplomacy_api_is_public ... ok
+test proposal_builds_treaties_with_canonical_pair_and_duration ... ok
+test peace_price_uses_treaty_duration_precedence_and_multiplier ... ok
+test proposal_conditions_cover_war_peace_duplicate_and_trade_fairness ... ok
+test proposal_rejects_withdrawn_access_and_invalid_tech_exchange ... ok
+test relation_is_clamped_and_events_are_immutable ... ok
+test quantity_catalog_multiplies_boolean_and_deposit_items ... ok
+test serialized_proposal_round_trips_canonical_wire_names ... ok
+test tech_and_boolean_resource_transfers_are_immutable_and_idempotent ... ok
+test quantity_resource_valuation_uses_blocks_and_floors_requested_units ... ok
+test technology_transfer_obeys_epoch_and_tier_gates ... ok
+test tick_stacks_trade_and_peace_tier_but_positive_growth_stops_in_war ... ok
+test trade_basket_valuation_multiplies_per_turn_currency_only ... ok
+test trade_event_has_no_flat_trust_bonus_and_fairness_keeps_high_relation_discount ... ok
+test trade_basket_valuation_uses_player_side_and_difficulty_multipliers ... ok
+test transferred_unit_rejects_unknown_type_and_missing_capital_without_mutation ... ok
+test transfer_is_atomic_when_recipient_is_missing_and_deterministic_when_split ... ok
+test trade_quantity_mode_builds_cyclic_exchange_deal ... ok
+test transferred_unit_spawns_at_near_hex_or_recipient_capital ... ok
+test trust_events_match_the_canonical_one_shot_deltas ... ok
+test treaty_basket_cannot_bypass_fairness_on_nap ... ok
+test tribute_offer_zero_gold_once_keeps_recurring_deal ... ok
+test war_currency_gate_allows_only_peace_settlements ... ok
+test diplomacy_unit_prices_match_units_json_for_every_row ... ok
+
+test result: ok. 32 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+     Running tests/events.rs (/home/user/cargo-target-shared/wf_e8c1af53-44e-1/debug/deps/events-987aa8790b10a253)
+
+running 8 tests
+test built_in_events_map_to_their_responsible_phases ... ok
+test canonical_turn_phases_are_explicit_and_stable ... ok
+test imported_queue_below_the_sequence_ceiling_still_accepts_enqueue ... ok
+test deserializing_a_queue_restores_order_and_rejects_duplicate_ids ... ok
+test phase_drain_is_scoped_and_preserves_the_remaining_order ... ok
+test imported_queue_with_max_sequence_is_rejected_before_enqueue_can_panic ... ok
+test queue_orders_turn_then_phase_then_insertion_sequence ... ok
+test queue_round_trip_preserves_order_and_allocates_a_fresh_sequence ... ok
+
+test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/hex_terrain.rs (/home/user/cargo-target-shared/wf_e8c1af53-44e-1/debug/deps/hex_terrain-51ccc9a6f3a95851)
+
+running 10 tests
+test coordinates_round_trip_through_the_canonical_map_key ... ok
+test distance_is_symmetric_and_uses_axial_cube_geometry ... ok
+test coordinates_and_terrain_are_json_round_trip_safe ... ok
+test axial_coordinates_keep_the_cube_invariant ... ok
+test root_reexports_are_the_same_production_api_types ... ok
+test every_coordinate_has_six_unique_reversible_neighbors ... ok
+test terrain_movement_costs_are_explicit ... ok
+test terrain_aliases_describe_the_same_source_values ... ok
+test terrain_qualification_matches_the_world_map_rules ... ok
+test tile_qualification_is_a_pure_terrain_projection ... ok
+
+test result: ok. 10 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/improvements.rs (/home/user/cargo-target-shared/wf_e8c1af53-44e-1/debug/deps/improvements-74300529620b4fd5)
+
+running 13 tests
+test food_layers_can_coexist_with_non_food_layers ... ok
+test food_layers_allow_farm_with_irrigation_or_trzoda_but_not_without_farm ... ok
+test forest_rules_distinguish_dependent_and_compatible_improvements ... ok
+test legacy_improvement_keys_and_bonus_fields_preserve_data_contract ... ok
+test non_food_upgrade_dependencies_are_preserved ... ok
+test production_is_pure_and_non_producers_have_zero_logistics ... ok
+test production_returns_field_bonuses_and_logistics_rates ... ok
+test solo_food_improvements_and_duplicates_are_rejected ... ok
+test terraces_are_hills_only_and_salt_works_reaches_shallow_water ... ok
+test trzoda_is_not_qualifying_on_forest_but_is_on_open_flat_land ... ok
+test tile_and_production_are_json_round_trip_safe ... ok
+test terrain_and_deposit_gates_are_checked_before_building ... ok
+test livestock_requires_matching_first_deposit_or_explicit_unlock ... ok
+
+test result: ok. 13 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/map_generator.rs (/home/user/cargo-target-shared/wf_e8c1af53-44e-1/debug/deps/map_generator-5afcd8df74a87c12)
+
+running 6 tests
+test invalid_dimensions_are_rejected_before_allocation ... ok
+test map_dimensions_and_seed_are_stable ... ok
+test map_golden_vector_matches_typescript_core_contract ... ok
+test world_types_and_default_seed_match_typescript_contract ... ok
+test repeated_generation_is_byte_for_byte_deterministic ... ok
+test river_markers_are_land_and_reach_water ... ok
+
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/owner_ref.rs (/home/user/cargo-target-shared/wf_e8c1af53-44e-1/debug/deps/owner_ref-92f476c7f4239a8a)
+
+running 10 tests
+test owner_and_camp_fields_are_plain_numbers_in_struct_json ... ok
+test camp_id_is_a_transparent_newtype ... ok
+test owner_ref_accessors_and_player_conversion ... ok
+test owner_ref_legacy_conversions_match_the_sentinels ... ok
+test owner_ref_ordering_matches_the_legacy_i64_order ... ok
+test owner_ref_refuses_player_ids_that_do_not_fit_the_legacy_number ... ok
+test owner_ref_hash_agrees_with_equality ... ok
+test owner_ref_serializes_every_variant_as_the_legacy_number ... ok
+test owner_ref_rejects_unknown_negative_numbers ... ok
+test player_keyed_maps_keep_numeric_string_keys ... ok
+
+test result: ok. 10 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/parity_suite.rs (/home/user/cargo-target-shared/wf_e8c1af53-44e-1/debug/deps/parity_suite-8699c8ce8b7a5315)
+
+running 11 tests
+test city_growth_vector_preserves_health_threshold_and_population_cap ... ok
+test canonical_state_dto_vector_round_trips_through_json ... ok
+test hex_terrain_and_pathfinding_vectors_preserve_geometry_and_costs ... ok
+test improvements_and_resource_production_vectors_match_catalogue_rules ... ok
+test lcg_golden_vector_matches_the_typescript_stream ... ok
+test map_generator_coordinate_vector_is_distinct_and_serializable ... ok
+test public_engine_wire_aliases_are_stable ... ok
+test turn_economy_vector_credits_before_spending_and_resets_work ... ok
+test trade_route_vector_uses_stable_hex_path_and_wire_identity ... ok
+test map_generator_golden_vector_matches_the_public_wire_contract ... ok
+test building_and_recruitment_vectors_keep_purchase_and_work_costs_separate ... ok
+
+test result: ok. 11 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+     Running tests/pathfinding.rs (/home/user/cargo-target-shared/wf_e8c1af53-44e-1/debug/deps/pathfinding-9421af37f99a3ae3)
+
+running 8 tests
+test impassable_destination_is_allowed_as_the_final_step ... ok
+test movement_cost_applies_terrain_overlay_river_and_road_rules ... ok
+test occupied_intermediate_tiles_block_but_occupied_destination_is_final_step ... ok
+test dijkstra_chooses_the_same_least_cost_path_every_time ... ok
+test reachable_applies_min_move_to_expensive_direct_neighbours ... ok
+test reachable_respects_fixed_point_budget_and_excludes_origin ... ok
+test terrain_qualification_keeps_workability_separate_from_movement ... ok
+test unreachable_and_missing_fields_are_rejected ... ok
+
+test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/playable_slice.rs (/home/user/cargo-target-shared/wf_e8c1af53-44e-1/debug/deps/playable_slice-96536ec0c076f01a)
+
+running 7 tests
+test movement_rejects_out_of_bounds_impassable_and_out_of_range_destinations ... ok
+test advance_turn_drains_the_canonical_phase_queue_and_refreshes_state ... ok
+test create_session_is_deterministic_and_contains_playable_entities ... ok
+test frontend_non_default_payload_reaches_the_rust_start_dto ... ok
+test selected_start_values_change_the_scenario_without_claiming_unsupported_effects ... ok
+test select_and_move_unit_updates_only_the_selected_unit_position ... ok
+test start_params_round_trip_with_frontend_camel_case_names ... ok
+
+test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/recruitment.rs (/home/user/cargo-target-shared/wf_e8c1af53-44e-1/debug/deps/recruitment-10fa19ca5709d7f0)
+
+running 8 tests
+test empty_purchase_cost_is_affordable_and_keeps_stock_unchanged ... ok
+test failed_recruitment_is_atomic_and_reports_the_missing_resource ... ok
+test canonical_unit_record_keeps_purchase_and_upkeep_separate ... ok
+test recruitment_affordability_checks_only_the_one_time_purchase_stock ... ok
+test successful_recruitment_spends_purchase_stock_but_not_future_upkeep ... ok
+test canonical_catalog_contains_all_unit_rows_and_round_trips ... ok
+test upkeep_totals_are_grouped_by_resource_and_ignore_unknown_units ... ok
+test canonical_catalog_matches_units_json_for_all_75_rows ... ok
+
+test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+     Running tests/replay.rs (/home/user/cargo-target-shared/wf_e8c1af53-44e-1/debug/deps/replay-0e0cf52d2fbdb5ec)
+
+running 6 tests
+test playback_cursor_observes_peek_remaining_and_reset ... ok
+test replay_playback_preserves_order_rng_checkpoints_and_snapshots ... ok
+test recording_same_inputs_seed_and_rng_checkpoints_is_byte_deterministic ... ok
+test replay_rejects_missing_or_unsupported_version_and_non_contiguous_steps ... ok
+test replay_log_round_trips_some_snapshot_with_all_snapshot_data ... ok
+test replay_validation_rejects_invalid_checkpoint_snapshots ... ok
+
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/resource_production.rs (/home/user/cargo-target-shared/wf_e8c1af53-44e-1/debug/deps/resource_production-10735877f5f8510b)
+
+running 5 tests
+test multiple_layers_stack_additively_per_resource ... ok
+test invalid_or_missing_era_is_safe_and_other_improvements_stay_flat ... ok
+test era_scaling_rounds_like_the_typescript_resolver_and_saturates ... ok
+test lumber_mill_and_quarry_follow_the_200_300_450_era_vector ... ok
+test resolver_rejects_non_producers_and_accepts_legacy_aliases ... ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/rng.rs (/home/user/cargo-target-shared/wf_e8c1af53-44e-1/debug/deps/rng-044cb5e0327fdca7)
+
+running 4 tests
+test copied_state_and_forks_reproduce_independent_streams ... ok
+test serialized_state_round_trip_resumes_the_exact_stream ... ok
+test seeded_stream_matches_the_typescript_lcg_and_repeats ... ok
+test ranges_reject_empty_or_reversed_bounds_and_stay_inside_exclusive_end ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/save_load.rs (/home/user/cargo-target-shared/wf_e8c1af53-44e-1/debug/deps/save_load-db71f01fd33c5619)
+
+running 6 tests
+test explicit_v1_constructor_uses_the_same_migration_contract ... ok
+test invalid_state_is_rejected_during_snapshot_deserialization ... ok
+test snapshot_parts_can_be_moved_into_a_runtime_restore ... ok
+test future_and_incomplete_versions_are_rejected_without_silent_defaults ... ok
+test current_snapshot_round_trips_with_state_queue_rng_and_version ... ok
+test version_one_snapshot_migrates_by_adding_an_empty_queue ... ok
+
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/smoke.rs (/home/user/cargo-target-shared/wf_e8c1af53-44e-1/debug/deps/smoke-adce5cc2d2d8a90e)
+
+running 2 tests
+test engine_state_can_be_created_advanced_and_round_tripped ... ok
+test one_based_turn_invariant_is_enforced_on_construction_and_deserialization ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/state_dto.rs (/home/user/cargo-target-shared/wf_e8c1af53-44e-1/debug/deps/state_dto-327fd3dbeed98a1f)
+
+running 10 tests
+test city_rejects_empty_names_and_zero_population ... ok
+test civilization_rejects_empty_names_and_duplicate_entity_references ... ok
+test invalid_entity_reference_is_rejected_by_state_constructor ... ok
+test canonical_state_round_trips_through_serde ... ok
+test state_rejects_city_and_unit_positions_outside_the_map ... ok
+test state_rejects_duplicate_civilization_city_and_unit_ids ... ok
+test map_rejects_invalid_dimensions_tile_count_duplicate_and_out_of_bounds ... ok
+test invalid_one_based_turn_is_rejected_during_state_deserialization ... ok
+test state_rejects_unknown_and_mismatched_entity_owners ... ok
+test state_rejects_unknown_unit_reference ... ok
+
+test result: ok. 10 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/steam_adapter.rs (/home/user/cargo-target-shared/wf_e8c1af53-44e-1/debug/deps/steam_adapter-f6b655412f549c74)
+
+running 5 tests
+test in_memory_adapter_round_trips_cloud_save_bytes_exactly ... ok
+test missing_cloud_save_key_is_reported_without_fabricating_data ... ok
+test production_adapter_is_explicitly_disconnected_and_side_effect_free ... ok
+test unavailable_mock_rejects_every_steam_operation ... ok
+test in_memory_adapter_unlocks_achievements_and_reports_overlay_status ... ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/terrain_movement_fix.rs (/home/user/cargo-target-shared/wf_e8c1af53-44e-1/debug/deps/terrain_movement_fix-125ac22589e46124)
+
+running 9 tests
+test ai_turn_movement_costs_agree_with_terrain_module_for_shared_terrains ... ok
+test ai_turn_desert_movement_cost_matches_web_and_pathfinder ... ok
+test barbarian_camps_never_spawn_on_tundra ... ok
+test barbarian_camps_spawn_on_passable_land_next_to_tundra ... ok
+test barbarians_treat_tundra_as_impassable_land ... ok
+test owners_land_border_ignores_tundra_neighbour ... ok
+test land_route_bfs_crosses_desert_field ... ok
+test land_route_bfs_is_blocked_by_tundra_field ... ok
+test trade_routes_do_not_cross_tundra ... ok
+
+test result: ok. 9 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/trade.rs (/home/user/cargo-target-shared/wf_e8c1af53-44e-1/debug/deps/trade-4501c2b50cea3ce6)
+
+running 12 tests
+test connection_result_and_tile_helpers_are_small_and_stable ... ok
+test grants_are_symmetric_and_disappear_with_inactive_routes ... ok
+test diff_and_serialization_preserve_route_contract ... ok
+test diagonal_path_uses_the_canonical_hex_neighbor_order ... ok
+test income_curve_is_clamped_and_sea_total_is_scaled_like_the_canonical_rule ... ok
+test land_and_sea_connection_follow_physical_terrain_without_distance_cap ... ok
+test map_and_resource_dtos_use_json_safe_camel_case_contracts ... ok
+test land_border_is_required_only_when_territory_data_is_supplied ... ok
+test resource_flow_moves_only_surplus_and_uses_deterministic_ledger ... ok
+test route_income_building_and_sea_bonuses_are_aggregated_per_city ... ok
+test route_identity_construction_and_building_limits_are_deterministic ... ok
+test refresh_requires_treaty_and_war_free_route_but_allows_internal_trade ... ok
+
+test result: ok. 12 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/turn_economy.rs (/home/user/cargo-target-shared/wf_e8c1af53-44e-1/debug/deps/turn_economy-ecc7aeae80031bf5)
+
+running 7 tests
+test resource_costs_are_paid_independently_and_never_underflow ... ok
+test flow_helpers_are_deterministic_and_saturating ... ok
+test pure_preview_does_not_mutate_input_balances ... ok
+test settlement_credits_income_before_paying_expenses ... ok
+test unused_work_is_reset_but_persistent_balances_carry_forward ... ok
+test settlement_and_balances_round_trip_through_serde ... ok
+test invalid_and_overflow_turn_boundaries_are_rejected_without_mutation ... ok
+
+test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/unit_epoch.rs (/home/user/cargo-target-shared/wf_e8c1af53-44e-1/debug/deps/unit_epoch-c52a04b91f6d1f56)
+
+running 5 tests
+test current_and_previous_epochs_are_available ... ok
+test non_scout_from_current_epoch_is_available_but_future_unit_is_not ... ok
+test scout_is_available_in_every_epoch ... ok
+test units_older_than_the_previous_epoch_are_rejected ... ok
+test epoch_labels_round_trip_and_reject_unknown_values ... ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+   Doc-tests civ_engine
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+EXIT=0
+```

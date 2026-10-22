@@ -28,14 +28,18 @@ fn work_cost_is_linear_and_levels_are_one_based() {
     assert_eq!(building.work_cost(3), 40);
 }
 
+/// P3-19 runda 3 (Q1=A, web 1:1): usunięto globalne dzielenie Pracy przez 2.
+/// Dawne oczekiwania (10 / 15 / 20 / 16) były zgodne z obecnym kodem Rust, nie z webem
+/// (`buildingWorkCost` = netto x1.0 względem `itemCost`). Zmiana jawnie uzasadniona w
+/// dokumencie P3-19 sekcja 6 (tabela było/jest, Praca budynków).
 #[test]
-fn effective_work_cost_is_exactly_half_without_scaling_resources() {
+fn effective_work_cost_is_raw_work_web_one_to_one() {
     let building = cost();
 
-    assert_eq!(building.effective_work_cost(1), 10);
-    assert_eq!(building.effective_work_cost(2), 15);
-    assert_eq!(building.effective_work_cost(3), 20);
-    assert_eq!(effective_work_cost(31), 16);
+    assert_eq!(building.effective_work_cost(1), 20);
+    assert_eq!(building.effective_work_cost(2), 30);
+    assert_eq!(building.effective_work_cost(3), 40);
+    assert_eq!(effective_work_cost(31), 31);
     assert_eq!(building.resource_cost("drewno"), Some(25));
     assert_eq!(building.resource_cost("kamien"), Some(30));
 }
@@ -46,7 +50,7 @@ fn resource_cost_is_independent_and_missing_resources_are_reported() {
     let available = stock(&[("drewno", 25), ("kamien", 29)]);
 
     assert_eq!(
-        validate_building_expenditure(15, &available, &building, 2),
+        validate_building_expenditure(30, &available, &building, 2),
         Err(BuildingSpendError::InsufficientResource {
             resource: "kamien".to_owned(),
             required: 30,
@@ -61,13 +65,13 @@ fn expenditure_requires_both_work_and_all_resources() {
     let available = stock(&[("drewno", 25), ("kamien", 30)]);
 
     assert_eq!(
-        validate_building_expenditure(14, &available, &building, 2),
+        validate_building_expenditure(29, &available, &building, 2),
         Err(BuildingSpendError::InsufficientWork {
-            required: 15,
-            available: 14,
+            required: 30,
+            available: 29,
         })
     );
-    assert!(validate_building_expenditure(15, &available, &building, 2).is_ok());
+    assert!(validate_building_expenditure(30, &available, &building, 2).is_ok());
 }
 
 #[test]
@@ -75,9 +79,9 @@ fn successful_spend_deducts_effective_work_and_raw_stock_atomically() {
     let building = cost();
     let available = stock(&[("drewno", 40), ("kamien", 50), ("zloto", 7)]);
 
-    let result = spend_building_cost(20, &available, &building, 2).expect("affordable");
+    let result = spend_building_cost(30, &available, &building, 2).expect("affordable");
 
-    assert_eq!(result.remaining_work, 5);
+    assert_eq!(result.remaining_work, 0);
     assert_eq!(
         result.remaining_resources,
         stock(&[("drewno", 15), ("kamien", 20), ("zloto", 7)])
@@ -96,7 +100,7 @@ fn failed_spend_does_not_mutate_the_input_stock() {
 #[test]
 fn mutable_spend_is_atomic_and_preserves_unrelated_resources() {
     let building = cost();
-    let mut work = 20;
+    let mut work = 40;
     let mut resources = stock(&[("drewno", 40), ("kamien", 50), ("zloto", 7)]);
 
     building
@@ -184,13 +188,15 @@ fn canonical_catalog_contains_all_buildings_and_preserves_split_values() {
     assert_eq!(ids, expected_ids);
 
     let found = building_cost_for("palac_iii").expect("canonical building");
-    assert_eq!(found.base_work, 90);
-    assert_eq!(found.work_increment, 27);
+    // P3-19 runda 3 (Q1=A): palac_iii epokaWejscia 3 => x4 (web buildingEraCostMultiplier).
+    // Dawne 90 / 27 (surowy JSON, bez ery) zastąpione wartościami weba: 90x4 = 360, 27x4 = 108.
+    assert_eq!(found.base_work, 360);
+    assert_eq!(found.work_increment, 108);
     // P3-19 derived table: palac_iii koszt_surowce JSON drewno 50 / cegla 70, x2 (FALA2),
     // then x4 (epokaWejscia 3): drewno 400, cegla 560 (building-stock-cost.ts:84-98).
     assert_eq!(found.resource_cost("drewno"), Some(400));
     assert_eq!(found.resource_cost("cegla"), Some(560));
-    assert_eq!(found.effective_work_cost(1), 45);
+    assert_eq!(found.effective_work_cost(1), 360);
 
     assert!(building_cost_for("not-a-building").is_none());
 }

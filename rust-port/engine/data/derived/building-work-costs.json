@@ -1,0 +1,473 @@
+{
+  "meta": {
+    "status": "BOOTSTRAP: wartosci startowe rozwiniete z regul weba. Zrodlem prawdy do recznego balansu jest TA tabela (edytuj liczby, nie mnozniki). Tabela NIE jest porownywana ze wzorem przy buildzie.",
+    "zrodlo": "gra/data/buildings.json @ edb8fb56 (identyczny z rust-port/engine/data/buildings.json)",
+    "regula_weba": "production.ts itemCost budynek (l.322-334) x buildingEraCostMultiplier (building-stock-cost.ts l.74-81); buildingWorkCost stan bazowy (production.ts l.514-529: 0.25x2x2 = 1.0)",
+    "wygenerowano": "R-RUSTPORT-P3-19-FLATTEN-MULTIPLIERS-Q1 runda 3, generator: gen-work-gold.mjs",
+    "uwaga_stan": "Wartosci dotycza stanu bazowego web: pace niski (x1), trudnosc normal (x1), bez ulgi cywilizacji. Stany (b) NIE sa rozwiniete w tej tabeli (P3-19 sek. 9)."
+  },
+  "wiersze": [
+    {
+      "budynek": "stolarnia",
+      "epokaWejscia": 1,
+      "praca_bazowa": 20,
+      "praca_przyrost": 10,
+      "baza": {
+        "kosztBudowy": 20,
+        "przyrostKosztu": 10,
+        "mnoznik_ery": 1
+      }
+    },
+    {
+      "budynek": "kamieniarski",
+      "epokaWejscia": 1,
+      "praca_bazowa": 20,
+      "praca_przyrost": 10,
+      "baza": {
+        "kosztBudowy": 20,
+        "przyrostKosztu": 10,
+        "mnoznik_ery": 1
+      }
+    },
+    {
+      "budynek": "kuznia",
+      "epokaWejscia": 2,
+      "praca_bazowa": 60,
+      "praca_przyrost": 20,
+      "baza": {
+        "kosztBudowy": 30,
+        "przyrostKosztu": 10,
+        "mnoznik_ery": 2
+      }
+    },
+    {
+      "budynek": "odlewnia_brazu",
+      "epokaWejscia": 2,
+      "praca_bazowa": 56,
+      "praca_przyrost": 20,
+      "baza": {
+        "kosztBudowy": 28,
+        "przyrostKosztu": 10,
+        "mnoznik_ery": 2
+      }
+    },
+    {
+      "budynek": "odlewnia_zelaza",
+      "epokaWejscia": 3,
+      "praca_bazowa": 140,
+      "praca_przyrost": 48,
+      "baza": {
+        "kosztBudowy": 35,
+        "przyrostKosztu": 12,
+        "mnoznik_ery": 4
+      }
+    },
+    {
+      "budynek": "wielka_odlewnia",
+      "epokaWejscia": 4,
+      "praca_bazowa": 320,
+      "praca_przyrost": 60,
+      "baza": {
+        "kosztBudowy": 80,
+        "przyrostKosztu": 15,
+        "mnoznik_ery": 4
+      }
+    },
+    {
+      "budynek": "targowisko",
+      "epokaWejscia": 1,
+      "praca_bazowa": 25,
+      "praca_przyrost": 10,
+      "baza": {
+        "kosztBudowy": 25,
+        "przyrostKosztu": 10,
+        "mnoznik_ery": 1
+      }
+    },
+    {
+      "budynek": "port",
+      "epokaWejscia": 2,
+      "praca_bazowa": 60,
+      "praca_przyrost": 20,
+      "baza": {
+        "kosztBudowy": 30,
+        "przyrostKosztu": 10,
+        "mnoznik_ery": 2
+      }
+    },
+    {
+      "budynek": "port_wielki",
+      "epokaWejscia": 3,
+      "praca_bazowa": 220,
+      "praca_przyrost": 48,
+      "baza": {
+        "kosztBudowy": 55,
+        "przyrostKosztu": 12,
+        "mnoznik_ery": 4
+      }
+    },
+    {
+      "budynek": "spichlerz",
+      "epokaWejscia": 1,
+      "praca_bazowa": 20,
+      "praca_przyrost": 8,
+      "baza": {
+        "kosztBudowy": 20,
+        "przyrostKosztu": 8,
+        "mnoznik_ery": 1
+      }
+    },
+    {
+      "budynek": "spichlerz_ii",
+      "epokaWejscia": 2,
+      "praca_bazowa": 70,
+      "praca_przyrost": 24,
+      "baza": {
+        "kosztBudowy": 35,
+        "przyrostKosztu": 12,
+        "mnoznik_ery": 2
+      }
+    },
+    {
+      "budynek": "garncarnia",
+      "epokaWejscia": 1,
+      "praca_bazowa": 18,
+      "praca_przyrost": 8,
+      "baza": {
+        "kosztBudowy": 18,
+        "przyrostKosztu": 8,
+        "mnoznik_ery": 1
+      }
+    },
+    {
+      "budynek": "cegielnia",
+      "epokaWejscia": 2,
+      "praca_bazowa": 44,
+      "praca_przyrost": 18,
+      "baza": {
+        "kosztBudowy": 22,
+        "przyrostKosztu": 9,
+        "mnoznik_ery": 2
+      }
+    },
+    {
+      "budynek": "kamienne_kregi",
+      "epokaWejscia": 1,
+      "praca_bazowa": 18,
+      "praca_przyrost": 8,
+      "baza": {
+        "kosztBudowy": 18,
+        "przyrostKosztu": 8,
+        "mnoznik_ery": 1
+      }
+    },
+    {
+      "budynek": "swiatynia",
+      "epokaWejscia": 2,
+      "praca_bazowa": 50,
+      "praca_przyrost": 20,
+      "baza": {
+        "kosztBudowy": 25,
+        "przyrostKosztu": 10,
+        "mnoznik_ery": 2
+      }
+    },
+    {
+      "budynek": "biblioteka",
+      "epokaWejscia": 2,
+      "praca_bazowa": 50,
+      "praca_przyrost": 20,
+      "baza": {
+        "kosztBudowy": 25,
+        "przyrostKosztu": 10,
+        "mnoznik_ery": 2
+      }
+    },
+    {
+      "budynek": "studnia",
+      "epokaWejscia": 1,
+      "praca_bazowa": 15,
+      "praca_przyrost": 5,
+      "baza": {
+        "kosztBudowy": 15,
+        "przyrostKosztu": 5,
+        "mnoznik_ery": 1
+      }
+    },
+    {
+      "budynek": "akwedukt",
+      "epokaWejscia": 2,
+      "praca_bazowa": 60,
+      "praca_przyrost": 24,
+      "baza": {
+        "kosztBudowy": 30,
+        "przyrostKosztu": 12,
+        "mnoznik_ery": 2
+      }
+    },
+    {
+      "budynek": "mennica",
+      "epokaWejscia": 2,
+      "praca_bazowa": 56,
+      "praca_przyrost": 20,
+      "baza": {
+        "kosztBudowy": 28,
+        "przyrostKosztu": 10,
+        "mnoznik_ery": 2
+      }
+    },
+    {
+      "budynek": "palisada",
+      "epokaWejscia": 1,
+      "praca_bazowa": 22,
+      "praca_przyrost": 8,
+      "baza": {
+        "kosztBudowy": 22,
+        "przyrostKosztu": 8,
+        "mnoznik_ery": 1
+      }
+    },
+    {
+      "budynek": "mury",
+      "epokaWejscia": 2,
+      "praca_bazowa": 70,
+      "praca_przyrost": 24,
+      "baza": {
+        "kosztBudowy": 35,
+        "przyrostKosztu": 12,
+        "mnoznik_ery": 2
+      }
+    },
+    {
+      "budynek": "koszary",
+      "epokaWejscia": 2,
+      "praca_bazowa": 50,
+      "praca_przyrost": 20,
+      "baza": {
+        "kosztBudowy": 25,
+        "przyrostKosztu": 10,
+        "mnoznik_ery": 2
+      }
+    },
+    {
+      "budynek": "magazyn",
+      "epokaWejscia": 2,
+      "praca_bazowa": 40,
+      "praca_przyrost": 16,
+      "baza": {
+        "kosztBudowy": 20,
+        "przyrostKosztu": 8,
+        "mnoznik_ery": 2
+      }
+    },
+    {
+      "budynek": "stela",
+      "epokaWejscia": 1,
+      "praca_bazowa": 15,
+      "praca_przyrost": 5,
+      "baza": {
+        "kosztBudowy": 15,
+        "przyrostKosztu": 5,
+        "mnoznik_ery": 1
+      }
+    },
+    {
+      "budynek": "palac",
+      "epokaWejscia": 1,
+      "praca_bazowa": 40,
+      "praca_przyrost": 12,
+      "baza": {
+        "kosztBudowy": 40,
+        "przyrostKosztu": 12,
+        "mnoznik_ery": 1
+      }
+    },
+    {
+      "budynek": "palac_ii",
+      "epokaWejscia": 2,
+      "praca_bazowa": 120,
+      "praca_przyrost": 36,
+      "baza": {
+        "kosztBudowy": 60,
+        "przyrostKosztu": 18,
+        "mnoznik_ery": 2
+      }
+    },
+    {
+      "budynek": "palac_iii",
+      "epokaWejscia": 3,
+      "praca_bazowa": 360,
+      "praca_przyrost": 108,
+      "baza": {
+        "kosztBudowy": 90,
+        "przyrostKosztu": 27,
+        "mnoznik_ery": 4
+      }
+    },
+    {
+      "budynek": "kuznia_zelaza",
+      "epokaWejscia": 3,
+      "praca_bazowa": 240,
+      "praca_przyrost": 60,
+      "baza": {
+        "kosztBudowy": 60,
+        "przyrostKosztu": 15,
+        "mnoznik_ery": 4
+      }
+    },
+    {
+      "budynek": "wielka_kuznia",
+      "epokaWejscia": 4,
+      "praca_bazowa": 360,
+      "praca_przyrost": 72,
+      "baza": {
+        "kosztBudowy": 90,
+        "przyrostKosztu": 18,
+        "mnoznik_ery": 4
+      }
+    },
+    {
+      "budynek": "fort",
+      "epokaWejscia": 3,
+      "praca_bazowa": 280,
+      "praca_przyrost": 60,
+      "baza": {
+        "kosztBudowy": 70,
+        "przyrostKosztu": 15,
+        "mnoznik_ery": 4
+      }
+    },
+    {
+      "budynek": "baszta",
+      "epokaWejscia": 3,
+      "praca_bazowa": 280,
+      "praca_przyrost": 60,
+      "baza": {
+        "kosztBudowy": 70,
+        "przyrostKosztu": 15,
+        "mnoznik_ery": 4
+      }
+    },
+    {
+      "budynek": "warsztat_oblezniczy",
+      "epokaWejscia": 3,
+      "praca_bazowa": 260,
+      "praca_przyrost": 60,
+      "baza": {
+        "kosztBudowy": 65,
+        "przyrostKosztu": 15,
+        "mnoznik_ery": 4
+      }
+    },
+    {
+      "budynek": "akademia",
+      "epokaWejscia": 3,
+      "praca_bazowa": 280,
+      "praca_przyrost": 60,
+      "baza": {
+        "kosztBudowy": 70,
+        "przyrostKosztu": 15,
+        "mnoznik_ery": 4
+      }
+    },
+    {
+      "budynek": "teatr",
+      "epokaWejscia": 3,
+      "praca_bazowa": 220,
+      "praca_przyrost": 48,
+      "baza": {
+        "kosztBudowy": 55,
+        "przyrostKosztu": 12,
+        "mnoznik_ery": 4
+      }
+    },
+    {
+      "budynek": "sad",
+      "epokaWejscia": 3,
+      "praca_bazowa": 220,
+      "praca_przyrost": 48,
+      "baza": {
+        "kosztBudowy": 55,
+        "przyrostKosztu": 12,
+        "mnoznik_ery": 4
+      }
+    },
+    {
+      "budynek": "dom_starszyzny",
+      "epokaWejscia": 1,
+      "praca_bazowa": 25,
+      "praca_przyrost": 5,
+      "baza": {
+        "kosztBudowy": 25,
+        "przyrostKosztu": 5,
+        "mnoznik_ery": 1
+      }
+    },
+    {
+      "budynek": "dwor_zarzadcy",
+      "epokaWejscia": 2,
+      "praca_bazowa": 90,
+      "praca_przyrost": 18,
+      "baza": {
+        "kosztBudowy": 45,
+        "przyrostKosztu": 9,
+        "mnoznik_ery": 2
+      }
+    },
+    {
+      "budynek": "pretorium",
+      "epokaWejscia": 3,
+      "praca_bazowa": 300,
+      "praca_przyrost": 60,
+      "baza": {
+        "kosztBudowy": 75,
+        "przyrostKosztu": 15,
+        "mnoznik_ery": 4
+      }
+    },
+    {
+      "budynek": "trybunal",
+      "epokaWejscia": 2,
+      "praca_bazowa": 60,
+      "praca_przyrost": 20,
+      "baza": {
+        "kosztBudowy": 30,
+        "przyrostKosztu": 10,
+        "mnoznik_ery": 2
+      }
+    },
+    {
+      "budynek": "garnizon",
+      "epokaWejscia": 1,
+      "praca_bazowa": 30,
+      "praca_przyrost": 6,
+      "baza": {
+        "kosztBudowy": 30,
+        "przyrostKosztu": 6,
+        "mnoznik_ery": 1
+      }
+    },
+    {
+      "budynek": "laznia_publiczna",
+      "epokaWejscia": 3,
+      "praca_bazowa": 200,
+      "praca_przyrost": 48,
+      "baza": {
+        "kosztBudowy": 50,
+        "przyrostKosztu": 12,
+        "mnoznik_ery": 4
+      }
+    },
+    {
+      "budynek": "akademia_wojskowa",
+      "epokaWejscia": 3,
+      "praca_bazowa": 320,
+      "praca_przyrost": 72,
+      "baza": {
+        "kosztBudowy": 80,
+        "przyrostKosztu": 18,
+        "mnoznik_ery": 4
+      }
+    }
+  ]
+}

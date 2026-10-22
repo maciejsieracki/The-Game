@@ -341,3 +341,110 @@ fn domain_building_costs_read_the_building_table_values_without_recomputing_them
         );
     }
 }
+
+// ---------------------------------------------------------------------------
+// P3-19 runda 3: tabele Pracy budynków i złota jednostek (KSZTAŁT i KOMPLETNOŚĆ).
+// Testy NIE porównują liczb z kosztBudowy / przyrostKosztu / mnożnikiem ery: wartości są
+// edytowalne przez właściciela. Sprawdzają komplet wierszy, brak duplikatów, zakres pól
+// i to, że kod domeny czyta tabelę bez przeliczania.
+// ---------------------------------------------------------------------------
+
+#[test]
+fn work_table_has_exactly_the_42_buildings_once_each_and_positive_values() {
+    use civ_engine::data::derived::parse_building_work_costs;
+
+    let table = parse_building_work_costs().expect("work table parses");
+    let ids: BTreeSet<&str> = table
+        .wiersze
+        .iter()
+        .map(|row| row.budynek.as_str())
+        .collect();
+    assert_eq!(table.wiersze.len(), 42, "one work row per building");
+    assert_eq!(ids.len(), table.wiersze.len(), "no duplicate work rows");
+    for row in &table.wiersze {
+        assert!(
+            row.praca_bazowa > 0,
+            "praca_bazowa of {} must be > 0",
+            row.budynek
+        );
+        assert!(
+            matches!(row.baza.mnoznik_ery, 1 | 2 | 4),
+            "provenance era factor of {} must be 1, 2 or 4",
+            row.budynek
+        );
+    }
+}
+
+#[test]
+fn work_table_is_read_by_the_domain_without_recomputation() {
+    use civ_engine::data::derived::parse_building_work_costs;
+
+    let table = parse_building_work_costs().expect("work table parses");
+    let by_id: BTreeMap<&str, (u32, u32)> = table
+        .wiersze
+        .iter()
+        .map(|row| (row.budynek.as_str(), (row.praca_bazowa, row.praca_przyrost)))
+        .collect();
+    for cost in civ_engine::domain::building_costs::canonical_building_costs() {
+        assert_eq!(
+            (cost.base_work, cost.work_increment),
+            by_id[cost.building_id.as_str()],
+            "work values of {}",
+            cost.building_id
+        );
+    }
+}
+
+#[test]
+fn gold_table_has_exactly_the_75_units_once_each_and_known_eras() {
+    use civ_engine::data::derived::parse_unit_gold_costs;
+
+    let units = parse_units().expect("units.json parses");
+    let table = parse_unit_gold_costs().expect("gold table parses");
+    let ids: BTreeSet<&str> = table
+        .wiersze
+        .iter()
+        .map(|row| row.jednostka.as_str())
+        .collect();
+    assert_eq!(table.wiersze.len(), 75, "one gold row per unit");
+    assert_eq!(ids.len(), table.wiersze.len(), "no duplicate gold rows");
+    for record in &units {
+        assert!(
+            ids.contains(record.jednostka.as_str()),
+            "gold row missing for {}",
+            record.jednostka
+        );
+    }
+    for row in &table.wiersze {
+        assert!(
+            matches!(row.epoka.as_str(), "Kamień" | "Brąz" | "Żelazo"),
+            "epoka of {} is one of the three eras",
+            row.jednostka
+        );
+    }
+}
+
+#[test]
+fn domain_recruitment_reads_the_gold_table_without_recomputation() {
+    use civ_engine::data::derived::parse_unit_gold_costs;
+
+    let table = parse_unit_gold_costs().expect("gold table parses");
+    let by_id: BTreeMap<&str, (u32, u32)> = table
+        .wiersze
+        .iter()
+        .map(|row| {
+            (
+                row.jednostka.as_str(),
+                (row.pieniadz_koszt, row.utrzymanie_pieniadz_ture),
+            )
+        })
+        .collect();
+    for unit in civ_engine::domain::recruitment::canonical_recruitment_costs() {
+        assert_eq!(
+            (unit.gold_cost, unit.gold_upkeep),
+            by_id[unit.unit_id.as_str()],
+            "gold values of {}",
+            unit.unit_id
+        );
+    }
+}
