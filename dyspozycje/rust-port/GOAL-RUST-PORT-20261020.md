@@ -32,6 +32,7 @@ dotykające tych samych plików — zawsze sekwencyjnie, nigdy w tej samej fali.
 | 4 | `R-RUSTPORT-P6-M02-PARAMETRY-NOWEJ-GRY-Q1` | generator mapy: parametry nowej gry — Operator Sonnet | 1/5 | `wf_8ae2c889-684` | DISPATCHED | 2026-10-22 |
 | 5 | `R-RUSTPORT-P6-M14-TERYTORIUM-ZASIEG-CUDA-Q1` | terytorium, zasięg, cuda — Operator Sonnet | 1/5 | `wf_d47fe9de-b65` | DISPATCHED | 2026-10-22 |
 | 6 | `R-RUSTPORT-P6-5A-JEDNOSTKI-ZYCIE-A-Q1` | P6.5A armyMerge, unit-cost-tempo, unit-replace-context — Operator Sonnet | 1/5 | `wf_54f56b61-dce` | DISPATCHED | 2026-10-22 |
+| 7 | `R-RUSTPORT-P4-30-IMAGES-Q1` | RR-T8c obrazy: JPG, SVG (resvg), emoji wg D-TXT-3=C — Opus 5.5 | 1/5 | `wf_5b41339e-109` | DISPATCHED | 2026-10-22 |
 
 
 Kolejka (aktualizacja 2026-10-22): P3.23 FLATTEN etap 3 (po P3.21 — te same pliki domeny: macierz counter 35g, struktury, wzrost 35b, mapa 35j–k, społeczeństwo 35n, wioski 35c, ruch 35i, produkcja 19–22b), MOD-07 jednostki żelaza, ujednolicenie typu drzewa sceny, P5.3+ kolejne poziomy `PORTING-QUEUE.md`, pierwotna kolejka: MOD-06/07 (jednostki brązu/żelaza, po P4.19), MOD-09 miasta, MOD-13 misc, ujednolicenie typu drzewa sceny (3 typy: `core::scene`, `wonders::model`, `unit_core::model`) po paczkach, P3.21 `CityId` po P3.22, P5.2+ kolejka portowania paneli (`PORTING-QUEUE.md`), RR-T1 spike (wymaga GPU właściciela).
