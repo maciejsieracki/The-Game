@@ -1,0 +1,24 @@
+rust-port/engine/src/domain/combat.rs:207:        | ("falangite", "mount") => 1.50,
+rust-port/engine/src/domain/combat.rs:208:        ("mount", "offensive") | ("offensive", "swordsman") => 1.25,
+rust-port/engine/src/domain/combat.rs:215:        | ("offensive", "slinger") => 1.15,
+rust-port/engine/src/domain/combat.rs:237:        // Wzgorze i gory: combat-ai-multipliers.json (P3-22 runda 4, web 1.5 / 1.75).
+rust-port/engine/src/domain/combat.rs:470:            let attacker_loss = (0.25 - 0.15 * advantage).clamp(0.10, 0.25);
+rust-port/engine/src/domain/combat.rs:475:            let defender_loss = (0.25 - 0.15 * advantage).clamp(0.10, 0.25);
+rust-port/engine/src/domain/diplomacy.rs:408:            alliance_strength_ease_max: 0.25,
+rust-port/engine/src/domain/diplomacy.rs:410:            alliance_strength_respect_step: 0.15,
+rust-port/engine/src/domain/diplomacy.rs:412:            alliance_stronger_other_bonus: 0.20,
+rust-port/engine/src/domain/diplomacy.rs:415:            alliance_stronger_military_step: 0.15,
+rust-port/engine/src/domain/diplomacy.rs:424:            alliance_player_three_x_bonus: 0.10,
+rust-port/engine/src/domain/diplomacy.rs:975:        penalty_ally: capped_penalty * 0.55,
+rust-port/engine/src/domain/diplomacy.rs:1027:        CivilizationKind::Chinese | CivilizationKind::Harappa => 0.20,
+rust-port/engine/src/domain/diplomacy.rs:1039:        CivilizationKind::Minor => 0.15,
+rust-port/engine/src/domain/diplomacy.rs:1049:        CivilizationKind::Incas => 0.25,
+rust-port/engine/src/domain/diplomacy.rs:1050:        CivilizationKind::Zulus => 0.20,
+rust-port/engine/src/domain/diplomacy.rs:1108:        (aggression * 0.50
+rust-port/engine/src/domain/diplomacy.rs:1110:            + (1.0 - (score / 200.0).clamp(0.0, 1.0)) * 0.20)
+rust-port/engine/src/domain/diplomacy.rs:1120:            + relation.trust / 100.0 * 0.20)
+rust-port/engine/src/domain/diplomacy.rs:1155:            CivilizationKind::Chinese => 0.20,
+rust-port/engine/src/domain/diplomacy.rs:1156:            CivilizationKind::Incas => 0.15,
+rust-port/engine/src/domain/diplomacy.rs:1157:            CivilizationKind::Greeks => 0.10,
+rust-port/engine/src/domain/diplomacy.rs:1158:            CivilizationKind::Zulus => -0.20,
+EXIT=0
