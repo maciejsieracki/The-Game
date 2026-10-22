@@ -22,6 +22,11 @@ gpu = ["dep:wgpu"]
 # Engine decision D-RR-1 = A (wgpu directly). Pinned to an exact version;
 # MSRV of wgpu 30.0.1 is 1.87 (hence rust-version above).
 wgpu = { version = "=30.0.1", optional = true }
+# CPU 2D rasteriser behind `raster::Canvas2dLite` (owner decision D-TXT-6 = A,
+# R-RUSTPORT-P4-28-RASTER-SHAPES-Q1). Pinned exactly: golden RGBA hashes in
+# tests/raster_*.rs depend on its AA/stroker/gradient arithmetic. Default
+# features (std, simd, png-format) are not needed: `std` is enough.
+tiny-skia = { version = "=0.12.0", default-features = false, features = ["std"] }
 
 [dev-dependencies]
 # Blocks on wgpu's async adapter request in tests/gpu_probe.rs (no async
