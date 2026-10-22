@@ -1,0 +1,5 @@
+$ cargo clippy --all-targets -- -D warnings (default features)
+    Checking pollster v0.4.0
+    Checking civ-renderer v0.1.0 (/home/user/The-Game/.claude/worktrees/wf_66f475c2-396-1/rust-port/renderer)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 4.12s
+EXIT=0
