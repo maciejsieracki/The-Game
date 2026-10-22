@@ -1,0 +1,20 @@
+$ node tools/dom-harness/run-level1a.mjs --pin-dir <PIN_DIR>   (regresja P5.3)
+unitCardStatus.ts            przypadki= 2271 różnice=0
+diplomacyDealDisplay.ts      przypadki=  552 różnice=0
+orderPanel.ts                przypadki=   73 różnice=0 asercje_v2=3/3 DOM_puste=0/3
+unitRecruitCard.ts           przypadki=   79 różnice=0 DOM_puste=0/78
+cityAttackChoice.ts          przypadki=   16 różnice=0 asercje_v2=1/1 DOM_puste=12/16
+postBattleSummary.ts         przypadki=   24 różnice=0 asercje_v2=2/2 DOM_puste=16/24
+siegeMapPanel.ts             przypadki=  114 różnice=0 asercje_v2=1/1 DOM_puste=0/114
+diploUiSkin.ts               przypadki=  352 różnice=0 DOM_puste=1/1
+icons/iconRegistry.ts        przypadki=   48 różnice=0
+mapUnitHudSkin.ts            przypadki=   10 różnice=0 DOM_puste=1/1
+armyMergePanel.ts            przypadki=   12 różnice=0 DOM_puste=8/12
+icons/wikiBookIcon.ts        przypadki=    5 różnice=0
+powerOverlayHud.ts           przypadki=   19 różnice=0 DOM_puste=0/4
+armyListHud.ts               przypadki=   23 różnice=0 asercje_v2=1/1 DOM_puste=0/23
+bottomBarHud.ts              przypadki=    8 różnice=0 DOM_puste=0/8
+cityListHud.ts               przypadki=    7 różnice=0 DOM_puste=0/7
+empireOverlayHud.ts          przypadki=    5 różnice=0 DOM_puste=0/5
+dom-harness-level1a: pin=edb8fb56 modułów=17 przypadków=3618 różnic=0 jsdomErrors=0
+EXIT=0

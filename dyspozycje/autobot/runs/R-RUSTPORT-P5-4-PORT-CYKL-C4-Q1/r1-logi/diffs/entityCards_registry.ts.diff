@@ -1,0 +1,64 @@
+--- pin:gra/src/ui/entityCards/registry.ts
++++ v2:src-tauri/frontend-v2/src/ui/entityCards/registry.ts
+@@ -17,12 +17,10 @@
+  *
+  * Zero edycji `sciencePicker.ts`/`research.ts` — tylko import ich publicznych eksportów.
+  */
+-import type { UnitDef, BuildingDef } from '../../data/loader';
+-import buildingsData from '../../../data/buildings.json';
+-import unitsData from '../../../data/units.json';
+-import terrainImprovementsData from '../../../data/terrain-improvements.json';
+-import techData from '../../../data/tech.json';
+-import wondersData from '../../../data/wonders.json';
++// P5.4: typy wierszy i dane statyczne z `StaticCatalogDto` (D-UI-4; pin `:20-25` importował
++// `data/loader` i 5 plików `gra/data/*.json`). Odczyt przy ewaluacji modułu — ZAŁOŻENIE P5.2-Z1.
++import type { UnitDefDto as UnitDef, BuildingDefDto as BuildingDef } from '../../viewmodel/types';
++import { staticCatalog } from '../../controller/staticCatalog';
+ import { techToSlug, techNameFromSlug } from '../sciencePicker';
+ import { slugify } from './slug';
+ import type { EntityCardResolver } from './types';
+@@ -31,7 +29,7 @@
+ // building
+ // ---------------------------------------------------------------------------
+ 
+-const BUILDINGS = buildingsData as unknown as BuildingDef[];
++const BUILDINGS = staticCatalog().buildings as unknown as BuildingDef[];
+ 
+ export const resolveBuildingRow: EntityCardResolver<BuildingDef> = (id) => {
+   return BUILDINGS.find((b) => b.id === id) ?? null;
+@@ -56,7 +54,7 @@
+   odblokowuje?: string;
+ }
+ 
+-const TERRAIN_IMPROVEMENTS = terrainImprovementsData as unknown as Record<string, ImprovementRow>;
++const TERRAIN_IMPROVEMENTS = staticCatalog().terrainImprovements as unknown as Record<string, ImprovementRow>;
+ 
+ export const resolveImprovementRow: EntityCardResolver<ImprovementRow> = (id) => {
+   if (id === '_meta') return null;
+@@ -81,7 +79,7 @@
+   'Uwagi': string | null;
+ }
+ 
+-const TECH_LIST = (techData as unknown as { technologie: RawTech[] }).technologie;
++const TECH_LIST = (staticCatalog().tech as unknown as { technologie: RawTech[] }).technologie;
+ 
+ /** Resolver technology: `id` to slug wg `techToSlug()` (WARIANT A, sciencePicker.ts) —
+  * odzyskaj nazwę kanoniczną przez `techNameFromSlug()`, potem znajdź surowy wiersz
+@@ -101,7 +99,7 @@
+ // unit — NOWY, własna Map budowana raz przy starcie, skonsolidowany slug.ts
+ // ---------------------------------------------------------------------------
+ 
+-const UNITS = unitsData as unknown as UnitDef[];
++const UNITS = staticCatalog().units as unknown as UnitDef[];
+ 
+ function buildUnitMap(): Map<string, UnitDef> {
+   const map = new Map<string, UnitDef>();
+@@ -177,7 +175,7 @@
+   historia?: string;
+ }
+ 
+-const WONDERS = (wondersData as unknown as { cuda: WonderRow[] }).cuda;
++const WONDERS = (staticCatalog().wonders as unknown as { cuda: WonderRow[] }).cuda;
+ 
+ function buildWonderMap(): Map<string, WonderRow> {
+   const map = new Map<string, WonderRow>();

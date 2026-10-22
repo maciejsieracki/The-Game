@@ -1,0 +1,250 @@
+/**
+ * entityCards/improvementAdapter.ts — pełne wypełnienie (T7b, KARTA-ULEPSZENIA-TERENU):
+ * surowy wiersz `terrain-improvements.json` (`ImprovementRow`, `registry.ts`) →
+ * `EntityCardData`. Budowany od razu na kontrakcie — nie ma dziś żadnej istniejącej
+ * karty ulepszeń do migracji (plan §4); to jest pierwsza pełna treść tego adaptera.
+ *
+ * Civpedia: `terrain-improvements.json` ma klucze wiele-do-jednego wobec plików
+ * CivPedii (np. warianty kopalni → `kopalnia.md`) — mostek `gra-id` to T9; `null` do T9.
+ *
+ * `registry.ts` (poza allowlistą T7b) nie niesie klucza `ImprovementKey` samego
+ * wiersza — reeksport `ImprovementRow` z registry.ts nie ma pola `nazwa`→klucz.
+ * Ten adapter odtwarza mapę `nazwa → klucz` bezpośrednio z `terrain-improvements.json`
+ * (ten sam wzorzec co `IMPROVEMENT_NAME_TO_KEY` w `techDiscoveryNotice.ts`/
+ * `technologyAdapter.ts`, Bug B R-TECH-ULEPSZENIA-TERENU-SYNC-Q1) — wyłącznie po to,
+ * żeby dobrać właściwą ikonę (`improvementIconSvg` jest kluczowany po `ImprovementKey`,
+ * nie po polskiej nazwie).
+ *
+ * Kolejność `sections` (P-KARTA-PRZEBUDOWA-UKLAD-TECH-ULEPSZENIE-Q1 — patrz 00-dispatch.md):
+ * Wymagania → Charakterystyka (dawna „Bonusy (obrabiane pole)", przemianowana/przeniesiona
+ * na tę rolę — patrz komentarz przy `characteristicsSection`) → [Rys historyczny, wstawiany
+ * przez `renderer.ts::renderEntityCard` na WSPÓLNYM, NIETKNIĘTYM stałym indeksie 2] → Surowce
+ * i terytorium → Dodatkowe informacje. `sections[0]`/`sections[1]` MUSZĄ zostać Wymaganiami/
+ * Charakterystyką — przesunięcie zepsułoby pozycję Rysu historycznego bez błędu kompilatora
+ * (dokładnie ten sam mechanizm co `buildingAdapter.ts`/`unitAdapter.ts`).
+ */
+// P5.4: `terrain-improvements.json` (pin `:26`) → `StaticCatalogDto.terrainImprovements` (D-UI-4).
+import { staticCatalog } from '../../controller/staticCatalog';
+import { improvementIconSvg } from '../icons/brandAssets';
+import { resolveImprovementRow, resolveTechnologyRow, technologyIdFromName } from './registry';
+import type { ImprovementRow } from './registry';
+import type { EntityCardAdapter, EntityCardRow, EntityCardSection } from './types';
+
+const PLACEHOLDER_ICON_SVG =
+  '<svg viewBox="0 0 24 24" width="34" height="34" aria-hidden="true">' +
+  '<rect x="4" y="10" width="16" height="10" fill="currentColor" opacity=".15"/>' +
+  '<polygon points="4,10 12,3 20,10" fill="currentColor" opacity=".15"/>' +
+  '<text x="12" y="18" text-anchor="middle" font-size="10" fill="currentColor">U</text></svg>';
+
+/** Pola realnie obecne w `terrain-improvements.json`, ale nie zadeklarowane
+ * w `ImprovementRow` (`registry.ts`, poza allowlistą T7b) — lokalne rozszerzenie
+ * typu, zero zmian w registrze. */
+interface ImprovementRowExtra {
+  bonus_obrona_proc?: number;
+  bonus_ruch?: number;
+  bonus_ruch_uwaga?: string;
+  bonus_wymaga_obozowania?: boolean;
+  cywilizacje?: string[];
+  cywilizacje_uwaga?: string;
+  /** Rys historyczny (T-KARTY-HISTORIA-INFRA-Q1) — lowercase, konwencja
+   * `terrain-improvements.json` zgodna z istniejącym `uwagi`/`cywilizacje_uwaga`. Pole
+   * NIE jest jeszcze zadeklarowane w danych (dodadzą je dopiero batche treści; tu
+   * wyłącznie infrastruktura karty). */
+  historia?: string;
+  surowiecOdblokowany_uwaga?: string;
+  surowiec_ilosc_tura?: number;
+  tech_uwaga?: string;
+  typ?: string;
+  upgradeFrom?: string;
+  uwagi?: string;
+  wycinka?: boolean;
+  zasieg_kontroli?: number;
+  zasieg_pol?: number;
+  zasieg_terytorium?: number;
+}
+
+type FullImprovementRow = ImprovementRow & ImprovementRowExtra;
+
+/** Mapa nazwa gracza (`row.nazwa`) → klucz obiektu (`ImprovementKey`) w
+ * `terrain-improvements.json` — wyłącznie do doboru ikony (Bug B). */
+const NAME_TO_KEY: Record<string, string> = (() => {
+  const map: Record<string, string> = {};
+  for (const [key, row] of Object.entries(staticCatalog().terrainImprovements as Record<string, { nazwa?: string }>)) {
+    if (key.startsWith('_')) continue;
+    const nazwa = row?.nazwa;
+    if (typeof nazwa === 'string' && nazwa) map[nazwa] = key;
+  }
+  return map;
+})();
+
+function text(value: unknown): string {
+  return value == null ? '' : String(value).trim();
+}
+
+function hasValue(value: unknown): boolean {
+  const t = text(value);
+  return t !== '' && t !== '—';
+}
+
+const BONUS_LABEL: Record<string, string> = {
+  zywnosc: 'Żywność',
+  praca: 'Praca',
+  handel: 'Handel',
+  pieniadz: 'Pieniądz',
+  kamien: 'Kamień',
+  drewno: 'Drewno',
+};
+
+export const improvementAdapter: EntityCardAdapter<ImprovementRow> = (improvementRaw) => {
+  const improvement = improvementRaw as FullImprovementRow;
+  const nazwa = text(improvement.nazwa) || '(bez nazwy)';
+  const key = NAME_TO_KEY[nazwa];
+
+  // --- Charakterystyka (P-KARTA-PRZEBUDOWA-UKLAD-TECH-ULEPSZENIE-Q1, sections[1]) -------------
+  // Dispatch (00-dispatch.md, „Zawartość sekcji Charakterystyka — ulepszenie terenu") każe
+  // zdecydować: albo przemianować/przenieść `bonusSection` samą w sobie na rolę
+  // „Charakterystyki", albo trzymać dwie osobne sekcje w tej kolejności. WYBÓR: przemianowanie
+  // (opcja pierwsza) — `typ` samo w sobie dałoby często JEDNOWIERSZOWĄ, cienką osobną sekcję
+  // (bo `epoka` zostaje WYŁĄCZNIE w `subtitle`, bez duplikacji — dispatch wprost), a bonusy
+  // (bonus{}, bonus_obrona_proc, bonus_ruch) SĄ koncepcyjnie „charakterystyką" ulepszenia — nie
+  // ma tu treściowej duplikacji z żadną inną sekcją tego adaptera. `key: 'characteristics'`
+  // dobrany świadomie zgodnie z `buildingAdapter.ts`/`unitAdapter.ts` (ten sam wzorzec
+  // „Charakterystyka" w całym systemie kart), żeby ewentualne wspólne testy pozycji sekcji
+  // (`data-section-key`) mogły rozpoznawać tę sekcję tym samym kluczem co u innych `kind`.
+  const bonus = improvement.bonus ?? {};
+  const charRows: EntityCardRow[] = [];
+  if (hasValue(improvement.typ)) {
+    charRows.push({ label: 'Typ', value: text(improvement.typ) });
+  }
+  for (const [k, v] of Object.entries(bonus)) {
+    if (typeof v !== 'number' || v === 0) continue;
+    charRows.push({ label: BONUS_LABEL[k] ?? k, value: `${v > 0 ? '+' : ''}${v}`, emphasize: true });
+  }
+  if (hasValue(improvement.bonus_obrona_proc)) {
+    charRows.push({ label: 'Obrona', value: `+${text(improvement.bonus_obrona_proc)}%` });
+  }
+  if (hasValue(improvement.bonus_ruch)) {
+    charRows.push({
+      label: 'Ruch',
+      value: `${text(improvement.bonus_ruch)}${improvement.bonus_ruch_uwaga ? ` (${text(improvement.bonus_ruch_uwaga)})` : ''}`,
+    });
+  }
+  const characteristicsSection: EntityCardSection = {
+    key: 'characteristics', title: 'Charakterystyka', rows: charRows,
+  };
+
+  // --- Wymagania (teren, warunek, technologia, koszt) ----------------------------------------
+  // T10 LINKOWANIE-KRZYZOWE: `improvement.tech` bywa placeholderem "-"/"—" LUB (potwierdzone
+  // reconem na realnych danych, np. `irygacja`) nazwą bez odpowiednika w `tech.json` —
+  // link tylko gdy `resolveTechnologyRow` faktycznie znajdzie wiersz.
+  const techName = text(improvement.tech);
+  const techSlug = techName ? technologyIdFromName(techName) : null;
+  const techLinkTo = techSlug != null && resolveTechnologyRow(techSlug) != null
+    ? ({ kind: 'technology', id: techSlug } as const) : undefined;
+  // „Ulepszenie bazowe" (`upgradeFrom`) jest już kluczem obiektu `terrain-improvements.json`
+  // (nie nazwą gracza) — resolver bierze go wprost, weryfikacja przez `resolveImprovementRow`.
+  const upgradeFromKey = text(improvement.upgradeFrom);
+  const upgradeFromLinkTo = upgradeFromKey && resolveImprovementRow(upgradeFromKey) != null
+    ? ({ kind: 'improvement', id: upgradeFromKey } as const) : undefined;
+  const requirementRows: EntityCardRow[] = [
+    { label: 'Teren', value: text(improvement.teren) },
+    {
+      // T-KARTY-HISTORIA-INFRA-Q1 (c): `improvement.tech_uwaga` NIE jest już doklejane
+      // do wartości — czysta nazwa technologii, bez dev-adnotacji w nawiasie. Pole
+      // `tech_uwaga` w danych zostaje nietknięte (inne narzędzia mogą go używać), tylko
+      // przestaje być renderowane na karcie gracza.
+      label: 'Technologia',
+      value: techName,
+      linkTo: techLinkTo,
+    },
+    { label: 'Koszt (Praca)', value: hasValue(improvement.koszt_praca) ? `${text(improvement.koszt_praca)} P` : '' },
+    { label: 'Warunek', value: text(improvement.warunek) },
+    {
+      // T-KARTY-HISTORIA-INFRA-Q1 (c): `improvement.cywilizacje_uwaga` NIE jest już
+      // doklejane — czysta lista cywilizacji, bez dev-adnotacji w nawiasie. Pole
+      // `cywilizacje_uwaga` w danych zostaje nietknięte, tylko przestaje być
+      // renderowane na karcie gracza.
+      label: 'Cywilizacje',
+      value: Array.isArray(improvement.cywilizacje) && improvement.cywilizacje.length > 0
+        ? improvement.cywilizacje.join(', ')
+        : '',
+    },
+    { label: 'Ulepszenie bazowe', value: upgradeFromKey, linkTo: upgradeFromLinkTo },
+  ].filter((r) => hasValue(r.value));
+  const requirementsSection: EntityCardSection = {
+    key: 'requirements', title: 'Wymagania', rows: requirementRows,
+  };
+
+  // --- Surowce i terytorium --------------------------------------------------------------------
+  const resourceRows: EntityCardRow[] = [];
+  if (hasValue(improvement.surowiecOdblokowany)) {
+    resourceRows.push({
+      label: 'Odblokowuje surowiec',
+      value: text(improvement.surowiecOdblokowany),
+    });
+  }
+  if (hasValue(improvement.surowiec_ilosc_tura)) {
+    resourceRows.push({ label: 'Produkcja surowca', value: `${text(improvement.surowiec_ilosc_tura)} / turę` });
+  }
+  if (hasValue(improvement.zasieg_terytorium)) {
+    resourceRows.push({ label: 'Zasięg terytorium', value: `${text(improvement.zasieg_terytorium)} pól` });
+  }
+  if (hasValue(improvement.zasieg_kontroli)) {
+    resourceRows.push({ label: 'Zasięg kontroli', value: `${text(improvement.zasieg_kontroli)} pól` });
+  }
+  if (hasValue(improvement.zasieg_pol)) {
+    resourceRows.push({ label: 'Zasięg wpływu na pola', value: `${text(improvement.zasieg_pol)} pól` });
+  }
+  const resourceSection: EntityCardSection = {
+    key: 'resources', title: 'Surowce i terytorium', rows: resourceRows,
+  };
+
+  // --- Odblokowuje / dodatkowe informacje ------------------------------------------------------
+  // T-KARTY-HISTORIA-INFRA-Q1 (c): wiersz „Uwagi" (`improvement.uwagi`) TRWALE usunięty z
+  // karty — było to źródło wycieku surowego tekstu deweloperskiego wprost graczowi
+  // (zgłoszenie właściciela, karta „Tarasy uprawne"). Pole `uwagi` w danych NIE jest
+  // usuwane (może być używane przez inne narzędzia/dokumentację), przestaje być
+  // WYŁĄCZNIE renderowane tutaj.
+  const unlockRows: EntityCardRow[] = [];
+  if (hasValue(improvement.odblokowuje)) {
+    unlockRows.push({ label: 'Odblokowuje', value: text(improvement.odblokowuje) });
+  }
+  if (improvement.wycinka === true) {
+    unlockRows.push({ label: 'Wycinka lasu', value: 'Tak — usuwa nakładkę Las' });
+  }
+  if (improvement.bonus_wymaga_obozowania === true) {
+    unlockRows.push({ label: 'Wymaga obozowania', value: 'Tak' });
+  }
+  const unlockSection: EntityCardSection = {
+    key: 'unlocks', title: 'Dodatkowe informacje', rows: unlockRows,
+  };
+
+  const subtitleParts = [
+    hasValue(improvement.epoka) ? `Epoka ${text(improvement.epoka)}` : null,
+    hasValue(improvement.typ) ? text(improvement.typ) : null,
+  ].filter((x): x is string => !!x);
+
+  return {
+    kind: 'improvement',
+    // Nadpisywane przez `renderer.ts:buildEntityCardData` prawdziwym `id` zapytania
+    // (patrz komentarz tam) — tu tylko najlepszy dostępny placeholder (klucz, jeśli
+    // udało się go odtworzyć z nazwy, inaczej sama nazwa).
+    id: key ?? nazwa,
+    title: nazwa,
+    subtitle: subtitleParts.length > 0 ? subtitleParts.join(' · ') : undefined,
+    medallion: { kind: 'icon', svg: key ? improvementIconSvg(key, 34) : PLACEHOLDER_ICON_SVG },
+    // P-KARTA-PRZEBUDOWA-UKLAD-TECH-ULEPSZENIE-Q1: sections[0] = Wymagania, sections[1] =
+    // Charakterystyka (patrz komentarz przy `characteristicsSection` wyżej) — renderer.ts
+    // wstawia Rys historyczny na stałym, WSPÓLNYM indeksie 2 (`HISTORIA_SECTION_INDEX`,
+    // NIETKNIĘTY w tym temacie), więc kolejność wynikowa w DOM to Wymagania → Charakterystyka
+    // → Rys historyczny (gdy `historicalNote` niepuste) → Surowce i terytorium → Dodatkowe
+    // informacje — dokładnie zaakceptowany układ z dispatchu.
+    sections: [requirementsSection, characteristicsSection, resourceSection, unlockSection],
+    // P-ENTITYCARD-CIVPEDIA-KLIK-MARTWY-Q1 — uzasadnienie jak w `unitAdapter.ts`.
+    // Folder = katalog `docs/encyklopedia/ulepszenia/`. `slug` jest tu placeholderem
+    // z tego samego powodu co `id` wyżej — `buildEntityCardData` nadpisze go kanonicznym
+    // `id` zapytania, więc rozjazd placeholdera i realnego klucza jest niemożliwy.
+    civpediaLink: { folder: 'ulepszenia', slug: key ?? nazwa },
+    historicalNote: hasValue(improvement.historia) ? text(improvement.historia) : undefined,
+  };
+};

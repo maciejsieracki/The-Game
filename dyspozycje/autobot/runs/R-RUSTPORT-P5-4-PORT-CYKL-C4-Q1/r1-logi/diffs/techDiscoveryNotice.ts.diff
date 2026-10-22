@@ -1,0 +1,52 @@
+--- pin:gra/src/ui/techDiscoveryNotice.ts
++++ v2:src-tauri/frontend-v2/src/ui/techDiscoveryNotice.ts
+@@ -43,14 +43,13 @@
+  *    to poprawne czytanie, czy jednak dodać widoczny, wygaszony przycisk?
+  */
+ 
+-import techData from '../../data/tech.json';
+-import buildingsData from '../../data/buildings.json';
+-import unitsData from '../../data/units.json';
+-import terrainImprovementsData from '../../data/terrain-improvements.json';
++// P5.4: 4 pliki `gra/data/*.json` (pin `:46-49`) → `StaticCatalogDto` (D-UI-4).
++import { staticCatalog } from '../controller/staticCatalog';
+ import { pushOverlay, popOverlay } from './escapeOverlayStack';
+ import { techIconSvg } from './techIcons';
+ import { buildingIconSvg, unitIconSvg, improvementIconSvg } from './icons/brandAssets';
+-import type { ImprovementKey } from '../render/improvements';
++// P5.4: `ImprovementKey` (`render/improvements`, pin `:53`) = klucz obiektu `terrain-improvements.json`.
++type ImprovementKey = string;
+ import { buildEntityCardData, renderEntityCard, ENTITY_CARD_CSS, openEntityCard } from './entityCards/renderer';
+ import { technologyIdFromName } from './entityCards/registry';
+ import type { EntityCardData, EntityCardAction } from './entityCards/types';
+@@ -126,7 +125,7 @@
+  */
+ export const IMPROVEMENT_NAME_TO_KEY: Record<string, ImprovementKey> = (() => {
+   const map: Record<string, ImprovementKey> = {};
+-  for (const [key, row] of Object.entries(terrainImprovementsData as Record<string, { nazwa?: string }>)) {
++  for (const [key, row] of Object.entries(staticCatalog().terrainImprovements as Record<string, { nazwa?: string }>)) {
+     if (key.startsWith('_')) continue;
+     const nazwa = row?.nazwa;
+     if (typeof nazwa === 'string' && nazwa) map[nazwa] = key as ImprovementKey;
+@@ -350,9 +349,9 @@
+ }
+ 
+ function buildBody(tech: TechRow): { html: string } {
+-  const buildings = (buildingsData as BuildingRow[]).filter(b => b.techUnlock === tech.Technologia);
+-  const units = (unitsData as UnitRow[]).filter(u => u.Tech === tech.Technologia);
+-  const allTechs = (techData as unknown as { technologie: TechRow[] }).technologie;
++  const buildings = (staticCatalog().buildings as BuildingRow[]).filter(b => b.techUnlock === tech.Technologia);
++  const units = (staticCatalog().units as UnitRow[]).filter(u => u.Tech === tech.Technologia);
++  const allTechs = (staticCatalog().tech as unknown as { technologie: TechRow[] }).technologie;
+   const nextTechRows = allTechs.filter(t => list(t['Wymaga (prereq)']).includes(tech.Technologia));
+   const improvementNames = list(tech['Odblokowuje ulepszenie terenu']);
+   const resourceUnlocked = tech['Odblokowuje surowiec.'] || null;
+@@ -504,7 +503,7 @@
+  * znajdzie wiersza) — patrz plan §3 „nie usuwaj starego kodu w tym samym commicie".
+  */
+ export function showTechDiscoveryNotice(opts: ShowTechDiscoveryNoticeOpts): void {
+-  const tech = (techData as unknown as { technologie: TechRow[] }).technologie
++  const tech = (staticCatalog().tech as unknown as { technologie: TechRow[] }).technologie
+     .find(t => t.Technologia === opts.techName);
+   if (!tech) return;
+   try {
