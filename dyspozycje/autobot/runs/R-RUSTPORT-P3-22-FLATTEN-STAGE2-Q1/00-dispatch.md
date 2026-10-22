@@ -28,3 +28,11 @@ RUNDA 3 — WIĄŻĄCE WYTYCZNE ORKIESTRATORA (rundy 1–2 zamknęły tylko grup
 - Wykonaj rozstrzygnięcia administracyjne z dispatchu (`pieniadzMnoznik` = martwa flaga, `utrzymanie_surowcowe_na_ture` = dane zachowane/brak mechaniki).
 - Wzorzec jakości z grupy HANDEL zostaje: generator uruchamiający kod weba + niezależny weryfikator, 0 rozbieżności, PEŁNE logi w repo (`git add -f` dla `*.log`), test asercji wartości (nie tylko kształtu), `check-etap3`.
 - Baza: `origin/rust-port/parity-v2` (≥ `d925acb3`+commity P3.22). Dysk: usuń swój worktree-target po pracy.
+
+RUNDA 4 — po FAIL Final Control r3 (grupa DYPLOMACJA + unifikacja `Difficulty` PRZYJĘTE, commit `3e6940fc`, ale zakres rundy 3 niedomknięty):
+- PIERWSZY KROK: `git fetch origin rust-port/parity-v2 && git checkout --detach origin/rust-port/parity-v2` (≥ `bf59164b`), potem `git cherry-pick 3e6940fc` (obiekt dostępny lokalnie; jeśli brak — odtwórz z dokumentu/ścieżek w `dyspozycje/autobot/runs/R-RUSTPORT-P3-22-FLATTEN-STAGE2-Q1/`). Baseline po cherry-picku: ≥ 362 testów.
+- ZAKRES rundy 4 (każda grupa PEŁNA): AI (35a, 35a2, 35o5), BARBARZYŃCY, WALKA/OBLĘŻENIE (35f–h, 35l, 35l2, 35o1–35o4; `combat.rs:207,222` ma literały mnożnikowe 1.25 — to nie jest „bez mechaniki”). Co się nie zmieści → ETAP 3 z klasą i plik:linia, ale NIE poprzestawaj na jednej małej grupie.
+- Rozbieżność Peace (D4: Rust liczy mnożnik czasu traktatu też dla `Peace`, web `diplomacy-proposals.ts:595` nie): Q1=A (web 1:1) rozstrzyga — popraw zachowanie do webu, wylistuj w tabeli było/jest z wektorem z uruchomionego weba i jawnie zaktualizowanym testem.
+- `archetype_aggression`/`archetype_trade` (`diplomacy.rs:1022–1063`) nie są mnożnikami → przekaż do tematu P3-18 (tabele zakodowane na stałe); pozycja 35p zostaje na liście.
+- Rozbieżność liczby testów (sumy `test result`: obrona 362 vs FC 367) wyjaśnij: policz osobno `--lib`, `--tests` i doc-testy w dokumencie.
+- To jest runda 4/5: po niej LIMIT 5 zbliża się — dąż do kompletnego zamknięcia zakresu, resztę uczciwie jako ETAP 3 do osobnego tematu.
