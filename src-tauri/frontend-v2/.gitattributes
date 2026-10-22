@@ -1,0 +1,4 @@
+# Kopia bajtowa z pinu edb8fb56 (gra/src/ui/techIcons.ts) ma pustą linię na końcu pliku.
+# Bajty muszą zostać identyczne z pinem (P5-1-UI-SHELL-SKELETON.md §3), więc wyłączamy
+# dla tego jednego pliku kontrolę białych znaków `git diff --check`.
+src/ui/techIcons.ts -whitespace
