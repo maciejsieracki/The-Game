@@ -15,6 +15,7 @@
 
 use super::hex::{client_rect_to_ndc, ClientRect, HEX_R};
 use super::three::{Mat4, Quat, Ray, Vec3};
+use crate::jsmath::{js_cos, js_sin, js_tan};
 
 /// Vertical field of view in degrees (`scene.ts:3079`).
 pub const FOV_DEG: f64 = 50.0;
@@ -80,12 +81,12 @@ impl PickCamera {
     pub fn position(&self) -> Vec3 {
         let elevation = ELEVATION_DEG * deg2rad();
         let azimut = 0.0f64;
-        let cos_el = elevation.cos();
-        let sin_el = elevation.sin();
+        let cos_el = js_cos(elevation);
+        let sin_el = js_sin(elevation);
         Vec3::new(
-            self.target_x + self.dist * cos_el * azimut.sin(),
+            self.target_x + self.dist * cos_el * js_sin(azimut),
             0.0 + self.dist * sin_el,
-            self.target_z + self.dist * cos_el * azimut.cos(),
+            self.target_z + self.dist * cos_el * js_cos(azimut),
         )
     }
 
@@ -101,7 +102,7 @@ impl PickCamera {
         let world = Mat4::compose(position, quaternion, Vec3::new(1.0, 1.0, 1.0));
         // PerspectiveCamera.updateProjectionMatrix (zoom 1, no view, no skew).
         let aspect = width / height;
-        let top = NEAR * (deg2rad() * 0.5 * FOV_DEG).tan() / 1.0;
+        let top = NEAR * js_tan(deg2rad() * 0.5 * FOV_DEG) / 1.0;
         let h = 2.0 * top;
         let w = aspect * h;
         let left = -0.5 * w;

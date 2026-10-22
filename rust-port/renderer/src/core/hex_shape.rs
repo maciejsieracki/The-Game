@@ -7,6 +7,7 @@
 use std::f64::consts::PI;
 
 use crate::geom::{Path2, Vec3};
+use crate::jsmath::{js_cos, js_sin};
 
 /// Angle of corner `i` (`Math.PI / 2 + (i * Math.PI) / 3`, same operation
 /// order as `hexShape.ts:10` and `:25`).
@@ -21,7 +22,7 @@ pub fn hex_ring_points_xz(radius: f64, y: f64) -> [Vec3; 6] {
     let mut out = [Vec3::default(); 6];
     for (i, v) in (0u32..).zip(out.iter_mut()) {
         let angle = corner_angle(i);
-        *v = Vec3::new(radius * angle.cos(), y, radius * angle.sin());
+        *v = Vec3::new(radius * js_cos(angle), y, radius * js_sin(angle));
     }
     out
 }
@@ -35,8 +36,8 @@ pub fn append_pointy_top_hex(path: &mut Path2, radius: f64, reverse: bool) {
     let order = if reverse { BACKWARD } else { FORWARD };
     for (j, &i) in order.iter().enumerate() {
         let angle = corner_angle(i);
-        let x = radius * angle.cos();
-        let y = radius * angle.sin();
+        let x = radius * js_cos(angle);
+        let y = radius * js_sin(angle);
         if j == 0 {
             path.move_to(x, y);
         } else {

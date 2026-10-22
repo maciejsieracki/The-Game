@@ -1,6 +1,8 @@
-//! `geom`, `terrain` and `models/wonders` use the ONE `jsmath`
+//! Every JS-mirroring renderer module uses the ONE `jsmath`
 //! implementation instead of the platform `libm`
-//! (R-RUSTPORT-P4-16-JSMATH-Q1, binary criterion "brak funkcji systemowych").
+//! (R-RUSTPORT-P4-16-JSMATH-Q1, binary criterion "brak funkcji systemowych";
+//! extended to `pick`, `core`, all of `models` and `camera.rs` by
+//! R-RUSTPORT-P4-18-JSMATH-CONSOLIDATE-Q1).
 //!
 //! 1. Source scan: no `f64` method call of a platform transcendental
 //!    function (`.sin()`, `.cos()`, `.tan()`, `.atan2(`, `.acos()`, `.powf(`,
@@ -8,10 +10,14 @@
 //!    `.sqrt()` is allowed: IEEE 754 square root is correctly rounded, so it
 //!    is the same in V8 and in every `libm`.
 //!    The scan walks the directories recursively and also rejects the
-//!    path-call form (`f64::sin(x)`, `f32::cos(x)`, …) and the known
-//!    INDIRECT platform-trig helpers of `pick` (`pick::three::Quat::from_euler_xyz`,
-//!    `pick::terrain::hex_prism_no_bottom`), which use `f64::sin/cos` inside
-//!    (round 2, Evaluator objection 2).
+//!    path-call forms (`f64::sin(x)`, `f32::cos(x)`, `<f64>::cos(x)`,
+//!    `<f32 as Float>::sin(x)`, `f64::sin` passed as a function value), any
+//!    reference to a `libm` crate, and macros that hide a call
+//!    (`concat_idents!`/`paste!` building a forbidden name).
+//!    Since P4.18 `pick::three::Quat::from_euler_xyz` and
+//!    `pick::terrain::hex_prism_no_bottom` are themselves `jsmath`-based and
+//!    the `pick` tree is scanned directly, so they are no longer listed as
+//!    indirect helpers.
 //! 2. Numeric guard: on angles where glibc `sin`/`cos` differ from V8 (taken
 //!    from the V8 vectors), `Mat4::rotation_z`, `Quat::from_euler`,
 //!    `terrain::quat_from_euler_xyz` and `terrain::instance_matrix` give the
@@ -21,13 +27,25 @@ use civ_renderer::geom::{Euler, Mat4, Quat};
 use civ_renderer::pick::three::{Mat4 as PickMat4, Quat as PickQuat, Vec3 as PickVec3};
 use civ_renderer::terrain::{instance_matrix, quat_from_euler_xyz};
 
-const MODULE_DIRS: [&str; 4] = [
+/// Scanned recursively (`src/models` covers `unit_core`, `wonders` and every
+/// later model family).
+const MODULE_DIRS: [&str; 6] = [
     "src/geom",
     "src/terrain",
-    "src/models/wonders",
+    "src/models",
     "src/jsmath",
+    "src/pick",
+    "src/core",
 ];
-const FORBIDDEN: [&str; 22] = [
+/// Single files outside those directories.
+const MODULE_FILES: [&str; 2] = ["src/camera.rs", "src/models.rs"];
+/// Function names that must never be reached through a platform path.
+const FN_NAMES: [&str; 25] = [
+    "sin", "cos", "tan", "sin_cos", "asin", "acos", "atan", "atan2", "sinh", "cosh", "tanh",
+    "asinh", "acosh", "atanh", "exp", "exp2", "exp_m1", "ln", "ln_1p", "log", "log10", "log2",
+    "powf", "hypot", "cbrt",
+];
+const FORBIDDEN: [&str; 26] = [
     ".sin()",
     ".cos()",
     ".tan()",
@@ -50,11 +68,11 @@ const FORBIDDEN: [&str; 22] = [
     ".log2()",
     ".powf(",
     ".hypot(",
+    ".ln_1p()",
+    ".cbrt()",
+    ".log(",
+    ".powi(",
 ];
-
-/// `pick` helpers that call `f64::sin/cos` internally; the JS-mirroring
-/// modules must not route web `Math.*` through them.
-const INDIRECT: [&str; 2] = ["from_euler_xyz(", "hex_prism_no_bottom("];
 
 fn rs_files_recursive(dir: &std::path::Path, out: &mut Vec<std::path::PathBuf>) {
     for e in std::fs::read_dir(dir).unwrap_or_else(|e| panic!("{}: {e}", dir.display())) {
@@ -74,21 +92,40 @@ fn forbidden_hits(code: &str) -> Vec<String> {
         if code.contains(pat) {
             found.push(pat.to_string());
         }
-        // `.sin()` -> `sin(`, `.atan2(` -> `atan2(`: path-call form.
-        let name = pat.trim_start_matches('.').trim_end_matches(')');
-        for ty in ["f64::", "f32::"] {
-            let path_form = format!("{ty}{name}");
-            if code.contains(&path_form) {
-                found.push(path_form);
+    }
+    // Path forms: `f64::sin`, `<f64>::sin`, `<f64 as Float>::sin`,
+    // `f64 :: sin` — whitespace is removed first, then every `<ty>::name`
+    // or `<ty ...>::name` followed by a non-identifier character.
+    let squashed: String = code.chars().filter(|c| !c.is_whitespace()).collect();
+    for name in FN_NAMES {
+        for (i, _) in squashed.match_indices(&format!("::{name}")) {
+            let after = squashed[i + 2 + name.len()..].chars().next();
+            if after.is_some_and(|c| c.is_alphanumeric() || c == '_') {
+                continue;
+            }
+            let before = &squashed[..i];
+            let typed = before.ends_with("f64")
+                || before.ends_with("f32")
+                || (before.ends_with('>')
+                    && before.rfind('<').is_some_and(|k| {
+                        before[k + 1..].starts_with("f64") || before[k + 1..].starts_with("f32")
+                    }));
+            if typed {
+                found.push(format!("path ::{name}"));
             }
         }
     }
-    for pat in INDIRECT {
-        for (i, _) in code.match_indices(pat) {
-            // `terrain::quat_from_euler_xyz(` is the jsmath-based twin.
-            if !code[..i].ends_with('_') {
-                found.push(pat.to_string());
-            }
+    // A `libm` crate (or `std::intrinsics`) reaches the platform functions.
+    if squashed.contains("libm::") || squashed.contains("externcrate libm") {
+        found.push("libm".to_string());
+    }
+    if squashed.contains("intrinsics::") {
+        found.push("intrinsics".to_string());
+    }
+    // Macros that assemble an identifier can build a forbidden call.
+    for mac in ["concat_idents!", "paste!", "paste::paste!"] {
+        if squashed.contains(mac) {
+            found.push(mac.to_string());
         }
     }
     found
@@ -101,9 +138,16 @@ fn scanner_catches_known_bypass_forms() {
         "let s = f64::sin(x);",
         "let p = f64::powf(a, b);",
         "let a = f32::atan2(y, x);",
-        "let q = Quat::from_euler_xyz(0.0, yaw, 0.0);",
-        "let q = three::Quat::from_euler_xyz(a, b, c);",
-        "let g = hex_prism_no_bottom(r, h);",
+        "let c = <f64>::cos(x);",
+        "let c = <f64 as Float>::sin(x);",
+        "let c = f64 :: tan (x);",
+        "let v: Vec<f64> = xs.iter().copied().map(f64::cos).collect();",
+        "let e = libm::exp(x);",
+        "let e = x.ln_1p();",
+        "let l = x.log(10.0);",
+        "let p = x.powi(3);",
+        "let f = paste! { [<co s>](x) };",
+        "let s = unsafe { std::intrinsics::sinf64(x) };",
     ] {
         assert!(!forbidden_hits(bad).is_empty(), "scanner misses: {bad}");
     }
@@ -111,6 +155,11 @@ fn scanner_catches_known_bypass_forms() {
         "let q = quat_from_euler_xyz(0.0, yaw, 0.0);",
         "let s = js_sin(x);",
         "let r = x.sqrt();",
+        "let q = Quat::from_euler_xyz(0.0, yaw, 0.0);",
+        "let c = js_cos(x);",
+        "let k = f64::consts::PI;",
+        "let m = f64::max(a, b);",
+        "let s = x.signum();",
     ] {
         assert!(forbidden_hits(ok).is_empty(), "false positive: {ok}");
     }
@@ -121,10 +170,15 @@ fn no_platform_transcendentals_in_js_mirroring_modules() {
     let root = env!("CARGO_MANIFEST_DIR");
     let mut scanned = 0;
     let mut hits = Vec::new();
+    let mut files = Vec::new();
     for dir in MODULE_DIRS {
-        let mut files = Vec::new();
         rs_files_recursive(std::path::Path::new(&format!("{root}/{dir}")), &mut files);
-        files.sort();
+    }
+    for f in MODULE_FILES {
+        files.push(std::path::PathBuf::from(format!("{root}/{f}")));
+    }
+    files.sort();
+    {
         for f in files {
             let text = std::fs::read_to_string(&f).expect("source file");
             scanned += 1;
@@ -136,7 +190,7 @@ fn no_platform_transcendentals_in_js_mirroring_modules() {
             }
         }
     }
-    assert!(scanned >= 20, "only {scanned} files scanned");
+    assert!(scanned >= 50, "only {scanned} files scanned");
     assert!(
         hits.is_empty(),
         "platform libm calls where the web uses Math.*:\n{}",

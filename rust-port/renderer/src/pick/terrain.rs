@@ -16,6 +16,7 @@ use std::collections::HashMap;
 use super::hex::{axial_to_world, HexCoord, HEX_R};
 use super::raycast::{InstancedPickMesh, Side, TriGeometry};
 use super::three::{Mat4, Quat, Vec3};
+use crate::jsmath::{js_cos, js_sin};
 
 /// `TerenBazowy`, in declaration order (= `Object.values(TerenBazowy)`,
 /// which fixes the order of the prism meshes, `scene.ts:1768-1769`).
@@ -201,7 +202,7 @@ pub fn hex_prism_no_bottom(radius: f64, height: f64) -> TriGeometry {
         for (xi, slot) in row.iter_mut().enumerate() {
             let u = f64::from(u32::try_from(xi).unwrap_or(0)) / f64::from(RADIAL);
             let theta = u * theta_length + 0.0;
-            let (sin_t, cos_t) = (theta.sin(), theta.cos());
+            let (sin_t, cos_t) = (js_sin(theta), js_cos(theta));
             push(r * sin_t, -v * height + half_height, r * cos_t);
             *slot = index;
             index += 1;
@@ -225,7 +226,7 @@ pub fn hex_prism_no_bottom(radius: f64, height: f64) -> TriGeometry {
         for x in 0..=RADIAL {
             let u = f64::from(x) / f64::from(RADIAL);
             let theta = u * theta_length + 0.0;
-            let (cos_t, sin_t) = (theta.cos(), theta.sin());
+            let (cos_t, sin_t) = (js_cos(theta), js_sin(theta));
             push(radius * sin_t, half_height * sign, radius * cos_t);
             index += 1;
         }

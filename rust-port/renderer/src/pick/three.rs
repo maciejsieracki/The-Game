@@ -6,6 +6,11 @@
 //! JavaScript original (Rust does not contract `a * b + c` into FMA), so the
 //! results are bit-identical to the browser as long as the inputs are. Each
 //! item names the Three.js method it mirrors.
+//!
+//! `Math.sin/cos` go through [`crate::jsmath`] (V8 fdlibm, bit-exact), not the
+//! platform `libm` (R-RUSTPORT-P4-18-JSMATH-CONSOLIDATE-Q1).
+
+use crate::jsmath::{js_cos, js_sin};
 
 /// `Math.min` for non-NaN inputs, including `Math.min(-0, +0) == -0`.
 #[must_use]
@@ -194,12 +199,12 @@ impl Quat {
     /// `Object3D.rotation`).
     #[must_use]
     pub fn from_euler_xyz(x: f64, y: f64, z: f64) -> Self {
-        let c1 = (x / 2.0).cos();
-        let c2 = (y / 2.0).cos();
-        let c3 = (z / 2.0).cos();
-        let s1 = (x / 2.0).sin();
-        let s2 = (y / 2.0).sin();
-        let s3 = (z / 2.0).sin();
+        let c1 = js_cos(x / 2.0);
+        let c2 = js_cos(y / 2.0);
+        let c3 = js_cos(z / 2.0);
+        let s1 = js_sin(x / 2.0);
+        let s2 = js_sin(y / 2.0);
+        let s3 = js_sin(z / 2.0);
         Self {
             x: s1 * c2 * c3 + c1 * s2 * s3,
             y: c1 * s2 * c3 - s1 * c2 * s3,
