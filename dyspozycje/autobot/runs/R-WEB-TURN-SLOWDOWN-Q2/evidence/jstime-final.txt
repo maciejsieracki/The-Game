@@ -1,0 +1,8 @@
+pre-turn12.cpuprofile: razem=8587 ms (program)=7845 (idle)=4 GC=11 JS+GC=739 ms
+pre-turn72.cpuprofile: razem=12897 ms (program)=8415 (idle)=10 GC=171 JS+GC=4472 ms
+fix-turn12.cpuprofile: razem=7167 ms (program)=6618 (idle)=3 GC=52 JS+GC=546 ms
+fix-turn72.cpuprofile: razem=10020 ms (program)=8717 (idle)=36 GC=28 JS+GC=1267 ms
+pre-city13.cpuprofile: razem=2106 ms (program)=1875 (idle)=6 GC=1 JS+GC=225 ms
+pre-city73.cpuprofile: razem=3582 ms (program)=2709 (idle)=21 GC=115 JS+GC=851 ms
+fix-city13.cpuprofile: razem=1778 ms (program)=1590 (idle)=2 GC=11 JS+GC=186 ms
+fix-city73.cpuprofile: razem=2869 ms (program)=2466 (idle)=3 GC=75 JS+GC=400 ms
