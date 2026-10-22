@@ -60,15 +60,15 @@ index 45a24822..12b00e26 100644
 +++ b/rust-port/engine/src/domain/combat.rs
 @@ -1,7 +1,7 @@
  use serde::{Deserialize, Serialize};
- 
+
  use super::UnitId;
 -use crate::data::derived::combat_ai_multiplier_value;
 +use crate::data::derived::{combat_ai_multiplier_value, counter_multiplier_value};
- 
+
  /// A counter bonus supplied by the unit data for one opposing unit type.
  #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 @@ -181,9 +181,10 @@ impl CombatResult {
- 
+
  /// Return a unit's counter multiplier against one target type.
  ///
 -/// Explicit data wins. The built-in table mirrors every confirmed attack
@@ -83,7 +83,7 @@ index 45a24822..12b00e26 100644
      defender_type: &str,
 @@ -198,23 +199,8 @@ pub fn counter_multiplier(
      }
- 
+
      let attacker = canonical_type(attacker_type);
 -    match (attacker.as_str(), defender.as_str()) {
 -        ("spearman", "mount")
@@ -105,5 +105,5 @@ index 45a24822..12b00e26 100644
 +    // Macierz z data/derived/counter-multipliers.json (P3-23 etap 3, wiersz 35g).
 +    counter_multiplier_value(&attacker, &defender).unwrap_or(1.0)
  }
- 
+
  /// Rola atakująca „dystans” / „flanka” z webu (ZAŁOŻENIE P3-22 sekcja 12):
