@@ -69,27 +69,37 @@ MUTATIONS = [
     ("B10-zmiana-i-zamiast-lub", CB, "let changed = armor_gained > 0.0 || soft_gained > 0.0;", "let changed = armor_gained > 0.0 && soft_gained > 0.0;", "p6_5b_bonuses"),
     ("B11-zapis-parametrow-pominiety", CB, "            unit.parametry_bonus_proc = Some(next.parametry_bonus_proc);\n", "", "p6_5b_bonuses"),
     ("B12-separator-wzmianki", CB, '("czesci", &parts.join(&labels.separator)),', '("czesci", &parts.join(", ")),', "p6_5b_bonuses"),
-    ("B13-scalanie-bez-zasiegu", CB, "            mods.ranged_atk += bonus.other;\n", "", "p6_5b_bonuses"),
+    ("B13-scalanie-bez-zasiegu", CB, "            *mods.ranged_atk_mut() += bonus.other;\n", "", "p6_5b_bonuses"),
     ("B14-prawda-bez-nan", CB, "x != 0.0 && !x.is_nan()", "x != 0.0", "p6_5b_bonuses"),
     ("B15-procent-podstawa", UBJ, '"podstawa_procentu": 100', '"podstawa_procentu": 10', "p6_5b_bonuses"),
     ("B16-etykieta-separator", UBJ, '"separator": " · "', '"separator": " | "', "p6_5b_bonuses"),
     ("B17-sciezka-bez-wielkiej-kuzni", UBJ, '"budynki": ["kuznia", "kuznia_zelaza", "wielka_kuznia"]', '"budynki": ["kuznia", "kuznia_zelaza"]', "p6_5b_bonuses"),
     ("B18-limit-lancucha-tabela", UBJ, '"max_glebokosc_lancucha": 32', '"max_glebokosc_lancucha": 31', "p6_5b_bonuses"),
     ("B19-proc-jednostki-nieskonczone", CB, "Some(v) if v.is_finite() && v > 0.0 => v,\n            _ => 0.0,\n        }\n    }\n\n    /// Web `unitPancerzBonusProc`", "Some(v) if v > 0.0 => v,\n            _ => 0.0,\n        }\n    }\n\n    /// Web `unitPancerzBonusProc`", "p6_5b_bonuses"),
+    ("B21-cecha-zdrowie-na-atk", CB, "        fn health_mut(&mut self) -> &mut f64 {\n            &mut self.health\n        }", "        fn health_mut(&mut self) -> &mut f64 {\n            &mut self.atk\n        }", "p6_5b_bonuses"),
     ("B20-zamkniecie-5a-tercje", UBJ, '"liczba_tercji": 3', '"liczba_tercji": 4', "p6_5b_tables"),
 ]
 
-# Grupy mutacji budowane jednym `cargo test --no-fail-fast`: czlonkowie grupy dotycza ROZLACZNYCH zbiorow binariow
-# testowych (kod modulow jest rozdzielny: bonusy budynkow -> p6_5b_bonuses/p6_5b_tables; manpower ->
-# p6_5b_manpower/p6_5b_replenish; formaty -> p6_5b_format), wiec werdykt czlonka = wynik JEGO binarium.
-# Powod: maszyna jest wspoldzielona (load ~20), pojedynczy build trwa ~7 min.
+# Grupy mutacji budowane jednym `cargo test --no-fail-fast`. Werdykt czlonka = wynik JEGO binarium, wiec
+# grupa jest wazna tylko, gdy mutacja jednego czlonka NIE moze zmienic wyniku binarium drugiego (zarzut 6 r2,
+# dowod statyczny: dowody/mutation-independence-r2.txt):
+#  - mutacje B* (combat.rs / unit-building-bonuses.json) trafiaja WYLACZNIE binaria p6_5b_bonuses/p6_5b_tables;
+#    binaria p6_5b_manpower/_replenish/_format nie importuja domain::combat, a recruitment.rs nie wola combat.rs,
+#  - mutacje M* (recruitment.rs / manpower-params.json / locale-compare-ascii.json) nie trafiaja binarium
+#    p6_5b_bonuses, bo combat::unit_building_bonuses uzywa z recruitment TYLKO `js_max` i `js_number_to_string`;
+#    mutacje w `js_number_to_string` (M25, M26) wolno wiec uruchamiac wylacznie pojedynczo,
+#  - grupa ma co najwyzej jedna mutacje B* i jedna M*; wiele mutacji M* (ten sam kod/dane, wspolne binaria
+#    manpower/replenish/format) NIGDY w jednej grupie (r1 mialo takie grupy: M25+M21+M29, M26+M22, M27+M24 -
+#    w r2 przeliczone pojedynczo).
+# Powod grupowania: maszyna jest wspoldzielona (load ~12-20), pojedynczy build trwa kilka minut.
 SKIP_DONE = {"M01", "M02", "M03", "M04", "M05"}  # wykonane w trybie pojedynczym (mutation-evidence-r1-part0.txt)
+SINGLE_ONLY = {"M25", "M26"}
 GROUPS = [
     ["B01", "M06"], ["B02", "M08"], ["B03", "M09"], ["B04", "M12"], ["B05", "M13"], ["B06", "M14"],
     ["B07", "M20"], ["B08", "M23"], ["B09", "M28"], ["B10", "M30"], ["B11", "M31"], ["B12", "M32"],
-    ["B13", "M33"], ["B14", "M11"], ["B15", "M04x"], ["B16", "M17"], ["B17", "M18"], ["B18", "M19"],
-    ["B19", "M07"], ["B20", "M10"],
-    ["M25", "M21", "M29"], ["M26", "M22"], ["M27", "M24"], ["M15"], ["M16"],
+    ["B13", "M33"], ["B14", "M11"], ["B15"], ["B16", "M17"], ["B17", "M18"], ["B18", "M19"],
+    ["B19", "M07"], ["B20", "M10"], ["B21"],
+    ["M25"], ["M21"], ["M29"], ["M26"], ["M22"], ["M27"], ["M24"], ["M15"], ["M16"],
 ]
 GROUPS = [[m for m in g if m != "M04x"] for g in GROUPS]
 BY_PREFIX = {m[0].split("-")[0]: m for m in MUTATIONS}
@@ -115,6 +125,8 @@ def run_group(ids):
     muts = [BY_PREFIX[i] for i in ids]
     tests = [m[4] for m in muts]
     assert len(set(tests)) == len(tests), f"grupa {ids}: binaria czlonkow musza byc rozne"
+    assert sum(i.startswith("B") for i in ids) <= 1 and sum(i.startswith("M") for i in ids) <= 1, f"grupa {ids}: max 1 B i 1 M"
+    assert len(ids) == 1 or not (set(ids) & SINGLE_ONLY), f"grupa {ids}: mutacje w js_number_to_string tylko pojedynczo"
     originals = {}
     texts = {}
     try:

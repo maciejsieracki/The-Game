@@ -14,7 +14,7 @@ use civ_engine::domain::combat::unit_building_bonuses::{
     mnoznik_role_for_building_id, soft_path_badge_level, unit_building_bonus_label,
     unit_pancerz_bonus_frac, unit_pancerz_bonus_proc, unit_parametry_bonus_frac,
     unit_parametry_bonus_proc, BuildingBonusGain, BuildingCombatBonus, MnoznikBuildingLookup,
-    MnoznikRole, StatMultipliersLike, UnitBuildingProgress,
+    MnoznikRole, StatMultipliers, StatMultipliersLike, UnitBuildingProgress,
 };
 use common::{assert_opt_same, assert_same, list, load, num, opt_num, opt_string};
 use serde_json::Value;
@@ -374,4 +374,75 @@ fn stat_multiplier_merge_matches_web() {
         }
     }
     assert!(merged > 100 && skipped > 20);
+}
+
+/// Typ spelniajacy `StatMultipliersLike` strukturalnie (jak obiekt TS z dodatkowymi polami): inna
+/// kolejnosc pol i pole dodatkowe, ktorego scalanie NIE moze dotknac.
+struct WideMods {
+    extra: f64,
+    health: f64,
+    ranged_atk: f64,
+    uderzenie: f64,
+    pancerz: f64,
+    obrona: f64,
+    atk: f64,
+}
+
+impl StatMultipliers for WideMods {
+    fn atk_mut(&mut self) -> &mut f64 {
+        &mut self.atk
+    }
+    fn obrona_mut(&mut self) -> &mut f64 {
+        &mut self.obrona
+    }
+    fn pancerz_mut(&mut self) -> &mut f64 {
+        &mut self.pancerz
+    }
+    fn uderzenie_mut(&mut self) -> &mut f64 {
+        &mut self.uderzenie
+    }
+    fn ranged_atk_mut(&mut self) -> &mut f64 {
+        &mut self.ranged_atk
+    }
+    fn health_mut(&mut self) -> &mut f64 {
+        &mut self.health
+    }
+}
+
+/// Web: `mergeBuildingBonusIntoStatMultipliers<T extends StatMultipliersLike>` zwraca ten sam
+/// obiekt typu `T`. Rust: ta sama funkcja generyczna dla innego typu niz konkretna struktura.
+#[test]
+fn stat_multiplier_merge_is_generic_over_any_structural_type() {
+    let root = root();
+    let mut compared = 0;
+    for case in bld(&root, "merge") {
+        let m = &case["mods"];
+        let mut wide = WideMods {
+            extra: 0.125,
+            health: num(&m["health"]),
+            ranged_atk: num(&m["rangedAtk"]),
+            uderzenie: num(&m["uderzenie"]),
+            pancerz: num(&m["pancerz"]),
+            obrona: num(&m["obrona"]),
+            atk: num(&m["atk"]),
+        };
+        let bonus = case
+            .get("bonus")
+            .filter(|b| b.is_object())
+            .map(|b| BuildingCombatBonus {
+                pancerz: num(&b["pancerz"]),
+                other: num(&b["other"]),
+            });
+        let returned = merge_building_bonus_into_stat_multipliers(&mut wide, bonus.as_ref());
+        let a = &case["after"];
+        assert_same("atk", returned.atk, num(&a["atk"]));
+        assert_same("obrona", returned.obrona, num(&a["obrona"]));
+        assert_same("pancerz", returned.pancerz, num(&a["pancerz"]));
+        assert_same("uderzenie", returned.uderzenie, num(&a["uderzenie"]));
+        assert_same("rangedAtk", returned.ranged_atk, num(&a["rangedAtk"]));
+        assert_same("health", returned.health, num(&a["health"]));
+        assert_same("extra", wide.extra, 0.125);
+        compared += 1;
+    }
+    assert!(compared > 100);
 }

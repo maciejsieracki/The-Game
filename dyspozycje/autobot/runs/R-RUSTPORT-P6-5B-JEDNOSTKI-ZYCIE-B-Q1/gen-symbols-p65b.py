@@ -1,11 +1,12 @@
 #!/usr/bin/env python3
 """Tabela symboli P6.5B: KAZDY eksport (i symbol prywatny) dwoch plikow TS (wyciagniety regexem ze zrodel
-pinu) ma status PORTOWANY / PORTOWANY-ZAWEZONY / DANE-JUZ-W-RUST / NIE-DOTYCZY / RUNDA-2, odpowiednik
-Rust (plik:linia) i test.
+pinu) ma status z zamknietego slownika {PORTOWANY, DANE-JUZ-W-RUST, NIE-DOTYCZY, RUNDA-2}, odpowiednik
+Rust (plik:linia, symbol Rust) i test.
 
-Uzycie: gen-symbols-p65b.py <WEB_ROOT> <ENGINE_DIR> > symbols-p65b-r1.tsv
-Blad (exit 1), gdy eksport TS nie ma wiersza w mapowaniu albo mapowanie wskazuje symbol, ktorego nie ma
-w zrodle / w Rust / w testach.
+Uzycie: gen-symbols-p65b.py <WEB_ROOT> <ENGINE_DIR> > symbols-p65b-r2.tsv
+Blad (exit 1), gdy: eksport TS nie ma wiersza w mapowaniu; mapowanie wskazuje symbol, ktorego nie ma
+w zrodle / w Rust / w testach; status spoza slownika; wiersz RUNDA-2 bez odwolania do listy R2-n;
+symbol Rust pod wskazana linia nie pasuje do nazwy TS, a uwaga nie zawiera "ALIAS:" (r2, zarzut 4).
 """
 import re
 import sys
@@ -28,8 +29,9 @@ EXPORT_RE = re.compile(r"^export (?:default )?(?:async )?(function|const|let|int
 PRIVATE_RE = re.compile(r"^(?:function|const|let|interface|type)\s+([A-Za-z0-9_]+)", re.M)
 
 P = "PORTOWANY"
-PZ = "PORTOWANY-ZAWEZONY"
+R2 = "RUNDA-2"
 D = "DANE-JUZ-W-RUST"
+VOCAB = {P, R2, D, "NIE-DOTYCZY"}
 
 T_ERA = "p6_5b_manpower::era_table_and_citizen_scalars_match_web"
 T_POOL = "p6_5b_manpower::pool_and_cost_scalars_match_web"
@@ -55,11 +57,13 @@ T_BUNIT = "p6_5b_bonuses::unit_progress_badges_and_fractions_match_web"
 T_BGAIN = "p6_5b_bonuses::city_visit_gain_progress_and_hint_match_web"
 T_BHINT = "p6_5b_bonuses::gain_hint_text_matches_web_for_arbitrary_gains"
 T_BMERGE = "p6_5b_bonuses::stat_multiplier_merge_matches_web"
+T_BMERGEGEN = "p6_5b_bonuses::stat_multiplier_merge_is_generic_over_any_structural_type"
 T_TCONST = "p6_5b_tables::table_constants_equal_the_running_web"
 T_TSHAPE = "p6_5b_tables::tables_parse_and_have_the_expected_shape"
 T_TCLOSE = "p6_5b_tables::p65a_badge_closures_are_closed_by_the_real_path_badge_port"
 
-LC = "localeCompare (ICU) zawezone do ASCII 0x20-0x7E (zmierzone); reszta NIE_ZMIERZONO"
+LC = "R2-1: localeCompare (ICU) tylko ASCII 0x20-0x7E w en-US (zmierzone); poza tym NIE_ZMIERZONO (lista R2-1 w dokumencie)"
+NAN = "R2-2: komparatory z NaN w polach miasta NIE_ZMIERZONO (nieosiagalne dla skonczonych danych)"
 
 # nazwa TS -> (status, plik, igla w pliku Rust, test, uwaga)
 M = {
@@ -78,7 +82,7 @@ M = {
         "manpowerHealCapForTurn": (P, "rs", "pub fn manpower_heal_cap_for_turn", T_HEAL, ""),
         "manpowerCostForHeal": (P, "rs", "pub fn manpower_cost_for_heal", T_HEAL, ""),
         "maxAffordableManpowerHeal": (P, "rs", "pub fn max_affordable_manpower_heal", T_HEAL, ""),
-        "tickManpowerUnitReplenishment": (PZ, "rs", "pub fn tick_manpower_unit_replenishment", T_TICK, "domkniecia resolveOwnerEra/resolveOwnerBonusy/getMaxHp/onUnitHpChanged to PARAMETRY weba (nie zaleznosci z innych plikow); ZAWEZENIA: getMaxHp zawsze dostaje jednostke (web: opcjonalny arg), " + LC + ", komparatory niespojne (NaN) NIE_ZMIERZONO"),
+        "tickManpowerUnitReplenishment": (R2, "rs", "pub fn tick_manpower_unit_replenishment", T_TICK, "domkniecia resolveOwnerEra/resolveOwnerBonusy/getMaxHp/onUnitHpChanged to PARAMETRY weba (nie zaleznosci z innych plikow); getMaxHp: ZAMKNIETE - jedyne wywolanie weba to manpower.ts:315 `getMaxHp(u.typeId, u)` ZAWSZE z jednostka, opcjonalnosc drugiego argumentu dotyczy tylko typu wywolujacego (domkniecie Rust ignorujace argument = web); pozostalo: " + LC + "; " + NAN),
         "loadManpowerRegenParams": (P, "rs", "pub fn load_manpower_regen_params", T_RAW + " + " + T_DEF, ""),
         "CivBonusPoborLite": (P, "rs", "pub struct CivBonusPoborLite", T_CIV, "wartosc: tylko liczby (typeof) - lista napisow/napis to None"),
         "civManpowerRegenMult": (P, "rs", "pub fn civ_manpower_regen_mult", T_CIV, ""),
@@ -91,7 +95,7 @@ M = {
         "cityLudnoscAbsolutna": (P, "rs", "pub fn city_ludnosc_absolutna", T_ERA, ""),
         "formatObywateleLabel": (P, "rs", "pub fn format_obywatele_label", T_LBL, "Number#toString: js_number_to_string"),
         "cityManpowerMax": (P, "rs", "pub fn city_manpower_max", T_POOL, ""),
-        "SCOUT_TYPE_ID": (P, "der", "pub scout_type_id", T_TCONST, "manpower-params.json"),
+        "SCOUT_TYPE_ID": (P, "der", "pub scout_type_id", T_TCONST, "ALIAS: SCOUT_TYPE_ID -> pole ManpowerParams.scout_type_id (data/derived.rs, manpower-params.json: scout_type_id); wartosc czytana przez is_scout_type_id"),
         "isScoutTypeId": (P, "rs", "pub fn is_scout_type_id", T_POOL, ""),
         "unitManpowerCost": (P, "rs", "pub fn unit_manpower_cost", T_POOL, ""),
         "unitManpowerCostForType": (P, "rs", "pub fn unit_manpower_cost_for_type", T_POOL, ""),
@@ -103,10 +107,10 @@ M = {
         "cityManpowerSnapshot": (P, "rs", "pub fn city_manpower_snapshot", T_CITY, "parametry odnowy z prawdziwego miasto-params.json (jak web)"),
         "canAffordUnitManpower": (P, "rs", "pub fn can_afford_unit_manpower", T_CITY, ""),
         "empireManpowerCurrent": (P, "rs", "pub fn empire_manpower_current", T_EMP, ""),
-        "deductManpowerFromEmpire": (PZ, "rs", "pub fn deduct_manpower_from_empire", T_MUT, "mutuje miasta; " + LC),
-        "refundManpowerToEmpire": (PZ, "rs", "pub fn refund_manpower_to_empire", T_MUT, "mutuje miasta; " + LC),
+        "deductManpowerFromEmpire": (R2, "rs", "pub fn deduct_manpower_from_empire", T_MUT, "mutuje miasta; " + LC + "; " + NAN),
+        "refundManpowerToEmpire": (R2, "rs", "pub fn refund_manpower_to_empire", T_MUT, "mutuje miasta; " + LC + "; " + NAN),
         "canAffordUnitManpowerEmpire": (P, "rs", "pub fn can_afford_unit_manpower_empire", T_EMP, "_recruitingCity/_popCost nieuzywane jak w webie"),
-        "tryDeductUnitSpawnCostsEmpire": (PZ, "rs", "pub fn try_deduct_unit_spawn_costs_empire", T_MUT, "mutuje miasta; " + LC),
+        "tryDeductUnitSpawnCostsEmpire": (R2, "rs", "pub fn try_deduct_unit_spawn_costs_empire", T_MUT, "mutuje miasta; " + LC + "; " + NAN),
         "UnitSpawnBlockReason": (P, "rs", "pub enum UnitSpawnBlockReason", T_SPAWN, "napisy powodow w manpower-params.json"),
         "UnitSpawnDeduction": (P, "rs", "pub struct UnitSpawnDeduction", T_SPAWN, ""),
         "tryDeductUnitSpawnCosts": (P, "rs", "pub fn try_deduct_unit_spawn_costs", T_SPAWN, ""),
@@ -149,26 +153,26 @@ M = {
         "BuildingCombatBonus": (P, "cb", "pub struct BuildingCombatBonus", T_BUNIT, ""),
         "ZERO_BUILDING_COMBAT_BONUS": (P, "cb", "pub const ZERO_BUILDING_COMBAT_BONUS", T_TCONST, ""),
         "buildingCombatBonusForUnit": (P, "cb", "pub fn building_combat_bonus_for_unit", T_BUNIT, ""),
-        "StatMultipliersLike": (PZ, "cb", "pub struct StatMultipliersLike", T_BMERGE, "ZAWEZENIE: web generyczny (T extends StatMultipliersLike), Rust dokladnie 6 pol"),
-        "mergeBuildingBonusIntoStatMultipliers": (PZ, "cb", "pub fn merge_building_bonus_into_stat_multipliers", T_BMERGE, "zwraca &mut do tej samej struktury (web: ten sam obiekt - wektor `same`)"),
+        "StatMultipliersLike": (P, "cb", "pub trait StatMultipliers", T_BMERGE + " + " + T_BMERGEGEN, "ALIAS: interfejs strukturalny TS = cecha `StatMultipliers` (szesc dostepow *_mut) + konkretna struktura `StatMultipliersLike` z dokladnie tymi polami (r2: zawezenie ZAMKNIETE - funkcja scalania jest generyczna)"),
+        "mergeBuildingBonusIntoStatMultipliers": (P, "cb", "pub fn merge_building_bonus_into_stat_multipliers", T_BMERGE + " + " + T_BMERGEGEN, "generyczna <T: StatMultipliers> jak `<T extends StatMultipliersLike>`; zwraca &mut do tej samej wartosci (web: ten sam obiekt - wektor `same`); test generyczny: inny typ z polem dodatkowym nietknietym"),
     },
 }
 PRIV = {
     "manpower.ts": {
-        "ROWS": (D, "rs", "pub fn all_epoka_manpower_rows", T_TCONST, "OnceLock z economy_society::parse_epoka_ludnosc_manpower"),
-        "MAX_EPOKA": (P, "der", "pub struct ManpowerEpokaBounds", T_TCONST, "manpower-params.json: epoka.max"),
-        "ParamRow": (P, "rs", "pub struct MiastoManpowerRaw", T_RAW, "surowe wartosci miasto-params; prawdziwy plik: MiastoManpowerRaw::game()"),
-        "DEFAULT_REGEN": (P, "rs", "pub fn default_params", T_DEF, "manpower-params.json: domyslne_regen"),
-        "DEFAULT_REPLENISH_PCT": (P, "der", "pub struct ManpowerDefaultReplenish", T_DEF, "manpower-params.json: domyslne_uzupelnienie_hp_proc"),
-        "CityReplenishFields": (P, "rs", "pub struct ManpowerCity", T_TICK, "jeden struktura ManpowerCity (nadzbior pol Pick<City,...>)"),
+        "ROWS": (D, "rs", "pub fn all_epoka_manpower_rows", T_TCONST, "ALIAS: ROWS -> all_epoka_manpower_rows() (OnceLock z economy_society::parse_epoka_ludnosc_manpower)"),
+        "MAX_EPOKA": (P, "der", "pub struct ManpowerEpokaBounds", T_TCONST, "ALIAS: MAX_EPOKA -> ManpowerEpokaBounds.max (struktura min/max z manpower-params.json: epoka)"),
+        "ParamRow": (P, "rs", "pub struct MiastoManpowerRaw", T_RAW, "ALIAS: ParamRow -> MiastoManpowerRaw (surowe wartosci miasto-params; prawdziwy plik: MiastoManpowerRaw::game())"),
+        "DEFAULT_REGEN": (P, "rs", "pub fn default_params", T_DEF, "ALIAS: DEFAULT_REGEN -> ManpowerRegenParams::default_params() (manpower-params.json: domyslne_regen)"),
+        "DEFAULT_REPLENISH_PCT": (P, "der", "pub struct ManpowerDefaultReplenish", T_DEF, "ALIAS: DEFAULT_REPLENISH_PCT -> ManpowerDefaultReplenish (easy/normal/hard z manpower-params.json: domyslne_uzupelnienie_hp_proc)"),
+        "CityReplenishFields": (P, "rs", "pub struct ManpowerCity", T_TICK, "ALIAS: CityReplenishFields -> ManpowerCity (jedna struktura, nadzbior pol Pick<City,...> obu aliasow web)"),
         "ReplenishmentCandidate": (P, "rs", "pub struct ReplenishmentCandidate", T_TICK, "jednostka jako indeks w liscie"),
-        "allocateProportionalReplenishment": (PZ, "rs", "pub fn allocate_proportional_replenishment", T_TICK, "martwy zapis usedMp po inicjalizacji remainingMp pominiety; " + LC),
+        "allocateProportionalReplenishment": (R2, "rs", "pub fn allocate_proportional_replenishment", T_TICK, "martwy zapis usedMp (manpower.ts:260, wartosc nigdy nie czytana po inicjalizacji remainingMp:240) pominiety; " + LC),
         "scaledManpower": (P, "rs", "fn scaled_manpower", T_POOL, ""),
-        "CityRecruitFields": (P, "rs", "pub struct ManpowerCity", T_MUT, "jak CityReplenishFields"),
+        "CityRecruitFields": (P, "rs", "pub struct ManpowerCity", T_MUT, "ALIAS: CityRecruitFields -> ManpowerCity (jak CityReplenishFields)"),
     },
     "unit-building-bonuses.ts": {
         "mnoznikOf": (P, "cb", "fn mnoznik_of", T_BCITY, ""),
-        "MAX_UPGRADE_CHAIN_DEPTH": (P, "der", "pub max_glebokosc_lancucha", T_BDEPTH, "unit-building-bonuses.json"),
+        "MAX_UPGRADE_CHAIN_DEPTH": (P, "der", "pub max_glebokosc_lancucha", T_BDEPTH, "ALIAS: MAX_UPGRADE_CHAIN_DEPTH -> pole max_glebokosc_lancucha (data/derived.rs, unit-building-bonuses.json)"),
         "chainMnoznikContribution": (P, "cb", "fn chain_mnoznik_contribution", T_BCITY + " + " + T_BDEPTH, "String#trim: is_js_whitespace (U+FEFF tak, U+0085 nie)"),
         "sumMnoznikForPresentBuildings": (P, "cb", "fn sum_mnoznik_for_present_buildings", T_BCITY, ""),
         "pathBadgeLevelFromPp": (P, "cb", "pub fn path_badge_level_from_pp", T_BUNIT, "siatka progow 0.5 pp"),
@@ -176,17 +180,38 @@ PRIV = {
 }
 # zaleznosci spoza dwoch plikow, portowane lokalnie
 EXTRA = [
-    ("gra/src/units/setup.ts", "isCivilianUnit", "function", "PORTOWANY-LOKALNIE", "rs", "pub fn is_civilian_unit", T_MISC + " + p6_5b_tables::civilian_set_is_resolved_from_the_table", "zaleznosc manpower.ts spoza zakresu (units/setup.ts:196); zbiory kategorii/typow w manpower-params.json; wektor z uruchomionego weba (isCivilianUnit)"),
-    ("<ECMAScript>", "String.prototype.localeCompare", "builtin", PZ, "rs", "pub fn locale_compare", T_LOC, LC),
-    ("<ECMAScript>", "Number.prototype.toString", "builtin", P, "rs", "pub fn js_number_to_string", T_NUM, "wlacznie z dokladnymi remisami najkrotszej reprezentacji (parzysta ostatnia cyfra)"),
+    ("gra/src/units/setup.ts:196", "isCivilianUnit", "function", R2, "rs", "pub fn is_civilian_unit", T_MISC + " + p6_5b_tables::civilian_set_is_resolved_from_the_table + p6_5b_tables::table_constants_equal_the_running_web", "R2-3 (WYJATEK UDOKUMENTOWANY, dokument ZA3): zaleznosc manpower.ts spoza dwoch plikow tematu, portowana LOKALNIE (nie wstrzykiwana jak w P6.5A/ZA2) - zbiory CIVILIAN_CATEGORIES/CIVILIAN_TYPE_IDS w manpower-params.json (cywilne); synchronizacja: check-p65b-civilian-sync.py (zrodlo pinu == tabela, test negatywny) + test porownujacy tabele z CIVILIAN_* z URUCHOMIONEGO weba; pelny port/wstrzykniecie w temacie units/setup"),
+    ("<ECMAScript>", "String.prototype.localeCompare", "builtin", R2, "rs", "pub fn locale_compare", T_LOC, "ALIAS: builtin ECMAScript localeCompare -> locale_compare; " + LC + "; zmierzone w r2: dowody/localecompare-locales-r2.txt"),
+    ("<ECMAScript>", "Number.prototype.toString", "builtin", P, "rs", "pub fn js_number_to_string", T_NUM, "ALIAS: builtin ECMAScript Number#toString -> js_number_to_string; wlacznie z dokladnymi remisami najkrotszej reprezentacji (parzysta ostatnia cyfra)"),
 ]
 
 
 def find(kind, needle):
     for i, line in enumerate(LINES[kind], 1):
-        if needle in line:
+        # r2: dopasowanie CALEGO identyfikatora (nie przedrostka: try_deduct_..._costs vs ..._costs_empire)
+        if re.search(re.escape(needle) + r"(?![A-Za-z0-9_])", line):
             return f"{SRC[kind][1]}:{i}"
     return None
+
+
+def rust_symbol(needle):
+    """Identyfikator Rust z igly (np. `pub fn manpower_regen_gain` -> manpower_regen_gain)."""
+    return needle.split()[-1].rstrip("(:{")
+
+
+def norm(name):
+    return re.sub(r"[^a-z0-9]", "", name.lower())
+
+
+def check_alias(name, needle, status, note, errors):
+    """Zarzut 4: nazwa TS musi byc odnajdywalna w symbolu Rust pod wskazana linia; inaczej uwaga zawiera ALIAS."""
+    sym = rust_symbol(needle)
+    if status not in VOCAB:
+        errors.append(f"status spoza slownika {sorted(VOCAB)}: {name}: {status}")
+    if status == R2 and "R2-" not in note:
+        errors.append(f"wiersz RUNDA-2 bez odwolania do listy R2-n: {name}")
+    if norm(name) != norm(sym) and norm(name) not in norm(needle) and "ALIAS:" not in note:
+        errors.append(f"symbol Rust {sym} nie pasuje do {name} i brak adnotacji ALIAS: {name}")
 
 
 rows, errors = [], []
@@ -204,12 +229,13 @@ for fname in FILES:
         if ref is None:
             errors.append(f"brak symbolu Rust {needle} dla {name}")
             continue
+        check_alias(name, needle, status, note, errors)
         for part in test.split(" + "):
             fn = part.split("::")[-1]
             if f"fn {fn}" not in TESTS:
                 errors.append(f"brak testu {part} dla {name}")
         line = next(i for i, l in enumerate(lines, 1) if re.match(rf"^export (?:default )?(?:async )?{kind}\s+{name}\b", l))
-        rows.append((f"gra/src/game/{fname}:{line}", name, kind, status, ref, test, note))
+        rows.append((f"gra/src/game/{fname}:{line}", name, kind, status, ref, rust_symbol(needle), test, note))
     for name in PRIVATE_RE.findall(text):
         if name not in PRIV[fname]:
             errors.append(f"brak mapowania dla symbolu prywatnego {fname}:{name}")
@@ -220,12 +246,13 @@ for fname in FILES:
         if ref is None:
             errors.append(f"brak symbolu Rust {needle} dla {name}")
             continue
+        check_alias(name, needle, status, note, errors)
         for part in test.split(" + "):
             fn = part.split("::")[-1]
             if f"fn {fn}" not in TESTS:
                 errors.append(f"brak testu {part} dla {name}")
         line = next(i for i, l in enumerate(lines, 1) if re.match(rf"^(?:function|const|let|interface|type)\s+{name}\b", l))
-        rows.append((f"gra/src/game/{fname}:{line}", name, "prywatny", status, ref, test, note))
+        rows.append((f"gra/src/game/{fname}:{line}", name, "prywatny", status, ref, rust_symbol(needle), test, note))
     for name in list(M[fname]) + list(PRIV[fname]):
         if name not in seen:
             errors.append(f"mapowanie dla symbolu spoza zrodla: {fname}:{name}")
@@ -235,9 +262,10 @@ for src, name, kind, status, rk, needle, test, note in EXTRA:
     if ref is None:
         errors.append(f"brak symbolu Rust {needle} dla {name}")
         continue
-    rows.append((src, name, kind, status, ref, test, note))
+    check_alias(name, needle, status, note, errors)
+    rows.append((src, name, kind, status, ref, rust_symbol(needle), test, note))
 
-print("zrodlo_web\tsymbol\trodzaj\tstatus\todpowiednik_rust\ttest\tuwaga")
+print("zrodlo_web\tsymbol\trodzaj\tstatus\todpowiednik_rust\tsymbol_rust\ttest\tuwaga")
 for r in rows:
     print("\t".join(c if c else "-" for c in r))
 if errors:

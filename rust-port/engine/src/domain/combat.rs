@@ -976,8 +976,20 @@ pub mod unit_building_bonuses {
         }
     }
 
-    /// Web `StatMultipliersLike` (`unit-building-bonuses.ts:497`). ZAWEZENIE: web jest generyczny
-    /// (`T extends StatMultipliersLike`), Rust przyjmuje dokladnie te szesc pol.
+    /// Web `StatMultipliersLike` (`unit-building-bonuses.ts:497`) jako cecha: typ strukturalny TS
+    /// (`T extends StatMultipliersLike`) odpowiada tu dowolnemu typowi z szescioma polami
+    /// mnoznikow, wystawionymi przez dostepy `*_mut`.
+    pub trait StatMultipliers {
+        fn atk_mut(&mut self) -> &mut f64;
+        fn obrona_mut(&mut self) -> &mut f64;
+        fn pancerz_mut(&mut self) -> &mut f64;
+        fn uderzenie_mut(&mut self) -> &mut f64;
+        fn ranged_atk_mut(&mut self) -> &mut f64;
+        fn health_mut(&mut self) -> &mut f64;
+    }
+
+    /// Konkretna struktura z dokladnie szescioma polami interfejsu `StatMultipliersLike`
+    /// (`unit-building-bonuses.ts:497`); implementuje [`StatMultipliers`].
     #[derive(Debug, Clone, Copy, PartialEq)]
     pub struct StatMultipliersLike {
         pub atk: f64,
@@ -988,28 +1000,49 @@ pub mod unit_building_bonuses {
         pub health: f64,
     }
 
+    impl StatMultipliers for StatMultipliersLike {
+        fn atk_mut(&mut self) -> &mut f64 {
+            &mut self.atk
+        }
+        fn obrona_mut(&mut self) -> &mut f64 {
+            &mut self.obrona
+        }
+        fn pancerz_mut(&mut self) -> &mut f64 {
+            &mut self.pancerz
+        }
+        fn uderzenie_mut(&mut self) -> &mut f64 {
+            &mut self.uderzenie
+        }
+        fn ranged_atk_mut(&mut self) -> &mut f64 {
+            &mut self.ranged_atk
+        }
+        fn health_mut(&mut self) -> &mut f64 {
+            &mut self.health
+        }
+    }
+
     /// Web `if (x)` dla liczby: `false` dla `0`, `-0` i `NaN`.
     fn truthy(x: f64) -> bool {
         x != 0.0 && !x.is_nan()
     }
 
     /// Web `mergeBuildingBonusIntoStatMultipliers` (`unit-building-bonuses.ts:512`). Mutuje `mods`.
-    pub fn merge_building_bonus_into_stat_multipliers<'a>(
-        mods: &'a mut StatMultipliersLike,
+    pub fn merge_building_bonus_into_stat_multipliers<'a, T: StatMultipliers>(
+        mods: &'a mut T,
         bonus: Option<&BuildingCombatBonus>,
-    ) -> &'a mut StatMultipliersLike {
+    ) -> &'a mut T {
         let Some(bonus) = bonus else {
             return mods;
         };
         if truthy(bonus.pancerz) {
-            mods.pancerz += bonus.pancerz;
+            *mods.pancerz_mut() += bonus.pancerz;
         }
         if truthy(bonus.other) {
-            mods.atk += bonus.other;
-            mods.obrona += bonus.other;
-            mods.uderzenie += bonus.other;
-            mods.ranged_atk += bonus.other;
-            mods.health += bonus.other;
+            *mods.atk_mut() += bonus.other;
+            *mods.obrona_mut() += bonus.other;
+            *mods.uderzenie_mut() += bonus.other;
+            *mods.ranged_atk_mut() += bonus.other;
+            *mods.health_mut() += bonus.other;
         }
         mods
     }
