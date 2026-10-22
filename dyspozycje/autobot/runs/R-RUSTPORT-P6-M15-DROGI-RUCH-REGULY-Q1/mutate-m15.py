@@ -44,11 +44,12 @@ for name, path, old, new in MUTANTS:
             capture_output=True, text=True,
         )
         out = r.stdout + r.stderr
+        print(f"  [diag] {name}: returncode={r.returncode} could_not_compile={'could not compile' in out} failed_lines={len([l for l in out.splitlines() if l.startswith('test ') and l.endswith('FAILED')])}")
         failed = [l for l in out.splitlines() if l.startswith("test ") and l.endswith("FAILED")]
         if r.returncode == 0:
             survived.append(name)
             print(f"PRZEZYL   : {name}")
-        elif "error[" in out or "error:" in out and not failed:
+        elif "could not compile" in out or (r.returncode == 101 and not failed and "test result:" not in out):
             print(f"KOMPILACJA: {name} (mutant nie kompiluje sie)")
             survived.append(name + " [nie kompiluje]")
         else:

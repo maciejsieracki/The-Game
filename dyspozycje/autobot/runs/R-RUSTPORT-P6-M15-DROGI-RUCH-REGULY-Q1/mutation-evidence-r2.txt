@@ -1,0 +1,33 @@
+  [diag] is_road: bez bruku: returncode=101 could_not_compile=False failed_lines=4
+WYKRYTY   : is_road: bez bruku -> 4 testow czerwonych: is_road_key_matches_web, road_table_shape_and_key_names, has_road_matches_web, collect_road_keys_matches_web_order
+  [diag] is_road: bez drogi zwyklej: returncode=101 could_not_compile=False failed_lines=4
+WYKRYTY   : is_road: bez drogi zwyklej -> 4 testow czerwonych: is_road_key_matches_web, collect_road_keys_matches_web_order, has_road_matches_web, road_table_shape_and_key_names
+  [diag] has_road: all zamiast any: returncode=101 could_not_compile=False failed_lines=2
+WYKRYTY   : has_road: all zamiast any -> 2 testow czerwonych: has_road_matches_web, collect_road_keys_matches_web_order
+  [diag] modifier: Infinity nie zwracane wprost: returncode=0 could_not_compile=False failed_lines=0
+PRZEZYL   : modifier: Infinity nie zwracane wprost
+  [diag] modifier: bez podlogi bruku: returncode=101 could_not_compile=False failed_lines=1
+WYKRYTY   : modifier: bez podlogi bruku -> 1 testow czerwonych: apply_modifier_matches_web_bitwise
+  [diag] modifier: podloga zwyklej drogi: returncode=101 could_not_compile=False failed_lines=1
+WYKRYTY   : modifier: podloga zwyklej drogi -> 1 testow czerwonych: apply_modifier_matches_web_bitwise
+  [diag] modifier: droga przed brukiem: returncode=101 could_not_compile=False failed_lines=1
+WYKRYTY   : modifier: droga przed brukiem -> 1 testow czerwonych: apply_modifier_matches_web_bitwise
+  [diag] modifier: bez sprawdzenia pola ulepszenie: returncode=101 could_not_compile=False failed_lines=1
+WYKRYTY   : modifier: bez sprawdzenia pola ulepszenie -> 1 testow czerwonych: apply_modifier_matches_web_bitwise
+  [diag] modifier: mnoznik drogi z bruku: returncode=101 could_not_compile=False failed_lines=1
+WYKRYTY   : modifier: mnoznik drogi z bruku -> 1 testow czerwonych: apply_modifier_matches_web_bitwise
+  [diag] js_max: f64::max (NaN gubiony): returncode=101 could_not_compile=False failed_lines=1
+WYKRYTY   : js_max: f64::max (NaN gubiony) -> 1 testow czerwonych: apply_modifier_matches_web_bitwise
+  [diag] index: wiodace zero dozwolone: returncode=101 could_not_compile=False failed_lines=1
+WYKRYTY   : index: wiodace zero dozwolone -> 1 testow czerwonych: collect_road_keys_matches_web_order
+  [diag] index: granica 2^32-1: returncode=101 could_not_compile=False failed_lines=1
+WYKRYTY   : index: granica 2^32-1 -> 1 testow czerwonych: collect_road_keys_matches_web_order
+  [diag] collect: bez porzadku indeksow: returncode=101 could_not_compile=False failed_lines=1
+WYKRYTY   : collect: bez porzadku indeksow -> 1 testow czerwonych: collect_road_keys_matches_web_order
+  [diag] collect: indeksy odwrocone: returncode=101 could_not_compile=False failed_lines=1
+WYKRYTY   : collect: indeksy odwrocone -> 1 testow czerwonych: collect_road_keys_matches_web_order
+  [diag] collect: pierwszy zamiast ostatniego duplikatu: returncode=101 could_not_compile=False failed_lines=1
+WYKRYTY   : collect: pierwszy zamiast ostatniego duplikatu -> 1 testow czerwonych: collect_road_keys_matches_web_order
+mutantow=15 przezylo/niekompilujace=1
+   modifier: Infinity nie zwracane wprost
+EXIT=1

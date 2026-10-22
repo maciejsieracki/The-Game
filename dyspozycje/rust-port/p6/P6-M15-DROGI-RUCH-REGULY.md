@@ -22,9 +22,9 @@ poza repo.
 | 543 | `hexHasRoad` (`:64`) | PORTOWANY | `roads::hex_has_road` (na `improvements::improvement_keys_for_hex`) | `has_road_matches_web` (326 heksow) |
 | 544 | `applyRoadMovementModifier` (`:73`) | PORTOWANY | `roads::apply_road_movement_modifier(cost, &HexLike)`; kopia na `RuchHex` z P6.4 (`pathfinding::ruch_jednostek`) zgodna bitowo z tym samym wektorem | `apply_modifier_matches_web_bitwise` (11 410 wierszy, bity f64 vs web), `p64_ruch_modifier_agrees_with_roads_module` |
 | 431 | `collectRoadKeys` (`improvement-build.ts:1560`) | PORTOWANY | `roads::collect_road_keys(&[(String, HexLike)])` - kolejnosc `Object.entries` (klucze-indeksy JS rosnaco, potem wstawianie; duplikat = ostatnia wartosc, pierwsza pozycja) | `collect_road_keys_matches_web_order` (121 map, w tym 4294967294/4294967295, `007`, `-3`) |
-| 432 | `isRoadImprovementKey` re-eksport (`improvement-build.ts:1569`) | DANE-JUZ-W-RUST / NIE-DOTYCZY | re-eksport nie ma osobnej logiki; ten sam `roads::is_road_improvement_key` | wiersz 542 |
+| 432 | `isRoadImprovementKey` re-eksport (`improvement-build.ts:1569`) | DANE-JUZ-W-RUST | re-eksport (`export { isRoadImprovementKey }`) nie ma osobnej logiki ani danych: to ten sam symbol co wiersz 542, juz zaimplementowany jako `roads::is_road_improvement_key` | `is_road_key_matches_web` (ten sam test co wiersz 542; wektor z weba pochodzi z `road-movement.ts`, ktory re-eksport tylko przekazuje) |
 
-Wszystkie symbole zakresu maja status PORTOWANY (z wektorem z uruchomionego weba) - brak pozycji RUNDA-2. Typ `GameMap` (parametr
+Podsumowanie statusow (9 wierszy tabeli): PORTOWANY = 8 (wiersze 538, 539, 540, 541, 542, 543, 544, 431; kazdy z wektorem z uruchomionego weba), DANE-JUZ-W-RUST = 1 (wiersz 432, re-eksport), RUNDA-2 = 0, NIE-DOTYCZY = 0. `hexHasRoad` wystepuje w tabeli raz (wiersz 543); jego uzycie w wektorze `collectRoadKeys` nie jest osobnym wierszem. Typ `GameMap` (parametr
 `collectRoadKeys`) jest reprezentowany przez uporzadkowane pary `(klucz, heks)`; `Hex` przez `improvements::HexLike`
 (pola uzywane przez te funkcje: `ulepszenie`, `ulepszenia`).
 
@@ -40,8 +40,12 @@ Wszystkie symbole zakresu maja status PORTOWANY (z wektorem z uruchomionego weba
   `gra/data/terrain-improvements.json` + `LEGACY_KEY_ALIASES`, wynik liczy sam: `checks=11887 rozbieznosci=0` (`verify-m15-r1.log`).
 * Mutacje (`mutate-m15.py`): 15 mutantow, 14 wykrytych; 1 rownowazny (`Infinity` nie zwracane wprost: `inf/dzielnik = inf`
   i `max(podloga, inf) = inf`, wiec wynik identyczny - straznik jest tylko skrotem). Dowody: `mutation-evidence-r1.txt`,
-  `mutation-evidence-r1b.txt` (ponowienie dwoch mutantow, ktore w pierwszym przebiegu wypadly jako "nie kompiluje sie" przez
-  wyscig mtime przy szybkim przywroceniu pliku).
+  `mutation-evidence-r1b.txt` (ponowienie dwoch mutantow, ktore w pierwszym przebiegu wypadly jako "nie kompiluje sie"; PRZYCZYNA
+  tej klasyfikacji w r1 NIE jest udowodniona w logu - wczesniejsza hipoteza o wyscigu mtime zostala wycofana). Obrona r2:
+  klasyfikator w `mutate-m15.py` mial blad priorytetu operatorow (`A or B and not C` - `"error[" in out` wystarczalo samo), wiec
+  rozpoznanie "nie kompiluje sie" bylo zbyt luzne; zaostrzono je (`could not compile` albo kod 101 bez wynikow testow), dodano
+  wiersz `[diag]` z kodem wyjscia i liczba czerwonych testow dla kazdego mutanta, i powtorzono CALY przebieg:
+  `mutation-evidence-r2.txt`.
 
 ## 4. Dane (brak literalow)
 
@@ -68,3 +72,11 @@ Jedyny "stalo-jezykowy" element: granica indeksu tablicy JS `2^32 - 2` zapisana 
 * `Hex.ulepszenie: unknown` (`String(hex.ulepszenie ?? 'brak')`) jest w Rust `Option<String>`; wartosci nietekstowe
   (liczba, obiekt) nie wystepuja w typie `Ulepszenie` weba.
 * Bramki: `gate-fmt-r1.log`, `gate-clippy-r1.log`, `gate-test-r1.log` (kazdy z `EXIT=` na koncu).
+
+## 6. Obrona r2 (odpowiedzi na zarzuty Evaluatora)
+
+1. Wiersz 432: PRZYJETO - jeden status `DANE-JUZ-W-RUST` z osobnym uzasadnieniem i dowodem (tabela §2).
+2. Liczba PORTOWANY: PRZYJETO - 8 (wiersze 538-544 i 431), `hexHasRoad` to jeden wiersz (543); 1 x DANE-JUZ-W-RUST (432). Podsumowanie w §2.
+3. Uzasadnienie "wyscig mtime": PRZYJETO - nieudowodnione, wycofane (§3). Wykryto realny blad klasyfikatora w `mutate-m15.py`, zaostrzono go
+   i powtorzono caly przebieg: 15 mutantow, 14 wykrytych, 0 "KOMPILACJA", 1 rownowazny (`mutation-evidence-r2.txt`).
+   Bramki r2: `gate-fmt-r2.log`, `gate-clippy-r2.log`, `gate-test-r2.log` (EXIT=0, 682 testy zielone).
