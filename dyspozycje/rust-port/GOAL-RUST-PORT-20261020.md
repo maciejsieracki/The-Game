@@ -28,7 +28,7 @@ dotykające tych samych plików — zawsze sekwencyjnie, nigdy w tej samej fali.
 | # | Temat | Faza | Runda | runId Workflow | Status | Ostatnia aktualizacja |
 |---|---|---|---|---|---|---|
 | 1 | `R-RUSTPORT-P3-22-FLATTEN-STAGE2-Q1` | etap 2 mnożników (dyplomacja, handel, AI, barbarzyńcy, walka, wzrost, mapa; tabele stanów wg Q3=A) | 1/5 | `wf_6b09c6e4-c20` | DISPATCHED | 2026-10-22 |
-| 2 | `R-RUSTPORT-P4-12-MOD01-CORE-Q1` | MOD-01 rdzeń renderera (hex, fog, LOD, rnd, palety) — Opus 5.5 | 1/5 | `wf_911d780b-448` | DISPATCHED | 2026-10-22 |
+| 2 | `R-RUSTPORT-P4-17-MOD03-TERRAIN-DECOR-Q1` | MOD-03 dekor terenu (lasy, dżungla, góry/wzgórza, łąki, oaza, tarasy, river LOD) — Opus 5.5 | 1/5 | `wf_b84d99df-bfb` | DISPATCHED | 2026-10-22 |
 | 3 | `R-RUSTPORT-P4-13-MOD04-UNIT-CORE-Q1` | MOD-04 rdzeń modeli jednostek + routing D-MOD-9 — Opus 5.5 | 1/5 | `wf_590a7af3-626` | DISPATCHED | 2026-10-22 |
 | 4 | `R-RUSTPORT-P4-15-GPU-SPIKE-PREP-Q1` | RR-T1 przygotowanie spike'a GPU (crate `spike-gpu-embed`, instrukcja dla właściciela) — Opus 5.5 | 1/5 | `wf_d050c8fc-9a3` | DISPATCHED | 2026-10-22 |
 | 5 | `R-RUSTPORT-P5-1-UI-SHELL-SKELETON-Q1` | P5-1 szkielet frontendu (Vite + kopia paneli bez logiki + typy DTO + bramka importów) w `src-tauri/frontend-v2` — Opus 5.5 | 1/5 | `wf_bcb1b0ee-f7d` | DISPATCHED | 2026-10-22 |
