@@ -244,4 +244,21 @@ mod tests {
         assert_eq!(js_to_fixed(0.03125, 4), "0.0313");
         assert_eq!(js_to_fixed(-0.03125, 4), "-0.0313");
     }
+
+    /// `js_to_fixed(x, 3)` must agree with the core helper (P4.12), so a later
+    /// consolidation into `core::jsnum` is mechanical.
+    #[test]
+    fn to_fixed_d3_equals_core_to_fixed3() {
+        use crate::core::jsnum::js_to_fixed3;
+        let mut cases = vec![
+            0.0, -0.0, 0.0625, -0.0625, 0.1875, 1.0005, -1.0005, 2.5e-4, -4.44e-16, 123.456_5,
+        ];
+        // Step 1/256 is exact in binary and hits every exact 3-decimal tie (odd/16).
+        for i in -1792_i32..=1792 {
+            cases.push(f64::from(i) / 256.0);
+        }
+        for x in cases {
+            assert_eq!(js_to_fixed(x, 3), js_to_fixed3(x), "{x}");
+        }
+    }
 }

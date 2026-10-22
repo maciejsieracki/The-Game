@@ -105,9 +105,11 @@ Skrypt `dyspozycje/autobot/runs/R-RUSTPORT-P4-22-MOD13-MISC-Q1/mut.py` (podmiana
 
 ## 6. Ryzyka i propozycje
 
-- **R1 — sampler reliefu.** `ReliefSource` dla `Wzgorza`/`Gory` wymaga portu `powierzchniaReliefuY` (`teren-gory-wzgorza.ts`, raycast w bryłę wariantu). Proponowany osobny temat (teren/relief, prawdopodobnie razem z P4.17 `decor` lub terrain); do tego czasu `FlatRelief` jest dokładny poza tymi dwoma terenami.
+- **R1 — sampler reliefu.** `ReliefSource` dla `Wzgorza`/`Gory` wymaga portu `powierzchniaReliefuY` (`teren-gory-wzgorza.ts`, raycast w bryłę wariantu). Port samplera należy do MOD-03 (`P4-4-MODEL-CATALOG.md` §4.2 wiersz 3: `teren-gory-wzgorza` → `<renderer>/decor/**`), czyli do tematu P4.17 (`src/decor/**`), a NIE do nowego tematu. To korekta po uwadze 1 Evaluatora r1, zgodna z `P4-12-MOD01-CORE.md` Z2. Zależność integracyjna: po wejściu P4.17 podpiąć jego sampler jako `range::ReliefSource` i dodać wektor `relief=real` na mapie z `Wzgorza`/`Gory`. Do tego czasu `FlatRelief` jest dokładny poza tymi dwoma terenami.
 - **R2 — linie 1 px.** `LineSegments`/`Line` WebGL mają stałą szerokość 1 px; wgpu nie ma szerokich linii — decyzja ścieżki rysowania w RR-T5.
 - **R3 — rasteryzacja sprite'a ⚔** — D-MOD-6.
+- **R5 — `toFixed`.** `overlay::js_to_fixed(x, digits)` uogólnia `core::jsnum::js_to_fixed3` (P4.12). Przeniesienie do `core` wykracza poza allowlistę tego tematu, bo `src/core/**` należy do P4.12. Równoważność dla `digits = 3` przypina test `overlay::tests::to_fixed_d3_equals_core_to_fixed3`: siatka 1/256 na [−7, 7] obejmuje wszystkie remisy dziesiętne. Dzięki temu konsolidacja w osobnym temacie albo przy integracji jest mechaniczna. To dług techniczny z uwagi 2 Evaluatora r1.
+- **R6 — współdzielony scratch.** W r1 `git archive edb8fb56` rozpakowało się przez pomyłkę do katalogu `web/` innego agenta i nadpisało `web/gra` plikami z pinu `edb8fb56`. Treść jest identyczna tylko wtedy, gdy tamten agent też pracował na `edb8fb56`. Tego nie da się już sprawdzić (NIE_ZMIERZONO), bo katalog nie istnieje. Do orkiestratora: potwierdzić pin i SHA-256 wektorów tematu, który używał tego scratcha (uwaga 3 Evaluatora r1). Wektory MOD-13 nie zależą od tamtego katalogu: Evaluator zregenerował je z czystego `git archive` i dostał identyczne SHA-256.
 - **R4 — baza.** `origin/rust-port/parity-v2` przesunął się na `6d77d02e` w trakcie pracy; jedyna zmiana współdzielona to 1 linia `src/models.rs` (konflikt jednej linii rozwiązuje orkiestrator).
 
 ## 7. Allowlista i granice
