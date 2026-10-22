@@ -1,0 +1,7 @@
+$ (cwd rust-port/spike-gpu-embed) CARGO_INCREMENTAL=0 CARGO_TARGET_DIR=<scratchpad>/target-spike cargo clippy --locked --all-targets --target x86_64-pc-windows-msvc -- -D warnings
+# 2026-10-22T12:01:14Z  rustc 1.97.0 (2d8144b78 2026-07-07)  cargo 1.97.0 (c980f4866 2026-06-30)
+warning: spike-gpu-embed@0.1.0: GNU compiler is not supported for this target
+warning: spike-gpu-embed@0.1.0: GNU compiler is not supported for this target
+    Checking spike-gpu-embed v0.1.0 (/home/user/The-Game/.claude/worktrees/wf_d050c8fc-9a3-1/rust-port/spike-gpu-embed)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 3.01s
+EXIT=0

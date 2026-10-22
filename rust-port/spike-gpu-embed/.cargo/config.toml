@@ -1,0 +1,6 @@
+# MSRV-aware dependency resolution (cargo >= 1.84): `cargo update` /
+# `cargo generate-lockfile` prefer versions compatible with `rust-version`
+# (1.87) from Cargo.toml. Without this, a lock resolved on a newer toolchain
+# picked ordered-float 5.5.0 (requires Rust 1.90) and broke the declared MSRV.
+[resolver]
+incompatible-rust-versions = "fallback"

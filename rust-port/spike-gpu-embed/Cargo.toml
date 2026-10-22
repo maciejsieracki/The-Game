@@ -1,0 +1,67 @@
+[package]
+name = "spike-gpu-embed"
+version = "0.1.0"
+edition = "2021"
+# MSRV of wgpu 30.0.1 (same as rust-port/renderer).
+rust-version = "1.87"
+description = "Spike RR-T1: wgpu surface under a transparent Tauri webview (R-RUSTPORT-P4-15-GPU-SPIKE-PREP-Q1)"
+publish = false
+default-run = "spike-gpu-embed"
+
+# Standalone crate OUTSIDE every workspace (like rust-port/engine and
+# rust-port/renderer). The empty table stops cargo from looking for a parent
+# workspace.
+[workspace]
+
+# Features:
+# - `app` (DEFAULT): the real spike = Tauri window + wgpu + platform hooks.
+#   Needs the platform webview stack (Windows: WebView2, Linux: GTK3 +
+#   WebKitGTK 4.1 dev packages, macOS: WKWebView). This is what the owner runs:
+#   `cargo run --release --locked`.
+# - `gpu`: only the wgpu layer (offscreen self-test, frame rendering code).
+#   Builds without GTK/WebKit, so it can be checked in a headless container.
+# - no features (`--no-default-features`): pure CPU logic (report, statistics,
+#   regions, clock sync, memory parsers) with unit tests that run anywhere.
+[features]
+default = ["app"]
+gpu = ["dep:wgpu", "dep:pollster"]
+app = [
+    "gpu",
+    "dep:tauri",
+    "dep:tauri-build",
+    "dep:raw-window-handle",
+    "dep:windows",
+    "dep:gtk",
+]
+
+[dependencies]
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+# Same exact versions as src-tauri/Cargo.toml (tauri) and rust-port/renderer (wgpu).
+tauri = { version = "=2.11.5", optional = true, features = ["macos-private-api"] }
+wgpu = { version = "=30.0.1", optional = true }
+pollster = { version = "0.4", optional = true }
+raw-window-handle = { version = "0.6.2", optional = true }
+
+# Native platform APIs: ONLY crates that are already in the tauri lockfile
+# (src-tauri/Cargo.lock: windows 0.61.3, gtk 0.18.2), same exact versions, so
+# the types are the ones tauri/wry hand out (HWND, gtk::ApplicationWindow).
+[target.'cfg(windows)'.dependencies]
+windows = { version = "=0.61.3", optional = true, features = [
+    "Win32_Foundation",
+    "Win32_Graphics_Gdi",
+    "Win32_System_LibraryLoader",
+    "Win32_UI_Shell",
+    "Win32_UI_WindowsAndMessaging",
+] }
+
+[target.'cfg(any(target_os = "linux", target_os = "dragonfly", target_os = "freebsd", target_os = "netbsd", target_os = "openbsd"))'.dependencies]
+gtk = { version = "=0.18.2", optional = true }
+
+[build-dependencies]
+# Same exact version as src-tauri (tauri-build is part of the tauri toolchain:
+# generate_context! needs the env it sets).
+tauri-build = { version = "=2.6.3", optional = true, features = [] }
+
+[profile.release]
+debug = 1
