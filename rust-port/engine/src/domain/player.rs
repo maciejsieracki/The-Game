@@ -277,7 +277,8 @@ pub struct PlayerState {
     pub badana: Option<String>,
     #[serde(rename = "playerResearchTargetId")]
     pub player_research_target_id: Option<String>,
-    #[serde(rename = "researchQueue")]
+    // Web (playerState.ts:105-106): stary zapis bez pola daje [] - stad default.
+    #[serde(rename = "researchQueue", default)]
     pub research_queue: Vec<String>,
     pub era: i64,
     #[serde(rename = "pieniadzMnoznik")]
@@ -575,7 +576,24 @@ impl PlayerRules {
     }
 
     /// Web `researchStep` (playerState.ts:362): jeden przebieg badan konca tury. Mutuje `state`.
+    ///
+    /// Atomowe (konwencja silnika, jak recruitment/turn_economy): praca na kopii stanu, a `state`
+    /// jest nadpisany dopiero po sukcesie. Przy `Err` (brak kosztu w tabeli) `state` zostaje
+    /// nietkniety. Web nie ma sciezki bledu, wiec na danych gry zachowanie jest identyczne.
     pub fn research_step(
+        &self,
+        state: &mut PlayerState,
+        techs: &[Technologia],
+        gate: Option<&dyn ResearchGate>,
+        difficulty: Difficulty,
+    ) -> Result<ResearchStepResult, PlayerStateError> {
+        let mut work = state.clone();
+        let result = self.research_step_inner(&mut work, techs, gate, difficulty)?;
+        *state = work;
+        Ok(result)
+    }
+
+    fn research_step_inner(
         &self,
         state: &mut PlayerState,
         techs: &[Technologia],

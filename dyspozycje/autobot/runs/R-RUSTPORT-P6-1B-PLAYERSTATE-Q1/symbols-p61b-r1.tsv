@@ -26,6 +26,6 @@ playerState	enqueueResearchTarget	function	PORTOWANY	PlayerRules::enqueue_resear
 playerState	dequeueResearchTarget	function	PORTOWANY	player::dequeue_research_target; 57 wywolan (4 true, 53 false)
 playerState	clearResearchQueue	function	PORTOWANY	player::clear_research_queue
 playerState	getResearchPlanSnapshot	function	PORTOWANY	player::get_research_plan_snapshot
-zaleznosc	scaledResearchCost	function	DANE-JUZ-W-RUST	difficulty-cost.ts:86 (gracz, ownerId 0) = data/derived/research-costs.json (P3-19); PlayerRules::scaled_research_cost = lookup; dowod: wektor costs (288 = 32 tech x 3 tempa x 3 trudnosci z uruchomionego weba) + verify-p61b run_costs_and_tables (576 komorek tabeli, wszystkie 15 kolumn, formula z zrodla)
+zaleznosc	scaledResearchCost	function	DANE-JUZ-W-RUST	difficulty-cost.ts:86 (gracz, ownerId 0) = data/derived/research-costs.json (P3-19); PlayerRules::scaled_research_cost = lookup; dowod: wektor costs (288 = 32 tech x 3 tempa x 3 trudnosci z uruchomionego weba) + verify-p61b run_costs_and_tables (tabela 32 wiersze x 15 wartosci = 480 komorek kosztu, 577 sprawdzen grupy table, wszystkie 15 kolumn, formula z zrodla)
 zaleznosc	researchGatesMet	function	RUNDA-2	research.ts:234 (P6.17); w P6.1B tylko predykat (trait ResearchGate)
 zaleznosc	humanSeats / playerStateByHuman	main.ts	PORTOWANY	player::PlayerStateByHuman (main.ts:9040, 11321: niezalezny PlayerState per fotel, tworzony przy pierwszym uzyciu); test hot_seat_two_human_owners_have_independent_player_states + scenariusz hotseat-three-seats

@@ -833,3 +833,60 @@ fn error_missing_cost_for_unknown_tempo_and_mode() {
         }
     );
 }
+
+#[test]
+fn table_research_cost_rows_agree_with_tech_json() {
+    // Kod czyta koszt z research-costs.json po nazwie i ignoruje `Technologia.koszt_nauki`;
+    // ten test lapie ciche rozjechanie dwoch zrodel (bez pinow wartosci: tabela vs tech.json).
+    let file: TechFile = serde_json::from_str(TECH_JSON).unwrap();
+    let costs = parse_research_costs().unwrap();
+    assert_eq!(costs.wiersze.len(), file.technologie.len());
+    for t in &file.technologie {
+        let name = t.technologia.trim();
+        let rows: Vec<_> = costs
+            .wiersze
+            .iter()
+            .filter(|r| r.technologia == name)
+            .collect();
+        assert_eq!(rows.len(), 1, "wiersz kosztu dla {name}");
+        assert_eq!(
+            i64::from(rows[0].koszt_bazowy),
+            tech_cost(t),
+            "koszt_bazowy {name}"
+        );
+        assert_eq!(rows[0].epoka, t.epoka, "epoka {name}");
+    }
+}
+
+#[test]
+fn error_research_step_is_atomic_on_missing_cost() {
+    // Pierwszy tech jest w tabeli (zostalby ukonczony i zmutowalby stan), kolejny nie ma kosztu
+    // -> Err; `state` musi zostac nietkniety (konwencja silnika: atomowosc).
+    let web = web();
+    let tl = techs(&web["techsets"]["real"]);
+    let mut costs = parse_research_costs().unwrap();
+    costs.wiersze.retain(|r| r.technologia == "Rolnictwo");
+    for v in &mut costs.wiersze[0].wartosci {
+        v.koszt = 1;
+    }
+    let rules = PlayerRules::new(parse_player_state_params().unwrap(), costs);
+    let mut st = rules.create_player_state();
+    st.nauka = 1000.0;
+    st.player_research_target_id = Some("Rolnictwo".to_owned());
+    let before = st.clone();
+    let err = rules
+        .research_step(&mut st, &tl, None, Difficulty::Hard)
+        .unwrap_err();
+    assert!(matches!(err, PlayerStateError::MissingResearchCost { .. }));
+    assert_eq!(st, before, "Err nie moze zostawic czesciowej mutacji");
+}
+
+#[test]
+fn serde_missing_research_queue_defaults_to_empty() {
+    // Web (playerState.ts:105-106): stary zapis bez `researchQueue` daje [].
+    let rules = rules();
+    let mut v = serde_json::to_value(rules.create_player_state()).unwrap();
+    v.as_object_mut().unwrap().remove("researchQueue");
+    let st: PlayerState = serde_json::from_value(v).expect("stary zapis bez researchQueue");
+    assert!(st.research_queue.is_empty());
+}
