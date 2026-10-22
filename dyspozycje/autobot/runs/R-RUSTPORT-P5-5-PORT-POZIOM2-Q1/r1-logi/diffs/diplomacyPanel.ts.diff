@@ -1,0 +1,19 @@
+--- pin/gra/src/ui/diplomacyPanel.ts
++++ v2/src/ui/diplomacyPanel.ts
+@@ -7,7 +7,6 @@
+  *
+  * Panel v1.0 = podgląd + audiencja (D3). Callbacki wpina SILNIK.
+  */
+-import { formatEntityDisplayName } from '../game/display-names';
+ import {
+   civPennantHtml,
+   civPennantHtmlById,
+@@ -200,7 +199,7 @@
+ // ---------------------------------------------------------------------------
+ 
+ const PLACEHOLDER_RELATIONS: DiploRelation[] = [
+-  { civ: formatEntityDisplayName({ baseName: 'Sparta', isCityState: true }), isCityState: true, tier: 0, zaufanie: 3,  respekt: 70 },
++  { civ: 'Sparta · miasto-państwo', isCityState: true, tier: 0, zaufanie: 3,  respekt: 70 },
+   { civ: 'Hunowie',    tier: 1, zaufanie: 12, respekt: 50 },
+   { civ: 'Chińczycy',  tier: 2, zaufanie: 50, respekt: 30 },
+   { civ: 'Grecy',      tier: 3, zaufanie: 65, respekt: 40 },

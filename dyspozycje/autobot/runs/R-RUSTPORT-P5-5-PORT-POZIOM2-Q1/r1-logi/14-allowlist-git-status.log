@@ -1,0 +1,58 @@
+$ git status --short --untracked-files=all   (baza 98e11c25, przed git add)
+ M src-tauri/frontend-v2/PORTING-QUEUE.md
+ M src-tauri/frontend-v2/package.json
+ M src-tauri/frontend-v2/src/controller/mockCatalog.ts
+ M src-tauri/frontend-v2/src/main.ts
+ M src-tauri/frontend-v2/src/viewmodel/types.ts
+ M src-tauri/frontend-v2/tools/dom-harness/build.mjs
+ M src-tauri/frontend-v2/tools/pin-manifest.json
+?? dyspozycje/autobot/runs/R-RUSTPORT-P5-5-PORT-POZIOM2-Q1/.gitattributes
+?? dyspozycje/autobot/runs/R-RUSTPORT-P5-5-PORT-POZIOM2-Q1/01-operator-r1.md
+?? dyspozycje/autobot/runs/R-RUSTPORT-P5-5-PORT-POZIOM2-Q1/03-operator-obrona-r1.md
+?? dyspozycje/autobot/runs/R-RUSTPORT-P5-5-PORT-POZIOM2-Q1/r1-logi/05-dom-harness-level2.json
+?? dyspozycje/autobot/runs/R-RUSTPORT-P5-5-PORT-POZIOM2-Q1/r1-logi/diffs/armyStackHud.ts.diff
+?? dyspozycje/autobot/runs/R-RUSTPORT-P5-5-PORT-POZIOM2-Q1/r1-logi/diffs/buildModeHud.ts.diff
+?? dyspozycje/autobot/runs/R-RUSTPORT-P5-5-PORT-POZIOM2-Q1/r1-logi/diffs/diploListHud.ts.diff
+?? dyspozycje/autobot/runs/R-RUSTPORT-P5-5-PORT-POZIOM2-Q1/r1-logi/diffs/diplomacyPanel.ts.diff
+?? dyspozycje/autobot/runs/R-RUSTPORT-P5-5-PORT-POZIOM2-Q1/r1-logi/diffs/techTreeView.ts.diff
+?? dyspozycje/autobot/runs/R-RUSTPORT-P5-5-PORT-POZIOM2-Q1/r1-logi/diffs/unitInfoCard.ts.diff
+?? dyspozycje/autobot/runs/R-RUSTPORT-P5-5-PORT-POZIOM2-Q1/r1-logi/diffs/unitPanelHud.ts.diff
+?? dyspozycje/autobot/runs/R-RUSTPORT-P5-5-PORT-POZIOM2-Q1/r1-logi/diffs/unitReplacePicker.ts.diff
+?? dyspozycje/autobot/runs/R-RUSTPORT-P5-5-PORT-POZIOM2-Q1/r1-logi/diffs/wikiHubHud.ts.diff
+?? dyspozycje/rust-port/p5/P5-5-PORT-POZIOM2.md
+?? src-tauri/frontend-v2/src/ui/armyMergePickPanel.ts
+?? src-tauri/frontend-v2/src/ui/armySplitPanel.ts
+?? src-tauri/frontend-v2/src/ui/armyStackHud.ts
+?? src-tauri/frontend-v2/src/ui/assets/hero/hero-menu.png
+?? src-tauri/frontend-v2/src/ui/buildModeHud.ts
+?? src-tauri/frontend-v2/src/ui/cityCaptureNotice.ts
+?? src-tauri/frontend-v2/src/ui/cityForeignPick.ts
+?? src-tauri/frontend-v2/src/ui/cityUnitPick.ts
+?? src-tauri/frontend-v2/src/ui/contextPanelHud.ts
+?? src-tauri/frontend-v2/src/ui/diploListHud.ts
+?? src-tauri/frontend-v2/src/ui/diplomacyPanel.ts
+?? src-tauri/frontend-v2/src/ui/diplomacyPendingHud.ts
+?? src-tauri/frontend-v2/src/ui/diplomacyProposalBanner.ts
+?? src-tauri/frontend-v2/src/ui/gamePauseMenu.ts
+?? src-tauri/frontend-v2/src/ui/hotSeatHandoff.ts
+?? src-tauri/frontend-v2/src/ui/hudChip6c.ts
+?? src-tauri/frontend-v2/src/ui/interHumanDiplomacyHud.ts
+?? src-tauri/frontend-v2/src/ui/leaderBannersHud.ts
+?? src-tauri/frontend-v2/src/ui/mainMenu.ts
+?? src-tauri/frontend-v2/src/ui/mapToolbarHud.ts
+?? src-tauri/frontend-v2/src/ui/portLevel2.ts
+?? src-tauri/frontend-v2/src/ui/techTreeView.ts
+?? src-tauri/frontend-v2/src/ui/unitActionBarHtml.ts
+?? src-tauri/frontend-v2/src/ui/unitForeignPick.ts
+?? src-tauri/frontend-v2/src/ui/unitInfoCard.ts
+?? src-tauri/frontend-v2/src/ui/unitPanelHud.ts
+?? src-tauri/frontend-v2/src/ui/unitReplacePicker.ts
+?? src-tauri/frontend-v2/src/ui/wikiHubHud.ts
+?? src-tauri/frontend-v2/tools/dom-harness/mutate-level2.mjs
+?? src-tauri/frontend-v2/tools/dom-harness/run-level2.mjs
+$ ... | grep -vE ' (src-tauri/frontend-v2/|dyspozycje/rust-port/p5/P5-5-PORT-POZIOM2.md|dyspozycje/autobot/runs/R-RUSTPORT-P5-5-PORT-POZIOM2-Q1/)'   # ścieżki poza allowlistą; oczekiwane: brak (EXIT=1)
+EXIT=1
+$ ... | grep -E 'node_modules|/dist/|package-lock'   # oczekiwane: brak (EXIT=1)
+EXIT=1
+$ git diff --check
+EXIT=0

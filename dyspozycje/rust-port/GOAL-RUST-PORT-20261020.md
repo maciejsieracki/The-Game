@@ -27,7 +27,6 @@ dotykające tych samych plików — zawsze sekwencyjnie, nigdy w tej samej fali.
 
 | # | Temat | Faza | Runda | runId Workflow | Status | Ostatnia aktualizacja |
 |---|---|---|---|---|---|---|
-| 6 | `R-RUSTPORT-P5-5-PORT-POZIOM2-Q1` | P5.5 port paneli UI poziom 1–2 niecykliczne — Opus 5.5 | 1/5 | `wf_a26c16b2-31b` | DISPATCHED | 2026-10-22 |
 | 5 | `R-RUSTPORT-P6-4-JEDNOSTKI-RUCH-Q1` | P6.4 `embarkation`, `planned-march`, `rally-point`, `scout-auto-explore` — Operator Sonnet | 1/5 | `wf_9ed3ca33-8bb` | DISPATCHED | 2026-10-22 |
 | 6 | `R-RUSTPORT-P4-29-TEXT-FONTS-Q1` | RR-T8b font + tekst (ab_glyph, rustybuzz, Liberation/DejaVu) — Opus 5.5 | 1/5 | `wf_ba6243e3-648` | DISPATCHED | 2026-10-22 |
 | 1 | `R-RUSTPORT-P6-M00-MAPGEN-SZKIELET-Q1` | P6.M00 szkielet generatora mapy (puste moduły `mapgen/*`) — Operator Sonnet | 1/5 | `wf_1f434c12-34f` | DISPATCHED | 2026-10-22 |

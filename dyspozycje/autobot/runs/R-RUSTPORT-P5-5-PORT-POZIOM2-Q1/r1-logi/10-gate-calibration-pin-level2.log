@@ -1,0 +1,16 @@
+$ (cwd = <pin>/gra/src/ui) node tools/check-no-logic-imports.mjs <26 modułów P5.5>
+armyStackHud.ts:16: [CORE:game] import type { UnitCardCombatDisplay } from '../game/unit-card-stats';
+buildModeHud.ts:7: [CORE:render] import type { ImprovementKey } from '../render/improvements';
+buildModeHud.ts:17: [CORE:game] import type { UlepszeniaFocus, UlepszeniaTryb, UlepszeniaPracaPercent, UlepszeniaEmpirePolicy } from '../game/cities';
+buildModeHud.ts:25: [CORE:game] } from '../game/cities';
+diploListHud.ts:5: [CORE:game] import { formatDiploCivListLines } from '../game/diplomacy-display';
+diplomacyPanel.ts:10: [CORE:game] import { formatEntityDisplayName } from '../game/display-names';
+techTreeView.ts:18: [CORE:data] import techData from '../../data/tech.json';
+techTreeView.ts:21: [CORE:game] import { terrainUnlockLabelsForTech } from '../game/improvement-tech';
+techTreeView.ts:22: [CORE:game] import { TEMPO_GRY, type TempoGry } from '../game/tech-tempo';
+techTreeView.ts:23: [CORE:game] import { scaledResearchCost, type GameDifficulty } from '../game/difficulty-cost';
+unitInfoCard.ts:27: [CORE:data] import type { GameData, UnitDef } from '../data/loader';
+unitInfoCard.ts:31: [CORE:units] import { categoryOf } from '../units/setup';
+wikiHubHud.ts:5: [CORE:data] import wikiBundle from '../data/wikiBundle.json';
+check-no-logic-imports: cele=leaderBannersHud.ts,cityCaptureNotice.ts,cityForeignPick.ts,cityUnitPick.ts,gamePauseMenu.ts,hotSeatHandoff.ts,mainMenu.ts,unitForeignPick.ts,buildModeHud.ts,diplomacyPanel.ts,techTreeView.ts,unitInfoCard.ts,wikiHubHud.ts,unitPanelHud.ts,contextPanelHud.ts,diplomacyProposalBanner.ts,hudChip6c.ts,mapToolbarHud.ts,armyMergePickPanel.ts,armySplitPanel.ts,diplomacyPendingHud.ts,interHumanDiplomacyHud.ts,unitReplacePicker.ts,armyStackHud.ts,diploListHud.ts,unitActionBarHtml.ts plików=26 plików_z_trafieniami=7 trafień=13 {"CORE:game":8,"CORE:render":1,"CORE:data":3,"CORE:units":1}
+EXIT=1

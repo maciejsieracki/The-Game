@@ -1,0 +1,37 @@
+$ node tools/dom-harness/mutate-level2.mjs --pin-dir <PIN_DIR>
+L1 diplomacyPanel: placeholder miasta-państwa bez dopisku: EXIT=1 WYKRYTA [diplomacyPanel.ts] dom-harness-level2: pin=edb8fb56 modułów=1 przypadków=35 różnic=2 jsdomErrors=0 consoleErrors=0
+L2 diploListHud: linie karty z DTO bez perspektywy: EXIT=1 WYKRYTA [diploListHud.ts] dom-harness-level2: pin=edb8fb56 modułów=1 przypadków=80 różnic=53 jsdomErrors=0 consoleErrors=0
+L3 unitPanelHud: odznaki z DTO ignorowane (ścieżka B): EXIT=1 WYKRYTA [unitPanelHud.ts] dom-harness-level2: pin=edb8fb56 modułów=1 przypadków=27 różnic=14 jsdomErrors=0 consoleErrors=0
+L4 armyStackHud: odznaki z DTO ignorowane (pancerz): EXIT=1 WYKRYTA [armyStackHud.ts] dom-harness-level2: pin=edb8fb56 modułów=1 przypadków=237 różnic=98 jsdomErrors=0 consoleErrors=0
+L5 buildModeHud: „stać na ulepszenie” z DTO ignorowane: EXIT=1 WYKRYTA [buildModeHud.ts] dom-harness-level2: pin=edb8fb56 modułów=1 przypadków=138 różnic=26 jsdomErrors=0 consoleErrors=0
+L6 buildModeHud: zakres automatu ulepszeń z katalogu −1: EXIT=1 WYKRYTA [buildModeHud.ts] dom-harness-level2: pin=edb8fb56 modułów=1 przypadków=138 różnic=96 jsdomErrors=0 consoleErrors=0
+L7 buildModeHud: cap puli imperium z katalogu +1: EXIT=1 WYKRYTA [buildModeHud.ts] dom-harness-level2: pin=edb8fb56 modułów=1 przypadków=138 różnic=96 jsdomErrors=0 consoleErrors=0
+L8 techTreeView: lista technologii z katalogu bez pierwszej: EXIT=1 WYKRYTA [techTreeView.ts] dom-harness-level2: pin=edb8fb56 modułów=1 przypadków=210 różnic=210 jsdomErrors=0 consoleErrors=0
+L9 techTreeView: etykiety ulepszeń z katalogu ignorowane: EXIT=1 WYKRYTA [techTreeView.ts] dom-harness-level2: pin=edb8fb56 modułów=1 przypadków=210 różnic=2 jsdomErrors=0 consoleErrors=0
+L10 techTreeView: mnożnik tempa z katalogu ignorowany: EXIT=1 WYKRYTA [techTreeView.ts] dom-harness-level2: pin=edb8fb56 modułów=1 przypadków=210 różnic=210 jsdomErrors=0 consoleErrors=0
+L11 techTreeView: koszt efektywny z DTO ignorowany: EXIT=1 WYKRYTA [techTreeView.ts] dom-harness-level2: pin=edb8fb56 modułów=1 przypadków=210 różnic=210 jsdomErrors=0 consoleErrors=0
+L12 techTreeView: tempo gry z DTO ignorowane: EXIT=1 WYKRYTA [techTreeView.ts] dom-harness-level2: pin=edb8fb56 modułów=1 przypadków=210 różnic=123 jsdomErrors=0 consoleErrors=0
+L13 unitInfoCard: kategoria „tylko nazwa” zamiast wiersza (ścieżka zapasowa): EXIT=1 WYKRYTA [unitInfoCard.ts] dom-harness-level2: pin=edb8fb56 modułów=1 przypadków=159 różnic=31 jsdomErrors=0 consoleErrors=150
+L14 wikiHubHud: encyklopedia z katalogu bez pierwszego hasła: EXIT=1 WYKRYTA [wikiHubHud.ts] dom-harness-level2: pin=edb8fb56 modułów=1 przypadków=390 różnic=33 jsdomErrors=0 consoleErrors=0
+L15 wikiHubHud: poradnik z katalogu bez pierwszego rozdziału: EXIT=1 WYKRYTA [wikiHubHud.ts] dom-harness-level2: pin=edb8fb56 modułów=1 przypadków=390 różnic=8 jsdomErrors=0 consoleErrors=0
+L16 unitReplacePicker: „stać na dopłatę” z DTO ignorowane: EXIT=1 WYKRYTA [unitReplacePicker.ts] dom-harness-level2: pin=edb8fb56 modułów=1 przypadków=24 różnic=5 jsdomErrors=0 consoleErrors=0
+L17 diplomacyPanel: suma relacji — inny cap: EXIT=1 WYKRYTA [diplomacyPanel.ts] dom-harness-level2: pin=edb8fb56 modułów=1 przypadków=35 różnic=6 jsdomErrors=0 consoleErrors=0
+L18 armySplitPanel: „co najmniej jedna zostaje” wyłączone: EXIT=1 WYKRYTA [armySplitPanel.ts] dom-harness-level2: pin=edb8fb56 modułów=1 przypadków=23 różnic=1 jsdomErrors=0 consoleErrors=0
+L19 interHumanDiplomacyHud: domyślna liczba tur paktu: EXIT=1 WYKRYTA [interHumanDiplomacyHud.ts] dom-harness-level2: pin=edb8fb56 modułów=1 przypadków=67 różnic=40 jsdomErrors=0 consoleErrors=0
+L20 kopia: leaderBannersHud — klasa banera: EXIT=1 WYKRYTA [leaderBannersHud.ts] dom-harness-level2: pin=edb8fb56 modułów=1 przypadków=2 różnic=1 jsdomErrors=0 consoleErrors=0
+L21 kopia: cityCaptureNotice — nagłówek bilansu: EXIT=1 WYKRYTA [cityCaptureNotice.ts] dom-harness-level2: pin=edb8fb56 modułów=1 przypadków=36 różnic=3 jsdomErrors=0 consoleErrors=0
+L22 kopia: cityForeignPick — etykieta akcji: EXIT=1 WYKRYTA [cityForeignPick.ts] dom-harness-level2: pin=edb8fb56 modułów=1 przypadków=27 różnic=11 jsdomErrors=0 consoleErrors=0
+L23 kopia: cityUnitPick — warunek stosu: EXIT=1 WYKRYTA [cityUnitPick.ts] dom-harness-level2: pin=edb8fb56 modułów=1 przypadków=36 różnic=3 jsdomErrors=0 consoleErrors=0
+L24 kopia: gamePauseMenu — przycisk powrotu: EXIT=1 WYKRYTA [gamePauseMenu.ts] dom-harness-level2: pin=edb8fb56 modułów=1 przypadków=57 różnic=44 jsdomErrors=0 consoleErrors=0
+L25 kopia: hotSeatHandoff — przycisk: EXIT=1 WYKRYTA [hotSeatHandoff.ts] dom-harness-level2: pin=edb8fb56 modułów=1 przypadków=15 różnic=15 jsdomErrors=0 consoleErrors=0
+L26 kopia: mainMenu — ekran pożegnalny: EXIT=1 WYKRYTA [mainMenu.ts] dom-harness-level2: pin=edb8fb56 modułów=1 przypadków=66 różnic=42 jsdomErrors=354 consoleErrors=0
+L27 kopia: unitForeignPick — etykieta akcji: EXIT=1 WYKRYTA [unitForeignPick.ts] dom-harness-level2: pin=edb8fb56 modułów=1 przypadków=27 różnic=11 jsdomErrors=0 consoleErrors=0
+L28 kopia: contextPanelHud — kontener komunikatu: EXIT=1 WYKRYTA [contextPanelHud.ts] dom-harness-level2: pin=edb8fb56 modułów=1 przypadków=3 różnic=2 jsdomErrors=0 consoleErrors=0
+L29 kopia: diplomacyProposalBanner — nagłówek: EXIT=1 WYKRYTA [diplomacyProposalBanner.ts] dom-harness-level2: pin=edb8fb56 modułów=1 przypadków=4 różnic=1 jsdomErrors=0 consoleErrors=0
+L30 kopia: hudChip6c — separator: EXIT=1 WYKRYTA [hudChip6c.ts] dom-harness-level2: pin=edb8fb56 modułów=1 przypadków=46 różnic=1 jsdomErrors=0 consoleErrors=0
+L31 kopia: mapToolbarHud — tytuł przycisku miast: EXIT=1 WYKRYTA [mapToolbarHud.ts] dom-harness-level2: pin=edb8fb56 modułów=1 przypadków=27 różnic=26 jsdomErrors=0 consoleErrors=0
+L32 kopia: armyMergePickPanel — przycisk: EXIT=1 WYKRYTA [armyMergePickPanel.ts] dom-harness-level2: pin=edb8fb56 modułów=1 przypadków=20 różnic=11 jsdomErrors=0 consoleErrors=0
+L33 kopia: diplomacyPendingHud — przycisk: EXIT=1 WYKRYTA [diplomacyPendingHud.ts] dom-harness-level2: pin=edb8fb56 modułów=1 przypadków=21 różnic=12 jsdomErrors=0 consoleErrors=0
+L34 kopia: unitActionBarHtml — kolejność akcji: EXIT=1 WYKRYTA [unitActionBarHtml.ts] dom-harness-level2: pin=edb8fb56 modułów=1 przypadków=7 różnic=3 jsdomErrors=0 consoleErrors=0
+mutate-level2: mutacji=34 niewykrytych=0 (pliki przywrócone bajtowo)
+EXIT=0

@@ -1,0 +1,21 @@
+$ dla m w <17 kopii .ts + assets/hero/hero-menu.png>: git ls-tree edb8fb56 gra/src/ui/<m>  vs  git hash-object src-tauri/frontend-v2/src/ui/<m>
+leaderBannersHud.ts            pin=658bb2f423c1944eb0268c8bd4bfd1c1e4eb863c v2=658bb2f423c1944eb0268c8bd4bfd1c1e4eb863c ZGODNY
+cityCaptureNotice.ts           pin=be2ee8cc4670ee20ccc34b0b9f0a5cd05f9227d2 v2=be2ee8cc4670ee20ccc34b0b9f0a5cd05f9227d2 ZGODNY
+cityForeignPick.ts             pin=a197066db49a623e4522c6a91fe2918a880bc2ce v2=a197066db49a623e4522c6a91fe2918a880bc2ce ZGODNY
+cityUnitPick.ts                pin=c055d580e9b4b0fc432cd3877aa17ef11b822667 v2=c055d580e9b4b0fc432cd3877aa17ef11b822667 ZGODNY
+gamePauseMenu.ts               pin=78ffb69bef8911cf12769e367ec9dfb0548f1c16 v2=78ffb69bef8911cf12769e367ec9dfb0548f1c16 ZGODNY
+hotSeatHandoff.ts              pin=6a59bce7279163c9be827aa3f5ec4a7cd25e628e v2=6a59bce7279163c9be827aa3f5ec4a7cd25e628e ZGODNY
+mainMenu.ts                    pin=2e3ab5a89c01333d52a386ba61fa40f86911af60 v2=2e3ab5a89c01333d52a386ba61fa40f86911af60 ZGODNY
+unitForeignPick.ts             pin=29147f5930f4a4149d17584882a1f74b5eb1714c v2=29147f5930f4a4149d17584882a1f74b5eb1714c ZGODNY
+contextPanelHud.ts             pin=1bdf70ac7faf71c8b7706b83311ed264a21ea43f v2=1bdf70ac7faf71c8b7706b83311ed264a21ea43f ZGODNY
+diplomacyProposalBanner.ts     pin=d5758c107dd3f590c88ae59eb7507f1453be291e v2=d5758c107dd3f590c88ae59eb7507f1453be291e ZGODNY
+hudChip6c.ts                   pin=527b65fe7caf499067e92827e819259270ee9613 v2=527b65fe7caf499067e92827e819259270ee9613 ZGODNY
+mapToolbarHud.ts               pin=9be11e466d284d0e6d143d139b6f129cfa75ec4c v2=9be11e466d284d0e6d143d139b6f129cfa75ec4c ZGODNY
+armyMergePickPanel.ts          pin=0b289eb6c9f8791ef13510456472603ce4001d8d v2=0b289eb6c9f8791ef13510456472603ce4001d8d ZGODNY
+armySplitPanel.ts              pin=b265b0b7bd762be24a9435e88c605dcbc60de3ee v2=b265b0b7bd762be24a9435e88c605dcbc60de3ee ZGODNY
+diplomacyPendingHud.ts         pin=6fa566ebb8e05bc4d507e941d6a121aa273e4cc8 v2=6fa566ebb8e05bc4d507e941d6a121aa273e4cc8 ZGODNY
+interHumanDiplomacyHud.ts      pin=2d09c11bcfd00d043e1b830870570c94df0e9b0e v2=2d09c11bcfd00d043e1b830870570c94df0e9b0e ZGODNY
+unitActionBarHtml.ts           pin=8368087c0b6dba524ff31163af77cf952c8a0875 v2=8368087c0b6dba524ff31163af77cf952c8a0875 ZGODNY
+assets/hero/hero-menu.png      pin=bbb2dc01f6d488162a8afa0623174a87e6ba2185 v2=bbb2dc01f6d488162a8afa0623174a87e6ba2185 ZGODNY
+kopie: zgodnych=18 niezgodnych=0
+EXIT=0

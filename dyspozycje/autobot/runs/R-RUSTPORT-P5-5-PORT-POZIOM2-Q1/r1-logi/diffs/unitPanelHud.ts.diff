@@ -1,0 +1,27 @@
+--- pin/gra/src/ui/unitPanelHud.ts
++++ v2/src/ui/unitPanelHud.ts
+@@ -9,6 +9,7 @@
+   MAP_UNIT_1E_SHARED_CSS,
+ } from './mapUnitHudSkin';
+ import { unitIconSvg } from './icons/brandAssets';
++import type { UnitCardBadgesDto } from '../viewmodel/types';
+ import {
+   buildUnitCardStatusSectionHtml,
+   pathStatusRowHasChips,
+@@ -51,6 +52,8 @@
+   sentry?: boolean;
+   ufortyfikowanyWPolu?: boolean;
+   oblegaCityName?: string;
++  /** P5.5: poziomy odznak ścieżek + gwiazdki weterana z Rust (`UnitCardDto.badges`, P5-0 §6.8; wymóg `unitCardStatus.ts` od P5.3). */
++  badges: UnitCardBadgesDto;
+ }
+ 
+ export interface UnitPanelHudConfig {
+@@ -133,6 +136,7 @@
+       sentry: u.sentry,
+       ufortyfikowanyWPolu: u.ufortyfikowanyWPolu,
+       oblegaCityName: u.oblegaCityName,
++      badges: u.badges,
+       // R-STATUS-PRZYCZYNA-CIERPIENIA-Q1=C: głód wojska + deficyt Złota.
+       ...pickUnitSufferingFields(u),
+       esc,
