@@ -4,6 +4,7 @@
 //! shared `geom` meshes (P4.3 §7.3 pt 2).
 //!
 //! Topics: **RR-T7..RR-T7n** (one sub-module per batch). Empty until the
-//! first batch lands.
+//! first batch lands (now: `unit_core`, `wonders`).
 
+pub mod unit_core;
 pub mod wonders;
