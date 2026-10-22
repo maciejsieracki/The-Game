@@ -27,9 +27,9 @@ dotykające tych samych plików — zawsze sekwencyjnie, nigdy w tej samej fali.
 
 | # | Temat | Faza | Runda | runId Workflow | Status | Ostatnia aktualizacja |
 |---|---|---|---|---|---|---|
-| 1 | `R-RUSTPORT-P6-1B-PLAYERSTATE-Q1` | P6.1B `playerState` (stan gracza, tabele PIENIADZ_MNOZNIK/RESEARCH_QUEUE_MAX, hot-seat) — Operator Sonnet | 1/5 | (patrz niżej) | DISPATCHED | 2026-10-22 |
-| 5 | `R-RUSTPORT-P6-1C-START-KLASTRA-Q1` | P6.1C `cluster-start`, `inca-llama-seed`, `braz-access` — Operator Sonnet | 1/5 | (patrz niżej) | DISPATCHED | 2026-10-22 |
-| 6 | `R-RUSTPORT-P6-1D-CIV-BONUSY-NAZWY-Q1` | P6.1D `city-names-pool`, `civ-bonuses` — Operator Sonnet | 1/5 | (patrz niżej) | DISPATCHED | 2026-10-22 |
+| 1 | `R-RUSTPORT-P6-1B-PLAYERSTATE-Q1` | P6.1B `playerState` (stan gracza, tabele PIENIADZ_MNOZNIK/RESEARCH_QUEUE_MAX, hot-seat) — Operator Sonnet | 1/5 | `wf_5fbe99b9-a41` | DISPATCHED | 2026-10-22 |
+| 5 | `R-RUSTPORT-P6-1C-START-KLASTRA-Q1` | P6.1C `cluster-start`, `inca-llama-seed`, `braz-access` — Operator Sonnet | 1/5 | `wf_837b3cd3-e34` | DISPATCHED | 2026-10-22 |
+| 6 | `R-RUSTPORT-P6-1D-CIV-BONUSY-NAZWY-Q1` | P6.1D `city-names-pool`, `civ-bonuses` — Operator Sonnet | 1/5 | `wf_5a999a56-eb6` | DISPATCHED | 2026-10-22 |
 | 2 | `R-RUSTPORT-P4-27-SCENE-UNIFY-Q1` | ujednolicenie typu drzewa sceny (decor, wonders, unit_core, units_*, improvements, cities, misc) — Opus 5.5 | 1/5 | `wf_f2947d22-ac9` | DISPATCHED | 2026-10-22 |
 | 3 | `R-RUSTPORT-P5-4-PORT-CYKL-C4-Q1` | P5-4 portowanie cyklu C4 (entityCards, science*, techDiscoveryNotice…) — Opus 5.5 | 1/5 | `wf_3a3da300-198` | DISPATCHED | 2026-10-22 |
 | 4 | `R-RUSTPORT-P4-28-RASTER-SHAPES-Q1` | RR-T8a rasteryzator kształtów (tiny-skia, D-TXT-6=A) — Opus 5.5 | 1/5 | `wf_99676387-673` | DISPATCHED | 2026-10-22 |
