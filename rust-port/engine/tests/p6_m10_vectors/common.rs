@@ -65,7 +65,12 @@ pub fn fv(v: &Value) -> f64 {
 }
 
 pub fn same_f64(got: f64, want: f64) -> bool {
-    got.to_bits() == want.to_bits() || (got.is_nan() && want.is_nan())
+    // Porownanie BITOWE (rozroznia 0 i -0, kazda inna wartosc musi miec identyczne bity).
+    // Jedyny wyjatek: NaN. W JS istnieje jedna wartosc NaN (ECMAScript: brak obserwowalnego
+    // ladunku/znaku), a wektory zapisuja ja tekstem "NaN"; Rust produkuje NaN o bitach zaleznych
+    // od instrukcji (0.0/0.0 na x86 daje 0xFFF8...), wiec oba NaN sprowadzamy do kanonicznego.
+    let canon = |x: f64| if x.is_nan() { f64::NAN } else { x };
+    canon(got).to_bits() == canon(want).to_bits()
 }
 
 pub fn assert_f64(got: f64, want: f64, ctx: &str) {

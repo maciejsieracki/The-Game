@@ -26,6 +26,7 @@ MUTATIONS = [
     ("dev-space-disk-r2", LIB, "let r2 = radius.min(-dq + radius);", "let r2 = radius.min(-dq + radius + 1);", 2),
     ("habitable-shallow-sea", LIB, "!matches!(t, Terrain::Sea | Terrain::Mountains | Terrain::ShallowSea)", "!matches!(t, Terrain::Sea | Terrain::Mountains)", 0),
     ("group-masses-ascending", LIB, "js_array_sort_by(&mut masses, |a, b| b.len() as f64 - a.len() as f64);", "js_array_sort_by(&mut masses, |a, b| a.len() as f64 - b.len() as f64);", 0),
+    ("group-masses-no-sort", LIB, "js_array_sort_by(&mut masses, |a, b| b.len() as f64 - a.len() as f64);", "let _ = &mut masses;", 0),
     ("group-masses-bfs-not-dfs", LIB, "while let Some(cur) = stack.pop() {", "while let Some(cur) = (if stack.is_empty() { None } else { Some(stack.remove(0)) }) {", 0),
     ("timsort-min-gallop", LIB, "const MIN_GALLOP_WINS: isize = 7;", "const MIN_GALLOP_WINS: isize = 6;", 0),
     ("timsort-min-run", LIB, "const MIN_RUN_THRESHOLD: usize = 64;", "const MIN_RUN_THRESHOLD: usize = 32;", 0),
@@ -67,12 +68,16 @@ def mutate_table(text, key):
     return text[: m.start(2)] + NEW_VALUE[key] + text[m.end(2) :]
 
 
-# Mutacje ROWNOWAZNE (analiza, nie ma testu ktory moglby je wykryc) - patrz P6-M10 §5a:
-#  - player-gate-ge-to-gt: `mass_size >= scaled_min` vs `>`; scaled_min >= 30 > PLAYER_START_MIN_MASS_HEXES (25),
-#    wiec dla mass_size == scaled_min drugi warunek i tak zwraca true.
-#  - enforce-drop-moving-to-empty: relokowany srodek pochodzi z cwiartki o obciazeniu >= 2, wiec
-#    przeniesienie do pustej cwiartki ZAWSZE zwieksza liczbe zajetych cwiartek.
-#  - table-sentinel-10: sentinel 999 uzywany tylko gdy brak srodkow => wszystkie minExist rowne.
+# Mutacje ROWNOWAZNE (analiza, nie ma testu ktory moglby je wykryc) - uzasadnienie tez w P6-M10 §6a.
+# Sa jawnie WYLACZONE z listy MUTATIONS i raportowane w podsumowaniu (EQUIVALENT), zeby nie znikaly po cichu:
+EQUIVALENT = {
+    "player-gate-ge-to-gt": "`mass_size >= scaled_min` vs `>`; scaled_min >= 30 > PLAYER_START_MIN_MASS_HEXES (25), "
+                            "wiec dla mass_size == scaled_min drugi warunek i tak zwraca true",
+    "enforce-drop-moving-to-empty": "relokowany srodek pochodzi z cwiartki o obciazeniu >= 2, wiec przeniesienie do "
+                                    "pustej cwiartki ZAWSZE zwieksza liczbe zajetych cwiartek",
+    "table-sentinel-10": "sentinel 999 (sentinel_brak_srodkow) uzywany tylko gdy brak srodkow => wszystkie minExist rowne "
+                         "dla wszystkich kandydatow, nie wplywa na porzadek ani pasmo wyboru",
+}
 if len(sys.argv) > 1:
     wanted = set(sys.argv[1:])
     MUTATIONS = [m for m in MUTATIONS if m[0] in wanted]
@@ -102,7 +107,7 @@ try:
         compile_err = "error[" in out or "could not compile" in out
         open(path, "w", encoding="utf-8").write(text)
         if compile_err:
-            print(f"BLAD-KOMPILACJI {mid}")
+            print(f"BLAD-KOMPILACJI {mid}: " + " | ".join(l for l in out.splitlines() if "error" in l)[:300])
             survived.append(mid + " (blad kompilacji)")
         elif failed:
             detected += 1
@@ -115,5 +120,6 @@ finally:
     for p, t in orig.items():
         open(p, "w", encoding="utf-8").write(t)
 same = all(open(p, encoding="utf-8").read() == t for p, t in orig.items())
+print(f"ROWNOWAZNE (wylaczone z listy, patrz §6a): {sorted(EQUIVALENT)}")
 print(f"PODSUMOWANIE: wykryte {detected}/{len(MUTATIONS)}, przezyly: {survived}, pliki przywrocone: {same}")
 sys.exit(0 if not survived and same else 1)
