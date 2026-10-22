@@ -50,7 +50,7 @@ Zakres web per plik jest w komentarzach `//!` danego pliku (zgodny z kolumna "za
 
 ## 4. Test
 
-`rust-port/engine/tests/p6_m00_skeleton.rs` (5 testow): moduly kompiluja sie i sa publiczne (`use civ_engine::domain::{mapgen, ...}` oraz wszystkie 22 podmoduly), lista plikow/modulow zgodna z wierszem M00 tabeli P6-25 §6 zapisanym w runie (`dyspozycje/autobot/runs/R-RUSTPORT-P6-M00-MAPGEN-SZKIELET-Q1/p6-25-sec6-m00-row.txt`, linia 740 dokumentu), pliki zawieraja wylacznie `//!`, `mapgen/mod.rs` deklaruje dokladnie moduly z dokumentu i nie ma plikow-sierot, `domain/mod.rs` deklaruje moduly szkieletu. Dodatkowo `skeleton_headers_name_full_owner_ids_from_table` porownuje pelne ID wlasciciela z naglowka `//!` kazdego pliku z kolumna "allowlista Rust" wierszy M01..M18 (`p6-25-sec6-rows-m00-m18.txt`, linie 740-765 P6-25); wyjatek jawny: `mapgen/types.rs` = M01 (ZALOZENIE Z2; wiersz M01 nie wymienia pliku). Test czerwienieje przy blednym wlascicielu (mutacja M04->M99 sprawdzona). Zalezy od artefaktu w runie, bo tak wymagal dispatch; run jest trwalym zapisem audytu. Bez pinow wartosci.
+`rust-port/engine/tests/p6_m00_skeleton.rs` (5 testow; po M14 patrz §8): moduly kompiluja sie i sa publiczne (`use civ_engine::domain::{mapgen, ...}` oraz wszystkie 22 podmoduly), lista plikow/modulow zgodna z wierszem M00 tabeli P6-25 §6 zapisanym w runie (`dyspozycje/autobot/runs/R-RUSTPORT-P6-M00-MAPGEN-SZKIELET-Q1/p6-25-sec6-m00-row.txt`, linia 740 dokumentu), pliki zawieraja wylacznie `//!`, `mapgen/mod.rs` deklaruje dokladnie moduly z dokumentu i nie ma plikow-sierot, `domain/mod.rs` deklaruje moduly szkieletu. Dodatkowo `skeleton_headers_name_full_owner_ids_from_table` porownuje pelne ID wlasciciela z naglowka `//!` kazdego pliku z kolumna "allowlista Rust" wierszy M01..M18 (`p6-25-sec6-rows-m00-m18.txt`, linie 740-765 P6-25); wyjatek jawny: `mapgen/types.rs` = M01 (ZALOZENIE Z2; wiersz M01 nie wymienia pliku). Test czerwienieje przy blednym wlascicielu (mutacja M04->M99 sprawdzona). Zalezy od artefaktu w runie, bo tak wymagal dispatch; run jest trwalym zapisem audytu. Bez pinow wartosci.
 
 ## 5. Bramki (surowe logi w runie, EXIT=0)
 
@@ -70,3 +70,7 @@ Zakres web per plik jest w komentarzach `//!` danego pliku (zgodny z kolumna "za
 ## 7. Granice
 
 Zero zmian w `data/**`, `bridge.rs`, `Cargo.toml`, `gra/**`, renderer, `src-tauri`; `Cargo.lock`/`target` niecommitowane; `domain/mod.rs` zmieniony tylko addytywnie (6 deklaracji `pub mod`). Mozliwy konflikt addytywny w `mod.rs` z rownoleglym P6.4 - do rozwiazania przez orkiestratora.
+
+## 8. Zmiana po M14: test szkieletu
+
+Test `files_exist_and_are_empty_doc_only` zmieniono na `files_exist_and_start_with_owner_doc_header`. Wymagal, by CALY plik szkieletu byl komentarzami `//!`, wiec po wypelnieniu pliku przez temat M* byl czerwony (blad projektu testu, nie kodu). Teraz test nadal wymaga: (1) istnienia kazdego pliku z listy, (2) bloku `//!` na poczatku pliku zawierajacego pelne ID tematu-wlasciciela zgodne z tabela z pliku w runie, (3) ze pierwszy niepusty wiersz to `//!`. Usunieto wylacznie wymog, ze caly plik to komentarze. Pozostale testy bez zmian.

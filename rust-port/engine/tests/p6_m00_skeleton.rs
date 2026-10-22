@@ -1,5 +1,8 @@
 //! P6.M00 - szkielet generatora mapy: moduly kompiluja sie, sa publiczne,
 //! a lista nazw zgadza sie z wierszem M00 tabeli P6-25 §6 (plik w runie).
+//! Pliki szkieletu musza istniec i zaczynac sie od bloku `//!` z pelnym ID
+//! tematu-wlasciciela; po wypelnieniu przez temat M* moga zawierac kod
+//! (zmiana po M14: wczesniej wymagano, by caly plik byl komentarzem).
 
 use std::collections::{BTreeMap, BTreeSet};
 use std::fs;
@@ -56,24 +59,39 @@ fn doc_row_lists_expected_counts() {
 }
 
 #[test]
-fn files_exist_and_are_empty_doc_only() {
+fn files_exist_and_start_with_owner_doc_header() {
+    let owners = doc_owners();
     for p in doc_paths() {
         let full = engine_dir().join(&p);
         let src = fs::read_to_string(&full).unwrap_or_else(|e| panic!("brak {p}: {e}"));
         if p.ends_with("/mod.rs") {
             continue;
         }
-        for (i, line) in src.lines().enumerate() {
+        let first = src
+            .lines()
+            .find(|l| !l.trim().is_empty())
+            .unwrap_or_else(|| panic!("{p}: plik pusty"));
+        assert!(
+            first.starts_with("//!"),
+            "{p}: pierwszy niepusty wiersz nie jest komentarzem //!"
+        );
+        // Blok naglowka `//!` na poczatku pliku musi zawierac pelne ID kazdego
+        // tematu-wlasciciela z tabeli P6-25 §6.
+        let header: String = src
+            .lines()
+            .skip_while(|l| l.trim().is_empty())
+            .take_while(|l| l.starts_with("//!"))
+            .collect::<Vec<_>>()
+            .join("\n");
+        let expected = owners
+            .get(&p)
+            .unwrap_or_else(|| panic!("{p}: brak wlasciciela w tabeli P6-25 §6"));
+        for id in expected {
             assert!(
-                line.starts_with("//!"),
-                "{p}:{} nie jest komentarzem //! (szkielet ma byc pusty)",
-                i + 1
+                header.contains(id.as_str()),
+                "{p}: blok naglowka //! nie zawiera ID wlasciciela {id}"
             );
         }
-        assert!(
-            src.contains("R-RUSTPORT-P6-M"),
-            "{p}: brak tematu wlasciciela"
-        );
     }
 }
 
