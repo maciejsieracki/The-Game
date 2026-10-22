@@ -187,36 +187,10 @@ pub fn buffer_geometry(positions: &[f64], indices: Option<Vec<u32>>) -> geom::Me
     }
 }
 
-/// `Number.prototype.toFixed(digits)` for finite `|x| < 1e15`, `digits <= 8`
-/// (JavaScript rounds an exact decimal tie away from zero, Rust formatting
-/// to even; a tie at `d` decimals means `|x| · 2^(d+1)` is an odd integer).
-/// `-0` prints without a sign, a tiny negative keeps it (`"-0.00000"`).
-#[must_use]
-pub fn js_to_fixed(x: f64, digits: u32) -> String {
-    let neg = x < 0.0;
-    let a = x.abs();
-    let d = digits as usize;
-    let scaled = a * f64::from(1u32 << (digits + 1));
-    let body = if scaled.fract() == 0.0 && scaled % 2.0 == 1.0 && a < 1e15 {
-        let p = 10u64.pow(digits);
-        #[allow(clippy::cast_precision_loss)]
-        let k = (a * p as f64).round();
-        #[allow(clippy::cast_possible_truncation, clippy::cast_sign_loss)]
-        let k = k as u64;
-        if d == 0 {
-            format!("{k}")
-        } else {
-            format!("{}.{:0d$}", k / p, k % p)
-        }
-    } else {
-        format!("{a:.d$}")
-    };
-    if neg {
-        format!("-{body}")
-    } else {
-        body
-    }
-}
+/// `Number.prototype.toFixed(digits)`. The single implementation is
+/// [`crate::core::jsnum::js_to_fixed`] (P4.24, tested against V8 on
+/// ≥ 20 000 values); re-exported here so the P4.22 public path stays valid.
+pub use crate::core::jsnum::js_to_fixed;
 
 #[cfg(test)]
 mod tests {
@@ -245,8 +219,8 @@ mod tests {
         assert_eq!(js_to_fixed(-0.03125, 4), "-0.0313");
     }
 
-    /// `js_to_fixed(x, 3)` must agree with the core helper (P4.12), so a later
-    /// consolidation into `core::jsnum` is mechanical.
+    /// `js_to_fixed(x, 3)` agrees with the P4.12 core helper (since P4.24
+    /// both are the same `core::jsnum` function; kept as a regression guard).
     #[test]
     fn to_fixed_d3_equals_core_to_fixed3() {
         use crate::core::jsnum::js_to_fixed3;

@@ -6,10 +6,14 @@
 //! The relief drape (`hugTerrainRelief`, `buildReliefDrapeMesh`) samples the
 //! hill / mountain solid through `reliefSurfaceSampler`
 //! (`mapRenderStyle.ts:1107-1121` → `powierzchniaReliefuY` of
-//! `teren-gory-wzgorza.ts`, a raycast into the relief variant). That
-//! raycaster is not part of MOD-13; the sampler is injected through
-//! [`ReliefSource`]. [`FlatRelief`] reproduces the web exactly for every
-//! terrain whose sampler is `null` (all but `Wzgorza` / `Gory`).
+//! `teren-gory-wzgorza.ts`, a raycast into the relief variant). The sampler
+//! is injected through [`ReliefSource`]; the default implementation is
+//! [`GameRelief`], the real sampler ported by P4.17
+//! ([`crate::decor::style::ReliefSampler`]), verified bit for bit against
+//! the running web without any shim on maps with `Wzgorza` / `Gory` (P4.24,
+//! `tests/fixtures/misc/relief_real.json`). [`FlatRelief`] (every sampler
+//! `null`) stays for callers that want flat sheets; it equals the web only
+//! where the real sampler is `null` (all terrains but `Wzgorza` / `Gory`).
 
 use std::collections::HashMap;
 use std::f64::consts::PI;
@@ -20,7 +24,9 @@ use super::overlay::{
     OverlayMap, OverlayObject,
 };
 use super::territory::{compute_territory_border_loops, LoopPoint, HEX_DIRS};
+use crate::core::jsnum::js_to_uint32;
 use crate::core::map_style::{terrain_surface_top_y, GAME_MAP_RENDER_STYLE};
+use crate::decor::style::ReliefSampler;
 use crate::geom::{self, Mat4, Quat, Vec3};
 use crate::jsmath::{js_cos, js_hypot, js_hypot_n, js_sin};
 use crate::pick::hex::{axial_to_world, HexCoord, HEX_R};
@@ -124,9 +130,37 @@ pub trait ReliefSource {
     ) -> Option<ReliefFn<'_>>;
 }
 
+/// The game's relief — the default [`ReliefSource`]: the real
+/// `reliefSurfaceSampler(teren, q, r, seed, R)` (`mapRenderStyle.ts:1107-1121`)
+/// as ported by P4.17 ([`ReliefSampler`]: `wariantDlaHeksa` /
+/// `rotacjaDlaHeksa` + `powierzchniaReliefuY`, the raycast into the hill /
+/// mountain variant of `teren-gory-wzgorza.ts`). `null` for every terrain
+/// but `Wzgorza` / `Gory`.
+///
+/// `seed` is the JS number `map.seed ?? 0`; `hashHeksa` reads it as
+/// `seed | 0` (ECMAScript `ToInt32`, `teren-gory-wzgorza.ts:104`), so it is
+/// converted with [`js_to_uint32`] and reinterpreted as `i32`.
+#[derive(Debug, Clone, Copy, Default)]
+pub struct GameRelief;
+
+impl ReliefSource for GameRelief {
+    fn sampler(
+        &self,
+        terrain: Terrain,
+        q: i32,
+        r: i32,
+        seed: f64,
+        radius: f64,
+    ) -> Option<ReliefFn<'_>> {
+        let seed = i32::from_ne_bytes(js_to_uint32(seed).to_ne_bytes());
+        let s = ReliefSampler::new(terrain, q, r, seed, radius)?;
+        Some(Box::new(move |x, z| s.sample(x, z)))
+    }
+}
+
 /// Every sampler is `null`. Identical to the web for all terrains except
-/// `Wzgorza` / `Gory`, whose real sampler is the relief raycaster of
-/// `teren-gory-wzgorza.ts` (not ported here).
+/// `Wzgorza` / `Gory`, whose real sampler is [`GameRelief`]. Kept (public
+/// path of P4.22) for callers that want flat sheets on purpose.
 #[derive(Debug, Clone, Copy, Default)]
 pub struct FlatRelief;
 
@@ -742,7 +776,19 @@ pub fn build_territory_border_group(
     group
 }
 
-/// `buildRangeOverlayGroup(map, hexKeys, style)` (`:860-895`).
+/// `buildRangeOverlayGroup(map, hexKeys, style)` exactly as the game calls
+/// it: with the real relief sampler ([`GameRelief`], the default).
+pub fn build_range_overlay_group_game(
+    map: &OverlayMap,
+    keys: &HexKeySet,
+    style: &RangeOverlayStyle,
+) -> OverlayGroup {
+    build_range_overlay_group(map, keys, style, &GameRelief)
+}
+
+/// `buildRangeOverlayGroup(map, hexKeys, style)` (`:860-895`) with an
+/// explicit relief source (the web uses [`GameRelief`]; see
+/// [`build_range_overlay_group_game`]).
 pub fn build_range_overlay_group(
     map: &OverlayMap,
     keys: &HexKeySet,

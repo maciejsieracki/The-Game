@@ -27,10 +27,11 @@ use civ_renderer::models::misc::territory::compute_territory_border_loops;
 use civ_renderer::models::misc::wioska::{OBOZ_LAYOUT, WIOSKA_LAYOUT};
 use civ_renderer::models::misc::{
     add_roblox_sky_decor, build_oboz_barbarzyncow, build_range_overlay_group,
-    build_siege_camp_group, build_territory_border_group, build_trade_routes_overlay_group,
-    build_wioska, FlatRelief, HexKey, HexKeySet, MiscModel, OverlayGroup, OverlayKind, OverlayMap,
-    RangeOverlayStyle, ReliefSource, SiegeCampBuildOpts, SiegeMachineKind, SiegeMarkerRenderer,
-    TerritoryBorderParams, TradeMedium, TradeRouteOverlayInput, BARB_FACTION_COLOR,
+    build_range_overlay_group_game, build_siege_camp_group, build_territory_border_group,
+    build_trade_routes_overlay_group, build_wioska, FlatRelief, GameRelief, HexKey, HexKeySet,
+    MiscModel, OverlayGroup, OverlayKind, OverlayMap, RangeOverlayStyle, ReliefSource,
+    SiegeCampBuildOpts, SiegeMachineKind, SiegeMarkerRenderer, TerritoryBorderParams, TradeMedium,
+    TradeRouteOverlayInput, BARB_FACTION_COLOR,
 };
 use civ_renderer::models::unit_core::model::geo_hash;
 use civ_renderer::pick::hex::{axial_to_world, HexCoord, HEX_R};
@@ -1012,14 +1013,18 @@ fn range_overlay_matches_web() {
         let style = st(rec.get("style").str());
         let relief: &dyn ReliefSource = match rec.get("relief").str() {
             "real" => {
-                // FlatRelief equals the web only where the real sampler is null.
+                // No relief terrain on these maps: the real sampler (default,
+                // P4.24) and FlatRelief both give `null` everywhere.
                 assert!(
                     map.hexes
                         .values()
                         .all(|t| !matches!(t, Terrain::Wzgorza | Terrain::Gory)),
                     "real-relief case on a map with relief terrain"
                 );
-                &FlatRelief
+                let flat =
+                    build_range_overlay_group(map, &HexKeySet::new(keys), &style, &FlatRelief);
+                cmp_overlay(&mut c, "flat-relief", &flat, rec);
+                &GameRelief
             }
             "analytic" => &AnalyticRelief,
             other => panic!("relief {other}"),
@@ -1035,6 +1040,116 @@ fn range_overlay_matches_web() {
     }
     c.eq("range cases", cases.len(), 252);
     c.finish("range overlay");
+}
+
+/// P4.24: `buildRangeOverlayGroup` with the REAL `reliefSurfaceSampler` (no
+/// shim, `build_relief.mjs`) on 4 maps containing `Wzgorza` / `Gory`: the
+/// mine sheet and the banded hug style drape over the relief, the flat
+/// styles cross the same hills. Rust side: the default [`GameRelief`]
+/// through `build_range_overlay_group_game`.
+#[test]
+fn range_overlay_real_relief_matches_web() {
+    let o = load("relief_real.json");
+    let mut c = Cmp::default();
+    let maps = load_maps(&o);
+    let sets = hex_sets(&o);
+    let styles: Vec<(String, RangeOverlayStyle)> = o
+        .get("styles")
+        .obj()
+        .iter()
+        .map(|(id, s)| (id.clone(), style_from(s)))
+        .collect();
+    let st = |id: &str| styles.iter().find(|(k, _)| k == id).expect("style").1;
+    for (id, m) in &maps {
+        let n = m
+            .hexes
+            .values()
+            .filter(|t| matches!(t, Terrain::Wzgorza | Terrain::Gory))
+            .count();
+        assert!(n > 0, "map {id} has no relief terrain");
+    }
+    let cases = o.get("range").arr();
+    let mut draped_relief_hexes = 0usize;
+    let mut differs_from_flat = 0usize;
+    for rec in cases {
+        let map = &maps
+            .iter()
+            .find(|(k, _)| k == rec.get("map").str())
+            .expect("map")
+            .1;
+        let keys = &sets
+            .iter()
+            .find(|(k, _)| k == rec.get("set").str())
+            .expect("set")
+            .1;
+        let style = st(rec.get("style").str());
+        let set = HexKeySet::new(keys);
+        let g = build_range_overlay_group_game(map, &set, &style);
+        let ctx = format!(
+            "real/{}/{}/{}",
+            rec.get("map").str(),
+            rec.get("set").str(),
+            rec.get("style").str()
+        );
+        cmp_overlay(&mut c, &ctx, &g, rec);
+        if style.hug_terrain_relief {
+            draped_relief_hexes += set
+                .iter()
+                .filter(|&k| matches!(map.terrain(k), Some(Terrain::Wzgorza | Terrain::Gory)))
+                .count();
+            if build_range_overlay_group(map, &set, &style, &FlatRelief) != g {
+                differs_from_flat += 1;
+            }
+        }
+    }
+    c.eq("real-relief range cases", cases.len(), 432);
+    // The relief really is exercised: hexes draped over hills / mountains,
+    // and the real sheets are not the flat ones.
+    c.eq("draped relief hexes", draped_relief_hexes, 1136);
+    assert!(
+        differs_from_flat >= 100,
+        "only {differs_from_flat} hug cases differ from FlatRelief"
+    );
+    c.finish("range overlay (real relief)");
+}
+
+/// P4.24: `reliefSurfaceSampler(teren, q, r, seed, R)(x, z)` of the running
+/// web (binary64 bits) vs [`GameRelief`], R in {1, 1.5}, incl. `null` for
+/// flat terrain, negative seed and a non-integer seed above 2^32 (`seed | 0`).
+#[test]
+fn relief_sampler_matches_web() {
+    let o = load("relief_real.json");
+    let mut c = Cmp::default();
+    let maps = load_maps(&o);
+    let mut non_null = 0usize;
+    let mut positive = 0usize;
+    for rec in o.get("samplers").arr() {
+        let map_id = rec.get("map").str();
+        let map = &maps.iter().find(|(k, _)| k == map_id).expect("map").1;
+        let (q, r) = (rec.get("q").i32(), rec.get("r").i32());
+        let t = Terrain::from_web_id(rec.get("t").str()).expect("terrain");
+        let radius = rec.get("R").num();
+        let ctx = format!("sampler/{map_id}/{q},{r}/R{radius}");
+        let s = GameRelief.sampler(t, q, r, map.seed.unwrap_or(0.0), radius);
+        match (s, rec.get("v").is_null()) {
+            (None, true) => c.eq(&ctx, true, true),
+            (Some(s), false) => {
+                non_null += 1;
+                let pts = rec.get("pts").hx();
+                let want = rec.get("v").hx();
+                let got: Vec<f64> = pts.chunks_exact(2).map(|p| s(p[0], p[1])).collect();
+                positive += got.iter().filter(|&&v| v > 0.0).count();
+                c.fs(&ctx, &got, &want);
+            }
+            (s, w_null) => c.err(format!(
+                "{ctx}: rust some={} web null={w_null}",
+                s.is_some()
+            )),
+        }
+    }
+    assert!(non_null >= 400, "only {non_null} relief samplers probed");
+    assert!(positive >= 5000, "only {positive} probes above the hex top");
+    c.finish("relief sampler (real)");
 }
 
 #[test]

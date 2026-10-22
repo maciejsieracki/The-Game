@@ -42,33 +42,100 @@ pub fn js_to_uint32(x: f64) -> u32 {
     m as u32
 }
 
-/// `Number.prototype.toFixed(3)` for the finite values the height audit
-/// prints. JavaScript picks the larger candidate on an exact decimal tie
-/// (ties away from zero after the sign is split off), while Rust formatting
-/// rounds ties to even; an exact tie at 3 decimals means `|x| · 16` is an odd
-/// integer, which is handled explicitly. `-0` prints as `0.000`.
+/// `Number.prototype.toFixed(3)` (the height audit of P4.12). The same
+/// function as [`js_to_fixed`] with `digits = 3`; kept for its callers.
 #[must_use]
 pub fn js_to_fixed3(x: f64) -> String {
-    if x == 0.0 {
-        return "0.000".to_owned();
+    js_to_fixed(x, 3)
+}
+
+/// `Number.prototype.toFixed(digits)` (ECMA-262 §21.1.3.3) for every `f64`
+/// and `digits` in `0..=100` — the single `toFixed` implementation of the
+/// crate (P4.24; `models::misc::overlay::js_to_fixed` re-exports it).
+///
+/// - `NaN`, `±∞` and `|x| ≥ 10²¹` give `Number::toString(x)` (`"NaN"`,
+///   `"Infinity"`, `"-1e+21"`, …).
+/// - Otherwise the sign is split off first (`x < 0` → `"-"`, so `-0` prints
+///   without a sign while a tiny negative keeps it: `(-1e-9).toFixed(3)` is
+///   `"-0.000"`), then the integer `n` closest to `|x| · 10^digits` is taken
+///   on the EXACT binary value, the larger `n` on an exact tie (ties away
+///   from zero). Rust's `{:.N}` formatting is exact too but breaks ties to
+///   even, so ties are handled explicitly: an exact tie at `d` decimals means
+///   `|x| · 2^(d+1)` is an odd integer; `|x|` then has exactly `d + 1`
+///   decimals, the last one `5`, which are printed exactly and rounded up as
+///   a decimal string (no integer overflow at any magnitude).
+///
+/// # Panics
+///
+/// If `digits > 100` (JavaScript throws a `RangeError`).
+#[must_use]
+pub fn js_to_fixed(x: f64, digits: u32) -> String {
+    assert!(
+        digits <= 100,
+        "toFixed() digits argument must be between 0 and 100"
+    );
+    if !x.is_finite() || x.abs() >= 1e21 {
+        return js_number_to_string_big(x);
     }
     let neg = x < 0.0;
     let a = x.abs();
-    let sixteen = a * 16.0;
-    let body = if sixteen.fract() == 0.0 && sixteen % 2.0 == 1.0 && a < 1e15 {
-        // Exact tie: a · 1000 = odd · 62.5 is exactly representable.
-        let k = (a * 1000.0).round(); // half away from zero = the larger candidate
-        let int = (k / 1000.0).trunc();
-        let frac = k - int * 1000.0;
-        format!("{int:.0}.{frac:03.0}")
+    let d = digits as usize;
+    // `2^(digits+1)` built from its exponent bits (`digits + 1 <= 101`, no
+    // libm), and `a · 2^(digits+1)` (< 1e21 · 2^101) are exact.
+    let pow2 = f64::from_bits((1023 + u64::from(digits) + 1) << 52);
+    let scaled = a * pow2;
+    let body = if scaled.fract() == 0.0 && scaled % 2.0 == 1.0 {
+        let mut s = format!("{a:.prec$}", prec = d + 1);
+        debug_assert!(s.ends_with('5'), "tie without a trailing 5: {s}");
+        s.pop();
+        if d == 0 {
+            s.pop(); // the '.'
+        }
+        round_up_decimal(&s)
     } else {
-        format!("{a:.3}")
+        format!("{a:.d$}")
     };
     if neg {
         format!("-{body}")
     } else {
         body
     }
+}
+
+/// Adds one unit in the last place to a non-negative decimal string
+/// (`"1.99"` → `"2.00"`, `"9"` → `"10"`).
+fn round_up_decimal(s: &str) -> String {
+    let mut b = s.as_bytes().to_vec();
+    let mut i = b.len();
+    loop {
+        if i == 0 {
+            b.insert(0, b'1');
+            break;
+        }
+        i -= 1;
+        match b[i] {
+            b'.' => {}
+            b'9' => b[i] = b'0',
+            c => {
+                b[i] = c + 1;
+                break;
+            }
+        }
+    }
+    String::from_utf8(b).unwrap_or_default()
+}
+
+/// `Number::toString(x)` for the values `toFixed` hands to it: `NaN`, `±∞`
+/// and `|x| ≥ 10²¹` (always the exponential form `d[.ddd]e+n` with the
+/// shortest round-trip digits, the digits of Rust's `{:e}`).
+fn js_number_to_string_big(x: f64) -> String {
+    if x.is_nan() {
+        return "NaN".to_owned();
+    }
+    if x.is_infinite() {
+        return if x > 0.0 { "Infinity" } else { "-Infinity" }.to_owned();
+    }
+    format!("{x:e}").replacen('e', "e+", 1)
 }
 
 #[cfg(test)]

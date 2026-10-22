@@ -39,8 +39,8 @@ pub use model::{
 };
 pub use overlay::{HexKey, HexKeySet, OverlayGroup, OverlayKind, OverlayMap, OverlayObject};
 pub use range::{
-    build_range_overlay_group, build_territory_border_group, FlatRelief, RangeOverlayStyle,
-    ReliefSource, TerritoryBorderParams,
+    build_range_overlay_group, build_range_overlay_group_game, build_territory_border_group,
+    FlatRelief, GameRelief, RangeOverlayStyle, ReliefSource, TerritoryBorderParams,
 };
 pub use siege::{
     build_siege_camp_group, SiegeCampBuildOpts, SiegeMachineKind, SiegeMarkerRenderer,

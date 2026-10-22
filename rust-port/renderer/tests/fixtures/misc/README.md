@@ -48,6 +48,34 @@ Two runs give identical files (SHA-256 below).
 | `overlays.json` | `d590e026deac901f3a1f9ffc8ffbca5fa0f8075b1624e499a7520b7fb0d075a9` | `maps` (3: `mixed` seed 12345, `flat` seed 777, `noseed`), `hexSets` (18: disks of radius 0..4 and 1..3, rings, islands, L, corner, missing hexes, grown clusters 25/40, empty), `styles`; `range` (252 `buildRangeOverlayGroup` cases), `loops` (18 `computeTerritoryBorderLoops`), `territory` (7 `buildTerritoryBorderGroup`), `trade` (3 `buildTradeRoutesOverlayGroup`), `bezier` (24 `QuadraticBezierCurve3.getPoints(28)` probes). Per overlay object: kind, name, renderOrder, frustumCulled, material, geometry (vtx, tri, index count, normals present, FNV hash, bbox, positions when ≤ 900 floats), `instanceMatrix` and `count` for `InstancedMesh`, `userData` of the relief drape. |
 | `gen.ts`, `build.mjs`, `relief_shim.ts` | `a58562c0…`, `42d3c58c…`, `dca1001f…` | the generator, its bundler and the relief shim |
 
+## Real relief sampler (R-RUSTPORT-P4-24-MISC-RELIEF-WIRE-Q1)
+
+`relief_real.json` is produced by `gen_relief.ts`, bundled by
+`build_relief.mjs` **without any plugin or shim**: `render/rangeOverlay.ts`
+imports the real `./mapRenderStyle` and its `reliefSurfaceSampler`
+(`powierzchniaReliefuY`, the raycast into `teren-gory-wzgorza.ts`).
+`build_relief.mjs` fails if the bundle contains `relief_shim` / `__MISC_RELIEF`
+or lacks the real `reliefSurfaceSampler` / `powierzchniaReliefuY`.
+
+```bash
+# same scratch as above (outside the repository)
+cp rust-port/renderer/tests/fixtures/misc/{gen_relief.ts,build_relief.mjs} $S/refscript/
+cd $S/refscript
+node build_relief.mjs   # prints: gen_relief.mjs: real reliefSurfaceSampler, no shim
+node gen_relief.mjs ../out   # prints: misc relief range=432 reliefHexesDraped=1136 samplers=904 probes=16560
+```
+
+| File | SHA-256 | Content |
+|---|---|---|
+| `relief_real.json` | `f3cfbdcd889dba81b9372823832890cbb78da43acf30ce78dadefdd1c6b9fec8` | `maps` (4, all with `Wzgorza`/`Gory`: `mixed` seed 12345 = layout of `overlays.json`, `noseed`, `hillsNeg` seed −987654, `hillsWrap` seed 6442450944.75 → `seed \| 0` = −2³¹), the 18 `hexSets`, 6 `styles`; `range`: 432 `buildRangeOverlayGroup` cases (mine sheet + banded hug drape over 1136 relief hexes; culture / religion / banded / noY crossing the same hills); `samplers`: 904 `reliefSurfaceSampler(teren,q,r,seed,R)` probes (R ∈ {1, 1.5}, `null` on flat terrain), 16 560 `(x, z) → y` values as binary64 bits. |
+| `gen_relief.ts`, `build_relief.mjs` | `fc44a8e8…`, `991b1b57…` | generator and its shim-free bundler |
+
+Rust side: `tests/misc_web_parity.rs` → `range_overlay_real_relief_matches_web`
+(through `build_range_overlay_group_game`, i.e. the default `GameRelief`) and
+`relief_sampler_matches_web`. Two runs give the same SHA-256. Regenerating the
+P4.22 files in the same scratch reproduced `models.json`, `siege.json` and
+`overlays.json` byte for byte (SHA-256 above), so they are unchanged.
+
 Floats are stored as IEEE-754 binary64 bits (`hx()`: 16 hex digits per
 number), so the Rust side compares `to_bits()`; `-0` and NaN survive.
 Hashes are FNV-1a 32-bit over little-endian bytes, the same routine as
