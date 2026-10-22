@@ -256,7 +256,8 @@ add('cat:falanga@B', `buildUnitModel('falanga', OWNER_B)`, () => buildUnitModel(
 // celtycki of MOD-04) through the real entry point
 // `buildUnitModel(categoryOf(...), owner, name)`: PL name with both owner
 // colours (`unit:` / `unitB:`; `unitB:` also covers the three non-exported
-// `units.ts` builders with OWNER_B) and EN name (`unitEn:`, battle path).
+// `units.ts` builders with OWNER_B) and EN name with both owner colours
+// (`unitEn:` / `unitEnB:`, battle path).
 type Row = Record<string, unknown>;
 const rows = unitsJson as unknown as Row[];
 const records: unknown[] = [];
@@ -270,6 +271,7 @@ for (const r of rows) {
   add(`unit:${pl}`, `buildUnitModel('${cat}', OWNER_A, '${pl}')`, () => buildUnitModel(cat, OWNER_A, pl));
   add(`unitB:${pl}`, `buildUnitModel('${cat}', OWNER_B, '${pl}')`, () => buildUnitModel(cat, OWNER_B, pl));
   add(`unitEn:${pl}`, `buildUnitModel('${cat}', OWNER_A, '${en}')`, () => buildUnitModel(cat, OWNER_A, en));
+  add(`unitEnB:${pl}`, `buildUnitModel('${cat}', OWNER_B, '${en}')`, () => buildUnitModel(cat, OWNER_B, en));
   records.push({ pl, en, category: cat });
 }
 

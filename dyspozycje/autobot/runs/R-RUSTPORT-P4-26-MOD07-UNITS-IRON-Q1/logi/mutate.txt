@@ -1,4 +1,4 @@
-$ python3 /home/user/The-Game/.claude/worktrees/wf_91ec5ced-915-1/dyspozycje/autobot/runs/R-RUSTPORT-P4-26-MOD07-UNITS-IRON-Q1/mutate.py; echo "EXIT=$?"
+$ python3 /home/user/The-Game/.claude/worktrees/wf_91ec5ced-915-3/dyspozycje/autobot/runs/R-RUSTPORT-P4-26-MOD07-UNITS-IRON-Q1/mutate.py; echo "EXIT=$?"
 M01 RingGeometry: full circle -> half (thetaLength PI): DETECTED by every_web_case_is_reproduced_bit_for_bit, norm_name_and_culture_match_the_web, unit_core_record_signatures_of_the_iron_records_match, web_signature_classes_equal_rust_model_id_classes
 M02 oval rim: outer ring not scaled by k: DETECTED by every_web_case_is_reproduced_bit_for_bit, norm_name_and_culture_match_the_web, unit_core_record_signatures_of_the_iron_records_match, web_signature_classes_equal_rust_model_id_classes
 M03 javelin head profile 0.78 -> 0.79: DETECTED by every_web_case_is_reproduced_bit_for_bit, unit_core_record_signatures_of_the_iron_records_match, web_signature_classes_equal_rust_model_id_classes

@@ -132,12 +132,14 @@ fn rust_case(fx: &J, id: &str) -> Result<UnitModel, String> {
             return build_model(rule, owner).map_err(|e| e.to_string());
         }
     }
-    if let Some(pl) = id.strip_prefix("unitEn:") {
-        // web `buildUnitModel(cat, owner, EN name)` (battle fallback path)
-        let r = record(fx, pl);
-        let en = r.at("en").s();
-        let id = legacy_route(r.at("category").s(), Some(en));
-        return build_model(id, OWNER_A).map_err(|e| e.to_string());
+    for (prefix, owner) in [("unitEn:", OWNER_A), ("unitEnB:", OWNER_B)] {
+        if let Some(pl) = id.strip_prefix(prefix) {
+            // web `buildUnitModel(cat, owner, EN name)` (battle fallback path)
+            let r = record(fx, pl);
+            let en = r.at("en").s();
+            let id = legacy_route(r.at("category").s(), Some(en));
+            return build_model(id, owner).map_err(|e| e.to_string());
+        }
     }
     panic!("no Rust mapping for fixture case {id}");
 }
@@ -355,7 +357,7 @@ fn every_web_case_is_reproduced_bit_for_bit() {
         values: 0,
     };
     let cases = fx.at("cases").obj();
-    let mut per_kind = [0usize; 5];
+    let mut per_kind = [0usize; 6];
     let mut same_as = 0usize;
     for (id, w) in cases {
         let web = web_record(&fx, id);
@@ -374,8 +376,10 @@ fn every_web_case_is_reproduced_bit_for_bit() {
             2
         } else if id.starts_with("unitEn:") {
             3
-        } else {
+        } else if id.starts_with("unitEnB:") {
             4
+        } else {
+            5
         };
         per_kind[k] += 1;
         // The 22 exported builders keep every geometry as a module singleton
@@ -390,13 +394,14 @@ fn every_web_case_is_reproduced_bit_for_bit() {
         }
     }
     println!(
-        "units_zelazo parity: {} cases (fn {} / unit PL {} / unit PL owner B {} / unit EN {} / cat {}; {} via sameAs), {} values bit-exact checked, {} mismatches",
+        "units_zelazo parity: {} cases (fn {} / unit PL {} / unit PL owner B {} / unit EN {} / unit EN owner B {} / cat {}; {} via sameAs), {} values bit-exact checked, {} mismatches",
         cases.len(),
         per_kind[0],
         per_kind[1],
         per_kind[2],
         per_kind[3],
         per_kind[4],
+        per_kind[5],
         same_as,
         c.values,
         c.errs.len()
@@ -408,8 +413,8 @@ fn every_web_case_is_reproduced_bit_for_bit() {
             println!("MISMATCH {e}");
         }
     }
-    assert_eq!(cases.len(), 121, "fixture cases");
-    assert_eq!(per_kind, [44, 25, 25, 25, 2]);
+    assert_eq!(cases.len(), 146, "fixture cases");
+    assert_eq!(per_kind, [44, 25, 25, 25, 25, 2]);
     assert!(
         c.errs.is_empty(),
         "{} mismatches:\n{}",

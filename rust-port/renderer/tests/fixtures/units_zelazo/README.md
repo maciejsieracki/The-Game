@@ -32,24 +32,24 @@ cp rust-port/renderer/tests/fixtures/units_zelazo/{gen.ts,build.mjs} $S/refscrip
 ln -s $S/ref/node_modules $S/refscript/node_modules
 cd $S/refscript
 node build.mjs           # -> gen.mjs
-node gen.mjs ../out      # prints: units_zelazo cases=121 stored=53 sameAs=68 records=25
+node gen.mjs ../out      # prints: units_zelazo cases=146 stored=54 sameAs=92 records=25
 ```
 
 The output is deterministic: measured on 2026-10-22, two runs into separate
 directories give the identical SHA-256
-`cc657f0fecb34e3d96eabf4a3c12e170cb5673aa8a8156cff60ee2df71c28c76`
+`f5fa526842b935db0775fb57ded112b7f6ca689c5712eba15133283a26f97805`
 (`units_zelazo.json.sha256`).
 
-## Content of `units_zelazo.json` (2.20 MB)
+## Content of `units_zelazo.json` (2.23 MB)
 
 | Key | Content |
 |---|---|
-| `cases` (121) | full object tree (format of `tests/fixtures/unit_core`, P4.13, `units_kamien`, P4.19, `units_braz`, P4.23): per node `kind`, `name`, `parent`, `p`/`q`/`s`, `w` (`matrixWorld`), for meshes `geo` (`type`, `vtx`, `tri`, FNV-1a `hash` of position/normal/uv/index/groups) and `mat` (`color`, linear `lin`, `metalness`, `roughness`, `transparent`, `opacity`, `flatShading`) + index in `userData['mats']`; per case `mats`, `bbox`, `meshes`, `tris`, `vertices`, `sig`, `celticRetint`, `perTokenGeos` (count). Ids: `fn:<export>` / `fn:<export>@B` (22 builders × 2 owner colours), `cat:falanga` / `cat:falanga@B` (`buildUnitModel('falanga', owner)`, the category fallback `units.ts:3704`), `unit:<PL>` / `unitB:<PL>` (`buildUnitModel(categoryOf, OWNER_A / OWNER_B, PL)`), `unitEn:<PL>` (same with the EN name) for the 25 Iron records. |
+| `cases` (146) | full object tree (format of `tests/fixtures/unit_core`, P4.13, `units_kamien`, P4.19, `units_braz`, P4.23): per node `kind`, `name`, `parent`, `p`/`q`/`s`, `w` (`matrixWorld`), for meshes `geo` (`type`, `vtx`, `tri`, FNV-1a `hash` of position/normal/uv/index/groups) and `mat` (`color`, linear `lin`, `metalness`, `roughness`, `transparent`, `opacity`, `flatShading`) + index in `userData['mats']`; per case `mats`, `bbox`, `meshes`, `tris`, `vertices`, `sig`, `celticRetint`, `perTokenGeos` (count). Ids: `fn:<export>` / `fn:<export>@B` (22 builders × 2 owner colours), `cat:falanga` / `cat:falanga@B` (`buildUnitModel('falanga', owner)`, the category fallback `units.ts:3704`), `unit:<PL>` / `unitB:<PL>` (`buildUnitModel(categoryOf, OWNER_A / OWNER_B, PL)`), `unitEn:<PL>` / `unitEnB:<PL>` (same with the EN name, OWNER_A / OWNER_B) for the 25 Iron records. |
 | `records` (25) | the `units.json` rows with `Epoka = Żelazo`: `pl`, `en`, `category` (`categoryOf`). |
 
 Size reduction: a case whose full record is identical (deep JSON equality,
 `call` excluded) to an already stored case is written as
-`{ call, sameAs: <id> }` (68 of 121); the Rust test builds its own model for
+`{ call, sameAs: <id> }` (92 of 146); the Rust test builds its own model for
 that call and compares it in full against the referenced record.
 
 Floats are stored as IEEE-754 binary64 bits (`hx()` in `gen.ts`, 16 hex digits
