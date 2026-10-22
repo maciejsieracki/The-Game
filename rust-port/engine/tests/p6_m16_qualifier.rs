@@ -116,17 +116,15 @@ fn api_qualifying_hexes_and_work_cost_match_web() {
             case["api"]["has_click"].as_bool().unwrap()
         );
         for key in &keys {
-            // `qualifying` zawiera losowy podzbior kluczy per stan (rozmiar wektorow)
-            if case["api"]["qualifying"].get(key.as_str()).is_some() {
-                let want: Vec<(i32, i32)> = arr(&case["api"]["qualifying"], key)
-                    .iter()
-                    .map(|p| (int(&p[0]), int(&p[1])))
-                    .collect();
-                let got = api.get_qualifying_hexes(key);
-                assert_eq!(got, want, "stan {ci} klucz {key}");
-                nonempty += usize::from(!got.is_empty());
-                checked += 1;
-            }
+            // R2: `qualifying` zawiera KAZDY klucz w kazdym stanie (zarzut 7)
+            let want: Vec<(i32, i32)> = arr(&case["api"]["qualifying"], key)
+                .iter()
+                .map(|p| (int(&p[0]), int(&p[1])))
+                .collect();
+            let got = api.get_qualifying_hexes(key);
+            assert_eq!(got, want, "stan {ci} klucz {key}");
+            nonempty += usize::from(!got.is_empty());
+            checked += 1;
             assert_bits(
                 &format!("koszt {key}"),
                 api.get_work_cost(key),
@@ -158,7 +156,10 @@ fn api_qualifying_hexes_and_work_cost_match_web() {
             }
         }
     }
-    assert!(nonempty > 1000 && checked > 3000, "{nonempty} {checked}");
+    assert!(
+        checked == arr(&d, "cases").len() * keys.len() && nonempty > 3000,
+        "{nonempty} {checked}"
+    );
 }
 
 #[test]

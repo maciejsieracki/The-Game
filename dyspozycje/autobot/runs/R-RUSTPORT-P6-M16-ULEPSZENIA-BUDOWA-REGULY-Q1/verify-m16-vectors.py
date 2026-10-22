@@ -179,6 +179,12 @@ check("tab.hodowla.koszt", tab["hodowla"]["stadnina_koszt_koni"], 50)
 ta_py = {k: (None if v is None else set(v)) for k, v in tab["teren_dozwolony"].items()}
 check("tab.teren_dozwolony", ta_py, {k: v for k, v in TERRAIN_ALLOW.items()})
 check("tab.domyslne.praca", tab["domyslne"]["praca_bez_wpisu"], 20)
+# R2 (zarzut 6): tabela `teksty` vs TEKST zrodla (literaly w kodzie weba, nie w wektorach)
+tk = tab["teksty"]
+check("tab.teksty.etykieta_lasu", ("parts.push('%s');" % tk["etykieta_lasu"]) in S, True)
+check("tab.teksty.separator_listy", ("parts.join('%s')" % tk["separator_listy"]) in S, True)
+check("tab.teksty.podpowiedz_bydlo", ("if (key === 'bydlo') return '%s';" % tk["podpowiedz_bydlo"]) in S, True)
+check("tab.teksty.podpowiedz_las_prefiks", ("return `${name}%s`;" % tk["podpowiedz_las_prefiks"]) in S, True)
 
 # ---------------------------------------------------------------------------------------------
 # Semantyka JS

@@ -504,9 +504,11 @@ for (let ci = 0; ci < 320; ci++) {
   // API bez activeKey
   const api = ib.createImprovementBuildApi(state);
   const apiOut = { qualifying: {}, work_cost: {}, requests: [], has_click: api.handleHexClick !== undefined };
-  const qualifyingKeys = new Set(ALL_KEYS.filter(() => chance(0.45)));
+  // R2 (zarzut 7): `getQualifyingHexes` dla KAZDEGO klucza w kazdym stanie. Wywolanie chance() zostaje
+  // (wynik nieuzywany), zeby strumien Mulberry32 - a wiec wszystkie pozostale wektory - byl bit-w-bit jak w R1.
+  ALL_KEYS.filter(() => chance(0.45));
   for (const key of ALL_KEYS) {
-    if (qualifyingKeys.has(key)) apiOut.qualifying[key] = api.getQualifyingHexes(key).map(({ q, r }) => [q, r]);
+    apiOut.qualifying[key] = api.getQualifyingHexes(key).map(({ q, r }) => [q, r]);
     apiOut.work_cost[key] = api.getWorkCost(key);
   }
   for (let i = 0; i < 40; i++) {

@@ -1,6 +1,6 @@
 # P6.M16 - Budowa ulepszen na mapie: reguly (port `gra/src/map/improvement-build.ts` do Rust)
 
-Temat: `R-RUSTPORT-P6-M16-ULEPSZENIA-BUDOWA-REGULY-Q1` - DOMAIN: GAME - RUNDA 1/5 (Operator).
+Temat: `R-RUSTPORT-P6-M16-ULEPSZENIA-BUDOWA-REGULY-Q1` - DOMAIN: GAME - RUNDA 2/5 (Operator, obrona; zmiany wzgledem R1 oznaczone "R2").
 Pin web: `edb8fb56`. Baza Rust: `origin/rust-port/parity-v2` @ `faca762c` (674 testy).
 Artefakty runu: `dyspozycje/autobot/runs/R-RUSTPORT-P6-M16-ULEPSZENIA-BUDOWA-REGULY-Q1/`.
 Kod: `rust-port/engine/src/domain/improvement_build.rs`, tabela `rust-port/engine/data/derived/ulepszenia-budowa.json`
@@ -28,16 +28,16 @@ Kod: `rust-port/engine/src/domain/improvement_build.rs`, tabela `rust-port/engin
 - NIEZALEZNY weryfikator: `verify-m16-vectors.py` (Python `-I`, bez Node/TS/Rust) liczy semantyke OD NOWA z TEKSTU zrodel i
   `gra/data/*.json`; zbiory i tabele (sety kluczy, `SEKTOR_OF`, `TERRAIN_ALLOW`, `INCA_CIV_TYPES`, `TECH_CANONICAL`...) WYCIAGA regexem
   z tekstu zrodla, a nie z tabeli Rust. Dodatkowo sprawdza zgodnosc `ulepszenia-budowa.json` z tekstem zrodla. Wynik w
-  `verify-m16-r1.log`: **checks=132505 rozbieznosci=0** (kontrola czulosci: celowo zepsuta kopia weryfikatora - `any` zamiast `all`
+  `verify-m16-r1.log`: **R1: checks=132505 rozbieznosci=0; R2: checks=138335 rozbieznosci=0** (`verify-m16-r2.log`; +4 sprawdzenia tabeli `teksty` z TEKSTEM zrodla, +5826 sprawdzen `getQualifyingHexes` dla wszystkich kluczy; kontrola czulosci: celowo zepsuta kopia weryfikatora - `any` zamiast `all`
   w regule kombinacji, `owce` zamiast `bydlo` w `canAddFoodLayer`, `or` zamiast `and` - daje 3850 rozbieznosci z 132501 sprawdzen).
-  Kotwice tekstowe zrodla (1569 linii, `return false` w `hasBlockingDepositForFarm`, `STADNINA_HORSE_COST = 50`, `era < 3`,
+  Kotwice tekstowe zrodla (1569 linii; `hasBlockingDepositForFarm`: `verify-m16-vectors.py:55` asertuje sygnature, a `:56` regexem asertuje, ze CIALO to `{ return false;` - `re.search(r"hasBlockingDepositForFarm\(_hex: HexWithZloze\): boolean \{\s*return false;", S)`, wiec stala `False` w sprawdzeniu `deposit.blocking` jest zakotwiczona w tekscie zrodla; `STADNINA_HORSE_COST = 50`, `era < 3`,
   `?? 20`, `+ 1` pierscienia kandydatow, promienie fort 10 / posterunek 5).
 - Rust: wektory porownywane wynikowo; liczby `f64` (koszt Pracy) BITOWO (`to_bits`); listy porownywane z zachowaniem KOLEJNOSCI
   tam, gdzie web zwraca tablice (`getQualifyingHexes`: kolejnosc zbioru kandydatow = kolejnosc wstawiania `Set`).
 
 ## 2. Tabela symboli (kazdy eksport i kazdy nieeksportowany symbol zakresu 50-1558)
 
-Legenda: PORTOWANY = kod + test + wektor z uruchomionego weba, 0 rozbieznosci. DANE = stala/zbior przeniesiony do
+Legenda: PORTOWANY = kod + test + wektor z uruchomionego weba, 0 rozbieznosci. Wyjatek jawny: `PORTOWANY (cz.)` = port 1:1 calosci, ale wektor pokrywa tylko czesc galezi; niepokryte galezie sa wymienione w wierszu i w §7 NIE_ZMIERZONO (jedyny taki wiersz: `getForestBuildBlockReason`). DANE = stala/zbior przeniesiony do
 `data/derived/ulepszenia-budowa.json` i zweryfikowany z TEKSTEM zrodla (`verify-m16-vectors.py`, sekcja `tab.*`) oraz zachowaniem
 (wektory). NIE-DOTYCZY = uzasadnienie. RUNDA-2 = lista w §7.
 
@@ -73,8 +73,8 @@ Legenda: PORTOWANY = kod + test + wektor z uruchomionego weba, 0 rozbieznosci. D
 | :1181 | `galleryTerrainEligible` | PORTOWANY (czysta regula terenu; galeria 3D jako UI = brak) | `gallery_terrain_eligible` | `gallery_terrain_eligible_matches_web` (264) |
 | :1252 | `galleryComboEligible` | PORTOWANY | `gallery_combo_eligible` | `gallery_combo_eligible_and_show_model_match_web` (3000) |
 | :1276 | `galleryComboShowModel` | PORTOWANY | `gallery_combo_show_model` | j.w. (6000) |
-| :1367 | `getForestBuildBlockReason` | PORTOWANY (zwraca wariant `ForestBlockReason` zamiast tekstu PL; mapowanie tekst->wariant w generatorze z TEKSTU zrodla) | `get_forest_build_block_reason` | `forest_build_block_reason_matches_web` (640; 6 z 8 wariantow osiagalnych, patrz §3 pkt 6) |
-| :1415 | `createImprovementBuildApi` | PORTOWANY (`getWorkCost`, `canBuild`, `getQualifyingHexes`, `createBuildRequest`, `handleHexClick`; `listTypes` = RUNDA-2) | `create_improvement_build_api` -> `ImprovementBuildApi` | `api_qualifying_hexes_and_work_cost_match_web` (4734 list kandydatow, 12800 zapytan `createBuildRequest`/`canBuild`), `api_hex_click_and_on_select_match_web` (16724 klikow) |
+| :1367 | `getForestBuildBlockReason` | PORTOWANY (cz.): port 1:1 wszystkich 8 galezi, wektor pokrywa 6 z 8 (brak `TartakWrongTerrainSome` `:1389` i `Generic` `:1404` - w webie nieosiagalne, §3 pkt 6, §7 NIE_ZMIERZONO); zwraca wariant `ForestBlockReason` zamiast tekstu PL; mapowanie tekst->wariant w generatorze z TEKSTU zrodla | `get_forest_build_block_reason` | `forest_build_block_reason_matches_web` (640; 6 z 8 wariantow w wektorach, patrz §3 pkt 6) |
+| :1415 | `createImprovementBuildApi` | PORTOWANY (`getWorkCost`, `canBuild`, `getQualifyingHexes`, `createBuildRequest`, `handleHexClick`; `listTypes` = RUNDA-2) | `create_improvement_build_api` -> `ImprovementBuildApi` | `api_qualifying_hexes_and_work_cost_match_web` (R2: 10560 list kandydatow = 320 stanow x 33 klucze - KAZDY klucz w KAZDYM stanie, w R1 losowy podzbior 4734; 12800 zapytan `createBuildRequest`/`canBuild`), `api_hex_click_and_on_select_match_web` (16724 klikow) |
 | :1560 | `collectRoadKeys` | NIE-DOTYCZY M16 (zakres M15: `improvement-build.ts`:1559-1569) | - | - |
 | :1569 | `isRoadImprovementKey` (re-eksport z `road-movement.ts`) | NIE-DOTYCZY M16 (M15); lokalnie uzywane przez `hex_has_road` przez dane P6.3 `improvements::road_improvement_keys` | - | `hex_has_road_matches_web` (400) |
 
@@ -192,11 +192,15 @@ Kazda ma wektory z uruchomionego weba i zostaje w `improvement_build.rs` do czas
 ## 5. Rozbieznosc regul web <-> `improvements.rs` (P6-25 §2 pkt 9) - WYNIK M16
 
 P6-25 zapisal: `hasBlockingDepositForFarm` zwraca w webie zawsze `false`, a Rust `deposit_gate` blokuje `Farm` gdy
-`tile.deposit.is_some()`. M16 **rozstrzyga strone weba wektorem**: web kwalifikuje farme / irygacje / tarasy na heksie ze zlozem
-(`p6_m16_divergence`: heksy ze `zloze` lub nakladka zlozowa, na ktorych web zwraca `true` dla kazdego z trzech kluczy, a
-`has_blocking_deposit_for_farm == false`). `improvements.rs:281` (`Farm | Irrigation | Terraces => tile.deposit.is_none()`) jest
-wiec NIEZGODNE z webem. M16 NIE edytuje `improvements.rs` (poza allowlista; P6.8/P6.17 maja ten plik), a kanoniczna regula weba
-jest dostepna jako `improvement_build::Qualifier`.
+`tile.deposit.is_some()`. Co M16 **zmierzyl** (wektor z uruchomionego weba, `p6_m16_divergence`): web kwalifikuje farme /
+irygacje / tarasy na heksie ze zlozem (heksy ze `zloze` lub nakladka zlozowa, na ktorych web zwraca `true` dla kazdego z trzech
+kluczy, a `has_blocking_deposit_for_farm == false`). Wektor dowodzi WYLACZNIE zachowania weba, nie tego, ze to kanon.
+Co M16 **odczytal ze zrodla**: web deklaruje to jako zamierzone - komentarz `improvement-build.ts:744-746` "WOLNE WSPOLISTNIENIE
+(Maciej 2026-07-09): zloza (ruda/kon/sol/glina) NIE blokuja farmy/irygacji/tarasow - wspolistnieja (surowiec = bok 1, pole = bok 2)";
+funkcja zostala jako stale `false` (nie usunieta). Ktora implementacja jest KANONEM dla portu (web czy `improvements.rs:281`
+`Farm | Irrigation | Terraces => tile.deposit.is_none()`) - **decyzja orkiestratora** (P6-25 §2 pkt 9 zostawia ja jemu); M16 jej NIE
+rozstrzyga. M16 NIE edytuje `improvements.rs` (poza allowlista; P6.8/P6.17 maja ten plik), a reguly weba sa dostepne jako
+`improvement_build::Qualifier`. Zmierzony fakt: `improvements.rs:281` jest NIEZGODNE z webem.
 
 Inne rozbieznosci znalezione przy czytaniu `improvements.rs` (NIE pinowane testem strony Rust - to bylyby piny cudzego kodu;
 do decyzji orkiestratora, ktora z dwoch implementacji jest kanonem przy zasilaniu komend):
@@ -218,13 +222,13 @@ do decyzji orkiestratora, ktora z dwoch implementacji jest kanonem przy zasilani
 | nowe pliki testow | - | `p6_m16_rules.rs` (15), `p6_m16_qualifier.rs` (4), `p6_m16_gallery.rs` (2), `p6_m16_tables.rs` (5), `p6_m16_divergence.rs` (1), `p6_m16_doc.rs` (1) = 28 |
 | zmienione testy istniejace | - | 0 (zadnego nie edytowano ani nie oslabiono; `tests/p6_m00_skeleton.rs` nietkniety, przechodzi) |
 
-Gate (surowe, PELNE logi z `EXIT=`): `gate-fmt-r1.log` (`cargo fmt --check`, EXIT=0), `gate-clippy-r1.log`
+Gate (surowe, PELNE logi z `EXIT=`; R2 = pliki `gate-*-r2.log`, wyniki w `02-operator-obrona-r2.md`): `gate-fmt-r1.log` (`cargo fmt --check`, EXIT=0), `gate-clippy-r1.log`
 (`cargo clippy --all-targets -- -D warnings`, EXIT=0), `gate-test-r1.log` (`cargo test --no-fail-fast`, EXIT=0, 702 passed / 0 failed).
 `git diff --check`: czysty (komenda i wynik w `gate-diff-check-r1.log`).
 
-Mutacje (`mutate-m16.py`, uruchamiane na kopii silnika poza repo; wynik w `mutation-evidence-r1.txt`): 48 mutacji (40 w kodzie `improvement_build.rs`, 8 w tabeli JSON), **47 wykrytych testem czerwonym, 1 rownowazna** (`gallery: combo bydlo+owce` - regula bydlo+owce bez farmy w `galleryComboEligible` jest nadmiarowa, bo tereny bydla i owiec sa rozlaczne; dwie inne rownowazne mutacje usuniete z listy z uzasadnieniem w pliku dowodowym). W przebiegu wstepnym przezyla `remove: placed.remove` (luka w wektorach: brak wpisow `placed` ze samymi farmami) - dodano 80 ukierunkowanych przypadkow do generatora i powtorzono caly przebieg na wektorach koncowych.
+Mutacje (`mutate-m16.py`, uruchamiane na kopii silnika poza repo; wynik w `mutation-evidence-r1.txt`): 50 mutacji zdefiniowanych, z czego **2 odrzucone PO FAKCIE jako rownowazne i usuniete z listy** (`api: candidate undo idx` oraz `case 'lama' teren`; `mutation-evidence-r1.txt`, "Uwaga 2"): liczba 48 to lista PO usunieciu, nie wszystkie zdefiniowane. Z 48 (40 w kodzie `improvement_build.rs`, 8 w tabeli JSON) **47 wykrytych testem czerwonym, 1 rownowazna** (`gallery: combo bydlo+owce` - regula bydlo+owce bez farmy w `galleryComboEligible` jest nadmiarowa, bo tereny bydla i owiec sa rozlaczne). Usuniete: (a) `idx > 0 -> idx >= 0` - kompozyt zaczynajacy sie od `:` daje pusty klucz kandydata, ktory nie jest kluczem zadnego heksa; (b) `teren !== Pustynia` w `case 'lama'` - warunek nadmiarowy, bo Pustynia nie nalezy do `TERRAIN_ALLOW.lama`. Ocena rownowaznosci to decyzja Operatora, nie wynik automatu - Evaluator moze ja podwazyc. R2: zmiana `qualifier.json` jest WYLACZNIE addytywna (stare `qualifying` jest podzbiorem nowych, reszta pliku identyczna - sprawdzone skryptem; `rules.json` i `gallery.json` bajt-w-bajt jak w R1), wiec wykrywalnosc mutacji z R1 nie maleje; pelnego przebiegu mutacji w R2 nie powtarzano. W przebiegu wstepnym przezyla `remove: placed.remove` (luka w wektorach: brak wpisow `placed` ze samymi farmami) - dodano 80 ukierunkowanych przypadkow do generatora i powtorzono caly przebieg na wektorach koncowych.
 
-Wektory z kontrolami istotnosci (liczniki "niepustych" wynikow w kazdym tescie, np. > 100 000 prawdziwych bitow kwalifikacji,
+Wektory z kontrolami istotnosci (liczniki "niepustych" wynikow w kazdym tescie, np. > 100 000 prawdziwych bitow kwalifikacji, `getQualifyingHexes` porownane dla KAZDEGO klucza w KAZDYM stanie (`checked == stany x klucze`),
 kazdy klucz z unii `ImprovementKey` bywa prawdziwy, > 500 `null` i > 500 niepustych skutkow budowy).
 
 ## 7. RUNDA-2 i NIE_ZMIERZONO (jawna lista)
@@ -235,15 +239,18 @@ RUNDA-2 (z uzasadnieniem):
   widocznosci panelu, `techUnlocked && canPlaceAny`, koszt Pracy, powod blokady lasu) sa juz portowane osobno i pokryte
   (`is_improvement_visible_in_build_panel`, `is_improvement_tech_unlocked`, `get_qualifying_hexes`, `get_work_cost`,
   `get_forest_build_block_reason`); brakuje tylko skladania w jedna liste z tekstem `lockHint`.
+- Literaly UI spoza tabeli `teksty` (swiadomie - naleza do niezportowanego `listTypes`): `'Brak heksów w twoim terytorium'` (`:1486`) i fallback `?? 'Brak lasu w twoim terytorium'` (`:1485`; wartosc rowna tekstowi galezi `Generic`, `:1404`) - przejmie je port `listTypes` razem z P6.17. Kryterium podzialu lokalnych portow z `improvement-tech.ts`: czy funkcja jest wolana przez cos innego niz `listTypes`. `getImprovementMeta` (`:1454`, `:1511`, `:1528`) i `isImprovementTechUnlocked` (`:1509`) sa wolane przez `getWorkCost`/`createBuildRequest`/`handleHexClick` - portowane lokalnie; `getImprovementLockHint` jest wolane WYLACZNIE z `listTypes` (`:1498`) - zostaje RUNDA-2 razem z `listTypes`.
 - `improvement-tech.ts`: `getImprovementLockHint`, `clearing`/`freshClearingState`/`tickHexClearing`, `terrainUnlockLabelsForTech` (P6.17).
 - `livestock-unlock.ts`: `computeEmpireLivestockUnlocks`, `hexHasLivestockDeposit`, `improvementMatchesLivestockDeposit`,
   `isLamaDepositVisibleForCiv` (P6.17; nie sa wolane przez `improvement-build.ts`).
 
+Tabela `teksty` (zarzut 6): R2 dodaje do weryfikatora 4 sprawdzenia, ze kazdy tekst z tabeli wystepuje doslownie w kodzie weba (`tab.teksty.*`, `verify-m16-r2.log`), niezaleznie od wektorow.
+
 NIE_ZMIERZONO: rozjazd klucza heksa i `coords` (§3 pkt 4); klucze z `Object.prototype` (§3 pkt 5); NaN/Infinity w stanie (§3 pkt 7);
-dwa nieosiagalne powody blokady lasu (§3 pkt 6); zachowanie `improvements.rs` po stronie Rust w §5 (odczyt kodu, bez testu).
+dwa nieosiagalne powody blokady lasu `TartakWrongTerrainSome`/`Generic` (§3 pkt 6; wiersz `getForestBuildBlockReason` w §2a = `PORTOWANY (cz.)`); zachowanie `improvements.rs` po stronie Rust w §5 (odczyt kodu, bez testu).
 
 ## 8. Artefakty runu
 
-`gen-m16-vectors.mjs`, `m16-loader-hooks.mjs`, `m16-loader-register.mjs`, `verify-m16-vectors.py`, `verify-m16-r1.log`,
+`gen-m16-vectors.mjs` (R2: `qualifying` dla wszystkich kluczy), `gen-m16-r2.log`, `verify-m16-r2.log`, gate `*-r2.log`, `02-operator-obrona-r2.md`, `m16-loader-hooks.mjs`, `m16-loader-register.mjs`, `verify-m16-vectors.py`, `verify-m16-r1.log`,
 `gen-m16-r1.log`, `mutate-m16.py`, `mutation-evidence-r1.txt`, `grep-literals-r1.txt`, `gate-fmt-r1.log`, `gate-clippy-r1.log`,
 `gate-test-r1.log`, `gate-diff-check-r1.log`, `01-operator-r1.md`.
