@@ -95,7 +95,11 @@ export interface StaticCatalogConstantsDto {
   cityBuildingPrereq: NieZmierzonoDto;
   waterAccessBuildingIds: string[];
   cityPanelRangeDepositLabels: NieZmierzonoDto;
-  tempoGry: NieZmierzonoDto;
+  /**
+   * P5.5 (`techTreeView.ts:699`, karta węzła „tempo … ×N”): mnożnik kosztu badań per tempo gry
+   * = web `TEMPO_GRY` (`game/tech-tempo.ts:23-27`; P5-0 §6.1 `tempo_gry`). Klucz = `ResearchViewDto.tempo`.
+   */
+  tempoGry: Readonly<Record<string, number>>;
 }
 
 export interface StaticCatalogLabelsDto {
@@ -423,7 +427,23 @@ export interface EmpireDetailDto {
   resourceUsageTotal: number;
   citizenUpkeepPerCitizen: number;
   manpower: { obywateleLabel: string; rekruciTotal: number };
-  improvementPolicy: NieZmierzonoDto;
+  /** P5.5: = web `UlepszeniaEmpirePolicy` (`game/cities.ts:303-310`) — konsument `buildModeHud.ts`. */
+  improvementPolicy: UlepszeniaEmpirePolicyDto;
+}
+
+/** P5.5: = web `UlepszeniaFocus` (`game/cities.ts:181`). */
+export type UlepszeniaFocusDto = 'zywnosc' | 'surowce' | 'infrastruktura' | 'zrownowazone';
+/** P5.5: = web `UlepszeniaTryb` (`game/cities.ts:184`). */
+export type UlepszeniaTrybDto = 'auto' | 'reczny';
+/** P5.5: = web `UlepszeniaPracaPercent` (`game/cities.ts:200`), % 0–`constants.maxUlepszeniaPracaAutoPercent`. */
+export type UlepszeniaPracaPercentDto = number;
+/** P5.5: = web `UlepszeniaEmpirePolicy` (`game/cities.ts:303-310`; P5-0 §6.5 `improvement_policy`). */
+export interface UlepszeniaEmpirePolicyDto {
+  focus: UlepszeniaFocusDto;
+  tryb: UlepszeniaTrybDto;
+  onlyWorked: boolean;
+  pracaAutoPercent: UlepszeniaPracaPercentDto;
+  wolnoWycinacLas: boolean;
 }
 
 // ─── §6.6 Dyplomacja ─────────────────────────────────────────────────────────
@@ -617,6 +637,18 @@ export interface NegotiationDealSidesDto {
 
 export interface DiploListDto {
   lines: string[];
+}
+
+/**
+ * P5.5 (`diploListHud.ts:481-490`, `diploListEntryFromRelation`): gotowe linie karty obcej cywilizacji
+ * = wynik web `formatDiploCivListLines` (`game/diplomacy-display.ts:670-706`; P5-0 §6.6 „DiploListDto: gotowe
+ * linie tekstu”) policzony w Rust dla relacji (z etykietą tieru relacji `tierLabel`, `diplomacyPanel.ts:132`).
+ * Pusty `metaLine`/`perspectiveLine` = brak linii (jak web).
+ */
+export interface DiploCivListLinesDto {
+  metaLine: string;
+  detailLine: string;
+  perspectiveLine: string;
 }
 
 // ─── §6.7 Heks ───────────────────────────────────────────────────────────────

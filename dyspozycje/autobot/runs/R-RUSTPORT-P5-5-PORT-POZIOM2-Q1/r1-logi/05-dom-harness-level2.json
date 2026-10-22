@@ -1,0 +1,288 @@
+{
+  "pin": "edb8fb56",
+  "totalCases": 1784,
+  "totalDiffs": 0,
+  "modules": [
+    {
+      "module": "leaderBannersHud.ts",
+      "cases": 2,
+      "diffs": 0,
+      "examples": [],
+      "notMeasured": [],
+      "domCases": 2,
+      "domEmpty": 1
+    },
+    {
+      "module": "cityCaptureNotice.ts",
+      "cases": 36,
+      "diffs": 0,
+      "examples": [],
+      "notMeasured": [],
+      "domCases": 36,
+      "domEmpty": 26
+    },
+    {
+      "module": "cityForeignPick.ts",
+      "cases": 27,
+      "diffs": 0,
+      "examples": [],
+      "notMeasured": [],
+      "domCases": 27,
+      "domEmpty": 16
+    },
+    {
+      "module": "cityUnitPick.ts",
+      "cases": 36,
+      "diffs": 0,
+      "examples": [],
+      "notMeasured": [],
+      "domCases": 36,
+      "domEmpty": 24
+    },
+    {
+      "module": "gamePauseMenu.ts",
+      "cases": 57,
+      "diffs": 0,
+      "examples": [],
+      "notMeasured": [],
+      "domCases": 57,
+      "domEmpty": 13
+    },
+    {
+      "module": "hotSeatHandoff.ts",
+      "cases": 15,
+      "diffs": 0,
+      "examples": [],
+      "notMeasured": [],
+      "domCases": 15
+    },
+    {
+      "module": "mainMenu.ts",
+      "cases": 66,
+      "diffs": 0,
+      "examples": [],
+      "notMeasured": [],
+      "domCases": 59,
+      "v2Assertions": [
+        {
+          "check": "obraz tła menu = bajty `assets/hero/hero-menu.png` (data URI; `?url`)",
+          "ok": true
+        }
+      ],
+      "v2AssertionsFailed": 0
+    },
+    {
+      "module": "unitForeignPick.ts",
+      "cases": 27,
+      "diffs": 0,
+      "examples": [],
+      "notMeasured": [],
+      "domCases": 27,
+      "domEmpty": 16
+    },
+    {
+      "module": "buildModeHud.ts",
+      "cases": 138,
+      "diffs": 0,
+      "examples": [],
+      "notMeasured": [
+        "zamknięcie kliknięciem poza panelem (`pointerdown` na `document`, pin :396-410) — wspólny `document` obu stron, nie wysyłane",
+        "pozycja dymka blokady (`offsetWidth`/`innerWidth`) — jsdom bez układu (0×0); porównany tylko jako ten sam wynik"
+      ],
+      "domCases": 138,
+      "v2Assertions": [
+        {
+          "check": "stałe zakresu z katalogu = pin (`MAX_PROCENT_PULI_IMPERIUM`, `MAX_ULEPSZENIA_PRACA_AUTO_PERCENT`)",
+          "ok": true
+        }
+      ],
+      "v2AssertionsFailed": 0
+    },
+    {
+      "module": "diplomacyPanel.ts",
+      "cases": 35,
+      "diffs": 0,
+      "examples": [],
+      "notMeasured": [],
+      "domCases": 22
+    },
+    {
+      "module": "techTreeView.ts",
+      "cases": 210,
+      "diffs": 0,
+      "examples": [],
+      "notMeasured": [
+        "klik(bez-haków): kliknięto 25 z 71 elementów (limit przypadków)",
+        "klik(start): kliknięto 25 z 111 elementów (limit przypadków)",
+        "klik(cel): kliknięto 90 z 111 elementów (limit przypadków)",
+        "klik(brąz): kliknięto 25 z 71 elementów (limit przypadków)",
+        "klik(wszystko): kliknięto 25 z 111 elementów (limit przypadków)",
+        "zoom kółkiem i przeciąganie (`wheel`/`pointer*`, pin :877-920) — jsdom bez układu; przyciski zoomu porównane",
+        "pozycja karty węzła (`showCardFor`, `offsetWidth`/`innerWidth`) — jsdom bez układu (0×0); porównany tylko jako ten sam wynik"
+      ],
+      "domCases": 210,
+      "v2Assertions": [
+        {
+          "check": "drzewko: karta węzła (.civ-ttv-tt) wypełniona po najechaniu (v2: 88; ≥ 32 — scenariusz „cel” × 2 właścicieli najeżdża każdy węzeł)",
+          "ok": true
+        },
+        {
+          "check": "drzewko: nakładka z węzłami w DOM v2 (10/10)",
+          "ok": true
+        },
+        {
+          "check": "v2 nie woła scaledResearchCost (koszt = ResearchViewDto.techs[].effectiveCost)",
+          "ok": true
+        }
+      ],
+      "v2AssertionsFailed": 0
+    },
+    {
+      "module": "unitInfoCard.ts",
+      "cases": 159,
+      "diffs": 0,
+      "examples": [],
+      "notMeasured": [
+        "miniatura jednostki (`mountUnitMiniPreview`, kolejka rAF): pin renderuje WebGL (three), v2 obraz z Rust/placeholder (D-UI-3) — zrzut przed rAF"
+      ],
+      "domCases": 157,
+      "domEmpty": 1,
+      "v2Assertions": [
+        {
+          "check": "karta: ścieżka entityCards w DOM v2 (75/75)",
+          "ok": true
+        },
+        {
+          "check": "legacy: ścieżka zapasowa osiągnięta w v2 (75/75)",
+          "ok": true
+        }
+      ],
+      "v2AssertionsFailed": 0
+    },
+    {
+      "module": "wikiHubHud.ts",
+      "cases": 390,
+      "diffs": 0,
+      "examples": [],
+      "notMeasured": [
+        "zamknięcie kliknięciem poza panelem (`bindHudPanelOutsideDismiss`, moduł P5.1) — wspólny `document` obu stron, nie wysyłane"
+      ],
+      "domCases": 44,
+      "domEmpty": 1
+    },
+    {
+      "module": "unitPanelHud.ts",
+      "cases": 27,
+      "diffs": 0,
+      "examples": [],
+      "notMeasured": [],
+      "domCases": 27
+    },
+    {
+      "module": "contextPanelHud.ts",
+      "cases": 3,
+      "diffs": 0,
+      "examples": [],
+      "notMeasured": [],
+      "domCases": 3
+    },
+    {
+      "module": "diplomacyProposalBanner.ts",
+      "cases": 4,
+      "diffs": 0,
+      "examples": [],
+      "notMeasured": [
+        "auto-ukrycie po 4500 ms (`setTimeout`) — nie czekano; `hide` porównany jawnie"
+      ],
+      "domCases": 4,
+      "domEmpty": 1
+    },
+    {
+      "module": "hudChip6c.ts",
+      "cases": 46,
+      "diffs": 0,
+      "examples": [],
+      "notMeasured": []
+    },
+    {
+      "module": "mapToolbarHud.ts",
+      "cases": 27,
+      "diffs": 0,
+      "examples": [],
+      "notMeasured": [],
+      "domCases": 26
+    },
+    {
+      "module": "armyMergePickPanel.ts",
+      "cases": 20,
+      "diffs": 0,
+      "examples": [],
+      "notMeasured": [],
+      "domCases": 20,
+      "domEmpty": 9
+    },
+    {
+      "module": "armySplitPanel.ts",
+      "cases": 23,
+      "diffs": 0,
+      "examples": [],
+      "notMeasured": [],
+      "domCases": 23,
+      "domEmpty": 10
+    },
+    {
+      "module": "diplomacyPendingHud.ts",
+      "cases": 21,
+      "diffs": 0,
+      "examples": [],
+      "notMeasured": [],
+      "domCases": 21,
+      "domEmpty": 9
+    },
+    {
+      "module": "interHumanDiplomacyHud.ts",
+      "cases": 67,
+      "diffs": 0,
+      "examples": [],
+      "notMeasured": [],
+      "domCases": 67,
+      "domEmpty": 3
+    },
+    {
+      "module": "unitReplacePicker.ts",
+      "cases": 24,
+      "diffs": 0,
+      "examples": [],
+      "notMeasured": [],
+      "domCases": 24,
+      "domEmpty": 11
+    },
+    {
+      "module": "armyStackHud.ts",
+      "cases": 237,
+      "diffs": 0,
+      "examples": [],
+      "notMeasured": [],
+      "domCases": 237
+    },
+    {
+      "module": "diploListHud.ts",
+      "cases": 80,
+      "diffs": 0,
+      "examples": [],
+      "notMeasured": [
+        "zamknięcie kliknięciem poza panelem (`bindHudPanelOutsideDismiss`, moduł P5.1) — wspólny `document` obu stron, nie wysyłane",
+        "singleton `showDiploListHud`/`toggleDiploListHud`/`refreshDiploListHudIfOpen` — `api` modułu ustawiany wyłącznie wewnętrznie (brak publicznego settera); `createDiploListHud` porównany wprost"
+      ],
+      "domCases": 49,
+      "domEmpty": 1
+    },
+    {
+      "module": "unitActionBarHtml.ts",
+      "cases": 7,
+      "diffs": 0,
+      "examples": [],
+      "notMeasured": []
+    }
+  ]
+}

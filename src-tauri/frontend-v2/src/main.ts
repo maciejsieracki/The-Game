@@ -64,6 +64,9 @@ async function boot(): Promise<void> {
   // P5.4: cykl C4 (karty encji + nauka) — jw., nic nie montują.
   const cycleC4 = await import('./ui/portCycleC4');
   shell.append(el('p', `Moduły cyklu C4 (P5.4): ${cycleC4.PORTED_CYCLE_C4.length}${mockTag}`));
+  // P5.5: poziom 2 (+ przechodnie poziomu 1 i poziom 3 bez cyklu) — jw., nic nie montują.
+  const level2 = await import('./ui/portLevel2');
+  shell.append(el('p', `Panele poziomu 2 (P5.5): ${level2.PORTED_LEVEL2.length}${mockTag}`));
   const status = el('p', `Źródło danych: ${controller.source}`, 'v2-status');
   shell.append(status);
 

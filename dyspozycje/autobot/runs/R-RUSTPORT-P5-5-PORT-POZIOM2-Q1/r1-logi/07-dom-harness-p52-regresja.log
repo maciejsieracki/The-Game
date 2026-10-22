@@ -1,0 +1,22 @@
+$ node tools/dom-harness/run.mjs --pin-dir <PIN_DIR>   # regresja P5.2
+icons/brandAssets.ts             przypadki=  814 różnice=0
+leaderPortraits.ts               przypadki=  888 różnice=0
+uiParams.ts                      przypadki=    1 różnice=0
+unitInfographic.ts               przypadki=  455 różnice=0
+power-labels.ts                  przypadki=   10 różnice=0 asercje_v2=3/3
+unitMiniPreview.ts               przypadki=    0 różnice=0 asercje_v2=4/4 NIE_ZMIERZONO=1
+   NIE_ZMIERZONO: pin renderuje miniaturę przez THREE.WebGLRenderer + render/units.buildUnitModel (pin :26-113) — w jsdom brak WebGL; D-UI-3: obraz z Rust. Sprawdzono tylko strukturę v2 (asercje niżej).
+civBrandDisplay.ts               przypadki=  108 różnice=0
+diplomacyAcceptanceBalance.ts    przypadki= 1245 różnice=0
+techUnlockParse.ts               przypadki=   67 różnice=0
+minimapHud.ts                    przypadki=    3 różnice=0 canvas_globalAlpha_w_logu=16 NIE_ZMIERZONO=1
+   NIE_ZMIERZONO: piksele canvas: porównano sekwencję wywołań kontekstu 2D (rejestrator), nie rastrowanie (jsdom bez canvas)
+perfReport.ts                    przypadki=   37 różnice=0
+improvementBuildConfirm.ts       przypadki=   96 różnice=0 dto.lines.join==formatImprovementBuildImpactList:true
+mapLoadingOverlay.ts             przypadki=   48 różnice=0
+saveLoadDialog.ts                przypadki=   17 różnice=0 wiersze_listy=pusto:0/0,3 sloty:3/3 NIE_ZMIERZONO=2
+   NIE_ZMIERZONO: zapisy z dysku (FSA) i „ostatnio grane”: jsdom nie ma File System Access API, a pin wymaga pełnego zapisu do walidacji lastPlayed — porównano listę pustą/3 sloty lokalne, lastPlayed=null, autosaves=[]
+   NIE_ZMIERZONO: akcje (klik usuń/wczytaj/zapisz → komendy) — nie klikane w harnessie
+victoryScreen.ts                 przypadki=   72 różnice=0
+dom-harness: pin=edb8fb56 modułów=15 przypadków=3861 różnic=0 kolizji_kategorii=0 jsdomErrors=0
+EXIT=0

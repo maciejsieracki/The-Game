@@ -73,6 +73,16 @@ const vitePlugin = {
       namespace: 'raw',
     }));
     b.onLoad({ filter: /.*/, namespace: 'raw' }, (args) => ({ contents: readFileSync(args.path, 'utf8'), loader: 'text' }));
+    // P5.5 (`mainMenu.ts:20`): `import x from './plik.png?url'` → `data:<mime>;base64,…` (jak obrazy w `import.meta.glob`:
+    // porównujemy BAJTY obrazu, nie nazwę pliku z hashem builda).
+    b.onResolve({ filter: /\?url$/ }, (args) => ({
+      path: resolve(args.resolveDir, args.path.replace(/\?url$/, '')),
+      namespace: 'url',
+    }));
+    b.onLoad({ filter: /.*/, namespace: 'url' }, (args) => ({
+      contents: `export default ${JSON.stringify(`data:${MIME[extname(args.path).toLowerCase()] ?? 'application/octet-stream'};base64,${readFileSync(args.path).toString('base64')}`)};`,
+      loader: 'js',
+    }));
     b.onLoad({ filter: /\.ts$/ }, (args) => {
       const src = readFileSync(args.path, 'utf8');
       if (!src.includes('import.meta.glob')) return undefined;

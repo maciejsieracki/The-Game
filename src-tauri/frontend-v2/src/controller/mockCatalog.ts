@@ -50,7 +50,8 @@ export const MOCK_STATIC_CATALOG: StaticCatalogDto = {
     menu: { wersja: 'MOCK', etap: 'MOCK', muzyka_fade_in_ms: 0, ustawienia: [] },
     nowa_gra: { ustawienia: [] },
   },
-  wiki: {},
+  // P5.5: kształt `wikiBundle.json` (`{ poradnik, encyklopedia }`) — czytany przez `wikiHubHud.ts` przy ewaluacji modułu.
+  wiki: { poradnik: [], encyklopedia: [] },
   constants: {
     handelPctStep: 0,
     maxProcentNauka: 0,
@@ -74,7 +75,7 @@ export const MOCK_STATIC_CATALOG: StaticCatalogDto = {
     cityBuildingPrereq: { mock: MOCK_LABEL },
     waterAccessBuildingIds: [],
     cityPanelRangeDepositLabels: { mock: MOCK_LABEL },
-    tempoGry: { mock: MOCK_LABEL },
+    tempoGry: { 'MOCK-tempo': 1 },
   },
   labels: {
     podzialPracyPulaLbl: 'MOCK',

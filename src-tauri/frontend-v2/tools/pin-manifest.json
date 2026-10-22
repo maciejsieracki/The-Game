@@ -2479,6 +2479,114 @@
       "pin": "edb8fb56:gra/src/ui/entityCards/wonderAdapter.ts",
       "sha256": "a2fe269f16bacf333ba65e4df2188afe568611aa9a04ee5439e8ed07135edf9d",
       "bytes": 7747
+    },
+    {
+      "path": "src/ui/leaderBannersHud.ts",
+      "pin": "edb8fb56:gra/src/ui/leaderBannersHud.ts",
+      "sha256": "a12292966eeef48c674b0316ca3b3aa18fb800768d9f236d46356658dde5732e",
+      "bytes": 3114
+    },
+    {
+      "path": "src/ui/cityCaptureNotice.ts",
+      "pin": "edb8fb56:gra/src/ui/cityCaptureNotice.ts",
+      "sha256": "0d7f631041e4fcb4813397c80f1c59aab43a2af8d287bd3c0a8b2ca8e1b68293",
+      "bytes": 15952
+    },
+    {
+      "path": "src/ui/cityForeignPick.ts",
+      "pin": "edb8fb56:gra/src/ui/cityForeignPick.ts",
+      "sha256": "796be06eb2314ad8253357bb4b05ce2241ba86fa75f449750516c9fbf690b54b",
+      "bytes": 9917
+    },
+    {
+      "path": "src/ui/cityUnitPick.ts",
+      "pin": "edb8fb56:gra/src/ui/cityUnitPick.ts",
+      "sha256": "9861cf6c14cd430c4458969489f8e04de5e9f8904f88764c66e310cdaeb71a35",
+      "bytes": 10714
+    },
+    {
+      "path": "src/ui/gamePauseMenu.ts",
+      "pin": "edb8fb56:gra/src/ui/gamePauseMenu.ts",
+      "sha256": "7e6b13de9e67957f9696bc63d0ab55b23f9d3f02de0fdf4703749ae9f419392d",
+      "bytes": 17727
+    },
+    {
+      "path": "src/ui/hotSeatHandoff.ts",
+      "pin": "edb8fb56:gra/src/ui/hotSeatHandoff.ts",
+      "sha256": "e14cf16a5bcd1068024ab72b281b4bf7f6666132bb10bf6eb049bcb8a578a92f",
+      "bytes": 6093
+    },
+    {
+      "path": "src/ui/mainMenu.ts",
+      "pin": "edb8fb56:gra/src/ui/mainMenu.ts",
+      "sha256": "ed37f2cef46f0458b494a0b21360637679f89fac835e7b577c18711cfee0bbf3",
+      "bytes": 24315
+    },
+    {
+      "path": "src/ui/unitForeignPick.ts",
+      "pin": "edb8fb56:gra/src/ui/unitForeignPick.ts",
+      "sha256": "170ec6f63a1482aad1d42e6a0745f12ed9249e730b180c92f4906cd31f732606",
+      "bytes": 9974
+    },
+    {
+      "path": "src/ui/contextPanelHud.ts",
+      "pin": "edb8fb56:gra/src/ui/contextPanelHud.ts",
+      "sha256": "448ae39dc14864886de430fd4a0025172f35b271d5d5c449f758b91d689f15f1",
+      "bytes": 2379
+    },
+    {
+      "path": "src/ui/diplomacyProposalBanner.ts",
+      "pin": "edb8fb56:gra/src/ui/diplomacyProposalBanner.ts",
+      "sha256": "80e55445f092ea050819c41e5608a704c616266e69d96552ea7af15e494ae443",
+      "bytes": 2521
+    },
+    {
+      "path": "src/ui/hudChip6c.ts",
+      "pin": "edb8fb56:gra/src/ui/hudChip6c.ts",
+      "sha256": "2fe6b462a6eaf3006d32a2626cf134892c496715fa19216f8dc635fe6bc203bd",
+      "bytes": 3075
+    },
+    {
+      "path": "src/ui/mapToolbarHud.ts",
+      "pin": "edb8fb56:gra/src/ui/mapToolbarHud.ts",
+      "sha256": "80ac2f8ec0db63b0898960de6be5fa5d950881bd964b2515afff335e90d0ca09",
+      "bytes": 8795
+    },
+    {
+      "path": "src/ui/armyMergePickPanel.ts",
+      "pin": "edb8fb56:gra/src/ui/armyMergePickPanel.ts",
+      "sha256": "05bf1ac237d41ffc16a5b1b00c2dc4961d709b2c175adede68253fe899bb4415",
+      "bytes": 7556
+    },
+    {
+      "path": "src/ui/armySplitPanel.ts",
+      "pin": "edb8fb56:gra/src/ui/armySplitPanel.ts",
+      "sha256": "59b839aececf306e42eab352212af37ed73f4de7daee903f0642ea8975fc7751",
+      "bytes": 7424
+    },
+    {
+      "path": "src/ui/diplomacyPendingHud.ts",
+      "pin": "edb8fb56:gra/src/ui/diplomacyPendingHud.ts",
+      "sha256": "56aa1f85274ac2b6b4cde5a3da5a83014bf51db76bdf6dc7886d41e61cef2c81",
+      "bytes": 3264
+    },
+    {
+      "path": "src/ui/interHumanDiplomacyHud.ts",
+      "pin": "edb8fb56:gra/src/ui/interHumanDiplomacyHud.ts",
+      "sha256": "123438dbe01f59bd00059b09dae3e22b3ff0cec2c930b66100bb1e4b0d08ef52",
+      "bytes": 12924
+    },
+    {
+      "path": "src/ui/unitActionBarHtml.ts",
+      "pin": "edb8fb56:gra/src/ui/unitActionBarHtml.ts",
+      "sha256": "7f9bfa0738260c9feb2c3005c9054297ffe128aff733c565c67f8b44611d2af1",
+      "bytes": 10052
+    },
+    {
+      "path": "src/ui/assets/hero/hero-menu.png",
+      "pin": "edb8fb56:gra/src/ui/assets/hero/hero-menu.png",
+      "sha256": "5a229b44374db46dfed1dad10eb8597d1ade40ec6b4645afda595964a694e93e",
+      "bytes": 2175174
     }
   ]
 }
