@@ -27,10 +27,8 @@ dotykające tych samych plików — zawsze sekwencyjnie, nigdy w tej samej fali.
 
 | # | Temat | Faza | Runda | runId Workflow | Status | Ostatnia aktualizacja |
 |---|---|---|---|---|---|---|
-| 1 | `R-RUSTPORT-P3-19-FLATTEN-MULTIPLIERS-Q1` | P3.19 runda 3: mnożniki → konkretne edytowalne liczby | 3/5 | `wf_d0304bdc-95d` | DISPATCHED | 2026-10-21 |
-| 2 | `R-RUSTPORT-P3-20-OWNERREF-CAMPID-Q1` | P3.20 `OwnerRef`/`CampId` w domenie | 1/5 | `wf_a8debab3-5a3` | DISPATCHED | 2026-10-21 |
-| 3 | `R-RUSTPORT-P4-11-CAMERA-TERRAIN-CPU-Q1` | RR-T2 kamera + teren CPU (`renderer`) — Opus 5.5 | 1/5 | `wf_7bf11755-730` | DISPATCHED | 2026-10-21 |
-| 4–6 | — | — | — | — | **WOLNE** (GPU-zależne czekają na maszynę właściciela; pytania ABC PACZKA 2–4/4 do zadania) | 2026-10-21 |
+| 1 | `R-RUSTPORT-P3-19-FLATTEN-MULTIPLIERS-Q1` | P3.19 runda 3 — **WSTRZYMANY: czeka na odpowiedzi właściciela (paczka ABC P3-19 Q1–Q3)** | 3/5 | — | DECISION_REQUIRED | 2026-10-22 |
+| 2–6 | — | — | — | — | **WOLNE** (P3.21 `CityId` startuje po P3.19 — te same pliki domeny; RR-T5 materiały/RR-T1 spike wymagają GPU; modele NM/MOD czekają na decyzje D-NM i spike) | 2026-10-22 |
 
 **Zamknięte w tej sesji (kod na `rust-port/parity-v2`, HEAD `aa7b225b`, 292 testy):** P3.4b, P3.4c (newtypy ID), P3.8 (assety 428), P3.8b (manifest), P3.9 (data wiring), P3.11 (zgodność danych), P3.12 (loader), P3.14 (fmt/clippy w `src/data`).
 
