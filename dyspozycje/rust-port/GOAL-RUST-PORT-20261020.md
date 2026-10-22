@@ -27,7 +27,7 @@ dotykające tych samych plików — zawsze sekwencyjnie, nigdy w tej samej fali.
 
 | # | Temat | Faza | Runda | runId Workflow | Status | Ostatnia aktualizacja |
 |---|---|---|---|---|---|---|
-| 1 | `R-RUSTPORT-P3-19-FLATTEN-MULTIPLIERS-Q1` | P3.19 runda 3 — **WSTRZYMANY: czeka na odpowiedzi właściciela (paczka ABC P3-19 Q1–Q3)** | 3/5 | — | DECISION_REQUIRED | 2026-10-22 |
+| 1 | `R-RUSTPORT-P3-22-FLATTEN-STAGE2-Q1` | etap 2 mnożników (dyplomacja, handel, AI, barbarzyńcy, walka, wzrost, mapa; tabele stanów wg Q3=A) | 1/5 | `wf_6b09c6e4-c20` | DISPATCHED | 2026-10-22 |
 | 2 | `R-RUSTPORT-P4-12-MOD01-CORE-Q1` | MOD-01 rdzeń renderera (hex, fog, LOD, rnd, palety) — Opus 5.5 | 1/5 | `wf_911d780b-448` | DISPATCHED | 2026-10-22 |
 | 3 | `R-RUSTPORT-P4-13-MOD04-UNIT-CORE-Q1` | MOD-04 rdzeń modeli jednostek + routing D-MOD-9 — Opus 5.5 | 1/5 | `wf_590a7af3-626` | DISPATCHED | 2026-10-22 |
 | 4 | `R-RUSTPORT-P4-15-GPU-SPIKE-PREP-Q1` | RR-T1 przygotowanie spike'a GPU (crate `spike-gpu-embed`, instrukcja dla właściciela) — Opus 5.5 | 1/5 | `wf_d050c8fc-9a3` | DISPATCHED | 2026-10-22 |
