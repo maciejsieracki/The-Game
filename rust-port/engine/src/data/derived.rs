@@ -2765,3 +2765,189 @@ pub fn start_scoring() -> &'static StartScoringFile {
     static TABLE: std::sync::OnceLock<StartScoringFile> = std::sync::OnceLock::new();
     TABLE.get_or_init(|| parse_start_scoring().expect("start-scoring.json must parse"))
 }
+
+// ---------------------------------------------------------------------------
+// P6.5B (R-RUSTPORT-P6-5B-JEDNOSTKI-ZYCIE-B-Q1): stale z `manpower.ts`, `units/setup.ts`
+// (zbior jednostek cywilnych) i `unit-building-bonuses.ts`, trzymane w KODZIE weba. Czytane przez
+// `domain::recruitment::manpower` i `domain::combat::unit_building_bonuses`. Wartosci sa EDYTOWALNE
+// w `data/derived/{manpower-params,unit-building-bonuses,locale-compare-ascii}.json`; kod Rust nie
+// zawiera ich literalow. Tabela epok i parametry miasta zostaly w `data/economy_society.rs`.
+// ---------------------------------------------------------------------------
+
+pub const MANPOWER_PARAMS_JSON: &str = include_str!("../../data/derived/manpower-params.json");
+pub const UNIT_BUILDING_BONUSES_JSON: &str =
+    include_str!("../../data/derived/unit-building-bonuses.json");
+pub const LOCALE_COMPARE_ASCII_JSON: &str =
+    include_str!("../../data/derived/locale-compare-ascii.json");
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct ManpowerEpokaBounds {
+    pub min: u32,
+    pub max: u32,
+    pub zrodlo_web: String,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct ManpowerDefaultRegen {
+    pub proc_max_na_ture: f64,
+    pub blokada_przy_oblezeniu: bool,
+    pub zrodlo_web: String,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct ManpowerDefaultReplenish {
+    pub easy: f64,
+    pub normal: f64,
+    pub hard: f64,
+    pub zrodlo_web: String,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct ManpowerCivMults {
+    pub regen_min: f64,
+    pub max_min: f64,
+    pub skalowanie_min: f64,
+    pub typ_regen_bonus: String,
+    pub typ_regen_mnoznik: String,
+    pub typ_pula_bonus: String,
+    pub typ_pula_mnoznik: String,
+    pub zrodlo_web: String,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct ManpowerSortKeys {
+    pub oblezone: u8,
+    pub garnizon: u8,
+    pub pole: u8,
+    pub zrodlo_web: String,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct ManpowerBlockReasons {
+    pub brak_manpower: String,
+    pub brak_ludnosci: String,
+    pub zrodlo_web: String,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct ManpowerCivilian {
+    pub kategorie: Vec<String>,
+    pub typy: Vec<String>,
+    pub zrodlo_web: String,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct ManpowerFormatting {
+    pub obywatel_jeden: String,
+    pub obywatel_wiele: String,
+    pub prog_mln: f64,
+    pub prog_tys: f64,
+    pub sufiks_mln: String,
+    pub sufiks_tys: String,
+    pub prog_calkowite_mln: f64,
+    pub prog_calkowite_tys: f64,
+    pub krok_dziesiatych: f64,
+    pub zrodlo_web: String,
+}
+
+/// Plik `manpower-params.json`.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct ManpowerParamsFile {
+    pub meta: serde_json::Value,
+    pub epoka: ManpowerEpokaBounds,
+    pub min_ludkow: f64,
+    pub scout_type_id: String,
+    pub maks_proc: f64,
+    pub domyslny_zwrot_koszt_ludnosci: f64,
+    pub domyslne_regen: ManpowerDefaultRegen,
+    pub domyslne_uzupelnienie_hp_proc: ManpowerDefaultReplenish,
+    pub mnozniki_cywilizacji: ManpowerCivMults,
+    pub klucz_sortowania_leczenia: ManpowerSortKeys,
+    pub powody_blokady: ManpowerBlockReasons,
+    pub cywilne: ManpowerCivilian,
+    pub formatowanie: ManpowerFormatting,
+}
+
+pub fn parse_manpower_params() -> Result<ManpowerParamsFile, serde_json::Error> {
+    serde_json::from_str(MANPOWER_PARAMS_JSON)
+}
+
+/// Stale `manpower.ts` (jednorazowy odczyt; blad danych = panika z komunikatem).
+pub fn manpower_params() -> &'static ManpowerParamsFile {
+    static TABLE: std::sync::OnceLock<ManpowerParamsFile> = std::sync::OnceLock::new();
+    TABLE.get_or_init(|| parse_manpower_params().expect("manpower-params.json must parse"))
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct BuildingPathParams {
+    pub budynki: Vec<String>,
+    pub max_pp: f64,
+    pub zrodlo_web: String,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct BuildingBonusLabels {
+    pub pancerz: String,
+    pub parametry: String,
+    pub separator: String,
+    pub wzmianka_pancerz: String,
+    pub wzmianka_parametry: String,
+    pub wzmianka: String,
+    pub zrodlo_web: String,
+}
+
+/// Plik `unit-building-bonuses.json`.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct UnitBuildingBonusesFile {
+    pub meta: serde_json::Value,
+    pub sciezka_pancerz: BuildingPathParams,
+    pub sciezka_parametry: BuildingPathParams,
+    pub max_glebokosc_lancucha: usize,
+    pub liczba_tercji: f64,
+    pub podstawa_procentu: f64,
+    pub etykiety: BuildingBonusLabels,
+}
+
+pub fn parse_unit_building_bonuses() -> Result<UnitBuildingBonusesFile, serde_json::Error> {
+    serde_json::from_str(UNIT_BUILDING_BONUSES_JSON)
+}
+
+/// Stale `unit-building-bonuses.ts` (jednorazowy odczyt; blad danych = panika z komunikatem).
+pub fn unit_building_bonuses_params() -> &'static UnitBuildingBonusesFile {
+    static TABLE: std::sync::OnceLock<UnitBuildingBonusesFile> = std::sync::OnceLock::new();
+    TABLE.get_or_init(|| {
+        parse_unit_building_bonuses().expect("unit-building-bonuses.json must parse")
+    })
+}
+
+/// Plik `locale-compare-ascii.json` (kolejnosc `localeCompare` dla ASCII).
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct LocaleCompareAsciiFile {
+    pub meta: serde_json::Value,
+    pub kolejnosc_podstawowa: String,
+    pub male_przed_wielkimi: bool,
+}
+
+pub fn parse_locale_compare_ascii() -> Result<LocaleCompareAsciiFile, serde_json::Error> {
+    serde_json::from_str(LOCALE_COMPARE_ASCII_JSON)
+}
+
+/// Kolejnosc ICU dla ASCII (jednorazowy odczyt; blad danych = panika z komunikatem).
+pub fn locale_compare_ascii() -> &'static LocaleCompareAsciiFile {
+    static TABLE: std::sync::OnceLock<LocaleCompareAsciiFile> = std::sync::OnceLock::new();
+    TABLE
+        .get_or_init(|| parse_locale_compare_ascii().expect("locale-compare-ascii.json must parse"))
+}

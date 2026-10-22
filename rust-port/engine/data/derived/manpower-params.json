@@ -1,0 +1,66 @@
+{
+  "meta": {
+    "status": "P6.5B - stale i teksty z gra/src/game/manpower.ts (pin edb8fb56), EDYTOWALNE; kod Rust nie zawiera tych literalow",
+    "pin_web": "edb8fb56",
+    "temat": "R-RUSTPORT-P6-5B-JEDNOSTKI-ZYCIE-B-Q1",
+    "uwaga": "Tabela epok (ludekNaLudka/manpowerNaLudka/manpowerNaJednostke) i parametry miasto-params.json (manpower_regen_*, manpower_uzupelnienie_hp_*) sa w data/epoka-ludnosc-manpower.json i data/miasto-params.json (DANE-JUZ-W-RUST, czytane przez data/economy_society.rs); tu tylko to, co web trzyma w KODZIE manpower.ts / units/setup.ts."
+  },
+  "epoka": {
+    "min": 1,
+    "max": 10,
+    "zrodlo_web": "manpower.ts:52 MAX_EPOKA, :480 Math.max(1, ...)"
+  },
+  "min_ludkow": 1,
+  "scout_type_id": "Zwiadowca",
+  "maks_proc": 100,
+  "domyslny_zwrot_koszt_ludnosci": 1,
+  "domyslne_regen": {
+    "proc_max_na_ture": 2,
+    "blokada_przy_oblezeniu": true,
+    "zrodlo_web": "manpower.ts:63 DEFAULT_REGEN"
+  },
+  "domyslne_uzupelnienie_hp_proc": {
+    "easy": 40,
+    "normal": 30,
+    "hard": 20,
+    "zrodlo_web": "manpower.ts:75 DEFAULT_REPLENISH_PCT"
+  },
+  "mnozniki_cywilizacji": {
+    "regen_min": 0.1,
+    "max_min": 0.1,
+    "skalowanie_min": 0.1,
+    "typ_regen_bonus": "bonus_pobor_regen",
+    "typ_regen_mnoznik": "mnoznik_pobor_regen",
+    "typ_pula_bonus": "bonus_pobor_pula",
+    "typ_pula_mnoznik": "mnoznik_manpower_max",
+    "zrodlo_web": "manpower.ts:396-428, :440-442"
+  },
+  "klucz_sortowania_leczenia": {
+    "oblezone": 2,
+    "garnizon": 0,
+    "pole": 1,
+    "zrodlo_web": "manpower.ts:143-150 replenishmentUnitSortKey"
+  },
+  "powody_blokady": {
+    "brak_manpower": "brak_manpower",
+    "brak_ludnosci": "brak_ludnosci",
+    "zrodlo_web": "manpower.ts:755 UnitSpawnBlockReason"
+  },
+  "cywilne": {
+    "kategorie": ["osadnik", "robotnik", "zwiadowca"],
+    "typy": ["Zwiadowca", "Osadnik", "Robotnik"],
+    "zrodlo_web": "units/setup.ts:190-199 CIVILIAN_CATEGORIES, CIVILIAN_TYPE_IDS, isCivilianUnit (zaleznosc manpower.ts spoza zakresu, portowana lokalnie)"
+  },
+  "formatowanie": {
+    "obywatel_jeden": "obywatel",
+    "obywatel_wiele": "obywateli",
+    "prog_mln": 1000000,
+    "prog_tys": 1000,
+    "sufiks_mln": " mln",
+    "sufiks_tys": " tys.",
+    "prog_calkowite_mln": 10,
+    "prog_calkowite_tys": 100,
+    "krok_dziesiatych": 10,
+    "zrodlo_web": "manpower.ts:494-499, :858-868"
+  }
+}

@@ -1399,3 +1399,1373 @@ pub mod army_merge {
         }
     }
 }
+
+// ---------------------------------------------------------------------------
+// P6.5B (R-RUSTPORT-P6-5B-JEDNOSTKI-ZYCIE-B-Q1): port `gra/src/game/manpower.ts` (pin edb8fb56).
+//
+// Ludnosc absolutna i pula Manpower per miasto, odnowa, rekrutacja z puli imperium oraz leczenie
+// jednostek z puli. Stale i teksty: `data/derived/manpower-params.json`; tabela epok i parametry
+// miasta: `data/epoka-ludnosc-manpower.json`, `data/miasto-params.json` (DANE-JUZ-W-RUST,
+// `data/economy_society.rs`). Liczby sa `f64` (semantyka JS: `NaN`, `-0`, `Math.min/max/round`).
+//
+// Zaleznosci spoza tego pliku weba:
+// - `isCivilianUnit` (`units/setup.ts:196`): portowana lokalnie (`is_civilian_unit`), zbior w JSON;
+// - `localeCompare` (ICU): `locale_compare` (ASCII 0x20-0x7E zmierzone, reszta NIE_ZMIERZONO);
+// - `Number#toString`: `js_number_to_string` (algorytm ECMAScript Number::toString).
+// Domkniecia wstrzykiwane przez weba (`resolveOwnerEra`, `resolveOwnerBonusy`, `getMaxHp`,
+// `onUnitHpChanged`) pozostaja domknieciami.
+// ---------------------------------------------------------------------------
+
+pub mod manpower {
+    use std::sync::OnceLock;
+
+    use super::army_merge::{js_max, js_min, js_round};
+    use crate::data::derived::{locale_compare_ascii, manpower_params};
+    use crate::data::economy_society::{
+        parse_epoka_ludnosc_manpower, parse_miasto_params, MiastoParams,
+    };
+
+    // -----------------------------------------------------------------------
+    // Semantyka JS: Number#toString, localeCompare, stabilne sortowanie
+    // -----------------------------------------------------------------------
+
+    /// Web `String(x)` / `${x}` dla liczby (ECMAScript Number::toString, radix 10).
+    pub fn js_number_to_string(x: f64) -> String {
+        if x.is_nan() {
+            return "NaN".to_owned();
+        }
+        if x == 0.0 {
+            return "0".to_owned();
+        }
+        if x.is_infinite() {
+            return if x > 0.0 { "Infinity" } else { "-Infinity" }.to_owned();
+        }
+        let sign = if x < 0.0 { "-" } else { "" };
+        let (digits, n) = shortest_digits(x.abs());
+        let k = i32::try_from(digits.len()).expect("liczba cyfr");
+        let body = if k <= n && n <= 21 {
+            format!(
+                "{digits}{}",
+                "0".repeat(usize::try_from(n - k).expect("n >= k"))
+            )
+        } else if 0 < n && n <= 21 {
+            let split = usize::try_from(n).expect("n > 0");
+            format!("{}.{}", &digits[..split], &digits[split..])
+        } else if -6 < n && n <= 0 {
+            format!(
+                "0.{}{digits}",
+                "0".repeat(usize::try_from(-n).expect("n <= 0"))
+            )
+        } else {
+            let e = n - 1;
+            let e_sign = if e < 0 { "-" } else { "+" };
+            if k == 1 {
+                format!("{digits}e{e_sign}{}", e.abs())
+            } else {
+                format!("{}.{}e{e_sign}{}", &digits[..1], &digits[1..], e.abs())
+            }
+        };
+        format!("{sign}{body}")
+    }
+
+    /// Najkrotsze cyfry `digits` i wykladnik `n` (wartosc = 0.digits * 10^n) dla dodatniej, skonczonej
+    /// liczby. Przy DOKLADNYM remisie dwoch najkrotszych kandydatow ECMAScript wybiera parzysta
+    /// ostatnia cyfre (Rust wybiera wieksza), np. `-2199212936684489.25` -> `...489.2`.
+    fn shortest_digits(abs: f64) -> (String, i32) {
+        let scientific = format!("{abs:e}");
+        let (mantissa, exponent) = scientific
+            .split_once('e')
+            .expect("format {:e} ma wykladnik");
+        let digits: String = mantissa.chars().filter(|c| *c != '.').collect();
+        let exp10 = exponent.parse::<i32>().expect("wykladnik");
+        let n = exp10 + 1;
+        let k = digits.len();
+        if k >= 18 {
+            return (digits, n);
+        }
+        // k + 1 cyfr znaczacych: remis tylko gdy ostatnia cyfra to 5 i rozwiniecie sie na niej konczy
+        let longer = format!("{abs:.k$e}");
+        let longer_digits: String = longer
+            .split_once('e')
+            .expect("wykladnik")
+            .0
+            .chars()
+            .filter(|c| *c != '.')
+            .collect();
+        if !longer_digits.ends_with('5') {
+            return (digits, n);
+        }
+        let exact = format!("{abs:.800e}");
+        let tail: String = exact
+            .split_once('e')
+            .expect("wykladnik")
+            .0
+            .chars()
+            .filter(|c| *c != '.')
+            .skip(k + 1)
+            .collect();
+        let exp_longer = longer
+            .split_once('e')
+            .expect("wykladnik")
+            .1
+            .parse::<i32>()
+            .expect("wykladnik");
+        if tail.chars().any(|c| c != '0') {
+            return (digits, n);
+        }
+        let Ok(lower) = longer_digits[..k].parse::<u64>() else {
+            return (digits, n);
+        };
+        let scale = exp_longer - (i32::try_from(k).expect("k") - 1);
+        let candidates = [lower, lower + 1];
+        let chosen = candidates
+            .iter()
+            .copied()
+            .filter(|c| c % 2 == 0)
+            .find(|c| format!("{c}e{scale}").parse::<f64>().ok() == Some(abs));
+        match chosen {
+            Some(cand) if cand > 0 => {
+                let text = cand.to_string();
+                let nn = i32::try_from(text.len()).expect("len") + scale;
+                (text.trim_end_matches('0').to_owned(), nn)
+            }
+            _ => (digits, n),
+        }
+    }
+
+    fn ascii_printable(text: &str) -> bool {
+        text.chars().all(|c| (' '..='~').contains(&c))
+    }
+
+    /// Web `a.localeCompare(b)` (ICU, locale en-US) dla napisow z ASCII 0x20-0x7E: poziom 1 wg
+    /// `locale-compare-ascii.json` (wielkosc liter ignorowana), poziom 3: male przed wielkimi.
+    /// Napisy spoza tego zakresu: NIE_ZMIERZONO - porownanie jednostek UTF-16.
+    pub fn locale_compare(a: &str, b: &str) -> i32 {
+        let ordering = if ascii_printable(a) && ascii_printable(b) {
+            let table = locale_compare_ascii();
+            let weight = |c: char| {
+                let lower = c.to_ascii_lowercase();
+                table
+                    .kolejnosc_podstawowa
+                    .chars()
+                    .position(|candidate| candidate == lower)
+            };
+            let primary_a: Vec<Option<usize>> = a.chars().map(weight).collect();
+            let primary_b: Vec<Option<usize>> = b.chars().map(weight).collect();
+            primary_a.cmp(&primary_b).then_with(|| {
+                for (ca, cb) in a.chars().zip(b.chars()) {
+                    if ca != cb {
+                        let a_lower = ca.is_ascii_lowercase();
+                        return if a_lower == table.male_przed_wielkimi {
+                            std::cmp::Ordering::Less
+                        } else {
+                            std::cmp::Ordering::Greater
+                        };
+                    }
+                }
+                std::cmp::Ordering::Equal
+            })
+        } else {
+            a.encode_utf16().cmp(b.encode_utf16())
+        };
+        match ordering {
+            std::cmp::Ordering::Less => -1,
+            std::cmp::Ordering::Equal => 0,
+            std::cmp::Ordering::Greater => 1,
+        }
+    }
+
+    /// Web `Array#sort(cmp)` (stabilny): komparator zwraca liczbe (`NaN` = rowne, jak w V8);
+    /// wstawianie bez paniki dla niespojnych komparatorow.
+    fn stable_sort_by<T>(items: &mut [T], cmp: &dyn Fn(&T, &T) -> f64) {
+        for i in 1..items.len() {
+            let mut j = i;
+            while j > 0 && cmp(&items[j - 1], &items[j]) > 0.0 {
+                items.swap(j - 1, j);
+                j -= 1;
+            }
+        }
+    }
+
+    // -----------------------------------------------------------------------
+    // Tabela epok i parametry miasta (dane juz w Rust)
+    // -----------------------------------------------------------------------
+
+    /// Web `EpokaManpowerRow` (`manpower.ts:30`).
+    #[derive(Debug, Clone, Copy, PartialEq)]
+    pub struct EpokaManpowerRow {
+        pub epoka: f64,
+        pub ludek_na_ludka: f64,
+        pub manpower_na_ludka: f64,
+        pub manpower_na_jednostke: f64,
+    }
+
+    fn to_f64(value: i64) -> f64 {
+        f64::from(i32::try_from(value).expect("wartosc tabeli epok miesci sie w i32"))
+    }
+
+    /// Web `ROWS` / `allEpokaManpowerRows` (`manpower.ts:50`, `:875`).
+    pub fn all_epoka_manpower_rows() -> &'static [EpokaManpowerRow] {
+        static ROWS: OnceLock<Vec<EpokaManpowerRow>> = OnceLock::new();
+        ROWS.get_or_init(|| {
+            parse_epoka_ludnosc_manpower()
+                .expect("epoka-ludnosc-manpower.json must parse")
+                .epoki
+                .iter()
+                .map(|row| EpokaManpowerRow {
+                    epoka: to_f64(row.epoka),
+                    ludek_na_ludka: to_f64(row.ludek_na_ludka),
+                    manpower_na_ludka: to_f64(row.manpower_na_ludka),
+                    manpower_na_jednostke: to_f64(row.manpower_na_jednostke),
+                })
+                .collect()
+        })
+    }
+
+    /// Surowe wartosci `miasto-params.json` czytane przez `manpower.ts`. `None` = brak klucza albo
+    /// wartosc nie-liczbowa (web: `typeof !== 'number'`).
+    #[derive(Debug, Clone, Copy, PartialEq, Default)]
+    pub struct ReplenishRaw {
+        pub easy: Option<f64>,
+        pub normal: Option<f64>,
+        pub hard: Option<f64>,
+    }
+
+    #[derive(Debug, Clone, Copy, PartialEq, Default)]
+    pub struct MiastoManpowerRaw {
+        /// `manpower_uzupelnienie_hp_proc_max_tura` (`None` = brak wiersza).
+        pub replenish: Option<ReplenishRaw>,
+        /// `manpower_regen_proc_max_tura.wartosc`.
+        pub regen_pct: Option<f64>,
+        /// `manpower_regen_blok_oblezenie.wartosc`.
+        pub regen_block: Option<f64>,
+    }
+
+    impl MiastoManpowerRaw {
+        /// Web domyslny argument `raw = miastoParams` (prawdziwy plik gry).
+        pub fn from_miasto_params(params: &MiastoParams) -> Self {
+            let row = &params.manpower_uzupelnienie_hp_proc_max_tura;
+            Self {
+                replenish: Some(ReplenishRaw {
+                    easy: Some(to_f64(row.easy)),
+                    normal: Some(to_f64(row.normal)),
+                    hard: Some(to_f64(row.hard)),
+                }),
+                regen_pct: Some(to_f64(params.manpower_regen_proc_max_tura.wartosc)),
+                regen_block: Some(to_f64(params.manpower_regen_blok_oblezenie.wartosc)),
+            }
+        }
+
+        /// Prawdziwy `miasto-params.json` (jednorazowy odczyt).
+        pub fn game() -> &'static Self {
+            static RAW: OnceLock<MiastoManpowerRaw> = OnceLock::new();
+            RAW.get_or_init(|| {
+                Self::from_miasto_params(&parse_miasto_params().expect("miasto-params.json"))
+            })
+        }
+    }
+
+    // -----------------------------------------------------------------------
+    // Parametry odnowy i leczenia
+    // -----------------------------------------------------------------------
+
+    /// Web `ManpowerRegenParams` (`manpower.ts:56`).
+    #[derive(Debug, Clone, Copy, PartialEq)]
+    pub struct ManpowerRegenParams {
+        pub regen_proc_max_per_turn: f64,
+        pub block_when_besieged: bool,
+    }
+
+    impl ManpowerRegenParams {
+        /// Web `DEFAULT_REGEN` (`manpower.ts:63`).
+        pub fn default_params() -> Self {
+            let defaults = &manpower_params().domyslne_regen;
+            Self {
+                regen_proc_max_per_turn: defaults.proc_max_na_ture,
+                block_when_besieged: defaults.blokada_przy_oblezeniu,
+            }
+        }
+    }
+
+    /// Web `ManpowerDifficulty` (`manpower.ts:68`).
+    #[derive(Debug, Clone, Copy, PartialEq, Eq)]
+    pub enum ManpowerDifficulty {
+        Easy,
+        Normal,
+        Hard,
+    }
+
+    /// Web `ManpowerReplenishParams` (`manpower.ts:70`).
+    #[derive(Debug, Clone, Copy, PartialEq)]
+    pub struct ManpowerReplenishParams {
+        pub heal_pct_max_per_turn: f64,
+    }
+
+    fn valid_percent(value: Option<f64>) -> Option<f64> {
+        value.filter(|v| v.is_finite() && *v >= 0.0)
+    }
+
+    /// Web `loadManpowerReplenishParams` (`manpower.ts:82`). `raw = None` to domyslny argument weba
+    /// (prawdziwy `miasto-params.json`).
+    pub fn load_manpower_replenish_params(
+        difficulty: ManpowerDifficulty,
+        raw: Option<&MiastoManpowerRaw>,
+    ) -> ManpowerReplenishParams {
+        let raw = match raw {
+            Some(raw) => raw,
+            None => MiastoManpowerRaw::game(),
+        };
+        let row = raw.replenish.unwrap_or_default();
+        let defaults = &manpower_params().domyslne_uzupelnienie_hp_proc;
+        let (value, default) = match difficulty {
+            ManpowerDifficulty::Easy => (row.easy, defaults.easy),
+            ManpowerDifficulty::Normal => (row.normal, defaults.normal),
+            ManpowerDifficulty::Hard => (row.hard, defaults.hard),
+        };
+        let picked = valid_percent(value)
+            .or_else(|| valid_percent(row.normal))
+            .unwrap_or(default);
+        ManpowerReplenishParams {
+            heal_pct_max_per_turn: js_min(manpower_params().maks_proc, picked),
+        }
+    }
+
+    /// Web `loadManpowerRegenParams` (`manpower.ts:373`).
+    pub fn load_manpower_regen_params(raw: Option<&MiastoManpowerRaw>) -> ManpowerRegenParams {
+        let raw = match raw {
+            Some(raw) => raw,
+            None => MiastoManpowerRaw::game(),
+        };
+        let defaults = ManpowerRegenParams::default_params();
+        ManpowerRegenParams {
+            regen_proc_max_per_turn: match raw.regen_pct {
+                Some(pct) if pct >= 0.0 => pct,
+                _ => defaults.regen_proc_max_per_turn,
+            },
+            block_when_besieged: match raw.regen_block {
+                None => true,
+                Some(block) => block != 0.0,
+            },
+        }
+    }
+
+    // -----------------------------------------------------------------------
+    // Bonusy cywilizacji
+    // -----------------------------------------------------------------------
+
+    /// Web `CivBonusPoborLite` (`manpower.ts:385`). `wartosc`: tylko liczby sa czytane (`typeof`).
+    #[derive(Debug, Clone, PartialEq, Default)]
+    pub struct CivBonusPoborLite {
+        pub typ: Option<String>,
+        pub wartosc: Option<f64>,
+    }
+
+    fn bonus_is(bonus: &CivBonusPoborLite, typ: &str) -> Option<f64> {
+        match (&bonus.typ, bonus.wartosc) {
+            (Some(t), Some(w)) if t == typ => Some(w),
+            _ => None,
+        }
+    }
+
+    /// Web `civManpowerRegenMult` (`manpower.ts:396`).
+    pub fn civ_manpower_regen_mult(bonusy: Option<&[CivBonusPoborLite]>) -> f64 {
+        let table = &manpower_params().mnozniki_cywilizacji;
+        let mut mult = 1.0;
+        let Some(list) = bonusy.filter(|list| !list.is_empty()) else {
+            return mult;
+        };
+        for bonus in list {
+            if let Some(w) = bonus_is(bonus, &table.typ_regen_bonus) {
+                mult *= 1.0 + w;
+            } else if let Some(w) = bonus_is(bonus, &table.typ_regen_mnoznik) {
+                mult *= w;
+            }
+        }
+        js_max(table.regen_min, mult)
+    }
+
+    /// Web `civManpowerMaxMult` (`manpower.ts:415`).
+    pub fn civ_manpower_max_mult(bonusy: Option<&[CivBonusPoborLite]>) -> f64 {
+        let table = &manpower_params().mnozniki_cywilizacji;
+        let mut mult = 1.0;
+        let Some(list) = bonusy.filter(|list| !list.is_empty()) else {
+            return mult;
+        };
+        for bonus in list {
+            if let Some(w) = bonus_is(bonus, &table.typ_pula_bonus) {
+                mult *= 1.0 + w;
+            } else if let Some(w) = bonus_is(bonus, &table.typ_pula_mnoznik) {
+                mult *= w;
+            }
+        }
+        js_max(table.max_min, mult)
+    }
+
+    /// Web `civManpowerMults` (`manpower.ts:431`).
+    pub fn civ_manpower_mults(bonusy: Option<&[CivBonusPoborLite]>) -> (f64, f64) {
+        (
+            civ_manpower_regen_mult(bonusy),
+            civ_manpower_max_mult(bonusy),
+        )
+    }
+
+    // -----------------------------------------------------------------------
+    // Miasto, jednostka
+    // -----------------------------------------------------------------------
+
+    /// Podzbior web `City` (`cities.ts`) czytany/pisany przez `manpower.ts`.
+    #[derive(Debug, Clone, PartialEq)]
+    pub struct ManpowerCity {
+        pub id: String,
+        pub owner_id: i64,
+        pub population: f64,
+        /// `None` = pole nieustawione (web `undefined`).
+        pub manpower: Option<f64>,
+        pub q: i32,
+        pub r: i32,
+        pub oblegane: Option<bool>,
+    }
+
+    impl ManpowerCity {
+        pub fn new(id: impl Into<String>, owner_id: i64, population: f64) -> Self {
+            Self {
+                id: id.into(),
+                owner_id,
+                population,
+                manpower: None,
+                q: 0,
+                r: 0,
+                oblegane: None,
+            }
+        }
+    }
+
+    /// Web `ManpowerHealUnit` (`manpower.ts:99`).
+    #[derive(Debug, Clone, PartialEq)]
+    pub struct ManpowerHealUnit {
+        pub id: String,
+        pub owner_id: i64,
+        pub type_id: String,
+        pub category: String,
+        pub hp: Option<f64>,
+        pub hp_max: Option<f64>,
+        pub parametry_bonus_proc: Option<f64>,
+        pub battles_survived: Option<f64>,
+        pub q: Option<i32>,
+        pub r: Option<i32>,
+        pub in_garnizon: Option<bool>,
+    }
+
+    /// Web `isCivilianUnit` (`units/setup.ts:196`): zaleznosc `manpower.ts` spoza zakresu, portowana
+    /// lokalnie ze zbiorami z `manpower-params.json` (`cywilne`).
+    pub fn is_civilian_unit(category: &str, type_id: &str) -> bool {
+        let table = &manpower_params().cywilne;
+        table.kategorie.iter().any(|c| c == category) || table.typy.iter().any(|t| t == type_id)
+    }
+
+    /// Web `syncLiveUnitHp` (`manpower.ts:117`): pierwsza jednostka o danym id.
+    pub fn sync_live_unit_hp(units: &mut [ManpowerHealUnit], unit_id: &str, hp: f64, hp_max: f64) {
+        if let Some(live) = units.iter_mut().find(|unit| unit.id == unit_id) {
+            live.hp = Some(hp);
+            live.hp_max = Some(hp_max);
+        }
+    }
+
+    /// Web `isUnitInBesiegedLocation` (`manpower.ts:132`).
+    pub fn is_unit_in_besieged_location(
+        owner_id: i64,
+        q: Option<i32>,
+        r: Option<i32>,
+        cities: &[ManpowerCity],
+    ) -> bool {
+        let (Some(q), Some(r)) = (q, r) else {
+            return false;
+        };
+        let Some(city) = cities.iter().find(|c| c.q == q && c.r == r) else {
+            return false;
+        };
+        city.owner_id == owner_id && city.oblegane == Some(true)
+    }
+
+    /// Web `replenishmentUnitSortKey` (`manpower.ts:143`).
+    pub fn replenishment_unit_sort_key(unit: &ManpowerHealUnit, cities: &[ManpowerCity]) -> u8 {
+        let keys = &manpower_params().klucz_sortowania_leczenia;
+        if is_unit_in_besieged_location(unit.owner_id, unit.q, unit.r, cities) {
+            return keys.oblezone;
+        }
+        if unit.in_garnizon == Some(true) {
+            return keys.garnizon;
+        }
+        keys.pole
+    }
+
+    /// Web `ManpowerReplenishResult` (`manpower.ts:152`).
+    #[derive(Debug, Clone, Copy, PartialEq)]
+    pub struct ManpowerReplenishResult {
+        pub healed_count: usize,
+        pub total_mp_spent: f64,
+    }
+
+    // -----------------------------------------------------------------------
+    // Leczenie: koszt, limit, przydzial
+    // -----------------------------------------------------------------------
+
+    /// Web `manpowerHealCapForTurn` (`manpower.ts:158`).
+    pub fn manpower_heal_cap_for_turn(
+        max_hp: f64,
+        cur_hp: f64,
+        params: &ManpowerReplenishParams,
+    ) -> f64 {
+        if max_hp <= 0.0 || cur_hp <= 0.0 || cur_hp >= max_hp {
+            return 0.0;
+        }
+        let cap = (max_hp * params.heal_pct_max_per_turn / manpower_params().maks_proc).floor();
+        js_max(0.0, js_min(cap, max_hp - cur_hp))
+    }
+
+    /// Web `manpowerCostForHeal` (`manpower.ts:169`).
+    pub fn manpower_cost_for_heal(heal_hp: f64, max_hp: f64, unit_cost: f64) -> f64 {
+        if heal_hp <= 0.0 || max_hp <= 0.0 || unit_cost <= 0.0 {
+            return 0.0;
+        }
+        js_min(unit_cost, ((heal_hp / max_hp) * unit_cost).ceil())
+    }
+
+    /// Web `maxAffordableManpowerHeal` (`manpower.ts:179`).
+    pub fn max_affordable_manpower_heal(
+        desired_heal: f64,
+        max_hp: f64,
+        unit_cost: f64,
+        available_mp: f64,
+    ) -> f64 {
+        if desired_heal <= 0.0 || max_hp <= 0.0 || unit_cost <= 0.0 || available_mp <= 0.0 {
+            return 0.0;
+        }
+        js_min(desired_heal, (available_mp * max_hp / unit_cost).floor())
+    }
+
+    /// Web `ReplenishmentCandidate` (`manpower.ts:189`); `unit` = indeks w liscie jednostek.
+    #[derive(Debug, Clone, PartialEq)]
+    pub struct ReplenishmentCandidate {
+        pub unit: usize,
+        pub unit_id: String,
+        pub max_hp: f64,
+        pub cur_hp: f64,
+        pub unit_cost: f64,
+        pub desired_heal: f64,
+        pub desired_mp: f64,
+        pub allocated_mp: f64,
+        pub heal_hp: f64,
+    }
+
+    /// Web `allocateProportionalReplenishment` (`manpower.ts:206`). Martwe zapisy `usedMp` po
+    /// inicjalizacji `remainingMp` (nigdy nieczytane) pominiete.
+    pub fn allocate_proportional_replenishment(
+        candidates: &mut [ReplenishmentCandidate],
+        available_mp: f64,
+    ) {
+        let total_desired_mp = candidates.iter().fold(0.0, |sum, c| sum + c.desired_mp);
+        if total_desired_mp <= 0.0 || available_mp <= 0.0 {
+            return;
+        }
+
+        if total_desired_mp <= available_mp {
+            for candidate in candidates.iter_mut() {
+                candidate.allocated_mp = candidate.desired_mp;
+                candidate.heal_hp = candidate.desired_heal;
+            }
+            return;
+        }
+
+        for candidate in candidates.iter_mut() {
+            candidate.allocated_mp =
+                (available_mp * candidate.desired_mp / total_desired_mp).floor();
+            candidate.heal_hp = max_affordable_manpower_heal(
+                candidate.desired_heal,
+                candidate.max_hp,
+                candidate.unit_cost,
+                candidate.allocated_mp,
+            );
+            candidate.allocated_mp =
+                manpower_cost_for_heal(candidate.heal_hp, candidate.max_hp, candidate.unit_cost);
+        }
+
+        let used_mp = candidates.iter().fold(0.0, |sum, c| {
+            sum + manpower_cost_for_heal(c.heal_hp, c.max_hp, c.unit_cost)
+        });
+        let mut remaining_mp = js_max(0.0, available_mp - used_mp);
+        let ideal_mp = |c: &ReplenishmentCandidate| available_mp * c.desired_mp / total_desired_mp;
+
+        while remaining_mp > 0.0 {
+            let mut eligible: Vec<usize> = (0..candidates.len())
+                .filter(|&i| candidates[i].heal_hp < candidates[i].desired_heal)
+                .collect();
+            stable_sort_by(&mut eligible, &|&a, &b| {
+                let (ca, cb) = (&candidates[a], &candidates[b]);
+                let gap_diff = (ideal_mp(cb) - cb.allocated_mp) - (ideal_mp(ca) - ca.allocated_mp);
+                if gap_diff != 0.0 {
+                    gap_diff
+                } else {
+                    f64::from(locale_compare(&ca.unit_id, &cb.unit_id))
+                }
+            });
+            let mut advanced = false;
+            for index in eligible {
+                let candidate = &mut candidates[index];
+                let next_cost = manpower_cost_for_heal(
+                    candidate.heal_hp + 1.0,
+                    candidate.max_hp,
+                    candidate.unit_cost,
+                );
+                let incremental_cost = next_cost - candidate.allocated_mp;
+                if incremental_cost <= remaining_mp {
+                    candidate.heal_hp += 1.0;
+                    candidate.allocated_mp = next_cost;
+                    remaining_mp -= incremental_cost;
+                    advanced = true;
+                    break;
+                }
+            }
+            if !advanced {
+                break;
+            }
+        }
+    }
+
+    // -----------------------------------------------------------------------
+    // Tabela epok: ludnosc, pula, koszt
+    // -----------------------------------------------------------------------
+
+    /// Web `epokaManpowerRow` (`manpower.ts:479`): epoka obcieta do 1..10.
+    pub fn epoka_manpower_row(epoka: f64) -> EpokaManpowerRow {
+        let bounds = &manpower_params().epoka;
+        let floored = epoka.floor();
+        let base = if floored == 0.0 || floored.is_nan() {
+            f64::from(bounds.min)
+        } else {
+            floored
+        };
+        let e = js_max(f64::from(bounds.min), js_min(f64::from(bounds.max), base));
+        let rows = all_epoka_manpower_rows();
+        rows.iter()
+            .find(|row| row.epoka == e)
+            .copied()
+            .unwrap_or(rows[0])
+    }
+
+    /// Web `clampLudki` (`manpower.ts:484`).
+    pub fn clamp_ludki(population: f64) -> f64 {
+        let min = manpower_params().min_ludkow;
+        let floored = population.floor();
+        js_max(
+            min,
+            if floored == 0.0 || floored.is_nan() {
+                min
+            } else {
+                floored
+            },
+        )
+    }
+
+    /// Web `cityLudnoscAbsolutna` (`manpower.ts:489`).
+    pub fn city_ludnosc_absolutna(ludki: f64, epoka: f64) -> f64 {
+        clamp_ludki(ludki) * epoka_manpower_row(epoka).ludek_na_ludka
+    }
+
+    /// Web `formatObywateleLabel` (`manpower.ts:495`).
+    pub fn format_obywatele_label(count: f64) -> String {
+        let format = &manpower_params().formatowanie;
+        let n = js_max(0.0, count.floor());
+        let word = if n == 1.0 {
+            &format.obywatel_jeden
+        } else {
+            &format.obywatel_wiele
+        };
+        format!("{} {word}", js_number_to_string(n))
+    }
+
+    /// Web `scaledManpower` (`manpower.ts:440`).
+    fn scaled_manpower(base: f64, max_mult: f64) -> f64 {
+        (base
+            * js_max(
+                manpower_params().mnozniki_cywilizacji.skalowanie_min,
+                max_mult,
+            ))
+        .floor()
+    }
+
+    /// Web `cityManpowerMax` (`manpower.ts:502`).
+    pub fn city_manpower_max(ludki: f64, epoka: f64, max_mult: f64) -> f64 {
+        let row = epoka_manpower_row(epoka);
+        scaled_manpower(clamp_ludki(ludki) * row.manpower_na_ludka, max_mult)
+    }
+
+    /// Web `isScoutTypeId` (`manpower.ts:510`).
+    pub fn is_scout_type_id(type_id: Option<&str>) -> bool {
+        type_id == Some(manpower_params().scout_type_id.as_str())
+    }
+
+    /// Web `unitManpowerCost` (`manpower.ts:515`).
+    pub fn unit_manpower_cost(epoka: f64, max_mult: f64) -> f64 {
+        scaled_manpower(epoka_manpower_row(epoka).manpower_na_jednostke, max_mult)
+    }
+
+    /// Web `unitManpowerCostForType` (`manpower.ts:520`).
+    pub fn unit_manpower_cost_for_type(type_id: Option<&str>, epoka: f64, max_mult: f64) -> f64 {
+        if is_scout_type_id(type_id) {
+            return 0.0;
+        }
+        unit_manpower_cost(epoka, max_mult)
+    }
+
+    /// Web `cityManpowerCurrent` (`manpower.ts:530`).
+    pub fn city_manpower_current(city: &ManpowerCity, epoka: f64, max_mult: f64) -> f64 {
+        let max = city_manpower_max(city.population, epoka, max_mult);
+        match city.manpower {
+            Some(manpower) if manpower.is_finite() => js_max(0.0, js_min(max, manpower.floor())),
+            _ => max,
+        }
+    }
+
+    // -----------------------------------------------------------------------
+    // Pobor imperium
+    // -----------------------------------------------------------------------
+
+    /// Web `EmpirePoborTotals` (`manpower.ts:541`).
+    #[derive(Debug, Clone, Copy, PartialEq)]
+    pub struct EmpirePoborTotals {
+        pub suma_ludkow: f64,
+        pub ludnosc_absolutna: f64,
+        pub rekruci: f64,
+        pub pobor_raw: f64,
+    }
+
+    /// Web `empireSumaLudkow` (`manpower.ts:548`).
+    pub fn empire_suma_ludkow(cities: &[ManpowerCity], owner_id: i64) -> f64 {
+        let mut suma = 0.0;
+        for c in cities {
+            if c.owner_id != owner_id {
+                continue;
+            }
+            suma += clamp_ludki(c.population);
+        }
+        suma
+    }
+
+    /// Web `rekrutUnitEquivalents` (`manpower.ts:561`).
+    pub fn rekrut_unit_equivalents(rekruci: f64, epoka: f64, max_mult: f64) -> f64 {
+        let cost = unit_manpower_cost(epoka, max_mult);
+        if cost <= 0.0 {
+            return 0.0;
+        }
+        (js_max(0.0, rekruci) / cost).floor()
+    }
+
+    /// Web `empirePoborTotals` (`manpower.ts:567`).
+    pub fn empire_pobor_totals(
+        cities: &[ManpowerCity],
+        owner_id: i64,
+        epoka: f64,
+        max_mult: f64,
+    ) -> EmpirePoborTotals {
+        let mut suma_ludkow = 0.0;
+        let mut ludnosc_absolutna = 0.0;
+        let mut rekruci = 0.0;
+        for c in cities {
+            if c.owner_id != owner_id {
+                continue;
+            }
+            suma_ludkow += clamp_ludki(c.population);
+            ludnosc_absolutna += city_ludnosc_absolutna(c.population, epoka);
+            rekruci += city_manpower_current(c, epoka, max_mult);
+        }
+        EmpirePoborTotals {
+            suma_ludkow,
+            ludnosc_absolutna,
+            rekruci,
+            pobor_raw: ludnosc_absolutna + rekruci,
+        }
+    }
+
+    /// Web `CityManpowerSnapshot` (`manpower.ts:37`).
+    #[derive(Debug, Clone, Copy, PartialEq)]
+    pub struct CityManpowerSnapshot {
+        pub epoka: f64,
+        pub ludki: f64,
+        pub ludnosc_absolutna: f64,
+        pub manpower_max: f64,
+        pub manpower_biezacy: f64,
+        pub koszt_jednostki: f64,
+        pub regen_per_turn: f64,
+        pub werb_max_przy_pelnej_puli: f64,
+    }
+
+    /// Web `cityManpowerSnapshot` (`manpower.ts:585`).
+    pub fn city_manpower_snapshot(
+        city: &ManpowerCity,
+        epoka: f64,
+        regen_mult: f64,
+        max_mult: f64,
+    ) -> CityManpowerSnapshot {
+        let ludki = clamp_ludki(city.population);
+        let row = epoka_manpower_row(epoka);
+        let ludnosc_absolutna = ludki * row.ludek_na_ludka;
+        let manpower_max = scaled_manpower(ludki * row.manpower_na_ludka, max_mult);
+        let koszt_jednostki = scaled_manpower(row.manpower_na_jednostke, max_mult);
+        let manpower_biezacy = city_manpower_current(city, epoka, max_mult);
+        let regen_params = load_manpower_regen_params(None);
+        CityManpowerSnapshot {
+            epoka: row.epoka,
+            ludki,
+            ludnosc_absolutna,
+            manpower_max,
+            manpower_biezacy,
+            koszt_jednostki,
+            regen_per_turn: manpower_regen_gain(ludki, epoka, &regen_params, regen_mult, max_mult),
+            werb_max_przy_pelnej_puli: if koszt_jednostki > 0.0 {
+                (manpower_biezacy / koszt_jednostki).floor()
+            } else {
+                0.0
+            },
+        }
+    }
+
+    /// Web `manpowerRegenGain` (`manpower.ts:445`).
+    pub fn manpower_regen_gain(
+        ludki: f64,
+        epoka: f64,
+        params: &ManpowerRegenParams,
+        regen_mult: f64,
+        max_mult: f64,
+    ) -> f64 {
+        let max = city_manpower_max(ludki, epoka, max_mult);
+        if max <= 0.0 || params.regen_proc_max_per_turn <= 0.0 {
+            return 0.0;
+        }
+        let cap = manpower_params().maks_proc;
+        let pct = js_min(cap, params.regen_proc_max_per_turn) / cap;
+        (max * pct * js_max(0.0, regen_mult)).floor()
+    }
+
+    /// Web `tickManpowerRegen` (`manpower.ts:462`): nowa wartosc puli miasta.
+    pub fn tick_manpower_regen(
+        city: &ManpowerCity,
+        epoka: f64,
+        params: &ManpowerRegenParams,
+        regen_mult: f64,
+        max_mult: f64,
+    ) -> f64 {
+        let max = city_manpower_max(city.population, epoka, max_mult);
+        let cur = city_manpower_current(city, epoka, max_mult);
+        if cur >= max {
+            return max;
+        }
+        if params.block_when_besieged && city.oblegane == Some(true) {
+            return cur;
+        }
+        let gain = manpower_regen_gain(city.population, epoka, params, regen_mult, max_mult);
+        if gain <= 0.0 {
+            return cur;
+        }
+        js_min(max, cur + gain)
+    }
+
+    /// Web `canAffordUnitManpower` (`manpower.ts:612`).
+    pub fn can_afford_unit_manpower(
+        city: &ManpowerCity,
+        epoka: f64,
+        max_mult: f64,
+        type_id: Option<&str>,
+    ) -> bool {
+        let cost = unit_manpower_cost_for_type(type_id, epoka, max_mult);
+        if cost <= 0.0 {
+            return true;
+        }
+        city_manpower_current(city, epoka, max_mult) >= cost
+    }
+
+    /// Web `empireManpowerCurrent` (`manpower.ts:624`).
+    pub fn empire_manpower_current(
+        cities: &[ManpowerCity],
+        owner_id: i64,
+        epoka: f64,
+        max_mult: f64,
+    ) -> f64 {
+        empire_pobor_totals(cities, owner_id, epoka, max_mult).rekruci
+    }
+
+    // -----------------------------------------------------------------------
+    // Rekrutacja: odjecie i zwrot z puli imperium
+    // -----------------------------------------------------------------------
+
+    /// Indeksy miast wlasciciela posortowane komparatorem (web: `[...ownerCities].sort(...)`).
+    fn sorted_owner_cities(
+        cities: &[ManpowerCity],
+        owner_id: i64,
+        cmp: &dyn Fn(&ManpowerCity, &ManpowerCity) -> f64,
+    ) -> Vec<usize> {
+        let mut owned: Vec<usize> = (0..cities.len())
+            .filter(|&i| cities[i].owner_id == owner_id)
+            .collect();
+        stable_sort_by(&mut owned, &|&a, &b| cmp(&cities[a], &cities[b]));
+        owned
+    }
+
+    /// Web `deductManpowerFromEmpire` (`manpower.ts:636`). Mutuje `cities`.
+    pub fn deduct_manpower_from_empire(
+        cities: &mut [ManpowerCity],
+        owner_id: i64,
+        epoka: f64,
+        amount: f64,
+        max_mult: f64,
+    ) -> bool {
+        if amount <= 0.0 {
+            return true;
+        }
+        if empire_manpower_current(cities, owner_id, epoka, max_mult) < amount {
+            return false;
+        }
+        let mut remaining = amount;
+        let order = sorted_owner_cities(cities, owner_id, &|a, b| {
+            let cur_diff = city_manpower_current(b, epoka, max_mult)
+                - city_manpower_current(a, epoka, max_mult);
+            if cur_diff != 0.0 {
+                cur_diff
+            } else {
+                f64::from(locale_compare(&a.id, &b.id))
+            }
+        });
+        for index in order {
+            if remaining <= 0.0 {
+                break;
+            }
+            let cur = city_manpower_current(&cities[index], epoka, max_mult);
+            let take = js_min(cur, remaining);
+            if take > 0.0 {
+                cities[index].manpower = Some(cur - take);
+                remaining -= take;
+            }
+        }
+        remaining <= 0.0
+    }
+
+    /// Web `refundManpowerToEmpire` (`manpower.ts:664`). Mutuje `cities`.
+    pub fn refund_manpower_to_empire(
+        cities: &mut [ManpowerCity],
+        owner_id: i64,
+        epoka: f64,
+        amount: f64,
+        max_mult: f64,
+    ) {
+        if amount <= 0.0 {
+            return;
+        }
+        let mut remaining = amount;
+        let room_of = |c: &ManpowerCity| {
+            city_manpower_max(c.population, epoka, max_mult)
+                - city_manpower_current(c, epoka, max_mult)
+        };
+        let order = sorted_owner_cities(cities, owner_id, &|a, b| {
+            let room_diff = room_of(b) - room_of(a);
+            if room_diff != 0.0 {
+                room_diff
+            } else {
+                f64::from(locale_compare(&a.id, &b.id))
+            }
+        });
+        for index in order {
+            if remaining <= 0.0 {
+                break;
+            }
+            let max = city_manpower_max(cities[index].population, epoka, max_mult);
+            let cur = city_manpower_current(&cities[index], epoka, max_mult);
+            let room = max - cur;
+            if room <= 0.0 {
+                continue;
+            }
+            let add = js_min(room, remaining);
+            cities[index].manpower = Some(cur + add);
+            remaining -= add;
+        }
+    }
+
+    /// Web `canAffordUnitManpowerEmpire` (`manpower.ts:698`); `_recruiting_city`, `_pop_cost` jak w
+    /// webie nieuzywane.
+    pub fn can_afford_unit_manpower_empire(
+        cities: &[ManpowerCity],
+        owner_id: i64,
+        _recruiting_city: &ManpowerCity,
+        epoka: f64,
+        _pop_cost: f64,
+        max_mult: f64,
+        type_id: Option<&str>,
+    ) -> bool {
+        let koszt_manpower = unit_manpower_cost_for_type(type_id, epoka, max_mult);
+        if koszt_manpower <= 0.0 {
+            return true;
+        }
+        empire_manpower_current(cities, owner_id, epoka, max_mult) >= koszt_manpower
+    }
+
+    /// Web `UnitSpawnBlockReason` (`manpower.ts:755`); napisy z `manpower-params.json`.
+    #[derive(Debug, Clone, Copy, PartialEq, Eq)]
+    pub enum UnitSpawnBlockReason {
+        BrakManpower,
+        BrakLudnosci,
+    }
+
+    impl UnitSpawnBlockReason {
+        pub fn as_str(self) -> &'static str {
+            let reasons = &manpower_params().powody_blokady;
+            match self {
+                Self::BrakManpower => reasons.brak_manpower.as_str(),
+                Self::BrakLudnosci => reasons.brak_ludnosci.as_str(),
+            }
+        }
+    }
+
+    /// Web `UnitSpawnDeduction` (`manpower.ts:757`).
+    #[derive(Debug, Clone, Copy, PartialEq)]
+    pub struct UnitSpawnDeduction {
+        pub ok: bool,
+        pub population: f64,
+        pub manpower: f64,
+        pub koszt_manpower: f64,
+        pub reason: Option<UnitSpawnBlockReason>,
+    }
+
+    /// Web `tryDeductUnitSpawnCostsEmpire` (`manpower.ts:713`). Mutuje `cities`.
+    pub fn try_deduct_unit_spawn_costs_empire(
+        cities: &mut [ManpowerCity],
+        recruiting_city_id: &str,
+        owner_id: i64,
+        epoka: f64,
+        _pop_cost: f64,
+        max_mult: f64,
+        type_id: Option<&str>,
+    ) -> UnitSpawnDeduction {
+        let recruiting = cities
+            .iter()
+            .position(|c| c.id == recruiting_city_id && c.owner_id == owner_id);
+        let koszt_manpower = unit_manpower_cost_for_type(type_id, epoka, max_mult);
+        let recruiting_mp = recruiting
+            .map(|i| city_manpower_current(&cities[i], epoka, max_mult))
+            .unwrap_or(0.0);
+        let recruiting_pop = recruiting.map(|i| cities[i].population).unwrap_or(0.0);
+        let Some(index) = recruiting else {
+            return UnitSpawnDeduction {
+                ok: false,
+                population: 0.0,
+                manpower: 0.0,
+                koszt_manpower,
+                reason: Some(UnitSpawnBlockReason::BrakManpower),
+            };
+        };
+        if koszt_manpower > 0.0
+            && !deduct_manpower_from_empire(cities, owner_id, epoka, koszt_manpower, max_mult)
+        {
+            return UnitSpawnDeduction {
+                ok: false,
+                population: recruiting_pop,
+                manpower: recruiting_mp,
+                koszt_manpower,
+                reason: Some(UnitSpawnBlockReason::BrakManpower),
+            };
+        }
+
+        UnitSpawnDeduction {
+            ok: true,
+            population: recruiting_pop,
+            manpower: city_manpower_current(&cities[index], epoka, max_mult),
+            koszt_manpower,
+            reason: None,
+        }
+    }
+
+    /// Web `tryDeductUnitSpawnCosts` (`manpower.ts:769`).
+    pub fn try_deduct_unit_spawn_costs(
+        city: &ManpowerCity,
+        epoka: f64,
+        pop_cost: f64,
+        max_mult: f64,
+        type_id: Option<&str>,
+    ) -> UnitSpawnDeduction {
+        let koszt_manpower = unit_manpower_cost_for_type(type_id, epoka, max_mult);
+        let cur = city_manpower_current(city, epoka, max_mult);
+        if cur < koszt_manpower {
+            return UnitSpawnDeduction {
+                ok: false,
+                population: city.population,
+                manpower: cur,
+                koszt_manpower,
+                reason: Some(UnitSpawnBlockReason::BrakManpower),
+            };
+        }
+        if pop_cost > 0.0 && city.population <= pop_cost {
+            return UnitSpawnDeduction {
+                ok: false,
+                population: city.population,
+                manpower: cur,
+                koszt_manpower,
+                reason: Some(UnitSpawnBlockReason::BrakLudnosci),
+            };
+        }
+        UnitSpawnDeduction {
+            ok: true,
+            population: city.population - pop_cost,
+            manpower: cur - koszt_manpower,
+            koszt_manpower,
+            reason: None,
+        }
+    }
+
+    /// Domyslny `popCost` weba w `refundUnitSpawnToCity` (`popCost = 1`, `manpower.ts:811`).
+    pub fn default_refund_pop_cost() -> f64 {
+        manpower_params().domyslny_zwrot_koszt_ludnosci
+    }
+
+    /// Web `refundUnitSpawnToCity` (`manpower.ts:808`): `(population, manpower)`.
+    pub fn refund_unit_spawn_to_city(
+        city: &ManpowerCity,
+        epoka: f64,
+        pop_cost: f64,
+        pop_cap: Option<f64>,
+        max_mult: f64,
+        type_id: Option<&str>,
+    ) -> (f64, f64) {
+        let mp_refund = unit_manpower_cost_for_type(type_id, epoka, max_mult);
+        let raw_pop = city.population + pop_cost;
+        let population = match pop_cap {
+            Some(cap) => js_min(cap, raw_pop),
+            None => raw_pop,
+        };
+        let max = city_manpower_max(population, epoka, max_mult);
+        let manpower = js_min(
+            max,
+            city_manpower_current(city, epoka, max_mult) + mp_refund,
+        );
+        (population, manpower)
+    }
+
+    /// Web `refreshManpowerAfterPopChange` (`manpower.ts:827`).
+    pub fn refresh_manpower_after_pop_change(
+        city: &ManpowerCity,
+        epoka: f64,
+        previous_pop: Option<f64>,
+        max_mult: f64,
+    ) -> f64 {
+        let max = city_manpower_max(city.population, epoka, max_mult);
+        let cur = city_manpower_current(city, epoka, max_mult);
+        if let Some(previous) = previous_pop {
+            if previous != city.population {
+                let old_max = city_manpower_max(previous, epoka, max_mult);
+                if city.population > previous {
+                    return js_min(max, cur + (max - old_max));
+                }
+                return js_min(cur, max);
+            }
+        }
+        max
+    }
+
+    /// Web `spendManpower` (`manpower.ts:846`): nowa wartosc puli (nie mutuje miasta).
+    pub fn spend_manpower(
+        city: &ManpowerCity,
+        epoka: f64,
+        amount: Option<f64>,
+        max_mult: f64,
+    ) -> f64 {
+        let cost = amount.unwrap_or_else(|| unit_manpower_cost(epoka, max_mult));
+        let cur = city_manpower_current(city, epoka, max_mult);
+        js_max(0.0, cur - cost)
+    }
+
+    // -----------------------------------------------------------------------
+    // Leczenie jednostek z puli imperium
+    // -----------------------------------------------------------------------
+
+    /// Web `onUnitHpChanged(unitId, hp, hpMax)` (`manpower.ts:287`).
+    pub type HpChangedFn<'a> = dyn FnMut(&str, f64, f64) + 'a;
+
+    /// Web `tickManpowerUnitReplenishment` (`manpower.ts:274`). Mutuje `cities` (pule) i `units`
+    /// (`hp`, `hpMax`). Domkniecia jak w webie: `getMaxHp(typeId, unit)` (unit zawsze podany),
+    /// `onUnitHpChanged(id, hp, hpMax)`.
+    #[allow(clippy::too_many_arguments)]
+    pub fn tick_manpower_unit_replenishment(
+        cities: &mut [ManpowerCity],
+        units: &mut [ManpowerHealUnit],
+        difficulty: ManpowerDifficulty,
+        resolve_owner_era: &dyn Fn(i64) -> f64,
+        resolve_owner_bonusy: &dyn Fn(i64) -> Option<Vec<CivBonusPoborLite>>,
+        get_max_hp: &dyn Fn(&str, &ManpowerHealUnit) -> f64,
+        raw_miasto_params: Option<&MiastoManpowerRaw>,
+        mut on_unit_hp_changed: Option<&mut HpChangedFn<'_>>,
+    ) -> ManpowerReplenishResult {
+        let params = load_manpower_replenish_params(difficulty, raw_miasto_params);
+        if params.heal_pct_max_per_turn <= 0.0 || units.is_empty() {
+            return ManpowerReplenishResult {
+                healed_count: 0,
+                total_mp_spent: 0.0,
+            };
+        }
+
+        // Web `Map<number, ManpowerHealUnit[]>`: kolejnosc pierwszego wystapienia wlasciciela.
+        let mut by_owner: Vec<(i64, Vec<usize>)> = Vec::new();
+        for (index, u) in units.iter().enumerate() {
+            if is_civilian_unit(&u.category, &u.type_id) {
+                continue;
+            }
+            match by_owner.iter_mut().find(|(owner, _)| *owner == u.owner_id) {
+                Some((_, list)) => list.push(index),
+                None => by_owner.push((u.owner_id, vec![index])),
+            }
+        }
+
+        let mut healed_count = 0;
+        let mut total_mp_spent = 0.0;
+
+        for (owner_id, owner_units) in by_owner {
+            let epoka = resolve_owner_era(owner_id);
+            let bonusy = resolve_owner_bonusy(owner_id);
+            let max_mult = civ_manpower_max_mult(bonusy.as_deref());
+            let mut empire_mp = empire_manpower_current(cities, owner_id, epoka, max_mult);
+            if empire_mp <= 0.0 {
+                continue;
+            }
+
+            let mut candidates: Vec<ReplenishmentCandidate> = Vec::new();
+            for &index in &owner_units {
+                if is_unit_in_besieged_location(
+                    units[index].owner_id,
+                    units[index].q,
+                    units[index].r,
+                    cities,
+                ) {
+                    continue;
+                }
+
+                let resolved_max_hp = get_max_hp(&units[index].type_id, &units[index]);
+                let max_hp = if resolved_max_hp.is_finite() && resolved_max_hp > 0.0 {
+                    resolved_max_hp
+                } else {
+                    match units[index].hp_max {
+                        Some(hp_max) if hp_max.is_finite() => hp_max,
+                        _ => 0.0,
+                    }
+                };
+                if max_hp <= 0.0 {
+                    continue;
+                }
+                units[index].hp_max = Some(max_hp);
+                let cur_hp = match units[index].hp {
+                    None => max_hp,
+                    Some(hp) if hp.is_finite() => js_max(0.0, js_min(max_hp, hp)),
+                    Some(_) => max_hp,
+                };
+                units[index].hp = Some(cur_hp);
+                if cur_hp <= 0.0 || cur_hp >= max_hp {
+                    continue;
+                }
+
+                let unit_cost = unit_manpower_cost_for_type(
+                    Some(units[index].type_id.as_str()),
+                    epoka,
+                    max_mult,
+                );
+                if unit_cost <= 0.0 || is_scout_type_id(Some(units[index].type_id.as_str())) {
+                    continue;
+                }
+
+                let desired_heal = manpower_heal_cap_for_turn(max_hp, cur_hp, &params);
+                if desired_heal <= 0.0 {
+                    continue;
+                }
+
+                let desired_mp = manpower_cost_for_heal(desired_heal, max_hp, unit_cost);
+                if desired_mp <= 0.0 {
+                    continue;
+                }
+                candidates.push(ReplenishmentCandidate {
+                    unit: index,
+                    unit_id: units[index].id.clone(),
+                    max_hp,
+                    cur_hp,
+                    unit_cost,
+                    desired_heal,
+                    desired_mp,
+                    allocated_mp: 0.0,
+                    heal_hp: 0.0,
+                });
+            }
+
+            allocate_proportional_replenishment(&mut candidates, empire_mp);
+            for candidate in &candidates {
+                let ReplenishmentCandidate {
+                    unit,
+                    max_hp,
+                    cur_hp,
+                    unit_cost,
+                    heal_hp,
+                    ..
+                } = *candidate;
+                if heal_hp <= 0.0 {
+                    continue;
+                }
+                let mp_cost = manpower_cost_for_heal(heal_hp, max_hp, unit_cost);
+                if mp_cost <= 0.0 {
+                    continue;
+                }
+                if !deduct_manpower_from_empire(cities, owner_id, epoka, mp_cost, max_mult) {
+                    continue;
+                }
+
+                empire_mp -= mp_cost;
+                total_mp_spent += mp_cost;
+                let new_hp = js_min(max_hp, cur_hp + heal_hp);
+                units[unit].hp = Some(new_hp);
+                if let Some(callback) = on_unit_hp_changed.as_mut() {
+                    callback(&units[unit].id, new_hp, max_hp);
+                }
+                healed_count += 1;
+            }
+        }
+
+        ManpowerReplenishResult {
+            healed_count,
+            total_mp_spent,
+        }
+    }
+
+    // -----------------------------------------------------------------------
+    // Formaty UI
+    // -----------------------------------------------------------------------
+
+    /// Web `formatPopulationAbs` (`manpower.ts:858`).
+    pub fn format_population_abs(n: f64) -> String {
+        let format = &manpower_params().formatowanie;
+        if n >= format.prog_mln {
+            let m = n / format.prog_mln;
+            let shown = if m >= format.prog_calkowite_mln {
+                js_round(m)
+            } else {
+                js_round(m * format.krok_dziesiatych) / format.krok_dziesiatych
+            };
+            return format!("{}{}", js_number_to_string(shown), format.sufiks_mln);
+        }
+        if n >= format.prog_tys {
+            let t = n / format.prog_tys;
+            let shown = if t >= format.prog_calkowite_tys {
+                js_round(t)
+            } else {
+                js_round(t * format.krok_dziesiatych) / format.krok_dziesiatych
+            };
+            return format!("{}{}", js_number_to_string(shown), format.sufiks_tys);
+        }
+        js_number_to_string(n)
+    }
+
+    /// Web `formatManpower` (`manpower.ts:870`).
+    pub fn format_manpower(n: f64) -> String {
+        format_population_abs(n)
+    }
+}

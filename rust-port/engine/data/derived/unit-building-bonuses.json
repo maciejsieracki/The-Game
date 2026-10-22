@@ -1,0 +1,30 @@
+{
+  "meta": {
+    "status": "P6.5B - stale i teksty z gra/src/game/unit-building-bonuses.ts (pin edb8fb56), EDYTOWALNE; kod Rust nie zawiera tych literalow",
+    "pin_web": "edb8fb56",
+    "temat": "R-RUSTPORT-P6-5B-JEDNOSTKI-ZYCIE-B-Q1",
+    "uwaga": "Procenty budynkow (baza.mnoznik) i lancuch upgradeFrom sa w data/buildings.json (DANE-JUZ-W-RUST); tu listy id sciezek, maksima sciezek w pp (web: literaly 45/50), limit glebokosci lancucha i teksty."
+  },
+  "sciezka_pancerz": {
+    "budynki": ["kuznia", "kuznia_zelaza", "wielka_kuznia"],
+    "max_pp": 45,
+    "zrodlo_web": "unit-building-bonuses.ts:67 ARMOR_BUILDING_IDS, :295 ARMOR_PATH_MAX_PP"
+  },
+  "sciezka_parametry": {
+    "budynki": ["koszary", "akademia_wojskowa", "warsztat_oblezniczy"],
+    "max_pp": 50,
+    "zrodlo_web": "unit-building-bonuses.ts:70 SOFT_STAT_BUILDING_IDS, :297 SOFT_PATH_MAX_PP"
+  },
+  "max_glebokosc_lancucha": 32,
+  "liczba_tercji": 3,
+  "podstawa_procentu": 100,
+  "etykiety": {
+    "pancerz": "Pancerz +{wartosc}%",
+    "parametry": "Parametry +{wartosc}%",
+    "separator": " · ",
+    "wzmianka_pancerz": "Kuźnia +{przyrost}% pancerza (razem +{razem}%)",
+    "wzmianka_parametry": "Koszary +{przyrost}% parametrów (razem +{razem}%)",
+    "wzmianka": "{jednostka} — {miasto}: {czesci}",
+    "zrodlo_web": "unit-building-bonuses.ts:421-445"
+  }
+}

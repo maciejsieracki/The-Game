@@ -1,0 +1,10 @@
+{
+  "meta": {
+    "status": "P6.5B - kolejnosc ICU (String.prototype.localeCompare, locale en-US) dla ASCII 0x20-0x7E, ZMIERZONA w uruchomionym Node (Intl.Collator sensitivity=base); wektory porownan par w tests/p6_5b_vectors/manpower.json",
+    "pin_web": "edb8fb56",
+    "temat": "R-RUSTPORT-P6-5B-JEDNOSTKI-ZYCIE-B-Q1",
+    "uwaga": "Web sortuje id miast/jednostek przez a.id.localeCompare(b.id) (manpower.ts:251, :649, :680). Rust nie ma ICU; implementacja pokrywa napisy z ASCII 0x20-0x7E (poziom 1: kolejnosc ponizej, wielkosc liter ignorowana; poziom 3: male przed wielkimi). Znaki spoza zakresu: NIE_ZMIERZONO (zapasowo porownanie UTF-16)."
+  },
+  "kolejnosc_podstawowa": " _-,;:!?.'\"()[]{}@*/\\&#%`^+<=>|~$0123456789abcdefghijklmnopqrstuvwxyz",
+  "male_przed_wielkimi": true
+}
