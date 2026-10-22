@@ -50,4 +50,8 @@ Każdy zarzut ma werdykt: PRZYJMUJĘ (poprawka + dowód) albo ODRZUCAM (dowód).
 14. **PRZYJMUJĘ.** `diplomacy-basket-transfer.ts`: test `basket_and_treaty_duration_read_diplomacy_table` (`tests/derived_values.rs:911`) dotyczy czasu trwania traktatu, nie transferu koszyka; kolumna testu ustawiona na `-`.
 15. **PRZYJMUJĘ.** Dodano ryzyka: `idb-storage.ts` jest importowany przez `save.ts:80` (ryzyko dla P6.20); `side-panel-event-priority.ts` (`isBlockingSidePanelEvent`, `:7`) blokuje koniec tury (`main.ts:14264`), klasa zmieniona na SYSTEM, status BRAK, punkt P6.10.
 
+### 9a. Poprawka Final Control (runda 2): pozostałe NIE-DOTYCZY z logiką gry
+
+Final Control sprawdził skryptem wszystkie 24 pliki NIE-DOTYCZY pod kątem importu przez pliki SYSTEM/DATA (zarzut 15 w tej samej klasie co 1–3). Trzy pliki UI zawierały logikę gry, a Operator ich nie ujął: `diplomacy-display.ts` (`sameCultureCircle` używane przez `culture-religion.ts:605`, `conquest-stability.ts:18`; `splitNegotiationDealPlayerSides` przez `diplomacy-acceptance-points.ts:22`), `display-names.ts` (`isOwnerClusterCityState` w `power-ranking.ts:33`; `clearCityStateFlagOnCapture`), `unit-card-stats.ts` (`effectiveMaxHp` w `combat.ts:924,936`). Klasa zmieniona na SYSTEM, status BRAK (Rust ma tylko pola danych), punkty P6.14, P6.6, P6.13. Po korekcie NIE-DOTYCZY = 21 plików; jedyny import przez SYSTEM/DATA z pozostałych to `idb-storage.ts` (`save.ts`, odnotowany w pkt 15).
+
 Wniosek rundy 2: wszystkie 15 zarzutów rozpatrzone; jedyne częściowe odrzucenie to zarzut 9 (część faktyczna o słowach w pliku). Brak PORTOWANE-1:1. Deploy/push: NIE WYKONANO.

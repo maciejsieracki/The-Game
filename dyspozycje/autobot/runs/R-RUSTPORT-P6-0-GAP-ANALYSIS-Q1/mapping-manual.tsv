@@ -66,7 +66,7 @@ diplomacy-border-march.ts	SYSTEM	domain/diplomacy.rs	BRAK (heur.)	P6.14	-	marsz 
 diplomacy-credibility.ts	SYSTEM	domain/diplomacy.rs	CZĘŚCIOWO (heur.)	P6.14	-	wiarygodność
 diplomacy-currency-trade.ts	SYSTEM	domain/trade.rs	CZĘŚCIOWO (heur.)	P6.15	-	handel walutą
 diplomacy-deposit-trade.ts	SYSTEM	domain/trade.rs	BRAK (heur.)	P6.15	-	handel depozytami
-diplomacy-display.ts	UI	-	NIE-DOTYCZY	-	-	prezentacja dyplomacji
+diplomacy-display.ts	SYSTEM	-	BRAK	P6.14	-	Final Control r2: zawiera logike gry, nie tylko prezentacje: sameCultureCircle (diplomacy-display.ts:213) importowane przez culture-religion.ts:605 i conquest-stability.ts:18; splitNegotiationDealPlayerSides (:562) importowane przez diplomacy-acceptance-points.ts:22; resolveFormalDiplomaticStatus (:289). Rust: tylko pole danych typ_cywilizacji (data/civilizations.rs:82,154), brak funkcji kregu kulturowego (grep culture_circle/kr[aa]g w src = 0 trafien)
 diplomacy-economy.ts	SYSTEM	domain/diplomacy.rs	CZĘŚCIOWO (heur.)	P6.14	-	ekonomia dyplomacji
 diplomacy-factors.ts	SYSTEM	domain/diplomacy.rs	CZĘŚCIOWO (heur.)	P6.14	-	czynniki dyplomacji
 diplomacy-goods.ts	SYSTEM	domain/trade.rs	CZĘŚCIOWO (heur.)	P6.15	-	towary w dyplomacji
@@ -86,7 +86,7 @@ diplomacy-unit-transfer.ts	SYSTEM	domain/diplomacy.rs	BRAK (heur.)	P6.14	-	trans
 diplomacy-value-catalog.ts	DATA	domain/diplomacy.rs	CZĘŚCIOWO (heur.)	P6.14	canonical_value_catalog_prices_non_quantity_basket_items	katalog wartości
 diplomacy-war-gates.ts	SYSTEM	domain/diplomacy.rs	CZĘŚCIOWO	P6.14	war_currency_gate_allows_only_peace_settlements	web isCurrencyProposalForbiddenDuringWar (diplomacy-war-gates.ts:46) ~ Rust is_currency_proposal_forbidden_during_war (domain/diplomacy.rs:2726), wyjątek Peace/TributeOffer ~ pokoj/trybut_oferta. Test: tests/diplomacy.rs:549. Zgodność nazwy i wyjątku po odczycie kodu; bez wektorów z weba (NIE_ZMIERZONO)
 diplomacy.ts	SYSTEM	domain/diplomacy.rs	CZĘŚCIOWO (heur.)	P6.14	diplomacy_state_serializes_non_empty_pair_map	dyplomacja (1617 LOC)
-display-names.ts	UI	-	NIE-DOTYCZY	-	-	nazwy wyświetlane
+display-names.ts	SYSTEM	-	BRAK	P6.6	-	Final Control r2: zawiera logike gry: isOwnerClusterCityState (display-names.ts:50) importowane przez power-ranking.ts:12,33 (wykluczenie miast-panstw z rankingu mocy) oraz wskazane jako predykat w komentarzu forced-war-iron.ts:53-54; clearCityStateFlagOnCapture (:88) wolane przy kazdym przejeciu miasta (cities.ts:1139-1149, post-battle-map.ts:470). Rust: tylko pola proposer_is_city_state/responder_is_city_state (domain/diplomacy.rs:2858-2859), brak logiki flagi miasta-panstwa przy przejeciu
 economy-upkeep.ts	SYSTEM	domain/turn_economy.rs	CZĘŚCIOWO (heur.)	P6.8	-	utrzymanie ekonomii
 economy.ts	SYSTEM	domain/turn_economy.rs	CZĘŚCIOWO (heur.)	P6.8	-	ekonomia (1243 LOC)
 effective-difficulty-for-owner.ts	SYSTEM	data/derived.rs	CZĘŚCIOWO (heur.)	P6.11	difficulty_is_one_type_across_domain_modules	trudność właściciela
@@ -166,7 +166,7 @@ trade-routes.ts	SYSTEM	domain/trade.rs	CZĘŚCIOWO (heur.)	P6.15	-	szlaki handlo
 triumph-city-state.ts	SYSTEM	domain/barbarians.rs	BRAK (heur.)	P6.18	-	triumf państwa-miasta
 turn-economy.ts	SYSTEM	domain/turn_economy.rs	CZĘŚCIOWO (heur.)	P6.9	-	ekonomia tury (2782 LOC)
 unit-building-bonuses.ts	SYSTEM	domain/combat.rs	BRAK (heur.)	P6.5	-	bonusy budynków jednostek
-unit-card-stats.ts	UI	-	NIE-DOTYCZY	-	-	statystyki karty jednostki
+unit-card-stats.ts	SYSTEM	-	BRAK	P6.13	-	Final Control r2: zawiera logike gry: effectiveMaxHp (unit-card-stats.ts:79) importowane przez combat.ts:6 i uzywane w combat.ts:924,936 do liczenia HP w walce (bonus parametrow + weteran). Rust: grep veteran w src = 0 trafien, brak odpowiednika efektywnego max HP
 unit-cost-tempo.ts	DATA	domain/recruitment.rs	CZĘŚCIOWO (heur.)	P6.5	unit_table_has_one_row_per_units_json_record_and_no_extra_rows	tempo kosztu jednostek
 unit-power.ts	SYSTEM	domain/combat.rs	CZĘŚCIOWO (heur.)	P6.13	counters_parses_and_spot_checks	moc jednostki
 unit-replace-context.ts	SYSTEM	domain/recruitment.rs	BRAK (heur.)	P6.5	-	kontekst zastąpienia jednostki
