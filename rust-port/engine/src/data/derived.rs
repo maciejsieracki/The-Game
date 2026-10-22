@@ -2256,3 +2256,106 @@ pub fn mapgen_nowa_gra() -> &'static MapgenNowaGraFile {
     static TABLE: std::sync::OnceLock<MapgenNowaGraFile> = std::sync::OnceLock::new();
     TABLE.get_or_init(|| parse_mapgen_nowa_gra().expect("mapgen-nowa-gra.json must parse"))
 }
+
+// ---------------------------------------------------------------------------
+// P6.M01 (rdzen mapgen): wartosci kalibracyjne klimatu/maski Ziemi i dane maski.
+// ---------------------------------------------------------------------------
+
+pub const MAPGEN_CORE_PARAMS_JSON: &str =
+    include_str!("../../data/derived/mapgen-core-params.json");
+pub const EARTH_LAND_MASK_JSON: &str = include_str!("../../data/derived/earth-land-mask.json");
+
+/// Prog rozmiaru: dla `min(w, h) - 2 * granica >= min_wewn` obowiazuje `kroki`.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct SubsampleTier {
+    pub min_wewn: u32,
+    pub kroki: u32,
+}
+
+/// Prog rozmiaru dla progu ulamka ladu komorki.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct LandFractionTier {
+    pub min_wewn: u32,
+    pub prog: f64,
+}
+
+/// Sekcja `earth` pliku `mapgen-core-params.json` (web `earth-land-mask.ts`).
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct MapgenEarthParams {
+    pub granica_grywalna: u32,
+    pub polarny_ocean_wiersze_ref: u32,
+    pub polarny_ocean_wysokosc_ref: u32,
+    pub polarny_ocean_limit_proc: f64,
+    pub polarny_ocean_min_wiersze: u32,
+    pub prog_szablonu_ladu: f64,
+    pub podprobkowanie_progi: Vec<SubsampleTier>,
+    pub podprobkowanie_domyslne: u32,
+    pub prog_ulamka_ladu_progi: Vec<LandFractionTier>,
+    pub prog_ulamka_ladu_domyslny: f64,
+}
+
+/// Sekcja `klimat` pliku `mapgen-core-params.json` (web `gen-helpers.ts`).
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct MapgenClimateParams {
+    pub polarny_proc: f64,
+    pub pustynia_pol_wiersze: f64,
+    pub rowniny_pol_proc: f64,
+    pub bufor_proceduralny_proc: f64,
+    pub bufor_proceduralny_min_wiersze: u32,
+    pub las_prog_wrogi: f64,
+    pub las_umiarkowany_delta: f64,
+}
+
+/// Plik `mapgen-core-params.json`.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct MapgenCoreParamsFile {
+    pub zrodlo: String,
+    pub earth: MapgenEarthParams,
+    pub klimat: MapgenClimateParams,
+}
+
+/// Obwiednia ladu w ukladzie znormalizowanym maski.
+#[derive(Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct EarthMaskBbox {
+    pub min_x: f64,
+    pub min_y: f64,
+    pub max_x: f64,
+    pub max_y: f64,
+}
+
+/// Plik `earth-land-mask.json`: maska ladu Ziemi (RLE, `szerokosc * wysokosc` bitow).
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct EarthLandMaskFile {
+    pub zrodlo: String,
+    pub szerokosc: usize,
+    pub wysokosc: usize,
+    pub bbox: EarthMaskBbox,
+    pub rle: String,
+}
+
+pub fn parse_mapgen_core_params() -> Result<MapgenCoreParamsFile, serde_json::Error> {
+    serde_json::from_str(MAPGEN_CORE_PARAMS_JSON)
+}
+
+pub fn parse_earth_land_mask() -> Result<EarthLandMaskFile, serde_json::Error> {
+    serde_json::from_str(EARTH_LAND_MASK_JSON)
+}
+
+/// Tabela kalibracji rdzenia mapgen (jednorazowy odczyt; blad danych = panika z komunikatem).
+pub fn mapgen_core_params() -> &'static MapgenCoreParamsFile {
+    static TABLE: std::sync::OnceLock<MapgenCoreParamsFile> = std::sync::OnceLock::new();
+    TABLE.get_or_init(|| parse_mapgen_core_params().expect("mapgen-core-params.json must parse"))
+}
+
+/// Maska ladu Ziemi (jednorazowy odczyt).
+pub fn earth_land_mask_file() -> &'static EarthLandMaskFile {
+    static TABLE: std::sync::OnceLock<EarthLandMaskFile> = std::sync::OnceLock::new();
+    TABLE.get_or_init(|| parse_earth_land_mask().expect("earth-land-mask.json must parse"))
+}

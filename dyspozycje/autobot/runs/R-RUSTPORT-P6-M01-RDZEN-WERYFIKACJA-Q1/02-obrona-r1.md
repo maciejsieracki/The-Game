@@ -1,0 +1,10 @@
+STATUS: PASS-WITH-NOTES
+DOMAIN: GAME
+TEMAT: R-RUSTPORT-P6-M01-RDZEN-WERYFIKACJA-Q1
+GOAL: Port rdzenia generatora mapy (maska Ziemi, gen-helpers: PRNG/perm/prymitywy/klimat) z wektorami z uruchomionego weba (pin edb8fb56), bitowo, bez literalow balansowych.
+ZMIANY/COMMIT: baza origin/rust-port/parity-v2 @ 453c3c79. Kod: `src/domain/mapgen/prims.rs` (633 LOC), `src/domain/map_generator.rs` (1546 -> 1236 LOC), `src/data/derived.rs` (dopisek), `data/derived/mapgen-core-params.json`, `data/derived/earth-land-mask.json`, `tests/p6_m01_{prims,earth_mask,climate,params_shape}.rs`, `tests/p6_m01_vectors/web-vectors.json`. Dokument: `dyspozycje/rust-port/p6/P6-M01-RDZEN-WERYFIKACJA.md`. Odstepstwo od allowlisty: `tests/p6_m00_skeleton.rs` (lista plikow wypelnionych; opis w dokumencie §8). SHA commitu: zwracany w odpowiedzi orkiestratorowi.
+TESTY: fmt EXIT=0; clippy --all-targets -D warnings EXIT=0; cargo test EXIT=0, 635 passed / 0 failed (baza 595, +40). Logi: gate-fmt.log, gate-clippy.log, gate-test.log, gate-diffcheck.log. Wektory z weba (Node v22.22.0, kod wyciety werbatim): 0 rozbieznosci Rust; niezalezny weryfikator Python: 268 185 sprawdzen, 0 rozbieznosci. Mutacje 25/25 wykryte (2 odrzucone mutanty rownowazne z dowodem). generate_map: 160/160 identycznych haszy baza vs po zmianie.
+BLOKADY: brak blokujacych. RUNDA-2 (jawnie): dedup `rng.rs::Mulberry32` (plik poza allowlista), model `MapHex` w `mapgen/types.rs` (poza allowlista; zakres web M01 go nie obejmuje). Zgloszone, nie naprawiane: literaly serde `Terrain` (PascalCase) != `TerenBazowy` weba (snake/lowercase); panika `generate_map` dla wysokosci 3 (istnieje na bazie).
+RUNDY: 1/5 zuzyta (obrona po FAIL Evaluatora; kolejna ocena = runda 2/5; zarzuty 1-13: wszystkie PRZYJETE i zrealizowane, odpowiedzi w dokumencie §0).
+NASTEPNY KROK: Evaluator (runda 2), potem Final Control; orkiestrator rozstrzyga konflikt addytywny `p6_m00_skeleton.rs` z innymi tematami M* oraz przydzial `types.rs`/`rng.rs`.
+DEPLOY/PUSH: NIE WYKONANO

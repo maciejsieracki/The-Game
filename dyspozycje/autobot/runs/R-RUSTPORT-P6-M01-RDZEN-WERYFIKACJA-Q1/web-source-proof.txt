@@ -1,0 +1,12 @@
+pin: edb8fb56115e9dec0a58614dfb23ca6173d60c9a
+node: v22.22.0
+29182ceda4730314b5197145e2c41d67688d6ea9bacb38ace38365875641a231  earth-land-mask.ts
+1efcc885893986d0e51a6a2f62d9eee3f718d8364102730e8dca0b62fc74d1a1  earth-land-mask.generated.ts
+ab934703990ba00e71a801eb0b6fcefeb0906c6bd4ded477c7162361307842de  gen-helpers.ts
+   170 earth-land-mask.ts
+   417 earth-land-mask.generated.ts
+ 12561 gen-helpers.ts
+ 13148 total
+archiwum: git archive edb8fb56 gra/src gra/data -> /tmp/claude-0/s/web (mktemp-owny katalog poza repo)
+wektory: sha256 6ca24d53f505143ce332d1877441899bd27676245370995fa150a2567653065a  /home/user/The-Game/.claude/worktrees/wf_320a8312-64a-3/rust-port/engine/tests/p6_m01_vectors/web-vectors.json
+wektory bajty: 2330064

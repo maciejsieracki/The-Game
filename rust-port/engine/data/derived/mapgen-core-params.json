@@ -1,0 +1,50 @@
+{
+  "zrodlo": "web gra/src/map/gen-helpers.ts:178-187,228-246 i earth-land-mask.ts:25-26,80-96,98-170 (pin edb8fb56). Edytowalne wartosci kalibracyjne generatora (P6.M01); klucze nazywaja role, nie wzor.",
+  "earth": {
+    "granica_grywalna": 2,
+    "polarny_ocean_wiersze_ref": 30,
+    "polarny_ocean_wysokosc_ref": 115,
+    "polarny_ocean_limit_proc": 0.12,
+    "polarny_ocean_min_wiersze": 2,
+    "prog_szablonu_ladu": 0.45,
+    "podprobkowanie_progi": [
+      {
+        "min_wewn": 420,
+        "kroki": 1
+      },
+      {
+        "min_wewn": 220,
+        "kroki": 3
+      },
+      {
+        "min_wewn": 110,
+        "kroki": 5
+      }
+    ],
+    "podprobkowanie_domyslne": 7,
+    "prog_ulamka_ladu_progi": [
+      {
+        "min_wewn": 320,
+        "prog": 0.45
+      },
+      {
+        "min_wewn": 160,
+        "prog": 0.38
+      },
+      {
+        "min_wewn": 80,
+        "prog": 0.32
+      }
+    ],
+    "prog_ulamka_ladu_domyslny": 0.26
+  },
+  "klimat": {
+    "polarny_proc": 0.05,
+    "pustynia_pol_wiersze": 3.5,
+    "rowniny_pol_proc": 0.075,
+    "bufor_proceduralny_proc": 0.05,
+    "bufor_proceduralny_min_wiersze": 2,
+    "las_prog_wrogi": 1.1,
+    "las_umiarkowany_delta": -0.06
+  }
+}
