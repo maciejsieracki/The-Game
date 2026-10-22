@@ -195,7 +195,7 @@ pub struct BarbUnit {
     #[serde(default)]
     pub sea_raider: bool,
     #[serde(default)]
-    pub cleared_city_ids: BTreeSet<u64>,
+    pub cleared_city_ids: BTreeSet<CityId>,
     #[serde(default)]
     pub orphaned_at_turn: Option<u32>,
 }
@@ -797,7 +797,7 @@ pub fn decide_barbarian_moves(
                 let undefended = !enemies
                     .iter()
                     .any(|enemy| enemy.position() == city.position());
-                !undefended || !unit.cleared_city_ids.contains(&city.id.get())
+                !undefended || !unit.cleared_city_ids.contains(&city.id)
             })
             .collect::<Vec<_>>();
         if city_targets.is_empty() {
@@ -862,7 +862,7 @@ pub fn decide_barbarian_moves(
                     .iter()
                     .any(|enemy| enemy.position() == city.position())
             {
-                unit.cleared_city_ids.insert(city.id.get());
+                unit.cleared_city_ids.insert(city.id);
             }
         }
 
@@ -915,7 +915,7 @@ pub fn decide_moves(
 /// A barbarian-owned city uses the camp cadence to grow a free garrison.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct BarbCityGarrison {
-    pub city_id: u64,
+    pub city_id: CityId,
     pub q: i32,
     pub r: i32,
     pub spawn_cooldown: u32,
@@ -923,7 +923,7 @@ pub struct BarbCityGarrison {
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct BarbCityGarrisonSpawn {
-    pub city_id: u64,
+    pub city_id: CityId,
     pub q: i32,
     pub r: i32,
     pub unit_type: String,

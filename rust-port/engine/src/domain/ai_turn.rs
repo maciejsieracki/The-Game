@@ -576,7 +576,7 @@ pub struct AiTurnOptions {
     #[serde(default)]
     pub archetype_mods: Option<ArchetypeMods>,
     #[serde(default)]
-    pub city_buildings: BTreeMap<u64, BTreeSet<String>>,
+    pub city_buildings: BTreeMap<CityId, BTreeSet<String>>,
     #[serde(default = "default_production_items")]
     pub production_items: Vec<ProductionItem>,
     #[serde(default = "default_min_city_distance")]
@@ -707,7 +707,7 @@ pub enum AiCommand {
     #[serde(rename = "build")]
     Build {
         #[serde(rename = "cityId")]
-        city_id: u64,
+        city_id: CityId,
         #[serde(rename = "buildingId")]
         building_id: String,
     },
@@ -862,12 +862,12 @@ pub fn find_settler_target(
 }
 
 /// Pick one production item for a city without mutating its queue.
-pub fn choose_city_production(input: &AiTurnInput, city_id: u64) -> Option<String> {
-    let city = input.cities.iter().find(|city| city.id.get() == city_id)?;
+pub fn choose_city_production(input: &AiTurnInput, city_id: CityId) -> Option<String> {
+    let city = input.cities.iter().find(|city| city.id == city_id)?;
     choose_city_production_for(input, city)
 }
 
-pub fn choose_production(input: &AiTurnInput, city_id: u64) -> Option<String> {
+pub fn choose_production(input: &AiTurnInput, city_id: CityId) -> Option<String> {
     choose_city_production(input, city_id)
 }
 
@@ -900,7 +900,7 @@ fn choose_city_production_for(input: &AiTurnInput, city: &AiCity) -> Option<Stri
     let mods = input.options.resolved_archetype_mods();
     let early_phase = own_cities.len() < 3;
     let mut built = city.built_buildings.clone();
-    if let Some(recorded_buildings) = input.options.city_buildings.get(&city.id.get()) {
+    if let Some(recorded_buildings) = input.options.city_buildings.get(&city.id) {
         built.extend(recorded_buildings.iter().cloned());
     }
 
@@ -1057,7 +1057,7 @@ pub fn plan_ai_turn(input: &AiTurnInput) -> AiTurnPlan {
     for city in cities {
         if let Some(item_id) = choose_city_production_for(input, city) {
             commands.push(AiCommand::Build {
-                city_id: city.id.get(),
+                city_id: city.id,
                 building_id: item_id,
             });
         }

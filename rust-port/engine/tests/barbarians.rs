@@ -1,5 +1,5 @@
 use civ_engine::domain::barbarians::*;
-use civ_engine::domain::{CampId, OwnerRef, PlayerId};
+use civ_engine::domain::{CampId, CityId, OwnerRef, PlayerId};
 use std::collections::BTreeSet;
 
 fn player(id: u64) -> OwnerRef {
@@ -243,7 +243,7 @@ fn barbarian_city_garrison_spawns_units_without_a_building_queue() {
         ..Default::default()
     };
     let city = BarbCityGarrison {
-        city_id: 4,
+        city_id: CityId::new(4),
         q: 0,
         r: 0,
         spawn_cooldown: 0,
@@ -251,14 +251,14 @@ fn barbarian_city_garrison_spawns_units_without_a_building_queue() {
 
     let tick = tick_barbarian_city_garrisons(&[city], &[], &[], &map, &params);
     assert_eq!(tick.spawns.len(), 1);
-    assert_eq!(tick.spawns[0].city_id, 4);
+    assert_eq!(tick.spawns[0].city_id, CityId::new(4));
     assert_eq!(tick.cities[0].spawn_cooldown, 3);
 }
 
 #[test]
 fn state_round_trip_preserves_camp_identity_and_visit_memory() {
     let mut unit = BarbUnit::new(1, 2, 3).with_camp(9).with_health(0.4);
-    unit.cleared_city_ids.insert(11);
+    unit.cleared_city_ids.insert(CityId::new(11));
     let encoded = serde_json::to_string(&unit).expect("unit serializes");
     let decoded: BarbUnit = serde_json::from_str(&encoded).expect("unit deserializes");
     assert_eq!(decoded, unit);

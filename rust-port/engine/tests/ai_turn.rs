@@ -10,7 +10,7 @@ pub mod data {
 #[path = "../src/domain/ai_turn.rs"]
 pub mod ai_turn;
 
-use civ_engine::domain::PlayerId;
+use civ_engine::domain::{CityId, PlayerId};
 use std::collections::BTreeMap;
 
 use ai_turn::{
@@ -167,7 +167,10 @@ fn production_matches_spec_priority_and_skips_already_built_buildings() {
             ProductionItem::unit("Osadnik", UnitKind::Settler),
             ProductionItem::unit("Wojownik", UnitKind::Warrior),
         ],
-        city_buildings: BTreeMap::from([(1, ["Spichlerz".to_owned()].into_iter().collect())]),
+        city_buildings: BTreeMap::from([(
+            CityId::new(1),
+            ["Spichlerz".to_owned()].into_iter().collect(),
+        )]),
         ..AiTurnOptions::default()
     };
     let input = AiTurnInput::new(
@@ -184,7 +187,7 @@ fn production_matches_spec_priority_and_skips_already_built_buildings() {
         commands,
         vec![
             AiCommand::Build {
-                city_id: 1,
+                city_id: CityId::new(1),
                 building_id: "Wojownik".to_owned(),
             },
             AiCommand::EndTurn,
