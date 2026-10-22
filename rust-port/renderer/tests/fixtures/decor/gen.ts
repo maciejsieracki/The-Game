@@ -179,6 +179,26 @@ const samplers: any[] = [];
     samplers.push({ teren, q, r, seed, R, ys: s ? pts.map(([x, z]) => s(x * R, z * R)) : null, pts });
   }
 }
+// Round 2 (Evaluator objection 3): >= 50 DISTINCT seeds for every
+// (relief type, wariantDlaHeksa variant) of the sampler. Hexes / seeds are
+// enumerated deterministically; a candidate is kept while its variant quota
+// (50) is open. The web `wariantDlaHeksa` only SELECTS the inputs.
+const samplersSeeds: any[] = [];
+{
+  const pts: Array<[number, number]> = [[0, 0], [0.3, -0.2], [-0.55, 0.4], [0.7, 0.1], [-0.2, -0.75], [1.1, 0.2]];
+  for (const teren of [TerenBazowy.Wzgorza, TerenBazowy.Gory]) {
+    const quota = new Array(Tg.LICZBA_WARIANTOW_TERENU).fill(0);
+    for (let k = 0; k < 100000 && quota.some((n) => n < 50); k++) {
+      const q = ((k * 13) % 23) - 11, r = ((k * 7) % 19) - 9, seed = k * 7919 - 1000003;
+      const v = Tg.wariantDlaHeksa(q, r, Tg.LICZBA_WARIANTOW_TERENU, seed);
+      if (quota[v] >= 50) continue;
+      quota[v]++;
+      const R = k % 2 === 0 ? 1 : 1.5;
+      const s = Ms.reliefSurfaceSampler(teren, q, r, seed, R);
+      samplersSeeds.push({ teren, q, r, seed, R, ys: s ? pts.map(([x, z]) => s(x * R, z * R)) : null, pts });
+    }
+  }
+}
 
 // ---------------------------------------------------------------------------
 // 2. Shared geometries (34 variants) + wrap + triangle counts + materials.
@@ -399,6 +419,28 @@ for (const [q, r] of [[0, 4], [4, -4], [-4, 0]] as Array<[number, number]>) {
   const { x, z } = axialToWorld(q, r, 1);
   coast.push({ id: 'waterForcedDelta', q, r, lite: false, obj: dumpObject(Ms.buildStyleCoastWaterCap('roblox', coastMap, q, r, x, z, 0.18, 1, { isDelta: true, mouthEdges })) });
 }
+// Round 2 (Evaluator objection 3): buildStyleMountainPeak / buildStyleHillBump
+// with >= 50 DISTINCT seeds per silhouette variant (`wariantDlaHeksa`), in a
+// separate file so `builders.json` stays below 4 MB.
+const reliefBuilders: any[] = [];
+for (const id of ['buildStyleMountainPeak', 'buildStyleHillBump']) {
+  const quota = new Array(Tg.LICZBA_WARIANTOW_TERENU).fill(0);
+  for (let k = 0; k < 100000 && quota.some((n) => n < 50); k++) {
+    const q = ((k * 17) % 29) - 14, r = ((k * 11) % 31) - 15, seed = k * 104729 - 2000003;
+    const v = Tg.wariantDlaHeksa(q, r, Tg.LICZBA_WARIANTOW_TERENU, seed);
+    if (quota[v] >= 50) continue;
+    quota[v]++;
+    const { x, z } = axialToWorld(q, r, 1);
+    if (id === 'buildStyleMountainPeak') {
+      reliefBuilders.push({ id, args: [q, r, x, z, 0.78, seed, 1],
+        obj: dumpObject(Ms.buildStyleMountainPeak('roblox', { q, r, x, z, topY: 0.78, seed, R: 1 }, false)) });
+    } else {
+      reliefBuilders.push({ id, args: [q, r, x, z, 0.64, seed, 1],
+        obj: dumpObject(Ms.buildStyleHillBump('roblox', { q, r, x, z, baseY: 0.64, seed, R: 1 }, false)) });
+    }
+  }
+}
+write('relief_builders.json', { builders: reliefBuilders });
 write('builders.json', {
   builders,
   coastMap: { hexes: Object.values(coastMap.hexes).map((h: any) => [h.coords.q, h.coords.r, h.terenBazowy]), riverPaths: coastMap.riverPaths.map((p: any) => p.map((c: any) => [c.q, c.r])), riverPathKinds: coastMap.riverPathKinds },
@@ -406,7 +448,7 @@ write('builders.json', {
   deltaKeys: [...deltaKeys].sort(),
   coast,
 });
-write('relief.json', { reliefSamples, samplers });
+write('relief.json', { reliefSamples, samplers, samplersSeeds });
 
 // ---------------------------------------------------------------------------
 // 5. riverLod.
@@ -504,4 +546,4 @@ const rl: any = {};
 }
 write('riverlod.json', rl);
 
-console.log(`decor geometries=${geometries.length} builders=${builders.length} coast=${coast.length} relief=${reliefSamples.length} hashfns=${Object.keys(fns).length} rlcases=${rl.cases.length}`);
+console.log(`decor geometries=${geometries.length} builders=${builders.length} reliefBuilders=${reliefBuilders.length} coast=${coast.length} relief=${reliefSamples.length} samplersSeeds=${samplersSeeds.length} hashfns=${Object.keys(fns).length} rlcases=${rl.cases.length}`);

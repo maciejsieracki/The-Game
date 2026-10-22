@@ -15,16 +15,15 @@ use crate::pick::terrain::hash_heksa;
 pub use crate::pick::terrain::{rotacja_dla_heksa, wariant_dla_heksa};
 use crate::pick::three::{Mat4 as PMat4, Quat as PQuat, Ray, Vec3 as PVec3};
 
-use super::js::{floor_index, js_cos, js_max, js_sin, quat_from_euler, wrap_variant, PI};
+use super::js::{floor_index, js_cos, js_max, js_sin, wrap_variant, PI};
 use super::object::DecorObject;
 use super::parts::{rgb, vertex_color_material, Parts, V3};
 
-/// `LICZBA_WARIANTOW_TERENU` (`:84`).
-pub const LICZBA_WARIANTOW_TERENU: usize = 5;
-/// `WZGORZE_SZCZYT_Y` (`:87`).
-pub const WZGORZE_SZCZYT_Y: f64 = 0.392;
-/// `GORA_APEX_Y` (`:90`).
-pub const GORA_APEX_Y: [f64; 5] = [1.25, 1.15, 1.20, 1.18, 1.10];
+// `LICZBA_WARIANTOW_TERENU` (`:84`) = `crate::pick::terrain::TERRAIN_SOLID_VARIANTS`
+// (P4.10); `WZGORZE_SZCZYT_Y` (`:87`) and `GORA_APEX_Y` (`:90`) =
+// `crate::core::map_style::{WZGORZE_SZCZYT_Y, GORA_APEX_Y}` (P4.12). They are
+// reused, not redefined (round 2, Evaluator objection 1); the web values are
+// checked against those constants by `tests/decor_web_parity.rs`.
 /// `WZGORZE_FOOTPRINT_R` (`:93`).
 pub const WZGORZE_FOOTPRINT_R: f64 = 0.92;
 /// `GORA_FOOTPRINT_R` (`:94`).
@@ -601,7 +600,7 @@ fn pick_geometry(kind: ReliefKind, w: usize) -> &'static TriGeometry {
 #[must_use]
 pub fn powierzchnia_reliefu_y(kind: ReliefKind, wariant: i32, rot_y: f64, x: f64, z: f64) -> f64 {
     let w = wrap_variant(wariant, 5);
-    let q = quat_from_euler(crate::geom::Euler::xyz(0.0, rot_y, 0.0));
+    let q = crate::geom::Quat::from_euler(crate::geom::Euler::xyz(0.0, rot_y, 0.0));
     let world = PMat4::compose(
         PVec3::new(0.0, 0.0, 0.0),
         PQuat {

@@ -30,12 +30,19 @@ use crate::pick::terrain::{hash_heksa as hash2d, Terrain};
 use crate::terrain::coast::{TerrainAt, AXIAL_NEIGHBORS, COAST_SAND_ROBLOX, LAND_COAST_SAND_FRAC};
 use crate::terrain::roblox_terrain_hex;
 
-use super::js::{js_cos, js_hypot, js_max, js_sin, PI};
+// `decorVariant5` (`:358-360`), `forestTreeCountForHex` (`:767-769`) and
+// `jungleForestTreeCountForHex` (`:776-778`) are the P4.12 ports in
+// `core::map_style`, reused (round 2, Evaluator objection 1).
+use crate::core::map_style::decor_variant5;
+pub use crate::core::map_style::{forest_tree_count_for_hex, jungle_forest_tree_count_for_hex};
+use crate::pick::terrain::TERRAIN_SOLID_VARIANTS as LICZBA_WARIANTOW_TERENU;
+
+use super::js::{js_atan2, js_cos, js_hypot, js_max, js_sin, PI};
 use super::object::{DecorObject, GroupBuilder};
 use super::parts::lambert;
 use super::relief::{
     gora_geometria, powierzchnia_reliefu_y, rotacja_dla_heksa, teren_material, wariant_dla_heksa,
-    wzgorze_geometria, ReliefKind, LICZBA_WARIANTOW_TERENU,
+    wzgorze_geometria, ReliefKind,
 };
 
 /// `mat(color, flat = true)` (`:353-355`).
@@ -66,12 +73,6 @@ fn mesh(g: Arc<Geometry>, color: u32, x: f64, y: f64, z: f64) -> SceneNode {
     let mut m = SceneNode::mesh(g, mat(color));
     m.position = Vec3::new(x, y, z);
     m
-}
-
-/// `decorVariant5(q, r, seed, salt)` (`:358-360`).
-#[allow(clippy::cast_possible_truncation, clippy::cast_sign_loss)]
-fn decor_variant5(q: i32, r: i32, seed: i32, salt: i32) -> usize {
-    (hash2d(q, r, seed, salt) * 5.0).floor() as usize
 }
 
 // ---------------------------------------------------------------------------
@@ -335,20 +336,6 @@ pub fn is_warm_jungle_forest_hex(r: i32, map_height: f64) -> bool {
     climate_zone_at(r, map_height) == ClimateZone::Tropical
 }
 
-/// `forestTreeCountForHex(q, r, seed)` (`:767-769`).
-#[must_use]
-#[allow(clippy::cast_possible_truncation, clippy::cast_sign_loss)]
-pub fn forest_tree_count_for_hex(q: i32, r: i32, seed: i32) -> u32 {
-    3 + (hash2d(q, r, seed, 1) * 3.0).floor() as u32
-}
-
-/// `jungleForestTreeCountForHex(q, r, seed)` (`:776-778`).
-#[must_use]
-#[allow(clippy::cast_possible_truncation, clippy::cast_sign_loss)]
-pub fn jungle_forest_tree_count_for_hex(q: i32, r: i32, seed: i32) -> u32 {
-    5 + (hash2d(q, r, seed, 889) * 3.0).floor() as u32
-}
-
 /// `ForestParams` (`:597-606`).
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub struct ForestParams {
@@ -381,7 +368,7 @@ pub fn build_style_forest_cluster(p: &ForestParams, lite: bool) -> DecorObject {
     } else {
         forest_tree_count_for_hex(q, r, seed)
     };
-    let hex_tree_bias = decor_variant5(q, r, seed, 300);
+    let hex_tree_bias = decor_variant5(q, r, seed, 300) as usize;
     for ti in 0..tree_count {
         #[allow(clippy::cast_possible_wrap)]
         let t = ti as i32;
@@ -791,7 +778,7 @@ fn edge_dir(x: f64, z: f64, lq: i32, lr: i32, radius: f64) -> (f64, f64, f64) {
     let dist = if d == 0.0 || d.is_nan() { 1.0 } else { d };
     let nx = dx / dist;
     let nz = dz / dist;
-    (nx, nz, nx.atan2(nz))
+    (nx, nz, js_atan2(nx, nz))
 }
 
 fn terrain_at(map: &TerrainAt, q: i32, r: i32) -> Option<Terrain> {
@@ -1000,7 +987,7 @@ pub fn build_style_coast_water_cap(
                 sea_top_y + strip_h * 0.58 + 0.014,
                 ez,
             );
-            tongue.rotation.y = nx.atan2(nz);
+            tongue.rotation.y = js_atan2(nx, nz);
             tongue.receive_shadow = true;
             g.add_leaf(tongue, 1);
         }
