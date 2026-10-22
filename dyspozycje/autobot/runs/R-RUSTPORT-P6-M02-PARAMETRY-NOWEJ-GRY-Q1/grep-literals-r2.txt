@@ -1,0 +1,4 @@
+grep -nE "[-+] 1[^0-9_.]|unwrap_or\(1\)" rust-port/engine/src/domain/mapgen/params.rs
+(brak trafien; r1 mial: max - 1 / min + 1 / (min+1) w clamp_typy_triple_to_epoch, triple_from_default, miasta_panstwa_triple oraz unwrap_or(1) w menu_bundle_from_triple)
+Jedyny pozostaly "krok 1" to petla `n += 1` w rywale_menu_for_map_label (iteracja po calkowitych opcjach menu, nie dana balansowa).
+Dane: data/derived/mapgen-nowa-gra.json typy_cywilizacji.triple_z_domyslnej.{krok_max,krok_min,krok_rozdzielenia,indeks_awaryjny_menu,minimum}

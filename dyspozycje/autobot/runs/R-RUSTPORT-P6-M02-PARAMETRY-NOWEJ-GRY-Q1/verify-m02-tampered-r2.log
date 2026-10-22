@@ -1,0 +1,10 @@
+ROZBIEZNOSC defaultRywale 'Standardowy': py=6 json=7
+ROZBIEZNOSC clampMiasta 'Infinity' True: py=0 json=1
+ROZBIEZNOSC multiplier low: py='3fe3333333333333' json='3ff0000000000001'
+ROZBIEZNOSC riverInts low 20x14: py={'minDim': 14, 'mainCell': 10, 'tributaryCell': 5, 'mainGridStride': 1, 'minLen': 4, 'maxLen': 10, 'gridTraceMinLen': 3, 'feederMinLen': 3, 'hardMeanderLen': 3, 'mouthTailLen': 3, 'minInlandFromSea': 1, 'reliefSearchMin': 2, 'reliefSearchMax': 6, 'reliefSourceBonus': 0, 'feederPasses': 4, 'topUpPasses': 6, 'expandSourceRadius': 1, 'minInlandCell': 4} json={'minDim': 14, 'mainCell': 10, 'tributaryCell': 5, 'mainGridStride': 1, 'minLen': 5, 'maxLen': 10, 'gridTraceMinLen': 3, 'feederMinLen': 3, 'hardMeanderLen': 3, 'mouthTailLen': 3, 'minInlandFromSea': 1, 'reliefSearchMin': 2, 'reliefSearchMax': 6, 'reliefSourceBonus': 0, 'feederPasses': 4, 'topUpPasses': 6, 'expandSourceRadius': 1, 'minInlandCell': 4}
+ROZBIEZNOSC minEraFor {'zloze': ' ', 'zlozeMinEra': 0}: py=0 json=1
+ROZBIEZNOSC enabled None None None '': py=True json=False
+ROZBIEZNOSC qualityTier 'Duży': py='medium' json='high'
+ROZBIEZNOSC qualityLarge 'Ogromny': py=True json=False
+RAZEM: 20371 sprawdzen, rozbieznosci: 8
+EXIT=1

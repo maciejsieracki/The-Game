@@ -2,7 +2,7 @@
 //! Temat wlasciciel: R-RUSTPORT-P6-M02-PARAMETRY-NOWEJ-GRY-Q1.
 //!
 //! Port 1:1 (pin web `edb8fb56`) czterech plikow `gra/src/map/`:
-//! `deposit-era.ts`, `generator.ts:762-818,844`, `newGameMapDefaults.ts`, `riverGenSwitch.ts`.
+//! `deposit-era.ts`, `generator.ts:762-818` (+ alias typu `:846`; zakres dispatchu `:844` to linia pusta), `newGameMapDefaults.ts`, `riverGenSwitch.ts`.
 //!
 //! Zasady:
 //! - Stale balansowe i tekstowe web trzyma w KODZIE; tutaj leza w
@@ -491,6 +491,110 @@ fn world_type_from_key(key: &str) -> WorldType {
         "ziemia" => WorldType::Earth,
         other => panic!("mapgen-nowa-gra.json: nieznany typ swiata {other}"),
     }
+}
+
+// ---------------------------------------------------------------------------
+// newGameMapDefaults.ts:136-190 - jakosc mapy (QualityTier i pakiet GPU + dekoracje)
+// ---------------------------------------------------------------------------
+
+/// Web `QualityTier` (`'low' | 'medium' | 'high'`).
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum QualityTier {
+    Low,
+    Medium,
+    High,
+}
+
+impl QualityTier {
+    /// Klucz web.
+    pub fn key(self) -> &'static str {
+        match self {
+            Self::Low => "low",
+            Self::Medium => "medium",
+            Self::High => "high",
+        }
+    }
+
+    pub fn from_key(key: &str) -> Option<Self> {
+        match key {
+            "low" => Some(Self::Low),
+            "medium" => Some(Self::Medium),
+            "high" => Some(Self::High),
+            _ => None,
+        }
+    }
+}
+
+/// Web `QUALITY_MENU_LABELS` (newGameMapDefaults.ts:139), z tabeli `jakosc.etykiety_menu`.
+pub fn quality_menu_labels() -> &'static [String] {
+    &table().jakosc.etykiety_menu
+}
+
+/// Web `DEFAULT_RENDER_QUALITY` (:141) = `eStartRenderQualityBundled()`
+/// (e-start-params-loader.ts:80): `low`/`high` z danych Panel-E, inna wartosc -> `medium`.
+pub fn default_render_quality() -> QualityTier {
+    let t = &table().jakosc;
+    match QualityTier::from_key(&e_start().defaulty.render_quality_bundled) {
+        Some(q @ (QualityTier::Low | QualityTier::High)) => q,
+        _ => QualityTier::from_key(&t.domyslna_z_etykiety)
+            .unwrap_or_else(|| panic!("mapgen-nowa-gra.json: jakosc.domyslna_z_etykiety")),
+    }
+}
+
+/// Web `DEFAULT_MAP_DETAIL_QUALITY` (:142), z tabeli `jakosc.domyslna_jakosc_mapy_szczegoly`.
+pub fn default_map_detail_quality() -> QualityTier {
+    QualityTier::from_key(&table().jakosc.domyslna_jakosc_mapy_szczegoly)
+        .unwrap_or_else(|| panic!("mapgen-nowa-gra.json: jakosc.domyslna_jakosc_mapy_szczegoly"))
+}
+
+/// Web `qualityTierFromLabel` (:154): `normQualityLabel`, tokeny z tabeli, inaczej `medium`.
+pub fn quality_tier_from_label(label: &str) -> QualityTier {
+    let t = &table().jakosc;
+    let n = norm_quality_label(label);
+    if t.z_etykiety_niskie.contains(&n) {
+        return QualityTier::Low;
+    }
+    if t.z_etykiety_wysokie.contains(&n) {
+        return QualityTier::High;
+    }
+    QualityTier::from_key(&t.domyslna_z_etykiety)
+        .unwrap_or_else(|| panic!("mapgen-nowa-gra.json: jakosc.domyslna_z_etykiety"))
+}
+
+/// Web `qualityTierToLabel` (:161); etykiety wg kolejnosci `QUALITY_MENU_LABELS`.
+pub fn quality_tier_to_label(tier: QualityTier) -> &'static str {
+    let labels = quality_menu_labels();
+    match tier {
+        QualityTier::Low => &labels[0],
+        QualityTier::Medium => &labels[1],
+        QualityTier::High => &labels[2],
+    }
+}
+
+/// Web `BundledMapQualityPreset` (:168).
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct BundledMapQualityPreset {
+    pub render_quality: QualityTier,
+    pub map_detail_quality: QualityTier,
+}
+
+/// Web `bundledMapQualityPreset` (:177): jeden wybor -> oba tiery (1:1).
+pub fn bundled_map_quality_preset(tier: QualityTier) -> BundledMapQualityPreset {
+    BundledMapQualityPreset {
+        render_quality: tier,
+        map_detail_quality: tier,
+    }
+}
+
+/// Web `bundledMapQualityFromLabel` (:182).
+pub fn bundled_map_quality_from_label(label: &str) -> BundledMapQualityPreset {
+    bundled_map_quality_preset(quality_tier_from_label(label))
+}
+
+/// Web `isLargeMapMenuLabel` (:187): `normQualityLabel` (a nie `normPlMenuLabel`), tokeny z tabeli.
+pub fn is_large_map_menu_label(menu_label: &str) -> bool {
+    let n = norm_quality_label(menu_label);
+    table().jakosc.duze_mapy.contains(&n)
 }
 
 // ---------------------------------------------------------------------------
@@ -1007,12 +1111,13 @@ fn clamp_typy_triple_to_epoch(
     if epoch_max <= 0 {
         return triple;
     }
-    let minimum = table().typy_cywilizacji.triple_z_domyslnej.minimum;
+    let cfg = &table().typy_cywilizacji.triple_z_domyslnej;
+    let minimum = cfg.minimum;
     let max = triple.max.min(epoch_max);
     let mut def = triple.default.min(max);
     let mut min = triple.min.min(max);
     if min > max {
-        min = minimum.max(max - 1);
+        min = minimum.max(max - cfg.krok_rozdzielenia);
     }
     if def < min {
         def = max;
@@ -1033,13 +1138,13 @@ fn triple_from_default(def: i64, pool: i64) -> TripleRow {
     let mut min = cfg.minimum.max(def - cfg.krok_min);
     let mut adjusted = def.max(cfg.minimum).min(pool);
     if min >= max {
-        min = cfg.minimum.max(max - 1);
+        min = cfg.minimum.max(max - cfg.krok_rozdzielenia);
     }
     if adjusted <= min {
-        adjusted = (min + 1).min(max);
+        adjusted = (min + cfg.krok_rozdzielenia).min(max);
     }
     if adjusted >= max {
-        adjusted = (min + 1).max(max - 1);
+        adjusted = (min + cfg.krok_rozdzielenia).max(max - cfg.krok_rozdzielenia);
     }
     TripleRow {
         min,
@@ -1095,7 +1200,7 @@ fn miasta_panstwa_triple(menu_label: &str) -> TripleRow {
             let max = (clamped + cfg.krok_max).min(max_city);
             let mut min = cfg.minimum.max(clamped - cfg.krok_min);
             if min >= max {
-                min = cfg.minimum.max(max - 1);
+                min = cfg.minimum.max(max - cfg.krok_rozdzielenia);
             }
             return TripleRow {
                 min,
@@ -1138,7 +1243,12 @@ fn menu_bundle_from_triple(
     let domyslny = opts
         .iter()
         .position(|o| *o == triple.default.to_string())
-        .unwrap_or(1);
+        .unwrap_or(
+            table()
+                .typy_cywilizacji
+                .triple_z_domyslnej
+                .indeks_awaryjny_menu as usize,
+        );
     MenuBundle {
         opts,
         descs,
@@ -1303,6 +1413,26 @@ impl RiverGenPhase {
             Self::All => &phases[2],
         }
     }
+}
+
+/// Web `RIVER_GEN_STORAGE_KEY` (riverGenSwitch.ts:9): klucz `localStorage` dla wlaczenia rzek.
+pub fn river_gen_storage_key() -> &'static str {
+    &table().rzeki_przelacznik.klucze.magazyn_generowanie
+}
+
+/// Web `RIVER_GEN_PHASE_STORAGE_KEY` (riverGenSwitch.ts:10): klucz `localStorage` dla fazy.
+pub fn river_gen_phase_storage_key() -> &'static str {
+    &table().rzeki_przelacznik.klucze.magazyn_faza
+}
+
+/// Nazwa parametru URL czytana przez `getRiverGenEnabled` (riverGenSwitch.ts:42).
+pub fn river_gen_url_param() -> &'static str {
+    &table().rzeki_przelacznik.klucze.url_generowanie
+}
+
+/// Nazwa parametru URL czytana przez `getRiverGenPhase` (riverGenSwitch.ts:61).
+pub fn river_gen_phase_url_param() -> &'static str {
+    &table().rzeki_przelacznik.klucze.url_faza
 }
 
 /// Web `parse01` (riverGenSwitch.ts:26).

@@ -17,6 +17,7 @@ fn every_section_names_its_web_source() {
         ("rozmiary", &t.rozmiary.zrodlo_web),
         ("etykieta_mapy", &t.etykieta_mapy.zrodlo_web),
         ("typ_swiata", &t.typ_swiata.zrodlo_web),
+        ("jakosc", &t.jakosc.zrodlo_web),
         ("gestosc", &t.gestosc.zrodlo_web),
         ("rzeki", &t.rzeki.zrodlo_web),
         ("progi_szumu", &t.progi_szumu.zrodlo_web),

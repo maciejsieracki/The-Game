@@ -20285,6 +20285,16 @@
    "full": true
   }
  ],
+ "queried": {
+  "url": [
+   "riverGen",
+   "riverGenPhase"
+  ],
+  "storage": [
+   "civ-river-gen",
+   "civ-river-gen-phase"
+  ]
+ },
  "noEnv": {
   "enabled": true,
   "phase": "main+medium",

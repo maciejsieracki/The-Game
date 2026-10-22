@@ -1,8 +1,8 @@
 # P6.M02 - Parametry nowej gry generatora mapy (R-RUSTPORT-P6-M02-PARAMETRY-NOWEJ-GRY-Q1)
 
-**Status:** runda 1/5, rola Operator. **DOMAIN:** GAME. **Pin web:** `edb8fb56`. **Baza Rust:** `origin/rust-port/parity-v2` @ `1570419b` (baseline 595 testow; po zmianie 624 = 595 + 29 nowych).
+**Status:** runda 1/5, rola Operator (obrona: poprawki po ocenie Evaluatora, patrz sekcja 9). **DOMAIN:** GAME. **Pin web:** `edb8fb56`. **Baza Rust:** `origin/rust-port/parity-v2` @ `1570419b` (baseline 595 testow; po obronie 629 = 595 + 34 nowe).
 **Artefakty biegu:** `dyspozycje/autobot/runs/R-RUSTPORT-P6-M02-PARAMETRY-NOWEJ-GRY-Q1/` (generator wektorow `gen-m02-vectors.mjs` + loader `m02-loader-*.mjs`, niezalezny weryfikator `verify-m02-vectors.py`, skazenie wektorow `tamper-vectors.py`, logi bramek `gate-*-r1.log`, `verify-m02-r1.log`, `mutation-evidence-r1.txt`, `grep-literals-r1.txt`, `gen-m02-r1.log`, `gen-m02-regen-cmp.log`).
-**Zakres web (pin, PELNE odczytane pliki):** `deposit-era.ts` 46 linii (1-46), `riverGenSwitch.ts` 83 (1-83), `newGameMapDefaults.ts` 743 (1-743), `generator.ts` 848 linii (odczytane 755-848: zakresy 762-818 i 844 + naglowek sekcji; reszta pliku = M01/M18, nie w zakresie). Zaleznosci przeczytane: `data/map-gen-params-loader.ts` 246, `data/e-start-params-loader.ts` 170, `util/norm-pl-label.ts` 10, `game/civ-entry-epoch.ts` (linie 1-60 z 88; funkcje juz zportowane w P6.1), `gen-helpers.ts:3253-3262` (`defaultLandFractionForTyp`).
+**Zakres web (pin, PELNE odczytane pliki):** `deposit-era.ts` 46 linii (1-46), `riverGenSwitch.ts` 83 (1-83), `newGameMapDefaults.ts` 743 (1-743), `generator.ts` 848 linii (odczytane 755-848: zakresy 762-818 i 844 (linia 844 jest PUSTA - zakres z dispatchu; re-eksport aliasu typu jest w linii 846, `cat -n generator.ts | sed -n 842,848p`) + naglowek sekcji; reszta pliku = M01/M18, nie w zakresie). Zaleznosci przeczytane: `data/map-gen-params-loader.ts` 246, `data/e-start-params-loader.ts` 170, `util/norm-pl-label.ts` 10, `game/civ-entry-epoch.ts` (linie 1-60 z 88; funkcje juz zportowane w P6.1), `gen-helpers.ts:3253-3262` (`defaultLandFractionForTyp`).
 
 ## 0. ZALOZENIA (luki rozstrzygniete bez pytan do wlasciciela)
 
@@ -18,7 +18,7 @@
 
 ## 1. Zakres i wynik binarny
 
-Statusy: **PORT** = port 1:1 + test + wektor z uruchomionego weba, 0 rozbieznosci (Python niezalezny: 20 070 sprawdzen, 0 rozbieznosci); **DANE** = DANE-JUZ-W-RUST (z dowodem); **N/D** = NIE-DOTYCZY; **R2** = RUNDA-2 (brak pozycji).
+Statusy: **PORT** = port 1:1 + test + wektor z uruchomionego weba, 0 rozbieznosci (Python niezalezny: 20 371 sprawdzen, 0 rozbieznosci); **DANE** = DANE-JUZ-W-RUST (z dowodem); **N/D** = NIE-DOTYCZY; **R2** = RUNDA-2 (brak pozycji).
 
 ### 1.1 `deposit-era.ts` (46 linii)
 
@@ -32,7 +32,7 @@ Statusy: **PORT** = port 1:1 + test + wektor z uruchomionego weba, 0 rozbieznosc
 | `ensureDepositEraMeta` | PORT | `ensure_deposit_era_meta(&mut BTreeMap<..>)` | `ensure_meta_and_hidden_count_match_web` |
 | `countHiddenMetalDeposits` | PORT | `count_hidden_metal_deposits` | j.w. (8 er x przed/po) |
 
-### 1.2 `generator.ts:762-818`, `:844`
+### 1.2 `generator.ts:762-818`, `:844` (pusta) / `:846` (alias typu)
 
 | Symbol (web) | Status | Rust | Test / dowod |
 |---|---|---|---|
@@ -43,7 +43,7 @@ Statusy: **PORT** = port 1:1 + test + wektor z uruchomionego weba, 0 rozbieznosc
 | `rozmiarFromMenuLabel` (798) | PORT | `rozmiar_from_menu_label` (reguly w kolejnosci z tabeli `rozmiary.rozpoznawanie`) | `size_from_menu_label_and_label_to_dims_match_web` |
 | `rozmiarToDims` (809) | PORT | `rozmiar_to_dims` | `size_dims_and_order_match_web` |
 | `menuLabelToDims` (815) | PORT | `menu_label_to_dims` | `size_from_menu_label_and_label_to_dims_match_web` |
-| `RozmiarSwiataType` (844, re-eksport aliasu typu) | N/D | ten sam typ `RozmiarSwiata` | alias typu, brak zachowania |
+| `RozmiarSwiataType` (`generator.ts:846`: `export type { ..., RozmiarSwiata as RozmiarSwiataType, ... }`; w dispatchu cytowane jako 844 - to linia pusta) | N/D | ten sam typ `RozmiarSwiata`; `export type` jest wymazywany przy kompilacji (zero kodu w czasie dzialania) | alias typu, brak zachowania |
 
 ### 1.3 `newGameMapDefaults.ts` (743 linie)
 
@@ -60,7 +60,15 @@ Statusy: **PORT** = port 1:1 + test + wektor z uruchomionego weba, 0 rozbieznosc
 | `rywaleMenuForMapLabel` | PORT | `rywale_menu_for_map_label` | j.w. |
 | `typSwiataFromMenuLabel` | PORT | `typ_swiata_from_menu_label -> WorldType` | j.w. |
 | `DEFAULT_PLAYER_CIV_ID`, `DEFAULT_START_EPOCH_ID` | DANE + PORT dostepu | `e-start-params.json defaulty`; `default_player_civ_id()`, `default_start_epoch_id()` | `constants_match_web` |
-| `QualityTier`, `QUALITY_MENU_LABELS`, `DEFAULT_RENDER_QUALITY`, `DEFAULT_MAP_DETAIL_QUALITY`, `qualityTierFromLabel`, `qualityTierToLabel`, `BundledMapQualityPreset`, `bundledMapQualityPreset`, `bundledMapQualityFromLabel`, `isLargeMapMenuLabel` | N/D (UI) | jakosc renderu/podpowiedz FPS; nie wplywa na stan gry. Wspolna `normQualityLabel` jest portowana (`norm_quality_label`), bo uzywa jej `densityTierFromLabel` | `normalization_matches_web` (quality) |
+| `QualityTier` | PORT | `QualityTier` (+ `key`/`from_key`) | `p6_m02_quality::per_label_functions_match_web` |
+| `QUALITY_MENU_LABELS` (139) | PORT (dane w tabeli) | `quality_menu_labels()` <- `jakosc.etykiety_menu` | `p6_m02_quality::constants_match_web` |
+| `DEFAULT_RENDER_QUALITY` (141) | PORT (dane Panel-E) | `default_render_quality()` (`e-start-params.json defaulty.render_quality_bundled`; `low`/`high`, inaczej `medium`) | `constants_match_web` (wartosc z uruchomionego weba) |
+| `DEFAULT_MAP_DETAIL_QUALITY` (142) | PORT (tabela) | `default_map_detail_quality()` <- `jakosc.domyslna_jakosc_mapy_szczegoly` | `constants_match_web` |
+| `qualityTierFromLabel` (154) | PORT | `quality_tier_from_label` (tokeny w tabeli `jakosc.z_etykiety_*`) | `per_label_functions_match_web` (ponad 90 etykiet) |
+| `qualityTierToLabel` (161) | PORT | `quality_tier_to_label` | `tier_to_label_and_preset_match_web` |
+| `BundledMapQualityPreset` (168), `bundledMapQualityPreset` (177) | PORT | `BundledMapQualityPreset`, `bundled_map_quality_preset` | `tier_to_label_and_preset_match_web` |
+| `bundledMapQualityFromLabel` (182) | PORT | `bundled_map_quality_from_label` | `per_label_functions_match_web` |
+| `isLargeMapMenuLabel` (187) | PORT (tokeny `jakosc.duze_mapy`) | `is_large_map_menu_label` | `per_label_functions_match_web`, `web_quirk_ignores_z_with_dot` (wektor `large` z uruchomionego weba) |
 | `DensityTier` | PORT | `DensityTier` | `per_label_functions_match_web` |
 | `DENSITY_MENU_LABELS` | N/D (UI) | etykiety w tabeli (`gestosc.etykiety_menu`) uzywane przez `density_tier_to_label` | `constants_match_web` |
 | `densityTierFromLabel` | PORT | `density_tier_from_label` | `per_label_functions_match_web` |
@@ -112,7 +120,7 @@ Statusy: **PORT** = port 1:1 + test + wektor z uruchomionego weba, 0 rozbieznosc
 
 | Symbol (web) | Status | Rust | Test / dowod |
 |---|---|---|---|
-| `RIVER_GEN_STORAGE_KEY`, `RIVER_GEN_PHASE_STORAGE_KEY` | N/D | klucz `localStorage` przegladarki (warstwa powloki); wartosci potwierdzone w wektorze (`keys`) | `gen-m02-vectors.mjs` zapis kluczy, Python `storage keys` |
+| `RIVER_GEN_STORAGE_KEY`, `RIVER_GEN_PHASE_STORAGE_KEY` (9-10) + nazwy parametrow URL `riverGen`/`riverGenPhase` (42, 61) | PORT (dane w tabeli `rzeki_przelacznik.klucze`) | `river_gen_storage_key()`, `river_gen_phase_storage_key()`, `river_gen_url_param()`, `river_gen_phase_url_param()` - powloka bierze klucze STAD, nie z wlasnych literalow | `p6_m02_deposit_river::river_switch_keys_match_names_the_web_queried` (wektor `keys` + `queried`: nazwy ZAREJESTROWANE przez uruchomiony web podczas `URLSearchParams.get` / `localStorage.getItem`); Python `river queried url/storage` |
 | `RiverGenPhase` | PORT | `RiverGenPhase` (napisy z tabeli `rzeki_przelacznik.fazy`) | `p6_m02_deposit_river::river_switch_matches_web` |
 | `setRiverGenEnabledOverride`, `setRiverGenPhaseOverride` | PORT | `RiverGenSwitch::set_enabled_override`, `set_phase_override` | j.w. (3 x 4 nadpisan) |
 | `parse01`, `parsePhase` (prywatne) | PORT | `parse01`, `parse_phase` | `parse_helpers_cover_all_tokens` + 2 028 wektorow |
@@ -120,14 +128,14 @@ Statusy: **PORT** = port 1:1 + test + wektor z uruchomionego weba, 0 rozbieznosc
 | `getRiverGenPhase` | PORT | `get_phase` | j.w. |
 | `isRiverGenMainOnly`, `isRiverGenFull` | PORT | `is_main_only`, `is_full` | j.w. |
 
-**Bilans:** 0 pozycji RUNDA-2; N/D wylacznie UI/powloka (`TYP_SWIATA_MENU_LABELS`, 10 symboli jakosci renderu, `DENSITY_MENU_LABELS`, 2 klucze `localStorage`, alias typu `RozmiarSwiataType`) i nieosiagalne fallbacki.
+**Bilans:** 0 pozycji RUNDA-2; N/D wylacznie `TYP_SWIATA_MENU_LABELS`, `DENSITY_MENU_LABELS` (etykiety menu, ktore i tak leza w tabeli), alias typu `RozmiarSwiataType` i nieosiagalne fallbacki. Rodzina jakosci mapy (10 symboli) NIE jest juz N/D: wchodzi w sciezke startu silnika (`main.ts:1770,1774,1788,1799,24140`, `newGameFlow.ts:2044`), wiec jest zportowana z wektorem.
 
 ## 2. Zaobserwowane zachowania weba odwzorowane 1:1 (NIE bledy portu)
 
 Wszystkie z uruchomionego weba; port je zachowuje, bo celem jest parytet. Do ewentualnej decyzji wlasciciela poza tym tematem:
 
 - **`densityTierFromLabel('Dużo')` zwraca `medium`, nie `high`.** Funkcja uzywa `normQualityLabel`, ktory (inaczej niz `normPlMenuLabel`) NIE zamienia `ż->z`, wiec `Dużo -> "duo"` i trafia na wartosc domyslna. Efekt: wybor "Dużo" w kreatorze dla gestosci surowcow/rzek/pustyni/lasu/reliefu nie daje tieru `high`. (`low`/`Mało` dziala.) Wektor: `perLabel[label="Dużo"].density = "medium"`; test `density_to_label_round_trips_where_web_does`.
-- **`isLargeMapMenuLabel('Duży')` zwraca `false`** z tej samej przyczyny (UI, N/D).
+- **`isLargeMapMenuLabel('Duży')` zwraca `false`** z tej samej przyczyny (zportowane 1:1, `web_quirk_ignores_z_with_dot`).
 - **`mapSizeLabelFromMenuLabel('Standardowy') = 'duza'`** (pole 168x120 = 20 160 < 25 200), co przesuwa domyslna liczbe rywali i skale rzek wzgledem nazwy menu (progi x4 po zmianie rozmiarow map).
 - **`rywaleMenuForMapLabel` dla etykiety spoza Panel-E** (np. `Mało`) zwraca puste `opts` (domyslna liczba rywali z fallbacku `mapa_skala.domyslni_rywale` jest wieksza niz gorna granica z `aktywneTypy`), `domyslny = 0`.
 - `mapGenDefaultRywale` z `map-gen-params.json mapa_skala` ma wartosci 12-30 (inne niz `FALLBACK_RYWALE` w loaderze 2-10); liczy sie JSON.
@@ -140,12 +148,12 @@ Wszystkie z uruchomionego weba; port je zachowuje, bo celem jest parytet. Do ewe
 | `data/derived.rs` | 1 786 linii, tabele P3/P6.1C | + ~400 linii na koncu: struktury i parser `mapgen-nowa-gra.json` (`MAPGEN_NOWA_GRA_JSON`, `parse_mapgen_nowa_gra`, `mapgen_nowa_gra`) |
 | `data/derived/` | 33 pliki | + `mapgen-nowa-gra.json` |
 | Funkcje rozmiaru/parametrow nowej gry w Rust | tylko dane (`rozmiar_dims`, `domyslni_rywale` bez funkcji wyboru) | pelny port (sekcja 1) |
-| Testy (baseline) | 595 | 624 (+29) |
+| Testy (baseline) | 595 | 629 (+34; w tym 1 czerwony M00, sekcja 4) |
 | Pokrycie wymiarow map | test pinowal tylko `standardowy` | 6 rozmiarow z weba |
 
 ## 4. Zmiany w testach
 
-- **Nowe (29):** `p6_m02_generator` (4), `p6_m02_new_game` (11), `p6_m02_deposit_river` (6), `p6_m02_tables` (7, ksztalt tabeli bez pinow wartosci), `p6_m02_float_parse` (1).
+- **Nowe (34):** `p6_m02_generator` (4), `p6_m02_new_game` (11), `p6_m02_deposit_river` (7, w tym klucze przelacznika), `p6_m02_tables` (7, ksztalt tabeli bez pinow wartosci), `p6_m02_float_parse` (1), `p6_m02_quality` (4).
 - **Zmienione istniejace:** zero (zaden plik testowy spoza `p6_m02_*` nie byl edytowany).
 - **Regresja z konstrukcji (BLOKADA-NOTA, decyzja orkiestratora):** `tests/p6_m00_skeleton.rs::files_exist_and_are_empty_doc_only` wymaga, by KAZDA linia `domain/mapgen/*.rs` (poza `mod.rs`) zaczynala sie od `//!`. Wypelnienie `params.rs` kodem (cel tego tematu) lamie ten test z samej definicji - dotyczy kazdego tematu M*, ktory wypelni swoj plik. Test jest poza allowlista (zakaz zmian), wiec zostawiony bez zmian. Rekomendacja: orkiestrator przy integracji wypelnionych szkieletow zmienia warunek na "plik doc-only ALBO ma naglowek `Temat wlasciciel:` z ID wlasciciela" (pozostale dwa testy M00 przechodza; wlasciciel w naglowku `params.rs` zgodny z tabela P6-25 §6: `//! Temat wlasciciel: R-RUSTPORT-P6-M02-PARAMETRY-NOWEJ-GRY-Q1.`).
 
@@ -166,7 +174,7 @@ EXIT=0
 ```
 (pierwszy przebieg tej samej tresci kodu wykryl 4x `clippy::manual_contains`; poprawione, drugi przebieg czysty.)
 
-`cargo test --no-fail-fast` (`gate-test-r1.log`, 1 103 linie, caly plik): **623 passed, 1 failed**, `EXIT=101`. Jedyny czerwony: `p6_m00_skeleton::files_exist_and_are_empty_doc_only` (sekcja 4, nie jest bledem portu). Testy M02: `p6_m02_deposit_river` 6 ok, `p6_m02_float_parse` 1 ok, `p6_m02_generator` 4 ok, `p6_m02_new_game` 11 ok, `p6_m02_tables` 7 ok.
+`cargo test --no-fail-fast` (`gate-test-r1.log`, 1 103 linie, caly plik; STAN PRZED OBRONA - aktualne bramki w sekcji 10): **623 passed, 1 failed**, `EXIT=101`. Jedyny czerwony: `p6_m00_skeleton::files_exist_and_are_empty_doc_only` (sekcja 4, nie jest bledem portu). Testy M02: `p6_m02_deposit_river` 6 ok, `p6_m02_float_parse` 1 ok, `p6_m02_generator` 4 ok, `p6_m02_new_game` 11 ok, `p6_m02_tables` 7 ok.
 
 Wektory i weryfikator: `verify-m02-r1.log` -> `RAZEM: 20070 sprawdzen, rozbieznosci: 0`, `EXIT=0`. Powtarzalnosc: `gen-m02-regen-cmp.log` (regeneracja daje pliki bajt-w-bajt identyczne z zacommitowanymi).
 
@@ -185,3 +193,101 @@ Wektory i weryfikator: `verify-m02-r1.log` -> `RAZEM: 20070 sprawdzen, rozbiezno
 ## 8. Zero zmian poza allowlista - samokontrola
 
 Zmienione/dodane: `rust-port/engine/src/domain/mapgen/params.rs`, `rust-port/engine/data/derived/mapgen-nowa-gra.json`, `rust-port/engine/src/data/derived.rs` (dopisek na koncu, zgodnie z uwaga dispatchu), `rust-port/engine/tests/p6_m02_*.rs` (5 plikow), `rust-port/engine/tests/p6_m02_vectors/*.json` (5 plikow), `dyspozycje/rust-port/p6/P6-M02-PARAMETRY-NOWEJ-GRY.md`, `dyspozycje/autobot/runs/R-RUSTPORT-P6-M02-PARAMETRY-NOWEJ-GRY-Q1/**`. Bez zmian: `bridge.rs`, `Cargo.toml`, `Cargo.lock` (niezacommitowany), `gra/**`, `rust-port/renderer/**`, `src-tauri/**`, `domain/mod.rs`, `domain/mapgen/mod.rs`, `tests/p6_m00_skeleton.rs`.
+
+## 9. Obrona (runda 1/5): odpowiedz na zarzuty Evaluatora
+
+Odtworzono stan z commita Operatora `451e430f`; poprawki na jego bazie (jeden commit obrony).
+
+1. **Bramka testow EXIT=101 (zarzut 1) - ODRZUCAM jako poprawke Operatora, ESKALUJE do orkiestratora.** Dowod: `tests/p6_m00_skeleton.rs:67-71` wymaga `line.starts_with("//!")` dla KAZDEJ linii `domain/mapgen/*.rs` poza `mod.rs`; kazdy kod w `params.rs` lamie to z definicji, a plik testu jest poza allowlista i obowiazuje zakaz oslabiania testow. Alternatywa (kod w innym pliku) lamie allowlista. Jedyny czerwony test pozostaje `p6_m00_skeleton::files_exist_and_are_empty_doc_only`. Rekomendacja bez zmian: orkiestrator przy integracji zmienia warunek na "doc-only ALBO naglowek `Temat wlasciciel:`" (dotknie kazdy temat M*).
+2. **Rodzina jakosci N/D (zarzut 2) - PRZYJMUJE.** Dowod braku wplywu nie istnieje: web woła te funkcje na sciezce startu silnika. Zportowano wszystkie 10 symboli (sekcja 1.3), tokeny i etykiety w `mapgen-nowa-gra.json` (`jakosc`), nowy wektor `quality.json` z uruchomionego weba (ponad 90 etykiet x tier/pakiet/duza mapa, 3 tiery x etykieta/preset, domyslne), test `tests/p6_m02_quality.rs` (4 testy), rozszerzony niezalezny weryfikator Python (+301 sprawdzen). Uwaga: wektor `isLarge` dla `Duży` istnial juz w `new-game.json` (sprawdzany Pythonem), brakowalo tylko portu Rust.
+3. **Cytowanie `RozmiarSwiataType` (zarzut 3) - PRZYJMUJE.** `cat -n generator.ts | sed -n 842,848p`: 844 pusta, alias w 846. Poprawiono sekcje 1.2 i uwage o zakresie (zakres z dispatchu `844-844` nie zawiera zadnego kodu; alias jest N/D z uzasadnieniem: `export type` znika przy kompilacji).
+4. **Sztywne `+1/-1` w `triple_from_default` itd. (zarzut 4) - PRZYJMUJE.** Web uzywa w tych miejscach (`max - 1`, `min + 1`, `Math.max(1, max - 1)`) osobnego kroku rozdzielenia, rozlacznego z `krok_max`/`krok_min` (te dotycza `def +/- 1`); dodano pole tabeli `triple_z_domyslnej.krok_rozdzielenia` oraz `indeks_awaryjny_menu` (zamiast `unwrap_or(1)`). `grep -nE 'max - 1|min \+ 1|unwrap_or\(1\)' params.rs` -> 0 trafien. Zostaje tylko krok petli `n += 1` w `rywale_menu_for_map_label` (iteracja po calkowitych, nie dana balansowa). Mutacja 12 (`krok_rozdzielenia` 1 -> 2) wykryta.
+5. **Klucze `RIVER_GEN_*` N/D (zarzut 5) - PRZYJMUJE.** Klucze `localStorage` i nazwy parametrow URL przeniesione do tabeli `rzeki_przelacznik.klucze` z akcesorami Rust; wektor zapisuje nazwy faktycznie odczytane przez uruchomiony web (patch `URLSearchParams.prototype.get` i `localStorage.getItem` w generatorze). Test + Python + mutacje 14 i 15.
+6. **Mutacje (zarzut 6) - PRZYJMUJE.** Kazda mutacja uruchomiona OSOBNO z surowymi wynikami `cargo test` (`mutation-evidence-r2.txt`: mutacje 1-5, 7, 8 z r1 odtworzone + nowe 9-16 dla jakosci, kroku rozdzielenia, kluczy, `normQualityLabel`). Mutacja 6 z r1 pozostaje rownowazna (nie liczona). Wyniki w sekcji 10.
+
+## 10. Obrona: surowe bramki r2 i dowody (pliki `*-r2.*` w katalogu runu; `echo "EXIT=$?"`)
+
+Build: `CARGO_INCREMENTAL=0 CARGO_PROFILE_DEV_DEBUG=0 CARGO_TARGET_DIR=/home/user/cargo-target-shared/wf_8ae2c889-684-3`, cargo w `rust-port/engine`.
+
+`cargo fmt --check` (`gate-fmt-r2.log`, caly plik):
+```
+EXIT=0
+```
+
+`cargo clippy --all-targets -- -D warnings` (`gate-clippy-r2.log`, caly plik):
+```
+    Checking serde_core v1.0.229
+    Checking once_cell v1.21.4
+    Checking zmij v1.0.23
+    Checking memchr v2.8.3
+    Checking tracing-core v0.1.36
+    Checking itoa v1.0.18
+    Checking pin-project-lite v0.2.17
+    Checking tracing v0.1.44
+    Checking serde_json v1.0.154
+    Checking serde v1.0.229
+    Checking civ-engine v0.1.0 (/home/user/The-Game/.claude/worktrees/wf_8ae2c889-684-3/rust-port/engine)
+    Finished `dev` profile [unoptimized] target(s) in 48.26s
+EXIT=0
+```
+
+`cargo test --no-fail-fast` (`gate-test-r2.log`, 1115 linii, pelny plik w runie; koniec): **628 passed, 1 failed** (629 testow = 595 baseline + 34 nowych), `EXIT=101`. Jedyny czerwony: `p6_m00_skeleton::files_exist_and_are_empty_doc_only` (zarzut 1, decyzja orkiestratora; sekcja 4 i 9.1).
+```
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+error: 1 target failed:
+    `--test p6_m00_skeleton`
+EXIT=101
+```
+
+Wektory (regeneracja z `git archive edb8fb56` do osobnego `mktemp -d`, `gen-m02-r2.log`, `gen-m02-regen-cmp-r2.log`):
+```
+IDENTYCZNY generator.json
+IDENTYCZNY norm.json
+IDENTYCZNY new-game.json
+IDENTYCZNY deposit-era.json
+IDENTYCZNY river-switch.json
+IDENTYCZNY quality.json
+EXIT=0
+```
+Niezalezny weryfikator (`verify-m02-r2.log`):
+```
+RAZEM: 20371 sprawdzen, rozbieznosci: 0
+EXIT=0
+```
+Skazona kopia wektorow (`tamper-vectors.py` rozszerzony o `quality.json`; `verify-m02-tampered-r2.log`, linie skrocone do 140 znakow):
+```
+ROZBIEZNOSC defaultRywale 'Standardowy': py=6 json=7
+ROZBIEZNOSC clampMiasta 'Infinity' True: py=0 json=1
+ROZBIEZNOSC multiplier low: py='3fe3333333333333' json='3ff0000000000001'
+ROZBIEZNOSC riverInts low 20x14: py={'minDim': 14, 'mainCell': 10, 'tributaryCell': 5, 'mainGridStride': 1, 'minLen': 4, 'maxLen': 10, 'g...
+ROZBIEZNOSC minEraFor {'zloze': ' ', 'zlozeMinEra': 0}: py=0 json=1
+ROZBIEZNOSC enabled None None None '': py=True json=False
+ROZBIEZNOSC qualityTier 'Duży': py='medium' json='high'
+ROZBIEZNOSC qualityLarge 'Ogromny': py=True json=False
+RAZEM: 20371 sprawdzen, rozbieznosci: 8
+EXIT=1
+```
+
+### Mutacje r2 - kazda osobno (`mutation-evidence-r2.txt`: pelne wyniki `cargo test` p6_m02_* po kazdej)
+
+```
+Mutacja 1: JSON rzeki.min_dlugosc_tier.medium 25 -> 26 -> cargo test EXIT=101 => WYKRYTA
+Mutacja 2: forest_noise_threshold_from_tier: .max( -> .min( -> cargo test EXIT=101 => WYKRYTA
+Mutacja 3: rozmiar_from_menu_label: kolejnosc regul odwrocona (.rev()) -> cargo test EXIT=101 => WYKRYTA
+Mutacja 4: is_deposit_visible: regula "wegiel nigdy widoczny" wylaczona -> cargo test EXIT=101 => WYKRYTA
+Mutacja 5: JSON rzeki_przelacznik.faza_domyslna main+medium -> all -> cargo test EXIT=101 => WYKRYTA
+Mutacja 7: resolve_river_map_params: minInlandFromSea min_dim >= 40 -> > 40 -> cargo test EXIT=101 => WYKRYTA
+Mutacja 8: max_rivers_for_map_and_density: js_round -> floor -> cargo test EXIT=101 => WYKRYTA
+Mutacja 9: JSON jakosc.z_etykiety_wysokie: usuniete "wysoka" -> cargo test EXIT=101 => WYKRYTA
+Mutacja 10: JSON jakosc.duze_mapy: usuniete "ogromny" -> cargo test EXIT=101 => WYKRYTA
+Mutacja 11: JSON jakosc.domyslna_jakosc_mapy_szczegoly high -> low -> cargo test EXIT=101 => WYKRYTA
+Mutacja 12: JSON triple_z_domyslnej.krok_rozdzielenia 1 -> 2 -> cargo test EXIT=101 => WYKRYTA
+Mutacja 13: JSON triple_z_domyslnej.indeks_awaryjny_menu: nieosiagalna galaz (informacyjnie) -> cargo test EXIT=0 => NIEWYKRYTA
+Mutacja 14: JSON rzeki_przelacznik.klucze.url_faza riverGenPhase -> riverPhase -> cargo test EXIT=101 => WYKRYTA
+Mutacja 15: JSON rzeki_przelacznik.klucze.magazyn_generowanie civ-river-gen -> civ-rivers -> cargo test EXIT=101 => WYKRYTA
+Mutacja 16: norm_quality_label: dodane z-kropka -> z (wada: Dużo -> high) -> cargo test EXIT=101 => WYKRYTA
+```
+
+Mutacja 6 z r1 (`round -> floor` przy komorce doplywu) pozostaje rownowazna i nie jest liczona. **Mutacja 13** (`indeks_awaryjny_menu` 1 -> 0) jest NIEWYKRYTA celowo: galaz `unwrap_or(...)` w `menu_bundle_from_triple` jest nieosiagalna (`opts` zawsze zawiera `triple.default`), identycznie jak w webie (`domyslny >= 0 ? domyslny : 1` po `Math.max(0, ...)`); wartosc zyje w tabeli tylko po to, by nie zostawiac literalu w kodzie.

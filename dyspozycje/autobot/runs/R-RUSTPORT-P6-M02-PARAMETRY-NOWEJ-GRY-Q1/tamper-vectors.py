@@ -33,3 +33,11 @@ def f_dep(x):
 edit("new-game.json", f_new)
 edit("river-switch.json", f_river)
 edit("deposit-era.json", f_dep)
+
+
+def f_quality(x):
+    x["perLabel"][3]["tier"] = "high"
+    x["perLabel"][4]["large"] = not x["perLabel"][4]["large"]
+
+
+edit("quality.json", f_quality)

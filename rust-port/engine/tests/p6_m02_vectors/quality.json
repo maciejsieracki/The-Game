@@ -1,0 +1,885 @@
+{
+ "menuLabels": [
+  "Niska",
+  "Średnia",
+  "Wysoka"
+ ],
+ "defaultRenderQuality": "medium",
+ "defaultMapDetailQuality": "high",
+ "toLabel": [
+  {
+   "tier": "low",
+   "label": "Niska"
+  },
+  {
+   "tier": "medium",
+   "label": "Średnia"
+  },
+  {
+   "tier": "high",
+   "label": "Wysoka"
+  }
+ ],
+ "presets": [
+  {
+   "tier": "low",
+   "preset": {
+    "renderQuality": "low",
+    "mapDetailQuality": "low"
+   }
+  },
+  {
+   "tier": "medium",
+   "preset": {
+    "renderQuality": "medium",
+    "mapDetailQuality": "medium"
+   }
+  },
+  {
+   "tier": "high",
+   "preset": {
+    "renderQuality": "high",
+    "mapDetailQuality": "high"
+   }
+  }
+ ],
+ "perLabel": [
+  {
+   "label": "Malenki",
+   "tier": "medium",
+   "bundle": {
+    "renderQuality": "medium",
+    "mapDetailQuality": "medium"
+   },
+   "large": false
+  },
+  {
+   "label": "Mały",
+   "tier": "medium",
+   "bundle": {
+    "renderQuality": "medium",
+    "mapDetailQuality": "medium"
+   },
+   "large": false
+  },
+  {
+   "label": "Standardowy",
+   "tier": "medium",
+   "bundle": {
+    "renderQuality": "medium",
+    "mapDetailQuality": "medium"
+   },
+   "large": false
+  },
+  {
+   "label": "Duży",
+   "tier": "medium",
+   "bundle": {
+    "renderQuality": "medium",
+    "mapDetailQuality": "medium"
+   },
+   "large": false
+  },
+  {
+   "label": "Ogromny",
+   "tier": "medium",
+   "bundle": {
+    "renderQuality": "medium",
+    "mapDetailQuality": "medium"
+   },
+   "large": true
+  },
+  {
+   "label": "Super Huge",
+   "tier": "medium",
+   "bundle": {
+    "renderQuality": "medium",
+    "mapDetailQuality": "medium"
+   },
+   "large": false
+  },
+  {
+   "label": "Malenka",
+   "tier": "medium",
+   "bundle": {
+    "renderQuality": "medium",
+    "mapDetailQuality": "medium"
+   },
+   "large": false
+  },
+  {
+   "label": "Mala",
+   "tier": "medium",
+   "bundle": {
+    "renderQuality": "medium",
+    "mapDetailQuality": "medium"
+   },
+   "large": false
+  },
+  {
+   "label": "Mały",
+   "tier": "medium",
+   "bundle": {
+    "renderQuality": "medium",
+    "mapDetailQuality": "medium"
+   },
+   "large": false
+  },
+  {
+   "label": "mały",
+   "tier": "medium",
+   "bundle": {
+    "renderQuality": "medium",
+    "mapDetailQuality": "medium"
+   },
+   "large": false
+  },
+  {
+   "label": "MAŁY",
+   "tier": "medium",
+   "bundle": {
+    "renderQuality": "medium",
+    "mapDetailQuality": "medium"
+   },
+   "large": false
+  },
+  {
+   "label": "Mala ",
+   "tier": "medium",
+   "bundle": {
+    "renderQuality": "medium",
+    "mapDetailQuality": "medium"
+   },
+   "large": false
+  },
+  {
+   "label": " Standardowy ",
+   "tier": "medium",
+   "bundle": {
+    "renderQuality": "medium",
+    "mapDetailQuality": "medium"
+   },
+   "large": false
+  },
+  {
+   "label": "Średnia",
+   "tier": "medium",
+   "bundle": {
+    "renderQuality": "medium",
+    "mapDetailQuality": "medium"
+   },
+   "large": false
+  },
+  {
+   "label": "Srednia",
+   "tier": "medium",
+   "bundle": {
+    "renderQuality": "medium",
+    "mapDetailQuality": "medium"
+   },
+   "large": false
+  },
+  {
+   "label": "Sredni",
+   "tier": "medium",
+   "bundle": {
+    "renderQuality": "medium",
+    "mapDetailQuality": "medium"
+   },
+   "large": false
+  },
+  {
+   "label": "Duża",
+   "tier": "medium",
+   "bundle": {
+    "renderQuality": "medium",
+    "mapDetailQuality": "medium"
+   },
+   "large": false
+  },
+  {
+   "label": "Duza",
+   "tier": "medium",
+   "bundle": {
+    "renderQuality": "medium",
+    "mapDetailQuality": "medium"
+   },
+   "large": false
+  },
+  {
+   "label": "Duzy",
+   "tier": "medium",
+   "bundle": {
+    "renderQuality": "medium",
+    "mapDetailQuality": "medium"
+   },
+   "large": true
+  },
+  {
+   "label": "Large",
+   "tier": "medium",
+   "bundle": {
+    "renderQuality": "medium",
+    "mapDetailQuality": "medium"
+   },
+   "large": false
+  },
+  {
+   "label": "large",
+   "tier": "medium",
+   "bundle": {
+    "renderQuality": "medium",
+    "mapDetailQuality": "medium"
+   },
+   "large": false
+  },
+  {
+   "label": "Medium",
+   "tier": "medium",
+   "bundle": {
+    "renderQuality": "medium",
+    "mapDetailQuality": "medium"
+   },
+   "large": false
+  },
+  {
+   "label": "Small",
+   "tier": "medium",
+   "bundle": {
+    "renderQuality": "medium",
+    "mapDetailQuality": "medium"
+   },
+   "large": false
+  },
+  {
+   "label": "small",
+   "tier": "medium",
+   "bundle": {
+    "renderQuality": "medium",
+    "mapDetailQuality": "medium"
+   },
+   "large": false
+  },
+  {
+   "label": "XLarge",
+   "tier": "medium",
+   "bundle": {
+    "renderQuality": "medium",
+    "mapDetailQuality": "medium"
+   },
+   "large": false
+  },
+  {
+   "label": "xlarge",
+   "tier": "medium",
+   "bundle": {
+    "renderQuality": "medium",
+    "mapDetailQuality": "medium"
+   },
+   "large": false
+  },
+  {
+   "label": "Kolosalny",
+   "tier": "medium",
+   "bundle": {
+    "renderQuality": "medium",
+    "mapDetailQuality": "medium"
+   },
+   "large": false
+  },
+  {
+   "label": "Super",
+   "tier": "medium",
+   "bundle": {
+    "renderQuality": "medium",
+    "mapDetailQuality": "medium"
+   },
+   "large": false
+  },
+  {
+   "label": "superhuge",
+   "tier": "medium",
+   "bundle": {
+    "renderQuality": "medium",
+    "mapDetailQuality": "medium"
+   },
+   "large": false
+  },
+  {
+   "label": "SUPER HUGE",
+   "tier": "medium",
+   "bundle": {
+    "renderQuality": "medium",
+    "mapDetailQuality": "medium"
+   },
+   "large": false
+  },
+  {
+   "label": "Ogromna",
+   "tier": "medium",
+   "bundle": {
+    "renderQuality": "medium",
+    "mapDetailQuality": "medium"
+   },
+   "large": false
+  },
+  {
+   "label": "Ogromny!",
+   "tier": "medium",
+   "bundle": {
+    "renderQuality": "medium",
+    "mapDetailQuality": "medium"
+   },
+   "large": true
+  },
+  {
+   "label": "Wielki",
+   "tier": "medium",
+   "bundle": {
+    "renderQuality": "medium",
+    "mapDetailQuality": "medium"
+   },
+   "large": false
+  },
+  {
+   "label": "xyz",
+   "tier": "medium",
+   "bundle": {
+    "renderQuality": "medium",
+    "mapDetailQuality": "medium"
+   },
+   "large": false
+  },
+  {
+   "label": "",
+   "tier": "medium",
+   "bundle": {
+    "renderQuality": "medium",
+    "mapDetailQuality": "medium"
+   },
+   "large": false
+  },
+  {
+   "label": " ",
+   "tier": "medium",
+   "bundle": {
+    "renderQuality": "medium",
+    "mapDetailQuality": "medium"
+   },
+   "large": false
+  },
+  {
+   "label": "ćńś",
+   "tier": "medium",
+   "bundle": {
+    "renderQuality": "medium",
+    "mapDetailQuality": "medium"
+   },
+   "large": false
+  },
+  {
+   "label": "Żółć",
+   "tier": "medium",
+   "bundle": {
+    "renderQuality": "medium",
+    "mapDetailQuality": "medium"
+   },
+   "large": false
+  },
+  {
+   "label": "standard",
+   "tier": "medium",
+   "bundle": {
+    "renderQuality": "medium",
+    "mapDetailQuality": "medium"
+   },
+   "large": false
+  },
+  {
+   "label": "stand",
+   "tier": "medium",
+   "bundle": {
+    "renderQuality": "medium",
+    "mapDetailQuality": "medium"
+   },
+   "large": false
+  },
+  {
+   "label": "sre",
+   "tier": "medium",
+   "bundle": {
+    "renderQuality": "medium",
+    "mapDetailQuality": "medium"
+   },
+   "large": false
+  },
+  {
+   "label": "ogr",
+   "tier": "medium",
+   "bundle": {
+    "renderQuality": "medium",
+    "mapDetailQuality": "medium"
+   },
+   "large": false
+  },
+  {
+   "label": "mal",
+   "tier": "medium",
+   "bundle": {
+    "renderQuality": "medium",
+    "mapDetailQuality": "medium"
+   },
+   "large": false
+  },
+  {
+   "label": "malen",
+   "tier": "medium",
+   "bundle": {
+    "renderQuality": "medium",
+    "mapDetailQuality": "medium"
+   },
+   "large": false
+  },
+  {
+   "label": "duz",
+   "tier": "medium",
+   "bundle": {
+    "renderQuality": "medium",
+    "mapDetailQuality": "medium"
+   },
+   "large": false
+  },
+  {
+   "label": "Kontynenty",
+   "tier": "medium",
+   "bundle": {
+    "renderQuality": "medium",
+    "mapDetailQuality": "medium"
+   },
+   "large": false
+  },
+  {
+   "label": "Pangea",
+   "tier": "medium",
+   "bundle": {
+    "renderQuality": "medium",
+    "mapDetailQuality": "medium"
+   },
+   "large": false
+  },
+  {
+   "label": "Wyspy",
+   "tier": "medium",
+   "bundle": {
+    "renderQuality": "medium",
+    "mapDetailQuality": "medium"
+   },
+   "large": false
+  },
+  {
+   "label": "Ziemia",
+   "tier": "medium",
+   "bundle": {
+    "renderQuality": "medium",
+    "mapDetailQuality": "medium"
+   },
+   "large": false
+  },
+  {
+   "label": "KONTYNENTY",
+   "tier": "medium",
+   "bundle": {
+    "renderQuality": "medium",
+    "mapDetailQuality": "medium"
+   },
+   "large": false
+  },
+  {
+   "label": "Ziemia ",
+   "tier": "medium",
+   "bundle": {
+    "renderQuality": "medium",
+    "mapDetailQuality": "medium"
+   },
+   "large": false
+  },
+  {
+   "label": "Wyspa",
+   "tier": "medium",
+   "bundle": {
+    "renderQuality": "medium",
+    "mapDetailQuality": "medium"
+   },
+   "large": false
+  },
+  {
+   "label": "Mało",
+   "tier": "medium",
+   "bundle": {
+    "renderQuality": "medium",
+    "mapDetailQuality": "medium"
+   },
+   "large": false
+  },
+  {
+   "label": "Normalnie",
+   "tier": "medium",
+   "bundle": {
+    "renderQuality": "medium",
+    "mapDetailQuality": "medium"
+   },
+   "large": false
+  },
+  {
+   "label": "Dużo",
+   "tier": "medium",
+   "bundle": {
+    "renderQuality": "medium",
+    "mapDetailQuality": "medium"
+   },
+   "large": false
+  },
+  {
+   "label": "Duzo",
+   "tier": "medium",
+   "bundle": {
+    "renderQuality": "medium",
+    "mapDetailQuality": "medium"
+   },
+   "large": false
+  },
+  {
+   "label": "Low",
+   "tier": "low",
+   "bundle": {
+    "renderQuality": "low",
+    "mapDetailQuality": "low"
+   },
+   "large": false
+  },
+  {
+   "label": "HIGH",
+   "tier": "high",
+   "bundle": {
+    "renderQuality": "high",
+    "mapDetailQuality": "high"
+   },
+   "large": false
+  },
+  {
+   "label": "high",
+   "tier": "high",
+   "bundle": {
+    "renderQuality": "high",
+    "mapDetailQuality": "high"
+   },
+   "large": false
+  },
+  {
+   "label": "low",
+   "tier": "low",
+   "bundle": {
+    "renderQuality": "low",
+    "mapDetailQuality": "low"
+   },
+   "large": false
+  },
+  {
+   "label": "malo",
+   "tier": "medium",
+   "bundle": {
+    "renderQuality": "medium",
+    "mapDetailQuality": "medium"
+   },
+   "large": false
+  },
+  {
+   "label": "Niska",
+   "tier": "low",
+   "bundle": {
+    "renderQuality": "low",
+    "mapDetailQuality": "low"
+   },
+   "large": false
+  },
+  {
+   "label": "Wysoka",
+   "tier": "high",
+   "bundle": {
+    "renderQuality": "high",
+    "mapDetailQuality": "high"
+   },
+   "large": false
+  },
+  {
+   "label": "Šmieszne",
+   "tier": "medium",
+   "bundle": {
+    "renderQuality": "medium",
+    "mapDetailQuality": "medium"
+   },
+   "large": false
+  },
+  {
+   "label": "Mąka",
+   "tier": "medium",
+   "bundle": {
+    "renderQuality": "medium",
+    "mapDetailQuality": "medium"
+   },
+   "large": false
+  },
+  {
+   "label": "Ęę",
+   "tier": "medium",
+   "bundle": {
+    "renderQuality": "medium",
+    "mapDetailQuality": "medium"
+   },
+   "large": false
+  },
+  {
+   "label": "Ąą",
+   "tier": "medium",
+   "bundle": {
+    "renderQuality": "medium",
+    "mapDetailQuality": "medium"
+   },
+   "large": false
+  },
+  {
+   "label": "àà",
+   "tier": "medium",
+   "bundle": {
+    "renderQuality": "medium",
+    "mapDetailQuality": "medium"
+   },
+   "large": false
+  },
+  {
+   "label": "niska",
+   "tier": "low",
+   "bundle": {
+    "renderQuality": "low",
+    "mapDetailQuality": "low"
+   },
+   "large": false
+  },
+  {
+   "label": "NISKA",
+   "tier": "low",
+   "bundle": {
+    "renderQuality": "low",
+    "mapDetailQuality": "low"
+   },
+   "large": false
+  },
+  {
+   "label": "Niska!",
+   "tier": "low",
+   "bundle": {
+    "renderQuality": "low",
+    "mapDetailQuality": "low"
+   },
+   "large": false
+  },
+  {
+   "label": " Niska ",
+   "tier": "low",
+   "bundle": {
+    "renderQuality": "low",
+    "mapDetailQuality": "low"
+   },
+   "large": false
+  },
+  {
+   "label": "wysoka",
+   "tier": "high",
+   "bundle": {
+    "renderQuality": "high",
+    "mapDetailQuality": "high"
+   },
+   "large": false
+  },
+  {
+   "label": "WYSOKA",
+   "tier": "high",
+   "bundle": {
+    "renderQuality": "high",
+    "mapDetailQuality": "high"
+   },
+   "large": false
+  },
+  {
+   "label": "Wysoka ",
+   "tier": "high",
+   "bundle": {
+    "renderQuality": "high",
+    "mapDetailQuality": "high"
+   },
+   "large": false
+  },
+  {
+   "label": "Srednia",
+   "tier": "medium",
+   "bundle": {
+    "renderQuality": "medium",
+    "mapDetailQuality": "medium"
+   },
+   "large": false
+  },
+  {
+   "label": "Średnia",
+   "tier": "medium",
+   "bundle": {
+    "renderQuality": "medium",
+    "mapDetailQuality": "medium"
+   },
+   "large": false
+  },
+  {
+   "label": "sredni",
+   "tier": "medium",
+   "bundle": {
+    "renderQuality": "medium",
+    "mapDetailQuality": "medium"
+   },
+   "large": false
+  },
+  {
+   "label": "Mid",
+   "tier": "medium",
+   "bundle": {
+    "renderQuality": "medium",
+    "mapDetailQuality": "medium"
+   },
+   "large": false
+  },
+  {
+   "label": "medium",
+   "tier": "medium",
+   "bundle": {
+    "renderQuality": "medium",
+    "mapDetailQuality": "medium"
+   },
+   "large": false
+  },
+  {
+   "label": "Hi",
+   "tier": "medium",
+   "bundle": {
+    "renderQuality": "medium",
+    "mapDetailQuality": "medium"
+   },
+   "large": false
+  },
+  {
+   "label": "L",
+   "tier": "medium",
+   "bundle": {
+    "renderQuality": "medium",
+    "mapDetailQuality": "medium"
+   },
+   "large": false
+  },
+  {
+   "label": "duzy",
+   "tier": "medium",
+   "bundle": {
+    "renderQuality": "medium",
+    "mapDetailQuality": "medium"
+   },
+   "large": true
+  },
+  {
+   "label": "DUZY",
+   "tier": "medium",
+   "bundle": {
+    "renderQuality": "medium",
+    "mapDetailQuality": "medium"
+   },
+   "large": true
+  },
+  {
+   "label": "Duży ",
+   "tier": "medium",
+   "bundle": {
+    "renderQuality": "medium",
+    "mapDetailQuality": "medium"
+   },
+   "large": false
+  },
+  {
+   "label": "ogromny",
+   "tier": "medium",
+   "bundle": {
+    "renderQuality": "medium",
+    "mapDetailQuality": "medium"
+   },
+   "large": true
+  },
+  {
+   "label": "OGROMNY",
+   "tier": "medium",
+   "bundle": {
+    "renderQuality": "medium",
+    "mapDetailQuality": "medium"
+   },
+   "large": true
+  },
+  {
+   "label": "Ogromny",
+   "tier": "medium",
+   "bundle": {
+    "renderQuality": "medium",
+    "mapDetailQuality": "medium"
+   },
+   "large": true
+  },
+  {
+   "label": "Duzy!",
+   "tier": "medium",
+   "bundle": {
+    "renderQuality": "medium",
+    "mapDetailQuality": "medium"
+   },
+   "large": true
+  },
+  {
+   "label": "Dużo",
+   "tier": "medium",
+   "bundle": {
+    "renderQuality": "medium",
+    "mapDetailQuality": "medium"
+   },
+   "large": false
+  },
+  {
+   "label": "dużo",
+   "tier": "medium",
+   "bundle": {
+    "renderQuality": "medium",
+    "mapDetailQuality": "medium"
+   },
+   "large": false
+  },
+  {
+   "label": "Super Huge",
+   "tier": "medium",
+   "bundle": {
+    "renderQuality": "medium",
+    "mapDetailQuality": "medium"
+   },
+   "large": false
+  },
+  {
+   "label": "Malenki",
+   "tier": "medium",
+   "bundle": {
+    "renderQuality": "medium",
+    "mapDetailQuality": "medium"
+   },
+   "large": false
+  }
+ ]
+}

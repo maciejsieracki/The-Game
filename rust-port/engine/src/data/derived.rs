@@ -1932,6 +1932,18 @@ pub struct PresetGestosci {
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
+pub struct MapgenJakosc {
+    pub zrodlo_web: String,
+    pub etykiety_menu: Vec<String>,
+    pub z_etykiety_niskie: Vec<String>,
+    pub z_etykiety_wysokie: Vec<String>,
+    pub domyslna_z_etykiety: String,
+    pub domyslna_jakosc_mapy_szczegoly: String,
+    pub duze_mapy: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
 pub struct MapgenGestosc {
     pub zrodlo_web: String,
     pub etykiety_menu: Vec<String>,
@@ -2154,6 +2166,8 @@ pub struct WgEpoki<T> {
 pub struct TripleZDomyslnej {
     pub krok_max: i64,
     pub krok_min: i64,
+    pub krok_rozdzielenia: i64,
+    pub indeks_awaryjny_menu: i64,
     pub minimum: i64,
 }
 
@@ -2192,6 +2206,15 @@ pub struct MapgenZlozaEpoka {
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
+pub struct KluczeRzekiPrzelacznik {
+    pub magazyn_generowanie: String,
+    pub magazyn_faza: String,
+    pub url_generowanie: String,
+    pub url_faza: String,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
 pub struct MapgenRzekiPrzelacznik {
     pub zrodlo_web: String,
     pub fazy: Vec<String>,
@@ -2199,6 +2222,7 @@ pub struct MapgenRzekiPrzelacznik {
     pub faza_tylko_glowne: String,
     pub faza_pelna: String,
     pub generowanie_domyslne: bool,
+    pub klucze: KluczeRzekiPrzelacznik,
     pub tokeny_wlaczone: Vec<String>,
     pub tokeny_wylaczone: Vec<String>,
 }
@@ -2211,6 +2235,7 @@ pub struct MapgenNowaGraFile {
     pub rozmiary: MapgenRozmiary,
     pub etykieta_mapy: MapgenEtykietaMapy,
     pub typ_swiata: MapgenTypSwiata,
+    pub jakosc: MapgenJakosc,
     pub gestosc: MapgenGestosc,
     pub rzeki: MapgenRzeki,
     pub progi_szumu: MapgenProgiSzumu,

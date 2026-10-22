@@ -371,9 +371,35 @@ out.newGame = ngdOut;
   out.deposit = dOut;
 }
 
+// ---------------- jakosc mapy (newGameMapDefaults.ts:136-190) ----------------
+{
+  const QLABELS = [
+    ...LABELS, 'niska', 'NISKA', 'Niska!', ' Niska ', 'wysoka', 'WYSOKA', 'Wysoka ', 'Srednia', 'Średnia', 'sredni', 'Mid', 'medium', 'Hi', 'L',
+    'duzy', 'DUZY', 'Duży ', 'ogromny', 'OGROMNY', 'Ogromny', 'Duzy!', 'Dużo', 'dużo', 'Super Huge', 'Malenki',
+  ];
+  const tiers = ['low', 'medium', 'high'];
+  out.quality = {
+    menuLabels: [...ngd.QUALITY_MENU_LABELS],
+    defaultRenderQuality: ngd.DEFAULT_RENDER_QUALITY,
+    defaultMapDetailQuality: ngd.DEFAULT_MAP_DETAIL_QUALITY,
+    toLabel: tiers.map((t) => ({ tier: t, label: ngd.qualityTierToLabel(t) })),
+    presets: tiers.map((t) => ({ tier: t, preset: ngd.bundledMapQualityPreset(t) })),
+    perLabel: QLABELS.map((l) => ({
+      label: l,
+      tier: ngd.qualityTierFromLabel(l),
+      bundle: ngd.bundledMapQualityFromLabel(l),
+      large: ngd.isLargeMapMenuLabel(l),
+    })),
+  };
+}
+
 // ---------------- riverGenSwitch.ts ----------------
 {
   const rOut = { keys: [rgs.RIVER_GEN_STORAGE_KEY, rgs.RIVER_GEN_PHASE_STORAGE_KEY], cases: [] };
+  const queriedUrl = new Set();
+  const queriedStorage = new Set();
+  const origGet = URLSearchParams.prototype.get;
+  URLSearchParams.prototype.get = function (name) { queriedUrl.add(name); return origGet.call(this, name); };
   const vals = [null, '0', '1', 'true', 'false', 'TRUE', 'yes', '', 'main', 'main+medium', 'all', 'ALL', 'main medium'];
   const enabledOverrides = [null, true, false];
   const phaseOverrides = [null, 'main', 'main+medium', 'all'];
@@ -390,7 +416,7 @@ out.newGame = ngdOut;
             if (url !== null) { q.set('riverGen', url); q.set('riverGenPhase', url); }
             Object.defineProperty(globalThis, 'location', { value: url === null ? { search: '' } : { search: `?${q.toString()}` }, configurable: true, writable: true });
             Object.defineProperty(globalThis, 'localStorage', {
-              value: { getItem: (k) => (store === null ? null : store) },
+              value: { getItem: (k) => { queriedStorage.add(k); return store === null ? null : store; } },
               configurable: true,
               writable: true,
             });
@@ -409,11 +435,13 @@ out.newGame = ngdOut;
       }
     }
   } finally {
+    URLSearchParams.prototype.get = origGet;
     rgs.setRiverGenEnabledOverride(null);
     rgs.setRiverGenPhaseOverride(null);
     if (saveLoc) Object.defineProperty(globalThis, 'location', saveLoc); else delete globalThis.location;
     if (saveLs) Object.defineProperty(globalThis, 'localStorage', saveLs); else delete globalThis.localStorage;
   }
+  rOut.queried = { url: [...queriedUrl].sort(), storage: [...queriedStorage].sort() };
   // bez location i bez localStorage (worker)
   delete globalThis.location;
   delete globalThis.localStorage;
@@ -428,6 +456,7 @@ const files = {
   'new-game.json': out.newGame,
   'deposit-era.json': out.deposit,
   'river-switch.json': out.riverSwitch,
+  'quality.json': out.quality,
 };
 for (const [name, data] of Object.entries(files)) {
   writeFileSync(join(outDir, name), JSON.stringify(data, null, 1) + '\n');

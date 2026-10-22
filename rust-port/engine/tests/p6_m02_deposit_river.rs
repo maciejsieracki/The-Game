@@ -6,8 +6,9 @@ use std::collections::BTreeMap;
 
 use civ_engine::domain::mapgen::params::{
     count_hidden_metal_deposits, ensure_deposit_era_meta, is_deposit_visible,
-    metal_deposit_min_era, parse01, parse_phase, visible_zloze, zloze_min_era_for, DepositEraHex,
-    RiverGenPhase, RiverGenSwitch,
+    metal_deposit_min_era, parse01, parse_phase, river_gen_phase_storage_key,
+    river_gen_phase_url_param, river_gen_storage_key, river_gen_url_param, visible_zloze,
+    zloze_min_era_for, DepositEraHex, RiverGenPhase, RiverGenSwitch,
 };
 use serde_json::Value;
 
@@ -190,4 +191,40 @@ fn parse_helpers_cover_all_tokens() {
     );
     assert_eq!(parse_phase(Some("all")), Some(RiverGenPhase::All));
     assert_eq!(parse_phase(Some("ALL")), None);
+}
+
+#[test]
+fn river_switch_keys_match_names_the_web_queried() {
+    let web = parse(RIVER);
+    // `keys`: wyeksportowane stale web; `queried`: nazwy faktycznie odczytane przez web
+    // (URLSearchParams.get i localStorage.getItem) podczas uruchomienia wektorow.
+    let keys: Vec<&str> = web["keys"]
+        .as_array()
+        .expect("keys")
+        .iter()
+        .map(|k| k.as_str().expect("s"))
+        .collect();
+    assert_eq!(
+        keys,
+        [river_gen_storage_key(), river_gen_phase_storage_key()]
+    );
+    let names = |v: &Value| -> Vec<String> {
+        v.as_array()
+            .expect("arr")
+            .iter()
+            .map(|x| x.as_str().expect("s").to_owned())
+            .collect()
+    };
+    let mut storage = vec![
+        river_gen_storage_key().to_owned(),
+        river_gen_phase_storage_key().to_owned(),
+    ];
+    storage.sort();
+    assert_eq!(names(&web["queried"]["storage"]), storage);
+    let mut url = vec![
+        river_gen_url_param().to_owned(),
+        river_gen_phase_url_param().to_owned(),
+    ];
+    url.sort();
+    assert_eq!(names(&web["queried"]["url"]), url);
 }

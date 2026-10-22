@@ -125,6 +125,16 @@ for label, text, needle in [
     ("default era 1", de, "return 1;"),
     ("river default true", rs, "return true;"),
     ("river default phase", rs, "return 'main+medium';"),
+    ("quality menu", ng, "export const QUALITY_MENU_LABELS = ['Niska', 'Średnia', 'Wysoka'] as const;"),
+    ("quality default detail", ng, "export const DEFAULT_MAP_DETAIL_QUALITY: QualityTier = 'high';"),
+    ("quality low", ng, "if (n === 'niska' || n === 'low') return 'low';"),
+    ("quality high", ng, "if (n === 'wysoka' || n === 'high') return 'high';"),
+    ("quality bundle", ng, "return { renderQuality: tier, mapDetailQuality: tier };"),
+    ("quality large", ng, "return n === 'duzy' || n === 'ogromny';"),
+    ("river keys", rs, "export const RIVER_GEN_STORAGE_KEY = 'civ-river-gen';\nexport const RIVER_GEN_PHASE_STORAGE_KEY = 'civ-river-gen-phase';"),
+    ("river url", rs, "new URLSearchParams(location.search).get('riverGen'))"),
+    ("river url phase", rs, "new URLSearchParams(location.search).get('riverGenPhase'))"),
+    ("triple krok", ng, "const max = Math.min(def + 1, pool);\n  let min = Math.max(1, def - 1);"),
     ("rozmiar menu labels", gt, "'Malenki',\n  'Mały',\n  'Standardowy',\n  'Duży',\n  'Ogromny',\n  'Super Huge',"),
 ]:
     expect(f"kotwica {label}", needle in text, True)
@@ -767,6 +777,44 @@ for c in rj["cases"]:
     expect(f"full {ctx}", ph == "all", c["full"])
 n = rj["noEnv"]
 expect("noEnv", {"enabled": True, "phase": "main+medium", "mainOnly": False, "full": False}, n)
+
+
+# ---------------------------------------------------------------------------
+# jakosc mapy (newGameMapDefaults.ts:136-190) - NIEZALEZNA reimplementacja
+# ---------------------------------------------------------------------------
+qj = load("quality.json")
+expect("quality menuLabels", ["Niska", "Średnia", "Wysoka"], qj["menuLabels"])
+expect("quality defaultMapDetail", "high", qj["defaultMapDetailQuality"])
+rq = es["defaulty"]["render_quality_bundled"]
+expect("quality defaultRender", rq if rq in ("low", "high") else "medium", qj["defaultRenderQuality"])
+
+
+def quality_from(label):
+    n = norm_q(label)
+    if n in ("niska", "low"):
+        return "low"
+    if n in ("wysoka", "high"):
+        return "high"
+    return "medium"
+
+
+def quality_label(tier):
+    return {"low": "Niska", "high": "Wysoka"}.get(tier, "Średnia")
+
+
+for t in ("low", "medium", "high"):
+    expect(f"toLabel {t}", quality_label(t), next(x["label"] for x in qj["toLabel"] if x["tier"] == t))
+    expect(f"preset {t}", {"renderQuality": t, "mapDetailQuality": t}, next(x["preset"] for x in qj["presets"] if x["tier"] == t))
+for row in qj["perLabel"]:
+    l = row["label"]
+    t = quality_from(l)
+    expect(f"qualityTier {l!r}", t, row["tier"])
+    expect(f"qualityBundle {l!r}", {"renderQuality": t, "mapDetailQuality": t}, row["bundle"])
+    expect(f"qualityLarge {l!r}", is_large(l), row["large"])
+expect("quality: Duzo/Duży spada na medium (brak z->z)", quality_from("Duży"), "medium")
+
+expect("river queried url", ["riverGen", "riverGenPhase"], rj["queried"]["url"])
+expect("river queried storage", ["civ-river-gen", "civ-river-gen-phase"], rj["queried"]["storage"])
 
 print(f"RAZEM: {checks} sprawdzen, rozbieznosci: {diffs}")
 sys.exit(1 if diffs else 0)
