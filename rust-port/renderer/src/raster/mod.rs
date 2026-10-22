@@ -21,6 +21,7 @@
 
 mod canvas;
 mod color;
+pub mod image;
 pub mod metric;
 mod path;
 mod shadow;

@@ -1,0 +1,256 @@
+# font (web value)<TAB>text<TAB>Chromium measureText(text).width (font mapped to the bundled faces)
+6px "Noto Color Emoji"	🔥	7.486236572265625
+7px "Noto Color Emoji"	🔥	8.733932495117188
+8px "Noto Color Emoji"	🔥	9.981643676757812
+9px "Noto Color Emoji"	🔥	11.229354858398438
+10px "Noto Color Emoji"	🔥	12.47705078125
+11px "Noto Color Emoji"	🔥	13.724761962890625
+12px "Noto Color Emoji"	🔥	14.97247314453125
+13px "Noto Color Emoji"	🔥	16.220184326171875
+14px "Noto Color Emoji"	🔥	17.467880249023438
+15px "Noto Color Emoji"	🔥	18.715591430664062
+16px "Noto Color Emoji"	🔥	19.963302612304688
+17px "Noto Color Emoji"	🔥	21.21099853515625
+18px "Noto Color Emoji"	🔥	22.458709716796875
+19px "Noto Color Emoji"	🔥	23.7064208984375
+20px "Noto Color Emoji"	🔥	24.954116821289062
+21px "Noto Color Emoji"	🔥	26.201828002929688
+22px "Noto Color Emoji"	🔥	27.449539184570312
+23px "Noto Color Emoji"	🔥	28.697235107421875
+24px "Noto Color Emoji"	🔥	29.9449462890625
+25px "Noto Color Emoji"	🔥	31.192657470703125
+26px "Noto Color Emoji"	🔥	32.44036865234375
+27px "Noto Color Emoji"	🔥	33.68806457519531
+28px "Noto Color Emoji"	🔥	34.93577575683594
+29px "Noto Color Emoji"	🔥	36.18348693847656
+30px "Noto Color Emoji"	🔥	37.431182861328125
+31px "Noto Color Emoji"	🔥	38.67889404296875
+32px "Noto Color Emoji"	🔥	39.926605224609375
+33px "Noto Color Emoji"	🔥	41.17430114746094
+34px "Noto Color Emoji"	🔥	42.42201232910156
+35px "Noto Color Emoji"	🔥	43.66972351074219
+36px "Noto Color Emoji"	🔥	44.91741943359375
+37px "Noto Color Emoji"	🔥	46.165130615234375
+38px "Noto Color Emoji"	🔥	47.412841796875
+39px "Noto Color Emoji"	🔥	48.66053771972656
+40px "Noto Color Emoji"	🔥	49.90824890136719
+41px "Noto Color Emoji"	🔥	51.15596008300781
+42px "Noto Color Emoji"	🔥	52.40367126464844
+43px "Noto Color Emoji"	🔥	53.6513671875
+44px "Noto Color Emoji"	🔥	54.899078369140625
+45px "Noto Color Emoji"	🔥	56.14678955078125
+46px "Noto Color Emoji"	🔥	57.39448547363281
+47px "Noto Color Emoji"	🔥	58.64219665527344
+48px "Noto Color Emoji"	🔥	59.88990783691406
+49px "Noto Color Emoji"	🔥	61.137603759765625
+50px "Noto Color Emoji"	🔥	62.38531494140625
+51px "Noto Color Emoji"	🔥	63.633026123046875
+52px "Noto Color Emoji"	🔥	64.8807373046875
+53px "Noto Color Emoji"	🔥	66.12843322753906
+54px "Noto Color Emoji"	🔥	67.37614440917969
+55px "Noto Color Emoji"	🔥	68.62385559082031
+56px "Noto Color Emoji"	🔥	69.87155151367188
+57px "Noto Color Emoji"	🔥	71.1192626953125
+58px "Noto Color Emoji"	🔥	72.36697387695312
+59px "Noto Color Emoji"	🔥	73.61466979980469
+60px "Noto Color Emoji"	🔥	74.86238098144531
+61px "Noto Color Emoji"	🔥	76.11009216308594
+62px "Noto Color Emoji"	🔥	77.35780334472656
+63px "Noto Color Emoji"	🔥	78.60549926757812
+64px "Noto Color Emoji"	🔥	79.85321044921875
+65px "Noto Color Emoji"	🔥	81.10092163085938
+66px "Noto Color Emoji"	🔥	82.34861755371094
+67px "Noto Color Emoji"	🔥	83.59632873535156
+68px "Noto Color Emoji"	🔥	84.84403991699219
+69px "Noto Color Emoji"	🔥	86.09173583984375
+70px "Noto Color Emoji"	🔥	87.33944702148438
+71px "Noto Color Emoji"	🔥	88.58714294433594
+72px "Noto Color Emoji"	🔥	89.83485412597656
+73px "Noto Color Emoji"	🔥	91.08256530761719
+74px "Noto Color Emoji"	🔥	92.33027648925781
+75px "Noto Color Emoji"	🔥	93.57797241210938
+76px "Noto Color Emoji"	🔥	94.82568359375
+77px "Noto Color Emoji"	🔥	96.07339477539062
+78px "Noto Color Emoji"	🔥	97.32109069824219
+79px "Noto Color Emoji"	🔥	98.56880187988281
+80px "Noto Color Emoji"	🔥	99.81651306152344
+81px "Noto Color Emoji"	🔥	101.064208984375
+82px "Noto Color Emoji"	🔥	102.31192016601562
+83px "Noto Color Emoji"	🔥	103.55963134765625
+84px "Noto Color Emoji"	🔥	104.80734252929688
+85px "Noto Color Emoji"	🔥	106.05503845214844
+86px "Noto Color Emoji"	🔥	107.30274963378906
+87px "Noto Color Emoji"	🔥	108.55046081542969
+88px "Noto Color Emoji"	🔥	109.79815673828125
+89px "Noto Color Emoji"	🔥	111.04586791992188
+90px "Noto Color Emoji"	🔥	112.2935791015625
+91px "Noto Color Emoji"	🔥	113.54129028320312
+92px "Noto Color Emoji"	🔥	114.78898620605469
+93px "Noto Color Emoji"	🔥	116.03669738769531
+94px "Noto Color Emoji"	🔥	117.28440856933594
+95px "Noto Color Emoji"	🔥	118.5321044921875
+96px "Noto Color Emoji"	🔥	119.77981567382812
+97px "Noto Color Emoji"	🔥	121.02751159667969
+98px "Noto Color Emoji"	🔥	122.27522277832031
+99px "Noto Color Emoji"	🔥	123.52293395996094
+100px "Noto Color Emoji"	🔥	124.7706298828125
+101px "Noto Color Emoji"	🔥	126.01834106445312
+102px "Noto Color Emoji"	🔥	127.26605224609375
+103px "Noto Color Emoji"	🔥	128.51376342773438
+104px "Noto Color Emoji"	🔥	129.761474609375
+105px "Noto Color Emoji"	🔥	131.00917053222656
+106px "Noto Color Emoji"	🔥	132.2568817138672
+107px "Noto Color Emoji"	🔥	133.5045928955078
+108px "Noto Color Emoji"	🔥	134.75230407714844
+109px "Noto Color Emoji"	🔥	136
+110px "Noto Color Emoji"	🔥	137.24771118164062
+111px "Noto Color Emoji"	🔥	138.4954071044922
+112px "Noto Color Emoji"	🔥	139.7431182861328
+113px "Noto Color Emoji"	🔥	140.99082946777344
+114px "Noto Color Emoji"	🔥	142.23854064941406
+115px "Noto Color Emoji"	🔥	143.48623657226562
+116px "Noto Color Emoji"	🔥	144.73394775390625
+117px "Noto Color Emoji"	🔥	145.98165893554688
+118px "Noto Color Emoji"	🔥	147.22935485839844
+119px "Noto Color Emoji"	🔥	148.47706604003906
+120px "Noto Color Emoji"	🔥	149.7247772216797
+121px "Noto Color Emoji"	🔥	150.97247314453125
+122px "Noto Color Emoji"	🔥	152.22018432617188
+123px "Noto Color Emoji"	🔥	153.4678955078125
+124px "Noto Color Emoji"	🔥	154.71560668945312
+125px "Noto Color Emoji"	🔥	155.9633026123047
+126px "Noto Color Emoji"	🔥	157.2110137939453
+127px "Noto Color Emoji"	🔥	158.45872497558594
+128px "Noto Color Emoji"	🔥	159.7064208984375
+15.86px "Noto Color Emoji"	🔥	19.788619995117188
+17.08px "Noto Color Emoji"	🔥	21.310821533203125
+20.3px "Noto Color Emoji"	🔥	25.315963745117188
+19.5px "Noto Color Emoji"	🔥	24.33026123046875
+33.25px "Noto Color Emoji"	🔥	41.486236572265625
+16px "Noto Color Emoji"	⚔	19.963302612304688
+16px "Noto Color Emoji"	☠	19.963302612304688
+16px "Noto Color Emoji"	👤	19.963302612304688
+16px "Noto Color Emoji"	🔥	19.963302612304688
+16px "Noto Color Emoji"	🍞	19.963302612304688
+16px "Noto Color Emoji"	🔨	19.963302612304688
+16px "Noto Color Emoji"	💰	19.963302612304688
+16px "Noto Color Emoji"	⛏	19.963302612304688
+16px "Noto Color Emoji"	🌾	19.963302612304688
+16px "Noto Color Emoji"	🎣	19.963302612304688
+16px "Noto Color Emoji"	🏔	19.963302612304688
+16px "Noto Color Emoji"	🏛	19.963302612304688
+16px "Noto Color Emoji"	🏰	19.963302612304688
+16px "Noto Color Emoji"	🏹	19.963302612304688
+16px "Noto Color Emoji"	🏺	19.963302612304688
+16px "Noto Color Emoji"	🐑	19.963302612304688
+16px "Noto Color Emoji"	💧	19.963302612304688
+16px "Noto Color Emoji"	🛡	19.963302612304688
+16px "Noto Color Emoji"	🛤	19.963302612304688
+16px "Noto Color Emoji"	🧂	19.963302612304688
+16px "Noto Color Emoji"	🪓	19.963302612304688
+16px "Noto Color Emoji"	🪚	19.963302612304688
+16px "Noto Color Emoji"	🪨	19.963302612304688
+bold 16px Segoe UI, Arial	👤	19.963302612304688
+bold 16px Segoe UI, Arial	🔥	19.963302612304688
+bold 16px Segoe UI, Arial	🍞	19.963302612304688
+bold 16px Segoe UI, Arial	🔨	19.963302612304688
+bold 16px Segoe UI, Arial	💰	19.963302612304688
+bold 16px Segoe UI, Arial	⚔	14.34375
+bold 16px Segoe UI, Arial	☠	14.34375
+bold 16px Segoe UI, Arial	◆	12.3046875
+bold 16px Segoe UI, Arial	🔥🔥🔥	59.88990783691406
+bold 16px Segoe UI, Arial	A🔥7	40.41642761230469
+bold 16px Segoe UI, Arial	🍞 3	33.30705261230469
+bold 16px Segoe UI, Arial	⚔ OBLĘŻENIE	110.3515625
+bold 16px Segoe UI, Arial	⛏🌾🎣🏔🏛🏰🏹🏺🐑💧🛡🛤🧂🪓🪚🪨	319.412841796875
+bold 13px Segoe UI, Arial	👤	16.220184326171875
+bold 13px Segoe UI, Arial	🔥	16.220184326171875
+bold 13px Segoe UI, Arial	🍞	16.220184326171875
+bold 13px Segoe UI, Arial	🔨	16.220184326171875
+bold 13px Segoe UI, Arial	💰	16.220184326171875
+bold 13px Segoe UI, Arial	⚔	11.654296875
+bold 13px Segoe UI, Arial	☠	11.654296875
+bold 13px Segoe UI, Arial	◆	9.99755859375
+bold 13px Segoe UI, Arial	🔥🔥🔥	48.660552978515625
+bold 13px Segoe UI, Arial	A🔥7	32.838348388671875
+bold 13px Segoe UI, Arial	🍞 3	27.061981201171875
+bold 13px Segoe UI, Arial	⚔ OBLĘŻENIE	89.66064453125
+bold 13px Segoe UI, Arial	⛏🌾🎣🏔🏛🏰🏹🏺🐑💧🛡🛤🧂🪓🪚🪨	259.52294921875
+16px "Segoe UI Emoji", "Apple Color Emoji", "Noto Color Emoji", sans-serif	👤	19.963302612304688
+16px "Segoe UI Emoji", "Apple Color Emoji", "Noto Color Emoji", sans-serif	🔥	19.963302612304688
+16px "Segoe UI Emoji", "Apple Color Emoji", "Noto Color Emoji", sans-serif	🍞	19.963302612304688
+16px "Segoe UI Emoji", "Apple Color Emoji", "Noto Color Emoji", sans-serif	🔨	19.963302612304688
+16px "Segoe UI Emoji", "Apple Color Emoji", "Noto Color Emoji", sans-serif	💰	19.963302612304688
+16px "Segoe UI Emoji", "Apple Color Emoji", "Noto Color Emoji", sans-serif	⚔	19.963302612304688
+16px "Segoe UI Emoji", "Apple Color Emoji", "Noto Color Emoji", sans-serif	☠	19.963302612304688
+16px "Segoe UI Emoji", "Apple Color Emoji", "Noto Color Emoji", sans-serif	◆	12.3046875
+16px "Segoe UI Emoji", "Apple Color Emoji", "Noto Color Emoji", sans-serif	🔥🔥🔥	59.88990783691406
+16px "Segoe UI Emoji", "Apple Color Emoji", "Noto Color Emoji", sans-serif	A🔥7	39.53361511230469
+16px "Segoe UI Emoji", "Apple Color Emoji", "Noto Color Emoji", sans-serif	🍞 3	33.30705261230469
+16px "Segoe UI Emoji", "Apple Color Emoji", "Noto Color Emoji", sans-serif	⚔ OBLĘŻENIE	114.21330261230469
+16px "Segoe UI Emoji", "Apple Color Emoji", "Noto Color Emoji", sans-serif	⛏🌾🎣🏔🏛🏰🏹🏺🐑💧🛡🛤🧂🪓🪚🪨	319.412841796875
+17px "Segoe UI Emoji", "Apple Color Emoji", "Noto Color Emoji", sans-serif	👤	21.21099853515625
+17px "Segoe UI Emoji", "Apple Color Emoji", "Noto Color Emoji", sans-serif	🔥	21.21099853515625
+17px "Segoe UI Emoji", "Apple Color Emoji", "Noto Color Emoji", sans-serif	🍞	21.21099853515625
+17px "Segoe UI Emoji", "Apple Color Emoji", "Noto Color Emoji", sans-serif	🔨	21.21099853515625
+17px "Segoe UI Emoji", "Apple Color Emoji", "Noto Color Emoji", sans-serif	💰	21.21099853515625
+17px "Segoe UI Emoji", "Apple Color Emoji", "Noto Color Emoji", sans-serif	⚔	21.21099853515625
+17px "Segoe UI Emoji", "Apple Color Emoji", "Noto Color Emoji", sans-serif	☠	21.21099853515625
+17px "Segoe UI Emoji", "Apple Color Emoji", "Noto Color Emoji", sans-serif	◆	13.07373046875
+17px "Segoe UI Emoji", "Apple Color Emoji", "Noto Color Emoji", sans-serif	🔥🔥🔥	63.63299560546875
+17px "Segoe UI Emoji", "Apple Color Emoji", "Noto Color Emoji", sans-serif	A🔥7	42.00445556640625
+17px "Segoe UI Emoji", "Apple Color Emoji", "Noto Color Emoji", sans-serif	🍞 3	35.38873291015625
+17px "Segoe UI Emoji", "Apple Color Emoji", "Noto Color Emoji", sans-serif	⚔ OBLĘŻENIE	121.35162353515625
+17px "Segoe UI Emoji", "Apple Color Emoji", "Noto Color Emoji", sans-serif	⛏🌾🎣🏔🏛🏰🏹🏺🐑💧🛡🛤🧂🪓🪚🪨	339.3759765625
+48px serif	👤	59.88990783691406
+48px serif	🔥	59.88990783691406
+48px serif	🍞	59.88990783691406
+48px serif	🔨	59.88990783691406
+48px serif	💰	59.88990783691406
+48px serif	⚔	43.03125
+48px serif	☠	43.03125
+48px serif	◆	36.9140625
+48px serif	🔥🔥🔥	179.6697235107422
+48px serif	A🔥7	118.55397033691406
+48px serif	🍞 3	95.88990783691406
+48px serif	⚔ OBLĘŻENIE	318.9609375
+48px serif	⛏🌾🎣🏔🏛🏰🏹🏺🐑💧🛡🛤🧂🪓🪚🪨	958.2384643554688
+bold 96px Arial	👤	119.77981567382812
+bold 96px Arial	🔥	119.77981567382812
+bold 96px Arial	🍞	119.77981567382812
+bold 96px Arial	🔨	119.77981567382812
+bold 96px Arial	💰	119.77981567382812
+bold 96px Arial	⚔	86.0625
+bold 96px Arial	☠	86.0625
+bold 96px Arial	◆	73.828125
+bold 96px Arial	🔥🔥🔥	359.3394470214844
+bold 96px Arial	A🔥7	242.49856567382812
+bold 96px Arial	🍞 3	199.84231567382812
+bold 96px Arial	⚔ OBLĘŻENIE	662.109375
+bold 96px Arial	⛏🌾🎣🏔🏛🏰🏹🏺🐑💧🛡🛤🧂🪓🪚🪨	1916.4769287109375
+bold 104px "Segoe UI Symbol", "Segoe UI Emoji", "Segoe UI", Arial, sans-serif	👤	129.761474609375
+bold 104px "Segoe UI Symbol", "Segoe UI Emoji", "Segoe UI", Arial, sans-serif	🔥	129.761474609375
+bold 104px "Segoe UI Symbol", "Segoe UI Emoji", "Segoe UI", Arial, sans-serif	🍞	129.761474609375
+bold 104px "Segoe UI Symbol", "Segoe UI Emoji", "Segoe UI", Arial, sans-serif	🔨	129.761474609375
+bold 104px "Segoe UI Symbol", "Segoe UI Emoji", "Segoe UI", Arial, sans-serif	💰	129.761474609375
+bold 104px "Segoe UI Symbol", "Segoe UI Emoji", "Segoe UI", Arial, sans-serif	⚔	93.234375
+bold 104px "Segoe UI Symbol", "Segoe UI Emoji", "Segoe UI", Arial, sans-serif	☠	93.234375
+bold 104px "Segoe UI Symbol", "Segoe UI Emoji", "Segoe UI", Arial, sans-serif	◆	79.98046875
+bold 104px "Segoe UI Symbol", "Segoe UI Emoji", "Segoe UI", Arial, sans-serif	🔥🔥🔥	389.284423828125
+bold 104px "Segoe UI Symbol", "Segoe UI Emoji", "Segoe UI", Arial, sans-serif	A🔥7	262.706787109375
+bold 104px "Segoe UI Symbol", "Segoe UI Emoji", "Segoe UI", Arial, sans-serif	🍞 3	216.495849609375
+bold 104px "Segoe UI Symbol", "Segoe UI Emoji", "Segoe UI", Arial, sans-serif	⚔ OBLĘŻENIE	717.28515625
+bold 104px "Segoe UI Symbol", "Segoe UI Emoji", "Segoe UI", Arial, sans-serif	⛏🌾🎣🏔🏛🏰🏹🏺🐑💧🛡🛤🧂🪓🪚🪨	2076.18359375
+12px Arial,sans-serif	👤	14.97247314453125
+12px Arial,sans-serif	🔥	14.97247314453125
+12px Arial,sans-serif	🍞	14.97247314453125
+12px Arial,sans-serif	🔨	14.97247314453125
+12px Arial,sans-serif	💰	14.97247314453125
+12px Arial,sans-serif	⚔	10.7578125
+12px Arial,sans-serif	☠	10.7578125
+12px Arial,sans-serif	◆	9.228515625
+12px Arial,sans-serif	🔥🔥🔥	44.91741943359375
+12px Arial,sans-serif	A🔥7	29.65020751953125
+12px Arial,sans-serif	🍞 3	24.98028564453125
+12px Arial,sans-serif	⚔ OBLĘŻENIE	81.4453125
+12px Arial,sans-serif	⛏🌾🎣🏔🏛🏰🏹🏺🐑💧🛡🛤🧂🪓🪚🪨	239.5595703125

@@ -136,6 +136,22 @@ impl RasterImage {
     pub fn height(&self) -> u32 {
         self.pixmap.height()
     }
+
+    // ----- hooks for `raster::image` (RR-T8c) -----------------------------
+    // Crate-private: the decoders of `raster/image` (SVG via resvg, emoji
+    // bitmaps) produce premultiplied tiny-skia pixmaps; wrapping them directly
+    // avoids a lossy premultiplied → straight → premultiplied round trip. The
+    // public surface stays the RR-T8a list (`tests/raster_api_closed.rs`).
+
+    /// Wraps an already premultiplied pixmap.
+    pub(crate) fn from_pixmap(pixmap: Pixmap) -> Self {
+        RasterImage { pixmap }
+    }
+
+    /// The premultiplied pixels (mip chain of `raster::image::mip`).
+    pub(crate) fn pixmap(&self) -> &Pixmap {
+        &self.pixmap
+    }
 }
 
 #[derive(Clone, Debug)]
@@ -666,6 +682,16 @@ impl Canvas2dLite {
     /// The current transformation matrix.
     pub(crate) fn ctm(&self) -> Affine {
         self.state.ctm
+    }
+
+    /// Alpha (0..=1) of the fill style when it is a colour, `None` for a
+    /// gradient. Used by `raster::image::emoji` (RR-T8c): Chromium draws a
+    /// colour (bitmap) glyph with its own RGB and the fill style's alpha.
+    pub(crate) fn fill_color_alpha(&self) -> Option<f32> {
+        match &self.state.fill {
+            Style::Color(c) => Some(c.a),
+            Style::Gradient(_) => None,
+        }
     }
 
     /// Text attributes of the current state.

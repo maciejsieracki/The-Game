@@ -26,7 +26,11 @@ wgpu = { version = "=30.0.1", optional = true }
 # R-RUSTPORT-P4-28-RASTER-SHAPES-Q1). Pinned exactly: golden RGBA hashes in
 # tests/raster_*.rs depend on its AA/stroker/gradient arithmetic. Default
 # features (std, simd, png-format) are not needed: `std` is enough.
-tiny-skia = { version = "=0.12.0", default-features = false, features = ["std"] }
+# `png-format` (RR-T8c): decodes the PNG bitmaps of the colour emoji glyphs
+# (`raster::image::emoji`). NOTE: `resvg` enables tiny-skia's default
+# features (std, simd, png-format) anyway; the golden RGBA hashes of RR-T8a/b
+# are unchanged by that on x86_64 (P4-30 §2).
+tiny-skia = { version = "=0.12.0", default-features = false, features = ["std", "png-format"] }
 # Text (RR-T8b, R-RUSTPORT-P4-29-TEXT-FONTS-Q1, owner decision D-TXT-6 = A):
 # `ab_glyph` parses the bundled TrueType fonts (glyph outlines, metrics, cmap);
 # `rustybuzz` shapes runs (GPOS kerning, GSUB) like HarfBuzz in Chromium.
@@ -34,6 +38,18 @@ tiny-skia = { version = "=0.12.0", default-features = false, features = ["std"] 
 # depend on their arithmetic. Both build on rustc 1.87.0 (P4-29 §2).
 ab_glyph = { version = "=0.2.32", default-features = false, features = ["std"] }
 rustybuzz = { version = "=0.20.1", default-features = false, features = ["std"] }
+# Images (RR-T8c, R-RUSTPORT-P4-30-IMAGES-Q1, owner decision D-TXT-6 = A):
+# `resvg` (+ its `usvg` parser, re-exported as `resvg::usvg`) rasterises the
+# brand-book SVG icons onto tiny-skia 0.12 (the same rasteriser as
+# `raster::Canvas2dLite`); default features off = no system fonts, no SVG
+# text, no svgz, no embedded raster images. `zune-jpeg` decodes the leader
+# portraits; default features off = no x86/neon SIMD paths, so the crate
+# compiles under its own `forbid(unsafe_code)` and decodes with portable
+# scalar code (deterministic across targets). Pinned exactly: golden RGBA
+# hashes in tests/image_*.rs depend on their arithmetic. Both build on rustc
+# 1.87.0 (P4-30 §2).
+resvg = { version = "=0.48.1", default-features = false }
+zune-jpeg = { version = "=0.5.15", default-features = false, features = ["std"] }
 
 [dev-dependencies]
 # Blocks on wgpu's async adapter request in tests/gpu_probe.rs (no async

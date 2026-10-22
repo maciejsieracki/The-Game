@@ -1,0 +1,24 @@
+| I01 | `src/raster/image/emoji.rs` | fillStyle alpha ignored for colour glyphs (Z-7) | **KILLED** | scenes_match_chromium, scenes_match_golden_hashes |
+| I02 | `src/raster/image/emoji.rs` | colour glyph origin x snapped to 1/2 px instead of 1/4 px | **KILLED** | scenes_match_golden_hashes |
+| I03 | `src/raster/image/emoji.rs` | colour glyph origin y not snapped to whole pixels | **KILLED** | scenes_match_chromium, scenes_match_golden_hashes |
+| I04 | `src/raster/image/emoji.rs` | no mip level for colour glyphs (bilinear from the 109 ppem strike) | **KILLED** | scenes_match_chromium, scenes_match_golden_hashes |
+| I05 | `src/raster/image/emoji.rs` | colour glyph filter nearest instead of bilinear | **KILLED** | scenes_match_chromium, scenes_match_golden_hashes |
+| I06 | `src/raster/image/emoji.rs` | emoji advance rounded instead of truncated to 16.16 | **KILLED** | emoji_widths_match_chromium_bit_for_bit |
+| I07 | `src/raster/image/emoji.rs` | emoji advance from the f64 scale (no f32 strike scale) | **KILLED** | emoji_widths_match_chromium_bit_for_bit |
+| I08 | `src/raster/image/emoji.rs` | emoji face before the DejaVu fallback (⚔ ☠ become colour) | **KILLED** | emoji_widths_match_chromium_bit_for_bit, raster::image::emoji::tests::selection_is_per_character |
+| I09 | `src/raster/image/emoji.rs` | CSS family "Noto Color Emoji" not mapped to the emoji face | **KILLED** | emoji_baselines_match_chromium, emoji_widths_match_chromium_bit_for_bit, raster::image::emoji::tests::selection_is_per_character |
+| I10 | `src/raster/image/emoji.rs` | baseline always from the outline primary face (emoji-primary stacks) | **KILLED** | emoji_baselines_match_chromium |
+| I11 | `src/raster/image/emoji.rs` | bitmap vertical bearing sign flipped | **KILLED** | scenes_match_chromium, scenes_match_golden_hashes |
+| I12 | `src/raster/image/emoji.rs` | text runs placed with the style baseline (double shift) | **KILLED** | scenes_match_chromium, scenes_match_golden_hashes |
+| I13 | `src/raster/image/svg.rs` | toFixed with Rust half-to-even ({:.2}) instead of JS half-up | **KILLED** | prepare_svg_for_canvas_matches_the_web_function |
+| I14 | `src/raster/image/svg.rs` | currentColor not replaced | **KILLED** | prepare_svg_for_canvas_matches_the_web_function, raster::image::svg::tests::prepare_replaces_colour_and_width |
+| I15 | `src/raster/image/svg.rs` | SVG rasterised at its intrinsic size and scaled as a bitmap | **KILLED** | scenes_match_chromium, scenes_match_golden_hashes |
+| I16 | `src/raster/image/svg.rs` | SVG drawn without the current transform | **KILLED** | scenes_match_chromium, scenes_match_golden_hashes |
+| I17 | `src/raster/image/svg.rs` | device layer compositing does not restore the transform | **KILLED** | scenes_match_chromium, scenes_match_golden_hashes |
+| I18 | `src/raster/image/mip.rs` | bitmap drawImage without mip levels | **KILLED** | scenes_match_chromium, scenes_match_golden_hashes |
+| I19 | `src/raster/image/mip.rs` | mip box average truncates instead of rounding | **KILLED** | raster::image::mip::tests::half_averages_with_rounding, scenes_match_golden_hashes |
+| I20 | `src/raster/image/mip.rs` | mip level = ceil instead of floor (one level too small) | **KILLED** | raster::image::mip::tests::levels, scenes_match_chromium, scenes_match_golden_hashes |
+| I21 | `src/raster/image/jpeg.rs` | JPEG red and blue swapped | **KILLED** | scenes_match_chromium, scenes_match_golden_hashes |
+
+killed 21/21
+EXIT=0
