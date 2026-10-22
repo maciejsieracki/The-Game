@@ -41,7 +41,10 @@ fn effective_strength_applies_counters_terrain_and_siege_structures() {
         1.15
     );
     assert_eq!(attack_strength, 1_150.0);
-    assert_eq!(defense_strength, 6_750.0);
+    // P3-23 etap 3 (WALKA — struktury): struktury daja MAX (wall 200% > fort 100% > posterunek 50%),
+    // nie sume. Bazowe 10*100*1.5(Hills)*1.0 = 1500; mnoznik struktur 1+2.0 = 3.0 -> 4500.
+    // Poprzednia wartosc 6_750 (= 1500 * 4.5, suma 200+100+50%) byla zgodna z regula Rust sumujaca.
+    assert_eq!(defense_strength, 4_500.0);
 }
 
 #[test]

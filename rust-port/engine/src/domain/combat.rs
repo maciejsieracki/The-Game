@@ -232,23 +232,23 @@ pub fn structure_defense_multiplier(structures: DefenseStructures, is_siege: boo
         return 1.0;
     }
 
-    // Structure bonuses are additive percentage points, read from
-    // combat-ai-multipliers.json (P3-22 runda 4): MUR 200%, fort terenowy 100%,
-    // posterunek 50%, zgodnie z structureDefenseBonusFor w grze (main.ts).
+    // Percentage values are read from combat-ai-multipliers.json (P3-22 runda 4):
+    // MUR 200%, fort terenowy 100%, posterunek 50%.
+    // Regula P3-23 etap 3 (WALKA — struktury): web structureDefenseBonusFor
+    // (gra/src/main.ts:26953-26979) zwraca JEDEN najwyzszy bonus, nie sume
+    // (struktury nie kumuluja sie). Stad max, nie suma.
     let pct = |id: &str| combat_ai_multiplier_value(id) / 100.0;
-    1.0 + if structures.wall {
-        pct("MUR_BONUS_PROC")
-    } else {
-        0.0
-    } + if structures.fort {
-        pct("FORT_TERENOWY_BONUS_PROC")
-    } else {
-        0.0
-    } + if structures.outpost {
-        pct("POSTERUNEK_BONUS_PROC")
-    } else {
-        0.0
+    let mut best = 0.0_f64;
+    if structures.wall {
+        best = best.max(pct("MUR_BONUS_PROC"));
     }
+    if structures.fort {
+        best = best.max(pct("FORT_TERENOWY_BONUS_PROC"));
+    }
+    if structures.outpost {
+        best = best.max(pct("POSTERUNEK_BONUS_PROC"));
+    }
+    1.0 + best
 }
 
 pub fn morale_factor(morale: u32) -> f64 {

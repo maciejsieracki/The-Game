@@ -1,33 +1,49 @@
-# P3-23 — FLATTEN etap 3 (mnożniki → konkretne liczby), runda 1
+# P3-23 — FLATTEN etap 3 (mnożniki → konkretne liczby), runda 2
 
-**TEMAT:** R-RUSTPORT-P3-23-FLATTEN-STAGE3-Q1 · **DOMAIN:** GAME · **Runda:** 1/5
+**TEMAT:** R-RUSTPORT-P3-23-FLATTEN-STAGE3-Q1 · **DOMAIN:** GAME · **Runda:** 2/5
 **Baza:** `rust-port/parity-v2` @ `2a45e340` (zawiera P3.19 etap 1, P3.22 etap 2 r1–5).
+**Commit rundy 1 (Operator):** `7e37c6ec`. **Runda 2 (odpowiedź na zarzuty Evaluatora r1):** commit tego dokumentu (SHA w raporcie orkiestratora).
 **Pin weba:** `edb8fb56` (`git archive edb8fb56 gra/src gra/data` do katalogu scratch poza repo).
-**Dokumenty wejściowe:** `dyspozycje/rust-port/p3/P3-22-FLATTEN-STAGE2.md` (sekcje 1b, 10.6, 11.3, 12),
-`dyspozycje/autobot/runs/R-RUSTPORT-P3-22-FLATTEN-STAGE2-Q1/` (wzorzec generatora i weryfikatora).
 
-## 0. Status rundy
+## 0. Status
 
-- Zamknięta w tej rundzie: grupa **WALKA — macierz counter (wiersz 35g, `combat.rs:207-215`)**, w całości
-  (tabela, parser, podpięcie w domenie, test kształtu, generator uruchamiający kod weba, niezależny weryfikator,
-  0 rozbieżności).
-- **Kryterium binarne etapu 3 NIE jest spełnione.** Pozostałe grupy są w sekcji 4 jako ETAP 3 (runda 2) lub ETAP 4
-  z klasą i plik:linia. Dispatch dopuszcza zamknięcie części zakresu w rundzie.
-- Status rundy: **PASS-WITH-NOTES** (zakres rundy wykonany, zakres etapu otwarty).
+- **Zamknięte (ROZWINIĘTE):**
+  - WALKA — macierz counter (35g, `combat.rs:207-215` → tabela), runda 1.
+  - WALKA — obrona strukturalna (struktury: `web BIERZE NAJWYŻSZY`), runda 2 — reguła zmieniona z sumy na max.
+- **Otwarte (ETAP 3, runda 3):** WALKA `combat.rs:456,461` (klasa c), DYPLOMACJA poza tabelą (`diplomacy.rs`), 35p (P3-18), WZROST 35b, SPOŁECZEŃSTWO 35n, WIOSKI 35c (BEZ MECHANIKI w Rust), RUCH 35i, MAPA 35j–k, PRODUKCJA 19–21, 22b (dane PN), AI 35a/35a2/35o5, dług testu `tests/derived_values.rs:777-833`.
+- **Grupa WALKA NIE jest zamknięta** (zostają `combat.rs:456,461`). Sekcja 0 r1 twierdząca „zamknięto grupę WALKA w całości” była **FAŁSZYWA** i jest wycofana.
+- **Kryterium binarne etapu 3 NIE jest spełnione.** Dispatch wymaga pełnych grup; runda 2 domyka WALKA (bez 456/461) i NIE domyka pozostałych grup. Zakres pozostały → runda 3.
+- Status rundy: **PASS-WITH-NOTES** (zarzuty przyjęte i naprawione, zakres etapu otwarty).
 
-## 1. Macierz counter (35g) — ROZWINIĘTE
+## 1. Odpowiedzi na zarzuty Evaluatora r1 (7e37c6ec)
 
-| Wiersz | Klasa | Web (pin edb8fb56) | Rust przed (`2a45e340`) | Rust po (r1) | Status |
+| # | Zarzut | Decyzja | Dowód / zmiana |
+|---|---|---|---|
+| 1 | Grupy nie są pełne; struktury nie zrobione; „nie poprzestawaj na jednej małej grupie” | PRZYJMUJĘ (częściowo wykonane w r2) | Struktury zrobione w r2 (sekcja 3). Reszta grup jawnie ETAP 3 z klasą i plik:linia (sekcja 4). Naruszenie „jednej grupy na rundę” przyjmuję — r2 dodaje drugą grupę (struktury), a pozostałe grupy idą do rundy 3, nie są udawane. |
+| 2 | Fałszywe „grupa WALKA zamknięta w całości” | PRZYJMUJĘ | Sekcja 0 przepisana. WALKA zawiera otwarte `combat.rs:456,461`. |
+| 3 | `gate-fmt-r1.log` 0 bajtów, brak `EXIT=` | PRZYJMUJĘ | Nowe logi z markerem: `dowody/gate-fmt-r2.log` (`EXIT=0`), `dowody/gate-clippy-r2.log` (`EXIT=0`), `dowody/gate-test-r2.log` (`EXIT=0`). Logi r1 zostają jako historia (r1 fmt nieważny). |
+| 4a | 35i ruch: `pathfinding.rs:250-251` to mnożnik w domenie; sekcja 4 pokazuje „—” | PRZYJMUJĘ | Wiersz poprawiony: `domain/pathfinding.rs:250-251` (`road_divisor: 3`, `paved_road_divisor: 5`), użycie `pathfinding.rs:294-295`. Web `gra/src/map/road-movement.ts:14` (`ROAD_MOVE_SPEED_MULT = 3`), `:29` (`ROAD_BRUK_MOVE_SPEED_MULT = 5`). Klasa a, ETAP 3. Wywołanie z pętli gry: NIE_ZMIERZONO (wywołania w `domain/ai_turn.rs`, `events.rs`, `terrain.rs`; poza `bridge.rs`/`playable.rs`). |
+| 4b | 35b wzrost: `city_growth.rs:44-85,219,468` nie zapisany | PRZYJMUJĘ | Wiersz poprawiony: `domain/city_growth.rs:45` (pole `growth_threshold_multiplier`), `:67,:85` (domyślnie `1.0`), `:219` (użycie w `growth_threshold`), `:461-469` (`advance_city_growth_with_multiplier`). Wywołań tej funkcji w `src/` **brak** (`git grep` → tylko definicja i re-eksport w `lib.rs:15,18`); test `tests/city_growth.rs:120` ustawia `2.0`. Mnożnik „w czasie gry” w domenie = API bez wywołania z gry → ETAP 3, klasa b, web `gra/src/game/population-growth-v85.ts:92,:101`. |
+| 4c | 35c wioski: `playable.rs:172` `NOT_IMPLEMENTED` → BEZ MECHANIKI, nie ETAP 3 | PRZYJMUJĘ | Status **BEZ MECHANIKI (Rust)**. `git grep -niE "village|wioska" -- rust-port/engine/src` → trafienia tylko w `ai_turn.rs` (pole `village` tile'a do wyboru celu zwiadu/zakładania miasta, NIE nagroda za wioskę) oraz `playable.rs:117,156,172` (flaga `villageRewardsEnabled`, `NOT_IMPLEMENTED`). Brak mnożnika nagrody za wioskę w domenie. Web `gra/src/game/villageRewards.ts:42,:48` (VILLAGE_GOLD_ERA_MULT / VILLAGE_TECH_ERA_MULT) — ETAP 3 tylko jako „do decyzji, czy wdrażać mechanikę”. |
+| 5 | Grep literałów tylko w `combat.rs`; trzeba objąć pathfinding, city_growth, resztę | PRZYJMUJĘ częściowo | Sprawdzone w r2: `combat.rs` (`git grep -nE "1\.(50\|25\|15)\b"` → 0 trafień), `pathfinding.rs` (`road_divisor`/`paved_road_divisor`, wiersz 35i), `city_growth.rs` (wiersz 35b). Pełny inwentarz `domain/**` NIE został wykonany w r2 — pozostałe pliki domeny (`diplomacy.rs`, `map_generator.rs`, `society`, `production`, `ai_turn.rs`) wchodzą do rundy 3 z własnym `git grep`. Wynik częściowy oznaczony NIE_ZMIERZONO tam, gdzie nie przeszukano. |
+| 6 | Relabel `combat.rs:470,475` (w rzeczywistości 456,461) na ETAP 4 bez próby webowej | PRZYJMUJĘ | Przywrócone: **ETAP 3, klasa c** (ciągła funkcja straty `(0.25 - 0.15*advantage).clamp(0.10,0.25)`, zgodnie z konwencją P3-22: klasa c = funkcja ciągła w zmiennej). Próba webowa r2: `git grep`/`grep` po `gra/src` za wzorcem `0.15`/`0.25`+advantage/loss → **brak odpowiednika** w webie (trafienia tylko w UI/animacji/kulturze). Status: web counterpart NIE ZNALEZIONY (nie to samo co „ETAP 4”). Decyzja dla rundy 3: czy to mechanika webu (wtedy wektor) czy wyłącznie Rust (wtedy BEZ MECHANIKI w webie — do decyzji właściciela). |
+| 7 | Barbarzyńcy to promienie/tury, nie mnożniki | PRZYJMUJĘ | Przeklasyfikowane: **NIE MNOŻNIK — usunięte z zakresu etapu 3**. Web `gra/src/game/diplomacy-barbarian-cooperation.ts:10` (`BARBARIAN_COOPERATION_RADIUS = 2`), `:21` (`BARBARIAN_COOPERATION_TURNS = 3`), `:25` (`..._DURATION_CHOICES = [5,10,15]`) — czas i promień, nie mnożnik. Ten sam wniosek jest w P3-22 sekcja 1 (wiersz „Barbarzyńcy … NIE-LICZBA mnożnikowa”). |
+| 8 | 22b cennik PN oznaczone ETAP 3 bez uzasadnienia | PRZYJMUJĘ | Przeklasyfikowane na **BEZ MECHANIKI (dane, nie mnożnik)**, zgodnie z dispatchem. Web `gra/data/diplomacy.json:158` (`pn_zloto`, `skala: 1`, „1 PN = 1 ¤”) to opis skali, nie mnożnik gry. Rust: parser danych `src/data/civilizations.rs:659-677` (`pn_zloto`, `pn_praca`, `pn_zywnosc`); brak mnożnika w domenie. |
+| 9 | Zakres linii struktur `combat.rs:244-252` (funkcja to 244-266) | PRZYJMUJĘ | Funkcja `structure_defense_multiplier` = `combat.rs:230-…` (po zmianie r2 zakres się zmienia; patrz sekcja 3). Stare `244-252` było tylko blokiem sumy. |
+| 10 | Dług `tests/derived_values.rs` bez wiersza statusu | PRZYJMUJĘ | Dodany wiersz: **ETAP 3 (runda 3), dług testu**. `rust-port/engine/tests/derived_values.rs:777-833` (`diplomacy_multipliers_cover_each_constant_once_with_web_values`, asercje `BUILDING_PN_FACTOR`, `TREATY_DURATION_*`) pinuje wartości DYPLOMACJI. NIE ruszany w r2 (nie jest częścią WALKA). |
+| 11 | Kryterium „tabela było/jest” i „lista zmian testów” spełnione tylko dla jednej macierzy | PRZYJMUJĘ | Zgodne. Tabele było/jest są w sekcji 2 (counter) i 3 (struktury). Lista zmian testów: sekcja 4. Kryterium etapu nadal NIE spełnione. |
+
+Pozytywne sprawdzenia Evaluatora (linie webu) potwierdzam bez zmian: `main.ts:26917`, `population-growth-v85.ts:92,101`, `villageRewards.ts:42,48`, `road-movement.ts:14,29`, `society-breakdown.ts:399`, `diplomacy.ts:676,1281`, `converters.ts:56`, `building-resource-gate.ts:329,332`, `ai.ts:1265`, `ai-major-absorb.ts:10`, `map-gen-params-loader.ts:21,24`, `newGameMapDefaults.ts:255,419`.
+
+## 2. Macierz counter (35g) — ROZWINIĘTE (runda 1, bez zmian w r2)
+
+| Wiersz | Klasa | Web (pin edb8fb56) | Rust przed (`2a45e340`) | Rust po | Status |
 |---|---|---|---|---|---|
-| 35g `COUNTER_MULT` / macierz typów | a | `gra/src/game/combat.ts:527-549` (`counterMultiplier`), dane `gra/data/counters.json` (17 wierszy, 15 × Atak potwierdzone), `battleScene.ts:1267` (normCounters) | `rust-port/engine/src/domain/combat.rs:200-217` — `match (attacker, defender)` z literałami `1.50` / `1.25` / `1.15` | `rust-port/engine/data/derived/counter-multipliers.json` (8 × 8 = 64 pary, pola `atakujacy`, `cel`, `mnoznik`); odczyt `counter_multiplier_value` w `src/data/derived.rs`; `combat.rs:200-202` wywołuje tabelę | ROZWINIĘTE (czytane przez kod domeny; patrz sekcja 3 — NIE w pętli gry) |
+| 35g macierz typów | a | `gra/src/game/combat.ts:527-549` (`counterMultiplier`), `gra/data/counters.json` (17 wierszy) | `rust-port/engine/src/domain/combat.rs` `match` z literałami `1.50/1.25/1.15` | `rust-port/engine/data/derived/counter-multipliers.json` (8×8 = 64 pary); odczyt `counter_multiplier_value` w `src/data/derived.rs`; `combat.rs:201-203` | ROZWINIĘTE (czytane przez domenę, NIE w pętli gry — zob. ZAŁOŻENIE 1) |
 
-Zasady: pary bez wpisu w `counters.json` mają mnożnik `1.0` (brak premii) i są w tabeli jawnie (64 pary, nie ma braków).
-Wiersze `Rodzaj=Obrona` (np. „Atak z flanki” −50%) NIE są macierzą counter — web ich nie czyta w `counterMultiplier`.
-Jawne `bonuses_vs_type` jednostki nadal mają pierwszeństwo nad tabelą (zachowanie bez zmian, test `explicit_unit_bonus_overrides_table`).
+Tabela było/jest (pary niezerowe, 15 z 64; pozostałe 49 = `1.0` w obu):
 
-### 1a. Tabela było/jest (pary niezerowe)
-
-| Para (atakujący → cel) | Było (literał Rust) | Jest (tabela) | Web (uruchomiony kod) | Zgodność |
+| Para (atakujący → cel) | Było | Jest | Web (uruchomiony kod) | Zgodność |
 |---|---|---|---|---|
 | spearman → mount | 1.50 | 1.5 | 1.5 | tak |
 | mount → distance | 1.50 | 1.5 | 1.5 | tak |
@@ -45,77 +61,84 @@ Jawne `bonuses_vs_type` jednostki nadal mają pierwszeństwo nad tabelą (zachow
 | offensive → distance | 1.15 | 1.15 | 1.15 | tak |
 | offensive → slinger | 1.15 | 1.15 | 1.15 | tak |
 
-Pozostałe 49 par: było `1.0` (brak literału, `_ => 1.0`), jest `1.0`, web `1.0`. Rozbieżności: **0**.
-Dowód: `dowody/verify-counter-r1.log` (`PAR_NIEZERO_OCZEKIWANE: 15`, `PAR_NIEZERO_STARE_LITERAL: 15`, `ROZBIEZNOSCI: 0`).
+Rozbieżności: **0**. Dowód: generator `gen-counter-web.mjs` (uruchomiony kod weba) + `verify-counter-web.py` → `dowody/verify-counter-r1.log` (`ROZBIEZNOSCI: 0`).
 
-### 1b. Dowody weryfikacji (plik:linia / komenda)
+## 3. Obrona strukturalna (WALKA — struktury) — ROZWINIĘTE w r2
 
-- Generator (uruchomiony kod TS weba): `dyspozycje/autobot/runs/R-RUSTPORT-P3-23-FLATTEN-STAGE3-Q1/gen-counter-web.mjs`
-  → `dowody/counter-web.json` (64 pary). Uruchomienie: `node --experimental-transform-types --import <abs>/gen-loader-register.mjs <abs>/gen-counter-web.mjs <KORZEN> <wyjscie>`.
-- Niezależny weryfikator (bez kodu weba, reguła z `combat.ts:527-549` przepisana w Pythonie):
-  `dyspozycje/autobot/runs/R-RUSTPORT-P3-23-FLATTEN-STAGE3-Q1/verify-counter-web.py` → `dowody/verify-counter-r1.log`.
-  Porównuje: A) tabela Rust vs oczekiwane; B) wynik kodu weba vs oczekiwane; C) stara macierz literalowa (`dowody/combat-before.rs`) vs tabela.
-- Brak mnożników literalnych w domenie: `git grep -nE "1\.(50|25|15)\b" -- rust-port/engine/src/domain/combat.rs` → brak trafień (EXIT 1).
+**Zmiana reguły:** Rust SUMOWAŁ bonusy (`1 + wall + fort + outpost`), web BIERZE NAJWYŻSZY (wg Q1=A: web 1:1).
 
-## 2. Testy
-
-- Dodany: `rust-port/engine/tests/counter_multipliers.rs` (5 testów): pełna macierz typ × typ bez duplikatów;
-  klucze kanoniczne; mnożniki skończone i > 0; odczyt tabeli dla każdej pary; domena czyta tabelę i daje `1.0` dla
-  nieznanego typu; jawny bonus jednostki nadpisuje tabelę. **Żaden test nie pinuje wartości mnożnika.**
-- Zmienione istniejące testy: **brak**. `tests/combat.rs` przechodzi bez zmian (wartości zachowane).
-- Dług z sekcji 12.0 (`tests/derived_values.rs` pinuje wartości DYPLOMACJI) — NIE ruszany w tej rundzie (ETAP 3).
-
-## 3. Do decyzji właściciela (ZAŁOŻENIA podjęte bez pytania)
-
-1. **ZAŁOŻENIE:** moduł `combat.rs` jest martwy w rozgrywce (P3-22 sekcja 12.0 #1: w Rust nie ma wywołania
-   `effective_strength` / `resolve_combat` z pętli gry). Tabela counter jest więc ROZWINIĘTA w sensie
-   „czytana przez kod domeny i testowana”, **NIE** w sensie „używana w grze”. Nie podpinałem `combat.rs` do gry
-   (zgodnie z dispatchem). Do decyzji: czy podpinać walkę do pętli gry (osobny temat).
-2. **ZAŁOŻENIE:** wiersze macierzy trzymane są jako 64 pary (pełny stan skończony, Q3=A), a nie jako 15 wierszy,
-   bo tabela ma być edytowalna bez zmiany kodu także dla par dziś neutralnych.
-
-## 4. Pozostałe pozycje etapu 3 (klasa i plik:linia; NIE zrobione w rundzie 1)
-
-Każda pozycja poniżej ma status ETAP 3 (runda 2) lub ETAP 4. Plik:linia z P3-22 sekcja 1b / 11.3 / 12.
-
-| Grupa | Pozycje | Klasa | Plik:linia (web) | Domena Rust | Status |
+| Wiersz | Klasa | Web (pin edb8fb56) | Rust przed | Rust po (r2) | Status |
 |---|---|---|---|---|---|
-| WALKA — struktury | obrona strukturalna: web BIERZE NAJWYŻSZY (`main.ts:26917-26931`, `structureDefenseBonusFor`), Rust SUMUJE (`combat.rs:244-252`, `structure_defense_multiplier`) | a (reguła) | `gra/src/main.ts:26917`; `gra/src/game/city-defense.ts:55-75` | `combat.rs:244-252`, testy `tests/combat.rs` (sumowanie) | ETAP 3, runda 2 — wymaga zmiany reguły i testu; web nie jest ładowalny w node (main.ts), weryfikacja przez odczyt kodu |
-| WALKA | `combat.rs:470,475` (`(0.25 - 0.15*advantage).clamp(0.10,0.25)`) | c | brak odpowiednika (NIE_ZMIERZONO) | `combat.rs:470,475` | ETAP 4 (klasa c, nie ma wiersza webu do wektora) |
-| DYPLOMACJA (poza inwentarzem) | `diplomacy.rs:410,412,415,975,1108,1110,1120` | a | `gra/src/game/diplomacy.ts:676`, `:1281` | `diplomacy.rs` | ETAP 3 (runda 2) |
-| 35p archetypy | `diplomacy.rs:1027-1158` | b | — | `diplomacy.rs` | ETAP 3 → P3-18 |
-| 35b wzrost | CIV_MATRIX_GROWTH_DIFFICULTY_MULT | b | `gra/src/game/population-growth-v85.ts:92`, `:101` | — | ETAP 3 |
-| 35n społeczeństwo | FALLBACK_SOCIETY_SCALE | a | `gra/src/game/society-breakdown.ts:399` | — | ETAP 3 |
-| 35c wioski | VILLAGE_GOLD_ERA_MULT / VILLAGE_TECH_ERA_MULT | a | `gra/src/game/villageRewards.ts:42`, `:48` | — | ETAP 3 |
-| 35i ruch | ROAD_MOVE_SPEED_MULT / ROAD_BRUK_MOVE_SPEED_MULT | a | `gra/src/map/road-movement.ts:14`, `:29` | — | ETAP 3 |
-| 35j–k mapa | RESOURCE_BASELINE_RARITY_MULT; RELIEF_OVERFLOW_CAP_MULT; MOUNTAIN_RANGE_REGROW_TARGET_MULT; RIVER_SCALE_BY_SIZE; FALLBACK_* | a/b | `gra/src/map/newGameMapDefaults.ts:255,419`; `gra/src/map/gen-helpers.ts:2181,2480`; `gra/src/data/map-gen-params-loader.ts:21,24` | — | ETAP 3 |
-| 19–21 produkcja/magazyn/ludność | citizen-resource-upkeep; throughputFallback x5; Spichlerz odpływ x5 | a | `gra/src/game/citizen-resource-upkeep.ts`; `gra/src/game/converters.ts:56`; `gra/src/game/building-resource-gate.ts:329,332` | — | ETAP 3 |
-| 22b cennik PN | `pn_zloto`, `pn_praca`, `pn_zywnosc` | dane | `gra/data/diplomacy.json:158` | — | ETAP 3 (dane, nie mnożnik) |
-| AI 35a/35a2/35o5 | AI_MAJOR_EARLY_ECON_BUILDING_MULT; TERYTORIUM_MNOZNIK; AI_MAJOR_ABSORB_POWER_RATIO_MIN | a / próg | `gra/src/game/ai.ts:1265`, `:4568`; `gra/src/game/ai-major-absorb.ts:10` | — | ETAP 3 (ai.ts nie ładuje się w node) |
-| Barbarzyńcy | NL-mnożnikowa | NL | `gra/src/game/diplomacy-barbarian-cooperation.ts:10,21,25` | `barbarians.rs` (brak literałów mnożnikowych, NIE_ZMIERZONO) | ETAP 3 |
+| obrona strukturalna | a (reguła) | `gra/src/main.ts:26953-26979` (`structureDefenseBonusFor`): miasto z murami → `cityWallDefenseBonusPercent` (`gra/src/game/city-defense.ts:55-75`) zwraca się ALBO (`if (wallBonus > 0) return wallBonus;`), inaczej ulepszenie terenu `fort` → `return 100`, `posterunek` → `return 50`, inaczej `return 0`. Jeden wynik, bez sumowania. | `combat.rs:230-252` `structure_defense_multiplier`: `1.0 + (wall? MUR) + (fort? FORT_TERENOWY) + (outpost? POSTERUNEK)` | `combat.rs:230-…`: `1.0 + max(wall? MUR, fort? FORT_TERENOWY, outpost? POSTERUNEK)`; wartości procentów nadal z `combat-ai-multipliers.json` | ROZWINIĘTE (reguła + test relacyjny) |
 
-Literały `diplomacy.rs` poza tabelą i dług testu `derived_values.rs` są w tej samej rundzie 2 jako osobny wpis.
+Tabela było/jest (wartości z `combat-ai-multipliers.json`: MUR 200, fort terenowy 100, posterunek 50):
 
-## 5. Gate (surowe wyjścia w `dowody/`)
+| Zestaw struktur (siege) | Było (suma) | Jest (max) | Web odpowiednik |
+|---|---|---|---|
+| brak | 1.0 | 1.0 | 0 |
+| tylko wall | 3.0 | 3.0 | 200 → 3.0 |
+| tylko fort | 2.0 | 2.0 | 100 → 2.0 |
+| tylko outpost | 1.5 | 1.5 | 50 → 1.5 |
+| wall + fort + outpost | 4.5 | 3.0 | jeden wynik, najwyższy = 200 → 3.0 |
+| fort + outpost | 2.5 | 2.0 | jeden wynik, najwyższy = 100 → 2.0 |
+
+**Zmiany testów (jawnie):**
+- `tests/combat.rs::effective_strength_applies_counters_terrain_and_siege_structures` — oczekiwana siła obrońcy **6_750 → 4_500** (`10*100*1.5(Hills)*1.0(counter) = 1500`; mnożnik struktur 4.5 → 3.0). Uzasadnienie: zmiana reguły na web (max). Test NIE został osłabiony — nadal pinuje pełny wynik `effective_strength` z trzema strukturami naraz; zmienił się tylko oczekiwany wynik zgodnie z regułą.
+- NOWY `tests/structure_defense_max.rs` (3 testy, RELACJE, bez pinów wartości): brak struktur = 1.0; poza oblężeniem = 1.0; wall+fort+outpost == wall; fort+outpost == fort; wall > fort > outpost > 1.0.
+- Brak innych zmian istniejących testów.
+
+**Weryfikacja:** web `structureDefenseBonusFor` NIE jest ładowalna w node (`main.ts`, zależności DOM/gra) — generator w tej rundzie NIE został dodany. Dowód = odczyt kodu `main.ts:26953-26979` (wiersze cytowane powyżej) i test relacyjny Rust. Rozbieżność między tym odczytem a Rust: 0 (po zmianie). Wektor numeryczny webu dla struktur: **NIE_ZMIERZONO** (do rundy 3, jeśli owner zażąda).
+
+**Efekt w grze:** `combat.rs` jest martwy w rozgrywce (ZAŁOŻENIE 1), więc zmiana NIE zmienia zachowania gry.
+
+## 4. Testy i gate
 
 | Bramka | Wynik | Plik |
 |---|---|---|
-| `cargo fmt -- --check` | EXIT=0 | `dowody/gate-fmt-r1.log` |
-| `cargo clippy --offline --all-targets -- -D warnings` | EXIT=0 | `dowody/gate-clippy-r1.log` |
-| `cargo test --offline` | EXIT=0, **378 passed, 0 failed** (baza 373 + 5 nowych) | `dowody/gate-test-r1.log` |
+| `cargo fmt -- --check` (r2) | EXIT=0 | `dowody/gate-fmt-r2.log` |
+| `cargo clippy --offline --all-targets -- -D warnings` (r2) | EXIT=0 | `dowody/gate-clippy-r2.log` |
+| `cargo test --offline` (r2) | EXIT=0, **381 passed, 0 failed** (42 bloki wyników) | `dowody/gate-test-r2.log` |
 | baza przed zmianą (`2a45e340`) | EXIT=0, 373 passed | `dowody/base-test.log` |
+| r1 (historia) | fmt log 0 bajtów (nieważny), clippy/test EXIT=0 | `dowody/gate-*-r1.log` |
 
-Build: `CARGO_INCREMENTAL=0 CARGO_TARGET_DIR=/home/user/cargo-target-shared/wf_e461f64a-457-1 CARGO_PROFILE_DEV_DEBUG=0`, `--offline`.
-Po zakończeniu katalog targetu zostanie usunięty. `Cargo.lock` NIE jest commitowany (untracked, wygenerowany przez build).
+381 = 373 (baza) + 5 (`counter_multipliers.rs`, r1) + 3 (`structure_defense_max.rs`, r2). Zmiany: `tests/combat.rs` (1 asercja, patrz sekcja 3).
 
-## 6. Allowlista rundy 1
+Grep literałów w domenie WALKI: `git grep -nE "1\.(50|25|15)\b" -- rust-port/engine/src/domain/combat.rs` → **0 trafień**. Struktury: `git grep -nE "\} \+ if structures"` → 0 trafień (suma usunięta).
 
-- `rust-port/engine/data/derived/counter-multipliers.json` (nowy)
-- `rust-port/engine/src/data/derived.rs` (dodany blok `counter_multiplier_value`, bez zmian istniejących funkcji)
-- `rust-port/engine/src/domain/combat.rs` (`counter_multiplier`: match → tabela; import)
-- `rust-port/engine/tests/counter_multipliers.rs` (nowy)
-- `dyspozycje/rust-port/p3/P3-23-FLATTEN-STAGE3.md` (nowy, ten dokument)
-- `dyspozycje/autobot/runs/R-RUSTPORT-P3-23-FLATTEN-STAGE3-Q1/**`
+Build: `CARGO_INCREMENTAL=0 CARGO_TARGET_DIR=/home/user/cargo-target-shared/wf_e461f64a-457-3 CARGO_PROFILE_DEV_DEBUG=0`, `cargo --offline`. Katalog targetu zostanie usunięty po zakończeniu rundy. `Cargo.lock` NIE jest commitowany (untracked).
 
-Zero zmian w `bridge.rs`, `playable.rs`, `Cargo.toml`, `gra/**`, `rust-port/renderer/**`, `src-tauri/**`.
-Push: NIE WYKONANO.
+## 5. Stan grup etapu 3 (ETAP 3 = runda 3, z klasą i plik:linia)
+
+| Grupa / pozycja | Klasa | Plik:linia (web) | Domena Rust (plik:linia) | Status |
+|---|---|---|---|---|
+| WALKA `combat.rs:456,461` (straty auto-resolve) | c | brak odpowiednika w webie (NIE ZNALEZIONO: grep `gra/src` po `0.15`/`0.25`+advantage) | `combat.rs:456,461` (`loss_fractions`, `(0.25 - 0.15*advantage).clamp(0.10,0.25)`) | ETAP 3 (runda 3) — decyzja: mechanika webu czy tylko Rust |
+| DYPLOMACJA poza inwentarzem | a | `gra/src/game/diplomacy.ts:676`, `:1281` | `diplomacy.rs:410,412,415,975,1108,1110,1120` | ETAP 3 (runda 3) |
+| Dług testu DYPLOMACJI | — | — | `tests/derived_values.rs:777-833` (pinuje wartości) | ETAP 3 (runda 3), NIE ruszany |
+| 35p archetypy | b | — | `diplomacy.rs:1027-1158` | ETAP 3 → P3-18 |
+| 35b WZROST | b | `gra/src/game/population-growth-v85.ts:92,:101` | `city_growth.rs:45,67,85,219,461-469` (API bez wywołania z gry) | ETAP 3 (runda 3) |
+| 35n SPOŁECZEŃSTWO | a | `gra/src/game/society-breakdown.ts:399` | NIE_ZMIERZONO (nie przeszukano w r2) | ETAP 3 (runda 3) |
+| 35c WIOSKI | a | `gra/src/game/villageRewards.ts:42,:48` | BRAK mnożnika w domenie (`playable.rs:172` NOT_IMPLEMENTED) | BEZ MECHANIKI (Rust); do decyzji, czy wdrażać |
+| 35i RUCH | a | `gra/src/map/road-movement.ts:14,:29` | `pathfinding.rs:250-251` (dane), `:294-295` (użycie) | ETAP 3 (runda 3); wywołanie z gry NIE_ZMIERZONO |
+| 35j–k MAPA | a/b | `gra/src/map/newGameMapDefaults.ts:255,:419`; `gra/src/map/gen-helpers.ts:2181,:2480`; `gra/src/data/map-gen-params-loader.ts:21,:24` | NIE_ZMIERZONO (`map_generator.rs` ma stałe generacji — do klasyfikacji w r3) | ETAP 3 (runda 3) |
+| 19–21 PRODUKCJA/magazyn/ludność | a | `gra/src/game/citizen-resource-upkeep.ts`; `gra/src/game/converters.ts:56`; `gra/src/game/building-resource-gate.ts:329,:332` | NIE_ZMIERZONO | ETAP 3 (runda 3) |
+| 22b cennik PN | dane | `gra/data/diplomacy.json:158` (`pn_zloto`, skala 1) | dane: `src/data/civilizations.rs:659-677`; brak mnożnika w domenie | BEZ MECHANIKI (dane, nie mnożnik) |
+| AI 35a/35a2/35o5 | a / próg | `gra/src/game/ai.ts:1265`, `:4568`; `gra/src/game/ai-major-absorb.ts:10` | NIE_ZMIERZONO (`ai_turn.rs` — do r3) | ETAP 3 (runda 3); `ai.ts` nie ładuje się w node |
+| Barbarzyńcy | — | `gra/src/game/diplomacy-barbarian-cooperation.ts:10,:21,:25` (promień/tury, NIE mnożnik) | — | NIE MNOŻNIK — poza zakresem mnożników |
+
+## 6. ZAŁOŻENIA (bez pytania, do decyzji właściciela)
+
+1. **ZAŁOŻENIE:** `combat.rs` jest martwy w rozgrywce (P3-22 sekcja 12.0 #1). Tabele counter i reguła struktur są ROZWINIĘTE w sensie „czytane przez domenę i testowane”, NIE „używane w grze”. Nie podpinano walki do pętli gry (dispatch). **Do decyzji właściciela:** czy podpinać walkę do pętli gry (osobny temat).
+2. **ZAŁOŻENIE:** counter jako 64 pary (pełny stan skończony, Q3=A), nie 15 wierszy, żeby tabela była edytowalna także dla par dziś neutralnych.
+3. **ZAŁOŻENIE:** reguła struktur = max (web 1:1, Q1=A). Zmiana wpływa tylko na `combat.rs`, który nie jest w grze.
+
+## 7. Allowlista rundy 2
+
+- `rust-port/engine/src/domain/combat.rs` (reguła max w `structure_defense_multiplier`; komentarz).
+- `rust-port/engine/tests/combat.rs` (jedna asercja 6_750 → 4_500 z uzasadnieniem).
+- `rust-port/engine/tests/structure_defense_max.rs` (nowy, 3 testy relacyjne).
+- `dyspozycje/rust-port/p3/P3-23-FLATTEN-STAGE3.md` (ten dokument).
+- `dyspozycje/autobot/runs/R-RUSTPORT-P3-23-FLATTEN-STAGE3-Q1/dowody/gate-{fmt,clippy,test}-r2.log`.
+
+Allowlista r1 (bez zmian): `data/derived/counter-multipliers.json`, `src/data/derived.rs` (blok counter), `src/domain/combat.rs` (counter), `tests/counter_multipliers.rs`, generator i weryfikator counter, logi r1.
+
+Zero zmian w `bridge.rs`, `playable.rs`, `Cargo.toml`, `gra/**`, `rust-port/renderer/**`, `src-tauri/**`. Push: NIE WYKONANO.
