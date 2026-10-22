@@ -40,6 +40,7 @@ pub mod jsmath;
 use std::collections::{HashMap, HashSet};
 
 use crate::geom::{box_geometry, cylinder_geometry, plane_geometry, Mesh};
+use crate::jsmath::{js_cos, js_sin};
 use crate::pick::camera::max_zoom_dist;
 use crate::pick::hex::{axial_to_world, HexCoord, HEX_R};
 use crate::pick::terrain::{
@@ -114,11 +115,33 @@ pub fn hash2d(q: i32, r: i32, seed: i32, salt: i32) -> f64 {
     f64::from(h) / 4_294_967_296.0
 }
 
+/// `Quaternion.setFromEuler(new Euler(x, y, z, 'XYZ'))` (three r169
+/// `Quaternion.js`, case `'XYZ'`), with `Math.sin/cos` taken from the shared
+/// V8-exact [`crate::jsmath`] instead of the platform `libm`
+/// (R-RUSTPORT-P4-16-JSMATH-Q1). Same operand order as
+/// `pick::three::Quat::from_euler_xyz`, which `terrain` must not call
+/// because it uses `f64::sin/cos`.
+#[must_use]
+pub fn quat_from_euler_xyz(x: f64, y: f64, z: f64) -> Quat {
+    let c1 = js_cos(x / 2.0);
+    let c2 = js_cos(y / 2.0);
+    let c3 = js_cos(z / 2.0);
+    let s1 = js_sin(x / 2.0);
+    let s2 = js_sin(y / 2.0);
+    let s3 = js_sin(z / 2.0);
+    Quat {
+        x: s1 * c2 * c3 + c1 * s2 * s3,
+        y: c1 * s2 * c3 - s1 * c2 * s3,
+        z: c1 * c2 * s3 + s1 * s2 * c3,
+        w: c1 * c2 * c3 - s1 * s2 * s3,
+    }
+}
+
 /// `dummy.position / rotation(0, yaw, 0) / scale(1,1,1) / updateMatrix()`
 /// stored with `setMatrixAt` into a `Float32Array`.
 #[must_use]
 pub fn instance_matrix(position: Vec3, yaw: f64) -> [f32; 16] {
-    let q = Quat::from_euler_xyz(0.0, yaw, 0.0);
+    let q = quat_from_euler_xyz(0.0, yaw, 0.0);
     Mat4::compose(position, q, Vec3::new(1.0, 1.0, 1.0)).to_f32()
 }
 
@@ -629,7 +652,7 @@ fn build_backdrop(input: &TerrainInput<'_>) -> Option<Backdrop> {
     );
     let ocean_world = Mat4::compose(
         Vec3::new(cxb, bed_y, czb),
-        Quat::from_euler_xyz(-std::f64::consts::PI / 2.0, 0.0, 0.0),
+        quat_from_euler_xyz(-std::f64::consts::PI / 2.0, 0.0, 0.0),
         Vec3::new(1.0, 1.0, 1.0),
     );
     let (fx0, fx1, fz0, fz1) = (min_x - pad_f, max_x + pad_f, min_z - pad_f, max_z + pad_f);
@@ -638,7 +661,7 @@ fn build_backdrop(input: &TerrainInput<'_>) -> Option<Backdrop> {
         geometry: box_geometry(w, bar_h, d, 1, 1, 1),
         world: Mat4::compose(
             Vec3::new(px, frame_y, pz),
-            Quat::from_euler_xyz(0.0, 0.0, 0.0),
+            quat_from_euler_xyz(0.0, 0.0, 0.0),
             Vec3::new(1.0, 1.0, 1.0),
         ),
     };

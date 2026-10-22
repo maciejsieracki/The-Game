@@ -147,7 +147,8 @@ przebieg 3 — 23/23.
 ## 9. Ryzyka szczątkowe i NIE_ZMIERZONO
 
 - `pick/**` (zakaz allowlisty) nadal używa platformowego `sin/cos/tan`: `pick/camera.rs:83-88`, `:104`, `pick/terrain.rs:204`,
-  `:228`, `pick/three.rs:197-202` (`Quat::set_from_euler` używany też przez `terrain` do macierzy instancji). Testy
+  `:228`, `pick/three.rs:197-202`. **Runda 2:** `terrain` NIE woła już `pick::three::Quat::from_euler_xyz` — ma własne
+  `terrain::quat_from_euler_xyz` na `js_sin/js_cos` (zarzut 1 Evaluatora r1, §11). Testy
   `pick_golden`/`terrain_web_parity` zielone, ale niezależność od platformy tam NIE jest zapewniona — propozycja tematu
   „przepięcie `pick/**` na `jsmath`".
 - Windows/macOS: port jest czystym Rustem bez `libm` (poza `sqrt`, poprawnie zaokrąglanym), więc wynik nie powinien zależeć
@@ -457,3 +458,25 @@ M22 wonders re-export swapped (sin <-> cos): exit=101 DETECTED failed=['compatib
 TOTAL: 23/23 detected
 EXIT=0
 ```
+
+## 11. Runda 2 — obrona (zarzuty Evaluatora r1)
+
+- **Zarzut 1 (terrain liczył obrót przez `pick::three::Quat::from_euler_xyz` = `f64::sin/cos`) — PRZYJMUJĘ.**
+  Nowa `pub fn terrain::quat_from_euler_xyz` (`src/terrain/mod.rs`, ten sam układ wyrażeń co `setFromEuler` 'XYZ' i
+  `pick/three.rs:196-209`, ale `js_sin/js_cos`); przepięte 3 miejsca: `instance_matrix` (używane m.in. przez `coast.rs`),
+  `ocean_world`, `bar`. `pick/**` nietknięte. Fixtury `terrain_web_parity` bez zmian i zielone (wynik po zapisie `f32`
+  identyczny na mapach testowych).
+- **Zarzut 2 (skaner `jsmath_wiring` nieszczelny) — PRZYJMUJĘ.** Skan rekurencyjny (`rs_files_recursive`), dodatkowo forma
+  ścieżkowa `f64::<fn>(`/`f32::<fn>(` oraz znane pośrednie helpery `pick` z platformową trygonometrią
+  (`from_euler_xyz(` bez prefiksu `_`, `hex_prism_no_bottom(`). Nowe testy: `scanner_catches_known_bypass_forms`
+  (7 form złych, 3 dobre) i `terrain_rotation_uses_v8_trig` (kąty z wektorów V8, gdzie glibc ≠ V8: bity
+  `quat_from_euler_xyz` == V8 oraz `instance_matrix` == compose kwaternionu V8; 2 kąty, gdzie różnica glibc/V8 przeżywa zapis `f32`).
+- **Mutacje rundy 2 (wszystkie wykryte):**
+  - R2-M1 `instance_matrix` z powrotem na `Quat::from_euler_xyz` → FAILED `terrain_rotation_uses_v8_trig`, `no_platform_…`;
+  - R2-M2 `c2 = (y / 2.0).cos()` → FAILED oba powyższe;
+  - R2-M3 `c1 = f64::cos(x / 2.0)` (forma ścieżkowa) → FAILED `no_platform_…` (`mod.rs:126: f64::cos(`);
+  - R2-M4 plik w podkatalogu `src/geom/zz_tmp/x.rs` z `x.sin()` → FAILED `no_platform_…` (plik usunięty).
+- **Bramki r2** (świeży `CARGO_TARGET_DIR=/dev/shm/op2/tgt`, usunięty): `fmt --check` EXIT=0, `clippy -D warnings` EXIT=0,
+  `clippy --features gpu -D warnings` EXIT=0, `cargo test --locked --all-targets` EXIT=0 — 12 binariów, 81 testów ok
+  (79 + 2 nowe), w tym `geom_three_parity` 17, `terrain_web_parity` 5, `wonders_web_parity` 4, `camera_web_parity` 5,
+  `pick_golden` 7, `jsmath_v8_parity` 13, `jsmath_wiring` 4.
