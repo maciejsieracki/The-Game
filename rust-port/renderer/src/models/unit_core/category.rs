@@ -2,9 +2,10 @@
 //! `decorateChariot` (`:1389-1488`), `applyCultureOverrides` (`:5559-5683`)
 //! and `attachEmbarkBoat` (`:5700-5752`).
 //!
-//! Cases whose geometry lives in another package return
-//! [`NotYetPorted`](super::registry::NotYetPorted) (see
-//! [`super::registry::pending`]).
+//! Cases whose geometry lives in another package delegate to it (MOD-05
+//! [`crate::models::units_kamien`], MOD-07 [`crate::models::units_zelazo`]);
+//! [`NotYetPorted`](super::registry::NotYetPorted) stays only in the
+//! signature (see [`super::registry::pending`], empty since MOD-07).
 
 use super::avatar::{
     add_boots, add_greaves, add_hands, add_hip_sword, add_owner_helm_stripe, add_pteruges,
@@ -164,9 +165,10 @@ impl UnitCategory {
 /// `buildCategoryModel(category, ownerColor)`.
 ///
 /// # Errors
-/// [`NotYetPorted`] for the case delegating to a package not ported yet
-/// (`falanga` → MOD-07); `lucznik`, `oszczepnik`, `zwiadowca`,
-/// `obleznicza`, `domyslny` build the MOD-05 Stone models.
+/// [`NotYetPorted`] only if a delegated package lacked the builder (none
+/// since MOD-07; kept for the public signature); `lucznik`, `oszczepnik`,
+/// `zwiadowca`, `obleznicza`, `domyslny` build the MOD-05 Stone models,
+/// `falanga` the MOD-07 Iron `buildFalangita`.
 pub fn build_category_model(cat: UnitCategory, owner: u32) -> Result<UnitModel, NotYetPorted> {
     match cat {
         UnitCategory::Legion | UnitCategory::Legionary | UnitCategory::Legionista => {
@@ -191,7 +193,10 @@ pub fn build_category_model(cat: UnitCategory, owner: u32) -> Result<UnitModel, 
         | UnitCategory::Obleznicza
         | UnitCategory::Domyslny => crate::models::units_kamien::build(cat.base(), owner)
             .ok_or(NotYetPorted::of(cat.base())),
-        UnitCategory::Falanga => Err(NotYetPorted::of(cat.base())),
+        // MOD-07 Iron (`R-RUSTPORT-P4-26-MOD07-UNITS-IRON-Q1`):
+        // `case 'falanga'` → `buildFalangita` (`units.ts:3704-3707`).
+        UnitCategory::Falanga => crate::models::units_zelazo::build(cat.base(), owner)
+            .ok_or(NotYetPorted::of(cat.base())),
     }
 }
 

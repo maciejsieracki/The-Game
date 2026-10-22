@@ -156,6 +156,10 @@ pub enum Prim {
     /// of the MOD-06 Bronze package (`R-RUSTPORT-P4-23-MOD06-UNITS-BRONZE-Q1`),
     /// built by [`crate::models::units_braz::geo`].
     Braz(crate::models::units_braz::geo::BrazGeo),
+    /// `RingGeometry` and the non-parametric `BufferGeometry` bodies of the
+    /// MOD-07 Iron package (`R-RUSTPORT-P4-26-MOD07-UNITS-IRON-Q1`), built by
+    /// [`crate::models::units_zelazo::geo`].
+    Zelazo(crate::models::units_zelazo::geo::ZelazoGeo),
 }
 
 impl Prim {
@@ -242,6 +246,7 @@ impl Prim {
             Self::LeafBlade { len, w_max } => leaf_blade_geometry(len, w_max),
             Self::Kamien(g) => g.build(),
             Self::Braz(g) => g.build(),
+            Self::Zelazo(g) => g.build(),
         }
     }
 }

@@ -117,6 +117,8 @@ fn three_type(prim: &Prim) -> &'static str {
         // MOD-06 geometries (R-RUSTPORT-P4-23-MOD06-UNITS-BRONZE-Q1); never
         // produced by a MOD-05 builder, mapped for exhaustiveness only.
         Prim::Braz(b) => b.three_type(),
+        // forced by the new `Prim::Zelazo` variant (R-RUSTPORT-P4-26-MOD07-UNITS-IRON-Q1)
+        Prim::Zelazo(z) => z.three_type(),
     }
 }
 
@@ -405,12 +407,13 @@ fn routing_no_longer_returns_not_yet_ported_for_the_stone_package() {
             "{label}"
         );
     }
-    // `falanga` stays a stub of MOD-07
+    // `falanga` was the MOD-07 stub; since R-RUSTPORT-P4-26-MOD07-UNITS-IRON-Q1
+    // it builds `buildFalangita` (forced update of this stub assertion)
     assert_eq!(
         build_category_model(UnitCategory::Falanga, OWNER_A)
-            .unwrap_err()
-            .base,
-        Base::Falangita
+            .expect("ported")
+            .signature(),
+        build_base(Base::Falangita, OWNER_A).unwrap().signature()
     );
     // every Stone record of the rule table builds
     let fx = kamien_fixture();

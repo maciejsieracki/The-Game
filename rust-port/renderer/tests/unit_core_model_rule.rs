@@ -201,8 +201,9 @@ fn web_signature_classes_equal_rust_model_id_classes() {
     // + Harappan Gate Guard→p1 wlocznik = 12, + the 10 MOD-05 Stone records PL and EN
     // (R-RUSTPORT-P4-19-MOD05-UNITS-STONE-Q1) = 32, + 73 PL/EN record calls whose
     // route lands on a MOD-06 Bronze builder (R-RUSTPORT-P4-23-MOD06-UNITS-BRONZE-Q1)
-    // = 105
-    assert_eq!(compared_records, 105);
+    // = 105, + 47 PL/EN record calls whose route lands on a MOD-07 Iron builder
+    // (R-RUSTPORT-P4-26-MOD07-UNITS-IRON-Q1) = 152, i.e. every record call
+    assert_eq!(compared_records, 152);
     assert!(
         compared > compared_records,
         "super probes must reach ported builders too"

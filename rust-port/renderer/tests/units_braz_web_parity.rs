@@ -162,6 +162,8 @@ fn three_type(prim: &Prim) -> &'static str {
             KamienGeo::Circle { .. } => "CircleGeometry",
         },
         Prim::Braz(b) => b.three_type(),
+        // forced by the new `Prim::Zelazo` variant (R-RUSTPORT-P4-26-MOD07-UNITS-IRON-Q1)
+        Prim::Zelazo(z) => z.three_type(),
     }
 }
 

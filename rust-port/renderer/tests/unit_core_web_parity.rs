@@ -310,12 +310,11 @@ fn compare_model(c: &mut Cmp, id: &str, m: &UnitModel, w: &J) {
 /// cases (`lucznik`, `oszczepnik`, `zwiadowca`, `obleznicza`, `domyslny`,
 /// `nieznana-kategoria`) are ported since R-RUSTPORT-P4-19-MOD05-UNITS-STONE-Q1
 /// and compared bit for bit like every other case.
+/// The last stub, `falanga` (MOD-07), is ported since
+/// R-RUSTPORT-P4-26-MOD07-UNITS-IRON-Q1: no case is expected to be pending.
 fn expected_pending(id: &str) -> Option<Base> {
-    let label = id.strip_prefix("cat:")?;
-    match label {
-        "falanga" => Some(Base::Falangita),
-        _ => None,
-    }
+    let _label = id.strip_prefix("cat:")?;
+    None
 }
 
 #[test]
@@ -350,8 +349,12 @@ fn every_web_case_is_reproduced_bit_for_bit() {
         c.values,
         pending.len()
     );
-    assert_eq!(pending.len(), 1, "pending stub cases");
-    assert_eq!(ported, 67, "compared cases");
+    assert_eq!(
+        pending.len(),
+        0,
+        "pending stub cases (MOD-07 closed the last one)"
+    );
+    assert_eq!(ported, 68, "compared cases (+ cat:falanga since MOD-07)");
     assert!(
         c.errs.is_empty(),
         "{} mismatches:\n{}",

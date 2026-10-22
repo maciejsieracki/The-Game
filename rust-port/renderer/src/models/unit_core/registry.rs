@@ -1,7 +1,9 @@
 //! Builder registry: one [`Base`] per distinct web builder that a unit can
 //! end up in, with its web origin and the P4.4 package that owns its
-//! geometry. Builders of packages 5–7 are explicit stubs returning
-//! [`NotYetPorted`]; [`pending`] lists them.
+//! geometry. Every package (MOD-04..MOD-07) is ported
+//! (`R-RUSTPORT-P4-26-MOD07-UNITS-IRON-Q1` closed the last one); the
+//! [`NotYetPorted`] error type and [`pending`] stay as the (now empty) stub
+//! mechanism of the public API.
 
 use super::category::{build_category_model, build_decorated_chariot, ChariotDecor, UnitCategory};
 use super::model::UnitModel;
@@ -162,8 +164,9 @@ bases! {
     Catapult => ("buildCatapult", "units.ts", Mod07Iron),
 }
 
-/// A builder whose geometry has not been ported yet (packages 5–7, or the
-/// unused `units.ts` models of MOD-04 not in this round's GOAL).
+/// A builder whose geometry has not been ported yet. Since
+/// `R-RUSTPORT-P4-26-MOD07-UNITS-IRON-Q1` no [`Base`] returns it; the type is
+/// kept because it is part of the public signatures.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct NotYetPorted {
     /// The missing builder.
@@ -195,17 +198,18 @@ impl std::error::Error for NotYetPorted {}
 
 /// `true` for the packages whose builders are ported: MOD-04 (this module),
 /// MOD-05 Stone ([`crate::models::units_kamien`],
-/// `R-RUSTPORT-P4-19-MOD05-UNITS-STONE-Q1`) and MOD-06 Bronze
-/// ([`crate::models::units_braz`], `R-RUSTPORT-P4-23-MOD06-UNITS-BRONZE-Q1`).
-/// Private: no new public API.
+/// `R-RUSTPORT-P4-19-MOD05-UNITS-STONE-Q1`), MOD-06 Bronze
+/// ([`crate::models::units_braz`], `R-RUSTPORT-P4-23-MOD06-UNITS-BRONZE-Q1`)
+/// and MOD-07 Iron ([`crate::models::units_zelazo`],
+/// `R-RUSTPORT-P4-26-MOD07-UNITS-IRON-Q1`). Private: no new public API.
 const fn is_ported(pkg: Package) -> bool {
     matches!(
         pkg,
-        Package::Mod04Core | Package::Mod05Stone | Package::Mod06Bronze
+        Package::Mod04Core | Package::Mod05Stone | Package::Mod06Bronze | Package::Mod07Iron
     )
 }
 
-/// Builders still waiting for their package (package 7).
+/// Builders still waiting for their package (empty since MOD-07).
 #[must_use]
 pub fn pending() -> Vec<Base> {
     Base::ALL
@@ -218,14 +222,17 @@ pub fn pending() -> Vec<Base> {
 /// Builds `base` for `owner`.
 ///
 /// # Errors
-/// [`NotYetPorted`] for every builder of a package not ported yet
-/// (MOD-07).
+/// [`NotYetPorted`] for a builder of a package not ported yet (none since
+/// MOD-07; kept for the public signature).
 pub fn build_base(base: Base, owner: u32) -> Result<UnitModel, NotYetPorted> {
     if base.package() == Package::Mod05Stone {
         return crate::models::units_kamien::build(base, owner).ok_or(NotYetPorted::of(base));
     }
     if base.package() == Package::Mod06Bronze {
         return crate::models::units_braz::build(base, owner).ok_or(NotYetPorted::of(base));
+    }
+    if base.package() == Package::Mod07Iron {
+        return crate::models::units_zelazo::build(base, owner).ok_or(NotYetPorted::of(base));
     }
     match base {
         Base::CatLegionista => build_category_model(UnitCategory::Legionista, owner),
