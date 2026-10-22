@@ -53,7 +53,7 @@ pub fn build_gaesatae(owner: u32) -> UnitModel {
         .set_pos(sx, AV_Y_LEG_CTR, 0.0)
         .set_name("gaesatae-bare-leg");
     }
-    m.add_mesh(g, Geo::Part(UnitPart::Loincloth), m_owner)
+    m.add_mesh(g, UnitPart::Loincloth.geo(), m_owner)
         .set_scale(0.8, 0.55, 0.95)
         .set_pos(0.0, AV_Y_TORSO_BOT - 0.01 * HEX_R, 0.0)
         .set_name("gaesatae-loincloth");

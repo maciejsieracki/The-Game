@@ -14,8 +14,8 @@
 //! - [`units_ts`] — the three MOD-07 builders of `units.ts`
 //!   (`buildGaesatae`, `buildSoldurii`, `buildCatapult`);
 //! - [`geo`] — `RingGeometry` and the hand-built `BufferGeometry` bodies not
-//!   covered by `Prim` / `BrazGeo` ([`geo::ZelazoGeo`], hooked into the
-//!   unit-core `Prim::Zelazo`);
+//!   covered by `Prim` / `BrazGeo` ([`geo::ZelazoGeo`], a module body of the
+//!   one scene type, P4.27);
 //! - [`kit`] — geometry constructors and Three.js helpers shared by the files.
 //!
 //! The unit-core registry ([`crate::models::unit_core::registry::build_base`])

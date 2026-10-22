@@ -222,7 +222,7 @@ fn z1_beard(m: &mut UnitModel, g: NodeId, m_hair: MatId, rows: u32) {
     ];
     for i in 0..rows {
         let fi = f64::from(i);
-        m.add_mesh(g, geos[i as usize], m_hair).set_pos(
+        m.add_mesh(g, geos[i as usize].clone(), m_hair).set_pos(
             0.0,
             Z1_HEAD_CTR - (0.052 + fi * 0.026) * HEX_R,
             z0 + (0.012 - fi * 0.003) * HEX_R,

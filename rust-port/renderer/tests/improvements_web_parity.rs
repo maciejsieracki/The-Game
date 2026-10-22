@@ -387,10 +387,10 @@ fn geo_dump(m: &ImprovementModel, id: usize) -> GeoDump {
             },
         };
     }
-    let Some(md) = m.tree.nodes[id].mesh else {
+    let Some(md) = m.tree.nodes[id].mesh() else {
         panic!("not a mesh")
     };
-    match md.geo.prim() {
+    match md.geo.prim().expect("improvement meshes are primitives") {
         Prim::Box { w, h, d } => GeoDump {
             ty: "box",
             params: vec![("w", w), ("h", h), ("d", d)],
@@ -442,7 +442,7 @@ fn dump(m: &ImprovementModel) -> Dump {
             )
         });
         let mut nd = NodeDump {
-            mesh: n.mesh.is_some(),
+            mesh: n.mesh().is_some(),
             parent,
             p: [n.position.x, n.position.y, n.position.z],
             q: [
@@ -463,12 +463,12 @@ fn dump(m: &ImprovementModel) -> Dump {
             hash: 0,
         };
         index.insert(id, nodes.len());
-        if let Some(md) = n.mesh {
+        if let Some(md) = n.mesh() {
             let g = m.geometry(id).expect("geometry");
-            let mi = match mats_order.iter().position(|&x| x == md.material) {
+            let mi = match mats_order.iter().position(|&x| x == md.material()) {
                 Some(i) => i,
                 None => {
-                    mats_order.push(md.material);
+                    mats_order.push(md.material());
                     mats_order.len() - 1
                 }
             };
@@ -493,8 +493,8 @@ fn dump(m: &ImprovementModel) -> Dump {
             let standard = ext.kind == MatKind::Standard;
             MatDump {
                 standard,
-                hex: mt.color,
-                lin: hex_to_linear(mt.color),
+                hex: mt.hex(),
+                lin: hex_to_linear(mt.hex()),
                 flat: mt.flat_shading,
                 metal: if standard { mt.metalness } else { 0.0 },
                 rough: if standard { mt.roughness } else { 0.0 },

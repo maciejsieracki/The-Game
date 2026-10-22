@@ -187,27 +187,27 @@ fn kz_sp_wrap() -> Geo {
     cy(0.0215 * HEX_R, 0.0215 * HEX_R, 0.016 * HEX_R, 8)
 }
 fn kz_shell() -> Geo {
-    Geo::Prim(Prim::Kamien(KamienGeo::NguniShell {
+    Geo::body(KamienGeo::NguniShell {
         a: KZ_SH_A,
         b: KZ_SH_B,
         c: KZ_SH_C,
         t: KZ_SH_T,
         n: KZ_SH_N,
-    }))
+    })
 }
 fn kz_face() -> Geo {
-    Geo::Prim(Prim::Kamien(KamienGeo::NguniFace {
+    Geo::body(KamienGeo::NguniFace {
         a: KZ_SH_A * 0.94,
         b: KZ_SH_B * 0.94,
         c: KZ_SH_C * 0.82,
         n: KZ_SH_N,
-    }))
+    })
 }
 fn kz_patch() -> Geo {
-    Geo::Prim(Prim::Kamien(KamienGeo::Circle {
+    Geo::body(KamienGeo::Circle {
         r: 0.040 * HEX_R,
         segments: 7,
-    }))
+    })
 }
 fn kz_umgobo() -> Geo {
     cy(0.0105 * HEX_R, 0.0125 * HEX_R, 0.428 * HEX_R, 6)

@@ -76,12 +76,12 @@ fn g_cone(r: f64, h: f64, seg: u32) -> Geo {
 }
 /// `getG(k, () => make*Geo(len, wMax, tMax))`.
 fn g_taper(profile: TaperProfile, len: f64, w_max: f64, t_max: f64) -> Geo {
-    Geo::Prim(Prim::Kamien(KamienGeo::Taper {
+    Geo::body(KamienGeo::Taper {
         profile,
         len,
         w_max,
         t_max,
-    }))
+    })
 }
 
 fn v3(x: f64, y: f64, z: f64) -> Vec3 {
@@ -899,7 +899,11 @@ pub fn build_lucznik_opus5(owner: u32) -> UnitModel {
         span(
             &mut m,
             g,
-            if wide { g_limb_w } else { g_limb_n },
+            if wide {
+                g_limb_w.clone()
+            } else {
+                g_limb_n.clone()
+            },
             m_wood_l,
             bow_pts[i],
             bow_pts[i + 1],
@@ -932,7 +936,7 @@ pub fn build_lucznik_opus5(owner: u32) -> UnitModel {
     );
 
     let g_str = Geo::Prim(Prim::bx(0.0065 * HEX_R, 1.0, 0.0065 * HEX_R));
-    span(&mut m, g, g_str, m_sinew, bow_pts[0], nock, 1.0);
+    span(&mut m, g, g_str.clone(), m_sinew, bow_pts[0], nock, 1.0);
     span(&mut m, g, g_str, m_sinew, bow_pts[10], nock, 1.0);
     m.add_mesh(g, g_box(0.012, 0.030, 0.012), m_sinew)
         .set_pos_v(nock);

@@ -10,7 +10,7 @@ use super::parts::UnitPart;
 use std::f64::consts::PI;
 
 pub(crate) fn part(p: UnitPart) -> Geo {
-    Geo::Part(p)
+    p.geo()
 }
 pub(crate) fn bx(w: f64, h: f64, d: f64) -> Geo {
     Geo::Prim(Prim::bx(w, h, d))

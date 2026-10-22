@@ -10,7 +10,7 @@
 //!   [`p57`], [`p8a`], [`p8b`] (only the exports reachable from `units.ts`);
 //! - [`units_ts`] — the eight MOD-06 builders of `units.ts`;
 //! - [`geo`] — `OctahedronGeometry` and the hand-built `BufferGeometry`
-//!   bodies ([`geo::BrazGeo`], hooked into the unit-core `Prim::Braz`);
+//!   bodies ([`geo::BrazGeo`], a module body of the one scene type, P4.27);
 //! - [`kit`] — geometry constructors and Three.js helpers shared by the files.
 //!
 //! The unit-core registry ([`crate::models::unit_core::registry::build_base`])

@@ -6,10 +6,11 @@
 //!   (lines 63-82).
 //!
 //! Each variant maps to the exact constructor arguments of the web call
-//! ([`Prim`]); the name is the web function name.
+//! ([`Prim`], or the [`HexRing`] shape body); the name is the web function
+//! name.
 
 use super::consts::*;
-use super::model::Prim;
+use super::model::{Geo, HexRing, Prim};
 use std::f64::consts::PI;
 
 macro_rules! catalogue {
@@ -29,10 +30,16 @@ macro_rules! catalogue {
                 match self { $(Self::$v => concat!($prefix, stringify!($v)),)* }
             }
 
-            /// Constructor arguments of the web geometry.
+            /// The web geometry (constructor arguments as data).
             #[must_use]
-            pub fn prim(self) -> Prim {
-                match self { $(Self::$v => $e,)* }
+            pub fn geo(self) -> Geo {
+                match self { $(Self::$v => Geo::from($e),)* }
+            }
+
+            /// Alias of [`Self::geo`] (the P4.13 name).
+            #[must_use]
+            pub fn prim(self) -> Geo {
+                self.geo()
             }
         }
     };
@@ -48,8 +55,8 @@ const fn cyl(rt: f64, rb: f64, h: f64, radial: u32) -> Prim {
 catalogue!(
     /// The 88 `getGeo*` singletons of `units.ts`.
     UnitPart, "getGeo", {
-    SelectionHexRing => Prim::HexRing { outer: SELECTION_HEX_OUTER, inner: SELECTION_HEX_INNER },
-    OwnerHexRing => Prim::HexRing { outer: OWNER_RING_OUTER, inner: OWNER_RING_INNER },
+    SelectionHexRing => Geo::body(HexRing { outer: SELECTION_HEX_OUTER, inner: SELECTION_HEX_INNER }),
+    OwnerHexRing => Geo::body(HexRing { outer: OWNER_RING_OUTER, inner: OWNER_RING_INNER }),
     AvLeg => bx(AV_LEG_W, AV_LEG_H, AV_LEG_W),
     AvTorso => bx(AV_TORSO_W, AV_TORSO_H, AV_TORSO_D),
     AvArm => bx(AV_ARM_W, AV_ARM_H, AV_ARM_D),

@@ -119,7 +119,7 @@ pub struct ArmIk {
 }
 
 /// Geometries and lengths of an IK arm.
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone)]
 pub struct ArmIkKit {
     /// Upper arm geometry.
     pub up: Geo,
@@ -164,12 +164,12 @@ pub fn arm_ik(
     let pp = pp.normalize();
     let e = c.plus(pp.scale(h));
     let d_u = e.minus(s).normalize();
-    seg_dir(m, g, kit.up, m_up, s, d_u, l1);
+    seg_dir(m, g, kit.up.clone(), m_up, s, d_u, l1);
     let elbow = s.plus(d_u.scale(l1));
     let axis = t.minus(elbow).normalize();
-    let hand = seg_dir(m, g, kit.fore, m_fore, elbow, axis, l2);
+    let hand = seg_dir(m, g, kit.fore.clone(), m_fore, elbow, axis, l2);
     if let Some(mf) = m_fist {
-        let id = m.add_mesh_id(g, kit.fist, mf);
+        let id = m.add_mesh_id(g, kit.fist.clone(), mf);
         orient_y_to(m, id, axis);
         m.node(id).set_pos_v(hand.plus(axis.scale(kit.fist_off)));
     }

@@ -11,7 +11,7 @@
 
 use super::consts::HEX_R;
 use super::jstrig::JsTrig;
-use super::model::{Geo, MatId, NodeId, Prim, UnitModel, ROOT};
+use super::model::{Geo, LeafBlade, MatId, NodeId, Prim, UnitModel, ROOT};
 use crate::geom::Vec3;
 use std::f64::consts::PI;
 
@@ -134,7 +134,7 @@ fn p1_span(m: &mut UnitModel, g: NodeId, geo: Geo, mtl: MatId, a: Vec3, b: Vec3)
     let dir = b.minus(a);
     let len = dir.length();
     let dir = dir.normalize();
-    let height = geo.prim().parameters_height();
+    let height = geo.parameters_height();
     let n = m.add_mesh(g, geo, mtl);
     n.quat_from_unit_vectors(Vec3::new(0.0, 1.0, 0.0), dir);
     n.scale.y = len / height;
@@ -848,7 +848,7 @@ pub fn build_miecznik(owner: u32) -> UnitModel {
         .set_pos_v(arm_r.wrist.plus(ax.scale(0.042 * HEX_R)));
     m.add_mesh(
         g,
-        Geo::Prim(Prim::LeafBlade {
+        Geo::body(LeafBlade {
             len: 0.185 * HEX_R,
             w_max: 0.058 * HEX_R,
         }),

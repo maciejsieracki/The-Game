@@ -15,7 +15,7 @@ const NH_LEG_TOP_F: f64 = 0.196 * HEX_R;
 const NH_LEG_TOP_R: f64 = 0.200 * HEX_R;
 
 fn hp(p: HorsePart) -> Geo {
-    Geo::Horse(p)
+    p.geo()
 }
 
 /// `nhChainSeg` (`kon-nowy-model.ts:94-105`).
@@ -285,17 +285,21 @@ pub fn add_rider_legs(
     let g_shin = Geo::Prim(Prim::bx(0.026 * HEX_R, 0.086 * HEX_R, 0.030 * HEX_R));
     let g_boot = Geo::Prim(Prim::bx(0.030 * HEX_R, 0.022 * HEX_R, 0.054 * HEX_R));
     for s in [-1.0_f64, 1.0] {
-        m.add_mesh(group, g_thigh, m_cloth).rot_x(-1.24).set_pos(
-            s * 0.064 * HEX_R,
-            rider_bot_y + 0.010 * HEX_R,
-            -0.020 * HEX_R,
-        );
-        m.add_mesh(group, g_shin, m_cloth).rot_x(0.10).set_pos(
-            s * 0.076 * HEX_R,
-            rider_bot_y - 0.048 * HEX_R,
-            -0.058 * HEX_R,
-        );
-        m.add_mesh(group, g_boot, m_boot).set_pos(
+        m.add_mesh(group, g_thigh.clone(), m_cloth)
+            .rot_x(-1.24)
+            .set_pos(
+                s * 0.064 * HEX_R,
+                rider_bot_y + 0.010 * HEX_R,
+                -0.020 * HEX_R,
+            );
+        m.add_mesh(group, g_shin.clone(), m_cloth)
+            .rot_x(0.10)
+            .set_pos(
+                s * 0.076 * HEX_R,
+                rider_bot_y - 0.048 * HEX_R,
+                -0.058 * HEX_R,
+            );
+        m.add_mesh(group, g_boot.clone(), m_boot).set_pos(
             s * 0.076 * HEX_R,
             rider_bot_y - 0.094 * HEX_R,
             -0.066 * HEX_R,
@@ -309,13 +313,10 @@ pub fn add_rider_legs(
 #[must_use]
 pub fn build_zloze_konie(hex_r: f64) -> UnitModel {
     let mut m = UnitModel::new();
-    let std = |c: u32| Material {
-        color: c,
-        metalness: 0.05,
-        roughness: 0.85,
-        transparent: false,
-        opacity: 1.0,
-        flat_shading: true,
+    let std = |c: u32| {
+        let mut mt = Material::standard(c, 0.05, 0.85);
+        mt.flat_shading = true;
+        mt
     };
     // { x: 0.80, z: -0.14, rotY: 2.30, body: 0x6b4a2f, mane: 0x2a1c12 }
     let (kx, kz, rot_y, body, mane) = (0.80, -0.14, 2.30, 0x6b_4a2f_u32, 0x2a_1c12_u32);

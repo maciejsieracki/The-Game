@@ -314,7 +314,9 @@ impl Geo {
     #[must_use]
     pub fn body_as<T: 'static>(&self) -> Option<&T> {
         match self {
-            Self::Body(b) => b.as_any().downcast_ref::<T>(),
+            // `(**b)`: dispatch through the trait object; `b.as_any()` would
+            // pick the blanket `DynEq` impl of the `Arc` itself.
+            Self::Body(b) => (**b).as_any().downcast_ref::<T>(),
             _ => None,
         }
     }

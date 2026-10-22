@@ -24,18 +24,18 @@ use std::f64::consts::PI;
 /// `new THREE.RingGeometry(inner, outer, thetaSegments, phiSegments)`.
 #[must_use]
 pub fn ring(inner: f64, outer: f64, theta_seg: u32, phi_seg: u32) -> Geo {
-    Geo::Prim(Prim::Zelazo(ZelazoGeo::Ring {
+    Geo::body(ZelazoGeo::Ring {
         inner,
         outer,
         theta_seg,
         phi_seg,
-    }))
+    })
 }
 
 /// `makeOvalRimGeo(a, b, c, t2, N, idx, k)`.
 #[must_use]
 pub fn oval_rim(a: f64, b: f64, c: f64, t2: f64, n: u32, arc: RimArc, k: f64) -> Geo {
-    Geo::Prim(Prim::Zelazo(ZelazoGeo::OvalRim {
+    Geo::body(ZelazoGeo::OvalRim {
         a,
         b,
         c,
@@ -43,13 +43,13 @@ pub fn oval_rim(a: f64, b: f64, c: f64, t2: f64, n: u32, arc: RimArc, k: f64) ->
         n,
         arc,
         k,
-    }))
+    })
 }
 
 /// `sjMakeLeafHeadGeo(len, wMax, tMax)`.
 #[must_use]
 pub fn javelin_head(len: f64, w_max: f64, t_max: f64) -> Geo {
-    Geo::Prim(Prim::Zelazo(ZelazoGeo::JavelinHead { len, w_max, t_max }))
+    Geo::body(ZelazoGeo::JavelinHead { len, w_max, t_max })
 }
 
 /// `new THREE.TorusGeometry(r, tube, radial, tubular, arc)`.
@@ -202,7 +202,7 @@ pub fn strap_unit(
 }
 
 /// Geometries and lengths of an [`ik_arm`] (`sjArmIK` / `acArmIK`).
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone)]
 pub struct IkArmKit {
     /// Upper arm.
     pub up: Geo,
@@ -260,13 +260,22 @@ pub fn ik_arm(
     let elbow = add_scaled(c, pp, h);
     let d_u = elbow.minus(s).normalize();
     let nm = |part: &str| prefix.map(|p| format!("{p}-{part}"));
-    along_len(m, parent, kit.up, m_arm, s, d_u, l1, nm("uparm").as_deref());
+    along_len(
+        m,
+        parent,
+        kit.up.clone(),
+        m_arm,
+        s,
+        d_u,
+        l1,
+        nm("uparm").as_deref(),
+    );
     let e = add_scaled(s, d_u, l1);
     let axis = t.minus(e).normalize();
     let hand = along_len(
         m,
         parent,
-        kit.fore,
+        kit.fore.clone(),
         m_arm,
         e,
         axis,
@@ -274,7 +283,7 @@ pub fn ik_arm(
         nm("forearm").as_deref(),
     );
     if let Some(mf) = m_fist {
-        let id = m.add_mesh_id(parent, kit.fist, mf);
+        let id = m.add_mesh_id(parent, kit.fist.clone(), mf);
         orient_y_to(m, id, axis);
         m.node(id).set_pos_v(add_scaled(hand, axis, kit.fist_off));
         if let Some(n) = nm("fist") {

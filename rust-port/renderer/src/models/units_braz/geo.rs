@@ -1,8 +1,8 @@
 //! Geometries of the MOD-06 Bronze package that the unit-core [`Prim`]
 //! does not describe: `OctahedronGeometry` and the hand-built
 //! `BufferGeometry` bodies (non-indexed, positions only, then
-//! `computeVertexNormals()`), hooked into the unit-core tree through
-//! `Prim::Braz` (`R-RUSTPORT-P4-23-MOD06-UNITS-BRONZE-Q1`).
+//! `computeVertexNormals()`) (`R-RUSTPORT-P4-23-MOD06-UNITS-BRONZE-Q1`),
+//! module bodies ([`crate::scene::GeoBody`]) of the one scene type since P4.27.
 //!
 //! [`Prim`]: crate::models::unit_core::model::Prim
 
@@ -246,4 +246,15 @@ fn oval_face_positions(a: f64, b: f64, c: f64, n: u32) -> Vec<f64> {
         pos.extend_from_slice(&[0.0, 0.0, 0.0, p[0], p[1], p[2], q[0], q[1], q[2]]);
     }
     pos
+}
+
+/// The Bronze package bodies are module geometries of the one scene type
+/// (P4.27): they replace the former `Prim::Braz` hook.
+impl crate::scene::GeoBody for BrazGeo {
+    fn build(&self) -> geom::Mesh {
+        BrazGeo::build(self)
+    }
+    fn three_type(&self) -> &'static str {
+        BrazGeo::three_type(self)
+    }
 }

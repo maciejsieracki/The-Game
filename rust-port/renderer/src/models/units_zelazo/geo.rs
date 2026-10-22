@@ -1,6 +1,7 @@
 //! Geometries of the MOD-07 Iron package that neither the unit-core
-//! [`Prim`] nor the MOD-06 [`BrazGeo`] describe, hooked into the unit-core
-//! tree through `Prim::Zelazo` (`R-RUSTPORT-P4-26-MOD07-UNITS-IRON-Q1`):
+//! [`Prim`] nor the MOD-06 [`BrazGeo`] describe
+//! (`R-RUSTPORT-P4-26-MOD07-UNITS-IRON-Q1`), module bodies
+//! ([`crate::scene::GeoBody`]) of the one scene type since P4.27:
 //!
 //! - `RingGeometry` (`hastati-falangita.ts:229`, `jednostki-p6-super.ts:269`);
 //! - the iron rim strip of the Hastati scutum (`makeOvalRimGeo`,
@@ -252,4 +253,15 @@ fn javelin_head_positions(len: f64, w_max: f64, t_max: f64) -> Vec<f64> {
         [-b[1], b[0], b[2]],
     );
     pos
+}
+
+/// The Iron package bodies are module geometries of the one scene type
+/// (P4.27): they replace the former `Prim::Zelazo` hook.
+impl crate::scene::GeoBody for ZelazoGeo {
+    fn build(&self) -> geom::Mesh {
+        ZelazoGeo::build(self)
+    }
+    fn three_type(&self) -> &'static str {
+        ZelazoGeo::three_type(self)
+    }
 }

@@ -8,17 +8,20 @@
 #[path = "unit_core_json.rs"]
 mod json;
 
+// P4.27 (R-RUSTPORT-P4-27-SCENE-UNIFY-Q1): forced type adjustments only —
+// `mesh()` / `material()` / `tracked()` are accessors of the one scene type,
+// colours are stored linear (`hex()` = `getHex()`), module bodies are
+// `Geo::Body`; every assertion is unchanged.
 use civ_renderer::geom::Vec3;
 use civ_renderer::models::unit_core::category::{apply_culture_overrides, attach_embark_boat};
 use civ_renderer::models::unit_core::galera::{build_galera, GaleraPoza};
 use civ_renderer::models::unit_core::horse::{add_rider_legs, build_horse, build_zloze_konie};
-use civ_renderer::models::unit_core::model::{geo_hash, Material, ROOT};
+use civ_renderer::models::unit_core::model::{celtic_retint, geo_hash, Material, ROOT};
 use civ_renderer::models::unit_core::parts::{HorsePart, UnitPart};
 use civ_renderer::models::unit_core::{
     build_base, build_category_model, build_model, legacy_route, model_for, p1, Base, Culture,
     NotYetPorted, UnitCategory, UnitModel, UnitTypeId,
 };
-use civ_renderer::terrain::color::Color;
 use json::{fixture, J};
 
 const OWNER_A: u32 = 0x00d0_3030;
@@ -166,8 +169,8 @@ impl Cmp {
 }
 
 fn material_check(c: &mut Cmp, what: &str, m: &Material, w: &J) {
-    c.eq(&format!("{what}.color"), m.color, w.at("color").u());
-    let lin = Color::from_hex(m.color);
+    c.eq(&format!("{what}.color"), m.hex(), w.at("color").u());
+    let lin = m.linear_color();
     c.bits(
         &format!("{what}.lin"),
         &f64_bits(&[lin.r, lin.g, lin.b]),
@@ -204,14 +207,14 @@ fn compare_model(c: &mut Cmp, id: &str, m: &UnitModel, w: &J) {
     let order = m.traverse();
     let nodes = w.at("nodes").arr();
     c.eq(&format!("{id}: node count"), order.len(), nodes.len());
-    let world = m.world_matrices();
+    let world = m.world_matrices(None);
     let pos_of = |n: usize| order.iter().position(|&x| x == n);
     for (k, (&nid, wn)) in order.iter().zip(nodes).enumerate() {
         let n = &m.nodes[nid];
         let tag = format!("{id}#{k}");
         c.eq(
             &format!("{tag}.kind"),
-            if n.mesh.is_some() { "mesh" } else { "group" },
+            if n.mesh().is_some() { "mesh" } else { "group" },
             wn.at("kind").s(),
         );
         c.eq(&format!("{tag}.name"), n.name.as_str(), wn.at("name").s());
@@ -241,7 +244,7 @@ fn compare_model(c: &mut Cmp, id: &str, m: &UnitModel, w: &J) {
             &f64_bits(&world[nid].e),
             &wn.at("w").bits(),
         );
-        if let Some(md) = n.mesh {
+        if let Some(md) = n.mesh() {
             let g = md.geo.build();
             let wg = wn.at("geo");
             c.eq(
@@ -258,20 +261,20 @@ fn compare_model(c: &mut Cmp, id: &str, m: &UnitModel, w: &J) {
             material_check(
                 c,
                 &format!("{tag}.mat"),
-                &m.materials[md.material],
+                &m.materials[md.material()],
                 wn.at("mat"),
             );
             let idx = m
-                .tracked
+                .tracked()
                 .iter()
-                .position(|&t| t == md.material)
+                .position(|&t| t == md.material())
                 .map_or(-1, |p| i64::try_from(p).unwrap());
             c.eq(&format!("{tag}.matIndex"), idx, wn.at("matIndex").i());
         }
     }
     let mats = w.at("mats").arr();
-    c.eq(&format!("{id}: mats count"), m.tracked.len(), mats.len());
-    for (k, (&t, wm)) in m.tracked.iter().zip(mats).enumerate() {
+    c.eq(&format!("{id}: mats count"), m.tracked().len(), mats.len());
+    for (k, (&t, wm)) in m.tracked().iter().zip(mats).enumerate() {
         material_check(c, &format!("{id}.mats[{k}]"), &m.materials[t], wm);
     }
     let [lo, hi]: [Vec3; 2] = m.bbox();
@@ -285,7 +288,7 @@ fn compare_model(c: &mut Cmp, id: &str, m: &UnitModel, w: &J) {
     c.eq(&format!("{id}: tris"), s.tris, w.at("tris").u());
     c.eq(&format!("{id}: sig"), s.sig, w.at("sig").u());
     let retint = w.at("celticRetint");
-    match (m.celtic_retint, retint.is_null()) {
+    match (celtic_retint(m), retint.is_null()) {
         (None, true) => {}
         (Some(r), false) => {
             c.eq(&format!("{id}: retint.iron"), r.iron, retint.at("iron").u());
@@ -423,7 +426,7 @@ fn part_catalogues_match_the_web_singletons() {
         p1::build_miecznik(OWNER_A),
     ] {
         for id in m.meshes() {
-            rust_hashes.insert(geo_hash(&m.nodes[id].mesh.unwrap().geo.build()));
+            rust_hashes.insert(geo_hash(&m.nodes[id].mesh().unwrap().geo.build()));
         }
     }
     let mut p1_keys = 0;

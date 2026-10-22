@@ -15,7 +15,7 @@ use super::consts::*;
 use super::galera::{build_galera, GaleraPoza};
 use super::horse::build_horse;
 use super::jstrig::JsTrig;
-use super::model::{CelticRetint, Geo, Material, NodeId, Prim, UnitModel, ROOT};
+use super::model::{set_celtic_retint, CelticRetint, Geo, Material, NodeId, Prim, UnitModel, ROOT};
 use super::p1;
 use super::parts::UnitPart;
 use super::registry::{Base, NotYetPorted};
@@ -544,7 +544,7 @@ fn cat_konnica(owner: u32) -> UnitModel {
     m.add_mesh(g, bx(0.09 * HEX_R, 0.035 * HEX_R, 0.012 * HEX_R), m_owner)
         .set_pos(0.0, r_torso_ctr, AV_TORSO_D * 0.43 + 0.003 * HEX_R);
     let arm = bx(AV_ARM_W * 0.8, AV_ARM_H * 0.75, AV_ARM_D * 0.8);
-    m.add_mesh(g, arm, m_cloth)
+    m.add_mesh(g, arm.clone(), m_cloth)
         .set_pos(-AV_ARM_OFFSET_X * 0.85, r_arm_ctr, 0.0);
     m.add_mesh(g, arm, m_cloth)
         .set_pos(AV_ARM_OFFSET_X * 0.85, r_arm_ctr, 0.0);
@@ -557,8 +557,11 @@ fn cat_konnica(owner: u32) -> UnitModel {
     let r_eye_z = -(AV_HEAD_S * 0.85 * 0.5 + 0.002 * HEX_R);
     let eye = bx(0.016 * HEX_R, 0.012 * HEX_R, 0.008 * HEX_R);
     let m_eye_l = m.mat(COLOR_DARK_EYE, 0.02, 0.95);
-    m.add_mesh(g, eye, m_eye_l)
-        .set_pos(-0.025 * HEX_R, r_head_ctr + 0.008 * HEX_R, r_eye_z);
+    m.add_mesh(g, eye.clone(), m_eye_l).set_pos(
+        -0.025 * HEX_R,
+        r_head_ctr + 0.008 * HEX_R,
+        r_eye_z,
+    );
     let m_eye_r = m.mat(COLOR_DARK_EYE, 0.02, 0.95);
     m.add_mesh(g, eye, m_eye_r)
         .set_pos(0.025 * HEX_R, r_head_ctr + 0.008 * HEX_R, r_eye_z);
@@ -627,10 +630,10 @@ fn cat_rydwan(owner: u32) -> UnitModel {
 
     let wheel = cyl(wheel_r, wheel_r, 0.022 * HEX_R, 12);
     let rim = Geo::Prim(Prim::cyl_open(wheel_r, wheel_r, 0.028 * HEX_R, 12));
-    m.add_mesh(g, wheel, m_wood)
+    m.add_mesh(g, wheel.clone(), m_wood)
         .rot_z(PI / 2.0)
         .set_pos(0.185 * HEX_R, wheel_y, -0.005 * HEX_R);
-    m.add_mesh(g, rim, m_bronze)
+    m.add_mesh(g, rim.clone(), m_bronze)
         .rot_z(PI / 2.0)
         .set_pos(0.185 * HEX_R, wheel_y, -0.005 * HEX_R);
     m.add_mesh(g, wheel, m_wood)
@@ -641,10 +644,10 @@ fn cat_rydwan(owner: u32) -> UnitModel {
         .set_pos(-0.185 * HEX_R, wheel_y, -0.005 * HEX_R);
     let spoke = bx(0.018 * HEX_R, wheel_r * 2.0 * 0.92, 0.016 * HEX_R);
     for sx in [0.185, -0.185] {
-        m.add_mesh(g, spoke, m_wood)
+        m.add_mesh(g, spoke.clone(), m_wood)
             .rot_z(PI / 2.0)
             .set_pos(sx * HEX_R, wheel_y, -0.005 * HEX_R);
-        m.add_mesh(g, spoke, m_wood)
+        m.add_mesh(g, spoke.clone(), m_wood)
             .rot_z(PI / 2.0)
             .rot_y(PI / 2.0)
             .set_pos(sx * HEX_R, wheel_y, -0.005 * HEX_R);
@@ -656,8 +659,11 @@ fn cat_rydwan(owner: u32) -> UnitModel {
     m.add_mesh(g, bx(0.28 * HEX_R, 0.10 * HEX_R, 0.018 * HEX_R), m_owner)
         .set_pos(0.0, car_floor_y + 0.05 * HEX_R, -0.045 * HEX_R);
     let side = bx(0.018 * HEX_R, 0.08 * HEX_R, 0.22 * HEX_R);
-    m.add_mesh(g, side, m_wood)
-        .set_pos(0.135 * HEX_R, car_floor_y + 0.04 * HEX_R, 0.06 * HEX_R);
+    m.add_mesh(g, side.clone(), m_wood).set_pos(
+        0.135 * HEX_R,
+        car_floor_y + 0.04 * HEX_R,
+        0.06 * HEX_R,
+    );
     m.add_mesh(g, side, m_wood)
         .set_pos(-0.135 * HEX_R, car_floor_y + 0.04 * HEX_R, 0.06 * HEX_R);
     m.add_mesh(g, bx(0.30 * HEX_R, 0.014 * HEX_R, 0.020 * HEX_R), m_bronze)
@@ -698,7 +704,7 @@ fn cat_rydwan(owner: u32) -> UnitModel {
     let dg: NodeId = m.add_group(g);
     m.node(dg).rot_y(PI);
     let leg = bx(AV_LEG_W * drv_scale, drv_leg_h, AV_LEG_W * drv_scale);
-    m.add_mesh(dg, leg, m_dark).set_pos(
+    m.add_mesh(dg, leg.clone(), m_dark).set_pos(
         -(AV_LEG_SEP + AV_LEG_W * drv_scale * 0.5),
         drv_leg_ctr,
         0.03 * HEX_R,
@@ -721,7 +727,7 @@ fn cat_rydwan(owner: u32) -> UnitModel {
         0.03 * HEX_R + drv_trs_d * 0.5 + 0.002 * HEX_R,
     );
     let darm = bx(drv_arm_w, drv_arm_h, drv_arm_d);
-    m.add_mesh(dg, darm, m_cloth)
+    m.add_mesh(dg, darm.clone(), m_cloth)
         .set_pos(-drv_arm_ox, drv_arm_ctr, 0.03 * HEX_R);
     m.add_mesh(dg, darm, m_cloth)
         .set_pos(drv_arm_ox, drv_arm_ctr, 0.03 * HEX_R);
@@ -731,7 +737,7 @@ fn cat_rydwan(owner: u32) -> UnitModel {
     let d_eye_y = drv_head_ctr + 0.008 * HEX_R;
     let eye = bx(0.016 * HEX_R, 0.012 * HEX_R, 0.008 * HEX_R);
     let m_eye_l = m.mat(COLOR_DARK_EYE, 0.02, 0.95);
-    m.add_mesh(dg, eye, m_eye_l)
+    m.add_mesh(dg, eye.clone(), m_eye_l)
         .set_pos(-0.025 * HEX_R, d_eye_y, 0.03 * HEX_R + d_eye_z);
     let m_eye_r = m.mat(COLOR_DARK_EYE, 0.02, 0.95);
     m.add_mesh(dg, eye, m_eye_r)
@@ -960,14 +966,14 @@ pub fn decorate_chariot(m: &mut UnitModel, accent: u32, shield_color: u32, celti
         let iron = m.retint(COLOR_BRONZE, COLOR_MAIL);
         let tunic = m.retint(COLOR_LACQUER, COLOR_WOAD);
         let crest = m.retint(COLOR_RED_VIV, COLOR_TROUSERS);
-        m.celtic_retint = Some(CelticRetint { iron, tunic, crest });
+        set_celtic_retint(m, CelticRetint { iron, tunic, crest });
 
         let m_face = m.mat(shield_color, 0.10, 0.72);
         let m_rim = m.mat(COLOR_LEATHER, 0.06, 0.84);
         let m_wood_c = m.mat(COLOR_CHARIOT, 0.05, 0.82);
         let m_boss_c = m.mat(accent, 0.30, 0.50);
         let (sh_x, sh_y, sh_z) = (0.078 * HEX_R, 0.185 * HEX_R, 0.0695 * HEX_R);
-        m.add_mesh(sub, oval, m_rim)
+        m.add_mesh(sub, oval.clone(), m_rim)
             .rot_x(PI / 2.0)
             .set_scale(0.80, 0.80, 1.20)
             .set_pos(sh_x, sh_y, sh_z - 0.002 * HEX_R)
@@ -1001,7 +1007,7 @@ pub fn decorate_chariot(m: &mut UnitModel, accent: u32, shield_color: u32, celti
             } else {
                 "rc-hoop-right"
             };
-            m.add_mesh(sub, hoop, m_wood_c)
+            m.add_mesh(sub, hoop.clone(), m_wood_c)
                 .rot_y(PI / 2.0)
                 .set_pos(s * 0.135 * HEX_R, 0.1905 * HEX_R, -0.035 * HEX_R)
                 .set_name(name);
@@ -1117,7 +1123,7 @@ pub fn attach_embark_boat(m: &mut UnitModel) {
     }
     let mk_mat = |m: &mut UnitModel, color: u32| {
         let id = m.untracked_mat(Material::standard(color, 0.05, 0.85));
-        m.tracked.push(id);
+        m.track(id);
         id
     };
     let mk_box = |w: f64, h: f64, d: f64| bx(w * HEX_R, h * HEX_R, d * HEX_R);

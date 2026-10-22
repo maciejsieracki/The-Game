@@ -229,3 +229,19 @@ fn nguni_face(a: f64, b: f64, c: f64, n: u32) -> Mesh {
     }
     finish(&pos)
 }
+
+/// The Stone package bodies are module geometries of the one scene type
+/// (P4.27): they replace the former `Prim::Kamien` hook.
+impl crate::scene::GeoBody for KamienGeo {
+    fn build(&self) -> Mesh {
+        KamienGeo::build(self)
+    }
+    fn three_type(&self) -> &'static str {
+        match self {
+            Self::Taper { .. } | Self::NguniShell { .. } | Self::NguniFace { .. } => {
+                "BufferGeometry"
+            }
+            Self::Circle { .. } => "CircleGeometry",
+        }
+    }
+}

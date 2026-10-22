@@ -10,7 +10,7 @@
 //! - [`lucznicy`] — Łucznik egipski, Łucznik sumeryjski;
 //! - [`zulu_taran`] — Oszczepnik Zulu (Izijula), Taran;
 //! - [`geo`] — the hand-built `BufferGeometry` bodies and `CircleGeometry`
-//!   ([`geo::KamienGeo`], hooked into the unit-core `Prim::Kamien`);
+//!   ([`geo::KamienGeo`], a module body of the one scene type, P4.27);
 //! - [`kit`] — shared chain kinematics / IK and the Three.js operations the
 //!   unit-core tree lacks (`rotateOnAxis`, `Euler.setFromQuaternion`,
 //!   V8 `Math.asin`).

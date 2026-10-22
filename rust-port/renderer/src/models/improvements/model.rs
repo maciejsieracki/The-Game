@@ -287,14 +287,9 @@ impl ImprovementModel {
 
     /// `new THREE.MeshLambertMaterial({ color, flatShading })`.
     pub fn lambert_mat(&mut self, color: u32, flat_shading: bool) -> MatId {
-        let id = self.tree.untracked_mat(Material {
-            color,
-            metalness: 0.0,
-            roughness: 1.0,
-            transparent: false,
-            opacity: 1.0,
-            flat_shading,
-        });
+        let mut mt = Material::lambert(color);
+        mt.flat_shading = flat_shading;
+        let id = self.tree.untracked_mat(mt);
         self.mat_ext.push(MatExt {
             kind: MatKind::Lambert,
             emissive: [0.0; 3],
@@ -318,14 +313,10 @@ impl ImprovementModel {
         roughness: f64,
         emissive: [f64; 3],
     ) -> MatId {
-        let id = self.tree.untracked_mat(Material {
-            color,
-            metalness,
-            roughness,
-            transparent: false,
-            opacity: 1.0,
-            flat_shading,
-        });
+        let mut mt = Material::standard(color, metalness, roughness);
+        mt.flat_shading = flat_shading;
+        mt.emissive = crate::terrain::color::Color::rgb(emissive[0], emissive[1], emissive[2]);
+        let id = self.tree.untracked_mat(mt);
         self.mat_ext.push(MatExt {
             kind: MatKind::Standard,
             emissive,
@@ -424,8 +415,10 @@ impl ImprovementModel {
             let mut c = n.clone();
             c.parent = n.parent.map(map);
             c.children = n.children.iter().map(|&k| map(k)).collect();
-            if let Some(md) = c.mesh.as_mut() {
-                md.material += mat_base;
+            if let Some(md) = c.mesh_mut() {
+                for s in &mut md.materials {
+                    *s += mat_base;
+                }
             }
             debug_assert_eq!(self.tree.nodes.len(), map(old));
             self.tree.nodes.push(c);
@@ -439,7 +432,7 @@ impl ImprovementModel {
     /// The CPU geometry of a mesh node.
     #[must_use]
     pub fn geometry(&self, id: NodeId) -> Option<geom::Mesh> {
-        let md = self.tree.nodes[id].mesh?;
+        let md = self.tree.nodes[id].mesh()?;
         Some(match self.node_ext[id].extra {
             Some(x) => x.build(),
             None => md.geo.build(),

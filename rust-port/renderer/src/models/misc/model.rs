@@ -17,7 +17,7 @@
 
 use crate::geom::{self, Mat4, Vec3};
 use crate::models::unit_core::model::{
-    geo_hash, Fnv, Geo, MatId, Material, MeshData, Node, NodeId, Prim, UnitModel, ROOT,
+    geo_hash, Fnv, Geo, MatId, Material, Node, NodeId, Prim, UnitModel, ROOT,
 };
 use crate::pick::three::{js_max, js_min};
 use crate::terrain::color::Color;
@@ -150,14 +150,17 @@ impl MiscMaterial {
     }
 
     fn mirror(&self) -> Material {
-        Material {
-            color: self.color,
-            metalness: 0.0,
-            roughness: 1.0,
-            transparent: self.transparent,
-            opacity: self.opacity,
-            flat_shading: self.flat_shading,
-        }
+        let kind = match self.kind {
+            MatKind::Lambert => crate::scene::MaterialKind::Lambert,
+            MatKind::Basic => crate::scene::MaterialKind::Basic,
+            MatKind::Sprite => crate::scene::MaterialKind::Sprite,
+            MatKind::LineBasic => crate::scene::MaterialKind::LineBasic,
+        };
+        let mut m = Material::new(kind, Some(self.color));
+        m.transparent = self.transparent;
+        m.opacity = self.opacity;
+        m.flat_shading = self.flat_shading;
+        m
     }
 }
 
@@ -352,7 +355,7 @@ impl MiscModel {
     /// Kind of node `id`.
     #[must_use]
     pub fn kind(&self, id: NodeId) -> NodeKind {
-        if self.tree.nodes[id].mesh.is_some() || self.info[id].custom.is_some() {
+        if self.tree.nodes[id].mesh().is_some() || self.info[id].custom.is_some() {
             NodeKind::Mesh
         } else if self.info[id].sprite.is_some() {
             NodeKind::Sprite
@@ -364,8 +367,11 @@ impl MiscModel {
     /// Geometry and material of mesh node `id`.
     #[must_use]
     pub fn mesh_of(&self, id: NodeId) -> Option<(MiscGeo, MatId)> {
-        match self.tree.nodes[id].mesh {
-            Some(MeshData { geo, material }) => Some((MiscGeo::Prim(geo.prim()), material)),
+        match self.tree.nodes[id].mesh() {
+            Some(md) => Some((
+                MiscGeo::Prim(md.geo.prim().expect("misc tree meshes are primitives")),
+                md.material(),
+            )),
             None => self.info[id].custom,
         }
     }
@@ -397,7 +403,7 @@ impl MiscModel {
     /// `updateMatrixWorld(true)`.
     #[must_use]
     pub fn world_matrices(&self) -> Vec<Mat4> {
-        self.tree.world_matrices()
+        self.tree.world_matrices(None)
     }
 
     /// World bounding box `[min, max]` over every mesh vertex.

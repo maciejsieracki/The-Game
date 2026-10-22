@@ -99,31 +99,31 @@ pub fn ico(r: f64, detail: u32) -> Geo {
 /// `new THREE.OctahedronGeometry(r, detail)`.
 #[must_use]
 pub fn octa(r: f64, detail: u32) -> Geo {
-    Geo::Prim(Prim::Braz(BrazGeo::Octahedron { r, detail }))
+    Geo::body(BrazGeo::Octahedron { r, detail })
 }
 
 /// Section-lofted blade (`knMakeLeafHeadGeo` / `wbMakeLeafHeadGeo` /
 /// `makeRapierBladeGeo`).
 #[must_use]
 pub fn blade(profile: BladeProfile, len: f64, w_max: f64, t_max: f64) -> Geo {
-    Geo::Prim(Prim::Braz(BrazGeo::Blade {
+    Geo::body(BrazGeo::Blade {
         profile,
         len,
         w_max,
         t_max,
-    }))
+    })
 }
 
 /// Faceted oval shield shell (`xxOvalShell` / `xxMakeShell`).
 #[must_use]
 pub fn oval_shell(a: f64, b: f64, c: f64, t: f64, n: u32) -> Geo {
-    Geo::Prim(Prim::Braz(BrazGeo::OvalShell { a, b, c, t, n }))
+    Geo::body(BrazGeo::OvalShell { a, b, c, t, n })
 }
 
 /// Faceted oval shield face (`xxOvalFace` / `xxMakeFace`).
 #[must_use]
 pub fn oval_face(a: f64, b: f64, c: f64, n: u32) -> Geo {
-    Geo::Prim(Prim::Braz(BrazGeo::OvalFace { a, b, c, n }))
+    Geo::body(BrazGeo::OvalFace { a, b, c, n })
 }
 
 /// `new THREE.Vector3(x, y, z)`.

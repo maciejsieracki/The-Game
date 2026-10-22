@@ -423,7 +423,7 @@ pub fn build_konnica_braz_opus5(owner: u32) -> UnitModel {
         np = kn_seg_up(
             &mut m,
             root,
-            neck_geo[i],
+            neck_geo[i].clone(),
             m_coat,
             np,
             neck_phi[i],

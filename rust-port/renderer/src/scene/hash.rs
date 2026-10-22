@@ -5,6 +5,9 @@
 
 use crate::geom::Mesh;
 
+use super::graph::Scene;
+use super::node::NodeKind;
+
 /// FNV-1a 32-bit over little-endian bytes.
 #[derive(Debug, Clone, Copy)]
 pub struct Fnv(u32);
@@ -81,4 +84,62 @@ pub fn geo_hash(m: &Mesh) -> u32 {
         f.u32(g.material_index);
     }
     f.finish()
+}
+
+/// Model signature (`signature` of `tests/fixtures/unit_core/gen.ts`).
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct Signature {
+    /// Number of meshes.
+    pub meshes: u32,
+    /// Number of triangles.
+    pub tris: u32,
+    /// FNV-1a over (geometry hash, material, world matrix) of every mesh.
+    pub sig: u32,
+}
+
+/// The parity signature of the unit-core generator (`signature` in
+/// `tests/fixtures/unit_core/gen.ts`): mesh count, triangle count and a hash
+/// of every mesh's geometry, material parameters (`color.getHex()`,
+/// `metalness`, `roughness`, `transparent`, `opacity`, `flatShading`) and
+/// world matrix, in traverse order.
+#[must_use]
+pub fn signature(m: &Scene) -> Signature {
+    let world = m.world_matrices(None);
+    let mut f = Fnv::default();
+    let mut meshes = 0u32;
+    let mut tris = 0u32;
+    for id in m.meshes() {
+        let NodeKind::Mesh(md) = &m.nodes[id].kind else {
+            continue;
+        };
+        let g = md.geo.mesh();
+        meshes += 1;
+        tris += len_u32(g.triangle_count());
+        f.u32(geo_hash(&g));
+        let mt = &m.materials[md.material()];
+        f.u32(mt.hex());
+        f.f64(mt.metalness);
+        f.f64(mt.roughness);
+        f.byte(u8::from(mt.transparent));
+        f.f64(mt.opacity);
+        f.byte(u8::from(mt.flat_shading));
+        for e in world[id].e {
+            f.f64(e);
+        }
+    }
+    f.u32(meshes);
+    Signature {
+        meshes,
+        tris,
+        sig: f.finish(),
+    }
+}
+
+impl Scene {
+    /// [`signature`] (`model.signature()`, the call shape of the parity
+    /// tests).
+    #[must_use]
+    pub fn signature(&self) -> Signature {
+        signature(self)
+    }
 }

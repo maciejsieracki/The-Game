@@ -10,17 +10,24 @@
 #[path = "unit_core_json.rs"]
 mod json;
 
+// P4.27 (R-RUSTPORT-P4-27-SCENE-UNIFY-Q1): forced type adjustments only —
+// `mesh()` / `material()` / `tracked()` are accessors of the one scene type,
+// colours are stored linear (`hex()` = `getHex()`), module bodies are
+// `Geo::Body`; every assertion is unchanged.
 use civ_renderer::geom::Vec3;
-use civ_renderer::models::unit_core::model::{geo_hash, Material, Prim};
+use civ_renderer::models::unit_core::model::{
+    celtic_retint, geo_hash, Geo, HexRing, LeafBlade, Material, Prim,
+};
 use civ_renderer::models::unit_core::registry::{pending, Package};
 use civ_renderer::models::unit_core::{
     build_base, build_category_model, build_model, legacy_route, model_for, Base, UnitCategory,
     UnitModel, UnitTypeId,
 };
+use civ_renderer::models::units_braz::geo::BrazGeo;
 use civ_renderer::models::units_kamien;
 use civ_renderer::models::units_kamien::geo::KamienGeo;
 use civ_renderer::models::units_kamien::kit::js_asin;
-use civ_renderer::terrain::color::Color;
+use civ_renderer::models::units_zelazo::geo::ZelazoGeo;
 use json::{parse, J};
 
 const OWNER_A: u32 = 0x00d0_3030;
@@ -96,29 +103,42 @@ fn rust_case(fx: &J, id: &str) -> UnitModel {
     panic!("no Rust mapping for fixture case {id}");
 }
 
-/// `geometry.type` of the Three class the web builder allocates for `prim`
-/// (exhaustive: a new `Prim` variant must be mapped here).
-fn three_type(prim: &Prim) -> &'static str {
-    match prim {
-        Prim::Box { .. } => "BoxGeometry",
-        Prim::Cylinder { .. } => "CylinderGeometry",
-        Prim::Cone { .. } => "ConeGeometry",
-        Prim::Sphere { .. } => "SphereGeometry",
-        Prim::Torus { .. } => "TorusGeometry",
-        Prim::Icosahedron { .. } => "IcosahedronGeometry",
-        Prim::HexRing { .. } => "ShapeGeometry",
-        Prim::LeafBlade { .. } => "BufferGeometry",
-        Prim::Kamien(k) => match k {
-            KamienGeo::Taper { .. }
-            | KamienGeo::NguniShell { .. }
-            | KamienGeo::NguniFace { .. } => "BufferGeometry",
-            KamienGeo::Circle { .. } => "CircleGeometry",
+/// `geometry.type` of the Three class the web builder allocates for `geo`
+/// (exhaustive over the parametric primitives; module bodies by type).
+/// P4.27: `Prim::HexRing/LeafBlade/Kamien/Braz/Zelazo` became module bodies
+/// (`Geo::Body`) — forced type adjustment, same mapping.
+fn three_type(geo: &Geo) -> &'static str {
+    match geo {
+        Geo::Prim(p) => match p {
+            Prim::Box { .. } => "BoxGeometry",
+            Prim::Cylinder { .. } => "CylinderGeometry",
+            Prim::Cone { .. } => "ConeGeometry",
+            Prim::Sphere { .. } => "SphereGeometry",
+            Prim::Torus { .. } => "TorusGeometry",
+            Prim::Icosahedron { .. } => "IcosahedronGeometry",
+            other => panic!("primitive not produced by unit builders: {other:?}"),
         },
-        // MOD-06 geometries (R-RUSTPORT-P4-23-MOD06-UNITS-BRONZE-Q1); never
-        // produced by a MOD-05 builder, mapped for exhaustiveness only.
-        Prim::Braz(b) => b.three_type(),
-        // forced by the new `Prim::Zelazo` variant (R-RUSTPORT-P4-26-MOD07-UNITS-IRON-Q1)
-        Prim::Zelazo(z) => z.three_type(),
+        Geo::Body(_) => {
+            if geo.body_as::<HexRing>().is_some() {
+                "ShapeGeometry"
+            } else if geo.body_as::<LeafBlade>().is_some() {
+                "BufferGeometry"
+            } else if let Some(k) = geo.body_as::<KamienGeo>() {
+                match k {
+                    KamienGeo::Taper { .. }
+                    | KamienGeo::NguniShell { .. }
+                    | KamienGeo::NguniFace { .. } => "BufferGeometry",
+                    KamienGeo::Circle { .. } => "CircleGeometry",
+                }
+            } else if let Some(b) = geo.body_as::<BrazGeo>() {
+                b.three_type()
+            } else if let Some(z) = geo.body_as::<ZelazoGeo>() {
+                z.three_type()
+            } else {
+                panic!("unknown module body {geo:?}")
+            }
+        }
+        Geo::Buffer(_) => panic!("unit builders allocate no shared buffers"),
     }
 }
 
@@ -158,8 +178,8 @@ impl Cmp {
 }
 
 fn material_check(c: &mut Cmp, what: &str, m: &Material, w: &J) {
-    c.eq(&format!("{what}.color"), m.color, w.at("color").u());
-    let lin = Color::from_hex(m.color);
+    c.eq(&format!("{what}.color"), m.hex(), w.at("color").u());
+    let lin = m.linear_color();
     c.bits(
         &format!("{what}.lin"),
         &f64_bits(&[lin.r, lin.g, lin.b]),
@@ -196,14 +216,14 @@ fn compare_model(c: &mut Cmp, id: &str, m: &UnitModel, w: &J) {
     let order = m.traverse();
     let nodes = w.at("nodes").arr();
     c.eq(&format!("{id}: node count"), order.len(), nodes.len());
-    let world = m.world_matrices();
+    let world = m.world_matrices(None);
     let pos_of = |n: usize| order.iter().position(|&x| x == n);
     for (k, (&nid, wn)) in order.iter().zip(nodes).enumerate() {
         let n = &m.nodes[nid];
         let tag = format!("{id}#{k}");
         c.eq(
             &format!("{tag}.kind"),
-            if n.mesh.is_some() { "mesh" } else { "group" },
+            if n.mesh().is_some() { "mesh" } else { "group" },
             wn.at("kind").s(),
         );
         c.eq(&format!("{tag}.name"), n.name.as_str(), wn.at("name").s());
@@ -233,7 +253,7 @@ fn compare_model(c: &mut Cmp, id: &str, m: &UnitModel, w: &J) {
             &f64_bits(&world[nid].e),
             &wn.at("w").bits(),
         );
-        if let Some(md) = n.mesh {
+        if let Some(md) = n.mesh() {
             let g = md.geo.build();
             let wg = wn.at("geo");
             c.eq(
@@ -249,26 +269,26 @@ fn compare_model(c: &mut Cmp, id: &str, m: &UnitModel, w: &J) {
             c.eq(&format!("{tag}.geo.hash"), geo_hash(&g), wg.at("hash").u());
             c.eq(
                 &format!("{tag}.geo.type"),
-                three_type(&md.geo.prim()),
+                three_type(&md.geo),
                 wg.at("type").s(),
             );
             material_check(
                 c,
                 &format!("{tag}.mat"),
-                &m.materials[md.material],
+                &m.materials[md.material()],
                 wn.at("mat"),
             );
             let idx = m
-                .tracked
+                .tracked()
                 .iter()
-                .position(|&t| t == md.material)
+                .position(|&t| t == md.material())
                 .map_or(-1, |p| i64::try_from(p).unwrap());
             c.eq(&format!("{tag}.matIndex"), idx, wn.at("matIndex").i());
         }
     }
     let mats = w.at("mats").arr();
-    c.eq(&format!("{id}: mats count"), m.tracked.len(), mats.len());
-    for (k, (&t, wm)) in m.tracked.iter().zip(mats).enumerate() {
+    c.eq(&format!("{id}: mats count"), m.tracked().len(), mats.len());
+    for (k, (&t, wm)) in m.tracked().iter().zip(mats).enumerate() {
         material_check(c, &format!("{id}.mats[{k}]"), &m.materials[t], wm);
     }
     let [lo, hi]: [Vec3; 2] = m.bbox();
@@ -283,7 +303,7 @@ fn compare_model(c: &mut Cmp, id: &str, m: &UnitModel, w: &J) {
     c.eq(&format!("{id}: sig"), s.sig, w.at("sig").u());
     c.eq(
         &format!("{id}: celticRetint"),
-        m.celtic_retint.is_none(),
+        celtic_retint(m).is_none(),
         w.at("celticRetint").is_null(),
     );
     // every geometry of the package is a module singleton: perTokenGeos = []
@@ -362,7 +382,7 @@ fn the_ten_records_cover_every_mod05_builder_and_counts_match_the_web() {
             s.tris,
             m.meshes()
                 .iter()
-                .map(|&n| m.nodes[n].mesh.unwrap().geo.build().vertex_count())
+                .map(|&n| m.nodes[n].mesh().unwrap().geo.build().vertex_count())
                 .sum::<usize>(),
             w.at("meshes").u(),
             w.at("tris").u()
