@@ -31,6 +31,8 @@ dotykające tych samych plików — zawsze sekwencyjnie, nigdy w tej samej fali.
 | 8 | `R-RUSTPORT-P6-M15-DROGI-RUCH-REGULY-Q1` | mapgen M15 drogi — reguły ruchu — Operator Sonnet | 1/5 | `wf_c44b7468-d53` | DISPATCHED | 2026-10-22 |
 | 9 | `R-RUSTPORT-P6-M17-SNAPSHOT-MAPY-Q1` | mapgen M17 snapshot mapy — Operator Sonnet | 1/5 | `wf_77971ea5-0ed` | DISPATCHED | 2026-10-22 |
 | 10 | `R-RUSTPORT-P6-M16-ULEPSZENIA-BUDOWA-REGULY-Q1` | mapgen M16 budowa ulepszeń — Operator Sonnet | 1/5 | `wf_53c8e07a-dff` | DISPATCHED | 2026-10-22 |
+| 5 | `R-RUSTPORT-P6-M10-KLASTRY-MASY-BRAMKI-Q1` | mapgen M10 klastry — masy i bramki (L) — Operator Sonnet | 1/5 | `wf_244cf44a-330` | DISPATCHED | 2026-10-22 |
+| 6 | `R-RUSTPORT-P6-5B-JEDNOSTKI-ZYCIE-B-Q1` | P6.5B `manpower`, `unit-building-bonuses` — Operator Sonnet | 1/5 | `wf_e07c9cb9-1c9` | DISPATCHED | 2026-10-22 |
 
 
 Kolejka (aktualizacja 2026-10-22): P3.23 FLATTEN etap 3 (po P3.21 — te same pliki domeny: macierz counter 35g, struktury, wzrost 35b, mapa 35j–k, społeczeństwo 35n, wioski 35c, ruch 35i, produkcja 19–22b), MOD-07 jednostki żelaza, ujednolicenie typu drzewa sceny, P5.3+ kolejne poziomy `PORTING-QUEUE.md`, pierwotna kolejka: MOD-06/07 (jednostki brązu/żelaza, po P4.19), MOD-09 miasta, MOD-13 misc, ujednolicenie typu drzewa sceny (3 typy: `core::scene`, `wonders::model`, `unit_core::model`) po paczkach, P3.21 `CityId` po P3.22, P5.2+ kolejka portowania paneli (`PORTING-QUEUE.md`), RR-T1 spike (wymaga GPU właściciela).
