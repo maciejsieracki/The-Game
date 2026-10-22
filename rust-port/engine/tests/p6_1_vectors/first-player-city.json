@@ -1,0 +1,1474 @@
+{
+ "pin": "edb8fb56",
+ "generator": "gen-p61-first-city-vectors.mjs (r3)",
+ "sourceFile": "gra/src/game/first-player-city.ts",
+ "constants": {
+  "FIRST_CITY_START_REVEAL_DENIED": "poza oświetlonym obszarem startu"
+ },
+ "awaiting": [
+  {
+   "everOwned": false,
+   "owners": [],
+   "awaiting": true
+  },
+  {
+   "everOwned": true,
+   "owners": [],
+   "awaiting": false
+  },
+  {
+   "everOwned": false,
+   "owners": [
+    0
+   ],
+   "awaiting": false
+  },
+  {
+   "everOwned": true,
+   "owners": [
+    0
+   ],
+   "awaiting": false
+  },
+  {
+   "everOwned": false,
+   "owners": [
+    1
+   ],
+   "awaiting": true
+  },
+  {
+   "everOwned": true,
+   "owners": [
+    1
+   ],
+   "awaiting": false
+  },
+  {
+   "everOwned": false,
+   "owners": [
+    2,
+    3
+   ],
+   "awaiting": true
+  },
+  {
+   "everOwned": true,
+   "owners": [
+    2,
+    3
+   ],
+   "awaiting": false
+  },
+  {
+   "everOwned": false,
+   "owners": [
+    -1,
+    -99
+   ],
+   "awaiting": true
+  },
+  {
+   "everOwned": true,
+   "owners": [
+    -1,
+    -99
+   ],
+   "awaiting": false
+  },
+  {
+   "everOwned": false,
+   "owners": [
+    1,
+    0
+   ],
+   "awaiting": false
+  },
+  {
+   "everOwned": true,
+   "owners": [
+    1,
+    0
+   ],
+   "awaiting": false
+  },
+  {
+   "everOwned": false,
+   "owners": [
+    0,
+    0
+   ],
+   "awaiting": false
+  },
+  {
+   "everOwned": true,
+   "owners": [
+    0,
+    0
+   ],
+   "awaiting": false
+  }
+ ],
+ "awaitingWithOwnerOne": [
+  {
+   "everOwned": false,
+   "owners": [],
+   "playerOwnerId": 1,
+   "awaiting": true
+  },
+  {
+   "everOwned": true,
+   "owners": [],
+   "playerOwnerId": 1,
+   "awaiting": false
+  },
+  {
+   "everOwned": false,
+   "owners": [
+    0
+   ],
+   "playerOwnerId": 1,
+   "awaiting": true
+  },
+  {
+   "everOwned": true,
+   "owners": [
+    0
+   ],
+   "playerOwnerId": 1,
+   "awaiting": false
+  },
+  {
+   "everOwned": false,
+   "owners": [
+    1
+   ],
+   "playerOwnerId": 1,
+   "awaiting": false
+  },
+  {
+   "everOwned": true,
+   "owners": [
+    1
+   ],
+   "playerOwnerId": 1,
+   "awaiting": false
+  },
+  {
+   "everOwned": false,
+   "owners": [
+    2,
+    3
+   ],
+   "playerOwnerId": 1,
+   "awaiting": true
+  },
+  {
+   "everOwned": true,
+   "owners": [
+    2,
+    3
+   ],
+   "playerOwnerId": 1,
+   "awaiting": false
+  },
+  {
+   "everOwned": false,
+   "owners": [
+    -1,
+    -99
+   ],
+   "playerOwnerId": 1,
+   "awaiting": true
+  },
+  {
+   "everOwned": true,
+   "owners": [
+    -1,
+    -99
+   ],
+   "playerOwnerId": 1,
+   "awaiting": false
+  },
+  {
+   "everOwned": false,
+   "owners": [
+    1,
+    0
+   ],
+   "playerOwnerId": 1,
+   "awaiting": false
+  },
+  {
+   "everOwned": true,
+   "owners": [
+    1,
+    0
+   ],
+   "playerOwnerId": 1,
+   "awaiting": false
+  },
+  {
+   "everOwned": false,
+   "owners": [
+    0,
+    0
+   ],
+   "playerOwnerId": 1,
+   "awaiting": true
+  },
+  {
+   "everOwned": true,
+   "owners": [
+    0,
+    0
+   ],
+   "playerOwnerId": 1,
+   "awaiting": false
+  }
+ ],
+ "reveal": [
+  {
+   "q": 0,
+   "r": 0,
+   "awaiting": false,
+   "start": null,
+   "radius": 0,
+   "inReveal": true
+  },
+  {
+   "q": 1,
+   "r": 0,
+   "awaiting": false,
+   "start": null,
+   "radius": 0,
+   "inReveal": true
+  },
+  {
+   "q": 3,
+   "r": -2,
+   "awaiting": false,
+   "start": null,
+   "radius": 0,
+   "inReveal": true
+  },
+  {
+   "q": -3,
+   "r": 0,
+   "awaiting": false,
+   "start": null,
+   "radius": 0,
+   "inReveal": true
+  },
+  {
+   "q": 2,
+   "r": -5,
+   "awaiting": false,
+   "start": null,
+   "radius": 0,
+   "inReveal": true
+  },
+  {
+   "q": 4,
+   "r": -1,
+   "awaiting": false,
+   "start": null,
+   "radius": 0,
+   "inReveal": true
+  },
+  {
+   "q": 0,
+   "r": 0,
+   "awaiting": false,
+   "start": null,
+   "radius": 1,
+   "inReveal": true
+  },
+  {
+   "q": 1,
+   "r": 0,
+   "awaiting": false,
+   "start": null,
+   "radius": 1,
+   "inReveal": true
+  },
+  {
+   "q": 3,
+   "r": -2,
+   "awaiting": false,
+   "start": null,
+   "radius": 1,
+   "inReveal": true
+  },
+  {
+   "q": -3,
+   "r": 0,
+   "awaiting": false,
+   "start": null,
+   "radius": 1,
+   "inReveal": true
+  },
+  {
+   "q": 2,
+   "r": -5,
+   "awaiting": false,
+   "start": null,
+   "radius": 1,
+   "inReveal": true
+  },
+  {
+   "q": 4,
+   "r": -1,
+   "awaiting": false,
+   "start": null,
+   "radius": 1,
+   "inReveal": true
+  },
+  {
+   "q": 0,
+   "r": 0,
+   "awaiting": false,
+   "start": null,
+   "radius": 3,
+   "inReveal": true
+  },
+  {
+   "q": 1,
+   "r": 0,
+   "awaiting": false,
+   "start": null,
+   "radius": 3,
+   "inReveal": true
+  },
+  {
+   "q": 3,
+   "r": -2,
+   "awaiting": false,
+   "start": null,
+   "radius": 3,
+   "inReveal": true
+  },
+  {
+   "q": -3,
+   "r": 0,
+   "awaiting": false,
+   "start": null,
+   "radius": 3,
+   "inReveal": true
+  },
+  {
+   "q": 2,
+   "r": -5,
+   "awaiting": false,
+   "start": null,
+   "radius": 3,
+   "inReveal": true
+  },
+  {
+   "q": 4,
+   "r": -1,
+   "awaiting": false,
+   "start": null,
+   "radius": 3,
+   "inReveal": true
+  },
+  {
+   "q": 0,
+   "r": 0,
+   "awaiting": false,
+   "start": {
+    "q": 0,
+    "r": 0
+   },
+   "radius": 0,
+   "inReveal": true
+  },
+  {
+   "q": 1,
+   "r": 0,
+   "awaiting": false,
+   "start": {
+    "q": 0,
+    "r": 0
+   },
+   "radius": 0,
+   "inReveal": true
+  },
+  {
+   "q": 3,
+   "r": -2,
+   "awaiting": false,
+   "start": {
+    "q": 0,
+    "r": 0
+   },
+   "radius": 0,
+   "inReveal": true
+  },
+  {
+   "q": -3,
+   "r": 0,
+   "awaiting": false,
+   "start": {
+    "q": 0,
+    "r": 0
+   },
+   "radius": 0,
+   "inReveal": true
+  },
+  {
+   "q": 2,
+   "r": -5,
+   "awaiting": false,
+   "start": {
+    "q": 0,
+    "r": 0
+   },
+   "radius": 0,
+   "inReveal": true
+  },
+  {
+   "q": 4,
+   "r": -1,
+   "awaiting": false,
+   "start": {
+    "q": 0,
+    "r": 0
+   },
+   "radius": 0,
+   "inReveal": true
+  },
+  {
+   "q": 0,
+   "r": 0,
+   "awaiting": false,
+   "start": {
+    "q": 0,
+    "r": 0
+   },
+   "radius": 1,
+   "inReveal": true
+  },
+  {
+   "q": 1,
+   "r": 0,
+   "awaiting": false,
+   "start": {
+    "q": 0,
+    "r": 0
+   },
+   "radius": 1,
+   "inReveal": true
+  },
+  {
+   "q": 3,
+   "r": -2,
+   "awaiting": false,
+   "start": {
+    "q": 0,
+    "r": 0
+   },
+   "radius": 1,
+   "inReveal": true
+  },
+  {
+   "q": -3,
+   "r": 0,
+   "awaiting": false,
+   "start": {
+    "q": 0,
+    "r": 0
+   },
+   "radius": 1,
+   "inReveal": true
+  },
+  {
+   "q": 2,
+   "r": -5,
+   "awaiting": false,
+   "start": {
+    "q": 0,
+    "r": 0
+   },
+   "radius": 1,
+   "inReveal": true
+  },
+  {
+   "q": 4,
+   "r": -1,
+   "awaiting": false,
+   "start": {
+    "q": 0,
+    "r": 0
+   },
+   "radius": 1,
+   "inReveal": true
+  },
+  {
+   "q": 0,
+   "r": 0,
+   "awaiting": false,
+   "start": {
+    "q": 0,
+    "r": 0
+   },
+   "radius": 3,
+   "inReveal": true
+  },
+  {
+   "q": 1,
+   "r": 0,
+   "awaiting": false,
+   "start": {
+    "q": 0,
+    "r": 0
+   },
+   "radius": 3,
+   "inReveal": true
+  },
+  {
+   "q": 3,
+   "r": -2,
+   "awaiting": false,
+   "start": {
+    "q": 0,
+    "r": 0
+   },
+   "radius": 3,
+   "inReveal": true
+  },
+  {
+   "q": -3,
+   "r": 0,
+   "awaiting": false,
+   "start": {
+    "q": 0,
+    "r": 0
+   },
+   "radius": 3,
+   "inReveal": true
+  },
+  {
+   "q": 2,
+   "r": -5,
+   "awaiting": false,
+   "start": {
+    "q": 0,
+    "r": 0
+   },
+   "radius": 3,
+   "inReveal": true
+  },
+  {
+   "q": 4,
+   "r": -1,
+   "awaiting": false,
+   "start": {
+    "q": 0,
+    "r": 0
+   },
+   "radius": 3,
+   "inReveal": true
+  },
+  {
+   "q": 0,
+   "r": 0,
+   "awaiting": false,
+   "start": {
+    "q": 3,
+    "r": -2
+   },
+   "radius": 0,
+   "inReveal": true
+  },
+  {
+   "q": 1,
+   "r": 0,
+   "awaiting": false,
+   "start": {
+    "q": 3,
+    "r": -2
+   },
+   "radius": 0,
+   "inReveal": true
+  },
+  {
+   "q": 3,
+   "r": -2,
+   "awaiting": false,
+   "start": {
+    "q": 3,
+    "r": -2
+   },
+   "radius": 0,
+   "inReveal": true
+  },
+  {
+   "q": -3,
+   "r": 0,
+   "awaiting": false,
+   "start": {
+    "q": 3,
+    "r": -2
+   },
+   "radius": 0,
+   "inReveal": true
+  },
+  {
+   "q": 2,
+   "r": -5,
+   "awaiting": false,
+   "start": {
+    "q": 3,
+    "r": -2
+   },
+   "radius": 0,
+   "inReveal": true
+  },
+  {
+   "q": 4,
+   "r": -1,
+   "awaiting": false,
+   "start": {
+    "q": 3,
+    "r": -2
+   },
+   "radius": 0,
+   "inReveal": true
+  },
+  {
+   "q": 0,
+   "r": 0,
+   "awaiting": false,
+   "start": {
+    "q": 3,
+    "r": -2
+   },
+   "radius": 1,
+   "inReveal": true
+  },
+  {
+   "q": 1,
+   "r": 0,
+   "awaiting": false,
+   "start": {
+    "q": 3,
+    "r": -2
+   },
+   "radius": 1,
+   "inReveal": true
+  },
+  {
+   "q": 3,
+   "r": -2,
+   "awaiting": false,
+   "start": {
+    "q": 3,
+    "r": -2
+   },
+   "radius": 1,
+   "inReveal": true
+  },
+  {
+   "q": -3,
+   "r": 0,
+   "awaiting": false,
+   "start": {
+    "q": 3,
+    "r": -2
+   },
+   "radius": 1,
+   "inReveal": true
+  },
+  {
+   "q": 2,
+   "r": -5,
+   "awaiting": false,
+   "start": {
+    "q": 3,
+    "r": -2
+   },
+   "radius": 1,
+   "inReveal": true
+  },
+  {
+   "q": 4,
+   "r": -1,
+   "awaiting": false,
+   "start": {
+    "q": 3,
+    "r": -2
+   },
+   "radius": 1,
+   "inReveal": true
+  },
+  {
+   "q": 0,
+   "r": 0,
+   "awaiting": false,
+   "start": {
+    "q": 3,
+    "r": -2
+   },
+   "radius": 3,
+   "inReveal": true
+  },
+  {
+   "q": 1,
+   "r": 0,
+   "awaiting": false,
+   "start": {
+    "q": 3,
+    "r": -2
+   },
+   "radius": 3,
+   "inReveal": true
+  },
+  {
+   "q": 3,
+   "r": -2,
+   "awaiting": false,
+   "start": {
+    "q": 3,
+    "r": -2
+   },
+   "radius": 3,
+   "inReveal": true
+  },
+  {
+   "q": -3,
+   "r": 0,
+   "awaiting": false,
+   "start": {
+    "q": 3,
+    "r": -2
+   },
+   "radius": 3,
+   "inReveal": true
+  },
+  {
+   "q": 2,
+   "r": -5,
+   "awaiting": false,
+   "start": {
+    "q": 3,
+    "r": -2
+   },
+   "radius": 3,
+   "inReveal": true
+  },
+  {
+   "q": 4,
+   "r": -1,
+   "awaiting": false,
+   "start": {
+    "q": 3,
+    "r": -2
+   },
+   "radius": 3,
+   "inReveal": true
+  },
+  {
+   "q": 0,
+   "r": 0,
+   "awaiting": true,
+   "start": null,
+   "radius": 0,
+   "inReveal": true
+  },
+  {
+   "q": 1,
+   "r": 0,
+   "awaiting": true,
+   "start": null,
+   "radius": 0,
+   "inReveal": true
+  },
+  {
+   "q": 3,
+   "r": -2,
+   "awaiting": true,
+   "start": null,
+   "radius": 0,
+   "inReveal": true
+  },
+  {
+   "q": -3,
+   "r": 0,
+   "awaiting": true,
+   "start": null,
+   "radius": 0,
+   "inReveal": true
+  },
+  {
+   "q": 2,
+   "r": -5,
+   "awaiting": true,
+   "start": null,
+   "radius": 0,
+   "inReveal": true
+  },
+  {
+   "q": 4,
+   "r": -1,
+   "awaiting": true,
+   "start": null,
+   "radius": 0,
+   "inReveal": true
+  },
+  {
+   "q": 0,
+   "r": 0,
+   "awaiting": true,
+   "start": null,
+   "radius": 1,
+   "inReveal": true
+  },
+  {
+   "q": 1,
+   "r": 0,
+   "awaiting": true,
+   "start": null,
+   "radius": 1,
+   "inReveal": true
+  },
+  {
+   "q": 3,
+   "r": -2,
+   "awaiting": true,
+   "start": null,
+   "radius": 1,
+   "inReveal": true
+  },
+  {
+   "q": -3,
+   "r": 0,
+   "awaiting": true,
+   "start": null,
+   "radius": 1,
+   "inReveal": true
+  },
+  {
+   "q": 2,
+   "r": -5,
+   "awaiting": true,
+   "start": null,
+   "radius": 1,
+   "inReveal": true
+  },
+  {
+   "q": 4,
+   "r": -1,
+   "awaiting": true,
+   "start": null,
+   "radius": 1,
+   "inReveal": true
+  },
+  {
+   "q": 0,
+   "r": 0,
+   "awaiting": true,
+   "start": null,
+   "radius": 3,
+   "inReveal": true
+  },
+  {
+   "q": 1,
+   "r": 0,
+   "awaiting": true,
+   "start": null,
+   "radius": 3,
+   "inReveal": true
+  },
+  {
+   "q": 3,
+   "r": -2,
+   "awaiting": true,
+   "start": null,
+   "radius": 3,
+   "inReveal": true
+  },
+  {
+   "q": -3,
+   "r": 0,
+   "awaiting": true,
+   "start": null,
+   "radius": 3,
+   "inReveal": true
+  },
+  {
+   "q": 2,
+   "r": -5,
+   "awaiting": true,
+   "start": null,
+   "radius": 3,
+   "inReveal": true
+  },
+  {
+   "q": 4,
+   "r": -1,
+   "awaiting": true,
+   "start": null,
+   "radius": 3,
+   "inReveal": true
+  },
+  {
+   "q": 0,
+   "r": 0,
+   "awaiting": true,
+   "start": {
+    "q": 0,
+    "r": 0
+   },
+   "radius": 0,
+   "inReveal": true
+  },
+  {
+   "q": 1,
+   "r": 0,
+   "awaiting": true,
+   "start": {
+    "q": 0,
+    "r": 0
+   },
+   "radius": 0,
+   "inReveal": false
+  },
+  {
+   "q": 3,
+   "r": -2,
+   "awaiting": true,
+   "start": {
+    "q": 0,
+    "r": 0
+   },
+   "radius": 0,
+   "inReveal": false
+  },
+  {
+   "q": -3,
+   "r": 0,
+   "awaiting": true,
+   "start": {
+    "q": 0,
+    "r": 0
+   },
+   "radius": 0,
+   "inReveal": false
+  },
+  {
+   "q": 2,
+   "r": -5,
+   "awaiting": true,
+   "start": {
+    "q": 0,
+    "r": 0
+   },
+   "radius": 0,
+   "inReveal": false
+  },
+  {
+   "q": 4,
+   "r": -1,
+   "awaiting": true,
+   "start": {
+    "q": 0,
+    "r": 0
+   },
+   "radius": 0,
+   "inReveal": false
+  },
+  {
+   "q": 0,
+   "r": 0,
+   "awaiting": true,
+   "start": {
+    "q": 0,
+    "r": 0
+   },
+   "radius": 1,
+   "inReveal": true
+  },
+  {
+   "q": 1,
+   "r": 0,
+   "awaiting": true,
+   "start": {
+    "q": 0,
+    "r": 0
+   },
+   "radius": 1,
+   "inReveal": true
+  },
+  {
+   "q": 3,
+   "r": -2,
+   "awaiting": true,
+   "start": {
+    "q": 0,
+    "r": 0
+   },
+   "radius": 1,
+   "inReveal": false
+  },
+  {
+   "q": -3,
+   "r": 0,
+   "awaiting": true,
+   "start": {
+    "q": 0,
+    "r": 0
+   },
+   "radius": 1,
+   "inReveal": false
+  },
+  {
+   "q": 2,
+   "r": -5,
+   "awaiting": true,
+   "start": {
+    "q": 0,
+    "r": 0
+   },
+   "radius": 1,
+   "inReveal": false
+  },
+  {
+   "q": 4,
+   "r": -1,
+   "awaiting": true,
+   "start": {
+    "q": 0,
+    "r": 0
+   },
+   "radius": 1,
+   "inReveal": false
+  },
+  {
+   "q": 0,
+   "r": 0,
+   "awaiting": true,
+   "start": {
+    "q": 0,
+    "r": 0
+   },
+   "radius": 3,
+   "inReveal": true
+  },
+  {
+   "q": 1,
+   "r": 0,
+   "awaiting": true,
+   "start": {
+    "q": 0,
+    "r": 0
+   },
+   "radius": 3,
+   "inReveal": true
+  },
+  {
+   "q": 3,
+   "r": -2,
+   "awaiting": true,
+   "start": {
+    "q": 0,
+    "r": 0
+   },
+   "radius": 3,
+   "inReveal": true
+  },
+  {
+   "q": -3,
+   "r": 0,
+   "awaiting": true,
+   "start": {
+    "q": 0,
+    "r": 0
+   },
+   "radius": 3,
+   "inReveal": true
+  },
+  {
+   "q": 2,
+   "r": -5,
+   "awaiting": true,
+   "start": {
+    "q": 0,
+    "r": 0
+   },
+   "radius": 3,
+   "inReveal": false
+  },
+  {
+   "q": 4,
+   "r": -1,
+   "awaiting": true,
+   "start": {
+    "q": 0,
+    "r": 0
+   },
+   "radius": 3,
+   "inReveal": false
+  },
+  {
+   "q": 0,
+   "r": 0,
+   "awaiting": true,
+   "start": {
+    "q": 3,
+    "r": -2
+   },
+   "radius": 0,
+   "inReveal": false
+  },
+  {
+   "q": 1,
+   "r": 0,
+   "awaiting": true,
+   "start": {
+    "q": 3,
+    "r": -2
+   },
+   "radius": 0,
+   "inReveal": false
+  },
+  {
+   "q": 3,
+   "r": -2,
+   "awaiting": true,
+   "start": {
+    "q": 3,
+    "r": -2
+   },
+   "radius": 0,
+   "inReveal": true
+  },
+  {
+   "q": -3,
+   "r": 0,
+   "awaiting": true,
+   "start": {
+    "q": 3,
+    "r": -2
+   },
+   "radius": 0,
+   "inReveal": false
+  },
+  {
+   "q": 2,
+   "r": -5,
+   "awaiting": true,
+   "start": {
+    "q": 3,
+    "r": -2
+   },
+   "radius": 0,
+   "inReveal": false
+  },
+  {
+   "q": 4,
+   "r": -1,
+   "awaiting": true,
+   "start": {
+    "q": 3,
+    "r": -2
+   },
+   "radius": 0,
+   "inReveal": false
+  },
+  {
+   "q": 0,
+   "r": 0,
+   "awaiting": true,
+   "start": {
+    "q": 3,
+    "r": -2
+   },
+   "radius": 1,
+   "inReveal": false
+  },
+  {
+   "q": 1,
+   "r": 0,
+   "awaiting": true,
+   "start": {
+    "q": 3,
+    "r": -2
+   },
+   "radius": 1,
+   "inReveal": false
+  },
+  {
+   "q": 3,
+   "r": -2,
+   "awaiting": true,
+   "start": {
+    "q": 3,
+    "r": -2
+   },
+   "radius": 1,
+   "inReveal": true
+  },
+  {
+   "q": -3,
+   "r": 0,
+   "awaiting": true,
+   "start": {
+    "q": 3,
+    "r": -2
+   },
+   "radius": 1,
+   "inReveal": false
+  },
+  {
+   "q": 2,
+   "r": -5,
+   "awaiting": true,
+   "start": {
+    "q": 3,
+    "r": -2
+   },
+   "radius": 1,
+   "inReveal": false
+  },
+  {
+   "q": 4,
+   "r": -1,
+   "awaiting": true,
+   "start": {
+    "q": 3,
+    "r": -2
+   },
+   "radius": 1,
+   "inReveal": false
+  },
+  {
+   "q": 0,
+   "r": 0,
+   "awaiting": true,
+   "start": {
+    "q": 3,
+    "r": -2
+   },
+   "radius": 3,
+   "inReveal": true
+  },
+  {
+   "q": 1,
+   "r": 0,
+   "awaiting": true,
+   "start": {
+    "q": 3,
+    "r": -2
+   },
+   "radius": 3,
+   "inReveal": true
+  },
+  {
+   "q": 3,
+   "r": -2,
+   "awaiting": true,
+   "start": {
+    "q": 3,
+    "r": -2
+   },
+   "radius": 3,
+   "inReveal": true
+  },
+  {
+   "q": -3,
+   "r": 0,
+   "awaiting": true,
+   "start": {
+    "q": 3,
+    "r": -2
+   },
+   "radius": 3,
+   "inReveal": false
+  },
+  {
+   "q": 2,
+   "r": -5,
+   "awaiting": true,
+   "start": {
+    "q": 3,
+    "r": -2
+   },
+   "radius": 3,
+   "inReveal": false
+  },
+  {
+   "q": 4,
+   "r": -1,
+   "awaiting": true,
+   "start": {
+    "q": 3,
+    "r": -2
+   },
+   "radius": 3,
+   "inReveal": true
+  }
+ ],
+ "validate": [
+  {
+   "baseOk": true,
+   "awaiting": false,
+   "inStartReveal": false,
+   "baseReason": "",
+   "result": {
+    "ok": true,
+    "reason": ""
+   }
+  },
+  {
+   "baseOk": true,
+   "awaiting": false,
+   "inStartReveal": false,
+   "baseReason": "zajęte",
+   "result": {
+    "ok": true,
+    "reason": ""
+   }
+  },
+  {
+   "baseOk": true,
+   "awaiting": false,
+   "inStartReveal": true,
+   "baseReason": "",
+   "result": {
+    "ok": true,
+    "reason": ""
+   }
+  },
+  {
+   "baseOk": true,
+   "awaiting": false,
+   "inStartReveal": true,
+   "baseReason": "zajęte",
+   "result": {
+    "ok": true,
+    "reason": ""
+   }
+  },
+  {
+   "baseOk": true,
+   "awaiting": true,
+   "inStartReveal": false,
+   "baseReason": "",
+   "result": {
+    "ok": false,
+    "reason": "poza oświetlonym obszarem startu"
+   }
+  },
+  {
+   "baseOk": true,
+   "awaiting": true,
+   "inStartReveal": false,
+   "baseReason": "zajęte",
+   "result": {
+    "ok": false,
+    "reason": "poza oświetlonym obszarem startu"
+   }
+  },
+  {
+   "baseOk": true,
+   "awaiting": true,
+   "inStartReveal": true,
+   "baseReason": "",
+   "result": {
+    "ok": true,
+    "reason": ""
+   }
+  },
+  {
+   "baseOk": true,
+   "awaiting": true,
+   "inStartReveal": true,
+   "baseReason": "zajęte",
+   "result": {
+    "ok": true,
+    "reason": ""
+   }
+  },
+  {
+   "baseOk": false,
+   "awaiting": false,
+   "inStartReveal": false,
+   "baseReason": "",
+   "result": {
+    "ok": false,
+    "reason": ""
+   }
+  },
+  {
+   "baseOk": false,
+   "awaiting": false,
+   "inStartReveal": false,
+   "baseReason": "zajęte",
+   "result": {
+    "ok": false,
+    "reason": "zajęte"
+   }
+  },
+  {
+   "baseOk": false,
+   "awaiting": false,
+   "inStartReveal": true,
+   "baseReason": "",
+   "result": {
+    "ok": false,
+    "reason": ""
+   }
+  },
+  {
+   "baseOk": false,
+   "awaiting": false,
+   "inStartReveal": true,
+   "baseReason": "zajęte",
+   "result": {
+    "ok": false,
+    "reason": "zajęte"
+   }
+  },
+  {
+   "baseOk": false,
+   "awaiting": true,
+   "inStartReveal": false,
+   "baseReason": "",
+   "result": {
+    "ok": false,
+    "reason": ""
+   }
+  },
+  {
+   "baseOk": false,
+   "awaiting": true,
+   "inStartReveal": false,
+   "baseReason": "zajęte",
+   "result": {
+    "ok": false,
+    "reason": "zajęte"
+   }
+  },
+  {
+   "baseOk": false,
+   "awaiting": true,
+   "inStartReveal": true,
+   "baseReason": "",
+   "result": {
+    "ok": false,
+    "reason": ""
+   }
+  },
+  {
+   "baseOk": false,
+   "awaiting": true,
+   "inStartReveal": true,
+   "baseReason": "zajęte",
+   "result": {
+    "ok": false,
+    "reason": "zajęte"
+   }
+  }
+ ]
+}

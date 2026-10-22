@@ -1,5 +1,6 @@
 use serde::{Deserialize, Serialize};
 
+use super::hex::HexCoord;
 use super::{EngineError, OwnerRef, PlayerId};
 
 /// Fotel gracza ludzkiego w single-player (web `HUMAN_OWNER_PRIMARY`, human-owners.ts:21).
@@ -74,6 +75,57 @@ impl HumanSeats {
     pub fn is_hot_seat(&self) -> bool {
         self.human_owners.len() > 1
     }
+}
+
+/// Komunikat odmowy założenia pierwszego miasta poza kręgiem startu (web
+/// `FIRST_CITY_START_REVEAL_DENIED`, first-player-city.ts:9).
+pub const FIRST_CITY_START_REVEAL_DENIED: &str = "poza oświetlonym obszarem startu";
+
+/// Web `isAwaitingFirstPlayerCity` (first-player-city.ts:16): gracz nigdy nie posiadał miasta
+/// i żadne z podanych miast nie należy do `player`. Web domyślnie `playerOwnerId = 0`
+/// (`HUMAN_OWNER_PRIMARY`); tu właściciel jest jawny.
+pub fn is_awaiting_first_player_city(
+    player_ever_owned_city: bool,
+    city_owners: impl IntoIterator<Item = OwnerRef>,
+    player: PlayerId,
+) -> bool {
+    let owner = OwnerRef::Player(player);
+    !player_ever_owned_city
+        && !city_owners
+            .into_iter()
+            .any(|city_owner| city_owner == owner)
+}
+
+/// Web `isHexInStartReveal` (first-player-city.ts:24). Bez oczekiwania na pierwsze miasto
+/// albo bez heksu startu każdy heks jest widoczny. `hex.distance` odpowiada webowemu
+/// `hexDistance` (units/setup.ts:354), czyli max(|dq|, |dr|, |ds|).
+pub fn is_hex_in_start_reveal(
+    hex: HexCoord,
+    awaiting_first_city: bool,
+    player_start_hex: Option<HexCoord>,
+    start_reveal_radius: u32,
+) -> bool {
+    match player_start_hex {
+        Some(start) if awaiting_first_city => hex.distance(start) <= start_reveal_radius,
+        _ => true,
+    }
+}
+
+/// Web `validateFirstPlayerCityPlacement` (first-player-city.ts:37). Zwraca `Ok(())` dla
+/// `ok: true` (web: `reason: ''`), w pozostałych przypadkach `Err` z powodem.
+pub fn validate_first_player_city_placement(
+    awaiting_first_city: bool,
+    in_start_reveal: bool,
+    base_ok: bool,
+    base_reason: &str,
+) -> Result<(), String> {
+    if !base_ok {
+        return Err(base_reason.to_owned());
+    }
+    if awaiting_first_city && !in_start_reveal {
+        return Err(FIRST_CITY_START_REVEAL_DENIED.to_owned());
+    }
+    Ok(())
 }
 
 /// A player identity kept independent from future map and economy systems.
