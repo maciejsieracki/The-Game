@@ -1,0 +1,11 @@
+edb8fb56:gra/src/main.ts:152:import { HEX_R, axialToWorld, worldToAxial } from './render/hexutil';
+edb8fb56:gra/src/main.ts:763:import { getMinimapData, computeViewport } from './map/minimap';
+edb8fb56:gra/src/main.ts:14451:     *  Reużywa computeViewport() (map/minimap.ts — ta sama ramka co widok na
+edb8fb56:gra/src/main.ts:14456:      const vp = computeViewport(map, cameraGroundTarget());
+edb8fb56:gra/src/main.ts:26795:        const { q: gq, r: gr } = worldToAxial(gx, gz, HEX_R);
+edb8fb56:gra/src/map/minimap.ts:9:import { worldToAxial, HEX_R } from '../render/hexutil';
+edb8fb56:gra/src/map/minimap.ts:128:export function computeViewport(
+edb8fb56:gra/src/map/minimap.ts:138:  const tl = worldToAxial(camera.targetX - halfW, camera.targetZ - halfH, HEX_R);
+edb8fb56:gra/src/map/minimap.ts:139:  const br = worldToAxial(camera.targetX + halfW, camera.targetZ + halfH, HEX_R);
+edb8fb56:gra/src/map/minimap.ts:241:  const viewport = camera ? computeViewport(map, camera) : undefined;
+EXIT=0

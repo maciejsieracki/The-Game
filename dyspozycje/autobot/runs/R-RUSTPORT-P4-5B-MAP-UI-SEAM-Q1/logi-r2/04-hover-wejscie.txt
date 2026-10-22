@@ -1,0 +1,16 @@
+edb8fb56:gra/src/main.ts:1894:    function pickMapTarget(clientX: number, clientY: number): { q: number; r: number } | null {
+edb8fb56:gra/src/main.ts:13085:    canvas.addEventListener('mouseleave', () => {
+edb8fb56:gra/src/main.ts:25280:    function refreshHoverPathPreview(uSel: RuntimeUnit, hitQ: number, hitR: number): void {
+edb8fb56:gra/src/main.ts:26204:    canvas.addEventListener('mousedown', (e: MouseEvent) => {
+edb8fb56:gra/src/main.ts:26209:    canvas.addEventListener('contextmenu', (e: MouseEvent) => {
+edb8fb56:gra/src/main.ts:26230:    canvas.addEventListener('mousemove', (e: MouseEvent) => {
+edb8fb56:gra/src/main.ts:26235:        const vetUid = unitRenderer.pickVeteranBadgeUnitIdAt(e.clientX, e.clientY, canvas, camera);
+edb8fb56:gra/src/main.ts:26253:        const chipCityId = cityRenderer.pickStatChipCityIdAt(e.clientX, e.clientY, canvas, camera);
+edb8fb56:gra/src/main.ts:26271:      const hitEarly = pickMapTarget(e.clientX, e.clientY);
+edb8fb56:gra/src/main.ts:26325:      refreshHoverPathPreview(uSel, hitEarly.q, hitEarly.r);
+edb8fb56:gra/src/main.ts:26328:    canvas.addEventListener('mouseleave', () => {
+edb8fb56:gra/src/main.ts:26337:    canvas.addEventListener('mouseup', (e: MouseEvent) => {
+edb8fb56:gra/src/main.ts:26369:      const hit = pickMapTarget(e.clientX, e.clientY);
+edb8fb56:gra/src/main.ts:26714:    canvas.addEventListener('dblclick', (e: MouseEvent) => {
+edb8fb56:gra/src/render/camera.ts:226:    this.canvas.addEventListener('mousedown',   this._onMouseDown);
+EXIT=0
