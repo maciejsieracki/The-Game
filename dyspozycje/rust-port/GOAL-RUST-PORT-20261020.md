@@ -231,4 +231,4 @@ w żywym Chromium — wymagają innego trybu pracy niż czysty katalog odczytowy
 - Integracja wyłącznie allowlist-only, scoped diff od merge-base.
 - `READY_FOR_DEPLOY`/push/deploy tylko po osobnej, jawnej zgodzie właściciela — nie dotyczy zwykłych commitów dokumentacji/postępu tego projektu na gałęzi roboczej.
 
-Tematy webowe (poza pulą portu, priorytet właściciela): `R-WEB-TURN-SLOWDOWN-Q2` (spowolnienie od tury ~72; `wf_9ec3a81d-275`, Opus 5.5) i `R-WEB-REKRUTACJA-PANEL-UX-Q1` (analiza + 3 makiety czytelnego panelu rekrutacji; `wf_6d6101fc-d30`, Opus 5.5; po akceptacji wariantu przez właściciela — osobny dispatch implementacyjny).
+Tematy webowe (poza pulą portu, priorytet właściciela): `R-WEB-TURN-SLOWDOWN-Q2` (spowolnienie od tury ~72; `wf_9ec3a81d-275`, Opus 5.5). `R-WEB-REKRUTACJA-PANEL-UX-Q1` — analiza ZAMKNIĘTA (PASS-WITH-NOTES), czeka na wybór wariantu A/B/C przez właściciela (ABC), potem dispatch implementacyjny.
