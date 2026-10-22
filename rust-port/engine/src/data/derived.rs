@@ -1784,3 +1784,57 @@ pub fn ruch_jednostek_params() -> &'static RuchJednostekParamsFile {
         parse_ruch_jednostek_params().expect("ruch-jednostek-params.json must parse")
     })
 }
+
+// ---------------------------------------------------------------------------
+// P6.M09 (R-RUSTPORT-P6-M09-KLASTRY-RYWALE-MIN-Q1): stale wycinka rywali klastra.
+// Czytane przez `domain/mapgen/cluster_rivals.rs`. Wartosci balansowe sa EDYTOWALNE
+// w `data/derived/mapgen-cluster-rivals.json`; kod nie zawiera ich literalow.
+// ---------------------------------------------------------------------------
+
+pub const MAPGEN_CLUSTER_RIVALS_JSON: &str =
+    include_str!("../../data/derived/mapgen-cluster-rivals.json");
+
+/// Parametry pakowania puli ladu wokol rdzenia (`clusterPackRadius`, `landPoolNearCore`).
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct ClusterPackingParams {
+    pub min_pierscieni: StartValue<i64>,
+    pub wspolczynnik_pierscieni: StartValue<f64>,
+    pub min_promien_w_odstepach: StartValue<i64>,
+    pub rozszerzenie_max_krokow_w_odstepach: StartValue<i64>,
+    pub pula_max_mnoznik: StartValue<i64>,
+    pub rozszerzony_promien_mnoznik: StartValue<i64>,
+}
+
+/// Parametry polplaszczyzny rywali tego samego typu.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct ClusterHalfPlaneParams {
+    pub margines: StartValue<f64>,
+    pub prog_dlugosci_kw: StartValue<f64>,
+}
+
+/// Plik `mapgen-cluster-rivals.json`.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct MapgenClusterRivalsFile {
+    pub meta: serde_json::Value,
+    pub promien_miasta_panstwa_min_hex: StartValue<i64>,
+    pub promien_miasta_panstwa_max_hex: StartValue<i64>,
+    pub min_dystans_obce_od_gracza: StartValue<i64>,
+    pub rezerwa_wzrostu_klastra: StartValue<i64>,
+    pub pakowanie: ClusterPackingParams,
+    pub polplaszczyzna: ClusterHalfPlaneParams,
+}
+
+pub fn parse_mapgen_cluster_rivals() -> Result<MapgenClusterRivalsFile, serde_json::Error> {
+    serde_json::from_str(MAPGEN_CLUSTER_RIVALS_JSON)
+}
+
+/// Tabela stalych wycinka rywali klastra (jednorazowy odczyt; blad danych = panika z komunikatem).
+pub fn mapgen_cluster_rivals() -> &'static MapgenClusterRivalsFile {
+    static TABLE: std::sync::OnceLock<MapgenClusterRivalsFile> = std::sync::OnceLock::new();
+    TABLE.get_or_init(|| {
+        parse_mapgen_cluster_rivals().expect("mapgen-cluster-rivals.json must parse")
+    })
+}

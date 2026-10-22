@@ -1,0 +1,72 @@
+{
+  "meta": {
+    "status": "BOOTSTRAP P6.M09: wartosci startowe przepisane z weba. Zrodlem prawdy do recznego balansu jest TA tabela (edytuj liczby, nie kod).",
+    "pin_web": "edb8fb56",
+    "temat": "R-RUSTPORT-P6-M09-KLASTRY-RYWALE-MIN-Q1",
+    "uwaga": "Stale ALGORYTMICZNE (maski xor ziarna, przesuniecia ziaren ponowien) NIE sa tutaj: to tozsamosc generatora, nie balans; sa nazwanymi const w domain/mapgen/cluster_rivals.rs z odnosnikiem plik:linia weba. MIN_DIST_START_CITY_STATE (clusters.ts:49) i MIN_DIST_FOREIGN_IN_CLUSTER (clusters.ts:56) w webie sa ALIASAMI CLUSTER_CITY_STATE_MIN_HEX (:42) - w Rust to metody tego samego pola, nie osobne liczby. Uwaga: to INNA stala niz min_dystans_miast_start_miasto_panstwo (=3) w start-cluster-params.json."
+  },
+  "promien_miasta_panstwa_min_hex": {
+    "wartosc": 5,
+    "zrodlo_web": "gra/src/map/clusters.ts:42 (CLUSTER_CITY_STATE_MIN_HEX); aliasy :49 MIN_DIST_START_CITY_STATE i :56 MIN_DIST_FOREIGN_IN_CLUSTER",
+    "uzycie": "min odleglosc miedzy dowolnymi dwoma miastami-panstwami w klastrze (packCityStates*, buildSameTypeRival*)"
+  },
+  "promien_miasta_panstwa_max_hex": {
+    "wartosc": 5,
+    "zrodlo_web": "gra/src/map/clusters.ts:47 (CLUSTER_CITY_STATE_MAX_HEX)",
+    "uzycie": "domyslny pierscien lancucha hubow w packCityStatesAroundCapital (clusters.ts:2088)"
+  },
+  "min_dystans_obce_od_gracza": {
+    "wartosc": 12,
+    "zrodlo_web": "gra/src/map/clusters.ts:54 (MIN_DIST_FOREIGN_FROM_PLAYER)",
+    "uzycie": "NIE uzywana w wycinku rywali (poza domknieciem AST); port stalej z zakresu linii :38-58, uzytkownik: M10-M12"
+  },
+  "rezerwa_wzrostu_klastra": {
+    "wartosc": 1,
+    "zrodlo_web": "gra/src/map/clusters.ts:58 (CLUSTER_GROWTH_RESERVE)",
+    "uzycie": "domyslna rezerwa pustego slotu na kolejne miasto w packCityStatesAroundCapital (clusters.ts:2056)"
+  },
+  "pakowanie": {
+    "min_pierscieni": {
+      "wartosc": 2,
+      "zrodlo_web": "gra/src/map/clusters.ts:1348 (Math.max(2, ...))",
+      "uzycie": "clusterPackRadius: dolna granica liczby pierscieni"
+    },
+    "wspolczynnik_pierscieni": {
+      "wartosc": 1.35,
+      "zrodlo_web": "gra/src/map/clusters.ts:1348 (Math.sqrt(...) * 1.35)",
+      "uzycie": "clusterPackRadius: pierscienie = ceil(sqrt(max(1, maxMiast)) * wspolczynnik)"
+    },
+    "min_promien_w_odstepach": {
+      "wartosc": 2,
+      "zrodlo_web": "gra/src/map/clusters.ts:1349 (Math.max(minDist * 2, ...))",
+      "uzycie": "clusterPackRadius: promien >= minDist * wartosc"
+    },
+    "rozszerzenie_max_krokow_w_odstepach": {
+      "wartosc": 6,
+      "zrodlo_web": "gra/src/map/clusters.ts:1791 (packR + minDist * 6)",
+      "uzycie": "landPoolNearCore: gorna granica rozszerzania promienia puli (legacy / obce typy)"
+    },
+    "pula_max_mnoznik": {
+      "wartosc": 3,
+      "zrodlo_web": "gra/src/map/clusters.ts:1795 (maxMiast * 3)",
+      "uzycie": "landPoolNearCore: limit rozmiaru puli przy rozszerzaniu = maxMiast * wartosc"
+    },
+    "rozszerzony_promien_mnoznik": {
+      "wartosc": 2,
+      "zrodlo_web": "gra/src/map/clusters.ts:2065 (clusterPackRadius(...) * 2)",
+      "uzycie": "packCityStatesAroundCapital: drugi, rozszerzony promien puli"
+    }
+  },
+  "polplaszczyzna": {
+    "margines": {
+      "wartosc": -0.01,
+      "zrodlo_web": "gra/src/map/clusters.ts:1899 (margin = -0.01)",
+      "uzycie": "isInSameTypeRivalHalfPlane: domyslny margines iloczynu skalarnego"
+    },
+    "prog_dlugosci_kw": {
+      "wartosc": 0.25,
+      "zrodlo_web": "gra/src/map/clusters.ts:1887 (lenSq < 0.25)",
+      "uzycie": "computeSameTypeRivalHalfPlaneAxis: ponizej progu (stolica w centrum) os wynika z ziarna"
+    }
+  }
+}
