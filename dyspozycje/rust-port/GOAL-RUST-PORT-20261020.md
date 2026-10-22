@@ -27,7 +27,7 @@ dotykające tych samych plików — zawsze sekwencyjnie, nigdy w tej samej fali.
 
 | # | Temat | Faza | Runda | runId Workflow | Status | Ostatnia aktualizacja |
 |---|---|---|---|---|---|---|
-| 5 | `R-RUSTPORT-P6-23-KOMENDY-TEREN-Q1` | P6.2+P6.3 `order`, `terrain-improvements`, `city-hex-movement`, `fort-territory` — Operator Sonnet | 1/5 | (patrz niżej) | DISPATCHED | 2026-10-22 |
+| 5 | `R-RUSTPORT-P6-23-KOMENDY-TEREN-Q1` | P6.2+P6.3 `order`, `terrain-improvements`, `city-hex-movement`, `fort-territory` — Operator Sonnet | 1/5 | `wf_fb33da4c-2f2` | DISPATCHED | 2026-10-22 |
 | 2 | `R-RUSTPORT-P4-27-SCENE-UNIFY-Q1` | ujednolicenie typu drzewa sceny (decor, wonders, unit_core, units_*, improvements, cities, misc) — Opus 5.5 | 1/5 | `wf_f2947d22-ac9` | DISPATCHED | 2026-10-22 |
 | 3 | `R-RUSTPORT-P5-4-PORT-CYKL-C4-Q1` | P5-4 portowanie cyklu C4 (entityCards, science*, techDiscoveryNotice…) — Opus 5.5 | 1/5 | `wf_3a3da300-198` | DISPATCHED | 2026-10-22 |
 | 4 | `R-RUSTPORT-P4-28-RASTER-SHAPES-Q1` | RR-T8a rasteryzator kształtów (tiny-skia, D-TXT-6=A) — Opus 5.5 | 1/5 | `wf_99676387-673` | DISPATCHED | 2026-10-22 |
