@@ -1,0 +1,607 @@
+plik	linia	rodzaj	symbol	klasa	loc	uzywane_poza_map	status	temat	rust	test_rust	uwaga
+cluster-spawn.ts	35	interface	ClusterSpawnSlot	SYSTEM	11	game:1	ISTNIEJE-ZWERYFIKOWANE	-	src/domain/start_position.rs:73	tests/p6_1c_start_cluster.rs:344	typ danych P6.1C; uzyty jako wejscie wektorow z weba (maps.json + cluster-start.json)
+cluster-spawn.ts	48	interface	ForeignTypeClusterGroup	SYSTEM	5	game:1	ISTNIEJE-ZWERYFIKOWANE	-	src/domain/start_position.rs:85	tests/p6_1c_start_cluster.rs:344	typ danych P6.1C; wektory z weba
+cluster-spawn.ts	54	interface	ClusterSpawnPlan	SYSTEM	16	game:1	CZĘŚCIOWO	M12	src/domain/start_position.rs:94	tests/p6_1c_start_cluster.rs:344	Rust BEZ pola `placement` (P6-1C §11); dane planu pochodza z zapisanego wyniku weba, nie z Rust
+cluster-spawn.ts	91	function	buildSameTypeRivalSlots	SYSTEM	44	game:1	BRAK	M09			P6.1C RUNDA-2 (pkt 1 §10: slot rywali); zalezy od packRivalCitiesAroundCore (clusters.ts:2144); domkniecie AST: 17 deklaracji `clusters.ts`/334 LOC + 5 z `cluster-spawn.ts`/98 LOC (callgraph-rivals.txt)
+cluster-spawn.ts	140	function	buildSameTypeRivalCandidateHexes	SYSTEM	25	main.ts:1,game:1	BRAK	M09			P6.1C RUNDA-2 (pkt 1 §10: kandydaci rywali); zalezy od packCityStatesAroundCapital (clusters.ts:2036) i computeSameTypeRivalHalfPlaneAxis (:1879)
+cluster-spawn.ts	167	interface	BuildClusterSpawnInput	SYSTEM	21	-	BRAK	M12	src/domain/start_position.rs:135		Rust `BuildClusterStartInput` (inna struktura -- wejscie cluster-start.ts, nie cluster-spawn.ts)
+cluster-spawn.ts	195	function	groupForeignTypeClusters	SYSTEM	14	game:1	BRAK	M09			czysta funkcja grupujaca (S); w Rust tylko struktura wyniku (`sp_group`), brak funkcji
+cluster-spawn.ts	216	function	buildClusterSpawnPlan	SYSTEM	211	main.ts:1,game:1	BRAK	M12	src/domain/start_position.rs:301		Rust `build_cluster_start_plan` PRZYJMUJE gotowy plan jako wejscie (start_position.rs, komentarz P6.1C); generator planu nie istnieje
+cluster-spawn.ts	445	type	HumanDistanceMode	SYSTEM	1	game:1,ui:1	ISTNIEJE-ZWERYFIKOWANE	-	src/domain/start_position.rs:52	tests/p6_1c_start_cluster.rs:344	enum; tryb w wektorach
+cluster-spawn.ts	477	function	pickSecondHumanStartHex	SYSTEM	30	game:1	ISTNIEJE-ZWERYFIKOWANE	-	src/domain/start_position.rs:236	tests/p6_1c_start_cluster.rs:522	test z wektorami weba (P6.1C)
+cluster-spawn.ts	511	function	displayLabelForSlot	SYSTEM	6	game:1	ISTNIEJE-ZWERYFIKOWANE	-	src/domain/start_position.rs:275	tests/p6_1c_start_cluster.rs:555	test z wektorami weba (P6.1C)
+clusters.ts	42	const	CLUSTER_CITY_STATE_MIN_HEX	DATA	1	-	BRAK	M09			w domknieciu wycinka rywali P6.1C (callgraph-rivals.txt); stala klastra; M09 = te uzywane przez wycinek rywali; reszta M10
+clusters.ts	47	const	CLUSTER_CITY_STATE_MAX_HEX	DATA	1	-	BRAK	M09			w domknieciu wycinka rywali P6.1C (callgraph-rivals.txt); stala klastra; M09 = te uzywane przez wycinek rywali; reszta M10
+clusters.ts	49	const	MIN_DIST_START_CITY_STATE	DATA	1	main.ts:1	BRAK	M09	src/domain/start_position.rs:186		UWAGA: =5 (clusters.ts:49); Rust `min_city_distance_start_city_state` to INNA stala (cities.ts:1122 =3). NIE mylic
+clusters.ts	54	const	MIN_DIST_FOREIGN_FROM_PLAYER	DATA	1	-	BRAK	M09			stala klastra; M09 = te uzywane przez wycinek rywali; reszta M10
+clusters.ts	56	const	MIN_DIST_FOREIGN_IN_CLUSTER	DATA	1	-	BRAK	M09			stala klastra; M09 = te uzywane przez wycinek rywali; reszta M10
+clusters.ts	58	const	CLUSTER_GROWTH_RESERVE	DATA	1	-	BRAK	M09			w domknieciu wycinka rywali P6.1C (callgraph-rivals.txt); stala klastra; M09 = te uzywane przez wycinek rywali; reszta M10
+clusters.ts	88	function	rosterKluczeForStartEpoch	SYSTEM	8	-	BRAK	M10			typy/roster/pomocnicze klastra
+clusters.ts	102	interface	ClusterCity	SYSTEM	5	-	BRAK	M10			typy/roster/pomocnicze klastra
+clusters.ts	109	interface	TypeCluster	SYSTEM	10	game:1	BRAK	M10			typy/roster/pomocnicze klastra
+clusters.ts	121	interface	ClusterSpawnCache	SYSTEM	5	-	BRAK	M10			typy/roster/pomocnicze klastra
+clusters.ts	128	interface	ClusterPlacement	SYSTEM	17	main.ts:1,game:1	BRAK	M12	src/domain/start_position.rs:94		Rust `ClusterSpawnPlan` pomija to pole (start_position.rs, komentarz) -- typ nieobecny
+clusters.ts	192	function	reorderRosterByPreference	SYSTEM	18	-	BRAK	M10			typy/roster/pomocnicze klastra
+clusters.ts	217	const	MIN_MASS_HEXES_FOR_SPAWN	SYSTEM	1	-	BRAK	M10			bramki mas ladu / rozmieszczenie srodkow klastrow
+clusters.ts	222	const	MIN_DEVELOPMENT_HEX_PER_CIV	SYSTEM	1	-	BRAK	M10			bramki mas ladu / rozmieszczenie srodkow klastrow
+clusters.ts	224	const	SMALL_MASS_CAP_THRESHOLD	SYSTEM	1	-	BRAK	M10			bramki mas ladu / rozmieszczenie srodkow klastrow
+clusters.ts	226	const	DEVELOPMENT_SPACE_RADIUS	SYSTEM	1	-	BRAK	M10			w domknieciu startScoring (callgraph-startscoring.txt); bramki mas ladu / rozmieszczenie srodkow klastrow
+clusters.ts	228	const	ISLAND_FALLBACK_MASS_FRAC	SYSTEM	1	-	BRAK	M10			bramki mas ladu / rozmieszczenie srodkow klastrow
+clusters.ts	233	const	FOREIGN_MASS_MIN_ABSOLUTE	SYSTEM	1	-	BRAK	M10			bramki mas ladu / rozmieszczenie srodkow klastrow
+clusters.ts	235	const	FOREIGN_MASS_FRAC_OF_LARGEST	SYSTEM	1	-	BRAK	M10			bramki mas ladu / rozmieszczenie srodkow klastrow
+clusters.ts	240	const	LOCAL_LAND_DOMINANCE_FRAC	SYSTEM	1	-	BRAK	M10			w domknieciu startScoring (callgraph-startscoring.txt); bramki mas ladu / rozmieszczenie srodkow klastrow
+clusters.ts	242	const	REGION_MASS_DOMINANCE_FRAC	SYSTEM	1	-	BRAK	M10			bramki mas ladu / rozmieszczenie srodkow klastrow
+clusters.ts	244	const	LOCAL_LAND_DOMINANCE_RADIUS	SYSTEM	1	-	BRAK	M10			w domknieciu startScoring (callgraph-startscoring.txt); bramki mas ladu / rozmieszczenie srodkow klastrow
+clusters.ts	246	const	PLAYER_START_MIN_MASS_HEXES	SYSTEM	1	-	BRAK	M10			w domknieciu startScoring (callgraph-startscoring.txt); bramki mas ladu / rozmieszczenie srodkow klastrow
+clusters.ts	248	const	PLAYER_START_MASS_MIN_ABSOLUTE	SYSTEM	1	-	BRAK	M10			w domknieciu startScoring (callgraph-startscoring.txt); bramki mas ladu / rozmieszczenie srodkow klastrow
+clusters.ts	258	function	foreignSpawnMassThreshold	SYSTEM	6	-	BRAK	M10			bramki mas ladu / rozmieszczenie srodkow klastrow
+clusters.ts	266	function	massQualifiesForForeignSpawn	SYSTEM	8	-	BRAK	M10			bramki mas ladu / rozmieszczenie srodkow klastrow
+clusters.ts	293	interface	MassLandCache	SYSTEM	5	-	BRAK	M10			w domknieciu startScoring (callgraph-startscoring.txt); bramki mas ladu / rozmieszczenie srodkow klastrow
+clusters.ts	299	function	createMassLandCache	SYSTEM	6	-	BRAK	M10			bramki mas ladu / rozmieszczenie srodkow klastrow
+clusters.ts	306	function	massLandCacheFromMasses	SYSTEM	9	-	BRAK	M10			w domknieciu startScoring (callgraph-startscoring.txt); bramki mas ladu / rozmieszczenie srodkow klastrow
+clusters.ts	337	function	regionMassDominance	SYSTEM	25	-	BRAK	M10			bramki mas ladu / rozmieszczenie srodkow klastrow
+clusters.ts	373	function	localLandFraction	SYSTEM	21	-	BRAK	M10			w domknieciu startScoring (callgraph-startscoring.txt); bramki mas ladu / rozmieszczenie srodkow klastrow
+clusters.ts	395	function	passesLocalLandGate	SYSTEM	9	-	BRAK	M10			w domknieciu startScoring (callgraph-startscoring.txt); bramki mas ladu / rozmieszczenie srodkow klastrow
+clusters.ts	409	function	developmentSpaceScore	SYSTEM	25	-	BRAK	M10			w domknieciu startScoring (callgraph-startscoring.txt); bramki mas ladu / rozmieszczenie srodkow klastrow
+clusters.ts	436	function	massTypeCap	SYSTEM	4	-	BRAK	M10			bramki mas ladu / rozmieszczenie srodkow klastrow
+clusters.ts	448	function	allocateTypyToMasses	SYSTEM	78	-	BRAK	M10			bramki mas ladu / rozmieszczenie srodkow klastrow
+clusters.ts	540	function	qualifyingMassIndicesForSpawn	SYSTEM	10	-	BRAK	M10			bramki mas ladu / rozmieszczenie srodkow klastrow
+clusters.ts	552	function	massSizeAtHex	SYSTEM	9	-	BRAK	M10			w domknieciu startScoring (callgraph-startscoring.txt); bramki mas ladu / rozmieszczenie srodkow klastrow
+clusters.ts	566	function	passesPlayerStartMassGate	SYSTEM	17	-	BRAK	M10			w domknieciu startScoring (callgraph-startscoring.txt); bramki mas ladu / rozmieszczenie srodkow klastrow
+clusters.ts	717	function	pickPlayerClusterCenter	SYSTEM	28	-	BRAK	M10			bramki mas ladu / rozmieszczenie srodkow klastrow
+clusters.ts	811	function	groupHabitableMasses	SYSTEM	29	-	BRAK	M10			w domknieciu startScoring (callgraph-startscoring.txt); bramki mas ladu / rozmieszczenie srodkow klastrow
+clusters.ts	1347	function	clusterPackRadius	SYSTEM	4	-	BRAK	M09			w domknieciu wycinka rywali P6.1C (callgraph-rivals.txt); uklad stolic/miast-panstw wokol rdzenia
+clusters.ts	1353	function	clusterCityStateRadius	SYSTEM	3	main.ts:1	BRAK	M11			uklad stolic/miast-panstw wokol rdzenia
+clusters.ts	1361	function	clusterHubChainReachHex	SYSTEM	4	main.ts:1	BRAK	M11			uklad stolic/miast-panstw wokol rdzenia
+clusters.ts	1370	function	capitalMinSeaDist	SYSTEM	10	-	BRAK	M11			uklad stolic/miast-panstw wokol rdzenia
+clusters.ts	1385	function	capitalMaxSeaDist	SYSTEM	3	-	BRAK	M11			uklad stolic/miast-panstw wokol rdzenia
+clusters.ts	1395	function	capitalMinSeaDistForMap	SYSTEM	9	-	BRAK	M11			uklad stolic/miast-panstw wokol rdzenia
+clusters.ts	1405	function	capitalMaxSeaDistForMap	SYSTEM	9	-	BRAK	M11			uklad stolic/miast-panstw wokol rdzenia
+clusters.ts	1416	function	clusterCohesionMaxHex	SYSTEM	3	-	BRAK	M11			uklad stolic/miast-panstw wokol rdzenia
+clusters.ts	1420	function	seaDistAt	SYSTEM	7	-	BRAK	M11			uklad stolic/miast-panstw wokol rdzenia
+clusters.ts	1428	function	passesMinSeaDistGate	SYSTEM	8	-	BRAK	M11			uklad stolic/miast-panstw wokol rdzenia
+clusters.ts	1438	function	passesCapitalSeaBandGate	SYSTEM	12	-	BRAK	M11			uklad stolic/miast-panstw wokol rdzenia
+clusters.ts	1452	function	capitalSeaBandPenalty	SYSTEM	13	-	BRAK	M11			uklad stolic/miast-panstw wokol rdzenia
+clusters.ts	1470	function	capitalMinSeparation	SYSTEM	10	-	BRAK	M11			uklad stolic/miast-panstw wokol rdzenia
+clusters.ts	1485	function	capitalMinSeparationForMap	SYSTEM	9	game:1	BRAK	M11			uklad stolic/miast-panstw wokol rdzenia
+clusters.ts	1500	function	clusterBodySeparation	SYSTEM	3	-	BRAK	M11			uklad stolic/miast-panstw wokol rdzenia
+clusters.ts	1508	function	clusterCenterPlacementSep	SYSTEM	3	-	BRAK	M11			uklad stolic/miast-panstw wokol rdzenia
+clusters.ts	1512	function	clusterBodySeparationForMap	SYSTEM	9	game:1	BRAK	M11			uklad stolic/miast-panstw wokol rdzenia
+clusters.ts	1522	function	clusterCenterPlacementSepForMap	SYSTEM	9	-	BRAK	M11			uklad stolic/miast-panstw wokol rdzenia
+clusters.ts	1533	function	clusterBodyBufferRadius	SYSTEM	4	-	BRAK	M11			uklad stolic/miast-panstw wokol rdzenia
+clusters.ts	1538	interface	ForeignClusterBuffer	SYSTEM	5	-	BRAK	M09			w domknieciu wycinka rywali P6.1C (callgraph-rivals.txt); uklad stolic/miast-panstw wokol rdzenia
+clusters.ts	1544	function	passesForeignClusterBufferGate	SYSTEM	9	-	BRAK	M09			w domknieciu wycinka rywali P6.1C (callgraph-rivals.txt); uklad stolic/miast-panstw wokol rdzenia
+clusters.ts	1555	function	landQuadrantIndex	SYSTEM	10	-	BRAK	M11			uklad stolic/miast-panstw wokol rdzenia
+clusters.ts	1579	function	minimumSpreadQuartersRequired	SYSTEM	6	-	BRAK	M11			uklad stolic/miast-panstw wokol rdzenia
+clusters.ts	1603	function	clusterCenterQuadrantSpread	SYSTEM	27	-	BRAK	M11			uklad stolic/miast-panstw wokol rdzenia
+clusters.ts	1631	function	passesMinCapitalSeparationGate	SYSTEM	10	-	BRAK	M11			uklad stolic/miast-panstw wokol rdzenia
+clusters.ts	1643	function	minCapitalSeparationDistance	SYSTEM	12	-	BRAK	M11			uklad stolic/miast-panstw wokol rdzenia
+clusters.ts	1656	interface	PickSpawnHexWithCapitalGatesOpts	SYSTEM	20	-	BRAK	M11			uklad stolic/miast-panstw wokol rdzenia
+clusters.ts	1678	function	seaDistRescueLadder	SYSTEM	12	-	BRAK	M11			uklad stolic/miast-panstw wokol rdzenia
+clusters.ts	1697	function	pickSpawnHexWithCapitalGates	SYSTEM	66	-	BRAK	M11			uklad stolic/miast-panstw wokol rdzenia
+clusters.ts	1870	interface	SameTypeRivalHalfPlaneAxis	SYSTEM	4	-	BRAK	M09			w domknieciu wycinka rywali P6.1C (callgraph-rivals.txt); uklad stolic/miast-panstw wokol rdzenia
+clusters.ts	1879	function	computeSameTypeRivalHalfPlaneAxis	SYSTEM	14	-	BRAK	M09			w domknieciu wycinka rywali P6.1C (callgraph-rivals.txt); uklad stolic/miast-panstw wokol rdzenia
+clusters.ts	1895	function	isInSameTypeRivalHalfPlane	SYSTEM	10	-	BRAK	M09			w domknieciu wycinka rywali P6.1C (callgraph-rivals.txt); uklad stolic/miast-panstw wokol rdzenia
+clusters.ts	1911	function	packCityStatesHubChain	SYSTEM	53	-	BRAK	M09			w domknieciu wycinka rywali P6.1C (callgraph-rivals.txt); uklad stolic/miast-panstw wokol rdzenia
+clusters.ts	2036	function	packCityStatesAroundCapital	SYSTEM	97	-	BRAK	M09			w domknieciu wycinka rywali P6.1C (callgraph-rivals.txt); uklad stolic/miast-panstw wokol rdzenia
+clusters.ts	2144	function	packRivalCitiesAroundCore	SYSTEM	22	-	BRAK	M09			w domknieciu wycinka rywali P6.1C (callgraph-rivals.txt); uklad stolic/miast-panstw wokol rdzenia
+clusters.ts	2168	interface	ClusterLayoutPlan	SYSTEM	5	-	BRAK	M11			uklad stolic/miast-panstw wokol rdzenia
+clusters.ts	2271	function	buildClusterLayoutWithEdgeCapital	SYSTEM	33	-	BRAK	M11			uklad stolic/miast-panstw wokol rdzenia
+clusters.ts	3373	function	computeClusters	SYSTEM	837	game:1	BRAK	M12			jedyny trafiony ciag `computeClusters` w Rust to komentarz w tests/p6_1c_start_cluster.rs; domkniecie AST = 118 deklaracji `clusters.ts`/3505 LOC + 7 z `gen-helpers.ts`/53 LOC (callgraph-computeclusters.txt)
+deposit-era.ts	7	type	DepositEraHex	DATA	1	-	BRAK	M02			typ pomocniczy
+deposit-era.ts	9	const	METAL_DEPOSIT_MIN_ERA	DATA	1	-	CZĘŚCIOWO	M02	src/data/terrain_map.rs:393	tests/data_terrain_map.rs:66	dane identyczne z `metal_deposit_min_era` (web_data_check.out.txt: {miedz:2,zelazo:3,wegiel:8,cyna:2}); test w repo przypina tylko `cyna` (data_terrain_map.rs:76-78); FUNKCJE lookup nieobecne
+deposit-era.ts	11	function	zlozeMinEraFor	SYSTEM	6	game:1	BRAK	M02			widocznosc zloz per epoka (uzywane w game/resource-access.ts)
+deposit-era.ts	18	function	isDepositVisible	SYSTEM	6	game:1	BRAK	M02			widocznosc zloz per epoka (uzywane w game/resource-access.ts)
+deposit-era.ts	25	function	visibleZloze	SYSTEM	4	main.ts:1	BRAK	M02			widocznosc zloz per epoka (uzywane w game/resource-access.ts)
+deposit-era.ts	30	function	ensureDepositEraMeta	SYSTEM	9	main.ts:1	BRAK	M02			widocznosc zloz per epoka (uzywane w game/resource-access.ts)
+deposit-era.ts	40	function	countHiddenMetalDeposits	SYSTEM	7	-	BRAK	M02			widocznosc zloz per epoka (uzywane w game/resource-access.ts)
+earth-land-mask.generated.ts	7	const	EARTH_MASK_W	DATA	1	-	CZĘŚCIOWO	M01	src/domain/map_generator.rs:843	src/domain/map_generator.rs:1458	720; earth_mask_compare.out.txt: wymiary rowne
+earth-land-mask.generated.ts	8	const	EARTH_MASK_H	DATA	1	-	CZĘŚCIOWO	M01	src/domain/map_generator.rs:843	src/domain/map_generator.rs:1458	400; wymiary rowne
+earth-land-mask.generated.ts	10	const	EARTH_MASK_BBOX	DATA	6	-	CZĘŚCIOWO	M01	src/domain/map_generator.rs:959	src/domain/map_generator.rs:1458	bbox rowny (earth_mask_compare.out.txt)
+earth-land-mask.generated.ts	16	const	EARTH_MASK_ROWS	DATA	402	-	CZĘŚCIOWO	M01	src/domain/map_generator.rs:843	src/domain/map_generator.rs:1458	288000 bitow identycznych (earth_mask_compare.out.txt, dekodowanie RLE); test w repo sprawdza 7 punktow -- dodac test pelnej rownosci w M01
+earth-land-mask.ts	25	const	EARTH_POLAR_OCEAN_REF_ROWS	DATA	1	-	CZĘŚCIOWO	M01	src/domain/map_generator.rs:1085	src/domain/map_generator.rs:1519	stala 30 wbudowana w `earth_polar_ocean_rows`; sweep klimatu Ziemi h=6..130: 8500/8500 rownych
+earth-land-mask.ts	26	const	EARTH_POLAR_OCEAN_REF_INNER_H	DATA	1	-	CZĘŚCIOWO	M01	src/domain/map_generator.rs:1085	src/domain/map_generator.rs:1519	stala 115 wbudowana; sweep jw.
+earth-land-mask.ts	29	function	earthNorthOceanRows	SYSTEM	3	-	CZĘŚCIOWO	M01	src/domain/map_generator.rs:1085	src/domain/map_generator.rs:1519	alias earthPolarOceanRows (web :29); sweep jw.
+earth-land-mask.ts	34	function	earthSouthOceanRows	SYSTEM	3	-	CZĘŚCIOWO	M01	src/domain/map_generator.rs:1085	src/domain/map_generator.rs:1519	alias earthPolarOceanRows (web :34); sweep jw.
+earth-land-mask.ts	52	reexport	earthPolarOceanRows	SYSTEM	1	-	CZĘŚCIOWO	M01	src/domain/map_generator.rs:1085	src/domain/map_generator.rs:1519	sweep: climateBandAt(isEarth) h=6..130 -> 8500/8500 rownych (sweep.out.txt); test w repo tylko 2 punkty (r=0,27 h=28)
+earth-land-mask.ts	80	function	sampleEarthTemplateLand	SYSTEM	17	-	ISTNIEJE-ZWERYFIKOWANE	M01	src/domain/map_generator.rs:978	src/domain/map_generator.rs:1458	WASKO: pokryte posrednio 7 punktami masek Ziemi (36x28 seed 42)
+earth-land-mask.ts	99	function	earthHexToTemplateNorm	SYSTEM	24	-	CZĘŚCIOWO	M01	src/domain/map_generator.rs:1002	src/domain/map_generator.rs:1458	w Rust wbudowane w `earth_template_land_at` (brak osobnej funkcji); logika zgodna wg odczytu; osobnego testu brak
+earth-land-mask.ts	148	function	earthTemplateLandAt	SYSTEM	20	-	ISTNIEJE-ZWERYFIKOWANE	M01	src/domain/map_generator.rs:1002	src/domain/map_generator.rs:1458	WASKO: tylko tryb subsamplingu steps=7 (mapa 36x28); steps 1/3/5 NIE_ZMIERZONO
+gen-helpers.ts	33	reexport-type	RiverMapParams	SYSTEM	1	-	BRAK	M01			re-eksport typu z newGameMapDefaults.ts (definicja = temat M02); instrukcja re-eksportu lezy w zakresie M01 (gen-helpers.ts:33)
+gen-helpers.ts	47	type	TypSwiata	SYSTEM	1	main.ts:1	ISTNIEJE-ZWERYFIKOWANE	M01	src/domain/map_generator.rs:21	tests/map_generator.rs:58	literaly kontynenty|pangea|wyspy|ziemia = serde Rust (test porownuje z literalami weba)
+gen-helpers.ts	57	function	mulberry32	SYSTEM	9	audio:1,battle:1,game:2	ISTNIEJE-ZWERYFIKOWANE	M01	src/domain/map_generator.rs:207 ; src/domain/rng.rs:118	src/domain/map_generator.rs:1348 ; tests/p6_1_rng_mulberry.rs:14	web_pure_check.out.txt: seed 42 = test :1348; sweep 300 ziaren x 64 wartosci rowne w OBU implementacjach Rust (19200/19200); DWIE kopie w Rust -- dedup w M01
+gen-helpers.ts	72	function	buildPermTable	SYSTEM	9	-	ISTNIEJE-ZWERYFIKOWANE	M01	src/domain/map_generator.rs:432	src/domain/map_generator.rs:1356	perm[0..16] seed 42 rowne z webem (web_pure_check.out.txt); funkcja prywatna w Rust
+gen-helpers.ts	83	function	cosLerp	SYSTEM	4	-	ISTNIEJE-ZWERYFIKOWANE	M01	src/domain/map_generator.rs:444	src/domain/map_generator.rs:1356	posrednio przez wektory valueNoise2D/fbm (prywatna)
+gen-helpers.ts	89	function	valueNoise2D	SYSTEM	15	-	ISTNIEJE-ZWERYFIKOWANE	M01	src/domain/map_generator.rs:449	src/domain/map_generator.rs:1356	2 wektory rowne z webem (web_pure_check.out.txt); prywatna
+gen-helpers.ts	109	function	fbm	SYSTEM	10	-	ISTNIEJE-ZWERYFIKOWANE	M01	src/domain/map_generator.rs:465	src/domain/map_generator.rs:1356	2 wektory rowne z webem; prywatna
+gen-helpers.ts	125	const	HEX_DIRECTIONS	DATA	4	-	CZĘŚCIOWO	M01	src/domain/map_generator.rs:108	tests/hex_terrain.rs:21	ta sama kolejnosc 6 kierunkow wg odczytu; test geometrii, nie wektor weba
+gen-helpers.ts	135	function	hexDistanceAxial	SYSTEM	6	game:1	CZĘŚCIOWO	M01	src/domain/hex.rs:64 ; src/domain/map_generator.rs:127	tests/hex_terrain.rs:21	sweep 1681 par: rowne w hex.rs i map_generator.rs (sweep.out.txt); testy w repo = geometria, bez wektora weba -> dodac w M01
+gen-helpers.ts	157	function	hexKey	SYSTEM	3	main.ts:1,battle:1,game:12,render:11	CZĘŚCIOWO	M01	src/domain/hex.rs:85	tests/hex_terrain.rs:52	format "q,r"; test round-trip, nie wektor weba
+gen-helpers.ts	162	type	ClimateZone	UI	1	-	NIE-DOTYCZY	-			@deprecated; tylko render las-dzungla
+gen-helpers.ts	168	type	ClimateBand	SYSTEM	8	-	ISTNIEJE-ZWERYFIKOWANE	M01	src/domain/map_generator.rs:46	src/domain/map_generator.rs:1519	7 pasow, nazwy serde = literaly weba
+gen-helpers.ts	178	const	CLIMATE_POLAR_FRAC	DATA	1	-	CZĘŚCIOWO	M01	src/domain/map_generator.rs:1093	src/domain/map_generator.rs:1519	literal 0.05 wbudowany w `climate_band_at` (stala nie jest osobno przypieta; posrednio przez 8 wierszy h=28); sweep h=6..130 8500/8500 rownych
+gen-helpers.ts	180	const	CLIMATE_DESERT_HALF_ROWS	DATA	1	-	CZĘŚCIOWO	M01	src/domain/map_generator.rs:1093	src/domain/map_generator.rs:1519	literal 3.5 wbudowany w `climate_band_at` (stala nie jest osobno przypieta; posrednio przez 8 wierszy h=28); sweep h=6..130 8500/8500 rownych
+gen-helpers.ts	182	const	CLIMATE_DESERT_HALF_FRAC	DATA	1	-	NIE-DOTYCZY	-			martwy eksport: uzyty tylko w definicji (grep -rn: 1 trafienie, gen-helpers.ts:182)
+gen-helpers.ts	184	const	CLIMATE_PLAINS_HALF_FRAC	DATA	1	-	CZĘŚCIOWO	M01	src/domain/map_generator.rs:1093	src/domain/map_generator.rs:1519	literal 0.075 wbudowany w `climate_band_at` (stala nie jest osobno przypieta; posrednio przez 8 wierszy h=28); sweep h=6..130 8500/8500 rownych
+gen-helpers.ts	187	const	CLIMATE_PROCEDURAL_LAT_BUFFER_FRAC	DATA	1	-	CZĘŚCIOWO	M01	src/domain/map_generator.rs:1093	src/domain/map_generator.rs:1519	literal 0.05 wbudowany w `climate_band_at` (stala nie jest osobno przypieta; posrednio przez 8 wierszy h=28); sweep h=6..130 8500/8500 rownych
+gen-helpers.ts	193	function	climateBandAt	SYSTEM	21	-	ISTNIEJE-ZWERYFIKOWANE	M01	src/domain/map_generator.rs:1093	src/domain/map_generator.rs:1519	sweep 125 wysokosci x wiersze (isEarth false/true): 17000/17000 rownych (sweep.out.txt)
+gen-helpers.ts	216	function	climateZoneAt	UI	6	render:1	NIE-DOTYCZY	-			tylko render (render/mapRenderStyle.ts)
+gen-helpers.ts	223	function	isPolarClimateBand	SYSTEM	3	-	CZĘŚCIOWO	M01	src/domain/map_generator.rs:64		trywialny predykat; test wektorowy brak
+gen-helpers.ts	228	function	latitudinalOceanBufferRows	SYSTEM	4	-	CZĘŚCIOWO	M01	src/domain/map_generator.rs:1093 ; src/domain/map_generator.rs:1085		w Rust wbudowane w `climate_band_at` (tryb nie-Ziemia: max(2, round(5%*h))); osobnej funkcji brak; sweep posrednio zgodny
+gen-helpers.ts	233	function	isInLatitudinalOceanBuffer	SYSTEM	4	-	BRAK	M04			web generator zeruje landMask w buforze (generator.ts:236); w Rust `generate_map` (map_generator.rs:329-430) brak odpowiednika -- jedna z roznic potoku
+gen-helpers.ts	253	interface	ShapeParams	SYSTEM	10	-	CZĘŚCIOWO	M03	src/domain/map_generator.rs:246	src/domain/map_generator.rs:1458	Rust `ShapeParams::from_rng` prywatne; noise_scale zgodny (maski), offsety NIE_ZMIERZONO; Rust `size_norm.max(1.0)` vs web `sizeNorm` bez klamry (generator.ts:174) -> rozne dla map <36
+gen-helpers.ts	268	function	defaultShapeParams	SYSTEM	11	-	CZĘŚCIOWO	M03	src/domain/map_generator.rs:246	src/domain/map_generator.rs:1458	kolejnosc rand(): 6 offsetow po permutacji; zgodna wg odczytu, wektor offsetow NIE_ZMIERZONO
+gen-helpers.ts	284	function	landMaskAt	SYSTEM	8	-	BRAK	M03			eksport bez konsumentow poza re-eksportem generator.ts:847 (grep) -- maska eliptyczna "oryginalna", nieuzywana przez generator; kandydat na NIE-DOTYCZY (martwy)
+gen-helpers.ts	297	interface	ContinentCenter	SYSTEM	5	-	ISTNIEJE-ZWERYFIKOWANE	M03	src/domain/map_generator.rs:265	src/domain/map_generator.rs:1458	struktura {nq,nr,radius}; uzyta w wektorach masek (prywatna)
+gen-helpers.ts	303	interface	ContinentCenterOpts	SYSTEM	13	-	BRAK	M03			maski ladu i centra kontynentow
+gen-helpers.ts	318	const	KONTYNENTY_ZONE_COUNT	DATA	1	-	CZĘŚCIOWO	M03	src/domain/map_generator.rs:529		stala wbudowana w logike centrow Rust (prywatna); brak osobnego testu wartosci
+gen-helpers.ts	324	function	continentCenterCount	SYSTEM	5	-	BRAK	M03			maski ladu i centra kontynentow
+gen-helpers.ts	334	function	buildContinentCenters	SYSTEM	56	-	BRAK	M03			maski ladu i centra kontynentow
+gen-helpers.ts	399	function	buildFiveZoneContinentCenters	SYSTEM	24	-	ISTNIEJE-ZWERYFIKOWANE	M03	src/domain/map_generator.rs:529	src/domain/map_generator.rs:1458	WASKO: centra wchodza do wektora maski kontynentow (3 pkt, 36x28 seed 42, landFraction 0.30; web_runtime_check.out.txt: 5 centrow, maska rowna); inne wymiary NIE_ZMIERZONO
+gen-helpers.ts	426	function	nearestContinentZoneIndex	SYSTEM	17	-	BRAK	M03			maski ladu i centra kontynentow
+gen-helpers.ts	460	function	landMaskKontynenty	SYSTEM	26	-	ISTNIEJE-ZWERYFIKOWANE	M03	src/domain/map_generator.rs:663	src/domain/map_generator.rs:1458	WASKO: 3 punkty; web_runtime_check.out.txt rowne co do 1e-15
+gen-helpers.ts	499	function	mapIsotropicFromCenter	SYSTEM	12	-	BRAK	M03			maski ladu i centra kontynentow
+gen-helpers.ts	527	interface	PangeaLandLayoutParams	SYSTEM	14	-	BRAK	M03			maski ladu i centra kontynentow
+gen-helpers.ts	553	function	pangeaLandLayoutParams	SYSTEM	29	-	BRAK	M03			maski ladu i centra kontynentow
+gen-helpers.ts	584	function	buildPangeaBlobCenters	SYSTEM	42	-	ISTNIEJE-ZWERYFIKOWANE	M03	src/domain/map_generator.rs:565	src/domain/map_generator.rs:1458	WASKO: jw. (6 centrow, landFraction 0.60)
+gen-helpers.ts	656	function	landMaskPangea	SYSTEM	28	-	ISTNIEJE-ZWERYFIKOWANE	M03	src/domain/map_generator.rs:716	src/domain/map_generator.rs:1458	WASKO: 3 punkty; ostatnia cyfra roznica 1e-16 (web_runtime_check.out.txt)
+gen-helpers.ts	688	const	ISLAND_GRID_DIVISIONS	DATA	1	-	CZĘŚCIOWO	M03	src/domain/map_generator.rs:529		stala wbudowana w logike centrow Rust (prywatna); brak osobnego testu wartosci
+gen-helpers.ts	693	function	buildSixteenGridIslandCenters	SYSTEM	30	-	ISTNIEJE-ZWERYFIKOWANE	M03	src/domain/map_generator.rs:617	src/domain/map_generator.rs:1458	WASKO: jw. (16 centrow)
+gen-helpers.ts	727	function	islandGridCellIndex	SYSTEM	6	-	BRAK	M03			maski ladu i centra kontynentow
+gen-helpers.ts	735	function	assignIslandGridIndices	SYSTEM	12	-	BRAK	M03			maski ladu i centra kontynentow
+gen-helpers.ts	753	function	landMaskWyspy	SYSTEM	37	-	ISTNIEJE-ZWERYFIKOWANE	M03	src/domain/map_generator.rs:788	src/domain/map_generator.rs:1458	WASKO: 3 punkty; rowne
+gen-helpers.ts	799	const	ZIEMIA_LAND_CENTERS	NIE-DOTYCZY	8	-	NIE-DOTYCZY	-			martwy eksport: jedyne trafienie to definicja (grep -rn gra/src: 1); Rust rowniez nie ma, `landMaskZiemia` uzywa szablonu
+gen-helpers.ts	812	function	landMaskZiemia	SYSTEM	11	-	ISTNIEJE-ZWERYFIKOWANE	M03	src/domain/map_generator.rs:1065	src/domain/map_generator.rs:1458	WASKO: 7 punktow; rowne (web_runtime_check.out.txt)
+gen-helpers.ts	826	interface	TerrainResult	SYSTEM	4	-	BRAK	M04			klasyfikacja terenu
+gen-helpers.ts	832	interface	TerrainClassifyThresholds	SYSTEM	9	-	BRAK	M04			klasyfikacja terenu
+gen-helpers.ts	843	interface	TerrainScratch	SYSTEM	7	-	BRAK	M04			klasyfikacja terenu
+gen-helpers.ts	889	function	terenCoverageCellSize	SYSTEM	3	-	CZĘŚCIOWO	M04	src/domain/map_generator.rs:1213	src/domain/map_generator.rs:1370	=4 (gen-helpers.ts:889); w Rust osobnej funkcji brak, jest tylko literal 4 w `terrain_cell_bias` (`q / 4`); test `map_generator.rs` pinuje WYNIK `terrain_cell_bias`, nie te funkcje -> CZESCIOWO; web ma dodatkowo parametr `cellSize` w `terrainCellBias`
+gen-helpers.ts	911	function	terrainCellBias	SYSTEM	5	-	ISTNIEJE-ZWERYFIKOWANE	M04	src/domain/map_generator.rs:1213	src/domain/map_generator.rs:1370	4 wektory rowne z webem (web_pure_check.out.txt); prywatna
+gen-helpers.ts	923	function	classifyTerrain	SYSTEM	42	-	CZĘŚCIOWO	M04	src/domain/map_generator.rs:1177	src/domain/map_generator.rs:1370	6 przypadkow rowne (web_runtime_check.out.txt) ale TYLKO progi domyslne (thresholds=undefined) -- web przyjmuje progi tier-ow gestosci (generator.ts:162)
+gen-helpers.ts	973	function	classifyTerrainFlat	SYSTEM	30	-	BRAK	M04			klasyfikacja terenu
+gen-helpers.ts	1012	function	reapplyForestOverlay	SYSTEM	56	-	BRAK	M04			klasyfikacja terenu
+gen-helpers.ts	1109	function	reapplyLandTerrain	SYSTEM	51	-	BRAK	M04			klasyfikacja terenu
+gen-helpers.ts	1163	type	ReliefDensityTier	SYSTEM	1	-	BRAK	M04			klasyfikacja terenu
+gen-helpers.ts	1172	function	reliefLandFractions	SYSTEM	3	-	BRAK	M04			klasyfikacja terenu
+gen-helpers.ts	1177	const	MAP_BORDER_OCEAN_HEXES	SYSTEM	1	-	BRAK	M04			brzeg/margines mapy
+gen-helpers.ts	1180	const	MAP_MARGIN_LAND_ZONE_HEXES	SYSTEM	1	-	BRAK	M04			brzeg/margines mapy
+gen-helpers.ts	1183	function	mapBorderWidth	SYSTEM	3	-	BRAK	M04			brzeg/margines mapy
+gen-helpers.ts	1191	function	marginLandCapForBorderDistance	SYSTEM	5	-	BRAK	M04			brzeg/margines mapy
+gen-helpers.ts	1233	function	applyMarginalLandZoneCaps	SYSTEM	50	-	BRAK	M04			brzeg/margines mapy
+gen-helpers.ts	1287	function	isInMapMarginZone	SYSTEM	3	-	BRAK	M04			brzeg/margines mapy
+gen-helpers.ts	1294	function	landMaskBorderFade	SYSTEM	7	-	CZĘŚCIOWO	M04	src/domain/map_generator.rs:641	src/domain/map_generator.rs:1458	uzyte posrednio w maskach (wektory 3 pkt); brak osobnego testu
+gen-helpers.ts	1303	function	mapCenterRadialBias	SYSTEM	8	-	BRAK	M04			brzeg/margines mapy
+gen-helpers.ts	1313	function	mapEdgeRectFade	SYSTEM	12	-	CZĘŚCIOWO	M04	src/domain/map_generator.rs:652	src/domain/map_generator.rs:1458	uzyte posrednio w maskach; brak osobnego testu
+gen-helpers.ts	1334	function	hexBorderDistance	SYSTEM	3	-	CZĘŚCIOWO	M04	src/domain/map_generator.rs:1226		odpowiednik `border_distance` (prywatna); brak testu
+gen-helpers.ts	1338	function	isInMapBorder	SYSTEM	4	-	BRAK	M04			brzeg/margines mapy
+gen-helpers.ts	1357	function	countMapBorderHexes	SYSTEM	10	-	BRAK	M04			brzeg/margines mapy
+gen-helpers.ts	1369	function	findLandInMapBorder	SYSTEM	17	-	BRAK	M04			brzeg/margines mapy
+gen-helpers.ts	1388	function	enforceMapBorderOcean	SYSTEM	19	-	BRAK	M04			brzeg/margines mapy
+gen-helpers.ts	1411	function	groupLandMassKeys	SYSTEM	27	-	BRAK	M05A			masy ladu, relief wg szumu, pokrycie
+gen-helpers.ts	1440	function	computeLandMassCentroid	SYSTEM	18	-	BRAK	M05A			masy ladu, relief wg szumu, pokrycie
+gen-helpers.ts	1460	const	CONTINENT_CENTER_SQUARE_SIZE	SYSTEM	1	-	BRAK	M05A			masy ladu, relief wg szumu, pokrycie
+gen-helpers.ts	1462	type	ContinentCenterSquare	SYSTEM	5	-	BRAK	M05A			masy ladu, relief wg szumu, pokrycie
+gen-helpers.ts	1472	function	continentCenterSquare	SYSTEM	61	-	BRAK	M05A			masy ladu, relief wg szumu, pokrycie
+gen-helpers.ts	1540	function	hexDistanceToCenterSquare	SYSTEM	14	-	BRAK	M05A			masy ladu, relief wg szumu, pokrycie
+gen-helpers.ts	1565	function	landPartitionKeysForDistribution	SYSTEM	18	-	BRAK	M05A			masy ladu, relief wg szumu, pokrycie
+gen-helpers.ts	1750	function	applyReliefByNoiseRank	SYSTEM	21	-	BRAK	M05A			masy ladu, relief wg szumu, pokrycie
+gen-helpers.ts	1777	const	MIN_RIVER_SOURCES_PER_WATER_CELL	SYSTEM	1	-	BRAK	M05A			masy ladu, relief wg szumu, pokrycie
+gen-helpers.ts	1782	function	minMountainsIronCell	SYSTEM	3	-	BRAK	M05A			masy ladu, relief wg szumu, pokrycie
+gen-helpers.ts	1786	function	minHighlandsCopperCell	SYSTEM	3	-	BRAK	M05A			masy ladu, relief wg szumu, pokrycie
+gen-helpers.ts	1791	const	MIN_MOUNTAINS_IRON_CELL	SYSTEM	1	-	BRAK	M05A			masy ladu, relief wg szumu, pokrycie
+gen-helpers.ts	1793	const	MIN_HIGHLANDS_COPPER_CELL	SYSTEM	1	-	BRAK	M05A			masy ladu, relief wg szumu, pokrycie
+gen-helpers.ts	1799	function	waterCoverageCellSize	SYSTEM	5	-	BRAK	M05A			masy ladu, relief wg szumu, pokrycie
+gen-helpers.ts	1809	function	ironCoverageCellSize	SYSTEM	5	-	BRAK	M05A			masy ladu, relief wg szumu, pokrycie
+gen-helpers.ts	1819	function	copperCoverageCellSize	SYSTEM	5	-	BRAK	M05A			masy ladu, relief wg szumu, pokrycie
+gen-helpers.ts	1828	function	reliefCoverageCellSize	SYSTEM	3	-	BRAK	M05A			masy ladu, relief wg szumu, pokrycie
+gen-helpers.ts	1833	function	fairPlayResourceCellSize	SYSTEM	3	-	BRAK	M05A			masy ladu, relief wg szumu, pokrycie
+gen-helpers.ts	1838	function	forestCoverageCellSize	SYSTEM	5	-	BRAK	M05A			masy ladu, relief wg szumu, pokrycie
+gen-helpers.ts	1844	function	minLandHexesForFairPlayCell	SYSTEM	3	-	BRAK	M05A			masy ladu, relief wg szumu, pokrycie
+gen-helpers.ts	1848	function	minLandHexesForReliefCell	SYSTEM	3	-	BRAK	M05A			masy ladu, relief wg szumu, pokrycie
+gen-helpers.ts	1889	function	cellHasIronPackage	SYSTEM	7	-	BRAK	M05A			masy ladu, relief wg szumu, pokrycie
+gen-helpers.ts	1898	function	cellHasCopperPackage	SYSTEM	7	-	BRAK	M05A			masy ladu, relief wg szumu, pokrycie
+gen-helpers.ts	1907	function	cellHasReliefPackage	SYSTEM	6	-	BRAK	M05A			masy ladu, relief wg szumu, pokrycie
+gen-helpers.ts	1962	function	ironGridCoverageRatio	SYSTEM	17	-	BRAK	M05A			masy ladu, relief wg szumu, pokrycie
+gen-helpers.ts	1980	function	copperGridCoverageRatio	SYSTEM	17	-	BRAK	M05A			masy ladu, relief wg szumu, pokrycie
+gen-helpers.ts	1999	function	reliefGridCoverageRatio	SYSTEM	11	-	BRAK	M05A			masy ladu, relief wg szumu, pokrycie
+gen-helpers.ts	2011	function	assertReliefGridCoverage	NIE-DOTYCZY	12	-	NIE-DOTYCZY	-			diagnostyka/profiler/asercja deweloperska (nie wplywa na wynik); w Rust jako debug_assert!/test
+gen-helpers.ts	2371	function	ensureReliefGridCoverage	SYSTEM	64	-	BRAK	M05B			pokrycie reliefu, pasma gorskie
+gen-helpers.ts	2618	function	capReliefClusterSizeSafetyNet	SYSTEM	11	-	BRAK	M05B			pokrycie reliefu, pasma gorskie
+gen-helpers.ts	2965	function	growMountainRanges	SYSTEM	208	-	BRAK	M05B			pokrycie reliefu, pasma gorskie
+gen-helpers.ts	3186	function	assignContinentIndices	SYSTEM	15	-	BRAK	M06A			bilans lad/morze, wybrzeze, wody srodladowe
+gen-helpers.ts	3234	function	isLandTerrain	SYSTEM	8	-	BRAK	M06A			bilans lad/morze, wybrzeze, wody srodladowe
+gen-helpers.ts	3249	function	isLandOrCoast	SYSTEM	3	-	BRAK	M06A			bilans lad/morze, wybrzeze, wody srodladowe
+gen-helpers.ts	3254	function	defaultLandFractionForTyp	SYSTEM	9	-	BRAK	M06A			bilans lad/morze, wybrzeze, wody srodladowe
+gen-helpers.ts	3268	function	countLandSeaHexes	SYSTEM	9	-	BRAK	M06A			bilans lad/morze, wybrzeze, wody srodladowe
+gen-helpers.ts	3339	function	enforceLatitudinalOceanBuffer	SYSTEM	19	-	BRAK	M06A			bilans lad/morze, wybrzeze, wody srodladowe
+gen-helpers.ts	3380	function	applyClimateBandsToHexes	SYSTEM	34	-	CZĘŚCIOWO	M06A	src/domain/map_generator.rs:1162		Rust `apply_climate_bands` na uproszczonym modelu HexTile (bez nakladek/zloz); brak testu wektorowego; kolejnosc w potoku inna
+gen-helpers.ts	3418	function	enforceEarthTemplateOnHexes	SYSTEM	15	-	BRAK	M06A			bilans lad/morze, wybrzeze, wody srodladowe
+gen-helpers.ts	3435	type	LandFractionFillBias	SYSTEM	1	-	BRAK	M06A			bilans lad/morze, wybrzeze, wody srodladowe
+gen-helpers.ts	3444	function	applyLandFractionByScore	SYSTEM	85	-	BRAK	M06A			bilans lad/morze, wybrzeze, wody srodladowe
+gen-helpers.ts	3532	function	rebalanceLandFractionWithMargins	SYSTEM	15	-	BRAK	M06A			bilans lad/morze, wybrzeze, wody srodladowe
+gen-helpers.ts	3667	function	rebalanceLandFractionPangea	SYSTEM	29	-	BRAK	M06A			bilans lad/morze, wybrzeze, wody srodladowe
+gen-helpers.ts	3701	function	applyLandFractionByContinent	SYSTEM	82	-	BRAK	M06A			bilans lad/morze, wybrzeze, wody srodladowe
+gen-helpers.ts	3791	function	rebalanceLandSeaRatio	SYSTEM	86	-	BRAK	M06A			bilans lad/morze, wybrzeze, wody srodladowe
+gen-helpers.ts	3882	function	isDryLandTerrain	SYSTEM	3	render:1	BRAK	M06A			bilans lad/morze, wybrzeze, wody srodladowe
+gen-helpers.ts	3894	function	applyCoastRing	SYSTEM	23	-	CZĘŚCIOWO	M06A	src/domain/map_generator.rs:1230		Rust `mark_coast_tiles` = jeden pierscien Morze->PlytkieMorze przy ladzie (nie czyta isDryLandTerrain/nakladek); web ma tez applyDoubleCoastRing; brak testu wektorowego
+gen-helpers.ts	3923	function	applyDoubleCoastRing	SYSTEM	24	-	BRAK	M06A			bilans lad/morze, wybrzeze, wody srodladowe
+gen-helpers.ts	3949	function	findDryLandTouchingSea	SYSTEM	17	-	BRAK	M06A			bilans lad/morze, wybrzeze, wody srodladowe
+gen-helpers.ts	3975	function	sanitizeCoastHexes	SYSTEM	46	-	BRAK	M06A			bilans lad/morze, wybrzeze, wody srodladowe
+gen-helpers.ts	4026	function	oceanConnectedWaterKeys	SYSTEM	34	-	BRAK	M06A			bilans lad/morze, wybrzeze, wody srodladowe
+gen-helpers.ts	4109	function	findInlandWaterHexes	SYSTEM	13	-	BRAK	M06A			bilans lad/morze, wybrzeze, wody srodladowe
+gen-helpers.ts	4123	function	findInlandSeaHexes	SYSTEM	10	-	BRAK	M06A			bilans lad/morze, wybrzeze, wody srodladowe
+gen-helpers.ts	4137	function	removeInlandWaterPools	SYSTEM	14	-	BRAK	M06A			bilans lad/morze, wybrzeze, wody srodladowe
+gen-helpers.ts	4156	function	purgeDesertEnclaveWater	SYSTEM	28	-	BRAK	M06A			bilans lad/morze, wybrzeze, wody srodladowe
+gen-helpers.ts	4189	function	fillEnclosedWaterByLandNeighbors	SYSTEM	24	-	BRAK	M06A			bilans lad/morze, wybrzeze, wody srodladowe
+gen-helpers.ts	4215	function	purgeInlandWaterForMultiLandTyp	SYSTEM	12	-	BRAK	M06A			bilans lad/morze, wybrzeze, wody srodladowe
+gen-helpers.ts	4232	function	applyJaggedCoastNoise	SYSTEM	39	-	BRAK	M06A			bilans lad/morze, wybrzeze, wody srodladowe
+gen-helpers.ts	4276	function	removeSmallInlandWaterPools	SYSTEM	38	-	BRAK	M06A			bilans lad/morze, wybrzeze, wody srodladowe
+gen-helpers.ts	4320	function	removeInlandSeaPools	SYSTEM	7	-	BRAK	M06A			bilans lad/morze, wybrzeze, wody srodladowe
+gen-helpers.ts	4375	function	ensurePangeaSingleContinent	SYSTEM	91	-	BRAK	M06B			pangea/korytarze, finalizacja wybrzeza, wyspy
+gen-helpers.ts	4530	function	measurePangeaAnnularCorridorHexes	NIE-DOTYCZY	19	-	NIE-DOTYCZY	-			diagnostyka/profiler/asercja deweloperska (nie wplywa na wynik); w Rust jako debug_assert!/test
+gen-helpers.ts	4552	type	PangeaBagelAuditSnap	NIE-DOTYCZY	7	-	NIE-DOTYCZY	-			diagnostyka/profiler/asercja deweloperska (nie wplywa na wynik); w Rust jako debug_assert!/test
+gen-helpers.ts	4560	let	pangeaBagelAuditSnaps	NIE-DOTYCZY	1	-	NIE-DOTYCZY	-			diagnostyka/profiler/asercja deweloperska (nie wplywa na wynik); w Rust jako debug_assert!/test
+gen-helpers.ts	4562	function	startPangeaBagelAudit	NIE-DOTYCZY	3	-	NIE-DOTYCZY	-			diagnostyka/profiler/asercja deweloperska (nie wplywa na wynik); w Rust jako debug_assert!/test
+gen-helpers.ts	4566	function	takePangeaBagelAuditSnaps	NIE-DOTYCZY	5	-	NIE-DOTYCZY	-			diagnostyka/profiler/asercja deweloperska (nie wplywa na wynik); w Rust jako debug_assert!/test
+gen-helpers.ts	4572	function	snapPangeaBagelAudit	NIE-DOTYCZY	18	-	NIE-DOTYCZY	-			diagnostyka/profiler/asercja deweloperska (nie wplywa na wynik); w Rust jako debug_assert!/test
+gen-helpers.ts	4595	function	fillPangeaAnnularSeaCorridors	SYSTEM	48	-	BRAK	M06B			pangea/korytarze, finalizacja wybrzeza, wyspy
+gen-helpers.ts	4649	function	maxOceanBayDepth	SYSTEM	5	-	BRAK	M06B			pangea/korytarze, finalizacja wybrzeza, wyspy
+gen-helpers.ts	4659	function	morseDepthFromMapBorder	SYSTEM	36	-	BRAK	M06B			pangea/korytarze, finalizacja wybrzeza, wyspy
+gen-helpers.ts	4701	function	trimEnclosedOceanOnly	SYSTEM	18	-	BRAK	M06B			pangea/korytarze, finalizacja wybrzeza, wyspy
+gen-helpers.ts	4724	function	purgeReliefValleyWater	SYSTEM	31	-	BRAK	M06B			pangea/korytarze, finalizacja wybrzeza, wyspy
+gen-helpers.ts	4761	function	trimDeepOceanBays	SYSTEM	20	-	BRAK	M06B			pangea/korytarze, finalizacja wybrzeza, wyspy
+gen-helpers.ts	4787	function	finalizeCoastAndInlandWater	SYSTEM	36	-	BRAK	M06B			pangea/korytarze, finalizacja wybrzeza, wyspy
+gen-helpers.ts	4840	function	thickenCoastAndSmoothInlets	SYSTEM	60	-	BRAK	M06B			pangea/korytarze, finalizacja wybrzeza, wyspy
+gen-helpers.ts	4915	function	flattenFalseCoastalRiverNotches	SYSTEM	26	-	BRAK	M06B			pangea/korytarze, finalizacja wybrzeza, wyspy
+gen-helpers.ts	4946	function	removeTinyLandIslands	SYSTEM	38	-	BRAK	M06B			pangea/korytarze, finalizacja wybrzeza, wyspy
+gen-helpers.ts	4992	function	minTinyIslandHexesForTyp	SYSTEM	9	-	BRAK	M06B			pangea/korytarze, finalizacja wybrzeza, wyspy
+gen-helpers.ts	5006	function	countOpenOceanLandSpecks	SYSTEM	19	-	BRAK	M06B			pangea/korytarze, finalizacja wybrzeza, wyspy
+gen-helpers.ts	5027	function	purgeOpenOceanLandSpecks	SYSTEM	21	-	BRAK	M06B			pangea/korytarze, finalizacja wybrzeza, wyspy
+gen-helpers.ts	5050	function	finalizeLandMassAfterCoast	SYSTEM	20	-	BRAK	M06B			pangea/korytarze, finalizacja wybrzeza, wyspy
+gen-helpers.ts	5079	function	enforceTargetDryLandFraction	SYSTEM	33	-	BRAK	M06B			pangea/korytarze, finalizacja wybrzeza, wyspy
+gen-helpers.ts	5121	function	auditMapTerrainData	NIE-DOTYCZY	46	-	NIE-DOTYCZY	-			diagnostyka/profiler/asercja deweloperska (nie wplywa na wynik); w Rust jako debug_assert!/test
+gen-helpers.ts	5175	const	ELEVATION_RANK	SYSTEM	10	-	BRAK	M07A			rzeki A: sciezki/pola
+gen-helpers.ts	5187	function	riversQuotaForLandMass	SYSTEM	6	-	BRAK	M07A			rzeki A: sciezki/pola
+gen-helpers.ts	5204	function	purgeOceanInsideEarthLandMask	SYSTEM	26	-	BRAK	M07A			rzeki A: sciezki/pola
+gen-helpers.ts	5244	function	purgeStrayLandOutsideEarthMask	SYSTEM	15	-	BRAK	M07A			rzeki A: sciezki/pola
+gen-helpers.ts	5261	function	landRiverRenderPath	SYSTEM	16	render:1	BRAK	M07A			rzeki A: sciezki/pola
+gen-helpers.ts	5279	function	countMediumInlandLandHexes	SYSTEM	11	-	BRAK	M07A			rzeki A: sciezki/pola
+gen-helpers.ts	5295	function	mediumRiverRenderPath	SYSTEM	15	render:1	BRAK	M07A			rzeki A: sciezki/pola
+gen-helpers.ts	5312	function	coastalRiverRenderPath	SYSTEM	70	render:1	BRAK	M07A			rzeki A: sciezki/pola
+gen-helpers.ts	5400	function	assertRiverPathAdjacent	NIE-DOTYCZY	13	-	NIE-DOTYCZY	-			diagnostyka/profiler/asercja deweloperska (nie wplywa na wynik); w Rust jako debug_assert!/test
+gen-helpers.ts	5415	function	splitAdjacentRiverChains	SYSTEM	22	-	BRAK	M07A			rzeki A: sciezki/pola
+gen-helpers.ts	5440	function	sanitizeRiverPath	SYSTEM	15	-	BRAK	M07A			rzeki A: sciezki/pola
+gen-helpers.ts	5457	function	riverPathHasRevisitedHex	SYSTEM	9	-	BRAK	M07A			rzeki A: sciezki/pola
+gen-helpers.ts	5468	function	repairRiverPathAdjacency	SYSTEM	42	-	BRAK	M07A			rzeki A: sciezki/pola
+gen-helpers.ts	5512	const	RIVER_MIN_INLAND_FROM_SEA	SYSTEM	1	-	BRAK	M07A			rzeki A: sciezki/pola
+gen-helpers.ts	5518	const	RIVER_MIN_MAIN_LEN	SYSTEM	1	-	BRAK	M07A			rzeki A: sciezki/pola
+gen-helpers.ts	5523	const	RIVER_HARD_MEANDER_LEN	SYSTEM	1	-	BRAK	M07A			rzeki A: sciezki/pola
+gen-helpers.ts	5526	const	RIVER_MOUTH_TAIL_LEN	SYSTEM	1	-	BRAK	M07A			rzeki A: sciezki/pola
+gen-helpers.ts	5529	const	MAIN_RIVER_MIN_PATH_SEP	SYSTEM	1	-	BRAK	M07A			rzeki A: sciezki/pola
+gen-helpers.ts	5532	const	MEDIUM_TRIBUTARY_SPACING_HEX	SYSTEM	1	-	BRAK	M07A			rzeki A: sciezki/pola
+gen-helpers.ts	5535	function	mediumTributarySpacingHex	SYSTEM	3	-	BRAK	M07A			rzeki A: sciezki/pola
+gen-helpers.ts	5540	const	MEDIUM_TRIBUTARY_MIN_NET_LEN	SYSTEM	1	-	BRAK	M07A			rzeki A: sciezki/pola
+gen-helpers.ts	5543	function	mediumTributaryMinNetLen	SYSTEM	6	-	BRAK	M07A			rzeki A: sciezki/pola
+gen-helpers.ts	5551	const	MAIN_RIVER_COAST_MOUTH_MAX_GAP	SYSTEM	1	-	BRAK	M07A			rzeki A: sciezki/pola
+gen-helpers.ts	5554	function	mainRiverCoastMouthMaxGapForDims	SYSTEM	5	-	BRAK	M07A			rzeki A: sciezki/pola
+gen-helpers.ts	5561	function	riverPathRespectsSeaBuffer	SYSTEM	17	-	BRAK	M07A			rzeki A: sciezki/pola
+gen-helpers.ts	5614	function	buildSeaDistanceField	SYSTEM	24	-	BRAK	M07A			rzeki A: sciezki/pola
+gen-helpers.ts	5640	function	buildOpenOceanDistanceField	SYSTEM	28	-	BRAK	M07A			rzeki A: sciezki/pola
+gen-helpers.ts	5679	interface	RiverProfileStats	NIE-DOTYCZY	21	-	NIE-DOTYCZY	-			diagnostyka/profiler/asercja deweloperska (nie wplywa na wynik); w Rust jako debug_assert!/test
+gen-helpers.ts	5719	function	resetRiverProfileStats	NIE-DOTYCZY	3	-	NIE-DOTYCZY	-			diagnostyka/profiler/asercja deweloperska (nie wplywa na wynik); w Rust jako debug_assert!/test
+gen-helpers.ts	5723	function	getRiverProfileStats	NIE-DOTYCZY	3	-	NIE-DOTYCZY	-			diagnostyka/profiler/asercja deweloperska (nie wplywa na wynik); w Rust jako debug_assert!/test
+gen-helpers.ts	5727	function	formatRiverProfileReport	NIE-DOTYCZY	26	-	NIE-DOTYCZY	-			diagnostyka/profiler/asercja deweloperska (nie wplywa na wynik); w Rust jako debug_assert!/test
+gen-helpers.ts	5755	interface	RiverFieldCache	SYSTEM	5	-	BRAK	M07A			rzeki A: sciezki/pola
+gen-helpers.ts	5761	function	buildRiverFieldCache	SYSTEM	19	-	BRAK	M07A			rzeki A: sciezki/pola
+gen-helpers.ts	5797	function	pathEndsAtSea	SYSTEM	21	-	BRAK	M07A			rzeki A: sciezki/pola
+gen-helpers.ts	5819	interface	TraceRiverOpts	SYSTEM	24	-	BRAK	M07A			rzeki A: sciezki/pola
+gen-helpers.ts	6070	function	riverGrowStepPassesSep	SYSTEM	10	-	BRAK	M07B			rzeki B: trace
+gen-helpers.ts	6707	function	traceRiver	SYSTEM	105	-	BRAK	M07B			rzeki B: trace
+gen-helpers.ts	6999	const	RIVER_TURN_WINDOW_HEX	SYSTEM	1	-	BRAK	M07B			rzeki B: trace
+gen-helpers.ts	7000	const	RIVER_TURN_WINDOW_MAX_SUM	SYSTEM	1	-	BRAK	M07B			rzeki B: trace
+gen-helpers.ts	7051	function	riverSegmentUnitVector	SYSTEM	11	-	BRAK	M07B			rzeki B: trace
+gen-helpers.ts	7064	function	riverPathHasSharpUTurn	SYSTEM	9	-	BRAK	M07B			rzeki B: trace
+gen-helpers.ts	7075	function	riverPathViolatesTurnWindow	SYSTEM	17	-	BRAK	M07B			rzeki B: trace
+gen-helpers.ts	7254	function	syncRiverEdgeBonusHexes	SYSTEM	12	ui:1	BRAK	M07C			rzeki C: dolywy srednie
+gen-helpers.ts	7516	function	riverPathHasJoinHexWrap	SYSTEM	13	-	BRAK	M07C			rzeki C: dolywy srednie
+gen-helpers.ts	7533	function	riverPathHasBranchHexWrap	SYSTEM	12	-	BRAK	M07C			rzeki C: dolywy srednie
+gen-helpers.ts	7549	function	trimMediumJoinHexWrap	SYSTEM	17	-	BRAK	M07C			rzeki C: dolywy srednie
+gen-helpers.ts	7570	function	trimMediumBranchHexWrap	SYSTEM	16	-	BRAK	M07C			rzeki C: dolywy srednie
+gen-helpers.ts	7619	function	perpendicularHexDirections	SYSTEM	7	-	BRAK	M07C			rzeki C: dolywy srednie
+gen-helpers.ts	7766	function	growMediumTributaryFromMain	SYSTEM	59	-	BRAK	M07C			rzeki C: dolywy srednie
+gen-helpers.ts	7831	function	mediumPathStartsOnMain	SYSTEM	5	-	BRAK	M07C			rzeki C: dolywy srednie
+gen-helpers.ts	7838	function	mediumTributaryNetHexCount	SYSTEM	7	-	BRAK	M07C			rzeki C: dolywy srednie
+gen-helpers.ts	8043	function	trimMediumRenderPathAtMain	SYSTEM	10	render:1	BRAK	M07C			rzeki C: dolywy srednie
+gen-helpers.ts	8145	function	stripRiverMarksFromOpenSea	SYSTEM	9	-	BRAK	M07C			rzeki C: dolywy srednie
+gen-helpers.ts	8156	function	clearRiverMarks	SYSTEM	5	-	BRAK	M07C			rzeki C: dolywy srednie
+gen-helpers.ts	8342	function	riverCoverageCellSize	SYSTEM	6	-	BRAK	M07D			rzeki D: walidacja/przycinanie
+gen-helpers.ts	8353	function	riverTributaryCellSize	SYSTEM	6	-	BRAK	M07D			rzeki D: walidacja/przycinanie
+gen-helpers.ts	8360	function	landHexesByCoverageCell	SYSTEM	14	-	BRAK	M07D			rzeki D: walidacja/przycinanie
+gen-helpers.ts	8376	type	RiverPathKind	SYSTEM	1	render:1	BRAK	M07D			rzeki D: walidacja/przycinanie
+gen-helpers.ts	8379	const	SHORT_RIVER_MAX_DIST_FROM_MEDIUM	SYSTEM	1	-	BRAK	M07D			rzeki D: walidacja/przycinanie
+gen-helpers.ts	8381	interface	GenerateRiversResult	SYSTEM	4	-	BRAK	M07D			rzeki D: walidacja/przycinanie
+gen-helpers.ts	8387	const	MAIN_RIVER_GRID_STRIDE	SYSTEM	1	-	BRAK	M07D			rzeki D: walidacja/przycinanie
+gen-helpers.ts	8390	function	cellHasRiverHex	SYSTEM	10	-	BRAK	M07D			rzeki D: walidacja/przycinanie
+gen-helpers.ts	8424	function	collectPathHexKeysForKinds	SYSTEM	13	-	BRAK	M07D			rzeki D: walidacja/przycinanie
+gen-helpers.ts	8443	function	buildOceanReachableRiverHexKeys	SYSTEM	40	-	BRAK	M07D			rzeki D: walidacja/przycinanie
+gen-helpers.ts	8488	function	verifyRiverNetworkConnectivity	SYSTEM	16	-	BRAK	M07D			rzeki D: walidacja/przycinanie
+gen-helpers.ts	8508	function	pruneOrphanRiverPaths	SYSTEM	56	-	BRAK	M07D			rzeki D: walidacja/przycinanie
+gen-helpers.ts	8573	function	pathReachesRealSea	SYSTEM	11	-	BRAK	M07D			rzeki D: walidacja/przycinanie
+gen-helpers.ts	8593	function	pruneRiversNotReachingRealSea	SYSTEM	20	-	BRAK	M07D			rzeki D: walidacja/przycinanie
+gen-helpers.ts	8619	function	ensureRiverOutlets	SYSTEM	15	-	BRAK	M07D			rzeki D: walidacja/przycinanie
+gen-helpers.ts	8661	function	checkRiverEdgeContinuity	SYSTEM	27	-	BRAK	M07D			rzeki D: walidacja/przycinanie
+gen-helpers.ts	8694	function	checkTributaryJunctions	SYSTEM	46	-	BRAK	M07D			rzeki D: walidacja/przycinanie
+gen-helpers.ts	8785	function	pruneInvalidMediumRiverPaths	SYSTEM	74	-	BRAK	M07D			rzeki D: walidacja/przycinanie
+gen-helpers.ts	8872	function	checkNoRiverRings	SYSTEM	31	-	BRAK	M07D			rzeki D: walidacja/przycinanie
+gen-helpers.ts	8904	function	countRiverOutletsToSea	SYSTEM	15	-	BRAK	M07D			rzeki D: walidacja/przycinanie
+gen-helpers.ts	8920	function	medianRiverPathLength	SYSTEM	16	-	BRAK	M07D			rzeki D: walidacja/przycinanie
+gen-helpers.ts	8937	function	collectRiverPathHexKeys	SYSTEM	7	-	BRAK	M07D			rzeki D: walidacja/przycinanie
+gen-helpers.ts	8981	class	RiverHexSpatialIndex	SYSTEM	56	-	BRAK	M07D			rzeki D: walidacja/przycinanie
+gen-helpers.ts	9044	function	nearestRiverHexDistance	SYSTEM	16	-	BRAK	M07D			rzeki D: walidacja/przycinanie
+gen-helpers.ts	9085	function	cellHasRiverSourceInCell	SYSTEM	11	-	BRAK	M07D			rzeki D: walidacja/przycinanie
+gen-helpers.ts	9102	function	pathHasValidRiverOutlet	SYSTEM	14	-	BRAK	M07D			rzeki D: walidacja/przycinanie
+gen-helpers.ts	9425	function	worstMainRiverCoastMouthGapOnMass	SYSTEM	21	-	BRAK	M07D			rzeki D: walidacja/przycinanie
+gen-helpers.ts	9563	function	refillMainRiverCoastMouthGapsOnMap	SYSTEM	77	-	BRAK	M07E1			rzeki E1: uzupelnienia/pokrycie
+gen-helpers.ts	9803	function	landMassHasMainRiver	SYSTEM	14	-	BRAK	M07E1			rzeki E1: uzupelnienia/pokrycie
+gen-helpers.ts	9819	function	cellHasMainRiverSource	SYSTEM	13	-	BRAK	M07E1			rzeki E1: uzupelnienia/pokrycie
+gen-helpers.ts	9865	function	minLandHexesForRiverCell	SYSTEM	3	-	BRAK	M07E1			rzeki E1: uzupelnienia/pokrycie
+gen-helpers.ts	9870	const	RIVER_PROXIMITY_MAX_DIST	SYSTEM	1	-	BRAK	M07E1			rzeki E1: uzupelnienia/pokrycie
+gen-helpers.ts	9872	function	riverProximityMaxDist	SYSTEM	3	-	BRAK	M07E1			rzeki E1: uzupelnienia/pokrycie
+gen-helpers.ts	10215	function	maxLandHexDistanceToRiver	SYSTEM	8	-	BRAK	M07E1			rzeki E1: uzupelnienia/pokrycie
+gen-helpers.ts	10252	function	assertRiverGridCoverage	NIE-DOTYCZY	27	-	NIE-DOTYCZY	-			diagnostyka/profiler/asercja deweloperska (nie wplywa na wynik); w Rust jako debug_assert!/test
+gen-helpers.ts	10281	function	riverGridCoverageRatio	SYSTEM	30	-	BRAK	M07E1			rzeki E1: uzupelnienia/pokrycie
+gen-helpers.ts	10517	const	MAX_DRY_LOWLAND_PATCH_HEXES	SYSTEM	1	-	BRAK	M07E1			rzeki E1: uzupelnienia/pokrycie
+gen-helpers.ts	10532	function	maxDryLowlandPatchSize	SYSTEM	27	-	BRAK	M07E2			rzeki E2: generateRivers
+gen-helpers.ts	11525	function	generateRivers	SYSTEM	228	-	BRAK	M07E2			rzeki E2: generateRivers
+gen-helpers.ts	11777	function	topUpRiverGridCoverage	SYSTEM	138	-	BRAK	M07E2			rzeki E2: generateRivers
+gen-helpers.ts	11935	type	HexWithZloze	SYSTEM	1	-	BRAK	M08			zloza/las/fair-play
+gen-helpers.ts	11953	interface	DepositRule	DATA	16	-	CZĘŚCIOWO	M08	src/data/terrain_map.rs:373	tests/data_terrain_map.rs:66	typ danych parsowany w Rust (spot-check), bez logiki losowania
+gen-helpers.ts	12045	const	DEPOSIT_RULES	DATA	4	data:1,game:2,render:1	CZĘŚCIOWO	M08	src/data/terrain_map.rs:380	tests/data_terrain_map.rs:66	tabela regul zloz = dane `map-gen-params.json`; test spot-check; funkcje placeDeposits nieobecne
+gen-helpers.ts	12065	function	placeDeposits	SYSTEM	51	-	BRAK	M08			zloza/las/fair-play
+gen-helpers.ts	12127	const	FAIR_PLAY_DEPOSIT_IDS	SYSTEM	3	data:1	BRAK	M08			zloza/las/fair-play
+gen-helpers.ts	12298	function	depositGridCoverageRatio	SYSTEM	18	-	BRAK	M08			zloza/las/fair-play
+gen-helpers.ts	12320	function	ensureDepositGridCoverage	SYSTEM	55	-	BRAK	M08			zloza/las/fair-play
+gen-helpers.ts	12379	function	forestGridCoverageRatio	SYSTEM	16	-	BRAK	M08			zloza/las/fair-play
+gen-helpers.ts	12399	function	ensureForestGridCoverage	SYSTEM	43	-	BRAK	M08			zloza/las/fair-play
+gen-helpers.ts	12449	function	stripDepositsFromWater	SYSTEM	11	-	BRAK	M08			zloza/las/fair-play
+gen-helpers.ts	12462	function	countDepositsOnWater	SYSTEM	8	-	BRAK	M08			zloza/las/fair-play
+gen-helpers.ts	12476	interface	StartPosition	SYSTEM	4	-	BRAK	M13			web {q,r,...} pozycja startowa generatora; w Rust brak tego typu (`start_position.rs` operuje slotami klastra)
+gen-helpers.ts	12495	function	computeStartPositions	SYSTEM	61	-	BRAK	M13			pozycje startowe
+genWorker.ts	13	type	GenWorkerRequest	NIE-DOTYCZY	9	-	NIE-DOTYCZY	-			protokol Web Workera (self.postMessage); silnik Rust jest synchroniczny -- ZALOZENIE Z4
+genWorker.ts	23	type	GenWorkerResponse	NIE-DOTYCZY	4	-	NIE-DOTYCZY	-			protokol Web Workera; jw.
+generator.ts	117	reexport-type	WorldGenOptions	SYSTEM	1	-	BRAK	M18			re-eksport typu z newGameMapDefaults.ts:442 (definicja = temat M02); instrukcja re-eksportu nalezy do fasady generatora = M18
+generator.ts	118	reexport-type	MapGenProgressCallback	UI	1	-	NIE-DOTYCZY	-			re-eksport typu callbacku postepu
+generator.ts	118	reexport-type	MapGenPhaseTimings	UI	1	main.ts:1,ui:2	NIE-DOTYCZY	-			re-eksport typu timerow
+generator.ts	125	const	DEFAULT_WIDTH	DATA	1	main.ts:1	CZĘŚCIOWO	M18	src/data/terrain_map.rs:352	tests/data_terrain_map.rs:66	=36; dane `generator.default_width` identyczne (web_data_check.out.txt); test w repo NIE przypina tej wartosci
+generator.ts	126	const	DEFAULT_HEIGHT	DATA	1	main.ts:1	CZĘŚCIOWO	M18	src/data/terrain_map.rs:352	tests/data_terrain_map.rs:66	=28; jw.
+generator.ts	133	type	GameMapWithStarts	SYSTEM	6	-	BRAK	M18			typ wyniku (GameMap + startPositions); Rust `GeneratedMap` (map_generator.rs:152) to inny, uproszczony model
+generator.ts	148	function	generateMap	SYSTEM	571	main.ts:1,game:1	CZĘŚCIOWO	M18	src/domain/map_generator.rs:329		Rust `generate_map` = UPROSZCZONY potok (maska->klasyfikacja->klimat->pierscien wybrzeza->rzeki BFS). POMIAR vs 5 map z weba: rowny teren 22-43% hexow (cmp_generate_map_vs_web.out.txt) -> NIE jest portem
+generator.ts	775	type	RozmiarSwiata	DATA	1	data:1	BRAK	M02			typ etykiety rozmiaru
+generator.ts	778	const	ROZMIAR_DIMS	DATA	1	-	CZĘŚCIOWO	M02	src/data/terrain_map.rs:361	tests/data_terrain_map.rs:66	wymiary rowne z `rozmiar_dims` (web_data_check.out.txt); test w repo przypina tylko `standardowy` (data_terrain_map.rs:76)
+generator.ts	781	const	ROZMIAR_MENU_LABELS	UI	8	perf:1	NIE-DOTYCZY	-			etykiety menu
+generator.ts	798	function	rozmiarFromMenuLabel	SYSTEM	10	main.ts:1	BRAK	M02			mapowanie etykiety menu -> rozmiar
+generator.ts	809	function	rozmiarToDims	SYSTEM	4	-	CZĘŚCIOWO	M02	src/data/terrain_map.rs:361		dane wymiarow sa w Rust, funkcja wyboru nie
+generator.ts	815	function	menuLabelToDims	SYSTEM	3	-	CZĘŚCIOWO	M02	src/data/terrain_map.rs:361		dane wymiarow sa w Rust, funkcja nie
+generator.ts	829	function	generujSwiat	SYSTEM	15	-	BRAK	M18	src/domain/map_generator.rs:329		wrapper generateMap(rozmiar, typ, seed)
+generator.ts	846	reexport-type	TypSwiata	SYSTEM	1	main.ts:1	ISTNIEJE-ZWERYFIKOWANE	M18	src/domain/map_generator.rs:21	tests/map_generator.rs:58	re-eksport typu (generator.ts:846); definicja w gen-helpers.ts (temat M01); instrukcja re-eksportu = fasada M18
+generator.ts	846	reexport-type	RozmiarSwiataType	DATA	1	-	BRAK	M18			re-eksport aliasu typu (definicja = temat M02); instrukcja re-eksportu = fasada M18
+generator.ts	846	reexport-type	StartPosition	SYSTEM	1	-	BRAK	M18			re-eksport typu z gen-helpers.ts:12476 (definicja = temat M13); instrukcja re-eksportu = fasada M18
+generator.ts	847	reexport	landMaskAt	SYSTEM	1	-	BRAK	M18			re-eksport (generator.ts:847); definicja gen-helpers.ts (temat M03); brak konsumentow
+generator.ts	848	reexport	findBestPlayerStartHex	SYSTEM	1	units:1	BRAK	M18			re-eksport z startScoring.ts (definicja = temat M10); instrukcja re-eksportu = fasada M18
+generator.ts	848	reexport	scoreCityStartHex	SYSTEM	1	-	BRAK	M18			re-eksport z startScoring.ts (definicja = temat M10); instrukcja re-eksportu = fasada M18
+generator.ts	848	reexport	START_REVEAL_RADIUS	DATA	1	-	CZĘŚCIOWO	M18	src/domain/player.rs:111	tests/p6_1_first_player_city.rs:80	re-eksport (definicja startScoring.ts = temat M10); Rust przyjmuje promien jako PARAMETR (`is_hex_in_start_reveal`), stala =5 nieobecna
+improvement-build.ts	50	interface	ImprovementBuildState	UI	59	main.ts:1,game:1	NIE-DOTYCZY	-			API/callbacki panelu budowy, galeria lub tekst podpowiedzi (UI)
+improvement-build.ts	110	interface	ImprovementTypeInfo	UI	11	-	NIE-DOTYCZY	-			API/callbacki panelu budowy, galeria lub tekst podpowiedzi (UI)
+improvement-build.ts	122	interface	ImprovementBuildRequest	UI	10	main.ts:1	NIE-DOTYCZY	-			API/callbacki panelu budowy, galeria lub tekst podpowiedzi (UI)
+improvement-build.ts	133	interface	ImprovementBuildCallbacks	UI	14	main.ts:1	NIE-DOTYCZY	-			API/callbacki panelu budowy, galeria lub tekst podpowiedzi (UI)
+improvement-build.ts	148	interface	ImprovementBuildModeOptions	UI	6	-	NIE-DOTYCZY	-			API/callbacki panelu budowy, galeria lub tekst podpowiedzi (UI)
+improvement-build.ts	212	function	stripImprovementsWhenForestRemoved	SYSTEM	3	main.ts:1,game:1	BRAK	M16			reguly budowy ulepszen na mapie
+improvement-build.ts	255	function	isLegacyFarmOnForestLayer	SYSTEM	4	game:1	BRAK	M16			reguly budowy ulepszen na mapie
+improvement-build.ts	261	function	stripLegacyFarmOnForest	SYSTEM	7	-	BRAK	M16			reguly budowy ulepszen na mapie
+improvement-build.ts	276	interface	LegacyFarmHexView	UI	5	-	NIE-DOTYCZY	-			API/callbacki panelu budowy, galeria lub tekst podpowiedzi (UI)
+improvement-build.ts	283	interface	LegacyFarmOnForestChange	SYSTEM	13	-	BRAK	M16			reguly budowy ulepszen na mapie
+improvement-build.ts	297	interface	LegacyFarmOnForestReport	SYSTEM	9	-	BRAK	M16			reguly budowy ulepszen na mapie
+improvement-build.ts	312	function	planLegacyFarmOnForestRemoval	SYSTEM	24	-	BRAK	M16			reguly budowy ulepszen na mapie
+improvement-build.ts	347	function	removeLegacyFarmsOnForest	SYSTEM	15	main.ts:1	BRAK	M16			reguly budowy ulepszen na mapie
+improvement-build.ts	387	function	isFarmBaseTerrain	SYSTEM	4	ui:1	BRAK	M16			reguly budowy ulepszen na mapie
+improvement-build.ts	414	function	isStadninaBlockedOnForest	SYSTEM	3	main.ts:1	BRAK	M16			regula stadniny na lesie; w Rust tylko ogolny `forest_gate`
+improvement-build.ts	474	function	isImprovementBlockedOnForest	SYSTEM	6	main.ts:1,ui:1	CZĘŚCIOWO	M16	src/domain/improvements.rs:264		Rust `forest_gate` (prywatna) blokuje Farm/Irrigation/Cattle/Terraces na lesie; stadnina/owce/inne reguly web NIE_ZMIERZONO; brak testu wektorowego weba
+improvement-build.ts	494	function	getImprovementForestBlockHint	UI	5	main.ts:1	NIE-DOTYCZY	-			API/callbacki panelu budowy, galeria lub tekst podpowiedzi (UI)
+improvement-build.ts	513	function	isOwceBaseTerrain	SYSTEM	5	-	BRAK	M16			reguly budowy ulepszen na mapie
+improvement-build.ts	519	const	FOOD_LAYER_KEYS	SYSTEM	3	-	BRAK	M16			reguly budowy ulepszen na mapie
+improvement-build.ts	567	interface	ImprovementBuildImpact	SYSTEM	6	main.ts:1,ui:1	BRAK	M16			reguly budowy ulepszen na mapie
+improvement-build.ts	575	function	improvementsReplacedByBuild	SYSTEM	25	-	BRAK	M16			reguly budowy ulepszen na mapie
+improvement-build.ts	617	function	computeImprovementBuildImpact	SYSTEM	40	main.ts:1	BRAK	M16			reguly budowy ulepszen na mapie
+improvement-build.ts	662	function	formatImprovementBuildImpactList	UI	10	ui:1	NIE-DOTYCZY	-			API/callbacki panelu budowy, galeria lub tekst podpowiedzi (UI)
+improvement-build.ts	709	const	MINE_IMPROVEMENT_KEYS	SYSTEM	6	-	BRAK	M16			reguly budowy ulepszen na mapie
+improvement-build.ts	717	function	isMineImprovementKey	SYSTEM	3	main.ts:1	BRAK	M16			reguly budowy ulepszen na mapie
+improvement-build.ts	725	function	isImprovementVisibleInBuildPanel	UI	8	-	NIE-DOTYCZY	-			API/callbacki panelu budowy, galeria lub tekst podpowiedzi (UI)
+improvement-build.ts	735	function	isTarasyCiv	SYSTEM	6	-	BRAK	M16			reguly budowy ulepszen na mapie
+improvement-build.ts	743	function	hasBlockingDepositForFarm	SYSTEM	5	-	CZĘŚCIOWO	M16	src/domain/improvements.rs:277		web: zawsze false (wolne wspolistnienie, improvement-build.ts:743-747); Rust: `Farm => tile.deposit.is_none()` (deposit_gate) -- ROZBIEZNOSC do zbadania w M16
+improvement-build.ts	757	function	hexHasClayDeposit	SYSTEM	4	ui:1	BRAK	M16			reguly budowy ulepszen na mapie
+improvement-build.ts	763	function	hexHasDepositReserve	SYSTEM	5	main.ts:1,game:1	BRAK	M16			reguly budowy ulepszen na mapie
+improvement-build.ts	770	function	depositAllowsPlayerImprovement	SYSTEM	36	main.ts:1,game:2	CZĘŚCIOWO	M16	src/domain/improvements.rs:277		Rust `deposit_gate` (prywatna) - inna reprezentacja zloz (`Deposit` enum vs nakladka/zloze weba); brak testu wektorowego weba
+improvement-build.ts	808	function	canAddFoodLayer	SYSTEM	28	-	CZĘŚCIOWO	M16	src/domain/improvements.rs:303		Rust `layers_allow` (prywatna) - warstwy zywnosci; zgodnosc z kanonem web NIE_ZMIERZONO (brak wektora weba)
+improvement-build.ts	912	function	hasAnimalDeposit	SYSTEM	3	-	BRAK	M16			reguly budowy ulepszen na mapie
+improvement-build.ts	1169	function	buildImprovementQualifier	SYSTEM	7	main.ts:1,game:2	BRAK	M16			reguly budowy ulepszen na mapie
+improvement-build.ts	1181	function	galleryTerrainEligible	UI	69	ui:1	NIE-DOTYCZY	-			API/callbacki panelu budowy, galeria lub tekst podpowiedzi (UI)
+improvement-build.ts	1252	function	galleryComboEligible	UI	19	-	NIE-DOTYCZY	-			API/callbacki panelu budowy, galeria lub tekst podpowiedzi (UI)
+improvement-build.ts	1276	function	galleryComboShowModel	UI	17	-	NIE-DOTYCZY	-			API/callbacki panelu budowy, galeria lub tekst podpowiedzi (UI)
+improvement-build.ts	1367	function	getForestBuildBlockReason	UI	31	-	NIE-DOTYCZY	-			API/callbacki panelu budowy, galeria lub tekst podpowiedzi (UI)
+improvement-build.ts	1415	function	createImprovementBuildApi	UI	133	main.ts:1,game:1,ui:1	NIE-DOTYCZY	-			API/callbacki panelu budowy, galeria lub tekst podpowiedzi (UI)
+improvement-build.ts	1560	function	collectRoadKeys	SYSTEM	7	main.ts:1,game:1	BRAK	M15			zbior kluczy drog; powiazane z road-movement.ts
+improvement-build.ts	1569	reexport	isRoadImprovementKey	SYSTEM	1	main.ts:1	BRAK	M15			re-eksport z road-movement.ts:59
+map-attack-city.ts	18	type	MapEnemyCityClickAction	UI	10	main.ts:1	NIE-DOTYCZY	-			routing klikniecia na wrogie miasto (hinty UI); decyzje oblezenia siedza w game/mapSiegeDetect.ts -- poza katalogiem map/, do P6.13
+map-attack-city.ts	29	reexport	isCivilianUnit	UI	1	main.ts:1,game:10,units:2	NIE-DOTYCZY	-			routing klikniecia na wrogie miasto (hinty UI); decyzje oblezenia siedza w game/mapSiegeDetect.ts -- poza katalogiem map/, do P6.13
+map-attack-city.ts	31	interface	ResolveEnemyCityClickInput	UI	11	-	NIE-DOTYCZY	-			routing klikniecia na wrogie miasto (hinty UI); decyzje oblezenia siedza w game/mapSiegeDetect.ts -- poza katalogiem map/, do P6.13
+map-attack-city.ts	83	function	resolveEnemyCityClick	UI	63	main.ts:1	NIE-DOTYCZY	-			routing klikniecia na wrogie miasto (hinty UI); decyzje oblezenia siedza w game/mapSiegeDetect.ts -- poza katalogiem map/, do P6.13
+mapGenAsync.ts	19	function	generujSwiatAsync	NIE-DOTYCZY	14	main.ts:1,game:1,ui:1	NIE-DOTYCZY	-	src/domain/map_generator.rs:329		opakowanie workera (`?worker&inline`); w Rust odpowiada mu synchroniczne `generate_map`, asynchronicznosc = warstwa powloki (Tauri/bridge, P7) -- ZALOZENIE Z4
+mapGenProgress.ts	6	const	MAP_GEN_PHASE_TOTAL	UI	1	ui:1	NIE-DOTYCZY	-			postep generacji / timery wydajnosci (UI+perf); ew. callback postepu w M18 jako opcja
+mapGenProgress.ts	8	type	MapGenProgressCallback	UI	6	-	NIE-DOTYCZY	-			postep generacji / timery wydajnosci (UI+perf); ew. callback postepu w M18 jako opcja
+mapGenProgress.ts	16	const	MAP_GEN_PHASE_LABELS	UI	12	ui:2	NIE-DOTYCZY	-			postep generacji / timery wydajnosci (UI+perf); ew. callback postepu w M18 jako opcja
+mapGenProgress.ts	33	function	reportMapGenPhase	UI	15	-	NIE-DOTYCZY	-			postep generacji / timery wydajnosci (UI+perf); ew. callback postepu w M18 jako opcja
+mapGenProgress.ts	50	type	MapGenPhaseKey	UI	1	-	NIE-DOTYCZY	-			postep generacji / timery wydajnosci (UI+perf); ew. callback postepu w M18 jako opcja
+mapGenProgress.ts	53	interface	MapGenPhaseTimings	UI	13	main.ts:1,ui:2	NIE-DOTYCZY	-			postep generacji / timery wydajnosci (UI+perf); ew. callback postepu w M18 jako opcja
+mapGenProgress.ts	70	function	createMapGenTimer	UI	31	-	NIE-DOTYCZY	-			postep generacji / timery wydajnosci (UI+perf); ew. callback postepu w M18 jako opcja
+mapSnapshot.ts	87	interface	SparseColumn	SYSTEM	4	-	BRAK	M17			serializacja mapy do zapisu (kolumny rzadkie) -- uzywane w game/save.ts, game/load-map-source.ts; Rust: `save_load.rs` (inny format, bez mapy hexow)
+mapSnapshot.ts	97	interface	SparseWidocznosc	SYSTEM	7	-	BRAK	M17			serializacja mapy do zapisu (kolumny rzadkie) -- uzywane w game/save.ts, game/load-map-source.ts; Rust: `save_load.rs` (inny format, bez mapy hexow)
+mapSnapshot.ts	111	interface	SerializedMapData	SYSTEM	31	game:1	BRAK	M17			serializacja mapy do zapisu (kolumny rzadkie) -- uzywane w game/save.ts, game/load-map-source.ts; Rust: `save_load.rs` (inny format, bez mapy hexow)
+mapSnapshot.ts	204	function	serializeMapForSave	SYSTEM	89	main.ts:1,game:1	BRAK	M17			serializacja mapy do zapisu (kolumny rzadkie) -- uzywane w game/save.ts, game/load-map-source.ts; Rust: `save_load.rs` (inny format, bez mapy hexow)
+mapSnapshot.ts	301	function	buildGameMapFromSnapshot	SYSTEM	49	main.ts:1,game:1	BRAK	M17			serializacja mapy do zapisu (kolumny rzadkie) -- uzywane w game/save.ts, game/load-map-source.ts; Rust: `save_load.rs` (inny format, bez mapy hexow)
+mapSnapshot.ts	365	function	isValidMapSnapshot	SYSTEM	36	game:2	BRAK	M17			serializacja mapy do zapisu (kolumny rzadkie) -- uzywane w game/save.ts, game/load-map-source.ts; Rust: `save_load.rs` (inny format, bez mapy hexow)
+minimap.ts	12	interface	MinimapHexData	UI	8	ui:2	NIE-DOTYCZY	-			dane minimapy (render/DOM; importuje render/hexutil)
+minimap.ts	24	interface	MinimapMarkerData	UI	6	ui:1	NIE-DOTYCZY	-			dane minimapy (render/DOM; importuje render/hexutil)
+minimap.ts	32	interface	MinimapData	UI	7	ui:2	NIE-DOTYCZY	-			dane minimapy (render/DOM; importuje render/hexutil)
+minimap.ts	40	interface	MinimapCityInput	UI	7	-	NIE-DOTYCZY	-			dane minimapy (render/DOM; importuje render/hexutil)
+minimap.ts	48	interface	MinimapUnitInput	UI	6	-	NIE-DOTYCZY	-			dane minimapy (render/DOM; importuje render/hexutil)
+minimap.ts	56	interface	MinimapCameraInput	UI	7	-	NIE-DOTYCZY	-			dane minimapy (render/DOM; importuje render/hexutil)
+minimap.ts	64	interface	GetMinimapDataOptions	UI	12	-	NIE-DOTYCZY	-			dane minimapy (render/DOM; importuje render/hexutil)
+minimap.ts	128	function	computeViewport	UI	18	main.ts:1,audio:1	NIE-DOTYCZY	-			dane minimapy (render/DOM; importuje render/hexutil)
+minimap.ts	183	function	getMinimapData	UI	84	main.ts:1,ui:2	NIE-DOTYCZY	-			dane minimapy (render/DOM; importuje render/hexutil)
+newGameMapDefaults.ts	39	type	MapSizeLabel	SYSTEM	1	data:1	BRAK	M02			parametry nowej gry / mapgen; wartosci tabelaryczne w `map-gen-params.json` (dane parsowane w Rust: `tm_params`), funkcje rozwiazujace NIEOBECNE
+newGameMapDefaults.ts	42	const	TYP_SWIATA_MENU_LABELS	UI	6	-	NIE-DOTYCZY	M02			etykiety menu / jakosc renderu = UI
+newGameMapDefaults.ts	61	function	mapSizeLabelFromDims	SYSTEM	9	-	BRAK	M02			parametry nowej gry / mapgen; wartosci tabelaryczne w `map-gen-params.json` (dane parsowane w Rust: `tm_params`), funkcje rozwiazujace NIEOBECNE
+newGameMapDefaults.ts	71	function	mapSizeLabelFromMenuLabel	SYSTEM	4	-	BRAK	M02			parametry nowej gry / mapgen; wartosci tabelaryczne w `map-gen-params.json` (dane parsowane w Rust: `tm_params`), funkcje rozwiazujace NIEOBECNE
+newGameMapDefaults.ts	77	function	aktywneTypyFromMapLabel	SYSTEM	4	main.ts:1	BRAK	M02			parametry nowej gry / mapgen; wartosci tabelaryczne w `map-gen-params.json` (dane parsowane w Rust: `tm_params`), funkcje rozwiazujace NIEOBECNE
+newGameMapDefaults.ts	85	function	defaultRywaleFromMapLabel	SYSTEM	12	-	BRAK	M02			parametry nowej gry / mapgen; wartosci tabelaryczne w `map-gen-params.json` (dane parsowane w Rust: `tm_params`), funkcje rozwiazujace NIEOBECNE
+newGameMapDefaults.ts	98	interface	RywaleMenuBundle	SYSTEM	6	-	BRAK	M02			parametry nowej gry / mapgen; wartosci tabelaryczne w `map-gen-params.json` (dane parsowane w Rust: `tm_params`), funkcje rozwiazujace NIEOBECNE
+newGameMapDefaults.ts	109	function	rywaleMenuForMapLabel	SYSTEM	14	-	BRAK	M02			parametry nowej gry / mapgen; wartosci tabelaryczne w `map-gen-params.json` (dane parsowane w Rust: `tm_params`), funkcje rozwiazujace NIEOBECNE
+newGameMapDefaults.ts	125	function	typSwiataFromMenuLabel	SYSTEM	4	main.ts:1,ui:1	BRAK	M02			parametry nowej gry / mapgen; wartosci tabelaryczne w `map-gen-params.json` (dane parsowane w Rust: `tm_params`), funkcje rozwiazujace NIEOBECNE
+newGameMapDefaults.ts	131	const	DEFAULT_PLAYER_CIV_ID	DATA	1	ui:1	BRAK	M02			stala domyslna nowej gry
+newGameMapDefaults.ts	134	const	DEFAULT_START_EPOCH_ID	DATA	1	ui:1	BRAK	M02			stala domyslna nowej gry
+newGameMapDefaults.ts	137	type	QualityTier	UI	1	main.ts:1,data:1,perf:1,render:3,ui:1	NIE-DOTYCZY	-			jakosc renderu/menu (nie wplywa na stan gry)
+newGameMapDefaults.ts	139	const	QUALITY_MENU_LABELS	UI	1	perf:1	NIE-DOTYCZY	M02			etykiety menu / jakosc renderu = UI
+newGameMapDefaults.ts	141	const	DEFAULT_RENDER_QUALITY	UI	1	ui:1	NIE-DOTYCZY	M02			etykiety menu / jakosc renderu = UI
+newGameMapDefaults.ts	142	const	DEFAULT_MAP_DETAIL_QUALITY	UI	1	-	NIE-DOTYCZY	M02			etykiety menu / jakosc renderu = UI
+newGameMapDefaults.ts	154	function	qualityTierFromLabel	UI	6	main.ts:1,ui:1	NIE-DOTYCZY	-			jakosc renderu/menu (nie wplywa na stan gry)
+newGameMapDefaults.ts	161	function	qualityTierToLabel	UI	5	main.ts:1,ui:1	NIE-DOTYCZY	-			jakosc renderu/menu (nie wplywa na stan gry)
+newGameMapDefaults.ts	168	interface	BundledMapQualityPreset	UI	4	-	NIE-DOTYCZY	-			jakosc renderu/menu (nie wplywa na stan gry)
+newGameMapDefaults.ts	177	function	bundledMapQualityPreset	UI	3	main.ts:1	NIE-DOTYCZY	-			jakosc renderu/menu (nie wplywa na stan gry)
+newGameMapDefaults.ts	182	function	bundledMapQualityFromLabel	UI	3	ui:1	NIE-DOTYCZY	-			jakosc renderu/menu (nie wplywa na stan gry)
+newGameMapDefaults.ts	187	function	isLargeMapMenuLabel	UI	4	-	NIE-DOTYCZY	-			jakosc renderu/menu (nie wplywa na stan gry)
+newGameMapDefaults.ts	193	type	DensityTier	SYSTEM	1	data:1	BRAK	M02			parametry nowej gry / mapgen; wartosci tabelaryczne w `map-gen-params.json` (dane parsowane w Rust: `tm_params`), funkcje rozwiazujace NIEOBECNE
+newGameMapDefaults.ts	195	const	DENSITY_MENU_LABELS	UI	1	-	NIE-DOTYCZY	M02			etykiety menu / jakosc renderu = UI
+newGameMapDefaults.ts	197	function	densityTierFromLabel	SYSTEM	6	game:1	BRAK	M02			parametry nowej gry / mapgen; wartosci tabelaryczne w `map-gen-params.json` (dane parsowane w Rust: `tm_params`), funkcje rozwiazujace NIEOBECNE
+newGameMapDefaults.ts	204	function	densityTierToLabel	SYSTEM	5	game:1	BRAK	M02			parametry nowej gry / mapgen; wartosci tabelaryczne w `map-gen-params.json` (dane parsowane w Rust: `tm_params`), funkcje rozwiazujace NIEOBECNE
+newGameMapDefaults.ts	211	interface	WorldGenerationPreset	SYSTEM	7	main.ts:1,game:1,ui:1	BRAK	M02			parametry nowej gry / mapgen; wartosci tabelaryczne w `map-gen-params.json` (dane parsowane w Rust: `tm_params`), funkcje rozwiazujace NIEOBECNE
+newGameMapDefaults.ts	219	const	DEFAULT_WORLD_DENSITY	SYSTEM	7	main.ts:1,game:1	BRAK	M02			parametry nowej gry / mapgen; wartosci tabelaryczne w `map-gen-params.json` (dane parsowane w Rust: `tm_params`), funkcje rozwiazujace NIEOBECNE
+newGameMapDefaults.ts	227	function	worldGenerationPresetFromLabels	SYSTEM	16	ui:1	BRAK	M02			parametry nowej gry / mapgen; wartosci tabelaryczne w `map-gen-params.json` (dane parsowane w Rust: `tm_params`), funkcje rozwiazujace NIEOBECNE
+newGameMapDefaults.ts	245	function	densityMultiplier	SYSTEM	3	-	BRAK	M02			parametry nowej gry / mapgen; wartosci tabelaryczne w `map-gen-params.json` (dane parsowane w Rust: `tm_params`), funkcje rozwiazujace NIEOBECNE
+newGameMapDefaults.ts	250	function	maxRiversFromDensity	SYSTEM	3	-	BRAK	M02			parametry nowej gry / mapgen; wartosci tabelaryczne w `map-gen-params.json` (dane parsowane w Rust: `tm_params`), funkcje rozwiazujace NIEOBECNE
+newGameMapDefaults.ts	264	function	maxRiversForMapAndDensity	SYSTEM	8	-	BRAK	M02			parametry nowej gry / mapgen; wartosci tabelaryczne w `map-gen-params.json` (dane parsowane w Rust: `tm_params`), funkcje rozwiazujace NIEOBECNE
+newGameMapDefaults.ts	274	function	riverMinPathLengthForTier	SYSTEM	5	-	BRAK	M02			parametry nowej gry / mapgen; wartosci tabelaryczne w `map-gen-params.json` (dane parsowane w Rust: `tm_params`), funkcje rozwiazujace NIEOBECNE
+newGameMapDefaults.ts	281	function	riverGridCellSizeForTier	SYSTEM	5	-	BRAK	M02			parametry nowej gry / mapgen; wartosci tabelaryczne w `map-gen-params.json` (dane parsowane w Rust: `tm_params`), funkcje rozwiazujace NIEOBECNE
+newGameMapDefaults.ts	298	function	riverGridTraceMinLen	SYSTEM	4	-	BRAK	M02			parametry nowej gry / mapgen; wartosci tabelaryczne w `map-gen-params.json` (dane parsowane w Rust: `tm_params`), funkcje rozwiazujace NIEOBECNE
+newGameMapDefaults.ts	304	const	RIVER_REF_AREA	SYSTEM	1	-	BRAK	M02			parametry nowej gry / mapgen; wartosci tabelaryczne w `map-gen-params.json` (dane parsowane w Rust: `tm_params`), funkcje rozwiazujace NIEOBECNE
+newGameMapDefaults.ts	306	function	riverMapAreaScale	SYSTEM	3	-	BRAK	M02			parametry nowej gry / mapgen; wartosci tabelaryczne w `map-gen-params.json` (dane parsowane w Rust: `tm_params`), funkcje rozwiazujace NIEOBECNE
+newGameMapDefaults.ts	310	interface	RiverMapParams	SYSTEM	22	-	BRAK	M02			parametry nowej gry / mapgen; wartosci tabelaryczne w `map-gen-params.json` (dane parsowane w Rust: `tm_params`), funkcje rozwiazujace NIEOBECNE
+newGameMapDefaults.ts	338	function	resolveRiverMapParams	SYSTEM	50	-	BRAK	M02			parametry nowej gry / mapgen; wartosci tabelaryczne w `map-gen-params.json` (dane parsowane w Rust: `tm_params`), funkcje rozwiazujace NIEOBECNE
+newGameMapDefaults.ts	392	function	resolveRiverTraceForMap	SYSTEM	13	-	BRAK	M02			parametry nowej gry / mapgen; wartosci tabelaryczne w `map-gen-params.json` (dane parsowane w Rust: `tm_params`), funkcje rozwiazujace NIEOBECNE
+newGameMapDefaults.ts	407	function	riverTraceLimitsForMap	SYSTEM	10	-	BRAK	M02			parametry nowej gry / mapgen; wartosci tabelaryczne w `map-gen-params.json` (dane parsowane w Rust: `tm_params`), funkcje rozwiazujace NIEOBECNE
+newGameMapDefaults.ts	419	const	RESOURCE_BASELINE_RARITY_MULT	SYSTEM	1	-	BRAK	M02			parametry nowej gry / mapgen; wartosci tabelaryczne w `map-gen-params.json` (dane parsowane w Rust: `tm_params`), funkcje rozwiazujace NIEOBECNE
+newGameMapDefaults.ts	422	function	desertNoiseThresholdFromTier	SYSTEM	3	-	BRAK	M02			parametry nowej gry / mapgen; wartosci tabelaryczne w `map-gen-params.json` (dane parsowane w Rust: `tm_params`), funkcje rozwiazujace NIEOBECNE
+newGameMapDefaults.ts	427	function	forestNoiseThresholdFromTier	SYSTEM	3	-	BRAK	M02			parametry nowej gry / mapgen; wartosci tabelaryczne w `map-gen-params.json` (dane parsowane w Rust: `tm_params`), funkcje rozwiazujace NIEOBECNE
+newGameMapDefaults.ts	432	function	mountainNoiseThresholdFromTier	SYSTEM	3	-	BRAK	M02			parametry nowej gry / mapgen; wartosci tabelaryczne w `map-gen-params.json` (dane parsowane w Rust: `tm_params`), funkcje rozwiazujace NIEOBECNE
+newGameMapDefaults.ts	437	function	highlandNoiseThresholdFromTier	SYSTEM	3	-	BRAK	M02			parametry nowej gry / mapgen; wartosci tabelaryczne w `map-gen-params.json` (dane parsowane w Rust: `tm_params`), funkcje rozwiazujace NIEOBECNE
+newGameMapDefaults.ts	442	interface	WorldGenOptions	SYSTEM	16	-	BRAK	M02			parametry nowej gry / mapgen; wartosci tabelaryczne w `map-gen-params.json` (dane parsowane w Rust: `tm_params`), funkcje rozwiazujace NIEOBECNE
+newGameMapDefaults.ts	460	const	LAND_FRACTION_PERCENT_OPTS	DATA	1	ui:1	BRAK	M02			stala domyslna nowej gry
+newGameMapDefaults.ts	462	type	LandFractionPercent	DATA	1	ui:1	CZĘŚCIOWO	M02	src/domain/playable.rs:63		Rust ma pole `land_fraction_percent: u8` w parametrach rozgrywki (playable.rs), bez zbioru dozwolonych wartosci i funkcji `resolveLandFraction`
+newGameMapDefaults.ts	464	function	defaultLandFractionPercentForTyp	SYSTEM	7	ui:1	BRAK	M02			parametry nowej gry / mapgen; wartosci tabelaryczne w `map-gen-params.json` (dane parsowane w Rust: `tm_params`), funkcje rozwiazujace NIEOBECNE
+newGameMapDefaults.ts	472	function	resolveLandFraction	SYSTEM	6	-	BRAK	M02			parametry nowej gry / mapgen; wartosci tabelaryczne w `map-gen-params.json` (dane parsowane w Rust: `tm_params`), funkcje rozwiazujace NIEOBECNE
+newGameMapDefaults.ts	479	function	scaleMaxRiversForLand	SYSTEM	10	-	BRAK	M02			parametry nowej gry / mapgen; wartosci tabelaryczne w `map-gen-params.json` (dane parsowane w Rust: `tm_params`), funkcje rozwiazujace NIEOBECNE
+newGameMapDefaults.ts	490	function	resolveWorldGenNumbers	SYSTEM	29	-	BRAK	M02			parametry nowej gry / mapgen; wartosci tabelaryczne w `map-gen-params.json` (dane parsowane w Rust: `tm_params`), funkcje rozwiazujace NIEOBECNE
+newGameMapDefaults.ts	521	const	MAX_MIAST_PANSTWA	DATA	1	game:1	BRAK	M02			=9 (web_data_check.out.txt)
+newGameMapDefaults.ts	532	function	clampMiastaPanstwaCount	SYSTEM	6	main.ts:1,game:1,ui:1	BRAK	M02			parametry nowej gry / mapgen; wartosci tabelaryczne w `map-gen-params.json` (dane parsowane w Rust: `tm_params`), funkcje rozwiazujace NIEOBECNE
+newGameMapDefaults.ts	540	const	MAX_TYPY_CYWILIZACJI_MENU	DATA	1	ui:1	BRAK	M02			=15
+newGameMapDefaults.ts	543	function	maxCivTypesForStartEpoch	SYSTEM	6	ui:1	BRAK	M02			parametry nowej gry / mapgen; wartosci tabelaryczne w `map-gen-params.json` (dane parsowane w Rust: `tm_params`), funkcje rozwiazujace NIEOBECNE
+newGameMapDefaults.ts	589	const	EPOCH_CIV_TYPE_POOL	SYSTEM	5	-	BRAK	M02			parametry nowej gry / mapgen; wartosci tabelaryczne w `map-gen-params.json` (dane parsowane w Rust: `tm_params`), funkcje rozwiazujace NIEOBECNE
+newGameMapDefaults.ts	633	function	civTypesTripleForMapLabel	SYSTEM	19	-	BRAK	M02			parametry nowej gry / mapgen; wartosci tabelaryczne w `map-gen-params.json` (dane parsowane w Rust: `tm_params`), funkcje rozwiazujace NIEOBECNE
+newGameMapDefaults.ts	689	function	defaultMiastaPanstwaFromMapLabel	SYSTEM	5	main.ts:1,game:1,ui:1	BRAK	M02			parametry nowej gry / mapgen; wartosci tabelaryczne w `map-gen-params.json` (dane parsowane w Rust: `tm_params`), funkcje rozwiazujace NIEOBECNE
+newGameMapDefaults.ts	695	function	miastaPanstwaMenuForMapLabel	SYSTEM	9	ui:1	BRAK	M02			parametry nowej gry / mapgen; wartosci tabelaryczne w `map-gen-params.json` (dane parsowane w Rust: `tm_params`), funkcje rozwiazujace NIEOBECNE
+newGameMapDefaults.ts	705	interface	CivTypesMenuBundle	SYSTEM	5	-	BRAK	M02			parametry nowej gry / mapgen; wartosci tabelaryczne w `map-gen-params.json` (dane parsowane w Rust: `tm_params`), funkcje rozwiazujace NIEOBECNE
+newGameMapDefaults.ts	712	function	defaultCivTypesFromMapLabel	SYSTEM	11	main.ts:1,game:1,ui:1	BRAK	M02			parametry nowej gry / mapgen; wartosci tabelaryczne w `map-gen-params.json` (dane parsowane w Rust: `tm_params`), funkcje rozwiazujace NIEOBECNE
+newGameMapDefaults.ts	724	function	civTypesMenuForMapLabel	SYSTEM	17	ui:1	BRAK	M02			parametry nowej gry / mapgen; wartosci tabelaryczne w `map-gen-params.json` (dane parsowane w Rust: `tm_params`), funkcje rozwiazujace NIEOBECNE
+newGameMapDefaults.ts	743	reexport	menuLabelToDims	SYSTEM	1	-	BRAK	M02			re-eksport z generator.ts
+newGameMapDefaults.ts	743	reexport	rozmiarFromMenuLabel	SYSTEM	1	main.ts:1	BRAK	M02			re-eksport z generator.ts
+range-hexes.ts	13	interface	RangeCityInput	SYSTEM	10	main.ts:1	BRAK	M14			zbiory hexow zasiegu (kultura/religia) -- zalezne od game/culture-religion.ts (P6.16) i okolica.ts (P6.8)
+range-hexes.ts	28	function	collectTerritoryHexKeysByOwner	SYSTEM	23	main.ts:1	BRAK	M14			zbiory hexow zasiegu (kultura/religia) -- zalezne od game/culture-religion.ts (P6.16) i okolica.ts (P6.8)
+range-hexes.ts	53	function	collectCultureRangeHexKeys	SYSTEM	20	main.ts:1	BRAK	M14			zbiory hexow zasiegu (kultura/religia) -- zalezne od game/culture-religion.ts (P6.16) i okolica.ts (P6.8)
+range-hexes.ts	75	function	collectReligionRangeHexKeys	SYSTEM	38	main.ts:1	BRAK	M14			zbiory hexow zasiegu (kultura/religia) -- zalezne od game/culture-religion.ts (P6.16) i okolica.ts (P6.8)
+riverGenSwitch.ts	9	const	RIVER_GEN_STORAGE_KEY	NIE-DOTYCZY	1	-	NIE-DOTYCZY	-			klucz localStorage przegladarki
+riverGenSwitch.ts	10	const	RIVER_GEN_PHASE_STORAGE_KEY	NIE-DOTYCZY	1	-	NIE-DOTYCZY	-			klucz localStorage przegladarki
+riverGenSwitch.ts	12	type	RiverGenPhase	SYSTEM	1	-	BRAK	M02			enum 'main'|'main+medium'|'all' -> parametr generatora; domyslnie 'main+medium' (riverGenSwitch.ts:73)
+riverGenSwitch.ts	18	function	setRiverGenEnabledOverride	NIE-DOTYCZY	3	-	NIE-DOTYCZY	-			override dla workera/UI (stan modulowy)
+riverGenSwitch.ts	22	function	setRiverGenPhaseOverride	NIE-DOTYCZY	3	-	NIE-DOTYCZY	-			override dla workera/UI (stan modulowy)
+riverGenSwitch.ts	38	function	getRiverGenEnabled	SYSTEM	14	ui:2	BRAK	M02			odczyt URL/localStorage = NIE-DOTYCZY; domyslna wartosc `true` (riverGenSwitch.ts:53) -> parametr `rivers_enabled` generatora
+riverGenSwitch.ts	57	function	getRiverGenPhase	SYSTEM	15	ui:1	BRAK	M02			odczyt URL/localStorage = NIE-DOTYCZY; domyslna 'main+medium' -> parametr
+riverGenSwitch.ts	76	function	isRiverGenMainOnly	SYSTEM	3	-	BRAK	M02			predykat na parametrze fazy
+riverGenSwitch.ts	81	function	isRiverGenFull	SYSTEM	3	-	BRAK	M02			predykat na parametrze fazy
+road-movement.ts	14	const	ROAD_MOVE_SPEED_MULT	DATA	1	units:1	CZĘŚCIOWO	M15	src/data/derived.rs:698	tests/road_movement_multipliers.rs:13	wartosc w `road-movement-multipliers.json` zapisana z odczytu TS (P3-23); test w repo BEZ pinow wartosci (road_movement_multipliers.rs:1-3), wartosci sprawdza poza repo verify-road-web.py -- dodac pin w M15
+road-movement.ts	29	const	ROAD_BRUK_MOVE_SPEED_MULT	DATA	1	units:1	CZĘŚCIOWO	M15	src/data/derived.rs:698	tests/road_movement_multipliers.rs:13	wartosc w `road-movement-multipliers.json` zapisana z odczytu TS (P3-23); test w repo BEZ pinow wartosci (road_movement_multipliers.rs:1-3), wartosci sprawdza poza repo verify-road-web.py -- dodac pin w M15
+road-movement.ts	32	const	ROAD_MIN_MOVE_COST	DATA	1	-	CZĘŚCIOWO	M15	src/data/derived.rs:698	tests/road_movement_multipliers.rs:13	wartosc w `road-movement-multipliers.json` zapisana z odczytu TS (P3-23); test w repo BEZ pinow wartosci (road_movement_multipliers.rs:1-3), wartosci sprawdza poza repo verify-road-web.py -- dodac pin w M15
+road-movement.ts	57	const	ROAD_BRUK_MIN_MOVE_COST	DATA	1	-	CZĘŚCIOWO	M15	src/data/derived.rs:698	tests/road_movement_multipliers.rs:13	wartosc w `road-movement-multipliers.json` zapisana z odczytu TS (P3-23); test w repo BEZ pinow wartosci (road_movement_multipliers.rs:1-3), wartosci sprawdza poza repo verify-road-web.py -- dodac pin w M15
+road-movement.ts	59	function	isRoadImprovementKey	SYSTEM	3	main.ts:1	BRAK	M15			Rust ma enum `ImprovementKey::Road/PavedRoad`; predykat po kluczu tekstowym ('droga'|'droga_brukowana') nieobecny
+road-movement.ts	64	function	hexHasRoad	SYSTEM	4	main.ts:1,game:1	BRAK	M15			brak odpowiednika
+road-movement.ts	73	function	applyRoadMovementModifier	SYSTEM	12	units:1	CZĘŚCIOWO	M15	src/domain/pathfinding.rs:284 ; src/domain/pathfinding.rs:251		Rust `movement_cost_with_rules` dzieli koszt przez dzielnik drogi; wywolanie z petli gry BRAK (P3-23 ZALOZENIE 1); brak testu wektorowego weba
+road-network.ts	32	const	ROAD_DIRS	UI	3	render:1	NIE-DOTYCZY	-			maska/geometria laczen drog do renderu (13 symboli uzywanych tylko w render/ i main.ts)
+road-network.ts	37	const	ROAD_MASK_NONE	UI	1	main.ts:1	NIE-DOTYCZY	-			maska/geometria laczen drog do renderu (13 symboli uzywanych tylko w render/ i main.ts)
+road-network.ts	39	const	ROAD_MASK_FULL	UI	1	main.ts:1,render:2	NIE-DOTYCZY	-			maska/geometria laczen drog do renderu (13 symboli uzywanych tylko w render/ i main.ts)
+road-network.ts	42	const	ROAD_NODE_MIN_ARMS	UI	1	-	NIE-DOTYCZY	-			maska/geometria laczen drog do renderu (13 symboli uzywanych tylko w render/ i main.ts)
+road-network.ts	54	const	ROAD_ARM_WIDTH_RATIO	UI	1	render:1	NIE-DOTYCZY	-			maska/geometria laczen drog do renderu (13 symboli uzywanych tylko w render/ i main.ts)
+road-network.ts	55	const	ROAD_NODE_RADIUS_RATIO	UI	1	render:1	NIE-DOTYCZY	-			maska/geometria laczen drog do renderu (13 symboli uzywanych tylko w render/ i main.ts)
+road-network.ts	60	function	roadDirBit	UI	3	-	NIE-DOTYCZY	-			maska/geometria laczen drog do renderu (13 symboli uzywanych tylko w render/ i main.ts)
+road-network.ts	65	function	roadMaskHasDir	UI	3	-	NIE-DOTYCZY	-			maska/geometria laczen drog do renderu (13 symboli uzywanych tylko w render/ i main.ts)
+road-network.ts	75	function	computeRoadMask	UI	12	main.ts:1	NIE-DOTYCZY	-			maska/geometria laczen drog do renderu (13 symboli uzywanych tylko w render/ i main.ts)
+road-network.ts	89	function	roadMaskArms	UI	7	render:1	NIE-DOTYCZY	-			maska/geometria laczen drog do renderu (13 symboli uzywanych tylko w render/ i main.ts)
+road-network.ts	98	function	roadArmCount	UI	7	-	NIE-DOTYCZY	-			maska/geometria laczen drog do renderu (13 symboli uzywanych tylko w render/ i main.ts)
+road-network.ts	111	function	roadMaskHasNode	UI	3	render:1	NIE-DOTYCZY	-			maska/geometria laczen drog do renderu (13 symboli uzywanych tylko w render/ i main.ts)
+road-network.ts	125	function	roadMaskIsLonePatch	UI	3	render:1	NIE-DOTYCZY	-			maska/geometria laczen drog do renderu (13 symboli uzywanych tylko w render/ i main.ts)
+road-network.ts	137	function	roadPortOffset	UI	7	render:1	NIE-DOTYCZY	-			maska/geometria laczen drog do renderu (13 symboli uzywanych tylko w render/ i main.ts)
+road-network.ts	146	function	roadPortRotationY	UI	4	render:1	NIE-DOTYCZY	-			maska/geometria laczen drog do renderu (13 symboli uzywanych tylko w render/ i main.ts)
+road-network.ts	152	function	roadArmLength	UI	3	render:1	NIE-DOTYCZY	-			maska/geometria laczen drog do renderu (13 symboli uzywanych tylko w render/ i main.ts)
+road-network.ts	170	function	roadHexesToRefresh	UI	13	main.ts:1	NIE-DOTYCZY	-			maska/geometria laczen drog do renderu (13 symboli uzywanych tylko w render/ i main.ts)
+startScoring.ts	14	const	START_REVEAL_RADIUS	DATA	1	-	CZĘŚCIOWO	M10	src/domain/player.rs:111	tests/p6_1_first_player_city.rs:80	Rust przyjmuje promien jako parametr; stala 5 nieobecna
+startScoring.ts	17	function	startRevealRadiusForDifficulty	SYSTEM	7	main.ts:1	BRAK	M10			easy=10 / normal=8 / hard=5; Rust `is_hex_in_start_reveal` ma parametr, ale mapa trudnosc->promien nieobecna
+startScoring.ts	51	function	scoreCityStartHex	SYSTEM	39	-	BRAK	M10			punktacja startu (rzeka +14, sasiad rzeki +8, ...)
+startScoring.ts	102	function	findBestPlayerStartHex	SYSTEM	36	units:1	BRAK	M10			zalezy od clusters.ts: groupHabitableMasses, passesPlayerStartMassGate, developmentSpaceScore (domkniecie AST: 19 deklaracji `clusters.ts`/159 LOC, callgraph-startscoring.txt)
+territory-border.ts	18	interface	BorderLoopPoint	UI	4	render:1	NIE-DOTYCZY	-			geometria obrysu granic do renderu (render/rangeOverlay.ts); zero konsumentow logiki
+territory-border.ts	23	interface	BorderEdge	UI	9	-	NIE-DOTYCZY	-			geometria obrysu granic do renderu (render/rangeOverlay.ts); zero konsumentow logiki
+territory-border.ts	76	function	collectTerritoryBoundaryEdges	UI	32	render:1	NIE-DOTYCZY	-			geometria obrysu granic do renderu (render/rangeOverlay.ts); zero konsumentow logiki
+territory-border.ts	180	function	traceTerritoryBoundaryLoops	UI	38	render:1	NIE-DOTYCZY	-			geometria obrysu granic do renderu (render/rangeOverlay.ts); zero konsumentow logiki
+territory-border.ts	227	function	computeTerritoryBorderLoops	UI	7	render:1	NIE-DOTYCZY	-			geometria obrysu granic do renderu (render/rangeOverlay.ts); zero konsumentow logiki
+territory-border.ts	236	function	makeAxialHexCenterFn	UI	3	-	NIE-DOTYCZY	-			geometria obrysu granic do renderu (render/rangeOverlay.ts); zero konsumentow logiki
+territory-work.ts	8	reexport-type	TerritoryNode	SYSTEM	1	main.ts:1,game:8	CZĘŚCIOWO	M14	src/domain/trade.rs:265		re-eksport typu z territory.ts
+territory-work.ts	10	function	buildTerritoryNodesFromCities	SYSTEM	11	game:2,ui:1	BRAK	M14			praca na heksach terytorium (reczne/auto), zalezne od game/cities.ts (P6.6)
+territory-work.ts	26	function	isTerritoryHexOwnedBy	SYSTEM	9	main.ts:1,game:1	BRAK	M14			praca na heksach terytorium (reczne/auto), zalezne od game/cities.ts (P6.6)
+territory-work.ts	37	function	makeTerritoryWorkableFilter	SYSTEM	10	game:1	BRAK	M14			praca na heksach terytorium (reczne/auto), zalezne od game/cities.ts (P6.6)
+territory-work.ts	55	function	cityCenterKeys	SYSTEM	5	main.ts:1	BRAK	M14			praca na heksach terytorium (reczne/auto), zalezne od game/cities.ts (P6.6)
+territory-work.ts	77	function	isReczneKeyLegal	SYSTEM	16	main.ts:1,ui:1	BRAK	M14			praca na heksach terytorium (reczne/auto), zalezne od game/cities.ts (P6.6)
+territory-work.ts	106	function	reconcileWorkedTilesForOwner	SYSTEM	48	main.ts:1,game:1,ui:1	BRAK	M14			praca na heksach terytorium (reczne/auto), zalezne od game/cities.ts (P6.6)
+territory-work.ts	156	function	reconcileAllWorkedTiles	SYSTEM	11	main.ts:1,game:2	BRAK	M14			praca na heksach terytorium (reczne/auto), zalezne od game/cities.ts (P6.6)
+territory.ts	23	interface	CityNode	SYSTEM	12	main.ts:1,game:2	BRAK	M14			Rust `TerritoryNode` ma pole `radius` z gory (nie pop/isFort/isOutpost)
+territory.ts	37	type	TerritoryNode	SYSTEM	1	main.ts:1,game:8	CZĘŚCIOWO	M14	src/domain/trade.rs:265		Rust `TerritoryNode{owner_id,q,r,radius}` (trade.rs) -- inny ksztalt (radius zamiast pop/fort/outpost)
+territory.ts	47	function	axialDistance	SYSTEM	5	game:3	CZĘŚCIOWO	M14	src/domain/hex.rs:64	tests/hex_terrain.rs:21	ta sama formula (cube/2) co `HexCoord::distance`; test geometrii, nie wektor weba
+territory.ts	57	reexport	cityRangeForPopulation	SYSTEM	1	main.ts:1,game:3,ui:1	BRAK	M14			re-eksport z game/okolica.ts (P6.8); w Rust brak (`grep city_range`=0)
+territory.ts	57	reexport	citySightRadius	SYSTEM	1	main.ts:1,game:5	BRAK	M14			re-eksport z game/okolica.ts (P6.8); w Rust brak (`grep city_range`=0)
+territory.ts	57	reexport	CITY_RANGE_CAP	SYSTEM	1	game:1	BRAK	M14			re-eksport z game/okolica.ts (P6.8); w Rust brak (`grep city_range`=0)
+territory.ts	57	reexport	CITY_RANGE_MIN	SYSTEM	1	game:1	BRAK	M14			re-eksport z game/okolica.ts (P6.8); w Rust brak (`grep city_range`=0)
+territory.ts	74	function	cityTerritoryRadius	SYSTEM	5	main.ts:1,game:5	BRAK	M14			fort=10, posterunek=5, miasto=cityRangeForPopulation; Rust przyjmuje radius od wywolujacego (komentarz trade.rs:262)
+territory.ts	92	function	isInTerritory	SYSTEM	6	main.ts:1,game:1	BRAK	M14			brak odpowiednika
+territory.ts	106	function	territoryOwnerAt	SYSTEM	18	main.ts:1,game:5	CZĘŚCIOWO	M14	src/domain/trade.rs:549		ta sama regula (najblizszy w promieniu, remis -> pierwszy) wg odczytu; funkcja PRYWATNA w trade.rs, brak testu wektorowego weba
+territory.ts	133	function	isPlayerTerritoryHex	SYSTEM	13	main.ts:1	BRAK	M14			brak odpowiednika
+villages.ts	30	const	VILLAGE_HUTS_PER_CITY	DATA	5	-	BRAK	M13			{hard:1, normal:2, easy:3}
+villages.ts	37	const	VILLAGE_LAND_HEX_PER_VILLAGE	DATA	1	-	BRAK	M13			@deprecated (legacy fallback)
+villages.ts	40	function	expectedStartCityCount	SYSTEM	5	-	BRAK	M13			wioski/chaty (LCG Numerical Recipes, nie mulberry)
+villages.ts	46	function	villageHutsPerCityMultiplier	SYSTEM	3	-	BRAK	M13			wioski/chaty (LCG Numerical Recipes, nie mulberry)
+villages.ts	51	function	targetVillageHutCount	SYSTEM	7	-	BRAK	M13			wioski/chaty (LCG Numerical Recipes, nie mulberry)
+villages.ts	63	const	VILLAGE_MIN_DIST_FROM_CITY	DATA	1	-	BRAK	M13			=3
+villages.ts	69	const	VILLAGE_MIN_SPACING	DATA	1	-	BRAK	M13			=3
+villages.ts	76	interface	VillageSite	SYSTEM	4	-	BRAK	M13			wioski/chaty (LCG Numerical Recipes, nie mulberry)
+villages.ts	82	interface	QRLike	SYSTEM	4	-	BRAK	M13			wioski/chaty (LCG Numerical Recipes, nie mulberry)
+villages.ts	143	function	placeVillages	SYSTEM	59	main.ts:1	BRAK	M13			wioski/chaty (LCG Numerical Recipes, nie mulberry)
+wonder-placement.ts	11	interface	WonderPlacementCity	SYSTEM	7	-	BRAK	M14			kwalifikacja hexow pod cuda; zalezne od territory.ts i units/setup (hexDistance)
+wonder-placement.ts	19	interface	PickWonderHexInput	SYSTEM	8	-	BRAK	M14			kwalifikacja hexow pod cuda; zalezne od territory.ts i units/setup (hexDistance)
+wonder-placement.ts	53	function	listQualifyingWonderHexesForCity	SYSTEM	27	-	BRAK	M14			kwalifikacja hexow pod cuda; zalezne od territory.ts i units/setup (hexDistance)
+wonder-placement.ts	83	interface	WonderMapPlacementInput	SYSTEM	8	-	BRAK	M14			kwalifikacja hexow pod cuda; zalezne od territory.ts i units/setup (hexDistance)
+wonder-placement.ts	93	function	listQualifyingWonderHexesForOwner	SYSTEM	18	main.ts:1	BRAK	M14			kwalifikacja hexow pod cuda; zalezne od territory.ts i units/setup (hexDistance)
+wonder-placement.ts	116	function	pickWonderHexForCity	SYSTEM	4	main.ts:1	BRAK	M14			kwalifikacja hexow pod cuda; zalezne od territory.ts i units/setup (hexDistance)

@@ -1,0 +1,4 @@
+climate: heights 6..=130, rows compared=8500 equal=8500 first_diff=[]
+climateEarth: heights 6..=130, rows compared=8500 equal=8500 first_diff=[]
+mulberry32: seeds 0..300 x 64 values, compared=19200 equal(map_generator::Mulberry32::next_u32)=19200 equal(rng::Mulberry32::next_f64)=19200
+hexDistanceAxial: pairs compared=1681 equal(hex.rs && map_generator.rs)=1681

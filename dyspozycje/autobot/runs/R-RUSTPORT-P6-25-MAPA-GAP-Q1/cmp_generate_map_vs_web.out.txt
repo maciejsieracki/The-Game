@@ -1,0 +1,5 @@
+k3small 24x18 seed=3 Continents: total=432 terrain_equal=117 land_water_equal=327 web_land=131 rust_land=60 web_land_also_rust_land=43
+k42 36x28 seed=42 Continents: total=1008 terrain_equal=407 land_water_equal=845 web_land=302 rust_land=239 web_land_also_rust_land=189
+k7 36x28 seed=7 Continents: total=1008 terrain_equal=316 land_water_equal=800 web_land=303 rust_land=199 web_land_also_rust_land=147
+p123 36x28 seed=123 Pangea: total=1008 terrain_equal=431 land_water_equal=869 web_land=394 rust_land=267 web_land_also_rust_land=261
+w5 40x30 seed=5 Islands: total=1200 terrain_equal=260 land_water_equal=841 web_land=464 rust_land=141 web_land_also_rust_land=123

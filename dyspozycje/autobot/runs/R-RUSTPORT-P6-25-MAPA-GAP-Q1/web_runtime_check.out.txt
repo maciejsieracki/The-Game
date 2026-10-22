@@ -1,0 +1,11 @@
+RUNTIME_EXPORTS {"cluster-spawn.ts":6,"clusters.ts":69,"deposit-era.ts":6,"earth-land-mask.generated.ts":4,"earth-land-mask.ts":8,"gen-helpers.ts":237,"genWorker.ts":"IMPORT-ERR: self is not defined","generator.ts":13,"improvement-build.ts":"IMPORT-ERR: Cannot find package 'three' imported from /tmp/claude-0/-home-user-The-Game/cbf4a126-dca3-5f50-bfb0-2a747b18a590/scratch","map-attack-city.ts":2,"mapGenAsync.ts":"IMPORT-ERR: The requested module './genWorker.ts?worker&inline' does not provide an export named 'default'","mapGenProgress.ts":4,"mapSnapshot.ts":3,"minimap.ts":2,"newGameMapDefaults.ts":55,"range-hexes.ts":3,"riverGenSwitch.ts":8,"road-movement.ts":7,"road-network.ts":17,"startScoring.ts":4,"territory-border.ts":4,"territory-work.ts":7,"territory.ts":9,"villages.ts":8,"wonder-placement.ts":3}
+WEB landMask kontynenty landFraction=0.3 centers=5 [1,0.5537604801383436,0.4956324549950586]
+WEB landMask pangea landFraction=0.6 centers=6 [0.9789176456785471,0.2049166935764927,0.1281437628375819]
+WEB landMask wyspy landFraction=0.5 centers=16 [0.014317990285265408,0.004516155530222999,0.0037681991835320453]
+RUST expected kontynenty [1.0,0.5537604801383436,0.4956324549950586]
+RUST expected pangea     [0.9789176456785471,0.2049166935764926,0.1281437628375818]
+RUST expected wyspy      [0.014317990285265408,0.004516155530222999,0.0037681991835320453]
+WEB landMaskZiemia [0,0.9316724043325739,0,0.9199536103293708,0,0,0]
+WEB classifyTerrain ["morze","laka","gory","wzgorza","pustynia","rownina"]
+RUST expected (Sea,Grassland,Mountains,Hills,Desert,Plains) = morze,laka,gory,wzgorza,pustynia,rownina
+RUST expected ziemia [0,0.9316724043325739,0,0.9199536103293708,0,0,0]

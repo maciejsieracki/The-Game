@@ -1,0 +1,32 @@
+== rywale-P6.1C: 27 deklaracji, 467 LOC niepustych
+-- cluster-spawn.ts: 7 deklaracji, 114 LOC
+  cluster-spawn.ts:35-45	ClusterSpawnSlot	11
+  cluster-spawn.ts:48-52	ForeignTypeClusterGroup	5
+  cluster-spawn.ts:71-79	landHexesFromMap	9
+  cluster-spawn.ts:81-86	mapCenterFromGameMap	6
+  cluster-spawn.ts:91-134	buildSameTypeRivalSlots	44
+  cluster-spawn.ts:140-165	buildSameTypeRivalCandidateHexes	25
+  cluster-spawn.ts:195-208	groupForeignTypeClusters	14
+-- clusters.ts: 17 deklaracji, 334 LOC
+  clusters.ts:42-42	CLUSTER_CITY_STATE_MIN_HEX	1
+  clusters.ts:47-47	CLUSTER_CITY_STATE_MAX_HEX	1
+  clusters.ts:49-49	MIN_DIST_START_CITY_STATE	1
+  clusters.ts:58-58	CLUSTER_GROWTH_RESERVE	1
+  clusters.ts:168-175	shuffleInPlace	8
+  clusters.ts:1347-1350	clusterPackRadius	4
+  clusters.ts:1538-1542	ForeignClusterBuffer	5
+  clusters.ts:1544-1552	passesForeignClusterBufferGate	9
+  clusters.ts:1771-1800	landPoolNearCore	30
+  clusters.ts:1848-1867	hexesAtDistance	20
+  clusters.ts:1870-1873	SameTypeRivalHalfPlaneAxis	4
+  clusters.ts:1879-1892	computeSameTypeRivalHalfPlaneAxis	14
+  clusters.ts:1895-1904	isInSameTypeRivalHalfPlane	10
+  clusters.ts:1911-1967	packCityStatesHubChain	53
+  clusters.ts:1975-2030	packNearestLegalLand	54
+  clusters.ts:2036-2139	packCityStatesAroundCapital	97
+  clusters.ts:2144-2165	packRivalCitiesAroundCore	22
+-- gen-helpers.ts: 3 deklaracji, 19 LOC
+  gen-helpers.ts:57-65	mulberry32	9
+  gen-helpers.ts:125-128	HEX_DIRECTIONS	4
+  gen-helpers.ts:135-140	hexDistanceAxial	6
+UNRESOLVED	(brak)
