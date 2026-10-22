@@ -1,0 +1,856 @@
+{
+  "pin": "edb8fb56",
+  "sourceFiles": [
+    "gra/src/game/civ-entry-epoch.ts",
+    "gra/src/game/owner-utils.ts",
+    "gra/src/game/human-owners.ts"
+  ],
+  "stubNote": "barbarians.ts / society-breakdown.ts zastapione stubami z werbatim stalymi (stubChecks)",
+  "stubChecks": {
+    "barbarian_const": true,
+    "barbarian_fn": true,
+    "rebel_const": true
+  },
+  "constants": {
+    "GAME_EPOCH_ORDER": [
+      "kamien",
+      "braz",
+      "zelazo"
+    ],
+    "HUMAN_OWNER_PRIMARY": 0,
+    "gameEpochIndex": {
+      "kamien": 0,
+      "braz": 1,
+      "zelazo": 2,
+      "bogus": 3,
+      "": 3,
+      "Kamien": 3,
+      "stone": 3
+    }
+  },
+  "civEntry": [
+    {
+      "input": {
+        "epokaWejscia": "kamien"
+      },
+      "entry": "kamien",
+      "available": {
+        "kamien": true,
+        "braz": true,
+        "zelazo": true,
+        "bogus": true,
+        "": true,
+        "Kamien": true,
+        "stone": true
+      }
+    },
+    {
+      "input": {
+        "epokaWejscia": "braz"
+      },
+      "entry": "braz",
+      "available": {
+        "kamien": false,
+        "braz": true,
+        "zelazo": true,
+        "bogus": true,
+        "": true,
+        "Kamien": true,
+        "stone": true
+      }
+    },
+    {
+      "input": {
+        "epokaWejscia": "zelazo"
+      },
+      "entry": "zelazo",
+      "available": {
+        "kamien": false,
+        "braz": false,
+        "zelazo": true,
+        "bogus": true,
+        "": true,
+        "Kamien": true,
+        "stone": true
+      }
+    },
+    {
+      "input": {
+        "epokaWejscia": "bogus"
+      },
+      "entry": "kamien",
+      "available": {
+        "kamien": true,
+        "braz": true,
+        "zelazo": true,
+        "bogus": true,
+        "": true,
+        "Kamien": true,
+        "stone": true
+      }
+    },
+    {
+      "input": {
+        "epokaWejscia": "Kamien"
+      },
+      "entry": "kamien",
+      "available": {
+        "kamien": true,
+        "braz": true,
+        "zelazo": true,
+        "bogus": true,
+        "": true,
+        "Kamien": true,
+        "stone": true
+      }
+    },
+    {
+      "input": {
+        "epokaWejscia": "stone"
+      },
+      "entry": "kamien",
+      "available": {
+        "kamien": true,
+        "braz": true,
+        "zelazo": true,
+        "bogus": true,
+        "": true,
+        "Kamien": true,
+        "stone": true
+      }
+    },
+    {
+      "input": {
+        "epokaWejscia": ""
+      },
+      "entry": "kamien",
+      "available": {
+        "kamien": true,
+        "braz": true,
+        "zelazo": true,
+        "bogus": true,
+        "": true,
+        "Kamien": true,
+        "stone": true
+      }
+    },
+    {
+      "input": {},
+      "entry": "kamien",
+      "available": {
+        "kamien": true,
+        "braz": true,
+        "zelazo": true,
+        "bogus": true,
+        "": true,
+        "Kamien": true,
+        "stone": true
+      }
+    },
+    {
+      "input": {
+        "epokiStartowe": []
+      },
+      "entry": "kamien",
+      "available": {
+        "kamien": true,
+        "braz": true,
+        "zelazo": true,
+        "bogus": true,
+        "": true,
+        "Kamien": true,
+        "stone": true
+      }
+    },
+    {
+      "input": {
+        "epokiStartowe": [
+          "zelazo",
+          "braz"
+        ]
+      },
+      "entry": "braz",
+      "available": {
+        "kamien": false,
+        "braz": true,
+        "zelazo": true,
+        "bogus": true,
+        "": true,
+        "Kamien": true,
+        "stone": true
+      }
+    },
+    {
+      "input": {
+        "epokiStartowe": [
+          "xyz",
+          "braz"
+        ]
+      },
+      "entry": "braz",
+      "available": {
+        "kamien": false,
+        "braz": true,
+        "zelazo": true,
+        "bogus": true,
+        "": true,
+        "Kamien": true,
+        "stone": true
+      }
+    },
+    {
+      "input": {
+        "epokiStartowe": [
+          "xyz"
+        ]
+      },
+      "entry": "kamien",
+      "available": {
+        "kamien": true,
+        "braz": true,
+        "zelazo": true,
+        "bogus": true,
+        "": true,
+        "Kamien": true,
+        "stone": true
+      }
+    },
+    {
+      "input": {
+        "epokiStartowe": [
+          "stone"
+        ]
+      },
+      "entry": "kamien",
+      "available": {
+        "kamien": true,
+        "braz": true,
+        "zelazo": true,
+        "bogus": true,
+        "": true,
+        "Kamien": true,
+        "stone": true
+      }
+    },
+    {
+      "input": {
+        "epokaWejscia": "bogus",
+        "epokiStartowe": [
+          "zelazo"
+        ]
+      },
+      "entry": "zelazo",
+      "available": {
+        "kamien": false,
+        "braz": false,
+        "zelazo": true,
+        "bogus": true,
+        "": true,
+        "Kamien": true,
+        "stone": true
+      }
+    },
+    {
+      "input": {
+        "epokaWejscia": "zelazo",
+        "epokiStartowe": [
+          "kamien"
+        ]
+      },
+      "entry": "zelazo",
+      "available": {
+        "kamien": false,
+        "braz": false,
+        "zelazo": true,
+        "bogus": true,
+        "": true,
+        "Kamien": true,
+        "stone": true
+      }
+    },
+    {
+      "input": {
+        "epokiStartowe": [
+          "braz",
+          "kamien",
+          "zelazo"
+        ]
+      },
+      "entry": "kamien",
+      "available": {
+        "kamien": true,
+        "braz": true,
+        "zelazo": true,
+        "bogus": true,
+        "": true,
+        "Kamien": true,
+        "stone": true
+      }
+    }
+  ],
+  "rosterAvail": {
+    "kamien": [
+      "A",
+      "E"
+    ],
+    "braz": [
+      "A",
+      "B",
+      "D",
+      "E"
+    ],
+    "zelazo": [
+      "A",
+      "B",
+      "C",
+      "D",
+      "E"
+    ],
+    "bogus": [
+      "A",
+      "B",
+      "C",
+      "D",
+      "E"
+    ],
+    "": [
+      "A",
+      "B",
+      "C",
+      "D",
+      "E"
+    ],
+    "Kamien": [
+      "A",
+      "B",
+      "C",
+      "D",
+      "E"
+    ],
+    "stone": [
+      "A",
+      "B",
+      "C",
+      "D",
+      "E"
+    ]
+  },
+  "majorAi": [
+    {
+      "owner": -99,
+      "major": false
+    },
+    {
+      "owner": -1,
+      "major": false
+    },
+    {
+      "owner": 0,
+      "major": false
+    },
+    {
+      "owner": 1,
+      "major": true
+    },
+    {
+      "owner": 2,
+      "major": false
+    },
+    {
+      "owner": 3,
+      "major": false
+    },
+    {
+      "owner": 100,
+      "major": true
+    }
+  ],
+  "seats": [
+    {
+      "seats": {
+        "humanOwnerIds": [
+          0
+        ],
+        "activeHumanOwnerId": 0
+      },
+      "isHotSeat": false,
+      "nextHumanSeat": null,
+      "owners": [
+        {
+          "owner": -99,
+          "isHuman": false,
+          "isActive": false,
+          "isAi": false
+        },
+        {
+          "owner": -1,
+          "isHuman": false,
+          "isActive": false,
+          "isAi": false
+        },
+        {
+          "owner": 0,
+          "isHuman": true,
+          "isActive": true,
+          "isAi": false
+        },
+        {
+          "owner": 1,
+          "isHuman": false,
+          "isActive": false,
+          "isAi": true
+        },
+        {
+          "owner": 2,
+          "isHuman": false,
+          "isActive": false,
+          "isAi": true
+        },
+        {
+          "owner": 5,
+          "isHuman": false,
+          "isActive": false,
+          "isAi": true
+        },
+        {
+          "owner": 7,
+          "isHuman": false,
+          "isActive": false,
+          "isAi": true
+        },
+        {
+          "owner": 9,
+          "isHuman": false,
+          "isActive": false,
+          "isAi": true
+        }
+      ]
+    },
+    {
+      "seats": {
+        "humanOwnerIds": [
+          0,
+          1
+        ],
+        "activeHumanOwnerId": 0
+      },
+      "isHotSeat": true,
+      "nextHumanSeat": 1,
+      "owners": [
+        {
+          "owner": -99,
+          "isHuman": false,
+          "isActive": false,
+          "isAi": false
+        },
+        {
+          "owner": -1,
+          "isHuman": false,
+          "isActive": false,
+          "isAi": false
+        },
+        {
+          "owner": 0,
+          "isHuman": true,
+          "isActive": true,
+          "isAi": false
+        },
+        {
+          "owner": 1,
+          "isHuman": true,
+          "isActive": false,
+          "isAi": false
+        },
+        {
+          "owner": 2,
+          "isHuman": false,
+          "isActive": false,
+          "isAi": true
+        },
+        {
+          "owner": 5,
+          "isHuman": false,
+          "isActive": false,
+          "isAi": true
+        },
+        {
+          "owner": 7,
+          "isHuman": false,
+          "isActive": false,
+          "isAi": true
+        },
+        {
+          "owner": 9,
+          "isHuman": false,
+          "isActive": false,
+          "isAi": true
+        }
+      ]
+    },
+    {
+      "seats": {
+        "humanOwnerIds": [
+          0,
+          1
+        ],
+        "activeHumanOwnerId": 1
+      },
+      "isHotSeat": true,
+      "nextHumanSeat": 0,
+      "owners": [
+        {
+          "owner": -99,
+          "isHuman": false,
+          "isActive": false,
+          "isAi": false
+        },
+        {
+          "owner": -1,
+          "isHuman": false,
+          "isActive": false,
+          "isAi": false
+        },
+        {
+          "owner": 0,
+          "isHuman": true,
+          "isActive": false,
+          "isAi": false
+        },
+        {
+          "owner": 1,
+          "isHuman": true,
+          "isActive": true,
+          "isAi": false
+        },
+        {
+          "owner": 2,
+          "isHuman": false,
+          "isActive": false,
+          "isAi": true
+        },
+        {
+          "owner": 5,
+          "isHuman": false,
+          "isActive": false,
+          "isAi": true
+        },
+        {
+          "owner": 7,
+          "isHuman": false,
+          "isActive": false,
+          "isAi": true
+        },
+        {
+          "owner": 9,
+          "isHuman": false,
+          "isActive": false,
+          "isAi": true
+        }
+      ]
+    },
+    {
+      "seats": {
+        "humanOwnerIds": [
+          0,
+          5,
+          7
+        ],
+        "activeHumanOwnerId": 5
+      },
+      "isHotSeat": true,
+      "nextHumanSeat": 7,
+      "owners": [
+        {
+          "owner": -99,
+          "isHuman": false,
+          "isActive": false,
+          "isAi": false
+        },
+        {
+          "owner": -1,
+          "isHuman": false,
+          "isActive": false,
+          "isAi": false
+        },
+        {
+          "owner": 0,
+          "isHuman": true,
+          "isActive": false,
+          "isAi": false
+        },
+        {
+          "owner": 1,
+          "isHuman": false,
+          "isActive": false,
+          "isAi": true
+        },
+        {
+          "owner": 2,
+          "isHuman": false,
+          "isActive": false,
+          "isAi": true
+        },
+        {
+          "owner": 5,
+          "isHuman": true,
+          "isActive": true,
+          "isAi": false
+        },
+        {
+          "owner": 7,
+          "isHuman": true,
+          "isActive": false,
+          "isAi": false
+        },
+        {
+          "owner": 9,
+          "isHuman": false,
+          "isActive": false,
+          "isAi": true
+        }
+      ]
+    },
+    {
+      "seats": {
+        "humanOwnerIds": [
+          0,
+          5,
+          7
+        ],
+        "activeHumanOwnerId": 7
+      },
+      "isHotSeat": true,
+      "nextHumanSeat": 0,
+      "owners": [
+        {
+          "owner": -99,
+          "isHuman": false,
+          "isActive": false,
+          "isAi": false
+        },
+        {
+          "owner": -1,
+          "isHuman": false,
+          "isActive": false,
+          "isAi": false
+        },
+        {
+          "owner": 0,
+          "isHuman": true,
+          "isActive": false,
+          "isAi": false
+        },
+        {
+          "owner": 1,
+          "isHuman": false,
+          "isActive": false,
+          "isAi": true
+        },
+        {
+          "owner": 2,
+          "isHuman": false,
+          "isActive": false,
+          "isAi": true
+        },
+        {
+          "owner": 5,
+          "isHuman": true,
+          "isActive": false,
+          "isAi": false
+        },
+        {
+          "owner": 7,
+          "isHuman": true,
+          "isActive": true,
+          "isAi": false
+        },
+        {
+          "owner": 9,
+          "isHuman": false,
+          "isActive": false,
+          "isAi": true
+        }
+      ]
+    },
+    {
+      "seats": {
+        "humanOwnerIds": [],
+        "activeHumanOwnerId": 0
+      },
+      "isHotSeat": false,
+      "nextHumanSeat": null,
+      "owners": [
+        {
+          "owner": -99,
+          "isHuman": false,
+          "isActive": false,
+          "isAi": false
+        },
+        {
+          "owner": -1,
+          "isHuman": false,
+          "isActive": false,
+          "isAi": false
+        },
+        {
+          "owner": 0,
+          "isHuman": false,
+          "isActive": true,
+          "isAi": true
+        },
+        {
+          "owner": 1,
+          "isHuman": false,
+          "isActive": false,
+          "isAi": true
+        },
+        {
+          "owner": 2,
+          "isHuman": false,
+          "isActive": false,
+          "isAi": true
+        },
+        {
+          "owner": 5,
+          "isHuman": false,
+          "isActive": false,
+          "isAi": true
+        },
+        {
+          "owner": 7,
+          "isHuman": false,
+          "isActive": false,
+          "isAi": true
+        },
+        {
+          "owner": 9,
+          "isHuman": false,
+          "isActive": false,
+          "isAi": true
+        }
+      ]
+    },
+    {
+      "seats": {
+        "humanOwnerIds": [
+          0,
+          1
+        ],
+        "activeHumanOwnerId": 9
+      },
+      "isHotSeat": true,
+      "nextHumanSeat": null,
+      "owners": [
+        {
+          "owner": -99,
+          "isHuman": false,
+          "isActive": false,
+          "isAi": false
+        },
+        {
+          "owner": -1,
+          "isHuman": false,
+          "isActive": false,
+          "isAi": false
+        },
+        {
+          "owner": 0,
+          "isHuman": true,
+          "isActive": false,
+          "isAi": false
+        },
+        {
+          "owner": 1,
+          "isHuman": true,
+          "isActive": false,
+          "isAi": false
+        },
+        {
+          "owner": 2,
+          "isHuman": false,
+          "isActive": false,
+          "isAi": true
+        },
+        {
+          "owner": 5,
+          "isHuman": false,
+          "isActive": false,
+          "isAi": true
+        },
+        {
+          "owner": 7,
+          "isHuman": false,
+          "isActive": false,
+          "isAi": true
+        },
+        {
+          "owner": 9,
+          "isHuman": false,
+          "isActive": true,
+          "isAi": true
+        }
+      ]
+    },
+    {
+      "seats": {
+        "humanOwnerIds": [
+          2,
+          2
+        ],
+        "activeHumanOwnerId": 2
+      },
+      "isHotSeat": true,
+      "nextHumanSeat": 2,
+      "owners": [
+        {
+          "owner": -99,
+          "isHuman": false,
+          "isActive": false,
+          "isAi": false
+        },
+        {
+          "owner": -1,
+          "isHuman": false,
+          "isActive": false,
+          "isAi": false
+        },
+        {
+          "owner": 0,
+          "isHuman": false,
+          "isActive": false,
+          "isAi": true
+        },
+        {
+          "owner": 1,
+          "isHuman": false,
+          "isActive": false,
+          "isAi": true
+        },
+        {
+          "owner": 2,
+          "isHuman": true,
+          "isActive": true,
+          "isAi": false
+        },
+        {
+          "owner": 5,
+          "isHuman": false,
+          "isActive": false,
+          "isAi": true
+        },
+        {
+          "owner": 7,
+          "isHuman": false,
+          "isActive": false,
+          "isAi": true
+        },
+        {
+          "owner": 9,
+          "isHuman": false,
+          "isActive": false,
+          "isAi": true
+        }
+      ]
+    }
+  ]
+}

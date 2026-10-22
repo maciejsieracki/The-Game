@@ -13,7 +13,7 @@ pub mod improvements;
 pub mod map_generator;
 pub mod pathfinding;
 pub mod playable;
-mod player;
+pub mod player;
 pub mod recruitment;
 pub mod resource_production;
 mod rng;
@@ -24,6 +24,7 @@ pub mod terrain;
 pub mod trade;
 pub mod turn_economy;
 mod types;
+pub mod unit_epoch;
 
 pub use error::EngineError;
 pub use events::{canonical_phase_order, phase_order, TurnEvent, TurnPhase, PHASE_COUNT};
