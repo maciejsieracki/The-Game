@@ -247,8 +247,11 @@ impl Default for MovementRules {
             hills: Some(2),
             forest_extra: 1,
             river_cost: 1,
-            road_divisor: 3,
-            paved_road_divisor: 5,
+            // P3-23 (RUCH 35i): dzielniki z data/derived/road-movement-multipliers.json.
+            road_divisor: crate::data::derived::road_movement_divisor("ROAD_MOVE_SPEED_MULT"),
+            paved_road_divisor: crate::data::derived::road_movement_divisor(
+                "ROAD_BRUK_MOVE_SPEED_MULT",
+            ),
         }
     }
 }

@@ -691,3 +691,58 @@ pub fn counter_multiplier_value(attacker: &str, defender: &str) -> Option<f64> {
         .get(&(attacker.to_owned(), defender.to_owned()))
         .copied()
 }
+
+/// Mnozniki ruchu drogi (P3-23 etap 3, grupa RUCH, wiersz 35i): `road-movement-multipliers.json`.
+/// Wiersze ROZWINIETE (`ROAD_MOVE_SPEED_MULT`, `ROAD_BRUK_MOVE_SPEED_MULT`, podloga bruku) sa
+/// czytane przez `domain/pathfinding.rs`; wiersz BEZ MECHANIKI (`ROAD_MIN_MOVE_COST`) jest NIEUZYWANY.
+pub const ROAD_MOVEMENT_MULTIPLIERS_JSON: &str =
+    include_str!("../../data/derived/road-movement-multipliers.json");
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct RoadMovementMultipliersFile {
+    pub meta: serde_json::Value,
+    pub wiersze: Vec<RoadMovementMultiplierRow>,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct RoadMovementMultiplierRow {
+    pub id: String,
+    pub klasa: String,
+    /// Wartosc klasy a (stala).
+    pub wartosc: f64,
+    pub definicja_web: String,
+    pub uzycie_web: String,
+    pub opis: String,
+    pub rust: String,
+}
+
+pub fn parse_road_movement_multipliers() -> Result<RoadMovementMultipliersFile, serde_json::Error> {
+    serde_json::from_str(ROAD_MOVEMENT_MULTIPLIERS_JSON)
+}
+
+/// Wartosc wiersza `id` z `road-movement-multipliers.json`. Brak wiersza to blad danych
+/// (pokrywa go test ksztaltu), wiec panika z komunikatem.
+pub fn road_movement_value(id: &str) -> f64 {
+    static TABLE: std::sync::OnceLock<RoadMovementMultipliersFile> = std::sync::OnceLock::new();
+    let table = TABLE.get_or_init(|| {
+        parse_road_movement_multipliers().expect("road-movement-multipliers.json must parse")
+    });
+    table
+        .wiersze
+        .iter()
+        .find(|row| row.id == id)
+        .map(|row| row.wartosc)
+        .unwrap_or_else(|| panic!("road-movement-multipliers.json: brak wiersza {id}"))
+}
+
+/// Dzielnik ruchu (calkowity, >= 1) z tabeli RUCH. Ulamkowa lub niedodatnia wartosc to blad danych.
+pub fn road_movement_divisor(id: &str) -> u32 {
+    let value = road_movement_value(id);
+    assert!(
+        value.fract() == 0.0 && value >= 1.0 && value <= f64::from(u32::MAX),
+        "road-movement-multipliers.json: {id} musi byc calkowitym dzielnikiem >= 1, jest {value}"
+    );
+    value as u32
+}

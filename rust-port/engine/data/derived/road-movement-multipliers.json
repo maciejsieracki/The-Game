@@ -1,0 +1,45 @@
+{
+  "meta": {
+    "status": "P3-23 ETAP 3, grupa RUCH (wiersz 35i: mnozniki drogi i drogi brukowanej). Tabela jest edytowalnym zrodlem prawdy: zmienia sie konkretna liczbe w polu wartosc. Wiersze klasy a maja pole wartosc.",
+    "pin_web": "edb8fb56",
+    "wygenerowano": "R-RUSTPORT-P3-23-FLATTEN-STAGE3-Q1 runda 4: wartosci zapisane z odczytu stalych TS przez gen-road-web.mjs (runs/R-RUSTPORT-P3-23-FLATTEN-STAGE3-Q1/), niezaleznie sprawdzone verify-road-web.py."
+  },
+  "wiersze": [
+    {
+      "id": "ROAD_MOVE_SPEED_MULT",
+      "klasa": "a",
+      "wartosc": 3,
+      "definicja_web": "gra/src/map/road-movement.ts:14",
+      "uzycie_web": "gra/src/map/road-movement.ts:81 (applyRoadMovementModifier: koszt / 3)",
+      "opis": "Droga zwykla: koszt wejscia na hex dzielony przez 3 (ruch 3x szybszy).",
+      "rust": "ROZWINIETA: domain/pathfinding.rs MovementRules::default().road_divisor (pathfinding.rs:250) czyta te wartosc przez data::derived::road_movement_divisor; uzycie movement_cost_with_rules (pathfinding.rs:294). Wywolanie movement_cost z petli gry: BRAK (ZALOZENIE 1 dokumentu P3-23, sekcja 8.6)."
+    },
+    {
+      "id": "ROAD_BRUK_MOVE_SPEED_MULT",
+      "klasa": "a",
+      "wartosc": 5,
+      "definicja_web": "gra/src/map/road-movement.ts:29",
+      "uzycie_web": "gra/src/map/road-movement.ts:78 (applyRoadMovementModifier: koszt / 5, z podloga ROAD_BRUK_MIN_MOVE_COST)",
+      "opis": "Droga brukowana: koszt wejscia dzielony przez 5 (ruch 5x szybszy); priorytet nad zwykla droga.",
+      "rust": "ROZWINIETA: domain/pathfinding.rs MovementRules::default().paved_road_divisor (pathfinding.rs:251) czyta te wartosc przez data::derived::road_movement_divisor; uzycie pathfinding.rs:295. Wywolanie z petli gry: BRAK (ZALOZENIE 1 dokumentu P3-23)."
+    },
+    {
+      "id": "ROAD_BRUK_MIN_MOVE_COST",
+      "klasa": "a",
+      "wartosc": 0.2,
+      "definicja_web": "gra/src/map/road-movement.ts:57",
+      "uzycie_web": "gra/src/map/road-movement.ts:78 (Math.max(ROAD_BRUK_MIN_MOVE_COST, koszt / 5))",
+      "opis": "Podloga kosztu wejscia dla drogi brukowanej (1/5). Dla kosztow calkowitych >= 1 nie wiaze (koszt/5 >= 0,2); wiaze tylko dla kosztow ulamkowych (np. 0,5 -> 0,2 zamiast 0,1).",
+      "rust": "ROZWINIETA (rownowaznosc w zakresie domeny): Rust nie ma kosztow ulamkowych (MovementCost = calkowity koszt * COST_SCALE 15, pathfinding.rs:296-298), wiec dla calkowitych kosztow >= 1 podloga nie wiaze w obu implementacjach. Dowod: dowody/road-web-vs-rust.txt (verify-road-web.py). Brak podlogi w kodzie Rust: swiadome, bez wplywu dla domeny."
+    },
+    {
+      "id": "ROAD_MIN_MOVE_COST",
+      "klasa": "a",
+      "wartosc": 0.3333333333333333,
+      "definicja_web": "gra/src/map/road-movement.ts:32",
+      "uzycie_web": "BRAK: stala eksportowana, nieczytana w gra/src (grep: wystapienia tylko road-movement.ts:32,36,40 — definicja i komentarze)",
+      "opis": "Wspolna podloga 1/3 z dawnej mechaniki; web jej nie stosuje od poprawki R-DROGI-PODLOGA-Q1.",
+      "rust": "BEZ MECHANIKI: stala martwa w webie (grep w gra/src); brak odpowiednika w domenie Rust."
+    }
+  ]
+}

@@ -819,76 +819,29 @@ fn diplomacy_multipliers_cover_each_constant_once_with_web_values() {
             row.id
         );
     }
-    // Wektory Rust-autorskie: wartosci zaobserwowane z uruchomionego kodu weba (runda 3).
-    assert_eq!(diplomacy_multiplier_value("BUILDING_PN_FACTOR"), 1.1);
-    assert_eq!(
-        diplomacy_multiplier_value("TREATY_DURATION_UNLIMITED_MULT"),
-        8.0
-    );
-    assert_eq!(
-        diplomacy_multiplier_value("TREATY_DURATION_MIN_TURNS"),
-        10.0
-    );
-    assert_eq!(
-        diplomacy_multiplier_value("TREATY_DURATION_MAX_TURNS"),
-        20.0
-    );
-    assert_eq!(
-        diplomacy_multiplier_value("TREATY_DURATION_TURNS_PER_DOUBLING"),
-        5.0
-    );
-    assert_eq!(
-        diplomacy_multiplier_value("TREATY_DURATION_GEOMETRIC_BASE"),
-        2.0
-    );
-    assert_eq!(
-        diplomacy_multiplier_by_key("BASKET_PN_DIFFICULTY_MULT_PLAYER_GIVE", "easy"),
-        1.5
-    );
-    assert_eq!(
-        diplomacy_multiplier_by_key("BASKET_PN_DIFFICULTY_MULT_PLAYER_GIVE", "normal"),
-        1.0
-    );
-    assert_eq!(
-        diplomacy_multiplier_by_key("BASKET_PN_DIFFICULTY_MULT_PLAYER_GIVE", "hard"),
-        0.5
-    );
-    assert_eq!(
-        diplomacy_multiplier_by_key("BASKET_PN_DIFFICULTY_MULT_PLAYER_RECEIVE", "easy"),
-        0.5
-    );
-    assert_eq!(
-        diplomacy_multiplier_by_key("BASKET_PN_DIFFICULTY_MULT_PLAYER_RECEIVE", "normal"),
-        1.0
-    );
-    assert_eq!(
-        diplomacy_multiplier_by_key("BASKET_PN_DIFFICULTY_MULT_PLAYER_RECEIVE", "hard"),
-        1.5
-    );
-    assert_eq!(
-        diplomacy_multiplier_by_key("AI_DIPLOMACY_GENEROSITY_GOLD_MULT", "easy"),
-        1.0
-    );
-    assert_eq!(
-        diplomacy_multiplier_by_key("AI_DIPLOMACY_GENEROSITY_GOLD_MULT", "normal"),
-        0.5
-    );
-    assert_eq!(
-        diplomacy_multiplier_by_key("AI_DIPLOMACY_GENEROSITY_GOLD_MULT", "hard"),
-        0.3
-    );
-    assert_eq!(
-        diplomacy_multiplier_by_key("SISTER_ALLIANCE_THRESHOLD_SCALE", "low"),
-        0.6
-    );
-    assert_eq!(
-        diplomacy_multiplier_by_key("SISTER_ALLIANCE_THRESHOLD_SCALE", "normal"),
-        0.3
-    );
-    assert_eq!(
-        diplomacy_multiplier_by_key("SISTER_ALLIANCE_THRESHOLD_SCALE", "strong"),
-        0.15
-    );
+    // P3-23 etap 3 (dług testu, runda 4): BEZ pinów wartości. Tabela ma być edytowalna;
+    // test sprawdza KSZTALT: każda wartość klasy a jest skończona i dodatnia, każda mapa
+    // klasy b ma wpisy i wszystkie wartości są skończone, a odczyt po kluczu zwraca tę samą
+    // wartość co wiersz tabeli (relacja, nie stała).
+    for row in &table.wiersze {
+        if let Some(v) = row.wartosc {
+            assert!(v.is_finite(), "wartosc {} nieskonczona", row.id);
+            assert_eq!(diplomacy_multiplier_value(&row.id), v, "odczyt {}", row.id);
+        }
+        if let Some(map) = &row.wartosci_po_trudnosci {
+            assert!(!map.is_empty(), "pusta mapa klasy b {}", row.id);
+            for (key, v) in map {
+                assert!(v.is_finite(), "wartosc {}/{} nieskonczona", row.id, key);
+                assert_eq!(
+                    diplomacy_multiplier_by_key(&row.id, key),
+                    *v,
+                    "odczyt {}/{}",
+                    row.id,
+                    key
+                );
+            }
+        }
+    }
     // Wiersz NL: zbior akcji z webu (pokoj poza zbiorem, zob. sekcja 1c dokumentu).
     let nl = table
         .wiersze
