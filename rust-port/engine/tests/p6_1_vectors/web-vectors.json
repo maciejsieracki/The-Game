@@ -1,15 +1,20 @@
 {
   "pin": "edb8fb56",
+  "generator": "gen-p61-web-vectors.mjs (r2)",
   "sourceFiles": [
     "gra/src/game/civ-entry-epoch.ts",
     "gra/src/game/owner-utils.ts",
-    "gra/src/game/human-owners.ts"
+    "gra/src/game/human-owners.ts",
+    "gra/src/game/civ-roster.ts"
   ],
-  "stubNote": "barbarians.ts / society-breakdown.ts zastapione stubami z werbatim stalymi (stubChecks)",
-  "stubChecks": {
-    "barbarian_const": true,
-    "barbarian_fn": true,
-    "rebel_const": true
+  "stubNote": "stubs/barbarians.ts = linie 49-54 i stubs/society-breakdown.ts = linie 205-206 weba, wyciete werbatim przez generator (kotwice anchors)",
+  "anchors": {
+    "barb_const_49": true,
+    "barb_fn_52": true,
+    "barb_ret_53": true,
+    "barb_close_54": true,
+    "rebel_doc_205": true,
+    "rebel_const_206": true
   },
   "constants": {
     "GAME_EPOCH_ORDER": [
@@ -42,7 +47,8 @@
         "": true,
         "Kamien": true,
         "stone": true
-      }
+      },
+      "label": "Wejście: Kamień · dostępne: Kamień, Brąz, Żelazo"
     },
     {
       "input": {
@@ -57,7 +63,8 @@
         "": true,
         "Kamien": true,
         "stone": true
-      }
+      },
+      "label": "Wejście: Brąz · dostępne: Brąz, Żelazo"
     },
     {
       "input": {
@@ -72,7 +79,8 @@
         "": true,
         "Kamien": true,
         "stone": true
-      }
+      },
+      "label": "Wejście: Żelazo · dostępne: Żelazo"
     },
     {
       "input": {
@@ -87,7 +95,8 @@
         "": true,
         "Kamien": true,
         "stone": true
-      }
+      },
+      "label": "Wejście: Kamień · dostępne: Kamień, Brąz, Żelazo"
     },
     {
       "input": {
@@ -102,7 +111,8 @@
         "": true,
         "Kamien": true,
         "stone": true
-      }
+      },
+      "label": "Wejście: Kamień · dostępne: Kamień, Brąz, Żelazo"
     },
     {
       "input": {
@@ -117,7 +127,8 @@
         "": true,
         "Kamien": true,
         "stone": true
-      }
+      },
+      "label": "Wejście: Kamień · dostępne: Kamień, Brąz, Żelazo"
     },
     {
       "input": {
@@ -132,7 +143,8 @@
         "": true,
         "Kamien": true,
         "stone": true
-      }
+      },
+      "label": "Wejście: Kamień · dostępne: Kamień, Brąz, Żelazo"
     },
     {
       "input": {},
@@ -145,7 +157,8 @@
         "": true,
         "Kamien": true,
         "stone": true
-      }
+      },
+      "label": "Wejście: Kamień · dostępne: Kamień, Brąz, Żelazo"
     },
     {
       "input": {
@@ -160,7 +173,8 @@
         "": true,
         "Kamien": true,
         "stone": true
-      }
+      },
+      "label": "Wejście: Kamień · dostępne: Kamień, Brąz, Żelazo"
     },
     {
       "input": {
@@ -178,7 +192,8 @@
         "": true,
         "Kamien": true,
         "stone": true
-      }
+      },
+      "label": "Wejście: Brąz · dostępne: Brąz, Żelazo"
     },
     {
       "input": {
@@ -196,7 +211,8 @@
         "": true,
         "Kamien": true,
         "stone": true
-      }
+      },
+      "label": "Wejście: Brąz · dostępne: Brąz, Żelazo"
     },
     {
       "input": {
@@ -213,7 +229,8 @@
         "": true,
         "Kamien": true,
         "stone": true
-      }
+      },
+      "label": "Wejście: Kamień · dostępne: Kamień, Brąz, Żelazo"
     },
     {
       "input": {
@@ -230,7 +247,8 @@
         "": true,
         "Kamien": true,
         "stone": true
-      }
+      },
+      "label": "Wejście: Kamień · dostępne: Kamień, Brąz, Żelazo"
     },
     {
       "input": {
@@ -248,7 +266,8 @@
         "": true,
         "Kamien": true,
         "stone": true
-      }
+      },
+      "label": "Wejście: Żelazo · dostępne: Żelazo"
     },
     {
       "input": {
@@ -266,7 +285,8 @@
         "": true,
         "Kamien": true,
         "stone": true
-      }
+      },
+      "label": "Wejście: Żelazo · dostępne: Żelazo"
     },
     {
       "input": {
@@ -285,7 +305,86 @@
         "": true,
         "Kamien": true,
         "stone": true
-      }
+      },
+      "label": "Wejście: Kamień · dostępne: Kamień, Brąz, Żelazo"
+    }
+  ],
+  "hudLabels": [
+    {
+      "input": "-1",
+      "label": "Epoka kamienia"
+    },
+    {
+      "input": "0",
+      "label": "Epoka kamienia"
+    },
+    {
+      "input": "0.4",
+      "label": "Epoka kamienia"
+    },
+    {
+      "input": "0.5",
+      "label": "Epoka kamienia"
+    },
+    {
+      "input": "1",
+      "label": "Epoka kamienia"
+    },
+    {
+      "input": "1.4",
+      "label": "Epoka kamienia"
+    },
+    {
+      "input": "1.5",
+      "label": "Epoka brązu"
+    },
+    {
+      "input": "2",
+      "label": "Epoka brązu"
+    },
+    {
+      "input": "2.5",
+      "label": "Epoka żelaza"
+    },
+    {
+      "input": "2.6",
+      "label": "Epoka żelaza"
+    },
+    {
+      "input": "3",
+      "label": "Epoka żelaza"
+    },
+    {
+      "input": "3.4",
+      "label": "Epoka żelaza"
+    },
+    {
+      "input": "3.5",
+      "label": "Epoka żelaza"
+    },
+    {
+      "input": "4",
+      "label": "Epoka żelaza"
+    },
+    {
+      "input": "1e9",
+      "label": "Epoka żelaza"
+    },
+    {
+      "input": "-1e9",
+      "label": "Epoka kamienia"
+    },
+    {
+      "input": "NaN",
+      "label": "Epoka kamienia"
+    },
+    {
+      "input": "Infinity",
+      "label": "Epoka żelaza"
+    },
+    {
+      "input": "-Infinity",
+      "label": "Epoka kamienia"
     }
   ],
   "rosterAvail": {
@@ -335,6 +434,176 @@
       "E"
     ]
   },
+  "rosterIds": [
+    "A",
+    "B",
+    "C",
+    "D",
+    "E"
+  ],
+  "rng": [
+    {
+      "seed": 0,
+      "values": [
+        0.26642920868471265,
+        0.0003297457005828619,
+        0.2232720274478197,
+        0.1462021479383111,
+        0.46732782293111086,
+        0.5450490827206522,
+        0.6152513844426721,
+        0.6489853798411787
+      ],
+      "valuesText": [
+        "0.26642920868471265",
+        "0.0003297457005828619",
+        "0.2232720274478197",
+        "0.1462021479383111",
+        "0.46732782293111086",
+        "0.5450490827206522",
+        "0.6152513844426721",
+        "0.6489853798411787"
+      ]
+    },
+    {
+      "seed": 1,
+      "values": [
+        0.6270739405881613,
+        0.002735721180215478,
+        0.5274470399599522,
+        0.9810509674716741,
+        0.9683778982143849,
+        0.281103502959013,
+        0.6128388606011868,
+        0.7207431411370635
+      ],
+      "valuesText": [
+        "0.6270739405881613",
+        "0.002735721180215478",
+        "0.5274470399599522",
+        "0.9810509674716741",
+        "0.9683778982143849",
+        "0.281103502959013",
+        "0.6128388606011868",
+        "0.7207431411370635"
+      ]
+    },
+    {
+      "seed": 42,
+      "values": [
+        0.6011037519201636,
+        0.44829055899754167,
+        0.8524657934904099,
+        0.6697340414393693,
+        0.17481389874592423,
+        0.5265925421845168,
+        0.2732279943302274,
+        0.6247446539346129
+      ],
+      "valuesText": [
+        "0.6011037519201636",
+        "0.44829055899754167",
+        "0.8524657934904099",
+        "0.6697340414393693",
+        "0.17481389874592423",
+        "0.5265925421845168",
+        "0.2732279943302274",
+        "0.6247446539346129"
+      ]
+    },
+    {
+      "seed": 123456789,
+      "values": [
+        0.2577907438389957,
+        0.9707721115555614,
+        0.7853280142880976,
+        0.20616457983851433,
+        0.30307188746519387,
+        0.7470660470426083,
+        0.7787336520850658,
+        0.2845096290111542
+      ],
+      "valuesText": [
+        "0.2577907438389957",
+        "0.9707721115555614",
+        "0.7853280142880976",
+        "0.20616457983851433",
+        "0.30307188746519387",
+        "0.7470660470426083",
+        "0.7787336520850658",
+        "0.2845096290111542"
+      ]
+    },
+    {
+      "seed": 4294967295,
+      "values": [
+        0.8964226141106337,
+        0.189478256739676,
+        0.7156526781618595,
+        0.9440599093213677,
+        0.8452364315744489,
+        0.5391399988438934,
+        0.6804977387655526,
+        0.4755720964167267
+      ],
+      "valuesText": [
+        "0.8964226141106337",
+        "0.189478256739676",
+        "0.7156526781618595",
+        "0.9440599093213677",
+        "0.8452364315744489",
+        "0.5391399988438934",
+        "0.6804977387655526",
+        "0.4755720964167267"
+      ]
+    },
+    {
+      "seed": 1831565813,
+      "values": [
+        0.0003297457005828619,
+        0.2232720274478197,
+        0.1462021479383111,
+        0.46732782293111086,
+        0.5450490827206522,
+        0.6152513844426721,
+        0.6489853798411787,
+        0.45600721263326705
+      ],
+      "valuesText": [
+        "0.0003297457005828619",
+        "0.2232720274478197",
+        "0.1462021479383111",
+        "0.46732782293111086",
+        "0.5450490827206522",
+        "0.6152513844426721",
+        "0.6489853798411787",
+        "0.45600721263326705"
+      ]
+    },
+    {
+      "seed": 2147483648,
+      "values": [
+        0.8205775609239936,
+        0.4481089550536126,
+        0.7836112855002284,
+        0.5120457962621003,
+        0.8388098266441375,
+        0.4205148529727012,
+        0.8944806265644729,
+        0.9326926763169467
+      ],
+      "valuesText": [
+        "0.8205775609239936",
+        "0.4481089550536126",
+        "0.7836112855002284",
+        "0.5120457962621003",
+        "0.8388098266441375",
+        "0.4205148529727012",
+        "0.8944806265644729",
+        "0.9326926763169467"
+      ]
+    }
+  ],
   "majorAi": [
     {
       "owner": -99,
@@ -852,5 +1121,11 @@
         }
       ]
     }
-  ]
+  ],
+  "outOfDomain": {
+    "note": "id -5 spoza {-99,-1,>=0}: niereprezentowalne w OwnerRef (rust ids.rs from_legacy_i64 => None)",
+    "owner": -5,
+    "isAiOwner_default_seats": true,
+    "isMajorAiOwner": false
+  }
 }

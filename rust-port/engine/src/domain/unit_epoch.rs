@@ -126,12 +126,10 @@ fn is_scout_name(id: &str) -> bool {
 // ---------------------------------------------------------------------------
 
 /// Kanoniczna kolejność epok gry (web `GAME_EPOCH_ORDER`, civ-entry-epoch.ts:9).
-#[allow(dead_code)]
 pub const GAME_EPOCH_ORDER: [Epoch; 3] = [Epoch::Stone, Epoch::Bronze, Epoch::Iron];
 
 /// Ścisłe rozpoznanie kanonicznego identyfikatora epoki gry (web `GAME_EPOCH_ORDER.includes`).
-/// `allow(dead_code)`: plik jest też włączany przez `tests/unit_epoch.rs` (`#[path]`), który nie używa tego API.
-#[allow(dead_code)]
+/// Uwaga: plik jest też włączany przez `tests/unit_epoch.rs` (`#[path]`); tamten harness wywołuje to API w teście `p6_1_civ_entry_api_is_exercised`.
 pub fn parse_game_epoch_id(id: &str) -> Option<Epoch> {
     match id {
         "kamien" => Some(Epoch::Stone),
@@ -142,13 +140,11 @@ pub fn parse_game_epoch_id(id: &str) -> Option<Epoch> {
 }
 
 /// Indeks epoki gry (web `gameEpochIndex`). Nieznany identyfikator => `GAME_EPOCH_ORDER.len()`.
-#[allow(dead_code)]
 pub fn game_epoch_index(id: &str) -> usize {
     parse_game_epoch_id(id).map_or(GAME_EPOCH_ORDER.len(), |epoch| epoch as usize - 1)
 }
 
 /// Wiersz cywilizacji potrzebny do wyznaczenia epoki wejścia (web `CivEntryEpochRow`).
-#[allow(dead_code)]
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct CivEntryRow<'a> {
     /// `ikonaId` — pusty lub brak = pomijany przy liście dostępnych.
@@ -162,7 +158,6 @@ pub struct CivEntryRow<'a> {
 /// Pierwsza epoka wejścia cywilizacji (web `getCivEpokaWejscia`).
 /// Kolejność: poprawny `epoka_wejscia`; w przeciwnym razie minimum poprawnych
 /// `epoki_startowe`; w przeciwnym razie `Kamień`.
-#[allow(dead_code)]
 pub fn civ_entry_epoch(epoka_wejscia: Option<&str>, epoki_startowe: Option<&[&str]>) -> Epoch {
     if let Some(epoch) = epoka_wejscia.and_then(parse_game_epoch_id) {
         return epoch;
@@ -177,7 +172,6 @@ pub fn civ_entry_epoch(epoka_wejscia: Option<&str>, epoki_startowe: Option<&[&st
 
 /// Czy cywilizacja może być wybrana/wylosowana w danej epoce gry
 /// (web `isCivAvailableAtGameEpoch`: indeks wejścia <= indeks epoki gry).
-#[allow(dead_code)]
 pub fn is_civ_available_at_game_epoch(row: CivEntryRow<'_>, game_epoch_id: &str) -> bool {
     let entry = civ_entry_epoch(row.epoka_wejscia, row.epoki_startowe);
     (entry as usize) - 1 <= game_epoch_index(game_epoch_id)
@@ -185,7 +179,6 @@ pub fn is_civ_available_at_game_epoch(row: CivEntryRow<'_>, game_epoch_id: &str)
 
 /// Identyfikatory cywilizacji (`ikona_id`) dostępnych w epoce startu gry, w kolejności wejścia
 /// (web `civIdsAvailableAtGameEpoch`).
-#[allow(dead_code)]
 pub fn civ_ids_available_at_game_epoch<'a>(
     rows: &[CivEntryRow<'a>],
     game_epoch_id: &str,
@@ -196,4 +189,40 @@ pub fn civ_ids_available_at_game_epoch<'a>(
             is_civ_available_at_game_epoch(*row, game_epoch_id).then_some(id)
         })
         .collect()
+}
+
+/// Etykieta UI cywilizacji (web `formatCivEntryEpochLabel`, civ-entry-epoch.ts:65):
+/// `Wejście: <epoka wejścia> · dostępne: <epoki od wejścia w górę>`.
+pub fn format_civ_entry_epoch_label(row: CivEntryRow<'_>) -> String {
+    let entry = civ_entry_epoch(row.epoka_wejscia, row.epoki_startowe);
+    let available: Vec<&str> = GAME_EPOCH_ORDER
+        .iter()
+        .filter(|epoch| **epoch >= entry)
+        .map(|epoch| epoch.as_str())
+        .collect();
+    format!(
+        "Wejście: {} · dostępne: {}",
+        entry.as_str(),
+        available.join(", ")
+    )
+}
+
+/// Etykieta epoki na HUD mapy (web `gameEpochHudLabel`, civ-entry-epoch.ts:82).
+/// Indeks: `Math.round` (połówki w górę), potem zacisk do `1..=3`. `NaN` => `Epoka kamienia`
+/// (web: `GAME_EPOCH_ORDER[NaN] ?? 'kamien'`).
+pub fn game_epoch_hud_label(era_index: f64) -> String {
+    let epoch = if era_index.is_nan() {
+        Epoch::Stone
+    } else {
+        // JS Math.round: floor(x + 0.5), nie zaokrąglenie od zera Rust `round`.
+        let rounded = (era_index + 0.5).floor();
+        let clamped = rounded.clamp(1.0, GAME_EPOCH_ORDER.len() as f64) as usize;
+        GAME_EPOCH_ORDER[clamped - 1]
+    };
+    match epoch {
+        Epoch::Stone => "Epoka kamienia",
+        Epoch::Bronze => "Epoka brązu",
+        Epoch::Iron => "Epoka żelaza",
+    }
+    .to_string()
 }

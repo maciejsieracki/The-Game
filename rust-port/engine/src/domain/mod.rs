@@ -16,7 +16,7 @@ pub mod playable;
 pub mod player;
 pub mod recruitment;
 pub mod resource_production;
-mod rng;
+pub mod rng;
 mod session;
 mod state;
 pub mod terrain;

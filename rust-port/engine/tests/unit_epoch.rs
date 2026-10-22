@@ -1,7 +1,38 @@
 #[path = "../src/domain/unit_epoch.rs"]
 mod unit_epoch;
 
-use unit_epoch::{available_units, Epoch, UnitEpoch};
+use unit_epoch::{
+    available_units, civ_entry_epoch, civ_ids_available_at_game_epoch,
+    format_civ_entry_epoch_label, game_epoch_hud_label, game_epoch_index,
+    is_civ_available_at_game_epoch, parse_game_epoch_id, CivEntryRow, Epoch, UnitEpoch,
+    GAME_EPOCH_ORDER,
+};
+
+/// P6.1 r2: harness włącza ten plik przez `#[path]`; wywołuje cały publiczny API wejścia cywilizacji
+/// (bez `allow(dead_code)`). Pełne wektory z weba: `tests/p6_1_civ_entry_epoch.rs`.
+#[test]
+fn p6_1_civ_entry_api_is_exercised() {
+    assert_eq!(GAME_EPOCH_ORDER.len(), 3);
+    assert_eq!(parse_game_epoch_id("braz"), Some(Epoch::Bronze));
+    assert_eq!(game_epoch_index("zelazo"), 2);
+    assert_eq!(
+        civ_entry_epoch(None, Some(&["zelazo", "braz"])),
+        Epoch::Bronze
+    );
+    let row = CivEntryRow {
+        ikona_id: Some("X"),
+        epoka_wejscia: Some("zelazo"),
+        epoki_startowe: None,
+    };
+    assert!(!is_civ_available_at_game_epoch(row, "braz"));
+    assert!(is_civ_available_at_game_epoch(row, "zelazo"));
+    assert_eq!(civ_ids_available_at_game_epoch(&[row], "zelazo"), ["X"]);
+    assert_eq!(
+        format_civ_entry_epoch_label(row),
+        "Wejście: Żelazo · dostępne: Żelazo"
+    );
+    assert_eq!(game_epoch_hud_label(2.5), "Epoka żelaza");
+}
 
 fn military(id: &str, epoch: Epoch) -> UnitEpoch {
     UnitEpoch::new(id, epoch)

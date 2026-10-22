@@ -3,8 +3,9 @@
 //! w katalogu runu R-RUSTPORT-P6-1-STAN-STARTOWY-Q1).
 
 use civ_engine::domain::unit_epoch::{
-    civ_entry_epoch, civ_ids_available_at_game_epoch, game_epoch_index,
-    is_civ_available_at_game_epoch, parse_game_epoch_id, CivEntryRow, Epoch, GAME_EPOCH_ORDER,
+    civ_entry_epoch, civ_ids_available_at_game_epoch, format_civ_entry_epoch_label,
+    game_epoch_hud_label, game_epoch_index, is_civ_available_at_game_epoch, parse_game_epoch_id,
+    CivEntryRow, Epoch, GAME_EPOCH_ORDER,
 };
 use serde_json::Value;
 
@@ -134,6 +135,46 @@ fn civ_ids_available_match_web_roster_vectors() {
             civ_ids_available_at_game_epoch(&rows, game),
             expected,
             "civIdsAvailableAtGameEpoch(roster, {game:?})"
+        );
+    }
+}
+
+#[test]
+fn civ_entry_label_matches_web_vectors() {
+    // Web: formatCivEntryEpochLabel (civ-entry-epoch.ts:65), P6.1 r2 — port 1:1.
+    let web = web();
+    let rows = web["civEntry"].as_array().expect("civEntry");
+    assert!(rows.len() >= 16);
+    for row in rows {
+        let input = &row["input"];
+        let direct = input.get("epokaWejscia").and_then(Value::as_str);
+        let legacy_owned: Option<Vec<&str>> = input.get("epokiStartowe").map(str_list);
+        let civ = CivEntryRow {
+            ikona_id: None,
+            epoka_wejscia: direct,
+            epoki_startowe: legacy_owned.as_deref(),
+        };
+        assert_eq!(
+            format_civ_entry_epoch_label(civ),
+            row["label"].as_str().expect("label"),
+            "formatCivEntryEpochLabel({input})"
+        );
+    }
+}
+
+#[test]
+fn game_epoch_hud_label_matches_web_vectors() {
+    // Web: gameEpochHudLabel (civ-entry-epoch.ts:82), wejścia liczbowe z wektora (także NaN/±Infinity).
+    let web = web();
+    let rows = web["hudLabels"].as_array().expect("hudLabels");
+    assert!(rows.len() >= 19);
+    for row in rows {
+        let text = row["input"].as_str().expect("input");
+        let input: f64 = text.parse().expect("f64 literal from web vector");
+        assert_eq!(
+            game_epoch_hud_label(input),
+            row["label"].as_str().expect("label"),
+            "gameEpochHudLabel({text})"
         );
     }
 }

@@ -33,12 +33,16 @@ fn human_owner_primary_matches_web() {
 fn stub_constants_are_the_web_sentinels() {
     // Sentynele weba: barbarians.ts:49 (-1), society-breakdown.ts:206 (-99); potwierdzone generatorem.
     let web = web();
-    for key in ["barbarian_const", "barbarian_fn", "rebel_const"] {
-        assert_eq!(
-            web["stubChecks"][key],
-            Value::Bool(true),
-            "stubChecks.{key}"
-        );
+    // r2: stuby są wycinane werbatim z weba przez generator; kotwice linii (anchors) muszą być true.
+    for key in [
+        "barb_const_49",
+        "barb_fn_52",
+        "barb_ret_53",
+        "barb_close_54",
+        "rebel_doc_205",
+        "rebel_const_206",
+    ] {
+        assert_eq!(web["anchors"][key], Value::Bool(true), "anchors.{key}");
     }
     assert_eq!(owner(-1), OwnerRef::Barbarian);
     assert_eq!(owner(-99), OwnerRef::Rebel);
@@ -103,6 +107,20 @@ fn human_seats_match_web_vectors() {
             );
         }
     }
+}
+
+#[test]
+fn web_owner_minus_five_is_out_of_domain_and_not_representable() {
+    // Web (generator outOfDomain): isAiOwner(seats, -5) = true, isMajorAiOwner(-5) = false.
+    // Rust: id -5 nie jest w OwnerRef (ids.rs from_legacy_i64 => None). NIE-DOTYCZY (P2-3, założenie).
+    let web = web();
+    assert_eq!(web["outOfDomain"]["owner"].as_i64(), Some(-5));
+    assert_eq!(web["outOfDomain"]["isMajorAiOwner"].as_bool(), Some(false));
+    assert_eq!(
+        web["outOfDomain"]["isAiOwner_default_seats"].as_bool(),
+        Some(true)
+    );
+    assert_eq!(OwnerRef::from_legacy_i64(-5), None);
 }
 
 #[test]

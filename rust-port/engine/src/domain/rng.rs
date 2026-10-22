@@ -110,3 +110,27 @@ const fn mix32(mut value: u32) -> u32 {
     value = value.wrapping_mul(0xc2b2_ae35);
     value ^ (value >> 16)
 }
+
+/// P6.1 — strumień zgodny bit-w-bit z webowym `makeRng(seed)` (web
+/// `gra/src/game/civ-roster.ts:10`, wariant mulberry32). To INNY generator niż
+/// `Rng` (LCG): web `makeRng` nie używa LCG, więc nie wolno go zastępować `Rng`.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct Mulberry32 {
+    state: u32,
+}
+
+impl Mulberry32 {
+    /// Web `makeRng(seed)`: `seed >>> 0`.
+    pub const fn new(seed: u32) -> Self {
+        Self { state: seed }
+    }
+
+    /// Następna wartość w `[0, 1)` (web: `((t ^ (t >>> 14)) >>> 0) / 4294967296`).
+    pub fn next_f64(&mut self) -> f64 {
+        self.state = self.state.wrapping_add(0x6d2b_79f5);
+        let mut t = self.state;
+        t = (t ^ (t >> 15)).wrapping_mul(t | 1);
+        t ^= t.wrapping_add((t ^ (t >> 7)).wrapping_mul(t | 61));
+        f64::from(t ^ (t >> 14)) / UNIT_SCALE
+    }
+}
