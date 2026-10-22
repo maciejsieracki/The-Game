@@ -18,4 +18,7 @@ M17 setFromUnitVectors w term: DETECTED ['test every_web_case_is_reproduced_bit_
 M18 leaf blade layer z: DETECTED ['test part_catalogues_match_the_web_singletons ... FAILED', 'test every_web_case_is_reproduced_bit_for_bit ... FAILED']
 M19 culture overlay sumer colour: DETECTED ['test every_web_case_is_reproduced_bit_for_bit ... FAILED']
 M20 named unused crossbow fletch: DETECTED ['test norm_name_and_culture_match_the_web ... FAILED', 'test every_web_case_is_reproduced_bit_for_bit ... FAILED']
-detected 20/20
+M21 Euler ZYX arm sign (obrona r1, zarzut 5): DETECTED ['test quat_from_euler_honours_every_order ... FAILED']
+M22 Euler order ignored = old release behaviour (obrona r1, zarzut 5): DETECTED ['test quat_from_euler_honours_every_order ... FAILED']
+detected 22/22, build errors 0
+EXIT=0

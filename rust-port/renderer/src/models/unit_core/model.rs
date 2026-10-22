@@ -14,7 +14,7 @@
 //! `group.userData['mats']` list of the web (used by fog dimming and
 //! disposal there).
 
-use crate::geom::{self, Euler, Mat4, Quat, Vec3};
+use crate::geom::{self, Euler, EulerOrder, Mat4, Quat, Vec3};
 
 use super::jstrig::JsTrig;
 use super::parts::{HorsePart, UnitPart};
@@ -445,25 +445,60 @@ impl Node {
     }
 }
 
-/// `Quaternion.setFromEuler(euler)` for the default `XYZ` order with V8's
-/// `Math.sin/cos` ([`super::jstrig`]); `geom::Quat::from_euler` uses the
-/// platform libm, which is 1 ulp off V8 for some angles of the unit models.
-/// Every rotation in the unit builders uses the default order.
+/// `Quaternion.setFromEuler(euler)` with V8's `Math.sin/cos`
+/// ([`super::jstrig`]); `geom::Quat::from_euler` uses the platform libm,
+/// which is 1 ulp off V8 for some angles of the unit models. All six Three.js
+/// orders are handled (same formulas as `geom::Quat::from_euler`, three
+/// r169 `Quaternion.setFromEuler`), so a non-default order can never silently
+/// produce an `XYZ` quaternion, in debug or release builds. The unit builders
+/// themselves only use the default `XYZ` order.
 #[must_use]
 pub fn quat_from_euler(eu: Euler) -> Quat {
-    debug_assert_eq!(eu.order, crate::geom::EulerOrder::Xyz);
     let c1 = (eu.x / 2.0).js_cos();
     let c2 = (eu.y / 2.0).js_cos();
     let c3 = (eu.z / 2.0).js_cos();
     let s1 = (eu.x / 2.0).js_sin();
     let s2 = (eu.y / 2.0).js_sin();
     let s3 = (eu.z / 2.0).js_sin();
-    Quat {
-        x: s1 * c2 * c3 + c1 * s2 * s3,
-        y: c1 * s2 * c3 - s1 * c2 * s3,
-        z: c1 * c2 * s3 + s1 * s2 * c3,
-        w: c1 * c2 * c3 - s1 * s2 * s3,
-    }
+    let (x, y, z, w) = match eu.order {
+        EulerOrder::Xyz => (
+            s1 * c2 * c3 + c1 * s2 * s3,
+            c1 * s2 * c3 - s1 * c2 * s3,
+            c1 * c2 * s3 + s1 * s2 * c3,
+            c1 * c2 * c3 - s1 * s2 * s3,
+        ),
+        EulerOrder::Yxz => (
+            s1 * c2 * c3 + c1 * s2 * s3,
+            c1 * s2 * c3 - s1 * c2 * s3,
+            c1 * c2 * s3 - s1 * s2 * c3,
+            c1 * c2 * c3 + s1 * s2 * s3,
+        ),
+        EulerOrder::Zxy => (
+            s1 * c2 * c3 - c1 * s2 * s3,
+            c1 * s2 * c3 + s1 * c2 * s3,
+            c1 * c2 * s3 + s1 * s2 * c3,
+            c1 * c2 * c3 - s1 * s2 * s3,
+        ),
+        EulerOrder::Zyx => (
+            s1 * c2 * c3 - c1 * s2 * s3,
+            c1 * s2 * c3 + s1 * c2 * s3,
+            c1 * c2 * s3 - s1 * s2 * c3,
+            c1 * c2 * c3 + s1 * s2 * s3,
+        ),
+        EulerOrder::Yzx => (
+            s1 * c2 * c3 + c1 * s2 * s3,
+            c1 * s2 * c3 + s1 * c2 * s3,
+            c1 * c2 * s3 - s1 * s2 * c3,
+            c1 * c2 * c3 - s1 * s2 * s3,
+        ),
+        EulerOrder::Xzy => (
+            s1 * c2 * c3 - c1 * s2 * s3,
+            c1 * s2 * c3 - s1 * c2 * s3,
+            c1 * c2 * s3 + s1 * s2 * c3,
+            c1 * c2 * c3 + s1 * s2 * s3,
+        ),
+    };
+    Quat { x, y, z, w }
 }
 
 /// `Quaternion.setFromUnitVectors(vFrom, vTo)` + `normalize()`.

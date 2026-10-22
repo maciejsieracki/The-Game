@@ -1,3 +1,4 @@
+$ cargo clippy --locked --all-targets --features gpu -- -D warnings
     Checking civ-renderer v0.1.0 (<repo>/rust-port/renderer)
-    Finished `dev` profile [unoptimized + debuginfo] target(s) in 2.31s
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 3.28s
 EXIT=0

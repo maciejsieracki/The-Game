@@ -33,10 +33,13 @@ MUT = [
     ('M18 leaf blade layer z', U + 'model.rs', 'quad(w1, y1, w2, y2, -0.006, true);', 'quad(w1, y1, w2, y2, -0.005, true);'),
     ('M19 culture overlay sumer colour', U + 'category.rs', 'let m_cop = m.mat(0xc8_843e, 0.55, 0.32);', 'let m_cop = m.mat(0xc8_843f, 0.55, 0.32);'),
     ('M20 named unused crossbow fletch', U + 'named_unused.rs', '.set_pos(cb_x, cb_y + 0.020 * HEX_R, cb_z + 0.10 * HEX_R);', '.set_pos(cb_x, cb_y + 0.021 * HEX_R, cb_z + 0.10 * HEX_R);'),
+    ('M21 Euler ZYX arm sign (obrona r1, zarzut 5)', U + 'model.rs', 'EulerOrder::Zyx => (\n            s1 * c2 * c3 - c1 * s2 * s3,', 'EulerOrder::Zyx => (\n            s1 * c2 * c3 + c1 * s2 * s3,'),
+    ('M22 Euler order ignored = old release behaviour (obrona r1, zarzut 5)', U + 'model.rs', 'let (x, y, z, w) = match eu.order {', 'let (x, y, z, w) = match {\n        let _ = eu.order;\n        EulerOrder::Xyz\n    } {'),
 ]
 
 TESTS = ['--test', 'unit_core_web_parity', '--test', 'unit_core_model_rule', '--test', 'unit_core_trig']
 detected = 0
+build_errors = 0
 for name, rel, old, new in MUT:
     p = R / rel
     orig = p.read_bytes()
@@ -48,10 +51,19 @@ for name, rel, old, new in MUT:
     p.write_text(text.replace(old, new, 1))
     try:
         res = subprocess.run(['cargo', 'test', '--locked', '--no-fail-fast', *TESTS], cwd=R, capture_output=True, text=True)
-        killed = res.returncode != 0
         failing = [l for l in res.stdout.splitlines() if l.startswith('test ') and l.endswith('FAILED')]
+        # Obrona r1: a non-zero exit without any FAILED test is a build/infra
+        # error (e.g. ENOSPC in the linker), not a killed mutant.
+        if res.returncode != 0 and not failing:
+            build_errors += 1
+            tail = [l for l in res.stderr.splitlines() if l.strip()][-1:]
+            print(f'{name}: BUILD-ERROR (not counted) {tail}')
+            continue
+        killed = res.returncode != 0
         detected += killed
         print(f'{name}: {"DETECTED" if killed else "SURVIVED"} {failing}')
     finally:
         p.write_bytes(orig)
-print(f'detected {detected}/{len(MUT)}')
+        assert p.read_bytes() == orig, f'{rel} not restored'
+print(f'detected {detected}/{len(MUT)}, build errors {build_errors}')
+sys.exit(0 if detected == len(MUT) and build_errors == 0 else 1)
