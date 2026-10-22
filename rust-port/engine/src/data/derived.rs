@@ -1678,3 +1678,109 @@ pub fn civ_matrix_semantic() -> &'static CivMatrixSemanticFile {
     static TABLE: std::sync::OnceLock<CivMatrixSemanticFile> = std::sync::OnceLock::new();
     TABLE.get_or_init(|| parse_civ_matrix_semantic().expect("civ-matrix-semantic.json must parse"))
 }
+
+// ---------------------------------------------------------------------------
+// P6.4 (R-RUSTPORT-P6-4-JEDNOSTKI-RUCH-Q1): `ruch-jednostek-params.json` - stale i teksty ruchu
+// jednostek (embarkacja, trasa, zaplanowany marsz, zwiad, identyfikator stosu). Kod
+// `domain/pathfinding.rs::ruch_jednostek` nie zawiera ich literalow.
+// ---------------------------------------------------------------------------
+
+pub const RUCH_JEDNOSTEK_PARAMS_JSON: &str =
+    include_str!("../../data/derived/ruch-jednostek-params.json");
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct EmbarkacjaParams {
+    pub zrodlo_web: String,
+    pub technologia: String,
+    pub mnoznik_obrony: f64,
+    pub koszt_wody: f64,
+    pub min_mnoznik_ruchu: f64,
+    pub kategoria_okretu: String,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct TerenRuchParams {
+    pub zrodlo_web: String,
+    pub koszt_rzeki: f64,
+    pub prog_nieprzejezdny: f64,
+    pub ulepszenie_droga: String,
+    pub ulepszenie_droga_brukowana: String,
+    pub sasiedzi: Vec<[i32; 2]>,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct TrasaParams {
+    pub zrodlo_web: String,
+    pub mnoznik_promienia: i64,
+    pub bufor_promienia: i64,
+    pub koszt_celu_nieprzejezdnego: f64,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct MarszTeksty {
+    pub brak_ruchu: String,
+    pub brak_trasy: String,
+    pub zablokowany_heks: String,
+    pub obce_miasto: String,
+    pub mgla: String,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct MarszParams {
+    pub zrodlo_web: String,
+    pub min_budzet_kroku: f64,
+    pub min_tury_ruchu: f64,
+    pub teksty: MarszTeksty,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct ZwiadParams {
+    pub zrodlo_web: String,
+    pub typ_jednostki: String,
+    pub kategoria: String,
+    pub punkty_nieodkryty_w_zasiegu: i64,
+    pub punkty_sasiad_ukryty: i64,
+    pub szum_losowania: f64,
+    pub tolerancja_remisu: f64,
+    pub limit_krokow: u32,
+    pub min_ruch_do_kroku: f64,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct StosParams {
+    pub zrodlo_web: String,
+    pub separator: String,
+    pub przyrostek_garnizon: String,
+}
+
+/// Plik `ruch-jednostek-params.json`.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct RuchJednostekParamsFile {
+    pub meta: serde_json::Value,
+    pub embarkacja: EmbarkacjaParams,
+    pub teren: TerenRuchParams,
+    pub trasa: TrasaParams,
+    pub marsz: MarszParams,
+    pub zwiad: ZwiadParams,
+    pub stos: StosParams,
+}
+
+pub fn parse_ruch_jednostek_params() -> Result<RuchJednostekParamsFile, serde_json::Error> {
+    serde_json::from_str(RUCH_JEDNOSTEK_PARAMS_JSON)
+}
+
+/// Tabela ruchu jednostek (jednorazowy odczyt; blad danych = panika z komunikatem).
+pub fn ruch_jednostek_params() -> &'static RuchJednostekParamsFile {
+    static TABLE: std::sync::OnceLock<RuchJednostekParamsFile> = std::sync::OnceLock::new();
+    TABLE.get_or_init(|| {
+        parse_ruch_jednostek_params().expect("ruch-jednostek-params.json must parse")
+    })
+}
