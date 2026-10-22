@@ -463,3 +463,29 @@ pub fn parse_wonder_work() -> Result<WonderWorkFile, serde_json::Error> {
 pub fn parse_storage_caps() -> Result<StorageCapsFile, serde_json::Error> {
     serde_json::from_str(STORAGE_CAPS_JSON)
 }
+
+/// Stałe handlu (P3-22 grupa HANDEL): `trade-multipliers.json`. Bez mechaniki w Rust.
+pub const TRADE_MULTIPLIERS_JSON: &str = include_str!("../../data/derived/trade-multipliers.json");
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct TradeMultipliersFile {
+    pub meta: serde_json::Value,
+    pub wiersze: Vec<TradeMultiplierRow>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct TradeMultiplierRow {
+    pub id: String,
+    pub klasa: String,
+    pub wartosc: u32,
+    pub definicja_web: String,
+    pub uzycie_web: String,
+    pub opis: String,
+    pub rust: String,
+}
+
+pub fn parse_trade_multipliers() -> Result<TradeMultipliersFile, serde_json::Error> {
+    serde_json::from_str(TRADE_MULTIPLIERS_JSON)
+}

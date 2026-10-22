@@ -711,3 +711,22 @@ fn storage_caps_cover_each_era_and_difficulty_once() {
         assert!(diffs.iter().all(|d| POZIOM_TRUDNOSCI_AXIS.contains(d)));
     }
 }
+
+#[test]
+fn trade_multipliers_cover_each_constant_once_with_class_a() {
+    use civ_engine::data::derived::parse_trade_multipliers;
+    let table = parse_trade_multipliers().expect("trade multipliers parse");
+    let ids: BTreeSet<&str> = table.wiersze.iter().map(|r| r.id.as_str()).collect();
+    assert_eq!(table.wiersze.len(), 2);
+    assert_eq!(ids.len(), 2);
+    assert!(ids.contains("TRADE_ROUTE_INTERNATIONAL_MULTIPLIER"));
+    assert!(ids.contains("FALLBACK_TRADE_MULT"));
+    assert!(table
+        .wiersze
+        .iter()
+        .all(|r| r.klasa == "a" && r.wartosc >= 1));
+    assert!(table
+        .wiersze
+        .iter()
+        .all(|r| r.rust.starts_with("bez mechaniki")));
+}

@@ -1,0 +1,27 @@
+{
+  "meta": {
+    "status": "P3-22 ETAP 2, grupa HANDEL. Stałe klasy a (bez zmiennych stanów). Tabela jest edytowalnym źródłem prawdy. Silnik Rust NIE ma mechaniki tras międzynarodowych ani mnożnika kulturowego, więc wiersze są NIEUŻYWANE (bez mechaniki).",
+    "pin_web": "edb8fb56",
+    "wygenerowano": "R-RUSTPORT-P3-22-FLATTEN-STAGE2-Q1 runda 1, ręcznie z odczytu źródła (grep -n na pinie edb8fb56); brak generatora node, bo stałe są literałami TS"
+  },
+  "wiersze": [
+    {
+      "id": "TRADE_ROUTE_INTERNATIONAL_MULTIPLIER",
+      "klasa": "a",
+      "wartosc": 2,
+      "definicja_web": "gra/src/game/trade-routes.ts:1558",
+      "uzycie_web": "gra/src/game/trade-routes.ts:1575",
+      "opis": "Międzynarodowa trasa: dochód bazowy x2 przed końcową redukcją (ceil/2).",
+      "rust": "bez mechaniki (brak tras międzynarodowych w rust-port/engine/src/domain/trade.rs)"
+    },
+    {
+      "id": "FALLBACK_TRADE_MULT",
+      "klasa": "a",
+      "wartosc": 1,
+      "definicja_web": "gra/src/game/culture-religion.ts:1268",
+      "uzycie_web": "gra/src/game/culture-religion.ts:1313",
+      "opis": "Mnożnik handlu miasta, gdy bramka Waluta+Mennica nie jest spełniona lub religia nie pasuje (neutralny 1.0).",
+      "rust": "bez mechaniki (brak mnożnika kulturowo-religijnego w rust-port/engine/src/domain/trade.rs)"
+    }
+  ]
+}
