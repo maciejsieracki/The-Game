@@ -1,0 +1,148 @@
+--- pin:gra/src/ui/sciencePicker.ts
++++ v2:src-tauri/frontend-v2/src/ui/sciencePicker.ts
+@@ -10,13 +10,13 @@
+  * LANE: src/ui/*.  Source: literalny UTF-8.
+  */
+ 
+-import type {} from '../../data/tech.json';
+-import techData from '../../data/tech.json';
+-import buildingsData from '../../data/buildings.json';
++// P5.4: `tech.json`/`buildings.json` (pin `:13-15`) → `StaticCatalogDto` (D-UI-4);
++// `terrainUnlockLabelsForTech` (`game/improvement-tech`, pin `:17`) → `StaticCatalogDto.techTerrainUnlockLabels`;
++// `scaledResearchCost` + typy `TempoGry`/`GameDifficulty` (pin `:18-19`) → `ResearchViewDto.techs[].effectiveCost`;
++// `buildHubTechEntries` (pin `:29`, reguła wpisana bez importu) → `ResearchViewDto.hubEntries`.
++import { staticCatalog } from '../controller/staticCatalog';
++import type { ResearchViewDto } from '../viewmodel/types';
+ import { parseUnlockBuildings, unitsUnlockedByTech } from './techUnlockParse';
+-import { terrainUnlockLabelsForTech } from '../game/improvement-tech';
+-import type { TempoGry } from '../game/tech-tempo';
+-import { scaledResearchCost, type GameDifficulty } from '../game/difficulty-cost';
+ import { scienceOwlIconHtml } from './icons/scienceOwlIcon';
+ import { techIconSvg } from './techIcons';
+ import type { ScienceHubEntry, ScienceHubPlanEntry, ScienceHubProgress } from './scienceHubHud';
+@@ -26,7 +26,6 @@
+ // dokłada żadnej nowej krawędzi w grafie modułów — dopisuje tylko drugą nazwę do
+ // istniejącego importu.
+ import { refreshScienceHubIfOpen, unlockIconSvg } from './scienceHubHud';
+-import { buildHubTechEntries } from './scienceHubSnapshotLogic';
+ // Reużycie, nie druga kopia tej samej pętli: `IMPROVEMENT_NAME_TO_KEY` (nazwa ulepszenia
+ // → ImprovementKey, zbudowana z terrain-improvements.json) już istnieje i działa w
+ // `techDiscoveryNotice.ts`.
+@@ -95,18 +94,12 @@
+    */
+   onSelectTarget?: (techId: string) => void;
+   /**
+-   * D1-Q1: numer epoki gracza (1=Kamień, 2=Brąz, 3=Żelazo).
+-   * Brak haka → pokaz wszystkie epoki (tryb podglądu).
++   * P5.4 (zastępuje haki `getPlayerEra`/`getTempoGry`/`getDifficulty` z pinu `:97-109`): widok badań
++   * policzony przez silnik — koszt po tempie/trudności/epoce (`techs[].effectiveCost`), epoka widoczna
++   * na drzewku (`treeEpoch`; `null` = wszystkie epoki, jak brak `getPlayerEra` w pinie) i lista huba
++   * (`hubEntries`). Brak haka → koszt bazowy z katalogu, wszystkie epoki, pusta lista huba (ZAŁOŻENIE P5.4-Z3).
+    */
+-  getPlayerEra?: (ownerId: number) => number;
+-  /**
+-   * Tempo gry (szybka/standardowa/dluga) — mnoznik kosztu badan w UI drzewka.
+-   */
+-  getTempoGry?: (ownerId: number) => TempoGry;
+-  /**
+-   * Poziom trudnosci — asymetria kosztow badan (latwa/normalna/trudna).
+-   */
+-  getDifficulty?: (ownerId: number) => GameDifficulty;
++  getResearchView?: (ownerId: number) => ResearchViewDto | null;
+   /**
+    * TEMAT 10 (C-RES-Q1=C): plan badań (aktywny cel + kolejka) — węzły w planie
+    * dostają widoczny numerek 1..RESEARCH_QUEUE_MAX na drzewku. Brak haka → bez numerków.
+@@ -129,7 +122,7 @@
+ 
+ /** T-TECH-2A: etykiety ulepszeń z kodu (terrain JSON + multi-tech); fallback z tech.json. */
+ function resolveTerrainUnlockLabel(techName: string, jsonField: string | null | undefined): string {
+-  const fromCode = terrainUnlockLabelsForTech(techName);
++  const fromCode = staticCatalog().techTerrainUnlockLabels[techName] ?? [];
+   if (fromCode.length > 0) return fromCode.join(', ');
+   return (jsonField ?? '').trim();
+ }
+@@ -157,7 +150,7 @@
+   y: number;
+ }
+ 
+-const rawList = (techData as unknown as { technologie: RawTech[] }).technologie;
++const rawList = (staticCatalog().tech as unknown as { technologie: RawTech[] }).technologie;
+ 
+ function buildNodes(): Map<string, TechNode> {
+   const map = new Map<string, TechNode>();
+@@ -289,7 +282,7 @@
+  * podciągiem wybierało najdłuższą (najbardziej szczegółową) nazwę.
+  */
+ const BUILDING_NAME_TO_ID: ReadonlyArray<{ nazwa: string; id: string; kategoria: string }> =
+-  (buildingsData as ReadonlyArray<{ id?: string; nazwa?: string; kategoria?: string }>)
++  (staticCatalog().buildings as ReadonlyArray<{ id?: string; nazwa?: string; kategoria?: string }>)
+     .filter(b => typeof b?.id === 'string' && b.id !== '' && typeof b?.nazwa === 'string' && b.nazwa !== '')
+     .map(b => ({
+       nazwa: (b.nazwa as string).toLowerCase().trim(),
+@@ -486,15 +479,8 @@
+     }
+     : null;
+ 
+-  const drafts = buildHubTechEntries({
+-    techById: TECH_MAP,
+-    slugify,
+-    researchedRaw: cfg.getResearchedTechs?.(ownerId) ?? [],
+-    availableRaw: cfg.getAvailableTechs?.(ownerId) ?? [],
+-    targetSlug,
+-    playerEra: cfg.getPlayerEra?.(ownerId),
+-    costFor: (base, epoka) => effectiveTechCost(base, ownerId, epoka),
+-  });
++  // P5.4: lista „Możesz wybrać” + podgląd zablokowanych liczy silnik (pin: `buildHubTechEntries`).
++  const drafts = cfg.getResearchView?.(ownerId)?.hubEntries ?? [];
+ 
+   const entries: ScienceHubEntry[] = drafts.map(d => {
+     const node = TECH_MAP.get(d.id);
+@@ -517,12 +503,9 @@
+ // Unique epochs in order
+ const EPOCH_ORDER: readonly string[] = ['Kamień', 'Brąz', 'Żelazo'];
+ 
+-/** D1-Q1: epoka widoczna na drzewku (ukryte tech z przyszłych epok). */
++/** D1-Q1: epoka widoczna na drzewku (ukryte tech z przyszłych epok). P5.4: z `ResearchViewDto.treeEpoch`. */
+ function currentEpochLabel(ownerId: number): string | null {
+-  const era = cfg.getPlayerEra?.(ownerId);
+-  if (era === undefined) return null;
+-  const idx = Math.max(0, Math.min(EPOCH_ORDER.length - 1, Math.round(era) - 1));
+-  return EPOCH_ORDER[idx] ?? 'Kamień';
++  return cfg.getResearchView?.(ownerId)?.treeEpoch ?? null;
+ }
+ 
+ function filterNodesForEpoch(nodes: TechNode[], ownerId: number): TechNode[] {
+@@ -1075,7 +1058,7 @@
+     }
+ 
+     // Cost top-right (po mnozniku tempa gry)
+-    lines.push(`<text x="${r(NW - 4)}" y="11" text-anchor="end" fill="rgba(120,180,90,0.45)" font-size="7.5" font-family="monospace" pointer-events="none">${effectiveTechCost(node.koszt, activeOwner, node.epoka)}PN</text>`);
++    lines.push(`<text x="${r(NW - 4)}" y="11" text-anchor="end" fill="rgba(120,180,90,0.45)" font-size="7.5" font-family="monospace" pointer-events="none">${effectiveTechCost(node, activeOwner)}PN</text>`);
+ 
+     if (isClickable) {
+       lines.push(`<rect class="civ-sci-hit" x="0" y="0" width="${NW}" height="${NH}" rx="8" fill="rgba(0,0,0,0.001)" stroke="none" pointer-events="all"/>`);
+@@ -1114,7 +1097,7 @@
+     : '';
+   let h = `<div class="tt-name" style="color:${st.label}">${ttIconHtml}${esc(node.nazwa)}</div>`;
+   h += `<div class="tt-meta" style="color:#7a6028">Epoka: <strong>${esc(node.epoka)}</strong> | Kolumna: ${node.epoka === 'Kamień' ? 'K' : node.epoka === 'Brąz' ? 'B' : 'Z'}${node.zoneCol}</div>`;
+-  h += `<div class="tt-cost" style="color:#78b058">⚗ Koszt nauki: ${effectiveTechCost(node.koszt, activeOwner, node.epoka)} PN</div>`;
++  h += `<div class="tt-cost" style="color:#78b058">⚗ Koszt nauki: ${effectiveTechCost(node, activeOwner)} PN</div>`;
+   h += `<div class="tt-status" style="margin-top:4px;font-size:0.73em;font-weight:700">${statusLabel[status]}</div>`;
+ 
+   if (node.prereqIds.length > 0) {
+@@ -1172,11 +1155,10 @@
+ 
+ let cfg: SciencePickerConfig = {};
+ 
+-/** Koszt badania po mnozniku tempa gry + asymetrii trudnosci. */
+-function effectiveTechCost(baseKoszt: number, ownerId = 0, epoka?: string | null): number {
+-  const tempo = cfg.getTempoGry?.(ownerId) ?? 'standardowa';
+-  const difficulty = cfg.getDifficulty?.(ownerId) ?? 'normal';
+-  return scaledResearchCost(baseKoszt, tempo, ownerId, difficulty, epoka);
++/** Koszt badania po mnozniku tempa gry + asymetrii trudnosci. P5.4: z `ResearchViewDto.techs[].effectiveCost`. */
++function effectiveTechCost(node: TechNode, ownerId = 0): number {
++  const row = cfg.getResearchView?.(ownerId)?.techs.find(t => t.id === node.id);
++  return row !== undefined ? row.effectiveCost : node.koszt;
+ }
+ let overlayEl: HTMLDivElement | null = null;
+ let panelEl: HTMLDivElement | null = null;

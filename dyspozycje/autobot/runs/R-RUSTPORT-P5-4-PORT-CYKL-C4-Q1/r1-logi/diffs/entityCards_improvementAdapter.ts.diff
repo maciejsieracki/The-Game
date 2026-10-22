@@ -1,0 +1,21 @@
+--- pin:gra/src/ui/entityCards/improvementAdapter.ts
++++ v2:src-tauri/frontend-v2/src/ui/entityCards/improvementAdapter.ts
+@@ -23,7 +23,8 @@
+  * Charakterystyką — przesunięcie zepsułoby pozycję Rysu historycznego bez błędu kompilatora
+  * (dokładnie ten sam mechanizm co `buildingAdapter.ts`/`unitAdapter.ts`).
+  */
+-import terrainImprovementsData from '../../../data/terrain-improvements.json';
++// P5.4: `terrain-improvements.json` (pin `:26`) → `StaticCatalogDto.terrainImprovements` (D-UI-4).
++import { staticCatalog } from '../../controller/staticCatalog';
+ import { improvementIconSvg } from '../icons/brandAssets';
+ import { resolveImprovementRow, resolveTechnologyRow, technologyIdFromName } from './registry';
+ import type { ImprovementRow } from './registry';
+@@ -68,7 +69,7 @@
+  * `terrain-improvements.json` — wyłącznie do doboru ikony (Bug B). */
+ const NAME_TO_KEY: Record<string, string> = (() => {
+   const map: Record<string, string> = {};
+-  for (const [key, row] of Object.entries(terrainImprovementsData as Record<string, { nazwa?: string }>)) {
++  for (const [key, row] of Object.entries(staticCatalog().terrainImprovements as Record<string, { nazwa?: string }>)) {
+     if (key.startsWith('_')) continue;
+     const nazwa = row?.nazwa;
+     if (typeof nazwa === 'string' && nazwa) map[nazwa] = key;
