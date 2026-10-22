@@ -1,0 +1,32 @@
+{
+  "meta": {
+    "status": "BOOTSTRAP P6.1C: wartosci startowe przepisane z weba. Zrodlem prawdy do recznego balansu jest TA tabela (edytuj liczby, nie kod).",
+    "pin_web": "edb8fb56",
+    "temat": "R-RUSTPORT-P6-1C-START-KLASTRA-Q1",
+    "uwaga": "Stale ALGORYTMICZNE (maski xor ziarna, mnozniki hasha) NIE sa tutaj: to tozsamosc generatora, nie balans; sa nazwanymi const w domain/start_position.rs z odnosnikiem plik:linia weba."
+  },
+  "min_dystans_miast_start_miasto_panstwo": {
+    "wartosc": 3,
+    "zrodlo_web": "gra/src/game/cities.ts:1122 (MIN_CITY_DISTANCE_START_CITY_STATE)",
+    "uzycie": "prog dystansu miedzy miastami startowymi, gdy ktores z dwoch jest miastem-panstwem; ta sama wartosc przekazywana do pickSecondHumanStartHex (cluster-start.ts:332)"
+  },
+  "drugi_czlowiek_tryb_domyslny": {
+    "wartosc": "losowo",
+    "zrodlo_web": "gra/src/game/cluster-start.ts:314 (humanDistanceMode ?? 'losowo')"
+  },
+  "drugi_czlowiek_pula_blisko_daleko_ulamek": {
+    "wartosc": 0.1,
+    "zrodlo_web": "gra/src/map/cluster-spawn.ts:495 i :498 (Math.ceil(withDist.length * 0.1)), minimum 1 kandydat",
+    "uzycie": "tryby 'blisko' (najblizsze) i 'daleko' (najdalsze) losuja z tego ulamka puli kandydatow"
+  },
+  "nazwa_miasta_zastepcza": {
+    "wartosc": "Miasto",
+    "zrodlo_web": "gra/src/game/cluster-start.ts:218 (slot.nazwaMiasta || 'Miasto')",
+    "uzycie": "podstawiana jako fallback pickNextCityName, gdy slot nie ma nazwy"
+  },
+  "start_relacja": {
+    "przedzial_zaufania": { "min": 0, "max": 100 },
+    "zrodlo_web": "gra/src/game/diplomacy-layers.ts:33-55 (clamp(zaufanie, 0, 100)); wartosci start/rywalizacja/roznica z data/diplomacy.json params",
+    "uwaga": "start_zaufanie, rywalizacjaTenSamTyp_zaufanie, roznicaKulturowa_zaufanie, startRespekt sa czytane z diplomacy.json (data::civilizations::parse_diplomacy), nie powielane tutaj."
+  }
+}

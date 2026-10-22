@@ -18,6 +18,7 @@ pub mod recruitment;
 pub mod resource_production;
 pub mod rng;
 mod session;
+pub mod start_position;
 mod state;
 pub mod terrain;
 

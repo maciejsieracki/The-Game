@@ -746,3 +746,108 @@ pub fn road_movement_divisor(id: &str) -> u32 {
     );
     value as u32
 }
+
+// ---------------------------------------------------------------------------
+// P6.1C (R-RUSTPORT-P6-1C-START-KLASTRA-Q1): tabele stanu poczatkowego.
+// Czytane przez `domain/start_position.rs`. Wartosci balansowe sa EDYTOWALNE
+// w `data/derived/start-*.json`; kod nie zawiera ich literalow.
+// ---------------------------------------------------------------------------
+
+pub const START_CLUSTER_PARAMS_JSON: &str =
+    include_str!("../../data/derived/start-cluster-params.json");
+pub const START_LLAMA_PARAMS_JSON: &str =
+    include_str!("../../data/derived/start-llama-params.json");
+pub const START_BRAZ_ACCESS_JSON: &str = include_str!("../../data/derived/start-braz-access.json");
+
+/// Pojedyncza wartosc z pochodzeniem w webie (`zrodlo_web`).
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct StartValue<T> {
+    pub wartosc: T,
+    pub zrodlo_web: String,
+    #[serde(default)]
+    pub uzycie: Option<String>,
+    #[serde(default)]
+    pub jednostka: Option<String>,
+    #[serde(default)]
+    pub uwaga: Option<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct StartTrustRange {
+    pub min: f64,
+    pub max: f64,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct StartRelationParams {
+    pub przedzial_zaufania: StartTrustRange,
+    pub zrodlo_web: String,
+    pub uwaga: String,
+}
+
+/// Plik `start-cluster-params.json`.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct StartClusterParamsFile {
+    pub meta: serde_json::Value,
+    pub min_dystans_miast_start_miasto_panstwo: StartValue<u32>,
+    pub drugi_czlowiek_tryb_domyslny: StartValue<String>,
+    pub drugi_czlowiek_pula_blisko_daleko_ulamek: StartValue<f64>,
+    pub nazwa_miasta_zastepcza: StartValue<String>,
+    pub start_relacja: StartRelationParams,
+}
+
+/// Plik `start-llama-params.json`.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct StartLlamaParamsFile {
+    pub meta: serde_json::Value,
+    pub promien_regionu_startowego: StartValue<u32>,
+    pub zloza_na_start: StartValue<u32>,
+}
+
+/// Plik `start-braz-access.json`.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct StartBrazAccessFile {
+    pub meta: serde_json::Value,
+    pub budynek_odlewnia_brazu: StartValue<String>,
+    pub budynki_ulepszenia_odlewni: StartValue<Vec<String>>,
+    pub ulepszenie_zrodlo_miedzi: StartValue<String>,
+    pub klucz_magazynu_brazu: StartValue<String>,
+    pub aliasy_kluczy_ulepszen: StartValue<BTreeMap<String, String>>,
+}
+
+pub fn parse_start_cluster_params() -> Result<StartClusterParamsFile, serde_json::Error> {
+    serde_json::from_str(START_CLUSTER_PARAMS_JSON)
+}
+
+pub fn parse_start_llama_params() -> Result<StartLlamaParamsFile, serde_json::Error> {
+    serde_json::from_str(START_LLAMA_PARAMS_JSON)
+}
+
+pub fn parse_start_braz_access() -> Result<StartBrazAccessFile, serde_json::Error> {
+    serde_json::from_str(START_BRAZ_ACCESS_JSON)
+}
+
+/// Tabela parametrow klastra startowego (jednorazowy odczyt; blad danych = panika z komunikatem).
+pub fn start_cluster_params() -> &'static StartClusterParamsFile {
+    static TABLE: std::sync::OnceLock<StartClusterParamsFile> = std::sync::OnceLock::new();
+    TABLE
+        .get_or_init(|| parse_start_cluster_params().expect("start-cluster-params.json must parse"))
+}
+
+/// Tabela parametrow posiewu lamy.
+pub fn start_llama_params() -> &'static StartLlamaParamsFile {
+    static TABLE: std::sync::OnceLock<StartLlamaParamsFile> = std::sync::OnceLock::new();
+    TABLE.get_or_init(|| parse_start_llama_params().expect("start-llama-params.json must parse"))
+}
+
+/// Tabela identyfikatorow lancucha brazu.
+pub fn start_braz_access() -> &'static StartBrazAccessFile {
+    static TABLE: std::sync::OnceLock<StartBrazAccessFile> = std::sync::OnceLock::new();
+    TABLE.get_or_init(|| parse_start_braz_access().expect("start-braz-access.json must parse"))
+}
