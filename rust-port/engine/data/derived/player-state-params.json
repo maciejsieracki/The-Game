@@ -1,0 +1,58 @@
+{
+  "meta": {
+    "status": "Edytowalna tabela stałych stanu gracza i badań (P6.1B). Edytuj liczby i listy tutaj; kod Rust nie ma literałów tych wartości.",
+    "zrodlo": "gra/src/game/playerState.ts",
+    "pin_web": "edb8fb56",
+    "wiersze_web": {
+      "pieniadz_mnoznik": "playerState.ts:75 (PIENIADZ_MNOZNIK = 10)",
+      "research_queue_max": "playerState.ts:82 (RESEARCH_QUEUE_MAX = 4)",
+      "brak_prereq": "playerState.ts:68 (BRAK_PREREQ)",
+      "numer_epoki": "playerState.ts:111-115 (NUMER_EPOKI)",
+      "diakrytyki_epoki": "playerState.ts:105-108 (PL_DIAKRYTYKI_EPOKA)",
+      "technologia_pieniadza": "playerState.ts:256 (techId === 'waluta')",
+      "uwagi_pieniadza_igla": "playerState.ts:258 (regex /pieniądz/i)",
+      "stan_poczatkowy": "playerState.ts:144-162 (createPlayerState)",
+      "tryb_badan_gracza": "difficulty-cost.ts:57-65 (getCostMultiplierForOwner dla ownerId 0) -> klucze osi tryb w research-costs.json"
+    },
+    "uwaga": "Koszty badań NIE są tutaj: czyta je research-costs.json (P3-19)."
+  },
+  "pieniadz_mnoznik": 10,
+  "research_queue_max": 4,
+  "brak_prereq": ["", "-", "—", "–", "brak", "none"],
+  "numer_epoki": {
+    "kamien": 1,
+    "braz": 2,
+    "zelazo": 3
+  },
+  "diakrytyki_epoki": {
+    "ą": "a",
+    "ć": "c",
+    "ę": "e",
+    "ł": "l",
+    "ń": "n",
+    "ó": "o",
+    "ś": "s",
+    "ź": "z",
+    "ż": "z"
+  },
+  "technologia_pieniadza": "waluta",
+  "uwagi_pieniadza_igla": "pieniądz",
+  "tryb_badan_gracza": {
+    "easy": "latwy_gracz",
+    "normal": "normalny",
+    "hard": "trudny_gracz"
+  },
+  "stan_poczatkowy": {
+    "skarbiec": 0,
+    "nauka": 0,
+    "era": 1,
+    "pieniadz_mnoznik": 1,
+    "tempo_gry": "standardowa",
+    "building_cost_pace": "niski",
+    "koszt_jednostek_pace": "niski",
+    "wzrost_ludnosci_pace": "wysoki",
+    "ruch_swiata_pace": "krotki",
+    "civ_type": "grecy",
+    "rakieta_wystrzelona": false
+  }
+}

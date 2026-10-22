@@ -1,0 +1,14 @@
+MUTACJA M1-utf16-as-utf8: ZABITA (2 linii FAILED)
+MUTACJA M2-js-trim-as-std-trim: ZABITA (3 linii FAILED)
+MUTACJA M3-queue-max-off-by-one: ZABITA (3 linii FAILED)
+MUTACJA M4-era-max-dropped: ZABITA (2 linii FAILED)
+MUTACJA M5-tier-gate-le: ZABITA (3 linii FAILED)
+MUTACJA M6-progress-not-clamped: ZABITA (2 linii FAILED)
+MUTACJA M7-money-skips-notes: ZABITA (3 linii FAILED)
+MUTACJA M8-queue-not-promoted: ZABITA (2 linii FAILED)
+MUTACJA M9-prereq-sentinel-case-sensitive: PRZEZYLA
+MUTACJA M10-epoch-diacritics-ignored: ZABITA (3 linii FAILED)
+PLIK PRZYWROCONY
+MUTACJA M9-prereq-part-sentinel-case-sensitive: ZABITA (3 linii FAILED)
+PLIK PRZYWROCONY
+UWAGA: M9 w pierwszym przebiegu (filtr wejsciowy raw.is_empty()) byl mutantem rownowaznym (te same wyniki); zastapiony M9 na filtrze czesci - ZABITA (drugi przebieg).

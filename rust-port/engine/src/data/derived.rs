@@ -1037,3 +1037,58 @@ pub fn civ_bonus_diacritics() -> &'static CivBonusDiacriticsFile {
     TABLE
         .get_or_init(|| parse_civ_bonus_diacritics().expect("civ-bonus-diacritics.json must parse"))
 }
+
+// ---------------------------------------------------------------------------
+// P6.1B (R-RUSTPORT-P6-1B-PLAYERSTATE-Q1): stale stanu gracza i badan
+// `player-state-params.json` (web playerState.ts). Czyta je `domain/player.rs`.
+// ---------------------------------------------------------------------------
+
+pub const PLAYER_STATE_PARAMS_JSON: &str =
+    include_str!("../../data/derived/player-state-params.json");
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct PlayerStateParamsFile {
+    pub meta: serde_json::Value,
+    pub pieniadz_mnoznik: i64,
+    pub research_queue_max: usize,
+    pub brak_prereq: Vec<String>,
+    pub numer_epoki: BTreeMap<String, i64>,
+    pub diakrytyki_epoki: BTreeMap<char, char>,
+    pub technologia_pieniadza: String,
+    pub uwagi_pieniadza_igla: String,
+    /// Klucz trudnosci (`easy`/`normal`/`hard`) -> os `tryb` w `research-costs.json` dla gracza.
+    pub tryb_badan_gracza: BTreeMap<String, String>,
+    pub stan_poczatkowy: PlayerStateInitial,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct PlayerStateInitial {
+    pub skarbiec: f64,
+    pub nauka: f64,
+    pub era: i64,
+    pub pieniadz_mnoznik: i64,
+    pub tempo_gry: String,
+    pub building_cost_pace: String,
+    pub koszt_jednostek_pace: String,
+    pub wzrost_ludnosci_pace: String,
+    pub ruch_swiata_pace: String,
+    pub civ_type: String,
+    pub rakieta_wystrzelona: bool,
+}
+
+pub fn parse_player_state_params() -> Result<PlayerStateParamsFile, serde_json::Error> {
+    serde_json::from_str(PLAYER_STATE_PARAMS_JSON)
+}
+
+impl ResearchCostsFile {
+    /// Koszt badania dla (technologia, tempo, tryb). `None`, gdy klucza nie ma w tabeli.
+    pub fn lookup(&self, technologia: &str, tempo: &str, tryb: &str) -> Option<u32> {
+        let row = self.wiersze.iter().find(|r| r.technologia == technologia)?;
+        row.wartosci
+            .iter()
+            .find(|w| w.tempo == tempo && w.tryb == tryb)
+            .map(|w| w.koszt)
+    }
+}
