@@ -27,14 +27,14 @@ dotykające tych samych plików — zawsze sekwencyjnie, nigdy w tej samej fali.
 
 | # | Temat | Faza | Runda | runId Workflow | Status | Ostatnia aktualizacja |
 |---|---|---|---|---|---|---|
-| 1 | `R-RUSTPORT-P3-22-FLATTEN-STAGE2-Q1` | etap 2 mnożników — runda 3: dyplomacja, AI, barbarzyńcy, walka (handel zintegrowany w r1–2) | 3/5 | `wf_4a60bbaf-350` | DISPATCHED | 2026-10-22 |
-| 2 | `R-RUSTPORT-P4-17-MOD03-TERRAIN-DECOR-Q1` | MOD-03 dekor terenu (lasy, dżungla, góry/wzgórza, łąki, oaza, tarasy, river LOD) — Opus 5.5 | 1/5 | `wf_b84d99df-bfb` | DISPATCHED | 2026-10-22 |
-| 3 | `R-RUSTPORT-P4-13-MOD04-UNIT-CORE-Q1` | MOD-04 rdzeń modeli jednostek + routing D-MOD-9 — Opus 5.5 | 1/5 | `wf_590a7af3-626` | DISPATCHED | 2026-10-22 |
-| 4 | `R-RUSTPORT-P4-15-GPU-SPIKE-PREP-Q1` | RR-T1 przygotowanie spike'a GPU (crate `spike-gpu-embed`, instrukcja dla właściciela) — Opus 5.5 | 1/5 | `wf_d050c8fc-9a3` | DISPATCHED | 2026-10-22 |
-| 5 | `R-RUSTPORT-P5-1-UI-SHELL-SKELETON-Q1` | P5-1 szkielet frontendu (Vite + kopia paneli bez logiki + typy DTO + bramka importów) w `src-tauri/frontend-v2` — Opus 5.5 | 1/5 | `wf_bcb1b0ee-f7d` | DISPATCHED | 2026-10-22 |
-| 6 | `R-RUSTPORT-P4-16-JSMATH-Q1` | wspólny `jsmath` (fdlibm/V8) dla geom/terrain/wonders — Opus 5.5 | 1/5 | `wf_294ff433-765` | DISPATCHED | 2026-10-22 |
+| 1 | `R-RUSTPORT-P3-22-FLATTEN-STAGE2-Q1` | etap 2 mnożników — runda 3: dyplomacja, AI, barbarzyńcy, walka | 3/5 | `wf_4a60bbaf-350` | DISPATCHED | 2026-10-22 |
+| 2 | `R-RUSTPORT-P4-17-MOD03-TERRAIN-DECOR-Q1` | MOD-03 dekor terenu — Opus 5.5 | 1/5 | `wf_b84d99df-bfb` | DISPATCHED | 2026-10-22 |
+| 3 | `R-RUSTPORT-P4-15-GPU-SPIKE-PREP-Q1` | RR-T1 przygotowanie spike'a GPU — Opus 5.5 | 1/5 | `wf_d050c8fc-9a3` | DISPATCHED | 2026-10-22 |
+| 4 | `R-RUSTPORT-P4-18-JSMATH-CONSOLIDATE-Q1` | konsolidacja jsmath (unit_core, pick, skaner) — Opus 5.5 | 1/5 | `wf_efb43141-a66` | DISPATCHED | 2026-10-22 |
+| 5 | `R-RUSTPORT-P4-19-MOD05-UNITS-STONE-Q1` | MOD-05 jednostki kamienia (10 rekordów) — Opus 5.5 | 1/5 | `wf_b18637ca-db2` | DISPATCHED | 2026-10-22 |
+| 6 | `R-RUSTPORT-P4-20-MOD11-IMPROVEMENTS-Q1` | MOD-11 ulepszenia/złoża/zwierzęta — Opus 5.5 | 1/5 | `wf_abfb7ff0-c37` | DISPATCHED | 2026-10-22 |
 
-Kolejka (po MOD-01/04): MOD-03 teren-dekor, MOD-05/06/07 jednostki epok, MOD-09 miasta, MOD-11 ulepszenia, MOD-13 misc; P3.21 `CityId` po P3.19. Zasada: blokada na pytaniach NIE zatrzymuje puli — uruchamiaj niezależne tematy równolegle (korekta właściciela 2026-10-22).
+Kolejka: MOD-06/07 (jednostki brązu/żelaza, po P4.19), MOD-09 miasta, MOD-13 misc, ujednolicenie typu drzewa sceny (3 typy: `core::scene`, `wonders::model`, `unit_core::model`) po paczkach, P3.21 `CityId` po P3.22, P5.2+ kolejka portowania paneli (`PORTING-QUEUE.md`), RR-T1 spike (wymaga GPU właściciela).
 
 **Zamknięte w tej sesji (kod na `rust-port/parity-v2`, HEAD `aa7b225b`, 292 testy):** P3.4b, P3.4c (newtypy ID), P3.8 (assety 428), P3.8b (manifest), P3.9 (data wiring), P3.11 (zgodność danych), P3.12 (loader), P3.14 (fmt/clippy w `src/data`).
 
