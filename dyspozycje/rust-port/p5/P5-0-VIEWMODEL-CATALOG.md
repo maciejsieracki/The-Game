@@ -1,6 +1,6 @@
 # P5.0 — Katalog modelu widoku (view-model / DTO) dla UI weba przy rdzeniu w Rust
 
-**Temat:** `R-RUSTPORT-P5-0-VIEWMODEL-CATALOG-Q1` · **Domena:** GAME · **Rola:** Operator (Opus 5.5 medium) · **Runda:** 1/5
+**Temat:** `R-RUSTPORT-P5-0-VIEWMODEL-CATALOG-Q1` · **Domena:** GAME · **Rola:** Operator (Opus 5.5 medium) · **Runda:** 2/5 (poprawki po Evaluatorze r1 — zarzuty 1–10, rejestr zmian §12)
 **Pin web:** `edb8fb56` — wyłącznie `git show` / `git grep` / `git archive` do katalogu scratch poza repo (odczyt; zero buildu, zero `npm`, zero zmian w `gra/**`).
 **Baza dokumentacyjna:** `origin/claude/sprawdzenie-funkcjonalnosci-ek4ra0` @ `88df6493`.
 **Zakres:** dokument projektowo-odczytowy. Zero kodu, zero buildu, zero zmian w `gra/**`, `rust-port/**`, `src-tauri/**`.
@@ -21,16 +21,16 @@
 
 ## 0. Streszczenie
 
-1. **Pomiar potwierdza P4-5 §2.4:** 49 plików `ui/**` importuje logikę/dane; **212 linii importu**: `game/**` 142, dane 41 (13 × `src/data/**` + 28 × JSON z `gra/data/**`), `map/**` 13, `render/**` 8, `units/**` 6, `battle/**` 2. Z tych linii rozwiązano **496 zaimportowanych symboli** (skrypt §11).
-2. **Klasyfikacja symboli (§2):** R (reguła gry liczona w UI) **181**, M (mutacja stanu gry z UI) **11**, IO (zapis/odczyt) **6**, F (formatowanie tekstu zależne od reguł) **56**, K (stała/parametr) **46**, S (dane statyczne/katalog) **42**, X (renderer/bitwa/mapgen/diagnostyka) **26**, T (typ = kształt DTO) **128**. Klasyfikacja jest heurystyczna (słownik + reguły nazw, §11) i przejrzana ręcznie dla plików z R/M.
-3. **Koncentracja:** `cityPanel.ts` ma **97 z 181** symboli R i **7 z 11** M. Razem z `diplomacyTradeBasket.ts` (R23), `newGameFlow.ts` (R15), `hexContextTooltip.ts` (R12), `buildingAdapter.ts` (R8), `diplomacyAcceptanceBalance.ts` (R7), `diplomacyAudience.ts` (R6), `empireDetailPanel.ts` (R6) → **8 plików = 174/181 R**. R lub M ma 15 z 49 plików; pozostałe 34 nie mają ani R, ani M (same typy, stałe, dane statyczne, formatery, X).
+1. **Pomiar potwierdza P4-5 §2.4:** 49 plików `ui/**` importuje logikę/dane; **212 linii importu**: `game/**` 142, dane 41 (13 × `src/data/**` + 28 × JSON z `gra/data/**`), `map/**` 13, `render/**` 8, `units/**` 6, `battle/**` 2. Z tych linii rozwiązano **498 zaimportowanych symboli** (skrypt §11; r1 podawał 496 — błąd parsera, §12 pkt 6).
+2. **Klasyfikacja symboli (§2):** R (reguła gry liczona w UI) **182** (w tym 1 re-eksport `validateTradeBasketSides`), M (mutacja stanu gry z UI) **11**, IO (zapis/odczyt) **6**, F (formatowanie tekstu zależne od reguł) **56**, K (stała/parametr) **46**, S (dane statyczne/katalog) **43**, X (renderer/bitwa/mapgen/diagnostyka) **26**, T (typ = kształt DTO) **128**. Klasyfikacja jest heurystyczna (słownik + reguły nazw, §11) i przejrzana ręcznie dla plików z R/M. Pełna lista symbol po symbolu z klasą i liniami użycia: `dyspozycje/autobot/runs/R-RUSTPORT-P5-0-VIEWMODEL-CATALOG-Q1/r2-pomiar/symbols.tsv` (498 wierszy), skrypty i surowe logi z EXIT obok.
+3. **Koncentracja:** `cityPanel.ts` ma **97 z 182** symboli R i **7 z 11** M. Razem z `diplomacyTradeBasket.ts` (R24), `newGameFlow.ts` (R15), `hexContextTooltip.ts` (R12), `buildingAdapter.ts` (R8), `diplomacyAcceptanceBalance.ts` (R7), `diplomacyAudience.ts` (R6), `empireDetailPanel.ts` (R6) → **8 plików = 175/182 R**. R lub M ma 15 z 49 plików; pozostałe 34 nie mają ani R, ani M (same typy, stałe, dane statyczne, formatery, X).
 4. **Najważniejsze ustalenia nowe względem P4-5:**
-   - **UI mutuje stan gry bezpośrednio** (nie tylko liczy): `cityPanel.ts` pobiera i zwraca surowce z miast (`deductBuildingStockCostAcrossCities` `:6277`, `refundBuildingStockCostAcrossCities` `:6131`) i składa nową kolejkę produkcji (`enqueue` `:6284`, `dequeue` `:6133`, `promoteToFront` `:8383-8408`, `setPaused` `:8522`, `dequeueRecruitment` `:8284`), zapisując ją przez `cfg.setProduction` albo — bez hooka — do **lokalnej mapy w module UI** (`localProd`, `cityPanel.ts:633-643`). W Rust to wyłącznie komendy P2-5 (§7).
+   - **UI mutuje stan gry bezpośrednio** (nie tylko liczy): `cityPanel.ts` pobiera i zwraca surowce z miast (`deductBuildingStockCostAcrossCities` `:6277`, `refundBuildingStockCostAcrossCities` `:6131`) i składa nową kolejkę produkcji (`enqueue` `:6284`, `dequeue` `:6133`, `promoteToFront` `:8400,8408`, `setPaused` `:8522`, `dequeueRecruitment` `:8284`), zapisując ją przez `cfg.setProduction` albo — bez hooka — do **lokalnej mapy w module UI** (`localProd`, `cityPanel.ts:633-643`). W Rust to wyłącznie komendy P2-5 (§7).
    - **Podwójna ścieżka „hook silnika albo liczenie lokalne”** w `cityPanel.ts`: zdrowie (`resolveCityHealth` `:3281-3290`: `cfg.getCityHealth` albo `computeCityHealthBreakdown`), porządek (`getOrderState` „Brak → szacunek z budynków” `:555`), dane gry (`gameData()` → `loadGameData()` `:626-631`). Kontrakt `CityPanelConfig` (`:314-606`) ma **58 hooków odczytu** (`get*`/`is*`) i **35 hooków akcji** (`on*`/`set*`) — to jest de facto dzisiejszy model widoku panelu miasta i punkt wyjścia DTO (§6.2).
    - **Podgląd akceptacji AI w dyplomacji liczony w UI** tą samą matematyką co bramka silnika, z udokumentowaną resztkową rozbieżnością: `diplomacyAcceptanceBalance.ts:773-788` (komentarz: podgląd nie ma „mnożnika chęci AI per-akcja”). W Rust: jedno zapytanie `diplomacy_preview_basket` liczone tą samą funkcją co bramka (§6.6).
-   - **Reguła gry wpisana w UI bez importu** (nie wykrywana bramą „zero importów”): `siegeMapPanel.ts:219-220` (`zuzycie = population + garnizon`, `atrycjaNext = max(1, floor(garnizon*0.08))`). Pełny spis takich reguł: `NIE_ZMIERZONO` (§10).
-   - **Liczby dzielone renderer↔UI (D-UI-9):** poza WZROST% (R14 z P4-5) są jeszcze: etykieta miasta `formatCityMapLabel` (`render/cities.ts:784` i `cityPanel.ts:10206`), front kolejki produkcji (`render/cities.ts:802` `frontItem` i `cityPanel.ts:896,5040,8432`), ostrzeżenie o brakujących surowcach (`render/cities.ts:809-811` i `cityPanel.ts:6309`), stolica (`render/cities.ts:774` i `CityPanelConfig.getCapitalCityId` `cityPanel.ts:594`) (§5).
-5. **Propozycja:** 20 rodzin DTO (§6), lista reguł do przeniesienia do silnika z mapowaniem na pola (§8), 11 mutacji → komendy P2-5 (§7), mierzalna brama dla P5.1 (§9).
+   - **Reguła gry wpisana w UI bez importu** (nie wykrywana bramą „zero importów”): `siegeMapPanel.ts:219-223` (`zuzycie = population + garnizon` `:219`, `atrycjaNext = max(1, floor(garnizon*0.08))` `:220`, `milicjaEst = max(1, floor(population*0.2))` `:221-222`, `playerCanStorm = oblegajacyOwnerId === 0` `:223` — bramka akcji szturmu/kolejki machin `:279,291,321`). Pełny spis takich reguł: `NIE_ZMIERZONO` (§10).
+   - **Liczby dzielone renderer↔UI (D-UI-9):** poza WZROST% (R14 z P4-5) są jeszcze: etykieta miasta `formatCityMapLabel` (`render/cities.ts:784` i `cityPanel.ts:10206`), front kolejki produkcji (`render/cities.ts:802` `frontItem` i `cityPanel.ts:896,5040,8432`), ostrzeżenie o brakujących surowcach (`render/cities.ts:809-811` i `cityPanel.ts:6309`), stolica (`render/cities.ts:774` i `CityPanelConfig.getCapitalCityId` `cityPanel.ts:594`), **stan buntu** (renderer `render/cities.ts:309` `getRevolt` ← `main.ts:2611-2613` `cityOrderState.bunt || revoltWarning`; panel liczy `revoltWarning` lokalnie `cityPanel.ts:3228-3229`, zwraca `:3251-3253`) (§5).
+5. **Propozycja:** 17 sekcji DTO (§6.1–§6.17; wyliczenie typów najwyższego poziomu w §6.0 — r1 błędnie podawał „20 rodzin”), lista reguł do przeniesienia do silnika z mapowaniem na pola (§8), 11 mutacji → komendy P2-5 (§7), mierzalna brama dla P5.1 (§9).
 
 ---
 
@@ -51,21 +51,21 @@ Uwagi metody (doprecyzowanie P4-5):
 - **Wieloliniowe importy** rozwiązane parserem (`import … from` z nawiasami przez wiele linii) — numer linii = linia słowa `import`. Dla `cityPanel.ts:84` (`game/production`) import obejmuje 30 symboli.
 - **Re-eksport** `diplomacyTradeBasket.ts:2833` (`export { validateTradeBasketSides } from '../game/diplomacy-trade-validation'`) liczony jako 1 z 142 linii `game/**`.
 - **Importy typów inline poza 142 liniami** (`import('../game/…').T`): `cityPanel.ts:571,573,575,577` (`BuildingCostPace`, `KosztJednostekPace`, `WzrostLudnosciPace`, `GameDifficulty`), `diplomacyAudience.ts:282-283` (`AcceptanceSideBalance`). Brama P5.1 musi łapać także tę formę (§9).
-- **Importy martwe** (symbol zaimportowany, nieużyty w pliku; `Grep` nazwy → tylko linia importu): `snapHandelPct` (`cityPanel.ts:65`, `empireDetailPanel.ts:33`), `getEmpireFoodMaxCap` (`cityPanel.ts:141`), `isCivAvailableAtGameEpoch` (`newGameFlow.ts:22`), `normalizeImprovementKey` (`hexContextTooltip.ts:13`), typ `GameDifficulty` (`diplomacyTradeBasket.ts:16`), typ `MapGenPhaseTimings` (`sceneTimingReport.ts:5`). Nie wymagają DTO; w katalogu oznaczone `°`.
+- **Importy martwe** (symbol zaimportowany, nieużyty w pliku; `Grep` nazwy → tylko linia importu): `snapHandelPct` (`cityPanel.ts:65`, `empireDetailPanel.ts:33`), `getEmpireFoodMaxCap` (`cityPanel.ts:141`), `isCivAvailableAtGameEpoch` (`newGameFlow.ts:22`), `normalizeImprovementKey` (`hexContextTooltip.ts:13`), typ `GameDifficulty` (`diplomacyTradeBasket.ts:16`), typ `MapGenPhaseTimings` (`sceneTimingReport.ts:5`). oraz domyślny import JSON `powerParams` (`power-labels.ts:14`, wykryty dopiero parserem r2). Nie wymagają DTO; w katalogu oznaczone `°`.
 
 ## 2. Taksonomia symboli
 
 | Klasa | Znaczenie | Docelowo (P5.13) | Liczba |
 |---|---|---|---:|
-| **R** | Reguła gry liczona lokalnie w UI (wydajność, koszt, bramka, podgląd decyzji AI, sortowanie wg mocy…) | **Wychodzi z frontendu**; wynik jako pole DTO albo zapytanie do Rust | 181 |
+| **R** | Reguła gry liczona lokalnie w UI (wydajność, koszt, bramka, podgląd decyzji AI, sortowanie wg mocy…) | **Wychodzi z frontendu**; wynik jako pole DTO albo zapytanie do Rust | 182 |
 | **M** | Mutacja stanu gry albo sesji wykonywana z UI | **Komenda** P2-5 (`engine_command`) | 11 |
 | **IO** | Odczyt slotów zapisu / metadanych / autosave | Komendy powłoki Tauri (P2-5 §2.10, pkt 17 rozstrzygnięć `P2-5-COMMANDS.md:654+`) | 6 |
 | **F** | Formatowanie tekstu, którego treść zależy od reguł gry (etykiety odmian „daniny”, nastawienie, wiarygodność, linie efektów) | **ZAŁOŻENIE Z1:** tekst zależny od reguł → gotowy string w DTO; czyste formatowanie liczb (`formatManpower`, `formatWyzwienieLabel`) → kopia 1:1 do `frontend/ui/format/**` (bez importu `game/`) | 56 |
 | **K** | Stała/parametr (krok suwaka, min/max, próg, etykieta stała) | `StaticCatalogDto.constants` (§6.1), jedno źródło w Rust | 46 |
-| **S** | Dane statyczne (JSON `gra/data/**`, `loadGameData`, `categoryOf`) | D-UI-4 — **ZAŁOŻENIE Z2** (§6.1) | 42 |
+| **S** | Dane statyczne (JSON `gra/data/**`, `loadGameData`, `categoryOf`) | D-UI-4 — **ZAŁOŻENIE Z2** (§6.1) | 43 |
 | **X** | Renderer/bitwa/mapgen/diagnostyka (`render/**`, `battle/battleHudTheme`, `map/mapGen*`, `riverGenSwitch`) | Paleta/style → kopia w frontendzie; WebGL/mapgen → D-UI-7 (P4-5 §5) | 26 |
 | **T** | Typ TS (kształt danych) | Odpowiednik `struct` DTO z serde (§6) | 128 |
-| | | **Razem** | **496** |
+| | | **Razem** | **498** |
 
 ## 3. Katalog per plik (49 plików)
 
@@ -77,8 +77,8 @@ Kolumny: LOC (`wc -l` na pinie), linie importu logiki/danych (numery), liczba sy
 
 | Plik | LOC | Linie importu | Klasy | Co czyta / liczy lokalnie (dowód) | DTO / komenda |
 |---|---:|---|---|---|---|
-| `cityPanel.ts` | 11 986 | 41 (`:52-274`) | R97 M7 F15 K19 S8 X2 T32 | Pełny rachunek miasta `computeView` (`:1137-1300`): obrabiane pola (`cityWorkedTilesForEconomy` `:1148`), zdrowie (`computeCityHealthBreakdown` `:1149`), plony (`cityYieldPerTurn` `:1217`, mnożniki cyw./Mennica/Waluta `:1177-1205`, Porządek `:1222-1228`), racje i spichlerz (`computeCityRationCost` `:1245`, `paySpichlerzDrainForCity` `:1243`), WZROST% (`computeGrowthPercentV85` `:1263`), limity ludności (`cityPopulationCap` `:1278-1281`); `cityGrowthLive` dla plakietki (`:1527-1560`); szczęście/porządek (`evaluateOrderFromBreakdown` `:3083,3186`, prawo pozdobyczne `:3224-3229`); zamożność (`wealth*` `:4794-4837`); katalog budowy i bramki (`buildableProduction` `:6946`, `cityBuildingPrereqMet` `:6870`, `isBuildingSupersededByUpgrade` `:6862`); koszty (`itemCost`/`buildingWorkCost` `:7645-7646`, `buildingGoldPurchaseCost` `:6305`, `rushCost` `:8507`, `etaTurns` ×10); rekrutacja (`purchasableUnits` `:8911`, sortowanie `sortByUnitPowerDescending` `:8910`, manpower `:8053,8865`); utrzymanie (`buildingUpkeep` `:6573`, `unitResourceUpkeep` `:6198`); szlaki (`computeTradeRouteBuildingBonusByCity` `:10898`); kolejność nawigacji miast wg X/Z świata (`axialToWorld` `:10196-10197`); **mutacje**: `enqueue` `:6284`, `dequeue` `:6133`, `promoteToFront` `:8383`, `setPaused` `:8522`, `dequeueRecruitment` `:8284`, pobór/zwrot surowców `:6277`/`:6131` | `CityPanelDto` (§6.2), `CityGrowthDto` (§5), `BuildOptionDto`/`RecruitOptionDto` (§6.3), `EmpireHudDto` (§6.4); komendy §7 |
-| `diplomacyTradeBasket.ts` | 2 851 | 17 (`:7-52`, `:2833`) | R23 F2 K2 S2 T7 | Wycena koszyka w PW (`diplomacySumPn` `:219`), próg uczciwości (`diplomacyFairGivePn` `:1923`), zaufanie/dobra wola z nadwyżki (`:1925,1934`), zaufanie z daru (`:1988`), walidacja stron (`validateTradeBasketSides` `:1297-1300`), zakaz waluty w wojnie (`:1269`), „szybka umowa” (`computeQuickDealBasket` `:2370,2800`), auto-wyrównanie (`balanceGiveItemsToFairMin` `:2545`), saldo traktatu (`computePlayerAcceptanceSides` `:1077`); opcje pozycji z surowego `units.json`/`tech.json` (`:430,436`) i stałej cen złóż (`:442`) | `DiplomacyBasketPreviewDto` + zapytania `diplomacy_preview_basket`, `diplomacy_quick_deal`, `diplomacy_balance_to_fair` (§6.6); `TradeableItemsDto` |
+| `cityPanel.ts` | 11 986 | 41 (`:52-274`) | R97 M7 F15 K19 S8 X2 T32 | Pełny rachunek miasta `computeView` (`:1137-1300`): obrabiane pola (`cityWorkedTilesForEconomy` `:1148`), zdrowie (`computeCityHealthBreakdown` `:1149`), plony (`cityYieldPerTurn` `:1217`, mnożniki cyw./Mennica/Waluta `:1177-1205`, Porządek `:1222-1228`), racje i spichlerz (`computeCityRationCost` `:1245`, `paySpichlerzDrainForCity` `:1243`), WZROST% (`computeGrowthPercentV85` `:1263`), limity ludności (`cityPopulationCap` `:1278-1281`); `cityGrowthLive` dla plakietki (`:1527-1560`); szczęście/porządek (`evaluateOrderFromBreakdown` `:3083,3186`, prawo pozdobyczne `:3224-3229`); zamożność (`wealth*` `:4794-4837`); katalog budowy i bramki (`buildableProduction` `:6946`, `cityBuildingPrereqMet` `:6870`, `isBuildingSupersededByUpgrade` `:6862`); koszty (`itemCost`/`buildingWorkCost` `:7645-7646`, `buildingGoldPurchaseCost` `:6305`, `rushCost` `:8507`, `etaTurns` ×10); rekrutacja (`purchasableUnits` `:8911`, sortowanie `sortByUnitPowerDescending` `:8910`, manpower `:8053,8865`); utrzymanie (`buildingUpkeep` `:6573`, `unitResourceUpkeep` `:6198`); szlaki (`computeTradeRouteBuildingBonusByCity` `:10898`); kolejność nawigacji miast wg X/Z świata (`axialToWorld` `:10196-10197`); **mutacje**: `enqueue` `:6284`, `dequeue` `:6133`, `promoteToFront` `:8400,8408`, `setPaused` `:8522`, `dequeueRecruitment` `:8284`, pobór/zwrot surowców `:6277`/`:6131` | `CityPanelDto` (§6.2), `CityGrowthDto` (§5), `BuildOptionDto`/`RecruitOptionDto` (§6.3), `EmpireHudDto` (§6.4); komendy §7 |
+| `diplomacyTradeBasket.ts` | 2 851 | 17 (`:7-52`, `:2833`) | R24 F2 K2 S2 T7 (R24 = 23 + re-eksport `:2833`) | Wycena koszyka w PW (`diplomacySumPn` `:219`), próg uczciwości (`diplomacyFairGivePn` `:1923`), zaufanie/dobra wola z nadwyżki (`:1925,1934`), zaufanie z daru (`:1988`), walidacja stron (`validateTradeBasketSides` `:1297-1300`), zakaz waluty w wojnie (`:1269`), „szybka umowa” (`computeQuickDealBasket` `:2370,2800`), auto-wyrównanie (`balanceGiveItemsToFairMin` `:2545`), saldo traktatu (`computePlayerAcceptanceSides` `:1077`); opcje pozycji z surowego `units.json`/`tech.json` (`:430,436`) i stałej cen złóż (`:442`) | `DiplomacyBasketPreviewDto` + zapytania `diplomacy_preview_basket`, `diplomacy_quick_deal`, `diplomacy_balance_to_fair` (§6.6); `TradeableItemsDto` |
 | `newGameFlow.ts` | 2 373 | 9 (`:19-63`) | R15 F5 K5 S1 T11 | Menu i domyślne kreatora z etykiety mapy (`civTypesMenuForMapLabel` `:763`, `miastaPanstwaMenuForMapLabel` `:745`, `defaultCivTypesFromMapLabel` `:1999`, `clampMiastaPanstwaCount` `:2053`, `worldGenerationPresetFromLabels` `:1994`), podgląd startu (`buildStartPreview` `:1150,2009`), profil macierzy cywilizacji (`buildCivMatrixSemanticProfile` `:1250`) | `NewGameOptionsDto` + zapytanie `new_game_preview` (§6.10) — przed `create_session` |
 | `hexContextTooltip.ts` | 992 | 12 (`:7-47`) | R12 F5 K1 X4 T7 | Plon heksu bazowy/pełny (`tileYield` `:252,260`), ulepszenia aktywne (`improvementKeysForHex` `:248…557`), lista dopuszczalnych ulepszeń z bramkami terenu/lasu/cywilizacji (`:445-462`), magazyn z ulepszenia (`territoryResourceYieldForImprovement` `:137`), widoczność złoża lamy (`:338`), Moc jednostki (`fieldPower` `:818`) | `HexContextDto` (§6.7), `UnitCardDto` (§6.8) |
 | `entityCards/buildingAdapter.ts` | 340 | 10 (`:35-49`) | R8 F2 S1 T4 | Koszt budynku z tempem i trudnością (`itemCost`/`buildingWorkCost` `:278-279`), efekt na poziomie (`:137,152`), utrzymanie (`:296-297`), koszt surowcowy (`:280`), mnożnik roli jednostek (`:257-259`) | `EntityCardDto::Building` (§6.11) |
@@ -89,11 +89,11 @@ Kolumny: LOC (`wc -l` na pinie), linie importu logiki/danych (numery), liczba sy
 | `saveLoadDialog.ts` | 623 | 2 (`:5,15`) | M3 IO6 F2 K1 T2 | Lista slotów, metadane, ostatni slot, odczyt/usuwanie zapisu (`loadFromLocal` ×6, `deleteLocal` `:493,508`, FSA `:237,240`) | `SaveSlotsDto` (§6.15); komendy sesji P2-5 §2.10 |
 | `sciencePicker.ts` | 1 666 | 6 (`:12-19`) | R1 F1 S2 T2 | Koszt badania z tempem/trudnością/epoką (`scaledResearchCost` `:1179`) | `ResearchViewDto.techs[].effective_cost` (§6.9) |
 | `techTreeView.ts` | 1 130 | 4 (`:17-23`) | R1 F1 K1 S1 T2 | jw. (`:268`) | jw. |
-| `siegeMapPanel.ts` | 371 | 4 (`:5-9`) | R1 T4 (+ reguła bez importu) | Żywność miasta (`getCityFood` `:217`), zużycie i atrycja garnizonu **wpisane w UI** (`:219-220`) | `SiegePanelDto` (§6.12) |
+| `siegeMapPanel.ts` | 371 | 4 (`:5-9`) | R1 T4 (+ 4 reguły bez importu) | Żywność miasta (`getCityFood` `:217`); **wpisane w UI**: zużycie `:219`, atrycja garnizonu `:220`, szacunek milicji przy szturmie `:221-222` (wyświetlany `:268-269`), uprawnienie do szturmu/kolejki machin `playerCanStorm` `:223` (użycia `:279,291,321`) | `SiegePanelDto` (§6.12) |
 | `postBattleSummary.ts` | 603 | 3 (`:4-7`) | R1 X11 T3 | `buildPostBattleSummary` (eksport do sondy testowej `:595`; budowanie danych podsumowania z wyniku bitwy) | `BattleSummaryDto` (§6.13) |
 | `perfTestPanel.ts` | 677 | 1 (`:21`) | M1 | Uruchamia generator świata (`generujSwiatAsync` `:270-282`) | D-UI-7 (poza P5 albo komenda diagnostyczna) |
 | `buildModeHud.ts` | 963 | 3 (`:6-22`) | K2 T5 | (brak R) — stałe zakresu suwaka automatu ulepszeń (`:589-593`) | `StaticCatalogDto.constants`; stan polityki → `EmpireDetailDto.improvement_policy` |
-| `power-labels.ts` | 36 | 2 (`:9,15`) | S1 | Opcje „Mocy” z `power-params.json` (`loadPowerOpcje` `:19`) | `StaticCatalogDto` |
+| `power-labels.ts` | 36 | 2 (`:14,15`) | S2 (`powerParams`° martwy) | Opcje „Mocy” z `power-params.json` (`loadPowerOpcje` `:19`) | `StaticCatalogDto` |
 
 ### 3.2 Pozostałe pliki bez R/M (32): typy, stałe, dane, formatery, X
 
@@ -132,7 +132,7 @@ Kolumny: LOC (`wc -l` na pinie), linie importu logiki/danych (numery), liczba sy
 | `victoryScreen.ts` | 346 | `:7,9` | K1 T1 | `PROG_DOMINACJI_POWER` (`:48`) | `VictoryDto` (§6.13) |
 | `wikiHubHud.ts` | 644 | `:4` | S1 | `src/data/wikiBundle.json` | `StaticCatalogDto.wiki` (Z2) |
 
-Pełna lista symboli per plik z klasą i liniami użycia: wynik skryptów §11 (scratchpad Operatora; do odtworzenia komendami §11).
+Pełna lista symboli per plik z klasą i liniami użycia: `dyspozycje/autobot/runs/R-RUSTPORT-P5-0-VIEWMODEL-CATALOG-Q1/r2-pomiar/symbols.tsv` (498 wierszy; kolumny: plik, linia importu, moduł, symbol, klasa, liczba użyć, pierwsze 6 linii użycia). Skrypty `imp.py`/`use.py`/`cls.py`/`tsv.py`, logi `imp.log`/`cls.log` i `EXIT.log` w tym samym katalogu.
 
 ---
 
@@ -150,7 +150,7 @@ Grupy reguł (symbol → linie użycia; wszystkie importy `cityPanel.ts:52-274`)
 | Produkcja i katalog | `buildableProduction` (`:6946,8772,11356`), `eraBuildingCatalog` (`:8657,8672`), `buildingLevelForEpoch` (`:3067,6559,8790`), `buildingEffectAtLevel` (×5), `buildingProductionItem` (`:8792`), `isBuildingSupersededByUpgrade` (`:6862,6871`), `cityBuildingPrereqMet` (`:6870`), `empireResourceLabelSatisfied` (`:6913`), `frontItem` (`:896,5040,8432`), `etaTurns` (×10), `itemCost`/`buildingWorkCost` (`:7645-7646`), `buildingGoldPurchaseCost` (`:6305`), `rushCost` (`:8507`), `buildingTypeQueued` (`:6268,8789`), `upgradeChainSteps` (`:8986,9058`), `groupBuiltBuildingIds` (`:7826,9232`), `cityPalacTier` (`:3211`), `buildingStructuralDefenseBonusPercent` (`:6547`), `filterRuntimeActiveBuiltIds` (`:9080`), `resolveOwnedBuildingInactiveStatus` (`:9065,9086`), `parsePrerequisites` (`:7309-7331`) | `CityPanelDto.production`, `.build_options[]`, `.built[]` |
 | Surowce i utrzymanie | `buildingStockCost` (×4), `unitStockCost` (×9), `canAffordBuildingStock` (`:6275`), `missingStockFor` (`:6309,8153,8200`), `ownerResourceStockAll` (`:3168,6146`), `buildingUpkeep`/`buildingResourceUpkeep`/`addResourceCosts` (`:6573-6668`), `unitResourceUpkeep` (×5), `canAffordUnitRecruitStock` (`:8195`), `isUnitRecruitStockChipMissing` (`:8110,8119`) | `BuildOptionDto.stock_cost/missing`, `RecruitOptionDto.*` |
 | Rekrutacja i Moc | `purchasableUnits` (`:6198,6204,8911,8930`), `sortByUnitPowerDescending` (`:8910,8929`), `unitNacjaForCivKey` (`:8624`), `civManpowerMaxMult` (`:8052,8864`), `unitManpowerCost` (`:8865`), `unitManpowerCostForType` (`:8053`), `cityLudnoscAbsolutna` (×7), `mnoznikRoleForBuildingId`/`cumulativeMnoznikForBuildingId` (×4) | `CityPanelDto.recruit_options[]` (już posortowane) |
-| Szlaki, lista budowy, HUD | `computeTradeRouteBuildingBonusByCity` (`:10898`), `civWideSixStatsFromEmpireSnap` (`:10427,10456`), `dedupeBudowaLista` (`:11377`), `defaultBudowaListaNazwa` (`:11401`), `sanitizeBudowaPriorytetTypow` (×4) | `.trade`, `.budowa`, `EmpireHudDto.civ_wide` |
+| Szlaki, lista budowy, HUD | `computeTradeRouteBuildingBonusByCity` (`:10898`), `civWideSixStatsFromEmpireSnap` (`:10456`; `:10427` to komentarz), `dedupeBudowaLista` (`:11377`), `defaultBudowaListaNazwa` (`:11401`), `sanitizeBudowaPriorytetTypow` (×4) | `.trade`, `.budowa`, `EmpireHudDto.civ_wide` |
 
 Mutacje (M) — §7. Fallbacki „bez hooka” (`localProd` `:633-643`, `loadGameData` `:629`, `resolveCityHealth` `:3281-3290`) **znikają** w Rust: jedyną ścieżką jest DTO (ZAŁOŻENIE Z3: brak trybu „panel bez silnika” w frontendzie Tauri; testy panelu dostają DTO-fikstury).
 
@@ -160,14 +160,15 @@ Przy UI-Q2=A plakietki/etykiety miast rysuje renderer Rust. Każda wartość wid
 
 | Wartość | Dziś renderer (web) | Dziś UI (web) | Jedno pole w Rust (propozycja) |
 |---|---|---|---|
-| WZROST% na turę + „nakarmione” | `render/cities.ts:392,821` (`getCityGrowth`) ← `cityGrowthLive` (`cityPanel.ts:1527`) | `computeView(...).wzrostProcent` (`cityPanel.ts:1263`), przycięcie do `maxSafe` (`clampedGrowthBreakdown` def. `:1434`, użycia `:1554,5228,10450,10829`) | `CityGrowthDto { pct_per_turn: f64, fed: bool, breakdown: GrowthBreakdownDto, turns_to_next_citizen: Option<u32>, max_safe_ration: u8 }` — liczony raz na rewizję stanu; `CityMapBadge.growth` i `CityPanelDto.growth` to ta sama wartość |
+| WZROST% na turę + „nakarmione” | `render/cities.ts:392,821` (`getCityGrowth`) ← `cityGrowthLive` (`cityPanel.ts:1527`) | `computeView(...).wzrostProcent` (`cityPanel.ts:1263`), przycięcie do `maxSafe` (`clampedGrowthBreakdown` def. `:1434`, użycia `:1554,5228,10450,10829`) | `CityGrowthDto { pct_per_turn: f64, fed: bool, breakdown: GrowthBreakdownDto, wzrost_ulamkowy: f64 /* CityView.wzrostUlamkowy cityPanel.ts:1050,1292; postęp do +1 obywatela :5536,10841 */, turns_to_next_citizen: Option<u32>, max_safe_ration: u8 }` — liczony raz na rewizję stanu; `CityMapBadge.growth` i `CityPanelDto.growth` to ta sama wartość |
 | Etykieta miasta (z dopiskiem miasto-państwo) | `render/cities.ts:784` `formatCityMapLabel` | `cityPanel.ts:10206` `formatCityMapLabel` | `CityRefDto.map_label: String` |
 | Bieżąca pozycja produkcji (front kolejki) | `render/cities.ts:802` `frontItem(prod)` | `cityPanel.ts:896,5040,8432` `frontItem` | `CityProductionDto.front: Option<ProductionItemDto { kind, id, label, eta_turns }>` |
 | Ostrzeżenie „brak surowców” dla frontu | `render/cities.ts:809-811` (pula ownera − koszt surowcowy) | `missingStockFor` (`cityPanel.ts:6309`) | `ProductionItemDto.stock_missing: BTreeMap<ResourceKey, u32>` (pusty = OK) |
 | Stolica | `render/cities.ts:774` `getCapitalCityId` | `CityPanelConfig.getCapitalCityId` (`cityPanel.ts:594`) | `CityRefDto.is_capital: bool` |
+| Stan buntu (ikona 🔥 / ostrzeżenie) | `render/cities.ts:309` `getRevolt` ← `main.ts:2611-2613` (`cityOrderState.get(id).bunt === true \|\| .revoltWarning === true`; `cityOrderState` wypełniany w turze `main.ts:32552`) | `cityPanel.ts:3228-3229` liczy lokalnie `revoltWarning = !isPostCaptureLawActive(city) && revoltGraceRemaining > 0`, zwraca w stanie `:3251-3253` (`revoltGraceRemaining`, `revoltWarning`, `rebelState`); hak `cfg.getOrderState` `:3085` ma pierwszeństwo, fallback lokalny `computeOrderStateLocal` | `CityRevoltDto { bunt: bool, warning: bool, grace_remaining: Option<u32>, rebel_state: Option<RebelStateDto>, post_capture_law_turns: Option<u32> }` — `CityMapBadge.revolt` = `revolt.bunt \|\| revolt.warning` z **tego samego** `CityPanelDto.order.revolt` (jedna funkcja Rust; reguła `society-breakdown.ts:1082-1125`) |
 | Populacja, nazwa | dane `City` | dane `City` | `CityRefDto.population: u32`, `.name` |
 
-`CityMapBadge` (Rust, wewnętrzny dla renderera; serializowalny dla testów P5.14) = `{ city: CityRefDto, front: Option<ProductionItemDto>, growth: Option<CityGrowthDto> /* tylko miasta gracza, render/cities.ts:821 */, era, walls, wall_kind, level, revolt, owner_color, civ_icon_id }` (pola odczytane z `CityRenderOptions`, `render/cities.ts:282-356`). Klucz cache tekstury plakietki (P4-3 §7 M2) powinien być budowany z tych pól — `NIE_ZMIERZONO` dla Rust (RR-T8).
+`CityMapBadge` (Rust, wewnętrzny dla renderera; serializowalny dla testów P5.14) = `{ city: CityRefDto, front: Option<ProductionItemDto>, growth: Option<CityGrowthDto> /* tylko miasta gracza, render/cities.ts:821 */, era, walls, wall_kind, level, revolt: bool /* = order.revolt.bunt || order.revolt.warning, wiersz „Stan buntu” wyżej */, owner_color, civ_icon_id }` (pola odczytane z `CityRenderOptions`, `render/cities.ts:282-356`). Klucz cache tekstury plakietki (P4-3 §7 M2) powinien być budowany z tych pól — `NIE_ZMIERZONO` dla Rust (RR-T8).
 
 **ZAŁOŻENIE Z4:** WZROST% jest liczbą zmiennoprzecinkową w DTO (formatowanie do całości/1 miejsca robi UI tą samą funkcją co dziś). Sposób zaokrąglenia weba: `NIE_ZMIERZONO` w tym temacie — do testu P5.14.
 
@@ -177,7 +178,31 @@ Przy UI-Q2=A plakietki/etykiety miast rysuje renderer Rust. Każda wartość wid
 
 Konwencja (**ZAŁOŻENIE Z5**): `serde(rename_all = "camelCase")`, identyfikatory wg P2-3 (`CityId`, `PlayerId`, `UnitId` = newtype), heks = `HexCoord { q: i32, r: i32 }` (mapowanie na `PositionDto(x,y)` — P4-3 §4.3, `NIE_ZMIERZONO`). Transport (**ZAŁOŻENIE Z6**): `engine_state_changed` niesie nagłówek `ViewRevision { rev: u64, turn: u32, active_owner: PlayerId, dirty: Vec<ViewKey> }`; panele dociągają DTO zapytaniem `get_view { key: ViewKey }` (`ViewKey::City(CityId)`, `::Empire(PlayerId)`, `::Hex(HexCoord)`, …). Rozmiar/opóźnienie IPC: `NIE_ZMIERZONO`.
 
-### 6.1 `StaticCatalogDto` (K + S; 88 symboli)
+### 6.0 Wyliczenie (17 sekcji, odpowiedź na zarzut 7)
+
+| § | Typy najwyższego poziomu (DTO stanu / wynik zapytania) |
+|---|---|
+| 6.1 | `StaticCatalogDto` |
+| 6.2 | `CityPanelDto` (+ `CityRefDto`, `CityGrowthDto`, `CityRevoltDto`, `CityProductionDto`, `ProductionItemDto` — wspólne z `CityMapBadge`, §5) |
+| 6.3 | `BuildOptionDto`, `RecruitOptionDto` |
+| 6.4 | `EmpireHudDto` |
+| 6.5 | `EmpireDetailDto` |
+| 6.6 | `DiplomacyBasketPreviewDto`, `TradeableItemsDto`, `DiplomacyAudienceDto`, `DealDisplayDto`, `DiploListDto` |
+| 6.7 | `HexContextDto`, `ImprovementBuildImpactDto` |
+| 6.8 | `UnitCardDto`, `ArmyStackDto` |
+| 6.9 | `ResearchViewDto` |
+| 6.10 | `NewGameOptionsDto`, `StartPreviewDto` |
+| 6.11 | `EntityCardDto` |
+| 6.12 | `SiegePanelDto` |
+| 6.13 | `PreBattleDto`, `BattleSummaryDto`, `VictoryDto` |
+| 6.14 | `MinimapDto` |
+| 6.15 | `SaveSlotsDto` |
+| 6.16 | zdarzenia `MapGenProgressEvent`, `HoverEvent` (nie DTO stanu) |
+| 6.17 | `PerfReportDto` (warunkowo, D-UI-7) |
+
+Razem: 17 sekcji, 33 nazwane typy najwyższego poziomu (w tym 2 zdarzenia i 1 warunkowy `PerfReportDto`). Liczba „20 rodzin” z r1 nie miała wyliczenia i jest wycofana.
+
+### 6.1 `StaticCatalogDto` (K + S; 89 symboli)
 - **Pola:** `buildings, units, tech, terrain_improvements, wonders, counters, civs, city_names_pools, power_params, ui_params, wiki` (zawartość JSON 1:1) + `constants: { handel_pct_step, max_procent_nauka, min/max_podzial_pracy_budynki_percent, max_procent_puli_imperium, max_ulepszenia_praca_auto_percent, wyzywienie_min/max/step, research_queue_max, prog_dominacji_power, citizen_upkeep_rate_per_citizen, handel_zloze_cena_baza, barbarian_cooperation_default_duration_turns, fog_explored_brightness, epoch_number_to_name, improvement_keys, city_building_prereq, water_access_building_ids, city_panel_range_deposit_labels, tempo_gry }` + `labels: { podzial_pracy_pula_lbl/_pelna/_tip, por_band_labels, traktat_handlowy_label, resource_access_trade_withdrawn_reason }` + `unit_category: map UnitTypeKey→Category` (zastępuje `categoryOf` ×6).
 - **Konsumenci:** `registry.ts`, `*Adapter.ts`, `techDiscoveryNotice.ts`, `techUnlockParse.ts`, `sciencePicker.ts`, `techTreeView.ts`, `civBrandDisplay.ts`, `leaderPortraits.ts`, `wikiHubHud.ts`, `uiParams.ts`, `power-labels.ts`, `buildModeHud.ts`, `empireDetailPanel.ts`, `cityPanel.ts`, `scienceHubHud.ts`, `victoryScreen.ts`, `minimapHud.ts`, ikony.
 - **ZAŁOŻENIE Z2 (D-UI-4 otwarte):** katalog wysyła Rust raz na sesję z hashem treści; frontend **nie** importuje `gra/data/**`. Jeśli właściciel wybierze „JSON w frontendzie”, warunkiem jest test hash(frontend) == hash(Rust) w CI.
@@ -194,7 +219,8 @@ CityPanelDto {
   pop_caps: { bez_akweduktu: u32, spichlerz: u32, z_akweduktem: u32, aktualny: u32, at_cap: bool, ma_spichlerz: bool, ma_akwedukt: bool },
   health: { total: i32, lines: Vec<CityHealthLineDto> },
   order: { szczescie: f64, porzadek_pct: f64, band: u8, band_label: String, lines: Vec<SocietyLineDto>,
-           citizen_upkeep: CitizenUpkeepCoverageDto, post_capture_law: Option<String /*banner*/> },
+           citizen_upkeep: CitizenUpkeepCoverageDto, post_capture_law: Option<String /*banner*/>,
+           revolt: CityRevoltDto },                // §5 wiersz „Stan buntu” — to samo źródło co CityMapBadge.revolt
   culture: Option<CultureStateDto>, religion: Option<ReligionStateDto>,   // = dzisiejsze getCultureState/getReligionState (cityPanel.ts:365-390)
   wealth: { poziom: u32, cap: u32, prog: u32, mnoznik: f64, zadowolenie: f64, rownowaga: f64 },
   money: CityMoneySnapDto,                  // = CityMoneySnap (cityPanel.ts:1108-1125)
@@ -216,12 +242,27 @@ CityPanelDto {
 ```
 Reguły przeniesione (P5.13): cała §4.
 
+**Pokrycie `CityView` (`cityPanel.ts:1039-1071`, wypełnienie `:1283-1299`) — odpowiedź na zarzut 9:**
+
+| Pole `CityView` | Pole DTO |
+|---|---|
+| `praca`, `pieniadz`, `nauka`, `kultura` | `yields.praca/pieniadz/nauka/kultura` |
+| `zywnoscBrutto` | `yields.zywnosc_brutto` |
+| `zywnoscNetto` | **alias** `food.bilans_lokalny` — w webie `zywnoscNetto: bilansLokalny` (`:1285`), ta sama liczba; jedno pole w DTO, UI czyta `food.bilans_lokalny` tam, gdzie dziś `zywnoscNetto` (`:1661,1867-1871,4646,10617-10620,11487`) |
+| `kosztRacji`, `bilansLokalny`, `poziomRacji` | `food.koszt_racji`, `food.bilans_lokalny`, `food.poziom_racji` |
+| `wzrostProcent`, `growthBreakdown` | `growth.pct_per_turn`, `growth.breakdown` (§5) |
+| `wzrostUlamkowy` | `growth.wzrost_ulamkowy` (§5; użycia `:1571,1606,5536-5538,5629,5727-5732,10832-10841`) |
+| `maSpichlerz`, `maAkwedukt`, `popCapBezAkweduktu`, `popCapSpichlerz`, `popCapZAkweduktem`, `popCapAktualny`, `atPopCap` | `pop_caps.ma_spichlerz/ma_akwedukt/bez_akweduktu/spichlerz/z_akweduktem/aktualny/at_cap` |
+| `citizenUpkeep` | `order.citizen_upkeep` |
+
+Wszystkie 20 pól `CityView` mają przypisanie.
+
 ### 6.3 `BuildOptionDto` / `RecruitOptionDto`
 - `BuildOptionDto { item: ProductionItemDto, level: u8, available: bool, block_reasons: Vec<String>, prereq_chips: Vec<{label, met}>, work_cost: u32, gold_cost: u32, stock_cost, stock_missing, upkeep_gold: f64, upkeep_resources, effect_lines: Vec<String>, structural_defense_pct: Option<f64>, unit_role_mult: Option<{role, cumulative}>, superseded: bool, queued: bool }` — źródła: `cityPanel.ts:6835-7026` (`AvailabilityContext`), `:6862-6913`, `:7623-7667`, `:6573-6668`.
 - `RecruitOptionDto { unit_type, label, category, power: f64, gold_cost, manpower_cost, stock_cost, stock_missing, upkeep_resources, affordable: bool, chip_missing: bool }` — źródła: `cityPanel.ts:6198-6220`, `:8052-8053`, `:8106-8200`, `:8864-8865`; konsument też `unitRecruitCard.ts`.
 
 ### 6.4 `EmpireHudDto` (konsument: pasek miasta `cityPanel.ts:10414-10456`; poza 49 plikami także `hud.ts` — `NIE_ZMIERZONO` w tym temacie)
-= dzisiejszy `EmpireHudSnap` (`cityPanel.ts:1075-1106`: praca pool/rate/upkeep, złoto/rate, nauka/rate, żywność, kultura, religia, rozbicie skarbca) + `civ_wide: SixStatsDto` (`civWideSixStatsFromEmpireSnap` `:10427`).
+= dzisiejszy `EmpireHudSnap` (`cityPanel.ts:1075-1106`: praca pool/rate/upkeep, złoto/rate, nauka/rate, żywność, kultura, religia, rozbicie skarbca) + `civ_wide: SixStatsDto` (`civWideSixStatsFromEmpireSnap` `:10456`).
 
 ### 6.5 `EmpireDetailDto` (konsument: `empireDetailPanel.ts`, `empireDetailTypes.ts`, `buildModeHud.ts`)
 `{ default_handel: SplitDto, default_praca_procent_puli: u8, default_ration: u8, resource_usage: ResourceUsageBreakdownDto + total, citizen_upkeep_per_citizen, manpower: {obywatele_label, rekruci_total}, improvement_policy: UlepszeniaEmpirePolicyDto, ... }`.
@@ -241,7 +282,28 @@ Reguły przeniesione (P5.13): cała §4.
 `ImprovementBuildImpactDto { lines: Vec<String> }` (konsument `improvementBuildConfirm.ts:42-49`).
 
 ### 6.8 `UnitCardDto` (konsumenci: `armyStackHud.ts`, `unitCardStatus.ts`, `hexContextTooltip.ts`, `unitInfoCard.ts`, `unitInfographic.ts`, `unitRecruitCard.ts`)
-`{ unit_id, unit_type, label, category, owner, combat: UnitCardCombatDisplayDto, power: f64 /* fieldPower, hexContextTooltip.ts:818 */, hp: {cur,max}, moves: {cur,max}, veteran: {progress, stars: u8, tooltip}, badges: {soft_path: u8, armor_path: u8}, thumbnail: Option<ThumbRef> /* D-UI-3 */ }`.
+Pola wyłącznie z typów web (odpowiedź na zarzut 5; r1 miał `hp{cur,max}`, `moves`, `thumbnail` bez dowodu — `thumbnail` usunięty, HP/ruch zastąpione polami z dowodem z `ArmyStackCard`/`ArmyStackHudState`):
+```
+UnitCardDto {
+  unit_id, unit_type, label, category, owner,                 // identyfikacja; category = categoryOf (S, §3.2)
+  combat: UnitCardCombatDisplayDto,                           // = UnitCardCombatDisplay (game/unit-card-stats.ts:37-…): atak/obrona/hpMax/pancerz/weaponDamage/piercing/chargeBonus/missileAttack × {base, effective}
+  power: f64,                                                 // fieldPower (hexContextTooltip.ts:818)
+  status: UnitCardStatusDto {                                 // = UnitCardStatusInput (unitCardStatus.ts:76-92) bez `esc`
+    parametry_path_pp: Option<f64>, pancerz_path_pp: Option<f64>,
+    veteran_progress: Option<VeteranProgressDto>, veteran_badge_label: Option<String>,
+    veteran_stars_tooltip: Option<String>, veteran_experience_line: Option<String>, veteran_panel_explanation: Option<String>,
+    in_garnizon: bool, sentry: bool, ufortyfikowany_w_polu: bool, oblega_city_name: Option<String>,
+    suffering: UnitSufferingStatusDto,                        // = UnitSufferingStatusFields (unitCardStatus.ts:32-55): poziomTrudnosciLabel, glodWojska{,StatMult,HpFrac,AtrycjaAktywna,TurDoAtrycji}, zlotoDeficyt{…}
+  },
+  badges: { soft_path: u8, armor_path: u8, veteran_stars: u8 }, // softPathBadgeLevel/armorPathBadgeLevel/veteranStarCount (unitCardStatus.ts:145-147)
+  vitals: { hp: f64, hp_max: f64, ruch_left: f64, ruch_max: f64, mov: f64, rng: f64 },
+      // ArmyStackCard.hp/hpMax/ruchLeft/ruchMax (armyStackHud.ts:26-35, render :278-283), ArmyStackHudState.hp/mov/rng (:37-48, :305-316);
+      // ta sama czwórka w hexContextTooltip.ts:768-777. hp_max na karcie aktywnej = combat.hpMaxEffective (:305).
+  display_name: Option<String>, building_bonus_label: Option<String>, // ArmyStackHudState.displayName/buildingBonusLabel (:42,58)
+}
+// Stos na heksie: ArmyStackDto { hex_label, unit_count, cards: Vec<{id,name,icon,hp,hp_max,ruch_left,ruch_max,active}>, active: UnitCardDto, actions: Vec<UnitPanelActionDto> } (armyStackHud.ts:37-60)
+```
+Typy liczbowe `f64` = `number` w TS (całkowitość `ruch*` `NIE_ZMIERZONO`). Miniatura jednostki to osobna ścieżka renderera (`unitMiniPreview.ts:90` `buildUnitModel`, D-UI-3), nie pole `UnitCardDto`.
 
 ### 6.9 `ResearchViewDto` (konsumenci: `sciencePicker.ts`, `techTreeView.ts`, `scienceHubHud.ts`)
 `{ techs: Vec<{id, base_cost, effective_cost /* scaledResearchCost */, epoka, state, terrain_unlock_labels}>, queue: Vec<TechId>, queue_max, era_gate: Option<EraGateInfoDto>, tempo, difficulty }`.
@@ -255,13 +317,22 @@ Uwaga: `render_quality`/`QualityTier` (`newGameFlow.ts:140-146,1984-1986`) to us
 - `Unit`/`Tech`/`Improvement`/`Wonder`: z `StaticCatalogDto` (bez reguł).
 
 ### 6.12 `SiegePanelDto` (konsumenci: `siegeMapPanel.ts`, `cityAttackChoice.ts`)
-`{ ctx: MapSiegeContextDto, city: CityRefDto, food: f64, garnizon: u32, zuzycie: u32, atrycja_next: u32, machines: SiegeMachinesStateDto }` — `atrycja_next`/`zuzycie` dziś wpisane w UI (`siegeMapPanel.ts:219-220`).
+`{ ctx: MapSiegeContextDto, city: CityRefDto, food: f64, garnizon: u32, zuzycie: u32, atrycja_next: u32, milicja_est: u32, player_can_storm: bool, machines: SiegeMachinesStateDto }` — `zuzycie` `:219`, `atrycja_next` `:220`, `milicja_est` `:221-222` (`garnizon<=0 ? 0 : max(1, floor(population*0.2))`), `player_can_storm` `:223` (`oblegajacyOwnerId === 0`; dziś zablokowanie przycisków `:279,291` i akcji `:321`) — wszystkie cztery dziś **wpisane w UI** bez importu; w Rust liczone przez silnik oblężenia, `player_can_storm` = bramka komendy szturmu/kolejki machin (UI nie decyduje, kto może szturmować).
 
 ### 6.13 Bitwa i koniec gry
 `PreBattleDto { sides: Vec<{nazwa, cywilizacja, wodz, bonus_chips: Vec<String>, ...}> }` (`preBattle.ts:708-716`); `BattleSummaryDto` = `PostBattleSummaryData` (`postBattleSummary.ts:4`); `VictoryDto` = `VictoryResult` + `prog_dominacji_pct` (`victoryScreen.ts:48`). Stałe wyglądu bitwy (`battle/battleHudTheme`: `PB_SVG`, kolory, fonty) → kopia w frontendzie (klasa X, nie reguła).
 
 ### 6.14 `MinimapDto` (konsument: `minimapHud.ts`; R7 w P4-5)
-`{ width, height, tiles: Vec<{teren, fog: hidden|explored|visible, owner}>, viewport: {x,y,w,h} /* z kamery Rust, UI-Q3=B */ }`; klik → komenda widoku `camera_focus(q,r)` (P2-5 §2.11, bez statusu domeny).
+1:1 z `MinimapData` (`minimapHud.ts:25-50`; odpowiedź na zarzut 4 — r1 miał pola bez dowodu):
+```
+MinimapDto {
+  cols: u32, rows: u32,                                         // MinimapData.cols/rows
+  hexes: Vec<MinimapHexDto { q: i32, r: i32, teren: String, owner_color: Option<String>, fog: Option<Fog /* hidden|explored|visible */> }>,
+  viewport: Option<{ x: f64, y: f64, w: f64, h: f64 }>,          // 0..1 względem cols/rows; z kamery Rust (UI-Q3=B)
+  markers: Vec<MinimapMarkerDto { q: i32, r: i32, kind: City|Outpost|Unit, color: String }>,
+}
+```
+Klik → komenda widoku `camera_focus(q,r)` (P2-5 §2.11, bez statusu domeny). Dane podaje dziś `main.ts` przez callback (`getMinimapData`, §10 pkt 2).
 
 ### 6.15 `SaveSlotsDto` (konsument: `saveLoadDialog.ts`)
 `{ slots: Vec<SaveSlotMetaDto>, last_played: Option<SlotId>, autosaves: Vec<...>, storage_available: bool }`; komendy `save_game`, `load_game`, `delete_save` (P2-5 §2.10). `slotSlugFromLabel`/`uniqueSlotIdFromLabel` → po stronie Rust (identyfikator slotu nadaje powłoka).
@@ -280,7 +351,7 @@ Uwaga: `render_quality`/`QualityTier` (`newGameFlow.ts:140-146,1984-1986`) to us
 |---|---|---|---|
 | `enqueue` + pobór surowców `deductBuildingStockCostAcrossCities` | `cityPanel.ts:6265-6285` (`addItem`) | `enqueue_build` (B1) | Pobór surowców **w silniku**, atomowo z dodaniem pozycji |
 | `dequeue` + zwrot `refundBuildingStockCostAcrossCities` | `cityPanel.ts:6125-6135` (`cancelQueueItem`) | B3 (usuń/przesuń) | Zwrot i bankowanie postępu (`postepBudynkowUsuniete`) w silniku |
-| `promoteToFront` | `cityPanel.ts:8383-8408` | B3 | — |
+| `promoteToFront` | `cityPanel.ts:8400,8408` (wywołania; `:8383` to komentarz) | B3 | — |
 | `setPaused` | `cityPanel.ts:8522` | `city_set_paused` | — |
 | `dequeueRecruitment` | `cityPanel.ts:8284` | `recruit_cancel` (R5) | — |
 | reorder kolejki budowy/rekrutacji w UI (`moveQueueItem`, `reorderQueueItem`, `moveRecruitQueueItem`, `reorderRecruitQueueItem`) | `cityPanel.ts:645-720` | B3 | Funkcje lokalne UI (nie import), ale tworzą nowy stan kolejki → komenda |
@@ -303,13 +374,16 @@ Zapisy przez hooki (`cfg.setProduction`, `cfg.onRushBuy`, `onPurchaseUnit`, …;
 | `diplomacy-*` (pn-engine, acceptance-points, value-catalog, trade-validation, ai-offer-balance, proposals, war-gates, display, audience-actions) | 36 symboli R (§3.1 wiersze dyplomacji) | `diplomacyTradeBasket`, `diplomacyAcceptanceBalance`, `diplomacyAudience` | `DiplomacyBasketPreviewDto`, `DiplomacyAudienceDto` + zapytania §6.6 |
 | `start-preview`, `civ-matrix-semantic`, `civ-entry-epoch`, `map/newGameMapDefaults` | 15 symboli R (`newGameFlow`) | `newGameFlow` | `NewGameOptionsDto`, `new_game_preview` |
 | `battle-summary` | `buildPostBattleSummary` | `postBattleSummary` | `BattleSummaryDto` |
+| `society-breakdown` (bunt) | `revoltWarning` liczony lokalnie (`cityPanel.ts:3228-3229`; reguła źródłowa `society-breakdown.ts:1082-1125`) | `cityPanel` (+ renderer przez `main.ts:2611-2613`) | `CityPanelDto.order.revolt` = `CityMapBadge.revolt` (§5) |
+| **bez importu** (oblężenie) | `zuzycie` `:219`, `atrycjaNext` `:220`, `milicjaEst` `:221-222`, `playerCanStorm` `:223` — wyrażenia wpisane w `siegeMapPanel.ts`, bez symbolu `game/**` | `siegeMapPanel` | `SiegePanelDto.zuzycie/atrycja_next/milicja_est/player_can_storm` (§6.12) |
 
 ## 9. Brama mierzalna dla P5.1 (propozycja)
 
 Na drzewie frontendu Tauri (ścieżka po P5.1):
-1. `git grep -n -E "from ['\"](\.\./)+(game|map|units|battle|render)/|import\(['\"](\.\./)+(game|map|units|battle|render)/|from ['\"]three['\"]" -- <frontend>/ui` → **0** (obejmuje formę inline z §1).
-2. `git grep -n -E "(\.\./)+data/.*\.json" -- <frontend>/ui` → 0 albo wyłącznie pliki objęte testem hash (Z2).
-3. Lista reguł wpisanych bez importu (np. `siegeMapPanel.ts:219-220`) — przegląd ręczny w P5.1, bo brama 1 ich nie wykrywa.
+1. `git grep -n -E "from ['\"](\.\./)+(game|map|units|battle|render|data)/|import\(['\"](\.\./)+(game|map|units|battle|render|data)/|from ['\"]three['\"]" -- <frontend>/ui` → **0** (obejmuje formę inline z §1 **oraz `../data/loader`** — w r1 regex bez `data` przepuszczał 12 linii `data/loader`, w tym wywołania `loadGameData` w czasie gry: import `cityPanel.ts:81` / wywołanie `:629`, import `newGameFlow.ts:20` / wywołanie `:505`; zarzut 1).
+   **Kalibracja na pinie `edb8fb56`** (`gra/src/ui`, `r2-pomiar/gate91-new.log`, EXIT 0): **220** trafień = 212 linii importu z §1 + 6 inline `import('../game/…')` + 2 × `three`. Regex r1: 179 (brak 12 × `data/loader` i 29 × JSON, które łapał tylko osobny pkt 2; 179 + 29 + 12 = 220). Brama „0” wykrywa więc każdą z 212 linii §1.
+2. (tylko dla wyjątku Z2) `git grep -n -E "(\.\./)+data/.*\.json" -- <frontend>/ui` — jeśli właściciel wybierze „JSON w frontendzie” (D-UI-4), pkt 1 dopuszcza wyłącznie pliki z tej listy objęte testem hash. Dla `data/loader` (`loadGameData`/`getTechDef`/`getUnitDef` w czasie gry) **brak wyjątku** — zastępuje je `StaticCatalogDto`.
+3. Lista reguł wpisanych bez importu (znane: `siegeMapPanel.ts:219-223`, `cityPanel.ts:3228-3229` `revoltWarning`, lokalne operacje kolejki `cityPanel.ts:645-720`) — przegląd ręczny w P5.1, bo brama 1 ich nie wykrywa.
 4. Test kontraktu: każde pole §5 ma jedną funkcję źródłową w Rust (test jednostkowy porównujący `CityMapBadge.growth` z `CityPanelDto.growth` dla fikstury).
 
 ## 10. ZAŁOŻENIA i `NIE_ZMIERZONO`
@@ -317,7 +391,7 @@ Na drzewie frontendu Tauri (ścieżka po P5.1):
 **ZAŁOŻENIA Operatora** (niewiążące, do rewizji): Z1 formatery (§2), Z2 katalog statyczny z Rust + hash (§6.1), Z3 brak trybu „panel bez silnika” (§4), Z4 WZROST% jako `f64` (§5), Z5 konwencja serde/ID (§6), Z6 nagłówek rewizji + `get_view` (§6), Z7 suwaki bez lokalnej normalizacji (§6.5), Z8 lista pozycji handlu filtrowana w Rust (§6.6), Z9 jakość renderu poza silnikiem (§6.10), Z10 diagnostyka poza bramą (§6.17).
 
 **NIE_ZMIERZONO:**
-1. Reguły gry wpisane w UI bez importu `game/**` (poza znalezionym `siegeMapPanel.ts:219-220`) — wymaga przeglądu 117 plików, nie tylko 49.
+1. Reguły gry wpisane w UI bez importu `game/**` (poza znalezionymi `siegeMapPanel.ts:219-223` i `cityPanel.ts:3228-3229`) — wymaga przeglądu 117 plików, nie tylko 49.
 2. Dane, które 68 plików UI bez importów logiki dostaje przez callbacki `main.ts` (np. `hud.ts`, `minimapHud.getMinimapData`) — kształt `HudState` i pozostałych konfiguracji nie skatalogowany (`configure*` w `ui/`: `cityPanel.ts:612`, `sciencePicker.ts:1579`, `preBattle.ts:196`, `gamePauseMenu.ts:120`, `empireDetailPanel.ts:79,83,170`, `techTreeView.ts:65`).
 3. Sposób zaokrągleń/formatowania liczb w panelach (Z4) i czy normalizacja suwaków po stronie Rust (Z7) jest widoczna dla gracza.
 4. Rozmiar DTO i koszt IPC `get_view` dla panelu miasta (P4-5 §7 pkt 2).
@@ -325,15 +399,32 @@ Na drzewie frontendu Tauri (ścieżka po P5.1):
 6. Klasyfikacja §2 jest heurystyczna (słownik + reguły nazw); granica F/R dla funkcji „…Label” zależnych od reguł (`buildingRequiredActiveLabels`, `labelsForImprovementUnlock`, `terrainUnlockLabelsForTech`) przyjęta jako F z tekstem w DTO.
 7. Pełny kształt typów web (`UnitCardCombatDisplay`, `PostBattleSummaryData`, `MapSiegeContext`, `EraGateInfo`, `StartPreview`, …) — pola DTO w §6 dla tych typów odwołują się do typu web 1:1, bez wypisania pól.
 8. Czy `buildPostBattleSummary` jest wołany w UI poza sondą testową (`postBattleSummary.ts:595`) — wywołanie produkcyjne w `main.ts`/`battle/**` nie sprawdzone.
+9. Całkowitość pól `vitals` w `UnitCardDto` (TS `number`) i pełne pola `rebelState` (`RebelStateDto`) — typy web nie rozpisane w tym temacie.
 
 ## 11. Metoda (komendy)
 
 - `git fetch origin claude/sprawdzenie-funkcjonalnosci-ek4ra0 && git checkout --detach origin/claude/sprawdzenie-funkcjonalnosci-ek4ra0` → `88df6493`.
 - `git archive edb8fb56 gra/src | tar -x -C <scratch>/src` (odczyt poza repo, bez buildu).
-- `imp.py` (`python3 -I`): parser `^\s*(import|export)\s+(type\s+)?(…)\s+from\s+['"](…)['"]` (wieloliniowo), rozwiązanie ścieżek względem katalogu pliku, filtr `game|map|units|data|battle|render` w `gra/src` + `../data` (= `gra/data`) → 49 plików / 212 linii (§1).
+- **Skrypty, logi z EXIT i lista symboli są w repo:** `dyspozycje/autobot/runs/R-RUSTPORT-P5-0-VIEWMODEL-CATALOG-Q1/r2-pomiar/` (`imp.py`, `use.py`, `cls.py`, `tsv.py`, `imp.log`, `cls.log`, `symbols.tsv`, `gate91-new.log`, `EXIT.log`). Odtworzenie: archiwum `edb8fb56 gra/src` → scratch, potem `python3 -I imp.py <src> imp.json`, `python3 -I use.py <src> imp.json use.json`, `python3 -I cls.py use.json cls.json`, `python3 -I tsv.py use.json cls.json symbols.tsv`.
+- `imp.py` (`python3 -I`): parser r2 `^[ \t]*(import|export)\s+(type\s+)?(\{[^}]*\}|[\w$]+(?:\s*,\s*\{[^}]*\})?|\*\s+as\s+[\w$]+)\s+from\s+['"](…)['"]` (wieloliniowo; poprawka względem r1 opisana w `EXIT.log`), rozwiązanie ścieżek względem katalogu pliku, filtr `game|map|units|data|battle|render` w `gra/src` + `../data` (= `gra/data`) → 49 plików / 212 linii (§1).
 - `use.py`: rozbiór symboli z ciała importu, wyszukanie użyć `(?<![\w$.])SYM(?![\w$])` w pliku poza linią importu → liczba i pierwsze linie użyć; `uses=0` zweryfikowane `Grep` (§1, importy martwe).
-- `cls.py`: klasyfikacja R/M/IO/F/K/S/X/T (słowniki M, X, F, S + reguła `^[A-Z][A-Z0-9_]+$` → K, `import type` → T) → 496 symboli (§2).
-- Odczyty kontekstu (`ctx.py`, wycinki linii): `cityPanel.ts:300-720,990-1300,1490-1560,3280-3290,6080-6315,6940-6950,8905-8915,10192-10208,10414-10430,10894-10900`; `diplomacyAcceptanceBalance.ts:700-706,762-795`; `diplomacyTradeBasket.ts:428-450,1074-1082,1295-1301,1918-1936,2366-2373,2540-2547`; `hexContextTooltip.ts:100-146,248-262,445-462,805-820`; `empireDetailPanel.ts:1150-1160,1490-1500`; `siegeMapPanel.ts:210-220`; `postBattleSummary.ts:590-600`; `unitCardStatus.ts:140-150`; `victoryScreen.ts:44-50`; `minimapHud.ts:242-248`; `preBattle.ts:708-716`; `newGameFlow.ts:1146-1152,2007-2011`; `sciencePicker.ts:1176-1181`; `techTreeView.ts:265-270`; `scienceHubHud.ts:90-95`; `buildModeHud.ts:586-594`; `render/cities.ts:282-392,774-821`.
+- `cls.py`: klasyfikacja R/M/IO/F/K/S/X/T (słowniki M, X, F, S + reguła `^[A-Z][A-Z0-9_]+$` → K, `import type` → T) → 498 symboli (§2).
+- Odczyty kontekstu (`ctx.py`, wycinki linii): `cityPanel.ts:300-720,990-1300,1490-1560,3280-3290,6080-6315,6940-6950,8905-8915,10192-10208,10414-10430,10894-10900`; `diplomacyAcceptanceBalance.ts:700-706,762-795`; `diplomacyTradeBasket.ts:428-450,1074-1082,1295-1301,1918-1936,2366-2373,2540-2547`; `hexContextTooltip.ts:100-146,248-262,445-462,805-820`; `empireDetailPanel.ts:1150-1160,1490-1500`; `siegeMapPanel.ts:210-220`; `postBattleSummary.ts:590-600`; `unitCardStatus.ts:140-150`; `victoryScreen.ts:44-50`; `minimapHud.ts:242-248`; `preBattle.ts:708-716`; `newGameFlow.ts:1146-1152,2007-2011`; `sciencePicker.ts:1176-1181`; `techTreeView.ts:265-270`; `scienceHubHud.ts:90-95`; `buildModeHud.ts:586-594`; `render/cities.ts:282-392,774-821`. Odczyty r2: `siegeMapPanel.ts:210-230,268-321`; `render/cities.ts:300-315`; `main.ts:2600-2620,32545-32560`; `cityPanel.ts:1035-1075,1280-1300,3083-3092,3220-3260,8383-8408,10427,10456`; `minimapHud.ts:20-55`; `unitCardStatus.ts:32-92`; `armyStackHud.ts:24-62,278-319`; `hexContextTooltip.ts:768-787`; `game/unit-card-stats.ts:37-63`; `power-labels.ts:1-25`.
 - `Grep` `import\(['"](\.\./)+(game|…)/` w `ui/` → 6 trafień (§1); `Grep` `^export function configure[A-Z]` w `ui/` → 8 (§10 pkt 2).
 - Przeczytane dokumenty: `P4-5-UI-SHELL-AUDIT.md` (całość), `P4-3-RUST-RENDERER-ARCH.md` (§2-§4, §7-§8), `P4-10-PICKING-CPU.md` (§0-§1), `P4-11-CAMERA-TERRAIN-CPU.md` (§0), `LEDGER.md:120,134,138`, `P2-2-GAMESTATE-CONTRACT.md` §1-§3, §8, `P2-5-COMMANDS.md` §2.1-§2.2, §9.
 - Zero `npm`, `cargo`, buildu; zero zapisu w `gra/**`, `rust-port/**`, `src-tauri/**`.
+
+## 12. Rejestr zmian r2 (odpowiedzi na zarzuty Evaluatora r1, `02-evaluator-r1.md`)
+
+| # | Zarzut | Odpowiedź | Gdzie |
+|---|---|---|---|
+| 1 | Brama 9.1/9.2 przepuszcza `../data/loader` | PRZYJMUJĘ — `data` dodane do regexu 9.1; kalibracja 220 trafień na pinie | §9 pkt 1–2, `r2-pomiar/gate91-new.log` |
+| 2 | Brak `milicjaEst`, `playerCanStorm` | PRZYJMUJĘ — dodane do §0, §3.1, `SiegePanelDto`, §8 | §6.12, §8 |
+| 3 | D-UI-9 pomija bunt | PRZYJMUJĘ — wiersz „Stan buntu”, `CityRevoltDto`, `order.revolt`; `CityMapBadge.revolt` z tego samego pola | §5, §6.2, §8 |
+| 4 | `MinimapDto` bez dowodu | PRZYJMUJĘ — przepisany 1:1 z `MinimapData` (`cols/rows`, `q/r`, `owner_color`, `markers`) | §6.14 |
+| 5 | `UnitCardDto` wymyślone pola | PRZYJMUJĘ — `thumbnail` usunięty; HP/ruch zostają, ale z dowodem `ArmyStackCard`/`ArmyStackHudState` (`armyStackHud.ts:26-48`, `hexContextTooltip.ts:768-777`); dodane pola `UnitCardStatusInput` (`unitCardStatus.ts:76-92`) i `UnitSufferingStatusFields` (`:32-55`) | §6.8 |
+| 6 | Brak logów i listy symboli w `runs/<ID>/` | PRZYJMUJĘ — skrypty, logi z EXIT i `symbols.tsv` (498 wierszy) w `r2-pomiar/`. Przy odtworzeniu wyszedł błąd parsera r1: 498 symboli (jak u Evaluatora), nie 496 | §0, §2, §11, `r2-pomiar/EXIT.log` |
+| 7 | „20 rodzin DTO” niewyliczone | PRZYJMUJĘ — wyliczenie: 17 sekcji, 33 typy | §6.0 |
+| 8 | Dowody wskazują komentarze | PRZYJMUJĘ — `promoteToFront` → `:8400,8408`; `civWideSixStatsFromEmpireSnap` → `:10456` | §0, §3.1, §4, §6.4, §7 |
+| 9 | `CityPanelDto` pomija `wzrostUlamkowy`, `zywnoscNetto` | PRZYJMUJĘ — `growth.wzrost_ulamkowy`; `zywnoscNetto` = alias `food.bilans_lokalny` (`:1285`); tabela pokrycia 20/20 pól `CityView` | §5, §6.2 |
+| 10 | `01-operator-r1.md` bez SHA | PRZYJMUJĘ — SHA `85cbd531` dopisany do `01-operator-r1.md`; `03-operator-r2.md` podaje SHA bazy, a SHA własnego commita jest w komunikacie zwrotnym (commit nie może zawierać własnego SHA) | `01-operator-r1.md`, `03-operator-r2.md` |
