@@ -142,3 +142,70 @@ Build: `CARGO_INCREMENTAL=0 CARGO_TARGET_DIR=/home/user/cargo-target-shared/wf_e
 Allowlista r1 (bez zmian): `data/derived/counter-multipliers.json`, `src/data/derived.rs` (blok counter), `src/domain/combat.rs` (counter), `tests/counter_multipliers.rs`, generator i weryfikator counter, logi r1.
 
 Zero zmian w `bridge.rs`, `playable.rs`, `Cargo.toml`, `gra/**`, `rust-port/renderer/**`, `src-tauri/**`. Push: NIE WYKONANO.
+
+---
+
+## 8. Runda 3/5 (Operator r3, TEMAT R-RUSTPORT-P3-23-FLATTEN-STAGE3-Q1)
+
+**Baza:** `rust-port/parity-v2` @ `e810d0d3` + cherry-pick `7e37c6ec` (r1, tabela counter) i `278ff735` (r2, struktury max). Wynik cherry-picka: `f5987be8` (counter), `3f3c48d8` (struktury). Pin weba: `edb8fb56`.
+
+**Zakres wykonany w r3: TYLKO inwentarz i klasyfikacja (bez nowych tabel).** Grupy WZROST 35b, RUCH 35i, SPOŁECZEŃSTWO 35n, PRODUKCJA 19–21, MAPA 35j–k, AI 35a NIE zostały zaimplementowane w tej rundzie (brak tabel, parserów, generatorów i weryfikatorów). Uczciwy stan: etap 3 NIE jest zamknięty; kryterium binarne NIE spełnione.
+
+### 8.1 Statusy pozycji etapu 3 (stan na koniec r3)
+
+| Pozycja | Klasa | Web (pin edb8fb56) | Rust (plik:linia) | Status r3 | Uzasadnienie |
+|---|---|---|---|---|---|
+| 35g counter | a | `gra/src/game/combat.ts:527-549`, `gra/data/counters.json` | `data/derived/counter-multipliers.json`, `src/domain/combat.rs:188-203` | ROZWINIĘTE (r1) | tabela 8×8, 0 rozbieżności |
+| Struktury (reguła max) | a | `gra/src/main.ts:26953-26979`, `gra/src/game/city-defense.ts:55-75` | `src/domain/combat.rs:230-…` | ROZWINIĘTE (r2) | `combat.rs` nieużywany w grze (ZAŁOŻENIE 1) |
+| WALKA `combat.rs:456,461` | c | brak odpowiednika (grep `gra/src` `0.15`/`0.25`+advantage: 0 trafień) | `combat.rs:456,461` | ETAP 3 (otwarte) | decyzja właściciela: mechanika tylko w Rust → BEZ MECHANIKI w webie |
+| WZROST 35b | b | `gra/src/game/population-growth-v85.ts:92,:101` | `src/domain/city_growth.rs:45,67,85,219,223-235,461-469` | ETAP 3 (otwarte); w grze NIEUŻYWANE | `git grep` poza `domain/city_growth.rs` i testami: 0 wywołań `advance_city_growth*`/`growth_threshold_with_multiplier` w `src/`, `bridge.rs`, `playable.rs` |
+| RUCH 35i | a | `gra/src/map/road-movement.ts:14` (`ROAD_MOVE_SPEED_MULT = 3`), `:29` (`ROAD_BRUK_MOVE_SPEED_MULT = 5`) | `src/domain/pathfinding.rs:237-238,250-251` (literały 3/5), `:292-298` | ETAP 3 (otwarte); w grze NIEUŻYWANE | `git grep` `find_path|movement_cost|path_cost|reachable` w `src/`/`tests/`: tylko `domain/pathfinding.rs` i testy; `ai_turn.rs:1394` używa `terrain.rs:91` (inna funkcja, bez divisorów) |
+| WIOSKI 35c | a | `gra/src/game/villageRewards.ts:42,:48` | brak mnożnika w domenie; `playable.rs:172` NOT_IMPLEMENTED | BEZ MECHANIKI (Rust) | — |
+| 22b cennik PN | dane | `gra/data/diplomacy.json:158` | `src/data/civilizations.rs:659-677` | BEZ MECHANIKI (dane) | — |
+| DYPLOMACJA (`diplomacy.rs`) | a | `gra/src/game/diplomacy.ts:676,:1281` | `diplomacy.rs:222-224,327-329` (literały `1.0` trust/respect/gift), `:2008-2055` (basket PN, już przez `diplomacy_multiplier_by_key`), `:3077-3111` (czas traktatu, już przez `diplomacy_multiplier_value`) | CZĘŚCIOWO ROZWINIĘTE w etapie 1; literały `diplomacy.rs` poza tabelą: NIE_ZMIERZONO w r3 | do r4 |
+| Dług testu `tests/derived_values.rs:777-833` | — | — | pinuje wartości DYPLOMACJI | ETAP 3 (otwarte), NIE ruszany | — |
+| 35p archetypy | b | — | `diplomacy.rs:1027-1158` | → P3-18 | — |
+| SPOŁECZEŃSTWO 35n | a | `gra/src/game/society-breakdown.ts:399` | NIE_ZMIERZONO | ETAP 3 (otwarte) | do r4 |
+| PRODUKCJA 19–21 | a | `gra/src/game/converters.ts:56`, `gra/src/game/building-resource-gate.ts:329,:332` | `src/domain/resource_production.rs`, `improvements.rs`, `turn_economy.rs` — NIE_ZMIERZONO (nie zaklasyfikowano) | ETAP 3 (otwarte) | do r4 |
+| MAPA 35j–k | a/b | `gra/src/map/newGameMapDefaults.ts:255,:419`; `gra/src/data/map-gen-params-loader.ts:21,:24` | `src/domain/map_generator.rs` (200 trafień wzorca ogólnego) — NIE_ZMIERZONO | ETAP 3 (otwarte) | do r4 |
+| AI 35a / 35a2 / 35o5 | a / próg | `gra/src/game/ai.ts:1265,:4568`; `gra/src/game/ai-major-absorb.ts:10` | `src/domain/ai_turn.rs` (89 trafień ogólnych) — NIE_ZMIERZONO | ETAP 3 (otwarte) | do r4 |
+| Barbarzyńcy | — | `gra/src/game/diplomacy-barbarian-cooperation.ts:10,:21,:25` (promień/tury) | `src/domain/barbarians.rs` | NIE MNOŻNIK — poza zakresem | — |
+
+### 8.2 Wynik `git grep` (r3)
+
+- Wzorzec `\*|/|round|MULT` w `rust-port/engine/src/domain` daje znacznie więcej niż 74 trafień (sumarycznie ok. 1 000+ linii, głównie komentarze, geometria hex i indeksy). Pełna klasyfikacja KAŻDEGO trafienia NIE została wykonana w r3 — to dług, nie zakończony krok.
+- Węższy grep nazw mnożnikowych (`MULT|multiplier|_mult|divisor`, bez komentarzy): **91 linii**. Klasyfikacja: `city_growth.rs` (wzrost, 35b), `combat.rs` (counter/terrain/struktury — już tabele, poza `combat.rs:456,461`), `diplomacy.rs` (trust/respect/gift literały `1.0` + basket/treaty), `pathfinding.rs` (RUCH, literały 3/5), `trade.rs:1481,1559` (`trade_multiplier_value`, już tabela — ROZWINIĘTE w etapie 1/2), `rng.rs:5` (`LCG_MULTIPLIER` — stała PRNG, klasa: NIE mnożnik gry, nie-mnożnik).
+- Komenda: `git grep -nE 'MULT|multiplier|_mult|divisor' -- rust-port/engine/src/domain | grep -vE '^\S+:\s*//'`.
+
+### 8.3 Tabela było/jest (r3)
+
+Brak zmian wartości w r3. Tabela counter (r1) i struktury (r2) bez zmian, zob. sekcje 2–3.
+
+### 8.4 Zmiany testów (r3)
+
+Brak zmian w `rust-port/engine/tests/*.rs` w tej rundzie. Dług `tests/derived_values.rs:777-833` NIE naprawiony (ETAP 3).
+
+### 8.5 Bramki (r3, PEŁNE surowe logi)
+
+| Bramka | Wynik | Plik |
+|---|---|---|
+| `cargo fmt -- --check` | EXIT=0 | `dowody/gate-fmt-r3.log` (7 B, sam marker) |
+| `cargo clippy --offline --all-targets -- -D warnings` | EXIT=0 | `dowody/gate-clippy-r3.log` |
+| `cargo test --offline` | EXIT=0, **381 passed, 0 failed** | `dowody/gate-test-r3.log` |
+
+Build: `CARGO_INCREMENTAL=0 CARGO_PROFILE_DEV_DEBUG=0 CARGO_TARGET_DIR=/home/user/cargo-target-shared/wf_059cda80-fd8-1`; katalog targetu usunięty po bramkach. `Cargo.lock` nie commitowany.
+
+### 8.6 Do decyzji właściciela (ZAŁOŻENIA, bez pytania)
+
+1. ZAŁOŻENIE: moduły `combat.rs`, `city_growth.rs`, `pathfinding.rs` NIE są podpięte do pętli gry (potwierdzone grepem 8.1). Tabele w tych obszarach są „testowane”, nie „używane w grze”. Podpięcie to osobny temat.
+2. ZAŁOŻENIE: WALKA `combat.rs:456,461` (klasa c) bez odpowiednika w webie — do decyzji: wdrożyć mechanikę w webie (wtedy wektor) czy zostawić jako BEZ MECHANIKI (Rust-only).
+3. ZAŁOŻENIE: grupy r4 w kolejności: SPOŁECZEŃSTWO 35n → PRODUKCJA 19–21 → MAPA 35j–k → AI 35a → DYPLOMACJA literały → dług testu `derived_values.rs`.
+
+### 8.7 Allowlista r3
+
+- `dyspozycje/rust-port/p3/P3-23-FLATTEN-STAGE3.md` (sekcja 8).
+- `dyspozycje/autobot/runs/R-RUSTPORT-P3-23-FLATTEN-STAGE3-Q1/dowody/gate-{fmt,clippy,test}-r3.log`.
+
+Zero zmian w kodzie w r3. Zero zmian w `bridge.rs`, `playable.rs`, `Cargo.toml`, `gra/**`, `rust-port/renderer/**`, `src-tauri/**`. Push: NIE WYKONANO.
+
+**STATUS r3:** PASS-WITH-NOTES (bramki zielone; zakres etapu 3 NIE zamknięty — inwentarz + klasyfikacja, bez implementacji nowych grup).
