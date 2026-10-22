@@ -24,26 +24,77 @@ Jedna implementacja `Math.*` V8 (moduł `crate::jsmath`, P4.16) w całym crate:
 `src/camera.rs`: `git grep` nie wykazał wywołań — bez zmian. `lib.rs` bez zmian
 (nowego modułu brak). `tests/unit_core_trig.rs` bez zmian (nie było konieczne).
 
-## Skaner `tests/jsmath_wiring.rs`
+## Skaner `tests/jsmath_wiring.rs` (runda 2, po FAIL Evaluatora r1)
 
-- Zakres: rekurencyjnie `src/{geom,terrain,models,jsmath,pick,core}` + pliki
-  `src/camera.rs`, `src/models.rs`; 56 plików (próg `scanned >= 50`).
-- Formy wykrywane: metody `.sin() … .hypot(` (+ nowe `.ln_1p()`, `.cbrt()`,
-  `.log(`, `.powi(`); formy ścieżkowe po usunięciu białych znaków:
-  `f64::sin`, `f32::cos`, `<f64>::cos(`, `<f64 as Float>::sin(`, `f64 :: tan (`,
-  oraz funkcja jako wartość (`map(f64::cos)`), dla 25 nazw (`FN_NAMES`), z
-  granicą identyfikatora (`f64::max`, `f64::consts::PI` nie są fałszywym
-  trafieniem); `libm::` / `extern crate libm`; `intrinsics::`; makra
-  budujące identyfikatory (`paste!`, `concat_idents!`).
-- Lista `INDIRECT` (`from_euler_xyz(`, `hex_prism_no_bottom(`) usunięta:
-  te funkcje są teraz same oparte o `jsmath`, a `pick/**` jest skanowany
-  bezpośrednio. `Quat::from_euler_xyz` przeniesiony do przypadków „ok”.
-- Test `scanner_catches_known_bypass_forms`: 14 form złych, 8 dobrych.
-- Mutacje (ręczne, cofnięte): dopisanie `fn _mut(x: f64) -> f64 { <f64>::cos(x) }`
-  do `src/pick/three.rs`, `src/core/hex_shape.rs`, `src/camera.rs`,
-  `src/models/unit_core/horse.rs` → za każdym razem 1 trafienie `path ::cos`
-  (4/4 wykryte). Przed P4.18 forma `<f64>::cos(` nie była wykrywana, a
-  `pick/core/camera.rs/models/unit_core` nie były skanowane.
+Runda 1 (wycofana): skaner liniowy na surowym tekście — metody sprawdzane bez
+normalizacji białych znaków, brak aliasów typu i lokalnych `macro_rules!`,
+zakres 6 katalogów + 2 pliki. Evaluator r1 wykazał obejścia (`x.sin ()`,
+`R::cos(x)`, `$v.$f()`), zarzuty 1–3 PRZYJĘTE.
+
+Runda 2:
+- **Zakres:** CAŁE `src/` rekurencyjnie (69 plików `.rs`, próg `>= 60`), więc
+  także `lib.rs`, `view.rs`, `overlays.rs`, `text.rs`, `material.rs`, `gpu.rs`,
+  `assets/**` i każdy przyszły plik najwyższego poziomu. Test asertuje obecność
+  16 wskazanych plików (m.in. `pick/three.rs`, `core/hex_shape.rs`, `camera.rs`,
+  `lib.rs`, `view.rs`).
+- **Lekser** (w teście, bez zależności): usuwa komentarze (`//`, zagnieżdżone
+  `/* */`), stringi, raw stringi (`r#"…"#`, `br"…"`), literały znakowe; rozwija
+  surowe identyfikatory `r#sin` → `sin`; `::` to jeden token. Reguły działają
+  na strumieniu tokenów, więc spacje, łamanie linii i `#[rustfmt::skip]` nie
+  ukrywają wywołania.
+- **Reguły** dla 27 nazw (`FN_NAMES`, dodane `powi`, `mul_add`):
+  - `. nazwa (` / `. nazwa ::<` — wywołanie metody;
+  - `:: nazwa`, o ile nie jest prefiksem modułu (`:: nazwa ::`) — łapie
+    `f64::sin`, `<f64>::cos`, `<f64 as Float>::sin`, alias `R::cos`, generyk
+    `T::sin`, `map(f64::cos)`;
+  - goła nazwa wewnątrz wywołania makra lub ciała `macro_rules!`
+    (`probe_call!(x, tan)`), poza dostępem do pola (`a.log,`);
+  - `. $f (` i `:: $f (` w makrze (wywołanie z nazwą od wywołującego);
+    `Self::$wariant` bez wywołania jest dozwolone (istniejące makra
+    `catalogue!`/`bases!`);
+  - identyfikatory `libm`, `intrinsics`, `extern`, `paste`, `concat_idents`
+    oraz `include!` i `#[path]` gdziekolwiek w kodzie.
+- `scanner_catches_known_bypass_forms`: 36 form złych (w tym wszystkie 8 z
+  raportu Evaluatora r1), 24 dobre (zmienne lokalne `sin`/`cos`/`tan`/`ln`,
+  pole `self.log`, `mod hypot`, stringi i komentarze z `x.sin()`, lifetimes,
+  `if !(sin > 0.0)`, `Self::$v` w makrze).
+- **Mutacja A** (cofnięta) w `src/pick/three.rs`:
+  `#[rustfmt::skip] pub fn probe_a(x: f64) -> f64 { x.sin () + ProbeR::cos(x) + probe_call!(x, tan) }`
+  + `type ProbeR = f64;` + `macro_rules! probe_call { ($v:expr, $f:ident) => { $v.$f() }; }`
+  → `no_platform_transcendentals_anywhere_in_src` FAILED, 4 trafienia:
+  `three.rs:687 metavariable call .$f(`, `:692 method .sin(`, `:692 path ::cos`,
+  `:692 bare `tan` in a macro`.
+- **Mutacja B** (cofnięta): `from_euler_xyz` i obie pętle
+  `hex_prism_no_bottom` wrócone na libm przez `type R = f64; R::sin/cos` →
+  FAILED 3 testy: skaner (10 trafień `path ::sin/::cos`),
+  `pick_quat_from_euler_xyz_uses_v8_trig` (`from_euler_xyz(7.853981633974482e-1,0,0) w`:
+  `…189` vs V8 `…190`), `pick_hex_prism_vertices_use_v8_trig`
+  (`r=1.0000000164645264 vertex 4 (k=4) x`: `3210589143` vs V8 `3210589144`).
+  Numeryka łapie powrót na libm niezależnie od skanera.
+
+## Strażnicy numeryczni `pick/**` (runda 2, zarzut 4)
+
+- `pick_quat_from_euler_xyz_uses_v8_trig`: na każdym kącie z wektorów V8
+  (`tests/fixtures/jsmath/{sin,cos}.bin`, bez zmian), gdzie glibc ≠ V8,
+  `PickQuat::from_euler_xyz` po każdej osi daje bity V8 w `f64` (`to_bits`).
+- `pick_hex_prism_vertices_use_v8_trig`: stałe V8 `Math.sin/cos((k/6)*(Math.PI*2)+0)`
+  dla k=0..6 zarejestrowane node v22.22.0 (komenda w teście). `hex_prism_no_bottom`
+  zwraca pozycje WYŁĄCZNIE jako bufor `f32` (`TriGeometry.positions: Vec<f32>`,
+  publiczna sygnatura bez zmian), więc asercja `f64` na wierzchołku jest
+  niemożliwa bez zmiany API; zamiast tego promień `DISCRIMINATING_RADIUS =
+  f64::from_bits(0x3ff0_0000_046b_6f03)` dobrany tak, że `r·sin(4π/3)` V8
+  (`…ca9`) i glibc (`…ca8`) lądują po różnych stronach granicy zaokrąglenia
+  `f32` — test sam asertuje tę rozłączność. Sprawdzane są wszystkie 4 pierścienie
+  (torso ×2, cap górny, cap dolny) × 7 wierzchołków × (x, z) dla r ∈ {1, 0.75,
+  DISCRIMINATING_RADIUS}.
+- `terrain_rotation_uses_v8_trig` (zarzut 5): referencja „libm” jest teraz
+  jawnie budowana z `f64::sin/cos` (platforma) tym samym drzewem wyrażeń co
+  `setFromEuler`; komentarz poprawiony. Licznik informacyjny pokazuje teraz
+  `2 angles where platform libm and V8 differ after f32 storage` (w r1 zawsze 0,
+  bo porównywał jsmath z jsmath).
+- `pick/camera.rs` (`tan(25°)`, `sin/cos(52°)`): bity libm == V8 (pomiar r1,
+  potwierdzony przez Evaluatora), więc numerycznie nierozróżnialne — chronione
+  wyłącznie skanerem; `pick_golden` 7/7 pokrywa wynik.
 
 ## Fixtury `pick_golden` i pozostałe
 
@@ -88,14 +139,15 @@ Przed zmianą ten sam grep dawał 18 linii kodu (21 wywołań):
 (źródła w tabeli wyżej). `.sqrt()` pozostaje dozwolone (IEEE 754, poprawnie
 zaokrąglany — identyczny w V8 i każdym libm). Pliki spoza skanu
 (`overlays.rs`, `text.rs`, `view.rs`, `material.rs`, `gpu.rs`, `assets/**`)
-nie mają trafień w grepie.
+nie mają trafień w grepie. Od rundy 2 są też skanowane (cały `src/`).
 
 ## Gate (pełne logi: `dyspozycje/autobot/runs/R-RUSTPORT-P4-18-JSMATH-CONSOLIDATE-Q1/01-operator-r1.md`)
 
 - `cargo fmt --all -- --check` → `EXIT=0`
 - `cargo clippy --locked --all-targets -- -D warnings` → `EXIT=0`
 - `cargo clippy --locked --all-targets --features gpu -- -D warnings` → `EXIT=0`
-- `cargo test --locked --all-targets` → `EXIT=0`, 103 testy ok, 0 failed.
+- `cargo test --locked --all-targets` → `EXIT=0`, 103 testy ok, 0 failed (r1).
+- Runda 2 (logi: `03-operator-r2.md`): fmt/clippy/clippy+gpu `EXIT=0`, test `EXIT=0`, 105 ok, 0 failed (`jsmath_wiring` 6/6).
 
 ## ZAŁOŻENIA
 
