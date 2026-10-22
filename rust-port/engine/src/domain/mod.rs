@@ -26,7 +26,7 @@ mod types;
 
 pub use error::EngineError;
 pub use events::{canonical_phase_order, phase_order, TurnEvent, TurnPhase, PHASE_COUNT};
-pub use ids::{CityId, PlayerId, UnitId};
+pub use ids::{CampId, CityId, OwnerRef, PlayerId, UnitId};
 pub use improvements::{
     can_build_improvement, improvement_production, production_for, qualifies,
     qualifies_improvement, Deposit, Improvement, ImprovementKey, Production, TerrainType, Tile,

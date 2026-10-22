@@ -6,12 +6,9 @@
 //! is mutated by the resolver except the per-unit visit memory, which is an
 //! intentional part of the movement decision state.
 
-use super::{CityId, UnitId};
+use super::{CampId, CityId, OwnerRef, UnitId};
 use serde::{Deserialize, Serialize};
 use std::collections::{BTreeMap, BTreeSet, VecDeque};
-
-/// Sentinel owner used by the neutral hostile faction.
-pub const BARBARIAN_OWNER_ID: i64 = -1;
 
 /// Axial pointy-top coordinate used by map and movement rules.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord, Serialize, Deserialize)]
@@ -83,7 +80,7 @@ pub struct MapTile {
     pub terrain: Terrain,
     /// `None` is neutral/unowned. Camp candidates must be neutral.
     #[serde(default)]
-    pub owner_id: Option<i64>,
+    pub owner_id: Option<OwnerRef>,
 }
 
 impl MapTile {
@@ -94,7 +91,7 @@ impl MapTile {
         }
     }
 
-    pub const fn owned(terrain: Terrain, owner_id: i64) -> Self {
+    pub const fn owned(terrain: Terrain, owner_id: OwnerRef) -> Self {
         Self {
             terrain,
             owner_id: Some(owner_id),
@@ -134,13 +131,13 @@ impl BarbarianMap {
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct CitySnapshot {
     pub id: CityId,
-    pub owner_id: i64,
+    pub owner_id: OwnerRef,
     pub q: i32,
     pub r: i32,
 }
 
 impl CitySnapshot {
-    pub const fn new(id: u64, owner_id: i64, q: i32, r: i32) -> Self {
+    pub const fn new(id: u64, owner_id: OwnerRef, q: i32, r: i32) -> Self {
         Self {
             id: CityId::new(id),
             owner_id,
@@ -157,7 +154,7 @@ impl CitySnapshot {
 /// A barbarian camp is a stationary source of new units.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct BarbCamp {
-    pub id: u64,
+    pub id: CampId,
     pub q: i32,
     pub r: i32,
     pub spawn_cooldown: u32,
@@ -168,7 +165,7 @@ pub struct BarbCamp {
 impl BarbCamp {
     pub const fn new(id: u64, q: i32, r: i32) -> Self {
         Self {
-            id,
+            id: CampId::new(id),
             q,
             r,
             spawn_cooldown: 0,
@@ -187,12 +184,12 @@ impl BarbCamp {
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct BarbUnit {
     pub id: UnitId,
-    pub owner_id: i64,
+    pub owner_id: OwnerRef,
     pub q: i32,
     pub r: i32,
     pub movement_left: u32,
     pub health_fraction: Option<f64>,
-    pub camp_id: Option<u64>,
+    pub camp_id: Option<CampId>,
     #[serde(default)]
     pub embarked: bool,
     #[serde(default)]
@@ -207,7 +204,7 @@ impl BarbUnit {
     pub fn new(id: u64, q: i32, r: i32) -> Self {
         Self {
             id: UnitId::new(id),
-            owner_id: BARBARIAN_OWNER_ID,
+            owner_id: OwnerRef::Barbarian,
             q,
             r,
             movement_left: 1,
@@ -225,7 +222,7 @@ impl BarbUnit {
     }
 
     pub fn with_camp(mut self, camp_id: u64) -> Self {
-        self.camp_id = Some(camp_id);
+        self.camp_id = Some(CampId::new(camp_id));
         self
     }
 
@@ -238,7 +235,7 @@ impl BarbUnit {
 /// Unit spawn emitted by a camp tick.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct BarbSpawn {
-    pub camp_id: u64,
+    pub camp_id: CampId,
     pub q: i32,
     pub r: i32,
     pub unit_type: String,
@@ -306,8 +303,8 @@ pub enum Difficulty {
     Hard,
 }
 
-pub const fn is_barbarian(owner_id: i64) -> bool {
-    owner_id == BARBARIAN_OWNER_ID
+pub const fn is_barbarian(owner_id: OwnerRef) -> bool {
+    owner_id.is_barbarian()
 }
 
 pub const fn barbarians_active(turn: u32, params: &BarbParams, highest_player_era: u8) -> bool {
@@ -525,7 +522,10 @@ pub fn tick_camps(
 }
 
 /// Remove the camp entered by a non-barbarian unit, preserving spawned units.
-pub fn destroy_camp_at(camps: &[BarbCamp], coordinate: HexCoord) -> (Vec<BarbCamp>, Option<u64>) {
+pub fn destroy_camp_at(
+    camps: &[BarbCamp],
+    coordinate: HexCoord,
+) -> (Vec<BarbCamp>, Option<CampId>) {
     let destroyed = camps
         .iter()
         .find(|camp| camp.position() == coordinate)
@@ -543,7 +543,7 @@ pub const fn should_allow_barbarian_city_capture(difficulty: Difficulty) -> bool
 }
 
 pub fn is_city_capture_blocked_by_defenders(
-    attacker_owner_id: i64,
+    attacker_owner_id: OwnerRef,
     units: &[BarbUnit],
     city: &CitySnapshot,
 ) -> bool {
@@ -554,7 +554,7 @@ pub fn is_city_capture_blocked_by_defenders(
 }
 
 pub fn can_capture_empty_city(
-    attacker_owner_id: i64,
+    attacker_owner_id: OwnerRef,
     city: &CitySnapshot,
     units: &[BarbUnit],
     difficulty: Difficulty,
@@ -649,9 +649,9 @@ pub fn plan_barbarian_rally(
     all_units: &[BarbUnit],
 ) -> Vec<BarbCommand> {
     let land_camps = camps.iter().filter(|camp| !camp.naval).collect::<Vec<_>>();
-    let mut groups: BTreeMap<u64, Vec<&BarbUnit>> = BTreeMap::new();
+    let mut groups: BTreeMap<CampId, Vec<&BarbUnit>> = BTreeMap::new();
     for unit in units.iter().filter(|unit| {
-        unit.owner_id == BARBARIAN_OWNER_ID
+        unit.owner_id == OwnerRef::Barbarian
             && unit.movement_left > 0
             && !unit.embarked
             && !unit.sea_raider
@@ -728,7 +728,7 @@ pub fn decide_barbarian_moves(
 
     for unit in units.iter_mut() {
         if unit.movement_left == 0
-            || unit.owner_id != BARBARIAN_OWNER_ID
+            || unit.owner_id != OwnerRef::Barbarian
             || unit.embarked
             || unit.sea_raider
             || rallied_ids.contains(&unit.id.get())

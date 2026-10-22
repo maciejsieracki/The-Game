@@ -1,5 +1,10 @@
 use civ_engine::domain::barbarians::*;
+use civ_engine::domain::{CampId, OwnerRef, PlayerId};
 use std::collections::BTreeSet;
+
+fn player(id: u64) -> OwnerRef {
+    OwnerRef::Player(PlayerId::new(id))
+}
 
 fn plain_map(q_start: i32, q_end: i32, r_start: i32, r_end: i32) -> BarbarianMap {
     BarbarianMap::from_tiles((q_start..=q_end).flat_map(|q| {
@@ -10,7 +15,7 @@ fn plain_map(q_start: i32, q_end: i32, r_start: i32, r_end: i32) -> BarbarianMap
 #[test]
 fn camp_spawning_is_deterministic_and_honours_city_and_camp_spacing() {
     let map = plain_map(-8, 8, -4, 4);
-    let cities = [CitySnapshot::new(7, 0, 0, 0)];
+    let cities = [CitySnapshot::new(7, player(0), 0, 0)];
     let params = BarbParams {
         max_camps: 3,
         min_distance_from_city: 3,
@@ -35,7 +40,7 @@ fn camp_spawning_rejects_owned_and_permanently_cleared_hexes() {
     let owned = HexCoord::new(0, 0);
     let cleared = HexCoord::new(1, 0);
     let map = BarbarianMap::from_tiles([
-        (owned, MapTile::owned(Terrain::Plains, 7)),
+        (owned, MapTile::owned(Terrain::Plains, player(7))),
         (cleared, MapTile::new(Terrain::Plains)),
     ]);
     let params = BarbParams {
@@ -76,7 +81,7 @@ fn camp_tick_decrements_cooldown_and_respects_owned_unit_cap() {
 
     let (updated, spawns) = tick_camps(std::slice::from_ref(&camp), &[], &[], &map, &params);
     assert_eq!(spawns.len(), 1);
-    assert_eq!(spawns[0].camp_id, 10);
+    assert_eq!(spawns[0].camp_id, CampId::new(10));
     assert_eq!(updated[0].spawn_cooldown, 4);
 
     let owned = BarbUnit::new(99, 0, 1).with_camp(10);
@@ -101,7 +106,7 @@ fn camp_tick_decrements_cooldown_and_respects_owned_unit_cap() {
 fn camp_destruction_removes_only_the_entered_camp() {
     let camps = [BarbCamp::new(1, 2, 2), BarbCamp::new(2, 4, 4)];
     let (remaining, destroyed) = destroy_camp_at(&camps, HexCoord::new(2, 2));
-    assert_eq!(destroyed, Some(1));
+    assert_eq!(destroyed, Some(CampId::new(1)));
     assert_eq!(remaining, vec![BarbCamp::new(2, 4, 4)]);
 
     let (unchanged, missing) = destroy_camp_at(&remaining, HexCoord::new(9, 9));
@@ -117,7 +122,7 @@ fn movement_prioritizes_retreat_then_adjacent_attack_then_nearest_target() {
 
     let wounded = BarbUnit::new(1, 3, 0).with_camp(1).with_health(0.1);
     let enemy = BarbUnit {
-        owner_id: 0,
+        owner_id: player(0),
         ..BarbUnit::new(20, 4, 0)
     };
     let mut units = vec![wounded.clone()];
@@ -156,7 +161,7 @@ fn movement_prioritizes_retreat_then_adjacent_attack_then_nearest_target() {
         }]
     );
 
-    let city = CitySnapshot::new(30, 0, 6, 0);
+    let city = CitySnapshot::new(30, player(0), 6, 0);
     let mut hunter = BarbUnit::new(3, 1, 0);
     let commands = decide_barbarian_moves(
         std::slice::from_mut(&mut hunter),
@@ -188,8 +193,8 @@ fn rally_moves_multiple_units_toward_their_shared_camp() {
 
 #[test]
 fn empty_city_capture_is_hard_only_and_defenders_block_barbarians() {
-    let city = CitySnapshot::new(5, 0, 2, 2);
-    let barb_owner = BARBARIAN_OWNER_ID;
+    let city = CitySnapshot::new(5, player(0), 2, 2);
+    let barb_owner = OwnerRef::Barbarian;
     assert!(!should_allow_barbarian_city_capture(Difficulty::Easy));
     assert!(!should_allow_barbarian_city_capture(Difficulty::Normal));
     assert!(should_allow_barbarian_city_capture(Difficulty::Hard));
@@ -201,7 +206,7 @@ fn empty_city_capture_is_hard_only_and_defenders_block_barbarians() {
     ));
 
     let defender = BarbUnit {
-        owner_id: 0,
+        owner_id: player(0),
         ..BarbUnit::new(8, 2, 2)
     };
     assert!(is_city_capture_blocked_by_defenders(
@@ -216,7 +221,7 @@ fn empty_city_capture_is_hard_only_and_defenders_block_barbarians() {
         Difficulty::Hard
     ));
     assert!(!is_city_capture_blocked_by_defenders(
-        0,
+        player(0),
         &city_units(),
         &city
     ));
@@ -224,7 +229,7 @@ fn empty_city_capture_is_hard_only_and_defenders_block_barbarians() {
 
 fn city_units() -> Vec<BarbUnit> {
     vec![BarbUnit {
-        owner_id: 0,
+        owner_id: player(0),
         ..BarbUnit::new(8, 2, 2)
     }]
 }
